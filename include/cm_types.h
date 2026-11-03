@@ -26,6 +26,13 @@ typedef struct G17GOTOMSG {             /* 0x4d bytes, the data of message 0x35 
     char reason[0x20];                  /* 0x2d, why it goes ("Unfall", "Pest", "RndGeselle") */
 } G17GOTOMSG;
 
+typedef struct G17GATEMSG {             /* 12 bytes, the data of message 0x36 (cm_SendChrUseGates, its handler
+                                           0x4ca8a0 cm_ExChrUseGates) */
+    int charId;                         /* 0x00, the character ("sp_<id>") */
+    int bldId;                          /* 0x04, the building it is in */
+    int objId;                          /* 0x08, the room (object) it goes to */
+} G17GATEMSG;
+
 typedef struct G17HIREMSG {             /* 0x17 bytes, the data of message 0x3d (cm_SendMessage3d, its handler
                                            0x4cb250 creates the character) */
     int bldId;                          /* 0x00, the building the character works in */
@@ -273,6 +280,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17BUILDMSG build;              /* 0x10, message 10 */
         G17OBJMSG obj;                  /* 0x10, message 0x2d */
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
+        G17GATEMSG gate;                /* 0x10, message 0x36 */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
