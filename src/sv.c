@@ -66,10 +66,8 @@ extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
 extern D2WIN d2_Wins[];
 extern GAPDATA full_data_623e90[];
-extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_62571c[];
 extern GAPDATA full_data_6f2364[];
-extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
 extern char * ai_PickedObject;
@@ -4197,7 +4195,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
     }
     if (SV_I((unsigned)&full_data_62571c) >= 0) {
-        if (SV_I((unsigned)&full_data_625718) > 3) {
+        if (he_LastSlot > 3) {
             d2_EnableObject(ai_Unk6238a4, 1);
         } else {
             d2_EnableObject(ai_Unk6238a4, 0);
@@ -4205,22 +4203,22 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         }
         if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)
             SV_I((unsigned)&full_data_6f2364) = SV_I((unsigned)&full_data_6f2364) == 0;
-        if (SV_I((unsigned)&full_data_623e90) != SV_I((unsigned)&full_data_625718) || (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)) {
+        if (SV_I((unsigned)&full_data_623e90) != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)) {
             if (SV_I((unsigned)&full_data_6f2364) != 0) {
-                d2_SetForm(SV_I((unsigned)&full_data_6faa60), 0);
-                d2_MoveObj(d2_ScreenW - (SV_I((unsigned)&full_data_625718) << 5) - 0x1d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
-                d2_MoveObj(d2_ScreenW - (SV_I((unsigned)&full_data_625718) << 5) - 0x4d, d2_ScreenH - 0x21, ai_Unk6238a4);
+                d2_SetForm(he_BarView, 0);
+                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
+                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, ai_Unk6238a4);
             } else {
-                d2_SetForm(SV_I((unsigned)&full_data_6faa60), 0);
+                d2_SetForm(he_BarView, 0);
                 d2_MoveObj(d2_ScreenW - 0x7d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
                 d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, ai_Unk6238a4);
             }
-            SV_I((unsigned)&full_data_623e90) = SV_I((unsigned)&full_data_625718);
+            SV_I((unsigned)&full_data_623e90) = he_LastSlot;
         }
         if (SV_I((unsigned)&full_data_6f2364) != 0) {
             d2_SetClipRect(0, 0, d2_ScreenW - 0x8c, d2_ScreenH);
             shape = d2_GetPic(sv_PanelPic + 3);
-            d2_DrawShape(d2_ScreenW - (SV_I((unsigned)&full_data_625718) << 5) - 0x37, d2_ScreenH - 0x37, d2_ScreenSurf, shape, 0);
+            d2_DrawShape(d2_ScreenW - (he_LastSlot << 5) - 0x37, d2_ScreenH - 0x37, d2_ScreenSurf, shape, 0);
             d2_SetClipRect(0, 0, d2_ScreenW, d2_ScreenH);
         }
     }
