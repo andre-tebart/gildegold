@@ -9112,28 +9112,32 @@ int gm_OwnerWorth(char *b, int flag)
     }
     return v;
 }
-/* 0x509d30, the sum of the prices of the building kind's negative object words (+0x23, high bit set) */
+/* 0x509d30, the value of a new building of the kind: its type's base value x 0xf00 plus the price (gm_ItemPrice, 100) of each object of the type's list that is flagged (bit 15); the first argument is the goods' type byte, as the original passes it */
 
 int gm_BuildingKindValue(int kind)
 {
     unsigned short w;
     unsigned short *p;
     int i;
-    float tot;
+    GMBTYPE *t;
+    GMGOOD *g;
+    int value;
 
-    tot = 0.0f;
-    p = (unsigned short *)(ai_BTypes + kind * 0x24d + 0x23);
+    t = GM_BTYPE(kind);
+    value = t->baseValue * 0xf00;
+    p = t->objs;
     i = 0;
     do {
         w = *p;
         if (w == 0)
             break;
-        if ((short)w < 0)
-            tot += gm_ItemPrice((unsigned char)ai_Goods[(w & 0x7fff) * 0x41], 100);
+        g = GM_GOOD(w & 0x7fff);
+        if (w & 0x8000)
+            value += gm_ItemPrice((unsigned char)g->type, 100);
         i++;
         p++;
     } while (i < 0x40);
-    return (int)tot;
+    return value;
 }
 /* 0x509dc0 */
 
