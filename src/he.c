@@ -9811,7 +9811,7 @@ fail:
 /* 0x5551c0, an object callback of 0x438d40: objects whose name contains "dummy_TRANSPORTER" are collected into the context (32 pointers, +0x80 the count); returns 1 while there is room */
 
 
-char he_Unk5551c0(char *name, int *ctx)
+char he_CollectTransporter(char *name, int *ctx)
 {
     if (strstr(name, "dummy_TRANSPORTER") != 0) {
         ctx[ctx[0x20]] = (int)name;
@@ -9821,7 +9821,7 @@ char he_Unk5551c0(char *name, int *ctx)
 }
 /* 0x555210 (ROUGH; the second and third parameters are unused), collects the transporter dummies of the object `obj` (0x438d40 (scene 0x5fb5b0, obj, 0x100, 0x5551c0, list), the object's +0x1f0 is cleared during the walk unless flag 1 of +0x210 is set) and returns a random one of them (0x42ec00 (n) with the count n passed as the fourth parameter), 0 when n = 0 */
 
-int he_Unk555210(char *obj, int unused1, int unused2, int n)
+int he_RandomTransporter(char *obj, int unused1, int unused2, int n)
 {
     int list[0x21];
     int save;
@@ -9830,10 +9830,10 @@ int he_Unk555210(char *obj, int unused1, int unused2, int n)
     if (obj != 0 && (*(unsigned char *)(obj + 0x210) & 1) == 0) {
         save = *(int *)(obj + 0x1f0);
         *(int *)(obj + 0x1f0) = 0;
-        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_Unk5551c0, list);
+        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_CollectTransporter, list);
         *(int *)(obj + 0x1f0) = save;
     } else {
-        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_Unk5551c0, list);
+        d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_CollectTransporter, list);
     }
     if (n == 0)
         return 0;
@@ -10097,7 +10097,7 @@ void he_Unk556080(int ev)
         cm_RequestChrMoveToUniverse(*(int *)(cart + 2), *(int *)(b1 + 1), -1, (char *)0);
         init_BuildingSceneUniverse(b1);
         d3if_SelectScene(0, 1);
-        o = he_Unk555210((char *)b1, 0, 0, 0);
+        o = he_RandomTransporter((char *)b1, 0, 0, 0);
         if (o != 0) {
             d3_PointToWorld(o, o + 0x4c, pos);
             d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), pos, 0, 0, 0);

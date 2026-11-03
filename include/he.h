@@ -137,7 +137,7 @@ int he_NoEvent4bPair(int a, int b);  /* 0x553d60 */
 int he_Unk56f170(int owner);  /* 0x56f170 */
 int he_Unk570ea0(int a, int b);  /* 0x570ea0 */
 int he_IsMessageKindFiltered(int id);  /* 0x575640 */
-int he_Unk555210(char *obj, int unused1, int unused2, int n);  /* 0x555210 */
+int he_RandomTransporter(char *obj, int unused1, int unused2, int n);  /* 0x555210 */
 char *ai_FindCurseEvent(char *a);  /* 0x5741d0 */
 int he_HasGraveWork(char *bld, int size, int index);  /* 0x573200, 1 when a work event 0x8d of bld is pending on the grave (size, index) */
 int he_Unk553db0(unsigned short *a, int b, int *count);  /* 0x553db0 */

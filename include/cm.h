@@ -395,7 +395,7 @@ extern char *ai_BTypes;  /* 0x7e3f30 */
 extern char init_SceneDirty[];  /* 0xfd7f75 */
 #endif
 
-int he_Unk555210();  /* 0x555210 */
+int he_RandomTransporter();  /* 0x555210 */
 #ifndef DATA_VIEWS_H
 extern char ai_Unkfd7c50[];  /* 0xfd7c50 */
 #endif

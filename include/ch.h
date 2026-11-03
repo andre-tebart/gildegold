@@ -246,6 +246,11 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
     union {                         /* 0x30 */
         int args[0x30];             /* from ch_InsertAction's varargs */
         struct {
+            char pad30w[0x40];
+            char why[0x20];         /* 0x70, the reason the action was queued (cm_ExChrGotoBuilding copies its
+                                       message's G17GOTOMSG.reason: "Unfall", "Pest", "RndGeselle") */
+        };
+        struct {
             char pad30[0x60];
             char scriptName[0x5f];  /* 0x90, the script an animation-script action runs */
         };

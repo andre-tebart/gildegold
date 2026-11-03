@@ -9,7 +9,7 @@
    Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h ch.h d2.h f3gm.h gfx.h gv.h he.h
    hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
    definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, ch_Create, d2_SetObjValue, gm_SkillPoints,
-   gv_CrimeText, gv_PassSentence, he_Unk555210. Meanwhile cm.h's own declarations of ord_AddGridAmount and
+   gv_CrimeText, gv_PassSentence, he_RandomTransporter. Meanwhile cm.h's own declarations of ord_AddGridAmount and
    gm_RemoveOwned are the owner headers' prototypes (gv.h, f3gm.h); the other calls into those headers stay M7.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
@@ -4372,67 +4372,83 @@ int ai_Unk4c9d80(G17MSG *m, G17STAT *s)
     return 0;
 }
 
-#define G17_NAME(r) strcpy((char *)(r) + 0x70, (char *)&m->data[0x2d])
-
-/* 0x4c9dc0, handler of type 0x35, the "cm_ExChrGotoBuilding" texts: the person "sp_<data[0]>" is sent from its
-   building (p + 0x2c) to the building data[4] (room data[0x18], id data[0x1c] / data[0x1d]): the actions 0x2d (walk
-   to a position), 0x33 (gate, between 0x38 actions), 0x39 (sit down); the 0x15-byte names are copied to the action
-   records. Rough draft: the control flow is from the disassembly, not checked. */
-int ai_Unk4c9dc0(G17MSG *m, G17STAT *s)
+/* 0x4c9dc0, handler of message 0x35 ("cm_ExChrGotoBuilding"): sends the character "sp_<charId>" from the building
+   it is in (group) to the building bldId and its room objId, queueing the actions on the way: out of a home
+   building through the gate of its room (ch_UseGate) and its transporter, out of another building through its
+   door ("dummy_EINGANG"), a walk (0x2d) to the door ("dummy_TUER") of the target, the scene change 0x33 between
+   two 0x38 actions, then the room's gate or the sit-down 0x39. Each action gets the message's reason.
+   @deep read whole against the original and fixed the meaning (NoCase door lookup on the target, the
+   out-of-building branch compares with the 0x44 building, o kept from function start, the last gate
+   through the start building cb, the objId/universe test as if/else, if/else FindObject calls VC6 merges,
+   hm loaded before d3_PointToWorld, 16-byte vector frame). Frame equal now; left: instruction
+   choice/scheduling of the inline strcpy into r->why (ours lea edx,[eax+0x70]; add ecx,0x3d; sub edx,ecx |
+   the original add ecx,0x3d; sub eax,ecx; lea edx,[eax+0x70]) at every copy, ai_Goods index lea
+   eax,[eax+edx+1] | add eax,edx; inc eax, the text test add eax,0x1d; cmp byte [eax],0 | mov
+   cl,[edx+0x1d]; lea eax,[edx+0x1d]; test cl,cl, and loads scheduled before/after pushes (0x4ca0ec,
+   0x4ca392, 0x4ca43c); dst spellings (char*)r+0x70, r->args+0x10, (char*)m+0x3d src tried, no change */
+int cm_ExChrGotoBuilding(G17MSG *m, G17STAT *s)
 {
     char buf[0x80];
     char gate[0x80];
-    float v[3];
-    int A, B, W;
-    char *p, *from, *to, *cb, *q, *q2, *o, *r;
+    D3VECTOR4 v;                        /* the engine's padded vector (the original's frame holds 16 bytes) */
+    int x, z;
+    float y;
+    CHARACTER *p;
+    AIBLD *from, *to, *cb;
+    AIOBJ *q, *q2;
+    D3OBJECT *o;
+    CHACTION *r;
+    D3SM *hm;
     int save, scene, k, i;
 
     cb = 0;
-    sprintf(buf, "sp_%i", G17_I(*m, 0));
+    o = 0;
+    sprintf(buf, "sp_%i", m->go.charId);
     p = ch_FindByName(buf);
     if (p == 0)
         return 1;
-    from = gm_BuildQuery(1, 0, 0x44);
-    if (G17_I(*m, 4) != -1) {
-        to = gm_BuildQuery(1, 1, G17_I(*m, 4));
+    from = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    if (m->go.bldId != -1) {
+        to = (AIBLD *)gm_BuildQuery(1, 1, m->go.bldId);
         if (to == 0)
             return 1;
     } else
         to = from;
-    if (*(int *)(p + 0x2c) != -1)
-        cb = gm_BuildQuery(1, 1, *(int *)(p + 0x2c));
+    if (p->group != -1)
+        cb = (AIBLD *)gm_BuildQuery(1, 1, p->group);
     save = d3_CurrentScene;
-    if (cb != 0 && gm_IsHomeType(cb) != 0) {
-        scene = d3t_SceneIndex(*(int *)(p + 0x88));
+    if (cb != 0 && gm_IsHomeType((unsigned char *)cb) != 0) {
+        scene = d3t_SceneIndex(p->scene);
         d3if_SelectScene(scene, 1);
         if (scene < 0)
             return 0;
-        if (*(int *)(p + 0x30) != -1) {
-            q = gm_Query(*(int *)(cb + 0x5d), 1, 1, *(int *)(p + 0x30));
-            if (q != 0 && *(unsigned short *)q != 0xfd) {
-                sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_Goods + *(unsigned short *)q * 0x41 + 1));
-                q2 = gm_Query(*(int *)(cb + 0x5d), 1, 0, 0xfd);
-                k = init_BuildingSceneUniverse(cb);
+        if (p->scriptGroup != -1) {
+            q = (AIOBJ *)gm_Query((void *)cb->objList, 1, 1, p->scriptGroup);
+            if (q != 0 && q->id != 0xfd) {
+                sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_GoodsT[q->id].name));
+                q2 = (AIOBJ *)gm_Query((void *)cb->objList, 1, 0, 0xfd);
+                k = init_BuildingSceneUniverse((unsigned char *)cb);
                 if (k >= 0 && q2 != 0) {
                     ch_StandUp(p, "sitzend/aufstehen");
-                    r = ch_UseGate(p, gate, "dummy_gate_ob_AUSSEN_RAUM", k, *(int *)(cb + 1), *(int *)(q2 + 2));
+                    r = ch_UseGate(p, gate, "dummy_gate_ob_AUSSEN_RAUM", k, cb->id, q2->objId);
                     if (r != 0)
-                        G17_NAME(r);
+                        strcpy(r->why, m->go.reason);
                 }
             }
         }
-        if (*(int *)(to + 1) != *(int *)(cb + 1)) {
-            k = init_BuildingSceneUniverse(cb);
+        if (to->id != cb->id) {
+            k = init_BuildingSceneUniverse((unsigned char *)cb);
             if (k < 0)
                 return 0;
             d3if_SelectScene(k, 1);
             o = d3_FindObject(0, 0x100, 0, "dummy_TRANSPORTER_ENTRY");
             if (o != 0) {
-                d3_PointToWorld(o, o + 0x4c, v);
-                if (d3_GetHeightAt(*(int *)(ai_Unkfd7c50 + k * 0x3e0), v, &B, &A, &W) != 0) {
-                    r = ch_AddAction(p, 0x2d, B, A, k);
+                hm = (D3SM *)d3_Scenes[k].hmap;
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
+                if (d3_GetHeightAt(hm, (D3VECTOR *)&v, &x, &z, &y) != 0) {
+                    r = ch_AddAction(p, 0x2d, x, z, k);
                     if (r != 0)
-                        G17_NAME(r);
+                        strcpy(r->why, m->go.reason);
                 }
             }
             ch_AddAction(p, 0x38, 0);
@@ -4442,167 +4458,173 @@ int ai_Unk4c9dc0(G17MSG *m, G17STAT *s)
                 d3if_SelectScene(save, 1);
                 return 1;
             }
-            G17_NAME(r);
-            if (*(char **)(cb + 0x61) != 0) {
+            strcpy(r->why, m->go.reason);
+            if (cb->object != 0) {
                 d3if_SelectScene(0, 1);
-                o = d3_FindObject(*(int *)(cb + 0x61), 0x100, 0, "dummy_TUER");
+                o = d3_FindObject((int)cb->object, 0x100, 0, "dummy_TUER");
                 if (o == 0)
-                    o = d3_FindObjectNoCase(*(int *)(cb + 0x61), 0x100, 0, "dummy_TUER");
+                    o = d3_FindObjectNoCase((int)to->object, 0x100, 0, "dummy_TUER");
                 if (o != 0)
-                    d3_PointToWorld(o, o + 0x4c, v);
+                    d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
                 else
-                    d3_PointToWorld(*(char **)(cb + 0x61), *(char **)(cb + 0x61) + 0x4c, v);
-                *(float *)(r + 0x180) = v[0];
-                *(float *)(r + 0x184) = v[1];
-                r[0x17c] = 1;
-                *(float *)(r + 0x188) = v[2];
+                    d3_PointToWorld((D3OBJECT *)cb->object, &((D3OBJECT *)cb->object)->pos, (D3VECTOR *)&v);
+                r->move.pos.x = v.x;
+                r->move.pos.y = v.y;
+                r->move.hasPos = 1;
+                r->move.pos.z = v.z;
             }
         }
-    } else if (*(int *)(p + 0x2c) != *(int *)(to + 1) && *(int *)(p + 0x2c) != -1) {
-        scene = d3t_SceneIndex(*(int *)(p + 0x88));
+    } else if (p->group != from->id && p->group != -1) {
+        scene = d3t_SceneIndex(p->scene);
         if (scene < 0)
             return 0;
         d3if_SelectScene(scene, 1);
         ch_StandUp(p, "sitzend/aufstehen");
         o = d3_FindObject(0, 0x100, 0, "dummy_EINGANG");
         if (o != 0) {
-            d3_PointToWorld(o, o + 0x4c, v);
-            if (d3_GetHeightAt(*(int *)(ai_Unkfd7c50 + scene * 0x3e0), v, &B, &A, &W) != 0) {
-                r = ch_AddAction(p, 0x2d, B, A, scene);
+            hm = (D3SM *)d3_Scenes[scene].hmap;
+            d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
+            if (d3_GetHeightAt(hm, (D3VECTOR *)&v, &x, &z, &y) != 0) {
+                r = ch_AddAction(p, 0x2d, x, z, scene);
                 if (r != 0)
-                    G17_NAME(r);
+                    strcpy(r->why, m->go.reason);
             }
         }
         ch_AddAction(p, 0x38, 0);
         r = ch_AddAction(p, 0x33, 0, -1, -1);
         ch_AddAction(p, 0x38, 1);
         if (r != 0) {
-            G17_NAME(r);
-            memcpy(r + 0xf0, "dummy_TUER", 11);
+            strcpy(r->why, m->go.reason);
+            strcpy(r->u.name, "dummy_TUER");
             if (cb != 0) {
-                o = d3_FindObject(*(int *)(cb + 0x61), 0x100, 0, "dummy_TUER");
-                if (o != 0) {
-                    d3_PointToWorld(o, o + 0x4c, v);
-                } else if (*(char **)(cb + 0x61) != 0) {
-                    d3_PointToWorld(*(char **)(cb + 0x61), *(char **)(cb + 0x61) + 0x4c, v);
-                } else
+                o = d3_FindObject((int)cb->object, 0x100, 0, "dummy_TUER");
+                if (o != 0)
+                    d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
+                else if (cb->object != 0)
+                    d3_PointToWorld((D3OBJECT *)cb->object, &((D3OBJECT *)cb->object)->pos, (D3VECTOR *)&v);
+                else
                     err_Message("cm_ExChrGotoBuilding(): start->D3Object is NULL!");
-                r[0x17c] = 1;
-                *(float *)(r + 0x180) = v[0];
-                *(float *)(r + 0x184) = v[1];
-                *(float *)(r + 0x188) = v[2];
+                r->move.hasPos = 1;
+                r->move.pos.x = v.x;
+                r->move.pos.y = v.y;
+                r->move.pos.z = v.z;
             }
         }
     }
-    if (gm_IsHomeType(to) == 0) {
+    if (gm_IsHomeType((unsigned char *)to) == 0) {
         d3if_SelectScene(0, 1);
-        o = 0;
-        if (m->data[0xd] != 0)
-            o = d3_FindObject(0, 0x100, 0, &m->data[0xd]);
-        else if (*(char **)(to + 0x61) != 0) {
-            if (*(int *)(p + 0x124) != 0)
-                o = (char *)he_Unk555210(*(int *)(to + 0x61));
+        if (m->go.text[0] != 0)
+            o = d3_FindObject(0, 0x100, 0, m->go.text);
+        else if (to->object != 0) {
+            if (p->transport != 0)
+                o = (D3OBJECT *)he_RandomTransporter(to->object);
             else {
-                o = d3_FindObject(*(int *)(to + 0x61), 0x100, 0, "dummy_TUER");
+                o = d3_FindObject((int)to->object, 0x100, 0, "dummy_TUER");
                 if (o == 0)
-                    o = d3_FindObjectNoCase(*(int *)(to + 0x61), 0x100, 0, "dummy_TUER");
+                    o = d3_FindObjectNoCase((int)to->object, 0x100, 0, "dummy_TUER");
             }
             if (o == 0)
-                o = *(char **)(to + 0x61);
+                o = (D3OBJECT *)to->object;
         }
         if (o != 0) {
-            d3_PointToWorld(o, o + 0x4c, v);
-            if (d3_GetHeightAt(*(int *)ai_Unkfd7c50, v, &B, &A, &W) != 0) {
-                r = ch_AddAction(p, 0x2d, B, A, 0);
+            hm = (D3SM *)d3_Scenes[0].hmap;
+            d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
+            if (d3_GetHeightAt(hm, (D3VECTOR *)&v, &x, &z, &y) != 0) {
+                r = ch_AddAction(p, 0x2d, x, z, 0);
                 if (r != 0)
-                    G17_NAME(r);
+                    strcpy(r->why, m->go.reason);
             }
         }
-        if (m->data[0xc] == 0) {
-            if (G17_I(*m, 0x18) != -1) {
-                i = init_ObjectSceneUniverse(gm_Query(*(int *)(to + 0x5d), 1, 1, G17_I(*m, 0x18)));
-                if (i < 0) {
-                    err_Message("cm_ExChrGotoBuilding(): Could not find universe...");
-                    goto sit;
-                }
-            } else
+        if (m->go.noObject == 0) {
+            if (m->go.objId != -1)
+                i = init_ObjectSceneUniverse((unsigned short *)gm_Query((void *)to->objList, 1, 1, m->go.objId));
+            else
                 i = 0;
-            if (G17_I(*m, 0x18) == -1)
-                err_Message("cm_ExChrGotoBuilding(): invalid room-id (cm_ID_NONE)");
-            else if (gm_Query(*(int *)(to + 0x5d), 1, 1, G17_I(*m, 0x18)) == 0)
-                err_Message("cm_ExChrGotoBuilding(): invalid room-id (raum==NULL)");
-            ch_AddAction(p, 0x38, 0);
-            r = ch_AddAction(p, 0x33, i, *(int *)(to + 1), G17_I(*m, 0x18));
-            if (r != 0)
-                G17_NAME(r);
-            ch_AddAction(p, 0x38, 1);
-sit:
+            if (i >= 0) {
+                if (m->go.objId == -1)
+                    err_Message("cm_ExChrGotoBuilding(): invalid room-id (cm_ID_NONE)");
+                else if (gm_Query((void *)to->objList, 1, 1, m->go.objId) == 0)
+                    err_Message("cm_ExChrGotoBuilding(): invalid room-id (raum==NULL)");
+                ch_AddAction(p, 0x38, 0);
+                r = ch_AddAction(p, 0x33, i, to->id, m->go.objId);
+                if (r != 0)
+                    strcpy(r->why, m->go.reason);
+                ch_AddAction(p, 0x38, 1);
+            } else
+                err_Message("cm_ExChrGotoBuilding(): Could not find universe...");
             r = ch_AddAction(p, 0x39, i);
             if (r != 0)
-                G17_NAME(r);
+                strcpy(r->why, m->go.reason);
         }
     } else {
-        if (*(int *)(to + 1) != *(int *)(p + 0x2c)) {
+        if (to->id != p->group) {
             d3if_SelectScene(0, 1);
-            o = d3_FindObject(*(int *)(to + 0x61), 0x100, 0, "dummy_TUER");
+            o = d3_FindObject((int)to->object, 0x100, 0, "dummy_TUER");
             if (o == 0)
-                o = d3_FindObjectNoCase(*(int *)(to + 0x61), 0x100, 0, "dummy_TUER");
+                o = d3_FindObjectNoCase((int)to->object, 0x100, 0, "dummy_TUER");
             if (o != 0) {
-                d3_PointToWorld(o, o + 0x4c, v);
-                if (d3_GetHeightAt(*(int *)ai_Unkfd7c50, v, &B, &A, &W) != 0) {
-                    r = ch_AddAction(p, 0x2d, B, A, 0);
+                hm = (D3SM *)d3_Scenes[0].hmap;
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
+                if (d3_GetHeightAt(hm, (D3VECTOR *)&v, &x, &z, &y) != 0) {
+                    r = ch_AddAction(p, 0x2d, x, z, 0);
                     if (r != 0)
-                        G17_NAME(r);
+                        strcpy(r->why, m->go.reason);
                 }
             }
         }
-        if (m->data[0xc] == 0) {
-            q = gm_Query(*(int *)(to + 0x5d), 1, 1, G17_I(*m, 0x18));
+        if (m->go.noObject == 0) {
+            q = (AIOBJ *)gm_Query((void *)to->objList, 1, 1, m->go.objId);
             if (q == 0) {
-                q = gm_Query(*(int *)(to + 0x5d), 1, 0, 0xfd);
+                q = (AIOBJ *)gm_Query((void *)to->objList, 1, 0, 0xfd);
                 if (q == 0) {
-                    i = init_BuildingSceneUniverse(to);
+                    i = init_BuildingSceneUniverse((unsigned char *)to);
                     if (i >= 0) {
                         ch_AddAction(p, 0x38, 0);
-                        r = ch_AddAction(p, 0x33, i, *(int *)(to + 1), -1);
+                        r = ch_AddAction(p, 0x33, i, to->id, -1);
                         if (r != 0) {
-                            G17_NAME(r);
-                            memcpy(r + 0xf0, "dummy_TRANSPORTER", 18);
+                            strcpy(r->why, m->go.reason);
+                            strcpy(r->u.name, "dummy_TRANSPORTER");
                         }
                         ch_AddAction(p, 0x38, 1);
                     }
                     goto done;
                 }
             }
-            if (*(unsigned short *)q == 0xfd) {
-                if (*(int *)(to + 1) != *(int *)(p + 0x2c)) {
-                    k = init_BuildingSceneUniverse(to);
+            if (q->id == 0xfd) {
+                if (to->id != p->group) {
+                    k = init_BuildingSceneUniverse((unsigned char *)to);
                     if (k < 0)
                         return 0;
                     ch_AddAction(p, 0x38, 0);
-                    r = ch_AddAction(p, 0x33, k, *(int *)(to + 1), *(int *)(q + 2));
+                    r = ch_AddAction(p, 0x33, k, to->id, q->objId);
                     if (r != 0) {
-                        G17_NAME(r);
-                        memcpy(r + 0xf0, "dummy_TRANSPORTER_ENTRY", 24);
+                        strcpy(r->why, m->go.reason);
+                        memcpy(r->u.name, "dummy_TRANSPORTER_ENTRY", 24);
                     }
                     ch_AddAction(p, 0x38, 1);
                     d3if_SelectScene(k, 1);
-                    o = d3_FindObject(0, 0x100, 0, *(int *)(p + 0x124) != 0 ? "dummy_TRANSPORTER" : "dummy_EINGANG");
+                    if (p->transport != 0)
+                        o = d3_FindObject(0, 0x100, 0, "dummy_TRANSPORTER");
+                    else
+                        o = d3_FindObject(0, 0x100, 0, "dummy_EINGANG");
                     if (o != 0) {
-                        d3_PointToWorld(o, o + 0x4c, v);
-                        if (d3_GetHeightAt(*(int *)(ai_Unkfd7c50 + k * 0x3e0), v, &B, &A, &W) != 0) {
-                            r = ch_AddAction(p, 0x2d, B, A, k);
+                        hm = (D3SM *)d3_Scenes[k].hmap;
+                        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&v);
+                        if (d3_GetHeightAt(hm, (D3VECTOR *)&v, &x, &z, &y) != 0) {
+                            r = ch_AddAction(p, 0x2d, x, z, k);
                             if (r != 0)
-                                G17_NAME(r);
+                                strcpy(r->why, m->go.reason);
                         }
                     }
                 }
             } else {
-                i = init_ObjectSceneUniverse(q);
-                sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_Goods + *(unsigned short *)q * 0x41 + 1));
-                r = ch_UseGate(p, "dummy_EINGANG", gate, i, *(int *)(to + 1), *(int *)(q + 2));
-                if (r != 0)
-                    G17_NAME(r);
+                i = init_ObjectSceneUniverse((unsigned short *)q);
+                sprintf(gate, "dummy_gate_ob_%s", _strupr(ai_GoodsT[q->id].name));
+                if (cb != 0) {
+                    r = ch_UseGate(p, "dummy_EINGANG", gate, i, cb->id, q->objId);
+                    if (r != 0)
+                        strcpy(r->why, m->go.reason);
+                }
             }
         }
     }
@@ -15237,7 +15259,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
