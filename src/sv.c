@@ -3086,7 +3086,14 @@ char sv_CreateBannerCB(D3OBJECT *part, AIBLD *b)
 /* 0x527bb0, puts the camera directly 600 units back along its view from the building b's 3D object (its centre,
    the terrain's mean height plus the zoom height, pulled in by the object's height range): the stored view
    sv_ViewPos / sv_ViewRot and the player's camera record get the new position, b becomes sv_SelectedObject;
-   sv_FlyCameraToObject does the same with an animated move */
+   sv_FlyCameraToObject does the same with an animated move
+   @deep read against the original (188 vs 188 ins): no code hunk; frame 0x88 vs the original's 0x94 and 19
+   slot hunks (locals laid out 4 bytes apart, temporaries at 0xb4 / 0xc4 in the original), the final
+   sv_ViewPos / sv_ViewRot stores load the same slots in another order (0x527d86..0x527db7) (references: M8
+   at +0x1ed: ours refers to sv_ViewPos (0x75fb80), the original's field to 0x75fb98 (sv_ViewRotZ) (and 2
+   more), explained: the three M8 lines pair reordered stores crosswise: ours ViewPos <- [esp+0x40],
+   ViewRot+4 <- [esp+0x54], ViewRot+8 <- [esp+0x58]; the original ViewPosX <- [esp+0x40], ViewRotY <-
+   [esp+0x54], ViewRotZ <- [esp+0x58]: the same values to the same fields (recorded as debt at 15bda65)) */
 void sv_CameraToObject(int b)
 {
     float pos[4];                   /* the new camera position (a padded vector) */
