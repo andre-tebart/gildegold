@@ -161,6 +161,13 @@ typedef struct G17MOVEMSG {             /* 12 bytes, the data of message 0x13 (s
     int objId;                          /* 0x08, the object moved (AIOBJ.objId) */
 } G17MOVEMSG;
 
+typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 0xa68ca0); the data of the messages
+                                           0x16 (deltas, its handler 0x4c7e90), 0x17 (values) and 0x18 */
+    int id;                             /* 0x00, the object (building, object or character id) */
+    unsigned char n;                    /* 0x04, fields */
+    unsigned char buf[0x77];            /* 0x05, per field: size (1, 2, 4), count, offset (short), values */
+} G17FIELDS;
+
 typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
                                            handler 0x4cc510) */
     int op;                             /* 0x00, 'join', 'leav' or 'cler' */
@@ -189,6 +196,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17SELLMSG sell;                /* 0x10, message 0x11 */
         G17MAKEMSG make;                /* 0x10, message 0x12 */
         G17MOVEMSG move;                /* 0x10, message 0x13 */
+        G17FIELDS fields;               /* 0x10, messages 0x16 / 0x17 / 0x18 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */

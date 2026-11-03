@@ -37,11 +37,6 @@ typedef struct G18LOG { char text[0x40]; char name[0x24]; int x; int id; } G18LO
 
 #pragma pack(push, 1)
 #include "cm_types.h"                /* G17MSG, G17STAT, CRIME */
-typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 0xa68ca0) */
-    int id;                             /* 0x00 */
-    unsigned char n;                    /* 0x04, fields */
-    unsigned char buf[0x77];            /* 0x05, size, count, offset (short), values */
-} G17FIELDS;
 #pragma pack(pop)
 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
@@ -311,7 +306,7 @@ int cm_ExMakeGoods(G17MSG *m, G17STAT *s);                                      
 int cm_ExMoveObject(G17MSG *m, G17STAT *s);                                         /* 0x4c7c30, handler of 0x13 */
 int ai_Unk4c7d80(G17MSG *m, G17STAT *s);                                         /* 0x4c7d80, handler of 0x14 */
 int ai_Unk4c7e20(G17MSG *m, G17STAT *s);                                         /* 0x4c7e20, handler of 0x15 */
-int ai_Unk4c7e90(G17MSG *m, G17STAT *s);                                         /* 0x4c7e90, handler of 0x16 */
+int cm_ExFieldDeltas(G17MSG *m, G17STAT *s);                                         /* 0x4c7e90, handler of 0x16 */
 int ai_Unk4c7f70(G17MSG *m, G17STAT *s);                                         /* 0x4c7f70, handler of 0x17 */
 int ai_Unk4c8050(G17MSG *m, G17STAT *s);                                         /* 0x4c8050, handler of 0x18 */
 int ai_Unk4c8110(G17MSG *m, G17STAT *s);                                         /* 0x4c8110, handler of 0x19 */
