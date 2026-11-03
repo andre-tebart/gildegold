@@ -65,6 +65,12 @@ typedef struct G17SPAWNMSG {            /* 0x26 bytes, the data of message 0x49 
     char text[0x10];                    /* 0x16, a tag ("SPIONAGE"), not read by the handler */
 } G17SPAWNMSG;
 
+typedef struct G17CHATMSG {             /* 0x80 bytes, the data of message 0x4b (cm_SendChat, its handler 0x4cbbd0
+                                           cm_ExChat) */
+    int to[8];                          /* 0x00, the netIds of the characters it is for */
+    char text[0x60];                    /* 0x20, the line ("$A" breaks lines) */
+} G17CHATMSG;
+
 typedef struct G17HIREMSG {             /* 0x17 bytes, the data of message 0x3d (cm_SendMessage3d, its handler
                                            0x4cb250 creates the character) */
     int bldId;                          /* 0x00, the building the character works in */
@@ -317,6 +323,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17UPGRADEMSG upgrade;          /* 0x10, message 0x3a */
         G17MODELMSG model;              /* 0x10, message 0x3e */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
+        G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
