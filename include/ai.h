@@ -82,29 +82,35 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     };
     struct D3OBJECT *obj;               /* 0x18, the scene object that shows it (sv_DrawItemNames draws its name above it) */
     union {
-        int unk1c;                      /* 0x1c, a building id / a state / a count */
-        int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
-        int cnt;                        /* 0x1c */
         struct {
-            unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
-            unsigned char lvl1d;        /* 0x1d */
+            union {
+                int unk1c;                      /* 0x1c, a building id / a state / a count */
+                int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
+                int cnt;                        /* 0x1c */
+                struct {
+                    unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
+                    unsigned char lvl1d;        /* 0x1d */
+                };
+                struct {
+                    int pad1c20;
+                    unsigned int flags20;       /* 0x20, of a cart (kind 0x1d): bit 1 (2) is cleared for the carts of the current building when the selection resets (sv_ResetSelection) */
+                };
+                struct {
+                    int pad1c24[2];
+                    struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
+                };
+                int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_EvidencePrice (0x4ab080 tries them in turn) */
+                struct {                        /* of a room of a building (the objects of AIBLD.objList the enter-building driver walks) */
+                    int locked;                 /* 0x1c, nonzero: the room's contacts open ai_UnlockRoomWindow, which clears it when paid */
+                    int unlockPrice;            /* 0x20, the money ai_UnlockRoomWindow asks; cleared with locked */
+                };
+            };
+            char pad28[2];
+            int unk2a;                          /* 0x2a */
         };
-        struct {
-            int pad1c20;
-            unsigned int flags20;       /* 0x20, of a cart (kind 0x1d): bit 1 (2) is cleared for the carts of the current building when the selection resets (sv_ResetSelection) */
-        };
-        struct {
-            int pad1c24[2];
-            struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
-        };
-        int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_EvidencePrice (0x4ab080 tries them in turn) */
-        struct {                        /* of a room of a building (the objects of AIBLD.objList the enter-building driver walks) */
-            int locked;                 /* 0x1c, nonzero: the room's contacts open ai_UnlockRoomWindow, which clears it when paid */
-            int unlockPrice;            /* 0x20, the money ai_UnlockRoomWindow asks; cleared with locked */
-        };
+        int seats[4];                   /* 0x1c..0x2b, of a table (kind 0x12d in a building): the ids of the characters at its
+                                           four seats, -1 free (message 0x54 'join' / 'leav' / 'cler', cm_SendTableRequest) */
     };
-    char pad28[2];
-    int unk2a;                          /* 0x2a */
     char pad2e[8];
     unsigned char unk36;                /* 0x36 */
     unsigned char unk37;                /* 0x37 */

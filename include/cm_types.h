@@ -93,6 +93,13 @@ typedef struct G17FIGHTMSG {            /* 0x51 bytes, the data of message 0x55 
     CMFIGHTSLOT slot;                   /* 0x25 */
 } G17FIGHTMSG;
 
+typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
+                                           handler 0x4cc510) */
+    int op;                             /* 0x00, 'join', 'leav' or 'cler' */
+    int charId;                         /* 0x04, the character that takes or leaves a seat */
+    int bldId;                          /* 0x08, the building whose table (object kind 0x12d) it is */
+} G17TABLEMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -111,6 +118,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
+        G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };
     struct G17MSG *prev;                /* 0x91 */
