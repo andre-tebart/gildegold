@@ -3641,14 +3641,14 @@ void main_ReplaceFigure(unsigned p)
         for (i = 0; i < 8; i++)
             ch->clear[i] = -1;
         U_I((unsigned)&ai_NextCharNumber) = U_I((unsigned)&ai_NextCharNumber) + 1;
-        s = (char *)((unsigned)&ai_Unk925520 + 0x8);
+        s = (char *)((unsigned)&cm_Parties + 0x8);
         do {
             if (s[0x28] != 0) {
                 if (cm_IsPartyMember(ch->netId, s - 8) != 0 && (*s == 3 || *s == 5 || *s == 4 || *s == 6 || *s == 9 || *s == 7))
-                    ai_Unk4e5180(*(int *)(s - 8));
+                    cm_ClearParty(*(int *)(s - 8));
             }
             s += 0x114;
-        } while ((int)s < (int)((unsigned)ai_Unk925520 + 0x6788));
+        } while ((int)s < (int)((unsigned)cm_Parties + 0x6788));
     }
 }
 /* 0x539870, the end of the round report of the player (0x6f25b8): the bookkeeping of the character record (0x506430: income / expense fields +0x14 .. +0x54, texts 0x2005 .. 0x204e of 0x515960)

@@ -270,7 +270,7 @@ void cm_SendTableRequest(int *p);                                               
 int cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
 void ai_Unk4c5ec0(int a);                                                        /* 0x4c5ec0 */
-void ai_Unk4c5ef0(int a);                                                        /* 0x4c5ef0 */
+void cm_SendCancelParty(int a);                                                        /* 0x4c5ef0 */
 int cm_SendCutsceneReady(void *p);                                                       /* 0x4c5f20, its send slot (cm_GetSlotState) */
 void cm_SendMoneyDelta(int a, int b);                                                 /* 0x4c5f60 */
 void cm_SendMessage5b(int a, int b, int c);                                          /* 0x4c5fa0 */
@@ -333,7 +333,7 @@ void ai_Unk47e990(struct AICHAR *c);  /* 0x47e990 */
 void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_CountMissionEvent();  /* 0x4b44e0 */
 int cm_PartyById();  /* 0x4e50a0 */
-extern G28REC ai_Unk925520[96];  /* 0x925520, the scene party records (cm.c) */
+extern G28REC cm_Parties[96];  /* 0x925520, the scene party records (cm.c) */
 int ai_Unk4e5150();  /* 0x4e5150 */
 int ai_Unk4e51b0();  /* 0x4e51b0 */
 int ai_Unk4e5210();  /* 0x4e5210 */
@@ -460,7 +460,7 @@ void ai_Unk4d7150(char *r);  /* 0x4d7150 */
 int cm_Attack(CMCUTINFO *rec, struct AICHAR *c, struct AICHAR *g);  /* 0x4d7360 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
 void cm_PlantEscapeFlag(CMFIGHTSLOT *f);  /* 0x4d7190 */
-void ai_Unk4e5180();  /* 0x4e5180 */
+void cm_ClearParty();  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */
 void ai_GameFrame(void);  /* 0x591520 */
@@ -1110,7 +1110,7 @@ extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, 
 #endif
 
 
-extern int ai_Unk92c510[];  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
+extern int cm_KindCheck[];  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
 
 int ai_Unk4e4f40();  /* 0x4e4f40 */
 char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the player pl */

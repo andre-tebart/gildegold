@@ -1199,15 +1199,15 @@ int ls_WriteParties(int f)
   char *puVar3;
   int local_4;
   local_4 = 0;
-  piVar1 = ((char *)(unsigned)&ai_Unk925520);
+  piVar1 = ((char *)(unsigned)&cm_Parties);
   do {
     if (*(int *)piVar1 != -1) {
       local_4 = local_4 + 1;
     }
     piVar1 = piVar1 + 0x114;
-  } while ((int)piVar1 < (unsigned)((unsigned)ai_Unk925520 + 0x6780));
+  } while ((int)piVar1 < (unsigned)((unsigned)cm_Parties + 0x6780));
   LS_W(&local_4, 4)
-  puVar3 = ((char *)((unsigned)&ai_Unk925520 + 0x14));
+  puVar3 = ((char *)((unsigned)&cm_Parties + 0x14));
   do {
     if (*(int *)(puVar3 - 0x14) != -1) {
       LS_W(puVar3 - 0x14, 4)
@@ -1225,7 +1225,7 @@ int ls_WriteParties(int f)
       LS_W(puVar3 - 8, 4)
     }
     puVar3 = puVar3 + 0x114;
-    if (((unsigned)&ai_Unk925520 + 0x6793) < (int)puVar3) {
+    if (((unsigned)&cm_Parties + 0x6793) < (int)puVar3) {
       return 1;
     }
   } while( 1 );
@@ -2466,7 +2466,7 @@ int unk_Unk520000(int f)
 
     LS_R(&n, 4)
     i = 0;
-    p = (char *)((unsigned)&ai_Unk925520 + 0x14);
+    p = (char *)((unsigned)&cm_Parties + 0x14);
     for (; i < n; i++) {
         LS_R(p - 0x14, 4)
         LS_R(p - 0xc, 1)

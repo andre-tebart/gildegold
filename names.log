@@ -1693,3 +1693,7 @@
 2026-11-03T21:32:00 0x004c4fd0 func ai_Unk4c4fd0 -> cm_SendLeaveParty by:main why:message 0x2a (party id, member netId): sent for a member that is gone or in another party (cm_CutsceneReady) and after ai_Unk4e5210 removes a character from a party (he.c)
 2026-11-03T21:32:00 0x004c5f20 func ai_Unk4c5f20 -> cm_SendCutsceneReady by:main why:message 0x59 with the party's id and its 16 members, sent by cm_CutsceneReady
 2026-11-03T21:32:00 0x004e4a50 func ai_Unk4e4a50 -> cm_CheckMaster by:main why:its trace "cut_CheckMaster": 1 when the party's owner is still a member, else a new master is chosen
+2026-11-03T21:33:22 0x00925520 data ai_Unk925520 -> cm_Parties by:main why:the 96 scene party records G28REC that cm_UpdateParties walks every frame
+2026-11-03T21:33:22 0x0092c510 data ai_Unk92c510 -> cm_KindCheck by:main why:the scene kind's check (+0x10 of the 5 ints per kind, ai_Unk4e5730 registers it): cm_UpdateParties cancels the party when it returns 0
+2026-11-03T21:33:22 0x004c5ef0 func ai_Unk4c5ef0 -> cm_SendCancelParty by:main why:message 0x58 with the party's id: cm_UpdateParties sends it when the kind's check fails (a reasoned guess from that use)
+2026-11-03T21:33:22 0x004e5180 func ai_Unk4e5180 -> cm_ClearParty by:main why:clears the party record of the id (its id -1 afterwards)

@@ -2123,7 +2123,7 @@ void ai_Unk4c5ec0(int a)
 }
 /* 0x4c5ef0, message 0x58 */
 
-void ai_Unk4c5ef0(int a)
+void cm_SendCancelParty(int a)
 {
     G17MSG m;
 
@@ -5896,7 +5896,7 @@ int ai_Unk4cc980(G17MSG *m, G17STAT *s)
                 *(int *)(c + 0x20c) = -1;
         }
     }
-    ai_Unk4e5180(G17_I(*m, 0));
+    cm_ClearParty(G17_I(*m, 0));
     if (s != 0) {
         s->state = 1;
         s->kind = 0;
@@ -15177,7 +15177,7 @@ void ai_Unk4e2910(char *o, int id)
     }
 }
 
-/* ai_Unk925538: view of ai_Unk925520 (tools/data_views.py) */
+/* ai_Unk925538: view of cm_Parties (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */
 #define G28_HI (*(unsigned short *)((char *)&ai_Unk92c4e0 + 2))  /* 0x92c4e2 */
@@ -16243,58 +16243,61 @@ int cm_CutsceneReady(char *m)
         sv_PumpNet();
     return cm_GetSlotState(h) != 2;
 }
-/* 0x4e4cc0, the per-frame update of the scene parties (the records of 0x114 bytes from 0x925538: +0x18 used, +0xe flags (2: the owner answers, 5: idle, 0x80:
-   a member run), +0x10 state, +4 the age in ticks; the party m itself starts 0x18 before the record: +0 the id, -0x14 done, -0x10 the kind, -0xc the owner):
-   the timers (0x4fe140) are fed, the owner's own party asks "ready?" (0x4e4b50: -1 gives the timer 5, 0 the timers 0x1e / 9 (old ones cancel the party
-   0x4c5ef0), else the callback of the kind (0x92c510) runs), a finished party is run (0x4e4060) and dropped (0x4e5180). ROUGH */
+/* 0x4e4cc0, the per-frame update of the 96 scene parties cm_Parties (used, not flags 1 / 4): a party without an owner
+   gets the player's character in the local run (or cm_NetFlags & 8); within the hour before its time the owner asks
+   cm_CutsceneReady (-1: again in 5 minutes, 0: in 30, from 22 o'clock on 9 hours later) and the kind's check
+   (cm_KindCheck; 0 cancels the party, message 0x58). Once its time has come the party is done when it has no check, when
+   the player's character is a member of it running in its own party (flags 0x80) or owns it with flags 2; else it is
+   dropped (cm_ClearParty). A done party within its hour runs (cm_ExecCutscene) and is dropped */
 
 int cm_UpdateParties(void)
 {
-    char *r;
-    AITIME tmp;
-    int x, k;
+    G28REC *p;
+    AITIME soon;
+    int i, k;
 
-    for (r = (char *)ai_Unk925520 + 0x18; (unsigned int)r < ((unsigned)ai_Unk925520 + 0x6780); r += 0x114) {
-        if (r[0x18] == 0 || (r[0xe] & 5))
+    for (i = 0; i < 96; i++) {
+        p = &cm_Parties[i];
+        if (p->used == 0 || (p->flags & 5))
             continue;
-        tmp = *(AITIME *)r;
-        gm_AddTime(&tmp, 0, -60, 0);
-        if (*(int *)(r - 0xc) == -1 && ((cm_NetFlags & 8) || (ai_GameFlags & 8)))
-            *(int *)(r - 0xc) = ai_CharInts[ai_PlayerId][0];
-        if (ai_CharInts[ai_PlayerId][0] == *(int *)(r - 0xc) && *(int *)(r + 0x10) == 0 && gm_CompareTime(&ai_Time, (char *)&x) > 0) {
-            k = cm_CutsceneReady(r - 0x18);
+        soon = p->time;
+        gm_AddTime(&soon, 0, -60, 0);
+        if (p->host == -1 && ((cm_NetFlags & 8) || (ai_GameFlags & 8)))
+            p->host = ai_CharsT[ai_PlayerId].netId;
+        if (ai_CharsT[ai_PlayerId].netId == p->host && p->state == 0 && gm_CompareTime(&ai_Time, &soon) > 0) {
+            k = cm_CutsceneReady((char *)p);
             if (k == -1) {
-                gm_AddTime(r, 0, 5, 0);
-                if (*(unsigned short *)(r + 4) >= 0x16)
-                    gm_AddTime(r, 9, 0, 0);
+                gm_AddTime(&p->time, 0, 5, 0);
+                if (p->time.hour >= 0x16)
+                    gm_AddTime(&p->time, 9, 0, 0);
                 continue;
             }
             if (k == 0) {
-                gm_AddTime(r, 0, 0x1e, 0);
-                if (*(unsigned short *)(r + 4) >= 0x16)
-                    gm_AddTime(r, 9, 0, 0);
+                gm_AddTime(&p->time, 0, 0x1e, 0);
+                if (p->time.hour >= 0x16)
+                    gm_AddTime(&p->time, 9, 0, 0);
                 continue;
             }
-            if (ai_Unk92c510[*(unsigned char *)(r - 0x10) * 5] != 0 && ((int (*)())ai_Unk92c510[*(unsigned char *)(r - 0x10) * 5])(r - 0x18) == 0) {
-                ai_Unk4c5ef0(*(int *)(r - 0x18));
+            if (cm_KindCheck[p->kind * 5] != 0 && ((int (*)(char *))cm_KindCheck[p->kind * 5])((char *)p) == 0) {
+                cm_SendCancelParty(p->id);
                 continue;
             }
         }
-        if (ai_Unk92c510[*(unsigned char *)(r - 0x10) * 5] == 0 && gm_CompareTime(&ai_Time, r) > 0)
-            *(int *)(r - 0x14) = 1;
-        if (gm_CompareTime(&ai_Time, r) > 0 && *(int *)(r - 0x14) == 0) {
-            if (cm_IsPartyMember(ai_CharInts[ai_PlayerId][0], r - 0x18) != 0 && (signed char)r[0xe] < 0) {
-                if (ai_CharInts[ai_PlayerId][0x208 / 4] == *(int *)(r - 0x18))
-                    *(int *)(r - 0x14) = 1;
-            } else if (*(int *)(r - 0xc) == ai_CharInts[ai_PlayerId][0] && (r[0xe] & 2))
-                *(int *)(r - 0x14) = 1;
+        if (cm_KindCheck[p->kind * 5] == 0 && gm_CompareTime(&ai_Time, &p->time) > 0)
+            p->done = 1;
+        if (gm_CompareTime(&ai_Time, &p->time) > 0 && p->done == 0) {
+            if (cm_IsPartyMember(ai_CharsT[ai_PlayerId].netId, (char *)p) != 0 && (p->flags & 0x80)) {
+                if (ai_CharsT[ai_PlayerId].partyId == p->id)
+                    p->done = 1;
+            } else if (p->host == ai_CharsT[ai_PlayerId].netId && (p->flags & 2))
+                p->done = 1;
             else
-                ai_Unk4e5180(*(int *)(r - 0x18));
+                cm_ClearParty(p->id);
         }
-        if (gm_CompareTime(&ai_Time, (char *)&x) > 0 && *(int *)(r - 0x14) != 0) {
+        if (gm_CompareTime(&ai_Time, &soon) > 0 && p->done != 0) {
             sv_PanelFlag = 0;
-            cm_ExecCutscene(r - 0x18);
-            ai_Unk4e5180(*(int *)(r - 0x18));
+            cm_ExecCutscene((char *)p);
+            cm_ClearParty(p->id);
         }
     }
     return 0;
@@ -16308,8 +16311,8 @@ int ai_Unk4e4f40(void)
 
     best = (unsigned int)-1;
     for (i = 0; i < 96; i++) {
-        if (ai_Unk925520[i].used != 0 && ai_Unk925520[i].id != -1 && (ai_Unk925520[i].flags & 1) != 0 && best >= (unsigned int)ai_Unk925520[i].id)
-            best = ai_Unk925520[i].id;
+        if (cm_Parties[i].used != 0 && cm_Parties[i].id != -1 && (cm_Parties[i].flags & 1) != 0 && best >= (unsigned int)cm_Parties[i].id)
+            best = cm_Parties[i].id;
     }
     if (best != (unsigned int)-1)
         return cm_PartyById(best);
@@ -16334,7 +16337,7 @@ char ai_RunPendingParties(int pl)
             ai_CharInts[pl][0x208 / 4] = -1;
             ret = 1;
         }
-        ai_Unk4e5180(*(int *)p);
+        cm_ClearParty(*(int *)p);
         p = ai_Unk4e4f40();
     }
     cm_BeginFieldBlock((char *)ai_CharInts[pl] - 4, ai_CharInts[pl][0]);
@@ -16349,8 +16352,8 @@ int ai_Unk4e5050(int a, int b)
     int i;
 
     for (i = 0; i < 96; i++) {
-        if (ai_Unk925520[i].used != 0 && ai_Unk925520[i].kind == a && ai_Unk925520[i].thing == b)
-            return (int)&ai_Unk925520[i];
+        if (cm_Parties[i].used != 0 && cm_Parties[i].kind == a && cm_Parties[i].thing == b)
+            return (int)&cm_Parties[i];
     }
     return 0;
 }
@@ -16361,8 +16364,8 @@ int cm_PartyById(int id)
     int i;
 
     for (i = 0; i < 96; i++) {
-        if (ai_Unk925520[i].used != 0 && ai_Unk925520[i].id == id)
-            return (int)&ai_Unk925520[i];
+        if (cm_Parties[i].used != 0 && cm_Parties[i].id == id)
+            return (int)&cm_Parties[i];
     }
     return 0;
 }
@@ -16385,8 +16388,8 @@ int ai_Unk4e5120(void)
     int i;
 
     for (i = 0; i < 96; i++) {
-        if (ai_Unk925520[i].id == -1)
-            return (int)&ai_Unk925520[i];
+        if (cm_Parties[i].id == -1)
+            return (int)&cm_Parties[i];
     }
     return 0;
 }
@@ -16407,7 +16410,7 @@ int ai_Unk4e5150(int *src)
 }
 /* 0x4e5180, clears the party record of the id (id -1 afterwards) */
 
-void ai_Unk4e5180(int id)
+void cm_ClearParty(int id)
 {
     G28REC *r;
 
@@ -16619,7 +16622,7 @@ void ai_Unk4e5730(int kind, int run, int cb4, int cb8, int check, char flag)
     cm_KindRun[kind * 5] = run;
     cm_KindAskPlayer[kind * 5] = cb4;
     cm_KindAskOther[kind * 5] = cb8;
-    ai_Unk92c510[kind * 5] = check;
+    cm_KindCheck[kind * 5] = check;
     cm_KindAllAtOnce[kind * 20] = flag;
 }
 /* 0x4e5770, the init of the scene code: the party records are cleared (id -1) and the scene kinds are registered: 0 the picture show (0x4e0010), 1 the council
@@ -16630,9 +16633,9 @@ void ai_Unk4e5770(void)
 {
     int i;
 
-    memset(ai_Unk925520, 0, 0x6780);
+    memset(cm_Parties, 0, 0x6780);
     for (i = 0; i < 96; i++)
-        ai_Unk925520[i].id = -1;
+        cm_Parties[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
@@ -16750,7 +16753,7 @@ extern int cm_KindRun[1];
 extern int cm_KindAskPlayer[1];
 extern int cm_KindAskOther[1];
 extern char cm_KindAllAtOnce[4];
-extern int ai_Unk92c510[60];
+extern int cm_KindCheck[60];
 extern char cm_SceneState[1152];
 extern int cm_SceneChars[16];
 extern int cm_SavedNoGroup;
@@ -16981,7 +16984,7 @@ int ai_Evidence[0x800][2] = {0}; /* 0x91b6e0 */
 char ai_Crimes[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
                                     table ai_Unk91f716 is the same storage, a view at +0x16 */
 int cm_SavedScene = 0;  /* 0x925510 */
-G28REC ai_Unk925520[96] = {0};  /* 0x925520 */
+G28REC cm_Parties[96] = {0};  /* 0x925520 */
 int cm_DuelRight = 0;  /* 0x92bca0 */
 int cm_DuelLeft = 0;  /* 0x92bca4 */
 int ai_Unk92bcc0[128] = {0};  /* 0x92bcc0 */
@@ -16992,7 +16995,7 @@ int cm_KindRun[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, fla
 int cm_KindAskPlayer[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
 int cm_KindAskOther[1] = {0};  /* 0x92c508 */
 char cm_KindAllAtOnce[4] = {0};  /* 0x92c50c */
-int ai_Unk92c510[60] = {0};  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
+int cm_KindCheck[60] = {0};  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
 char cm_SceneState[1152] = {0};  /* 0x92c600 */
 int cm_SceneChars[16] = {0};  /* 0x92ca80 */
 int cm_SavedNoGroup = 0;  /* 0x92cac0 */
