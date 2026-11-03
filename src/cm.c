@@ -7252,50 +7252,50 @@ void ai_Unk4ceb80(int id)
         evt_Stop(e);
     di_ClearButtons();
 }
-/* 0x4cec00, closes the 32 windows of ai_Unk935d20 */
+/* 0x4cec00, closes the 32 windows of cm_CharInfoWins */
 
 void ai_Unk4cec00()
 {
     int *p;
 
-    for (p = ai_Unk935d20; (int)p < (int)(ai_Unk935d20 + 0x20); p++) {
+    for (p = cm_CharInfoWins; (int)p < (int)(cm_CharInfoWins + 0x20); p++) {
         if (*p != -1) {
             d2_RemoveWindow(*p);
             *p = -1;
         }
     }
 }
-/* 0x4cec30, opens a window (text box 110+ wide) around the model box of the character c; Rough draft */
+/* 0x4cec30, the info window of the character c: a window 16 pixels around the screen box of its body (at least 110
+   wide; pictures 0x7b0 / 0x7b1 in its corners) with the value bar of skill 3 and the health slider (0..100), in a free
+   slot of cm_CharInfoWins; first the record of c in a (cm_CutEntrySlot) is looked up or taken */
 
-void ai_Unk4cec30(int a, char *c)
+void cm_OpenCharInfoWin(int a, char *c)
 {
-    int v[8];
-    int x0, y0, w, h, i, hnd;
+    D3RECT r;
+    int x0, y0, w, h, i, hp, bar;
 
-    if (d3if_ScreenBox(*(int *)(*(char **)(c + 0x184) + 0x34), v) == 0)
+    if (d3if_ScreenBox(((AICHAR *)c)->scene->obj, &r) == 0)
         return;
-    x0 = v[4] - 0x10;
-    w = v[6] - v[4] + 0x20;
-    y0 = v[5] - 0x10;
+    x0 = r.left - 0x10;
+    w = r.right - r.left + 0x20;
+    y0 = r.top - 0x10;
     if (w <= 0x6e)
         w = 0x6e;
-    h = v[7] - v[5] + 0x20;
+    h = r.bottom - r.top + 0x20;
     for (i = 0; i < 0x20; i++) {
-        if (ai_Unk935d20[i] == -1)
-            break;
-    }
-    if (i >= 0x20)
+        if (cm_CharInfoWins[i] != -1)
+            continue;
+        cm_CutEntrySlot((char *)a, c);
+        cm_CharInfoWins[i] = d2_CreateWindow(x0, y0, w, h, 0x10);
+        d2_WinOpenPic(0, 0, 0x7b0, d2_LastWindow);
+        d2_WinOpenPic(w - 0x18, 0, 0x7b1, d2_LastWindow);
+        d2_Wins[d2_LastWindow].font = 0x54;
+        sv_ValueBar(4, 4, gm_SkillPoints(c, 3), 0x4df);
+        hp = (int)(gm_HealthRatio(c) * 100.0);
+        bar = d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
+        d2_SetObjValue(bar, 0, 0x64, hp);
         return;
-    cm_CutEntrySlot((char *)a, c);
-    ai_Unk935d20[i] = d2_CreateWindow(x0, y0, w, h, 0x10);
-    d2_WinOpenPic(0, 0, 0x7b0, d2_LastWindow);
-    d2_WinOpenPic(w - 0x18, 0, 0x7b1, d2_LastWindow);
-    hnd = d2_LastWindow;
-    *(short *)(ai_Unkf8f39c + hnd * 0x3c4) = 0x54;
-    sv_ValueBar(4, 4, gm_SkillPoints(c, 3), 0x4df);
-    hnd = (int)(gm_HealthRatio(c) * 100.0);
-    d2_WinOpenSlider(0, 0xe, 0x40, 0, 0x64, 0x75, 0x442, d2_LastWindow);
-    d2_SetObjValue(d2_LastWindow, 0, 0x64, hnd);
+    }
 }
 /* 0x4ced80 */
 
@@ -7306,7 +7306,7 @@ void ai_Unk4ced80(int a)
     ai_Unk4cec00();
     for (p = ai_Unk930600; (int)p < (int)(ai_Unk930600 + 0x4380); p += 0x21c) {
         if (p[0x188] != 0)
-            ai_Unk4cec30(a, p);
+            cm_OpenCharInfoWin(a, p);
     }
 }
 /* 0x4cedc0, a floating number (v / (c's +0x1c * 0.01)) over the character c in a free slot of the 16 of
@@ -8349,7 +8349,7 @@ void ai_Unk4d0fa0(char *rec)
         sv_UpdateWeather();
         d3sky_Init(ai_Unk633dd4, 1);
     }
-    memset(ai_Unk935d20, -1, 0x80);
+    memset(cm_CharInfoWins, -1, 0x80);
     for (p = (char *)ai_Unk9304c0 + 4; (int)p < ((unsigned)((unsigned)ai_Unk9304c0 + 0x140) + 0x4); p += 0x14) {
         *(int *)(p + 4) = -1;
         *(int *)p = 0;
@@ -15246,7 +15246,7 @@ extern char ai_Unk930600[21376];
 extern char * ai_Unk935980[32];
 extern char cm_Grenades[512];
 extern float ai_Unk935d00;
-extern int ai_Unk935d20[32];
+extern int cm_CharInfoWins[32];
 extern G18LOG cm_LobbyChat[15];
 extern int cm_LobbyChatNext;
 extern int ai_Unk936400;
@@ -15492,7 +15492,7 @@ char ai_Unk930600[21376] = {0};  /* 0x930600 */
 char * ai_Unk935980[32] = {0};  /* 0x935980 */
 char cm_Grenades[512] = {0};  /* 0x935a00 */
 float ai_Unk935d00 = 0;  /* 0x935d00 */
-int ai_Unk935d20[32] = {0};  /* 0x935d20 */
+int cm_CharInfoWins[32] = {0};  /* 0x935d20 */
 G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
 int cm_LobbyChatNext = 0;  /* 0x9363f4 */
 int ai_Unk936400 = 0;  /* 0x936400 */

@@ -566,7 +566,7 @@ int cm_UpdateGrenades();  /* 0x4ce830 */
 int ai_Unk4ceb70(char *c);  /* 0x4ceb70 */
 void ai_Unk4ceb80(int id);  /* 0x4ceb80 */
 void ai_Unk4cec00();  /* 0x4cec00 */
-void ai_Unk4cec30(int a, char *c);  /* 0x4cec30 */
+void cm_OpenCharInfoWin(int a, char *c);  /* 0x4cec30 */
 void ai_Unk4ced80(int a);  /* 0x4ced80 */
 void d3fl_MakeDivide();  /* 0x441300 */
 struct D3OBJECT; struct D3RECT; char d3if_ScreenBox(struct D3OBJECT *obj, struct D3RECT *r);  /* 0x4486e0 */
@@ -578,7 +578,7 @@ void d2_SetObjValue();  /* 0x475cb0 */
 int gm_SkillPoints();  /* 0x504e00 */
 extern int d2_LastWindow;  /* 0x6ed938 */
 extern int cm_SkipEvents;  /* 0x6f0d8c */
-extern int ai_Unk935d20[];  /* 0x935d20 */
+extern int cm_CharInfoWins[];  /* 0x935d20 */
 
 void cm_ShowDamage(char *c, int v, int kind);  /* 0x4cedc0 */
 void ai_Unk4cee20();  /* 0x4cee20 */
