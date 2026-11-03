@@ -1155,11 +1155,11 @@ void ai_Unk58bbd0(void)
     int i;
     int n;
 
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5) {
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5) {
         p[-2] = -1;
         p[0] = -1;
     }
-    for (p = (int *)(unsigned)&full_data_6f52f0; p < (int *)(unsigned)((unsigned)full_data_6f52f0 + 0x28); p += 5) {
+    for (p = (int *)(unsigned)&full_data_6f52f0; p < (int *)(unsigned)((unsigned)full_data_6f5318); p += 5) {
         p[-2] = 0;
         p[0] = -1;
     }
@@ -1193,7 +1193,7 @@ void ai_Unk58bbd0(void)
         p[0xc] = -1;
         n += 0x45;
     }
-    for (p = (int *)(unsigned)&full_data_6f4f64, n = 0; p < (int *)(unsigned)((unsigned)full_data_6f4f64 + 0x380); p += 0xe, n++) {
+    for (p = (int *)(unsigned)&full_data_6f4f64, n = 0; p < (int *)(unsigned)((unsigned)full_data_6f52e4); p += 0xe, n++) {
         p[-1] = 0;
         p[0] = -1;
         p[1] = (n % 4) * 0x40 + 0x10;
@@ -1207,7 +1207,7 @@ void ai_Unk58bbd0(void)
         p[8] = -1;
         p[0xc] = -1;
     }
-    for (p = (int *)(unsigned)&full_data_6f58a4, n = 0; p < (int *)(unsigned)((unsigned)full_data_6f58a4 + 0x1c0); p += 0xe, n++) {
+    for (p = (int *)(unsigned)&full_data_6f58a4, n = 0; p < (int *)(unsigned)((unsigned)full_data_6f5a64); p += 0xe, n++) {
         p[-1] = 0;
         p[0] = -1;
         p[1] = (n % 4) * 0x40 + 0x10;
@@ -1439,7 +1439,7 @@ void ai_Unk58c680(int param_1, int param_2, int param_3, int param_4)
     }
     if (c >= 0xf)
         return;
-    for (n = (unsigned)&full_data_6f5350 + c * 0x58; n < (unsigned)((unsigned)full_data_6f5350 + 0x580); n += 0x58) {
+    for (n = (unsigned)&full_data_6f5350 + c * 0x58; n < (unsigned)((unsigned)full_data_6f58d0); n += 0x58) {
         if (*(int *)n >= 0) {
             *(int *)(n - 4) = -1;
             d2_RemoveObj(*(int *)n);
@@ -1629,7 +1629,7 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
         d2_SetForm(param_1, param_2);
     }
     if (c < 0xf) {
-        for (n = (unsigned)&full_data_6f5350 + c * 0x58; n < (unsigned)((unsigned)full_data_6f5350 + 0x580); n += 0x58) {
+        for (n = (unsigned)&full_data_6f5350 + c * 0x58; n < (unsigned)((unsigned)full_data_6f58d0); n += 0x58) {
             if (*(int *)n >= 0) {
                 *(int *)(n - 4) = -1;
                 d2_RemoveObj(*(int *)n);
@@ -1720,14 +1720,14 @@ int ai_Unk58d720(unsigned char *param_1, int param_2)
         }
         g = (unsigned short *)gm_QueryNext();
     }
-    for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)full_data_6f4f60 + 0x380); p += 0xe)
+    for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)full_data_6f52e0); p += 0xe)
         if (gm_Query(U_I(param_1 + 0x14), 1, 0, *p) == 0)
             *p = 0;
-    for (p = (int *)(unsigned)&full_data_6f58a0; p < (int *)(unsigned)((unsigned)full_data_6f58a0 + 0x1c0); p += 0xe)
+    for (p = (int *)(unsigned)&full_data_6f58a0; p < (int *)(unsigned)((unsigned)full_data_6f5a60); p += 0xe)
         if (gm_Query(U_I(param_1 + 0x14), 1, 0, *p) == 0)
             *p = 0;
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f70; p <= (int *)(unsigned)((unsigned)full_data_6f4f70 + 0x37f); p += 0xe) {
+    for (p = (int *)(unsigned)&full_data_6f4f70; p <= (int *)(unsigned)((unsigned)full_data_6f52ef); p += 0xe) {
         n = *p;
         if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
             i = 1;
@@ -1735,7 +1735,7 @@ int ai_Unk58d720(unsigned char *param_1, int param_2)
         }
     }
     if (i == 0) {
-        for (p = (int *)(unsigned)&full_data_6f58b0; p <= (int *)(unsigned)((unsigned)full_data_6f58b0 + 0x1bf); p += 0xe) {
+        for (p = (int *)(unsigned)&full_data_6f58b0; p <= (int *)(unsigned)((unsigned)full_data_6f5a6f); p += 0xe) {
             n = *p;
             if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
                 i = 1;
@@ -1744,7 +1744,7 @@ int ai_Unk58d720(unsigned char *param_1, int param_2)
         }
     }
     if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0 && U_I(((unsigned)&dm_L + 0x18)) != 0 && d2_CountPointerItems() == 0) {
-        for (p = (int *)(unsigned)&full_data_6f4f80; p < (int *)(unsigned)((unsigned)full_data_6f4f80 + 0x380); p += 0xe) {
+        for (p = (int *)(unsigned)&full_data_6f4f80; p < (int *)(unsigned)((unsigned)full_data_6f5300); p += 0xe) {
             if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
                 continue;
             n = gm_Query(U_I(param_1 + 0x14), 1, 0, p[-8]);
@@ -1756,7 +1756,7 @@ int ai_Unk58d720(unsigned char *param_1, int param_2)
             cm_SendFieldValues();
             U_I(n + 0x1c) = st;
         }
-        for (p = (int *)(unsigned)&full_data_6f58c0; p < (int *)(unsigned)((unsigned)full_data_6f58c0 + 0x1c0); p += 0xe) {
+        for (p = (int *)(unsigned)&full_data_6f58c0; p < (int *)(unsigned)((unsigned)full_data_6f5a80); p += 0xe) {
             if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
                 continue;
             n = gm_Query(U_I(param_1 + 0x14), 1, 0, p[-8]);
@@ -1793,15 +1793,15 @@ void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4)
     scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5)
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f52f0; p < (int *)(unsigned)((unsigned)full_data_6f52f0 + 0x28); p += 5)
+    for (p = (int *)(unsigned)&full_data_6f52f0; p < (int *)(unsigned)((unsigned)full_data_6f5318); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f0c + 0x50); p += 5, i++) {
+    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f5c); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -1812,7 +1812,7 @@ void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4)
         }
     }
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f52ec; p < (int *)(unsigned)((unsigned)full_data_6f52ec + 0x28); p += 5, i++) {
+    for (p = (int *)(unsigned)&full_data_6f52ec; p < (int *)(unsigned)((unsigned)full_data_6f5314); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -1823,7 +1823,7 @@ void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4)
         }
     }
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5) {
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5) {
         n = *p;
         if (p[-2] < 2) {
             U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
@@ -1850,9 +1850,9 @@ void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4)
         *q = *(int *)((unsigned)&full_data_6f4f04 + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 2, param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)full_data_6f4f6c + 0x380));
+    } while (q < (int *)(unsigned)((unsigned)full_data_6f52ec));
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f52ec; p < (int *)(unsigned)((unsigned)full_data_6f52ec + 0x28); p += 5) {
+    for (p = (int *)(unsigned)&full_data_6f52ec; p < (int *)(unsigned)((unsigned)full_data_6f5314); p += 5) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         p[-1] = *p;
@@ -1881,13 +1881,13 @@ void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4)
         *q = *(int *)((unsigned)&full_data_6f52e4 + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 2, param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)full_data_6f58ac + 0x1c0));
+    } while (q < (int *)(unsigned)((unsigned)full_data_6f5a6c));
     if (param_3 != 0) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)&full_data_6f4f70; p < (int *)(unsigned)((unsigned)full_data_6f4f70 + 0x380); p += 0xe)
+        for (p = (int *)(unsigned)&full_data_6f4f70; p < (int *)(unsigned)((unsigned)full_data_6f52f0); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)&full_data_6f58b0; p < (int *)(unsigned)((unsigned)full_data_6f58b0 + 0x1c0); p += 0xe)
+        for (p = (int *)(unsigned)&full_data_6f58b0; p < (int *)(unsigned)((unsigned)full_data_6f5a70); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
@@ -1919,12 +1919,12 @@ int ai_Unk58e130(int param_1, int param_2)
     int n;
 
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f0c + 0x50); p += 5, i++)
+    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f5c); p += 5, i++)
         *p = tbl[i + ((unsigned char *)param_1)[0x1c] * 4];
     g = (unsigned short *)gm_Query(U_I(param_2 + 0x14), 1, 5);
     while (1) {
         if (g == 0) {
-            for (p = (int *)(unsigned)&full_data_6f4f90; p < (int *)(unsigned)((unsigned)full_data_6f4f90 + 0x380); p += 0xe) {
+            for (p = (int *)(unsigned)&full_data_6f4f90; p < (int *)(unsigned)((unsigned)full_data_6f5310); p += 0xe) {
                 q = (int *)gm_Query(U_I(param_1 + 0x14), 1, 0, p[-0xc]);
                 if (q != 0) {
                     p[0] = gm_ListAmount(param_1, q);
@@ -1932,7 +1932,7 @@ int ai_Unk58e130(int param_1, int param_2)
                 }
             }
             i = 0;
-            for (p = (int *)(unsigned)&full_data_6f4f70; p <= (int *)(unsigned)((unsigned)full_data_6f4f70 + 0x37f); p += 0xe) {
+            for (p = (int *)(unsigned)&full_data_6f4f70; p <= (int *)(unsigned)((unsigned)full_data_6f52ef); p += 0xe) {
                 n = *p;
                 if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0)
                     i = 1;
@@ -1940,7 +1940,7 @@ int ai_Unk58e130(int param_1, int param_2)
             return i;
         }
         n = 0;
-        for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)full_data_6f4f60 + 0x380); p += 0xe, n++) {
+        for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)full_data_6f52e0); p += 0xe, n++) {
             if (*p == *g) {
                 if (n < 0x10)
                     *(int *)((unsigned)&full_data_6f4f90 + n * 0x38) = 0;
@@ -1978,11 +1978,11 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
     scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5)
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f0c + 0x50); p += 5, i++) {
+    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f5c); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -1993,7 +1993,7 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
         }
     }
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5) {
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5) {
         n = *p;
         if (p[-2] < 2) {
             U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
@@ -2020,13 +2020,13 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
         *q = *(int *)((unsigned)&full_data_6f4f04 + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 3, (unsigned char *)param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)full_data_6f4f6c + 0x380));
+    } while (q < (int *)(unsigned)((unsigned)full_data_6f52ec));
     if (param_3 != 0) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)&full_data_6f4f70; p < (int *)(unsigned)((unsigned)full_data_6f4f70 + 0x380); p += 0xe)
+        for (p = (int *)(unsigned)&full_data_6f4f70; p < (int *)(unsigned)((unsigned)full_data_6f52f0); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)&full_data_6f58b0; p < (int *)(unsigned)((unsigned)full_data_6f58b0 + 0x1c0); p += 0xe)
+        for (p = (int *)(unsigned)&full_data_6f58b0; p < (int *)(unsigned)((unsigned)full_data_6f5a70); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
@@ -2185,12 +2185,12 @@ int ai_Unk58ee30(int param_1, short *param_2)
     int st;
 
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f0c + 0x50); p += 5, i++)
+    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f5c); p += 5, i++)
         *p = tbl[i + ((unsigned char *)param_2)[0x1c] * 4];
     g = (unsigned short *)gm_Query(U_I((char *)param_2 + 10), 1, 5);
     while (g != 0) {
         n = 0;
-        for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)full_data_6f4f60 + 0x380); p += 0xe, n++) {
+        for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)full_data_6f52e0); p += 0xe, n++) {
             if (*p == *g) {
                 if (n < 0x10)
                     *(int *)((unsigned)&full_data_6f4f90 + n * 0x38) = gm_ListAmount((int)param_2, g);
@@ -2209,7 +2209,7 @@ int ai_Unk58ee30(int param_1, short *param_2)
         }
         g = (unsigned short *)gm_QueryNext();
     }
-    for (q = (int *)(unsigned)&full_data_6f4f90; q < (int *)(unsigned)((unsigned)full_data_6f4f90 + 0x380); q += 0xe) {
+    for (q = (int *)(unsigned)&full_data_6f4f90; q < (int *)(unsigned)((unsigned)full_data_6f5310); q += 0xe) {
         g = (unsigned short *)gm_Query(U_I((char *)param_2 + 10), 1, 0, q[-0xc]);
         if (g == 0) {
             q[-0xc] = 0;
@@ -2228,7 +2228,7 @@ int ai_Unk58ee30(int param_1, short *param_2)
         }
     }
     if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0 && U_I(((unsigned)&dm_L + 0x18)) != 0 && d2_CountPointerItems() == 0) {
-        for (p = (int *)(unsigned)&full_data_6f4f80; p < (int *)(unsigned)((unsigned)full_data_6f4f80 + 0x380); p += 0xe) {
+        for (p = (int *)(unsigned)&full_data_6f4f80; p < (int *)(unsigned)((unsigned)full_data_6f5300); p += 0xe) {
             if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
                 continue;
             n = gm_Query(U_I((char *)param_2 + 10), 1, 0, p[-8]);
@@ -2242,7 +2242,7 @@ int ai_Unk58ee30(int param_1, short *param_2)
         }
     }
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f70; p <= (int *)(unsigned)((unsigned)full_data_6f4f70 + 0x37f); p += 0xe) {
+    for (p = (int *)(unsigned)&full_data_6f4f70; p <= (int *)(unsigned)((unsigned)full_data_6f52ef); p += 0xe) {
         n = *p;
         if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
             i = 1;
@@ -2271,11 +2271,11 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
     scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5)
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     i = 0;
-    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f0c + 0x50); p += 5, i++) {
+    for (p = (int *)(unsigned)&full_data_6f4f0c; p < (int *)(unsigned)((unsigned)full_data_6f4f5c); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -2286,7 +2286,7 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
         }
     }
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f10 + 0x50); p += 5) {
+    for (p = (int *)(unsigned)&full_data_6f4f10; p < (int *)(unsigned)((unsigned)full_data_6f4f60); p += 5) {
         n = *p;
         if (p[-2] < 2) {
             U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
@@ -2319,13 +2319,13 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
         q[3] = *(int *)((unsigned)&full_data_6f4f04 + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q, param_3, side, (unsigned char *)param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)full_data_6f4f60 + 0x380));
+    } while (q < (int *)(unsigned)((unsigned)full_data_6f52e0));
     if (param_3 != 0) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)&full_data_6f4f70; p < (int *)(unsigned)((unsigned)full_data_6f4f70 + 0x380); p += 0xe)
+        for (p = (int *)(unsigned)&full_data_6f4f70; p < (int *)(unsigned)((unsigned)full_data_6f52f0); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)&full_data_6f58b0; p < (int *)(unsigned)((unsigned)full_data_6f58b0 + 0x1c0); p += 0xe)
+        for (p = (int *)(unsigned)&full_data_6f58b0; p < (int *)(unsigned)((unsigned)full_data_6f5a70); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
@@ -6234,7 +6234,7 @@ void ai_Unk598b80(int param_1, int param_2)
             if (n == 0) {
                 io_PrintText(0x188e);
             } else {
-                margin = *(short *)((unsigned)&d2_Pics + 0x1ebd8);
+                margin = *(short *)((unsigned)&he_Events + 0x119b0);
                 w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) + margin * -2;
                 for (i = 0; i < n; i++) {
                     p = chars + i * 0xe;
@@ -6341,7 +6341,7 @@ void ai_Unk598dc0(int param_1, int param_2)
             if (n == 0) {
                 io_PrintText(0x188e);
             } else {
-                margin = *(short *)((unsigned)&d2_Pics + 0x1ebd8);
+                margin = *(short *)((unsigned)&he_Events + 0x119b0);
                 w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) + margin * -2;
                 for (i = 0; i < n; i++) {
                     p = chars + i * 0xe;
@@ -6485,7 +6485,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
             io_PrintText(0x18a3);
             y = 0x46;
             w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) / 2;
-            x = (w - *(short *)((unsigned)&d2_Pics + 0x1ebd8)) - 0x28;
+            x = (w - *(short *)((unsigned)&he_Events + 0x119b0)) - 0x28;
             for (i = 0; i < 3; i++) {
                 p = items + i * 0xe;
                 p[4] = x;
@@ -6598,7 +6598,7 @@ void ai_Unk5996b0(int param_1, int param_2)
             io_PrintText(0x18a3);
             y = 0x46;
             w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) / 2;
-            x = (w - *(short *)((unsigned)&d2_Pics + 0x1ebd8)) - 0x28;
+            x = (w - *(short *)((unsigned)&he_Events + 0x119b0)) - 0x28;
             for (i = 0; i < 3; i++) {
                 p = items + i * 0xe;
                 p[4] = x;
@@ -7431,13 +7431,13 @@ void ai_Unk59b160(int param_1)
             }
             for (i = 0; i < n; i++) {
                 d2_SetForm(win, 2);
-                v = (*(short *)((unsigned)&d2_Pics + 0x269da) + 8) * i;
+                v = (*(short *)((unsigned)&he_Events + 0x197b2) + 8) * i;
                 list[i * 3] = d2_WinOpenPic(
-                    (*(short *)((unsigned)&d2_LastWindowPtr + 8) - *(short *)((unsigned)&d2_Pics + 0x269d8)) >> 1, v, 0x75a,
+                    (*(short *)((unsigned)&d2_LastWindowPtr + 8) - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v, 0x75a,
                     U_I((unsigned)&d2_LastWindow));
                 list[i * 3 + 1] = d2_CreateChildWindow(
-                    (*(short *)((unsigned)&d2_LastWindowPtr + 8) - *(short *)((unsigned)&d2_Pics + 0x269d8)) >> 1, v,
-                    *(short *)((unsigned)&d2_Pics + 0x269d8), *(short *)((unsigned)&d2_Pics + 0x269da), 0x10, U_I((unsigned)&d2_LastWindow));
+                    (*(short *)((unsigned)&d2_LastWindowPtr + 8) - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v,
+                    *(short *)((unsigned)&he_Events + 0x197b0), *(short *)((unsigned)&he_Events + 0x197b2), 0x10, U_I((unsigned)&d2_LastWindow));
                 recs[i] = offers[i];
                 list[i * 3 + 2] = offers[i];
                 U_I((unsigned)&ai_Unkf8f39c + list[i * 3 + 1] * 0x1e2) = 0x56;
@@ -7523,8 +7523,8 @@ void ai_Unk59b630(int param_1, int param_2)
                 }
             }
             n = gm_Unk50a150(param_2, param_1, offers);
-            h = *(short *)((unsigned)&d2_Pics + 0x269d8);
-            w = *(short *)((unsigned)&d2_Pics + 0x269da);
+            h = *(short *)((unsigned)&he_Events + 0x197b0);
+            w = *(short *)((unsigned)&he_Events + 0x197b2);
             for (i = 0; i < n; i++) {
                 d2_SetForm(win, 2);
                 v = (w + 4) * i;
@@ -9470,9 +9470,9 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                     io_PrintText(0x1a0c);
                 } else {
                     k = 0;
-                    w = *(short *)((unsigned)&d2_LastWindowPtr + 8) + *(short *)((unsigned)&d2_Pics + 0x1ebd8) * -2;
+                    w = *(short *)((unsigned)&d2_LastWindowPtr + 8) + *(short *)((unsigned)&he_Events + 0x119b0) * -2;
                     for (i = 0; i < n; i++) {
-                        s = *(short *)((unsigned)&d2_Pics + 0x1ebd8);
+                        s = *(short *)((unsigned)&he_Events + 0x119b0);
                         items[i * 0xe + 0xc] = 0;
                         items[i * 0xe + 4] = ((k & 1) + 1) * (w / 3) - 10 + (w % 3) / 2 + (s + 10) * (k & 1);
                         items[i * 0xe] = chars[k];
@@ -15179,7 +15179,7 @@ int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, 
         }
     }
     cm_BeginSendGroup();
-    for (row = (int *)(unsigned)&full_data_6f58a0; (int)row < (unsigned)((unsigned)full_data_6f58a0 + 0x1c0); row += 0xe) {
+    for (row = (int *)(unsigned)&full_data_6f58a0; (int)row < (unsigned)((unsigned)full_data_6f5a60); row += 0xe) {
         if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
             continue;
         n = d2_GetObjValue(row[4]);
@@ -15270,7 +15270,7 @@ order:
             }
         }
         row += 0xe;
-    } while ((int)row <= (unsigned)((unsigned)full_data_6f4f60 + 0x37f));
+    } while ((int)row <= (unsigned)((unsigned)full_data_6f52df));
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0)
         sv_PumpNet();
@@ -15296,7 +15296,7 @@ void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
         owner = *(int *)(param_1 + 0x65);
     else
         owner = *(unsigned char *)(unsigned)&ai_OwnPlayer;
-    for (row = (int *)(unsigned)&full_data_6f58a0; (int)row < (unsigned)((unsigned)full_data_6f58a0 + 0x1c0); row += 0xe) {
+    for (row = (int *)(unsigned)&full_data_6f58a0; (int)row < (unsigned)((unsigned)full_data_6f5a60); row += 0xe) {
         if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
             continue;
         n = d2_GetObjValue(row[4]);
@@ -15309,7 +15309,7 @@ void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
         if (param_3 == 2 || param_3 == 4)
             gm_GoodsPrice(row[0], param_1[0x65]);
     }
-    for (row = (int *)(unsigned)&full_data_6f4f60; (int)row < (unsigned)((unsigned)full_data_6f4f60 + 0x380); row += 0xe) {
+    for (row = (int *)(unsigned)&full_data_6f4f60; (int)row < (unsigned)((unsigned)full_data_6f52e0); row += 0xe) {
         if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
             continue;
         n = d2_GetObjValue(row[4]);
@@ -16148,7 +16148,7 @@ int ai_PlayerStatsPanel(void)
                 }
                 d2_ScrollWindowBy(0, k, h);
             }
-            for (p = (int *)(unsigned)&full_data_6f40f4; p < (int *)(unsigned)((unsigned)full_data_6f40f4 + 0xc00); p += 6) {
+            for (p = (int *)(unsigned)&full_data_6f40f4; p < (int *)(unsigned)((unsigned)full_data_6f4cf4); p += 6) {
                 if (p[-4] != -1 && p[-1] != d2_GetObjValue(p[-4])) {
                     h = d2_GetObjValue(p[-4], *(unsigned char *)(unsigned)&ai_OwnPlayer);
                     i = ((int (*)(int))gm_PlayerFactor)(h);
@@ -17280,7 +17280,7 @@ void ai_Unk5c08b0(void)
 {
     int *p;
 
-    for (p = (int *)(unsigned)&full_data_62d150; p < (int *)(unsigned)((unsigned)full_data_62d150 + 0xa0); p += 5) {
+    for (p = (int *)(unsigned)&full_data_62d150; p < (int *)(unsigned)((unsigned)full_data_62d1f0); p += 5) {
         p[-1] = 0;
         p[0] = 0;
     }

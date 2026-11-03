@@ -13067,7 +13067,7 @@ void he_Unk567810(char *param)
                 k++;
             }
             e += 4;
-            if ((int)e > ((unsigned)&full_data_6fa260 + 0x800))
+            if ((int)e > ((unsigned)&full_data_6faa60))
                 return;
         }
         if (feof(f)) {
