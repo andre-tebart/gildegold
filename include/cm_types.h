@@ -6,6 +6,15 @@
 #include "ai_types.h"                /* AITIME, for CRIME */
 
 #pragma pack(push, 1)
+typedef struct G17B7 { char b[7]; } G17B7;      /* blocks copied as one */
+
+typedef struct G17OBJMSG {              /* 0xf bytes, the data of message 0x2d (its handler 0x4c9740 creates an
+                                           object of kind 0x1b5 in the building owner) */
+    int objectId;                       /* 0x00, the next object id (the server's, read when connected) */
+    int owner;                          /* 0x04, the building's id */
+    G17B7 value;                        /* 0x08, copied to the new object's +0x1c */
+} G17OBJMSG;
+
 typedef struct G17BUILDMSG {            /* 0x40 bytes, the data of message 10 (cm_SendMessage10, its handler
                                            0x4c6b20 creates the building) */
     int objectId;                       /* 0x00, the next object id (the server's, read when connected) */
@@ -29,6 +38,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */
+        G17OBJMSG obj;                  /* 0x10, message 0x2d */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */

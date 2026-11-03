@@ -86,7 +86,6 @@ extern char ai_Unk625820[][0x20];       /* 0x625820, names ("HE_NULL", ..) */
 extern char ai_Time[];                /* 0x770ae0, AITIME (ai.h) */
 
 #pragma pack(push, 1)
-typedef struct G17B7 { char b[7]; } G17B7;      /* blocks copied as one */
 typedef struct G17B9 { char b[9]; } G17B9;
 typedef struct G17B10 { char b[10]; } G17B10;
 typedef struct G17B12 { char b[12]; } G17B12;
@@ -226,7 +225,7 @@ int cm_SendNewParty(void *p);                                                   
 void ai_Unk4c4fd0(int a, int b);                                                 /* 0x4c4fd0 */
 void cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
-void ai_Unk4c50b0(int a, int b, short c);                                        /* 0x4c50b0 */
+int cm_SendObject1b5(int owner, G17B7 value);                                        /* 0x4c50b0 */
 void cm_SendChrWalkTo(int a, int b, int c, int d);                                   /* 0x4c5100 */
 void cm_RequestChrMove(int a, int b, int c, const char *s);                           /* 0x4c5150 */
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                           /* 0x4c51b0, "cm_RequestChrMoveToUniverse" */

@@ -1475,17 +1475,17 @@ void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char
     G17_I(m, 0xd) = f;
     cm_QueueSend(&m);
 }
-/* 0x4c50b0, message 0x2d */
+/* 0x4c50b0, message 0x2d: creates an object of kind 0x1b5 in the building owner, its +0x1c set to value;
+   returns the send slot */
 
-void ai_Unk4c50b0(int a, int b, short c)
+int cm_SendObject1b5(int owner, G17B7 value)
 {
     G17MSG m;
 
-    G17_S(m, 0xc) = c;
-    G17_I(m, 8) = b;
+    m.obj.value = value;
     m.type = 0x2d;
-    G17_I(m, 4) = a;
-    cm_QueueSend(&m);
+    m.obj.owner = owner;
+    return cm_QueueSend(&m);
 }
 /* 0x4c5100, sends message 0x2e: its handler (0x4c97c0) gives the person "sp_<a>" the walk action 0x2d to (b, c) in scene d */
 

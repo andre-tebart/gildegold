@@ -6469,7 +6469,7 @@ void he_Unk542100(int ev)
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
 
-void ai_Unk4c50b0(int a, int b, short c);
+int cm_SendObject1b5(int owner, G17B7 value);
 
 /* 0x542490, a Ghidra miss (disassembled): the event with the building (+0x10): sets the clock (+0x52 + 0x18, state word 7 at +0x56), posts it again when the building is gone; else with no record 0x1b5 in the building sends 0x4c50b0 (a 7 byte value of -1 passed by value, here only approximated) and posts the event (ROUGH) */
 void he_Unk542490(int ev)
@@ -6489,7 +6489,7 @@ void he_Unk542490(int ev)
         }
         r = gm_Query(*(int *)(bld + 0x5d), 1, 0, 0x1b5);
         if (r == 0)
-            ((void (*)(int, int))ai_Unk4c50b0)(*(int *)(bld + 1), -1);
+            ((void (*)(int, int))cm_SendObject1b5)(*(int *)(bld + 1), -1);
         *(int *)(ev + 0x84) = -1;
         cm_SendExSetHE(0, ev);
     }

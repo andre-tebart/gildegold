@@ -10769,7 +10769,7 @@ void ai_Unk5a2de0(int param_1)
     }
 }
 
-void ai_Unk4c50b0(int a, int b, short c); int cm_GetSlotValue(int h); int cm_SendGroupState(); int cm_FlushSendQueue();
+int cm_SendObject1b5(int owner, G17B7 value); int cm_GetSlotValue(int h); int cm_SendGroupState(); int cm_FlushSendQueue();
 int cm_ReceiveMessages(); int cm_ExecCommands(); int cm_SendLongMessage(char *msg); int cm_GetSlotState();
 int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
 
@@ -10814,7 +10814,7 @@ void ai_Unk5a2e60(int param_1)
         return;
     rec = gm_Query(U_I(param_1 + 0x5d), 1, 0, 0x1b5);
     if (rec == 0) {
-        h = ((int (*)(int, int, int))ai_Unk4c50b0)(U_I(param_1 + 1), -1, 0xffff);
+        h = ((int (*)(int, int, int))cm_SendObject1b5)(U_I(param_1 + 1), -1, 0xffff);
         cm_GetSlotValue(h);
         while (cm_SendGroupState() == 0) {
             cm_FlushSendQueue();
