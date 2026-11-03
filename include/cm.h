@@ -965,7 +965,7 @@ void cm_RunDuel(G28REC *m);  /* 0x4ded10 */
 
 int gv_Accuse();  /* 0x4f2e30 */
 int cm_DuelAftermath(G28REC *m);  /* 0x4dfa20 */
-void ai_Unk4dfcb0(char *m);  /* 0x4dfcb0 */
+void cm_DuelAskPlayer(CMCUTINFO *r);  /* 0x4dfcb0 */
 void ai_Unk4dfdd0(char *m);  /* 0x4dfdd0 */
 void ai_Unk4dff80(char *m);  /* 0x4dff80 */
 void ai_Unk4dfff0(char *m);  /* 0x4dfff0 */

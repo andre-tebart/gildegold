@@ -14004,32 +14004,34 @@ int cm_DuelAftermath(G28REC *m)
         he_ShowNews(ai_CharsT[a->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
     return 0;
 }
-/* 0x4dfcb0, the question "accept the duel?" (text 0x10de, "cutscenes\\duell", a box with the two answers): m + 0x94 = 1 for the first answer, 0 for the second */
+/* 0x4dfcb0, the player's choice of the duel round as a dialog ("cutscenes\\duell", text 0x10de with cm_CutChar's
+   name, the timer slider): r->duel.round = 1 (the cheat) for the answer 0, 0 for the answer 1 and when the time runs
+   out; r's text cleared */
 
-void ai_Unk4dfcb0(char *m)
+void cm_DuelAskPlayer(CMCUTINFO *r)
 {
-    int v, dlg;
+    int view, dlg;
 
-    v = d2_OpenForm(0, 0, "cutscenes\\duell");
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-    d2_SetForm(v, 0);
-    io_PrintText(0x10de, *(int *)cm_CutChar);
-    m[0x94] = 0;
-    m[0x14] = ch_EmptyName;
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    view = d2_OpenForm(0, 0, "cutscenes\\duell");
+    d2_PlaceMainWindow(view, 3);
+    d2_SetForm(view, 0);
+    io_PrintText(0x10de, ((AICHAR *)cm_CutChar)->id);
+    r->duel.round = 0;
+    r->text[0] = ch_EmptyName[0];
+    dlg = CUT_BOX();
     cm_DialogTimer(dlg, cm_SceneDuration * 0x4b, 1);
-    while (sv_RunFrame(ai_Unk4dfcb0, cm_DialogFrameFlags) != 0) {
+    while (sv_RunFrame(cm_DuelAskPlayer, cm_DialogFrameFlags) != 0) {
         if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0) {
-            m[0x94] = 1;
+            r->duel.round = 1;
             sv_PopRequest = 1;
         } else if (d2_ClickedId == 1) {
-            m[0x94] = 0;
+            r->duel.round = 0;
             sv_PopRequest = 1;
         }
     }
-    d2_CloseView(v);
+    d2_CloseView(view);
 }
 /* 0x4dfdd0, the choice of the challenged person (text 0x10e6, three answers: m + 0x94 = 2 / 3 / 4); the player's character is the
    one of m + 0x34 / m + 0x38 that is not the first */
@@ -14101,7 +14103,7 @@ void ai_Unk4dff80(char *m)
 void ai_Unk4dfff0(char *m)
 {
     if (cm_ScenePartyRuns == 0)
-        ai_Unk4dfcb0(m);
+        cm_DuelAskPlayer((CMCUTINFO *)m);
     else
         ai_Unk4dfdd0(m);
 }
