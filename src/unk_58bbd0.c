@@ -901,7 +901,7 @@ extern signed char ai_Relations[768][768];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_62d204[];
 extern int gm_PlayerRecords[688];
-extern float ai_Unk5eb788;
+extern float ai_FloatZero;
 extern GAPDATA full_rdata_5ed0fc[];
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62d150[];
@@ -17036,7 +17036,7 @@ unsigned int ai_Unk5bf4f0(short *param_1, unsigned int param_2, int *param_3, in
             if (!(f > *(float *)(unsigned)&full_rdata_5ed0fc))
                 continue;
         } else {
-            f = *(float *)(unsigned)&ai_Unk5eb788;
+            f = *(float *)(unsigned)&ai_FloatZero;
         }
         if (n < param_2 && (n == 0 || f >= (float)param_3[param_2 * 0xe - 3])) {
             rec = param_3 + n * 0xe;

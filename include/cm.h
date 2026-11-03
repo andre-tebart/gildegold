@@ -758,7 +758,7 @@ char cm_CollectConquerPoint(char *o);  /* 0x4d2650 */
 struct D3OBJECT *cm_NearestConquerPoint(struct AICHAR *c);  /* 0x4d2680 */
 extern int cm_PointCount;  /* 0x6f0d60 */
 extern char *cm_PointList[];  /* 0x930380 */
-extern float ai_Unk5eb788;  /* 0x5eb788 */
+extern float ai_FloatZero;  /* 0x5eb788 */
 extern float ai_Unk5eb988;  /* 0x5eb988 */
 extern double ai_Unk5eb990;  /* 0x5eb990 */
 extern double ai_Unk5eb7b0;  /* 0x5eb7b0 */
@@ -964,7 +964,7 @@ void cm_RunDuel(G28REC *m);  /* 0x4ded10 */
 
 
 int gv_Accuse();  /* 0x4f2e30 */
-int ai_Unk4dfa20(char *m);  /* 0x4dfa20 */
+int cm_DuelAftermath(G28REC *m);  /* 0x4dfa20 */
 void ai_Unk4dfcb0(char *m);  /* 0x4dfcb0 */
 void ai_Unk4dfdd0(char *m);  /* 0x4dfdd0 */
 void ai_Unk4dff80(char *m);  /* 0x4dff80 */

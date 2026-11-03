@@ -63,9 +63,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_Unk143e8c0                            (*(char * *)((char *)txt_Ptrs + 0x04700))  /* 0x143e8c0 */
 #define ai_Unk143e8c8                            (*(char * *)((char *)txt_Ptrs + 0x04708))  /* 0x143e8c8 */
 #define ai_Unk143e8e4                            (*(char * *)((char *)txt_Ptrs + 0x04724))  /* 0x143e8e4 */
-#define ai_Unk143e8f4                            (*(char * *)((char *)txt_Ptrs + 0x04734))  /* 0x143e8f4 */
-#define ai_Unk143e8f8                            (*(char * *)((char *)txt_Ptrs + 0x04738))  /* 0x143e8f8 */
-#define ai_Unk143e8fc                            (*(char * *)((char *)txt_Ptrs + 0x0473c))  /* 0x143e8fc */
+#define txt_DuelNoteTail                            (*(char * *)((char *)txt_Ptrs + 0x04734))  /* 0x143e8f4 */
+#define txt_DuelDeathNews                            (*(char * *)((char *)txt_Ptrs + 0x04738))  /* 0x143e8f8 */
+#define txt_DuelHeldNews                            (*(char * *)((char *)txt_Ptrs + 0x0473c))  /* 0x143e8fc */
 #define ai_Unk143e948                            (*(char * *)((char *)txt_Ptrs + 0x04788))  /* 0x143e948 */
 #define ai_Unk143e954                            (*(char * *)((char *)txt_Ptrs + 0x04794))  /* 0x143e954 */
 #define ai_Unk143e960                            (*(char * *)((char *)txt_Ptrs + 0x047a0))  /* 0x143e960 */

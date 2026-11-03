@@ -13945,61 +13945,63 @@ void cm_RunDuel(G28REC *m)
     cm_ClearDamagePops();
     cm_EndSpecialTrack();
 }
-/* 0x4dfa20, after a duel (the message m: +0x34 / +0x38 the duellists): when one of them is down (life 0x4fc8e0 <= 0) the owner of the
-   other gets the text 0x143e8f8 (0x53dda0, kind 0x5ec); when both stand each side with the kind 6 / 7 gets "0x11ca" + the text 0x143e8f4
-   (0x4e48b0) and the relation is changed (0x4f2e30); a caught person (+0x1b1) gets the text 0x143e8fc. Returns 0 */
+/* 0x4dfa20, the duel's aftermath (the fourth callback of the duel event, ai_Unk4e5730 kind 4) for the duellists
+   m->members[0] / [1]: when one of them is held (heldRounds) the players' characters (kinds 6 / 7) among them get the news
+   txt_DuelHeldNews; else when one is dead (gm_HealthRatio <= 0) the other's player gets txt_DuelDeathNews; else each
+   player's character among them sends a note naming the other (text 0x11ca + txt_DuelNoteTail, cm_SendPartyNote) and the
+   duel is accused (gv_Accuse 0x14, by the building of a, else of b). Returns 1 when a note went out */
 
-int ai_Unk4dfa20(char *m)
+int cm_DuelAftermath(G28REC *m)
 {
     char buf[0x200];
-    char *a, *b;
+    AICHAR *a, *b;
     int flag;
+    int bld;
 
     flag = 0;
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
     if (a == 0 || b == 0)
         return 0;
-    if (b[0x1b1] == 0 && a[0x1b1] == 0) {
-        if (gm_HealthRatio(a) <= 0.0f) {
-            if (b[2] != 6 && b[2] != 7)
+    if (b->heldRounds == 0 && a->heldRounds == 0) {
+        if (gm_HealthRatio((short *)a) <= ai_FloatZero) {
+            if (b->kind != 6 && b->kind != 7)
                 return 0;
-            he_ShowNews(ai_CharInts[*(unsigned short *)b][0], -1, ai_Unk143e8f8, 0, 0x5ec, 0);
+            he_ShowNews(ai_CharsT[b->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
             return 0;
         }
-        if (gm_HealthRatio(b) <= 0.0f) {
-            if (a[2] != 6 && a[2] != 7)
+        if (gm_HealthRatio((short *)b) <= ai_FloatZero) {
+            if (a->kind != 6 && a->kind != 7)
                 return 0;
-            he_ShowNews(ai_CharInts[*(unsigned short *)a][0], -1, ai_Unk143e8f8, 0, 0x5ec, 0);
+            he_ShowNews(ai_CharsT[a->id].netId, -1, txt_DuelDeathNews, 0, 0x5ec, 0);
             return 0;
         }
-        if (b[2] == 6 || b[2] == 7) {
-            txt_Format(buf, 0x11ca, *(unsigned short *)b);
-            strcat(buf + 12, ai_Unk143e8f4);
-            cm_SendPartyNote(a, *(int *)(m + 0x10), buf + 12, &ch_EmptyName);
+        if (a->kind == 6 || a->kind == 7) {
+            txt_Format(buf, 0x11ca, b->id);
+            strcat(buf, txt_DuelNoteTail);
+            cm_SendPartyNote(a, m, buf, &ch_EmptyName);
             flag = 1;
         }
-        if (a[2] == 6 || a[2] == 7) {
-            txt_Format(buf, 0x11ca, *(unsigned short *)a);
-            strcat(buf + 12, ai_Unk143e8f4);
-            cm_SendPartyNote(b, *(int *)(m + 0x10), buf + 12, &ch_EmptyName);
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(buf, 0x11ca, a->id);
+            strcat(buf, txt_DuelNoteTail);
+            cm_SendPartyNote(b, m, buf, &ch_EmptyName);
             flag = 1;
         }
         if (flag != 0) {
-            int ra = -1;
-
-            if (*(int *)(a + 0x170) != 0)
-                ra = *(int *)(*(int *)(a + 0x170) + 1);
-            else if (*(int *)(b + 0x170) != 0)
-                ra = *(int *)(*(int *)(b + 0x170) + 1);
-            gv_Accuse(0x14, 1, *(int *)(a + 4), *(int *)(b + 4), ra);
+            bld = -1;
+            if (a->bld2 != 0)
+                bld = a->bld2->id;
+            else if (b->bld2 != 0)
+                bld = b->bld2->id;
+            gv_Accuse(0x14, 1, a->netId, b->netId, bld);
         }
         return flag;
     }
-    if (b[2] == 6 || b[2] == 7)
-        he_ShowNews(ai_CharInts[*(unsigned short *)b][0], -1, ai_Unk143e8fc, 0, 0x5ec, 0);
-    if (a[2] == 6 || a[2] == 7)
-        he_ShowNews(ai_CharInts[*(unsigned short *)a][0], -1, ai_Unk143e8fc, 0, 0x5ec, 0);
+    if (b->kind == 6 || b->kind == 7)
+        he_ShowNews(ai_CharsT[b->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
+    if (a->kind == 6 || a->kind == 7)
+        he_ShowNews(ai_CharsT[a->id].netId, -1, txt_DuelHeldNews, 0, 0x5ec, 0);
     return 0;
 }
 /* 0x4dfcb0, the question "accept the duel?" (text 0x10de, "cutscenes\\duell", a box with the two answers): m + 0x94 = 1 for the first answer, 0 for the second */
@@ -16369,7 +16371,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
-    ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
+    ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
     ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)ai_Unk4e0f70, 0, 0, (int)ai_Unk4e0e90, 0);
@@ -16550,9 +16552,9 @@ extern int cm_PickCellZ;
 /* ai_Unk143e8c0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8e4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8f4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8f8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8fc: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_DuelNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_DuelDeathNews: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_DuelHeldNews: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e948: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e954: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e960: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -16560,7 +16562,7 @@ extern int cm_PickCellZ;
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
 float ai_FloatOne = 1.0f;  /* 0x5eb780 */
-float ai_Unk5eb788 = 0.0f;  /* 0x5eb788 */
+float ai_FloatZero = 0.0f;  /* 0x5eb788 */
 /* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
    double: a 8-byte definition here claims two literals another unit owns. */
 /* 0x5eb7ac is the pooled float 0.5f (0x3f000000): use the literal at the call sites. */

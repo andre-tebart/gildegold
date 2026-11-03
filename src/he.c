@@ -182,7 +182,7 @@ extern int ai_MissionPartner;
 extern G13MIS ai_Missions[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
-extern float ai_Unk5eb788;
+extern float ai_FloatZero;
 extern float ai_FloatOne;
 extern GAPDATA full_data_628dc8[];
 
@@ -15019,7 +15019,7 @@ void he_Unk56d610(int ev)
     if (p == 0)
         goto done;
     *(float *)(ev + 0xb4) = ahm_ResearchProgress(c, p, (void *)(ev + 0xbc));
-    if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_Unk5eb788)
+    if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_FloatZero)
         goto done;
     *(int *)(ev + 0xb8) = *(int *)(ev + 0xbc);
     *(AITIME *)(ev + 0xc0) = ai_Time;
@@ -15101,7 +15101,7 @@ void he_Unk56d990(int ev)
     if (c == 0)
         goto done;
     *(float *)(ev + 0xb4) = ahm_ShareProgress(c, *(int *)(ev + 0xb0), (void *)(ev + 0xbc));
-    if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_Unk5eb788)
+    if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_FloatZero)
         goto done;
     *(int *)(ev + 0xb8) = *(int *)(ev + 0xbc);
     *(AITIME *)(ev + 0xc0) = ai_Time;
