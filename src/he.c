@@ -451,74 +451,56 @@ int he_OpenEventSlot(int ev, int x, int y, char *form, int pic)
     }
     return 0;
 }
-/* 0x53d800, releases the slot of the event `ev`: closes its window and panel, packs the slots below it up by one (0x46cda0 re-places the windows) and sets 0x625718 to the last used slot */
+/* 0x53d800, releases the slot of the event `ev`: removes its picture object and closes its window, moves the events of
+   the slots after the first free one down by one (their objects 32 to the left, d2_MoveObj) and sets he_LastSlot to the
+   highest slot still used */
 
 void he_ReleaseSlot(int ev)
 {
-    int *sl;
-    int *q;
-    int *pr;
+    AIJOB *job = (AIJOB *)ev;
     int i, k;
 
-    if (*(int *)(ev + 0x74) != 0) {
-        sl = *(int **)(ev + 0x74);
-        if (sl[1] == -1) {
-            __asm int 3
-            return;
-        }
+    if (job->slot == 0)
+        return;
+    if (job->slot->obj != -1) {
         d2_SetForm(he_BarView, 0);
-        d2_RemoveObj(sl[1]);
-        sl[1] = -1;
-        i = sl[2];
-        if (i != -1) {
-            d2_CloseView(i);
-            sl[2] = -1;
-        }
-        if (U_I((unsigned)&he_ActiveSlot) == (int)sl)
-            U_I((unsigned)&he_ActiveSlot) = 0;
-        *(int *)(ev + 0x74) = 0;
-        i = 0;
-        q = (int *)(unsigned)&full_data_6faa84;
-        do {
-            if (*q == -1) {
-                if (i < 0x10) {
-                    q = (int *)((unsigned)&full_data_6faa90 + i * 12);
-                    do {
-                        if ((int)q < ((unsigned)((unsigned)full_data_6faa90 + 0xb0) + 0x4) && *q != -1) {
-                            q[-3] = *q;
-                            pr = q - 4;
-                            q[-2] = q[1];
-                            *pr = q[-1];
-                            *(int **)(q[-1] + 0x74) = pr;
-                            *q = -1;
-                            q[-1] = 0;
-                            q[1] = -1;
-                            if (q[-3] == -1 && *pr != 0) {
-                                __asm int 3
-                                return;
-                            }
-                        }
-                        k = q[-3];
-                        if (k != -1)
-                            d2_MoveObj((((k * 0xbb) & 0xffff0000) | (unsigned short)(*(short *)(U_I((unsigned)&d2_Objs) + k * 0x2ec + 0x10) - 0x20)),
-                                         ((((unsigned)k >> 16) << 16) | (unsigned short)*(short *)(U_I((unsigned)&d2_Objs) + 0x12 + k * 0x2ec)), k);
-                        q += 3;
-                    } while ((int)q < ((unsigned)((unsigned)full_data_6faa90 + 0xb0) + 0x10));
-                }
-                break;
-            }
-            q += 3;
-            i++;
-        } while ((int)q < ((unsigned)((unsigned)full_data_6faa90 + 0xb0) + 0x4));
-        i = 0;
-        q = (int *)(unsigned)&full_data_6faa84;
-        do {
-            if (*q != -1)
-                he_LastSlot = i;
-            q += 3;
-            i++;
-        } while ((int)q < ((unsigned)((unsigned)full_data_6faa84 + 0xbc) + 0x4));
+        d2_RemoveObj(job->slot->obj);
+        job->slot->obj = -1;
+    } else {
+        __asm int 3
     }
+    if (job->slot->win != -1) {
+        d2_CloseView(job->slot->win);
+        job->slot->win = -1;
+    }
+    if (he_ActiveSlot == job->slot)
+        he_ActiveSlot = 0;
+    job->slot = 0;
+    for (i = 0; i < 16; i++)
+        if (he_EventSlots[i].obj == -1)
+            break;
+    if (i < 16) {
+        do {
+            if (i < 15 && he_EventSlots[i + 1].obj != -1) {
+                he_EventSlots[i].obj = he_EventSlots[i + 1].obj;
+                he_EventSlots[i].ev = he_EventSlots[i + 1].ev;
+                he_EventSlots[i].win = he_EventSlots[i + 1].win;
+                he_EventSlots[i].ev->slot = &he_EventSlots[i];
+                he_EventSlots[i + 1].obj = -1;
+                he_EventSlots[i + 1].ev = 0;
+                he_EventSlots[i + 1].win = -1;
+                if (he_EventSlots[i].obj == -1 && he_EventSlots[i].ev != 0) {
+                    __asm int 3
+                }
+            }
+            k = he_EventSlots[i].obj;
+            if (k != -1)
+                d2_MoveObj(d2_Objs[k].x - 0x20, d2_Objs[k].y, k);
+        } while (++i < 16);
+    }
+    for (i = 0; i < 16; i++)
+        if (he_EventSlots[i].obj != -1)
+            he_LastSlot = i;
 }
 /* 0x53d930, creates the panel "Panel\Event_Leiste" (bottom right: screen size - 0x7d / - 0x21) and frees all slots */
 
