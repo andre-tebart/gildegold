@@ -1056,7 +1056,7 @@ void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */
 int ai_Unk4e3210();  /* 0x4e3210 */
 struct CHARACTER * ch_Create();  /* 0x403390 */
-int ai_Unk4e3230();  /* 0x4e3230 */
+int cm_CreateChar();  /* 0x4e3230 */
 void cm_RunBankruptcy(G28REC *m);  /* 0x4e1700 */
 int ai_Unk4e19a0(char *m);  /* 0x4e19a0 */
 

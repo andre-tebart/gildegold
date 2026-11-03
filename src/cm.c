@@ -137,7 +137,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
-#define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original ai_Unk4e3230 (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
+#define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original cm_CreateChar (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
@@ -14742,156 +14742,236 @@ int ai_Unk4e19a0(char *m)
     }
     return 1;
 }
-/* 0x4e1a80, an auction (the message m: +0x7c the building / place, +0x30 count, +0x34 the bidders): for the building kinds 0xb / 0xc / 0xd (forest
-   "WALDSTUECK", quarry "STEINBRUCH", mine "MINE") the scene "Versteigerung.ed3" with "ub_STAFELEI" (texture set by the kind), the auctioneer
-   "Auktionator" (dummy_AUKTIONATOR) and up to 8 persons on the places "dummy_RP_%02i" (the bidders' own models, else a random
-   "buerger_MANN" / "buerger2_MANN" / "handwerker3_MANN"); the voices "_VERSTEIGERUNG_INTRO_%s", "_VERSTEIGERUNG_GEBOTE" (bids, texts 0x1aa2 ..
-   0x1aa5: intro, the bid, the winner, nobody) and "_VERSTEIGERUNG_KOMMENTARE"; the winner pays (0x4c3c00 fields 0x69 / 0x6d) and the
-   opinion of the others changes (0x4c4830). ROUGH: the bid loop (slots 0x92cb74, the bid steps) is only sketched */
+/* 0x4e1a80, an auction (the scene callback of the auction event, kind 10) of the building m->auction.building among the
+   bidders m->members[0 .. used - 1] from the price m->auction.price: only for the building kinds 0xb / 0xd / 0xc (forest
+   "WALDSTUECK", mine "MINE", quarry "STEINBRUCH"; else nothing, the track is not ended). The voice banks
+   VERSTEIGERUNG_INTRO / _GEBOTE / _KOMMENTARE, the scene "Versteigerung.ed3" (the easel "ub_STAFELEI" textured by the
+   kind), one of three auctioneers at random (model, voice "M1" / "M2" / "W1", speaker -5 / -4 / -2) on "dummy_AUKTIONATOR",
+   every bidder found on his place "dummy_RP_%02i" (his head record's model). Text 0x1aa2, then up to 5 rounds: the bidders
+   answer through cm_RunSceneParty (CMAUCTION; the bids in cm_CutInfos[i].session), fewer than 2 bids end it, else the
+   highest bid leads and the price rises by 0x20 (the auctioneer's voice by how many bid, text 0x1aa3). The leader wins
+   (text 0x1aa4); the host's game sends the building's price (field 0x69) and year (0x6d), the ownership and the payment
+   (9/10 to the object 0x115 of the first building, 1/10 to the holder of office kind 0xb when there is one); with no
+   leader text 0x1aa5 and the building stays with the host */
 
-void ai_Unk4e1a80(char *m)
+void cm_RunAuction(G28REC *m)
 {
-    char buf[0x100];
-    char who[0x40];
-    int ids[8];
-    int who_ok[8];
-    char *b, *kind;
-    int i, n, bid, best, round, pl, h, v, scene;
+    char voice[4];
+    char kindName[0x40];
+    char model[0x40];
+    char buf[0x200];
+    AIBLD *b, *first;
+    AIBTYPE *t;
+    AICHAR *chars[8];
+    AICHAR *w, *holder;
+    CHARACTER *persons[8];
+    CHARACTER *auct;
+    D3OBJECT *o;
+    AIOBJ *q;
+    GMHEAD *rec;
+    CMAUCTION req;
+    float pos[4];
+    int i, k, speaker, bankIntro, bankBids, bankRemarks, behavior, enter, form;
+    int best, rounds, round, done;
 
-    b = (char *)gm_BuildQuery(1, 1, *(int *)(m + 0x7c));
+    b = (AIBLD *)gm_BuildQuery(1, 1, m->auction.building);
     best = -1;
-    scene = cm_Random(3);
+    pos[0] = 0;
+    pos[1] = 0;
+    pos[2] = 0;
+    pos[3] = 0;
+    speaker = cm_Random(3);  /* which auctioneer, then his speaker id */
     cm_PlaySpecialTrack(0);
     if (b == 0)
-        goto done;
-    kind = (char *)ai_BTypes + *(unsigned char *)b * 0x24d;
-    if (kind[0] == 0xb)
-        sprintf(who, "%s", "WALDSTUECK");
-    else if (kind[0] == 0xd)
-        sprintf(who, "%s", "MINE");
-    else if (kind[0] == 0xc)
-        sprintf(who, "%s", "STEINBRUCH");
+        return;
+    t = &ai_BTypesT[b->type];
+    if (t->kind == 0xb)
+        sprintf(kindName, "%s", "WALDSTUECK");
+    else if (t->kind == 0xd)
+        sprintf(kindName, "%s", "MINE");
+    else if (t->kind == 0xc)
+        sprintf(kindName, "%s", "STEINBRUCH");
     else
-        goto done;
-    n = *(unsigned char *)(m + 0x30);
-    for (i = 0; i < n; i++) {
-        who_ok[i] = 0;
-        ids[i] = *(int *)(m + 0x34 + i * 4);
-        who_ok[i] = gm_FindChar(ids[i]) != 0 ? 1 : 0;
+        return;
+    req.price = m->auction.price;
+    req.building = m->auction.building;
+    req.count = m->used;
+    for (i = 0; i < m->used; i++) {
+        req.bids[i] = 0;
+        chars[i] = (AICHAR *)gm_FindChar(m->members[i]);
+        req.bids[i] = chars[i] != 0 ? 0 : -1;
+        req.ids[i] = m->members[i];
     }
     for (; i < 8; i++) {
-        ids[i] = -1;
-        who_ok[i] = 0;
+        chars[i] = 0;
+        req.bids[i] = 0;
+        req.ids[i] = -1;
     }
-    cm_LoadVoiceBank(0, "VERSTEIGERUNG_INTRO.sbf");
-    cm_LoadVoiceBank(0, "VERSTEIGERUNG_GEBOTE.sbf");
-    cm_LoadVoiceBank(0, "VERSTEIGERUNG_KOMMENTARE.sbf");
+    bankIntro = cm_LoadVoiceBank("VERSTEIGERUNG_INTRO.sbf", 0);
+    bankBids = cm_LoadVoiceBank("VERSTEIGERUNG_GEBOTE.sbf", 0);
+    bankRemarks = cm_LoadVoiceBank("VERSTEIGERUNG_KOMMENTARE.sbf", 0);
     cm_LoadEventScene("Versteigerung.ed3");
-    if (d3_FindObject("ub_STAFELEI", 0, 0x40, 0) != 0) {
-        if (kind[0] == 0xb)
-            v = 0;
-        else if (kind[0] == 0xc)
-            v = 1;
-        else
-            v = 2;
-        d3if_SelectTextureSet(v, 0, 1, 2);
+    o = d3_FindObject(0, 0x40, 0, "ub_STAFELEI");
+    if (o != 0) {
+        if (t->kind == 0xb)
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, 0, 1);
+        else if (t->kind == 0xc)
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, 1, 1);
+        else if (t->kind == 0xd)
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, 2, 1);
     }
     /* the auctioneer */
-    sprintf(buf, "%s", v == 0 ? "buerger3_DICKER" : v == 1 ? "wirt2_DICKER" : "buergerin2_FRAU");
-    sprintf(buf, "%s", "W1");
-    h = d3_FindObject("dummy_AUKTIONATOR", 0, 0x100, 0);
-    if (h != 0)
-        d3_PointToWorld(0, 0, h);
-    pl = ai_Unk4e3230(0, 0);
-    if (pl != 0)
-        ch_PlaceAtObject(pl, h);
-    sprintf(who + strlen(who), "%s", "Auktionator");
-    /* the persons on the places dummy_RP_00 .. */
-    for (i = 0; i < n; i++) {
-        sprintf(buf, "dummy_RP_%02i", i);
-        h = d3_FindObject(buf, 0, 0x100, 0);
-        if (h != 0)
-            d3_PointToWorld(0, 0, h);
-        if (who_ok[i] != 0 && gm_CharNameRecord(ids[i]) != 0)
-            sprintf(buf, "%s", (char *)gm_CharNameRecord(ids[i]) + 4);
-        else if (cm_Random(3) == 1)
-            strcpy(buf, "buerger_MANN");
-        else if (cm_Random(3) == 2)
-            strcpy(buf, "buerger2_MANN");
-        else
-            strcpy(buf, "handwerker3_MANN");
-        pl = ai_Unk4e3230(0, 0);
-        if (pl != 0)
-            ch_PlaceAtObject(pl, h);
+    if (speaker == 0) {
+        sprintf(model, "%s", "buerger3_DICKER");
+        speaker = -5;
+        sprintf(voice, "%s", "M1");
+    } else if (speaker == 1) {
+        sprintf(model, "%s", "wirt2_DICKER");
+        speaker = -4;
+        sprintf(voice, "%s", "M2");
+    } else {
+        sprintf(model, "%s", "buergerin2_FRAU");
+        speaker = -2;
+        sprintf(voice, "%s", "W1");
     }
-    cm_StartEventArg("cutscenes\\auktion\\behavior_auktionator.esc", &ch_EmptyName);
-    cm_StartEventArg("cutscenes\\auktion\\Enterfly_auktion.esc", &ch_EmptyName);
-    sprintf(buf, "_VERSTEIGERUNG_INTRO_%s_00", who);
-    cm_QueueVoice(0, -1, buf, 0, -7);
-    sprintf(buf, "_VERSTEIGERUNG_INTRO_%s", who);
-    cm_QueueVoice(0x1f4, cm_Random(3), buf, 0, 0);
-    v = d2_OpenForm("cutscenes\\pacht_main", 0, 0);
-    if (cm_SkipEvents == 0)
-        d2_SetViewEnabled(v, 0);
-    ((void (*)(int, int))d2_PlaceMainWindow)(3, v);
-    d2_SetForm(0, v);
-    io_PrintText(0x1aa2, 0, 0);
-    cm_WaitEvent(0);
-    /* the bids: up to 6 rounds, the bidders raise by turns (the slots 0x92cb74 hold the bids) */
-    for (round = 0; round <= 5; round++) {
-        if (cm_WaitEvent(0) != 0)
-            break;
-        cm_RunSceneParty(m, 0);
-        if (n > 6 && cm_Random(3) != 0) {
-            cm_Random(0x200);
-            cm_Random(6, 0);
-            cm_QueueVoice(cm_Random(4), "_VERSTEIGERUNG_KOMMENTARE", 0, 0);
+    o = d3_FindObject(0, 0x100, 0, "dummy_AUKTIONATOR");
+    if (o != 0)
+        d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
+    auct = (CHARACTER *)cm_CreateChar(model, pos);
+    if (auct != 0) {
+        ch_PlaceAtObject(auct, o);
+        strcpy(auct->name, "Auktionator");
+        strcpy(auct->obj->name, "Auktionator");
+    }
+    /* the bidders on their places */
+    for (i = 0; i < m->used; i++) {
+        sprintf(buf, "dummy_RP_%02i", i);
+        o = d3_FindObject(0, 0x100, 0, buf);
+        if (o != 0)
+            d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
+        w = chars[i];
+        if (w != 0 && (rec = (GMHEAD *)gm_CharNameRecord(w->id)) != 0)
+            sprintf(buf, "%s", rec->name);
+        else {
+            k = cm_Random(3);
+            if (k == 1)
+                strcpy(buf, "buerger_MANN");
+            else if (k == 2)
+                strcpy(buf, "buerger2_MANN");
+            else
+                strcpy(buf, "handwerker3_MANN");
         }
-        for (i = 0; i < n; i++)
-            if (*(int *)(ai_Unk92caf0 + i * 0x18 + 0x84) != 0 && best < *(int *)(ai_Unk92caf0 + i * 0x18 + 0x84))
-                best = i;
-        if (best < 2 || n <= 6)
-            cm_QueueVoice(cm_Random(2), "_VERSTEIGERUNG_GEBOTE", 0, 0);
-        else
-            cm_QueueVoice(cm_Random(4), "_VERSTEIGERUNG_GEBOTE", 0, 0);
-        d2_SetForm(0, v);
-        io_PrintText(0x1aa3, 0, 5, 0, best, 0);
+        if (w != 0) {
+            persons[i] = (CHARACTER *)cm_CreateChar(buf, pos);
+            ch_PlaceAtObject(persons[i], o);
+        } else
+            persons[i] = 0;
+    }
+    behavior = cm_StartEventArg("cutscenes\\auktion\\behavior_auktionator.esc", &ch_EmptyName);
+    enter = cm_StartEventArg("cutscenes\\auktion\\Enterfly_auktion.esc", &ch_EmptyName);
+    sprintf(buf, "_VERSTEIGERUNG_INTRO_%s_00", voice);
+    cm_QueueVoice(-7, bankIntro, buf, -1, 0);
+    sprintf(buf, "_VERSTEIGERUNG_INTRO_%s", kindName);
+    k = cm_Random(3);
+    cm_QueueVoice(speaker, bankIntro, buf, k, 0x1f4);
+    form = d2_OpenForm(0, 0, "cutscenes\\pacht_main");
+    if (cm_SkipEvents != 0)
+        d2_SetViewEnabled(form, 0);
+    d2_PlaceMainWindow(form, 3);
+    d2_SetForm(form, 0);
+    io_PrintText(0x1aa2, b, req.price);
+    cm_WaitEvent(enter);
+    /* the rounds */
+    round = 0;  /* then the year of the sale */
+    done = 0;   /* then the price paid */
+    for (; round < 5 && done == 0; round++) {
+        int nbid, top;
+
+        rounds = 10 - round;
+        req.countdown = rounds;
+        top = 0;
+        nbid = 0;
+        cm_RunSceneParty(m, &req);
+        if (rounds > 6 && cm_Random(3) != 0)
+            cm_QueueVoice(cm_Random(4) != 0 ? -4 : -2, bankRemarks, "_VERSTEIGERUNG_KOMMENTARE", cm_Random(6), cm_Random(0x200) + 0x32);
+        for (i = 0; i < m->used; i++) {
+            if (cm_CutInfosT[i].session.click != 0 && chars[i] != 0) {
+                req.bids[i] = cm_CutInfosT[i].session.answer;
+                if (top < req.bids[i]) {
+                    top = req.bids[i];
+                    best = i;
+                    req.price = top;
+                }
+                nbid++;
+            } else
+                req.bids[i] = -1;
+        }
+        if (nbid < 2)
+            done = 1;
+        else if (rounds > 6) {
+            if (nbid < m->used / 2)
+                cm_QueueVoice(speaker, bankBids, "_VERSTEIGERUNG_GEBOTE", cm_Random(4) + 2, 0xfa);
+            else
+                cm_QueueVoice(speaker, bankBids, "_VERSTEIGERUNG_GEBOTE", cm_Random(2), 0xfa);
+            req.price += 0x20;
+            d2_SetForm(form, 0);
+            io_PrintText(0x1aa3, b, round + 2, 5, nbid, req.bids[best]);
+        }
         cm_WaitTicks(5);
     }
     if (best > -1) {
-        bid = ai_Time.year;
-        cm_QueueVoice(6, "_VERSTEIGERUNG_GEBOTE", 0, 0);
-        d2_SetForm(0, v);
-        io_PrintText(0x1aa4, bid, 0);
-        if (ids[best] == ai_CharInts[ai_PlayerId][0]) {
-            cm_BeginFieldBlock(0, best);
-            cm_AddFieldDelta(0, 0x69, 1, 4);
-            cm_AddFieldDelta(0, 0x6d, 1, 4);
+        done = req.bids[best];
+        round = ai_Time.year;
+        cm_QueueVoice(speaker, bankBids, "_VERSTEIGERUNG_GEBOTE", 6, 200);
+        d2_SetForm(form, 0);
+        w = chars[best];
+        io_PrintText(0x1aa4, w->id, req.price);
+        if (m->host == G20_ME) {
+            holder = 0;
+            for (i = 0; i < 768; i++) {
+                if (ai_CharsT[i].officeKind == 0xb) {
+                    holder = &ai_CharsT[i];
+                    break;
+                }
+            }
+            cm_BeginFieldBlock((char *)b, b->id);
+            cm_AddFieldDelta(4, 1, 0x69, &done);
+            cm_AddFieldDelta(4, 1, 0x6d, &round);
             cm_SendFieldDeltas();
-            cm_SendOwnership(ai_PlayerCharC, 0, 0);
-            gm_FirstBuilding(1);
-            gm_Query(0x115, 0, 6, 2, 0);
-            cm_SendMoveGoodsUnchecked(util_RandomU(5) % 5, 0, 0, 0);
+            cm_SendOwnership(b->id, ((AICHAR *)ai_PlayerChar)->netId, w->netId);
+            first = (AIBLD *)gm_FirstBuilding(1);
+            q = (AIOBJ *)gm_Query((void *)first->objList, 2, 6, 0, 0x115);
+            if (w == holder)
+                cm_SendMoveGoodsUnchecked(q->objId, w->netId, 0, (int)(req.bids[best] * 0.9f));
+            else if (holder != 0) {
+                cm_SendMoveGoodsUnchecked(q->objId, w->netId, 0, (int)(req.bids[best] * 0.9f));
+                cm_SendMoveGoodsUnchecked(holder->netId, w->netId, 0, (int)(req.bids[best] * 0.1f));
+            } else
+                cm_SendMoveGoodsUnchecked(q->objId, w->netId, 0, req.bids[best]);
         }
     } else {
-        cm_QueueVoice(7, "_VERSTEIGERUNG_GEBOTE", 0, 0);
-        d2_SetForm(0, v);
-        io_PrintText(0x1aa5, 0);
-        if (ids[0] == ai_CharInts[ai_PlayerId][0])
-            cm_SendOwnership(ai_PlayerCharC, 0, 0);
+        cm_QueueVoice(speaker, bankBids, "_VERSTEIGERUNG_GEBOTE", 7, 200);
+        d2_SetForm(form, 0);
+        io_PrintText(0x1aa5, b);
+        if (m->host == G20_ME)
+            cm_SendOwnership(b->id, ((AICHAR *)ai_PlayerChar)->netId, ((AICHAR *)ai_PlayerChar)->netId);
     }
-    cm_QueueVoice(0x1f4, 8, "_VERSTEIGERUNG_GEBOTE", 0, 0);
+    cm_QueueVoice(speaker, bankBids, "_VERSTEIGERUNG_GEBOTE", 8, 0x1f4);
     cm_WaitEvent(cm_StartEventArg("cutscenes\\auktion\\Auktion_Outro.esc", &ch_EmptyName));
-    d2_CloseView(v);
+    d2_CloseView(form);
     cm_FadeToBlack();
-    cm_WaitEvent(cm_StopScript(0));
-    for (i = 0; i < n; i++)
-        if (ai_Unk4e3230(0, 0) != 0)
-            cm_DeleteChar(0);
+    cm_StopScript(behavior);
+    cm_WaitEvent(behavior);
+    for (i = 0; i < m->used; i++)
+        if (persons[i] != 0)
+            cm_DeleteChar(persons[i]);
+    if (auct != 0)
+        cm_DeleteChar(auct);
     cm_LeaveEventScene();
     snd_ClearQueue();
-    cm_UnloadVoiceBank(0);
-done:
+    cm_UnloadVoiceBank(bankIntro);
+    cm_UnloadVoiceBank(bankBids);
+    cm_UnloadVoiceBank(bankRemarks);
     cm_EndSpecialTrack();
 }
 /* 0x4e24c0, the player's answer to an offer m (+0x20 the price, +0x24 .. the persons in the deal, +0x44 the object, +0x48 their count, +0x4c a
@@ -15345,7 +15425,7 @@ int ai_Unk4e3210(void)
 }
 /* 0x4e3230, 0x403390 (arguments, if any, are passed on untouched) unless the replay mode is on */
 
-int ai_Unk4e3230(void)
+int cm_CreateChar(void)
 {
     if (cm_SkipEvents != 0)
         return 0;
@@ -16434,7 +16514,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
-    ai_Unk4e5730(10, (int)ai_Unk4e1a80, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
+    ai_Unk4e5730(10, (int)cm_RunAuction, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }

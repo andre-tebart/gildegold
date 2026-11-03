@@ -319,6 +319,17 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
 } CMCUTINFO;
 typedef char cm_AssertCMCUTINFO[sizeof(CMCUTINFO) == 0x35c ? 1 : -1];
 
+typedef struct CMAUCTION {          /* 0x50 bytes, the state of an auction (cm_RunAuction) that cm_RunSceneParty hands to the
+                                       bidders' callbacks (ai_Unk4e24c0 the player, ai_Unk4e26d0 a computer character) */
+    int bids[8];                    /* 0x00, a bidder's bid of the last round; 0 none yet, -1 out (not found, no bid) */
+    int price;                      /* 0x20, the price asked: the start price, then the best bid (+ 0x20 after a round) */
+    int ids[8];                     /* 0x24, the bidders' netIds (G28REC.members), -1 unused */
+    int building;                   /* 0x44, the building's id (G28REC.auction.building) */
+    int count;                      /* 0x48, the number of bidders (G28REC.used) */
+    int countdown;                  /* 0x4c, the rounds counter, 10 down to 6 (a computer bidder's limit grows with it) */
+} CMAUCTION;
+typedef char cm_AssertCMAUCTION[sizeof(CMAUCTION) == 0x50 ? 1 : -1];
+
 typedef struct CMSESSIONREQ {       /* 0x1c bytes, the request of a council session vote that cm_RunSceneParty hands to the
                                        member callbacks (cm_SessionAskPlayer) */
     int mode;                       /* 0x00, 1: deposition, 2: election */
@@ -530,8 +541,12 @@ typedef struct G28REC {
         };
         int crimeState;                 /* 0x7c, of a trial: the state its crimes were handed over in (cm_CheckTrial opens them
                                            again with cm_SendHandOverCrimes) */
+        struct {                        /* 0x7c, of an auction (kind 10, cm_RunAuction) */
+            int building;               /* 0x7c, the id of the building auctioned (gm_BuildQuery 1, 1) */
+            int price;                  /* 0x80, the start price */
+        } auction;
     };
-    char pad80[0x114 - 0x80];
+    char pad84[0x114 - 0x84];
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 
