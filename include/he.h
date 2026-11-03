@@ -146,6 +146,7 @@ extern unsigned char he_FindKind;       /* 0x625708, he_FindEvent's filter on AI
 extern int he_FindId;                   /* 0x62570c, its filter on AIJOB.id (key 1), -1 = any */
 extern unsigned short he_FindChr;       /* 0x625710, its filter on AIJOB.chr (key 2), 0xffff = any */
 extern int he_FindFrom;                 /* 0x625714, its filter on AIJOB.from (key 3: the sending building), -1 = any */
+extern int he_FindUnused;               /* 0x6f2628, set 0 by he_FindEvent; nothing reads it (the name says only that) */
 extern char he_FindFirst;               /* 0x6f2624, 1 while he_Cursor stands on the first record he_FindEvent found:
                                            he_NextEvent tests it before stepping on */
 extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_OpenEventSlot), -1 = none; sv_UpdateCityPanel places the bar's end by it */

@@ -50,7 +50,6 @@ extern int ai_TransportWindow();
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
 extern int ai_GameFlags;
-extern GAPDATA full_data_6f2628[];
 extern const struct D3VECTOR d3_Origin;
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GameSwitches;
@@ -962,7 +961,7 @@ char *he_FindEvent(int n, ...)
     he_FindChr = 0xffff;
     he_FindFrom = -1;
     he_FindFirst = 1;
-    U_I((unsigned)&full_data_6f2628) = 0;
+    he_FindUnused = 0;
     va_start(ap, n);
     for (i = n; i > 0; i--) {
         kind = va_arg(ap, int);
