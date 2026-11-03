@@ -47,7 +47,7 @@ typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
 
 extern G17MSG cm_RecvPool[0x2000];     /* 0x9367e0, the free receive records */
 extern int cm_NextNetStep;                /* 0xa687e4, d3_Time of the start */
-extern unsigned char ai_Unka68800[];    /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
+extern unsigned char cm_SplitMsg[];    /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
 extern G17MSG *cm_RecvFree;            /* 0xa68c00, the free list */
 extern unsigned int cm_GroupEndSeq;       /* 0xa68c04 */
 extern int ai_Unka68c08;                /* 0xa68c08, bytes used in ai_Unka68c20.buf */
@@ -56,7 +56,7 @@ extern G17FIELDS ai_Unka68ca0;          /* 0xa68ca0 */
 extern int ai_Unka68d20;                /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
 extern G17MSG *cm_RecvQueue;            /* 0xa68d24, the received messages */
 extern char *cm_FieldObject;              /* 0xa68d2c, the object of the field block (fields are offsets into it) */
-extern int ai_Unka68d30;                /* 0xa68d30, length of ai_Unka68800 */
+extern int cm_SplitMsgLen;                /* 0xa68d30, length of cm_SplitMsg */
 extern char *ai_Unka68d34;              /* 0xa68d34 */
 extern unsigned char cm_LongMsg[];    /* 0xa68d40, a joined long message */
 extern G17MSG cm_SendRing[0x8000];     /* 0xa69140, the send ring */
@@ -162,10 +162,10 @@ void ai_ResetMessages(void);                                                    
 void cm_SendHello(void);                                                         /* 0x4c3600 */
 int cm_WaitHello(void);                                                          /* 0x4c3630 */
 int cm_FlushSendQueue(void);                                                          /* 0x4c3680 */
-int ai_Unk4c3720(void);                                                          /* 0x4c3720 */
+int cm_QueueSplit(void);                                                          /* 0x4c3720 */
 int cm_SplitComplete(G17MSG *m);                                                     /* 0x4c3850 */
 unsigned int cm_JoinSplit(G17MSG *m);                                            /* 0x4c38e0 */
-int ai_Unk4c39c0(G17MSG *src);                                                   /* 0x4c39c0 */
+int cm_QueueSend(G17MSG *src);                                                   /* 0x4c39c0 */
 int cm_GetSlotState(int h);                                                         /* 0x4c3ae0 */
 int cm_GetSlotValue(int h);                                                         /* 0x4c3b10 */
 void cm_BeginSendGroup(void);                                                         /* 0x4c3b30 */

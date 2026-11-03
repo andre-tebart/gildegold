@@ -2564,7 +2564,7 @@ int unk_Unk520310(int f)
     int i, n;
     char *q;
 
-    for (p = (int *)((unsigned)&cm_RecvPool + 0x91); (int)p < ((unsigned)&ai_Unka68800 + 0x71); p = (int *)((char *)p + 0x99)) {
+    for (p = (int *)((unsigned)&cm_RecvPool + 0x91); (int)p < ((unsigned)&cm_SplitMsg + 0x71); p = (int *)((char *)p + 0x99)) {
         LS_R((char *)p - 0x91, 0x99)
         if (*p == -1)
             *p = 0;

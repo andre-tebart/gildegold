@@ -343,7 +343,7 @@ void cm_SendHello(void)
     m.type = 3;
     *(int *)&m.data[0] = 0xa03ef57c;
     *(int *)&m.data[4] = 0;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c3630, waits for the answer to 0x4c3600; 1: none */
 
@@ -392,27 +392,27 @@ int cm_FlushSendQueue(void)
     }
     return 0;
 }
-/* 0x4c3720, queues ai_Unka68800 as parts of type 7 (0x80 bytes each); returns the seq of the first part */
+/* 0x4c3720, queues cm_SplitMsg as parts of type 7 (0x80 bytes each); returns the seq of the first part */
 
-int ai_Unk4c3720(void)
+int cm_QueueSplit(void)
 {
     G17MSG *m, *p, *last;
     unsigned int i;
     int first, off;
 
-    if (ai_Unka68d30 == 0)
+    if (cm_SplitMsgLen == 0)
         return 0;
     if (net_Conn.closed != 0)
         return 0;
     last = 0;
     first = cm_LastSeq + 1;
-    for (off = 0; off < ai_Unka68d30; off += 0x80) {
+    for (off = 0; off < cm_SplitMsgLen; off += 0x80) {
         cm_LastSeq++;
         i = cm_LastSeq & 0x7fff;
         m = &cm_SendRing[i];
         m->type = 7;
         m->size = cm_MessageSize(m);
-        memcpy(m->data, ai_Unka68800 + off, 0x80);
+        memcpy(m->data, cm_SplitMsg + off, 0x80);
         m->sender = 0;
         m->idx = i;
         m->seq = cm_LastSeq;
@@ -433,7 +433,7 @@ int ai_Unk4c3720(void)
         m->next = 0;
         last = m;
     }
-    ai_Unka68d30 = 0;
+    cm_SplitMsgLen = 0;
     return first;
 }
 /* 0x4c3850, 1 when every part of the split message m is in the receive queue (or m is a part itself / not split):
@@ -500,9 +500,16 @@ unsigned int cm_JoinSplit(G17MSG *m)
     r->next7 = 0;
     return cm_LongMsgLen;
 }
-/* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use */
+/* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use
+   @deep read in full against the original: the append was if/else inverted with a while walk from p =
+   cm_SendQueue (fixed; now 91/91 instructions, all else equal). Tried m = cm_SendRing + i (no change).
+   Left: scheduling only at +0x19: ours loads net_Conn.s into eax before computing the slot address in ebp
+   ('- mov eax,[net_Conn]; mov ebp,ebx; shl ebp,4; add ebp,ebx; ... lea ebp,[ebp+ebp*8+cm_SendRing]'), the
+   original computes it in eax first then loads net_Conn.s ('+ mov eax,ebx; shl eax,4; add eax,ebx; lea
+   ebp,[eax+eax*8+cm_SendRing]; mov eax,[net_Conn]'): the same 6 instructions, another order and temp
+   register */
 
-int ai_Unk4c39c0(G17MSG *src)
+int cm_QueueSend(G17MSG *src)
 {
     G17MSG *m, *p;
     unsigned int i;
@@ -527,18 +534,19 @@ int ai_Unk4c39c0(G17MSG *src)
         cm_LastSyncCount = m->seq;
     cm_SendStates[i].state = 0;
     cm_SendStates[i].idx = i;
-    if (cm_SendQueue == 0) {
-        cm_SendQueue = m;
-        m->prev = 0;
-    } else {
-        for (p = cm_SendQueue; p->next != 0; p = p->next)
-            ;
+    p = cm_SendQueue;
+    if (p != 0) {
+        while (p->next != 0)
+            p = p->next;
         m->prev = p;
         p->next = m;
+    } else {
+        cm_SendQueue = m;
+        m->prev = 0;
     }
     m->next = 0;
-    if (ai_Unka68d30 != 0)
-        m->next7 = ai_Unk4c3720();
+    if (cm_SplitMsgLen != 0)
+        m->next7 = cm_QueueSplit();
     return i;
 }
 /* 0x4c3ae0, the state of slot h, -1: no slot */
@@ -981,13 +989,13 @@ int ai_Unk4c4450(int a, int id)
 
 int ai_Unk4c4480(unsigned short len, void *p)
 {
-    if (ai_Unka68d30 != 0)
+    if (cm_SplitMsgLen != 0)
         return 0;
     if (len > 0x3fe)
         return 0;
-    *(unsigned short *)ai_Unka68800 = len;
-    memcpy(ai_Unka68800 + 2, p, len);
-    ai_Unka68d30 = len + 2;
+    *(unsigned short *)cm_SplitMsg = len;
+    memcpy(cm_SplitMsg + 2, p, len);
+    cm_SplitMsgLen = len + 2;
     return 1;
 }
 /* 0x4c44d0, message 8: sends the size of the load buffer that the blocks of message 9 follow (the handler
@@ -999,7 +1007,7 @@ void cm_SendLoadSize(int v)
 
     m.type = 8;
     G17_I(m, 0) = v;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4500, message 9: sends one 0x80-byte block of the load buffer (the handler of type 9 appends it);
    returns the send slot of 0x4c39c0, -1 when the ring is full (the ls.c caller tests that) */
@@ -1010,7 +1018,7 @@ int cm_SendLoadBlock(void *p)
 
     m.type = 9;
     memcpy(m.data, p, 0x80);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4540, message 5: starts a group */
 
@@ -1020,7 +1028,7 @@ void cm_BeginGroup(const char *s)
 
     m.type = 5;
     strncpy((char *)m.data, s, 0x80);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4580, message 6: ends a group */
 
@@ -1030,7 +1038,7 @@ void cm_EndGroup(const char *s)
 
     m.type = 6;
     strncpy((char *)m.data, s, 0x80);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c45c0, message 10 (0x30 bytes of p, or zeros) */
 
@@ -1051,7 +1059,7 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d)
         memcpy(&m.data[0x10], p, 0x30);
         G17_I(m, 0xc) = 1;
     }
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4650, message 0xb */
 
@@ -1068,7 +1076,7 @@ int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int 
     m.data[0x13] = f;
     m.data[0x14] = g;
     m.data[0x15] = h;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c46d0, message 0xc (two names of 0x10 bytes) */
 
@@ -1086,7 +1094,7 @@ int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned cha
     m.data[0x14] = g;
     strncpy((char *)&m.data[0x15], s1, 0x10);
     strncpy((char *)&m.data[0x25], s2, 0x10);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4770, message 0xd */
 
@@ -1097,7 +1105,7 @@ void ai_Unk4c4770(int a, int b)
     m.type = 0xd;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c47b0, message 0xe */
 
@@ -1107,7 +1115,7 @@ void ai_Unk4c47b0(short a)
 
     m.type = 0xe;
     G17_S(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c47e0, message 0xf */
 
@@ -1120,7 +1128,7 @@ void cm_SendMoveGoods(int a, int b, unsigned char c, int d)
     m.type = 0xf;
     m.data[0xc] = c;
     G17_I(m, 0xd) = d;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4830, message 0x10 */
 
@@ -1133,7 +1141,7 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d)
     m.type = 0x10;
     m.data[0xc] = c;
     G17_I(m, 0xd) = d;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4880, message 0x11 */
 
@@ -1148,7 +1156,7 @@ void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f)
     m.data[0xe] = e;
     G17_I(m, 0xf) = d;
     G17_I(m, 0x13) = f;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c48e0, message 0x12 */
 
@@ -1160,7 +1168,7 @@ void ai_Unk4c48e0(int a, short b, int c)
     m.type = 0x12;
     G17_S(m, 4) = b;
     G17_I(m, 6) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4920, message 0x13 */
 
@@ -1172,7 +1180,7 @@ void ai_Unk4c4920(int a, int b, int c)
     m.type = 0x13;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4960, message 0x14 */
 
@@ -1183,7 +1191,7 @@ void cm_SendRemoveGoods(int a, short b)
     m.type = 0x14;
     G17_I(m, 0) = a;
     G17_S(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c49a0, message 0x16: the field block (deltas) */
 
@@ -1193,7 +1201,7 @@ void cm_SendFieldDeltas(void)
 
     m.type = 0x16;
     memcpy(m.data, &ai_Unka68c20, sizeof(G17FIELDS));
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c49e0, message 0x17: the field block (values) */
 
@@ -1203,7 +1211,7 @@ void cm_SendFieldValues(void)
 
     m.type = 0x17;
     memcpy(m.data, &ai_Unka68c20, sizeof(G17FIELDS));
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4a20, message 0x18: the second field block */
 
@@ -1213,7 +1221,7 @@ void ai_SendNeedBlock(void)
 
     m.type = 0x18;
     memcpy(m.data, &ai_Unka68ca0, sizeof(G17FIELDS));
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4a60, message 0x19 */
 
@@ -1227,7 +1235,7 @@ void cm_SendSetField(int a, int b, int c, int d, int e)
     m.type = 0x19;
     G17_I(m, 0xc) = d;
     G17_I(m, 0x10) = e;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4ac0, sends message 0x1a: adds delta to the float field at the offset field of the character with the netId id */
 
@@ -1239,9 +1247,9 @@ void cm_SendFloatDelta(int id, int field, float delta)
     m.type = 0x1a;
     G17_I(m, 4) = field;
     *(float *)&m.data[8] = delta;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
-/* 0x4c4b00, sends message 0x1b: the relation of the character a to b changes by c (d: 0 / 1 / 2, the callers' kind of change), with the difficulty values; returns the send slot (ai_Unk4c39c0) */
+/* 0x4c4b00, sends message 0x1b: the relation of the character a to b changes by c (d: 0 / 1 / 2, the callers' kind of change), with the difficulty values; returns the send slot (cm_QueueSend) */
 
 int cm_SendRelations(int a, int b, int c, int d)
 {
@@ -1254,7 +1262,7 @@ int cm_SendRelations(int a, int b, int c, int d)
     G17_I(m, 0xc) = d;
     *(float *)&m.data[0x10] = ai_DifficultyScale;
     G17_I(m, 0x14) = (int)ai_DifficultyValue;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4b70, message 0x1c: msg (0xf8 bytes, AIMSG) as a long message; zeros at 0x38..0x57 become -1 */
 
@@ -1268,7 +1276,7 @@ int cm_SendLongMessage(char *msg)
         if (((int *)(msg + 0x38))[i] == 0)
             ((int *)(msg + 0x38))[i] = -1;
     ai_Unk4c4480(0xf8, msg);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4bc0, message 0x1c with len extra bytes after msg (0xf8 bytes) */
 
@@ -1285,7 +1293,7 @@ int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra)
     memcpy(buf + 0xf8, extra, len);
     ai_Unk4c4480(len + 0xf8, buf);
     mem_Free(buf);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4c60, message 0x1d about p (three AITIMEs, its name from ai_Unk625820); p + 0xac as the long message */
 
@@ -1301,7 +1309,7 @@ void cm_SendExSetHE(unsigned char k, char *p)
     m.data[0x2e] = k;
     strcpy((char *)&m.data[0x2f], ai_Unk625820[*(unsigned char *)p]);
     ai_Unk4c4480(0xa0, p + 0xac);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4d40, message 0x1e with the time t; -1: t is not valid (0x4fe210) */
 
@@ -1313,7 +1321,7 @@ int cm_SendTime(char *t)
         return -1;
     *(G17T14 *)m.data = *(G17T14 *)t;
     m.type = 0x1e;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4db0, sends message 0x20 (the extended system message, handled by cm_ExSysMessage): sub type id and 0x7c bytes of msg */
 
@@ -1325,7 +1333,7 @@ int cm_SendExSysMessage(unsigned char id, void *msg)
     m.data[0] = id;
     if (msg != 0)
         memcpy(&m.data[1], msg, 0x7c);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4e00, message 0x21 */
 
@@ -1336,7 +1344,7 @@ void cm_SendKillCharacter(int a, int b)
     m.type = 0x21;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4e40, sends message 0x22, a new crime: the CRIME record p (0x2d bytes) with the id ai_NextCrimeId, the state 1 and a random seed; the send's result */
 
@@ -1349,9 +1357,9 @@ int cm_SendCrime(void *p)
     G17_I(m, 0) = ai_NextCrimeId;
     G17_I(m, 0x25) = 1;
     G17_I(m, 0x29) = rand();
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
-/* 0x4c4e90, sends message 0x23 (crime id a, force b: retire the crime record, ai_Unk4c9090); the send slot of ai_Unk4c39c0 */
+/* 0x4c4e90, sends message 0x23 (crime id a, force b: retire the crime record, ai_Unk4c9090); the send slot of cm_QueueSend */
 
 int cm_SendRetireCrime(int a, int b)
 {
@@ -1360,7 +1368,7 @@ int cm_SendRetireCrime(int a, int b)
     m.type = 0x23;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4ed0, message 0x24 */
 
@@ -1371,7 +1379,7 @@ void cm_SendProofExecuted(int a, int b)
     m.type = 0x24;
     G17_I(m, 4) = b;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4f10, message 0x25 */
 
@@ -1383,7 +1391,7 @@ void ai_Unk4c4f10(int a, int b, int c)
     m.type = 0x25;
     G17_I(m, 0) = a;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4f50, "cm_RequestSendCutInfo": message 0x26 */
 
@@ -1396,7 +1404,7 @@ void ai_Unk4c4f50(int id, int b)
     G17_I(m, 0) = id;
     G17_I(m, 4) = b;
     sprintf(buf, "cm_RequestSendCutInfo(): PlayerId:%i Time:%i", id, d3_Time);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c4fa0, message 0x27: p (0x114 bytes) as the long message */
 
@@ -1406,7 +1414,7 @@ int cm_SendNewParty(void *p)
 
     m.type = 0x27;
     ai_Unk4c4480(0x114, p);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4fd0, message 0x2a */
 
@@ -1417,7 +1425,7 @@ void ai_Unk4c4fd0(int a, int b)
     m.type = 0x2a;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5010, message 0x2b */
 
@@ -1429,7 +1437,7 @@ void cm_SendMoveObject(int a, int b, int c)
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5050, message 0x2c */
 
@@ -1444,7 +1452,7 @@ void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char
     G17_S(m, 0xa) = d;
     m.data[0xc] = e;
     G17_I(m, 0xd) = f;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c50b0, message 0x2d */
 
@@ -1456,7 +1464,7 @@ void ai_Unk4c50b0(int a, int b, short c)
     G17_I(m, 8) = b;
     m.type = 0x2d;
     G17_I(m, 4) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5100, sends message 0x2e: its handler (0x4c97c0) gives the person "sp_<a>" the walk action 0x2d to (b, c) in scene d */
 
@@ -1469,7 +1477,7 @@ void cm_SendChrWalkTo(int a, int b, int c, int d)
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
     G17_I(m, 0xc) = d;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5150, message 0x2f with a name */
 
@@ -1482,7 +1490,7 @@ void cm_RequestChrMove(int a, int b, int c, const char *s)
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
     strcpy((char *)&m.data[0xc], s);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c51b0, "cm_RequestChrMoveToUniverse": message 0x30 with a dummy name (< 0x20 characters) */
 
@@ -1498,7 +1506,7 @@ void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s)
         strcpy((char *)&m.data[0xc], s);
     else
         err_Message("cm_RequestChrMoveToUniverse(): dummyname is too long...");
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5230, sends message 0x31: its handler (0x4c9c10) stops the actions of the person "sp_<a>" */
 
@@ -1508,7 +1516,7 @@ void cm_SendChrStop(int a)
 
     m.type = 0x31;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5260, message 0x33 */
 
@@ -1519,7 +1527,7 @@ void ai_Unk4c5260(int a, int b)
     m.type = 0x33;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c52a0, message 0x34 */
 
@@ -1531,7 +1539,7 @@ void ai_Unk4c52a0(int a, int b, int c)
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1) */
 
@@ -1572,7 +1580,7 @@ int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const c
             G17_I(m, 8) = -1;
         }
     }
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5410, message 0x37 with a name */
 
@@ -1584,7 +1592,7 @@ void ai_Unk4c5410(int a, const char *s, unsigned char c)
     G17_I(m, 0) = a;
     m.data[0x34] = c;
     strncpy((char *)&m.data[4], s, 0x2f);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5460, sends message 0x36: its handler (0x4ca8a0) lets the person "sp_<a>" use the gates of building b (room object c) */
 
@@ -1596,7 +1604,7 @@ void cm_SendChrUseGates(int a, int b, int c)
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c54a0, message 0x38 */
 
@@ -1608,7 +1616,7 @@ void cm_SendOwnership(int a, int b, int c)
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c54e0, message 0x3a */
 
@@ -1618,7 +1626,7 @@ void ai_Unk4c54e0(int a)
 
     m.type = 0x3a;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5510, message 0x3b */
 
@@ -1628,7 +1636,7 @@ void cm_SendBuildingDestroyed(int a)
 
     m.type = 0x3b;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5540, message 0x39 (b first) */
 
@@ -1639,7 +1647,7 @@ void cm_SendBoss(int a, int b)
     m.type = 0x39;
     G17_I(m, 4) = a;
     G17_I(m, 0) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5580, message 0x3c */
 
@@ -1652,7 +1660,7 @@ void ai_Unk4c5580(int a, int b, int c, int d)
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
     G17_I(m, 0xc) = d;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c55d0, message 0x3d about p at (c, d) */
 
@@ -1681,7 +1689,7 @@ int cm_SendMessage3d(char *p, unsigned char b, int c, int d)
     m.data[8] = b;
     m.data[0xd] = (unsigned char)c;
     m.data[0xe] = (unsigned char)d;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5690, message 0x3e: the character a and a text, the model name it takes (reasoned guess: its one caller,
    gm_DailyCharacters, sends "stallbursche_MANN" / "magd_FRAU" by the sex when a character comes of age) */
@@ -1693,7 +1701,7 @@ void cm_SendCharModel(int a, const char *s)
     G17_I(m, 0) = a;
     m.type = 0x3e;
     strcpy((char *)&m.data[4], s);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c56d0, message 0x3f: k and 0x80 bytes of p */
 
@@ -1704,7 +1712,7 @@ void cm_SendGoodsRecord(void *p, unsigned char k)
     m.type = 0x3f;
     m.data[0] = k;
     memcpy(&m.data[1], p, 0x80);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5710, message 0x40: the differences of p (0x80 bytes) to the object k / id of list k */
 
@@ -1728,7 +1736,7 @@ void cm_SendGoodsDelta(char *p, unsigned char k)
     m.data[0] = k;
     *(float *)&m.data[0x17] = *(float *)(t + 0x2c);
     *(float *)&m.data[0x1b] = *(float *)(t + 0x38);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5800, message 0x41 (0x3a bytes of p) */
 
@@ -1738,7 +1746,7 @@ void cm_SendMessage41(void *p)
 
     m.type = 0x41;
     memcpy(m.data, p, 0x3a);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5840, message 0x42 */
 
@@ -1748,7 +1756,7 @@ void ai_Unk4c5840(int a)
 
     m.type = 0x42;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5870, message 0x43 */
 
@@ -1758,7 +1766,7 @@ void ai_Unk4c5870(int a)
 
     m.type = 0x43;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c58a0, message 0x44: sends the office application (the int id, the two office bytes and the kind of p, G17B7) and returns the
    send slot of 0x4c39c0 */
@@ -1769,7 +1777,7 @@ int cm_SendApplication(char *p)
 
     m.type = 0x44;
     *(G17B7 *)m.data = *(G17B7 *)p;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c58e0, message 0x45: sends the 15-byte office record p (amt_SendOfficeMessage's AMTMSG; the int id, the two character ids, the
    kind and the code) and returns the send slot of 0x4c39c0 */
@@ -1780,7 +1788,7 @@ int cm_SendOfficeRecord(char *p)
 
     m.type = 0x45;
     *(G17B15 *)m.data = *(G17B15 *)p;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5930, sends message 0x46, an AI decision record's new value (the 9 bytes of p, a GVDECMSG of gv_SetTableRecord); the send's result */
 
@@ -1790,7 +1798,7 @@ int cm_SendDecisionValue(char *p)
 
     m.type = 0x46;
     *(G17B9 *)m.data = *(G17B9 *)p;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5970, message 0x47 */
 
@@ -1802,7 +1810,7 @@ void ai_Unk4c5970(int a, int b, int c)
     m.type = 0x47;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c59b0, sends message 0x48: its handler (0x4cb9b0) gives the character id the job (gm_SetJob) */
 
@@ -1813,7 +1821,7 @@ void cm_SendSetJob(int id, int job)
     m.type = 0x48;
     G17_I(m, 0) = id;
     m.data[4] = job;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c59f0, message 0x49 with a text */
 
@@ -1829,7 +1837,7 @@ void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char 
     m.type = 0x49;
     m.data[0x10] = e;
     strcpy((char *)&m.data[0x16], s);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5a70, message 0x4a */
 
@@ -1839,7 +1847,7 @@ void ai_Unk4c5a70(int a)
 
     m.type = 0x4a;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5aa0, message 0x4b (0x80 bytes of p) */
 
@@ -1849,7 +1857,7 @@ void cm_SendChat(void *p)
 
     m.type = 0x4b;
     memcpy(m.data, p, 0x80);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5ae0, "cm_RequestCreateGeb": message 0x4c, a building of kind k at pos */
 
@@ -1871,7 +1879,7 @@ int cm_RequestCreateGeb(int a, int k, float *pos, int *v)
     G17_I(m, 0x1d) = v[1];
     G17_I(m, 0x21) = v[2];
     sprintf(buf, "cm_RequestCreateGeb(): pos %f   %f   %f", pos[0], pos[1], pos[2]);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5b90, message 0x4d */
 
@@ -1881,7 +1889,7 @@ void ai_Unk4c5b90(int a)
 
     m.type = 0x4d;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5bc0, message 0x4e with two texts */
 
@@ -1897,7 +1905,7 @@ void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2)
         strcpy((char *)&m.data[0x20], s2);
     else
         m.data[0x20] = 0;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *ai_Unk6f0d90) */
 
@@ -1912,7 +1920,7 @@ void ai_Unk4c5c40(int a, void *p)
     else
         G17_I(m, 0x30) = *ai_Unk6f0d90;
     memcpy(&m.data[4], p, 0x2c);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5ca0, message 0x51, as 0x4c5c40 */
 
@@ -1927,7 +1935,7 @@ void ai_Unk4c5ca0(int a, void *p)
     else
         G17_I(m, 0x30) = *ai_Unk6f0d90;
     memcpy(&m.data[4], p, 0x2c);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5d00, message 0x52 */
 
@@ -1939,7 +1947,7 @@ void ai_Unk4c5d00(int a, int b, int c)
     m.type = 0x52;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5d40, message 0x53 (0x14 bytes of p) */
 
@@ -1949,7 +1957,7 @@ void cm_SendScriptMessage(void *p)
 
     m.type = 0x53;
     memcpy(m.data, p, 0x14);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5d80, message 0x54 (three ints of p) */
 
@@ -1959,7 +1967,7 @@ void cm_SendTableRequest(int *p)
 
     m.type = 0x54;
     *(G17B12 *)m.data = *(G17B12 *)p;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5dc0, message 0x55: 0x2c bytes of p, the position / direction of o's model; k 2: also the id of 0x4ce130 */
 
@@ -1987,7 +1995,7 @@ void ai_Unk4c5dc0(char *o, int k, void *p)
                 G17_I(m, 0x4d) = *(int *)(r + 0x24);
         }
     }
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5e80, message 0x56 (0x28 bytes of p) */
 
@@ -1997,7 +2005,7 @@ void cm_SendMessage56(void *p)
 
     m.type = 0x56;
     memcpy(m.data, p, 0x28);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5ec0, message 0x57 */
 
@@ -2007,7 +2015,7 @@ void ai_Unk4c5ec0(int a)
 
     m.type = 0x57;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5ef0, message 0x58 */
 
@@ -2017,7 +2025,7 @@ void ai_Unk4c5ef0(int a)
 
     m.type = 0x58;
     G17_I(m, 0) = a;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5f20, message 0x59 (0x48 bytes of p) */
 
@@ -2027,7 +2035,7 @@ void ai_Unk4c5f20(void *p)
 
     m.type = 0x59;
     memcpy(m.data, p, 0x48);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5f60, message 0x5a */
 
@@ -2038,7 +2046,7 @@ void cm_SendMoneyDelta(int a, int b)
     m.type = 0x5a;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5fa0, message 0x5b */
 
@@ -2050,7 +2058,7 @@ void cm_SendMessage5b(int a, int b, int c)
     m.type = 0x5b;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c5fe0, message 0x5c: the 10-byte trade record p (the office-swap request of amt_SendOfficeSwap) */
 
@@ -2060,7 +2068,7 @@ void cm_SendTradeMessage(char *p)
 
     m.type = 0x5c;
     *(G17B10 *)m.data = *(G17B10 *)p;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c6020, message 0x5d */
 
@@ -2072,7 +2080,7 @@ void ai_Unk4c6020(int a, int b, int c)
     m.type = 0x5d;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c6060, message 0x5e: o's id (+1) and 0x1c bytes of p */
 
@@ -2083,7 +2091,7 @@ void ai_Unk4c6060(char *o, void *p)
     G17_I(m, 4) = *(int *)(o + 1);
     m.type = 0x5e;
     memcpy(&m.data[8], p, 0x1c);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c60b0, message 0x60 (0x1f bytes of p) */
 
@@ -2093,9 +2101,9 @@ void cm_SendGraveOrder(void *p)
 
     m.type = 0x60;
     memcpy(m.data, p, 0x1f);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
-/* 0x4c60f0, message 0x61 (0x19 bytes of p), the slot handle ai_Unk4c39c0 returns */
+/* 0x4c60f0, message 0x61 (0x19 bytes of p), the slot handle cm_QueueSend returns */
 
 int cm_SendGraveMove(void *p)
 {
@@ -2103,7 +2111,7 @@ int cm_SendGraveMove(void *p)
 
     m.type = 0x61;
     memcpy(m.data, p, 0x19);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c6130, message 0x62 (0x19 bytes of p) */
 
@@ -2113,7 +2121,7 @@ void cm_SendRaiseDead(void *p)
 
     m.type = 0x62;
     memcpy(m.data, p, 0x19);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c6170, message 99 (0x24 bytes of p) */
 
@@ -2123,7 +2131,7 @@ void cm_SendCreateAlchemist(void *p)
 
     m.type = 99;
     memcpy(m.data, p, 0x24);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c61b0, message 100 (0x18 bytes of p) */
 
@@ -2133,7 +2141,7 @@ void cm_SendCommand(void *p)
 
     m.type = 100;
     memcpy(m.data, p, 0x18);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c61f0, message 0x65 */
 
@@ -2144,9 +2152,9 @@ void ai_Unk4c61f0(int *p, char *q)
     m.type = 0x65;
     G17_I(m, 0) = *p;
     G17_I(m, 4) = *(int *)(q + 4);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
-/* 0x4c6230, message 0x66 (two ints of p); returns what ai_Unk4c39c0 returns */
+/* 0x4c6230, message 0x66 (two ints of p); returns what cm_QueueSend returns */
 
 int ai_Unk4c6230(int *p)
 {
@@ -2155,10 +2163,10 @@ int ai_Unk4c6230(int *p)
     m.type = 0x66;
     G17_I(m, 0) = p[0];
     G17_I(m, 4) = p[1];
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c6260, sends message 0x67, the 0x80 bytes of p: cannon balls fired at a building (GVSHOTMSG, gv.c gv_SendShots; the receiver
-   starts them in the effect slot, gv.c 0x4eee00); returns what ai_Unk4c39c0 returns */
+   starts them in the effect slot, gv.c 0x4eee00); returns what cm_QueueSend returns */
 
 int cm_SendShots(void *p)
 {
@@ -2166,7 +2174,7 @@ int cm_SendShots(void *p)
 
     m.type = 0x67;
     memcpy(m.data, p, 0x80);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c62a0, message 0x68: the route points pts (0x40 bytes each, next at +0x3c) of o as the long message */
 
@@ -2187,7 +2195,7 @@ void ai_Unk4c62a0(char *o, char *pts)
         pts = next;
     }
     ai_Unk4c4480(G17_I(m, 4) << 6, buf);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c6320, message 0x69: o's id (+2) */
 
@@ -2197,7 +2205,7 @@ void ai_Unk4c6320(char *o)
 
     m.type = 0x69;
     G17_I(m, 0) = *(int *)(o + 2);
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4c6350, check of message 0xf: 1 if the owner of id has less than the amount of item k */
 
@@ -6250,7 +6258,7 @@ int cm_LobbyRequestList()
     memset(m.data, 0, 0x80);
     G17_I(m, 0) = 0;
     m.type = 0x5f;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4cd650, kind 1: this player's ready flag v; returns the send slot */
 
@@ -6263,7 +6271,7 @@ int cm_LobbySetReady(int v)
     m.type = 0x5f;
     G17_I(m, 0) = 1;
     G17_I(m, 8) = v;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4cd6a0, kind 3: this player leaves the lobby; returns the send slot */
 
@@ -6275,7 +6283,7 @@ int cm_LobbyLeave()
     m.type = 0x5f;
     G17_I(m, 0) = 3;
     G17_I(m, 4) = ai_Unk9367d0;
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4cd6e0, kind 6: a chat line (0x3f characters) of this player to the player id to (0: everybody); returns the
    send slot */
@@ -6296,7 +6304,7 @@ int cm_LobbySendChat(int to, char *text)
     t.name[0x3f] = 0;
     G17_I(m, 0) = 6;
     memcpy(&m.data[4], &t, 0x48);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4cd760, kind 2: this player joins with the record p (its id is set here); returns the send slot */
 
@@ -6309,7 +6317,7 @@ int cm_LobbyJoin(CMLOBBYPLAYER *p)
     p->id = ai_Unk9367d0;
     G17_I(m, 0) = 2;
     memcpy(&m.data[4], p, 0x57);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4cd7c0, kind 4: this player's changed record p (its id is set here); returns the send slot */
 
@@ -6322,7 +6330,7 @@ int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p)
     p->id = ai_Unk9367d0;
     G17_I(m, 0) = 4;
     memcpy(&m.data[4], p, 0x57);
-    return ai_Unk4c39c0(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4cd820, kind 5 */
 
@@ -6334,7 +6342,7 @@ void ai_Unk4cd820(int v)
     m.type = 0x5f;
     G17_I(m, 0) = 5;
     G17_I(m, 4) = v;
-    ai_Unk4c39c0(&m);
+    cm_QueueSend(&m);
 }
 /* 0x4cd870, the handler of type 0x5f (also 0x4cce00): data[0] is the kind (0..6) of the player list message */
 
@@ -14976,7 +14984,7 @@ extern int ai_Unk9367d4;
 extern G17MSG cm_RecvPool[0x2000];
 extern int cm_LastSyncCount;
 extern int cm_NextNetStep;
-extern unsigned char ai_Unka68800[1024];
+extern unsigned char cm_SplitMsg[1024];
 extern G17MSG * cm_RecvFree;
 extern unsigned int cm_GroupEndSeq;
 extern int ai_Unka68c08;
@@ -14986,7 +14994,7 @@ extern unsigned int ai_Unka68d1c;
 extern int ai_Unka68d20;
 extern G17MSG * cm_RecvQueue;
 extern char * cm_FieldObject;
-extern int ai_Unka68d30;
+extern int cm_SplitMsgLen;
 extern char * ai_Unka68d34;
 extern unsigned char cm_LongMsg[1024];
 extern G17MSG cm_SendRing[0x8000];
@@ -15223,7 +15231,7 @@ int ai_Unk9367d4 = 0;  /* 0x9367d4 */
 G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
 int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 int cm_NextNetStep = 0;  /* 0xa687e4, d3_Time of the start */
-unsigned char ai_Unka68800[1024] = {0};  /* 0xa68800, a long message to split (ai_Unka68d30 bytes) */
+unsigned char cm_SplitMsg[1024] = {0};  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
 G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
 unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
 int ai_Unka68c08 = 0;  /* 0xa68c08, bytes used in ai_Unka68c20.buf */
@@ -15233,7 +15241,7 @@ unsigned int ai_Unka68d1c = 0;  /* 0xa68d1c, "cm_LastRequCount" */
 int ai_Unka68d20 = 0;  /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
 G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
 char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
-int ai_Unka68d30 = 0;  /* 0xa68d30, length of ai_Unka68800 */
+int cm_SplitMsgLen = 0;  /* 0xa68d30, length of cm_SplitMsg */
 char * ai_Unka68d34 = 0;  /* 0xa68d34 */
 unsigned char cm_LongMsg[1024] = {0};  /* 0xa68d40, a joined long message */
 G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
