@@ -49,7 +49,9 @@ typedef struct GMBTYPE {
     unsigned char objCount;             /* 0x022, the entries of objs used (gm_LayoutTree) */
     unsigned short objs[0x40];          /* 0x023, the objects the type can hold, goods ids (bit 15 = flag) */
     unsigned short parents[0x40][2];    /* 0x0a3, the two goods each of objs needs first (gm_LayoutTree's tree) */
-    char pad1a3[0xa6];
+    char pad1a3[0xa4];
+    unsigned char level;                /* 0x247, the type's level 1 .. 3 (ai.h AIBTYPE.level / cap247) */
+    unsigned char maxLevel;             /* 0x248, the highest level of the type's line (ai.h AIBTYPE.maxLevel) */
     int baseValue;                      /* 0x249, the type's own value, x 0xf00 the base of gm_EquipmentValue (reasoned: the worth before the equipment) */
 } GMBTYPE;
 #pragma pack(pop)
