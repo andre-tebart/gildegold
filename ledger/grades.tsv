@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at c76055d: VC6 declaration-set tie-break: adding the typedef GMPLAYERSLOT to f3gm_types.h (d3_engine.c includes it through f3gm.h and uses none of it) swaps two independent loads (mov esi,[ebp-4] / mov ebx,[ebp+8] and mov eax,[ebp-4] / mov edx,[ebp-8]); the match was no evidence of the source. The type names ai_PlayerSlots' money good for cm_ExSellObjekt. [waits for: d3_engine.c's head (its includes settling)]
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		

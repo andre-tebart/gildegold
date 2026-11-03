@@ -154,6 +154,17 @@ typedef struct GMPOINT {
     int value;
 } GMPOINT;
 
+/* a player slot (0x2f4 bytes, four of them at ai_PlayerSlots 0x7e3f40, declared char[4][0x2f4]) as far as known */
+typedef struct GMPLAYERSLOT {
+    char pad000[0x54];
+    unsigned short moneyGood;           /* 0x54, the good the player's money is counted in (cm.c 0x4c70b0 pays a sale's price
+                                           with gm_AddObjekt / gm_TakeObjekt of it) */
+    char pad056[0xe];
+    GMPOINT tableA[10];                 /* 0x64, the yearly tables gm_UpdatePrices interpolates */
+    GMPOINT tableB[10];                 /* 0xb4 */
+    char pad104[0x1f0];
+} GMPLAYERSLOT;
+
 /* a player's line of the ranking gm_RankPlayers fills (0x24 bytes; the names from its log format 0x61ac40) */
 typedef struct GMRANK {
     unsigned short id;                  /* 0x00, the character index */

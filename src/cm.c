@@ -96,6 +96,8 @@ extern GAPDATA full_data_92bcb8[];
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
+#define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (cm.h: char[][0x21c]) as the AICHAR records they are */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
@@ -2760,16 +2762,37 @@ int ai_Unk4c7010(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4c70b0, handler of type 0x11, "cm_ExSellObjekt": moves n of item from data[4] (seller) to data[0] (buyer) at
-   the price data[0x13] each (money in the player good k) */
+/* 0x4c70b0, handler of type 0x11, "cm_ExSellObjekt": moves count of the goods item from the seller (a building's,
+   an object's or a character's list, gm_FindById) to the buyer; with a price, the buyer pays count * price in the
+   money good of the player slot to the seller (gm_TakeObjekt / gm_AddObjekt) and both book it. A store (an object of
+   kind 0x2a / 0x116) of the own player character gives the status text of its building and a sound
+   @deep Read whole against 0x4c70b0..0x4c78bd and rewritten typed (G17SELLMSG, AIOBJ / AIBLD / AICHAR /
+   GMSTOCK / GMPLAYERSLOT): the same calls in the same order with the same arguments, stores, constants and
+   strings; fixed on the way: one buf[0x200] for the sprintf texts and the status text (frame 0x228 now
+   equal), the reserve check as one expression (the original spills the ListStock term), the room check of
+   the buyer object shared by the store kinds and 0x1dd (one gm_FreeCapacity call), the goods record taken
+   before o2->count++. Left: block layout and scheduling - the y2 = y store is laid out after the room
+   check (0x4c735d, the original inline with a jmp), the return-1 tails the original shares (0x4c7594 /
+   0x4c77ad jump to +0x66d, ours inline), the gm_TakeObjekt / txt_Format argument loads in another order
+   (0x4c768b, 0x4c7865), register renamings (0x4c766f, 0x4c76d1, 0x4c77ed, 0x4c7841). Tried: if / else-if /
+   goto forms of the room check (this one the closest, 179 -> 173 ins). (size: 7 of the instruction
+   difference are shared / inline tails) */
 
-int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
+int cm_ExSellObjekt(G17MSG *m, G17STAT *s)
 {
-    char *r1, *y, *o2, *ys, *y2, *x2, *z, *x1, *o, *r2, *g;
-    int *p, *q;
-    unsigned int t;
-    char buf[0x100];
-    char text[0x7c];
+    AICHAR *r1;
+    AIOBJ *y;
+    AIOBJ *o2;
+    AIOBJ *ys;
+    AIOBJ *y2;
+    AIBLD *x2;
+    AICHAR *z;
+    AIBLD *x1;
+    int *p;
+    AIOBJ *o;
+    AICHAR *r2;
+    int *q;
+    char buf[0x200];
 
     r1 = 0;
     y = 0;
@@ -2783,169 +2806,174 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
     o = 0;
     r2 = 0;
     if (net_Conn.s != INVALID_SOCKET)
-        ai_NextObjectId = *(int *)&m->data[0xa];
-    if (*(int *)&m->data[4] != -1) {
-        *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
-        if (gm_FindById(&x1, &y, &z, *(int *)&m->data[4]) == 0)
+        ai_NextObjectId = m->sell.objectId;
+    if (m->sell.seller != -1) {
+        m->sell.seller = cm_ResolveId((int)m, m->sell.seller);
+        if (gm_FindById((int *)&x1, (int *)&y, (int *)&z, m->sell.seller) == 0)
             return 1;
         if (x1 != 0) {
-            p = (int *)(x1 + 0x5d);
-            if (*(unsigned short *)(x1 + 0x27) != 0xffff)
-                r1 = ai_Chars[*(unsigned short *)(x1 + 0x27)];
+            p = &x1->objList;
+            if (x1->owner != 0xffff)
+                r1 = &ai_CharsT[x1->owner];
             else
                 r1 = 0;
         } else if (y != 0) {
-            if (*(short *)y == 0x2a || *(short *)y == 0x1db || *(short *)y == 0x1dc || *(short *)y == 0x116 || *(short *)y == 0x1dd)
+            if (y->type == 0x2a || y->type == 0x1db || y->type == 0x1dc || y->type == 0x116 || y->type == 0x1dd)
                 ys = y;
-            p = (int *)(y + 0x14);
-            r1 = gm_ObjectBuildingOwner(y);
+            p = &y->list;
+            r1 = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)y);
             if (r1 == 0)
                 return 1;
         } else {
             r1 = z;
-            p = (int *)(z + 0x178);
+            p = &z->inventory;
         }
-        o = gm_Query(*p, 1, 0, *(unsigned short *)&m->data[8]);
+        o = (AIOBJ *)gm_Query((void *)*p, 1, 0, m->sell.item);
         if (o == 0) {
-            sprintf(buf, "cm_ExSellObjekt(): Object not found: ObjProt:%i Menge:%i CmdCnt:", *(unsigned short *)&m->data[8], *(int *)&m->data[0xf], m->seq);
+            sprintf(buf, "cm_ExSellObjekt(): Object not found: ObjProt:%i Menge:%i CmdCnt:", m->sell.item, m->sell.count, m->seq);
             return 1;
         }
-        if (ys != 0 && gm_ListAmount(ys, o) < *(int *)&m->data[0xf]) {
-            sprintf(buf, "cm_ExSellObjekt() Not enough Objekts at source: ObjProt:%i Menge:%i CmdCnt:%i", *(unsigned short *)&m->data[8], *(int *)&m->data[0xf], m->seq);
+        if (ys != 0 && gm_ListAmount((short *)ys, (char *)o) < m->sell.count) {
+            sprintf(buf, "cm_ExSellObjekt() Not enough Objekts at source: ObjProt:%i Menge:%i CmdCnt:%i", m->sell.item, m->sell.count, m->seq);
             return 1;
         }
-        if (*(int *)(o + 0xe) < *(int *)&m->data[0xf]) {
-            sprintf(buf, "cm_ExSellObjekt() Not enough Objekts at source: ObjProt:%i Menge:%i CmdCnt:%i", *(unsigned short *)&m->data[8], *(int *)&m->data[0xf], m->seq);
+        if (o->count < m->sell.count) {
+            sprintf(buf, "cm_ExSellObjekt() Not enough Objekts at source: ObjProt:%i Menge:%i CmdCnt:%i", m->sell.item, m->sell.count, m->seq);
             return 1;
         }
-        if (*(int *)&m->data[0x13] != 0 && r1 != 0)
-            gm_SumSlotAmounts(*(int *)(r1 + 0x178), m->data[0xe]);
+        if (m->sell.price != 0 && r1 != 0)
+            gm_SumSlotAmounts((void *)r1->inventory, m->sell.player);
     }
-    if (*(int *)&m->data[0] != -1) {
-        *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
-        if (gm_FindById(&x2, &y, &z, *(int *)&m->data[0]) == 0)
+    if (m->sell.buyer != -1) {
+        m->sell.buyer = cm_ResolveId((int)m, m->sell.buyer);
+        if (gm_FindById((int *)&x2, (int *)&y, (int *)&z, m->sell.buyer) == 0)
             return 1;
         if (x2 != 0) {
-            q = (int *)(x2 + 0x5d);
-            if (*(unsigned short *)(x2 + 0x27) != 0xffff)
-                r2 = ai_Chars[*(unsigned short *)(x2 + 0x27)];
+            q = &x2->objList;
+            if (x2->owner != 0xffff)
+                r2 = &ai_CharsT[x2->owner];
             else
                 r2 = 0;
         } else if (y != 0) {
-            if (*(short *)y == 0x2a || *(short *)y == 0x1db || *(short *)y == 0x1dc || *(short *)y == 0x116) {
+            if (y->type == 0x2a || y->type == 0x1db || y->type == 0x1dc || y->type == 0x116) {
                 y2 = y;
-                if (gm_FreeCapacity(y, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]) < *(int *)&m->data[0xf])
-                    return 1;
-            } else if (*(short *)y == 0x1dd) {
-                if (gm_FreeCapacity(y, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]) < *(int *)&m->data[0xf])
+                goto room;
+            }
+            if (y->type == 0x1dd) {
+            room:
+                if (gm_FreeCapacity((short *)y, m->sell.item, m->sell.count) < m->sell.count)
                     return 1;
             }
-            q = (int *)(y + 0x14);
-            r2 = gm_ObjectBuildingOwner(y);
+            q = &y->list;
+            r2 = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)y);
         } else {
-            q = (int *)(z + 0x178);
+            q = &z->inventory;
             r2 = z;
         }
-        if (ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 0x1d)
+        if (ai_GoodsT[m->sell.item].type == 0x1d)
             o2 = 0;
         else
-            o2 = gm_Query(*q, 1, 0, *(unsigned short *)&m->data[8]);
-        if (*(int *)&m->data[0x13] != 0 && r2 != 0) {
-            if (gm_SumSlotAmounts(*(int *)(r2 + 0x178), m->data[0xe]) < *(int *)&m->data[0xf] * *(int *)&m->data[0x13])
+            o2 = (AIOBJ *)gm_Query((void *)*q, 1, 0, m->sell.item);
+        if (m->sell.price != 0 && r2 != 0) {
+            if (gm_SumSlotAmounts((void *)r2->inventory, m->sell.player) < m->sell.count * m->sell.price)
                 return 1;
         }
     }
     if (ys != 0) {
         if (r2 == 0)
             goto money;
-        if (gm_ObjectBuildingOwner(o) != r2 && *(int *)(o + 0x1c) != 0) {
-            t = (unsigned int)(gm_ListStock(ys, *(unsigned short *)o) * *(int *)(o + 0x1c)) >> 2;
-            if ((unsigned int)(gm_ListAmount(ys, o) - t) < (unsigned int)*(int *)&m->data[0xf])
+        if ((AICHAR *)gm_ObjectBuildingOwner((unsigned short *)o) != r2 && o->reserve != 0) {
+            if (gm_ListAmount((short *)ys, (char *)o) - ((unsigned int)(gm_ListStock((short *)ys, o->type) * o->reserve) >> 2)
+                < (unsigned int)m->sell.count)
                 return 1;
         }
     }
     if (r2 != 0 && x2 == 0 && y2 == 0 && y == 0) {
-        *(int *)&m->data[0xf] = gm_TakeableCount(r2, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]);
-        if (*(int *)&m->data[0xf] == 0)
+        m->sell.count = gm_TakeableCount((char *)r2, m->sell.item, m->sell.count);
+        if (m->sell.count == 0)
             return 1;
     }
 money:
-    if (*(int *)&m->data[0x13] != 0) {
-        if (y2 == 0 && y != 0 && *(short *)y == 0x1dd) {
-            g = gm_FindGoods(ai_OwnPlayer, *(unsigned short *)&m->data[8]);
+    if (m->sell.price != 0) {
+        GMSTOCK *g;
+
+        if (y2 == 0 && y != 0 && y->type == 0x1dd) {
+            g = (GMSTOCK *)gm_FindGoods(ai_OwnPlayer, m->sell.item);
             if (g != 0)
-                *(int *)(g + 0x18) += *(int *)&m->data[0xf];
+                g->daily[2] += m->sell.count;
         }
-        if (ys != 0 && *(short *)ys == 0x1dd) {
-            g = gm_FindGoods(ai_OwnPlayer, *(unsigned short *)&m->data[8]);
+        if (ys != 0 && ys->type == 0x1dd) {
+            g = (GMSTOCK *)gm_FindGoods(ai_OwnPlayer, m->sell.item);
             if (g != 0)
-                *(int *)(g + 0x1c) += *(int *)&m->data[0xf];
+                g->daily[3] += m->sell.count;
         }
     }
-    if (*(int *)&m->data[4] != -1) {
-        *(int *)(o + 0xe) -= *(int *)&m->data[0xf];
-        if (*(int *)(o + 0xe) <= 0) {
-            if (ai_Goods[*(unsigned short *)&m->data[8] * 0x41] != 2 && ai_Goods[*(unsigned short *)&m->data[8] * 0x41] != 6) {
-                gm_RemoveObject(p, *(unsigned short *)&m->data[8]);
+    if (m->sell.seller != -1) {
+        o->count -= m->sell.count;
+        if (o->count <= 0) {
+            if (ai_GoodsT[m->sell.item].type != 2 && ai_GoodsT[m->sell.item].type != 6) {
+                gm_RemoveObject(p, m->sell.item);
             } else {
                 if (x1 == 0)
                     return 1;
-                gm_RemoveObjectFromBuilding(x1, *(unsigned short *)&m->data[8]);
+                gm_RemoveObjectFromBuilding((int)x1, m->sell.item);
             }
         }
-        if (*(int *)&m->data[0x13] != 0) {
-            gm_AddObjekt(*(int *)(r1 + 4), *(unsigned short *)(ai_PlayerSlots[m->data[0xe]] + 0x54), *(int *)&m->data[0xf] * *(int *)&m->data[0x13]);
-            if (ys != 0 && *(short *)ys == 0x1db)
-                *(int *)(r1 + 0x1a4) += *(int *)&m->data[0xf] * *(int *)&m->data[0x13];
-            else if (ys != 0 && *(short *)ys == 0x1dc)
-                *(int *)(r1 + 0x1a0) += *(int *)&m->data[0xf] * *(int *)&m->data[0x13];
+        if (m->sell.price != 0) {
+            gm_AddObjekt(r1->netId, ai_PlayerSlotsT[m->sell.player].moneyGood, m->sell.count * m->sell.price);
+            if (ys != 0 && ys->type == 0x1db)
+                r1->v1a4 += m->sell.count * m->sell.price;
+            else if (ys != 0 && ys->type == 0x1dc)
+                r1->v1a0 += m->sell.count * m->sell.price;
             else
-                *(int *)(r1 + 0x19c) += *(int *)&m->data[0xf] * *(int *)&m->data[0x13];
+                r1->wage += m->sell.count * m->sell.price;
         }
     }
-    if (*(int *)&m->data[0] != -1) {
+    if (m->sell.buyer != -1) {
         if (o2 != 0) {
-            *(int *)(o2 + 0xe) += *(int *)&m->data[0xf];
-        } else if (ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 2 || ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 6) {
+            o2->count += m->sell.count;
+        } else if (ai_GoodsT[m->sell.item].type == 2 || ai_GoodsT[m->sell.item].type == 6) {
             if (x2 == 0)
                 return 1;
-            o2 = gm_AllocRaum(x2, *(unsigned short *)&m->data[8]);
+            o2 = (AIOBJ *)gm_AllocRaum((unsigned char *)x2, m->sell.item);
             if (o2 == 0)
                 return 1;
         } else {
-            o2 = gm_CreateObject(*(int *)&m->data[0], *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]);
+            o2 = (AIOBJ *)gm_CreateObject(m->sell.buyer, m->sell.item, m->sell.count);
             if (o2 == 0)
                 return 1;
             if (y2 != 0) {
-                (*(int *)(o2 + 0xe))++;
-                if ((ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 0x17 || ai_Goods[*(unsigned short *)&m->data[8] * 0x41] == 0x25)
-                    && (*(short *)y2 == 0x2a || *(short *)y2 == 0x116) && r2 != 0 && (r2[2] == 6 || r2[2] == 7))
-                    *(int *)(o2 + 0x1c) = 4;
+                AIGOOD *gd = &ai_GoodsT[m->sell.item];
+
+                o2->count++;
+                if ((gd->type == 0x17 || gd->type == 0x25)
+                    && (y2->type == 0x2a || y2->type == 0x116) && r2 != 0 && (r2->kind == 6 || r2->kind == 7))
+                    o2->reserve = 4;
             }
         }
-        cm_LastObjectId = *(int *)(o2 + 2);
-        if (*(int *)&m->data[0x13] != 0 && r2 != 0) {
-            gm_TakeObjekt(*(int *)(r2 + 4), *(unsigned short *)(ai_PlayerSlots[m->data[0xe]] + 0x54), *(int *)&m->data[0xf] * *(int *)&m->data[0x13]);
-            if (y2 != 0 && *(short *)y2 == 0x1db)
-                *(int *)(r2 + 0x1a0) += *(int *)&m->data[0xf] * *(int *)&m->data[0x13];
-            else if (y2 != 0 && *(short *)y2 == 0x1dc)
-                *(int *)(r2 + 0x1a4) += *(int *)&m->data[0xf] * *(int *)&m->data[0x13];
+        cm_LastObjectId = o2->objId;
+        if (m->sell.price != 0 && r2 != 0) {
+            gm_TakeObjekt(r2->netId, ai_PlayerSlotsT[m->sell.player].moneyGood, m->sell.count * m->sell.price);
+            if (y2 != 0 && y2->type == 0x1db)
+                r2->v1a0 += m->sell.count * m->sell.price;
+            else if (y2 != 0 && y2->type == 0x1dc)
+                r2->v1a4 += m->sell.count * m->sell.price;
             else
-                *(int *)(r2 + 0x198) += *(int *)&m->data[0xf] * *(int *)&m->data[0x13];
+                r2->spent198 += m->sell.count * m->sell.price;
         }
     }
-    if (ys != 0 && (*(short *)ys == 0x2a || *(short *)ys == 0x116) && r1 != 0 && *(int *)&m->data[0x13] != 0
-        && *(unsigned short *)r1 == ai_PlayerId) {
-        x1 = gm_FindBuildingById(*(int *)(ys + 6));
+    if (ys != 0 && (ys->type == 0x2a || ys->type == 0x116) && r1 != 0 && m->sell.price != 0
+        && r1->id == ai_PlayerId) {
+        x1 = (AIBLD *)gm_FindBuildingById(ys->ownerId);
         if (x1 != 0) {
-            txt_Format(text, 0x7c, *(unsigned char *)x1 * 14 + 0x48e, *(int *)&m->data[0x13]);
-            sv_SetStatusText(text);
+            txt_Format(buf, 0x7c, x1->type * 14 + 0x48e, m->sell.price);
+            sv_SetStatusText(buf);
             sb_PlaySampleI(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         }
     }
     if (s != 0) {
         s->state = 1;
-        if (*(int *)&m->data[0] != -1) {
+        if (m->sell.buyer != -1) {
             s->kind = 3;
             s->value = (int)o2;
         }
@@ -15146,7 +15174,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

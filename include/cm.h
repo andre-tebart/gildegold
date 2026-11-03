@@ -306,7 +306,7 @@ int cm_ExTakeOverCharacter(G17MSG *m, G17STAT *s);                              
 int ai_Unk4c6ec0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ec0, handler of 0xe */
 int ai_Unk4c6f60(G17MSG *m, G17STAT *s);                                         /* 0x4c6f60, handler of 0xf */
 int ai_Unk4c7010(G17MSG *m, G17STAT *s);                                         /* 0x4c7010, handler of 0x10 */
-int ai_Unk4c70b0(G17MSG *m, G17STAT *s);                                         /* 0x4c70b0, handler of 0x11, "cm_ExSellObjekt" */
+int cm_ExSellObjekt(G17MSG *m, G17STAT *s);                                         /* 0x4c70b0, handler of 0x11, "cm_ExSellObjekt" */
 int ai_Unk4c78c0(G17MSG *m, G17STAT *s);                                         /* 0x4c78c0, handler of 0x12 */
 int ai_Unk4c7c30(G17MSG *m, G17STAT *s);                                         /* 0x4c7c30, handler of 0x13 */
 int ai_Unk4c7d80(G17MSG *m, G17STAT *s);                                         /* 0x4c7d80, handler of 0x14 */

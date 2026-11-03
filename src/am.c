@@ -4474,7 +4474,7 @@ int ai_DecideProduceGood(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 return 0;
             if (AI_GOODX[obj->id].type != 2 && AI_GOODX[obj->id].type != 6)
                 goto rate;
-            if (!gm_Query(obj->list, 1, 0, o1->ref) && (bld = gm_FindBuildingById(obj->unk06)) != 0) {
+            if (!gm_Query(obj->list, 1, 0, o1->ref) && (bld = gm_FindBuildingById(obj->ownerId)) != 0) {
                 t = &AI_BTX[bld->type];
                 n = t->n;
                 for (i = 0; i < n; i++)

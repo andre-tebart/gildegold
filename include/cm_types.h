@@ -135,6 +135,17 @@ typedef struct G17TAKEOVERMSG {         /* 8 bytes, the data of message 0xd (0x4
     int taken;                          /* 0x04, the character taken over */
 } G17TAKEOVERMSG;
 
+typedef struct G17SELLMSG {             /* 0x17 bytes, the data of message 0x11 (cm_SendExSellObject, its handler 0x4c70b0
+                                           "cm_ExSellObjekt") */
+    int buyer;                          /* 0x00, the id (building, object or character) the goods go to, -1: none */
+    int seller;                         /* 0x04, the id they come from, -1: none */
+    unsigned short item;                /* 0x08, the goods prototype */
+    int objectId;                       /* 0x0a, the next object id (the server's, read when connected) */
+    unsigned char player;               /* 0x0e, the player slot whose money good pays */
+    int count;                          /* 0x0f */
+    int price;                          /* 0x13, per unit, 0: no payment */
+} G17SELLMSG;
+
 typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
                                            handler 0x4cc510) */
     int op;                             /* 0x00, 'join', 'leav' or 'cler' */
@@ -160,6 +171,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
+        G17SELLMSG sell;                /* 0x10, message 0x11 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */

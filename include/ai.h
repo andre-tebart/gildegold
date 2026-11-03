@@ -68,7 +68,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     };
     int objId;                          /* 0x02, the object's own id (0x500190 gives a new one; messages name the
                                            object by it, 0x4fea50 finds it by it) */
-    int unk06;                          /* 0x06 */
+    int ownerId;                        /* 0x06, the id of the building / object / character holding it (gv.h ORDOBJ.ownerId) */
     char pad0a[4];
     union {
         int unk0e;                      /* 0x0e */
@@ -87,6 +87,9 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                 int unk1c;                      /* 0x1c, a building id / a state / a count */
                 int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
                 int cnt;                        /* 0x1c */
+                int reserve;                    /* 0x1c, of goods in a store: the quarters of the store's stock (gm_ListStock)
+                                                   kept from buyers other than its owner (cm.c 0x4c70b0); 4 when created
+                                                   there for a character of kind 6 / 7 */
                 struct {
                     unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
                     unsigned char lvl1d;        /* 0x1d */
@@ -322,9 +325,13 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     int picture;                        /* 0x18c, the portrait picture (sv.c: the person panel, the member list) */
     int v190;                         /* 0x190, a sum the round change prints on the player's balance page (text 0x1eff, main.c 0x5384e0) */
     int money;                          /* 0x194, the character's money (amt.c) */
-    char pad198[4];
+    int spent198;                       /* 0x198, the money paid for goods bought (cm.c 0x4c70b0 adds count * price, unless the
+                                           goods go to an object of kind 0x1db / 0x1dc) */
     int wage;                           /* 0x19c, the wage the character was paid in the last round settlement (main_SettleRound sends it as a field delta) */
-    char pad1a0[0x11];
+    int v1a0;                           /* 0x1a0, the money of sales from an object of kind 0x1dc / purchases into one of kind
+                                           0x1db (cm.c 0x4c70b0) */
+    int v1a4;                           /* 0x1a4, the same for sales from 0x1db / purchases into 0x1dc */
+    char pad1a8[9];
     unsigned char heldRounds;           /* 0x1b1, rounds the character is held: message 0x5b (cm.c 0x4ccb10) adds to it, each
                                            round adds 0xff (main.c); nonzero: the AI chooses no new action (ai.c
                                            0x47e360), the character takes no office (amt.c), the player's room click
