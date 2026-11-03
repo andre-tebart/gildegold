@@ -7851,7 +7851,7 @@ void ai_Unk4cfeb0()
             o = *(char **)(sel + 0x200);
             if ((ai_LedSelectBits(*(unsigned short *)t, o) & 0x800) && kb_Down[0x36] == 0 &&
                 (c == 0 || cm_OtherBuilding(c, o) == 0)) {
-                ai_Unk4d08c0();
+                cm_ClearMarks();
                 o[0x188] = 1;
                 if (*(int *)(o + 0x16c) == cm_FightAttacker)
                     snd_QueueVoice(*(unsigned short *)o, ai_Unk6f0d24, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
@@ -8122,56 +8122,66 @@ char cm_OrderClick(char *rec, char *c)
     }
     return ret;
 }
-/* 0x4d0740, the per-tick command handling for the player record rec: the click orders of the selected characters
-   (0x4d0570, then the comment "_K_C2C_BEFEHL_ERHALTEN" and the mark +0x188 is cleared), the highlight of the selected
-   characters' models (bit 2 of +0x212 as the mark). Rough draft. */
+/* 0x4d0740, the per-tick mouse handling of the fight for the cutscene record rec: the left button held starts the
+   rubber band (sv_StartBand, the marks cleared first), its release ends it; a click gives every marked scene character
+   (AICHAR.selected) that cm_CutChar may command (ai_LedSelectBits 0x800) and that is alive its order (cm_OrderClick),
+   answered with the voice "_K_C2C_BEFEHL_ERHALTEN" of its side, and drops the mark. Then the marked characters' bodies
+   are greyed (d3t_SetGrey, D3OBJECT.stateFlags bit 2) and the unmarked ones restored, unless the body is fading; a
+   right click clears every mark (cm_ClearMarks)
+   @deep Read whole against the original: every call, store and branch of the band / click part lines up;
+   the highlight loop reads the same fields (scene->flags 0x40 fading, selected, obj->stateFlags & 2) and
+   greys / restores the same way. Left (+0x11a..): the original loads selected into dl and stateFlags into
+   cl once before the branch (test bl, cl / and cl, bl / cmp cl, bl with bl = 2), ours reads stateFlags in
+   each branch (test byte ptr [ecx+0x212], bl; mov dl, [ecx+0x212]; and dl, bl) - one load of an unchanged
+   byte against two, the rest regs (ecx<->eax). Tried a local for the flags (unsigned char / int, with and
+   without a local for selected): VC6 then hoists 0x40 into bl instead of 2 and the hunk grows. Allocation
+   / load CSE only. */
 
-void ai_Unk4d0740(char *rec)
+void cm_FightMouse(char *rec)
 {
-    char *c, *m, *mdl, **pp;
+    AICHAR **pp;
+    AICHAR *c;
+    D3OBJECT *body;
 
     if (dm_L.lhold == 0 && sv_BandActive != 0)
         sv_EndBand();
     if (dm_L.lhold != 0 && dm_L.rdown == 0) {
         if (sv_BandActive == 0 && di_Absolute != 0 && d2_PointerObj == -1) {
-            ai_Unk4d08c0();
+            cm_ClearMarks();
             sv_StartBand();
         }
     } else if (dm_L.lup != 0) {
-        for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
+        for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
             c = *pp;
-            if (c != 0 && c[0x188] != 0 && (ai_LedSelectBits(*(unsigned short *)cm_CutChar, c) & 0x800) &&
-                *(int *)(c + 0x184) != 0 && c[8] != 0) {
-                if (cm_OrderClick(rec, c)) {
+            if (c != 0 && c->selected != 0 && (ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)c) & 0x800) &&
+                c->scene != 0 && c->health != 0) {
+                if (cm_OrderClick(rec, (char *)c)) {
                     if (cm_CutChar == (char *)cm_FightAttacker)
-                        snd_PlayVoice(*(unsigned short *)c, (int)ai_Unk6f0d34, "_K_C2C_BEFEHL_ERHALTEN", -1);
+                        snd_PlayVoice(c->id, cm_AttackerOrderVoices, "_K_C2C_BEFEHL_ERHALTEN", -1);
                     else
-                        snd_PlayVoice(*(unsigned short *)c, (int)ai_Unk6f0d38, "_K_C2C_BEFEHL_ERHALTEN", -1);
-                    c[0x188] = 0;
+                        snd_PlayVoice(c->id, cm_DefenderOrderVoices, "_K_C2C_BEFEHL_ERHALTEN", -1);
+                    c->selected = 0;
                 }
             }
         }
     }
-    for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
+    for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
         c = *pp;
-        if (c != 0) {
-            m = *(char **)(c + 0x184);
-            if (!(m[0x8c] & 0x40)) {
-                mdl = *(char **)(m + 0x34);
-                if (c[0x188]) {
-                    if (!(mdl[0x212] & 2))
-                        d3t_SetGreyK(mdl, 1);
-                } else if ((mdl[0x212] & 2) == 2)
-                    d3t_SetGreyK(mdl, 0);
-            }
+        if (c != 0 && !(c->scene->flags.bytes.lo & 0x40)) {
+            body = c->scene->obj;
+            if (c->selected) {
+                if (!(body->stateFlags & 2))
+                    d3t_SetGrey(body, 1);
+            } else if ((body->stateFlags & 2) == 2)
+                d3t_SetGrey(body, 0);
         }
     }
     if (dm_L.rup != 0)
-        ai_Unk4d08c0();
+        cm_ClearMarks();
 }
 /* 0x4d08c0, clears the marks of the 32 records ai_Unk930600[0x21c] (+0x188) and the highlight of their models */
 
-void ai_Unk4d08c0()
+void cm_ClearMarks()
 {
     char *r;
 
@@ -8447,11 +8457,11 @@ void ai_Unk4d0fa0(char *rec)
     if (b != 0)
         ai_Unk6f0d50 = ai_Unk4d4050(b);
     if (ai_Unk6f0d50 == 2) {
-        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, ai_Unk6f0d34, ai_Unk6f0d3c, ai_Unk6f0d44, DIEBE);
+        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, cm_AttackerOrderVoices, ai_Unk6f0d3c, ai_Unk6f0d44, DIEBE);
     } else if (ai_Unk6f0d50 == 1) {
-        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, ai_Unk6f0d34, ai_Unk6f0d3c, ai_Unk6f0d44, RAEUBER);
+        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, cm_AttackerOrderVoices, ai_Unk6f0d3c, ai_Unk6f0d44, RAEUBER);
     } else if (ai_Unk6f0d50 == 0) {
-        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, ai_Unk6f0d34, ai_Unk6f0d3c, ai_Unk6f0d44, SOELDNER);
+        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, cm_AttackerOrderVoices, ai_Unk6f0d3c, ai_Unk6f0d44, SOELDNER);
     }
     b = gm_BuildQuery(1, 1, *(int *)(rec + 0x14));
     if (b != 0)
@@ -8459,15 +8469,15 @@ void ai_Unk4d0fa0(char *rec)
     if (ai_Unk6f0d54 == ai_Unk6f0d50) {
         ai_Unk6f0d28 = ai_Unk6f0d24;
         ai_Unk6f0d30 = ai_Unk6f0d2c;
-        ai_Unk6f0d38 = ai_Unk6f0d34;
+        cm_DefenderOrderVoices = cm_AttackerOrderVoices;
         ai_Unk6f0d40 = ai_Unk6f0d3c;
         ai_Unk6f0d48 = ai_Unk6f0d44;
     } else if (ai_Unk6f0d54 == 2) {
-        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, ai_Unk6f0d38, ai_Unk6f0d40, ai_Unk6f0d48, DIEBE);
+        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, cm_DefenderOrderVoices, ai_Unk6f0d40, ai_Unk6f0d48, DIEBE);
     } else if (ai_Unk6f0d54 == 1) {
-        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, ai_Unk6f0d38, ai_Unk6f0d40, ai_Unk6f0d48, RAEUBER);
+        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, cm_DefenderOrderVoices, ai_Unk6f0d40, ai_Unk6f0d48, RAEUBER);
     } else if (ai_Unk6f0d54 == 0) {
-        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, ai_Unk6f0d38, ai_Unk6f0d40, ai_Unk6f0d48, SOELDNER);
+        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, cm_DefenderOrderVoices, ai_Unk6f0d40, ai_Unk6f0d48, SOELDNER);
     }
     ai_Unk6f0d5c = d3io_LoadObjectRef("ub_STIEFEL", "ub_STIEFEL");
     if (sc == 0) {
@@ -8617,13 +8627,13 @@ void ai_Unk4d1a10(char *rec)
     sb_UnloadSampleBank(ai_Unk6f0d20);
     sb_UnloadSampleBank(ai_Unk6f0d24);
     sb_UnloadSampleBank(ai_Unk6f0d2c);
-    sb_UnloadSampleBank(ai_Unk6f0d34);
+    sb_UnloadSampleBank(cm_AttackerOrderVoices);
     sb_UnloadSampleBank(ai_Unk6f0d3c);
     sb_UnloadSampleBank(ai_Unk6f0d44);
     if (ai_Unk6f0d50 != ai_Unk6f0d54) {
         sb_UnloadSampleBank(ai_Unk6f0d28);
         sb_UnloadSampleBank(ai_Unk6f0d30);
-        sb_UnloadSampleBank(ai_Unk6f0d38);
+        sb_UnloadSampleBank(cm_DefenderOrderVoices);
         sb_UnloadSampleBank(ai_Unk6f0d40);
         sb_UnloadSampleBank(ai_Unk6f0d48);
     }
@@ -10627,7 +10637,7 @@ void ai_Unk4d6970(char *r)
     cm_UpdatePortraits();
     cm_UpdatePointer();
     ai_Unk4cfeb0();
-    ai_Unk4d0740(r);
+    cm_FightMouse(r);
     cm_UpdateSceneChars();
     ai_Unk4ced80(r);
     cm_UpdateBombs();
@@ -10673,7 +10683,7 @@ void ai_Unk4d6b70()
 {
     d2_CloseView(ai_Unk6f0d64);
     ai_Unk6f0d64 = 0;
-    ai_Unk4d08c0();
+    cm_ClearMarks();
     ai_Unk4cfe70();
 }
 /* 0x4d6ba0, the action of one fighter slot f (+0 id, +4 active, +0x10 target id, +0x14 / +0x18 the attacked place,
@@ -15487,8 +15497,8 @@ int ai_Unk6f0d24 = 0;  /* 0x6f0d24 */
 int ai_Unk6f0d28 = 0;  /* 0x6f0d28 */
 int ai_Unk6f0d2c = 0;  /* 0x6f0d2c */
 int ai_Unk6f0d30 = 0;  /* 0x6f0d30 */
-int ai_Unk6f0d34 = 0;  /* 0x6f0d34 */
-int ai_Unk6f0d38 = 0;  /* 0x6f0d38 */
+int cm_AttackerOrderVoices = 0;  /* 0x6f0d34 */
+int cm_DefenderOrderVoices = 0;  /* 0x6f0d38 */
 int ai_Unk6f0d3c = 0;  /* 0x6f0d3c */
 int ai_Unk6f0d40 = 0;  /* 0x6f0d40 */
 int ai_Unk6f0d44 = 0;  /* 0x6f0d44 */

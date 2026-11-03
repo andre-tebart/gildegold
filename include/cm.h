@@ -674,13 +674,13 @@ int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy);  /* 0x4d2
 char cm_OrderClick(char *rec, char *c);  /* 0x4d0570 */
 
 
-void ai_Unk4d0740(char *rec);  /* 0x4d0740 */
+void cm_FightMouse(char *rec);  /* 0x4d0740 */
 int snd_PlayVoice(int id, int bank, char *text, int var);  /* 0x4c2760 */
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);  /* 0x446f30 */
-extern int ai_Unk6f0d34;  /* 0x6f0d34 */
-extern int ai_Unk6f0d38;  /* 0x6f0d38 */
+extern int cm_AttackerOrderVoices;  /* 0x6f0d34 */
+extern int cm_DefenderOrderVoices;  /* 0x6f0d38 */
 
-void ai_Unk4d08c0();  /* 0x4d08c0 */
+void cm_ClearMarks();  /* 0x4d08c0 */
 char *ai_Unk4d0920(char *c, int a);  /* 0x4d0920 */
 int gm_CreateCharModel();  /* 0x4fbb80 */
 extern const double ai_Unk5eb9b8;  /* 0x5eb9b8 */
