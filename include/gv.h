@@ -256,6 +256,12 @@ typedef struct ORDCELL {
 #pragma pack(push, 1)
 /* the building record ai.h's AIBLD, as ord.c reads it (gv.h and ai.h cannot be in one TU: both declare
    ai_Time / ai_Chars / ai_BTypes); the object list of gm_BuildQuery's records */
+typedef struct ORDCREDIT {          /* 12 bytes, a credit offer of a bank (gm_GetCreditOffers) */
+    int amount;                     /* 0x0, the sum lent; -1 = the slot is taken */
+    int term;                       /* 0x4, 2 .. 7 */
+    int interest;                   /* 0x8 */
+} ORDCREDIT;
+
 typedef struct ORDBLD {
     unsigned char type;             /* 0x00, index into ai_BTypes */
     int id;                         /* 0x01, ai.h AIBLD.id */
@@ -297,8 +303,12 @@ typedef struct ORDBLD {
         };
         AITIME created;             /* 0x69, of the kinds 4 .. 7 the game time it was created (gm_CreateBuilding) */
         unsigned short w69[2];      /* 0x69, the kinds 0x35 .. 0x37 clear it as two words */
+        struct {
+            char pad69[8];
+            ORDCREDIT credits[3];   /* 0x71, of a bank the credit offers kept for the player (gm_GetCreditOffers) */
+        };
+        char u69[0x2c];             /* 0x69 .. 0x95 */
     };
-    char pad77[0x1e];
     int smokeEffect;                /* 0x95, ai.h AIBLD.smokeEffect, -1 none */
     int flags99;                    /* 0x99, bit 0 set when created */
     char pad9d[8];

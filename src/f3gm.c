@@ -9355,92 +9355,103 @@ int gm_BuildingEvents(unsigned owner, int b, int c, int *out)
     }
     return n;
 }
-/* 0x50a250, hands the owner of the building b the person p's wage entries: up to `cnt` triples (value, kind 2 .. 7, amount) written to out (0x0 means the building has no owner / p is no person / cnt is 0; the first 3 triples of a kind 6 person's own record +0x71 are reused when they are still valid below the owner's budget 0x508660, else the whole table is built anew: from the random numbers (0x42ec00(0x1e), (6)) and the per-class tables 0x4f81c0 (0xf / 0xb) and the wage 0x50a640; a kind 6 person's table is stored back at +0x71, a kind 6 / 7 person employed by a non-6 / 7 owner is rated with 0x50c550). Returns 3 when written, 0 else. ROUGH: the float operands (the __ftol calls) are lost */
+/* 0x50a250, the credit offers of the bank b to the person p: up to cnt offers (amount, term 2 .. 7, interest) written to out; returns 3, or 0 when b has no owner, p or cnt is 0 or the bank already has 9 credits running (gm_BuildingEvents). A player (kind 6) gets the bank's kept offers (ORDBLD.credits) while one of them is taken (-1) or within the bank's money (gm_SumSlotAmounts); before day 6 a bank of a computer owner tops its money up to 0.2 of the player's worth (at most 64000, cm_SendMoveGoods). New offers: at most worth (gm_GetWorth) x 0.3 (0.6 / 0.45 for the orders 0xf / 0xb of ord_DispatchOrder) and half the bank's money, each 70 .. 100 % of it (the first 1/4, the second 1/2); the interest lies between 0.7 and 1.5 of the bank's v65 by the term, less (liking - 50) / 20 (gm_Liking) for a player or a computer player at a computer bank; a player's offers are kept
+   @deep Reconstructed in full against the original (0x50a250..0x50a63b): every call, argument, constant
+   (0.2, 64000f, 0.3f x2 / x1.5 = the original's 0x3ee66667, 0.5, 0.01, 1.0, 0.25, 0.7, 1.5, 1/6, 50f, 5f),
+   field (ORDBLD.credits +0x71, v65, owner, objList, id), branch and store order match; frame 0x250 equal.
+   Left (diffclass): regs 46 / order 8 = cnt in esi (ours) vs edi (the original) and the edi/esi swap of
+   all; code 12: (1) 0x50a3e1 'lea ecx,[edi+edi*2]; mov edi,[out]' vs ours the reverse order with cnt in
+   esi, (2) 0x50a492 the loop guard: the original reloads cnt ('mov eax,[esp+0x26c]; test eax,eax'), ours
+   tests esi (the same register choice), (3) 0x50a4b7 + fpu 0x50a4c5: the original negates the random
+   number in an int ('neg eax; fild; fmul 0.01; fadd 1.0'), VC6 folds every spelling tried into 'fild; fmul
+   0.01; fsubr 1.0' (-r*0.01+1.0, a separate int amount = -r, /100.0, (float)-r, (float)(..)): the same
+   value, a fold variant. Tried: index vs pointer copy loop (index form matched), rate/lim variables vs one
+   reused float (slots 52, worse), maxAmount as float var vs int cast in the loop (the cast matched the
+   preheader). */
 
 int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
 {
-    int budget, i, r, t, v;
-    int *src, *dst;
-    int tmp[0x88];
-    char buf[36];
+    ORDBLD *bank = (ORDBLD *)b;
+    ORDCHAR *ch = (ORDCHAR *)p;
+    ORDCREDIT *offers = (ORDCREDIT *)out;
+    ORDCREDIT *src, *dst;
+    int budget, worth, maxAmount, i, all, amount, term, interest;
     unsigned k;
-    int all = 0;
+    float f, add, rate, lim;
+    int events[9];
+    int orders[0x88];
 
-    if (p != 0 && b != 0 && *(short *)(b + 0x27) != -1 && cnt != 0) {
-        budget = gm_SumSlotAmounts(*(int *)(b + 0x5d), ai_OwnPlayer);
-        if (*((char *)p + 2) == 6) {
-            if (*(int *)ai_Time < 6) {
-                if (ai_Chars[*(unsigned short *)(b + 0x27)][2] != 6
-                    && ai_Chars[*(unsigned short *)(b + 0x27)][2] != 7
-                    && (float)budget < (float)gm_GetWorth(*p) * 0.2f) {
-                    budget = (int)(float)budget;     /* lost */
-                    cm_SendMoveGoods(*(int *)(b + 1), -1, ai_OwnPlayer, (int)(float)budget);
-                }
+    all = 0;
+    if (p == 0 || b == 0 || bank->owner == 0xffff || cnt == 0)
+        return 0;
+    budget = gm_SumSlotAmounts(bank->objList, ai_OwnPlayer);
+    if (ch->kind == 6) {
+        if (GM_NOW.day < 6 && ORD_CHARS[bank->owner].kind != 6 && ORD_CHARS[bank->owner].kind != 7) {
+            worth = gm_GetWorth(*p);
+            add = worth * 0.2;
+            if ((f = (float)budget) < add) {
+                add = GM_MIN(add, 64000.0f);
+                budget = (int)(f + add);
+                cm_SendMoveGoods(bank->id, -1, ai_OwnPlayer, (int)add);
             }
-            src = (int *)(b + 0x71);
-            dst = out;
-            for (i = 3; i != 0; i--) {
-                v = *src;
-                if (v < 1) {
-                    if (v == -1) {
-                        all = -1;
-                    }
-                    *dst = -1;
-                } else if (budget <= v) {
-                    all = -1;
-                    *dst = -1;
-                } else {
-                    dst[0] = src[0];
-                    dst[1] = src[1];
-                    dst[2] = src[2];
-                    all = -1;
-                }
-                src += 3;
-                dst += 3;
-            }
-            if (all == -1)
-                return 3;
         }
-        r = gm_BuildingEvents(*(unsigned short *)(b + 0x27), 0, 0xffff, buf);
-        if (r < 9) {
-            memset(out, 0, cnt * 12);
-            gm_GetWorth(*p);
-            memset(tmp, 0, sizeof(tmp));
-            tmp[0] = 1;
-            k = ord_DispatchOrder(0xf, p, tmp);
-            if ((k & 2) == 0)
-                ord_DispatchOrder(0xb, p, tmp);
-            for (k = 0; k < cnt; k++) {
-                util_RandomU(0x1e);
-                v = (int)(float)0;               /* lost */
-                if (k == 0 || k == 1)
-                    v = (int)(float)0;           /* lost */
-                t = util_RandomU(6);
-                r = (int)(float)0;               /* lost */
-                if (ai_Chars[*(unsigned short *)(b + 0x27)][2] != 6
-                    && ai_Chars[*(unsigned short *)(b + 0x27)][2] != 7
-                    && (*((char *)p + 2) == 6 || *((char *)p + 2) == 7)) {
-                    gm_Liking(*p, *(unsigned short *)(b + 0x27), 1);
-                    r = (int)(float)0;           /* lost */
+        for (i = 0; i < 3; i++) {
+            if (bank->credits[i].amount > 0) {
+                if (bank->credits[i].amount < budget) {
+                    offers[i] = bank->credits[i];
+                    all = -1;
+                } else {
+                    all = -1;
+                    offers[i].amount = -1;
                 }
-                out[k * 3 + 2] = r;
-                out[k * 3] = v;
-                out[k * 3 + 1] = (unsigned short)t + 2;
+            } else {
+                if (bank->credits[i].amount == -1)
+                    all = -1;
+                offers[i].amount = -1;
             }
-            if (*((char *)p + 2) == 6) {
-                dst = (int *)(b + 0x71);
-                for (i = 3; i != 0; i--) {
-                    dst[0] = out[0];
-                    dst[1] = out[1];
-                    dst[2] = out[2];
-                    out += 3;
-                    dst += 3;
-                }
-            }
+        }
+        if (all == -1)
             return 3;
+    }
+    if (gm_BuildingEvents(bank->owner, 0, 0xffff, events) >= 9)
+        return 0;
+    memset(out, 0, cnt * sizeof(ORDCREDIT));
+    worth = gm_GetWorth(*p);
+    memset(orders, 0, sizeof(orders));
+    rate = 0.3f;
+    orders[0] = 1;
+    if (ord_DispatchOrder(0xf, p, orders) & 2)
+        rate *= 2.0f;
+    else if (ord_DispatchOrder(0xb, p, orders) & 2)
+        rate *= 1.5f;
+    lim = worth * rate;
+    maxAmount = (int)GM_MIN(lim, budget * 0.5);
+    for (k = 0; k < cnt; k++) {
+        amount = (int)((-util_RandomU(0x1e) * 0.01 + 1.0) * (float)maxAmount);   /* 70 .. 100 % */
+        if (k == 0)
+            amount = (int)(amount * 0.25);
+        else if (k == 1)
+            amount = (int)(amount * 0.5);
+        term = util_RandomU(6) + 2;
+        interest = (int)(bank->v65 * 0.7 + (bank->v65 * 1.5 - bank->v65 * 0.7) * (term / 6.0f));
+        if (ORD_CHARS[bank->owner].kind != 6 && ORD_CHARS[bank->owner].kind != 7 && (ch->kind == 6 || ch->kind == 7)) {
+            f = (float)interest;
+            interest = (int)(f - (float)((gm_Liking(*p, bank->owner, 1) - 50.0f) * 0.01) * 5.0f);
+        }
+        offers[k].interest = interest;
+        offers[k].amount = amount;
+        offers[k].term = term;
+    }
+    if (ch->kind == 6) {
+        src = offers;
+        dst = bank->credits;
+        for (i = 3; i != 0; i--) {
+            *dst = *src;
+            src++;
+            dst++;
         }
     }
-    return 0;
+    return 3;
 }
 /* 0x50a640, the worth of the character id: its objects (0x509e60) plus the buildings it owns (query kind 3 of the owner): 0x509b10 and 0x509f80 per building; -1 for a free slot */
 
