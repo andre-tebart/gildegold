@@ -678,35 +678,39 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
 
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
-    unsigned char *p;
-    int o;
-    unsigned int len;
+    union { unsigned char *b; unsigned short *w; short *s; int *i; } p;    /* the entry: size, n, field, the values */
+    unsigned int i, len;
 
-    o = cm_FieldBlockLen;
     if (size != 1 && size != 2 && size != 4)
         return 1;
-    len = n * size + 4 + o;
-    if (len > 0x76)
+    len = n * size + cm_FieldBlockLen + 4;
+    if (len >= 0x77)
         return 1;
-    p = &cm_FieldBlock.buf[o];
+    p.b = &cm_FieldBlock.buf[cm_FieldBlockLen];
     cm_FieldBlock.n++;
     cm_FieldBlockLen = len;
-    p[0] = size;
-    p[1] = n;
-    *(unsigned short *)(p + 2) = field;
-    p += 4;
-    if (size == 1) {
+    *p.b++ = size;
+    *p.b++ = n;
+    *p.w++ = field;
+    switch (size) {
+    case 1: {
         unsigned char *s = (unsigned char *)v;
-        for (; n != 0; n--)
-            *p++ = *s++;
-    } else if (size == 2) {
-        short *s = (short *)v, *d = (short *)p;
-        for (; n != 0; n--)
-            *d++ = *s++;
-    } else if (size == 4) {
-        int *s = (int *)v, *d = (int *)p;
-        for (; n != 0; n--)
-            *d++ = *s++;
+        for (i = 0; i < n; i++)
+            *p.b++ = *s++;
+        break;
+    }
+    case 2: {
+        short *s = (short *)v;
+        for (i = 0; i < n; i++)
+            *p.s++ = *s++;
+        break;
+    }
+    case 4: {
+        int *s = (int *)v;
+        for (i = 0; i < n; i++)
+            *p.i++ = *s++;
+        break;
+    }
     }
     return 0;
 }
