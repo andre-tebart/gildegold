@@ -100,7 +100,7 @@ extern GAPDATA full_data_92bcb8[];
 #include "gv.h"
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
-#define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
+#define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (cm_CreateSceneSky 0x4e32f0: push 0x44160000 ..) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d3t_CreateEarthK ((int (*)())d3t_CreateEarth)  /* 0x4168e0 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
@@ -13730,7 +13730,7 @@ void cm_RunDuel(G28REC *m)
             return;
         }
         cm_ResetCutInfos(m);
-        v = (char)m->variant;
+        v = m->variant;
         cm_LoadEventScene(sc[v]);
         cm_DuelInitVariants(10);
         cm_ApplySeason();
@@ -14156,71 +14156,75 @@ int cm_ExecutionAftermath(G28REC *m)
     }
     return 1;
 }
-/* 0x4e01e0, one execution (the message m: +0x34 the delinquent, +0x38 / +0x3c / +0x40 the others, +0x7c the way 0 .. 4: head, gallows (1, 2),
-   shovel, cannon; +0xc the owner): the scene "Richtplatz.ed3" with a random sky, the names of the four in the text, the intro, the
-   way's own scene, the pause dur[kind], the exit scene; the delinquent's life goes down by (life + 5). ROUGH */
+#define CUT_NAMEREC(c) ((c) != 0 ? (char *)gm_CharNameRecord((c)->id) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1))  /* a character's name record, a random one for none */
+/* 0x4e01e0, one execution (the scene callback of the execution event, ai_Unk4e5730 kind 5) of the delinquent
+   m->members[0] with the others m->members[1] .. [3], the way m->variant 0 .. 4 (head, gallows (1, 2), shovel, cannon):
+   the scene "Richtplatz.ed3" with a random sky of a random weather (1 heavy, 2 medium, else fair; the heavy one also calls
+   cm_StartSceneRain(500)), the track "ArmerDelinquent", the four names (members [1], [0], [2], [3], a random name for one
+   not found) to "hinrichtung-create", the intro; at the host's player the delinquent's health goes down by (f01c + 5);
+   the way's scene, the pause dur[way], the exit scene; then cm_StopSceneRain unless the weather was fair (w 0, as the
+   original tests it), the sky destroyed. Nothing when the delinquent is not found */
 
-void ai_Unk4e01e0(char *m)
+void cm_RunExecution(G28REC *m)
 {
+    int w = cm_Random(3);
     int dur[5] = {0x36b0, 0x2ee0, 0x2ee0, 0x3a98, 0x2710};
     char buf[0x100];
-    char *v, *p1, *p2, *p3, *nm;
-    int w;
+    AICHAR *v, *p1, *p2, *p3;
+    char *end;
 
-    w = cm_Random(3);
-    v = (char *)gm_FindChar(*(int *)(m + 0x34));
+    v = (AICHAR *)gm_FindChar(m->members[0]);
     if (v == 0)
         return;
-    p1 = (char *)gm_FindChar(*(int *)(m + 0x38));
-    p2 = (char *)gm_FindChar(*(int *)(m + 0x3c));
-    p3 = (char *)gm_FindChar(*(int *)(m + 0x40));
+    p1 = (AICHAR *)gm_FindChar(m->members[1]);
+    p2 = (AICHAR *)gm_FindChar(m->members[2]);
+    p3 = (AICHAR *)gm_FindChar(m->members[3]);
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     cm_LoadEventScene("Richtplatz.ed3");
-    d3_SetLightSet(0, 0, 0x3f800000, 1);
+    d3_SetLightSet(0, 0, 1.0f, 1);
     d3_SetFogSet(0, 0, 0);
     if (w == 1)
-        ai_Unk4e32f0(&sv_SkyHeavy[cm_Random(3)]);
+        cm_CreateSceneSky(&sv_SkyHeavy[cm_Random(3)]);
     else if (w == 2)
-        ai_Unk4e32f0(&sv_SkyMedium[cm_Random(3)]);
+        cm_CreateSceneSky(&sv_SkyMedium[cm_Random(3)]);
     else
-        ai_Unk4e32f0(&sv_SkyFair[cm_Random(4)]);
+        cm_CreateSceneSky(&sv_SkyFair[cm_Random(4)]);
     cm_PlaySpecialTrack("cd2\\ArmerDelinquent.mp3");
     if (w == 1)
-        ai_Unk4e33d0(0x1f4);
-    nm = v != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)v) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
-    sprintf(buf, "%s ", nm + 4);
-    nm = p1 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p1) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
-    sprintf(buf + strlen(buf), "%s ", nm + 4);
-    nm = p2 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p2) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
-    sprintf(buf + strlen(buf), "%s ", nm + 4);
-    nm = p3 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p3) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
-    sprintf(buf + strlen(buf), "%s", nm + 4);
-    cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-create", buf);
-    cm_WaitEvent(cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-intro.", &ch_EmptyName));
-    if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0])
-        gm_AddHealth(*(unsigned short *)v, (int)-(*(float *)(v + 0x1c) + 5.0f));
-    switch (m[0x7c]) {
+        cm_StartSceneRain(0x1f4);
+    sprintf(buf, "%s ", CUT_NAMEREC(p1) + 4);
+    end = buf + strlen(buf);
+    sprintf(end, "%s ", CUT_NAMEREC(v) + 4);
+    end = buf + strlen(buf);
+    sprintf(end, "%s ", CUT_NAMEREC(p2) + 4);
+    end = buf + strlen(buf);
+    sprintf(end, "%s", CUT_NAMEREC(p3) + 4);
+    cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-create.esc", buf);
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-intro.esc", &ch_EmptyName));
+    if (m->host == ai_CharInts[ai_PlayerId][0])
+        gm_AddHealth(v->id, (int)-(v->f01c + 5.0f));
+    switch (m->variant) {
     case 0:
-        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-kopf.e", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-kopf.esc", &ch_EmptyName);
         break;
     case 1:
     case 2:
-        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-galgen", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-galgen.esc", &ch_EmptyName);
         break;
     case 3:
-        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-shaufe", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-shaufen.esc", &ch_EmptyName);
         break;
     case 4:
-        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-kanone", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-kanone.esc", &ch_EmptyName);
         break;
     }
-    cm_RunSceneTicks(dur[m[0x7c]]);
+    cm_RunSceneTicks(dur[m->variant]);
     cm_FadeToBlack();
-    cm_WaitEvent(cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-exit.e", &ch_EmptyName));
-    if (v != 0)
-        ai_Unk4e33f0();
-    ai_Unk4e3390();
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-exit.esc", &ch_EmptyName));
+    if (w != 0)
+        cm_StopSceneRain();
+    cm_DestroySceneSky();
     cm_FightStart = 0;
     cm_LeaveEventScene();
     d2_CutsceneActive = 0;
@@ -14521,7 +14525,7 @@ int ai_Unk4e1250(char *m)
     cm_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
     snd = snd_LoadVoiceBank("tod.sbf", 1);
     cm_LoadEventScene("Tod.ed3");
-    ai_Unk4e32f0("Sky_Schoen_02");
+    cm_CreateSceneSky("Sky_Schoen_02");
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
     sc = cm_StartEventArg("cutscenes\\tod\\enter_TOD.esc", &ch_EmptyName);
@@ -14589,7 +14593,7 @@ int ai_Unk4e1250(char *m)
     cm_FadeToBlack();
     cm_StopScript(sc);
     cm_WaitEvent(sc);
-    ai_Unk4e3390();
+    cm_DestroySceneSky();
     cm_LeaveEventScene();
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
@@ -14624,7 +14628,7 @@ int ai_Unk4e1700(char *m)
     cm_LoadEventScene("Pleite.ed3");
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
-    ai_Unk4e32f0("sky_dunkel_01");
+    cm_CreateSceneSky("sky_dunkel_01");
     sprintf(buf, "%i", stage);
     sc = cm_StartEventArg("cutscenes\\pleite\\enter_Pleite.esc", buf);
     rc = ai_Unk4e3490(0x1770, 0, 0);
@@ -14634,7 +14638,7 @@ int ai_Unk4e1700(char *m)
         cm_QueueVoice(-8, "_PLEITE_HS", 2, 0x1f4);
         rc = ai_Unk4e3490(0x3e80, 0, 0);
         if (rc == 0) {
-            ai_Unk4e33d0(0xfa);
+            cm_StartSceneRain(0xfa);
             rc = ai_Unk4e3490(0x2af8, 0, 0);
             if (rc == 0) {
                 cm_QueueVoice(-8, "_PLEITE_HS", 3, 0x251c);
@@ -14653,8 +14657,8 @@ int ai_Unk4e1700(char *m)
     cm_FadeToBlack();
     cm_StopScript(sc);
     cm_WaitEvent(sc);
-    ai_Unk4e3390();
-    ai_Unk4e33f0();
+    cm_DestroySceneSky();
+    cm_StopSceneRain();
     cm_LeaveEventScene();
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
@@ -15345,7 +15349,7 @@ int cm_QueueVoice(int a, int b, int c, int d, int e)
 /* 0x4e32f0, sets up the scene's light / camera object 0x6f0db8 (0x45da30 -2.25, -0.2, 600.0) with the attachment 0x6f0db4 (0x45d880, 3.0, 0.8, -0.25;
    the colour 0 and a the tint) and fades it in (0x45d960, 0x45d9a0 255, 10.0) */
 
-int ai_Unk4e32f0(int a)
+int cm_CreateSceneSky(int a)
 {
     int v, id;
 
@@ -15360,7 +15364,7 @@ int ai_Unk4e32f0(int a)
 }
 /* 0x4e3390, releases the scene's sound / object slot 0x6f0db8 (0x45d800 first when 0x6f0db4 is set) */
 
-int ai_Unk4e3390(void)
+int cm_DestroySceneSky(void)
 {
     if (cm_SkipEvents == 0) {
         if (ai_Unk6f0db4 != 0)
@@ -15371,14 +15375,14 @@ int ai_Unk4e3390(void)
 }
 /* 0x4e33d0, remembers the result of 0x413b30(a) in 0x6f0dbc */
 
-int ai_Unk4e33d0(int a)
+int cm_StartSceneRain(int a)
 {
     if (cm_SkipEvents == 0)
         cm_SceneRain = d3t_CreateRain(a);
 }
 /* 0x4e33f0, frees the thing 0x4e33d0 remembered */
 
-int ai_Unk4e33f0(void)
+int cm_StopSceneRain(void)
 {
     if (cm_SkipEvents == 0) {
         d3t_DeleteRain(cm_SceneRain);
@@ -16380,7 +16384,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
-    ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)cm_ExecutionAftermath, 0);
+    ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)ai_Unk4e0f70, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)ai_Unk4e1220, 0);

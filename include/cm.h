@@ -976,11 +976,11 @@ int ai_Unk4e0010(int scene);  /* 0x4e0010 */
 
 int cm_ExecutionAftermath(G28REC *m);  /* 0x4e0040 */
 
-int ai_Unk4e32f0();  /* 0x4e32f0 */
-int ai_Unk4e33d0();  /* 0x4e33d0 */
-int ai_Unk4e33f0();  /* 0x4e33f0 */
-int ai_Unk4e3390();  /* 0x4e3390 */
-void ai_Unk4e01e0(char *m);  /* 0x4e01e0 */
+int cm_CreateSceneSky();  /* 0x4e32f0 */
+int cm_StartSceneRain();  /* 0x4e33d0 */
+int cm_StopSceneRain();  /* 0x4e33f0 */
+int cm_DestroySceneSky();  /* 0x4e3390 */
+void cm_RunExecution(G28REC *m);  /* 0x4e01e0 */
 int ai_Unk4e0580(char *m);  /* 0x4e0580 */
 void sb_Stop();  /* 0x427290 */
 int ai_Unk4e06d0(int *s);  /* 0x4e06d0 */
@@ -1040,7 +1040,7 @@ struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fo
 /* d3sky_CreateLayer (0x45d880): declared in cm's head after d3.h (its D3TEXFLAGS parameter is passed by value) */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
-int ai_Unk4e32f0();  /* 0x4e32f0 */
+int cm_CreateSceneSky();  /* 0x4e32f0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
 int ai_Unk4e3490();  /* 0x4e3490 */
 extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */

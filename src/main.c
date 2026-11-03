@@ -2133,7 +2133,7 @@ int main_ChooseFamily(int unused)
     f = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
     d2_PlaceMainWindowF(f, 1);
     k = 4;
-    ai_Unk4e32f0("Sky_Mittel_02");
+    cm_CreateSceneSky("Sky_Mittel_02");
     d3_SetLightSet(4, 0.0f, 1.0f, 1);
     if (main_MessageBox != -1) {
         d2_CloseView(main_MessageBox);
@@ -2268,7 +2268,7 @@ lskip:
         d3sm_Destroy((int)d3_DefaultScene->hmap);
         d3_DefaultScene->hmap = 0;
     }
-    ai_Unk4e3390();
+    cm_DestroySceneSky();
     p = (int *)d3_DefaultScene;
     if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x294) != 0)
         ((void (*)(int *, int, int, int))*(int *)(q + 0x294))(p, 5, q + 0x298, 0);

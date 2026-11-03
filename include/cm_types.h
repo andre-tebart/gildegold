@@ -525,7 +525,7 @@ typedef struct G28REC {
     char pad74[8];
     union {
         struct {
-            unsigned char variant;      /* 0x7c, written by gv_PassSentence with a random 0 .. 4 */
+            char variant;               /* 0x7c, written by gv_PassSentence with a random 0 .. 4; read signed (movsx: cm_RunDuel, cm_RunExecution) */
             unsigned char zero7d;       /* 0x7d, only seen written 0 (gv_PassSentence) */
         };
         int crimeState;                 /* 0x7c, of a trial: the state its crimes were handed over in (cm_CheckTrial opens them
