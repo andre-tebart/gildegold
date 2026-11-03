@@ -56,6 +56,7 @@ extern GAPDATA full_data_92bcb8[];
 #include "sv.h"
 #include "ahm.h"
 #include "ai.h"
+#include "ch.h"
 #include "d3_anim.h"
 #include "d3_engine.h"
 #include "d3_fl.h"
@@ -110,6 +111,7 @@ extern GAPDATA full_data_92bcb8[];
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
 #define ch_FindFreeCellK ((int (*)())ch_FindFreeCell)  /* 0x4072a0 (ch.h: char, 9 parameters): @original cm.c's call at 8227 passes 8 arguments without a prototype and reads an int */
+#define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original ai_Unk4e3230 (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
@@ -9319,7 +9321,7 @@ void ai_Unk4d3550(char *ev)
 
     ka = ai_Unk4cda50(att);
     kt = ai_Unk4cda50(tgt);
-    ch_GetHMap(tbl, att, tgt);
+    ch_GetHMap(*(struct CHARACTER **)(att + 0x184));
     if (kt != 0 && ai_Unk4ce1b0(tgt, *(char **)(*(char **)(att + 0x184) + 0x34)) <= *(float *)(kt + 0xc))
         ;
     else {
@@ -13925,7 +13927,7 @@ int ai_Unk4e3230(void)
 {
     if (cm_SkipEvents != 0)
         return 0;
-    return ch_Create();
+    return ch_CreateK();
 }
 /* 0x4e3250, the scene helpers 0x4e3250 .. 0x4e3640 pass their arguments on to the sound / object calls unless the replay mode (0x6f0d8c) is on */
 
