@@ -2559,19 +2559,6 @@ typedef struct AIOBJVIEW {         /* the object fields the vg_ / build-site cal
     int kind;                      /* 0x220, 1 = per-vertex lit */
 } AIOBJVIEW;
 #pragma pack(pop)
-typedef struct AIVGLIST {          /* the "vg_" object list of ai_ShowVgObjects */
-    int objs[0x20];                /* 0x00 */
-    int count;                     /* 0x80 */
-} AIVGLIST;
-typedef struct AIBUILDSITE {       /* the construction-site record lc_GetGebaeudeBauplatz fills (cm.c passes z + 0xc) */
-    union {
-        char name[0x40];           /* 0x00, the building name (ai_BuildingName) */
-        int nameHead;              /* 0x00, cleared before the name is written */
-    };
-    float pos[4];                  /* 0x40, the owner's world position (d3_PointToWorld) */
-    int object;                    /* 0x50, the "bk_" site object ai_FindBauplatz found */
-    char siteName[0x34];           /* 0x54, the site object's name from the "bk_" prefix on */
-} AIBUILDSITE;
 
 /* 0x58f920, the "vg_" predicate of ai_ShowVgObjects (86 B, a d3_ForEachObject callback): objects whose name contains
    "vg_" and whose parent is no per-vertex-lit object (parent == 0 or its kind != 1) are appended to the ctx list
@@ -2712,9 +2699,9 @@ char d3if_SelectScene(int index, char keep);  /* 0x4478e0 (d3_interface.c) */
    out->name, the owner position goes to out->pos and is formatted (sprintf,
    "lc_GetGebaeudeBauplatz(): FindPos->Pos:%f  %f  %f") into the unused 0x100-byte local; the "bk_" finder
    ai_FindBauplatz (d3_ForEachObject, mask 0x180) over d3_DefaultScene fills out->object; 1 when a site was
-   found, 0 else. The first parameter is unused (cm.c calls it with two arguments)
+   found, 0 else. out is the first parameter, the building record the second (every caller, cm.c / he.c / 0x5b7690, pushes (out, b))
    @deep B 30 code hunks + 10 slots over 256 B: one register-role difference, not a meaning error. Read the whole original 0x58fc40..0x58fd36 and the asmdiff. The original keeps rec in ebx across the ai_BuildingName call, rematerialises rec->object in eax after it (3 callee-saved saves + a late push edi for the out+0x40 scratch, no ebp-frame); ours holds the same owner in ebx with rec in edi (4 saves, scene in ebp in both). The meaning fix is done: the sprintf destination is an unused char[0x100] local, not out (that alone removed the 0x100 frame error and 73 hunks), the calls go through d3if_SelectScene/sprintf/d3_ForEachObject/d3_PointToWorld/ai_FindBauplatz and the out record is the AIBUILDSITE view. Tried: owner read twice (short live ranges), int rec/int *out with casts, AIBLD* parameter, local declaration order, scene assignment before/after the first d3if_SelectScene call, raw-int spellings - every owner-live-across form gives 30 code + 10 slots, every rematerialised form 86 code + 4 regs; the register choice does not follow the source. c2prio / variant round. */
-int lc_GetGebaeudeBauplatz(int unused, AIBLD *b, AIBUILDSITE *out)
+int lc_GetGebaeudeBauplatz(AIBUILDSITE *out, AIBLD *b)
 {
     char text[0x100];
     int scene;

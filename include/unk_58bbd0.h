@@ -16,6 +16,23 @@ extern AIBUILDNAME ai_BuildNames[0xf];  /* 0x62aae8 */
 void ai_Unk58bbd0(void);                /* 0x58bbd0, the production window's table init */
 void ai_MarketContact(struct AIBLD *b); /* 0x58f510, the shop-counter contact of a building */
 int ai_BuildingName(int id, char *out); /* 0x58f640, the building name of a kind id */
+
+/* the "vg_" object list ai_VgFilter collects (ai_ShowVgObjects, cm's building creation) */
+typedef struct AIVGLIST {
+    int objs[0x20];                /* 0x00 */
+    int count;                     /* 0x80 */
+} AIVGLIST;
+/* the construction-site record lc_GetGebaeudeBauplatz fills (0x54 bytes: cm's building creation clears 0x15 dwords) */
+typedef struct AIBUILDSITE {
+    union {
+        char name[0x40];           /* 0x00, the building name (ai_BuildingName), then the "bk_" site object's name */
+        int nameHead;              /* 0x00, cleared before the name is written */
+    };
+    float pos[4];                  /* 0x40, the owner's world position (d3_PointToWorld) */
+    int object;                    /* 0x50, the "bk_" site object ai_FindBauplatz found */
+} AIBUILDSITE;
+char ai_VgFilter(int obj, AIVGLIST *ctx);                       /* 0x58f920, d3_ForEachObject callback: collects "vg_" objects */
+int lc_GetGebaeudeBauplatz(AIBUILDSITE *out, struct AIBLD *b);  /* 0x58fc40, the construction site of a building */
 /* 0x61168c: the "%1G" format of the map's city names (ai_FormatCityName). */
 void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master checks every contact listener runs once per frame */
 /* The windows the building contacts open (defined far below their callers in the .c). */

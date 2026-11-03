@@ -5347,81 +5347,83 @@ int cm_ExChat(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cbca0, handler of type 0x4c, "cm_ExCreateGeb": a building of kind data[8] (owner = the character data[0]) at the
-   position data[9..0x14]; its model "<geb dir>/<name>[_<level>].ogr" is loaded. Rough draft. */
+/* 0x4cbca0, handler of message 0x4c, "cm_ExCreateGeb": creates a building of kind m->geb.kind for the character
+   m->geb.owner (gm_CreateBuilding), finds its model "<data>gebaeude/*<NAME>.ogr" or "*<NAME>_A .. _C.ogr" in the
+   VFS, loads it into scene 0 at m->geb.pos / m->geb.rot, drops it onto the ground, hooks it to the building record
+   and removes the "vg_" objects (d3_ForEachObject over the default scene with ai_VgFilter) under the building's
+   construction site (lc_GetGebaeudeBauplatz); banners and the road follow. s (when given) gets the building
+   (state 1, kind 2). Returns 1 when the character or the building is missing, else 0 */
 
-int ai_Unk4cbca0(G17MSG *m, G17STAT *s)
+int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
 {
-    char nm[0x100];
-    char path[0x200];
-    char path2[0x100];
-    char msg[0x100], msg2[0x100], msg3[0x100];
-    char tmp[0x100];
-    char z[0x54];
-    char zz[0x84];
-    char *c, *b, *d, *o, *bp;
-    int sc, save, i, n;
-    int w1[3], w2[3];
-    int p1, p2, p3;
+    char name[MAX_PATH];
+    char tmp[0x80];
+    char path[MAX_PATH];
+    char text[0x100];
+    char found[MAX_PATH];
+    AIBUILDSITE site;
+    AIVGLIST list;
+    D3VECTOR4 pos;
+    AIBLD *b;
+    AICHAR *c;
+    D3OBJECT *o;
+    int scene, i;
 
-    c = gm_FindChar(G17_I(*m, 0));
+    c = (AICHAR *)gm_FindChar(m->geb.owner);
     if (c == 0)
         return 1;
-    if (ai_Unk1460ae0 != -1)
-        ai_NextObjectId = G17_I(*m, 4);
-    b = gm_CreateBuilding(m->data[8], *(unsigned short *)c);
+    if (net_Conn.s != -1)
+        ai_NextObjectId = m->geb.objectId;
+    b = (AIBLD *)gm_CreateBuilding(m->geb.kind, c->id);
     if (b == 0)
         return 1;
-    cm_LastBuildingId = *(int *)(b + 1);
-    sc = ai_Unk5f8b10;
-    d = ai_BTypes + (unsigned char)b[0] * 0x24d;
-    strcpy(nm, d + 1);
-    _strupr(nm + 2);
+    cm_LastBuildingId = b->id;
+    strcpy(name, "gb_");
+    strcat(name, ai_BTypes + (unsigned)b->type * 0x24d + 1);
+    _strupr(name + 2);
     for (i = 0; i < 4; i++) {
         if (i != 0)
-            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, nm, (char)(i + 0x40));
+            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, name, (char)(i + 0x40));
         else
-            sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, nm);
-        if (vfs_GetPath(path, vfs_Root, vfs_Root, path2) != 0)
-            break;
-    }
-    if (i >= 4)
-        goto done;
-    save = d3_CurrentScene;
-    d3if_SelectScene(0, 1);
-    p1 = G17_I(*m, 9);
-    p2 = G17_I(*m, 0xd);
-    p3 = G17_I(*m, 0x11);
-    o = d3_LoadGroup(path, 0, 0);
-    if (o == 0) {
-        sprintf(msg, "cm_ExCreateGeb(): Could not load 3D-Object-Group '%s'...", path);
-    } else {
-        memset(z, 0, sizeof(z));
-        d3_SetObjectPos(o, w1);
-        d3_SetObjectRot(o, &m->data[0x19]);
-        ai_DropObjectAt(o, &bp);
-        init_HookObject(o, bp, 2);
-        ai_BuildingName((unsigned char)bp[0], tmp);
-        strcpy(z, tmp);
-        sprintf(msg2, "cm_ExCreateGeb(): bauplatze name:%s", tmp);
-        if (lc_GetGebaeudeBauplatz(z + 0xc, bp) != 0) {
-            memset(zz, 0, sizeof(zz));
-            d3_ForEachObject(ai_Unk5fb5b0, sc, 0x2c0, ai_VgFilter, zz);
-            n = *(int *)(z + 0x10);
-            for (i = 0; i < n; i++) {
-                if (d3_QuadTree != 0)
-                    d3q_RemoveObject((D3OBJECT *)*(int *)(zz + i * 4), (D3QNODE *)d3_QuadTree);
-                sprintf(msg3, "cm_ExCreateGeb(): killing objectptr: %s", *(char **)(zz + i * 4));
-                sprintf(msg3, "cm_ExCreateGeb(): killing objectname: %s", *(char **)(zz + 0xc + i * 4));
-                d3if_Delete((struct D3OBJECT *)*(int *)(zz + 0x18 + i * 4));
+            sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, name);
+        if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
+            scene = d3_CurrentScene;
+            d3if_SelectScene(0, 1);
+            pos.x = m->geb.pos.x;
+            pos.y = m->geb.pos.y;
+            pos.z = m->geb.pos.z;
+            o = d3_LoadGroup(path, 0, 0);
+            if (o == 0) {
+                sprintf(name, "cm_ExCreateGeb(): Could not load 3D-Object-Group '%s'...", path);
+            } else {
+                memset(&site, 0, sizeof(site));
+                d3_SetObjectPos(o, (D3VECTOR *)&pos);
+                d3_SetObjectRot(o, m->geb.rot);
+                ai_DropObjectAt((int)o, (int)&pos);
+                init_HookObject((char *)o, (unsigned short *)b, 2);
+                ai_BuildingName(b->type, tmp);
+                strcpy(site.name, tmp);
+                sprintf(name, "cm_ExCreateGeb(): bauplatze name:%s", tmp);
+                if (lc_GetGebaeudeBauplatz(&site, b) != 0) {
+                    memset(&list, 0, sizeof(list));
+                    d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)site.object, 0x2c0,
+                                     (D3OBJECTCB)ai_VgFilter, &list);
+                    for (i = 0; i < list.count; i++) {
+                        if (d3_QuadTree != 0)
+                            d3q_RemoveObject((D3OBJECT *)list.objs[i], (D3QNODE *)d3_QuadTree);
+                        sprintf(text, "cm_ExCreateGeb(): killing objectptr: %s", (char *)list.objs[i]);
+                        sprintf(text, "cm_ExCreateGeb(): killing objectname: %s", (char *)list.objs[i]);
+                        d3if_Delete((D3OBJECT *)list.objs[i]);
+                    }
+                } else
+                    err_Message("cm_ExCreateGeb(): could not lc_GetGebaeudeBauplatz()...");
+                sv_CreateBanners((char *)b);
+                rd_BuildRoad(b->object, b->type);
             }
-        } else
-            err_Message("cm_ExCreateGeb(): could not lc_GetGebaeudeBauplatz()...");
-        sv_CreateBanners(b);
-        rd_BuildRoad(*(int *)(b + 0x61), (unsigned char)b[0]);
+            d3if_SelectScene(scene, 1);
+            break;
+        }
     }
-    d3if_SelectScene(save, 1);
-done:
     if (s != 0) {
         s->state = 1;
         s->kind = 2;
@@ -15289,7 +15291,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, ai_Unk4cbb90, cm_ExChat, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, ai_Unk4cbb90, cm_ExChat, cm_ExCreateGeb, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

@@ -438,8 +438,6 @@ extern char ch_EmptyName[];  /* 0x631090, "" (ch.h) */
 
 int rd_BuildRoad();  /* 0x4bcc20 */
 int ai_BuildingName();  /* 0x58f640 */
-int ai_VgFilter();  /* 0x58f920 */
-int lc_GetGebaeudeBauplatz();  /* 0x58fc40 (unk_58bbd0.c) */
 extern int ai_Unk5f8b10;  /* 0x5f8b10 */
 extern char cm_ChatLog[];  /* 0x75fba0 */
 

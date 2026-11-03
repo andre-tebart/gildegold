@@ -1319,3 +1319,4 @@
 2026-11-03T11:45:55 0x004cb4a0 func ai_Unk4cb4a0 -> cm_ExCharModel by:main why:handler of message 0x3e (cm_SendCharModel): gives the character the new model object
 2026-11-03T11:48:19 0x004cba10 func ai_Unk4cba10 -> cm_ExSpawnCharacter by:main why:handler of message 0x49: creates a character (gm_CreateCharacter) and places it in a building's room
 2026-11-03T11:49:10 0x004cbbd0 func ai_Unk4cbbd0 -> cm_ExChat by:main why:handler of message 0x4b (cm_SendChat): appends the chat text to cm_ChatLog
+2026-11-03T12:37:15 0x004cbca0 func ai_Unk4cbca0 -> cm_ExCreateGeb by:main why:its own messages name it: "cm_ExCreateGeb(): Could not load 3D-Object-Group" (0x60c774), handler of message 0x4c
