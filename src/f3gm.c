@@ -8769,15 +8769,7 @@ int gm_Unk509060(char *c, int *out)
 }
 /* 0x5090b0, the rank byte (+0x247) of the building b's kind record. The original switches on the kind's class
    (the record's first byte) into three groups, 2 / 5 / 7, 4 / 0xb .. 0xd / 0x10 / 0x13 and the rest, that all
-   return the same byte (its jump table: two bodies, the second shared by the last group and the default)
-   @deep Read against the original: the unsigned char switch on the kind record's class byte over 2..0x13
-   with the byte index table (2/5/7 -> body 0, 4/0xb..0xd/0x10/0x13 -> body 1, the rest -> default, bodies
-   1 and default merged) now matches, switch tables equal (3 entries, 18 index bytes), same size 79. Left:
-   the register of the two identical return bodies is swapped: the original's case-2/5/7 body uses ecx
-   (+0x39 xor ecx,ecx; mov cl,[eax+0x247]; mov eax,ecx) and the shared default body edx (+0x44), ours the
-   other way round (edx at +0x39, ecx at +0x44); diffclass: order 14 + that ja. Tried: the case groups in
-   other source orders (default first, group 4.. first), switch (p[0]): no change; folding group 4.. into
-   default changes the table (code). */
+   return the same byte (its jump table: two bodies, the second shared by the last group and the default) */
 
 int gm_BuildingRank(unsigned char *b)
 {
@@ -9761,15 +9753,7 @@ int gm_FreeCapacity(short *l, int id, int n)
 }
 /* 0x50acf0, how many of the goods id the stall object l can still take, at most n, as gm_FreeCapacity without the
    goods groups: the room left on its stock (gm_ListStock less the held object's count) when it holds the goods
-   already; else none when its goods fill cap[0], else the stock
-   @deep Read whole against the original and rewritten (ORDOBJ stall, the held-goods branch first with
-   stock - o->count spelled twice so the stock stays live as the original keeps it in ebx, the goods count
-   against cap[0], the final min): every call, field, constant and branch matches, 121 vs 121 bytes, no
-   code hunk left. Left: allocation only - the original saves ebx/esi first (stock in ebx, id in ecx, the
-   count in edi pushed inside the branch), ours esi/edi (stock in edi, id in edx, the count in ebx);
-   diffclass: slots 20 / order 64 under edi<->ebx. The grade stays draft only on 'branch targets differ: jg
-   at +0x35 ours to +0x76, the original's to +0x76' - the same offset, the epilogue pops in the other order
-   (tool note). */
+   already; else none when its goods fill cap[0], else the stock */
 
 int gm_FreeStallCapacity(char *l, int id, int n)
 {

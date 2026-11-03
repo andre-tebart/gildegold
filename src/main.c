@@ -438,7 +438,7 @@ void main_Exit(void)
 /* 0x531780, the window procedure of "Die Gilde": WM_DESTROY / WM_CLOSE post the quit message, WM_PAINT / WM_MOUSEWHEEL validate the window, WM_SYSCOLORCHANGE revalidates and repaints the screen
    (d2_BlitPart copies the back surface 0x6ed92c onto the screen surface 0x6ed924) when both surfaces are set, WM_ACTIVATEAPP restores the screen and reacquires the sound on activation (after
    the flip waits) and releases everything on deactivation (window to the bottom of the z order), 0x218 with wparam 0 answers the magic 0x424d5144 ("DQMB"), 0x7e7 reacquires the sound;
-   everything else goes to DefWindowProc. The surfaces are read from their globals at every use, like the original @deep body complete and instruction-identical to the original (dcp diffclass: hunks=0, 'identical instructions', 185 = 185 ins; the final fix was the '!= 1' nesting of the deactivation branch and tb_Paused = 0 before sfx_ReacquireAll). The grade still reads code=draft: dcp grade B3 'code 19' / size 590 vs 627 and B1 '2 of 640 bytes differ at +0xb4' are the original's 37-byte tail inside the function extent (0x5319ce.. fill, the 5-entry switch jump table 0x5319d0.. and the 0x16-byte index table 0x5319e4..) which our function symbol does not cover (the same walker-extent artifact as ai_PokerGame's note); nothing left to change in the C */
+   everything else goes to DefWindowProc. The surfaces are read from their globals at every use, like the original */
 LRESULT CALLBACK main_WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg) {
