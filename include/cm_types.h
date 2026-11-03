@@ -45,6 +45,12 @@ typedef struct G17UPGRADEMSG {          /* 8 bytes, the data of message 0x3a (se
     int nextObjId;                      /* 0x04, ai_NextObjectId from now, taken while connected (reasoned: the server's) */
 } G17UPGRADEMSG;
 
+typedef struct G17MODELMSG {            /* 0x24 bytes, the data of message 0x3e (cm_SendCharModel, its handler 0x4cb4a0
+                                           cm_ExCharModel) */
+    int charId;                         /* 0x00, the character */
+    char name[0x20];                    /* 0x04, its new model ("stallbursche_MANN") */
+} G17MODELMSG;
+
 typedef struct G17HIREMSG {             /* 0x17 bytes, the data of message 0x3d (cm_SendMessage3d, its handler
                                            0x4cb250 creates the character) */
     int bldId;                          /* 0x00, the building the character works in */
@@ -295,6 +301,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17GATEMSG gate;                /* 0x10, message 0x36 */
         G17HOMEMSG home;                /* 0x10, message 0x39 */
         G17UPGRADEMSG upgrade;          /* 0x10, message 0x3a */
+        G17MODELMSG model;              /* 0x10, message 0x3e */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */

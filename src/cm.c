@@ -5015,63 +5015,71 @@ int cm_ExHire(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cb4a0, handler of type 0x3e: the character data[0] gets a new 3D object group (name data[4], like
-   "<kind>_<a>_<b>"); its names are split into +0x130 / +0x170 of the record at +0x184 */
+#define CM_CHR(c) ((CHARACTER *)(c)->model)  /* AICHAR.model (ai.h: AITASK *) as the CHARACTER it is */
 
-int ai_Unk4cb4a0(G17MSG *m, G17STAT *s)
+/* 0x4cb4a0, handler of message 0x3e (cm_SendCharModel): the character charId gets the model "<body>_<name>": a new
+   scene object at the old one's place and angles (its name, owner and pick id kept), relit and marked as a
+   character's body; the model's text after its last '_' goes to the body name, the text before it to the full
+   name (an empty body name without a '_'; the second strrchr searches past the last '_' and finds none) */
+
+int cm_ExCharModel(G17MSG *m, G17STAT *s)
 {
     char buf[0x100];
-    float v1[3], v2[3];
-    char *c, *g, *o, *t, *p, *q;
-    int save, e;
+    D3VECTOR rot;
+    D3VECTOR4 pos;                      /* the engine's padded vector (the original's frame holds 16 bytes) */
+    AICHAR *c;
+    D3OBJECT *t;
+    void *owner;
+    CHARACTER *ch;
+    char *p, *q;
+    int save;
 
-    c = gm_FindChar(G17_I(*m, 0));
-    if (c == 0 || *(char **)(c + 0x184) == 0)
+    c = (AICHAR *)gm_FindChar(m->model.charId);
+    if (c == 0 || c->model == 0)
         return 1;
-    g = *(char **)(c + 0x184);
     save = d3_CurrentScene;
-    d3if_SelectScene(d3t_SceneIndex(*(int *)(g + 0x88)), 1);
-    v1[0] = *(float *)(*(char **)(g + 0x34) + 0x4c);
-    v1[1] = *(float *)(*(char **)(g + 0x34) + 0x50);
-    v1[2] = *(float *)(*(char **)(g + 0x34) + 0x54);
-    v2[0] = *(float *)(*(char **)(g + 0x34) + 0x84);
-    v2[1] = *(float *)(*(char **)(g + 0x34) + 0x88);
-    v2[2] = *(float *)(*(char **)(g + 0x34) + 0x8c);
-    e = *(int *)(*(char **)(g + 0x34) + 0x200);
-    t = d3_CreateObject(0, v1, v2, &m->data[4]);
-    if (t == 0) {
+    d3if_SelectScene(d3t_SceneIndex(CM_CHR(c)->scene), 1);
+    ch = CM_CHR(c);
+    pos.x = ch->obj->pos.x;
+    pos.y = ch->obj->pos.y;
+    pos.z = ch->obj->pos.z;
+    rot.x = ch->obj->rotation.x;
+    rot.y = ch->obj->rotation.y;
+    rot.z = ch->obj->rotation.z;
+    owner = ch->obj->owner;
+    t = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, m->model.name);
+    if (t != 0) {
+        strcpy(t->name, CM_CHR(c)->obj->name);
+        strcpy(CM_CHR(c)->name, m->model.name);
+        d3if_Delete(CM_CHR(c)->obj);
+        CM_CHR(c)->obj = t;
+        CM_CHR(c)->obj->owner = owner;
+        CM_CHR(c)->obj->pickId = 0x3000000;
+        d3_RelightObject(CM_CHR(c)->obj);
+        CM_CHR(c)->obj->stateFlags = (CM_CHR(c)->obj->stateFlags & 0xf7) | 4;
+        CM_CHR(c)->obj->kind = 2;
+        strcpy(buf, m->model.name);
+        p = strrchr(buf, '_');
+        if (p != 0) {
+            p++;
+            q = strrchr(p, '_');
+            if (q != 0)
+                *q = 0;
+            strcpy(CM_CHR(c)->body, p);
+            p[-1] = 0;
+            strcpy(CM_CHR(c)->fullname, buf);
+        } else
+            CM_CHR(c)->body[0] = ch_EmptyName[0];
         d3if_SelectScene(save, 1);
-        return 1;
+        if (s != 0) {
+            s->state = 2;
+            s->kind = 1;
+            s->value = (int)c;
+        }
+        return 0;
     }
-    strcpy(t, *(char **)(g + 0x34));
-    strcpy(g + 8, (char *)&m->data[4]);
-    d3if_Delete((struct D3OBJECT *)*(int *)(g + 0x34));
-    *(char **)(g + 0x34) = t;
-    *(int *)(*(char **)(g + 0x34) + 0x200) = e;
-    *(int *)(*(char **)(g + 0x34) + 0x48) = 0x3000000;
-    d3_RelightObject(*(D3OBJECT **)(g + 0x34));
-    o = *(char **)(g + 0x34);
-    o[0x212] = (o[0x212] & 0xf7) | 4;
-    *(int *)(*(char **)(g + 0x34) + 0x220) = 2;
-    strcpy(buf, (char *)&m->data[4]);
-    p = strchr(buf, '_');
-    if (p != 0) {
-        p++;
-        q = strchr(p, '_');
-        if (q != 0)
-            *q = 0;
-        strcpy(g + 0x130, p);
-        p[-1] = 0;
-        strcpy(g + 0x170, buf);
-    } else
-        g[0x130] = ch_EmptyName;
     d3if_SelectScene(save, 1);
-    if (s != 0) {
-        s->state = 2;
-        s->kind = 1;
-        s->value = (int)c;
-    }
-    return 0;
+    return 1;
 }
 /* 0x4cb6e0, handler of type 0x3f: a 0x80-byte record (id byte data[0], word data[1]) of gm_FindGoods is replaced */
 
@@ -15276,7 +15284,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
