@@ -60,10 +60,10 @@ typedef unsigned int SOCKET;
 
 int ai_Init(void)
 {
-    ai_UpdateStart = 0;
-    ai_LastUpdateTime.year = 0;
-    gm_SetTime(&ai_LastUpdateTime, 6, 0, 0);
-    ai_CountCarry = 0;
+    ai_Update.start = 0;
+    ai_Update.last.year = 0;
+    gm_SetTime(&ai_Update.last, 6, 0, 0);
+    ai_Update.carry = 0;
     if (!ai_LoadActionTable())
         return 0;
     ai_WeaponList[5] = 0;
@@ -374,30 +374,30 @@ void ai_UpdateCharacters(void)
     char buf[1024];
 
     now = ai_Time;
-    n = gm_MinutesBetween(&ai_LastUpdateTime, &now);
+    n = gm_MinutesBetween(&ai_Update.last, &now);
     f = n * 12.8f;
     whole = (int)f;
     ai_DifficultyValue = (float)ai_Difficulty;
     ai_DifficultyScale = ai_DifficultyValue * 0.0625f + 0.5f;
     if (n > 0 && ai_Time.hour <= 0x16 && ai_Time.hour >= 6) {
-        if (ai_LastUpdateTime.year < now.year) {
-            ai_LastUpdateTime = now;
+        if (ai_Update.last.year < now.year) {
+            ai_Update.last = now;
             return;
         }
         if (n > 0x3c) {
-            ai_LastUpdateTime.hour++;
+            ai_Update.last.hour++;
             count = 0x300;
         } else {
-            ai_LastUpdateTime = now;
-            ai_CountCarry = (f - (float)whole) + ai_CountCarry;
+            ai_Update.last = now;
+            ai_Update.carry = (f - (float)whole) + ai_Update.carry;
             count = whole;
-            if (ai_CountCarry >= 1.0f) {
-                ai_CountCarry = ai_CountCarry - 1.0f;
+            if (ai_Update.carry >= 1.0f) {
+                ai_Update.carry = ai_Update.carry - 1.0f;
                 count = whole + 1;
             }
         }
-        sprintf(buf, "Player count: %i, Starting with: %i Count: %i Deltatime: %i", count, ai_UpdateStart, count, n);
-        idx = ai_UpdateStart;
+        sprintf(buf, "Player count: %i, Starting with: %i Count: %i Deltatime: %i", count, ai_Update.start, count, n);
+        idx = ai_Update.start;
         for (; count != 0; count--) {
             if (ai_CharsT[idx].id != 0xffff) {
                 c = &ai_CharsT[idx];
@@ -415,15 +415,15 @@ void ai_UpdateCharacters(void)
             }
             idx = (idx + 1) % 0x300;
         }
-        ai_UpdateStart = idx;
+        ai_Update.start = idx;
         if (idx == 0x300) {
-            ai_UpdateStart = 0;
-            ai_LastUpdateTime.hour++;
-            ai_LastUpdateTime.min = 0;
-            ai_LastUpdateTime.sec = 0;
-            ai_CountCarry = 0.0f;
+            ai_Update.start = 0;
+            ai_Update.last.hour++;
+            ai_Update.last.min = 0;
+            ai_Update.last.sec = 0;
+            ai_Update.carry = 0.0f;
         }
-        sprintf(buf, "Next Player: %i", ai_UpdateStart);
+        sprintf(buf, "Next Player: %i", ai_Update.start);
     }
 }
 /* 0x47e7f0, the character can act now (this machine runs it, and no flag 0x3000) */
@@ -5977,9 +5977,7 @@ int ai_NEntries = 0;  /* 0xf86a2c */
 AISLOT ai_Slots[128] = {0};  /* 0xf86a40 */
 AIENTRY ai_Entries[32] = {0};  /* 0xf88a40 */
 AIOBJ * ai_Carts[16] = {0};  /* 0xf89540, the master's kind- */
-int ai_UpdateStart = 0;  /* 0xf89580, the character index the per-frame update share starts at */
-AITIME ai_LastUpdateTime = {0};  /* 0xf89584, the game time of the last per-frame AI update */
-float ai_CountCarry = 0;  /* 0xf89594, the fractional character count carried to the next frame */
+AIUPDATE ai_Update = {0};  /* 0xf89580, the per-frame character update cycle */
 int ai_WeaponList2[10] = {0};  /* 0xf8a0a0, goods ids of the second weapon list (0-terminated; ends before */
 AICHAR * ai_LoggedMaster = 0;  /* 0xf8a0c8, the master whose decisions are logged */
 int ai_NumCarts = 0;  /* 0xf8a0cc, how many of ai_Carts are set (0 .. 16) */

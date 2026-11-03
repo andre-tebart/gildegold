@@ -3,7 +3,7 @@
 #ifndef AI_TYPES_H
 #define AI_TYPES_H
 #pragma pack(push, 2)
-typedef struct AITIME {                 /* 14 bytes: the game clock ai_Time, the AI's last-run time ai_LastUpdateTime,
+typedef struct AITIME {                 /* 14 bytes: the game clock ai_Time, the AI's last-run time ai_Update.last,
                                            the times of the events and messages (f3gm.c's clock functions) */
     int year;                           /* 0x0, the year (0x578 + it is the calendar year; % 4 the season) */
     unsigned short hour;                /* 0x4, the hour */

@@ -1708,3 +1708,6 @@
 2026-11-03T22:12:24 0x0053e4e0 func he_Unk53e4e0 -> he_SpreadGfxInfos by:main why:0x53e4e0 places the gfx infos (0x7588a0) over one object on a circle of radius 100 around it; called after one is added (0x53e5f0) or removed (0x53e840)
 2026-11-03T22:15:55 0x0053e5f0 data he_Unk53e5f0 -> he_CreateGfxObject by:main why:0x53e5f0 creates the model object of a gfx info over its parent (d3_CreateObject at the parent's top, alpha, colour, a turning path); its only caller 0x53e780 reports itself as he_CreateGfxInfo()
 2026-11-03T22:19:12 0x0053e780 func he_Unk53e780 -> he_CreateGfxInfo by:main why:0x53e780 names itself in its error string "he_CreateGfxInfo(): invalid parent :%s" (0x626760); takes the first free gfx info for an event
+2026-11-03T22:26:20 0x00f89580 data ai_UpdateStart -> ai_Update.start by:main why:one object (0xf89580): the save writes and reads the 0x18 bytes as one block (vfs_fwrite at 0x5191ad), the AIUPDATE record, its fields
+2026-11-03T22:26:20 0x00f89584 data ai_LastUpdateTime -> ai_Update.last by:main why:contained in ai_Update (0xf89580)
+2026-11-03T22:26:20 0x00f89594 data ai_CountCarry -> ai_Update.carry by:main why:contained in ai_Update (0xf89580)

@@ -558,9 +558,13 @@ extern int ai_TradeMsgOff;              /* 0xf86a24, read-only in every source: 
                                            message and its count (never set in this build) */
 extern AIOBJ *ai_Carts[16];             /* 0xf89540, the master's kind-0x1d cart objects without a running
                                            job (ai_Unk483a60 fills them, ai_NumCarts counts them) */
-extern int ai_UpdateStart;              /* 0xf89580, the character index the per-frame update share starts at */
-extern AITIME ai_LastUpdateTime;        /* 0xf89584, the game time of the last per-frame AI update */
-extern float ai_CountCarry;             /* 0xf89594, the fractional character count carried to the next frame */
+typedef struct AIUPDATE {               /* 0x18 bytes, the per-frame character update cycle (ai_Update): the save
+                                           writes and reads it as one block (ls.c, vfs_fwrite at 0x5191ad) */
+    int start;                          /* 0x00, the character index the per-frame update share starts at */
+    AITIME last;                        /* 0x04, the game time of the last per-frame AI update */
+    float carry;                        /* 0x14, the fractional character count carried to the next frame */
+} AIUPDATE;
+extern AIUPDATE ai_Update;              /* 0xf89580 */
 extern int ai_WeaponList2[10];          /* 0xf8a0a0, goods ids of the second weapon list (0-terminated; ends before 0xf8a0c8) */
 extern AICHAR *ai_LoggedMaster;            /* 0xf8a0c8, the master whose decisions are logged */
 extern int ai_NumCarts;                 /* 0xf8a0cc, how many of ai_Carts are set (0 .. 16) */

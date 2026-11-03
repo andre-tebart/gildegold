@@ -174,7 +174,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     vfs_fwrite(&ai_NextPlayerNumber, 4, 1, f);
     vfs_fwrite(&ai_CharCount, 4, 1, f);
     vfs_fwrite(&ls_SpareInt, 4, 1, f);
-    vfs_fwrite(&ai_UpdateStart, 0x18, 1, f);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
+    vfs_fwrite(&ai_Update, sizeof(AIUPDATE), 1, f);   /* 0xf89580 */
     vfs_fwrite(&ai_NextPartyId, 4, 1, f);
     vfs_fwrite(&ai_NextCrimeId, 4, 1, f);
 #define LS_STEP(fn) if (fn(f) == 0) { vfs_fclose(f); ls_IdsToRefs(); return 0; }
@@ -1372,7 +1372,7 @@ int ls_LoadGame(int name, int kind)
         goto close;
     if (ls_Version >= 0x10022)
         LS_RD(&ls_SpareInt, 4);
-    LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
+    LS_RD(&ai_Update, sizeof(AIUPDATE));   /* 0xf89580 */
     ai_Unk75e134 = *(int *)&ai_Time.hour;
     ai_TimeCopy[0] = ai_Time.year;
     ai_Unk75e138 = *(int *)((char *)&ai_Time + 8);
@@ -2843,7 +2843,7 @@ int ls_ReceiveGame(void)
         LS_LOADFAIL
     ai_TimeCopyT = ai_Time;
     LS_RD(&ls_SpareInt, 4);
-    LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
+    LS_RD(&ai_Update, sizeof(AIUPDATE));   /* 0xf89580 */
     if (ls_Version >= 0x10030)
         LS_RD(&ai_NextPartyId, 4);
     if (ls_Version >= 0x1003d)
