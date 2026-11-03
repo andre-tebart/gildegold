@@ -14116,7 +14116,7 @@ int ai_Unk4e0010(int scene)
     cm_RunSceneParty(scene, 0);
     cm_RunSceneParty(scene, 0);
     cm_WaitTicks(5);
-    return cm_LeaveEventScene();
+    cm_LeaveEventScene();
 }
 /* 0x4e0040, the execution's aftermath (the fourth callback of the execution event, ai_Unk4e5730 kind 5 with the scene
    0x4e01e0) for the delinquent m->members[0]: unless m->zero7d is set, the delinquent's player (kinds 6 / 7) gets the note
@@ -15271,7 +15271,7 @@ int cm_StopScript(int a)
 }
 /* 0x4e2dc0, evt_Stop of every used script of evt_Scripts (128) that runs (flags bit 1) for the group -2 */
 
-int ai_Unk4e2dc0(void)
+int cm_StopGroupScripts(void)
 {
     int i;
     EVTSCRIPT *e;
@@ -15284,7 +15284,7 @@ int ai_Unk4e2dc0(void)
     return 0;
 }
 /* 0x4e2e00, waits frame by frame (sv_RunFrame, flags 0x79706) until no used script of evt_Scripts (128) runs for the group
-   -2 (the ones ai_Unk4e2dc0 stops), or the frames end; cm_LeaveEventScene waits so */
+   -2 (the ones cm_StopGroupScripts stops), or the frames end; cm_LeaveEventScene waits so */
 
 void cm_WaitGroupScripts(void)
 {
@@ -15341,9 +15341,9 @@ void cm_LoadEventScene(char *name)
     }
     if (gm_ClockSeason(&ai_Time) == 3)
         sv_UpdateSkyColors();
-    k = ai_Unk6f0d9c + 1;
+    k = cm_SceneDepth + 1;
     evt_NoGroup = -2;
-    ai_Unk6f0d9c = k;
+    cm_SceneDepth = k;
     if (d3_DefaultScene != 0) {
         t = (int)d3_DefaultScene->events;
         if (t != 0) {
@@ -15352,7 +15352,7 @@ void cm_LoadEventScene(char *name)
                 cb(d3_DefaultScene, 4, t + 0x214, 0);
         }
     }
-    ai_Unk60d36c = evt_LastId;
+    cm_SceneEnterScript = evt_LastId;
     d3if_Prerender(1);
     if (ai_Unk6f0da0 != 0) {
         d2_ReleaseFade(ai_Unk6f0da0);
@@ -15373,52 +15373,50 @@ int cm_FadeToBlack(void)
         }
     }
 }
-/* 0x4e30c0, leaves the scene (depth 0x6f0d9c): waits for the objects 0x60d36c / 0x5f8438 (0x4284a0, bit 1 of +0x124), clears the scene objects (0x4e2dc0 /
-   0x4e2e00), the table 0x5fb5b0 +0xb0 (0x45ef60), 0x433b10 (0xfc2dec), 0x6310e8 / e4 and 0x4473f0. ROUGH */
+/* 0x4e30c0, leaves the event scene (unless replaying or no scene is entered, cm_SceneDepth): stops the script that was the
+   last when the scene was entered (cm_SceneEnterScript), runs the scene's event 5 (D3SCENE.events), waits while the last
+   started script (evt_LastId) runs, stops and waits for the scene's scripts (group -2: cm_StopGroupScripts,
+   cm_WaitGroupScripts), waits while the entering script runs; then frees the scene's height map (d3sm_Destroy), the
+   camera's path and its move, resets the 3D interface (d3if_Reset) and lowers cm_SceneDepth */
 
-int cm_LeaveEventScene(void)
+void cm_LeaveEventScene(void)
 {
-    char *t, *o;
-    int id;
+    EVTSCRIPT *e;
 
-    if (cm_SkipEvents != 0 || ai_Unk6f0d9c <= 0)
-        return cm_SkipEvents;
-    if (ai_Unk60d36c != -1) {
-        o = (char *)evt_FindById(ai_Unk60d36c);
-        if (o != 0)
-            evt_Stop((EVTSCRIPT *)o);
+    if (cm_SkipEvents != 0 || cm_SceneDepth <= 0)
+        return;
+    if (cm_SceneEnterScript != -1) {
+        e = evt_FindById(cm_SceneEnterScript);
+        if (e != 0)
+            evt_Stop(e);
     }
-    t = (char *)d3_DefaultScene;
-    if (t != 0 && *(int *)(t + 0x3c8) != 0 && *(int *)(*(char **)(t + 0x3c8) + 0x294) != 0)
-        (*(int (**)(char *, int, char *, int))(*(char **)(t + 0x3c8) + 0x294))(t, 5, *(char **)(t + 0x3c8) + 0x298, 0);
-    id = evt_LastId;
-    if (id != -1) {
-        o = (char *)evt_FindById(id);
-        while (o != 0 && (*(unsigned char *)(o + 0x124) & 1)) {
+    if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[5].fn != 0)
+        d3_DefaultScene->events[5].fn(d3_DefaultScene, 5, d3_DefaultScene->events[5].name, 0);
+    if (evt_LastId != -1) {
+        e = evt_FindById(evt_LastId);
+        while (e != 0 && (e->flags & 1)) {
             sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
-            o = (char *)evt_FindById(evt_LastId);
+            e = evt_FindById(evt_LastId);
         }
     }
-    ai_Unk4e2dc0();
+    cm_StopGroupScripts();
     cm_WaitGroupScripts();
-    id = ai_Unk60d36c;
-    if (id != -1) {
-        o = (char *)evt_FindById(id);
-        while (o != 0 && (*(unsigned char *)(o + 0x124) & 1)) {
+    if (cm_SceneEnterScript != -1) {
+        e = evt_FindById(cm_SceneEnterScript);
+        while (e != 0 && (e->flags & 1)) {
             sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
-            o = (char *)evt_FindById(ai_Unk60d36c);
+            e = evt_FindById(cm_SceneEnterScript);
         }
     }
-    t = (char *)d3_DefaultScene;
-    if (*(int *)(t + 0xb0) != 0) {
-        d3sm_Destroy(*(int *)(t + 0xb0));
+    if (d3_DefaultScene->hmap != 0) {
+        d3sm_Destroy(d3_DefaultScene->hmap);
         d3_DefaultScene->hmap = 0;
     }
     d3anim_FreePath(d3_Camera);
-    d3t_CamMoveI = 0;
+    d3t_CamMove = 0;
     d3t_CamMoving = 0;
     d3if_Reset();
-    ai_Unk6f0d9c--;
+    cm_SceneDepth--;
 }
 /* 0x4e3210, the scene's tick counter 0x6f0d80: 0x6f0d88 tells whether it was past 0x6f0d84 */
 
@@ -16753,7 +16751,7 @@ int ai_Unk60cb68 = -1;  /* 0x60cb68 */
 int cm_DialogFrameFlags = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
 int cm_SceneDuration = 10;  /* 0x60d364 */
 int cm_TextBox = -1;  /* 0x60d368 */
-int ai_Unk60d36c = -1;  /* 0x60d36c, -1 or the object waited for ( */
+int cm_SceneEnterScript = -1;  /* 0x60d36c, -1 or the object waited for ( */
 int ai_Unk60d370 = 1;  /* 0x60d370 */
 int ai_Unk60d374 = 1;  /* 0x60d374 */
 char ai_Unk60dd24 = 48;  /* 0x60dd24 */
@@ -16825,7 +16823,7 @@ int cm_SkipEvents = 0;  /* 0x6f0d8c */
 int * cm_CurrentFight = 0;  /* 0x6f0d90 */
 int cm_DuelOver = 0;  /* 0x6f0d94 */
 unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
-int ai_Unk6f0d9c = 0;  /* 0x6f0d9c, the scene nesting depth */
+int cm_SceneDepth = 0;  /* 0x6f0d9c, the scene nesting depth */
 char * ai_Unk6f0da0 = 0;  /* 0x6f0da0, the fade */
 unsigned int cm_FightStart = 0;  /* 0x6f0da4, fight start (d3_Time) */
 unsigned char cm_DuelScore[2] = {0};  /* 0x6f0da8, the damage taken by the left / right duellist (cm_DuelShotAction adds it, cm_RunDuel heals it back) */

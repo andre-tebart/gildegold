@@ -734,7 +734,7 @@ void cm_PlaceFighters(int *ids, char *side);  /* 0x4d1c20, places the fighters o
 int cm_FadeToBlack();  /* 0x4e3060 */
 int sb_UnloadSampleBank();  /* 0x426ba0 */
 void d3io_ReleaseObject();  /* 0x44e2c0 */
-int cm_LeaveEventScene();  /* 0x4e30c0 */
+void cm_LeaveEventScene(void);  /* 0x4e30c0 */
 void d2_CopyCaption(char *caption);  /* 0x478870 */
 char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h */
 
@@ -1023,7 +1023,7 @@ int ai_PlanRank();  /* 0x4945c0 */
 int gv_CheckSentence();  /* 0x4f4420 */
 void d2_SetObjEnabled(int obj, int on);  /* 0x475e40 */
 void cm_SetViewEnabled(int view, int on);  /* 0x4e2bd0 */
-int ai_Unk4e2dc0();  /* 0x4e2dc0 */
+int cm_StopGroupScripts();  /* 0x4e2dc0 */
 void cm_WaitGroupScripts(void);  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
 extern int cm_SceneRain;  /* 0x6f0dbc */
@@ -1048,8 +1048,8 @@ int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
 int ai_Unk4e3fe0();  /* 0x4e3fe0 */
 int ai_Unk4e4020();  /* 0x4e4020 */
-extern int ai_Unk6f0d9c;  /* 0x6f0d9c, the scene nesting depth */
-extern int ai_Unk60d36c;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
+extern int cm_SceneDepth;  /* 0x6f0d9c, the scene nesting depth */
+extern int cm_SceneEnterScript;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
 extern int evt_LastId;  /* 0x5f8438 */
 extern int d3t_CamMoving;  /* 0x6310e4 */
 void d3sm_Destroy();  /* 0x45ef60 */
