@@ -213,6 +213,7 @@ extern int sv_PanelKind1eBtn;                                    /* 0x623898 */
 extern int ai_Unk6238a4;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
 extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
+extern SVSKYREC sv_SkyHeavy[3];                             /* 0x623ac0 */
 extern char sv_DayTables[278];                              /* 0x623ba8 */
 extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
 extern int ai_Unk623e10[];                                  /* 0x623e10 */

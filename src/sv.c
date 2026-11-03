@@ -16,8 +16,6 @@
    Open: data: 0x6f23f1 sv_InMissionComplete, owner sv (only sv_RunFrame uses it; it follows sv_BookPhase) but kept
    typed in main.c's gap block: defining it in sv's bss moves ai_GameState's neighbour and the sv_MenuOpen view
    (ai_GameState + 2) fails D7 until ai_GameState is declared at its real size.
-   Open: data: 0x623ac0 sv_SkyHeavy, owner sv or cm (defined in cm.c as char[], lies in sv's data block between
-   sv_SkyMedium and sv_DayTables; sv reads it through the SVSKYREC view sv_SkyHeavyT, cm by byte offsets).
    unit of rea 8cef7d5b (src/game/sv.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct D2SHP;
@@ -55,7 +53,6 @@ extern GAPDATA full_data_623e84[];
 extern GAPDATA full_data_6f2354[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern char sv_SkyHeavy[];
 
 #include "unk_5d33b0_types.h"
 #include "ai_types.h"
@@ -134,7 +131,6 @@ extern char cm_ChatLog[2048];
 
 extern GAPDATA full_data_602568[];
 extern char cm_ChatLog[2048];
-extern char sv_SkyHeavy[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
 
@@ -2083,7 +2079,6 @@ char sv_SetSkyLightColors(D3OBJECT *o, void *ctx)
     }
     return 1;
 }
-#define sv_SkyHeavyT (*(SVSKYREC (*)[3])&sv_SkyHeavy)  /* 0x623ac0, sv_SkyHeavy (cm.c: char[]) as its sky records */
 /* 0x525510, sets up the day's weather and sky for the clock t: the season's cloud chance and climate from the own player's record; with
    reroll the hours are rolled anew (winter weather in season 3: snow with rain at half the cloud chance, else snow; the clouds of each hour
    by the chance, their thunder above 999 out of winter, the wind rose as sin / cos of a random walk of the angle by +-0.175); the wind
@@ -2179,7 +2174,7 @@ void sv_SetupWeather(struct AITIME *t, int reroll)
     d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[1], 0);
     flags.all = 0;
     flags.b[2] = 0;
-    d3_SkyLayers[2] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyHeavyT[2].name, flags, sv_SkyHeavyT[2].scale, 0, sv_SkyHeavyT[2].vscale, sv_SkyHeavyT[2].voffset);
+    d3_SkyLayers[2] = (int)d3sky_CreateLayer(d3_Sky, 0, sv_SkyHeavy[2].name, flags, sv_SkyHeavy[2].scale, 0, sv_SkyHeavy[2].vscale, sv_SkyHeavy[2].voffset);
     d3sky_SetLayerSpeed(d3_Sky, (struct D3SKYLAYER *)d3_SkyLayers[2], 0);
     scene = d3_CurrentScene;
     for (i = 0; i < 64; i++) {
@@ -7124,9 +7119,9 @@ void sv_UpdateWeather(void)
                 sky = &sv_SkyMedium[k];
             } else {
                 k = util_RandomU(2);
-                if (_strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyHeavyT[k].name) == 0)
+                if (_strcmpi(sv_SkyLayersT[1]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
-                sky = &sv_SkyHeavyT[k];
+                sky = &sv_SkyHeavy[k];
             }
             d3sky_SetLayerTex(sv_SkyLayersT[1], sky->name);
             sv_SkyLayersT[1]->scale = sky->scale;
@@ -7147,9 +7142,9 @@ void sv_UpdateWeather(void)
                 sky = &sv_SkyMedium[k];
             } else {
                 k = util_RandomU(2);
-                if (_strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyHeavyT[k].name) == 0)
+                if (_strcmpi(sv_SkyLayersT[0]->t->name, sv_SkyHeavy[k].name) == 0)
                     k++;
-                sky = &sv_SkyHeavyT[k];
+                sky = &sv_SkyHeavy[k];
             }
             d3sky_SetLayerTex(sv_SkyLayersT[0], sky->name);
             sv_SkyLayersT[0]->scale = sky->scale;
@@ -7679,6 +7674,12 @@ SVSKYREC sv_SkyMedium[3] = {
     { "Sky_Mittel_01", 3.0f, 0.8f, -0.25f },
     { "Sky_Mittel_02", 3.0f, 0.8f, -0.25f },
     { "Sky_Mittel_03", 3.0f, 0.8f, -0.25f },
+};
+/* 0x623ac0, the skies of heavy cloud (150 clouds and above; cm picks one for the stormy cutscene) */
+SVSKYREC sv_SkyHeavy[3] = {
+    { "sky_schwer_01", 3.0f, 0.8f, -0.25f },
+    { "sky_schwer_02", 3.0f, 0.8f, -0.25f },
+    { "sky_dunkel_01", 3.0f, 0.8f, -0.25f },
 };
 /* 0x623ba8, the day tables: the 6 day phases (SVDAYPHASE, 10 bytes each, sv_FillDayPhases writes them from the season's
    minutes; their int seconds sit at odd addresses, so the object is packed) and the sky key colours sv_SkyKeys (+0x38) /
