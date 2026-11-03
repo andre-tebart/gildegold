@@ -689,8 +689,8 @@ extern const double cm_WeaponSpeedScale;  /* 0x5eb9b8 */
 
 void cm_CollectSceneChars();  /* 0x4d0a30 */
 char ai_Unk4d0a80(char *o);  /* 0x4d0a80 */
-extern int ai_Unk6f0d58;  /* 0x6f0d58 */
-extern char *ai_Unk935980[];  /* 0x935980 */
+extern int cm_FlagObjectCount;  /* 0x6f0d58 */
+extern char *cm_FlagObjects[];  /* 0x935980 */
 
 void cm_PlaceFlagObjects();  /* 0x4d0ca0 */
 int ai_Unk4d0cd0(int *a);  /* 0x4d0cd0 */
@@ -732,12 +732,12 @@ extern const double ai_Unk5edc58;  /* 0x5edc58 */
 extern double ai_Unk5eb8b8;  /* 0x5eb8b8 */
 extern float ai_Unk5eb878;  /* 0x5eb878 */
 
-void ai_Unk4d1a10(char *rec);  /* 0x4d1a10 */
+void cm_EndFightScene(struct CMFIGHTREC *rec);  /* 0x4d1a10, ends the fight scene of a fight record (cm_SetupFightScene its counterpart) */
 void ai_Unk4d1c20(char *side, int id);  /* 0x4d1c20 */
-int ai_Unk4e3060();  /* 0x4e3060 */
+int cm_FadeToBlack();  /* 0x4e3060 */
 int sb_UnloadSampleBank();  /* 0x426ba0 */
 void d3io_ReleaseObject();  /* 0x44e2c0 */
-int ai_Unk4e30c0();  /* 0x4e30c0 */
+int cm_LeaveEventScene();  /* 0x4e30c0 */
 void d2_CopyCaption(char *caption);  /* 0x478870 */
 char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h (cm.c calls it through ch_FindFreeCellK) */
 

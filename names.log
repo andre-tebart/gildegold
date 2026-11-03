@@ -1430,3 +1430,8 @@
 2026-11-03T14:10:47 0x004d0ca0 data ai_Unk4d0ca0 -> cm_PlaceFlagObjects by:main why:0x4d0ca0 walks the scene with the callback 0x4d0a80, which gives the dummies "dummy_sp_ESCAPE" / "dummy_CONQUER" their flag objects ub_FLUCHTFLAGGE / ub_CONQUER
 2026-11-03T14:10:47 0x004d0f80 data ai_Unk4d0f80 -> cm_ClearKind3MaskCB by:main why:0x4d0f80, a d3_ForEachObject2 callback of the fight scene setup: an object of kind 3 (D3OBJECT.kind) gets its mask (0x224) cleared
 2026-11-03T14:10:47 0x004e3650 data ai_Unk4e3650 -> cm_ApplySeason by:main why:0x4e3650: gm_ClockSeason, then the plant and texture set hooks of init over the default scene and init_SetSeasonTextures
+2026-11-03T14:16:56 0x004d1a10 func ai_Unk4d1a10 -> cm_EndFightScene by:main why:0x4d1a10 is the counterpart of cm_SetupFightScene: fades out, unloads the fight sound banks and voices, deletes the flag objects and the fighters' scene characters, leaves the scene
+2026-11-03T14:16:56 0x004e3060 data ai_Unk4e3060 -> cm_FadeToBlack by:main why:0x4e3060 starts a d2_StartFade to "BLACK" (0x5a ticks) and runs frames until the fade's end flag is set
+2026-11-03T14:16:56 0x004e30c0 func ai_Unk4e30c0 -> cm_LeaveEventScene by:main why:0x4e30c0 leaves the scene cm_LoadEventScene entered (the scene depth 0x6f0d9c), clears its objects; called at the end of the fight scene
+2026-11-03T14:16:56 0x00935980 data ai_Unk935980 -> cm_FlagObjects by:main why:0x4d0a80 keeps the flag objects ub_FLUCHTFLAGGE / ub_CONQUER it creates at the dummies here; 0x4d1a10 deletes them (d3if_Delete)
+2026-11-03T14:16:56 0x006f0d58 data ai_Unk6f0d58 -> cm_FlagObjectCount by:main why:0x4d0a80 counts the flag objects of cm_FlagObjects (ai_Unk935980[n++]); cm_PlaceFlagObjects clears it, 0x4d1a10 deletes that many

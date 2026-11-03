@@ -8258,7 +8258,7 @@ void cm_CollectSceneChars()
 }
 /* 0x4d0a80, a callback of the object walk: the dummies "dummy_sp_ESCAPE" get a flag object "ub_FLUCHTFLAGGE" (named
    "sp_ESCAPE", the animation "anim_FLUCHTFLAGGE.baf"), "dummy_CONQUER" one "ub_CONQUER" (named "sp_CONQUER_<n>"), both
-   kept in ai_Unk935980[ai_Unk6f0d58++]; returns 1. Rough draft. */
+   kept in cm_FlagObjects[cm_FlagObjectCount++]; returns 1. Rough draft. */
 
 char ai_Unk4d0a80(char *o)
 {
@@ -8272,14 +8272,14 @@ char ai_Unk4d0a80(char *o)
         rot[2] = 0;
         d3_PointToWorld(o, o + 0x4c, pos);
         r = (char *)d3_CreateObject(0, pos, rot, "ub_FLUCHTFLAGGE");
-        ai_Unk935980[ai_Unk6f0d58] = r;
+        cm_FlagObjects[cm_FlagObjectCount] = r;
         strcpy(r, "sp_ESCAPE");
-        *(int *)(ai_Unk935980[ai_Unk6f0d58] + 0x220) = 4;
-        *(int *)(ai_Unk935980[ai_Unk6f0d58] + 0x224) = 1;
-        ai_Unk935980[ai_Unk6f0d58][0x212] = (ai_Unk935980[ai_Unk6f0d58][0x212] & 0xf7) | 4;
-        ai_Unk935980[ai_Unk6f0d58][0x212] |= 0x40;
-        d3t_PlayAnim(ai_Unk935980[ai_Unk6f0d58], "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
-        ai_Unk6f0d58++;
+        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x220) = 4;
+        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x224) = 1;
+        cm_FlagObjects[cm_FlagObjectCount][0x212] = (cm_FlagObjects[cm_FlagObjectCount][0x212] & 0xf7) | 4;
+        cm_FlagObjects[cm_FlagObjectCount][0x212] |= 0x40;
+        d3t_PlayAnim(cm_FlagObjects[cm_FlagObjectCount], "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
+        cm_FlagObjectCount++;
         return 1;
     }
     if (strstr(o, "dummy_CONQUER") != 0) {
@@ -8288,14 +8288,14 @@ char ai_Unk4d0a80(char *o)
         rot[2] = 0;
         d3_PointToWorld(o, o + 0x4c, pos);
         r = (char *)d3_CreateObject(0, pos, rot, "ub_CONQUER");
-        ai_Unk935980[ai_Unk6f0d58] = r;
+        cm_FlagObjects[cm_FlagObjectCount] = r;
         d3if_SelectTextureSet(r, *(int *)(r + 0x1cc), 1, 1);
-        sprintf(ai_Unk935980[ai_Unk6f0d58], "sp_CONQUER_%i", ai_Unk6f0d58);
-        *(int *)(ai_Unk935980[ai_Unk6f0d58] + 0x200) = 0;
-        *(int *)(ai_Unk935980[ai_Unk6f0d58] + 0x220) = 4;
-        *(int *)(ai_Unk935980[ai_Unk6f0d58] + 0x224) = 1;
-        ai_Unk935980[ai_Unk6f0d58][0x212] = (ai_Unk935980[ai_Unk6f0d58][0x212] & 0xf7) | 4;
-        ai_Unk6f0d58++;
+        sprintf(cm_FlagObjects[cm_FlagObjectCount], "sp_CONQUER_%i", cm_FlagObjectCount);
+        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x200) = 0;
+        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x220) = 4;
+        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x224) = 1;
+        cm_FlagObjects[cm_FlagObjectCount][0x212] = (cm_FlagObjects[cm_FlagObjectCount][0x212] & 0xf7) | 4;
+        cm_FlagObjectCount++;
     }
     return 1;
 }
@@ -8303,7 +8303,7 @@ char ai_Unk4d0a80(char *o)
 
 void cm_PlaceFlagObjects()
 {
-    ai_Unk6f0d58 = 0;
+    cm_FlagObjectCount = 0;
     d3_ForEachObject(ai_Unk5fb5b0, 0, 0x100, ai_Unk4d0a80, 0);
 }
 /* 0x4d0cd0, the first free (-1) of 16 slots, else -1 */
@@ -8636,15 +8636,18 @@ void cm_SetupFightScene(CMFIGHTREC *rec)
     else
         cm_DefenseFactor = 1.0f;
 }
-/* 0x4d1a10, ends the fight scene (the counterpart of 0x4d0fa0): releases the sound sets, the flag objects
-   ai_Unk935980[], the characters' objects (the strength effect of non-kind-0xb characters 0x4fca40) and resets the scene */
+/* 0x4d1a10, ends the fight scene of the fight record rec (the counterpart of cm_SetupFightScene): fades to black, unloads
+   the sound banks and voices (the defender's only when its role differs), deletes the flag objects cm_FlagObjects and
+   the boots object; every fighter with a scene character carries the health lost in the fight back to its character
+   (gm_AddHealth, not for the kind 0xb ones; only in the own fight or without a network connection) and loses the scene
+   character; then the scroll speed, the sky, the scene and the caption are put back */
 
-void ai_Unk4d1a10(char *rec)
+void cm_EndFightScene(CMFIGHTREC *rec)
 {
-    char *r, *k;
+    AICHAR *k;
     int i;
 
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     if (cm_PickMarker != 0) {
         d3if_Delete((struct D3OBJECT *)cm_PickMarker);
         cm_PickMarker = 0;
@@ -8667,29 +8670,29 @@ void ai_Unk4d1a10(char *rec)
         sb_UnloadSampleBank(cm_DefenderTauntVoices);
         sb_UnloadSampleBank(cm_DefenderPainVoices);
     }
-    for (i = 0; i < ai_Unk6f0d58; i++)
-        d3if_Delete((struct D3OBJECT *)ai_Unk935980[i]);
+    for (i = 0; i < cm_FlagObjectCount; i++)
+        d3if_Delete((struct D3OBJECT *)cm_FlagObjects[i]);
     if (cm_BootsObject != 0) {
         d3io_ReleaseObject(cm_BootsObject);
         cm_BootsObject = 0;
     }
-    for (r = cm_Fighters; (int)(r + 0x184) < ((unsigned)&cm_Fighters + 0x4504); r += 0x21c) {
-        if (*(unsigned short *)r != 0xffff && *(int *)(r + 0x184) != 0) {
-            if (*(int *)(rec + 0xc) == ai_CharInts[ai_PlayerId][0] || ai_Unk1460ae0 == -1) {
-                k = gm_FindChar(*(int *)(r + 4));
-                if (k[2] != 0xb)
-                    gm_AddHealth(*(unsigned short *)k, *(int *)(r + 0x24) - *(int *)(k + 0x24));
+    for (i = 0; i < 32; i++) {
+        if (cm_FightersT[i].id != 0xffff && cm_FightersT[i].scene != 0) {
+            if (rec->owner == ai_CharsT[ai_PlayerId].netId || net_Conn.s == INVALID_SOCKET) {
+                k = (AICHAR *)gm_FindChar(cm_FightersT[i].netId);
+                if (k->kind != 0xb)
+                    gm_AddHealth(k->id, cm_FightersT[i].v024 - k->v024);
             }
-            ch_Delete(*(int *)(r + 0x184));
-            *(int *)(r + 0x184) = 0;
+            ch_Delete(cm_FightersT[i].scene);
+            cm_FightersT[i].scene = 0;
         }
     }
     sv_ScrollSpeed = 1.0f;
-    if (ai_Unk633738 != 0) {
-        ai_Unk633dd4 = 0;
-        *(int *)(ai_Unkfd7c50 + d3_CurrentScene * 0x3e0 + 8) = 0;
+    if (d3_Terrain != 0) {
+        d3_Sky = 0;
+        D3IF_SCENE(d3_CurrentScene).sky = 0;
     }
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     snd_EndSpecialTrack();
     sv_CameraEaseOn = 1;
     d2_CopyCaption((char *)&ch_EmptyName);
@@ -9262,12 +9265,12 @@ float *ai_Unk4d2c00(int side)
                 b = cm_FightStrength(o) + b;
         }
     }
-    for (i = 0; i < ai_Unk6f0d58; i++) {
-        if (strstr(ai_Unk935980[i], "sp_CONQUER") != 0) {
+    for (i = 0; i < cm_FlagObjectCount; i++) {
+        if (strstr(cm_FlagObjects[i], "sp_CONQUER") != 0) {
             float v[4];
 
-            d3_PointToWorld(ai_Unk935980[i], ai_Unk935980[i] + 0x4c, v);
-            o = *(char **)(ai_Unk935980[i] + 0x200);
+            d3_PointToWorld(cm_FlagObjects[i], cm_FlagObjects[i] + 0x4c, v);
+            o = *(char **)(cm_FlagObjects[i] + 0x200);
             if (o != 0 && *(int *)(o + 0x16c) == cm_FightAttacker)
                 cnt++;
         }
@@ -9709,9 +9712,9 @@ char *ai_Unk4d3b30(char *rec)
         ret = w;
     } else
         ret = (char *)cm_FightAttacker;
-    for (i = 0; i < ai_Unk6f0d58; i++) {
-        if (strcmp(ai_Unk935980[i], "sp_CONQUER") != 0) {
-            o = ai_Unk935980[i];
+    for (i = 0; i < cm_FlagObjectCount; i++) {
+        if (strcmp(cm_FlagObjects[i], "sp_CONQUER") != 0) {
+            o = cm_FlagObjects[i];
             d3_PointToWorld(o, o + 0x4c, &out);
             total = out + 1;
             if (*(char **)(o + 0x200) != 0 && *(int *)(*(char **)(o + 0x200) + 0x16c) == cm_FightAttacker)
@@ -10579,7 +10582,7 @@ void ai_Unk4d63e0(char *a)
             }
             ai_Unk4d4d70(a);
             ai_Unk4d1eb0(a);
-            ai_Unk4d1a10(a);
+            cm_EndFightScene((CMFIGHTREC *)a);
             return;
         }
         if (ai_Unk6f0cfc != 0 && G20_DEF[2] == 6) {
@@ -10596,7 +10599,7 @@ void ai_Unk4d63e0(char *a)
                 txt_Format(buf, 0x1146);
             ai_Unk4e5470(buf, 0x10);
         }
-        ai_Unk4d1a10(a);
+        cm_EndFightScene((CMFIGHTREC *)a);
         return;
     }
     sa = 0;
@@ -10913,7 +10916,7 @@ void ai_Unk4d7190(char *f)
                 rot[2] = 0;
                 d3_PointToWorld(o, o + 0x4c, pos);
                 r = (char *)d3_CreateObject(0, pos, rot, "ub_FLUCHTFLAGGE");
-                ai_Unk935980[ai_Unk6f0d58] = (char *)d3_CreateObject(0, pos, rot, &ch_EmptyName);
+                cm_FlagObjects[cm_FlagObjectCount] = (char *)d3_CreateObject(0, pos, rot, &ch_EmptyName);
                 d3t_PlayAnim(r, "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
                 side = *(char **)(c + 0x16c);
                 if (side != 0 && *(int *)(side + 0x54) != 0 && (side[2] == 5 || side[2] == 6 || side[2] == 7)) {
@@ -11671,10 +11674,10 @@ void ai_Unk4d8e20(char *a)
             sv_Unk52fd80(&ch_EmptyName);
         }
         if (nv != 0) {
-            ai_Unk4e3060();
+            cm_FadeToBlack();
             ai_Unk4e3570(0x3e8);
             ai_Unk4e2d40(ai_Unk4e2c30("cutscenes\\sitzungen\\sitzungen_exit.esc", &ch_EmptyName));
-            ai_Unk4e30c0();
+            cm_LeaveEventScene();
         }
 next:
         d2_CloseView(view1);
@@ -12156,7 +12159,7 @@ void ai_Unk4db700(char *m)
             cm_SendRelations(1, 26, 0, 0);
         }
     }
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-ende.esc", &ch_EmptyName));
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-exit.esc", &ch_EmptyName));
 done:
@@ -12800,12 +12803,12 @@ void ai_Unk4ded10(char *m)
         cm_SendRelations(*(int *)(cb + 4), *(int *)(ca + 4), 0xf, 1);
         cm_SendRelations(*(int *)(ca + 4), *(int *)(cb + 4), 0xf, 1);
     }
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e3250(oa);
     ai_Unk4e3250(ob);
     ai_Unk4e2d90(scene);
     ai_Unk4e2d40(scene);
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     sb_UnloadSampleBank(snd1);
     sb_UnloadSampleBank(snd2);
     cm_ClearDamagePops();
@@ -12977,7 +12980,7 @@ int ai_Unk4e0010(int scene)
     ai_Unk4e3830(scene, 0);
     ai_Unk4e3830(scene, 0);
     ai_Unk4e3420(5);
-    return ai_Unk4e30c0();
+    return cm_LeaveEventScene();
 }
 /* 0x4e0040, tells the others of the party m (+0x30 count, +0x34 ids; +0x7d: the challenger is not the first) about the duel: the text
    0x11c8 (the name of the first) to every one of the kinds 6 / 7 after the first (0x4e48b0), with 0x11c5 + the text 0x143e8e4 for the first
@@ -13072,13 +13075,13 @@ void ai_Unk4e01e0(char *m)
         break;
     }
     ai_Unk4e3570(dur[m[0x7c]]);
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-exit.e", &ch_EmptyName));
     if (v != 0)
         ai_Unk4e33f0();
     ai_Unk4e3390();
     cm_FightStart = 0;
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     d2_CutsceneActive = 0;
     ai_Unk4e3640();
 }
@@ -13124,7 +13127,7 @@ int ai_Unk4e06d0(int *s)
 {
     int v;
 
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     if (s[3] != 0)
         sb_Stop(s[3], 0);
     v = s[2];
@@ -13139,7 +13142,7 @@ int ai_Unk4e06d0(int *s)
     s[0] = -1;
     s[1] = -1;
     cm_FightStart = 0;
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     ai_Unk4e3640();
     d2_CutsceneActive = 0;
     return 1;
@@ -13331,13 +13334,13 @@ int ai_Unk4e0f70(char *m)
     cm_AddFieldDelta(1, 0x10, 0x30, &n);
     cm_SendFieldDeltas();
     d2_CloseView(v);
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e2d90(sc);
     ai_Unk4e2c70(sc);
     snd_ClearQueue();
     ai_Unk4e3290(snd);
     cm_FightStart = 0;
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     ai_Unk4e3640();
     d2_CutsceneActive = 0;
     return 1;
@@ -13442,11 +13445,11 @@ int ai_Unk4e1250(char *m)
             ai_Unk4e5470(big, 0x10);
         }
     }
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e2d90(sc);
     ai_Unk4e2c70(sc);
     ai_Unk4e3390();
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
     ai_Unk4e3640();
@@ -13506,12 +13509,12 @@ int ai_Unk4e1700(char *m)
     else
         txt_Format(buf, 0x1ab1, *(unsigned short *)a);
     ai_Unk4e5470(buf, 0);
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e2d90(sc);
     ai_Unk4e2c70(sc);
     ai_Unk4e3390();
     ai_Unk4e33f0();
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
     ai_Unk4e3640();
@@ -13690,12 +13693,12 @@ void ai_Unk4e1a80(char *m)
     ai_Unk4e32d0(0x1f4, 8, "_VERSTEIGERUNG_GEBOTE", 0, 0);
     ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\auktion\\Auktion_Outro.esc", &ch_EmptyName));
     d2_CloseView(v);
-    ai_Unk4e3060();
+    cm_FadeToBlack();
     ai_Unk4e2c70(ai_Unk4e2d90(0));
     for (i = 0; i < n; i++)
         if (ai_Unk4e3230(0, 0) != 0)
             ai_Unk4e3250(0);
-    ai_Unk4e30c0();
+    cm_LeaveEventScene();
     snd_ClearQueue();
     ai_Unk4e3290(0);
 done:
@@ -13824,8 +13827,8 @@ void ai_Unk4e2860(char *m)
         }
     }
     if (f != 0) {
-        ai_Unk4e3060();
-        ai_Unk4e30c0();
+        cm_FadeToBlack();
+        cm_LeaveEventScene();
     }
     ai_Unk4e3640();
 }
@@ -14085,7 +14088,7 @@ void cm_LoadEventScene(char *name)
 }
 /* 0x4e3060, fades the screen to black ("BLACK", 0x5a ticks) and waits until the fade has reached its end flag (+0 & 4) */
 
-int ai_Unk4e3060(void)
+int cm_FadeToBlack(void)
 {
     if (cm_SkipEvents == 0) {
         ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
@@ -14099,7 +14102,7 @@ int ai_Unk4e3060(void)
 /* 0x4e30c0, leaves the scene (depth 0x6f0d9c): waits for the objects 0x60d36c / 0x5f8438 (0x4284a0, bit 1 of +0x124), clears the scene objects (0x4e2dc0 /
    0x4e2e00), the table 0x5fb5b0 +0xb0 (0x45ef60), 0x433b10 (0xfc2dec), 0x6310e8 / e4 and 0x4473f0. ROUGH */
 
-int ai_Unk4e30c0(void)
+int cm_LeaveEventScene(void)
 {
     char *t, *o;
     int id;
@@ -15357,7 +15360,7 @@ extern char * ai_Unk930380[32];
 extern CMPORTRAIT cm_Portraits[6];
 extern G18POP cm_DamagePops[16];
 extern char cm_Fighters[21376];
-extern char * ai_Unk935980[32];
+extern char * cm_FlagObjects[32];
 extern char cm_Grenades[512];
 extern float cm_FightCellScale;
 extern int cm_CharInfoWins[32];
@@ -15536,7 +15539,7 @@ int cm_DefenderPainVoices = 0;  /* 0x6f0d48 */
 int ai_Unk6f0d4c = 0;  /* 0x6f0d4c */
 int cm_AttackerRole = 0;  /* 0x6f0d50 */
 int cm_DefenderRole = 0;  /* 0x6f0d54 */
-int ai_Unk6f0d58 = 0;  /* 0x6f0d58 */
+int cm_FlagObjectCount = 0;  /* 0x6f0d58 */
 int cm_BootsObject = 0;  /* 0x6f0d5c */
 int ai_Unk6f0d60 = 0;  /* 0x6f0d60 */
 int ai_Unk6f0d64 = 0;  /* 0x6f0d64 */
@@ -15603,7 +15606,7 @@ char * ai_Unk930380[32] = {0};  /* 0x930380 */
 CMPORTRAIT cm_Portraits[6] = {0};  /* 0x930400 */
 G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
 char cm_Fighters[21376] = {0};  /* 0x930600 */
-char * ai_Unk935980[32] = {0};  /* 0x935980 */
+char * cm_FlagObjects[32] = {0};  /* 0x935980 */
 char cm_Grenades[512] = {0};  /* 0x935a00 */
 float cm_FightCellScale = 0;  /* 0x935d00 */
 int cm_CharInfoWins[32] = {0};  /* 0x935d20 */
