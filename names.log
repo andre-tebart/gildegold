@@ -1719,3 +1719,4 @@
 2026-11-03T23:35:32 0x0053f6b0 func he_Unk53f6b0 -> he_SpawnFounders by:main why:per round (main_BeginPlayerRound) creates a kind 4 character (cm_SendCreateCharacter) for a building kind the town lacks, paid the building's value (cm_SendMoveGoods)
 2026-11-03T23:47:13 0x00540c90 func he_Unk540c90 -> he_PostEvent67 by:main why:posts the message 0x67 (he_FindEvent(1, 0, 0x67) guards it) about one of the player's buildings of kind 0x20 / 0x1e / 0x1f
 2026-11-03T23:52:47 0x00540e40 func he_Unk540e40 -> he_InnReport by:main why:reports the inn's round (the guests / served / takings counters the inn simulation 0x54d260 adds to) to its owner, texts 0x18a1 / 0x18a2, and resets them
+2026-11-03T23:54:38 0x00541010 func he_Unk541010 -> he_PostEvent3a by:main why:posts the message 0x3a for the player's character (main_GameLoop)

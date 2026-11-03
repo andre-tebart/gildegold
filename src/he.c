@@ -2236,17 +2236,17 @@ void he_Unk540fe0(void)
     he_InnReport();
     he_PostWorkshopEvents98();
 }
-/* 0x541010, posts the event 0x3a for the current player (flag 1) */
+/* 0x541010, posts the message 0x3a (from -1, flag 1) to the player's character */
 
-void he_Unk541010(void)
+void he_PostEvent3a(void)
 {
-    char ev[0xf8];
+    AIMSG m;
 
-    HM_B(ev, 4) = 0x3a;
-    HM_I(ev, 0xc) = -1;
-    HM_B(ev, 0x36) = 1;
-    HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
-    cm_SendLongMessage(ev);
+    m.type = 0x3a;
+    m.fromId = -1;
+    m.flags = 1;
+    m.to = ai_CharsT[ai_PlayerId].netId;
+    cm_SendLongMessage((char *)&m);
 }
 /* 0x541060, posts the event 0x3b for the current player (replacing a posted one) */
 

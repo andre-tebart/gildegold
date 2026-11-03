@@ -4899,7 +4899,7 @@ void main_GameLoop(int ctl)
             if ((u & 2) == 0) {
                 cm_BeginSendGroup();
                 if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 || (net_Conn.s != -1 && (U_I((unsigned)&cm_NetFlags) & 8) != 0)) {
-                    he_Unk541010();
+                    he_PostEvent3a();
                     he_Unk541060();
                     he_Unk541170();
                 }
