@@ -257,6 +257,7 @@ void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
+#define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
 void d3io_NoopCallback(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
@@ -1146,96 +1147,78 @@ void he_Unk53e840(int *e)
     e[1] = 0;
     e[0] = -1;
 }
-/* 0x53e8b0, adds the gfx info of the event `r` by its type (2 / 0x1f plus hammer, 4 / 0x35 / 0x6b exclamation marks over the parent, 0x1a blows, 0x1b coin, 0x1c / 0x1e hammer gold, 0x40 binoculars) when the event has none (ROUGH) */
-
-void he_Unk53e8b0(unsigned char *r)
+/* 0x53e8b0, adds the gfx info of the event `ev` by its kind when it has none (3D option only): 0x1b a coin, 0x1c / 0x1e
+   a gold (saw) hammer, 0x1f / 2 a plus hammer, 0x40 binoculars (the player's), 0x1a blows over the event's building;
+   an exclamation mark over the notice board (0x35, the player's tribute collector, scene 0), the tribune (0x6b at stage
+   2, scene 0, unless the player's flags1c8 has 0x20000) or the building of a kind 4 event of the player with argc8 */
+void he_AddEventGfxInfo(AIJOB *ev)
 {
-    int iv, o;
-    unsigned short *pl;
+    AIBLD *b;
+    unsigned short *ch;
+    D3OBJECT *o;
 
-    if (*(char *)((unsigned)&ai_GameSwitches + 0x3) == 0)
+    if (ai_GameSwitches.byte[3] == 0)
         return;
-    if (*(int *)(r + 0x88) != 0)
+    if (ev->gfx != 0)
         return;
-    switch (*r) {
-    case 2:
-        o = *(int *)(r + 0x10);
-        goto L_hammer;
-    case 4:
-        if (*(unsigned short *)(r + 8) != (unsigned short)U_I((unsigned)&ai_PlayerId))
-            return;
-        if (*(int *)(r + 200) == 0)
-            return;
-        iv = gm_FindBuildingById(*(int *)(r + 0xbc));
-        if (iv == 0)
-            return;
-        iv = *(int *)(iv + 0x61);
-        goto L_mark;
-    case 0x1a:
-        iv = gm_FindBuildingById(*(int *)(r + 0xd0));
-        if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_CreateGfxInfo((int)r, "he_schlaege", *(int *)(iv + 0x61));
-            return;
-        }
-        break;
+    switch ((unsigned char)ev->kind) {
     case 0x1b:
-        iv = gm_FindBuildingById(*(int *)(r + 0xac));
-        if (iv != 0) {
-            he_CreateGfxInfo((int)r, "he_muenze", *(int *)(iv + 0x61));
-            return;
-        }
+        b = (AIBLD *)gm_FindBuildingById(ev->bldId);
+        if (b != 0)
+            he_CreateGfxInfo(ev, "he_muenze", (D3OBJECT *)b->object);
         break;
     case 0x1c:
-        iv = gm_FindBuildingById(*(int *)(r + 0xac));
-        if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_CreateGfxInfo((int)r, "he_hammer_gold", *(int *)(iv + 0x61));
-            return;
-        }
+        b = (AIBLD *)gm_FindBuildingById(ev->bldId);
+        if (b != 0 && b->object != 0)
+            he_CreateGfxInfo(ev, "he_hammer_gold", (D3OBJECT *)b->object);
         break;
     case 0x1e:
-        iv = gm_FindBuildingById(*(int *)(r + 0xac));
-        if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_CreateGfxInfo((int)r, "he_saege_hammer_gold", *(int *)(iv + 0x61));
-            return;
-        }
+        b = (AIBLD *)gm_FindBuildingById(ev->bldId);
+        if (b != 0 && b->object != 0)
+            he_CreateGfxInfo(ev, "he_saege_hammer_gold", (D3OBJECT *)b->object);
         break;
     case 0x1f:
-        o = *(int *)(r + 0xac);
-L_hammer:
-        iv = gm_FindBuildingById(o);
-        if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_CreateGfxInfo((int)r, "he_plus_hammer", *(int *)(iv + 0x61));
-            return;
-        }
+        b = (AIBLD *)gm_FindBuildingById(ev->bldId);
+        if (b != 0 && b->object != 0)
+            he_CreateGfxInfo(ev, "he_plus_hammer", (D3OBJECT *)b->object);
+        break;
+    case 2:
+        b = (AIBLD *)gm_FindBuildingById(ev->from);
+        if (b != 0 && b->object != 0)
+            he_CreateGfxInfo(ev, "he_plus_hammer", (D3OBJECT *)b->object);
+        break;
+    case 0x40:
+        b = (AIBLD *)gm_FindBuildingById(ev->bldId);
+        if (b != 0 && b->object != 0 && ev->chr == ai_PlayerId)
+            he_CreateGfxInfo(ev, "he_fernglas", (D3OBJECT *)b->object);
         break;
     case 0x35:
-        pl = (unsigned short *)gm_FindChar(*(int *)(r + 0xbc));
-        if (pl == 0)
-            return;
-        if (*pl != (unsigned short)U_I((unsigned)&ai_PlayerId))
-            return;
-        if (U_I((unsigned)&d3_CurrentScene) != 0)
-            return;
-        iv = d3_FindObject(0, 0x40, 0, "ob_SCHWARZES_BRETT");
-        goto L_mark;
-    case 0x40:
-        iv = gm_FindBuildingById(*(int *)(r + 0xac));
-        if (iv != 0 && *(int *)(iv + 0x61) != 0 && *(unsigned short *)(r + 8) == (unsigned short)U_I((unsigned)&ai_PlayerId)) {
-            he_CreateGfxInfo((int)r, "he_fernglas", *(int *)(iv + 0x61));
-            return;
+        ch = (unsigned short *)gm_FindChar(ev->idbc);
+        if (ch != 0 && *ch == ai_PlayerId && d3_CurrentScene == 0) {
+            o = d3_FindObject(0, 0x40, 0, "ob_SCHWARZES_BRETT");
+            if (o != 0)
+                he_CreateGfxInfo(ev, "he_ausrufezeichen", o);
         }
         break;
     case 0x6b:
-        if (*(int *)(r + 0x70) != 2)
-            return;
-        if (U_I((unsigned)&d3_CurrentScene) != 0)
-            return;
-        if ((U_I(((unsigned)&ai_Selected + 0x40) + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c) & 0x20000) != 0)
-            return;
-        iv = d3_FindObject(0, 0x40, 0, "ob_TRIBUENE");
-L_mark:
-        if (iv != 0)
-            he_CreateGfxInfo((int)r, "he_ausrufezeichen", iv);
+        if (ev->stage == 2 && d3_CurrentScene == 0 && (ai_CharInts[ai_PlayerId][AICHAR_FLAGS1C8] & 0x20000) == 0) {
+            o = d3_FindObject(0, 0x40, 0, "ob_TRIBUENE");
+            if (o != 0)
+                he_CreateGfxInfo(ev, "he_ausrufezeichen", o);
+        }
+        break;
+    case 0x1a:
+        b = (AIBLD *)gm_FindBuildingById(ev->bldd0);
+        if (b != 0 && b->object != 0)
+            he_CreateGfxInfo(ev, "he_schlaege", (D3OBJECT *)b->object);
+        break;
+    case 4:
+        if (ev->chr == ai_PlayerId && ev->argc8 != 0) {
+            b = (AIBLD *)gm_FindBuildingById(ev->idbc);
+            if (b != 0 && b->object != 0)
+                he_CreateGfxInfo(ev, "he_ausrufezeichen", (D3OBJECT *)b->object);
+        }
+        break;
     }
 }
 /* 0x53eba0, removes the gfx infos whose parent changed or when the 3D option is off */
@@ -1327,7 +1310,7 @@ void he_Unk53ed70(void)
             if ((int)pb >= (int)((unsigned)&he_Events + 0x53000))
                 return;
             if (*pb != 0 && (pb[0x78] & 0x18) == 0) {
-                he_Unk53e8b0(pb);
+                he_AddEventGfxInfo((AIJOB *)pb);
                 iv = gm_CompareTime((unsigned)&ai_Time, pb + 0x52);
                 if (iv > 0 && *pb < 0xa7) {
                     he_Unk53ec40(pb);

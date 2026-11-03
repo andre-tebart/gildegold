@@ -52,7 +52,7 @@ void he_SpreadGfxInfos(struct D3OBJECT *obj);
 struct D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, struct D3OBJECT *obj);
 void he_CreateGfxInfo(struct AIJOB *ev, char *name, struct D3OBJECT *parent);
 void he_Unk53e840(int *e);
-void he_Unk53e8b0(unsigned char *r);
+void he_AddEventGfxInfo(struct AIJOB *ev);
 void he_Unk53eba0(void);
 void he_RemoveGfxInfos(int obj);
 void he_ShowObjectInfos(int obj, int a);

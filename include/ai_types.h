@@ -50,6 +50,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
     };
     union {
         int unkac;                      /* 0xac, a building id */
+        int bldId;                      /* 0xac, of the building events (0x1b, 0x1c, 0x1e, 0x1f, 0x40) their building's id
+                                           (he_AddEventGfxInfo shows their gfx info over it) */
         int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_EndPersonEvents) the first partner's netId */
         int ownerCh;                    /* 0xac, of an event 0x24 the netId of the character it is for (ai_DecideChangeProfession skips a character that has one) */
         union {
@@ -89,6 +91,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
         struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
         struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
+        struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark
+                                                       while argc8 is set), of a tribute event 0x35 the collector's netId (he.c) */
+        struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */
         struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
                                                           members, -1 = free (sv_SendSelectedToBuilding) */
     };

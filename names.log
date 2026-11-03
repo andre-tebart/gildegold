@@ -1711,3 +1711,4 @@
 2026-11-03T22:26:20 0x00f89580 data ai_UpdateStart -> ai_Update.start by:main why:one object (0xf89580): the save writes and reads the 0x18 bytes as one block (vfs_fwrite at 0x5191ad), the AIUPDATE record, its fields
 2026-11-03T22:26:20 0x00f89584 data ai_LastUpdateTime -> ai_Update.last by:main why:contained in ai_Update (0xf89580)
 2026-11-03T22:26:20 0x00f89594 data ai_CountCarry -> ai_Update.carry by:main why:contained in ai_Update (0xf89580)
+2026-11-03T23:12:58 0x0053e8b0 data he_Unk53e8b0 -> he_AddEventGfxInfo by:main why:adds the event's gfx info (he_CreateGfxInfo) by its kind, called per event from the frame run 0x53ed70
