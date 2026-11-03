@@ -547,7 +547,12 @@ typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at 
     unsigned char dmgMax;               /* 0x06, the most damage */
     char pad07[2];
     unsigned char speed;                /* 0x09, times 2/7 the fighter's CHARACTER.walkSpeed (cm_AddFighter) */
-    char pad0a[0x4e];
+    char pad0a[2];
+    float range;                        /* 0x0c, the farthest a hit reaches (cm_HitAction: the hitter's distance to the
+                                           victim's body) */
+    char pad10;
+    char anim[0x43];                    /* 0x11, the hitter's animation (copied to the hit action's name) */
+    int text054;                        /* 0x54, an argument of the text 0x1188 (a stunning hit, weapon 0x16e) */
     int kind;                           /* 0x58, 1 / 2: used up with the item (cm_CharWeapon refuses an item with nothing left) */
 } AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
@@ -795,7 +800,7 @@ void d3_SetWorldPosRot();  /* 0x449920 */
 extern double ai_Unk5edbd0;  /* 0x5edbd0 */
 extern double ai_Unk5eb8e0;  /* 0x5eb8e0 */
 
-void ai_Unk4d3550(char *ev);  /* 0x4d3550 */
+void cm_HitAction(struct CHACTION *a);  /* 0x4d3550 */
 void ai_Unk4d3980(char *ev);  /* 0x4d3980 */
 void ai_Unk4d3a30(char *ev);  /* 0x4d3a30 */
 void ai_Unk4d3ac0(char *ev);  /* 0x4d3ac0 */

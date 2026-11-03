@@ -9587,91 +9587,95 @@ int cm_CheckDeath(AICHAR *c)
         cm_SendFieldDeltas();                                                               \
     }
 
-/* 0x4d3550, the hit of the fight event ev (+0x17c the attacker, +0x180 the target, +0x184 its record): the weapon range test
-   0x402140 / 0x4ce1b0, the worker count of the player's characters synced (+0x20 -> field), damage 0x4cedc0, the pain
-   speech "_K_C2C_SCHMERZ" or the sound "Schmerzschrei", the hit / miss sound by the attacker's kind ("schuss_s", "Treffer",
-   "Daneben_s"), 0x4d3390 for a death, else the target's model flinches (0x415e90 / 0x405610 / 0x405810 with
-   "kampf/stich_abwehr" / "kampf/ausweichen_seite", the text 0x1188 for the kind 0x16e). Rough draft. */
-void ai_Unk4d3550(char *ev)
-{
-    char buf[0x80];
-    char tbl[0x14];
-    char *att = *(char **)(ev + 0x17c);
-    char *tgt = *(char **)(ev + 0x180);
-    char *ka, *kt, *r;
-    int vv, hit, rnd, a, b;
-    int hitv = 0;
-    int kt1 = 0;
+/* 0x4d3550, the hit action of the fight (queued on the hitter, a's hit record): a hit counts only while the victim's
+   body is within the range of the hitter's weapon; a used-up weapon item of the player's fight is synced (its uses
+   field -1); a damage shows (cm_ShowDamage) with the pain voice "_K_C2C_SCHMERZ" of the victim's side (3 in 10) or
+   the cry "Schmerzschrei" (3 in 10); while both stand, the sound of the hitter's weapon ("Treffer" for a hit, else
+   "Daneben_s" of the sword / dagger bank, "schuss_s" for the pistol), then, unless the victim dies (cm_CheckDeath),
+   blood and a random flinch "kampf/arm_greifen" / "kampf/bauch_greifen" for a hit (the weapon 0x16e stuns: health 4,
+   text 0x1188), "kampf/ausweichen_seite" (pistol, 0x160) or "kampf/stich_abwehr" for a miss, when the victim is idle */
 
-    ka = cm_CharWeapon(att);
-    kt = cm_CharWeapon(tgt);
-    ch_GetHMap(*(struct CHARACTER **)(att + 0x184));
-    if (kt != 0 && cm_CharObjDistXZ(tgt, *(char **)(*(char **)(att + 0x184) + 0x34)) <= *(float *)(kt + 0xc))
-        ;
-    else {
-        hitv = 0;
-        kt1 = 0;
+void cm_HitAction(CHACTION *a)
+{
+    int damage, ok;
+    AIWEAPON *hw, *vw;
+    int v;
+    char anims[2][0x20] = {"kampf/arm_greifen", "kampf/bauch_greifen"};
+    char buf[0x100];
+    AICHAR *victim, *hitter;
+    AIOBJ *item;
+    int rnd;
+
+    hitter = a->hit.hitter;
+    ok = 1;
+    victim = a->hit.victim;
+    damage = a->hit.damage;
+    vw = (AIWEAPON *)cm_CharWeapon((char *)victim);
+    hw = (AIWEAPON *)cm_CharWeapon((char *)hitter);
+    ch_GetHMap(victim->scene);
+    if (hw == 0 || cm_CharObjDistXZ((char *)hitter, (char *)victim->scene->obj) > hw->range) {
+        damage = 0;
+        ok = 0;
     }
-    if (*(int *)(cm_CutChar + 4) == cm_FightOwner && (*(int *)(kt + 0x58) == 1 || *(int *)(kt + 0x58) == 2)) {
-        G19_FIGHTER_SYNC(tgt);
-    }
-    if (hitv != 0) {
-        rnd = cm_Random(10);
-        if (*(int *)(att + 0x16c) == cm_FightAttacker)
-            cm_ShowDamage(att, hitv, 1);
-        else
-            cm_ShowDamage(att, hitv, 2);
-        if (rnd > 8) {
-            if (*(int *)(ev + 0x188) != *(int *)(cm_FightAttacker + 4))
-                snd_QueueVoice(*(unsigned short *)att, cm_AttackerPainVoices, "_K_C2C_SCHMERZ", -1, 500);
-            else
-                snd_QueueVoice(*(unsigned short *)att, cm_DefenderPainVoices, "_K_C2C_SCHMERZ", -1, 500);
-        } else if (rnd > 5)
-            sb_PlaySampleI(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
-    }
-    if (att[8] != 0 && tgt[8] != 0 && kt1 != 0) {
-        switch (*(int *)ka) {
-        case 0x156:
-        case 0x158:
-            sb_PlaySampleI(hitv ? 0 : cm_SwordSounds, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
-            break;
-        case 0x154:
-        case 0x16e:
-        case 0x172:
-            sb_PlaySampleI(hitv ? 0 : cm_DaggerSounds, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
-            break;
-        case 0x15e:
-            sb_PlaySampleI(cm_PistolSounds, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
-            break;
-        case 0x160:
-            if (hitv != 0)
-                sb_PlaySampleI(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
-            break;
-        default:
-            if (*(int *)ka == 0 && hitv == 0)
-                sb_PlaySampleI(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
-            break;
+    if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && (hw->kind == 1 || hw->kind == 2)) {
+        item = (AIOBJ *)cm_CharWeaponItem((char *)hitter);
+        if (item != 0) {
+            v = -1;
+            cm_BeginFieldBlock((char *)item, item->objId);
+            cm_AddFieldValues(4, 1, (unsigned short)((char *)item - cm_FieldObject + 0x20), &v);
+            cm_SendFieldDeltas();
         }
-        if (cm_CheckDeath((AICHAR *)att) == 0) {
-            if (hitv != 0) {
-                d3t_CreateBloodK(*(char **)(*(char **)(att + 0x184) + 0x34), 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
-                if (*(char **)(*(char **)(att + 0x184) + 0x128) == 0 || (*(char **)(*(char **)(att + 0x184) + 0x128))[9] == 0x3b) {
-                    ch_StopActions(*(char **)(att + 0x184));
-                    a = cm_Random(2);
-                    ai_Unk405810(*(char **)(att + 0x184), buf + a * 0x20, 1, 1.4f);
+    }
+    if (damage != 0) {
+        rnd = cm_Random(10);
+        if ((int)victim->bld == cm_FightAttacker)
+            cm_ShowDamage((char *)victim, damage, 1);
+        else
+            cm_ShowDamage((char *)victim, damage, 2);
+        if (rnd > 8) {
+            if (a->hit.sideId != ((AICHAR *)cm_FightAttacker)->netId)
+                snd_QueueVoice(victim->id, cm_AttackerPainVoices, "_K_C2C_SCHMERZ", -1, 500);
+            else
+                snd_QueueVoice(victim->id, cm_DefenderPainVoices, "_K_C2C_SCHMERZ", -1, 500);
+        } else if (rnd > 5)
+            sb_PlaySample(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
+    }
+    if (victim->health != 0 && hitter->health != 0 && ok != 0) {
+        if (hw->id == 0x156 || hw->id == 0x158) {
+            if (damage != 0)
+                sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
+            else
+                sb_PlaySampleI(cm_SwordSounds, "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+        } else if (hw->id == 0x154 || hw->id == 0x16e || hw->id == 0x172) {
+            if (damage != 0)
+                sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
+            else
+                sb_PlaySampleI(cm_DaggerSounds, "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+        } else if (hw->id == 0x15e)
+            sb_PlaySampleI(cm_PistolSounds, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
+        else if (hw->id == 0x160) {
+            if (damage != 0)
+                sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
+        } else if (hw->id == 0)
+            sb_PlaySample(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
+        if (cm_CheckDeath(victim) == 0) {
+            if (damage != 0) {
+                d3t_CreateBlood(victim->scene->obj, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
+                if (victim->scene->actions == 0 || victim->scene->actions->type == 0x3b) {
+                    ch_StopActions(victim->scene);
+                    ch_QueueAnimSpeed(victim->scene, anims[cm_Random(2)], 1, 1.4f);
                 }
-                if (*(int *)ka == 0x16e) {
-                    att[8] = 4;
-                    txt_FormatS(buf, (char *)0x1188, *(int *)(tbl + 0x54), *(unsigned short *)att);
+                if (hw->id == 0x16e) {
+                    victim->health = 4;
+                    txt_Format(buf, 0x1188, vw->text054, victim->id);
                     sv_SetStatusText(buf);
                 }
-            } else if (*(char **)(*(char **)(att + 0x184) + 0x128) == 0 ||
-                       (*(char **)(*(char **)(att + 0x184) + 0x128))[9] == 0x3b) {
-                ch_StopActions(*(char **)(att + 0x184));
-                if (*(int *)ka == 0x15e || *(int *)ka == 0x160)
-                    ai_Unk405810(*(char **)(att + 0x184), "kampf/ausweichen_seite", 1, 1.4f);
+            } else if (victim->scene->actions == 0 || victim->scene->actions->type == 0x3b) {
+                ch_StopActions(victim->scene);
+                if (hw->id == 0x15e || hw->id == 0x160)
+                    ch_QueueAnimSpeed(victim->scene, "kampf/ausweichen_seite", 1, 1.4f);
                 else
-                    ai_Unk405810(*(char **)(att + 0x184), "kampf/stich_abwehr", 1, 1.4f);
+                    ch_QueueAnimSpeed(victim->scene, "kampf/stich_abwehr", 1, 1.4f);
             }
         }
     }
@@ -10811,7 +10815,7 @@ void ai_Unk4d6ba0(char *f)
                     mode = kill != 0 ? 8 : 2;
                 else
                     mode = kill != 0 ? 6 : 2;
-                ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3550, mode, 0x2e, 1);
+                ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&cm_HitAction, mode, 0x2e, 1);
                 *(float *)(ev + 0x178) = 1.4f;
                 *(char **)(ev + 0x17c) = tgt;
                 *(char **)(ev + 0x180) = c;

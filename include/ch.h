@@ -306,6 +306,14 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
             char pad17d[0x3];
             D3VECTOR pos;               /* 0x180 */
         } move;
+        struct {                        /* the fight's hit actions (cm.c: queued on the hitter, cm_HitAction) */
+            float speed;                /* 0x178, the animation speed (1.4) */
+            struct AICHAR *victim;      /* 0x17c */
+            struct AICHAR *hitter;      /* 0x180 */
+            int damage;                 /* 0x184, 0 for a miss */
+            int sideId;                 /* 0x188, the netId of the hitter's side leader (the attacker's: the
+                                           defenders' pain voices) */
+        } hit;
     };
     char stop;                      /* 0x190 */
     char pad191[0x3];
