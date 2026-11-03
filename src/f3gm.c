@@ -73,6 +73,7 @@ extern char gm_StockBlocks[];                 /* 0x7d6a60, the five 0x2a90-byte 
 #define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
 #define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
 #define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
+#define ai_PlayerCity (*(unsigned short (*)[4][0x17a])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94, the city id (word +0x54) of each 0x2f4-byte player slot: ai_PlayerCity[player][0] */
 
 #include "am_types.h"
 extern G7GRP gm_BuildingItemGroups[];           /* 0x61a348 */
@@ -7914,7 +7915,7 @@ int gv_GetTableRecord(int i, int *out);                     /* 0x4f2720 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_SumListAmounts(void *list, unsigned char p);
 
-#define PLW54(k) (*(unsigned short *)(ai_PlayerSlots[(unsigned char)(k)] + 0x54))
+#define PLW54(k) (ai_PlayerCity[(unsigned char)(k)][0])  /* the city id of the player slot k */
 #define PLTAB(i) (((int *)ai_Unk61a8ac)[i])
 #define OPROTO(i) (ai_Goods + (unsigned)(i) * 0x41)
 
@@ -9199,16 +9200,18 @@ int gm_CharSumAmounts(char *c)
     }
     return s;
 }
-/* 0x509ee0, the amount of the character c's object of the prototype word of the player p */
+/* 0x509ee0, the amount (count) of the character c's currency: the object of its inventory whose prototype is the city id of the player p (each city has its own money) */
 
 int gm_CharCurrency(char *c, char p)
 {
-    char *o;
+    ORDOBJ *o;
+    int v;
 
-    o = gm_Query(*(void **)(c + 0x178), 1, 0, PLW54(p));
+    v = 0;
+    o = (ORDOBJ *)gm_Query((void *)((ORDCHAR *)c)->inventory, 1, 0, ai_PlayerCity[p][0]);
     if (o)
-        return *(int *)(o + 0xe);
-    return 0;
+        v = o->count;
+    return v;
 }
 
 /* ---- layout 2026-10-23: the character / building worth helpers 0x509f20 .. 0x50af00 (ROUGH drafts) ---- */
