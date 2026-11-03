@@ -411,52 +411,45 @@ int he_FreeOldestSlot(void)
     }
     return bi;
 }
-/* 0x53d6f0, gives the event `ev` a slot (bit 8 of ev+0x78 must be set; 1 = no window wanted, 2 = no slot) with a message panel `b, c, d` and a window (0x4731d0); the slot is stored at ev+0x74 */
+/* 0x53d6f0, gives the event `ev` a slot of the event bar (only with its option 8; 1: not shown in the bar, 2: no slot free
+   nor freed by he_FreeOldestSlot): the slot's picture object (pic, at 32 * the slot index) and its event window, the view
+   form opened at (x, y); the slot is kept in the event's slot field; 0 */
 
-int he_Unk53d6f0(int ev, int b, int c, int d, int e)
+int he_OpenEventSlot(int ev, int x, int y, char *form, int pic)
 {
-    int i = 0;
-    int *p;
-    int *sl;
+    AIJOB *job = (AIJOB *)ev;
+    int i;
 
-    if ((*(unsigned char *)(ev + 0x78) & 8) == 0) {
-        *(int *)(ev + 0x74) = 0;
+    if ((job->opts & 8) == 0) {
+        job->slot = 0;
         return 1;
     }
-    p = (int *)(unsigned)&full_data_6faa84;
-    do {
-        if (*p == -1) {
-            if (i < 0x10)
-                goto got;
+    for (i = 0; i < 16; i++)
+        if (he_EventSlots[i].obj == -1)
             break;
-        }
-        p += 3;
-        i++;
-    } while ((int)p < ((unsigned)((unsigned)full_data_6faa84 + 0xbc) + 0x4));
-    i = he_FreeOldestSlot();
-got:
+    if (i >= 16)
+        i = he_FreeOldestSlot();
     if (i == -1) {
-        *(int *)(ev + 0x74) = 0;
+        job->slot = 0;
         return 2;
     }
-    if (he_LastSlot < i)
+    if (i > he_LastSlot)
         he_LastSlot = i;
     d2_SetForm(he_BarView, 0);
-    *(int **)(ev + 0x74) = SLOT(i);
-    SLOT(i)[0] = ev;
-    sl = *(int **)(ev + 0x74);
-    sl[1] = d2_WinOpenPic(i << 5, 0, e, U_I((unsigned)&d2_LastWindow));
-    U_I(U_I((unsigned)&d2_Objs) + 0x48 + (*(int **)(ev + 0x74))[1] * 0x2ec) = 1;
-    (*(int **)(ev + 0x74))[2] = d2_OpenForm(b, c, d);
-    d2_PlaceMainWindow((*(int **)(ev + 0x74))[2], 3);
-    d2_SetViewEnabled((*(int **)(ev + 0x74))[2], 0);
-    if ((*(int **)(ev + 0x74))[1] != -1) {
-        if ((*(int **)(ev + 0x74))[2] != -1)
-            return 0;
-        __asm int 3
-    } else {
+    job->slot = &he_EventSlots[i];
+    job->slot->ev = job;
+    job->slot->obj = d2_WinOpenPic(i << 5, 0, pic, d2_LastWindow);
+    d2_Objs[job->slot->obj].checkable = 1;
+    job->slot->win = d2_OpenForm(x, y, form);
+    d2_PlaceMainWindow(job->slot->win, 3);
+    d2_SetViewEnabled(job->slot->win, 0);
+    if (job->slot->obj == -1) {
         __asm int 3
     }
+    if (job->slot->win == -1) {
+        __asm int 3
+    }
+    return 0;
 }
 /* 0x53d800, releases the slot of the event `ev`: closes its window and panel, packs the slots below it up by one (0x46cda0 re-places the windows) and sets 0x625718 to the last used slot */
 
@@ -2924,7 +2917,7 @@ void he_Unk547430(int ev)
         return;
     }
     if (st == 0) {
-        he_Unk53d6f0(ev, 0, 0, (int)"Special\\Beleidigung", 0x5ec);
+        he_OpenEventSlot(ev, 0, 0, (int)"Special\\Beleidigung", 0x5ec);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -3348,7 +3341,7 @@ void he_Unk5485b0(int ev)
     if (*(int *)(ev + 0x70) == 0) {
         v = (int)gm_GetWorth(*(unsigned short *)(ev + 8));
         if (*(int *)(ev + 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
         io_PrintText((unsigned)"$C");
         io_PrintText(0x10b1, *(unsigned short *)(ev + 8), v);
@@ -3406,7 +3399,7 @@ void he_Unk548790(int ev)
         amt = (int)((float)gm_GetWorth(*(unsigned short *)(ev + 8)) * 0.05f);
         *(int *)(ev + 0xb0) = amt;
         if (*(int *)(ev + 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
         if (*(int *)(ev + 0x74) != 0) {
             d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
             io_PrintText((unsigned)"$C");
@@ -4394,7 +4387,7 @@ void he_Unk54ae60(int ev)
         he_FreeEvent((int *)ev);
     }
     if (*(int *)(ev + 0x70) == 0) {
-        he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_SCHUTZGELD", 0x5f3);
+        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_SCHUTZGELD", 0x5f3);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -5054,9 +5047,9 @@ void he_Unk54cc50(int ev)
     if (st == 0) {
         if (*(int *)(ev + 0x74) == 0) {
             if (esi == ebp)
-                he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\\TITEL", 0x5fd);
+                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TITEL", 0x5fd);
             else
-                he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\\TITEL_ANDERE", 0x5fe);
+                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TITEL_ANDERE", 0x5fe);
         }
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
@@ -5293,7 +5286,7 @@ void he_Unk54d7d0(int ev)
     }
     if (st == 0) {
         if (*(int *)(ev + 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\\TALENT_STUFE", 0x5ec);
+            he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TALENT_STUFE", 0x5ec);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -6656,7 +6649,7 @@ void he_Unk5432f0(int ev)
         *(int *)(ev + 0x70) = 2;
     st = *(int *)(ev + 0x70);
     if (st == 0) {
-        he_Unk53d6f0(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
+        he_OpenEventSlot(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -7008,7 +7001,7 @@ void he_Unk543ac0(int ev)
         *(int *)(ev + 0x70) = 2;
     switch (*(int *)(ev + 0x70)) {
     case 0:
-        he_Unk53d6f0(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
+        he_OpenEventSlot(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
         if (*(int *)(ev + 0x74) == 0)
             goto done;
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
@@ -8539,7 +8532,7 @@ void he_Unk552090(int ev)
     }
     if (st == 0) {
         if (*(int *)(ev + 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, (int)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
+            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
         if (*(int *)(ev + 0x74) != 0) {
             d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
             d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
@@ -8928,9 +8921,9 @@ void he_Unk552ca0(int ev)
     if (st == 0) {
         if (*(int *)(ev + 0x74) == 0) {
             if (p == ch)
-                he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\TITEL", 0x5fd);
+                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\TITEL", 0x5fd);
             else
-                he_Unk53d6f0(ev, 0, 0, (int)"SPECIAL\TITEL_ANDERE", 0x5fe);
+                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\TITEL_ANDERE", 0x5fe);
         }
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
@@ -10249,7 +10242,7 @@ void he_Unk557190(int ev)
                 pl = U_I((unsigned)&ai_PlayerBuilding);
             else if (U_I((unsigned)&ai_FallbackBuilding) != 0)
                 pl = U_I((unsigned)&ai_FallbackBuilding);
-            he_Unk53d6f0(ev, 0, 0, (int)((fl & 1) ? "misc\EventMessagebox_QJ_BIG" : "misc\EventMessagebox_QJ"), *(int *)(ev + 0xac));
+            he_OpenEventSlot(ev, 0, 0, (int)((fl & 1) ? "misc\EventMessagebox_QJ_BIG" : "misc\EventMessagebox_QJ"), *(int *)(ev + 0xac));
             if (*(int *)(ev + 0x74) == 0) {
                 he_FreeEvent((int *)ev);
                 return;
@@ -10260,23 +10253,23 @@ void he_Unk557190(int ev)
             else
                 io_PrintText(0x1ba1);
         } else if ((fl & 1) != 0) {
-            he_Unk53d6f0(ev, 0, 0, (int)"misc\EventMessagebox_BIG", *(int *)(ev + 0xac));
+            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox_BIG", *(int *)(ev + 0xac));
             if (*(int *)(ev + 0x74) != 0) {
                 d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
                 io_PrintText(0x1ba3);
             }
         } else if ((fl & 0x20) != 0) {
-            he_Unk53d6f0(ev, 0, 0, (int)"misc\EventMsgbox_History", *(int *)(ev + 0xac));
+            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMsgbox_History", *(int *)(ev + 0xac));
             if (*(int *)(ev + 0x74) != 0) {
                 d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
                 io_PrintText(0x1ba3);
             }
         } else if ((fl & 4) != 0) {
-            he_Unk53d6f0(ev, 0, 0, (int)"misc\EventMessagebox_Cutscenes", *(int *)(ev + 0xac));
+            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox_Cutscenes", *(int *)(ev + 0xac));
         } else if ((fl & 0x40) != 0) {
-            he_Unk53d6f0(ev, 0, 0, (int)"misc\EventMessagebox_Help", *(int *)(ev + 0xac));
+            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox_Help", *(int *)(ev + 0xac));
         } else {
-            he_Unk53d6f0(ev, 0, 0, (int)"misc\EventMessagebox", *(int *)(ev + 0xac));
+            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox", *(int *)(ev + 0xac));
             if (*(int *)(ev + 0x74) != 0) {
                 d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
                 io_PrintText(0x7d);
@@ -11307,7 +11300,7 @@ void he_Unk55cc10(int ev)
     }
     switch (st) {
     case 0:
-        he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
+        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
         if (*(int *)(ev + 0x74) == 0)
             he_FreeEvent((int *)ev);
         return;
@@ -11363,7 +11356,7 @@ void he_Unk55ce60(int ev)
         return;
     }
     if (st == 0) {
-        he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Meisterpruefung_BESTANDEN", 0x5fd);
+        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Meisterpruefung_BESTANDEN", 0x5fd);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -11650,7 +11643,7 @@ void he_Unk55e730(int ev)
         return;
     }
     if (st == 0) {
-        he_Unk53d6f0(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
+        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -11924,7 +11917,7 @@ void he_Unk5614c0(int ev)
         return;
     }
     if (st == 0) {
-        he_Unk53d6f0(ev, 0, 0, (int)"locations\\diebesgilde\\Diebesgilde_Loesegeld_Msg", 0x5fd);
+        he_OpenEventSlot(ev, 0, 0, (int)"locations\\diebesgilde\\Diebesgilde_Loesegeld_Msg", 0x5fd);
         if (*(int *)(ev + 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -14137,7 +14130,7 @@ void he_Unk56a710(int ev)
         return;
     case 0:
         id = *(int *)(ev + 0xac);
-        he_Unk53d6f0(ev, 0, 0, (int)"Misc\\EventMessagebox", 0x5f2);
+        he_OpenEventSlot(ev, 0, 0, (int)"Misc\\EventMessagebox", 0x5f2);
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
         io_PrintText("HE_NEUE_VORKOMMEN_SUCHEN_MSG: Ich bin ein Bug !!! %s gefunden!!", id * 2 + 0x9a8);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
@@ -16410,7 +16403,7 @@ void he_Unk570c70(int *a, int b)
     he_ShowNews(a[0], -1, text, 1, 0x5f4, 0);
 }
 
-int he_Unk53d6f0();                 /* 0x53d6f0 */
+int he_OpenEventSlot();                 /* 0x53d6f0 */
 
 /* 0x570cc0, the run of the event 0x8b (a fight / attack of the character +0xac on the player +8): a missing character or a player without the bit 1 of +0x770d4c -> state -2; -2 releases the window +0x74 (0x53d800) and frees; state 0 opens the window 0x53d6f0 (0x6269c0, 0x5ec), 0x475600 / 0x475f70, the texts 0x602568 and 0x40fd and 0x4c27d0 (-7, .., 0x628ecc, -1, 0), state 1; state 1: due (0x4fe210) -> text 0x40ff (0x570c70), 0x53d800, free; the window missing -> state 0; the actor 0xf8aac4 != window +8 or 0xf8a668 -1 -> nothing; 0xf8a668 0 -> 0x570bf0; 1 -> 0x570c70, then 0x53d800 and free. ROUGH */
 void he_Unk570cc0(int ev)
@@ -16429,7 +16422,7 @@ void he_Unk570cc0(int ev)
     }
     if (state == 0) {
         if (HM_I(ev, 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+            he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
         if (HM_I(ev, 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -16480,7 +16473,7 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c483
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
 void he_Unk570bf0(int *a, int b);   /* 0x570bf0 */
 void he_Unk570c70(int *a, int b);   /* 0x570c70 */
-int he_Unk53d6f0();                 /* 0x53d6f0 */
+int he_OpenEventSlot();                 /* 0x53d6f0 */
 int gm_ClockSeason();                 /* 0x4fe350 */
 int gm_BuildingSkill();                 /* 0x5092e0 */
 int sv_UsedGroupSlots();                 /* 0x5241b0 */
@@ -17166,7 +17159,7 @@ void he_Unk572a50(int ev)
     }
     if (state == 0) {
         if (HM_I(ev, 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+            he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
         if (HM_I(ev, 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;

@@ -2003,7 +2003,7 @@ int ai_Unk577740(void)
         return -4;
     if (*(int *)(per + 0x74))
         return -4;
-    he_Unk53d6f0(per, 0, 0, (char *)(unsigned)&full_data_629304, 0x5ec);
+    he_OpenEventSlot(per, 0, 0, (char *)(unsigned)&full_data_629304, 0x5ec);
     if (!*(int *)(*(char **)(S + 0x1c) + 0x74))
         return -1;
     d2_PlaceMainWindowF(R8, 3);
@@ -3113,13 +3113,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep read against the original (1213 / 1213 instructions, same stores and calls): only the register
-   choice and placement of the hoisted float constants differ (0x420c0000 / 0x430e0000 / 0x428e0000 cached
-   in edi/ebx/ecx by ours, ecx/edi/ebx by the original, at +0xc88, +0xda8 regs, +0xec0: the constant loads
-   scheduled around the [esi+0x64] stores); a VC6 register tie-break that flips on the unit's declaration
-   set alone (its debt item: cm.h's declarations), so the stores are the same values at the same offsets -
-   allocation, not meaning */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {

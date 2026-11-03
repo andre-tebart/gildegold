@@ -31,7 +31,10 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
     char pad60[0x10];
     int stage;                          /* 0x70, the stage the job has reached (sv_RefreshPanel shows progress only from a kind's timed stage on) */
-    char pad74[0x18];
+    struct HEEVSLOT *slot;              /* 0x74, of an event shown in the event bar its slot (he.h he_EventSlots), 0: none */
+    unsigned char opts;                 /* 0x78, the event's options from its message: 2 posts it when due, 4 not started yet,
+                                           8 shown in the event bar, 0x10 runs every frame (he.c) */
+    char pad79[0x13];
     int helpers[4];                     /* 0x8c, of a helper job 0x8c the characters on it, -1: a free place
                                            (ai_GypsyHelperWindow counts them) */
     char pad9c[0x10];

@@ -1700,3 +1700,4 @@
 2026-11-03T21:35:42 0x006f0dc4 data ai_Unk6f0dc4 -> cm_MessageBoxOpen by:main why:set to 1 while cm_MessageBox runs, tested at its entry (not reentrant)
 2026-11-03T21:39:52 0x0053d630 func he_Unk53d630 -> he_FreeOldestSlot by:main why:0x53d630 frees the event of the slot whose start time is the earliest (gm_CompareTime over the 16 he_EventSlots); 0x53d800 releases the slot of an event (closes its window, packs the slots below)
 2026-11-03T21:39:52 0x0053d800 func he_Unk53d800 -> he_ReleaseSlot by:main why:0x53d630 frees the event of the slot whose start time is the earliest (gm_CompareTime over the 16 he_EventSlots); 0x53d800 releases the slot of an event (closes its window, packs the slots below)
+2026-11-03T21:44:25 0x0053d6f0 data he_Unk53d6f0 -> he_OpenEventSlot by:main why:0x53d6f0 gives an event (option 8) a slot of he_EventSlots: its picture object and window (d2_WinOpenPic / d2_OpenForm), stored in the event's slot field

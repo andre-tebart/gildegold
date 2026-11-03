@@ -10,7 +10,7 @@ int he_ReleaseEvents(void);
 int he_FigureContact(int p);                 /* 0x55ea60, the contact id of the figure p, or -1 */
 int he_Unk53d600(int type, void *alloc, void *run);
 int he_FreeOldestSlot(void);
-int he_Unk53d6f0(int ev, int b, int c, int d, int e);
+int he_OpenEventSlot(int ev, int x, int y, char *form, int pic);
 void he_ReleaseSlot(int ev);
 void he_Unk53d930(void);
 void he_CloseEventSlots(void);
@@ -142,7 +142,7 @@ char *ai_FindCurseEvent(char *a);  /* 0x5741d0 */
 int he_HasGraveWork(char *bld, int size, int index);  /* 0x573200, 1 when a work event 0x8d of bld is pending on the grave (size, index) */
 int he_Unk553db0(unsigned short *a, int b, int *count);  /* 0x553db0 */
 
-extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_Unk53d6f0), -1 = none; sv_UpdateCityPanel places the bar's end by it */
+extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_OpenEventSlot), -1 = none; sv_UpdateCityPanel places the bar's end by it */
 extern int he_BarView;                  /* 0x6faa60, the view "Panel\Event_Leiste" (he_Unk53d930 opens it) */
 
 #endif
