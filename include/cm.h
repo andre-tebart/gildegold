@@ -292,7 +292,7 @@ int ai_Unk4c6750(G17MSG *m);                                                    
 int ai_Unk4c6780(G17MSG *m);                                                     /* 0x4c6780, check of 0x44 */
 int ai_Unk4c67a0(G17MSG *m);                                                     /* 0x4c67a0, check of 0x45 */
 int ai_Unk4c67c0(G17MSG *m);                                                     /* 0x4c67c0, check of 0x53 */
-int ai_Unk4c6870(G17MSG *m);                                                     /* 0x4c6870, check of 0x54 */
+int cm_CheckTableRequest(G17MSG *m);                                                     /* 0x4c6870, check of 0x54 */
 int ai_Unk4c69c0(G17MSG *m);                                                     /* 0x4c69c0, check of 0x59 */
 int ai_Unk4c6a20(G17MSG *m, G17STAT *s);                                         /* 0x4c6a20, handler of 0, 3, 5..7 */
 int ai_Unk4c6a50(G17MSG *m, G17STAT *s);                                         /* 0x4c6a50, handler of 1 */
