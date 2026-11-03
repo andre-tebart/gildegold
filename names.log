@@ -1518,3 +1518,4 @@
 2026-11-03T16:21:03 0x004942a0 data ai_Unk4942a0 -> ai_PlanLevel by:main why:its comment: a level from the plan's score, score / 4 clamped to 2..6
 2026-11-03T16:21:03 0x00494300 data ai_Unk494300 -> ai_PlanRollTries by:main why:its comment: rolls the plan's tries, sets unk48 on success and unk4c to the negated sum
 2026-11-03T16:21:03 0x004f48f0 data unk_Unk4f48f0 -> gv_SentenceText by:main why:its comment: the text of the sentence a for the character (texts 0x1535 + 3 * a, 0x1538, 0x153e); the trial prints it with the verdict
+2026-11-03T16:32:00 0x004dd960 func ai_Unk4dd960 -> cm_TrialAskPlayer by:main why:the trial's member callback for the player's character (ai_Unk4e5730(2, cm_RunTrial, it, ...)): by the plan's mode the dialogs of the plea, the torture, the votes and the sentence

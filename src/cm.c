@@ -13186,221 +13186,202 @@ void cm_RunTrial(G28REC *m)
         cm_UnloadVoiceBank(bankF2);     /* the original frees bankF2 a second time here, not bankT4 */
 }
 
-/* 0x4dd960, the court's (and torture's) question dialogs of the player for a request m of kinds 0 .. 6 ("cutscenes\\prozess": a yes / no
-   box, "cutscenes\\folterwahl": three choices); r +0x10 the asking character, +0x94 the answer, +0x98 a value. The bodies stand in the order
-   0, 1, 2, 3, 6, 4, 5 (jump table 0x4de324). ROUGH */
-#define CUT_BOX() d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow)
+#define CUT_BOX() d2_WinOpenSlider((d2_LastWindowPtrT->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow)  /* the timer slider of a cutscene dialog */
+#define CM_ASK_YESNO(r, yes, no)                                                    \
+    while (sv_RunFrame(cm_TrialAskPlayer, cm_DialogFrameFlags) != 0) {              \
+        if (cm_DialogTimer(dlg, 0, 0) == 0)                                         \
+            sv_PopRequest = 1;                                                      \
+        else if (d2_ClickedId != -1) {                                              \
+            sv_PopRequest = 1;                                                      \
+            if (d2_ClickedId == 1)                                                  \
+                (r)->session.answer = (yes);                                        \
+            else if (d2_ClickedId == 0)                                             \
+                (r)->session.answer = (no);                                         \
+        }                                                                           \
+    }
 
-/* 0x4dd960 */
-void ai_Unk4dd960(char *r, int *m)
+/* 0x4dd960, the trial's member callback for the player's character (cm_RunSceneParty, scene kind 2): r is the member's record,
+   m the trial's plan (cm_RunTrial). By m->mode the player, when he is the one asked, answers in a dialog ("cutscenes\prozess",
+   "cutscenes\folterwahl") before the timer slider runs out (cm_DialogTimer, 1500 ms); the answer goes to r->session.answer:
+   0 the accused's plea (ids[1], text 0x14bc: 1 guilty; his worth as the amount), 1 the accuser on the torture (ids[0], 0x14cb),
+   2 the accuser's pick of three instruments in random order (0x14db / 0x14dc with their prices by the two worths), 3 the
+   torturer's mercy (ids[5], 0x14e3; giving in raises his relation to the accuser by 0x23), 4 the vote of the judge or an
+   assessor (ids[2] .. ids[4], 0x1529 ..), 5 the judge's sentence of three by the plan's rank (0x1532 / 0x1533, the ones
+   gv_CheckSentence refuses disabled), 6 the accused's confession (0x1512). Without a click the default stays */
+
+void cm_TrialAskPlayer(CMCUTINFO *r, AIPLAN *m)
 {
-    char tab[8] = {8, 10, 12, 15, 18, 21, 24, 0};
-    int sel[7] = {-1, -1, -1, -1, -1, -1, -1};
-    int btn[7];
-    char *si, *di;
-    int v, dlg, n, i, t, sum, k;
+    char prices[7] = {8, 10, 12, 15, 18, 21, 24};
+    int btn[7];                         /* the instrument buttons */
+    int order[7];
+    int sel[3];                         /* the sentence buttons */
+    AICHAR *c, *accused;
+    int view, dlg, rank, obj, i, k, t, sum;
 
-    *(int *)(r + 0x94) = -1;
-    si = (char *)gm_FindChar(*(int *)(r + 0x10));
-    di = (char *)gm_FindChar(m[6]);
-    switch (m[0]) {
+    r->session.answer = -1;
+    for (i = 0; i < 7; i++)
+        btn[i] = -1;
+    c = (AICHAR *)gm_FindChar(r->playerId);
+    accused = (AICHAR *)gm_FindChar(m->ids[1]);
+    switch (m->mode) {
     case 0:
-        if (*(int *)(r + 0x10) != m[6])
+        if (r->playerId != m->ids[1])
             return;
-        *(float *)(r + 0x98) = (float)*(int *)(di + 0x24) + *(float *)(di + 0x1c);
-        v = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x14bc, *(unsigned short *)si);
+        r->session.amount = (float)accused->v024 + accused->f01c;
+        view = d2_OpenForm(0, 0, "cutscenes\\prozess");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x14bc, c->id);
         d2_ClickedId = -1;
-        *(int *)(r + 0x94) = 0;
+        r->session.answer = 0;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
-            if (cm_DialogTimer(dlg, 0, 0) == 0)
-                sv_PopRequest = 1;
-            else if (d2_ClickedId != -1) {
-                sv_PopRequest = 1;
-                if (d2_ClickedId == 1)
-                    *(int *)(r + 0x94) = 0;
-                else if (d2_ClickedId == 0)
-                    *(int *)(r + 0x94) = 1;
-            }
-        }
-        d2_CloseView(v);
+        CM_ASK_YESNO(r, 0, 1)
+        d2_CloseView(view);
         return;
     case 1:
-        if (*(int *)(r + 0x10) != m[5])
+        if (r->playerId != m->ids[0])
             return;
-        v = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x14cb, *(unsigned short *)si, *(unsigned short *)di);
+        view = d2_OpenForm(0, 0, "cutscenes\\prozess");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x14cb, c->id, accused->id);
         d2_ClickedId = -1;
-        *(int *)(r + 0x94) = 0;
+        r->session.answer = 0;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
-            if (cm_DialogTimer(dlg, 0, 0) == 0)
-                sv_PopRequest = 1;
-            else if (d2_ClickedId != -1) {
-                sv_PopRequest = 1;
-                if (d2_ClickedId == 1)
-                    *(int *)(r + 0x94) = 1;
-                else if (d2_ClickedId == 0)
-                    *(int *)(r + 0x94) = 0;
-            }
-        }
-        d2_CloseView(v);
+        CM_ASK_YESNO(r, 1, 0)
+        d2_CloseView(view);
         return;
     case 2:
-        if (*(int *)(r + 0x10) != m[5])
+        if (r->playerId != m->ids[0])
             return;
-        gm_Shuffled(7, btn);
-        sum = gm_GetWorth(*(unsigned short *)si) + gm_GetWorth(*(unsigned short *)di);
-        sum /= 1000;
-        v = d2_OpenForm(0, 0, "cutscenes\\folterwahl");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x14db, *(unsigned short *)si);
+        gm_Shuffled(7, order);
+        sum = (gm_GetWorth(c->id) + gm_GetWorth(accused->id)) / 2000;
+        view = d2_OpenForm(0, 0, "cutscenes\\folterwahl");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x14db, c->id);
         for (i = 0; i < 3; i++) {
-            k = btn[i];
-            t = io_PrintText(0x14dc, k * 2 + 0xb20, (unsigned char)tab[k] * sum);
-            sel[i] = d2_GetWinObj(v, 0, t);
+            k = order[i];
+            t = io_PrintText(0x14dc, k * 2 + 0xb20, (unsigned char)prices[k] * sum);
+            btn[i] = d2_GetWinObj(view, 0, t);
         }
         d2_ClickedId = -1;
-        *(int *)(r + 0x94) = btn[cm_Random(3)];
+        r->session.answer = order[cm_Random(3)];
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+        while (sv_RunFrame(cm_TrialAskPlayer, cm_DialogFrameFlags) != 0) {
             if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 for (i = 0; i < 3; i++)
-                    if (d2_PointerObj == sel[i])
+                    if (d2_PointerObj == btn[i]) {
+                        r->session.answer = order[i];
+                        sv_PopRequest = 1;
                         break;
-                if (i < 3)
-                    *(int *)(r + 0x94) = btn[i];
-                sv_PopRequest = 1;
+                    }
             }
         }
-        d2_CloseView(v);
+        d2_CloseView(view);
         return;
     case 3:
-        if (*(int *)(r + 0x10) != m[10])
+        if (r->playerId != m->ids[5])
             return;
-        v = d2_OpenForm(0, 0, "cutscenes\\folterwahl");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x14e3, *(unsigned short *)si, *(unsigned short *)di, *(unsigned short *)di);
+        view = d2_OpenForm(0, 0, "cutscenes\\folterwahl");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x14e3, c->id, accused->id, accused->id);
         d2_ClickedId = -1;
-        *(int *)(r + 0x94) = 0;
+        r->session.answer = 0;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+        while (sv_RunFrame(cm_TrialAskPlayer, cm_DialogFrameFlags) != 0) {
             if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
                 if (d2_ClickedId == 1)
-                    *(int *)(r + 0x94) = 0;
+                    r->session.answer = 0;
                 else if (d2_ClickedId == 0) {
-                    *(int *)(r + 0x94) = 1;
-                    cm_SendRelations(*(int *)(si + 4), *(int *)(di + 4), 0x23, 1);
+                    r->session.answer = 1;
+                    cm_SendRelations(c->netId, accused->netId, 0x23, 1);
                 }
             }
         }
-        d2_CloseView(v);
+        d2_CloseView(view);
         return;
     case 6:
-        if (*(int *)(r + 0x10) != m[6])
+        if (r->playerId != m->ids[1])
             return;
-        v = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x1512, *(unsigned short *)si);
+        view = d2_OpenForm(0, 0, "cutscenes\\prozess");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x1512, c->id);
         d2_ClickedId = -1;
-        *(int *)(r + 0x94) = 0;
+        r->session.answer = 0;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
-            if (cm_DialogTimer(dlg, 0, 0) == 0)
-                sv_PopRequest = 1;
-            else if (d2_ClickedId != -1) {
-                sv_PopRequest = 1;
-                if (d2_ClickedId == 1)
-                    *(int *)(r + 0x94) = 1;
-                else if (d2_ClickedId == 0)
-                    *(int *)(r + 0x94) = 0;
-            }
-        }
-        d2_CloseView(v);
+        CM_ASK_YESNO(r, 1, 0)
+        d2_CloseView(view);
         return;
     case 4:
-        t = *(int *)(r + 0x10);
-        if (t != m[7] && t != m[8] && t != m[9])
+        t = r->playerId;
+        if (t != m->ids[2] && t != m->ids[3] && t != m->ids[4])
             return;
-        v = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x1529, *(unsigned short *)si);
+        view = d2_OpenForm(0, 0, "cutscenes\\prozess");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x1529, c->id);
         io_PrintText(0x152a);
         io_PrintText(0x152b);
         d2_ClickedId = -1;
-        *(int *)(r + 0x94) = 1;
+        r->session.answer = 1;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
-            if (cm_DialogTimer(dlg, 0, 0) == 0)
-                sv_PopRequest = 1;
-            else if (d2_ClickedId != -1) {
-                sv_PopRequest = 1;
-                if (d2_ClickedId == 1)
-                    *(int *)(r + 0x94) = 1;
-                else if (d2_ClickedId == 0)
-                    *(int *)(r + 0x94) = 0;
-            }
-        }
-        d2_CloseView(v);
+        CM_ASK_YESNO(r, 1, 0)
+        d2_CloseView(view);
         return;
     case 5:
-        if (*(int *)(r + 0x10) != m[7])
+        if (r->playerId != m->ids[2])
             return;
-        sel[0] = sel[1] = sel[2] = -1;
-        n = ai_PlanRank(0);
-        v = d2_OpenForm(0, 0, "cutscenes\\prozess");
-        ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-        d2_SetForm(v, 0);
-        io_PrintText(0x1532, *(unsigned short *)si);
+        sel[0] = -1;
+        sel[1] = -1;
+        sel[2] = -1;
+        rank = ai_PlanRank(m);
+        view = d2_OpenForm(0, 0, "cutscenes\\prozess");
+        d2_PlaceMainWindow(view, 3);
+        d2_SetForm(view, 0);
+        io_PrintText(0x1532, c->id);
         for (i = 0; i < 3; i++) {
-            t = io_PrintText(0x1533, n * 3 + 0x1534 + i * 3);
-            sel[i] = d2_GetWinObj(v, 0, t);
-            if (gv_CheckSentence(di, i + n) != 0)
-                d2_SetObjEnabled(sel[i], 0);
+            obj = d2_GetWinObj(view, 0, io_PrintText(0x1533, rank * 3 + 0x1534 + i * 3));
+            sel[i] = obj;
+            if (gv_CheckSentence(accused, i + rank) != 0)
+                d2_SetObjEnabled(obj, 0);
         }
-        if (sel[0] != -1)
-            *(int *)(r + 0x94) = n + 1;
+        if (sel[1] != -1)
+            r->session.answer = rank + 1;
         else if (cm_Random(2) != 0)
-            *(int *)(r + 0x94) = n + 2;
+            r->session.answer = rank + 2;
         else
-            *(int *)(r + 0x94) = n;
+            r->session.answer = rank;
         d2_ClickedId = -1;
         dlg = CUT_BOX();
         cm_DialogTimer(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+        while (sv_RunFrame(cm_TrialAskPlayer, cm_DialogFrameFlags) != 0) {
             if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
                 if (d2_PointerObj == sel[0])
-                    *(int *)(r + 0x94) = n;
+                    r->session.answer = rank;
                 else if (d2_PointerObj == sel[1])
-                    *(int *)(r + 0x94) = n + 1;
+                    r->session.answer = rank + 1;
                 else if (d2_PointerObj == sel[2])
-                    *(int *)(r + 0x94) = n + 2;
+                    r->session.answer = rank + 2;
             }
         }
-        d2_CloseView(v);
+        d2_CloseView(view);
         return;
     }
 }
@@ -16250,7 +16231,7 @@ void ai_Unk4e5770(void)
         ai_Unk925520[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
-    ai_Unk4e5730(2, (int)cm_RunTrial, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
+    ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
