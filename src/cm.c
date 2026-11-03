@@ -4929,31 +4929,36 @@ int ai_Unk4cb210(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cb250, handler of type 0x3d: creates a character (kind data[8]) for building data[0] under the boss data[4] */
-
-int ai_Unk4cb250(G17MSG *m, G17STAT *s)
+/* 0x4cb250, handler of message 0x3d (cm_SendMessage3d): hires a character for the building bldId: the applicant charId
+   (a new one of the kind, title and job when it has none or already works), placed in its home's (homeId, else the
+   applicant's own) or the building's main room; a worker of the titles 1 / 2 / 0xf / 0x10 / 0x13 / 0x14 gets the
+   item 0x154 when it holds no weapon, the others drop the weapon they hold; it works in the building from now,
+   moves into the home, gets the building's work settings (and its budget with a job) and a fresh job */
+int cm_ExHire(G17MSG *m, G17STAT *s)
 {
-    char *b, *c, *bo = 0, *t;
-    int *r;
-    int k;
+    AIBLD *b, *home = 0;
+    AICHAR *c;
+    AIOBJ *t;
+    AIWEAPON *w;
+    unsigned char title;
 
-    if (ai_Unk1460ae0 != -1)
-        ai_NextObjectId = G17_I(*m, 0xf);
+    if (net_Conn.s != (unsigned int)-1)
+        ai_NextObjectId = m->hire.objectId;
     else
-        G17_I(*m, 0x13) = rand();
-    util_Seed(G17_I(*m, 0x13));
-    b = gm_BuildQuery(1, 1, G17_I(*m, 0));
+        m->hire.seed = rand();
+    util_Seed(m->hire.seed);
+    b = (AIBLD *)gm_BuildQuery(1, 1, m->hire.bldId);
     if (b == 0)
         return 1;
-    c = gm_FindChar(G17_I(*m, 9));
-    if (G17_I(*m, 4) != -1) {
-        bo = gm_BuildQuery(1, 1, G17_I(*m, 4));
-        if (bo == 0)
+    c = (AICHAR *)gm_FindChar(m->hire.charId);
+    if (m->hire.homeId != -1) {
+        home = (AIBLD *)gm_BuildQuery(1, 1, m->hire.homeId);
+        if (home == 0)
             return 1;
     } else if (c != 0)
-        bo = *(char **)(c + 0x170);
-    if (c == 0 || *(int *)(c + 0x16c) != 0)
-        c = gm_SpawnCharacter(6, m->data[8], 0x12, m->data[0xe], m->data[0xd], bo);
+        home = c->bld2;
+    if (c == 0 || c->bld != 0)
+        c = (AICHAR *)gm_SpawnCharacter(6, m->hire.kind, 0x12, m->hire.job, m->hire.title, (char *)home);
     if (c == 0) {
         if (s != 0) {
             s->state = 2;
@@ -4962,47 +4967,47 @@ int ai_Unk4cb250(G17MSG *m, G17STAT *s)
         }
         return 2;
     }
-    if (m->data[0xd] != 0)
-        c[0x165] = m->data[0xd];
-    if (m->data[0xe] != 0)
-        c[0x164] = m->data[0xe];
+    if (m->hire.title != 0)
+        c->title = m->hire.title;
+    if (m->hire.job != 0)
+        c->jobId = m->hire.job;
     else
-        c[0x164] = 0;
-    c[2] = m->data[8];
-    if (*(int *)(c + 0x184) == 0) {
-        if (bo != 0) {
-            t = gm_HomeObject(bo);
-            if (t != 0 && *(int *)(t + 2) != -1)
-                gm_PlaceOnStage(*(int *)(c + 4), *(int *)(bo + 1), *(int *)(t + 2), 0, 0);
+        c->jobId = 0;
+    c->kind = m->hire.kind;
+    if (c->model == 0) {
+        if (home != 0) {
+            t = (AIOBJ *)gm_HomeObject((unsigned char *)home);
+            if (t != 0 && t->objId != -1)
+                gm_PlaceOnStage(c->netId, home->id, t->objId, 0, 0);
         } else {
-            t = gm_BuildingMainObject(b);
-            if (t != 0 && *(int *)(t + 2) != -1)
-                gm_PlaceOnStage(*(int *)(c + 4), *(int *)(b + 1), *(int *)(t + 2), 0, 0);
+            t = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
+            if (t != 0 && t->objId != -1)
+                gm_PlaceOnStage(c->netId, b->id, t->objId, 0, 0);
         }
     }
-    k = m->data[0xd];
-    if (k != 2 && k != 1 && k != 0x10 && k != 0xf && k != 0x14 && k != 0x13) {
-        r = (int *)ai_Unk4cda50(c);
-        if (*r != 0) {
-            gm_TakeObjekt(*(int *)(c + 4), *r, 1);
-            cm_UpdateHandObject(c);
+    title = m->hire.title;
+    if (title != 2 && title != 1 && title != 0x10 && title != 0xf && title != 0x14 && title != 0x13) {
+        w = (AIWEAPON *)cm_CharWeapon((char *)c);
+        if (w->id != 0) {
+            gm_TakeObjekt(c->netId, w->id, 1);
+            cm_UpdateHandObject((char *)c);
         }
     } else {
-        r = (int *)ai_Unk4cda50(c);
-        if (*r == 0) {
-            gm_CreateObject(*(int *)(c + 4), 0x154, 1);
-            cm_UpdateHandObject(c);
+        w = (AIWEAPON *)cm_CharWeapon((char *)c);
+        if (w->id == 0) {
+            gm_CreateObject(c->netId, 0x154, 1);
+            cm_UpdateHandObject((char *)c);
         }
     }
-    *(char **)(c + 0x16c) = b;
-    if (bo != 0)
-        unk_Unk4fda10(c, bo);
-    *(int *)(c + 0x174) = 0;
-    *(int *)(c + 0x1c8) &= ~0x2000;
+    c->bld = b;
+    if (home != 0)
+        gm_MoveIntoHome((char *)c, (char *)home);
+    c->v174 = 0;
+    c->flags1c8 &= ~0x2000;
     ai_ResetJob(c);
-    *(G17B16 *)(c + 0x1b4) = *(G17B16 *)(b + 0x99);
-    if (m->data[0xe] != 0)
-        *(int *)(c + 0x1b8) = *(int *)(b + 0x39);
+    memcpy(&c->flags1b4, b->workSet, sizeof(b->workSet));
+    if (m->hire.job != 0)
+        c->budget = b->budget;
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
@@ -6629,7 +6634,7 @@ char *ai_Unk4cda00(char *c)
 }
 /* 0x4cda50, as 0x4cda00; a record of kind 1 / 2 whose entry has nothing left (+0x20) is not taken */
 
-char *ai_Unk4cda50(char *c)
+char *cm_CharWeapon(char *c)
 {
     char *q, *r;
 
@@ -6697,7 +6702,7 @@ char ai_Unk4cdb80(char *c)
                 id = *(unsigned short *)(g + 0x27);
                 ch = ai_Chars[id];
                 if (ch[2] == 6 || ch[2] == 7) {
-                    r = (int *)ai_Unk4cda50(c);
+                    r = (int *)cm_CharWeapon(c);
                     if (*r != 0) {
                         txt_Format(buf, 0x1bca, *r * 2 + 0x9a8, *(unsigned short *)c, g);
                         he_ShowNews(*(int *)(ch + 4), -1, buf, 0, 0x5f2, 0);
@@ -6722,7 +6727,7 @@ float ai_Unk4cdcf0(char *c)
     int *p;
 
     g = gm_GetSkill(c, 3);
-    p = (int *)ai_Unk4cda50(c);
+    p = (int *)cm_CharWeapon(c);
     if (p != 0) {
         switch (*p) {
         case 0x154:
@@ -6753,7 +6758,7 @@ void cm_UpdateHandObject(char *c)
     int *r;
     char *g;
 
-    r = (int *)ai_Unk4cda50(c);
+    r = (int *)cm_CharWeapon(c);
     if (r != 0 && *r != 0) {
         if (*(char **)(c + 0x184) == 0)
             return;
@@ -7361,7 +7366,7 @@ void ai_Unk4cf000()
         c = *pp;
         if (c == 0)
             continue;
-        rr = (int *)ai_Unk4cda50(c);
+        rr = (int *)cm_CharWeapon(c);
         if (rr != 0 && *rr == 0x172) {
             fl = 0;
             if (ai_Unk6f0d74 != 0)
@@ -7516,7 +7521,7 @@ void ai_Unk4cf670()
         if (c != 0 && c[0x188] != 0) {
             if (ai_LedSelectBits(*(unsigned short *)ai_Unk6f0d74, c) & 0x800) {
                 if (kb_Down[0x36] == 0) {
-                    r = ai_Unk4cda50(c);
+                    r = cm_CharWeapon(c);
                     if (r != 0) {
                         switch (*(int *)r) {
                         case 0x160: cur = 0x18; break;
@@ -7665,7 +7670,7 @@ void ai_Unk4cfc10()
             continue;
         G19_E(e, 4) = d2_CreatePicObj(x + 0x18, 0xf, 0x5da);
         G19_E(e, 8) = d2_CreateWindow(x, 0, 0x80, 0x4b, 0x110);
-        o = ai_Unk4cda50(*pp);
+        o = cm_CharWeapon(*pp);
         if (o != 0 && *(int *)o != 0) {
             G19_E(e, 0x14) = d2_WinOpenPic(0x54, 0xf, *(int *)o + 0xdf, d2_LastWindow);
             d2_ScaleObject(G19_E(e, 0x14), -2);
@@ -7754,7 +7759,7 @@ int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z)
 
     if (c == 0)
         return -1;
-    k = (char *)ai_Unk4cda50(c);
+    k = (char *)cm_CharWeapon(c);
     if (tgt == 0 || *(char **)(*(char **)(tgt + 0x184) + 0x34) == 0)
         return -1;
     if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(tgt + 0x184) + 0x34) + 0x4c, &x, &z, &h) == 0)
@@ -7845,7 +7850,7 @@ int ai_Unk4d02d0(char *rec, char *c, char *tgt)
     float v[4];
     int x, z, h;
 
-    ai_Unk4cda50(c);
+    cm_CharWeapon(c);
     d3_PointToWorld(tgt, tgt + 0x4c, v);
     if ((char)d3_GetHeightAt(sc, v, &x, &z, &h) == 0)
         return 0;
@@ -7869,7 +7874,7 @@ int ai_Unk4d0380(char *rec, char *c, char *tgt, unsigned char a)
     int L[11];
     int x, z, h;
 
-    ai_Unk4cda50(c);
+    cm_CharWeapon(c);
     d3_PointToWorld(tgt, tgt + 0x4c, v);
     if ((char)d3_GetHeightAt(sc, v, &x, &z, &h) == 0 || *(int *)(c + 0x1ac) != 0)
         return -1;
@@ -8056,7 +8061,7 @@ char *ai_Unk4d0920(char *c, int a)
     *(char *)(*(char **)(r + 0x184) + 0x240) = 4;
     *(char *)(*(char **)(r + 0x184) + 0x8d) |= 0x80;
     cm_UpdateHandObject(r);
-    k = ai_Unk4cda50(c);
+    k = cm_CharWeapon(c);
     *(float *)(*(char **)(r + 0x184) + 0x1a0) = (float)(unsigned char)k[9] * ai_Unk5eb9b8;
     sprintf(*(char **)(*(char **)(r + 0x184) + 0x34), "%i", *(int *)(r + 4));
     w = ai_Unk4cdac0(c);
@@ -8519,7 +8524,7 @@ void ai_Unk4d1c20(char *side, int id)
         c = cm_FindFighter(ids[i]);
         if (c == 0)
             continue;
-        k = ai_Unk4cda50(c);
+        k = cm_CharWeapon(c);
         if (k != 0 && (*(int *)k == 0x174 || *(int *)k == 0x176 || *(int *)k == 0x15e || *(int *)k == 0x160))
             sprintf(buf, "dummy_%s_FERN_%02i", (char *)id, n2++);
         else
@@ -8599,7 +8604,7 @@ char *ai_Unk4d1f10(char *c)
     char *res = 0;
     char **pp;
 
-    if (*(int *)(ai_Unk4cda50(c) + 0x58) == 2) {
+    if (*(int *)(cm_CharWeapon(c) + 0x58) == 2) {
         for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
                 w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
@@ -9114,7 +9119,7 @@ float ai_Unk4d2e30(char *c, int type)
         v = 1.0f;
         if (c[0x1c4] != 0)
             v = 0.5f;
-        k = *(int *)(ai_Unk4cda50(c) + 0x58);
+        k = *(int *)(cm_CharWeapon(c) + 0x58);
         if ((k == 1 || k == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
             v = 0.2f;
         return ai_Unk4cdcf0(c) * v;
@@ -9127,7 +9132,7 @@ float ai_Unk4d2e30(char *c, int type)
             if (st != 0)
                 v = 0.5f;
         }
-        k = *(int *)(ai_Unk4cda50(c) + 0x58);
+        k = *(int *)(cm_CharWeapon(c) + 0x58);
         if ((k == 1 || k == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
             v = 1.0f;
         return v / ai_Unk4cdcf0(c);
@@ -9228,7 +9233,7 @@ void ai_Unk4d3120(char *rec, char *c)
     }
     switch ((unsigned char)c[0x1c4]) {
     case 0:
-        k = ai_Unk4cda50(c);
+        k = cm_CharWeapon(c);
         if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
             return;
         if (*(int *)(k + 0x58) == 2) {
@@ -9298,7 +9303,7 @@ int ai_Unk4d3390(char *c)
     char *m, *b, *p;
     int o;
 
-    ai_Unk4cda50(c);
+    cm_CharWeapon(c);
     if (!(gm_HealthRatio(c) < ai_Unk5edbd0))
         return 0;
     d3t_CreateBloodK(*(char **)(c + 0x184) + 0, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
@@ -9353,8 +9358,8 @@ void ai_Unk4d3550(char *ev)
     int hitv = 0;
     int kt1 = 0;
 
-    ka = ai_Unk4cda50(att);
-    kt = ai_Unk4cda50(tgt);
+    ka = cm_CharWeapon(att);
+    kt = cm_CharWeapon(tgt);
     ch_GetHMap(*(struct CHARACTER **)(att + 0x184));
     if (kt != 0 && ai_Unk4ce1b0(tgt, *(char **)(*(char **)(att + 0x184) + 0x34)) <= *(float *)(kt + 0xc))
         ;
@@ -9434,7 +9439,7 @@ void ai_Unk4d3980(char *ev)
     char *k, *r;
     int vv;
 
-    k = ai_Unk4cda50(att);
+    k = cm_CharWeapon(att);
     ai_Unk4ce290(*(char **)(*(char **)(att + 0x184) + 0x34) + 0x4c);
     sb_PlaySampleI(ai_Unk6f0d14, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
     if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c && (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2)) {
@@ -9705,7 +9710,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         G19_R(t, 0x74, short) = 0x56;
         G19_5176D0(buf, "%1N1 %i%", *(unsigned short *)c, (int)(gm_HealthRatio(c) * 100.0));
         d2_SetObjText(t, buf);
-        o = ai_Unk4cda50(c);
+        o = cm_CharWeapon(c);
         if (o != 0 && *(int *)o != 0) {
             ic = d2_WinOpenPic(px + 0x28, py + 0xf, *(int *)o + 0xdf, d2_LastWindow);
             d2_ScaleObject(ic, -2);
@@ -10536,7 +10541,7 @@ void ai_Unk4d6ba0(char *f)
     if (*(int *)(f + 4) == 0 || *(int *)f == -1)
         return;
     c = cm_FindFighter(*(int *)f);
-    k = ai_Unk4cda50(c);
+    k = cm_CharWeapon(c);
     side = *(char **)(c + 0x16c);
     tgt = cm_FindFighter(*(int *)(f + 0x10));
     if (tgt != 0)
@@ -10759,7 +10764,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
     s[4] = *(int *)(g + 4);
     if (c[0x1c4] == 1 || c[0x1c4] == 2 || c[0x1c4] == 3)
         ((char *)s)[0x1c] = 1;
-    k = ai_Unk4cda50(c);
+    k = cm_CharWeapon(c);
     if (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) {
         x = ai_Unk4cdac0(c);
         if (x != 0 && *(int *)(x + 0x20) <= 0)
@@ -10852,7 +10857,7 @@ void ai_Unk4d76a0(int *rec)
                 c = gm_FindChar(0);
             else
                 c = cm_FindFighter(p[0]);
-            k = ai_Unk4cda50(c);
+            k = cm_CharWeapon(c);
             if ((c == 0 || c[8] == 0) && k != 0) {
                 p[0] = -1;
                 p[1] = 0;
@@ -15271,7 +15276,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

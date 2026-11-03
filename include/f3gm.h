@@ -74,7 +74,7 @@ unsigned *gm_CharNameRecord(int id);  /* 0x4fb390 */
 int gm_CreateCharModel(unsigned short *c, int scene, int *p, int *ori, int obj, char *dummy);  /* 0x4fbb80 */
 float gm_HealthRatio(short *c);  /* 0x4fc8e0 */
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);  /* 0x4fd820, a home with room for the building o (the nearest or least full) */
-void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
+void gm_MoveIntoHome(char *c, char *b);  /* 0x4fda10 */
 struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);  /* 0x4fda70 */
 char *gm_HomeObject(unsigned char *b);  /* 0x4fdc10 */
 short *gm_SpawnCharacter(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */

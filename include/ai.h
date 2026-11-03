@@ -59,7 +59,8 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                                            building's vegetation map (rd.c: veg_Fits / veg_FindPlantId) */
     char pad75[0x20];
     int smokeEffect;                    /* 0x95, the id of the running chimney smoke effect (evt_FindById), -1 none (sv.c 0x528490) */
-    char pad99[0x10];
+    char workSet[0x10];                 /* 0x99, the work settings a hired worker takes over into AICHAR flags1b4 ..
+                                           target (cm_ExHire); begins with flags (ls.c) */
 } AIBLD;
 
 typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind ai_Objects): carts, stores, the
@@ -317,7 +318,8 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     char pad16a[2];
     AIBLD *bld;                         /* 0x16c */
     AIBLD *bld2;                        /* 0x170, the character's own building (the f3gm.c 0x4fdcb0 comment: its home), 0 when none */
-    char pad174[4];
+    int v174;                           /* 0x174, 0 when hired (cm_ExHire); ai.c 0x487b40 wants it >= 4 with a title
+                                           (reasoned: rounds in the job) */
     int inventory;                      /* 0x178, the character's goods inventory (a G8 object list of item ids,
                                            next at +0x3f): gm_Query finds a prototype kind in it, gm_SumSlotAmounts
                                            sums a need slot over it (am.c 0x4a5760) */

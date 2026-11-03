@@ -1415,7 +1415,7 @@ void d2_ReleaseFade(struct D2FADE *f); /* 0x476860, d2.h */                     
 void d2_PlaceWindow(int win, unsigned char flags);  /* 0x4756b0 */
 int ahm_HasRecord();                     /* 0x4eaad0 */
 struct D3SKY; struct D3SKYLAYER; struct D3VECTOR; int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);  /* 0x453e80 */
-char * ai_Unk4cda50(char *c);                     /* 0x4cda50 */
+char * cm_CharWeapon(char *c);                     /* 0x4cda50 */
 
 /* 0x524010, redraws the whole screen: the background view 0x6ed924 is filled (0x46d040), the panel 0x522f10 (1, 0) built into it, the view blitted (0x479480) to 0x6ed92c, a black clip rectangle ("BLACK") over the
    whole screen shown for one message round (0x5309a0 (0, 0x1c6)), the strip 0x623840 shown (0x4756b0) and the background copied back */
@@ -1745,7 +1745,7 @@ int sv_CharStateIcons(char *c, int *out)
             }
         }
     }
-    q = (int *)ai_Unk4cda50(c);
+    q = (int *)cm_CharWeapon(c);
     if (q != 0 && *q != 0)
         out[n++] = *q + 0xdf;
     return n;

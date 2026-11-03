@@ -419,7 +419,7 @@ extern char ai_DataPath[];  /* 0x75dca0 */
 
 void ai_ResetJob(struct AICHAR *c);  /* 0x47e940 */
 int gv_HandOverCrimes();  /* 0x4f3910 */
-void unk_Unk4fda10(char *c, char *b);  /* 0x4fda10 */
+void gm_MoveIntoHome(char *c, char *b);  /* 0x4fda10 */
 char *gm_HomeObject(unsigned char *b);  /* 0x4fdc10 */
 short *gm_SpawnCharacter(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
 unsigned short * gm_QueryNext(void);  /* 0x4ffcc0 */
@@ -509,7 +509,7 @@ void ai_Unk4cd820(int v);  /* 0x4cd820 */
 int ai_Unk4cd870(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
 char *ai_FindWeaponRecord(int id);  /* 0x4cd9d0 */
 char *ai_Unk4cda00(char *c);  /* 0x4cda00 */
-char *ai_Unk4cda50(char *c);  /* 0x4cda50 */
+char *cm_CharWeapon(char *c);  /* 0x4cda50 */
 char *ai_Unk4cdac0(char *c);  /* 0x4cdac0 */
 void ai_Unk4cdb20(char *c);  /* 0x4cdb20 */
 char ai_Unk4cdb80(char *c);  /* 0x4cdb80 */

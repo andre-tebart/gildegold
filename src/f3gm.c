@@ -2232,7 +2232,7 @@ ORDBLD *gm_FindHome(int unused, ORDBLD *o)
 }
 /* 0x4fda10, moves the character c into the building b (+0x170) when b (+0x65 its occupancy) has room (0x4f8890 capacity): the old building loses one */
 
-void unk_Unk4fda10(char *c, char *b)
+void gm_MoveIntoHome(char *c, char *b)
 {
     unsigned short cap[4];
     char *old;
