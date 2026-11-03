@@ -6919,20 +6919,20 @@ float cm_CharObjDistXZ(char *c, char *o)
     d.z -= b.z;
     return (float)sqrt(d.z * d.z + d.x * d.x);
 }
-/* 0x4ce200, the distance of the character c's model to the cell (x, y) */
+/* 0x4ce200, the distance in the x / z plane of the character c's body to the vertex of cell (x, y) (the frame holds two 16-byte vectors) */
 
-float ai_Unk4ce200(char *c, int x, int y)
+float cm_CharCellDistXZ(char *c, int x, int y)
 {
-    float v[3];
-    char *p;
-    float dx, dz;
+    D3VECTOR4 v, d;
+    D3VECTOR b;
 
-    d3sm_GetVertexI(*(int *)(ai_Unk5fb5b0 + 0xb0), x, y, v);
-    v[1] = 0;
-    p = *(char **)(*(char **)(c + 0x184) + 0x34);
-    dx = v[0] - *(float *)(p + 0x4c);
-    dz = v[2] - *(float *)(p + 0x54);
-    return (float)sqrt(dz * dz + dx * dx);
+    d3sm_GetVertex((struct D3SM *)d3_DefaultScene->hmap, x, y, (D3VECTOR *)&v);
+    v.y = 0;
+    b.x = ((AICHAR *)c)->scene->obj->pos.x;
+    b.z = ((AICHAR *)c)->scene->obj->pos.z;
+    d.x = v.x - b.x;
+    d.z = v.z - b.z;
+    return (float)sqrt(d.z * d.z + d.x * d.x);
 }
 /* 0x4ce270, 1 when the two characters are not in the same building (+0x16c) */
 
@@ -10949,7 +10949,7 @@ void ai_Unk4d76a0(int *rec)
                         }
                     } else {
                         if (x == 0)
-                            f = ai_Unk4ce200(c, p[5], p[6]);
+                            f = cm_CharCellDistXZ(c, p[5], p[6]);
                         else
                             f = cm_CharObjDistXZ(c, *(char **)(G21_CH(x) + 0x34));
                         if (*(int *)k == 0x176) {
