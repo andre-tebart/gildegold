@@ -50,7 +50,7 @@ extern GAPDATA full_data_92bcb8[];
 #define G17_S(m, o) (*(short *)&(m).data[o])
 /* the block at 0x936420 is 0x24 bytes: the count then the eight player states at +4 (one object, so the
    0x24-byte memset / memcpy in 0x4cd580 and 0x4cdxx cannot run over a neighbour that LINK placed there) */
-#define ai_Unk936424 (*(int (*)[8])((char *)ai_Unk936420 + 4))  /* 0x936424, the eight player states (a view) */
+#define cm_LobbyListIds (*(int (*)[8])((char *)cm_LobbyList + 4))  /* 0x936424, the eight player states (a view) */
 
 #include "time_view.h"
 #include "f3init.h"
@@ -6034,7 +6034,7 @@ found:
 
 int ai_Unk4cce00(G17MSG *m, G17STAT *s)
 {
-    return ai_Unk4cd870(m, s);
+    return cm_ExLobby(m, s);
 }
 /* 0x4cce10, handler of type 0x60: kind data[0] (0..6) picks the creator */
 
@@ -6320,7 +6320,7 @@ int ai_Unk4cd2f0(G17MSG *m, G17STAT *s)
 }
 /* 0x4cd350, a free slot of the 8 records (0x57 bytes) of ai_Unk9364e0, 0: none */
 
-char *ai_Unk4cd350()
+char *cm_LobbyFreeRecord()
 {
     int i = 0;
     char *p;
@@ -6334,7 +6334,7 @@ char *ai_Unk4cd350()
 }
 /* 0x4cd380, the record with id, else a free one */
 
-char *ai_Unk4cd380(int id)
+char *cm_LobbyRecord(int id)
 {
     int i;
     char *p;
@@ -6347,11 +6347,11 @@ char *ai_Unk4cd380(int id)
             return ai_Unk9364e0 + i * 0x57;
         i++;
     }
-    return ai_Unk4cd350();
+    return cm_LobbyFreeRecord();
 }
-/* 0x4cd3c0, appends the chat line text of the player id (x kept with it) to the lobby chat ring cm_LobbyChat[15]; an unknown sender is named "???????" */
+/* 0x4cd3c0, appends the chat line text of the player id sent to the player to (0: everybody) to the lobby chat ring cm_LobbyChat[15]; an unknown sender is named "???????" */
 
-void cm_LobbyAddChat(int id, int x, char *text)
+void cm_LobbyAddChat(int id, int to, char *text)
 {
     char *p;
 
@@ -6361,7 +6361,7 @@ void cm_LobbyAddChat(int id, int x, char *text)
     else
         strcpy(cm_LobbyChat[cm_LobbyChatNext].name, "???????");
     cm_LobbyChat[cm_LobbyChatNext].id = id;
-    cm_LobbyChat[cm_LobbyChatNext].x = x;
+    cm_LobbyChat[cm_LobbyChatNext].to = to;
     strcpy(cm_LobbyChat[cm_LobbyChatNext].text, text);
     if (++cm_LobbyChatNext >= 15)
         cm_LobbyChatNext = 0;
@@ -6409,7 +6409,7 @@ void cm_LobbyClearChat()
     cm_LobbyChatNext = 0;
     cm_LobbyChatCount = 0;
 }
-/* 0x4cd510, all players of the list (ai_Unk936424[8]) have state 1 and their number is the one asked for */
+/* 0x4cd510, all players of the list (cm_LobbyListIds[8]) have state 1 and their number is the one asked for */
 
 int cm_LobbyAllReady()
 {
@@ -6422,9 +6422,9 @@ int cm_LobbyAllReady()
         n = cm_NetGame.hdr.players;
     else
         n = cm_NetGame.hdr.players;
-    if (ai_Unk936420[0] < n)
+    if (cm_LobbyList[0] < n)
         return 0;
-    for (p = ai_Unk936424; (int)p < (int)(ai_Unk936424 + 8); p++) {
+    for (p = cm_LobbyListIds; (int)p < (int)(cm_LobbyListIds + 8); p++) {
         if (*p != 0) {
             q = cm_LobbyFindPlayer(*p);
             if (q == 0)
@@ -6439,32 +6439,32 @@ int cm_LobbyAllReady()
 
 void ai_Unk4cd580(int a, int b)
 {
-    memset(ai_Unk936420, 0, 0x24);
+    memset(cm_LobbyList, 0, 0x24);
     memset(ai_Unk9364e0, 0, 0x2b8);
     ai_Unk936400 = 1;
     ai_Unk9367d0 = a;
     ai_Unk9367d4 = b;
-    ai_Unk936408 = 0;
+    cm_LobbyClosed = 0;
 }
-/* 0x4cd5d0, the lobby's player list ai_Unk936420 (the count, then the eight player ids) */
+/* 0x4cd5d0, the lobby's player list cm_LobbyList (the count, then the eight player ids) */
 
 unsigned int *cm_LobbyPlayerList()
 {
-    return ai_Unk936420;
+    return cm_LobbyList;
 }
 /* 0x4cd5e0 */
 
 char *cm_LobbyFindPlayer(int id)
 {
-    return ai_Unk4cd380(id);
+    return cm_LobbyRecord(id);
 }
 /* 0x4cd5f0, this player's lobby record (the one of the id ai_Unk9367d0) */
 
 CMLOBBYPLAYER *cm_LobbyMyPlayer()
 {
-    return (CMLOBBYPLAYER *)ai_Unk4cd380(ai_Unk9367d0);
+    return (CMLOBBYPLAYER *)cm_LobbyRecord(ai_Unk9367d0);
 }
-/* 0x4cd600, the lobby state: [0] the lobby is open (ai_Unk4cd580), [1] a lobby message came in (ai_Unk4cd870) */
+/* 0x4cd600, the lobby state: [0] the lobby is open (ai_Unk4cd580), [1] a lobby message came in (cm_ExLobby) */
 
 int *cm_LobbyState()
 {
@@ -6565,65 +6565,62 @@ void ai_Unk4cd820(int v)
     G17_I(m, 4) = v;
     cm_QueueSend(&m);
 }
-/* 0x4cd870, the handler of type 0x5f (also 0x4cce00): data[0] is the kind (0..6) of the player list message */
+/* 0x4cd870, the handler of type 0x5f (also 0x4cce00), the network lobby by m->lobby.kind (0..6): the player list,
+   a player's ready flag or record, a player leaving, a chat line; sets cm_LobbyChanged */
 
-int ai_Unk4cd870(G17MSG *m, G17STAT *s)
+int cm_ExLobby(G17MSG *m, G17STAT *s)
 {
-    char *p;
-    struct {
-        int a, b;
-        char name[0x40];
-    } t;
+    CMLOBBYPLAYER *p;
+    G17LOBBYCHAT t;
 
     if (s != 0)
         s->state = 2;
-    switch (G17_I(*m, 0)) {
+    switch (m->lobby.kind) {
     case 0:
-        memcpy(ai_Unk936420, &m->data[4], 0x24);
+        memcpy(cm_LobbyList, m->lobby.list, sizeof(m->lobby.list));
         break;
     case 1:
-        p = ai_Unk4cd380(G17_I(*m, 4));
+        p = (CMLOBBYPLAYER *)cm_LobbyRecord(m->lobby.state.id);
         if (p == 0)
             return -2;
-        *(int *)p = G17_I(*m, 4);
-        *(int *)(p + 4) = G17_I(*m, 8);
+        memcpy(p, &m->lobby.state, sizeof(m->lobby.state));
         break;
     case 2:
-        p = ai_Unk4cd350();
+        p = (CMLOBBYPLAYER *)cm_LobbyFreeRecord();
         if (p == 0)
             return -1;
-        memcpy(p, &m->data[4], 0x57);
+        memcpy(p, &m->lobby.player, sizeof(CMLOBBYPLAYER));
         break;
     case 3:
-        p = ai_Unk4cd380(G17_I(*m, 4));
+        p = (CMLOBBYPLAYER *)cm_LobbyRecord(m->lobby.state.id);
         if (p == 0)
             return -2;
-        if (G17_I(*m, 8) == 1)
-            ai_Unk936408 = 1;
-        memset(p, 0, 0x57);
+        if (m->lobby.state.value == 1)
+            cm_LobbyClosed = 1;
+        memset(p, 0, sizeof(CMLOBBYPLAYER));
         break;
     case 4:
-        p = ai_Unk4cd380(G17_I(*m, 4));
+        p = (CMLOBBYPLAYER *)cm_LobbyRecord(m->lobby.player.id);
         if (p == 0)
             return -2;
-        memcpy(p, &m->data[4], 0x57);
+        memcpy(p, &m->lobby.player, sizeof(CMLOBBYPLAYER));
         break;
     case 5:
-        p = ai_Unk4cd380(G17_I(*m, 4));
+        p = (CMLOBBYPLAYER *)cm_LobbyRecord(m->lobby.player.id);
         if (p == 0)
             return -2;
-        memcpy(p, &m->data[4], 0x57);
+        memcpy(p, &m->lobby.player, sizeof(CMLOBBYPLAYER));
         break;
     case 6:
-        memcpy(&t, &m->data[4], 0x48);
-        cm_LobbyAddChat(t.a, t.b, t.name);
+        memcpy(&t, &m->lobby.chat, sizeof(t));
+        cm_LobbyAddChat(t.from, t.to, t.text);
         break;
     default:
         return 1;
     }
     if (s != 0)
         s->state = 1;
-    ai_Unk936404 = 1;
+    cm_LobbyChanged = 1;
     return 0;
 }
 /* 0x4cd9d0, the record of the 10 (0x5c bytes, ai_Unk60c7c0) with id */
@@ -15196,9 +15193,9 @@ extern int ai_Unk935d20[32];
 extern G18LOG cm_LobbyChat[15];
 extern int cm_LobbyChatNext;
 extern int ai_Unk936400;
-extern int ai_Unk936404;
-extern int ai_Unk936408;
-extern unsigned int ai_Unk936420[9];
+extern int cm_LobbyChanged;
+extern int cm_LobbyClosed;
+extern unsigned int cm_LobbyList[9];
 extern CMNETGAME cm_NetGame;
 extern char ai_Unk9364e0[752];
 extern int ai_Unk9367d0;
@@ -15442,9 +15439,9 @@ int ai_Unk935d20[32] = {0};  /* 0x935d20 */
 G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
 int cm_LobbyChatNext = 0;  /* 0x9363f4 */
 int ai_Unk936400 = 0;  /* 0x936400 */
-int ai_Unk936404 = 0;  /* 0x936404 */
-int ai_Unk936408 = 0;  /* 0x936408 */
-unsigned int ai_Unk936420[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
+int cm_LobbyChanged = 0;  /* 0x936404 */
+int cm_LobbyClosed = 0;  /* 0x936408 */
+unsigned int cm_LobbyList[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
 CMNETGAME cm_NetGame = {0};  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
 char ai_Unk9364e0[752] = {0};  /* 0x9364e0 */
 int ai_Unk9367d0 = 0;  /* 0x9367d0 */

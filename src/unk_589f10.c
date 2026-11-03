@@ -409,7 +409,7 @@ void lobby_ShowMyPlayer(void)
     int x;
     int y;
 
-    p = ai_Unk4cd380(lobby_List[lobby_MyRow + 1]);
+    p = cm_LobbyRecord(lobby_List[lobby_MyRow + 1]);
     if (p != 0)
         lobby_Player.coat = U_I(p + 0xc);
     d2_SetForm(lobby_Form, 3);
@@ -475,7 +475,7 @@ void lobby_ShowPlayers(void)
     d2_SetForm(lobby_Form, 1);
     io_PrintText((char *)(unsigned)"$C");
     for (i = 0; i < 8; i++) {
-        p = (int *)ai_Unk4cd380(lobby_List[i + 1]);
+        p = (int *)cm_LobbyRecord(lobby_List[i + 1]);
         if (p == 0)
             continue;
         id = d2_WinOpenPic(5, y, p[3] + 0x59a, U_I((unsigned)&d2_LastWindow));
@@ -592,7 +592,7 @@ void lobby_ShowChat(void)
     U_I((unsigned)&full_data_6f2684) = 0;
     while (p != 0) {
         U_I((unsigned)&full_data_6f2684)++;
-        n = ai_Unk4cd380(U_I(p + 0x68));
+        n = cm_LobbyRecord(U_I(p + 0x68));
         if (n == 0 || U_I(n) != U_I(p + 0x68))
             id = 9;
         else

@@ -33,7 +33,7 @@ struct D3SURF;
 struct AICHAR;
 struct D3FLMAP;
 typedef struct G18POP { float t; int v; int h; char *c; int kind; } G18POP;      /* 0x14 bytes, a floating number */
-typedef struct G18LOG { char text[0x40]; char name[0x24]; int x; int id; } G18LOG;      /* 0x6c bytes, a chat line */
+typedef struct G18LOG { char text[0x40]; char name[0x24]; int to; int id; } G18LOG;      /* 0x6c bytes, a lobby chat line: the text, the sender's name, the receiver (0: everybody), the sender */
 
 #pragma pack(push, 1)
 #include "cm_types.h"                /* G17MSG, G17STAT, CRIME */
@@ -486,9 +486,9 @@ int gv_ReserveEffect();  /* 0x4eeaa0 */
 int gv_StopEffect();  /* 0x4eeb00 */
 int gv_StartShot();  /* 0x4eee00 */
 
-char *ai_Unk4cd350();  /* 0x4cd350 */
-char *ai_Unk4cd380(int id);  /* 0x4cd380 */
-void cm_LobbyAddChat(int id, int x, char *text);  /* 0x4cd3c0 */
+char *cm_LobbyFreeRecord();  /* 0x4cd350 */
+char *cm_LobbyRecord(int id);  /* 0x4cd380 */
+void cm_LobbyAddChat(int id, int to, char *text);  /* 0x4cd3c0 */
 G18LOG *ai_Unk4cd480();  /* 0x4cd480 */
 G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
 void cm_LobbyClearChat();  /* 0x4cd500 */
@@ -505,7 +505,7 @@ int cm_LobbySendChat(int to, char *text);  /* 0x4cd6e0 */
 int cm_LobbyJoin(CMLOBBYPLAYER *p);  /* 0x4cd760 */
 int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
 void ai_Unk4cd820(int v);  /* 0x4cd820 */
-int ai_Unk4cd870(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
+int cm_ExLobby(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
 char *ai_FindWeaponRecord(int id);  /* 0x4cd9d0 */
 char *ai_Unk4cda00(char *c);  /* 0x4cda00 */
 char *cm_CharWeapon(char *c);  /* 0x4cda50 */
@@ -543,9 +543,9 @@ extern char ai_Unk930600[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
 extern int cm_LobbyChatNext;  /* 0x9363f4 */
 extern int ai_Unk936400;  /* 0x936400 */
-extern int ai_Unk936404;  /* 0x936404 */
-extern int ai_Unk936408;  /* 0x936408 */
-extern unsigned int ai_Unk936420[];  /* 0x936420, the count then the eight player states (0x24 bytes; ai_Unk936424
+extern int cm_LobbyChanged;  /* 0x936404 */
+extern int cm_LobbyClosed;  /* 0x936408 */
+extern unsigned int cm_LobbyList[];  /* 0x936420, the count then the eight player states (0x24 bytes; cm_LobbyListIds
                                         is a view at +4) */
 extern CMNETGAME cm_NetGame;  /* 0x936460, the network game */
 extern char ai_Unk9364e0[];  /* 0x9364e0 */

@@ -327,6 +327,44 @@ typedef struct G17ROUTEMSG {            /* 8 bytes, the data of message 0x68 (ai
     int count;                          /* 0x04, the points */
 } G17ROUTEMSG;
 
+typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of ai_Unk9364e0,
+                                           sent whole by the lobby messages of type 0x5f (kinds 2 and 4) */
+    int id;                             /* 0x00, the player's net id (ai_Unk9367d0 for this player), 0: a free record */
+    int ready;                          /* 0x04, 1: ready to start (kind 1; cm_LobbyAllReady counts them) */
+    char pad08[2];                      /* 0x08, no user seen */
+    unsigned char status;               /* 0x0a, 0x10 as INIT_PLAYER.status of a new profile */
+    unsigned char job;                  /* 0x0b, the profession (INIT_PLAYER.job, the profile key "Beruf") */
+    int coat;                           /* 0x0c, the coat of arms index (INIT_PLAYER.coat - 0x59a, "Wappen") */
+    unsigned char sex;                  /* 0x10, 0 male / 1 female ("Geschlecht") */
+    unsigned char faith;                /* 0x11, "Glauben" */
+    char firstName[0x10];               /* 0x12, "Name" */
+    char familyName[0x10];              /* 0x22, "Familienname" */
+    int reserved;                       /* 0x32, -1 for a new player; no reader seen */
+    unsigned char talents[5];           /* 0x36, 0x5a 0x46 0x78 0x46 0x5a for a new player (a reasoned guess: the
+                                           five talents of INIT_PLAYER.talents) */
+    char pad3b[0x1c];                   /* 0x3b, no user seen */
+} CMLOBBYPLAYER;
+typedef char cm_AssertCMLOBBYPLAYER[sizeof(CMLOBBYPLAYER) == 0x57 ? 1 : -1];
+
+typedef struct G17LOBBYCHAT {           /* 0x48 bytes, a lobby chat line (message 0x5f kind 6) */
+    int from;                           /* 0x00, the sender's id */
+    int to;                             /* 0x04, the receiver's id, 0: everybody */
+    char text[0x40];                    /* 0x08 */
+} G17LOBBYCHAT;
+
+typedef struct G17LOBBYMSG {            /* 0x5b bytes, the data of message 0x5f (the network lobby; its handler 0x4cd870) */
+    int kind;                           /* 0x00, 0 the player list, 1 ready, 2 join, 3 leave, 4 a changed player, 5 (0x4cd820), 6 chat */
+    union {
+        unsigned int list[9];           /* 0x04, kind 0: the count, then the eight player ids (cm_LobbyList) */
+        struct {
+            int id;                     /* 0x04, the player */
+            int value;                  /* 0x08, kind 1: the ready flag (CMLOBBYPLAYER.ready); kind 3: 1 sets cm_LobbyClosed */
+        } state;                        /* 0x04, kinds 1 and 3: copied whole over the player's record head */
+        CMLOBBYPLAYER player;           /* 0x04, kinds 2, 4 and 5: the player's record */
+        G17LOBBYCHAT chat;              /* 0x04, kind 6 (cm_LobbySendChat) */
+    };
+} G17LOBBYMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -369,6 +407,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
         G17ROUTEMSG route;              /* 0x10, messages 0x68 / 0x69 */
+        G17LOBBYMSG lobby;              /* 0x10, message 0x5f */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */
@@ -404,26 +443,6 @@ typedef struct CMJOIN {                 /* 0x30 bytes at 0x9367a0 (inside ai_Unk
     int char54;                         /* 0x2c */
 } CMJOIN;
 
-#pragma pack(push, 1)
-typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of ai_Unk9364e0,
-                                           sent whole by the lobby messages of type 0x5f (kinds 2 and 4) */
-    int id;                             /* 0x00, the player's net id (ai_Unk9367d0 for this player), 0: a free record */
-    int ready;                          /* 0x04, 1: ready to start (kind 1; cm_LobbyAllReady counts them) */
-    char pad08[2];                      /* 0x08, no user seen */
-    unsigned char status;               /* 0x0a, 0x10 as INIT_PLAYER.status of a new profile */
-    unsigned char job;                  /* 0x0b, the profession (INIT_PLAYER.job, the profile key "Beruf") */
-    int coat;                           /* 0x0c, the coat of arms index (INIT_PLAYER.coat - 0x59a, "Wappen") */
-    unsigned char sex;                  /* 0x10, 0 male / 1 female ("Geschlecht") */
-    unsigned char faith;                /* 0x11, "Glauben" */
-    char firstName[0x10];               /* 0x12, "Name" */
-    char familyName[0x10];              /* 0x22, "Familienname" */
-    int reserved;                       /* 0x32, -1 for a new player; no reader seen */
-    unsigned char talents[5];           /* 0x36, 0x5a 0x46 0x78 0x46 0x5a for a new player (a reasoned guess: the
-                                           five talents of INIT_PLAYER.talents) */
-    char pad3b[0x1c];                   /* 0x3b, no user seen */
-} CMLOBBYPLAYER;
-#pragma pack(pop)
-typedef char cm_AssertCMLOBBYPLAYER[sizeof(CMLOBBYPLAYER) == 0x57 ? 1 : -1];
 
 /* the scene party records (0x925520, 96 of 0x114 bytes: +0 id (-1 free), +8 kind, +0x14 the thing, +0x26 flags, +0x30 used) */
 typedef struct G28REC {
