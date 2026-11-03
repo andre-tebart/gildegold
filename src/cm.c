@@ -413,7 +413,7 @@ int ai_Unk4c3720(void)
         m->type = 7;
         m->size = cm_MessageSize(m);
         memcpy(m->data, ai_Unka68800 + off, 0x80);
-        m->unk03 = 0;
+        m->sender = 0;
         m->idx = i;
         m->seq = cm_LastSeq;
         m->next7 = 0;
@@ -436,9 +436,11 @@ int ai_Unk4c3720(void)
     ai_Unka68d30 = 0;
     return first;
 }
-/* 0x4c3850, 1 if all parts of the split message m are received (or m is not split) */
+/* 0x4c3850, 1 when every part of the split message m is in the receive queue (or m is a part itself / not split):
+   follows the next7 chain from the first part, which holds the whole length, 0x7e bytes in it and 0x80 in each
+   further part */
 
-int ai_Unk4c3850(G17MSG *m)
+int cm_SplitComplete(G17MSG *m)
 {
     G17MSG *r, *p, *q;
     int n;
@@ -446,12 +448,10 @@ int ai_Unk4c3850(G17MSG *m)
     if (m->type == 7 || m->next7 == 0)
         return 1;
     for (r = cm_RecvQueue; r != 0; r = r->next) {
-        if (r->unk03 == m->unk03 && r->seq == m->next7) {
-            if (*(unsigned short *)r->data < 0x7f)
-                return 1;
-            for (n = 0x7e, p = r; n < *(unsigned short *)r->data; n += 0x80) {
+        if (r->sender == m->sender && r->seq == m->next7) {
+            for (n = 0x7e, p = r; n < r->splitLen; n += 0x80) {
                 for (q = cm_RecvQueue; q != 0; q = q->next)
-                    if (q->unk03 == p->unk03 && q->seq == p->next7)
+                    if (q->sender == p->sender && q->seq == p->next7)
                         break;
                 if (q == 0)
                     return 0;
@@ -471,17 +471,17 @@ unsigned int ai_Unk4c38e0(G17MSG *m)
 
     if (m->next7 == 0 || cm_RecvQueue == 0)
         return 0;
-    for (r = cm_RecvQueue; r->unk03 != m->unk03 || r->seq != m->next7; r = r->next)
+    for (r = cm_RecvQueue; r->sender != m->sender || r->seq != m->next7; r = r->next)
         if (r->next == 0)
             return 0;
     m->next7 = 0;
-    ai_Unkf81164 = *(unsigned short *)r->data;
+    ai_Unkf81164 = r->splitLen;
     memcpy(ai_Unka68d40, r->data + 2, 0x7e);
     r->type = 0;
     for (n = 0x7e, p = r; n < (int)ai_Unkf81164; n += 0x80) {
         if (cm_RecvQueue == 0)
             return 0;
-        for (r = cm_RecvQueue; r->unk03 != p->unk03 || r->seq != p->next7; r = r->next)
+        for (r = cm_RecvQueue; r->sender != p->sender || r->seq != p->next7; r = r->next)
             if (r->next == 0)
                 return 0;
         p->next7 = 0;
@@ -511,7 +511,7 @@ int ai_Unk4c39c0(G17MSG *src)
     cm_LastSeq++;
     *m = *src;
     m->size = cm_MessageSize(m);
-    m->unk03 = 0;
+    m->sender = 0;
     m->idx = i;
     m->seq = cm_LastSeq;
     m->next7 = 0;
@@ -887,7 +887,7 @@ int cm_ExecCommands(void)
         }
         if (grp != 0)
             ok = 0;
-        if (t->type != 7 && ai_Unk4c3850(t) != 0 && ok) {
+        if (t->type != 7 && cm_SplitComplete(t) != 0 && ok) {
             if (t == cm_RecvQueue) {
                 cm_RecvQueue = next;
             } else {

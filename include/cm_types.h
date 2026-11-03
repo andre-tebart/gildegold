@@ -9,11 +9,16 @@
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
-    unsigned char unk03;                /* 0x03 */
+    unsigned char sender;               /* 0x03, 0 when sent; the parts of one split message match by it and by seq
+                                           (reasoned guess: the sender's slot, filled in by the server) */
     int idx;                            /* 0x04, its slot in the send ring */
     unsigned int seq;                   /* 0x08 */
     unsigned int next7;                 /* 0x0c, seq of the next part of a split message (type 7), 0: none */
-    unsigned char data[0x81];           /* 0x10 */
+    union {
+        unsigned char data[0x81];       /* 0x10 */
+        unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
+                                           of the whole, its bytes follow at data + 2 */
+    };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */
 } G17MSG;

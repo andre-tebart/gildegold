@@ -163,7 +163,7 @@ void cm_SendHello(void);                                                        
 int cm_WaitHello(void);                                                          /* 0x4c3630 */
 int cm_FlushSendQueue(void);                                                          /* 0x4c3680 */
 int ai_Unk4c3720(void);                                                          /* 0x4c3720 */
-int ai_Unk4c3850(G17MSG *m);                                                     /* 0x4c3850 */
+int cm_SplitComplete(G17MSG *m);                                                     /* 0x4c3850 */
 unsigned int ai_Unk4c38e0(G17MSG *m);                                            /* 0x4c38e0 */
 int ai_Unk4c39c0(G17MSG *src);                                                   /* 0x4c39c0 */
 int cm_GetSlotState(int h);                                                         /* 0x4c3ae0 */
