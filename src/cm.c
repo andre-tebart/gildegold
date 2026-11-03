@@ -14116,36 +14116,43 @@ int ai_Unk4e0010(int scene)
     cm_WaitTicks(5);
     return cm_LeaveEventScene();
 }
-/* 0x4e0040, tells the others of the party m (+0x30 count, +0x34 ids; +0x7d: the challenger is not the first) about the duel: the text
-   0x11c8 (the name of the first) to every one of the kinds 6 / 7 after the first (0x4e48b0), with 0x11c5 + the text 0x143e8e4 for the first
-   when m + 0x7d is 0. Returns 1 */
+/* 0x4e0040, the execution's aftermath (the fourth callback of the execution event, ai_Unk4e5730 kind 5 with the scene
+   0x4e01e0) for the delinquent m->members[0]: unless m->zero7d is set, the delinquent's player (kinds 6 / 7) gets the note
+   text 0x11c5 + txt_ExecNoteTail; then every player's character among the other members gets the note text 0x11c8 with
+   the delinquent's name (cm_SendPartyNote). The loop is written in both branches, as the original has it twice.
+   Returns 0 when the delinquent is not found, else 1 */
 
-int ai_Unk4e0040(char *m)
+int cm_ExecutionAftermath(G28REC *m)
 {
     char buf[0x200];
-    char *p, *q;
+    AICHAR *c, *o;
     int i;
 
-    if (m[0x7d] == 0) {
-        p = (char *)gm_FindChar(*(int *)(m + 0x34));
-        if (p == 0)
+    if (m->zero7d == 0) {
+        c = (AICHAR *)gm_FindChar(m->members[0]);
+        if (c == 0)
             return 0;
-        if (p[2] == 6 || p[2] == 7) {
+        if (c->kind == 6 || c->kind == 7) {
             txt_Format(buf, 0x11c5);
-            strcat(buf + 8, ai_Unk143e8e4);
-            cm_SendPartyNote(p, m, buf + 8, &ch_EmptyName);
+            strcat(buf, txt_ExecNoteTail);
+            cm_SendPartyNote(c, m, buf, &ch_EmptyName);
         }
-        txt_Format(buf, 0x11c8, *(unsigned short *)p);
+        txt_Format(buf, 0x11c8, c->id);
+        for (i = 1; i < m->used; i++) {
+            o = (AICHAR *)gm_FindChar(m->members[i]);
+            if (o != 0 && (o->kind == 6 || o->kind == 7))
+                cm_SendPartyNote(o, m, buf, &ch_EmptyName);
+        }
     } else {
-        p = (char *)gm_FindChar(*(int *)(m + 0x34));
-        if (p == 0)
+        c = (AICHAR *)gm_FindChar(m->members[0]);
+        if (c == 0)
             return 0;
-        txt_Format(buf, 0x11c8, *(unsigned short *)p);
-    }
-    for (i = 1; i < (unsigned char)m[0x30]; i++) {
-        q = (char *)gm_FindChar(*(int *)(m + 0x34 + i * 4));
-        if (q != 0 && (q[2] == 6 || q[2] == 7))
-            cm_SendPartyNote(q, m, buf, &ch_EmptyName);
+        txt_Format(buf, 0x11c8, c->id);
+        for (i = 1; i < m->used; i++) {
+            o = (AICHAR *)gm_FindChar(m->members[i]);
+            if (o != 0 && (o->kind == 6 || o->kind == 7))
+                cm_SendPartyNote(o, m, buf, &ch_EmptyName);
+        }
     }
     return 1;
 }
@@ -16373,7 +16380,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
-    ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
+    ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)ai_Unk4e0f70, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)ai_Unk4e1220, 0);
@@ -16552,7 +16559,7 @@ extern int cm_PickCellZ;
 /* ai_Unk143e8bc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8e4: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_ExecNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DuelNoteTail: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DuelDeathNews: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DuelHeldNews: view of txt_Ptrs (build/mk_txt_views.py) */

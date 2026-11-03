@@ -974,7 +974,7 @@ void ai_Unk4dff80(char *m);  /* 0x4dff80 */
 void ai_Unk4dfff0(CMCUTINFO *r);  /* 0x4dfff0 */
 int ai_Unk4e0010(int scene);  /* 0x4e0010 */
 
-int ai_Unk4e0040(char *m);  /* 0x4e0040 */
+int cm_ExecutionAftermath(G28REC *m);  /* 0x4e0040 */
 
 extern char sv_SkyHeavy[];  /* 0x623ac0, 76-byte sky records: Sky_Schwer / Sky_Mittel / Sky_Schoen */
 int ai_Unk4e32f0();  /* 0x4e32f0 */
