@@ -154,6 +154,13 @@ typedef struct G17MAKEMSG {             /* 0xe bytes, the data of message 0x12 (
     int objectId;                       /* 0x0a, the next object id (the server's, read when connected) */
 } G17MAKEMSG;
 
+typedef struct G17MOVEMSG {             /* 12 bytes, the data of message 0x13 (sent by 0x4c4920, its handler 0x4c7c30
+                                           moves an object from one holder's list to another's) */
+    int to;                             /* 0x00, the new holder (building, object or character id) */
+    int from;                           /* 0x04, the holder whose list holds it */
+    int objId;                          /* 0x08, the object moved (AIOBJ.objId) */
+} G17MOVEMSG;
+
 typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
                                            handler 0x4cc510) */
     int op;                             /* 0x00, 'join', 'leav' or 'cler' */
@@ -181,6 +188,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
         G17SELLMSG sell;                /* 0x10, message 0x11 */
         G17MAKEMSG make;                /* 0x10, message 0x12 */
+        G17MOVEMSG move;                /* 0x10, message 0x13 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
