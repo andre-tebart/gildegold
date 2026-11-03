@@ -1328,3 +1328,4 @@
 2026-11-03T12:42:41 0x004cc720 data ai_Unk4cc720 -> cm_PlaceFighter by:main why:places the fighter's body at the fight message's position / rotation (d3_SetObjectPos / d3_SetObjectRot unless within 8.0), called by the fight action handler 0x4cc7b0
 2026-11-03T12:43:55 0x004ccc20 func ai_Unk4ccc20 -> cm_ExAddSkill by:main why:message 0x5d: 0x4c6020 sends (character, skill index, delta), the handler 0x4ccc20 adds delta to AICHAR.skills[skill] clamped to 0 .. 252
 2026-11-03T12:43:55 0x004c6020 data ai_Unk4c6020 -> cm_SendAddSkill by:main why:message 0x5d: 0x4c6020 sends (character, skill index, delta), the handler 0x4ccc20 adds delta to AICHAR.skills[skill] clamped to 0 .. 252
+2026-11-03T12:45:19 0x004cd010 data ai_Unk4cd010 -> cm_ExAlchemistOrder by:main why:the handler of message 0x64 (AHMORDER, ahm.h): applies the alchemist commands SmSa / ErFi / SsCa / cRSa / Rdaa / Rdsa through ahm_AddValue .. ahm_RemovePlace

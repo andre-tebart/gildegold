@@ -65,6 +65,7 @@ typedef struct AHMORDER {               /* 0x18 bytes, the data of a type 100 me
 #define AHM_CMD_SET_PLACE 0x61535263    /* 'cRSa', sets the value of a place (0x4ecd10) */
 #define AHM_CMD_ADD_VALUE 0x61536d53    /* 'SmSa', adds to the value at +4 of the record (0x4ecdb0) */
 #define AHM_CMD_DELETE    0x46697245    /* 'ErFi', deletes the alchemist (0x4ece60) */
+#define AHM_CMD_REMOVE_PLACE 0x61736452 /* 'Rdsa', removes a place (0x4ecbc0) */
 typedef union AHMSEED {                 /* 0x6f0ddc, the seed of the CRT generator (its low word is saved) */
     int seed;                           /* the seed as the shuffler reads it */
     unsigned short seed16;              /* the low word written on a restart */
