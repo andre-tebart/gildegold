@@ -2240,9 +2240,9 @@ exe	0x004c5a70	ai_Unk4c5a70	cm	byte	draft
 exe	0x004c5aa0	cm_SendChat	cm	byte	readable		
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
 exe	0x004c5b90	ai_Unk4c5b90	cm	byte	draft		
-exe	0x004c5bc0	ai_Unk4c5bc0	cm	byte	draft		
+exe	0x004c5bc0	cm_SendObjCell	cm	byte	draft		
 exe	0x004c5c40	cm_SendCutEntry	cm	shape	draft		
-exe	0x004c5ca0	ai_Unk4c5ca0	cm	shape	draft		
+exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	shape	draft		
 exe	0x004c5d00	cm_SendDamage	cm	byte	draft		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable		
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
@@ -2455,8 +2455,8 @@ exe	0x004d0f80	cm_ClearKind3MaskCB	cm	byte	draft
 exe	0x004d0fa0	cm_SetupFightScene	cm	draft	readable	deep	
 exe	0x004d1a10	cm_EndFightScene	cm	byte	readable		
 exe	0x004d1c20	cm_PlaceFighters	cm	shape	readable		
-exe	0x004d1e00	ai_Unk4d1e00	cm	byte	draft		
-exe	0x004d1eb0	ai_Unk4d1eb0	cm	byte	draft		
+exe	0x004d1e00	cm_FightIntro	cm	byte	draft		
+exe	0x004d1eb0	cm_FightOutro	cm	byte	draft		
 exe	0x004d1f10	cm_NearestEnemy	cm	byte	readable		
 exe	0x004d2010	cm_ThreatAt	cm	byte	readable		
 exe	0x004d2170	cm_BestCellNear	cm	shape	readable		
@@ -2475,33 +2475,33 @@ exe	0x004d3120	cm_CarryOutOrder	cm	shape	draft
 exe	0x004d3300	cm_FallDownAction	cm	byte	draft		
 exe	0x004d3390	cm_CheckDeath	cm	byte	readable		
 exe	0x004d3550	cm_HitAction	cm	byte	readable		
-exe	0x004d3980	ai_Unk4d3980	cm	byte	draft		
-exe	0x004d3a30	ai_Unk4d3a30	cm	byte	draft		
+exe	0x004d3980	cm_LayBombAction	cm	byte	draft		
+exe	0x004d3a30	cm_ThrowBombAction	cm	byte	draft		
 exe	0x004d3ac0	ai_Unk4d3ac0	cm	byte	draft		
 exe	0x004d3ae0	ai_Unk4d3ae0	cm	byte	draft		
 exe	0x004d3b30	cm_CheckFightWinner	cm	byte	readable		
-exe	0x004d3d10	ai_Unk4d3d10	cm	byte	draft		
-exe	0x004d3ea0	ai_Unk4d3ea0	cm	byte	draft		
+exe	0x004d3d10	cm_LootStock	cm	byte	draft		
+exe	0x004d3ea0	cm_LootCarts	cm	byte	draft		
 exe	0x004d4050	cm_FightRole	cm	shape	readable		
 exe	0x004d4090	ai_Unk4d4090	cm	shape	draft		
 exe	0x004d4340	ai_Unk4d4340	cm	byte	draft		
-exe	0x004d4540	ai_Unk4d4540	cm	draft	draft		
-exe	0x004d4d70	ai_Unk4d4d70	cm	draft	draft		
-exe	0x004d60b0	ai_Unk4d60b0	cm	draft	draft		
-exe	0x004d63e0	ai_Unk4d63e0	cm	draft	draft		
+exe	0x004d4540	cm_FightStartDialog	cm	draft	draft	deep	
+exe	0x004d4d70	cm_FightEndDialog	cm	draft	draft	deep	
+exe	0x004d60b0	ai_Unk4d60b0	cm	draft	draft	deep	
+exe	0x004d63e0	cm_RunFight	cm	shape	readable		
 exe	0x004d6930	ai_Unk4d6930	cm	byte	draft		
 exe	0x004d6970	ai_Unk4d6970	cm	shape	draft		
 exe	0x004d6a50	ai_Unk4d6a50	cm	byte	draft		
 exe	0x004d6b70	ai_Unk4d6b70	cm	byte	draft		
-exe	0x004d6ba0	ai_Unk4d6ba0	cm	draft	draft		
+exe	0x004d6ba0	cm_FighterAct	cm	byte	readable		
 exe	0x004d6f60	ai_Unk4d6f60	cm	byte	draft		
 exe	0x004d6f90	ai_Unk4d6f90	cm	byte	draft		
 exe	0x004d7000	ai_Unk4d7000	cm	byte	draft		
 exe	0x004d70a0	ai_Unk4d70a0	cm	byte	draft		
 exe	0x004d7150	ai_Unk4d7150	cm	byte	draft		
-exe	0x004d7190	ai_Unk4d7190	cm	draft	draft		
-exe	0x004d7360	ai_Unk4d7360	cm	draft	draft		
-exe	0x004d76a0	ai_Unk4d76a0	cm	draft	draft		
+exe	0x004d7190	cm_PlantEscapeFlag	cm	draft	readable	deep	
+exe	0x004d7360	cm_Attack	cm	draft	readable	deep	
+exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep	
 exe	0x004d88c0	ai_Unk4d88c0	cm	byte	draft		
 exe	0x004d8b10	ai_Unk4d8b10	cm	draft	draft		
 exe	0x004d8b30	ai_Unk4d8b30	cm	byte	draft		
@@ -2581,7 +2581,7 @@ exe	0x004e36a0	ai_Unk4e36a0	cm	draft	draft
 exe	0x004e3750	ai_Unk4e3750	cm	draft	draft		
 exe	0x004e37a0	ai_Unk4e37a0	cm	byte	draft		
 exe	0x004e3800	ai_Unk4e3800	cm	byte	draft		
-exe	0x004e3830	ai_Unk4e3830	cm	draft	draft		
+exe	0x004e3830	cm_RunSceneParty	cm	draft	draft		
 exe	0x004e3fe0	ai_Unk4e3fe0	cm	byte	draft		
 exe	0x004e4020	ai_Unk4e4020	cm	byte	draft		
 exe	0x004e4060	ai_Unk4e4060	cm	draft	draft		
@@ -2600,12 +2600,12 @@ exe	0x004e5150	ai_Unk4e5150	cm	byte	draft
 exe	0x004e5180	ai_Unk4e5180	cm	byte	draft		
 exe	0x004e51b0	ai_Unk4e51b0	cm	shape	draft		
 exe	0x004e5210	ai_Unk4e5210	cm	shape	draft		
-exe	0x004e52a0	ai_Unk4e52a0	cm	byte	draft		
-exe	0x004e52c0	ai_Unk4e52c0	cm	byte	draft		
+exe	0x004e52a0	cut_RandSeed	cm	byte	draft		
+exe	0x004e52c0	cut_GetRandSeed	cm	byte	draft		
 exe	0x004e52f0	cm_Random	cm	byte	draft		
 exe	0x004e5360	cm_RandomFloat	cm	byte	draft		
 exe	0x004e53e0	ai_Unk4e53e0	cm	byte	draft		
-exe	0x004e5470	ai_Unk4e5470	cm	draft	draft		
+exe	0x004e5470	cm_MessageBox	cm	draft	draft		
 exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
 exe	0x004e5770	ai_Unk4e5770	cm	byte	draft		
 exe	0x004e58e0	ai_Unk4e58e0	cm	shape	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 6407c687: cm_FighterAct typed: ch.h's CHACTION gets the pot / bomb members of its 0x178 union and cm.h the CMFIGHTACT prototype and the names of the fight's bomb actions (closer: typed records instead of raw offsets). Either header change alone flips this function's constant register choice (6 bytes at +0x5e0): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the unit's head (unk_575860 includes ch.h and cm.h whole); re-grade when its declarations settle]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 6407c687: the same header changes (ch.h CHACTION pot / bomb union members, cm.h CMFIGHTACT and renames) flip its float-constant register allocation (mov edi/edx of 0x447f0000 / 0x44670000 swapped, 48 bytes, regs + code hunks only): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the unit's head (unk_575860 includes ch.h and cm.h whole); re-grade when its declarations settle]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at 6407c687: the same header changes (ch.h CHACTION pot / bomb union members, cm.h CMFIGHTACT and renames) flip its float-constant register allocation (mov edi/edx of 0x447f0000 / 0x44670000 swapped, 48 bytes, regs + code hunks only): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the unit's head (unk_575860 includes ch.h and cm.h whole); re-grade when its declarations settle]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		

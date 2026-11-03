@@ -15,6 +15,8 @@
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
    The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
    layout, defined in this file; cm_FightRecordT views cm_FightRecord as it).
+   Open: types: CMFIGHTSLOT and CMCUTENTRY (cm_types.h) are one 0x2c-byte record in two views (a cutscene entry is sent
+   as the fight command's slot, cm_RunCutOrders casts between them); one type for both is unsettled.
    Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
    calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
