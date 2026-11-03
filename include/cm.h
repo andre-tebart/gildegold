@@ -108,7 +108,7 @@ char * gm_Query(void *list, int n, ...);                                        
 struct ORDCHAR; struct ORDBLD; struct ORDCHAR *gm_FindApplicant(struct ORDBLD *o, unsigned title, unsigned job);                             /* 0x4fda70 */
 struct ORDBLD; struct ORDBLD *gm_FindHome(int unused, struct ORDBLD *o);                                   /* 0x4fd820 */
 char * gm_FindGoods(int p, unsigned id);                                            /* 0x4ffc40, ai.h: int * */
-extern int *ai_Unk6f0d90;               /* 0x6f0d90 */
+extern int *cm_CurrentFight;               /* 0x6f0d90 */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters (ai.h AICHAR) */
 int gm_SumSlotAmounts(void *list, unsigned char i);                                     /* 0x508660 */
 int gm_FreeCapacity(short *l, int item, int max);                                    /* 0x50ab80 */
@@ -264,7 +264,7 @@ void ai_Unk4c5ca0(int a, void *p);                                              
 void ai_Unk4c5d00(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
 void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
-void ai_Unk4c5dc0(char *o, int k, void *p);                                      /* 0x4c5dc0 */
+void cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
 void ai_Unk4c5ec0(int a);                                                        /* 0x4c5ec0 */
 void ai_Unk4c5ef0(int a);                                                        /* 0x4c5ef0 */
@@ -524,7 +524,7 @@ int *ai_Unk4cdf00(char *rec, char *c);  /* 0x4cdf00 */
 int *ai_Unk4cdf80(char *c);  /* 0x4cdf80 */
 int ai_Unk4cdfe0(int x, int y);  /* 0x4cdfe0 */
 int ai_Unk4ce040(int a, int b, int *ox, int *oy);  /* 0x4ce040 */
-char *ai_Unk4ce130(int id);  /* 0x4ce130 */
+char *cm_FindFighter(int id);  /* 0x4ce130 */
 int ai_LedSelectBits(int idx, char *c);  /* 0x4ce170 */
 float ai_Unk4ce1b0(char *c, char *o);  /* 0x4ce1b0 */
 float ai_Unk4ce200(char *c, int x, int y);  /* 0x4ce200 */

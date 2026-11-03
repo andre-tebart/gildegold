@@ -1942,7 +1942,7 @@ void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2)
         m.data[0x20] = 0;
     cm_QueueSend(&m);
 }
-/* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *ai_Unk6f0d90) */
+/* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight) */
 
 void ai_Unk4c5c40(int a, void *p)
 {
@@ -1950,10 +1950,10 @@ void ai_Unk4c5c40(int a, void *p)
 
     m.type = 0x50;
     G17_I(m, 0) = a;
-    if (ai_Unk6f0d90 == 0)
+    if (cm_CurrentFight == 0)
         G17_I(m, 0x30) = -1;
     else
-        G17_I(m, 0x30) = *ai_Unk6f0d90;
+        G17_I(m, 0x30) = *cm_CurrentFight;
     memcpy(&m.data[4], p, 0x2c);
     cm_QueueSend(&m);
 }
@@ -1965,10 +1965,10 @@ void ai_Unk4c5ca0(int a, void *p)
 
     m.type = 0x51;
     G17_I(m, 0) = a;
-    if (ai_Unk6f0d90 == 0)
+    if (cm_CurrentFight == 0)
         G17_I(m, 0x30) = -1;
     else
-        G17_I(m, 0x30) = *ai_Unk6f0d90;
+        G17_I(m, 0x30) = *cm_CurrentFight;
     memcpy(&m.data[4], p, 0x2c);
     cm_QueueSend(&m);
 }
@@ -2004,30 +2004,39 @@ void cm_SendTableRequest(int *p)
     *(G17B12 *)m.data = *(G17B12 *)p;
     cm_QueueSend(&m);
 }
-/* 0x4c5dc0, message 0x55: 0x2c bytes of p, the position / direction of o's model; k 2: also the id of 0x4ce130 */
+/* 0x4c5dc0, message 0x55: the command cmd of the fighter slot f of the current fight, with the position and rotation
+   of the fighter c's body and its health; for an attack (2) also the target's current health
+   @deep Read whole against 0x4c5dc0..0x4c5e7a: the same stores (fight id, cmd, the 0x2c-byte slot by rep
+   movsd, health, pos x/y/z, rot x/y/z, the target's health for cmd 2), calls and branches. Left is
+   allocation: the original keeps esi/edi pushed to the end and copies the six vector dwords through esi
+   (mov esi,[eax+0x4c] / mov [esp+0x1d],esi ...), ours pops esi/edi right after the rep movsd and copies
+   through ecx, so every m offset differs by 8 (slots) and the cmd-2 push uses edx vs ecx. Tried: struct
+   copies of pos / rot (keeps esi but adds lea / add for the addresses, 34 ins), memcpy of 12 bytes (same),
+   one struct copy plus element copies (29 ins, bigger), element copies (this, 43 ins, size 183 vs 186). */
 
-void ai_Unk4c5dc0(char *o, int k, void *p)
+void cm_SendFightCommand(AICHAR *c, int cmd, CMFIGHTSLOT *f)
 {
     G17MSG m;
-    char *v, *r;
+    D3OBJECT *b;
+    AICHAR *t;
 
-    G17_I(m, 0) = *ai_Unk6f0d90;
+    m.fight.fight = *cm_CurrentFight;
     m.type = 0x55;
-    m.data[4] = (unsigned char)k;
-    memcpy(&m.data[0x25], p, 0x2c);
-    if (o != 0 && *(int *)(o + 0x184) != 0) {
-        v = *(char **)(*(char **)(o + 0x184) + 0x34);
-        G17_I(m, 0x21) = *(int *)(o + 0x24);
-        G17_I(m, 5) = *(int *)(v + 0x4c);
-        G17_I(m, 9) = *(int *)(v + 0x50);
-        G17_I(m, 0xd) = *(int *)(v + 0x54);
-        G17_I(m, 0x15) = *(int *)(v + 0x84);
-        G17_I(m, 0x19) = *(int *)(v + 0x88);
-        G17_I(m, 0x1d) = *(int *)(v + 0x8c);
-        if (k == 2) {
-            r = ai_Unk4ce130(G17_I(m, 0x35));
-            if (r != 0)
-                G17_I(m, 0x4d) = *(int *)(r + 0x24);
+    m.fight.cmd = (unsigned char)cmd;
+    m.fight.slot = *f;
+    if (c != 0 && c->model != 0) {
+        b = c->model->body;
+        m.fight.health = c->v024;
+        m.fight.pos.x = b->pos.x;
+        m.fight.pos.y = b->pos.y;
+        m.fight.pos.z = b->pos.z;
+        m.fight.rot.x = b->rotation.x;
+        m.fight.rot.y = b->rotation.y;
+        m.fight.rot.z = b->rotation.z;
+        if (cmd == 2) {
+            t = (AICHAR *)cm_FindFighter(m.fight.slot.target);
+            if (t != 0)
+                m.fight.slot.health = t->v024;
         }
     }
     cm_QueueSend(&m);
@@ -3807,7 +3816,7 @@ int ai_Unk4c9170(G17MSG *m, G17STAT *s)
             break;
     }
     if (i < 16) {
-        if (ai_Unk6f0d90 != 0 && *ai_Unk6f0d90 == G17_I(*m, 4)) {
+        if (cm_CurrentFight != 0 && *cm_CurrentFight == G17_I(*m, 4)) {
             rec = ai_Unk92cae0[i];
             memcpy(rec, cm_LongMsg, 0x35c);
             *(int *)(rec + 0xc) = 0;
@@ -3816,7 +3825,7 @@ int ai_Unk4c9170(G17MSG *m, G17STAT *s)
         }
     }
     if (i >= 16) {
-        if (ai_Unk6f0d90 != 0 && *ai_Unk6f0d90 == G17_I(*m, 4))
+        if (cm_CurrentFight != 0 && *cm_CurrentFight == G17_I(*m, 4))
             sprintf(buf, "cm_ExSendCutInfo(): io-buffer has not been written, because player not found (player id %i)",
                     G17_I(*m, 0));
         return 1;
@@ -5345,7 +5354,7 @@ int ai_Unk4cc1b0(G17MSG *m, G17STAT *s)
     }
     if (i < 16) {
         rec = ai_Unk92cae0[i];
-        c = ai_Unk4ce130(G17_I(*m, 4));
+        c = cm_FindFighter(G17_I(*m, 4));
         if (c == 0)
             c = gm_FindChar(G17_I(*m, 4));
         if (c != 0) {
@@ -5376,7 +5385,7 @@ int ai_Unk4cc270(G17MSG *m, G17STAT *s)
             break;
     }
     if (i < 16) {
-        r = ai_Unk4cdf00(ai_Unk92cae0[i], ai_Unk4ce130(G17_I(*m, 4)));
+        r = ai_Unk4cdf00(ai_Unk92cae0[i], cm_FindFighter(G17_I(*m, 4)));
         if (*(int *)(r + 4) == G17_I(*m, 8)) {
             if (*(int *)(r + 4) != 2 || *(int *)(r + 0x10) == G17_I(*m, 0x14))
                 memcpy(r, &m->data[4], 0x2c);
@@ -5395,7 +5404,7 @@ int ai_Unk4cc330(G17MSG *m, G17STAT *s)
 {
     char *r;
 
-    r = ai_Unk4ce130(G17_I(*m, 0));
+    r = cm_FindFighter(G17_I(*m, 0));
     if (r != 0) {
         ai_Unk4cedc0(r, G17_I(*m, 4), 0);
         *(int *)(r + 0x24) -= G17_I(*m, 4);
@@ -5565,9 +5574,9 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
 {
     char *c;
 
-    if (ai_Unk6f0d90 == 0 || *ai_Unk6f0d90 != G17_I(*m, 0))
+    if (cm_CurrentFight == 0 || *cm_CurrentFight != G17_I(*m, 0))
         return 1;
-    c = ai_Unk4ce130(G17_I(*m, 0x25));
+    c = cm_FindFighter(G17_I(*m, 0x25));
     switch (m->data[4]) {
     case 2:
         if (c[8] != 0) {
@@ -6687,9 +6696,9 @@ int ai_Unk4ce040(int a, int b, int *ox, int *oy)
     }
     return 0;
 }
-/* 0x4ce130, the record (0x21c bytes) with id (+4) of the 32 of ai_Unk930600 */
+/* 0x4ce130, the fighter (an AICHAR, 0x21c bytes) with the netId id among the 32 of ai_Unk930600, 0 when none */
 
-char *ai_Unk4ce130(int id)
+char *cm_FindFighter(int id)
 {
     int i = 0;
     char *p;
@@ -7245,7 +7254,7 @@ void ai_Unk4cf000()
 next:
         rr = (int *)ai_Unk4cdf80(c);
         if (rr != 0 && rr[1] == 2 && *((char *)rr + 0x1d) != 0) {
-            o = ai_Unk4ce130(rr[4]);
+            o = cm_FindFighter(rr[4]);
             if (o != 0) {
                 if (d3_VecEqual((float *)(*(char **)(*(char **)(o + 0x184) + 0x34) + 0x4c),
                                  (float *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c), 10.0f) == 0) {
@@ -8356,7 +8365,7 @@ void ai_Unk4d1c20(char *side, int id)
     for (i = 0; i < 16; i++) {
         if (ids[i] == -1)
             continue;
-        c = ai_Unk4ce130(ids[i]);
+        c = cm_FindFighter(ids[i]);
         if (c == 0)
             continue;
         k = ai_Unk4cda50(c);
@@ -8487,7 +8496,7 @@ float ai_Unk4d2010(char *c, int a, int b, float limit)
     d3sm_GetVertexI(sc, a, b, v);
     for (i = 0; i < 16; i++) {
         if (*(int *)(oth + i * 4) != -1) {
-            o = ai_Unk4ce130(*(int *)(oth + i * 4));
+            o = cm_FindFighter(*(int *)(oth + i * 4));
             if (o != 0 && (unsigned char)o[8] > 0) {
                 m = *(char **)(*(char **)(o + 0x184) + 0x34);
                 dx = v[0] - *(float *)(m + 0x4c);
@@ -8501,7 +8510,7 @@ float ai_Unk4d2010(char *c, int a, int b, float limit)
     }
     for (i = 0; i < 16; i++) {
         if (*(int *)(own + i * 4) != -1) {
-            o = ai_Unk4ce130(*(int *)(own + i * 4));
+            o = cm_FindFighter(*(int *)(own + i * 4));
             if (o != 0 && (unsigned char)o[8] > 0 && o != c) {
                 m = *(char **)(*(char **)(o + 0x184) + 0x34);
                 dx = v[0] - *(float *)(m + 0x4c);
@@ -8896,14 +8905,14 @@ float *ai_Unk4d2c00(int side)
         kind = 5;
     for (i = 0x80; i < 0xc0; i += 4) {
         if (*(int *)(ai_Unk6f0d04 + i) != -1) {
-            o = ai_Unk4ce130(*(int *)(ai_Unk6f0d04 + i));
+            o = cm_FindFighter(*(int *)(ai_Unk6f0d04 + i));
             if (o[8] != 0 && o[8] != 4)
                 a = ai_Unk4cdcf0(o) + a;
         }
     }
     for (i = 0xc0; i < 0x100; i += 4) {
         if (*(int *)(ai_Unk6f0d04 + i) != -1) {
-            o = ai_Unk4ce130(*(int *)(ai_Unk6f0d04 + i));
+            o = cm_FindFighter(*(int *)(ai_Unk6f0d04 + i));
             if (o[8] != 0 && o[8] != 4)
                 b = ai_Unk4cdcf0(o) + b;
         }
@@ -9013,7 +9022,7 @@ void ai_Unk4d2f80(int side)
         arr = (int *)(rec + 0x80);
     for (i = 0; i < 16; i++) {
         if (arr[i] != -1) {
-            c[i] = ai_Unk4ce130(arr[i]);
+            c[i] = cm_FindFighter(arr[i]);
             n++;
         } else
             c[i] = 0;
@@ -9045,7 +9054,7 @@ void ai_Unk4d2f80(int side)
     }
     for (i = 0; i < 16; i++) {
         if (arr[i] != -1)
-            ai_Unk4d3120(rec2, ai_Unk4ce130(arr[i]));
+            ai_Unk4d3120(rec2, cm_FindFighter(arr[i]));
     }
 }
 /* 0x4d3120, the formation order for the character c of the fight record rec2 by its formation type (+0x1c4: 0 the best free
@@ -9335,7 +9344,7 @@ char *ai_Unk4d3b30(char *rec)
     for (i = 0; i < 16; i++) {
         id = *(int *)(rec + 0x80 + i * 4);
         if (id != -1) {
-            c = ai_Unk4ce130(id);
+            c = cm_FindFighter(id);
             if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
                 na++;
         }
@@ -9343,7 +9352,7 @@ char *ai_Unk4d3b30(char *rec)
     for (i = 0; i < 16; i++) {
         id = *(int *)(rec + 0xc0 + i * 4);
         if (id != -1) {
-            c = ai_Unk4ce130(id);
+            c = cm_FindFighter(id);
             if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
                 nb++;
         }
@@ -9532,7 +9541,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
     for (i = 0; i < 16; i++) {
         if (ids[i] == -1)
             continue;
-        c = ai_Unk4ce130(ids[i]);
+        c = cm_FindFighter(ids[i]);
         px = (i % 6 + 1) * w + x;
         py = y + i / 6 * 100;
         d2_WinOpenPic(px - 0x10, py, 0x5da, d2_LastWindow);
@@ -9874,7 +9883,7 @@ void ai_Unk4d4d70(char *a)
         for (i = 0; i < 16; i++) {
             id = *(int *)(a + 0x80 + i * 4);
             if (id != -1) {
-                c = ai_Unk4ce130(id);
+                c = cm_FindFighter(id);
                 if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
                     na++;
             }
@@ -9883,7 +9892,7 @@ void ai_Unk4d4d70(char *a)
         for (i = 0; i < 16; i++) {
             id = *(int *)(a + 0xc0 + i * 4);
             if (id != -1) {
-                c = ai_Unk4ce130(id);
+                c = cm_FindFighter(id);
                 if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
                     nb++;
             }
@@ -10025,7 +10034,7 @@ void ai_Unk4d4d70(char *a)
                 id = *(int *)(a + 0x80 + i * 4);
                 if (id == -1)
                     continue;
-                c = ai_Unk4ce130(id);
+                c = cm_FindFighter(id);
                 col = i % 4;
                 row = i / 4 + 1;
                 px = col * 80 + 0x30;
@@ -10375,10 +10384,10 @@ void ai_Unk4d6ba0(char *f)
 
     if (*(int *)(f + 4) == 0 || *(int *)f == -1)
         return;
-    c = ai_Unk4ce130(*(int *)f);
+    c = cm_FindFighter(*(int *)f);
     k = ai_Unk4cda50(c);
     side = *(char **)(c + 0x16c);
-    tgt = ai_Unk4ce130(*(int *)(f + 0x10));
+    tgt = cm_FindFighter(*(int *)(f + 0x10));
     if (tgt != 0)
         *(int *)(tgt + 0x24) = *(int *)(f + 0x28);
     if (!(k != 0 && (*(int *)k == 0x174 || *(int *)k == 0x176))) {
@@ -10453,7 +10462,7 @@ void ai_Unk4d6f60(char *f)
     char *c;
 
     if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = ai_Unk4ce130(*(int *)f);
+        c = cm_FindFighter(*(int *)f);
         if (c != 0)
             ch_StopActions(*(char **)(c + 0x184));
     }
@@ -10465,7 +10474,7 @@ void ai_Unk4d6f90(char *f)
     char *c, *ev;
 
     if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = ai_Unk4ce130(*(int *)f);
+        c = cm_FindFighter(*(int *)f);
         ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3ac0, 5, 0x2e, 1);
         *(char **)(ev + 0x17c) = c;
         strcpy(ev + 0xf0, "gestik/jubeln");
@@ -10479,7 +10488,7 @@ void ai_Unk4d7000(char *f)
     char *c, *side, *o, *ev;
 
     if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = ai_Unk4ce130(*(int *)f);
+        c = cm_FindFighter(*(int *)f);
         side = *(char **)(c + 0x16c);
         ch_StopActions(*(char **)(c + 0x184));
         o = (char *)d3_FindObject(0, 0x40, 0, f + 0x10);
@@ -10499,7 +10508,7 @@ void ai_Unk4d70a0(char *f)
     char *c, *o, *p, *a;
 
     if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = ai_Unk4ce130(*(int *)f);
+        c = cm_FindFighter(*(int *)f);
         ch_StopActions(*(char **)(c + 0x184));
         d3_FindObject(0, 0x40, 0, f + 0x10);
         o = *(char **)(c + 0x1ac);
@@ -10542,7 +10551,7 @@ void ai_Unk4d7190(char *f)
     if (*(int *)(f + 4) != 0) {
         o = (char *)d3_FindObject(0, 0x40, 0, f + 0x10);
         if (*(int *)f != -1) {
-            c = ai_Unk4ce130(*(int *)f);
+            c = cm_FindFighter(*(int *)f);
             (*(char **)(c + 0x184))[0x8d] |= 4;
             txt_Format(buf, 0x11b8, G20_US(c));
             sv_SetStatusText(buf);
@@ -10648,7 +10657,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
         }
     }
     cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-    ai_Unk4c5dc0(c, 2, s);
+    cm_SendFightCommand(c, 2, s);
     return 0;
 walk:
     if (*(int *)(*(char **)(c + 0x184) + 0x128) != 0 || ((char *)s)[0x1c] != 0)
@@ -10664,7 +10673,7 @@ walk:
 #define G21_BC0 ((int (*)(const char *, int, int, const char *))ai_Unk4c5bc0)
 #define G21_C40 ((int (*)(int, void *))ai_Unk4c5c40)
 #define G21_CA0 ((int (*)(int, void *))ai_Unk4c5ca0)
-#define G21_DC0 ((int (*)(char *, int, void *))ai_Unk4c5dc0)
+#define G21_DC0 ((int (*)(char *, int, void *))cm_SendFightCommand)
 #define G21_CH(o) (*(char **)((o) + 0x184))
 #define G21_POS(o) (*(char **)(G21_CH(o) + 0x34) + 0x4c)
 
@@ -10691,7 +10700,7 @@ void ai_Unk4d76a0(int *rec)
             if (p[1] == 5)
                 c = gm_FindChar(0);
             else
-                c = ai_Unk4ce130(p[0]);
+                c = cm_FindFighter(p[0]);
             k = ai_Unk4cda50(c);
             if ((c == 0 || c[8] == 0) && k != 0) {
                 p[0] = -1;
@@ -10706,7 +10715,7 @@ void ai_Unk4d76a0(int *rec)
                         if (ai_Unk4ce040(p[4], p[5], &ix, &iz) != 0) {
                             sprintf(buf, "cmb_%i", *(int *)(c + 4));
                             ((char *)p)[0xc] = 1;
-                            ai_Unk4c5dc0(c, 6, m);
+                            cm_SendFightCommand(c, 6, m);
                             res = G21_BC0(buf, ix, iz, 0);
                             goto done;
                         }
@@ -10715,7 +10724,7 @@ void ai_Unk4d76a0(int *rec)
                         if (d3_VecEqual(q, (float *)G21_POS(c), 30.0f) != 0) {
                             m[0] = *(int *)(c + 4);
                             m[1] = 0;
-                            ai_Unk4c5dc0(c, 6, m);
+                            cm_SendFightCommand(c, 6, m);
                             goto send;
                         }
                     }
@@ -10724,7 +10733,7 @@ void ai_Unk4d76a0(int *rec)
             case 2:
                 if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
                     p[2] = -1;
-                    x = ai_Unk4ce130(p[4]);
+                    x = cm_FindFighter(p[4]);
                     if (x != 0 && (x[8] == 0 || *(int *)(*(char **)(G21_CH(x) + 0x34) + 0x218) == 1 || c == 0 || c[8] == 0)) {
                         m[0] = *(int *)(c + 4);
                         id = 6;
@@ -10848,7 +10857,7 @@ attack:
                 if (*(int *)(G21_CH(c) + 0x128) == 0) {
                     if (*(int *)(k + 0x58) == 2 && p[8] != 0) {
                         cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-                        ai_Unk4c5dc0(c, 2, p);
+                        cm_SendFightCommand(c, 2, p);
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
                         if (d3_GetHeightAt(h, G21_POS(c), &ai_Unkfa5f00, &ai_Unkfa5f04, tmp) == 0)
@@ -10875,7 +10884,7 @@ attack:
                     }
                     d3sm_GetVertexI(h, p[4], p[5], q);
                     if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
-                        ai_Unk4c5dc0(c, 1, m);
+                        cm_SendFightCommand(c, 1, m);
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
                         res = G21_C40(rec[4], m);
@@ -10898,14 +10907,14 @@ attack:
                                 ((char *)p)[0xc] = 1;
                                 p[8] = ix;
                                 p[9] = iz;
-                                ai_Unk4c5dc0(c, 6, m);
+                                cm_SendFightCommand(c, 6, m);
                                 res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                                 goto done;
                             }
                             if ((char)p[3] == 1 && *(int *)(G21_CH(c) + 0x128) == 0 && d3_VecEqual(q, (float *)G21_POS(c), 49.5f) == 0)
                                 ((char *)p)[0xc] = 0;
                             else if (d3_VecEqual(q, (float *)G21_POS(c), 49.5f) != 0) {
-                                ai_Unk4c5dc0(c, 3, m);
+                                cm_SendFightCommand(c, 3, m);
                                 m[0] = *(int *)(c + 4);
                                 m[1] = 0;
                                 res = G21_C40(rec[4], m);
@@ -10936,7 +10945,7 @@ attack:
                     id = 7;
 stop:
                     m[1] = 0;
-                    ai_Unk4c5dc0(c, id, m);
+                    cm_SendFightCommand(c, id, m);
                     res = G21_C40(rec[4], m);
                     goto done;
                 }
@@ -10945,7 +10954,7 @@ stop:
                 if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
                     p[2] = -1;
                     if (d3_FindObject(0, 0x40, 0, p + 4) == 0) {
-                        ai_Unk4c5dc0(c, 6, m);
+                        cm_SendFightCommand(c, 6, m);
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
                         p[2] = G21_C40(rec[4], m);
@@ -10955,7 +10964,7 @@ stop:
                     case 0:
                         if (n == 0) {
                             ((char *)p)[0xc] = 1;
-                            ai_Unk4c5dc0(c, 6, m);
+                            cm_SendFightCommand(c, 6, m);
                             if (ai_Unk4ce040((char)p[8], ((char *)p)[0x21], &ix, &iz) != 0) {
                                 res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                                 goto done;
@@ -10963,7 +10972,7 @@ stop:
                         } else {
                             d3sm_GetVertexI(h, (char)p[8], ((char *)p)[0x21], q);
                             if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
-                                ai_Unk4c5dc0(c, 4, m);
+                                cm_SendFightCommand(c, 4, m);
                                 ((char *)m)[0x2a] = 1;
                                 res = G21_CA0(rec[4], m);
                                 goto done;
@@ -10988,7 +10997,7 @@ stop:
                     case 2:
                         d3sm_GetVertexI(h, (char)p[8], ((char *)p)[0x21], q);
                         if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
-                            ai_Unk4c5dc0(c, 5, m);
+                            cm_SendFightCommand(c, 5, m);
                             m[0] = *(int *)(c + 4);
                             m[1] = 0;
                             res = G21_C40(rec[4], m);
@@ -11005,7 +11014,7 @@ stop:
                         if (ai_Unk4ce040(p[4], p[5], &ix, &iz) != 0) {
                             sprintf(buf, "cmb_%i", *(int *)(c + 4));
                             ((char *)p)[0xc] = 1;
-                            ai_Unk4c5dc0(c, 6, m);
+                            cm_SendFightCommand(c, 6, m);
                             res = G21_BC0(buf, ix, iz, 0);
                             goto done;
                         }
@@ -11014,7 +11023,7 @@ stop:
                         if (d3_VecEqual(q, (float *)G21_POS(c), 30.0f) != 0) {
                             m[0] = *(int *)(c + 4);
                             m[1] = 0;
-                            ai_Unk4c5dc0(c, 6, m);
+                            cm_SendFightCommand(c, 6, m);
                             res = G21_C40(rec[4], m);
                             goto done;
                         }
@@ -13489,7 +13498,7 @@ void ai_Unk4e2910(char *o, int id)
     if (cm_SkipEvents != 0)
         return;
     if (((char *)ai_PlayerBuildingT == o && *(unsigned short *)(o + 0x29) == id) || ((char *)ai_FallbackBuildingT == o && *(unsigned short *)(o + 0x29) == id)) {
-        if (((char *)ai_Unk6f0d90)[0x26] & 0x20) {
+        if (((char *)cm_CurrentFight)[0x26] & 0x20) {
             d2_ClearSurface(d2_ScreenSurf);
             G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);
             sv_RunFrame(0, 0x86);
@@ -13527,7 +13536,7 @@ void ai_Unk4e2910(char *o, int id)
         d3_InflateScene(ai_Unk63349c & ~2);
         ai_Unk6f0d98 = ai_Unk6f0d98 & ~2;
     }
-    if (((char *)ai_Unk6f0d90)[0x26] & 0x20) {
+    if (((char *)cm_CurrentFight)[0x26] & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
         G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);
         sv_RunFrame(0, 0x86);
@@ -13701,7 +13710,7 @@ void ai_Unk4e2e60(char *name)
         d3fl_SetDetail(0x40);
         d3fl_SetShift((struct D3FLMAP *)ai_Unk633738, sh >> 1, 1);
     }
-    if (((char *)ai_Unk6f0d90)[0x26] & 0x20) {
+    if (((char *)cm_CurrentFight)[0x26] & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
         G27_FRAME(d2_ScreenSurf, ai_Unk6ed92c);
         sv_RunFrame(0, 0x86);
@@ -13900,7 +13909,7 @@ int ai_Unk4e3420(int a)
                 if (ai_Unk6f0d80 >= end)
                     sv_PopRequest = 1;
                 ai_Unk4cee20();
-                ai_Unk4e37a0(ai_Unk6f0d90);
+                ai_Unk4e37a0(cm_CurrentFight);
             } while (sv_RunFrame(ai_Unk4e3420, ai_Unk60d360 | 0x8000) != 0);
         }
     }
@@ -13930,7 +13939,7 @@ int ai_Unk4e3490(int a, int (*cb)(int))
                     sv_PopRequest = 1;
             }
             ai_Unk4cee20();
-            ai_Unk4e37a0(ai_Unk6f0d90);
+            ai_Unk4e37a0(cm_CurrentFight);
         } while (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0);
     }
     return res;
@@ -13950,7 +13959,7 @@ int ai_Unk4e3570(int a)
                 if ((double)d3_Time >= lim)
                     sv_PopRequest = 1;
                 ai_Unk4cee20();
-                ai_Unk4e37a0(ai_Unk6f0d90);
+                ai_Unk4e37a0(cm_CurrentFight);
             } while (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0);
         }
     }
@@ -14292,7 +14301,7 @@ void ai_Unk4e4060(char *m)
         }
         ((int (*)())d3io_NoopCallback)();
         ai_Unk4d8b30();
-    } else if (ai_Unk6f0d90 == 0)
+    } else if (cm_CurrentFight == 0)
         ai_Unk4e36a0(m);
     win_old = ai_Unk60d368;
     *(int *)(m + 0x2c) = d2_OpenForm(m[8] == 2 ? "cutscenes\\prozess_main" : (m[0x26] & 0x20) ? "cutscenes\\announcement_cinemascope" : "cutscenes\\announcement", 0, 0);
@@ -14302,7 +14311,7 @@ void ai_Unk4e4060(char *m)
         d2_SetViewEnabled(ai_Unk60d368, 0);
     ai_Unk4e52a0(*(int *)(m + 0x78));
     sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", (unsigned char)m[8]);
-    ai_Unk6f0d90 = (int *)m;
+    cm_CurrentFight = (int *)m;
     ((void (*)())ai_Unk92c500[(unsigned char)m[8] * 5])(m);
     d2_CloseView(*(int *)(m + 0x2c));
     ai_Unk60d368 = win_old;
@@ -14339,7 +14348,7 @@ void ai_Unk4e4060(char *m)
         cm_AddFieldValue(4, 1, (unsigned short)(c - cm_FieldObject + 0x20c), &id);
         cm_SendFieldValues();
     }
-    ai_Unk6f0d90 = 0;
+    cm_CurrentFight = 0;
     evt_NoGroup = ai_Unk92cac0;
 }
 /* 0x4e4870, 1 when the character id is one of the party m (+0x30 count, +0x34 ids) and still exists */
@@ -14700,7 +14709,7 @@ int ai_Unk4e5210(int id, int who)
             break;
         }
     }
-    if (ai_Unk6f0d90 != 0 && *ai_Unk6f0d90 == id) {
+    if (cm_CurrentFight != 0 && *cm_CurrentFight == id) {
         for (i = 0; i < 16; i++) {
             if (*(int *)(ai_Unk92cae0[i] + 0x10) == who) {
                 *(int *)(ai_Unk92cae0[i] + 0x10) = -1;
@@ -15196,7 +15205,7 @@ int ai_Unk6f0d80 = 0;  /* 0x6f0d80 */
 int ai_Unk6f0d84 = 0;  /* 0x6f0d84 */
 int ai_Unk6f0d88 = 0;  /* 0x6f0d88 */
 int cm_SkipEvents = 0;  /* 0x6f0d8c */
-int * ai_Unk6f0d90 = 0;  /* 0x6f0d90 */
+int * cm_CurrentFight = 0;  /* 0x6f0d90 */
 int ai_Unk6f0d94 = 0;  /* 0x6f0d94 */
 unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
 int ai_Unk6f0d9c = 0;  /* 0x6f0d9c, the scene nesting depth */

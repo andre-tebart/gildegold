@@ -4,7 +4,7 @@
 #ifndef CM_TYPES_H
 #define CM_TYPES_H
 #include "ai_types.h"                /* AITIME, for CRIME */
-#include "d3_types.h"                /* D3VECTOR4 */
+#include "d3_types.h"                /* D3VECTOR, D3VECTOR4 */
 
 #pragma pack(push, 1)
 typedef struct G17B7 { char b[7]; } G17B7;      /* blocks copied as one */
@@ -68,6 +68,31 @@ typedef struct G17GEBMSG {              /* 0x25 bytes, the data of message 0x4c 
     int rot[3];                         /* 0x19, the rotation (d3_SetObjectRot) */
 } G17GEBMSG;
 
+typedef struct CMFIGHTSLOT {            /* 0x2c bytes, a fighter slot of a fight record (16 at its +0x94, ai_Unk4d76a0) */
+    int id;                             /* 0x00, the fighter's id (AICHAR.netId), -1: free */
+    int active;                         /* 0x04 */
+    char pad08[8];
+    int target;                         /* 0x10, the target's id */
+    int x, y;                           /* 0x14, the attacked place */
+    char pad1c;
+    unsigned char hit;                  /* 0x1d */
+    char pad1e[2];
+    int kill;                           /* 0x20 */
+    int damage;                         /* 0x24 */
+    int health;                         /* 0x28, the target's new health (its AICHAR.v024) */
+} CMFIGHTSLOT;
+
+typedef struct G17FIGHTMSG {            /* 0x51 bytes, the data of message 0x55 (cm_SendFightAction, its handler 0x4cc7b0
+                                           runs the command for the fighter slot) */
+    int fight;                          /* 0x00, the fight's id (the first int of its record) */
+    unsigned char cmd;                  /* 0x04, the command 1 .. 7 */
+    D3VECTOR pos;                       /* 0x05, the position of the fighter's body */
+    char pad11[4];
+    D3VECTOR rot;                       /* 0x15, its rotation */
+    int health;                         /* 0x21, the fighter's AICHAR.v024 */
+    CMFIGHTSLOT slot;                   /* 0x25 */
+} G17FIGHTMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -86,6 +111,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
+        G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */
