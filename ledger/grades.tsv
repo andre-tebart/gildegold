@@ -857,7 +857,7 @@ exe	0x004473f0	d3if_Reset	d3_interface	byte	draft	deep
 exe	0x004475f0	d3if_InitScene	d3_interface	byte	draft	deep	
 exe	0x00447800	d3if_PrecacheCB	d3_interface	byte	readable		
 exe	0x00447860	d3if_Prerender	d3_interface	byte	readable		
-exe	0x004478e0	d3if_SelectScene	d3_interface	shape	draft	deep	
+exe	0x004478e0	d3if_SelectScene	d3_interface	draft	draft	deep	shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x00447e60	d3if_ClearScene	d3_interface	byte	readable		
 exe	0x00447f70	d3if_MoveCB	d3_interface	byte	readable		
 exe	0x00447fd0	d3if_MoveObject	d3_interface	byte	readable		
@@ -1752,7 +1752,7 @@ exe	0x004a61d0	ai_PickPartnerChainLevel	am	byte	readable
 exe	0x004a63f0	ai_PickActionBuilding	am	draft	readable	deep	
 exe	0x004a6570	ai_PickActionBuildings	am	draft	readable	deep	
 exe	0x004a66f0	ai_BuildingAimPoints	am	byte	readable		
-exe	0x004a67a0	ai_AimCannon	am	shape	readable		
+exe	0x004a67a0	ai_AimCannon	am	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x004a6ae0	ai_FireCannon	am	draft	readable	deep	
 exe	0x004a7140	ai_PokerStart	unk_4a7140	byte	readable		
 exe	0x004a7430	ai_PokerDealRound	unk_4a7140	byte	readable		
@@ -2559,7 +2559,7 @@ exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft
 exe	0x004e2e00	ai_Unk4e2e00	cm	draft	draft		
 exe	0x004e2e60	ai_Unk4e2e60	cm	shape	draft		
 exe	0x004e3060	ai_Unk4e3060	cm	byte	draft		
-exe	0x004e30c0	ai_Unk4e30c0	cm	shape	draft		
+exe	0x004e30c0	ai_Unk4e30c0	cm	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
 exe	0x004e3230	ai_Unk4e3230	cm	byte	draft		
 exe	0x004e3250	ai_Unk4e3250	cm	byte	draft		
@@ -3341,8 +3341,8 @@ exe	0x00525ff0	sv_BorderCameraView	sv	byte	readable
 exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	deep	
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep	
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
-exe	0x00527840	sv_FlyCameraToObject	sv	shape	readable		
-exe	0x00527bb0	sv_CameraToObject	sv	shape	readable		
+exe	0x00527840	sv_FlyCameraToObject	sv	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x00527bb0	sv_CameraToObject	sv	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep	
 exe	0x00528140	sv_MoveCameraToView	sv	byte	draft		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
@@ -3530,8 +3530,8 @@ exe	0x0053efe0	he_PostEvent6d	he	draft	draft
 exe	0x0053f070	he_PostEvent6b	he	draft	draft		
 exe	0x0053f100	he_PostEvent7a	he	draft	draft		
 exe	0x0053f190	he_PostEvent2b	he	draft	draft		
-exe	0x0053f270	he_Unk53f270	he	shape	draft		
-exe	0x0053f370	he_Unk53f370	he	shape	draft		
+exe	0x0053f270	he_Unk53f270	he	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x0053f370	he_Unk53f370	he	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x0053f430	he_Unk53f430	he	shape	draft		
 exe	0x0053f500	he_Unk53f500	he	shape	draft		
 exe	0x0053f5b0	he_Unk53f5b0	he	draft	draft		
@@ -3962,7 +3962,7 @@ exe	0x00576ab0	ai_StepChapter2Step6	unk_575860	shape	draft
 exe	0x00576b50	ai_StepChapter2Step7	unk_575860	shape	draft		
 exe	0x00576ba0	ai_StepChapter4Step2	unk_575860	shape	draft		
 exe	0x00576cd0	ai_QueryChapter4Step2	unk_575860	byte	draft		
-exe	0x00576d40	ai_StepChapter4Step4	unk_575860	shape	draft		
+exe	0x00576d40	ai_StepChapter4Step4	unk_575860	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x00576e70	ai_QueryChapter4Step4	unk_575860	byte	draft		
 exe	0x00576ee0	ai_StepChapter4Step5	unk_575860	shape	draft		
 exe	0x00577020	ai_QueryChapter4Step5	unk_575860	byte	draft		
@@ -4011,7 +4011,7 @@ exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
 exe	0x0057b810	ai_TutorialBezier	unk_575860	shape	readable		
-exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	shape	readable		
+exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft		
 exe	0x0057bce0	ai_TutorialWindow	unk_575860	shape	readable	deep	
 exe	0x0057bf00	ai_AlchemistCandidates	unk_575860	draft	readable	deep	
