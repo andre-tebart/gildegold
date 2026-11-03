@@ -3367,7 +3367,7 @@ void main_EndRound(void)
             cm_SendLongMessage((char *)&msg);
         }
     }
-    if (ai_Unk6f2438 != 0 && he_FindEvent(1, 0, 0x85) == 0) {
+    if (cm_TutorialActive != 0 && he_FindEvent(1, 0, 0x85) == 0) {
         MAIN_NOTE(msg, 0x85);
         cm_SendLongMessage((char *)&msg);
     }

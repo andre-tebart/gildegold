@@ -993,7 +993,7 @@ int cm_RunWedding(G28REC *m);  /* 0x4e0770 */
 
 int ai_Unk4e0e90(char *m);  /* 0x4e0e90 */
 extern struct D2INPUT *d2_FocusedInput;  /* 0x6ed9dc, the focused input (as d2.h / rt.h) */
-extern int ai_Unk6f2438;  /* 0x6f2438 */
+extern int cm_TutorialActive;  /* 0x6f2438 */
 void snd_ClearQueue(void);  /* 0x4c01b0 */
 int cm_UnloadVoiceBank();  /* 0x4e3290 */
 void d2_CentreViewWindows(int view);  /* 0x475600 */
@@ -1002,7 +1002,7 @@ void d2_FocusInput();  /* 0x478320 */
 int d2_GetObjValue();  /* 0x475980 */
 int cm_StartScript();  /* 0x4e2bf0 */
 int cm_QueueVoice();  /* 0x4e32d0 */
-int ai_Unk4e0f70(char *m);  /* 0x4e0f70 */
+void cm_RunBirth(G28REC *m);  /* 0x4e0f70 */
 int ai_Unk4e1220(char *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
 int gm_Unk506480();  /* 0x506480 */

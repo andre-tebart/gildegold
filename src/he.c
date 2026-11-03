@@ -158,7 +158,7 @@ extern GAPDATA full_data_6fa1e0[];
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
-extern int ai_Unk6f2438;
+extern int cm_TutorialActive;
 extern char ch_EmptyName[1];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
@@ -13186,7 +13186,7 @@ void he_Unk567d60(int ev)
     int list[0x41];
 
     n = 0;
-    if (U_I((unsigned)&ai_Unk6f2438) == 0)
+    if (U_I((unsigned)&cm_TutorialActive) == 0)
         *(int *)(ev + 0x70) = -1;
     switch (*(int *)(ev + 0x70)) {
     case 0:

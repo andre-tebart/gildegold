@@ -14430,74 +14430,89 @@ int ai_Unk4e0e90(char *m)
     }
     return 0;
 }
-/* 0x4e0f70, a birth (the message m: +0x34 the mother, +0x38 the child; +0x30 count): the scene "Geburt.ed3" with "cutscenes\\geburt\\enter_Geburt.esc",
-   the screams "_GEBURT_GESCHREI" (2 .. 5 of them, random pauses), the view "cutscenes\\geburt" with the text 0x1aae (a boy) / 0x1aaf and
-   the name box ("$L%t" + the child's name), waits for a key (0x1468410 == 0x1c) or the end of the frame wait, then the field
-   blocks (0x4c3ba0 / 0x4c3c00) for the new person */
+/* 0x4e0f70, a birth (the scene callback of the birth event, kind 7) of the child m->members[1] to the mother m->members[0]:
+   the child's kind (+2) set to 8 and sent; the sample bank "GEBURT.sbf", the track "Geburt", the scene "Geburt.ed3" with
+   "cutscenes\\geburt\\enter_Geburt.esc"; unless a click ends a pause: the voice "_GEBURT" by the sexes of mother and child
+   (random 0 / 1, + 2 for a girl, + 4 when members[0] has sex 1), 2 .. 5 screams "_GEBURT_GESCHREI" with random delays; then the
+   view "cutscenes\\geburt" with the text 0x1aae (a boy) / 0x1aaf and the name box ("$L%t" with the child's first name,
+   15 characters) until Enter or the box losing the focus gives a non-empty name, the frames end or the tutorial runs; the
+   name box's text is sent as the child's first name (16 bytes at +0x30). Nothing when one of them is not found
+   @deep read whole against the original 0x4e0f70..0x4e1212 and fixed: void (no return value), the name
+   buffer 16 bytes and sent as the first name (cm_AddFieldDelta(1, 0x10, 0x30, name)), the voice calls with
+   the bank and 5 arguments, the name-box loop (Enter or no focused input -> read the box), the text
+   0x1aae/0x1aaf as if/else. The only code hunks left (+0xb8..+0x10b) are argument scheduling of
+   cm_QueueVoice(-8, bank, "_GEBURT", n, 0): the original pushes the last 0 before evaluating n (push 0 /
+   push 2 hoisted, the four cm_Random calls share one add esp,4 at the join, add esp 0x14 after the call),
+   ours evaluates n first (add esp,4 per branch, push 0 after, the stack cleanup merged into the next
+   call's add esp 0x20); tried n as a nested ?: inside the argument list and as an if/else before the call:
+   identical object. The rest is slots (the prologue saves ebp before esi: '+ push ebp / + push esi / + mov
+   esi,[esp+0x20]' vs '- push esi / - mov esi,[esp+0x1c] / - push ebp'), regs (ebx<->edi) and the epilogue
+   order */
 
-int ai_Unk4e0f70(char *m)
+void cm_RunBirth(G28REC *m)
 {
-    char name[0x20];
-    char *a, *b, *t;
-    int snd, sc, v, w, n;
+    char name[0x10];
+    AICHAR *a, *b;
+    int bank, sc, view, box, n, k;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
     if (a == 0 || b == 0)
-        return 0;
+        return;
     n = 8;
-    cm_BeginFieldBlock(b, *(int *)(b + 4));
+    cm_BeginFieldBlock((char *)b, b->netId);
     cm_AddFieldDelta(1, 1, 2, &n);
     cm_SendFieldDeltas();
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
-    snd = cm_LoadVoiceBank("GEBURT.sbf", 0);
+    bank = cm_LoadVoiceBank("GEBURT.sbf", 0);
     cm_PlaySpecialTrack("cd2\\Geburt.mp3");
     cm_LoadEventScene("Geburt.ed3");
     sc = cm_StartScript("cutscenes\\geburt\\enter_Geburt.esc");
     if (cm_RunSceneTicksOrClick(0x1964, 0, 0) == 0) {
-        if (a[9] == 0)
-            n = cm_Random(2) + (b[9] == 0 ? 0 : 2);
+        if (a->sex == 0)
+            n = b->sex == 0 ? cm_Random(2) : cm_Random(2) + 2;
         else
-            n = cm_Random(2) + (b[9] == 0 ? 4 : 6);
-        cm_QueueVoice(-8, "_GEBURT", n, 0);
+            n = b->sex == 0 ? cm_Random(2) + 4 : cm_Random(2) + 6;
+        cm_QueueVoice(-8, bank, "_GEBURT", n, 0);
         if (cm_RunSceneTicksOrClick(0x3e8, 0, 0) == 0) {
-            for (n = cm_Random(4) + 2; n > 0; n--)
-                cm_QueueVoice(-8, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
+            for (k = cm_Random(4) + 2; k > 0; k--)
+                cm_QueueVoice(-8, bank, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
             cm_RunSceneTicksOrClick(0x1b58, 0, 0);
         }
     }
-    v = d2_OpenForm(0, 0, "cutscenes\\geburt");
-    d2_CentreViewWindows(v);
-    d2_SetForm(v, 1);
-    io_PrintText(b[9] == 0 ? 0x1aae : 0x1aaf);
-    d2_SetForm(v, 2);
-    w = d2_GetWinObj(v, 2, io_PrintText("$L%t", b + 0x30));
-    d2_SetObjMax(w, 0xf);
-    d2_FocusInput(w);
+    view = d2_OpenForm(0, 0, "cutscenes\\geburt");
+    d2_CentreViewWindows(view);
+    d2_SetForm(view, 1);
+    if (b->sex == 0)
+        io_PrintText(0x1aae);
+    else
+        io_PrintText(0x1aaf);
+    d2_SetForm(view, 2);
+    box = d2_GetWinObj(view, 2, io_PrintText("$L%t", b->first));
+    d2_SetObjMax(box, 0xf);
+    d2_FocusInput(box);
     do {
-        if (kb_Last == 0x1c || d2_FocusedInput != 0)
-            break;
-        d2_GetObjValue(w);
-        strcpy(name, (char *)d2_GetObjValue(w));
-        if (name[0] != 0)
-            break;
-        d2_FocusInput(w);
-    } while (sv_RunFrame(0, cm_DialogFrameFlags) != 0 && ai_Unk6f2438 == 0);
-    cm_BeginFieldBlock(b, *(int *)(b + 4));
-    cm_AddFieldDelta(1, 0x10, 0x30, &n);
+        if (kb_Last == 0x1c || d2_FocusedInput == 0) {
+            strcpy(name, (char *)d2_GetObjValue(box));
+            if (name[0] != 0)
+                break;
+            d2_FocusInput(box);
+        }
+    } while (sv_RunFrame(0, cm_DialogFrameFlags) != 0 && cm_TutorialActive == 0);
+    cm_BeginFieldBlock((char *)b, b->netId);
+    cm_AddFieldDelta(1, 0x10, 0x30, name);
     cm_SendFieldDeltas();
-    d2_CloseView(v);
+    d2_CloseView(view);
     cm_FadeToBlack();
     cm_StopScript(sc);
     cm_WaitEvent(sc);
     snd_ClearQueue();
-    cm_UnloadVoiceBank(snd);
+    cm_UnloadVoiceBank(bank);
     cm_FightStart = 0;
     cm_LeaveEventScene();
     cm_EndSpecialTrack();
     d2_CutsceneActive = 0;
-    return 1;
 }
 /* 0x4e1220, 1 when the life (0x4fc820) of the first of m is not above 0 */
 
@@ -16395,7 +16410,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
-    ai_Unk4e5730(7, (int)ai_Unk4e0f70, 0, 0, (int)ai_Unk4e0e90, 0);
+    ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)ai_Unk4e1220, 0);
     ai_Unk4e5730(9, (int)ai_Unk4e1700, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)ai_Unk4e1a80, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
@@ -16721,7 +16736,7 @@ int ai_Unk6f0dc0 = 0;  /* 0x6f0dc0 */
 char ai_Unk6f0dc4 = 0;  /* 0x6f0dc4 */
 char * ai_PickedObject = 0;  /* 0x6f22e8 */
 int ai_PickedChar = 0;  /* 0x6f22f8 */
-int ai_Unk6f2438 = 0;  /* 0x6f2438 */
+int cm_TutorialActive = 0;  /* 0x6f2438 */
 int cm_FightFixedLight = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
