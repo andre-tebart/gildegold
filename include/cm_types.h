@@ -168,6 +168,16 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
     unsigned char buf[0x77];            /* 0x05, per field: size (1, 2, 4), count, offset (short), values */
 } G17FIELDS;
 
+typedef struct G17RELMSG {              /* 0x18 bytes, the data of message 0x1b (cm_SendRelations, its handler 0x4c8240) */
+    int from;                           /* 0x00, the character (netId) whose relation changes */
+    int to;                             /* 0x04, the character (netId) it is towards */
+    int delta;                          /* 0x08, added to ai_Relations[from][to] (kinds 0..2) */
+    int kind;                           /* 0x0c, 0..2 add delta (1 also to the memory, 2 clears it), 3 scales the
+                                           memory of everyone towards `to`, 4 drifts all relations */
+    float scale;                        /* 0x10, ai_DifficultyScale (kind 3) */
+    unsigned int level;                 /* 0x14, (int)ai_DifficultyValue: the drift's strength (kind 4) */
+} G17RELMSG;
+
 typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
                                            handler 0x4cc510) */
     int op;                             /* 0x00, 'join', 'leav' or 'cler' */
@@ -200,6 +210,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
+        G17RELMSG rel;                  /* 0x10, message 0x1b */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };

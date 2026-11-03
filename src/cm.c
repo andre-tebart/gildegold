@@ -3361,23 +3361,25 @@ int ai_Unk4c81d0(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4c8240, handler of type 0x1b: changes the relations (0x7e5360 / 0x889f80, 0x300 x 0x300) between the characters
-   data[0] and data[4]; kind data[0xc]: 4 drifts all relations by level data[0x14], 3 scales column b by data[0x10],
-   0..2 add data[8] */
+/* 0x4c8240, handler of type 0x1b (cm_SendRelations): changes the relations ai_Relations / ai_RelationMemory between
+   the characters m->rel.from and m->rel.to (netIds); kind 4 drifts every relation towards 0 by the level (the
+   higher, the narrower the band left alone), 3 scales everyone's memory towards `to` (but its partner's) by scale,
+   0..2 add delta to from's relation to `to` (1 half of it, a positive one, to the memory as well, 2 clears the
+   memory); each kept in -0x7f..0x7f */
 
-int ai_Unk4c8240(G17MSG *m, G17STAT *s)
+int cm_ExRelations(G17MSG *m, G17STAT *s)
 {
-    int a, b, kind, i, j, v, hi, lo, dn, dp;
-    unsigned int n;
+    int from, to, kind, i, j, v, hi, lo, dn, dp;
+    unsigned int n, ci, cj;
 
-    a = cm_ResolveId((int)m, *(int *)&m->data[0]);
-    *(int *)&m->data[0] = a;
-    b = cm_ResolveId((int)m, *(int *)&m->data[4]);
-    kind = *(int *)&m->data[0xc];
-    *(int *)&m->data[4] = b;
+    from = cm_ResolveId((int)m, m->rel.from);
+    m->rel.from = from;
+    to = cm_ResolveId((int)m, m->rel.to);
+    kind = m->rel.kind;
+    m->rel.to = to;
     if (kind == 4) {
-        n = *(unsigned int *)&m->data[0x14];
-        if (n != 0 && n >= 4) {
+        n = min(max(m->rel.level, 0), 4);
+        if (n == 4) {
             hi = 0x28;
             lo = -0x73;
             dn = -0x14;
@@ -3406,7 +3408,7 @@ int ai_Unk4c8240(G17MSG *m, G17STAT *s)
         for (i = 0; i < 0x300; i++) {
             for (j = 0; j < 0x300; j++) {
                 v = ai_Relations[i][j];
-                if (i != j && *(unsigned short *)ai_Chars[i] != 0xffff && *(unsigned short *)ai_Chars[j] != 0xffff) {
+                if (i != j && ai_CharsT[i].id != 0xffff && ai_CharsT[j].id != 0xffff) {
                     if (v > hi)
                         v += dn;
                     else if (v < lo)
@@ -3415,62 +3417,63 @@ int ai_Unk4c8240(G17MSG *m, G17STAT *s)
                         v = -0x7f;
                     else if (v >= 0x7f)
                         v = 0x7f;
-                    ai_Relations[i][j] = (char)v;
+                    ai_Relations[i][j] = (signed char)v;
                 }
             }
         }
     } else {
-        for (i = 0; i < 0x300; i++)
-            if (*(int *)(ai_Chars[i] + 4) == b)
+        for (ci = 0; ci < 0x300; ci++)
+            if (ai_CharsT[ci].netId == to)
                 break;
-        if (i >= 0x300)
+        if (ci >= 0x300)
             return 1;
-        if (*(unsigned short *)ai_Chars[i] == 0xffff)
+        if (ai_CharsT[ci].id == 0xffff)
             return 1;
         if (kind == 3) {
-            v = *(int *)(ai_Chars[i] + 0x210);
+            v = ai_CharsT[ci].partner;
             for (j = 0; j < 0x300; j++)
-                if (*(int *)(ai_Chars[j] + 4) != v)
-                    ai_RelationMemory[j][i] = (char)(int)(ai_RelationMemory[j][i] * *(float *)&m->data[0x10]);
+                if (ai_CharsT[j].netId != v)
+                    ai_RelationMemory[j][ci] = (signed char)(int)(ai_RelationMemory[j][ci] * m->rel.scale);
         } else {
-            for (j = 0; j < 0x300; j++)
-                if (*(int *)(ai_Chars[j] + 4) == a)
+            for (cj = 0; cj < 0x300; cj++)
+                if (ai_CharsT[cj].netId == from)
                     break;
-            if (j >= 0x300)
+            if (cj >= 0x300)
                 return 1;
-            if (*(unsigned short *)ai_Chars[j] == 0xffff)
+            if (ai_CharsT[cj].id == 0xffff)
                 return 1;
             if (kind == 2) {
-                v = ai_Relations[j][i];
-                ai_RelationMemory[j][i] = 0;
-                v += *(int *)&m->data[8];
+                v = ai_Relations[cj][ci];
+                ai_RelationMemory[cj][ci] = 0;
+                v += m->rel.delta;
                 if (v < -0x7f)
                     v = -0x7f;
                 else if (v >= 0x7f)
                     v = 0x7f;
-                ai_Relations[j][i] = (char)v;
+                ai_Relations[cj][ci] = (signed char)v;
             } else if (kind == 1) {
-                v = ai_Relations[j][i] + *(int *)&m->data[8];
+                v = ai_Relations[cj][ci] + m->rel.delta;
                 if (v < -0x7f)
                     v = -0x7f;
                 else if (v >= 0x7f)
                     v = 0x7f;
-                ai_Relations[j][i] = (char)v;
-                if (*(int *)&m->data[8] >= 0)
+                ai_Relations[cj][ci] = (signed char)v;
+                if (m->rel.delta >= 0)
                     v /= 2;
-                v += ai_RelationMemory[j][i];
+                v += ai_RelationMemory[cj][ci];
                 if (v < -0x7f)
-                    v = -0x7f;
+                    ai_RelationMemory[cj][ci] = -0x7f;
                 else if (v >= 0x7f)
-                    v = 0x7f;
-                ai_RelationMemory[j][i] = (char)v;
+                    ai_RelationMemory[cj][ci] = 0x7f;
+                else
+                    ai_RelationMemory[cj][ci] = (signed char)v;
             } else if (kind == 0) {
-                v = ai_Relations[j][i] + *(int *)&m->data[8];
+                v = ai_Relations[cj][ci] + m->rel.delta;
                 if (v < -0x7f)
                     v = -0x7f;
                 else if (v >= 0x7f)
                     v = 0x7f;
-                ai_Relations[j][i] = (char)v;
+                ai_Relations[cj][ci] = (signed char)v;
             }
         }
     }
@@ -15199,7 +15202,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
