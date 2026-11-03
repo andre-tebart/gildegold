@@ -643,33 +643,44 @@ short * gm_FindChar(int id);
 int cm_SendLongMessageText();
 void err_Message(char *text);
 
-/* 0x53dda0, sends the message 0x11 (event text) to the player `pid` (-1 when it is no figure of kind 6 / 7): `text` (+ `text2` behind its NUL; flag 0x10 then) with the clock of the game, event record `ev` at +0x58 (ROUGH) */
-int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2)
+/* 0x53dda0, sends the news message 0x11 (message flags 9) to the character `pid`, which must be of kind 6 / 7 (else -1):
+   from `from`, the news id `news` (arg[0]), the text flags `tflags` (| 0x10 when `text2` follows the text behind its NUL);
+   cm_SendLongMessageText's result
+   @deep read whole against the original and rewritten on AIMSG (moved to ai_types.h): the parameters are
+   (pid, from -> fromId, text, tflags -> textFlags byte at 0x9c, news -> arg[0], text2); fixed the second
+   textFlags store (0x9c with | 0x10, was 0xa0), the text-only send (passes text itself, not buf) and buf's
+   size (0x1fa0, frame 0x2098). Left: only the placement of the callee-saved pushes: the original pushes
+   esi alone before the kind 6 / 7 check and ebx / ebp / edi after it (its -1 path pops esi only), ours
+   pushes all four at the entry (+0xa / +0x35 / +0x127 hunks) and schedules one lea edx, [esp+0x108] later;
+   tried an early return, the body nested in the if and the locals in the inner block, all the same */
+int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2)
 {
-    char msg[0xf8];
-    char buf[0x1f90];
-    int rec, n, m;
-    char *p;
-    unsigned char b = (unsigned char)fl;
+    AIMSG msg;
+    char buf[0x1fa0];
+    unsigned char *ch;
 
-    rec = gm_FindChar(pid);
-    if (rec == 0 || (*(char *)(rec + 2) != 6 && *(char *)(rec + 2) != 7))
-        return -1;
-    memset(msg, 0, 0xf8);
-    HM_I(msg, 8) = pid;
-    HM_I(msg, 0xc) = fl;
-    HM_B(msg, 4) = 0x11;
-    HM_B(msg, 0x36) = 9;
-    HM_I(msg, 0x58) = ev;
-    HM_B(msg, 0x9c) = b;
-    strcpy(buf, text);
-    n = strlen(text) + 1;
-    if (text2 == 0 || *text2 == 0)
-        return cm_SendLongMessageText(msg, n, buf);
-    memcpy(buf + n, text2, strlen(text2) + 1);
-    b |= 0x10;
-    HM_B(msg, 0xa0) = b;
-    return cm_SendLongMessageText(msg, strlen(text2) + n + 1, buf);
+    ch = (unsigned char *)gm_FindChar(pid);
+    if (ch != 0 && (ch[2] == 6 || ch[2] == 7)) {  /* AICHAR.kind */
+        unsigned char fl = (unsigned char)tflags;
+        int n;
+
+        memset(&msg, 0, sizeof(msg));
+        msg.to = pid;
+        msg.fromId = from;
+        msg.type = 0x11;
+        msg.flags = 9;
+        msg.arg[0] = news;
+        msg.textFlags = fl;
+        strcpy(buf, text);
+        n = strlen(text) + 1;
+        if (text2 == 0 || *text2 == 0)
+            return cm_SendLongMessageText(&msg, n, text);
+        memcpy(buf + n, text2, strlen(text2) + 1);
+        fl |= 0x10;
+        msg.textFlags = fl;
+        return cm_SendLongMessageText(&msg, strlen(text2) + n + 1, buf);
+    }
+    return -1;
 }
 /* 0x53dee0, sends the message 0x11 with a quick jump (name `jump`, at most 0x30 characters: else "he_MessageBoxQuickjump(): .." 0x626700, the function's own name) and the clock values a5 / a6 / a7 (+0x58 / +0x5c / +0x60) (ROUGH) */
 
