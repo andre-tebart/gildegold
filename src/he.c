@@ -9819,14 +9819,15 @@ char he_CollectTransporter(char *name, int *ctx)
     }
     return ctx[0x20] < 0x20;
 }
-/* 0x555210 (ROUGH; the second and third parameters are unused), collects the transporter dummies of the object `obj` (0x438d40 (scene 0x5fb5b0, obj, 0x100, 0x5551c0, list), the object's +0x1f0 is cleared during the walk unless flag 1 of +0x210 is set) and returns a random one of them (0x42ec00 (n) with the count n passed as the fourth parameter), 0 when n = 0 */
+/* 0x555210 (ROUGH), collects the transporter dummies of the object `obj` (0x438d40 (scene 0x5fb5b0, obj, 0x100, 0x5551c0, list), the object's +0x1f0 is cleared during the walk unless flag 1 of +0x210 is set) and returns a random one of them (0x42ec00 (n) with the list's count n), 0 when n = 0; one parameter (every caller pushes one) */
 
-int he_RandomTransporter(char *obj, int unused1, int unused2, int n)
+int he_RandomTransporter(char *obj)
 {
     int list[0x21];
     int save;
 
     memset(list, 0, sizeof(list));
+    list[0x20] = 0;
     if (obj != 0 && (*(unsigned char *)(obj + 0x210) & 1) == 0) {
         save = *(int *)(obj + 0x1f0);
         *(int *)(obj + 0x1f0) = 0;
@@ -9835,9 +9836,9 @@ int he_RandomTransporter(char *obj, int unused1, int unused2, int n)
     } else {
         d3_ForEachObject(U_I((unsigned)&ai_Unk5fb5b0), obj, 0x100, (void *)he_CollectTransporter, list);
     }
-    if (n == 0)
+    if (list[0x20] == 0)
         return 0;
-    return list[(unsigned short)util_Random(n)];
+    return list[(unsigned short)util_Random(list[0x20])];
 }
 /* 0x5552c0, sets the speed factor (+0x1a0 of the record at +0x3b of `p`) from the event's value +0xc0: * the first constant when 0x76061c points to a value above 100, else * the second when 0x760618 points above 200, else unchanged; a second stage (+0xf1 == 2) multiplies it once more */
 
@@ -10097,7 +10098,7 @@ void he_Unk556080(int ev)
         cm_RequestChrMoveToUniverse(*(int *)(cart + 2), *(int *)(b1 + 1), -1, (char *)0);
         init_BuildingSceneUniverse(b1);
         d3if_SelectScene(0, 1);
-        o = he_RandomTransporter((char *)b1, 0, 0, 0);
+        o = he_RandomTransporter(0);  /* the original passes 0 (push 0 at 0x5561a2), not b1 */
         if (o != 0) {
             d3_PointToWorld(o, o + 0x4c, pos);
             d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), pos, 0, 0, 0);
