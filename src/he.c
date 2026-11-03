@@ -2248,25 +2248,22 @@ void he_PostEvent3a(void)
     m.to = ai_CharsT[ai_PlayerId].netId;
     cm_SendLongMessage((char *)&m);
 }
-/* 0x541060, posts the event 0x3b for the current player (replacing a posted one) */
+/* 0x541060, posts the message 0x3b (now, from -1, flag 1) to the player's character, after freeing a running event 0x3b */
 
-void he_Unk541060(void)
+void he_PostEvent3b(void)
 {
-    char ev[0xf8];
-    int r;
+    AIMSG m;
+    char *ev;
 
-    r = (int)he_FindEvent(1, 0, 0x3b);
-    if (r != 0)
-        he_FreeEvent((int *)r);
-    HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-    HM_B(ev, 4) = 0x3b;
-    HM_I(ev, 0xc) = -1;
-    HM_B(ev, 0x36) = 1;
-    *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-    HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
-    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-    HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-    cm_SendLongMessage(ev);
+    ev = he_FindEvent(1, 0, 0x3b);
+    if (ev != 0)
+        he_FreeEvent((int *)ev);
+    m.type = 0x3b;
+    m.fromId = -1;
+    m.flags = 1;
+    m.to = ai_CharsT[ai_PlayerId].netId;
+    m.time = ai_Time;
+    cm_SendLongMessage((char *)&m);
 }
 /* 0x5410f0, posts the event 0x73 for the player of 0x6f1bf8 (replacing a posted one) */
 

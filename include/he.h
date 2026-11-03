@@ -92,7 +92,7 @@ void he_PostEvent67(void);
 void he_InnReport(void);
 void he_Unk540fe0(void);
 void he_PostEvent3a(void);
-void he_Unk541060(void);
+void he_PostEvent3b(void);
 void he_Unk5410f0(void);
 void he_Unk541170(void);
 void he_Unk541200(int r);
