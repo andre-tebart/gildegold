@@ -1577,13 +1577,13 @@ exe	0x00494020	ai_Unk494020	am	byte	draft
 exe	0x004941b0	ai_Unk4941b0	am	byte	draft		
 exe	0x004941d0	ai_Unk4941d0	am	byte	draft		
 exe	0x004941e0	ai_Unk4941e0	am	byte	draft		
-exe	0x004942a0	ai_Unk4942a0	am	byte	draft		
-exe	0x00494300	ai_Unk494300	am	byte	draft		
+exe	0x004942a0	ai_PlanLevel	am	byte	readable		
+exe	0x00494300	ai_PlanRollTries	am	byte	draft		
 exe	0x00494410	ai_Unk494410	am	byte	draft		
 exe	0x004945c0	ai_PlanRank	am	shape	readable	deep	
 exe	0x004946c0	ai_Unk4946c0	am	byte	draft		
-exe	0x004947a0	ai_Unk4947a0	am	byte	draft		
-exe	0x00494830	ai_Unk494830	am	byte	draft		
+exe	0x004947a0	ai_WealthRating	am	byte	readable		
+exe	0x00494830	ai_WealthRatingHalf	am	byte	readable		
 exe	0x004948c0	ai_Unk4948c0	am	byte	draft		
 exe	0x004948f0	ai_Unk4948f0	am	byte	draft		
 exe	0x00494a30	ai_Unk494a30	am	byte	draft		
@@ -2222,7 +2222,7 @@ exe	0x004c54a0	cm_SendOwnership	cm	byte	draft
 exe	0x004c54e0	ai_Unk4c54e0	cm	byte	draft		
 exe	0x004c5510	cm_SendBuildingDestroyed	cm	byte	draft		
 exe	0x004c5540	cm_SendBoss	cm	byte	draft		
-exe	0x004c5580	ai_Unk4c5580	cm	byte	draft		
+exe	0x004c5580	cm_SendHandOverCrimes	cm	byte	draft		
 exe	0x004c55d0	cm_SendMessage3d	cm	byte	readable		
 exe	0x004c5690	cm_SendCharModel	cm	byte	draft		
 exe	0x004c56d0	cm_SendGoodsRecord	cm	byte	readable		
@@ -2489,7 +2489,7 @@ exe	0x004d4540	cm_FightStartDialog	cm	draft	draft	deep
 exe	0x004d4d70	cm_FightEndDialog	cm	draft	draft	deep	
 exe	0x004d60b0	ai_Unk4d60b0	cm	draft	draft	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
-exe	0x004d6930	ai_Unk4d6930	cm	byte	draft		
+exe	0x004d6930	cm_FightResult	cm	byte	draft		
 exe	0x004d6970	ai_Unk4d6970	cm	shape	draft		
 exe	0x004d6a50	ai_Unk4d6a50	cm	byte	draft		
 exe	0x004d6b70	ai_Unk4d6b70	cm	byte	draft		
@@ -2502,21 +2502,21 @@ exe	0x004d7150	ai_Unk4d7150	cm	byte	draft
 exe	0x004d7190	cm_PlantEscapeFlag	cm	draft	readable	deep	
 exe	0x004d7360	cm_Attack	cm	draft	readable	deep	
 exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep	
-exe	0x004d88c0	ai_Unk4d88c0	cm	byte	draft		
-exe	0x004d8b10	ai_Unk4d8b10	cm	draft	draft		
+exe	0x004d88c0	cm_FightLoop	cm	byte	draft		
+exe	0x004d8b10	cm_FightMember	cm	draft	readable	deep	
 exe	0x004d8b30	ai_Unk4d8b30	cm	byte	draft		
 exe	0x004d8b50	cm_DrawFightTime	cm	shape	readable		
 exe	0x004d8c40	ai_Unk4d8c40	cm	byte	draft		
-exe	0x004d8c70	ai_Unk4d8c70	cm	byte	draft		
-exe	0x004d8cb0	ai_Unk4d8cb0	cm	byte	draft		
-exe	0x004d8e20	ai_Unk4d8e20	cm	draft	draft		
-exe	0x004da9e0	ai_Unk4da9e0	cm	byte	draft		
-exe	0x004dab50	ai_Unk4dab50	cm	draft	draft		
-exe	0x004dada0	ai_Unk4dada0	cm	draft	draft		
-exe	0x004dae90	ai_Unk4dae90	cm	draft	draft		
-exe	0x004daf80	ai_Unk4daf80	cm	draft	draft		
-exe	0x004db700	ai_Unk4db700	cm	draft	draft		
-exe	0x004dd960	ai_Unk4dd960	cm	draft	draft		
+exe	0x004d8c70	cm_StackPicture	cm	byte	draft		
+exe	0x004d8cb0	cm_TallyStack	cm	byte	draft		
+exe	0x004d8e20	cm_RunCouncilSession	cm	draft	readable	deep	
+exe	0x004da9e0	cm_AskDeposeVote	cm	byte	draft		
+exe	0x004dab50	cm_AskElectVote	cm	byte	readable		
+exe	0x004dada0	cm_SessionAskPlayer	cm	shape	readable		
+exe	0x004dae90	cm_SessionAskAI	cm	shape	readable		
+exe	0x004daf80	cm_CheckTrial	cm	byte	readable		
+exe	0x004db700	cm_RunTrial	cm	draft	readable	deep	
+exe	0x004dd960	cm_TrialAskPlayer	cm	shape	readable		
 exe	0x004de340	ai_Unk4de340	cm	byte	draft		
 exe	0x004de4b0	ai_Unk4de4b0	cm	draft	draft		
 exe	0x004de530	ai_Unk4de530	cm	byte	draft		
@@ -2548,12 +2548,12 @@ exe	0x004e24c0	ai_Unk4e24c0	cm	draft	draft
 exe	0x004e26d0	ai_Unk4e26d0	cm	draft	draft		
 exe	0x004e2860	ai_Unk4e2860	cm	byte	draft		
 exe	0x004e2910	ai_Unk4e2910	cm	byte	draft		
-exe	0x004e2bd0	ai_Unk4e2bd0	cm	draft	draft		
+exe	0x004e2bd0	cm_SetViewEnabled	cm	draft	readable		
 exe	0x004e2bf0	ai_Unk4e2bf0	cm	byte	draft		
-exe	0x004e2c30	ai_Unk4e2c30	cm	byte	draft		
-exe	0x004e2c70	ai_Unk4e2c70	cm	byte	draft		
+exe	0x004e2c30	cm_StartEventArg	cm	byte	draft		
+exe	0x004e2c70	cm_WaitEvent	cm	byte	readable		
 exe	0x004e2cc0	ai_Unk4e2cc0	cm	byte	draft		
-exe	0x004e2d40	ai_Unk4e2d40	cm	byte	draft		
+exe	0x004e2d40	cm_WaitEventFull	cm	byte	readable		
 exe	0x004e2d90	ai_Unk4e2d90	cm	byte	draft		
 exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft		
 exe	0x004e2e00	ai_Unk4e2e00	cm	draft	draft		
@@ -2563,19 +2563,19 @@ exe	0x004e30c0	cm_LeaveEventScene	cm	draft	draft		shape+draft -> draft+draft at 
 exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
 exe	0x004e3230	ai_Unk4e3230	cm	byte	draft		
 exe	0x004e3250	ai_Unk4e3250	cm	byte	draft		
-exe	0x004e3270	ai_Unk4e3270	cm	byte	draft		
-exe	0x004e3290	ai_Unk4e3290	cm	byte	draft		
-exe	0x004e32b0	ai_Unk4e32b0	cm	byte	draft		
-exe	0x004e32d0	ai_Unk4e32d0	cm	byte	draft		
+exe	0x004e3270	cm_LoadVoiceBank	cm	byte	draft		
+exe	0x004e3290	cm_UnloadVoiceBank	cm	byte	draft		
+exe	0x004e32b0	cm_PlayVoice	cm	byte	draft		
+exe	0x004e32d0	cm_QueueVoice	cm	byte	draft		
 exe	0x004e32f0	ai_Unk4e32f0	cm	draft	draft		
 exe	0x004e3390	ai_Unk4e3390	cm	byte	draft		
 exe	0x004e33d0	ai_Unk4e33d0	cm	byte	draft		
 exe	0x004e33f0	ai_Unk4e33f0	cm	byte	draft		
-exe	0x004e3420	ai_Unk4e3420	cm	shape	draft		
+exe	0x004e3420	cm_WaitTicks	cm	shape	draft		
 exe	0x004e3490	ai_Unk4e3490	cm	draft	draft		
-exe	0x004e3570	ai_Unk4e3570	cm	byte	draft		
-exe	0x004e3620	ai_Unk4e3620	cm	byte	draft		
-exe	0x004e3640	ai_Unk4e3640	cm	byte	draft		
+exe	0x004e3570	cm_RunSceneTicks	cm	byte	draft		
+exe	0x004e3620	cm_PlaySpecialTrack	cm	byte	draft		
+exe	0x004e3640	cm_EndSpecialTrack	cm	byte	draft		
 exe	0x004e3650	cm_ApplySeason	cm	byte	draft		
 exe	0x004e36a0	ai_Unk4e36a0	cm	draft	draft		
 exe	0x004e3750	ai_Unk4e3750	cm	draft	draft		
@@ -2586,7 +2586,7 @@ exe	0x004e3fe0	ai_Unk4e3fe0	cm	byte	draft
 exe	0x004e4020	ai_Unk4e4020	cm	byte	draft		
 exe	0x004e4060	ai_Unk4e4060	cm	draft	draft		
 exe	0x004e4870	ai_Unk4e4870	cm	byte	draft		
-exe	0x004e48b0	ai_Unk4e48b0	cm	draft	draft		
+exe	0x004e48b0	cm_SendPartyNote	cm	draft	draft		
 exe	0x004e4a50	ai_Unk4e4a50	cm	byte	draft		
 exe	0x004e4b50	ai_Unk4e4b50	cm	draft	draft		
 exe	0x004e4cc0	cm_UpdateParties	cm	draft	draft		
@@ -2604,7 +2604,7 @@ exe	0x004e52a0	cut_RandSeed	cm	byte	draft
 exe	0x004e52c0	cut_GetRandSeed	cm	byte	draft		
 exe	0x004e52f0	cm_Random	cm	byte	draft		
 exe	0x004e5360	cm_RandomFloat	cm	byte	draft		
-exe	0x004e53e0	ai_Unk4e53e0	cm	byte	draft		
+exe	0x004e53e0	cm_DialogTimer	cm	byte	draft		
 exe	0x004e5470	cm_MessageBox	cm	draft	draft		
 exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
 exe	0x004e5770	ai_Unk4e5770	cm	byte	draft		
@@ -2656,7 +2656,7 @@ exe	0x004e7c40	amt_GetKindLevel	amt	byte	readable
 exe	0x004e7c60	amt_ElectOffices	amt	draft	draft	deep	
 exe	0x004e8160	amt_CheckOfficeColumns	amt	draft	readable	deep	
 exe	0x004e83b0	amt_IsColumnDecided	amt	shape	readable		
-exe	0x004e8530	amt_Unk4e8530	amt	byte	draft		
+exe	0x004e8530	amt_HasDeposalVote	amt	byte	readable		
 exe	0x004e85d0	amt_UpdateOffices	amt	shape	readable		
 exe	0x004e86e0	amt_HasColumn7Holder	amt	shape	readable		
 exe	0x004e8730	amt_SendOfficeNews	amt	byte	readable		
@@ -2835,7 +2835,7 @@ exe	0x004f4350	gv_ClearCrimes	gv	byte	readable
 exe	0x004f4390	gv_SortCrimesByLaw	gv	byte	readable		
 exe	0x004f4420	gv_CheckSentence	gv	byte	readable		
 exe	0x004f4460	gv_PassSentence	gv	byte	readable		
-exe	0x004f48f0	unk_Unk4f48f0	gv	byte	draft		
+exe	0x004f48f0	gv_SentenceText	gv	byte	readable		
 exe	0x004f4970	gv_CheckRankUp	gv	shape	readable		
 exe	0x004f4d10	unk_Unk4f4d10	gv	byte	draft		
 exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable		
@@ -3419,7 +3419,7 @@ exe	0x0052fb50	sv_PopTo	sv	byte	readable
 exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
 exe	0x0052fc10	sv_NetworkSyncWait	sv	byte	readable		
 exe	0x0052fcf0	sv_BroadcastText	sv	byte	readable		
-exe	0x0052fd80	sv_Unk52fd80	sv	byte	draft		
+exe	0x0052fd80	sv_SyncText	sv	byte	readable		
 exe	0x0052fe00	sv_PumpNet	sv	byte	readable		
 exe	0x0052fe10	sv_ChatConsole	sv	byte	readable		
 exe	0x00530100	sv_UpdateQuickChat	sv	shape	readable		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 6407c687: cm_FighterAct typed: ch.h's CHACTION gets the pot / bomb members of its 0x178 union and cm.h the CMFIGHTACT prototype and the names of the fight's bomb actions (closer: typed records instead of raw offsets). Either header change alone flips this function's constant register choice (6 bytes at +0x5e0): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the unit's head (unk_575860 includes ch.h and cm.h whole); re-grade when its declarations settle]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 87974489: cm.h / cm_types.h typing for the council session (CMSESSIONREQ, CMCUTINFO.text, the session callbacks' prototypes) is closer to the original; the function's shape was a VC6 register tie-break (ecx/edi swapped in a run of float-constant stores) that flips on any declaration change of cm.h, even removing an unused typedef, so it was no evidence of its source [waits for: the declaration set of cm.h (its unprototyped and duplicated declarations) to settle]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at 87974489: cm.h / cm_types.h typing for the council session (CMSESSIONREQ, CMCUTINFO.text, the session callbacks' prototypes) is closer to the original; the function's shape was a VC6 register tie-break (ecx/edi swapped in a run of float-constant stores) that flips on any declaration change of cm.h, even removing an unused typedef, so it was no evidence of its source [waits for: the declaration set of cm.h (its unprototyped and duplicated declarations) to settle]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		

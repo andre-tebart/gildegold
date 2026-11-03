@@ -7,10 +7,13 @@
    monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
    Names are ours.
    The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type.
-   Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h d2.h f3gm.h gfx.h gv.h
-   hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
-   definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints,
-   gv_CrimeText, gv_PassSentence (rt.h: its d2_SetObjValue). Meanwhile cm.h's own declarations of ord_AddGridAmount,
+   Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h d2.h f3gm.h gfx.h hmt.h hst.h rt.h
+   unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the definition (read the
+   original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
+   gv_PassSentence takes five arguments here (gv_PassSentenceK).
+   Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
+   without parameters; cm_QueueVoice has callers with four arguments, and any cm.h declaration change flips the
+   register tie-break of ai_TutorialInitChapter3 (debt). Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
    The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
