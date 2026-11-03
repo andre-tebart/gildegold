@@ -321,6 +321,12 @@ typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (c
     int bldId;                          /* 0x08, the building whose table (object kind 0x12d) it is */
 } G17TABLEMSG;
 
+typedef struct G17ROUTEMSG {            /* 8 bytes, the data of message 0x68 (ai_Unk4c62a0, its handler 0x4cd220); the route
+                                           points (rt.h RTPOINT, 0x40 bytes each) follow as the joined long message cm_LongMsg */
+    int objId;                          /* 0x00, the cart (AIOBJ.objId, gm_FindObjectInst) */
+    int count;                          /* 0x04, the points */
+} G17ROUTEMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -362,6 +368,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
+        G17ROUTEMSG route;              /* 0x10, messages 0x68 / 0x69 */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */

@@ -114,6 +114,10 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             char pad28[2];
             int unk2a;                          /* 0x2a */
         };
+        struct {
+            char pad1c29[0xd];
+            struct RTPOINT *route;              /* 0x29, of a cart: its route, a list of rt.c's RTPOINT (rt_CopyPoints; message 0x68 sets it) */
+        };
         int seats[4];                   /* 0x1c..0x2b, of a table (kind 0x12d in a building): the ids of the characters at its
                                            four seats, -1 free (message 0x54 'join' / 'leav' / 'cler', cm_SendTableRequest) */
     };

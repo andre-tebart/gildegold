@@ -1329,3 +1329,4 @@
 2026-11-03T12:43:55 0x004ccc20 func ai_Unk4ccc20 -> cm_ExAddSkill by:main why:message 0x5d: 0x4c6020 sends (character, skill index, delta), the handler 0x4ccc20 adds delta to AICHAR.skills[skill] clamped to 0 .. 252
 2026-11-03T12:43:55 0x004c6020 data ai_Unk4c6020 -> cm_SendAddSkill by:main why:message 0x5d: 0x4c6020 sends (character, skill index, delta), the handler 0x4ccc20 adds delta to AICHAR.skills[skill] clamped to 0 .. 252
 2026-11-03T12:45:19 0x004cd010 data ai_Unk4cd010 -> cm_ExAlchemistOrder by:main why:the handler of message 0x64 (AHMORDER, ahm.h): applies the alchemist commands SmSa / ErFi / SsCa / cRSa / Rdaa / Rdsa through ahm_AddValue .. ahm_RemovePlace
+2026-11-03T12:48:29 0x004cd220 func ai_Unk4cd220 -> cm_ExSetRoute by:main why:handler of message 0x68 (cm_Handlers): sets the route (RTPOINT list, rt_CopyPoints) of the cart the message names

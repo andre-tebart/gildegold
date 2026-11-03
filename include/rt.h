@@ -8,14 +8,7 @@ struct D3VECTOR;
 #ifndef RT_H
 #define RT_H
 
-typedef struct RTPOINT {                /* 0x40 bytes ("rt_point"), a route point in a list of at most 8 */
-    int cartId;                         /* 0x00 */
-    int buildingId;                     /* 0x04, -1 when new */
-    int loadSlots[6];                   /* 0x08, three {good, amount} pairs */
-    int unloadSlots[6];                 /* 0x20, three {good, amount} pairs */
-    struct RTPOINT *prev;               /* 0x38 */
-    struct RTPOINT *next;               /* 0x3c */
-} RTPOINT;
+#include "rt_types.h"                /* RTPOINT */
 
 typedef struct RTINV {                  /* 0xb8 bytes, filled by 0x5098a0 / 0x50aa00 */
     char pad00[0xb4];

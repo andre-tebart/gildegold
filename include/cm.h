@@ -37,6 +37,7 @@ typedef struct G18LOG { char text[0x40]; char name[0x24]; int x; int id; } G18LO
 
 #pragma pack(push, 1)
 #include "cm_types.h"                /* G17MSG, G17STAT, CRIME */
+#include "rt_types.h"                /* RTPOINT */
 #pragma pack(pop)
 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
@@ -472,8 +473,8 @@ int gv_AddNewDead();  /* 0x4f0dd0 */
 int gv_MoveGrave();  /* 0x4f0ed0 */
 unsigned gv_RaiseDead(struct GVRAISE *m);  /* 0x4f1200 */
 
-void rt_FreePoints();  /* 0x4bd9e0 */
-struct RTPOINT * rt_CopyPoints();  /* 0x4bda00 */
+void rt_FreePoints(RTPOINT *p);  /* 0x4bd9e0, rt.h */
+RTPOINT *rt_CopyPoints(RTPOINT *p);  /* 0x4bda00, rt.h */
 int ahm_HasRecord();  /* 0x4eaad0 */
 int ahm_SetShare();  /* 0x4eca00 */
 int ahm_AddPlace();  /* 0x4ecb30 */
