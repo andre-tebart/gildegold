@@ -8713,20 +8713,37 @@ int gm_Unk509060(char *c, int *out)
     }
     return n;
 }
-/* 0x5090b0, a rank byte (+0x247) of the building b */
+/* 0x5090b0, the rank byte (+0x247) of the building b's kind record. The original switches on the kind's class
+   (the record's first byte) into three groups, 2 / 5 / 7, 4 / 0xb .. 0xd / 0x10 / 0x13 and the rest, that all
+   return the same byte (its jump table: two bodies, the second shared by the last group and the default)
+   @deep Read against the original: the unsigned char switch on the kind record's class byte over 2..0x13
+   with the byte index table (2/5/7 -> body 0, 4/0xb..0xd/0x10/0x13 -> body 1, the rest -> default, bodies
+   1 and default merged) now matches, switch tables equal (3 entries, 18 index bytes), same size 79. Left:
+   the register of the two identical return bodies is swapped: the original's case-2/5/7 body uses ecx
+   (+0x39 xor ecx,ecx; mov cl,[eax+0x247]; mov eax,ecx) and the shared default body edx (+0x44), ours the
+   other way round (edx at +0x39, ecx at +0x44); diffclass: order 14 + that ja. Tried: the case groups in
+   other source orders (default first, group 4.. first), switch (p[0]): no change; folding group 4.. into
+   default changes the table (code). */
 
 int gm_BuildingRank(unsigned char *b)
 {
-    char *p;
+    unsigned char *p;
 
-    p = ai_BTypes + (unsigned)*b * 0x24d;
+    p = (unsigned char *)ai_BTypes + (unsigned)*b * 0x24d;
     switch (*p) {
     case 2:
     case 5:
     case 7:
-        return (unsigned char)p[0x247];
+        return p[0x247];
+    case 4:
+    case 0xb:
+    case 0xc:
+    case 0xd:
+    case 0x10:
+    case 0x13:
+        return p[0x247];
     default:
-        return (unsigned char)p[0x247];
+        return p[0x247];
     }
 }
 /* 0x509120, 1 when the rank of c is below the limit of the building b (rank 1: < 2, 2: < 3, 3: <= 7, else <= 0) */
