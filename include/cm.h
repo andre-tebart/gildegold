@@ -324,7 +324,7 @@ void ai_UpdateNeeds(void);  /* 0x47da80 */
 void ai_UpdateCharacters(void);  /* 0x47e560 */
 void ai_Unk47e990(struct AICHAR *c);  /* 0x47e990 */
 void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
-int ai_Unk4b44e0();  /* 0x4b44e0 */
+int ai_CountMissionEvent();  /* 0x4b44e0 */
 int cm_PartyById();  /* 0x4e50a0 */
 extern G28REC ai_Unk925520[96];  /* 0x925520, the scene party records (cm.c) */
 int ai_Unk4e5150();  /* 0x4e5150 */
@@ -334,13 +334,13 @@ int gv_AddEvidence();  /* 0x4f3640 */
 int gv_FreeCrimeSlot();  /* 0x4f36b0 */
 int gv_EvidenceSlot();  /* 0x4f3780 */
 int gv_RetireCrime();  /* 0x4f37e0 */
-void ord_AddGridAmount();  /* 0x4f8460 */
-int unk_Unk4f86a0();  /* 0x4f86a0 */
+void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py);  /* 0x4f8460, gv.h (ord.c) */
+int ord_RandomCellPoint();  /* 0x4f86a0 */
 void ord_AdvanceRatingBase(void);  /* 0x4f9c00, ord.c */
 void gm_CountCharacters(void);  /* 0x4fdfd0 */
 char * he_NextEvent(void);  /* 0x53e300 */
 void he_Unk53ed70();  /* 0x53ed70 */
-void ai_Unk5a9170(unsigned short *param_1, int param_2);  /* 0x5a9170 */
+void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2);  /* 0x5a9170 */
 int ai_Unk5ba750();  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */
 extern const int cm_SpeedTicks[];  /* 0x5edc10 */

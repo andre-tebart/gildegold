@@ -728,10 +728,10 @@ void ord_CountGridObjects(void);               /* 0x4f8360 */
 
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
 extern char ord_KindTable[];            /* 0x617468, 0x58 pairs of ints */
-int unk_Unk4f86a0(int x, int y, int z);  /* 0x4f86a0 */
+int ord_RandomCellPoint(int x, int y, int z);  /* 0x4f86a0 */
 int ord_GetKindRecord(int i, int *out);     /* 0x4f8890 */
 
-void ord_AddGridAmount(int who, int kind, int *px, int *py);  /* 0x4f8460 */
+void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py);  /* 0x4f8460, kind: a law record (CRIME.law; the caller cm_ExAddCrime pushes the byte unwidened) */
 void ord_SubGridAmount(int who, unsigned char kind);  /* 0x4f8590 */
 
 int unk_Unk4f8700(char *c);             /* 0x4f8700 */

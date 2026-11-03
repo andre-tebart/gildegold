@@ -178,7 +178,10 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
 
 typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) */
     char kind;                          /* 0x00 */
-    char pad01[0x43];
+    char pad01[7];
+    unsigned short chr;                 /* 0x08, the index in ai_Chars of the character it is for (cm_ExAddCrime: of a
+                                           kind 0x18 the witness told of the crime) */
+    char pad0a[0x3a];
     AITIME start;                       /* 0x44, the start time (sv_RefreshPanel measures the progress from it) */
     AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
     char pad60[0x10];

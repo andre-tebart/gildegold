@@ -448,7 +448,7 @@ int ai_ChooseMissionFrom(int n)
 int ai_TimedCondition(int x, int ok, int y);                                          /* 0x4b5160 */
 
 /* 0x4b44e0, counts event ev (11, 19, 23, 28, 40) for the running mission of m's owner when it is of that type */
-int ai_Unk4b44e0(G13MIS *m, int ev)
+int ai_CountMissionEvent(G13MIS *m, int ev)
 {
     G13MIS *e = ai_FindOwnerMission(m);
 

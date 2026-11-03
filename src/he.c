@@ -7377,7 +7377,7 @@ int gv_Accuse();
 int gv_HeldCrimeIdsOf();
 void gm_Shuffled(unsigned char n, int *out);
 void ai_Unk4c4f10(int a, int b, int c);
-int ai_Unk4b44e0();
+int ai_CountMissionEvent();
 void cm_SendMoneyDelta(int a, int b);
 
 /* 0x546100, a Ghidra miss (disassembled): the start handler of the event of a figure pair (+0xac): when the target (0x501190 kind 1) is gone the event ends, else it is posted again at once (ROUGH) */
@@ -7684,7 +7684,7 @@ void he_Unk546c40(int ev)
                 break;
         }
         if (*(char *)(a + 2) == 6)
-            ai_Unk4b44e0(a, 0xb);
+            ai_CountMissionEvent(a, 0xb);
     }
     cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0x100, 0);
     cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0x200, 0);

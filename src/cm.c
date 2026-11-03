@@ -104,7 +104,7 @@ extern GAPDATA full_data_92bcb8[];
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
-#define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched unk_Unk4f86a0 (ord.c): no 0f be c0 after the call) */
+#define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
 #define ch_FindFreeCellK ((int (*)())ch_FindFreeCell)  /* 0x4072a0 (ch.h: char, 9 parameters): @original cm.c's call at 8227 passes 8 arguments without a prototype and reads an int */
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
@@ -3782,71 +3782,78 @@ int ai_Unk4c8de0(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4c8e70, handler of type 0x22, "cm_ExAddStraftat": a crime record (0x2d bytes) in ai_Crimes, the matching
-   jobs are ended */
+/* 0x4c8e70, handler of type 0x22, "cm_ExAddStraftat": stores the crime m->crime in a free slot of ai_Crimes under a
+   new id (the sender's when connected, else the next of ai_NextCrimeId); a culprit of kind 6 counts mission event
+   0x17; without a place the victim's building (bld2, else bld) is it; the culprit's grid cells around the place get
+   an amount (ord_AddGridAmount); every job 0x18 about the culprit gets the evidence, its character told (with a
+   state); the state 1, kind 6, the record; -1 when ai_Crimes is full */
 
-int ai_Unk4c8e70(G17MSG *m, G17STAT *s)
+int cm_ExAddStraftat(G17MSG *m, G17STAT *s)
 {
-    char buf[0x1f0];
-    char *c, *rec, *o, *j, *c2;
-    int slot, v;
-    int a, b;
-    int pos[3];
+    char buf[0x200];
+    CRIME *rec;
+    AICHAR *c;
+    AIBLD *b;
+    AIJOB *j;
+    int slot, place;
+    int x, y;
+    D3VECTOR4 pos;                      /* the engine pads its vectors to 16 bytes */
 
-    if (ai_Unk1460ae0 != -1)
-        ai_NextCrimeId = G17_I(*m, 0);
+    if (net_Conn.s != INVALID_SOCKET)
+        ai_NextCrimeId = m->crime.id;
     else
         ai_NextCrimeId = ai_NextCrimeId + 1;
     slot = gv_FreeCrimeSlot();
-    if (slot == -1)
-        return -1;
-    c = gm_FindChar(G17_I(*m, 0x16));
-    if (c != 0 && c[2] == 6)
-        ai_Unk4b44e0(c, 0x17);
-    rec = ai_Crimes + slot * 0x2d;
-    memcpy(rec, &m->data[0], 0x2d);
-    *(int *)rec = ai_NextCrimeId;
-    sprintf(buf, "cm_ExAddStraftat(): Executed---- st_id = %i, taeter = %i, opfer = %i", ai_NextCrimeId,
-            G17_I(*m, 0x16), G17_I(*m, 0x12));
-    v = G17_I(*m, 0x21);
-    if (v == -1) {
-        c = gm_FindChar(G17_I(*m, 0x12));
-        if (c != 0) {
-            if (*(char **)(c + 0x170) != 0)
-                v = *(int *)(*(char **)(c + 0x170) + 1);
-            else if (*(char **)(c + 0x16c) != 0)
-                v = *(int *)(*(char **)(c + 0x16c) + 1);
-            else
-                util_Seed(G17_I(*m, 0x29));
-        } else
-            util_Seed(G17_I(*m, 0x29));
-    }
-    ord_AddGridAmount(v, m->data[0x1c], &b, &a);
-    gm_FindById(&o, 0, 0, v);
-    if (o == 0)
-        unk_Unk4f86a0(b, a, pos);
-    else if (*(char **)(o + 0x61) != 0) {
-        pos[0] = *(int *)(*(char **)(o + 0x61) + 0x4c);
-        pos[1] = *(int *)(*(char **)(o + 0x61) + 0x50);
-        pos[2] = *(int *)(*(char **)(o + 0x61) + 0x54);
-    }
-    for (j = he_FindEvent(1, 0, 0x18); j != 0; j = he_NextEvent()) {
-        if (*(int *)(j + 0xc4) == *(int *)(rec + 0x16)) {
-            if (gv_AddEvidence(*(int *)rec, ai_CharInts[*(unsigned short *)(j + 8)][0]) == 0)
-                break;
-            if (s != 0) {
-                c2 = gm_FindChar(*(int *)(j + 0xc4));
-                if (c2 != 0)
-                    ai_Unk5a9170(c2, ai_Chars[*(unsigned short *)(j + 8)]);
+    if (slot != -1) {
+        c = (AICHAR *)gm_FindChar(m->crime.culprit);
+        if (c != 0 && c->kind == 6)
+            ai_CountMissionEvent(c, 0x17);
+        rec = &((CRIME *)ai_Crimes)[slot];
+        *rec = m->crime;
+        rec->id = ai_NextCrimeId;
+        sprintf(buf, "cm_ExAddStraftat(): Executed---- st_id = %i, taeter = %i, opfer = %i", ai_NextCrimeId,
+                m->crime.culprit, m->crime.victim);
+        place = m->crime.place;
+        if (place == -1) {
+            c = (AICHAR *)gm_FindChar(m->crime.victim);
+            if (c != 0) {
+                if (c->bld2 != 0)
+                    place = c->bld2->id;
+                else if (c->bld != 0)
+                    place = c->bld->id;
+                else
+                    util_Seed(m->crime.seed);
+            } else
+                util_Seed(m->crime.seed);
+        }
+        ord_AddGridAmount(place, m->crime.law, &x, &y);
+        gm_FindById((int *)&b, 0, 0, place);
+        if (b == 0)
+            ord_RandomCellPoint(x, y, &pos);
+        else if (b->object != 0) {
+            pos.x = ((D3OBJECT *)b->object)->pos.x;
+            pos.y = ((D3OBJECT *)b->object)->pos.y;
+            pos.z = ((D3OBJECT *)b->object)->pos.z;
+        }
+        for (j = (AIJOB *)he_FindEvent(1, 0, 0x18); j != 0; j = (AIJOB *)he_NextEvent()) {
+            if (j->id4 == ((CRIME *)ai_Crimes)[slot].culprit) {
+                if (gv_AddEvidence(rec->id, ai_CharsT[j->chr].netId) == 0)
+                    break;
+                if (s != 0) {
+                    c = (AICHAR *)gm_FindChar(j->id4);
+                    if (c != 0)
+                        ai_NotifyPlayerOfChar((unsigned short *)c, (int)&ai_CharsT[j->chr]);
+                }
             }
         }
+        if (s != 0) {
+            s->state = 1;
+            s->kind = 6;
+            s->value = (int)rec;
+        }
+        return 0;
     }
-    if (s != 0) {
-        s->state = 1;
-        s->kind = 6;
-        s->value = (int)rec;
-    }
-    return 0;
+    return -1;
 }
 /* 0x4c9090, handler of type 0x23 */
 
@@ -10108,7 +10115,7 @@ void ai_Unk4d4d70(char *a)
         if (n == 1) {
             kr = ai_BTypes + (unsigned char)ca[0] * 0x24d;
             if (*kr == 4 || *kr == 0x10)
-                ai_Unk4b44e0(G20_DEF, 0x1c);
+                ai_CountMissionEvent(G20_DEF, 0x1c);
             cm_SendOwnership(*(int *)(ca + 1), *(int *)(G20_DEF + 4), *(int *)(G20_DEF + 4));
             txt_Format(ba, 0x11a4, G20_US(G20_DEF), ca);
             ai_Unk4e5470(ba, 0);
@@ -11855,7 +11862,7 @@ void ai_Unk4db700(char *m)
         ai_Unk4e2bd0(ai_Unk60d368, 0);
         ai_Unk4e3830(m, 0);
         if (mode >= 4 && ch[0][2] == 6 && ai_Unk4e3290(0) != 0)
-            ai_Unk4b44e0(0x13, ch[0]);
+            ai_CountMissionEvent(0x13, ch[0]);
         G26_BOX(1);
         io_PrintText(0x152f);
         io_PrintText(0x1530);
@@ -12915,9 +12922,9 @@ int ai_Unk4e0770(char *m)
     if (b == 0)
         return 0;
     if (a[2] == 6)
-        ai_Unk4b44e0(a, 0x28);
+        ai_CountMissionEvent(a, 0x28);
     if (b[2] == 6)
-        ai_Unk4b44e0(b, 0x28);
+        ai_CountMissionEvent(b, 0x28);
     ai_Unk60d360 = 0x702c6;
     d2_CutsceneActive = 1;
     cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000);
@@ -15214,7 +15221,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

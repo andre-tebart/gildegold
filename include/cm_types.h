@@ -168,6 +168,20 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
     unsigned char buf[0x77];            /* 0x05, per field: size (1, 2, 4), count, offset (short), values */
 } G17FIELDS;
 
+typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
+    int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
+    AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
+    int victim;                         /* 0x12, the victim's netId ("opfer") */
+    int culprit;                        /* 0x16, the culprit's netId ("taeter"), -1 when free */
+    short count;                        /* 0x1a, counts down to the record's retirement (0x4f37e0) */
+    unsigned char law;                  /* 0x1c, the AI decision (law) record broken (gv_GetTableRecord) */
+    int v1d;                            /* 0x1d */
+    int place;                          /* 0x21, the object id of the scene (ord_AddGridAmount), -1 for none */
+    unsigned int state;                 /* 0x25, 0 free, 1 open, above 1 handed over (a job id; unsigned: gv_SendCrimes, gv_FindAccused) */
+    int seed;                           /* 0x29, a random seed (util_Seed when there is no place) */
+} CRIME;
+typedef char cm_AssertCRIME[sizeof(CRIME) == 0x2d ? 1 : -1];
+
 typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
                                            cm_ExSysMessage 0x4c89b0) */
     unsigned char kind;                 /* 0x00, 0..0x14 */
@@ -226,6 +240,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
         G17RELMSG rel;                  /* 0x10, message 0x1b */
         G17SYSMSG sys;                  /* 0x10, message 0x20 */
+        CRIME crime;                    /* 0x10, message 0x22 */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };
@@ -306,20 +321,5 @@ typedef struct G28REC {
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 
-#pragma pack(push, 1)
-typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
-    int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
-    AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
-    int victim;                         /* 0x12, the victim's netId ("opfer") */
-    int culprit;                        /* 0x16, the culprit's netId ("taeter"), -1 when free */
-    short count;                        /* 0x1a, counts down to the record's retirement (0x4f37e0) */
-    unsigned char law;                  /* 0x1c, the AI decision (law) record broken (gv_GetTableRecord) */
-    int v1d;                            /* 0x1d */
-    int place;                          /* 0x21, the object id of the scene (ord_AddGridAmount), -1 for none */
-    unsigned int state;                 /* 0x25, 0 free, 1 open, above 1 handed over (a job id; unsigned: gv_SendCrimes, gv_FindAccused) */
-    int seed;                           /* 0x29, a random seed (util_Seed when there is no place) */
-} CRIME;
-#pragma pack(pop)
-typedef char cm_AssertCRIME[sizeof(CRIME) == 0x2d ? 1 : -1];
 
 #endif
