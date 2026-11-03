@@ -50,8 +50,8 @@ extern int cm_NextNetStep;                /* 0xa687e4, d3_Time of the start */
 extern unsigned char cm_SplitMsg[];    /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
 extern G17MSG *cm_RecvFree;            /* 0xa68c00, the free list */
 extern unsigned int cm_GroupEndSeq;       /* 0xa68c04 */
-extern int ai_Unka68c08;                /* 0xa68c08, bytes used in ai_Unka68c20.buf */
-extern G17FIELDS ai_Unka68c20;          /* 0xa68c20 */
+extern int cm_FieldBlockLen;                /* 0xa68c08, bytes used in cm_FieldBlock.buf */
+extern G17FIELDS cm_FieldBlock;          /* 0xa68c20 */
 extern G17FIELDS ai_Unka68ca0;          /* 0xa68ca0 */
 extern int ai_Unka68d20;                /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
 extern G17MSG *cm_RecvQueue;            /* 0xa68d24, the received messages */
@@ -172,7 +172,7 @@ void cm_BeginSendGroup(void);                                                   
 void cm_EndSendGroup(void);                                                         /* 0x4c3b40 */
 int cm_SendGroupState(void);                                                          /* 0x4c3b50 */
 void cm_BeginFieldBlock(char *o, int id);                                              /* 0x4c3ba0 */
-int cm_AddFieldDelta(int size, int n, short field, void *v); /* 0x4c3c00 */
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3c00 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3d00 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3d90 */
 void ai_BeginNeedBlock(char *p);                                                      /* 0x4c3e70 */

@@ -724,7 +724,7 @@ int util_Random(unsigned short n);                                       /* 0x42
 struct G15TREE * veg_FindType(int type);                                         /* 0x4bc5a0 */
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);                /* 0x4bc670, the plant record with the id (rd.c) */
 void cm_BeginFieldBlock(char *o, int id);                             /* 0x4c3ba0, starts a message about o */
-int cm_AddFieldDelta(int size, int n, short field, void *v);                /* 0x4c3c00, adds a field */
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                /* 0x4c3c00, adds a field */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                  /* 0x4c3d00 */
 void cm_BeginGroup(const char *s);                                        /* 0x4c4540 */
 void cm_EndGroup(const char *s);                                        /* 0x4c4580 */

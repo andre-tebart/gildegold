@@ -587,7 +587,7 @@ int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
-int cm_AddFieldDelta(int size, int n, short field, void *v);                     /* 0x4c3c00 */
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3c00 */
 void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 struct GCLOCK;  /* f3gm.h typedef (gm_AddTime); file-scope so the gm_AddTime prototype below is stable */
 void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */

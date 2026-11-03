@@ -7357,7 +7357,7 @@ int d2_RemoveWindow(); void d2_RemoveObj(); int gm_BuildingEvents(); int gm_SumS
 void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
-void d2_SetObjPic(); int cm_AddFieldDelta(int size, int n, short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
+void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
 void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
@@ -10454,7 +10454,7 @@ void ai_IndulgenceWindow(int param_1, int param_2)
         sv_CameraFollow();
 }
 
-void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_AddFieldDelta(int size, int n, short field, void *v); short * gm_FindChar(int id); int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);
+void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); short * gm_FindChar(int id); int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);
 
 /* 0x5a23a0, the baptism window "Locations_Kirche_Taufe" (1360 B, ROUGH): the player's slot record
    (0x770b80 + slot * 0x21c) and the fee (int)(0x50a640 (the slot) * 0.01f); param_1 the building record

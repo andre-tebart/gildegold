@@ -276,7 +276,7 @@ typedef struct HETIME {            /* the 14 byte game time (day, hour, minute, 
 extern HETIME ai_Time;                  /* 0x770ae0 (ai.h) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
-void d3io_NoopCallback(); int cm_AddFieldDelta(int size, int n, short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
+void d3io_NoopCallback(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
 int he_Unk553060(void);
 int he_Unk568310();
 int ai_Unk56d050();
@@ -2064,7 +2064,7 @@ unsigned he_Unk53f6b0(void)
 
 float util_RandomF();
 int gv_GetTableRecord(int i, int *out);
-int cm_AddFieldDelta(int size, int n, short field, void *v);
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
 void cm_BeginFieldBlock(char *o, int id);
 void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
@@ -8695,7 +8695,7 @@ void he_Unk5524e0(int ev)
 }
 
 void cm_BeginFieldBlock(char *o, int id);
-int cm_AddFieldDelta(int size, int n, short field, void *v);
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
 void cm_SendFieldDeltas(void);
 
 /* 0x552520, the run handler of a counting event: a negative state or a counter +0xac <= 0 frees the record; flag 4 does nothing; else the counter is decremented and the event posted 0x18 later (handle in +0x84) */
@@ -15281,7 +15281,7 @@ void he_Unk56de10(int ev)
 }
 
 void cm_BeginFieldBlock(char *o, int id);
-int cm_AddFieldDelta(int size, int n, short field, void *v);
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
 void cm_SendFieldDeltas(void);
 void ai_Unk5a9d60(int param_1, int param_2, int param_3, unsigned short *param_4);
 void ai_Unk5a9ca0(int param_1, int param_2, int param_3);
@@ -16914,7 +16914,7 @@ void he_Unk571f60(int ev)
 }
 
 int gm_GetDisease();                 /* 0x5051d0 */
-int cm_AddFieldDelta(int size, int n, short field, void *v);                 /* 0x4c3c00 */
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                 /* 0x4c3c00 */
 
 /* 0x5720f0, the skill lottery of the record rec (the field at +0x2c): the chance f must beat 0x42ec20 (), then the kind 2 / 1 / other picks the free bit range a or b (2 / 3, 4 / 5, 6 and 7 / 8 / 9 by 0x42ec00 (2) and the taken bits 0x1800000 / 0x700000); a when b is 0, else b by 0x42ec00 (2); 0 when none. 0x5051d0 (a, buf) gives the max (buf + 8) of 0x42ec00; n = that * f; the field gets (v << shift ^ field) & mask for a; 0x4c3ba0 (rec, +4), 0x4c3c00 (4, 1, 0x2c, &field), 0x4c49a0 (); 0x4fca40 (*rec, -n) into out; a */
 int he_Unk5720f0(unsigned short *rec, float f, int kind, float *out)

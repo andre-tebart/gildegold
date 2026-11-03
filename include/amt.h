@@ -183,7 +183,7 @@ int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void cm_BeginFieldBlock(char *o, int id);     /* 0x4c3ba0 */
-int cm_AddFieldDelta(int size, int n, short field, void *v);  /* 0x4c3c00 */
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);  /* 0x4c3c00 */
 void cm_SendFieldDeltas(void);                /* 0x4c49a0 */
 int cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int cm_GetSlotState(int h);                     /* 0x4c3ae0 */

@@ -313,7 +313,7 @@ int cm_FlushSendQueue();                     /* 0x4c3680 */
 int cm_ReceiveMessages();                     /* 0x4c3fd0 */
 int cm_ExecCommands();                     /* 0x4c4190 */
 int cm_GetSlotValue(int h);                     /* 0x4c3b10 */
-int cm_AddFieldDelta(int size, int n, short field, void *v);                     /* 0x4c3c00 */
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3c00 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880, @original: this unit's call sites push the third argument as an int - 0x50f42c zero-extends the unsigned short goods id (`and eax,0xffff`) where cm.h's short view would sign-extend */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d90 */

@@ -601,46 +601,54 @@ void cm_BeginFieldBlock(char *o, int id)
 {
     int a, b;
 
-    ai_Unka68c20.id = id;
-    ai_Unka68c20.n = 0;
-    memset(ai_Unka68c20.buf, 0, sizeof(ai_Unka68c20.buf));
-    ai_Unka68c08 = 0;
+    cm_FieldBlock.id = id;
+    cm_FieldBlock.n = 0;
+    memset(cm_FieldBlock.buf, 0, sizeof(cm_FieldBlock.buf));
+    cm_FieldBlockLen = 0;
     if (gm_FindById(&a, &b, &id, id) != 0)
         cm_FieldObject = o;
 }
-/* 0x4c3c00, adds n values of size bytes at field as differences to the object's values */
+/* 0x4c3c00, adds n values of size bytes at field as differences to the object's values
+   @deep read in full against the original: fixed the signature (size, n unsigned char, field unsigned
+   short: cmp cl / and 0xff / and 0xffff; all declarations updated, no grade fell), the bound (len >= 0x77,
+   jb), the field offset read once (cm_FieldObject + field before the switch: the dec/dec/sub-2 switch on
+   size). 101 vs 100 instructions, the head now equal but for the esi/edi push order. Tried: 3 typed
+   pointers (counter i, i = n down, n itself), mixed pointer/index, char pointers with casts: all keep an
+   extra register (ebp) and worse. Left: the copy loops' induction form: ours (indexed) '- sub ecx,edx; sub
+   eax,edx; mov ebx,[ecx+edx]; mov [eax+edx],esi' where the original walks three pointers '+ mov ebx,[ecx];
+   add ecx,4; mov [eax],esi; add eax,4' (cases 1, 2, 4), and edi/esi swapped */
 
-int cm_AddFieldDelta(int size, int n, short field, void *v)
+int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v)
 {
-    unsigned char *p;
-    int o;
-    unsigned int len;
+    unsigned char *p, *b;
+    unsigned int i, len;
 
-    o = ai_Unka68c08;
     if (size != 1 && size != 2 && size != 4)
         return 1;
-    len = n * size + 4 + o;
-    if (len > 0x76)
+    len = n * size + cm_FieldBlockLen + 4;
+    if (len >= 0x77)
         return 1;
-    p = &ai_Unka68c20.buf[o];
-    ai_Unka68c20.n++;
-    ai_Unka68c08 = len;
-    p[0] = size;
-    p[1] = n;
-    *(unsigned short *)(p + 2) = field;
-    p += 4;
-    if (size == 1) {
-        unsigned char *s = (unsigned char *)v, *b = (unsigned char *)cm_FieldObject + field;
-        for (; n != 0; n--)
-            *p++ = *s++ - *b++;
-    } else if (size == 2) {
-        short *s = (short *)v, *b = (short *)(cm_FieldObject + field), *d = (short *)p;
-        for (; n != 0; n--)
-            *d++ = *s++ - *b++;
-    } else if (size == 4) {
-        int *s = (int *)v, *b = (int *)(cm_FieldObject + field), *d = (int *)p;
-        for (; n != 0; n--)
-            *d++ = *s++ - *b++;
+    p = &cm_FieldBlock.buf[cm_FieldBlockLen];
+    cm_FieldBlock.n++;
+    cm_FieldBlockLen = len;
+    *p++ = size;
+    *p++ = n;
+    *(unsigned short *)p = field;
+    p += 2;
+    b = (unsigned char *)cm_FieldObject + field;
+    switch (size) {
+    case 1:
+        for (i = 0; i < n; i++)
+            p[i] = ((unsigned char *)v)[i] - b[i];
+        break;
+    case 2:
+        for (i = 0; i < n; i++)
+            ((short *)p)[i] = ((short *)v)[i] - ((short *)b)[i];
+        break;
+    case 4:
+        for (i = 0; i < n; i++)
+            ((int *)p)[i] = ((int *)v)[i] - ((int *)b)[i];
+        break;
     }
     return 0;
 }
@@ -652,16 +660,16 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
     int o;
     unsigned int k, len;
 
-    o = ai_Unka68c08;
+    o = cm_FieldBlockLen;
     if (size != 1 && size != 2 && size != 4)
         return 1;
     k = size * n;
     len = k + 4 + o;
     if (len > 0x76)
         return 1;
-    p = &ai_Unka68c20.buf[o];
-    ai_Unka68c20.n++;
-    ai_Unka68c08 = len;
+    p = &cm_FieldBlock.buf[o];
+    cm_FieldBlock.n++;
+    cm_FieldBlockLen = len;
     p[0] = size;
     p[1] = n;
     *(unsigned short *)(p + 2) = field;
@@ -676,15 +684,15 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
     int o;
     unsigned int len;
 
-    o = ai_Unka68c08;
+    o = cm_FieldBlockLen;
     if (size != 1 && size != 2 && size != 4)
         return 1;
     len = n * size + 4 + o;
     if (len > 0x76)
         return 1;
-    p = &ai_Unka68c20.buf[o];
-    ai_Unka68c20.n++;
-    ai_Unka68c08 = len;
+    p = &cm_FieldBlock.buf[o];
+    cm_FieldBlock.n++;
+    cm_FieldBlockLen = len;
     p[0] = size;
     p[1] = n;
     *(unsigned short *)(p + 2) = field;
@@ -1200,7 +1208,7 @@ void cm_SendFieldDeltas(void)
     G17MSG m;
 
     m.type = 0x16;
-    memcpy(m.data, &ai_Unka68c20, sizeof(G17FIELDS));
+    memcpy(m.data, &cm_FieldBlock, sizeof(G17FIELDS));
     cm_QueueSend(&m);
 }
 /* 0x4c49e0, message 0x17: the field block (values) */
@@ -1210,7 +1218,7 @@ void cm_SendFieldValues(void)
     G17MSG m;
 
     m.type = 0x17;
-    memcpy(m.data, &ai_Unka68c20, sizeof(G17FIELDS));
+    memcpy(m.data, &cm_FieldBlock, sizeof(G17FIELDS));
     cm_QueueSend(&m);
 }
 /* 0x4c4a20, message 0x18: the second field block */
@@ -14987,8 +14995,8 @@ extern int cm_NextNetStep;
 extern unsigned char cm_SplitMsg[1024];
 extern G17MSG * cm_RecvFree;
 extern unsigned int cm_GroupEndSeq;
-extern int ai_Unka68c08;
-extern G17FIELDS ai_Unka68c20;
+extern int cm_FieldBlockLen;
+extern G17FIELDS cm_FieldBlock;
 extern G17FIELDS ai_Unka68ca0;
 extern unsigned int ai_Unka68d1c;
 extern int ai_Unka68d20;
@@ -15234,8 +15242,8 @@ int cm_NextNetStep = 0;  /* 0xa687e4, d3_Time of the start */
 unsigned char cm_SplitMsg[1024] = {0};  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
 G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
 unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
-int ai_Unka68c08 = 0;  /* 0xa68c08, bytes used in ai_Unka68c20.buf */
-G17FIELDS ai_Unka68c20 = {0};  /* 0xa68c20 */
+int cm_FieldBlockLen = 0;  /* 0xa68c08, bytes used in cm_FieldBlock.buf */
+G17FIELDS cm_FieldBlock = {0};  /* 0xa68c20 */
 G17FIELDS ai_Unka68ca0 = {0};  /* 0xa68ca0 */
 unsigned int ai_Unka68d1c = 0;  /* 0xa68d1c, "cm_LastRequCount" */
 int ai_Unka68d20 = 0;  /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
