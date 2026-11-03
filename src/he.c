@@ -4,9 +4,13 @@
    0x53d430 .. 0x575860: starts right after main.c's program entry (its globals 0x625718 / 0x62571c follow
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
-   Open: the event record (0x14c B, also ai.h AIJOB) and the message record (0xf8 B) are untyped; handlers use raw offsets.
-   Open: data: 0x6faa80 he_EventSlots, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed, owner he or main (typed
-   in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's bss).
+   The event record is AIJOB, the message record AIMSG (both in ai_types.h, readable without ai.h); the event bar
+   functions read them typed.
+   Open: types: the handlers past the event bar still read the event and message records through raw offsets
+   (HM_I / U_I); AIJOB covers only part of the 0x14c bytes.
+   Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
+   0x625718 he_LastSlot, 0x62571c he_BarShown, owner he or main (typed in place in main.c's gap block; he.c and sv.c
+   use them, they lie among main.c's data / bss).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h ch.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument

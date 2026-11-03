@@ -2605,7 +2605,7 @@ exe	0x004e52c0	cut_GetRandSeed	cm	byte	draft
 exe	0x004e52f0	cm_Random	cm	byte	draft		
 exe	0x004e5360	cm_RandomFloat	cm	byte	draft		
 exe	0x004e53e0	cm_DialogTimer	cm	byte	draft		
-exe	0x004e5470	cm_MessageBox	cm	draft	draft		
+exe	0x004e5470	cm_MessageBox	cm	draft	readable	deep	
 exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
 exe	0x004e5770	ai_Unk4e5770	cm	byte	draft		
 exe	0x004e58e0	ai_Unk4e58e0	cm	shape	draft		
@@ -3493,16 +3493,16 @@ exe	0x0053d4b0	he_Unk53d4b0	he	byte	draft
 exe	0x0053d590	he_FreeEvents	he	byte	draft		
 exe	0x0053d5d0	he_ReleaseEvents	he	byte	readable		
 exe	0x0053d600	he_Unk53d600	he	byte	draft		
-exe	0x0053d630	he_Unk53d630	he	draft	draft		
-exe	0x0053d6f0	he_Unk53d6f0	he	draft	draft		
-exe	0x0053d800	he_Unk53d800	he	draft	draft		
+exe	0x0053d630	he_FreeOldestSlot	he	byte	readable		
+exe	0x0053d6f0	he_OpenEventSlot	he	byte	readable		
+exe	0x0053d800	he_ReleaseSlot	he	byte	readable		
 exe	0x0053d930	he_Unk53d930	he	byte	draft		
 exe	0x0053d9b0	he_CloseEventSlots	he	byte	draft		
-exe	0x0053d9f0	he_ShowEventBar	he	draft	draft		
+exe	0x0053d9f0	he_ShowEventBar	he	byte	readable		
 exe	0x0053dad0	he_Unk53dad0	he	byte	draft		
-exe	0x0053daf0	he_PickActiveEvent	he	draft	draft		
+exe	0x0053daf0	he_PickActiveEvent	he	shape	readable		
 exe	0x0053dcb0	he_ActivateSlot	he	byte	draft		
-exe	0x0053dda0	he_ShowNews	he	draft	draft		
+exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	draft	draft		
 exe	0x0053e040	he_Unk53e040	he	draft	draft		
 exe	0x0053e1f0	he_FreeEvent	he	draft	draft		
