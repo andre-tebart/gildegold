@@ -947,13 +947,12 @@ step:
     }
     return (char *)he_Cursor;
 }
-/* 0x53e400, starts a search of the records: n pairs (kind, value): 0 type (byte), 1 owner (+4), 2 player (+8, word), 3 argument (+0x10); returns the first match (0x53e300 gives the next) */
-
+/* 0x53e400, starts a search of the event records: n pairs (key, value) set the filter, key 0 the kind (he_FindKind),
+   1 the event id (he_FindId), 2 the character index (he_FindChr), 3 the sending building (he_FindFrom), the others
+   unset; puts he_Cursor on the first used record (0 when there is none) and returns he_NextEvent's first match */
 char *he_FindEvent(int n, ...)
 {
     va_list ap;
-    int kind;
-    char *pc;
     int i;
 
     he_FindKind = 0xff;
@@ -964,8 +963,7 @@ char *he_FindEvent(int n, ...)
     he_FindUnused = 0;
     va_start(ap, n);
     for (i = n; i > 0; i--) {
-        kind = va_arg(ap, int);
-        switch ((char)kind) {
+        switch ((unsigned char)va_arg(ap, int)) {
         case 0:
             he_FindKind = (unsigned char)va_arg(ap, int);
             break;
@@ -981,22 +979,14 @@ char *he_FindEvent(int n, ...)
         }
     }
     va_end(ap);
-    pc = (char *)(unsigned)&he_Events;
-    i = 0;
-    U_I(((unsigned)&he_QuickList + 0xaaa0)) = (unsigned)&he_Events;
-    if (*(char *)(unsigned)&he_Events == 0) {
-        do {
-            if (i > 0x3ff)
-                goto L_none;
-            pc += 0x14c;
-            i++;
-        } while (*pc == 0);
-        U_I(((unsigned)&he_QuickList + 0xaaa0)) = (int)pc;
-        if (i > 0x3ff) {
-L_none:
-            U_I(((unsigned)&he_QuickList + 0xaaa0)) = 0;
-        }
+    he_Cursor = he_Jobs;
+    for (i = 0; he_Cursor->kind == 0; i++) {
+        if (i >= 0x400)
+            break;
+        he_Cursor++;
     }
+    if (i >= 0x400)
+        he_Cursor = 0;
     return he_NextEvent();
 }
 /* 0x53e4e0, spreads the gfx infos (0x7588a0, 16 bytes each, owner = `obj`) of one object on a circle (radius 100, 0 for a single one) around its position (ROUGH) */
