@@ -639,7 +639,7 @@ extern const AIREC10 ai_Unk5ecfd8[7];         /* 0x5ecfd8 */
 #define AI_C4(id) ((AIC4 *)gm_FindChar(id))
 
 double ai_Unk4e5360(void);                                       /* 0x4e5360, a random value */
-unsigned int ai_Unk4e52f0(unsigned int n);                                        /* 0x4e52f0, a random test */
+unsigned int cm_Random(unsigned int n);                                        /* 0x4e52f0, a random test */
 float gm_MapDistance(int a, int b, int c, int d);                 /* 0x4ffc90 */
 float gm_Mix(int a, int b, int c);                    /* 0x504e20 */
 int gm_ConvertMoney(int a, unsigned char b);                       /* 0x5085b0 */

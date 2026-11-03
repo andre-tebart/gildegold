@@ -3064,7 +3064,7 @@ int ai_Unk494300(AIPLAN *q)
         sum = acc + v;
         if (sum >= f) {
             acc = v + acc;
-            if (ai_Unk4e52f0(4))
+            if (cm_Random(4))
                 acc = acc * 0.75;
             q->unk48 = 1;
             break;

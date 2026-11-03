@@ -532,7 +532,10 @@ float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
 typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_Unk60c7c0 (ai_FindWeaponRecord) */
     int id;                             /* 0x00, the goods item */
-    char pad04[0x58];
+    char pad04;
+    unsigned char dmgMin;               /* 0x05, the least damage (the bomb adds a random part below dmgMax - dmgMin) */
+    unsigned char dmgMax;               /* 0x06, the most damage */
+    char pad07[0x55];
 } AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
 extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
@@ -552,12 +555,11 @@ extern char ai_Unk9364e0[];  /* 0x9364e0 */
 extern int ai_Unk9367d0;  /* 0x9367d0 */
 extern int ai_Unk9367d4;  /* 0x9367d4 */
 
-int ai_Unk4ce300();  /* 0x4ce300 */
+int cm_UpdateBombs();  /* 0x4ce300 */
 char *ai_Unk4ce5d0(float *p, int x, int y);  /* 0x4ce5d0 */
-int ai_Unk4d3390();  /* 0x4d3390 */
-unsigned int ai_Unk4e52f0();  /* 0x4e52f0 */
-extern int ai_Unk6f0cec;  /* 0x6f0cec */
-extern int ai_Unk6f0d14;  /* 0x6f0d14 */
+unsigned int cm_Random();  /* 0x4e52f0, a random number below n (two callers pass a second argument: no parameter list yet) */
+extern int cm_FightAttacker;  /* 0x6f0cec */
+extern int cm_BombSounds;  /* 0x6f0d14 */
 extern char ai_Unk935a00[];  /* 0x935a00 */
 
 int ai_Unk4ce830();  /* 0x4ce830 */
@@ -578,7 +580,7 @@ extern int d2_LastWindow;  /* 0x6ed938 */
 extern int cm_SkipEvents;  /* 0x6f0d8c */
 extern int ai_Unk935d20[];  /* 0x935d20 */
 
-void ai_Unk4cedc0(char *c, int v, int kind);  /* 0x4cedc0 */
+void cm_ShowDamage(char *c, int v, int kind);  /* 0x4cedc0 */
 void ai_Unk4cee20();  /* 0x4cee20 */
 void ai_Unk4cef80();  /* 0x4cef80 */
 void ai_Unk4cefa0();  /* 0x4cefa0 */
@@ -774,7 +776,7 @@ void ai_Unk4d3300(char *c);  /* 0x4d3300 */
 extern float ai_Unk5eb7dc;  /* 0x5eb7dc */
 extern const double ai_Unk5edc68;  /* 0x5edc68 */
 
-int ai_Unk4d3390(char *c);  /* 0x4d3390 */
+int cm_CheckDeath(char *c);  /* 0x4d3390 */
 struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
 void d3_SetWorldPosRot();  /* 0x449920 */
 extern double ai_Unk5edbd0;  /* 0x5edbd0 */
