@@ -11481,7 +11481,7 @@ void ai_Unk5a44e0(unsigned char *param_1)
     sv_ClearSelection();
 }
 
-unsigned char * gm_BuildQuery(int n, ...); int gm_Unk5091a0(); int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj);
+unsigned char * gm_BuildQuery(int n, ...); int gm_BuildingValues(); int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj);
 void d2_RadioClear(int g); int d2_RadioGetSel(); void cm_SendMoveObject(int a, int b, int c); void ai_Unk4c47b0(short a);
 int d2_GetViewWin(); void d2_CreateScrollButtons(); void d2_ClearInput(void); void sv_PumpNet();
 
@@ -11551,7 +11551,7 @@ void ai_Unk5a45c0(int param_1)
                     if (p == 0) {
                         ai_Unk4c47b0(U_I(rows[j] + 2));
                     } else if (U_W(p + 0x27) != 0xffff) {
-                        gm_Unk5091a0(p, &i);
+                        gm_BuildingValues(p, &i);
                         ctl[n] = d2_GetWinObj(win, 2,
                                   io_PrintText(0x19fc, *(unsigned char *)p + 0x427,
                                                U_W(p + 0x27), p, rows[j] + 0x1c, i,

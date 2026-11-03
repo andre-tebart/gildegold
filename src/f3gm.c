@@ -8764,40 +8764,43 @@ int gm_Unk509120(unsigned char *b, void *c)
         lim = 7;
     return r <= lim;
 }
-/* 0x5091a0, the value of the building b: out[0] the price of its owner's estate (0x50a640 of the owner capped at 2048000, 7 % for the kind 2 else 3 %), out[1] the sum of the prices of the objects of its first kind 0x2a object. ROUGH */
+/* 0x5091a0, two values of the building b: out[0] a share of its owner's worth (gm_GetWorth, capped at 2048000:
+   7 % for a kind of class 2, else 3 %, not below 0), out[1] the price of the goods its stall object (prototype 0x2a)
+   holds, each goods counted at 30 % of its amount (at least 1) times gm_ItemPrice of 100 pieces. Returns 0 */
 
-int gm_Unk5091a0(unsigned char *b, int *out)
+int gm_BuildingValues(unsigned char *b, int *out)
 {
+    ORDBLD *bld;
+    unsigned char *kind;
+    ORDOBJ *stall, *o;
     float f, tot;
-    char *p, *l, *o;
-    int v;
-    unsigned short id;
+    int n;
 
+    bld = (ORDBLD *)b;
     f = 0.0f;
-    p = ai_BTypes + (unsigned)*b * 0x24d;
-    id = *(unsigned short *)(b + 0x27);
-    if (id != 0xffff) {
-        f = I50A640(id);
-        if (f > 2048000.0f)
+    kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
+    if (bld->owner != 0xffff) {
+        f = gm_GetWorth(bld->owner);
+        if (2048000.0f < f)
             f = 2048000.0f;
     }
-    if (*p == 2)
+    if (*kind == 2)
         f *= 0.07f;
     else
         f *= 0.03f;
-    if (f < 0.0f)
+    if (0.0f > f)
         f = 0.0f;
     out[0] = (int)f;
     tot = 0.0f;
-    l = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x2a);
-    if (l) {
-        o = gm_Query(*(void **)(l + 0x14), 1, 5);
+    stall = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    if (stall) {
+        o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
         while (o) {
-            v = (int)(gm_ListAmount(l, o) * 0.3);
-            if (v < 1)
-                v = 1;
-            tot = gm_ItemPrice(*(unsigned short *)o, 100) * v + tot;
-            o = (char *)gm_QueryNext();
+            n = (int)(gm_ListAmount((short *)stall, (char *)o) * 0.3);
+            if (n < 1)
+                n = 1;
+            tot = gm_ItemPrice(o->type, 100) * n + tot;
+            o = (ORDOBJ *)gm_QueryNext();
         }
     }
     out[1] = (int)tot;
