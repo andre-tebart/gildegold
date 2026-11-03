@@ -1555,45 +1555,48 @@ int ai_QueryChapter4Step2(int *p)
         return 1;
     return 0;
 }
-/* 0x576d40, the twin of 0x576ba0 for the kinds 0x2b (step word 0x78 / 0x79 / 0x7a) and 0x11 */
+/* 0x576d40, the twin of ai_StepChapter4Step2 (0x576ba0) for the kinds 0x2b / 0x11: on a building of the type kind
+   0x12 that the player owns, the kind 0x2b with the step word p[3] 0x78 / 0x79 / 0x7a and the goal not met yet
+   meets the goal and switches to the state 0xa (answers 3); the kind 0x11 sets the pending state 9 (p[2] 0, goal
+   open), 0xb / 4 (p[2] 1, by the goal), applies it and answers 1 */
 
 int ai_StepChapter4Step4(int *p)
 {
     int kind;
 
     if (p[0] == 0x2b && p[1]) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0x12)
+        kind = ((AIBLD *)p[1])->type;
+        if (((AIBTYPE *)ai_BTypes)[kind].kind != 0x12)
             return 3;
-        if (*(unsigned short *)(p[1] + 0x27) != *(unsigned short *)(unsigned)&ai_PlayerId)
+        if (((AIBLD *)p[1])->owner != ai_PlayerId)
             return 3;
-        if (U_I(S + 0x38))
+        if (ai_Tutorial->goalDone)
             return 3;
-        if (p[3] != 0x78 && p[3] != 0x79 && p[3] != 0x7a)
+        if (p[3] != 0x79 && p[3] != 0x7a && p[3] != 0x78)
             return 3;
-        U_I(S + 0x38) = 1;
-        U_I(S + 4) = 0xa;
-        U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+        ai_Tutorial->goalDone = 1;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->state = ai_Tutorial->next;
+        ai_Tutorial->stepAt = ai_ClockMsVolatile;
         return 3;
     }
     if (p[0] != 0x11 || !p[1])
         return 3;
-    kind = *(unsigned char *)p[1];
-    if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0x12)
+    kind = ((AIBLD *)p[1])->type;
+    if (((AIBTYPE *)ai_BTypes)[kind].kind != 0x12)
         return 3;
-    if (*(unsigned short *)(p[1] + 0x27) != *(unsigned short *)(unsigned)&ai_PlayerId)
+    if (((AIBLD *)p[1])->owner != ai_PlayerId)
         return 3;
-    if (p[2] == 0 && !U_I(S + 0x38))
-        U_I(S + 4) = 9;
+    if (p[2] == 0 && !ai_Tutorial->goalDone)
+        ai_Tutorial->next = 9;
     if (p[2] == 1) {
-        if (U_I(S + 0x38) == 1)
-            U_I(S + 4) = 0xb;
+        if (ai_Tutorial->goalDone == 1)
+            ai_Tutorial->next = 0xb;
         else
-            U_I(S + 4) = 4;
+            ai_Tutorial->next = 4;
     }
-    U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&ai_ClockMs);
+    ai_Tutorial->state = ai_Tutorial->next;
+    ai_Tutorial->stepAt = ai_ClockMsVolatile;
     return 1;
 }
 /* 0x576e70, the predicate twin of 0x576cd0: 1 for the player's building (byte 0x12, word +0x27 = 0x6f25b8) with

@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 24440527: ai_StepChapter4Step4 (0x576d40) typed (AIBLD / AIBTYPE / TUTSTATE, the volatile clock view) and byte-matched; VC6 /O2 swaps eax/ecx at 0x579420 / 0x579465 in this later function by the unit's code alone (the prover shows it equal). The match flips with unrelated spellings in another function (raw vs typed building access, the clock's spelling: tried 5 variants, it fell in 4, ai_TutorialInitChapter3 flipped byte/shape/draft along), as the lead comment already records for the declaration set: no evidence of the original's source [waits for: unk_575860's typing of the remaining S / U_I functions (the unit's final code set)]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
