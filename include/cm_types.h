@@ -4,6 +4,7 @@
 #ifndef CM_TYPES_H
 #define CM_TYPES_H
 #include "ai_types.h"                /* AITIME, for CRIME */
+#include "d3_types.h"                /* D3VECTOR4 */
 
 #pragma pack(push, 1)
 typedef struct G17B7 { char b[7]; } G17B7;      /* blocks copied as one */
@@ -58,6 +59,15 @@ typedef struct G17GOODSMSG {            /* 0x1f bytes, the data of message 0x40 
     float price;                        /* 0x1b */
 } G17GOODSMSG;
 
+typedef struct G17GEBMSG {              /* 0x25 bytes, the data of message 0x4c (cm_RequestCreateGeb, its handler
+                                           0x4cbca0 "cm_ExCreateGeb" creates the building and loads its model) */
+    int owner;                          /* 0x00, the owner character's id */
+    int objectId;                       /* 0x04, the next object id (the server's, read when connected) */
+    unsigned char kind;                 /* 0x08, the building kind */
+    D3VECTOR4 pos;                      /* 0x09, the position */
+    int rot[3];                         /* 0x19, the rotation (d3_SetObjectRot) */
+} G17GEBMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -75,6 +85,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
+        G17GEBMSG geb;                  /* 0x10, message 0x4c */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */

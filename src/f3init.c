@@ -329,7 +329,7 @@ extern int sv_PanelFlag;                /* 0x75e8c0 */
 void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, unk_58bbd0.c: the angle of the object plot to out */
 void cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
 void cm_SendBoss(int a, int b);                            /* 0x4c5540, cm.c: message 0x39, the building a gets the character b as its boss */
-int cm_RequestCreateGeb(int a, int k, float *pos, int *v);/* 0x4c5ae0, cm.c: message 0x4c, a building of kind k at pos */
+int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);  /* 0x4c5ae0, cm.c: message 0x4c, a building of kind k at pos */
 unsigned char *gm_NearestFreeBuilding(unsigned char *b, unsigned kind); /* 0x501f60, f3gm.c */
 void main_SetLoadProgress(int unused, int pct);          /* 0x537af0, main.c: the loading progress bar */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                     /* 0x4c55d0 */
@@ -1800,7 +1800,7 @@ void init_OpenTown(void)
                 }
                 d3_PointToWorld((struct D3OBJECT *)list200[m], (D3VECTOR *)(list200[m] + 0x4c), (D3VECTOR *)vecA);
                 ai_ObjectAngle(vecB, list200[m]);
-                h = cm_RequestCreateGeb(((INIT_CHAR *)c)->netId, proto, vecA, vecB);
+                h = cm_RequestCreateGeb(((INIT_CHAR *)c)->netId, proto, (D3VECTOR4 *)vecA, (int *)vecB);
                 while (h != -1 && cm_GetSlotState(h) == 0)
                     sv_PumpNet();
                 h = cm_GetSlotValue(h);

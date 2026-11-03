@@ -256,7 +256,7 @@ void cm_SendSetJob(int id, int job);                                       /* 0x
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s); /* 0x4c59f0 */
 void ai_Unk4c5a70(int a);                                                        /* 0x4c5a70 */
 void cm_SendChat(void *p);                                                      /* 0x4c5aa0 */
-int cm_RequestCreateGeb(int a, int k, float *pos, int *v);                              /* 0x4c5ae0, "cm_RequestCreateGeb" */
+int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
 void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
 void ai_Unk4c5c40(int a, void *p);                                               /* 0x4c5c40 */
