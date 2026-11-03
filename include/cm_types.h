@@ -216,6 +216,17 @@ typedef struct G17REMOVEMSG {           /* 12 bytes, the data of message 0x2b (h
     int entry;                          /* 0x08, what gm_RemoveOwned removes */
 } G17REMOVEMSG;
 
+typedef struct G17PLANTMSG {            /* 0x11 bytes, the data of message 0x2c (handler 0x4c9520): a plant of a building's
+                                           vegetation map (rd.h G15PLANT) */
+    int id;                             /* 0x00, the plant id (veg_NextId) when connected */
+    int bldId;                          /* 0x04, the building */
+    unsigned char x;                    /* 0x08, cell */
+    unsigned char z;                    /* 0x09 */
+    unsigned short type;                /* 0x0a, G15TREE.id */
+    unsigned char fall;                 /* 0x0c, veg_SetPlant's fall model */
+    int fallId;                         /* 0x0d, G15PLANT.fallId: set with fall, else the fall model to undo (-1 none) */
+} G17PLANTMSG;
+
 typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
                                            cm_ExSysMessage 0x4c89b0) */
     unsigned char kind;                 /* 0x00, 0..0x14 */
@@ -277,6 +288,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         CRIME crime;                    /* 0x10, message 0x22 */
         G17CUTMSG cut;                  /* 0x10, message 0x26 */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
+        G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };
