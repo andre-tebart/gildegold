@@ -10966,7 +10966,7 @@ void he_Unk55b140(int ev)
 
 void gm_ChangeBuildingState(unsigned char *b, int d);
 void ai_Unk4c54e0(int a);
-void ai_Unk4c5510(int a);
+void cm_SendBuildingDestroyed(int a);
 int ai_Unk4fdcb0();
 
 /* 0x55b3e0, the allocation handler of a building event (ROUGH): the building +0xac (none: free) is the event place (+0x10), its figure gets the message 0x5a / 2 / 4, both clocks are now, the due clock + 0xa units, and the end clock +0xb8 = now + (the owner rank factor 0x5eb7b8 / 0x5ee020 / 0x5eb828 / 1.0 by the rank byte +0xd (>= 9 / 8 / 7) * +0xb0 * 0x5eb990) units */
@@ -11173,7 +11173,7 @@ void he_Unk55bd80(int ev)
             txt_Format(text, 0x1bbb, b);
             he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
         }
-        ai_Unk4c5510(b);
+        cm_SendBuildingDestroyed(b);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -14741,7 +14741,7 @@ short * gm_FindChar(int id);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 short *gm_PlayerRecord(char *c);
 int ai_Unk50c4e0();
-void ai_Unk4c5510(int a);
+void cm_SendBuildingDestroyed(int a);
 int cm_SendExSysMessage(unsigned char id, void *msg);
 
 /* 0x56be30, the run handler of the building construction event (the type 0xd; ROUGH SKELETON: the states 0x70 = -2 .. 7 from the jump table 0x56cda8, the calls in order from the disassembly; the conditions and most call arguments are not recovered yet; the states -1 / -2 hand the building back, rebuild its scene object and free the record) */

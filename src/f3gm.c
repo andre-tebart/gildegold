@@ -9858,7 +9858,7 @@ int gm_TechTreeView = 0;  /* 0x770af0, the view of the tech tree form (gm_Unk50c
 /* ai_Unkfb1030: view of d2_Views (tools/data_views.py) */
 /* ai_Unkf8f128: view of d2_Wins (tools/data_views.py) */
 void d2_PlotLine();                     /* 0x4764f0 */
-void ai_Unk4c5510(int a);                     /* 0x4c5510 */
+void cm_SendBuildingDestroyed(int a);                     /* 0x4c5510 */
 float gm_Liking();
 int gm_LayoutTree();
 void gm_UpdateTechTree();
@@ -10696,39 +10696,52 @@ void gm_Unk50ca50(int id, int d)
     cm_AddFieldValues(1, 1, 0x12, &v);
     cm_SendFieldDeltas();
 }
-/* 0x50cad0, changes the state byte (+0x5c) of the building b by d (kept in 0 .. 100) and sends it; when a building of a kind that matters drops to 0, every person is told (HS_66 for the owner, HS_67 for the others) */
+/* 0x50cad0, changes the state (ORDBLD.level, kept in 0 .. 100) of the building b by d and sends it; when the
+   building drops to 0 and its type is not of the kinds 6, 10, 0xf, 0x10, 0x1b, 0x1c or 0x17 and up, every player
+   character (kind 6 / 7) gets the news: HS_66 for the owner, HS_67 with the owner's name for the others, and the
+   building is reported gone (cm_SendBuildingDestroyed)
+   @deep Read whole against the original and rewritten (ORDBLD / ORDCHAR / GMBTYPE typed, the HS_67 branch
+   first with txt_Format(buf, 0x1c52, owner, b), the int-index loop over ORD_CHARS that VC6
+   strength-reduces to the signed jl walk from ai_Chars+4); every call, argument, branch and constant
+   equals the original's. Left: an order hunk (movsx of v and of level swapped, eax<->edx) and one
+   instruction-selection hunk at +0x61: ours 'mov al, byte ptr [eax + edx*4]', the original 'lea eax, [eax
+   + edx*4]; mov al, byte ptr [eax]' for GM_BTYPE(type)->kind; tried the kind as ai_BTypes[type*0x24d], as
+   a separate unsigned char, nested vs early-return conditions: no change. A variant round. */
 
 void gm_ChangeBuildingState(unsigned char *b, int d)
 {
-    unsigned char k;
+    ORDBLD *bld = (ORDBLD *)b;
+    char k;
     char v;
-    int *q;
-    char buf1[0x400], buf2[0x400];
+    unsigned char kind;
+    int i;
+    ORDCHAR *c;
+    char other[0x400], own[0x400];
 
     v = d;
-    k = b[0x5c];
-    if (d + (char)k < 0)
+    k = bld->level;
+    if (d + k < 0)
         v = -k;
-    if (100 < d + (char)k)
+    if (d + k > 100)
         v = 100 - k;
-    cm_BeginFieldBlock(b, *(int *)(b + 1));
+    cm_BeginFieldBlock(b, bld->id);
     cm_AddFieldValues(1, 1, 0x5c, &v);
     cm_SendFieldDeltas();
-    if (*b != 0 && (int)v + (char)b[0x5c] < 1 && (k = ai_BTypes[*b * 0x24d]) != 0xf && k != 0x1c && k != 0x1b && k != 10 && k != 6 && k < 0x17 && k != 0x10) {
-        q = (int *)(ai_Chars[0] + 4);
-        do {
-            if (*((char *)q - 2) == 6 || *((char *)q - 2) == 7) {
-                if (*(short *)(q - 1) == *(short *)(b + 0x27)) {
-                    txt_Format(buf1, 0x1c53, b);
-                    he_ShowNews(*q, -1, buf1, 0, 0x5fe, "_NACHRICHTEN_HS_66");
+    if (bld->type != 0 && v + bld->level <= 0 && (kind = GM_BTYPE(bld->type)->kind) != 0xf && kind != 0x1c
+        && kind != 0x1b && kind != 10 && kind != 6 && kind < 0x17 && kind != 0x10) {
+        for (i = 0; i < 768; i++) {
+            c = &ORD_CHARS[i];
+            if (c->kind == 6 || c->kind == 7) {
+                if (c->id != bld->owner) {
+                    txt_Format(other, 0x1c52, bld->owner, b);
+                    he_ShowNews(c->netId, -1, other, 0, 0x5fe, "_NACHRICHTEN_HS_67");
                 } else {
-                    txt_Format(buf2, 0x1c52, *(short *)(b + 0x27));
-                    he_ShowNews(*q, -1, buf2, 0, 0x5fe, "_NACHRICHTEN_HS_67");
+                    txt_Format(own, 0x1c53, b);
+                    he_ShowNews(c->netId, -1, own, 0, 0x5fe, "_NACHRICHTEN_HS_66");
                 }
             }
-            q += 0x87;
-        } while ((int)q < ((unsigned)((unsigned)ai_Chars + 0x65402) + 0x2));
-        ai_Unk4c5510(*(int *)(b + 1));
+        }
+        cm_SendBuildingDestroyed(bld->id);
     }
 }
 /* 0x50cc50, forwards to 0x4c5f60 */

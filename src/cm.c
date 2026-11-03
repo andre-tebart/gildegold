@@ -1606,7 +1606,7 @@ void ai_Unk4c54e0(int a)
 }
 /* 0x4c5510, message 0x3b */
 
-void ai_Unk4c5510(int a)
+void cm_SendBuildingDestroyed(int a)
 {
     G17MSG m;
 

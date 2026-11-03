@@ -238,7 +238,7 @@ void ai_Unk4c5410(int a, const char *s, unsigned char c);                       
 void cm_SendChrUseGates(int a, int b, int c);                                          /* 0x4c5460 */
 void cm_SendOwnership(int a, int b, int c);                                          /* 0x4c54a0 */
 void ai_Unk4c54e0(int a);                                                        /* 0x4c54e0 */
-void ai_Unk4c5510(int a);                                                        /* 0x4c5510 */
+void cm_SendBuildingDestroyed(int a);                                                        /* 0x4c5510 */
 void cm_SendBoss(int a, int b);                                                 /* 0x4c5540 */
 void ai_Unk4c5580(int a, int b, int c, int d);                                   /* 0x4c5580 */
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                        /* 0x4c55d0 */
