@@ -361,9 +361,9 @@ extern int sv_GroundplanButtons[15];                                /* 0x7662e0 
 extern int sv_SelectedExtra;                                       /* 0x76631c */
 extern int cm_Bombs[0x40];                                  /* 0x935c00 */
 extern int d2_HitWindow;                                    /* 0xf8aad0 */
-extern int d2_DirtyRectLeft;                                    /* 0xfb9060 */
-extern int d2_DirtyRectTop;                                    /* 0xfb9064 */
-extern int d2_DirtyRectRight;                                    /* 0xfb9068 */
-extern int d2_DirtyRectBottom;                                    /* 0xfb906c */
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 
 #endif

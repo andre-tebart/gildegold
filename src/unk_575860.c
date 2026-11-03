@@ -251,10 +251,10 @@ extern GAPDATA full_data_62a2a4[];
 extern int d2_PointerObj;
 extern GAPDATA full_data_62a2c4[];
 extern const int sv_PhaseMinutes[24];
-extern int d2_DirtyRectLeft;
-extern int d2_DirtyRectTop;
-extern int d2_DirtyRectRight;
-extern int d2_DirtyRectBottom;
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern struct D2OBJ *d2_Objs;
 extern float d3s_QuadUV[6];
 extern GAPDATA full_data_5fea38[];
@@ -3113,14 +3113,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep read against the original: all 5 hunks store the same float constants to the same fields of
-   [esi+0x64] in the same order; the differences are only which register holds each constant and when it is
-   loaded (0x579dfe: ours loads 0x430e0000 into edx before the [ecx+0x20] store, the original into ecx
-   after it; 0x57a1f8: ours keeps 0x420c0000/0x430e0000/0x428e0000 in edi/ebx/ecx, the original ecx/edi/ebx
-   loaded up front; 0x57a430: the 0x442f0000/0x44670000 loads swap edx/ecx around the cmp ax,0x320), the
-   regs hunks follow from that mapping (ebx->edi ecx->ebx edi->ecx). Instruction counts equal (1213/1213).
-   Constant-load scheduling and allocation only. */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {
@@ -5451,7 +5444,7 @@ void ai_CannonScene(char *rec)
     save3.y = d3_Camera->rotation.y;
     save3.z = d3_Camera->rotation.z;
     rect[2] = d2_DirtyRectRight;
-    rect[0] = d2_DirtyRectLeft;
+    rect[0] = d2_DirtyRectLeft[0];
     rect[1] = d2_DirtyRectTop;
     rect[3] = d2_DirtyRectBottom;
     scene = d3_CurrentScene;
@@ -5482,7 +5475,7 @@ void ai_CannonScene(char *rec)
     }
     d3_SetViewport((float)d2_ScreenW, (float)d2_ScreenH - 150.0f, 0.0f, 75.0f, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
     d2_DirtyRectRight = 0;
-    d2_DirtyRectLeft = d2_ScreenW;
+    d2_DirtyRectLeft[0] = d2_ScreenW;
     d2_DirtyRectTop = 0x4b;
     d2_DirtyRectBottom = d2_ScreenH - 0x4b;
     sv_SetPanelEnabled(0);
@@ -5596,7 +5589,7 @@ void ai_CannonScene(char *rec)
         d2_Objs[list[m]].disabled = 0;
     d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop), (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
     d2_DirtyRectRight = rect[2];
-    d2_DirtyRectLeft = rect[0];
+    d2_DirtyRectLeft[0] = rect[0];
     d2_DirtyRectTop = rect[1];
     d2_DirtyRectBottom = rect[3];
     sv_SetPanelEnabled(1);

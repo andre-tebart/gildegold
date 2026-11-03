@@ -215,11 +215,10 @@ extern D2OBJ *d2_PendingCaptionObj;  /* 0x6ed9bc, the object whose caption is dr
 extern D2INPUT *d2_FocusedInput;       /* 0x6ed9dc, the focused input */
 extern int d2_ClipLeft;            /* 0x6f0458, clip left */
 extern int d2_ClipTop;            /* 0x6f045c, clip top */
-extern int d2_DirtyRectLeft;            /* 0xfb9060, the rectangle d2_AddDirty tests against (D2RECT
-                                           order: left, top, right, bottom; zeroed at init, no writer) */
-extern int d2_DirtyRectTop;             /* 0xfb9064 */
-extern int d2_DirtyRectRight;           /* 0xfb9068 */
-extern int d2_DirtyRectBottom;          /* 0xfb906c */
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern D2PICHDR *d2_FontPic;      /* 0x6ed948, the font "_FONT" */
 extern D2TEX *d2_CaptionTex;         /* 0x6ed960, sprite behind captions / texts */
 extern D2OBJ **d2_DrawOrder;        /* 0x6ed964, objects in drawing order (0x300) */

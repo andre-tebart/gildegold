@@ -90,10 +90,10 @@ extern int sv_PopRequest;
 
 
 
-extern int d2_DirtyRectLeft;
-extern int d2_DirtyRectTop;
-extern int d2_DirtyRectRight;
-extern int d2_DirtyRectBottom;
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 
 
 
@@ -139,10 +139,10 @@ extern GAPDATA full_data_5f1084[];
 extern GAPDATA full_data_602568[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
-extern int d2_DirtyRectLeft;
-extern int d2_DirtyRectTop;
-extern int d2_DirtyRectRight;
-extern int d2_DirtyRectBottom;
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 #define main_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* @original this caller passes the id as a word ("mov ax,[id]; push eax") and pops the float result */
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
@@ -204,10 +204,10 @@ extern GAPDATA full_data_75e630[];
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
-extern int d2_DirtyRectLeft;
-extern int d2_DirtyRectTop;
-extern int d2_DirtyRectRight;
-extern int d2_DirtyRectBottom;
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
@@ -225,10 +225,10 @@ extern int ai_NextCharNumber;
 extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
-extern int d2_DirtyRectLeft;
-extern int d2_DirtyRectTop;
-extern int d2_DirtyRectRight;
-extern int d2_DirtyRectBottom;
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
@@ -240,10 +240,10 @@ extern char ai_MissionMode;
 
 extern GAPDATA full_data_75e401[];
 extern INIT_PLAYER init_PlayerProfile;
-extern int d2_DirtyRectLeft;
-extern int d2_DirtyRectTop;
-extern int d2_DirtyRectRight;
-extern int d2_DirtyRectBottom;
+extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty tests against: left, top, right, bottom (one object: one memset clears it) */
+#define d2_DirtyRectTop (*(int *)((char *)&d2_DirtyRectLeft + 0x4))       /* 0xfb9064 */
+#define d2_DirtyRectRight (*(int *)((char *)&d2_DirtyRectLeft + 0x8))     /* 0xfb9068 */
+#define d2_DirtyRectBottom (*(int *)((char *)&d2_DirtyRectLeft + 0xc))    /* 0xfb906c */
 extern GAPDATA full_data_624560[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
@@ -1499,7 +1499,7 @@ void main_Menue(void)
     sv_FrameBase = sv_FrameDepth + 1;
     ai_GameFlags = 0;
     D3_ZERO_AT(offset init_PlayerProfile, 0x8c);  /* the profile and the bytes after it up to 0x75e62c */
-    d2_DirtyRectLeft = d2_ScreenW;
+    d2_DirtyRectLeft[0] = d2_ScreenW;
     d2_CutsceneActive = 0;
     d2_DirtyRectRight = 0;
     d2_DirtyRectTop = 0;
@@ -2912,7 +2912,7 @@ void main_LoadingScreen(void)
     sv_SetScreenCenter(0x24087);
     s = (short)util_RandomInt(2);
     d2_ShowPicture(((s != 1) ? 3 : 0) + 0x78e);
-    d2_DirtyRectLeft = -1;
+    d2_DirtyRectLeft[0] = -1;
     d2_DirtyRectRight = -1;
     d2_DirtyRectTop = -1;
     d2_DirtyRectBottom = -1;
@@ -3328,11 +3328,11 @@ void main_EndRound(void)
     fin->roundFactors[2] = 1.0f;
     if (main_GfxOn != 0) {
         d2_DirtyRectRight = 0;
-        d2_DirtyRectLeft = d2_ScreenW;
+        d2_DirtyRectLeft[0] = d2_ScreenW;
         d2_DirtyRectTop = 0;
         d2_DirtyRectBottom = d2_ScreenH;
         if (main_NoRoundFade == 0) {
-            fade = d2_StartFade(0, 0, d2_DirtyRectLeft, d2_DirtyRectBottom, "BLACK", 0, 1);
+            fade = d2_StartFade(0, 0, d2_DirtyRectLeft[0], d2_DirtyRectBottom, "BLACK", 0, 1);
             while ((fade->flags & 4) == 0)
                 sv_RunFrame(0, 0x24087);
             d2_ShowPicture(0x79d);
@@ -3448,7 +3448,7 @@ void main_EndRound(void)
     if ((ai_GameFlags & 4) != 0)
         sv_NetworkSyncWait(0x24087);
     d2_DirtyRectRight = sv_ViewRectRight;
-    d2_DirtyRectLeft = sv_ViewRectLeft;
+    d2_DirtyRectLeft[0] = sv_ViewRectLeft;
     d2_DirtyRectTop = sv_ViewRectTop;
     d2_DirtyRectBottom = sv_ViewRectBottom;
     init_AfterTownLoad();
@@ -4131,7 +4131,7 @@ void main_BeginPlayerRound(void)
     cm_ResetCutInfos(0);
     if (ai_RunPendingParties(cur) != 0 && main_GfxOn != 0) {
         d2_DirtyRectRight = 0;
-        d2_DirtyRectLeft = d2_ScreenW;
+        d2_DirtyRectLeft[0] = d2_ScreenW;
         d2_DirtyRectTop = 0;
         d2_DirtyRectBottom = d2_ScreenH;
         d2_ClearSurface(d2_ScreenSurf);

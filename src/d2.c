@@ -403,7 +403,7 @@ void d2_AddDirty(int x, int y, int w, int h)
             y = d2_ClipTop;
         if (x < d2_ClipLeft)
             x = d2_ClipLeft;
-        if (0 < w && 0 < h && (y <= d2_DirtyRectTop || y + h >= d2_DirtyRectBottom || x <= d2_DirtyRectLeft ||
+        if (0 < w && 0 < h && (y <= d2_DirtyRectTop || y + h >= d2_DirtyRectBottom || x <= d2_DirtyRectLeft[0] ||
                                x + w >= d2_DirtyRectRight)) {
             dp = &d2_Dirty[dd_Page];
             (*dp)[n].x = x;
@@ -4416,7 +4416,7 @@ int d2_Open(int hwnd, int w, int h, char *dir, char *file)
     d2_Objs[0].id = 0;
     memset(d2_Pics, 0, 4);   /* the original clears the first 4 bytes with one dword store */
     d2_DrawOrder[0] = 0;
-    memset(&d2_DirtyRectLeft, 0, 16);   /* d2_DirtyRectLeft..6c, four ints (one memset, not four stores) */
+    memset(d2_DirtyRectLeft, 0, sizeof(d2_DirtyRectLeft));
     memset(d2_Fades, 0, sizeof(d2_Fades));
     for (i = 0; i < 0x30; i++)
         d2_Views[i].id = i;

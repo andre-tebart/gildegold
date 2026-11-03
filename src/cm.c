@@ -15847,7 +15847,7 @@ void ai_Unk4e4060(char *m)
     sprintf(buf, "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i>", (unsigned char)m[8], *(int *)m);
     shown = 0;
     sv_view[2] = d2_DirtyRectRight;
-    sv_view[0] = d2_DirtyRectLeft;
+    sv_view[0] = d2_DirtyRectLeft[0];
     sv_view[1] = d2_DirtyRectTop;
     sv_view[3] = d2_DirtyRectBottom;
     ai_Unk925510 = d3_CurrentScene;
