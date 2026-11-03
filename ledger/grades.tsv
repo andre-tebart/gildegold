@@ -1928,7 +1928,7 @@ exe	0x004b3ae0	ai_GetMissionType	unk_4b39f0	byte	readable
 exe	0x004b3b10	ai_HasMission	unk_4b39f0	byte	readable		
 exe	0x004b3b40	ai_CountMissionTypes	unk_4b39f0	byte	readable		
 exe	0x004b3b70	ai_FindMissionType	unk_4b39f0	shape	readable	deep	
-exe	0x004b3bd0	ai_Unk4b3bd0	unk_4b39f0	byte	draft		
+exe	0x004b3bd0	ai_SetFirstMission	unk_4b39f0	byte	draft		
 exe	0x004b3c10	ai_NewRandomMission	unk_4b39f0	byte	readable		
 exe	0x004b3c40	ai_RandomMissionType	unk_4b39f0	byte	readable		
 exe	0x004b3ca0	ai_NewMission	unk_4b39f0	byte	draft	deep	
@@ -1936,7 +1936,7 @@ exe	0x004b3d50	ai_Unk4b3d50	unk_4b39f0	byte	draft
 exe	0x004b3e70	ai_ChooseMissionType	unk_4b39f0	byte	draft		
 exe	0x004b4040	ai_ChooseMission	unk_4b39f0	shape	readable	deep	
 exe	0x004b4280	ai_ChooseMissionFrom	unk_4b39f0	byte	readable		
-exe	0x004b44e0	ai_Unk4b44e0	unk_4b39f0	byte	draft		
+exe	0x004b44e0	ai_CountMissionEvent	unk_4b39f0	byte	draft		
 exe	0x004b4550	ai_Unk4b4550	unk_4b39f0	byte	draft		
 exe	0x004b4590	ai_Unk4b4590	unk_4b39f0	byte	draft		
 exe	0x004b45c0	ai_Unk4b45c0	unk_4b39f0	byte	draft		
@@ -2068,7 +2068,7 @@ exe	0x004bc640	veg_FindPlantObject	rd	byte	readable
 exe	0x004bc670	veg_FindPlantId	rd	byte	readable		
 exe	0x004bc6a0	veg_FindPlantArea	rd	byte	readable		
 exe	0x004bc710	veg_Fits	rd	byte	readable		
-exe	0x004bc7c0	veg_SetPlant	rd	draft	draft	deep	
+exe	0x004bc7c0	veg_SetPlant	rd	draft	readable	deep	
 exe	0x004bc8d0	veg_GrowPlants	rd	byte	readable		
 exe	0x004bc940	veg_LoadModel	rd	draft	readable	deep	
 exe	0x004bcb90	veg_ShowPlants	rd	byte	readable		
@@ -2294,28 +2294,28 @@ exe	0x004c7c30	cm_ExMoveObject	cm	byte	readable
 exe	0x004c7d80	ai_Unk4c7d80	cm	byte	draft		
 exe	0x004c7e20	ai_Unk4c7e20	cm	byte	draft		
 exe	0x004c7e90	cm_ExFieldDeltas	cm	shape	readable		
-exe	0x004c7f70	ai_Unk4c7f70	cm	draft	draft		
-exe	0x004c8050	ai_Unk4c8050	cm	draft	draft		
+exe	0x004c7f70	cm_ExFieldValues	cm	byte	readable		
+exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable		
 exe	0x004c8110	ai_Unk4c8110	cm	byte	draft		
 exe	0x004c81d0	ai_Unk4c81d0	cm	shape	draft		
-exe	0x004c8240	ai_Unk4c8240	cm	draft	draft		
+exe	0x004c8240	cm_ExRelations	cm	shape	readable		
 exe	0x004c85c0	ai_Unk4c85c0	cm	shape	draft		
 exe	0x004c87a0	ai_Unk4c87a0	cm	byte	draft		
 exe	0x004c88a0	ai_Unk4c88a0	cm	byte	draft		
 exe	0x004c8990	ai_Unk4c8990	cm	byte	draft		
-exe	0x004c89b0	ai_Unk4c89b0	cm	draft	draft		
+exe	0x004c89b0	cm_ExSysMessage	cm	byte	readable		
 exe	0x004c8de0	ai_Unk4c8de0	cm	byte	draft		
-exe	0x004c8e70	ai_Unk4c8e70	cm	draft	draft		
+exe	0x004c8e70	cm_ExAddStraftat	cm	byte	readable		
 exe	0x004c9090	ai_Unk4c9090	cm	byte	draft		
 exe	0x004c90d0	ai_Unk4c90d0	cm	byte	draft		
 exe	0x004c9110	ai_Unk4c9110	cm	byte	draft		
-exe	0x004c9170	ai_Unk4c9170	cm	draft	draft		
+exe	0x004c9170	cm_ExSendCutInfo	cm	byte	readable		
 exe	0x004c9280	ai_Unk4c9280	cm	shape	draft		
 exe	0x004c9340	ai_Unk4c9340	cm	byte	draft		
 exe	0x004c93b0	ai_Unk4c93b0	cm	byte	draft		
 exe	0x004c9400	ai_Unk4c9400	cm	byte	draft		
-exe	0x004c9450	ai_Unk4c9450	cm	draft	draft		
-exe	0x004c9520	ai_Unk4c9520	cm	draft	draft		
+exe	0x004c9450	cm_ExRemoveOwned	cm	byte	readable		
+exe	0x004c9520	cm_ExSetPlant	cm	byte	readable		
 exe	0x004c9740	ai_Unk4c9740	cm	byte	draft		
 exe	0x004c97c0	ai_Unk4c97c0	cm	byte	draft		
 exe	0x004c9830	ai_Unk4c9830	cm	shape	draft		
@@ -2904,7 +2904,7 @@ exe	0x004f8300	ord_GetGridCell	ord	byte	draft
 exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
-exe	0x004f86a0	unk_Unk4f86a0	ord	byte	draft		
+exe	0x004f86a0	ord_RandomCellPoint	ord	byte	draft		
 exe	0x004f8700	unk_Unk4f8700	ord	shape	draft		
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	unk_Unk4f88c0	ord	byte	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 24440527: ai_StepChapter4Step4 (0x576d40) typed (AIBLD / AIBTYPE / TUTSTATE, the volatile clock view) and byte-matched; VC6 /O2 swaps eax/ecx at 0x579420 / 0x579465 in this later function by the unit's code alone (the prover shows it equal). The match flips with unrelated spellings in another function (raw vs typed building access, the clock's spelling: tried 5 variants, it fell in 4, ai_TutorialInitChapter3 flipped byte/shape/draft along), as the lead comment already records for the declaration set: no evidence of the original's source [waits for: unk_575860's typing of the remaining S / U_I functions (the unit's final code set)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	shape+readable -> draft+readable at ba832240: cm_types.h now holds G17FIELDS (moved from cm.h, a member of the G17MSG union for the messages 0x16..0x18) and the message records G17MAKEMSG / G17MOVEMSG; unk_575860's declaration set changes with it and VC6 /O2 loads the float constants of the step tables into other registers at other times (0x57a202, 0x57a430: allocation only, every store, call and branch equal). This match has flipped byte / shape / draft with unrelated edits in this session alone (ai_StepChapter4Step4's spelling, an AIFIN field, cm_types.h records): no evidence of the original's source [waits for: unk_575860's declaration set (its head's includes) and the deep pass on its allocation]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
@@ -4344,7 +4344,7 @@ exe	0x005a8ee0	ai_Unk5a8ee0	unk_58bbd0	shape	draft
 exe	0x005a8f90	ai_Unk5a8f90	unk_58bbd0	shape	draft		
 exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	shape	draft		
 exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	draft		
-exe	0x005a9170	ai_Unk5a9170	unk_58bbd0	byte	draft		
+exe	0x005a9170	ai_NotifyPlayerOfChar	unk_58bbd0	byte	draft		
 exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	shape	draft		
 exe	0x005a9240	ai_Unk5a9240	unk_58bbd0	draft	draft		
 exe	0x005a92b0	ai_Unk5a92b0	unk_58bbd0	draft	draft		

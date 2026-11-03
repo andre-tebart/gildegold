@@ -9,7 +9,8 @@
    Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h ch.h d2.h f3gm.h gfx.h gv.h he.h
    hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
    definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, ch_Create, d2_SetObjValue, gm_SkillPoints,
-   gv_CrimeText, gv_PassSentence, he_Unk555210.
+   gv_CrimeText, gv_PassSentence, he_Unk555210. Meanwhile cm.h's own declarations of ord_AddGridAmount and
+   gm_RemoveOwned are the owner headers' prototypes (gv.h, f3gm.h); the other calls into those headers stay M7.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];
