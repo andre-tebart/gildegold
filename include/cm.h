@@ -512,7 +512,7 @@ char *cm_CharWeapon(char *c);  /* 0x4cda50 */
 char *ai_Unk4cdac0(char *c);  /* 0x4cdac0 */
 void cm_DiscardWeapons(char *c);  /* 0x4cdb20 */
 char cm_FightWeaponLoss(char *c);  /* 0x4cdb80 */
-float ai_Unk4cdcf0(char *c);  /* 0x4cdcf0 */
+float cm_FightStrength(char *c);  /* 0x4cdcf0 */
 void cm_UpdateHandObject(char *c);  /* 0x4cde20 */
 int *cm_CutEntrySlot(char *rec, char *c);  /* 0x4cdf00 */
 int *ai_Unk4cdf80(char *c);  /* 0x4cdf80 */

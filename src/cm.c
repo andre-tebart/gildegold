@@ -6735,37 +6735,44 @@ char cm_FightWeaponLoss(char *ch)
     }
     return 0;
 }
-/* 0x4cdcf0, a factor by the record kind of the character (0x154 .. 0x176) */
+/* 0x4cdcf0, the fighting strength of the character c: its health ratio times its skill 3 times a factor of the
+   weapon it carries (cm_CharWeapon's item: 0x158 1.0, 0x154 0.5, 0x156 / 0x16e / 0x172 0.8, 0x174 / 0x176 0.9,
+   0x15e / 0x160 0.7, another 0.3; none 0.5) */
 
-float ai_Unk4cdcf0(char *c)
+float cm_FightStrength(char *c)
 {
     float f = 0.5f;
-    float g;
-    int *p;
+    float skill;
+    AIWEAPON *w;
 
-    g = gm_GetSkill(c, 3);
-    p = (int *)cm_CharWeapon(c);
-    if (p != 0) {
-        switch (*p) {
+    skill = gm_GetSkill(c, 3);
+    w = (AIWEAPON *)cm_CharWeapon(c);
+    if (w != 0) {
+        switch (w->id) {
+        case 0x158:
+            f = 1.0f;
+            break;
         case 0x154:
-            return gm_HealthRatio(c) * g * 0.5f;
+            f = 0.5f;
+            break;
         case 0x156:
         case 0x16e:
         case 0x172:
-            return gm_HealthRatio(c) * g * 0.8f;
-        case 0x158:
-            return gm_HealthRatio(c) * g * 1.0f;
-        case 0x15e:
-        case 0x160:
-            return gm_HealthRatio(c) * g * 0.7f;
+            f = 0.8f;
+            break;
         case 0x174:
         case 0x176:
-            return gm_HealthRatio(c) * g * 0.9f;
+            f = 0.9f;
+            break;
+        case 0x15e:
+        case 0x160:
+            f = 0.7f;
+            break;
         default:
             f = 0.3f;
         }
     }
-    return gm_HealthRatio(c) * g * f;
+    return gm_HealthRatio(c) * skill * f;
 }
 /* 0x4cde20, the model name "ob_<NAME>" of the record kind (+0x64 of the record +0x184) of the character */
 
@@ -9080,14 +9087,14 @@ float *ai_Unk4d2c00(int side)
         if (*(int *)(ai_Unk6f0d04 + i) != -1) {
             o = cm_FindFighter(*(int *)(ai_Unk6f0d04 + i));
             if (o[8] != 0 && o[8] != 4)
-                a = ai_Unk4cdcf0(o) + a;
+                a = cm_FightStrength(o) + a;
         }
     }
     for (i = 0xc0; i < 0x100; i += 4) {
         if (*(int *)(ai_Unk6f0d04 + i) != -1) {
             o = cm_FindFighter(*(int *)(ai_Unk6f0d04 + i));
             if (o[8] != 0 && o[8] != 4)
-                b = ai_Unk4cdcf0(o) + b;
+                b = cm_FightStrength(o) + b;
         }
     }
     for (i = 0; i < ai_Unk6f0d58; i++) {
@@ -9139,7 +9146,7 @@ float ai_Unk4d2e30(char *c, int type)
         k = *(int *)(cm_CharWeapon(c) + 0x58);
         if ((k == 1 || k == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
             v = 0.2f;
-        return ai_Unk4cdcf0(c) * v;
+        return cm_FightStrength(c) * v;
     case 1:
         st = c[0x1c4];
         if (st == 1)
@@ -9152,7 +9159,7 @@ float ai_Unk4d2e30(char *c, int type)
         k = *(int *)(cm_CharWeapon(c) + 0x58);
         if ((k == 1 || k == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
             v = 1.0f;
-        return v / ai_Unk4cdcf0(c);
+        return v / cm_FightStrength(c);
     case 2:
         if (c[0x1c4] != 2)
             return 0.5f;
@@ -10434,7 +10441,7 @@ void ai_Unk4d63e0(char *a)
     for (i = 0; i < 16; i++) {
         id = *(int *)(a + 0x80 + i * 4);
         if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
-            sa = (int)(ai_Unk4cdcf0(c) + sa);
+            sa = (int)(cm_FightStrength(c) + sa);
             r = (unsigned short)util_RandomU(10);
             gm_AddHealth(G20_US(c), -r * 20);
         }
@@ -10442,7 +10449,7 @@ void ai_Unk4d63e0(char *a)
     for (i = 0; i < 16; i++) {
         id = *(int *)(a + 0xc0 + i * 4);
         if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
-            sb = (int)(ai_Unk4cdcf0(c) + sb);
+            sb = (int)(cm_FightStrength(c) + sb);
             r = (unsigned short)util_RandomU(10);
             gm_AddHealth(G20_US(c), -r * 20);
         }
