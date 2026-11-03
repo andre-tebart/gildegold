@@ -14974,58 +14974,60 @@ void cm_RunAuction(G28REC *m)
     cm_UnloadVoiceBank(bankRemarks);
     cm_EndSpecialTrack();
 }
-/* 0x4e24c0, the player's answer to an offer m (+0x20 the price, +0x24 .. the persons in the deal, +0x44 the object, +0x48 their count, +0x4c a
-   factor): when the asked character r + 0x10 is among them: the dialog "cutscenes\\pacht" (texts 0x1aa6 / 0x1aa7) with a slider between the two
-   limits (0x5bd060 / 0x5085b0 of the price), r + 0x98 = 1 and r + 0x94 = the picked value when the player confirms (0xf8a668 == 0).
-   ROUGH: the limits are only read from the calls */
+/* 0x4e24c0, the auction's member callback for the player's character (cm_RunSceneParty, scene kind 10): r is the member's
+   record, m the auction (cm_RunAuction). Nothing unless r->playerId is one of the bidders still in (m->bids[i] != -1) and his
+   goods are worth the price; else r->session.answer = the price and the dialog "cutscenes\\pacht" (texts 0x1aa6 / 0x1aa7)
+   with a value box between the price and the limit ai_AmountLimit gives (the price raised by 0x20 * 10000, at most the worth;
+   both in the player's money, gm_ConvertMoney), before the timer slider runs out (cm_DialogTimer, 1500 ms): button 0 bids
+   (r->session.click = 1, the answer the box's value back in the game's money), button 1 passes */
 
-void ai_Unk4e24c0(char *r, char *m)
+void cm_AuctionAskPlayer(CMCUTINFO *r, CMAUCTION *m)
 {
-    int i, n, id, lo, hi, v, dlg, sl, cur, t, lim[8];
-    char *c;
+    AICHAR *c;
+    int i, price, worth, lim, lo, hi, view, t, box, dlg;
 
-    *(int *)(r + 0x98) = 0;
-    n = *(int *)(m + 0x48);
-    id = *(int *)(r + 0x10);
-    for (i = 0; i < n && *(int *)(m + 0x24 + i * 4) != id; i++)
+    r->session.click = 0;
+    for (i = 0; i < m->count && m->ids[i] != r->playerId; i++)
         ;
-    if (i >= n || *(int *)(m + i * 4) == -1)
+    if (i >= m->count || m->bids[i] == -1)
         return;
-    *(int *)(r + 0x94) = *(int *)(m + 0x20);
-    gm_BuildQuery(1, 1, *(int *)(m + 0x44));
-    c = (char *)gm_FindChar(*(int *)(r + 0x10));
+    r->session.answer = m->price;
+    gm_BuildQuery(1, 1, m->building);
+    price = m->price;
+    c = (AICHAR *)gm_FindChar(r->playerId);
     if (c == 0)
         return;
-    cur = *(int *)(m + 0x20);
-    hi = gm_GetGoodsValue(c);
-    ai_Unk5bd060(cur, hi, 0x20, lim);
-    lo = gm_ConvertMoney(cur, ai_OwnPlayer);
-    sl = gm_ConvertMoney(lim[0], ai_OwnPlayer);
-    if (hi < cur)
+    worth = gm_GetGoodsValue((char *)c);
+    ai_AmountLimit(price, worth, 0x20, &lim);
+    lo = gm_ConvertMoney(price, ai_OwnPlayer);
+    hi = gm_ConvertMoney(lim, ai_OwnPlayer);
+    if (worth < price)
         return;
-    v = d2_OpenForm("cutscenes\\pacht", 0, 0);
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
+    view = d2_OpenForm(0, 0, "cutscenes\\pacht");
+    d2_PlaceMainWindow(view, 3);
     d2_ClickedId = -1;
-    d2_SetForm(v, 0);
+    d2_SetForm(view, 0);
     t = io_PrintText(0x1aa6, ai_OwnPlayer);
-    t = io_PrintText(0x1aa7);
-    dlg = d2_GetWinObj(v, 0, t);
-    d2_SetObjValue(dlg, lo, sl, lo);
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    io_PrintText(0x1aa7);
+    box = d2_GetWinObj(view, 0, t);
+    d2_SetObjValue(box, lo, hi, lo);
+    dlg = CUT_BOX();
     cm_DialogTimer(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
-    while (sv_RunFrame(cm_DialogFrameFlags, ai_Unk4e24c0) != 0) {
+    while (sv_RunFrame(cm_AuctionAskPlayer, cm_DialogFrameFlags) != 0) {
         if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         else if (d2_ClickedId != -1) {
             sv_PopRequest = 1;
-            if (d2_ClickedId != 1 && d2_ClickedId == 0) {
-                *(int *)(r + 0x98) = 1;
-                *(int *)(r + 0x94) = ((int (*)(int))gm_PlayerFactor)(d2_GetObjValue(dlg, ai_OwnPlayer));
+            if (d2_ClickedId == 1)
+                ;                       /* passes */
+            else if (d2_ClickedId == 0) {
+                r->session.click = 1;
+                r->session.answer = gm_PlayerFactor(d2_GetObjValue(box), ai_OwnPlayer);
             }
         }
     }
-    d2_CloseView(v);
+    d2_CloseView(view);
 }
 /* 0x4e26d0, the answer of a computer character to the offer m of 0x4e24c0: the price (+0x20) is compared with a value the character's
    resources (0x509e60) and a random factor (0x4e5360, 0x5eba9c / 0x5ebb30) give; r + 0x98 = 1 and r + 0x94 = the counter offer rounded to
@@ -16514,7 +16516,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
-    ai_Unk4e5730(10, (int)cm_RunAuction, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
+    ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }

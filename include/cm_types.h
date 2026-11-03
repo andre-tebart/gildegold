@@ -320,7 +320,7 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
 typedef char cm_AssertCMCUTINFO[sizeof(CMCUTINFO) == 0x35c ? 1 : -1];
 
 typedef struct CMAUCTION {          /* 0x50 bytes, the state of an auction (cm_RunAuction) that cm_RunSceneParty hands to the
-                                       bidders' callbacks (ai_Unk4e24c0 the player, ai_Unk4e26d0 a computer character) */
+                                       bidders' callbacks (cm_AuctionAskPlayer the player, ai_Unk4e26d0 a computer character) */
     int bids[8];                    /* 0x00, a bidder's bid of the last round; 0 none yet, -1 out (not found, no bid) */
     int price;                      /* 0x20, the price asked: the start price, then the best bid (+ 0x20 after a round) */
     int ids[8];                     /* 0x24, the bidders' netIds (G28REC.members), -1 unused */

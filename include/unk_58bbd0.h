@@ -138,7 +138,7 @@ int ai_BlackmailContact(int param_1, int param_2);  /* 0x5c9c50 */
 unsigned char ai_BlackmailContactVariant(int param_1, int param_2);  /* 0x5c9ff0 */
 int ai_CounterEspionage(int param_1, int *m);  /* 0x5cae00 */
 int ai_CounterEspionageWindow(int *param_1, int param_2);  /* 0x5cb250 */
-int ai_Unk5bd060(int param_1, int param_2, int param_3, int *param_4);  /* 0x5bd060 */
+int ai_AmountLimit(int param_1, int param_2, int param_3, int *param_4);  /* 0x5bd060 */
 void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
 void ai_Unk5a8cb0(unsigned short *param_1, char *param_2);  /* 0x5a8cb0 */
 int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_5, int param_6);  /* 0x5be3b0 */

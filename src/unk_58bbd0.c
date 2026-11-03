@@ -9404,7 +9404,7 @@ void ai_Unk59fe40(int param_1)
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
 int ai_Unk5bea50(); int ai_Unk5c1a80(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
-int ai_AmountRowStatus(); int ai_AmountRow(); int ai_Unk5c2160(); int ai_Unk5bd060();
+int ai_AmountRowStatus(); int ai_AmountRow(); int ai_Unk5c2160(); int ai_AmountLimit();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
@@ -9696,7 +9696,7 @@ void ai_Unk5a0950(unsigned char *param_1)
     io_PrintText(0x1a1a, money);
     if (k) {
         text = io_PrintText(0x1a1b, (unsigned int)U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4) * 2 + 0x9a8);
-        ai_Unk5bd060(0x640, own, 0x20, &amount);
+        ai_AmountLimit(0x640, own, 0x20, &amount);
         v = gm_ConvertMoney(0x640, U_I((unsigned)&ai_OwnPlayer));
         v = ((int (*)(int, int, int))gm_ConvertMoney)(amount, U_I((unsigned)&ai_OwnPlayer), v);
         v = ((int (*)(int, int, int))gm_ConvertMoney)(0x640, U_I((unsigned)&ai_OwnPlayer), v);
@@ -10164,7 +10164,7 @@ void ai_Unk5a1a60(int param_1)
     }
 }
 
-char * gm_Query(void *list, int n, ...); int gm_GetWorth(unsigned short id); int gm_GetGoodsValue(); int ai_Unk5bd060();
+char * gm_Query(void *list, int n, ...); int gm_GetWorth(unsigned short id); int gm_GetGoodsValue(); int ai_AmountLimit();
 int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
 void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj(); void d2_SetObjValue();
 int gm_ConvertMoney(int a, unsigned char k); int d2_GetObjValue(); int gm_PlayerFactor(int a, unsigned char k); int sv_CheckGoodAmount();
@@ -10229,7 +10229,7 @@ void ai_Unk5a1af0(int param_1)
     } else {
         v = io_PrintText(0x1988, U_W((unsigned)&ai_PlayerId), U_W(param_1 + 0x27), 0x48c,
                          (unsigned int)U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4) * 2 + 0x9a8);
-        ai_Unk5bd060(pct, money, 0x20, &amount);
+        ai_AmountLimit(pct, money, 0x20, &amount);
         ctl = d2_GetWinObj(win, 1, v);
         d2_SetObjValue(ctl, ((int (*)(int, int, int))gm_ConvertMoney)(pct, k,
                             ((int (*)(int, int, int))gm_ConvertMoney)(amount, k, gm_ConvertMoney(pct, k))));
@@ -16177,10 +16177,10 @@ int ai_PlayerStatsPanel(void)
     ai_CampaignStep(0x13, 0, 1, 0);
     return 0;
 }
-/* 0x5bd060, the clamp of a combined id (88 B): with param_1 and param_3 positive,
+/* 0x5bd060, the upper limit of an amount box (88 B): with param_1 (the lower end) and param_3 (steps of 10000) positive,
    out = the larger of param_1 and min(param_2, param_3 * 10000 + param_1); returns 1, else 0 */
 
-int ai_Unk5bd060(int param_1, int param_2, int param_3, int *param_4)
+int ai_AmountLimit(int param_1, int param_2, int param_3, int *param_4)
 {
     int v;
     int m;

@@ -1072,7 +1072,7 @@ int ai_WealthRating();  /* 0x4947a0 */
 int sb_IsPlaying(struct SBSAMPLE *s);  /* 0x426f20 */
 void msx_StopAmbient(struct MSXTRACK *t);  /* 0x4244b0 */
 
-int ai_Unk5bd060();  /* 0x5bd060 */
+int ai_AmountLimit();  /* 0x5bd060 */
 int gm_ConvertMoney(int a, unsigned char k);  /* 0x5085b0 */
 int gm_PlayerFactor(int a, unsigned char k);  /* 0x5085f0 */
 int d2_GetObjValue();  /* 0x475980 */
