@@ -72,7 +72,7 @@ extern int cm_LastBuildingId;                /* 0x60bd8c, = -1 */
 extern int cm_LastObjectId;                /* 0x60bd90, = -1 */
 extern int cm_LeftPlayerId;                /* 0x60bd94, = -1 */
 extern int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s);  /* 0x60bd98, the handler of each message type */
-extern int (*ai_Unk60bf40[0x6a])(G17MSG *m);             /* 0x60bf40, the check of each type (groups 5..6) */
+extern int (*cm_Checks[0x6a])(G17MSG *m);             /* 0x60bf40, the check of each type (groups 5..6) */
 extern unsigned int cm_LastRequCount;       /* 0xa68d1c, "cm_LastRequCount" */
 extern int cm_LastSyncCount;               /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 extern int ai_GameOver;                /* 0x6f259c */
