@@ -360,16 +360,15 @@ int cm_WaitHello(void)
     ai_Unk4c4130(m);
     return 0;
 }
-/* 0x4c3680, sends the queued messages (offline: straight into the receive list); 1: no free record */
+/* 0x4c3680, sends the queued messages one by one while the connection takes them (0 when the send is still busy);
+   offline (no socket) they go straight into the receive list (cm_EnqueueReceived), 1: no free record */
 
 int cm_FlushSendQueue(void)
 {
-    G17MSG *n;
-
     if (cm_SendQueue != 0) {
         if (net_Conn.s == INVALID_SOCKET) {
             while (1) {
-                if (ai_Unk4c4080(cm_SendQueue) != 0)
+                if (cm_EnqueueReceived(cm_SendQueue) != 0)
                     return 1;
                 cm_SendQueue = cm_SendQueue->next;
                 if (cm_SendQueue == 0)
@@ -383,11 +382,10 @@ int cm_FlushSendQueue(void)
                     if (net_Conn.tx != 0)
                         return 0;
                 }
-                n = cm_SendQueue->next;
                 net_Conn.tx = (NETPKT *)cm_SendQueue;
-                if (n != 0)
-                    n->prev = 0;
-                cm_SendQueue = n;
+                cm_SendQueue = cm_SendQueue->next;
+                if (cm_SendQueue != 0)
+                    cm_SendQueue->prev = 0;
                 net_Send();
             } while (cm_SendQueue != 0);
         }
@@ -779,7 +777,7 @@ int cm_ReceiveMessages(void)
         }
         do {
             ai_Unk6f0cd0++;
-            if (ai_Unk4c4080(&cm_RecvMsg) != 0)
+            if (cm_EnqueueReceived(&cm_RecvMsg) != 0)
                 return 1;
             net_Conn.rx = (NETPKT *)&cm_RecvMsg;
             net_Recv();
@@ -806,7 +804,7 @@ G17MSG *ai_Unk4c4030(char type, int timeout)
 }
 /* 0x4c4080, appends a copy of src to the receive list; 1: no free record (closes the connection) */
 
-int ai_Unk4c4080(G17MSG *src)
+int cm_EnqueueReceived(G17MSG *src)
 {
     G17MSG *m, *p;
 
