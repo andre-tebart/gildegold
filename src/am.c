@@ -11172,7 +11172,15 @@ int ai_BuildingAimPoints(AIBLD *x, float *a, AIBLD *y, float *b)
 /* 0x4a67a0: aims p's cannon in building b at building t: a random cannon type r (gv_BuildingCannon / gv_CannonKind,
    p's money must reach its level), a ballistic solution (ai_SphereVolume of the iron ball, ai_PositionShare,
    ai_SolveCannonAim) within -15..45 degrees, its charge (gv_SalvoCharge) within the cannon's limit and its cost
-   (gv_CannonCost) within a quarter of p's goods; the shot goes into ai_CannonShot, 1 when aimed */
+   (gv_CannonCost) within a quarter of p's goods; the shot goes into ai_CannonShot, 1 when aimed
+   @deep read the whole function against the original (255 vs 255 ins); only two order hunks remain in the
+   final ai_CannonShot stores (0x4a6a79..0x4a6ad1): the original stores who (+0x0) before loading
+   [esp+0x24], ours stores +0x6c first; same values to the same fields, other schedule and ecx/edx swap;
+   the mov eax,1 is placed before rep movsd in the original (references: M8 at +0x2f0: ours refers to
+   ai_CannonShot+0x70 (0x6f0708), the original's field to 0x6f0704 (ai_CannonShot+0x6c) (and 2 more),
+   explained: the three M8 lines pair reordered stores crosswise: ours +0x70<-[esp+0x24],
+   +0x4c<-[esp+0x14]+1, +0x54<-[esp+0x10]; the original 0x6f0708<-[esp+0x24], 0x6f06e4<-[esp+0x14]+1,
+   0x6f06ec<-[esp+0x10]: the same field gets the same value on both sides (recorded as debt at 15bda65)) */
 
 int ai_AimCannon(AIPER *p, AIBLD *b, AIBLD *t)
 {
