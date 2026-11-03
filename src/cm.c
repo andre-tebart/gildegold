@@ -7855,9 +7855,9 @@ void ai_Unk4cfeb0()
                 cm_ClearMarks();
                 o[0x188] = 1;
                 if (*(int *)(o + 0x16c) == cm_FightAttacker)
-                    snd_QueueVoice(*(unsigned short *)o, ai_Unk6f0d24, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
+                    snd_QueueVoice(*(unsigned short *)o, cm_AttackerClickVoices, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
                 else
-                    snd_QueueVoice(*(unsigned short *)o, ai_Unk6f0d28, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
+                    snd_QueueVoice(*(unsigned short *)o, cm_DefenderClickVoices, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
                 sel = ai_PickedObject;
             }
         }
@@ -8301,7 +8301,7 @@ char ai_Unk4d0a80(char *o)
 }
 /* 0x4d0ca0, walks the objects of the scene with the callback 0x4d0a80 (the flag dummies) */
 
-void ai_Unk4d0ca0()
+void cm_PlaceFlagObjects()
 {
     ai_Unk6f0d58 = 0;
     d3_ForEachObject(ai_Unk5fb5b0, 0, 0x100, ai_Unk4d0a80, 0);
@@ -8354,158 +8354,186 @@ void ai_ArmGateGuards(CMGUARDREC *rec, unsigned char kind)
 }
 /* 0x4d0f80, a callback: an object of kind 3 gets +0x224 = 0; returns 1 */
 
-char ai_Unk4d0f80(char *o)
+char cm_ClearKind3MaskCB(char *o)
 {
     if (*(int *)(o + 0x220) == 3)
         *(int *)(o + 0x224) = 0;
     return 1;
 }
 
-#define G19_SNDS(a, b, c, d, e, s)     a = snd_LoadVoiceBank(S_##s##1, 0);      b = snd_LoadVoiceBank(S_##s##2, 0);      c = snd_LoadVoiceBank(S_##s##3, 0);      d = snd_LoadVoiceBank(S_##s##4, 0);      e = snd_LoadVoiceBank(S_##s##5, 0)
-#define S_DIEBE1 "ARBEITER_KOMMENTARE_KLICK_DIEBE.sbf"
-#define S_DIEBE2 "K_C2C_ANGRIFF_DIEBE.sbf"
-#define S_DIEBE3 "K_C2C_BEFEHL_ERHALTEN_DIEBE.sbf"
-#define S_DIEBE4 "K_C2C_HOHN_DIEBE.sbf"
-#define S_DIEBE5 "K_C2C_SCHMERZ_DIEBE.sbf"
-#define S_RAEUBER1 "ARBEITER_KOMMENTARE_KLICK_RAEUBER.sbf"
-#define S_RAEUBER2 "K_C2C_ANGRIFF_RAEUBER.sbf"
-#define S_RAEUBER3 "K_C2C_BEFEHL_ERHALTEN_RAEUBER.sbf"
-#define S_RAEUBER4 "K_C2C_HOHN_RAEUBER.sbf"
-#define S_RAEUBER5 "K_C2C_SCHMERZ_RAEUBER.sbf"
-#define S_SOELDNER1 "ARBEITER_KOMMENTARE_KLICK_SOELDNER.sbf"
-#define S_SOELDNER2 "K_C2C_ANGRIFF_SOELDNER.sbf"
-#define S_SOELDNER3 "K_C2C_BEFEHL_ERHALTEN_SOELDNER.sbf"
-#define S_SOELDNER4 "K_C2C_HOHN_SOELDNER.sbf"
-#define S_SOELDNER5 "K_C2C_SCHMERZ_SOELDNER.sbf"
+/* the voice banks of a fight side: KIND is the role's suffix (DIEBE thieves, RAEUBER robbers, SOELDNER mercenaries) */
+#define CM_LOAD_VOICES(SIDE, KIND)                                                         \
+    cm_##SIDE##ClickVoices = snd_LoadVoiceBank("ARBEITER_KOMMENTARE_KLICK_" KIND ".sbf", 0); \
+    cm_##SIDE##AttackVoices = snd_LoadVoiceBank("K_C2C_ANGRIFF_" KIND ".sbf", 0);         \
+    cm_##SIDE##OrderVoices = snd_LoadVoiceBank("K_C2C_BEFEHL_ERHALTEN_" KIND ".sbf", 0);  \
+    cm_##SIDE##TauntVoices = snd_LoadVoiceBank("K_C2C_HOHN_" KIND ".sbf", 0);             \
+    cm_##SIDE##PainVoices = snd_LoadVoiceBank("K_C2C_SCHMERZ_" KIND ".sbf", 0)
 
-/* 0x4d0fa0, sets up the fight scene for the fight record rec (+0x7c flags, +0x10 / +0x14 the attacker's and the
-   defender's buildings, +0x34 / +0x38 the two sides, +0x80 / +0xc0 the 16 defender / attacker characters, +0x100 the three
-   carts, +0x10c the building whose kind chooses the sounds): the scenario "Kampfszenario_<place>.ed3" by the flags or the
-   building kind of the defender (0x4e2e60), the portrait / record tables cleared, the weapon sounds (kampf\*.sbf), the
-   speech sets of both sides (types 0 mercenaries / 1 robbers / 2 thieves), the characters placed at the dummies
-   "dummy_OFFENSE_ENTRY" / "dummy_DEFENSE_ENTRY" (0x4d0920), the carts "ob_KARREN_<size>_KAMPF.ogr" with their goods
-   "WARE_0<n>", the border cells of the scene's map set to 0xd. Rough draft. */
-void ai_Unk4d0fa0(char *rec)
+/* a fight record as cm_SetupFightScene and its caller 0x4d63e0 read it (the rest of its layout is not known here) */
+typedef struct CMFIGHTREC {
+    char pad000[0xc];
+    int owner;                      /* 0x00c, the player whose fight it is (cm_FightOwner) */
+    char pad010[4];
+    int placeId;                    /* 0x014, the defender's building: its type picks the scenario, its role the defender voices */
+    char pad018[0x1c];
+    int attackerId;                 /* 0x034, the attacking character (cm_FightAttacker) */
+    int defenderId;                 /* 0x038, the defending character (cm_FightDefender) */
+    char pad03c[0x40];
+    unsigned char flags;            /* 0x07c, 1 in the open (8: in the town, else the mountain pass), 4 the mountain pass */
+    char pad07d[3];
+    int defenders[16];              /* 0x080, the netIds of the defending fighters, -1 = none */
+    int attackers[16];              /* 0x0c0, the netIds of the attacking fighters, -1 = none */
+    int carts[3];                   /* 0x100, the object ids of the carts in the fight, -1 = none */
+    int attackerBldId;              /* 0x10c, the attacker's building: its role picks the attacker voices */
+} CMFIGHTREC;
+
+/* 0x4d0fa0, sets up the fight scene for the fight record rec: the scenario "Kampfszenario_<place>.ed3" by the flags or
+   the type of the defender's building (cm_LoadEventScene; a robbers' camp gets a 15 cells wide border), the fight
+   tables cleared, the weapon sounds (kampf\*.sbf), the voices of both sides by their roles (cm_FightRole), the boots
+   object, the attackers placed at "dummy_OFFENSE_ENTRY" and the defenders (walking 1.2 times as fast) at
+   "dummy_DEFENSE_ENTRY", the scene characters collected, the carts "ob_KARREN_<size>_KAMPF.ogr" put at their
+   dummies "dummy_KARREN_0<n>" with up to three of their goods shown as "WARE_0<n>" (shuffled), the border cells of the
+   height map set to the ground type 0xd and cm_DefenseFactor from the defender's building
+   @deep Read in full against 0x4d0fa0..0x4d1a0b and rewritten: the scenario choice (AIBTYPE record 0x24d,
+   kind / level), the fight tables (index loops: VC6 jl on the strength-reduced pointer), the sounds and
+   the role voices (copy branch last), the boots, the fighters (cm_AddFighter, side leader at +0x16c, the
+   defenders' walkSpeed *1.2), the scene chars, the nine WARE objects, the cart loop (nested ifs, goods
+   query for-loop store/next/n<3 order, order walked by a char pointer as the original's inc edi), the
+   border cells and cm_DefenseFactor; frame now 0x13c on both sides and 763 vs 765 instructions. Left: the
+   cart loop's allocation (the original keeps i+1 in edi and spills it, n in a stack slot reloaded for k >
+   n - 1, the dummy object in ebx; ours inc esi, n in a register: 'inc esi' vs 'lea edi,[esi+1]', 'cmp
+   ebx,edi' vs 'test ebx,ebx', the cart pointer slot [esp+0x18] vs [esp+0x10]) and the slot layout of order
+   / goods / pos (the prover stops at gm_ShuffledBytes(9, frame-0x10 vs frame-0x1c)). (references: M8 at
+   +0x96b: ours refers to d3_DefaultScene (0x5fb5b0), the original's field to 0x633738 (ai_Unk633738,
+   d3_Terrain), explained: the M8 at +0x96b is an alignment artifact: both sides load d3_DefaultScene and
+   d3_Terrain and push d3_Terrain then hmap for d3sm_Build (ours ecx=scene eax=terrain, the original
+   edx=scene ecx=terrain); the aligner pairs our scene load with the original's terrain load by register) */
+void cm_SetupFightScene(CMFIGHTREC *rec)
 {
-    char buf[0x40], nm[0x40], path[0x40];
-    char t[16];
-    int q[4];
-    char *sc, *b, *bl, *o, *a, *c, *h, *w, *r, *p, *k;
-    char **pp;
-    int nmax = 10;
-    int i, j, n, kind, ty, wd;
-    int *cell;
-    unsigned char fl = rec[0x7c];
+    char name[0x100];
+    D3VECTOR pos;
+    char order[16];
+    AIOBJ *goods[3];
+    int k, n, border, i;
+    int *cart;
+    AIBLD *b;
+    AIOBJ *obj, *load, *w;
+    D3OBJECT *o;
+    AICHAR *r;
+    D3SM *sc;
+    AIBTYPE *t;
+    char *p;
 
-    if (fl & 1) {
-        if (fl & 8)
-            ai_Unk4e2e60("Kampfszenario_STADT.ed3");
+    border = 10;
+    if (rec->flags & 1) {
+        if (rec->flags & 8)
+            cm_LoadEventScene("Kampfszenario_STADT.ed3");
         else
-            ai_Unk4e2e60("Kampfszenario_BERGPASS.ed3");
-    } else if (fl & 4) {
-        ai_Unk4e2e60("Kampfszenario_BERGPASS.ed3");
+            cm_LoadEventScene("Kampfszenario_BERGPASS.ed3");
+    } else if (rec->flags & 4) {
+        cm_LoadEventScene("Kampfszenario_BERGPASS.ed3");
     } else {
-        bl = gm_BuildQuery(1, 1, *(int *)(rec + 0x14));
-        k = &ai_BTypes[(unsigned char)bl[0] * 0x24d + (unsigned char)bl[0]];
-        kind = (unsigned char)k[0];
-        if (gm_IsHomeType(bl) != 0) {
-            if (kind == 0x10) {
-                ai_Unk4e2e60("Kampfszenario_RAEUBERLAGER.ed3");
-                nmax = 15;
-            } else if (kind == 0xc)
-                ai_Unk4e2e60("Kampfszenario_STEINBRUCH.ed3");
-            else if (kind == 0xb)
-                ai_Unk4e2e60("Kampfszenario_WALDSTUECK.ed3");
-            else if (kind == 0xd)
-                ai_Unk4e2e60("Kampfszenario_MINE.ed3");
-        } else {
-            if (kind == 4) {
-                if (k[0x247] == 1)
-                    ai_Unk4e2e60("Kampfszenario_SCHMUGGLERLOCH.ed3");
-                else if (k[0x247] == 2)
-                    ai_Unk4e2e60("Kampfszenario_UNTERSCHLUPF.ed3");
-                else if (k[0x247] == 3)
-                    ai_Unk4e2e60("Kampfszenario_DIEBESGILDE.ed3");
-            } else if (kind == 0x13) {
-                if (k[0x247] == 1)
-                    ai_Unk4e2e60("Kampfszenario_STADTWACHE_KLEIN.ed3");
-                else if (k[0x247] == 2)
-                    ai_Unk4e2e60("Kampfszenario_STADTWACHE_MITTEL.ed3");
-                else if (k[0x247] == 3)
-                    ai_Unk4e2e60("Kampfszenario_STADTWACHE_GROSS.ed3");
-            }
+        b = (AIBLD *)gm_BuildQuery(1, 1, rec->placeId);
+        if (gm_IsHomeType((unsigned char *)b) != 0) {
+            t = &ai_BTypesT[b->type];
+            if (t->kind == 0x10) {
+                cm_LoadEventScene("Kampfszenario_RAEUBERLAGER.ed3");
+                border = 15;
+            } else if (t->kind == 0xc)
+                cm_LoadEventScene("Kampfszenario_STEINBRUCH.ed3");
+            else if (t->kind == 0xb)
+                cm_LoadEventScene("Kampfszenario_WALDSTUECK.ed3");
+            else if (t->kind == 0xd)
+                cm_LoadEventScene("Kampfszenario_MINE.ed3");
+        } else if (ai_BTypesT[b->type].kind == 4) {
+            if (ai_BTypesT[b->type].level == 1)
+                cm_LoadEventScene("Kampfszenario_SCHMUGGLERLOCH.ed3");
+            else if (ai_BTypesT[b->type].level == 2)
+                cm_LoadEventScene("Kampfszenario_UNTERSCHLUPF.ed3");
+            else if (ai_BTypesT[b->type].level == 3)
+                cm_LoadEventScene("Kampfszenario_DIEBESGILDE.ed3");
+        } else if (ai_BTypesT[b->type].kind == 0x13) {
+            if (ai_BTypesT[b->type].level == 1)
+                cm_LoadEventScene("Kampfszenario_STADTWACHE_KLEIN.ed3");
+            else if (ai_BTypesT[b->type].level == 2)
+                cm_LoadEventScene("Kampfszenario_STADTWACHE_MITTEL.ed3");
+            else if (ai_BTypesT[b->type].level == 3)
+                cm_LoadEventScene("Kampfszenario_STADTWACHE_GROSS.ed3");
         }
     }
-    sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    ai_Unk4e3650();
-    if (ai_Unk633738 != 0) {
-        *(int *)(ai_Unkfd7c50 + d3_CurrentScene * 0x3e0 + 8) = *(int *)(ai_Unkfd7c50 + 8);
-        ai_Unk633dd4 = *(int *)(ai_Unkfd7c50 + 8);
+    sc = (D3SM *)d3_DefaultScene->hmap;
+    cm_ApplySeason();
+    if (d3_Terrain != 0) {
+        D3IF_SCENE(d3_CurrentScene).sky = D3IF_SCENE(0).sky;
+        d3_Sky = D3IF_SCENE(0).sky;
         sv_UpdateWeather();
-        d3sky_Init(ai_Unk633dd4, 1);
+        d3sky_Init(d3_Sky, 1);
     }
-    memset(cm_CharInfoWins, -1, 0x80);
-    for (p = (char *)cm_DamagePops + 4; (int)p < ((unsigned)((unsigned)cm_DamagePops + 0x140) + 0x4); p += 0x14) {
-        *(int *)(p + 4) = -1;
-        *(int *)p = 0;
-        *(int *)(p + 8) = 0;
+    memset(cm_CharInfoWins, -1, 32 * sizeof(int));
+    for (i = 0; i < 16; i++) {
+        cm_DamagePops[i].h = -1;
+        cm_DamagePops[i].v = 0;
+        cm_DamagePops[i].c = 0;
     }
-    memset((char *)((unsigned)&cm_Fighters + 0x4380), 0, 0x1000);
-    memset(cm_Bombs, 0, 0x100);
+    memset(&cm_FightersT[32], 0, 0x1000);
+    memset(cm_Bombs, 0, sizeof(cm_Bombs));
     memset(cm_Grenades, 0, 0x200);
-    memset(cm_Fighters, 0, 0x4380);
-    for (p = cm_Fighters; (int)p < ((unsigned)&cm_Fighters + 0x4380); p += 0x21c)
-        *(unsigned short *)p = 0xffff;
-    for (p = (char *)cm_Portraits + 8; (int)p < ((unsigned)((unsigned)cm_Portraits + 0xc0) + 0x8); p += 0x20)
-        *(int *)p = -1;
-    ai_Unk6f0d0c = sb_LoadSampleBank("kampf.sbf", 1);
-    ai_Unk6f0d10 = sb_LoadSampleBank("kampf\\armbrust.sbf", 1);
+    memset(cm_Fighters, 0, 32 * sizeof(AICHAR));
+    for (i = 0; i < 32; i++)
+        cm_FightersT[i].id = 0xffff;
+    for (i = 0; i < 6; i++)
+        cm_Portraits[i].win = -1;
+    cm_FightSounds = sb_LoadSampleBank("kampf.sbf", 1);
+    cm_CrossbowSounds = sb_LoadSampleBank("kampf\\armbrust.sbf", 1);
     cm_BombSounds = sb_LoadSampleBank("kampf\\bombeundtopf.sbf", 1);
-    ai_Unk6f0d18 = sb_LoadSampleBank("kampf\\dolche.sbf", 1);
-    ai_Unk6f0d1c = sb_LoadSampleBank("kampf\\pistole.sbf", 1);
-    ai_Unk6f0d20 = sb_LoadSampleBank("kampf\\schwerter.sbf", 1);
-    b = gm_BuildQuery(1, 1, *(int *)(rec + 0x10c));
+    cm_DaggerSounds = sb_LoadSampleBank("kampf\\dolche.sbf", 1);
+    cm_PistolSounds = sb_LoadSampleBank("kampf\\pistole.sbf", 1);
+    cm_SwordSounds = sb_LoadSampleBank("kampf\\schwerter.sbf", 1);
+    b = (AIBLD *)gm_BuildQuery(1, 1, rec->attackerBldId);
     if (b != 0)
-        ai_Unk6f0d50 = ai_Unk4d4050(b);
-    if (ai_Unk6f0d50 == 2) {
-        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, cm_AttackerOrderVoices, ai_Unk6f0d3c, ai_Unk6f0d44, DIEBE);
-    } else if (ai_Unk6f0d50 == 1) {
-        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, cm_AttackerOrderVoices, ai_Unk6f0d3c, ai_Unk6f0d44, RAEUBER);
-    } else if (ai_Unk6f0d50 == 0) {
-        G19_SNDS(ai_Unk6f0d24, ai_Unk6f0d2c, cm_AttackerOrderVoices, ai_Unk6f0d3c, ai_Unk6f0d44, SOELDNER);
+        cm_AttackerRole = cm_FightRole((unsigned char *)b);
+    if (cm_AttackerRole == 2) {
+        CM_LOAD_VOICES(Attacker, "DIEBE");
+    } else if (cm_AttackerRole == 1) {
+        CM_LOAD_VOICES(Attacker, "RAEUBER");
+    } else if (cm_AttackerRole == 0) {
+        CM_LOAD_VOICES(Attacker, "SOELDNER");
     }
-    b = gm_BuildQuery(1, 1, *(int *)(rec + 0x14));
+    b = (AIBLD *)gm_BuildQuery(1, 1, rec->placeId);
     if (b != 0)
-        ai_Unk6f0d54 = ai_Unk4d4050(b);
-    if (ai_Unk6f0d54 == ai_Unk6f0d50) {
-        ai_Unk6f0d28 = ai_Unk6f0d24;
-        ai_Unk6f0d30 = ai_Unk6f0d2c;
+        cm_DefenderRole = cm_FightRole((unsigned char *)b);
+    if (cm_DefenderRole != cm_AttackerRole) {
+        if (cm_DefenderRole == 2) {
+            CM_LOAD_VOICES(Defender, "DIEBE");
+        } else if (cm_DefenderRole == 1) {
+            CM_LOAD_VOICES(Defender, "RAEUBER");
+        } else if (cm_DefenderRole == 0) {
+            CM_LOAD_VOICES(Defender, "SOELDNER");
+        }
+    } else {
+        cm_DefenderClickVoices = cm_AttackerClickVoices;
+        cm_DefenderAttackVoices = cm_AttackerAttackVoices;
         cm_DefenderOrderVoices = cm_AttackerOrderVoices;
-        ai_Unk6f0d40 = ai_Unk6f0d3c;
-        ai_Unk6f0d48 = ai_Unk6f0d44;
-    } else if (ai_Unk6f0d54 == 2) {
-        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, cm_DefenderOrderVoices, ai_Unk6f0d40, ai_Unk6f0d48, DIEBE);
-    } else if (ai_Unk6f0d54 == 1) {
-        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, cm_DefenderOrderVoices, ai_Unk6f0d40, ai_Unk6f0d48, RAEUBER);
-    } else if (ai_Unk6f0d54 == 0) {
-        G19_SNDS(ai_Unk6f0d28, ai_Unk6f0d30, cm_DefenderOrderVoices, ai_Unk6f0d40, ai_Unk6f0d48, SOELDNER);
+        cm_DefenderTauntVoices = cm_AttackerTauntVoices;
+        cm_DefenderPainVoices = cm_AttackerPainVoices;
     }
-    ai_Unk6f0d5c = d3io_LoadObjectRef("ub_STIEFEL", "ub_STIEFEL");
+    cm_BootsObject = d3io_LoadObjectRef("ub_STIEFEL", "ub_STIEFEL");
     if (sc == 0) {
-        *(char **)(ai_Unk5fb5b0 + 0xb0) = (char *)d3sm_Create(ai_Unk633738, *(int *)(ai_Unk5fb5b0 + 0xb4), 2);
-        sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
+        d3_DefaultScene->hmap = (struct D3HMAP *)d3sm_Create((struct D3TERRAIN *)d3_Terrain,
+                                                             ((D3IFSCENE *)d3_DefaultScene)->mapSize, 2);
+        sc = (D3SM *)d3_DefaultScene->hmap;
     }
-    ai_Unk935d00 = *(float *)(sc + 0x10) * ai_Unk5edc58;
+    cm_FightCellScale = sc->cell.x * 1.1;
     sv_ScrollSpeed = 0.15f;
     sv_CameraEaseOn = 0;
-    cm_FightRecord = rec;
-    ai_Unk4d0ca0();
-    cm_FightAttacker = (int)gm_FindChar(*(int *)(rec + 0x34));
-    ai_Unk6f0ce8 = (int)gm_FindChar(*(int *)(rec + 0x38));
-    if (ai_CharInts[ai_PlayerId][0] == cm_FightOwner && (rec[0x7c] & 1)) {
+    cm_FightRecord = (char *)rec;
+    cm_PlaceFlagObjects();
+    cm_FightAttacker = (int)gm_FindChar(rec->attackerId);
+    cm_FightDefender = (int)gm_FindChar(rec->defenderId);
+    if (ai_CharsT[ai_PlayerId].netId == cm_FightOwner && (rec->flags & 1)) {
         cm_BeginSendGroup();
         for (i = 0; i < 3; i++) {
-            if (*(int *)(rec + 0x100 + i * 4) != -1)
+            if (rec->carts[i] != -1)
                 cm_SendExSellObject(-2, -1, 0x154, 1, ai_OwnPlayer, 0);
         }
         cm_EndSendGroup();
@@ -8516,106 +8544,97 @@ void ai_Unk4d0fa0(char *rec)
         }
     }
     for (i = 0; i < 16; i++) {
-        if (*(int *)(rec + 0xc0 + i * 4) != -1) {
-            r = cm_AddFighter(*(int *)(rec + 0xc0 + i * 4), "dummy_OFFENSE_ENTRY");
-            *(int *)(r + 0x16c) = cm_FightAttacker;
-            if (*(char **)(r + 0x184) != 0) {
-                o = *(char **)(*(char **)(r + 0x184) + 0x34);
-                d3if_SelectTextureSet(o, *(int *)(o + 0x1cc), 5, 1);
-            }
+        if (rec->attackers[i] != -1) {
+            r = (AICHAR *)cm_AddFighter(rec->attackers[i], "dummy_OFFENSE_ENTRY");
+            r->bld = (AIBLD *)cm_FightAttacker;     /* in a fight: the side's leader */
+            if (r->scene != 0)
+                d3if_SelectTextureSet(r->scene->obj, (struct D3SURF *)r->scene->obj->info, 5, 1);
         }
     }
     for (i = 0; i < 16; i++) {
-        if (*(int *)(rec + 0x80 + i * 4) != -1) {
-            r = cm_AddFighter(*(int *)(rec + 0x80 + i * 4), "dummy_DEFENSE_ENTRY");
-            *(int *)(r + 0x16c) = ai_Unk6f0ce8;
-            *(float *)(*(char **)(r + 0x184) + 0x1a0) = *(float *)(*(char **)(r + 0x184) + 0x1a0) * ai_Unk5eb8b8;
-            if (*(char **)(r + 0x184) != 0) {
-                o = *(char **)(*(char **)(r + 0x184) + 0x34);
-                d3if_SelectTextureSet(o, *(int *)(o + 0x1cc), 4, 1);
-            }
+        if (rec->defenders[i] != -1) {
+            r = (AICHAR *)cm_AddFighter(rec->defenders[i], "dummy_DEFENSE_ENTRY");
+            r->bld = (AIBLD *)cm_FightDefender;
+            r->scene->walkSpeed *= 1.2;
+            if (r->scene != 0)
+                d3if_SelectTextureSet(r->scene->obj, (struct D3SURF *)r->scene->obj->info, 4, 1);
         }
     }
-    d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, ai_Unk4d0f80);
-    memset(ai_Unk7603a0V, 0, 0x80);
-    pp = ai_Unk7603a0V;
-    for (p = cm_Fighters; (int)p < ((unsigned)&cm_Fighters + 0x4380); p += 0x21c) {
-        if (*(unsigned short *)p != 0xffff && *(char **)(p + 0x184) != 0 &&
-            *(char **)(*(char **)(p + 0x184) + 0x88) == ai_Unk5fb5b0)
-            *pp++ = p;
+    d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, cm_ClearKind3MaskCB);
+    memset(ai_SceneChars, 0, sizeof(ai_SceneChars));
+    n = 0;
+    for (i = 0; i < 32; i++) {
+        if (cm_FightersT[i].id != 0xffff && cm_FightersT[i].scene != 0 &&
+            cm_FightersT[i].scene->scene == d3_DefaultScene)
+            ai_SceneCharsT[n++] = &cm_FightersT[i];
     }
-    for (i = 1; i < 9; i++) {
-        sprintf(nm, "WARE_0%i", i);
-        o = (char *)d3_FindObject(0, 0x40, 0, nm);
+    for (i = 0; i < 9; i++) {
+        sprintf(name, "WARE_0%i", i + 1);
+        o = d3_FindObject(0, 0x40, 0, name);
         if (o != 0)
             d3if_Show(o, 0);
     }
-    n = 0;
-    for (j = 0; j < 3; j++) {
-        q[0] = 0;
-        q[1] = 0;
-        q[2] = 0;
-        gm_ShuffledBytes(9, t);
-        sprintf(nm, "dummy_KARREN_0%i", j + 1);
-        o = (char *)d3_FindObject(0, 0x100, 0, nm);
+    cart = rec->carts;
+    for (i = 0; i < 3; i++, cart++) {
+        goods[0] = 0;
+        goods[1] = 0;
+        goods[2] = 0;
+        gm_ShuffledBytes(9, (unsigned char *)order);
+        sprintf(name, "dummy_KARREN_0%i", i + 1);
+        o = d3_FindObject(0, 0x100, 0, name);
         if (o != 0) {
-            if (*(int *)(rec + 0x100 + j * 4) == -1)
-                d3if_ShowTree(o, 0);
-            else {
-                a = gm_Query(0, 2, 7, 1, *(int *)(rec + 0x100 + j * 4));
-                if (a == 0) {
-                    gm_FindObjectInst(*(int *)(rec + 0x100 + j * 4));
-                    *(int *)(rec + 0x100 + j * 4) = -1;
+            if (*cart != -1) {
+                obj = (AIOBJ *)gm_Query(0, 2, 7, 1, *cart);
+                if (obj == 0) {
+                    gm_FindObjectInst(*cart);
+                    *cart = -1;
                 } else {
-                    c = gm_Query(*(int *)(a + 0x14), 1, 0, 0x1dd);
+                    load = (AIOBJ *)gm_Query((void *)obj->list, 1, 0, 0x1dd);
                     n = 0;
-                    while ((w = gm_Query(*(int *)(c + 0x14), 1, 5)) != 0 && n < 3) {
-                        q[n++] = (int)w;
-                        gm_QueryNext();
-                    }
-                    d3_PointToWorld(o, o + 0x4c, buf);
-                    ty = *(unsigned short *)a;
-                    if (ty == 0x134)
-                        sprintf(path, "%s*ob_KARREN_KLEIN_KAMPF.ogr", ai_DataPath);
-                    else if (ty == 0x135)
-                        sprintf(path, "%s*ob_KARREN_MITTEL_KAMPF.ogr", ai_DataPath);
-                    else if (ty == 0x136)
-                        sprintf(path, "%s*ob_KARREN_GROSS_KAMPF.ogr", ai_DataPath);
-                    h = (char *)d3_LoadGroup(path, 0, 0);
-                    d3_SetObjectPos(h, buf);
-                    *(int *)(h + 0x200) = (int)a;
-                    for (i = 0; i < 3; i++) {
-                        sprintf(nm, "WARE_0%i", t[i] + 1);
-                        w = (char *)d3_FindObject(0, 0xc0, 0, nm);
-                        if (w != 0) {
-                            if (i > n - 1)
-                                d3if_Show(w, 0);
+                    for (w = (AIOBJ *)gm_Query((void *)load->list, 1, 5); n < 3 && w != 0; w = (AIOBJ *)gm_QueryNext())
+                        goods[n++] = w;
+                    d3_PointToWorld(o, &o->pos, &pos);
+                    if (obj->type == 0x134)
+                        sprintf(name, "%s*ob_KARREN_KLEIN_KAMPF.ogr", ai_DataPath);
+                    else if (obj->type == 0x135)
+                        sprintf(name, "%s*ob_KARREN_MITTEL_KAMPF.ogr", ai_DataPath);
+                    else if (obj->type == 0x136)
+                        sprintf(name, "%s*ob_KARREN_GROSS_KAMPF.ogr", ai_DataPath);
+                    o = d3_LoadGroup(name, 0, 0);
+                    d3_SetObjectPos(o, &pos);
+                    o->owner = obj;
+                    p = order;
+                    for (k = 0; k < 3; k++) {
+                        sprintf(name, "WARE_0%i", *p++ + 1);       /* the shuffled goods places */
+                        o = d3_FindObject(0, 0xc0, 0, name);
+                        if (o != 0) {
+                            if (k > n - 1)
+                                d3if_Show(o, 0);
                             else {
-                                *(int *)(w + 0x200) = q[i];
-                                d3if_Show(w, 1);
-                                *(int *)(w + 0x224) = 1;
+                                o->owner = goods[k];
+                                d3if_Show(o, 1);
+                                o->mask = 1;
                             }
                         }
                     }
                 }
-            }
+            } else
+                d3if_ShowTree(o, 0);
         }
     }
-    d3sm_Build(*(char **)(ai_Unk5fb5b0 + 0xb0), ai_Unk633738);
-    for (i = 0; i < nmax; i++) {
-        wd = *(int *)(sc + 0x20);
-        cell = *(int **)(sc + 0x24);
-        for (j = i; j < wd; j++) {
-            cell[((wd - 1) * i + j) * 7] = 0xd;
-            cell[((wd - i - 1) * wd + j) * 7] = 0xd;
-            cell[(wd * j + i) * 7] = 0xd;
-            cell[(wd * (j + 1) - i - 1) * 7] = 0xd;
+    d3sm_Build((struct D3SM *)d3_DefaultScene->hmap, (struct D3TERRAIN *)d3_Terrain);
+    for (i = 0; i < border; i++) {
+        for (k = i; k < sc->size; k++) {
+            sc->entries[(sc->size - 1) * i + k].type = 0xd;
+            sc->entries[(sc->size - i - 1) * sc->size + k].type = 0xd;
+            sc->entries[sc->size * k + i].type = 0xd;
+            sc->entries[sc->size * (k + 1) - i - 1].type = 0xd;
         }
     }
     if (b != 0)
-        ai_Unk60cb58 = (float)gm_BuildingSkill(b, 6, 1) + ai_Unk5eb878;
+        cm_DefenseFactor = (float)gm_BuildingSkill((unsigned char *)b, 6, 1) + 1.4f;
     else
-        ai_Unk60cb58 = 1.0f;
+        cm_DefenseFactor = 1.0f;
 }
 /* 0x4d1a10, ends the fight scene (the counterpart of 0x4d0fa0): releases the sound sets, the flag objects
    ai_Unk935980[], the characters' objects (the strength effect of non-kind-0xb characters 0x4fca40) and resets the scene */
@@ -8630,29 +8649,29 @@ void ai_Unk4d1a10(char *rec)
         d3if_Delete((struct D3OBJECT *)cm_PickMarker);
         cm_PickMarker = 0;
     }
-    sb_UnloadSampleBank(ai_Unk6f0d0c);
-    sb_UnloadSampleBank(ai_Unk6f0d10);
+    sb_UnloadSampleBank(cm_FightSounds);
+    sb_UnloadSampleBank(cm_CrossbowSounds);
     sb_UnloadSampleBank(cm_BombSounds);
-    sb_UnloadSampleBank(ai_Unk6f0d18);
-    sb_UnloadSampleBank(ai_Unk6f0d1c);
-    sb_UnloadSampleBank(ai_Unk6f0d20);
-    sb_UnloadSampleBank(ai_Unk6f0d24);
-    sb_UnloadSampleBank(ai_Unk6f0d2c);
+    sb_UnloadSampleBank(cm_DaggerSounds);
+    sb_UnloadSampleBank(cm_PistolSounds);
+    sb_UnloadSampleBank(cm_SwordSounds);
+    sb_UnloadSampleBank(cm_AttackerClickVoices);
+    sb_UnloadSampleBank(cm_AttackerAttackVoices);
     sb_UnloadSampleBank(cm_AttackerOrderVoices);
-    sb_UnloadSampleBank(ai_Unk6f0d3c);
-    sb_UnloadSampleBank(ai_Unk6f0d44);
-    if (ai_Unk6f0d50 != ai_Unk6f0d54) {
-        sb_UnloadSampleBank(ai_Unk6f0d28);
-        sb_UnloadSampleBank(ai_Unk6f0d30);
+    sb_UnloadSampleBank(cm_AttackerTauntVoices);
+    sb_UnloadSampleBank(cm_AttackerPainVoices);
+    if (cm_AttackerRole != cm_DefenderRole) {
+        sb_UnloadSampleBank(cm_DefenderClickVoices);
+        sb_UnloadSampleBank(cm_DefenderAttackVoices);
         sb_UnloadSampleBank(cm_DefenderOrderVoices);
-        sb_UnloadSampleBank(ai_Unk6f0d40);
-        sb_UnloadSampleBank(ai_Unk6f0d48);
+        sb_UnloadSampleBank(cm_DefenderTauntVoices);
+        sb_UnloadSampleBank(cm_DefenderPainVoices);
     }
     for (i = 0; i < ai_Unk6f0d58; i++)
         d3if_Delete((struct D3OBJECT *)ai_Unk935980[i]);
-    if (ai_Unk6f0d5c != 0) {
-        d3io_ReleaseObject(ai_Unk6f0d5c);
-        ai_Unk6f0d5c = 0;
+    if (cm_BootsObject != 0) {
+        d3io_ReleaseObject(cm_BootsObject);
+        cm_BootsObject = 0;
     }
     for (r = cm_Fighters; (int)(r + 0x184) < ((unsigned)&cm_Fighters + 0x4504); r += 0x21c) {
         if (*(unsigned short *)r != 0xffff && *(int *)(r + 0x184) != 0) {
@@ -9205,7 +9224,7 @@ void ai_BuildFloatTable()
     }
 }
 /* 0x4d2c00, the row of 6 floats of ai_Unk9300a0 for the side (kind 0 .. 5 by the fight flags +0x7c bit 0 / 1 / 2 and the side
-   being the attacker cm_FightAttacker or the defender ai_Unk6f0ce8, else 6) and the strength level 0 .. 4 (the ratio of the two
+   being the attacker cm_FightAttacker or the defender cm_FightDefender, else 6) and the strength level 0 .. 4 (the ratio of the two
    sides' strengths 0x4cdcf0 against the limits 5ebc1c / 5ecebc / 5eb94c / 5eb7ac), lowered by the number of "sp_CONQUER"
    flags the attacker owns. Rough draft. */
 
@@ -9219,15 +9238,15 @@ float *ai_Unk4d2c00(int side)
 
     if ((fl & 1) && cm_FightAttacker == side)
         kind = 0;
-    else if ((fl & 1) && ai_Unk6f0ce8 == side)
+    else if ((fl & 1) && cm_FightDefender == side)
         kind = 1;
     else if ((fl & 2) && cm_FightAttacker == side)
         kind = 2;
-    else if ((fl & 2) && ai_Unk6f0ce8 == side)
+    else if ((fl & 2) && cm_FightDefender == side)
         kind = 3;
     else if ((fl & 4) && cm_FightAttacker == side)
         kind = 4;
-    else if ((fl & 4) && ai_Unk6f0ce8 == side)
+    else if ((fl & 4) && cm_FightDefender == side)
         kind = 5;
     for (i = 0x80; i < 0xc0; i += 4) {
         if (*(int *)(cm_FightRecord + i) != -1) {
@@ -9267,7 +9286,7 @@ float *ai_Unk4d2c00(int side)
         lvl = 1;
     else
         lvl = 0;
-    if (side == ai_Unk6f0ce8) {
+    if (side == cm_FightDefender) {
         if (cnt == 1)
             lvl = cnt;
         else if (cnt == 2 || cnt == 3)
@@ -9496,8 +9515,8 @@ int cm_CheckDeath(char *c)
         d3_SetWorldPosRot(o, m + 0x4c, m + 0x18c);
         d3if_Show(o, 1);
         *(int *)(c + 0x1ac) = 0;
-        p = (char *)ai_Unk4ceb70(*(char **)ai_Unk6f0ce8);
-        *(int *)(p + 0xa) = *(unsigned short *)ai_Unk6f0ce8;
+        p = (char *)ai_Unk4ceb70(*(char **)cm_FightDefender);
+        *(int *)(p + 0xa) = *(unsigned short *)cm_FightDefender;
     }
     sv_SetStatusText(buf);
     return 1;
@@ -9548,9 +9567,9 @@ void ai_Unk4d3550(char *ev)
             cm_ShowDamage(att, hitv, 2);
         if (rnd > 8) {
             if (*(int *)(ev + 0x188) != *(int *)(cm_FightAttacker + 4))
-                snd_QueueVoice(*(unsigned short *)att, ai_Unk6f0d44, "_K_C2C_SCHMERZ", -1, 500);
+                snd_QueueVoice(*(unsigned short *)att, cm_AttackerPainVoices, "_K_C2C_SCHMERZ", -1, 500);
             else
-                snd_QueueVoice(*(unsigned short *)att, ai_Unk6f0d48, "_K_C2C_SCHMERZ", -1, 500);
+                snd_QueueVoice(*(unsigned short *)att, cm_DefenderPainVoices, "_K_C2C_SCHMERZ", -1, 500);
         } else if (rnd > 5)
             sb_PlaySampleI(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
     }
@@ -9558,15 +9577,15 @@ void ai_Unk4d3550(char *ev)
         switch (*(int *)ka) {
         case 0x156:
         case 0x158:
-            sb_PlaySampleI(hitv ? 0 : ai_Unk6f0d20, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(hitv ? 0 : cm_SwordSounds, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
             break;
         case 0x154:
         case 0x16e:
         case 0x172:
-            sb_PlaySampleI(hitv ? 0 : ai_Unk6f0d18, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(hitv ? 0 : cm_DaggerSounds, hitv ? "Treffer" : "Daneben_s", 1, 0x3f, 0x7f, 0, 0);
             break;
         case 0x15e:
-            sb_PlaySampleI(ai_Unk6f0d1c, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
+            sb_PlaySampleI(cm_PistolSounds, "schuss_s", 1, 0x3f, 0x7f, 0, 0);
             break;
         case 0x160:
             if (hitv != 0)
@@ -9650,7 +9669,7 @@ void ai_Unk4d3ae0(char *ev)
     }
     d3if_ShowTree(o, 0);
 }
-/* 0x4d3b30, the winning side of a fight record: the character record of the side (cm_FightAttacker attacker, ai_Unk6f0ce8
+/* 0x4d3b30, the winning side of a fight record: the character record of the side (cm_FightAttacker attacker, cm_FightDefender
    defender) that has nobody left standing opposite or owns every "sp_CONQUER" object of the scene; the winner gets
    message 0x50 with its fight record (0x4cdf00) marked 5. 0 / the pending result 0x6f0cf4 if no winner yet */
 
@@ -9686,7 +9705,7 @@ char *ai_Unk4d3b30(char *rec)
     }
     if (nb > 0) {
         if (na <= 0)
-            w = (char *)ai_Unk6f0ce8;
+            w = (char *)cm_FightDefender;
         ret = w;
     } else
         ret = (char *)cm_FightAttacker;
@@ -9700,7 +9719,7 @@ char *ai_Unk4d3b30(char *rec)
         }
     }
     if (total != 0 && mine == total)
-        w = ret = (char *)ai_Unk6f0ce8;
+        w = ret = (char *)cm_FightDefender;
     if (ret != 0) {
         n = (unsigned char)cm_FightRecord[0x30];
         for (i = 0; i < n && *(int *)(cm_FightRecord + 0x34 + i * 4) == -1; i++)
@@ -9758,7 +9777,7 @@ int ai_Unk4d3ea0(char *a, char *b, char *d, int unused, float f)
     int dmg = 0;
     float x;
 
-    if (cm_FightAttacker == 0 || ai_Unk6f0ce8 == 0)
+    if (cm_FightAttacker == 0 || cm_FightDefender == 0)
         return 0;
     {
         ob = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x116);
@@ -9792,7 +9811,7 @@ int ai_Unk4d3ea0(char *a, char *b, char *d, int unused, float f)
 }
 /* 0x4d4050, the fight role of a building kind (first byte of its 0x24d-byte record): 0x13 -> 0, 0x10 -> 1, 4 -> 2, else 0 */
 
-int ai_Unk4d4050(unsigned char *b)
+int cm_FightRole(unsigned char *b)
 {
     char *r = ai_BTypes + *b * 0x24d;
     char k = *r;
@@ -9918,13 +9937,13 @@ int ai_Unk4d4540(char *a)
     ai_Unk6f0cf8 = 0;
     ca = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x14));
     cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-    role = ai_Unk4d4050((unsigned char *)cb);
+    role = cm_FightRole((unsigned char *)cb);
     d2_SetForm(win, 1);
     if (*(char *)(cm_FightAttacker + 2) == 6) {
         if (a[0x7c] & 2) {
-            io_PrintText(0x1138, role + 0x1125, cb, *(unsigned short *)ai_Unk6f0ce8, ca);
+            io_PrintText(0x1138, role + 0x1125, cb, *(unsigned short *)cm_FightDefender, ca);
             d2_SetForm(win, 2);
-            edi = io_PrintText(0x113a, *(unsigned short *)ai_Unk6f0ce8, ca);
+            edi = io_PrintText(0x113a, *(unsigned short *)cm_FightDefender, ca);
         } else if (a[0x7c] & 1) {
             edi = st;
             for (i = 0; i < 3; i++) {
@@ -9933,7 +9952,7 @@ int ai_Unk4d4540(char *a)
             }
             st = edi;
             fv = gm_GetSkill(cm_FightAttacker, 3);
-            io_PrintText(0x112e, cb, *(unsigned short *)ai_Unk6f0ce8);
+            io_PrintText(0x112e, cb, *(unsigned short *)cm_FightDefender);
             d2_SetForm(win, 2);
             io_PrintText(0x112f, edi, 0xc10);
             if (fv >= 0.5) {
@@ -9943,21 +9962,21 @@ int ai_Unk4d4540(char *a)
                     io_PrintText(0x1135);
             }
             if (fv >= 0.75) {
-                v = gm_SkillPoints(ai_Unk6f0ce8, 3);
+                v = gm_SkillPoints(cm_FightDefender, 3);
                 r = (int)(v * 0.023809524f);
                 if (r > 4)
                     r = 4;
                 r = r < 0 ? 0 : r;
                 io_PrintText(0x1131, r + 0x1128);
             }
-            if (*(char *)(ai_Unk6f0ce8 + 9) == 0)
+            if (*(char *)(cm_FightDefender + 9) == 0)
                 edi = io_PrintText(0x1133, 0x1136);
             else
                 edi = io_PrintText(0x1133, 0x1137);
         } else if (a[0x7c] & 4) {
-            io_PrintText(0x113b, cb, *(unsigned short *)ai_Unk6f0ce8);
+            io_PrintText(0x113b, cb, *(unsigned short *)cm_FightDefender);
             d2_SetForm(win, 2);
-            edi = io_PrintText(0x113c, *(unsigned short *)ai_Unk6f0ce8, ca);
+            edi = io_PrintText(0x113c, *(unsigned short *)cm_FightDefender, ca);
         }
         d2_SetForm(win, 1);
         io_PrintText(0x1132);
@@ -9981,7 +10000,7 @@ int ai_Unk4d4540(char *a)
             }
         }
     }
-    if ((a[0x7c] & 1) && *(char *)(ai_Unk6f0ce8 + 2) == 6 && ai_Unk6f0cf8 == 0) {
+    if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) == 6 && ai_Unk6f0cf8 == 0) {
         memset(rc, 0, sizeof(rc));
         total = 0;
         for (i = 0; i < 3; i++) {
@@ -10002,7 +10021,7 @@ int ai_Unk4d4540(char *a)
             if (p != 0)
                 io_PrintText(0x113d, st, 0xc10, p, *(unsigned short *)cm_FightAttacker, esi);
         }
-        v = gm_SkillPoints(ai_Unk6f0ce8, 3);
+        v = gm_SkillPoints(cm_FightDefender, 3);
         r = (int)(v * 0.023809524f);
         if (r > 4)
             r = 4;
@@ -10068,11 +10087,11 @@ int ai_Unk4d4540(char *a)
                     sv_PopRequest = 1;
                     b4 = 0;
                     ai_Unk6f0cf8 = 1;
-                    ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, ai_Unk6f0ce8, fv);
+                    ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
                 }
             }
         }
-    } else if ((a[0x7c] & 1) && *(char *)(ai_Unk6f0ce8 + 2) != 6 && ai_Unk6f0cf8 == 0) {
+    } else if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) != 6 && ai_Unk6f0cf8 == 0) {
         n = 0;
         for (i = 0; i < 16; i++) {
             if (*(int *)(a + 0x80 + i * 4) != -1)
@@ -10094,7 +10113,7 @@ int ai_Unk4d4540(char *a)
                 cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                 fv = (float)(st * 0.01);
                 ai_Unk6f0cf8 = 1;
-                ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, ai_Unk6f0ce8, fv);
+                ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
             }
         }
     }
@@ -10106,7 +10125,7 @@ int ai_Unk4d4540(char *a)
 #define G20_US(p) (*(unsigned short *)(p))
 #define G20_NAME(id) (((char **)txt_ObjectNames)[(id) * 2])
 #define G20_ME (ai_CharInts[ai_PlayerId][0])
-#define G20_ATT ((char *)ai_Unk6f0ce8)
+#define G20_ATT ((char *)cm_FightDefender)
 #define G20_DEF ((char *)cm_FightAttacker)
 /* the pump of the dialog: the click on a button (f8a668 == 0) or the abort flag closes it */
 #define G20_PUMP()                                                                                      \
@@ -10124,7 +10143,7 @@ int ai_Unk4d4540(char *a)
     ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x2a);                                              \
     if (ob == 0)                                                                                        \
         ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x116);                                         \
-    v = gm_GetGoodsValue(ai_Unk6f0ce8);                                                                     \
+    v = gm_GetGoodsValue(cm_FightDefender);                                                                     \
     v = v < 0x9c400 ? v : 0x9c400;                                                                      \
     v = (int)(((double)(unsigned int)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));             \
     txt_Format(ba, "$Z%T$A", v);                                                                      \
@@ -10460,7 +10479,7 @@ int ai_Unk4d60b0(char *a)
         txt_Format(buf, 0x11e1, G20_US(ca));
         strcat(buf, ai_Unk143e948);
     } else if (a[0x7c] & 2) {
-        role = ai_Unk4d4050((unsigned char *)gm_FindBuildingById(*(int *)(a + 0x10c))) + 0x1125;
+        role = cm_FightRole((unsigned char *)gm_FindBuildingById(*(int *)(a + 0x10c))) + 0x1125;
         txt_Format(buf, 0x11e3, role, G20_US(cb), edi);
         strcat(buf, ai_Unk143e954);
         ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
@@ -10528,7 +10547,7 @@ void ai_Unk4d63e0(char *a)
     if (cm_SkipEvents == 0) {
         ai_Unk60d364 = 200;
         cm_FightOwner = *(int *)(a + 0xc);
-        ai_Unk4d0fa0(a);
+        cm_SetupFightScene((CMFIGHTREC *)a);
         cm_CollectSceneChars();
         ai_Unk4d1c20(a + 0xc0, (int)"OFF");
         ai_Unk4d1c20(a + 0x80, (int)"DEF");
@@ -10583,7 +10602,7 @@ void ai_Unk4d63e0(char *a)
     sa = 0;
     sb = 0;
     cm_FightAttacker = gm_FindChar(*(int *)(a + 0x34));
-    ai_Unk6f0ce8 = gm_FindChar(*(int *)(a + 0x38));
+    cm_FightDefender = gm_FindChar(*(int *)(a + 0x38));
     for (i = 0; i < 16; i++) {
         id = *(int *)(a + 0x80 + i * 4);
         if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
@@ -10621,7 +10640,7 @@ void ai_Unk4d63e0(char *a)
         }
     } else if (!(a[0x7c] & 4) && (a[0x7c] & 1) && win == G20_DEF) {
         c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-        ai_Unk4d3ea0(a, c, G20_DEF, ai_Unk6f0ce8, 100.0f);
+        ai_Unk4d3ea0(a, c, G20_DEF, cm_FightDefender, 100.0f);
     }
 }
 /* 0x4d6930, the result of the fight in the record r (+0x354 / +0x358): 0x6f0cf8 set -> 0 and the ransom 0x6f0cfc, else 1 */
@@ -10721,9 +10740,9 @@ void ai_Unk4d6ba0(char *f)
         if (f[0x1d] != 0 && ((x = *(char **)(*(char **)(c + 0x184) + 0x128)) == 0 || x[9] == 0x2d || x[9] == 0x3a)) {
             if ((unsigned short)util_RandomU(10) > 8) {
                 if (*(int *)(side + 4) == *(int *)(G20_DEF + 4))
-                    snd_QueueVoice(G20_US(c), ai_Unk6f0d2c, "_K_C2C_ANGRIFF", -1, 500);
+                    snd_QueueVoice(G20_US(c), cm_AttackerAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
                 else
-                    snd_QueueVoice(G20_US(c), ai_Unk6f0d30, "_K_C2C_ANGRIFF", -1, 500);
+                    snd_QueueVoice(G20_US(c), cm_DefenderAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
             }
             kill = *(int *)(f + 0x20);
             dmg = *(int *)(f + 0x24);
@@ -11584,7 +11603,7 @@ void ai_Unk4d8e20(char *a)
                 nv++;
         }
         if (nv != 0) {
-            ai_Unk4e2e60(ed3[k]);
+            cm_LoadEventScene(ed3[k]);
             sound = msx_PlayAmbient("Athmos\\Athmo_sitzung.mp3", 0x40);
             for (i = 0; i < nc; i++) {
                 if (gm_CharNameRecord(*(unsigned short *)cand[i]) != 0)
@@ -11912,7 +11931,7 @@ void ai_Unk4db700(char *m)
     c = ids[2];
     gv_GetTableRecord(a, (int *)names);     /* ROUGH: the original pushes (edi, a local buffer) */
     G26_BOX(0);
-    ai_Unk4e2e60("Gericht.ed3");
+    cm_LoadEventScene("Gericht.ed3");
     for (i = 0; i < 5; i++) {
         ch[i] = (char *)gm_FindChar(ids[i]);
         if (ch[i] == 0)
@@ -12032,7 +12051,7 @@ void ai_Unk4db700(char *m)
             io_PrintText(0x14d8);
         }
         ai_Unk4e3420(4);
-        ai_Unk4e2e60("ob_GEFAENGNIS_FOLTERKAMMER.ed3");
+        cm_LoadEventScene("ob_GEFAENGNIS_FOLTERKAMMER.ed3");
         ai_Unk4e2c30("cutscenes\\prozess\\folter-create.esc", &ch_EmptyName);
         G26_BOX(1);
         io_PrintText(0x14e4);
@@ -12674,9 +12693,9 @@ void ai_Unk4ded10(char *m)
         return;
     }
     ai_Unk4e36a0();
-    ai_Unk4e2e60(sc[*(char *)(m + 0x7c)]);
+    cm_LoadEventScene(sc[*(char *)(m + 0x7c)]);
     ai_Unk4de5e0(10);
-    ai_Unk4e3650();
+    cm_ApplySeason();
     k = gm_ClockSeason(&ai_Time);
     if (k == 3)
         k = 0;
@@ -12954,7 +12973,7 @@ void ai_Unk4dfff0(char *m)
 
 int ai_Unk4e0010(int scene)
 {
-    ai_Unk4e2e60("cutscene_toby.ed3");
+    cm_LoadEventScene("cutscene_toby.ed3");
     ai_Unk4e3830(scene, 0);
     ai_Unk4e3830(scene, 0);
     ai_Unk4e3420(5);
@@ -13013,7 +13032,7 @@ void ai_Unk4e01e0(char *m)
     p3 = (char *)gm_FindChar(*(int *)(m + 0x40));
     ai_Unk60d360 = 0x702c6;
     d2_CutsceneActive = 1;
-    ai_Unk4e2e60("Richtplatz.ed3");
+    cm_LoadEventScene("Richtplatz.ed3");
     d3_SetLightSet(0, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
     if (w == 1)
@@ -13162,7 +13181,7 @@ int ai_Unk4e0770(char *m)
     }
     sprintf(buf, "%s %s %i", gm_CharNameRecord(*(unsigned short *)a) + 4, gm_CharNameRecord(*(unsigned short *)b) + 4, 1);
     st[2] = ai_Unk4e3270("ADDON\\HOCHZEIT_NEU.sbf", 0);
-    ai_Unk4e2e60("KIRCHE_HOCHZEIT.ed3");
+    cm_LoadEventScene("KIRCHE_HOCHZEIT.ed3");
     ai_Unk4e3620("cd2\\Hochzeit.mp3");
     v = d2_OpenForm(0, 0, "cutscenes\\hochzeit");
     ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
@@ -13277,7 +13296,7 @@ int ai_Unk4e0f70(char *m)
     d2_CutsceneActive = 1;
     snd = ai_Unk4e3270("GEBURT.sbf", 0);
     ai_Unk4e3620("cd2\\Geburt.mp3");
-    ai_Unk4e2e60("Geburt.ed3");
+    cm_LoadEventScene("Geburt.ed3");
     sc = ai_Unk4e2bf0("cutscenes\\geburt\\enter_Geburt.esc");
     if (ai_Unk4e3490(0x1964, 0, 0) == 0) {
         if (a[9] == 0)
@@ -13357,7 +13376,7 @@ int ai_Unk4e1250(char *m)
     }
     ai_Unk4e3620("cd2\\AmKuehlenGrabe.mp3");
     snd = snd_LoadVoiceBank("tod.sbf", 1);
-    ai_Unk4e2e60("Tod.ed3");
+    cm_LoadEventScene("Tod.ed3");
     ai_Unk4e32f0("Sky_Schoen_02");
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
@@ -13458,7 +13477,7 @@ int ai_Unk4e1700(char *m)
     }
     snd = snd_LoadVoiceBank("pleite.sbf", 1);
     ai_Unk4e3620("cd2\\DerSeuchenzug.mp3");
-    ai_Unk4e2e60("Pleite.ed3");
+    cm_LoadEventScene("Pleite.ed3");
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
     ai_Unk4e32f0("sky_dunkel_01");
@@ -13574,7 +13593,7 @@ void ai_Unk4e1a80(char *m)
     ai_Unk4e3270(0, "VERSTEIGERUNG_INTRO.sbf");
     ai_Unk4e3270(0, "VERSTEIGERUNG_GEBOTE.sbf");
     ai_Unk4e3270(0, "VERSTEIGERUNG_KOMMENTARE.sbf");
-    ai_Unk4e2e60("Versteigerung.ed3");
+    cm_LoadEventScene("Versteigerung.ed3");
     if (d3_FindObject("ub_STAFELEI", 0, 0x40, 0) != 0) {
         if (kind[0] == 0xb)
             v = 0;
@@ -13794,7 +13813,7 @@ void ai_Unk4e2860(char *m)
         ai_Unk4e2910(o, 0x17);
     else {
         f = 1;
-        ai_Unk4e2e60("ob_SALON.ed3");
+        cm_LoadEventScene("ob_SALON.ed3");
     }
     ai_Unk4e3420(5);
     p = (int *)(m + 0x38);
@@ -14012,7 +14031,7 @@ int ai_Unk4e2e00(void)
    setting 0x6f35ca (bits 3 / 4), freezes the screen (0x6ed924 / 0x6ed92c) when the window flag +0x26 & 0x20 of 0x6f0d90 is set, runs the
    scene's callback (+0x3c8 -> +0x210) once, counts the scene depth 0x6f0d9c and fades from black ("BLACK", 0x5a ticks). Not in the replay mode */
 
-void ai_Unk4e2e60(char *name)
+void cm_LoadEventScene(char *name)
 {
     char path[0x80];
     int idx, sh, t, k;
@@ -14309,7 +14328,7 @@ int ai_Unk4e3640(void)
 }
 /* 0x4e3650, sets the object tables 0x5fb5b0 up with the two 0xc0 byte callbacks 0x512de0 / 0x512e40 (0x438e60) after 0x4fe350, then 0x5128d0 */
 
-void ai_Unk4e3650(void)
+void cm_ApplySeason(void)
 {
     gm_ClockSeason(&ai_Time);
     d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, init_PlantTextureSetHook);
@@ -15340,7 +15359,7 @@ extern G18POP cm_DamagePops[16];
 extern char cm_Fighters[21376];
 extern char * ai_Unk935980[32];
 extern char cm_Grenades[512];
-extern float ai_Unk935d00;
+extern float cm_FightCellScale;
 extern int cm_CharInfoWins[32];
 extern G18LOG cm_LobbyChat[15];
 extern int cm_LobbyChatNext;
@@ -15452,7 +15471,7 @@ int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZer
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
 char ai_Unk60c7c0[920] = { 84, 1, 0, 0, 120, 5, 20, 0, 1, 4, 1, 0, 0, 0, -96, 66, 2, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 17, 0, 0, 0, 0, 0, 0, 86, 1, 0, 0, 95, 10, 15, 0, 1, 4, 1, 0, 0, 0, -96, 66, 5, 107, 97, 109, 112, 102, 47, 115, 116, 114, 101, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 17, 0, 0, 0, 0, 0, 0, 88, 1, 0, 0, 80, 20, 40, 0, 1, 4, 1, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 104, 105, 101, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 17, 0, 0, 0, 0, 0, 0, 114, 1, 0, 0, 110, 5, 10, 0, 1, 5, 0, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 102, 17, 0, 0, 0, 0, 0, 0, 110, 1, 0, 0, 100, 5, 10, 0, 1, 5, 0, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 103, 17, 0, 0, 0, 0, 0, 0, 116, 1, 0, 0, 100, 0, 30, 1, 2, 6, 0, 0, 0, 0, 72, 67, 2, 107, 97, 109, 112, 102, 47, 119, 101, 114, 102, 101, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 17, 0, 0, 2, 0, 0, 0, 118, 1, 0, 0, 90, 0, 30, 1, 1, 6, 0, 0, 0, 0, 72, 67, 2, 107, 97, 109, 112, 102, 47, 119, 101, 114, 102, 101, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 105, 17, 0, 0, 2, 0, 0, 0, 94, 1, 0, 0, 60, 5, 20, 1, 1, 3, 0, 0, 0, 0, -56, 67, 5, 107, 97, 109, 112, 102, 47, 115, 99, 104, 105, 101, 115, 115, 101, 110, 95, 112, 105, 115, 116, 111, 108, 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 17, 0, 0, 1, 0, 0, 0, 96, 1, 0, 0, 70, 10, 30, 1, 1, 3, 0, 0, 0, 0, 22, 68, 5, 107, 97, 109, 112, 102, 47, 115, 99, 104, 105, 101, 115, 115, 101, 110, 95, 97, 114, 109, 98, 114, 117, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 107, 17, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, -106, 2, 8, 0, 1, 5, 1, 0, 0, 0, -96, 66, 2, 107, 97, 109, 112, 102, 47, 115, 99, 104, 108, 97, 103, 101, 110, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 17, 0, 0, 0, 0, 0, 0 };  /* 0x60c7c0, the ten 0x5c-byte records ai_FindWeaponRecord searches (G12REC10, hst.c); the last has id 0, the fallback */
-float ai_Unk60cb58 = 1.0f;  /* 0x60cb58 */
+float cm_DefenseFactor = 1.0f;  /* 0x60cb58 */
 int cm_FightOwner = -1;  /* 0x60cb5c */
 int cm_FightView = -1;  /* 0x60cb60 */
 int ai_Unk60cb64 = -1;  /* 0x60cb64 */
@@ -15490,7 +15509,7 @@ int cm_LobbyChatCount = 0;  /* 0x6f0cd8 */
 int ai_Unk6f0cdc = 0;  /* 0x6f0cdc */
 char * cm_HoverObject = 0;  /* 0x6f0ce0 */
 int ai_Unk6f0ce4 = 0;  /* 0x6f0ce4, fight paused */
-int ai_Unk6f0ce8 = 0;  /* 0x6f0ce8 */
+int cm_FightDefender = 0;  /* 0x6f0ce8 */
 int cm_FightAttacker = 0;  /* 0x6f0cec */
 char * cm_PickMarker = 0;  /* 0x6f0cf0 */
 int ai_Unk6f0cf4 = 0;  /* 0x6f0cf4 */
@@ -15498,27 +15517,27 @@ int ai_Unk6f0cf8 = 0;  /* 0x6f0cf8 */
 int ai_Unk6f0cfc = 0;  /* 0x6f0cfc */
 char * cm_FightRecord = 0;  /* 0x6f0d04 */
 int cm_SelectedCount = 0;  /* 0x6f0d08 */
-int ai_Unk6f0d0c = 0;  /* 0x6f0d0c */
-int ai_Unk6f0d10 = 0;  /* 0x6f0d10 */
+int cm_FightSounds = 0;  /* 0x6f0d0c */
+int cm_CrossbowSounds = 0;  /* 0x6f0d10 */
 int cm_BombSounds = 0;  /* 0x6f0d14 */
-int ai_Unk6f0d18 = 0;  /* 0x6f0d18 */
-int ai_Unk6f0d1c = 0;  /* 0x6f0d1c */
-int ai_Unk6f0d20 = 0;  /* 0x6f0d20 */
-int ai_Unk6f0d24 = 0;  /* 0x6f0d24 */
-int ai_Unk6f0d28 = 0;  /* 0x6f0d28 */
-int ai_Unk6f0d2c = 0;  /* 0x6f0d2c */
-int ai_Unk6f0d30 = 0;  /* 0x6f0d30 */
+int cm_DaggerSounds = 0;  /* 0x6f0d18 */
+int cm_PistolSounds = 0;  /* 0x6f0d1c */
+int cm_SwordSounds = 0;  /* 0x6f0d20 */
+int cm_AttackerClickVoices = 0;  /* 0x6f0d24 */
+int cm_DefenderClickVoices = 0;  /* 0x6f0d28 */
+int cm_AttackerAttackVoices = 0;  /* 0x6f0d2c */
+int cm_DefenderAttackVoices = 0;  /* 0x6f0d30 */
 int cm_AttackerOrderVoices = 0;  /* 0x6f0d34 */
 int cm_DefenderOrderVoices = 0;  /* 0x6f0d38 */
-int ai_Unk6f0d3c = 0;  /* 0x6f0d3c */
-int ai_Unk6f0d40 = 0;  /* 0x6f0d40 */
-int ai_Unk6f0d44 = 0;  /* 0x6f0d44 */
-int ai_Unk6f0d48 = 0;  /* 0x6f0d48 */
+int cm_AttackerTauntVoices = 0;  /* 0x6f0d3c */
+int cm_DefenderTauntVoices = 0;  /* 0x6f0d40 */
+int cm_AttackerPainVoices = 0;  /* 0x6f0d44 */
+int cm_DefenderPainVoices = 0;  /* 0x6f0d48 */
 int ai_Unk6f0d4c = 0;  /* 0x6f0d4c */
-int ai_Unk6f0d50 = 0;  /* 0x6f0d50 */
-int ai_Unk6f0d54 = 0;  /* 0x6f0d54 */
+int cm_AttackerRole = 0;  /* 0x6f0d50 */
+int cm_DefenderRole = 0;  /* 0x6f0d54 */
 int ai_Unk6f0d58 = 0;  /* 0x6f0d58 */
-int ai_Unk6f0d5c = 0;  /* 0x6f0d5c */
+int cm_BootsObject = 0;  /* 0x6f0d5c */
 int ai_Unk6f0d60 = 0;  /* 0x6f0d60 */
 int ai_Unk6f0d64 = 0;  /* 0x6f0d64 */
 int ai_Unk6f0d68 = 0;  /* 0x6f0d68 */
@@ -15586,7 +15605,7 @@ G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
 char cm_Fighters[21376] = {0};  /* 0x930600 */
 char * ai_Unk935980[32] = {0};  /* 0x935980 */
 char cm_Grenades[512] = {0};  /* 0x935a00 */
-float ai_Unk935d00 = 0;  /* 0x935d00 */
+float cm_FightCellScale = 0;  /* 0x935d00 */
 int cm_CharInfoWins[32] = {0};  /* 0x935d20 */
 G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
 int cm_LobbyChatNext = 0;  /* 0x9363f4 */

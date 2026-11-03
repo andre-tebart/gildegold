@@ -1405,3 +1405,28 @@
 2026-11-03T14:01:11 0x005eb9b8 data ai_Unk5eb9b8 -> cm_WeaponSpeedScale by:main why:0x5eb9b8 is the double 2/7 (0.2857142857142857) cm_AddFighter multiplies AIWEAPON.speed by for the fighter's CHARACTER.walkSpeed
 2026-11-03T14:01:53 0x004d0a30 data ai_Unk4d0a30 -> cm_CollectSceneChars by:main why:0x4d0a30 clears ai_SceneChars and fills it with the cm_Fighters whose scene character (AICHAR +0x184) is in d3_DefaultScene (CHARACTER.scene +0x88), at most 31
 2026-11-03T14:04:27 0x004d0cf0 data ai_Unk4d0cf0 -> ai_ArmGateGuards by:main why:0x4d0cf0 takes a free slot, discards the character's weapons and gives it an item (cm_DiscardWeapons, cm_SendExSellObject) for each of the kind 0xb characters ai_KindBChars; called from the town gate event handler he_Unk5630f0
+2026-11-03T14:10:05 0x004d0fa0 func ai_Unk4d0fa0 -> cm_SetupFightScene by:main why:0x4d0fa0 loads the "Kampfszenario_<place>.ed3" scene, the kampf\*.sbf sounds and voices, places the fighters at dummy_OFFENSE_ENTRY / dummy_DEFENSE_ENTRY and the carts
+2026-11-03T14:10:05 0x004e2e60 func ai_Unk4e2e60 -> cm_LoadEventScene by:main why:0x4e2e60 loads "scenes/*%s" into a free scene (d3t_FindFreeScene, d3_LoadScene), selects it and fades in; called with the Kampfszenario files
+2026-11-03T14:10:05 0x004d4050 func ai_Unk4d4050 -> cm_FightRole by:main why:0x4d4050 maps a building's type kind to the fight role 0 mercenaries / 1 robbers / 2 thieves, which picks the SOELDNER / RAEUBER / DIEBE voice banks in 0x4d0fa0
+2026-11-03T14:10:05 0x006f0d0c data ai_Unk6f0d0c -> cm_FightSounds by:main why:0x4d0fa0 stores sb_LoadSampleBank("kampf.sbf") here
+2026-11-03T14:10:05 0x006f0d10 data ai_Unk6f0d10 -> cm_CrossbowSounds by:main why:0x4d0fa0 stores sb_LoadSampleBank("kampf\armbrust.sbf") here
+2026-11-03T14:10:05 0x006f0d18 data ai_Unk6f0d18 -> cm_DaggerSounds by:main why:0x4d0fa0 stores sb_LoadSampleBank("kampf\dolche.sbf") here
+2026-11-03T14:10:05 0x006f0d1c data ai_Unk6f0d1c -> cm_PistolSounds by:main why:0x4d0fa0 stores sb_LoadSampleBank("kampf\pistole.sbf") here
+2026-11-03T14:10:05 0x006f0d20 data ai_Unk6f0d20 -> cm_SwordSounds by:main why:0x4d0fa0 stores sb_LoadSampleBank("kampf\schwerter.sbf") here
+2026-11-03T14:10:05 0x006f0d24 data ai_Unk6f0d24 -> cm_AttackerClickVoices by:main why:0x4d0fa0: ARBEITER_KOMMENTARE_KLICK_<role>.sbf of the attacker's role (cm_AttackerRole)
+2026-11-03T14:10:05 0x006f0d28 data ai_Unk6f0d28 -> cm_DefenderClickVoices by:main why:0x4d0fa0: ARBEITER_KOMMENTARE_KLICK_<role>.sbf of the defender's role (cm_DefenderRole)
+2026-11-03T14:10:05 0x006f0d2c data ai_Unk6f0d2c -> cm_AttackerAttackVoices by:main why:0x4d0fa0: K_C2C_ANGRIFF_<role>.sbf of the attacker's role
+2026-11-03T14:10:05 0x006f0d30 data ai_Unk6f0d30 -> cm_DefenderAttackVoices by:main why:0x4d0fa0: K_C2C_ANGRIFF_<role>.sbf of the defender's role
+2026-11-03T14:10:05 0x006f0d3c data ai_Unk6f0d3c -> cm_AttackerTauntVoices by:main why:0x4d0fa0: K_C2C_HOHN_<role>.sbf of the attacker's role
+2026-11-03T14:10:05 0x006f0d40 data ai_Unk6f0d40 -> cm_DefenderTauntVoices by:main why:0x4d0fa0: K_C2C_HOHN_<role>.sbf of the defender's role
+2026-11-03T14:10:05 0x006f0d44 data ai_Unk6f0d44 -> cm_AttackerPainVoices by:main why:0x4d0fa0: K_C2C_SCHMERZ_<role>.sbf of the attacker's role
+2026-11-03T14:10:05 0x006f0d48 data ai_Unk6f0d48 -> cm_DefenderPainVoices by:main why:0x4d0fa0: K_C2C_SCHMERZ_<role>.sbf of the defender's role
+2026-11-03T14:10:05 0x006f0d50 data ai_Unk6f0d50 -> cm_AttackerRole by:main why:0x4d0fa0: cm_FightRole of the fight record's +0x10c building, picks the attacker voices
+2026-11-03T14:10:05 0x006f0d54 data ai_Unk6f0d54 -> cm_DefenderRole by:main why:0x4d0fa0: cm_FightRole of the fight record's +0x14 building, picks the defender voices
+2026-11-03T14:10:05 0x006f0d5c data ai_Unk6f0d5c -> cm_BootsObject by:main why:0x4d0fa0 stores d3io_LoadObjectRef("ub_STIEFEL") (boots), released by the fight scene end 0x4d1a10 (d3io_ReleaseObject)
+2026-11-03T14:10:05 0x006f0ce8 data ai_Unk6f0ce8 -> cm_FightDefender by:main why:0x4d0fa0: gm_FindChar(rec+0x38), given to the fighters placed at dummy_DEFENSE_ENTRY (cm_FightAttacker: rec+0x34, the OFFENSE ones)
+2026-11-03T14:10:05 0x00935d00 data ai_Unk935d00 -> cm_FightCellScale by:main why:0x4d0fa0: the fight scene's height map cell size (D3SM.cell.x) times 1.1
+2026-11-03T14:10:47 0x0060cb58 data ai_Unk60cb58 -> cm_DefenseFactor by:main why:0x4d0fa0 sets it to gm_BuildingSkill(defender's building, 6, 1) + 1.4 (1.0 without the building); 0x4d76a0 multiplies a damage by it in one branch (reasoned: the defense bonus)
+2026-11-03T14:10:47 0x004d0ca0 data ai_Unk4d0ca0 -> cm_PlaceFlagObjects by:main why:0x4d0ca0 walks the scene with the callback 0x4d0a80, which gives the dummies "dummy_sp_ESCAPE" / "dummy_CONQUER" their flag objects ub_FLUCHTFLAGGE / ub_CONQUER
+2026-11-03T14:10:47 0x004d0f80 data ai_Unk4d0f80 -> cm_ClearKind3MaskCB by:main why:0x4d0f80, a d3_ForEachObject2 callback of the fight scene setup: an object of kind 3 (D3OBJECT.kind) gets its mask (0x224) cleared
+2026-11-03T14:10:47 0x004e3650 data ai_Unk4e3650 -> cm_ApplySeason by:main why:0x4e3650: gm_ClockSeason, then the plant and texture set hooks of init over the default scene and init_SetSeasonTextures

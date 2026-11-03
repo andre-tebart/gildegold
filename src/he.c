@@ -7396,7 +7396,7 @@ void he_Unk546100(int ev)
 }
 
 int ai_Unk4d3d10();
-int ai_Unk4d4050();
+int cm_FightRole();
 int cm_PartyById();
 int cm_GetSlotValue(int h);
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
@@ -7576,7 +7576,7 @@ void he_Unk5461c0(int ev)
                 return;
             }
         } else {
-            n = ai_Unk4d4050(gm_BuildQuery(1, 1, *(int *)(ev + 0xb0))) + 0x1125;
+            n = cm_FightRole(gm_BuildQuery(1, 1, *(int *)(ev + 0xb0))) + 0x1125;
             txt_Format(buf, 0x114b, n, *(unsigned short *)(t + 0x27), t, n);
             he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, buf, 0, 0x5f0, (char *)0);
             if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {

@@ -655,8 +655,8 @@ int d2_CreateWinText(short x, short y, char *text, int win);  /* 0x473650 */
 void ai_Unk4cfeb0();  /* 0x4cfeb0 */
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);  /* 0x4c27d0 */
 extern int ai_ClickedObject;  /* 0x6f22e4 */
-extern int ai_Unk6f0d24;  /* 0x6f0d24 */
-extern int ai_Unk6f0d28;  /* 0x6f0d28 */
+extern int cm_AttackerClickVoices;  /* 0x6f0d24 */
+extern int cm_DefenderClickVoices;  /* 0x6f0d28 */
 
 int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z);  /* 0x4cffd0 */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);  /* 0x45f170 */
@@ -692,42 +692,42 @@ char ai_Unk4d0a80(char *o);  /* 0x4d0a80 */
 extern int ai_Unk6f0d58;  /* 0x6f0d58 */
 extern char *ai_Unk935980[];  /* 0x935980 */
 
-void ai_Unk4d0ca0();  /* 0x4d0ca0 */
+void cm_PlaceFlagObjects();  /* 0x4d0ca0 */
 int ai_Unk4d0cd0(int *a);  /* 0x4d0cd0 */
 struct CMGUARDREC; void ai_ArmGateGuards(struct CMGUARDREC *rec, unsigned char kind);  /* 0x4d0cf0, arms the guards of the town gate event (the kind 0xb characters ai_KindBChars) */
-char ai_Unk4d0f80(char *o);  /* 0x4d0f80 */
+char cm_ClearKind3MaskCB(char *o);  /* 0x4d0f80 */
 float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 
-void ai_Unk4d0fa0(char *rec);  /* 0x4d0fa0 */
+struct CMFIGHTREC; void cm_SetupFightScene(struct CMFIGHTREC *rec);  /* 0x4d0fa0, sets up the fight scene of a fight record */
 int snd_LoadVoiceBank();  /* 0x4c2830 */
 struct SBBANK * sb_LoadSampleBank();  /* 0x426950 */
-int ai_Unk4d4050();  /* 0x4d4050 */
-void ai_Unk4e2e60();  /* 0x4e2e60 */
-void ai_Unk4e3650(void);  /* 0x4e3650 */
+int cm_FightRole();  /* 0x4d4050 */
+void cm_LoadEventScene(char *name);  /* 0x4e2e60, loads the scene file name into a free scene and fades it in */
+void cm_ApplySeason(void);  /* 0x4e3650 */
 void d3sky_Init(struct D3SKY *s, char build);  /* 0x45d690 */
 struct D3IOOBJ * d3io_LoadObjectRef();  /* 0x44e190 */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);  /* 0x45eeb0, d3_sm.h */
 void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
-int gm_BuildingSkill();  /* 0x5092e0 */
+int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0, f3gm.h (not includable here, cm.c lead comment) */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
-extern int ai_Unk6f0ce8;  /* 0x6f0ce8 */
+extern int cm_FightDefender;  /* 0x6f0ce8 */
 extern int ai_Unk6f0cf4;  /* 0x6f0cf4 */
-extern int ai_Unk6f0d0c;  /* 0x6f0d0c */
-extern int ai_Unk6f0d10;  /* 0x6f0d10 */
-extern int ai_Unk6f0d18;  /* 0x6f0d18 */
-extern int ai_Unk6f0d1c;  /* 0x6f0d1c */
-extern int ai_Unk6f0d20;  /* 0x6f0d20 */
-extern int ai_Unk6f0d2c;  /* 0x6f0d2c */
-extern int ai_Unk6f0d30;  /* 0x6f0d30 */
-extern int ai_Unk6f0d3c;  /* 0x6f0d3c */
-extern int ai_Unk6f0d40;  /* 0x6f0d40 */
-extern int ai_Unk6f0d44;  /* 0x6f0d44 */
-extern int ai_Unk6f0d48;  /* 0x6f0d48 */
-extern int ai_Unk6f0d50;  /* 0x6f0d50 */
-extern int ai_Unk6f0d54;  /* 0x6f0d54 */
-extern int ai_Unk6f0d5c;  /* 0x6f0d5c */
-extern float ai_Unk935d00;  /* 0x935d00 */
-extern float ai_Unk60cb58;  /* 0x60cb58 */
+extern int cm_FightSounds;  /* 0x6f0d0c */
+extern int cm_CrossbowSounds;  /* 0x6f0d10 */
+extern int cm_DaggerSounds;  /* 0x6f0d18 */
+extern int cm_PistolSounds;  /* 0x6f0d1c */
+extern int cm_SwordSounds;  /* 0x6f0d20 */
+extern int cm_AttackerAttackVoices;  /* 0x6f0d2c */
+extern int cm_DefenderAttackVoices;  /* 0x6f0d30 */
+extern int cm_AttackerTauntVoices;  /* 0x6f0d3c */
+extern int cm_DefenderTauntVoices;  /* 0x6f0d40 */
+extern int cm_AttackerPainVoices;  /* 0x6f0d44 */
+extern int cm_DefenderPainVoices;  /* 0x6f0d48 */
+extern int cm_AttackerRole;  /* 0x6f0d50 */
+extern int cm_DefenderRole;  /* 0x6f0d54 */
+extern int cm_BootsObject;  /* 0x6f0d5c */
+extern float cm_FightCellScale;  /* 0x935d00 */
+extern float cm_DefenseFactor;  /* 0x60cb58 */
 extern const double ai_Unk5edc58;  /* 0x5edc58 */
 extern double ai_Unk5eb8b8;  /* 0x5eb8b8 */
 extern float ai_Unk5eb878;  /* 0x5eb878 */
@@ -802,7 +802,7 @@ void ai_Unk4d3ac0(char *ev);  /* 0x4d3ac0 */
 void ai_Unk4d3ae0(char *ev);  /* 0x4d3ae0 */
 char *ai_Unk4d3b30(char *rec);  /* 0x4d3b30 */
 int ai_Unk4d3d10(char *a, char *b, char *d, char *t);  /* 0x4d3d10 */
-int ai_Unk4d4050(unsigned char *b);  /* 0x4d4050 */
+int cm_FightRole(unsigned char *b);  /* 0x4d4050 */
 int ai_Unk4d4090(int x, int y, int mode);  /* 0x4d4090 */
 void ai_Unk4d4340(int *ids, int x, int y);  /* 0x4d4340 */
 int ai_Unk4d4540(char *a);  /* 0x4d4540 */
