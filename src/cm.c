@@ -2980,92 +2980,102 @@ money:
     }
     return 0;
 }
-/* 0x4c78c0, handler of type 0x12: workshop y produces up to n of item from its ingredients (good + 0x26 amounts,
-   + 0x2e ids, + 0x36 output per run) */
+/* 0x4c78c0, handler of type 0x12: the workshop object y (kind 0x2a / 0x116, its building's owner r) makes up to
+   m->make.runs runs of the item: as many as each input (AIGOOD.in, AIGOOD.need of it per run) in y's list and the
+   room for the output allow (state kind 8: none); the inputs leave y's list (an emptied one is removed) and are
+   booked as used (GMSTOCK.daily[1]), the output joins it (a new object: kind 6 of the state when that fails; one
+   more in a store 0x2a; reserve 4 for the goods kinds 0x17 / 0x25 of an owner of kind 6 / 7) and is booked as
+   made (GMSTOCK.daily[0]); its price value goes to the building's round sum and the owner's AIFIN.madeValue */
 
-int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
+int cm_ExMakeGoods(G17MSG *m, G17STAT *s)
 {
-    char *y, *g, *r, *o, *st, *e;
+    AIOBJ *y;
+    AIGOOD *g;
+    int n;
+    AICHAR *r;
     unsigned short *pp;
-    unsigned short id;
-    int n, i, v;
+    AIOBJ *o;
+    GMSTOCK *st;
+    AIBLD *b;
+    AIFIN *f;
+    int i, v;
 
     if (net_Conn.s != INVALID_SOCKET)
-        ai_NextObjectId = *(int *)&m->data[0xa];
-    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
-    if (gm_FindById(0, &y, 0, *(int *)&m->data[0]) == 0)
+        ai_NextObjectId = m->make.objectId;
+    m->make.objId = cm_ResolveId((int)m, m->make.objId);
+    if (gm_FindById(0, (int *)&y, 0, m->make.objId) == 0)
         return 1;
-    if (*(short *)y != 0x2a && *(short *)y != 0x116)
+    if (y->type != 0x2a && y->type != 0x116)
         return 1;
-    r = gm_ObjectBuildingOwner(y);
+    r = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)y);
     if (r == 0)
         return 1;
-    g = ai_Goods + *(unsigned short *)&m->data[4] * 0x41;
-    n = *(int *)&m->data[6];
-    pp = (unsigned short *)(g + 0x26);
+    g = &ai_GoodsT[m->make.item];
+    n = m->make.runs;
+    pp = g->need;
     for (i = 4; i != 0; i--, pp++) {
         if (pp[4] != 0) {
-            o = gm_Query(*(int *)(y + 0x14), 1, 0, pp[4]);
+            o = (AIOBJ *)gm_Query((void *)y->list, 1, 0, pp[4]);
             if (o != 0) {
-                if (n >= gm_ListAmount(y, o) / *pp)
-                    n = gm_ListAmount(y, o) / *pp;
+                if (n >= gm_ListAmount((short *)y, (char *)o) / *pp)
+                    n = gm_ListAmount((short *)y, (char *)o) / *pp;
             } else {
                 n = 0;
             }
         }
     }
-    if (n >= gm_FreeCapacity(y, *(unsigned short *)&m->data[4], *(unsigned short *)(g + 0x36) * n) / *(unsigned short *)(g + 0x36))
-        n = gm_FreeCapacity(y, *(unsigned short *)&m->data[4], *(unsigned short *)(g + 0x36) * n) / *(unsigned short *)(g + 0x36);
+    v = gm_FreeCapacity((short *)y, m->make.item, g->batch * n) / g->batch;
+    if (n >= v)
+        n = v;
     if (n == 0) {
         if (s != 0)
             s->kind = 8;
         return 1;
     }
     for (i = 0; i < 4; i++) {
-        id = ((unsigned short *)(g + 0x2e))[i];
-        if (id != 0) {
-            o = gm_Query(*(int *)(y + 0x14), 1, 0, id);
+        if (g->in[i] != 0) {
+            o = (AIOBJ *)gm_Query((void *)y->list, 1, 0, g->in[i]);
             if (o == 0) {
                 if (s != 0)
                     s->kind = 8;
                 return 1;
             }
-            *(int *)(o + 0xe) -= ((unsigned short *)(g + 0x26))[i] * n;
-            st = gm_FindGoods(ai_OwnPlayer, id);
+            o->count -= g->need[i] * n;
+            st = (GMSTOCK *)gm_FindGoods(ai_OwnPlayer, g->in[i]);
             if (st != 0)
-                *(int *)(st + 0x14) += *(unsigned short *)(g + 0x36) * n;
-            if (*(int *)(o + 0xe) == 0)
-                gm_RemoveObject((int *)(y + 0x14), id);
+                st->daily[1] += g->batch * n;
+            if (o->count == 0)
+                gm_RemoveObject(&y->list, g->in[i]);
         }
     }
-    o = gm_Query(*(int *)(y + 0x14), 1, 0, *(unsigned short *)&m->data[4]);
+    o = (AIOBJ *)gm_Query((void *)y->list, 1, 0, m->make.item);
     if (o != 0) {
-        *(int *)(o + 0xe) += *(unsigned short *)(g + 0x36) * n;
+        o->count += g->batch * n;
     } else {
-        o = gm_CreateObject(*(int *)(y + 2), *(unsigned short *)&m->data[4], *(unsigned short *)(g + 0x36) * n);
+        o = (AIOBJ *)gm_CreateObject(y->objId, m->make.item, g->batch * n);
         if (o == 0) {
             if (s != 0)
                 s->kind = 6;
             return 1;
         }
-        if (*(short *)y == 0x2a)
-            (*(int *)(o + 0xe))++;
-        if ((g[0] == 0x17 || g[0] == 0x25) && (*(short *)y == 0x2a || *(short *)y == 0x116) && (r[2] == 6 || r[2] == 7))
-            *(int *)(o + 0x1c) = 4;
+        if (y->type == 0x2a)
+            o->count++;
+        if ((g->type == 0x17 || g->type == 0x25) && (y->type == 0x2a || y->type == 0x116) && (r->kind == 6 || r->kind == 7))
+            o->reserve = 4;
     }
-    v = (int)(gm_ItemPrice(*(unsigned short *)&m->data[4], 100) * n);
-    e = gm_ObjectBuilding(y);
-    if (e != 0)
-        *(int *)(e + 0x4d) += v;
-    st = gm_FindGoods(ai_OwnPlayer, *(unsigned short *)&m->data[4]);
+    v = (int)(gm_ItemPrice(m->make.item, 100) * n);
+    b = (AIBLD *)gm_ObjectBuilding((int)y);
+    if (b != 0)
+        b->roundSums[0] += v;
+    st = (GMSTOCK *)gm_FindGoods(ai_OwnPlayer, m->make.item);
     if (st != 0)
-        *(int *)(st + 0x10) += *(unsigned short *)(g + 0x36) * n;
-    e = gm_PlayerRecord(r);
-    if (e != 0)
-        *(int *)(e + 0x24) += v;
+        st->daily[0] += g->batch * n;
+    f = (AIFIN *)gm_PlayerRecord((char *)r);
+    if (f != 0)
+        f->madeValue += v;
     if (s != 0) {
         s->state = 1;
-        if (*(int *)&m->data[0] != -1) {
+        if (m->make.objId != -1) {
             s->kind = 3;
             s->value = (int)o;
         }
@@ -15174,7 +15184,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

@@ -598,7 +598,9 @@ typedef struct AIRECIPE {               /* 0xb8 bytes, filled by gm_StallGoodsLi
 typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a character */
     unsigned short w00;                 /* 0x00, the character's AICHAR.w050 (cm.c 0x4c6cd0 copies it) */
     char family[0x10];                  /* 0x02, the family name (cm.c 0x4c6cd0 sets it with the character's) */
-    char pad12[0x16];
+    char pad12[0x12];
+    int madeValue;                      /* 0x24, the price value of the goods its workshops made (cm.c 0x4c78c0 adds it
+                                           with the building's AIBLD.roundSums[0]) */
     int spyPaid;                        /* 0x28, the money the player paid to the cabinet's spies (ai_CabinetSpyWindow adds each payment) */
     char pad2c[0x14];
     int upgradeSpent;                   /* 0x40, the money the record has paid for workshop upgrades (ai_BuyUpgrade) */
