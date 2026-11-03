@@ -239,15 +239,21 @@ typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a 
     int charId;                         /* 0x00, the character's netId, -1 when free */
     int state;                          /* 0x04, 0 frees the slot (cm_ExCutEntry); message 0x51 updates only an entry
                                            in the same state */
-    char pad08[8];
+    char pad08[4];
+    unsigned char b0c;                  /* 0x0c, cleared in the record itself before an order copies it (cm_OrderAttack) */
+    char pad0d[3];
     int stateArg;                       /* 0x10, in state 2 message 0x51 also has to match it; in state 2 the netId of
-                                           the partner the fighter turns towards (cm_UpdateSceneChars) */
-    char pad14[9];
+                                           the partner the fighter turns towards (cm_UpdateSceneChars), 0 for an
+                                           attack on a ground cell (cm_OrderAttack) */
+    int x;                              /* 0x14, in state 2 the ground cell attacked (cm_OrderAttack: weapon kinds 0x15e .. 0x176) */
+    int z;                              /* 0x18 */
+    unsigned char held;                 /* 0x1c, cm_OrderAttack sets it for the formation types 1 .. 3 (AICHAR.formation);
+                                           reasoned name: the fighter holds its place */
     unsigned char turn;                 /* 0x1d, in state 2: nonzero, the fighter turns towards stateArg (cm_UpdateSceneChars) */
     char pad1e[0xe];
 } CMCUTENTRY;
 
-typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (ai_Unk4c5c40 / ai_Unk4c5ca0
+typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (cm_SendCutEntry / ai_Unk4c5ca0
                                            send, the handlers 0x4cc1b0 / 0x4cc270 store the entry) */
     int playerId;                       /* 0x00, the player whose cutscene record (CMCUTINFO.playerId) it is */
     CMCUTENTRY entry;                   /* 0x04, the character's entry, copied whole */

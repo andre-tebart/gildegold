@@ -1972,7 +1972,7 @@ void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2)
 }
 /* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight) */
 
-void ai_Unk4c5c40(int a, void *p)
+void cm_SendCutEntry(int a, void *p)
 {
     G17MSG m;
 
@@ -7863,73 +7863,85 @@ void ai_Unk4cfeb0()
         ai_ClickedObject = (int)sel;
     }
 }
-/* 0x4cffd0, an order for the character c of the player record rec to the object / ground point (tgt, x, z): the order
-   record (0x2c bytes, the one of 4cdf00 copied; L[1] = 2 the order kind, L[4..6] target id / x / z, byte +0x1c a flag)
-   is passed to 0x4c5c40; characters of the kinds 0x15e .. 0x176 need a worker count in 4cdac0 (else the message
-   ai_Unk143e8a4 .. a8 / ac). Rough draft: 0x45f170 writes through the addresses of the parameters in the original. */
+/* 0x4cffd0, orders the character c of the cutscene record rec (CMCUTINFO) to attack: its entry (cm_CutEntrySlot, b0c and
+   held cleared there) is copied with state 2 and tgt's netId, for the weapon kinds 0x15e / 0x160 also the cell (x, z) of
+   tgt's body, for 0x174 / 0x176 that cell alone, and sent as message 0x50 (cm_SendCutEntry); held is set for the
+   formation types 1 .. 3. A weapon of those kinds with no uses left shows its txt_WeaponEmpty text instead. -1 when c,
+   tgt, its body or the entry is missing; else the original returns nothing (eax as the last call left it)
+   @deep Read whole against the original: the three weapon-empty checks were inverted (the original returns
+   -1 only when the item exists with usesLeft <= 0) - fixed; byte +0xc of the entry is a byte store
+   (CMCUTENTRY.b0c). Left: VC6 cross-jumps ours' 0x174 ok path into the 0x176 block (L[4]=0, x, z, then the
+   shared charId/state tail), while the original keeps the 0x174 path inline at 0x4d00f9 (mov edx,[ebp+4];
+   ... mov [esp+0xc],edx; mov [esp+0x1c],esi; [esp+0x20]; [esp+0x24]; jmp 0x4d01c5) - the same stores in
+   the same source order; reordering the 0x174 statements does not change ours. The other hunks are regs
+   (eax->ecx ecx->edx) of the same blocks. Block layout / tail-merge, no meaning difference. */
 
-int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z)
+int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z)
 {
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    char *k, *q, *r;
-    int L[11];
-    int h;
+    D3SM *hmap = (D3SM *)d3_DefaultScene->hmap;
+    AICHAR *ch = (AICHAR *)c;
+    AICHAR *t = (AICHAR *)tgt;
+    AIWEAPON *w;
+    AIOBJ *item;
+    CMCUTENTRY *e;
+    CMCUTENTRY order;
+    float y;
 
-    if (c == 0)
+    if (ch == 0)
         return -1;
-    k = (char *)cm_CharWeapon(c);
-    if (tgt == 0 || *(char **)(*(char **)(tgt + 0x184) + 0x34) == 0)
+    w = (AIWEAPON *)cm_CharWeapon(c);
+    if (t == 0 || t->scene->obj == 0)
         return -1;
-    if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(tgt + 0x184) + 0x34) + 0x4c, &x, &z, &h) == 0)
+    if (d3_GetHeightAt(hmap, &t->scene->obj->pos, &x, &z, &y) == 0)
         return -1;
-    q = (char *)cm_CutEntrySlot(rec, c);
-    if (q == 0)
+    e = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+    if (e == 0)
         return -1;
-    q[0x1c] = 0;
-    q[0xc] = 0;
-    memcpy(L, q, 0x2c);
-    if (k == 0 || *(int *)k == 0x154 || *(int *)k == 0x156 || *(int *)k == 0x158 || *(int *)k == 0x16e ||
-        *(int *)k == 0x172 || *(int *)k == 0) {
-        L[4] = *(int *)(tgt + 4);
-        L[0] = *(int *)(c + 4);
-        L[1] = 2;
-    } else if (*(int *)k == 0x15e || *(int *)k == 0x160) {
-        r = cm_CharWeaponItem(c);
-        if (r == 0 || *(int *)(r + 0x20) <= 0) {
-            sv_SetStatusText((char *)ai_Unk143e8a4);
+    e->held = 0;
+    e->b0c = 0;
+    memcpy(&order, e, sizeof(order));
+    if (w == 0 || w->id == 0x154 || w->id == 0x156 || w->id == 0x158 || w->id == 0x16e || w->id == 0x172 ||
+        w->id == 0) {
+        order.stateArg = t->netId;
+        order.charId = ch->netId;
+        order.state = 2;
+    } else if (w->id == 0x15e || w->id == 0x160) {
+        item = (AIOBJ *)cm_CharWeaponItem(c);
+        if (item != 0 && item->usesLeft <= 0) {
+            sv_SetStatusText((char *)txt_WeaponEmpty15e);
             return -1;
         }
-        L[0] = *(int *)(c + 4);
-        L[4] = *(int *)(tgt + 4);
-        L[5] = x;
-        L[6] = z;
-        L[1] = 2;
-    } else if (*(int *)k == 0x174) {
-        r = cm_CharWeaponItem(c);
-        if (r == 0 || *(int *)(r + 0x20) <= 0) {
-            sv_SetStatusText((char *)ai_Unk143e8a8);
+        order.charId = ch->netId;
+        order.stateArg = t->netId;
+        order.x = x;
+        order.z = z;
+        order.state = 2;
+    } else if (w->id == 0x174) {
+        item = (AIOBJ *)cm_CharWeaponItem(c);
+        if (item != 0 && item->usesLeft <= 0) {
+            sv_SetStatusText((char *)txt_WeaponEmpty174);
             return -1;
         }
-        L[0] = *(int *)(c + 4);
-        L[4] = 0;
-        L[5] = x;
-        L[6] = z;
-        L[1] = 2;
-    } else if (*(int *)k == 0x176) {
-        r = cm_CharWeaponItem(c);
-        if (r == 0 || *(int *)(r + 0x20) <= 0) {
-            sv_SetStatusText((char *)ai_Unk143e8ac);
+        order.charId = ch->netId;
+        order.stateArg = 0;
+        order.x = x;
+        order.z = z;
+        order.state = 2;
+    } else if (w->id == 0x176) {
+        item = (AIOBJ *)cm_CharWeaponItem(c);
+        if (item != 0 && item->usesLeft <= 0) {
+            sv_SetStatusText((char *)txt_WeaponEmpty176);
             return -1;
         }
-        L[4] = 0;
-        L[5] = x;
-        L[6] = z;
-        L[0] = *(int *)(c + 4);
-        L[1] = 2;
+        order.stateArg = 0;
+        order.x = x;
+        order.z = z;
+        order.charId = ch->netId;
+        order.state = 2;
     }
-    if (c[0x1c4] == 1 || c[0x1c4] == 2 || c[0x1c4] == 3)
-        ((char *)L)[0x1c] = 1;
-    ai_Unk4c5c40(*(int *)(rec + 0x10), L);
+    if (ch->formation == 1 || ch->formation == 2 || ch->formation == 3)
+        order.held = 1;
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
 /* 0x4d0200, like 0x4cffd0, the order kind 3 with the ground point of tgt (record 4cdf00 copied; L[0] the character id,
    L[4] / L[5] the arguments c / tgt as they are in the original). Rough draft. */
@@ -7956,7 +7968,7 @@ int ai_Unk4d0200(char *rec, char *c, char *tgt)
     L[0] = *(int *)(c + 4);
     L[1] = 3;
     L[5] = (int)c;
-    ai_Unk4c5c40(*(int *)(rec + 0x10), L);
+    cm_SendCutEntry(*(int *)(rec + 0x10), L);
 }
 /* 0x4d02d0, an order kind 4 for the character c with the name of the object tgt (strcpy to +0x10) and its ground
    point (x, z); returns 1, 0 when the point is not on the ground. Rough draft. */
@@ -8004,7 +8016,7 @@ int ai_Unk4d0380(char *rec, char *c, char *tgt, unsigned char a)
     strcpy((char *)&L[4], tgt);
     ((char *)L)[0x1c] = a;
     ((char *)L)[0x1d] = ((char *)v)[0];
-    ai_Unk4c5c40(*(int *)(rec + 0x10), L);
+    cm_SendCutEntry(*(int *)(rec + 0x10), L);
 }
 /* 0x4d0460, an order kind 7 to the ground point of the character c (4d2170 checks the way): L[4] = the argument,
    L[5] a float of the lookup; -1 when the point is not on the ground. Rough draft (0x45f170 / 0x4d2170 write through the
@@ -8028,7 +8040,7 @@ int ai_Unk4d0460(char *rec, char *c, int a)
     L[4] = a;
     L[1] = 7;
     L[5] = z;
-    ai_Unk4c5c40(*(int *)(rec + 0x10), L);
+    cm_SendCutEntry(*(int *)(rec + 0x10), L);
 }
 /* 0x4d0520, an order kind 8 for the character c */
 
@@ -8042,7 +8054,7 @@ void ai_Unk4d0520(char *rec, char *c)
     memcpy(L, q, 0x2c);
     L[0] = *(int *)(c + 4);
     L[1] = 8;
-    ai_Unk4c5c40(*(int *)(rec + 0x10), L);
+    cm_SendCutEntry(*(int *)(rec + 0x10), L);
 }
 
 #define G19_4D0380 ((int (*)(char *, char *, char *))ai_Unk4d0380)
@@ -8063,7 +8075,7 @@ char ai_Unk4d0570(char *rec, char *c)
             if (*(int *)(sel + 0x220) == 2) {
                 o = *(char **)(sel + 0x200);
                 if (cm_OtherBuilding(c, o) != 0 || kb_Down[0x36] != 0) {
-                    if (ai_Unk4cffd0(rec, c, o, 0, 0) != -1)
+                    if (cm_OrderAttack(rec, c, o, 0, 0) != -1)
                         ret = 1;
                 }
             } else if (strcmp(sel, "sp_ESCAPE") == 0) {
@@ -8084,7 +8096,7 @@ char ai_Unk4d0570(char *rec, char *c)
             L[4] = x;
             L[1] = 1;
             L[5] = z;
-            ai_Unk4c5c40(*(int *)(rec + 0x10), L);
+            cm_SendCutEntry(*(int *)(rec + 0x10), L);
             return 1;
         } else
             sv_SetStatusText((char *)ai_Unk143e8b0);
@@ -9361,13 +9373,13 @@ void ai_Unk4d3120(char *rec, char *c)
             r = (int)(500.0f / *(float *)(sc + 0x10));
             if (ai_Unk4d22d0(c, x, y, r, &x, &y) == 0)
                 return;
-            ai_Unk4cffd0(rec, c, 0, x, y);
+            cm_OrderAttack(rec, c, 0, x, y);
             return;
         }
         o = ai_Unk4d1f10(c);
         if (o == 0)
             return;
-        ai_Unk4cffd0(rec, c, o, 0, 0);
+        cm_OrderAttack(rec, c, o, 0, 0);
         return;
     case 5:
         o = ai_Unk4d2490(c);
@@ -9657,7 +9669,7 @@ char *ai_Unk4d3b30(char *rec)
         memcpy(sl, rr, 0x2c);
         sl[0] = *(int *)(ret + 4);
         sl[1] = 5;
-        ai_Unk4c5c40(*(int *)(cm_CutInfos[i] + 0x10), sl);
+        cm_SendCutEntry(*(int *)(cm_CutInfos[i] + 0x10), sl);
     }
     return ret;
 }
@@ -10607,7 +10619,7 @@ void ai_Unk4d6970(char *r)
             memcpy(sl, q, 0x2c);
             sl[0] = *(int *)(cm_CutChar + 4);
             sl[1] = 5;
-            ai_Unk4c5c40(*(int *)(r + 0x10), sl);
+            cm_SendCutEntry(*(int *)(r + 0x10), sl);
         }
     } else
         sv_PopRequest = 1;
@@ -10927,7 +10939,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
             if (id == 0) {
                 x = cm_CharWeaponItem(g);
                 if (x != 0 && *(int *)(x + 0x20) > 0)
-                    *(int *)(r2 + 8) = ai_Unk4cffd0(other, g, c, 0, 0);
+                    *(int *)(r2 + 8) = cm_OrderAttack(other, g, c, 0, 0);
             }
         }
     }
@@ -10946,7 +10958,7 @@ walk:
 }
 
 #define G21_BC0 ((int (*)(const char *, int, int, const char *))ai_Unk4c5bc0)
-#define G21_C40 ((int (*)(int, void *))ai_Unk4c5c40)
+#define G21_C40 ((int (*)(int, void *))cm_SendCutEntry)
 #define G21_CA0 ((int (*)(int, void *))ai_Unk4c5ca0)
 #define G21_DC0 ((int (*)(char *, int, void *))cm_SendFightCommand)
 #define G21_CH(o) (*(char **)((o) + 0x184))
@@ -11081,7 +11093,7 @@ void ai_Unk4d76a0(int *rec)
                                 (*(int *)(r2 + 8) = -1, *(int *)(r2 + 4) == 0) &&
                                 cm_CharWeaponItem(x) != 0 && *(int *)(cm_CharWeaponItem(x) + 0x20) > 0) {
                                 cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-                                *(int *)(r2 + 8) = ai_Unk4cffd0(other, x, c, 0, 0);
+                                *(int *)(r2 + 8) = cm_OrderAttack(other, x, c, 0, 0);
                             }
                         }
                     }
@@ -15336,9 +15348,9 @@ extern int ai_Unkfa5f04;
 /* ai_Unk143b3d8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143b3e4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e674: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8a4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8a8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8ac: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_WeaponEmpty15e: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_WeaponEmpty174: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_WeaponEmpty176: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8b0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8b4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8bc: view of txt_Ptrs (build/mk_txt_views.py) */

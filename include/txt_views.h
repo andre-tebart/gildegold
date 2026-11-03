@@ -54,9 +54,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143df38                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x03d78))  /* 0x143df38 */
 #define full_data_143df40                        (*(unsigned char (*)[1848])((char *)txt_Ptrs + 0x03d80))  /* 0x143df40 */
 #define ai_Unk143e674                            (*(char * *)((char *)txt_Ptrs + 0x044b4))  /* 0x143e674 */
-#define ai_Unk143e8a4                            (*(int *)((char *)txt_Ptrs + 0x046e4))  /* 0x143e8a4 */
-#define ai_Unk143e8a8                            (*(int *)((char *)txt_Ptrs + 0x046e8))  /* 0x143e8a8 */
-#define ai_Unk143e8ac                            (*(int *)((char *)txt_Ptrs + 0x046ec))  /* 0x143e8ac */
+#define txt_WeaponEmpty15e                            (*(int *)((char *)txt_Ptrs + 0x046e4))  /* 0x143e8a4 */
+#define txt_WeaponEmpty174                            (*(int *)((char *)txt_Ptrs + 0x046e8))  /* 0x143e8a8 */
+#define txt_WeaponEmpty176                            (*(int *)((char *)txt_Ptrs + 0x046ec))  /* 0x143e8ac */
 #define ai_Unk143e8b0                            (*(int *)((char *)txt_Ptrs + 0x046f0))  /* 0x143e8b0 */
 #define ai_Unk143e8b4                            (*(int *)((char *)txt_Ptrs + 0x046f4))  /* 0x143e8b4 */
 #define ai_Unk143e8bc                            (*(char * *)((char *)txt_Ptrs + 0x046fc))  /* 0x143e8bc */

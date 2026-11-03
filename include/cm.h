@@ -265,7 +265,7 @@ void cm_SendChat(void *p);                                                      
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
 void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
-void ai_Unk4c5c40(int a, void *p);                                               /* 0x4c5c40 */
+void cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
 void ai_Unk4c5ca0(int a, void *p);                                               /* 0x4c5ca0 */
 void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
@@ -656,7 +656,7 @@ extern int ai_ClickedObject;  /* 0x6f22e4 */
 extern int ai_Unk6f0d24;  /* 0x6f0d24 */
 extern int ai_Unk6f0d28;  /* 0x6f0d28 */
 
-int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z);  /* 0x4cffd0 */
+int cm_OrderAttack(char *rec, char *c, char *tgt, int x, int z);  /* 0x4cffd0 */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);  /* 0x45f170 */
 
 
