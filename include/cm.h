@@ -777,7 +777,7 @@ extern float ai_Unk5ebc1c;  /* 0x5ebc1c */
 extern const float ai_Unk5ecebc;  /* 0x5ecebc */
 extern float ai_Unk5eb94c;  /* 0x5eb94c */
 
-float ai_Unk4d2e30(char *c, int type);  /* 0x4d2e30 */
+float cm_OrderRating(struct AICHAR *c, int order);  /* 0x4d2e30 */
 void ai_Unk4d2f80(int side);  /* 0x4d2f80 */
 float util_RandomF();  /* 0x42ec20 */
 double ai_Unk4e5360();  /* 0x4e5360 */

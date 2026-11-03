@@ -9327,50 +9327,61 @@ float *cm_OrderChancesFor(int side)
     }
     return &cm_OrderChances[(kind * 5 + lvl) * 6];
 }
-/* 0x4d2e30, the rating of the character c for the formation type 0 .. 5 (0 the strength times a factor 1 / 0.5 / 0.2 by the
-   state +0x1c4 and an empty weapon count, 1 the inverse, 2 / 3 constants, 4 / 5 5eb8b0 or 5eb780 / 0x4fc8e0), else 5eb788 */
+/* 0x4d2e30, how well the fighter c suits the order 0 .. 5 (the fight AI gives each order drawn to the fighter rated
+   highest): 0 (attack) its strength (cm_FightStrength) times 1, 0.5 when it has an order already, 0.2 with a used-up
+   weapon; 1 the inverse (1 / strength times 0.4, 0.5 with another order, 1 while on order 1 or with a used-up weapon);
+   2 1 on order 2, else 0.5; 3 1; 4 / 5 0.2 on order 2, else 1 / its health ratio (gm_HealthRatio); 0 for others */
 
-float ai_Unk4d2e30(char *c, int type)
+float cm_OrderRating(AICHAR *c, int order)
 {
-    float v;
-    int k;
-    unsigned char st;
+    float r;
+    float f;
+    int kind;
+    unsigned char cur;
 
-    switch (type) {
+    r = 0.0f;
+    switch (order) {
     case 0:
-        v = 1.0f;
-        if (c[0x1c4] != 0)
-            v = 0.5f;
-        k = *(int *)(cm_CharWeapon(c) + 0x58);
-        if ((k == 1 || k == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
-            v = 0.2f;
-        return cm_FightStrength(c) * v;
+        f = 1.0f;
+        if (c->formation != 0)
+            f = 0.5f;
+        kind = ((AIWEAPON *)cm_CharWeapon((char *)c))->kind;
+        if ((kind == 1 || kind == 2) && ((AIOBJ *)cm_CharWeaponItem((char *)c))->usesLeft <= 0)
+            f = 0.2f;
+        r = cm_FightStrength((char *)c) * f;
+        break;
     case 1:
-        st = c[0x1c4];
-        if (st == 1)
-            v = 1.0f;
+        cur = c->formation;
+        if (cur == 1)
+            f = 1.0f;
         else {
-            v = 0.4f;
-            if (st != 0)
-                v = 0.5f;
+            f = 0.4f;
+            if (cur != 0)
+                f = 0.5f;
         }
-        k = *(int *)(cm_CharWeapon(c) + 0x58);
-        if ((k == 1 || k == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
-            v = 1.0f;
-        return v / cm_FightStrength(c);
+        kind = ((AIWEAPON *)cm_CharWeapon((char *)c))->kind;
+        if ((kind == 1 || kind == 2) && ((AIOBJ *)cm_CharWeaponItem((char *)c))->usesLeft <= 0)
+            f = 1.0f;
+        r = f / cm_FightStrength((char *)c);
+        break;
     case 2:
-        if (c[0x1c4] != 2)
-            return 0.5f;
-        return ai_FloatOne;
+        if (c->formation != 2)
+            r = 0.5f;
+        else
+            r = 1.0f;
+        break;
     case 3:
-        return ai_FloatOne;
+        r = 1.0f;
+        break;
     case 4:
     case 5:
-        if (c[0x1c4] == 2)
-            return 0.2f;
-        return ai_FloatOne / gm_HealthRatio(c);
+        if (c->formation == 2)
+            r = 0.2f;
+        else
+            r = 1.0f / gm_HealthRatio((short *)c);
+        break;
     }
-    return ai_Unk5eb788;
+    return r;
 }
 /* 0x4d2f80, gives the characters of a side (the ids +0x80 / +0xc0 of the fight record) their formation: per character a
    random roll against the row 0x4d2c00 picks the type 0 .. 5, the character with the best rating 0x4d2e30 for it takes it
@@ -9417,7 +9428,7 @@ void ai_Unk4d2f80(int side)
         best = -1.0f;
         for (i = 0; i < 16; i++) {
             if (c[i] != 0) {
-                w = ai_Unk4d2e30(c[i], k);
+                w = cm_OrderRating((AICHAR *)c[i], k);
                 if (w > best) {
                     best = w;
                     selidx = i;
