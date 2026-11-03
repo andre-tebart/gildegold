@@ -553,7 +553,7 @@ extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
 extern int ai_Unk6f0cdc;  /* 0x6f0cdc */
 extern char *cm_FightRecord;  /* 0x6f0d04 */
 extern int gm_AllowAll;  /* 0x6f2448 */
-extern char ai_Unk930600[];  /* 0x930600 */
+extern char cm_Fighters[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
 extern int cm_LobbyChatNext;  /* 0x9363f4 */
 extern int ai_Unk936400;  /* 0x936400 */
@@ -576,7 +576,7 @@ extern char cm_Grenades[];  /* 0x935a00 */
 int cm_UpdateGrenades();  /* 0x4ce830 */
 int ai_Unk4ceb70(char *c);  /* 0x4ceb70 */
 void ai_Unk4ceb80(int id);  /* 0x4ceb80 */
-void ai_Unk4cec00();  /* 0x4cec00 */
+void cm_CloseCharInfoWins();  /* 0x4cec00 */
 void cm_OpenCharInfoWin(int a, char *c);  /* 0x4cec30 */
 void ai_Unk4ced80(int a);  /* 0x4ced80 */
 void d3fl_MakeDivide();  /* 0x441300 */
@@ -595,13 +595,13 @@ void cm_ShowDamage(char *c, int v, int kind);  /* 0x4cedc0 */
 void cm_UpdateDamagePops();  /* 0x4cee20 */
 void cm_InitDamagePops();  /* 0x4cef80 */
 void cm_ClearDamagePops();  /* 0x4cefa0 */
-void ai_Unk4cefe0();  /* 0x4cefe0 */
+void cm_CloseFightView();  /* 0x4cefe0 */
 void d2_MoveObj(short x, short y, int obj);  /* 0x46cda0 */
 void d2_RemoveObj();  /* 0x46e710 */
 int d2_CreateScreenText(short x, short y, char *text);  /* 0x473860 */
 void d2_CloseView(int view);  /* 0x4758f0 */
 void d2_EnableObject();  /* 0x475aa0 */
-extern int ai_Unk60cb60;  /* 0x60cb60 */
+extern int cm_FightView;  /* 0x60cb60 */
 extern G18POP cm_DamagePops[16];  /* 0x9304c0 */
 
 void cm_UpdateSceneChars();  /* 0x4cf000 */

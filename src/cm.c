@@ -131,6 +131,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
+#define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
@@ -6894,16 +6895,16 @@ int cm_FindNearCell(int a, int b, int *ox, int *oy)
     }
     return 0;
 }
-/* 0x4ce130, the fighter (an AICHAR, 0x21c bytes) with the netId id among the 32 of ai_Unk930600, 0 when none */
+/* 0x4ce130, the fighter (an AICHAR, 0x21c bytes) with the netId id among the 32 of cm_Fighters, 0 when none */
 
 char *cm_FindFighter(int id)
 {
     int i = 0;
     char *p;
 
-    for (p = ai_Unk930600 + 4; (int)p < (int)(ai_Unk930600 + 4 + 32 * 0x21c); p += 0x21c) {
+    for (p = cm_Fighters + 4; (int)p < (int)(cm_Fighters + 4 + 32 * 0x21c); p += 0x21c) {
         if (*(unsigned short *)(p - 4) != 0xffff && *(int *)p == id)
-            return ai_Unk930600 + i * 0x21c;
+            return cm_Fighters + i * 0x21c;
         i++;
     }
     return 0;
@@ -7256,7 +7257,7 @@ void ai_Unk4ceb80(int id)
 }
 /* 0x4cec00, closes the 32 windows of cm_CharInfoWins */
 
-void ai_Unk4cec00()
+void cm_CloseCharInfoWins()
 {
     int *p;
 
@@ -7305,8 +7306,8 @@ void ai_Unk4ced80(int a)
 {
     char *p;
 
-    ai_Unk4cec00();
-    for (p = ai_Unk930600; (int)p < (int)(ai_Unk930600 + 0x4380); p += 0x21c) {
+    cm_CloseCharInfoWins();
+    for (p = cm_Fighters; (int)p < (int)(cm_Fighters + 0x4380); p += 0x21c) {
         if (p[0x188] != 0)
             cm_OpenCharInfoWin(a, p);
     }
@@ -7397,11 +7398,11 @@ void cm_ClearDamagePops()
 }
 /* 0x4cefe0 */
 
-void ai_Unk4cefe0()
+void cm_CloseFightView()
 {
-    if (ai_Unk60cb60 != -1) {
-        d2_CloseView(ai_Unk60cb60);
-        ai_Unk60cb60 = -1;
+    if (cm_FightView != -1) {
+        d2_CloseView(cm_FightView);
+        cm_FightView = -1;
     }
 }
 /* 0x4cf000, the per-tick update of the scene characters (ai_SceneChars): on the fight owner's machine, every 0x15e
@@ -8179,27 +8180,29 @@ void cm_FightMouse(char *rec)
     if (dm_L.rup != 0)
         cm_ClearMarks();
 }
-/* 0x4d08c0, clears the marks of the 32 records ai_Unk930600[0x21c] (+0x188) and the highlight of their models */
+/* 0x4d08c0, clears the marks (AICHAR.selected) of the 32 cm_Fighters and the grey highlight of their bodies
+   (D3OBJECT.stateFlags bit 2: d3t_SetColor black), then the pointer items, the character info windows and the fight
+   view */
 
 void cm_ClearMarks()
 {
-    char *r;
+    AICHAR *r;
+    D3OBJECT *body;
 
-    for (r = ai_Unk930600; (int)(r + 0x184) < ((unsigned)&ai_Unk930600 + 0x4504); r += 0x21c) {
-        if (r[0x188] != 0)
-            r[0x188] = 0;
-        if (*(int *)(r + 0x184) != 0) {
-            char *mdl = *(char **)(*(char **)(r + 0x184) + 0x34);
-
-            if ((mdl[0x212] & 2) == 2)
-                d3t_SetColorK(mdl, 0, 0, 0);
+    for (r = cm_FightersT; (int)&r->scene < (int)&cm_FightersT[32].scene; r++) {
+        if (r->selected != 0)
+            r->selected = 0;
+        if (r->scene != 0) {
+            body = r->scene->obj;
+            if ((body->stateFlags & 2) == 2)
+                d3t_SetColor(body, 0, 0, 0);
         }
     }
     d2_ClearPointerItems();
-    ai_Unk4cec00();
-    ai_Unk4cefe0();
+    cm_CloseCharInfoWins();
+    cm_CloseFightView();
 }
-/* 0x4d0920, a record of the 32 ai_Unk930600[0x21c] for the character c: the first free one (+0 == 0xffff) gets a copy of
+/* 0x4d0920, a record of the 32 cm_Fighters[0x21c] for the character c: the first free one (+0 == 0xffff) gets a copy of
    the template of 0x505df0 (0x87 ints), an object (4fbb80) with the name "%i" of its id and the speed from the
    character's kind; the kind 2 gets the count 6, else 0xf. Rough draft. */
 
@@ -8209,8 +8212,8 @@ char *ai_Unk4d0920(char *c, int a)
     int i;
 
     t = gm_FindChar((int)c);
-    for (i = 0, r = ai_Unk930600; *(unsigned short *)r != 0xffff; i++, r += 0x21c) {
-        if ((int)(r + 0x21c) >= ((unsigned)&ai_Unk930600 + 0x4380))
+    for (i = 0, r = cm_Fighters; *(unsigned short *)r != 0xffff; i++, r += 0x21c) {
+        if ((int)(r + 0x21c) >= ((unsigned)&cm_Fighters + 0x4380))
             return 0;
     }
     memcpy(r, t, 0x21c);
@@ -8232,7 +8235,7 @@ char *ai_Unk4d0920(char *c, int a)
     }
     return r;
 }
-/* 0x4d0a30, fills ai_SceneChars[] (32 pointers) with the records of ai_Unk930600 whose object belongs to the scene ai_Unk5fb5b0 */
+/* 0x4d0a30, fills ai_SceneChars[] (32 pointers) with the records of cm_Fighters whose object belongs to the scene ai_Unk5fb5b0 */
 
 void ai_Unk4d0a30()
 {
@@ -8241,7 +8244,7 @@ void ai_Unk4d0a30()
 
     memset(ai_Unk7603a0V, 0, 0x80);
     p = ai_Unk7603a0V;
-    for (r = ai_Unk930600; (int)p < ((unsigned)&ai_SceneChars + 0x7c) && (int)(r + 0x184) < ((unsigned)&ai_Unk930600 + 0x4504); r += 0x21c) {
+    for (r = cm_Fighters; (int)p < ((unsigned)&ai_SceneChars + 0x7c) && (int)(r + 0x184) < ((unsigned)&cm_Fighters + 0x4504); r += 0x21c) {
         if (*(int *)(r + 0x184) != 0 && *(char **)(*(char **)(r + 0x184) + 0x88) == ai_Unk5fb5b0)
             *p++ = r;
     }
@@ -8439,11 +8442,11 @@ void ai_Unk4d0fa0(char *rec)
         *(int *)p = 0;
         *(int *)(p + 8) = 0;
     }
-    memset((char *)((unsigned)&ai_Unk930600 + 0x4380), 0, 0x1000);
+    memset((char *)((unsigned)&cm_Fighters + 0x4380), 0, 0x1000);
     memset(cm_Bombs, 0, 0x100);
     memset(cm_Grenades, 0, 0x200);
-    memset(ai_Unk930600, 0, 0x4380);
-    for (p = ai_Unk930600; (int)p < ((unsigned)&ai_Unk930600 + 0x4380); p += 0x21c)
+    memset(cm_Fighters, 0, 0x4380);
+    for (p = cm_Fighters; (int)p < ((unsigned)&cm_Fighters + 0x4380); p += 0x21c)
         *(unsigned short *)p = 0xffff;
     for (p = (char *)cm_Portraits + 8; (int)p < ((unsigned)((unsigned)cm_Portraits + 0xc0) + 0x8); p += 0x20)
         *(int *)p = -1;
@@ -8528,7 +8531,7 @@ void ai_Unk4d0fa0(char *rec)
     d3_ForEachObject2(ai_Unk5fb5b0, 0, 0xc0, ai_Unk4d0f80);
     memset(ai_Unk7603a0V, 0, 0x80);
     pp = ai_Unk7603a0V;
-    for (p = ai_Unk930600; (int)p < ((unsigned)&ai_Unk930600 + 0x4380); p += 0x21c) {
+    for (p = cm_Fighters; (int)p < ((unsigned)&cm_Fighters + 0x4380); p += 0x21c) {
         if (*(unsigned short *)p != 0xffff && *(char **)(p + 0x184) != 0 &&
             *(char **)(*(char **)(p + 0x184) + 0x88) == ai_Unk5fb5b0)
             *pp++ = p;
@@ -8643,7 +8646,7 @@ void ai_Unk4d1a10(char *rec)
         d3io_ReleaseObject(ai_Unk6f0d5c);
         ai_Unk6f0d5c = 0;
     }
-    for (r = ai_Unk930600; (int)(r + 0x184) < ((unsigned)&ai_Unk930600 + 0x4504); r += 0x21c) {
+    for (r = cm_Fighters; (int)(r + 0x184) < ((unsigned)&cm_Fighters + 0x4504); r += 0x21c) {
         if (*(unsigned short *)r != 0xffff && *(int *)(r + 0x184) != 0) {
             if (*(int *)(rec + 0xc) == ai_CharInts[ai_PlayerId][0] || ai_Unk1460ae0 == -1) {
                 k = gm_FindChar(*(int *)(r + 4));
@@ -15326,7 +15329,7 @@ extern float ai_Unk9300a0[0xb4];
 extern char * ai_Unk930380[32];
 extern CMPORTRAIT cm_Portraits[6];
 extern G18POP cm_DamagePops[16];
-extern char ai_Unk930600[21376];
+extern char cm_Fighters[21376];
 extern char * ai_Unk935980[32];
 extern char cm_Grenades[512];
 extern float ai_Unk935d00;
@@ -15443,7 +15446,7 @@ char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
 char ai_Unk60c7c0[920] = { 84, 1, 0, 0, 120, 5, 20, 0, 1, 4, 1, 0, 0, 0, -96, 66, 2, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 17, 0, 0, 0, 0, 0, 0, 86, 1, 0, 0, 95, 10, 15, 0, 1, 4, 1, 0, 0, 0, -96, 66, 5, 107, 97, 109, 112, 102, 47, 115, 116, 114, 101, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 17, 0, 0, 0, 0, 0, 0, 88, 1, 0, 0, 80, 20, 40, 0, 1, 4, 1, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 104, 105, 101, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 17, 0, 0, 0, 0, 0, 0, 114, 1, 0, 0, 110, 5, 10, 0, 1, 5, 0, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 102, 17, 0, 0, 0, 0, 0, 0, 110, 1, 0, 0, 100, 5, 10, 0, 1, 5, 0, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 103, 17, 0, 0, 0, 0, 0, 0, 116, 1, 0, 0, 100, 0, 30, 1, 2, 6, 0, 0, 0, 0, 72, 67, 2, 107, 97, 109, 112, 102, 47, 119, 101, 114, 102, 101, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 17, 0, 0, 2, 0, 0, 0, 118, 1, 0, 0, 90, 0, 30, 1, 1, 6, 0, 0, 0, 0, 72, 67, 2, 107, 97, 109, 112, 102, 47, 119, 101, 114, 102, 101, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 105, 17, 0, 0, 2, 0, 0, 0, 94, 1, 0, 0, 60, 5, 20, 1, 1, 3, 0, 0, 0, 0, -56, 67, 5, 107, 97, 109, 112, 102, 47, 115, 99, 104, 105, 101, 115, 115, 101, 110, 95, 112, 105, 115, 116, 111, 108, 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 17, 0, 0, 1, 0, 0, 0, 96, 1, 0, 0, 70, 10, 30, 1, 1, 3, 0, 0, 0, 0, 22, 68, 5, 107, 97, 109, 112, 102, 47, 115, 99, 104, 105, 101, 115, 115, 101, 110, 95, 97, 114, 109, 98, 114, 117, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 107, 17, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, -106, 2, 8, 0, 1, 5, 1, 0, 0, 0, -96, 66, 2, 107, 97, 109, 112, 102, 47, 115, 99, 104, 108, 97, 103, 101, 110, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 17, 0, 0, 0, 0, 0, 0 };  /* 0x60c7c0, the ten 0x5c-byte records ai_FindWeaponRecord searches (G12REC10, hst.c); the last has id 0, the fallback */
 float ai_Unk60cb58 = 1.0f;  /* 0x60cb58 */
 int cm_FightOwner = -1;  /* 0x60cb5c */
-int ai_Unk60cb60 = -1;  /* 0x60cb60 */
+int cm_FightView = -1;  /* 0x60cb60 */
 int ai_Unk60cb64 = -1;  /* 0x60cb64 */
 int ai_Unk60cb68 = -1;  /* 0x60cb68 */
 int ai_Unk60d360 = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
@@ -15572,7 +15575,7 @@ float ai_Unk9300a0[0xb4] = {0};  /* 0x9300a0 */
 char * ai_Unk930380[32] = {0};  /* 0x930380 */
 CMPORTRAIT cm_Portraits[6] = {0};  /* 0x930400 */
 G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
-char ai_Unk930600[21376] = {0};  /* 0x930600 */
+char cm_Fighters[21376] = {0};  /* 0x930600 */
 char * ai_Unk935980[32] = {0};  /* 0x935980 */
 char cm_Grenades[512] = {0};  /* 0x935a00 */
 float ai_Unk935d00 = 0;  /* 0x935d00 */
