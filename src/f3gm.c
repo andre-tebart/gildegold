@@ -8859,45 +8859,55 @@ int gm_Unk5093a0(int kind, unsigned k)
 
 #define GM_CLAMPMIN(m, lo, hi) ((float)(m) < (lo) ? (lo) : ((float)(m) > (hi) ? (hi) : (float)(m)))
 
-/* 0x509400, the working minutes between the clocks a and b of the building b (the day runs from the season's start to its end: 0x617830 / 0x617840 hours); the whole day (0x4fe280) for the night shift (0x6f23f8 < 0) and the kind 0x1d. ROUGH */
-int gm_Unk509400(GCLOCK *a, GCLOCK *b, unsigned char *bld)
+/* 0x509400, the working minutes from the clock a to the clock b for the building bld (0: none): the working day
+   runs from the season's start to its end hour (gm_DayStartHours / gm_DayEndHours), so a day's clock is clamped
+   into it; the rest of a's day, the whole working days between, and b's day up to its clock. The full minutes
+   (gm_MinutesBetween) with the game flag bit 7 set or for a building of class 0x1d; 0 when b is before a
+   @deep Read whole against the original: the season hours, the flag bit 7 test (ai_GameFlags & 0x80: test
+   al,al; jns), the class 0x1d and compare-time exits, the clock copy, the first day clamped as
+   MIN(MAX(lo*60, (float)minutes), hi*60) (the float cast stored once, lo*60 evaluated first), acc = hi*60
+   - x, gm_SetTime to the next day's start, the whole days (hi*60 - lo*60 per day) and the last day's two
+   clamps (b's minutes, then t's, as ints) all match; same size 671. Left is allocation only: acc and y
+   swap ebp / edi (the original: mov eax,ebp; sub eax,ecx; add eax,edi; pop edi at +0x27a and +0x293, ours
+   mov eax,edi ... add eax,ebp after pop edi), and the temporaries of lo*60 / hi*60 / the float minutes
+   swap the slots [esp+0x2c] / [esp+0x34] (+0xde..+0x138) and [esp+0x2c] / [esp+0x30] (+0x1c3..+0x24b).
+   Tried: the declaration order of acc / x / y (no change); the prover stops at the 4-byte read of the
+   clock's min at +0x1e (a stack access across two cells). */
+int gm_WorkMinutesBetween(GCLOCK *a, GCLOCK *b, unsigned char *bld)
 {
-    float lo, hi, m, c;
-    int s, acc, x, y, d0, d1, n;
+    float lo, hi;
+    int season, acc, x, y, day, end, n;
     GCLOCK t;
 
-    s = gm_ClockSeason(a);
-    lo = gm_DayStartHours[s];
-    hi = gm_DayEndHours[s];
-    if ((char)ai_GameFlags < 0)
+    season = gm_ClockSeason(a);
+    lo = gm_DayStartHours[season];
+    hi = gm_DayEndHours[season];
+    if (ai_GameFlags & 0x80)
         return gm_MinutesBetween(a, b);
     if (bld != 0 && ai_BTypes[*bld * 0x24d] == 0x1d)
         return gm_MinutesBetween(a, b);
     if (gm_CompareTime(a, b) > 0)
         return 0;
     t = *a;
-    d0 = a->day;
-    d1 = b->day;
-    if (d0 < d1) {
-        m = (float)(t.hour * 60 + t.min);
-        c = GM_CLAMPMIN(m, lo * 60.0f, hi * 60.0f);
-        x = (int)c;
+    day = t.day;
+    end = b->day;
+    if (day < end) {
+        x = (int)GM_MIN(GM_MAX(lo * 60.0f, (float)(t.hour * 60 + t.min)), hi * 60.0f);
         acc = (int)(hi * 60.0f - x);
-        t.day = d0 + 1;
+        t.day = day + 1;
         gm_SetTime(&t, (int)lo, 0, 0);
-        d0 = t.day;
+        day = t.day;
     } else
         acc = 0;
-    if (d0 < d1) {
-        n = d1 - d0;
+    if (day < end) {
+        n = end - day;
         do {
-            acc = (int)(acc + (hi - lo) * 60.0f);
+            acc = (int)(acc + (hi * 60.0f - lo * 60.0f));
             n--;
         } while (n != 0);
     }
-    m = (float)(t.hour * 60 + t.min);
-    y = (int)GM_CLAMPMIN((float)(b->hour * 60 + b->min), lo * 60.0f, hi * 60.0f);
-    x = (int)GM_CLAMPMIN(m, lo * 60.0f, hi * 60.0f);
+    y = (int)GM_MIN(GM_MAX(lo * 60.0f, b->hour * 60 + b->min), hi * 60.0f);
+    x = (int)GM_MIN(GM_MAX(lo * 60.0f, t.hour * 60 + t.min), hi * 60.0f);
     return (acc - x) + y;
 }
 /* 0x5096a0, the same with the fixed day 360 .. 1380 minutes (6:00 to 23:00, 1020 a day) */

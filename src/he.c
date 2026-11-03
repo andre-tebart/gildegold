@@ -10616,7 +10616,7 @@ void he_Unk558550(int ev)
 }
 
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
-int gm_Unk509400();
+int gm_WorkMinutesBetween();
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x5588c0, the allocation handler of the sabotage event (ROUGH): the saboteur +0xb0 (0x505df0; gone or with a job of the kind 0x16 at +0x17c: free) and the building +0x10 are looked up (+0xb4 optionally the target figure 0x4ffe90 (.., 2, 6, 1, id)); the start / due clocks are now, the saboteur is stored for the group (0x524260 (building, target, id, ev)), +0x60 = now, posted 0x1e later, +0xb8 = the due clock + 6 units, and the word +0xbc is set to 0x1d + (+0xbc - the minute word) when it is below 6 */
@@ -13585,12 +13585,12 @@ void he_Unk568be0(int ev)
             }
             *(char *)(ev + 0xc8) = 0;
         }
-        n = gm_Unk509400(ev + 0x60, (unsigned)&ai_Time, 0);
+        n = gm_WorkMinutesBetween(ev + 0x60, (unsigned)&ai_Time, 0);
         if (n > 0)
             *(unsigned char *)(ev + 0xc8) += n;
         f2 = f1 + *(float *)(ev + 0xc4);
         while (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) < 0) {
-            n = gm_Unk509400(ev + 0x60, ev + 0x52, 0);
+            n = gm_WorkMinutesBetween(ev + 0x60, ev + 0x52, 0);
             v = (int)((float)n * 0.0f * f2);
             *(int *)(ev + 0xb0) = (int)((float)*(int *)(ev + 0xb0) - (float)v);
             if (*(int *)(ev + 0xb0) <= 0) {
@@ -13690,7 +13690,7 @@ int cm_SendRelations(int a, int b, int c, int d);
 int gm_FreeCapacity();
 int gm_ListAmount();
 int gm_BuildingMainObject(unsigned char *b);
-int gm_Unk509400();
+int gm_WorkMinutesBetween();
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
 int ai_InventoryHas(void *ch, int id);
 
@@ -13880,7 +13880,7 @@ fetch:
         *(unsigned char *)(ev + 0xd0) = 0;
     }
     ck = ev + 0x60;
-    n = gm_Unk509400(ck, (unsigned)&ai_Time, 0);
+    n = gm_WorkMinutesBetween(ck, (unsigned)&ai_Time, 0);
     if (n > 0)
         *(unsigned char *)(ev + 0xd0) += n;
     v = f;
@@ -13937,7 +13937,7 @@ fetch:
         for (;;) {
             if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
                 return;
-            n = gm_Unk509400(ck, ev + 0x52, 0);
+            n = gm_WorkMinutesBetween(ck, ev + 0x52, 0);
             *(float *)(ev + 0xb4) = *(float *)(ev + 0xb4) - (float)n * ((float)*(int *)(ev + 0x14) * 1.3f + *(int *)(ev + 0x18)) * rate;
             i = 0;
             while (!(*(float *)(ev + 0xb4) > 0.0f)) {
@@ -16844,7 +16844,7 @@ void he_Unk571c30(int ev)
         goto free_ev;
     n = gm_BuildingSkill(bld, 0xc, 1);
     f = (float)n;
-    v = gm_Unk509400(ev + 0x60, &ai_Time, bld);
+    v = gm_WorkMinutesBetween(ev + 0x60, &ai_Time, bld);
     HM_B(per + HM_I(ev, 0xb0), 0x80) = (unsigned char)(int)((double)v * *(double *)((unsigned)&sv_PhaseMinutes + 0x158) * *(double *)((unsigned)&gm_MoodRanges + 0x7c8) * ((double)f * *(double *)(unsigned)&ai_Unk5ece60 + *(double *)(unsigned)&full_rdata_5eb8a8));
     cm_BeginFieldBlock(per, *(int *)(per + 4));
     cm_AddFieldValues(1, 1, per + (*(unsigned short *)(ev + 0xb0) - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x80, &n);
