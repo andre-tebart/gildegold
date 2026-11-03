@@ -3503,14 +3503,14 @@ exe	0x0053dad0	he_Unk53dad0	he	byte	draft
 exe	0x0053daf0	he_PickActiveEvent	he	shape	readable		
 exe	0x0053dcb0	he_ActivateSlot	he	byte	draft		
 exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
-exe	0x0053dee0	he_MessageBoxQuickjump	he	draft	draft		
-exe	0x0053e040	he_Unk53e040	he	draft	draft		
-exe	0x0053e1f0	he_FreeEvent	he	draft	draft		
-exe	0x0053e300	he_NextEvent	he	draft	draft		
-exe	0x0053e400	he_FindEvent	he	draft	draft		
-exe	0x0053e4e0	he_Unk53e4e0	he	draft	draft		
-exe	0x0053e5f0	he_Unk53e5f0	he	draft	draft		
-exe	0x0053e780	he_Unk53e780	he	draft	draft		
+exe	0x0053dee0	he_MessageBoxQuickjump	he	byte	readable		
+exe	0x0053e040	he_CreateEvent	he	draft	readable	deep	
+exe	0x0053e1f0	he_FreeEvent	he	draft	readable	deep	
+exe	0x0053e300	he_NextEvent	he	draft	readable	deep	
+exe	0x0053e400	he_FindEvent	he	byte	readable		
+exe	0x0053e4e0	he_SpreadGfxInfos	he	shape	readable		
+exe	0x0053e5f0	he_CreateGfxObject	he	byte	readable		
+exe	0x0053e780	he_CreateGfxInfo	he	draft	readable	deep	
 exe	0x0053e840	he_Unk53e840	he	shape	draft		
 exe	0x0053e8b0	he_Unk53e8b0	he	draft	draft		
 exe	0x0053eba0	he_Unk53eba0	he	byte	draft		

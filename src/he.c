@@ -4,13 +4,17 @@
    0x53d430 .. 0x575860: starts right after main.c's program entry (its globals 0x625718 / 0x62571c follow
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
-   The event record is AIJOB, the message record AIMSG (both in ai_types.h, readable without ai.h); the event bar
-   functions read them typed.
-   Open: types: the handlers past the event bar still read the event and message records through raw offsets
-   (HM_I / U_I); AIJOB covers only part of the 0x14c bytes.
+   The event record is AIJOB (0x14c bytes, he_Jobs over he_Events), the message record AIMSG (both in ai_types.h,
+   readable without ai.h); the event bar, the event create / free / search and the gfx info functions read them
+   typed (HEGFXINFO in he.h, he_GfxInfos).
+   Open: types: the handlers past the gfx infos still read the event and message records through raw offsets
+   (HM_I / U_I); AIJOB's fields between 0x14 and 0xac are named only as the message's words.
+   Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
+   (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
-   0x625718 he_LastSlot, 0x62571c he_BarShown, owner he or main (typed in place in main.c's gap block; he.c and sv.c
-   use them, they lie among main.c's data / bss).
+   0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom),
+   0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner he or main (typed in place in main.c's gap block; he.c and
+   sv.c use them, they lie among main.c's data / bss).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h ch.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
