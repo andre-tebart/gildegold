@@ -183,7 +183,7 @@ void ai_Unk4c3f50(void);                                                        
 int ai_Unk4c3f80(void);                                                          /* 0x4c3f80 */
 int cm_SendPlayerId(void);                                                         /* 0x4c3f90 */
 int cm_ReceiveMessages(void);                                                          /* 0x4c3fd0 */
-G17MSG *ai_Unk4c4030(char type, int timeout);                                    /* 0x4c4030 */
+G17MSG *cm_WaitMessage(unsigned char type, int timeout);                                    /* 0x4c4030 */
 int cm_EnqueueReceived(G17MSG *src);                                                   /* 0x4c4080 */
 void ai_Unk4c4130(G17MSG *m);                                                    /* 0x4c4130 */
 int cm_ExecCommands(void);                                                          /* 0x4c4190, "cm_ExecCommand" */

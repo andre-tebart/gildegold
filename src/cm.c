@@ -351,7 +351,7 @@ int cm_WaitHello(void)
 {
     G17MSG *m;
 
-    m = ai_Unk4c4030(3, 0x165);
+    m = cm_WaitMessage(3, 0x165);
     if (m == 0)
         return 1;
     if (*(int *)&m->data[0] != 0xa03ef57c)
@@ -813,7 +813,7 @@ int cm_ReceiveMessages(void)
 }
 /* 0x4c4030, waits up to timeout ms for a message of type type */
 
-G17MSG *ai_Unk4c4030(char type, int timeout)
+G17MSG *cm_WaitMessage(unsigned char type, int timeout)
 {
     G17MSG *m;
     unsigned int end;
