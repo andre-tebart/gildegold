@@ -52,8 +52,8 @@ extern G17MSG *cm_RecvFree;            /* 0xa68c00, the free list */
 extern unsigned int cm_GroupEndSeq;       /* 0xa68c04 */
 extern int cm_FieldBlockLen;                /* 0xa68c08, bytes used in cm_FieldBlock.buf */
 extern G17FIELDS cm_FieldBlock;          /* 0xa68c20 */
-extern G17FIELDS ai_Unka68ca0;          /* 0xa68ca0 */
-extern int ai_Unka68d20;                /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
+extern G17FIELDS ai_NeedBlock;          /* 0xa68ca0 */
+extern int ai_NeedBlockLen;                /* 0xa68d20, bytes used in ai_NeedBlock.buf */
 extern G17MSG *cm_RecvQueue;            /* 0xa68d24, the received messages */
 extern char *cm_FieldObject;              /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 extern int cm_SplitMsgLen;                /* 0xa68d30, length of cm_SplitMsg */

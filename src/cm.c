@@ -718,27 +718,27 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
 
 void ai_BeginNeedBlock(char *p)
 {
-    ai_Unka68ca0.id = *(int *)(p + 4);
-    ai_Unka68ca0.n = 0;
-    memset(ai_Unka68ca0.buf, 0, sizeof(ai_Unka68ca0.buf));
-    ai_Unka68d20 = 0;
+    ai_NeedBlock.id = *(int *)(p + 4);
+    ai_NeedBlock.n = 0;
+    memset(ai_NeedBlock.buf, 0, sizeof(ai_NeedBlock.buf));
+    ai_NeedBlockLen = 0;
     ai_Unka68d34 = p;
 }
 /* 0x4c3eb0, adds the pair (k, v) to the second field block */
 
 int ai_AddNeedDelta(int k, float v)
 {
-    unsigned char *p;
-    int o;
+    union { unsigned char *b; float *f; } p;    /* the pair: the kind (a byte), the delta */
+    unsigned int len;
 
-    o = ai_Unka68d20;
-    if (ai_Unka68d20 + 5 > 0x76)
+    len = ai_NeedBlockLen + 5;
+    if (len >= 0x77)
         return 1;
-    p = &ai_Unka68ca0.buf[ai_Unka68d20];
-    ai_Unka68ca0.n++;
-    ai_Unka68d20 += 5;
-    *p = k;
-    *(float *)&ai_Unka68ca0.buf[o + 1] = v;
+    p.b = &ai_NeedBlock.buf[ai_NeedBlockLen];
+    ai_NeedBlockLen = len;
+    ai_NeedBlock.n++;
+    *p.b++ = k;
+    *p.f = v;
     return 0;
 }
 /* 0x4c3ef0, sets cm_SpeedLevel (0..4) through message 0x12 */
@@ -1230,7 +1230,7 @@ void ai_SendNeedBlock(void)
     G17MSG m;
 
     m.type = 0x18;
-    memcpy(m.data, &ai_Unka68ca0, sizeof(G17FIELDS));
+    memcpy(m.data, &ai_NeedBlock, sizeof(G17FIELDS));
     cm_QueueSend(&m);
 }
 /* 0x4c4a60, message 0x19 */
@@ -14999,9 +14999,9 @@ extern G17MSG * cm_RecvFree;
 extern unsigned int cm_GroupEndSeq;
 extern int cm_FieldBlockLen;
 extern G17FIELDS cm_FieldBlock;
-extern G17FIELDS ai_Unka68ca0;
+extern G17FIELDS ai_NeedBlock;
 extern unsigned int ai_Unka68d1c;
-extern int ai_Unka68d20;
+extern int ai_NeedBlockLen;
 extern G17MSG * cm_RecvQueue;
 extern char * cm_FieldObject;
 extern int cm_SplitMsgLen;
@@ -15246,9 +15246,9 @@ G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
 unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
 int cm_FieldBlockLen = 0;  /* 0xa68c08, bytes used in cm_FieldBlock.buf */
 G17FIELDS cm_FieldBlock = {0};  /* 0xa68c20 */
-G17FIELDS ai_Unka68ca0 = {0};  /* 0xa68ca0 */
+G17FIELDS ai_NeedBlock = {0};  /* 0xa68ca0 */
 unsigned int ai_Unka68d1c = 0;  /* 0xa68d1c, "cm_LastRequCount" */
-int ai_Unka68d20 = 0;  /* 0xa68d20, bytes used in ai_Unka68ca0.buf */
+int ai_NeedBlockLen = 0;  /* 0xa68d20, bytes used in ai_NeedBlock.buf */
 G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
 char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 int cm_SplitMsgLen = 0;  /* 0xa68d30, length of cm_SplitMsg */
