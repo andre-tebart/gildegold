@@ -2419,7 +2419,7 @@ exe	0x004ce290	cm_LayBomb	cm	byte	readable
 exe	0x004ce300	cm_UpdateBombs	cm	draft	readable	deep	
 exe	0x004ce5d0	cm_ThrowGrenade	cm	shape	readable		
 exe	0x004ce830	cm_UpdateGrenades	cm	draft	readable	deep	
-exe	0x004ceb70	ai_Unk4ceb70	cm	byte	draft		
+exe	0x004ceb70	cm_ObjectOwner	cm	byte	draft		
 exe	0x004ceb80	ai_Unk4ceb80	cm	shape	draft		
 exe	0x004cec00	cm_CloseCharInfoWins	cm	byte	readable		
 exe	0x004cec30	cm_OpenCharInfoWin	cm	shape	readable		
@@ -2465,21 +2465,21 @@ exe	0x004d2450	ai_Unk4d2450	cm	byte	draft
 exe	0x004d2490	ai_Unk4d2490	cm	shape	draft		
 exe	0x004d2550	ai_Unk4d2550	cm	byte	draft		
 exe	0x004d25a0	ai_Unk4d25a0	cm	byte	draft		
-exe	0x004d2650	ai_Unk4d2650	cm	byte	draft		
-exe	0x004d2680	ai_Unk4d2680	cm	draft	draft		
-exe	0x004d27a0	ai_BuildFloatTable	cm	draft	draft		
-exe	0x004d2c00	ai_Unk4d2c00	cm	draft	draft		
-exe	0x004d2e30	ai_Unk4d2e30	cm	draft	draft		
-exe	0x004d2f80	ai_Unk4d2f80	cm	draft	draft		
-exe	0x004d3120	ai_Unk4d3120	cm	shape	draft		
-exe	0x004d3300	ai_Unk4d3300	cm	byte	draft		
-exe	0x004d3390	cm_CheckDeath	cm	draft	draft		
-exe	0x004d3550	ai_Unk4d3550	cm	draft	draft		
+exe	0x004d2650	cm_CollectConquerPoint	cm	byte	readable		
+exe	0x004d2680	cm_NearestConquerPoint	cm	byte	readable		
+exe	0x004d27a0	cm_InitOrderChances	cm	draft	readable	deep	
+exe	0x004d2c00	cm_OrderChancesFor	cm	byte	readable		
+exe	0x004d2e30	cm_OrderRating	cm	shape	readable		
+exe	0x004d2f80	cm_GiveFightOrders	cm	byte	readable		
+exe	0x004d3120	cm_CarryOutOrder	cm	shape	draft		
+exe	0x004d3300	cm_FallDownAction	cm	byte	draft		
+exe	0x004d3390	cm_CheckDeath	cm	byte	readable		
+exe	0x004d3550	cm_HitAction	cm	byte	readable		
 exe	0x004d3980	ai_Unk4d3980	cm	byte	draft		
 exe	0x004d3a30	ai_Unk4d3a30	cm	byte	draft		
 exe	0x004d3ac0	ai_Unk4d3ac0	cm	byte	draft		
 exe	0x004d3ae0	ai_Unk4d3ae0	cm	byte	draft		
-exe	0x004d3b30	ai_Unk4d3b30	cm	draft	draft		
+exe	0x004d3b30	cm_CheckFightWinner	cm	byte	readable		
 exe	0x004d3d10	ai_Unk4d3d10	cm	byte	draft		
 exe	0x004d3ea0	ai_Unk4d3ea0	cm	byte	draft		
 exe	0x004d4050	cm_FightRole	cm	shape	readable		
@@ -2603,7 +2603,7 @@ exe	0x004e5210	ai_Unk4e5210	cm	shape	draft
 exe	0x004e52a0	ai_Unk4e52a0	cm	byte	draft		
 exe	0x004e52c0	ai_Unk4e52c0	cm	byte	draft		
 exe	0x004e52f0	cm_Random	cm	byte	draft		
-exe	0x004e5360	ai_Unk4e5360	cm	byte	draft		
+exe	0x004e5360	cm_RandomFloat	cm	byte	draft		
 exe	0x004e53e0	ai_Unk4e53e0	cm	byte	draft		
 exe	0x004e5470	ai_Unk4e5470	cm	draft	draft		
 exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at c69fda40: cm.h: ai_ArmGateGuards (0x4d0cf0) declared with its record type (struct CMGUARDREC *, the town gate event's guard record) instead of char *. unk_575860 never calls it, yet any new struct tag in cm.h flips a VC6 register tie-break in this 1839-byte function (regs 30 hunks only, the same statements; void * keeps it byte): the same declaration-set flip as ai_TutorialInitChapter3's debt, no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at 0c023456: cm.h: cm_OrderToBestCell (0x4d0460) declared with the two parameters the original reads (rec, c; its third was never used and its one caller 0x4d3120 called it through a cast). unk_575860 never calls it, yet the declaration-set change flips a VC6 register tie-break in this 5377-byte function (code 36 / regs 10 hunks, the same statements); it already flips on unrelated renames and struct splits (see its earlier debt and ai_TutorialInitChapter2's): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
