@@ -305,7 +305,10 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
         struct {                        /* 0x94, of a council session (the member callbacks cm_SessionAskPlayer / cm_SessionAskAI,
                                            cm_RunCouncilSession counts them) */
             int answer;                 /* 0x94, mode 1: 0 yes, 1 no, 2 abstain; mode 2: the netId voted for; -1 none */
-            int click;                  /* 0x98, how it was given (1 / 2 pick the remark texts) */
+            union {
+                int click;              /* 0x98, how it was given (1 / 2 pick the remark texts) */
+                float amount;           /* 0x98, of a trial's plea: the amount the plan record takes as unk0c */
+            };
             int observer;               /* 0x9c, 1: a present member without a vote (no answer is asked) */
         } session;
     };

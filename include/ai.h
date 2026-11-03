@@ -631,7 +631,10 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     int renovationSpent;                /* 0x44, the money it has paid for renovations (ai_BuyUpgrade, am.c 0x497ee0) */
     char pad48[0x10];
     float roundFactors[3];              /* 0x58, set to 0.5, 1, 1 at every round change (main.c 0x5384e0); their reader is not known yet */
-    char pad64[0x24];
+    char pad64[8];
+    int officeSentences;                /* 0x6c, the sentences 4 / 6 / 8 its character passed as the judge of a trial on an
+                                           office holder (cm.c 0x4db700) */
+    char pad70[0x18];
     float camAngle;                     /* 0x88, the player's camera angle factor (sv_CameraAngleFactor; sv.c) */
     float camPos[3];                    /* 0x8c, the player's camera position, restored with the view (sv.c) */
     char pad98[4];

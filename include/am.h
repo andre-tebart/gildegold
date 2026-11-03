@@ -587,26 +587,6 @@ typedef struct AIC4 {                   /* 0x21c bytes, ai_Chars[] with the fiel
     char pad214[8];
 } AIC4;
 
-typedef struct AIPLAN {                 /* a plan record the callbacks 0x494020 .. 0x494410 look at */
-    char pad00[4];
-    float score;                        /* 0x04, the plan's score (rated 3..18 by 0x494020, ranked by 0x4945c0) */
-    int unk08;                          /* 0x08 */
-    float unk0c;                        /* 0x0c */
-    char pad10[4];
-    int c14;                            /* 0x14, character ids */
-    int c18;                            /* 0x18 */
-    int c1c;                            /* 0x1c */
-    char pad20[8];
-    int c28;                            /* 0x28 */
-    char pad2c[0xc];
-    int unk38;                          /* 0x38, key into the table at 0x5ecfd8 */
-    int unk3c;                          /* 0x3c, tries */
-    int unk40;                          /* 0x40 */
-    int unk44;                          /* 0x44 */
-    int unk48;                          /* 0x48, result */
-    float unk4c;                        /* 0x4c, result */
-} AIPLAN;
-
 typedef struct AIGRP {                  /* a group: a leader and up to four members (0x494ac0) */
     AIC4 *leader;                       /* 0x00 */
     struct {
