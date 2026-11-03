@@ -150,7 +150,6 @@ extern signed char ai_RelationMemory[768][768];  /* 0x889f80 */
 extern int ai_CharCount;                /* 0x6f1bc0, the number of characters */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 extern int ai_NextObjectId;                /* 0x61a654 */
-extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 
 
 

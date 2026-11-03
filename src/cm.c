@@ -3988,7 +3988,7 @@ int ai_Unk4c9280(G17MSG *m, G17STAT *s)
     int ret = 0;
 
     memcpy(buf, cm_LongMsg, 0x114);
-    if (ai_Unk1460ae0 != -1)
+    if (net_Conn.s != -1)
         ai_NextPartyId = G17_I(*m, 0);
     o = ai_Unk4e5150(buf);
     if (o != 0) {
@@ -4168,7 +4168,7 @@ int ai_Unk4c9740(G17MSG *m, G17STAT *s)
     char *o;
     int k;
 
-    if (ai_Unk1460ae0 != -1)
+    if (net_Conn.s != -1)
         ai_NextObjectId = G17_I(*m, 0);
     k = cm_ResolveId((int)m, G17_I(*m, 4));
     G17_I(*m, 4) = k;
@@ -6028,7 +6028,7 @@ int ai_Unk4ccce0(G17MSG *m, G17STAT *s)
     char *a, *b, *q;
     int v;
 
-    if (ai_Unk1460ae0 != -1)
+    if (net_Conn.s != -1)
         ai_NextObjectId = G17_I(*m, 0);
     if (s != 0) {
         s->state = 2;
@@ -6083,7 +6083,7 @@ int ai_Unk4cce10(G17MSG *m, G17STAT *s)
         s->kind = 0;
         s->value = 0;
     }
-    if (ai_Unk1460ae0 != -1)
+    if (net_Conn.s != -1)
         ai_NextObjectId = G17_I(*m, 0x17);
     else
         G17_I(*m, 0x1b) = rand();
@@ -6143,7 +6143,7 @@ int ai_Unk4ccf10(G17MSG *m, G17STAT *s)
         s->kind = 0;
         s->value = 0;
     }
-    if (ai_Unk1460ae0 != -1)
+    if (net_Conn.s != -1)
         ai_NextObjectId = G17_I(*m, 4);
     else
         G17_I(*m, 0) = rand();
@@ -6169,7 +6169,7 @@ int ai_Unk4ccf90(G17MSG *m, G17STAT *s)
         s->kind = 0;
         s->value = 0;
     }
-    if (ai_Unk1460ae0 != -1)
+    if (net_Conn.s != -1)
         ai_NextObjectId = G17_I(*m, 4);
     else
         G17_I(*m, 0) = rand();
@@ -15529,27 +15529,28 @@ void cm_RunSceneParty(char *m, int ctx)
     cm_ScenePartyRuns = cm_ScenePartyRuns + 1;
     cut_RandSeed(saved);
 }
-/* 0x4e3fe0, switches the scene mode on: 0x42ea10 (0x5315c0, 1), then 0x404c20 (o, 1) for every object whose +0x8c bit 4 is not set */
+/* 0x4e3fe0, switches the scene mode on: stops the clock (tb_SetFunctionOff(sv_UpdateClock, 1)), then pauses the
+   animation of every character of ch_List whose flags bit 4 (+0x8c) is not set */
 
 int ai_Unk4e3fe0(void)
 {
-    char **pp;
+    CHARACTER **pp;
 
     tb_SetFunctionOff(sv_UpdateClock, 1);
-    for (pp = ai_Unk1468ae0; (int)pp < (int)(ai_Unk1468ae0 + 0x300); pp++) {
-        if (*pp != 0 && !(*(unsigned char *)(*pp + 0x8c) & 4))
+    for (pp = ch_List; (int)pp < (int)(ch_List + CH_MAX); pp++) {
+        if (*pp != 0 && !((*pp)->flags.bytes.lo & 4))
             ch_PauseAnim(*pp, 1);
     }
 }
-/* 0x4e4020, the reverse: the objects with the bit 4 get 0x404c20 (o, 0) */
+/* 0x4e4020, the reverse: the characters with the bit 4 get ch_PauseAnim(ch, 0) */
 
 int ai_Unk4e4020(void)
 {
-    char **pp;
+    CHARACTER **pp;
 
     tb_SetFunctionOff(sv_UpdateClock, 0);
-    for (pp = ai_Unk1468ae0; (int)pp < (int)(ai_Unk1468ae0 + 0x300); pp++) {
-        if (*pp != 0 && (*(unsigned char *)(*pp + 0x8c) & 4))
+    for (pp = ch_List; (int)pp < (int)(ch_List + CH_MAX); pp++) {
+        if (*pp != 0 && ((*pp)->flags.bytes.lo & 4))
             ch_PauseAnim(*pp, 0);
     }
 }
@@ -16424,7 +16425,6 @@ extern int cm_PickCellZ;
 /* ai_Unk1440c88: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
-extern char * ai_Unk1468ae0[0x300];
 float ai_FloatOne = 1.0f;  /* 0x5eb780 */
 float ai_Unk5eb788 = 0.0f;  /* 0x5eb788 */
 /* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
@@ -16643,4 +16643,3 @@ char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffe
 int cm_PickCellX = {0}; /* 0xfa5f00 */
 int cm_PickCellZ = {0}; /* 0xfa5f04 */
 /* ai_Unk144a160: view of txt_Ptrs (build/mk_txt_views.py) */
-char * ai_Unk1468ae0[0x300] = {0}; /* 0x1468ae0, the objects */

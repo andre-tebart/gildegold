@@ -167,8 +167,6 @@ float d3_YawTo(struct D3OBJECT *obj, float *p);                                 
 /* D3OBJECT.info is the D3ANIMCTL of animated objects */
 #define D3OBJ_ANIM(obj) ((D3ANIMCTL *)(obj)->info)
 
-#include "ch_types.h"                /* CHMOTION */
-extern CHMOTION ch_Motions[];       /* 0x14696e0 */
 extern char ch_ShadowEnabled;           /* 0x5f122c */
 extern int ch_CurrentGroup;         /* 0x5f1294, the group of the building the player is in (sv.c / f3init.c
                                        write it from the building record); -1 = none, ch_Reset sets both */
@@ -350,9 +348,7 @@ typedef struct CHACTDEF {           /* 0x4c bytes, 64 of them in ch_ActDefs */
 #define CH_QUEUE 2000
 
 extern CHACTION *ch_Queue;                  /* 0x631050 */
-#ifndef DATA_VIEWS_H
 extern CHACTDEF ch_ActDefs[64];             /* 0x1469700 */
-#endif
 extern int ch_MotionTimeout;                /* 0x5f12a0 */
 extern int ch_Ground0[];                    /* 0x146aa00, ground types of d3_Scenes[0] */
 extern int ch_Ground1[];                    /* 0x14aaa20, ground types of the default scene */
@@ -447,16 +443,11 @@ void ch_ActMove2Universe(CHACTION *a);                                          
 int ch_FollowGround(CHACTION *a);                                                       /* 0x406a70 */
 
 typedef struct CHPATHPT { unsigned char x, z; } CHPATHPT;
-typedef struct CHPATH {             /* a path of map cells */
-    int n;
-    int unk04;
-    CHPATHPT *pts;                  /* 0x08 */
-} CHPATH;
 typedef struct CHWALKDEF {
     char pad00[0x10];
     float speed;                    /* 0x10 */
 } CHWALKDEF;
-int ch_ThinPath(CHARACTER *ch, CHPATH *path, CHPATHPT *out, CHWALKDEF *w);              /* 0x406bc0 */
+int ch_ThinPath(CHARACTER *ch, struct PATHOUT *path, CHPATHPT *out, CHWALKDEF *w);              /* 0x406bc0 */
 void ch_SetHandObject(CHARACTER *ch, int hand, char *name);                             /* 0x406c60, 1 left, 2 right, 3 head */
 
 #define CH_UNK038(ch)   ((int *)((char *)(ch) + 0x38))
@@ -487,7 +478,7 @@ typedef struct CHWAYPT {            /* 12 bytes; a list ends with flags == 0 */
 } CHWAYPT;
 extern D3SM *ch_PathMap;            /* 0x63108c */
 int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out);                              /* 0x407790 */
-extern struct PATHOUT ch_Path;              /* 0x14696e0 (overlaps ch_Motions as declared above) */
+extern struct PATHOUT ch_Path;              /* 0x14696e0 */
 extern unsigned char ch_PathBuf[]; /* 0x14686e0 */
 /* 0x406bc0 is ch3's ch_ThinPath; ch4 calls it with a PATHOUT / byte buffer / D3SM */
 int ch_PathToTarget(CHACTION *a);                                                         /* 0x408490 */
@@ -551,7 +542,7 @@ void ch_ActWalkCells(CHACTION *a);                                              
 #define CHACT_NAME70(a) ((char *)(a) + 0x70)                         /* debug name of an action ("Walk2RndDummy") */
 #define CHACT_FSTART(a) (*(float *)&(a)->args[8])                    /* 0x50, fade actions: start time */
 #define CH_NOFADE       0x4000                                       /* CH_FLAGW: fade-in pending (met another character) */
-extern char ch_EmptyName[];         /* 0x631090, "" (d3fl_EmptyName) */
+extern char ch_EmptyName[];         /* 0x631090, "" */
 
 
 #define ch_MapAllocF ((void *(*)(float))ch_MapAlloc)                /* 0x407690 takes a float */

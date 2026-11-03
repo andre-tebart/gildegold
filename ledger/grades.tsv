@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at d52f7930: declaration-set noise from the C.name.alias cleanup of ch.h / d3_fl.h (the fake CHMOTION view type and d3fl_EmptyName gone): two order hunks (a frame load scheduled one instruction earlier at +0x176 and +0x26f), same instructions; any extra struct type in ch.h restores byte, no genuine one found [waits for: the final type set of ch.h / d3_fl.h (the original's declarations around ch_ActDefs / ch_Path)]
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		

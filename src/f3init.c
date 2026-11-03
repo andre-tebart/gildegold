@@ -32,7 +32,6 @@ extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern float sv_SkyScale;
-#include "ch_types.h"
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
@@ -247,7 +246,6 @@ unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int
 
 struct D3SCENE;
 /* init_SceneDirty: view of d3_Scenes (tools/data_views.py) */
-extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x100) */
 extern unsigned char ai_GameState;      /* 0x6f25ac */
 extern int sv_FrameMask;           /* 0x760638 */
 extern short d2_ScreenW;  /* 0xfb9072 */

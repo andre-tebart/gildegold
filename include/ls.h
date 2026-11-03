@@ -6,6 +6,8 @@
 
 #include "ls_types.h"                     /* NETHDR, LSSAVE */
 
+struct CHACTION;
+
 int ls_LanguageOf(char *s);                                             /* 0x519010 */
 int ls_GetLanguage(void);                                               /* 0x5190a0 */
 int ls_SaveGame(int name, char *path, unsigned flags);                  /* 0x5190b0 */
@@ -17,8 +19,8 @@ int ls_WriteObjects(int f);                                             /* 0x519
 int ls_WriteBuildings(int f);                                               /* 0x519d20 */
 int ls_WritePlayerRecords(int f);                                               /* 0x51a1a0 */
 int ls_WriteCharacters(int f);                                               /* 0x51a4b0 */
-unsigned ls_ActionIndex(char *p);                                       /* 0x51ad30 */
-int ls_ActionAt(int n);                                                 /* 0x51ad60 */
+unsigned ls_ActionIndex(struct CHACTION *p);                            /* 0x51ad30 */
+struct CHACTION *ls_ActionAt(int n);                                    /* 0x51ad60 */
 int unk_Unk51ad80(char *r, int id, int f);                              /* 0x51ad80 */
 int ls_WriteSceneRecords(int f);                                               /* 0x51aff0 */
 int ls_WritePlayerSlots(int f);                                               /* 0x51b340 */

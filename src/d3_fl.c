@@ -1494,7 +1494,7 @@ int d3fl_LoadTexture(D3FLMAP *map, char *name, int idx)
     else
         k = idx;
     if (k < 8) {
-        map->typenames[k][0] = d3fl_EmptyName;
+        map->typenames[k][0] = ch_EmptyName[0];
         for (i = 0; i < 3; i++)
             map->src[i][k] = 0;
         if (tex_FindFile(name)) {
@@ -1520,7 +1520,7 @@ int d3fl_ReplaceTexture(D3FLMAP *map, char *name, int idx)
 {
     int i;
 
-    map->typenames[idx][0] = d3fl_EmptyName;
+    map->typenames[idx][0] = ch_EmptyName[0];
     for (i = 0; i < 3; i++)
         if (map->src[i][idx]) {
             mem_Free(map->src[i][idx]);
@@ -1737,7 +1737,7 @@ D3FLMAP *d3fl_LoadMap(D3FLDESC *desc)
         map->nolight = 0;
         map->lod = 0;
         for (i = 0; i < 8; i++) {
-            map->typenames[i][0] = d3fl_EmptyName;
+            map->typenames[i][0] = ch_EmptyName[0];
             p = desc->typenames[i];
             if (p && *p)
                 d3fl_LoadTexture(map, p, -1);

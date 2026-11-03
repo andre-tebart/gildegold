@@ -282,7 +282,7 @@ void d3fl_Flush(void);                                                          
 void d3fl_PrepareWater(D3FLMAP *map);                                                    /* 0x440360 */
 
 /* ---- 0x441f50..0x4439e0 (worker map) ---- */
-extern char d3fl_EmptyName;                 /* 0x631090, the shared empty string (ch.h's ch_EmptyName, "") */
+extern char ch_EmptyName[];                 /* 0x631090, the shared empty string "" (ch.c) */
 extern const char d3fl_Suffix[3][11];             /* 0x5ebaa8, "", "_high_1", "_high_2": source texture mip levels */
 void d3fl_ReloadTextures(D3FLMAP *map);                                                 /* 0x442280 */
 extern D3VECTOR4 d3fl_Origin;               /* 0xfbbd30, map point (0, 0, 0) in world space */

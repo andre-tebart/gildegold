@@ -741,7 +741,7 @@ extern GAPDATA full_data_6f26a8[];
 extern GAPDATA full_data_6f26b4[];
 extern GAPDATA full_data_6f26b8[];
 extern GAPDATA full_data_6f26bc[];
-extern char * ai_Unk1468ae0[0x300];
+extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0, ch.h's CHARACTER *ch_List[CH_MAX] */
 extern int d2_PointerObj;
 extern int ai_DragWindow;
 extern int ai_Unk62c26c;
@@ -13350,9 +13350,9 @@ void ai_Unk5a7cd0(int *m_)
         } while (i < m_[0x9e9]);
     }
     *(int *)((unsigned)&d2_LastWindow) = m_[2];
-    entry = (unsigned)&ai_Unk1468ae0;
+    entry = (unsigned)&ch_List;
     e = (int *)(p + 0x18dc);
-    while (entry <= ((unsigned)&ai_Unk1468ae0 + 0xbff)) {
+    while (entry <= ((unsigned)&ch_List + 0xbff)) {
         obj = (char *)*(int *)entry;
         if (obj != 0) {
             if (*(int *)(obj + 0x88) == (unsigned)&d3_Scenes) {

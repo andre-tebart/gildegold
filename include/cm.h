@@ -326,7 +326,6 @@ struct RTPOINT;
 int rt_PointCount(struct RTPOINT *p);                                             /* 0x4bdaa0, rt.h */
 
 
-extern int ai_Unk1460ae0;  /* 0x1460ae0 */
 extern int ai_NetPlayer;  /* 0x1460af4 */
 void ai_UpdateNeeds(void);  /* 0x47da80 */
 void ai_UpdateCharacters(void);  /* 0x47e560 */
@@ -1044,7 +1043,6 @@ int cm_RunSceneTicks();  /* 0x4e3570 */
 int ai_Unk4e3490();  /* 0x4e3490 */
 extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */
 int ai_Unk4e36a0();  /* 0x4e36a0 */
-extern char *ai_Unk1468ae0[0x300];  /* 0x1468ae0, the objects */
 int tb_SetFunctionOff();  /* 0x42ea10 */
 int ai_Unk4e3fe0();  /* 0x4e3fe0 */
 int ai_Unk4e4020();  /* 0x4e4020 */

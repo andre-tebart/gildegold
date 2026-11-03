@@ -201,7 +201,6 @@ extern char cm_RequestedSaveName[72];
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
 extern GAPDATA full_data_75e630[];
-#include "ch_types.h"
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
@@ -250,7 +249,6 @@ extern int sv_FrameMask;
 extern int sv_PopRequest;
 
 extern OPTIONBYTES ai_GamePanel;
-extern int ai_Unk1460ae0;
 extern char * ai_Unk60c1ec;
 extern int cm_NetFlags;
 
@@ -2970,7 +2968,7 @@ void main_Unk537be0(void)
     unsigned mask;
 
     mask = 0x24087;
-    if (U_I((unsigned)&ai_Unk1460ae0) == -1)
+    if (net_Conn.s == -1)
         mask = 0x24086;
     tb_CloseFunction(d3io_NoopCallback);
     fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 1);
@@ -4170,7 +4168,7 @@ void main_BeginPlayerRound(void)
     }
     gm_UpdatePlayers();
     unk_Unk4f88c0();
-    if ((cm_NetFlags & 8) == 0 && ai_Unk1460ae0 != -1)
+    if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
         gm_EndDayIncomes(2);
     else {
         gv_SendCrimes();
@@ -4241,13 +4239,13 @@ void main_BeginPlayerRound(void)
             ai_GameOver = 1;
         }
         if (main_GfxOn != 0 && ai_GameOver == 0) {
-            if ((cm_NetFlags & 8) == 0 && ai_Unk1460ae0 != -1)
+            if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
                 hst_YearlyHistory(0);
             else
                 hst_YearlyHistory(1);
         }
     }
-    if ((cm_NetFlags & 8) != 0 || ai_Unk1460ae0 == -1)
+    if ((cm_NetFlags & 8) != 0 || net_Conn.s == -1)
         main_UpdateFigures();
     snd_AmbientOn = (unsigned char)sv;
 }
@@ -4601,7 +4599,7 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
    @deep Read against the original and restructured 0x53bb20 (598 -> 198 differing, 992 vs 994
    instructions, frame 0x4b4 vs 0x4bc): the network branch first (flags & 4), the separate 0x7c system
    message buffer for AUTOSAVE, the load progress call pair, the mode dispatch (0x41: new city / network
-   with ai_Unk1460ae0 != -1 around the 0x40 / start choice and the failure after it; 0x40; 2 with
+   with net_Conn.s != -1 around the 0x40 / start choice and the failure after it; 0x40; 2 with
    sv_ClockSeason, not gm_ClockSeason), the money cheat order and the index loops, the panel object pair of
    calls, the player id scans with the id in a short, the current player count loop, ls_SaveSlot as a byte,
    the clock loops on a copy of ai_Time testing its hour. Left: the original reads ai_GameFlags
@@ -4757,7 +4755,7 @@ void main_GameLoop(int ctl)
             main_SetLoadProgress(0, 100);
             if (ai_Unk6f2440 != 0)
                 unk_Unk511c70();
-        } else if (ai_Unk1460ae0 != -1) {
+        } else if (net_Conn.s != -1) {
             if ((ai_GameFlags & 0x40) != 0) {
                 unk_Unk5112d0(((unsigned)&ls_SavePath + 0xca));
                 ai_Difficulty = 2;
@@ -4773,7 +4771,7 @@ void main_GameLoop(int ctl)
         }
     } else if ((ai_GameFlags & 0x40) != 0) {
         ai_Difficulty = 2;
-        if (ai_Unk1460ae0 != -1)
+        if (net_Conn.s != -1)
             unk_Unk5112d0(main_NetSaveName);
         else {
             sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
@@ -4901,7 +4899,7 @@ void main_GameLoop(int ctl)
             u = U_I((unsigned)&ai_GameFlags) & 0xff;
             if ((u & 2) == 0) {
                 cm_BeginSendGroup();
-                if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 || (U_I((unsigned)&ai_Unk1460ae0) != -1 && (U_I((unsigned)&cm_NetFlags) & 8) != 0)) {
+                if ((U_I((unsigned)&ai_GameFlags) & 8) != 0 || (net_Conn.s != -1 && (U_I((unsigned)&cm_NetFlags) & 8) != 0)) {
                     he_Unk541010();
                     he_Unk541060();
                     he_Unk541170();
@@ -4978,7 +4976,7 @@ void main_GameLoop(int ctl)
         }
 L_next:
         if (U_I((unsigned)&ai_GameOver) == 0) {
-            if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
+            if (net_Conn.s == -1) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
                 ck = ai_Time;
                 while (ck.hour < 0x17) {
@@ -4992,7 +4990,7 @@ L_next:
                 cm_SendTime(&ck);
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 0);
             }
-            if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || U_I((unsigned)&ai_Unk1460ae0) == -1) {
+            if ((U_I((unsigned)&cm_NetFlags) & 8) != 0 || net_Conn.s == -1) {
                 iv = amt_CheckOfficeColumns();
                 if (iv == 0) {
                     amt_UpdateOffices();

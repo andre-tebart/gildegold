@@ -57,8 +57,9 @@ int ch_DirtyX0 = 256;  /* 0x5f12a8, changed ground rectangle */
 int ch_DirtyZ0 = 256;  /* 0x5f12ac */
 
 extern unsigned char ch_PathBuf[1024];
-extern CHMOTION ch_Motions[64];
-extern char ch_MotionsTail[0x20];
+extern CHARACTER *ch_List[CH_MAX];
+extern PATHOUT ch_Path;
+extern CHACTDEF ch_ActDefs[64];
 extern int ch_Ground0[65536];
 extern int ch_Ground1[65536];
 extern CHFADE ch_Fades[16];
@@ -72,14 +73,14 @@ int ch_DirtyX1 = 0;  /* 0x63107c */
 int ch_DirtyZ1 = 0;  /* 0x631080 */
 D3SCENE * ch_Saved1 = 0;  /* 0x631088, the same for ch_Ground1 */
 D3SM * ch_PathMap = 0;  /* 0x63108c */
-char ch_EmptyName[1] = {0};  /* 0x631090, "" (d3fl_EmptyName) */
+char ch_EmptyName[1] = {0};  /* 0x631090, "" */
 D3SCENE d3_Scenes[D3_MAX_SCENES] = {0}; /* 0xfd7ba0 */
-unsigned char ch_PathBuf[1024] = {0};  /* 0x14686e0 */
-CHMOTION ch_Motions[64] = {0}; /* 0x14696e0, the 64 records end 0x20 before ch_Ground0 (its +0x20 dword is
-                                   ai_Unk1469700, the action id ls.c indexes); ch_Path (0x14696e0) is an alias view */
-char ch_MotionsTail[0x20] = {0};  /* 0x146a9e0, the 0x20 bytes the ch_ActDefs view (ch_Motions + 0x20, 0x1300 bytes) reaches
-                                     past ch_Motions; without a symbol here the full link put ch_Queue at +0x1300 and
-                                     ch_Open's memset(ch_ActDefs) zeroed it (anm_Update then crashed on a null queue) */
+unsigned char ch_PathBuf[1024] = {0};  /* 0x14686e0, the cells path_Find writes for ch_Path */
+CHARACTER *ch_List[CH_MAX] = {0};  /* 0x1468ae0, the characters by id (CHARACTER.id) */
+PATHOUT ch_Path = {0};  /* 0x14696e0, the result of a path search (xy = ch_PathBuf, max 0x200); nothing of the
+                           original reads 0x14696ec..0x1469700 */
+CHACTDEF ch_ActDefs[64] = {0};  /* 0x1469700, the action types (ch_DeclareAction); the name of type m is also the
+                                   motion name ch_AttachMotion loads; ch_Open clears all 0x1300 bytes */
 int ch_Ground0[65536] = {0};  /* 0x146aa00, ground types of d3_Scenes[0] */
 int ch_Ground1[65536] = {0};  /* 0x14aaa20, ground types of the default scene */
 CHFADE ch_Fades[16] = {0};                /* 0x14eaa20 */
@@ -763,8 +764,8 @@ D3ANIMSLOT *ch_AttachMotion(CHARACTER *ch, int motion)
     char path[0x110];
     char msg[0x200];
 
-    sprintf(path, "character/%s/%s_%s.baf", ch->body, ch_Motions[motion].name, ch->body);
-    sprintf(name, "%s_%s", ch_Motions[motion].name, ch->body);
+    sprintf(path, "character/%s/%s_%s.baf", ch->body, ch_ActDefs[motion].name, ch->body);
+    sprintf(name, "%s_%s", ch_ActDefs[motion].name, ch->body);
     vfs_ToSlashes(name);
     if (path[0]) {
         memset(&f, 0, sizeof(f));
@@ -2263,7 +2264,7 @@ int ch_FollowGround(CHACTION *a)
 }
 /* 0x406bc0, every step-th point of path (always the first and the last) into out; returns the count */
 
-int ch_ThinPath(CHARACTER *ch, CHPATH *path, CHPATHPT *out, CHWALKDEF *w)
+int ch_ThinPath(CHARACTER *ch, PATHOUT *path, CHPATHPT *out, CHWALKDEF *w)
 {
     int n = 0;
     int i = 1;
@@ -2277,16 +2278,16 @@ int ch_ThinPath(CHARACTER *ch, CHPATH *path, CHPATHPT *out, CHWALKDEF *w)
         if (step < 1)
             step = 1;
     }
-    for (; i < path->n; i += step) {
-        x = path->pts[i].x;
-        z = path->pts[i].z;
+    for (; i < path->count; i += step) {
+        x = path->xy[i * 2];
+        z = path->xy[i * 2 + 1];
         out[n].x = x;
         out[n].z = z;
         n++;
     }
-    if (i != path->n - 1) {
-        out[n].x = path->pts[path->n - 1].x;
-        out[n].z = path->pts[path->n - 1].z;
+    if (i != path->count - 1) {
+        out[n].x = path->xy[(path->count - 1) * 2];
+        out[n].z = path->xy[(path->count - 1) * 2 + 1];
         n++;
     }
     return n;
@@ -2880,7 +2881,7 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                     a->u.walk.path = 0;
                 }
                 a->u.walk.path = mem_Alloc((cnt + nrest) * 2, "ch_GetNewPath");
-                tz = ch_ThinPath(ch, (CHPATH *)&ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
+                tz = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
                 for (k = 0; k < nrest; k++) {
                     ((unsigned char *)a->u.walk.path)[(tz + k) * 2] = rest[k * 2];
                     ((unsigned char *)a->u.walk.path)[(tz + k) * 2 + 1] = rest[k * 2 + 1];
@@ -2949,7 +2950,7 @@ int ch_PathToTarget(CHACTION *a)
     a->u.walk.path = mem_Alloc(ch_Path.count * 2, "ch_t:waypoints");
     if (!a->u.walk.path)
         __asm int 3
-    a->u.walk.pathLen = ch_ThinPath(ch, (CHPATH *)&ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
+    a->u.walk.pathLen = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
     t = a->u.walk.target;
     a->u.walk.cur = 0;
     a->u.walk.unk0fc = -1;
@@ -3035,7 +3036,7 @@ int ch_InitWalk(CHACTION *a, D3SM *h)
         return 0;
     }
     a->u.walk.path = mem_Alloc(ch_Path.count * 2, "ch_t:waypoints");
-    a->u.walk.pathLen = ch_ThinPath(ch, (CHPATH *)&ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
+    a->u.walk.pathLen = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
     a->u.walk.cur = 0;
     a->u.walk.unk0fc = -1;
     d3sm_GetVertex(h, ((unsigned char *)a->u.walk.path)[0], ((unsigned char *)a->u.walk.path)[1], &a->u.walk.end);

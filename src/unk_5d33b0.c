@@ -60,6 +60,7 @@ extern int gm_PlayerRecords[688];
 #include "d3_engine.h"
 #include "d3_fl.h"
 #include "dd_vesa.h"
+#include "ch.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define sb_PlaySampleI ((struct SBSAMPLE *(*)(int, char *, int, int, int, int, int))sb_PlaySample)  /* 0x426fa0 (sblib.c: SBBANK *bank): this unit passes the bank as an int */
 #define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* 0x521040 (sv.c: unsigned t): @original ai_CurseWindow (0x5d8c90) passes the good as a byte (mov cl, [ai_OwnPlayer], no zero extension) */
@@ -1059,15 +1060,6 @@ void ai_LoadOptions(void)
     ai_Opponents[6] = v;
 }
 
-/* the character list this unit walks for the shadow bit: ch.h's CHARACTER (only the fields used here; ch.h
-   cannot be included in this unit) */
-typedef struct INIT_CHARACTER {
-    char pad000[0x34];              /* 0x00 .. 0x33 */
-    unsigned char *obj;             /* 0x34, CHARACTER.obj: the body (its +0x211 bit 3 is the shadow bit) */
-    char pad038[0x50];              /* 0x38 .. 0x87 */
-    void *scene;                    /* 0x88, CHARACTER.scene */
-} INIT_CHARACTER;
-extern INIT_CHARACTER *ch_List[0x300];   /* 0x1468ae0, ch.h's CHARACTER *ch_List[CH_MAX] */
 extern unsigned int d3s_TexSize;         /* 0xfb9260, d3s.c */
 extern unsigned int d3s_MaxTexSize;      /* 0xfb91dc, d3s.c */
 extern float d3o_FogScale;               /* 0x5fbd04, d3_interface.h */
@@ -1116,13 +1108,13 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
    (ai_GfxFloor.byte[1]) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
    camera, the mipmaps follow the floor setting and the scene is selected around the build-site check and the
    red lights. Returns 0
-   @deep behaviour from the ROUGH stub rewritten against the whole original 0x5d5c40..0x5d5e8b (the stub was 16 B): the shadow detail (ai_GfxShadowDetail) picks ch_ShadowEnabled + the 0x20 / 0x40 size and the changed flag, a changed size resets / frees the shadows (mask 0x40) and clamps d3s_TexSize to d3s_MaxTexSize before d3_UpdateAll(0); init_SetDetailLevel(ai_MapRefs, 0); the LOD handling (byte[2]) picks d3io_Lod (2 / 4), deselects the scene, reloads the meshes (0x40, 3) and reselects; d3_ApplyGraphicsOptions(floor byte, 0, 2 - texture_scale, changed, 0); the fog scale 1.0 - fog*0.01 (double constants) only while neither ai_PlayerBuilding nor ai_FallbackBuilding is set; the town-scene character bodies get the shadow bit (+0x211 bit 3, the xor idiom); ch_SetLowPoly(character_detail); the camera limit pair of the camera_limits byte (table 0x6237d0, 6 pairs, the pair +3) into sv_CameraHeightNear / sv_CameraAngleNear / ...Far; sv_PlaceCamera when ai_GameState; d3fl_SetMips on a floor change; then select the scene, ai_CheckBuildSites, d3_SetRLights(detail != 0), reselect. Q1/Q2/Q5/Q7 cleared (INIT_CHARACTER + ch_List, INIT_LOD union for the whole-dword d3io_Lod, INIT_MAPREF via data_views' ai_MapRefs, prototypes for all 13 callees). Left: 6 hunks / 98 differing instructions before this session, all codegen shape: the camera limit copy - ours did float copies (fld/fstp) from (0x623800 - 0x30) where the original copies the four dwords from the table symbol 0x6237d0; that table was missing from the C, so the copies read whatever the linker put before sv_CameraHeightNear (the camera angle became 8.2e20 and the whole 3D view culled blue); it is now sv_CameraLimits in sv.c and the copies come from it. Still open: the changed flag / lod / scene registers (slots hunk [esp+4]/[esp+8]). Renames: ch_Unk5f122c -> ch_ShadowEnabled, sv_Unk525dd0 -> sv_PlaceCamera, ai_Unk623800/04/08/0c -> sv_CameraHeightNear / sv_CameraAngleNear / sv_CameraHeightFar / sv_CameraAngleFar, ai_Unk6f22d4 / d8 -> sv_CameraHeightFactor / sv_CameraAngleFactor. */
+   @deep behaviour from the ROUGH stub rewritten against the whole original 0x5d5c40..0x5d5e8b (the stub was 16 B): the shadow detail (ai_GfxShadowDetail) picks ch_ShadowEnabled + the 0x20 / 0x40 size and the changed flag, a changed size resets / frees the shadows (mask 0x40) and clamps d3s_TexSize to d3s_MaxTexSize before d3_UpdateAll(0); init_SetDetailLevel(ai_MapRefs, 0); the LOD handling (byte[2]) picks d3io_Lod (2 / 4), deselects the scene, reloads the meshes (0x40, 3) and reselects; d3_ApplyGraphicsOptions(floor byte, 0, 2 - texture_scale, changed, 0); the fog scale 1.0 - fog*0.01 (double constants) only while neither ai_PlayerBuilding nor ai_FallbackBuilding is set; the town-scene character bodies get the shadow bit (+0x211 bit 3, the xor idiom); ch_SetLowPoly(character_detail); the camera limit pair of the camera_limits byte (table 0x6237d0, 6 pairs, the pair +3) into sv_CameraHeightNear / sv_CameraAngleNear / ...Far; sv_PlaceCamera when ai_GameState; d3fl_SetMips on a floor change; then select the scene, ai_CheckBuildSites, d3_SetRLights(detail != 0), reselect. Q1/Q2/Q5/Q7 cleared (ch.h's CHARACTER + ch_List, INIT_LOD union for the whole-dword d3io_Lod, INIT_MAPREF via data_views' ai_MapRefs, prototypes for all 13 callees). Left: 6 hunks / 98 differing instructions before this session, all codegen shape: the camera limit copy - ours did float copies (fld/fstp) from (0x623800 - 0x30) where the original copies the four dwords from the table symbol 0x6237d0; that table was missing from the C, so the copies read whatever the linker put before sv_CameraHeightNear (the camera angle became 8.2e20 and the whole 3D view culled blue); it is now sv_CameraLimits in sv.c and the copies come from it. Still open: the changed flag / lod / scene registers (slots hunk [esp+4]/[esp+8]). Renames: ch_Unk5f122c -> ch_ShadowEnabled, sv_Unk525dd0 -> sv_PlaceCamera, ai_Unk623800/04/08/0c -> sv_CameraHeightNear / sv_CameraAngleNear / sv_CameraHeightFar / sv_CameraAngleFar, ai_Unk6f22d4 / d8 -> sv_CameraHeightFactor / sv_CameraAngleFactor. */
 int ai_ApplyGfxOptions(void)
 {
     unsigned char level, changed;
     unsigned size;
     int lod, scene, i;
-    INIT_CHARACTER *c;
+    CHARACTER *c;
     float *lim;
 
     changed = 0;
@@ -1167,7 +1159,7 @@ int ai_ApplyGfxOptions(void)
     for (i = 0; i < 0x300; i++) {
         c = ch_List[i];
         if (c != 0 && c->scene == d3_Scenes)
-            c->obj[0x211] = ((ch_ShadowEnabled << 3 ^ c->obj[0x211]) & 8) ^ c->obj[0x211];
+            c->obj->objectFlags = ((ch_ShadowEnabled << 3 ^ c->obj->objectFlags) & 8) ^ c->obj->objectFlags;
     }
     ch_SetLowPoly(ai_GfxFloor.byte[3]);
     lim = sv_CameraLimits;

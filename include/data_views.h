@@ -96,10 +96,6 @@
 /* gm_QueryKind */
 #define ai_Unk61a688             (*(char (*)[548])((char *)&gm_QueryKind + 0x2))  /* 0x61a688 */
 
-/* ch_Motions */
-#define ai_Unk1469700            (*(int (*)[1216])((char *)&ch_Motions + 0x20))  /* 0x1469700 */
-#define ch_ActDefs               (*(CHACTDEF (*)[64])((char *)&ch_Motions + 0x20))  /* 0x1469700 */
-
 /* d3_Cfg */
 #define d3_SortMax               (*(int *)((char *)&d3_Cfg + 0x18))  /* 0xfe73f8 */
 #define d3_Unkfe7400             (*(int *)((char *)&d3_Cfg + 0x20))  /* 0xfe7400 */

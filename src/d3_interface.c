@@ -1567,7 +1567,7 @@ void d3_WriteMap(VFSFILE *f, D3FLMAP *map)
                     bio_wr_c(f, ((unsigned char *)map->regions[i].tex)[0x72] & 0xf);
                     bio_wr_c(f, map->regions[i].tex->state & 1);
                 } else {
-                    bio_wr_s(f, &d3fl_EmptyName);
+                    bio_wr_s(f, ch_EmptyName);
                     bio_wr_c(f, 0);
                     bio_wr_c(f, 0);
                     bio_wr_c(f, 0);

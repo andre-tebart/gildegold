@@ -32,7 +32,6 @@ extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
 extern void main_Unk537b60(int kind, int cur, int total);
 extern int gm_TreeNodeCount;
-#include "ch_types.h"
 extern int gm_QueryDepth;
 
 #include "cm.h"
@@ -42,7 +41,6 @@ int ls_Version = 65626;  /* 0x623650 */
 const char ls_LanguageNames[][0x40] = { "GERMAN", "ENGLISH", "FRENCH", "ITALIAN", "SPANISH" };  /* 0x5ee978, the language names (5 of */
 extern int gm_PlayerRecords[688];          /* 0x7d5f80, the 16 player records (0xac bytes each; gm_PlayerRecord, f3gm.c) */
 /* gm_PlayerRecordBytes: view of gm_PlayerRecords (tools/data_views.py) */
-extern char *ls_ActionQueue;            /* 0x631050, the action queue (ch.h: CHACTION *ch_Queue) */
 int ai_NextCrimeId = 0;  /* 0x6f1b88 .. */
 int ls_SpareInt = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
@@ -103,7 +101,6 @@ void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run
 
 void he_FreeEvents();                    /* 0x53d590 */
 
-/* ai_Unk1469700: view of ch_Motions (tools/data_views.py) */
 char *strstr();                   /* 0x5de6b0, strstr-like (the "hozfaeller" misspelling check) */
 
 /* 0x519010, the language number of the name s (case-insensitive, one of the five of the table 0x5ee978), 0xffff when unknown; kept in 0x62364c */
@@ -727,21 +724,22 @@ int ls_WriteCharacters(int f)
   } while ((int)c < (int)&ai_Chars[768]);
   return 1;
 }
-/* 0x51ad30, the index of the action queue entry p (0x631050, 0x194 bytes each, ch.h: CHACTION *ch_Queue), -1 for NULL */
+/* 0x51ad30, the index of the action queue entry p in ch_Queue, -1 for NULL (the unsigned byte distance divided by
+   sizeof(CHACTION): the original's mul by the reciprocal) */
 
 
-unsigned ls_ActionIndex(char *p)
+unsigned ls_ActionIndex(CHACTION *p)
 {
-    return p ? (unsigned)(p - ls_ActionQueue) / 0x194 : 0xffffffff;
+    return p ? ((unsigned)p - (unsigned)ch_Queue) / sizeof(CHACTION) : 0xffffffff;
 }
-/* 0x51ad60, the action queue entry n (0x631050), NULL for -1 */
+/* 0x51ad60, the action queue entry n of ch_Queue, NULL for -1 */
 
 
-int ls_ActionAt(int n)
+CHACTION *ls_ActionAt(int n)
 {
     if (n == -1)
         return 0;
-    return (int)ls_ActionQueue + n * 0x194;
+    return &ch_Queue[n];
 }
 /* 0x51ad80, the record r of a character scene (+0 / +8 .. , the names +0x170 / +0x130, the object's bounding box from +0x34, the word `id`, the 0x40 bytes of +0x64 / the 0x40 bytes of its parent's +0x68): writes the pieces; returns 1 when all was written @deep draft: one code hunk left, the 0x1c-byte zero substitute (7 mov DWORD PTR [esp+X],0 stores in the original at 0x51aea1..0x51aed1 vs our rep stosd; tried int[7]={0} (mov + rep stosd), char[0x1c]+memset (rep stosd ecx=7), a zero loop (rep stosd), two arrays, a struct with members and one with ={0} (all force ebp), seven separate ints (dead, frame 0x40) - VC6 always inlines the zero with rep stosd; the original's 7 immediate stores need the shape a vargen round can search). Everything else matches: 233/232 instructions, the field order/sizes, the blank[0x40] buffer, zero+0xc, the per-branch != 0x40 checks and the <= 0 LS_W checks; the two condition chains are written from the non-zero case (q != 0 && ...) as the original lays them out. Q1/Q2/Q4 remain: the function name, ch_EmptyName, and the raw pointer casts of the scene record field offsets. */
 
@@ -792,15 +790,16 @@ int unk_Unk51ad80(char *r, int id, int f)
 }
 
 
-/* 0x51aff0, the characters' scene records and the table 0x631050 (0x194-byte records, 0x800 of them with the used flag at +9): the count and the records of the characters (0x770d04, 0x21c each) through 0x51ad80, the same for the objects of the kind 0x1d in the list 0x7e3f34, then the table's pointers are turned into indices (+0x14 the first word of the pointed record, +0x24 / +0x28 through 0x51ad30), each used record whose scene object (the list 0x1468ae0) exists is written in pieces (the flag byte, the vectors, the names, a 0xa0-byte block and a byte), and the pointers are restored (0x51ad60). Returns 1. ROUGH: the pieces of the record copy (local_188 .. local_4) are the fields of the 0x65-word copy */
-extern char * ai_Unk1468ae0[0x300];             /* 0x1468ae0, the scene objects (0x300) */
+/* 0x51aff0, the characters' scene records and the action queue ch_Queue (CH_QUEUE CHACTION records, type != 0: used): the count and the records of the characters (0x770d04, 0x21c each) through 0x51ad80, the same for the objects of the kind 0x1d in the list 0x7e3f34, then the queue's pointers are turned into indices (ch: the character's id, prev / next through ls_ActionIndex), each record whose character (ch_List) has a body owner is written in pieces (the type byte, the vectors, the names, the 0xa0-byte union u and stop), and the pointers are restored (ch_List, ls_ActionAt). Returns 1. ROUGH: the pieces of the record copy (local_188 .. local_4) are the fields of the 0x65-word copy */
 extern char *ai_Goods;              /* 0x91aaf0, the object prototypes (0x41 bytes) */
 int mem_IsValid();                     /* 0x4225e0 */
-/* 0x51aff0 @deep draft: the loop structure is now read against the original at 0x51aff0..0x51b340 and the record pieces fixed - the draft wrote rec+0x70 / rec+0x2c / rec+0x38, the original at 0x51b262 / 0x51b29f / 0x51b2b9 writes rec+0xf0 (0xa0 bytes) / rec+0x24 / rec+0x28, exactly what the reader in ls_ReadSceneRecords reads back (t+0x3c, t+9, t+10), so three wrong offsets were a meaning error and are corrected; the flag/rec reset moved before the fourth loop (the original zeroes them once at 0x51b165..0x51b177), the tab local removed so both table loops re-read ls_ActionQueue per iteration as the original does. Remaining 209 code hunks: register allocation and scheduling - the original's first count loop runs in eax/ecx with no callee-saved register and the pushes ebx/ebp/esi/edi come only after it at 0x51b013, ours pushes them at entry (so cnt is memory-incremented in [esp+0x14] and the zero sits in edi), then the whole function is shifted (ebp/esi/ebx/edi roles and the esp-relative offsets of the rec pieces). Readability Q2/Q4 unchanged: the CHACTION typed view (ch.h) is blocked in ls.c by gv.h's K&R d3sm_GetVertex; the record is handled as int*. */
+/* 0x51aff0 @deep draft: the loop structure is now read against the original at 0x51aff0..0x51b340 and the record pieces fixed - the draft wrote rec+0x70 / rec+0x2c / rec+0x38, the original at 0x51b262 / 0x51b29f / 0x51b2b9 writes rec+0xf0 (0xa0 bytes) / rec+0x24 / rec+0x28, exactly what the reader in ls_ReadSceneRecords reads back (t+0x3c, t+9, t+10), so three wrong offsets were a meaning error and are corrected; the flag/rec reset moved before the fourth loop (the original zeroes them once at 0x51b165..0x51b177), the tab local removed so both queue loops re-read ch_Queue per iteration as the original does. Remaining 209 code hunks: register allocation and scheduling - the original's first count loop runs in eax/ecx with no callee-saved register and the pushes ebx/ebp/esi/edi come only after it at 0x51b013, ours pushes them at entry (so cnt is memory-incremented in [esp+0x14] and the zero sits in edi), then the whole function is shifted (ebp/esi/ebx/edi roles and the esp-relative offsets of the rec pieces). Readability Q2/Q4: the queue loops are typed (CHACTION, ch_List); the copy rec is still an int[0x65]. */
 int ls_WriteSceneRecords(int f)
 {
     int cnt = 0, i, k, n;
     int *p;
+    CHACTION *a;
+    CHARACTER *c;
     int rec[0x65];
     char flag;
 
@@ -831,30 +830,28 @@ int ls_WriteSceneRecords(int f)
             && unk_Unk51ad80(*(int *)(q + 0x3b), *(int *)(q + 2), f) == 0)
             return 0;
     }
-    for (k = 0; k < 0xc5440; k += 0x194) {
-        int *r = (int *)(ls_ActionQueue + k);
-
-        if (ls_ActionQueue[k + 9] == 0) {
-            memset(r, 0, 0x194);
+    for (i = 0; i < CH_QUEUE; i++) {
+        a = &ch_Queue[i];
+        if (a->type == 0) {
+            memset(a, 0, sizeof(CHACTION));
         } else {
-            r[5] = *(int *)r[5];
-            r[9] = ls_ActionIndex((char *)r[9]);
-            r[10] = ls_ActionIndex((char *)r[10]);
+            a->ch = (CHARACTER *)a->ch->id;
+            a->prev = (CHACTION *)ls_ActionIndex(a->prev);
+            a->next = (CHACTION *)ls_ActionIndex(a->next);
         }
     }
     flag = 0;
     memset(rec, 0, sizeof(rec));
-    for (k = 0; k < 0xc5440; k += 0x194) {
-        int *r = (int *)(ls_ActionQueue + k);
-
-        n = *(int *)(ls_ActionQueue + k + 0x14);
-        if (n > -1 && n < 0x300) {
-            n = ai_Unk1468ae0[n];
-            if (mem_IsValid(n) == 0)
+    for (i = 0; i < CH_QUEUE; i++) {
+        a = &ch_Queue[i];
+        n = (int)a->ch;
+        if (n > -1 && n < CH_MAX) {
+            c = ch_List[n];
+            if (mem_IsValid(c) == 0)
                 __asm int 3
-            if (n != 0 && *(int *)(*(int *)(n + 0x34) + 0x200) != 0) {
-                flag = *((char *)r + 9);
-                memcpy(rec, r, 0x194);
+            if (c != 0 && c->obj->owner != 0) {
+                flag = a->type;
+                memcpy(rec, a, sizeof(CHACTION));
             }
             LS_W(&flag, 1)
             LS_W((char *)rec + 0xc, 4)
@@ -867,13 +864,12 @@ int ls_WriteSceneRecords(int f)
             LS_W((char *)rec + 0x28, 4)
         }
     }
-    for (k = 0; k < 0xc5440; k += 0x194) {
-        int *r = (int *)(ls_ActionQueue + k);
-
-        if (ls_ActionQueue[k + 9] != 0) {
-            r[5] = ai_Unk1468ae0[r[5]];
-            r[9] = ls_ActionAt(r[9]);
-            r[10] = ls_ActionAt(r[10]);
+    for (i = 0; i < CH_QUEUE; i++) {
+        a = &ch_Queue[i];
+        if (a->type != 0) {
+            a->ch = ch_List[(int)a->ch];
+            a->prev = ls_ActionAt((int)a->prev);
+            a->next = ls_ActionAt((int)a->next);
         }
     }
     return 1;
@@ -2119,8 +2115,8 @@ int ls_ReadSceneRecords(int f)
                 memset(a, 0, sizeof(CHACTION));
                 continue;
             }
-            a->prev = (CHACTION *)ls_ActionAt((int)a->prev);
-            a->next = (CHACTION *)ls_ActionAt((int)a->next);
+            a->prev = ls_ActionAt((int)a->prev);
+            a->next = ls_ActionAt((int)a->next);
             a->func = ch_ActDefs[type].func;
             a->count = 0;
             if (a->prev == 0) {

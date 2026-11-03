@@ -484,7 +484,6 @@ int gv_DecayRaisedDead(struct AICHAR *c);  /* 0x4f1660 */
 int gv_RoomForRaised(unsigned char *o, int *n);  /* 0x4f1d50 */
 float gv_PreserveRate(char *o);           /* 0x4f16f0 */
 void cm_SendFloatDelta(int id, int field, float delta);  /* 0x4c4ac0 */
-extern int ai_Unk1460ae0;               /* 0x1460ae0 */
 int unk_Unk4f17f0(void *f, unsigned char *o);  /* 0x4f17f0 */
 char * gm_Query(void *list, int n, ...);                   /* 0x4ffe90 */
 unsigned gv_RaiseDead(GVRAISE *m);     /* 0x4f1200 */

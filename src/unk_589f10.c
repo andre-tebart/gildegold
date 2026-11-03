@@ -8,7 +8,6 @@
    starts with "Handel\Handel_PRODUKTION" 0x62b038 (0x58bd60), so its table init 0x58bbd0 opens the next unit.
    Open: the control API (0x4731d0, 0x473650, 0x52e350, 0x52e860) is unnamed; the U_I / U_B / U_W raw views remain
    in the pickers.
-   Open: 0x1460ae0 has two names, net_Conn (net.h) and ai_Unk1460ae0 (cm.h / gv.h / ahm.h).
    unit of rea 8cef7d5b (src/game/unk_589f10.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 #include "txt_views.h"
@@ -28,7 +27,6 @@
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern char ai_OptionsFile[288];
-extern int ai_Unk1460ae0;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_6230f8[];
 extern GAPDATA full_data_623108[];

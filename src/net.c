@@ -330,8 +330,7 @@ unsigned int net_RecvPackets = 0;  /* 0x633178 */
 unsigned int net_SentBytes = 0;  /* 0x63317c */
 unsigned int net_SentPackets = 0;  /* 0x633180 */
 int net_Seq = 0;  /* 0x1460ac4, last received sequence number */
-/* 0x1460ae0, the network connection (net.h's NETCONN, 0x14 bytes). It is one object: ai_Unk1460ae0 is
-   only the alias of its first field (the socket), so the full structure must be reserved here - when the
-   4-byte ai_Unk1460ae0 was the definition, net_Conn.closed (+0x10) landed on the next .bss globals. */
+/* 0x1460ae0, the network connection (net.h's NETCONN, 0x14 bytes); the game code tests net_Conn.s != -1 for "a
+   network game is running" */
 NETCONN net_Conn = {0};  /* 0x1460ae0, the network connection of a running network game */
 NETSTAT net_Stats[NET_TYPES] = {0};  /* 0x1460b00 */
