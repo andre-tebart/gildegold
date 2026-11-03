@@ -7760,51 +7760,56 @@ void cm_UpdatePortraits()
 }
 #define G19_R(id, o, t) (*(t *)(d2_ObjsC + (id) * 0x2ec + (o)))
 
-/* 0x4cfc10, builds the portrait boxes of cm_Portraits[6] (see 0x4cf9c0) for the selected characters ai_SceneChars[]:
-   window objects, the picture of the job, the texts, 0x80 pixels apart. Rough draft. */
-void ai_Unk4cfc10()
-{
-    char *e, *o, **pp;
-    int x = 0, t;
+/* 0x4cfc10, builds the portrait boxes cm_Portraits (at most 6, 0x80 pixels apart) for the characters of
+   ai_SceneChars that cm_CutChar sees (0x800): a frame picture, a window with the weapon picture and its uses left text
+   (when the character has a weapon), the portrait (checkable), the name text and the value bar of skill 3; then
+   cm_UpdatePortraits fills them */
 
-    for (e = (char *)cm_Portraits; e < (char *)cm_Portraits + 0xc0; e += 0x20) {
-        G19_E(e, 8) = -1;
-        G19_E(e, 0) = -1;
-        G19_E(e, 0xc) = -1;
-        G19_E(e, 0x10) = -1;
-        G19_E(e, 0x18) = -1;
-        G19_E(e, 0x14) = -1;
+void cm_BuildPortraits()
+{
+    AICHAR *c;
+    AIWEAPON *w;
+    int i, n, x = 0;
+    float t;
+
+    for (i = 0; i < 6; i++) {
+        cm_Portraits[i].win = -1;
+        cm_Portraits[i].portrait = -1;
+        cm_Portraits[i].unused0c = -1;
+        cm_Portraits[i].text = -1;
+        cm_Portraits[i].countText = -1;
+        cm_Portraits[i].weaponPic = -1;
     }
-    e = (char *)cm_Portraits;
-    for (pp = ai_Unk7603a0V; e < (char *)cm_Portraits + 0xc0 && (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
-        if (*pp == 0)
+    for (i = 0, n = 0; i < 31 && n < 6; i++) {
+        c = ai_SceneCharsT[i];
+        if (c == 0)
             continue;
-        if (!(ai_LedSelectBits(*(unsigned short *)cm_CutChar, *pp) & 0x800))
+        if (!(ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)c) & 0x800))
             continue;
-        G19_E(e, 4) = d2_CreatePicObj(x + 0x18, 0xf, 0x5da);
-        G19_E(e, 8) = d2_CreateWindow(x, 0, 0x80, 0x4b, 0x110);
-        o = cm_CharWeapon(*pp);
-        if (o != 0 && *(int *)o != 0) {
-            G19_E(e, 0x14) = d2_WinOpenPic(0x54, 0xf, *(int *)o + 0xdf, d2_LastWindow);
-            d2_ScaleObject(G19_E(e, 0x14), -2);
-            G19_E(e, 0x18) = d2_CreateWinText(0x54, 0x26, &ch_EmptyName, d2_LastWindow);
-            G19_R(G19_E(e, 0x18), 0x74, short) = 0x54;
-            G19_R(G19_E(e, 0x18), 0x14, short) = 0x18;
-            G19_R(G19_E(e, 0x18), 0x5c, int) = 1;
+        cm_Portraits[n].frame = d2_CreatePicObj(x + 0x18, 0xf, 0x5da);
+        cm_Portraits[n].win = d2_CreateWindow(x, 0, 0x80, 0x4b, 0x110);
+        w = (AIWEAPON *)cm_CharWeapon((char *)c);
+        if (w != 0 && w->id != 0) {
+            cm_Portraits[n].weaponPic = d2_WinOpenPic(0x54, 0xf, w->id + 0xdf, d2_LastWindow);
+            d2_ScaleObject(cm_Portraits[n].weaponPic, -2);
+            cm_Portraits[n].countText = d2_CreateWinText(0x54, 0x26, &ch_EmptyName, d2_LastWindow);
+            d2_Objs[cm_Portraits[n].countText].font = 0x54;
+            d2_Objs[cm_Portraits[n].countText].w = 0x18;
+            d2_Objs[cm_Portraits[n].countText].centred = 1;
         }
-        G19_E(e, 0x1c) = (int)*pp;
-        *(short *)(ai_Unkf8f39c - 0x268 + G19_E(e, 8) * 0x3c4) = 0;
-        *(short *)(ai_Unkf8f39c + G19_E(e, 8) * 0x3c4) = 0x54;
-        G19_E(e, 0) = d2_WinOpenPic(0x28, 0x11, *(int *)(*pp + 0x18c), d2_LastWindow);
-        G19_R(G19_E(e, 0), 0x48, int) = 1;
-        G19_E(e, 0x10) = d2_CreateWinText(0, 0, &ch_EmptyName, d2_LastWindow);
-        G19_R(G19_E(e, 0x10), 0x74, short) = 0x54;
-        G19_R(G19_E(e, 0x10), 0x14, short) = 0x80;
-        G19_R(G19_E(e, 0x10), 0x5c, int) = 1;
-        t = gm_SkillPoints();
-        sv_ValueBar(0x24, 0x41, (int)(double)t, 0x4df);
+        cm_Portraits[n].c = c;
+        d2_Wins[cm_Portraits[n].win].mt = 0;
+        d2_Wins[cm_Portraits[n].win].font = 0x54;
+        cm_Portraits[n].portrait = d2_WinOpenPic(0x28, 0x11, c->picture, d2_LastWindow);
+        d2_Objs[cm_Portraits[n].portrait].checkable = 1;
+        cm_Portraits[n].text = d2_CreateWinText(0, 0, &ch_EmptyName, d2_LastWindow);
+        d2_Objs[cm_Portraits[n].text].font = 0x54;
+        d2_Objs[cm_Portraits[n].text].w = 0x80;
+        d2_Objs[cm_Portraits[n].text].centred = 1;
+        t = gm_SkillPoints(c, 3);
+        sv_ValueBar(0x24, 0x41, (int)t, 0x4df);
         x += 0x80;
-        e += 0x20;
+        n++;
     }
     cm_UpdatePortraits();
 }
@@ -10629,7 +10634,7 @@ void ai_Unk4d6a50()
     d2_SetForm(ai_Unk60d368, 0);
     io_PrintText("$C");
     ai_Unk4cfe70();
-    ai_Unk4cfc10();
+    cm_BuildPortraits();
 }
 /* 0x4d6b70, closes the fight UI: the view 0x6f0d64, 0x4d08c0, the portrait boxes */
 

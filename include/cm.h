@@ -644,7 +644,7 @@ extern int d2_ClickedId;  /* 0xf8a668 */
 extern CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
 extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
 
-void ai_Unk4cfc10();  /* 0x4cfc10 */
+void cm_BuildPortraits();  /* 0x4cfc10 */
 void ai_Unk4cfe70();  /* 0x4cfe70 */
 int d2_CreatePicObj();  /* 0x46cd80 */
 int d2_CreateWindow();  /* 0x472390 */
