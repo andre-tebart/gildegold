@@ -139,7 +139,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
-#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (unk_4a7140.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), and its caller 0x4dada0 passes a byte (mov al / push eax) */
+#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (unk_4a7140.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 #define cm_PicsT (*(struct D2PIC **)&ai_Unk6ed918)  /* 0x6ed918, ai_Unk6ed918 (cm.h: char *), d2.c's d2_Pics, as the D2PIC records it points to */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
@@ -12370,37 +12370,39 @@ void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m)
     r->session.answer = res;
     sprintf(r->text, ch_EmptyName);
 }
-/* 0x4dae90, like 0x4dada0 for a record of the other kind (the AI side: 0x4aab90 / 0x4aad30 decide instead of the session pickers); the out
-   value is written through the first parameter slot */
+/* 0x4dae90, the session member callback for the other characters (cm_RunSceneParty, scene kind 1), as cm_SessionAskPlayer but the
+   character decides itself: mode 1 the one of holder and challenger it trusts more (ai_TrustedOfTwo), mode 2 the applicant
+   it trusts most (ai_TrustedOfFour); the answer and its click go to r's session fields, r's text is cleared */
 
-void ai_Unk4dae90(char *r, int *m)
+void cm_SessionAskAI(CMCUTINFO *r, CMSESSIONREQ *m)
 {
-    char *p = r;
-    int c, x, y, res;
+    AICHAR *c, *holder, *challenger;
+    int res, click;
 
-    *(int *)(p + 0x94) = *(int *)(p + 0x98) = -1;
-    if (*(int *)(p + 0x9c) != 0)
+    r->session.answer = -1;
+    r->session.click = -1;
+    if (r->session.observer != 0)
         return;
-    c = gm_FindChar(*(int *)(p + 0x10));
-    if (c == 0 || *(char *)(c + 0x166) == 0 || *(unsigned char *)(c + 0x1b1) > 0)
+    c = (AICHAR *)gm_FindChar(r->playerId);
+    if (c == 0 || c->officeKind == 0 || c->heldRounds > 0)
         return;
-    if (m[0] == 1) {
-        x = gm_FindChar(m[3]);
-        y = gm_FindChar(m[4]);
-        if (x == 0 || y == 0)
+    if (m->mode == 1) {
+        holder = (AICHAR *)gm_FindChar(m->ids[0]);
+        challenger = (AICHAR *)gm_FindChar(m->ids[1]);
+        if (holder == 0 || challenger == 0)
             return;
-        res = ai_TrustedOfTwo(c, x, y, &r);
-        *(char **)(p + 0x98) = r;
+        res = ai_TrustedOfTwo(c, holder, challenger, &click);
+        r->session.click = click;
     } else {
-        if (m[0] != 2)
+        if (m->mode != 2)
             return;
-        if (amt_CanTakeOffice(c, m[2]) == 0)
+        if (amt_CanTakeOffice((char *)c, m->kind) == 0)
             return;
-        res = ai_TrustedOfFour(*(unsigned char *)(m + 1), c, m + 3, &r);
-        *(char **)(p + 0x98) = r;
+        res = ai_TrustedOfFourB(m->office, c, m->ids, &click);
+        r->session.click = click;
     }
-    *(int *)(p + 0x94) = res;
-    strcpy(p + 0x14, &ch_EmptyName);
+    r->session.answer = res;
+    sprintf(r->text, ch_EmptyName);
 }
 /* 0x4daf80, a trial / session request p (+0x34 .. +0x44 five character ids, +0x48 a sixth one when the byte +0x30 is >= 6): every character must
    exist, not be of kind 0xf, be alive (+8) and, when +0x1b1 is set, not be among the characters of the list 0x53e400 / 0x53e300 with the same
@@ -15793,7 +15795,7 @@ void ai_Unk4e5770(void)
     for (i = 0; i < 96; i++)
         ai_Unk925520[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
-    ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)ai_Unk4dae90, 0, 0);
+    ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)ai_Unk4daf80, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);

@@ -1504,3 +1504,4 @@
 2026-11-03T16:04:11 0x004dab50 func ai_Unk4dab50 -> cm_AskElectVote by:main why:the player's election vote dialog: a button per applicant (texts 0x12dc / 0x12dd), called by the session member callback for mode 2 (cm.c 0x4dada0)
 2026-11-03T16:04:11 0x0060d360 data ai_Unk60d360 -> cm_DialogFrameFlags by:main why:its declaration: the frame wait flags of the dialogs (sv_RunFrame's second argument in every cutscene dialog loop)
 2026-11-03T16:06:46 0x004dada0 func ai_Unk4dada0 -> cm_SessionAskPlayer by:main why:the member callback (cm_RunSceneParty table +4) of the council session (kind 1): asks the player with cm_AskDeposeVote / cm_AskElectVote and stores the answer in the member record
+2026-11-03T16:08:24 0x004dae90 func ai_Unk4dae90 -> cm_SessionAskAI by:main why:the session member callback for the other members (cm_RunSceneParty table +8, scene kind 1): ai_TrustedOfTwo / ai_TrustedOfFour decide the answer where cm_SessionAskPlayer asks the player

@@ -302,7 +302,7 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
     char text[0x80];                    /* 0x14, in a session: the member's answer text (shown by 0x4e37a0, cleared by the member callbacks) */
     union {
         CMCUTENTRY entries[16];         /* 0x94, of a fight */
-        struct {                        /* 0x94, of a council session (the member callbacks cm_SessionAskPlayer / ai_Unk4dae90,
+        struct {                        /* 0x94, of a council session (the member callbacks cm_SessionAskPlayer / cm_SessionAskAI,
                                            cm_RunCouncilSession counts them) */
             int answer;                 /* 0x94, mode 1: 0 yes, 1 no, 2 abstain; mode 2: the netId voted for; -1 none */
             int click;                  /* 0x98, how it was given (1 / 2 pick the remark texts) */
