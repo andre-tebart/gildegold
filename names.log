@@ -1365,3 +1365,4 @@
 2026-11-03T13:14:30 0x009304c0 data ai_Unk9304c0 -> cm_DamagePops by:main why:0x9304c0: 16 floating numbers (G18POP: time 64.0, value, character, kind) filled by cm_ShowDamage 0x4cedc0
 2026-11-03T13:25:22 0x004cee20 func ai_Unk4cee20 -> cm_UpdateDamagePops by:main why:moves / creates / removes the cm_DamagePops texts that cm_ShowDamage fills
 2026-11-03T13:25:43 0x004cef80 func ai_Unk4cef80 -> cm_InitDamagePops by:main why:sets every cm_DamagePops slot empty (h -1, v 0, c 0)
+2026-11-03T13:26:01 0x004cefa0 data ai_Unk4cefa0 -> cm_ClearDamagePops by:main why:removes each cm_DamagePops screen text and empties the slot

@@ -7379,18 +7379,18 @@ void cm_InitDamagePops()
         cm_DamagePops[i].c = 0;
     }
 }
-/* 0x4cefa0, removes all floating numbers */
+/* 0x4cefa0, removes all damage numbers of cm_DamagePops (their screen texts too) */
 
-void ai_Unk4cefa0()
+void cm_ClearDamagePops()
 {
-    G18POP *p;
+    int i;
 
-    for (p = cm_DamagePops; (int)p < (int)(cm_DamagePops + 16); p++) {
-        if (p->h != -1)
-            d2_RemoveObj(p->h);
-        p->h = -1;
-        p->v = 0;
-        p->c = 0;
+    for (i = 0; i < 16; i++) {
+        if (cm_DamagePops[i].h != -1)
+            d2_RemoveObj(cm_DamagePops[i].h);
+        cm_DamagePops[i].h = -1;
+        cm_DamagePops[i].v = 0;
+        cm_DamagePops[i].c = 0;
     }
 }
 /* 0x4cefe0 */
@@ -12694,7 +12694,7 @@ void ai_Unk4ded10(char *m)
     ai_Unk4e30c0();
     sb_UnloadSampleBank(snd1);
     sb_UnloadSampleBank(snd2);
-    ai_Unk4cefa0();
+    cm_ClearDamagePops();
     ai_Unk4e3640();
 }
 /* 0x4dfa20, after a duel (the message m: +0x34 / +0x38 the duellists): when one of them is down (life 0x4fc8e0 <= 0) the owner of the
