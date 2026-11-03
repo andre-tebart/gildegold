@@ -1061,7 +1061,7 @@ void cm_EndGroup(const char *s)
     strncpy((char *)m.data, s, 0x80);
     cm_QueueSend(&m);
 }
-/* 0x4c45c0, message 10 (0x30 bytes of p, or zeros) */
+/* 0x4c45c0, message 10: creates a building of kind n for the character b (the 0x30 bytes of p, or zeros) */
 
 int cm_SendMessage10(unsigned char n, int b, void *p, short d)
 {
@@ -1070,15 +1070,15 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d)
     m.type = 10;
     if (n == 0)
         return -1;
-    *(unsigned short *)&m.data[4] = n;
-    G17_I(m, 6) = b;
-    G17_S(m, 0xa) = d;
-    if (p == 0) {
-        memset(&m.data[0x10], 0, 0x30);
-        G17_I(m, 0xc) = 0;
+    m.build.kind = n;
+    m.build.owner = b;
+    m.build.flags = d;
+    if (p != 0) {
+        memcpy(m.build.block, p, 0x30);
+        m.build.hasBlock = 1;
     } else {
-        memcpy(&m.data[0x10], p, 0x30);
-        G17_I(m, 0xc) = 1;
+        memset(m.build.block, 0, 0x30);
+        m.build.hasBlock = 0;
     }
     return cm_QueueSend(&m);
 }
