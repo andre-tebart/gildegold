@@ -772,7 +772,7 @@ void cm_InitOrderChances();  /* 0x4d27a0 */
 extern float cm_OrderChances[0xb4];  /* 0x9300a0 */
 extern double ai_Unk5ece60;  /* 0x5ece60 */
 
-float *ai_Unk4d2c00(int side);  /* 0x4d2c00 */
+float *cm_OrderChancesFor(int side);  /* 0x4d2c00 */
 extern float ai_Unk5ebc1c;  /* 0x5ebc1c */
 extern const float ai_Unk5ecebc;  /* 0x5ecebc */
 extern float ai_Unk5eb94c;  /* 0x5eb94c */

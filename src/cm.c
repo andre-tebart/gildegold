@@ -9253,66 +9253,69 @@ void cm_InitOrderChances()
         }
     }
 }
-/* 0x4d2c00, the row of 6 floats of cm_OrderChances for the side (kind 0 .. 5 by the fight flags +0x7c bit 0 / 1 / 2 and the side
-   being the attacker cm_FightAttacker or the defender cm_FightDefender, else 6) and the strength level 0 .. 4 (the ratio of the two
-   sides' strengths 0x4cdcf0 against the limits 5ebc1c / 5ecebc / 5eb94c / 5eb7ac), lowered by the number of "sp_CONQUER"
-   flags the attacker owns. Rough draft. */
+/* 0x4d2c00, the row of cm_OrderChances the fight AI draws the orders of side from: the kind by the fight flags (bit 0 /
+   1 / 2, then side being the attacker cm_FightAttacker or the defender cm_FightDefender; 6 for neither), the level
+   0 .. 4 by the ratio of the side's own strength to the enemy's (the sums of cm_FightStrength over the fighters still
+   standing, health neither 0 nor 4) against 1.75 / 1.25 / 0.75 / 0.5; the defender holding against the attacker's
+   "sp_CONQUER" flags gets level 1 for one taken, 0 for two or three */
 
-float *ai_Unk4d2c00(int side)
+float *cm_OrderChancesFor(int side)
 {
-    unsigned char fl = *(unsigned char *)(cm_FightRecord + 0x7c);
-    int kind = 6;
-    int lvl, cnt = 0, i;
-    float a = 0.0f, b = 0.0f, r;
+    int kind;
+    float def, att, r;
+    D3VECTOR4 v;
     char *o;
+    int i, cnt, lvl;
 
-    if ((fl & 1) && cm_FightAttacker == side)
+    kind = 6;
+    if ((cm_FightRecordT->flags & 1) && cm_FightAttacker == side)
         kind = 0;
-    else if ((fl & 1) && cm_FightDefender == side)
+    else if ((cm_FightRecordT->flags & 1) && cm_FightDefender == side)
         kind = 1;
-    else if ((fl & 2) && cm_FightAttacker == side)
+    else if ((cm_FightRecordT->flags & 2) && cm_FightAttacker == side)
         kind = 2;
-    else if ((fl & 2) && cm_FightDefender == side)
+    else if ((cm_FightRecordT->flags & 2) && cm_FightDefender == side)
         kind = 3;
-    else if ((fl & 4) && cm_FightAttacker == side)
+    else if ((cm_FightRecordT->flags & 4) && cm_FightAttacker == side)
         kind = 4;
-    else if ((fl & 4) && cm_FightDefender == side)
+    else if ((cm_FightRecordT->flags & 4) && cm_FightDefender == side)
         kind = 5;
-    for (i = 0x80; i < 0xc0; i += 4) {
-        if (*(int *)(cm_FightRecord + i) != -1) {
-            o = cm_FindFighter(*(int *)(cm_FightRecord + i));
-            if (o[8] != 0 && o[8] != 4)
-                a = cm_FightStrength(o) + a;
+    def = 0.0f;
+    for (i = 0; i < 16; i++) {
+        if (cm_FightRecordT->defenders[i] != -1) {
+            o = cm_FindFighter(cm_FightRecordT->defenders[i]);
+            if (((AICHAR *)o)->health != 0 && ((AICHAR *)o)->health != 4)
+                def = cm_FightStrength(o) + def;
         }
     }
-    for (i = 0xc0; i < 0x100; i += 4) {
-        if (*(int *)(cm_FightRecord + i) != -1) {
-            o = cm_FindFighter(*(int *)(cm_FightRecord + i));
-            if (o[8] != 0 && o[8] != 4)
-                b = cm_FightStrength(o) + b;
+    att = 0.0f;
+    for (i = 0; i < 16; i++) {
+        if (cm_FightRecordT->attackers[i] != -1) {
+            o = cm_FindFighter(cm_FightRecordT->attackers[i]);
+            if (((AICHAR *)o)->health != 0 && ((AICHAR *)o)->health != 4)
+                att = cm_FightStrength(o) + att;
         }
     }
+    cnt = 0;
     for (i = 0; i < cm_FlagObjectCount; i++) {
         if (strstr(cm_FlagObjects[i], "sp_CONQUER") != 0) {
-            float v[4];
-
-            d3_PointToWorld(cm_FlagObjects[i], cm_FlagObjects[i] + 0x4c, v);
-            o = *(char **)(cm_FlagObjects[i] + 0x200);
-            if (o != 0 && *(int *)(o + 0x16c) == cm_FightAttacker)
+            d3_PointToWorld((D3OBJECT *)cm_FlagObjects[i], &((D3OBJECT *)cm_FlagObjects[i])->pos, (D3VECTOR *)&v);
+            o = ((D3OBJECT *)cm_FlagObjects[i])->owner;
+            if (o != 0 && (int)((AICHAR *)o)->bld == cm_FightAttacker)
                 cnt++;
         }
     }
     if (side == cm_FightAttacker)
-        r = b / a;
+        r = att / def;
     else
-        r = a / b;
-    if (!(r < ai_Unk5ebc1c))
+        r = def / att;
+    if (r >= 1.75f)
         lvl = 4;
-    else if (!(r < ai_Unk5ecebc))
+    else if (r >= 1.25f)
         lvl = 3;
-    else if (!(r < ai_Unk5eb94c))
+    else if (r >= 0.75f)
         lvl = 2;
-    else if (!(r < 0.5f))
+    else if (r >= 0.5f)
         lvl = 1;
     else
         lvl = 0;
@@ -9384,7 +9387,7 @@ void ai_Unk4d2f80(int side)
     float r, best, w;
     int cnt = 0, i, j, k, n = 0, selidx = 0;
 
-    row = ai_Unk4d2c00(side);
+    row = cm_OrderChancesFor(side);
     for (i = 0; i < (unsigned char)rec[0x30]; i++) {
         if (*(int *)(rec + 0x34 + i * 4) == *(int *)((char *)side + 4)) {
             rec2 = cm_CutInfos[i];
