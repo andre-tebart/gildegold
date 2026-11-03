@@ -525,7 +525,9 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             char unk89;                 /* 0x89 */
         };
     };
-    char pad94[9];
+    char pad94[8];
+    unsigned char textFlags;            /* 0x9c, of a note with a text (cm_SendPartyNote): 0xc, 0xe with the party's building,
+                                           | 0x10 when a second text follows the first */
     unsigned char unk9d;                /* 0x9d */
     char pad9e[2];
     int unka0;                          /* 0xa0 */

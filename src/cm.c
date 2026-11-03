@@ -125,6 +125,10 @@ typedef struct CMCUTTYPEMSG {      /* 0x7c bytes, the data of the system message
     int party;                      /* 0x00, the party's id (G28REC.id) */
     char text[0x78];                /* 0x04, "cut_type:%i" with the scene kind */
 } CMCUTTYPEMSG;
+typedef struct CMNOTE {             /* 0x8f8 bytes, a long message (AIMSG) with its texts right after it, as cm_SendPartyNote builds it */
+    AIMSG head;                     /* 0x00 */
+    char text[0x800];               /* 0xf8, the text, then the second one (textFlags 0x10) */
+} CMNOTE;
 typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of cm_Grenades */
     D3OBJECT *obj;                  /* the object "ob_BOMBE", 0 = a free slot */
     D3ANIM *anim;                   /* 0x04, its flight path (d3anim_CreatePath) */
@@ -1358,7 +1362,7 @@ int cm_SendLongMessage(char *msg)
 }
 /* 0x4c4bc0, message 0x1c with len extra bytes after msg (0xf8 bytes) */
 
-int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra)
+int cm_SendLongMessageText(char *msg, unsigned int len, void *extra)
 {
     G17MSG m;
     char *buf;
@@ -16114,52 +16118,54 @@ int cm_IsPartyMember(int id, char *m)
     }
     return 0;
 }
-/* 0x4e48b0, sends a message of the type 0x11 (0x5ec) for the party m (a +4 the owner) from the object b (+0x14 the building, +0
-   its id, +0x26 bit 4: a text follows): the text `text` (and the second one, joined, flag 0x10) after the header at +0xf8 of the buffer;
-   +0x60 gets the kind of the building's thing (0x501ce0 / 0x4ffe90 +2), -1 without. ROUGH */
+/* 0x4e48b0, sends the note text (and the second text extra, joined after it, textFlags bit 0x10) about the party b to
+   the character a as a long message (0x1c, kind 0x11, text id 0x5ec): with it the party's building b->thing, the party's
+   id and the object id of the building's main room (of a home: its object of type 0xfd), -1 without; textFlags 0xe
+   when the party's flags have bit 0x10 and it has a building, else 0xc */
 
 void cm_SendPartyNote(int *a, char *b, char *text, char *extra)
 {
-    char buf[0x8f8];
-    char *o, *p;
-    int x, len;
+    G28REC *party = (G28REC *)b;
+    CMNOTE note;
+    AIBLD *bld;
+    AIOBJ *o;
+    int len;
 
-    memset(buf, 0, 0xf8);
-    buf[4] = 0x11;
-    *(int *)(buf + 0xc) = -1;
-    buf[0x36] = 9;
-    *(int *)(buf + 8) = a[1];
-    *(int *)(buf + 0x58) = 0x5ec;
-    if (*(int *)(b + 0x14) != -1 && (b[0x26] & 0x10))
-        buf[0x9c] = 0xe;
+    memset(&note.head, 0, sizeof(note.head));
+    note.head.type = 0x11;
+    note.head.fromId = -1;
+    note.head.flags = 9;
+    note.head.to = ((AICHAR *)a)->netId;
+    note.head.arg[0] = 0x5ec;
+    if (party->thing != -1 && (party->flags & 0x10))
+        note.head.textFlags = 0xe;
     else
-        buf[0x9c] = 0xc;
-    *(int *)(buf + 0x5c) = *(int *)(b + 0x14);
-    *(int *)(buf + 0x64) = *(int *)b;
-    x = -1;
-    *(int *)(buf + 0x60) = -1;
-    if (*(int *)(b + 0x14) != -1) {
-        o = (char *)gm_FindBuildingById(*(int *)(b + 0x14));
-        if (o != 0) {
-            if (gm_IsHomeType(o) == 0) {
-                p = (char *)gm_GetGebaeudeHauptraum(o);
-                if (p != 0)
-                    *(int *)(buf + 0x60) = *(int *)(p + 2);
+        note.head.textFlags = 0xc;
+    note.head.arg[1] = party->thing;
+    note.head.arg[3] = party->id;
+    note.head.arg[2] = -1;
+    if (party->thing != -1) {
+        bld = (AIBLD *)gm_FindBuildingById(party->thing);
+        if (bld != 0) {
+            if (gm_IsHomeType((unsigned char *)bld) == 0) {
+                o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)bld);
+                if (o != 0)
+                    note.head.arg[2] = o->objId;
             } else {
-                p = (char *)gm_Query(*(int *)(o + 0x5d), 1, 0, 0xfd);
-                if (p != 0)
-                    *(int *)(buf + 0x60) = *(int *)(p + 2);
+                o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xfd);
+                if (o != 0)
+                    note.head.arg[2] = o->objId;
             }
         }
     }
-    strcpy(buf + 0xf8, text);
-    len = strlen(buf + 0xf8) + 1;
+    strcpy(note.text, text);
+    len = strlen(note.text) + 1;
     if (extra != 0 && *extra != 0) {
-        strcpy(buf + 0xf8 + len, extra);
-        buf[0x9c] |= 0x10;
-        ai_Unk4c4bc0(buf, len + strlen(extra) + 1, buf + 0xf8);
+        memcpy(note.text + len, extra, strlen(extra) + 1);
+        note.head.textFlags |= 0x10;
+        cm_SendLongMessageText((char *)&note, len + strlen(extra) + 1, note.text);
     } else
-        ai_Unk4c4bc0(buf, strlen(text) + 1, text);
+        cm_SendLongMessageText((char *)&note, strlen(text) + 1, text);
 }
 /* 0x4e4a50, "cut_CheckMaster": 1 when the owner (m +0xc) is one of the party m (+0x30 count, +0x34 ids); else the first member of the kind 6 / 7 that
    still exists (as long as none was found, 16 slots) becomes the new owner: the log "new master for id %i => %i", a request (0x4c61f0) and the wait for its

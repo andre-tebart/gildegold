@@ -699,7 +699,7 @@ void he_ActivateSlot(int *sl)
 #define HM_I(m, o) (*(int *)((m) + (o)))
 
 short * gm_FindChar(int id);
-int ai_Unk4c4bc0();
+int cm_SendLongMessageText();
 void err_Message(char *text);
 
 /* 0x53dda0, sends the message 0x11 (event text) to the player `pid` (-1 when it is no figure of kind 6 / 7): `text` (+ `text2` behind its NUL; flag 0x10 then) with the clock of the game, event record `ev` at +0x58 (ROUGH) */
@@ -724,11 +724,11 @@ int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2)
     strcpy(buf, text);
     n = strlen(text) + 1;
     if (text2 == 0 || *text2 == 0)
-        return ai_Unk4c4bc0(msg, n, buf);
+        return cm_SendLongMessageText(msg, n, buf);
     memcpy(buf + n, text2, strlen(text2) + 1);
     b |= 0x10;
     HM_B(msg, 0xa0) = b;
-    return ai_Unk4c4bc0(msg, strlen(text2) + n + 1, buf);
+    return cm_SendLongMessageText(msg, strlen(text2) + n + 1, buf);
 }
 /* 0x53dee0, sends the message 0x11 with a quick jump (name `jump`, at most 0x30 characters: else "he_MessageBoxQuickjump(): .." 0x626700, the function's own name) and the clock values a5 / a6 / a7 (+0x58 / +0x5c / +0x60) (ROUGH) */
 
@@ -758,13 +758,13 @@ void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6,
     strcpy(buf, text);
     n = strlen(text) + 1;
     if (text2 == 0 || *text2 == 0) {
-        ai_Unk4c4bc0(msg, n, buf);
+        cm_SendLongMessageText(msg, n, buf);
         return;
     }
     memcpy(buf + n, text2, strlen(text2) + 1);
     b |= 0x10;
     HM_B(msg, 0xa0) = b;
-    ai_Unk4c4bc0(msg, strlen(text2) + n + 1, buf);
+    cm_SendLongMessageText(msg, strlen(text2) + n + 1, buf);
 }
 
 #include <stdarg.h>
