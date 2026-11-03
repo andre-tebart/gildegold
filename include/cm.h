@@ -716,7 +716,7 @@ void gm_ShuffledBytes(unsigned char n, unsigned char *out);  /* 0x505be0 */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0, f3gm.h (not includable here, cm.c lead comment) */
 extern int ai_Unk633dd4;  /* 0x633dd4 */
 extern int cm_FightDefender;  /* 0x6f0ce8 */
-extern int ai_Unk6f0cf4;  /* 0x6f0cf4 */
+extern int cm_FightWinner;  /* 0x6f0cf4 */
 extern int cm_FightSounds;  /* 0x6f0d0c */
 extern int cm_CrossbowSounds;  /* 0x6f0d10 */
 extern int cm_DaggerSounds;  /* 0x6f0d18 */
@@ -805,7 +805,7 @@ void ai_Unk4d3980(char *ev);  /* 0x4d3980 */
 void ai_Unk4d3a30(char *ev);  /* 0x4d3a30 */
 void ai_Unk4d3ac0(char *ev);  /* 0x4d3ac0 */
 void ai_Unk4d3ae0(char *ev);  /* 0x4d3ae0 */
-char *ai_Unk4d3b30(char *rec);  /* 0x4d3b30 */
+struct AICHAR *cm_CheckFightWinner(struct CMFIGHTREC *rec);  /* 0x4d3b30 */
 int ai_Unk4d3d10(char *a, char *b, char *d, char *t);  /* 0x4d3d10 */
 int cm_FightRole(unsigned char *b);  /* 0x4d4050 */
 int ai_Unk4d4090(int x, int y, int mode);  /* 0x4d4090 */

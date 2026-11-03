@@ -9729,68 +9729,70 @@ void ai_Unk4d3ae0(char *ev)
     }
     d3if_ShowTree(o, 0);
 }
-/* 0x4d3b30, the winning side of a fight record: the character record of the side (cm_FightAttacker attacker, cm_FightDefender
-   defender) that has nobody left standing opposite or owns every "sp_CONQUER" object of the scene; the winner gets
-   message 0x50 with its fight record (0x4cdf00) marked 5. 0 / the pending result 0x6f0cf4 if no winner yet */
+/* 0x4d3b30, decides the fight of rec: the winner known already (cm_FightWinner), else the attacker cm_FightAttacker
+   when no attacker of rec stands any more (health neither 0 nor 4, the body not hidden: type 1), the defender
+   cm_FightDefender when no defender does, and the defender too when the attacker's side owns every "sp_CONQUER" flag;
+   the winner's cutscene entry (cm_CutEntrySlot, the record of the first leader of cm_FightRecord) is sent with state 5
+   (cm_SendCutEntry). Returns the winner, 0 while the fight goes on */
 
-char *ai_Unk4d3b30(char *rec)
+AICHAR *cm_CheckFightWinner(CMFIGHTREC *rec)
 {
-    char *w = 0;
-    char *ret;
-    int total = 0;
-    int mine = 0;
-    int na = 0, nb = 0;
-    int out;
-    int i, id, n;
-    char *c, *o, *rr;
-    int sl[11];
+    AICHAR *winner;
+    int flags, owned;
+    int nDef, nAtt;
+    D3VECTOR4 v;
+    CMCUTENTRY entry;
+    AICHAR *c;
+    CMCUTENTRY *slot;
+    int i, n;
 
-    if (ai_Unk6f0cf4 != 0)
-        return (char *)ai_Unk6f0cf4;
+    winner = 0;
+    owned = 0;
+    flags = 0;
+    if (cm_FightWinner != 0)
+        return (AICHAR *)cm_FightWinner;
+    nDef = 0;
     for (i = 0; i < 16; i++) {
-        id = *(int *)(rec + 0x80 + i * 4);
-        if (id != -1) {
-            c = cm_FindFighter(id);
-            if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
-                na++;
+        if (rec->defenders[i] != -1) {
+            c = (AICHAR *)cm_FindFighter(rec->defenders[i]);
+            if (c->health != 0 && c->health != 4 && c->scene->obj->type != 1)
+                nDef++;
         }
     }
+    nAtt = 0;
     for (i = 0; i < 16; i++) {
-        id = *(int *)(rec + 0xc0 + i * 4);
-        if (id != -1) {
-            c = cm_FindFighter(id);
-            if (c[8] != 0 && c[8] != 4 && *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) != 1)
-                nb++;
+        if (rec->attackers[i] != -1) {
+            c = (AICHAR *)cm_FindFighter(rec->attackers[i]);
+            if (c->health != 0 && c->health != 4 && c->scene->obj->type != 1)
+                nAtt++;
         }
     }
-    if (nb > 0) {
-        if (na <= 0)
-            w = (char *)cm_FightDefender;
-        ret = w;
-    } else
-        ret = (char *)cm_FightAttacker;
+    if (nAtt <= 0)
+        winner = (AICHAR *)cm_FightAttacker;
+    else if (nDef <= 0)
+        winner = (AICHAR *)cm_FightDefender;
     for (i = 0; i < cm_FlagObjectCount; i++) {
-        if (strcmp(cm_FlagObjects[i], "sp_CONQUER") != 0) {
-            o = cm_FlagObjects[i];
-            d3_PointToWorld(o, o + 0x4c, &out);
-            total = out + 1;
-            if (*(char **)(o + 0x200) != 0 && *(int *)(*(char **)(o + 0x200) + 0x16c) == cm_FightAttacker)
-                mine++;
+        if (strstr(cm_FlagObjects[i], "sp_CONQUER") != 0) {
+            d3_PointToWorld((D3OBJECT *)cm_FlagObjects[i], &((D3OBJECT *)cm_FlagObjects[i])->pos, (D3VECTOR *)&v);
+            flags++;
+            c = ((D3OBJECT *)cm_FlagObjects[i])->owner;
+            if (c != 0 && (int)c->bld == cm_FightAttacker)
+                owned++;
         }
     }
-    if (total != 0 && mine == total)
-        w = ret = (char *)cm_FightDefender;
-    if (ret != 0) {
-        n = (unsigned char)cm_FightRecord[0x30];
-        for (i = 0; i < n && *(int *)(cm_FightRecord + 0x34 + i * 4) == -1; i++)
+    if (flags != 0 && owned == flags)
+        winner = (AICHAR *)cm_FightDefender;
+    if (winner != 0) {
+        n = cm_FightRecordT->nChars;
+        for (i = 0; i < n && cm_FightRecordT->charIds[i] == -1; i++)
             ;
-        rr = (char *)cm_CutEntrySlot(cm_CutInfos[i], ret);
-        memcpy(sl, rr, 0x2c);
-        sl[0] = *(int *)(ret + 4);
-        sl[1] = 5;
-        cm_SendCutEntry(*(int *)(cm_CutInfos[i] + 0x10), sl);
+        slot = (CMCUTENTRY *)cm_CutEntrySlot((char *)&cm_CutInfosT[i], (char *)winner);
+        entry = *slot;
+        entry.charId = winner->netId;
+        entry.state = 5;
+        cm_SendCutEntry(cm_CutInfosT[i].playerId, &entry);
     }
-    return ret;
+    return winner;
 }
 
 #define G19_4C4880U ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)
@@ -10284,7 +10286,7 @@ void ai_Unk4d4d70(char *a)
                 cm_FightWeaponLoss(c);
         }
     }
-    if (ai_Unk6f0cf4 == 0) {
+    if (cm_FightWinner == 0) {
         na = 0;
         for (i = 0; i < 16; i++) {
             id = *(int *)(a + 0x80 + i * 4);
@@ -10309,7 +10311,7 @@ void ai_Unk4d4d70(char *a)
             side = G20_ATT;
     } else {
         side = G20_ATT;
-        if (ai_Unk6f0cf4 != cm_FightAttacker)
+        if (cm_FightWinner != cm_FightAttacker)
             side = G20_DEF;
     }
     win = d2_OpenForm(0, 0, "cutscenes\\combat_end");
@@ -10616,7 +10618,7 @@ void ai_Unk4d63e0(char *a)
             d3_SetLightSet(2, 0, 0x3f800000, 1);
         else
             sv_UpdateSkyPhase(ai_Time);
-        ai_Unk6f0cf4 = 0;
+        cm_FightWinner = 0;
         ai_Unk6f0cf8 = 0;
         ai_Unk6f0cfc = 0;
         ai_Unk4d4540(a);
@@ -10624,8 +10626,8 @@ void ai_Unk4d63e0(char *a)
         cm_CollectSceneChars();
         cm_CollectSceneChars();
         ai_Unk4e3830(a, 0);
-        if (ai_Unk6f0cf4 != 0 || ai_Unk6f0cf8 == 0) {
-            if (ai_Unk6f0cf4 == 0)
+        if (cm_FightWinner != 0 || ai_Unk6f0cf8 == 0) {
+            if (cm_FightWinner == 0)
                 ai_Unk4e3830(a, 0);
         } else
             ai_Unk4e3830(a, 0);
@@ -10732,7 +10734,7 @@ void ai_Unk4d6970(char *r)
     ai_Unk4ced80(r);
     cm_UpdateBombs();
     cm_UpdateGrenades();
-    if (ai_Unk6f0d88 == 0 && ai_Unk6f0cf4 == 0) {
+    if (ai_Unk6f0d88 == 0 && cm_FightWinner == 0) {
         if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk60cb68) {
             q = cm_CutEntrySlot(r, cm_CutChar);
             memcpy(sl, q, 0x2c);
@@ -10936,7 +10938,7 @@ void ai_Unk4d7150(char *r)
     char *c;
 
     c = gm_FindChar(*(int *)r);
-    ai_Unk6f0cf4 = (int)c;
+    cm_FightWinner = (int)c;
     txt_Format(buf, 0x11b7, G20_US(c));
     sv_SetStatusText(buf);
 }
@@ -11098,7 +11100,7 @@ void ai_Unk4d76a0(int *rec)
     int tmp[3];
 
     for (slot = 0; slot < 16; slot++) {
-        if (ai_Unk6f0cf4 != 0)
+        if (cm_FightWinner != 0)
             return;
         p = rec + slot * 11 + 0x25;
         memcpy(m, p, 0x2c);
@@ -11455,7 +11457,7 @@ done:
         }
     }
 }
-/* 0x4d88c0, the fight loop: starts one of two fight tracks, then runs until the fight ends (ai_Unk6f0cf4 / ai_Unk6f0cf8): the pause
+/* 0x4d88c0, the fight loop: starts one of two fight tracks, then runs until the fight ends (cm_FightWinner / ai_Unk6f0cf8): the pause
    toggle (key 0x39 = space) with the character animations and the "pause" text, the frame of the UI, and every 0x15e timer calls
    the characters' fight-AI (0x4d2f80) and the fighters' commands (0x4d76a0). Ends with the end-of-fight code 0x4d6b70. */
 
@@ -11489,7 +11491,7 @@ void ai_Unk4d88c0(char *a)
             sv_SetStatusText(ai_Unk143e674);
         else
             ai_Unk4d6970(a);
-        if (ai_Unk6f0cf4 == 0 && ai_Unk6f0cf8 == 0 && ai_Unk6f0ce4 == 0) {
+        if (cm_FightWinner == 0 && ai_Unk6f0cf8 == 0 && ai_Unk6f0ce4 == 0) {
             if (tb_Calls > t + 0x1a4) {
                 for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
                     if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1) {
@@ -11501,14 +11503,14 @@ void ai_Unk4d88c0(char *a)
                 t = tb_Calls;
             }
             if (*(int *)(cm_CutChar + 4) == cm_FightOwner) {
-                ai_Unk4d3b30(cm_FightRecord);
+                cm_CheckFightWinner(cm_FightRecordT);
                 for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
                     if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1)
                         ai_Unk4d76a0((int *)cm_CutInfos[i]);
                 }
             }
         }
-        if (ai_Unk6f0cf4 != 0 || ai_Unk6f0cf8 != 0)
+        if (cm_FightWinner != 0 || ai_Unk6f0cf8 != 0)
             sv_PopRequest = 1;
     }
     ai_Unk4d6b70();
@@ -15572,7 +15574,7 @@ int ai_Unk6f0ce4 = 0;  /* 0x6f0ce4, fight paused */
 int cm_FightDefender = 0;  /* 0x6f0ce8 */
 int cm_FightAttacker = 0;  /* 0x6f0cec */
 char * cm_PickMarker = 0;  /* 0x6f0cf0 */
-int ai_Unk6f0cf4 = 0;  /* 0x6f0cf4 */
+int cm_FightWinner = 0;  /* 0x6f0cf4 */
 int ai_Unk6f0cf8 = 0;  /* 0x6f0cf8 */
 int ai_Unk6f0cfc = 0;  /* 0x6f0cfc */
 char * cm_FightRecord = 0;  /* 0x6f0d04 */
