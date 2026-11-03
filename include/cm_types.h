@@ -293,7 +293,8 @@ typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50
 
 typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a player's cutscene (fight) record, received
                                            whole by cm_ExSendCutInfo */
-    int unk00;                          /* 0x00 */
+    int fresh;                          /* 0x00, set 1 by cm_ResetCutInfos (with recvFlag); no reader known, the name a
+                                           reasoned guess */
     int ready;                          /* 0x04, "Ready" in cm_ExSendCutInfo's trace */
     int valid;                          /* 0x08, "Valid" */
     int recvFlag;                       /* 0x0c, cleared when the record is received (cm_ExSendCutInfo; reasoned guess: a

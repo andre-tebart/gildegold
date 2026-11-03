@@ -15608,36 +15608,37 @@ void cm_ApplySeason(void)
     d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, init_TextureSetHook);
     init_SetSeasonTextures();
 }
-/* 0x4e36a0, resets the 16 member slots of 0x92cae0 for the party m (+0x34 the ids, +0x30 the count, +8 the kind): used, nothing announced, the id
-   (-1 without a party); for a kind 3 party the 16 sub entries (+0x98.., 0x2c bytes) of its used slots are cleared. ROUGH */
+/* 0x4e36a0, resets the 16 cutscene records cm_CutInfos for the party m: each one fresh 1, ready / valid 0, recvFlag 1, no
+   text, and the member's netId m->members[j] as its playerId (-1 without a party); for a council session (kind 3) the 16
+   entries of each of the first m->used records whose playerId is set are cleared (charId -1, state 0) */
 
 int cm_ResetCutInfos(char *m)
 {
-    int j, i, q;
-    char *s, *t;
+    G28REC *party = (G28REC *)m;
     int *ids;
+    int j, i, q;
 
-    ids = (int *)(m + 0x34);
-    for (j = 0, s = cm_CutInfos; j < 16; j++, s += 0x35c, ids++) {
-        *(int *)s = 1;
-        *(int *)(s + 8) = 0;
-        *(int *)(s + 4) = 0;
-        *(int *)(s + 0xc) = 1;
-        if (m != 0) {
-            *(int *)(s + 0x10) = *ids;
-            if (m[8] == 3 && (unsigned char)m[0x30] > 0) {
-                for (i = 0, t = cm_CutInfos; i < (unsigned char)m[0x30]; i++, t += 0x35c) {
-                    if (*(int *)(t + 8) == -1)
+    ids = party->members;
+    for (j = 0; j < 16; j++, ids++) {
+        cm_CutInfosT[j].fresh = 1;
+        cm_CutInfosT[j].valid = 0;
+        cm_CutInfosT[j].ready = 0;
+        cm_CutInfosT[j].recvFlag = 1;
+        if (party != 0) {
+            cm_CutInfosT[j].playerId = *ids;
+            if (party->kind == 3) {
+                for (i = 0; i < party->used; i++) {
+                    if (cm_CutInfosT[i].playerId == -1)
                         continue;
                     for (q = 0; q < 16; q++) {
-                        *(int *)(t + 0x94 + q * 0x2c) = -1;
-                        *(int *)(t + 0x98 + q * 0x2c) = 0;
+                        cm_CutInfosT[i].entries[q].charId = -1;
+                        cm_CutInfosT[i].entries[q].state = 0;
                     }
                 }
             }
         } else
-            *(int *)(s + 0x10) = -1;
-        s[0x14] = 0;
+            cm_CutInfosT[j].playerId = -1;
+        cm_CutInfosT[j].text[0] = 0;
     }
 }
 /* 0x4e3750, 1 when no member slot of the party m is used (+0), alive (+8 == 0) and waiting (+0x10 != -1) */
