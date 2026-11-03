@@ -2543,43 +2543,43 @@ exe	0x004e1220	cm_DeathSceneCheck	cm	byte	readable
 exe	0x004e1250	cm_RunDeath	cm	draft	readable	deep	
 exe	0x004e1700	cm_RunBankruptcy	cm	byte	readable		
 exe	0x004e19a0	ai_Unk4e19a0	cm	byte	draft		
-exe	0x004e1a80	ai_Unk4e1a80	cm	draft	draft		
-exe	0x004e24c0	ai_Unk4e24c0	cm	draft	draft		
-exe	0x004e26d0	ai_Unk4e26d0	cm	draft	draft		
+exe	0x004e1a80	cm_RunAuction	cm	shape	readable		
+exe	0x004e24c0	cm_AuctionAskPlayer	cm	byte	readable		
+exe	0x004e26d0	cm_AuctionAskAI	cm	shape	readable		
 exe	0x004e2860	ai_Unk4e2860	cm	byte	draft		
 exe	0x004e2910	ai_Unk4e2910	cm	byte	draft		
-exe	0x004e2bd0	cm_SetViewEnabled	cm	draft	readable		
+exe	0x004e2bd0	cm_SetViewEnabled	cm	byte	readable		
 exe	0x004e2bf0	cm_StartScript	cm	byte	draft		
 exe	0x004e2c30	cm_StartEventArg	cm	byte	draft		
 exe	0x004e2c70	cm_WaitEvent	cm	byte	readable		
 exe	0x004e2cc0	cm_WaitEventOrClick	cm	byte	readable		
 exe	0x004e2d40	cm_WaitEventFull	cm	byte	readable		
 exe	0x004e2d90	cm_StopScript	cm	byte	readable		
-exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft		
-exe	0x004e2e00	ai_Unk4e2e00	cm	draft	draft		
+exe	0x004e2dc0	cm_StopGroupScripts	cm	byte	readable		
+exe	0x004e2e00	cm_WaitGroupScripts	cm	byte	readable		
 exe	0x004e2e60	cm_LoadEventScene	cm	shape	draft		
 exe	0x004e3060	cm_FadeToBlack	cm	byte	draft		
-exe	0x004e30c0	cm_LeaveEventScene	cm	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x004e30c0	cm_LeaveEventScene	cm	byte	readable		
 exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
-exe	0x004e3230	ai_Unk4e3230	cm	byte	draft		
+exe	0x004e3230	cm_CreateChar	cm	byte	readable		
 exe	0x004e3250	cm_DeleteChar	cm	byte	readable		
 exe	0x004e3270	cm_LoadVoiceBank	cm	byte	draft		
 exe	0x004e3290	cm_UnloadVoiceBank	cm	byte	draft		
 exe	0x004e32b0	cm_PlayVoice	cm	byte	draft		
 exe	0x004e32d0	cm_QueueVoice	cm	byte	draft		
-exe	0x004e32f0	cm_CreateSceneSky	cm	draft	draft		
-exe	0x004e3390	cm_DestroySceneSky	cm	byte	draft		
+exe	0x004e32f0	cm_CreateSceneSky	cm	byte	readable		
+exe	0x004e3390	cm_DestroySceneSky	cm	byte	readable		
 exe	0x004e33d0	cm_StartSceneRain	cm	byte	readable		
 exe	0x004e33f0	cm_StopSceneRain	cm	byte	readable		
 exe	0x004e3420	cm_WaitTicks	cm	shape	draft		
-exe	0x004e3490	cm_RunSceneTicksOrClick	cm	draft	draft		
-exe	0x004e3570	cm_RunSceneTicks	cm	byte	draft		
+exe	0x004e3490	cm_RunSceneTicksOrClick	cm	byte	readable		
+exe	0x004e3570	cm_RunSceneTicks	cm	byte	readable		
 exe	0x004e3620	cm_PlaySpecialTrack	cm	byte	draft		
 exe	0x004e3640	cm_EndSpecialTrack	cm	byte	draft		
 exe	0x004e3650	cm_ApplySeason	cm	byte	readable		
 exe	0x004e36a0	cm_ResetCutInfos	cm	draft	draft		
 exe	0x004e3750	ai_Unk4e3750	cm	draft	draft		
-exe	0x004e37a0	ai_Unk4e37a0	cm	byte	draft		
+exe	0x004e37a0	cm_ShowPartyTexts	cm	byte	draft		
 exe	0x004e3800	ai_Unk4e3800	cm	byte	draft		
 exe	0x004e3830	cm_RunSceneParty	cm	draft	draft		
 exe	0x004e3fe0	ai_Unk4e3fe0	cm	byte	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 5f62d178: three byte declarations (cm_DuelRightInsultWon / cm_DuelLeftRollWon / cm_DuelRightRollWon, 0x6f0dab..0x6f0dad) join cm.h where cm_DuelScore[2] was read past its end (D8): truer data, one object per byte as the original's separate byte loads show; the function uses none of them, its register tie-break flips on cm.h's declaration set alone (it flipped the same way for a parameter name in cm_DuelChooseRound's prototype), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 5f62d178: three byte declarations (cm_DuelRightInsultWon / cm_DuelLeftRollWon / cm_DuelRightRollWon, 0x6f0dab..0x6f0dad) join cm.h where cm_DuelScore[2] was read past its end (D8): truer data, one object per byte as the original's separate byte loads show; the function uses none of them, its register tie-break flips on cm.h's declaration set alone (it flipped the same way for a parameter name in cm_DuelChooseRound's prototype), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
@@ -4450,7 +4450,7 @@ exe	0x005bc6d0	ai_Unk5bc6d0	unk_58bbd0	draft	draft
 exe	0x005bc790	ai_Unk5bc790	unk_58bbd0	draft	draft		
 exe	0x005bc9c0	ai_Unk5bc9c0	unk_58bbd0	draft	draft		
 exe	0x005bcc70	ai_PlayerStatsPanel	unk_58bbd0	draft	draft		
-exe	0x005bd060	ai_Unk5bd060	unk_58bbd0	draft	draft		
+exe	0x005bd060	ai_AmountLimit	unk_58bbd0	draft	draft		
 exe	0x005bd0c0	ai_Unk5bd0c0	unk_58bbd0	draft	draft		
 exe	0x005bd190	ai_Unk5bd190	unk_58bbd0	draft	draft		
 exe	0x005bd1f0	ai_Unk5bd1f0	unk_58bbd0	draft	draft		
