@@ -8319,36 +8319,37 @@ int ai_Unk4d0cd0(int *a)
     return -1;
 }
 
-#define G19_GRANT(K, B)                                                                                 \
-    i = ai_Unk4d0cd0((int *)(rec + 0x80));                                                              \
-    *(int *)(rec + 0x80 + i * 4) = *(int *)(ai_KindBChars[i] + 4);                                       \
-    cm_DiscardWeapons(ai_KindBChars[i]);                                                                      \
-    cm_SendExSellObject(*(int *)(ai_KindBChars[i] + 4), -1, K, 1, ai_OwnPlayer, 0);                             \
-    gm_AddHealth(*(unsigned short *)ai_KindBChars[i], -*(int *)(ai_KindBChars[i] + 0x24));                \
-    buf[0] = B;                                                                                         \
-    cm_BeginFieldBlock(ai_KindBChars[i], *(int *)(ai_KindBChars[i] + 4));                                       \
-    cm_AddFieldDelta(1, 1, (unsigned short)(*(unsigned short *)&ai_KindBChars[i] - (unsigned short)cm_FieldObject + 0x83), buf)
+/* the record ai_ArmGateGuards fills: a local of the town gate event's run handler (he_Unk5630f0 passes its
+   address); only these two fields are read here, the rest of its layout is not known */
+typedef struct CMGUARDREC {
+    char pad000[0x80];
+    int netIds[16];                 /* 0x080, the netIds of the guards already armed, -1 = a free slot (ai_Unk4d0cd0) */
+    char pad0c0[0x50];
+    int kind;                       /* 0x110, the kind of arming last asked for (1 .. 3) */
+} CMGUARDREC;
+#define ai_KindBCharsT (*(AICHAR *(*)[8])&ai_KindBChars)  /* 0x6f1c04, ai_KindBChars (f3init.h: char *[8]) as the AICHAR pointers it holds */
 
-/* 0x4d0cf0, the reward of the quest rec (+0x80 .. +0xbc the 16 ids already given, +0x110 the kind a): per kind one or
-   two of the slots ai_KindBChars[] are taken, their characters get the property 0x156 (kind 1; 0x158 / 0x160 for 2 / 3)
-   and the field block 0x83 + id is sent with the value 0xa8 / 0xd2. Rough draft. */
-void ai_Unk4d0cf0(char *rec, unsigned char a)
+/* arms the next guard: takes the first free slot i of rec, the character ai_KindBChars[i] gives up its weapons and
+   gets the item ITEM, loses its v024 health and its skill sk83 is set to SKILL (a field delta of the character).
+   The original repeats this code inline (the four copies of 0x4d0cf0 reload ai_KindBChars[i] each time) */
+#define CM_ARM_GUARD(ITEM, SKILL)                                                                             i = ai_Unk4d0cd0(rec->netIds);                                                                           rec->netIds[i] = ai_KindBCharsT[i]->netId;                                                               cm_DiscardWeapons((char *)ai_KindBCharsT[i]);                                                            cm_SendExSellObject(ai_KindBCharsT[i]->netId, -1, ITEM, 1, ai_OwnPlayer, 0);                              gm_AddHealth(ai_KindBCharsT[i]->id, -ai_KindBCharsT[i]->v024);                                            skill = SKILL;                                                                                            cm_BeginFieldBlock((char *)ai_KindBCharsT[i], ai_KindBCharsT[i]->netId);                                  cm_AddFieldDelta(1, 1, (unsigned short)((char *)ai_KindBCharsT[i] - cm_FieldObject + 0x83), &skill);      cm_SendFieldDeltas()
+
+/* 0x4d0cf0, arms the guards of the town gate event: kind 1 two guards with the item 0x156 (sk83 = 0xa8), kinds 2 / 3
+   one with 0x158 and one with 0x160 (sk83 = 0xd2); a nonzero kind is kept in rec->kind (reasoned: the items replace
+   the weapons cm_DiscardWeapons sends away, the characters are the kind 0xb ones of ai_KindBChars) */
+void ai_ArmGateGuards(CMGUARDREC *rec, unsigned char kind)
 {
-    unsigned char buf[0x10];
+    unsigned char skill;
     int i;
 
-    if (a != 0)
-        *(int *)(rec + 0x110) = a;
-    if (a == 1) {
-        G19_GRANT(0x156, 0xa8);
-        cm_SendFieldDeltas();
-        G19_GRANT(0x156, 0xa8);
-        cm_SendFieldDeltas();
-    } else if (a == 2 || a == 3) {
-        G19_GRANT(0x158, 0xd2);
-        cm_SendFieldDeltas();
-        G19_GRANT(0x160, 0xd2);
-        cm_SendFieldDeltas();
+    if (kind != 0)
+        rec->kind = kind;
+    if (kind == 1) {
+        CM_ARM_GUARD(0x156, 0xa8);
+        CM_ARM_GUARD(0x156, 0xa8);
+    } else if (kind == 2 || kind == 3) {
+        CM_ARM_GUARD(0x158, 0xd2);
+        CM_ARM_GUARD(0x160, 0xd2);
     }
 }
 /* 0x4d0f80, a callback: an object of kind 3 gets +0x224 = 0; returns 1 */

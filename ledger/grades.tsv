@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at c69fda40: cm.h: ai_ArmGateGuards (0x4d0cf0) declared with its record type (struct CMGUARDREC *, the town gate event's guard record) instead of char *. unk_575860 never calls it, yet any new struct tag in cm.h flips a VC6 register tie-break in this 1839-byte function (regs 30 hunks only, the same statements; void * keeps it byte): the same declaration-set flip as ai_TutorialInitChapter3's debt, no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 0c023456: cm.h: cm_OrderToBestCell (0x4d0460) declared with the two parameters the original reads (rec, c; its third was never used and its one caller 0x4d3120 called it through a cast). unk_575860 never calls it, yet the declaration-set change flips a VC6 register tie-break in this 5377-byte function (code 36 / regs 10 hunks, the same statements); it already flips on unrelated renames and struct splits (see its earlier debt and ai_TutorialInitChapter2's): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

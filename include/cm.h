@@ -694,7 +694,7 @@ extern char *ai_Unk935980[];  /* 0x935980 */
 
 void ai_Unk4d0ca0();  /* 0x4d0ca0 */
 int ai_Unk4d0cd0(int *a);  /* 0x4d0cd0 */
-void ai_Unk4d0cf0(char *rec, unsigned char a);  /* 0x4d0cf0 */
+struct CMGUARDREC; void ai_ArmGateGuards(struct CMGUARDREC *rec, unsigned char kind);  /* 0x4d0cf0, arms the guards of the town gate event (the kind 0xb characters ai_KindBChars) */
 char ai_Unk4d0f80(char *o);  /* 0x4d0f80 */
 float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 
