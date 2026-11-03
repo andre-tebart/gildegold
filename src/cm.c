@@ -16532,73 +16532,74 @@ int cm_DialogTimer(int dlg, int a, int c)
     return v;
 }
 /* 0x4e5470, a message box for the text id with the flags (2: "Messagebox_Autosize", 0x10: "_BIG", 0x20: "_VERY_BIG", 0x100: "_NONE_PERGA" (form 1), else "misc\\Messagebox";
-   8: the frame wait flags 0x717c6, 0x80: a timer slider (0x500 ms), 0x40: ends on the first click of the dialog's own click, 4: ends after 500 ms): the dialog's
-   objects are put into a radio group (all but the type 0x40), the loop runs the frame wait 0x5309a0 until the stop flag; the answer: the clicked
-   button index + 1 (0xf8aad0 == id, the clicked object's result in 0xfa5aa8), else -1; not reentrant (0x6f0dc4). ROUGH */
+   8: the frame wait flags 0x717c6, 0x80: a timer slider (0x500 ms), 0x40: raises the dialog's windows every frame, 4: ends after 500 ms): the dialog's
+   objects are put into a radio group (all but the type 0x40), the loop runs the frame wait sv_RunFrame until the stop request; the answer: the selected
+   button index + 1 when the text window is clicked, 0 on a right click on it or the escape key, else -1; not reentrant (cm_MessageBoxOpen).
+   @deep read whole against the original; fixed the d2_OpenForm (x, y, name) and sv_RunFrame (cb, mask)
+   argument orders, the frame mask (& ~0x38: and al, 0xc7), the clicked window (d2_LastWindow after
+   io_PrintText, the original keeps it in id's slot), typed D2WIN/D2OBJ access. Left: allocation only: ours
+   keeps ret in ebp (or ebp, -1 / xor ebp, ebp / mov eax, ebp) and fl in a register, the original keeps ret
+   at [esp+0x14] and fl at [esp+0x10] with no ebp (frame 0x10 vs 0x18), and the original holds 0 in esi
+   from the start (push esi for the d2_OpenForm / d2_CreateRadioGroup zeros, i starts in it); slider = ret
+   loads the slot there (or esi, -1 here). */
 
 int cm_MessageBox(int id, int flags)
 {
-    int t0, ret, win, radio, i, n, k, slider, fl, timed, quick;
-    int *list;
-    char *dlg;
+    unsigned long t0;
+    int ret, win, textwin, radio, i, k, slider, fl, timed, raise, ends;
 
     t0 = d3_Time;
     ret = -1;
     win = 0;
-    if (ai_Unk6f0dc4 != 0)
+    if (cm_MessageBoxOpen != 0)
         return 0;
-    fl = sv_FrameMask & 0xc7;
+    fl = sv_FrameMask & ~0x38;
     if (flags & 2)
-        win = d2_OpenForm("misc\\Messagebox_Autosize", 0, 0);
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_Autosize");
     else if (flags & 0x10)
-        win = d2_OpenForm("misc\\Messagebox_BIG", 0, 0);
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_BIG");
     else if (flags & 0x20)
-        win = d2_OpenForm("misc\\Messagebox_VERY_BIG", 0, 0);
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_VERY_BIG");
     else if (flags & 0x100) {
-        win = d2_OpenForm("misc\\Messagebox_NONE_PERGA", 0, 0);
+        win = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
         d2_SetForm(win, 1);
     } else
-        win = d2_OpenForm("misc\\Messagebox", 0, 0);
+        win = d2_OpenForm(0, 0, "misc\\Messagebox");
     if (flags & 8)
         fl = 0x717c6;
     io_PrintText(id);
+    textwin = d2_LastWindow;
     d2_CentreViewWindows(fl);
-    ai_Unk6f0dc4 = 1;
+    cm_MessageBoxOpen = 1;
     radio = d2_CreateRadioGroup(0);
-    dlg = d2_LastWindowPtrC;
-    i = 0;
-    if (*(short *)(dlg + 0x1c) > 0) {
-        do {
-            k = (*(int **)(dlg + 0x18))[i];
-            if (*(int *)(d2_ObjsC + k * 0x2ec + 0x18) != 0x40)
-                d2_RadioAdd(radio, k);
-            dlg = d2_LastWindowPtrC;
-            i++;
-        } while (i < *(short *)(dlg + 0x1c));
+    for (i = 0; i < d2_LastWindowPtr->nobjs; i++) {
+        k = d2_LastWindowPtr->objs[i];
+        if (d2_Objs[k].type != 0x40)
+            d2_RadioAdd(radio, k);
     }
     d2_RadioSelect(radio, 0);
     d2_SetForm(win, 0);
     timed = flags & 0x80;
     if (timed != 0)
-        slider = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtrC + 0xa) - 0x18, *(short *)(d2_LastWindowPtrC + 8) - 0x40, 0, 0x1f4, 0x83, 0x42, d2_LastWindow);
+        slider = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x18, d2_LastWindowPtr->w - 0x40, 0, 0x1f4, 0x83, 0x42, d2_LastWindow);
     else
-        slider = -1;
-    if (sv_RunFrame(fl, cm_MessageBox) != 0) {
-        quick = flags & 0x40;
-        n = flags & 4;
+        slider = ret;
+    if (sv_RunFrame(cm_MessageBox, fl) != 0) {
+        raise = flags & 0x40;
+        ends = flags & 4;
         do {
             d2_MenuNavigate(radio);
-            if (quick != 0)
+            if (raise != 0)
                 d2_RaiseViewWindows(win);
             if (d2_ClickedId == 0) {
-                if (d2_HitWindow == id) {
+                if (d2_HitWindow == textwin) {
                     ret = d2_RadioSel[radio * 35] + 1;
                     sv_PopRequest = 1;
                 } else if (kb_Last == 1) {
                     ret = 0;
                     sv_PopRequest = 1;
                 }
-            } else if (d2_ClickedId == 1 && d2_HitWindow == id || kb_Last == 1) {
+            } else if (d2_ClickedId == 1 && d2_HitWindow == textwin || kb_Last == 1) {
                 ret = 0;
                 sv_PopRequest = 1;
             }
@@ -16606,11 +16607,11 @@ int cm_MessageBox(int id, int flags)
                 sv_PopRequest = 1;
             if (timed != 0 && slider != -1)
                 d2_SetObjValue(slider, 0, 0x1f4, d3_Time - t0);
-            if (n != 0 && d3_Time > t0 + 0x1f4)
+            if (ends != 0 && d3_Time > t0 + 0x1f4)
                 sv_PopRequest = 1;
-        } while (sv_RunFrame(fl, cm_MessageBox) != 0);
+        } while (sv_RunFrame(cm_MessageBox, fl) != 0);
     }
-    ai_Unk6f0dc4 = 0;
+    cm_MessageBoxOpen = 0;
     d2_RadioClear(radio);
     d2_CloseView(win);
     return ret;
@@ -16966,7 +16967,7 @@ struct D3SKYLAYER *cm_SkyLayer = 0;  /* 0x6f0db4 */
 struct D3SKY *cm_SceneSky = 0;  /* 0x6f0db8 */
 int cm_SceneRain = 0;  /* 0x6f0dbc */
 int ai_Unk6f0dc0 = 0;  /* 0x6f0dc0 */
-char ai_Unk6f0dc4 = 0;  /* 0x6f0dc4 */
+char cm_MessageBoxOpen = 0;  /* 0x6f0dc4 */
 char * ai_PickedObject = 0;  /* 0x6f22e8 */
 int ai_PickedChar = 0;  /* 0x6f22f8 */
 int cm_TutorialActive = 0;  /* 0x6f2438 */

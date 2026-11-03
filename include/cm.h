@@ -1131,7 +1131,7 @@ void d2_MenuNavigate(int g);  /* 0x46c6c0 */
 void d2_RaiseViewWindows(int view);  /* 0x4741a0 */
 void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_RadioClear(int g);  /* 0x46c600 */
-extern char ai_Unk6f0dc4;  /* 0x6f0dc4 */
+extern char cm_MessageBoxOpen;  /* 0x6f0dc4 */
 
 extern int cm_KindRun[];  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
 void d3io_NoopCallback(void *t);  /* 0x44ee40 */
