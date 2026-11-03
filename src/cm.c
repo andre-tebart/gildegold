@@ -6,7 +6,9 @@
    and the cutscenes (cut_, 0x4d8c70..: trial, duel, execution, wedding, auction, ...; joined: the strings run
    monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
    Names are ours.
-   The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type.
+   The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type; the scene
+   callbacks registered by ai_Unk4e5770 (cm_RunDuel, cm_RunExecution, cm_RunWedding, cm_RunBirth, cm_RunDeath,
+   cm_RunBankruptcy, their checks and member callbacks) read the party record G28REC.
    Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h d2.h f3gm.h gfx.h hmt.h hst.h rt.h
    unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the definition (read the
    original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);

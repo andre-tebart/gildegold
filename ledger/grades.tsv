@@ -2528,20 +2528,20 @@ exe	0x004debe0	cm_DuelOutcome	cm	shape	readable
 exe	0x004ded10	cm_RunDuel	cm	draft	readable	deep	
 exe	0x004dfa20	cm_DuelAftermath	cm	byte	readable		
 exe	0x004dfcb0	cm_DuelAskPlayer	cm	byte	readable		
-exe	0x004dfdd0	ai_Unk4dfdd0	cm	draft	draft		
+exe	0x004dfdd0	cm_DuelChooseRound	cm	shape	readable		
 exe	0x004dff80	ai_Unk4dff80	cm	byte	draft		
 exe	0x004dfff0	ai_Unk4dfff0	cm	byte	draft		
 exe	0x004e0010	ai_Unk4e0010	cm	byte	draft		
-exe	0x004e0040	ai_Unk4e0040	cm	draft	draft		
-exe	0x004e01e0	ai_Unk4e01e0	cm	draft	draft		
+exe	0x004e0040	cm_ExecutionAftermath	cm	byte	readable		
+exe	0x004e01e0	cm_RunExecution	cm	byte	readable		
 exe	0x004e0580	ai_Unk4e0580	cm	byte	draft		
-exe	0x004e06d0	ai_Unk4e06d0	cm	byte	draft		
-exe	0x004e0770	ai_Unk4e0770	cm	draft	draft		
+exe	0x004e06d0	cm_EndWedding	cm	byte	readable		
+exe	0x004e0770	cm_RunWedding	cm	shape	readable		
 exe	0x004e0e90	ai_Unk4e0e90	cm	shape	draft		
-exe	0x004e0f70	ai_Unk4e0f70	cm	draft	draft		
-exe	0x004e1220	ai_Unk4e1220	cm	draft	draft		
-exe	0x004e1250	ai_Unk4e1250	cm	draft	draft		
-exe	0x004e1700	ai_Unk4e1700	cm	draft	draft		
+exe	0x004e0f70	cm_RunBirth	cm	draft	readable	deep	
+exe	0x004e1220	cm_DeathSceneCheck	cm	byte	readable		
+exe	0x004e1250	cm_RunDeath	cm	draft	readable	deep	
+exe	0x004e1700	cm_RunBankruptcy	cm	byte	readable		
 exe	0x004e19a0	ai_Unk4e19a0	cm	byte	draft		
 exe	0x004e1a80	ai_Unk4e1a80	cm	draft	draft		
 exe	0x004e24c0	ai_Unk4e24c0	cm	draft	draft		
@@ -2552,7 +2552,7 @@ exe	0x004e2bd0	cm_SetViewEnabled	cm	draft	readable
 exe	0x004e2bf0	cm_StartScript	cm	byte	draft		
 exe	0x004e2c30	cm_StartEventArg	cm	byte	draft		
 exe	0x004e2c70	cm_WaitEvent	cm	byte	readable		
-exe	0x004e2cc0	ai_Unk4e2cc0	cm	byte	draft		
+exe	0x004e2cc0	cm_WaitEventOrClick	cm	byte	readable		
 exe	0x004e2d40	cm_WaitEventFull	cm	byte	readable		
 exe	0x004e2d90	cm_StopScript	cm	byte	readable		
 exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft		
@@ -2567,12 +2567,12 @@ exe	0x004e3270	cm_LoadVoiceBank	cm	byte	draft
 exe	0x004e3290	cm_UnloadVoiceBank	cm	byte	draft		
 exe	0x004e32b0	cm_PlayVoice	cm	byte	draft		
 exe	0x004e32d0	cm_QueueVoice	cm	byte	draft		
-exe	0x004e32f0	ai_Unk4e32f0	cm	draft	draft		
-exe	0x004e3390	ai_Unk4e3390	cm	byte	draft		
-exe	0x004e33d0	ai_Unk4e33d0	cm	byte	draft		
-exe	0x004e33f0	ai_Unk4e33f0	cm	byte	draft		
+exe	0x004e32f0	cm_CreateSceneSky	cm	draft	draft		
+exe	0x004e3390	cm_DestroySceneSky	cm	byte	draft		
+exe	0x004e33d0	cm_StartSceneRain	cm	byte	readable		
+exe	0x004e33f0	cm_StopSceneRain	cm	byte	readable		
 exe	0x004e3420	cm_WaitTicks	cm	shape	draft		
-exe	0x004e3490	ai_Unk4e3490	cm	draft	draft		
+exe	0x004e3490	cm_RunSceneTicksOrClick	cm	draft	draft		
 exe	0x004e3570	cm_RunSceneTicks	cm	byte	draft		
 exe	0x004e3620	cm_PlaySpecialTrack	cm	byte	draft		
 exe	0x004e3640	cm_EndSpecialTrack	cm	byte	draft		
@@ -3089,7 +3089,7 @@ exe	0x00506000	gm_BirthDate	f3gm	shape	readable
 exe	0x005060d0	gm_DeathDate	f3gm	shape	readable		
 exe	0x00506180	gm_RankPlayers	f3gm	shape	readable		
 exe	0x00506430	gm_PlayerRecord	f3gm	shape	readable		
-exe	0x00506480	gm_Unk506480	f3gm	shape	draft		
+exe	0x00506480	gm_HasAdultRelative	f3gm	shape	draft		
 exe	0x005064d0	gm_TakeOverCharacter	f3gm	draft	readable	deep	
 exe	0x00506890	gm_InheritEstate	f3gm	shape	readable		
 exe	0x00506e70	gm_ForfeitEstate	f3gm	draft	readable	deep	
