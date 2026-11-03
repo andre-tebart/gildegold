@@ -264,13 +264,13 @@ void ai_Unk4c5a70(int a);                                                       
 void cm_SendChat(void *p);                                                      /* 0x4c5aa0 */
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
-void cm_SendObjCell(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
+int cm_SendObjCell(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
 void cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
 void ai_Unk4c5ca0(int a, void *p);                                               /* 0x4c5ca0 */
 void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
 void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
-void cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
+int cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
 void ai_Unk4c5ec0(int a);                                                        /* 0x4c5ec0 */
 void ai_Unk4c5ef0(int a);                                                        /* 0x4c5ef0 */
@@ -457,15 +457,15 @@ void he_StammtischCommand();  /* 0x541b40 */
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 
 int ch_Delete();  /* 0x4028a0 */
-struct CMFIGHTACT; void cm_FighterAct(struct CMFIGHTACT *f);  /* 0x4d6ba0, the action of one fighter (message 0x55) */
+void cm_FighterAct(CMFIGHTSLOT *f);  /* 0x4d6ba0, the action of one fighter (message 0x55) */
 void ai_Unk4d6f60(char *f);  /* 0x4d6f60 */
 void ai_Unk4d6f90(char *f);  /* 0x4d6f90 */
 void ai_Unk4d7000(char *f);  /* 0x4d7000 */
 void ai_Unk4d70a0(char *f);  /* 0x4d70a0 */
 void ai_Unk4d7150(char *r);  /* 0x4d7150 */
-int ai_Unk4d7360(char *rec, char *c, char *g);  /* 0x4d7360 */
+int cm_Attack(CMCUTINFO *rec, struct AICHAR *c, struct AICHAR *g);  /* 0x4d7360 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
-void cm_PlantEscapeFlag(struct CMFIGHTACT *f);  /* 0x4d7190 */
+void cm_PlantEscapeFlag(CMFIGHTSLOT *f);  /* 0x4d7190 */
 void ai_Unk4e5180();  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */
@@ -542,7 +542,7 @@ float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
 typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_Unk60c7c0 (ai_FindWeaponRecord) */
     int id;                             /* 0x00, the goods item */
-    char pad04;
+    unsigned char accuracy;             /* 0x04, the hit chance in percent of the fighter's skill sk83 (cm_Attack) */
     unsigned char dmgMin;               /* 0x05, the least damage (the bomb adds a random part below dmgMax - dmgMin) */
     unsigned char dmgMax;               /* 0x06, the most damage */
     char pad07[2];

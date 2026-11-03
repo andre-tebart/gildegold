@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	draft		
-exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
+exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at 322b60fd: the fighter slot record unified: cm_types.h's CMFIGHTSLOT gets the escape dummy name in a union (the duplicate CMFIGHTACT of cm.c dropped) and cm.h's cm_FighterAct / cm_PlantEscapeFlag take CMFIGHTSLOT (closer: one record, typed). The change flips whether this function keeps an address constant in edx (mov edx, X / mov eax, edx: 4 instructions, regs only): a VC6 declaration-set tie-break of the headers ord.c includes, no evidence of the original's source [waits for: ord.c's head (its includes of cm.h / cm_types.h); re-grade when its declarations settle]
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	draft		

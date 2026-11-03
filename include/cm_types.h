@@ -117,14 +117,20 @@ typedef struct CMFIGHTSLOT {            /* 0x2c bytes, a fighter slot of a fight
     int id;                             /* 0x00, the fighter's id (AICHAR.netId), -1: free */
     int active;                         /* 0x04 */
     char pad08[8];
-    int target;                         /* 0x10, the target's id */
-    int x, y;                           /* 0x14, the attacked place */
-    char pad1c;
-    unsigned char hit;                  /* 0x1d */
-    char pad1e[2];
-    int kill;                           /* 0x20 */
-    int damage;                         /* 0x24 */
-    int health;                         /* 0x28, the target's new health (its AICHAR.v024) */
+    union {
+        struct {
+            int target;                 /* 0x10, the target's id */
+            int x, y;                   /* 0x14, the attacked place (where a pot or a bomb is thrown) */
+            unsigned char held;         /* 0x1c, as CMCUTENTRY.held: the formation types 1 .. 3, such a fighter does not
+                                           walk to its target (cm_Attack) */
+            unsigned char hit;          /* 0x1d, a blow is struck (a bomb thrown) */
+            char pad1e[2];
+            int kill;                   /* 0x20, the blow lands (the pot is laid) */
+            int damage;                 /* 0x24 */
+            int health;                 /* 0x28, the target's new health (its AICHAR.v024) */
+        };
+        char dummy[0x1c];               /* 0x10, the object name of the escape dummy (cm_PlantEscapeFlag) */
+    };
 } CMFIGHTSLOT;
 
 typedef struct G17FIGHTMSG {            /* 0x51 bytes, the data of message 0x55 (cm_SendFightAction, its handler 0x4cc7b0
@@ -239,7 +245,8 @@ typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a 
     int charId;                         /* 0x00, the character's netId, -1 when free */
     int state;                          /* 0x04, 0 frees the slot (cm_ExCutEntry); message 0x51 updates only an entry
                                            in the same state */
-    char pad08[4];
+    int orderSlot;                      /* 0x08, the send slot of the order message for the entry (cm_OrderAttack's
+                                           result), -1: none; cm_GetSlotState tells whether it is still pending */
     unsigned char b0c;                  /* 0x0c, cleared in the record itself before an order copies it (cm_OrderAttack) */
     char pad0d[3];
     int stateArg;                       /* 0x10, in state 2 message 0x51 also has to match it; in state 2 the netId of

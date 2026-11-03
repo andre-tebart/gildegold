@@ -1477,3 +1477,4 @@
 2026-11-03T15:19:03 0x00fa5f00 data ai_Unkfa5f00 -> cm_PickCellX by:main why:the cell x d3_GetHeightAt finds under a fighter (cm_FighterAct, the fight AI 0x4d8...)
 2026-11-03T15:19:03 0x00fa5f04 data ai_Unkfa5f04 -> cm_PickCellZ by:main why:the cell z d3_GetHeightAt finds under a fighter
 2026-11-03T15:25:02 0x004d7190 func ai_Unk4d7190 -> cm_PlantEscapeFlag by:main why:puts the flag "ub_FLUCHTFLAGGE" (escape flag, renamed CONQUER_FLAG) at the escape dummy of a fighter action (message 0x55)
+2026-11-03T15:31:39 0x004d7360 func ai_Unk4d7360 -> cm_Attack by:main why:the attack of the fighter c on g: the hit rolled from the weapon's accuracy, the fight command 2 sent; out of range c walks to g

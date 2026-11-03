@@ -1958,7 +1958,7 @@ void ai_Unk4c5b90(int a)
 }
 /* 0x4c5bc0, message 0x4e with two texts */
 
-void cm_SendObjCell(const char *s, int a, int b, const char *s2)
+int cm_SendObjCell(const char *s, int a, int b, const char *s2)
 {
     G17MSG m;
 
@@ -1970,7 +1970,7 @@ void cm_SendObjCell(const char *s, int a, int b, const char *s2)
         strcpy((char *)&m.data[0x20], s2);
     else
         m.data[0x20] = 0;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight) */
 
@@ -2044,7 +2044,7 @@ void cm_SendTableRequest(int *p)
    copies of pos / rot (keeps esi but adds lea / add for the addresses, 34 ins), memcpy of 12 bytes (same),
    one struct copy plus element copies (29 ins, bigger), element copies (this, 43 ins, size 183 vs 186). */
 
-void cm_SendFightCommand(AICHAR *c, int cmd, CMFIGHTSLOT *f)
+int cm_SendFightCommand(AICHAR *c, int cmd, CMFIGHTSLOT *f)
 {
     G17MSG m;
     D3OBJECT *b;
@@ -2069,7 +2069,7 @@ void cm_SendFightCommand(AICHAR *c, int cmd, CMFIGHTSLOT *f)
                 m.fight.slot.health = t->v024;
         }
     }
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5e80, message 0x56 (0x28 bytes of p) */
 
@@ -5774,7 +5774,7 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
     case 2:
         if (c[8] != 0) {
             cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
-            cm_FighterAct((struct CMFIGHTACT *)&m->data[0x25]);
+            cm_FighterAct(&m->fight.slot);
         }
         break;
     case 6:
@@ -5801,7 +5801,7 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
     case 3:
         if (c[8] != 0) {
             cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
-            cm_PlantEscapeFlag((struct CMFIGHTACT *)&m->data[0x25]);
+            cm_PlantEscapeFlag(&m->fight.slot);
         }
         break;
     }
@@ -10812,27 +10812,6 @@ void ai_Unk4d6b70()
     cm_ClearMarks();
     ai_Unk4cfe70();
 }
-/* a fighter's action as message 0x55 carries it (sub-commands 2 and 6, at data + 0x25) */
-typedef struct CMFIGHTACT {
-    int id;                             /* 0x00, the fighter's netId, -1 = none */
-    int active;                         /* 0x04, 0: nothing to do */
-    char pad08[8];
-    union {
-        struct {                        /* sub-command 2 (cm_FighterAct) */
-            int targetId;               /* 0x10, the netId of the fighter attacked */
-            int x;                      /* 0x14, the place a pot or a bomb is thrown at */
-            int y;                      /* 0x18 */
-            char pad1c;
-            char strikes;               /* 0x1d, nonzero: a blow is struck (a bomb thrown) */
-            char pad1e[2];
-            int lands;                  /* 0x20, nonzero: the blow lands (the pot is laid) */
-            int damage;                 /* 0x24 */
-            int health;                 /* 0x28, the target's health after it */
-        };
-        char dummy[0x1c];               /* 0x10, the object name of the escape dummy (cm_PlantEscapeFlag) */
-    };
-} CMFIGHTACT;
-
 /* 0x4d6ba0, the action of one fighter (f): the target's health is set; a blow (not with the pot 0x174 or the bomb
    0x176) by a fighter that is idle or walking / standing (action 0x2d / 0x3a) shouts the attack (1 in 10), takes the
    damage off the target when it lands and queues the strike: "kampf/schlagen1" without a weapon, else cm_HitAction
@@ -10840,7 +10819,7 @@ typedef struct CMFIGHTACT {
    The pot queues cm_LayBombAction (the thrower's own fight places it at the free cell near him, cm_SendObjCell), the
    bomb cm_ThrowBombAction with the throw sound; both end the action. */
 
-void cm_FighterAct(CMFIGHTACT *f)
+void cm_FighterAct(CMFIGHTSLOT *f)
 {
     struct D3HMAP *h = d3_DefaultScene->hmap;
     AICHAR *c, *tgt, *side;
@@ -10855,18 +10834,18 @@ void cm_FighterAct(CMFIGHTACT *f)
     c = (AICHAR *)cm_FindFighter(f->id);
     k = (AIWEAPON *)cm_CharWeapon((char *)c);
     side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
-    tgt = (AICHAR *)cm_FindFighter(f->targetId);
+    tgt = (AICHAR *)cm_FindFighter(f->target);
     if (tgt != 0)
         tgt->v024 = f->health;
     if (!(k != 0 && (k->id == 0x174 || k->id == 0x176))) {
-        if (f->strikes != 0 && ((x = c->scene->actions) == 0 || x->type == 0x2d || x->type == 0x3a)) {
+        if (f->hit != 0 && ((x = c->scene->actions) == 0 || x->type == 0x2d || x->type == 0x3a)) {
             if ((unsigned short)util_RandomU(10) > 8) {
                 if (side->netId == cm_FightAttackerC->netId)
                     snd_QueueVoice(c->id, cm_AttackerAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
                 else
                     snd_QueueVoice(c->id, cm_DefenderAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
             }
-            lands = f->lands;
+            lands = f->kill;
             dmg = f->damage;
             if (lands != 0)
                 tgt->v024 -= dmg;
@@ -10897,7 +10876,7 @@ void cm_FighterAct(CMFIGHTACT *f)
             ch_AddAction(c->scene, 0x3b, cm_Random(0x1e) + 0x8c);
         }
     }
-    if (k->id == 0x174 && f->lands != 0) {
+    if (k->id == 0x174 && f->kill != 0) {
         ev = ch_AddActionCBK(c->scene, (unsigned)&cm_LayBombAction, 6, 0x2e, 1);
         ev->pot.victim = tgt;
         ev->pot.thrower = c;
@@ -10913,7 +10892,7 @@ void cm_FighterAct(CMFIGHTACT *f)
             f->active = 0;
         }
     }
-    if (k->id == 0x176 && f->strikes != 0) {
+    if (k->id == 0x176 && f->hit != 0) {
         ev = ch_AddActionCBK(c->scene, (unsigned)&cm_ThrowBombAction, 5, 0x2e, 1);
         ev->bomb.thrower = c;
         ev->bomb.x = f->x;
@@ -11010,7 +10989,7 @@ void ai_Unk4d7150(char *r)
    fighter marked fled, text 0x11b8); when the owner changes the old flag is deleted and a new "ub_FLUCHTFLAGGE" object
    (animated, the texture set 'g' + ref54 of the side leader of the kinds 5 .. 7, named "CONQUER_FLAG") is put at the
    dummy's place (the name of the fled bit is a reasoned guess from the flag).
-   @deep Read against the original in full; typed (CMFIGHTACT with the dummy name, D3OBJECT.flagObj at
+   @deep Read against the original in full; typed (CMFIGHTSLOT with the dummy name, D3OBJECT.flagObj at
    0x204, CHARACTER.flags.fled, AICHAR.ref54) and the fled bit set through the bitfield (or byte ptr
    [eax+0x8d], 4 as the original). Left: one code hunk at 0x4d72cc: the original tests the texture set k
    (mov al,[eax+0x54]; add al,0x67; test al,al; mov [esp+0xc],al; je), ours reuses the add's flags (no
@@ -11018,7 +10997,7 @@ void ai_Unk4d7150(char *r)
    assignment inside the condition, if (k): all compile without the test; the rest is order (the 0x212 /
    0x220 / 0x224 stores) and regs. ins 128 vs 129. */
 
-void cm_PlantEscapeFlag(CMFIGHTACT *f)
+void cm_PlantEscapeFlag(CMFIGHTSLOT *f)
 {
     AICHAR *c = 0;
     D3OBJECT *o, *r;
@@ -11067,87 +11046,98 @@ void cm_PlantEscapeFlag(CMFIGHTACT *f)
         o->owner = c;
     }
 }
-/* 0x4d7360, the attack of the character c on the character g in the fight record rec: -1 when c cannot attack (no
-   ammunition for the ranged kinds, the animation of c is busy, g not on the map); in range the hit is rolled
-   (k+4 percent of c's skill against random 255) with the damage (k+5 .. k+6 percent of g's health, 0x5ba6b0 / 0x2b9
-   scales it), and the action record (0x2c bytes, id of c, 2, id of g, the hit / damage) goes to message 0x4c5dc0;
-   a player's attack also arms the AI of the other side (0x4cffd0). Out of range c walks to g (0x4c5bc0). Rough draft. */
+/* 0x4d7360, the attack of the fighter c on the fighter g (rec: c's cutscene record): -1 when c cannot attack (a used-up
+   weapon of the kinds 1 / 2, c's actions busy). In range (or with a weapon that is not one of the melee kinds) the hit
+   is rolled (random 255 against the weapon's accuracy percent of c's skill sk83) with the damage (dmgMin .. dmgMax
+   percent of g's life value, * 1.25 when c's side leader has the item 0x2b9); in the player's own fight a melee attack
+   also orders the other side's AI to strike back (cm_OrderAttack, unless an order is pending); the fight command 2 goes
+   out (cm_SendFightCommand). Out of range c walks to the free cell near g (cm_SendObjCell), unless c holds its place.
+   Returns the send slot, -1 when nothing was sent.
+   @deep Read against the original in full. Fixed: the walk takes g's body position (g->scene->obj->pos,
+   was g + 0x34), the side-leader bonus is 1.25 (the 0x5ecebc float, was 1.5), the AI order is renewed when
+   the pending one's send slot is still busy (cm_GetSlotState != 0, was == 0), the damage is computed in
+   the slot record itself, the range test as !(dist > range) in one condition with the melee kinds (walk
+   out of line as the original), both exits return the send slot (cm_SendFightCommand / cm_SendObjCell now
+   return cm_QueueSend's slot: the original has no xor eax after them). Instruction count equal (273).
+   Left: allocation - the original packs ix / iz / py and the fild temporaries into the dead parameter
+   slots (rec / c / g at [esp+0x48..0x50], frame 0x34) where ours keeps two of them in the frame (0x3c); g
+   in esi and the weapon in edi (ours esi / edi swapped), the random value in esi; the g load moved before
+   the rep stosd. */
 
-int ai_Unk4d7360(char *rec, char *c, char *g)
+int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
 {
-    char *h = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    int s[11];
-    char *k, *x, *other, *r2;
-    int i, n, hit, dmg, ix, iz, id;
+    struct D3HMAP *h = d3_DefaultScene->hmap;
+    CMFIGHTSLOT s;
+    AIWEAPON *k;
+    AIOBJ *item;
+    AICHAR *side;
+    CMCUTINFO *other;
+    CMCUTENTRY *e;
+    int i, n, hit, ix, iz, state;
     unsigned short r;
     float py;
 
-    memset(s, 0, sizeof(s));
-    s[0] = *(int *)(c + 4);
-    s[1] = 2;
-    s[4] = *(int *)(g + 4);
-    if (c[0x1c4] == 1 || c[0x1c4] == 2 || c[0x1c4] == 3)
-        ((char *)s)[0x1c] = 1;
-    k = cm_CharWeapon(c);
-    if (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) {
-        x = cm_CharWeaponItem(c);
-        if (x != 0 && *(int *)(x + 0x20) <= 0)
+    memset(&s, 0, sizeof(s));
+    s.id = c->netId;
+    s.active = 2;
+    s.target = g->netId;
+    if (c->formation == 1 || c->formation == 2 || c->formation == 3)
+        s.held = 1;
+    k = (AIWEAPON *)cm_CharWeapon((char *)c);
+    if (k->kind == 1 || k->kind == 2) {
+        item = (AIOBJ *)cm_CharWeaponItem((char *)c);
+        if (item != 0 && item->usesLeft <= 0)
             return -1;
     }
-    if (*(int *)k == 0x154 || *(int *)k == 0x156 || *(int *)k == 0x158 || *(int *)k == 0x16e || *(int *)k == 0x172 ||
-        *(int *)k == 0 || *(int *)k == 0x176) {
-        if (cm_CharObjDistXZ(c, *(char **)(*(char **)(g + 0x184) + 0x34)) > *(float *)(k + 0xc))
-            goto walk;
-    }
-    if (*(int *)(*(char **)(c + 0x184) + 0x128) != 0)
-        return -1;
-    r = util_RandomU(0xff);
-    x = *(char **)(c + 0x16c);
-    if (r > 0xff - (int)((unsigned char)k[4] * 0.01 * (unsigned char)c[0x83])) {
-        n = (unsigned char)k[6] - (unsigned char)k[5];
-        hit = 1;
-        dmg = (int)((double)(unsigned int)(cm_Random(n) + (unsigned char)k[5]) * *(float *)(g + 0x1c) * 0.01);
-    } else {
-        hit = 0;
-        dmg = 0;
-    }
-    if (x != 0 && ai_InventoryHas(x, 0x2b9) != 0)
-        dmg = (int)(dmg * 1.5f);
-    ((char *)s)[0x1d] = 1;
-    s[8] = hit;
-    s[9] = dmg;
-    if (*(int *)(cm_CutChar + 4) == cm_FightOwner && *(int *)(k + 0x58) == 0) {
-        other = 0;
-        n = (unsigned char)cm_FightRecord[0x30];
-        for (i = 0; i < n; i++) {
-            if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1 && rec != cm_CutInfos[i]) {
-                other = cm_CutInfos[i];
-                break;
+    if (!(k->id == 0x154 || k->id == 0x156 || k->id == 0x158 || k->id == 0x16e || k->id == 0x172 || k->id == 0 ||
+          k->id == 0x176) ||
+        !(cm_CharObjDistXZ((char *)c, (char *)g->scene->obj) > k->range)) {
+        if (c->scene->actions != 0)
+            return -1;
+        r = util_RandomU(0xff);
+        side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
+        if (r > 0xff - (int)(k->accuracy * 0.01 * c->sk83)) {
+            n = k->dmgMax - k->dmgMin;
+            hit = 1;
+            s.damage = (int)((double)(unsigned int)(cm_Random(n) + k->dmgMin) * g->f01c * 0.01);
+        } else {
+            hit = 0;
+            s.damage = 0;
+        }
+        if (side != 0 && ai_InventoryHas(side, 0x2b9) != 0)
+            s.damage = (int)(s.damage * 1.25f);
+        s.hit = 1;
+        s.kill = hit;
+        if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && k->kind == 0) {
+            other = 0;
+            n = cm_FightRecordT->nChars;
+            for (i = 0; i < n; i++) {
+                if (cm_FightRecordT->charIds[i] != -1 && rec != &cm_CutInfosT[i]) {
+                    other = &cm_CutInfosT[i];
+                    break;
+                }
+            }
+            e = (CMCUTENTRY *)cm_CutEntrySlot((char *)other, (char *)g);
+            if (e->orderSlot == -1 || cm_GetSlotState(e->orderSlot) != 0) {
+                state = e->state;
+                e->orderSlot = -1;
+                if (state == 0) {
+                    item = (AIOBJ *)cm_CharWeaponItem((char *)g);
+                    if (item != 0 && item->usesLeft > 0)
+                        e->orderSlot = cm_OrderAttack((char *)other, (char *)g, (char *)c, 0, 0);
+                }
             }
         }
-        r2 = (char *)cm_CutEntrySlot(other, g);
-        if (*(int *)(r2 + 8) == -1 || cm_GetSlotState(*(int *)(r2 + 8)) == 0) {
-            id = *(int *)(r2 + 4);
-            *(int *)(r2 + 8) = -1;
-            if (id == 0) {
-                x = cm_CharWeaponItem(g);
-                if (x != 0 && *(int *)(x + 0x20) > 0)
-                    *(int *)(r2 + 8) = cm_OrderAttack(other, g, c, 0, 0);
-            }
-        }
+        cm_SendSetField(c->netId, 0x1c8, 4, 0x20000000, 0);
+        return cm_SendFightCommand(c, 2, &s);
     }
-    cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-    cm_SendFightCommand(c, 2, s);
-    return 0;
-walk:
-    if (*(int *)(*(char **)(c + 0x184) + 0x128) != 0 || ((char *)s)[0x1c] != 0)
+    if (c->scene->actions != 0 || s.held != 0)
         return -1;
-    if (!d3_GetHeightAt(h, *(char **)(g + 0x34) + 0x4c, &ix, &iz, &py))
+    if (!d3_GetHeightAt((struct D3SM *)h, &g->scene->obj->pos, &ix, &iz, &py))
         return -1;
     if (cm_FindNearCell(ix, iz, &ix, &iz) == 0)
         return -1;
-    cm_SendObjCell(*(char **)(*(char **)(c + 0x184) + 0x34), ix, iz, 0);
-    return 0;
+    return cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
 }
 
 #define G21_BC0 ((int (*)(const char *, int, int, const char *))cm_SendObjCell)
@@ -11406,7 +11396,7 @@ attack:
                     d3_PointToWorld(id, id + 0x4c, q);
                     if (cm_OtherBuilding(c, *(char **)(id + 0x200)) != 0 && *(char *)(n + 8) != 0) {
                         if (d3_VecEqual(q, (float *)G21_POS((char *)n), 49.5f) != 0) {
-                            res = ai_Unk4d7360((char *)rec, c, *(char **)(id + 0x200));
+                            res = cm_Attack((CMCUTINFO *)rec, (AICHAR *)c, *(AICHAR **)(id + 0x200));
                             goto done;
                         }
                     }
