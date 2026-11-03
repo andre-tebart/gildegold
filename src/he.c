@@ -315,7 +315,7 @@ int gm_CompareTime();
 #include "unk_58bbd0.h"
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+#define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
 void he_Unk53d430(unsigned char *ev)
@@ -9716,7 +9716,7 @@ int gm_IsHomeType();
 char *gm_FindBuildingById(int id);
 int gm_BuildingSkill();
 int gm_StallGoodsList(char *c, unsigned *out);
-void gm_Unk50a970(int a, int kind);
+int gm_LevelPayout(int v, int kind);
 
 /* 0x554cb0, the allocation handler of the two-building event (a Ghidra miss; ROUGH, the tail is only sketched): the clocks +0x52 / +0x60 are the start clock, +0xe8 = -1, the buildings +0xb0 / +0xb4 (0x501190) and the person +0xac (0x4fea50) are looked up (any missing: free the record); when the second building is of the kind 0xa and the person has flag 1 (+0x20) the nearest building of the kind 5 / 0xa list (0x501190 (1, 5, 0xa), 0x458a20 positions, start range 1e8) replaces it in all records of type +0xf4 (+0xb8 .. / +0xb0) and +0xb4; the two buildings' 0x502520 flags choose the mode +0xc8 (1 / 2 / 3, 4 when both: equal buildings = error text 0x62728c and free), +0xb8 = the sum of both +0x30, +0xc4 = the first building's id, the event is posted 1 later and the person's data (0x502020, 0x5092e0, the +0x1a0 factor from the person's byte +0x12 with the type 0x135 / 0x136 correction) is set up; flag 2 of +0x78 sends the person the message 0x13 / 0x40, the person gets +0x24 = ev and +0x10 = its id; with flag 1 the 0x50aa00 / 0x627258 text decides a count +0xcc (<= the person's limit) and its tag +0x28 (0x50a970), the handle +0x84 / +0xec = -1 */
 void he_Unk554cb0(int ev)
@@ -9800,7 +9800,7 @@ void he_Unk554cb0(int ev)
         gm_StallGoodsList(o, tmp);
         sprintf(tmp, "%s", "");
         *(unsigned char *)(o + 0x28) = *(unsigned char *)(ev + 0xcc);
-        gm_Unk50a970K(*(int *)(ev + 0xcc), *(char *)(o + 0x28));
+        gm_LevelPayoutK(*(int *)(ev + 0xcc), *(char *)(o + 0x28));
     }
     *(int *)(ev + 0x84) = -1;
     *(int *)(ev + 0xec) = -1;

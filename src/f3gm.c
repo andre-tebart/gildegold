@@ -9545,15 +9545,27 @@ void gm_SortCharsByName(int n, int *ids, int flag)
         }
     }
 }
-/* 0x50a970, the effect of a kind of event (kinds 1 .. 3 start with a float 0): the pseudocode lost both float operands. ROUGH placeholder */
+/* 0x50a970, the payout of level 1 / 2 / 3 on the value v: 5 / 10 / 15 % of v (a positive v clamped to
+   32000 .. 256000 first), rounded; 0 for another level. The level is a stall object's byte 0x28; the caller at
+   0x5ae6b0 pays the result to the character (reasoned guess: an insurance payout) */
 
-void gm_Unk50a970(int a, int kind)
+int gm_LevelPayout(int v, int level)
 {
-    float z = 0.0f;
+    int fee = 0;
 
-    if (kind == 1 || kind == 2 || kind == 3)
-        (void)(int)z;
-    (void)(int)z;
+    if (v > 0.0f) {
+        if (v < 32000)
+            v = 32000;
+        else if (v > 256000)
+            v = 256000;
+    }
+    if (level == 1)
+        fee = (int)(v * 0.05f);
+    else if (level == 2)
+        fee = (int)(v * 0.1f);
+    else if (level == 3)
+        fee = (int)(v * 0.15f);
+    return (int)(fee + 0.5);
 }
 /* 0x50aa00, the list of the stall object 0x1dd of the object c: out[0] the capacity, out[1] the number of entries, per entry the amount (+0x68), the stock (0x50ab50) .., out[0x2a] / [0x2b] the sums, out[0x2c] the last price. ROUGH */
 

@@ -1181,7 +1181,7 @@ extern HETIME ai_Time;                  /* 0x770ae0 (ai.h AITIME, defined in he.
 #include "unk_458810.h"
 #include "unk_575860.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define gm_Unk50a970K ((int (*)())gm_Unk50a970)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+#define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
    0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
    slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
@@ -14972,7 +14972,7 @@ int ai_Unk5ad150(int param_1, char *param_2)
 }
 
 
-void d2_CenterObj(); void gm_Unk5034b0(int o); void gm_Unk50a970(int a, int kind);
+void d2_CenterObj(); void gm_Unk5034b0(int o); int gm_LevelPayout(int v, int kind);
 
 /* 0x5ae240, the transport purchase window "Handel\Handel_Transport_neuer_Kauf" (791 B): 0x509060 counts the
    selected characters (more than 2: the text 0xf1 and out); the window 0x4741f0, the three controls 0xd8 of the
@@ -15131,7 +15131,7 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
     v = 0;
     if (*(char *)(param_2 + 0x28) != 0) {
         gm_StallGoodsList((void *)param_2, (void *)rec);
-        v = gm_Unk50a970K(U_I(rec + 0xb0), *(char *)(param_2 + 0x28));
+        v = gm_LevelPayoutK(U_I(rec + 0xb0), *(char *)(param_2 + 0x28));
         cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + param_1 * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
     }
     if (param_1 == U_W((unsigned)&ai_PlayerId))
