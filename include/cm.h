@@ -556,11 +556,11 @@ extern int ai_Unk9367d0;  /* 0x9367d0 */
 extern int ai_Unk9367d4;  /* 0x9367d4 */
 
 int cm_UpdateBombs();  /* 0x4ce300 */
-char *ai_Unk4ce5d0(float *p, int x, int y);  /* 0x4ce5d0 */
+struct CMGRENADE *cm_ThrowGrenade(struct D3VECTOR *p, int x, int y);  /* 0x4ce5d0 */
 unsigned int cm_Random();  /* 0x4e52f0, a random number below n (two callers pass a second argument: no parameter list yet) */
 extern int cm_FightAttacker;  /* 0x6f0cec */
 extern int cm_BombSounds;  /* 0x6f0d14 */
-extern char ai_Unk935a00[];  /* 0x935a00 */
+extern char cm_Grenades[];  /* 0x935a00 */
 
 int ai_Unk4ce830();  /* 0x4ce830 */
 int ai_Unk4ceb70(char *c);  /* 0x4ceb70 */

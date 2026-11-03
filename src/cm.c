@@ -108,6 +108,12 @@ extern GAPDATA full_data_92bcb8[];
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
+typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of cm_Grenades */
+    D3OBJECT *obj;                  /* the object "ob_BOMBE", 0 = a free slot */
+    D3ANIM *anim;                   /* 0x04, its flight path (d3anim_CreatePath) */
+    int x, y;                       /* 0x08, the target cell */
+} CMGRENADE;
+#define cm_GrenadesT (*(CMGRENADE (*)[32])&cm_Grenades)  /* 0x935a00, cm_Grenades (char[512]) as the 32 records */
 typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs */
     D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
     unsigned long time;             /* d3_Time when it was laid */
@@ -7051,68 +7057,74 @@ int cm_UpdateBombs()
     }
     return cnt;
 }
-/* 0x4ce5d0, a bomb: the first free slot of the 32 (0x10 bytes) of ai_Unk935a00 gets the object "ob_BOMBE" at the
-   position p (y + 60.0) and a particle block thrown towards the cell (x, y); (object, effect, x, y) */
+/* 0x4ce5d0, throws a bomb: the first free slot of cm_Grenades gets the object "ob_BOMBE" at p (60.0 higher) and a
+   4-key path animation (up to half way + 50.0, then down) to the vertex of the cell (x, y); 0 when all 32 are used */
 
-char *ai_Unk4ce5d0(float *p, int x, int y)
+CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
 {
-    float o[3];
-    float d[3];
-    char s[0x160];
+    D3ANIMKEY keys[4];
+    D3VECTOR4 mid;
+    D3VECTOR4 pos;
+    D3VECTOR rot;
+    D3ANIMFLAGS af;
+    D3VECTOR4 d;
+    struct D3SM *g;
     int i;
-    char *obj, *slot;
-    char *g = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    float pos[3];
 
-    o[0] = 0;
-    o[1] = 0;
-    o[2] = 0;
+    rot.x = 0;
+    rot.y = 0;
+    rot.z = 0;
+    g = (struct D3SM *)d3_DefaultScene->hmap;
     for (i = 0; i < 32; i++) {
-        if (*(int *)(ai_Unk935a00 + i * 0x10) == 0)
-            break;
+        if (cm_GrenadesT[i].obj != 0)
+            continue;
+        pos.x = p->x;
+        pos.y = (float)(p->y + 60.0);
+        pos.z = p->z;
+        cm_GrenadesT[i].obj = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "ob_BOMBE");
+        cm_GrenadesT[i].obj->objectFlags |= 4;
+        d3sm_GetVertex(g, x, y, (D3VECTOR *)&d);
+        d.x -= p->x;
+        d.y -= p->y;
+        d.z -= p->z;
+        memset(keys, 0, sizeof(keys));
+        mid.x = (float)(d.x * 0.5);
+        mid.y = (float)(d.y * 0.5 + 50.0);
+        mid.z = (float)(d.z * 0.5);
+        D3_ZERO(&af, sizeof(af));
+        af.b[1] |= 0x14;
+        af.b[8] |= 2;
+        af.b[1] |= 8;
+        keys[0].time = 0x12;
+        keys[1].time = 0x12;
+        keys[1].pos.x = mid.x;
+        keys[1].pos.y = mid.y;
+        keys[1].pos.z = mid.z;
+        keys[1].rot.x = 3.1415927f;
+        keys[1].rot.y = 3.1415927f;
+        keys[1].rot.z = 3.1415927f;
+        keys[2].time = 1;
+        d.y = (float)(d.y - 60.0);
+        keys[2].pos.x = d.x;
+        keys[2].pos.y = d.y;
+        keys[2].pos.z = d.z;
+        keys[2].rot.x = 3.1415927f;
+        keys[2].rot.y = 3.1415927f;
+        keys[2].rot.z = 3.1415927f;
+        keys[3].pos.x = d.x;
+        keys[3].pos.y = d.y;
+        keys[3].pos.z = d.z;
+        keys[3].rot.x = 3.1415927f;
+        keys[3].rot.y = 3.1415927f;
+        keys[3].rot.z = 3.1415927f;
+        cm_GrenadesT[i].anim = d3anim_CreatePath(cm_GrenadesT[i].obj, af, 4, keys);
+        cm_GrenadesT[i].x = x;
+        cm_GrenadesT[i].y = y;
+        return &cm_GrenadesT[i];
     }
-    if (i >= 32)
-        return 0;
-    pos[0] = p[0];
-    pos[1] = (float)(p[1] + 60.0);
-    pos[2] = p[2];
-    obj = d3_CreateObject(0, pos, o, "ob_BOMBE");
-    *(char **)(ai_Unk935a00 + i * 0x10) = obj;
-    obj[0x211] |= 4;
-    d3sm_GetVertexI(g, x, y, d);
-    d[0] = d[0] - p[0];
-    d[1] = d[1] - p[1];
-    d[2] = d[2] - p[2];
-    memset(s, 0, sizeof(s));
-    *(int *)(s + 0x00) = 0x12;
-    *(int *)(s + 0x58) = 0x12;
-    *(float *)(s + 0x5c) = (float)(d[0] * 0.5);
-    *(float *)(s + 0x60) = (float)(d[1] * 0.5 + 50.0);
-    *(float *)(s + 0x64) = (float)(d[2] * 0.5);
-    *(float *)(s + 0x6c) = 3.1415927f;
-    *(float *)(s + 0x70) = 3.1415927f;
-    *(float *)(s + 0x74) = 3.1415927f;
-    *(int *)(s + 0xb0) = 1;
-    d[1] = (float)(d[1] - 60.0);
-    *(float *)(s + 0xb4) = d[0];
-    *(float *)(s + 0xb8) = d[1];
-    *(float *)(s + 0xbc) = d[2];
-    *(float *)(s + 0xc4) = 3.1415927f;
-    *(float *)(s + 0xc8) = 3.1415927f;
-    *(float *)(s + 0xcc) = 3.1415927f;
-    *(float *)(s + 0x10c) = d[0];
-    *(float *)(s + 0x110) = d[1];
-    *(float *)(s + 0x114) = d[2];
-    *(float *)(s + 0x11c) = 3.1415927f;
-    *(float *)(s + 0x120) = 3.1415927f;
-    *(float *)(s + 0x124) = 3.1415927f;
-    slot = ai_Unk935a00 + i * 0x10;
-    *(int *)(slot + 4) = ((D3ANIM *(*)(void *, void *, int, void *))d3anim_CreatePath)(*(int *)slot, o, 4, s);
-    *(int *)(slot + 0xc) = y;
-    *(int *)(slot + 8) = x;
-    return slot;
+    return 0;
 }
-/* 0x4ce830, as 0x4ce300 for the grenades of ai_Unk935a00 (0x10 bytes: object, effect, cell x, cell y): the effect
+/* 0x4ce830, as 0x4ce300 for the grenades of cm_Grenades (0x10 bytes: object, effect, cell x, cell y): the effect
    ends (flag 0x20 of its byte +0x2d), the cell of the map ai_Unk633738 loses 5 (and its mark is cleared), the
    characters within 100.0 are hurt (action "kampf/arm_greifen"). Rough draft. */
 
@@ -7133,7 +7145,7 @@ int ai_Unk4ce830()
 
     g = *(char **)(ai_Unk5fb5b0 + 0xb0);
     r = ai_FindWeaponRecord(0x176);
-    for (rec = ai_Unk935a00; (int)rec < (int)(ai_Unk935a00 + 0x200); rec += 0x10) {
+    for (rec = cm_Grenades; (int)rec < (int)(cm_Grenades + 0x200); rec += 0x10) {
         if (*(int *)rec == 0)
             continue;
         cnt++;
@@ -8327,7 +8339,7 @@ void ai_Unk4d0fa0(char *rec)
     }
     memset((char *)((unsigned)&ai_Unk930600 + 0x4380), 0, 0x1000);
     memset(cm_Bombs, 0, 0x100);
-    memset(ai_Unk935a00, 0, 0x200);
+    memset(cm_Grenades, 0, 0x200);
     memset(ai_Unk930600, 0, 0x4380);
     for (p = ai_Unk930600; (int)p < ((unsigned)&ai_Unk930600 + 0x4380); p += 0x21c)
         *(unsigned short *)p = 0xffff;
@@ -9502,7 +9514,7 @@ void ai_Unk4d3a30(char *ev)
     if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c) {
         G19_FIGHTER_SYNC(att);
     }
-    ai_Unk4ce5d0(*(float **)(*(char **)(att + 0x184) + 0x34) + 0x13, *(int *)(ev + 0x180), *(int *)(ev + 0x184));
+    cm_ThrowGrenade(*(float **)(*(char **)(att + 0x184) + 0x34) + 0x13, *(int *)(ev + 0x180), *(int *)(ev + 0x184));
 }
 /* 0x4d3ac0, 0x402480 on the attacker's record */
 
@@ -15214,7 +15226,7 @@ extern char ai_Unk930400[192];
 extern G18POP ai_Unk9304c0[16];
 extern char ai_Unk930600[21376];
 extern char * ai_Unk935980[32];
-extern char ai_Unk935a00[512];
+extern char cm_Grenades[512];
 extern float ai_Unk935d00;
 extern int ai_Unk935d20[32];
 extern G18LOG cm_LobbyChat[15];
@@ -15460,7 +15472,7 @@ char ai_Unk930400[192] = {0};  /* 0x930400 */
 G18POP ai_Unk9304c0[16] = {0};  /* 0x9304c0 */
 char ai_Unk930600[21376] = {0};  /* 0x930600 */
 char * ai_Unk935980[32] = {0};  /* 0x935980 */
-char ai_Unk935a00[512] = {0};  /* 0x935a00 */
+char cm_Grenades[512] = {0};  /* 0x935a00 */
 float ai_Unk935d00 = 0;  /* 0x935d00 */
 int ai_Unk935d20[32] = {0};  /* 0x935d20 */
 G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
