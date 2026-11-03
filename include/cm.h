@@ -733,13 +733,13 @@ extern double ai_Unk5eb8b8;  /* 0x5eb8b8 */
 extern float ai_Unk5eb878;  /* 0x5eb878 */
 
 void cm_EndFightScene(struct CMFIGHTREC *rec);  /* 0x4d1a10, ends the fight scene of a fight record (cm_SetupFightScene its counterpart) */
-void ai_Unk4d1c20(char *side, int id);  /* 0x4d1c20 */
+void cm_PlaceFighters(int *ids, char *side);  /* 0x4d1c20, places the fighters of one side of the fight at their dummies */
 int cm_FadeToBlack();  /* 0x4e3060 */
 int sb_UnloadSampleBank();  /* 0x426ba0 */
 void d3io_ReleaseObject();  /* 0x44e2c0 */
 int cm_LeaveEventScene();  /* 0x4e30c0 */
 void d2_CopyCaption(char *caption);  /* 0x478870 */
-char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h (cm.c calls it through ch_FindFreeCellK) */
+char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h */
 
 void ai_Unk4d1e00();  /* 0x4d1e00 */
 void ai_Unk4d1eb0();  /* 0x4d1eb0 */

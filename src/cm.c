@@ -126,7 +126,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define d3sm_GetVertexI ((int (*)())d3sm_GetVertex)  /* 0x45f100 (d3_sm.c: char, D3SM *, int, int, D3VECTOR *): @original this unit's callers read an int result (byte-matched ord_RandomCellPoint (ord.c): no 0f be c0 after the call) */
-#define ch_FindFreeCellK ((int (*)())ch_FindFreeCell)  /* 0x4072a0 (ch.h: char, 9 parameters): @original cm.c's call at 8227 passes 8 arguments without a prototype and reads an int */
 #define ch_CreateK ((struct CHARACTER *(*)())ch_Create)  /* 0x403390 (ch.h: name, pos): @original ai_Unk4e3230 (byte) passes its own arguments on untouched (jmp ch_Create): a call without a prototype */
 #define ch_AddActionCBK ((struct CHACTION *(*)())ch_AddActionCB)  /* 0x40b400 (ch.h): @original cm.c's calls were compiled without a prototype (default promotions) */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
@@ -8697,45 +8696,53 @@ void cm_EndFightScene(CMFIGHTREC *rec)
     sv_CameraEaseOn = 1;
     d2_CopyCaption((char *)&ch_EmptyName);
 }
-/* 0x4d1c20, places the characters ids[16] (side of the fight: dummies "dummy_<side>_NAHK_%02i" / "_FERN_%02i" for the
-   melee / ranged kinds 0x174 0x176 0x15e 0x160) on the ground at their dummy (0x45f170 / 0x45f100 / 0x4072a0 /
-   0x4025c0 / 0x43b860). Rough draft. */
-
-void ai_Unk4d1c20(char *side, int id)
+/* 0x4d1c20, places the fighters ids[16] (-1 = none) of one side of the fight (side "OFF" / "DEF") on the ground of the
+   scene: a fighter with a ranged weapon (the goods 0x174 0x176 0x15e 0x160) at the next dummy "dummy_<side>_FERN_%02i",
+   the others at "dummy_<side>_NAHK_%02i", each on the free cell nearest the dummy's height map cell (ch_FindFreeCell),
+   turned the way the dummy faces; stops when a dummy lies off the height map */
+void cm_PlaceFighters(int *ids, char *side)
 {
-    char buf[0x60];
-    float v[4], w[4], u[4];
-    int a, b, h, n1 = 1, n2 = 1, i;
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    char *c, *k, *o;
-    int *ids = (int *)side;
+    int melee, ranged, i;
+    int z, cz, cx, x;
+    D3VECTOR rot;
+    float h;
+    D3VECTOR4 pos;                  /* d3_PointToWorld writes past the vector */
+    D3VECTOR dir;
+    char name[0x100];
+    D3SM *sc;
+    AICHAR *c;
+    int *weapon;
+    D3OBJECT *o;
 
+    ranged = 1;
+    melee = 1;
+    sc = (D3SM *)d3_DefaultScene->hmap;
     for (i = 0; i < 16; i++) {
         if (ids[i] == -1)
             continue;
-        c = cm_FindFighter(ids[i]);
+        c = (AICHAR *)cm_FindFighter(ids[i]);
         if (c == 0)
             continue;
-        k = cm_CharWeapon(c);
-        if (k != 0 && (*(int *)k == 0x174 || *(int *)k == 0x176 || *(int *)k == 0x15e || *(int *)k == 0x160))
-            sprintf(buf, "dummy_%s_FERN_%02i", (char *)id, n2++);
+        weapon = (int *)cm_CharWeapon((char *)c);
+        if (weapon != 0 && (*weapon == 0x174 || *weapon == 0x176 || *weapon == 0x15e || *weapon == 0x160))
+            sprintf(name, "dummy_%s_FERN_%02i", side, ranged++);
         else
-            sprintf(buf, "dummy_%s_NAHK_%02i", (char *)id, n1++);
-        o = (char *)d3_FindObject(0, 0x100, 0, buf);
+            sprintf(name, "dummy_%s_NAHK_%02i", side, melee++);
+        o = d3_FindObject(0, 0x100, 0, name);
         if (o == 0)
             continue;
-        d3_PointToWorld(o, o + 0x4c, v);
-        if ((char)d3_GetHeightAt(sc, v, &a, &b, &h) == 0)
+        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&pos);
+        if (d3_GetHeightAt(sc, (D3VECTOR *)&pos, &x, &z, &h) == 0)
             return;
-        ch_FindFreeCellK(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, a, b, w, 2, 0);
-        d3sm_GetVertexI(sc, a, b, w);
-        ch_SetPos(*(char **)(c + 0x184), u, 1);
-        u[0] = 0;
-        u[1] = 0;
-        u[2] = 0;
-        d3_DirToWorld(o, (unsigned)&ai_AxisPair, v);
-        d3_VecAngle((unsigned)&ai_AxisPair, v);
-        d3_SetObjectRot(*(char **)(*(char **)(c + 0x184) + 0x34), u);
+        ch_FindFreeCell(sc, &c->scene->obj->pos, &c->scene->obj->pos, x, z, &cx, &cz, 2, 0);
+        d3sm_GetVertex(sc, cx, cz, (D3VECTOR *)&pos);
+        ch_SetPos(c->scene, (D3VECTOR *)&pos, 1);
+        rot.x = 0;
+        rot.y = 0;
+        rot.z = 0;
+        d3_DirToWorld((struct XOBJ *)o, (float *)ai_AxisPair, (float *)&dir);
+        rot.y = d3_VecAngle((D3VECTOR *)ai_AxisPair, &dir);
+        d3_SetObjectRot(c->scene->obj, &rot);
     }
 }
 /* 0x4d1e00, the intro of the fight: a random fight track (when the music is on) and the cutscene "Kampf_Intro_Fluege" */
@@ -10552,8 +10559,8 @@ void ai_Unk4d63e0(char *a)
         cm_FightOwner = *(int *)(a + 0xc);
         cm_SetupFightScene((CMFIGHTREC *)a);
         cm_CollectSceneChars();
-        ai_Unk4d1c20(a + 0xc0, (int)"OFF");
-        ai_Unk4d1c20(a + 0x80, (int)"DEF");
+        cm_PlaceFighters((int *)(a + 0xc0), "OFF");
+        cm_PlaceFighters((int *)(a + 0x80), "DEF");
         ai_Unk4d1e00(a);
         if (ai_Unk6f244c != 0)
             d3_SetLightSet(2, 0, 0x3f800000, 1);
