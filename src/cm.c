@@ -6823,17 +6823,19 @@ int *cm_CutEntrySlot(char *rec, char *c)
     }
     return 0;
 }
-/* 0x4cdf80, the record of the character c in the first (ai_Unk6f0d04 + 0x30) cutscene slots */
+/* 0x4cdf80, the entry (CMCUTENTRY) of the character c in the first cm_FightRecord[0x30] cutscene records
+   (cm_CutInfos), 0: none */
 
-int *ai_Unk4cdf80(char *c)
+int *cm_FightCutEntry(char *c)
 {
-    int n = *(unsigned char *)(ai_Unk6f0d04 + 0x30);
+    int n = (unsigned char)cm_FightRecord[0x30];
+    CMCUTINFO *r;
     int i, j;
 
-    for (i = 0; i < n; i++) {
+    for (i = 0, r = cm_CutInfosT; i < n; i++, r++) {
         for (j = 0; j < 16; j++) {
-            if (*(int *)(cm_CutInfos[i] + 0x94 + j * 0x2c) == *(int *)(c + 4))
-                return (int *)(cm_CutInfos[i] + 0x94 + j * 0x2c);
+            if (r->entries[j].charId == ((AICHAR *)c)->netId)
+                return &r->entries[j].charId;
         }
     }
     return 0;
@@ -7433,7 +7435,7 @@ void ai_Unk4cf000()
             mdl[0x212] |= 2;
         }
 next:
-        rr = (int *)ai_Unk4cdf80(c);
+        rr = (int *)cm_FightCutEntry(c);
         if (rr != 0 && rr[1] == 2 && *((char *)rr + 0x1d) != 0) {
             o = cm_FindFighter(rr[4]);
             if (o != 0) {
@@ -8353,7 +8355,7 @@ void ai_Unk4d0fa0(char *rec)
     ai_Unk935d00 = *(float *)(sc + 0x10) * ai_Unk5edc58;
     sv_ScrollSpeed = 0.15f;
     sv_CameraEaseOn = 0;
-    ai_Unk6f0d04 = rec;
+    cm_FightRecord = rec;
     ai_Unk4d0ca0();
     ai_Unk6f0cec = (int)gm_FindChar(*(int *)(rec + 0x34));
     ai_Unk6f0ce8 = (int)gm_FindChar(*(int *)(rec + 0x38));
@@ -8663,7 +8665,7 @@ float ai_Unk4d2010(char *c, int a, int b, float limit)
     float v[4];
     float d, dx, dy, dz;
     char *own, *oth, *o, *m;
-    char *rec = ai_Unk6f0d04;
+    char *rec = cm_FightRecord;
     char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     int i;
 
@@ -9066,7 +9068,7 @@ void ai_BuildFloatTable()
 
 float *ai_Unk4d2c00(int side)
 {
-    unsigned char fl = *(unsigned char *)(ai_Unk6f0d04 + 0x7c);
+    unsigned char fl = *(unsigned char *)(cm_FightRecord + 0x7c);
     int kind = 6;
     int lvl, cnt = 0, i;
     float a = 0.0f, b = 0.0f, r;
@@ -9085,15 +9087,15 @@ float *ai_Unk4d2c00(int side)
     else if ((fl & 4) && ai_Unk6f0ce8 == side)
         kind = 5;
     for (i = 0x80; i < 0xc0; i += 4) {
-        if (*(int *)(ai_Unk6f0d04 + i) != -1) {
-            o = cm_FindFighter(*(int *)(ai_Unk6f0d04 + i));
+        if (*(int *)(cm_FightRecord + i) != -1) {
+            o = cm_FindFighter(*(int *)(cm_FightRecord + i));
             if (o[8] != 0 && o[8] != 4)
                 a = cm_FightStrength(o) + a;
         }
     }
     for (i = 0xc0; i < 0x100; i += 4) {
-        if (*(int *)(ai_Unk6f0d04 + i) != -1) {
-            o = cm_FindFighter(*(int *)(ai_Unk6f0d04 + i));
+        if (*(int *)(cm_FightRecord + i) != -1) {
+            o = cm_FindFighter(*(int *)(cm_FightRecord + i));
             if (o[8] != 0 && o[8] != 4)
                 b = cm_FightStrength(o) + b;
         }
@@ -9181,7 +9183,7 @@ float ai_Unk4d2e30(char *c, int type)
 
 void ai_Unk4d2f80(int side)
 {
-    char *rec = ai_Unk6f0d04;
+    char *rec = cm_FightRecord;
     char *c[16];
     int *arr;
     float *row;
@@ -9557,8 +9559,8 @@ char *ai_Unk4d3b30(char *rec)
     if (total != 0 && mine == total)
         w = ret = (char *)ai_Unk6f0ce8;
     if (ret != 0) {
-        n = (unsigned char)ai_Unk6f0d04[0x30];
-        for (i = 0; i < n && *(int *)(ai_Unk6f0d04 + 0x34 + i * 4) == -1; i++)
+        n = (unsigned char)cm_FightRecord[0x30];
+        for (i = 0; i < n && *(int *)(cm_FightRecord + 0x34 + i * 4) == -1; i++)
             ;
         rr = (char *)cm_CutEntrySlot(cm_CutInfos[i], ret);
         memcpy(sl, rr, 0x2c);
@@ -9658,7 +9660,7 @@ int ai_Unk4d4050(unsigned char *b)
         return 1;
     return k == 4 ? 2 : 0;
 }
-/* 0x4d4090, the loot list of a won fight: for each of the 3 cart ids at +0x100 of ai_Unk6f0d04 the goods (mode 0 all,
+/* 0x4d4090, the loot list of a won fight: for each of the 3 cart ids at +0x100 of cm_FightRecord the goods (mode 0 all,
    1 only those of the player, 2 only the others) get a cell of 5 per row (120 x 96 pixels from x, y): their picture
    (0x525 frame, 0xdf + id), the count "%i " plus a suffix, the value "%T"; returns the sum of the values */
 
@@ -9673,9 +9675,9 @@ int ai_Unk4d4090(int x, int y, int mode)
     char buf[0x100];
 
     for (off = 0x100; off < 0x10c; off += 4) {
-        if (*(int *)(off + ai_Unk6f0d04) == -1)
+        if (*(int *)(off + cm_FightRecord) == -1)
             continue;
-        q = gm_Query(0, 2, 7, 1, *(int *)(off + ai_Unk6f0d04));
+        q = gm_Query(0, 2, 7, 1, *(int *)(off + cm_FightRecord));
         q = gm_Query(*(int *)(q + 0x14), 1, 0, 0x1dd);
         for (q = gm_Query(*(int *)(q + 0x14), 1, 5); q != 0; q = (char *)gm_QueryNext()) {
             if (mode != 0 && !(mode == 1 && *(int *)(q + 0xa) == ai_PlayerId) &&
@@ -9923,7 +9925,7 @@ int ai_Unk4d4540(char *a)
                     sv_PopRequest = 1;
                     b4 = 0;
                     ai_Unk6f0cf8 = 1;
-                    ai_Unk6f0cfc = ai_Unk4d3ea0(ai_Unk6f0d04, cb, ai_Unk6f0cec, ai_Unk6f0ce8, fv);
+                    ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, ai_Unk6f0cec, ai_Unk6f0ce8, fv);
                 }
             }
         }
@@ -9949,7 +9951,7 @@ int ai_Unk4d4540(char *a)
                 cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                 fv = (float)(st * 0.01);
                 ai_Unk6f0cf8 = 1;
-                ai_Unk6f0cfc = ai_Unk4d3ea0(ai_Unk6f0d04, cb, ai_Unk6f0cec, ai_Unk6f0ce8, fv);
+                ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, ai_Unk6f0cec, ai_Unk6f0ce8, fv);
             }
         }
     }
@@ -10420,7 +10422,7 @@ void ai_Unk4d63e0(char *a)
         }
         if (ai_Unk6f0cfc != 0 && G20_DEF[2] == 6) {
             e1 = 0;
-            c = gm_BuildQuery(1, 1, *(int *)(ai_Unk6f0d04 + 0x10c));
+            c = gm_BuildQuery(1, 1, *(int *)(cm_FightRecord + 0x10c));
             if (c != 0)
                 e1 = gm_Query(*(int *)(c + 0x5d), 2, 6, 0, 0x116);
             if (ai_Unk6f0cfc > 0) {
@@ -10820,9 +10822,9 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
     s[9] = dmg;
     if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c && *(int *)(k + 0x58) == 0) {
         other = 0;
-        n = (unsigned char)ai_Unk6f0d04[0x30];
+        n = (unsigned char)cm_FightRecord[0x30];
         for (i = 0; i < n; i++) {
-            if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1 && rec != cm_CutInfos[i]) {
+            if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1 && rec != cm_CutInfos[i]) {
                 other = cm_CutInfos[i];
                 break;
             }
@@ -10976,9 +10978,9 @@ void ai_Unk4d76a0(int *rec)
                             p[9] = (int)(p[9] * 1.25f);
                         if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c && *(int *)(k + 0x58) == 0 && x != 0) {
                             other = 0;
-                            n = (unsigned char)ai_Unk6f0d04[0x30];
+                            n = (unsigned char)cm_FightRecord[0x30];
                             for (i = 0; i < n; i++) {
-                                if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1 && (char *)rec != cm_CutInfos[i]) {
+                                if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1 && (char *)rec != cm_CutInfos[i]) {
                                     other = cm_CutInfos[i];
                                     break;
                                 }
@@ -11267,9 +11269,9 @@ void ai_Unk4d88c0(char *a)
             ai_Unk4d6970(a);
         if (ai_Unk6f0cf4 == 0 && ai_Unk6f0cf8 == 0 && ai_Unk6f0ce4 == 0) {
             if (tb_Calls > t + 0x1a4) {
-                for (i = 0; i < (unsigned char)ai_Unk6f0d04[0x30]; i++) {
-                    if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1) {
-                        o = gm_FindChar(*(int *)(ai_Unk6f0d04 + 0x34 + i * 4));
+                for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
+                    if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1) {
+                        o = gm_FindChar(*(int *)(cm_FightRecord + 0x34 + i * 4));
                         if (o != 0 && o[2] != 6 && o[2] != 7)
                             ai_Unk4d2f80((int)o);
                     }
@@ -11277,9 +11279,9 @@ void ai_Unk4d88c0(char *a)
                 t = tb_Calls;
             }
             if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c) {
-                ai_Unk4d3b30(ai_Unk6f0d04);
-                for (i = 0; i < (unsigned char)ai_Unk6f0d04[0x30]; i++) {
-                    if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1)
+                ai_Unk4d3b30(cm_FightRecord);
+                for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
+                    if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1)
                         ai_Unk4d76a0((int *)cm_CutInfos[i]);
                 }
             }
@@ -15351,7 +15353,7 @@ char * ai_Unk6f0cf0 = 0;  /* 0x6f0cf0 */
 int ai_Unk6f0cf4 = 0;  /* 0x6f0cf4 */
 int ai_Unk6f0cf8 = 0;  /* 0x6f0cf8 */
 int ai_Unk6f0cfc = 0;  /* 0x6f0cfc */
-char * ai_Unk6f0d04 = 0;  /* 0x6f0d04 */
+char * cm_FightRecord = 0;  /* 0x6f0d04 */
 int ai_Unk6f0d08 = 0;  /* 0x6f0d08 */
 int ai_Unk6f0d0c = 0;  /* 0x6f0d0c */
 int ai_Unk6f0d10 = 0;  /* 0x6f0d10 */

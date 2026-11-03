@@ -515,7 +515,7 @@ char cm_FightWeaponLoss(char *c);  /* 0x4cdb80 */
 float cm_FightStrength(char *c);  /* 0x4cdcf0 */
 void cm_UpdateHandObject(char *c);  /* 0x4cde20 */
 int *cm_CutEntrySlot(char *rec, char *c);  /* 0x4cdf00 */
-int *ai_Unk4cdf80(char *c);  /* 0x4cdf80 */
+int *cm_FightCutEntry(char *c);  /* 0x4cdf80 */
 int ai_Unk4cdfe0(int x, int y);  /* 0x4cdfe0 */
 int ai_Unk4ce040(int a, int b, int *ox, int *oy);  /* 0x4ce040 */
 char *cm_FindFighter(int id);  /* 0x4ce130 */
@@ -537,7 +537,7 @@ typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at 
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
 extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
 extern int ai_Unk6f0cdc;  /* 0x6f0cdc */
-extern char *ai_Unk6f0d04;  /* 0x6f0d04 */
+extern char *cm_FightRecord;  /* 0x6f0d04 */
 extern int gm_AllowAll;  /* 0x6f2448 */
 extern char ai_Unk930600[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
