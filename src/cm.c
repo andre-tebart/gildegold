@@ -15029,49 +15029,48 @@ void cm_AuctionAskPlayer(CMCUTINFO *r, CMAUCTION *m)
     }
     d2_CloseView(view);
 }
-/* 0x4e26d0, the answer of a computer character to the offer m of 0x4e24c0: the price (+0x20) is compared with a value the character's
-   resources (0x509e60) and a random factor (0x4e5360, 0x5eba9c / 0x5ebb30) give; r + 0x98 = 1 and r + 0x94 = the counter offer rounded to
-   a multiple of 32 when it is acceptable. ROUGH: the float expressions are only roughly in the order of the code */
+/* 0x4e26d0, the auction's member callback for a computer bidder (cm_RunSceneParty, scene kind 10): r is the member's record,
+   m the auction (cm_RunAuction). Nothing unless r->playerId is one of the bidders still in (m->bids[i] != -1); else
+   r->session.answer = the price, and the bidder's limit is m->countdown * 32000 + the price, or his worth
+   (gm_GetGoodsValue) times a random factor 0.3 .. 0.47 when that is less. A limit below the price, or price / limit not
+   below a random 0 .. 1, gives no bid; else r->session.click = 1 and the bid is the price plus a random part of the margin
+   (at most the price again) scaled by m->countdown / 10, plus its remainder modulo 32 */
 
-void ai_Unk4e26d0(char *r, char *m)
+void cm_AuctionAskAI(CMCUTINFO *r, CMAUCTION *m)
 {
-    int i, n, id, pay, v, x;
+    AICHAR *c;
     float lim, k;
-    char *c;
+    int i, price, v, x;
 
-    *(int *)(r + 0x98) = 0;
-    n = *(int *)(m + 0x48);
-    id = *(int *)(r + 0x10);
-    for (i = 0; i < n && *(int *)(m + 0x24 + i * 4) != id; i++)
+    r->session.click = 0;
+    for (i = 0; i < m->count && m->ids[i] != r->playerId; i++)
         ;
-    if (i >= n || *(int *)(m + i * 4) == -1)
+    if (i >= m->count || m->bids[i] == -1)
         return;
-    *(int *)(r + 0x94) = *(int *)(m + 0x20);
-    gm_BuildQuery(1, 1, *(int *)(m + 0x44));
-    pay = *(int *)(m + 0x20);
-    c = (char *)gm_FindChar(*(int *)(r + 0x10));
+    r->session.answer = m->price;
+    gm_BuildQuery(1, 1, m->building);
+    price = m->price;
+    c = (AICHAR *)gm_FindChar(r->playerId);
     if (c == 0)
         return;
-    lim = (float)(*(int *)(m + 0x4c) * 32000 + pay);
-    k = cm_RandomFloat() * 0.16666667f + 0.3f;
-    x = gm_GetGoodsValue(c);
-    if ((float)x * k > lim)
+    lim = (float)(m->countdown * 32000 + price);
+    k = (float)cm_RandomFloat() * 0.16666667f + 0.3f;
+    if (gm_GetGoodsValue((char *)c) * k < lim) {
+        k = (float)cm_RandomFloat() * 0.16666667f + 0.3f;
+        v = (int)(gm_GetGoodsValue((char *)c) * k);
+    } else
         v = (int)lim;
-    else {
-        k = cm_RandomFloat() * 0.16666667f + 0.3f;
-        x = gm_GetGoodsValue(c);
-        v = (int)(lim * x);
+    if (v < price)
+        return;
+    lim = (float)price;
+    if ((float)cm_RandomFloat() > lim / v) {
+        if (v > price * 2)
+            v = price * 2;
+        v -= price;
+        r->session.click = 1;
+        x = (int)(cm_Random(v) * (m->countdown * 0.1f) + lim);
+        r->session.answer = x + x % 32;
     }
-    if (v < pay)
-        return;
-    if (k < cm_RandomFloat() / v)
-        return;
-    if (v > pay * 2)
-        v = pay * 2;
-    v -= pay;
-    *(int *)(r + 0x98) = 1;
-    x = (int)(cm_Random(v) * *(int *)(m + 0x4c) * 0.1f + pay);
-    *(int *)(r + 0x94) = x - x % 32;
 }
 /* 0x4e2860, the scene of a sale (the message m: +0x14 the object, +0x34 the seller, +0x38 .. +0x44 the buyers): the scene of the object
    (0x4fea50 -> 0x4e2910 with 0x17) or "ob_SALON.ed3", a pause of 5, then every buyer changes his opinion of the seller by +10 (0x4c4b00, both ways) */
@@ -16516,7 +16515,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
-    ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
+    ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }
