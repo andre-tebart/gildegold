@@ -44,7 +44,7 @@ struct D3SM;
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern GAPDATA full_rdata_5eed68[];
+extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
 extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_6faa60[];
 extern GAPDATA full_data_62571c[];
@@ -10840,7 +10840,7 @@ void he_Unk55a5f0(int ev)
         return;
     }
     spot = 0;
-    if (AI_4A63F0_7((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 6, *(int *)((unsigned)&full_rdata_5eed68), *(int *)((unsigned)&full_rdata_5eed68 + 4), spot, 100.0f, &v) != 0)
+    if (AI_4A63F0_7((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 6, *(int *)((unsigned)&gypsyFilter), *(int *)((unsigned)&gypsyFilter + 4), spot, 100.0f, &v) != 0)
         *(int *)(ev + 0xd0) = *(int *)(gm_BuildQuery(1, 1, (int)v) + 1);
     else
         *(int *)(ev + 0xd0) = *(int *)(own + 1);

@@ -259,9 +259,8 @@ int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280,
 char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
 int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
-/* the filter of the gypsy windows: a const object, the original loads it from .rdata 0x5eed68 (mov eax,[..]; mov ecx,[..+4]) */
 extern const int ai_CardBack;  /* 0x5ed1bc, unk_4a7140.c: the picture offset of the card back (another unit's constant: the original loads it from memory) */
-static const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;
+extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c: the filter of the gypsy windows (flags, kind of ai_PickActionBuilding), read from memory as two dwords */
 static const float ai_InchPerMeter = 39.37008f;  /* 0x5eedf4, .rdata: world units (inches) per meter */
 static const float ai_Gravity = 9.81f;            /* 0x5eedfc, .rdata: m/s^2 */
 extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */

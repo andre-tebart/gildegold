@@ -29,6 +29,9 @@ extern int gm_PlayerRecords[688];
 #include "d3_sm.h"
 #include "d3_vec.h"
 #include "surf.h"
+/* the unit's first .rdata constant (before the header's, in address order): the filter of the gypsy windows, the
+   flags and kind he and unk_58bbd0 pass to ai_PickActionBuilding too */
+const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatile: VC6 would fold it into immediates here; the original reads it from memory) */
 #include "unk_5d33b0.h"
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
