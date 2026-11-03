@@ -568,54 +568,43 @@ void he_Unk53dad0(int state)
 }
 
 /* the quick jump marker (0x6333e0): set when the active event is a type 0x11 record with bit 0x40 at +0xf0 or a type 0x87 record, outside the network games */
-#define HE_JUMP(r) ((r) != 0 && ((*(char *)(r) == 0x11 && (*(unsigned char *)((r) + 0xf0) & 0x40) != 0) || *(char *)(r) == -0x79) && (U_I((unsigned)&ai_GameFlags) & 4) == 0)
+#define HE_PAUSES(e) ((e) != 0 && ((e)->kind == 0x11 && ((e)->modes & 0x40) != 0 || (e)->kind == (char)0x87) && (ai_GameFlags & 4) == 0)  /* the event pauses the game while its window is active (kinds 0x11 with mode 0x40, 0x87; not with game flag 4) */
+#define HE_JUMP(r) HE_PAUSES((AIJOB *)(r))
 
-/* 0x53daf0, picks the active event window (0x6f262c): drops it when its window is closed, activates the first used slot whose window is open (ROUGH) */
+/* 0x53daf0, picks the active event window (he_ActiveSlot): drops the active slot whose object is no longer checked (hides
+   its window, unpauses), then activates each used slot whose object is checked: the previous one's window hidden and
+   its object unchecked, the new one's window shown and raised; an event of HE_PAUSES pauses the game (tb_Paused) */
 void he_PickActiveEvent(void)
 {
-    int *cur;
-    int *p;
-    char *r;
-    int k;
+    int i;
 
     if (he_BarShown != -1) {
-        cur = (int *)U_I((unsigned)&he_ActiveSlot);
-        if (cur != 0 && cur[1] != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x28 + cur[1] * 0x2ec) == 0) {
-            if (cur[2] != 0)
-                d2_SetViewEnabled(cur[2], 0);
-            r = (char *)*cur;
-            if (HE_JUMP(r))
-                U_I((unsigned)&tb_Paused) = 0;
-            U_I((unsigned)&he_ActiveSlot) = 0;
+        if (he_ActiveSlot != 0 && he_ActiveSlot->obj != -1 && d2_Objs[he_ActiveSlot->obj].checked == 0) {
+            if (he_ActiveSlot->win != 0)
+                d2_SetViewEnabled(he_ActiveSlot->win, 0);
+            if (HE_PAUSES(he_ActiveSlot->ev))
+                tb_Paused = 0;
+            he_ActiveSlot = 0;
         }
-        p = (int *)(unsigned)&he_EventSlots;
-        cur = (int *)U_I((unsigned)&he_ActiveSlot);
-        do {
-            if (p[1] != -1 && cur != p && U_I(U_I((unsigned)&d2_Objs) + 0x28 + p[1] * 0x2ec) != 0) {
-                if (cur != 0 && (k = cur[2]) != -1) {
-                    if (k != 0) {
-                        d2_SetViewEnabled(k, 0);
-                        cur = (int *)U_I((unsigned)&he_ActiveSlot);
+        for (i = 0; i < 16; i++) {
+            if (he_EventSlots[i].obj != -1 && he_ActiveSlot != &he_EventSlots[i] && d2_Objs[he_EventSlots[i].obj].checked != 0) {
+                if (he_ActiveSlot != 0 && he_ActiveSlot->win != -1) {
+                    if (he_ActiveSlot->win != 0)
+                        d2_SetViewEnabled(he_ActiveSlot->win, 0);
+                    if (he_ActiveSlot->obj != -1) {
+                        d2_Objs[he_ActiveSlot->obj].checked = 0;
+                        d2_Objs[he_ActiveSlot->obj].highlighted = 0;
                     }
-                    if (cur[1] != -1) {
-                        U_I(U_I((unsigned)&d2_Objs) + 0x28 + cur[1] * 0x2ec) = 0;
-                        U_I(U_I((unsigned)&d2_Objs) + 0x2c + ((int *)U_I((unsigned)&he_ActiveSlot))[1] * 0x2ec) = 0;
-                        cur = (int *)U_I((unsigned)&he_ActiveSlot);
-                    }
-                    r = (char *)*cur;
-                    if (HE_JUMP(r))
-                        U_I((unsigned)&tb_Paused) = 0;
+                    if (HE_PAUSES(he_ActiveSlot->ev))
+                        tb_Paused = 0;
                 }
-                U_I((unsigned)&he_ActiveSlot) = (int)p;
-                d2_SetViewEnabled(p[2], 1);
-                d2_RaiseViewWindows(((int *)U_I((unsigned)&he_ActiveSlot))[2]);
-                r = (char *)*(int *)U_I((unsigned)&he_ActiveSlot);
-                cur = (int *)U_I((unsigned)&he_ActiveSlot);
-                if (HE_JUMP(r))
-                    U_I((unsigned)&tb_Paused) = 1;
+                he_ActiveSlot = &he_EventSlots[i];
+                d2_SetViewEnabled(he_EventSlots[i].win, 1);
+                d2_RaiseViewWindows(he_ActiveSlot->win);
+                if (HE_PAUSES(he_ActiveSlot->ev))
+                    tb_Paused = 1;
             }
-            p += 3;
-        } while ((int)p < (unsigned)((unsigned)he_EventSlots + 0xc0));
+        }
     }
 }
 /* 0x53dcb0, makes the slot `sl` the active event window (0x6f262c), closing the previous one */

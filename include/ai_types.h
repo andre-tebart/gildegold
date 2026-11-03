@@ -82,7 +82,8 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
         struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
                                                           members, -1 = free (sv_SendSelectedToBuilding) */
     };
-    char pade8[9];
+    char pade8[8];
+    unsigned char modes;                /* 0xf0, of a kind 0x11 bit 0x40: the game pauses while its event window is active (he_PickActiveEvent) */
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
 } AIJOB;
 
