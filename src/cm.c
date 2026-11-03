@@ -6805,19 +6805,20 @@ void cm_UpdateHandObject(char *ch)
 
 int *cm_CutEntrySlot(char *rec, char *c)
 {
-    int id = *(int *)(c + 4);
+    CMCUTINFO *r = (CMCUTINFO *)rec;
+    int id = ((AICHAR *)c)->netId;
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (*(int *)(rec + 0x94 + i * 0x2c) == id)
-            return (int *)(rec + 0x94 + i * 0x2c);
+        if (r->entries[i].charId == id)
+            return &r->entries[i].charId;
     }
     for (i = 0; i < 16; i++) {
-        if (*(int *)(rec + 0x94 + i * 0x2c) == -1) {
-            memset(rec + 0x94 + i * 0x2c, 0, 0x2c);
-            *(int *)(rec + i * 0x2c + 0x98) = 0;
-            *(int *)(rec + 0x94 + i * 0x2c) = *(int *)(c + 4);
-            return (int *)(rec + 0x94 + i * 0x2c);
+        if (r->entries[i].charId == -1) {
+            memset(&r->entries[i], 0, sizeof(CMCUTENTRY));
+            r->entries[i].charId = ((AICHAR *)c)->netId;
+            r->entries[i].state = 0;
+            return &r->entries[i].charId;
         }
     }
     return 0;
