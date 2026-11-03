@@ -800,7 +800,7 @@ void d3_SetFog(float start, float end, unsigned long color)
         d3_FogOn = on;
         d3_FogStart1 = start;
         d3_FogEnd2 = end;
-        d3_FogColor = color;
+        d3_fog_color.col = color;
     }
 }
 /* 0x43a7d0, Direct3D rendering: draws the sorted triangles in texture order through the vertex buffer,
@@ -839,7 +839,7 @@ void d3_DrawSortedD3D(void)
     else
         zmin = 0.0f;
     d3_ZScale = 1.0f / (d3_MaxZ + 50.0f - zmin);
-    d3_BeginScene(d3_FogOn, d3_FogColor, 1);
+    d3_BeginScene(d3_FogOn, d3_fog_color.col, 1);
     h = d3d_GetVertexBuffer(&vb, &max);
     max -= 0x80;
     p = vb;
@@ -1338,7 +1338,7 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
         if (d3_D3DActive) {
             d3d_SetConfig(d3_DefaultD3DConfig);
             d3d_SetWBuffer(1);
-            d3_FogColor = 0;
+            d3_fog_color.col = 0;
             d3_MipSkip = d3_Cfg.texShift;
         }
     }
@@ -2417,7 +2417,7 @@ void d3_Render(unsigned int mask, char flag)
         if (d3_Hardware)
             d3d_Clear(&d3_Viewport);
         else
-            dd_ClearB(&d3_Viewport, GetBValue(d3_FogColor), GetGValue(d3_FogColor), GetRValue(d3_FogColor));
+            dd_ClearB(&d3_Viewport, GetBValue(d3_fog_color.col), GetGValue(d3_fog_color.col), GetRValue(d3_fog_color.col));
         d3_LightKeysCulled = 0;
         d3_LightKeysVisible = 0;
         d3_MaxZ = 0.0f;
@@ -2588,7 +2588,7 @@ unsigned int d3_Fps60 = 0;  /* 0x63348c, frames per second (two windows) */
 unsigned int d3_Fps10 = 0;  /* 0x633490 */
 int d3_Unk633494 = 0;  /* 0x633494, objects tested / drawn */
 int d3_Unk633498 = 0;  /* 0x633498 */
-unsigned long d3_FogColor = 0;  /* 0x6334a0 */
+D3COLORU d3_fog_color = {0};  /* 0x6334a0, the fog colour (the name: d3d_Clear's D3DCHECK string "d3_fog_color.col") */
 char d3_FogOn = 0;  /* 0x6334a4 */
 unsigned char d3_FogByDistance = 0;  /* 0x6334a5, the byte right after d3_FogOn: when set, d3_Render clamps the fog end to the
                                         terrain's far distance (0x43e200); the scene setups of f3init.c / cm.c switch it off / on */

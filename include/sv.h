@@ -169,9 +169,6 @@ int sv_RunFrame(int cb, unsigned mask);                                 /* 0x530
 void sv_UpdateClock(void);                                              /* 0x5315c0 */
 
 extern const int sv_PhaseMinutes[24];                          /* 0x5eeab8 */
-extern int ai_Unk5fcc78;                                    /* 0x5fcc78 */
-extern int ai_Unk5fcc7c;                                    /* 0x5fcc7c */
-extern int ai_Unk5fcc80;                                    /* 0x5fcc80 */
 extern int d2_PointerObj;                                    /* 0x5fe710 */
 extern float sv_FramesPerTick;                              /* 0x62378c */
 extern int sv_TickFrames;                                   /* 0x623790 */
@@ -366,7 +363,6 @@ extern int d2_DirtyRectLeft;                                    /* 0xfb9060 */
 extern int d2_DirtyRectTop;                                    /* 0xfb9064 */
 extern int d2_DirtyRectRight;                                    /* 0xfb9068 */
 extern int d2_DirtyRectBottom;                                    /* 0xfb906c */
-extern int ai_Unkfba9c0[168];                               /* 0xfba9c0 */
 extern char * sv_CameraObj;                                 /* 0xfc2dec */
 
 #endif

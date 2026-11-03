@@ -269,7 +269,7 @@ char d3if_Reload(D3OBJECT *obj, char *name)
 void d3if_Reset(void)
 {
     int i;
-    D3IFLEVEL *l;
+    D3LIGHTSET *l;
 
     while (d3_TopFirst != &d3_ObjEnd)
         d3_DisposeObject(d3_TopFirst);
@@ -289,25 +289,25 @@ void d3if_Reset(void)
     }
     d3_TopFirst = &d3_ObjEnd;
     d3_TopLast = &d3_TopHead;
-    d3if_Dir[0] = 0;
-    d3if_Dir[1] = 0;
-    d3if_Dir[2] = 0;
+    d3_SunColor.x = 0;
+    d3_SunColor.y = 0;
+    d3_SunColor.z = 0;
     d3if_Gray = 200.0f;
-    d3if_AmbR = 200.0f;
-    d3if_AmbG = 200.0f;
-    d3if_AmbB = 200.0f;
+    d3_AmbientColor.x = 200.0f;
+    d3_AmbientColor.y = 200.0f;
+    d3_AmbientColor.z = 200.0f;
     for (i = 0; i < 6; i++) {
-        d3if_Fog[i].a = 0;
-        d3if_Fog[i].c = 0;
-        d3if_Fog[i].b = 0;
+        d3if_Fog[i].col.col = 0;
+        d3if_Fog[i].end = 0;
+        d3if_Fog[i].start = 0;
     }
     for (i = 0; i < 7; i++) {
-        d3if_Levels[i].amb.x = d3if_AmbR;
-        d3if_Levels[i].amb.y = d3if_AmbG;
-        d3if_Levels[i].amb.z = d3if_AmbB;
-        d3if_Levels[i].dir.x = d3if_Dir[0];
-        d3if_Levels[i].dir.y = d3if_Dir[1];
-        d3if_Levels[i].dir.z = d3if_Dir[2];
+        d3if_Levels[i].amb.x = d3_AmbientColor.x;
+        d3if_Levels[i].amb.y = d3_AmbientColor.y;
+        d3if_Levels[i].amb.z = d3_AmbientColor.z;
+        d3if_Levels[i].sun.x = d3_SunColor.x;
+        d3if_Levels[i].sun.y = d3_SunColor.y;
+        d3if_Levels[i].sun.z = d3_SunColor.z;
         D3_COPY(d3if_Levels[i].fog, offset d3if_Fog, sizeof(d3if_Levels[i].fog));
     }
     d3if_MegaCam = 0;
@@ -357,24 +357,24 @@ char d3if_InitScene(D3IFSCENE *s)
         s->sky = 0;
         s->mapSize = 0;
         s->hmap = 0;
-        s->dir.x = 0;
-        s->dir.y = 0;
-        s->dir.z = 0;
-        s->fog.a = 0;
-        s->fog.c = 0;
-        s->fog.b = 0;
+        s->sun.x = 0;
+        s->sun.y = 0;
+        s->sun.z = 0;
+        s->fog.col.col = 0;
+        s->fog.end = 0;
+        s->fog.start = 0;
         for (i = 0; i < 6; i++) {
-            s->fogs[i].a = s->fog.a;
-            s->fogs[i].b = s->fog.b;
-            s->fogs[i].c = s->fog.c;
+            s->fogs[i].col.col = s->fog.col.col;
+            s->fogs[i].start = s->fog.start;
+            s->fogs[i].end = s->fog.end;
         }
         for (i = 0; i < 7; i++) {
             s->levels[i].amb.x = s->amb.x;
             s->levels[i].amb.y = s->amb.y;
             s->levels[i].amb.z = s->amb.z;
-            s->levels[i].dir.x = s->dir.x;
-            s->levels[i].dir.y = s->dir.y;
-            s->levels[i].dir.z = s->dir.z;
+            s->levels[i].sun.x = s->sun.x;
+            s->levels[i].sun.y = s->sun.y;
+            s->levels[i].sun.z = s->sun.z;
             D3_COPY3(s->levels[i].fog, s->fogs, sizeof(s->levels[i].fog));
         }
         s->unk3cc = 4;
@@ -424,7 +424,7 @@ void d3if_Prerender(char map)
 }
 /* 0x4478e0, makes scene `index` the current one: saves the engine's global state into the old scene and
    loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are
-   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_Unk6339db/dc, d3s_ShadowMapSize, d3if_Unkfba944, d3if_Unkfc29bc/40) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
+   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_Unk6339db/dc, d3s_ShadowMapSize, d3if_Unkfba944) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
 
 char d3if_SelectScene(int index, char keep)  /* @original: the definition returns char and takes a char keep (byte-matched); the headers declare void (int, int) */
 {
@@ -454,16 +454,16 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         D3IF_SCENE(d3_CurrentScene).map = d3_Terrain;
         D3IF_SCENE(d3_CurrentScene).sky = d3_Sky;
         D3IF_SCENE(d3_CurrentScene).sceneFlags = d3_SceneFlags;
-        D3IF_SCENE(d3_CurrentScene).amb.x = d3if_AmbR;
-        D3IF_SCENE(d3_CurrentScene).amb.y = d3if_AmbG;
-        D3IF_SCENE(d3_CurrentScene).amb.z = d3if_AmbB;
-        D3IF_SCENE(d3_CurrentScene).dir.x = d3if_Dir[0];
-        D3IF_SCENE(d3_CurrentScene).dir.y = d3if_Dir[1];
-        D3IF_SCENE(d3_CurrentScene).dir.z = d3if_Dir[2];
+        D3IF_SCENE(d3_CurrentScene).amb.x = d3_AmbientColor.x;
+        D3IF_SCENE(d3_CurrentScene).amb.y = d3_AmbientColor.y;
+        D3IF_SCENE(d3_CurrentScene).amb.z = d3_AmbientColor.z;
+        D3IF_SCENE(d3_CurrentScene).sun.x = d3_SunColor.x;
+        D3IF_SCENE(d3_CurrentScene).sun.y = d3_SunColor.y;
+        D3IF_SCENE(d3_CurrentScene).sun.z = d3_SunColor.z;
         D3_COPY(D3IF_SCENE(d3_CurrentScene).levels, offset d3if_Levels, sizeof(D3IF_SCENE(d3_CurrentScene).levels));
-        D3IF_SCENE(d3_CurrentScene).fog.a = d3_FogColor;
-        D3IF_SCENE(d3_CurrentScene).fog.b = d3if_Unkfc29bc;
-        D3IF_SCENE(d3_CurrentScene).fog.c = d3if_Unkfc5340;
+        D3IF_SCENE(d3_CurrentScene).fog.col.col = d3_fog_color.col;
+        D3IF_SCENE(d3_CurrentScene).fog.start = d3_FogStart1;
+        D3IF_SCENE(d3_CurrentScene).fog.end = d3_FogEnd2;
         D3_COPY(D3IF_SCENE(d3_CurrentScene).fogs, offset d3if_Fog, sizeof(D3IF_SCENE(d3_CurrentScene).fogs));
         D3IF_SCENE(d3_CurrentScene).unk3cc = d3if_Unk5fb5c0;
         D3IF_SCENE(d3_CurrentScene).unk3d0 = d3if_Unk5fb5c4;
@@ -487,16 +487,16 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         d3_Terrain = D3IF_SCENE(index).map;
         d3if_Unk5fb5c4 = D3IF_SCENE(index).unk3d0;
         d3_TopFirst = D3IF_SCENE(index).first;
-        d3if_AmbG = D3IF_SCENE(index).amb.y;
+        d3_AmbientColor.y = D3IF_SCENE(index).amb.y;
         d3_ParTail = D3IF_SCENE(index).par2;
-        d3if_AmbR = D3IF_SCENE(index).amb.x;
+        d3_AmbientColor.x = D3IF_SCENE(index).amb.x;
         d3if_Unk5fb5c0 = D3IF_SCENE(index).unk3cc;
-        d3if_AmbB = D3IF_SCENE(index).amb.z;
-        d3if_Dir[0] = D3IF_SCENE(index).dir.x;
+        d3_AmbientColor.z = D3IF_SCENE(index).amb.z;
+        d3_SunColor.x = D3IF_SCENE(index).sun.x;
         d3_Camera = 0;
-        d3if_Dir[1] = D3IF_SCENE(index).dir.y;
-        d3if_Dir[2] = D3IF_SCENE(index).dir.z;
-        d3if_Gray = d3if_AmbR * 0.3f + d3if_AmbG * 0.59f + d3if_AmbB * 0.11f;
+        d3_SunColor.y = D3IF_SCENE(index).sun.y;
+        d3_SunColor.z = D3IF_SCENE(index).sun.z;
+        d3if_Gray = d3_AmbientColor.x * 0.3f + d3_AmbientColor.y * 0.59f + d3_AmbientColor.z * 0.11f;
         D3_COPY_TO(offset d3if_Fog, D3IF_SCENE(index).fogs, sizeof(D3IF_SCENE(index).fogs));
         D3_COPY_TO(offset d3if_Levels, D3IF_SCENE(index).levels, sizeof(D3IF_SCENE(index).levels));
         d3_CurrentScene = index;
@@ -523,7 +523,7 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
             }
             d3_SortPtr = d3_SortBuf;
             d3_SortCount = 0;
-            ((void (*)(unsigned long, unsigned long, unsigned long))d3_SetFog)(D3IF_SCENE(index).fog.b, D3IF_SCENE(index).fog.c, D3IF_SCENE(index).fog.a);  /* @original: the three floats as dwords, no conversion */
+            d3_SetFog(D3IF_SCENE(index).fog.start, D3IF_SCENE(index).fog.end, D3IF_SCENE(index).fog.col.col);
         }
     }
     if (!keep) {
@@ -886,7 +886,7 @@ void d3if_ClearView(void)
             d3d_Clear(&d3_Viewport);
         } else {
             if (!dd_Cleared)
-                dd_ClearB(&d3_Viewport, GetBValue(d3_FogColor), GetGValue(d3_FogColor), GetRValue(d3_FogColor));
+                dd_ClearB(&d3_Viewport, GetBValue(d3_fog_color.col), GetGValue(d3_fog_color.col), GetRValue(d3_fog_color.col));
         }
         d3_Frame(0x40, 1, 1);
     }
@@ -1251,7 +1251,9 @@ void d3_SetWorldPosRot(D3OBJECT *obj, float *pos, D3MATRIX *rot)
 }
 
 void err_Message(char *msg);                                                                     /* 0x4222b0 */
-void d3_SetFog(float start, float end, D3FOGCOL color);  /* 0x43a6f0, d3_engine.c; @original: this unit passes the colour struct, d3_engine.c / the header take the dword */
+/* @original: d3_SetFogSet passes the fog colour as the struct (the original pushes it before the second fmul; the
+   dword of a D3COLORU pushes it after), d3_engine.c / the header take the dword */
+#define d3_SetFogS ((void (*)(float, float, D3COLOR))d3_SetFog)  /* 0x43a6f0 */
 
 /* 0x449960, makes obj a child of parent (0: top level) keeping its world position; light keys too */
 char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent)
@@ -1364,7 +1366,7 @@ char d3_SetLightKeyCB(D3OBJECT *obj, float *time)
     return 1;
 }
 /* 0x449de0, sets the day-time light set `set` blended towards the next one by t (0..1): the lights,
-   the ambient colour (times scale), the sun direction, the fog sets and the sky colour */
+   the ambient colour (times scale), the sun colour, the fog sets and the sky colour */
 
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc)
 {
@@ -1380,37 +1382,37 @@ char d3_SetLightSet(unsigned int set, float t, float scale, char calc)
         if (scale != 1.0f)
             d3_ForEachObject(d3_DefaultScene, 0, 8, (D3OBJECTCB)d3_ScaleLightCB, &scale);
         n = (set + 1) % 7;
-        d.x = d3o_Sets[n].amb.x - d3o_Sets[set].amb.x;
-        d.y = d3o_Sets[n].amb.y - d3o_Sets[set].amb.y;
-        d.z = d3o_Sets[n].amb.z - d3o_Sets[set].amb.z;
-        d3o_Amb.x = d.x * t + d3o_Sets[set].amb.x;
-        d3o_Amb.y = d.y * t + d3o_Sets[set].amb.y;
-        d3o_Amb.z = d.z * t + d3o_Sets[set].amb.z;
-        d3o_Amb.x *= scale;
-        d3o_Amb.y *= scale;
-        d3o_Amb.z *= scale;
-        d3if_Gray = d3o_Amb.x * 0.3f + d3o_Amb.y * 0.59f + d3o_Amb.z * 0.11f;
-        d.x = d3o_Sets[n].dir.x - d3o_Sets[set].dir.x;
-        d.y = d3o_Sets[n].dir.y - d3o_Sets[set].dir.y;
-        d.z = d3o_Sets[n].dir.z - d3o_Sets[set].dir.z;
-        d3o_Dir.x = d.x * t + d3o_Sets[set].dir.x;
-        d3o_Dir.y = d.y * t + d3o_Sets[set].dir.y;
-        d3o_Dir.z = d.z * t + d3o_Sets[set].dir.z;
+        d.x = d3if_Levels[n].amb.x - d3if_Levels[set].amb.x;
+        d.y = d3if_Levels[n].amb.y - d3if_Levels[set].amb.y;
+        d.z = d3if_Levels[n].amb.z - d3if_Levels[set].amb.z;
+        d3_AmbientColor.x = d.x * t + d3if_Levels[set].amb.x;
+        d3_AmbientColor.y = d.y * t + d3if_Levels[set].amb.y;
+        d3_AmbientColor.z = d.z * t + d3if_Levels[set].amb.z;
+        d3_AmbientColor.x *= scale;
+        d3_AmbientColor.y *= scale;
+        d3_AmbientColor.z *= scale;
+        d3if_Gray = d3_AmbientColor.x * 0.3f + d3_AmbientColor.y * 0.59f + d3_AmbientColor.z * 0.11f;
+        d.x = d3if_Levels[n].sun.x - d3if_Levels[set].sun.x;
+        d.y = d3if_Levels[n].sun.y - d3if_Levels[set].sun.y;
+        d.z = d3if_Levels[n].sun.z - d3if_Levels[set].sun.z;
+        d3_SunColor.x = d.x * t + d3if_Levels[set].sun.x;
+        d3_SunColor.y = d.y * t + d3if_Levels[set].sun.y;
+        d3_SunColor.z = d.z * t + d3if_Levels[set].sun.z;
         u = 1.0f - t;
         for (j = 0; j < 6; j++) {
-            D3FOGSET *a = &d3o_Sets[set].fog[j], *b = &d3o_Sets[n].fog[j];
-            d3o_Fog[j].col.r = (int)(a->col.r * u + b->col.r * t);
-            d3o_Fog[j].col.g = (int)(a->col.g * u + b->col.g * t);
-            d3o_Fog[j].col.b = (int)(a->col.b * u + b->col.b * t);
-            d3o_Fog[j].start = u * a->start + t * b->start;
-            d3o_Fog[j].end = u * a->end + t * b->end;
+            D3FOGSET *a = &d3if_Levels[set].fog[j], *b = &d3if_Levels[n].fog[j];
+            d3if_Fog[j].col.c.r = (int)(a->col.c.r * u + b->col.c.r * t);
+            d3if_Fog[j].col.c.g = (int)(a->col.c.g * u + b->col.c.g * t);
+            d3if_Fog[j].col.c.b = (int)(a->col.c.b * u + b->col.c.b * t);
+            d3if_Fog[j].start = u * a->start + t * b->start;
+            d3if_Fog[j].end = u * a->end + t * b->end;
         }
         d3_LightInvalidate(calc);
         d3o_LightSet = set;
         if (d3_Sky) {
-            ((unsigned char *)d3_Sky)[0xaa6] = (int)(d3o_SkyCol[n].r * t + d3o_SkyCol[set].r * u);
-            ((unsigned char *)d3_Sky)[0xaa5] = (int)(d3o_SkyCol[n].g * t + d3o_SkyCol[set].g * u);
-            ((unsigned char *)d3_Sky)[0xaa4] = (int)(d3o_SkyCol[n].b * t + d3o_SkyCol[set].b * u);
+            ((unsigned char *)d3_Sky)[0xaa6] = (int)(d3sky_Colors[n].c.r * t + d3sky_Colors[set].c.r * u);
+            ((unsigned char *)d3_Sky)[0xaa5] = (int)(d3sky_Colors[n].c.g * t + d3sky_Colors[set].c.g * u);
+            ((unsigned char *)d3_Sky)[0xaa4] = (int)(d3sky_Colors[n].c.b * t + d3sky_Colors[set].c.b * u);
         }
         return 1;
     }
@@ -1420,14 +1422,14 @@ char d3_SetLightSet(unsigned int set, float t, float scale, char calc)
 
 char d3_SetFogSet(unsigned int a, unsigned int b, float t)
 {
-    D3FOGCOL col;
+    D3COLOR col;
 
     if (a < 6 && b < 6 && t >= 0.0f && t <= 1.0f) {
-        col.r = (int)((d3o_Fog[b].col.r - d3o_Fog[a].col.r) * t + d3o_Fog[a].col.r);
-        col.g = (int)((d3o_Fog[b].col.g - d3o_Fog[a].col.g) * t + d3o_Fog[a].col.g);
-        col.b = (int)((d3o_Fog[b].col.b - d3o_Fog[a].col.b) * t + d3o_Fog[a].col.b);
-        d3_SetFog(((d3o_Fog[b].start - d3o_Fog[a].start) * t + d3o_Fog[a].start) * d3o_FogScale,
-                  ((d3o_Fog[b].end - d3o_Fog[a].end) * t + d3o_Fog[a].end) * d3o_FogScale,
+        col.r = (int)((d3if_Fog[b].col.c.r - d3if_Fog[a].col.c.r) * t + d3if_Fog[a].col.c.r);
+        col.g = (int)((d3if_Fog[b].col.c.g - d3if_Fog[a].col.c.g) * t + d3if_Fog[a].col.c.g);
+        col.b = (int)((d3if_Fog[b].col.c.b - d3if_Fog[a].col.c.b) * t + d3if_Fog[a].col.c.b);
+        d3_SetFogS(((d3if_Fog[b].start - d3if_Fog[a].start) * t + d3if_Fog[a].start) * d3o_FogScale,
+                  ((d3if_Fog[b].end - d3if_Fog[a].end) * t + d3if_Fog[a].end) * d3o_FogScale,
                   col);
         d3o_FogSet = a;
         return 1;
@@ -1617,19 +1619,19 @@ void d3_SaveScene(char *name, VFSFILE *f)
         bio_wr_i(out, 0x3a6c00bb);
         bio_wr_s(out, (char *)d3if_MegaCam);
         bio_wr_i(out, ((D3IFBITS *)&d3if_Gray)->bits);
-        bio_wr_v3(out, (int *)&d3o_Amb);
-        bio_wr_v3(out, (int *)&d3o_Dir);
+        bio_wr_v3(out, (int *)&d3_AmbientColor);
+        bio_wr_v3(out, (int *)&d3_SunColor);
         bio_wr_i(out, ((D3IFSCENE *)d3_DefaultScene)->mapSize);
-        bio_wr_i(out, d3_FogColor);
+        bio_wr_i(out, d3_fog_color.col);
         bio_wr_i(out, ((D3IFBITS *)&d3_FogStart1)->bits);
         bio_wr_i(out, ((D3IFBITS *)&d3_FogEnd2)->bits);
         for (k = 0; k < 7; k++) {
-            bio_wr_v3(out, (int *)&d3o_Sets[k].amb);
-            bio_wr_v3(out, (int *)&d3o_Sets[k].dir);
+            bio_wr_v3(out, (int *)&d3if_Levels[k].amb);
+            bio_wr_v3(out, (int *)&d3if_Levels[k].sun);
             for (i = 0; i < 6; i++) {
-                bio_wr_i(out, ((D3IFBITS *)&d3o_Sets[k].fog[i].col)->bits);
-                bio_wr_i(out, ((D3IFBITS *)&d3o_Sets[k].fog[i].start)->bits);
-                bio_wr_i(out, ((D3IFBITS *)&d3o_Sets[k].fog[i].end)->bits);
+                bio_wr_i(out, d3if_Levels[k].fog[i].col.col);
+                bio_wr_i(out, ((D3IFBITS *)&d3if_Levels[k].fog[i].start)->bits);
+                bio_wr_i(out, ((D3IFBITS *)&d3if_Levels[k].fog[i].end)->bits);
             }
         }
         n = 0;
@@ -1648,17 +1650,18 @@ void d3_SaveScene(char *name, VFSFILE *f)
 }
 
 extern char d3if_ParList[788];
-extern D3IFTRIPLE d3if_Fog[6];
 /* d3if_Unk5fb5c0: view of d3_DefaultD3DConfig (tools/data_views.py) */
 /* d3if_Unk5fb5c4 is defined in d3_engine.c, right after that block (0x5fb5c4, the same unit) */
 int d3o_LightSet = -1;  /* 0x5fbcfc, the current light set */
 int d3o_FogSet = -1;  /* 0x5fbd00, the current fog set */
 float d3if_Gray = 200.0f;  /* 0x5fcc74, 0.3 r + 0.59 g + 0.11 b of the ambient colour */
+D3VECTOR d3_AmbientColor = {200.0f, 200.0f, 200.0f};  /* 0x5fcc78, the ambient colour (r, g, b) */
 int d3if_CamOben = 0;  /* 0x6338b8 */
 int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
-/* d3if_Unk6339dc: view of ai_Unk6339db (tools/data_views.py) */
+/* d3if_Unk6339dc: view of d3if_Unk6339db (tools/data_views.py) */
 int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 char d3if_ParList[788] = {0};  /* 0xfb95e0 */
 int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3_AnimPath is a 4-byte pointer) */
-D3IFTRIPLE d3if_Fog[6] = {0}; /* 0xfba960 */
+D3FOGSET d3if_Fog[6] = {0}; /* 0xfba960 */
+D3LIGHTSET d3if_Levels[7] = {0}; /* 0xfba9c0 */

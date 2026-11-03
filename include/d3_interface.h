@@ -8,16 +8,16 @@ struct VFSFILE;
 #define D3_INTERFACE_H
 #include "d3.h"                       /* the D3 records and typedefs this header names */
 
-/* one of the 6 groups of three dwords (fog colour and two more) kept per scene and as globals */
-typedef struct D3IFTRIPLE {
-    unsigned long a, b, c;
-} D3IFTRIPLE;
+typedef struct D3FOGSET {           /* 12 bytes: a fog colour and its range (the 6 fog sets, the current fog of a scene) */
+    D3COLORU col;                   /* 0x00, d3_SetFogSet blends the bytes, the scene file holds the dword */
+    float start, end;               /* 0x04, 0x08 */
+} D3FOGSET;
 
-typedef struct D3IFLEVEL {          /* 0x60 bytes, 7 of them */
-    D3VECTOR amb;                   /* 0x00, from 0x5fcc78 (ambient colour) */
-    D3VECTOR dir;                   /* 0x0c, from 0x633b1c */
-    D3IFTRIPLE fog[6];              /* 0x18 */
-} D3IFLEVEL;
+typedef struct D3LIGHTSET {         /* 0x60 bytes: one of the 7 day-time light sets */
+    D3VECTOR amb;                   /* 0x00, the ambient colour (d3_AmbientColor) */
+    D3VECTOR sun;                   /* 0x0c, the sun colour (d3_SunColor) */
+    D3FOGSET fog[6];                /* 0x18, the fog sets (d3if_Fog) */
+} D3LIGHTSET;
 
 typedef struct D3IFSCENE {          /* 0x3e0 bytes: the per-scene copy of the engine's global state (d3_Scenes) */
     char pad000[0x80];
@@ -32,11 +32,11 @@ typedef struct D3IFSCENE {          /* 0x3e0 bytes: the per-scene copy of the en
     void *hmap;                     /* 0xb0, the scene's D3HMAP (D3SCENE.hmap) */
     int mapSize;                    /* 0xb4, height map size: 0x80 with terrain, 0x40 without, from the file */
     void *sky;                      /* 0xb8, d3_Sky */
-    D3VECTOR amb;                   /* 0xbc, 0x5fcc78.. */
-    D3VECTOR dir;                   /* 0xc8, 0x633b1c.. */
-    D3IFTRIPLE fog;                 /* 0xd4, 0x6334a0, 0xfc29bc, 0xfc5340 */
-    D3IFTRIPLE fogs[6];             /* 0xe0, 0xfba960 */
-    D3IFLEVEL levels[7];            /* 0x128, 0xfba9c0 */
+    D3VECTOR amb;                   /* 0xbc, d3_AmbientColor */
+    D3VECTOR sun;                   /* 0xc8, d3_SunColor */
+    D3FOGSET fog;                   /* 0xd4, d3_fog_color, d3_FogStart1, d3_FogEnd2 */
+    D3FOGSET fogs[6];               /* 0xe0, d3if_Fog */
+    D3LIGHTSET levels[7];           /* 0x128, d3if_Levels */
     void *events;                   /* 0x3c8, the scene's event table (D3EVENT, "d3e:RegisterSceneEvent(eventtable)") */
     int unk3cc, unk3d0;             /* 0x5fb5c0, 0x5fb5c4 */
     char loaded, dirty;             /* 0x3d4 / 0x3d5, copied from D3SCENE */
@@ -48,12 +48,9 @@ typedef struct D3IFSCENE {          /* 0x3e0 bytes: the per-scene copy of the en
 #define D3IF_SCENE(i) (((D3IFSCENE *)d3_Scenes)[i])
 
 extern float d3if_Gray;             /* 0x5fcc74, 0.3 r + 0.59 g + 0.11 b of the ambient colour */
-extern float d3if_AmbR;                 /* 0x5fcc78 */
-extern float d3if_AmbG;                 /* 0x5fcc7c */
-extern float d3if_AmbB;                 /* 0x5fcc80 */
-extern float d3if_Dir[3];           /* 0x633b1c */
-extern D3IFTRIPLE d3if_Fog[6];      /* 0xfba960 */
-extern D3IFLEVEL d3if_Levels[7];    /* 0xfba9c0 */
+extern D3VECTOR d3_AmbientColor;    /* 0x5fcc78, the ambient colour (r, g, b) */
+extern D3FOGSET d3if_Fog[6];        /* 0xfba960, the fog sets of the current light set */
+extern D3LIGHTSET d3if_Levels[7];   /* 0xfba9c0, the day-time light sets */
 extern int d3if_CamOben;              /* 0x6338b8 */
 extern int d3if_CamVorne;              /* 0x6338bc */
 extern int d3if_CamSeite;              /* 0x6338c0 */
@@ -62,7 +59,6 @@ extern int d3if_Unk5fb5c0;              /* 0x5fb5c0 */
 #endif
 
 extern int d3s_ShadowMapSize;          /* 0x633dcc */
-extern unsigned char d3if_Unk6339db;    /* 0x6339db */
 #ifndef DATA_VIEWS_H
 extern unsigned int d3if_Unk6339dc;     /* 0x6339dc, counts the scene switches */
 #endif
@@ -71,7 +67,7 @@ extern int d3if_Unkfba944;          /* 0xfba944 */
 void d3_AddChild(D3OBJECT *parent, D3OBJECT *obj);                                      /* 0x43cb80, d3_engine.c */
 int d3io_FindStock(char *name);                                                           /* 0x44c5d0 */
 void d3if_CreateCameras(void);                                                                /* 0x448910 */
-void d3_SetFog(float start, float end, unsigned long color);                    /* 0x43a6f0 = d3_SetFog, the floats passed as dwords */  /* @original: d3_interface.c passes the D3FOGCOL struct (byte-matched call); the other units pass the dword */
+void d3_SetFog(float start, float end, unsigned long color);                    /* 0x43a6f0, d3_engine.c (d3_SetFogSet passes the colour struct: its unit keeps that spelling) */
 struct D3SM * d3sm_Create(struct D3TERRAIN *t, int size, int mask);                                /* 0x45eeb0 */
 void d3sm_Destroy(struct D3SM *h);                                                          /* 0x45ef60 */
 struct TSTEXTURE; void tex_GetParams(struct TSTEXTURE *tex, unsigned char *opts, unsigned char *fmt);                                   /* 0x460aa0, ts_texture.c */
@@ -84,8 +80,6 @@ D3OBJECT *d3if_Pick(float x, float y, int flags, int mask);                     
 
 
 extern char d3if_ParList[];         /* 0xfb95e0 */
-extern unsigned long d3if_Unkfc29bc;    /* 0xfc29bc, with d3_FogColor the fog triple */
-extern unsigned long d3if_Unkfc5340;    /* 0xfc5340 */
 typedef char d3if_chk_size[sizeof(D3IFSCENE) == 0x3e0 ? 1 : -1];
 typedef char d3if_chk_levels[(int)&((D3IFSCENE *)0)->levels == 0x128 ? 1 : -1];
 typedef char d3if_chk_sceneFlags[(int)&((D3IFSCENE *)0)->sceneFlags == 0x3d8 ? 1 : -1];
@@ -234,28 +228,8 @@ typedef struct D3IFMAP {            /* D3FLMAP, the fields the map writer serial
     D3IFBITS hscale;                /* 0xc4 */
 } D3IFMAP;
 
-typedef struct D3FOGCOL {
-    unsigned char b, g, r, a;
-} D3FOGCOL;
-
-typedef struct D3FOGSET {           /* 12 bytes, D3IFTRIPLE seen as colour + range */
-    D3FOGCOL col;
-    float start, end;
-} D3FOGSET;
-
-typedef struct D3LIGHTSET {         /* 0x60 bytes, D3IFLEVEL */
-    D3VECTOR amb;
-    D3VECTOR dir;
-    D3FOGSET fog[6];
-} D3LIGHTSET;
-
-extern D3FOGSET d3o_Fog[6];         /* 0xfba960 (d3if_Fog) */
-extern D3LIGHTSET d3o_Sets[7];      /* 0xfba9c0 (d3if_Levels) */
-extern D3VECTOR d3o_Amb;            /* 0x5fcc78 (d3if_AmbR..) */
-extern D3VECTOR d3o_Dir;            /* 0x633b1c (d3if_Dir) */
 extern int d3o_LightSet;            /* 0x5fbcfc, the current light set */
 extern int d3o_FogSet;              /* 0x5fbd00, the current fog set */
-extern D3FOGCOL d3o_SkyCol[7];      /* 0xfb91c0, sky colour per light set */
 
 char d3_SetParent(D3OBJECT *obj, D3OBJECT *parent);                                    /* 0x449960 */
 char d3_SetLightKey(D3OBJECT *obj, unsigned int key, float t);                          /* 0x449b20 */

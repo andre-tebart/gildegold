@@ -149,8 +149,8 @@
 #define ai_Unk76f9b8             (*(int *)((char *)&ai_Unk76f920 + 0x98))  /* 0x76f9b8 */
 #define ai_Unk76f9bc             (*(char (*)[100])((char *)&ai_Unk76f920 + 0x9c))  /* 0x76f9bc */
 
-/* ai_Unk6339db */
-#define d3if_Unk6339dc           (*(unsigned int *)((char *)&ai_Unk6339db + 0x1))  /* 0x6339dc */
+/* d3if_Unk6339db */
+#define d3if_Unk6339dc           (*(unsigned int *)((char *)&d3if_Unk6339db + 0x1))  /* 0x6339dc */
 
 /* ai_Unk6f0454 */
 #define ai_Unk6f0455             (*(char (*)[2])((char *)&ai_Unk6f0454 + 0x1))  /* 0x6f0455 */

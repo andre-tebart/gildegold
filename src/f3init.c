@@ -340,8 +340,8 @@ int d2_SetForm(int view, int n);                     /* 0x475f70 */
 unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
-int ai_Unk633748 = 0;  /* 0x633748 */
-char ai_Unk6339db = 0;  /* 0x6339db */
+unsigned int d3fl_DetailScale = 0;  /* 0x633748 */
+unsigned char d3if_Unk6339db = 0;  /* 0x6339db */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
 int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
@@ -1699,7 +1699,7 @@ stock:
 
 
 extern char *ai_Blds;              /* 0x889f74, the buildings (0xa9 bytes each, 0x100) */
-int ai_Unk5fcc6c = 128;  /* 0x5fcc6c */
+unsigned int d3_LightKeyBudgetCulled = 128;  /* 0x5fcc6c */
 unsigned int d3_LightKeyBudgetVisible = 512;  /* 0x5fcc70 */
 unsigned char init_Detail = 2;  /* 0x61adf8, the detail level of the scene (4 = high / 2 / 1 = low, a byte) */
 float init_SoundVolume = 0.699999988f;  /* 0x61adfc, 0.7f: the volume factor of a started town sound ( */
@@ -3645,7 +3645,7 @@ void unk_Unk5136b0(void)
     d3_ForEachObject2(d3_DefaultScene, 0, 0xa0, init_SoundObjectFreeHook);
     unk_Unk512890();
     d3_LightKeyBudgetVisible = 0x400;
-    ai_Unk5fcc6c = 0x40;
+    d3_LightKeyBudgetCulled = 0x40;
     if (init_ShopScript != -1) {
         h = (int)evt_FindById(init_ShopScript);
         if (h != 0) {
@@ -3712,7 +3712,7 @@ void init_AfterTownLoad(void)
         evt_NoGroup = 0;
         d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;
         sv_UpdateSkyPhase(ai_Time);
-        if (ai_Unk6339db != 0) {
+        if (d3if_Unk6339db != 0) {
             d3if_Prerender(0);
             return;
         }

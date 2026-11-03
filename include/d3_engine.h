@@ -243,7 +243,7 @@ extern float d3_FogEnd;                     /* 0xfc2dd8 */
 extern float d3_SavedZFar;                  /* 0xfe73bc, d3_ZFar while the fog is off */
 extern float d3_FogEnd2;                    /* 0xfc5340 */
 extern float d3_FogStart1;                  /* 0xfc29bc */
-extern unsigned long d3_FogColor;           /* 0x6334a0 */
+extern D3COLORU d3_fog_color;               /* 0x6334a0 */
 #ifndef DATA_VIEWS_H
 extern unsigned char d3d_Caps98d;           /* 0xfe798d, bit 5 = fog supported */
 #endif

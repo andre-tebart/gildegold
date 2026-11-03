@@ -1545,3 +1545,23 @@
 2026-11-03T16:55:01 0x014661a0 data d3_Pitch16 -> dd_PitchPixels by:main why:one object (0x14661a0): dd_vesa.c defines it
 2026-11-03T16:55:01 0x01463590 data d3s_ShadowBits -> dd_Surface by:main why:one object (0x1463590): dd_vesa.c defines it
 2026-11-03T16:55:01 0x01464fa8 data d3d_NumCards -> d3d_NumDevices by:main why:one object (0x1464fa8): its definition's name
+2026-11-03T17:09:36 0x006334a0 data d3_FogColor -> d3_fog_color by:main why:the original's own name: d3d_Clear's D3DCHECK string at 0x5f9570 reads 'd3_fog_color.col' (one object at 0x6334a0, a union with the dword col)
+2026-11-03T17:11:27 0x005fcc6c data ai_Unk5fcc6c -> d3_LightKeyBudgetCulled by:main why:one object (0x5fcc6c): f3init.c's placeholder is the culled-light key budget, unsigned int
+2026-11-03T17:11:27 0x00633748 data ai_Unk633748 -> d3fl_DetailScale by:main why:one object (0x633748): f3init.c's placeholder is the detail scale, unsigned int
+2026-11-03T17:11:27 0x006339db data ai_Unk6339db -> d3if_Unk6339db by:main why:one object (0x6339db): the byte d3if_SelectScene clears / sets, unsigned char
+2026-11-03T17:11:27 0x00fc29bc data d3if_Unkfc29bc -> d3_FogStart1 by:main why:one object (0xfc29bc): d3_engine.c's fog start float, D3IFSCENE.fog.start
+2026-11-03T17:11:27 0x00fc5340 data d3if_Unkfc5340 -> d3_FogEnd2 by:main why:one object (0xfc5340): d3_engine.c's fog end float, D3IFSCENE.fog.end
+2026-11-03T17:11:27 0x00633b1c data d3_Unk633b1c -> d3_SunColor by:main why:one object (0x633b1c, D3VECTOR): the light set's second colour, d3_fl.c adds it to the ambient colour as d3fl_SunCol
+2026-11-03T17:11:27 0x00633b1c data d3if_Dir -> d3_SunColor by:main why:one object (0x633b1c): float[3] view of the sun colour D3VECTOR
+2026-11-03T17:11:27 0x00633b1c data d3o_Dir -> d3_SunColor by:main why:one object (0x633b1c): the sun colour D3VECTOR
+2026-11-03T17:11:27 0x005fcc78 data ai_Unk5fcc78 -> d3_AmbientColor by:main why:one object (0x5fcc78..0x5fcc84): the ambient colour D3VECTOR {200, 200, 200}, moved from sv.c next to d3if_Gray
+2026-11-03T17:11:27 0x005fcc78 data d3if_AmbR -> d3_AmbientColor.x by:main why:one object (0x5fcc78): the ambient colour D3VECTOR, its fields
+2026-11-03T17:11:27 0x005fcc7c data ai_Unk5fcc7c -> d3_AmbientColor.y by:main why:contained in d3_AmbientColor (0x5fcc78)
+2026-11-03T17:11:27 0x005fcc7c data d3if_AmbG -> d3_AmbientColor.y by:main why:contained in d3_AmbientColor (0x5fcc78)
+2026-11-03T17:11:27 0x005fcc80 data ai_Unk5fcc80 -> d3_AmbientColor.z by:main why:contained in d3_AmbientColor (0x5fcc78)
+2026-11-03T17:11:27 0x005fcc80 data d3if_AmbB -> d3_AmbientColor.z by:main why:contained in d3_AmbientColor (0x5fcc78)
+2026-11-03T17:11:27 0x005fcc78 data d3o_Amb -> d3_AmbientColor by:main why:one object (0x5fcc78): the ambient colour D3VECTOR
+2026-11-03T17:11:27 0x00fba960 data d3o_Fog -> d3if_Fog by:main why:one object (0xfba960): the six fog sets D3FOGSET[6], defined in d3_interface.c
+2026-11-03T17:11:27 0x00fba9c0 data ai_Unkfba9c0 -> d3if_Levels by:main why:one object (0xfba9c0): the seven light sets D3LIGHTSET[7], moved from sv.c next to d3if_Fog
+2026-11-03T17:11:27 0x00fba9c0 data d3o_Sets -> d3if_Levels by:main why:one object (0xfba9c0): the seven light sets D3LIGHTSET[7]
+2026-11-03T17:11:27 0x00fb91c0 data d3o_SkyCol -> d3sky_Colors by:main why:one object (0xfb91c0): d3_sky.c's six sky colours D3COLORU[6]

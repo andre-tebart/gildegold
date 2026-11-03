@@ -515,14 +515,14 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                 bio_rd_i(in, (int *)&t);
                 bio_rd_v3(in, (int *)&v);
                 d3if_Gray = t;
-                d3if_AmbR = v.x;
-                d3if_AmbG = v.y;
-                d3if_AmbB = v.z;
+                d3_AmbientColor.x = v.x;
+                d3_AmbientColor.y = v.y;
+                d3_AmbientColor.z = v.z;
                 if (version >= 0x3a6c00b5) {
                     bio_rd_v3(in, (int *)&v);
-                    d3if_Dir[0] = v.x;
-                    d3if_Dir[1] = v.y;
-                    d3if_Dir[2] = v.z;
+                    d3_SunColor.x = v.x;
+                    d3_SunColor.y = v.y;
+                    d3_SunColor.z = v.z;
                 }
                 if (version >= 0x3a6c00b3) {
                     x = 0;
@@ -535,34 +535,34 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                     d3_SetFog(*(int *)&start, *(int *)&end, col);
                 }
                 for (x = 0; x < 7; x++) {
-                    D3IO_SETS[x].amb.x = d3if_AmbR;
-                    D3IO_SETS[x].amb.y = d3if_AmbG;
-                    D3IO_SETS[x].amb.z = d3if_AmbB;
-                    D3IO_SETS[x].dir.x = 0;
-                    D3IO_SETS[x].dir.y = 0;
-                    D3IO_SETS[x].dir.z = 0;
+                    d3if_Levels[x].amb.x = d3_AmbientColor.x;
+                    d3if_Levels[x].amb.y = d3_AmbientColor.y;
+                    d3if_Levels[x].amb.z = d3_AmbientColor.z;
+                    d3if_Levels[x].sun.x = 0;
+                    d3if_Levels[x].sun.y = 0;
+                    d3if_Levels[x].sun.z = 0;
                 }
                 if (version >= 0x3a6c00a2) {
                     nsets = d3_SceneVersion(version);
                     for (x = 0; x < nsets; x++) {
                         bio_rd_v3(in, (int *)&v);
-                        D3IO_SETS[x].amb.x = v.x;
-                        D3IO_SETS[x].amb.y = v.y;
-                        D3IO_SETS[x].amb.z = v.z;
+                        d3if_Levels[x].amb.x = v.x;
+                        d3if_Levels[x].amb.y = v.y;
+                        d3if_Levels[x].amb.z = v.z;
                         if (version >= 0x3a6c00b3) {
                             if (version >= 0x3a6c00b5) {
                                 bio_rd_v3(in, (int *)&v);
-                                D3IO_SETS[x].dir.x = v.x;
-                                D3IO_SETS[x].dir.y = v.y;
-                                D3IO_SETS[x].dir.z = v.z;
+                                d3if_Levels[x].sun.x = v.x;
+                                d3if_Levels[x].sun.y = v.y;
+                                d3if_Levels[x].sun.z = v.z;
                             }
                             for (n = 0; n < 6; n++) {
                                 bio_rd_i(in, &fcol);
                                 bio_rd_i(in, (int *)&t);
-                                D3IO_SETS[x].fog[n].col = fcol;
-                                D3IO_SETS[x].fog[n].start = t;
+                                d3if_Levels[x].fog[n].col.col = fcol;
+                                d3if_Levels[x].fog[n].start = t;
                                 bio_rd_i(in, (int *)&t);
-                                D3IO_SETS[x].fog[n].end = t;
+                                d3if_Levels[x].fog[n].end = t;
                             }
                         }
                     }

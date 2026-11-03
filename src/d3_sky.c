@@ -29,7 +29,7 @@ void d3_BeginScene(unsigned char fog, DWORD fogcol, unsigned char zbuffer);     
 void d3_SetBlendState(unsigned char balpha, unsigned char glow, unsigned char colorkey);                                             /* 0x4387b0 */
 
 D3SKY *d3_Sky = 0;                          /* 0x633dd4 */
-int d3sky_Colors[6] = {0}; /* 0xfb91c0 */
+D3COLORU d3sky_Colors[6] = {0}; /* 0xfb91c0, the sky colour of each day-time light set (d3_SetLightSet blends [set] and [(set + 1) % 7]: set 6 reads the dword after the array) */
 /* 0x45ce60 */
 char d3sky_DrawLayer(D3SKY *s, D3SKYLAYER *l)
 {
@@ -158,7 +158,7 @@ char d3sky_Draw(D3SKY *s)
         }
         if (base && s->num_buffer > 0 && d3_Busy <= 1) {
             d3_Busy++;
-            d3_BeginScene(d3_FogOn, d3_FogColor, 0);
+            d3_BeginScene(d3_FogOn, d3_fog_color.col, 0);
             for (l = base; l; l = l->next)
                 d3sky_DrawLayer(s, l);
             d3_EndScene();
@@ -329,16 +329,16 @@ void d3sky_Destroy(D3SKY *s)
         mem_Free(s);
     }
 }
-/* 0x45dae0, stores the six sky shades in d3sky_Colors (edge, inner, centre, inner, edge; slot 0 is not one of them) */
+/* 0x45dae0, stores the six sky colours of the light sets in d3sky_Colors (dark blue, then rose, light gray, white, light gray, rose) */
 
 void d3sky_InitColors(void)
 {
-    d3sky_Colors[0] = D3SKY_COLOR0;
-    d3sky_Colors[1] = D3SKY_COLOR_EDGE;
-    d3sky_Colors[2] = D3SKY_COLOR_INNER;
-    d3sky_Colors[3] = D3SKY_COLOR_CENTER;
-    d3sky_Colors[4] = D3SKY_COLOR_INNER;
-    d3sky_Colors[5] = D3SKY_COLOR_EDGE;
+    d3sky_Colors[0].col = D3SKY_COLOR0;
+    d3sky_Colors[1].col = D3SKY_COLOR_EDGE;
+    d3sky_Colors[2].col = D3SKY_COLOR_INNER;
+    d3sky_Colors[3].col = D3SKY_COLOR_CENTER;
+    d3sky_Colors[4].col = D3SKY_COLOR_INNER;
+    d3sky_Colors[5].col = D3SKY_COLOR_EDGE;
 }
 /* 0x45db20 */
 

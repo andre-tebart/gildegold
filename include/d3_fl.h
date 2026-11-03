@@ -346,7 +346,7 @@ typedef struct D3FLTRIUV {          /* the texture coordinates of one triangle (
     float uv[6];
 } D3FLTRIUV;
 extern D3VECTOR d3_AmbientColor;               /* 0x5fcc78, ambient light color */
-extern D3VECTOR d3_Unk633b1c;               /* 0x633b1c, point light color */
+extern D3VECTOR d3_SunColor;               /* 0x633b1c, the sun colour, added to the ambient colour */
 void d3fl_Draw(D3FLMAP *map, char water);                                               /* 0x4439e0 */
 
 

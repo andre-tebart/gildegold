@@ -1981,7 +1981,6 @@ const int sv_PhaseMinutes[24] = { 390, 510, 630, 1050, 1170, 1290, 300, 420, 540
 
 extern char *ai_Unk5fb5b0;              /* 0x5fb5b0 */
 extern int ai_Unk623cc0[], ai_Unk623e10[];  /* 0x623cc0, 0x623e10 */
-extern int ai_Unkfba9c0[], ai_Unk5fcc78, ai_Unk5fcc7c, ai_Unk5fcc80;  /* 0xfba9c0, 0x5fcc78, 0x5fcc7c, 0x5fcc80 */
 int d2_GetWinObj();                     /* 0x475b80 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
@@ -7624,7 +7623,6 @@ extern int d2_DirtyRectLeft;
 extern int d2_DirtyRectTop;
 extern int d2_DirtyRectRight;
 extern int d2_DirtyRectBottom;
-extern int ai_Unkfba9c0[168];
 /* txt_NetworkSyncWait: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnBuild: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnOwn: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7633,9 +7631,6 @@ extern int ai_Unkfba9c0[168];
 /* txt_PanelBtnItemOwn: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnItem: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelPersons: view of txt_Ptrs (build/mk_txt_views.py) */
-int ai_Unk5fcc78 = 1128792064;  /* 0x5fcc78 */
-int ai_Unk5fcc7c = 1128792064;  /* 0x5fcc7c */
-int ai_Unk5fcc80 = 1128792064;  /* 0x5fcc80 */
 int d2_PointerObj = -1;  /* 0x5fe710 */
 float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
@@ -7852,5 +7847,4 @@ int d2_DirtyRectLeft = {0}; /* 0xfb9060 */
 int d2_DirtyRectTop = {0}; /* 0xfb9064 */
 int d2_DirtyRectRight = {0}; /* 0xfb9068 */
 int d2_DirtyRectBottom = {0}; /* 0xfb906c */
-int ai_Unkfba9c0[168] = {0}; /* 0xfba9c0 */
 char * sv_CameraObj = {0}; /* 0xfc2dec, the camera object */

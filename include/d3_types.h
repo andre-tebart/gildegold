@@ -61,4 +61,9 @@ typedef struct D3COLOR {            /* a B, G, R, A colour (passed by value) */
     unsigned char b, g, r, a;
 } D3COLOR;
 
+typedef union D3COLORU {            /* a D3COLOR stored or passed as its dword (the fog colour of a fog set, a sky colour) */
+    D3COLOR c;
+    unsigned long col;
+} D3COLORU;
+
 #endif

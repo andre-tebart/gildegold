@@ -143,11 +143,7 @@ extern LPDIRECTDRAWSURFACE4 dd_BackBuffer;  /* 0x631208, Dd_vesa.c */
 extern char dd_Cleared;                 /* 0x631222, Dd_vesa.c */
 extern char dd_ZCleared;                    /* 0x631223, Dd_vesa.c */
 extern unsigned char dd_RBits, dd_GBits, dd_BBits;   /* 0x1463570, 0x1463580, 0x1464fbd, dd_vesa.c (d3_d3d.c reads them signed: dd_RBitsC / dd_GBitsC / dd_BBitsC) */
-typedef union D3COLORU {
-    D3COLOR c;
-    unsigned long col;
-} D3COLORU;
-extern D3COLORU d3_fog_color;               /* 0x6334a0 */
+extern D3COLORU d3_fog_color;               /* 0x6334a0, d3_engine.c */
 extern int dd_Width, dd_Height;             /* 0x1463598, 0x1463594, Dd_vesa.c */
 extern DWORD d3d_MinMipSize;                   /* 0x5f942c, smallest mip dimension kept (4) */
 extern float d3d_ViewW;                 /* 0x5f9430, last viewport set, -1 = none */

@@ -8,8 +8,8 @@
 #define D3SKY_ROWS 6
 #define D3SKY_COLS 8
 
-/* the six values d3sky_InitColors stores in d3sky_Colors: 0 is not one of the shades, 1 .. 5 run
-   edge (rose), inner (light gray), centre (white) and back; nothing reads the array in the drafted code */
+/* the six values d3sky_InitColors stores in d3sky_Colors, the sky colour (B, G, R) of the day-time light sets
+   d3_SetLightSet blends: 0 dark blue, 1 .. 5 run rose, light gray, white and back */
 #define D3SKY_COLOR0 0x40
 #define D3SKY_COLOR_EDGE 0xe08080
 #define D3SKY_COLOR_INNER 0xe0e0e0
@@ -65,6 +65,7 @@ void d3sky_Destroy(D3SKY *s);  /* 0x45daa0 */
 void d3sky_FadeLayer(D3SKY *s, D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 void d3sky_SetLayerSpeed(D3SKY *s, D3SKYLAYER *l, float speed);  /* 0x45d960 */
 extern D3SKY *d3_Sky;  /* 0x633dd4 */
+extern D3COLORU d3sky_Colors[6];  /* 0xfb91c0, the sky colour of each day-time light set */
 void d3sky_Free(void);  /* 0x45db20 */
 void d3sky_InitColors(void);  /* 0x45dae0 */
 

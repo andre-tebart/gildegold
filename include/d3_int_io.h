@@ -181,17 +181,6 @@ typedef struct D3IOSURF {           /* 0x198 bytes, D3SURF as the stock attach f
 
 #define D3IO_214(o) (D3_X(o)->unk214)
 void d3io_AttachStock(D3OBJECT *obj, D3SURF *surf, char *name);                        /* 0x44c610 */
-typedef struct D3IOFOG {            /* D3IFTRIPLE as the scene reader writes it */
-    int col;
-    float start;
-    float end;
-} D3IOFOG;
-typedef struct D3IOSET {            /* D3IFLEVEL (0x60 bytes) */
-    D3VECTOR amb;
-    D3VECTOR dir;
-    D3IOFOG fog[6];
-} D3IOSET;
-#define D3IO_SETS ((D3IOSET *)d3if_Levels)
 #define D3IO_SCENEB4(s) (*(int *)((char *)(s) + 0xb4))
 #define D3IO_SCENEAC(s) (*(void **)((char *)(s) + 0xac))
 #define D3IO_SCENE3D8(s) (*(int *)((char *)(s) + 0x3d8))

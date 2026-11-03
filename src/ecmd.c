@@ -265,9 +265,9 @@ int ocmd_RotateObjectRelative(D3OBJECT **obj, int *x, int *y, int *z, int *time)
 
 int ocmd_SetAmbiente(int *r, int *g, int *b)
 {
-    d3if_AmbR = (float)*r;
-    d3if_AmbG = (float)*g;
-    d3if_AmbB = (float)*b;
+    d3_AmbientColor.x = (float)*r;
+    d3_AmbientColor.y = (float)*g;
+    d3_AmbientColor.z = (float)*b;
     d3_LightInvalidate(1);
     return 1;
 }
