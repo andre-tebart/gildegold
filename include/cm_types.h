@@ -230,8 +230,11 @@ typedef char cm_AssertCRIME[sizeof(CRIME) == 0x2d ? 1 : -1];
 typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a cutscene record (messages 0x50 / 0x51
                                            copy one whole) */
     int charId;                         /* 0x00, the character's netId, -1 when free */
-    int state;                          /* 0x04 */
-    char pad08[0x24];
+    int state;                          /* 0x04, 0 frees the slot (cm_ExCutEntry); message 0x51 updates only an entry
+                                           in the same state */
+    char pad08[8];
+    int stateArg;                       /* 0x10, in state 2 message 0x51 also has to match it (meaning unknown) */
+    char pad14[0x18];
 } CMCUTENTRY;
 
 typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (ai_Unk4c5c40 / ai_Unk4c5ca0
