@@ -227,6 +227,13 @@ typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crim
 } CRIME;
 typedef char cm_AssertCRIME[sizeof(CRIME) == 0x2d ? 1 : -1];
 
+typedef struct G17SKILLMSG {            /* 12 bytes, the data of message 0x5d (cm_SendAddSkill sends, the handler 0x4ccc20
+                                           applies it) */
+    int charId;                         /* 0x00, the character (gm_FindChar) */
+    int skill;                          /* 0x04, the index into AICHAR.skills, 0 .. 4 */
+    int delta;                          /* 0x08, added to the skill (the sum clamped to 0 .. 252) */
+} G17SKILLMSG;
+
 typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a cutscene record (messages 0x50 / 0x51
                                            copy one whole) */
     int charId;                         /* 0x00, the character's netId, -1 when free */
@@ -350,6 +357,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         CRIME crime;                    /* 0x10, message 0x22 */
         G17CUTMSG cut;                  /* 0x10, message 0x26 */
         G17CUTENTRYMSG cutEntry;        /* 0x10, messages 0x50 / 0x51 */
+        G17SKILLMSG skill;              /* 0x10, message 0x5d */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17TABLEMSG table;              /* 0x10, message 0x54 */

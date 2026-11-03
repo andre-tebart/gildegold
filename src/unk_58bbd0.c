@@ -22864,7 +22864,7 @@ int ai_Unk5d08c0(int param_1, int param_2)
     if ((float)total > 252.0f)
         amount = (unsigned char)(int)(252.0f - n);
     if (amount != 0)
-        ai_Unk4c6020(param_1 + 4, param_2, amount);
+        cm_SendAddSkill(param_1 + 4, param_2, amount);
     return 1;
 }
 /* 0x5d09d0, a message callback (108 B): param_1 the message record (+2 the type), param_2 the request

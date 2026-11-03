@@ -3232,7 +3232,7 @@ void he_Unk548110(int ev)
 
 int gm_GetWorth(unsigned short id);
 void gm_Unk50ca10(unsigned short a, int b);
-void ai_Unk4c6020(int a, int b, int c);
+void cm_SendAddSkill(int a, int b, int c);
 void ai_Unk4c5870(int a);
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 void ai_Unk5a91c0(void);
@@ -3966,7 +3966,7 @@ void he_Unk549aa0(int ev)
     ab = *(unsigned char *)(ev + 0xae);
     if ((float)(*(unsigned char *)(rec + 0x80 + ab) + v) > 252.0f)
         v = (int)(252.0f - (float)*(unsigned char *)(rec + 0x80 + ab));
-    ai_Unk4c6020(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), ab, v);
+    cm_SendAddSkill(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), ab, v);
     if (*(char *)(rec + 2) == 6) {
         if ((int)(252.0f - (float)(*(unsigned char *)(rec + 0x80 + ab) + v)) < 0) {
             memset(msg, 0, sizeof(msg));
@@ -17784,8 +17784,8 @@ void he_Unk573ae0(char *pl, char *per)
     }
     if (lo_i == hi_i || lo_i < 0 || hi_i < 0)
         return;
-    ai_Unk4c6020(HM_I(per, 4), lo_i, hi - lo);
-    ai_Unk4c6020(HM_I(per, 4), hi_i, lo - hi);
+    cm_SendAddSkill(HM_I(per, 4), lo_i, hi - lo);
+    cm_SendAddSkill(HM_I(per, 4), hi_i, lo - hi);
     if (pl == per)
         memcpy(name, (void *)(unsigned)&full_data_629038, 0x19);
     else
