@@ -65,6 +65,9 @@
 /* d3_ParEnd */
 #define d3_ParTail               (*(struct D3PARTSYS **)((char *)&d3_ParEnd + 0x318))  /* 0xfb9598 */
 
+/* d3if_ParList (the head node: its next field) */
+#define d3_ParHead               (*(struct D3PARTSYS **)((char *)&d3if_ParList + 0x314))  /* 0xfb98f4 */
+
 /* d3_Mirror */
 #define d3_Unkfb9928             (*(unsigned char *)((char *)&d3_Mirror + 0x28))  /* 0xfb9928 */
 

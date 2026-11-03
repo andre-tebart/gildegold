@@ -2605,7 +2605,7 @@ unsigned int d3_LightGeneration = 0;  /* 0x633b10, lightmap generation, D3MESH::
 char d3_LightsChanged = 0;  /* 0x633b14 */
 D3PARTSYS d3_ParEnd = {0};  /* 0xfb9280, particle system list end marker */
 /* d3_ParTail: view of d3_ParEnd (tools/data_views.py) */
-struct D3PARTSYS * d3_ParHead = 0;  /* 0xfb98f4, particle list head (D3PARTSYS * in d3_par.h) */
+/* d3_ParHead: view of d3if_ParList (the head node's next field) */
 /* d3_Unkfb9928: view of d3_Mirror (tools/data_views.py) */
 struct VFSDIR *d3io_StockDir = {0}; /* 0xfba940, the stock object directory */
 float d3_ZFar = 0;  /* 0xfc2564 */

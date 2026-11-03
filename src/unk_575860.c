@@ -3113,7 +3113,14 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed) */
+   (the records built so far freed)
+   @deep read against the original: all 5 hunks store the same float constants to the same fields of
+   [esi+0x64] in the same order; the differences are only which register holds each constant and when it is
+   loaded (0x579dfe: ours loads 0x430e0000 into edx before the [ecx+0x20] store, the original into ecx
+   after it; 0x57a1f8: ours keeps 0x420c0000/0x430e0000/0x428e0000 in edi/ebx/ecx, the original ecx/edi/ebx
+   loaded up front; 0x57a430: the 0x442f0000/0x44670000 loads swap edx/ecx around the cmp ax,0x320), the
+   regs hunks follow from that mapping (ebx->edi ecx->ebx edi->ecx). Instruction counts equal (1213/1213).
+   Constant-load scheduling and allocation only. */
 
 int ai_TutorialInitChapter3(void)
 {

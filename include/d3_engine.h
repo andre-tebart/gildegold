@@ -79,7 +79,9 @@ extern D3OBJECT d3_ObjEnd;                  /* 0xfc2700, list end marker */
    Both spellings are one object, which d3_LinkTop / d3_UnlinkTop require. */
 #define d3_TopFirst (d3_TopHead.next)      /* 0xfc52f0, first top-level object */
 #define d3_TopLast (d3_ObjEnd.prev)        /* 0xfc28f4, last top-level object */
+#ifndef DATA_VIEWS_H
 extern struct D3PARTSYS *d3_ParHead;                    /* 0xfb98f4, particle list head (D3PARTSYS * in d3_par.h) */
+#endif
 #ifndef DATA_VIEWS_H
 extern struct D3PARTSYS *d3_ParTail;                    /* 0xfb9598, particle list tail (D3PARTSYS * in d3_par.h) */
 #endif

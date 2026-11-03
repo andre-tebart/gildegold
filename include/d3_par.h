@@ -9,7 +9,9 @@
    node (0xfb95e0), whose next field (+0x314) is the head pointer at 0xfb98f4. */
 #define D3PAR_HEADNODE ((D3PARTSYS *)d3if_ParList)
 extern char d3if_ParList[];         /* 0xfb95e0, d3_interface.c */
+#ifndef DATA_VIEWS_H
 extern D3PARTSYS *d3_ParHead;       /* 0xfb98f4, head of the default scene's list */
+#endif
 #ifndef DATA_VIEWS_H
 extern D3PARTSYS *d3_ParTail;       /* 0xfb9598, tail of the default scene's list */
 #endif

@@ -1649,7 +1649,7 @@ void d3_SaveScene(char *name, VFSFILE *f)
     }
 }
 
-extern char d3if_ParList[788];
+extern char d3if_ParList[0x31c];
 /* d3if_Unk5fb5c0: view of d3_DefaultD3DConfig (tools/data_views.py) */
 /* d3if_Unk5fb5c4 is defined in d3_engine.c, right after that block (0x5fb5c4, the same unit) */
 int d3o_LightSet = -1;  /* 0x5fbcfc, the current light set */
@@ -1661,7 +1661,7 @@ int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
 unsigned int d3if_Unk6339dc = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_Unk6339db) */
 int d3s_ShadowMapSize = 0;  /* 0x633dcc */
-char d3if_ParList[788] = {0};  /* 0xfb95e0 */
+char d3if_ParList[0x31c] = {0};  /* 0xfb95e0, the default scene's particle list head node (a D3PARTSYS, 0x31c bytes: d3_ParHead is its next field, +0x318 its prev) */
 int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */
 D3FOGSET d3if_Fog[6] = {0}; /* 0xfba960 */
 D3LIGHTSET d3if_Levels[7] = {0}; /* 0xfba9c0 */
