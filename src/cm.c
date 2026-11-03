@@ -4721,31 +4721,33 @@ int ai_Unk4caaa0(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cab40, handler of type 0x39: building data[0] gets the character data[4] as its boss (+0x170) */
-
-int ai_Unk4cab40(G17MSG *m, G17STAT *s)
+/* 0x4cab40, handler of message 0x39 (cm_SendBoss): the building bldId becomes the home (bld2) of the character
+   charId (-1: none); a home building (AIBTYPE.kind 1) counts its residents up to the capacity of its ord kind record
+   (fails when full), the former home counts one down */
+int cm_ExSetHome(G17MSG *m, G17STAT *s)
 {
-    unsigned short n;
-    char *b, *c, *o;
+    int kind[2];
+    AIBLD *b, *o;
+    AICHAR *c;
 
-    b = gm_BuildQuery(1, 1, G17_I(*m, 0));
+    b = (AIBLD *)gm_BuildQuery(1, 1, m->home.bldId);
     if (b == 0)
         return 1;
-    c = gm_FindChar(G17_I(*m, 4));
-    if (c == 0 && G17_I(*m, 4) != -1)
+    c = (AICHAR *)gm_FindChar(m->home.charId);
+    if (c == 0 && m->home.charId != -1)
         return 1;
-    if (ai_BTypes[(unsigned char)b[0] * 0x24d] == 1) {
-        ord_GetKindRecord((unsigned char)b[0], &n);
-        if ((unsigned char)b[0x65] >= n)
+    if (ai_BTypesT[b->type].kind == 1) {
+        ord_GetKindRecord(b->type, kind);
+        if (b->residents >= (unsigned short)kind[0])
             return 1;
-        b[0x65]++;
+        b->residents++;
     }
-    o = *(char **)(c + 0x170);
+    o = c->bld2;
     if (o != 0) {
-        if (ai_BTypes[(unsigned char)o[0] * 0x24d] == 1 && (unsigned char)o[0x65] > 0)
-            o[0x65]--;
+        if (ai_BTypesT[o->type].kind == 1 && o->residents > 0)
+            o->residents--;
     }
-    *(char **)(c + 0x170) = b;
+    c->bld2 = b;
     if (s != 0) {
         s->state = 1;
         s->kind = 0;
@@ -15264,7 +15266,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

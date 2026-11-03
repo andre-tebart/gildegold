@@ -33,6 +33,12 @@ typedef struct G17GATEMSG {             /* 12 bytes, the data of message 0x36 (c
     int objId;                          /* 0x08, the room (object) it goes to */
 } G17GATEMSG;
 
+typedef struct G17HOMEMSG {             /* 8 bytes, the data of message 0x39 (cm_SendBoss, its handler 0x4cab40
+                                           cm_ExSetHome) */
+    int bldId;                          /* 0x00, the building the character lives in from now */
+    int charId;                         /* 0x04, the character */
+} G17HOMEMSG;
+
 typedef struct G17HIREMSG {             /* 0x17 bytes, the data of message 0x3d (cm_SendMessage3d, its handler
                                            0x4cb250 creates the character) */
     int bldId;                          /* 0x00, the building the character works in */
@@ -281,6 +287,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17OBJMSG obj;                  /* 0x10, message 0x2d */
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
         G17GATEMSG gate;                /* 0x10, message 0x36 */
+        G17HOMEMSG home;                /* 0x10, message 0x39 */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
