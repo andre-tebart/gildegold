@@ -298,6 +298,8 @@ int gm_CompareTime();
 #include "unk_58bbd0.h"
 #include "ai_bld.h"
 #include "f3gm_carry.h"
+#include "ai_char.h"
+#define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -1470,42 +1472,33 @@ void he_PostEvent7a(void)
 {
     HE_ONCE(0x7a)
 }
-/* 0x53f190, posts the event 0x2b for every figure of kind 5 / 7 without one (+0x10 = its id; flag byte +0x5c) */
-
+/* 0x53f190, posts the tavern event 0x2b for every building of kind 5 / 7 that has none yet (the message's fromId is the
+   building); once one building has its event, the rest of the walk posts nothing */
 void he_PostEvent2b(void)
 {
-    char ev[0xf8];
-    int ok = 0;
-    int r, f;
+    AIMSG m;
+    int found = 0;
+    AIJOB *ev;
+    AIBLD *b;
 
-    memset(ev, 0, 0xf8);
-    f = gm_BuildQuery(1, 5, 7);
-    do {
-        if (f == 0)
-            return;
-        r = (int)he_FindEvent(1, 0, 0x2b);
-        while (r != 0) {
-            if (*(int *)(r + 0x10) == *(int *)(f + 1)) {
-                ok = 1;
-                goto L_next;
+    memset(&m, 0, sizeof(m));
+    for (b = (AIBLD *)gm_BuildQuery(1, 5, 7); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x2b); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->from == b->id) {
+                found = 1;
+                break;
             }
-            r = (int)he_NextEvent();
         }
-        if (!ok) {
-            HM_B(ev, 4) = 0x2b;
-            HM_B(ev, 0x36) = 2;
-            HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-            HM_I(ev, 0xc) = *(int *)(f + 1);
-            HM_B(ev, 0x5c) = 0;
-            HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-            HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-            HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-            *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-            cm_SendLongMessage(ev);
+        if (!found) {
+            m.type = 0x2b;
+            m.time = ai_Time;
+            m.flags = 2;
+            m.to = he_PlayerCh->netId;
+            m.fromId = b->id;
+            m.tavern.mode = 0;
+            cm_SendLongMessage((char *)&m);
         }
-L_next:
-        f = gm_BuildNext();
-    } while (1);
+    }
 }
 /* 0x53f270, posts the events 0x86 and 0xa2 (once each) for the player of 0x6f1bf8 */
 

@@ -147,6 +147,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             char pad6c;
             unsigned char variant;      /* 0x6d, a random text variant 0..0x1c */
         } pamphlet;
+        struct {                        /* the tavern message 0x2b (he_PostEvent2b, one per tavern building) */
+            int pad58;
+            unsigned char mode;         /* 0x5c, posted 0; the event keeps it at +0xb0 (a reasoned guess: a mode byte, its
+                                           reader is not read yet) */
+        } tavern;
         struct {                        /* the grave lease offer 0x92 to a player (gv_GraveyardTurn; he_Unk5728d0 answers it with gv_OrderExtendGrave) */
             int bld;                    /* 0x58, the graveyard building's id */
             int size;                   /* 0x5c, the grave size */
