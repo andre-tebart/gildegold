@@ -7977,7 +7977,7 @@ int cm_OrderEscape(char *rec, char *c, char *tgt)
 /* 0x4d02d0, an order kind 4 for the character c with the name of the object tgt (strcpy to +0x10) and its ground
    point (x, z); returns 1, 0 when the point is not on the ground. Rough draft. */
 
-int ai_Unk4d02d0(char *rec, char *c, char *tgt)
+int cm_OrderConquer(char *rec, char *c, char *tgt)
 {
     char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     char *q;
@@ -8000,7 +8000,7 @@ int ai_Unk4d02d0(char *rec, char *c, char *tgt)
 /* 0x4d0380, an order kind 6 with the name of the object tgt, copied to +0x10 of the order record that goes to 0x4c5c40;
    -1 when the point is not on the ground or the character c has a job (+0x1ac). Rough draft. */
 
-int ai_Unk4d0380(char *rec, char *c, char *tgt, unsigned char a)
+int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
 {
     char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     char *q;
@@ -8064,49 +8064,61 @@ void ai_Unk4d0520(char *rec, char *c)
     cm_SendCutEntry(*(int *)(rec + 0x10), L);
 }
 
-#define G19_4D0380 ((int (*)(char *, char *, char *))ai_Unk4d0380)
+#define cm_OrderWare3 ((int (*)(char *, char *, char *))cm_OrderWare)
 
-/* 0x4d0570, the order of the right click for the character c of the player record rec to the picked object
-   ai_ClickedObject (type 2: 0x4cffd0; "sp_ESCAPE" 0x4d0200; "sp_CONQUER" 0x4d02d0; "WARE" 0x4d0380) or, without a pick, to
-   the ground point under the cursor (kind 1); returns 1 when an order was given. Rough draft. */
-char ai_Unk4d0570(char *rec, char *c)
+/* 0x4d0570, the order of a mouse click (dm_L.lup) for the character c of the cutscene record rec (CMCUTINFO): on a
+   character's body (D3OBJECT.kind 2) an attack (cm_OrderAttack) when it is not in c's building or shift is down; on
+   "sp_ESCAPE" cm_OrderEscape, on "sp_CONQUER.." cm_OrderConquer, on "WARE.." cm_OrderWare; with nothing picked the ground
+   cell under the pointer (d3sm_Pick) is sent in state 1 (stateArg / x), else txt_ClickNoGround is shown. Returns 1 when
+   an order was given
+   @deep Read whole against the original: fixed the shift key (kb_Down[0x36], DIK_RSHIFT) and the
+   ground-click path (ret = 1 falls through to the common return: the original keeps 1 in bl/ebx for both
+   state and result); every call, string and store now lines up. Left: one hunk at +0x11a, the argument
+   evaluation of d3sm_Pick(d3_DefaultScene->hmap, dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z): the original loads
+   [d3_DefaultScene] first and pushes the +0x1a sums in ecx/edx, ours loads dm_L.y first (movsx edx / lea
+   eax,[esp+0x10] / ... / mov edx,[ecx+0xb0]) - the same five pushes of the same values; tried the K&R
+   d3sm_PickK spelling and a prototyped call: no change. Scheduling only; the
+   prover stops at the inlined strcmp (rep cmpsb). */
+char cm_OrderClick(char *rec, char *c)
 {
     char ret = 0;
-    char *sel, *o, *q;
-    int L[11];
+    D3OBJECT *sel;
+    char *o;
+    CMCUTENTRY *e;
+    CMCUTENTRY order;
     int x, z;
 
     if (dm_L.lup != 0) {
-        sel = (char *)ai_ClickedObject;
+        sel = (D3OBJECT *)ai_ClickedObject;
         if (sel != 0) {
-            if (*(int *)(sel + 0x220) == 2) {
-                o = *(char **)(sel + 0x200);
-                if (cm_OtherBuilding(c, o) != 0 || kb_Down[0x36] != 0) {
+            if (sel->kind == 2) {
+                o = (char *)sel->owner;
+                if (cm_OtherBuilding(c, o) != 0 || kb_Down[DIK_RSHIFT] != 0) {
                     if (cm_OrderAttack(rec, c, o, 0, 0) != -1)
                         ret = 1;
                 }
-            } else if (strcmp(sel, "sp_ESCAPE") == 0) {
-                cm_OrderEscape(rec, c, sel);
+            } else if (strcmp(sel->name, "sp_ESCAPE") == 0) {
+                cm_OrderEscape(rec, c, (char *)sel);
                 ret = 1;
-            } else if (strncmp(sel, "sp_CONQUER", 10) == 0) {
-                ai_Unk4d02d0(rec, c, (char *)ai_ClickedObject);
+            } else if (strncmp(sel->name, "sp_CONQUER", 10) == 0) {
+                cm_OrderConquer(rec, c, (char *)ai_ClickedObject);
                 ret = 1;
             } else if (strncmp((char *)ai_ClickedObject, "WARE", 4) == 0) {
-                G19_4D0380(rec, c, (char *)ai_ClickedObject);
+                cm_OrderWare3(rec, c, (char *)ai_ClickedObject);
                 ret = 1;
             }
-        } else if ((char)d3sm_PickK(*(char **)(ai_Unk5fb5b0 + 0xb0), dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z)) {
-            q = (char *)cm_CutEntrySlot(rec, c);
-            q[0xc] = 0;
-            memcpy(L, q, 0x2c);
-            L[0] = *(int *)(c + 4);
-            L[4] = x;
-            L[1] = 1;
-            L[5] = z;
-            cm_SendCutEntry(*(int *)(rec + 0x10), L);
-            return 1;
+        } else if (d3sm_Pick((D3SM *)d3_DefaultScene->hmap, dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z)) {
+            e = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+            e->b0c = 0;
+            memcpy(&order, e, sizeof(order));
+            order.charId = ((AICHAR *)c)->netId;
+            order.stateArg = x;
+            order.state = 1;
+            order.x = z;
+            cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
+            ret = 1;
         } else
-            sv_SetStatusText((char *)ai_Unk143e8b0);
+            sv_SetStatusText((char *)txt_ClickNoGround);
     }
     return ret;
 }
@@ -8130,7 +8142,7 @@ void ai_Unk4d0740(char *rec)
             c = *pp;
             if (c != 0 && c[0x188] != 0 && (ai_LedSelectBits(*(unsigned short *)cm_CutChar, c) & 0x800) &&
                 *(int *)(c + 0x184) != 0 && c[8] != 0) {
-                if (ai_Unk4d0570(rec, c)) {
+                if (cm_OrderClick(rec, c)) {
                     if (cm_CutChar == (char *)cm_FightAttacker)
                         snd_PlayVoice(*(unsigned short *)c, (int)ai_Unk6f0d34, "_K_C2C_BEFEHL_ERHALTEN", -1);
                     else
@@ -9398,13 +9410,13 @@ void ai_Unk4d3120(char *rec, char *c)
         o = ai_Unk4d25a0(c);
         if (o == 0)
             return;
-        G19_4D0380(rec, c, o);
+        cm_OrderWare3(rec, c, o);
         return;
     case 2:
         o = ai_Unk4d2680(c);
         if (o == 0)
             return;
-        ai_Unk4d02d0(rec, c, o);
+        cm_OrderConquer(rec, c, o);
         return;
     case 4:
         cm_OrderToBestCell(rec, c);
@@ -15358,7 +15370,7 @@ extern int ai_Unkfa5f04;
 /* txt_WeaponEmpty15e: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_WeaponEmpty174: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_WeaponEmpty176: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e8b0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_ClickNoGround: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8b4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8bc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e8c0: view of txt_Ptrs (build/mk_txt_views.py) */
