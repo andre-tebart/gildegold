@@ -167,7 +167,7 @@ typedef struct ORDCHAR {
     int v1a0;                       /* 0x1a0, a trade sum cm.c's goods move adds to (price x amount) for an object of the type 0x1dc (seller) / 0x1db (buyer); the income kind 4 taxes v1a0 + v1a4 */
     int v1a4;                       /* 0x1a4, the same for the types 0x1db (seller) / 0x1dc (buyer) */
     int v1a8;                       /* 0x1a8, an amount the income kind 3 (f3gm.c gm_IncomeKind3) taxes at the decision 0xd's rate and clears once paid */
-    char pad1ac[4];
+    int donated;                    /* 0x1ac, the sum the character gave the church (ai_IndulgenceWindow shows it with its rank, gm_DonationRank) */
     unsigned char b1b0;             /* 0x1b0, scales the chance that gm_HandOutMoney takes money from the character (x 0.25) */
     unsigned char b1b1;             /* 0x1b1, gm_PartnerStep takes no step unless it is 0 */
     char pad1b2[2];

@@ -10337,7 +10337,7 @@ int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSpri
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
 int gv_RetireCrimesOf(int p, int n); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
-void sv_PumpNet(); int gm_Unk50b170(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
+void sv_PumpNet(); int gm_DonationRank(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 void ai_Top5Window();
 
@@ -10438,7 +10438,7 @@ void ai_IndulgenceWindow(int param_1, int param_2)
                 }
                 txt_Format(buf, 0x1964,
                              U_I((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c + 0x1ac),
-                             gm_Unk50b170(U_W((unsigned)&ai_PlayerId), 0));
+                             gm_DonationRank(U_W((unsigned)&ai_PlayerId), 0));
                 sv_MessageBox(buf, 0x100);
                 ok = 1;
                 U_I((unsigned)&sv_PopRequest) = 1;
