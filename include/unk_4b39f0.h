@@ -26,7 +26,7 @@ G13TYPE *ai_GetMissionType(int type);                                           
 int ai_HasMission(int owner);                                                      /* 0x4b3b10 */
 int ai_CountMissionTypes(int kind);                                                      /* 0x4b3b40 */
 G13TYPE *ai_FindMissionType(int kind, G13TYPE *after);                                 /* 0x4b3b70 */
-void ai_Unk4b3bd0(int owner, int type);                                          /* 0x4b3bd0 */
+void ai_SetFirstMission(int owner, int type);                                          /* 0x4b3bd0 */
 G13MIS *ai_NewRandomMission(int owner, int kind, int x);                                /* 0x4b3c10 */
 int ai_RandomMissionType(int kind);                                                      /* 0x4b3c40 */
 G13MIS *ai_NewMission(int owner, int type, int x);                                /* 0x4b3ca0 */

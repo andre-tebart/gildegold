@@ -168,6 +168,20 @@ typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 
     unsigned char buf[0x77];            /* 0x05, per field: size (1, 2, 4), count, offset (short), values */
 } G17FIELDS;
 
+typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
+                                           cm_ExSysMessage 0x4c89b0) */
+    unsigned char kind;                 /* 0x00, 0..0x14 */
+    union {
+        int arg[0x20];                  /* 0x01, the int arguments (unaligned) */
+        unsigned char b;                /* 0x01, kinds 6 and 9: a byte argument */
+        AITIME time;                    /* 0x01, kind 3: the game clock */
+        struct {
+            int slot;                   /* 0x01 */
+            char name[0x7c];            /* 0x05 */
+        } save;                         /* 0x01, kind 15: the save requested */
+    };
+} G17SYSMSG;
+
 typedef struct G17RELMSG {              /* 0x18 bytes, the data of message 0x1b (cm_SendRelations, its handler 0x4c8240) */
     int from;                           /* 0x00, the character (netId) whose relation changes */
     int to;                             /* 0x04, the character (netId) it is towards */
@@ -211,6 +225,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
         G17RELMSG rel;                  /* 0x10, message 0x1b */
+        G17SYSMSG sys;                  /* 0x10, message 0x20 */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };

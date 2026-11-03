@@ -181,7 +181,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1441350                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x07190))  /* 0x1441350 */
 #define full_data_1441354                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x07194))  /* 0x1441354 */
 #define full_data_1441358                        (*(unsigned char (*)[112])((char *)txt_Ptrs + 0x07198))  /* 0x1441358 */
-#define ai_Unk14413c8                            (*(char * (*)[10])((char *)txt_Ptrs + 0x07208))  /* 0x14413c8 */
+#define txt_SpeedNames                            (*(char * (*)[10])((char *)txt_Ptrs + 0x07208))  /* 0x14413c8 */
 #define ai_DifficultyTexts                       (*(char * (*)[38])((char *)txt_Ptrs + 0x07230))  /* 0x14413f0 */
 #define ai_Unk1441488                            (*(int *)((char *)txt_Ptrs + 0x072c8))  /* 0x1441488 */
 #define init_StatusSendGame                      (*(int *)((char *)txt_Ptrs + 0x072d0))  /* 0x1441490 */

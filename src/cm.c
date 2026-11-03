@@ -97,6 +97,8 @@ extern GAPDATA full_data_92bcb8[];
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
+#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
+#define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (cm.h: char[][0x21c]) as the AICHAR records they are */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
@@ -3606,142 +3608,152 @@ int ai_Unk4c8990(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4c89b0, handler of type 0x20 (system message): data[0] is the kind (0..0x14) */
+/* 0x4c89b0, handler of type 0x20, the system message, on a copy of it by its kind: 0 seeds the random numbers and
+   sets up the weather, 2 the day end request (and the net flags 8 / 0x10), 3 sets the game clock (with the clock
+   update off), 4 shows a building's scene, 5 seeds, 6 the number of players, 7 the net player, 8 / 10 take / end
+   the mission partner (2 in the state when it is not ours), 9 the mission mode, 12 rebuilds the default scene's
+   height map, 13 colours the banners, 15 a save request, 16 a save acknowledgement, 17 counts a notice, 18 sets
+   the game speed (0..4), 19 the player who left, 20 a pending election; the state 1 (2: refused) */
 
-int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
+int cm_ExSysMessage(G17MSG *m, G17STAT *s)
 {
-    G17MSG msg = *m;
-    char buf[0x80];
     int ret = 1;
-    int i, k;
-    char *p, *q;
-    int t[4];
-    short t4;
-    int save;
+    unsigned char kind;
+    int i, k, save;
+    struct AIBLD *b;
+    AIOBJ *o;
 
-    switch (msg.data[0]) {
-    case 0:
-        t[0] = 0;
-        t[1] = G17_I(msg, 1);
-        t[2] = 0;
-        t[3] = 0;
-        t4 = 0;
-        util_Seed(G17_I(msg, 5));
-        sv_SetupWeather(t, 1);
-        break;
-    case 2:
-        cm_DayEndRequest = 1;
-        if (G17_I(msg, 1) != 0)
-            cm_NetFlags = (cm_NetFlags & ~0x10) | 8;
-        else
-            cm_NetFlags = (cm_NetFlags & ~8) | 0x10;
-        break;
-    case 3:
-        p = tb_IsFunctionOff(sv_UpdateClock);
-        if (p == 0)
-            tb_SetFunctionOff(sv_UpdateClock, 1);
-        *(int *)ai_Time = G17_I(msg, 1);
-        *(short *)&ai_Time[4] = G17_S(msg, 5);
-        *(int *)&ai_Time[6] = G17_I(msg, 7);
-        *(int *)&ai_Time[10] = G17_I(msg, 0xb);
-        *(G17T14 *)&ai_TimeCopy = *(G17T14 *)ai_Time;
-        if (p == 0)
-            tb_SetFunctionOff(sv_UpdateClock, 0);
-        break;
-    case 4:
-        p = gm_BuildQuery(1, 1, G17_I(msg, 1));
-        if (p != 0) {
-            q = gm_Query(*(int *)(p + 0x5d), 1, 1, G17_I(msg, 5));
-            if (q != 0)
-                init_ShowBuildingScene(p, *(unsigned short *)q);
+    {
+        G17MSG msg = *m;
+
+        kind = msg.sys.kind;
+        switch (kind) {
+        case 0: {
+            AITIME t;
+
+            memset(&t, 0, sizeof(t));
+            t.year = msg.sys.arg[0];
+            util_Seed(msg.sys.arg[1]);
+            sv_SetupWeather((struct GCLOCK *)&t, 1);
+            break;
+        }
+        case 2:
+            cm_DayEndRequest = 1;
+            if (msg.sys.arg[0] != 0)
+                cm_NetFlags = (cm_NetFlags & ~0x10) | 8;
             else
-                init_ShowBuildingScene(p, 0xfd);
-        }
-        break;
-    case 5:
-        util_Seed(G17_I(msg, 1));
-        hst_SeedPending = 0;
-        break;
-    case 6:
-        ai_NumPlayers = msg.data[1];
-        break;
-    case 7:
-        ai_NetPlayer = G17_I(msg, 1);
-        break;
-    case 8:
-        if (ai_MissionPartner == -1) {
-            k = G17_I(msg, 1);
-            if (gm_FindChar(k) != 0) {
-                ai_MissionPartner = k;
-                break;
+                cm_NetFlags = (cm_NetFlags & ~8) | 0x10;
+            break;
+        case 3:
+            k = tb_IsFunctionOff(sv_UpdateClock);
+            if (k == 0)
+                tb_SetFunctionOff(sv_UpdateClock, 1);
+            ai_TimeT.year = msg.sys.time.year;
+            ai_TimeT.xy = msg.sys.time.xy;
+            ai_TimeT.min = msg.sys.time.min;
+            ai_TimeT.hour = msg.sys.time.hour;
+            ai_TimeCopyT = ai_TimeT;
+            if (k == 0)
+                tb_SetFunctionOff(sv_UpdateClock, 0);
+            break;
+        case 4:
+            b = (struct AIBLD *)gm_BuildQuery(1, 1, msg.sys.arg[0]);
+            if (b != 0) {
+                o = (AIOBJ *)gm_Query((void *)b->objList, 1, 1, msg.sys.arg[1]);
+                if (o != 0)
+                    init_ShowBuildingScene((unsigned char *)b, o->id);
+                else
+                    init_ShowBuildingScene((unsigned char *)b, 0xfd);
             }
-        }
-        ret = 2;
-        break;
-    case 9:
-        ai_MissionMode = msg.data[1];
-        ai_MissionSeed = G17_I(msg, 5);
-        break;
-    case 10:
-        if (ai_MissionPartner == G17_I(msg, 1)) {
-            ai_MissionPartner = -1;
-            if (G17_I(msg, 0x11) == 1)
-                ai_GameOver = 1;
-            if (ai_MissionMode == 5)
-                ai_Unk4b3bd0(ai_CharInts[ai_PlayerId][0], G17_I(msg, 0x21));
-        } else
+            break;
+        case 5:
+            util_Seed(msg.sys.arg[0]);
+            hst_SeedPending = 0;
+            break;
+        case 7:
+            ai_NetPlayer = msg.sys.arg[0];
+            break;
+        case 6:
+            ai_NumPlayers = msg.sys.b;
+            break;
+        case 8:
+            if (ai_MissionPartner == -1) {
+                k = msg.sys.arg[0];
+                if (gm_FindChar(k) != 0) {
+                    ai_MissionPartner = k;
+                    break;
+                }
+            }
             ret = 2;
-        break;
-    case 12:
-        save = d3_CurrentScene;
-        d3if_SelectScene(0, 1);
-        d3sm_Build(*(int *)(ai_Unk5fb5b0 + 0xb0), ai_Unk633738);
-        d3if_SelectScene(save, 1);
-        ai_Unk631084 = 0;
-        break;
-    case 13:
-        sv_ColourBanners(G17_I(msg, 1));
-        break;
-    case 15:
-        cm_RequestedSaveSlot = G17_I(msg, 1);
-        i = 0;
-        do {
-            cm_RequestedSaveName[i] = msg.data[5 + i];
-            i++;
-        } while (msg.data[4 + i] != 0);
-        break;
-    case 16:
-        for (i = 0; i < 8; i++) {
-            if (cm_SaveAcks[i][0] == -1) {
-                cm_SaveAcks[i][0] = G17_I(msg, 1);
-                cm_SaveAcks[i][1] = G17_I(msg, 5);
-                break;
+            break;
+        case 9:
+            ai_MissionMode = msg.sys.b;
+            ai_MissionSeed = msg.sys.arg[1];
+            break;
+        case 10:
+            if (ai_MissionPartner == msg.sys.arg[0]) {
+                ai_MissionPartner = -1;
+                if (msg.sys.arg[4] == 1)
+                    ai_GameOver = 1;
+                if (ai_MissionMode == 5)
+                    ai_SetFirstMission(ai_CharsT[ai_PlayerId].netId, msg.sys.arg[8]);
+            } else
+                ret = 2;
+            break;
+        case 12:
+            save = d3_CurrentScene;
+            d3if_SelectScene(0, 1);
+            d3sm_Build((struct D3SM *)d3_DefaultScene->hmap, d3_Terrain);
+            d3if_SelectScene(save, 1);
+            ch_Saved0 = 0;
+            break;
+        case 13:
+            sv_ColourBanners(msg.sys.arg[0]);
+            break;
+        case 15:
+            cm_RequestedSaveSlot = msg.sys.save.slot;
+            i = 0;
+            do
+                cm_RequestedSaveName[i] = msg.sys.save.name[i];
+            while (msg.sys.save.name[i++] != 0);
+            break;
+        case 16:
+            for (i = 0; i < 8; i++) {
+                if (cm_SaveAcks[i][0] == -1) {
+                    cm_SaveAcks[i][0] = msg.sys.arg[0];
+                    cm_SaveAcks[i][1] = msg.sys.arg[1];
+                    break;
+                }
             }
+            break;
+        case 17:
+            if (ai_PlayerId != 0xffff) {
+                if (ai_CharsT[ai_PlayerId].partyId != msg.sys.arg[0] || msg.sys.arg[0] == -1)
+                    cm_NoticeCount++;
+            }
+            break;
+        case 18:
+            k = m->sys.arg[0];
+            if (k >= 4)
+                k = 4;
+            cm_SpeedLevel = k;
+            cm_SpeedTick = cm_SpeedTicks[k];
+            sv_SetStatusText(txt_SpeedNames[k]);
+            ai_ApplyOptions();
+            break;
+        case 19:
+            cm_LeftPlayerId = msg.sys.arg[0];
+            break;
+        case 20:
+            hmt_SetPendingElection(msg.sys.arg[0]);
+            break;
         }
-        break;
-    case 17:
-        if (ai_PlayerId != 0xffff) {
-            if (ai_CharInts[ai_PlayerId][0x82] != G17_I(msg, 1) || G17_I(msg, 1) == -1)
-                cm_NoticeCount++;
-        }
-        break;
-    case 18:
-        k = G17_I(*m, 1);
-        if (k >= 4)
-            k = 4;
-        cm_SpeedLevel = k;
-        ai_Unk60bd80 = ai_Unk5edc10[k];
-        sv_SetStatusText(ai_Unk14413c8[k]);
-        ai_ApplyOptions();
-        break;
-    case 19:
-        cm_LeftPlayerId = G17_I(msg, 1);
-        break;
-    case 20:
-        hmt_SetPendingElection(G17_I(msg, 1));
-        break;
     }
-    sprintf(buf, "cm_ExSysMessage() type: %i", msg.data[0]);
+    {
+        char buf[0x80];
+
+        sprintf(buf, "cm_ExSysMessage() type: %i", kind);
+    }
     if (s != 0) {
         s->kind = 0;
         s->state = ret;
@@ -15159,7 +15171,7 @@ extern int ai_Unkfa5f04;
 /* ai_Unk143e954: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e960: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1440c88: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk14413c8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
 extern char * ai_Unk1468ae0[0x300];
 float ai_FloatOne = 1.0f;  /* 0x5eb780 */
@@ -15187,7 +15199,7 @@ float ai_Unk5ebc1c = 1.75f;  /* 0x5ebc1c */
 double ai_Unk5ece60 = 0.01;  /* 0x5ece60 */
 const float ai_Unk5ecebc = 1.25f;  /* 0x5ecebc */
 double ai_Unk5edbd0 = 0.050000000000000003;  /* 0x5edbd0 */
-const int ai_Unk5edc10[] = { 1155, 937, 770, 577, 385, 0 };  /* 0x5edc10 */
+const int cm_SpeedTicks[] = { 1155, 937, 770, 577, 385, 0 };  /* 0x5edc10 */
 const double ai_Unk5edc28 = 1.8;  /* 0x5edc28 */
 const float ai_Unk5edc50 = 525.0f;  /* 0x5edc50 */
 const double ai_Unk5edc58 = 1.1000000000000001;  /* 0x5edc58, read-only: the original keeps it in .rdata */
@@ -15196,13 +15208,13 @@ const double ai_Unk5edc68 = 0.0055555555555555558;  /* 0x5edc68 */
 int ai_Unk5f8438 = -1;  /* 0x5f8438 */
 int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
 float d2_ScreenScale = 1.0f;  /* 0x5fe708 */
-int ai_Unk60bd80 = 770;  /* 0x60bd80 */
+int cm_SpeedTick = 770;  /* 0x60bd80 */
 unsigned int cm_SpeedLevel = 2;  /* 0x60bd84, = 2 (0..4) */
 int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
@@ -15236,7 +15248,7 @@ int ai_Unk624574 = 1;  /* 0x624574 */
 int ai_Unk624578 = 1;  /* 0x624578 */
 char ai_Unk625820[115][0x20] = { "HE_NULL", "HE_HISTORIE", "HE_UPGRADE_DUMMY", "HE_ABBAU", "HE_PRODUKTION", "HE_PRODUKTION_FERTIG_MSG", "HE_ARBEITER_EINSTELLEN", "HE_MEISTER_EINSTELLEN", "HE_VORKOMMEN_SUCHEN", "HE_NEUE_VORKOMMEN_SUCHEN", "HE_NEUE_VORKOMMEN_SUCHEN_MSG", "HE_AI_WATCH_TRANSPORT", "HE_OBJEKT_BAUEN", "HE_GEBAEUDE_BAUEN", "HE_MAUER_BAUEN", "HE_TRANSPORT", "HE_REPARATUR", "HE_MESSAGEBOX", "HE_LAGERSLOTS_BAUEN", "HE_LAGER_ERWEITERN", "HE_KRAEUTER_SAMMELN", "HE_GETIER_FANGEN", "HE_SPIELER_TRAINIEREN", "HE_GEHEIM_TREFFEN", "HE_SPIONAGE", "HE_SABOTAGE", "HE_PRUEGEL", "HE_GEB_VERKAUFEN", "HE_GEB_RENOVIEREN", "HE_GEB_VERMIETEN_DUMMY", "HE_GEB_UPGRADEN", "HE_GEB_RAUM_UPGRADEN", "HE_GEB_ABREISSEN", "HE_GEB_KAUFANGEBOT", "HE_SITZUNG", "HE_KREDIT", "HE_MEISTER_PRUEFUNG", "HE_MEISTER_PRUEFUNG_MSG", "HE_MEISTER_BESTANDEN", "HE_GELDBOTE", "HE_ERNTEN", "HE_STAMMTISCH_MSG", "HE_STAMMTISCH", "HE_GOTTESDIENST", "HE_PROZESS", "HE_DROHEN_MSG", "HE_DROHEN", "HE_ANSCHWAERZEN_MSG", "HE_BUCH_SCHREIBEN", "HE_ENTLASSEN", "HE_BEFOERDERN", "HE_PERSONAL_KUENDIGEN", "HE_PERSONAL_STEHLEN", "HE_PAMPHLET", "HE_FEST_MSG", "HE_FEST", "HE_GELAGE", "HE_KERKER_MEISTER_BESTECHEN", "HE_SIM_PERSONAL", "HE_MARKT_SUPERVISOR", "HE_ENTFUEHREN", "HE_SPIELER_ENTFUEHRT", "HE_LOESEGELD", "HE_EINBRUCH", "HE_GEB_SPIONAGE", "HE_WERBUNG", "HE_RANDOM_EVENT", "HE_STREIFE", "HE_RAZZIA", "HE_ERPRESSUNG", "HE_BELEIDIGUNG_MSG", "HE_BELEIDIGUNG", "HE_UEBERFALL", "HE_ANGRIFF", "HE_RANDOM_GESELLE", "HE_FURCHT_EINFLOESSEN", "HE_MISSION_SUPERVISOR", "HE_MISSION_DONE_MSG", "HE_EVT_GROSS_BRAND", "HE_EVT_BRAND", "HE_EVT_WIRBELSTURM", "HE_EVT_RAUBRITTER", "HE_EVT_KOMMENTARE", "HE_EVT_STADTFEST", "HE_EVT_SPENDE", "HE_EVT_BETEILIGUNG_MSG", "HE_EVT_BETEILIGUNG", "HE_EVT_SOELDNER_PLUENDERN", "HE_EVT_SOELDNER_MARODIEREN", "HE_EVT_PEST", "HE_ESKORTE_VERHINDERN", "HE_GELDSTRAFE", "HE_PRANGER", "HE_NACHWUCHS", "HE_BERUFSAUSBILDUNG", "HE_UNI", "HE_TALENT_SPIELER", "HE_TASCHENDIEB", "HE_SCHUTZGELD", "HE_SCHUTZGELD_MSG", "HE_BETRIEBS_PRUEFUNG", "HE_UMLAND_PATROL", "HE_SIM_UNFALL", "HE_PACHT", "HE_SIM_WIRTSHAUS", "HE_TITEL_VERGABE", "HE_AMT_VERGABE", "HE_BARDE", "HE_HEILEN", "HE_SIM_EINWANDERUNG", "HE_INIT_BETRIEB", "HE_GELIEBTE", "HE_SIM_KRANKHEITEN", "HE_DIE_PLAYER", "HE_KILL_PLAYER" };  /* 0x625820, names ("HE_NULL", ..) */
 int ai_Unk631064 = 0;  /* 0x631064 */
-int ai_Unk631084 = 0;  /* 0x631084 */
+struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
 char * ai_Unk6332b4 = 0;  /* 0x6332b4 */
 int ai_ClockMs = 0;  /* 0x6333cc, a clock */
 unsigned int ai_Unk63349c = 0;  /* 0x63349c */

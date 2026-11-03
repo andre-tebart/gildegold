@@ -323,7 +323,7 @@ extern int ai_NetPlayer;  /* 0x1460af4 */
 void ai_UpdateNeeds(void);  /* 0x47da80 */
 void ai_UpdateCharacters(void);  /* 0x47e560 */
 void ai_Unk47e990(struct AICHAR *c);  /* 0x47e990 */
-void ai_Unk4b3bd0(int owner, int type);  /* 0x4b3bd0 */
+void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_Unk4b44e0();  /* 0x4b44e0 */
 int cm_PartyById();  /* 0x4e50a0 */
 extern G28REC ai_Unk925520[96];  /* 0x925520, the scene party records (cm.c) */
@@ -343,9 +343,9 @@ void he_Unk53ed70();  /* 0x53ed70 */
 void ai_Unk5a9170(unsigned short *param_1, int param_2);  /* 0x5a9170 */
 int ai_Unk5ba750();  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */
-extern const int ai_Unk5edc10[];  /* 0x5edc10 */
+extern const int cm_SpeedTicks[];  /* 0x5edc10 */
 extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 */
-extern int ai_Unk60bd80;  /* 0x60bd80 */
+extern int cm_SpeedTick;  /* 0x60bd80 */
 extern int ai_NextPartyId;  /* 0x61a658 */
 extern int ai_Unk624570;  /* 0x624570 */
 extern int ai_Unk624574;  /* 0x624574 */
@@ -353,7 +353,7 @@ extern int ai_Unk624578;  /* 0x624578 */
 extern char ai_MissionMode;  /* 0x624580 */
 extern unsigned char ai_NumPlayers;  /* 0x62489c */
 extern int ai_MissionPartner;  /* 0x6248a0, the netId of the other player in a network mission (-1 none; set by message 8, cleared by 10) */
-extern int ai_Unk631084;  /* 0x631084 */
+extern struct D3SCENE *ch_Saved0;  /* 0x631084 */
 extern int * ai_Unk633738;  /* 0x633738 */
 extern int ai_TradeMsgCount;  /* 0x6f046c */
 extern int cm_NoticeCount;  /* 0x6f0cd4 */
