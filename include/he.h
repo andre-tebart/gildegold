@@ -142,6 +142,12 @@ char *ai_FindCurseEvent(char *a);  /* 0x5741d0 */
 int he_HasGraveWork(char *bld, int size, int index);  /* 0x573200, 1 when a work event 0x8d of bld is pending on the grave (size, index) */
 int he_Unk553db0(unsigned short *a, int b, int *count);  /* 0x553db0 */
 
+extern unsigned char he_FindKind;       /* 0x625708, he_FindEvent's filter on AIJOB.kind (key 0), 0xff = any */
+extern int he_FindId;                   /* 0x62570c, its filter on AIJOB.id (key 1), -1 = any */
+extern unsigned short he_FindChr;       /* 0x625710, its filter on AIJOB.chr (key 2), 0xffff = any */
+extern int he_FindFrom;                 /* 0x625714, its filter on AIJOB.from (key 3: the sending building), -1 = any */
+extern char he_FindFirst;               /* 0x6f2624, 1 while he_Cursor stands on the first record he_FindEvent found:
+                                           he_NextEvent tests it before stepping on */
 extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_OpenEventSlot), -1 = none; sv_UpdateCityPanel places the bar's end by it */
 extern int he_BarShown;                 /* 0x62571c, he_BarView while the event bar is shown (he_ShowEventBar), -1 = hidden */
 extern int he_BarView;                  /* 0x6faa60, the view "Panel\Event_Leiste" (he_Unk53d930 opens it) */

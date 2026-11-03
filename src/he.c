@@ -50,11 +50,6 @@ extern int ai_TransportWindow();
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
 extern int ai_GameFlags;
-extern GAPDATA full_data_625708[];
-extern GAPDATA full_data_62570c[];
-extern GAPDATA full_data_625710[];
-extern GAPDATA full_data_625714[];
-extern GAPDATA full_data_6f2624[];
 extern GAPDATA full_data_6f2628[];
 extern const struct D3VECTOR d3_Origin;
 #include "unk_5d33b0_types.h"
@@ -901,10 +896,10 @@ char *he_NextEvent(void)
         last = (char *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c);
     if (U_I(((unsigned)&he_QuickList + 0xaaa0)) == 0 || (char *)U_I(((unsigned)&he_QuickList + 0xaaa0)) == last || last < (char *)U_I(((unsigned)&he_QuickList + 0xaaa0)))
         return 0;
-    if (*(char *)(unsigned)&full_data_6f2624 == 0)
+    if (he_FindFirst == 0)
         U_I(((unsigned)&he_QuickList + 0xaaa0)) += 0x14c;
     else
-        *(char *)(unsigned)&full_data_6f2624 = 0;
+        he_FindFirst = 0;
     do {
         cur = (char *)U_I(((unsigned)&he_QuickList + 0xaaa0));
         if (*cur == 0) {
@@ -912,23 +907,23 @@ L_chk:
             if (ok)
                 return (char *)U_I(((unsigned)&he_QuickList + 0xaaa0));
         } else {
-            if (U_I((unsigned)&full_data_625708) == -1) {
+            if (he_FindKind == 0xff) {
 L_a:
-                if (U_I((unsigned)&full_data_62570c) != -1) {
-                    if (*(int *)(cur + 4) != U_I((unsigned)&full_data_62570c))
+                if (he_FindId != -1) {
+                    if (*(int *)(cur + 4) != he_FindId)
                         goto L_no;
                     ok = 1;
                 }
-                if (U_I((unsigned)&full_data_625710) != -1) {
-                    if (*(short *)(cur + 8) != U_I((unsigned)&full_data_625710))
+                if (he_FindChr != 0xffff) {
+                    if (*(unsigned short *)(cur + 8) != he_FindChr)
                         goto L_no;
                     ok = 1;
                 }
-                if (U_I((unsigned)&full_data_625714) == -1)
+                if (he_FindFrom == -1)
                     goto L_chk;
-                if (*(int *)(cur + 0x10) == U_I((unsigned)&full_data_625714))
+                if (*(int *)(cur + 0x10) == he_FindFrom)
                     return (char *)U_I(((unsigned)&he_QuickList + 0xaaa0));
-            } else if (*cur == (char)U_I((unsigned)&full_data_625708)) {
+            } else if (*cur == (char)he_FindKind) {
                 ok = 1;
                 goto L_a;
             }
@@ -951,27 +946,27 @@ char *he_FindEvent(int n, ...)
     char *pc;
     int i;
 
-    U_I((unsigned)&full_data_625708) = 0xff;
-    U_I((unsigned)&full_data_62570c) = -1;
-    U_I((unsigned)&full_data_625710) = 0xffff;
-    U_I((unsigned)&full_data_625714) = -1;
-    *(char *)(unsigned)&full_data_6f2624 = 1;
+    he_FindKind = 0xff;
+    he_FindId = -1;
+    he_FindChr = 0xffff;
+    he_FindFrom = -1;
+    he_FindFirst = 1;
     U_I((unsigned)&full_data_6f2628) = 0;
     va_start(ap, n);
     for (i = n; i > 0; i--) {
         kind = va_arg(ap, int);
         switch ((char)kind) {
         case 0:
-            U_I((unsigned)&full_data_625708) = (unsigned char)va_arg(ap, int);
+            he_FindKind = (unsigned char)va_arg(ap, int);
             break;
         case 1:
-            U_I((unsigned)&full_data_62570c) = va_arg(ap, int);
+            he_FindId = va_arg(ap, int);
             break;
         case 2:
-            *(unsigned short *)(unsigned)&full_data_625710 = (unsigned short)va_arg(ap, int);
+            he_FindChr = (unsigned short)va_arg(ap, int);
             break;
         case 3:
-            U_I((unsigned)&full_data_625714) = va_arg(ap, int);
+            he_FindFrom = va_arg(ap, int);
             break;
         }
     }
