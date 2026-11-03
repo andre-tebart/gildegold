@@ -1003,7 +1003,7 @@ int d2_GetObjValue();  /* 0x475980 */
 int cm_StartScript();  /* 0x4e2bf0 */
 int cm_QueueVoice();  /* 0x4e32d0 */
 void cm_RunBirth(G28REC *m);  /* 0x4e0f70 */
-int ai_Unk4e1220(char *m);  /* 0x4e1220 */
+int cm_DeathSceneCheck(G28REC *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
 int gm_Unk506480();  /* 0x506480 */
 struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */

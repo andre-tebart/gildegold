@@ -14514,13 +14514,14 @@ void cm_RunBirth(G28REC *m)
     cm_EndSpecialTrack();
     d2_CutsceneActive = 0;
 }
-/* 0x4e1220, 1 when the life (0x4fc820) of the first of m is not above 0 */
+/* 0x4e1220, the check of the death scene (kind 8): 1 when the health (gm_CharacterHealth) of the dying m->members[0] is
+   not above 0 */
 
-int ai_Unk4e1220(char *m)
+int cm_DeathSceneCheck(G28REC *m)
 {
-    if (gm_CharacterHealth(gm_FindChar(*(int *)(m + 0x34))) <= 0.0f)
-        return 1;
-    return 0;
+    if (gm_CharacterHealth(gm_FindChar(m->members[0])) > ai_FloatZero)
+        return 0;
+    return 1;
 }
 /* 0x4e1250, a death (the message m: +0x34 the dying person): the scene "Tod.ed3" with "cutscenes\\tod\\enter_TOD.esc", the bells "GLOCKEN_r", the
    voices "_TOD_HS" 0 .. 6 with the pauses 0xbb8 / 0xfa0 / 0x7d0 / 0x1f4, a fade out over 0x339 ticks (0x44a170); then by the flags +0x1cc
@@ -16411,7 +16412,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
-    ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)ai_Unk4e1220, 0);
+    ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)ai_Unk4e1700, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)ai_Unk4e1a80, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
