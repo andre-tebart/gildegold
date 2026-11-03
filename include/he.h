@@ -109,7 +109,7 @@ void he_Unk544070(int ev);
 
 unsigned he_Unk53f6b0(void);
 
-void he_Unk541b40(unsigned cmd, int a2, int a3, int a4);
+void he_StammtischCommand(unsigned cmd, int a2, int a3, int a4);
 
 void he_Unk542490(int ev);
 

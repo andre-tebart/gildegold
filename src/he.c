@@ -6261,7 +6261,7 @@ int he_Unk550070(int ev)
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
 /* 0x541b40, the script message handler of the inn meeting ("stammtisch", see 0x53f430): `cmd` is a four letter code ("join" 0x6a6f696e, "cler" 0x636c6572 = clear, "exec" 0x65786563, "leav" 0x6c656176, "new " 0x6e657720), a2 the inn record, a3 its staff record (4 members at +0x1c), a4 the figure id. Collects the member players (0x505df0), tells them (0x53dee0, the news 0x1893 .. 0x189d) and settles the money / relations of an executed meeting (ROUGH) */
-void he_Unk541b40(unsigned cmd, int a2, int a3, int a4)
+void he_StammtischCommand(unsigned cmd, int a2, int a3, int a4)
 {
     int n = 0;
     int i, j, k, pm;
@@ -6431,7 +6431,7 @@ void he_Unk542100(int ev)
         o = (unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c;
     if (o != 0 && o != U_I((unsigned)&ai_PlayerChar) && *(char *)(o + 8) != 0 && *(char *)(o + 2) != 0xf) {
         if (*(int *)(ev + 0xc0) == 1) {
-            he_Unk541b40(0x6e657720, bld, r, -1);
+            he_StammtischCommand(0x6e657720, bld, r, -1);
             *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
             *(HETIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
@@ -6443,7 +6443,7 @@ void he_Unk542100(int ev)
                 cm_SendExSetHE(0, ev);
                 return;
             }
-            he_Unk541b40(0x65786563, bld, r, -1);
+            he_StammtischCommand(0x65786563, bld, r, -1);
             *(HETIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
             *(HETIME *)(ev + 0xb0) = ai_Time;
