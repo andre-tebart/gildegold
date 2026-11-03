@@ -3568,7 +3568,7 @@ set:
     }
     if (msg[4] == 0x11 && he_IsMessageKindFiltered(*(int *)(msg + 0x58)) != 0)
         return 0;
-    o = he_Unk53e040(msg);
+    o = he_CreateEvent(msg);
     if (o == 0)
         return 1;
     if (o[0] == 0x11) {

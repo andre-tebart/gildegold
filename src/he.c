@@ -352,7 +352,7 @@ void he_FreeEvents(void)
     char *p;
     int i = 0;
 
-    if (U_I((unsigned)&ai_Unk6f261c) >= 0) {
+    if (U_I((unsigned)&he_EventTop) >= 0) {
         p = (char *)(unsigned)&he_Events;
         do {
             if ((int)p >= (int)((unsigned)&he_Events + 0x53000))
@@ -361,7 +361,7 @@ void he_FreeEvents(void)
                 he_FreeEvent(p);
             i++;
             p += 0x14c;
-        } while (i <= U_I((unsigned)&ai_Unk6f261c));
+        } while (i <= U_I((unsigned)&he_EventTop));
     }
 }
 /* 0x53d5d0, frees the records, then asks 0x52a040 three times */
@@ -757,83 +757,86 @@ void err_Message(char *text);
 /* HE_SET_CLOCK: the game clock (0x770ae0 ..) into a message at +0x28 .. +0x34, flag byte 2 at +0x36 */
 #define HE_CLK(m) do { HM_I(m, 0x28) = U_I((unsigned)&ai_Time); HM_I(m, 0x2c) = U_I((unsigned)&ai_Time.hour); HM_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); HM_B(m, 0x36) = 2; } while (0)
 
-/* 0x53e040, creates the event record of the message `m` (type m+4 < 0xa7 with both handlers, player m+8): the first free of the 0x400 records at 0x6fab40 (0x14c bytes, type byte first), copies the message into it, calls the alloc handler and counts it (0x7585e4); 0 when no handler / record is free (ROUGH) */
-unsigned char *he_Unk53e040(unsigned char *m)
+#define he_Jobs (*(AIJOB (*)[0x400])&he_Events)  /* 0x6fab40 */
+typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_Unk53d600) */
+#define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
+
+/* 0x53e040, creates the event record of the message `m`: its type needs both an alloc and a run handler (< 0xa7) and its
+   receiver `to` (unless -1) must be a character; takes the first free of the 0x400 records he_Events (raising
+   he_EventTop), copies the message into it (the character's index and netId, the new event id ai_NextEventId, the
+   words, the time, the flags, the ids and the arguments 0x58.. to 0xac..), lists it in he_QuickList when it is
+   shown in the event bar (flags 8, he_QuickTop), calls the alloc handler and counts it (he_EventCount); 0 when it
+   cannot
+   @deep read whole against the original and rewritten on AIMSG / AIJOB (AIJOB gained
+   id/netId/from/words14/text/textSize/exSlot/ids and its 0x14c size): every statement, store and its order
+   matches (the handler checks, the free record search, the he_EventTop / he_QuickTop raises, the
+   character's id / netId or -1 / 0xffff, the quick list, the id, kind, from, the time struct copy, opts,
+   stage/slot/text 0, exSlot -1, the 0xa0-byte argument copy, the alloc handler call, he_EventCount++).
+   Left: the two word-copy loops (12 words +0x10 -> +0x14, 8 ids +0x38 -> +0x8c): the original walks two
+   pointers with a down counter (lea ecx,[ebp+0x14]; lea eax,[ebx+0x10]; mov edx,0xc; mov edi,[eax]; add
+   eax,4; mov [ecx],edi; add ecx,4; dec edx), ours folds them into one pointer plus the difference (mov
+   ecx,ebx; sub ecx,eax; mov edi,[edx+eax]) and the register choice of the time copy / the rep movsd
+   follows; tried pointer for loops, do-while with --k, the index form (gives [ebx+eax*4+0x10] with an up
+   counter): an induction-variable choice of the optimizer */
+unsigned char *he_CreateEvent(unsigned char *m)
 {
-    unsigned short *pl = 0;
-    int i, j, k, off, saved;
-    char *pc;
-    unsigned char *r;
+    AIMSG *msg = (AIMSG *)m;
+    short *ch = 0;                      /* the AICHAR (ai.h, not included here): id at 0, netId at 4 */
+    AIJOB *ev;
+    int i, j, k;
     int *d, *s;
 
-    if (m[4] < 0xa7 && U_I(((unsigned)&he_QuickList + 0x400) + m[4] * 4) != 0 && U_I((unsigned)&he_RunHandlers + m[4] * 4) != 0) {
-        if (*(int *)(m + 8) != -1 && (pl = (unsigned short *)gm_FindChar(*(int *)(m + 8))) == 0)
-            return 0;
-        i = 0;
-        pc = (char *)(unsigned)&he_Events;
-        do {
-            if (*pc == 0)
-                break;
-            pc += 0x14c;
-            i++;
-        } while ((int)pc < (unsigned)((unsigned)&he_Events + 0x53000));
-        if (i != 0x400) {
-            off = i * 0x14c;
-            r = (unsigned char *)((unsigned)&he_Events + off);
-            if (U_I((unsigned)&ai_Unk6f261c) < i)
-                U_I((unsigned)&ai_Unk6f261c) = i;
-            if (*(int *)(m + 8) == -1) {
-                U_I(((unsigned)&he_Events + 0xc) + off) = -1;
-                *(unsigned short *)(((unsigned)&he_Events + 0x8) + off) = 0xffff;
-            } else {
-                U_I(((unsigned)&he_Events + 0xc) + off) = *(int *)(pl + 2);
-                *(unsigned short *)(((unsigned)&he_Events + 0x8) + off) = *pl;
-            }
-            saved = U_I((unsigned)&ai_Unk6f2620);
-            if ((m[0x36] & 8) != 0) {
-                j = 0;
-                do {
-                    if (U_I((unsigned)&he_QuickList + j * 4) == 0)
-                        break;
-                    j++;
-                } while (j < 0x100);
-                if (j == 0x100)
-                    return 0;
-                U_I((unsigned)&he_QuickList + j * 4) = (int)r;
-                if (saved < j)
-                    U_I((unsigned)&ai_Unk6f2620) = j;
-            }
-            *r = m[4];
-            U_I(((unsigned)&he_Events + 0x4) + off) = U_I((unsigned)&ai_NextEventId);
-            U_I((unsigned)&ai_NextEventId)++;
-            U_I(((unsigned)&he_Events + 0x10) + off) = *(int *)(m + 0xc);
-            d = (int *)(((unsigned)&he_Events + 0x14) + off);
-            s = (int *)(m + 0x10);
-            for (k = 0; k < 0xc; k++)
-                *d++ = *s++;
-            U_I(((unsigned)&he_Events + 0x44) + off) = *(int *)(m + 0x28);
-            U_I(((unsigned)&he_Events + 0x48) + off) = *(int *)(m + 0x2c);
-            U_I(((unsigned)&he_Events + 0x4c) + off) = *(int *)(m + 0x30);
-            *(short *)(((unsigned)&he_Events + 0x50) + off) = *(short *)(m + 0x34);
-            *(unsigned char *)(((unsigned)&he_Events + 0x78) + off) = m[0x36];
-            U_I(((unsigned)&he_Events + 0x70) + off) = 0;
-            U_I(((unsigned)&he_Events + 0x74) + off) = 0;
-            U_I(((unsigned)&he_Events + 0x7c) + off) = 0;
-            U_I(((unsigned)&he_Events + 0x84) + off) = -1;
-            d = (int *)(((unsigned)&he_Events + 0x8c) + off);
-            s = (int *)(m + 0x38);
-            for (k = 0; k < 8; k++)
-                *d++ = *s++;
-            s = (int *)(m + 0x58);
-            d = (int *)(((unsigned)&he_Events + 0xac) + off);
-            for (k = 0; k < 0x28; k++)
-                *d++ = *s++;
-            ((void (*)(unsigned char *))U_I(((unsigned)&he_QuickList + 0x400) + m[4] * 4))(r);
-            U_I((unsigned)&ai_Unk7585e4)++;
-            return r;
-        }
+    if (msg->type >= 0xa7 || he_AllocHandlers[msg->type] == 0 || he_RunHandlers[msg->type] == 0)
+        return 0;
+    if (msg->to != -1 && (ch = gm_FindChar(msg->to)) == 0)
+        return 0;
+    for (i = 0; i < 0x400; i++)
+        if (he_Jobs[i].kind == 0)
+            break;
+    if (i == 0x400)
+        return 0;
+    ev = &he_Jobs[i];
+    if (i > he_EventTop)
+        he_EventTop = i;
+    if (msg->to == -1) {
+        ev->netId = -1;
+        ev->chr = 0xffff;
+    } else {
+        ev->netId = ((int *)ch)[1];
+        ev->chr = ch[0];
     }
-    return 0;
+    if (msg->flags & 8) {
+        for (j = 0; j < 0x100; j++)
+            if (he_QuickList[j] == 0)
+                break;
+        if (j == 0x100)
+            return 0;
+        he_QuickList[j] = (char *)ev;
+        if (j > he_QuickTop)
+            he_QuickTop = j;
+    }
+    ev->id = ai_NextEventId;
+    ev->kind = msg->type;
+    ai_NextEventId++;
+    ev->from = msg->fromId;
+    d = ev->words14;
+    s = &msg->nIds;
+    for (k = 0; k < 0xc; k++)
+        *d++ = *s++;
+    ev->start = msg->time;
+    ev->opts = msg->flags;
+    ev->stage = 0;
+    ev->slot = 0;
+    ev->text = 0;
+    ev->exSlot = -1;
+    d = ev->ids;
+    s = msg->ids;
+    for (k = 0; k < 8; k++)
+        *d++ = *s++;
+    memcpy(&ev->u.id, msg->arg, 0xa0);  /* the arguments 0x58..0xf8 */
+    he_AllocHandlers[msg->type](ev);
+    he_EventCount++;
+    return (unsigned char *)ev;
 }
 /* 0x53e1f0, frees the event record `r` (the memo block at +0x7c, the slot of the quick list 0x74db40) and shrinks the used counters 0x6f261c / 0x6f2620 */
 
@@ -862,29 +865,29 @@ void he_FreeEvent(int *r)
                 return;
             if (q[0x1d] != 0 && *(int *)(q[0x1d] + 8) != -1)
                 he_ReleaseSlot((int)q);
-            u = U_I((unsigned)&ai_Unk6f2620);
+            u = U_I((unsigned)&he_QuickTop);
             U_I((unsigned)&he_QuickList + i * 4) = 0;
             if (i == u) {
                 for (; (int)u >= 0 && U_I((unsigned)&he_QuickList + u * 4) == 0; u--)
                     ;
-                U_I((unsigned)&ai_Unk6f2620) = ((int)u < 0) - 1 & u;
+                U_I((unsigned)&he_QuickTop) = ((int)u < 0) - 1 & u;
             }
         }
-        U_I((unsigned)&ai_Unk7585e4)--;
+        U_I((unsigned)&he_EventCount)--;
         q = r;
         for (k = 0; k < 0x53; k++)
             *q++ = 0;
-        if (r == (int *)((unsigned)&he_Events + U_I((unsigned)&ai_Unk6f261c) * 0x14c)) {
-            if (U_I((unsigned)&ai_Unk6f261c) >= 0) {
-                pc = (char *)((unsigned)&he_Events + U_I((unsigned)&ai_Unk6f261c) * 0x14c);
+        if (r == (int *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c)) {
+            if (U_I((unsigned)&he_EventTop) >= 0) {
+                pc = (char *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c);
                 do {
                     if (*pc != 0)
                         break;
-                    U_I((unsigned)&ai_Unk6f261c)--;
+                    U_I((unsigned)&he_EventTop)--;
                     pc -= 0x14c;
-                } while (U_I((unsigned)&ai_Unk6f261c) >= 0);
+                } while (U_I((unsigned)&he_EventTop) >= 0);
             }
-            U_I((unsigned)&ai_Unk6f261c) = (U_I((unsigned)&ai_Unk6f261c) < 0) - 1 & U_I((unsigned)&ai_Unk6f261c);
+            U_I((unsigned)&he_EventTop) = (U_I((unsigned)&he_EventTop) < 0) - 1 & U_I((unsigned)&he_EventTop);
         }
     }
 }
@@ -896,10 +899,10 @@ char *he_NextEvent(void)
     char *last = 0;
     char *cur;
 
-    if (U_I((unsigned)&ai_Unk6f261c) < 0 || U_I((unsigned)&ai_Unk6f261c) > 0x3ff)
+    if (U_I((unsigned)&he_EventTop) < 0 || U_I((unsigned)&he_EventTop) > 0x3ff)
         err_Message("he_fn_Handlung(): invalid Handlungen_LAST");
     else
-        last = (char *)((unsigned)&he_Events + U_I((unsigned)&ai_Unk6f261c) * 0x14c);
+        last = (char *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c);
     if (U_I(((unsigned)&he_QuickList + 0xaaa0)) == 0 || (char *)U_I(((unsigned)&he_QuickList + 0xaaa0)) == last || last < (char *)U_I(((unsigned)&he_QuickList + 0xaaa0)))
         return 0;
     if (*(char *)(unsigned)&full_data_6f2624 == 0)
@@ -1306,7 +1309,7 @@ void he_Unk53ed70(void)
 
     he_Unk53eba0();
     i = 0;
-    if (U_I((unsigned)&ai_Unk6f261c) >= 0) {
+    if (U_I((unsigned)&he_EventTop) >= 0) {
         pb = (unsigned char *)(unsigned)&he_Events;
         do {
             if ((int)pb >= (int)((unsigned)&he_Events + 0x53000))
@@ -1321,7 +1324,7 @@ void he_Unk53ed70(void)
             }
             i++;
             pb += 0x14c;
-        } while (i <= U_I((unsigned)&ai_Unk6f261c));
+        } while (i <= U_I((unsigned)&he_EventTop));
     }
 }
 /* 0x53edf0, runs the run handler of the quick list records (0x74db40) */
@@ -1331,7 +1334,7 @@ void he_RunQuickList(void)
     unsigned char *pb;
     int i = 0;
 
-    if (U_I((unsigned)&ai_Unk6f2620) >= 0) {
+    if (U_I((unsigned)&he_QuickTop) >= 0) {
         do {
             if (i > 0xff)
                 return;
@@ -1341,7 +1344,7 @@ void he_RunQuickList(void)
                 ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
             }
             i++;
-        } while (i <= U_I((unsigned)&ai_Unk6f2620));
+        } while (i <= U_I((unsigned)&he_QuickTop));
     }
 }
 /* 0x53ee40, runs the run handler of the records with bit 0x10 at +0x78 */
@@ -1351,7 +1354,7 @@ void he_Unk53ee40(void)
     unsigned char *pb;
     int i = 0;
 
-    if (U_I((unsigned)&ai_Unk6f261c) >= 0) {
+    if (U_I((unsigned)&he_EventTop) >= 0) {
         pb = (unsigned char *)(unsigned)&he_Events;
         do {
             if ((int)pb >= (int)((unsigned)&he_Events + 0x53000))
@@ -1362,7 +1365,7 @@ void he_Unk53ee40(void)
             }
             i++;
             pb += 0x14c;
-        } while (i <= U_I((unsigned)&ai_Unk6f261c));
+        } while (i <= U_I((unsigned)&he_EventTop));
     }
 }
 /* 0x53eea0, counts the 0x100 entries of 0x74e1e0 (0xa4 bytes, the byte at +4 is a counter) down, clearing the first word of an expired one */
@@ -1382,7 +1385,7 @@ void he_Unk53eea0(void)
             p[-1] = 0;
         }
         p += 0xa4;
-    } while ((int)p < (unsigned)&ai_Unk7585e4);
+    } while ((int)p < (unsigned)&he_EventCount);
 }
 /* 0x53eec0, registers an AP event in the first free of the 0x100 entries at 0x758ca0 (0x50 bytes: counter byte 2, values +4 / +8 / +0xc, name +0x10, 0x3f characters); 0 when full */
 

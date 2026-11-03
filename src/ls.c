@@ -46,7 +46,7 @@ int ls_SpareInt = 0;  /* 0x6f1bcc */
 unsigned char ls_SaveSlot = 0;  /* 0x6f1c38, the slot the save header records */
 /* ai_Unk76fa24: view of cm_SaveAcks (tools/data_views.py) */
 int ai_NextEventId = 0;  /* 0x6f2618 */
-int ai_Unk6f261c = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
+int he_EventTop = 0;  /* 0x6f261c, the highest used index of he_Events (own object: ai_NextEventId is a 4-byte int) */
 extern int ai_NextCharNumber, ai_NextPlayerNumber;   /* 0x6f1bb8, 0x6f1bbc, 0x6f1bc0 */
 /* ls_RefTargets: view of cm_SendStates (tools/data_views.py) */
 int gv_WriteCrimes();                     /* 0x4f28d0 */
@@ -91,11 +91,11 @@ extern char hst_Key[];                 /* 0xf83520, the history key ("G12", 0x20
 int ai_LoadWind();                     /* 0x5dc0c0 */
 int gv_ReadEffects();                     /* 0x4ed910 */
 
-/* ai_Unk6f261c: view of ai_NextEventId (tools/data_views.py) */
-int ai_Unk6f2620 = 0;  /* 0x6f2620 / */
+/* he_EventTop: view of ai_NextEventId (tools/data_views.py) */
+int he_QuickTop = 0;  /* 0x6f2620 / */
 unsigned char he_Events[339968] = {0};  /* 0x6fab40, the */
 char * he_QuickList[10921] = {0};  /* 0x74db40, pointers to the */
-int ai_Unk7585e4 = 0;  /* 0x7585e4 */
+int he_EventCount = 0;  /* 0x7585e4 */
 void (*he_RunHandlers[5544])(unsigned char *) = {0};  /* 0x758600, the event run handlers by type (he.c */
 /* ai_Unk75e134 / ai_Unk75e138 / ai_Unk75e13c: views of ai_TimeCopy (data_views.h), the clock copy */
 
@@ -2359,7 +2359,7 @@ int ls_ReadAvatars(void *f)
 {
     return gv_ReadAvatars(f);
 }
-/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH @deep diff read against the source (97 lines, 70 code / 6 regs / 4 order): meaning verified - the three 4-byte counts, the record loop (rec = 0x6fab40 + idx*0x14c, the 11 pieces incl. the version-gated 8 words +0x8c, the text buffer +0x7c / +0x80 via mem_Alloc and the direct read, the kind 0xc / 0xd block of +0xac and the +0xbc pointer / -1 / +0xd0 clear), the flagged records into 0x74db40, then the 0x29-int table 0x74e1e0 and the 0x14-int table 0x758ca4. Left is codegen: a store-order pair (the +0x7c store before/after the following load) and the induction-variable base - the original keeps the middle-loop pointer 8 bytes above ours (its edi with 0/+4/+8/... vs our edi-8 with -8/-4/0/...; both reach the same 0x74e1e8 start), the `if (n > 0) do {} while` loop shape was tried. Readability: Q3 on every table literal (0x6fab40, 0x74db40, 0x74e1e0, 0x758ca4), Q2 on he_FreeEvents / ai_Unk7585e4 / ai_Unk6f261c / ai_Unk6f2620, Q1/Q5. */
+/* 0x51fb90, reads the 0x14c-byte records of 0x6fab40 (the counterpart of 0x51bdc0): the counts, then each record in pieces (the 8 words +0x8c from 0x1002f), the text buffer of +0x7c (size +0x80, "messagebox", 0x400 bytes) and the type specific block of +0xac (the kind 0xc gets a 0x58-byte "f3_alwin_t:d" record at +0xbc, the kind 0xd -1 and, for the type 6, +0xd0 = 0), the records flagged 8 are listed in 0x74db40; then the 0x29-word table 0x74e1e0 (0x2c-byte entries) and the 0x14-word table 0x758ca0. Returns 1. ROUGH @deep diff read against the source (97 lines, 70 code / 6 regs / 4 order): meaning verified - the three 4-byte counts, the record loop (rec = 0x6fab40 + idx*0x14c, the 11 pieces incl. the version-gated 8 words +0x8c, the text buffer +0x7c / +0x80 via mem_Alloc and the direct read, the kind 0xc / 0xd block of +0xac and the +0xbc pointer / -1 / +0xd0 clear), the flagged records into 0x74db40, then the 0x29-int table 0x74e1e0 and the 0x14-int table 0x758ca4. Left is codegen: a store-order pair (the +0x7c store before/after the following load) and the induction-variable base - the original keeps the middle-loop pointer 8 bytes above ours (its edi with 0/+4/+8/... vs our edi-8 with -8/-4/0/...; both reach the same 0x74e1e8 start), the `if (n > 0) do {} while` loop shape was tried. Readability: Q3 on every table literal (0x6fab40, 0x74db40, 0x74e1e0, 0x758ca4), Q2 on he_FreeEvents / he_EventCount / he_EventTop / he_QuickTop, Q1/Q5. */
 
 int unk_Unk51fb90(int f)
 {
@@ -2371,12 +2371,12 @@ int unk_Unk51fb90(int f)
     he_FreeEvents();
     LS_R(&n, 4)
     LS_R(&size2, 4)
-    ai_Unk6f261c = 0;
-    ai_Unk6f2620 = 0;
-    ai_Unk7585e4 = 0;
+    he_EventTop = 0;
+    he_QuickTop = 0;
+    he_EventCount = 0;
     if (n > 0) {
         do {
-            idx = ai_Unk7585e4;
+            idx = he_EventCount;
             rec = (char *)(unsigned)&he_Events + idx * 0x14c;
             LS_R(rec, 1)
             LS_R(rec + 4, 4)
@@ -2415,13 +2415,13 @@ int unk_Unk51fb90(int f)
                 LS_R(rec + 0xac, size2)
             }
             if ((rec[0x78] & 8) != 0) {
-                he_QuickList[ai_Unk6f2620] = rec;
-                ai_Unk6f2620++;
+                he_QuickList[he_QuickTop] = rec;
+                he_QuickTop++;
             }
-            ai_Unk7585e4++;
-        } while (ai_Unk7585e4 < n);
+            he_EventCount++;
+        } while (he_EventCount < n);
     }
-    ai_Unk6f261c = ai_Unk7585e4;
+    he_EventTop = he_EventCount;
     LS_R(&n, 4)
     i = 0;
     if (n > 0) {

@@ -103,11 +103,11 @@ extern int ai_NextCrimeId;                                    /* 0x6f1b88 */
 extern int ls_SpareInt;                                    /* 0x6f1bcc */
 extern unsigned char ls_SaveSlot;                           /* 0x6f1c38 */
 extern int ai_NextEventId;                                    /* 0x6f2618 */
-extern int ai_Unk6f261c;                                      /* 0x6f261c, the highest used index of he_Events */
-extern int ai_Unk6f2620;                                    /* 0x6f2620 */
+extern int he_EventTop;                                      /* 0x6f261c, the highest used index of he_Events */
+extern int he_QuickTop;                                    /* 0x6f2620 */
 extern unsigned char he_Events[339968];                     /* 0x6fab40 */
 extern char * he_QuickList[10921];                          /* 0x74db40 */
-extern int ai_Unk7585e4;                                    /* 0x7585e4 */
+extern int he_EventCount;                                    /* 0x7585e4 */
 #ifndef DATA_VIEWS_H
 extern int ai_Unk75e134;                                    /* 0x75e134 */
 extern int ai_Unk75e138;                                    /* 0x75e138 */

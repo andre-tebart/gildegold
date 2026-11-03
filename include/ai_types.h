@@ -21,12 +21,16 @@ typedef struct AISTORE {                /* 24 bytes, a stock list per building, 
     int stored;                         /* 0x14, 1 when the building's store object (0xff) holds the goods */
 } AISTORE;
 
-typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) */
-    char kind;                          /* 0x00 */
-    char pad01[7];
+typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he_Events, he_CreateEvent; he_FindEvent / he_NextEvent) */
+    char kind;                          /* 0x00, the message type it was made from, 0: a free record */
+    char pad01[3];
+    int id;                             /* 0x04, the event id (ai_NextEventId at its creation) */
     unsigned short chr;                 /* 0x08, the index in ai_Chars of the character it is for (cm_ExAddCrime: of a
                                            kind 0x18 the witness told of the crime) */
-    char pad0a[0x3a];
+    char pad0a[2];
+    int netId;                          /* 0x0c, the netId of that character, -1: none (the message's 'to') */
+    int from;                           /* 0x10, the message's fromId */
+    int words14[12];                    /* 0x14, the message's 12 words from +0x10 */
     AITIME start;                       /* 0x44, the start time (sv_RefreshPanel measures the progress from it) */
     AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
     char pad60[0x10];
@@ -34,10 +38,16 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     struct HEEVSLOT *slot;              /* 0x74, of an event shown in the event bar its slot (he.h he_EventSlots), 0: none */
     unsigned char opts;                 /* 0x78, the event's options from its message: 2 posts it when due, 4 not started yet,
                                            8 shown in the event bar, 0x10 runs every frame (he.c) */
-    char pad79[0x13];
-    int helpers[4];                     /* 0x8c, of a helper job 0x8c the characters on it, -1: a free place
+    char pad79[3];
+    char *text;                         /* 0x7c, of a message box event 0x11 its text ("messagebox", cm.c), 0 at creation */
+    int textSize;                       /* 0x80, the size of that text (ls.c's loader reads it) */
+    int exSlot;                         /* 0x84, the cm slot cm_SendExSetHE gave the event (cm_GetSlotState asks it), -1: none */
+    char pad88[4];
+    union {
+        int ids[8];                     /* 0x8c, the message's ids[] */
+        int helpers[4];                 /* 0x8c, of a helper job 0x8c the characters on it, -1: a free place
                                            (ai_GypsyHelperWindow counts them) */
-    char pad9c[0x10];
+    };
     union {
         int unkac;                      /* 0xac, a building id */
         int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_EndPersonEvents) the first partner's netId */
@@ -85,7 +95,10 @@ typedef struct AIJOB {                  /* a job (he_FindEvent / he_NextEvent) *
     char pade8[8];
     unsigned char modes;                /* 0xf0, of a kind 0x11 bit 0x40: the game pauses while its event window is active (he_PickActiveEvent) */
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
+    char padf2[0x5a];                   /* up to 0x14c: the rest of the message's words from +0x58 (0xac..0x14c) */
 } AIJOB;
+
+typedef char ai_AssertAIJOB[sizeof(AIJOB) == 0x14c ? 1 : -1];
 
 typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessage */
     int unk00;

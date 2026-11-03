@@ -32,7 +32,7 @@ extern unsigned char he_SlotConfirmed;  /* 0x6f2630, set by a right click / Ente
 int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
-unsigned char * he_Unk53e040(unsigned char *m);
+unsigned char * he_CreateEvent(unsigned char *m);
 void he_FreeEvent(int *r);
 char *he_NextEvent(void);
 char *he_FindEvent(int n, ...);
