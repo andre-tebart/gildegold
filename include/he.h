@@ -100,7 +100,7 @@ void he_Unk541250(int r, int pl);
 
 
 
-void he_Unk541280(int ev, int p2);
+void he_CharacterBehavior(struct AIJOB *ev, float *pos);
 void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6);
 void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6);
 void he_Unk541a80(int r);

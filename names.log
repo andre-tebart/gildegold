@@ -1722,3 +1722,4 @@
 2026-11-03T23:54:38 0x00541010 func he_Unk541010 -> he_PostEvent3a by:main why:posts the message 0x3a for the player's character (main_GameLoop)
 2026-11-03T23:55:05 0x00541060 func he_Unk541060 -> he_PostEvent3b by:main why:posts the message 0x3b for the player's character, freeing a running event 0x3b first (main_GameLoop)
 2026-11-03T23:56:34 0x00541170 func he_Unk541170 -> he_PostEventA6 by:main why:posts the message 0xa6 for the player's character, freeing a running event 0xa6 first (main_GameLoop)
+2026-11-03T23:59:55 0x00541280 func he_Unk541280 -> he_CharacterBehavior by:main why:the string it tags its walk actions with, "he_CharacterBehavior"

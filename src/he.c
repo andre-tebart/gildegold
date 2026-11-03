@@ -55,7 +55,6 @@ extern int ai_TransportWindow();
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
 extern int ai_GameFlags;
-extern const struct D3VECTOR d3_Origin;
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GameSwitches;
 extern char ai_Chars[768][0x21c];
@@ -93,11 +92,9 @@ extern signed char ai_Relations[768][768];
 extern const int ai_CharWalkSteps[16];
 extern char ai_Crimes[];
 extern const int sv_PhaseMinutes[24];
-extern volatile unsigned long d3_Time;
 extern unsigned short * ai_PlayerChar;
 extern const float ai_FloatOne;
 extern char ai_Unk625820[115][0x20];
-extern const struct D3VECTOR d3_ZAxis;
 extern GAPDATA full_data_60d0d4[];
 extern GAPDATA full_data_6f2634[];
 extern struct G16TRACKHANDLES snd_TrackHandles;
@@ -134,7 +131,6 @@ extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet)
 extern GAPDATA full_data_627b0c[];
 extern char gm_TagGebaeudePROT[24];
 extern GAPDATA full_data_627b20[];
-extern char ch_EmptyName[1];
 extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
 extern float gm_DayEndHours[];
@@ -248,7 +244,6 @@ void cm_SendProofExecuted(int a, int b);
 void cm_SendChrStop(int a);
 void cm_SendFieldDeltas(void);
 int cm_SendRelations(int a, int b, int c, int d);
-int util_Random(unsigned short n);      /* 0x42ec00, tr.c's definition: this TU's callers were compiled against the 16-bit parameter and result */
 
 int gm_PlayerFactor(int a, unsigned char k);
 void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);
@@ -271,7 +266,6 @@ int ai_Unk56e400();
 int ai_Unk5733c0();
 int ai_Unk573260();
 
-int sv_ReturnZero(void);
 int gm_CompareTime();
 
 #include "ls.h"
@@ -301,6 +295,7 @@ int gm_CompareTime();
 #include "f3gm_carry.h"
 #include "ai_char.h"
 #include "gv_types.h"
+#include "ch.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -2331,44 +2326,42 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);
 void cm_SendSetField(int a, int b, int c, int d, int e);
 int cm_SendChrGotoBuilding();
 
-/* 0x541280, a figure's behaviour at an event: for every one of the 8 figures (+0x8c) without a pending job in 40 percent of the cases walks the way points of the event (0x4bc390 / 0x45f170 / 0x40b2f0, job 0x2d, "he_CharacterBehavior"), else plays one of three gestures ("gestik/..") twice (ROUGH) */
-void he_Unk541280(int ev, int p2)
+/* 0x541280, the idle behaviour of the event's characters (ids[], 8 of them) in the default scene: each one whose scene
+   character has no queued action either walks to 1 .. 3 points near pos (rd_PointsNear, actions 0x2d tagged
+   "he_CharacterBehavior"; 41 of 100) or plays one of three gestures twice, each 1 .. 3 times */
+void he_CharacterBehavior(AIJOB *ev, float *pos)
 {
-    int *pi;
-    int k, n, o, e8, f0, r, ec;
-    unsigned short us;
-    unsigned u;
-    char *pu;
-    char e4[4];
-    char gest[3][0x20];
-    char buf[0x80];
+    int *id;
+    int k, n;
+    AICHAR *c;
+    struct D3SM *h;
+    int px, pz;
+    float py;
+    float (*p)[4];
+    CHACTION *act;
 
-    if (U_I((unsigned)&d3_CurrentScene) == 0) {
-        pi = (int *)(ev + 0x8c);
-        for (k = 8; k != 0; k--, pi++) {
-            if (*pi != -1 && (o = gm_FindChar(*pi)) != 0 && *(int *)(*(int *)(o + 0x184) + 0x128) == 0) {
-                us = util_Random(100);
-                if (us < 0x29) {
-                    ec = (int)d3_DefaultScene->hmap;
-                    u = util_Random(3);
-                    n = rd_PointsNear(p2, (u & 0xffff) + 1, buf);
-                    pu = buf;
-                    for (; n > 0; n--) {
-                        if ((char)d3_GetHeightAt(ec, pu, &e8, &f0, e4) != 0) {
-                            r = ch_AddAction(*(int *)(o + 0x184), 0x2d, e8, f0, 0);
-                            strcpy((char *)(r + 0x70), "he_CharacterBehavior");
-                        }
-                        pu += 0x10 * 4;
-                    }
+    if (d3_CurrentScene == 0) {
+        for (id = ev->ids, k = 8; k != 0; k--, id++) {
+            if (*id != -1 && (c = (AICHAR *)gm_FindChar(*id)) != 0 && c->scene->actions == 0) {
+                if (util_RandomU(100) > 40) {
+                    char gest[3][0x20] = { "gestik/durch_haar_fahr", "gestik/kopf_kratzen", "gestik/mit_faust_droh" };
+
+                    ch_QueueAnim(c->scene, gest[util_RandomU(3)], util_RandomU(3) + 1);
+                    ch_QueueAnim(c->scene, gest[util_RandomU(3)], util_RandomU(3) + 1);
                 } else {
-                    memset(gest, 0, sizeof(gest));
-                    strcpy(gest[0], "gestik/durch_haar_fahr");
-                    strcpy(gest[1], "gestik/kopf_kratzen");
-                    strcpy(gest[2], "gestik/mit_faust_droh");
-                    u = util_Random(3);
-                    ch_QueueAnim(*(int *)(o + 0x184), gest[u & 0xffff]);
-                    u = util_Random(3);
-                    ch_QueueAnim(*(int *)(o + 0x184), gest[u & 0xffff]);
+                    float pts[8][4];
+
+                    h = d3_DefaultScene->hmap;
+                    n = util_RandomU(3) + 1;
+                    n = rd_PointsNear(pos, n, pts);
+                    if (n > 0) {
+                        for (p = pts; n != 0; n--, p++) {
+                            if (d3_GetHeightAt(h, (struct D3VECTOR *)*p, &px, &pz, &py)) {
+                                act = ch_AddAction(c->scene, 0x2d, px, pz, 0);
+                                strcpy(act->why, "he_CharacterBehavior");
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -4868,7 +4861,7 @@ void he_Unk54bec0(int ev)
             float pos[3];
 
             d3_PointToWorld(o, o + 0x4c, pos);
-            he_Unk541280(ev, (int)pos);
+            he_CharacterBehavior((AIJOB *)ev, pos);
         }
         *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
         return;
