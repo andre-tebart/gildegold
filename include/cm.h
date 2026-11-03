@@ -782,8 +782,8 @@ extern double ai_Unk5eb9b0;  /* 0x5eb9b0 */
 
 void cm_CarryOutOrder(char *rec, char *c);  /* 0x4d3120 */
 void cm_FallDownAction(char *c);  /* 0x4d3300 */
-extern float ai_Unk5eb7dc;  /* 0x5eb7dc */
-extern const double ai_Unk5edc68;  /* 0x5edc68 */
+extern float cm_Pi;  /* 0x5eb7dc */
+extern const double cm_Inv180;  /* 0x5edc68 */
 
 int cm_CheckDeath(struct AICHAR *c);  /* 0x4d3390 */
 struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
@@ -939,7 +939,7 @@ extern int ai_Unk92bca4;  /* 0x92bca4 */
 extern unsigned char ai_Unk6f0da8[];  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
 int ai_Unk4e50e0();  /* 0x4e50e0 */
 int cm_WaitTicks();  /* 0x4e3420 */
-void ai_Unk4de4b0(float a, char *o);  /* 0x4de4b0 */
+void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
 int ai_Unk4de530(char *c, int dmg);  /* 0x4de530 */
 void ai_Unk4de900(char *a, char *b);  /* 0x4de900 */
 extern int ai_Unk60d370;  /* 0x60d370 */

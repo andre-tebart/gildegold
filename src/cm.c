@@ -9554,7 +9554,7 @@ void cm_FallDownAction(char *c)
     rot[0] = 0;
     rot[1] = 0;
     rot[2] = 0;
-    rot[1] = (float)(cm_Random(0x168) * ai_Unk5eb7dc * ai_Unk5edc68);
+    rot[1] = (float)(cm_Random(0x168) * cm_Pi * cm_Inv180);
     sb_PlaySampleI(0, "Koerperfaellt", 1, 0x3f, 0x7f, 0, 0);
     b = (char *)d3_CreateObject(0, *(char **)(*(char **)(c + 0x14) + 0x34) + 0x4c, rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
@@ -13440,17 +13440,20 @@ void ai_Unk4de340(char *r, int *m)
         return;
     }
 }
-/* 0x4de4b0, a callback of the fall animation: a blood puddle ("ub_Blutlache") at the position of the object o->+0x14 */
+/* 0x4de4b0, the sink-to-ground action's callback (ai_Unk4de530): a blood puddle "ub_Blutlache" turned at random at
+   the character's place, as cm_FallDownAction without the sound */
 
-void ai_Unk4de4b0(float a, char *o)
+void cm_SinkDownAction(CHACTION *a)
 {
-    int v[3];
+    D3VECTOR rot;
+    D3OBJECT *b;
 
-    v[0] = 0;
-    v[1] = 0;
-    v[2] = 0;
-    a = (float)cm_Random(0x168) * ai_Unk5eb7dc * ai_Unk5edc68;
-    d3t_PlayAnim(d3_CreateObject(0, *(char **)(*(char **)(o + 0x14) + 0x34) + 0x4c, v, "ub_Blutlache"), "sonstiges\\ub_Blutlache.baf", 0x12);
+    rot.x = 0;
+    rot.y = 0;
+    rot.z = 0;
+    rot.y = (float)(cm_Random(0x168) * cm_Pi * cm_Inv180);
+    b = d3_CreateObject(0, &a->ch->obj->pos, &rot, "ub_Blutlache");
+    d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
 }
 /* 0x4de530, a fighter whose life (0x4fc8e0) is under 0.2 sinks to the ground ("bewegung/zu_boden_sinken"): 1 */
 
@@ -13461,7 +13464,7 @@ int ai_Unk4de530(char *c, int dmg)
     if (gm_HealthRatio(c) < 0.2) {
         d3t_CreateBloodK(*(int *)(*(char **)(c + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
         ch_StopActions(*(char **)(c + 0x184));
-        o = (char *)ch_AddActionCBK(*(char **)(c + 0x184), ai_Unk4de4b0, 0x12, 0x36, 1);
+        o = (char *)ch_AddActionCBK(*(char **)(c + 0x184), cm_SinkDownAction, 0x12, 0x36, 1);
         strcpy(o + 0xf0, "bewegung/zu_boden_sinken");
         *(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x220) = 0;
         ai_Unk6f0d94 = 1;
@@ -16431,7 +16434,7 @@ float ai_Unk5eb788 = 0.0f;  /* 0x5eb788 */
    double: a 8-byte definition here claims two literals another unit owns. */
 /* 0x5eb7ac is the pooled float 0.5f (0x3f000000): use the literal at the call sites. */
 double ai_Unk5eb7b0 = 15.0;  /* 0x5eb7b0 */
-float ai_Unk5eb7dc = 3.14159274f;  /* 0x5eb7dc */
+float cm_Pi = 3.14159274f;  /* 0x5eb7dc */
 float ai_Unk5eb7fc = 75.0f;  /* 0x5eb7fc */
 float ai_Unk5eb81c = 30.0f;  /* 0x5eb81c */
 float ai_Unk5eb878 = 1.39999998f;  /* 0x5eb878 */
@@ -16453,7 +16456,7 @@ const double cm_EffectRadiusScale = 1.8;  /* 0x5edc28 */
 const float ai_Unk5edc50 = 525.0f;  /* 0x5edc50 */
 const double ai_Unk5edc58 = 1.1000000000000001;  /* 0x5edc58, read-only: the original keeps it in .rdata */
 const double ai_Unk5edc60 = 6.5012084524677184e-315;  /* 0x5edc60 */
-const double ai_Unk5edc68 = 0.0055555555555555558;  /* 0x5edc68 */
+const double cm_Inv180 = 0.0055555555555555558;  /* 0x5edc68 */
 int evt_LastId = -1;  /* 0x5f8438 */
 int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
 float d2_ScreenScale = 1.0f;  /* 0x5fe708 */
