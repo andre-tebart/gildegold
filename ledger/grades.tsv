@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at d52f7930: declaration-set noise from the C.name.alias cleanup of ch.h / d3_fl.h (the fake CHMOTION view type and d3fl_EmptyName gone): two order hunks (a frame load scheduled one instruction earlier at +0x176 and +0x26f), same instructions; any extra struct type in ch.h restores byte, no genuine one found [waits for: the final type set of ch.h / d3_fl.h (the original's declarations around ch_ActDefs / ch_Path)]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -2171,7 +2171,7 @@ exe	0x004c4130	cm_FreeReceived	cm	byte	readable
 exe	0x004c4190	cm_ExecCommands	cm	draft	readable	deep	
 exe	0x004c43c0	cm_CheckGroup	cm	byte	readable		
 exe	0x004c4450	cm_ResolveId	cm	byte	readable		
-exe	0x004c4480	ai_Unk4c4480	cm	byte	draft		
+exe	0x004c4480	cm_SetLongMsg	cm	byte	draft		
 exe	0x004c44d0	cm_SendLoadSize	cm	byte	draft		
 exe	0x004c4500	cm_SendLoadBlock	cm	byte	readable		
 exe	0x004c4540	cm_BeginGroup	cm	byte	readable		
@@ -2193,8 +2193,8 @@ exe	0x004c4a20	ai_SendNeedBlock	cm	byte	readable
 exe	0x004c4a60	cm_SendSetField	cm	byte	draft		
 exe	0x004c4ac0	cm_SendFloatDelta	cm	byte	draft		
 exe	0x004c4b00	cm_SendRelations	cm	byte	draft		
-exe	0x004c4b70	cm_SendLongMessage	cm	byte	draft		
-exe	0x004c4bc0	ai_Unk4c4bc0	cm	byte	draft		
+exe	0x004c4b70	cm_SendLongMessage	cm	byte	readable		
+exe	0x004c4bc0	cm_SendLongMessageText	cm	byte	draft		
 exe	0x004c4c60	cm_SendExSetHE	cm	byte	draft		
 exe	0x004c4d40	cm_SendTime	cm	shape	draft		
 exe	0x004c4db0	cm_SendExSysMessage	cm	byte	readable		
@@ -2203,9 +2203,9 @@ exe	0x004c4e40	cm_SendCrime	cm	byte	draft
 exe	0x004c4e90	cm_SendRetireCrime	cm	byte	draft		
 exe	0x004c4ed0	cm_SendProofExecuted	cm	byte	draft		
 exe	0x004c4f10	ai_Unk4c4f10	cm	byte	draft		
-exe	0x004c4f50	ai_Unk4c4f50	cm	byte	draft		
-exe	0x004c4fa0	cm_SendNewParty	cm	byte	draft		
-exe	0x004c4fd0	ai_Unk4c4fd0	cm	byte	draft		
+exe	0x004c4f50	cm_RequestSendCutInfo	cm	byte	draft		
+exe	0x004c4fa0	cm_SendNewParty	cm	byte	readable		
+exe	0x004c4fd0	cm_SendLeaveParty	cm	byte	draft		
 exe	0x004c5010	cm_SendMoveObject	cm	byte	draft		
 exe	0x004c5050	cm_SetPlant	cm	byte	draft		
 exe	0x004c50b0	cm_SendObject1b5	cm	shape	readable		
@@ -2249,8 +2249,8 @@ exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft
 exe	0x004c5dc0	cm_SendFightCommand	cm	draft	readable	deep	
 exe	0x004c5e80	cm_SendMessage56	cm	byte	readable		
 exe	0x004c5ec0	ai_Unk4c5ec0	cm	byte	draft		
-exe	0x004c5ef0	ai_Unk4c5ef0	cm	byte	draft		
-exe	0x004c5f20	ai_Unk4c5f20	cm	byte	draft		
+exe	0x004c5ef0	cm_SendCancelParty	cm	byte	draft		
+exe	0x004c5f20	cm_SendCutsceneReady	cm	byte	readable		
 exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	draft		
 exe	0x004c5fa0	cm_SendMessage5b	cm	byte	draft		
 exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	draft		
@@ -2504,9 +2504,9 @@ exe	0x004d7360	cm_Attack	cm	draft	readable	deep
 exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep	
 exe	0x004d88c0	cm_FightLoop	cm	byte	draft		
 exe	0x004d8b10	cm_FightMember	cm	draft	readable	deep	
-exe	0x004d8b30	ai_Unk4d8b30	cm	byte	draft		
+exe	0x004d8b30	cm_ClearSceneChars	cm	byte	readable		
 exe	0x004d8b50	cm_DrawFightTime	cm	shape	readable		
-exe	0x004d8c40	ai_Unk4d8c40	cm	byte	draft		
+exe	0x004d8c40	cm_DeleteSceneChars	cm	byte	readable		
 exe	0x004d8c70	cm_StackPicture	cm	byte	draft		
 exe	0x004d8cb0	cm_TallyStack	cm	byte	draft		
 exe	0x004d8e20	cm_RunCouncilSession	cm	draft	readable	deep	
@@ -2558,9 +2558,9 @@ exe	0x004e2d90	cm_StopScript	cm	byte	readable
 exe	0x004e2dc0	cm_StopGroupScripts	cm	byte	readable		
 exe	0x004e2e00	cm_WaitGroupScripts	cm	byte	readable		
 exe	0x004e2e60	cm_LoadEventScene	cm	shape	draft		
-exe	0x004e3060	cm_FadeToBlack	cm	byte	draft		
+exe	0x004e3060	cm_FadeToBlack	cm	byte	readable		
 exe	0x004e30c0	cm_LeaveEventScene	cm	byte	readable		
-exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
+exe	0x004e3210	cm_SceneTick	cm	byte	readable		
 exe	0x004e3230	cm_CreateChar	cm	byte	readable		
 exe	0x004e3250	cm_DeleteChar	cm	byte	readable		
 exe	0x004e3270	cm_LoadVoiceBank	cm	byte	draft		
@@ -2571,33 +2571,33 @@ exe	0x004e32f0	cm_CreateSceneSky	cm	byte	readable
 exe	0x004e3390	cm_DestroySceneSky	cm	byte	readable		
 exe	0x004e33d0	cm_StartSceneRain	cm	byte	readable		
 exe	0x004e33f0	cm_StopSceneRain	cm	byte	readable		
-exe	0x004e3420	cm_WaitTicks	cm	shape	draft		
+exe	0x004e3420	cm_WaitTicks	cm	shape	readable		
 exe	0x004e3490	cm_RunSceneTicksOrClick	cm	byte	readable		
 exe	0x004e3570	cm_RunSceneTicks	cm	byte	readable		
 exe	0x004e3620	cm_PlaySpecialTrack	cm	byte	draft		
 exe	0x004e3640	cm_EndSpecialTrack	cm	byte	draft		
 exe	0x004e3650	cm_ApplySeason	cm	byte	readable		
-exe	0x004e36a0	cm_ResetCutInfos	cm	draft	draft		
-exe	0x004e3750	ai_Unk4e3750	cm	draft	draft		
+exe	0x004e36a0	cm_ResetCutInfos	cm	shape	readable		
+exe	0x004e3750	cm_PartyAnswered	cm	byte	readable		
 exe	0x004e37a0	cm_ShowPartyTexts	cm	byte	draft		
-exe	0x004e3800	ai_Unk4e3800	cm	byte	draft		
-exe	0x004e3830	cm_RunSceneParty	cm	draft	draft		
-exe	0x004e3fe0	ai_Unk4e3fe0	cm	byte	draft		
-exe	0x004e4020	ai_Unk4e4020	cm	byte	draft		
-exe	0x004e4060	ai_Unk4e4060	cm	draft	draft		
-exe	0x004e4870	ai_Unk4e4870	cm	byte	draft		
-exe	0x004e48b0	cm_SendPartyNote	cm	draft	draft		
-exe	0x004e4a50	ai_Unk4e4a50	cm	byte	draft		
-exe	0x004e4b50	ai_Unk4e4b50	cm	draft	draft		
-exe	0x004e4cc0	cm_UpdateParties	cm	draft	draft		
+exe	0x004e3800	cm_PrevPartyMember	cm	byte	draft		
+exe	0x004e3830	cm_RunSceneParty	cm	draft	readable	deep	
+exe	0x004e3fe0	cm_PauseSceneChars	cm	byte	readable		
+exe	0x004e4020	cm_ResumeSceneChars	cm	byte	readable		
+exe	0x004e4060	cm_ExecCutscene	cm	shape	readable		
+exe	0x004e4870	cm_IsPartyMember	cm	byte	draft		
+exe	0x004e48b0	cm_SendPartyNote	cm	byte	readable		
+exe	0x004e4a50	cm_CheckMaster	cm	byte	draft		
+exe	0x004e4b50	cm_CutsceneReady	cm	byte	readable		
+exe	0x004e4cc0	cm_UpdateParties	cm	byte	readable		
 exe	0x004e4f40	ai_Unk4e4f40	cm	byte	draft		
 exe	0x004e4f80	ai_RunPendingParties	cm	byte	draft		
 exe	0x004e5050	ai_Unk4e5050	cm	byte	draft		
-exe	0x004e50a0	cm_PartyById	cm	byte	draft		
+exe	0x004e50a0	cm_PartyById	cm	byte	readable		
 exe	0x004e50e0	cm_CutInfoById	cm	byte	draft		
 exe	0x004e5120	ai_Unk4e5120	cm	byte	draft		
 exe	0x004e5150	ai_Unk4e5150	cm	byte	draft		
-exe	0x004e5180	ai_Unk4e5180	cm	byte	draft		
+exe	0x004e5180	cm_ClearParty	cm	byte	readable		
 exe	0x004e51b0	ai_Unk4e51b0	cm	shape	draft		
 exe	0x004e5210	ai_Unk4e5210	cm	shape	draft		
 exe	0x004e52a0	cut_RandSeed	cm	byte	draft		
@@ -3406,7 +3406,7 @@ exe	0x0052eee0	sv_UpdateBand	sv	draft	readable	deep
 exe	0x0052f0d0	sv_UpdateBandLed	sv	draft	readable	deep	
 exe	0x0052f2c0	sv_DrawRubberBand	sv	byte	draft		
 exe	0x0052f340	sv_BookKeys	sv	byte	draft		
-exe	0x0052f360	sv_OpenBook	sv	draft	readable	deep	
+exe	0x0052f360	sv_OpenBook	sv	byte	readable		
 exe	0x0052f530	sv_Unk52f530	sv	byte	draft		
 exe	0x0052f600	sv_UpdateBook	sv	byte	readable		
 exe	0x0052f710	sv_TurnBook	sv	byte	readable		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 419f9e3d: G28REC (cm_types.h) gets its field seed at 0x78, which cm_ExecCutscene passes to cut_RandSeed (was raw *(int *)(m + 0x78)): a truer type; ai_TutorialInitChapter2 uses no G28REC, its register tie-break flips on the declaration set cm.h / cm_types.h bring into unk_575860 alone (an unrelated new typedef CMCUTTYPEMSG in cm_types.h flipped it the same way, as cm.h's declarations flip ai_TutorialInitChapter3), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 5f62d178: three byte declarations (cm_DuelRightInsultWon / cm_DuelLeftRollWon / cm_DuelRightRollWon, 0x6f0dab..0x6f0dad) join cm.h where cm_DuelScore[2] was read past its end (D8): truer data, one object per byte as the original's separate byte loads show; the function uses none of them, its register tie-break flips on cm.h's declaration set alone (it flipped the same way for a parameter name in cm_DuelChooseRound's prototype), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

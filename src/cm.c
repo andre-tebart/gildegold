@@ -15,8 +15,9 @@
    original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
    gv_PassSentence takes five arguments here (gv_PassSentenceK).
    Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
-   without parameters; cm_QueueVoice has callers with four arguments, and any cm.h declaration change flips the
-   register tie-break of ai_TutorialInitChapter3 (debt). Meanwhile cm.h's own declarations of ord_AddGridAmount,
+   without parameters; cm_QueueVoice has callers with four arguments, and declaration changes in cm.h / cm_types.h flip
+   the register tie-breaks of ai_TutorialInitChapter2 / 3 (unk_575860, debt). Types only cm.c uses (CMNOTE,
+   CMCUTTYPEMSG) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
    The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
