@@ -8922,29 +8922,32 @@ int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
     }
     return best != 1000000000.0f;
 }
-/* 0x4d22d0, like 0x4d2170 but the greatest rating wins (and the threshold 5eb988 must be exceeded); rough draft */
+/* 0x4d22d0, the most threatened cell around (cx, cy) for the fighter c: the rings of cm_BestCellNear, the cell with the
+   greatest cm_ThreatAt rating goes into (*ox, *oy); returns 1 when that rating is above 5 (0 too when no cell rated
+   above 0) */
 
-int ai_Unk4d22d0(char *c, int cx, int cy, int r, int *ox, int *oy)
+int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
 {
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    float best = 0.0f;
-    float thr = 0.0f;
+    D3SM *sc;
+    float best;
     float f;
-    int k, row, col, hi, hic, m, cell;
+    int k, row, col, hi, hic, m, type;
 
+    sc = (D3SM *)d3_DefaultScene->hmap;
+    best = 0.0f;
     for (k = 0; k < r; k++) {
-        hi = cy + k;
-        if (*(int *)(sc + 0x20) - 1 < hi)
-            hi = *(int *)(sc + 0x20) - 1;
-        for (row = (cy - k < 0) ? 0 : cy - k; row <= hi; row++) {
+        hi = sc->size - 1;
+        if (hi >= cy + k)
+            hi = cy + k;
+        for (row = cy - k < 0 ? 0 : cy - k; row <= hi; row++) {
             m = k - abs(cy - row);
-            hic = cx + m;
-            if (*(int *)(sc + 0x20) - 1 < hic)
-                hic = *(int *)(sc + 0x20) - 1;
-            for (col = (cx - m < 0) ? 0 : cx - m; col <= hic; col++) {
-                cell = (*(int **)(sc + 0x24))[(*(int *)(sc + 0x20) * row + col) * 7];
-                if (cell != 0 && cell != 0xd) {
-                    f = cm_ThreatAt((AICHAR *)c, col, row, (float)(r * *(float *)(sc + 0x10) * 2));
+            hic = sc->size - 1;
+            if (hic >= cx + m)
+                hic = cx + m;
+            for (col = cx - m < 0 ? 0 : cx - m; col <= hic; col++) {
+                type = sc->entries[sc->size * row + col].type;
+                if (type != 0 && type != 0xd) {
+                    f = cm_ThreatAt((AICHAR *)c, col, row, r * sc->cell.x * 2);
                     if (f > best) {
                         best = f;
                         *ox = col;
@@ -8954,7 +8957,7 @@ int ai_Unk4d22d0(char *c, int cx, int cy, int r, int *ox, int *oy)
             }
         }
     }
-    if (best != ai_Unk5eb788 && thr > ai_Unk5eb988)
+    if (best != 0.0f && best > 5.0f)
         return 1;
     return 0;
 }
@@ -9448,7 +9451,7 @@ void ai_Unk4d3120(char *rec, char *c)
             if ((char)d3_GetHeightAt(sc, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, &x, &y, &h) == 0)
                 return;
             r = (int)(500.0f / *(float *)(sc + 0x10));
-            if (ai_Unk4d22d0(c, x, y, r, &x, &y) == 0)
+            if (cm_MostThreatenedCellNear(c, x, y, r, &x, &y) == 0)
                 return;
             cm_OrderAttack(rec, c, 0, x, y);
             return;
