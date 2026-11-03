@@ -3108,17 +3108,17 @@ exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable
 exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable	deep	
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
-exe	0x00508d80	gm_BuildingBalance	f3gm	draft	draft		
+exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
-exe	0x005090b0	gm_BuildingRank	f3gm	draft	readable		
+exe	0x005090b0	gm_BuildingRank	f3gm	draft	readable	deep	
 exe	0x00509120	gm_Unk509120	f3gm	shape	draft		
-exe	0x005091a0	gm_Unk5091a0	f3gm	draft	draft		
-exe	0x005092e0	gm_BuildingSkill	f3gm	draft	draft		
+exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
+exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
 exe	0x005093a0	gm_Unk5093a0	f3gm	byte	draft		
-exe	0x00509400	gm_Unk509400	f3gm	draft	draft		
-exe	0x005096a0	gm_Unk5096a0	f3gm	draft	draft		
-exe	0x005098a0	gm_BuildingGoodsList	f3gm	draft	draft		
-exe	0x005099e0	gm_Unk5099e0	f3gm	draft	draft		
+exe	0x00509400	gm_WorkMinutesBetween	f3gm	draft	readable	deep	
+exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	draft	readable	deep	
+exe	0x005098a0	gm_BuildingGoodsList	f3gm	draft	readable	deep	
+exe	0x005099e0	gm_BuildingGoodsList17	f3gm	shape	readable		
 exe	0x00509b10	gm_EquipmentValue	f3gm	draft	draft		
 exe	0x00509c80	gm_OwnerWorth	f3gm	draft	draft		
 exe	0x00509d30	gm_BuildingKindValue	f3gm	draft	readable		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 6a2ad59: gv.h's ORDCHAR got the field inventory (+0x178, ai.h AICHAR.inventory) for f3gm's gm_AddObjekt (byte with it): a truer record. ai_TutorialInitChapter2 never uses ORDCHAR; the change only alters the declaration set of unk_575860 and flips a VC6 register tie-break (regs 30 hunks, 6 bytes), so the byte match was no evidence of the original's source [waits for: unk_575860's head settling (ai.h and gv.h both included; its declaration set)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	shape+readable -> draft+readable at d4f0224: f3gm_types.h's GMGOOD names the cached price at +0x38 (int price, read and written by gm_ItemPrice, now byte) in place of pad38[8]; unk_575860 includes f3gm.h but never uses GMGOOD. Any change of that member list (tried int price_ / int v3c / unsigned char pad) flips this function's register allocation of three float constants (0x579df6, 0x57a1b6: the same stores, other registers): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: a stable declaration set for unk_575860 (its head and the f3gm.h include)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
