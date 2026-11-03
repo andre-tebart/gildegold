@@ -16698,7 +16698,6 @@ extern int cm_PickCellZ;
 /* txt_DeathTreeCaption: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
-float ai_FloatOne = 1.0f;  /* 0x5eb780 */
 float ai_FloatZero = 0.0f;  /* 0x5eb788 */
 /* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
    double: a 8-byte definition here claims two literals another unit owns. */

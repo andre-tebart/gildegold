@@ -8,6 +8,7 @@ struct VFSFILE;
 #include "vfs.h"
 
 extern const unsigned int bio_CrcTable[256];  /* 0x5eb380, the zlib crc32 table */
+extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f */
 
 unsigned int util_Hash(unsigned char *buf, unsigned int len);                           /* 0x401000 */
 char *util_BaseName(char *path);                                                         /* 0x401040 */

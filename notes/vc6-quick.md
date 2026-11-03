@@ -153,3 +153,16 @@ mechanisms, each as a generated round over all positions / subsets:
 - One name = one address; `/* 0xADDR */` per declaration; reach struct members through the type.
 - Original string / float text and bits; `__FILE__` via the file's first `#line N "D:\\develop\\..."`.
 - .bss statics / globals need `= 0` to keep declaration order; far COMMON globals are tentative `T x;`.
+
+## Data layout (from the containment checks, M.contain / D7 / D9)
+- A unit's .rdata is its named constants, then the literals it is the first to use (COMDATs, folded across units):
+  the bytes right after a unit's last constant are its literals. bio, first in link order, holds the shared ones
+  (255.0f after ai_FloatOne). A constant the code loads from memory is another unit's `const` read through an
+  extern (ai_CardBack in unk_4a7140), not a header `static const volatile`.
+- Never `&X + N` past X: a constant of another object is its literal (`80.0f`), a field is reached through its
+  pointer (`d2_LastWindowPtr->w`), several globals one memset clears are one object (EVTGLOBALS, int[4]), flag
+  bytes after a byte are objects of their own, an int at an odd address is a packed struct's field.
+- A memset over several globals rewritten as single stores costs the byte match: declare the block as one object.
+- unk_575860's ai_TutorialInitChapter2 / 3 flip their register tie-break on the unit's declaration set alone: a
+  struct of a new name may cost Chapter2 its byte (keep the container's symbol); the build clears Chapter3's
+  @deep note whenever it comes out byte (put it back from git when it falls).
