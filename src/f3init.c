@@ -3372,8 +3372,9 @@ char init_TextureSetHook(int o)
 /* 0x512e80, the scene callback (a function start Ghidra missed) for the objects of a building b whose state is not 2 / 3 / 4 and whose name does not start with "pfl_" / "vg_" / "!vg_": registers (0x446f30) the object with its list for every slot 0 .. (the building kind's rank byte (+0x247) - 1, + 1 for the type 2) */
 
 
-char init_BuildingTextureSetHook(int unused, unsigned char *b, int o)
+char init_BuildingTextureSetHook(D3OBJECT *o, void *ctx)
 {
+    unsigned char *b = ctx;
     char *p;
     int n, i;
     int st;
@@ -3382,17 +3383,12 @@ char init_BuildingTextureSetHook(int unused, unsigned char *b, int o)
     n = (unsigned char)p[0x247] - 1;
     if (*p == 2)
         n++;
-    st = *(int *)(o + 0x220);
-    if (st != 2 && st != 4 && st != 3) {
-        if (strncmp((char *)o, "pfl_", 4) != 0 && strncmp((char *)o, "vg_", 3) != 0 && strncmp((char *)o, "!vg_", 4) != 0) {
-            i = 0;
-            if (n >= 0) {
-                do {
-                    d3if_SelectTextureSet(o, *(int *)(o + 0x1cc), i, 1);
-                    i++;
-                } while (i <= n);
-            }
-        }
+    st = o->kind;
+    if (st == 2 || st == 4 || st == 3)
+        return 1;
+    if (strncmp(o->name, "pfl_", 4) != 0 && strncmp(o->name, "vg_", 3) != 0 && strncmp(o->name, "!vg_", 4) != 0) {
+        for (i = 0; i <= n; i++)
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, i, 1);
     }
     return 1;
 }
