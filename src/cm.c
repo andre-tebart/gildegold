@@ -14268,7 +14268,7 @@ int ai_Unk4e0580(char *m)
 /* 0x4e06d0, ends a wedding scene s (s[0] the scene, s[1] its view, s[2] a sample bank, s[3] a playing sample): the exit scene
    "cutscenes\\hochzeit\\hochzeit-exit.esc", the globals reset. Returns 1 */
 
-int ai_Unk4e06d0(int *s)
+int cm_EndWedding(int *s)
 {
     int v;
 
@@ -14293,108 +14293,117 @@ int ai_Unk4e06d0(int *s)
     return 1;
 }
 
-/* 0x4e0770, the wedding (the message m: +0x34 / +0x38 the couple): the scenes "cutscenes\\hochzeit\\hochzeit-create / -intro / -reden1 .. -reden3",
-   "KIRCHE_HOCHZEIT.ed3", "cd2\\Hochzeit.mp3", the sample bank "ADDON\\HOCHZEIT_NEU.sbf"; each speech: the text (0x1aa9 .. 0x1aad), the voice
-   "_HOCHZEIT_NEU_MAIN_0n" waited for with 0x426f20, pauses 0x3e8 / 0x1f4 / 0x5dc through 0x4e3490, which calls the cleanup 0x4e06d0 and
-   returns nonzero when the player aborts. ROUGH: the pauses between the speeches are from the disassembly, not checked */
-#define G25_STEP(ms) if (ai_Unk4e3490((ms), ai_Unk4e06d0, st) != 0) goto done
-#define G25_VOICE(tag)     h = cm_PlayVoice(-7, tag, 0);     if (sb_IsPlaying(h) != 0) {         do {             G25_STEP(0x3e8);         } while (sb_IsPlaying(h) != 0);     }     G25_STEP(0x3e8)
+#define WED_STEP(ms) if ((r = cm_RunSceneTicksOrClick((ms), cm_EndWedding, st)) != 0) return r  /* a pause; a click ends the wedding */
+#define WED_WAIT() if ((r = cm_WaitEventOrClick(st[0], cm_EndWedding, st)) != 0) return r  /* waits for the speech scene st[0] */
+#define WED_VOICE(tag) st[3] = cm_PlayVoice(-7, st[2], (tag), 0); while (sb_IsPlaying(st[3]) != 0) { WED_STEP(0x3e8); }  /* plays a voice of the bank and waits for it */
+/* 0x4e0770, the wedding (the scene callback of the wedding event) of the couple m->members[0] / [1] (a the one with sex 0,
+   swapped so; the players' characters, kind 6, count the mission event 0x28; both get the field 0x1c8 set): the scene
+   "KIRCHE_HOCHZEIT.ed3", the track "Hochzeit", the sample bank "ADDON\\HOCHZEIT_NEU.sbf", the scenes hochzeit-create (the
+   names "a b 1") / -intro and the speeches -reden1 .. -reden4 with their texts 0x1aa9 .. 0x1aad and voices, the pauses
+   between; st holds the scene, the view, the bank and the voice for cm_EndWedding. A click ends it at once through
+   cm_EndWedding (its result returned); 0 when one of the couple is not found */
 
-/* 0x4e0770 */
-int ai_Unk4e0770(char *m)
+int cm_RunWedding(G28REC *m)
 {
-    char buf[0x100];
-    char *a, *b, *t;
     int st[4];
-    int v, h;
+    char buf[0x100];
+    AICHAR *a, *b, *t;
+    char *na, *nb;
+    int r;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
+    a = (AICHAR *)gm_FindChar(m->members[0]);
     if (a == 0)
         return 0;
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
+    b = (AICHAR *)gm_FindChar(m->members[1]);
     if (b == 0)
         return 0;
-    if (a[2] == 6)
+    if (a->kind == 6)
         ai_CountMissionEvent(a, 0x28);
-    if (b[2] == 6)
+    if (b->kind == 6)
         ai_CountMissionEvent(b, 0x28);
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
-    cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000);
-    cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x40000);
-    if (a[9] != 0) {
+    cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x40000);
+    cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x40000);
+    na = (char *)gm_CharNameRecord(a->id) + 4;
+    nb = (char *)gm_CharNameRecord(b->id) + 4;
+    if (a->sex != 0) {
         t = a;
         a = b;
         b = t;
-    }
-    sprintf(buf, "%s %s %i", gm_CharNameRecord(*(unsigned short *)a) + 4, gm_CharNameRecord(*(unsigned short *)b) + 4, 1);
+        sprintf(buf, "%s %s %i", nb, na, 1);
+    } else
+        sprintf(buf, "%s %s %i", na, nb, 1);
     st[2] = cm_LoadVoiceBank("ADDON\\HOCHZEIT_NEU.sbf", 0);
     cm_LoadEventScene("KIRCHE_HOCHZEIT.ed3");
     cm_PlaySpecialTrack("cd2\\Hochzeit.mp3");
-    v = d2_OpenForm(0, 0, "cutscenes\\hochzeit");
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-    d2_SetViewEnabled(v, 0);
-    st[1] = v;
-    st[3] = 0;
+    st[1] = d2_OpenForm(0, 0, "cutscenes\\hochzeit");
+    d2_PlaceMainWindow(st[1], 3);
+    d2_SetViewEnabled(st[1], 0);
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-create.esc", buf);
-    cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-intro.esc", &ch_EmptyName);
+    st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-intro.esc", &ch_EmptyName);
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden1.esc", &ch_EmptyName);
-    G25_STEP(0x5dc);
-    d2_SetViewEnabled(v, 1);
-    d2_SetForm(v, 0);
-    io_PrintText(0x1aa9, *(unsigned short *)b, *(unsigned short *)a);
-    G25_VOICE("_HOCHZEIT_NEU_MAIN_00");
-    d2_SetForm(v, 0);
+    WED_STEP(0x5dc);
+    d2_SetViewEnabled(st[1], 1);
+    d2_SetForm(st[1], 0);
+    io_PrintText(0x1aa9, a->id, b->id);
+    WED_VOICE("_HOCHZEIT_NEU_MAIN_00");
+    WED_STEP(0x3e8);
+    d2_SetForm(st[1], 0);
     io_PrintText("$C");
-    d2_SetViewEnabled(v, 0);
-    if (ai_Unk4e2cc0(st[0], ai_Unk4e06d0, st) != 0)
-        goto done;
-    G25_STEP(0x3e8);
+    d2_SetViewEnabled(st[1], 0);
+    WED_WAIT();
+    WED_STEP(0x3e8);
+
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden2.esc", &ch_EmptyName);
-    d2_SetForm(v, 0);
-    d2_SetViewEnabled(v, 1);
-    io_PrintText(0x1aac, *(unsigned short *)b, *(unsigned short *)a);
-    G25_VOICE("_HOCHZEIT_NEU_MAIN_03");
-    d2_SetForm(v, 0);
+    d2_SetForm(st[1], 0);
+    d2_SetViewEnabled(st[1], 1);
+    io_PrintText(0x1aac, a->id, b->id);
+    WED_VOICE("_HOCHZEIT_NEU_MAIN_03");
+    WED_STEP(0x3e8);
+    d2_SetForm(st[1], 0);
     io_PrintText("$C");
-    d2_SetViewEnabled(v, 0);
-    G25_STEP(0x1f4);
-    d2_SetViewEnabled(v, 1);
-    d2_SetForm(v, 0);
+    d2_SetViewEnabled(st[1], 0);
+    WED_STEP(0x1f4);
+    d2_SetViewEnabled(st[1], 1);
+    d2_SetForm(st[1], 0);
     io_PrintText(0x1aab);
-    G25_VOICE("_HOCHZEIT_NEU_M");
-    if (ai_Unk4e2cc0(st[0], ai_Unk4e06d0, st) != 0)
-        goto done;
+    WED_VOICE("_HOCHZEIT_NEU_M");
+    WED_STEP(0x3e8);
+    WED_WAIT();
+
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden3.esc", &ch_EmptyName);
-    d2_SetViewEnabled(v, 0);
-    d2_SetForm(v, 0);
+    d2_SetViewEnabled(st[1], 0);
+    d2_SetForm(st[1], 0);
     io_PrintText("$C");
-    G25_STEP(0x5dc);
-    d2_SetViewEnabled(v, 1);
-    d2_SetForm(v, 0);
-    io_PrintText(0x1aaa, *(unsigned short *)b, *(unsigned short *)a);
-    G25_VOICE("_HOCHZEIT_NEU_MAIN_01");
-    G25_STEP(0x1f4);
-    d2_SetViewEnabled(v, 0);
-    d2_SetForm(v, 0);
+    WED_STEP(0x5dc);
+    d2_SetViewEnabled(st[1], 1);
+    d2_SetForm(st[1], 0);
+    io_PrintText(0x1aaa, b->id, a->id);
+    WED_VOICE("_HOCHZEIT_NEU_MAIN_01");
+    WED_STEP(0x1f4);
+    d2_SetViewEnabled(st[1], 0);
+    d2_SetForm(st[1], 0);
     io_PrintText("$C");
-    G25_STEP(0x1f4);
-    d2_SetViewEnabled(v, 1);
-    d2_SetForm(v, 0);
+    WED_STEP(0x1f4);
+    d2_SetViewEnabled(st[1], 1);
+    d2_SetForm(st[1], 0);
     io_PrintText(0x1aab);
-    G25_VOICE("_HOCHZEIT_NEU_MAIN_02");
-    G25_STEP(0x1f4);
-    if (ai_Unk4e2cc0(st[0], ai_Unk4e06d0, st) != 0)
-        goto done;
+    WED_VOICE("_HOCHZEIT_NEU_W");
+    WED_STEP(0x1f4);
+    WED_WAIT();
+
     st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden4.esc", &ch_EmptyName);
-    d2_SetForm(v, 0);
+    d2_SetForm(st[1], 0);
     io_PrintText(0x1aad);
-    G25_VOICE("_HOCHZEIT_NEU_MAIN_04");
-    G25_STEP(0x1f4);
-    d2_SetViewEnabled(v, 0);
-    ai_Unk4e06d0(st);
-done:
-    return 1;
+    WED_VOICE("_HOCHZEIT_NEU_MAIN_04");
+    WED_STEP(0x1f4);
+    d2_SetViewEnabled(st[1], 0);
+    d2_SetForm(st[1], 0);
+    io_PrintText("$C");
+    WED_WAIT();
+    st[0] = -1;
+    return cm_EndWedding(st);
 }
 /* 0x4e0e90, a divorce / separation message m (+0x34 / +0x38 the two): when the partner (+0x5c of the first) is not of the kind 0xf the
    first, if a person of the kinds 6 / 7, gets the text 0x11c1 + 0x143e8c8 (0x4e48b0) and 1 is returned; else the second gets the state
@@ -14446,16 +14455,16 @@ int ai_Unk4e0f70(char *m)
     cm_PlaySpecialTrack("cd2\\Geburt.mp3");
     cm_LoadEventScene("Geburt.ed3");
     sc = cm_StartScript("cutscenes\\geburt\\enter_Geburt.esc");
-    if (ai_Unk4e3490(0x1964, 0, 0) == 0) {
+    if (cm_RunSceneTicksOrClick(0x1964, 0, 0) == 0) {
         if (a[9] == 0)
             n = cm_Random(2) + (b[9] == 0 ? 0 : 2);
         else
             n = cm_Random(2) + (b[9] == 0 ? 4 : 6);
         cm_QueueVoice(-8, "_GEBURT", n, 0);
-        if (ai_Unk4e3490(0x3e8, 0, 0) == 0) {
+        if (cm_RunSceneTicksOrClick(0x3e8, 0, 0) == 0) {
             for (n = cm_Random(4) + 2; n > 0; n--)
                 cm_QueueVoice(-8, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
-            ai_Unk4e3490(0x1b58, 0, 0);
+            cm_RunSceneTicksOrClick(0x1b58, 0, 0);
         }
     }
     v = d2_OpenForm(0, 0, "cutscenes\\geburt");
@@ -14529,11 +14538,11 @@ int ai_Unk4e1250(char *m)
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
     sc = cm_StartEventArg("cutscenes\\tod\\enter_TOD.esc", &ch_EmptyName);
-    rc = ai_Unk4e3490(0xbb8, 0, 0);
+    rc = cm_RunSceneTicksOrClick(0xbb8, 0, 0);
     if (rc == 0) {
         for (i = 0; i < 7; i++)
             cm_QueueVoice(-8, "_TOD_HS", i, i == 0 ? 0 : i == 1 ? 0 : i == 2 ? 0xfa0 : i == 3 ? 0xbb8 : i == 4 ? 0x7d0 : i == 5 ? 0xfa0 : 0x1f4);
-        rc = ai_Unk4e3490(0x2af8, 0, 0);
+        rc = cm_RunSceneTicksOrClick(0x2af8, 0, 0);
         if (rc == 0) {
             t0 = d3_Time;
             while (d3_Time < t0 + 0x339 && rc == 0) {
@@ -14545,7 +14554,7 @@ int ai_Unk4e1250(char *m)
                 d3_SetFogSet(0, 1, f);
             }
             d3_SetFogSet(0, 1, 0x3f800000);
-            ai_Unk4e3490(0x2cec, 0, 0);
+            cm_RunSceneTicksOrClick(0x2cec, 0, 0);
             rc = 0;
         }
     }
@@ -14631,20 +14640,20 @@ int ai_Unk4e1700(char *m)
     cm_CreateSceneSky("sky_dunkel_01");
     sprintf(buf, "%i", stage);
     sc = cm_StartEventArg("cutscenes\\pleite\\enter_Pleite.esc", buf);
-    rc = ai_Unk4e3490(0x1770, 0, 0);
+    rc = cm_RunSceneTicksOrClick(0x1770, 0, 0);
     if (rc == 0) {
         cm_QueueVoice(-8, "_PLEITE_HS", 0, 0);
         cm_QueueVoice(-8, "_PLEITE_HS", 1, 0x9c4);
         cm_QueueVoice(-8, "_PLEITE_HS", 2, 0x1f4);
-        rc = ai_Unk4e3490(0x3e80, 0, 0);
+        rc = cm_RunSceneTicksOrClick(0x3e80, 0, 0);
         if (rc == 0) {
             cm_StartSceneRain(0xfa);
-            rc = ai_Unk4e3490(0x2af8, 0, 0);
+            rc = cm_RunSceneTicksOrClick(0x2af8, 0, 0);
             if (rc == 0) {
                 cm_QueueVoice(-8, "_PLEITE_HS", 3, 0x251c);
                 cm_QueueVoice(-8, "_PLEITE_HS", 4, 0x1194);
                 cm_QueueVoice(-8, "_PLEITE_HS", 5, 0x1f4);
-                ai_Unk4e3490(0x5dc0, 0, 0);
+                cm_RunSceneTicksOrClick(0x5dc0, 0, 0);
             }
         }
     }
@@ -15101,7 +15110,7 @@ int cm_WaitEvent(int a)
 }
 /* 0x4e2cc0, like 0x4e2c70, but ends with the callback cb(arg) and 1 as soon as 0x14673a0 is set */
 
-int ai_Unk4e2cc0(int a, int (*cb)(int), int arg)
+int cm_WaitEventOrClick(int a, int (*cb)(int), int arg)
 {
     if (cm_SkipEvents != 0)
         return 0;
@@ -15410,7 +15419,7 @@ int cm_WaitTicks(int a)
 }
 /* 0x4e3490, like 0x4e3570 for a ticks, but a click (0x14673a0) ends it at once with cb(a) (1 without cb) as the result */
 
-int ai_Unk4e3490(int a, int (*cb)(int))
+int cm_RunSceneTicksOrClick(int a, int (*cb)(int))
 {
     int start, res;
     double lim;
@@ -16385,7 +16394,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
-    ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
+    ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)ai_Unk4e0f70, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)ai_Unk4e1220, 0);
     ai_Unk4e5730(9, (int)ai_Unk4e1700, 0, 0, 0, 0);

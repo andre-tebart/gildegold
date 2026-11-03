@@ -983,13 +983,13 @@ int cm_DestroySceneSky();  /* 0x4e3390 */
 void cm_RunExecution(G28REC *m);  /* 0x4e01e0 */
 int ai_Unk4e0580(char *m);  /* 0x4e0580 */
 void sb_Stop();  /* 0x427290 */
-int ai_Unk4e06d0(int *s);  /* 0x4e06d0 */
-int ai_Unk4e3490();  /* 0x4e3490 */
-int ai_Unk4e2cc0();  /* 0x4e2cc0 */
+int cm_EndWedding(int *s);  /* 0x4e06d0 */
+int cm_RunSceneTicksOrClick();  /* 0x4e3490 */
+int cm_WaitEventOrClick();  /* 0x4e2cc0 */
 int cm_LoadVoiceBank();  /* 0x4e3270 */
 int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
-int ai_Unk4e0770(char *m);  /* 0x4e0770 */
+int cm_RunWedding(G28REC *m);  /* 0x4e0770 */
 
 int ai_Unk4e0e90(char *m);  /* 0x4e0e90 */
 extern struct D2INPUT *d2_FocusedInput;  /* 0x6ed9dc, the focused input (as d2.h / rt.h) */
@@ -1042,7 +1042,7 @@ void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 int cm_CreateSceneSky();  /* 0x4e32f0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
-int ai_Unk4e3490();  /* 0x4e3490 */
+int cm_RunSceneTicksOrClick();  /* 0x4e3490 */
 extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */
 int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
