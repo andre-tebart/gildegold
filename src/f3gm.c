@@ -120,6 +120,50 @@ extern ORDCHAR *gm_RichestChar;
 #define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
 #define ai_Unk91b6d0 (gm_IncomeHistory + 0x150)  /* 0x91b6d0, row 4 */
 #define gm_IncomeRows (*(int (*)[5][17])&gm_IncomeHistory)  /* 0x91b580, the five rows of 17 ints; [row][16] is the current sum */
+#pragma pack(push, 1)
+/* the 0xe-byte goods description a carried-goods record holds and gm_CollectCarried copies whole (ls.c saves it
+   as one block of 0xe bytes) */
+typedef struct GMCARRYSPEC {
+    int v[3];
+    short w;
+} GMCARRYSPEC;
+
+/* one of the 0x100 carried-goods records at 0x74e1e0 (0xa4 bytes; he.c counts +4 down, ls.c saves the fields
+   +4 / +8 / +0xc / +0x10 / +0x14 (0xe bytes) / +0x22 (0x80 bytes) of each used one) */
+typedef struct GMCARRYREC {
+    int ref;                            /* 0x00, nonzero: the record is in use (ls.c saves the word at ref + 4) */
+    unsigned char ttl;                  /* 0x04, counted down by he.c 0x53eea0, the record expires at 0 */
+    char pad05[3];
+    int hasValue;                       /* 0x08, nonzero: value counts */
+    int owner;                          /* 0x0c, the id of the person who carries it */
+    int value;                          /* 0x10 */
+    GMCARRYSPEC spec;                   /* 0x14 */
+    char data[0x80];                    /* 0x22 */
+    char padA2[2];
+} GMCARRYREC;
+
+/* an entry of gm_CollectCarried's list (0x1e bytes) */
+typedef struct GMCARRYENTRY {
+    int ref;                            /* 0x00, the record's ref */
+    GMCARRYREC *rec;                    /* 0x04, the record */
+    char *data;                         /* 0x08, the record's data */
+    int value;                          /* 0x0c, the record's value when it has one */
+    GMCARRYSPEC spec;                   /* 0x10 */
+} GMCARRYENTRY;
+
+/* what gm_CollectCarried collects for a person (0x21d bytes; main.c MAINCARRY reads the head of it) */
+typedef struct GMCARRY {
+    int units;                          /* 0x000, the 0xe-byte units */
+    char goods[0x2d];                   /* 0x004, main.c: the goods list of the balance page */
+    int capacity;                       /* 0x031, the free capacity */
+    GMCARRYENTRY entries[16];           /* 0x035 */
+    int valueSum;                       /* 0x215, minus the values of the records with one */
+    int count;                          /* 0x219, the entries used */
+} GMCARRY;
+#pragma pack(pop)
+typedef char gm_AssertGMCARRYREC[sizeof(GMCARRYREC) == 0xa4 ? 1 : -1];
+typedef char gm_AssertGMCARRY[sizeof(GMCARRY) == 0x21d ? 1 : -1];
+#define gm_CarryRecs (*(GMCARRYREC (*)[0x100])((char *)&he_QuickList + 0x6a0))  /* 0x74e1e0, the 0x100 carried-goods records inside ls.c's he_QuickList */
 
 int gm_GetGoodsValue(char *c);              /* 0x509e60 */
 int gm_TitleGroup(int n);                /* 0x504ad0 */
@@ -9813,48 +9857,44 @@ float gm_Liking();
 int gm_Unk50b3a0();
 int gm_Unk50b9f0();
 
-/* 0x50af00, collects what the person `id` carries into the record out (0x218 bytes: the first word counts the 0xe-byte units, +0x31 the free capacity, +0x41 .. the entries of 0x1e bytes built from the goods list 0x74e1f4 (0x29 words each, owner at -2 words) that belong to the person, the entry count +0x219 and the sum +0x215). The person's own character record is searched with 0x501190 / 0x501030 (0x502eb0 gives its fields; one with the id equal adds 0xe to the first word and to +0x31). Returns 0. ROUGH */
+/* 0x50af00, collects what the person id carries into out (a GMCARRY, cleared first): 0xe units and capacity when the person is the special worker (gm_ListWorkers' last slot) of a building of key 4 = id, then an entry for each used carried-goods record of gm_CarryRecs it owns (count, valueSum minus the values). Returns 0 */
 int gm_CollectCarried(int id, int *out)
 {
-    int *p, *e;
-    int rec;
-    char buf[148];
-    int c;
+    GMCARRY *cr;
+    GMCARRYREC *r;
+    unsigned char *b;
+    int workers[0x26];
+    int w, i, j;
 
-    memset(out, 0, 0x21c);
-    rec = (int)gm_BuildQuery(1, 4, id);
-    for (;;) {
-        if (rec == 0)
-            break;
-        gm_ListWorkers(rec, buf);
-        c = *(int *)(buf + 0x94);
-        if (c != 0xffff && c == id) {
-            *out += 0xe;
-            *(int *)((char *)out + 0x31) += 0xe;
+    cr = (GMCARRY *)out;
+    memset(cr, 0, sizeof(GMCARRY));
+    b = (unsigned char *)gm_BuildQuery(1, 4, id);
+    while (b != 0) {
+        gm_ListWorkers(b, workers);
+        w = workers[0x25];
+        if (w != 0xffff && w == id) {
+            cr->units += 0xe;
+            cr->capacity += 0xe;
             break;
         }
-        rec = (int)gm_BuildNext();
+        b = (unsigned char *)gm_BuildNext();
     }
-    p = (int *)((unsigned)&he_QuickList + 0x6b4);
-    e = (int *)((char *)out + 0x41);
-    do {
-        if (p[-5] != 0 && p[-2] == id) {
-            e[-3] = p[-5];
-            if (p[-3] != 0)
-                *e = p[-1];
-            e[1] = *p;
-            e[2] = p[1];
-            e[3] = p[2];
-            *(short *)(e + 4) = *(short *)(p + 3);
-            e[-1] = (int)p + 0xe;
-            if (p[-3] != 0)
-                *(int *)((char *)out + 0x215) -= p[-1];
-            e[-2] = (int)(p - 5);
-            e = (int *)((char *)e + 0x1e);
-            *(int *)((char *)out + 0x219) += 1;
+    j = 0;
+    for (i = 0; i < 0x100; i++) {
+        r = &gm_CarryRecs[i];
+        if (r->ref != 0 && r->owner == id) {
+            cr->entries[j].ref = r->ref;
+            if (r->hasValue != 0)
+                cr->entries[j].value = r->value;
+            cr->entries[j].spec = r->spec;
+            cr->entries[j].data = r->data;
+            if (r->hasValue != 0)
+                cr->valueSum -= r->value;
+            cr->entries[j].rec = r;
+            cr->count++;
+            j++;
         }
-        p += 0x29;
-    } while ((int)p < ((unsigned)&he_QuickList + 0xaab4));
+    }
     return 0;
 }
 /* 0x50b010, the first building of the class n (1 .. 5: the types 0xf, 0x17 .. 0x1a); 0 for 6 / 7 */
