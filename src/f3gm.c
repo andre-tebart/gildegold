@@ -9139,16 +9139,20 @@ int gm_BuildingKindValue(int kind)
     } while (i < 0x40);
     return value;
 }
-/* 0x509dc0 */
+/* 0x509dc0, the cost of a new building of the kind for the character c (a record pointer as int): its value (gm_BuildingKindValue) times 0.8 + 0.1 per step the decision 6 (gv_GetTableRecord) lies below 4, and times 0.85 for a character whose +0x166 kind is 0xe */
 
-int gm_BuildingKindCost(int unused, int kind)
+int gm_BuildingKindCost(int c, int kind)
 {
-    char buf[0x24];
+    AIDEC rec;
     int v;
+    float f;
 
     v = gm_BuildingKindValue(kind);
-    gv_GetTableRecord(6, buf);
-    return v;
+    f = 0.85f;
+    if (((ORDCHAR *)c)->job != 0xe)
+        f = 1.0f;
+    gv_GetTableRecord(6, (int *)&rec);
+    return (int)(((4 - rec.cur) * 0.1f + 0.8f) * v * f);
 }
 /* 0x509e30, the sum of the amounts of the objects in the list (prototype kind 9, group 1) */
 

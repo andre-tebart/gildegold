@@ -336,7 +336,7 @@ int gm_BuildingJob(int k);                                                      
 int gm_TitlesLeft(int k);                                                        /* 0x504ce0 */
 float gm_Mix(int a, int b, int c);                                  /* 0x504e20 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
-int gm_BuildingKindCost(int unused, int kind);                                              /* 0x509dc0 */
+int gm_BuildingKindCost(int c, int kind);                                              /* 0x509dc0 */
 int unk_Unk4f8700(char *c);                                                     /* 0x4f8700 */
 unsigned short *gm_ObjectOwnerChar(unsigned short *o);                                                  /* 0x509ff0 */
 
@@ -563,7 +563,7 @@ void ai_FindWantedItems(struct G5CH *p, int n, struct G9REC *rec, int *st);     
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 int gm_BuildingKindValue(int a);                                                        /* 0x509d30 */
-int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
+int gm_BuildingKindCost(int c, int kind);                                               /* 0x509dc0 */
 int ai_FindUsableGood(int param_1);                                         /* 0x5ba620 */
 
 /* ---- 0x494020..0x494e70 (was unk_494020.h) ---- */
@@ -789,7 +789,7 @@ int ai_DecidePriceManipulation(int a, G5CH *p, int f, AIARG *o1);               
 int amt_MayorBonusStep(char *c);                                                      /* 0x4e94a0 */
 int ai_DecideBuildResidence(int a, struct AIPER *p, int f, struct AIARG *o1, struct AIARG *o2);                 /* 0x4984d0 */
 int ai_CanBuildType(int a, struct AIPER *p, int b, struct AIARG *s1, struct AIARG *s2, int f);           /* 0x4a5140 */
-int gm_BuildingKindCost(int unused, int kind);                                               /* 0x509dc0 */
+int gm_BuildingKindCost(int c, int kind);                                               /* 0x509dc0 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int ai_DecideTakeCredit(int a, struct G5CH *p, int f, struct AIARG *o1, struct AIARG *o2);                  /* 0x49eec0 */
 #define G6_509EE0(p, k) ((float (*)(AIPER *, unsigned char))gm_CharCurrency)((AIPER *)(p), (k))  /* am.h: returns int */

@@ -10021,7 +10021,7 @@ tail:
     }
 }
 
-int gm_BuildingKindCost(int unused, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
+int gm_BuildingKindCost(int c, int kind); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...);
 
 /* 0x588160, opens the tooltip view of the building type idx (ai_BTypes): the form "ToolTip\ToolTip_Gebaeude",
    centred; section 1 the type's name (text idx * 0xe + 0x48e), for a kind other than 0xa through the text 0x27
