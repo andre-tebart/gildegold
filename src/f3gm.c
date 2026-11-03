@@ -9002,61 +9002,48 @@ int gm_BuildingGoodsList(char *b, unsigned *out, int kind)
     out[0x2d] = (unsigned)stall;
     return 1;
 }
-/* 0x5099e0, the same list with the other loop shape (the kinds 0x17 only when kind != 0, the others only when kind == 0) */
+/* 0x5099e0, the goods list of the building b as gm_BuildingGoodsList (the same out record, stall, capacity and
+   market rules), with another goods filter: kind != 0 lists only the goods of type 0x17, kind 0 all others, and a
+   market gets no exception (f3snd.c uses it for the building classes 0x1e .. 0x20) */
 
-int gm_Unk5099e0(char *b, unsigned *out, int kind)
+int gm_BuildingGoodsList17(char *b, unsigned *out, int kind)
 {
-    short *l;
-    unsigned short *o;
-    unsigned v;
-    int i;
+    ORDBLD *bld;
+    ORDOBJ *stall, *o;
+    char type;
+    int i, cap;
 
+    bld = (ORDBLD *)b;
     for (i = 0; i < 0x2e; i++)
         out[i] = 0;
-    if (gm_Query(*(void **)(b + 0x5d), 1, 0, 0xfd) == 0)
+    if (gm_Query((void *)bld->objList, 1, 0, 0xfd) == 0)
         return 0;
-    l = (short *)gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x2a);
-    if (l == 0 && (l = (short *)gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x116)) == 0)
+    stall = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    if (stall == 0 && (stall = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116)) == 0)
         return 0;
-    if (kind == 0) {
-        v = *(unsigned char *)((char *)l + 0x1d);
-        out[0] = v;
-        if (*l == 0x116) {
-            if (v <= *(unsigned char *)(l + 0xe))
-                v = *(unsigned char *)(l + 0xe);
-            out[0] = v;
-        }
-    } else {
-        if (*l == 0x116)
+    if (kind != 0) {
+        if (stall->type == 0x116)
             return 0;
-        v = *(unsigned char *)(l + 0xe);
-        out[0] = v;
+        out[0] = stall->cap[0];
+    } else {
+        cap = stall->cap[1];
+        out[0] = cap;
+        if (stall->type == 0x116)
+            out[0] = GM_MAX(cap, (int)stall->cap[0]);
     }
-    o = (unsigned short *)gm_Query(*(void **)(l + 10), 1, 5);
-    do {
-        if (o == 0) {
-            out[0x2d] = (unsigned)l;
-            return 1;
-        }
-        if (ai_Goods[*o * 0x41] == 0x17) {
-            if (kind != 0) {
-                v = gm_ListAmount(l, o);
-                out[out[1] + 0x1a] = v;
-                v = gm_ListStock(l, *o);
-                out[out[1] + 2] = v;
-                *(unsigned short *)((char *)out + out[1] * 2 + 0x48) = *o;
-                out[1]++;
-            }
-        } else if (kind == 0) {
-            v = gm_ListAmount(l, o);
-            out[out[1] + 0x1a] = v;
-            v = gm_ListStock(l, *o);
-            out[out[1] + 2] = v;
-            *(unsigned short *)((char *)out + out[1] * 2 + 0x48) = *o;
+    o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
+    while (o) {
+        type = GM_GOOD(o->type)->type;
+        if ((type == 0x17 && kind != 0) || (type != 0x17 && kind == 0)) {
+            out[0x1a + out[1]] = gm_ListAmount((short *)stall, (char *)o);
+            out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
+            ((unsigned short *)(out + 0x12))[out[1]] = o->type;
             out[1]++;
         }
-        o = (unsigned short *)gm_QueryNext();
-    } while (1);
+        o = (ORDOBJ *)gm_QueryNext();
+    }
+    out[0x2d] = (unsigned)stall;
+    return 1;
 }
 /* 0x509b10, walks the building b's object words from +0x25: for a kind 2 / 6 object found in the instance, the price (0x5087f0) of the next one that is not 2 / 6 is added up. ROUGH */
 

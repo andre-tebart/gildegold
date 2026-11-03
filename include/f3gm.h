@@ -80,7 +80,7 @@ char *gm_HomeObject(unsigned char *b);  /* 0x4fdc10 */
 short *gm_SpawnCharacter(unsigned char flags, int p2, int p3, unsigned char p4, unsigned char p5, char *p6);  /* 0x4fddb0 */
 void gm_CountCharacters(void);  /* 0x4fdfd0 */
 unsigned short *gm_AllocRaum(unsigned char *b, unsigned n);  /* 0x5031b0 */
-int gm_Unk5099e0(char *b, unsigned *out, int kind);  /* 0x5099e0 */
+int gm_BuildingGoodsList17(char *b, unsigned *out, int kind);  /* 0x5099e0 */
 extern char gm_CharacterStatistics[128];  /* 0x91b500 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700 */
 int gm_TakeObjekt(int id, int proto, int n);  /* 0x500a40 */
