@@ -1717,3 +1717,4 @@
 2026-11-03T23:23:19 0x0053f270 func he_Unk53f270 -> he_PostPlayerEvents86a2 by:main why:posts the events 0x86 and 0xa2 to the player's character (he_PlayerCh) when none exists
 2026-11-03T23:25:09 0x0053f370 func he_Unk53f370 -> he_PostWorkshopEvents98 by:main why:posts the event 0x98 for each kind 0x1e building (gm_BuildQuery(1, 5, 0x1e)) without one, to its owner
 2026-11-03T23:35:32 0x0053f6b0 func he_Unk53f6b0 -> he_SpawnFounders by:main why:per round (main_BeginPlayerRound) creates a kind 4 character (cm_SendCreateCharacter) for a building kind the town lacks, paid the building's value (cm_SendMoveGoods)
+2026-11-03T23:47:13 0x00540c90 func he_Unk540c90 -> he_PostEvent67 by:main why:posts the message 0x67 (he_FindEvent(1, 0, 0x67) guards it) about one of the player's buildings of kind 0x20 / 0x1e / 0x1f

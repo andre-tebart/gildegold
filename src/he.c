@@ -2136,59 +2136,55 @@ void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_Unk541200 / he_Unk543020 / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
-/* 0x540c90, from day 8, in 1 of 4 frames: when no event 0x67 exists, posts one for a random one of the figures of the player of 0x6f1bf8 (kinds 0x20 / 0x1e / 0x1f): +0x58 = the figure, +0x5c = an amount of the 0x4f2720 table plus its +0x69 value (ROUGH) */
-void he_Unk540c90(void)
+/* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the message 0x67 about one of the
+   player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at random):
+   arg[0] its id, arg[1] its unk69 plus ((5 - the AI decision 7's cur) * 0.1 + 0.7) * 0.5 * (unk65 + unk69), or, when that
+   is not positive, 1 .. 2 times its equipment value
+   @deep byte (rewritten from the original 0x540c90..0x540e3f: no memset of the message, the AI decision
+   7's cur, the amount sum * (x * 0.5), the equipment fallback through an int). Q-only handover, Q2:
+   AIBLD.unk65 / unk69 only. Read: their users in every unit (ai.c steers unk65 towards AIPOS.unk18 and
+   sends it as field 0x65; gv.c / f3gm.c read +0x65 as a record pointer; the inn code reads +0x65 / +0x69 /
+   +0x6b as guest counters; main.c zeroes unk69 for kind 7 every round; unk_4b39f0 reads +0x69 as an
+   AITIME) and the 0x67 run handler he_Unk54c8e0 (arg[1] is the ranking's minimum wealth): the 0x65 .. 0x6c
+   area is a per-kind union, no source names the two ints for the kinds 0x1e / 0x1f / 0x20; a rename or a
+   union in the shared ai_bld.h is a shared-header decision (ai.c notes a union there flipped a byte
+   match). */
+void he_PostEvent67(void)
 {
-    char ev[0xf8];
-    int cand[3];
-    float tab[9];
-    int a, b, c, n, f;
-    unsigned short pick;
-    int amt;
+    AIMSG m;
+    AIDEC dec;
+    AIBLD *cand[3];
+    AIBLD *a, *b, *c, *f;
+    int n, amt, pick;
 
-    if (U_I((unsigned)&ai_Time) > 7) {
-        if ((short)util_Random(4) == 0) {
-            if (he_FindEvent(1, 0, 0x67) == 0) {
-                a = gm_BuildQuery(1, 0, 0x20);
-                b = gm_BuildQuery(1, 0, 0x1e);
-                c = gm_BuildQuery(1, 0, 0x1f);
-                n = 0;
-                if (a != 0 && *(short *)(a + 0x27) == **(short **)(unsigned)&ai_PlayerChar) {
-                    n = 1;
-                    cand[0] = a;
-                }
-                if (b != 0 && *(short *)(b + 0x27) == **(short **)(unsigned)&ai_PlayerChar) {
-                    cand[n] = b;
-                    n++;
-                }
-                if (c != 0 && *(short *)(c + 0x27) == **(short **)(unsigned)&ai_PlayerChar) {
-                    cand[n] = c;
-                    n++;
-                }
-                if (n != 0) {
-                    pick = util_Random(n);
-                    gv_GetTableRecord(7, tab);
-                    f = cand[pick];
-                    amt = (int)tab[0];
-                    memset(ev, 0, 0xf8);
-                    HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-                    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-                    HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                    HM_B(ev, 4) = 0x67;
-                    *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-                    HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 2);
-                    HM_I(ev, 0xc) = *(int *)(f + 1);
-                    HM_I(ev, 0x58) = *(int *)(f + 1);
-                    amt = *(int *)(f + 0x69) + amt;
-                    HM_I(ev, 0x5c) = amt;
-                    if (amt < 1) {
-                        gm_EquipmentValue(f, 100);
-                        HM_I(ev, 0x5c) = (int)util_RandomF();
-                    }
-                    HM_B(ev, 0x36) = 2;
-                    cm_SendLongMessage(ev);
-                }
+    if (ai_Time.year >= 8 && util_RandomU(4) == 0 && he_FindEvent(1, 0, 0x67) == 0) {
+        a = (AIBLD *)gm_BuildQuery(1, 0, 0x20);
+        b = (AIBLD *)gm_BuildQuery(1, 0, 0x1e);
+        c = (AIBLD *)gm_BuildQuery(1, 0, 0x1f);
+        n = 0;
+        if (a != 0 && a->owner == *ai_PlayerChar)
+            cand[n++] = a;
+        if (b != 0 && b->owner == *ai_PlayerChar)
+            cand[n++] = b;
+        if (c != 0 && c->owner == *ai_PlayerChar)
+            cand[n++] = c;
+        if (n != 0) {
+            pick = util_RandomU(n);
+            gv_GetTableRecord(7, (int *)&dec);
+            f = cand[pick];
+            amt = (int)((f->unk65 + f->unk69) * (((5 - dec.cur) * 0.1f + 0.7f) * 0.5f));
+            m.type = 0x67;
+            m.time = ai_Time;
+            m.to = he_PlayerCh->netId;
+            m.fromId = f->id;
+            m.arg[0] = f->id;
+            m.arg[1] = f->unk69 + amt;
+            if (m.arg[1] <= 0) {
+                amt = gm_EquipmentValue((unsigned char *)f, 100);
+                m.arg[1] = (int)((util_RandomF() + 1.0f) * amt);
             }
+            m.flags = 2;
+            cm_SendLongMessage((char *)&m);
         }
     }
 }
@@ -2238,7 +2234,7 @@ void he_Unk540fe0(void)
 {
     he_PostEvent2b();
     he_PostPlayerEvents86a2();
-    he_Unk540c90();
+    he_PostEvent67();
     he_Unk53f500();
     he_Unk53f430();
     he_Unk540e40();
