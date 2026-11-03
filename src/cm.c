@@ -5243,49 +5243,52 @@ int ai_Unk4cb9b0(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cba10, handler of type 0x49: creates a character (kind data[4], boss building data[7], place data[0xb]) in the
-   slot ai_Chars[] */
-
-int ai_Unk4cba10(G17MSG *m, G17STAT *s)
+/* 0x4cba10, handler of message 0x49 (sent by 0x4c59f0, he.c's spy "SPIONAGE"): creates a character of the kind with
+   job and title (gm_CreateCharacter) at the building bldId (an id cm_ResolveId maps; -1: none), in its room objId
+   (-1: none), without a workplace, as kind 0xd, holding the item; cm_LastCharId is its id */
+int cm_ExSpawnCharacter(G17MSG *m, G17STAT *s)
 {
-    char *bo = 0, *t;
+    AIBLD *b;
+    AIOBJ *t;
     int id, k;
 
-    if (ai_Unk1460ae0 != -1)
-        ai_NextObjectId = G17_I(*m, 0);
+    if (net_Conn.s != (unsigned int)-1)
+        ai_NextObjectId = m->spawn.objectId;
     else
-        G17_I(*m, 0x12) = timeGetTime();
+        m->spawn.seed = timeGetTime();
     if (s != 0) {
         s->state = 2;
         s->kind = 1;
         s->value = 0;
     }
-    util_Seed(G17_I(*m, 0x12));
-    if (G17_I(*m, 7) != -1) {
-        k = cm_ResolveId((int)m, G17_I(*m, 7));
-        G17_I(*m, 7) = k;
-        bo = gm_BuildQuery(1, 1, k);
-        if (bo == 0)
+    util_Seed(m->spawn.seed);
+    if (m->spawn.bldId == -1)
+        b = 0;
+    else {
+        k = cm_ResolveId((int)m, m->spawn.bldId);
+        m->spawn.bldId = k;
+        b = (AIBLD *)gm_BuildQuery(1, 1, k);
+        if (b == 0)
             return 1;
     }
-    id = gm_CreateCharacter(m->data[4], -1, -1, 0x14, 0, m->data[0xf], m->data[0x10], 0);
+    id = gm_CreateCharacter(m->spawn.kind, -1, -1, 0x14, 0, m->spawn.job, m->spawn.title, 0);
     if (id == 0xffff)
         return 1;
-    if (G17_I(*m, 0xb) != -1 && (t = gm_FindObjectInst(G17_I(*m, 0xb))) != 0)
-        gm_PlaceOnStage(ai_CharInts[id][0], *(int *)(bo + 1), *(int *)(t + 2), 0, 0);
+    if (m->spawn.objId != -1 && (t = (AIOBJ *)gm_FindObjectInst(m->spawn.objId)) != 0)
+        gm_PlaceOnStage(ai_CharsT[id].netId, b->id, t->objId, 0, 0);
     else
-        gm_PlaceOnStage(ai_CharInts[id][0], *(int *)(bo + 1), -1, 0, 0);
-    *(int *)(ai_Chars[id] + 0x16c) = 0;
-    ai_Chars[id][2] = 0xd;
-    if (m->data[0x11] != 0) {
-        gm_CreateObject(ai_CharInts[id][0], m->data[0x11], 1);
-        cm_UpdateHandObject(ai_Chars[id]);
+        gm_PlaceOnStage(ai_CharsT[id].netId, b->id, -1, 0, 0);
+    ai_CharsT[id].bld = 0;
+    ai_CharsT[id].kind = 0xd;
+    if (m->spawn.item != 0) {
+        gm_CreateObject(ai_CharsT[id].netId, m->spawn.item, 1);
+        cm_UpdateHandObject((char *)&ai_CharsT[id]);
     }
-    cm_LastCharId = ai_CharInts[id][0];
+    cm_LastCharId = ai_CharsT[id].netId;
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
-        s->value = (int)ai_Chars[id];
+        s->value = (int)&ai_CharsT[id];
     }
     return 0;
 }
@@ -15284,7 +15287,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, cm_ExRemoveOwned, cm_ExSetPlant, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, cm_ExChrGotoBuilding, cm_ExChrUseGates, ai_Unk4caa20, ai_Unk4caaa0, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

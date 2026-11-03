@@ -51,6 +51,20 @@ typedef struct G17MODELMSG {            /* 0x24 bytes, the data of message 0x3e 
     char name[0x20];                    /* 0x04, its new model ("stallbursche_MANN") */
 } G17MODELMSG;
 
+typedef struct G17SPAWNMSG {            /* 0x26 bytes, the data of message 0x49 (sent by 0x4c59f0, its handler 0x4cba10
+                                           cm_ExSpawnCharacter) */
+    int objectId;                       /* 0x00, the next object id (the server's, read when connected) */
+    unsigned char kind;                 /* 0x04, the kind of character */
+    char pad05[2];
+    int bldId;                          /* 0x07, the building it appears at (cm_ResolveId), -1: none */
+    int objId;                          /* 0x0b, the room (object) in it, -1: none */
+    unsigned char job;                  /* 0x0f, gm_CreateCharacter's job (a6) */
+    unsigned char title;                /* 0x10, its title (a7) */
+    unsigned char item;                 /* 0x11, an item it holds, 0: none */
+    int seed;                           /* 0x12, util_Seed (timeGetTime() when not connected) */
+    char text[0x10];                    /* 0x16, a tag ("SPIONAGE"), not read by the handler */
+} G17SPAWNMSG;
+
 typedef struct G17HIREMSG {             /* 0x17 bytes, the data of message 0x3d (cm_SendMessage3d, its handler
                                            0x4cb250 creates the character) */
     int bldId;                          /* 0x00, the building the character works in */
@@ -302,6 +316,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HOMEMSG home;                /* 0x10, message 0x39 */
         G17UPGRADEMSG upgrade;          /* 0x10, message 0x3a */
         G17MODELMSG model;              /* 0x10, message 0x3e */
+        G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
