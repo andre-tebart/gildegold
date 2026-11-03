@@ -56,8 +56,8 @@
 /* ai_Unk925520 */
 #define ai_Unk925538             (*(char (*)[26472])((char *)&ai_Unk925520 + 0x18))  /* 0x925538 */
 
-/* ai_Unk92cae0 */
-#define ai_Unk92caf0             (*(char (*)[13744])((char *)&ai_Unk92cae0 + 0x10))  /* 0x92caf0 */
+/* cm_CutInfos */
+#define ai_Unk92caf0             (*(char (*)[13744])((char *)&cm_CutInfos + 0x10))  /* 0x92caf0 */
 
 /* d3d_UsedCard */
 #define d3d_Caps98d              (*(unsigned char *)((char *)&d3d_UsedCard + 0x30d))  /* 0xfe798d */

@@ -32,7 +32,7 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 #include "data_views.h"
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GfxFloor;
-extern char ai_Unk92cae0[16][0x35c];
+extern char cm_CutInfos[16][0x35c];
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -97,6 +97,8 @@ extern GAPDATA full_data_92bcb8[];
 #define d2_LastWindowPtrC (*(char **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) read bytewise, as this unit does */
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
+#define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
+#define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
@@ -3903,38 +3905,35 @@ int ai_Unk4c9110(G17MSG *m, G17STAT *s)
     }
     return 1;
 }
-/* 0x4c9170, handler of type 0x26, "cm_ExSendCutInfo": the 0x35c bytes of the joined message go to the cutscene
-   slot of player data[0] */
+/* 0x4c9170, handler of type 0x26, "cm_ExSendCutInfo": the joined long message (a CMCUTINFO) becomes the cutscene
+   record of the player m->cut.playerId when it belongs to the current fight; 1 when the player has no record */
 
-int ai_Unk4c9170(G17MSG *m, G17STAT *s)
+int cm_ExSendCutInfo(G17MSG *m, G17STAT *s)
 {
     char buf[0x100];
-    char *rec;
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (*(int *)(ai_Unk92cae0[i] + 0x10) == G17_I(*m, 0))
+        if (cm_CutInfosT[i].playerId == m->cut.playerId) {
+            if (cm_CurrentFight != 0 && *cm_CurrentFight == m->cut.fightId) {
+                cm_CutInfosT[i] = cm_LongMsgCut;
+                cm_CutInfosT[i].recvFlag = 0;
+                sprintf(buf, "cm_ExSendCutInfo: PlayerId:%i Valid:%i  Ready:%i  Time:%i", cm_CutInfosT[i].playerId,
+                        cm_CutInfosT[i].valid, cm_CutInfosT[i].ready, d3_Time);
+            }
             break;
-    }
-    if (i < 16) {
-        if (cm_CurrentFight != 0 && *cm_CurrentFight == G17_I(*m, 4)) {
-            rec = ai_Unk92cae0[i];
-            memcpy(rec, cm_LongMsg, 0x35c);
-            *(int *)(rec + 0xc) = 0;
-            sprintf(buf, "cm_ExSendCutInfo: PlayerId:%i Valid:%i  Ready:%i  Time:%i", *(int *)(rec + 0x10),
-                    *(int *)(rec + 8), *(int *)(rec + 4), d3_Time);
         }
     }
     if (i >= 16) {
-        if (cm_CurrentFight != 0 && *cm_CurrentFight == G17_I(*m, 4))
+        if (cm_CurrentFight != 0 && *cm_CurrentFight == m->cut.fightId)
             sprintf(buf, "cm_ExSendCutInfo(): io-buffer has not been written, because player not found (player id %i)",
-                    G17_I(*m, 0));
+                    m->cut.playerId);
         return 1;
     }
     if (s != 0) {
         s->state = 1;
         s->kind = 8;
-        s->value = (int)ai_Unk92cae0[i];
+        s->value = (int)&cm_CutInfosT[i];
     }
     return 0;
 }
@@ -5450,11 +5449,11 @@ int ai_Unk4cc1b0(G17MSG *m, G17STAT *s)
     if (m->data[0x30] != ai_CharInts[ai_PlayerId][0x82])
         return 1;
     for (i = 0; i < 16; i++) {
-        if (*(int *)(ai_Unk92cae0[i] + 0x10) == G17_I(*m, 0))
+        if (*(int *)(cm_CutInfos[i] + 0x10) == G17_I(*m, 0))
             break;
     }
     if (i < 16) {
-        rec = ai_Unk92cae0[i];
+        rec = cm_CutInfos[i];
         c = cm_FindFighter(G17_I(*m, 4));
         if (c == 0)
             c = gm_FindChar(G17_I(*m, 4));
@@ -5482,11 +5481,11 @@ int ai_Unk4cc270(G17MSG *m, G17STAT *s)
     if (m->data[0x30] != ai_CharInts[ai_PlayerId][0x82])
         return 1;
     for (i = 0; i < 16; i++) {
-        if (*(int *)(ai_Unk92cae0[i] + 0x10) == G17_I(*m, 0))
+        if (*(int *)(cm_CutInfos[i] + 0x10) == G17_I(*m, 0))
             break;
     }
     if (i < 16) {
-        r = ai_Unk4cdf00(ai_Unk92cae0[i], cm_FindFighter(G17_I(*m, 4)));
+        r = ai_Unk4cdf00(cm_CutInfos[i], cm_FindFighter(G17_I(*m, 4)));
         if (*(int *)(r + 4) == G17_I(*m, 8)) {
             if (*(int *)(r + 4) != 2 || *(int *)(r + 0x10) == G17_I(*m, 0x14))
                 memcpy(r, &m->data[4], 0x2c);
@@ -6752,8 +6751,8 @@ int *ai_Unk4cdf80(char *c)
 
     for (i = 0; i < n; i++) {
         for (j = 0; j < 16; j++) {
-            if (*(int *)(ai_Unk92cae0[i] + 0x94 + j * 0x2c) == *(int *)(c + 4))
-                return (int *)(ai_Unk92cae0[i] + 0x94 + j * 0x2c);
+            if (*(int *)(cm_CutInfos[i] + 0x94 + j * 0x2c) == *(int *)(c + 4))
+                return (int *)(cm_CutInfos[i] + 0x94 + j * 0x2c);
         }
     }
     return 0;
@@ -9113,7 +9112,7 @@ void ai_Unk4d2f80(int side)
     row = ai_Unk4d2c00(side);
     for (i = 0; i < (unsigned char)rec[0x30]; i++) {
         if (*(int *)(rec + 0x34 + i * 4) == *(int *)((char *)side + 4)) {
-            rec2 = ai_Unk92cae0[i];
+            rec2 = cm_CutInfos[i];
             break;
         }
     }
@@ -9479,11 +9478,11 @@ char *ai_Unk4d3b30(char *rec)
         n = (unsigned char)ai_Unk6f0d04[0x30];
         for (i = 0; i < n && *(int *)(ai_Unk6f0d04 + 0x34 + i * 4) == -1; i++)
             ;
-        rr = (char *)ai_Unk4cdf00(ai_Unk92cae0[i], ret);
+        rr = (char *)ai_Unk4cdf00(cm_CutInfos[i], ret);
         memcpy(sl, rr, 0x2c);
         sl[0] = *(int *)(ret + 4);
         sl[1] = 5;
-        ai_Unk4c5c40(*(int *)(ai_Unk92cae0[i] + 0x10), sl);
+        ai_Unk4c5c40(*(int *)(cm_CutInfos[i] + 0x10), sl);
     }
     return ret;
 }
@@ -10741,8 +10740,8 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
         other = 0;
         n = (unsigned char)ai_Unk6f0d04[0x30];
         for (i = 0; i < n; i++) {
-            if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1 && rec != ai_Unk92cae0[i]) {
-                other = ai_Unk92cae0[i];
+            if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1 && rec != cm_CutInfos[i]) {
+                other = cm_CutInfos[i];
                 break;
             }
         }
@@ -10897,8 +10896,8 @@ void ai_Unk4d76a0(int *rec)
                             other = 0;
                             n = (unsigned char)ai_Unk6f0d04[0x30];
                             for (i = 0; i < n; i++) {
-                                if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1 && (char *)rec != ai_Unk92cae0[i]) {
-                                    other = ai_Unk92cae0[i];
+                                if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1 && (char *)rec != cm_CutInfos[i]) {
+                                    other = cm_CutInfos[i];
                                     break;
                                 }
                             }
@@ -11199,7 +11198,7 @@ void ai_Unk4d88c0(char *a)
                 ai_Unk4d3b30(ai_Unk6f0d04);
                 for (i = 0; i < (unsigned char)ai_Unk6f0d04[0x30]; i++) {
                     if (*(int *)(ai_Unk6f0d04 + 0x34 + i * 4) != -1)
-                        ai_Unk4d76a0((int *)ai_Unk92cae0[i]);
+                        ai_Unk4d76a0((int *)cm_CutInfos[i]);
                 }
             }
         }
@@ -11665,7 +11664,7 @@ void ai_Unk4daf80(char *p)
 extern char ai_Unk60de4c;
 extern char ai_Unk60dd68;
 extern char ai_Unk60dd24;
-/* ai_Unk92caf0: view of ai_Unk92cae0 (tools/data_views.py) */
+/* ai_Unk92caf0: view of cm_CutInfos (tools/data_views.py) */
 #define G26_BOX(sw) ai_Unk4e2bd0(ai_Unk60d368, (sw)); d2_SetForm(ai_Unk60d368, 0)
 #define G26_WAITV(h) if ((h) != 0) { while (sb_IsPlaying(h) != 0) ai_Unk4e3420(1); } ai_Unk4e3420(1)
 
@@ -14100,7 +14099,7 @@ int ai_Unk4e36a0(char *m)
     int *ids;
 
     ids = (int *)(m + 0x34);
-    for (j = 0, s = ai_Unk92cae0; j < 16; j++, s += 0x35c, ids++) {
+    for (j = 0, s = cm_CutInfos; j < 16; j++, s += 0x35c, ids++) {
         *(int *)s = 1;
         *(int *)(s + 8) = 0;
         *(int *)(s + 4) = 0;
@@ -14108,7 +14107,7 @@ int ai_Unk4e36a0(char *m)
         if (m != 0) {
             *(int *)(s + 0x10) = *ids;
             if (m[8] == 3 && (unsigned char)m[0x30] > 0) {
-                for (i = 0, t = ai_Unk92cae0; i < (unsigned char)m[0x30]; i++, t += 0x35c) {
+                for (i = 0, t = cm_CutInfos; i < (unsigned char)m[0x30]; i++, t += 0x35c) {
                     if (*(int *)(t + 8) == -1)
                         continue;
                     for (q = 0; q < 16; q++) {
@@ -14133,7 +14132,7 @@ int ai_Unk4e3750(char *m)
     i = 0;
     n = (unsigned char)m[0x30];
     if (n > 0) {
-        s = ai_Unk92cae0;
+        s = cm_CutInfos;
         do {
             if (*(int *)s != 0 && *(int *)(s + 8) == 0 && *(int *)(s + 0x10) != -1)
                 return 0;
@@ -14150,7 +14149,7 @@ int ai_Unk4e37a0(char *m)
     int i;
     char *s;
 
-    s = ai_Unk92cae0;
+    s = cm_CutInfos;
     for (i = 0; i < (unsigned char)m[0x30]; i++, s += 0x35c) {
         if (*(int *)(s + 0xc) == 0 && *(int *)(s + 8) != 0) {
             d2_SetForm(*(int *)(m + 0x2c), 0);
@@ -14201,7 +14200,7 @@ void ai_Unk4e3830(char *m, int ctx)
     sv_SetStatusText(&ch_EmptyName);
     if (ai_GameFlags & 8) {
         n = *(unsigned char *)(m + 0x30);
-        slot = ai_Unk92cae0[0];
+        slot = cm_CutInfos[0];
         for (i = 0; i < n; i++, slot += 0x35c) {
             ai_Unk6f0d78 = i;
             who = *(int *)(m + 0x34 + i * 4);
@@ -14233,7 +14232,7 @@ void ai_Unk4e3830(char *m, int ctx)
             if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
                 /* the owner asks every member in turn (the slots of the humans are sent, the computer ones answered at once) */
                 n = *(unsigned char *)(m + 0x30);
-                slot = ai_Unk92cae0[0];
+                slot = cm_CutInfos[0];
                 for (i = 0; i < n; i++, slot += 0x35c) {
                     c = (char *)gm_FindChar(*(int *)slot);
                     if (c == 0 || c[2] == 6 || c[2] == 7 || *(int *)(slot + 8) != 0)
@@ -14254,12 +14253,12 @@ void ai_Unk4e3830(char *m, int ctx)
                 /* the others wait for the owner's slots and answer for their own character */
                 n = *(unsigned char *)(m + 0x30);
                 for (j = 0; j < n; j++)
-                    if (*(int *)(ai_Unk92cae0[j]) == ai_CharInts[ai_PlayerId][0])
+                    if (*(int *)(cm_CutInfos[j]) == ai_CharInts[ai_PlayerId][0])
                         break;
                 if (j < n) {
                     ai_Unk6f0d84 = ai_Unk60d364 + ai_Unk6f0d80;
                     ai_Unk6f0d88 = 0;
-                    ai_Unk4c4480(0x35c, ai_Unk92cae0[j]);
+                    ai_Unk4c4480(0x35c, cm_CutInfos[j]);
                     ai_Unk4c4f50(ai_Unk6f0d74 != 0, 0);
                     while (cm_GetSlotState(0) == 0)
                         sv_PumpNet();
@@ -14430,9 +14429,9 @@ void ai_Unk4e4060(char *m)
         ai_Unk4e36a0(m);
     if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
         for (i = 0; i < 16; i++) {
-            *(int *)(ai_Unk92cae0[i] + 4) = 0;
-            *(int *)(ai_Unk92cae0[i]) = 0;
-            *(int *)(ai_Unk92cae0[i] + 8) = 0;
+            *(int *)(cm_CutInfos[i] + 4) = 0;
+            *(int *)(cm_CutInfos[i]) = 0;
+            *(int *)(cm_CutInfos[i] + 8) = 0;
             id = *(int *)(m + 0x34 + i * 4);
             if (id != -1 && (c = (char *)gm_FindChar(id)) != 0) {
                 cm_BeginFieldBlock(c, *(int *)(c + 4));
@@ -14725,8 +14724,8 @@ int ai_Unk4e50e0(int id)
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (*(int *)(ai_Unk92cae0[i] + 0x10) == id)
-            return (int)ai_Unk92cae0[i];
+        if (*(int *)(cm_CutInfos[i] + 0x10) == id)
+            return (int)cm_CutInfos[i];
     }
     return 0;
 }
@@ -14812,8 +14811,8 @@ int ai_Unk4e5210(int id, int who)
     }
     if (cm_CurrentFight != 0 && *cm_CurrentFight == id) {
         for (i = 0; i < 16; i++) {
-            if (*(int *)(ai_Unk92cae0[i] + 0x10) == who) {
-                *(int *)(ai_Unk92cae0[i] + 0x10) = -1;
+            if (*(int *)(cm_CutInfos[i] + 0x10) == who) {
+                *(int *)(cm_CutInfos[i] + 0x10) = -1;
                 break;
             }
         }
@@ -15106,7 +15105,7 @@ extern int ai_Unk92c510[60];
 extern char ai_Unk92c600[1152];
 extern int ai_Unk92ca80[16];
 extern int ai_Unk92cac0;
-extern char ai_Unk92cae0[16][0x35c];
+extern char cm_CutInfos[16][0x35c];
 extern float ai_Unk9300a0[0xb4];
 extern char * ai_Unk930380[32];
 extern char ai_Unk930400[192];
@@ -15221,7 +15220,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, ai_Unk4c7d80, ai_Unk4c7e20, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, ai_Unk4c8110, ai_Unk4c81d0, cm_ExRelations, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, cm_ExSysMessage, ai_Unk4c8de0, cm_ExAddStraftat, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, cm_ExSendCutInfo, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
@@ -15353,7 +15352,7 @@ int ai_Unk92c510[60] = {0};  /* 0x92c510, the answer callbacks of the kind table
 char ai_Unk92c600[1152] = {0};  /* 0x92c600 */
 int ai_Unk92ca80[16] = {0};  /* 0x92ca80 */
 int ai_Unk92cac0 = 0;  /* 0x92cac0 */
-char ai_Unk92cae0[16][0x35c] = {0};  /* 0x92cae0 */
+char cm_CutInfos[16][0x35c] = {0};  /* 0x92cae0 */
 float ai_Unk9300a0[0xb4] = {0};  /* 0x9300a0 */
 char * ai_Unk930380[32] = {0};  /* 0x930380 */
 char ai_Unk930400[192] = {0};  /* 0x930400 */

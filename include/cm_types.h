@@ -182,6 +182,33 @@ typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crim
 } CRIME;
 typedef char cm_AssertCRIME[sizeof(CRIME) == 0x2d ? 1 : -1];
 
+typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a cutscene record (messages 0x50 / 0x51
+                                           copy one whole) */
+    int charId;                         /* 0x00, the character's netId, -1 when free */
+    int state;                          /* 0x04 */
+    char pad08[0x24];
+} CMCUTENTRY;
+
+typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a player's cutscene (fight) record, received
+                                           whole by cm_ExSendCutInfo */
+    int unk00;                          /* 0x00 */
+    int ready;                          /* 0x04, "Ready" in cm_ExSendCutInfo's trace */
+    int valid;                          /* 0x08, "Valid" */
+    int recvFlag;                       /* 0x0c, cleared when the record is received (cm_ExSendCutInfo; reasoned guess: a
+                                           flag of the local copy only, no other use known) */
+    int playerId;                       /* 0x10, "PlayerId" */
+    char pad14[0x80];
+    CMCUTENTRY entries[16];             /* 0x94 */
+    char pad354[8];
+} CMCUTINFO;
+typedef char cm_AssertCMCUTINFO[sizeof(CMCUTINFO) == 0x35c ? 1 : -1];
+
+typedef struct G17CUTMSG {              /* 8 bytes, the data of message 0x26 ("cm_ExSendCutInfo", handler 0x4c9170; the
+                                           record itself follows as the joined long message cm_LongMsg) */
+    int playerId;                       /* 0x00, the player whose cutscene record (CMCUTINFO.playerId) it is */
+    int fightId;                        /* 0x04, the fight it belongs to (*cm_CurrentFight) */
+} G17CUTMSG;
+
 typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
                                            cm_ExSysMessage 0x4c89b0) */
     unsigned char kind;                 /* 0x00, 0..0x14 */
@@ -241,6 +268,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17RELMSG rel;                  /* 0x10, message 0x1b */
         G17SYSMSG sys;                  /* 0x10, message 0x20 */
         CRIME crime;                    /* 0x10, message 0x22 */
+        G17CUTMSG cut;                  /* 0x10, message 0x26 */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };
