@@ -1076,40 +1076,47 @@ D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, D3OBJECT *obj)
     }
     return o;
 }
-/* 0x53e780, adds a gfx info (the first free of 0x40 entries at 0x7588a0) to the event `rec` for the object `obj`: 3D model `name` (only with the 3D option byte 0x6f361b) */
-
-void he_Unk53e780(int rec, char *name, int obj)
+/* 0x53e780, adds a gfx info for the event `ev`: the model `name` over the object `parent` in the first free of the 0x40
+   he_GfxInfos (he_CreateGfxObject), with the 3D option (ai_GameSwitches byte 3) only; an unknown parent gives the
+   message "he_CreateGfxInfo(): invalid parent :%s" (formatted, never shown; %s prints the parent's name at its
+   offset 0). Selects scene 0 meanwhile
+   @deep read whole against the original and rewritten on HEGFXINFO / AIJOB.gfx / D3OBJECT: the 3D option
+   test (ai_GameSwitches byte 3), the free entry search over he_GfxInfos[].ev, the scene switch to 0 and
+   back, d3_FindObject(0, 0x40, parent, 0), the dropped sprintf of the parent's name, the ev / parent 0 /
+   eventId / ev->gfx stores and the he_CreateGfxObject call all match. Left is allocation: the original
+   keeps the index in esi through the loop and turns it into the entry pointer in place (shl esi,4; add
+   esi,he_GfxInfos), pushing esi / edi at the entry; ours runs the loop in eax and moves the entry to esi
+   (mov esi,eax), pushing esi / edi after the loop (+0x7 / +0x37 hunks, the eax->esi renames); and the
+   original folds the he_CreateGfxObject cleanup into the last add esp,0x14 where ours keeps add esp,0xc /
+   add esp,8 (+0xa2). Tried early returns, nested ifs, a do-while search, the entry indexed in place of a
+   pointer, and the parent itself as the %s argument */
+void he_CreateGfxInfo(AIJOB *ev, char *name, D3OBJECT *parent)
 {
-    int sv = U_I((unsigned)&d3_CurrentScene);
+    int scene = d3_CurrentScene;
     int i;
-    int *p;
-    int *ent;
-    int o;
+    HEGFXINFO *e;
     char buf[0x200];
 
-    if (*(char *)((unsigned)&ai_GameSwitches + 0x3) != 0) {
+    if (ai_GameSwitches.byte[3] != 0) {
         i = 0;
-        p = (int *)((unsigned)&he_RunHandlers + 0x2a4);
         do {
-            if (*p == 0)
+            if (he_GfxInfos[i].ev == 0)
                 break;
-            p += 4;
             i++;
-        } while ((int)p < ((unsigned)&he_RunHandlers + 0x6a4));
+        } while (i < 0x40);
         if (i != 0x40) {
-            ent = (int *)(((unsigned)&he_RunHandlers + 0x2a0) + i * 16);
+            e = &he_GfxInfos[i];
             d3if_SelectScene(0, 1);
-            o = d3_FindObject(0, 0x40, obj, 0);
-            if (o == 0) {
-                sprintf(buf, "he_CreateGfxInfo(): invalid parent :%s");
+            if (d3_FindObject(0, 0x40, (int)parent, 0) == 0) {
+                sprintf(buf, "he_CreateGfxInfo(): invalid parent :%s", parent->name);
             } else {
-                ent[1] = rec;
-                ent[2] = 0;
-                ent[0] = *(int *)(rec + 4);
-                *(int **)(rec + 0x88) = ent;
-                he_CreateGfxObject((HEGFXINFO *)ent, name, (D3OBJECT *)obj);
+                e->ev = ev;
+                e->parent = 0;
+                e->eventId = ev->id;
+                ev->gfx = e;
+                he_CreateGfxObject(e, name, parent);
             }
-            d3if_SelectScene(sv, 1);
+            d3if_SelectScene(scene, 1);
         }
     }
 }
@@ -1162,28 +1169,28 @@ void he_Unk53e8b0(unsigned char *r)
     case 0x1a:
         iv = gm_FindBuildingById(*(int *)(r + 0xd0));
         if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_Unk53e780((int)r, "he_schlaege", *(int *)(iv + 0x61));
+            he_CreateGfxInfo((int)r, "he_schlaege", *(int *)(iv + 0x61));
             return;
         }
         break;
     case 0x1b:
         iv = gm_FindBuildingById(*(int *)(r + 0xac));
         if (iv != 0) {
-            he_Unk53e780((int)r, "he_muenze", *(int *)(iv + 0x61));
+            he_CreateGfxInfo((int)r, "he_muenze", *(int *)(iv + 0x61));
             return;
         }
         break;
     case 0x1c:
         iv = gm_FindBuildingById(*(int *)(r + 0xac));
         if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_Unk53e780((int)r, "he_hammer_gold", *(int *)(iv + 0x61));
+            he_CreateGfxInfo((int)r, "he_hammer_gold", *(int *)(iv + 0x61));
             return;
         }
         break;
     case 0x1e:
         iv = gm_FindBuildingById(*(int *)(r + 0xac));
         if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_Unk53e780((int)r, "he_saege_hammer_gold", *(int *)(iv + 0x61));
+            he_CreateGfxInfo((int)r, "he_saege_hammer_gold", *(int *)(iv + 0x61));
             return;
         }
         break;
@@ -1192,7 +1199,7 @@ void he_Unk53e8b0(unsigned char *r)
 L_hammer:
         iv = gm_FindBuildingById(o);
         if (iv != 0 && *(int *)(iv + 0x61) != 0) {
-            he_Unk53e780((int)r, "he_plus_hammer", *(int *)(iv + 0x61));
+            he_CreateGfxInfo((int)r, "he_plus_hammer", *(int *)(iv + 0x61));
             return;
         }
         break;
@@ -1209,7 +1216,7 @@ L_hammer:
     case 0x40:
         iv = gm_FindBuildingById(*(int *)(r + 0xac));
         if (iv != 0 && *(int *)(iv + 0x61) != 0 && *(unsigned short *)(r + 8) == (unsigned short)U_I((unsigned)&ai_PlayerId)) {
-            he_Unk53e780((int)r, "he_fernglas", *(int *)(iv + 0x61));
+            he_CreateGfxInfo((int)r, "he_fernglas", *(int *)(iv + 0x61));
             return;
         }
         break;
@@ -1223,7 +1230,7 @@ L_hammer:
         iv = d3_FindObject(0, 0x40, 0, "ob_TRIBUENE");
 L_mark:
         if (iv != 0)
-            he_Unk53e780((int)r, "he_ausrufezeichen", iv);
+            he_CreateGfxInfo((int)r, "he_ausrufezeichen", iv);
     }
 }
 /* 0x53eba0, removes the gfx infos whose parent changed or when the 3D option is off */

@@ -42,7 +42,7 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
     char *text;                         /* 0x7c, of a message box event 0x11 its text ("messagebox", cm.c), 0 at creation */
     int textSize;                       /* 0x80, the size of that text (ls.c's loader reads it) */
     int exSlot;                         /* 0x84, the cm slot cm_SendExSetHE gave the event (cm_GetSlotState asks it), -1: none */
-    char pad88[4];
+    struct HEGFXINFO *gfx;              /* 0x88, the gfx info shown over its object (he.h, he_CreateGfxInfo), 0: none */
     union {
         int ids[8];                     /* 0x8c, the message's ids[] */
         int helpers[4];                 /* 0x8c, of a helper job 0x8c the characters on it, -1: a free place
