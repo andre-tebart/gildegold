@@ -989,12 +989,6 @@ char *he_FindEvent(int n, ...)
         he_Cursor = 0;
     return he_NextEvent();
 }
-typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model shown over an object for an event (he_Unk53e780) */
-    int eventId;                        /* 0x0, the event's AIJOB.id */
-    AIJOB *ev;                          /* 0x4, the event */
-    D3OBJECT *parent;                   /* 0x8, the object it is shown over (he_Unk53e5f0 sets it), 0: a free entry */
-    D3OBJECT *obj;                      /* 0xc, its model object (he_Unk53e5f0) */
-} HEGFXINFO;
 #define he_GfxInfos (*(HEGFXINFO (*)[0x40])((char *)&he_RunHandlers + 0x2a0))  /* 0x7588a0 */
 
 /* 0x53e4e0, spreads the gfx infos over the object `obj` (at most 0x20) on a circle around its position: radius 100 (0 for
@@ -1029,42 +1023,55 @@ void he_SpreadGfxInfos(D3OBJECT *obj)
         d3_SetObjectPos(list[i]->obj, &at);
     }
 }
-/* 0x53e5f0, creates the gfx object of the info `e` (name b, parent obj): a 0x446e10 object at the top of `obj`, flags, 0x433d70 with a 0x78 byte record (ROUGH) */
-
-int he_Unk53e5f0(int e, int name, int obj)
+/* 0x53e5f0, creates the model object `name` of the gfx info `e` at the top of `obj` (its world position, at its
+   height's top), parent obj: shadow mask bits 0xc on, saved-with-scene and flag 4 off, kind 5, alpha 0x80, vertex
+   colour (0xc0, 0xa0, 0x80), and a two-key path that turns it about y by 64 pi in 0x8c0; then re-spreads obj's
+   gfx infos (he_SpreadGfxInfos). The object, 0 when it could not be created */
+D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, D3OBJECT *obj)
 {
-    int o;
-    float vec[3];
-    float mn, mx;
-    int st[0x1e];
+    D3TEXFLAGS alpha;
+    D3ANIMFLAGS f;
+    D3VECTOR4 pos;                      /* the engine's padded vector */
+    float lo, hi;
+    D3OBJECT *o;
+    D3ANIMKEY keys[2];
 
-    d3_PointToWorld(obj, obj + 0x4c, vec);
-    d3t_GetHeightRange(obj, &mn, &mx);
-    vec[1] = mx;
-    o = d3_CreateObject(0, vec, (char *)&d3_Origin, name);
-    *(int *)(e + 0xc) = o;
-    *(int *)(e + 8) = obj;
+    d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
+    d3t_GetHeightRange(obj, &lo, &hi);
+    pos.y = hi;
+    o = d3_CreateObject(0, (D3VECTOR *)&pos, (D3VECTOR *)&d3_Origin, name);
+    e->obj = o;
+    e->parent = obj;
     if (o != 0) {
-        *(unsigned char *)(o + 0x212) |= 0xc;
-        *(unsigned char *)(o + 0x211) &= 0xfd;
-        *(unsigned char *)(o + 0x213) &= 0xfb;
-        *(int *)(o + 0x220) = 5;
-        ((void (*)(void *, void *, int))d3_SetObjectAlpha)(o, (void *)(o + 0x1cc), 0x10080);
+        o->objectFlags &= ~2;
+        o->stateFlags |= 0xc;
+        o->flags &= ~4;
+        o->kind = 5;
+        alpha.all = 0;
+        alpha.b[2] = 1;
+        alpha.b[0] = 0x80;
+        d3_SetObjectAlpha(o, o->info, alpha);
         d3t_SetColor(o, 0xc0, 0xa0, 0x80);
-        st[0] = 0x8c0;
-        st[0x1c] = 0x43490fdb;
-        st[5] = 0;
-        st[6] = 0;
-        st[7] = 0;
-        st[1] = 0;
-        st[2] = 0;
-        st[3] = 0;
-        st[0x1b] = 0;
-        st[0x1d] = 0;
-        st[0x17] = 0;
-        st[0x18] = 0;
-        st[0x19] = 0;
-        ((D3ANIM *(*)(void *, int, int, int, int, void *))d3anim_CreatePath)(o, 0, 0, 2, 2, st);
+        memset(&f, 0, sizeof(f));
+        keys[0].time = 0x8c0;
+        keys[1].rot.y = 201.06193f;             /* 64 pi */
+        f.b[1] &= ~0x14;
+        f.b[8] |= 2;
+        f.b[1] &= ~8;
+        f.b[0] = 0;
+        f.b[1] &= ~1;
+        keys[0].rot.x = 0.0f;
+        keys[0].rot.y = 0.0f;
+        keys[0].rot.z = 0.0f;
+        keys[0].pos.x = 0.0f;
+        keys[0].pos.y = 0.0f;
+        keys[0].pos.z = 0.0f;
+        keys[1].rot.x = 0.0f;
+        keys[1].rot.z = 0.0f;
+        keys[1].pos.x = 0.0f;
+        keys[1].pos.y = 0.0f;
+        keys[1].pos.z = 0.0f;
+        d3anim_CreatePath(o, f, 2, keys);
         he_SpreadGfxInfos(obj);
     }
     return o;
@@ -1100,7 +1107,7 @@ void he_Unk53e780(int rec, char *name, int obj)
                 ent[2] = 0;
                 ent[0] = *(int *)(rec + 4);
                 *(int **)(rec + 0x88) = ent;
-                he_Unk53e5f0((int)ent, (int)name, obj);
+                he_CreateGfxObject((HEGFXINFO *)ent, name, (D3OBJECT *)obj);
             }
             d3if_SelectScene(sv, 1);
         }

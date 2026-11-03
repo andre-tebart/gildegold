@@ -3,6 +3,14 @@
 #define HE_H
 
 struct D3OBJECT;
+struct AIJOB;
+
+typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model shown over an object for an event (he_Unk53e780) */
+    int eventId;                        /* 0x0, the event's AIJOB.id */
+    struct AIJOB *ev;                   /* 0x4, the event */
+    struct D3OBJECT *parent;            /* 0x8, the object it is shown over (he_CreateGfxObject sets it), 0: a free entry */
+    struct D3OBJECT *obj;               /* 0xc, its model object (he_CreateGfxObject) */
+} HEGFXINFO;
 
 void he_Unk53d430(unsigned char *ev);
 void he_Unk53d470(unsigned char *ev);
@@ -41,7 +49,7 @@ char *he_FindEvent(int n, ...);
 int he_NoEvent9bFor(int a);                     /* 0x56f3b0, 1 when no running type 0x9b event has +0xac == a + 4 */
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */
 void he_SpreadGfxInfos(struct D3OBJECT *obj);
-int he_Unk53e5f0(int e, int name, int obj);
+struct D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, struct D3OBJECT *obj);
 void he_Unk53e780(int rec, char *name, int obj);
 void he_Unk53e840(int *e);
 void he_Unk53e8b0(unsigned char *r);
