@@ -3125,15 +3125,7 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed)
-   @deep read the 11 hunks against the original (1213 vs 1213 instructions): 7 are regs rotations (eax/ecx,
-   ebx/ecx/edi, edx/edi); the 4 code hunks are the same float-constant stores of the marker paths in other
-   registers / order: at 0x579df9 ours loads 35.0f (0x420c0000) into edx and 71.0f (0x428e0000) into edi
-   early, the original 35.0f into edi and 71.0f into edx just before its store [eax+0x28]; at 0x57a1b6 the
-   three stores 0x43af0000 / 0x43cb0000 / 0x43910000 through [esi+0x64] are the same, with eax/ecx swapped
-   and one load moved; at 0x57a441 the constants 0x44670000 / 0x447f0000 go to edx/edi in swapped order
-   around the cmp ax, 0x320. Same constants, same destinations, same count: which register holds a reused
-   constant is allocation. */
+   (the records built so far freed) */
 
 int ai_TutorialInitChapter3(void)
 {
