@@ -6349,31 +6349,24 @@ char *ai_Unk4cd380(int id)
     }
     return ai_Unk4cd350();
 }
-/* 0x4cd3c0, appends a line (text) of the player id (with x) to the ring ai_Unk935da0[15] */
+/* 0x4cd3c0, appends the chat line text of the player id (x kept with it) to the lobby chat ring cm_LobbyChat[15]; an unknown sender is named "???????" */
 
-void ai_Unk4cd3c0(int id, int x, char *text)
+void cm_LobbyAddChat(int id, int x, char *text)
 {
     char *p;
-    int n;
 
     p = cm_LobbyFindPlayer(id);
-    if (p != 0) {
-        sprintf(ai_Unk935da0[ai_Unk9363f4].name, "%s %s", p + 0x12, p + 0x22);
-        n = ai_Unk9363f4;
-    } else {
-        n = ai_Unk9363f4;
-        *(int *)ai_Unk935da0[n].name = ai_Unk60c7b0[0];
-        *(int *)(ai_Unk935da0[n].name + 4) = ai_Unk60c7b0[1];
-    }
-    ai_Unk935da0[n].id = id;
-    ai_Unk935da0[n].x = x;
-    strcpy(ai_Unk935da0[n].text, text);
-    n++;
-    ai_Unk9363f4 = n;
-    if (n >= 15)
-        ai_Unk9363f4 = 0;
-    if (ai_Unk6f0cd8 < 15)
-        ai_Unk6f0cd8++;
+    if (p != 0)
+        sprintf(cm_LobbyChat[cm_LobbyChatNext].name, "%s %s", p + 0x12, p + 0x22);
+    else
+        strcpy(cm_LobbyChat[cm_LobbyChatNext].name, "???????");
+    cm_LobbyChat[cm_LobbyChatNext].id = id;
+    cm_LobbyChat[cm_LobbyChatNext].x = x;
+    strcpy(cm_LobbyChat[cm_LobbyChatNext].text, text);
+    if (++cm_LobbyChatNext >= 15)
+        cm_LobbyChatNext = 0;
+    if (cm_LobbyChatCount < 15)
+        cm_LobbyChatCount++;
 }
 /* 0x4cd480, the oldest line of the ring (0: none) */
 
@@ -6381,15 +6374,15 @@ G18LOG *ai_Unk4cd480()
 {
     int i;
 
-    if (ai_Unk6f0cd8 == 0)
+    if (cm_LobbyChatCount == 0)
         return 0;
-    i = ai_Unk9363f4 - ai_Unk6f0cd8;
+    i = cm_LobbyChatNext - cm_LobbyChatCount;
     ai_Unk6f0cdc = i;
     if (i < 0) {
-        i = ai_Unk9363f4 + 1;
+        i = cm_LobbyChatNext + 1;
         ai_Unk6f0cdc = i;
     }
-    return &ai_Unk935da0[i];
+    return &cm_LobbyChat[i];
 }
 /* 0x4cd4c0, the next line of the ring (0: no more) */
 
@@ -6397,24 +6390,24 @@ G18LOG *ai_Unk4cd4c0()
 {
     int i = ai_Unk6f0cdc;
 
-    if (i == ai_Unk9363f4)
+    if (i == cm_LobbyChatNext)
         return 0;
     i++;
     ai_Unk6f0cdc = i;
-    if (i == ai_Unk9363f4)
+    if (i == cm_LobbyChatNext)
         return 0;
     if (i == 15) {
         i = 0;
         ai_Unk6f0cdc = 0;
     }
-    return &ai_Unk935da0[i];
+    return &cm_LobbyChat[i];
 }
 /* 0x4cd500 */
 
 void cm_LobbyClearChat()
 {
-    ai_Unk9363f4 = 0;
-    ai_Unk6f0cd8 = 0;
+    cm_LobbyChatNext = 0;
+    cm_LobbyChatCount = 0;
 }
 /* 0x4cd510, all players of the list (ai_Unk936424[8]) have state 1 and their number is the one asked for */
 
@@ -6623,7 +6616,7 @@ int ai_Unk4cd870(G17MSG *m, G17STAT *s)
         break;
     case 6:
         memcpy(&t, &m->data[4], 0x48);
-        ai_Unk4cd3c0(t.a, t.b, t.name);
+        cm_LobbyAddChat(t.a, t.b, t.name);
         break;
     default:
         return 1;
@@ -15200,8 +15193,8 @@ extern char * ai_Unk935980[32];
 extern char ai_Unk935a00[512];
 extern float ai_Unk935d00;
 extern int ai_Unk935d20[32];
-extern G18LOG ai_Unk935da0[15];
-extern int ai_Unk9363f4;
+extern G18LOG cm_LobbyChat[15];
+extern int cm_LobbyChatNext;
 extern int ai_Unk936400;
 extern int ai_Unk936404;
 extern int ai_Unk936408;
@@ -15309,7 +15302,6 @@ int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, 
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
-int ai_Unk60c7b0[2] = { 1061109567, 4144959 };  /* 0x60c7b0 */
 char ai_Unk60c7c0[920] = { 84, 1, 0, 0, 120, 5, 20, 0, 1, 4, 1, 0, 0, 0, -96, 66, 2, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 17, 0, 0, 0, 0, 0, 0, 86, 1, 0, 0, 95, 10, 15, 0, 1, 4, 1, 0, 0, 0, -96, 66, 5, 107, 97, 109, 112, 102, 47, 115, 116, 114, 101, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 17, 0, 0, 0, 0, 0, 0, 88, 1, 0, 0, 80, 20, 40, 0, 1, 4, 1, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 104, 105, 101, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 17, 0, 0, 0, 0, 0, 0, 114, 1, 0, 0, 110, 5, 10, 0, 1, 5, 0, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 102, 17, 0, 0, 0, 0, 0, 0, 110, 1, 0, 0, 100, 5, 10, 0, 1, 5, 0, 0, 0, 0, -96, 66, 10, 107, 97, 109, 112, 102, 47, 115, 116, 105, 99, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 103, 17, 0, 0, 0, 0, 0, 0, 116, 1, 0, 0, 100, 0, 30, 1, 2, 6, 0, 0, 0, 0, 72, 67, 2, 107, 97, 109, 112, 102, 47, 119, 101, 114, 102, 101, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 17, 0, 0, 2, 0, 0, 0, 118, 1, 0, 0, 90, 0, 30, 1, 1, 6, 0, 0, 0, 0, 72, 67, 2, 107, 97, 109, 112, 102, 47, 119, 101, 114, 102, 101, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 105, 17, 0, 0, 2, 0, 0, 0, 94, 1, 0, 0, 60, 5, 20, 1, 1, 3, 0, 0, 0, 0, -56, 67, 5, 107, 97, 109, 112, 102, 47, 115, 99, 104, 105, 101, 115, 115, 101, 110, 95, 112, 105, 115, 116, 111, 108, 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 17, 0, 0, 1, 0, 0, 0, 96, 1, 0, 0, 70, 10, 30, 1, 1, 3, 0, 0, 0, 0, 22, 68, 5, 107, 97, 109, 112, 102, 47, 115, 99, 104, 105, 101, 115, 115, 101, 110, 95, 97, 114, 109, 98, 114, 117, 115, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 107, 17, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, -106, 2, 8, 0, 1, 5, 1, 0, 0, 0, -96, 66, 2, 107, 97, 109, 112, 102, 47, 115, 99, 104, 108, 97, 103, 101, 110, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 17, 0, 0, 0, 0, 0, 0 };  /* 0x60c7c0, the ten 0x5c-byte records ai_FindWeaponRecord searches (G12REC10, hst.c); the last has id 0, the fallback */
 float ai_Unk60cb58 = 1.0f;  /* 0x60cb58 */
 int ai_Unk60cb5c = -1;  /* 0x60cb5c */
@@ -15345,7 +15337,7 @@ int ai_ClockMs = 0;  /* 0x6333cc, a clock */
 unsigned int ai_Unk63349c = 0;  /* 0x63349c */
 int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
-int ai_Unk6f0cd8 = 0;  /* 0x6f0cd8 */
+int cm_LobbyChatCount = 0;  /* 0x6f0cd8 */
 int ai_Unk6f0cdc = 0;  /* 0x6f0cdc */
 char * ai_Unk6f0ce0 = 0;  /* 0x6f0ce0 */
 int ai_Unk6f0ce4 = 0;  /* 0x6f0ce4, fight paused */
@@ -15447,8 +15439,8 @@ char * ai_Unk935980[32] = {0};  /* 0x935980 */
 char ai_Unk935a00[512] = {0};  /* 0x935a00 */
 float ai_Unk935d00 = 0;  /* 0x935d00 */
 int ai_Unk935d20[32] = {0};  /* 0x935d20 */
-G18LOG ai_Unk935da0[15] = {0};  /* 0x935da0 */
-int ai_Unk9363f4 = 0;  /* 0x9363f4 */
+G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
+int cm_LobbyChatNext = 0;  /* 0x9363f4 */
 int ai_Unk936400 = 0;  /* 0x936400 */
 int ai_Unk936404 = 0;  /* 0x936404 */
 int ai_Unk936408 = 0;  /* 0x936408 */

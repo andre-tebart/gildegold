@@ -488,7 +488,7 @@ int gv_StartShot();  /* 0x4eee00 */
 
 char *ai_Unk4cd350();  /* 0x4cd350 */
 char *ai_Unk4cd380(int id);  /* 0x4cd380 */
-void ai_Unk4cd3c0(int id, int x, char *text);  /* 0x4cd3c0 */
+void cm_LobbyAddChat(int id, int x, char *text);  /* 0x4cd3c0 */
 G18LOG *ai_Unk4cd480();  /* 0x4cd480 */
 G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
 void cm_LobbyClearChat();  /* 0x4cd500 */
@@ -530,19 +530,18 @@ char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);        
 float gm_HealthRatio();  /* 0x4fc8e0 */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
-extern int ai_Unk60c7b0[2];  /* 0x60c7b0 */
 typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_Unk60c7c0 (ai_FindWeaponRecord) */
     int id;                             /* 0x00, the goods item */
     char pad04[0x58];
 } AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
-extern int ai_Unk6f0cd8;  /* 0x6f0cd8 */
+extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
 extern int ai_Unk6f0cdc;  /* 0x6f0cdc */
 extern char *ai_Unk6f0d04;  /* 0x6f0d04 */
 extern int gm_AllowAll;  /* 0x6f2448 */
 extern char ai_Unk930600[];  /* 0x930600 */
-extern G18LOG ai_Unk935da0[15];  /* 0x935da0 */
-extern int ai_Unk9363f4;  /* 0x9363f4 */
+extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
+extern int cm_LobbyChatNext;  /* 0x9363f4 */
 extern int ai_Unk936400;  /* 0x936400 */
 extern int ai_Unk936404;  /* 0x936404 */
 extern int ai_Unk936408;  /* 0x936408 */
