@@ -248,7 +248,6 @@ extern GAPDATA full_data_62a248[];
 
 extern GAPDATA full_data_62a284[];
 extern GAPDATA full_data_62a2a4[];
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern GAPDATA full_data_62a2c4[];
 extern const int sv_PhaseMinutes[24];
@@ -298,7 +297,6 @@ extern GAPDATA full_data_62a38c[];
 extern GAPDATA full_data_62a3ac[];
 extern GAPDATA full_data_62a3cc[];
 
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
@@ -310,7 +308,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -324,7 +321,6 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -339,7 +335,6 @@ extern GAPDATA full_data_62a3ec[];
 extern GAPDATA full_data_62a3f8[];
 extern int sv_PopRequest;
 extern unsigned short ai_PlayerId;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -420,7 +415,6 @@ extern GAPDATA full_data_62a5bc[];
 extern int sv_FrameMask;
 extern GAPDATA full_data_625150[];
 extern GAPDATA full_data_62a5d8[];
-extern unsigned char ai_TimeHour;
 
 
 
@@ -431,7 +425,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62a5f8[];
 extern GAPDATA full_data_62a62c[];
-extern unsigned char ai_TimeHour;
 
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -443,7 +436,6 @@ extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -481,7 +473,6 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_62a5bc[];
 extern GAPDATA full_data_62a6f8[];
 extern GAPDATA full_data_62a70c[];
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern const int sv_PhaseMinutes[24];
 
@@ -511,8 +502,7 @@ extern GAPDATA full_data_62a7e0[];
 extern unsigned char kb_Last;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern char ai_Time[14];
-extern unsigned char ai_TimeHour;
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -524,8 +514,7 @@ extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_Chars[768][0x21c];
 extern unsigned short ai_PlayerId;
-extern char ai_Time[14];
-extern unsigned char ai_TimeHour;
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -542,8 +531,7 @@ extern const int sv_PhaseMinutes[24];
 
 
 extern char ai_Chars[768][0x21c];
-extern char ai_Time[14];
-extern unsigned char ai_TimeHour;
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -566,8 +554,7 @@ extern int ai_ClickedObject;
 
 extern GAPDATA full_data_62a83c[];
 extern unsigned short ai_PlayerId;
-extern char ai_Time[14];
-extern unsigned char ai_TimeHour;
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int gm_AllowAll;
@@ -644,7 +631,6 @@ extern char ai_Chars[768][0x21c];
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
 #define U_I(a) (*(int *)(a))
-#define amt_PriceTable (*(AMTPRICEROW (*)[37])&amt_PriceRows)  /* 0x61a348, amt_PriceRows as its rows */
 
 void sv_CameraFollow();
 
@@ -672,8 +658,6 @@ extern char *txt_Ptrs[]; /* 0x143a1c0 */
 TUTSTATE *const ai_Tutorial = (TUTSTATE *)full_data_6fa060;  /* 0x5eec60, the pointer to the tutorial state record */
 #define S (*(char **)(unsigned)&ai_Tutorial)  /* the tutorial state record (at 0x6fa060): the pointer ai_Tutorial holds */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
-#define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time as the messages here copy it: @original 3 ints and a short (ahm.h AHMCLOCK) */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original ai_SeanceGhost reads the 16-bit result (mov si, ax) */
 typedef struct SHOTENTRY {   /* 0x10 bytes */
     int obj;                 /* +0x0, -1 when empty */
@@ -708,7 +692,6 @@ int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gam
 AIBOOKMARK ai_Bookmarks[11] = { 0 };  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
 SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
-#include "time_view.h"
 #include "ls.h"
 #include "f3init.h"
 #include "ahm.h"
@@ -1997,7 +1980,7 @@ void ai_HookChapter5Step6(int end)
             party.members[n++] = ai_CharsT[i].netId;
     }
     party.used = n;
-    party.time = ai_TimeT;
+    party.time = ai_Time;
     party.kind = 1;
     party.flags = 0xa0;
     party.thing = -1;
@@ -4843,22 +4826,17 @@ void ai_AlchemistResearchWindow(unsigned char *obj)
 int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
 {
     AIMSG msg;
-    AHMCLOCK *clk;
     int a;
     float f;
 
     if (ahm_ResearchState(obj, &a, &f, 0) != 0)
         return 0;
     memset(&msg, 0, sizeof(msg));
-    clk = (AHMCLOCK *)&msg.time;
     msg.fromId = ((AIBLD *)obj)->id;
-    clk->c = ai_TimeK.c;
+    msg.time = ai_Time;
     msg.type = 0x96;
     msg.flags = 1;
     msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
-    clk->b = ai_TimeK.b;
-    clk->a = ai_TimeK.a;
-    clk->d = ai_TimeK.d;
     msg.arg[0] = rec->id;
     msg.arg[1] = rec->slots[slot].id;
     msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
@@ -4877,22 +4855,17 @@ int ai_AlchemistSendRecipeResearch(unsigned char *obj, AHMREC *rec, int slot)
 int ai_AlchemistSendResearchStart(unsigned char *obj, AHMREC *rec)
 {
     AIMSG msg;
-    AHMCLOCK *clk;
     int a;
     float f;
 
     if (ahm_ResearchState(obj, &a, &f, 0) != 0)
         return 0;
     memset(&msg, 0, sizeof(msg));
-    clk = (AHMCLOCK *)&msg.time;
     msg.fromId = ((AIBLD *)obj)->id;
-    clk->c = ai_TimeK.c;
+    msg.time = ai_Time;
     msg.type = 0x95;
     msg.flags = 1;
     msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
-    clk->b = ai_TimeK.b;
-    clk->a = ai_TimeK.a;
-    clk->d = ai_TimeK.d;
     msg.arg[0] = rec->id;
     msg.arg[3] = rec->id;
     cm_SendLongMessage((char *)&msg);
@@ -5117,13 +5090,12 @@ void ai_AlchemistWindow(unsigned char *obj)
    literal); asmdiff --symbols: every call, argument, constant and branch in the original's order, 520 vs
    520 bytes (the same 94 leading instructions equal). Left: scheduling of the message block only (the
    0x57cde0 family): the original loads the owner's netId (lea/lea/lea, mov ecx,[ai_CharInts]) and the
-   clock words (NOWX, ai_TimeHour, 0x770ae8, the word 0x770aec) interleaved with the fromId and arg stores,
+   clock words (ai_Time.year, ai_Time.hour, 0x770ae8, the word 0x770aec) interleaved with the fromId and arg stores,
    ours copies the clock first (ai_Time, ai_Time+0xc) and the owner after; struct copy, field-wise copy in
    several orders give the same schedule */
 int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
 {
     AIMSG msg;
-    AHMCLOCK *clk;
     int win;
     int a;
     float b;
@@ -5158,15 +5130,11 @@ int ai_AlchemistTrainShareWindow(unsigned char *obj, AHMREC *rec, int idx)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == t1) {
                 memset(&msg, 0, sizeof(msg));
-                clk = (AHMCLOCK *)&msg.time;
                 msg.type = 0x97;
                 msg.flags = 1;
                 msg.fromId = ((AIBLD *)obj)->id;
                 msg.to = ai_CharsT[((AIBLD *)obj)->owner].netId;
-                clk->a = ai_TimeK.a;
-                clk->b = ai_TimeK.b;
-                clk->c = ai_TimeK.c;
-                clk->d = ai_TimeK.d;
+                msg.time = ai_Time;
                 msg.arg[0] = rec->id;
                 msg.arg[1] = idx;
                 msg.arg[4] = (util_Random(0x5a0) & 0xffff) + 1000;
@@ -6603,7 +6571,7 @@ void ai_CabinetSpyWindow(AIBLD *rec)
                     pick = -1;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[1] = rec->id;
                     mask.LowPart = 0x7b4c4a0;
                     mask.HighPart = 0;
@@ -6717,7 +6685,7 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
                     msg.arg[5] = i;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[2] = p->netId;
                     msg.arg[1] = rec->id;
                     if (p->bld2 != 0)
@@ -6826,7 +6794,7 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
                     msg.arg[4] = 1;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[2] = p->netId;
                     msg.arg[1] = rec->id;
                     msg.arg[5] = i;
@@ -6942,7 +6910,7 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
                     msg.arg[4] = 4;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[2] = p->netId;
                     msg.arg[1] = rec->id;
                     msg.arg[5] = 0;
@@ -8222,7 +8190,7 @@ int ai_GraveCare(AIBLD *rec, GVPICK *pick)
                     msg.flags = 1;
                     msg.to = ai_CharsT[rec->owner].netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.graveWork.size = pick->size;
                     msg.graveWork.index = pick->index;
                     msg.ids[0] = c->netId;
@@ -8479,7 +8447,7 @@ void ai_GypsyHelperWindow(AIBLD *rec)
                 msg.flags = 1;
                 msg.to = ai_CharsT[rec->owner].netId;
                 msg.fromId = rec->id;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 msg.itemId = kinds[sel];
                 k = 0;
                 for (j = 0; j < 0x300 && k < 4; j++) {
@@ -8596,7 +8564,7 @@ void ai_GraveFogWindow(AIBLD *rec)
                         msg.flags = 2;
                         msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
                         msg.fromId = rec->id;
-                        msg.time = ai_TimeT;
+                        msg.time = ai_Time;
                         msg.arg[1] = d2_GetObjValue(factor1);
                         msg.arg[2] = d2_GetObjValue(factor2);
                         msg.arg[0] = target->id;
@@ -8912,7 +8880,7 @@ void ai_SeanceSacrifice(AIBLD *rec, GVSEANCE *ev)
         msg.type = 0x8e;
         msg.to = ai_CharsT[ai_PlayerId].netId;
         msg.fromId = rec->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.flags = 1;
         msg.arg[0] = amount;
         cm_SendLongMessage((char *)&msg);
@@ -9286,7 +9254,7 @@ void ai_GraveHauntContact(AIBLD *rec)
                     msg.arg[3] = n;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[1] = p->netId;
                     msg.arg[2] = f->netId;
                     msg.ids[0] = f->netId;
@@ -9396,7 +9364,7 @@ void ai_GraveAgeContact(AIBLD *rec)
                         msg.arg[3] = 4;
                         msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                         msg.fromId = rec->id;
-                        msg.time = ai_TimeT;
+                        msg.time = ai_Time;
                         msg.arg[2] = f->netId;
                         msg.ids[0] = f->netId;
                         msg.arg[1] = p->netId;
@@ -9540,7 +9508,7 @@ void ai_GraveInsuranceContact(AIBLD *rec)
                     msg.flags = 1;
                     msg.to = ((AICHAR *)ai_Chars[rec->owner])->netId;
                     msg.fromId = rec->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[0] = f->netId;
                     msg.ids[0] = f->netId;
                     cm_SendLongMessage((char *)&msg);
@@ -9632,7 +9600,7 @@ int ai_UpgradeWorkerSend(AIBLD *rec, AICHAR *ch, int sel)
         msg.flags = 1;
         msg.to = ((AICHAR *)ai_Chars[ai_PlayerId])->netId;
         msg.fromId = rec->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         if (obj != 0)
             msg.arg[2] = obj->objId;
         else
@@ -9669,7 +9637,7 @@ void ai_UpgradeWorkerWindow(AIBLD *rec)
     int sel;
 
     f = 0;
-    n = gm_ClockSeason(ai_Time);
+    n = gm_ClockSeason(&ai_Time);
     if (sv_CheckCharacterFlag(rec) != 0)
         return;
     if (gm_AllowAll == 0 && n != 2) {
@@ -10083,13 +10051,13 @@ float gm_GoodsPrice(unsigned id, unsigned char p);
    building (ai_PlayerBuilding, ai_FallbackBuilding, sv_SelectedObject), the price over the building's staff
    factor (gm_StaffFactor of its workers other than the master, plus the master's skill byte / 1008, text 0x22);
    then the list: the goods it is made of with their amounts (section 4, text 0x25), the guild-house buildings
-   that make it (amt_PriceRows, section 3, text 0x26), for the item types 0x17 / 0x25 the buildings that use the
+   that make it (gm_BuildingItemGroups, section 3, text 0x26), for the item types 0x17 / 0x25 the buildings that use the
    item idx and the extra slot 0x444 (text 0x624); "$C" when the list stayed empty; returns the view
    @deep reconstructed in full from 0x588310..0x58894b (453 vs 449 instructions): form choice, window
    clamp, sections 1..4, the price texts 0x21 / 0x1f (io_PrintText's third word is (int)gm_ItemPrice,
    gm_GoodsPrice takes two), the staff loop (ai_Chars bld == building, not the master, netIds) with
    gm_StaffFactor and the work time / (master skill / 1008 + factor), the ingredient loop (AIGOOD in/need),
-   the amt_PriceRows rows, the building lists by item type 0x17/0x25 and the extra slot 0x444, every call
+   the gm_BuildingItemGroups rows, the building lists by item type 0x17/0x25 and the extra slot 0x444, every call
    and constant compared. What remains needs a variant round: (1) the 0x225..0x295 / 0x1c1.. if-else chain:
    the original lays the blocks inline after each test (0x5886df 0x48..0x4a, 0x588720 0x4e..0x50, 0x58875d
    0x18/0x19) and re-tests 0x226/0x227 at 0x5886cf, our VC6 threads every test to blocks placed after the
@@ -10178,9 +10146,9 @@ int ai_OpenItemTooltip(int idx)
     slot = 0;
     for (i = 0; i < 37; i++) {
         for (k = 0; k < 10; k++) {
-            if (amt_PriceTable[i].goods[k] == idx && idx != 0x1cd) {
-                d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, amt_PriceTable[i].kind + 0x427, d2_LastWindow, -2);
-                io_PrintText("%s$N", amt_PriceTable[i].kind * 0xe + 0x48e);
+            if (gm_BuildingItemGroups[i].items[k] == idx && idx != 0x1cd) {
+                d2_WinOpenPicStyled(6, slot * 0x16 + 0x28, gm_BuildingItemGroups[i].key + 0x427, d2_LastWindow, -2);
+                io_PrintText("%s$N", gm_BuildingItemGroups[i].key * 0xe + 0x48e);
                 slot++;
             }
         }

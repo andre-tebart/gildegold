@@ -1,4 +1,4 @@
-struct GCLOCK;
+struct AITIME;
 /* ai.h -- the AI unit (ai.c, 0x47d9e0..0x48e070; "ai_" strings: ai_CalcMeisterWache, ai_CalcAngriff,
    ai_CalcMeisterDiebe, ai_MeisterTrade, ai_MeisterCollectTrans, ai_MeisterTradeFernEinkauf ...). Original file name
    unknown. Names are ours except the ones taken from the strings; the layouts only hold the fields the AI code
@@ -580,7 +580,7 @@ typedef struct AIPLANT {                /* a partial G15TREE (rd.h), what veg_Fi
     unsigned char size;                 /* 0x42, G15TREE.size (its size in cells) */
 } AIPLANT;
 
-typedef struct AIWATCH {                /* 0xf895a0, what the watched building's masters did */
+typedef struct AIWATCH {                /* 0xb00 bytes at 0xf895a0, what the watched building's masters did */
     AIBLD *bld;                         /* 0x000 */
     AIBLD *target;                      /* 0x004 */
     AICHAR *ch;                         /* 0x008 */
@@ -594,13 +594,18 @@ typedef struct AIWATCH {                /* 0xf895a0, what the watched building's
     AIENTRY ent[4];                     /* 0x040 */
     AIENTRY entries[4];                 /* 0x1a0 */
     AISLOT slots[16];                   /* 0x300 */
+    char pad700[0x400];                 /* 0x700 .. 0xaff, no reader known (cm.c's daily clear covers 0xb00 bytes) */
 } AIWATCH;
 
-typedef struct AIGRID {                 /* 24 bytes, ai_Grid[8][8] */
-    unsigned short a;                   /* 0x00 */
-    unsigned short b;                   /* 0x02 */
-    char used;                          /* 0x04 */
-    char pad05[0x13];
+typedef struct AIGRID {                 /* 24 bytes, a cell of the statistics grid ai_Grid[8][8] */
+    unsigned short a;                   /* 0x00, the sum over the 3 x 3 neighbourhood */
+    unsigned short b;                   /* 0x02, the sum over the cell itself */
+    unsigned char used;                 /* 0x04, the number of objects of the cell (ord.c reads it unsigned: and eax,0xff) */
+    char pad05[3];
+    int average;                        /* 0x08, the average equipment value of the cell's objects (0x4f8360) */
+    float halfWeightSum;                /* 0x0c, the sum of half the weights w of 0x4f8920 (w * 0.5f) */
+    float weightSum;                    /* 0x10, the sum of the weights w of 0x4f8920 */
+    float buildingCount;                /* 0x14, 0x4f8ae0 adds 1.0 per building object of the cell */
 } AIGRID;
 
 typedef struct AIPOS {                  /* filled by gv_GetTableRecord */
@@ -658,7 +663,7 @@ typedef struct AIMAPENT {               /* 24 bytes, the AI's view of the vegeta
 
 #define AI_KIND(t) (((int (*)(int))gm_BuildingClass)(t))   /* the call zero-extends the byte (xor ecx,ecx; mov cl) */
 
-extern char ai_Time[14];                 /* 0x770ae0, the game clock: an AITIME (14 bytes), defined by anm.c as char[14]; the units that read its fields use their ai_TimeT view */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters: AICHAR records, defined by ahm.c as char[768][0x21c]; the units that read their fields use their ai_CharsT view */
 extern char *ai_BTypes;                 /* 0x7e3f30, the building types: AIBTYPE records (ahm.c defines char *; ai_BTypesT views) */
 extern char *ai_Blds;                   /* 0x889f74, the buildings: AIBLD records (f3gm.c defines char *; ai_BldsT views) */
@@ -780,8 +785,8 @@ int cm_SendLongMessage(char *msg);                                           /* 
 char * ai_FindWeaponRecord(int id);                                              /* 0x4cd9d0 */
 int gv_EntryIndex(char *r, int *e);                                        /* 0x4ef6b0 */
 int ord_GetGridCell(char *p, int *x, int *y);                               /* 0x4f8300 */
-void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                       /* 0x4fe140 */
-void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec);                   /* 0x4fe1e0, the gm_SetTime of f3gm.c in the AITIME view */
+void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                       /* 0x4fe140 */
+void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);                   /* 0x4fe1e0, f3gm.c: sets the time of day of the clock c */
 int gm_MinutesBetween(AITIME *a, AITIME *b);                                  /* 0x4fe280, minutes between two times */
 int gm_FindObjectInst(int id);                                              /* 0x4fe980 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);           /* 0x4fea50 */

@@ -18,7 +18,6 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #include "cm_types.h"
 #include "ahm.h"
 #include "amt.h"
@@ -368,7 +367,7 @@ void hmt_Update(void)
     char text[256];
     int i;
 
-    year = ai_TimeT.year + 0x578;
+    year = ai_Time.year + 0x578;
     if (amt_GetFirstOffice(0x26, &ev) && amt_GetFirstOffice(0x27, &ps)) {
         ce = gm_FindChar(ev.id);
         cp = gm_FindChar(ps.id);
@@ -434,7 +433,7 @@ void hmt_Begin(void)
     HMTREC *r;
     int kind;
 
-    year = ai_TimeT.year + 0x578;
+    year = ai_Time.year + 0x578;
     if (amt_GetFirstOffice(0x26, &ev) && amt_GetFirstOffice(0x27, &ps)) {
         if (ev.id == -1 && hmt_Event != -1) {
             r = hmt_Find(hmt_Event, &kind);
@@ -481,8 +480,8 @@ void hmt_Election(void)
     AICHAR *c;
     float s;
 
-    if (ai_TimeT.year >= 4) {
-        m = ai_TimeT.year % 4;
+    if (ai_Time.year >= 4) {
+        m = ai_Time.year % 4;
         if (m != 0) {
             mask = hmt_ElectionGroupBits[m - 1];
             type = hmt_ElectionObjTypes[m - 1];
@@ -568,8 +567,8 @@ void hmt_ClearOffices(void)
     int m;
     HMTOBJ o;
 
-    if (ai_TimeT.year >= 4) {
-        m = ai_TimeT.year % 4;
+    if (ai_Time.year >= 4) {
+        m = ai_Time.year % 4;
         if (m != 0) {
             if (amt_GetFirstOffice(hmt_ElectionObjTypes[m - 1], &o) && gm_FindChar(o.id) != 0)
                 amt_SendOfficeMessage(o.obj, 0, 0, 1, 0xff);
@@ -630,7 +629,7 @@ void hmt_Unk4ad580(void)
                     amt_SendOfficeMessage(o.obj, (int)win, 0, 1, 0xff);
                     if (win->kind == 6 || win->kind == 7 || win->kind == 5) {
                         msg.to = win->netId;
-                        msg.time = ai_TimeT;
+                        msg.time = ai_Time;
                         msg.type = 0xa5;
                         msg.fromId = -1;
                         msg.flags = 1;
@@ -826,14 +825,14 @@ void hmt_Create(int type, int unk, unsigned short v, AICHAR *c)
     strcpy(c->name, r->vname);
     strcpy(c->name + 0x10, r->nname);
     if (type == 0x15) {
-        if (ai_TimeT.year > 0 && pl != 0xffff) {
+        if (ai_Time.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b3, c->id);
             he_ShowNews(ai_CharsT[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_01");
         }
         HMT_I(c, 0x18c) = hmt_RandomHeadIcon();
         hmt_NextEvent();
     } else {
-        if (ai_TimeT.year > 0 && pl != 0xffff) {
+        if (ai_Time.year > 0 && pl != 0xffff) {
             txt_Format(text, 0x42b5, c->id);
             he_ShowNews(ai_CharsT[pl].netId, -1, text, 0, 0x602, "_NACHRICHTEN_NEU_03");
         }

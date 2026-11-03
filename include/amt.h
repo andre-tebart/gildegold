@@ -163,7 +163,8 @@ typedef struct AMTRANGEW {               /* an AMTRANGE's first pair read as the
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int d3_CurrentScene;                /* 0x633444 */
 extern char ai_DataPath[];             /* 0x75dca0 */
-extern char ai_Time[];             /* 0x770ae0 */
+#include "ai_types.h"                /* AITIME */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 void err_Message(char *text);                     /* 0x4222b0 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 char * he_FindEvent(int n, ...);                     /* 0x53e400 */
@@ -171,13 +172,8 @@ void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 
 void cm_SendMoneyDelta(int a, int b);                     /* 0x4c5f60 */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c */
 extern int amt_Flip;                    /* 0x60f118, 2 at the start */
-#pragma pack(push, 1)
-typedef struct AMTPRICEROW {            /* 0x15 bytes, a row of amt_PriceRows */
-    unsigned char kind;                 /* 0x00, the building type */
-    unsigned short goods[10];           /* 0x01, the goods ids it makes */
-} AMTPRICEROW;
-#pragma pack(pop)
-extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table: 37 rows of 0x15 bytes (the building kind, 10 goods ids) */
+#include "am_types.h"                /* G7GRP */
+extern G7GRP gm_BuildingItemGroups[];            /* 0x61a348 */
 #define AMT_CHARS_END (&ai_CharInts[0x300][0])  /* 0x7d5f84, the word past the last character record */
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830 */
@@ -187,7 +183,6 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_SendFieldDeltas(void);                /* 0x4c49a0 */
 int cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int cm_GetSlotState(int h);                     /* 0x4c3ae0 */
-/* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 int amt_ApplyForOffice(char *c, unsigned int kind);  /* 0x4e6180 */
 int amt_CheckApplication(struct AMTAPP *m);           /* 0x4e6360 */
 int amt_AcceptApplication(AMTAPP *m);           /* 0x4e6430 */

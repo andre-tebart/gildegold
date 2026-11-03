@@ -24,7 +24,6 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_Unk4baa80 / ai_Unk4baba0) */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_Unk4b86c0) */
 #define cm_SendExSetHEI ((void (*)(int, void *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers push the key as an int (byte-matched ai_Unk4b8c80) */
@@ -970,7 +969,7 @@ int ai_MsgJobTime(G14MSG *m)
     s = (int)G14_5087F0(*(unsigned short *)o, o[0x12]);
     for (e = gm_Query(*(int *)(o + 0x14), 2, 5, 6); e != 0; e = gm_QueryNext())
         s = (int)(G14_5087F0(*(unsigned short *)e, o[0x12]) * *(int *)((char *)e + 0xe) + s);
-    *(AITIME *)((char *)j + 0x52) = ai_TimeT;
+    *(AITIME *)((char *)j + 0x52) = ai_Time;
     cm_SendMoveObject(-1, -1, *(int *)(o + 2));
     cm_SendExSetHEI(-1, j);
     G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));
@@ -1219,7 +1218,7 @@ int ai_Unk4b9820(G14MSG *m)
     }
     if (n == 0)
         return 0x400;
-    t = ai_TimeT;
+    t = ai_Time;
     t.year++;
     n = util_RandomU(n);
     j = js[n];
@@ -1339,7 +1338,7 @@ int ai_MsgWorkerStop(G14MSG *m)
         memset(&msg, 0, sizeof(msg));
         msg.fromId = b->id;
         msg.to = c->netId;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.type = 0x31;
         msg.flags = 1;
         msg.arg[0] = p->netId;
@@ -1434,7 +1433,7 @@ int ai_Unk4ba0c0(G14MSG *m)
         msg.flags = 1;
         msg.n = msg.fromId;
         msg.to = ai_CharsT[ai_PlayerId].netId;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         /* the text id at 0x64 is the only 16-bit store of AIMSG (a word over dst[0]); a textId union arm in
            ai.h regresses ai_Unk483a60's slots (ai.c's note), so the shared-header view is match-deep's */
         *(unsigned short *)&msg.dst[0] = m->type + 0x12e7;
@@ -1820,7 +1819,7 @@ int ai_Unk4bb250(G14MSG *m)
         return 1;
     if (*(int *)((char *)c + 0x2c) == 0)
         return 0x400;
-    t = ai_TimeT;
+    t = ai_Time;
     gm_ClockToDate(&t, d);
     txt_Format(buf, m->type + 0x12e7, gm_Season(d) + 0x4c);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
@@ -1918,7 +1917,7 @@ int ai_Unk4bb6c0(G14MSG *m)
 {
     AICHAR *c;
 
-    if (ai_TimeT.year < 8)
+    if (ai_Time.year < 8)
         return 0;
     if (m == 0)
         return -1;
@@ -1971,7 +1970,7 @@ int ai_PostRandomMessages(int n, int id)
     msg.type = 0x42;
     msg.to = id;
     msg.fromId = -1;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.flags = 1;
     for (i = k; i > 0; i--) {
         *(unsigned short *)&msg.n = ai_Unk4bb7d0(0x45);

@@ -28,7 +28,6 @@ typedef unsigned int SOCKET;
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_Unk4baa80 / ai_Unk4baba0) */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendRemoveGoodsI ((void (*)(int, int))cm_SendRemoveGoods)  /* 0x4c4960 (cm.h: short b): @original ai.c pushes the second argument as an int (byte-matched ai_SendRemoveEmptyGoods) */
@@ -345,8 +344,8 @@ void ai_MasterUpdate(AICHAR *c)
                     if (gm_BuildingClass(b->type) != 6 && !found) {
                         v = b->type;
                         cm_SendMessage3d(b, 1, ai_BTypesT[v].unk230, ai_BTypesT[v].unk223);
-                        sprintf(buf, "%li:%02li - %s stellt Meister f\xfc" "r '%s' ein", ai_TimeT.hour,
-                                ai_TimeT.min, c->name, b->name);
+                        sprintf(buf, "%li:%02li - %s stellt Meister f\xfc" "r '%s' ein", ai_Time.hour,
+                                ai_Time.min, c->name, b->name);
                     }
                 }
             }
@@ -374,13 +373,13 @@ void ai_UpdateCharacters(void)
     float f;
     char buf[1024];
 
-    now = ai_TimeT;
+    now = ai_Time;
     n = gm_MinutesBetween(&ai_LastUpdateTime, &now);
     f = n * 12.8f;
     whole = (int)f;
     ai_DifficultyValue = (float)ai_Difficulty;
     ai_DifficultyScale = ai_DifficultyValue * 0.0625f + 0.5f;
-    if (n > 0 && ai_TimeT.hour <= 0x16 && ai_TimeT.hour >= 6) {
+    if (n > 0 && ai_Time.hour <= 0x16 && ai_Time.hour >= 6) {
         if (ai_LastUpdateTime.year < now.year) {
             ai_LastUpdateTime = now;
             return;
@@ -403,8 +402,8 @@ void ai_UpdateCharacters(void)
             if (ai_CharsT[idx].id != 0xffff) {
                 c = &ai_CharsT[idx];
                 ai_UnloadCarts(c);
-                if (ai_TimeT.hour > 6 && ai_TimeT.hour < 0x16 && !(ai_GameFlags & 0x80) &&
-                    (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_TimeT.hour) & 1) == 0))
+                if (ai_Time.hour > 6 && ai_Time.hour < 0x16 && !(ai_GameFlags & 0x80) &&
+                    (c->kind == 5 || (((unsigned char)c->id ^ (unsigned char)ai_Time.hour) & 1) == 0))
                     ai_MasterUpdate(c);
                 if ((ai_CanAct(c) && c->v024 != 0) || (c->flags1cc & 0x3000) != 0) {
                     whole = c->v024;
@@ -421,7 +420,7 @@ void ai_UpdateCharacters(void)
             ai_UpdateStart = 0;
             ai_LastUpdateTime.hour++;
             ai_LastUpdateTime.min = 0;
-            ai_LastUpdateTime.xy = 0;
+            ai_LastUpdateTime.sec = 0;
             ai_CountCarry = 0.0f;
         }
         sprintf(buf, "Next Player: %i", ai_UpdateStart);
@@ -496,7 +495,7 @@ void ai_Unk47e990(AICHAR *c)
     int t;
     char k;
 
-    if (ai_TimeT.hour >= 6 && (ai_TimeT.hour != 6 || ai_TimeT.min >= 0x1e) &&
+    if (ai_Time.hour >= 6 && (ai_Time.hour != 6 || ai_Time.min >= 0x1e) &&
         ai_IsLocalJob(c) && (c->flags1b4 & 1)) {
         if (c == ai_LoggedMaster) {
             sprintf(buf, "Evaluation von Meister %s in %s beginnt...", ai_LoggedMaster->name,
@@ -633,7 +632,7 @@ void ai_EvaluateProduction(AICHAR *ch)
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
     found = 0;
-    if (ai_TimeT.hour == 8 || ai_TimeT.hour == 0xd) {
+    if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
         if (!(ch->flags1b4 & 0x100)) {
             ch->prod = 0;
             ch->flags1b4 |= 0x100;
@@ -822,7 +821,7 @@ void ai_EvaluateProductionFlags(AICHAR *ch)
     ai_BuySlots(b, ch, 0x4b);
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
-    if (ai_TimeT.hour == 8 || ai_TimeT.hour == 0xd) {
+    if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
         if (!(ch->flags1b4 & 0x100)) {
             ch->prod = 0;
             ch->flags1b4 |= 0x100;
@@ -1093,7 +1092,7 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
                 msg.fromId = ch->bld->id;
                 msg.nIds = 0;
                 msg.unk14 = 0;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 msg.flags = 1;
                 msg.arg[0] = ch->bld->id;
                 msg.arg[1] = a->objId;
@@ -1236,7 +1235,7 @@ check:
         info.z2 = 0;
         info.z1 = 0;
         if (ai_BTypesT[ch->bld->type].kind == 11) {
-            if (ai_TimeT.hour % 2 == 0) {
+            if (ai_Time.hour % 2 == 0) {
                 ch->flags1b4 &= ~0x20;
             } else if (!(ch->flags1b4 & 0x20)) {
                 map = ((AIMAPREF *)&ai_MapRefs)[init_BuildingSceneUniverse(ch->bld)].map;
@@ -1344,7 +1343,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
     ai_BuyUpgrade(ch);
     ai_CheckFreeThieves(ch);
     ai_SendFreeThieves(ch);
-    if (ai_TimeT.hour <= 6 || (ch->netId + ai_TimeT.hour) % 3 != 0) {
+    if (ai_Time.hour <= 6 || (ch->netId + ai_Time.hour) % 3 != 0) {
         ch->flags1b4 &= ~0x20;
         return;
     }
@@ -1379,7 +1378,7 @@ void ai_CalcMeisterWache(AICHAR *ch)
             goto choose;
         goto city;
     } else {
-        if (util_RandomF() <= 0.85 || idle < 3 || ai_TimeT.year < 7 - ai_Difficulty) {
+        if (util_RandomF() <= 0.85 || idle < 3 || ai_Time.year < 7 - ai_Difficulty) {
             r = util_RandomU(3);
 choose:
             if (r == 4)
@@ -1433,7 +1432,7 @@ city:
             msg.type = 0x43;
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             msg.flags = 2;
             msg.arg[0] = sel->id;
             msg.arg[1] = ch->bld->id;
@@ -1500,7 +1499,7 @@ check:
             msg.type = 100;
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             msg.flags = 1;
             msg.arg[1] = sel->id;
             msg.arg[2] = ch->bld->id;
@@ -1539,7 +1538,7 @@ umland:
     msg.type = 0x65;
     msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.flags = 2;
     r = util_RandomU(8);
     strcpy((char *)&msg.arg[0], ai_AmbushSpots[r]);
@@ -1670,7 +1669,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
         msg.type = 0x40;
         msg.to = ai_CharsT[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.flags = 1;
         msg.arg[0] = best->id;
         msg.arg[1] = ch->bld->id;
@@ -1697,7 +1696,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
     msg.type = 0x49;
     msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.flags = 1;
     msg.arg[0] = best->id;
     msg.arg[1] = ch->bld->id;
@@ -1719,7 +1718,7 @@ spying:
     sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name, best->name);
     return 1;
 }
-/* 0x481ef0 @deep Read whole against the original and fixed: both best-building picks as if(!best)/else-if, the entfuehren filter kind <= 7 (cmp 7/ja), the einbrechen test unk37 >= 0x5f (jae) || (float)unk37 >= rand(20) + unk36*2.0f (unk37 converted first, the fadd st,st), the id counts clamped into their own variable (cmp 8/jl, three sites), the busy checks of the burgle and the spy part as gotos to one sprintf exit each, placed after their send as in the original (0x4827be, 0x48297e). The instruction multiset is now equal up to register / slot names, symbol aliases (ai_Time vs NOWX, ai_Chars+4 vs ai_CharInts) and reloads. Left: register allocation (ch in ebp, the original ebx; ours reloads ch / obj from the frame: 13 extra mov reg,[esp+N], loads 10 into a register for the BuySlots/BuyCapacity pushes where the original pushes 0xa), a frame 4 bytes smaller (0x524 vs 0x528, one slot fewer, not changed by keeping the rank in r), and block layout: the r==1 (entfuehren) block, which the original places after the CalcAngriff call (+0xac0..), sits inline after the r==1 test in ours (jnp at +0x349: ours to +0xee7, the original's to +0xeb7; jne at +0x32a: ours to +0x7b2, the original's to +0x3bc). (size: 1195 vs 1181 instructions, explained: ours 1195 vs 1181: the 13 extra mov reg,[esp+N] reloads of ch / obj / n that the original keeps in ebx / ebp (asmdiff +0x482016 mov edi,[esp+0x538], +0x482023 mov esi,[esp+0x24]) plus mov ebx,0xa for the pushed 10s) */
+/* 0x481ef0 @deep Read whole against the original and fixed: both best-building picks as if(!best)/else-if, the entfuehren filter kind <= 7 (cmp 7/ja), the einbrechen test unk37 >= 0x5f (jae) || (float)unk37 >= rand(20) + unk36*2.0f (unk37 converted first, the fadd st,st), the id counts clamped into their own variable (cmp 8/jl, three sites), the busy checks of the burgle and the spy part as gotos to one sprintf exit each, placed after their send as in the original (0x4827be, 0x48297e). The instruction multiset is now equal up to register / slot names, symbol aliases (ai_Chars+4 vs ai_CharInts) and reloads. Left: register allocation (ch in ebp, the original ebx; ours reloads ch / obj from the frame: 13 extra mov reg,[esp+N], loads 10 into a register for the BuySlots/BuyCapacity pushes where the original pushes 0xa), a frame 4 bytes smaller (0x524 vs 0x528, one slot fewer, not changed by keeping the rank in r), and block layout: the r==1 (entfuehren) block, which the original places after the CalcAngriff call (+0xac0..), sits inline after the r==1 test in ours (jnp at +0x349: ours to +0xee7, the original's to +0xeb7; jne at +0x32a: ours to +0x7b2, the original's to +0x3bc). (size: 1195 vs 1181 instructions, explained: ours 1195 vs 1181: the 13 extra mov reg,[esp+N] reloads of ch / obj / n that the original keeps in ebx / ebp (asmdiff +0x482016 mov edi,[esp+0x538], +0x482023 mov esi,[esp+0x24]) plus mov ebx,0xa for the pushed 10s) */
 
 void ai_CalcMeisterDiebe(AICHAR *ch)
 {
@@ -1763,7 +1762,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
     if (gm_Query(ch->bld->objList, 2, 6, 0, 0x60))
         ai_CheckFreeThieves(ch);
     ai_SendFreeThieves(ch);
-    if (ai_TimeT.hour <= 6 || (ch->netId + ai_TimeT.hour) % 3 != 0) {
+    if (ai_Time.hour <= 6 || (ch->netId + ai_Time.hour) % 3 != 0) {
         ch->flags1b4 &= ~0x20;
         return;
     }
@@ -1798,7 +1797,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
         if (r && ch->target != -1 && util_RandomU(2))
             goto burgle;
     } else {
-        if (util_RandomF() > 0.85 && n >= 3 && ai_TimeT.year >= 7 - ai_Difficulty)
+        if (util_RandomF() > 0.85 && n >= 3 && ai_Time.year >= 7 - ai_Difficulty)
             goto other;
         r = util_RandomU(3);
     }
@@ -1849,7 +1848,7 @@ void ai_CalcMeisterDiebe(AICHAR *ch)
                 msg.type = 0x3c;
                 msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 msg.flags = 1;
                 msg.arg[0] = ai_CharsT[best->owner].netId;
                 msg.arg[1] = best->id;
@@ -1930,7 +1929,7 @@ burgle:
                     msg.type = 0x3f;
                     msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.flags = 1;
                     msg.arg[0] = best->id;
                     msg.arg[1] = ch->bld->id;
@@ -1962,7 +1961,7 @@ burgle:
         msg.type = 0x40;
         msg.to = ai_CharsT[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.flags = 1;
         msg.arg[0] = best->id;
         msg.arg[1] = ch->bld->id;
@@ -1986,7 +1985,7 @@ pick:
     msg.type = 0x61;
     msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.flags = 1;
     msg.arg[10] = ai_CharsT[ch->bld->owner].netId;
     t = n;
@@ -2027,7 +2026,7 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
     ai_BuyUpgrade(ch);
     ai_CheckFreeThieves(ch);
     ai_SendFreeThieves(ch);
-    if (ai_TimeT.hour <= 6 || (ch->netId + ai_TimeT.hour) % 3 != 0) {
+    if (ai_Time.hour <= 6 || (ch->netId + ai_Time.hour) % 3 != 0) {
         ch->flags1b4 &= ~0x20;
         return;
     }
@@ -2062,7 +2061,7 @@ void ai_CalcMeisterRaeuber(AICHAR *ch)
         if (r && ch->target != -1 && util_RandomU(2))
             goto lauer;
     } else {
-        if (util_RandomF() > 0.85 && n >= 3 && ai_TimeT.year >= 7 - ai_Difficulty)
+        if (util_RandomF() > 0.85 && n >= 3 && ai_Time.year >= 7 - ai_Difficulty)
             goto attack;
         r = util_RandomU(4);
     }
@@ -2109,7 +2108,7 @@ attack:
             msg.type = 0x62;
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             msg.flags = 2;
             msg.arg[0] = -1;
             msg.arg[1] = best->id;
@@ -2143,7 +2142,7 @@ lauer:
     msg.type = 0x48;
     msg.to = ai_CharsT[ch->bld->owner].netId;
     msg.fromId = ch->bld->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.flags = 2;
     src = ai_AmbushSpots[util_RandomU(8)];
     strcpy((char *)msg.arg, src);
@@ -2254,7 +2253,7 @@ void ai_Unk483a60(AICHAR *ch)
     float f;
     int i, ok, c;
 
-    if ((ch->netId + ai_TimeT.hour) % 3 == 0) {
+    if ((ch->netId + ai_Time.hour) % 3 == 0) {
         if (!(ch->flags1b4 & 0x20)) {
             obj = gm_Query(ch->bld->objList, 2, 6, 0, 0x116);
             if (!obj)
@@ -2325,7 +2324,7 @@ void ai_StartBuildingWork(AICHAR *ch)
     int *p;
     int c;
 
-    if ((short)ai_TimeT.hour != 7 && (short)ai_TimeT.hour != 0xc && (short)ai_TimeT.hour != 0x12) {
+    if ((short)ai_Time.hour != 7 && (short)ai_Time.hour != 0xc && (short)ai_Time.hour != 0x12) {
         ch->flags1b4 &= ~0x800;
         return;
     }
@@ -2350,7 +2349,7 @@ void ai_StartBuildingWork(AICHAR *ch)
                 msg.type = 0x8d;
                 msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 msg.flags = 1;
                 msg.arg[1] = *p;
                 *(char *)&msg.arg[2] = gv_EntryIndex(ch->bld->unk65, p);
@@ -2373,7 +2372,7 @@ void ai_EndWorkerPose(AICHAR *ch)
     int c;
 
     f = 0;
-    if ((short)ai_TimeT.hour != 7 && (short)ai_TimeT.hour != 0xc && (short)ai_TimeT.hour != 0x12) {
+    if ((short)ai_Time.hour != 7 && (short)ai_Time.hour != 0xc && (short)ai_Time.hour != 0x12) {
         ch->flags1b4 &= ~0x1000;
         return;
     }
@@ -2420,7 +2419,7 @@ void ai_Unk483fc0(AICHAR *ch)
     ai_Unk489480(ch);
     ai_SendFreeSpies(ch);
     ai_EndWorkerPose(ch);
-    if (ai_TimeT.hour == 8 || ai_TimeT.hour == 0xd) {
+    if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
         if (!(ch->flags1b4 & 0x100)) {
             ch->prod = 0;
             ch->flags1b4 |= 0x100;
@@ -2650,7 +2649,7 @@ void ai_Unk484a60(AICHAR *ch)
     ai_BuySlots(b, ch, 0x4b);
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
-    if (ai_TimeT.hour == 8 || ai_TimeT.hour == 0xd) {
+    if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
         if (!(ch->flags1b4 & 0x100)) {
             ch->prod = 0;
             ch->flags1b4 |= 0x100;
@@ -3811,7 +3810,7 @@ void ai_UpdateStaff(AICHAR *ch)
     int i, n, k, v;
     unsigned int t;
 
-    if (ai_TimeT.hour != 7 && ai_TimeT.hour != 0xc && ai_TimeT.hour != 0x12) {
+    if (ai_Time.hour != 7 && ai_Time.hour != 0xc && ai_Time.hour != 0x12) {
         ch->flags1b4 &= ~0x40;
         return;
     }
@@ -3829,7 +3828,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 2;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[0] = ai_CharsT[i].netId;
                     cm_SendLongMessage(&msg);
                 }
@@ -3866,7 +3865,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
                     msg.flags = 1;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.arg[1] = 1;
                     gm_IsHomeType(ch->bld);
                     *(int *)((char *)&msg + 0x8c) = -1;
@@ -3887,7 +3886,7 @@ void ai_Unk487ea0(AICHAR *ch)
     unsigned int fl;
     int i, n;
 
-    if (ai_TimeT.hour == 7 || ai_TimeT.hour == 0xc || ai_TimeT.hour == 0x12) {
+    if (ai_Time.hour == 7 || ai_Time.hour == 0xc || ai_Time.hour == 0x12) {
         fl = ch->flags1b4;
         if (!(fl & 0x40)) {
             bld = ch->bld;
@@ -3932,7 +3931,7 @@ void ai_BuyUpgrade(AICHAR *ch)
     first = 0xfd;
     if (ch->flags1c8 & 8)
         return;
-    if (ai_TimeT.hour != 7 && ai_TimeT.hour != 0xc && ai_TimeT.hour != 0x12) {
+    if (ai_Time.hour != 7 && ai_Time.hour != 0xc && ai_Time.hour != 0x12) {
         ch->flags1b4 &= ~0x400;
         return;
     }
@@ -4013,7 +4012,7 @@ found:
             msg2.type = 2;
             msg2.to = ai_CharsT[ch->bld->masterId].netId;
             msg2.fromId = ch->bld->id;
-            msg2.time = ai_TimeT;
+            msg2.time = ai_Time;
             msg2.flags = 1;
             msg2.itemId = ret;
             msg2.arg[1] = o->objId;
@@ -4060,7 +4059,7 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
             msg.to = ai_CharsT[bld->owner].netId;
             msg.fromId = bld->id;
             msg.flags = 1;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             msg.arg[0] = b->objId;
             msg.arg[1] = x != 0;
             msg.arg[2] = y != 0;
@@ -4106,7 +4105,7 @@ void ai_BuyCapacity(AIOBJ *b, AICHAR *ch, int n)
                 msg.to = ai_CharsT[c->bld->owner].netId;
                 msg.fromId = c->bld->id;
                 msg.flags = 1;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 msg.arg[0] = b->objId;
                 msg.arg[1] = 1;
                 msg.arg[3] = 1;
@@ -4215,7 +4214,7 @@ void ai_SendJobOrders(AIINFO *info)
                     msg.type = info->type;
                     msg.to = ai_CharsT[info->ch->bld->owner].netId;
                     msg.fromId = info->ch->bld->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.nIds = 1;
                     msg.unk14 = 0;
                     msg.flags = 1;
@@ -4238,7 +4237,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.type = info->type;
         msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.nIds = 0;
         msg.unk14 = 0;
         msg.flags = 1;
@@ -4280,7 +4279,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
         msg.nIds = 0;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.unk14 = 0;
         msg.flags = 1;
         *((unsigned short *)&msg.arg[0] + 1) = *(unsigned short *)info->e;
@@ -4327,7 +4326,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.type = info->type;
         msg.to = ai_CharsT[info->ch->bld->owner].netId;
         msg.fromId = info->ch->bld->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.nIds = 0;
         msg.unk14 = 0;
         msg.flags = 1;
@@ -4404,7 +4403,7 @@ void ai_SendJobOrders(AIINFO *info)
             msg.arg[1] = info->ch->bld->id;
             msg.arg[2] = info->c->objId;
         }
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         if (type == 3) {
             msg.itemId = info->e->item;
             msg.arg[3] = info->ch->bld->id;
@@ -4516,7 +4515,7 @@ void ai_SendFreeThieves(AICHAR *ch)
         msg.type = 0x16;
         msg.to = ai_CharsT[c->bld->owner].netId;
         msg.fromId = c->bld->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.flags = 1;
         if (o)
             msg.arg[2] = o->objId;
@@ -4576,7 +4575,7 @@ void ai_SendFreeSpies(AICHAR *ch)
         msg.type = 0x8f;
         msg.to = ai_CharsT[ch->bld->owner].netId;
         msg.fromId = ch->bld->id;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.flags = 1;
         msg.arg[2] = o->objId;
         i = 0;
@@ -4710,11 +4709,11 @@ void ai_MeisterCollectTrans(AICHAR *ch)
     char buf[1024];
     int i, n, n136, v, item;
 
-    if (ai_TimeT.hour % 2) {
+    if (ai_Time.hour % 2) {
         if (ch->flags1b4 & 0x80)
             return;
         ch->flags1b4 |= 0x80;
-        sprintf(buf, "ai_MeisterCollectTrans(): Check um %li:%li Uhr", ai_TimeT.hour, ai_TimeT.min);
+        sprintf(buf, "ai_MeisterCollectTrans(): Check um %li:%li Uhr", ai_Time.hour, ai_Time.min);
         n = 0;
         n136 = 0;
         t = (AIOBJ *)ai_Objects;
@@ -4750,7 +4749,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
                     msg.type = 0xf;
                     msg.flags = 2;
                     msg.to = ai_CharsT[ch->bld->owner].netId;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.car = t->objId;
                     msg.fromId = -1;
                     msg.n = own->id;
@@ -4821,7 +4820,7 @@ void ai_MeisterCollectTrans(AICHAR *ch)
         cm_SendExSellObjectI(ch->bld->id, -1, item, 1, ai_OwnPlayer, 0);
     }
     sprintf(buf, "ai_MeisterCollectTrans(): Um %li:%li Uhr zus\xe4tzlichen Transporter f\xfcr %s gekauft",
-            ai_TimeT.hour, ai_TimeT.min, ch->bld->name);
+            ai_Time.hour, ai_Time.min, ch->bld->name);
     ch->flags1c8 |= 8;
     } else {
         ch->flags1b4 &= ~0x80;
@@ -4844,7 +4843,7 @@ void ai_UnloadCarts(AICHAR *ch)
                 msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 gm_AddTime(&msg.time, 0, 0, 10);
                 id = car->objId;
                 fill = car->fill;
@@ -4895,7 +4894,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
             }
         }
     }
-    if (ai_TimeT.hour % 2) {
+    if (ai_Time.hour % 2) {
         if (!(ch->flags1b4 & 0x200)) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (!(ai_Entries[i].flags & 6) && (!(ai_Entries[i].flags & 8) || ai_Entries[i].amount > 3)) {
@@ -4985,7 +4984,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                 msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 gm_AddTime(&msg.time, 0, 0, 10);
                 msg.car = car->objId;
                 msg.dst[0] = 5;
@@ -5255,7 +5254,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                     msg.type = 11;
                     msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.flags = 1;
                     msg.car = car->objId;
                     msg.n = n;
@@ -5301,7 +5300,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                 ai_Slots[i].sellAmount = v;
         }
     }
-    if (ai_TimeT.hour % 2) {
+    if (ai_Time.hour % 2) {
         if (!(ch->flags1b4 & 0x200)) {
             for (i = 0; i < ai_NEntries; i++) {
                 if (!(ai_Entries[i].flags & 6)
@@ -5358,7 +5357,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                 msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.flags = 1;
-                msg.time = ai_TimeT;
+                msg.time = ai_Time;
                 gm_AddTime(&msg.time, 0, 0, 10);
                 msg.car = car->objId;
                 msg.dst[0] = 5;
@@ -5590,7 +5589,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                     msg.type = 11;
                     msg.to = ai_CharsT[ch->bld->owner].netId;
                     msg.fromId = ch->bld->id;
-                    msg.time = ai_TimeT;
+                    msg.time = ai_Time;
                     msg.flags = 1;
                     msg.car = car->objId;
                     msg.n = n;
@@ -5639,7 +5638,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.flags = 1;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             gm_AddTime(&msg.time, 0, 0, 10);
             msg.car = car->objId;
             msg.dst[0] = 5;
@@ -5769,7 +5768,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             msg.type = 0xb;
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             msg.flags = 1;
             msg.car = car->objId;
             msg.n = n;
@@ -5815,7 +5814,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
             msg.flags = 1;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             gm_AddTime(&msg.time, 0, 0, 10);
             msg.car = car->objId;
             msg.dst[0] = 5;
@@ -5949,7 +5948,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             msg.type = 0xb;
             msg.to = ai_CharsT[ch->bld->owner].netId;
             msg.fromId = ch->bld->id;
-            msg.time = ai_TimeT;
+            msg.time = ai_Time;
             msg.flags = 1;
             msg.car = car->objId;
             msg.n = n;

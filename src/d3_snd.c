@@ -504,7 +504,7 @@ typedef struct D3MAP {
 char map_Pick(struct D3FLMAP *map, struct D3VECTOR *pos, char lod, int *x, int *y, float *h);          /* 0x4463b0 */
 int map_Region(D3MAP *map, int x, int y);                                              /* 0x446910, index into regions or < 0 */
 
-extern char snd_Unk6f0b60;                  /* 0x6f0b60 */
+extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 float d3sndw_Range[] = { 0.0f, 30.0f, 25.0f, 20.0f, 15.0f, 10.0f };  /* 0x5f38a4, per water type, in meters */
 unsigned int d3sndw_Vol[] = { 0, 70, 70, 70, 70, 60, 0 };  /* 0x5f38bc, per water type */
 extern char d3sndw_Names[6][25];  /* 0x5f38d8, defined below (declaration order = section order) */
@@ -547,7 +547,7 @@ void d3sndw_Update(void)
     unsigned long t;
     D3SOUND *s;
 
-    if (!d3_Terrain || !d3sndw_Sin || !d3_Camera || !snd_Unk6f0b60)
+    if (!d3_Terrain || !d3sndw_Sin || !d3_Camera || !snd_AmbientOn)
         goto off;
     sc = d3_DefaultScene;
     if (!d3sndw_Scene)

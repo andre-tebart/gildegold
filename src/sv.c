@@ -61,7 +61,6 @@ extern char sv_SkyHeavy[];
 #include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
 extern char ai_PlayerSlots[4][0x2f4];
-extern unsigned char ai_TimeHour;
 extern int d2_HitUnderPointer;
 extern short d2_ShpH;
 extern short d2_ShpW;
@@ -72,11 +71,9 @@ extern D2WIN d2_Wins[];
 extern GAPDATA full_data_623e90[];
 extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_62571c[];
-extern GAPDATA full_data_6f22dc[];
 extern GAPDATA full_data_6f2364[];
 extern GAPDATA full_data_6faa60[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
-extern unsigned char ai_TimeHour;
 
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
@@ -89,7 +86,6 @@ extern int d2_PointerSprite;
 extern char * ai_PickedObject;
 extern int ai_PickedChar;
 extern int d2_HitUnderPointer;
-extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
 extern int gm_PlayerRecords[688];
 extern int hst_KeyNext;
@@ -138,7 +134,6 @@ extern char cm_ChatLog[2048];
 
 extern GAPDATA full_data_602568[];
 extern char cm_ChatLog[2048];
-extern unsigned char ai_TimeHour;
 extern char sv_SkyHeavy[];
 extern int d2_HalfScreenH;
 extern int d2_HalfScreenW;
@@ -164,7 +159,6 @@ extern int snd_MusicEnabled;
 extern int snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_OptionSpeed;
-extern unsigned char ai_TimeHour;
 extern int ai_TimeCopy[4];
 extern GAPDATA full_data_6248b4[];
 
@@ -178,7 +172,7 @@ void d2_SetObjFont();
 void d2_SetObjWidth(int obj, short w);
 
 struct G16CHARCLICK;  /* file-scope tag for the prototypes below */
-struct GCLOCK;        /* f3gm.c typedef; file-scope tag for the gm_AddTime / gm_SetTime prototypes */
+struct AITIME;        /* f3gm.c typedef; file-scope tag for the gm_AddTime / gm_SetTime prototypes */
 struct D3SURF;        /* d3_engine.h typedef; file-scope tag for the d3if_SelectTextureSet prototype */
 
 extern int di_Absolute, di_MinX, di_MinY, di_MaxX, di_MaxY;  /* 0x5f3240, 0x6310b0, 0x6310b4, 0x5f3238, 0x5f323c (di_input.c) */
@@ -310,7 +304,6 @@ int d2_FreeSurface(struct D2SURF *s);                     /* 0x478fc0 */
 void d2_RemoveHitRect();                     /* 0x4788f0 */
 int d2_RemoveWindow();                     /* 0x472ce0 */
 
-#include "time_view.h"
 #include "io_text.h"
 #include "ls.h"
 #include "ahm.h"
@@ -1072,10 +1065,9 @@ void sv_DestroyScreen(void)
 extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
-extern int ai_Unk6f22dc, sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f22dc, 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
+extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
 extern int sv_ResearchClass;  /* 0x6f233c, the class number of the research list the panel shows (gm_BuildingClass) */
 extern char d2_GfxDir[];             /* 0xf8ef80, the data directory */
 extern char sv_GroundplanColours[];
@@ -1526,7 +1518,7 @@ void sv_CountGroupMembers(char *g)
 extern float gm_DayStartHours[], gm_DayEndHours[];   /* 0x617830 / 0x617840 */
 int init_BuildingSceneUniverse();                     /* 0x511e60 */
 int init_ObjectSceneUniverse();                     /* 0x511dc0 */
-int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
+int gm_ClockSeason(AITIME *c);         /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
 char *strstr();                   /* 0x5de6b0, strstr (LIBC; as ls.c) */
 void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* @original: sv_MoveToGroup pushes -1, not 0xff (an int / signed parameter at its calls) */
@@ -1575,8 +1567,8 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
             w = init_ObjectSceneUniverse(it);
         else
             w = init_BuildingSceneUniverse(o);
-        k = gm_ClockSeason(ai_Time);
-        if ((((float)ai_TimeT.hour < gm_DayEndHours[k] && gm_DayStartHours[k] <= (float)ai_TimeT.hour) || bt->kind == 4 || bt->kind == 0x13 || bt->kind == 0x1d)
+        k = gm_ClockSeason(&ai_Time);
+        if ((((float)ai_Time.hour < gm_DayEndHours[k] && gm_DayStartHours[k] <= (float)ai_Time.hour) || bt->kind == 4 || bt->kind == 0x13 || bt->kind == 0x1d)
             && w >= 0 && ch->model != 0 && &d3_Scenes[w] != ch->model->scene) {
             msg = (char *)ch_AddAction((struct CHARACTER *)ch->model, 0x33, w, ((AIBLD *)o)->id, ((AIOBJ *)it)->objId);
             strcpy(msg + 0x70, "sv_ChangePlayerHE");
@@ -1602,7 +1594,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
             if (ch->model != 0 && ch->model->scriptId != -1)
                 evt_Stop(evt_FindById(ch->model->scriptId));
             if (old->state < 3) {
-                old->time = ai_TimeT;
+                old->time = ai_Time;
                 old->state = -1;
             }
             break;
@@ -1611,7 +1603,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g)
         case 0x8c:
             sv_CountGroupMembers((char *)old);
             if (sv_UsedGroupSlots((char *)old) <= 0) {
-                old->time = ai_TimeT;
+                old->time = ai_Time;
                 cm_SendExSetHEI(-1, (char *)old);
             }
             break;
@@ -1979,7 +1971,7 @@ void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_ClearPointerItems(void);                     /* 0x476c70 */
 void sv_UpdatePanel(void);                     /* 0x52a050 */
 int d2_WinOpenPicStyled();                     /* 0x473350 */
-void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
+void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
 void ai_InitWind(int type, int id, float *from, float *to);                     /* 0x5dbc30 */
 void d3t_FreeSnow();                     /* 0x414b50 */
 struct D3TRAIN * d3t_CreateRain();                     /* 0x413b30 */
@@ -2097,7 +2089,7 @@ char sv_SetSkyLightColors(D3OBJECT *o, void *ctx)
    by the chance, their thunder above 999 out of winter, the wind rose as sin / cos of a random walk of the angle by +-0.175); the wind
    state, rain or snow by the winter weather and the strongest hour, the sky with its three layers (two fair skies and the dark one), the
    light colours of every scene with a map and the sky phase for t */
-void sv_SetupWeather(struct GCLOCK *t, int reroll)
+void sv_SetupWeather(struct AITIME *t, int reroll)
 {
     int season, i, mx;
     float ang, step;
@@ -2140,7 +2132,7 @@ void sv_SetupWeather(struct GCLOCK *t, int reroll)
             ang = (float)(util_RandomF() * step + ang);
         }
     }
-    ai_InitWind(season, ai_TimeT.year, sv_Weather.windX, sv_Weather.windY);
+    ai_InitWind(season, ai_Time.year, sv_Weather.windX, sv_Weather.windY);
     sv_Weather.thunderStart = 0;
     sv_Weather.thunderLen = 0;
     sv_WeatherHour = -1;
@@ -2244,7 +2236,7 @@ void sv_UpdateSkyColors(void)
    edi vs ebx: '+ push ebx', '+ mov edi, dword ptr [esi]', '+ imul edi'). Tried: a walking const int *q,
    swapped declaration orders of h / m and season / i, h * 60 + m: all the same 40 vs 42 instructions. */
 
-void sv_FillDayPhases(struct GCLOCK *t)
+void sv_FillDayPhases(struct AITIME *t)
 {
     int season, i;
     char h, m;
@@ -3299,7 +3291,7 @@ void sv_UpdateChimneySmoke(AIBLD *b)
     EVTSCRIPT *e;
     D3VECTOR4 pos;
 
-    season = gm_ClockSeason(ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     if (ai_BTypesT[b->type].kind != 7 && b->object != 0) {
         for (i = 0; i < 0x300; i++) {
             ch = &ai_CharsT[i];
@@ -3308,7 +3300,7 @@ void sv_UpdateChimneySmoke(AIBLD *b)
                 if (job == 0 || job->argc8 == 0) {
                     if (b->smokeEffect != -1)
                         return;
-                    if (!((float)ai_TimeT.hour >= gm_DayStartHours[season] && (float)ai_TimeT.hour < gm_DayEndHours[season]))
+                    if (!((float)ai_Time.hour >= gm_DayStartHours[season] && (float)ai_Time.hour < gm_DayEndHours[season]))
                         return;
                     scene = d3_CurrentScene;
                     d3if_SelectScene(0, 1);
@@ -3571,7 +3563,7 @@ extern unsigned short * sv_SelectedItem;
 extern int ai_BuildingPerms;  /* 0x6f231c */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
 int gm_MinutesBetween();                     /* 0x4fe280 */
-void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
+void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 void rt_EditCartRoute();                     /* 0x4bf5b0 */
 int d2_RemoveWindowObjects();                     /* 0x472d20 */
 int gm_ListAmount();                     /* 0x50aaf0 */
@@ -3752,7 +3744,7 @@ void sv_RefreshPanel(void)
             if (j == 0)
                 return;
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
-            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             if (sv_PanelWidgets[0] == -1) {
                 d2_SetForm(sv_PanelForm, 0);
                 sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
@@ -3778,7 +3770,7 @@ void sv_RefreshPanel(void)
             if (j == 0)
                 return;
             total = (float)gm_MinutesBetween(&j->start, &j->end);
-            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             if (sv_PanelWidgets[0] == -1) {
                 d2_SetForm(sv_PanelForm, 0);
                 sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
@@ -3789,7 +3781,7 @@ void sv_RefreshPanel(void)
             if (j == 0)
                 return;
             total = (float)gm_MinutesBetween(&j->start, &j->end);
-            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+            ((D2OBJ *)d2_Objs)[sv_PanelBldPic].fillFraction = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             if (sv_PanelWidgets[0] == -1) {
                 d2_SetForm(sv_PanelForm, 0);
                 sv_PanelWidgets[0] = d2_WinOpenPic(((d2_Wins[d2_LastWindow].w - 0x30) >> 1) + 0x2f, 0x4c, 0x4ff, d2_LastWindow);
@@ -3834,43 +3826,43 @@ void sv_RefreshPanel(void)
         if (kind == 0x8f) {
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
             if (total != 0.0f)
-                prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+                prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         } else if (kind == 0x16) {
             total = (float)gm_MinutesBetween(&j->start, &j->end8f);
             if (total != 0.0f)
-                prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+                prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         } else if (kind == 0x40) {
             if (j->stage < 2)
                 prog = 0.01f;
             else if (j->stage == 2) {
                 total = (float)gm_MinutesBetween(&j->start, &j->end);
                 if (total != 0.0f)
-                    prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+                    prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             }
         } else if (kind == 0x61) {
             from = &j->start61;
             t = *from;
-            gm_AddTime((struct GCLOCK *)&t, 8, 0, 0);
+            gm_AddTime((struct AITIME *)&t, 8, 0, 0);
             total = (float)gm_MinutesBetween(from, &t);
             if (total != 0.0f)
-                prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+                prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
         } else if (kind == 0x43) {
             from = &j->start;
             t = *from;
-            gm_AddTime((struct GCLOCK *)&t, 0x18, 0, 0);
+            gm_AddTime((struct AITIME *)&t, 0x18, 0, 0);
             total = (float)gm_MinutesBetween(from, &t);
             if (total != 0.0f)
-                prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+                prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
         } else if (kind == 0x62) {
             if (j->stage < 4)
                 prog = 0.01f;
             else if (j->stage == 4) {
                 from = &j->start;
                 t = *from;
-                gm_AddTime((struct GCLOCK *)&t, 0x60, 0, 0);
+                gm_AddTime((struct AITIME *)&t, 0x60, 0, 0);
                 total = (float)gm_MinutesBetween(from, &t);
                 if (total != 0.0f)
-                    prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+                    prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
             }
         } else if (kind == 0x65) {
             if (j->stage < 2)
@@ -3878,10 +3870,10 @@ void sv_RefreshPanel(void)
             else {
                 from = &j->start;
                 t = *from;
-                gm_AddTime((struct GCLOCK *)&t, 0x18, 0, 0);
+                gm_AddTime((struct AITIME *)&t, 0x18, 0, 0);
                 total = (float)gm_MinutesBetween(from, &t);
                 if (total != 0.0f)
-                    prog = (float)gm_MinutesBetween(from, &ai_TimeT) / total;
+                    prog = (float)gm_MinutesBetween(from, &ai_Time) / total;
             }
         } else if (kind == 0x48) {
             if (j->stage < 1)
@@ -3889,12 +3881,12 @@ void sv_RefreshPanel(void)
             else if (j->stage == 1) {
                 total = (float)gm_MinutesBetween(&j->start, &j->end48);
                 if (total != 0.0f)
-                    prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+                    prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
             }
         } else if (kind == 0x6c) {
             total = (float)gm_MinutesBetween(&j->start, &j->end6c);
             if (total != 0.0f)
-                prog = (float)gm_MinutesBetween(&j->start, &ai_TimeT) / total;
+                prog = (float)gm_MinutesBetween(&j->start, &ai_Time) / total;
         }
             ((D2OBJ *)d2_Objs)[sv_PanelPortrait].fillFraction = prog;
         } else if (sv_PanelPortrait != -1)
@@ -4001,9 +3993,9 @@ void d2_SetClipRect(int x0, int y0, int x1, int y1);                     /* 0x47
 void * d2_SetFont(int font);                     /* 0x476030 */
 void d2_EnableObject();                     /* 0x475aa0 */
 int d2_SetForm(int view, int n);                     /* 0x475f70 */
-void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);                     /* 0x4fe2c0 */
+void gm_ClockToDate(struct AITIME *c, unsigned char *out);                     /* 0x4fe2c0 */
 int gm_Season(char *d);                     /* 0x4fe330, f3gm.h */
-int gm_ClockSeason(void *t);           /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
+int gm_ClockSeason(AITIME *c);         /* 0x4fe350, f3gm.c */                     /* 0x4fe350 */
 int ls_GetLanguage();                     /* 0x5190a0 */
 char * gm_PlayerSeat(int p);                     /* 0x504a80 */
 int gm_SumListAmounts(void *list, unsigned char p);                     /* 0x509e30 */
@@ -4108,7 +4100,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         }
         sv_UpdateGroundplan(b);
         d2_SetFont(0x55);
-        gm_ClockToDate((struct GCLOCK *)&ai_Time, (unsigned char *)&t);
+        gm_ClockToDate((struct AITIME *)&ai_Time, (unsigned char *)&t);
         if (ls_GetLanguage() == 2) {
             sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
             d2_DrawText(d2_Wins[ai_Unk623840].x + 0x181, 0x17, d2_ScreenSurf, buf, 0);
@@ -4120,12 +4112,12 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         shape = d2_GetPic(0x581);
         d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
         d2_AddDirty(d2_ScreenW - 0x50, 0x11, SV_S((unsigned)&d2_ShpW), SV_S((unsigned)&d2_ShpH));
-        h = (int)((float)((SV_US((unsigned)&ai_TimeHour) * 0x3c + SV_I(((unsigned)&ai_Time + 0x6))) * 4.0) / 60.0) % 0x30;
+        h = (int)((float)((SV_US((unsigned)&ai_Time.hour) * 0x3c + SV_I(((unsigned)&ai_Time + 0x6))) * 4.0) / 60.0) % 0x30;
         shape = d2_GetPic(0x582);
         d2_DrawShape(d2_ScreenW - 0x50, 0x11, d2_ScreenSurf, shape, h);
         d2_AddDirty(d2_ScreenW - 0x50, 0x11, SV_S((unsigned)&d2_ShpW), SV_S((unsigned)&d2_ShpH));
         if (SV_I((unsigned)&d2_HitUnderPointer) == sv_AdvanceHit) {
-            sprintf(buf, "%02i:%02i", SV_US((unsigned)&ai_TimeHour), SV_I(((unsigned)&ai_Time + 0x6)));
+            sprintf(buf, "%02i:%02i", SV_US((unsigned)&ai_Time.hour), SV_I(((unsigned)&ai_Time + 0x6)));
             d2_SetFont(0x54);
             d2_DrawTextBox(d2_ScreenW - 0x50, 2, 0x2e, 0x14, d2_ScreenSurf, buf, 0x28);
             d2_AddDirty(d2_ScreenW - 0x50, 2, SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
@@ -4187,9 +4179,9 @@ void sv_UpdateCityPanel(unsigned char a, int b)
                 who = *(int *)(SV_I((unsigned)&ai_FallbackBuilding) + 0x65);
             else
                 who = SV_B((unsigned)&ai_OwnPlayer);
-            n = gm_SumSlotAmounts(SV_I(((unsigned)&ai_Unk770cec + 0xc) + ai_PlayerId * 0x21c), who) + SV_I((unsigned)&full_data_6f22dc);
+            n = gm_SumSlotAmounts(SV_I(((unsigned)&ai_Unk770cec + 0xc) + ai_PlayerId * 0x21c), who) + sv_PendingMoney;
         } else {
-            n = ((int (*)(void *))gm_SumListAmounts)(*(int *)(gm_PlayerSeat(SV_I((unsigned)&sv_ResearchClass)) + 0x14)) + SV_I((unsigned)&full_data_6f22dc);
+            n = ((int (*)(void *))gm_SumListAmounts)(*(int *)(gm_PlayerSeat(SV_I((unsigned)&sv_ResearchClass)) + 0x14)) + sv_PendingMoney;
             who = SV_B((unsigned)&ai_OwnPlayer);
         }
         if (ai_Unk62384c != -1) {
@@ -4353,7 +4345,7 @@ int sv_ActivityName(AICHAR *c, AIBLD *b, char *out)
         if (sv_Activities[i].kind == c->jobKind) {
             if ((c->flags1cc & (1 << 24)) == 0 && c->bld == b
                 && (sv_Activities[i].dayOnly == 0
-                    || ((float)ai_TimeT.hour < gm_DayEndHours[season] && gm_DayStartHours[season] <= (float)ai_TimeT.hour))) {
+                    || ((float)ai_Time.hour < gm_DayEndHours[season] && gm_DayStartHours[season] <= (float)ai_Time.hour))) {
                 strcpy(out, sv_Activities[i].name);
                 return 1;
             }
@@ -4953,7 +4945,7 @@ lstop:
         ok = 0;
         if (c->bld != a || c->model == 0 || c->model->scriptId == -1)
             continue;
-        if (c->jobKind == 0 || (float)ai_TimeT.hour > gm_DayEndHours[season])
+        if (c->jobKind == 0 || (float)ai_Time.hour > gm_DayEndHours[season])
             ok = 1;
         if ((c->job != 0 && c->job->kind == 4 && c->job->argc8 != 0) || ok) {
             ok = 0;
@@ -7094,7 +7086,7 @@ void sv_UpdateWeather(void)
     int c, k;
     SVSKYREC *sky;
 
-    sv_WeatherHour = ai_TimeHour;
+    sv_WeatherHour = ai_Time.hour;
     if (d3t_Snow != 0)
         d3t_SetSnow((struct D3TSNOW *)d3t_Snow, 1, 1, sv_Weather.clouds[sv_WeatherHour], 1000);
     if (d3t_Rain != 0) {
@@ -7180,10 +7172,10 @@ void sv_UpdateWeather(void)
    @deep Read whole against 0x530670..0x5307eb and rewritten: rain/snow draw, the thunder roll (storm[h],
    1/300 or storm 3 and 1/100, thunderStart/thunderLen, sb_PlaySample with the 7 arguments the original
    pushes, volume init_SoundVolume*127.0f), the sun rays when clouds[h-1] != 0 and clouds[h] == 0 between
-   11 and 17 past minute 30 (ai_TimeT.min), sv_SunRaysHour int (the signed jle). Every statement matches;
-   diffclass: regs 8/4/20 (eax<->ecx: the original keeps ai_TimeHour in ecx and zero-extends into eax, ours
-   the reverse) and one code hunk at 0x530734 that is the same cascade: the reload of ai_TimeHour before
-   d3_CurrentScene (+ mov ecx,[ai_TimeHour] / mov eax,[d3_CurrentScene] vs ours mov eax,[ai_Time+4] / mov
+   11 and 17 past minute 30 (ai_Time.min), sv_SunRaysHour int (the signed jle). Every statement matches;
+   diffclass: regs 8/4/20 (eax<->ecx: the original keeps ai_Time.hour in ecx and zero-extends into eax, ours
+   the reverse) and one code hunk at 0x530734 that is the same cascade: the reload of ai_Time.hour before
+   d3_CurrentScene (+ mov ecx,[ai_Time.hour] / mov eax,[d3_CurrentScene] vs ours mov eax,[ai_Time+4] / mov
    ecx,[d3_CurrentScene]) and the clouds[h-1]/clouds[h] addressing (+ shl eax,2 / mov
    edx,[eax+sv_Weather-4] / mov edx,[eax+sv_Weather] vs ours lea ecx,[edx*4+sv_Weather] / cmp [ecx],0).
    Tried (&clouds[-1])[h] and clouds[(int)h-1]: same 47. Left: allocation / addressing selection. */
@@ -7194,18 +7186,18 @@ void sv_WeatherFrame(void)
         d3t_DrawRain(d3t_Rain);
     if (d3t_Snow != 0)
         d3t_DrawSnow(d3t_Snow);
-    if (sv_Weather.storm[ai_TimeHour] != 0 && (util_RandomU(300) == 0 || (sv_Weather.storm[ai_TimeHour] == 3 && util_RandomU(100) == 0))) {
+    if (sv_Weather.storm[ai_Time.hour] != 0 && (util_RandomU(300) == 0 || (sv_Weather.storm[ai_Time.hour] == 3 && util_RandomU(100) == 0))) {
         sv_Weather.thunderStart = d3_Time;
         sv_Weather.thunderLen = util_RandomU(8) + 8;
         sb_PlaySample(snd_ThunderBank, "DonnerMittel_s", 1, 0x3f, (int)(init_SoundVolume * 127.0f), 0, 0);
     }
     if (d3_CurrentScene == 0) {
-        if (ai_TimeHour >= 11 && ai_TimeHour <= 17 && sv_Weather.clouds[ai_TimeHour - 1] != 0 && sv_Weather.clouds[ai_TimeHour] == 0 && ai_TimeT.min > 30) {
+        if (ai_Time.hour >= 11 && ai_Time.hour <= 17 && sv_Weather.clouds[ai_Time.hour - 1] != 0 && sv_Weather.clouds[ai_Time.hour] == 0 && ai_Time.min > 30) {
             if (util_RandomU(0x80) > 0x60 && d3t_SunRays == 0)
                 d3t_CreateSunRays();
-            sv_SunRaysHour = ai_TimeHour;
+            sv_SunRaysHour = ai_Time.hour;
         }
-        if (sv_SunRaysHour != -1 && ai_TimeHour > sv_SunRaysHour && ai_TimeT.min > 30) {
+        if (sv_SunRaysHour != -1 && ai_Time.hour > sv_SunRaysHour && ai_Time.min > 30) {
             if (d3t_SunRays != 0)
                 d3t_FadeOutSunRays(d3t_SunRays, 1);
             sv_SunRaysHour = -1;
@@ -7391,7 +7383,7 @@ l64:
         ch_Update();
         ch_SyncObjectOffsets();
     }
-    if ((mask & 0x4000) != 0 && ai_TimeHour != sv_WeatherHour)
+    if ((mask & 0x4000) != 0 && ai_Time.hour != sv_WeatherHour)
         sv_UpdateWeather();
     if (main_WeatherSound != 0)
         snd_UpdateRain();
@@ -7547,7 +7539,7 @@ l3f5:
             }
             goto l444;
         }
-        if (net_Conn.s != (unsigned)-1 || ai_TimeHour < 0x17)
+        if (net_Conn.s != (unsigned)-1 || ai_Time.hour < 0x17)
             goto l444;
         if (main_DayEnding == 0)
             goto l3f5;
@@ -7592,7 +7584,7 @@ void sv_UpdateClock(void)
 {
     int t, h, m;
 
-    if ((SV_US((unsigned)&ai_Unk75e134) >= 0x17 || SV_US((unsigned)&ai_TimeHour) >= 0x17) && (SV_B((unsigned)&ai_GameFlags) & 0x80) == 0)
+    if ((SV_US((unsigned)&ai_Unk75e134) >= 0x17 || SV_US((unsigned)&ai_Time.hour) >= 0x17) && (SV_B((unsigned)&ai_GameFlags) & 0x80) == 0)
         return;
     t = (int)(((float)SV_I((unsigned)&ai_OptionSpeed) * 0.00625f + 0.5) * SV_I((unsigned)&full_data_6248b4));
     h = t / 3600;

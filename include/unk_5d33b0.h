@@ -16,8 +16,12 @@ typedef struct FILEREC {            /* 0x210 bytes, a file of ai_ListFiles's lis
 /* The option values the profile keeps (the reader 0x5d5640 and the writer 0x5d4c70, the "Game" /
    "Gfx" / "Sound" sections of 0x75e480). The reader stores the camera / mouse speed as single bytes;
    the run time reads them as integers here. */
+extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
+extern unsigned char ai_GfxTextureScale;  /* 0x6f35c5, the "texture_scale" key */
+extern unsigned char ai_GfxLodHandling;  /* 0x6f35c6, the "lod_handling" key */
+extern unsigned char ai_GfxShadowDetail;  /* 0x6f35c7, the "shadow_detail" key */
 extern int ai_OptionSpeed;          /* 0x6f3608, the "speed" key: the game speed setting (0x2ee = 4.9375) */
-extern int ai_OptionCameraSpeed;    /* 0x6f360c, the "camera_speed" key (the reader stores the low byte) */
+extern unsigned char ai_OptionCameraSpeed; /* 0x6f360c, the "camera_speed" key */
 extern int ai_OptionMouseSpeed;     /* 0x6f3610, the "mouse_speed" key (the input base is this - 0x40) */
 
 /* 0x6f3600: the "Sound" options of the profile (the reader 0x5d5640), the master_vol / sfx_vol /
@@ -60,7 +64,7 @@ extern EFFECTREC ai_DefaultEffect;  /* 0x62de60 */
 extern float ai_ShotDrag;          /* 0x62de58, .data: the drag coefficient of a cannon ball, 1.5 */
 extern float ai_ShotHitHeight;     /* 0x62de5c, .data: 98.4 = 2.5 m in inches, the height above the ground that counts as a hit */
 typedef struct EFFECTSTATE {            /* 0x1f0 bytes at 0x6f3300: the wind state ai_InitWind builds (reasoned: the caller 0x525510 passes the wind rose tables) */
-    int year;                           /* +0x00, the clock of the last update (a GAMECLOCK spread to ints): ai_InitWind's second argument (the clock's year) */
+    int year;                           /* +0x00, the clock of the last update (an AITIME spread to ints): ai_InitWind's second argument (the clock's year) */
     int hour;                           /* +0x04, 6 after ai_InitWind; ai_UpdateWind stores the clock's hour */
     int min;                            /* +0x08, 0 after ai_InitWind; ai_UpdateWind stores the clock's minute */
     float sinTab[24];                   /* +0x0c, a copy of the caller's first table (sin of the 24 directions) */
@@ -211,14 +215,7 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
     int option4c;                       /* +0x4c, 0x727 (the sabotage menu, the graveyard's fog target pick), 0x71f
                                            (ai_HandleMapKey's pick; meaning not derived) */
 } AMOUNTCFG;
-#pragma pack(push, 2)
-typedef struct GAMECLOCK {              /* 14 bytes, ai.h's AITIME (ai_Time itself is char[] here, f3snd.h) */
-    int year;                           /* +0x00 */
-    unsigned short hour;                /* +0x04 */
-    int min;                            /* +0x06 */
-    int xy;                             /* +0x0a */
-} GAMECLOCK;
-#pragma pack(pop)
+#include "ai_types.h"                /* AITIME */
 
 typedef struct CURSEMSG {               /* 0xf8 bytes, ai.h's AIMSG (the long message cm_SendLongMessage sends) */
     int unk00;
@@ -227,7 +224,7 @@ typedef struct CURSEMSG {               /* 0xf8 bytes, ai.h's AIMSG (the long me
     int to;                             /* +0x08, the net id of the sender (the message goes to the player's group) */
     int fromId;                         /* +0x0c */
     char pad10[0x18];
-    GAMECLOCK time;                     /* +0x28 */
+    AITIME time;                     /* +0x28 */
     unsigned char flags;                /* +0x36 */
     char pad37;
     int ids[8];                         /* +0x38 */
@@ -247,17 +244,17 @@ typedef struct CURSEBLD {               /* the building record: the id and the o
 #pragma pack(push, 2)
 typedef struct CURSEEVENT {             /* the event 0xa0 ai_FindCurseEvent finds: only the fields the curse target window reads */
     char pad00[0x44];
-    GAMECLOCK from;                     /* +0x44, the clock the event started */
-    GAMECLOCK due;                      /* +0x52, the clock it is due */
+    AITIME from;                     /* +0x44, the clock the event started */
+    AITIME due;                      /* +0x52, the clock it is due */
     char pad60[0x10];
     int done;                           /* +0x70 */
     char pad74[0x38];
     int victim;                         /* +0xac */
 } CURSEEVENT;
 #pragma pack(pop)
-struct GCLOCK;
 struct AITIME;
-void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
+struct AITIME;
+void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
 int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
 char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
 int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
@@ -339,8 +336,6 @@ void ai_OptionsGameScreen(void);         /* 0x5d6950, "menu\options_game" */
 /* ---- the options menu 0x5d7770 (ai_OptionsMenu) ---- */
 extern int d2_LastWindow;           /* 0x6ed938, d2.c: the window created last (the current form the
                                        text / control calls work in; d2.c sets it, every screen reads it) */
-extern unsigned char snd_AmbientOnByte; /* 0x6f0b60, the `on` byte of snd_AmbientOn
-                                       (f3snd.h: G16AMBIENTON; that unit has no header here) */
 extern int ai_GameOver;             /* 0x6f259c, cm.h: nonzero once the game is over / left */
 extern int ai_LeaveGame;            /* 0x6f25a0, set with ai_GameOver when the menu leaves the game (the
                                        load window / the game loop end); main.c clears it when a game

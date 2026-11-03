@@ -95,9 +95,7 @@ typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon s
     int selected;                       /* 0x1c, the selected object (the scene's +0xa0) */
 } GVCANNON;
 extern GVCANNON gv_Cannon;              /* 0x925100 */
-extern char ai_Time[];             /* 0x770ae0 */
-extern int ai_TimeYear;            /* 0x770ae0, ai_Time's first int: the game year (AITIME.year in ai.h;
-                                      the alias am.h / cm.h use for AITIME.hour is ai_TimeHour) */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern char ai_Chars[][0x21c];      /* 0x770b80, the characters */
 
 /* the 0x21c-byte character records (ai_Chars) as the order handlers read them */
@@ -238,20 +236,6 @@ typedef struct ORDMSG {
     ORDCHAR *partner;               /* 0x21c, the partner character of an answer */
 } ORDMSG;
 #define ORD_MSG(p) ((ORDMSG *)(p))
-
-/* a cell of the statistics grid ai_Grid (ai.h, 0x91ae60) as ord.c reads it: the same 24-byte record, which the
-   order statistics use beyond AIGRID's a / b / used (+8 the average value of the objects of the cell, +0xc /
-   +0x10 / +0x14 the float sums 0x4f8920 rebuilds); kept here because gv.h and ai.h cannot be in one TU */
-typedef struct ORDCELL {
-    unsigned short a;               /* 0x00, the sum over the 3 x 3 neighbourhood */
-    unsigned short b;               /* 0x02, the sum over the cell itself */
-    unsigned char used;             /* 0x04, the number of objects of the cell (read unsigned: and eax,0xff) */
-    char pad05[3];
-    int average;                    /* 0x08 */
-    float halfWeightSum;            /* 0x0c, the sum of half the weights w of 0x4f8920 (w * 0.5f) */
-    float weightSum;                /* 0x10, the sum of the weights w of 0x4f8920 */
-    float buildingCount;            /* 0x14, 0x4f8ae0 adds 1.0 per building object of the cell */
-} ORDCELL;
 
 #pragma pack(push, 1)
 /* the building record ai.h's AIBLD, as ord.c reads it (gv.h and ai.h cannot be in one TU: both declare
@@ -536,7 +520,6 @@ extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes 
 
 int gv_WriteCrimes(void *f);             /* 0x4f28d0 */
 float gv_SchoolLevelFactor(short *c);          /* 0x4f2da0 */
-extern char unk_Tab91b6e0[];            /* 0x91b6e0 */
 int gm_BuildingSkill();                     /* 0x5092e0 */
 
 int gv_ReadCrimes(int f);             /* 0x4f2b30 */
@@ -588,8 +571,8 @@ int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3c00 */
 void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
-struct GCLOCK;  /* f3gm.h typedef (gm_AddTime); file-scope so the gm_AddTime prototype below is stable */
-void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);                     /* 0x4fe140 */
+struct AITIME;  /* f3gm.h typedef (gm_AddTime); file-scope so the gm_AddTime prototype below is stable */
+void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 
 int gv_CannonCost(char *o, int a, int b, int d, int *n, int *price);  /* 0x4ef090 */
 int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out);  /* 0x4f2440 */
@@ -699,20 +682,17 @@ int unk_Unk4f5800(char *c, int *m);     /* 0x4f5800 */
 int ord_WageReportOrder(char *c, int *m);     /* 0x4f5a80 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700, the wage record (ORDWAGES) of the character id for the report */
 
+#include "gv_types.h"                /* ORDSTATS, ORDSTATROUND, ORDMSGREC */
+
 /* the tables 0x4f82a0 clears */
-extern char ord_MessageRecord[0x24];        /* 0x91b480, the 9-int record the messages carry, then the tag */
-extern int ord_MessageRecordEnabled;    /* 0x91b480, the first int of ord_MessageRecord: 0x4f9710 sets it 1 / 0
-                                           on the 'enbl' / 'dsbl' message, 0x4f9220 runs the event only at 1 (a
-                                           separate name, so the compiler does not kill the record's clear) */
+extern ORDMSGREC ord_MessageRecord;     /* 0x91b480, the record the messages carry */
 extern char gm_IncomeHistory[];         /* 0x91b580, the 17-round history of the five income sums (rows of
                                             0x44 bytes, the running sums behind them) */
 extern char gm_CharacterStatistics[];            /* 0x91b500 */
-extern char ord_StatisticsHistory[];            /* 0x91ab00 */
-extern char ord_StatisticsRecord[];            /* 0x91b4c0 */
-extern ORDCELL ord_GridCells[8][8];     /* 0x91ae60, ai.h's ai_Grid (the same address); see ORDCELL */
-extern int ai_RatingBase;                /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at 0x6f1ba0) */
+extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of the last 16 rounds */
+extern ORDSTATS ord_Statistics;         /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
+extern float ai_RatingBase;              /* 0x6f1b9c, the running rating: it moves towards ai_Rating (ai.h, 0x6f1ba0) by ord_RatingRate */
 extern float ord_RatingRate;             /* 0x91aaf4, the change rate of the rating (ord.c 0x4f8ed0; ls.c saves it) */
-extern float ai_RatingBaseF;             /* 0x6f1b9c, ai_RatingBase read as the float its bits hold */
 #ifndef DATA_VIEWS_H
 extern char *unk_Ptrfd7c50;             /* 0xfd7c50, the scene */
 #endif
@@ -737,7 +717,7 @@ int unk_Unk4f8700(char *c);             /* 0x4f8700 */
 
 void unk_Unk4f88c0(void);               /* 0x4f88c0 */
 
-extern char ai_Crimes[], gv_GraveyardEnd[];  /* 0x91f700, 0x925100: 0x200 records of 0x2d bytes, and their end */
+extern char ai_Crimes[];  /* 0x91f700, 0x200 records of 0x2d bytes (to 0x925100) */
 void ord_RebuildGridSums(void);               /* 0x4f8920 */
 
 void ord_GetMessageRecord(int *out);           /* 0x4f9170 */
@@ -758,7 +738,7 @@ float ord_StatisticsRating(void);              /* 0x4f9ce0 */
 float ord_WeightedRecordSum(int *out);          /* 0x4f9d40 */
 float ord_GetStatistics(int *o);            /* 0x4f9e00 */
 
-extern char ord_StatisticsTime[];            /* 0x91b470, a clock stamp (14 bytes) */
+extern AITIME ord_StatisticsClock;      /* 0x91b470, the clock of the last rating step (ord_AdvanceRatingBase) */
 int gm_MinutesBetween();                     /* 0x4fe280 */
 void ord_AdvanceRatingBase(void);               /* 0x4f9c00 */
 

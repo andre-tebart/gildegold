@@ -20,7 +20,6 @@ struct D3TERRAIN;
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.c: int[4]) as the AITIME it holds */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
 #include "d3_types.h"
@@ -28,28 +27,7 @@ struct D3TERRAIN;
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int gm_TreeNodeCount;
-extern char gm_StockBlocks[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
-#define ai_Unk7d6a64 (*(int (*)[3])((char *)gm_StockBlocks + 4))  /* 0x7d6a64, block 0's header tail (a view) */
-typedef struct GMSTOCKREC {         /* 0x80 bytes, a goods record of a stock block (the fields ls_WritePlayerSlots
-                                       saves; their meaning is not read yet) */
-    short good;                     /* 0x00 */
-    char pad02[2];
-    int f04, f08, f0c;              /* 0x04 */
-    char pad10[0x10];
-    int f20, f24;                   /* 0x20 */
-    char pad28[4];
-    int f2c, f30, f34, f38;         /* 0x2c */
-    short f3c;                      /* 0x3c */
-    char pad3e[0x42];
-} GMSTOCKREC;
-typedef struct GMSTOCKBLOCK {       /* 0x2a90 bytes, one of the five blocks of gm_StockBlocks */
-    int head[4];                    /* 0x00 */
-    GMSTOCKREC recs[0x55];          /* 0x10 */
-} GMSTOCKBLOCK;
-#define gm_StockBlocksT ((GMSTOCKBLOCK *)gm_StockBlocks)  /* 0x7d6a60, gm_StockBlocks (f3gm.c: char[]) as its five blocks */
 extern unsigned gm_OwnNameHeads[136];
-extern unsigned char ord_Statistics;
-extern unsigned char ord_StatisticsClock;
 extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
 extern void main_Unk537b60(int kind, int cur, int total);
@@ -192,7 +170,7 @@ int ls_SaveGame(int name, char *path, unsigned flags)
     }
     vfs_fwrite(&ai_NextObjectId, 4, 1, f);
     vfs_fwrite(&ai_NextEventId, 4, 1, f);
-    vfs_fwrite(ai_Time, 0xe, 1, f);
+    vfs_fwrite(&ai_Time, 0xe, 1, f);
     vfs_fwrite(&ai_OwnPlayer, 1, 1, f);
     vfs_fwrite(ai_PlayerCharC + 4, 4, 1, f);
     vfs_fwrite(&ai_NextCharNumber, 4, 1, f);
@@ -280,7 +258,7 @@ int ls_WriteSaveHeader(int f, unsigned flags)
         return 0;
     if (vfs_fwrite(&hdr.players, 1, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite(ai_Time, 0xe, 1, f) <= 0)
+    if (vfs_fwrite(&ai_Time, 0xe, 1, f) <= 0)
         return 0;
     if (ai_PlayerId != 0xffff) {
         if (vfs_fwrite(ai_Chars[ai_PlayerId] + 0x30, 0x10, 1, f) <= 0)
@@ -915,7 +893,7 @@ int ls_WriteSceneRecords(int f)
    0x51b3de..0x51b4f1 - ours add edi, 0x14 (fields at edi-4, edi, edi+4 .. edi+0x38), the original's add
    edi, 0x18 (edi-8, edi-4, edi .. edi+0x34); every lea displacement in that loop shifts by 4, nothing else
    differs. Tried: a char pointer walked by 0x80 (bias 0x10), char + j*0x80 index form and
-   GMSTOCKBLOCK/GMSTOCKREC struct index (bias 0x14), a struct pointer incremented / indexed through the
+   GMBLOCK/GMSTOCK struct index (bias 0x14), a struct pointer incremented / indexed through the
    global view (larger), the int fields as one array w[14] (no change): needs a generated variant round */
 
 
@@ -925,29 +903,29 @@ int ls_WritePlayerSlots(int f)
     int j;
     char *rec;
     char *slot;
-    GMSTOCKBLOCK *b;
+    GMBLOCK *b;
 
     n = 0x55;
     if (vfs_fwrite(&n, 4, 1, f) <= 0)
         return 0;
     for (n = 0; n < 5; n++) {
-        b = &gm_StockBlocksT[n];
-        LS_W(&b->head[0], 4)
-        LS_W(&b->head[1], 4)
-        LS_W(&b->head[2], 4)
-        LS_W(&b->head[3], 4)
+        b = &gm_StockBlocks[n];
+        LS_W(&b->demandIndex, 4)
+        LS_W(&b->demandFactor, 4)
+        LS_W(&b->indexB, 4)
+        LS_W(&b->factorB, 4)
         for (j = 0; j < 0x55; j++) {
-            LS_W(&b->recs[j].good, 2)
-            LS_W(&b->recs[j].f04, 4)
-            LS_W(&b->recs[j].f08, 4)
-            LS_W(&b->recs[j].f0c, 4)
-            LS_W(&b->recs[j].f20, 4)
-            LS_W(&b->recs[j].f24, 4)
-            LS_W(&b->recs[j].f30, 4)
-            LS_W(&b->recs[j].f34, 4)
-            LS_W(&b->recs[j].f38, 4)
-            LS_W(&b->recs[j].f3c, 2)
-            LS_W(&b->recs[j].f2c, 4)
+            LS_W(&b->goods[j].item, 2)
+            LS_W(&b->goods[j].amount, 4)
+            LS_W(&b->goods[j].rate, 4)
+            LS_W(&b->goods[j].v00c, 4)
+            LS_W(&b->goods[j].demand, 4)
+            LS_W(&b->goods[j].mean, 4)
+            LS_W(&b->goods[j].baseStock, 4)
+            LS_W(&b->goods[j].stock, 4)
+            LS_W(&b->goods[j].price, 4)
+            LS_W(&b->goods[j].marketKind, 2)
+            LS_W(&b->goods[j].f2c, 4)
         }
     }
     for (n = 0; n < 4; n++) {
@@ -1392,17 +1370,17 @@ int ls_LoadGame(int name, int kind)
     ai_JudgeProtestant = 0;
     init_FreeScenes();
     if (ls_ReadSaveHeader(h, ai_Unk76f920) == 0 || ai_Unk76f920[0] > 0x1005a || ai_Unk76f920[0] < 0x10026
-        || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(ai_Time, 0xe)
+        || !LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(&ai_Time, 0xe)
         || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
         || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
         goto close;
     if (ls_Version >= 0x10022)
         LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
-    ai_Unk75e134 = *(int *)(ai_Time + 4);
-    ai_TimeCopy[0] = *(int *)ai_Time;
-    ai_Unk75e138 = *(int *)(ai_Time + 8);
-    ai_Unk75e13c = *(short *)(ai_Time + 0xc);
+    ai_Unk75e134 = *(int *)&ai_Time.hour;
+    ai_TimeCopy[0] = ai_Time.year;
+    ai_Unk75e138 = *(int *)((char *)&ai_Time + 8);
+    ai_Unk75e13c = *(short *)((char *)&ai_Time + 0xc);
     if ((ai_Unk76f924 & 2) == 0)
         ai_Difficulty = ai_Unk76f9b8;
     if (ls_Version >= 0x10030)
@@ -2206,7 +2184,7 @@ int ls_ReadPlayerSlots(int f)
 {
     int n;
     int b, j, k;
-    GMSTOCKBLOCK *blk;
+    GMBLOCK *blk;
     char *slot;
     char buf[0x100];
 
@@ -2214,23 +2192,23 @@ int ls_ReadPlayerSlots(int f)
     if (ls_Version >= 0x10048)
         LS_R(&n, 4)
     for (b = 0; b < 5; b++) {
-        blk = &gm_StockBlocksT[b];
-        LS_R(&blk->head[0], 4)
-        LS_R(&blk->head[1], 4)
-        LS_R(&blk->head[2], 4)
-        LS_R(&blk->head[3], 4)
+        blk = &gm_StockBlocks[b];
+        LS_R(&blk->demandIndex, 4)
+        LS_R(&blk->demandFactor, 4)
+        LS_R(&blk->indexB, 4)
+        LS_R(&blk->factorB, 4)
         for (j = 0; j < n; j++) {
-            LS_R(&blk->recs[j].good, 2)
-            LS_R(&blk->recs[j].f04, 4)
-            LS_R(&blk->recs[j].f08, 4)
-            LS_R(&blk->recs[j].f0c, 4)
-            LS_R(&blk->recs[j].f20, 4)
-            LS_R(&blk->recs[j].f24, 4)
-            LS_R(&blk->recs[j].f30, 4)
-            LS_R(&blk->recs[j].f34, 4)
-            LS_R(&blk->recs[j].f38, 4)
-            LS_R(&blk->recs[j].f3c, 2)
-            LS_R(&blk->recs[j].f2c, 4)
+            LS_R(&blk->goods[j].item, 2)
+            LS_R(&blk->goods[j].amount, 4)
+            LS_R(&blk->goods[j].rate, 4)
+            LS_R(&blk->goods[j].v00c, 4)
+            LS_R(&blk->goods[j].demand, 4)
+            LS_R(&blk->goods[j].mean, 4)
+            LS_R(&blk->goods[j].baseStock, 4)
+            LS_R(&blk->goods[j].stock, 4)
+            LS_R(&blk->goods[j].price, 4)
+            LS_R(&blk->goods[j].marketKind, 2)
+            LS_R(&blk->goods[j].f2c, 4)
         }
     }
     for (b = 0; b < 4; b++) {
@@ -2320,48 +2298,48 @@ int ls_ReadRelations(int f)
     }
     return 1;
 }
-/* 0x51f720, reads what ls_WriteStatistics writes: the ten words of ord_StatisticsRecord, ord_RatingRate, the
+/* 0x51f720, reads what ls_WriteStatistics writes: the ten words of ord_Statistics, ord_RatingRate, the
    statistics clock (a word, a short and two words), ai_RatingBase, ai_Rating, the nine words of ord_MessageRecord,
    the 16 records of five words of ord_StatisticsHistory, the five 0x44-byte rows of gm_IncomeHistory and the
-   8 x 8 cells of ord_GridCells (a, b, used, average). Returns 1, 0 when a read fails. */
+   8 x 8 cells of ai_Grid (a, b, used, average). Returns 1, 0 when a read fails. */
 
 
 int ls_ReadStatistics(int f)
 {
     int i, j;
 
-    LS_R(ord_StatisticsRecord, 4)
-    LS_R(ord_StatisticsRecord + 0x4, 4)
-    LS_R(ord_StatisticsRecord + 0x8, 4)
-    LS_R(ord_StatisticsRecord + 0xc, 4)
-    LS_R(ord_StatisticsRecord + 0x10, 4)
-    LS_R(ord_StatisticsRecord + 0x14, 4)
-    LS_R(ord_StatisticsRecord + 0x18, 4)
-    LS_R(ord_StatisticsRecord + 0x1c, 4)
-    LS_R(ord_StatisticsRecord + 0x20, 4)
-    LS_R(ord_StatisticsRecord + 0x24, 4)
+    LS_R(&ord_Statistics.col[0], 4)
+    LS_R(&ord_Statistics.col[1], 4)
+    LS_R(&ord_Statistics.col[2], 4)
+    LS_R(&ord_Statistics.col[3], 4)
+    LS_R(&ord_Statistics.col[4], 4)
+    LS_R(&ord_Statistics.rating, 4)
+    LS_R(&ord_Statistics.base, 4)
+    LS_R(&ord_Statistics.v1c, 4)
+    LS_R(&ord_Statistics.v20, 4)
+    LS_R(&ord_Statistics.score, 4)
     LS_R(&ord_RatingRate, 4)
-    LS_R(&ord_StatisticsClock, 4)
-    LS_R(&ord_StatisticsClock + 0x4, 2)
-    LS_R(&ord_StatisticsClock + 0x6, 4)
-    LS_R(&ord_StatisticsClock + 0xa, 4)
+    LS_R(&ord_StatisticsClock.year, 4)
+    LS_R(&ord_StatisticsClock.hour, 2)
+    LS_R(&ord_StatisticsClock.min, 4)
+    LS_R(&ord_StatisticsClock.sec, 4)
     LS_R(&ai_RatingBase, 4)
     LS_R(&ai_Rating, 4)
-    LS_R(ord_MessageRecord, 4)
-    LS_R(ord_MessageRecord + 0x4, 4)
-    LS_R(ord_MessageRecord + 0x8, 4)
-    LS_R(ord_MessageRecord + 0xc, 4)
-    LS_R(ord_MessageRecord + 0x10, 4)
-    LS_R(ord_MessageRecord + 0x14, 4)
-    LS_R(ord_MessageRecord + 0x18, 4)
-    LS_R(ord_MessageRecord + 0x1c, 4)
-    LS_R(ord_MessageRecord + 0x20, 4)
+    LS_R(&ord_MessageRecord.enabled, 4)
+    LS_R(&ord_MessageRecord.count, 4)
+    LS_R(&ord_MessageRecord.time, 4)
+    LS_R(&ord_MessageRecord.base, 4)
+    LS_R(&ord_MessageRecord.scale, 4)
+    LS_R(&ord_MessageRecord.value, 4)
+    LS_R(&ord_MessageRecord.limit, 4)
+    LS_R(&ord_MessageRecord.phase, 4)
+    LS_R(&ord_MessageRecord.stage, 4)
     for (i = 0; i < 16; i++) {
-        LS_R(ord_StatisticsHistory + i * 0x14, 4)
-        LS_R(ord_StatisticsHistory + i * 0x14 + 0x4, 4)
-        LS_R(ord_StatisticsHistory + i * 0x14 + 0x8, 4)
-        LS_R(ord_StatisticsHistory + i * 0x14 + 0xc, 4)
-        LS_R(ord_StatisticsHistory + i * 0x14 + 0x10, 4)
+        LS_R(&ord_StatisticsHistory[i].noFirst, 4)
+        LS_R(&ord_StatisticsHistory[i].combined, 4)
+        LS_R(&ord_StatisticsHistory[i].noSecond, 4)
+        LS_R(&ord_StatisticsHistory[i].score, 4)
+        LS_R(&ord_StatisticsHistory[i].base, 4)
     }
     LS_R(gm_IncomeHistory, 0x44)
     LS_R(gm_IncomeHistory + 0x44, 0x44)
@@ -2370,10 +2348,10 @@ int ls_ReadStatistics(int f)
     LS_R(gm_IncomeHistory + 0x110, 0x44)
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-            LS_R(&ord_GridCells[i][j].a, 2)
-            LS_R(&ord_GridCells[i][j].b, 2)
-            LS_R(&ord_GridCells[i][j].used, 1)
-            LS_R(&ord_GridCells[i][j].average, 4)
+            LS_R(&ai_Grid[i][j].a, 2)
+            LS_R(&ai_Grid[i][j].b, 2)
+            LS_R(&ai_Grid[i][j].used, 1)
+            LS_R(&ai_Grid[i][j].average, 4)
         }
     }
     return 1;
@@ -2510,7 +2488,7 @@ int unk_Unk520000(int f)
         if (ls_Version >= 0x1003f) {
             LS_R(p + 4, 0xe)
         } else {
-            memcpy(p + 4, ai_Time, 0xe);
+            memcpy(p + 4, &ai_Time, 0xe);
             gm_AddTime(p + 4, i + 1, 0, 0);
         }
         if (ls_Version >= 0x10040)
@@ -2863,11 +2841,11 @@ int ls_ReceiveGame(void)
     ls_ReadSaveHeader(h, (int *)&hdr);
     if ((hdr.flags & 2) == 0 || hdr.version > 0x1005a)
         LS_LOADFAIL
-    if (!LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(ai_Time, 0xe)
+    if (!LS_RD(&ai_NextObjectId, 4) || !LS_RD(&ai_NextEventId, 4) || !LS_RD(&ai_Time, 0xe)
         || !LS_RD(&ai_OwnPlayer, 1) || !LS_RD(&ai_PlayerCharC, 4) || !LS_RD(&ai_NextCharNumber, 4)
         || !LS_RD(&ai_NextPlayerNumber, 4) || !LS_RD(&ai_CharCount, 4))
         LS_LOADFAIL
-    ai_TimeCopyT = ai_TimeT;
+    ai_TimeCopyT = ai_Time;
     LS_RD(&ls_SpareInt, 4);
     LS_RD(&ai_UpdateStart, 0x18);   /* the 0x18-byte block ai_UpdateStart .. ai_CountCarry (0xf89580) */
     if (ls_Version >= 0x10030)

@@ -17,7 +17,6 @@ extern int gm_PlayerRecords[688];
 #define AMT_TABA_END ((int)&amt_TabA[15 * 10])  /* 0x5edee8, the end of the 15 rows of amt_TabA */
 #define AMT_MONEY_UNIT 64  /* money in the character messages counts in multiples of this: the amounts of the 0x4c4830 sites are built as n * 0x40 */
 
-#include "time_view.h"
 #include "ahm.h"
 #include "ai.h"
 #include "cm.h"
@@ -760,14 +759,14 @@ int amt_ExecuteSwapMessage(AMTTRADE *m)
    becomes free (state 3, or 4 after the 12th hour of the game clock), a second office returns to state 1), takes back its
    application (the applicant counts of its kind) and clears its ranks (officeKind / secondOffice / appliedOffice);
    1 when it held an office or an application
-   @deep B3: 32 of ~120 instructions differ (51 code hunks; ours 63 instructions, the original 57). The whole original 0x4e6d80..0x4e6e16 was read against the source and the statement sequence is equal: d = the clock hour (ai_TimeHour = ai_Time.hour 0x770ae4), the 42-record loop testing owner then x14 (owner: free state (hour > 11) + 3, cnt 0, r |= 1; x14: state 1), the appliedOffice loop (kind match + cnt > 0: r |= 1, cnt--), the three rank bytes cleared, return r. Left: the loop's induction base (the original walks &amt_Table[i].x14 with [ecx-0x10] = owner, [ecx-8] = cnt, [ecx-4] = state; ours uses &amt_Table[i].owner), the -1 constant (the original stores the immediate, ours hoists -1 into edi and pushes it - 3 extra instructions) and the netId cache in edx - allocation/strength-reduction, no menu rule. spell.py reload lead tried: the netId is already the typed expression at both uses (the original reloads [ebp+4] once per branch, ours CSEs it); the r = 1 -> r |= 1 spelling was applied (the original's or al,0x1) and the typed AMTCHARVIEW fields / ai_TimeHour view are byte-neutral. Readability Q1-Q7 pass (amt_ClearOffices, AMTCHARVIEW fields). */
+   @deep B3: 32 of ~120 instructions differ (51 code hunks; ours 63 instructions, the original 57). The whole original 0x4e6d80..0x4e6e16 was read against the source and the statement sequence is equal: d = the clock hour (ai_Time.hour = ai_Time.hour 0x770ae4), the 42-record loop testing owner then x14 (owner: free state (hour > 11) + 3, cnt 0, r |= 1; x14: state 1), the appliedOffice loop (kind match + cnt > 0: r |= 1, cnt--), the three rank bytes cleared, return r. Left: the loop's induction base (the original walks &amt_Table[i].x14 with [ecx-0x10] = owner, [ecx-8] = cnt, [ecx-4] = state; ours uses &amt_Table[i].owner), the -1 constant (the original stores the immediate, ours hoists -1 into edi and pushes it - 3 extra instructions) and the netId cache in edx - allocation/strength-reduction, no menu rule. spell.py reload lead tried: the netId is already the typed expression at both uses (the original reloads [ebp+4] once per branch, ours CSEs it); the r = 1 -> r |= 1 spelling was applied (the original's or al,0x1) and the typed AMTCHARVIEW fields / ai_Time.hour view are byte-neutral. Readability Q1-Q7 pass (amt_ClearOffices, AMTCHARVIEW fields). */
 
 int amt_ClearOffices(char *c)
 {
     unsigned short d;
     int r, i;
 
-    d = ai_TimeHour;
+    d = ai_Time.hour;
     r = 0;
     for (i = 0; i < 42; i++) {
         if (amt_Table[i].owner == ((AMTCHARVIEW *)c)->netId) {
@@ -797,14 +796,14 @@ int amt_ClearOffices(char *c)
 /* 0x4e6e20, amt_ClearOffices without the result: the owner's office is released only when `all` is set (the second
    office always returns to state 1), the application is always taken back, the ranks (officeKind / secondOffice) are
    cleared only when `all` is set
-   @deep B3: the sibling of amt_ClearOffices (0x4e6d80) with the same body and the same causes: 51 code hunks from the loop's induction base (the original walks &amt_Table[i].x14 with [ecx-0x10] = owner, [ecx-8] = cnt, [ecx-4] = state; ours uses &amt_Table[i].owner), the -1 constant hoisted into a pushed register instead of the original's immediate stores, and the netId cache in edx - allocation / strength reduction, no menu rule. The whole original 0x4e6e20..0x4e6e2b was read against the source: the owner branch gated by all != 0 (release, cnt 0, state (hour > 11) + 3, x14 -1), the x14 branch (state 1), the appliedOffice count take-back, appliedOffice = 0 and the officeKind / secondOffice clears under all != 0 - every statement matches. spell.py: the reload lead (the netId is the typed expression at both tests) and the r = 1 spelling (no r here) tried; typed AMTCHARVIEW fields and ai_TimeHour are byte-neutral. Readability Q1-Q7 pass (amt_ClearOfficesIfAll). */
+   @deep B3: the sibling of amt_ClearOffices (0x4e6d80) with the same body and the same causes: 51 code hunks from the loop's induction base (the original walks &amt_Table[i].x14 with [ecx-0x10] = owner, [ecx-8] = cnt, [ecx-4] = state; ours uses &amt_Table[i].owner), the -1 constant hoisted into a pushed register instead of the original's immediate stores, and the netId cache in edx - allocation / strength reduction, no menu rule. The whole original 0x4e6e20..0x4e6e2b was read against the source: the owner branch gated by all != 0 (release, cnt 0, state (hour > 11) + 3, x14 -1), the x14 branch (state 1), the appliedOffice count take-back, appliedOffice = 0 and the officeKind / secondOffice clears under all != 0 - every statement matches. spell.py: the reload lead (the netId is the typed expression at both tests) and the r = 1 spelling (no r here) tried; typed AMTCHARVIEW fields and ai_Time.hour are byte-neutral. Readability Q1-Q7 pass (amt_ClearOfficesIfAll). */
 
 void amt_ClearOfficesIfAll(char *c, int all)
 {
     unsigned short d;
     int i;
 
-    d = ai_TimeHour;
+    d = ai_Time.hour;
     for (i = 0; i < 42; i++) {
         if (amt_Table[i].owner == ((AMTCHARVIEW *)c)->netId && all != 0) {
             amt_Table[i].owner = -1;
@@ -2143,12 +2142,12 @@ void amt_CalcZuenfte(unsigned int kind)
                 sprintf(name, "%sgebaeude/*%s.ogr", ai_DataPath, buf);
                 memset(msg, 0, sizeof(msg));
                 msg[4] = 0xd;
-                *(int *)(msg + 0x28) = *(int *)ai_Time;
+                *(int *)(msg + 0x28) = ai_Time.year;
                 *(int *)(msg + 0x8) = *(int *)(*(char **)&ai_PlayerChar + 4);
                 *(int *)(msg + 0xc) = -1;
-                *(int *)(msg + 0x2c) = *(int *)&ai_TimeHour;
-                *(int *)(msg + 0x30) = *(int *)(ai_Time + 8);
-                *(short *)(msg + 0x34) = *(short *)(ai_Time + 12);
+                *(int *)(msg + 0x2c) = *(int *)&ai_Time.hour;
+                *(int *)(msg + 0x30) = *(int *)((char *)&ai_Time + 8);
+                *(short *)(msg + 0x34) = *(short *)((char *)&ai_Time + 0xc);
                 msg[0x36] = 2;
                 *(int *)(msg + 0x80) = pos[0];
                 *(int *)(msg + 0x58) = *(int *)(*(char **)&ai_PlayerChar + 4);
@@ -2348,7 +2347,7 @@ int amt_CanUseMayorPower3(char *c)
     return 0;
 }
 /* 0x4e9660, executes the guild-house price message m (kind 3, +4 the job number 1 .. 7, +8 = 1 / -1 raise / lower) of the character c:
-   the best building of the district (the type's level +0x247) selects the row of amt_PriceRows (0x15 bytes: the building kind and 10 goods
+   the best building of the district (the type's level +0x247) selects the row of gm_BuildingItemGroups (0x15 bytes: the building kind and 10 goods
    ids), gm_Shuffled picks one or two of those goods and their price records (gm_FindGoods) get the factor gm_GetSkill(c, 2) times a random
    1.2 .. 2.0 (raise) or 0.5 .. 1.0 (lower); the goods go back through cm_SendGoodsDelta, m[3] / m[4] return them, c uses its power flag
    0x4000000 and pays 3 money (gm_SendMoneyDelta), every player character except c is told the news text (0x1655 / 0x1659 + the goods
@@ -2387,12 +2386,12 @@ int amt_ExecutePriceMessage(char *c, int *m)
                 } while (it != 0);
                 if (id != 0) {
                     for (i = 0; i < 0x25; i++) {
-                        if (amt_PriceRows[i * 0x15] == id)
+                        if (gm_BuildingItemGroups[i].key == id)
                             break;
                     }
                     if (i < 0x25) {
                         n = 0;
-                        row = (unsigned short *)&amt_PriceRows[1 + i * 0x15];
+                        row = gm_BuildingItemGroups[i].items;
                         for (t = 0; t < 10; t++, row++) {
                             if (*row != 0) {
                                 cands[n] = *row;

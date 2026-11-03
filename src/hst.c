@@ -32,7 +32,6 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_Unk4b86c0) */
 /* 0x4adf40, copies src to dst up to the second '-', '%' becomes " %" after a non-blank; *n1 = the characters
    read, *n2 = the length of the rest */
@@ -926,7 +925,7 @@ int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out)
 }
 /* 0x4afdd0, the FEST text command (callback 0x601b50[0], name 0x601070[0]) "-n" (n > 0): sends message 0x53
    for the character ai_PlayerChar, today 12:00
-   @deep B: 38 code hunks / 23 differing instructions of 54 vs 53 - one scheduling region, meaning read and equal (type 0x53, to = ((AICHAR *)ai_PlayerChar)->netId, TMX(msg) = NOWX, fromId -1, flags 1, byte 0 at 0x58, hour 12, min 0, cm_SendLongMessage): the original hoists ai_Time's first dword above the msg zeroing loop and stores the TMX copy a,c,b,d with the '&msg' push before fromId/flags/car/hour/min, ours stores b,c,a,d and pushes after car/min. Tried, one build each: source order (TMX before msg.to moves the hoist but stores a,b,d,c, 29 differing - reverted), msg.car as int (no change), typed netId (byte-neutral). spell: width hint at 0x4afdf6 is the hoisted dword read of the TMX slot. Needs vargen perm/mask rounds (store order + hoisted load). Q4 left: (1) the TMX/NOWX macro (am.h deref cast) - a typed view needs an AITIMEX member on AITIME in ai.h; both spellings tried (struct AITIME{union{...;AITIMEX x;};} and union AITIME{AITIMEX x; struct{...};}) regress ai_Unk483a60 in ai.c from byte to the [esp+0x10]/[esp+0x18] slot swap (the same regression the ai_StartBuildingWork note records for an AIMSG char view) - reverted, shared-header decision; (2) *(char *)&msg.car = 0: the byte at AIMSG+0x58 has no evidenced name (G6MSG/G8MSG call it unk58, a Q2 placeholder; every other sender writes the int car there), so a typed view would invent a name. Q1 fixed by the rename (callback 0x601b50[0], name 0x601070[0] FEST), Q2/Q3/Q5/Q6/Q7 pass. */
+   @deep B: 38 code hunks / 23 differing instructions of 54 vs 53 - one scheduling region, meaning read and equal (type 0x53, to = ((AICHAR *)ai_PlayerChar)->netId, msg.time = ai_Time, fromId -1, flags 1, byte 0 at 0x58, hour 12, min 0, cm_SendLongMessage): the original hoists ai_Time's first dword above the msg zeroing loop and stores the clock copy's dwords 0,8,4,c with the '&msg' push before fromId/flags/car/hour/min, ours 4,8,0,c and pushes after car/min. Tried, one build each: source order (the clock copy before msg.to moves the hoist but stores 0,4,c,8, 29 differing - reverted), msg.car as int (no change), typed netId (byte-neutral). spell: width hint at 0x4afdf6 is the hoisted dword read of the clock slot. Needs vargen perm/mask rounds (store order + hoisted load). Q4 left: (1) settled, the clock is copied as msg.time = ai_Time (AITIME, no view); (2) *(char *)&msg.car = 0: the byte at AIMSG+0x58 has no evidenced name (G6MSG/G8MSG call it unk58, a Q2 placeholder; every other sender writes the int car there), so a typed view would invent a name. Q1 fixed by the rename (callback 0x601b50[0], name 0x601070[0] FEST), Q2/Q3/Q5/Q6/Q7 pass. */
 
 int ai_CommandFest(int a, int b, char *fmt)
 {
@@ -938,7 +937,7 @@ int ai_CommandFest(int a, int b, char *fmt)
         memset(&msg, 0, sizeof(msg));
         msg.type = 0x53;
         msg.to = ((AICHAR *)ai_PlayerChar)->netId;
-        TMX(msg) = NOWX;
+        msg.time = ai_Time;
         msg.fromId = -1;
         msg.flags = 1;
         *(char *)&msg.car = 0;
@@ -957,7 +956,7 @@ int ai_Unk4afe80(void)
 
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7f;
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     msg.fromId = -1;
     msg.time.hour = 8;
     msg.time.min = 0;
@@ -980,7 +979,7 @@ int ai_Unk4aff30(void)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7d;
     msg.to = *(int *)((char *)ai_PlayerChar + 4);
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     msg.fromId = -1;
     msg.flags = 1;
     msg.car = 1;
@@ -1000,7 +999,7 @@ typedef struct G12EVENTMSG {
 
 /* 0x4affc0, the BRAND text command (callback 0x601b50[3], name 0x601070[3]): sends message 0x4e (value 1000) for
    the character ai_PlayerChar, today 7:00
-   @deep byte already (the event value at 0x9c via the G12EVENTMSG view, fixed this session; AIMSG.unka0 at 0xa0 was the wrong offset). Q4 only left: the TMX/NOWX macro of am.h is a deref-cast macro; a typed view needs an AITIMEX member on AITIME in ai.h and both spellings tried (struct AITIME{union{...;AITIMEX x;};} and union AITIME{AITIMEX x; struct{...};}) regress ai_Unk483a60 in ai.c from byte to the [esp+0x10]/[esp+0x18] slot swap (same regression as ai_StartBuildingWork's note for an AIMSG char view) - reverted, shared-header decision. Q1 evidence: callback 0x601b50[3], name 0x601070[3] BRAND; Q2/Q3/Q5/Q6/Q7 pass. */
+   @deep byte already (the event value at 0x9c via the G12EVENTMSG view, fixed this session; AIMSG.unka0 at 0xa0 was the wrong offset). Q4 settled: the clock is copied as msg.time = ai_Time (AITIME, no view). Q1 evidence: callback 0x601b50[3], name 0x601070[3] BRAND; Q2/Q3/Q5/Q6/Q7 pass. */
 int ai_CommandFire(void)
 {
     AIMSG msg;
@@ -1012,14 +1011,14 @@ int ai_CommandFire(void)
     msg.car = -1;
     msg.flags = 1;
     ((G12EVENTMSG *)&msg)->value = 1000;
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     msg.time.hour = 7;
     cm_SendLongMessage(&msg);
     return 1;
 }
 /* 0x4b0050, the WIRBELSTURM text command (callback 0x601b50[4], name 0x601070[4]), the same as ai_CommandFire:
    message 0x50 (value 1000, flags 2), today 16:00
-   @deep byte already (the event value at 0x9c via the G12EVENTMSG view, as ai_CommandFire). Q4 only left: the TMX/NOWX macro (am.h deref cast); the typed AITIMEX view on AITIME in ai.h regresses ai_Unk483a60 from byte to the [esp+0x10]/[esp+0x18] slot swap (documented in ai_CommandFire's reason and ai_StartBuildingWork's note) - shared-header decision. Q1 has evidence (callback 0x601b50[4], name 0x601070[4] WIRBELSTURM), Q2/Q3/Q5/Q6/Q7 pass. */
+   @deep byte already (the event value at 0x9c via the G12EVENTMSG view, as ai_CommandFire). Q4 settled: the clock is copied as msg.time = ai_Time (AITIME, no view). Q1 has evidence (callback 0x601b50[4], name 0x601070[4] WIRBELSTURM), Q2/Q3/Q5/Q6/Q7 pass. */
 
 int ai_CommandTornado(void)
 {
@@ -1032,7 +1031,7 @@ int ai_CommandTornado(void)
     msg.car = -1;
     msg.flags = 2;
     ((G12EVENTMSG *)&msg)->value = 1000;
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     msg.time.hour = 16;
     cm_SendLongMessage(&msg);
     return 1;
@@ -1225,7 +1224,7 @@ int cm_SendNewParty(void *p);                                                   
 /* 0x4b0640, the STRAFE_HINRICHTUNG text command (callback 0x601b50[10], name 0x601070[10])
    "-KANONE" / "-GALGEN" / "-KOEPFEN" / "-SHAUFEN": starts the execution (kind 3, 0, 2, 4) of the character args[k]
    in 24 hours at 10:00, with the judge, ai_JudgeCatholic / ai_JudgeProtestant and up to 12 councillors
-   @deep B: 153 code hunks, 189 vs 187 instructions, frame 0x158 vs 0x16c (20 B): the nested blocks name[4][8] / kinds[4] / list[16] get other slots in ours, so every [esp+N] after the prologue is shifted (first hunk 4b0640: sub esp,0x158 vs 0x16c, args at [esp+0x160]/[esp+0x15c] vs [esp+0x174]/[esp+0x170]); the constants, callees and statements were read against the original (the KANONE/GALGEN/KOEPFEN/SHAUFEN table and kinds 3/0/2/4, the kind list, msg.type 5 with unk14 -1 / unk26 0 / unk7d 1 and the judge + councillor netIds, the call to 0x4c4fa0) and match. Block-scope slot reuse -> match-deep's slotmap/vargen work. Q2 blocked: ai_Unk4c4fa0 (0x4c4fa0, cm.c) has no evidenced name in its unit (the note calls it only 'the vote / execution message' sender); G12XMSG.unk0c / unk14 / unk26 / unk7d are written here only, no reader in any source names them. Q4 blocked: the TMX/NOWX macro (the AITIMEX view on AITIME regresses ai_Unk483a60 - see ai_CommandFire's reason). Q1 done (callback 0x601b50[10], name 0x601070[10] STRAFE_HINRICHTUNG), Q3/Q5/Q6/Q7 pass. */
+   @deep B: 153 code hunks, 189 vs 187 instructions, frame 0x158 vs 0x16c (20 B): the nested blocks name[4][8] / kinds[4] / list[16] get other slots in ours, so every [esp+N] after the prologue is shifted (first hunk 4b0640: sub esp,0x158 vs 0x16c, args at [esp+0x160]/[esp+0x15c] vs [esp+0x174]/[esp+0x170]); the constants, callees and statements were read against the original (the KANONE/GALGEN/KOEPFEN/SHAUFEN table and kinds 3/0/2/4, the kind list, msg.type 5 with unk14 -1 / unk26 0 / unk7d 1 and the judge + councillor netIds, the call to 0x4c4fa0) and match. Block-scope slot reuse -> match-deep's slotmap/vargen work. Q2 blocked: ai_Unk4c4fa0 (0x4c4fa0, cm.c) has no evidenced name in its unit (the note calls it only 'the vote / execution message' sender); G12XMSG.unk0c / unk14 / unk26 / unk7d are written here only, no reader in any source names them. Q4: the clock is copied as msg.time = ai_Time (AITIME, no view). Q1 done (callback 0x601b50[10], name 0x601070[10] STRAFE_HINRICHTUNG), Q3/Q5/Q6/Q7 pass. */
 int ai_CommandExecution(G12ARG *args, int k, char *fmt)
 {
     G12XMSG msg;
@@ -1286,7 +1285,7 @@ int ai_CommandExecution(G12ARG *args, int k, char *fmt)
     for (i = n; i < 16; i++)
         msg.ids[i] = -1;
     msg.n = (unsigned char)n;
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     gm_AddTime(&msg.time, 0x18, 0, 0);
     msg.unk26 = 0x22;
     msg.time.hour = 10;
@@ -1434,9 +1433,9 @@ int ai_CommandLawChange(int s, int b, char *fmt)
    ds:0x601c20 into the lower slot [esp+0x14], so the KATHOLISCH word counts the 1s), the float product
    (float)cnt * p (the original's fild + fimul, an integer imul has no fimul and grows the frame by 8), the
    d1-before-d2 declaration order, the two zero stores as memset of a 4-byte buffer, and msg.time = ai_Time
-   (byte-identical to am.h's TMX(msg) = NOWX, which is Q4-blocked) are the fixes; 165 -> 6 differing
+   (byte-identical to msg.time = ai_Time) are the fixes; 165 -> 6 differing
    instructions. Q1 has evidence, Q2..Q7 pass.
-   @deep only scheduling left: 3 order hunks of 226 instructions (6 differing) - the for-init i = 0 of both digit loops sits after fmt++ (4b0e0e) / after the *fmt == 0 test (4b0e52) in ours and before them in the original (4b0e05, 4b0e4d), and the TMX word store (msg.ids[0], [esp+0x7c]) is kept until after fromId/flags/car/n in the original (4b0fa9) but emitted right after the TMX dwords in ours (4b0f82). Meaning read equal against the disassembly: the name array is {KATHOLISCH, EVANGELISCH} (ds:0x601c20 into [esp+0x14]), the product is float (fild + fimul p), the d1/d2 slot pair and the msg fields match. Store-order / hoist work: vargen perm rounds or a source shape that keeps the word store late. */
+   @deep only scheduling left: 3 order hunks of 226 instructions (6 differing) - the for-init i = 0 of both digit loops sits after fmt++ (4b0e0e) / after the *fmt == 0 test (4b0e52) in ours and before them in the original (4b0e05, 4b0e4d), and the clock word store (msg.ids[0], [esp+0x7c]) is kept until after fromId/flags/car/n in the original (4b0fa9) but emitted right after the clock copy's dwords in ours (4b0f82). Meaning read equal against the disassembly: the name array is {KATHOLISCH, EVANGELISCH} (ds:0x601c20 into [esp+0x14]), the product is float (fild + fimul p), the d1/d2 slot pair and the msg fields match. Store-order / hoist work: vargen perm rounds or a source shape that keeps the word store late. */
 
 int ai_CommandFaithChange(int a, int b, char *fmt)
 {
@@ -1504,7 +1503,7 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
     msg.type = 0x81;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;
     msg.ch = rel;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.fromId = -1;
     msg.flags = 2;
     msg.car = n;
@@ -1516,7 +1515,7 @@ int ai_CommandFaithChange(int a, int b, char *fmt)
 }
 /* 0x4b0fd0, the AUFRUHR text command (callback 0x601b50[16], name 0x601070[16]), the same message as 0x4aff30
    (AUFSTAND) with car 0: message 0x7d for the character ai_PlayerChar, today 8:00
-   @deep only scheduling left (readable, 23 asm / 91 B): the original hoists ai_Time's first dword out of the TMX copy above the msg zeroing loop (mov edx,ds:0x770ae0 at 4b0fd6, before push edi / rep stos) and then stores the copy a,c,b,d (year 4b0ff7, +8 4b100b, +4 4b100f, word 4b1032) interleaved with the netId load, while ours keeps source order (netId load 4b0fe4, year 4b0fe9) and stores b,c,a,d (4b1006, 4b100c, 4b1018); car 0 and time.min 0 also come earlier here than in the original. diffclass: one 1-instruction code hunk (the hoist) + one code hunk of the same 8-instruction store permutation; the multiset test fails only because the offsets 0x2c/0x30/0x34 attach to different registers. Tried and reverted: TMX before msg.to (29 asm, worse). The same blocked pattern as the @deep 0x4afdd0 ai_CommandFest (hoisted ai_Time dword + a,c,b,d store order), so one vargen store-order pass should settle both. */
+   @deep only scheduling left (readable, 23 asm / 91 B): the original hoists ai_Time's first dword out of the clock copy above the msg zeroing loop (mov edx,ds:0x770ae0 at 4b0fd6, before push edi / rep stos) and then stores the copy a,c,b,d (year 4b0ff7, +8 4b100b, +4 4b100f, word 4b1032) interleaved with the netId load, while ours keeps source order (netId load 4b0fe4, year 4b0fe9) and stores b,c,a,d (4b1006, 4b100c, 4b1018); car 0 and time.min 0 also come earlier here than in the original. diffclass: one 1-instruction code hunk (the hoist) + one code hunk of the same 8-instruction store permutation; the multiset test fails only because the offsets 0x2c/0x30/0x34 attach to different registers. Tried and reverted: the clock copy before msg.to (29 asm, worse). The same blocked pattern as the @deep 0x4afdd0 ai_CommandFest (hoisted ai_Time dword + a,c,b,d store order), so one vargen store-order pass should settle both. */
 
 int ai_CommandRiot(void)
 {
@@ -1525,7 +1524,7 @@ int ai_CommandRiot(void)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x7d;
     msg.to = ((AICHAR *)ai_PlayerChar)->netId;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.fromId = -1;
     msg.flags = 1;
     msg.car = 0;
@@ -1565,7 +1564,7 @@ int ai_Unk4b1060(int a, int b, char *fmt)
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x80;
     msg.to = *(int *)((char *)ai_PlayerChar + 4);
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     msg.fromId = -1;
     msg.flags = 2;
     msg.car = 4;
@@ -1575,29 +1574,6 @@ int ai_Unk4b1060(int a, int b, char *fmt)
     return 1;
 }
 
-typedef struct G12STOCK {               /* 0x80 bytes, a player's goods record (f3init.c's INIT_STOCK, f3gm.c's GM_GOODS) */
-    unsigned short item;                /* 0x00, the goods prototype (an ai_GoodsT index) */
-    char pad02[2];
-    int amount;                         /* 0x04, the amount the player holds */
-    char pad08[0x18];                   /* 0x08 .. 0x1f */
-    float demand;                       /* 0x20, the amount the market wants */
-    float mean;                         /* 0x24 */
-    char pad28[0x10];                   /* 0x28 .. 0x37 */
-    float price;                        /* 0x38, the stored price */
-    char pad3c[0x44];                   /* 0x3c .. 0x7f */
-} G12STOCK;
-
-typedef struct G12STOCKBLOCK {          /* the 0x55 goods records of one player; the next player's records start 0x2a90
-                                           bytes on (f3init.c's INIT_STOCKBLOCK: four price-index ints precede each block) */
-    G12STOCK rec[0x55];                 /* 0x00, at 0x7d6a70 + player * 0x2a90 (f3gm.c's GM_GOODS) */
-    char pad2a80[0x10];                 /* 0x2a80 */
-} G12STOCKBLOCK;
-
-extern char gm_StockBlocks[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
-#define init_StockBlocks ((G12STOCKBLOCK *)(gm_StockBlocks + 0x10))  /* 0x7d6a70, the records of block 0; a
-                                       view into the one 0xd4d0-byte object, not a separate COMMON symbol
-                                       (a separate definition let the block writer/reader overwrite the
-                                       globals the linker placed inside the stock area) */
 
 typedef struct G12REC10 {               /* 0x5c bytes, one of the ten records 0x4cd9d0 searches (ai_Unk60c7c0) */
     int id;                             /* 0x00, the id 0x4cd9d0 matches */
@@ -1607,10 +1583,10 @@ void cm_SendGoodsRecord(void *p, unsigned char k);                              
 
 /* 0x4b11e0, text command "-PLUS_<kind>_n" / "-MINUS_<kind>_n" (kind WAFFEN / BUECHER / ENDPRODUKTE): scales
    the prices of the player's stock of that kind by 1 +- n% (0x4c56d0)
-   @deep meaning read equal against the disassembly (all 14 hunks), only allocation / scheduling left plus a Q2 block. This session: the stock block stride (0x7d6a70 + player * 0x2a90, f3gm.c's GM_GOODS / f3init.c's INIT_STOCKBLOCK; was G12STOCK[][0x55], stride 0x2a80, wrong records for every ai_OwnPlayer > 0) and &e instead of e.unk08 to 0x4c56d0 (that callee memcpy's 0x80 bytes; the original's lea [esp+0x54] with 8 pushed bytes is e+0) are fixed: 332 -> 275 differing instructions, frame 0xbc now equal, every slot equal (sign 0x14, name 0x1c, kind 0x28, e 0x4c). What is left: the register permutation fmt/i/cursor = edx/ebx/ebp here vs ebp/edx/ebx in the original (the original keeps fmt in ebp as ai_CommandLaw does - ours loads it into edx before sub esp and spills i to [esp+0x10] inside the name loop, one extra store), the FPU kept-alive pattern in the three loop tails (original fst g; fmul e.demand, ours fstp g; fld e.demand; fmul g) and the 167-instruction prologue store order (the string copies are verified against .rdata: name MINUS/PLUS at 0x601bc4/0x601bbc, kind WAFFEN/BUECHER/ENDPRODUKTE at 0x601c40/0x601c38/0x601c2c, sign -1/1). Tried and reverted: a per-loop G12STOCK *s pointer local (336 asm, code 48 bytes smaller) - allocation, not meaning. Q2 block: cm_SendGoodsRecord (0x4c56d0 = message 0x3f, k and 0x80 bytes of p, cm.c; cm_SendGoodsRecord is the evidenced name) and ai_FindWeaponRecord (0x4cd9d0, the record of ten with id, cm.c) - both need their own units' evidence before the rename. */
+   @deep meaning read equal against the disassembly (all 14 hunks), only allocation / scheduling left plus a Q2 block. This session: the stock block stride (0x7d6a70 + player * 0x2a90, gm_StockBlocks[p].goods; was a [][0x55] record view, stride 0x2a80, wrong records for every ai_OwnPlayer > 0) and &e instead of e.unk08 to 0x4c56d0 (that callee memcpy's 0x80 bytes; the original's lea [esp+0x54] with 8 pushed bytes is e+0) are fixed: 332 -> 275 differing instructions, frame 0xbc now equal, every slot equal (sign 0x14, name 0x1c, kind 0x28, e 0x4c). What is left: the register permutation fmt/i/cursor = edx/ebx/ebp here vs ebp/edx/ebx in the original (the original keeps fmt in ebp as ai_CommandLaw does - ours loads it into edx before sub esp and spills i to [esp+0x10] inside the name loop, one extra store), the FPU kept-alive pattern in the three loop tails (original fst g; fmul e.demand, ours fstp g; fld e.demand; fmul g) and the 167-instruction prologue store order (the string copies are verified against .rdata: name MINUS/PLUS at 0x601bc4/0x601bbc, kind WAFFEN/BUECHER/ENDPRODUKTE at 0x601c40/0x601c38/0x601c2c, sign -1/1). Tried and reverted: a per-loop stock record pointer local (336 asm, code 48 bytes smaller) - allocation, not meaning. Q2 block: cm_SendGoodsRecord (0x4c56d0 = message 0x3f, k and 0x80 bytes of p, cm.c; cm_SendGoodsRecord is the evidenced name) and ai_FindWeaponRecord (0x4cd9d0, the record of ten with id, cm.c) - both need their own units' evidence before the rename. */
 int ai_CommandDemand(int a, int b, char *fmt)
 {
-    G12STOCK e;
+    GMSTOCK e;
     float f, g;
     int i, j;
 
@@ -1645,14 +1621,14 @@ int ai_CommandDemand(int a, int b, char *fmt)
     switch (j) {
     case 0:
         for (i = 0; i < 0x55; i++) {
-            if (init_StockBlocks[ai_OwnPlayer].rec[i].item != 0 && init_StockBlocks[ai_OwnPlayer].rec[i].amount != 0) {
-                G12REC10 *r = (G12REC10 *)ai_FindWeaponRecord(init_StockBlocks[ai_OwnPlayer].rec[i].item);
+            if (gm_StockBlocks[ai_OwnPlayer].goods[i].item != 0 && gm_StockBlocks[ai_OwnPlayer].goods[i].amount != 0) {
+                G12REC10 *r = (G12REC10 *)ai_FindWeaponRecord(gm_StockBlocks[ai_OwnPlayer].goods[i].item);
 
                 if (r != 0 && r->id != 0) {
                     g = f + 1.0f;
-                    e = init_StockBlocks[ai_OwnPlayer].rec[i];
+                    e = gm_StockBlocks[ai_OwnPlayer].goods[i];
                     e.mean = g * e.demand;
-                    e.price = gm_ItemPrice(init_StockBlocks[ai_OwnPlayer].rec[i].item, 100) * g;
+                    e.price = gm_ItemPrice(gm_StockBlocks[ai_OwnPlayer].goods[i].item, 100) * g;
                     cm_SendGoodsRecord(&e, ai_OwnPlayer);
                 }
             }
@@ -1660,24 +1636,24 @@ int ai_CommandDemand(int a, int b, char *fmt)
         break;
     case 1:
         for (i = 0; i < 0x55; i++) {
-            if (init_StockBlocks[ai_OwnPlayer].rec[i].item != 0 && init_StockBlocks[ai_OwnPlayer].rec[i].amount != 0
-                && ai_GoodsT[init_StockBlocks[ai_OwnPlayer].rec[i].item].type == 8) {
+            if (gm_StockBlocks[ai_OwnPlayer].goods[i].item != 0 && gm_StockBlocks[ai_OwnPlayer].goods[i].amount != 0
+                && ai_GoodsT[gm_StockBlocks[ai_OwnPlayer].goods[i].item].type == 8) {
                 g = f + 1.0f;
-                e = init_StockBlocks[ai_OwnPlayer].rec[i];
+                e = gm_StockBlocks[ai_OwnPlayer].goods[i];
                 e.mean = g * e.demand;
-                e.price = gm_ItemPrice(init_StockBlocks[ai_OwnPlayer].rec[i].item, 100) * g;
+                e.price = gm_ItemPrice(gm_StockBlocks[ai_OwnPlayer].goods[i].item, 100) * g;
                 cm_SendGoodsRecord(&e, ai_OwnPlayer);
             }
         }
         break;
     case 2:
         for (i = 0; i < 0x55; i++) {
-            if (init_StockBlocks[ai_OwnPlayer].rec[i].item != 0 && init_StockBlocks[ai_OwnPlayer].rec[i].amount != 0
-                && ai_GoodsT[init_StockBlocks[ai_OwnPlayer].rec[i].item].type == 0x20) {
+            if (gm_StockBlocks[ai_OwnPlayer].goods[i].item != 0 && gm_StockBlocks[ai_OwnPlayer].goods[i].amount != 0
+                && ai_GoodsT[gm_StockBlocks[ai_OwnPlayer].goods[i].item].type == 0x20) {
                 g = f + 1.0f;
-                e = init_StockBlocks[ai_OwnPlayer].rec[i];
+                e = gm_StockBlocks[ai_OwnPlayer].goods[i];
                 e.mean = g * e.demand;
-                e.price = gm_ItemPrice(init_StockBlocks[ai_OwnPlayer].rec[i].item, 100) * g;
+                e.price = gm_ItemPrice(gm_StockBlocks[ai_OwnPlayer].goods[i].item, 100) * g;
                 cm_SendGoodsRecord(&e, ai_OwnPlayer);
             }
         }
@@ -1694,7 +1670,7 @@ int ai_Unk4b1600(void)
     AIMSG msg;
     int i;
 
-    *(AITIMEX *)&t = NOWX;
+    t = ai_Time;
     memset(&msg, 0, sizeof(msg));
     t.min = 0;
     for (i = 0; i < 0x300; i++) {
@@ -1705,7 +1681,7 @@ int ai_Unk4b1600(void)
             msg.to = ai_CharsT[i].netId;
             msg.fromId = ai_CharsT[i].netId;
             msg.flags = 1;
-            TMX(msg) = *(AITIMEX *)&t;
+            msg.time = t;
             cm_SendLongMessage(&msg);
         }
     }
@@ -1719,7 +1695,7 @@ int ai_Unk4b16e0(void)
     AIMSG msg;
     int i;
 
-    *(AITIMEX *)&t = NOWX;
+    t = ai_Time;
     memset(&msg, 0, sizeof(msg));
     t.min = 0;
     for (i = 0; i < 0x300; i++) {
@@ -1730,7 +1706,7 @@ int ai_Unk4b16e0(void)
             msg.to = ai_CharsT[i].netId;
             msg.fromId = ai_CharsT[i].netId;
             msg.flags = 1;
-            TMX(msg) = *(AITIMEX *)&t;
+            msg.time = t;
             cm_SendLongMessage(&msg);
         }
     }
@@ -1775,7 +1751,7 @@ int ai_Unk4b1880(void)
     AIMSG msg;
     int i, n;
 
-    *(AITIMEX *)&t = NOWX;
+    t = ai_Time;
     t.hour = 12;
     t.min = 0;
     n = 0;
@@ -1786,7 +1762,7 @@ int ai_Unk4b1880(void)
             msg.to = ai_CharsT[i].netId;
             msg.fromId = ai_CharsT[i].netId;
             msg.flags = 9;
-            TMX(msg) = *(AITIMEX *)&t;
+            msg.time = t;
             cm_SendLongMessage(&msg);
             n++;
         }
@@ -1801,7 +1777,7 @@ int ai_Unk4b1950(void)
     AIMSG msg;
     int i, n;
 
-    *(AITIMEX *)&t = NOWX;
+    t = ai_Time;
     t.hour = 10;
     t.min = 0;
     n = 0;
@@ -1812,7 +1788,7 @@ int ai_Unk4b1950(void)
             msg.to = ai_CharsT[i].netId;
             msg.fromId = ai_CharsT[i].netId;
             msg.flags = 9;
-            TMX(msg) = *(AITIMEX *)&t;
+            msg.time = t;
             cm_SendLongMessage(&msg);
             n++;
         }
@@ -1875,7 +1851,7 @@ int ai_Unk4b1a20(void)
             cm_SendLongMessage(&msg);
             return 1;
         }
-        if (day[0] > ai_TimeT.year)
+        if (day[0] > ai_Time.year)
             break;
         pos += 6;
         if (!hst_ParseDate(pos, 4, day, name))
@@ -1904,7 +1880,7 @@ int ai_Unk4b1bd0(int a, int b, char *fmt)
     msg.car = n;
     msg.fromId = -1;
     msg.flags = 2;
-    TMX(msg) = NOWX;
+    msg.time = ai_Time;
     msg.time.hour = 11;
     cm_SendLongMessage(&msg);
     return 1;
@@ -2596,7 +2572,7 @@ int hst_NextEvent(char *name, char *out)
             hst_TextsOn = 0;
             return 4;
         }
-        d = ai_TimeT.year - year[0];
+        d = ai_Time.year - year[0];
         if (d == 1) {
             r = d;
             hst_ParseText_Real(out, hst_TextCurrent + 1);
@@ -2693,7 +2669,7 @@ int hst_NextEventCmd(char *name, char *out, int cmd)
             hst_TextsOn = 0;
             return 4;
         }
-        d = ai_TimeT.year - year[0];
+        d = ai_Time.year - year[0];
         if (d == 1) {
             r = d;
             if (!hst_ParseEventText(out, hst_TextCurrent, cmd))

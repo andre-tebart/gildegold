@@ -68,9 +68,9 @@ void sv_OpenPlayerBar(int a, char k);                                   /* 0x525
 void sv_ClosePlayerBar(void);                                           /* 0x525440 */
 int sv_ClockSeason(void *t);                                            /* 0x525480 */
 char sv_SetSkyLightColors(struct D3OBJECT *o, void *ctx);                                           /* 0x525490 */
-struct GCLOCK; void sv_SetupWeather(struct GCLOCK *t, int reroll);/* 0x525510 */
+struct AITIME; void sv_SetupWeather(struct AITIME *t, int reroll);/* 0x525510 */
 void sv_UpdateSkyColors(void);                                          /* 0x525940 */
-struct GCLOCK; void sv_FillDayPhases(struct GCLOCK *t);                                             /* 0x525a00 */
+struct AITIME; void sv_FillDayPhases(struct AITIME *t);                                             /* 0x525a00 */
 char sv_SetLampRamp(char *o, int f);                                      /* 0x525a80 */
 struct AITIME; void sv_UpdateSkyPhase(struct AITIME *t);                    /* 0x525ad0 */
 void sv_PlaceCamera(float f);                                           /* 0x525dd0 */
@@ -347,6 +347,7 @@ extern int sv_CharsOn;                                    /* 0x623eac */
 extern int sv_WorldOn;                                    /* 0x623eb0 */
 extern int sv_CityPanelOn;                                    /* 0x623eb4 */
 extern unsigned char sv_InMissionComplete;                    /* 0x6f23f1 */
+extern int sv_PendingMoney;                    /* 0x6f22dc, the money the money panel adds to the player's (the credit window: the limit minus the amount chosen; the transport window: minus the goods' total) */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
 extern char sv_StatusText[128];                             /* 0x761f40 */

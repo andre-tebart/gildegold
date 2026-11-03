@@ -19,7 +19,6 @@
 #include "d3_vec.h"
 #include "unk_458810.h"
 #include "unk_5d33b0.h"
-extern unsigned char ai_GfxDetail;  /* 0x6f35c4 (unk_5d33b0.c: OPTIONBYTES): @original anm_Update reads it as a byte object (0x4bb884 mov al, byte ptr [0x6f35c4]); through the 4-byte union, .byte[0] or a char view of it, VC6 loads the dword (mov eax, dword ptr) */
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 
 /* 0x4bb810, allocates the animal list ("anm:animals") and resets the animal count and the first record */
@@ -44,13 +43,13 @@ void anm_Free(void)
 
 /* 0x4bb860, the animal step: every 350 ms maybe a new animal (not in season 3), then one of the 32 records is
    updated by kind and removed when flagged
-   @deep Q2 + Q4: ai_GfxDetail (0x6f35c4, no writer in src; the step reads it as the animal limit 0/16/32 - name unproven) and 3 raw accesses obj+0x34->+0x1ec->+0x96d flag 0x40 (D3MATERIAL has no field at 0x96d) */
+   @deep Q2 + Q4: ai_GfxDetail (0x6f35c4, the "details" option ai_LoadOptions reads; the step reads it as the animal limit 0/16/32) and 3 raw accesses obj+0x34->+0x1ec->+0x96d flag 0x40 (D3MATERIAL has no field at 0x96d) */
 void anm_Update(void)
 {
     int scene, s, m;
 
     scene = d3_CurrentScene;
-    s = gm_ClockSeason(ai_Time);
+    s = gm_ClockSeason(&ai_Time);
     d3if_SelectScene(0, 1);
     if (ai_GfxDetail == 0)
         m = 0;
@@ -376,12 +375,9 @@ void anm_UpdateSheep(ANMREC *a)
     }
 }
 
-extern char ai_Time[14];
 char anm_KindNames[8][0x20] = { "DOG", "CAT", "BIRD", "COW", "SHEEP", "CHICK", "PIG", "HORSE" };  /* 0x602688, "DOG", "CAT", "BIRD", "COW", "SHEEP", "CHICK", "PIG", "HORSE" */
 int anm_NAnimals = 0;  /* 0x6f0734, the number of animals */
 ANMREC * anm_Animals = 0;  /* 0x6f0738, the animal list (32 records, "anm:animals") */
 int anm_NextAnimal = 0;  /* 0x6f073c, the animal updated next */
 unsigned int anm_LastSpawn = 0;  /* 0x6f0740, d3_Time of the last spawn try */
-char ai_Time[14] = {0}; /* 0x770ae0, AITIME (ai.h): 14 bytes (int, short, int, int); a 3-byte placeholder
-                           here put anm_NAnimals / anm_Animals right behind it in .bss, so cm.c's message 3
-                           (ai_Time[6] / [10]) overwrote the animal list pointer */
+AITIME ai_Time = {0};  /* 0x770ae0, the game clock */

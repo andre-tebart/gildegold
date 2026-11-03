@@ -21,7 +21,6 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define amt_GetOfficeI ((int (*)(int, struct AMTREC *))amt_GetOffice)  /* 0x4e6f30 (amt.h: unsigned char i): @original this unit pushes its int index raw (0x4dab50 / 0x4aad30: push ebp / push edx, no zero-extension) */
 
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
@@ -1077,7 +1076,7 @@ int ai_EvalOwnTimeSlot(int a, AIPER *p)
     int id;
 
     id = p->netId;
-    if ((id & 3) == ai_TimeT.year % 4 && (id & 7) == ai_TimeT.hour % 8)
+    if ((id & 3) == ai_Time.year % 4 && (id & 7) == ai_Time.hour % 8)
         return util_RandomU(4) == 0;
     return 0;
 }
@@ -1247,7 +1246,7 @@ int ai_DecideAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 
 int ai_EvalOwnYearTurn(int a, AICHAR *p)
 {
-    if (p->money >= 8 && p->netId % 4 == ai_TimeT.year % 4 && util_RandomU(4) == 0)
+    if (p->money >= 8 && p->netId % 4 == ai_Time.year % 4 && util_RandomU(4) == 0)
         return 1;
     return 0;
 }
@@ -1261,7 +1260,7 @@ int ai_DecideSuitor(int a, AICHAR *p, int c, int d, AIARG *m)
     AIJOB *r;
     unsigned int n;
 
-    if (ai_TimeT.year % 4 == p->netId % 4 && gm_FindChar(p->relatives[0]) == 0) {
+    if (ai_Time.year % 4 == p->netId % 4 && gm_FindChar(p->relatives[0]) == 0) {
         for (r = (AIJOB *)he_FindEvent(1, 0, 0x41); r != 0; r = (AIJOB *)he_NextEvent()) {
             if (r->partner2 == p->netId)
                 return 0;
@@ -1977,7 +1976,7 @@ int aip_ExecPamphlet(AIPER *p, int c, AIARG *m)
     msg.to = p->netId;
     msg.fromId = msg.to;
     msg.flags = 2;
-    msg.pamphlet.when = ai_TimeT;
+    msg.pamphlet.when = ai_Time;
     msg.pamphlet.variant = (unsigned char)util_RandomU(0x1d);
     msg.pamphlet.about = o->netId;
     cm_BeginGroup("aip_ExecPamphlet");
@@ -2026,7 +2025,7 @@ int aip_ExecAnschwaerzen(AIPER *p, int c, AIARG *m)
     msg.type = 0x2f;
     msg.fromId = -1;
     msg.flags = 1;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     cm_BeginGroup("aip_ExecAnschwaerzen");
     cm_SendLongMessage(&msg);
     cm_SendMoneyDelta(p->netId, -3);
@@ -2169,7 +2168,7 @@ int ai_ExecMessage74(AIPER *p, AIARG *a, AIARG *b)
     msg.flags = 2;
     msg.to = p->netId;
     msg.fromId = a->ref;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.arg[1] = a->ref;
     msg.arg[2] = b->ref;
     cm_SendLongMessage(&msg);
@@ -2197,8 +2196,8 @@ int ai_DecideBuyDunkleEcke(AIPER *p, AIARG *a, AIARG *b)
     AIBLD *bld;
     AIOBJ *o;
 
-    if ((p->flags1cc & 0x2000000) == 0 && ai_TimeT.hour >= 21
-        && ai_TimeT.hour % 3 == (unsigned int)p->netId % 3) {
+    if ((p->flags1cc & 0x2000000) == 0 && ai_Time.hour >= 21
+        && ai_Time.hour % 3 == (unsigned int)p->netId % 3) {
         money = gm_GetGoodsValue((AICHAR *)p);
         memset(shops, 0, sizeof(shops));
         n = 0;
@@ -2488,7 +2487,7 @@ int ai_Unk4ab9f0(AIPER *p, unsigned char *m)
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, -*(int *)(m + 0x10));
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.type = 0x9d;
     msg.fromId = -1;
     msg.flags = 2;
@@ -2567,7 +2566,7 @@ int ai_Unk4abc60(AIPER *p, unsigned char *m)
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
     msg.fromId = *(int *)(m + 4);
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.type = 0xa0;
     msg.flags = 2;
     msg.arg[0] = *(int *)(m + 0xc);

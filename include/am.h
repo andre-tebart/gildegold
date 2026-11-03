@@ -493,17 +493,6 @@ typedef char ai_AssertAIPX[sizeof(AIPX) == 0x21c ? 1 : -1];
 
 typedef AIARG AIARGX;                   /* 0x48e070..0x48f250 spell it so */
 
-#pragma pack(push, 2)
-typedef struct AITIMEX {                /* AITIME as 3 ints and a short (the original copies it so) */
-    int a;                              /* 0x0 */
-    int b;                              /* 0x4 */
-    int c;                              /* 0x8 */
-    short d;                            /* 0xc */
-} AITIMEX;
-#pragma pack(pop)
-
-#define TMX(m) (*(AITIMEX *)&(m).time)
-#define NOWX (*(AITIMEX *)&ai_Time)  /* 0x770ae0 */
 
 extern int ai_Unk5ffd1c;                /* 0x5ffd1c, the game day the count below was made on (-1 at start) */
 extern int ai_Unk6f0470;                /* 0x6f0470, number of characters of kind 5, 6, 7 */
@@ -740,7 +729,6 @@ int ai_AddNeedDelta(int k, float v);                    /* 0x4c3eb0 */
 void ai_SendNeedBlock(void);                                        /* 0x4c4a20 */
 int gm_ExpectedDeathAge(char *c);                                      /* 0x4fc7a0 */
 int amt_GetOfficeCandidates(char *c, int n, struct AMTCAND *out);                     /* 0x4e7150 */
-/* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 extern void *main_Instance;              /* 0x75e140, the module handle */
 int ai_RegisterBuildingActions(int a);                                                        /* 0x48fb70 */
 int ai_RegisterBaseActions(int a);                                                        /* 0x4a16f0 */

@@ -48,8 +48,7 @@ int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and fre
 /* the placement-candidate list of the build screen (ai_BauplatzFilter / ai_FindBauplaetze) */
 extern int *ai_BauplatzList;            /* 0x6f5308 */
 extern int ai_BauplatzCount;            /* 0x6f2688 */
-/* 0x6f35c4: the vg_ objects from this index on are hidden ((unsigned char) index, (char) != 2) */
-extern int ai_VgHideFrom;
+extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
 
 /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 extern int ai_ClickedObject;

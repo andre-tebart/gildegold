@@ -53,7 +53,6 @@ AIACT ai_Actions[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them
 /* ai_Unkf868b4: view of ai_Actions (+0x29f4, in the last action record) */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
-#include "time_view.h"
 #include "ls.h"
 #include "gv.h"
 #include "he.h"
@@ -77,7 +76,6 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_Unk490b90 passes its AGCH record and s1 as they are */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
@@ -94,7 +92,7 @@ int ai_Unk48e070(AIPX *p, int *out)
 {
     int i, n, bld;
 
-    if (ai_Unk5ffd1c < ai_TimeT.year) {
+    if (ai_Unk5ffd1c < ai_Time.year) {
         ai_Unk6f0470 = 0;
         for (i = 0; i < 768; i++) {
             AIPX *c = &((AIPX *)ai_CharsT)[i];
@@ -102,7 +100,7 @@ int ai_Unk48e070(AIPX *p, int *out)
             if (c->kind == 6 || c->kind == 7 || c->kind == 5)
                 ai_Unk6f0470++;
         }
-        ai_Unk5ffd1c = ai_TimeT.year;
+        ai_Unk5ffd1c = ai_Time.year;
     }
     if (p->kind != 3) {
         bld = (int)gm_BuildQuery(2, 5, 0x1e, 4, p->id);
@@ -203,7 +201,7 @@ int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2)
     if (s2->kind == 4) {
         memset(&msg, 0, sizeof(msg));
         msg.to = p->netId;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.type = 0x1e;
         msg.fromId = s2->ref;
         msg.flags = 1;
@@ -445,7 +443,7 @@ int ai_ExecSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_SendMoneyDelta(p->netId, -16);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.fromId = s1->ref2;
     msg.type = 0x99;
     msg.flags = 2;
@@ -492,7 +490,7 @@ int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_SendMoneyDelta(p->netId, -(int)s1->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.type = 0x99;
     msg.fromId = s1->ref2;
     msg.flags = 2;
@@ -538,7 +536,7 @@ int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
     gm_SendMoneyDelta(p->netId, -(int)s1->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.type = 0x99;
     msg.fromId = s1->ref2;
     msg.flags = 2;
@@ -578,7 +576,7 @@ int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
     cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s2->arg);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.fromId = s1->ref2;
     msg.dst[2] = s2->arg2;
     msg.type = 0x99;
@@ -760,7 +758,7 @@ int ai_ExecBuildSculpture(AIPX *p, AIARG *s1, AIARG *s2)
         msg.to = p->netId;
         msg.fromId = s2->ref;
         msg.flags = 1;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.arg[0] = s2->ref;
         cm_BeginGroup("building_upgrade");
         v = gm_BuildingKindValue(s1->ref);
@@ -817,11 +815,11 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
         goto fail;
     if (st[0] < 6) {
         if (!st[2]) {
-            if (ai_TimeT.year < 0x14)
+            if (ai_Time.year < 0x14)
                 goto fail;
             if (p->rank <= 4)
                 goto fail;
-            if (ai_TimeT.year % 8 != (p->netId & 7))
+            if (ai_Time.year % 8 != (p->netId & 7))
                 goto fail;
             if (p->flags1cc & 0x40000000)
                 goto fail;
@@ -1066,7 +1064,7 @@ int ai_ExecGraveyardOwner0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.flags = 2;
     msg.to = p->netId;
     msg.fromId = b->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.arg[1] = o->ref2;
     msg.arg[2] = o->ref;
     msg.arg[3] = o->arg2;
@@ -1122,7 +1120,7 @@ int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.flags = 2;
     msg.to = p->netId;
     msg.fromId = b->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.arg[1] = o->ref;
     msg.arg[2] = o->arg;
     msg.arg[0] = o->ref2;
@@ -1188,7 +1186,7 @@ int ai_ExecGraveyardOwner2(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.flags = 1;
     msg.to = p->netId;
     msg.fromId = b->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.arg[1] = o->ref2;
     msg.arg[2] = o->ref;
     msg.arg[3] = o->arg2;
@@ -1226,7 +1224,7 @@ int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o)
     msg.flags = 1;
     msg.to = p->netId;
     msg.fromId = b->id;
-    msg.time = ai_TimeT;
+    msg.time = ai_Time;
     msg.arg[0] = o->ref;
     msg.ids[0] = o->ref;
     cm_SendLongMessage(&msg);
@@ -1307,9 +1305,9 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     r = 0;
     if (b != 0 || a != 0 || p->unk050 == 0x7fff)
         return 0;
-    if (ai_TimeT.hour % 6 != p->netId % 6)
+    if (ai_Time.hour % 6 != p->netId % 6)
         return 0;
-    if (ai_TimeT.year % 3 != p->netId % 3)
+    if (ai_Time.year % 3 != p->netId % 3)
         return 0;
     if (p->kind != 5) {
         q = AG_CH(p->unk05c);
@@ -1665,7 +1663,7 @@ int ai_Unk4916d0(AIPER *p, int a, int *out)
     int t, n, m, k;
 
     t = gm_TitleGroup(p->jobId);
-    if (ai_TimeT.year >= 4) {
+    if (ai_Time.year >= 4) {
         gv_GetTableRecord(9, &d);
         f = ord_BuildingCapacityRatio();
         k = d.max - d.min;
@@ -1707,7 +1705,7 @@ int ai_Unk491860(AIPER *p, int a, int *out)
 
     t = gm_TitleGroup(p->jobId);
     k = 0;
-    if (ai_TimeT.year >= 10) {
+    if (ai_Time.year >= 10) {
         if (gm_BuildQuery(1, 5, 0x17))
             k = 1;
         if (gm_BuildQuery(1, 5, 0x18))
@@ -1782,7 +1780,7 @@ int ai_Unk491b20(AIPER *p, int a, int *out)
     int t, k;
 
     t = gm_TitleGroup(p->jobId);
-    if (ai_TimeT.year >= 4) {
+    if (ai_Time.year >= 4) {
         gv_GetTableRecord(12, &d);
         k = d.max - d.min;
         if (t == 8) {
@@ -1823,7 +1821,7 @@ int ai_Unk491cb0(AIPER *p, int a, int *out)
     int t, k;
 
     t = gm_TitleGroup(p->jobId);
-    if (ai_TimeT.year >= 4) {
+    if (ai_Time.year >= 4) {
         gv_GetTableRecord(14, &d);
         k = d.max - d.min;
         if (t == 9) {
@@ -1847,7 +1845,7 @@ int ai_Unk491d80(AIPER *p, int a, int *out)
     AIOBJ *o;
     int m, k, n;
 
-    if (ai_TimeT.year < 4)
+    if (ai_Time.year < 4)
         return 0;
     gv_GetTableRecord(15, &d);
     ord_BuildingCapacityRatio();
@@ -4406,7 +4404,7 @@ int ai_DecideApplyForOffice(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
                 *o2 = s2;
             }
             return r;
-        } else if (ai_TimeHour >= 13 && p->appliedOffice == 0 && gm_ExpectedDeathAge(p) - p->age >= 3) {
+        } else if (ai_Time.hour >= 13 && p->appliedOffice == 0 && gm_ExpectedDeathAge(p) - p->age >= 3) {
             k = amt_GetOfficeCandidates(p, 2, list);
             if (k == 0) {
                 if (util_RandomU(4) == 0) {
@@ -5080,7 +5078,7 @@ int ai_ExecuteBuildResidence(G5CH *p, AIARG *s1, AIARG *s2)
         memset(&m, 0, sizeof(m));
         m.to = p->netId;
         m.fromId = s2->ref;
-        m.time = ai_TimeT;
+        m.time = ai_Time;
         m.type = 0x1e;
         m.flags = 1;
         m.arg[0] = s2->ref;
@@ -5226,7 +5224,7 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     if (ones > 0 && !sel) {
         if (ones > maxn)
             return 0;
-        if (ai_TimeT.year % 8 != (unsigned int)p->netId % 8)
+        if (ai_Time.year % 8 != (unsigned int)p->netId % 8)
             return 0;
     }
     if (!sel) {
@@ -5312,7 +5310,7 @@ int ai_ExecuteBuildBusiness(AIPER *p, AIARG *s1, AIARG *s2)
         msg.to = p->netId;
         msg.fromId = s2->ref;
         msg.flags = 1;
-        msg.time = ai_TimeT;
+        msg.time = ai_Time;
         msg.arg[0] = s2->ref;
         cm_BeginGroup("building_upgrade");
         cm_SendMoveGoods(-1, p->netId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
@@ -5747,7 +5745,7 @@ int ai_ExecuteCitizenship(G5CH *p)
     cm_AddFieldDelta(1, 1, 0xd, &rank);
     cm_SendFieldDeltas();
     cm_SendSetField(p->netId, 0x1c8, 4, 0, 0x4000);
-    t = ai_TimeT;
+    t = ai_Time;
     gm_AddTime(&t, util_RandomU(4) + 1, util_RandomU(8) * 7, 0);
     if (((AIPER *)p)->kind == 5) {
         n = 0;
@@ -7023,7 +7021,7 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     AIBLDX *b;
     AIBLDX *list[10];
 
-    if (f == 0 && (p->netId & 3) == ai_TimeT.year % 4 && (p->netId & 7) == (int)ai_TimeT.hour % 8) {
+    if (f == 0 && (p->netId & 3) == ai_Time.year % 4 && (p->netId & 7) == (int)ai_Time.hour % 8) {
         guilt = gv_CulpritGuilt(p->netId);
         graves = gv_CountOwnedGraves(p->netId);
         if (util_RandomU(8) + 8 <= guilt) {
@@ -7661,7 +7659,7 @@ int ai_ExecuteMayor(G5CH *p, AIARG *s1, AIARG *s2)
         m.to = p->netId;
         m.unk0c = s2->ref;
         m.unk36 = 1;
-        m.time = ai_TimeT;
+        m.time = ai_Time;
         *(int *)&m.unk58 = s2->ref;
         cm_BeginGroup("upgr_arbeiter_unterk");
         cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
@@ -7836,7 +7834,7 @@ int ai_ExecuteMayorTownHall(G5CH *p, AIARG *s1, AIARG *s2)
     m.to = p->netId;
     m.unk0c = s2->ref;
     m.unk36 = 1;
-    m.time = ai_TimeT;
+    m.time = ai_Time;
     *(int *)&m.unk58 = s2->ref;
     cm_BeginGroup("upgr_rathaus");
     cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
@@ -7959,7 +7957,7 @@ int ai_ExecuteMayorPrison(G5CH *p, AIARG *s1, AIARG *s2)
     m.to = p->netId;
     m.unk0c = s2->ref;
     m.unk36 = 1;
-    m.time = ai_TimeT;
+    m.time = ai_Time;
     *(int *)&m.unk58 = s2->ref;
     cm_BeginGroup("upgr_kerker");
     cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
@@ -7991,7 +7989,7 @@ int ai_DecideMasterBuilder(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     recB = 0;
     cntA = 0;
     cntB = 0;
-    if (ai_TimeT.year < 4 || f != 0 || ((unsigned char *)p)[0x166] != 0xa || a != 0)
+    if (ai_Time.year < 4 || f != 0 || ((unsigned char *)p)[0x166] != 0xa || a != 0)
         return 0;
     b = gm_FirstBuilding(1);
     if (b == 0)
@@ -8092,7 +8090,7 @@ int ai_ExecuteMasterBuilder(G5CH *p, AIARG *s1, AIARG *s2)
         m.to = p->netId;
         m.fromId = s2->ref;
         m.flags = 1;
-        m.time = ai_TimeT;
+        m.time = ai_Time;
         m.arg[0] = s2->ref;
         cm_BeginGroup("upgr_brunnen");
         cm_SendMoveGoods(-1, c->objId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
@@ -8139,7 +8137,7 @@ int ai_EvalDarkCorner(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIAR
         }
         return 0;
     }
-    if (ai_TimeT.hour < 0x14)
+    if (ai_Time.hour < 0x14)
         return 0;
     return ai_EvalMoodWeights(a, b, i, (AIPER *)p, 0, o1, o2);
 }
@@ -8225,7 +8223,7 @@ int ai_DecideTakeCredit(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (util_RandomU(10) < n + 1)
         return 0;
     if (a == 0x33) {
-        h = min(max(ai_TimeT.hour - 8, 0), 10);
+        h = min(max(ai_Time.hour - 8, 0), 10);
         m = (10 - h) * 0.1f;
         m = m * m;
         lim[1] = (int)(m * 6400.0f);
@@ -8338,7 +8336,7 @@ int ai_ExecuteTakeCredit(G5CH *p, AIARG *s1, AIARG *s2)
     m.type = 0x23;
     m.to = ai_CharsT[a->owner].netId;
     m.unk0c = a->id;
-    m.time = ai_TimeT;
+    m.time = ai_Time;
     m.unk36 = 0x12;
     *(int *)&m.unk58 = a->id;
     m.from = p->netId;
@@ -9244,7 +9242,7 @@ int ai_ExecuteUpgradeGuild(G5CH *p, AIARG *s1, AIARG *s2)
     m.unk0c = s1->ref2;
     m.to = p->netId;
     m.unk36 = 1;
-    m.time = ai_TimeT;
+    m.time = ai_Time;
     *(int *)&m.unk58 = s1->ref2;
     cm_BeginGroup("upgr_ai_zunfthaus");
     cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
@@ -10575,7 +10573,7 @@ int ai_CanBuildType(int a, AIPER *p, int b, AIARG *s1, AIARG *s2, int f)
    duplicates the epilogue at both early returns (je over pop ebp/xor eax,eax/pop ebx/add esp,0x400/ret at
    +0x10 and +0x27, ours jne to the shared one), and schedules the ai_Time struct copy with an early add
    esp,0xc of sprintf's args (ours defers it to add esp,0x28); tried success-block-inside-loop layout,
-   assignment orders, TMX/NOWX copy: no change */
+   assignment orders, the clock struct copy: no change */
 
 int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
 {
@@ -10601,7 +10599,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
             sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, name);
         if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
             sprintf((char *)&m + 0x9c, "%s", path);
-            m.time = ai_TimeT;
+            m.time = ai_Time;
             m.to = p->netId;
             m.fromId = p->netId;
             m.arg[0] = p->netId;

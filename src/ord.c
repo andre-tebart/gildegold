@@ -3,7 +3,7 @@
    grid statistics that follow (0x4f82a0 ..). Split from gv.c: the table sits right after gv's strings, and
    0x4f5d50 matches only when 0x4f2870 is not defined above it in the same file.
    Open: no ord.h yet; the unit's declarations and views live in gv.h, shared with gv.c.
-   Open: gv.h's ORDCELL / ORDBLD duplicate ai.h's AIGRID / AIBLD (extending AIGRID regressed other units).
+   Open: gv.h's ORDBLD duplicates ai.h's AIBLD.
    unit of rea 8cef7d5b (src/game/ord.c); boundaries in decl/text.dcl */
 #include <windows.h>
 #include <stdio.h>
@@ -36,7 +36,6 @@
 
 /* the clock's hour as am.h / cm.h / amt.h declare it: a view of gv.h's ai_Time (0x770ae0 + 4), so it is not
    an object of its own in the data area */
-#define ai_TimeHour (*(unsigned short *)((char *)&ai_Time + 0x4))  /* 0x770ae4 */
 
 /* the engine's generic unaligned block copy (D3_COPY in d3.h, which needs the DirectX headers): size and
    destination through temps, the source named directly in the asm (0x4f9190 copies the record 0x91b480) */
@@ -97,28 +96,13 @@
 }
 
 /* the statistics record views of 0x4f9020 (unit-private: gv.h's ORDCHAR is the shared character view) */
-typedef struct ORDSTATS {               /* 0x28 bytes at 0x91b4c0 (ord_StatisticsRecord) */
-    int col[5];                         /* 0x00, the five statistic columns */
-    float rating;                       /* 0x14, ai_Rating (0x6f1ba0) */
-    float base;                         /* 0x18, ai_RatingBaseF (0x6f1b9c) */
-    int v1c, v20, v24;                  /* 0x1c, 0x20, 0x24 */
-} ORDSTATS;
-#pragma pack(push, 1)
-typedef struct ORDSTIME {               /* the 0x0e-byte game clock: ai_Time 0x770ae0 and the stamp 0x91b470 */
-    int year;                           /* 0x00 */
-    int hourWord;                       /* 0x04, the hour in the low word (the minute's low word at +6) */
-    int minuteWord;                     /* 0x08 */
-    unsigned short stamp;               /* 0x0c */
-} ORDSTIME;
-#pragma pack(pop)
 typedef struct ORDSAVE {                /* the saved record of 0x4f9020 (15 words) */
-    int col[5];                         /* 0x00 */
+    float col[5];                       /* 0x00, ORDSTATS */
     float rating;                       /* 0x14 */
     float base;                         /* 0x18 */
-    int v1c, v20, v24;                  /* 0x1c .. 0x24 */
-    int rate;                           /* 0x28, the bits of ord_RatingRate */
-    int clock[3];                       /* 0x2c, the clock stamp */
-    unsigned short stamp;               /* 0x38 */
+    float v1c, v20, score;              /* 0x1c .. 0x24 */
+    float rate;                         /* 0x28, ord_RatingRate */
+    AITIME clock;                       /* 0x2c, the clock stamp (ord_StatisticsClock) */
 } ORDSAVE;
 typedef struct ORDCHARKIND {            /* the character record seen from its kind byte */
     unsigned char kind;                 /* 0x00 (ORDCHAR + 0x02) */
@@ -131,21 +115,9 @@ typedef struct ORDCHARKIND {            /* the character record seen from its ki
     char pad83[0x21c - 0x83];
 } ORDCHARKIND;
 #define ORD_CHARKINDS ((ORDCHARKIND *)((char *)ai_Chars + 2))
-typedef struct ORDSTATROUND {           /* one 0x14-byte round of the statistics history 0x4f88c0 keeps */
-    float noFirst;                      /* 0x00, out[1] of 0x4f8ae0: the share of the kind 0/1 characters without
-                                           the first object (1 - n0 / cnt) */
-    float combined;                     /* 0x04, out[2]: the combined rating and grid score */
-    float noSecond;                     /* 0x08, out[3]: the share without the second object (1 - n1 / cnt) */
-    float score;                        /* 0x0c, out[9]: the overall score the report's 0.55 / 0.45 use */
-    float base;                         /* 0x10, ai_RatingBaseF of the round */
-} ORDSTATROUND;
-extern ORDSTATS ord_Statistics;
 unsigned char ai_OwnPlayer = 0;  /* 0x6f1bc5: defined here because ord.c does not read it (the ai data area) */
-ORDSTIME ord_StatisticsClock = {0}; /* 0x91b470, the same bytes as ord_StatisticsTime */
-ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the same bytes as ord_StatisticsRecord */
-extern ORDSTIME ord_GameClock;           /* 0x770ae0, the same bytes as ai_Time */
-extern ORDSTATROUND ord_StatisticsRounds[16]; /* 0x91ab00, the same bytes as ord_StatisticsHistory */
-extern int ord_RatingRateBits;           /* 0x91aaf4, the bits of ord_RatingRate */
+AITIME ord_StatisticsClock = {0}; /* 0x91b470, the clock of the last rating step (ord_AdvanceRatingBase) */
+ORDSTATS ord_Statistics = {0}; /* 0x91b4c0, the last statistics (ord_UpdateStatistics) */
 
 /* 0x4f4e20, the order "apply for office" (table 0x611768 entry 0; c the character, m the message: m[0] the
    kind 1 = do / 3 = ask, the text at m + 5): only when c has no partner (partner = -1) or the partner record
@@ -1677,19 +1649,18 @@ int ord_PrivilegeDialog(char *text, int mode, int arg)
 /* 0x4f82a0, resets the statistics at the start of a game (the only caller is main_Unk537de0, 0x537e3f, after
    the graveyard clear): clears the message record 0x91b480 (0x24 bytes, then its first int = -1 = no event),
    the income history gm_IncomeHistory (0x154), the character statistics 0x91b500 (0x68), the 8 x 8 grid
-   ord_GridCells (0x600), the statistics history (0x140), the last statistics record (0x28) and the base rating
-   0x6f1b9c. No result. The -1 store goes through the alias ord_MessageRecordEnabled: through
-   ord_MessageRecord the compiler drops the whole clear as a dead store. */
+   ai_Grid (0x600), the statistics history (0x140), the last statistics record (0x28) and the base rating
+   ai_RatingBase. No result. */
 
 void ord_ResetStatistics(void)
 {
-    memset(ord_MessageRecord, 0, 0x24);
+    memset(&ord_MessageRecord, 0, 0x24);
     memset(gm_IncomeHistory, 0, 0x154);
     memset(gm_CharacterStatistics, 0, 0x68);
-    memset(ord_GridCells, 0, 0x600);
+    memset(ai_Grid, 0, 0x600);
     memset(ord_StatisticsHistory, 0, 0x140);
-    memset(ord_StatisticsRecord, 0, 0x28);
-    ord_MessageRecordEnabled = -1;
+    memset(&ord_Statistics, 0, 0x28);
+    ord_MessageRecord.enabled = -1;
     ai_RatingBase = 0;
 }
 /* 0x4f8300, asks 0x45f170 (the scene 0xfd7c50 points to, a, x, y, &y) for a position and divides *x and *y by the scene's cell size (+0x20, over 8); 0 when it fails */
@@ -1709,13 +1680,13 @@ int ord_GetGridCell(char *p, int *x, int *y)
     return 0;
 }
 
-#define ORD_CELLS ((ORDCELL *)ord_GridCells)   /* the grid as flat cells (row y, column x = y * 8 + x) */
+#define ORD_CELLS ((AIGRID *)ai_Grid)   /* the grid as flat cells (row y, column x = y * 8 + x) */
 
-/* 0x4f8360, fills the 8 x 8 grid ord_GridCells (cells of 0x18 bytes: +4 the number of objects, +8 the average):
+/* 0x4f8360, fills the 8 x 8 grid ai_Grid (cells of 0x18 bytes: +4 the number of objects, +8 the average):
    counts the objects of kind 6 (0x501190 / 0x501030 iteration; +0x61 a pointer, its +0x4c the position through
    0x4f8300 -> x, y) per cell with the value 0x509b10 (o, o[0x5c]) summed up in a local float table, then cell +8
    = sum / count (0 for empty cells). No result.
-   @deep behaviour draft, allocation only: the count-clear loop's induction variable. The original keeps the row base in edx and copies it to the cursor (mov edx,0x91ae64 hoisted above the prologue pushes, mov eax,edx in the loop head, mov edx,eax after the inner loop, cmp eax,0x91b464); ours lets VC6 collapse the nested 8x8 clear into one pointer induction variable (mov eax,0x91ae64 in the preheader after the rep stos, cmp eax,0x604, jl). Everything else matches: the object loop, the average loop (ebx counter, esi cursor, cmp 0x91b608), the frame 0x10c and the three callee-saved pushes; the remaining hunks are 4 code (those 3 instructions) + slots + fill. Read against tools/disasm.py 0x4f8360 0x100: same statements, constants and callees. Tried and reverted (each built, obj checked): for(i=0;i<8;i++)for(j=0;j<8;j++) grid[i][j].used=0 flat and 2D-typed (extern ORDCELL grid[8][8], also via a flat (ORDCELL*) cast); ORDCELL *row = grid[i] with an inner j; char *row walk from grid with *(row+j*0x18+4)=0 and from grid+4 with row[j*0x18]; unsigned char *row over &grid[0].used (folds to one IV too); the clear before vs after the memset(f,0,sizeof f); separate i/j counters instead of the address-taken x/y. spell.py: reload/dup-tail/slots leads describe the same allocation (the x/y stack slots 0x10/0x14 are swapped: original x at 0x14, ours at 0x10; declaration order of x/y does not change it). Q4 done via the ORDCELL view (gv.h) and the ORDBLD view for the building record; Q1 ord_CountGridObjects, Q2 clean, Q7 through gv.h. Needs match-deep's induction-variable / allocation toolbox. */
+   @deep behaviour draft, allocation only: the count-clear loop's induction variable. The original keeps the row base in edx and copies it to the cursor (mov edx,0x91ae64 hoisted above the prologue pushes, mov eax,edx in the loop head, mov edx,eax after the inner loop, cmp eax,0x91b464); ours lets VC6 collapse the nested 8x8 clear into one pointer induction variable (mov eax,0x91ae64 in the preheader after the rep stos, cmp eax,0x604, jl). Everything else matches: the object loop, the average loop (ebx counter, esi cursor, cmp 0x91b608), the frame 0x10c and the three callee-saved pushes; the remaining hunks are 4 code (those 3 instructions) + slots + fill. Read against tools/disasm.py 0x4f8360 0x100: same statements, constants and callees. Tried and reverted (each built, obj checked): for(i=0;i<8;i++)for(j=0;j<8;j++) grid[i][j].used=0 flat and 2D-typed (extern AIGRID grid[8][8], also via a flat (AIGRID*) cast); AIGRID *row = grid[i] with an inner j; char *row walk from grid with *(row+j*0x18+4)=0 and from grid+4 with row[j*0x18]; unsigned char *row over &grid[0].used (folds to one IV too); the clear before vs after the memset(f,0,sizeof f); separate i/j counters instead of the address-taken x/y. spell.py: reload/dup-tail/slots leads describe the same allocation (the x/y stack slots 0x10/0x14 are swapped: original x at 0x14, ours at 0x10; declaration order of x/y does not change it). Q4 done via ai.h's AIGRID and the ORDBLD view for the building record; Q1 ord_CountGridObjects, Q2 clean, Q7 through gv.h. Needs match-deep's induction-variable / allocation toolbox. */
 void ord_CountGridObjects(void)
 {
     float f[64];
@@ -1727,7 +1698,7 @@ void ord_CountGridObjects(void)
     memset(f, 0, sizeof f);
     for (i = 0; i < 8; i++)
         for (j = 0; j < 8; j++)
-            ord_GridCells[i][j].used = 0;
+            ai_Grid[i][j].used = 0;
     b = (ORDBLD *)gm_BuildQuery(1, 6);
     while (b != 0) {
         if (b->object != 0 && ord_GetGridCell((char *)&b->object->pos, &x, &y) != 0) {
@@ -1739,10 +1710,10 @@ void ord_CountGridObjects(void)
     }
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-            if (ord_GridCells[i][j].used != 0)
-                ord_GridCells[i][j].average = (int)(f[i * 8 + j] / ord_GridCells[i][j].used);
+            if (ai_Grid[i][j].used != 0)
+                ai_Grid[i][j].average = (int)(f[i * 8 + j] / ai_Grid[i][j].used);
             else
-                ord_GridCells[i][j].average = 0;
+                ai_Grid[i][j].average = 0;
         }
     }
 }
@@ -1778,7 +1749,7 @@ int ord_GetKindRecord(int i, int *out)
     out[1] = ORD_KINDS[i].flags;
     return 1;
 }
-/* 0x4f8460, adds a random amount (0x42ec00 (8)) to the sums (+2, a short) of the cells of the 8 x 8 grid 0x91ae60 around the position of an object (0x4fea50 gives the object of who; 0x4f8300 the cell x, y of its +0x61 record's +0x4c): the 3 x 3 neighbourhood, clamped to the grid; the record kind of 0x4f2720 is read first (unused); the cell x, y go to *px / *py @deep behaviour draft, allocation / register-save placement only (109 code hunks, every statement equal). Read against tools/disasm.py 0x4f8460 0x130 and asmdiff: gv_GetTableRecord(kind, rec), gm_FindById(&b, 0, 0, who), amount = util_Random(8), y = util_Random(8), the o / o->object guard, ord_GetGridCell((char *)&b->object->pos, &x, &y), the +2 sum add (add WORD PTR [eax*8+0x91ae62],bx), the xhi / yhi clamps (mov [esp+0x3c],8 + cmp/jg), the xlo / ylo setl-dec-and clamps and the 3x3 add loop with the index edx + esi*8 all match. Diff: the original does NOT save ebx / esi / edi in the prologue - it saves them inside the if (0x4f84c6) and ebp inside the outer loop (0x4f8532) - and spills amount to [esp+0x20] until ebx is free (the add then uses bx); ours pushes edi in the prologue and keeps amount in edi, so the x / y slots and the register roles swap (ours amount=edi, y=ebx; original amount=ebx, y=edi). Tried: int amount (kept), unsigned short amount / y (the original's add uses bx and a 32-bit slot store, so they are ints), the ORDBLD typed view (kept, byte-neutral), gm_FindById prototyped in gv.h (Q7). Q1 ord_AddGridAmount, Q4 through ORDBLD + ORDCELL, Q7 through gv.h. Needs match-deep's register-allocation / deferred-callee-save toolbox. */
+/* 0x4f8460, adds a random amount (0x42ec00 (8)) to the sums (+2, a short) of the cells of the 8 x 8 grid 0x91ae60 around the position of an object (0x4fea50 gives the object of who; 0x4f8300 the cell x, y of its +0x61 record's +0x4c): the 3 x 3 neighbourhood, clamped to the grid; the record kind of 0x4f2720 is read first (unused); the cell x, y go to *px / *py @deep behaviour draft, allocation / register-save placement only (109 code hunks, every statement equal). Read against tools/disasm.py 0x4f8460 0x130 and asmdiff: gv_GetTableRecord(kind, rec), gm_FindById(&b, 0, 0, who), amount = util_Random(8), y = util_Random(8), the o / o->object guard, ord_GetGridCell((char *)&b->object->pos, &x, &y), the +2 sum add (add WORD PTR [eax*8+0x91ae62],bx), the xhi / yhi clamps (mov [esp+0x3c],8 + cmp/jg), the xlo / ylo setl-dec-and clamps and the 3x3 add loop with the index edx + esi*8 all match. Diff: the original does NOT save ebx / esi / edi in the prologue - it saves them inside the if (0x4f84c6) and ebp inside the outer loop (0x4f8532) - and spills amount to [esp+0x20] until ebx is free (the add then uses bx); ours pushes edi in the prologue and keeps amount in edi, so the x / y slots and the register roles swap (ours amount=edi, y=ebx; original amount=ebx, y=edi). Tried: int amount (kept), unsigned short amount / y (the original's add uses bx and a 32-bit slot store, so they are ints), the ORDBLD typed view (kept, byte-neutral), gm_FindById prototyped in gv.h (Q7). Q1 ord_AddGridAmount, Q4 through ORDBLD + AIGRID, Q7 through gv.h. Needs match-deep's register-allocation / deferred-callee-save toolbox. */
 
 void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py)
 {
@@ -1813,7 +1784,7 @@ void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py)
         *py = y;
     }
 }
-/* 0x4f8590, the counterpart of 0x4f8460: subtracts the random amount from the cells (+2 of the cell of the object, +0 of its 3 x 3 neighbourhood); no outputs @deep behaviour draft, the same allocation / register-save placement as its sibling ord_AddGridAmount (0x4f8460, escalated in this session with the full reading). Read against tools/disasm.py 0x4f8590: the identical statements with the two subtracts (sub WORD PTR [eax*8+0x91ae62],bx for the cell's +2 sum and the 3x3 loop's +0 sum) and no px / py outputs - no missing or extra statement, constant or offset. Diff: the original saves ebx / esi / edi inside the if and ebp inside the outer loop, spills amount to a stack slot until ebx is free, and keeps y in edi; ours saves edi in the prologue and keeps amount in edi. Tried: unsigned short amount / y (the original's 32-bit slot store and bx add say int), the ORDBLD typed view (kept). Q1 ord_SubGridAmount, Q4 through ORDBLD + ORDCELL, Q7 through gv.h. Needs match-deep's register-allocation / deferred-callee-save toolbox. */
+/* 0x4f8590, the counterpart of 0x4f8460: subtracts the random amount from the cells (+2 of the cell of the object, +0 of its 3 x 3 neighbourhood); no outputs @deep behaviour draft, the same allocation / register-save placement as its sibling ord_AddGridAmount (0x4f8460, escalated in this session with the full reading). Read against tools/disasm.py 0x4f8590: the identical statements with the two subtracts (sub WORD PTR [eax*8+0x91ae62],bx for the cell's +2 sum and the 3x3 loop's +0 sum) and no px / py outputs - no missing or extra statement, constant or offset. Diff: the original saves ebx / esi / edi inside the if and ebp inside the outer loop, spills amount to a stack slot until ebx is free, and keeps y in edi; ours saves edi in the prologue and keeps amount in edi. Tried: unsigned short amount / y (the original's 32-bit slot store and bx add say int), the ORDBLD typed view (kept). Q1 ord_SubGridAmount, Q4 through ORDBLD + AIGRID, Q7 through gv.h. Needs match-deep's register-allocation / deferred-callee-save toolbox. */
 
 void ord_SubGridAmount(int who, unsigned char kind)
 {
@@ -1909,18 +1880,18 @@ int unk_Unk4f8700(char *c)
 done:
     return list[util_RandomU(n)];
 }
-/* 0x4f88c0, shifts the 15 records of 0x14 bytes of the table 0x91ab00 down by one (a history: the oldest drops out) and fills the last one (0x91ac2c) from the 0x91b4c0 table (+4 .. +0xc and +0x24) and the float 0x6f1b9c truncated */
+/* 0x4f88c0, shifts the 15 rounds of ord_StatisticsHistory down by one (the oldest drops out) and fills the last one from ord_Statistics (out[1] .. out[3] and the score out[9]) and ai_RatingBase truncated */
 
 void unk_Unk4f88c0(void)
 {
-    memmove(ord_StatisticsHistory, ord_StatisticsHistory + 0x14, 0x12c);
-    *(int *)(ord_StatisticsHistory + 0x12c) = *(int *)(ord_StatisticsRecord + 4);
-    *(int *)(ord_StatisticsHistory + 0x130) = *(int *)(ord_StatisticsRecord + 8);
-    *(int *)(ord_StatisticsHistory + 0x134) = *(int *)(ord_StatisticsRecord + 0xc);
-    *(int *)(ord_StatisticsHistory + 0x138) = *(int *)(ord_StatisticsRecord + 0x24);
-    *(int *)(ord_StatisticsHistory + 0x13c) = (int)ai_RatingBaseF;
+    memmove(&ord_StatisticsHistory[0], &ord_StatisticsHistory[1], 0x12c);
+    ord_StatisticsHistory[15].noFirst = ord_Statistics.col[1];
+    ord_StatisticsHistory[15].combined = ord_Statistics.col[2];
+    ord_StatisticsHistory[15].noSecond = ord_Statistics.col[3];
+    ord_StatisticsHistory[15].score = ord_Statistics.score;
+    ord_StatisticsHistory[15].base = (int)ai_RatingBase;
 }
-/* 0x4f8920, rebuilds the three float sums (+0xc, +0x10, +0x14) of every cell of the 8 x 8 grid 0x91ae60 from the 0x200 records of 0x2d bytes at 0x91f700 (+0x25 a pointer, +0 an id, -1 = free): the object with the id at +0x21 (0x501190 (1, 1, id)) must have a +0x61 record and a building kind (ai_BTypes[kind * 0x24d]) outside 0xb .. 0xd and not 0x10; its cell x, y (0x4f8300), the table record of the byte +0x1c (0x4f2720): w = (short)(+0x22) / rec[2] * rec[1]; the center cell gets w * 0x5eb7ac at +0xc, each cell of the 3 x 3 neighbourhood w at +0x10 and w * 0x5eb7ac at +0xc @deep far draft (111 code / 16 fpu / 1 fill hunks, 378 of 448 bytes). Read against tools/disasm.py 0x4f8920 0x260: the per-cell float clear (3 stores of a zero register, 8 x 8 nested), the 0x91f700 record walk (p < 0x925100, stride 0x2d, skip when the +0x25 int is 0 or the +0 id is -1), the 0x2d-byte copy, gm_BuildQuery(1, 1, r[0x21]), the guards (o[0] != 0, o->object != 0), the ai_BTypes kind byte (kind * 0x24d, rejected 0xb..0xd and 0x10), ord_GetGridCell(object + 0x4c, &x, &y), gv_GetTableRecord(r[0x1c], rec), w = (short)r[0x22] / rec[2] * rec[1] (the original's fild/fidiv/fimul - my double spelling compiled identically, so the float spelling is kept for the reading), the +0xc += w * 0.5f of the cell, the xhi/yhi/xlo/ylo clamps and the 3 x 3 loop (+0x10 += w, +0xc += w * 0.5f per cell) all match - no missing or extra statement, constant or offset. What is left is structural: the original's nested 8 x 8 clear (the same two-level induction variable that blocks 0x4f8360) and its countdown inner loop of the 3 x 3 block (fld w / fadd [eax+4] / fld w2 / fadd [eax-0x18] with the pointer advanced 0x18), plus the ebx/ebp/esi/edi save placement (the original saves them after the clear, ebp never at all) - allocation / scheduling = match-deep. Tried and measured: the float conversion spelling (byte-identical), the loop bound written ai_Crimes + 0x5a00 instead of gv_GraveyardEnd (WORSE, 36 bytes - reverted). Q1 ord_RebuildGridSums, Q2 clean (ai_Crimes / gv_GraveyardEnd named from gv.c's own wording, ORDCELL's floats named halfWeightSum / weightSum / buildingCount). Q4 left as the evidence gap: 5 raw accesses into the 0x2d-byte graveyard record (the int at +0x25, the id at +0, and the copy's +0x1c / +0x21 / +0x22); gv.c reads the same record with raw offsets and names no field, so the +0x1c kind byte / +0x21 id / +0x22 short / +0x25 state have no evidenced names to put in a typed view (a shared-header decision for match-deep). */
+/* 0x4f8920, rebuilds the three float sums (+0xc, +0x10, +0x14) of every cell of the 8 x 8 grid 0x91ae60 from the 0x200 records of 0x2d bytes at 0x91f700 (+0x25 a pointer, +0 an id, -1 = free): the object with the id at +0x21 (0x501190 (1, 1, id)) must have a +0x61 record and a building kind (ai_BTypes[kind * 0x24d]) outside 0xb .. 0xd and not 0x10; its cell x, y (0x4f8300), the table record of the byte +0x1c (0x4f2720): w = (short)(+0x22) / rec[2] * rec[1]; the center cell gets w * 0x5eb7ac at +0xc, each cell of the 3 x 3 neighbourhood w at +0x10 and w * 0x5eb7ac at +0xc @deep far draft (111 code / 16 fpu / 1 fill hunks, 378 of 448 bytes). Read against tools/disasm.py 0x4f8920 0x260: the per-cell float clear (3 stores of a zero register, 8 x 8 nested), the 0x91f700 record walk (p < ai_Crimes + 0x5a00, stride 0x2d, skip when the +0x25 int is 0 or the +0 id is -1), the 0x2d-byte copy, gm_BuildQuery(1, 1, r[0x21]), the guards (o[0] != 0, o->object != 0), the ai_BTypes kind byte (kind * 0x24d, rejected 0xb..0xd and 0x10), ord_GetGridCell(object + 0x4c, &x, &y), gv_GetTableRecord(r[0x1c], rec), w = (short)r[0x22] / rec[2] * rec[1] (the original's fild/fidiv/fimul - my double spelling compiled identically, so the float spelling is kept for the reading), the +0xc += w * 0.5f of the cell, the xhi/yhi/xlo/ylo clamps and the 3 x 3 loop (+0x10 += w, +0xc += w * 0.5f per cell) all match - no missing or extra statement, constant or offset. What is left is structural: the original's nested 8 x 8 clear (the same two-level induction variable that blocks 0x4f8360) and its countdown inner loop of the 3 x 3 block (fld w / fadd [eax+4] / fld w2 / fadd [eax-0x18] with the pointer advanced 0x18), plus the ebx/ebp/esi/edi save placement (the original saves them after the clear, ebp never at all) - allocation / scheduling = match-deep. Tried and measured: the float conversion spelling (byte-identical); the loop bound is ai_Crimes + 0x5a00 (the end of the records, 0x925100 is gv_Cannon: no second name gv_GraveyardEnd; with that name 36 bytes fewer differed). Q1 ord_RebuildGridSums, Q2 clean (ai_Crimes named from gv.c's own wording, AIGRID's floats named halfWeightSum / weightSum / buildingCount). Q4 left as the evidence gap: 5 raw accesses into the 0x2d-byte graveyard record (the int at +0x25, the id at +0, and the copy's +0x1c / +0x21 / +0x22); gv.c reads the same record with raw offsets and names no field, so the +0x1c kind byte / +0x21 id / +0x22 short / +0x25 state have no evidenced names to put in a typed view (a shared-header decision for match-deep). */
 
 void ord_RebuildGridSums(void)
 {
@@ -1947,7 +1918,7 @@ void ord_RebuildGridSums(void)
         ORD_CELLS[i].weightSum = 0;
         ORD_CELLS[i].buildingCount = 0;
     }
-    for (p = ai_Crimes; p < gv_GraveyardEnd; p += 0x2d) {
+    for (p = ai_Crimes; p < ai_Crimes + 0x5a00; p += 0x2d) {
         if (*(int *)(p + 0x25) == 0 || *(int *)p == -1)
             continue;
         memcpy(r, p, 0x2d);
@@ -1980,7 +1951,7 @@ void ord_RebuildGridSums(void)
     }
 }
 
-#define ORD_GRID(c) ((char *)ord_GridCells + (c) * 0x18)
+#define ORD_GRID(c) ((char *)ai_Grid + (c) * 0x18)
 #define ORD_KIND(k) ((unsigned short *)(ord_KindTable + (k) * 8))
 float gm_IncomeRating();                       /* 0x4f9ec0 */
 void cm_SendMessage41(void *p);                         /* 0x4c5800 */
@@ -2030,7 +2001,7 @@ void ord_ComputeStatistics(float *out)
             bt = (unsigned char *)ai_BTypes + c->bld->type * 0x24d;
             if (c->bld->object != 0 && (*bt < 0xb || *bt > 0xd) && *bt != 0x10
                 && ord_GetGridCell((char *)&c->bld->object->pos, &x, &y) != 0)
-                ord_GridCells[x][y].buildingCount += 1.0f;
+                ai_Grid[x][y].buildingCount += 1.0f;
         }
         if (c->bld2 != 0) {
             int x, y;
@@ -2039,7 +2010,7 @@ void ord_ComputeStatistics(float *out)
             bt = (unsigned char *)ai_BTypes + c->bld2->type * 0x24d;
             if (c->bld2->object != 0 && (*bt < 0xb || *bt > 0xd) && *bt != 0x10
                 && ord_GetGridCell((char *)&c->bld2->object->pos, &x, &y) != 0)
-                ord_GridCells[x][y].buildingCount += 1.0f;
+                ai_Grid[x][y].buildingCount += 1.0f;
         }
     }
     s50 = 0;
@@ -2078,13 +2049,13 @@ void ord_ComputeStatistics(float *out)
     inv = 1.0f / (cntf + cntf);
     for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
-            if (!(m > ord_GridCells[i][j].halfWeightSum))
-                m = ord_GridCells[i][j].halfWeightSum;
-            w = ord_GridCells[i][j].weightSum > 1.0f ? ord_GridCells[i][j].weightSum : 1.0f;
-            ord_GridCells[i][j].weightSum = w;
-            g = inv * ord_GridCells[i][j].buildingCount;
-            ord_GridCells[i][j].buildingCount = g;
-            sum += ord_GridCells[i][j].halfWeightSum / w * g;
+            if (!(m > ai_Grid[i][j].halfWeightSum))
+                m = ai_Grid[i][j].halfWeightSum;
+            w = ai_Grid[i][j].weightSum > 1.0f ? ai_Grid[i][j].weightSum : 1.0f;
+            ai_Grid[i][j].weightSum = w;
+            g = inv * ai_Grid[i][j].buildingCount;
+            ai_Grid[i][j].buildingCount = g;
+            sum += ai_Grid[i][j].halfWeightSum / w * g;
         }
     }
     f = ord_WeightedRecordSum(rec);
@@ -2094,7 +2065,7 @@ void ord_ComputeStatistics(float *out)
 }
 /* 0x4f8ed0, recomputes the statistics (0x4f8ae0) into the record 0x91b4c0 (10 floats), smooths the rating out[5] into the floats 0x6f1b9c / 0x6f1ba0 (first time: 0x6f1b9c = 0.95 * rating), stores the time stamp and sends the
    message 0x4c5800 with the record, the two floats, the change rate 0x91aaf4 and the clock. ROUGH
-   @deep far draft (119 code / 4 fill hunks, 183 of 288 bytes; ROUGH from the layout session). Read against tools/asmdiff 0x4f8ed0: the original fuses the rating smoothing into the FPU stack (fst / fld / fmul QWORD with the 0.95 double constant, the 0.5 factor and the fsub/fmul/fadd chain) where ours reloads the globals; it copies the 10-float record with rep movs before the smoothing (ours after the first-value test), keeps cur / base in edi / edx and builds the 15-int message in place. The statements (ord_ComputeStatistics(st), first = ai_RatingBaseF == 0.0f, memcpy of the record, the first / else rating update on ai_Rating / ai_RatingBaseF, base / cur, ord_RatingRate = (cur - base) * 0.0007336182f, the 15-int m build with m[5] / m[6] the two floats, m[10] the rate, the 14-byte time stamp copied to ord_StatisticsTime and into m[11..14], cm_SendMessage41(m)) are the same, but the float / double spellings (0.95f vs 0.95 in the original's fmul QWORD) and the block order were not settled, so the ROUGH marker stays and that is the first lead. Q4 left: 14 raw accesses - the ai_Time byte copies (gv.h has no AITIME view; ai.h cannot be included), the ((float *)m)[5] / ((int *)st)[7] record/message views (needs one named 15-int message view) and the float bits of ai_RatingBase where the F view does not fit. Done here: Q1 name kept, Q2 clean (cm_SendMessage41 for 0x4c5800 = cm.c's 'message 0x41', ord_StatisticsTime for 0x91b470), Q4 down from 23 to 14 and the byte diff 4932 -> 4894 by giving 0x91aaf4 (ord_RatingRate, float) and 0x6f1ba0 (ai_Rating) and the float view of 0x6f1b9c (ai_RatingBaseF) their own names instead of char-pointer arithmetic. */
+   @deep far draft (119 code / 4 fill hunks, 183 of 288 bytes; ROUGH from the layout session). Read against tools/asmdiff 0x4f8ed0: the original fuses the rating smoothing into the FPU stack (fst / fld / fmul QWORD with the 0.95 double constant, the 0.5 factor and the fsub/fmul/fadd chain) where ours reloads the globals; it copies the 10-float record with rep movs before the smoothing (ours after the first-value test), keeps cur / base in edi / edx and builds the 15-int message in place. The statements (ord_ComputeStatistics(st), first = ai_RatingBase == 0.0f, memcpy of the record, the first / else rating update on ai_Rating / ai_RatingBase, base / cur, ord_RatingRate = (cur - base) * 0.0007336182f, the 15-int m build with m[5] / m[6] the two floats, m[10] the rate, the 14-byte time stamp copied to ord_StatisticsClock and into m[11..14], cm_SendMessage41(m)) are the same, but the float / double spellings (0.95f vs 0.95 in the original's fmul QWORD) and the block order were not settled, so the ROUGH marker stays and that is the first lead. Q4 left: 14 raw accesses - the ((float *)m)[5] / ((int *)st)[7] record/message views (needs one named 15-int message view) and the float bits of ai_RatingBase where the F view does not fit. Done here: Q1 name kept, Q2 clean (cm_SendMessage41 for 0x4c5800 = cm.c's 'message 0x41', ord_StatisticsClock for 0x91b470), Q4 down from 23 to 14 and the byte diff 4932 -> 4894 by giving 0x91aaf4 (ord_RatingRate, float) and 0x6f1ba0 (ai_Rating) and the float view of 0x6f1b9c (ai_RatingBase) their own names instead of char-pointer arithmetic. */
 
 void ord_UpdateStatistics(void)
 {
@@ -2104,14 +2075,14 @@ void ord_UpdateStatistics(void)
     float cur, base;
 
     ord_ComputeStatistics(st);
-    first = ai_RatingBaseF == 0.0f;
-    memcpy(ord_StatisticsRecord, st, 0x28);
+    first = ai_RatingBase == 0.0f;
+    memcpy(&ord_Statistics, st, 0x28);
     if (first) {
         ai_Rating = st[5];
-        ai_RatingBaseF = st[5] * 0.95f;
+        ai_RatingBase = st[5] * 0.95f;
     } else
         ai_Rating = (st[5] - ai_Rating) * 0.5f + ai_Rating;
-    base = ai_RatingBaseF;
+    base = ai_RatingBase;
     cur = ai_Rating;
     ord_RatingRate = (cur - base) * 0.0007336182f;
     memcpy(m, st, 0x14);
@@ -2120,27 +2091,24 @@ void ord_UpdateStatistics(void)
     m[7] = ((int *)st)[7];
     m[8] = ((int *)st)[8];
     m[9] = ((int *)st)[9];
-    m[10] = *(int *)(ord_StatisticsHistory - 0xc);
-    *(int *)ord_StatisticsTime = *(int *)ai_Time;
-    *(int *)(ord_StatisticsTime + 4) = *(int *)(ai_Time + 4);
-    *(int *)(ord_StatisticsTime + 8) = *(int *)(ai_Time + 8);
-    *(short *)(ord_StatisticsTime + 0xc) = *(short *)(ai_Time + 0xc);
-    m[11] = *(int *)ai_Time;
-    m[12] = *(int *)(ai_Time + 4);
-    m[13] = *(int *)(ai_Time + 8);
-    *(short *)(m + 14) = *(short *)(ai_Time + 0xc);
+    m[10] = *(int *)&ord_RatingRate;
+    ord_StatisticsClock = ai_Time;
+    m[11] = ai_Time.year;
+    m[12] = *(int *)&ai_Time.hour;
+    m[13] = *(int *)((char *)&ai_Time + 8);
+    *(short *)(m + 14) = *(short *)((char *)&ai_Time + 0xc);
     cm_SendMessage41(m);
 }
 /* 0x4f9020, restores the statistics record from a saved record of 15 words (the fields of ORDSAVE): the five
-   columns, ai_Rating / ai_RatingBaseF, the three values, the rate and the clock stamp; then rebuilds the rating
+   columns, ai_Rating / ai_RatingBase, the three values, the rate and the clock stamp; then rebuilds the rating
    bytes 0x91b460[0..4] from the characters' skill bytes +0x80..+0x84 (kind below 10, health above 0) and [5] from
    the weighted level +0xd, and runs ord_ReportStatistics. The inverse of ord_UpdateStatistics (0x4f8ed0).
-   @deep readable, 69 asm / 160 B left; allocation only: frame 0x18 vs 0x1c (7 vs 8 slots, the original zeroes a slot at 0x8), push ebx at entry vs after fld p[6], the walk base is health +8 vs kind +2, epilogue order; tried and kept the clock struct copy, packed ORDSTIME, q = p + 11 base, ORDCHARKIND walk, declaration order; reverted the health pointer; next slotmap / vargen */
+   @deep readable, 69 asm / 160 B left; allocation only: frame 0x18 vs 0x1c (7 vs 8 slots, the original zeroes a slot at 0x8), push ebx at entry vs after fld p[6], the walk base is health +8 vs kind +2, epilogue order; tried and kept the clock struct copy, a packed 3-int clock view, q = p + 11 base, ORDCHARKIND walk, declaration order; reverted the health pointer; next slotmap / vargen */
 
 void ord_LoadStatistics(void *p)
 {
     ORDSAVE *s = p;
-    ORDSTIME *clk;
+    AITIME *clk;
     ORDCHAR *c;
     ORDCHARKIND *k;
     float rating, base;
@@ -2158,11 +2126,11 @@ void ord_LoadStatistics(void *p)
     ord_Statistics.base = base;
     ord_Statistics.v1c = s->v1c;
     ord_Statistics.v20 = s->v20;
-    ord_Statistics.v24 = s->v24;
-    ord_RatingRateBits = s->rate;
-    clk = (ORDSTIME *)((char *)p + 0x2c);
+    ord_Statistics.score = s->score;
+    ord_RatingRate = s->rate;
+    clk = &s->clock;
     ord_StatisticsClock = *clk;
-    ai_RatingBaseF = base;
+    ai_RatingBase = base;
     ai_Rating = rating;
     n = 0;
     w = 0;
@@ -2183,19 +2151,6 @@ void ord_LoadStatistics(void *p)
     ord_ReportStatistics();
 }
 
-/* the record 0x91b480 the messages 0x4c5e80 carry (0x4f9220 reads the fields) */
-typedef struct ORDMSGREC {
-    int enabled;                        /* 0x00, 0 nothing, 1 the event runs */
-    int count;                          /* 0x04, the messages sent so far */
-    int time;                           /* 0x08, the clock's first int (ai_TimeYear) */
-    float base;                         /* 0x0c, the accumulator's base */
-    float scale;                        /* 0x10, the accumulator's random scale */
-    float value;                        /* 0x14, the accumulator */
-    float limit;                        /* 0x18, the limit the accumulator is compared to */
-    int phase;                          /* 0x1c, 0 idle, 1 / 2 / 3 running */
-    int stage;                          /* 0x20, 0 .. 3, picked on every message */
-} ORDMSGREC;
-
 typedef struct ORDINITMSG {             /* the message 0x4c5e80 payload: the record and its tag at +0x24 */
     ORDMSGREC record;                   /* 0x00 */
     int tag;                            /* 0x24, 'init' / 'set ' */
@@ -2204,7 +2159,7 @@ typedef struct ORDINITMSG {             /* the message 0x4c5e80 payload: the rec
 /* 0x4f9170, copies the 9 ints of the record 0x91b480 (the clear-able table of 0x4f82a0) to out */
 void ord_GetMessageRecord(int *out)
 {
-    memcpy(out, ord_MessageRecord, 0x24);
+    memcpy(out, &ord_MessageRecord, 0x24);
 }
 /* 0x4f9190, sends the message 0x4c5e80 built from the record 0x91b480 with its fields replaced by
    (a, 0, ai_Time, b, c, 0, d, 0, 0) and the tag 'init' at +0x24: the first frame of a game */
@@ -2217,7 +2172,7 @@ void ord_InitMessageRecord(int a, float b, float c, float d)
     m.tag = 0x696e6974;
     m.record.enabled = a;
     m.record.count = 0;
-    m.record.time = ai_TimeYear;
+    m.record.time = ai_Time.year;
     m.record.base = b;
     m.record.scale = c;
     m.record.value = 0.0f;
@@ -2230,7 +2185,6 @@ void ord_InitMessageRecord(int a, float b, float c, float d)
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);                     /* 0x53dda0 */
 
 /* the record 0x91b480 as its ORDMSGREC */
-#define ord_MessageRec (*(ORDMSGREC *)&ord_MessageRecord)  /* 0x91b480 */
 
 #pragma pack(push, 1)
 typedef struct ORDLONGMSG {             /* 0xf8 bytes, the long message of cm_SendLongMessage as 0x4f9220 fills it */
@@ -2240,13 +2194,7 @@ typedef struct ORDLONGMSG {             /* 0xf8 bytes, the long message of cm_Se
     int netId;                          /* 0x08, the character's net id */
     int target;                         /* 0x0c, -1 = none */
     char pad10[0x18];
-    union {
-        ORDSTIME time;                  /* 0x28, when: the game clock, moved on by gm_AddTime */
-        struct {
-            char pad[6];
-            int minute;                 /* 0x2e, the minute word and the next, cleared together */
-        } at;
-    };
+    AITIME time;                        /* 0x28, when: the game clock, moved on by gm_AddTime */
     unsigned char mode;                 /* 0x36 */
     char pad37[0x21];
     int value;                          /* 0x58, -1 or a random amount */
@@ -2261,24 +2209,24 @@ typedef struct ORDLONGMSG {             /* 0xf8 bytes, the long message of cm_Se
    picks the next phase from a 16-entry table chosen by the stage (stage 0 goes straight to phase 3, stage 4 resets
    the stage), sends the long message 0x59 / 0x4e / 0x50 to the player (character ai_PlayerChar, gm_AddTime later)
    and finally the whole record (message 0x4c5e80, tag 'set '); running, it returns while he_FindEvent (1, 0, the
-   phase's event) exists, else clears the phase and the accumulator. @deep Read all of it against the original and rebuilt: typed ORDMSGREC record (view ord_MessageRec), the running branch tests the global's phase with one he_FindEvent call per phase (cross-jumped as the original's push 0x59/0x4e/0x50), the stage tables are three 16-int initializers (the original's hoisted common stores tbl[0,1,7,8,14,15] then the five-store runs match instruction for instruction), the long message is an ORDLONGMSG (kind 0x04, netId 0x08, target 0x0c, clock 0x28, mode 0x36, value 0x58, limit 0x9c, the int at 0x2e cleared in phases 1/2), the hour tests read ord_GameClock's hour word (cmp ax, 0x17), phases 2/3 test hour >= 0x17 first as the original. 350 vs 338 instructions, the 12 are VC6 cross-jumping: the original merges the four gm_AddTime calls of phases 1 and 3 into one (phase 1's plain path: lea ecx,[ebp-0x140]; push eax; push ecx; jmp 0x4f968e, its +7 path jmp 0x4f9686), ours keeps phase 1's two calls and the push &msg / cm_SendLongMessage tails apart; that follows from the per-phase store schedule and register choice (phase 3: hour in eax / -1 in ecx in the original, ours hour in ecx / -1 in eax; phase 2: the -1 stores before the netId store), which reordering the phase-1 statements did not change. */
+   phase's event) exists, else clears the phase and the accumulator. @deep Read all of it against the original and rebuilt: typed ORDMSGREC record (ord_MessageRecord), the running branch tests the global's phase with one he_FindEvent call per phase (cross-jumped as the original's push 0x59/0x4e/0x50), the stage tables are three 16-int initializers (the original's hoisted common stores tbl[0,1,7,8,14,15] then the five-store runs match instruction for instruction), the long message is an ORDLONGMSG (kind 0x04, netId 0x08, target 0x0c, clock 0x28, mode 0x36, value 0x58, limit 0x9c, the int at 0x2e cleared in phases 1/2), the hour tests read ai_Time's hour word (cmp ax, 0x17), phases 2/3 test hour >= 0x17 first as the original. 350 vs 338 instructions, the 12 are VC6 cross-jumping: the original merges the four gm_AddTime calls of phases 1 and 3 into one (phase 1's plain path: lea ecx,[ebp-0x140]; push eax; push ecx; jmp 0x4f968e, its +7 path jmp 0x4f9686), ours keeps phase 1's two calls and the push &msg / cm_SendLongMessage tails apart; that follows from the per-phase store schedule and register choice (phase 3: hour in eax / -1 in ecx in the original, ours hour in ecx / -1 in eax; phase 2: the -1 stores before the netId store), which reordering the phase-1 statements did not change. */
 void ord_UpdateMessageEvent(void)
 {
     ORDMSGREC r;
     ORDINITMSG out;
     ORDLONGMSG msg;
 
-    if (ord_MessageRec.enabled != 1)
+    if (ord_MessageRecord.enabled != 1)
         return;
-    r = ord_MessageRec;
-    if (ord_MessageRec.phase > 0) {
-        if (ord_MessageRec.phase == 1) {
+    r = ord_MessageRecord;
+    if (ord_MessageRecord.phase > 0) {
+        if (ord_MessageRecord.phase == 1) {
             if (he_FindEvent(1, 0, 0x59) != 0)
                 return;
-        } else if (ord_MessageRec.phase == 2) {
+        } else if (ord_MessageRecord.phase == 2) {
             if (he_FindEvent(1, 0, 0x4e) != 0)
                 return;
-        } else if (ord_MessageRec.phase == 3) {
+        } else if (ord_MessageRecord.phase == 3) {
             if (he_FindEvent(1, 0, 0x50) != 0)
                 return;
         }
@@ -2287,7 +2235,7 @@ void ord_UpdateMessageEvent(void)
     } else if ((r.value = util_RandomF() * r.scale + r.base + r.value) > r.limit) {
         memset(&msg, 0, sizeof(msg));
         r.count++;
-        r.time = ai_TimeYear;
+        r.time = ai_Time.year;
         if (r.stage >= 4) {
             r.stage = 0;
             r.phase = 3;
@@ -2310,42 +2258,42 @@ void ord_UpdateMessageEvent(void)
             msg.kind = 0x59;
             msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
             msg.target = -1;
-            msg.time = ord_GameClock;
+            msg.time = ai_Time;
             msg.mode = 2;
             msg.value = util_RandomU(3) * 3;
-            msg.time = ord_GameClock;
-            msg.at.minute = 0;
-            if ((unsigned short)ord_GameClock.hourWord < 0x17 && (unsigned short)ord_GameClock.hourWord >= 7)
-                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+            msg.time = ai_Time;
+            msg.time.min = 0;
+            if (ai_Time.hour < 0x17 && ai_Time.hour >= 7)
+                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
             else
-                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
             cm_SendLongMessage((char *)&msg);
         } else if (r.phase == 2) {
             msg.kind = 0x4e;
             msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
             msg.target = -1;
             msg.value = -1;
-            msg.time = ord_GameClock;
+            msg.time = ai_Time;
             msg.mode = 1;
             msg.limit = 1000;
-            msg.at.minute = 0;
-            if ((unsigned short)ord_GameClock.hourWord >= 0x17)
-                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+            msg.time.min = 0;
+            if (ai_Time.hour >= 0x17)
+                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
             else
-                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
             cm_SendLongMessage((char *)&msg);
         } else if (r.phase == 3) {
             msg.kind = 0x50;
             msg.netId = ORD_CHAR(ai_PlayerChar)->netId;
-            msg.time = ord_GameClock;
+            msg.time = ai_Time;
             msg.target = -1;
             msg.mode = 2;
             msg.value = -1;
             msg.limit = 1000;
-            if ((unsigned short)ord_GameClock.hourWord >= 0x17)
-                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
+            if (ai_Time.hour >= 0x17)
+                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4) + 7, util_RandomU(2) * 0x1e, 0);
             else
-                gm_AddTime((struct GCLOCK *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
+                gm_AddTime((struct AITIME *)&msg.time, util_RandomU(4), util_RandomU(2) * 0x1e, 0);
             cm_SendLongMessage((char *)&msg);
         }
         r.stage = r.phase;
@@ -2355,7 +2303,7 @@ void ord_UpdateMessageEvent(void)
     cm_SendMessage56(&out);
 }
 /* 0x4f9850, ord_ReportStatistics, in a game year >= 8 divisible by 4: averages the last four rounds of the
-   statistics history (ord_StatisticsRounds[12..15]) into a = the share without the second object, b = the share
+   statistics history (ord_StatisticsHistory[12..15]) into a = the share without the second object, b = the share
    without the first object, c = the combined score and d = the overall score; rates a / b / c against 0.15 (the
    texts 0x1c11 .. 0x1c14 when the share is low, 0x1c15 .. 0x1c18 when it is high) and the income rating of
    gm_IncomeRating (0x4f9ec0) against 0 (0x1c13 / 0x1c17). The lowest m of a / b / c and the rating above 0.2
@@ -2377,16 +2325,16 @@ void ord_ReportStatistics(void)
     char tierText[0x200];
     int any;
 
-    if (ai_TimeYear < 8 || ai_TimeYear % 4 != 0)
+    if (ai_Time.year < 8 || ai_Time.year % 4 != 0)
         return;
-    a = (ord_StatisticsRounds[15].noSecond + ord_StatisticsRounds[14].noSecond
-         + ord_StatisticsRounds[13].noSecond + ord_StatisticsRounds[12].noSecond) * 0.25f;
-    b = (ord_StatisticsRounds[15].noFirst + ord_StatisticsRounds[14].noFirst
-         + ord_StatisticsRounds[13].noFirst + ord_StatisticsRounds[12].noFirst) * 0.25f;
-    c = (ord_StatisticsRounds[15].combined + ord_StatisticsRounds[14].combined
-         + ord_StatisticsRounds[13].combined + ord_StatisticsRounds[12].combined) * 0.25f;
-    d = (ord_StatisticsRounds[15].score + ord_StatisticsRounds[14].score
-         + ord_StatisticsRounds[13].score + ord_StatisticsRounds[12].score) * 0.25f;
+    a = (ord_StatisticsHistory[15].noSecond + ord_StatisticsHistory[14].noSecond
+         + ord_StatisticsHistory[13].noSecond + ord_StatisticsHistory[12].noSecond) * 0.25f;
+    b = (ord_StatisticsHistory[15].noFirst + ord_StatisticsHistory[14].noFirst
+         + ord_StatisticsHistory[13].noFirst + ord_StatisticsHistory[12].noFirst) * 0.25f;
+    c = (ord_StatisticsHistory[15].combined + ord_StatisticsHistory[14].combined
+         + ord_StatisticsHistory[13].combined + ord_StatisticsHistory[12].combined) * 0.25f;
+    d = (ord_StatisticsHistory[15].score + ord_StatisticsHistory[14].score
+         + ord_StatisticsHistory[13].score + ord_StatisticsHistory[12].score) * 0.25f;
     v = gm_IncomeRating();
     txt0 = a <= 0.15 ? 0x1c11 : 0x1c15;
     txt1 = b <= 0.15 ? 0x1c12 : 0x1c16;
@@ -2448,10 +2396,10 @@ int ord_HandleMessageRecord(int *m)
 {
     switch ((unsigned)m[9]) {
     case 0x656e626c:                    /* 'enbl' */
-        ord_MessageRecordEnabled = 1;
+        ord_MessageRecord.enabled = 1;
         break;
     case 0x6473626c:                    /* 'dsbl' */
-        ord_MessageRecordEnabled = 0;
+        ord_MessageRecord.enabled = 0;
         break;
     case 0x696e6974:                    /* 'init' */
     case 0x73657420:                    /* 'set ' */
@@ -2528,7 +2476,7 @@ float ord_GetStatistics(int *o)
 {
     if (o == 0)
         return 0;
-    memcpy(o, ord_StatisticsRecord, 0x28);
+    memcpy(o, &ord_Statistics, 0x28);
     o[6] = *(int *)&ai_RatingBase;
     return *(float *)(o + 9);
 }
@@ -2539,25 +2487,19 @@ void ord_AdvanceRatingBase(void)
     int k;
     double lim;
 
-    k = gm_MinutesBetween(ord_StatisticsTime, ai_Time);  /* @original: gv.h's shared K&R declaration (the call
+    k = gm_MinutesBetween(&ord_StatisticsClock, &ai_Time);  /* @original: gv.h's shared K&R declaration (the call
          pushes the two clock pointers, 0x4f9c01 push 0x770ae0 / 0x4f9c06 push 0x91b470); a prototype in ord.c
          is a lint cross-TU conflict with he.c / sv.c / gv.c, which call it with an int address literal */
     if (k == 0) {
-        ord_StatisticsClock.year = ord_GameClock.year;
-        ord_StatisticsClock.hourWord = ord_GameClock.hourWord;
-        ord_StatisticsClock.minuteWord = ord_GameClock.minuteWord;
-        ord_StatisticsClock.stamp = ord_GameClock.stamp;
+        ord_StatisticsClock = ai_Time;
         return;
     }
-    if (ai_Rating != 0 && (unsigned short)ord_GameClock.hourWord > 6
-        && (unsigned short)ord_GameClock.hourWord < 0x15) {
-        ai_RatingBaseF = k * ord_RatingRate + ai_RatingBaseF;
+    if (ai_Rating != 0 && ai_Time.hour > 6
+        && ai_Time.hour < 0x15) {
+        ai_RatingBase = k * ord_RatingRate + ai_RatingBase;
         lim = ai_Rating * 0.25;
-        if (ai_RatingBaseF < lim)
-            ai_RatingBaseF = (float)lim;
-        ord_StatisticsClock.year = ord_GameClock.year;
-        ord_StatisticsClock.hourWord = ord_GameClock.hourWord;
-        ord_StatisticsClock.minuteWord = ord_GameClock.minuteWord;
-        ord_StatisticsClock.stamp = ord_GameClock.stamp;
+        if (ai_RatingBase < lim)
+            ai_RatingBase = (float)lim;
+        ord_StatisticsClock = ai_Time;
     }
 }

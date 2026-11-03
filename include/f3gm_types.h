@@ -114,7 +114,7 @@ typedef struct GMDISEASE {
 } GMDISEASE;
 
 /* a player's goods record (0x80 bytes; 0x55 of them at 0x7d6a70 + player * 0x2a90, gm_StockBlocks + 0x10; the
-   template gm_DefaultStock has the same layout): f3init.c's INIT_STOCK, hst.c's G12STOCK */
+   template gm_DefaultStock has the same layout) */
 typedef struct GMSTOCK {
     unsigned short item;                /* 0x00, the goods prototype (an ai_Goods index) */
     char pad02[2];

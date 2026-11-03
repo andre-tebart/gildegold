@@ -44,7 +44,6 @@ struct D3SM;
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_625718[];
 extern GAPDATA full_data_6faa60[];
 extern GAPDATA full_data_62571c[];
@@ -85,7 +84,6 @@ extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
 extern int d2_Unkf8aac4;
 extern unsigned short ai_PlayerId;
-extern unsigned char ai_TimeHour;
 extern unsigned char ai_GameState;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char * cm_FieldObject;
@@ -130,7 +128,6 @@ extern GAPDATA full_rdata_5ee020[];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
 extern unsigned short * ai_PlayerChar;
-extern unsigned char ai_TimeHour;
 #include "sv_types.h"
 extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
 extern GAPDATA full_data_627b0c[];
@@ -161,7 +158,6 @@ extern GAPDATA full_data_6fa1e0[];
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
-extern unsigned char ai_TimeHour;
 extern int ai_Unk6f2438;
 extern char ch_EmptyName[1];
 extern unsigned char ai_OwnPlayer;
@@ -235,7 +231,6 @@ extern GAPDATA full_rdata_5eb7e8[];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_62901c[];
 extern GAPDATA full_data_629038[];
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_629054[];
 extern int gm_AllowAll;
 extern GAPDATA full_data_629070[];
@@ -248,7 +243,7 @@ extern GAPDATA full_data_6fa0e0[];
 void gm_Shuffled(unsigned char n, int *out);
 void amt_ChangeDistrictOpinion();
 void gm_Shuffled(unsigned char n, int *out);
-struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct GCLOCK;
+struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 void cm_SendProofExecuted(int a, int b);
 void cm_SendChrStop(int a);
 void cm_SendFieldDeltas(void);
@@ -256,21 +251,13 @@ int cm_SendRelations(int a, int b, int c, int d);
 int util_Random(unsigned short n);      /* 0x42ec00, tr.c's definition: this TU's callers were compiled against the 16-bit parameter and result */
 
 int gm_PlayerFactor(int a, unsigned char k);
-void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec);
+void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);
 
 #define U_I(a) (*(int *)(a))
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
-#pragma pack(push, 2)
-typedef struct HETIME {            /* the 14 byte game time (day, hour, minute, ..: ai.h AITIME) */
-    int a;
-    unsigned short b;
-    int c;
-    int d;
-} HETIME;
-#pragma pack(pop)
-extern HETIME ai_Time;                  /* 0x770ae0 (ai.h) */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
 void d3io_NoopCallback(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
@@ -286,7 +273,6 @@ int ai_Unk573260();
 int sv_ReturnZero(void);
 int gm_CompareTime();
 
-#include "time_view.h"
 #include "ls.h"
 #include "f3init.h"
 #include "d2.h"
@@ -410,7 +396,7 @@ int he_Unk53d630(void)
     int *p;
 
     clk[0] = U_I((unsigned)&ai_Time);
-    clk[1] = U_I((unsigned)&ai_TimeHour);
+    clk[1] = U_I((unsigned)&ai_Time.hour);
     clk[2] = U_I(((unsigned)&ai_Time + 0x8));
     *(short *)(clk + 3) = *(short *)((unsigned)&ai_Time + 0xc);
     p = (int *)(unsigned)&he_EventSlots;
@@ -810,7 +796,7 @@ void mem_Free(void *p);
 void err_Message(char *text);
 
 /* HE_SET_CLOCK: the game clock (0x770ae0 ..) into a message at +0x28 .. +0x34, flag byte 2 at +0x36 */
-#define HE_CLK(m) do { HM_I(m, 0x28) = U_I((unsigned)&ai_Time); HM_I(m, 0x2c) = U_I((unsigned)&ai_TimeHour); HM_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); HM_B(m, 0x36) = 2; } while (0)
+#define HE_CLK(m) do { HM_I(m, 0x28) = U_I((unsigned)&ai_Time); HM_I(m, 0x2c) = U_I((unsigned)&ai_Time.hour); HM_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); HM_B(m, 0x36) = 2; } while (0)
 
 /* 0x53e040, creates the event record of the message `m` (type m+4 < 0xa7 with both handlers, player m+8): the first free of the 0x400 records at 0x6fab40 (0x14c bytes, type byte first), copies the message into it, calls the alloc handler and counts it (0x7585e4); 0 when no handler / record is free (ROUGH) */
 unsigned char *he_Unk53e040(unsigned char *m)
@@ -1338,7 +1324,7 @@ void he_Unk53ec40(unsigned char *r)
     } else {
 L_reset:
         *(int *)(r + 0x70) = -2;
-        *(HETIME *)(r + 0x52) = ai_Time;
+        *(AITIME *)(r + 0x52) = ai_Time;
     }
 }
 /* 0x53ed40, runs 0x53ec40 on every record of the player *pl (type 2 filter) */
@@ -1524,7 +1510,7 @@ int he_SumApEventCosts(int key)
         HM_B(ev, 0x36) = 2; \
         *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); \
         HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c); \
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour); \
+        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour); \
         HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); \
         cm_SendLongMessage(ev); \
     }
@@ -1574,7 +1560,7 @@ void he_PostEvent2b(void)
             HM_I(ev, 0xc) = *(int *)(f + 1);
             HM_B(ev, 0x5c) = 0;
             HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-            HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+            HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
             HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
             *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
             cm_SendLongMessage(ev);
@@ -1593,7 +1579,7 @@ void he_Unk53f270(void)
         memset(ev, 0, 0xf8);
         HM_B(ev, 4) = 0x86;
         HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
         HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
         HM_I(ev, 0xc) = -1;
         HM_B(ev, 0x36) = 2;
@@ -1605,7 +1591,7 @@ void he_Unk53f270(void)
         memset(ev, 0, 0xf8);
         HM_B(ev, 4) = 0xa2;
         HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
         HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
         HM_I(ev, 0xc) = -1;
         HM_B(ev, 0x36) = 2;
@@ -1629,7 +1615,7 @@ void he_Unk53f370(void)
             HM_B(ev, 4) = 0x98;
             HM_I(ev, 8) = *(int *)(o + 4);
             HM_I(ev, 0xc) = *(int *)(f + 1);
-            HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+            HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
             HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
             HM_B(ev, 0x36) = 2;
             HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
@@ -2104,7 +2090,7 @@ void he_Unk540c90(void)
                     amt = (int)tab[0];
                     memset(ev, 0, 0xf8);
                     HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-                    HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+                    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
                     HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                     HM_B(ev, 4) = 0x67;
                     *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
@@ -2204,7 +2190,7 @@ void he_Unk541060(void)
     HM_B(ev, 0x36) = 1;
     *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
     HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
-    HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
     HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
     cm_SendLongMessage(ev);
 }
@@ -2220,7 +2206,7 @@ void he_Unk5410f0(void)
         he_FreeEvent((int *)r);
     HM_B(ev, 4) = 0x73;
     HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-    HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
     HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
     HM_I(ev, 0xc) = -1;
     HM_B(ev, 0x36) = 1;
@@ -2244,7 +2230,7 @@ void he_Unk541170(void)
     HM_B(ev, 0x36) = 1;
     *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
     HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
-    HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
     HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
     cm_SendLongMessage(ev);
 }
@@ -2252,7 +2238,7 @@ void he_Unk541170(void)
 
 void he_Unk541200(int r)
 {
-    *(HETIME *)(r + 0x52) = ai_Time;
+    *(AITIME *)(r + 0x52) = ai_Time;
     if ((*(unsigned char *)(r + 0x78) & 2) != 0)
         cm_SendExSetHE(-1, r);
 }
@@ -2369,7 +2355,7 @@ void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6)
             HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(p1 + 8) * 0x21c);
         HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
         HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
         HM_I(ev, 0x58) = *(int *)(p2 + 2);
         HM_I(ev, 0xc) = -1;
         *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
@@ -2412,7 +2398,7 @@ void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
             HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(p1 + 8) * 0x21c);
         HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
         HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_TimeHour);
+        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
         HM_I(ev, 0x58) = *(int *)(p2 + 2);
         HM_I(ev, 0xc) = -1;
         *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
@@ -2442,7 +2428,7 @@ void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
 
 void he_Unk541a50(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x541a80, starts the event record `r` (when bit 4 of +0x78 is clear): due now + 1, a second clock (+0xb0) due in 0x18 units, a random 0x13 .. 0x16 at +0xb4, state 1 at +0xc0, posts it (0x4c4c60) and keeps the result at +0x84 */
 
@@ -2451,9 +2437,9 @@ void he_Unk541a80(int r)
     short s;
 
     if ((*(unsigned char *)(r + 0x78) & 4) == 0) {
-        *(HETIME *)(r + 0x52) = ai_Time;
+        *(AITIME *)(r + 0x52) = ai_Time;
         gm_AddTime(r + 0x52, 1, 0, 0);
-        *(HETIME *)(r + 0xb0) = ai_Time;
+        *(AITIME *)(r + 0xb0) = ai_Time;
         gm_AddTime(r + 0xb0, 0x18, 0, 0);
         *(int *)(r + 0xb6) = 0;
         s = util_Random(4);
@@ -2479,7 +2465,7 @@ void he_Unk544070(int ev)
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         pl = gm_FindChar(*(int *)(ev + 0xbc));
         if (pl == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
@@ -2489,15 +2475,15 @@ void he_Unk544070(int ev)
                 n++;
             } while ((r = (int)he_NextEvent()) != 0);
             if (n > 4) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
                 ai_Unk5a8d00((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
                 return;
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0xac) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0xac) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         gm_AddTime(ev + 0xac, 0x18, 0, 0);
         idx = *(unsigned short *)(ev + 8) * 0x21c;
@@ -2513,7 +2499,7 @@ void he_Unk544070(int ev)
         *(float *)(ev + 0xd0) = gm_GetSkill((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 4);
         *(int *)(ev + 0xcc) = 0x300;
         if (ai_InventoryHas(pl, 0x15c) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             ai_Unk5a8d80(pl, (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
             return;
@@ -2570,7 +2556,7 @@ void he_Unk544330(int ev)
             pl = (*(int *)(sv + 200) + pl) % 0x300;
         }
         *(int *)(sv + 0xc4) = pl;
-        *(HETIME *)(sv + 0x52) = ai_Time;
+        *(AITIME *)(sv + 0x52) = ai_Time;
         if (gm_CompareTime(sv + 0xac, (unsigned)&ai_Time) != 1) {
             gm_AddTime(sv + 0x52, 0, 1, 0);
             *(int *)(sv + 0x84) = cm_SendExSetHE(-1, sv);
@@ -2627,7 +2613,7 @@ void he_Unk544630(int ev)
             r = (int)he_FindEvent(1, 0, 0x41);
             while (1) {
                 if (r == 0) {
-                    *(HETIME *)(ev + 0x52) = ai_Time;
+                    *(AITIME *)(ev + 0x52) = ai_Time;
                     gm_AddTime(ev + 0x52, 0x18, 0, 0);
                     *(int *)(ev + 0x58) = 0;
                     *(int *)(ev + 0x70) = 0;
@@ -2645,12 +2631,12 @@ void he_Unk544630(int ev)
                     break;
                 r = (int)he_NextEvent();
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
     }
@@ -2705,7 +2691,7 @@ void he_Unk544840(int ev)
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
         return;
     if (a == 0 || b == 0 || *(char *)(a + 9) == *(char *)(b + 9)) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
@@ -2717,7 +2703,7 @@ void he_Unk544840(int ev)
     case 0:
         r = ai_Unk5c6530(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
         if (r == -0x405 || r == -0x406) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             txt_Format(buf3, r == -0x405 ? 0x42f6 : 0x42f7, HE_W(b));
@@ -2754,14 +2740,14 @@ void he_Unk544840(int ev)
                     }
                     he_ShowNews(*(int *)(a + 4), *(int *)(a + 4), buf1, 1, 0x5f4, (char *)0);
                 }
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
             } else {
                 if (r == 1) {
                     *(char *)(ev + 0xb9) = (char)ai_Unk5c6620(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
                     *(char *)(ev + 0xb8) = *(char *)(ev + 0xb8) + 1;
                 }
                 if (*(char *)(ev + 0xb8) >= *(char *)(ev + 0xb9)) {
-                    *(HETIME *)(ev + 0x52) = ai_Time;
+                    *(AITIME *)(ev + 0x52) = ai_Time;
                     gm_AddTime(ev + 0x52, 0, 2, 0);
                     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
                     return;
@@ -2775,7 +2761,7 @@ void he_Unk544840(int ev)
                 } else if ((short)util_Random(4) == 0) {
                     *(char *)(ev + 0xb8) = *(char *)(ev + 0xb8) + 1;
                 }
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0x18, 0, 0);
                 *(short *)(ev + 0x56) = 8;
                 *(char *)(ev + 0xba) = 1;
@@ -2785,7 +2771,7 @@ void he_Unk544840(int ev)
                 return;
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
@@ -2803,7 +2789,7 @@ void he_Unk544840(int ev)
         cm_SendSetField(*(int *)pb, 0x1c8, 4, 0x40000, 0);
         cm_SendSetField(*(int *)pa, 0x1c8, 4, 0x40000, 0);
         cm_EndGroup((char *)((unsigned)&ai_Unk625820 + 0x11d8));
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(5, ev);
         return;
@@ -2828,7 +2814,7 @@ void he_Unk544840(int ev)
             memset(msg, 0, sizeof(msg));
             *(int *)(msg + 0x34) = *(int *)(ev + 4);
             *(int *)(msg + 0x38) = *(int *)(b + 4);
-            *(HETIME *)(msg + 0x18) = ai_Time;
+            *(AITIME *)(msg + 0x18) = ai_Time;
             *(int *)(msg + 0xc) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
             msg[8] = 6;
             msg[0x26] = (char)0xb2;
@@ -2842,7 +2828,7 @@ void he_Unk544840(int ev)
             } else if (*(unsigned short *)(msg + 0x1c) < 7) {
                 *(unsigned short *)(msg + 0x1c) = 0xb;
             }
-            *(HETIME *)(ev + 0x52) = *(HETIME *)(msg + 0x18);
+            *(AITIME *)(ev + 0x52) = *(AITIME *)(msg + 0x18);
             *(char *)(ev + 0xbb) = 1;
             *(int *)(ev + 0x84) = -1;
             cm_SendExSetHE(4, ev);
@@ -2859,7 +2845,7 @@ void he_Unk544840(int ev)
             }
             he_ShowNews(*(int *)(a + 4), *(int *)(a + 4), buf1, 1, 0x5f4, (char *)0);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
@@ -2893,7 +2879,7 @@ int ai_DrawAmountRow();
 struct SBSAMPLE * sb_PlaySample();
 int gm_FindById();
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);
-int gm_AddTime2();
+void gm_AddTime2();
 int cm_SendLongMessage(char *msg);
 int gm_CompareTime();
 int d2_SetForm(int view, int n);
@@ -2923,7 +2909,7 @@ void he_Unk5472d0(int ev, int p, int q)
     amt -= (unsigned short)util_Random(8);
     amt_ChangeDistrictOpinion(q, bx, amt);
     cm_SendRelations(*(int *)(p + 4), *(int *)(q + 4), -0x14, 1);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     cm_SendExSetHE(-1, ev);
 }
 /* 0x547430, a Ghidra miss (disassembled): the run handler of the duel announcement ("Special\Beleidigung" window, the event +0xac is the duel (0x53e400 kind 1): its two figures +0xb0 / +0xac): state 0 opens the window with the sound "NeueMessage_s_01" (0x426fa0, when 0x6f25ac is not 2), shows the news 0x1d6c / 0x1d6b and a click target (0x5be1d0 / 0x5be720), state 1 waits for the due time (then 0x5472d0 settles it for the first) or the answer (0xf8a668: 0 = 0x5471e0, 1 = 0x5472d0); a gone figure ends both events (ROUGH) */
@@ -2944,7 +2930,7 @@ void he_Unk547430(int ev)
         if (*(int *)(ev + 0x74) != 0)
             he_Unk53d800(ev);
         if (edi != 0) {
-            *(HETIME *)(edi + 0x52) = ai_Time;
+            *(AITIME *)(edi + 0x52) = ai_Time;
             cm_SendExSetHE(-1, edi);
         }
         he_FreeEvent((int *)ev);
@@ -2971,8 +2957,8 @@ void he_Unk547430(int ev)
         }
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 3);
         io_PrintText(0x1d6b, *(unsigned short *)(edi + 0xb4), *(unsigned short *)ebx, *(unsigned short *)(edi + 0xb6), *(unsigned short *)ebx);
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 2, 0, 0);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
@@ -3010,7 +2996,7 @@ void he_Unk547750(int ev)
     int amt;
 
     *(int *)(ev + 0x84) = -1;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(short *)(ev + 0x56) = 6;
     *(int *)(ev + 0x58) = 0x1e;
@@ -3020,7 +3006,7 @@ void he_Unk547750(int ev)
     b = gm_FindChar(*(int *)(ev + 0xb0));
     if (a == 0 || b == 0) {
         if ((*(unsigned *)(a + 0x1c8) & 0x400) != 0 || (*(unsigned *)(b + 0x1c8) & 0x400) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
@@ -3042,7 +3028,7 @@ void he_Unk547750(int ev)
         *(int *)(msg + 0x58) = *(int *)(ev + 4);
         gm_AddTime2(msg + 0x24, *(unsigned short *)b, 6, 0, 0);
         cm_SendLongMessage(msg);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(short *)(ev + 0x56) = 6;
         *(int *)(ev + 0x58) = 0x1e;
@@ -3055,7 +3041,7 @@ void he_Unk547750(int ev)
     if (!(util_RandomF() + f < 1.0f)) {
         cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0x400, 0);
         cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0x400, 0);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(short *)(ev + 0x56) = 6;
         *(int *)(ev + 0x58) = 0x1e;
@@ -3081,7 +3067,7 @@ void he_Unk547750(int ev)
     amt -= (unsigned short)util_Random(8);
     amt_ChangeDistrictOpinion(b, bx, amt);
     cm_SendRelations(*(int *)(b + 4), *(int *)(a + 4), -0x14, 1);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 2, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
@@ -3105,7 +3091,7 @@ void he_Unk547ba0(int ev)
             if (b != 0) {
                 memset(msg, 0, sizeof(msg));
                 *(int *)(msg + 0x34) = *(int *)(a + 4);
-                *(HETIME *)(msg + 0x18) = ai_Time;
+                *(AITIME *)(msg + 0x18) = ai_Time;
                 msg[8] = 4;
                 msg[0x26] = (char)0xa2;
                 *(int *)(msg + 0x14) = -1;
@@ -3120,7 +3106,7 @@ void he_Unk547ba0(int ev)
         }
         if (b != 0)
             cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x400);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
@@ -3134,7 +3120,7 @@ void he_Unk547ba0(int ev)
             cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x400);
         if (b != 0)
             cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x400);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
@@ -3148,7 +3134,7 @@ void he_Unk547ba0(int ev)
                 cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x400);
             if (b != 0)
                 cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x400);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         }
@@ -3171,7 +3157,7 @@ void he_Unk547ee0(int ev)
         he_FreeEvent((int *)ev);
     c = *(unsigned char *)o;
     *(int *)(ev + 0xbc) = cm_SendMessage3d(o, 0, *(unsigned char *)(U_I((unsigned)&ai_BTypes) + c * 0x24d + 0x22f), 0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 6, 0);
 }
 /* 0x547f90, a Ghidra miss (disassembled): the run handler of the "RndGeselle" event: the objects of +0xb0 / +0xac are fetched (0x4fea50); a gone one ends the event, in the state 0 with the finished job +0xbc the figure it returns (0x4c3b10) is sent to +0xb0 / +0xb4 ("RndGeselle", 0x4c52e0) and the news (id +0xb8, 0x20d + 0x23 for party 0 + its record byte +0x165) is shown (0x53dee0) (ROUGH) */
@@ -3182,7 +3168,7 @@ void he_Unk547f90(int ev)
     int o2 = 0, o1 = 0;
     int r, k;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 4, 0);
     gm_FindById(&o1, 0, 0, *(int *)(ev + 0xb0));
     gm_FindById(0, 0, &o2, *(int *)(ev + 0xac));
@@ -3208,13 +3194,13 @@ void he_Unk548110(int ev)
 
     *(int *)(ev + 0x84) = -1;
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
             b = gm_FindChar(*(int *)(ev + 0xb0));
             a = gm_FindChar(*(int *)(ev + 0xac));
             if (a == 0 || b == 0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 cm_SendExSetHE(-1, ev);
                 return;
             }
@@ -3266,7 +3252,7 @@ void he_Unk548230(int ev)
         if (st < 0) {
             he_FreeEvent((int *)ev);
         } else if (st == 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         }
@@ -3276,7 +3262,7 @@ void he_Unk548230(int ev)
 
 void he_Unk5482c0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
 }
 /* 0x548300, a Ghidra miss: counts +0xac (a byte) down in the state 0, frees the event at 0 or when it is freed (-2) */
@@ -3299,7 +3285,7 @@ void he_Unk548300(int ev)
 
 void he_Unk548330(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0xb0) = *(int *)(ev + 0xac) + 1;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
 }
@@ -3317,7 +3303,7 @@ void he_Unk548380(int ev)
 void he_Unk5483a0(int ev)
 {
     *(int *)(ev + 0xb0) = -1;
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(short *)(ev + 0x56) = *(short *)(ev + 0x56) + (short)util_Random(4) + 2;
     *(int *)(ev + 0x70) = 0;
 }
@@ -3410,7 +3396,7 @@ void he_Unk5485b0(int ev)
 
 void he_Unk548750(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 3, 0, 0);
 }
 /* 0x548790, a Ghidra miss: the run handler of the pay event (state 0: the window "Berufe\Messagebox_Meisterpruefung" and the news 0x10b4 with the amount 0x50a640 * 0.05 (+0xb0); state 1: the answer yes (0xf8a668 = 0) pays 0x4c4830 and posts a message record of type 0x56, no only ends it) (ROUGH) */
@@ -3514,7 +3500,7 @@ void he_Unk5489b0(int ev)
 
 void he_Unk548b70(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     if ((short)util_Random(2) != 0)
         he_FreeEvent((int *)ev);
 }
@@ -3621,7 +3607,7 @@ void he_Unk548de0(int ev)
 
 void he_Unk548ef0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x60, 0, 0);
 }
 /* 0x548f30, the run handler of a one-shot event (like 0x548230 without the pending check) */
@@ -3634,7 +3620,7 @@ void he_Unk548f30(int ev)
         if (st < 0) {
             he_FreeEvent((int *)ev);
         } else if (st == 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         }
@@ -3653,7 +3639,7 @@ void he_Unk548fa0(int ev)
             cm_SendMoveGoods(-1, U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xac));
             *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
             if (*(int *)(ev + 0xb0) != 0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0x18, 0, 0);
                 return;
             }
@@ -3665,7 +3651,7 @@ void he_Unk548fa0(int ev)
 
 void he_Unk549040(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 5, 0);
 }
 /* 0x549080, like 0x548fa0 but the amount -+0xac goes to the player through 0x53eec0 */
@@ -3681,7 +3667,7 @@ void he_Unk549080(int ev)
             he_AddApEvent(*(unsigned short *)(ev + 8), U_I((unsigned)&full_data_1442500), -*(int *)(ev + 0xac), 0);
             *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
             if (*(int *)(ev + 0xb0) != 0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0x18, 0, 0);
                 return;
             }
@@ -3746,7 +3732,7 @@ void he_Unk549120(int ev)
         msg[8] = 7;
         *(int *)(msg + 0xc) = *(int *)(rec + 4);
         *(int *)(msg + 0x14) = -1;
-        *(HETIME *)(msg + 0x18) = ai_Time;
+        *(AITIME *)(msg + 0x18) = ai_Time;
         msg[0x26] = 0x20;
         msg[0x30] = 2;
         *(int *)(msg + 0x34) = *(int *)(o + 4);
@@ -3780,7 +3766,7 @@ void he_Unk5493a0(int ev)
             break;
         e = (int)he_NextEvent();
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
 /* 0x549430, a Ghidra miss (disassembled): the run handler of the trial of the figure +0xac for the player (word +8): state 0 counts the rounds (+0xb8, +0x56 += 0x18 units, the news 0x1a9b, the player pays the cost -+0xb4 with 0x53eec0; the 3rd round goes to the state 1), state 1 picks two random abilities of the player (0x504ad0 / 0x504100, +0x10 random bytes each at +0x80 by 0x4c3d00), sets the party flags 0x4c59b0 (+0xb0) and tells the figure the news 0x1a9c (ROUGH) */
@@ -3806,7 +3792,7 @@ void he_Unk549430(int ev)
         rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
         o = gm_FindChar(*(int *)(ev + 0xac));
         if (o == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             cm_SendExSetHE(-1, ev);
             return;
         }
@@ -3832,13 +3818,13 @@ void he_Unk549430(int ev)
     cm_SendSetJob(*(int *)(rec + 4), *(unsigned char *)(ev + 0xb0));
     o = gm_FindChar(*(int *)(ev + 0xac));
     if (o == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         cm_SendExSetHE(-1, ev);
         return;
     }
     txt_Format(text, 0x1a9c, *(unsigned short *)rec, ((*(char *)(rec + 9) != 0) ? 0x5f : 0) + 0x130 + *(unsigned char *)(ev + 0xb0));
     he_ShowNews(*(int *)(o + 4), *(int *)(o + 4), text, 0, 0x5f4, (char *)0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     cm_SendExSetHE(-1, ev);
 }
 /* 0x5496f0, the init of the event 0x5f (like 0x5493a0, without the posting) */
@@ -3857,7 +3843,7 @@ void he_Unk5496f0(int ev)
             break;
         e = (int)he_NextEvent();
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
 /* 0x549770, a Ghidra miss (disassembled): the run handler of the next trial step for the player (word +8): state 0 shows the news 0x1a9f to the figure +0xac and raises the 0x506430 counter (+0x64); state 1 spends the 0x5d08c0 of +0xb8 / +0xb9, shows 0x1a9e, counts +0xba (5 rounds end it) and pays the cost -+0xb4 (0x53eec0) (ROUGH) */
@@ -3887,14 +3873,14 @@ void he_Unk549770(int ev)
             if (r != 0)
                 *(int *)(r + 0x64) = *(int *)(r + 0x64) + 1;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         cm_SendExSetHE(-1, ev);
         return;
     }
     if (st != 1)
         return;
     if (o == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         cm_SendExSetHE(-1, ev);
         return;
     }
@@ -3935,12 +3921,12 @@ void he_Unk549970(int ev)
     *(unsigned char *)(ev + 0xac) = 0x15;
     *(unsigned char *)(ev + 0xad) = (unsigned char)(((int)((float)a * 0.5f + 1.0f) + 2) * 2);
     *(int *)(ev + 0x70) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (U_I((unsigned)&gm_AllowAll) != 0)
         gm_AddTime(ev + 0x52, 0, 0, 1);
     else
         gm_AddTime(ev + 0x52, 5, 0, 0);
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
 }
 /* 0x549aa0, the run handler of the training result event (+0xac = base, +0xad = random range, +0xae = the ability): state 0 raises the ability (0x4c6020) of the player by base - random, with a news 0x16f2 .. when the value cap 252 is hit; a player of kind 6 whose value rises past the old one gets a message record (type 0x6a, 0x4c4b70), then 0x4c5870 and free (ROUGH) */
 
@@ -3970,7 +3956,7 @@ void he_Unk549aa0(int ev)
             msg[0] = 0x6a;
             *(int *)(msg + 4) = *(int *)(rec + 4);
             *(int *)(msg + 8) = -1;
-            *(HETIME *)(msg + 0x1c) = ai_Time;
+            *(AITIME *)(msg + 0x1c) = ai_Time;
             msg[0x24] = 9;
             msg[0x2a] = (char)ab;
             cm_SendLongMessage(msg);
@@ -3990,7 +3976,7 @@ void he_Unk549ce0(int ev)
     char msg[0xf8];
     int n = 0x100, idx, b, rec, t;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     idx = (unsigned short)util_Random(0x100);
     do {
         b = U_I((unsigned)&ai_Blds) + idx * 0xa9;
@@ -4007,7 +3993,7 @@ void he_Unk549ce0(int ev)
             *(int *)(msg + 0xc) = -1;
             msg[4] = 0x78;
             msg[0x36 - 0x28] = 9;
-            *(HETIME *)(msg + 0x28) = ai_Time;
+            *(AITIME *)(msg + 0x28) = ai_Time;
             for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
                 if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
                     *(int *)(msg + 8) = *(int *)(rec + 4);
@@ -4046,14 +4032,14 @@ void he_Unk549f70(int ev)
     e = (int)he_FindEvent(1, 0, 0x59);
     while (e != 0) {
         if (e != ev) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
         e = (int)he_NextEvent();
     }
     *(int *)(ev + 0x70) = 5;
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0x84) = -1;
     cm_SendExSetHE(5, ev);
 }
@@ -4256,8 +4242,8 @@ void he_Unk54a6f0(int ev)
     }
     memset((void *)(ev + 0xac), -1, 6 * 4);
     *(unsigned char *)(ev + 0xd2) = 0;
-    *(HETIME *)(ev + 0xc4) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xc4) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 2, 0);
 }
 
@@ -4294,7 +4280,7 @@ void he_Unk54a7b0(int ev)
             break;
         }
         *(int *)(ev + 0x70) = dt > 0x1e0;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 6, 0);
         *(unsigned char *)(ev + 0xd2) = *(unsigned char *)(ev + 0xd2) % 6;
     }
@@ -4402,7 +4388,7 @@ int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 /* 0x54ae20, a Ghidra miss: the start handler: the due clock +0x52 = now, posted 2 units ahead */
 void he_Unk54ae20(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 2, 0);
 }
 /* 0x54ae60, a Ghidra miss (disassembled): the protection money question ("Berufe\Messagebox_SCHUTZGELD", the running event +0xac (0x53e400 kind 1) of the pickpocket gang 0x54a7b0 and its target figure +0xb0 of 0x501190): state 0 opens the window and the news 0x1a8c (the amount +0xb4 and the player, in the order of 0x5190a0), state 1 waits for the due time or the answer (0xf8a668: 0 = pays: the gang event goes on in the state 3 with +0xb8 = 1, the target figure gets the flag 0x100 (0x4c4a60 0x5a), the amount goes from the player to the gang leader (0x4c4830) and to the building +0x4d; 1 = refuses: +0xb8 = 0); a gone event or figure ends it (ROUGH) */
@@ -4432,8 +4418,8 @@ void he_Unk54ae60(int ev)
             io_PrintText(0x1a8c, *(unsigned short *)(esi + 8), *(int *)(esi + 0xb4), ebx);
         else if (h == 1)
             io_PrintText(0x1a8c, *(unsigned short *)(esi + 8), ebx, *(int *)(esi + 0xb4));
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 3, 0, 0);
         snd_QueueVoice(-7, 0, "_NACHRICHTEN_HS_34", 0, 0);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
@@ -4452,7 +4438,7 @@ void he_Unk54ae60(int ev)
     if (h == 0) {
         *(int *)(ev + 0x70) = 3;
         *(int *)(esi + 0xb8) = 1;
-        *(HETIME *)(esi + 0x52) = ai_Time;
+        *(AITIME *)(esi + 0x52) = ai_Time;
         cm_SendExSetHE(3, esi);
         cm_SendSetField(*(int *)(ebx + 1), 0x5a, 2, 0x100, 0);
         cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + *(unsigned short *)(esi + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebx + 0x27) * 0x21c), 0, *(int *)(esi + 0xb4));
@@ -4463,7 +4449,7 @@ void he_Unk54ae60(int ev)
     } else if (h == 1) {
         *(int *)(ev + 0x70) = 3;
         *(int *)(esi + 0xb8) = 0;
-        *(HETIME *)(esi + 0x52) = ai_Time;
+        *(AITIME *)(esi + 0x52) = ai_Time;
         cm_SendExSetHE(3, esi);
     }
     he_Unk53d800(ev);
@@ -4479,7 +4465,7 @@ void he_Unk54b170(int ev)
     *(int *)(ev + 0x84) = -1;
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(int *)(ev + 0xb8) = -1;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x70) = 1;
         *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
@@ -4508,7 +4494,7 @@ void he_Unk54b1e0(int ev)
         return;
     *(int *)(ev + 0x84) = -1;
     if (edi == 0 || ebp == 0 || *(unsigned short *)(ebp + 0x27) == 0xffff) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x70) = -1;
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -4519,14 +4505,14 @@ void he_Unk54b1e0(int ev)
         sv_MoveToGroup(ebp, 0, *(unsigned short *)edi, ev);
         cm_SendChrStop(*(int *)(edi + 4));
         cm_SendChrGotoBuilding(*(int *)(edi + 4), *(int *)(ebp + 1), -1, 0, 1, "Schutzgeld");
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 10, 0);
         *(int *)(ev + 0x70) = 2;
         *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
         return;
     case 2:
         if (*(int *)(*(int *)(edi + 0x184) + 0x128) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 4, 0);
             *(int *)(ev + 0x70) = 2;
             *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
@@ -4543,16 +4529,16 @@ void he_Unk54b1e0(int ev)
             msg[0x3a] = 9;
             *(int *)(msg + 0x34) = *(int *)(ev + 4);
             *(int *)(msg + 0x58) = *(int *)(ev + 4);
-            *(HETIME *)(msg + 0x28) = ai_Time;
+            *(AITIME *)(msg + 0x28) = ai_Time;
             cm_SendLongMessage(msg);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 3, 0);
             *(int *)(ev + 0x70) = 3;
             *(int *)(ev + 0xb8) = 2;
             *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(0x10) + 2, 0);
         *(int *)(ev + 0x70) = 3;
         if ((*(unsigned char *)(ebp + 0x5b) & 1) != 0) {
@@ -4574,8 +4560,8 @@ void he_Unk54b1e0(int ev)
                 o = gm_BuildQuery(1, 1, *(int *)(ev + 0xbc));
                 *(int *)(o + 0x4d) = *(int *)(o + 0x4d) + *(int *)(ev + 0xb4);
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
-            *(HETIME *)(ev + 0x44) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x44) = ai_Time;
             gm_AddTime(ev + 0x52, 0x30, 0, 0);
             *(int *)(ev + 0x70) = 1;
             *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
@@ -4583,7 +4569,7 @@ void he_Unk54b1e0(int ev)
             he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5f3, "_NACHRICHTEN_HS_84");
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
         if (r == 0) {
             *(int *)(ev + 0x70) = 1;
@@ -4605,7 +4591,7 @@ void he_Unk54b1e0(int ev)
         sv_MoveToGroup(ebp, 0, *(unsigned short *)edi, 0);
         cm_SendChrStop(*(int *)(edi + 4));
         cm_SendChrGotoBuilding(*(int *)(edi + 4), *(int *)(ev + 0xbc), *(int *)(ev + 0xc0), 0, 0, "Schutzgeld");
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x70) = -1;
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -4620,7 +4606,7 @@ void he_Unk54b9b0(int ev)
 {
     int s = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 2, 0);
     if (s != 0)
         cm_SendSetField(*(int *)(s + 1), 0x5a, 2, 0x800, 0);
@@ -4644,13 +4630,13 @@ void he_Unk54ba20(int ev)
         sv_MoveToGroup(esi, *(unsigned short *)ebx, 0, ev);
         cm_SendChrStop(*(int *)(ebx + 4));
         cm_SendChrGotoBuilding(*(int *)(ebx + 4), *(int *)(esi + 1), -1, 0, 1, "BetriebsPr\xfc" "fung");
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 10, 0);
         *(int *)(ev + 0x70) = 1;
         return;
     }
     if (st == 1) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 4, 0);
         if (*(int *)(*(int *)(ebx + 0x184) + 0x128) != 0) {
             *(int *)(ev + 0x70) = 1;
@@ -4701,8 +4687,8 @@ void he_Unk54be20(int ev)
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(int *)(ev + 0xd4) = -1;
         *(unsigned char *)(ev + 0xdc) = 0;
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
@@ -4732,7 +4718,7 @@ void he_Unk54bec0(int ev)
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     switch (*(int *)(ev + 0x70)) {
     case 0:
         for (i = 0; i < 6; i++) {
@@ -4755,12 +4741,12 @@ void he_Unk54bec0(int ev)
                 return;
             }
         }
-        *(HETIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 10, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        *(HETIME *)(tmpclock) = *(HETIME *)(ev + 0x44);
+        *(AITIME *)(tmpclock) = *(AITIME *)(ev + 0x44);
         gm_AddTime((int)tmpclock, 0x18, 0, 0);
         if (gm_CompareTime((unsigned)&ai_Time, (int)tmpclock) > 0) {
             gm_AddTime(ev + 0x52, 0, 2, 0);
@@ -4801,7 +4787,7 @@ void he_Unk54bec0(int ev)
             *(int *)(msg + 0x104) = ebx;
             *(int *)(msg + 0x108) = ebx;
             *(int *)(msg + 0x10c) = *(int *)(ev + 0xcc);
-            *(HETIME *)(msg + 0x18) = ai_Time;
+            *(AITIME *)(msg + 0x18) = ai_Time;
             gm_AddTime(msg + 0x18, 0, 0x1e, 0);
             *(int *)(ev + 0xd8) = ((int (*)(void *))cm_SendNewParty)(msg);
             gm_AddTime(ev + 0x52, 0, 10, 0);
@@ -4861,7 +4847,7 @@ void he_Unk54bec0(int ev)
 
 void he_Unk54c4c0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(short *)(ev + 0x56) = 0xa;
     *(int *)(ev + 0x58) = 0;
     *(int *)(ev + 0x5c) = 0;
@@ -4900,7 +4886,7 @@ void he_Unk54c570(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    sprintf(text, "-------> RunSimUnfall: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_TimeHour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
+    sprintf(text, "-------> RunSimUnfall: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_Time.hour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
     if (*(int *)(ev + 0xb0) == 0) {
         int pr0[16] = { 1, 3, 5, 7, 0xb, 0xd, 0x11, 0x13, 0x2ed, 0x2ef, 0x2f3, 0x2f5, 0x2f9, 0x2fb, 0x2fd, 0x2ff };
 
@@ -4956,7 +4942,7 @@ void he_Unk54c570(int ev)
 void he_Unk54c870(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(short *)(ev + 0x56) = 9;
         *(int *)(ev + 0x58) = 0;
@@ -5043,11 +5029,11 @@ void he_Unk54c8e0(int ev)
         *(int *)(msg + 0x80) = *(int *)(ev + 0xac);
         *(int *)(msg + 0xb0) = n;
         *(int *)(msg + 0x70) = *(int *)(ev + 0xb0);
-        *(HETIME *)(msg + 0x14) = ai_Time;
+        *(AITIME *)(msg + 0x14) = ai_Time;
         gm_AddTime(msg + 0x14, 0, 0x1e, 0);
         cm_SendNewParty(msg);
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     cm_SendExSetHE(-1, ev);
 }
@@ -5055,7 +5041,7 @@ void he_Unk54c8e0(int ev)
 
 void he_Unk54cc20(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0x70) = 0;
     *(int *)(ev + 0xb4) = 0;
 }
@@ -5155,7 +5141,7 @@ void he_Unk54cc50(int ev)
 
 void he_Unk54d190(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(short *)(ev + 0x56) = 0x16;
     *(int *)(ev + 0x58) = 0x1e;
     *(int *)(ev + 0x5c) = 0;
@@ -5297,7 +5283,7 @@ void d2_CentreViewWindows(int view);
 /* 0x54d790, a Ghidra miss: the init of the level-up event: the due clock = the start clock (+0x44), +0xb4 = random(6) */
 void he_Unk54d790(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0xb4) = (unsigned short)util_Random(6);
 }
 /* 0x54d7d0, a Ghidra miss (disassembled; 582 B): the run handler of the level-up message of the own player ("SPECIAL\TALENT_STUFE": the news 0x16c8, 0x16c9 + 2 * +0xb4 + the talent +0xac, the fanfare 0x4c27d0, "_TALENT_MAIN" / "_TALENT_STUFE" (+0xb0 - 1) / "_TALENT_MAX" by the level +0xb0 (0x16e6 + level, 0x16ec + talent), 0x16f1); state 1 waits for the answer and frees the event (ROUGH) */
@@ -5371,7 +5357,7 @@ void he_Unk54da20(int ev)
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(unsigned short *)(ev + 0xac) = (unsigned short)hmt_RecordCount();
         *(int *)(ev + 0xb4) = -1;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
@@ -5397,7 +5383,7 @@ void he_Unk54da80(int ev)
         a = hmt_RandomRecord(*(unsigned short *)(ev + 0xac));
         *(unsigned short *)(ev + 0xac) = (unsigned short)a;
         *(unsigned short *)(ev + 0xae) = (unsigned short)hmt_RandomTextOffset(a);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + (unsigned short)util_Random(4) + 3;
         *(short *)(ev + 0x56) = 0xa;
         *(int *)(ev + 0x58) = 0;
@@ -5416,7 +5402,7 @@ void he_Unk54da80(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
         obj = (int)evt_FindById(*(int *)(ev + 0xb4));
         if (*(unsigned short *)(ev + 0x56) >= 0x14) {
@@ -5454,7 +5440,7 @@ void he_Unk54da80(int ev)
                     cm_SendSetField(*(int *)(rec + 4), 0x1c8, 4, 0, 0x20000);
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
         *(short *)(ev + 0x56) = 6;
         *(int *)(ev + 0x58) = 0;
@@ -5480,7 +5466,7 @@ float gm_AddHealth(unsigned short id, int d);
 void he_Unk54de60(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0xac) = 0;
         *(int *)(ev + 0xb0) = 0;
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
@@ -5526,7 +5512,7 @@ void he_Unk54dec0(int ev)
         return;
     case 3:
         if (cm_GetSlotState(*(int *)(ev + 0xb8)) == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 1, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
             return;
@@ -5562,7 +5548,7 @@ void he_Unk54dec0(int ev)
         cm_AddFieldDelta(1, 1, 2, &id);
         cm_AddFieldDelta(1, 1, 0xc, &id);
         cm_SendFieldDeltas();
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0xac) = *(int *)(ev + 0xac) + 1;
         *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
@@ -5595,12 +5581,12 @@ void he_Unk54dec0(int ev)
     case 7:
         gm_AddTime(ev + 0x52, 0, 10, 0);
         if (*(unsigned short *)(ev + 0x56) >= 0x16) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
             *(int *)(ev + 0x58) = 0;
             *(short *)(ev + 0x56) = 6;
         } else if (*(unsigned short *)(ev + 0x56) < 0xf) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x58) = *(int *)(ev + 0x58) + 1;
         }
         *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
@@ -5622,7 +5608,7 @@ void he_Unk54e770(int ev)
 
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     if (edi == 0) {
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -5699,7 +5685,7 @@ void he_Unk54e890(int ev)
             return;
         }
         if (st == 3) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
             return;
         }
@@ -5744,7 +5730,7 @@ void he_Unk54ebd0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    sprintf(text, "-------> RunSimKrankheiten: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_TimeHour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
+    sprintf(text, "-------> RunSimKrankheiten: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_Time.hour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
     if (*(int *)(ev + 0xb0) == 0) {
         *(int *)(ev + 0xb0) = pr0[(unsigned short)util_Random(0x10)];
         *(int *)(ev + 0xac) = (unsigned short)util_Random(0x300);
@@ -5806,7 +5792,7 @@ void he_Unk54ebd0(int ev)
 void he_Unk54ef70(int ev)
 {
     int e, o = 0, b, h;
-    HETIME tm;
+    AITIME tm;
 
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
         return;
@@ -5816,8 +5802,8 @@ void he_Unk54ef70(int ev)
     *(int *)(ev + 0xc0) = 0;
     *(int *)(ev + 0xb8) = -1;
     *(int *)(ev + 0xbc) = (unsigned short)util_Random(4) + 5;
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     e = (int)he_FindEvent(1, 0, 0x74);
     while (e != 0) {
@@ -6021,7 +6007,7 @@ void he_Unk54f160(int ev)
         else
             txt_Format(text, 0x18aa);
         he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(o + 0x27) * 0x21c), -1, text, 0, 0x5ec, *(int *)(o + 1), *(int *)(ev + 0xb4), 0, "");
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
     default:
@@ -6045,7 +6031,7 @@ void he_Unk54fb50(int ev)
 
     gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
     if (o != 0 && *(int *)(o + 0x61) != 0 && (r = ai_FindUsableGood(*(unsigned short *)(ev + 0xc2))) != 0 && *(int *)(r + 4) != 0) {
-        *(HETIME *)(ev + 0xb4) = ai_Time;
+        *(AITIME *)(ev + 0xb4) = ai_Time;
         gm_AddTime(ev + 0xb4, 0, *(int *)(r + 4), 0);
         *(int *)(ev + 0xb0) = 0;
         *(int *)(ev + 0x70) = 0;
@@ -6145,10 +6131,10 @@ void he_Unk54fe80(int ev)
 {
     int r;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     r = ai_FindUsableGood(0x178);
     if (r != 0 && *(int *)(r + 4) != 0) {
-        *(HETIME *)(ev + 0xb0) = ai_Time;
+        *(AITIME *)(ev + 0xb0) = ai_Time;
         gm_AddTime(ev + 0xb0, 0, *(int *)(r + 4), 0);
         return;
     }
@@ -6184,7 +6170,7 @@ void he_Unk54ff20(int ev)
                 cm_SendChrGotoBuilding(*(int *)esi, *(int *)(*(int *)(esi + 0x16c) + 1), *(int *)(o + 2), 0, 0, "Unkendunk");
         }
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
     if (gm_CompareTime((unsigned)&ai_Time, ev + 0xb0) == 1)
         he_FreeEvent((int *)ev);
@@ -6430,9 +6416,9 @@ void he_Unk542100(int ev)
         if (*(int *)(ev + 0xc0) == 1) {
             he_StammtischCommand(0x6e657720, bld, r, -1);
             *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(HETIME *)(ev + 0xb0) = ai_Time;
+            *(AITIME *)(ev + 0xb0) = ai_Time;
             gm_AddTime(ev + 0xb0, 0x18, 0, 0);
         } else {
             if (gm_MinutesBetween((unsigned)&ai_Time, ev + 0xb0) > 0) {
@@ -6441,9 +6427,9 @@ void he_Unk542100(int ev)
                 return;
             }
             he_StammtischCommand(0x65786563, bld, r, -1);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(HETIME *)(ev + 0xb0) = ai_Time;
+            *(AITIME *)(ev + 0xb0) = ai_Time;
             gm_AddTime(ev + 0xb0, 0x18, 0, 0);
         }
     } else {
@@ -6456,9 +6442,9 @@ void he_Unk542100(int ev)
             cm_EndGroup("stammtisch clear HE");
             *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) + 1;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 1, 0, 0);
-        *(HETIME *)(ev + 0xb0) = ai_Time;
+        *(AITIME *)(ev + 0xb0) = ai_Time;
         gm_AddTime(ev + 0xb0, 0x18, 0, 0);
     }
     *(int *)(ev + 0xb6) = 0;
@@ -6475,7 +6461,7 @@ void he_Unk542490(int ev)
     int r;
 
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(short *)(ev + 0x56) = 7;
         *(int *)(ev + 0x58) = 0;
@@ -6600,10 +6586,10 @@ void he_Unk543020(int ev)
     *(int *)(ev + 0x84) = -1;
     if ((fl & 2) != 0) {
         if (a == 0 || b == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             cm_SendExSetHE(-1, ev);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x30, 0, 0);
         cm_SendExSetHE(0, ev);
         cm_SendRelations(*(int *)(b + 4), *(int *)(a + 4), -20, 1);
@@ -6642,7 +6628,7 @@ void he_Unk543180(int ev)
     a = gm_FindChar(*(int *)(ev + 0xac));
     b = gm_FindChar(*(int *)(ev + 0xb0));
     if (b == 0 || a == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
     }
@@ -6651,7 +6637,7 @@ void he_Unk543180(int ev)
             txt_Format(buf, 0x175d, *(unsigned short *)a);
             he_ShowNews(*(int *)(b + 4), -1, buf, 0, 0x5fa, (char *)0);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
     }
@@ -6690,8 +6676,8 @@ void he_Unk5432f0(int ev)
         }
         d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
         io_PrintText(0x1763, *(unsigned short *)q, *(unsigned short *)p);
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_20", 0);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
@@ -6753,7 +6739,7 @@ void he_Unk5436a0(int ev)
     fl = *(unsigned char *)(ev + 0x78);
     *(int *)(ev + 0x70) = 0;
     if ((fl & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(short *)(ev + 0x56) = 0x14;
         *(int *)(ev + 0x58) = 0;
@@ -6766,7 +6752,7 @@ void he_Unk5436a0(int ev)
                     HM_I(msg, 8) = *(int *)(m + 4);
                     HM_I(msg, 0xc) = -1;
                     HM_I(msg, 0x68) = 1;
-                    *(HETIME *)(msg + 0x58) = *(HETIME *)(ev + 0x52);
+                    *(AITIME *)(msg + 0x58) = *(AITIME *)(ev + 0x52);
                     HM_I(msg, 0x6c) = *(int *)(ev + 4);
                     if (*(char *)(m + 2) == 6 || *(char *)(m + 2) == 7)
                         HM_B(msg, 0x36) = 9;
@@ -6791,11 +6777,11 @@ void he_Unk542960(int ev)
 
     q = gm_FindChar(*(int *)(ev + 0xb0));
     p = gm_FindChar(*(int *)(ev + 0xac));
-    *(HETIME *)(ev + 0xc5) = ai_Time;
+    *(AITIME *)(ev + 0xc5) = ai_Time;
     gm_AddTime(ev + 0xc5, 0x18, 0, 0);
     *(short *)(ev + 0xc9) = 0xa;
     *(int *)(ev + 0xcb) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     fl = *(unsigned char *)(ev + 0x78);
     if ((fl & 2) != 0) {
         r = (int)he_FindEvent(1, 0, 0x2c);
@@ -6804,12 +6790,12 @@ void he_Unk542960(int ev)
                 if (*(int *)(r + 0xac) == *(int *)(ev + 0xac)) {
                     txt_Format(buf, 0x1bbe, *(unsigned short *)p, *(unsigned short *)q);
                     he_ShowNews(*(int *)(p + 4), *(int *)(p + 4), buf, 0, 0x5f5, (char *)0);
-                    *(HETIME *)(ev + 0x52) = ai_Time;
+                    *(AITIME *)(ev + 0x52) = ai_Time;
                     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
                     return;
                 }
                 if (*(int *)(ev + 0xc5) <= *(int *)(r + 0xc5)) {
-                    *(HETIME *)(ev + 0xc5) = *(HETIME *)(r + 0xc5);
+                    *(AITIME *)(ev + 0xc5) = *(AITIME *)(r + 0xc5);
                     gm_AddTime(ev + 0xc5, 0x18, 0, 0);
                     *(short *)(ev + 0xc9) = 0xa;
                     *(int *)(ev + 0xcb) = 0;
@@ -6853,7 +6839,7 @@ void he_Unk542b60(int ev)
         a5 = gm_FindChar(*(int *)(ev + 0xbc));
         a6 = gm_FindChar(*(int *)(ev + 0xc0));
         if ((char)ok == 1) {
-            *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0xc5);
+            *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0xc5);
             if (*(char *)(q + 2) == 6 || *(char *)(q + 2) == 7) {
                 txt_Format(buf, 0x1bc0, *(unsigned short *)p, ev + 0x52, *(unsigned short *)(ev + 0x56), *(unsigned short *)a3, *(unsigned short *)a4, *(unsigned short *)a5);
                 he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5f5, "_NACHRICHTEN_HS_16");
@@ -6880,7 +6866,7 @@ void he_Unk542b60(int ev)
                 txt_Format(buf, 0x1bbe, *(unsigned short *)q);
                 he_ShowNews(*(int *)(p + 4), *(int *)(p + 4), buf, 0, 0x5f5, (char *)0);
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x58) += 2;
             cm_SendExSetHE(-1, ev);
         }
@@ -6901,7 +6887,7 @@ void he_Unk542b60(int ev)
         *(unsigned char *)((char *)m + 0x32) = 0xa2;
         m[0x0a] = -1;
         m[0x0e - 4] = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
-        *(HETIME *)((char *)m + 0x24) = ai_Time;
+        *(AITIME *)((char *)m + 0x24) = ai_Time;
         gm_AddTime((char *)m + 0x24, 0, 0x2d, 0);
         cm_SendNewParty(m);
         gm_AddTime(ev + 0x52, 0, 2, 0);
@@ -6932,7 +6918,7 @@ void he_Unk5437c0(int ev)
     } else if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         gm_FindById(&bld, 0, 0, *(int *)(ev + 0x10));
         if (bld != 0 && (rec = gm_Query(*(int *)(bld + 0x5d), 1, 0, 0x17)) == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             cm_SendExSetHE(-1, ev);
             return;
         }
@@ -6982,12 +6968,12 @@ void he_Unk5437c0(int ev)
                 }
                 he_ShowNews(*(int *)(grp[0] + 4), -1, big, 0x20, 0x5fd, (char *)(unsigned)&ch_EmptyName);
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             cm_SendExSetHE(-1, ev);
             return;
         }
         if (*(int *)(ev + 0x70) == 1) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             cm_SendExSetHE(-1, ev);
             return;
         }
@@ -7043,8 +7029,8 @@ void he_Unk543ac0(int ev)
             io_PrintText(0x1770, *(unsigned short *)(o + 0x27), *(unsigned short *)me, ev + 0xac, o, *(unsigned short *)cr, *(unsigned short *)me);
         else
             io_PrintText(0x1771, *(unsigned short *)(o + 0x27), *(unsigned short *)me, ev + 0xac, *(unsigned short *)cr, *(unsigned short *)me);
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_28", 0);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
@@ -7111,7 +7097,7 @@ done:
 
 void he_Unk5455e0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(short *)(ev + 0x56) = (short)(util_Random(10) + 10);
     *(int *)(ev + 0x58) = (unsigned short)util_Random(0x3b);
     *(int *)(ev + 0x5c) = 0;
@@ -7141,7 +7127,7 @@ void he_Unk545670(int ev)
     double dist;
 
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
         memset(cand, -1, sizeof(cand));
         t = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
         f = gm_BuildQuery(1, 6);
@@ -7173,7 +7159,7 @@ void he_Unk545670(int ev)
         }
         sprintf(buf, "STREIFE_INIT: Target: %i, Way: %i, %i, %i, %i, Start: %i", *(int *)(ev + 0xac), *(int *)(ev + 0xb4), *(int *)(ev + 0xb8),
                 *(int *)(ev + 0xbc), *(int *)(ev + 0xc0), *(int *)(ev + 0xb0));
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         *(int *)(ev + 0xd8) = 0;
         *(char *)(ev + 0xdc) = 0;
@@ -7246,7 +7232,7 @@ void he_Unk545840(int ev)
             }
         }
         sprintf(buf, "GOTO_TARGET: %i", *(int *)(t + 1));
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
         return;
@@ -7286,7 +7272,7 @@ void he_Unk545840(int ev)
             he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(t + 1), -1, 0, (char *)0);
             cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         sprintf(buf, "GOTO_START: %i", *(int *)(t + 1));
@@ -7297,7 +7283,7 @@ void he_Unk545840(int ev)
             if (g != -1 && (p = gm_FindChar(g)) != 0 && *(int *)(p + 0x184) != 0 && *(int *)(*(int *)(p + 0x184) + 0x128) != 0)
                 return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
         return;
@@ -7307,7 +7293,7 @@ void he_Unk545840(int ev)
             if (g != -1 && (p = gm_FindChar(g)) != 0 && *(int *)(p + 0x184) != 0 && *(int *)(*(int *)(p + 0x184) + 0x128) != 0)
                 goto busy;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0xd4) = -1;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
@@ -7319,7 +7305,7 @@ void he_Unk545840(int ev)
     case 3:
         if (*(int *)(ev + 0xd8) <= 3 && *(int *)(ev + 0xb4 + *(int *)(ev + 0xd8) * 4) != -1) {
             if (gm_MinutesBetween(ev + 0x44, (unsigned)&ai_Time) > 0x1e0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 2, 0);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
                 return;
@@ -7327,7 +7313,7 @@ void he_Unk545840(int ev)
             t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4 + *(int *)(ev + 0xd8) * 4));
             *(int *)(ev + 0xd8) = *(int *)(ev + 0xd8) + 1;
             if (t == 0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 2, 0);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
                 return;
@@ -7347,21 +7333,21 @@ void he_Unk545840(int ev)
                     }
                 }
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
             sprintf(buf, "GOTO_NEXT: %i", *(int *)(t + 1));
             return;
         }
         if (gm_MinutesBetween(ev + 0x44, (unsigned)&ai_Time) > 0x1e0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
             return;
         }
         *(int *)(ev + 0xd8) = 0;
         *(char *)(ev + 0xdc) = *(char *)(ev + 0xdc) + 1;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
         return;
@@ -7382,11 +7368,11 @@ void he_Unk546100(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
         if (gm_BuildQuery(1, 1, *(int *)(ev + 0xac)) == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 0, 1);
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
@@ -7457,7 +7443,7 @@ void he_Unk5461c0(int ev)
                     }
                 }
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
             return;
@@ -7483,7 +7469,7 @@ void he_Unk5461c0(int ev)
                 }
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         if (flag) {
             he_FreeEvent((int *)ev);
@@ -7502,7 +7488,7 @@ void he_Unk5461c0(int ev)
                 break;
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         if (busy)
             *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
@@ -7564,10 +7550,10 @@ void he_Unk5461c0(int ev)
                 }
             }
             if (edi != 0 && ebx != 0) {
-                *(HETIME *)(msg + 0x18) = ai_Time;
+                *(AITIME *)(msg + 0x18) = ai_Time;
                 gm_AddTime(msg + 0x18, 0, 0x1e, 0);
                 *(int *)(ev + 0xb4) = ((int (*)(void *))cm_SendNewParty)(msg);
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 0, 1);
                 *(int *)(ev + 0x70) = 4;
                 return;
@@ -7595,7 +7581,7 @@ void he_Unk5461c0(int ev)
             txt_Format(buf, 0x1c55, *(unsigned short *)(ta + 0x27), ta, r);
             he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, buf, 0, 0x5f0, (char *)0);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         *(int *)(ev + 0x70) = 1;
         return;
@@ -7603,17 +7589,17 @@ void he_Unk5461c0(int ev)
         if (cm_GetSlotState(*(int *)(ev + 0xb4)) == 0)
             return;
         *(int *)(ev + 0xb8) = *(int *)cm_GetSlotValue(*(int *)(ev + 0xb4));
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x70) = 5;
         return;
     case 5:
         if (cm_PartyById(*(int *)(ev + 0xb8)) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         *(int *)(ev + 0x70) = 1;
         return;
@@ -7621,7 +7607,7 @@ void he_Unk5461c0(int ev)
         return;
     }
 gone:
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
@@ -7634,14 +7620,14 @@ void he_Unk546c40(int ev)
     int arr[32];
     int a, b, code, x, n, i, r;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x70) = 2;
     if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
         return;
     a = gm_FindChar(*(int *)(ev + 0xac));
     b = gm_FindChar(*(int *)(ev + 0xb0));
     if (a == 0 || (*(unsigned *)(a + 0x1c8) & 0x100) != 0 || b == 0 || (*(unsigned *)(b + 0x1c8) & 0x200) != 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 2, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
@@ -7743,7 +7729,7 @@ void he_Unk546ef0(int ev)
             }
         }
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 2, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
@@ -7751,8 +7737,8 @@ void he_Unk546ef0(int ev)
 
 void he_Unk547170(int ev)
 {
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 2, 0, 0);
 }
 
@@ -7918,7 +7904,7 @@ void he_Unk5509f0(int ev)
     int idx = *(int *)(ev + 0xb8);
     int esi;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     do {
         unsigned lo = 0, hi = 0;
         int e, k;
@@ -7975,7 +7961,7 @@ void he_Unk550b60(int ev)
         if (U_I((unsigned)&snd_TrackHandles) != 0)
             U_I((unsigned)&full_data_6f2634) = 1;
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (st == 0) {
         r = he_Unk550370(ev);
         if (r == 1) {
@@ -8055,7 +8041,7 @@ void he_Unk550b60(int ev)
 void he_Unk550ea0(int ev)
 {
     *(int *)(ev + 0x70) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(unsigned short *)(ev + 0x56) = 7;
     *(int *)(ev + 0x58) = 0;
 }
@@ -8124,7 +8110,7 @@ void he_Unk550ee0(int ev)
         strncpy((char *)pk + 0x9d, p, 0x24);
         udp_Send(pk, *(unsigned short *)(pk + 4));
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     if (*(unsigned short *)(ev + 0x56) >= 0x15)
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
@@ -8148,7 +8134,7 @@ void he_Unk5512c0(int ev)
             s[11] = 0;
             s += 0x10;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(unsigned short *)(ev + 0x56) = 0xb;
         *(int *)(ev + 0x58) = 0;
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
@@ -8172,7 +8158,7 @@ int he_Unk551340(int *s)
     if (a != 0) {
         gm_FindById(&o, 0, 0, s[1]);
         if (o != 0) {
-            if (sv_IsAtDoor(a, o) == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16)
+            if (sv_IsAtDoor(a, o) == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16)
                 return 2;
             if (*(int *)(a + 0x184) != 0) {
                 cm_SendChrStop(*(int *)(a + 4));
@@ -8218,7 +8204,7 @@ int he_Unk551440(unsigned char *slot, int n, int m)
 
     pair[0] = 0x20a0;
     pair[1] = 0x402c20;
-    if (lim >= 10 || slot[9] != 0 || *(unsigned short *)(unsigned)&ai_TimeHour < 0xb)
+    if (lim >= 10 || slot[9] != 0 || *(unsigned short *)(unsigned)&ai_Time.hour < 0xb)
         return -1;
     x = (float)(n - m) / (float)(n + 1);
     if (x >= (0.660000026f)) {
@@ -8322,11 +8308,11 @@ void he_Unk551780(unsigned char *s)
         s[9] |= 0x40;
         v18 = 1;
         if (c == 0xff) {
-            s[0xc] = (unsigned char)*(unsigned short *)(unsigned)&ai_TimeHour;
+            s[0xc] = (unsigned char)*(unsigned short *)(unsigned)&ai_Time.hour;
             cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x1000);
             return;
         }
-        if ((*(unsigned short *)(unsigned)&ai_TimeHour & 0xffff) <= c + 1)
+        if ((*(unsigned short *)(unsigned)&ai_Time.hour & 0xffff) <= c + 1)
             return;
         s[9] &= 0xbf;
         cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x1000);
@@ -8424,7 +8410,7 @@ void he_Unk551b70(int ev)
         return;
     if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 5, 0);
     *(int *)(ev + 0x84) = -1;
     if (*(unsigned short *)(ev + 0x56) >= 0x11) {
@@ -8456,7 +8442,7 @@ void he_Unk551b70(int ev)
         r = he_Unk551440(s, n, 0);
         *(int *)(ev + 0x84) = r;
         if (r != -1) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 1, 0);
             cm_SendExSetHE(0, ev);
             return;
@@ -8475,7 +8461,7 @@ void he_Unk551d00(int ev)
     gm_Shuffled(6, p);
     for (i = 0; i < 6; i++)
         p[i] = p[i] + 1;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x70) = 0xc;
     *(unsigned short *)(ev + 0x56) = 9;
     *(int *)(ev + 0x58) = 0;
@@ -8546,7 +8532,7 @@ void he_Unk551d70(int ev)
 
 void he_Unk552040(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 2, 0, 0);
     *(int *)(ev + 0x70) = 0;
 }
@@ -8618,7 +8604,7 @@ void he_Unk552200(int ev)
     int r;
 
     *(int *)(ev + 0x70) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(unsigned short *)(ev + 0x56) = (unsigned short)(util_Random(3) + 9);
     r = (unsigned short)util_Random(4);
     *(int *)(ev + 0xb0) = 0;
@@ -8646,18 +8632,18 @@ void he_Unk552270(int ev)
         *(int *)(m + 0x20) = -1;
         *(int *)(m + 0x30) = *(int *)(unsigned)&ai_Time;
         *(int *)(m + 0x68) = *(int *)(unsigned)&ai_Time;
-        *(int *)(m + 0x40) = *(int *)(unsigned)&ai_TimeHour;
+        *(int *)(m + 0x40) = *(int *)(unsigned)&ai_Time.hour;
         *(int *)(m + 0x44) = *(int *)((unsigned)&ai_Time + 0x8);
         *(unsigned short *)(m + 0x48) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
         m[0x4a] = 9;
         *(int *)(m + 0x70) = *(int *)(ev + 4);
-        *(int *)(m + 0x78) = *(int *)(unsigned)&ai_TimeHour;
+        *(int *)(m + 0x78) = *(int *)(unsigned)&ai_Time.hour;
         *(int *)(m + 0x7c) = *(int *)((unsigned)&ai_Time + 0x8);
         *(unsigned short *)(m + 0x80) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
         gm_AddTime(m + 0x6c, 2, 0, 0);
         cm_SendLongMessage(m + 0x14);
         *(int *)(ev + 0x70) = 1;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 8, 0, 0);
         return;
     }
@@ -8686,7 +8672,7 @@ void he_Unk552270(int ev)
 void he_Unk5524e0(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+        *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
@@ -8705,7 +8691,7 @@ void he_Unk552520(int ev)
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
         return;
     *(int *)(ev + 0xac) = *(int *)(ev + 0xac) - 1;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
@@ -8744,14 +8730,14 @@ void he_Unk5525a0(int ev)
         ring = (ring + 1) % 0x300;
     }
     if (cnt < n) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
     }
     *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
     *(int *)(ev + 0xac) = *(int *)(ev + 0xac) - n;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
@@ -8760,7 +8746,7 @@ void he_Unk5525a0(int ev)
 void he_Unk5527c0(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, *(int *)(ev + 0xb8), 0, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
@@ -8777,7 +8763,7 @@ void he_Unk552820(int ev)
     }
     if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
 /* 0x552880, the allocation handler of an event with a day timer (ROUGH): unless flag 4 the due clock is now (posted 0x18 later when the minute word was already >= 0x11), the minute word is set to 0x11, +0xac = 0, +0xb0 = 0x1b, +0xb4 = +0xb8 = -1 and the event posted (0x4c4c60 (0, ev), handle in +0x84) */
@@ -8785,7 +8771,7 @@ void he_Unk552820(int ev)
 void he_Unk552880(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         if (*(unsigned short *)(ev + 0x56) >= 0x11)
             gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(unsigned short *)(ev + 0x56) = 0x11;
@@ -8869,7 +8855,7 @@ reset:
             }
         }
         if (n == 2) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
             return;
@@ -8877,7 +8863,7 @@ reset:
     } else {
         return;
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
 
@@ -8925,8 +8911,8 @@ void he_Unk552bc0(int ev)
 
 void he_Unk552c30(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0xac) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xac) = ai_Time;
     *(int *)(ev + 0x70) = 0;
 }
 /* 0x552ca0, the run handler of the award ceremony of an imperial office ("_VERLEIHUNG_REICHSAMT_.." texts; the figure +8 is the player's, +0xbc the awarded person, +0xc0 the office 0x23 .. 0x25, +0xac the clock of the award; ROUGH): nothing unless the figure is the player's (0x6f25b8) and the game runs; state 0 opens the window "SPECIAL\TITEL" (the player is awarded) or "SPECIAL\TITEL_ANDERE", plays the fanfare "FanfarePositivHeldenhaftLang" and the spoken address / office texts (0x4c27d0 (-7, 0, name, 0, 100) with the text names by sex (person +9) and rank (person +0xd: 9 = _02, 8 = _01, else _00)), prints the news (0x515960) and the click sound; state 1 waits for the answer (0xf8a668 == 0 or the confirm 0x6f2630) and closes; a gone figure / person frees the record */
@@ -9314,7 +9300,7 @@ int he_Unk553ae0(int *q)
         ai_Unk4c5410(h, "gestik/abfaellig", (unsigned short)util_Random(2) + 1);
     }
     *(int *)(best + 0xd4) = *(int *)(q[2] + 4);
-    *(HETIME *)(best + 0x52) = ai_Time;
+    *(AITIME *)(best + 0x52) = ai_Time;
     gm_AddTime(best + 0x52, 0, 8, 0);
     cm_SendExSetHE(0x400, best);
     return 1;
@@ -9379,7 +9365,7 @@ void he_Unk553e10(int ev)
 {
     char *rec = (char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (U_I((unsigned)&gm_AllowAll) != 0)
         gm_AddTime(ev + 0x52, 0, 0, 1);
     else
@@ -9477,7 +9463,7 @@ void he_Unk553e90(int ev)
         *(unsigned char *)(p + 0x13) |= 0xa0;
     }
     q = gm_Query(*(int *)(b + 0x5d), 1, 1, *(int *)(ev + 0xb0));
-    *(HETIME *)c = ai_Time;
+    *(AITIME *)c = ai_Time;
     gm_AddTime(c, 0, 0, 1);
     c[0] = *(int *)(b + 1);
     c[1] = *(int *)(q + 2);
@@ -9535,7 +9521,7 @@ void he_Unk554320(int ev)
             return;
         }
         *(int *)(ev + 0xe4) = cm_SendMessage3d(b, *(unsigned char *)(ev + 0xac), 0, 0);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
@@ -9561,7 +9547,7 @@ void he_Unk554320(int ev)
         }
         cm_RequestChrMoveToUniverse(*(int *)(ev + 0xe8), *(int *)(ev + 0x10), *(int *)(ev + 0xe0), (char *)(unsigned)"dummy_EINGANG");
         *(int *)(ev + 0x70) = 3;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         return;
     case 3:
@@ -9602,7 +9588,7 @@ void he_Unk554320(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(10) + 0x1e, 0);
         *(int *)(ev + 0x70) = 1;
         return;
@@ -9612,7 +9598,7 @@ void he_Unk554320(int ev)
 
 void he_Unk554820(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 0, 0xf, 0);
 }
 /* 0x554860, the run handler of the single-ware variant of 0x554320 (ROUGH): one counter +0xb0, +0xac the ware, +0xb4 the target building (0 = the first of the kind +0x29, -1 = kind 0xfd), +0xb8 the order handle, +0xbc the person's id. State 0 -> 1; state 1 orders the delivery (0x4c55d0 (building, 1, 0, the ware's price byte +0x223 of the kind record)), state 2 sends the person (0x4c51b0, news 0x1bb1 / "0x627228" to a player, payment 0x4c4830) and posts the next round 10 + random 10 later (state 1); states -2 / -1 free */
@@ -9725,9 +9711,9 @@ void he_Unk554cb0(int ev)
 
     *(int *)(ev + 0xe8) = -1;
     *(int *)(ev + 0xd4) = 0;
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(unsigned char *)(ev + 0xd0) = 0;
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
     b1 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
     if (b1 == 0)
         goto fail;
@@ -10137,7 +10123,7 @@ void he_Unk556600(int ev)
         return;
     switch (st) {
     case 0:
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 3, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
         return;
@@ -10177,9 +10163,9 @@ void he_Unk556dc0(int ev)
 {
     int o = 0, n;
 
-    *(HETIME *)(ev + 0xc0) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0xc0) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0xc0, 0, *(int *)(ev + 0xb8) * *(int *)(ev + 0xb0), 0);
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 0, 0, 1);
     gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
     if (o != 0) {
@@ -10189,7 +10175,7 @@ void he_Unk556dc0(int ev)
         }
         cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0x20, 0);
     }
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     n = *(unsigned char *)(o + 0x12) + *(int *)(ev + 0xb0);
     if (n >= 0x64)
         n = 0x64;
@@ -10324,8 +10310,8 @@ void he_Unk557190(int ev)
             strcpy(speak, (char *)(*(int *)(ev + 0x7c) + strlen((char *)*(int *)(ev + 0x7c)) + 1));
             *(int *)(ev + 0xec) = snd_QueueVoice(-7, 0, speak, 0, 0x7d0);
         }
-        *(HETIME *)(ev + 0x44) = ai_Time;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x44) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         if ((fl & 2) != 0 && *(unsigned short *)(ev + 0x56) < 6)
             gm_AddTime(ev + 0x52, 0, 0, 1);
         else
@@ -10433,7 +10419,7 @@ void he_Unk5578a0(int ev)
 
 void he_Unk557b30(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 2, 0, 0);
 }
 /* 0x557b70, the run handler "he_RunLagerErweitern" (the warehouse extension, ROUGH skeleton): state 0 .. 3 (jump table 0x557d58): waits for the due time (0x4fe210), moves the person +0xac (0x4fea50; 0x4c3ba0 / 0x4c3d00 / 0x4c49a0 raise a field), tells the owner (the news 0x1bbb, 0x53dee0 with 0x501b50's contact and the 0x50a810 owner flag) and frees; the default is the debug text "he_RunLagerErweitern():Wrong LagerID..." (0x4222b0) and the free */
@@ -10488,7 +10474,7 @@ void he_Unk557d70(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x70) = 1;
     gm_AddTime(ev + 0x52, 0, 5, 0);
 }
@@ -10562,7 +10548,7 @@ void he_Unk5584d0(int ev)
         if (p != 0)
             sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
     }
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x558550, the run handler of the animal hunt ("Getier", the second string 0x6274c0; ROUGH skeleton, 4 states by the jump table 0x5588a8): state 0 sends the hunters (0x505df0, 0x4c5230, 0x4c52e0 (.., "Getier" 0x6274c0)) and waits a random time (0x42ec00), state 1 waits for the due time (0x4fe210), looks for the building (0x501190, 0x4ffe90, the contact 0x501b50 / 0x50a810 owner) and pays out the catch (0x5092e0 and a random roll, 0x4c4880 (.., -1), the news 0x1805 / 0x1809 / 0x180a for the owner and the players of kind 6 / 7 (0x53dee0)); the end frees the persons (0x524260) and the record */
@@ -10595,7 +10581,7 @@ void he_Unk558550(int ev)
                 cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Getier");
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(10), 0);
         *(int *)(ev + 0x70) = 1;
         return;
@@ -10634,12 +10620,12 @@ void he_Unk5588c0(int ev)
     }
     if (*(int *)(ev + 0xb4) != -1)
         tgt = gm_Query(*(int *)(b + 0x5d), 2, 6, 1, *(int *)(ev + 0xb4));
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     sv_MoveToGroup(b, tgt, *(unsigned short *)p, ev);
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    *(HETIME *)(ev + 0xb8) = *(HETIME *)(ev + 0x52);
+    *(AITIME *)(ev + 0xb8) = *(AITIME *)(ev + 0x52);
     gm_AddTime(ev + 0xb8, 6, 0, 0);
     if (*(unsigned short *)(ev + 0xbc) < 6)
         *(unsigned short *)(ev + 0xbc) = (unsigned short)(*(unsigned short *)(ev + 0xbc) - *(unsigned short *)(ev + 0x56) + 0x1d);
@@ -10672,7 +10658,7 @@ void he_Unk558a40(int ev)
 
 void he_Unk558de0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0xb4);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0xb4);
 }
 /* 0x558e10, a run handler: state 3 posts the event 1 later, state 9 frees the record */
 
@@ -10685,7 +10671,7 @@ void he_Unk558e10(int ev)
         return;
     }
     if (st == 3) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
     }
 }
@@ -10695,7 +10681,7 @@ void he_Unk558e70(int ev)
 {
     int b;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     if (*(int *)(ev + 0x10) == -1) {
         b = gm_BuildQuery(1, 5, 0x16);
@@ -10743,7 +10729,7 @@ void he_Unk558f10(int ev)
     case 0:
         cm_SendMoveGoodsUnchecked(*(int *)(p + 4), 0, 0, 0);
         cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Sabotage");
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x70) = 1;
         return;
@@ -10774,7 +10760,7 @@ void he_Unk559d20(int ev)
     }
     n = (unsigned short)util_Random(0x100);
     (void)n;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
     for (e = (int)he_FindEvent(1, 0, 0x4e); e != 0; e = (int)he_NextEvent()) {
         if (*(unsigned short *)(e + 8) == *(unsigned short *)(ev + 8) && *(int *)(e + 0xd8) == *(int *)(ev + 0xd8))
@@ -10818,7 +10804,7 @@ void he_Unk55a030(int ev)
         return;
     cm_SendChrStop(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Spionage");
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
 
@@ -10834,7 +10820,7 @@ void he_Unk55a5f0(int ev)
     float v;
 
     p = gm_FindChar(*(int *)(ev + 0xb4));
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (*(int *)(ev + 0x10) == -1) {
         b = gm_BuildQuery(1, 5, 0x16);
         if (b == 0)
@@ -10888,7 +10874,7 @@ void he_Unk55a730(int ev)
     cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "PRUEGEL");
     txt_Format(text, 0x1bba, b);
     he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     *(int *)(ev + 0x70) = st + 1;
 }
@@ -10899,7 +10885,7 @@ void he_Unk55af70(int ev)
     int b, kind, p;
     char text[0x100];
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(3), 0);
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
     if (b == 0) {
@@ -10979,11 +10965,11 @@ void he_Unk55b3e0(int ev)
     }
     *(int *)(ev + 0x10) = *(int *)(b + 1);
     cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 4, 0);
-    *(HETIME *)(ev + 0x60) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0xa, 0);
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0xb8) = *(HETIME *)(ev + 0x52);
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0xb8) = *(AITIME *)(ev + 0x52);
     rank = *(unsigned char *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c + 0xd);
     if (rank >= 9)
         f = (0.400000006f);
@@ -11014,7 +11000,7 @@ void he_Unk55b530(int ev)
         txt_Format(text, 0x17cb, b);
         he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_68", 0);
     }
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0xa, 0);
 }
 /* 0x55b720, the allocation handler of a building event: both clocks now, the building +0xac (none: free), the due delay is the table value +0x243 of its kind (else 0x1e units), +0x10 = its id; a building with the flag 0x40 in +0x5a frees the record, else the flag is set (message 0x5a / 2 / 0x40) */
@@ -11023,8 +11009,8 @@ void he_Unk55b720(int ev)
 {
     int b, kind, d;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
         he_FreeEvent((int *)ev);
@@ -11071,8 +11057,8 @@ void he_Unk55ba00(int ev)
 {
     int b;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
@@ -11133,7 +11119,7 @@ void he_Unk55bd20(int ev)
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b != 0)
         cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x400, 0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x55bd80, the run handler "GebAbreissen" (the demolition of a building, 4 states by the jump table 0x55bf40; ROUGH): state 0 sends the figures of the building away (0x4c5b90, 0x4c52e0 (.., "GebAbreissen")) and waits, the later state demolishes (0x4c5510) after the news for the kind 0xf (0x53dda0) and frees the record */
 
@@ -11160,7 +11146,7 @@ void he_Unk55bd80(int ev)
                 cm_SendChrGotoBuilding(*(int *)c, -1, -1, 0, 0, "GebAbreissen");
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x70) = st + 1;
         return;
@@ -11187,7 +11173,7 @@ void he_Unk55bf50(int ev)
     int o;
 
     o = gm_FindBuildingById(*(int *)(ev + 0xac));
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, (unsigned short)((int (*)(int, int))util_Random)(10, 0) + 10);
     cm_SendSetField(*(int *)(o + 1), 0x5a, 2, 0x200, 0);
 }
@@ -11248,8 +11234,8 @@ void he_Unk55c540(int ev)
     int b, buyer, o;
     char text[0x200];
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0xc4) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xc4) = ai_Time;
     gm_AddTime(ev + 0xc4, 0, *(int *)(ev + 0xb8), 0);
     *(unsigned short *)(ev + 0xc8) = 8;
     *(int *)(ev + 0xca) = 0;
@@ -11371,7 +11357,7 @@ void he_Unk55ce00(int ev)
     e = he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 0, 0x25);
     if (e != 0)
         *(int *)(e + 0x70) = -1;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x55ce60, the run handler of the "Berufe\Meisterpruefung_BESTANDEN" ceremony (the exam passed; for the player's figure only: 0x6f25b8; ROUGH skeleton, 1199 bytes): opens the window, shows the person's new title (gm_TitleGroup / gm_TitlesLeft, the texts "BERUF_BESTANDEN", "ADDON_BERUF_LISTE_MAENNLICH" / "_WEIBLICH", "ADDON_GEBAEUDE_LISTE", the sound banks "brk_%02i" 0x4c27d0 x8), waits for the click and closes (0x53d800) and frees the record */
 
@@ -11429,7 +11415,7 @@ void he_Unk55d310(int ev)
         return;
     }
     gm_BuildingSkill(b, 0x10, 1);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 0x18);
     *(int *)(ev + 0x58) = 0;
 }
@@ -11456,7 +11442,7 @@ void he_Unk55d490(int ev)
 {
     int b, p, o;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
     *(int *)(ev + 0x70) = 0;
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
@@ -11553,7 +11539,7 @@ void he_Unk55dd70(int ev)
         if ((int)e != ev && *(int *)(e + 0xac) == *(int *)(ev + 0xac))
             *(int *)(e + 0xb0) = -1;
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
@@ -11588,7 +11574,7 @@ void he_Unk55e180(int ev)
 
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p != 0 && *(char *)(p + 2) != 0x14) {
-        *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+        *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
         return;
     }
     he_FreeEvent((int *)ev);
@@ -11616,7 +11602,7 @@ void he_Unk55e1d0(int ev)
 
 void he_Unk55e3a0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
 }
 /* 0x55e3d0, the run handler of a news event (ROUGH skeleton, 496 bytes): a figure (0x505df0) is looked up, a random building of the query list (gm_Query / gm_QueryNext, 0x42ec00) is picked, the amount 0x5089c0 / _ftol is booked (0x4c4880) and the news "_NACHRICHTEN_HS_09" shown to the owner (0x53dee0); the record is freed */
 
@@ -11637,7 +11623,7 @@ void he_Unk55e3d0(int ev)
 
 void he_Unk55e5c0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 4, 0, 0);
 }
 /* 0x55e600, the run handler of a relation event (ROUGH): states -2 / -1 free; the building +0x10 (none: free) and the figure +0xac; every character of the town in the same building gets the relation change 0x4c4b00 (id, +0xac, 0x3e8-scaled by 0x5085f0 (1000)) and the player figures (kind 6 / 7) the news 0x19ab (0x53dee0, 0x5ec); then the record is freed */
@@ -11701,8 +11687,8 @@ void he_Unk55e9d0(int ev)
     gm_ClockSeason((unsigned)&ai_Time);
     *(int *)(ev + 0xb0) = 3;
     *(int *)(ev + 0xac) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     gm_SetTime(ev + 0x52, 6, 0xf, 0);
 }
 /* 0x55ea60, the id of the contact (the person to talk to at the place) of the figure `p`, or -1 (ROUGH): -1 for no figure, the kinds 0xd / 0xe, no current building (+0x16c) or object (+0x184) and for a busy job code (+0x180: 0x3f, 0x40, 0x48, 0x3c, 0x49, 0x44, 0x62, 0x61, 0x65, 0x64, 0x14, 0x75, 0x1a, 0x18, 0xa1); a building that 0x502520 knows takes the owner contact (0x4ffe90 (building object +0x5d, 1, 0, 0xfd) or the type 0x37 for the job codes 3 / 8 / 9) and gives its +2 id when the target of the figure (+0x184 +0x2c / +0x30) is not it (0x501b50 as the fallback) */
@@ -11766,7 +11752,7 @@ void he_FindFigurePlace(int p)
         init_BuildingSceneUniverse(*(int *)(o + 0x5d));
 }
 
-void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec);
+void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);
 void cm_RequestChrMove(int a, int b, int c, const char *s);
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);
@@ -11816,14 +11802,14 @@ void he_Unk55efc0(int ev)
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
     he_FindFigurePlace(p);
     he_Unk55ee40(p);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
 }
 /* 0x55fa20, the allocation handler of the market event: the due clock is now (+0x52, 0x4fe1e0 sets the minute word 5) and the event posted (0x4fe140 (.., 0, 0, 1)) */
 
 void he_Unk55fa20(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_SetTime(ev + 0x52, 5, 0, 0);
     gm_AddTime(ev + 0x52, 1, 0, 0);
 }
@@ -11864,7 +11850,7 @@ void he_Unk560820(int ev)
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p != 0 && *(unsigned char *)(p + 0x1b1) != 0)
         *(int *)(ev + 0x70) = -1;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
 /* 0x560900, the run handler of the prison visit / arrest event (dummy "dummy_EINGANG_ZELLE", the news "_NACHRICHTEN_HS_71" / "_26" / "_72" / "_73"; ROUGH skeleton, 2096 bytes): the guard and the prisoner (+0xac, group 0x524260, 0x4c5230 / 0x4c52e0 send them, 0x524770 arrival), the cell entrance and the sentence by a roll (util_RandomF, gm_BuildingSkill, 0x5ba6b0 skill), the news to the player (0x53dee0 / 0x53dda0) and the release; the end frees the record */
@@ -11891,15 +11877,15 @@ void he_Unk560900(int ev)
     txt_Format(text, 0x1bba, b);
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_71", 0);
     sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x561130, the allocation handler: the due clock and the clock +0xb4 are now (copy of the game clock twice) */
 
 void he_Unk561130(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0xb4) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xb4) = ai_Time;
 }
 
 unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind);
@@ -11935,7 +11921,7 @@ void he_Unk561190(int ev)
 
 void he_Unk561470(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 1, 0, (unsigned short)util_Random(0x1e) - 0x14);
 }
 /* 0x5614c0, the run handler of the ransom demand ("locations\diebesgilde\Diebesgilde_Loesegeld_Msg" window; ROUGH skeleton, 1376 bytes): opens the thieves guild message (0x53d6f0, d2_SetForm), shows the demand (0x515960, the news 0x53dda0), the answer pays (0x4c4830 / 0x4c5fa0, 0x4c3ba0 / 0x4c3c00 / 0x4c49a0, the player record) or refuses (a random reaction 0x53dee0), the thief figure leaves (0x55eba0, 0x4c52e0); the window is closed and the record freed */
@@ -11980,7 +11966,7 @@ void he_Unk5619a0(int ev)
             break;
         }
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
 /* 0x561a20, the run handler "Einbruch" (the burglary walk; 8 states by the jump table 0x5628bc; ROUGH): state 0 sends the burglars (the group 0x524260 (building, .., id, ev), 0x4c5230, 0x4c52e0 "Einbruch" 0x627a24) towards the building +0xac (none: state -1), state 1 waits for their arrival (0x524770, a figure count of 8) and goes on with the entry in 0x561c20; the clock is posted by 0x4fe140 */
@@ -12009,7 +11995,7 @@ void he_Unk561a20(int ev)
             sv_IsAtDoor(p, 0);
         }
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     *(int *)(ev + 0x70) = st + 1;
 }
@@ -12060,15 +12046,15 @@ void he_Unk5628e0(int ev)
     gm_GetGebaeudeHauptraum(b);
     txt_Format(text, 0x1bba, b);
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_78", 0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x563070, a Ghidra miss: the allocation handler of the event 0x48: the clocks +0x52 and +0xcc are now, the run at +0xcc 0x30 units ahead and at +0x52 one unit ahead */
 
 void he_Unk563070(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0xcc) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xcc) = ai_Time;
     gm_AddTime(ev + 0xcc, 0, 0x30, 0);
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
@@ -12092,14 +12078,14 @@ void he_Unk5630f0(int ev)
     }
     sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
     cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "STADT");
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
 /* 0x563980, the allocation handler: due clock now + 1 */
 
 void he_Unk563980(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
 /* 0x5639c0, the run handler "Angriff" (the attack of a gang on a building; ROUGH skeleton, 2336 bytes): the attackers (group 0x524260, 0x4c5230, 0x4c52e0 "Angriff") walk to the building (0x524770), the victims of the query list (gm_Query / gm_QueryNext, util_Random) are picked, the fight is started (0x4c4fa0, 0x4d3d10) and the news 0x5176d0 / 0x53dee0 shown; the record is freed at the end */
@@ -12122,7 +12108,7 @@ void he_Unk5639c0(int ev)
     cm_SendChrStop(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Angriff");
     sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x5642e0, picks the target of a fire (ROUGH): the first building of the list (0x501190 (1, 1, ..), checks 0x502520 / 0x5024f0, kind 3 buildings are skipped) near the scene object of the reference building (0x458a20 positions, 0x453e80 against the range), at random (0x42ec00) with up to 0x10 tries; returns the building or 0 */
@@ -12162,7 +12148,7 @@ void he_Unk5644e0(int ev)
             break;
     }
     snd_QueueVoice(-7, 0, "Brand_Ende", 0, 0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, *(unsigned short *)(ev + 0x56) >= 0x14 ? (unsigned short)util_Random(5) : 7, 0);
 }
 /* 0x564860, the allocation handler of the fire event (ROUGH): the clocks +0x52 / +0x60 are now, +0xb4 = 0, the building +0xac (none: free), the nearest building (0x501e40, 0x458a20 positions) gives the distance scaled by +0xb0 (_ftol) as the burning time +0xb0 and +0x84 = -1 */
@@ -12171,8 +12157,8 @@ void he_Unk564860(int ev)
 {
     int b;
 
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     *(unsigned char *)(ev + 0xb4) = 0;
     b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
     if (b == 0) {
@@ -12204,7 +12190,7 @@ void he_Unk5649b0(int ev)
     }
     sprintf(name, "brand_he_%i_%i", *(int *)(ev + 0xac), st);
     snd_QueueVoice(-7, 0, "Brand_l", 0, 0);
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x5652b0, a Ghidra miss: the allocation handler of the event 0x50 (ROUGH): the characters of kind 6 (0x501190 (1, 6) / 0x501030) without 0x502520 / 0x5024f0 and with a +0x61 object are collected (at most 16 are kept as targets); +0xb0 .. +0xeb = -1; the chosen
@@ -12238,7 +12224,7 @@ void he_Unk5652b0(int ev)
     }
     *(int *)(ev + 0x100) = 0;
     *(int *)(ev + 0x104) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x565410, the run handler of an event that hurts the stock of several buildings (ROUGH): state 0 sets the three days after today in the tables 0x760488 (1000) / 0x7604e8 (3), the next run 2 days ahead; state 1: when the flag +0x78 & 2 and +0xec are set every building of the 16 slots at +0xac gets a random change 0x50cad0 (-(random(5) + 5)); then freed */
 
@@ -12250,7 +12236,7 @@ void he_Unk565410(int ev)
 
     switch (*(int *)(ev + 0x70)) {
     case 0:
-        base = U_I((unsigned)&ai_TimeHour);
+        base = U_I((unsigned)&ai_Time.hour);
         i = (base & 0xffff) + 1;
         last = (base & 0xffff) + 4;
         if (i < last) {
@@ -12300,10 +12286,10 @@ void he_Unk565500(int ev)
         f = gm_FindObjectInst(*(int *)(ev + 0xc4));
     sv_MoveToGroup(o, f, *p, ev);
     *(int *)(ev + 0xb0) = 200;
-    *(HETIME *)(ev + 0xb4) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0xb4) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     gm_AddTime(ev + 0xb4, 0, 400, 0);
 }
 
@@ -12333,12 +12319,12 @@ void he_Unk565620(int ev)
         if (*(unsigned *)(ev + 0xb0) > 0 && step + v < 100.0f) {
             gm_AddHealth(*(unsigned short *)p, (int)step);
             *(int *)(ev + 0xb0) = (int)((double)*(unsigned *)(ev + 0xb0) - step);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 10, 0);
         } else {
             *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         }
-        *(HETIME *)(ev + 0x60) = ai_Time;
+        *(AITIME *)(ev + 0x60) = ai_Time;
         return;
     case 1:
         p = gm_FindChar(*(int *)(ev + 0xac));
@@ -12394,7 +12380,7 @@ void he_Unk565850(int ev)
         r = cm_SendMessage3d(p, 1, rec[0x230], c);
     }
     *(int *)(ev + 0xac) = r;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x565940, a Ghidra miss: the run handler of the event 0x6e (ROUGH): when the sound handle +0xac is done (0x4c3ae0) the result 0x4c3b10 and the object +0xb4 (0x502020) decide: 0x4c54a0 (obj + 1, the owner (+0x25) player record 0x770b84 or the result), the reward
    0x4c47e0 (result +4, -1, 0x6f1bc5, 0x5085f0 (0xbb8, 0x6f1bc5)); with a value +0xbc the owner (kinds 6 / 7: the news 0x17e6) gets the share 0x4c47e0 and 0x55ea60 yields a target for 0x4c52e0 (id, target, 0, 0, 0x627b20); always freed; -1 / -2 free */
@@ -12455,7 +12441,7 @@ void he_Unk565b00(int ev)
         return;
     }
     *(char *)(p + 8) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x565b60, the run handler of the death of a player (ROUGH): state 0 removes the follow object of his figure (0x4284a0 / 0x429e90) and clears his lock 0x524260; state 1 waits until the figure object (+0x184, its +0x28) is gone; state 2 clears the flag +8, the lock, the figure +0x16c and lays the figure down (0x405610, 0x40b2f0 (obj, 0x36, 1): the animation name "bewegung/zu_boden_sinken" at +0xf0), next run at once; state 3 informs the owner 0x4c4e00 (+4, 1) when the flag +0x78 & 2 is set; then freed */
 
@@ -12496,7 +12482,7 @@ void he_Unk565b60(int ev)
                 a = ch_AddAction(*(int *)(p + 0xc2), 0x36, 1);
                 strcpy((char *)(a + 0xf0), "bewegung/zu_boden_sinken");
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
             *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
             return;
@@ -12535,7 +12521,7 @@ void he_Unk565d10(int ev)
         }
     }
     *(int *)(ev + 0xb4) = -1;
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0xb0) = -1;
     *(int *)(ev + 0x84) = -1;
 }
@@ -12565,7 +12551,7 @@ void he_Unk565db0(int ev)
         return;
     }
     if (*(int *)(p + 0x20c) != -1 && st != 6) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
         return;
     }
@@ -12609,7 +12595,7 @@ void he_Unk565db0(int ev)
             if (a != 0)
                 strcpy((char *)(a + 0xf0), "bewegung/zu_boden_sinken");
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0x1e, 0);
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
@@ -12624,7 +12610,7 @@ void he_Unk565db0(int ev)
         memset(m, 0, sizeof(m));
         m[0x18] = 8;
         m[0x36] = 0xa0;
-        *(HETIME *)(m + 0x1c) = ai_Time;
+        *(AITIME *)(m + 0x1c) = ai_Time;
         gm_AddTime(m + 0x1c, 0, 0x1e, 0);
         h = *(int *)(p + 4);
         *(int *)(m + 0x2c) = h;
@@ -12632,7 +12618,7 @@ void he_Unk565db0(int ev)
         m[0x44] = 1;
         *(int *)(m + 0x48) = h;
         *(int *)(ev + 0xb4) = ((int (*)(void *))cm_SendNewParty)(m + 0x10);
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x70) = 6;
         return;
@@ -12662,11 +12648,11 @@ void he_Unk565db0(int ev)
         if (a == 0)
             return;
         if (a == 2) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x70) = 4;
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(int *)(ev + 0xb0) = *(int *)cm_GetSlotValue(*(int *)(ev + 0xb4));
         gm_AddTime(ev + 0x52, 2, 0, 0);
         *(int *)(ev + 0x70) = 7;
@@ -12679,11 +12665,11 @@ void he_Unk565db0(int ev)
         if (cm_PartyById(*(int *)(ev + 0xb0)) == 0) {
             *(int *)(ev + 0xb4) = -1;
             *(int *)(ev + 0xb0) = -1;
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x70) = 4;
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 2, 0, 0);
         return;
     case -2:
@@ -12697,8 +12683,8 @@ void he_Unk565db0(int ev)
 
 void he_Unk5662d0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     *(int *)(ev + 0xac) = (unsigned short)util_Random(5) - 5;
     *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&gm_DayStartHours)[gm_ClockSeason((unsigned)&ai_Time)];
     *(int *)(ev + 0x58) = 0;
@@ -12722,10 +12708,10 @@ void he_Unk566370(int ev)
     id = *(int *)(ev + 0xac);
     switch (*(int *)(ev + 0x70)) {
     case 0:
-        h = (float)(int)(U_I((unsigned)&ai_TimeHour) & 0xffff);
+        h = (float)(int)(U_I((unsigned)&ai_Time.hour) & 0xffff);
         m = ((float *)(unsigned)&gm_DayStartHours)[season];
         if (h < m || !(h < m + 1.0f)) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             goto lagain;
         }
         if (*(char *)(unsigned)&ai_GameState != 0)
@@ -12745,16 +12731,16 @@ void he_Unk566370(int ev)
             if ((unsigned short)util_Random(10) > 7)
                 snd_QueueVoice(id, 0, "_NACHTWAECHTER_MORGENS_SPRUECHE", -1, 0x3e8);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&gm_DayEndHours)[season];
         *(int *)(ev + 0x58) = 0;
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
     case 1:
-        h = (float)(int)(U_I((unsigned)&ai_TimeHour) & 0xffff);
+        h = (float)(int)(U_I((unsigned)&ai_Time.hour) & 0xffff);
         m = ((float *)(unsigned)&gm_DayEndHours)[season];
         if (h < m || !(h < m + 1.0f)) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             goto lagain;
         }
         if (*(char *)(unsigned)&ai_GameState != 0)
@@ -12774,14 +12760,14 @@ void he_Unk566370(int ev)
             if ((unsigned short)util_Random(10) > 7)
                 snd_QueueVoice(id, 0, "_NACHTWAECHTER_ABENDS_SPRUECHE", -1, 0x3e8);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(short *)(ev + 0x56) = 0x16;
         *(int *)(ev + 0x58) = 0x1e;
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
     case 2:
-        if (*(unsigned short *)(unsigned)&ai_TimeHour < 0x16 || (int)U_I(((unsigned)&ai_Time + 0x6)) < 0x1e || (int)U_I(((unsigned)&ai_Time + 0x6)) >= 0x32) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+        if (*(unsigned short *)(unsigned)&ai_Time.hour < 0x16 || (int)U_I(((unsigned)&ai_Time + 0x6)) < 0x1e || (int)U_I(((unsigned)&ai_Time + 0x6)) >= 0x32) {
+            *(AITIME *)(ev + 0x52) = ai_Time;
             goto lagain;
         }
         if (*(char *)(unsigned)&ai_GameState != 0) {
@@ -12857,7 +12843,7 @@ void he_Unk566830(int ev)
             cm_SendChrStop(*slot);
             cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), -1, 0, 1, (unsigned)&full_data_627d74);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 4, 0);
         *(int *)(ev + 0x70) = 1;
         return;
@@ -12868,12 +12854,12 @@ void he_Unk566830(int ev)
                 continue;
             p = gm_FindChar(*slot);
             if (p != 0 && *(int *)(p + 0x184) != 0 && sv_IsAtDoor(p, b) == 0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 4, 0);
                 return;
             }
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0, 1);
         *(int *)(ev + 0x70) = 2;
         return;
@@ -12890,7 +12876,7 @@ void he_Unk566830(int ev)
                 *(int *)(ev + 0xb8) = *(int *)(rec[3] + 4);
                 *(int *)(ev + 0xbc) = *(int *)(rec[3] + 0xb0);
                 *(int *)(ev + 0x70) = 3;
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 return;
             }
         }
@@ -12906,7 +12892,7 @@ void he_Unk566830(int ev)
             ((void (*)(int, const char *))ai_Unk4c5410)(*slot, names[(unsigned short)((int (*)(int, int))util_Random)(3, 1)]);
         }
         *(int *)(ev + 0x70) = 5;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0xf, 0);
         return;
     case 3:
@@ -12983,7 +12969,7 @@ void he_Unk566830(int ev)
 
 void he_Unk567620(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x14, 0);
 }
 
@@ -13009,13 +12995,13 @@ void he_Unk567660(int ev)
         return;
     id = *(unsigned short *)(ev + 8);
     if (*(int *)(((unsigned)&ai_Selected + 0x40) + id * 0x21c) < 0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 4, 0, 0);
         return;
     }
     v = gm_TitlePeriodServed(id, out);
     if (v < 1.0) {
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0x14, 0);
         return;
     }
@@ -13028,7 +13014,7 @@ void he_Unk567660(int ev)
     *(int *)(m + 0x5c) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
     cm_SendLongMessage(m);
     *(unsigned *)(((unsigned)&ai_Selected + 0x40) + id * 0x21c) |= 0x80000000;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 4, 0, 0);
 }
 /* 0x567810, "he_OpenHelpEvents": reads the tutorial hint script "<name>\project\game\tutorial\<param>.ini" (0x627e08 with 0x624690: "%s\tutorial\%s.ini") into the table 0x6fa260 (128 entries of four ints: due day, due
@@ -13108,7 +13094,7 @@ void he_Unk5679b0(int ev)
         he_Unk567810("help_events_wirt");
     else if (k == 0xb)
         he_Unk567810("help_events_dieb");
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x52) = U_I((unsigned)&full_data_6fa260);
     *(short *)(ev + 0x56) = *(short *)(unsigned)&full_data_6fa264;
     *(int *)(ev + 0x58) = U_I((unsigned)&full_data_6fa268);
@@ -13134,7 +13120,7 @@ void he_Unk567a80(int ev)
                 *(int *)(ev + 0x70) = 1;
                 return;
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x52) = *(int *)((unsigned)&full_data_6fa260 + i * 16);
             *(short *)(ev + 0x56) = *(short *)((unsigned)&full_data_6fa264 + i * 16);
             *(int *)(ev + 0x58) = *(int *)((unsigned)&full_data_6fa268 + i * 16);
@@ -13145,7 +13131,7 @@ void he_Unk567a80(int ev)
 
 void he_Unk567b80(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (he_FindEvent(1, 0, 0x83) != 0)
         *(int *)(ev + 0x52) = U_I((unsigned)&ai_Time) + 4;
     else
@@ -13172,12 +13158,12 @@ void he_Unk567c00(int ev)
                 *(int *)(ev + 0xac) = i;
                 if (0x1a < i)
                     *(int *)(ev + 0x70) = 1;
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 r = ((int (*)(int, int, int))util_Random)(4, 0, 0);
                 gm_AddTime(ev + 0x52, (r & 0xffff) + 8);
                 return;
             }
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
         }
     }
@@ -13186,7 +13172,7 @@ void he_Unk567c00(int ev)
 
 void he_Unk567d20(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(short *)(ev + 0x56) = 7;
     *(int *)(ev + 0x58) = 0;
 }
@@ -13210,7 +13196,7 @@ void he_Unk567d60(int ev)
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
     case 1:
-        if (*(unsigned short *)(unsigned)&ai_TimeHour >= 0x16) {
+        if (*(unsigned short *)(unsigned)&ai_Time.hour >= 0x16) {
             *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
             return;
         }
@@ -13232,7 +13218,7 @@ void he_Unk567d60(int ev)
         } else {
             sv_SelectPanelObjectK(pick, -1, (unsigned)&ch_EmptyName);
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         *(unsigned short *)(ev + 0x56) += (unsigned short)util_Random(2);
         *(int *)(ev + 0x58) = (unsigned short)util_Random(0x3c);
         return;
@@ -13252,7 +13238,7 @@ void he_Unk567d60(int ev)
 
 void he_Unk567f00(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x84) = -1;
     *(short *)(ev + 0x56) = 6;
     *(int *)(ev + 0x58) = 0;
@@ -13274,7 +13260,7 @@ void he_Unk567f50(int ev, unsigned short *c)
     if (*(unsigned char *)(c + 9) < (unsigned)((unsigned short)util_Random(0x20) + 0x28)) {
         memset(m, 0, sizeof(m));
         *(int *)(m + 8) = *(int *)(o + 4);
-        *(int *)(m + 0x2c) = U_I((unsigned)&ai_TimeHour);
+        *(int *)(m + 0x2c) = U_I((unsigned)&ai_Time.hour);
         *(int *)(m + 0x28) = U_I((unsigned)&ai_Time);
         m[4] = 0x10;
         m[0x36] = 1;
@@ -13323,7 +13309,7 @@ void he_Unk567f50(int ev, unsigned short *c)
             *(int *)(m + 0x28) = U_I((unsigned)&ai_Time);
             *(int *)(m + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
             *(int *)(m + 0x58) = *(int *)(c + 1);
-            *(int *)(m + 0x2c) = U_I((unsigned)&ai_TimeHour);
+            *(int *)(m + 0x2c) = U_I((unsigned)&ai_Time.hour);
             m[4] = 0xf;
             *(int *)(m + 0xc) = -1;
             m[0x36] = 2;
@@ -13362,7 +13348,7 @@ void he_Unk568220(int ev)
         if (*(int *)(g + 0x29) != 0 && (*(unsigned char *)(g + 0x20) & 1) == 0 && (*(unsigned char *)(g + 0x13) & 0x20) == 0 && *(char *)(g + 0x33) != 0)
             he_Unk567f50(ev, (unsigned short *)g);
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0xf, 0);
 }
 /* 0x568310, registers the event types 0x02 .. 0xa6 (second part, after 0x553060): he_Unk53d600 (type, alloc, run) for each (a non-zero result = out of table space: return 1), the type texts 0x52b350 (type, name, 0, menu id, icon) for the types with an entry in the event list, and the tip table 0x505ca0 (0x1a, 0x6fa1e0); returns 0 */
@@ -13517,9 +13503,9 @@ void he_Unk568ae0(int ev)
 
     v = *(int *)(U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41 + 0x22);
     *(int *)(ev + 0xb0) = v;
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(float *)(ev + 0xb4) = (float)v;
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
     d = gm_MeanLiking(*(unsigned short *)(ev + 8), 8, ev + 0x8c) - 0.5;
     *(char *)(ev + 0xc8) = 0;
     *(float *)(ev + 0xc4) = (float)(d * 0.25);
@@ -13612,7 +13598,7 @@ void he_Unk568be0(int ev)
                     return;
                 }
             }
-            *(HETIME *)(ev + 0x60) = *(HETIME *)(ebp != 0 ? ebp : ev + 0x52);
+            *(AITIME *)(ev + 0x60) = *(AITIME *)(ebp != 0 ? ebp : ev + 0x52);
             gm_AddTime(ev + 0x52, 0, 0, 5);
         }
         return;
@@ -13661,8 +13647,8 @@ void he_Unk5690c0(int r)
     t = (char *)U_I((unsigned)&ai_Goods);
     id = *(unsigned short *)(r + 0xac);
     v = (float)*(unsigned int *)(t + (id << 6) + id + 0x22);
-    *(HETIME *)(r + 0x52) = *(HETIME *)(r + 0x44);
-    *(HETIME *)(r + 0x60) = *(HETIME *)(r + 0x44);
+    *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
+    *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
     *(float *)(r + 0xb4) = v;
     *(float *)(r + 0xb8) = v;
     gm_AddTime(r + 0x52, 0, 0, 1);
@@ -13928,7 +13914,7 @@ fetch:
                 he_Unk53e840((int *)h);
                 *(int *)(ev + 0x88) = 0;
             }
-            *(HETIME *)ck = *(HETIME *)(ev + 0x52);
+            *(AITIME *)ck = *(AITIME *)(ev + 0x52);
         }
         for (;;) {
             if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
@@ -13947,7 +13933,7 @@ fetch:
                 if (gm_Query(*(int *)(b2 + 0x14), 1, 0, *(unsigned short *)(ev + 0xac)) == 0)
                     *(int *)(ev + 0xc4) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(b2 + 2), -1, *(unsigned short *)(ev + 0xac), 0, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
             }
-            *(HETIME *)ck = *(HETIME *)(ev + 0x52);
+            *(AITIME *)ck = *(AITIME *)(ev + 0x52);
             gm_AddTime(ev + 0x52, 0, 1, 0);
             if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
                 return;
@@ -13973,7 +13959,7 @@ lacking:
     *(int *)(ev + 0xc8) = 1;
     *(int *)(ev + 0xc4) = -1;
     gm_AddTime(ev + 0x52, 0, 5, 0);
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x52);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x52);
     return;
 state2:
     if (*(int *)(ev + 0x14) > 0 || *(int *)(ev + 0x18) > 0) {
@@ -14010,8 +13996,8 @@ done_free:
 
 void he_Unk56a100(int r)
 {
-    *(HETIME *)(r + 0x52) = *(HETIME *)(r + 0x44);
-    *(HETIME *)(r + 0x60) = *(HETIME *)(r + 0x44);
+    *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
+    *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
     gm_AddTime(r + 0x52, 4, (unsigned short)util_Random(0x3c), 0);
 }
 /* 0x56a170, a run handler (state 0 -> 1; state 1 with orders (+0x14 / +0x18): when due, the goods building +0xb0 gets an order of the good
@@ -14068,8 +14054,8 @@ void he_Unk56a170(int ev)
 
 void he_Unk56a360(int r)
 {
-    *(HETIME *)(r + 0x52) = *(HETIME *)(r + 0x44);
-    *(HETIME *)(r + 0x60) = *(HETIME *)(r + 0x44);
+    *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
+    *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
     gm_AddTime(r + 0x52, 7, (unsigned short)util_Random(0x1e) + 0x1e, 0);
 }
 
@@ -14194,13 +14180,13 @@ void he_Unk56a7b0(int ev)
             return;
         }
     }
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0xe8) = -1;
     *(int *)(ev + 0xec) = -1;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     memset(msg, 0, sizeof(msg));
-    *(HETIME *)(msg + 0x28) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(msg + 0x28) = *(AITIME *)(ev + 0x44);
     msg[4] = 0xf;
     *(int *)(msg + 0xc) = -1;
     *(int *)(msg + 8) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
@@ -14364,7 +14350,7 @@ void he_Unk56a960(int ev)
         }
     }
     if (*(unsigned char *)(ev + 0xf0) != 0 && flags != 0) {
-        if (*(unsigned short *)(unsigned)&ai_TimeHour < 0x14) {
+        if (*(unsigned short *)(unsigned)&ai_Time.hour < 0x14) {
             gm_AddTime(ev + 0x52, 0, 0x1e, 0);
             *(unsigned char *)(ev + 0xf0) -= 1;
         } else {
@@ -14393,7 +14379,7 @@ void he_Unk56a960(int ev)
     *(int *)(msg + 0xc) = -1;
     *(int *)(msg + 8) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
     *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
     *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
     *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
     msg[0x36] = 2;
@@ -14418,8 +14404,8 @@ done_free:
 
 void he_Unk56b380(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 0, 1, 0);
     *(int *)(ev + 0xbc) = 0;
     *(int *)(ev + 0xc0) = 0;
@@ -14492,8 +14478,8 @@ void he_Unk56b570(int ev)
         if (e2 != ev && *(int *)(e2 + 0x70) < 5)
             goto done;
     }
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 0, 1, 0);
     *(int *)(ev + 0xc4) = 0;
     *(int *)(ev + 0xc8) = 0;
@@ -14799,8 +14785,8 @@ void he_Unk56be30(int ev)
 
 void he_Unk56cdd0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = *(HETIME *)(ev + 0x44);
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0x70) = 0;
     *(int *)(ev + 0xac) = -1;
     gm_AddTime(ev + 0x52, 0, 0xa, 0);
@@ -14832,7 +14818,7 @@ void he_Unk56ce40(int ev)
         he_FreeEvent((int *)ev);
         break;
     case 0:
-        if (ai_Missions[i].unk20 == 0 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16) {
+        if (ai_Missions[i].unk20 == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16) {
             if (ai_Unk4b4f00(&ai_Missions[i]) != 0) {
                 ai_Missions[i].unk20 = 1;
                 gm_AddTime(ev + 0x52, 0, 1, 0);
@@ -14844,7 +14830,7 @@ void he_Unk56ce40(int ev)
         break;
     case 1:
         gm_AddTime(ev + 0x52, 0, 1, 0);
-        if (ai_Missions[i].unk20 == 1 && *(unsigned short *)(unsigned)&ai_TimeHour < 0x16 &&
+        if (ai_Missions[i].unk20 == 1 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16 &&
             U_I((unsigned)&ai_MissionPartner) == -1) {
             arg = ai_Missions[i].owner;
             *(int *)(ev + 0xac) = ((int (*)(unsigned char, void *))cm_SendExSysMessage)(8, &arg);
@@ -14949,8 +14935,8 @@ void he_Unk56d2d0(int ev)
             v = ahm_ResearchMinutes(c, p);
             *(int *)(ev + 0xb4) = v;
             *(int *)(ev + 0xb8) = v;
-            *(HETIME *)(ev + 0xbc) = ai_Time;
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0xbc) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             *(int *)(ev + 0x70) = 0;
             v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b,
@@ -14985,9 +14971,9 @@ void he_Unk56d3d0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
-        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
-        *(HETIME *)(ev + 0xbc) = ai_Time;
+    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_Time.hour ||
+        (float)*(unsigned short *)(unsigned)&ai_Time.hour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
+        *(AITIME *)(ev + 0xbc) = ai_Time;
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
     }
@@ -15002,16 +14988,16 @@ void he_Unk56d3d0(int ev)
         return;
     }
     if (he_Unk56ddc0(*(int *)(c + 0x16c), 0x24b) != 0) {
-        *(HETIME *)(ev + 0xbc) = ai_Time;
+        *(AITIME *)(ev + 0xbc) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0xf, 0);
         return;
     }
     if (st == 0) {
         v = gm_MinutesBetween((void *)(ev + 0xbc), (void *)(unsigned)&ai_Time);
         *(int *)(ev + 0xb4) -= v;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(HETIME *)(ev + 0xbc) = ai_Time;
+        *(AITIME *)(ev + 0xbc) = ai_Time;
         if (*(int *)(ev + 0xb4) < 1)
             *(int *)(ev + 0x70) = 1;
     }
@@ -15036,8 +15022,8 @@ void he_Unk56d610(int ev)
     if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_Unk5eb788)
         goto done;
     *(int *)(ev + 0xb8) = *(int *)(ev + 0xbc);
-    *(HETIME *)(ev + 0xc0) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xc0) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 5, 0);
     *(int *)(ev + 0x70) = 0;
     v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b, *(unsigned short *)c, ev);
@@ -15068,14 +15054,14 @@ void he_Unk56d730(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
-        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
-        *(HETIME *)(ev + 0xc0) = ai_Time;
+    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_Time.hour ||
+        (float)*(unsigned short *)(unsigned)&ai_Time.hour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
+        *(AITIME *)(ev + 0xc0) = ai_Time;
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
     }
     if (he_Unk56ddc0(*(int *)(c + 0x16c), 0x24b) != 0) {
-        *(HETIME *)(ev + 0xc0) = ai_Time;
+        *(AITIME *)(ev + 0xc0) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0xf, 0);
         return;
     }
@@ -15092,9 +15078,9 @@ void he_Unk56d730(int ev)
     if (st == 0) {
         v = gm_MinutesBetween((void *)(ev + 0xc0), (void *)(unsigned)&ai_Time);
         *(int *)(ev + 0xb8) -= v;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(HETIME *)(ev + 0xc0) = ai_Time;
+        *(AITIME *)(ev + 0xc0) = ai_Time;
         if (*(int *)(ev + 0xb8) < 1)
             *(int *)(ev + 0x70) = 1;
     }
@@ -15118,8 +15104,8 @@ void he_Unk56d990(int ev)
     if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_Unk5eb788)
         goto done;
     *(int *)(ev + 0xb8) = *(int *)(ev + 0xbc);
-    *(HETIME *)(ev + 0xc0) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xc0) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 5, 0);
     *(int *)(ev + 0x70) = 0;
     v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b, *(unsigned short *)c, ev);
@@ -15145,8 +15131,8 @@ void he_Unk56daa0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_TimeHour ||
-        (float)*(unsigned short *)(unsigned)&ai_TimeHour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
+    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_Time.hour ||
+        (float)*(unsigned short *)(unsigned)&ai_Time.hour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
     }
@@ -15167,9 +15153,9 @@ void he_Unk56daa0(int ev)
     if (st == 0) {
         v = gm_MinutesBetween((void *)(ev + 0xc0), (void *)(unsigned)&ai_Time);
         *(int *)(ev + 0xb8) -= v;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(HETIME *)(ev + 0xc0) = ai_Time;
+        *(AITIME *)(ev + 0xc0) = ai_Time;
         if (*(int *)(ev + 0xb8) < 1)
             *(int *)(ev + 0x70) = 1;
     }
@@ -15182,7 +15168,7 @@ void he_Unk56dd20(int ev)
 
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (*(unsigned short *)(ev + 0x56) < 0x14) {
         if (*(unsigned short *)(ev + 0x56) < 9) {
             h = util_Random(8);
@@ -15238,7 +15224,7 @@ void he_Unk56de10(int ev)
         cm_SendExSetHE(-1, ev);
         return;
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x52) += 1;
     *(unsigned short *)(ev + 0x56) = util_Random((int)(*(float *)((unsigned)&gm_DayEndHours + h * 4) - *(float *)((unsigned)&gm_DayStartHours + h * 4))) +
                                      (int)*(float *)((unsigned)&gm_DayStartHours + h * 4);
@@ -15410,8 +15396,8 @@ void he_Unk56e460(int ev)
         if (r != ev && *(unsigned short *)(r + 8) == *(unsigned short *)(ev + 8))
             goto taken;
     }
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     *(int *)(ev + 0xcc) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xd, *(int *)(ev + 0xb0), -1, 0x2d, 0, 0, (char *)(unsigned)&full_data_628dc8);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
@@ -15470,13 +15456,13 @@ void he_Unk56e5b0(int ev)
         if (cm_GetSlotState(HM_I(ev, 0xcc)) == 1 && (r = cm_GetSlotValue(HM_I(ev, 0xcc))) != 0) {
             HM_I(ev, 0xb8) = HM_I(r, 4);
             if (HM_I(ev, 0xbc) == 3) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
             } else if ((e = gm_BuildQuery(1, 1, HM_I(ev, 0xac))) != 0) {
                 *(int *)(ev + 0xcc) = cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(e, 1), -1, 0, 1, (char *)(unsigned)&full_data_628dc8);
                 *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
             } else {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             }
         } else
@@ -15486,17 +15472,17 @@ void he_Unk56e5b0(int ev)
         HM_I(ev, 0xcc) = -1;
         r = gm_FindChar(HM_I(ev, 0xb8));
         if (r != 0 && HM_I(HM_I(r, 0x184), 0x128) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 4, 0);
             return;
         }
         if (r == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
         if (gm_BuildQuery(1, 1, HM_I(ev, 0xac)) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
             return;
@@ -15505,7 +15491,7 @@ void he_Unk56e5b0(int ev)
     case 3:
         r = gm_FindChar(HM_I(ev, 0xb8));
         if (r == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
@@ -15534,7 +15520,7 @@ void he_Unk56e5b0(int ev)
                 he_ShowNews(HM_I(per, 4), -1, text, 1, 0x5fa, 0);
                 break;
             case 2:
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 HM_I(ev, 0xc4) = -1;
                 HM_I(ev, 0xc8) = 0;
                 *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
@@ -15548,7 +15534,7 @@ void he_Unk56e5b0(int ev)
         return;
     case 4:
         r = gm_FindChar(HM_I(ev, 0xb8));
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         if (r == 0)
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         else {
@@ -15559,12 +15545,12 @@ void he_Unk56e5b0(int ev)
     case 5:
         r = gm_FindChar(HM_I(ev, 0xb8));
         if (r == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
         if (HM_I(HM_I(r, 0x184), 0x128) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 4, 0);
             return;
         }
@@ -15583,7 +15569,7 @@ void he_Unk56e5b0(int ev)
         k -= e;
         if (k <= 5)
             k = 5;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, k / 60, k % 60, 0);
         cm_SendKillCharacter(HM_I(ev, 0xb8), 1);
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -15591,13 +15577,13 @@ void he_Unk56e5b0(int ev)
     case 6:
         e = gm_MinutesBetween(ev + 0x44, &ai_Time);
         if (e > 0x5a0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
             return;
         }
         r = gm_FindChar(HM_I(ev, 0xb8));
         if (r == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
@@ -15607,7 +15593,7 @@ void he_Unk56e5b0(int ev)
             HM_I(ev, 0xc8) = 1;
             cm_SendChrStop(HM_I(r, 4));
             cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
         } else {
@@ -15616,7 +15602,7 @@ void he_Unk56e5b0(int ev)
             HM_I(ev, 0xc8) = 0;
             cm_SendChrStop(HM_I(r, 4));
             cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 0xf, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
         }
@@ -15625,21 +15611,21 @@ void he_Unk56e5b0(int ev)
         e = gm_MinutesBetween(ev + 0x44, &ai_Time);
         r = gm_FindChar(HM_I(ev, 0xb8));
         if (r == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
         if (e > 0x5a0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
             return;
         }
         if (he_Unk56f740(r, ev, he_FindEvent(2, 0, 0x18, 1, HM_I(ev, 0xc4))) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
         } else {
             gm_AddTime(ev + 0x52, 0, 0, 0);
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
         }
         return;
@@ -15651,7 +15637,7 @@ void he_Unk56e5b0(int ev)
 
 void he_Unk56efc0(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (he_Unk56f360(HM_I(ev, 0xac), gm_FindChar(HM_I(ev, 0xb0))) != 0) {
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
@@ -15670,7 +15656,7 @@ void he_Unk56f050(int ev)
 {
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x30, 0, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
@@ -16023,7 +16009,7 @@ void he_Unk56fc50(int ev)
         he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fa, 0);
         return;
     }
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     if (HM_I(ev, 0xb4) == -1)
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
@@ -16063,7 +16049,7 @@ void he_Unk56fda0(int ev)
         sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
         r = gm_BuildQuery(1, 1, HM_I(ev, 0xac));
         if (r == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
@@ -16075,13 +16061,13 @@ void he_Unk56fda0(int ev)
     case 2:
         HM_I(ev, 0xbc) = -1;
         if (HM_I(HM_I(per, 0x184), 0x128) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 4, 0);
             HM_I(ev, 0x84) = cm_SendExSetHE(2, ev);
             return;
         }
         if (gm_BuildQuery(1, 1, HM_I(ev, 0xac)) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             r = gm_FindChar(HM_I(ev, 0xb0));
             if (r != 0) {
                 gm_AddTime(ev + 0x52, 0x18, 0, 0);
@@ -16090,12 +16076,12 @@ void he_Unk56fda0(int ev)
             HM_I(ev, 0x84) = cm_SendExSetHE(3, ev);
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
         return;
     case 3:
         if (HM_I(per, 0x16c) == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
@@ -16104,16 +16090,16 @@ void he_Unk56fda0(int ev)
         return;
     case 4:
         if (HM_I(per, 0x16c) == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
             return;
         }
         if (HM_I(HM_I(per, 0x184), 0x128) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 4, 0);
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
         HM_I(ev, 0x84) = cm_SendExSetHE(5, ev);
         r = HM_I(ev, 0xb8) >> 1;
@@ -16155,7 +16141,7 @@ void he_Unk570130(int ev)
         return;
     }
     HM_I(ev, 0xbc) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
     HM_I(ev, 0x70) = 0;
@@ -16217,7 +16203,7 @@ void he_Unk5702e0(int ev)
             return;
         }
         if (HM_I(HM_I(r, 0x184), 0x128) == 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
             b2 = gm_FindChar(HM_I(ev, 0xb0));
             r = gm_FindChar(HM_I(ev, 0xb4));
@@ -16237,7 +16223,7 @@ void he_Unk5702e0(int ev)
             HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 4, 0);
         return;
     case 3:
@@ -16253,7 +16239,7 @@ void he_Unk5702e0(int ev)
         r = gm_FindChar(HM_I(ev, 0xb4));
         if (r != 0 && HM_I(r, 0x16c) != 0) {
             if (HM_I(HM_I(r, 0x184), 0x128) != 0) {
-                *(HETIME *)(ev + 0x52) = ai_Time;
+                *(AITIME *)(ev + 0x52) = ai_Time;
                 gm_AddTime(ev + 0x52, 0, 4, 0);
                 return;
             }
@@ -16298,7 +16284,7 @@ void he_Unk5706e0(int ev)
     if (r < 5)
         HM_I(ev, 0xb4 + r * 4) = 0;
     HM_I(ev, 0xb0) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }
@@ -16354,7 +16340,7 @@ void he_Unk5707a0(int ev)
             return;
         }
         if (HM_I(HM_I(r, 0x184), 0x128) != 0) {
-            *(HETIME *)(ev + 0x52) = ai_Time;
+            *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 0xa, 0);
             return;
         }
@@ -16371,7 +16357,7 @@ void he_Unk5707a0(int ev)
                 HM_B(msg, 4) = 0x8b;
                 HM_I(msg, 8) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
                 HM_I(msg, 0xc) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
-                *(HETIME *)(msg + 0x28) = ai_Time;
+                *(AITIME *)(msg + 0x28) = ai_Time;
                 HM_B(msg, 0x3a) = 9;
                 HM_I(msg, 0x5c) = HM_I(ev, 0xc);
                 HM_I(msg, 0x60) = HM_I(ev, 0xac);
@@ -16411,7 +16397,7 @@ void he_Unk5707a0(int ev)
             HM_I(ev, 0x70) = -1;
             return;
         }
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 4, 0);
         return;
     }
@@ -16549,9 +16535,9 @@ void he_Unk570ef0(int ev)
         return;
     }
     HM_I(ev, 0xb0) = 0;
-    *(HETIME *)(ev + 0xb8) = ai_Time;
+    *(AITIME *)(ev + 0xb8) = ai_Time;
     HM_I(ev, 0xb4) = 0x168;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, 0, 5, 0);
 }
@@ -16607,7 +16593,7 @@ void he_Unk571000(int ev)
         for (i = alive; i > 0; i--)
             *(float *)(ev + 0xb0) += x;
         HM_I(ev, 0xb4) -= alive;
-        *(HETIME *)(ev + 0xb8) = ai_Time;
+        *(AITIME *)(ev + 0xb8) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
         if (HM_I(ev, 0xb4) < 0)
             HM_I(ev, 0x70) = -1;
@@ -16667,8 +16653,8 @@ void he_Unk571550(int ev)
     sv_MoveToGroup(bld, grp, *(unsigned short *)per, ev);
     HM_I(ev, 0xac) = 0;
     HM_I(ev, 0xb8) = 0x1fe;
-    *(HETIME *)(ev + 0xbc) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0xbc) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, 0, 5, 0);
 }
@@ -16686,7 +16672,7 @@ void he_Unk571640(int ev)
     minute = *(unsigned short *)((char *)&ai_Time + 4);
     if ((float)minute < *(float *)((unsigned)&gm_DayEndHours + hour * 4) || (float)minute < *(float *)((unsigned)&gm_DayStartHours + hour * 4)) {
         if (HM_I(ev, 0x70) != -1 && HM_I(ev, 0x70) != -2) {
-            *(HETIME *)(ev + 0xbc) = ai_Time;
+            *(AITIME *)(ev + 0xbc) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 5, 0);
             return;
         }
@@ -16710,10 +16696,10 @@ void he_Unk571640(int ev)
         if ((HM_B(per, 0x165) == 0x1b || HM_B(per, 0x165) == 0x1c) && (HM_B(per, 0x1b4) & 1))
             x *= 0.25f;
         *(float *)(ev + 0xac) += x;
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 5, 0);
         HM_I(ev, 0xb8) -= e;
-        *(HETIME *)(ev + 0xbc) = ai_Time;
+        *(AITIME *)(ev + 0xbc) = ai_Time;
         if (HM_I(ev, 0xb8) <= 0)
             HM_I(ev, 0x70) = -1;
         n = (int)*(float *)(ev + 0xac) + HM_B(r, 0xc);
@@ -16742,7 +16728,7 @@ free_one:
 
 void he_Unk571990(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, 0x48, 0, 0);
 }
@@ -16795,15 +16781,15 @@ void he_Unk571ac0(int ev)
         goto free_ev;
     if (HM_I(ev, 0xb4) != -1)
         grp = gm_Query(HM_I(bld, 0x5d), 2, 6, 1, HM_I(ev, 0xb4));
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
     if (grp != 0)
         sv_MoveToGroup(bld, grp, *(unsigned short *)per, ev);
     else
         sv_MoveToGroup(bld, 0, *(unsigned short *)per, ev);
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    *(HETIME *)(ev + 0xb8) = *(HETIME *)(ev + 0x52);
+    *(AITIME *)(ev + 0xb8) = *(AITIME *)(ev + 0x52);
     gm_AddTime(ev + 0xb8, 3, 0, 0);
     return;
 free_ev:
@@ -16844,8 +16830,8 @@ void he_Unk571c30(int ev)
     cm_BeginFieldBlock(per, *(int *)(per + 4));
     cm_AddFieldValues(1, 1, per + (*(unsigned short *)(ev + 0xb0) - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x80, &n);
     cm_SendFieldDeltas();
-    *(HETIME *)(ev + 0x52) = ai_Time;
-    *(HETIME *)(ev + 0x60) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x60) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
     return;
 release:
@@ -16881,7 +16867,7 @@ void he_Unk571f60(int ev)
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
     HM_I(ev, 0x70) = 0;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     for (r = he_FindEvent(2, 0, 0x90, 3, HM_I(ev, 0x10)); r != 0; r = he_NextEvent()) {
         if ((int)r != ev) {
             HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
@@ -16892,7 +16878,7 @@ void he_Unk571f60(int ev)
     HM_B(msg, 4) = 0x91;
     HM_I(msg, 8) = HM_I(ev, 0xc);
     HM_I(msg, 0xc) = HM_I(ev, 0xac);
-    *(HETIME *)(msg + 0x28) = ai_Time;
+    *(AITIME *)(msg + 0x28) = ai_Time;
     HM_B(msg, 0x36) = 0xa;
     HM_I(msg, 0x58) = HM_I(ev, 4);
     HM_I(msg, 0x5c) = -1;
@@ -17054,7 +17040,7 @@ void he_Unk5725b0(int ev)
         he_FreeEvent((int *)ev);
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0xac));
     if (bld == 0) {
         cm_SendExSetHE(-1, ev);
@@ -17128,7 +17114,7 @@ void he_Unk5726b0(int ev)
 
 void he_Unk572860(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (*(unsigned short *)(ev + 0x56) >= 0x17) {
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(unsigned short *)(ev + 0x56) = 0xc;
@@ -17232,14 +17218,14 @@ void he_Unk572a50(int ev)
     }
 }
 
-void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec); /* 0x4fe1e0 */
+void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec); /* 0x4fe1e0 */
 
 /* 0x572b90, the alloc of the event 0x93: the due clock +0x52 = now + 6 hours (0x4fe1e0), the second clock +0x60 = the due clock */
 void he_Unk572b90(int ev)
 {
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_SetTime(ev + 0x52, 6, 0, 0);
-    *(HETIME *)(ev + 0x60) = *(HETIME *)(ev + 0x52);
+    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x52);
 }
 
 int gm_Opinion(int a, int b); /* 0x50c520 */
@@ -17291,7 +17277,7 @@ void he_Unk572bf0(int ev)
                                     HM_B(msg, 4) = 0x94;
                                     HM_I(msg, 8) = *(unsigned short *)(ev + 8);
                                     HM_I(msg, 0xc) = HM_I(bld, 4);
-                                    *(HETIME *)(msg + 0x28) = ai_Time;
+                                    *(AITIME *)(msg + 0x28) = ai_Time;
                                     HM_B(msg, 0x36) = 1;
                                     HM_I(msg, 0x58) = HM_I(ev, 4);
                                     cm_SendLongMessage(msg);
@@ -17308,7 +17294,7 @@ void he_Unk572bf0(int ev)
             }
         }
 tail:
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0x14 + (util_Random(0x14) & 0xffff), 0);
         HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
         return;
@@ -17359,12 +17345,12 @@ tail:
         he_FreeEvent((int *)ev);
         return;
     case 2:
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0x1e, 0);
         HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
         return;
     case 3:
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0x1e, 0);
         HM_I(ev, 0x70) = 0;
         return;
@@ -17473,7 +17459,7 @@ void he_Unk573280(int ev)
 {
     if (HM_B(ev, 0x78) & 4)
         return;
-    if (ai_Time.b <= 0xa)
+    if (ai_Time.hour <= 0xa)
         return;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(unsigned short *)(ev + 0x56) = 0xa;
@@ -17577,8 +17563,8 @@ void he_Unk5734b0(int ev)
     HM_I(ev, 0x70) = 0;
     if (HM_B(ev, 0x78) & 4)
         return;
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     per = (char *)gm_FindChar(HM_I(ev, 0xb0));
     if (per == 0) {
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
@@ -17613,7 +17599,7 @@ void he_Unk573580(int ev)
     if (HM_I(ev, 0x84) != -1 && cm_GetSlotState(HM_I(ev, 0x84)) == 0)
         return;
     HM_I(ev, 0x84) = -1;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     per = (char *)gm_FindChar(HM_I(ev, 0xb0));
     if (per == 0 || *(unsigned short *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c) == 0xffff) {
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
@@ -17741,7 +17727,7 @@ void he_Unk573970(char *pl, char *per)
     HM_B(msg, 4) = 0x33;
     HM_I(msg, 8) = HM_I(pl, 4);
     HM_I(msg, 0xc) = HM_I(HM_I(ch, 0x16c), 1);
-    *(HETIME *)(msg + 0x28) = ai_Time;
+    *(AITIME *)(msg + 0x28) = ai_Time;
     HM_B(msg, 0x36) = 1;
     HM_I(msg, 0x58) = HM_I(ch, 4);
     cm_SendLongMessage(msg);
@@ -17803,7 +17789,7 @@ void he_Unk573c20(char *pl, char *per)
     HM_B(msg, 4) = 0x9e;
     HM_I(msg, 8) = HM_I(per, 4);
     HM_I(msg, 0xc) = -1;
-    *(HETIME *)(msg + 0x28) = ai_Time;
+    *(AITIME *)(msg + 0x28) = ai_Time;
     HM_B(msg, 0x36) = 1;
     HM_I(msg, 0x58) = pl == per ? -1 : HM_I(pl, 4);
     HM_I(msg, 0x60) = HM_I(per, 4);
@@ -17831,7 +17817,7 @@ void he_Unk573d30(char *pl, char *per)
     HM_I(msg, 8) = HM_I(per, 4);
     HM_I(msg, 0xc) = -1;
     HM_I(msg, 0x28) = U_I((unsigned)&ai_Time);
-    HM_I(msg, 0x2c) = U_I((unsigned)&ai_TimeHour);
+    HM_I(msg, 0x2c) = U_I((unsigned)&ai_Time.hour);
     HM_I(msg, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
     *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
     HM_B(msg, 0x36) = 1;
@@ -17878,8 +17864,8 @@ void he_Unk573e30(char *pl, int a)
 void he_Unk573f20(int ev)
 {
     HM_I(ev, 0x70) = 0;
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(unsigned short *)(ev + 0x56) = 6;
     HM_I(ev, 0x58) = (util_Random(0x10) & 0xffff) + 5;
@@ -17925,8 +17911,8 @@ void he_Unk573fb0(int ev)
 void he_Unk574060(int ev)
 {
     HM_I(ev, 0x70) = -1;
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
 }
 /* 0x5740d0, the run of the event 0x9f: -2 / -1 free */
@@ -17956,8 +17942,8 @@ void he_Unk574120(int ev)
 {
     if (HM_B(ev, 0x78) & 4)
         return;
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     if (U_I((unsigned)&gm_AllowAll) != 0) {
         gm_AddTime(ev + 0x52, 1, 0, 0);
     } else {
@@ -18109,8 +18095,8 @@ void he_Unk574550(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     gm_Shuffled(4, out);
     *(unsigned short *)(ev + 0xce) = 0;
     *(unsigned short *)(ev + 0xc0) = w[out[0]];
@@ -18312,8 +18298,8 @@ void ai_Unk575030(int ev)
 
 void he_Unk575150(int ev)
 {
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, util_Random(2) & 0xffff, util_Random(0x1e) & 0xffff, 0);
 }
@@ -18356,14 +18342,14 @@ void he_Unk5751e0(int ev)
         }
     }
     if (HM_I(ev, 0x70) > 3)
-        *(HETIME *)(ev + 0x52) = ai_Time;
+        *(AITIME *)(ev + 0x52) = ai_Time;
 }
 /* 0x575320, the alloc of the event 0xa4: state 0, the clocks +0x44 / +0x52 = now, the due clock + random (0x20) hours (0x4fe140) */
 
 void he_Unk575320(int ev)
 {
-    *(HETIME *)(ev + 0x44) = ai_Time;
-    *(HETIME *)(ev + 0x52) = ai_Time;
+    *(AITIME *)(ev + 0x44) = ai_Time;
+    *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, util_Random(0x20) & 0xffff, 0, 0);
 }

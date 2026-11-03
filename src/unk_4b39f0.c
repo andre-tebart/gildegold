@@ -27,7 +27,6 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 /* 0x4b39f0, clears the running missions */
 int ai_ClearMissions(void)
 {
@@ -60,7 +59,7 @@ void ai_RestartMission(G13MIS *m)
     G13MIS *e = ai_FindOwnerMission(m);
 
     if (e != 0) {
-        TMX(*e) = NOWX;
+        e->time = ai_Time;
         e->unk18 = 0;
         e->unk1c = 0;
         e->unk20 = 0;
@@ -528,7 +527,7 @@ int ai_Unk4b46f0(AICHAR *c, G13TYPE *t)
 
     for (b = gm_BuildQuery(2, 4, c->id, 5, 2); b != 0; b = gm_BuildNext()) {
         if (G13_B(b, 0) >= 5 && *(int *)((char *)b + 0x65) == c->netId
-            && gm_MinutesBetween((AITIME *)((char *)b + 0x69), &ai_TimeT) > t->unk18)
+            && gm_MinutesBetween((AITIME *)((char *)b + 0x69), &ai_Time) > t->unk18)
             return 1;
     }
     return 0;
@@ -763,7 +762,7 @@ int ai_Unk4b4dc0(AICHAR *c, int x, G13TYPE *t)
 {
     G13ECON e;
 
-    if (ai_TimeT.year < 10)
+    if (ai_Time.year < 10)
         return 0;
     ord_GetStatistics(&e);
     if (t->goal < e.unk18)
@@ -909,10 +908,10 @@ int ai_TimedCondition(int x, int ok, int min)
     if (ok) {
         if (m->time.year == 0 && m->time.hour == 0 && *(int *)((char *)m + 0x0e) == 0
             && *(int *)((char *)m + 0x12) == 0) {
-            m->time.year = ai_TimeT.year;
-            G13_4FE1E0(&m->time, *((char *)&ai_TimeT + 4), *((char *)&ai_TimeT + 6), *((char *)&ai_TimeT + 0x0a));
+            m->time.year = ai_Time.year;
+            G13_4FE1E0(&m->time, (char)ai_Time.hour, (char)ai_Time.min, (char)ai_Time.sec);
         }
-        return gm_MinutesBetween(&m->time, &ai_TimeT) >= min;
+        return gm_MinutesBetween(&m->time, &ai_Time) >= min;
     }
     m->time.year = 0;
     gm_SetTime(&m->time, 0, 0, 0);

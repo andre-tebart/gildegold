@@ -1583,3 +1583,23 @@
 2026-11-03T17:45:10 0x0146356c data d3_ddhr -> dd_Ref by:main why:0x146356c is one ULONG: dd_vesa.c defines dd_Ref (the result of the last Release), ts_texture.c called it d3_ddhr
 2026-11-03T17:45:10 0x0146356c data d3d_RefCount -> dd_Ref by:main why:0x146356c is one ULONG: dd_vesa.c defines dd_Ref, d3_d3d.h called it d3d_RefCount
 2026-11-03T17:45:10 0x00fba940 data d3_AnimPath -> d3io_StockDir by:main why:0xfba940 is the stock object directory (VFSDIR *, set by d3io_SetStockDir in d3_int_io.c); d3_engine.c defined it as char *d3_AnimPath
+2026-11-03T18:31:07 0x0061a348 data amt_PriceRows -> gm_BuildingItemGroups by:main why:0x61a348 is f3gm.c's G7GRP gm_BuildingItemGroups[37] (a building kind and ten goods); amt.h declared it as unsigned char rows
+2026-11-03T18:31:07 0x006332b4 data ai_Unk6332b4 -> evt_Scripts by:main why:0x6332b4 is evt.c's EVTSCRIPT *evt_Scripts (128 scripts of 0xc98 bytes); cm.c defined it as a char * placeholder
+2026-11-03T18:31:07 0x006f0b60 data snd_AmbientOnByte -> snd_AmbientOn by:main why:0x6f0b60 is one unsigned char (anm.c / main.c read it as a byte, f3snd.c the defining unit widens the load); unk_5d33b0.h called it snd_AmbientOnByte
+2026-11-03T18:31:07 0x006f0b60 data snd_Unk6f0b60 -> snd_AmbientOn by:main why:0x6f0b60 is f3snd.c's ambient-sound flag snd_AmbientOn; d3_snd.c declared a placeholder
+2026-11-03T18:31:07 0x006f1b9c data ai_RatingBaseF -> ai_RatingBase by:main why:0x6f1b9c is one float (every user reads it as a float); gv.h had an int ai_RatingBase and the float view ai_RatingBaseF
+2026-11-03T18:31:07 0x006f22dc data full_data_6f22dc -> sv_PendingMoney by:main why:0x6f22dc is one int: the money the money panel (sv.c) adds to the player's, the credit / transport windows set it
+2026-11-03T18:31:07 0x006f22dc data ai_Unk6f22dc -> sv_PendingMoney by:main why:0x6f22dc is the int sv_PendingMoney; sv.c declared an unused placeholder
+2026-11-03T18:31:07 0x006f35c4 data ai_VgHideFrom -> ai_GfxDetail by:main why:0x6f35c4 is the "details" option byte ai_GfxDetail; unk_58bbd0.h called it ai_VgHideFrom (the vg_ objects from this detail on are hidden)
+2026-11-03T18:31:07 0x006f360c data ai_OptionCameraSpeedByte -> ai_OptionCameraSpeed by:main why:0x6f360c is one unsigned char, the "camera_speed" key (the reader stores a byte, the defining unit widens its loads)
+2026-11-03T18:31:07 0x00770ae0 data ai_TimeYear -> ai_Time by:main why:0x770ae0 is the AITIME ai_Time; gv.h's ai_TimeYear was its first field
+2026-11-03T18:31:07 0x00770ae0 data ord_GameClock -> ai_Time by:main why:0x770ae0 is anm.c's AITIME ai_Time; ord.c had an ORDSTIME view ord_GameClock
+2026-11-03T18:31:07 0x007d6a60 data init_StockBlock -> gm_StockBlocks by:main why:0x7d6a60 is f3gm.c's GMBLOCK gm_StockBlocks[5]; f3init.c declared an INIT_STOCKBLOCK copy
+2026-11-03T18:31:07 0x0091aaf4 data ord_RatingRateBits -> ord_RatingRate by:main why:0x91aaf4 is the float ord_RatingRate; ord.c had an int view of its bits
+2026-11-03T18:31:07 0x0091ab00 data ord_StatisticsRounds -> ord_StatisticsHistory by:main why:0x91ab00 is gv.c's ORDSTATROUND ord_StatisticsHistory[16]; ord.c declared it as ord_StatisticsRounds
+2026-11-03T18:31:07 0x0091ae60 data ord_GridCells -> ai_Grid by:main why:0x91ae60 is ai.c's AIGRID ai_Grid[8][8] (ORDCELL merged into AIGRID); gv.h declared it as ord_GridCells
+2026-11-03T18:31:07 0x0091b470 data ord_StatisticsTime -> ord_StatisticsClock by:main why:0x91b470 is ord.c's AITIME ord_StatisticsClock; gv.h declared it as char ord_StatisticsTime[]
+2026-11-03T18:31:07 0x0091b480 data ord_MessageRecordEnabled -> ord_MessageRecord by:main why:0x91b480 is the ORDMSGREC ord_MessageRecord; ord_MessageRecordEnabled was its first field
+2026-11-03T18:31:07 0x0091b4c0 data ord_StatisticsRecord -> ord_Statistics by:main why:0x91b4c0 is ord.c's ORDSTATS ord_Statistics; gv.h declared it as char ord_StatisticsRecord[]
+2026-11-03T18:31:07 0x0091b6e0 data unk_Tab91b6e0 -> ai_Evidence by:main why:0x91b6e0 is cm.c's int ai_Evidence[0x800][2]; gv.h had the placeholder unk_Tab91b6e0
+2026-11-03T18:31:07 0x00f895a0 data ai_Unkf895a0 -> ai_Watch by:main why:0xf895a0 is ai.h's AIWATCH ai_Watch (0xb00 bytes); cm.c defined it as a char[0xb00] placeholder

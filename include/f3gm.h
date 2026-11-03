@@ -50,6 +50,7 @@ int gm_HeadIconNumber(char *name);  /* 0x4fb770 */
 int gm_FindRichest(short *id, int *rate);  /* 0x4fad60 */
 void gm_Shuffle(unsigned n, int *out);  /* 0x505d30 */
 int gm_SexForJob(int x);  /* 0x503f30 */
+extern GMBLOCK gm_StockBlocks[];             /* 0x7d6a60, the five stock blocks (one per player slot) */
 extern unsigned short gm_KindObjCount;  /* 0x76fdc4 */
 extern unsigned gm_KindObjs[732];  /* 0x889400 */
 int gm_BuildKindObjects(char *b);  /* 0x500b90 */

@@ -246,7 +246,6 @@ extern int d2_DirtyRectTop;
 extern int d2_DirtyRectRight;
 extern int d2_DirtyRectBottom;
 extern GAPDATA full_data_624560[];
-#include "f3snd_types.h"
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 
@@ -269,7 +268,7 @@ extern GAPDATA full_data_624798[];
 extern GAPDATA full_data_6f241c[];
 extern int di_Disabled;
 extern GAPDATA full_data_6f2574[];
-extern G16AMBIENTON snd_AmbientOn;
+extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern char ai_OptionsFile[288];
 extern int ai_ScreenModeH;
@@ -326,7 +325,6 @@ int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city
 struct D3OBJECT;
 void main_FreeSoundBanks(void);         /* 0x537db0 */
 
-#include "time_view.h"
 #include "f3init.h"
 #include "sv.h"
 #include "mem.h"
@@ -361,7 +359,6 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is: this unit reads its fields */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 /* 0x531670, destroys the game window and unregisters its class "Die Gilde" */
 
@@ -892,9 +889,9 @@ void main_StartCityGame(char *name, int net)
         sprintf(path, "%s/%s.NET", "gamedata/cities", name);
     else
         sprintf(path, "%s/%s.CTY", "gamedata/cities", name);
-    ai_TimeT.year = 0;
-    ai_TimeT.hour = 6;
-    ai_TimeT.min = 0;
+    ai_Time.year = 0;
+    ai_Time.hour = 6;
+    ai_Time.min = 0;
     ls_SaveGame(path, "city", 2);
     gm_ResetCharacters();
     gm_ClearBuildings();
@@ -3054,7 +3051,7 @@ void main_Unk537de0(void)
     he_Unk53d4b0();
     U_I((unsigned)&sv_ScreenDirty) = 1;
     main_Round = 1;
-    U_I((unsigned)&ai_TimeT) = 2;
+    U_I((unsigned)&ai_Time) = 2;
     U_I((unsigned)&ai_GameOver) = 0;
     U_I((unsigned)&ai_LeaveGame) = 0;
     *(char *)((unsigned)&ai_GameState + 0x1) = 0;
@@ -3268,7 +3265,6 @@ void main_RundenBeginn(void)
 
 /* message record (0xf8 bytes) of 0x4c4b70 / 0x4e4060: kind byte +4, owner id +8, target +0xc, time stamp (the 0x770ae0 clock, 14 bytes) +0x28 .. +0x36, flag +0x36 = 1 */
 #define MAIN_PID ((int)(U_I((unsigned)&ai_PlayerId) & 0xffff))  /* the player character */
-#define main_Now (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, the game clock copied as 3 ints and a short (ahm.h) */
 #define MSG_B(m, o) (*(unsigned char *)((m) + (o)))
 #define MSG_I(m, o) (*(int *)((m) + (o)))
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
@@ -3279,7 +3275,7 @@ void main_RundenBeginn(void)
 #define main_NoRoundFade (*(int *)&full_data_6f25c0)  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared by the round start) */
 #define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */
 /* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
-#define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_CharsT[MAIN_PLAYER].netId; (m).time = ai_TimeT; } while (0)
+#define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_CharsT[MAIN_PLAYER].netId; (m).time = ai_Time; } while (0)
 
 /* 0x5384e0, the round / day change of the player: fades out (BLACK), advances the clock copy (+1 when networked (ai_GameFlags bit 2) after the first round), queues the announcement messages of the kinds 0x66 / 0x70 / 0x68 / 0x85 / 0x7c / 0x93 / 0x84 /
    0x4c when none is pending (he_FindEvent), shows the balance page of the player (texts 0x1ef9 .. 0x1eff, 0x2051: the AP events of the player with their incomes / costs and the goods of gm_CollectCarried), takes the AP event costs, renovates the run-down
@@ -3309,7 +3305,7 @@ void main_EndRound(void)
     } sysmsg;
     AIMSG msg;
     short rid;
-    AHMCLOCK clk;
+    AITIME clk;
     D2FADE *fade;
     AIFIN *fin;
     AIBLD *b;
@@ -3323,10 +3319,10 @@ void main_EndRound(void)
 
     fin = (AIFIN *)gm_PlayerRecord(ai_Chars[MAIN_PLAYER]);
     fade = 0;
-    gm_ClockSeason((unsigned)&ai_TimeT);
-    clk = main_Now;
+    gm_ClockSeason((unsigned)&ai_Time);
+    clk = ai_Time;
     if ((ai_GameFlags & 4) != 0 && 1 < main_Round)
-        clk.a++;
+        clk.year++;
     season = sv_ClockSeason(&clk);
     ahm_FillSteps();
     fin->roundFactors[0] = 0.5f;
@@ -3353,7 +3349,7 @@ void main_EndRound(void)
     main_Season = sv_ClockSeason(&clk);
     gm_FindRichest(&rid, &k);
     k = 0;
-    sysmsg.clock0 = clk.a;
+    sysmsg.clock0 = clk.year;
     sysmsg.tick = timeGetTime();
     q = cm_SendExSysMessage(0, &sysmsg);
     while (cm_GetSlotState(q) == 0)
@@ -3703,7 +3699,7 @@ void main_RoundReport(void)
         d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 10);
         d2_SetForm(win, 2);
         io_PrintText(0x7d);
-        gm_ClockToDate((unsigned)&ai_TimeT, (char *)lines);
+        gm_ClockToDate((unsigned)&ai_Time, (char *)lines);
         d2_SetForm(win, 1);
         io_PrintText(0x2007);
         iv = U_I(((unsigned)&ai_Selected + 0x14) + MAIN_PID * 0x21c);
@@ -4099,7 +4095,7 @@ int sv_MessageBox();
    (0x53b351) where ours tests the memory byte. */
 void main_BeginPlayerRound(void)
 {
-    int sv = (unsigned char)snd_AmbientOn.on;
+    int sv = snd_AmbientOn;
     int cur = -1;
     int i, w;
     AIBLD *b;
@@ -4150,7 +4146,7 @@ void main_BeginPlayerRound(void)
         d2_PlaceMainWindowF(w, 3);
         d2_SetForm(w, 1);
         io_PrintText(0x7d);
-        gm_ClockToDate((struct GCLOCK *)&ai_TimeT, date);
+        gm_ClockToDate((struct AITIME *)&ai_Time, date);
         d2_SetForm(w, 0);
         d2_CloseView(w);
     }
@@ -4253,7 +4249,7 @@ void main_BeginPlayerRound(void)
     }
     if ((cm_NetFlags & 8) != 0 || ai_Unk1460ae0 == -1)
         main_UpdateFigures();
-    snd_AmbientOn.on = (char)sv;
+    snd_AmbientOn = (unsigned char)sv;
 }
 
 #define MAIN_ME ((AICHAR *)ai_PlayerChar)  /* the player's character (ai_PlayerChar: unsigned short *) */
@@ -4400,7 +4396,7 @@ void main_SettleRound(unsigned short pl)
                                 msg2.type = 0x31;
                                 msg2.fromId = c->id;
                                 msg2.to = MAIN_ME->netId;
-                                msg2.time = ai_TimeT;
+                                msg2.time = ai_Time;
                                 msg2.flags = 1;
                                 msg2.arg[0] = ai_CharsT[i].netId;
                                 cm_SendLongMessage((char *)&msg2);
@@ -4513,20 +4509,20 @@ void main_SettleRound(unsigned short pl)
                                         msg4.type = 0x33;
                                         msg4.to = ai_CharsT[pl].netId;
                                         msg4.fromId = p->id;
-                                        msg4.time = ai_TimeT;
+                                        msg4.time = ai_Time;
                                         msg4.flags = 1;
                                         msg4.arg[0] = q->netId;
-                                        gm_AddTime((struct GCLOCK *)&msg4.time, (util_Random(6) & 0xffff) + 4, 0, 0);
+                                        gm_AddTime((struct AITIME *)&msg4.time, (util_Random(6) & 0xffff) + 4, 0, 0);
                                         cm_SendLongMessage((char *)&msg4);
                                     } else {
                                         memset(&msg1, 0, sizeof(msg1));
                                         msg1.type = 0x34;
                                         msg1.to = ai_CharsT[pl].netId;
                                         msg1.fromId = p->id;
-                                        msg1.time = ai_TimeT;
+                                        msg1.time = ai_Time;
                                         msg1.flags = 1;
                                         msg1.arg[0] = q->netId;
-                                        gm_AddTime((struct GCLOCK *)&msg1.time, (util_Random(6) & 0xffff) + 4, 0, 0);
+                                        gm_AddTime((struct AITIME *)&msg1.time, (util_Random(6) & 0xffff) + 4, 0, 0);
                                         cm_SendLongMessage((char *)&msg1);
                                     }
                                     cnt++;
@@ -4608,7 +4604,7 @@ void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, floa
    with ai_Unk1460ae0 != -1 around the 0x40 / start choice and the failure after it; 0x40; 2 with
    sv_ClockSeason, not gm_ClockSeason), the money cheat order and the index loops, the panel object pair of
    calls, the player id scans with the id in a short, the current player count loop, ls_SaveSlot as a byte,
-   the clock loops on an AHMCLOCK copy (main_Now) testing its hour. Left: the original reads ai_GameFlags
+   the clock loops on a copy of ai_Time testing its hour. Left: the original reads ai_GameFlags
    into al before each test (mov al, [ai_GameFlags] / test al, X at 0x53bb6a, 0x53c418, 0x53c42a, 0x53c443,
    0x53c49c, js for bit 7 at 0x53c4c7) where ours tests memory, with the knock-on of ebp as the zero
    register (push ebp / cmp edx, ebp at 0x53bb5b, 0x53c20a, 0x53c2ab) and edi = 0x17 held for the hour
@@ -4625,7 +4621,7 @@ void main_GameLoop(int ctl)
     unsigned u;
     int cl[0x3e];
     int sys[0x1f];
-    AHMCLOCK ck;
+    AITIME ck;
     int clk[4];
     char ap[0x104], ab[0x104];
     int pl[0x45];
@@ -4795,8 +4791,8 @@ void main_GameLoop(int ctl)
             main_Unk537be0();
             return;
         }
-        sv_FillDayPhases((int)&ai_TimeT);
-        main_Season = sv_ClockSeason(&ai_TimeT);
+        sv_FillDayPhases((int)&ai_Time);
+        main_Season = sv_ClockSeason(&ai_Time);
     }
     unk_Unk5124d0();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0) {
@@ -4837,7 +4833,7 @@ void main_GameLoop(int ctl)
     ai_ApplyOptions();
     d3_SetViewport((float)(U_I((unsigned)&sv_ViewRectRight) - U_I((unsigned)&sv_ViewRectLeft)), (float)(U_I((unsigned)&sv_ViewRectBottom) - U_I((unsigned)&sv_ViewRectTop)), (float)U_I((unsigned)&sv_ViewRectLeft), (float)U_I((unsigned)&sv_ViewRectTop),
                  *(float *)&U_I((unsigned)&d3_ZNear), *(float *)&U_I((unsigned)&d3_ZFar), *(float *)&U_I((unsigned)&d3_ScaleX), (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH);
-    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_SetupWeather((unsigned)&ai_TimeT, 0), U_I((unsigned)&full_data_76f990) != -1)) {
+    if ((U_I((unsigned)&ai_GameFlags) & 2) != 0 && (sv_SetupWeather((unsigned)&ai_Time, 0), U_I((unsigned)&full_data_76f990) != -1)) {
         p3 = (unsigned char *)gm_FindBuildingById(U_I((unsigned)&full_data_76f990));
         p4 = (unsigned short *)gm_FindObjectInst(U_I((unsigned)&full_data_76f994));
         U_I((unsigned)&ai_FrameWait) = 2;
@@ -4879,10 +4875,10 @@ void main_GameLoop(int ctl)
             us++;
         if (*(char *)(((unsigned)&ai_CharsT + 0x2) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) == 6) {
             if ((U_I((unsigned)&ai_GameFlags) & 0x46) == 0) {
-                clk[1] = U_I((unsigned)&ai_TimeHour);
-                clk[0] = U_I((unsigned)&ai_TimeT);
-                clk[2] = U_I(((unsigned)&ai_TimeT + 0x8));
-                *(short *)(clk + 3) = *(short *)((unsigned)&ai_TimeT + 0xc);
+                clk[1] = U_I((unsigned)&ai_Time.hour);
+                clk[0] = U_I((unsigned)&ai_Time);
+                clk[2] = U_I(((unsigned)&ai_Time + 0x8));
+                *(short *)(clk + 3) = *(short *)((unsigned)&ai_Time + 0xc);
                 gm_SetTime(clk, 6, 0, 0);
                 w = cm_SendExSysMessage(3, clk);
                 iv = cm_GetSlotState(w);
@@ -4963,9 +4959,9 @@ void main_GameLoop(int ctl)
             if (U_I((unsigned)&ai_GameOver) == 0) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
                 if ((U_I((unsigned)&ai_GameFlags) & 8) == 0) {
-                    ck = main_Now;
-                    while ((unsigned short)ck.b < 0x17) {
-                        gm_AddTime((struct GCLOCK *)&ck, 0, 0x1e, 0);
+                    ck = ai_Time;
+                    while (ck.hour < 0x17) {
+                        gm_AddTime((struct AITIME *)&ck, 0, 0x1e, 0);
                         w = cm_SendTime(&ck);
                         while (cm_GetSlotState(w) == 0)
                             sv_PumpNet();
@@ -4984,15 +4980,15 @@ L_next:
         if (U_I((unsigned)&ai_GameOver) == 0) {
             if (U_I((unsigned)&ai_Unk1460ae0) == -1) {
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 1);
-                ck = main_Now;
-                while ((unsigned short)ck.b < 0x17) {
-                    gm_AddTime((struct GCLOCK *)&ck, 0, 0x1e, 0);
+                ck = ai_Time;
+                while (ck.hour < 0x17) {
+                    gm_AddTime((struct AITIME *)&ck, 0, 0x1e, 0);
                     w = cm_SendTime(&ck);
                     while (cm_GetSlotState(w) == 0)
                         sv_PumpNet();
                 }
-                gm_AddTime((struct GCLOCK *)&ck, 0x18, 0, 0);
-                gm_SetTime((struct GCLOCK *)&ck, 6, 0, 0);
+                gm_AddTime((struct AITIME *)&ck, 0x18, 0, 0);
+                gm_SetTime((struct AITIME *)&ck, 6, 0, 0);
                 cm_SendTime(&ck);
                 tb_SetFunctionOff((unsigned)&sv_UpdateClock, 0);
             }
@@ -5017,14 +5013,14 @@ L_next:
                         pp += 0x87;
                     } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
                     *((char *)pl + 0x30) = (char)idx;
-                    pl[7] = U_I((unsigned)&ai_TimeHour);
-                    pl[6] = U_I((unsigned)&ai_TimeT);
+                    pl[7] = U_I((unsigned)&ai_Time.hour);
+                    pl[6] = U_I((unsigned)&ai_Time);
                     U_I((unsigned)&sv_FrameMask) = 0x24087;
                     *((char *)pl + 8) = 1;
                     *((char *)pl + 0x26) = 0x61;
                     pl[5] = -1;
-                    pl[8] = U_I(((unsigned)&ai_TimeT + 0x8));
-                    *(short *)(pl + 9) = *(short *)((unsigned)&ai_TimeT + 0xc);
+                    pl[8] = U_I(((unsigned)&ai_Time + 0x8));
+                    *(short *)(pl + 9) = *(short *)((unsigned)&ai_Time + 0xc);
                     w = cm_SendNewParty(pl);
                     iv = cm_GetSlotState(w);
                     while (iv == 0) {
@@ -5087,16 +5083,7 @@ void main_Unk53c9b0(void)
 #define main_MoviesOpen (*(int *)&full_data_6f2574)  /* 0x6f2574, nonzero while the movie player is set up (mov_Init); the outro opens and closes it itself otherwise */
 #define main_OutroMovie (*(int *)&full_data_6f241c)  /* 0x6f241c, the id mov_Open gave the outro */
 #define main_MoviePath ((char *)full_data_624798)  /* 0x624798, the directory of the movies ("%soutro.mpg") */
-#define main_AmbientByte (*(unsigned char *)&snd_AmbientOn)  /* 0x6f0b60, snd_AmbientOn.on as the byte it is */
-/* 0x53cb40, the outro: fades the music out and waits for the black fade, switches the ambient sounds off, plays outro.mpg (input released, own window), restores the focus, the input and the music volume (msxVolume / 127) and the ambient flag
-   @deep Read against the original: the ambient flag is saved after the fade loop (not inside it), the
-   loop's msx_FadeTo >= 0.0f against the float zero, kb_Last as a byte, the volume factor 0.007874016f as a
-   float constant; typed (D2FADE, msxVolume, views for the movie flag / id / path). 111 / 111 instructions,
-   4 differing. Left is one load: 0x53cbb7 the original reads snd_AmbientOn as a byte (xor ebx, ebx / mov
-   bl, [0x6f0b60]) where ours, through f3snd.h's G16AMBIENTON union (4 bytes, 0x4c23f0 reads the word),
-   loads the dword and masks it (mov ebx, [snd_AmbientOn] / and ebx, 0xff); a byte-cast view over the union
-   compiles the same. The original's main.c saw a 1-byte object; declaring it so in main.c conflicts with
-   f3snd.h (M5). Same load in main_BeginPlayerRound. */
+/* 0x53cb40, the outro: fades the music out and waits for the black fade, switches the ambient sounds off, plays outro.mpg (input released, own window), restores the focus, the input and the music volume (msxVolume / 127) and the ambient flag */
 void main_PlayOutro(void)
 {
     int sv;
@@ -5109,8 +5096,8 @@ void main_PlayOutro(void)
     f = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
     while ((f->flags & 4) == 0 || msx_FadeTo >= 0.0f)
         sv_RunFrame(0, sv_FrameMask);
-    sv = main_AmbientByte;
-    main_AmbientByte = 0;
+    sv = snd_AmbientOn;
+    snd_AmbientOn = 0;
     sprintf(buf, "%soutro.mpg", main_MoviePath);
     di_Disabled = 1;
     di_PollKeyboard();
@@ -5132,7 +5119,7 @@ void main_PlayOutro(void)
     di_Disabled = 0;
     kb_Last = 0;
     snd_FadeMusic((float)ai_SoundOptions.msxVolume * 0.007874016f, 1000);
-    main_AmbientByte = (unsigned char)sv;
+    snd_AmbientOn = (unsigned char)sv;
     if (main_MoviesOpen == 0)
         mov_Exit();
 }
@@ -5798,7 +5785,8 @@ GAPDATA full_data_62d6a8[20] = { 0x5f, 0x4e, 0x41, 0x43, 0x48, 0x52, 0x49, 0x43,
 GAPDATA full_data_62d6bc[252] = { 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x75, 0x6e, 0x69, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x00, 0x02, 0x00, 0x02, 0x02, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0x00, 0x01, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d6bc */
 GAPDATA full_data_6f1c2c[8] = { 0 };  /* 0x6f1c2c */
 GAPDATA full_data_6f22b0[4] = { 0 };  /* 0x6f22b0 */
-GAPDATA full_data_6f22dc[8] = { 0 };  /* 0x6f22dc */
+int sv_PendingMoney = 0;  /* 0x6f22dc, the money the money panel adds to the player's (the credit window: the limit minus the amount chosen; the transport window: minus the goods' total); sv's by use */
+GAPDATA full_data_6f22e0[4] = { 0 };  /* 0x6f22e0 */
 GAPDATA full_data_6f2314[4] = { 0 };  /* 0x6f2314 */
 GAPDATA full_data_6f2330[4] = { 0 };  /* 0x6f2330 */
 GAPDATA full_data_6f2354[4] = { 0 };  /* 0x6f2354 */

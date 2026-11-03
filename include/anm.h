@@ -27,8 +27,9 @@ extern unsigned int anm_LastSpawn;       /* 0x6f0740, d3_Time of the last spawn 
 extern int d3_CurrentScene;             /* 0x633444 */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 char d3if_SelectScene(int index, char keep);                                         /* 0x4478e0 */
-extern char ai_Time[];                /* 0x770ae0, AITIME (ai.h) */
-int gm_ClockSeason(void *t);                                                       /* 0x4fe350, 3: winter? */
+#include "ai_types.h"                /* AITIME */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
+int gm_ClockSeason(AITIME *c);                                                     /* 0x4fe350, the season of the clock c (3: winter?) */
 struct CHARACTER *ch_Create(char *name, struct D3VECTOR *pos);                                         /* 0x403390, ch.c: CHARACTER *, D3VECTOR * */
 struct CHACTION *ch_AddAction(struct CHARACTER *ch, unsigned int type, ...);                            /* 0x40b2f0, ch.c */
 int ch_Delete(struct CHARACTER *ch);                                                         /* 0x4028a0, ch.c: CHARACTER * */

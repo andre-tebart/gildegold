@@ -14,7 +14,7 @@ struct D3TRAIN;
 struct G15PLANT;
 struct SBBANK;
 struct SBSAMPLE;
-struct GCLOCK;
+struct AITIME;
 struct D2FADE;
 struct AMTREC;
 struct D2SURF;
@@ -90,23 +90,20 @@ extern unsigned short ai_PlayerId;     /* 0x6f25b8, the player */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 extern int ai_NextCrimeId;                /* 0x6f1b88 */
 extern char ai_Unk625820[][0x20];       /* 0x625820, names ("HE_NULL", ..) */
-extern char ai_Time[];                /* 0x770ae0, AITIME (ai.h) */
+#include "ai_types.h"                /* AITIME */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
 #pragma pack(push, 1)
 typedef struct G17B9 { char b[9]; } G17B9;
 typedef struct G17B10 { char b[10]; } G17B10;
 typedef struct G17B12 { char b[12]; } G17B12;
 typedef struct G17B15 { char b[15]; } G17B15;
-typedef struct G17T14 {                 /* 14 bytes copied as one (an AITIME) */
-    int a, b, c;
-    short d;
-} G17T14;
 #pragma pack(pop)
 
 int gm_FindById(int *bld, int *obj, int *chr, int id);                             /* 0x4fea50, out: three object views */
 void main_GameLoop(int ctl);                                                              /* 0x53bb20 */
 short * gm_FindChar(int id);                                                      /* 0x505df0, ai.h: AICHAR * */
-int gm_CompareTime(char *t, char *now);                                            /* 0x4fe210, AITIME * */
+int gm_CompareTime(AITIME *a, AITIME *b);                                          /* 0x4fe210 */
 char *gm_FindBuildingById(int id);                                                      /* 0x502020, ai.h: AIBLD * */
 int gm_IsHomeType(unsigned char *bld);                                                     /* 0x502520 */
 void *gm_GetGebaeudeHauptraum(unsigned char *bld);                                                   /* 0x501ce0, ai.h: AIOBJ * */
@@ -378,7 +375,6 @@ extern char ai_Crimes[];  /* 0x91f700 */
 extern char cm_CutInfos[16][0x35c];  /* 0x92cae0 */
 extern int cm_DayEndRequest;  /* 0xf31144 */
 extern int hst_SeedPending;  /* 0xf83650 */
-extern char ai_Unkf895a0[0xb00];  /* 0xf895a0 */
 struct D3SM; struct D3TERRAIN; void d3sm_Build(struct D3SM *h, struct D3TERRAIN *t);  /* 0x45e620, d3_sm.c: void d3sm_Build(D3SM *, D3TERRAIN *) */
 void hmt_SetPendingElection(int v);  /* 0x4ad1b0 */
 int tb_IsFunctionOff();
@@ -750,7 +746,6 @@ void snd_PlaySpecialTrack(char *name);  /* 0x4c23f0 */
 extern int snd_MusicEnabled;  /* 0x6f2578 */
 extern int sv_FrameMask;  /* 0x760638 */
 extern int ai_Unk6f0d4c;  /* 0x6f0d4c */
-extern char ai_Time[];  /* 0x770ae0 */
 
 float cm_ThreatAt(struct AICHAR *c, int a, int b, float limit);  /* 0x4d2010, the threat at a height map vertex for the fighter c */
 extern const double ai_Unk5edc60;  /* 0x5edc60 */
@@ -1013,7 +1008,6 @@ int gm_Unk506480();  /* 0x506480 */
 struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */
 void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
 int ai_Unk4e1250(char *m);  /* 0x4e1250 */
-/* ai_TimeHour (0x770ae4, the clock's hour) is no object: time_view.h views it in ai_Time + 4 */
 
 
 
@@ -1027,7 +1021,6 @@ int gm_GetWorth(unsigned short id);  /* 0x50a640 */
 int ai_PlanRank();  /* 0x4945c0 */
 int gv_CheckSentence();  /* 0x4f4420 */
 void d2_SetObjEnabled(int obj, int on);  /* 0x475e40 */
-extern char *ai_Unk6332b4;  /* 0x6332b4 */
 int cm_SetViewEnabled();  /* 0x4e2bd0 */
 int ai_Unk4e2dc0();  /* 0x4e2dc0 */
 int ai_Unk4e2e00();  /* 0x4e2e00 */
@@ -1111,7 +1104,7 @@ extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
 void ai_Unk4e4060();  /* 0x4e4060 */
-void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);  /* 0x4fe140 */
+void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);  /* 0x4fe140 */
 #ifndef DATA_VIEWS_H
 extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, +0x18 used) */
 #endif

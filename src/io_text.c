@@ -29,8 +29,8 @@ extern D2WIN d2_Wins[];
 #include "err.h"
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 
-struct GCLOCK;
-void gm_ClockToDate(struct GCLOCK *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c: the calendar record of a clock */
+struct AITIME;
+void gm_ClockToDate(struct AITIME *c, unsigned char *out);  /* 0x4fe2c0, f3gm.c: the calendar record of a clock */
 int gm_Season(char *d);                 /* 0x4fe330, f3gm.c: the season of a calendar record */
 
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
@@ -919,7 +919,7 @@ int io_PrintText(char *fmt, ...)
                 }
                 break;
             case 'D':
-                gm_ClockToDate(va_arg(ap, struct GCLOCK *), date.b);
+                gm_ClockToDate(va_arg(ap, struct AITIME *), date.b);
                 sprintf(tmp, "%s %i", txt_Ptrs[0x4c + gm_Season((char *)date.b)], date.w[1]);
                 memmove(&buf[pos + strlen(tmp) - 2], &buf[pos], strlen(buf) + 2 - pos);
                 memcpy(&buf[pos - 1], tmp, strlen(tmp));
@@ -1357,7 +1357,7 @@ void txt_Format(char *out, int id0, ...)
                 }
                 break;
             case 'D':
-                gm_ClockToDate(va_arg(ap, struct GCLOCK *), date.b);
+                gm_ClockToDate(va_arg(ap, struct AITIME *), date.b);
                 sprintf(tmp, "%s %i", txt_Ptrs[0x4c + gm_Season((char *)date.b)], date.w[1]);
                 memmove(&buf[pos + strlen(tmp) - 2], &buf[pos], strlen(buf) + 2 - pos);
                 memcpy(&buf[pos - 1], tmp, strlen(tmp));

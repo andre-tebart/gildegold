@@ -198,8 +198,8 @@ void snd_UpdateRain(void)
     int v;
     int k;
 
-    if (d3_Terrain == 0 || snd_AmbientOn.on == 0 || snd_Season != gm_ClockSeason(ai_Time)) {
-        snd_Season = gm_ClockSeason(ai_Time);
+    if (d3_Terrain == 0 || snd_AmbientOn == 0 || snd_Season != gm_ClockSeason(&ai_Time)) {
+        snd_Season = gm_ClockSeason(&ai_Time);
         SND_STOP(snd_RainHeavyFar);
         SND_STOP(snd_RainHeavyNear);
         SND_STOP(snd_RainMediumFar);
@@ -211,7 +211,7 @@ void snd_UpdateRain(void)
     }
     w = 0;
     f = d3_Camera->pos.y - d3t_GetMeanHeight(&d3_Camera->pos);
-    memcpy(snd_TimeCopy, ai_Time, 14);
+    memcpy(snd_TimeCopy, &ai_Time, 14);
     if (d3t_Rain == 0 || (n = *d3t_Rain) == 0) {
         SND_STOP(snd_RainHeavyFar);
         SND_STOP(snd_RainHeavyNear);
@@ -289,7 +289,7 @@ void snd_UpdateRain(void)
             SND_STOP(snd_RainMediumNear);
         }
     }
-    if (d3_Terrain != 0 && snd_AmbientOn.on != 0
+    if (d3_Terrain != 0 && snd_AmbientOn != 0
         && (unsigned int)(w + (F3SND_TIME - snd_LastGust)) >= snd_Gusts[snd_Season].interval) {
         snd_LastGust = F3SND_TIME;
         if (rand() * 3.0518509e-05f + snd_Gusts[snd_Season].chance > 1.0f) {
@@ -324,10 +324,10 @@ void snd_UpdateAnimals(void)
     char c;
     G16AMB *a;
 
-    if (d3_Terrain == 0 || snd_AmbientOn.on == 0) {
+    if (d3_Terrain == 0 || snd_AmbientOn == 0) {
         t = F3SND_TIME;
-        if (ai_Unk6f0b9c != gm_ClockSeason(ai_Time))
-            ai_Unk6f0b9c = gm_ClockSeason(ai_Time);
+        if (ai_Unk6f0b9c != gm_ClockSeason(&ai_Time))
+            ai_Unk6f0b9c = gm_ClockSeason(&ai_Time);
         SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped (reason: sound off) %i");
         SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped (reason: sound off) %i");
         a = ai_Unk602bd8[ai_Unk6f0b9c];
@@ -339,8 +339,8 @@ void snd_UpdateAnimals(void)
     } else {
         n = 0;
         t = F3SND_TIME;
-        if (ai_Unk6f0b9c != gm_ClockSeason(ai_Time)) {
-            ai_Unk6f0b9c = gm_ClockSeason(ai_Time);
+        if (ai_Unk6f0b9c != gm_ClockSeason(&ai_Time)) {
+            ai_Unk6f0b9c = gm_ClockSeason(&ai_Time);
             if (ai_Unk6f0b98 != 0) {
                 sb_Stop(ai_Unk6f0b98, 0);
                 *(int *)(ai_Unk6f0b98 + 0x18) = 0;
@@ -435,7 +435,7 @@ void snd_UpdateAnimals(void)
             d3snd_SetVolumeI(snd_AmbientTrack, k);
         }
     }
-    if (ai_PlayerBuildingB != 0 && snd_AmbientOn.on != 0) {
+    if (ai_PlayerBuildingB != 0 && snd_AmbientOn != 0) {
         c = ai_BTypes[*ai_PlayerBuildingB * 0x24d];
         if (c == 0x16 && sv_PanelShown != 0 && *sv_PanelShown == 0x120) {
             n = ch_Count(d3_CurrentScene, 0) * 9;
@@ -497,7 +497,7 @@ void snd_EnterBuilding(void)
         return;
     k = 0;
     kind = (unsigned char)ai_BTypes[*b * 0x24d];
-    season = gm_ClockSeason(ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     i = snd_FindActiveTrack();
     if (i >= 0) {
         snd_LocationTracks[i].active = 0;
@@ -567,7 +567,7 @@ void snd_PlayOutdoorTrack(void)
     int r;
     char *t;
 
-    season = gm_ClockSeason(ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     i = snd_FindActiveTrack();
     if (i >= 0) {
         snd_LocationTracks[i].prio -= 0x1e;
@@ -700,14 +700,14 @@ void snd_UpdateMusic(void)
     t = F3SND_TIME;
     if (ai_GameState == 0 || !(snd_MusicVolume > 0.0f))
         return;
-    i = gm_ClockSeason(ai_Time);
+    i = gm_ClockSeason(&ai_Time);
     if (ai_Unk6f0cb4 != i) {
         if (ai_Unk6f0cb4 == 0) {
-            ai_Unk6f0cb4 = gm_ClockSeason(ai_Time);
+            ai_Unk6f0cb4 = gm_ClockSeason(&ai_Time);
             return;
         }
         i = snd_FindTrackKind(0x2694);
-        ai_Unk6f0cb4 = gm_ClockSeason(ai_Time);
+        ai_Unk6f0cb4 = gm_ClockSeason(&ai_Time);
         if (i < 0)
             return;
         trk = snd_TrackHandles.current;
@@ -798,10 +798,10 @@ void snd_PlaySpecialTrack(char *name)
     unsigned int on;
 
     if (snd_AmbientSaved == 0) {
-        on = snd_AmbientOn.word;
-        snd_AmbientOn.on = 0;
+        on = snd_AmbientOn;
+        snd_AmbientOn = 0;
         snd_AmbientSaved = 1;
-        snd_AmbientOnSaved = (unsigned char)on;
+        snd_AmbientOnSaved = on;
     }
     if (snd_MusicEnabled == 0 || snd_MusicVolume == 0.0f)
         return;
@@ -820,7 +820,7 @@ void snd_PlaySpecialTrack(char *name)
 void snd_EndSpecialTrack(void)
 {
     snd_AmbientSaved = 0;
-    snd_AmbientOn.on = (char)snd_AmbientOnSaved;
+    snd_AmbientOn = (unsigned char)snd_AmbientOnSaved;
     if (snd_MusicEnabled != 0 && snd_TrackHandles.current != snd_SpecialTrack)
         snd_FadeMusic(1.0f, 3000);
 }
@@ -1237,8 +1237,8 @@ char snd_TrackText[256] = {0};  /* 0x6f0760, a debug text */
 char ai_Unk6f0860[256] = {0};  /* 0x6f0860, a debug text */
 char ai_Unk6f0960[256] = {0};  /* 0x6f0960, a debug text */
 char snd_DebugText[256] = {0};  /* 0x6f0a60, a debug text */
-G16AMBIENTON snd_AmbientOn = {0};  /* 0x6f0b60, ambient sounds on */
-unsigned int snd_AmbientOnSaved = 0;  /* 0x6f0b64, the saved snd_AmbientOn.on */
+unsigned char snd_AmbientOn = 0;  /* 0x6f0b60, 1: ambient sounds on */
+unsigned int snd_AmbientOnSaved = 0;  /* 0x6f0b64, the saved snd_AmbientOn */
 int snd_QueuePaused = 0;  /* 0x6f0b68, nonzero: the queue does not advance */
 G16TRACKHANDLES snd_TrackHandles = {0};  /* 0x6f0b6c, the music track and its copy */
 char * snd_SpecialTrack = 0;  /* 0x6f0b74, the special track of */

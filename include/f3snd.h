@@ -78,8 +78,6 @@ typedef struct G16TRACKHANDLES {        /* 0x8 bytes, snd_TrackHandles: the musi
     char *copy;                         /* 0x04, a copy of current, never read */
 } G16TRACKHANDLES;
 
-#include "f3snd_types.h"             /* G16AMBIENTON */
-
 typedef struct G16CHARCLICK {           /* the click-comment view of the start of a character record (0x770b80) */
     unsigned short id;                  /* 0x00, the character id */
     unsigned char kind;                 /* 0x02, the building kind (0x14: none) */
@@ -106,7 +104,7 @@ extern unsigned char *ai_Unk6f0ca8;     /* 0x6f0ca8, the building of the track *
 extern int ai_Unk6f0cac;                /* 0x6f0cac, the room of the track */
 extern char *snd_SpecialTrack;          /* 0x6f0b74, the special track of 0x4c23f0 (MSXTRACK *) */
 extern int snd_AmbientSaved;            /* 0x6f0b78, 1 while the ambient flag is off and saved (0x4c23f0) */
-extern unsigned int snd_AmbientOnSaved; /* 0x6f0b64, the saved snd_AmbientOn.on */
+extern unsigned int snd_AmbientOnSaved; /* 0x6f0b64, the saved snd_AmbientOn */
 extern char ai_Unk6f0860[];             /* 0x6f0860, a debug text */
 extern char ch_EmptyName[];             /* 0x631090, "" */
 extern char ai_Chars[768][0x21c];        /* 0x770b80, the characters (ahm.c); f3snd.c reads them flat (ai_CharsC) */
@@ -135,10 +133,11 @@ extern void *ai_Unk6f0ba0;              /* 0x6f0ba0, the atmosphere mp3 (MSXTRAC
 extern int d3_CurrentScene;             /* 0x633444 */        /* 0x602ba8 */
 extern char snd_GustNames[3][0x32];     /* 0x602b10, "Boehe_Leicht_s", "Boehe_Mittel_s", "Boehe_Stark_s" */
 extern void *d3_Terrain;                /* 0x633738 */
-extern G16AMBIENTON snd_AmbientOn;      /* 0x6f0b60, ambient sounds on */
+extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 extern int snd_Season;                  /* 0x6f0b8c, the season */
 extern unsigned int snd_LastGust;       /* 0x6f0b90, time of the last gust */
-extern char ai_Time[];                /* 0x770ae0, AITIME (ai.h) */
+#include "ai_types.h"                /* AITIME */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 extern char snd_TimeCopy[14];           /* 0xf81240, a copy of ai_Time */
 extern int *d3t_Rain;               /* 0x760618, the rain level */
 extern int snd_Bank;                    /* 0x6f2404, the sample bank */
@@ -155,7 +154,7 @@ extern int snd_QueuePaused;             /* 0x6f0b68, nonzero: the queue does not
 extern int snd_QueueTime;               /* 0x6f0b88, time of the last queue change */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 
-int gm_ClockSeason(void *t);                                                       /* 0x4fe350, the season */
+int gm_ClockSeason(AITIME *c);                                                     /* 0x4fe350, the season */
 struct SBSAMPLE *sb_PlaySample(struct SBBANK *bank, char *name, int loops, int pan, int volume, int fade, int delay); /* 0x426fa0, sblib.c (this header's units: sb_PlaySampleI) */
 void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out);                               /* 0x458a20 */
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */

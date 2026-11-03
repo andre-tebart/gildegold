@@ -62,7 +62,6 @@ extern GAPDATA full_data_92bcb8[];
    0x24-byte memset / memcpy in 0x4cd580 and 0x4cdxx cannot run over a neighbour that LINK placed there) */
 #define cm_LobbyListIds (*(int (*)[8])((char *)cm_LobbyList + 4))  /* 0x936424, the eight player states (a view) */
 
-#include "time_view.h"
 #include "f3init.h"
 #include "sv.h"
 #include "ahm.h"
@@ -117,7 +116,6 @@ extern GAPDATA full_data_92bcb8[];
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
-#define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of cm_Grenades */
@@ -1376,9 +1374,9 @@ void cm_SendExSetHE(unsigned char k, char *p)
 
     m.type = 0x1d;
     G17_I(m, 0) = *(int *)(p + 4);
-    *(G17T14 *)&m.data[4] = *(G17T14 *)(p + 0x44);
-    *(G17T14 *)&m.data[0x12] = *(G17T14 *)(p + 0x52);
-    *(G17T14 *)&m.data[0x20] = *(G17T14 *)(p + 0x60);
+    *(AITIME *)&m.data[4] = *(AITIME *)(p + 0x44);
+    *(AITIME *)&m.data[0x12] = *(AITIME *)(p + 0x52);
+    *(AITIME *)&m.data[0x20] = *(AITIME *)(p + 0x60);
     m.data[0x2e] = k;
     strcpy((char *)&m.data[0x2f], ai_Unk625820[*(unsigned char *)p]);
     ai_Unk4c4480(0xa0, p + 0xac);
@@ -1390,9 +1388,9 @@ int cm_SendTime(char *t)
 {
     G17MSG m;
 
-    if (gm_CompareTime(t, ai_Time) == 0)
+    if (gm_CompareTime(t, &ai_Time) == 0)
         return -1;
-    *(G17T14 *)m.data = *(G17T14 *)t;
+    *(AITIME *)m.data = *(AITIME *)t;
     m.type = 0x1e;
     return cm_QueueSend(&m);
 }
@@ -2481,7 +2479,7 @@ int ai_Unk4c67c0(G17MSG *m)
         if (b != 0) {
             o = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 300);
             if (o != 0)
-                return *(int *)ai_Time - *(int *)(o + 0x28) <= 1;
+                return ai_Time.year - *(int *)(o + 0x28) <= 1;
         }
     } else if (*(int *)&m->data[0] == 0x62757920) {
         b = gm_BuildQuery(1, 1, *(int *)&m->data[8]);
@@ -3599,9 +3597,9 @@ int ai_Unk4c87a0(G17MSG *m, G17STAT *s)
         sprintf(buf, "cm_ExSetHE(): He not found. id:%i name:%s", *(int *)&m->data[0], &m->data[0x2f]);
         return 1;
     }
-    *(G17T14 *)(p + 0x44) = *(G17T14 *)&m->data[4];
-    *(G17T14 *)(p + 0x52) = *(G17T14 *)&m->data[0x12];
-    *(G17T14 *)(p + 0x60) = *(G17T14 *)&m->data[0x20];
+    *(AITIME *)(p + 0x44) = *(AITIME *)&m->data[4];
+    *(AITIME *)(p + 0x52) = *(AITIME *)&m->data[0x12];
+    *(AITIME *)(p + 0x60) = *(AITIME *)&m->data[0x20];
     *(int *)(p + 0x70) = (char)m->data[0x2e];
     memcpy(p + 0xac, cm_LongMsg, 0xa0);
     if (s != 0) {
@@ -3618,18 +3616,18 @@ int ai_Unk4c88a0(G17MSG *m, G17STAT *s)
     char *t = (char *)m + 0x10;
     char *p;
 
-    if (gm_CompareTime(ai_Time, t) < 0) {
-        *(G17T14 *)ai_Time = *(G17T14 *)t;
+    if (gm_CompareTime(&ai_Time, t) < 0) {
+        ai_Time = *(AITIME *)t;
         if (ai_Unk624578)
             he_Unk53ed70();
         if (ai_Unk624574) {
             ord_AdvanceRatingBase();
-            if (*(int *)&ai_Time[6] % 6 == 0)
+            if (ai_Time.min % 6 == 0)
                 gm_CountCharacters();
         }
         if (ai_Unk624570)
             ai_UpdateNeeds();
-        memset(ai_Unkf895a0, 0, 0xb00);
+        memset(&ai_Watch, 0, 0xb00);
         if (ai_Unk624570) {
             ai_TradeMsgCount = 0;
             for (p = ai_Chars[0]; (int)p < (int)ai_Chars[0x300]; p += 0x21c) {
@@ -3680,7 +3678,7 @@ int cm_ExSysMessage(G17MSG *m, G17STAT *s)
             memset(&t, 0, sizeof(t));
             t.year = msg.sys.arg[0];
             util_Seed(msg.sys.arg[1]);
-            sv_SetupWeather((struct GCLOCK *)&t, 1);
+            sv_SetupWeather((struct AITIME *)&t, 1);
             break;
         }
         case 2:
@@ -3694,11 +3692,11 @@ int cm_ExSysMessage(G17MSG *m, G17STAT *s)
             k = tb_IsFunctionOff(sv_UpdateClock);
             if (k == 0)
                 tb_SetFunctionOff(sv_UpdateClock, 1);
-            ai_TimeT.year = msg.sys.time.year;
-            ai_TimeT.xy = msg.sys.time.xy;
-            ai_TimeT.min = msg.sys.time.min;
-            ai_TimeT.hour = msg.sys.time.hour;
-            ai_TimeCopyT = ai_TimeT;
+            ai_Time.year = msg.sys.time.year;
+            ai_Time.sec = msg.sys.time.sec;
+            ai_Time.min = msg.sys.time.min;
+            ai_Time.hour = msg.sys.time.hour;
+            ai_TimeCopyT = ai_Time;
             if (k == 0)
                 tb_SetFunctionOff(sv_UpdateClock, 0);
             break;
@@ -4879,7 +4877,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                 init_HookObject((char *)o, (unsigned short *)b, 2);
                 sv_CreateBanners((char *)b);
                 if (b->object != 0) {
-                    season = gm_ClockSeason(ai_Time);
+                    season = gm_ClockSeason(&ai_Time);
                     if (season == 1)
                         init_TextureSet = 1;
                     else if (season == 0)
@@ -5651,12 +5649,12 @@ int ai_Unk4cc390(G17MSG *m, G17STAT *s)
         q = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x12c);
         if (q == 0)
             return 1;
-        if (*(int *)ai_Time - *(int *)(q + 0x28) <= 1)
+        if (ai_Time.year - *(int *)(q + 0x28) <= 1)
             return 1;
         *(int *)(q + 0x1c) = -1;
         *(int *)(q + 0x20) = -1;
         *(int *)(q + 0x24) = -1;
-        *(int *)(q + 0x28) = *(int *)ai_Time - 1;
+        *(int *)(q + 0x28) = ai_Time.year - 1;
     } else if (G17_I(*m, 0) == 0x62757920) {
         c = gm_FindChar(G17_I(*m, 4));
         if (c == 0)
@@ -6054,7 +6052,7 @@ int ai_Unk4ccce0(G17MSG *m, G17STAT *s)
         return 1;
     cm_LastObjectId = *(int *)(q + 2);
 found:
-    *(G17T14 *)(q + 0x1c) = *(G17T14 *)&m->data[8];
+    *(AITIME *)(q + 0x1c) = *(AITIME *)&m->data[8];
     *(int *)(q + 0x2a) = G17_I(*m, 0x16);
     *(int *)(q + 0x32) = G17_I(*m, 0x1e);
     q[0x36] = m->data[0x22];
@@ -8803,7 +8801,7 @@ void cm_FightIntro()
     }
     sv_FrameMask = 0x7d6c6;
     sv_UpdateWeather();
-    sv_UpdateSkyPhase(ai_Time);
+    sv_UpdateSkyPhase(&ai_Time);
     s = (char *)evt_Load("cutscenes\\kampf\\Kampf_Intro_Fluege.esc");
     if (s != 0) {
         evt_RunScript((EVTSCRIPT *)s);
@@ -10677,7 +10675,7 @@ void cm_RunFight(CMFIGHTREC *a)
         if (cm_FightFixedLight != 0)
             d3_SetLightSet(2, 0, 1.0f, 1);
         else
-            sv_UpdateSkyPhase(ai_Time);
+            sv_UpdateSkyPhase(&ai_Time);
         cm_FightWinner = 0;
         cm_FightSettled = 0;
         cm_FightLootValue = 0;
@@ -14371,7 +14369,7 @@ int ai_Unk4e1250(char *m)
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     for (i = 0; i < 6; i++) {
-        if ((unsigned short)ai_TimeHour < ages[i]) {
+        if ((unsigned short)ai_Time.hour < ages[i]) {
             stage = i;
             break;
         }
@@ -14472,7 +14470,7 @@ int ai_Unk4e1700(char *m)
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     for (i = 0; i < 6; i++) {
-        if ((unsigned short)ai_TimeHour < ages[i]) {
+        if ((unsigned short)ai_Time.hour < ages[i]) {
             stage = i;
             break;
         }
@@ -14668,7 +14666,7 @@ void ai_Unk4e1a80(char *m)
         cm_WaitTicks(5);
     }
     if (best > -1) {
-        bid = ai_Time;
+        bid = ai_Time.year;
         cm_QueueVoice(6, "_VERSTEIGERUNG_GEBOTE", 0, 0);
         d2_SetForm(0, v);
         io_PrintText(0x1aa4, bid, 0);
@@ -14995,33 +14993,33 @@ int ai_Unk4e2d90(int a)
             return evt_Stop((EVTSCRIPT *)r);
     }
 }
-/* 0x4e2dc0, 0x429e90 of every used slot (of 0x80 x 0xc98 bytes at 0x6332b4) whose +0x104 is -2 and +0x124 has bit 1 */
+/* 0x4e2dc0, evt_Stop of every used script of evt_Scripts (128) that runs (flags bit 1) for the group -2 */
 
 int ai_Unk4e2dc0(void)
 {
     int i;
-    char *e;
+    EVTSCRIPT *e;
 
     for (i = 0; i < 0x80; i++) {
-        e = ai_Unk6332b4 + i * 0xc98;
-        if (*(int *)(e + 0x100) != -1 && (*(unsigned char *)(e + 0x124) & 1) && *(int *)(e + 0x104) == -2)
-            evt_Stop((EVTSCRIPT *)e);
+        e = &evt_Scripts[i];
+        if (e->id != -1 && (e->flags & 1) && e->group == -2)
+            evt_Stop(e);
     }
     return 0;
 }
-/* 0x4e2e00, waits (frame wait 0x79706) until no used slot of 0x6332b4 has +0x104 == -2: -1 */
+/* 0x4e2e00, waits (frame wait 0x79706) until no used script of evt_Scripts runs for the group -2: -1 */
 
 int ai_Unk4e2e00(void)
 {
     int i, none;
-    char *e;
+    EVTSCRIPT *e;
 
     none = -1;
     if (sv_RunFrame(0, 0x79706) != 0) {
         do {
-            e = ai_Unk6332b4 + 0x104;
-            for (i = 0; i < 0x80; i++, e += 0xc98) {
-                if (*(int *)(e - 4) != none && *(int *)e == -2)
+            e = evt_Scripts;
+            for (i = 0; i < 0x80; i++, e++) {
+                if (e->id != none && e->group == -2)
                     goto wait;
             }
             return none;
@@ -15064,7 +15062,7 @@ void cm_LoadEventScene(char *name)
         sv_RunFrame(0, 0x86);
         G27_FRAME(d2_BackSurf, d2_ScreenSurf);
     }
-    if (gm_ClockSeason(ai_Time) == 3)
+    if (gm_ClockSeason(&ai_Time) == 3)
         sv_UpdateSkyColors();
     k = ai_Unk6f0d9c + 1;
     evt_NoGroup = -2;
@@ -15850,17 +15848,17 @@ int ai_Unk4e4b50(char *m)
 int cm_UpdateParties(void)
 {
     char *r;
-    G17T14 tmp;
+    AITIME tmp;
     int x, k;
 
     for (r = (char *)ai_Unk925520 + 0x18; (unsigned int)r < ((unsigned)ai_Unk925520 + 0x6780); r += 0x114) {
         if (r[0x18] == 0 || (r[0xe] & 5))
             continue;
-        tmp = *(G17T14 *)r;
+        tmp = *(AITIME *)r;
         gm_AddTime(&tmp, 0, -60, 0);
         if (*(int *)(r - 0xc) == -1 && ((cm_NetFlags & 8) || (ai_GameFlags & 8)))
             *(int *)(r - 0xc) = ai_CharInts[ai_PlayerId][0];
-        if (ai_CharInts[ai_PlayerId][0] == *(int *)(r - 0xc) && *(int *)(r + 0x10) == 0 && gm_CompareTime(ai_Time, (char *)&x) > 0) {
+        if (ai_CharInts[ai_PlayerId][0] == *(int *)(r - 0xc) && *(int *)(r + 0x10) == 0 && gm_CompareTime(&ai_Time, (char *)&x) > 0) {
             k = ai_Unk4e4b50(r - 0x18);
             if (k == -1) {
                 gm_AddTime(r, 0, 5, 0);
@@ -15879,9 +15877,9 @@ int cm_UpdateParties(void)
                 continue;
             }
         }
-        if (ai_Unk92c510[*(unsigned char *)(r - 0x10) * 5] == 0 && gm_CompareTime(ai_Time, r) > 0)
+        if (ai_Unk92c510[*(unsigned char *)(r - 0x10) * 5] == 0 && gm_CompareTime(&ai_Time, r) > 0)
             *(int *)(r - 0x14) = 1;
-        if (gm_CompareTime(ai_Time, r) > 0 && *(int *)(r - 0x14) == 0) {
+        if (gm_CompareTime(&ai_Time, r) > 0 && *(int *)(r - 0x14) == 0) {
             if (ai_Unk4e4870(ai_CharInts[ai_PlayerId][0], r - 0x18) != 0 && (signed char)r[0xe] < 0) {
                 if (ai_CharInts[ai_PlayerId][0x208 / 4] == *(int *)(r - 0x18))
                     *(int *)(r - 0x14) = 1;
@@ -15890,7 +15888,7 @@ int cm_UpdateParties(void)
             else
                 ai_Unk4e5180(*(int *)(r - 0x18));
         }
-        if (gm_CompareTime(ai_Time, (char *)&x) > 0 && *(int *)(r - 0x14) != 0) {
+        if (gm_CompareTime(&ai_Time, (char *)&x) > 0 && *(int *)(r - 0x14) != 0) {
             sv_PanelFlag = 0;
             ai_Unk4e4060(r - 0x18);
             ai_Unk4e5180(*(int *)(r - 0x18));
@@ -16397,7 +16395,6 @@ extern G17MSG * cm_SendQueue;
 extern unsigned int cm_LongMsgLen;
 extern G17MSG cm_RecvMsg;
 extern unsigned int cm_GroupFirstSeq;
-extern char ai_Unkf895a0[0xb00];
 extern char d2_CaptionCopy[0x80];
 extern int cm_PickCellX;
 extern int cm_PickCellZ;
@@ -16500,7 +16497,7 @@ int ai_Unk624578 = 1;  /* 0x624578 */
 char ai_Unk625820[115][0x20] = { "HE_NULL", "HE_HISTORIE", "HE_UPGRADE_DUMMY", "HE_ABBAU", "HE_PRODUKTION", "HE_PRODUKTION_FERTIG_MSG", "HE_ARBEITER_EINSTELLEN", "HE_MEISTER_EINSTELLEN", "HE_VORKOMMEN_SUCHEN", "HE_NEUE_VORKOMMEN_SUCHEN", "HE_NEUE_VORKOMMEN_SUCHEN_MSG", "HE_AI_WATCH_TRANSPORT", "HE_OBJEKT_BAUEN", "HE_GEBAEUDE_BAUEN", "HE_MAUER_BAUEN", "HE_TRANSPORT", "HE_REPARATUR", "HE_MESSAGEBOX", "HE_LAGERSLOTS_BAUEN", "HE_LAGER_ERWEITERN", "HE_KRAEUTER_SAMMELN", "HE_GETIER_FANGEN", "HE_SPIELER_TRAINIEREN", "HE_GEHEIM_TREFFEN", "HE_SPIONAGE", "HE_SABOTAGE", "HE_PRUEGEL", "HE_GEB_VERKAUFEN", "HE_GEB_RENOVIEREN", "HE_GEB_VERMIETEN_DUMMY", "HE_GEB_UPGRADEN", "HE_GEB_RAUM_UPGRADEN", "HE_GEB_ABREISSEN", "HE_GEB_KAUFANGEBOT", "HE_SITZUNG", "HE_KREDIT", "HE_MEISTER_PRUEFUNG", "HE_MEISTER_PRUEFUNG_MSG", "HE_MEISTER_BESTANDEN", "HE_GELDBOTE", "HE_ERNTEN", "HE_STAMMTISCH_MSG", "HE_STAMMTISCH", "HE_GOTTESDIENST", "HE_PROZESS", "HE_DROHEN_MSG", "HE_DROHEN", "HE_ANSCHWAERZEN_MSG", "HE_BUCH_SCHREIBEN", "HE_ENTLASSEN", "HE_BEFOERDERN", "HE_PERSONAL_KUENDIGEN", "HE_PERSONAL_STEHLEN", "HE_PAMPHLET", "HE_FEST_MSG", "HE_FEST", "HE_GELAGE", "HE_KERKER_MEISTER_BESTECHEN", "HE_SIM_PERSONAL", "HE_MARKT_SUPERVISOR", "HE_ENTFUEHREN", "HE_SPIELER_ENTFUEHRT", "HE_LOESEGELD", "HE_EINBRUCH", "HE_GEB_SPIONAGE", "HE_WERBUNG", "HE_RANDOM_EVENT", "HE_STREIFE", "HE_RAZZIA", "HE_ERPRESSUNG", "HE_BELEIDIGUNG_MSG", "HE_BELEIDIGUNG", "HE_UEBERFALL", "HE_ANGRIFF", "HE_RANDOM_GESELLE", "HE_FURCHT_EINFLOESSEN", "HE_MISSION_SUPERVISOR", "HE_MISSION_DONE_MSG", "HE_EVT_GROSS_BRAND", "HE_EVT_BRAND", "HE_EVT_WIRBELSTURM", "HE_EVT_RAUBRITTER", "HE_EVT_KOMMENTARE", "HE_EVT_STADTFEST", "HE_EVT_SPENDE", "HE_EVT_BETEILIGUNG_MSG", "HE_EVT_BETEILIGUNG", "HE_EVT_SOELDNER_PLUENDERN", "HE_EVT_SOELDNER_MARODIEREN", "HE_EVT_PEST", "HE_ESKORTE_VERHINDERN", "HE_GELDSTRAFE", "HE_PRANGER", "HE_NACHWUCHS", "HE_BERUFSAUSBILDUNG", "HE_UNI", "HE_TALENT_SPIELER", "HE_TASCHENDIEB", "HE_SCHUTZGELD", "HE_SCHUTZGELD_MSG", "HE_BETRIEBS_PRUEFUNG", "HE_UMLAND_PATROL", "HE_SIM_UNFALL", "HE_PACHT", "HE_SIM_WIRTSHAUS", "HE_TITEL_VERGABE", "HE_AMT_VERGABE", "HE_BARDE", "HE_HEILEN", "HE_SIM_EINWANDERUNG", "HE_INIT_BETRIEB", "HE_GELIEBTE", "HE_SIM_KRANKHEITEN", "HE_DIE_PLAYER", "HE_KILL_PLAYER" };  /* 0x625820, names ("HE_NULL", ..) */
 int ch_LowPoly = 0;  /* 0x631064 */
 struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
-char * ai_Unk6332b4 = 0;  /* 0x6332b4 */
+EVTSCRIPT *evt_Scripts = 0;  /* 0x6332b4, [128] */
 unsigned int d3_SceneFlags = 0;  /* 0x63349c */
 int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
@@ -16640,7 +16637,7 @@ G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
 unsigned int cm_LongMsgLen = 0;  /* 0xf81164, length of cm_LongMsg */
 G17MSG cm_RecvMsg = {0};  /* 0xf81180, the message being received */
 unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
-char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
+AIWATCH ai_Watch = {0}; /* 0xf895a0, what the watched building's masters did (0xb00 bytes) */
 char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
 int cm_PickCellX = {0}; /* 0xfa5f00 */

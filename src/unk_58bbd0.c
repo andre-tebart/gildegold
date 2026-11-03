@@ -73,7 +73,6 @@ extern GAPDATA full_data_6f535c[];
 extern GAPDATA full_data_6f536c[];
 extern GAPDATA full_data_6f58d0[];
 extern char * ai_Goods;
-extern unsigned char ai_TimeHour;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern GAPDATA full_data_62b054[];
@@ -183,7 +182,6 @@ extern char ai_Chars[768][0x21c];
 extern int ai_GameFlags;
 extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
-extern unsigned char ai_TimeHour;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern int sv_PanelBuildBtn;
@@ -201,8 +199,7 @@ extern int di_MinY;
 extern GAPDATA full_data_5f3418[];
 extern GAPDATA full_data_6f1c2c[];
 extern int sv_HoverBuilding;  /* 0x6f22f4 (sv.c) */
-#include "f3snd_types.h"
-extern G16AMBIENTON snd_AmbientOn;
+extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 extern void sv_UpdateClock(void);
 extern unsigned short * sv_PanelShown;
 extern int gm_TreeNodeCount;
@@ -247,7 +244,6 @@ extern int d2_ClickedId;
 
 
 extern char * ai_FallbackBuilding;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern float sv_SkyScale;
 extern int d2_ClickedId;
@@ -278,7 +274,6 @@ extern GAPDATA full_data_62b3b8[];
 
 
 extern char * ai_BTypes;
-extern unsigned char ai_TimeHour;
 
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -286,7 +281,6 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
 extern int sv_PopRequest;
-extern unsigned char ai_TimeHour;
 
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -319,7 +313,6 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
-extern unsigned char ai_TimeHour;
 extern struct D2WIN *d2_LastWindowPtr;
 extern int ai_Unk5b3ad0();
 extern char ai_Chars[768][0x21c];
@@ -337,7 +330,6 @@ extern int d2_LastWindow;
 extern int sv_PopRequest;
 extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern GAPDATA full_data_602568[];
@@ -354,7 +346,6 @@ extern struct D2OBJ *d2_Objs;
 extern int ai_CameraStep;
 extern char ai_PlayerSlots[4][0x2f4];
 extern volatile unsigned long d3_Time;
-extern char gm_StockBlocks[0xd4d0];
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
@@ -385,7 +376,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern unsigned short * sv_PanelShown;
 extern int sv_PopRequest;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 
 extern int sv_PopRequest;
@@ -404,7 +394,7 @@ extern struct D2PIC *d2_Pics;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
-extern GAPDATA full_data_6f22dc[];
+extern int sv_PendingMoney;                    /* 0x6f22dc, the money the money panel adds to the player's (the credit window: the limit minus the amount chosen; the transport window: minus the goods' total) */
 extern int d2_PointerObj;
 
 extern int sv_PopRequest;
@@ -457,7 +447,6 @@ extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
 extern char * ai_BTypes;
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62afa0[];
 extern GAPDATA full_data_62afa4[];
 extern GAPDATA full_data_62afa5[];
@@ -488,7 +477,6 @@ extern char * ai_BTypes;
 extern char * ai_FallbackBuilding;
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GfxFloor;
-extern G16AMBIENTON snd_AmbientOn;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_PointerObj;
@@ -625,13 +613,11 @@ extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_602568[];
 extern char * ai_PlayerBuilding;
-extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
 extern float sv_SkyScale;
 
 extern int sv_PopRequest;
 
-extern unsigned char ai_TimeHour;
 extern int ai_SceneChars[32];
 extern float sv_SkyScale;
 extern int d2_ClickedId;
@@ -689,7 +675,6 @@ extern int sv_PopRequest;
 extern int ai_Unk5a5fd0();
 extern int ai_Unk5a6270();
 extern char * ai_PlayerBuilding;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
 extern float sv_SkyScale;
@@ -699,7 +684,6 @@ extern unsigned short * sv_PanelShown;
 extern int sv_PopRequest;
 extern int ai_Unk5a6270();
 extern char * ai_PlayerBuilding;
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
 extern float sv_SkyScale;
@@ -853,7 +837,6 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_6f2f64[];
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
@@ -862,7 +845,6 @@ extern GAPDATA full_data_6f4f60[];
 extern GAPDATA full_data_6f52df[];
 extern GAPDATA full_data_6f58a0[];
 extern GAPDATA full_data_6f5a60[];
-extern GAPDATA full_data_6f22dc[];
 extern GAPDATA full_data_6f52e0[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -961,7 +943,6 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_624cf8[];
 extern GAPDATA full_data_62d2bc[];
-extern unsigned char ai_TimeHour;
 extern unsigned short * sv_PanelShown;
 extern char * ai_Goods;
 extern struct D2OBJ *d2_Objs;
@@ -994,18 +975,18 @@ extern int sv_FrameMask;
 extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d3f4[];
 extern GAPDATA full_data_62d3fc[];
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d40c[];
 extern GAPDATA full_data_62d424[];
 extern unsigned gm_OwnNameHeads[136];
-extern char ord_StatisticsHistory[320];
+#include "gv_types.h"
+extern ORDSTATROUND ord_StatisticsHistory[16]; /* 0x91ab00, the statistics of the last 16 rounds */
+extern float ai_RatingBase;              /* 0x6f1b9c, the running rating: it moves towards ai_Rating (ai.h, 0x6f1ba0) by ord_RatingRate */
 extern float ai_Unk5eb81c;
 extern float ai_Unk5eb988;
 extern unsigned int d2_PenSize;
 extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
-extern int ai_RatingBase;
 extern GAPDATA full_data_62d440[];
 extern GAPDATA full_data_6f2f88[];
 extern GAPDATA full_rdata_5eb8a8[];
@@ -1026,10 +1007,8 @@ extern int sv_PopRequest;
 extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d494[];
 extern GAPDATA full_data_62d4ac[];
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d4c4[];
 
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern int d2_LastWindow;
@@ -1060,10 +1039,8 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
 extern int sv_PopRequest;
-extern unsigned char ai_TimeHour;
 extern GAPDATA full_data_62d5dc[];
 
-extern unsigned char ai_TimeHour;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
@@ -1095,7 +1072,6 @@ extern GAPDATA full_data_60d224[];
 extern GAPDATA full_data_62d6bc[];
 extern GAPDATA full_data_62d010[];
 extern unsigned char ai_OwnPlayer;
-extern unsigned char ai_TimeHour;
 extern char * cm_FieldObject;
 extern float ai_Unk5eb94c;
 extern const int sv_PhaseMinutes[24];
@@ -1124,7 +1100,7 @@ struct AMTREC;  /* file-scope tag for the prototypes below */
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
-struct GCLOCK;  /* f3gm.h typedef; file-scope tag for the gm_AddTime prototype */
+struct AITIME;  /* f3gm.h typedef; file-scope tag for the gm_AddTime prototype */
 
 unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 
@@ -1141,17 +1117,8 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     int object;                    /* 0x61, its object in the scene */
 } AIBLD;
 #pragma pack(pop)
-#pragma pack(push, 2)
-typedef struct HETIME {            /* the 14 byte game time (ai.h AITIME; he.c has the same local view) */
-    int a;
-    unsigned short b;
-    int c;
-    int d;
-} HETIME;
-#pragma pack(pop)
-extern HETIME ai_Time;                  /* 0x770ae0 (ai.h AITIME, defined in he.c) */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
-#include "time_view.h"
 #include "ls.h"
 #include "f3init.h"
 #include "d3_engine.h"
@@ -1174,6 +1141,7 @@ extern HETIME ai_Time;                  /* 0x770ae0 (ai.h AITIME, defined in he.
 #include "unk_575860.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+#define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (unk_5d33b0.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
    0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
    slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
@@ -1599,8 +1567,8 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
             n = gm_ClockSeason((char *)(unsigned)&ai_Time);
             id = 0;
             t0 = 0;
-            if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
-                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
+            if ((float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
+                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour)) {
                 if (*p == 4)
                     id = 0x50b;
                 else if (*p == 3)
@@ -2574,8 +2542,8 @@ char d3if_ShowTree(struct D3OBJECT *obj, char show);                /* 0x447300 
 
 /* 0x58f980, shows or hides the player's "vg_" objects (146 B): the 0x84-byte local list (count at +0x80) is
    filled by d3_ForEachObject (mask 0x2c0) with ai_VgFilter, then every entry is shown by d3if_ShowTree (obj, 0) or
-   hidden by d3if_ShowTree (obj, 1); showAll == 0 shows all, else the entries from the index ai_VgHideFrom (when
-   that byte is not 2) are hidden */
+   hidden by d3if_ShowTree (obj, 1); showAll == 0 shows all, else the entries from the index ai_GfxDetail (when
+   that detail is not 2) are hidden */
 void ai_ShowVgObjects(int start, int showAll)
 {
     int list[0x21];
@@ -2588,7 +2556,7 @@ void ai_ShowVgObjects(int start, int showAll)
     for (i = 0; i < list[0x20]; i++) {
         v = list[i];
         if (showAll == 0 ||
-            (i >= (unsigned char)ai_VgHideFrom && (char)ai_VgHideFrom != 2))
+            (i >= (unsigned char)ai_GfxDetailI && (char)ai_GfxDetailI != 2))
             d3if_ShowTree((struct D3OBJECT *)v, 0);
         else
             d3if_ShowTree((struct D3OBJECT *)v, 1);
@@ -3187,7 +3155,7 @@ void ai_GameFrame(void)
     s1 = U_I((unsigned)&di_MaxY);
     s2 = U_I((unsigned)&di_MinX);
     s3 = U_I((unsigned)&di_MinY);
-    *(char *)(unsigned)&snd_AmbientOn = 1;
+    snd_AmbientOn = 1;
     U_I((unsigned)&ai_GameState) = 1;
     if (U_I((unsigned)&ai_GameFlags) & 4) {
         for (p = (char *)((unsigned)&ai_Chars + 0x2); p < (char *)(unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
@@ -3219,8 +3187,8 @@ void ai_GameFrame(void)
             ai_Unk591ad0();
         sv_UpdateCamera();
         if (mode == 0) {
-            if ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
-                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour)) {
+            if ((float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
+                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour)) {
                 for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
                     if (*(int *)(it + 0x95) != -1) {
                         v = (int)evt_FindById(*(int *)(it + 0x95));
@@ -3232,16 +3200,16 @@ void ai_GameFrame(void)
                 mode = 1;
             }
         } else if (mode == 1) {
-            if (*(float *)((unsigned)&gm_DayStartHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour) &&
-                (float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayEndHours + n * 4)) {
+            if (*(float *)((unsigned)&gm_DayStartHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour) &&
+                (float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayEndHours + n * 4)) {
                 for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext())
                     if (*(int *)(it + 0x95) == -1)
                         sv_UpdateChimneySmoke(it);
                 mode = 2;
             }
         } else if (mode == 2 &&
-                   ((float)U_W((unsigned)&ai_TimeHour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
-                    *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_TimeHour))) {
+                   ((float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
+                    *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour))) {
             for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
                 if (*(int *)(it + 0x95) != -1) {
                     v = (int)evt_FindById(*(int *)(it + 0x95));
@@ -3306,7 +3274,7 @@ void ai_GameFrame(void)
         }
         r = sv_RunFrame(ai_GameFrame, 0x67fff);
     }
-    *(char *)(unsigned)&snd_AmbientOn = 0;
+    snd_AmbientOn = 0;
     U_I((unsigned)&ai_GameState) = 0;
     snd_StopMarketAmbience();
     d2_CopyCaption((void *)(unsigned)&ch_EmptyName);
@@ -4249,7 +4217,7 @@ int ai_Unk593f40(char *name)
             *(int *)((char *)msg + 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(rec + 0x27) * 0x87);
             *(int *)((char *)msg + 0xc) = U_I(rec + 1);
             *(int *)((char *)msg + 0x28) = U_I((unsigned)&ai_Time);
-            *(int *)((char *)msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+            *(int *)((char *)msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
             *(int *)((char *)msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
             *(unsigned short *)((char *)msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
             *(unsigned char *)((char *)msg + 0x36) = 2;
@@ -4905,7 +4873,7 @@ void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
                 *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(param_1 + 0x27) * 0x87);
                 *(int *)(msg + 0xc) = U_I(param_1 + 1);
                 *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                 *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
                 *(unsigned short *)(msg + 0x5a) = kinds[i];
@@ -5042,7 +5010,7 @@ void ai_AquariumSearchWindow(int param_1, int param_2)
                 *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(param_1 + 0x27) * 0x87);
                 *(int *)(msg + 0xc) = U_I(param_1 + 1);
                 *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                 *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
                 *(unsigned short *)(msg + 0x5a) = kinds[i];
@@ -5539,7 +5507,7 @@ void ai_MistressContact(int building, int room)
 }
 
 int gm_TitlesLeft(); float gm_TitlePeriodServed(int n, int *out); int d2_WinOpenSlider();
-void d2_SetObjValue(); int gm_TitleGroup(); void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs);
+void d2_SetObjValue(); int gm_TitleGroup(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);
 
 /* 0x596ff0, the master-exam window "locations\wohnsitz\meisterpruefung" (897 B, ROUGH SKELETON from the Ghidra
    pseudocode): the exam level 0x504ce0 (the character's byte 0x770ce4) + 1; the window 0x4741f0 / 0x475600 /
@@ -5618,7 +5586,7 @@ void ai_Unk596ff0(void)
                     *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + player * 0x87);
                     *(int *)(msg + 0xc) = -1;
                     *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                     *(unsigned char *)(msg + 4) = 0x26;
                     *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                     *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
@@ -6109,11 +6077,11 @@ void ai_Unk598170(int param_1)
     d2_SetForm(win, 1);
     d2_SetPointerSprite(0, 0);
     io_PrintText(0x1874);
-    if (*(float *)(rec + 0x5c) <= (float)util_RandomF() || (unsigned short)U_I((unsigned)&ai_TimeHour) < 0xc ||
+    if (*(float *)(rec + 0x5c) <= (float)util_RandomF() || (unsigned short)U_I((unsigned)&ai_Time.hour) < 0xc ||
         money < 10000) {
         d2_SetForm(win, 2);
         io_PrintText(0x1875);
-        if ((unsigned short)U_I((unsigned)&ai_TimeHour) > 0xb)
+        if ((unsigned short)U_I((unsigned)&ai_Time.hour) > 0xb)
             *(float *)(rec + 0x5c) = *(float *)(rec + 0x5c) * 0.66f - 0.02f;
     } else {
         d2_SetForm(win, 2);
@@ -6554,7 +6522,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
             *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
             *(int *)(msg + 0xc) = U_I(param_1 + 1);
             *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-            *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+            *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
             *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
             *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
             *(int *)(msg + 0x5c) = U_I(param_2 + 2);
@@ -6738,7 +6706,7 @@ void ai_Unk599af0(int param_1, int param_2)
                 *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
                 *(int *)(msg + 0xc) = -1;
                 *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                 *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
                 *(int *)(msg + 0x5c) = U_I(param_1 + 1);
@@ -7300,7 +7268,7 @@ void ai_Unk59ad60(int param_1)
                     *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
                     *(int *)(msg + 0xc) = U_I(param_1 + 1);
                     *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                     *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                     *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
                     *(unsigned char *)(msg + 0x36) = 0x12;
@@ -7581,10 +7549,10 @@ void ai_Unk59b630(int param_1, int param_2)
    0x18e5, the limit 0x508660 (param_1 + 0x5d, the player byte), the texts 0x18e6 and the two controls 0x475b80
    (the same text and the next text id), the range control 0x475cb0 (5, 0x28, the character +0x65), the money
    0x509e60 (the character 0x770b80 + slot * 0x21c) and the counter 0x475cb0 (0, max (0x5085b0 (the money) +
-   0x5085b0 (the limit), 0x5085b0 (the money)), 0x5085b0 (the money)); the pump 0x5309a0 (0x677c7); 0x6f22dc =
+   0x5085b0 (the limit), 0x5085b0 (the money)), 0x5085b0 (the money)); the pump 0x5309a0 (0x677c7); sv_PendingMoney =
    the limit minus the selected amount; on select (0xf8a668 == 0) the difference 0x4c47e0 (param_1 + 1, the
    character, the player byte, the amount), 0x4c3ba0 (param_1, param_1 + 1), 0x4c3c00 (4, 1, 0x65, &value),
-   0x4c49a0; 0x4758f0 at the end, 0x6f22dc = 0 */
+   0x4c49a0; 0x4758f0 at the end, sv_PendingMoney = 0 */
 
 void ai_Unk59b880(int param_1)
 {
@@ -7620,7 +7588,7 @@ void ai_Unk59b880(int param_1)
             U_I((unsigned)&sv_PopRequest) = 1;
         v = d2_GetObjValue(ctl2, U_I((unsigned)&ai_OwnPlayer));
         n = ((int (*)(int))gm_PlayerFactor)(v);
-        U_I((unsigned)&full_data_6f22dc) = limit - n;
+        sv_PendingMoney = limit - n;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             v = d2_GetObjValue(ctl2, U_I((unsigned)&ai_OwnPlayer));
             n = ((int (*)(int))gm_PlayerFactor)(v);
@@ -7642,7 +7610,7 @@ void ai_Unk59b880(int param_1)
         }
     }
     d2_CloseView(win);
-    U_I((unsigned)&full_data_6f22dc) = 0;
+    sv_PendingMoney = 0;
 }
 
 int gm_SumSlotAmounts(void *list, unsigned char i); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
@@ -8697,8 +8665,8 @@ int ai_Unk59e170(unsigned char *param_1, unsigned int *param_2, unsigned int *pa
                 *param_2 = *(unsigned char *)((unsigned)&full_data_62afa4 + i * 8);
             if (param_3 != 0)
                 *param_3 = *(unsigned char *)((unsigned)&full_data_62afa5 + i * 8);
-            if (*(unsigned char *)((unsigned)&full_data_62afa4 + i * 8) <= (unsigned short)U_I((unsigned)&ai_TimeHour) &&
-                (unsigned short)U_I((unsigned)&ai_TimeHour) < *(unsigned char *)((unsigned)&full_data_62afa5 + i * 8))
+            if (*(unsigned char *)((unsigned)&full_data_62afa4 + i * 8) <= (unsigned short)U_I((unsigned)&ai_Time.hour) &&
+                (unsigned short)U_I((unsigned)&ai_Time.hour) < *(unsigned char *)((unsigned)&full_data_62afa5 + i * 8))
                 return 1;
             return 0;
         }
@@ -8746,7 +8714,7 @@ int ai_Unk59e210(unsigned char *param_1)
     if (ai_Unk59e170(param_1, &from, &to) != 0)
         return 1;
     strcpy(buf, (char *)U_I((unsigned)&full_data_1442314));
-    if ((int)(U_I((unsigned)&ai_TimeHour) & 0xffff) < (int)from) {
+    if ((int)(U_I((unsigned)&ai_Time.hour) & 0xffff) < (int)from) {
         if (k != 3 && k != 5) {
             txt_Format(msg, 0x2056, slot, param_1);
             goto out;
@@ -9161,7 +9129,7 @@ void ai_Unk59f410(unsigned short *param_1)
         U_I((unsigned)&sv_BorderViewX) = 0;
         U_I((unsigned)&sv_BorderViewY) = 0;
     }
-    U_I((unsigned)&snd_AmbientOn) &= 0xffffff00;
+    snd_AmbientOn = 0;
     switch (*param_1) {
     case 0x2c:
     case 0x109: ai_UpgradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
@@ -9177,7 +9145,7 @@ void ai_Unk59f410(unsigned short *param_1)
     case 0x28a: ai_CurseContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     default: ai_PumpFrames(param_1); break;
     }
-    U_I((unsigned)&snd_AmbientOn) |= 1;
+    snd_AmbientOn = 1;
     sv_ResetSelection();
     sv_ClearSelection();
     sv_ReleaseNamePlates();
@@ -11623,7 +11591,7 @@ int ai_Unk5a48d0(int param_1)
                 U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W(guild + 0x27) * 0x21c);
                 U_I(msg + 0xc) = U_I(guild + 1);
                 U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                U_I(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                 U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
                 *(unsigned char *)(msg + 0x36) = 1;
@@ -11729,7 +11697,7 @@ void ai_Unk5a4b90(int param_1)
                     U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W(param_1 + 0x27) * 0x21c);
                     U_I(msg + 0xc) = U_I(param_1 + 1);
                     U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    U_I(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                    U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                     U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                     U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
                     *(unsigned char *)(msg + 0x36) = 1;
@@ -12547,7 +12515,7 @@ int ai_Unk5a6270(int param_1, char *param_2)
                 *(unsigned char *)(msg + 4) = 0x65;
                 U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
                 U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                U_I(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                 U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
                 *(unsigned char *)(msg + 0x36) = 2;
@@ -12634,7 +12602,7 @@ int ai_Unk5a64d0(int param_1, char *param_2)
                 *(unsigned char *)(msg + 4) = 0x64;
                 U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
                 U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                U_I(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                 U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
                 *(unsigned char *)(msg + 0x36) = 1;
@@ -15083,7 +15051,7 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
     carrier = he_FindEvent(2, 3, *(int *)(param_2 + 2), 0, 0x11);
     while (carrier != 0) {
         *(int *)(carrier + 0x52) = U_I((unsigned)&ai_Time);
-        *(int *)(carrier + 0x56) = U_I((unsigned)&ai_TimeHour);
+        *(int *)(carrier + 0x56) = U_I((unsigned)&ai_Time.hour);
         *(int *)(carrier + 0x5a) = U_I(((unsigned)&ai_Time + 0x8));
         U_W(carrier + 0x5e) = U_W(((unsigned)&ai_Time + 0xc));
         *(int *)(carrier + 0x70) = -1;
@@ -15096,7 +15064,7 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
     *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + param_1 * 0x21c);
     *(int *)(msg + 0xc) = -1;
     *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
     *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
     U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
     *(unsigned char *)(msg + 0x36) = 2;
@@ -15127,7 +15095,7 @@ void ai_Unk5ae870(int param_1)
     carrier = he_FindEvent(1, 0, 0xf);
     while (carrier != 0) {
         if (*(int *)(carrier + 0xac) == *(int *)(param_1 + 2)) {
-            *(HETIME *)(carrier + 0x52) = ai_Time;
+            *(AITIME *)(carrier + 0x52) = ai_Time;
             cm_SendExSetHE(-1, carrier);
             return;
         }
@@ -15312,7 +15280,7 @@ order:
    is the +0x65 word for the kind 0x47, else the player 0x6f1bc5. Both carrier tables (0x6f58a0 .. 0x6f5a60 and
    0x6f4f60 .. 0x6f52e0, 0x38-byte rows, the good at +0, the control id at +0x10) add the row's amount 0x475980
    times its price 0x5089c0 (times 1.1 for a "\n" kind, else times the float +0x49 of the record; the +0x65
-   amount again for the modes 2 / 4). 0x6f22dc = the negated total */
+   amount again for the modes 2 / 4). sv_PendingMoney = the negated total */
 
 void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
 {
@@ -15354,7 +15322,7 @@ void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
         if (param_3 == 2 || param_3 == 4)
             gm_GoodsPrice(row[0], param_1[0x65]);
     }
-    U_I((unsigned)&full_data_6f22dc) = -sum;
+    sv_PendingMoney = -sum;
 }
 /* 0x5af1a0, a forwarder of 0x5af1d0 with the mode 1 (16 B) */
 
@@ -15740,14 +15708,14 @@ int ai_Unk5b5a20(void)
     return 1;
 }
 /* 0x5b5e80, (2753 B, ROUGH SKELETON): the game clock 0x770ae0 is copied FIELD BY FIELD into the frame (+0x1c ..
-   +0x34, the `mov ds:0x770ae0` form, not a HETIME assignment), then a 0x3e4-byte frame; the body is a comment */
+   +0x34, the `mov ds:0x770ae0` form, not an AITIME assignment), then a 0x3e4-byte frame; the body is a comment */
 
 int ai_Unk5b5e80(void)
 {
     int clock[4];
 
     clock[0] = U_I((unsigned)&ai_Time);
-    clock[1] = U_I((unsigned)&ai_TimeHour);
+    clock[1] = U_I((unsigned)&ai_Time.hour);
     clock[2] = U_I(((unsigned)&ai_Time + 0x8));
     U_W((int)clock + 0xc) = U_W(((unsigned)&ai_Time + 0xc));
     /* ROUGH SKELETON: the 0x3e4-byte frame */
@@ -17886,7 +17854,7 @@ void ai_Unk5c27b0(char *param_1, int param_2)
                     *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
                     *(int *)(msg + 0xc) = U_I(param_1 + 1);
                     *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                     *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
                     *(unsigned short *)(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
                     *(unsigned char *)(msg + 0x58) = 0;
@@ -19068,7 +19036,7 @@ int ai_Unk5c6620(int param_1, int param_2)
 }
 
 void sv_PumpNet(); int ai_AmountRowStatus(); int ai_AmountRow();
-void d2_EnableViewObjects(); void gm_AddTime(struct GCLOCK *c, int hours, int mins, int secs); 
+void d2_EnableViewObjects(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs); 
 int sv_CheckGoodAmount(); int sv_MessageBox(); int cm_GetSlotState();
 
 /* 0x5c6910, the advertising / marriage proposal confirm (395 B): the rating 0x5c6620 (the own id
@@ -19104,7 +19072,7 @@ int ai_Unk5c6910(short *param_1)
                 *(unsigned char *)(msg + 4) = 0x41;
                 *(unsigned char *)(msg + 0x36) = 2;
                 *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_TimeHour);
+                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
                 *(unsigned short *)(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
                 *(int *)(msg + 0xc) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
                 *(int *)(msg + 0x58) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
@@ -19535,7 +19503,7 @@ void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_
         d2_TextWidth(buf, 0x55);
         d2_CreateWinText(5, h - 0x3c, (w - 0x1e) / 2 + 5);
     }
-    /* the date label: the 14 byte ai_Time 0x770ae0 copied to a local HETIME and formatted by 0x4fe2c0,
+    /* the date label: the 14 byte ai_Time 0x770ae0 copied to a local AITIME and formatted by 0x4fe2c0,
        then the fifteen rows (0x5c7db9 .. 0x5c7e78): 0x4fe2c0 per row, 0x473650 (0x2d + i * scale, ...)
        0x4764f0, 0x5176d0 (0x5fe7d0) / 0x46ea10, and the last row of 0x5c7e7e */
     *(char *)(unsigned)&d2_PenSize = old;
@@ -19593,7 +19561,7 @@ void ai_CityStatsPanel(void)
     io_PrintText(0x1f0e, ((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4, (unsigned)&ai_Time);
     f = ord_GetStatistics(vals);
     d2_SetForm(win, 2);
-    io_PrintText(0x1f14, (int)*(float *)(unsigned)&ai_RatingBase);
+    io_PrintText(0x1f14, (int)ai_RatingBase);
     io_PrintText(0x1f15, min(4, (int)((f + *(double *)(unsigned)&full_rdata_5eb8a8) * (2.5))) + 0x1f16);
     io_PrintText(0x1f1b, min(4, (int)(f * *(float *)(unsigned)&ai_Unk5eb988)) + 0x1f1c);
     io_PrintText(0x1f21, (int)f);
@@ -20127,7 +20095,7 @@ int ai_Unk5c9290(unsigned short *param_1, unsigned short *param_2)
                     *(int *)(unsigned)&sv_PopRequest = 1;
                 } else {
                     time[0] = *(int *)(unsigned)&ai_Time;
-                    time[1] = *(int *)(unsigned)&ai_TimeHour;
+                    time[1] = *(int *)(unsigned)&ai_Time.hour;
                     time[2] = *(int *)((unsigned)&ai_Time + 0x8);
                     *(short *)&time[3] = *(short *)((unsigned)&ai_Time + 0xc);
                     gm_AddTime(time, 0x60, 0, 0);
@@ -20136,7 +20104,7 @@ int ai_Unk5c9290(unsigned short *param_1, unsigned short *param_2)
                     rec[0] = 0;                    /* +0 */
                     rec[1] = *(int *)((char *)param_1 + 4);   /* +4 */
                     rec[4] = *(int *)(unsigned)&ai_Time;     /* +0x10 */
-                    rec[5] = *(int *)(unsigned)&ai_TimeHour;
+                    rec[5] = *(int *)(unsigned)&ai_Time.hour;
                     rec[6] = *(int *)((unsigned)&ai_Time + 0x8);
                     rec[7] = *(int *)((char *)param_2 + 4);   /* +0x1c */
                     *(char *)&rec[8] = 0x45;       /* +0x20 */
@@ -20223,7 +20191,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
             return 0x10;
         }
         time[0] = *(int *)(unsigned)&ai_Time;
-        time[1] = *(int *)(unsigned)&ai_TimeHour;
+        time[1] = *(int *)(unsigned)&ai_Time.hour;
         time[2] = *(int *)((unsigned)&ai_Time + 0x8);
         *(short *)&time[3] = *(short *)((unsigned)&ai_Time + 0xc);
         gm_AddTime(time, 0x60, 0, 0);
@@ -20231,7 +20199,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
             rec[i] = 0;
         rec[1] = *(int *)((char *)param_1 + 4);
         rec[4] = *(int *)(unsigned)&ai_Time;
-        rec[5] = *(int *)(unsigned)&ai_TimeHour;
+        rec[5] = *(int *)(unsigned)&ai_Time.hour;
         rec[6] = *(int *)((unsigned)&ai_Time + 0x8);
         *(short *)((char *)rec + 0x1a) = *(short *)((unsigned)&ai_Time + 0xc);
         rec[7] = *(int *)(target + 4);
@@ -20373,7 +20341,7 @@ int ai_Unk5c9990(unsigned short *param_1)
                     rec[3] = charid;
                     rec[0x16] = charid;
                     rec[10] = *(int *)(unsigned)&ai_Time;
-                    rec[11] = *(int *)(unsigned)&ai_TimeHour;
+                    rec[11] = *(int *)(unsigned)&ai_Time.hour;
                     rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
                     *(short *)((char *)rec + 0x38) = *(short *)((unsigned)&ai_Time + 0xc);
                     *(char *)((char *)rec + 0x36) = 2;
@@ -20433,7 +20401,7 @@ int ai_BlackmailContact(int param_1, int param_2)  /* @original: the callers pus
         rec[3] = *(int *)(param_1 + 4);
         rec[0x16] = *(int *)(param_1 + 4);
         rec[10] = *(int *)(unsigned)&ai_Time;
-        rec[11] = *(int *)(unsigned)&ai_TimeHour;
+        rec[11] = *(int *)(unsigned)&ai_Time.hour;
         rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
         *(short *)((char *)rec + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
         *(char *)((char *)rec + 0x36) = 2;
@@ -20494,14 +20462,14 @@ int ai_Unk5c9df0(unsigned short *param_1)
                     rec[3] = charid;
                     rec[0x16] = charid;
                     rec[10] = *(int *)(unsigned)&ai_Time;
-                    rec[11] = *(int *)(unsigned)&ai_TimeHour;
+                    rec[11] = *(int *)(unsigned)&ai_Time.hour;
                     rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
                     *(short *)((char *)rec + 0x38) = *(short *)((unsigned)&ai_Time + 0xc);
                     *(char *)((char *)rec + 0x36) = 2;
                     rec[0x17] = *(int *)((char *)param_1 + 4);
                     cm_SendLongMessage(rec);
                     date[0] = *(int *)(unsigned)&ai_Time;
-                    date[1] = *(int *)(unsigned)&ai_TimeHour;
+                    date[1] = *(int *)(unsigned)&ai_Time.hour;
                     date[2] = *(int *)((unsigned)&ai_Time + 0x8);
                     *(short *)&date[3] = *(short *)((unsigned)&ai_Time + 0xc);
                     gm_AddTime(date, 0x18, 0, 0);
@@ -20547,7 +20515,7 @@ unsigned char ai_BlackmailContactVariant(int param_1, int param_2)  /* @original
         rec[3] = *(int *)(param_1 + 4);
         rec[0x16] = *(int *)(param_1 + 4);
         rec[10] = *(int *)(unsigned)&ai_Time;
-        rec[11] = *(int *)(unsigned)&ai_TimeHour;
+        rec[11] = *(int *)(unsigned)&ai_Time.hour;
         rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
         *(short *)((char *)rec + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
         *(char *)((char *)rec + 0x36) = 2;
@@ -21023,15 +20991,15 @@ int ai_CounterEspionage(int param_1, int *m)  /* m: the handler's second argumen
         *(char *)((char *)rec + 4) = 0x18;
         *(int *)((char *)rec + 8) = handle;
         *(int *)((char *)rec + 0xc) = handle;
-        *(HETIME *)((char *)rec + 0x28) = ai_Time;
+        *(AITIME *)((char *)rec + 0x28) = ai_Time;
         *(char *)((char *)rec + 0x36) = 2;
         cm_SendMoneyDelta(handle, 0xfffffffc);
         carrier = he_FindEvent(1, 0, 0x18);
         while (carrier != 0) {
             if (*(int *)(carrier + 0xc4) == *(int *)(param_1 + 4)) {
                 ret |= 0x10;
-                *(HETIME *)(carrier + 0x52) = ai_Time;
-                *(HETIME *)(carrier + 0xc8) = ai_Time;
+                *(AITIME *)(carrier + 0x52) = ai_Time;
+                *(AITIME *)(carrier + 0xc8) = ai_Time;
                 cm_SendExSetHE(*(int *)(carrier + 0x70), carrier);
                 *(int *)((char *)rec + 0x70) =
                     U_I((unsigned)&ai_CharInts + U_W(carrier + 8) * 0x21c);
@@ -21062,7 +21030,7 @@ int ai_CounterEspionage(int param_1, int *m)  /* m: the handler's second argumen
                     *(char *)((char *)rec + 4) = 0x18;
                     *(int *)((char *)rec + 8) = handle;
                     *(int *)((char *)rec + 0xc) = handle;
-                    *(HETIME *)((char *)rec + 0x28) = ai_Time;
+                    *(AITIME *)((char *)rec + 0x28) = ai_Time;
                     *(char *)((char *)rec + 0x36) = 2;
                     cm_SendMoneyDelta(handle, 0xfffffffc);
                     carrier = he_FindEvent(1, 0, 0x18);
@@ -21072,7 +21040,7 @@ int ai_CounterEspionage(int param_1, int *m)  /* m: the handler's second argumen
                         do {
                             if (*(int *)(carrier + 0xc4) == *(int *)(param_1 + 4)) {
                                 found = 1;
-                                *(HETIME *)(carrier + 0x52) = ai_Time;
+                                *(AITIME *)(carrier + 0x52) = ai_Time;
                                 cm_SendExSetHE(0, carrier);
                                 *(int *)((char *)rec + 0x70) =
                                     U_I((unsigned)&ai_CharInts + U_W(carrier + 8) * 0x21c);
@@ -21897,7 +21865,7 @@ int ai_WorkerDismissalWindow(int param_1, int *m)  /* m: the handler's second ar
             U_I((unsigned)&sv_PopRequest) = 1;
         } else if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_PointerObj) == click1) {
-                amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_TimeHour) > 0xd ? -1 : 3), 0xff);
+                amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_Time.hour) > 0xd ? -1 : 3), 0xff);
                 ret = 0x90;
                 U_I((unsigned)&sv_PopRequest) = 1;
             } else if (U_I((unsigned)&d2_PointerObj) == click2) {
@@ -21946,7 +21914,7 @@ int ai_DismissalHandler(unsigned short *param_1, int param_2)  /* @original: the
         h = amt_GetFirstOffice(*(unsigned char *)(i + 0x166), out);
         if (h == 0)
             return 0x40;
-        amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_TimeHour) > 0xd ? -1 : 3), 0xff);
+        amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_Time.hour) > 0xd ? -1 : 3), 0xff);
         cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), -8);
         cm_SendSetField(*(int *)((char *)param_1 + 4), 0x1cc, 4, 0x40000, 0);
         if (*(char *)(i + 2) == 6 || *(char *)(i + 2) == 7) {
@@ -21987,7 +21955,7 @@ int ai_DismissalHandler(unsigned short *param_1, int param_2)  /* @original: the
             if (U_I((unsigned)&d2_PointerObj) == click1) {
                 i = sv_CheckMoney(param_1, 8);
                 if (i != 0) {
-                    amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_TimeHour) > 0xd ? -1 : 3), 0xff);
+                    amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_Time.hour) > 0xd ? -1 : 3), 0xff);
                     cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), -8);
                     i = cm_SendSetField(*(int *)((char *)param_1 + 4), 0x1cc, 4, 0x40000, 0);
                     if (i != -1)
@@ -22030,7 +21998,7 @@ int ai_Unk5ced50(int param_1, int param_2, int param_3)
     rec[2] = *(int *)(param_1 + 4);
     rec[3] = -1;
     rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_TimeHour);
+    rec[11] = U_I((unsigned)&ai_Time.hour);
     rec[12] = U_I(((unsigned)&ai_Time + 0x8));
     *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
     *(char *)((char *)rec + 0x36) = 2;
@@ -22428,7 +22396,7 @@ int ai_UseGood(int param_1, int *param_2)
         cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x21, &one);
         cm_AddFieldDelta(1, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x20, &byteone);
         cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x2d, (void *)(unsigned)&ai_Time);
-        cm_AddFieldDelta(2, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x31, (void *)(unsigned)&ai_TimeHour);
+        cm_AddFieldDelta(2, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x31, (void *)(unsigned)&ai_Time.hour);
         cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x33, (void *)((unsigned)&ai_Time + 0x6));
         cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x37, (void *)((unsigned)&ai_Time + 0xa));
         cm_SendFieldDeltas();
@@ -22525,7 +22493,7 @@ int ai_Unk5cfc00(int param_1, int *param_2)
     rec[2] = *(int *)(param_1 + 4);
     rec[3] = -1;
     rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_TimeHour);
+    rec[11] = U_I((unsigned)&ai_Time.hour);
     rec[12] = U_I(((unsigned)&ai_Time + 0x8));
     *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
     *(char *)((char *)rec + 0x36) = 10;
@@ -22599,7 +22567,7 @@ int ai_Unk5cff70(int param_1, int *param_2)
     rec[2] = *(int *)(param_1 + 4);
     rec[3] = -1;
     rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_TimeHour);
+    rec[11] = U_I((unsigned)&ai_Time.hour);
     rec[12] = U_I(((unsigned)&ai_Time + 0x8));
     *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
     *(char *)((char *)rec + 0x36) = 10;
@@ -22616,7 +22584,7 @@ int ai_Unk5cff70(int param_1, int *param_2)
     rec[2] = *(int *)(param_1 + 4);
     rec[3] = -1;
     rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_TimeHour);
+    rec[11] = U_I((unsigned)&ai_Time.hour);
     rec[12] = U_I(((unsigned)&ai_Time + 0x8));
     *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
     *(char *)((char *)rec + 0x36) = 1;

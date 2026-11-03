@@ -20,7 +20,6 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 #include "main.h"
 #include "mem.h"
 #include "tr.h"
-#define ai_TimeK (*(AHMCLOCK *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as ahm.c copies it: @original 3 ints and a short (0x4eb43a lea edx,[eax+0x52]; stores 4/4/4/2) */
 #define cm_SendExSetHEI ((void (*)(int, char *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original ahm.c pushes the key as an int (0x4eb43e push 0xfffffffe) */
 
 #define vfs_freadU ((unsigned (*)(void *, int, int, VFSFILE *))vfs_fread)  /* 0x430bd0, vfs.h int: @original this unit compares the count as unsigned (ahm_LoadDfn 0x4ebabd test eax,eax; jbe for `<= 0`) */
@@ -349,7 +348,7 @@ void ahm_RescheduleResearch(char *o)
     ev = (AHMRESEARCH *)he_FindEvent(1, 3, ((AHMOBJ *)o)->id);
     while (ev != 0) {
         if (0x95 <= ev->kind && ev->kind <= 0x97) {
-            ev->due = ai_TimeK;
+            ev->due = ai_Time;
             cm_SendExSetHEI(-2, (char *)ev);
         }
         ev = (AHMRESEARCH *)he_NextEvent();

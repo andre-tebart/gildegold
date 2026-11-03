@@ -1,4 +1,4 @@
-/* The item group record of f3gm.c's table ai_Unk61a348 (am.h's G7GRP) and the action record of am.c's
+/* The item group record of f3gm.c's table gm_BuildingItemGroups (G7GRP) and the action record of am.c's
    ai_Actions (AIACT), for the units that declare or define them without the rest of am.h: types only.
    am.h includes it. */
 #ifndef AM_TYPES_H

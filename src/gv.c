@@ -29,8 +29,8 @@
    17to28) words a crime; gv_FindAccused / gv_EvidencePrice / gv_SortCrimesByLaw / gv_ClearCrimes serve the crime windows
    and the evidence trade. A trial's sentence 0 .. 9 is checked by gv_CheckSentence and carried out by gv_PassSentence;
    gv_CheckRankUp raises a character's rank (AICHAR.b00d) by his worth (gv_RankWorth).
-   Open: ai_Crimes (0x91f700) and unk_Tab91b6e0 are second names of ai_Crimes / ai_Evidence (the crime records, not
-   graves); gv_FindCrime, gv_EvidenceSlot and gv_CountOwnedGraves still read them through raw offsets; unk_Tab611258's initializer holds the callbacks (AIDEC.fn) as raw original addresses.
+   Open: gv_FindCrime, gv_EvidenceSlot and gv_CountOwnedGraves still read ai_Crimes (cm.c's char[], the 0x2d-byte
+   CRIME records) and ai_Evidence (cm.c, the int pairs) through raw offsets; unk_Tab611258's initializer holds the callbacks (AIDEC.fn) as raw original addresses.
    Open: data: gv_RankWorth (0x5ee0f8) is declared with 7 entries, gv_CheckRankUp reads 11 (the last 4 lie under
    hmt_Unk5ee114 ..).
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
@@ -58,7 +58,6 @@
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define gv_EffectsT (*(GVEFFECT (*)[8])&gv_Effects)  /* 0x6f1008, gv_Effects (char[0xb80]) as the 8 GVEFFECT slots */
-#define gv_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define gv_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 typedef struct GVPLAYERREC {           /* 0x2f4 bytes, a player's slot record (ai_PlayerSlots, indexed by ai_OwnPlayer) */
     char pad00[0x54];
@@ -264,7 +263,7 @@ int gv_WriteEffects(void *f)
         return 0;
     if (vfs_fwrite(&gv_LastTime.min, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
-    if (vfs_fwrite(&gv_LastTime.xy, 4, 1, (struct VFSFILE *)f) <= 0)
+    if (vfs_fwrite(&gv_LastTime.sec, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
     if (vfs_fwrite(&gv_Cannon.bld, 4, 1, (struct VFSFILE *)f) <= 0)
         return 0;
@@ -372,7 +371,7 @@ int gv_ReadEffects(void *f, int v)
         return 0;
     if (ls_Read(&gv_LastTime.min, 4, 1, (int)f) == 0)
         return 0;
-    if (ls_Read(&gv_LastTime.xy, 4, 1, (int)f) == 0)
+    if (ls_Read(&gv_LastTime.sec, 4, 1, (int)f) == 0)
         return 0;
     if (ls_Read(&gv_Cannon.bld, 4, 1, (int)f) == 0)
         return 0;
@@ -483,7 +482,7 @@ void unk_ResetEffectSlots(void)
         gv_EffectsT[i].f0c = 1.0f;
         gv_EffectsT[i].f10 = 1.0f;
     }
-    gv_LastTime = gv_TimeT;
+    gv_LastTime = ai_Time;
     memset(&gv_Cannon.bld, 0, 0x20);
     gv_Cannon.bld = -1;
 }
@@ -706,7 +705,7 @@ void gv_ExplodeShot(int damage, int effectId, SHOTREC *shot, GVEFFARG *out)
                 else
                     msg.to = gv_CharsT[hit->owner].netId;
                 msg.fromId = hit->id;
-                msg.time = gv_TimeT;
+                msg.time = ai_Time;
                 msg.flags = 2;
                 msg.arg[0] = hit->id;
                 msg.arg[1] = (int)h.recs[i].value;
@@ -749,7 +748,7 @@ void gv_UpdateEffects(void)
     dt = gm_MinutesBetween(&gv_LastTime, &ai_Time);
     if (dt < 0)
         dt = 0;
-    gv_LastTime = gv_TimeT;
+    gv_LastTime = ai_Time;
     scene = d3_CurrentScene;
     step = (float)dt * 0.016666668f * 0.1f;
     d3if_SelectScene(0, 1);
@@ -1515,14 +1514,14 @@ int gv_BuryNewDead(unsigned char *o, int n)
             ai_NextObjectId++;
             e->id = e->grave->id;
             e->w08 = 0x7fff;
-            e->until = (unsigned short)(gv_TimeT.year + 5);
+            e->until = (unsigned short)(ai_Time.year + 5);
             e->b0c = 0xff;
             for (k = 0; k < 5; k++)
                 e->grave->traits[k] = (unsigned char)(int)((float)util_RandomU(8) * 21.0f + 42.0f);
             e->grave->v2c = util_RandomU(9) + 1;
             e->grave->v30 = util_RandomU(2) + 1;
             e->grave->nameId = util_RandomU(0x5e) + 1;
-            e->grave->year = gv_TimeT.year - util_RandomU(4) - 1;
+            e->grave->year = ai_Time.year - util_RandomU(4) - 1;
             e->grave->sex = util_RandomU(2);
             strncpy(e->grave->family, txt_FamilyNames[util_RandomU(0x95)], 0xf);
             rec = gm_NameRecord(e->grave->sex, e->grave->nameId);
@@ -1827,7 +1826,7 @@ int gv_BuryCharacter(int *p)
     best->v30 = c->b00d;
     best->nameId = c->jobId;
     best->sex = c->sex;
-    best->year = gv_TimeT.year;
+    best->year = ai_Time.year;
     best->icon = c->picture;
     return 0;
 }
@@ -1883,7 +1882,7 @@ int gv_ReserveGrave(GVORDER *m)
             return -7;
         e->id = c->netId;
         e->w08 = c->w050;
-        e->until = m->years + (unsigned short)gv_TimeT.year;
+        e->until = m->years + (unsigned short)ai_Time.year;
         e->b0c = 0xff;
         for (i = 0; i < gv_EntryCounts[m->size]; i++)
             e->grave[i].id = -1;
@@ -2248,7 +2247,7 @@ moved:
     src->id = -1;
     dst->w08 = src->w08;
     src->w08 = 0xffff;
-    dst->until = (unsigned short)(gv_TimeT.year + 10);
+    dst->until = (unsigned short)(ai_Time.year + 10);
     dst->b0c = 0xff;
     src->until = 0xff;
     if (net_Conn.s != INVALID_SOCKET)
@@ -3251,7 +3250,7 @@ int gv_FindCrime(int id)
     } while ((int)p < (int)((unsigned)&gv_Cannon.bld));
     return -1;
 }
-/* 0x4f3780, the slot for the pair (a, b) in the table 0x91b6e0 (2048 pairs): -2 when it exists already, else the first free one or -1 */
+/* 0x4f3780, the slot for the pair (a, b) in the table ai_Evidence (2048 pairs): -2 when it exists already, else the first free one or -1 */
 
 int gv_EvidenceSlot(int a, int b)
 {
@@ -3261,7 +3260,7 @@ int gv_EvidenceSlot(int a, int b)
     ok = 0;
     r = -1;
     i = 0;
-    t = (int *)unk_Tab91b6e0;
+    t = (int *)ai_Evidence;
     while (1) {
         if (!ok && t[i * 2] == -1 && t[i * 2 + 1] == -1) {
             r = i;
@@ -3909,8 +3908,8 @@ void gv_PassSentence(AICHAR *c, int a)
     case 0:
         m.type = 0x5c;
         m.flags = 1;
-        m.time = gv_TimeT;
-        gm_AddTime((struct GCLOCK *)&m.time, 1, 0, 0);
+        m.time = ai_Time;
+        gm_AddTime((struct AITIME *)&m.time, 1, 0, 0);
         m.to = c->netId;
         m.fromId = -1;
         m.arg[0] = 3;
@@ -3920,8 +3919,8 @@ void gv_PassSentence(AICHAR *c, int a)
     case 1:
         m.type = 0x5b;
         m.flags = 1;
-        m.time = gv_TimeT;
-        gm_AddTime((struct GCLOCK *)&m.time, 1, 0, 0);
+        m.time = ai_Time;
+        gm_AddTime((struct AITIME *)&m.time, 1, 0, 0);
         m.to = c->netId;
         m.fromId = -1;
         m.arg[0] = (int)(worth * 0.03f);
@@ -3931,8 +3930,8 @@ void gv_PassSentence(AICHAR *c, int a)
     case 2:
         m.type = 0x5c;
         m.flags = 1;
-        m.time = gv_TimeT;
-        gm_AddTime((struct GCLOCK *)&m.time, 1, 0, 0);
+        m.time = ai_Time;
+        gm_AddTime((struct AITIME *)&m.time, 1, 0, 0);
         m.to = c->netId;
         m.fromId = -1;
         m.arg[0] = 3;
@@ -3942,8 +3941,8 @@ void gv_PassSentence(AICHAR *c, int a)
     case 3:
         m.type = 0x5b;
         m.flags = 1;
-        m.time = gv_TimeT;
-        gm_AddTime((struct GCLOCK *)&m.time, 1, 0, 0);
+        m.time = ai_Time;
+        gm_AddTime((struct AITIME *)&m.time, 1, 0, 0);
         m.to = c->netId;
         m.fromId = -1;
         m.arg[0] = (int)(worth * 0.03f);
@@ -3982,8 +3981,8 @@ void gv_PassSentence(AICHAR *c, int a)
         party.used = (unsigned char)i;
         party.host = gv_CharsT[ai_PlayerId].netId;
         party.thing = -1;
-        party.time = gv_TimeT;
-        gm_AddTime((struct GCLOCK *)&party.time, 0x18, 0, 0);
+        party.time = ai_Time;
+        gm_AddTime((struct AITIME *)&party.time, 0x18, 0, 0);
         party.time.hour = 10;
         party.time.min = 0;
         party.kind = 5;
@@ -4060,7 +4059,7 @@ void gv_CheckRankUp(unsigned i)
         if (c->kind == 6 || c->kind == 7) {
             AI_ZERO(&m, sizeof(m));
             m.to = c->netId;
-            m.time = gv_TimeT;
+            m.time = ai_Time;
             m.type = 0x69;
             m.fromId = -1;
             m.flags = 9;
@@ -4083,14 +4082,14 @@ void gv_CheckRankUp(unsigned i)
             if ((gv_CharsT[k].kind == 6 || gv_CharsT[k].kind == 7) && &gv_CharsT[k] != c) {
                 AI_ZERO(&m, sizeof(m));
                 m.to = gv_CharsT[k].netId;
-                m.time = gv_TimeT;
+                m.time = ai_Time;
                 m.type = 0x69;
                 m.fromId = -1;
                 m.flags = 9;
                 m.time.hour = 7;
                 m.time.min = 0;
                 if (c->kind == 5)
-                    gm_AddTime((struct GCLOCK *)&m.time, util_RandomU(4), util_RandomU(8) * 7, 0);
+                    gm_AddTime((struct AITIME *)&m.time, util_RandomU(4), util_RandomU(8) * 7, 0);
                 m.rankUp.rank = nb;
                 m.rankUp.ch = c->netId;
                 cm_SendLongMessage((char *)&m);
@@ -4203,7 +4202,7 @@ int gv_Accuse(int i, int v, int a, int b, int obj)
         goto unreported;
     if (ai_InventoryHas(culprit, 0x22a) != 0 && util_RandomF() > 0.5)
         goto unreported;
-    m.time = gv_TimeT;
+    m.time = ai_Time;
     m.v1d = v;
     m.law = (unsigned char)rec.id;
     m.victim = b;
@@ -4280,7 +4279,7 @@ void gv_GraveyardTurn(char *o)
                 if (g->id != -1) {
                     f = (util_RandomF() + 1.0f) * 0.5f;
                     t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[e->size]));
-                    if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ gv_TimeT.year) & 1) != 0)
+                    if (t <= 0 || ((gv_EntryIndex((char *)bld->yard, (int *)e) ^ ai_Time.year) & 1) != 0)
                         goto next;
                     h = gv_OrderAdjustEntry(o, e->size, gv_EntryIndex((char *)bld->yard, (int *)e), -t);
                     goto counted;
@@ -4291,19 +4290,19 @@ void gv_GraveyardTurn(char *o)
             f = (util_RandomF() + 1.0f) * 0.5f;
             size = e->size;
             t = (int)(f * ((float)e->b0c / 255.0f * gv_GraveWear[size]));
-            if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ gv_TimeT.year) & 1) == 0) {
+            if (t > 0 && ((gv_EntryIndex((char *)(yard = bld->yard), (int *)e) ^ ai_Time.year) & 1) == 0) {
                 h = gv_OrderAdjustEntry(o, size, gv_EntryIndex((char *)yard, (int *)e), -t);
                 rounds++;
             }
             if (pl == 0)
                 goto next;
-            if (c != pl && gv_TimeT.year % 4 == (int)(c->netId & 3)
+            if (c != pl && ai_Time.year % 4 == (int)(c->netId & 3)
                 && (float)e->b0c / 255.0f < 0.66f) {
                 h = cm_SendRelations(pl->netId, c->netId, -5 - util_RandomU(0x10), 1);
                 rounds++;
                 nrel++;
             }
-            if (e->until != gv_TimeT.year)
+            if (e->until != ai_Time.year)
                 goto next;
             h = price = gv_LeasePrice(&c->id, e->b0c, e->size, 0, &share);
             if (c == pl) {
@@ -4312,7 +4311,7 @@ void gv_GraveyardTurn(char *o)
                 memset(&m, 0, sizeof(m));
                 m.to = c->netId;
                 m.fromId = bld->id;
-                m.time = gv_TimeT;
+                m.time = ai_Time;
                 m.type = 0x92;
                 m.flags = 9;
                 m.lease.bld = bld->id;
@@ -4346,10 +4345,6 @@ void gv_GraveyardTurn(char *o)
     }
 }
 
-extern float ord_RatingRate;
-extern char ord_StatisticsHistory[320];
-extern char ord_RatingBytes[16];
-extern char ord_MessageRecord[0x24];
 const char ai_ZeroRot[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  /* 0x5ebbb4 */
 const float gv_SaleShares[] = { 0.800000012f, 0.699999988f, 0.600000024f, 0.5f };  /* 0x5ee034, the owner's share of a grave sale per size */
 const float gv_GraveWear[] = { 15.0f, 12.5f, 10.0f, 7.5f };  /* 0x5ee044, the care a grave entry of each size loses per step (gv_GraveyardTurn: times (random + 1) / 2 and the care / 255) */
@@ -4365,13 +4360,13 @@ char ord_KindTable[] = { 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 50, 0, 0, 0, 0, 0, 12, 0,
 AITIME gv_LastTime = {0};  /* 0x6f0e38, the game time ai_Time of the last effect step (gv_UpdateEffects) */
 GVEFFARG gv_EffectArgs[8] = {0};  /* 0x6f0e48, the argument of each effect slot's default callback */
 char gv_Effects[2944] = {0};  /* 0x6f1008, 8 slots of */
-int ai_RatingBase = 0;  /* 0x6f1b9c, the rating's old value (stored as bits; ai.h's ai_Rating follows it at */
+float ai_RatingBase = 0;  /* 0x6f1b9c, the running rating (it moves towards ai.h's ai_Rating) */
 struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
 /* ai_Unk7e3f94: view of ai_PlayerSlots (tools/data_views.py) */
 float ord_RatingRate = {0}; /* 0x91aaf4, the change rate of the rating (ord.c */
-char ord_StatisticsHistory[320] = {0}; /* 0x91ab00 */
+ORDSTATROUND ord_StatisticsHistory[16] = {0}; /* 0x91ab00, the statistics of the last 16 rounds */
 char ord_RatingBytes[16] = {0};  /* 0x91b460, 5 + 1 bytes */
-char ord_MessageRecord[0x24] = {0}; /* 0x91b480, the 9-int record the messages carry, then the tag */
+ORDMSGREC ord_MessageRecord = {0}; /* 0x91b480, the record the messages carry */
 char gm_IncomeHistory[0x154] = {0};  /* 0x91b580, the 17-round history of the five income sums (rows of */
 GVCANNON gv_Cannon = {0};  /* 0x925100, the cannon scene state */

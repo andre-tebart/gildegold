@@ -35,7 +35,6 @@ extern int gm_PlayerRecords[688];
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
 #include "data_views.h"
-#include "time_view.h"
 #include "d2_types.h"                 /* D2OBJ, D2WIN, D2PIC: the records of d2_Objs, d2_LastWindowPtr, d2_Pics */
 #include "ls.h"                      /* ls_SavePath */
 #include "ahm.h"
@@ -69,7 +68,7 @@ extern int gm_PlayerRecords[688];
 #define ai_PlayerBuildingB (*(unsigned char **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) read bytewise, as this unit does */
 #define ai_CharsC (*(char (*)[768 * 0x21c])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) read flat, as this unit does */
 
-extern OPTIONBYTES ai_GfxDetail, ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
+extern OPTIONBYTES ai_GfxFloor, ai_GfxSet, ai_GfxFog, ai_GfxResolution, ai_GameSwitches, ai_GamePanel, ai_OptionPanelHelp;
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 
 extern struct D2OBJ *d2_Objs;              /* 0xf8f080, d2.h: D2OBJ * */
@@ -507,15 +506,19 @@ EFFECTSTATE ai_EffectState = {0};  /* 0x6f3300 .. 0x6f34f0, the wind state ai_In
 POKERGAME ai_PokerState = {0};  /* 0x6f3500 .. 0x6f35c0, the poker game state (unk_4a7140.c steps it) */
 OPTIONBYTES ai_GfxSet = {0};  /* 0x6f35c0: byte 0 gfx_set */
 /* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
-   bytes, the INI keys name the bytes (see the key order in 0x5d4c70) */
-OPTIONBYTES ai_GfxDetail = {0}; /* 0x6f35c4: byte 1 texture_scale, 0 details, 2 lod_handling, 3 shadow_detail */
+   bytes, the INI keys name the bytes (see the key order in 0x5d4c70); the four "Gfx" detail bytes are
+   objects of their own (anm.c reads 0x6f35c4 as a byte, 0x4bb884 mov al, byte ptr) */
+unsigned char ai_GfxDetail = 0;  /* 0x6f35c4, the "details" key */
+unsigned char ai_GfxTextureScale = 0;  /* 0x6f35c5, the "texture_scale" key */
+unsigned char ai_GfxLodHandling = 0;  /* 0x6f35c6, the "lod_handling" key */
+unsigned char ai_GfxShadowDetail = 0;  /* 0x6f35c7, the "shadow_detail" key */
 OPTIONBYTES ai_GfxFloor = {0};  /* 0x6f35c8: byte 0 floor_mipmapping, 1 camera_limits, 2 floor_lod, 3 character_detail */
 OPTIONBYTES ai_GfxFog = {0};  /* 0x6f35cc: byte 0 fog_plane */
 float ai_ScreenTuning[0xc] = {0};  /* 0x6f35d0: brightness r, g, b, a, contrast r, g, b, a, gamma
                                                r, g, b, a (0 .. 1, the keys are the value * 100) */
 SNDOPTIONBYTES ai_SoundOptions = {0};  /* 0x6f3600 */
 int ai_OptionSpeed = 0;  /* 0x6f3608, the "speed" key: the game speed setting ( */
-int ai_OptionCameraSpeed = {0}; /* 0x6f360c, the "camera_speed" key (the reader stores the low byte) */
+unsigned char ai_OptionCameraSpeed = 0;  /* 0x6f360c, the "camera_speed" key */
 int ai_OptionMouseSpeed = 0;  /* 0x6f3610, the "mouse_speed" key (the input base is this - */
 OPTIONBYTES ai_GameSwitches = {0};  /* 0x6f3618: byte 0 invert_mouse, 1 nachtwaechter, 2 show_cursor_txt, 3 show_geb_info */
 extern OPTIONBYTES ai_GamePanel;
@@ -528,8 +531,6 @@ OPTIONBYTES ai_GamePanel = {0};  /* 0x6f3668: byte 0 panel_mode, 1 help_events, 
 OPTIONBYTES ai_OptionPanelHelp = {0};  /* 0x6f366c, the "panel_help" key */
 int ai_Opponents[7] = {0};  /* 0x75e160 .. */
 char ai_OptionsFile[288] = {0};  /* 0x75e480, the INI the options are read from and written to */
-extern unsigned char ai_OptionCameraSpeedByte; /* 0x6f360c, the byte the reader stores (the writer and the
-                                               run time read ai_OptionCameraSpeed as an int) */
 typedef struct SCREENMODE {                 /* 8 bytes, a screen mode of the table 0x62d7b8 */
     int w;                                  /* +0x0, the width */
     int h;                                  /* +0x4, the height */
@@ -828,13 +829,13 @@ void ai_SaveOptions(void)
 {
     char buf[0x20];
 
-    _itoa(ai_GfxDetail.byte[1], buf, 10);
+    _itoa(ai_GfxTextureScale, buf, 10);
     WritePrivateProfileStringA("Gfx", "texture_scale", buf, ai_OptionsFile);
-    _itoa(ai_GfxDetail.word & 0xff, buf, 10);
+    _itoa(ai_GfxDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "details", buf, ai_OptionsFile);
-    _itoa(ai_GfxDetail.byte[2], buf, 10);
+    _itoa(ai_GfxLodHandling, buf, 10);
     WritePrivateProfileStringA("Gfx", "lod_handling", buf, ai_OptionsFile);
-    _itoa(ai_GfxDetail.byte[3], buf, 10);
+    _itoa(ai_GfxShadowDetail, buf, 10);
     WritePrivateProfileStringA("Gfx", "shadow_detail", buf, ai_OptionsFile);
     _itoa(ai_GfxFloor.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Gfx", "floor_mipmapping", buf, ai_OptionsFile);
@@ -890,7 +891,7 @@ void ai_SaveOptions(void)
     WritePrivateProfileStringA("Game", "mouse_speed", buf, ai_OptionsFile);
     _itoa(ai_OptionScrollSpeed, buf, 10);
     WritePrivateProfileStringA("Game", "scroll_speed", buf, ai_OptionsFile);
-    _itoa(ai_OptionCameraSpeed & 0xff, buf, 10);
+    _itoa(ai_OptionCameraSpeed, buf, 10);
     WritePrivateProfileStringA("Game", "camera_speed", buf, ai_OptionsFile);
     _itoa(ai_GameSwitches.word & 0xff, buf, 10);
     WritePrivateProfileStringA("Game", "invert_mouse", buf, ai_OptionsFile);
@@ -950,13 +951,13 @@ void ai_LoadOptions(void)
     int i;
 
     v = GetPrivateProfileIntA("Gfx", "texture_scale", 0, ai_OptionsFile);
-    ai_GfxDetail.byte[1] = v;
+    ai_GfxTextureScale = v;
     v = GetPrivateProfileIntA("Gfx", "details", 0, ai_OptionsFile);
-    ai_GfxDetail.byte[0] = v;
+    ai_GfxDetail = v;
     v = GetPrivateProfileIntA("Gfx", "lod_handling", 0, ai_OptionsFile);
-    ai_GfxDetail.byte[2] = v;
+    ai_GfxLodHandling = v;
     v = GetPrivateProfileIntA("Gfx", "shadow_detail", 0, ai_OptionsFile);
-    ai_GfxDetail.byte[3] = v;
+    ai_GfxShadowDetail = v;
     v = GetPrivateProfileIntA("Gfx", "floor_mipmapping", 0, ai_OptionsFile);
     ai_GfxFloor.byte[0] = v;
     v = GetPrivateProfileIntA("Gfx", "camera_limits", 0, ai_OptionsFile);
@@ -1013,7 +1014,7 @@ void ai_LoadOptions(void)
     v = GetPrivateProfileIntA("Game", "mouse_speed", 0, ai_OptionsFile);
     ai_OptionMouseSpeed = v;
     v = GetPrivateProfileIntA("Game", "camera_speed", 0, ai_OptionsFile);
-    ai_OptionCameraSpeedByte = v;
+    ai_OptionCameraSpeed = v;
     v = GetPrivateProfileIntA("Game", "scroll_speed", 0, ai_OptionsFile);
     ai_OptionScrollSpeed = v;
     v = GetPrivateProfileIntA("Game", "invert_mouse", 0, ai_OptionsFile);
@@ -1105,7 +1106,7 @@ typedef union INIT_LOD {
 } INIT_LOD;
 extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
 
-/* 0x5d5c40, applies the graphics options to the scene: the shadow detail (ai_GfxDetail.byte[3]) picks the
+/* 0x5d5c40, applies the graphics options to the scene: the shadow detail (ai_GfxShadowDetail) picks the
    character shadow flag ch_ShadowEnabled and the shadow texture size (0x20 / 0x40), a changed size resets / frees
    every shadow and updates the scene, the map's detail level is set (init_SetDetailLevel), the LOD handling
    (byte[2]) selects d3io_Lod.mode and reloads the meshes with the scene deselected, d3_ApplyGraphicsOptions gets
@@ -1115,7 +1116,7 @@ extern INIT_LOD d3io_Lod;          /* 0x5fbf78 */
    (ai_GfxFloor.byte[1]) is copied to sv_CameraHeightNear .. sv_CameraAngleFar, the game state re-places the
    camera, the mipmaps follow the floor setting and the scene is selected around the build-site check and the
    red lights. Returns 0
-   @deep behaviour from the ROUGH stub rewritten against the whole original 0x5d5c40..0x5d5e8b (the stub was 16 B): the shadow detail (ai_GfxDetail.byte[3]) picks ch_ShadowEnabled + the 0x20 / 0x40 size and the changed flag, a changed size resets / frees the shadows (mask 0x40) and clamps d3s_TexSize to d3s_MaxTexSize before d3_UpdateAll(0); init_SetDetailLevel(ai_MapRefs, 0); the LOD handling (byte[2]) picks d3io_Lod (2 / 4), deselects the scene, reloads the meshes (0x40, 3) and reselects; d3_ApplyGraphicsOptions(floor byte, 0, 2 - texture_scale, changed, 0); the fog scale 1.0 - fog*0.01 (double constants) only while neither ai_PlayerBuilding nor ai_FallbackBuilding is set; the town-scene character bodies get the shadow bit (+0x211 bit 3, the xor idiom); ch_SetLowPoly(character_detail); the camera limit pair of the camera_limits byte (table 0x6237d0, 6 pairs, the pair +3) into sv_CameraHeightNear / sv_CameraAngleNear / ...Far; sv_PlaceCamera when ai_GameState; d3fl_SetMips on a floor change; then select the scene, ai_CheckBuildSites, d3_SetRLights(detail != 0), reselect. Q1/Q2/Q5/Q7 cleared (INIT_CHARACTER + ch_List, INIT_LOD union for the whole-dword d3io_Lod, INIT_MAPREF via data_views' ai_MapRefs, prototypes for all 13 callees). Left: 6 hunks / 98 differing instructions before this session, all codegen shape: the camera limit copy - ours did float copies (fld/fstp) from (0x623800 - 0x30) where the original copies the four dwords from the table symbol 0x6237d0; that table was missing from the C, so the copies read whatever the linker put before sv_CameraHeightNear (the camera angle became 8.2e20 and the whole 3D view culled blue); it is now sv_CameraLimits in sv.c and the copies come from it. Still open: the changed flag / lod / scene registers (slots hunk [esp+4]/[esp+8]). Renames: ch_Unk5f122c -> ch_ShadowEnabled, sv_Unk525dd0 -> sv_PlaceCamera, ai_Unk623800/04/08/0c -> sv_CameraHeightNear / sv_CameraAngleNear / sv_CameraHeightFar / sv_CameraAngleFar, ai_Unk6f22d4 / d8 -> sv_CameraHeightFactor / sv_CameraAngleFactor. */
+   @deep behaviour from the ROUGH stub rewritten against the whole original 0x5d5c40..0x5d5e8b (the stub was 16 B): the shadow detail (ai_GfxShadowDetail) picks ch_ShadowEnabled + the 0x20 / 0x40 size and the changed flag, a changed size resets / frees the shadows (mask 0x40) and clamps d3s_TexSize to d3s_MaxTexSize before d3_UpdateAll(0); init_SetDetailLevel(ai_MapRefs, 0); the LOD handling (byte[2]) picks d3io_Lod (2 / 4), deselects the scene, reloads the meshes (0x40, 3) and reselects; d3_ApplyGraphicsOptions(floor byte, 0, 2 - texture_scale, changed, 0); the fog scale 1.0 - fog*0.01 (double constants) only while neither ai_PlayerBuilding nor ai_FallbackBuilding is set; the town-scene character bodies get the shadow bit (+0x211 bit 3, the xor idiom); ch_SetLowPoly(character_detail); the camera limit pair of the camera_limits byte (table 0x6237d0, 6 pairs, the pair +3) into sv_CameraHeightNear / sv_CameraAngleNear / ...Far; sv_PlaceCamera when ai_GameState; d3fl_SetMips on a floor change; then select the scene, ai_CheckBuildSites, d3_SetRLights(detail != 0), reselect. Q1/Q2/Q5/Q7 cleared (INIT_CHARACTER + ch_List, INIT_LOD union for the whole-dword d3io_Lod, INIT_MAPREF via data_views' ai_MapRefs, prototypes for all 13 callees). Left: 6 hunks / 98 differing instructions before this session, all codegen shape: the camera limit copy - ours did float copies (fld/fstp) from (0x623800 - 0x30) where the original copies the four dwords from the table symbol 0x6237d0; that table was missing from the C, so the copies read whatever the linker put before sv_CameraHeightNear (the camera angle became 8.2e20 and the whole 3D view culled blue); it is now sv_CameraLimits in sv.c and the copies come from it. Still open: the changed flag / lod / scene registers (slots hunk [esp+4]/[esp+8]). Renames: ch_Unk5f122c -> ch_ShadowEnabled, sv_Unk525dd0 -> sv_PlaceCamera, ai_Unk623800/04/08/0c -> sv_CameraHeightNear / sv_CameraAngleNear / sv_CameraHeightFar / sv_CameraAngleFar, ai_Unk6f22d4 / d8 -> sv_CameraHeightFactor / sv_CameraAngleFactor. */
 int ai_ApplyGfxOptions(void)
 {
     unsigned char level, changed;
@@ -1125,7 +1126,7 @@ int ai_ApplyGfxOptions(void)
     float *lim;
 
     changed = 0;
-    level = ai_GfxDetail.byte[3];
+    level = ai_GfxShadowDetail;
     size = d3s_TexSize;
     if (level == 0) {
         ch_ShadowEnabled = 1;
@@ -1149,9 +1150,9 @@ int ai_ApplyGfxOptions(void)
     }
     init_SetDetailLevel((int *)ai_MapRefs, 0);
     lod = 0;
-    if (ai_GfxDetail.byte[2] == 0)
+    if (ai_GfxLodHandling == 0)
         lod = 2;
-    else if (ai_GfxDetail.byte[2] == 1)
+    else if (ai_GfxLodHandling == 1)
         lod = 4;
     if (lod != (int)d3io_Lod.all) {
         scene = d3_CurrentScene;
@@ -1160,7 +1161,7 @@ int ai_ApplyGfxOptions(void)
         d3_ReloadMeshes(0x40, 3, 0);
         d3if_SelectScene(scene, 0);
     }
-    d3_ApplyGraphicsOptions(ai_GfxFloor.byte[0], 0, 2 - ai_GfxDetail.byte[1], changed, 0);
+    d3_ApplyGraphicsOptions(ai_GfxFloor.byte[0], 0, 2 - ai_GfxTextureScale, changed, 0);
     if (ai_PlayerBuildingB == 0 && ai_FallbackBuildingB == 0)
         d3o_FogScale = 1.0 - (double)ai_GfxFog.byte[0] * 0.01;
     for (i = 0; i < 0x300; i++) {
@@ -1182,7 +1183,7 @@ int ai_ApplyGfxOptions(void)
     scene = d3_CurrentScene;
     d3if_SelectScene(1, 0);
     ai_CheckBuildSites();
-    d3_SetRLights(ai_GfxDetail.byte[0] != 0);
+    d3_SetRLights(ai_GfxDetail != 0);
     d3if_SelectScene(scene, 1);
     return 0;
 }
@@ -1205,7 +1206,7 @@ void ai_ApplyOptions(void)
         speed = (float)ai_OptionSpeed * 0.00625f + 0.25;
     cm_SpeedFactor = (float)speed;
     kb_SetBase(ai_OptionMouseSpeed - 0x40);
-    ai_CameraStep = 100 - (ai_OptionCameraSpeed & 0xff);
+    ai_CameraStep = 100 - (ai_OptionCameraSpeed);
 }
 /* 0x5d5f10, applies the sound option volumes to the mixer (192 B): the master volume scales the sound
    driver (sb_SetMasterVolume, sfx * master / 127) and the music volume (msx_SetVolume, msx * master /
@@ -1667,8 +1668,8 @@ void ai_OptionsMenu(void)
     id7 = ai_MenuButton(7, (int)ai_TextBack, d2_LastWindow);
     group = d2_CreateRadioGroup(7, id0, id1, id2, id3, id4, id5, id7);
     msx_SetAmbVolume(0);
-    saved = snd_AmbientOnByte;
-    snd_AmbientOnByte = 0;
+    saved = snd_AmbientOn;
+    snd_AmbientOn = 0;
     snd_StopMarketAmbience();
     pump = sv_RunFrame(ai_OptionsMenu, 0x24087);
     while (pump != 0) {
@@ -1734,7 +1735,7 @@ void ai_OptionsMenu(void)
     d2_RadioClear(group);
     d2_CloseView(wnd);
     msx_SetAmbVolume(ai_SoundOptions.sfxVolume);
-    snd_AmbientOnByte = saved;
+    snd_AmbientOn = saved;
     snd_StartMarketAmbience();
     if ((ai_GameFlags & 0x80) != 0 && ai_GameOver == 0)
         unk_SetEndGameGate();
@@ -1963,11 +1964,11 @@ void ai_OptionsGfxScreen(void)
     d2_SetSliderFlags(res, 0x82);
     d2_SetLabel(res, txt_Ptrs[0x1c67]);
     d2_SetList(res, 3, txt_Ptrs[0x1c73], txt_Ptrs[0x1c74], txt_Ptrs[0x1c75]);
-    d2_SetObjValue4(obj1, 0, 2, ai_GfxDetail.word & 0xff);
+    d2_SetObjValue4(obj1, 0, 2, ai_GfxDetail);
     d2_SetSliderFlags(obj1, 0x82);
     d2_SetLabel(obj1, txt_Ptrs[0x1c68]);
     d2_SetList(obj1, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj2, 0, 2, ai_GfxDetail.byte[1]);
+    d2_SetObjValue4(obj2, 0, 2, ai_GfxTextureScale);
     d2_SetSliderFlags(obj2, 0x82);
     d2_SetLabel(obj2, txt_Ptrs[0x1c69]);
     d2_SetList(obj2, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
@@ -1979,11 +1980,11 @@ void ai_OptionsGfxScreen(void)
     d2_SetSliderFlags(obj4, 0x82);
     d2_SetLabel(obj4, txt_Ptrs[0x1c6b]);
     d2_SetList(obj4, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
-    d2_SetObjValue4(obj5, 0, 1, ai_GfxDetail.byte[2]);
+    d2_SetObjValue4(obj5, 0, 1, ai_GfxLodHandling);
     d2_SetSliderFlags(obj5, 0x82);
     d2_SetLabel(obj5, txt_Ptrs[0x1c6c]);
     d2_SetList(obj5, 2, txt_Ptrs[0x1c70], txt_Ptrs[0x1c72]);
-    d2_SetObjValue4(obj6, 0, 2, ai_GfxDetail.byte[3]);
+    d2_SetObjValue4(obj6, 0, 2, ai_GfxShadowDetail);
     d2_SetSliderFlags(obj6, 0x82);
     d2_SetLabel(obj6, txt_Ptrs[0x1c6d]);
     d2_SetList(obj6, 3, txt_Ptrs[0x1c70], txt_Ptrs[0x1c71], txt_Ptrs[0x1c72]);
@@ -2012,10 +2013,10 @@ void ai_OptionsGfxScreen(void)
         }
     }
     if (apply != 0) {
-        ai_GfxDetail.byte[0] = d2_GetObjValue(obj1);
-        ai_GfxDetail.byte[1] = d2_GetObjValue(obj2);
-        ai_GfxDetail.byte[2] = d2_GetObjValue(obj5);
-        ai_GfxDetail.byte[3] = d2_GetObjValue(obj6);
+        ai_GfxDetail = d2_GetObjValue(obj1);
+        ai_GfxTextureScale = d2_GetObjValue(obj2);
+        ai_GfxLodHandling = d2_GetObjValue(obj5);
+        ai_GfxShadowDetail = d2_GetObjValue(obj6);
         ai_GfxFloor.byte[0] = d2_GetObjValue(obj4);
         ai_GfxFloor.byte[1] = d2_GetObjValue(obj8);
         ai_GfxFloor.byte[2] = d2_GetObjValue(obj3);
@@ -2174,7 +2175,7 @@ void ai_OptionsGameScreen(void)
     d2_SetObjValue4(scroll, 0, 100, ai_OptionScrollSpeed);
     d2_SetSliderFlags(scroll, 0x882);
     d2_SetLabel(scroll, txt_Ptrs[0x1c98]);
-    d2_SetObjValue4(camera, 0, 100, ai_OptionCameraSpeed & 0xff);
+    d2_SetObjValue4(camera, 0, 100, ai_OptionCameraSpeed);
     d2_SetSliderFlags(camera, 0x882);
     d2_SetLabel(camera, txt_Ptrs[0x1c99]);
     d2_SetObjValue4(sw0, 0, 1, ai_GameSwitches.word & 0xff);
@@ -2224,7 +2225,7 @@ void ai_OptionsGameScreen(void)
     }
     if (apply != 0) {
         ai_OptionSpeed = d2_GetObjValue(speed);
-        ai_OptionCameraSpeedByte = d2_GetObjValue(camera);
+        ai_OptionCameraSpeed = d2_GetObjValue(camera);
         ai_OptionMouseSpeed = d2_GetObjValue(mouse);
         ai_OptionScrollSpeed = d2_GetObjValue(scroll);
         ai_GameSwitches.byte[0] = 0;
@@ -2838,7 +2839,7 @@ void ai_BloodRevengeWindow(int building)
 }
 /* batch 3: the gypsy / poker / particle stretch 0x5d8c90 .. 0x5dd3e0 */
 void sv_ButtonRow(int f, int y, int *out, int n, ...); int sv_CheckGoodAmount();
-struct GCLOCK;
+struct AITIME;
 int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 int ai_PokerStart();
 unsigned short ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectScale(float x);
@@ -2921,7 +2922,7 @@ void ai_CurseWindow(int building)
                     msg.flags = 2;
                     msg.arg[0] = v;
                     msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
-                    memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
+                    memcpy(&msg.time, &ai_Time, sizeof(AITIME));
                     msg.arg[2] = target->netId;
                     cm_SendLongMessage((char *)&msg);
                     txt_Format(text, 0x41da, 0x41c1);
@@ -2949,12 +2950,12 @@ void ai_CurseWindow(int building)
    0x41fb + its id) or 0x41f9 (done) is shown. The buttons are enabled and the victim slider is used only without a running
    curse, the share bar only with one. The right mouse button and the second button leave; the first button pays the class
    (sv_CheckMoney, gm_SendMoneyDelta) and sends the message 0xa0 (the building id, the game time, arg 0 = the strength,
-   flags 2) with cm_SendLongMessage. The pump ends with d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 363 vs 365 instructions, the clock (GAMECLOCK, memcpy of ai_Time + gm_AddTime, hour 21 + random, minute 0), the two sliders, the 0x8c ms / value-change rebuild with the running-curse (ai_FindCurseEvent) and the new-curse branches in the original order, the buttons, the pay + 0xa0 message and the tail jump all match. The diff has 7 slot hunks (a 4 byte shift of the ids / tick locals: ours keeps a float local for the share ratio, the original has none) and ONE code hunk of 28 instructions at 0x5d92c7, the share ratio: the original stores the first gm_MinutesBetween result as an int ([esp+0x44]) and later does fild first; fidiv second (the second result also in memory), then fcom 1.0 / fnstsw / test ah,5 / jnp; ours converts the first result at once (fild; fstp float temp before the second call), then fild second; fdivr temp. Tried: one expression (float)f() / g() (this), named int locals total / elapsed (same early fild), the clamp as a ternary with > and >= (changes the compare to and eax,0x4100 / 0x100 and does not remove the early conversion), swapping the if / else order (fixed three other hunks). Allocation / scheduling of the FPU expression only. */
+   flags 2) with cm_SendLongMessage. The pump ends with d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 363 vs 365 instructions, the clock (AITIME, memcpy of ai_Time + gm_AddTime, hour 21 + random, minute 0), the two sliders, the 0x8c ms / value-change rebuild with the running-curse (ai_FindCurseEvent) and the new-curse branches in the original order, the buttons, the pay + 0xa0 message and the tail jump all match. The diff has 7 slot hunks (a 4 byte shift of the ids / tick locals: ours keeps a float local for the share ratio, the original has none) and ONE code hunk of 28 instructions at 0x5d92c7, the share ratio: the original stores the first gm_MinutesBetween result as an int ([esp+0x44]) and later does fild first; fidiv second (the second result also in memory), then fcom 1.0 / fnstsw / test ah,5 / jnp; ours converts the first result at once (fild; fstp float temp before the second call), then fild second; fdivr temp. Tried: one expression (float)f() / g() (this), named int locals total / elapsed (same early fild), the clamp as a ternary with > and >= (changes the compare to and eax,0x4100 / 0x100 and does not remove the early conversion), swapping the if / else order (fixed three other hunks). Allocation / scheduling of the FPU expression only. */
 
 void ai_CurseTargetWindow(int building)
 {
     CURSEMSG msg;
-    GAMECLOCK when;
+    AITIME when;
     int ids[2];                         /* the two buttons */
     int share, victim, form;
     int value, cls;
@@ -2965,8 +2966,8 @@ void ai_CurseTargetWindow(int building)
     tick = 0;
     cls = 2;
     value = 0;
-    memcpy(&when, ai_Time, sizeof(GAMECLOCK));
-    gm_AddTime((struct GCLOCK *)&when, 0x18, 0, 0);
+    memcpy(&when, &ai_Time, sizeof(AITIME));
+    gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
     when.hour = util_RandomU(cls) + 0x15;
     when.min = 0;
     form = d2_OpenForm(0, 0, "Locations\\zigeuner\\blutrache");
@@ -2990,14 +2991,14 @@ void ai_CurseTargetWindow(int building)
             if (ev != 0) {
                 when = ev->due;
                 when.hour += ev->done ? 0 : 2;
-                ratio = (float)gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)ai_Time)
+                ratio = (float)gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&ai_Time)
                         / gm_MinutesBetween((struct AITIME *)&ev->from, (struct AITIME *)&when);
                 if (ratio > 1.0f)
                     ratio = 1.0f;
                 d2_SetObjValue4(share, 0, 100, (int)(ratio * 100.0f));
             } else {
-                memcpy(&when, ai_Time, sizeof(GAMECLOCK));
-                gm_AddTime((struct GCLOCK *)&when, 0x18, 0, 0);
+                memcpy(&when, &ai_Time, sizeof(AITIME));
+                gm_AddTime((struct AITIME *)&when, 0x18, 0, 0);
                 when.hour = util_RandomU(2) + 0x15;
                 when.min = 0;
                 d2_SetObjValue4(share, 0, 100, 0);
@@ -3034,7 +3035,7 @@ void ai_CurseTargetWindow(int building)
                     msg.flags = 2;
                     msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
                     msg.fromId = ((CURSEBLD *)building)->id;
-                    memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
+                    memcpy(&msg.time, &ai_Time, sizeof(AITIME));
                     msg.arg[0] = value;
                     cm_SendLongMessage((char *)&msg);
                     sv_PopRequest = 1;
@@ -3169,7 +3170,7 @@ void ai_GypsyBeggingWindow(int building)
                     msg.flags = 1;
                     msg.to = ((AICHARVIEW *)(ai_CharsC + ai_PlayerId * 0x21c))->netId;
                     msg.fromId = ((CURSEBLD *)building)->id;
-                    memcpy(&msg.time, ai_Time, sizeof(GAMECLOCK));
+                    memcpy(&msg.time, &ai_Time, sizeof(AITIME));
                     for (i = 0; i < count; i++)
                         msg.ids[i] = ((AICHARVIEW *)(ai_CharsC + chosen[i] * 0x21c))->netId;
                     cm_SendLongMessage((char *)&msg);
@@ -3362,7 +3363,7 @@ int ai_PokerGame(void)
     if (rec == 0)
         return 0;
     worth = gm_ConvertMoney(gm_GetWorth(ai_PlayerId), ai_OwnPlayer);
-    if (util_RandomF() < rec->luck && ai_TimeHour > 11 && worth >= 10000) {
+    if (util_RandomF() < rec->luck && ai_Time.hour > 11 && worth >= 10000) {
         rec->luck = rec->luck * 0.66f - 0.1f;
         kb_Down[0x1e] = 0;
         if (ai_OpenPokerWindow() == 0)
@@ -3929,16 +3930,16 @@ void ai_InitWind(int type, int id, float *from, float *to)
 
 void ai_UpdateWind(void)
 {
-    GAMECLOCK last;
-    GAMECLOCK *now = (GAMECLOCK *)ai_Time;
+    AITIME last;
+    AITIME *now = &ai_Time;
     float hours;
     int hour;
 
     last.year = ai_EffectState.year;
     last.hour = (unsigned short)ai_EffectState.hour;
     last.min = ai_EffectState.min;
-    last.xy = 0;
-    hours = gm_MinutesBetween((struct AITIME *)&last, (struct AITIME *)ai_Time) * (1.0f / 60.0f);
+    last.sec = 0;
+    hours = gm_MinutesBetween((struct AITIME *)&last, (struct AITIME *)&ai_Time) * (1.0f / 60.0f);
     if (!(hours < 0.0f)) {
         hour = now->hour;
         ai_DefaultEffect.pos[1] = 0;

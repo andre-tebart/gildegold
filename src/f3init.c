@@ -132,35 +132,9 @@ typedef struct INIT_BTYPEREC {
 } INIT_BTYPEREC;
 #pragma pack(pop)
 
-/* the player's stock record (hst.c's G12STOCK, 0x80 bytes: init_StockList[player][0x55]); the fields this unit
-   reads, named after f3gm.c's 0x4ffa10 / 0x4ff550 (the record's wanted amount at 0x20, the stored price 0x38) */
-typedef struct INIT_STOCK {
-    unsigned short item;            /* 0x00, the goods prototype (an ai_Goods index) */
-    char pad02[2];                  /* 0x02 */
-    int amount;                     /* 0x04, the amount the player holds */
-    char pad08[0x18];               /* 0x08 .. 0x1f */
-    float demand;                   /* 0x20, the amount the market wants */
-    float mean;                     /* 0x24, the mean amount (f3gm.c 0x4ffa10) */
-    char pad28[0x10];               /* 0x28 .. 0x37 */
-    float price;                    /* 0x38, the stored price */
-    char pad3c[0x44];               /* 0x3c .. 0x7f */
-} INIT_STOCK;
 
-/* the stock block of one player (0x2a90 bytes): four header ints, then the 0x55 goods records */
-typedef struct INIT_STOCKBLOCK {
-    int priceIndex[4];              /* 0x00, the player's two price indices and their factors (f3gm.c 0x4ff550) */
-    INIT_STOCK rec[0x55];           /* 0x10 */
-} INIT_STOCKBLOCK;
-
-/* the game clock (ai.h's AITIME, 14 bytes at 0x770ae0) as the long message copies it */
+#include "ai_types.h"                /* AITIME */
 #pragma pack(push, 1)
-typedef struct INIT_TIME {
-    int year;                       /* 0x0, the year (0x578 + it is the calendar year) */
-    unsigned short hour;            /* 0x4, the hour */
-    short unk6;                     /* 0x6 */
-    int unk8;                       /* 0x8 */
-    short unkc;                     /* 0xc */
-} INIT_TIME;
 
 /* the long-message record (ai.h's AIMSG, 0xf8 bytes, cm_SendLongMessage's argument); only the fields this unit
    writes are declared (type debt: ai.h cannot be included here) */
@@ -173,7 +147,7 @@ typedef struct INIT_AIMSG {
     int nIds;                       /* 0x10, how many of ids[] are set (ai.h's AIMSG.nIds) */
     int reserved14;                 /* 0x14, only ever written 0 (ai.h's AIMSG.unk14) */
     char pad018[0x10];              /* 0x18 .. 0x27 */
-    INIT_TIME time;                 /* 0x28, the game clock the message was made at (ai.h's AIMSG.time) */
+    AITIME time;                    /* 0x28, the game clock the message was made at (ai.h's AIMSG.time) */
     unsigned char flags;            /* 0x36, the message flags (2 = a new-town building, 1 = the mission mode) */
     char pad037;                    /* 0x37 */
     int ids[8];                     /* 0x38 */
@@ -264,7 +238,6 @@ typedef struct INIT_SITELIST {
 /* the functions of f3gm.c this unit calls (declared by their addresses there) */
 float gm_JobWage();
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
 extern char * ai_PlayerBuilding;                /* 0x6f2308 */
 extern char * ai_FallbackBuilding;                /* 0x6f230c */
 int gm_IsBuildingKind(int n);           /* 0x4fe940, f3gm.c: 1 when the object prototype n is a building part */
@@ -345,7 +318,6 @@ unsigned char d3if_Unk6339db = 0;  /* 0x6339db */
 int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
 extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
-extern INIT_STOCKBLOCK init_StockBlock[];  /* 0x7d6a60, one 0x2a90-byte stock block per player (the records start at +0x10) */
 extern int cm_NetFlags;  /* 0x6f2594 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
 int d3_QuadTree = 0;  /* 0x6f1c28 */
@@ -437,7 +409,6 @@ int init_TownSounds[16] = {0};  /* 0x76fd80, the handles of the town's sounds (1
 unsigned char * ai_SceneBuilding = 0;  /* 0x76fdc0 */
 int ai_NBauplaetze = 0;  /* 0xf812e0, the number of building sites */
 G15BK * ai_Bauplaetze = 0;  /* 0xf812e4, the building sites */
-extern OPTIONBYTES ai_GfxDetail;       /* 0x6f35c4 */
 int evt_NoGroup = -1;  /* 0x5f8430 */
 float d3o_FogScale = 1.0f;  /* 0x5fbd04 */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
@@ -1993,7 +1964,7 @@ void init_OpenTown(void)
     }
     if (ai_MissionMode == 5) {
         INIT_AIMSG m2;
-        INIT_TIME *clock = (INIT_TIME *)ai_Time;
+        AITIME *clock = &ai_Time;
 
         i = 0;
         p = (char *)ai_Chars + 2;
@@ -2767,11 +2738,11 @@ void init_FillMarkets(int p)
 {
     int i;
     char *pr;
-    INIT_STOCK *g;
+    GMSTOCK *g;
     INIT_OBJ *m;
 
     i = 0x55;
-    g = &init_StockBlock[p].rec[0];
+    g = &gm_StockBlocks[p].goods[0];
     do {
         pr = ai_Goods + g->item * 0x41;
         m = (INIT_OBJ *)gm_FindMarketObject(g->item);
@@ -3181,7 +3152,7 @@ void init_PlayTownSound(char *name, int volume, int delay)
 
 void init_PlayGraveyardSound(char *b)
 {
-    gm_ClockSeason(ai_Time);
+    gm_ClockSeason(&ai_Time);
     if (b != 0) {
         if (gm_IsHomeType(b) != 0 && *(short *)(b + 0x29) == 0xfd && *b == 0x1e)
             init_PlayTownSound("AesteKnacken_s", 0x50, 8000);
@@ -3218,7 +3189,7 @@ void init_SetSeasonTextures(void)
     char *nm, *u;
     char a[0x80], b[0x80];
 
-    season = gm_ClockSeason(ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     if (d3_Terrain == 0)
         return;
     if (season == 3) {
@@ -3443,7 +3414,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     unsigned short proto;
     char *p;
 
-    season = gm_ClockSeason(ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     cls = gm_BuildingClass(*b);
     p = ai_BTypes + (unsigned)*b * 0x24d;
     o = (unsigned short *)gm_Query(bd->objList, 1, 0, slot);
@@ -3459,7 +3430,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     if (d3_CurrentScene == uni && (ai_PlayerBuilding == 0 || ai_PlayerBuilding == (int)b) && (ai_FallbackBuilding == 0 || ai_FallbackBuilding == (int)b)) {
         d = d3_FindObject(0, 0x180, 0, "ordner_DETAILS");
         if (d != 0)
-            d3if_ShowTree(d, ai_GfxDetail.byte[0] != 0);
+            d3if_ShowTree(d, ai_GfxDetail != 0);
         ch_CurrentGroup = bd->id;
         if (sv_PanelShown == 0)
             evt_NoGroup = bd->id;
@@ -3664,7 +3635,7 @@ void init_AfterTownLoad(void)
     int *p;
     char *e;
 
-    phase = gm_ClockSeason(ai_Time);
+    phase = gm_ClockSeason(&ai_Time);
     if (d3_CurrentScene == 0) {
         c = (int)gm_PlayerRecord(ai_Chars[(unsigned short)ai_PlayerId]);
         if (c == 0 || *(int *)(c + 0x88) == -0x40800000) {
@@ -3709,7 +3680,7 @@ void init_AfterTownLoad(void)
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
         d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;
-        sv_UpdateSkyPhase(ai_Time);
+        sv_UpdateSkyPhase(&ai_Time);
         if (d3if_Unk6339db != 0) {
             d3if_Prerender(0);
             return;

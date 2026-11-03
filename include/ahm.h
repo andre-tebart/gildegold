@@ -3,14 +3,7 @@ struct VFSFILE;
 #ifndef AHM_H
 #define AHM_H
 
-#pragma pack(push, 2)
-typedef struct AHMCLOCK {               /* 14 bytes, AITIME (ai.h) copied as 3 ints and a short (as am.h's AITIMEX: the original copies it so) */
-    int a;                              /* +0x0, the year */
-    int b;                              /* +0x4, the hour */
-    int c;                              /* +0x8 */
-    short d;                            /* +0xc */
-} AHMCLOCK;
-#pragma pack(pop)
+#include "ai_types.h"                /* AITIME */
 
 typedef struct AHMSLOT {                /* 8 bytes, a place of the record at +0x65 of the object (6 from +0xc): a good and its value */
     int id;
@@ -39,7 +32,7 @@ typedef struct AHMGOOD {                /* an object of a building's object list
 typedef struct AHMRESEARCH {            /* the fields ahm.c reads of a research event record (ai.h AIJOB: the kind at +0, unkb0 .. unkb8) */
     unsigned char kind;                 /* +0x0, the event type (0x95 .. 0x97) */
     char pad01[0x51];
-    AHMCLOCK due;                       /* +0x52, when the event is due (0x4eb410 copies the game clock 0x770ae0 over it) */
+    AITIME due;                         /* +0x52, when the event is due (0x4eb410 copies the game clock ai_Time over it) */
     char pad60[0x50];
     int id;                             /* +0xb0, the recipe / share the research is about */
     int amount;                         /* +0xb4, the research amount left (the event counts it down by the elapsed minutes) */
@@ -106,7 +99,8 @@ extern int ai_WalkX, ai_WalkDX, ai_WalkY, ai_WalkDY, ai_WalkIndex;  /* 0x6f0dc8,
 extern AHMSEED ai_WalkSeed;             /* 0x6f0ddc */
 extern AHMSTEP ai_WalkSteps[3];         /* 0x6f0de0 */
 extern int ahm_Tab[8];                  /* 0x60f1b0 */
-extern char ai_Time[14];                 /* 0x770ae0, the game clock (anm.c's char[14]; ahm.c reads it through ai_TimeK) */
+#include "ai_types.h"                /* AITIME */
+extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 char * he_FindEvent(int n, ...);                   /* 0x53e400 */
 char * he_NextEvent(void);                   /* 0x53e300 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60, cm.c */
