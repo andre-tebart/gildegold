@@ -330,8 +330,11 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
     AIJOB *job;                       /* 0x17c */
     unsigned char jobKind;              /* 0x180, the kind (first byte) of job, refreshed on load */
     char pad181[3];
-    AITASK *model;                      /* 0x184, the character's model record; its +0x2c is the building the
+    union {
+        AITASK *model;                  /* 0x184, the character's model record; its +0x2c is the building the
                                            character was sent to (f3gm.c 0x4fbd10) */
+        struct CHARACTER *scene;        /* 0x184, the same: the scene character (ch.h), as cm_UpdateHandObject reads it */
+    };
     unsigned char selected;             /* 0x188, nonzero: the character is in the player's selection (sv_ClearSelection clears it, sv_HandleObjects sets it) */
     char pad189[3];
     int picture;                        /* 0x18c, the portrait picture (sv.c: the person panel, the member list) */
