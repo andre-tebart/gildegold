@@ -209,6 +209,13 @@ typedef struct G17CUTMSG {              /* 8 bytes, the data of message 0x26 ("c
     int fightId;                        /* 0x04, the fight it belongs to (*cm_CurrentFight) */
 } G17CUTMSG;
 
+typedef struct G17REMOVEMSG {           /* 12 bytes, the data of message 0x2b (handler 0x4c9450) */
+    int holder;                         /* 0x00, the id of the building, character or object holding it (gm_FindById) */
+    int objId;                          /* 0x04, of a building: the id of its object whose list holds it (gm_Query key 1),
+                                           -1: the building's own object list */
+    int entry;                          /* 0x08, what gm_RemoveOwned removes */
+} G17REMOVEMSG;
+
 typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
                                            cm_ExSysMessage 0x4c89b0) */
     unsigned char kind;                 /* 0x00, 0..0x14 */
@@ -269,6 +276,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17SYSMSG sys;                  /* 0x10, message 0x20 */
         CRIME crime;                    /* 0x10, message 0x22 */
         G17CUTMSG cut;                  /* 0x10, message 0x26 */
+        G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
     };
