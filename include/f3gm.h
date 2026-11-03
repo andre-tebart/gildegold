@@ -87,7 +87,7 @@ int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4f
 int gm_TakeObjekt(int id, int proto, int n);  /* 0x500a40 */
 void gm_Unk5034b0(int o);  /* 0x5034b0 */
 int gm_SkillPoints(char *c, int skill);  /* 0x504e00 */
-int gm_Unk506480(char *c, int *n);  /* 0x506480 */
+int gm_HasAdultRelative(char *c, int *n);  /* 0x506480 */
 unsigned gm_TakeOverCharacter(int a, int b);  /* 0x5064d0 */
 struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */
 struct ORDBLD; unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, struct ORDBLD *a5, unsigned a6, int a7, int a8);  /* 0x507690 */

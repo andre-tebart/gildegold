@@ -1005,10 +1005,10 @@ int cm_QueueVoice();  /* 0x4e32d0 */
 void cm_RunBirth(G28REC *m);  /* 0x4e0f70 */
 int cm_DeathSceneCheck(G28REC *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
-int gm_Unk506480();  /* 0x506480 */
+int gm_HasAdultRelative();  /* 0x506480 */
 struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */
 void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4);  /* 0x5c4150 */
-int ai_Unk4e1250(char *m);  /* 0x4e1250 */
+void cm_RunDeath(G28REC *m);  /* 0x4e1250 */
 
 
 

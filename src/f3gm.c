@@ -7446,7 +7446,7 @@ short *gm_PlayerRecord(char *c)
 }
 /* 0x506480, counts the active relatives (the five ids from +0x68, 0x505df0, +8 set) of the character c into *n and returns 1 when one of them is older than 0xb */
 
-int gm_Unk506480(char *c, int *n)
+int gm_HasAdultRelative(char *c, int *n)
 {
     int r, cnt, k;
     short *p;

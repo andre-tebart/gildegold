@@ -14523,97 +14523,117 @@ int cm_DeathSceneCheck(G28REC *m)
         return 0;
     return 1;
 }
-/* 0x4e1250, a death (the message m: +0x34 the dying person): the scene "Tod.ed3" with "cutscenes\\tod\\enter_TOD.esc", the bells "GLOCKEN_r", the
-   voices "_TOD_HS" 0 .. 6 with the pauses 0xbb8 / 0xfa0 / 0x7d0 / 0x1f4, a fade out over 0x339 ticks (0x44a170); then by the flags +0x1cc
-   (1 = heir / 2) of the person and whether 0x506480 finds a successor the text 0x40fb / 0x40fc / 0x1ab3 / 0x1ab4 (0x4e5470) and the
-   field blocks 0x1c / 0x24 are sent (0x4c3c00), or the death is reported to the player's owner (0x5c4150). ROUGH */
+/* 0x4e1250, a death (the scene callback of the death event, kind 8) of m->members[0]: the light set by the hour (the
+   first of the hours 8 / 10 / 12 / 15 / 18 / 20 above ai_Time.hour, 6 after 20), the track "AmKuehlenGrabe", the sample
+   bank "tod.sbf", the scene "Tod.ed3" with the sky "Sky_Schoen_02" and "cutscenes\\tod\\enter_TOD.esc"; unless a click ends
+   a pause: the voices "_TOD_HS" 0, 2 .. 6 queued with their delays, then the fog faded in over 0x339 ticks; the bells
+   "GLOCKEN_r". Then: with an adult relative (gm_HasAdultRelative) the player whose person (flags +0x1cc: 1 without 2) may
+   play on is asked (text 0x40fb): yes revives the person (f01c 100, v024 0, the flag 2), no (or another person) opens the
+   family tree with txt_DeathTreeCaption; without one such a person is told (0x40fc) and revived all the same; else in a
+   game of the flag 8 the game is over (text 0x1ab4 with relatives, 0x1ab3 without, back to main_GameLoop); else the
+   estate is forfeited (gm_ForfeitEstate) and its text shown
+   @deep read whole against the original 0x4e1250..0x4e16f3 and rebuilt: void, the voices _TOD_HS 0, 2..6
+   with the bank and their delays, the fog fade (sv_RunFrame's result ignored, the click ends it,
+   min(t*1/825, ai_FloatOne)), the light scale 1.0f, the bells, the revive branch as revive =
+   cm_MessageBox(..) with one family-tree call, the field slots, a 0x1fb8 estate buffer from the frame. One
+   instruction differs: +0xf0 '- test eax, eax' vs '+ cmp eax, ebx' (the test of the first
+   cm_RunSceneTicksOrClick result; the original compares with ebx, its cached 0). Tried rc = ..; if (rc ==
+   0), if ((rc = ..) == 0), rc = 0 / == rc, and a goto: the same test eax,eax. Only VC6's choice of the
+   zero register at this compare is left */
 
-int ai_Unk4e1250(char *m)
+void cm_RunDeath(G28REC *m)
 {
     char buf[0x400];
-    char big[0x1c00];
-    char *a;
-    int ages[6] = {8, 10, 12, 15, 18, 20};
-    int stage, i, sc, snd, t0, rc, ok;
-    float f, v[4];
+    char estate[0x1fb8];
+    AICHAR *a = (AICHAR *)gm_FindChar(m->members[0]);
+    int hours[6] = {8, 10, 12, 15, 18, 20};
+    int stage, i, sc, bank, rc, kin, revive;
+    unsigned int t0;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
     stage = 6;
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     for (i = 0; i < 6; i++) {
-        if ((unsigned short)ai_Time.hour < ages[i]) {
+        if (ai_Time.hour < hours[i]) {
             stage = i;
             break;
         }
     }
     cm_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
-    snd = snd_LoadVoiceBank("tod.sbf", 1);
+    bank = snd_LoadVoiceBank("tod.sbf", 1);
     cm_LoadEventScene("Tod.ed3");
     cm_CreateSceneSky("Sky_Schoen_02");
-    d3_SetLightSet(stage, 0, 0x3f800000, 1);
+    d3_SetLightSet(stage, 0, 1.0f, 1);
     d3_SetFogSet(0, 0, 0);
     sc = cm_StartEventArg("cutscenes\\tod\\enter_TOD.esc", &ch_EmptyName);
     rc = cm_RunSceneTicksOrClick(0xbb8, 0, 0);
     if (rc == 0) {
-        for (i = 0; i < 7; i++)
-            cm_QueueVoice(-8, "_TOD_HS", i, i == 0 ? 0 : i == 1 ? 0 : i == 2 ? 0xfa0 : i == 3 ? 0xbb8 : i == 4 ? 0x7d0 : i == 5 ? 0xfa0 : 0x1f4);
+        cm_QueueVoice(-8, bank, "_TOD_HS", 0, 0);
+        cm_QueueVoice(-8, bank, "_TOD_HS", 2, 0xfa0);
+        cm_QueueVoice(-8, bank, "_TOD_HS", 3, 0xbb8);
+        cm_QueueVoice(-8, bank, "_TOD_HS", 4, 0x7d0);
+        cm_QueueVoice(-8, bank, "_TOD_HS", 5, 0xfa0);
+        cm_QueueVoice(-8, bank, "_TOD_HS", 6, 0x1f4);
         rc = cm_RunSceneTicksOrClick(0x2af8, 0, 0);
         if (rc == 0) {
             t0 = d3_Time;
             while (d3_Time < t0 + 0x339 && rc == 0) {
-                if (sv_RunFrame(0, cm_DialogFrameFlags) != 0 && dm_L.rup != 0)
+                sv_RunFrame(0, cm_DialogFrameFlags);
+                if (dm_L.rup != 0)
                     rc = 1;
-                f = (float)(d3_Time - t0) * 0.0012121212f;
-                if (!(f < 1.0f))
-                    f = 1.0f;
-                d3_SetFogSet(0, 1, f);
+                d3_SetFogSet(0, 1, (float)(d3_Time - t0) * (1.0f / 0x339) < ai_FloatOne ? (float)(d3_Time - t0) * (1.0f / 0x339) : 1.0f);
             }
-            d3_SetFogSet(0, 1, 0x3f800000);
+            d3_SetFogSet(0, 1, 1.0f);
             cm_RunSceneTicksOrClick(0x2cec, 0, 0);
-            rc = 0;
         }
     }
-    sb_PlaySampleI(0, "GLOCKEN_r", 1, 0x3f, 0x7f, 0, 0);
+    sb_PlaySample(0, "GLOCKEN_r", 1, 0x3f, 0x7f, 0, 0);
     d2_CutsceneActive = 0;
-    ok = gm_Unk506480(a, v);
-    if (ok != 0) {
-        if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
-            txt_Format(buf, 0x40fb, 0x40f5, *(unsigned short *)a);
-            if (cm_MessageBox(buf, 0x10) == 0)
-                ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, cm_DialogFrameFlags);
-            else {
-                v[2] = 100.0f;
-                cm_BeginFieldBlock(a, *(int *)(a + 4));
-                cm_AddFieldDelta(4, 1, 0x1c, &v[1]);
-                cm_AddFieldDelta(4, 1, 0x24, &v[2]);
-                cm_SendFieldDeltas();
-                cm_SendSetField(*(int *)(a + 4), 0x1cc, 4, 2, 0);
-            }
-        } else
-            ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, cm_DialogFrameFlags);
-    } else {
-        if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
-            txt_Format(buf, 0x40fc, 0x40f5, *(unsigned short *)a);
-            cm_MessageBox(buf, 0x10);
-            cm_BeginFieldBlock(a, *(int *)(a + 4));
-            cm_AddFieldDelta(4, 1, 0x1c, &v[1]);
-            cm_AddFieldDelta(4, 1, 0x24, &v[2]);
-            cm_SendFieldDeltas();
-            cm_SendSetField(*(int *)(a + 4), 0x1cc, 4, 2, 0);
-        } else if ((ai_GameFlags & 8) != 0) {
-            a[8] = 0;
-            ai_GameOver = 1;
-            if (ok != 0)
-                txt_Format(buf, 0x1ab4);
-            else
-                txt_Format(buf, 0x1ab3, *(unsigned short *)a);
-            cm_MessageBox(buf, 0);
-            sv_PopTo((unsigned)&main_GameLoop);
-        } else {
-            gm_ForfeitEstate(a, big, 1);
-            cm_MessageBox(big, 0x10);
+    if (gm_HasAdultRelative((char *)a, &kin) != 0) {
+        revive = 0;
+        if ((a->flags1cc & 1) != 0 && (a->flags1cc & 2) == 0) {
+            txt_Format(buf, 0x40fb, 0x40f5, a->id);
+            revive = cm_MessageBox(buf, 0x10);
         }
+        if (revive == 0)
+            ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, txt_DeathTreeCaption, cm_DialogFrameFlags);
+        else {
+            float life;
+            int zero;
+
+            zero = 0;
+            life = 100.0f;
+            cm_BeginFieldBlock((char *)a, a->netId);
+            cm_AddFieldDelta(4, 1, 0x1c, &life);
+            cm_AddFieldDelta(4, 1, 0x24, &zero);
+            cm_SendFieldDeltas();
+            cm_SendSetField(a->netId, 0x1cc, 4, 2, 0);
+        }
+    } else if ((a->flags1cc & 1) != 0 && (a->flags1cc & 2) == 0) {
+        int zero;
+        float life;
+
+        zero = 0;
+        life = 100.0f;
+        txt_Format(buf, 0x40fc, 0x40f5, a->id);
+        cm_MessageBox(buf, 0x10);
+        cm_BeginFieldBlock((char *)a, a->netId);
+        cm_AddFieldDelta(4, 1, 0x1c, &life);
+        cm_AddFieldDelta(4, 1, 0x24, &zero);
+        cm_SendFieldDeltas();
+        cm_SendSetField(a->netId, 0x1cc, 4, 2, 0);
+    } else if ((ai_GameFlags & 8) != 0) {
+        a->health = 0;
+        ai_GameOver = 1;
+        if (kin != 0)
+            txt_Format(buf, 0x1ab4);
+        else
+            txt_Format(buf, 0x1ab3, a->id);
+        cm_MessageBox(buf, 0);
+        sv_PopTo((unsigned)&main_GameLoop);
+    } else {
+        gm_ForfeitEstate((struct ORDCHAR *)a, estate, 1);
+        cm_MessageBox(estate, 0x10);
     }
     cm_FadeToBlack();
     cm_StopScript(sc);
@@ -14621,10 +14641,9 @@ int ai_Unk4e1250(char *m)
     cm_DestroySceneSky();
     cm_LeaveEventScene();
     snd_ClearQueue();
-    sb_UnloadSampleBank(snd);
+    sb_UnloadSampleBank(bank);
     cm_EndSpecialTrack();
     cm_FightStart = 0;
-    return 0;
 }
 /* 0x4e1700, a bankruptcy (the message m: +0x34 the person): the scene "Pleite.ed3" with "cutscenes\\pleite\\enter_Pleite.esc", a sky by the age
    0x770ae4, the voices "_PLEITE_HS" 0 .. 5 (pauses 0x9c4 / 0x1f4 / 0x251c / 0x1194), the text 0x1ab1 (0x3fda with the flag 0x6f23f8 & 4)
@@ -16412,7 +16431,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
-    ai_Unk4e5730(8, (int)ai_Unk4e1250, 0, 0, (int)cm_DeathSceneCheck, 0);
+    ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)ai_Unk4e1700, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)ai_Unk4e1a80, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
@@ -16595,7 +16614,7 @@ extern int cm_PickCellZ;
 /* ai_Unk143e948: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e954: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143e960: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1440c88: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_DeathTreeCaption: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
 float ai_FloatOne = 1.0f;  /* 0x5eb780 */

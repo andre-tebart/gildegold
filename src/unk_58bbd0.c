@@ -5624,7 +5624,7 @@ void ai_Unk597380(void)
     sv_CameraFollow();
 }
 
-int gm_Unk506480(); float gm_AddHealth(unsigned short id, int d); int ai_Unk578170(); int ai_Unk5b4590();
+int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_Unk578170(); int ai_Unk5b4590();
 
 /* 0x5973f0, the wine-cellar window "locations\wohnsitz\weinkeller" (272 B): 0x4741f0 / 0x475600, the texts
    0x515960 (0x42cf / 0x42d1), the pump 0x5309a0 (this, 0x677c7); the click 0 (0xf8a668) resolves the
@@ -5649,7 +5649,7 @@ void ai_Unk5973f0(void)
         if (U_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)((unsigned)&kb_Down + 0x1) == 0) {
             if (U_I((unsigned)&d2_ClickedId) == 0) {
                 sel = U_I((unsigned)&d2_ClickedId);
-                r = gm_Unk506480((void *)((unsigned)&ai_Chars + player * 0x21c), &sel);
+                r = gm_HasAdultRelative((void *)((unsigned)&ai_Chars + player * 0x21c), &sel);
                 if (r == 0)
                     sv_MessageBox(U_I((unsigned)&d2_Strings + (0x42d2 + (sel != 0)) * 4), 0);
                 else
