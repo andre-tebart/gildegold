@@ -8396,6 +8396,7 @@ typedef struct CMFIGHTREC {
     int attackerBldId;              /* 0x10c, the attacker's building: its role picks the attacker voices */
 } CMFIGHTREC;
 #define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
+#define cm_FightAttackerC (*(AICHAR **)&cm_FightAttacker)  /* 0x6f0cec, cm_FightAttacker (cm.h: int) as the character it points to */
 
 /* 0x4d0fa0, sets up the fight scene for the fight record rec: the scenario "Kampfszenario_<place>.ed3" by the flags or
    the type of the defender's building (cm_LoadEventScene; a robbers' camp gets a 15 cells wide border), the fight
@@ -8758,7 +8759,7 @@ void cm_PlaceFighters(int *ids, char *side)
 }
 /* 0x4d1e00, the intro of the fight: a random fight track (when the music is on) and the cutscene "Kampf_Intro_Fluege" */
 
-void ai_Unk4d1e00()
+void cm_FightIntro()
 {
     int r;
     char *s;
@@ -8789,7 +8790,7 @@ void ai_Unk4d1e00()
 }
 /* 0x4d1eb0, the outro: stops the stream ai_Unk6f0d4c and runs the cutscene "Kampf_outro_flug" */
 
-void ai_Unk4d1eb0()
+void cm_FightOutro()
 {
     char *s;
 
@@ -9800,7 +9801,7 @@ AICHAR *cm_CheckFightWinner(CMFIGHTREC *rec)
 /* 0x4d3d10, loot of a won fight: a random share (0.07 + 0.001 * 0 .. 49 of the winner's strength 0x509e60, at most 0x9c400)
    goes to the money message 0x4c47e0, then each object of the loser's stock (0x4ffe90 list 1) is moved to the winner
    (0x4c4880, 80 .. 99 % of its count) and its price added; the value goes to the loser's record (0x506430) */
-int ai_Unk4d3d10(char *a, char *b, char *d, char *t)
+int cm_LootStock(char *a, char *b, char *d, char *t)
 {
     char *oa, *ob, *q;
     int cnt, v;
@@ -9832,7 +9833,7 @@ int ai_Unk4d3d10(char *a, char *b, char *d, char *t)
    price is added; with no winner record half of the value goes to the money message 0x4c47e0; the value goes to
    the record of the attacker side (0x506430) */
 
-int ai_Unk4d3ea0(char *a, char *b, char *d, int unused, float f)
+int cm_LootCarts(char *a, char *b, char *d, int unused, float f)
 {
     char *ob, *q, *p;
     int cnt, i;
@@ -9990,7 +9991,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
    ebx and a in ebp; the three PrintText branches share one 'mov edi,eax' join (0x4d4795) where ours keeps
    a copy per branch; b1..b3 in ebx/ebp/slot vs our slots. */
 
-int ai_Unk4d4540(char *a)
+int cm_FightStartDialog(char *a)
 {
     int res = 1;
     int st = 0;
@@ -10003,7 +10004,7 @@ int ai_Unk4d4540(char *a)
 
     win = d2_OpenForm(0, 0, "cutscenes\\combat_start");
     ((void (*)(int, int))d2_PlaceMainWindow)(win, 3);
-    ai_Unk6f0cf8 = 0;
+    cm_FightSettled = 0;
     ca = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x14));
     cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
     role = cm_FightRole((unsigned char *)cb);
@@ -10051,23 +10052,23 @@ int ai_Unk4d4540(char *a)
         d2_GetWinObj(win, 2, edi);
         edi++;
         d2_GetWinObj(win, 2, edi);
-        while (sv_RunFrame(ai_Unk4d4540, 0x7d6c6)) {
+        while (sv_RunFrame(cm_FightStartDialog, 0x7d6c6)) {
             if (dm_L.rup != 0) {
                 sv_PopRequest = 1;
-                ai_Unk6f0cf8 = 1;
+                cm_FightSettled = 1;
                 res = 0;
             }
             if (d2_ClickedId == 0) {
                 res = 1;
                 sv_PopRequest = 1;
             } else if (d2_ClickedId == 1) {
-                ai_Unk6f0cf8 = 1;
+                cm_FightSettled = 1;
                 res = 0;
                 sv_PopRequest = 1;
             }
         }
     }
-    if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) == 6 && ai_Unk6f0cf8 == 0) {
+    if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) == 6 && cm_FightSettled == 0) {
         int rc[0x2e] = {0};
 
         total = 0;
@@ -10123,7 +10124,7 @@ int ai_Unk4d4540(char *a)
         b4 = d2_GetWinObj(win, 2, esi + 3);
         if (edi == 0)
             d2_EnableObject(b4, 0);
-        while (sv_RunFrame(ai_Unk4d4540, 0x7d6c6)) {
+        while (sv_RunFrame(cm_FightStartDialog, 0x7d6c6)) {
             if (dm_L.rup != 0) {
                 sv_PopRequest = 1;
                 res = 0;
@@ -10145,21 +10146,21 @@ int ai_Unk4d4540(char *a)
                 if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
                     cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                     txt_Format(tb, 0x1142);
-                    ai_Unk4e5470(tb, 0);
+                    cm_MessageBox(tb, 0);
                     fv = (float)(st * 0.01);
                     sv_PopRequest = 1;
                     b4 = 0;
-                    ai_Unk6f0cf8 = 1;
-                    ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
+                    cm_FightSettled = 1;
+                    cm_FightLootValue = cm_LootCarts(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
                 } else {
                     txt_Format(tc, 0x1143);
-                    ai_Unk4e5470(tc, 0);
+                    cm_MessageBox(tc, 0);
                     sv_PopRequest = 1;
                     res = 1;
                 }
             }
         }
-    } else if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) != 6 && ai_Unk6f0cf8 == 0) {
+    } else if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) != 6 && cm_FightSettled == 0) {
         n = 0;
         for (i = 0; i < 16; i++) {
             if (*(int *)(a + 0x80 + i * 4) != -1)
@@ -10178,10 +10179,10 @@ int ai_Unk4d4540(char *a)
                 cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                 fv = (float)(st * 0.01);
                 b4 = 0;
-                ai_Unk6f0cf8 = 1;
-                ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
+                cm_FightSettled = 1;
+                cm_FightLootValue = cm_LootCarts(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
             } else {
-                ai_Unk6f0cfc = -1;
+                cm_FightLootValue = -1;
                 res = 1;
             }
         }
@@ -10198,7 +10199,7 @@ int ai_Unk4d4540(char *a)
 #define G20_DEF ((char *)cm_FightAttacker)
 /* the pump of the dialog: the click on a button (f8a668 == 0) or the abort flag closes it */
 #define G20_PUMP()                                                                                      \
-    while (sv_RunFrame(ai_Unk4d4d70, 0x7d6c6)) {                                                       \
+    while (sv_RunFrame(cm_FightEndDialog, 0x7d6c6)) {                                                       \
         if (dm_L.rup != 0 || d2_ClickedId == 0)                                                    \
             sv_PopRequest = 1;                                                                           \
     }
@@ -10208,7 +10209,7 @@ int ai_Unk4d4540(char *a)
     ba[0] = ch_EmptyName;                                                                               \
     memset(ba + 1, 0, 0x3ff);                                                                           \
     txt_Format(tc, 0x11a5, G20_US(G20_DEF), ca);                                                      \
-    ai_Unk4e5470(tc, 0);                                                                                \
+    cm_MessageBox(tc, 0);                                                                                \
     ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x2a);                                              \
     if (ob == 0)                                                                                        \
         ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x116);                                         \
@@ -10245,14 +10246,14 @@ int ai_Unk4d4540(char *a)
     tc[0] = ch_EmptyName;                                                                               \
     memset(tc + 1, 0, 0x3ff);                                                                           \
     txt_Format(tc, 0x11a6, G20_US(G20_DEF), ca);                                                      \
-    ai_Unk4e5470(tc, 0);                                                                                \
+    cm_MessageBox(tc, 0);                                                                                \
     if (G20_ME == cm_FightOwner)                                                                         \
         gm_ChangeBuildingState(ca, 0x14 - cm_Random(0x14));
 /* nothing taken: the text 0x11a7 and the fight with the tavern keepers' men: every character of the table of 0x770b80
    that is a guard (kinds 10 .. 12) gets 0x4c4b00 */
 #define G20_GUARDS(bb)                                                                                    \
     txt_Format(bb, 0x11a7, G20_US(G20_DEF), G20_US(G20_DEF));                                         \
-    ai_Unk4e5470(bb, 0);                                                                                \
+    cm_MessageBox(bb, 0);                                                                                \
     for (p = (char *)ai_CharInts - 4; p < (char *)(unsigned)((unsigned)ai_CharInts + 0x653fc); p += 0x21c) {                                  \
         if (*(short *)p != -1 && p[8] != 0 &&                                                           \
             ((k = gm_TitleGroup((unsigned char)p[0x164])) == 10 || k == 11 || k == 12))                  \
@@ -10281,7 +10282,7 @@ int ai_Unk4d4540(char *a)
    whose registers are swapped: both sides push (cm_FightAttacker+4, cm_FightDefender+4, ai_OwnPlayer, v) -
    ours loads Defender into eax and Attacker into edx, the original Defender into edx and Attacker into
    ecx) */
-void ai_Unk4d4d70(char *a)
+void cm_FightEndDialog(char *a)
 {
     char ba[0x800];
     char bb[0x400];
@@ -10442,7 +10443,7 @@ void ai_Unk4d4d70(char *a)
         strcat(ba, bb);
         txt_Format(bb, 0x11a3);
         strcat(ba, bb);
-        n = ai_Unk4e5470(ba, 0x11);
+        n = cm_MessageBox(ba, 0x11);
         k = ca[0];
         if (k == 0x1e || k == 0x20 || k == 0x1f)
             n++;
@@ -10452,7 +10453,7 @@ void ai_Unk4d4d70(char *a)
                 ai_CountMissionEvent(G20_DEF, 0x1c);
             cm_SendOwnership(*(int *)(ca + 1), *(int *)(G20_DEF + 4), *(int *)(G20_DEF + 4));
             txt_Format(ba, 0x11a4, G20_US(G20_DEF), ca);
-            ai_Unk4e5470(ba, 0);
+            cm_MessageBox(ba, 0);
         } else if (n == 2) {
             G20_TAKE();
         take_done:
@@ -10514,7 +10515,7 @@ void ai_Unk4d4d70(char *a)
             k = (unsigned short)util_RandomU(3) + 1;
         if (k == 0) {
             txt_Format(bb, 0x11a4, G20_US(G20_DEF), ca);
-            ai_Unk4e5470(bb, 0);
+            cm_MessageBox(bb, 0);
         } else if (k == 2) {
             G20_TAKE();
             goto take_done;
@@ -10593,39 +10594,42 @@ int ai_Unk4d60b0(char *a)
 }
 /* 0x4d63e0, a fight starts (a: the fight record): characters that are gone are dropped from both id lists, a cart
    without goods or no defender ends it (bad = 2); with the player present (0x6f0d8c == 0) the fight scene is built and
-   fought (0x4d0fa0 .. 0x4d1e00), 0x4d4540 asks for the ransom and 0x4d4d70 shows the end, else (remote) it is decided
-   at once by strength (sum of 0x4cdcf0 + random 30 per side, losers lose up to 20 * random 10 health) and
-   the loot goes through 0x4d3d10 / 0x4d3ea0. Rough draft. */
+   fought (cm_SetupFightScene .. cm_FightIntro, the party run by cm_RunSceneParty), cm_FightStartDialog settles the
+   loot and cm_FightEndDialog shows the end, else (remote) it is decided at once by strength (sum of cm_FightStrength +
+   random 30 per side, every fighter loses up to 20 * random 10 health) and the loot goes through cm_LootStock /
+   cm_LootCarts. */
 
-void ai_Unk4d63e0(char *a)
+void cm_RunFight(CMFIGHTREC *a)
 {
     char buf[0x800];
     int rc[0x2e];
     int bad = 0, nb = 0, seed, i, id, sa, sb, w, n, r;
     char *c, *p, *win, *e1, *e2;
+    AICHAR *ch;
+    AIBLD *bld;
     int *e;
 
-    seed = ai_Unk4e52c0();
+    seed = cut_GetRandSeed();
     for (i = 0; i < 16; i++) {
-        id = *(int *)(a + 0x80 + i * 4);
+        id = a->defenders[i];
         if (id != -1 && gm_FindChar(id) == 0) {
             bad = 1;
-            *(int *)(a + 0x80 + i * 4) = -1;
+            a->defenders[i] = -1;
         }
     }
     for (i = 0; i < 16; i++) {
-        id = *(int *)(a + 0xc0 + i * 4);
+        id = a->attackers[i];
         if (id != -1) {
             if (gm_FindChar(id) == 0) {
                 bad = 1;
-                *(int *)(a + 0xc0 + i * 4) = -1;
+                a->attackers[i] = -1;
             } else
                 nb++;
         }
     }
-    if (a[0x7c] & 1) {
+    if (a->flags & 1) {
         for (i = 0; i < 3; i++) {
-            id = *(int *)(a + 0x100 + i * 4);
+            id = a->carts[i];
             if (id != -1) {
                 p = (char *)gm_FindObjectInst(id);
                 if (p != 0) {
@@ -10637,34 +10641,31 @@ void ai_Unk4d63e0(char *a)
             }
         }
     }
-    if (gm_BuildQuery(1, 1, *(int *)(a + 0x10c)) == 0 || bad == 2 || nb == 0)
+    if (gm_BuildQuery(1, 1, a->attackerBldId) == 0 || bad == 2 || nb == 0)
         return;
     if (cm_SkipEvents == 0) {
-        ai_Unk60d364 = 200;
-        cm_FightOwner = *(int *)(a + 0xc);
-        cm_SetupFightScene((CMFIGHTREC *)a);
+        cm_SceneDuration = 200;
+        cm_FightOwner = a->owner;
+        cm_SetupFightScene(a);
         cm_CollectSceneChars();
-        cm_PlaceFighters((int *)(a + 0xc0), "OFF");
-        cm_PlaceFighters((int *)(a + 0x80), "DEF");
-        ai_Unk4d1e00(a);
-        if (ai_Unk6f244c != 0)
-            d3_SetLightSet(2, 0, 0x3f800000, 1);
+        cm_PlaceFighters(a->attackers, "OFF");
+        cm_PlaceFighters(a->defenders, "DEF");
+        cm_FightIntro((char *)a);
+        if (cm_FightFixedLight != 0)
+            d3_SetLightSet(2, 0, 1.0f, 1);
         else
             sv_UpdateSkyPhase(ai_Time);
         cm_FightWinner = 0;
-        ai_Unk6f0cf8 = 0;
-        ai_Unk6f0cfc = 0;
-        ai_Unk4d4540(a);
-        ai_Unk4e52a0(seed);
+        cm_FightSettled = 0;
+        cm_FightLootValue = 0;
+        cm_FightStartDialog((char *)a);
+        cut_RandSeed(seed);
         cm_CollectSceneChars();
         cm_CollectSceneChars();
-        ai_Unk4e3830(a, 0);
-        if (cm_FightWinner != 0 || ai_Unk6f0cf8 == 0) {
-            if (cm_FightWinner == 0)
-                ai_Unk4e3830(a, 0);
-        } else
-            ai_Unk4e3830(a, 0);
-        if (ai_Unk6f0cf8 == 0) {
+        cm_RunSceneParty((char *)a, 0);
+        if (cm_FightWinner == 0 && cm_FightSettled == 0)
+            cm_RunSceneParty((char *)a, 0);
+        if (cm_FightSettled == 0) {
             for (i = 0; i < 16; i++) {
                 if (cm_DamagePops[i].h != -1)
                     d2_RemoveObj(cm_DamagePops[i].h);
@@ -10672,46 +10673,46 @@ void ai_Unk4d63e0(char *a)
                 cm_DamagePops[i].v = 0;
                 cm_DamagePops[i].c = 0;
             }
-            ai_Unk4d4d70(a);
-            ai_Unk4d1eb0(a);
-            cm_EndFightScene((CMFIGHTREC *)a);
+            cm_FightEndDialog((char *)a);
+            cm_FightOutro((char *)a);
+            cm_EndFightScene(a);
             return;
         }
-        if (ai_Unk6f0cfc != 0 && G20_DEF[2] == 6) {
+        if (cm_FightLootValue != 0 && cm_FightAttackerC->kind == 6) {
             e1 = 0;
-            c = gm_BuildQuery(1, 1, *(int *)(cm_FightRecord + 0x10c));
-            if (c != 0)
-                e1 = gm_Query(*(int *)(c + 0x5d), 2, 6, 0, 0x116);
-            if (ai_Unk6f0cfc > 0) {
+            bld = (AIBLD *)gm_BuildQuery(1, 1, cm_FightRecordT->attackerBldId);
+            if (bld != 0)
+                e1 = gm_Query(bld->objList, 2, 6, 0, 0x116);
+            if (cm_FightLootValue > 0) {
                 if (e1 == 0)
-                    txt_Format(buf, 0x1144, ai_Unk6f0cfc);
+                    txt_Format(buf, 0x1144, cm_FightLootValue);
                 else
-                    txt_Format(buf, 0x1145, ai_Unk6f0cfc);
+                    txt_Format(buf, 0x1145, cm_FightLootValue);
             } else
                 txt_Format(buf, 0x1146);
-            ai_Unk4e5470(buf, 0x10);
+            cm_MessageBox(buf, 0x10);
         }
-        cm_EndFightScene((CMFIGHTREC *)a);
+        cm_EndFightScene(a);
         return;
     }
     sa = 0;
     sb = 0;
-    cm_FightAttacker = gm_FindChar(*(int *)(a + 0x34));
-    cm_FightDefender = gm_FindChar(*(int *)(a + 0x38));
+    cm_FightAttacker = gm_FindChar(a->attackerId);
+    cm_FightDefender = gm_FindChar(a->defenderId);
     for (i = 0; i < 16; i++) {
-        id = *(int *)(a + 0x80 + i * 4);
-        if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
-            sa = (int)(cm_FightStrength(c) + sa);
+        id = a->defenders[i];
+        if (id != -1 && (ch = (AICHAR *)gm_FindChar(id)) != 0 && ch->health != 0 && ch->health != 4) {
+            sa = (int)(cm_FightStrength((char *)ch) + sa);
             r = (unsigned short)util_RandomU(10);
-            gm_AddHealth(G20_US(c), -r * 20);
+            gm_AddHealth(ch->id, -r * 20);
         }
     }
     for (i = 0; i < 16; i++) {
-        id = *(int *)(a + 0xc0 + i * 4);
-        if (id != -1 && (c = gm_FindChar(id)) != 0 && c[8] != 0 && c[8] != 4) {
-            sb = (int)(cm_FightStrength(c) + sb);
+        id = a->attackers[i];
+        if (id != -1 && (ch = (AICHAR *)gm_FindChar(id)) != 0 && ch->health != 0 && ch->health != 4) {
+            sb = (int)(cm_FightStrength((char *)ch) + sb);
             r = (unsigned short)util_RandomU(10);
-            gm_AddHealth(G20_US(c), -r * 20);
+            gm_AddHealth(ch->id, -r * 20);
         }
     }
     if ((unsigned short)util_RandomU(30) + sb > (unsigned short)util_RandomU(30) + sa)
@@ -10719,32 +10720,32 @@ void ai_Unk4d63e0(char *a)
     else
         win = G20_ATT;
     for (i = 0; i < 16; i++) {
-        id = *(int *)(a + 0x80 + i * 4);
-        if (id != -1 && (c = gm_FindChar(id)) != 0)
-            cm_FightWeaponLoss(c);
+        id = a->defenders[i];
+        if (id != -1 && (ch = (AICHAR *)gm_FindChar(id)) != 0)
+            cm_FightWeaponLoss((char *)ch);
     }
     for (i = 0; i < 16; i++) {
-        if (*(int *)(a + 0xc0 + i * 4) != -1 && (c = gm_FindChar(*(int *)(a + 0x80 + i * 4))) != 0)
-            cm_FightWeaponLoss(c);
+        if (a->attackers[i] != -1 && (ch = (AICHAR *)gm_FindChar(a->defenders[i])) != 0)
+            cm_FightWeaponLoss((char *)ch);
     }
-    if (a[0x7c] & 2) {
+    if (a->flags & 2) {
         if (win == G20_DEF) {
-            e1 = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-            e2 = gm_BuildQuery(1, 1, *(int *)(a + 0x14));
-            ai_Unk4d3d10(e2, e1, G20_DEF, G20_ATT);
+            e1 = gm_BuildQuery(1, 1, a->attackerBldId);
+            e2 = gm_BuildQuery(1, 1, a->placeId);
+            cm_LootStock(e2, e1, G20_DEF, G20_ATT);
         }
-    } else if (!(a[0x7c] & 4) && (a[0x7c] & 1) && win == G20_DEF) {
-        c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
-        ai_Unk4d3ea0(a, c, G20_DEF, cm_FightDefender, 100.0f);
+    } else if (!(a->flags & 4) && (a->flags & 1) && win == G20_DEF) {
+        c = gm_BuildQuery(1, 1, a->attackerBldId);
+        cm_LootCarts((char *)a, c, G20_DEF, cm_FightDefender, 100.0f);
     }
 }
 /* 0x4d6930, the result of the fight in the record r (+0x354 / +0x358): 0x6f0cf8 set -> 0 and the ransom 0x6f0cfc, else 1 */
 
 void ai_Unk4d6930(char *r)
 {
-    if (ai_Unk6f0cf8 != 0) {
+    if (cm_FightSettled != 0) {
         *(int *)(r + 0x354) = 0;
-        *(int *)(r + 0x358) = ai_Unk6f0cfc;
+        *(int *)(r + 0x358) = cm_FightLootValue;
     } else
         *(int *)(r + 0x354) = 1;
 }
@@ -10757,7 +10758,7 @@ void ai_Unk4d6970(char *r)
     int sl[11];
     int *q;
 
-    d2_SetObjValue(ai_Unk60cb64, 0, ai_Unk60d364, ai_Unk6f0d84 - ai_Unk6f0d80 + 1);
+    d2_SetObjValue(ai_Unk60cb64, 0, cm_SceneDuration, ai_Unk6f0d84 - ai_Unk6f0d80 + 1);
     sv_BorderCameraView();
     cm_UpdatePortraits();
     cm_UpdatePointer();
@@ -10793,7 +10794,7 @@ void ai_Unk4d6a50()
     ai_Unk60cb68 = t;
     G19_R(t, 0x5c, int) = 1;
     d2_CenterObj(ai_Unk60cb68);
-    t = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 0x190) / 2, 0x37, 0x190, 0, ai_Unk60d364, 0x83, 0x42, d2_LastWindow);
+    t = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 0x190) / 2, 0x37, 0x190, 0, cm_SceneDuration, 0x83, 0x42, d2_LastWindow);
     ai_Unk60cb64 = t;
     G19_R(t, 0x74, short) = 0x54;
     G19_R(*(int *)(ai_Unkf8f39c - 0x10 + d2_LastWindow * 0x3c4), 0x4c, int) = 1;
@@ -11490,7 +11491,7 @@ done:
         }
     }
 }
-/* 0x4d88c0, the fight loop: starts one of two fight tracks, then runs until the fight ends (cm_FightWinner / ai_Unk6f0cf8): the pause
+/* 0x4d88c0, the fight loop: starts one of two fight tracks, then runs until the fight ends (cm_FightWinner / cm_FightSettled): the pause
    toggle (key 0x39 = space) with the character animations and the "pause" text, the frame of the UI, and every 0x15e timer calls
    the characters' fight-AI (0x4d2f80) and the fighters' commands (0x4d76a0). Ends with the end-of-fight code 0x4d6b70. */
 
@@ -11510,7 +11511,7 @@ void ai_Unk4d88c0(char *a)
     else
         ai_Unk6f0d4c = msx_PlayAmbient("Athmos\\Kampfathmo_2.mp3", 0xb);
     ai_Unk6f0ce4 = 0;
-    while (sv_RunFrame(ai_Unk4d88c0, 0xfd6c6) != 0 && ai_Unk6f0cf8 == 0) {
+    while (sv_RunFrame(ai_Unk4d88c0, 0xfd6c6) != 0 && cm_FightSettled == 0) {
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
             ai_Unk6f0ce4 = ai_Unk6f0ce4 == 0;
             for (i = 0; i < 32; i++) {
@@ -11524,7 +11525,7 @@ void ai_Unk4d88c0(char *a)
             sv_SetStatusText(ai_Unk143e674);
         else
             ai_Unk4d6970(a);
-        if (cm_FightWinner == 0 && ai_Unk6f0cf8 == 0 && ai_Unk6f0ce4 == 0) {
+        if (cm_FightWinner == 0 && cm_FightSettled == 0 && ai_Unk6f0ce4 == 0) {
             if (tb_Calls > t + 0x1a4) {
                 for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
                     if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1) {
@@ -11543,7 +11544,7 @@ void ai_Unk4d88c0(char *a)
                 }
             }
         }
-        if (cm_FightWinner != 0 || ai_Unk6f0cf8 != 0)
+        if (cm_FightWinner != 0 || cm_FightSettled != 0)
             sv_PopRequest = 1;
     }
     ai_Unk4d6b70();
@@ -12095,7 +12096,7 @@ void ai_Unk4db700(char *m)
     /* the accused answers: guilty / not guilty */
     ai_Unk4e2c30("cutscenes\\prozess\\prozess-angeklagter.esc", &ai_Unk60dd24);
     ai_Unk4e2bd0(ai_Unk60d368, 0);
-    ai_Unk4e3830(m, 0);
+    cm_RunSceneParty(m, 0);
     for (i = 0; i < n && *(int *)(ai_Unk92caf0 + i * 0x18) != ids[0]; i++)
         ;
     guilty = *(int *)(ai_Unk92caf0 + i * 0x18 + 0x84);
@@ -12126,7 +12127,7 @@ void ai_Unk4db700(char *m)
         ai_Unk4e3420(4);
         ai_Unk4e2c30("cutscenes\\prozess\\prozess-folter-1.esc", &ch_EmptyName);
         G26_BOX(0);
-        ai_Unk4e3830(m, 0);
+        cm_RunSceneParty(m, 0);
         ai_Unk4e2c70(0);
         for (i = 0; i < n && *(int *)(ai_Unk92caf0 + i * 0x18) != ids[0]; i++)
             ;
@@ -12200,7 +12201,7 @@ void ai_Unk4db700(char *m)
         ai_Unk4e2c30("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
         ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
         ai_Unk4e2bd0(ai_Unk60d368, 0);
-        ai_Unk4e3830(m, 0);
+        cm_RunSceneParty(m, 0);
         if (mode >= 4 && ch[0][2] == 6 && ai_Unk4e3290(0) != 0)
             ai_CountMissionEvent(0x13, ch[0]);
         G26_BOX(1);
@@ -12847,13 +12848,13 @@ void ai_Unk4ded10(char *m)
     ai_Unk4e3420(4);
     io_PrintText("$C");
     snd_PlayVoice(-7, "_DUELL_INTRO_BEGRUESSUNG_RUECKEN", 0, -1);
-    ai_Unk4e3830(scene, 0);
+    cm_RunSceneParty(scene, 0);
     rec = (char *)ai_Unk4e50e0(*(int *)(ca + 0x10 - 0x10 + 0));
     /* the seconds: with the first round of kind 1 each side gets a shot object (callback 0x4de640, "kampf/schiessen_pistole") */
     hita = 0;
     hitb = 0;
     for (i = 0; i < 3 && ai_Unk6f0d94 == 0; i++) {
-        ai_Unk4e3830(scene, scene);
+        cm_RunSceneParty(scene, scene);
         rec = (char *)ai_Unk4e50e0(*(int *)(m + 0x34));
         ai_Unk6f0da8[2] = 0;
         ai_Unk6f0da8[3] = 0;
@@ -12976,7 +12977,7 @@ void ai_Unk4dfcb0(char *m)
     m[0x94] = 0;
     m[0x14] = ch_EmptyName;
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, ai_Unk60d364 * 0x4b, 1);
+    ai_Unk4e53e0(dlg, cm_SceneDuration * 0x4b, 1);
     while (sv_RunFrame(ai_Unk4dfcb0, ai_Unk60d360) != 0) {
         if (ai_Unk4e53e0(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
@@ -13016,7 +13017,7 @@ void ai_Unk4dfdd0(char *m)
     m[0x94] = 4;
     m[0x14] = ch_EmptyName;
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, ai_Unk60d364 * 0x4b, 1);
+    ai_Unk4e53e0(dlg, cm_SceneDuration * 0x4b, 1);
     while (sv_RunFrame(ai_Unk4dfdd0, ai_Unk60d360) != 0) {
         cm_UpdateDamagePops();
         if (d2_ClickedId != -1) {
@@ -13069,8 +13070,8 @@ void ai_Unk4dfff0(char *m)
 int ai_Unk4e0010(int scene)
 {
     cm_LoadEventScene("cutscene_toby.ed3");
-    ai_Unk4e3830(scene, 0);
-    ai_Unk4e3830(scene, 0);
+    cm_RunSceneParty(scene, 0);
+    cm_RunSceneParty(scene, 0);
     ai_Unk4e3420(5);
     return cm_LeaveEventScene();
 }
@@ -13502,7 +13503,7 @@ int ai_Unk4e1250(char *m)
     if (ok != 0) {
         if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
             txt_Format(buf, 0x40fb, 0x40f5, *(unsigned short *)a);
-            if (ai_Unk4e5470(buf, 0x10) == 0)
+            if (cm_MessageBox(buf, 0x10) == 0)
                 ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
             else {
                 v[2] = 100.0f;
@@ -13517,7 +13518,7 @@ int ai_Unk4e1250(char *m)
     } else {
         if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
             txt_Format(buf, 0x40fc, 0x40f5, *(unsigned short *)a);
-            ai_Unk4e5470(buf, 0x10);
+            cm_MessageBox(buf, 0x10);
             cm_BeginFieldBlock(a, *(int *)(a + 4));
             cm_AddFieldDelta(4, 1, 0x1c, &v[1]);
             cm_AddFieldDelta(4, 1, 0x24, &v[2]);
@@ -13530,11 +13531,11 @@ int ai_Unk4e1250(char *m)
                 txt_Format(buf, 0x1ab4);
             else
                 txt_Format(buf, 0x1ab3, *(unsigned short *)a);
-            ai_Unk4e5470(buf, 0);
+            cm_MessageBox(buf, 0);
             sv_PopTo((unsigned)&main_GameLoop);
         } else {
             gm_ForfeitEstate(a, big, 1);
-            ai_Unk4e5470(big, 0x10);
+            cm_MessageBox(big, 0x10);
         }
     }
     cm_FadeToBlack();
@@ -13600,7 +13601,7 @@ int ai_Unk4e1700(char *m)
         txt_Format(buf, 0x3fda, *(unsigned short *)a);
     else
         txt_Format(buf, 0x1ab1, *(unsigned short *)a);
-    ai_Unk4e5470(buf, 0);
+    cm_MessageBox(buf, 0);
     cm_FadeToBlack();
     ai_Unk4e2d90(sc);
     ai_Unk4e2c70(sc);
@@ -13743,7 +13744,7 @@ void ai_Unk4e1a80(char *m)
     for (round = 0; round <= 5; round++) {
         if (ai_Unk4e2c70(0) != 0)
             break;
-        ai_Unk4e3830(m, 0);
+        cm_RunSceneParty(m, 0);
         if (n > 6 && cm_Random(3) != 0) {
             cm_Random(0x200);
             cm_Random(6, 0);
@@ -14518,7 +14519,7 @@ int ai_Unk4e3800(char *m, int n)
    net run) the owner's machine asks the members (0x4c4480 / 0x4c4f50 send the answers, 0x4c3ae0 waits for them with the frame wait 0x52fe00,
    0x4e37a0 shows the texts, 0x4e3750 tells when nobody is left). The counter 0x6f0d7c grows by one per run. ROUGH: the net run is only sketched */
 
-void ai_Unk4e3830(char *m, int ctx)
+void cm_RunSceneParty(char *m, int ctx)
 {
     char msg[0x7c];
     int saved, i, j, n, k, who, h;
@@ -14526,7 +14527,7 @@ void ai_Unk4e3830(char *m, int ctx)
     int *tab;
     int (*cb)();
 
-    saved = ai_Unk4e52c0();
+    saved = cut_GetRandSeed();
     ai_Unk4e36a0(m);
     if (ai_GameFlags & 4) {
         if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0] && cm_SkipEvents == 0) {
@@ -14554,7 +14555,7 @@ void ai_Unk4e3830(char *m, int ctx)
                 continue;
             }
             if (c[2] == 6) {
-                ai_Unk6f0d84 = ai_Unk60d364 + ai_Unk6f0d80;
+                ai_Unk6f0d84 = cm_SceneDuration + ai_Unk6f0d80;
                 ai_Unk6f0d88 = 0;
                 ((int (*)())ai_Unk92c504[*(unsigned char *)(m + 8) * 5])(slot, ctx);
             } else {
@@ -14597,7 +14598,7 @@ void ai_Unk4e3830(char *m, int ctx)
                     if (*(int *)(cm_CutInfos[j]) == ai_CharInts[ai_PlayerId][0])
                         break;
                 if (j < n) {
-                    ai_Unk6f0d84 = ai_Unk60d364 + ai_Unk6f0d80;
+                    ai_Unk6f0d84 = cm_SceneDuration + ai_Unk6f0d80;
                     ai_Unk6f0d88 = 0;
                     ai_Unk4c4480(0x35c, cm_CutInfos[j]);
                     ai_Unk4c4f50(cm_CutChar != 0, 0);
@@ -14622,7 +14623,7 @@ void ai_Unk4e3830(char *m, int ctx)
         }
     }
     ai_Unk6f0d7c = ai_Unk6f0d7c + 1;
-    ai_Unk4e52a0(saved);
+    cut_RandSeed(saved);
 }
 /* 0x4e3fe0, switches the scene mode on: 0x42ea10 (0x5315c0, 1), then 0x404c20 (o, 1) for every object whose +0x8c bit 4 is not set */
 
@@ -14750,7 +14751,7 @@ void ai_Unk4e4060(char *m)
     ((void (*)(int, int))d2_PlaceMainWindow)(ai_Unk60d368, 3);
     if (cm_SkipEvents != 0)
         d2_SetViewEnabled(ai_Unk60d368, 0);
-    ai_Unk4e52a0(*(int *)(m + 0x78));
+    cut_RandSeed(*(int *)(m + 0x78));
     sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", (unsigned char)m[8]);
     cm_CurrentFight = (int *)m;
     ((void (*)())ai_Unk92c500[(unsigned char)m[8] * 5])(m);
@@ -14761,7 +14762,7 @@ void ai_Unk4e4060(char *m)
         ai_Unk631064 = sv_time;
         if (ai_GameFlags & 8)
             ai_Unk4e4020();
-        ai_Unk60d364 = 10;
+        cm_SceneDuration = 10;
         tb_CloseFunction(ai_Unk4e3210);
         for (i = 0; i < shown; i++)
             *(int *)(d2_ObjsC + ai_Unk92bee0[i] * 0x2ec + 0x38) = 0;
@@ -15162,7 +15163,7 @@ int ai_Unk4e5210(int id, int who)
 }
 /* 0x4e52a0, sets the seed (logged "cut_randseed: %i") */
 
-void ai_Unk4e52a0(unsigned int seed)
+void cut_RandSeed(unsigned int seed)
 {
     char buf[0x40];
 
@@ -15171,7 +15172,7 @@ void ai_Unk4e52a0(unsigned int seed)
 }
 /* 0x4e52c0, the seed (logged "cut_getrandseed: %i") */
 
-unsigned int ai_Unk4e52c0(void)
+unsigned int cut_GetRandSeed(void)
 {
     char buf[0x40];
 
@@ -15224,7 +15225,7 @@ int ai_Unk4e53e0(int dlg, int a, int c)
    objects are put into a radio group (all but the type 0x40), the loop runs the frame wait 0x5309a0 until the stop flag; the answer: the clicked
    button index + 1 (0xf8aad0 == id, the clicked object's result in 0xfa5aa8), else -1; not reentrant (0x6f0dc4). ROUGH */
 
-int ai_Unk4e5470(int id, int flags)
+int cm_MessageBox(int id, int flags)
 {
     int t0, ret, win, radio, i, n, k, slider, fl, timed, quick;
     int *list;
@@ -15271,7 +15272,7 @@ int ai_Unk4e5470(int id, int flags)
         slider = d2_WinOpenSlider(0x1c, *(short *)(d2_LastWindowPtrC + 0xa) - 0x18, *(short *)(d2_LastWindowPtrC + 8) - 0x40, 0, 0x1f4, 0x83, 0x42, d2_LastWindow);
     else
         slider = -1;
-    if (sv_RunFrame(fl, ai_Unk4e5470) != 0) {
+    if (sv_RunFrame(fl, cm_MessageBox) != 0) {
         quick = flags & 0x40;
         n = flags & 4;
         do {
@@ -15296,7 +15297,7 @@ int ai_Unk4e5470(int id, int flags)
                 d2_SetObjValue(slider, 0, 0x1f4, ai_ClockMs - t0);
             if (n != 0 && ai_ClockMs > t0 + 0x1f4)
                 sv_PopRequest = 1;
-        } while (sv_RunFrame(fl, ai_Unk4e5470) != 0);
+        } while (sv_RunFrame(fl, cm_MessageBox) != 0);
     }
     ai_Unk6f0dc4 = 0;
     d2_RadioClear(radio);
@@ -15328,7 +15329,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)ai_Unk4d8e20, (int)ai_Unk4dada0, (int)ai_Unk4dae90, 0, 0);
     ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)ai_Unk4daf80, 0);
-    ai_Unk4e5730(3, (int)ai_Unk4d63e0, (int)ai_Unk4d8b10, 0, (int)ai_Unk4d60b0, 1);
+    ai_Unk4e5730(3, (int)cm_RunFight, (int)ai_Unk4d8b10, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
     ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
@@ -15572,7 +15573,7 @@ int cm_FightView = -1;  /* 0x60cb60 */
 int ai_Unk60cb64 = -1;  /* 0x60cb64 */
 int ai_Unk60cb68 = -1;  /* 0x60cb68 */
 int ai_Unk60d360 = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
-int ai_Unk60d364 = 10;  /* 0x60d364 */
+int cm_SceneDuration = 10;  /* 0x60d364 */
 int ai_Unk60d368 = -1;  /* 0x60d368 */
 int ai_Unk60d36c = -1;  /* 0x60d36c, -1 or the object waited for ( */
 int ai_Unk60d370 = 1;  /* 0x60d370 */
@@ -15608,8 +15609,8 @@ int cm_FightDefender = 0;  /* 0x6f0ce8 */
 int cm_FightAttacker = 0;  /* 0x6f0cec */
 char * cm_PickMarker = 0;  /* 0x6f0cf0 */
 int cm_FightWinner = 0;  /* 0x6f0cf4 */
-int ai_Unk6f0cf8 = 0;  /* 0x6f0cf8 */
-int ai_Unk6f0cfc = 0;  /* 0x6f0cfc */
+int cm_FightSettled = 0;  /* 0x6f0cf8 */
+int cm_FightLootValue = 0;  /* 0x6f0cfc */
 char * cm_FightRecord = 0;  /* 0x6f0d04 */
 int cm_SelectedCount = 0;  /* 0x6f0d08 */
 int cm_FightSounds = 0;  /* 0x6f0d0c */
@@ -15662,7 +15663,7 @@ char ai_Unk6f0dc4 = 0;  /* 0x6f0dc4 */
 char * ai_PickedObject = 0;  /* 0x6f22e8 */
 int ai_PickedChar = 0;  /* 0x6f22f8 */
 int ai_Unk6f2438 = 0;  /* 0x6f2438 */
-int ai_Unk6f244c = 0;  /* 0x6f244c */
+int cm_FightFixedLight = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */

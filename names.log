@@ -1455,3 +1455,18 @@
 2026-11-03T15:00:04 0x004d3550 func ai_Unk4d3550 -> cm_HitAction by:main why:0x4d3550 is the action callback the fight queues on the hitter (ch_AddActionCB with the victim, the hitter, the damage in the action): the range check, the damage shown, the pain voice, the hit / miss sound by the weapon, cm_CheckDeath and the victim's flinch
 2026-11-03T15:01:50 0x004d3b30 func ai_Unk4d3b30 -> cm_CheckFightWinner by:main why:0x6f0cf4 holds the fight's winner (0x4d7150 sets it from message 0x50's record, text 0x11b7 the winner; the fight loop 0x4d88c0 runs until it is set; the end form compares it with cm_FightAttacker); 0x4d3b30 decides it: the side with nobody standing opposite or the defender holding every sp_CONQUER flag, sent as cutscene entry state 5
 2026-11-03T15:01:50 0x006f0cf4 data ai_Unk6f0cf4 -> cm_FightWinner by:main why:0x6f0cf4 holds the fight's winner (0x4d7150 sets it from message 0x50's record, text 0x11b7 the winner; the fight loop 0x4d88c0 runs until it is set; the end form compares it with cm_FightAttacker); 0x4d3b30 decides it: the side with nobody standing opposite or the defender holding every sp_CONQUER flag, sent as cutscene entry state 5
+2026-11-03T15:15:42 0x004d63e0 func ai_Unk4d63e0 -> cm_RunFight by:main why:runs a fight record: the scene fought with the player present, else decided by strength (its address comment)
+2026-11-03T15:15:42 0x004e52c0 data ai_Unk4e52c0 -> cut_GetRandSeed by:main why:logs "cut_getrandseed: %i"
+2026-11-03T15:15:42 0x004e52a0 func ai_Unk4e52a0 -> cut_RandSeed by:main why:logs "cut_randseed: %i"
+2026-11-03T15:15:42 0x004d1e00 data ai_Unk4d1e00 -> cm_FightIntro by:main why:the cutscene "Kampf_Intro_Fluege" and a fight track
+2026-11-03T15:15:42 0x004d1eb0 data ai_Unk4d1eb0 -> cm_FightOutro by:main why:the cutscene "Kampf_outro_flug"
+2026-11-03T15:15:42 0x004d3d10 data ai_Unk4d3d10 -> cm_LootStock by:main why:the loser's stock and money go to the winner (0x4c47e0 / 0x4c4880)
+2026-11-03T15:15:42 0x004d3ea0 data ai_Unk4d3ea0 -> cm_LootCarts by:main why:the goods of the 3 carts at +0x100 go to the winner
+2026-11-03T15:15:42 0x004d4540 func ai_Unk4d4540 -> cm_FightStartDialog by:main why:opens "cutscenes\combat_start": the winner's line and the share 10 / 50 / 90
+2026-11-03T15:15:42 0x004d4d70 func ai_Unk4d4d70 -> cm_FightEndDialog by:main why:opens "cutscenes\combat_end": the outcome of the fight
+2026-11-03T15:15:42 0x004e3830 func ai_Unk4e3830 -> cm_RunSceneParty by:main why:runs the scene party m: the table 0x92c500 of callbacks over the member slots
+2026-11-03T15:15:42 0x004e5470 func ai_Unk4e5470 -> cm_MessageBox by:main why:a message box "misc\Messagebox" for a text, answers the clicked button + 1
+2026-11-03T15:15:42 0x006f0cf8 data ai_Unk6f0cf8 -> cm_FightSettled by:main why:set when the fight is settled without fighting it out (cm_FightStartDialog: loot taken / called off); the fight loop 0x4d88c0 ends on it
+2026-11-03T15:15:42 0x006f0cfc data ai_Unk6f0cfc -> cm_FightLootValue by:main why:the value cm_LootCarts returns, -1 when the share was refused; texts 0x1144 / 0x1146 show it
+2026-11-03T15:15:42 0x0060d364 data ai_Unk60d364 -> cm_SceneDuration by:main why:the length of a scene: end = start + it (0x6f0d84 = 0x6f0d80 + it), the slider's max, * 0x4b ms; 200 for a fight, 10 else
+2026-11-03T15:15:42 0x006f244c data ai_Unk6f244c -> cm_FightFixedLight by:main why:read only by cm_RunFight: nonzero picks the light set 2 instead of the sky of the time (never written: a guess)

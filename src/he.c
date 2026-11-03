@@ -7395,7 +7395,7 @@ void he_Unk546100(int ev)
     }
 }
 
-int ai_Unk4d3d10();
+int cm_LootStock();
 int cm_FightRole();
 int cm_PartyById();
 int cm_GetSlotValue(int h);
@@ -7589,7 +7589,7 @@ void he_Unk5461c0(int ev)
         t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
         ta = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
         rec = HE_REC(*(unsigned short *)(ta + 0x27));
-        r = ai_Unk4d3d10(ta, t, HE_REC(*(unsigned short *)(ev + 8)), rec);
+        r = cm_LootStock(ta, t, HE_REC(*(unsigned short *)(ev + 8)), rec);
         if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
             txt_Format(buf, 0x1c54, ta, r);
             he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ta + 0x27) * 0x21c), -1, buf, 0, 0x5f0, *(int *)(ta + 1), -1, 0, (char *)0);

@@ -746,8 +746,8 @@ int cm_LeaveEventScene();  /* 0x4e30c0 */
 void d2_CopyCaption(char *caption);  /* 0x478870 */
 char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, ch.h */
 
-void ai_Unk4d1e00();  /* 0x4d1e00 */
-void ai_Unk4d1eb0();  /* 0x4d1eb0 */
+void cm_FightIntro();  /* 0x4d1e00 */
+void cm_FightOutro();  /* 0x4d1eb0 */
 struct AICHAR *cm_NearestEnemy(struct AICHAR *c);  /* 0x4d1f10, the enemy the fighter c goes for */
 void snd_PlaySpecialTrack(char *name);  /* 0x4c23f0 */
 extern int snd_MusicEnabled;  /* 0x6f2578 */
@@ -806,12 +806,12 @@ void ai_Unk4d3a30(char *ev);  /* 0x4d3a30 */
 void ai_Unk4d3ac0(char *ev);  /* 0x4d3ac0 */
 void ai_Unk4d3ae0(char *ev);  /* 0x4d3ae0 */
 struct AICHAR *cm_CheckFightWinner(struct CMFIGHTREC *rec);  /* 0x4d3b30 */
-int ai_Unk4d3d10(char *a, char *b, char *d, char *t);  /* 0x4d3d10 */
+int cm_LootStock(char *a, char *b, char *d, char *t);  /* 0x4d3d10 */
 int cm_FightRole(unsigned char *b);  /* 0x4d4050 */
 int ai_Unk4d4090(int x, int y, int mode);  /* 0x4d4090 */
 void ai_Unk4d4340(int *ids, int x, int y);  /* 0x4d4340 */
-int ai_Unk4d4540(char *a);  /* 0x4d4540 */
-void ai_Unk4d4d70(char *a);  /* 0x4d4d70 */
+int cm_FightStartDialog(char *a);  /* 0x4d4540 */
+void cm_FightEndDialog(char *a);  /* 0x4d4d70 */
 int ai_Unk4d60b0(char *a);  /* 0x4d60b0 */
 void ai_Unk4d6930(char *r);  /* 0x4d6930 */
 void ai_Unk4d6970(char *r);  /* 0x4d6970 */
@@ -829,13 +829,13 @@ extern int ai_Unk60cb68;  /* 0x60cb68 */
 extern int ai_Unk6f0d64;  /* 0x6f0d64 */
 
 extern int ai_Unk60d368;  /* 0x60d368 */
-void ai_Unk4d63e0(char *a);  /* 0x4d63e0 */
-unsigned int ai_Unk4e52c0();  /* 0x4e52c0 */
-void ai_Unk4e52a0();  /* 0x4e52a0 */
-void ai_Unk4e3830();  /* 0x4e3830 */
+void cm_RunFight(struct CMFIGHTREC *a);  /* 0x4d63e0, runs a fight record */
+unsigned int cut_GetRandSeed();  /* 0x4e52c0 */
+void cut_RandSeed();  /* 0x4e52a0 */
+void cm_RunSceneParty();  /* 0x4e3830 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);  /* 0x449de0 */
-extern int ai_Unk60d364;  /* 0x60d364 */
-extern int ai_Unk6f244c;  /* 0x6f244c */
+extern int cm_SceneDuration;  /* 0x60d364 */
+extern int cm_FightFixedLight;  /* 0x6f244c */
 void ai_Unk4e48b0();  /* 0x4e48b0 */
 
 
@@ -849,13 +849,13 @@ void d2_PlaceMainWindow();  /* 0x475850 (int view, unsigned char flags), K&R */
 int d2_SetForm(int view, int n);  /* 0x475f70 */
 int d2_GetWinObj(int view, int idx, int k);  /* 0x475b80 */
 int io_PrintText(char *fmt, ...);  /* 0x515960 */
-int ai_Unk4e5470();  /* 0x4e5470 */
+int cm_MessageBox();  /* 0x4e5470 */
 int gm_StallGoodsList(char *c, unsigned *out);  /* 0x50aa00 */
-extern int ai_Unk6f0cf8;  /* 0x6f0cf8 */
-extern int ai_Unk6f0cfc;  /* 0x6f0cfc */
+extern int cm_FightSettled;  /* 0x6f0cf8 */
+extern int cm_FightLootValue;  /* 0x6f0cfc */
 extern struct D2WIN *d2_LastWindowPtr;  /* 0x6ed980, window created last (d2.c); cm.c adds byte offsets through d2_LastWindowPtrC */
 
-int ai_Unk4d3ea0(char *a, char *b, char *d, int unused, float f);  /* 0x4d3ea0 */
+int cm_LootCarts(char *a, char *b, char *d, int unused, float f);  /* 0x4d3ea0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0, a price */
 int gm_GetGoodsValue(char *ch);  /* 0x509e60 */
 struct D3HMAP * ch_GetHMap();  /* 0x402140 */
