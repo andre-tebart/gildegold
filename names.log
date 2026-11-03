@@ -1715,3 +1715,4 @@
 2026-11-03T23:15:30 0x0053eea0 func he_Unk53eea0 -> he_AgeCarryRecs by:main why:counts down the ttl of every gm_CarryRecs record and frees (ref 0) the expired ones
 2026-11-03T23:17:36 0x00758ca0 data main_ApEvents -> he_ApEvents by:main why:the AP event table he_AddApEvent fills and he_CountDownApEvents / he_SumApEvents walk; its view lives in he.h now
 2026-11-03T23:23:19 0x0053f270 func he_Unk53f270 -> he_PostPlayerEvents86a2 by:main why:posts the events 0x86 and 0xa2 to the player's character (he_PlayerCh) when none exists
+2026-11-03T23:25:09 0x0053f370 func he_Unk53f370 -> he_PostWorkshopEvents98 by:main why:posts the event 0x98 for each kind 0x1e building (gm_BuildQuery(1, 5, 0x1e)) without one, to its owner

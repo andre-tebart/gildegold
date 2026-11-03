@@ -1524,29 +1524,24 @@ void he_PostPlayerEvents86a2(void)
         cm_SendLongMessage((char *)&m);
     }
 }
-/* 0x53f370, posts the event 0x98 for every building of kind 0x1e (workshop; +0xc = its id) that has none and a record */
-
-void he_Unk53f370(void)
+/* 0x53f370, posts the event 0x98 for every building of kind 0x1e (workshop) that has none (he_FindEvent key 3, the
+   message's fromId: the building) and an owner (ahm_OwnerChar), to that owner */
+void he_PostWorkshopEvents98(void)
 {
-    char ev[0xf8];
-    int f, r, o;
+    AIMSG m;
+    AIBLD *b;
+    AICHAR *o;
 
-    f = gm_BuildQuery(1, 5, 0x1e);
-    while (f != 0) {
-        r = (int)he_FindEvent(2, 0, 0x98, 3, *(int *)(f + 1));
-        if (r == 0 && (o = ahm_OwnerChar(f)) != 0) {
-            memset(ev, 0, 0xf8);
-            HM_B(ev, 4) = 0x98;
-            HM_I(ev, 8) = *(int *)(o + 4);
-            HM_I(ev, 0xc) = *(int *)(f + 1);
-            HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-            HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-            HM_B(ev, 0x36) = 2;
-            HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-            *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-            cm_SendLongMessage(ev);
+    for (b = (AIBLD *)gm_BuildQuery(1, 5, 0x1e); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        if (he_FindEvent(2, 0, 0x98, 3, b->id) == 0 && (o = (AICHAR *)ahm_OwnerChar(b)) != 0) {
+            memset(&m, 0, sizeof(m));
+            m.type = 0x98;
+            m.to = o->netId;
+            m.fromId = b->id;
+            m.flags = 2;
+            m.time = ai_Time;
+            cm_SendLongMessage((char *)&m);
         }
-        f = gm_BuildNext();
     }
 }
 /* 0x53f430, for every figure of kind 5 / 0x16 (inn) checks the four staff slots of its record; a slot whose figure is gone or dead gets the script message "veal" ("stammtisch supervisor") */
@@ -2084,7 +2079,7 @@ void he_Unk540fe0(void)
     he_Unk53f500();
     he_Unk53f430();
     he_Unk540e40();
-    he_Unk53f370();
+    he_PostWorkshopEvents98();
 }
 /* 0x541010, posts the event 0x3a for the current player (flag 1) */
 

@@ -83,7 +83,7 @@ void he_PostEvent6b(void);
 void he_PostEvent7a(void);
 void he_PostEvent2b(void);
 void he_PostPlayerEvents86a2(void);
-void he_Unk53f370(void);
+void he_PostWorkshopEvents98(void);
 void he_Unk53f430(void);
 void he_Unk53f500(void);
 unsigned he_Unk53f5b0(void);
