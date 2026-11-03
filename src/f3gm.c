@@ -8857,7 +8857,6 @@ int gm_Unk5093a0(int kind, unsigned k)
     return i;
 }
 
-#define GM_CLAMPMIN(m, lo, hi) ((float)(m) < (lo) ? (lo) : ((float)(m) > (hi) ? (hi) : (float)(m)))
 
 /* 0x509400, the working minutes from the clock a to the clock b for the building bld (0: none): the working day
    runs from the season's start to its end hour (gm_DayStartHours / gm_DayEndHours), so a day's clock is clamped
@@ -8910,38 +8909,44 @@ int gm_WorkMinutesBetween(GCLOCK *a, GCLOCK *b, unsigned char *bld)
     x = (int)GM_MIN(GM_MAX(lo * 60.0f, t.hour * 60 + t.min), hi * 60.0f);
     return (acc - x) + y;
 }
-/* 0x5096a0, the same with the fixed day 360 .. 1380 minutes (6:00 to 23:00, 1020 a day) */
+/* 0x5096a0, the working minutes from the clock a to the clock b as gm_WorkMinutesBetween, with the fixed working
+   day 6:00 .. 23:00 (360 .. 1380 minutes, 1020 a day); 0 when b is before a
+   @deep Read whole against the original: compare-time exit, the clock copy, the first day clamped as
+   MIN(MAX(360.0f, minutes), 1380.0f) on the int minutes (fild, no float store; VC6 folds the constant
+   compares into the original's branch tree exactly), acc = 1380 - x, gm_SetTime(&t, 6, 0, 0), 1020 per
+   whole day, the last day's clamps of b then t all match; same size 497. Left is the same allocation as
+   gm_WorkMinutesBetween: acc and y swap ebp / edi (original mov eax,ebp; sub eax,ecx; add eax,edi; pop edi
+   at +0x1ca / +0x1e5, ours mov eax,edi ... add eax,ebp after pop edi) and the b-minutes temporary sits in
+   [esp+0x28] instead of the original's reuse of acc's spill slot [esp+0x24] (+0x11f / +0x123). Tried:
+   folding the first x into the acc expression (no change). */
 
-int gm_Unk5096a0(GCLOCK *a, GCLOCK *b)
+int gm_FixedWorkMinutesBetween(GCLOCK *a, GCLOCK *b)
 {
-    float m;
-    int acc, x, y, d0, d1, n;
+    int acc, x, y, day, end, n;
     GCLOCK t;
 
     if (gm_CompareTime(a, b) > 0)
         return 0;
     t = *a;
-    d0 = a->day;
-    d1 = b->day;
-    if (d0 < d1) {
-        m = (float)(t.hour * 60 + t.min);
-        x = (int)GM_CLAMPMIN(m, 360.0f, 1380.0f);
+    day = t.day;
+    end = b->day;
+    if (day < end) {
+        x = (int)GM_MIN(GM_MAX(360.0f, t.hour * 60 + t.min), 1380.0f);
         acc = (int)(1380.0f - x);
-        t.day = d0 + 1;
+        t.day = day + 1;
         gm_SetTime(&t, 6, 0, 0);
-        d0 = t.day;
+        day = t.day;
     } else
         acc = 0;
-    if (d0 < d1) {
-        n = d1 - d0;
+    if (day < end) {
+        n = end - day;
         do {
             acc = (int)(acc + 1020.0f);
             n--;
         } while (n != 0);
     }
-    y = (int)GM_CLAMPMIN((float)(b->hour * 60 + b->min), 360.0f, 1380.0f);
-    m = (float)(t.hour * 60 + t.min);
-    x = (int)GM_CLAMPMIN(m, 360.0f, 1380.0f);
+    y = (int)GM_MIN(GM_MAX(360.0f, b->hour * 60 + b->min), 1380.0f);
+    x = (int)GM_MIN(GM_MAX(360.0f, t.hour * 60 + t.min), 1380.0f);
     return (acc - x) + y;
 }
 /* 0x5098a0, the goods list of the building b: out (0x2e ints) gets the max count (out[0]), the number of entries (out[1]), per entry the goods id (words at +0x48), its stock (+8 ints: 0x50ab50) and its price (+0x68: 0x50aaf0); out[0x2d] the building's market object. kind 0: the objects that are not 0x17 / 0x25; else those. 0 when it has no such object (0xfd). */
