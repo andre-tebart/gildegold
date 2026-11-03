@@ -3512,7 +3512,7 @@ exe	0x0053e4e0	he_SpreadGfxInfos	he	shape	readable
 exe	0x0053e5f0	he_CreateGfxObject	he	byte	readable		
 exe	0x0053e780	he_CreateGfxInfo	he	draft	readable	deep	
 exe	0x0053e840	he_Unk53e840	he	shape	draft		
-exe	0x0053e8b0	he_Unk53e8b0	he	draft	draft		
+exe	0x0053e8b0	he_AddEventGfxInfo	he	byte	readable		
 exe	0x0053eba0	he_Unk53eba0	he	byte	draft		
 exe	0x0053ebe0	he_RemoveGfxInfos	he	byte	draft		
 exe	0x0053ec10	he_ShowObjectInfos	he	byte	readable		
@@ -3521,17 +3521,17 @@ exe	0x0053ed40	he_RecheckPersonEvents	he	byte	draft
 exe	0x0053ed70	he_Unk53ed70	he	byte	draft		
 exe	0x0053edf0	he_RunQuickList	he	shape	draft		
 exe	0x0053ee40	he_Unk53ee40	he	byte	draft		
-exe	0x0053eea0	he_Unk53eea0	he	draft	draft		
-exe	0x0053eec0	he_AddApEvent	he	draft	draft		
-exe	0x0053ef50	he_CountDownApEvents	he	draft	readable		
+exe	0x0053eea0	he_AgeCarryRecs	he	byte	readable		
+exe	0x0053eec0	he_AddApEvent	he	byte	readable		
+exe	0x0053ef50	he_CountDownApEvents	he	byte	readable		
 exe	0x0053ef80	he_SumApEvents	he	byte	readable		
 exe	0x0053efb0	he_SumApEventCosts	he	byte	readable		
-exe	0x0053efe0	he_PostEvent6d	he	draft	draft		
-exe	0x0053f070	he_PostEvent6b	he	draft	draft		
-exe	0x0053f100	he_PostEvent7a	he	draft	draft		
-exe	0x0053f190	he_PostEvent2b	he	draft	draft		
-exe	0x0053f270	he_Unk53f270	he	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
-exe	0x0053f370	he_Unk53f370	he	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x0053efe0	he_PostEvent6d	he	byte	readable		
+exe	0x0053f070	he_PostEvent6b	he	byte	readable		
+exe	0x0053f100	he_PostEvent7a	he	byte	readable		
+exe	0x0053f190	he_PostEvent2b	he	byte	readable		
+exe	0x0053f270	he_PostPlayerEvents86a2	he	byte	readable		
+exe	0x0053f370	he_PostWorkshopEvents98	he	shape	readable		
 exe	0x0053f430	he_Unk53f430	he	shape	draft		
 exe	0x0053f500	he_Unk53f500	he	shape	draft		
 exe	0x0053f5b0	he_Unk53f5b0	he	draft	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 9676b2cb: he_LastSlot (0x625718) and he_BarView (0x6faa60) are typed and declared once in he.h instead of GAPDATA externs in he.c / sv.c: truer data; the function uses neither, its eax/ecx tie-break (two regs hunks, proof equal) flips on he.h's declaration set alone (as on cm.h's for ai_TutorialInitChapter3), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 5f62d178: three byte declarations (cm_DuelRightInsultWon / cm_DuelLeftRollWon / cm_DuelRightRollWon, 0x6f0dab..0x6f0dad) join cm.h where cm_DuelScore[2] was read past its end (D8): truer data, one object per byte as the original's separate byte loads show; the function uses none of them, its register tie-break flips on cm.h's declaration set alone (it flipped the same way for a parameter name in cm_DuelChooseRound's prototype), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at 5f62d178: three byte declarations (cm_DuelRightInsultWon / cm_DuelLeftRollWon / cm_DuelRightRollWon, 0x6f0dab..0x6f0dad) join cm.h where cm_DuelScore[2] was read past its end (D8): truer data, one object per byte as the original's separate byte loads show; the function uses none of them, its register tie-break flips on cm.h's declaration set alone (it flipped the same way for a parameter name in cm_DuelChooseRound's prototype), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		

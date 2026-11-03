@@ -5,9 +5,10 @@
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
    The event record is AIJOB (0x14c bytes, he_Jobs over he_Events), the message record AIMSG (both in ai_types.h,
-   readable without ai.h); the event bar, the event create / free / search and the gfx info functions read them
-   typed (HEGFXINFO in he.h, he_GfxInfos).
-   Open: types: the handlers past the gfx infos still read the event and message records through raw offsets
+   readable without ai.h); the buildings and characters are AIBLD / AICHAR (ai_bld.h / ai_char.h, he_PlayerCh), the
+   carried-goods records GMCARRYREC (f3gm_carry.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the
+   event create / free / search, the gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
+   Open: types: the handlers past 0x53f370 still read the event and message records through raw offsets
    (HM_I / U_I); AIJOB's fields between 0x14 and 0xac are named only as the message's words.
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
