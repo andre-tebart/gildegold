@@ -108,6 +108,11 @@ extern GAPDATA full_data_92bcb8[];
 #define ai_TimeT (*(AITIME *)&ai_Time)  /* 0x770ae0, ai_Time (anm.c: char[14]) as the AITIME it is */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
+typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs */
+    D3OBJECT *obj;                  /* the bomb object "ob_BOMBE", 0 = a free slot */
+    unsigned long time;             /* d3_Time when it was laid */
+} CMBOMB;
+#define cm_BombsT (*(CMBOMB (*)[32])&cm_Bombs)  /* 0x935c00, cm_Bombs (sv.h: int[0x40]) as the 32 bomb records */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (cm.h: char[][0x21c]) as the AICHAR records they are */
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
@@ -6942,25 +6947,24 @@ int ai_Unk4ce270(char *a, char *b)
 }
 /* 0x4ce290, a bomb object "ob_BOMBE" at the position p in a free slot of the 32 (object, time) of cm_Bombs */
 
-char *ai_Unk4ce290(char *p)
+CMBOMB *cm_LayBomb(D3VECTOR *p)
 {
-    float v[3];
+    D3VECTOR rot;
     int i;
-    char *o;
+    CMBOMB *b;
 
-    v[0] = 0;
-    v[1] = 0;
-    v[2] = 0;
+    rot.x = 0;
+    rot.y = 0;
+    rot.z = 0;
     for (i = 0; i < 32; i++) {
-        if (*(int *)(cm_Bombs + i * 8) == 0)
-            break;
+        if (cm_BombsT[i].obj == 0) {
+            b = &cm_BombsT[i];
+            b->obj = d3_CreateObject(0, p, &rot, "ob_BOMBE");
+            cm_BombsT[i].time = d3_Time;
+            return b;
+        }
     }
-    if (i >= 32)
-        return 0;
-    o = d3_CreateObject(0, p, v, "ob_BOMBE");
-    *(char **)(cm_Bombs + i * 8) = o;
-    *(int *)(cm_Bombs + i * 8 + 4) = d3_Time;
-    return cm_Bombs + i * 8;
+    return 0;
 }
 /* 0x4ce300, updates the bombs of cm_Bombs: a bomb older than 0x15e ticks explodes ("Explosion_s", the effects
    0x416340 / 0x4168e0 / 0x416040) and hurts the characters within 170.0 (bear hug action 0x60cb80); returns the number
@@ -9471,7 +9475,7 @@ void ai_Unk4d3980(char *ev)
     int vv;
 
     k = cm_CharWeapon(att);
-    ai_Unk4ce290(*(char **)(*(char **)(att + 0x184) + 0x34) + 0x4c);
+    cm_LayBomb(*(char **)(*(char **)(att + 0x184) + 0x34) + 0x4c);
     sb_PlaySampleI(ai_Unk6f0d14, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
     if (*(int *)(ai_Unk6f0d74 + 4) == ai_Unk60cb5c && (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2)) {
         G19_FIGHTER_SYNC(att);

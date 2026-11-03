@@ -523,7 +523,7 @@ int ai_LedSelectBits(int idx, char *c);  /* 0x4ce170 */
 float cm_CharObjDistXZ(char *c, char *o);  /* 0x4ce1b0 */
 float cm_CharCellDistXZ(char *c, int x, int y);  /* 0x4ce200 */
 int ai_Unk4ce270(char *a, char *b);  /* 0x4ce270 */
-char *ai_Unk4ce290(char *p);  /* 0x4ce290 */
+struct CMBOMB *cm_LayBomb(struct D3VECTOR *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
 int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
