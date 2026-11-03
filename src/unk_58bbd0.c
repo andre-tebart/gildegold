@@ -10604,7 +10604,7 @@ void ai_Unk5a23a0(int param_1, int param_2)
     sv_MessageBox(buf, 0);
 }
 
-void gm_Unk50b1e0(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_Unk5bd1f0();
+void gm_DonationTop5(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_Unk5bd1f0();
 int d2_RemoveWindowObjects();
 
 /* 0x5a28f0, the church top-5 window "Locations\Kirche\Top5" (620 B, Ghidra-missed start: the tail call of
@@ -10641,7 +10641,7 @@ void ai_Top5Window(void)
     d2_SetPointerSprite(0, 0);
     U_I((unsigned)&d2_ClickedId) = -1;
     for (;;) {
-        gm_Unk50b1e0(id, val);
+        gm_DonationTop5(id, val);
         for (i = 0; i < 5; i++) {
             if (oldid[i] != id[i] || oldval[i] != val[i])
                 changed = 1;

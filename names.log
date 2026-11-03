@@ -1236,3 +1236,4 @@
 2026-11-03T08:50:22 0x0050acf0 func gm_Unk50acf0 -> gm_FreeStallCapacity by:main why:as gm_FreeCapacity (0x50ab80) without the goods groups: stock (gm_ListStock) less the held object's count, else 0 when the stall's goods fill cap[0], at most n
 2026-11-03T08:51:48 0x0050ad70 func gm_Unk50ad70 -> gm_TakeableCount by:main why:callers (cm.c 0x4c63e0, transport window) clamp the wanted amount n to its result: how many of a goods prototype a character may take (3 per kind, 6+ kinds: none)
 2026-11-03T08:55:53 0x0050b170 func gm_Unk50b170 -> gm_DonationRank by:main why:ai_IndulgenceWindow (the church's Top5 window) shows the record +0x1ac with gm_Unk50b170 (the slot, 0): the rank of the character by the sum at +0x1ac
+2026-11-03T08:56:34 0x0050b1e0 func gm_Unk50b1e0 -> gm_DonationTop5 by:main why:ai_Top5Window (the church's Locations\Kirche\Top5 window) shows its five ids and values: the five characters with the largest ORDCHAR.donated
