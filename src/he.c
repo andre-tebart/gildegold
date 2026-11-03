@@ -2777,7 +2777,7 @@ void he_Unk544840(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
     case 1:
-        cm_BeginGroup((char *)((unsigned)&ai_Unk625820 + 0x11d8));
+        cm_BeginGroup("werbung");
         pb = b + 4;
         cm_BeginFieldBlock(b, *(int *)(b + 4));
         pa = a + 4;
@@ -2789,7 +2789,7 @@ void he_Unk544840(int ev)
         cm_SendFieldDeltas();
         cm_SendSetField(*(int *)pb, 0x1c8, 4, 0x40000, 0);
         cm_SendSetField(*(int *)pa, 0x1c8, 4, 0x40000, 0);
-        cm_EndGroup((char *)((unsigned)&ai_Unk625820 + 0x11d8));
+        cm_EndGroup("werbung");
         *(AITIME *)(ev + 0x52) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 1, 0);
         *(int *)(ev + 0x84) = cm_SendExSetHE(5, ev);
@@ -7638,7 +7638,7 @@ void he_Unk546c40(int ev)
         *(int *)(ev + 0x58) = 0;
         if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
             txt_Format(text, 0x1e18, *(unsigned short *)a);
-            he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, (char *)((unsigned)&ai_Unk625820 + 0x1284));
+            he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_04");
         }
         code = -4;
     } else {
@@ -7647,7 +7647,7 @@ void he_Unk546c40(int ev)
         code = -2;
         if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
             txt_Format(text, 0x1d5b, *(unsigned short *)a, *(unsigned short *)a);
-            he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, (char *)((unsigned)&ai_Unk625820 + 0x1270));
+            he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_21");
         }
         x = -1;
         r = *(int *)(a + 0x170);
@@ -7927,7 +7927,7 @@ void he_Unk5509f0(int ev)
     if (esi == 0)
         he_FreeEvent((int *)ev);
     else
-        txt_Format(text, (char *)((unsigned)&ai_Unk625820 + 0x1760), esi);
+        txt_Format(text, "EvtSensenmann: next target = %G", esi);
     *(int *)(ev + 0xb4) = *(int *)(esi + 1);
     if (he_Unk550070(ev) == 0)
         he_FreeEvent((int *)ev);
@@ -7998,7 +7998,7 @@ void he_Unk550b60(int ev)
                     *(int *)(ev + 0x70) = -1;
                     return;
                 }
-                txt_Format(text, (char *)((unsigned)&ai_Unk625820 + 0x1760), esi);
+                txt_Format(text, "EvtSensenmann: next target = %G", esi);
                 *(int *)(ev + 0xb4) = *(int *)(esi + 1);
                 *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
                 if (he_Unk550850(ev) != 0) {
@@ -8082,8 +8082,8 @@ void he_Unk550ee0(int ev)
         head[0x1d + i * 0x18] = 0;
     }
     strcpy((char *)head + 0x7e, (char *)((unsigned)&ai_PlayerSlots + 0x20) + (unsigned)*(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4);
-    memcpy(head + 0x9e, (char *)((unsigned)&ai_Unk625820 + 0x1790), 9);
-    memcpy(head + 0xb6, (char *)((unsigned)&ai_Unk625820 + 0x1780), 0x11);
+    memcpy(head + 0x9e, "Verm\366gen", 9);
+    memcpy(head + 0xb6, "Gewinnpunkte", 0x11);
     head[0xce] = (unsigned char)cnt;
     udp_Send(head, *(unsigned short *)(head + 4));
     for (i = 0; i < cnt; i++) {
@@ -8250,20 +8250,20 @@ void he_Unk5516a0(int p)
 {
     switch ((unsigned short)util_Random(4)) {
     case 0:
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x17b0), 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     case 1:
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x179c), 1);
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x17b0), 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/herranwinken", 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     case 2:
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x122c), 1);
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x17b0), 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/kinn_kratzen", 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     case 3:
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x10a8), 1);
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x179c), 1);
-        ai_Unk4c5410(*(int *)(p + 4), (char *)((unsigned)&ai_Unk625820 + 0x17b0), 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/durch_haar_fahr", 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/herranwinken", 1);
+        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     }
 }
@@ -8388,9 +8388,9 @@ cleanup:
     s[8]++;
     kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)bld * 0x24d);
     if (kind == 0x16 || kind == 7 || kind == 0xf)
-        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x17c8));
+        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 0, "Sim Politicians");
     else
-        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 1, (char *)((unsigned)&ai_Unk625820 + 0x17c8));
+        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 1, "Sim Politicians");
 }
 
 int cm_GetSlotState();
@@ -9531,7 +9531,7 @@ void he_Unk554320(int ev)
             return;
         p = cm_GetSlotValue(*(int *)(ev + 0xe4));
         if (p == 0) {
-            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, (char *)((unsigned)&ai_Unk625820 + 0x19ec), 0, 0x5f2, 0);
+            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, "$2AEinwohnerlimit erreicht!", 0, 0x5f2, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -9572,9 +9572,9 @@ void he_Unk554320(int ev)
                 q = gm_FindCharacterByMaster(b);
                 txt_Format(text, 0x1bab, r, *(unsigned short *)p, b);
                 if (q != 0 && (*(unsigned char *)(q + 0x1b4) & 1) != 0)
-                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x60c, *(int *)(b + 1), *(int *)(ev + 0xe0), (char *)((unsigned)&ai_Unk625820 + 0x12e4), 0);
+                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x60c, *(int *)(b + 1), *(int *)(ev + 0xe0), "_NACHRICHTEN_HS_00", 0);
                 else
-                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xe0), (char *)((unsigned)&ai_Unk625820 + 0x12e4), 0);
+                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xe0), "_NACHRICHTEN_HS_00", 0);
             }
             cm_SendMoveGoodsUnchecked(*(int *)(p + 4), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, r);
             q = gm_PlayerRecord((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
@@ -9650,7 +9650,7 @@ void he_Unk554860(int ev)
             return;
         p = cm_GetSlotValue(*(int *)(ev + 0xb8));
         if (p == 0) {
-            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, (char *)((unsigned)&ai_Unk625820 + 0x1a1c), 0, 0x5f8, 0);
+            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, "Einwohnerlimit erreicht!", 0, 0x5f8, 0);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -9673,7 +9673,7 @@ void he_Unk554860(int ev)
             q = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);
             if (q == 6 || q == 7) {
                 txt_Format(text, 0x1bb1, n, *(unsigned short *)p, b);
-                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xb4), (char *)((unsigned)&ai_Unk625820 + 0x1a08), 0);
+                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xb4), "_NACHRICHTEN_HS_03", 0);
             }
             cm_SendMoveGoodsUnchecked(*(int *)(p + 4), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, n);
         }
@@ -9766,7 +9766,7 @@ void he_Unk554cb0(int ev)
     mode = f1 ? (f2 ? 4 : 2) : (f2 ? 1 : 3);
     *(int *)(ev + 0xc8) = mode;
     if (mode == 4 && b1 == b2) {
-        err_Message((char *)((unsigned)&ai_Unk625820 + 0x1a6c));
+        err_Message("he_AllocTransport(): Start and goal are the same!");
         he_FreeEvent((int *)ev);
         return;
     }
@@ -9948,12 +9948,12 @@ void he_Unk555690(int ev)
                 txt_Format(text, 0x1c3b, 1, 0x1c39, (char *)(unsigned)&ai_PlayerSlots + *(int *)(b1 + 0x65) * 0x2f4);
                 skip = U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow && U_I((unsigned)&ai_FallbackBuilding) == b1;
                 if (!skip)
-                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x1af8), 0);
+                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, "_NACHRICHTEN_HS_59", 0);
             } else if (*(unsigned char *)b0 == 0x47) {
                 txt_Format(text, 0x1c3d, 1, 0x1c39);
                 skip = U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow && U_I((unsigned)&ai_FallbackBuilding) == b1;
                 if (!skip)
-                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x1ae4), 0);
+                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, "_NACHRICHTEN_HS_60", 0);
             } else {
                 e = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b1 * 0x24d);
                 if (e == 0x1d || e == 0x1f) {
@@ -16443,7 +16443,7 @@ void he_Unk570cc0(int ev)
     }
     if (state == 0) {
         if (HM_I(ev, 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x11a0), 0x5ec);
+            he_Unk53d6f0(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
         if (HM_I(ev, 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;
@@ -16850,7 +16850,7 @@ release:
             goto released;
     }
     txt_Format(text, 0x1bc8, *(unsigned short *)per, bld);
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), HM_I(ev, 0x10), text, 0, 0x5f2, *(int *)(bld + 1), *(int *)(grp + 2), (char *)(unsigned)&ch_EmptyName, (char *)((unsigned)&ai_Unk625820 + 0x1ca8));
+    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), HM_I(ev, 0x10), text, 0, 0x5f2, *(int *)(bld + 1), *(int *)(grp + 2), (char *)(unsigned)&ch_EmptyName, "_NACHRICHTEN_HS_81");
 released:
     sv_MoveToGroup(bld, 0, *(unsigned short *)per, 0);
     he_FreeEvent((int *)ev);
@@ -17180,7 +17180,7 @@ void he_Unk572a50(int ev)
     }
     if (state == 0) {
         if (HM_I(ev, 0x74) == 0)
-            he_Unk53d6f0(ev, 0, 0, (char *)((unsigned)&ai_Unk625820 + 0x11a0), 0x5ec);
+            he_Unk53d6f0(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
         if (HM_I(ev, 0x74) == 0) {
             he_FreeEvent((int *)ev);
             return;

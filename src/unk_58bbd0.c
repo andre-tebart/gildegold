@@ -21287,7 +21287,7 @@ int ai_EspionagePayment(int param_1, int param_2)  /* @original: the callers pus
         if (*(char *)(target + 2) == 6 || *(char *)(target + 2) == 7) {
             txt_Format(text, (char *)0x1dda, *(unsigned short *)param_1, 3);
             he_ShowNews(*(int *)(target + 4), *(int *)(target + 4), 0, text, 0x5fb,
-                         (char *)((unsigned)&ai_Unk625820 + 0x118c));
+                         "_NACHRICHTEN_HS_20");
         }
         return 0x10;
     }
