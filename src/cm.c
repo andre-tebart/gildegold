@@ -9980,7 +9980,15 @@ void ai_Unk4d4340(int *ids, int x, int y)
    text): the line of the winner (texts 0x1138 .. 0x113c, 0x1125 + role), the loot list 0x4d4090,
    the portrait row 0x4d4340, and the buttons: the player picks the share 10 / 50 / 90 (chance share <= random 10 .. 99)
    or the AI side picks at random; the loot goes through 0x4d3ea0, the result is 0x6f0cfc (-1: refused), 0x6f0cf8 = 1 when
-   the loot was taken. Returns 1 when the fight goes on. Rough draft. */
+   the loot was taken. Returns 1 when the fight goes on. Rough draft.
+   @deep Read against the original in full: fixed the loot total (summed into total and printed by 0x1141,
+   not v), the per-block rc init (int rc[0x2e] = {0} in the loot block: mov [esp+0x24],0 + rep stosd 0x2d),
+   the share test (rand+10 <= st takes the loot, else refuse), b4 = 0 on the AI path, tb/tc 0x400 (frame
+   now 0x8cc both). No ref/literal/call differences left, frame equal, ins 607 vs 611. Left: allocation -
+   the original keeps win in a slot ([esp+0x1c], mov ebx,[esp+0x1c] before d2_SetForm(win,1) at 0x4d4797
+   and reloads at each d2_SetForm/d2_GetWinObj), ca in ebp, a reloaded from [esp+0x8e0]; ours holds win in
+   ebx and a in ebp; the three PrintText branches share one 'mov edi,eax' join (0x4d4795) where ours keeps
+   a copy per branch; b1..b3 in ebx/ebp/slot vs our slots. */
 
 int ai_Unk4d4540(char *a)
 {
@@ -9990,9 +9998,8 @@ int ai_Unk4d4540(char *a)
     int b1, b2, b3, b4;
     float fv;
     char *p;
-    int rc[0x2e];
-    char tb[0x3f4];
-    char tc[0x3f0];
+    char tb[0x400];
+    char tc[0x400];
 
     win = d2_OpenForm(0, 0, "cutscenes\\combat_start");
     ((void (*)(int, int))d2_PlaceMainWindow)(win, 3);
@@ -10007,16 +10014,14 @@ int ai_Unk4d4540(char *a)
             d2_SetForm(win, 2);
             edi = io_PrintText(0x113a, *(unsigned short *)cm_FightDefender, ca);
         } else if (a[0x7c] & 1) {
-            edi = st;
             for (i = 0; i < 3; i++) {
                 if (*(int *)(a + 0x100 + i * 4) != -1)
-                    edi++;
+                    st++;
             }
-            st = edi;
             fv = gm_GetSkill(cm_FightAttacker, 3);
             io_PrintText(0x112e, cb, *(unsigned short *)cm_FightDefender);
             d2_SetForm(win, 2);
-            io_PrintText(0x112f, edi, 0xc10);
+            io_PrintText(0x112f, st, 0xc10);
             if (fv >= 0.5) {
                 if (*(int *)(a + 0x110) != 0)
                     io_PrintText(0x1134);
@@ -10063,7 +10068,8 @@ int ai_Unk4d4540(char *a)
         }
     }
     if ((a[0x7c] & 1) && *(char *)(cm_FightDefender + 2) == 6 && ai_Unk6f0cf8 == 0) {
-        memset(rc, 0, sizeof(rc));
+        int rc[0x2e] = {0};
+
         total = 0;
         for (i = 0; i < 3; i++) {
             if (*(int *)(a + 0x100 + i * 4) != -1)
@@ -10105,7 +10111,7 @@ int ai_Unk4d4540(char *a)
         }
         d2_SetForm(win, 2);
         io_PrintText("$C");
-        esi = io_PrintText(0x1141, (int)(v * 0.1), (int)(v * 0.5), (int)(v * 0.8));
+        esi = io_PrintText(0x1141, (int)(total * 0.1), (int)(total * 0.5), (int)(total * 0.8));
         b1 = d2_GetWinObj(win, 2, esi);
         b2 = d2_GetWinObj(win, 2, esi + 1);
         b3 = d2_GetWinObj(win, 2, esi + 2);
@@ -10136,12 +10142,7 @@ int ai_Unk4d4540(char *a)
                     st = 50;
                 else if (sel == b3)
                     st = 90;
-                if ((unsigned short)util_RandomU(0x5a) + 10 > st) {
-                    txt_Format(tc, 0x1143);
-                    ai_Unk4e5470(tc, 0);
-                    sv_PopRequest = 1;
-                    res = 1;
-                } else {
+                if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
                     cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                     txt_Format(tb, 0x1142);
                     ai_Unk4e5470(tb, 0);
@@ -10150,6 +10151,11 @@ int ai_Unk4d4540(char *a)
                     b4 = 0;
                     ai_Unk6f0cf8 = 1;
                     ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
+                } else {
+                    txt_Format(tc, 0x1143);
+                    ai_Unk4e5470(tc, 0);
+                    sv_PopRequest = 1;
+                    res = 1;
                 }
             }
         }
@@ -10168,14 +10174,15 @@ int ai_Unk4d4540(char *a)
                 st = 90;
             else if (r >= 2)
                 st = 50;
-            if ((unsigned short)util_RandomU(0x5a) + 10 > st) {
-                ai_Unk6f0cfc = -1;
-                res = 1;
-            } else {
+            if ((unsigned short)util_RandomU(0x5a) + 10 <= st) {
                 cb = (int)gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                 fv = (float)(st * 0.01);
+                b4 = 0;
                 ai_Unk6f0cf8 = 1;
                 ai_Unk6f0cfc = ai_Unk4d3ea0(cm_FightRecord, cb, cm_FightAttacker, cm_FightDefender, fv);
+            } else {
+                ai_Unk6f0cfc = -1;
+                res = 1;
             }
         }
     }
