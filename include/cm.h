@@ -768,8 +768,8 @@ extern double ai_Unk5eb990;  /* 0x5eb990 */
 extern double ai_Unk5eb7b0;  /* 0x5eb7b0 */
 extern double ai_Unk5ebbe8;  /* 0x5ebbe8 */
 
-void ai_BuildFloatTable();  /* 0x4d27a0 */
-extern float ai_Unk9300a0[0xb4];  /* 0x9300a0 */
+void cm_InitOrderChances();  /* 0x4d27a0 */
+extern float cm_OrderChances[0xb4];  /* 0x9300a0 */
 extern double ai_Unk5ece60;  /* 0x5ece60 */
 
 float *ai_Unk4d2c00(int side);  /* 0x4d2c00 */

@@ -806,7 +806,7 @@ int main_OpenEngine(void)
         hmt_CreateBinaryFile();
     main_HmtBuild = 0;
     hmt_Init();
-    ai_BuildFloatTable();
+    cm_InitOrderChances();
     d2_CloseView(f);
     fade = d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
     while ((fade->flags & 4) == 0)
