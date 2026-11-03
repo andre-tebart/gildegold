@@ -56,7 +56,7 @@ int gm_BuildKindObjects(char *b);  /* 0x500b90 */
 int gm_BathObjectCount(char *b);  /* 0x50cf60 */
 int gm_CurseObjectCount(char *b);  /* 0x50cfd0 */
 int gm_ObjectBuilding(int o);  /* 0x50a0f0 */
-int gm_Unk50ad70(char *c, int proto, int n);  /* 0x50ad70 */
+int gm_TakeableCount(char *c, int proto, int n);  /* 0x50ad70 */
 void gm_ChangeBuildingState(unsigned char *b, int d);  /* 0x50cad0 */
 int gm_ListWorkers(unsigned char *b, int *out);  /* 0x502eb0, the worker lists of the building b (out[1 ..], out[0x19 ..]); returns their number */
 int gm_TitleNumberGroup(int n);  /* 0x504350, the group of the title number n */

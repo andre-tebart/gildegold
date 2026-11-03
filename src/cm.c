@@ -2244,7 +2244,7 @@ int ai_Unk4c63e0(G17MSG *m)
             }
             r = gm_ObjectBuildingOwner(y);
         } else {
-            if (gm_Unk50ad70(z, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]) < *(int *)&m->data[0xf])
+            if (gm_TakeableCount(z, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]) < *(int *)&m->data[0xf])
                 return 1;
             r = z;
         }
@@ -2771,7 +2771,7 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
         }
     }
     if (r2 != 0 && x2 == 0 && y2 == 0 && y == 0) {
-        *(int *)&m->data[0xf] = gm_Unk50ad70(r2, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]);
+        *(int *)&m->data[0xf] = gm_TakeableCount(r2, *(unsigned short *)&m->data[8], *(int *)&m->data[0xf]);
         if (*(int *)&m->data[0xf] == 0)
             return 1;
     }

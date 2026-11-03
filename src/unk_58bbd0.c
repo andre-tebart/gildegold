@@ -15241,7 +15241,7 @@ int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, 
             if (rec != 0)
                 n = gm_FreeStallCapacity(rec, row[0], n);
         } else {
-            n = gm_Unk50ad70(param_5, row[0], n);
+            n = gm_TakeableCount(param_5, row[0], n);
         }
         if (n <= 0)
             continue;
@@ -15308,7 +15308,7 @@ order:
             if (param_5 == 0)
                 n = gm_FreeStallCapacity(rec, row[0]);
             else
-                n = gm_Unk50ad70(param_5, row[0], n);
+                n = gm_TakeableCount(param_5, row[0], n);
             if (n > 0) {
                 if (param_4 == 0)
                     v = 0.0f;
