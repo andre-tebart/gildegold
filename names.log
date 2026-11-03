@@ -1470,3 +1470,9 @@
 2026-11-03T15:15:42 0x006f0cfc data ai_Unk6f0cfc -> cm_FightLootValue by:main why:the value cm_LootCarts returns, -1 when the share was refused; texts 0x1144 / 0x1146 show it
 2026-11-03T15:15:42 0x0060d364 data ai_Unk60d364 -> cm_SceneDuration by:main why:the length of a scene: end = start + it (0x6f0d84 = 0x6f0d80 + it), the slider's max, * 0x4b ms; 200 for a fight, 10 else
 2026-11-03T15:15:42 0x006f244c data ai_Unk6f244c -> cm_FightFixedLight by:main why:read only by cm_RunFight: nonzero picks the light set 2 instead of the sky of the time (never written: a guess)
+2026-11-03T15:19:03 0x004d6ba0 data ai_Unk4d6ba0 -> cm_FighterAct by:main why:the action of one fighter of message 0x55 (sub-command 2): the target's health, the hit action, the pot and bomb throws
+2026-11-03T15:19:03 0x004d3980 data ai_Unk4d3980 -> cm_LayBombAction by:main why:the action queued for the pot (weapon 0x174): the fuse sound "ZuendschnurBrennt_l_01" and cm_LayBomb at the thrower
+2026-11-03T15:19:03 0x004d3a30 data ai_Unk4d3a30 -> cm_ThrowBombAction by:main why:the action queued for the bomb (weapon 0x176): 0x4ce5d0 at the target cell
+2026-11-03T15:19:03 0x004c5bc0 data ai_Unk4c5bc0 -> cm_SendObjCell by:main why:message 0x4e: an object name, a cell x / y and a second text (the pot placed at a cell)
+2026-11-03T15:19:03 0x00fa5f00 data ai_Unkfa5f00 -> cm_PickCellX by:main why:the cell x d3_GetHeightAt finds under a fighter (cm_FighterAct, the fight AI 0x4d8...)
+2026-11-03T15:19:03 0x00fa5f04 data ai_Unkfa5f04 -> cm_PickCellZ by:main why:the cell z d3_GetHeightAt finds under a fighter

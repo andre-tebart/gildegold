@@ -314,6 +314,20 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
             int sideId;                 /* 0x188, the netId of the hitter's side leader (the attacker's: the
                                            defenders' pain voices) */
         } hit;
+        struct {                        /* the pot thrown in a fight (cm.c: cm_LayBombAction, queued by cm_FighterAct) */
+            int unk178;
+            struct AICHAR *victim;      /* 0x17c */
+            struct AICHAR *thrower;     /* 0x180 */
+            int x;                      /* 0x184, the place aimed at */
+            int y;                      /* 0x188 */
+        } pot;
+        struct {                        /* the bomb thrown in a fight (cm.c: cm_ThrowBombAction, queued by cm_FighterAct) */
+            int unk178;
+            struct AICHAR *thrower;     /* 0x17c */
+            int x;                      /* 0x180, the place aimed at */
+            int y;                      /* 0x184 */
+            int sideId;                 /* 0x188, the netId of the thrower's side leader */
+        } bomb;
     };
     char stop;                      /* 0x190 */
     char pad191[0x3];

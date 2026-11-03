@@ -264,7 +264,7 @@ void ai_Unk4c5a70(int a);                                                       
 void cm_SendChat(void *p);                                                      /* 0x4c5aa0 */
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
-void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
+void cm_SendObjCell(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
 void cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
 void ai_Unk4c5ca0(int a, void *p);                                               /* 0x4c5ca0 */
 void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
@@ -457,7 +457,7 @@ void he_StammtischCommand();  /* 0x541b40 */
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 
 int ch_Delete();  /* 0x4028a0 */
-void ai_Unk4d6ba0(char *f);  /* 0x4d6ba0 */
+struct CMFIGHTACT; void cm_FighterAct(struct CMFIGHTACT *f);  /* 0x4d6ba0, the action of one fighter (message 0x55) */
 void ai_Unk4d6f60(char *f);  /* 0x4d6f60 */
 void ai_Unk4d6f90(char *f);  /* 0x4d6f90 */
 void ai_Unk4d7000(char *f);  /* 0x4d7000 */
@@ -801,8 +801,8 @@ extern double ai_Unk5edbd0;  /* 0x5edbd0 */
 extern double ai_Unk5eb8e0;  /* 0x5eb8e0 */
 
 void cm_HitAction(struct CHACTION *a);  /* 0x4d3550 */
-void ai_Unk4d3980(char *ev);  /* 0x4d3980 */
-void ai_Unk4d3a30(char *ev);  /* 0x4d3a30 */
+void cm_LayBombAction(char *ev);  /* 0x4d3980 */
+void cm_ThrowBombAction(char *ev);  /* 0x4d3a30 */
 void ai_Unk4d3ac0(char *ev);  /* 0x4d3ac0 */
 void ai_Unk4d3ae0(char *ev);  /* 0x4d3ae0 */
 struct AICHAR *cm_CheckFightWinner(struct CMFIGHTREC *rec);  /* 0x4d3b30 */
@@ -817,8 +817,8 @@ void ai_Unk4d6930(char *r);  /* 0x4d6930 */
 void ai_Unk4d6970(char *r);  /* 0x4d6970 */
 void ai_Unk4d6a50();  /* 0x4d6a50 */
 void ai_Unk4d6b70();  /* 0x4d6b70 */
-extern int ai_Unkfa5f00;  /* 0xfa5f00 */
-extern int ai_Unkfa5f04;  /* 0xfa5f04 */
+extern int cm_PickCellX;  /* 0xfa5f00 */
+extern int cm_PickCellZ;  /* 0xfa5f04 */
 int d2_WinCreateSlider();  /* 0x46bf10 */
 void d2_CenterObj();  /* 0x46c1d0 */
 extern int ai_Unk6f0d84;  /* 0x6f0d84 */

@@ -1958,7 +1958,7 @@ void ai_Unk4c5b90(int a)
 }
 /* 0x4c5bc0, message 0x4e with two texts */
 
-void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2)
+void cm_SendObjCell(const char *s, int a, int b, const char *s2)
 {
     G17MSG m;
 
@@ -5774,7 +5774,7 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
     case 2:
         if (c[8] != 0) {
             cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
-            ai_Unk4d6ba0(&m->data[0x25]);
+            cm_FighterAct((struct CMFIGHTACT *)&m->data[0x25]);
         }
         break;
     case 6:
@@ -9683,7 +9683,7 @@ void cm_HitAction(CHACTION *a)
 }
 /* 0x4d3980, an explosion event: the fuse sound "ZuendschnurBrennt_l_01", the attacker's worker count synced, 0x4ce290 */
 
-void ai_Unk4d3980(char *ev)
+void cm_LayBombAction(char *ev)
 {
     char *att = *(char **)(ev + 0x180);
     char *k, *r;
@@ -9698,7 +9698,7 @@ void ai_Unk4d3980(char *ev)
 }
 /* 0x4d3a30, a bomb event: the attacker's worker count synced, 0x4ce5d0 at the target */
 
-void ai_Unk4d3a30(char *ev)
+void cm_ThrowBombAction(char *ev)
 {
     char *att = *(char **)(ev + 0x17c);
     char *r;
@@ -10812,89 +10812,114 @@ void ai_Unk4d6b70()
     cm_ClearMarks();
     ai_Unk4cfe70();
 }
-/* 0x4d6ba0, the action of one fighter slot f (+0 id, +4 active, +0x10 target id, +0x14 / +0x18 the attacked place,
-   +0x1d hit, +0x20 kill, +0x24 damage, +0x28 the target's new health): the target's health is set, and the attacker
-   gets the strike animation / event 0x4d3550 (damage 1.4), for the kinds 0x174 / 0x176 the bomb events 0x4d3980 / 0x4d3a30
-   (0x174 also picks the pot spot 0x4d2170 and sends 0x4c5bc0). The slot is cleared after a kill. Rough draft. */
+/* a fighter's action as message 0x55 carries it (sub-commands 2 and 6, at data + 0x25) */
+typedef struct CMFIGHTACT {
+    int id;                             /* 0x00, the fighter's netId, -1 = none */
+    int active;                         /* 0x04, 0: nothing to do */
+    char pad08[8];
+    int targetId;                       /* 0x10, the netId of the fighter attacked */
+    int x;                              /* 0x14, the place a pot or a bomb is thrown at */
+    int y;                              /* 0x18 */
+    char pad1c;
+    char strikes;                       /* 0x1d, nonzero: a blow is struck (a bomb thrown) */
+    char pad1e[2];
+    int lands;                          /* 0x20, nonzero: the blow lands (the pot is laid) */
+    int damage;                         /* 0x24 */
+    int health;                         /* 0x28, the target's health after it */
+} CMFIGHTACT;
 
-void ai_Unk4d6ba0(char *f)
+/* 0x4d6ba0, the action of one fighter (f): the target's health is set; a blow (not with the pot 0x174 or the bomb
+   0x176) by a fighter that is idle or walking / standing (action 0x2d / 0x3a) shouts the attack (1 in 10), takes the
+   damage off the target when it lands and queues the strike: "kampf/schlagen1" without a weapon, else cm_HitAction
+   with the weapon's animation (speed 1.4; a landing blow of the weapons 0x16e / 0x172 ends the action), then a pause.
+   The pot queues cm_LayBombAction (the thrower's own fight places it at the free cell near him, cm_SendObjCell), the
+   bomb cm_ThrowBombAction with the throw sound; both end the action. */
+
+void cm_FighterAct(CMFIGHTACT *f)
 {
-    char *h = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    char *c, *tgt, *k, *side, *x, *ev, *s, *d;
-    int dmg, kill, ox, oy, mode;
+    struct D3HMAP *h = d3_DefaultScene->hmap;
+    AICHAR *c, *tgt, *side;
+    AIWEAPON *k;
+    CHACTION *x, *ev;
+    char *s, *d;
+    int dmg, lands, ox, oy;
     float py;
 
-    if (*(int *)(f + 4) == 0 || *(int *)f == -1)
+    if (f->active == 0 || f->id == -1)
         return;
-    c = cm_FindFighter(*(int *)f);
-    k = cm_CharWeapon(c);
-    side = *(char **)(c + 0x16c);
-    tgt = cm_FindFighter(*(int *)(f + 0x10));
+    c = (AICHAR *)cm_FindFighter(f->id);
+    k = (AIWEAPON *)cm_CharWeapon((char *)c);
+    side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
+    tgt = (AICHAR *)cm_FindFighter(f->targetId);
     if (tgt != 0)
-        *(int *)(tgt + 0x24) = *(int *)(f + 0x28);
-    if (!(k != 0 && (*(int *)k == 0x174 || *(int *)k == 0x176))) {
-        if (f[0x1d] != 0 && ((x = *(char **)(*(char **)(c + 0x184) + 0x128)) == 0 || x[9] == 0x2d || x[9] == 0x3a)) {
+        tgt->v024 = f->health;
+    if (!(k != 0 && (k->id == 0x174 || k->id == 0x176))) {
+        if (f->strikes != 0 && ((x = c->scene->actions) == 0 || x->type == 0x2d || x->type == 0x3a)) {
             if ((unsigned short)util_RandomU(10) > 8) {
-                if (*(int *)(side + 4) == *(int *)(G20_DEF + 4))
-                    snd_QueueVoice(G20_US(c), cm_AttackerAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
+                if (side->netId == cm_FightAttackerC->netId)
+                    snd_QueueVoice(c->id, cm_AttackerAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
                 else
-                    snd_QueueVoice(G20_US(c), cm_DefenderAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
+                    snd_QueueVoice(c->id, cm_DefenderAttackVoices, "_K_C2C_ANGRIFF", -1, 500);
             }
-            kill = *(int *)(f + 0x20);
-            dmg = *(int *)(f + 0x24);
-            if (kill != 0)
-                *(int *)(tgt + 0x24) -= dmg;
+            lands = f->lands;
+            dmg = f->damage;
+            if (lands != 0)
+                tgt->v024 -= dmg;
             if (k == 0)
-                ch_QueueAnim(*(char **)(c + 0x184), "kampf/schlagen1", 1);
+                ch_QueueAnim(c->scene, "kampf/schlagen1", 1);
             else {
-                if (*(int *)k == 0)
-                    mode = kill != 0 ? 8 : 2;
+                if (k->id == 0) {
+                    if (lands != 0)
+                        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 8, 0x2e, 1);
+                    else
+                        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 2, 0x2e, 1);
+                } else if (lands != 0)
+                    ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 6, 0x2e, 1);
                 else
-                    mode = kill != 0 ? 6 : 2;
-                ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&cm_HitAction, mode, 0x2e, 1);
-                *(float *)(ev + 0x178) = 1.4f;
-                *(char **)(ev + 0x17c) = tgt;
-                *(char **)(ev + 0x180) = c;
-                *(int *)(ev + 0x184) = dmg;
-                *(int *)(ev + 0x188) = *(int *)(side + 4);
-                for (s = k + 0x11, d = ev + 0xf0; (*d++ = *s++) != 0;)
+                    ev = ch_AddActionCBK(c->scene, (unsigned)&cm_HitAction, 2, 0x2e, 1);
+                ev->hit.speed = 1.4f;
+                ev->hit.victim = tgt;
+                ev->hit.hitter = c;
+                ev->hit.damage = dmg;
+                ev->hit.sideId = side->netId;
+                for (s = k->anim, d = ev->u.name; (*d++ = *s++) != 0;)
                     ;
-                if ((*(int *)k == 0x16e || *(int *)k == 0x172) && kill != 0) {
-                    *(int *)f = -1;
-                    *(int *)(f + 4) = 0;
+                if ((k->id == 0x16e || k->id == 0x172) && lands != 0) {
+                    f->id = -1;
+                    f->active = 0;
                 }
             }
-            ch_AddAction(*(char **)(c + 0x184), 0x3b, cm_Random(0x1e) + 0x8c);
+            ch_AddAction(c->scene, 0x3b, cm_Random(0x1e) + 0x8c);
         }
     }
-    if (*(int *)k == 0x174 && *(int *)(f + 0x20) != 0) {
-        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3980, 6, 0x2e, 1);
-        *(char **)(ev + 0x17c) = tgt;
-        *(char **)(ev + 0x180) = c;
-        *(int *)(ev + 0x184) = *(int *)(f + 0x14);
-        *(int *)(ev + 0x188) = *(int *)(f + 0x18);
-        strcpy(ev + 0xf0, "spezial/einhaendig_vom_boden_nehmen");
-        if (*(int *)(cm_CutChar + 4) == cm_FightOwner) {
-            if (!d3_GetHeightAt(h, *(char **)(*(char **)(c + 0x184) + 0x34) + 0x4c, &ai_Unkfa5f00, &ai_Unkfa5f04, &py))
+    if (k->id == 0x174 && f->lands != 0) {
+        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_LayBombAction, 6, 0x2e, 1);
+        ev->pot.victim = tgt;
+        ev->pot.thrower = c;
+        ev->pot.x = f->x;
+        ev->pot.y = f->y;
+        strcpy(ev->u.name, "spezial/einhaendig_vom_boden_nehmen");
+        if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner) {
+            if (!d3_GetHeightAt((struct D3SM *)h, &c->scene->obj->pos, &cm_PickCellX, &cm_PickCellZ, &py))
                 return;
-            cm_BestCellNear(c, ai_Unkfa5f00, ai_Unkfa5f04, 8, &ox, &oy);
-            ai_Unk4c5bc0(*(char **)(*(char **)(c + 0x184) + 0x34), ox, oy, 0);
-            *(int *)f = -1;
-            *(int *)(f + 4) = 0;
+            cm_BestCellNear((char *)c, cm_PickCellX, cm_PickCellZ, 8, &ox, &oy);
+            cm_SendObjCell(c->scene->obj->name, ox, oy, 0);
+            f->id = -1;
+            f->active = 0;
         }
     }
-    if (*(int *)k == 0x176 && f[0x1d] != 0) {
-        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3a30, 5, 0x2e, 1);
-        *(char **)(ev + 0x17c) = c;
-        *(int *)(ev + 0x180) = *(int *)(f + 0x14);
-        *(int *)(ev + 0x184) = *(int *)(f + 0x18);
-        *(int *)(ev + 0x188) = *(int *)(side + 4);
-        for (s = k + 0x11, d = ev + 0xf0; (*d++ = *s++) != 0;)
+    if (k->id == 0x176 && f->strikes != 0) {
+        ev = ch_AddActionCBK(c->scene, (unsigned)&cm_ThrowBombAction, 5, 0x2e, 1);
+        ev->bomb.thrower = c;
+        ev->bomb.x = f->x;
+        ev->bomb.y = f->y;
+        ev->bomb.sideId = side->netId;
+        for (s = k->anim, d = ev->u.name; (*d++ = *s++) != 0;)
             ;
-        ch_AddAction(*(char **)(c + 0x184), 0x3b, cm_Random(0x1e) + 0x8c);
+        ch_AddAction(c->scene, 0x3b, cm_Random(0x1e) + 0x8c);
         sb_PlaySampleI(cm_BombSounds, "topfwerfen_s", 1, 0x3f, 0x7f, 0, 0);
-        *(int *)f = -1;
-        *(int *)(f + 4) = 0;
+        f->id = -1;
+        f->active = 0;
     }
 }
 /* 0x4d6f60, the fighter slot f (+0 id, +4 active) of an active character: 0x405610 on its object */
@@ -11108,11 +11133,11 @@ walk:
         return -1;
     if (cm_FindNearCell(ix, iz, &ix, &iz) == 0)
         return -1;
-    ai_Unk4c5bc0(*(char **)(*(char **)(c + 0x184) + 0x34), ix, iz, 0);
+    cm_SendObjCell(*(char **)(*(char **)(c + 0x184) + 0x34), ix, iz, 0);
     return 0;
 }
 
-#define G21_BC0 ((int (*)(const char *, int, int, const char *))ai_Unk4c5bc0)
+#define G21_BC0 ((int (*)(const char *, int, int, const char *))cm_SendObjCell)
 #define G21_C40 ((int (*)(int, void *))cm_SendCutEntry)
 #define G21_CA0 ((int (*)(int, void *))ai_Unk4c5ca0)
 #define G21_DC0 ((int (*)(char *, int, void *))cm_SendFightCommand)
@@ -11194,7 +11219,7 @@ void ai_Unk4d76a0(int *rec)
                             if (cm_FindNearCell(p[5], p[6], &ix, &iz) != 0) {
                                 p[5] = ix;
                                 p[6] = iz;
-                                ai_Unk4c5bc0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
+                                cm_SendObjCell(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                             }
                             ((char *)p)[0xc] = 1;
                         } else if (*(int *)(G21_CH(c) + 0x128) == 0 && (char)p[3] != 0) {
@@ -11285,8 +11310,8 @@ test1d:
                             goto attack;
                     }
                     if ((*(int *)k == 0x16e || *(int *)k == 0x172) && p[8] != 0 &&
-                        d3_GetHeightAt(h, G21_POS(c), &ai_Unkfa5f00, &ai_Unkfa5f04, tmp) != 0) {
-                        if (cm_BestCellNear(c, ai_Unkfa5f00, ai_Unkfa5f04, 0xc, &ix, &iz) != 0)
+                        d3_GetHeightAt(h, G21_POS(c), &cm_PickCellX, &cm_PickCellZ, tmp) != 0) {
+                        if (cm_BestCellNear(c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
                             p[2] = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
@@ -11302,9 +11327,9 @@ attack:
                         cm_SendFightCommand(c, 2, p);
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
-                        if (d3_GetHeightAt(h, G21_POS(c), &ai_Unkfa5f00, &ai_Unkfa5f04, tmp) == 0)
+                        if (d3_GetHeightAt(h, G21_POS(c), &cm_PickCellX, &cm_PickCellZ, tmp) == 0)
                             break;
-                        if (cm_BestCellNear(c, ai_Unkfa5f00, ai_Unkfa5f04, 0xc, &ix, &iz) != 0)
+                        if (cm_BestCellNear(c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
                             p[2] = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                         res = G21_C40(rec[4], m);
                     } else {
@@ -15493,8 +15518,8 @@ extern G17MSG cm_RecvMsg;
 extern unsigned int cm_GroupFirstSeq;
 extern char ai_Unkf895a0[0xb00];
 extern char d2_CaptionCopy[0x80];
-extern int ai_Unkfa5f00;
-extern int ai_Unkfa5f04;
+extern int cm_PickCellX;
+extern int cm_PickCellZ;
 /* ai_Unkfd7c50: view of d3_Scenes (tools/data_views.py) */
 /* ai_Unk143a610: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143a680: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -15740,7 +15765,7 @@ unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
 char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
 char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
-int ai_Unkfa5f00 = {0}; /* 0xfa5f00 */
-int ai_Unkfa5f04 = {0}; /* 0xfa5f04 */
+int cm_PickCellX = {0}; /* 0xfa5f00 */
+int cm_PickCellZ = {0}; /* 0xfa5f04 */
 /* ai_Unk144a160: view of txt_Ptrs (build/mk_txt_views.py) */
 char * ai_Unk1468ae0[0x300] = {0}; /* 0x1468ae0, the objects */
