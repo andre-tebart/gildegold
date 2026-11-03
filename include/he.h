@@ -86,7 +86,7 @@ void he_PostPlayerEvents86a2(void);
 void he_PostWorkshopEvents98(void);
 void he_Unk53f430(void);
 void he_Unk53f500(void);
-unsigned he_Unk53f5b0(void);
+void he_TopUpCharMoney(void);
 
 void he_Unk540c90(void);
 void he_Unk540e40(void);

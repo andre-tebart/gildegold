@@ -1200,9 +1200,9 @@ void ai_Unk4c47b0(short a)
     G17_S(m, 0) = a;
     cm_QueueSend(&m);
 }
-/* 0x4c47e0, message 0xf */
+/* 0x4c47e0, message 0xf: moves d of the goods / money of player c from a to b (-1: none); returns its send slot (cm_GetSlotState) */
 
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d)
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d)
 {
     G17MSG m;
 
@@ -1211,7 +1211,7 @@ void cm_SendMoveGoods(int a, int b, unsigned char c, int d)
     m.type = 0xf;
     m.data[0xc] = c;
     G17_I(m, 0xd) = d;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4830, message 0x10 */
 

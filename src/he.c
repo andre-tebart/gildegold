@@ -300,6 +300,7 @@ int gm_CompareTime();
 #include "ai_bld.h"
 #include "f3gm_carry.h"
 #include "ai_char.h"
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -748,7 +749,7 @@ int cm_SendLongMessage(char *msg);
 int cm_GetSlotState();
 void sv_PumpNet();
 int gm_GetGoodsValue();
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 char *gm_Query(void *list, int n, ...);
 void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
@@ -1595,60 +1596,41 @@ void he_Unk53f500(void)
         f = gm_BuildNext();
     }
 }
-/* 0x53f5b0, the money of the figures (kind 5 / 4 pay to the level 0x640 * (cost class * 5 + 0x14), kind 2 on every 4th day): every 0x20 changes it waits for the last change (0x4c3ae0) */
-
-unsigned he_Unk53f5b0(void)
+/* 0x53f5b0, tops up the money of the characters of kind 5 and 4 (kind 2 when the year % 4 is its net id & 3) to the
+   level 0x640 * (difficulty * 5 + 0x14), from the own player (no source); after 0x20 transfers it waits for the last
+   one's send slot */
+void he_TopUpCharMoney(void)
 {
-    unsigned char b;
-    unsigned u = 0, u3;
-    int i4, i7, cnt, d;
-    unsigned last = 0xffffffff;
-    unsigned char *pb;
-    int tgt;
+    int i, level, have, n, slot = -1;
 
-    i4 = (int)U_I((unsigned)&ai_Time) / 10 + 1;
-    u = (int)U_I((unsigned)&ai_Time) / i4;
-    if ((int)U_I((unsigned)&ai_Time) % i4 == 0) {
-        pb = (unsigned char *)((unsigned)&ai_Chars + 0x2);
-        i7 = (U_I((unsigned)&ai_Difficulty) * 5 + 0x14) * 0x640;
-        cnt = 0;
-        do {
-            b = *pb;
-            u = b;
-            if (b == 5) {
-                u = gm_GetGoodsValue(pb - 2);
-                if (i7 <= (int)u)
-                    goto L_next;
-                tgt = *(int *)(pb + 2);
-L_pay:
-                u = ((int (*)(int, int, unsigned char, int))cm_SendMoveGoods)(tgt, -1, U_I((unsigned)&ai_OwnPlayer), i7 - u);
-                cnt++;
-                last = u;
-            } else if (b == 4) {
-L_chk:
-                u = gm_GetGoodsValue(pb - 2);
-                if ((int)u < i7) {
-                    tgt = *(int *)(pb + 2);
-                    goto L_pay;
+    if (ai_Time.year % (ai_Time.year / 10 + 1) == 0) {
+        level = (ai_Difficulty * 5 + 0x14) * 0x640;
+        n = 0;
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].kind == 5) {
+                have = gm_GetGoodsValue((char *)&ai_CharsT[i]);
+                if (have < level) {
+                    slot = cm_SendMoveGoods(ai_CharsT[i].netId, -1, ai_OwnPlayer, level - have);
+                    n++;
                 }
-            } else if (b == 2) {
-                u3 = U_I((unsigned)&ai_Time) & 0x80000003;
-                if ((int)u3 < 0)
-                    u3 = (u3 - 1 | 0xfffffffc) + 1;
-                if (u3 == (*(unsigned *)(pb + 2) & 3))
-                    goto L_chk;
+            } else if (ai_CharsT[i].kind == 4 || (ai_CharsT[i].kind == 2 && ai_Time.year % 4 == (int)(ai_CharsT[i].netId & 3))) {
+                have = gm_GetGoodsValue((char *)&ai_CharsT[i]);
+                if (have < level) {
+                    slot = cm_SendMoveGoods(ai_CharsT[i].netId, -1, ai_OwnPlayer, level - have);
+                    n++;
+                }
             }
-L_next:
-            if (cnt > 0x1f && last != 0xffffffff) {
-                while ((u = cm_GetSlotState(last)) == 0)
+            if (n >= 0x20 && slot != -1) {
+                do {
+                    if (cm_GetSlotState(slot) != 0)
+                        break;
                     sv_PumpNet();
-                last = 0xffffffff;
-                cnt = 0;
+                } while (1);
+                slot = -1;
+                n = 0;
             }
-            pb += 0x21c;
-        } while ((int)pb < (unsigned)((unsigned)ai_Chars + 0x65402));
+        }
     }
-    return u;
 }
 
 int gm_TitleNumber();
@@ -1723,7 +1705,7 @@ unsigned he_Unk53f6b0(void)
         lvl = 0;
     x = (U_I((unsigned)&ai_Time) + ((U_I((unsigned)&ai_Time) >> 31) & 3)) / 4 + 1;
     gate = (float)x / ((float)x + ((float *)((unsigned)&sv_PhaseMinutes + 0x10c))[lvl]);
-    he_Unk53f5b0();
+    he_TopUpCharMoney();
     memset(cnt, 0, sizeof(cnt));
     memset(own, 0, sizeof(own));
     pb = (unsigned char *)U_I((unsigned)&ai_Blds);
@@ -7092,7 +7074,7 @@ int gm_MinutesBetween();
 int gm_PlayerFactor(int a, unsigned char k);
 void cm_SendChrStop(int a);
 void ai_Unk4c5410(int a, const char *s, unsigned char c);
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 unsigned char *gm_BuildQuery(int n, ...);
 char *gm_Query(void *list, int n, ...);
 
@@ -10731,7 +10713,7 @@ void he_Unk55a030(int ev)
 int ai_Unk494d90();
 int gm_EquipmentValue(unsigned char *b, int level);
 int gm_SumListAmounts(void *list, unsigned char p);
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 
 /* 0x55a5f0, the allocation handler of the brawl event "PRUEGEL" (ROUGH): due now; with no building (+0x10 = -1) the first of the kind 0x16 (else 0xf) is taken, the message 0x4c59f0 (0x11, +0x10, -1, 0, 2, 0x154, "PRUEGEL") is created (+0xc8 = -1, handle +0xcc), and the target building +0xd0 is the opponent's own (+0x170) or its first of the type (0x501190 (1, 4, id)), else a free spot near it (0x4a63f0 (player, .., 100.0)) */
 void he_Unk55a5f0(int ev)
@@ -11678,7 +11660,7 @@ void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);
 int gm_ListAmount();
 int gm_CharCurrency(char *c, char p);
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x55ee40, a Ghidra start: the chance of a figure to be seen at its place (ROUGH): for a figure with the flag 1 of +0x5a and objects (+0x61 / the target's +0x170 +0x61) the 3D distance of the two objects scales a factor against 0x5eb780 (1.0), 0x5edbb8 and the building value (0x5092e0 (.., 9, 1)); a nearby contact (0x4ffe90 (.., 1, 0, 0x120)) with an object returns 1, else 0 */
@@ -14640,7 +14622,7 @@ int he_Unk56bc50(void *rot, float *pos, unsigned char *type, char *model, int ev
 
 int gm_CompareTime();
 short * gm_FindChar(int id);
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 short *gm_PlayerRecord(char *c);
 void cm_SendBuildingDestroyed(int a);
 int cm_SendExSysMessage(unsigned char id, void *msg);

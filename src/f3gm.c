@@ -5008,7 +5008,7 @@ extern int ai_CharCount, ai_NextCharNumber, ai_NextPlayerNumber;  /* 0x6f1bc0, 0
 char d3if_ShowTree(struct D3OBJECT *obj, char show);                     /* 0x447300 */
 void cm_BeginGroup(const char *s);                     /* 0x4c4540 */
 void cm_EndGroup(const char *s);                     /* 0x4c4580 */
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 void cm_SendBoss(int a, int b);                     /* 0x4c5540 */
 void cm_SendExSetHE(unsigned char k, char *p);                     /* 0x4c4c60 */
@@ -7566,7 +7566,7 @@ void cm_SendMoveObject(int a, int b, int c);                     /* 0x4c5010 */
 #define ORD_F1C8_ANEW 0x800000  /* flags1c8 bit 23, set for a character that starts anew (gm_ForfeitEstate) */
 extern const unsigned int ai_BuildingTypeMasks[4];  /* 0x5eed70 (ai.h, not includable here): [2..3] the 64-bit mask of the house-owner building kinds */
 void cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int gm_PlayerFactor(int a, unsigned char k);                     /* 0x5085f0 */
 float util_RandomSq(void);                  /* 0x42ec40 */
 
@@ -7574,7 +7574,7 @@ int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  
 int gm_BuildingClass();                     /* 0x501d80 */
 void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     /* 0x4c47e0 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
 unsigned char * gm_BuildNext(void);                     /* 0x501030 */
 

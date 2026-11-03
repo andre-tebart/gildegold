@@ -202,7 +202,7 @@ int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int 
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2); /* 0x4c46d0 */
 void cm_SendTakeOverCharacter(int a, int b);                                                 /* 0x4c4770 */
 void ai_Unk4c47b0(short a);                                                      /* 0x4c47b0 */
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
 void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);         /* 0x4c4880 */
 void ai_Unk4c48e0(int a, short b, int c);                                        /* 0x4c48e0 */

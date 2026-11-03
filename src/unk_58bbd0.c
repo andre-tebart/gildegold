@@ -2937,7 +2937,7 @@ struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
 int gm_Unk50c340(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
-void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
+void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
 char *_strupr(char *); void gm_Unk50c4d0(void); int ai_Unk5ac110();
 int ai_Unk5bb350(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
@@ -7240,7 +7240,7 @@ void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); vo
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
 void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
+void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
 /* 0x59b030, a credit payment of the money lender (304 B): the person 0x505df0 (param_2 + 0xb0), the text
    0x18d5 (param_2 + 0xb4); when 0x521040 (the person, param_2 + 0xb4, the player byte) and the confirmation
@@ -10103,7 +10103,7 @@ char * gm_Query(void *list, int n, ...); int gm_GetWorth(unsigned short id); int
 int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); int d2_SetForm(int view, int n);
 void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj(); void d2_SetObjValue();
 int gm_ConvertMoney(int a, unsigned char k); int d2_GetObjValue(); int gm_PlayerFactor(int a, unsigned char k); int sv_CheckGoodAmount();
-void cm_SendMoveGoods(int a, int b, unsigned char c, int d); int cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
+int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int cm_SendRelations(int a, int b, int c, int d); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 
 /* 0x5a1af0, the church donation window "Locations\Kirche\Spenden" (1141 B): param_1 is the building record (+0x27
@@ -10217,7 +10217,7 @@ int gv_CountOwnedGraves(); int gv_CulpritGuilt(int c); int gm_GetWorth(unsigned 
 int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); 
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
-int gv_RetireCrimesOf(int p, int n); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
+int gv_RetireCrimesOf(int p, int n); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
 void sv_PumpNet(); int gm_DonationRank(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 void ai_Top5Window();
