@@ -14645,58 +14645,58 @@ void cm_RunDeath(G28REC *m)
     cm_EndSpecialTrack();
     cm_FightStart = 0;
 }
-/* 0x4e1700, a bankruptcy (the message m: +0x34 the person): the scene "Pleite.ed3" with "cutscenes\\pleite\\enter_Pleite.esc", a sky by the age
-   0x770ae4, the voices "_PLEITE_HS" 0 .. 5 (pauses 0x9c4 / 0x1f4 / 0x251c / 0x1194), the text 0x1ab1 (0x3fda with the flag 0x6f23f8 & 4)
-   as a message (0x4e5470); with the flag & 8 the person is removed (+8 = 0, 0x53bb20). ROUGH */
+/* 0x4e1700, a bankruptcy (the scene callback of the bankruptcy event, kind 9) of m->members[0]: the light set by the hour
+   (as cm_RunDeath), the sample bank "pleite.sbf", the track "DerSeuchenzug", the scene "Pleite.ed3" with the sky
+   "sky_dunkel_01" and "cutscenes\\pleite\\enter_Pleite.esc" (given the light set as text); unless a click ends a pause:
+   the voices "_PLEITE_HS" 0 .. 2, the rain (250), the voices 3 .. 5. Then the text 0x1ab1 (0x3fda in a game of the flag 4)
+   with the person's name as a message; in a game of the flag 8 the game is over (back to main_GameLoop), else the estate is
+   forfeited (gm_ForfeitEstate, its text not shown) */
 
-int ai_Unk4e1700(char *m)
+void cm_RunBankruptcy(G28REC *m)
 {
+    char stagetext[0x100];
     char buf[0x200];
-    char big[0x1c00];
-    char *a;
-    int ages[6] = {8, 10, 12, 15, 18, 20};
-    int i, stage, sc, snd, rc;
+    char estate[0x1fb8];
+    AICHAR *a = (AICHAR *)gm_FindChar(m->members[0]);
+    int hours[6] = {8, 10, 12, 15, 18, 20};
+    int i, stage, sc, bank;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
     stage = 6;
     cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     for (i = 0; i < 6; i++) {
-        if ((unsigned short)ai_Time.hour < ages[i]) {
+        if (ai_Time.hour < hours[i]) {
             stage = i;
             break;
         }
     }
-    snd = snd_LoadVoiceBank("pleite.sbf", 1);
+    bank = snd_LoadVoiceBank("pleite.sbf", 1);
     cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
     cm_LoadEventScene("Pleite.ed3");
-    d3_SetLightSet(stage, 0, 0x3f800000, 1);
+    d3_SetLightSet(stage, 0, 1.0f, 1);
     d3_SetFogSet(0, 0, 0);
     cm_CreateSceneSky("sky_dunkel_01");
-    sprintf(buf, "%i", stage);
-    sc = cm_StartEventArg("cutscenes\\pleite\\enter_Pleite.esc", buf);
-    rc = cm_RunSceneTicksOrClick(0x1770, 0, 0);
-    if (rc == 0) {
-        cm_QueueVoice(-8, "_PLEITE_HS", 0, 0);
-        cm_QueueVoice(-8, "_PLEITE_HS", 1, 0x9c4);
-        cm_QueueVoice(-8, "_PLEITE_HS", 2, 0x1f4);
-        rc = cm_RunSceneTicksOrClick(0x3e80, 0, 0);
-        if (rc == 0) {
+    sprintf(stagetext, "%i", stage);
+    sc = cm_StartEventArg("cutscenes\\pleite\\enter_Pleite.esc", stagetext);
+    if (cm_RunSceneTicksOrClick(0x1770, 0, 0) == 0) {
+        cm_QueueVoice(-8, bank, "_PLEITE_HS", 0, 0);
+        cm_QueueVoice(-8, bank, "_PLEITE_HS", 1, 0x9c4);
+        cm_QueueVoice(-8, bank, "_PLEITE_HS", 2, 0x1f4);
+        if (cm_RunSceneTicksOrClick(0x3e80, 0, 0) == 0) {
             cm_StartSceneRain(0xfa);
-            rc = cm_RunSceneTicksOrClick(0x2af8, 0, 0);
-            if (rc == 0) {
-                cm_QueueVoice(-8, "_PLEITE_HS", 3, 0x251c);
-                cm_QueueVoice(-8, "_PLEITE_HS", 4, 0x1194);
-                cm_QueueVoice(-8, "_PLEITE_HS", 5, 0x1f4);
+            if (cm_RunSceneTicksOrClick(0x2af8, 0, 0) == 0) {
+                cm_QueueVoice(-8, bank, "_PLEITE_HS", 3, 0x251c);
+                cm_QueueVoice(-8, bank, "_PLEITE_HS", 4, 0x1194);
+                cm_QueueVoice(-8, bank, "_PLEITE_HS", 5, 0x1f4);
                 cm_RunSceneTicksOrClick(0x5dc0, 0, 0);
             }
         }
     }
     d2_CutsceneActive = 0;
     if ((ai_GameFlags & 4) != 0)
-        txt_Format(buf, 0x3fda, *(unsigned short *)a);
+        txt_Format(buf, 0x3fda, a->id);
     else
-        txt_Format(buf, 0x1ab1, *(unsigned short *)a);
+        txt_Format(buf, 0x1ab1, a->id);
     cm_MessageBox(buf, 0);
     cm_FadeToBlack();
     cm_StopScript(sc);
@@ -14705,17 +14705,16 @@ int ai_Unk4e1700(char *m)
     cm_StopSceneRain();
     cm_LeaveEventScene();
     snd_ClearQueue();
-    sb_UnloadSampleBank(snd);
+    sb_UnloadSampleBank(bank);
     cm_EndSpecialTrack();
     cm_FightStart = 0;
     if ((ai_GameFlags & 8) != 0) {
-        a[8] = 0;
+        a->health = 0;
         ai_GameOver = 1;
         sv_PopTo((unsigned)&main_GameLoop);
-        return 0;
+        return;
     }
-    gm_ForfeitEstate(a, big, 0);
-    return 0;
+    gm_ForfeitEstate((struct ORDCHAR *)a, estate, 0);
 }
 /* 0x4e19a0, tells the party m (+0x30 count, +0x34 ids) about the thing +0x7c / +0x80 (text 0x3fd9, then 0x143e8c0 / 0x143e8bc by the flag
    0x6f23f8 & 4): every one of the kinds 6 / 7 gets it (0x4e48b0). Returns 1 */
@@ -16432,7 +16431,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
-    ai_Unk4e5730(9, (int)ai_Unk4e1700, 0, 0, 0, 0);
+    ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
     ai_Unk4e5730(10, (int)ai_Unk4e1a80, (int)ai_Unk4e24c0, (int)ai_Unk4e26d0, (int)ai_Unk4e19a0, 1);
     ai_Unk4e5730(11, (int)ai_Unk4e2860, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
