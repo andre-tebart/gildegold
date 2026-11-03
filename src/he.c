@@ -838,57 +838,53 @@ unsigned char *he_CreateEvent(unsigned char *m)
     he_EventCount++;
     return (unsigned char *)ev;
 }
-/* 0x53e1f0, frees the event record `r` (the memo block at +0x7c, the slot of the quick list 0x74db40) and shrinks the used counters 0x6f261c / 0x6f2620 */
-
+/* 0x53e1f0, frees the event record `r`: its message box text (+0x7c), its entry in he_QuickList when it is shown in the
+   event bar (flags 8: releases its slot first, shrinks he_QuickTop), counts it off (he_EventCount), clears it and,
+   when it was the last used record, shrinks he_EventTop
+   @deep read whole against the original and rewritten on AIJOB / HEEVSLOT: the text free, the quick list
+   search and its q != ev return, the slot release through q, he_QuickTop's shrink and clamp,
+   he_EventCount--, the 0x14c-byte clear, the he_EventTop shrink and clamp all match statement for
+   statement. Left: the original computes &he_Jobs[he_EventTop] twice (once for the ev compare at +0xb9,
+   again after the he_EventTop >= 0 test at +0xd1: lea edx,[eax+eax*4]; lea ecx,[eax+edx*8]; lea
+   edx,[eax+ecx*2]; lea ecx,[edx*4+he_Events]), ours keeps the first (common subexpression); the rest is
+   the register renaming that follows (edx / ecx for the clamp). Tried the do-while pointer walk in an if,
+   the for over the index, a local copy of he_EventTop and a cast compare on r: all CSE the address */
 void he_FreeEvent(int *r)
 {
-    unsigned i;
-    int *q;
-    int k;
-    char *pc;
-    unsigned u;
+    AIJOB *ev = (AIJOB *)r;
+    AIJOB *q;
+    int i, t;
 
-    if (r != 0) {
-        if (r[0x1f] != 0) {
-            mem_Free(r[0x1f]);
-            r[0x1f] = 0;
+    if (ev == 0)
+        return;
+    if (ev->text != 0) {
+        mem_Free(ev->text);
+        ev->text = 0;
+    }
+    if (ev->opts & 8) {
+        for (i = 0; i < 0x100; i++)
+            if (he_QuickList[i] == (char *)ev)
+                break;
+        q = (AIJOB *)he_QuickList[i];
+        if (q != ev)
+            return;
+        if (q->slot != 0 && q->slot->win != -1)
+            he_ReleaseSlot((int)q);
+        t = he_QuickTop;
+        he_QuickList[i] = 0;
+        if (i == t) {
+            for (; t >= 0 && he_QuickList[t] == 0; t--)
+                ;
+            he_QuickTop = t < 0 ? 0 : t;
         }
-        if ((*(unsigned char *)(r + 0x1e) & 8) != 0) {
-            i = 0;
-            do {
-                if (U_I((unsigned)&he_QuickList + i * 4) == (int)r)
-                    break;
-                i++;
-            } while ((int)i < 0x100);
-            q = (int *)U_I((unsigned)&he_QuickList + i * 4);
-            if (q != r)
-                return;
-            if (q[0x1d] != 0 && *(int *)(q[0x1d] + 8) != -1)
-                he_ReleaseSlot((int)q);
-            u = U_I((unsigned)&he_QuickTop);
-            U_I((unsigned)&he_QuickList + i * 4) = 0;
-            if (i == u) {
-                for (; (int)u >= 0 && U_I((unsigned)&he_QuickList + u * 4) == 0; u--)
-                    ;
-                U_I((unsigned)&he_QuickTop) = ((int)u < 0) - 1 & u;
-            }
-        }
-        U_I((unsigned)&he_EventCount)--;
-        q = r;
-        for (k = 0; k < 0x53; k++)
-            *q++ = 0;
-        if (r == (int *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c)) {
-            if (U_I((unsigned)&he_EventTop) >= 0) {
-                pc = (char *)((unsigned)&he_Events + U_I((unsigned)&he_EventTop) * 0x14c);
-                do {
-                    if (*pc != 0)
-                        break;
-                    U_I((unsigned)&he_EventTop)--;
-                    pc -= 0x14c;
-                } while (U_I((unsigned)&he_EventTop) >= 0);
-            }
-            U_I((unsigned)&he_EventTop) = (U_I((unsigned)&he_EventTop) < 0) - 1 & U_I((unsigned)&he_EventTop);
-        }
+    }
+    he_EventCount--;
+    memset(ev, 0, sizeof(AIJOB));
+    if (ev == &he_Jobs[he_EventTop]) {
+        for (; he_EventTop >= 0; he_EventTop--)
+            if (he_Jobs[he_EventTop].kind != 0)
+                break;
+        he_EventTop = he_EventTop < 0 ? 0 : he_EventTop;
     }
 }
 /* 0x53e300, the next record that matches the filter of 0x53e400 (type 0x625708, owner 0x62570c, player 0x625710, argument +0x10 0x625714) after the cursor 0x7585e0; 0 at the end */
