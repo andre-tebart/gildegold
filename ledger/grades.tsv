@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at c76055d: VC6 declaration-set tie-break: adding the typedef GMPLAYERSLOT to f3gm_types.h (d3_engine.c includes it through f3gm.h and uses none of it) swaps two independent loads (mov esi,[ebp-4] / mov ebx,[ebp+8] and mov eax,[ebp-4] / mov edx,[ebp-8]); the match was no evidence of the source. The type names ai_PlayerSlots' money good for cm_ExSellObjekt. [waits for: d3_engine.c's head (its includes settling)]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -2324,16 +2324,16 @@ exe	0x004c9c10	ai_Unk4c9c10	cm	byte	draft
 exe	0x004c9c80	ai_Unk4c9c80	cm	byte	draft		
 exe	0x004c9d00	ai_Unk4c9d00	cm	byte	draft		
 exe	0x004c9d80	ai_Unk4c9d80	cm	byte	draft		
-exe	0x004c9dc0	ai_Unk4c9dc0	cm	draft	draft		
-exe	0x004ca8a0	ai_Unk4ca8a0	cm	draft	draft		
+exe	0x004c9dc0	cm_ExChrGotoBuilding	cm	draft	readable	deep	
+exe	0x004ca8a0	cm_ExChrUseGates	cm	shape	readable		
 exe	0x004caa20	ai_Unk4caa20	cm	byte	draft		
 exe	0x004caaa0	ai_Unk4caaa0	cm	byte	draft		
-exe	0x004cab40	ai_Unk4cab40	cm	draft	draft		
-exe	0x004cac40	ai_Unk4cac40	cm	draft	draft		
+exe	0x004cab40	cm_ExSetHome	cm	byte	readable		
+exe	0x004cac40	cm_ExGebUpgrade	cm	shape	readable		
 exe	0x004cb100	ai_Unk4cb100	cm	byte	draft		
 exe	0x004cb210	ai_Unk4cb210	cm	byte	draft		
-exe	0x004cb250	ai_Unk4cb250	cm	draft	draft		
-exe	0x004cb4a0	ai_Unk4cb4a0	cm	draft	draft		
+exe	0x004cb250	cm_ExHire	cm	byte	readable		
+exe	0x004cb4a0	cm_ExCharModel	cm	byte	readable		
 exe	0x004cb6e0	ai_Unk4cb6e0	cm	byte	draft		
 exe	0x004cb730	ai_Unk4cb730	cm	byte	draft		
 exe	0x004cb7c0	ai_Unk4cb7c0	cm	byte	draft		
@@ -2344,9 +2344,9 @@ exe	0x004cb8d0	ai_Unk4cb8d0	cm	byte	draft
 exe	0x004cb910	ai_Unk4cb910	cm	shape	draft		
 exe	0x004cb940	ai_Unk4cb940	cm	byte	draft		
 exe	0x004cb9b0	ai_Unk4cb9b0	cm	byte	draft		
-exe	0x004cba10	ai_Unk4cba10	cm	draft	draft		
+exe	0x004cba10	cm_ExSpawnCharacter	cm	byte	readable		
 exe	0x004cbb90	ai_Unk4cbb90	cm	byte	draft		
-exe	0x004cbbd0	ai_Unk4cbbd0	cm	draft	draft		
+exe	0x004cbbd0	cm_ExChat	cm	byte	readable		
 exe	0x004cbca0	ai_Unk4cbca0	cm	draft	draft		
 exe	0x004cbff0	ai_Unk4cbff0	cm	byte	draft		
 exe	0x004cc050	ai_Unk4cc050	cm	shape	draft		
@@ -2400,7 +2400,7 @@ exe	0x004cd820	ai_Unk4cd820	cm	byte	draft
 exe	0x004cd870	ai_Unk4cd870	cm	draft	draft		
 exe	0x004cd9d0	ai_FindWeaponRecord	cm	byte	draft		
 exe	0x004cda00	ai_Unk4cda00	cm	byte	draft		
-exe	0x004cda50	ai_Unk4cda50	cm	byte	draft		
+exe	0x004cda50	cm_CharWeapon	cm	byte	draft		
 exe	0x004cdac0	ai_Unk4cdac0	cm	byte	draft		
 exe	0x004cdb20	ai_Unk4cdb20	cm	byte	draft		
 exe	0x004cdb80	ai_Unk4cdb80	cm	draft	draft		
@@ -2961,7 +2961,7 @@ exe	0x004fd120	gm_PopulationStep	f3gm	shape	readable
 exe	0x004fd5c0	gm_CreateRandomChild	f3gm	byte	readable		
 exe	0x004fd7e0	gm_IsUnderAge	f3gm	byte	draft		
 exe	0x004fd820	gm_FindHome	f3gm	draft	readable	deep	
-exe	0x004fda10	unk_Unk4fda10	f3gm	byte	draft		
+exe	0x004fda10	gm_MoveIntoHome	f3gm	byte	draft		
 exe	0x004fda70	gm_FindApplicant	f3gm	byte	readable		
 exe	0x004fdc10	gm_HomeObject	f3gm	byte	readable		
 exe	0x004fdcb0	gm_CharacterHome	f3gm	byte	readable		
@@ -3205,7 +3205,7 @@ exe	0x00510e50	init_StartNetworkGame	f3init	draft	draft	deep	draft+readable -> d
 exe	0x005112d0	unk_Unk5112d0	f3init	byte	draft		
 exe	0x00511400	init_SetupNewGame	f3init	byte	readable		
 exe	0x005115b0	unk_Unk5115b0	f3init	byte	draft		
-exe	0x00511600	unk_Unk511600	f3init	byte	draft		
+exe	0x00511600	init_StripTorches	f3init	byte	draft		
 exe	0x005116b0	unk_Unk5116b0	f3init	byte	draft		
 exe	0x00511700	init_TownBuildingHook	f3init	draft	readable	deep	
 exe	0x00511790	unk_Unk511790	f3init	byte	draft		
@@ -3696,8 +3696,8 @@ exe	0x00554320	he_Unk554320	he	draft	draft
 exe	0x00554820	he_Unk554820	he	byte	draft		
 exe	0x00554860	he_Unk554860	he	draft	draft		
 exe	0x00554cb0	he_Unk554cb0	he	draft	draft		
-exe	0x005551c0	he_Unk5551c0	he	byte	draft		
-exe	0x00555210	he_Unk555210	he	draft	draft		
+exe	0x005551c0	he_CollectTransporter	he	byte	readable		
+exe	0x00555210	he_RandomTransporter	he	draft	draft		
 exe	0x005552c0	he_Unk5552c0	he	byte	draft		
 exe	0x00555350	he_Unk555350	he	draft	draft		
 exe	0x00555690	he_Unk555690	he	draft	draft		
@@ -4146,7 +4146,7 @@ exe	0x0058fc40	lc_GetGebaeudeBauplatz	unk_58bbd0	draft	readable	deep
 exe	0x0058fd40	ai_ObjectPosition	unk_58bbd0	byte	readable		
 exe	0x0058fd90	ai_ObjectAngle	unk_58bbd0	byte	readable		
 exe	0x0058fe10	ai_FindNearestObject	unk_58bbd0	shape	readable		
-exe	0x0058feb0	ai_Unk58feb0	unk_58bbd0	byte	draft		
+exe	0x0058feb0	ai_DropObjectAt	unk_58bbd0	byte	draft		
 exe	0x0058ff00	ai_Unk58ff00	unk_58bbd0	draft	draft		
 exe	0x005909a0	ai_Unk5909a0	unk_58bbd0	draft	draft		
 exe	0x00591170	ai_HandleMapKey	unk_58bbd0	draft	draft		
