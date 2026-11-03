@@ -117,28 +117,8 @@ extern ORDCHAR *gm_RichestChar;
 #define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
 #define ai_Unk91b6d0 (gm_IncomeHistory + 0x150)  /* 0x91b6d0, row 4 */
 #define gm_IncomeRows (*(int (*)[5][17])&gm_IncomeHistory)  /* 0x91b580, the five rows of 17 ints; [row][16] is the current sum */
+#include "f3gm_carry.h"            /* GMCARRYSPEC, GMCARRYREC, gm_CarryRecs */
 #pragma pack(push, 1)
-/* the 0xe-byte goods description a carried-goods record holds and gm_CollectCarried copies whole (ls.c saves it
-   as one block of 0xe bytes) */
-typedef struct GMCARRYSPEC {
-    int v[3];
-    short w;
-} GMCARRYSPEC;
-
-/* one of the 0x100 carried-goods records at 0x74e1e0 (0xa4 bytes; he.c counts +4 down, ls.c saves the fields
-   +4 / +8 / +0xc / +0x10 / +0x14 (0xe bytes) / +0x22 (0x80 bytes) of each used one) */
-typedef struct GMCARRYREC {
-    int ref;                            /* 0x00, nonzero: the record is in use (ls.c saves the word at ref + 4) */
-    unsigned char ttl;                  /* 0x04, counted down by he.c 0x53eea0, the record expires at 0 */
-    char pad05[3];
-    int hasValue;                       /* 0x08, nonzero: value counts */
-    int owner;                          /* 0x0c, the id of the person who carries it */
-    int value;                          /* 0x10 */
-    GMCARRYSPEC spec;                   /* 0x14 */
-    char data[0x80];                    /* 0x22 */
-    char padA2[2];
-} GMCARRYREC;
-
 /* an entry of gm_CollectCarried's list (0x1e bytes) */
 typedef struct GMCARRYENTRY {
     int ref;                            /* 0x00, the record's ref */
@@ -158,9 +138,7 @@ typedef struct GMCARRY {
     int count;                          /* 0x219, the entries used */
 } GMCARRY;
 #pragma pack(pop)
-typedef char gm_AssertGMCARRYREC[sizeof(GMCARRYREC) == 0xa4 ? 1 : -1];
 typedef char gm_AssertGMCARRY[sizeof(GMCARRY) == 0x21d ? 1 : -1];
-#define gm_CarryRecs (*(GMCARRYREC (*)[0x100])((char *)&he_QuickList + 0x6a0))  /* 0x74e1e0, the 0x100 carried-goods records inside ls.c's he_QuickList */
 
 int gm_GetGoodsValue(char *c);              /* 0x509e60 */
 int gm_TitleGroup(int n);                /* 0x504ad0 */

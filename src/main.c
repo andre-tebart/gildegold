@@ -3056,7 +3056,7 @@ void main_Unk537de0(void)
     U_I((unsigned)&cm_SpeedLevel) = 2;
     tb_OpenFunction(sv_UpdateClock, 0x47);
     tb_SetFunctionOff(sv_UpdateClock, 1);
-    he_Unk53eea0();
+    he_AgeCarryRecs();
     gv_ClearCrimes();
     ord_ResetStatistics();
     main_BookObject = d3io_LoadObjectRef("Buch", "Buch");
@@ -4137,7 +4137,7 @@ void main_BeginPlayerRound(void)
         d2_ClearSurface(d2_ScreenSurf);
         d2_ShowPicture(0x79d);
     }
-    he_Unk53eea0();
+    he_AgeCarryRecs();
     he_CountDownApEvents();
     if (main_GfxOn != 0) {
         w = d2_OpenForm(0, 0, "Runden\\Spielerrunde_Beginn_NEU");

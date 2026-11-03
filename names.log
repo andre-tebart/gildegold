@@ -1712,3 +1712,4 @@
 2026-11-03T22:26:20 0x00f89584 data ai_LastUpdateTime -> ai_Update.last by:main why:contained in ai_Update (0xf89580)
 2026-11-03T22:26:20 0x00f89594 data ai_CountCarry -> ai_Update.carry by:main why:contained in ai_Update (0xf89580)
 2026-11-03T23:12:58 0x0053e8b0 data he_Unk53e8b0 -> he_AddEventGfxInfo by:main why:adds the event's gfx info (he_CreateGfxInfo) by its kind, called per event from the frame run 0x53ed70
+2026-11-03T23:15:30 0x0053eea0 func he_Unk53eea0 -> he_AgeCarryRecs by:main why:counts down the ttl of every gm_CarryRecs record and frees (ref 0) the expired ones

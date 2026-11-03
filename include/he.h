@@ -61,7 +61,7 @@ void he_RecheckPersonEvents(unsigned short *pl);
 void he_Unk53ed70(void);
 void he_RunQuickList(void);
 void he_Unk53ee40(void);
-void he_Unk53eea0(void);
+void he_AgeCarryRecs(void);
 
 void he_CountDownApEvents(void);
 #pragma pack(push, 1)

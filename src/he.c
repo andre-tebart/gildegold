@@ -297,6 +297,7 @@ int gm_CompareTime();
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
 #include "ai_bld.h"
+#include "f3gm_carry.h"
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -1363,24 +1364,16 @@ void he_Unk53ee40(void)
         } while (i <= U_I((unsigned)&he_EventTop));
     }
 }
-/* 0x53eea0, counts the 0x100 entries of 0x74e1e0 (0xa4 bytes, the byte at +4 is a counter) down, clearing the first word of an expired one */
-
-void he_Unk53eea0(void)
+/* 0x53eea0, counts the time to live of the 0x100 carried-goods records (gm_CarryRecs) down, freeing (ref 0) each one
+   that reaches 0 */
+void he_AgeCarryRecs(void)
 {
-    char c;
-    char *p = (char *)((unsigned)&he_QuickList + 0x6a4);
+    int i;
 
-    do {
-        c = *p;
-        *p = c - 1;
-        if ((char)(c - 1) == 0) {
-            p[-4] = 0;
-            p[-3] = 0;
-            p[-2] = 0;
-            p[-1] = 0;
-        }
-        p += 0xa4;
-    } while ((int)p < (unsigned)&he_EventCount);
+    for (i = 0; i < 0x100; i++) {
+        if (--gm_CarryRecs[i].ttl == 0)
+            gm_CarryRecs[i].ref = 0;
+    }
 }
 /* 0x53eec0, registers an AP event in the first free of the 0x100 entries at 0x758ca0 (0x50 bytes: counter byte 2, values +4 / +8 / +0xc, name +0x10, 0x3f characters); 0 when full */
 
