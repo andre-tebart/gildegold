@@ -3095,8 +3095,8 @@ exe	0x00506890	gm_InheritEstate	f3gm	shape	readable
 exe	0x00506e70	gm_ForfeitEstate	f3gm	draft	readable	deep	
 exe	0x005075c0	gm_MayRemoveChar	f3gm	byte	readable		
 exe	0x00507690	gm_CreateCharacter	f3gm	draft	readable	deep	
-exe	0x005085b0	gm_ConvertMoney	f3gm	byte	draft		
-exe	0x005085f0	gm_PlayerFactor	f3gm	byte	draft		
+exe	0x005085b0	gm_ConvertMoney	f3gm	byte	readable		
+exe	0x005085f0	gm_PlayerFactor	f3gm	byte	readable		
 exe	0x00508620	gm_Unk508620	f3gm	byte	draft		
 exe	0x00508640	gm_Unk508640	f3gm	byte	draft		
 exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	draft		
@@ -3119,23 +3119,23 @@ exe	0x00509400	gm_WorkMinutesBetween	f3gm	draft	readable	deep
 exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	draft	readable	deep	
 exe	0x005098a0	gm_BuildingGoodsList	f3gm	draft	readable	deep	
 exe	0x005099e0	gm_BuildingGoodsList17	f3gm	shape	readable		
-exe	0x00509b10	gm_EquipmentValue	f3gm	draft	draft		
-exe	0x00509c80	gm_OwnerWorth	f3gm	draft	draft		
-exe	0x00509d30	gm_BuildingKindValue	f3gm	draft	readable		
-exe	0x00509dc0	gm_BuildingKindCost	f3gm	draft	draft		
+exe	0x00509b10	gm_EquipmentValue	f3gm	byte	readable		
+exe	0x00509c80	gm_OwnerWorth	f3gm	byte	readable		
+exe	0x00509d30	gm_BuildingKindValue	f3gm	byte	readable		
+exe	0x00509dc0	gm_BuildingKindCost	f3gm	byte	readable		
 exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft		
 exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
 exe	0x00509eb0	gm_CharSumAmounts	f3gm	byte	draft		
-exe	0x00509ee0	gm_CharCurrency	f3gm	draft	draft		
+exe	0x00509ee0	gm_CharCurrency	f3gm	byte	readable		
 exe	0x00509f20	gm_Unk509f20	f3gm	shape	draft		
-exe	0x00509f80	gm_Unk509f80	f3gm	draft	draft		
+exe	0x00509f80	gm_StallValue	f3gm	byte	readable		
 exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
 exe	0x0050a050	gm_ObjectBuildingOwner	f3gm	byte	draft		
 exe	0x0050a0b0	gm_ObjectOwnerNo	f3gm	byte	draft		
-exe	0x0050a0f0	gm_Unk50a0f0	f3gm	draft	draft		
+exe	0x0050a0f0	gm_ObjectBuilding	f3gm	byte	readable		
 exe	0x0050a150	gm_Unk50a150	f3gm	byte	draft		
-exe	0x0050a1c0	gm_Unk50a1c0	f3gm	draft	draft		
-exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	draft		
+exe	0x0050a1c0	gm_BuildingEvents	f3gm	byte	readable		
+exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	deep	
 exe	0x0050a640	gm_GetWorth	f3gm	draft	draft		
 exe	0x0050a6c0	gm_IsBankrupt	f3gm	draft	draft		
 exe	0x0050a810	gm_FindCharacterByMaster	f3gm	draft	draft		

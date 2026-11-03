@@ -12,7 +12,8 @@
    f3gm_types.h's GMMSG (AIMSG), the crime records through GM_CRIMES (cm_types.h CRIME over cm.c's char
    ai_Crimes[]), the goods prototypes through GMGOOD (AIGOOD, GM_GOOD), the goods records of the
    stock blocks through GMBLOCK / GMSTOCK (f3gm_types.h, GM_BLOCK; f3init.c / hst.c hold their own copies
-   INIT_STOCK / G12STOCK), or by byte offset (the rest, GM_GOODS, the building type records of ai_BTypes).
+   INIT_STOCK / G12STOCK), the building types through GMBTYPE (AIBTYPE, GM_BTYPE; older functions still by
+   byte offset), the kind 0x23 events through GMEVENT23, or by byte offset (the rest, GM_GOODS).
    Open: data: gm_QueryKind (0x61a686) is defined as 550 bytes, but only its first byte is the query kind; the
    job table gm_JobTalents (0x61a688) is a view inside it, and its last 0x1c bytes, the title table
    gm_TitleTalents (0x61a8c8) and the player-slot factor ints (indexed from 0x61a8ac) are one 0x140-byte block
