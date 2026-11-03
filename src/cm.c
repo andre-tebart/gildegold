@@ -105,15 +105,28 @@ extern GAPDATA full_data_92bcb8[];
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
-/* 0x4c3180, the size of message m by its type */
+/* 0x4c3180, the size in bytes of the game message m by its type: fixed per type, the lists 0x16 / 0x17 a 0x15-byte
+   head and data[4] records of w * h + 4 bytes, 0x18 a head and data[4] records of 5, 0x20 by its kind byte data[0];
+   0x91 (the whole G17MSG body) for any other type
+   @deep Read whole against the original: the 42 case bodies, their values and their order (the 0x18 group
+   after case 0x22, the 0x28 group and 0x5f after 0x61/0x62, as the original's block layout), the list loop
+   of 0x16/0x17 (int count, jle) and 0x18 / 0x20 all match; the decoded jump table maps every type 3..0x69
+   to the same value as ours. Left: VC6 lowers our switch through a byte index table (xor edx,edx; mov
+   dl,[ecx+X]; jmp [edx*4+X]) where the original jumps directly through a 0x67-entry table (mov dl,[eax];
+   mov ecx,edx; and ecx,0xff; ... jmp [ecx*4+X]), and the original's dead 'cmp dl, 0x16' in the 0x16/0x17
+   body. Tried: explicit labels for the default types (with default:, with their own return), one case per
+   type (no grouping), the type in an unsigned char local, ternaries on t == 0x16 in the count / pointer /
+   head size: the table form never changed. A variant round (switch-lowering heuristic). */
 
-int ai_Unk4c3180(G17MSG *m)
+int cm_MessageSize(G17MSG *m)
 {
     unsigned char *p;
     int n, k;
-    unsigned int i;
+    int i;
+    unsigned char t;
 
-    switch (m->type) {
+    t = m->type;
+    switch (t) {
     case 3:
     case 0x13:
     case 0x1a:
@@ -149,21 +162,6 @@ int ai_Unk4c3180(G17MSG *m)
         return 0x2a;
     case 0xc:
         return 0x49;
-    case 0xd:
-    case 0x21:
-    case 0x23:
-    case 0x24:
-    case 0x26:
-    case 0x27:
-    case 0x29:
-    case 0x2a:
-    case 0x33:
-    case 0x39:
-    case 0x3a:
-    case 0x5a:
-    case 0x66:
-    case 0x68:
-        return 0x18;
     case 0xf:
     case 0x2c:
         return 0x21;
@@ -181,7 +179,7 @@ int ai_Unk4c3180(G17MSG *m)
     case 0x17:
         n = 0x15;
         p = (unsigned char *)m + 0x15;
-        for (i = m->data[4]; i != 0; i--) {
+        for (i = m->data[4]; i > 0; i--) {
             k = p[1] * p[0] + 4;
             n += k;
             p += k;
@@ -192,15 +190,27 @@ int ai_Unk4c3180(G17MSG *m)
     case 0x19:
     case 0x53:
         return 0x24;
-    case 0x1b:
-    case 100:
-        return 0x28;
     case 0x1d:
         return 0x5f;
     case 0x20:
         return m->data[0] != 0x0e ? 0x8d : 0x11;
     case 0x22:
         return 0x3d;
+    case 0xd:
+    case 0x21:
+    case 0x23:
+    case 0x24:
+    case 0x26:
+    case 0x27:
+    case 0x29:
+    case 0x2a:
+    case 0x33:
+    case 0x39:
+    case 0x3a:
+    case 0x5a:
+    case 0x66:
+    case 0x68:
+        return 0x18;
     case 0x2d:
     case 0x45:
         return 0x1f;
@@ -250,11 +260,14 @@ int ai_Unk4c3180(G17MSG *m)
         return 0x38;
     case 0x5c:
         return 0x1a;
-    case 0x5f:
-        return 0x80;
     case 0x61:
     case 0x62:
         return 0x29;
+    case 0x1b:
+    case 100:
+        return 0x28;
+    case 0x5f:
+        return 0x80;
     }
     return 0x91;
 }
@@ -403,7 +416,7 @@ int ai_Unk4c3720(void)
         i = cm_LastSeq & 0x7fff;
         m = &cm_SendRing[i];
         m->type = 7;
-        m->size = ai_Unk4c3180(m);
+        m->size = cm_MessageSize(m);
         memcpy(m->data, ai_Unka68800 + off, 0x80);
         m->unk03 = 0;
         m->idx = i;
@@ -502,7 +515,7 @@ int ai_Unk4c39c0(G17MSG *src)
             return -1;
     cm_LastSeq++;
     *m = *src;
-    m->size = ai_Unk4c3180(m);
+    m->size = cm_MessageSize(m);
     m->unk03 = 0;
     m->idx = i;
     m->seq = cm_LastSeq;
@@ -808,7 +821,7 @@ int ai_Unk4c4080(G17MSG *src)
     }
     cm_RecvFree = m->next;
     *m = *src;
-    m->size = ai_Unk4c3180(m);
+    m->size = cm_MessageSize(m);
     if (cm_RecvQueue == 0) {
         m->prev = 0;
         m->next = 0;

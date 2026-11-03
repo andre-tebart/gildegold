@@ -8,7 +8,7 @@
 #pragma pack(push, 1)
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
-    unsigned short size;                /* 0x01, ai_Unk4c3180 */
+    unsigned short size;                /* 0x01, cm_MessageSize */
     unsigned char unk03;                /* 0x03 */
     int idx;                            /* 0x04, its slot in the send ring */
     unsigned int seq;                   /* 0x08 */

@@ -156,7 +156,7 @@ extern char *cm_LoadBuf;              /* 0xf31140, the load buffer ("cm_LoadBuf"
 extern unsigned cm_LoadReceived;           /* 0xf81220, bytes in it */
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 
-int ai_Unk4c3180(G17MSG *m);                                                     /* 0x4c3180 */
+int cm_MessageSize(G17MSG *m);                                                     /* 0x4c3180 */
 void ai_InitStates(void);                                                         /* 0x4c3480 */
 void ai_ResetMessages(void);                                                         /* 0x4c3560 */
 void ai_Unk4c3600(void);                                                         /* 0x4c3600 */
