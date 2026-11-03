@@ -7354,7 +7354,7 @@ short * gm_FindChar(int id); void txt_Format(char *out, int id0, ...); int sv_Ch
 short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); int gm_Unk50a150();
 void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...); void d2_SetObjText(); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 int d2_RemoveWindow(); void d2_RemoveObj(); int gm_BuildingEvents(); int gm_SumSlotAmounts(void *list, unsigned char i);
-void gm_Unk50a880(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
+void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(int size, int n, short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
@@ -7669,7 +7669,7 @@ void ai_Unk59b880(int param_1)
 
 int gm_SumSlotAmounts(void *list, unsigned char i); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k); int gm_PlayerFactor(int a, unsigned char k);
 int d2_GetObjValue(); void d2_SetObjEnabled(); void d2_EnableViewObjects(); void d2_EnableObject();
-int gm_BuildingEvents(); void gm_Unk50a880(int n, int *ids, int flag); int d2_RemoveWindow(); void d2_RemoveObj();
+int gm_BuildingEvents(); void gm_SortCharsByName(int n, int *ids, int flag); int d2_RemoveWindow(); void d2_RemoveObj();
 void d2_SetObjText(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont();
 
 /* 0x59bad0, the money lender's credit giver window "..geldleihe_KreditGeber" (960 B): the window 0x4741f0
@@ -7763,7 +7763,7 @@ void ai_Unk59bad0(int param_1)
             io_PrintText(0x18de, (unsigned int)U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4) * 2 + 0x9a8);
             if (cnt == 0)
                 io_PrintText(0x48d);
-            gm_Unk50a880(cnt, cities, 0);
+            gm_SortCharsByName(cnt, cities, 0);
             for (i = 0; i < cnt; i++) {
                 r = gm_BuildingEvents(*(unsigned short *)(param_1 + 0x27), param_1, cities[i], offers);
                 sum = 0;
