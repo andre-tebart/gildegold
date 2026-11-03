@@ -53,6 +53,7 @@ struct D3SM;
 
 extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
+extern GAPDATA full_rdata_5eed68[];
 extern GAPDATA full_data_6f5a84[];
 extern GAPDATA full_data_6f4f64[];
 extern GAPDATA full_data_6f58a4[];
@@ -11988,8 +11989,8 @@ void ai_Unk5a53e0(int param_1)
             req[0] = 0;
             req[1] = 0x400;
             req[4] = 6;
-            req[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-            req[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+            req[2] = U_I(((unsigned)&full_rdata_5eed68));
+            req[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
             txt_Format(buf, 0x19b8);
             sv_OpenPlayerBar(param_1, 0);
             ai_AmountMenu(req, buf, 0, (void *)(unsigned)&ai_Unk5a5120);
@@ -16797,8 +16798,8 @@ int ai_Unk5bea00(int param_1, int param_2)
     for (i = 0; i < 0x14; i++)
         cfg[i] = 0;
     cfg[1] = 0x204;
-    cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-    cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+    cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+    cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
     cfg[4] = 6;
     return ai_Unk5c0970((int)cfg, param_2, 0, 0);
 }
@@ -20741,8 +20742,8 @@ int ai_EmbezzlementPrivilege(unsigned short *param_1, int *param_2)  /* @origina
     if (param_2[0x87] == owner)
         *(short *)((char *)&cfg[7] + 2) = *(short *)owner;
     cfg[1] = 0x400;
-    cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-    cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+    cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+    cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
     cfg[4] = 6;
     cfg[5] = 3;
     txt_Format(text1, (char *)0x1d98);
@@ -20937,8 +20938,8 @@ char ai_EmbezzlementContract(int param_1, int param_2)  /* @original: the caller
             cfg[i] = 0;
         cfg[1] = 0x400;
         cfg[4] = 6;
-        cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-        cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+        cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+        cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
         txt_Format(text, (char *)0x1dae,
                      *(char *)(param_1 + 9) == 0 ? 0x1daf : 0x1db0);
         return ai_AmountMenu((int)cfg, (int)text, 0, (int)ai_Unk5caab0) != 0;
@@ -21238,8 +21239,8 @@ int ai_EspionageWindow(int param_1, int param_2)  /* @original: the callers push
     for (i = 0; i < 0x14; i++)
         cfg[i] = 0;
     cfg[1] = 0x400;
-    cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-    cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+    cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+    cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
     cfg[4] = 6;
     txt_Format(text, (char *)0x1dcf);
     r = ai_AmountMenu((int)cfg, (int)text, 0, 0);
@@ -21298,8 +21299,8 @@ int ai_EspionagePayment(int param_1, int param_2)  /* @original: the callers pus
         return 0x81;
     }
     cfg[1] = 0x400;
-    cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-    cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+    cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+    cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
     cfg[4] = 6;
     txt_Format(text, (char *)0x1dd7);
     ret = ai_AmountMenu((int)cfg, (int)text, 0, 0);
@@ -22633,8 +22634,8 @@ int ai_Unk5d0320(int param_1, int param_2)
         txt_Format(cfgtext, (char *)0x9c);
         cfg[0] = 0;
         cfg[1] = 0x400;
-        cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-        cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+        cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+        cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
         cfg[4] = 6;
         req = ai_AmountMenu(cfg, cfgtext, 0, 0);
         if (req == 0)
@@ -22685,8 +22686,8 @@ int ai_Unk5d0530(int param_1, int param_2)
         txt_Format(cfgtext, (char *)0x9c);
         cfg[0] = 0;
         cfg[1] = 0x400;
-        cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-        cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+        cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+        cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
         cfg[4] = 6;
         req = ai_AmountMenu(cfg, cfgtext, 0, 0);
         if (req == 0)
@@ -22915,8 +22916,8 @@ int ai_Unk5d0b20(int param_1, int param_2)
         txt_Format(text, (char *)0x9c);
         cfg[0] = 1;
         cfg[1] = *(char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 ? 0x402 : 0x401;
-        cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-        cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+        cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+        cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
         cfg[4] = 6;
         target = ai_AmountMenu(cfg, text, 0, 0);
         if (target == 0)
@@ -22966,8 +22967,8 @@ int ai_Unk5d0c70(int param_1, int param_2)
         txt_Format(text, (char *)0x9c);
         cfg[0] = 0;
         cfg[1] = 0x400;
-        cfg[2] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-        cfg[3] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+        cfg[2] = U_I(((unsigned)&full_rdata_5eed68));
+        cfg[3] = U_I(((unsigned)&full_rdata_5eed68 + 4));
         cfg[4] = 6;
         a = ai_AmountMenu(cfg, text, 0, 0);
         if (a == 0)
@@ -23058,8 +23059,8 @@ int ai_Unk5d0f20(int param_1, int param_2)
         /* ROUGH: the caption id of 0x5176d0 (text) and the config block fields are not read yet; the
            disassembly stores the ids U_I(0x5eed68) / U_I(0x5eed6c), 0x400 and 6 into the block at
            esp+0x40 and calls 0x5c1130 (the block, the text, 0, 0). */
-        cfg[0] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b0));
-        cfg[1] = U_I(((unsigned)&sv_PhaseMinutes + 0x2b4));
+        cfg[0] = U_I(((unsigned)&full_rdata_5eed68));
+        cfg[1] = U_I(((unsigned)&full_rdata_5eed68 + 4));
         cfg[2] = 0x400;
         cfg[3] = 6;
         txt_Format(text, (char *)0);
