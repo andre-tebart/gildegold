@@ -273,7 +273,9 @@ typedef struct ORDBLD {
     int v45;                        /* 0x45, 100 when created */
     float priceFactor;              /* 0x49, scales the goods price of the building's offers (f3gm.c gm_CollectOffers) */
     int roundSum;                   /* 0x4d, ai.h AIBLD.roundSums[0], cleared at the end of every day (gm_EndDayIncomes) */
-    char pad51[9];
+    char pad51[4];
+    int v55;                        /* 0x55, of a kind 5 building an income per round (gm_BuildingBalance out[10]) */
+    char pad59;
     unsigned char flags5a;          /* 0x5a, bit 0: takes no new inhabitants (gm_FindHome) */
     char pad5b;
     char level;                     /* 0x5c, the building's level 0 .. 100 */

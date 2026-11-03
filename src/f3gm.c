@@ -8588,108 +8588,109 @@ int gm_BuildingLevel(char *c)
 {
     return c[0x5c];
 }
-/* 0x508d80, the income / cost summary (0x15 ints, out[3] wages, out[0x10] cost, out[0x11] income, out[0x14] profit) of the building b for the owner id; 0 when both are zero. ROUGH */
+/* 0x508d80, the income / cost summary of the building b for the owner id into out (0x15 ints, cleared first):
+   the wages of the characters working there per job (out[6 + j]) and title (out[4 + t], a worker of neither
+   takes the title 0 wage), each scaled by the building's wage rate in percent, or for a kind 0x1e building with
+   an owner its object value (out[6]); out[3] and out[0x10] the costs, out[0x12] the round sum, the income parts
+   of the kinds 5 (out[10]), 7 (the goods of the queries 0xe8 / 0xf0 for the own player, out[0xc] / out[0xf], and
+   out[0xd] / out[0xe]) and 0x16 (out[0x13]), out[0x11] the income, out[0x14] income - costs; nothing but zeros
+   when id is not the owner. Returns 0 when costs and income are both zero, else 1
+   @deep Read whole against the original (0x508d80..0x509060) and rewritten through ORDBLD / ORDCHAR: the
+   0x1e object-value path, the character walk (an index loop i < 0x300: VC6's strength-reduced pointer with
+   the signed jl end compare against gm_PlayerRecords, as the original), the job / title wage loops
+   (gm_JobWage * (wageRate * 0.01), the fild/fmul/fmulp order equal), the no-job title-0 wage, round sum,
+   kinds 5 / 7 / 0x16 income parts and the tail all match statement for statement; 247 vs 250 instructions.
+   Left is allocation only: the original keeps income in the stack slot [esp+0x10] (loaded into edi around
+   the kind-7 queries: +0x23c mov edi,[esp+0x10] on the o==0 path, stored back at +0x298; kind 0x16 via
+   eax) and spills cost from ebx into the dead out-parameter slot [esp+0x24] (+0x1df) to reload it as edx
+   at the tail (+0x2b2), with the not-owner jump using edx=0 from the prologue; ours keeps income in edi
+   and cost in ebx throughout, so the tail and the zero return (xor eax,eax vs the original returning
+   income's 0) differ. Tried: swapping the cost / income initialisation order, the literal 0 vs found in
+   the title-0 call (no change). */
 
 int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
 {
+    ORDBLD *bld;
+    unsigned char *kind;    /* the kind's ai_BTypes record: +0x223 the job ids, +0x22f the title ranks */
     char *own;
-    char *bp;
-    unsigned char *c;
-    int i, k, w, in, t, r, u, n, found;
-    int *pi;
-    char *o;
+    ORDCHAR *c;
+    int i, j, cost, income, wage, found;
+    int *slot;
+    ORDOBJ *o;
 
+    bld = (ORDBLD *)b;
     for (i = 0; i < 0x15; i++)
         out[i] = 0;
-    w = 0;
-    in = 0;
-    bp = ai_BTypes + *b * 0x24d;
-    t = 0;
-    if (id == *(unsigned short *)(b + 0x27)) {
+    cost = 0;
+    kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
+    income = 0;
+    if (id == bld->owner) {
         own = ai_Chars[id];
-        if (*bp == 0x1e) {
-            n = w;
+        if (*kind == 0x1e) {
             if (ahm_OwnerChar(b) != 0) {
-                n = ahm_ObjectValue(b);
-                out[6] = n;
+                cost = ahm_ObjectValue(b);
+                out[6] = cost;
             }
-            w = n;
         } else {
-            c = (unsigned char *)ai_Chars[0];
-            do {
-                if (*(unsigned char **)(c + 0x16c) == b) {
-                    found = 0;
-                    k = 0;
-                    pi = out + 6;
-                    do {
-                        if (bp[k + 0x223] != 0 && bp[k + 0x223] == (char)c[0x164] && (char)c[2] != 0x14) {
-                            r = (int)gm_JobWage(own, *b, k, -1);
-                            found = 1;
-                            in += r;
-                            *pi += r;
-                        }
-                        k++;
-                        pi++;
-                    } while (k < 6);
-                    k = 0;
-                    pi = out + 4;
-                    do {
-                        if (bp[k + 0x22f] != 0 && bp[k + 0x22f] == (char)c[0x165] && (char)c[2] != 0x14) {
-                            r = (int)gm_JobWage(own, *b, -1, k);
-                            found = 1;
-                            in += r;
-                            *pi += r;
-                        }
-                        k++;
-                        pi++;
-                    } while (k < 2);
-                    if (!found && (char)c[2] != 0x14) {
-                        r = (int)gm_JobWage(own, *b, -1, 0);
-                        in += r;
-                        out[4] += r;
+            for (i = 0; i < 0x300; i++) {
+                c = &ORD_CHARS[i];
+                if (c->bld != bld)
+                    continue;
+                found = 0;
+                slot = out + 6;
+                for (j = 0; j < 6; j++, slot++) {
+                    if (kind[0x223 + j] != 0 && kind[0x223 + j] == c->jobId && c->kind != 0x14) {
+                        wage = (int)(gm_JobWage(own, bld->type, j, -1) * (bld->wageRate * 0.01));
+                        found = 1;
+                        cost += wage;
+                        *slot += wage;
                     }
                 }
-                c += 0x21c;
-                w = in;
-            } while ((int)c < (unsigned)((unsigned)ai_Chars + 0x65400));
-        }
-        out[3] = w;
-        out[0x12] = *(int *)(b + 0x4d);
-        if (*bp == 5) {
-            out[10] = *(int *)(b + 0x55);
-            t = *(int *)(b + 0x55);
-        }
-        if (*bp == 7) {
-            o = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0xe8);
-            if (o) {
-                r = gm_SumListAmounts(*(void **)(o + 0x14), ai_OwnPlayer);
-                u = out[0xc];
-                out[0xc] = u + r;
-                t = t + u + r;
+                slot = out + 4;
+                for (j = 0; j < 2; j++, slot++) {
+                    if (kind[0x22f + j] != 0 && kind[0x22f + j] == (unsigned char)c->title && c->kind != 0x14) {
+                        wage = (int)(gm_JobWage(own, bld->type, -1, j) * (bld->wageRate * 0.01));
+                        found = 1;
+                        cost += wage;
+                        *slot += wage;
+                    }
+                }
+                if (!found && c->kind != 0x14) {
+                    wage = (int)(gm_JobWage(own, bld->type, -1, 0) * (bld->wageRate * 0.01));
+                    cost += wage;
+                    out[4] += wage;
+                }
             }
-            o = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0xf0);
+        }
+        out[3] = cost;
+        out[0x12] = bld->roundSum;
+        if (*kind == 5) {
+            out[10] = bld->v55;
+            income = bld->v55;
+        }
+        if (*kind == 7) {
+            o = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0xe8);
             if (o) {
-                r = gm_SumListAmounts(*(void **)(o + 0x14), ai_OwnPlayer);
-                u = out[0xf];
-                out[0xf] = u + r;
-                t = t + u + r;
+                out[0xc] += gm_SumListAmounts((void *)o->list, ai_OwnPlayer);
+                income += out[0xc];
             }
-            k = *(int *)(b + 0x65);
-            r = out[0xd];
-            u = out[0xe];
-            out[0xd] = r + k;
-            i = *(int *)(b + 0x69);
-            out[0xe] = u + i;
-            t = t + r + k + u + i;
-        } else if (*bp == 0x16) {
-            t += *(int *)(b + 0x6d);
-            out[0x13] = *(int *)(b + 0x6d);
+            o = (ORDOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0xf0);
+            if (o) {
+                out[0xf] += gm_SumListAmounts((void *)o->list, ai_OwnPlayer);
+                income += out[0xf];
+            }
+            out[0xd] += bld->v65;
+            out[0xe] += bld->daySum;
+            income += out[0xd] + out[0xe];
+        } else if (*kind == 0x16) {
+            income += bld->v6d;
+            out[0x13] = bld->v6d;
         }
     }
-    out[0x10] = w;
-    out[0x11] = t;
-    out[0x14] = t - w;
-    if (w == 0 && t == 0)
+    out[0x10] = cost;
+    out[0x11] = income;
+    out[0x14] = income - cost;
+    if (cost == 0 && income == 0)
         return 0;
     return 1;
 }
