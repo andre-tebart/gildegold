@@ -535,7 +535,8 @@ typedef struct G28REC {
     unsigned char used;                 /* 0x30, the number of members[] (ai_Unk4e51b0: at most 16) */
     char pad31[3];
     int members[16];                    /* 0x34, the members' netIds (-1 for one removed, ai_Unk4e5210) */
-    char pad74[8];
+    char pad74[4];
+    unsigned int seed;                  /* 0x78, the random seed the scene runs with (cut_RandSeed) */
     union {
         struct {
             char variant;               /* 0x7c, written by gv_PassSentence with a random 0 .. 4; read signed (movsx: cm_RunDuel, cm_RunExecution) */

@@ -3644,7 +3644,7 @@ void main_ReplaceFigure(unsigned p)
         s = (char *)((unsigned)&ai_Unk925520 + 0x8);
         do {
             if (s[0x28] != 0) {
-                if (ai_Unk4e4870(ch->netId, s - 8) != 0 && (*s == 3 || *s == 5 || *s == 4 || *s == 6 || *s == 9 || *s == 7))
+                if (cm_IsPartyMember(ch->netId, s - 8) != 0 && (*s == 3 || *s == 5 || *s == 4 || *s == 6 || *s == 9 || *s == 7))
                     ai_Unk4e5180(*(int *)(s - 8));
             }
             s += 0x114;
@@ -3898,7 +3898,7 @@ void main_RoundReport(void)
         MSG_I(msg, 0x14) = -1;
         MSG_B(msg, 8) = 9;
         MSG_I(msg, 0x34) = MSG_I(msg, 0xc);
-        ai_Unk4e4060(msg);
+        cm_ExecCutscene(msg);
         if (U_I((unsigned)&full_data_6f25b0) != 0)
             main_ReplaceFigure(U_I((unsigned)&ai_PlayerId) & 0xffff);
         U_I((unsigned)&full_data_6f25b0) = 0;

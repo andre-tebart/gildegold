@@ -218,7 +218,7 @@ extern char sv_DayTables[278];                              /* 0x623ba8 */
 extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
 extern int ai_Unk623e10[];                                  /* 0x623e10 */
 extern int sv_LampPhase;                                    /* 0x623e80 */
-extern int ai_Unk623e88;                                    /* 0x623e88 */
+extern int sv_PanelEnabled;                                    /* 0x623e88 */
 extern int sv_GroundplanScene;                                    /* 0x623e8c */
 extern float sv_DayPhaseFrac;                                  /* 0x623e94 */
 extern int ai_Unk623ea0;                                    /* 0x623ea0 */

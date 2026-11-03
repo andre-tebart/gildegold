@@ -615,7 +615,7 @@ void cm_DrawScrollArrows();  /* 0x4cf370 */
 void * d2_GetPic();  /* 0x4690b0 */
 int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i);  /* 0x47c6f0 */
 void d2_SetClipRect(int x0, int y0, int x1, int y1);  /* 0x47cb40 */
-extern float ai_Unk5eb7fc;  /* 0x5eb7fc */
+extern float cm_Float75;  /* 0x5eb7fc */
 extern float ai_Unk5eb81c;  /* 0x5eb81c */
 extern const struct D3VECTOR d3_Origin;  /* 0x5ebba4, (0, 0, 0), d3_vec.c */
 extern const float ai_Unk5edc50;  /* 0x5edc50 */
@@ -862,18 +862,18 @@ struct MSXTRACK * msx_PlayAmbient(char *name, int vol);  /* 0x4243f0 */
 void cm_FightLoop(char *a);  /* 0x4d88c0 */
 void cm_FightMember(char *a);  /* 0x4d8b10 */
 
-extern int ai_Unk92ca80[16];  /* 0x92ca80 */
+extern int cm_SceneChars[16];  /* 0x92ca80 */
 extern unsigned int cm_FightStart;  /* 0x6f0da4, fight start (d3_Time) */
 void * d2_SetFont(int font);  /* 0x476030 */
 void d2_DrawTextBox(int x, int y, int w, int h, void *surf, char *text, unsigned int flags);  /* 0x46f1a0 */
 void d2_AddDirty(int x, int y, int w, int h);  /* 0x468eb0 */
 extern int d2_TextDrawnW;  /* 0x6ed968 */
 extern int d2_TextDrawnH;  /* 0x6ed96c */
-void ai_Unk4d8b30();  /* 0x4d8b30 */
+void cm_ClearSceneChars();  /* 0x4d8b30 */
 void cm_DrawFightTime();  /* 0x4d8b50 */
 
 int cm_DeleteChar();  /* 0x4e3250 */
-void ai_Unk4d8c40();  /* 0x4d8c40 */
+void cm_DeleteSceneChars();  /* 0x4d8c40 */
 
 int d2_RemoveWindowObjects();  /* 0x472d20 */
 void d2_SetObjFont(int obj, int font);  /* 0x4760b0 */
@@ -1043,18 +1043,18 @@ void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha,
 void cm_CreateSceneSky(char *tex);  /* 0x4e32f0 */
 int cm_RunSceneTicks();  /* 0x4e3570 */
 int cm_RunSceneTicksOrClick();  /* 0x4e3490 */
-extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */
+extern char *cm_SceneFade;  /* 0x6f0da0, the fade 0x4e3060 started */
 int cm_ResetCutInfos();  /* 0x4e36a0 */
 int tb_SetFunctionOff();  /* 0x42ea10 */
-int ai_Unk4e3fe0();  /* 0x4e3fe0 */
-int ai_Unk4e4020();  /* 0x4e4020 */
+int cm_PauseSceneChars();  /* 0x4e3fe0 */
+int cm_ResumeSceneChars();  /* 0x4e4020 */
 extern int cm_SceneDepth;  /* 0x6f0d9c, the scene nesting depth */
 extern int cm_SceneEnterScript;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
 extern int evt_LastId;  /* 0x5f8438 */
 extern int d3t_CamMoving;  /* 0x6310e4 */
 void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */
-int ai_Unk4e3210();  /* 0x4e3210 */
+int cm_SceneTick();  /* 0x4e3210 */
 struct CHARACTER * ch_Create();  /* 0x403390 */
 int cm_CreateChar();  /* 0x4e3230 */
 void cm_RunBankruptcy(G28REC *m);  /* 0x4e1700 */
@@ -1103,7 +1103,7 @@ extern char cm_KindAllAtOnce[];  /* 0x92c50c */
 extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
-void ai_Unk4e4060();  /* 0x4e4060 */
+void cm_ExecCutscene();  /* 0x4e4060 */
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);  /* 0x4fe140 */
 #ifndef DATA_VIEWS_H
 extern char ai_Unk925538[];  /* 0x925538, the scene party records (0x114 bytes, +0x18 used) */
@@ -1133,7 +1133,7 @@ void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_RadioClear(int g);  /* 0x46c600 */
 extern char ai_Unk6f0dc4;  /* 0x6f0dc4 */
 
-extern int ai_Unk92c500[];  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
+extern int cm_KindRun[];  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
 void d3io_NoopCallback(void *t);  /* 0x44ee40 */
 
 extern char ai_Unk60eae0[][24];  /* 0x60eae0, the names of the NPC kinds */
@@ -1148,12 +1148,12 @@ extern char ai_Unk60eae0[][24];  /* 0x60eae0, the names of the NPC kinds */
 
 extern float cm_SpeedFactor;  /* 0x5f1290 */
 extern int ch_LowPoly;  /* 0x631064 */
-extern int ai_Unk925510;  /* 0x925510 */
-extern int ai_Unk92cac0;  /* 0x92cac0 */
-extern char ai_Unk92c600[];  /* 0x92c600, 0x480 bytes of scene state */
+extern int cm_SavedScene;  /* 0x925510 */
+extern int cm_SavedNoGroup;  /* 0x92cac0 */
+extern char cm_SceneState[];  /* 0x92c600, 0x480 bytes of scene state */
 extern unsigned char d3_FogByDistance;  /* 0x6334a5 */
 extern char d2_CaptionCopy[0x80];  /* 0xf8aae0, the d2 caption / status text buffer */
-extern unsigned short ai_Unk92bee0[];  /* 0x92bee0 */
+extern unsigned short cm_DisabledObjs[];  /* 0x92bee0 */
 int tb_OpenFunction();  /* 0x42e970 */
 int tb_CloseFunction();  /* 0x42e9d0 */
 void d2_SetPointerSprite(int a, int pic);  /* 0x476f80 */

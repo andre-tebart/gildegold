@@ -48,6 +48,7 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 #include "data_views.h"
 #include "unk_5d33b0_types.h"
 extern OPTIONBYTES ai_GfxFloor;
+extern OPTIONBYTES ai_GfxFog;  /* 0x6f35cc, unk_5d33b0.c: the fog option byte */
 extern char cm_CutInfos[16][0x35c];
 #define GAPDATA __declspec(align(1)) unsigned char
 
@@ -7589,9 +7590,9 @@ void cm_DrawScrollArrows()
     else if (up == 1)
         d2_DrawShape(d2_ScreenW - 0x28, d2_ScreenH / 2 + 0x14, d2_ScreenSurf, t, 5);
     if (b == 2)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5eb7fc), d2_ScreenSurf, t, 6);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * cm_Float75), d2_ScreenSurf, t, 6);
     else if (b == 1)
-        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5eb7fc), d2_ScreenSurf, t, 7);
+        d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * cm_Float75), d2_ScreenSurf, t, 7);
 }
 /* 0x4cf670, the mouse pick: the object under the cursor (ai_PickedObject; with characters selected and nothing picked,
    the ground cell under the cursor is looked up, else the pick marker is hidden) and the cursor look d2_PointerLook:
@@ -11657,9 +11658,9 @@ void cm_FightMember(char *a)
 }
 /* 0x4d8b30, clears the 16 ints at 0x92ca80 */
 
-void ai_Unk4d8b30()
+void cm_ClearSceneChars()
 {
-    memset(ai_Unk92ca80, 0, 0x40);
+    memset(cm_SceneChars, 0, 0x40);
 }
 /* 0x4d8b50, shows the fight time (d3_Time minus the start 0x6f0da4, 14 ms per tick) as "mm : ss : ms ms" in a box at the top */
 
@@ -11675,13 +11676,13 @@ void cm_DrawFightTime()
 }
 /* 0x4d8c40, frees the 16 slots of 0x92ca80 */
 
-void ai_Unk4d8c40()
+void cm_DeleteSceneChars()
 {
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (ai_Unk92ca80[i] != 0)
-            cm_DeleteChar(ai_Unk92ca80[i]);
+        if (cm_SceneChars[i] != 0)
+            cm_DeleteChar(cm_SceneChars[i]);
     }
 }
 
@@ -15127,9 +15128,9 @@ void ai_Unk4e2910(char *o, int id)
             sv_RunFrame(0, 0x86);
             G27_FRAME(d2_BackSurf, d2_ScreenSurf);
         }
-        if (ai_Unk6f0da0 != 0) {
-            d2_ReleaseFade(ai_Unk6f0da0);
-            ai_Unk6f0da0 = 0;
+        if (cm_SceneFade != 0) {
+            d2_ReleaseFade(cm_SceneFade);
+            cm_SceneFade = 0;
             d2_StartFade(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, "BLACK", 0x5a, 0xa);
         }
         return;
@@ -15165,9 +15166,9 @@ void ai_Unk4e2910(char *o, int id)
         sv_RunFrame(0, 0x86);
         G27_FRAME(d2_BackSurf, d2_ScreenSurf);
     }
-    if (ai_Unk6f0da0 != 0) {
-        d2_ReleaseFade(ai_Unk6f0da0);
-        ai_Unk6f0da0 = 0;
+    if (cm_SceneFade != 0) {
+        d2_ReleaseFade(cm_SceneFade);
+        cm_SceneFade = 0;
         d2_StartFade(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, "BLACK", 0x5a, 0xa);
     }
 }
@@ -15357,9 +15358,9 @@ void cm_LoadEventScene(char *name)
     }
     cm_SceneEnterScript = evt_LastId;
     d3if_Prerender(1);
-    if (ai_Unk6f0da0 != 0) {
-        d2_ReleaseFade(ai_Unk6f0da0);
-        ai_Unk6f0da0 = 0;
+    if (cm_SceneFade != 0) {
+        d2_ReleaseFade(cm_SceneFade);
+        cm_SceneFade = 0;
     }
     d2_StartFade(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, "BLACK", 0x5a, 0xa);
 }
@@ -15368,11 +15369,11 @@ void cm_LoadEventScene(char *name)
 int cm_FadeToBlack(void)
 {
     if (cm_SkipEvents == 0) {
-        ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
-        if (!(*ai_Unk6f0da0 & 4)) {
+        cm_SceneFade = (char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
+        if (!(*cm_SceneFade & 4)) {
             do {
                 sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
-            } while (!(*ai_Unk6f0da0 & 4));
+            } while (!(*cm_SceneFade & 4));
         }
     }
 }
@@ -15423,7 +15424,7 @@ void cm_LeaveEventScene(void)
 }
 /* 0x4e3210, the scene's tick counter 0x6f0d80: 0x6f0d88 tells whether it was past 0x6f0d84 */
 
-int ai_Unk4e3210(void)
+int cm_SceneTick(void)
 {
     cm_SceneTimedOut = cm_SceneTicks > cm_SceneDeadline;
     cm_SceneTicks++;
@@ -15870,7 +15871,7 @@ void cm_RunSceneParty(char *m, int ctx)
 /* 0x4e3fe0, switches the scene mode on: stops the clock (tb_SetFunctionOff(sv_UpdateClock, 1)), then pauses the
    animation of every character of ch_List whose flags bit 4 (+0x8c) is not set */
 
-int ai_Unk4e3fe0(void)
+int cm_PauseSceneChars(void)
 {
     CHARACTER **pp;
 
@@ -15882,7 +15883,7 @@ int ai_Unk4e3fe0(void)
 }
 /* 0x4e4020, the reverse: the characters with the bit 4 get ch_PauseAnim(ch, 0) */
 
-int ai_Unk4e4020(void)
+int cm_ResumeSceneChars(void)
 {
     CHARACTER **pp;
 
@@ -15892,82 +15893,90 @@ int ai_Unk4e4020(void)
             ch_PauseAnim(*pp, 0);
     }
 }
-/* 0x4e4060, runs a scene party m (the main function of the cutscene kinds: +0 id, +8 the kind, +0xc the owner, +0x26 flags (4 running, 0x20 own view,
-   0x40 no fade), +0x2c the window, +0x78 the seed): saves the view state (0x5f1290, 0x631064, the viewport 0xfb9060 .., the sky / fog 0x75fb80 .., the objects of
-   0xf8f080 that are shown), clears the scene table 0x92c600, decides the replay mode (0x6f0d8c: the run of the kind 6 members is only watched), fades out
-   ("BLACK", 0x5a ticks), opens the window "cutscenes\\announcement" (or "..\\<own view>"), calls the run function of the kind (0x92c500, with m),
-   closes everything again, fades in, and gives every member back its field +0x20c = -1 (0x4c3d90). ROUGH: the viewport arithmetic (0x43b950) and the
-   decisions of the replay mode are only roughly in the order of the code */
+/* 0x4e4060, runs the scene party m, the main function of the cutscenes: clears the scene state cm_SceneState and decides
+   whether the scene is only skipped (cm_SkipEvents: flags 2 with no player's character among the members in the local run,
+   or 0x4e4870 says so in the net run); unless skipped, fades to "BLACK", keeps the camera, the fog and the dirty rect,
+   starts the scene timer 0x4e3210, disables the shown d2 objects and for a cinemascope party (flags 0x20) narrows the
+   viewport to the letterbox. Opens the scene window "cutscenes\\announcement" (the trial: "cutscenes\\prozess_main"),
+   seeds the random numbers with m->seed and calls the run function of the kind (cm_KindRun); then restores all of it,
+   fades in again, and the owner gives every member's character back its scene party field (+0x20c = -1, a field
+   message) */
 
-void ai_Unk4e4060(char *m)
+void cm_ExecCutscene(char *m)
 {
-    char buf[0x240];
-    float sv_fog;
-    int sv_time, sv_view[4], sv_sky[6], sv_byte, shown, replay, i, j, n, win_old, id, ours;
-    char *c;
+    G28REC *party = (G28REC *)m;
+    int ours, shown, panel;
+    float savedSpeed;
+    int savedFog, savedLowPoly;
+    int rect[4], pos[4], rot[4];
+    char buf[0x200];
+    int savedBox, i, v;
+    AICHAR *c;
     unsigned int fl;
 
-    sv_fog = cm_SpeedFactor;
-    sv_time = ch_LowPoly;
-    sprintf(buf, "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i>", (unsigned char)m[8], *(int *)m);
+    savedSpeed = cm_SpeedFactor;
+    savedLowPoly = ch_LowPoly;
+    ours = 0;
     shown = 0;
-    sv_view[2] = d2_DirtyRectRight;
-    sv_view[0] = d2_DirtyRectLeft[0];
-    sv_view[1] = d2_DirtyRectTop;
-    sv_view[3] = d2_DirtyRectBottom;
-    ai_Unk925510 = d3_CurrentScene;
-    ai_Unk92cac0 = evt_NoGroup;
+    savedFog = 0;
+    panel = 0;
+    sprintf(buf, "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i", party->kind, party->id);
+    rect[2] = d2_DirtyRectRight;
+    rect[0] = d2_DirtyRectLeft[0];
+    rect[1] = d2_DirtyRectTop;
+    rect[3] = d2_DirtyRectBottom;
+    cm_SavedScene = d3_CurrentScene;
+    cm_SavedNoGroup = evt_NoGroup;
     cm_ScenePartyRuns = 0;
     cm_InitDamagePops();
-    AI_ZERO_AT(offset ai_Unk92c600, 0x480);  /* @vc6 clang's MS asm cannot take the offset of an incomplete array */
+    AI_ZERO_AT(offset cm_SceneState, 0x480);  /* @vc6 clang's MS asm cannot take the offset of an incomplete array */
     cm_SkipEvents = 0;
-    m[0x26] |= 4;
+    party->flags |= 4;
     if (sv_FrameMask & 0x200000)
-        m[0x26] |= 0x40;
+        party->flags |= 0x40;
     cm_DialogFrameFlags = 0x717c6;
-    if (m[0x26] & 0x40)
+    if (party->flags & 0x40)
         cm_DialogFrameFlags = 0x716c6;
-    replay = 0;
     if (ai_GameFlags & 8) {
+        /* ours: no player's character (kind 6) is a member */
         ours = 1;
-        n = *(unsigned char *)(m + 0x30);
-        for (i = 0; i < n; i++) {
-            id = *(int *)(m + 0x34 + i * 4);
-            if (id != -1 && (c = (char *)gm_FindChar(id)) != 0 && c[2] == 6) {
+        for (i = 0; i < party->used; i++) {
+            if (party->members[i] != -1 && (c = (AICHAR *)gm_FindChar(party->members[i])) != 0 && c->kind == 6) {
                 ours = 0;
                 break;
             }
         }
-        for (j = 0; j < n; j++) {
-            id = *(int *)(m + 0x34 + j * 4);
-            if (id != -1 && (c = (char *)gm_FindChar(id)) != 0 && c[2] == 6)
-                return;
+        for (i = 0; i < party->used; i++) {
+            if (party->members[i] != -1 && (c = (AICHAR *)gm_FindChar(party->members[i])) != 0 && c->kind == 6) {
+                ours = 0;
+                break;
+            }
         }
+        if (ours != 0 && !party->flags & 2)  /* as the original: (!flags) & 2, never true */
+            return;
     }
-    if (m[0x26] & 2) {
+    if (party->flags & 2) {
         if (ai_GameFlags & 8) {
             if (ours != 0)
-                replay = 1;
-        } else if ((ai_GameFlags & 4) && ai_Unk4e4870(ai_CharInts[ai_PlayerId][0], m) == 0)
-            replay = 1;
+                cm_SkipEvents = 1;
+        } else if ((ai_GameFlags & 4) && cm_IsPartyMember(ai_CharsT[ai_PlayerId].netId, m) == 0)
+            cm_SkipEvents = 1;
     }
-    if (replay != 0)
-        cm_SkipEvents = 1;
     if (cm_SkipEvents == 0) {
         fl = (sv_FrameMask & ~8) | 0x10080;
-        ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, (short)d2_ScreenW, (short)d2_ScreenH, "BLACK", 0x5a, 1);
-        while ((*ai_Unk6f0da0 & 4) == 0)
+        cm_SceneFade = (char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
+        while ((*cm_SceneFade & 4) == 0)
             sv_RunFrame(0, fl);
-        sv_sky[0] = sv_ViewPosX;
-        sv_sky[1] = sv_ViewPosY;
-        sv_sky[2] = sv_ViewPosZ;
-        sv_sky[3] = sv_ViewRotX;
-        sv_sky[4] = sv_ViewRotY;
-        sv_sky[5] = sv_ViewRotZ;
+        pos[0] = sv_ViewPosX;
+        pos[1] = sv_ViewPosY;
+        pos[2] = sv_ViewPosZ;
+        rot[0] = sv_ViewRotX;
+        rot[1] = sv_ViewRotY;
+        rot[2] = sv_ViewRotZ;
         if (ai_GameFlags & 8)
-            ai_Unk4e3fe0();
-        tb_OpenFunction(0x46, ai_Unk4e3210);
-        sv_byte = d3_FogByDistance;
+            cm_PauseSceneChars();
+        tb_OpenFunction(cm_SceneTick, 0x46);
+        savedFog = d3_FogByDistance;
         d3_FogByDistance = 0;
         cm_SpeedFactor = 0.6f;
         d3o_FogScale = 1.0f;
@@ -15977,68 +15986,121 @@ void ai_Unk4e4060(char *m)
         d2_ClearPointerItems();
         sv_ResetScreenClip();
         d2_CaptionCopy[0] = 0;
-        for (i = 0, shown = 0; i < 0x8c400 / 0x2ec; i++) {
-            if (*(int *)(d2_ObjsC + i * 0x2ec + 0x18) != 0 && *(int *)(d2_ObjsC + i * 0x2ec + 0x38) == 0) {
-                ai_Unk92bee0[shown] = i;
-                *(int *)(d2_ObjsC + i * 0x2ec + 0x38) = 1;
+        for (i = 0, shown = 0; i < 0x300; i++) {
+            if (d2_Objs[i].type != 0 && d2_Objs[i].disabled == 0) {
+                cm_DisabledObjs[shown] = i;
+                d2_Objs[i].disabled = 1;
                 shown++;
             }
         }
-        ((int (*)())d3io_NoopCallback)();
-        ai_Unk4d8b30();
+        ((void (*)(void))d3io_NoopCallback)();  /* @original called without its argument (no push) */
+        cm_ClearSceneChars();
+        if (party->flags & 0x20) {
+            /* the cinemascope letterbox: 75 (scaled) lines off the top and the bottom */
+            cm_DialogFrameFlags &= ~0x100;
+            d3_SetViewport((float)d2_ScreenW, d2_ScreenH - d2_ScreenScale * 150.0f, 0, cm_Float75 * d2_ScreenScale,
+                           d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW, d2_ScreenH);
+            d2_DirtyRectRight = 0;
+            d2_DirtyRectLeft[0] = d2_ScreenW;
+            d2_DirtyRectTop = (int)(d2_ScreenScale * cm_Float75);
+            d2_DirtyRectBottom = (int)(d2_ScreenH - d2_ScreenScale * cm_Float75);
+            if (sv_PanelEnabled != 0) {
+                sv_SetPanelEnabled(0);
+                panel = 1;
+            } else
+                panel = 0;
+        }
     } else if (cm_CurrentFight == 0)
         cm_ResetCutInfos(m);
-    win_old = cm_TextBox;
-    *(int *)(m + 0x2c) = d2_OpenForm(m[8] == 2 ? "cutscenes\\prozess_main" : (m[0x26] & 0x20) ? "cutscenes\\announcement_cinemascope" : "cutscenes\\announcement", 0, 0);
-    cm_TextBox = *(int *)(m + 0x2c);
-    ((void (*)(int, int))d2_PlaceMainWindow)(cm_TextBox, 3);
+    savedBox = cm_TextBox;
+    if (party->kind == 2)
+        party->window = d2_OpenForm(0, 0, "cutscenes\\prozess_main");
+    else if (party->flags & 0x20)
+        party->window = d2_OpenForm(0, 0, "cutscenes\\announcement_cinemascope");
+    else
+        party->window = d2_OpenForm(0, 0, "cutscenes\\announcement");
+    cm_TextBox = party->window;
+    d2_PlaceMainWindow(cm_TextBox, 3);
     if (cm_SkipEvents != 0)
         d2_SetViewEnabled(cm_TextBox, 0);
-    cut_RandSeed(*(int *)(m + 0x78));
-    sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", (unsigned char)m[8]);
+    cut_RandSeed(party->seed);
+    sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", party->kind);
     cm_CurrentFight = (int *)m;
-    ((void (*)())ai_Unk92c500[(unsigned char)m[8] * 5])(m);
-    d2_CloseView(*(int *)(m + 0x2c));
-    cm_TextBox = win_old;
+    ((void (*)(char *))cm_KindRun[party->kind * 5])(m);
+    d2_CloseView(party->window);
+    cm_TextBox = savedBox;
     if (cm_SkipEvents == 0) {
-        ai_Unk4d8c40();
-        ch_LowPoly = sv_time;
+        cm_DeleteSceneChars();
+        ch_LowPoly = savedLowPoly;
         if (ai_GameFlags & 8)
-            ai_Unk4e4020();
+            cm_ResumeSceneChars();
         cm_SceneDuration = 10;
-        tb_CloseFunction(ai_Unk4e3210);
+        tb_CloseFunction(cm_SceneTick);
         for (i = 0; i < shown; i++)
-            *(int *)(d2_ObjsC + ai_Unk92bee0[i] * 0x2ec + 0x38) = 0;
-        cm_ResetCutInfos(m);
-    } else
-        cm_ResetCutInfos(m);
-    if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
+            d2_Objs[cm_DisabledObjs[i]].disabled = 0;
+        if ((party->flags & 0x20) && (!(party->flags & 0x40) || (party->flags & 1))) {
+            d3_SetViewport((float)(sv_ViewRectRight - sv_ViewRectLeft), (float)(sv_ViewRectBottom - sv_ViewRectTop),
+                           (float)sv_ViewRectLeft, (float)sv_ViewRectTop, d3_ZNear, d3_ZFar, d3_ScaleX, d2_ScreenW,
+                           d2_ScreenH);
+            d2_DirtyRectRight = rect[2];
+            d2_DirtyRectLeft[0] = rect[0];
+            d2_DirtyRectTop = rect[1];
+            d2_DirtyRectBottom = rect[3];
+            if (panel != 0 && !(party->flags & 0x40)) {
+                sv_SetPanelEnabled(1);
+                sv_RedrawScreen();
+            }
+        }
+        d3if_SelectScene(cm_SavedScene, 0);
+        if (d3_Sky != 0)
+            d3sky_Init(d3_Sky, 1);
+        sv_ViewPosX = pos[0];
+        sv_ViewPosY = pos[1];
+        sv_ViewPosZ = pos[2];
+        sv_ViewRotX = rot[0];
+        sv_ViewRotY = rot[1];
+        sv_ViewRotZ = rot[2];
+        d3_SetFogSet(0, 1, 0);
+        d3_FogByDistance = savedFog;
+        cm_SpeedFactor = savedSpeed;
+        if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0)
+            d3o_FogScale = 1.0 - (ai_GfxFog.word & 0xff) * 0.01;
+        init_SetDetailLevel(d3_Terrain, 0);
+        d3if_Prerender(1);
+        if (cm_SceneFade != 0) {
+            d2_ReleaseFade((struct D2FADE *)cm_SceneFade);
+            cm_SceneFade = 0;
+            d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 10);
+        }
+    }
+    cm_ResetCutInfos(m);
+    if (party->host == ai_CharsT[ai_PlayerId].netId) {
         for (i = 0; i < 16; i++) {
-            *(int *)(cm_CutInfos[i] + 4) = 0;
-            *(int *)(cm_CutInfos[i]) = 0;
-            *(int *)(cm_CutInfos[i] + 8) = 0;
-            id = *(int *)(m + 0x34 + i * 4);
-            if (id != -1 && (c = (char *)gm_FindChar(id)) != 0) {
-                cm_BeginFieldBlock(c, *(int *)(c + 4));
-                id = -1;
-                cm_AddFieldValue(4, 1, (unsigned short)(c - cm_FieldObject + 0x20c), &id);
+            cm_CutInfosT[i].ready = 0;
+            cm_CutInfosT[i].fresh = 0;
+            cm_CutInfosT[i].valid = 0;
+            if (party->members[i] != -1 && (c = (AICHAR *)gm_FindChar(party->members[i])) != 0) {
+                v = -1;
+                cm_BeginFieldBlock(c, c->netId);
+                cm_AddFieldValue(4, 1, (char *)c - cm_FieldObject + 0x20c, &v);
                 cm_SendFieldValues();
             }
         }
     }
-    id = *(int *)(m + 0xc);
-    if (id != -1 && (c = (char *)gm_FindChar(id)) != 0) {
-        id = -1;
-        cm_BeginFieldBlock(c, *(int *)(c + 4));
-        cm_AddFieldValue(4, 1, (unsigned short)(c - cm_FieldObject + 0x20c), &id);
-        cm_SendFieldValues();
+    if (party->host != -1) {
+        v = -1;
+        if ((c = (AICHAR *)gm_FindChar(party->host)) != 0) {
+            cm_BeginFieldBlock(c, c->netId);
+            cm_AddFieldValue(4, 1, (char *)c - cm_FieldObject + 0x20c, &v);
+            cm_SendFieldValues();
+        }
     }
     cm_CurrentFight = 0;
-    evt_NoGroup = ai_Unk92cac0;
+    evt_NoGroup = cm_SavedNoGroup;
 }
 /* 0x4e4870, 1 when the character id is one of the party m (+0x30 count, +0x34 ids) and still exists */
 
-int ai_Unk4e4870(int id, char *m)
+int cm_IsPartyMember(int id, char *m)
 {
     int i, n;
 
@@ -16109,7 +16171,7 @@ int ai_Unk4e4a50(char *m)
     int flag, i, h;
     char *c;
 
-    if (ai_Unk4e4870(*(int *)(m + 0xc), m) == 0) {
+    if (cm_IsPartyMember(*(int *)(m + 0xc), m) == 0) {
         flag = 1;
         c = (char *)gm_FindChar(*(int *)(m + 0xc));
         sprintf(buf, "cut_CheckMaster(): invalid master for id %i", *(int *)m);
@@ -16219,7 +16281,7 @@ int cm_UpdateParties(void)
         if (ai_Unk92c510[*(unsigned char *)(r - 0x10) * 5] == 0 && gm_CompareTime(&ai_Time, r) > 0)
             *(int *)(r - 0x14) = 1;
         if (gm_CompareTime(&ai_Time, r) > 0 && *(int *)(r - 0x14) == 0) {
-            if (ai_Unk4e4870(ai_CharInts[ai_PlayerId][0], r - 0x18) != 0 && (signed char)r[0xe] < 0) {
+            if (cm_IsPartyMember(ai_CharInts[ai_PlayerId][0], r - 0x18) != 0 && (signed char)r[0xe] < 0) {
                 if (ai_CharInts[ai_PlayerId][0x208 / 4] == *(int *)(r - 0x18))
                     *(int *)(r - 0x14) = 1;
             } else if (*(int *)(r - 0xc) == ai_CharInts[ai_PlayerId][0] && (r[0xe] & 2))
@@ -16229,7 +16291,7 @@ int cm_UpdateParties(void)
         }
         if (gm_CompareTime(&ai_Time, (char *)&x) > 0 && *(int *)(r - 0x14) != 0) {
             sv_PanelFlag = 0;
-            ai_Unk4e4060(r - 0x18);
+            cm_ExecCutscene(r - 0x18);
             ai_Unk4e5180(*(int *)(r - 0x18));
         }
     }
@@ -16264,9 +16326,9 @@ char ai_RunPendingParties(int pl)
     save = ai_CharInts[pl][0x208 / 4];
     p = ai_Unk4e4f40();
     while (p != 0) {
-        if (ai_Unk4e4870(ai_CharInts[pl][0], (char *)p) != 0) {
+        if (cm_IsPartyMember(ai_CharInts[pl][0], (char *)p) != 0) {
             ai_CharInts[pl][0x208 / 4] = *(int *)p;
-            ai_Unk4e4060(p);
+            cm_ExecCutscene(p);
             ai_CharInts[pl][0x208 / 4] = -1;
             ret = 1;
         }
@@ -16552,7 +16614,7 @@ int cm_MessageBox(int id, int flags)
 
 void ai_Unk4e5730(int kind, int run, int cb4, int cb8, int check, char flag)
 {
-    ai_Unk92c500[kind * 5] = run;
+    cm_KindRun[kind * 5] = run;
     cm_KindAskPlayer[kind * 5] = cb4;
     cm_KindAskOther[kind * 5] = cb8;
     ai_Unk92c510[kind * 5] = check;
@@ -16675,21 +16737,21 @@ extern int cm_SaveAcks[8][2];
 /* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
 extern int ai_Evidence[0x800][2];
 extern char ai_Crimes[0x5a00];
-extern int ai_Unk925510;
+extern int cm_SavedScene;
 extern int cm_DuelRight;
 extern int cm_DuelLeft;
 extern int ai_Unk92bcc0[128];
 extern int cm_OrderTicks;
-extern unsigned short ai_Unk92bee0[768];
+extern unsigned short cm_DisabledObjs[768];
 extern unsigned int ai_Unk92c4e0;
-extern int ai_Unk92c500[1];
+extern int cm_KindRun[1];
 extern int cm_KindAskPlayer[1];
 extern int cm_KindAskOther[1];
 extern char cm_KindAllAtOnce[4];
 extern int ai_Unk92c510[60];
-extern char ai_Unk92c600[1152];
-extern int ai_Unk92ca80[16];
-extern int ai_Unk92cac0;
+extern char cm_SceneState[1152];
+extern int cm_SceneChars[16];
+extern int cm_SavedNoGroup;
 extern char cm_CutInfos[16][0x35c];
 extern float cm_OrderChances[0xb4];
 extern char * cm_PointList[32];
@@ -16769,7 +16831,7 @@ float ai_FloatZero = 0.0f;  /* 0x5eb788 */
 /* 0x5eb7ac is the pooled float 0.5f (0x3f000000): use the literal at the call sites. */
 double ai_Unk5eb7b0 = 15.0;  /* 0x5eb7b0 */
 float cm_Pi = 3.14159274f;  /* 0x5eb7dc */
-float ai_Unk5eb7fc = 75.0f;  /* 0x5eb7fc */
+float cm_Float75 = 75.0f;  /* 0x5eb7fc */
 float ai_Unk5eb81c = 30.0f;  /* 0x5eb81c */
 float ai_Unk5eb878 = 1.39999998f;  /* 0x5eb878 */
 /* 0x5eb8b0 is the pooled float 0.2f (0x3e4ccccd): use the literal at the call sites. */
@@ -16886,7 +16948,7 @@ int * cm_CurrentFight = 0;  /* 0x6f0d90 */
 int cm_DuelOver = 0;  /* 0x6f0d94 */
 unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
 int cm_SceneDepth = 0;  /* 0x6f0d9c, the scene nesting depth */
-char * ai_Unk6f0da0 = 0;  /* 0x6f0da0, the fade */
+char * cm_SceneFade = 0;  /* 0x6f0da0, the fade */
 unsigned int cm_FightStart = 0;  /* 0x6f0da4, fight start (d3_Time) */
 unsigned char cm_DuelScore[2] = {0};  /* 0x6f0da8, the damage taken by the left / right duellist (cm_DuelShotAction adds it, cm_RunDuel heals it back) */
 unsigned char cm_DuelLeftInsultWon = 0;  /* 0x6f0daa, the left duellist won the insult round (cm_DuelRound): the right one shoots worse */
@@ -16916,22 +16978,22 @@ int cm_SaveAcks[8][2] = {0};  /* 0x76fa20 */
 int ai_Evidence[0x800][2] = {0}; /* 0x91b6e0 */
 char ai_Crimes[0x5a00] = {0}; /* 0x91f700, the crime records (0x2d bytes each) up to 0x925100; f3gm's goods
                                     table ai_Unk91f716 is the same storage, a view at +0x16 */
-int ai_Unk925510 = 0;  /* 0x925510 */
+int cm_SavedScene = 0;  /* 0x925510 */
 G28REC ai_Unk925520[96] = {0};  /* 0x925520 */
 int cm_DuelRight = 0;  /* 0x92bca0 */
 int cm_DuelLeft = 0;  /* 0x92bca4 */
 int ai_Unk92bcc0[128] = {0};  /* 0x92bcc0 */
 int cm_OrderTicks = 0;  /* 0x92bec0 */
-unsigned short ai_Unk92bee0[768] = {0};  /* 0x92bee0 */
+unsigned short cm_DisabledObjs[768] = {0};  /* 0x92bee0 */
 unsigned int ai_Unk92c4e0 = 0;  /* 0x92c4e0, the random seed of the scenes */
-int ai_Unk92c500[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
+int cm_KindRun[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
 int cm_KindAskPlayer[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
 int cm_KindAskOther[1] = {0};  /* 0x92c508 */
 char cm_KindAllAtOnce[4] = {0};  /* 0x92c50c */
 int ai_Unk92c510[60] = {0};  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
-char ai_Unk92c600[1152] = {0};  /* 0x92c600 */
-int ai_Unk92ca80[16] = {0};  /* 0x92ca80 */
-int ai_Unk92cac0 = 0;  /* 0x92cac0 */
+char cm_SceneState[1152] = {0};  /* 0x92c600 */
+int cm_SceneChars[16] = {0};  /* 0x92ca80 */
+int cm_SavedNoGroup = 0;  /* 0x92cac0 */
 char cm_CutInfos[16][0x35c] = {0};  /* 0x92cae0 */
 float cm_OrderChances[0xb4] = {0};  /* 0x9300a0 */
 char * cm_PointList[32] = {0};  /* 0x930380 */

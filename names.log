@@ -1672,3 +1672,19 @@
 2026-11-03T21:19:06 0x0092c504 data ai_Unk92c504 -> cm_KindAskPlayer by:main why:the scene kind's callback (+4) that fills the record of a player's character (kind 6), registered by 0x4e5730
 2026-11-03T21:19:06 0x0092c508 data ai_Unk92c508 -> cm_KindAskOther by:main why:the scene kind's callback (+8) for the other members (the computer ones), registered by 0x4e5730
 2026-11-03T21:19:06 0x0092c50c data ai_Unk92c50c -> cm_KindAllAtOnce by:main why:the scene kind's flag (+0xc): 1 cm_RunSceneParty asks all members at once, 0 one after the other
+2026-11-03T21:27:00 0x004e4060 func ai_Unk4e4060 -> cm_ExecCutscene by:main why:its traces "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i" / "Exec Cutscene(Mainfunc) <Type = %i>": runs a scene party through its kind's run function
+2026-11-03T21:27:00 0x004d8b30 func ai_Unk4d8b30 -> cm_ClearSceneChars by:main why:clears the 16 character slots ai_Unk92ca80 before a cutscene runs (cm_ExecCutscene)
+2026-11-03T21:27:00 0x004d8c40 func ai_Unk4d8c40 -> cm_DeleteSceneChars by:main why:deletes every character of the 16 slots ai_Unk92ca80 (cm_DeleteChar) after a cutscene
+2026-11-03T21:27:00 0x0092ca80 data ai_Unk92ca80 -> cm_SceneChars by:main why:the 16 characters a cutscene created: cleared before it, deleted (cm_DeleteChar) after it
+2026-11-03T21:27:00 0x004e3fe0 func ai_Unk4e3fe0 -> cm_PauseSceneChars by:main why:stops the clock and pauses the animation of the characters without flags bit 4 when a cutscene starts
+2026-11-03T21:27:00 0x004e4020 func ai_Unk4e4020 -> cm_ResumeSceneChars by:main why:the reverse of cm_PauseSceneChars after a cutscene
+2026-11-03T21:27:00 0x004e4870 func ai_Unk4e4870 -> cm_IsPartyMember by:main why:1 when the character id is one of the party's members and still exists
+2026-11-03T21:27:00 0x004e3210 data ai_Unk4e3210 -> cm_SceneTick by:main why:the scene timer function cm_ExecCutscene registers with tb_OpenFunction: counts cm_SceneTicks
+2026-11-03T21:27:00 0x005eb7fc data ai_Unk5eb7fc -> cm_Float75 by:main why:the pooled float 75.0 (the letterbox height and an icon line, scaled by d2_ScreenScale)
+2026-11-03T21:27:00 0x00623e88 data ai_Unk623e88 -> sv_PanelEnabled by:main why:sv_SetPanelEnabled stores its argument there; cm_ExecCutscene turns the panel off for a cinemascope scene when it is set
+2026-11-03T21:27:00 0x006f0da0 data ai_Unk6f0da0 -> cm_SceneFade by:main why:the fade (d2_StartFade "BLACK") a cutscene starts with and releases at its end
+2026-11-03T21:27:00 0x00925510 data ai_Unk925510 -> cm_SavedScene by:main why:d3_CurrentScene kept by cm_ExecCutscene and selected again after the scene (d3if_SelectScene)
+2026-11-03T21:27:00 0x0092cac0 data ai_Unk92cac0 -> cm_SavedNoGroup by:main why:evt_NoGroup kept by cm_ExecCutscene and restored after the scene
+2026-11-03T21:27:00 0x0092bee0 data ai_Unk92bee0 -> cm_DisabledObjs by:main why:the d2 objects cm_ExecCutscene disabled for the scene (their indices), enabled again after it
+2026-11-03T21:27:00 0x0092c600 data ai_Unk92c600 -> cm_SceneState by:main why:the 0x480 bytes of scene state cm_ExecCutscene clears before each cutscene
+2026-11-03T21:27:00 0x0092c500 data ai_Unk92c500 -> cm_KindRun by:main why:the scene kind's run function (+0 of the 5 ints per kind, ai_Unk4e5730 registers it)
