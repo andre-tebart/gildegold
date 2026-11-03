@@ -32,7 +32,7 @@ struct D3SURF;
 #define CM_H
 struct AICHAR;
 struct D3FLMAP;
-typedef struct G18POP { float t; int v; int h; char *c; int kind; } G18POP;      /* 0x14 bytes, a floating number */
+typedef struct G18POP { float t; int v; int h; struct AICHAR *c; int kind; } G18POP;      /* 0x14 bytes, a floating number: its rise left (t), the value, the screen text, the character, the kind */
 typedef struct G18LOG { char text[0x40]; char name[0x24]; int to; int id; } G18LOG;      /* 0x6c bytes, a lobby chat line: the text, the sender's name, the receiver (0: everybody), the sender */
 
 #pragma pack(push, 1)
@@ -581,7 +581,7 @@ extern int cm_SkipEvents;  /* 0x6f0d8c */
 extern int cm_CharInfoWins[];  /* 0x935d20 */
 
 void cm_ShowDamage(char *c, int v, int kind);  /* 0x4cedc0 */
-void ai_Unk4cee20();  /* 0x4cee20 */
+void cm_UpdateDamagePops();  /* 0x4cee20 */
 void ai_Unk4cef80();  /* 0x4cef80 */
 void ai_Unk4cefa0();  /* 0x4cefa0 */
 void ai_Unk4cefe0();  /* 0x4cefe0 */

@@ -7320,49 +7320,50 @@ void cm_ShowDamage(char *c, int v, int kind)
         if (cm_DamagePops[i].v != 0)
             continue;
         cm_DamagePops[i].v = (int)((double)v / (((AICHAR *)c)->f01c * 0.01));
-        cm_DamagePops[i].c = c;
+        cm_DamagePops[i].c = (AICHAR *)c;
         cm_DamagePops[i].t = 64.0f;
         cm_DamagePops[i].kind = kind;
         return;
     }
 }
-/* 0x4cee20, shows / moves the floating numbers; one that rose for 128 steps is removed. Rough draft. */
+/* 0x4cee20, shows / moves the damage numbers of cm_ShowDamage over their characters (created on first show, kind 1 /
+   2 between sign glyphs); each rises half a pixel a step and is removed after 128 steps; a character off screen hides
+   its number and ends the pass */
 
-void ai_Unk4cee20()
+void cm_UpdateDamagePops()
 {
     char buf[0x40];
-    int box[4];
+    D3RECT box;
     int i, x, y0;
-    G18POP *p;
 
-    for (i = 0, p = cm_DamagePops; (int)p < (int)(cm_DamagePops + 16); i++, p++) {
-        if (p->v == 0)
+    for (i = 0; i < 16; i++) {
+        if (cm_DamagePops[i].v == 0)
             continue;
-        if (d3if_ScreenBox(*(int *)(*(char **)(p->c + 0x184) + 0x34), box) == 0) {
+        if (d3if_ScreenBox(cm_DamagePops[i].c->scene->obj, &box) == 0) {
             if (cm_DamagePops[i].h != -1)
                 d2_EnableObject(cm_DamagePops[i].h, 0);
             return;
         }
-        x = box[0] + 0x10;
-        y0 = box[1] - 0x30;
-        if (p->h == -1) {
-            if (p->kind == 1)
-                sprintf(buf, "%c-%i%c", 0x5c, p->v, 0x5d);
-            else if (p->kind == 2)
-                sprintf(buf, "%c-%i%c", 0x5e, p->v, 0x5f);
+        x = box.left + 0x10;
+        y0 = box.top - 0x30;
+        if (cm_DamagePops[i].h == -1) {
+            if (cm_DamagePops[i].kind == 1)
+                sprintf(buf, "%c-%i%c", 0x5c, cm_DamagePops[i].v, 0x5d);
+            else if (cm_DamagePops[i].kind == 2)
+                sprintf(buf, "%c-%i%c", 0x5e, cm_DamagePops[i].v, 0x5f);
             else
-                sprintf(buf, "-%i", p->v);
-            p->h = d2_CreateScreenText(x, (int)(y0 + p->t), buf);
+                sprintf(buf, "-%i", cm_DamagePops[i].v);
+            cm_DamagePops[i].h = d2_CreateScreenText(x, (int)(y0 + cm_DamagePops[i].t), buf);
         } else
-            d2_MoveObj(x, (int)(y0 + p->t), p->h);
-        if (p->h != -1)
-            d2_EnableObject(p->h, 1);
-        p->t = (float)(p->t - 0.5);
-        if (p->t <= 0.0f) {
-            d2_RemoveObj(p->h);
-            p->v = 0;
-            p->h = -1;
-            p->c = 0;
+            d2_MoveObj(x, (int)(y0 + cm_DamagePops[i].t), cm_DamagePops[i].h);
+        if (cm_DamagePops[i].h != -1)
+            d2_EnableObject(cm_DamagePops[i].h, 1);
+        cm_DamagePops[i].t = (float)(cm_DamagePops[i].t - 0.5);
+        if (cm_DamagePops[i].t <= 0.0f) {
+            d2_RemoveObj(cm_DamagePops[i].h);
+            cm_DamagePops[i].v = 0;
+            cm_DamagePops[i].h = -1;
+            cm_DamagePops[i].c = 0;
         }
     }
 }
@@ -7500,7 +7501,7 @@ next:
             }
         }
     }
-    ai_Unk4cee20();
+    cm_UpdateDamagePops();
 }
 /* 0x4cf370, draws the scroll arrows (sprite ids 0 .. 7 of the sheet d2_GetPic(0x52c)): the mouse hit tests against
    the boxes at sv_CameraObj + 0xb4 / 0xcc / 0xe4 / 0xfc pick the pressed (2) or the free (1) look. Rough draft. */
@@ -12808,7 +12809,7 @@ void ai_Unk4dfdd0(char *m)
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     ai_Unk4e53e0(dlg, ai_Unk60d364 * 0x4b, 1);
     while (sv_RunFrame(ai_Unk4dfdd0, ai_Unk60d360) != 0) {
-        ai_Unk4cee20();
+        cm_UpdateDamagePops();
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == b1)
                 m[0x94] = 2;
@@ -14139,7 +14140,7 @@ int ai_Unk4e3420(int a)
             do {
                 if (ai_Unk6f0d80 >= end)
                     sv_PopRequest = 1;
-                ai_Unk4cee20();
+                cm_UpdateDamagePops();
                 ai_Unk4e37a0(cm_CurrentFight);
             } while (sv_RunFrame(ai_Unk4e3420, ai_Unk60d360 | 0x8000) != 0);
         }
@@ -14169,7 +14170,7 @@ int ai_Unk4e3490(int a, int (*cb)(int))
                 if ((double)d3_Time >= lim)
                     sv_PopRequest = 1;
             }
-            ai_Unk4cee20();
+            cm_UpdateDamagePops();
             ai_Unk4e37a0(cm_CurrentFight);
         } while (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0);
     }
@@ -14189,7 +14190,7 @@ int ai_Unk4e3570(int a)
             do {
                 if ((double)d3_Time >= lim)
                     sv_PopRequest = 1;
-                ai_Unk4cee20();
+                cm_UpdateDamagePops();
                 ai_Unk4e37a0(cm_CurrentFight);
             } while (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0);
         }
