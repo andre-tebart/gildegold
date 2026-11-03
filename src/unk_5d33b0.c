@@ -2855,7 +2855,7 @@ unsigned short ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectS
    player has the goods (sv_CheckGoodAmount): the status bit 0x10 is set (cm_SendSetField), another owner is paid the price
    (cm_SendMoveGoodsUnchecked), the message 0x9d (arg 0 = the strength, arg 2 = the target's net id, the game time, flags 2) is sent
    (cm_SendLongMessage), the voice "_WAHRSAGERIN_FLUCH_0<v>" is played and the text 0x41da is shown. The pump ends with
-   d2_CloseView and the camera follow. @deep body reconstructed and read whole against the disassembly: 316 = 316 instructions, 1103 = 1103 bytes, the amount-menu config (AMOUNTCFG, the 64-bit filter loaded from a const volatile object like the original's .rdata pair), form / slider / buttons, the strength loop, the confirm branch with the 0xf8-byte message and the tail jumps all match. ONE hunk of 4 differing instructions is left at 0x5d9026: the original stores the last word of the game time copy (mov [esp+0xa8],ax) after the push of the message pointer (mov ecx,[ebp+4]; lea edx,[esp+0x70]; push edx; mov [esp+0xa8],ax; mov [esp+0xd0],ecx) while ours stores it before (mov [esp+0xa4],ax; ...; push edx), a pure scheduling difference of one store across the push. Tried the order of msg.to / the time copy / msg.arg[2] (three orders tried: this one is the best, the others 16 and 49 instructions), memcpy vs a struct copy (the struct copy needs the Q4 cast of the char ai_Time[]). */
+   d2_CloseView and the camera follow. */
 void ai_CurseWindow(int building)
 {
     char text[0x200];
@@ -4329,7 +4329,7 @@ float ai_NormalizeEffectScale(float value)
    speed in *outSpeed, the elevation in *outElev, the heading angle (d3_VecAngle2 against ai_AxisPair) in
    *outYaw and three vectors: outDir the horizontal direction tilted by the elevation, outUp d3_YAxis tilted
    the same way, outSide their cross product; -1 when no setting in the range hits (reasoned: the names follow
-   the use in am.c). @deep body complete and read against the original (bisection of speed range[0..1] / elevation range[2..3], 16 steps, +-2.5 m window, outputs outElev/outSpeed/outDir/outUp/outSide; conditions in the original's > / < jump forms, D3VECTOR4 dir/hdir give the 0x34 frame). Left (208 ins, all allocation): the original keeps speed/ang/speedStep/angStep on the FPU stack from before the loop (fld [ebx+0xc]; fld [ebx]; fld [g]...) and holds the sign in ebp / the counter in ecx with g, 2g, 1/g, drop, horiz*0.0254 in the slots 0x14/0x20/0x48/0x18/0x10; ours loads speed through an int copy (mov edx,[ebx]; mov [esp+0x48],edx), keeps sign in ecx, counter in edx and orders the three FPU temps differently (asmdiff hunks at 0x5dd108, 0x5dd1f7, 0x5dd294 fpu stack order, 0x5dd2d0, 0x5dd383 the cross-product operand order); horiz*0.0254 compiles fld mem; fmul const where the original has fld const; fmul mem */
+   the use in am.c). */
 int ai_SolveCannonAim(float *from, float *to, float *range, float *outElev, float *outYaw, float *outSpeed,
                       float *outDir, float *outUp, float *outSide)
 {

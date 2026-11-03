@@ -2352,7 +2352,7 @@ int amt_CanUseMayorPower3(char *c)
    ids), gm_Shuffled picks one or two of those goods and their price records (gm_FindGoods) get the factor gm_GetSkill(c, 2) times a random
    1.2 .. 2.0 (raise) or 0.5 .. 1.0 (lower); the goods go back through cm_SendGoodsDelta, m[3] / m[4] return them, c uses its power flag
    0x4000000 and pays 3 money (gm_SendMoneyDelta), every player character except c is told the news text (0x1655 / 0x1659 + the goods
-   names) and c gets it as a message box when it is a player character (kind 6). Always 0. @deep Read whole against the original and fixed: the building level and best are ints compared lvl > best (xor/mov dl, cmp eax,esi / jle), best set before id; pick is int[10] (gm_Shuffled fills n <= 10 entries; the frame 0xad8 has pick at +0x40 .. +0x68 before rec), the price-row search is a for over the 0x25 rows with a break and the i < 0x25 test, the random factor calls util_RandomF in each branch (raise 0.4f / 1.2f floats; lower 0.3f then the doubles 0.2 and 1.0), the second pick written id then id2, both news texts as full txt_Format calls (VC6 merges their call), the character scan an index loop over 768 (signed jl). Left is allocation only: the original keeps a zero in ebx from the prologue (cmp eax,ebx / cmp ax,bx / cmp esi,ebx for the t / it / id / row / n tests, the stores of id2, m[3], m[4]) with best in esi; ours zeroes esi (best) and stores / tests through it (test eax,eax etc.) and so takes ebx for the level byte (xor ebx / mov bl,[edx+eax*4+0x247] where the original has lea eax / xor edx / mov dl,[eax+0x247]). */
+   names) and c gets it as a message box when it is a player character (kind 6). Always 0. */
 
 int amt_ExecutePriceMessage(char *c, int *m)
 {

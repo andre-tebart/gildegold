@@ -906,7 +906,7 @@ unsigned short ahm_CreateAlchemist(int *p)
     *(int *)(c + 0x1cc) |= 4;
     return *(unsigned short *)c;
 }
-/* 0x4ec940, the message 'SsCa' (cm_SendCommand) of the character c with the id and the value v clamped to 0 .. 1; -1 when c has no object (0x4eaad0) @deep B3 draft, close (69/69 instructions, 12 differing): the two out-of-line return blocks are in the other order - the original has m.value.f = 0.0f first (0x4ec9c1), ours the 1.0 block - plus the block's lea register (ecx vs eax); the 42 leading instructions and both branch tests match (fcomp 0x5eb788 0.0 / 0x5eb780 1.0, and 0x4100 / test ah,5 jp = the !(v > 0) / !(v < 1) NaN forms). Read: disasm 0x4ec940..0x4ec9f4, cm_SendCommand, the sibling ahm_SendSetPlaceValue. Leads tried, one build each, no gain: the else-form, the inverted form, if (!(v > 0)), the 1.0 block inside the outer if with the 0.0 block after it (no else keyword - 12 as before), and the two-guard early-return form (worse: 30). spell.py: no menu rule matches the 4ec9c1 hunk, 'no hunk matched the menu; escalate'. Q1..Q7 pass. */
+/* 0x4ec940, the message 'SsCa' (cm_SendCommand) of the character c with the id and the value v clamped to 0 .. 1; -1 when c has no object (0x4eaad0) */
 
 int ahm_SendSetShare(char *c, int id, float v)
 {
@@ -1032,7 +1032,7 @@ int ahm_RemovePlace(int *p, char *rec, unsigned char *o)
     } while (i < 6);
     return 0;
 }
-/* 0x4ecc30, the message 'cRSa' (0x4c61b0) of the character c for the place id with the value v clamped to 0 .. 1; -1 when c has no object or no such place (0x4eabe0) @deep B3 draft, close (89/89 instructions, 12 differing): the same clamp block order as ahm_SendSetShare - the original lays the m.value.f = 0.0f block out first (0x4ecccb), ours the 1.0 block, and the block's lea register differs (edx vs eax); the 56 leading instructions and both branch tests match. Read: disasm 0x4ecc30..0x4eccf8, the sibling ahm_SendSetShare. Leads tried (same source family as the sibling, one build each): the else-form, the inverted form, if (!(v > 0)), the no-else form (1.0 inside the outer if, 0.0 after - the current source, 12), the two-guard early-return form (worse, 30 on the sibling). spell.py: no menu rule matches the 4ecccb hunk. Q1..Q7 pass. */
+/* 0x4ecc30, the message 'cRSa' (0x4c61b0) of the character c for the place id with the value v clamped to 0 .. 1; -1 when c has no object or no such place (0x4eabe0) */
 
 int ahm_SendSetPlaceValue(char *c, int id, float v)
 {
