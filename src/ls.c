@@ -27,7 +27,7 @@ struct D3TERRAIN;
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern int ai_Unk7d6a40;
+extern int gm_TreeNodeCount;
 extern char gm_StockBlocks[];  /* 0x7d6a60, the five 0x2a90-byte stock blocks (f3gm.c's definition) */
 #define ai_Unk7d6a64 (*(int (*)[3])((char *)gm_StockBlocks + 4))  /* 0x7d6a64, block 0's header tail (a view) */
 typedef struct GMSTOCKREC {         /* 0x80 bytes, a goods record of a stock block (the fields ls_WritePlayerSlots
@@ -53,7 +53,7 @@ extern unsigned char ord_StatisticsClock;
 extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
 extern void main_Unk537b60(int kind, int cur, int total);
-extern int ai_Unk7d6a40;
+extern int gm_TreeNodeCount;
 #include "ch_types.h"
 extern int gm_QueryDepth;
 
@@ -591,7 +591,7 @@ int ls_WritePlayerRecords(int f)
         LS_W(p + 0xa6, 4)
         LS_W(p + 0x6e, 4)
         p += 0xac;
-        if ((int)p > ((unsigned)&ai_Unk7d6a40 + 0x1))
+        if ((int)p > ((unsigned)&gm_TreeNodeCount + 0x1))
             return 1;
     }
 }

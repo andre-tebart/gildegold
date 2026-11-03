@@ -90,7 +90,7 @@ extern GAPDATA full_data_7585f4[];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern int gm_PlayerRecords[688];
-extern int ai_Unk7d6a40;
+extern int gm_TreeNodeCount;
 void ch_PreloadAnims(struct CHARACTER *ch, int n, ...);
 unsigned short *gm_CreateObject(int id, int proto, int n);
 char *gm_FindCharacterByMaster(int m);
@@ -9847,14 +9847,14 @@ int gm_AllowAll = 0;  /* 0x6f2448 */
 unsigned short gm_KindObjCount = 0;  /* 0x76fdc4 */
 int ai_Unk76fdc8 = 0;  /* 0x76fdc8 */
 /* ---- layout 2026-10-23: the standing / family helpers 0x50b010 .. 0x50d0b0 (ROUGH drafts) ---- */
-char ai_Unk76fde0[3328] = {0};  /* 0x76fde0, the family records ( */
+char gm_TreeNodes[3328] = {0};  /* 0x76fde0, the family records ( */
 int ai_Unk770af0 = 0;  /* 0x770af0, the window of the family tree */
 /* ai_Unkfb1030: view of d2_Views (tools/data_views.py) */
 /* ai_Unkf8f128: view of d2_Wins (tools/data_views.py) */
 void d2_PlotLine();                     /* 0x4764f0 */
 void ai_Unk4c5510(int a);                     /* 0x4c5510 */
 float gm_Liking();
-int gm_Unk50b3a0();
+int gm_LayoutTree();
 int gm_Unk50b9f0();
 
 /* 0x50af00, collects what the person id carries into out (a GMCARRY, cleared first): 0xe units and capacity when the person is the special worker (gm_ListWorkers' last slot) of a building of key 4 = id, then an entry for each used carried-goods record of gm_CarryRecs it owns (count, valueSum minus the values). Returns 0 */
@@ -10024,38 +10024,38 @@ int gm_LikingChance(int a, int b, int c, int d)
 }
 /* 0x50b2f0, the generation of the family record p: 0 without parents, else one more than the older parent's (cached in the word at +0xc) */
 
-unsigned gm_Unk50b2f0(int p)
+unsigned gm_TreeNodeRank(int p)
 {
     unsigned a, b, i;
     int n, j;
     int *q;
 
-    n = ai_Unk7d6a40;
+    n = gm_TreeNodeCount;
     a = 0;
     b = 0;
-    if (*(unsigned short *)(ai_Unk76fde0 + p * 0x34 + 0xc) != 0xffff)
-        return *(unsigned short *)(ai_Unk76fde0 + p * 0x34 + 0xc);
+    if (*(unsigned short *)(gm_TreeNodes + p * 0x34 + 0xc) != 0xffff)
+        return *(unsigned short *)(gm_TreeNodes + p * 0x34 + 0xc);
     i = 0;
-    if (*(int *)(ai_Unk76fde0 + p * 0x34 + 4) != 0) {
-        if (0 < ai_Unk7d6a40) {
-            q = (int *)ai_Unk76fde0;
+    if (*(int *)(gm_TreeNodes + p * 0x34 + 4) != 0) {
+        if (0 < gm_TreeNodeCount) {
+            q = (int *)gm_TreeNodes;
             do {
-                if (*(int *)(ai_Unk76fde0 + p * 0x34 + 4) == *q) {
-                    a = gm_Unk50b2f0(i) + 1;
+                if (*(int *)(gm_TreeNodes + p * 0x34 + 4) == *q) {
+                    a = gm_TreeNodeRank(i) + 1;
                     break;
                 }
                 i++;
                 q += 0xd;
-            } while ((int)i < ai_Unk7d6a40);
+            } while ((int)i < gm_TreeNodeCount);
         }
-        if (*(int *)(ai_Unk76fde0 + p * 0x34 + 8) == 0)
+        if (*(int *)(gm_TreeNodes + p * 0x34 + 8) == 0)
             return a;
         j = 0;
         if (0 < n) {
-            q = (int *)ai_Unk76fde0;
+            q = (int *)gm_TreeNodes;
             do {
-                if (*(int *)(ai_Unk76fde0 + p * 0x34 + 8) == *q) {
-                    b = gm_Unk50b2f0(j) + 1;
+                if (*(int *)(gm_TreeNodes + p * 0x34 + 8) == *q) {
+                    b = gm_TreeNodeRank(j) + 1;
                     break;
                 }
                 j++;
@@ -10076,67 +10076,73 @@ typedef struct {
     int l[5];
     unsigned char flag;
 } RTNODE;       /* 0x34 bytes, the nodes of the research tree layout 0x76fde0 */
-#define NODES ((RTNODE *)ai_Unk76fde0)
-extern int ai_Unk889f70;
-unsigned short ai_Unk770b00[64] = {0};  /* 0x770b00 */
-unsigned gm_Unk50b2f0();                /* 0x50b2f0 */
+#define NODES ((RTNODE *)gm_TreeNodes)
+extern int gm_TreeRanks;
+unsigned short gm_TreeRankStart[64] = {0};  /* 0x770b00 */
+unsigned gm_TreeNodeRank();                /* 0x50b2f0 */
 
-/* 0x50b3a0, lays out the tree of the items that follow the item *b in the list of the building a (record +0x22 the count, +0x23 the ids (& 0x7fff), +0xa5 pairs of parents): the nodes (until an item of class 2 / 6) go into
-   0x76fde0 (id, the two parents, rank = 0x50b2f0, x / y unset, links -1), are bubble-sorted by rank, the rank starts go to 0x770b00, then the x positions are spread over the width w (averages of the parents' x,
-   spreading of equal x, a minimum distance of 0x50, a shift when the tree leaves the area), and the y positions over the height h (0x60 per rank at most); 1 when there is nothing to lay out, else 0. ROUGH */
-int gm_Unk50b3a0(unsigned short *a, unsigned short *b, int w, int h)
+/* 0x50b3a0, lays out the goods tree of the building bld's type from the item *item on (the entries of its objs list that follow it, up to one of goods type 2 / 6) in the w x h area: the nodes go into gm_TreeNodes (id, the two parents, rank = gm_TreeNodeRank) sorted by rank, the first node of each rank into gm_TreeRankStart; the first rank is spread evenly, each further one under the mean x of its parents (equal x spread apart, neighbours 0x50 apart), the whole scaled back into the width when it leaves it, and the ranks spread over the height (0x60 apart at most). 1 when there is nothing to lay out, else 0
+   @deep Read the whole function against the original (527 ins) and rebuilt it section by section: the objs
+   search, the node fill (indexed by gm_TreeNodeCount, written per node), the rank sort, the rank starts,
+   the first rank as (2i+1)*step-0x18, per rank the parent mean, the x sort, the equal-x spread (k/(num-1)
+   - (d>>1)), the 0x50 neighbour push, the bounds with lo>=x / hi<=x, the float rescale (w/(hi-lo+0x78),
+   off=(int)-(m*scale)) and the y spread; every store, compare, call and constant now pairs with the
+   original's. What is left is loop shape and allocation: the original keeps bt and the objs pointer in
+   stack slots (mov eax,[esp+0x1c] / [esp+0x64] reloads at +0x7d, +0x116), runs the x-sort and the 0x50
+   neighbour outer loops as count-down trip counters in [esp+0x18] / [esp+0x68] (sub eax,esi; mov
+   [esp+0x18],eax ... dec eax; jne) where ours keeps i+1 in a register (lea eax,[ecx-1]; cmp eax,ebp; jl),
+   and recomputes &NODES[s].x for the neighbour loop where ours reuses it ([esp+0x28]); tried: compare
+   operand order in the x sort (worse) (size: 504 vs 527 instructions, explained: 23 instructions fewer:
+   the original's two count-down trip counters (sub/mov/dec/mov per outer loop, ~10), its reloads of the
+   spilled bt / objs pointer / s / e (~8) and the recomputed &NODES[s].x (4) where ours keeps them in
+   registers) */
+int gm_LayoutTree(unsigned char *bld, unsigned short *item, int w, int h)
 {
-    char *rec;
-    int n, i, j, k, lv, cnt, ranks, step, sum, num, lo, hi, d;
-    unsigned short *ids;
-    unsigned short rmax;
-    unsigned s, e, t, u;
-    int again;
+    GMBTYPE *bt;
+    int n, cnt, i, j, k, u, lv, rmax, again;
+    int first, step, s, e, sum, num, lo, hi, d, m, off;
+    float scale;
+    char kind;
     RTNODE tmp;
-    int *pp;
 
-    rec = ai_BTypes + (unsigned char)*(char *)a * 0x24d;
-    n = 0;
-    cnt = (unsigned char)rec[0x22];
-    ids = (unsigned short *)(rec + 0x23);
-    if (cnt != 0) {
-        do {
-            if ((ids[n] & 0x7fff) == *b)
-                break;
-            n++;
-        } while (n < cnt);
-    }
-    if (cnt <= n)
-        return 1;
-    ai_Unk7d6a40 = 0;
-    n++;
-    for (; n < (unsigned char)rec[0x22]; n++) {
-        char cls = *(char *)(ai_Goods + (ids[n] & 0x7fff) * 0x41);
-        RTNODE *r;
-        if (cls == 2 || cls == 6)
+    bt = GM_BTYPE(*bld);
+    for (n = 0; n < bt->objCount; n++)
+        if ((bt->objs[n] & 0x7fff) == *item)
             break;
-        r = &NODES[ai_Unk7d6a40];
-        r->id = ids[n] & 0x7fff;
-        r->p1 = *(unsigned short *)(rec + 0xa3 + n * 4);
-        r->p2 = *(unsigned short *)(rec + 0xa5 + n * 4);
-        r->rank = 0xffff;
-        r->x = 0;
-        r->y = 0;
-        for (k = 0; k < 5; k++)
-            r->l[k] = -1;
-        r->flag = 0xff;
-        ai_Unk7d6a40++;
+    if (n >= bt->objCount)
+        return 1;
+    gm_TreeNodeCount = 0;
+    for (n++; n < bt->objCount; n++) {
+        u = bt->objs[n] & 0x7fff;
+        kind = GM_GOOD(u)->type;
+        if (kind == 2 || kind == 6)
+            break;
+        NODES[gm_TreeNodeCount].id = u;
+        NODES[gm_TreeNodeCount].p1 = bt->parents[n][0];
+        NODES[gm_TreeNodeCount].p2 = bt->parents[n][1];
+        NODES[gm_TreeNodeCount].rank = 0xffff;
+        NODES[gm_TreeNodeCount].x = 0;
+        NODES[gm_TreeNodeCount].y = 0;
+        NODES[gm_TreeNodeCount].l[0] = -1;
+        NODES[gm_TreeNodeCount].l[1] = -1;
+        NODES[gm_TreeNodeCount].l[2] = -1;
+        NODES[gm_TreeNodeCount].l[3] = -1;
+        NODES[gm_TreeNodeCount].l[4] = -1;
+        NODES[gm_TreeNodeCount].flag = 0xff;
+        gm_TreeNodeCount++;
     }
-    cnt = ai_Unk7d6a40;
+    cnt = gm_TreeNodeCount;
     if (cnt == 0)
         return 1;
+
+    /* the ranks, and the nodes sorted by them */
     rmax = 0;
     for (i = 0; i < cnt; i++) {
-        NODES[i].rank = (unsigned short)gm_Unk50b2f0(i);
+        NODES[i].rank = gm_TreeNodeRank(i);
         if (rmax <= NODES[i].rank)
             rmax = NODES[i].rank;
     }
-    ai_Unk889f70 = rmax + 1;
+    gm_TreeRanks = rmax + 1;
     do {
         again = 0;
         for (i = 0; i < cnt; i++)
@@ -10149,31 +10155,29 @@ int gm_Unk50b3a0(unsigned short *a, unsigned short *b, int w, int h)
                 }
     } while (again);
     lv = 0;
-    ai_Unk770b00[0] = 0;
+    gm_TreeRankStart[0] = 0;
     for (i = 0; i < cnt; i++) {
-        if (lv < NODES[i].rank) {
+        if (NODES[i].rank > lv) {
             lv++;
-            ai_Unk770b00[lv] = (unsigned short)i;
+            gm_TreeRankStart[lv] = i;
         }
     }
-    ranks = ai_Unk889f70;
-    ai_Unk770b00[ranks] = (unsigned short)cnt;
-    t = ai_Unk770b00[1];
-    step = w / (int)(t * 2);
-    if (t != 0) {
-        d = step - 0x18;
-        for (i = 0; i < (int)t; i++) {
-            NODES[i].x = d;
-            d += step * 2;
-        }
-    }
-    for (lv = 1; lv < ranks; lv++) {
-        s = ai_Unk770b00[lv];
-        e = ai_Unk770b00[lv + 1];
-        for (i = s; i < (int)e; i++) {
+    gm_TreeRankStart[gm_TreeRanks] = cnt;
+
+    /* the first rank spread evenly over the width */
+    first = gm_TreeRankStart[1];
+    step = w / (first * 2);
+    for (i = 0; i < first; i++)
+        NODES[i].x = (i * 2 + 1) * step - 0x18;
+
+    /* each further rank under the mean of its parents */
+    for (lv = 1; lv < gm_TreeRanks; lv++) {
+        s = gm_TreeRankStart[lv];
+        e = gm_TreeRankStart[lv + 1];
+        for (i = s; i < e; i++) {
             sum = 0;
             num = 0;
-            for (j = 0; j < (int)s; j++) {
+            for (j = 0; j < s; j++) {
                 if (NODES[j].id == NODES[i].p1 || NODES[j].id == NODES[i].p2) {
                     sum += NODES[j].x;
                     num++;
@@ -10185,8 +10189,8 @@ int gm_Unk50b3a0(unsigned short *a, unsigned short *b, int w, int h)
         }
         do {
             again = 0;
-            for (i = s; i < (int)e; i++)
-                for (j = i + 1; j < (int)e; j++)
+            for (i = s; i < e; i++)
+                for (j = i + 1; j < e; j++)
                     if (NODES[j].x < NODES[i].x) {
                         tmp = NODES[i];
                         NODES[i] = NODES[j];
@@ -10194,53 +10198,58 @@ int gm_Unk50b3a0(unsigned short *a, unsigned short *b, int w, int h)
                         again = 1;
                     }
         } while (again);
-        for (i = s; i < (int)e; i++) {
-            u = i;
-            for (j = i; j < (int)e; j++)
-                if (NODES[i].x != NODES[j].x)
+        /* nodes on one x are spread around it */
+        for (i = s; i < e; i++) {
+            for (j = i; j < e; j++)
+                if (NODES[j].x != NODES[i].x)
                     break;
-            if (i + 1 < j) {
+            if (j > i + 1) {
                 num = j - i;
-                d = (w / (int)t >> (lv - 1)) + (num * 3 + 3) * -8;
-                if (num > 0) {
-                    k = 0;
-                    for (u = 0; (int)u < num; u++) {
-                        NODES[i + u].x += k / (num - 1) - (d >> 1);
-                        k += d;
-                    }
+                d = (w / first >> (lv - 1)) - (num * 3 + 3) * 8;
+                for (u = 0, k = 0; u < num; u++) {
+                    NODES[i + u].x += k / (num - 1) - (d >> 1);
+                    k += d;
                 }
             }
         }
-        for (i = s; i < (int)e; i++)
-            for (j = i + 1; j < (int)e; j++) {
+        /* neighbours at least 0x50 apart */
+        for (i = s; i < e; i++)
+            for (j = i + 1; j < e; j++) {
                 lo = NODES[i].x;
-                if (NODES[j].x - lo < 0x50) {
-                    d = (lo - NODES[j].x + 0x50) >> 1;
+                hi = NODES[j].x;
+                if (hi - lo < 0x50) {
+                    d = (lo - hi + 0x50) >> 1;
                     NODES[i].x = lo - d;
                     NODES[j].x += d;
                 }
             }
     }
+
+    /* scaled into the width when the tree leaves it */
     lo = w + 1;
     hi = -1;
-    for (lv = 0; lv < ranks; lv++)
-        for (i = ai_Unk770b00[lv]; i < ai_Unk770b00[lv + 1]; i++) {
-            if (NODES[i].x <= lo)
+    for (lv = 0; lv < gm_TreeRanks; lv++)
+        for (i = gm_TreeRankStart[lv]; i < gm_TreeRankStart[lv + 1]; i++) {
+            if (lo >= NODES[i].x)
                 lo = NODES[i].x;
             if (hi <= NODES[i].x)
                 hi = NODES[i].x;
         }
-    if (lo - 0x18 < 0 || w <= hi + 0x60) {
-        d = (int)((w - (hi - lo)) * 0.5);
-        for (lv = 0; lv < ranks; lv++)
-            for (i = ai_Unk770b00[lv]; i < ai_Unk770b00[lv + 1]; i++)
-                NODES[i].x = (int)(NODES[i].x - lo) + d;
+    m = lo - 0x18;
+    if (m < 0 || hi + 0x60 >= w) {
+        scale = (float)w / (hi - lo + 0x78);
+        off = (int)-(m * scale);
+        for (lv = 0; lv < gm_TreeRanks; lv++)
+            for (i = gm_TreeRankStart[lv]; i < gm_TreeRankStart[lv + 1]; i++)
+                NODES[i].x = (int)(NODES[i].x * scale) + off;
     }
-    step = ranks * 0x60;
-    if (h - 0x10 <= step)
+
+    /* the ranks spread over the height, 0x60 apart at most */
+    step = gm_TreeRanks * 0x60;
+    if (step >= h - 0x10)
         step = h - 0x10;
-    for (i = 0; i < ai_Unk7d6a40; i++)
-        NODES[i].y = (int)((unsigned)NODES[i].rank * step) / ranks + 0x10;
+    for (i = 0; i < gm_TreeNodeCount; i++)
+        NODES[i].y = NODES[i].rank * step / gm_TreeRanks + 0x10;
     return 0;
 }
 
@@ -10264,7 +10273,7 @@ int gm_Unk50b9f0(char *a, short *b)
     RTNODE *nd;
 
     parent = *(int *)(ai_Unkfb1030 + ai_Unk770af0 * 0x2ac);
-    for (i = 0; i < ai_Unk7d6a40; i++) {
+    for (i = 0; i < gm_TreeNodeCount; i++) {
         nd = &NODES[i];
         state = 0;
         cls = *(char *)(ai_Goods + nd->id * 0x41);
@@ -10405,29 +10414,29 @@ int gm_Unk50c340(int form, unsigned char *p, unsigned short *q)
         t = *q * 2 + 0x9a8;
     io_PrintText("$[%s$]", 0x19, t);
     d2_SetForm(0, 3);
-    n = gm_Unk50b3a0(p, q, (int)*(short *)(ai_Unkf8f128 + w * 0x3c4), (int)*(short *)(ai_Unkf8f128 + 2 + w * 0x3c4));
+    n = gm_LayoutTree(p, q, (int)*(short *)(ai_Unkf8f128 + w * 0x3c4), (int)*(short *)(ai_Unkf8f128 + 2 + w * 0x3c4));
     if (n != 0) {
         d2_CloseView(ai_Unk770af0);
         return -1;
     }
     gm_Unk50b9f0(p, q);
     i = 0;
-    if (0 < ai_Unk7d6a40) {
+    if (0 < gm_TreeNodeCount) {
         j = 0;
         do {
             if (0 < j) {
-                r = (int *)(ai_Unk76fde0 + 0x14);
+                r = (int *)(gm_TreeNodes + 0x14);
                 t = i;
                 do {
-                    if (r[-5] == *(int *)(ai_Unk76fde0 + 4 + j)) {
-                        a = *(int *)(ai_Unk76fde0 + 0x14 + j);
-                        b = *(int *)(ai_Unk76fde0 + 0x10 + j);
+                    if (r[-5] == *(int *)(gm_TreeNodes + 4 + j)) {
+                        a = *(int *)(gm_TreeNodes + 0x14 + j);
+                        b = *(int *)(gm_TreeNodes + 0x10 + j);
                         c = *r;
                         d = r[-1];
                         gm_Unk50c310(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
-                    } else if (r[-5] == *(int *)(ai_Unk76fde0 + 8 + j)) {
-                        a = *(int *)(ai_Unk76fde0 + 0x14 + j);
-                        b = *(int *)(ai_Unk76fde0 + 0x10 + j);
+                    } else if (r[-5] == *(int *)(gm_TreeNodes + 8 + j)) {
+                        a = *(int *)(gm_TreeNodes + 0x14 + j);
+                        b = *(int *)(gm_TreeNodes + 0x10 + j);
                         c = *r;
                         d = r[-1];
                         gm_Unk50c310(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
@@ -10438,7 +10447,7 @@ int gm_Unk50c340(int form, unsigned char *p, unsigned short *q)
             }
             i++;
             j += 0x34;
-        } while (i < ai_Unk7d6a40);
+        } while (i < gm_TreeNodeCount);
     }
     return ai_Unk770af0;
 }
@@ -10469,7 +10478,7 @@ int gm_Opinion(int a, int b)
 }
 
 int gm_PlayerRecords[688] = {0};  /* 0x7d5f80, the 16 player records ( */
-int ai_Unk7d6a40 = 0;  /* 0x7d6a40, the number of family records */
+int gm_TreeNodeCount = 0;  /* 0x7d6a40, the number of family records */
 char gm_StockBlocks[0xd4d0] = {0}; /* 0x7d6a60, the five stock blocks (five rows of four header ints plus 0x55 records of 0x80 bytes); a tentative definition, so the COMMON linker reserves the whole span and no other global lands inside it. init_StockBlock is the same object (data.csv alias). */
 struct AIOBJ *ai_Objects = 0;  /* 0x7e3f34, the object instances (AIOBJ, ai.h) */
 int gm_QueryDepth = 0;  /* 0x7e3f38, the depth of the child stack */
@@ -10478,7 +10487,7 @@ AISTORE gm_Offers[88] = {0};  /* 0x7e4b20, the offers (ai.h's AISTORE rows of 6 
 int gm_ClassBuilding[32] = {0};  /* 0x875360 */
 int gm_QueryStack[20488] = {0};  /* 0x8753e0, the child stack (the first word of */
 unsigned gm_KindObjs[732] = {0};  /* 0x889400 */
-int ai_Unk889f70 = 0;  /* 0x889f70 */
+int gm_TreeRanks = 0;  /* 0x889f70 */
 char * ai_Blds = 0;  /* 0x889f74, the buildings ( */
 int gm_GoodBuilding[732] = {0};  /* 0x919f80 */
 char * ai_Goods = 0;  /* 0x91aaf0, the object prototypes ( */
