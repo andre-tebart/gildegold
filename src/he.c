@@ -12321,7 +12321,7 @@ void he_Unk565620(int ev)
 {
     int p, o, d;
     float step;
-    double v;
+    float v;
     char text[0x200];
 
     switch (*(int *)(ev + 0x70)) {
@@ -12334,7 +12334,7 @@ void he_Unk565620(int ev)
         d = gm_MinutesBetween(ev + 0x60, (unsigned)&ai_Time);
         step = 5.0f * ((float)d * 0.1f);
         v = gm_HealthRatio(p) * 100.0;
-        if (*(unsigned *)(ev + 0xb0) > 0 && step + v < 100.0) {
+        if (*(unsigned *)(ev + 0xb0) > 0 && step + v < 100.0f) {
             gm_AddHealth(*(unsigned short *)p, (int)step);
             *(int *)(ev + 0xb0) = (int)((double)*(unsigned *)(ev + 0xb0) - step);
             *(HETIME *)(ev + 0x52) = ai_Time;

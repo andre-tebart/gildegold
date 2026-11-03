@@ -2379,14 +2379,14 @@ void ord_ReportStatistics(void)
 
     if (ai_TimeYear < 8 || ai_TimeYear % 4 != 0)
         return;
-    a = (ord_StatisticsRounds[12].noSecond + ord_StatisticsRounds[13].noSecond
-         + ord_StatisticsRounds[14].noSecond + ord_StatisticsRounds[15].noSecond) * 0.25f;
-    b = (ord_StatisticsRounds[12].noFirst + ord_StatisticsRounds[13].noFirst
-         + ord_StatisticsRounds[14].noFirst + ord_StatisticsRounds[15].noFirst) * 0.25f;
-    c = (ord_StatisticsRounds[12].combined + ord_StatisticsRounds[13].combined
-         + ord_StatisticsRounds[14].combined + ord_StatisticsRounds[15].combined) * 0.25f;
-    d = (ord_StatisticsRounds[12].score + ord_StatisticsRounds[13].score
-         + ord_StatisticsRounds[14].score + ord_StatisticsRounds[15].score) * 0.25f;
+    a = (ord_StatisticsRounds[15].noSecond + ord_StatisticsRounds[14].noSecond
+         + ord_StatisticsRounds[13].noSecond + ord_StatisticsRounds[12].noSecond) * 0.25f;
+    b = (ord_StatisticsRounds[15].noFirst + ord_StatisticsRounds[14].noFirst
+         + ord_StatisticsRounds[13].noFirst + ord_StatisticsRounds[12].noFirst) * 0.25f;
+    c = (ord_StatisticsRounds[15].combined + ord_StatisticsRounds[14].combined
+         + ord_StatisticsRounds[13].combined + ord_StatisticsRounds[12].combined) * 0.25f;
+    d = (ord_StatisticsRounds[15].score + ord_StatisticsRounds[14].score
+         + ord_StatisticsRounds[13].score + ord_StatisticsRounds[12].score) * 0.25f;
     v = gm_IncomeRating();
     txt0 = a <= 0.15 ? 0x1c11 : 0x1c15;
     txt1 = b <= 0.15 ? 0x1c12 : 0x1c16;

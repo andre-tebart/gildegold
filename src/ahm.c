@@ -1040,7 +1040,7 @@ int ahm_SendSetPlaceValue(char *c, int id, float v)
 
     if (ahm_HasRecord(c) == 0)
         return -1;
-    if (ahm_FindSlot(c, id) == 0)
+    if (ahm_SlotOf(c, id) == 0)
         return -1;
     AHM_ZERO6(&m);
     m.charId = ((AHMCHAR *)c)->id;

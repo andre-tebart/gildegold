@@ -661,7 +661,7 @@ void ai_FillSaveSlots(int view, int form, SAVESLOTVIEW *slots, char *files, char
    screen to pop and, when dm_L.lclick is set, the 16 slots are walked: the slot is hit when the click
    is on its caption object (d2_PointerObj), in its window (d2_HitWindow) or in a control of it (the
    parent object of the clicked window belongs to the slot's window). A hit asks for confirmation
-   (ai_MessageBox 0x101) while a game runs, then writes "Gamedata\Saves\<name>.SAV" into ls_SavePath,
+   (ai_MessageBox 0x101) while a game runs, then writes "Gamedata\Saves\<name>.SAV" into main_NetSaveName,
    sets the load mode (ai_GameFlags 10) and the pop request and returns 1. Returns 0 otherwise. */
 
 int ai_LoadGameWindow(void)
@@ -706,7 +706,7 @@ int ai_LoadGameWindow(void)
                             && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
                     if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
                         sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
-                        strcpy(ls_SavePath.path, path);
+                        strcpy(main_NetSaveName, path);
                         ai_GameFlagsWord = 10;
                         sv_PopRequest = 1;
                         ret = 1;
@@ -726,7 +726,7 @@ int ai_LoadGameWindow(void)
    and the frame's mask; a mouse event asks the screen to pop, and when dm_L.lclick is set the 16 slots
    are walked (the same hit test as ai_LoadGameWindow: the caption object, the slot's window, or a
    control of it). A hit asks for confirmation (ai_MessageBox 0x101) while a game runs, then copies the
-   slot's name into ls_SavePath (the caller opens "gamedata/network/<name>.SAV"), asks the screen to
+   slot's name into main_NetSaveName (the caller opens "gamedata/network/<name>.SAV"), asks the screen to
    pop and returns 1. Returns 0 otherwise. */
 
 int ai_JoinGameWindow(void)
@@ -768,7 +768,7 @@ int ai_JoinGameWindow(void)
                         || (d2_HitWindow != -1
                             && d2_Objs[d2_Wins[d2_HitWindow].parent].win == &d2_Wins[slots[i].win]))) {
                     if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
-                        strcpy(ls_SavePath.path, slots[i].name);
+                        strcpy(main_NetSaveName, slots[i].name);
                         sv_PopRequest = 1;
                         ret = 1;
                     }
@@ -2132,7 +2132,7 @@ void ai_OptionsSfxScreen(void)
    panel list changed, the stored panel is updated, the view is disabled and, while a game runs, the screen is rebuilt
    (sv_DestroyScreen, sv_BuildScreenLayout of sv_PanelImage, the fade ai_LeaveGameScreen, sv_ScreenDirty = 1); then the INI is
    written (ai_SaveOptions) and the speed factor applied (ai_ApplyOptions). Void; opened by the options menu 0x5d7770 and main.c.
-   Text slots (txt_Ptrs): the labels 0x1c96 .. 0x1ca1 (0x1c9f unused), the two-state items 0x1c7c / 0x1c7d, the panel items
+   Text slots (txt_Ptrs): the labels 0x1c96 .. 0x1ca1 (0x1c9f unused), the two-state items 0x1c7b / 0x1c7c, the panel items
    0x1c76 .. 0x1c7a, the buttons 0x1ca2 / 0x1ca3. */
 
 void ai_OptionsGameScreen(void)
@@ -2181,16 +2181,16 @@ void ai_OptionsGameScreen(void)
     d2_SetObjValue4(sw0, 0, 1, ai_GameSwitches.word & 0xff);
     d2_SetSliderFlags(sw0, 0x82);
     d2_SetLabel(sw0, txt_Ptrs[0x1c9a]);
-    d2_SetList(sw0, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(sw0, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_EnableObject(sw0, 0);
     d2_SetObjValue4(sw2, 0, 1, ai_GameSwitches.byte[2]);
     d2_SetSliderFlags(sw2, 0x82);
     d2_SetLabel(sw2, txt_Ptrs[0x1c9b]);
-    d2_SetList(sw2, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(sw2, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_SetObjValue4(sw3, 0, 1, ai_GameSwitches.byte[3]);
     d2_SetSliderFlags(sw3, 0x82);
     d2_SetLabel(sw3, txt_Ptrs[0x1c9c]);
-    d2_SetList(sw3, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(sw3, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_SetObjValue4(panel, 0, 4, ai_GamePanel.word & 0xff);
     d2_SetSliderFlags(panel, 0x82);
     d2_SetLabel(panel, txt_Ptrs[0x1c9d]);
@@ -2198,16 +2198,16 @@ void ai_OptionsGameScreen(void)
     d2_SetObjValue4(panel1, 0, 1, ai_GamePanel.byte[1]);
     d2_SetSliderFlags(panel1, 0x82);
     d2_SetLabel(panel1, txt_Ptrs[0x1c9e]);
-    d2_SetList(panel1, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(panel1, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_EnableObject(panel1, 0);
     d2_SetObjValue4(help, 0, 1, ai_OptionPanelHelp.word & 0xff);
     d2_SetSliderFlags(help, 0x82);
     d2_SetLabel(help, txt_Ptrs[0x1ca1]);
-    d2_SetList(help, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(help, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_SetObjValue4(panel3, 0, 1, ai_GamePanel.byte[3]);
     d2_SetSliderFlags(panel3, 0x82);
     d2_SetLabel(panel3, txt_Ptrs[0x1ca0]);
-    d2_SetList(panel3, 2, txt_Ptrs[0x1c7c], txt_Ptrs[0x1c7d]);
+    d2_SetList(panel3, 2, txt_Ptrs[0x1c7b], txt_Ptrs[0x1c7c]);
     d2_SetForm(form, 3);
     sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x1ca2], txt_Ptrs[0x1ca3]);
     okId = ids[0];
@@ -2849,7 +2849,7 @@ unsigned short ai_PokerStep(); int gm_BuildingSkill(); float ai_NormalizeEffectS
    message box 0x41c1 / 0x41c2 refuses. Otherwise the target is chosen with the special-amount menu ai_AmountMenu (the same
    config as the blood revenge window: +0 = 1, +4 = 0x400, +8 / +0xc the filter 0x1a7fdfbb6, +0x10 = 6, the id list from +0x1c all
    0xffff); no target ends the window. The form shows a slider (0 .. 5 at first, then 0 .. the limit gm_CurseObjectCount - 1) with
-   the six strength names 0x41ca .. 0x41cf and the two buttons 0x41d4 / 0x41d5. Each pass the strength v is clamped to the limit,
+   the six strength names 0x41ca .. 0x41cf and the two buttons 0x41d8 / 0x41d9. Each pass the strength v is clamped to the limit,
    the texts 0x41d0 + v (with the target's id), 0x41d6 / 0x41c1 / 0x41c4 + v and, for a building of another owner, the price
    max (v, 1) * 32000 (0x41d7) are shown. The right mouse button and the second button leave; the first button curses when the
    player has the goods (sv_CheckGoodAmount): the status bit 0x10 is set (cm_SendSetField), another owner is paid the price
@@ -2894,7 +2894,7 @@ void ai_CurseWindow(int building)
     d2_SetList(slider, 6, txt_Ptrs[0x41ca], txt_Ptrs[0x41cb], txt_Ptrs[0x41cc], txt_Ptrs[0x41cd], txt_Ptrs[0x41ce],
                txt_Ptrs[0x41cf]);
     d2_SetForm(form, 3);
-    sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41d4], txt_Ptrs[0x41d5]);
+    sv_ButtonRow(d2_LastWindow, 0, ids, 2, txt_Ptrs[0x41d8], txt_Ptrs[0x41d9]);
     do {
         limit = gm_CurseObjectCount((struct AIBLD *)building) - 1;
         v = d2_GetObjValue(slider);
