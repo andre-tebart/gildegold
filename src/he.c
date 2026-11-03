@@ -531,36 +531,28 @@ void he_CloseEventSlots(void)
     } while ((int)p < (int)((unsigned)&full_data_6faa84 + 0xbc));
     d2_CloseView(he_BarView);
 }
-/* 0x53d9f0, shows / hides the event bar for the player slot `pl` (0xffff = hide, 0x62571c = the panel or -1) */
+/* 0x53d9f0, shows / hides the event bar for the player slot `pl` (0xffff = hide): a bar already shown first hides its
+   event windows and moves to the bottom right of the screen hidden; shown, he_LastSlot is the first free slot and
+   he_BarShown the bar's view, hidden both are -1 */
 
 void he_ShowEventBar(int pl)
 {
-    int *p;
+    int i;
 
     if (he_BarShown != -1) {
-        p = (int *)(unsigned)&full_data_6faa88;
-        do {
-            if (p[-1] != -1 && *p != -1)
-                d2_SetViewEnabled(*p, 0);
-            p += 3;
-        } while ((int)p < ((unsigned)((unsigned)full_data_6faa88 + 0xb8) + 0x8));
+        for (i = 0; i < 16; i++)
+            if (he_EventSlots[i].obj != -1 && he_EventSlots[i].win != -1)
+                d2_SetViewEnabled(he_EventSlots[i].win, 0);
         d2_SetForm(he_BarView, 0);
-        d2_MoveObj((((U_I((unsigned)&d2_LastWindow) * 0xf1) & 0xffff0000) | (unsigned short)(*(short *)(unsigned)&d2_ScreenW - 0x7d)), *(short *)(unsigned)&d2_ScreenH - 0x21,
-                     U_I(((unsigned)&ai_Unkf8f13c + 0x250) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
+        d2_MoveObj(d2_ScreenW - 0x7d, d2_ScreenH - 0x21, d2_Wins[d2_LastWindow].parent);
         d2_SetViewEnabled(he_BarView, 0);
     }
     if (pl != 0xffff) {
         d2_SetViewEnabled(he_BarView, 1);
-        he_LastSlot = 0;
-        p = (int *)(unsigned)&full_data_6faa84;
-        do {
-            if (*p == -1) {
-                he_BarShown = he_BarView;
-                return;
-            }
-            p += 3;
-            he_LastSlot++;
-        } while ((int)p < ((unsigned)((unsigned)full_data_6faa84 + 0xbc) + 0x4));
+        for (i = 0; i < 16; i++)
+            if (he_EventSlots[i].obj == -1)
+                break;
+        he_LastSlot = i;
         he_BarShown = he_BarView;
         return;
     }
