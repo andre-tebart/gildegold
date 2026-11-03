@@ -15175,12 +15175,14 @@ void ai_Unk4e2910(char *o, int id)
 #define G28_HI (*(unsigned short *)((char *)&ai_Unk92c4e0 + 2))  /* 0x92c4e2 */
 
 
-/* 0x4e2bd0, the window call 0x475590 of the scene helpers; in the replay mode (0x6f0d8c) the second argument is 0 */
-int cm_SetViewEnabled(int a, int b)
+/* 0x4e2bd0, d2_SetViewEnabled for the scene helpers: in the replay mode (cm_SkipEvents) the view is always disabled */
+void cm_SetViewEnabled(int view, int on)
 {
-    if (cm_SkipEvents != 0)
-        b = 0;
-    return ((int (*)(int, int))d2_SetViewEnabled)(a, b);
+    if (cm_SkipEvents != 0) {
+        d2_SetViewEnabled(view, 0);
+        return;
+    }
+    d2_SetViewEnabled(view, on);
 }
 /* 0x4e2bf0, loads the named thing (0x4287b0, then 0x4299a0) and returns its +0x100; 0 in the replay mode */
 

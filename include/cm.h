@@ -1022,7 +1022,7 @@ int gm_GetWorth(unsigned short id);  /* 0x50a640 */
 int ai_PlanRank();  /* 0x4945c0 */
 int gv_CheckSentence();  /* 0x4f4420 */
 void d2_SetObjEnabled(int obj, int on);  /* 0x475e40 */
-int cm_SetViewEnabled();  /* 0x4e2bd0 */
+void cm_SetViewEnabled(int view, int on);  /* 0x4e2bd0 */
 int ai_Unk4e2dc0();  /* 0x4e2dc0 */
 int ai_Unk4e2e00();  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
