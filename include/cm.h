@@ -1033,7 +1033,7 @@ struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct 
 void d3sky_Destroy();  /* 0x45daa0 */
 int cm_ShowPartyTexts();  /* 0x4e37a0 */
 int cm_WaitTicks();  /* 0x4e3420 */
-int ai_Unk4e3750();  /* 0x4e3750 */
+int cm_PartyAnswered();  /* 0x4e3750 */
 int ai_Unk4e3800();  /* 0x4e3800 */
 int cm_ShowPartyTexts();  /* 0x4e37a0 */
 struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale);  /* 0x45da30 */
