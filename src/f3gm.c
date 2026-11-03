@@ -9239,21 +9239,20 @@ int gm_Unk509f20(int c)
     }
     return -1;
 }
-/* 0x509f80, the price of the goods of the building b's first kind 0x2a object (the last one counts) */
+/* 0x509f80, the value of the goods in the building b's stall (its first object 0x2a): the sum of their prices (gm_ItemPrice of the prototype and fill) */
 
-int gm_Unk509f80(char *b)
+int gm_StallValue(char *b)
 {
     int v;
-    char *l;
-    unsigned short *o;
+    ORDOBJ *stall, *o;
 
     v = 0;
-    l = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x2a);
-    if (l) {
-        o = (unsigned short *)gm_Query(*(void **)(l + 0x14), 1, 5);
+    stall = (ORDOBJ *)gm_Query((void *)((ORDBLD *)b)->objList, 2, 6, 0, 0x2a);
+    if (stall) {
+        o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
         while (o) {
-            v = (int)gm_ItemPrice(*o, *(unsigned char *)(o + 9));
-            o = (unsigned short *)gm_QueryNext();
+            v += gm_ItemPrice(o->type, o->fill);
+            o = (ORDOBJ *)gm_QueryNext();
         }
     }
     return v;
@@ -9460,7 +9459,7 @@ int gm_GetWorth(unsigned short id)
         bl = gm_BuildQuery(1, 3, id);
         while (bl != 0) {
             a = gm_EquipmentValue(bl, (char)bl[0x5c]);
-            b = gm_Unk509f80((char *)bl);
+            b = gm_StallValue((char *)bl);
             v = v + a + b;
             bl = gm_BuildNext();
         }

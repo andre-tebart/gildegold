@@ -1226,3 +1226,4 @@
 2026-11-03T08:25:38 0x00509400 func gm_Unk509400 -> gm_WorkMinutesBetween by:main why:the minutes between two game clocks counted only inside the season's working day (gm_DayStartHours .. gm_DayEndHours); gm_MinutesBetween for the full minutes
 2026-11-03T08:26:55 0x005096a0 func gm_Unk5096a0 -> gm_FixedWorkMinutesBetween by:main why:gm_WorkMinutesBetween with the fixed working day 360 .. 1380 minutes (6:00 .. 23:00)
 2026-11-03T08:28:53 0x005099e0 func gm_Unk5099e0 -> gm_BuildingGoodsList17 by:main why:gm_BuildingGoodsList with the goods filter type 0x17 (kind != 0) / all others (kind 0)
+2026-11-03T08:34:01 0x00509f80 func gm_Unk509f80 -> gm_StallValue by:main why:0x509f80 sums gm_ItemPrice over the goods objects (query 1, 5) of the building's stall (its object 0x2a, as gm_OwnerWorth); gm_GetWorth adds it per building
