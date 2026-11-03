@@ -1,5 +1,5 @@
-/* The order statistics records of gv.h (ord.c's ord_Statistics, ord_StatisticsHistory, ord_MessageRecord), for the
-   units that declare them without the rest of gv.h: types only. gv.h includes it. */
+/* The order statistics records of gv.h (ord.c's ord_Statistics, ord_StatisticsHistory, ord_MessageRecord) and the AI
+   decision record AIDEC (gv_GetTableRecord), for the units that declare them without the rest of gv.h: types only. gv.h includes it. */
 #ifndef GV_TYPES_H
 #define GV_TYPES_H
 
@@ -35,5 +35,22 @@ typedef struct ORDMSGREC {              /* 0x24 bytes at 0x91b480 (ord_MessageRe
     int phase;                          /* 0x1c, 0 idle, 1 / 2 / 3 running */
     int stage;                          /* 0x20, 0 .. 3, picked on every message */
 } ORDMSGREC;
+
+typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decision table 0x611258 (29 records, gv_GetTableRecord copies one) */
+    unsigned char id;                   /* 0x00, the record's own index 0 .. 0x1c (CRIME.law of a crime against it) */
+    unsigned char valueText;            /* 0x01, how gv_TableRecordText shows cur: 0 the number, 1 / 2 / 3 a name of the texts 0x13dd / 0x13e6 / 0x13ec */
+    short pad02;
+    int min;                            /* 0x04 */
+    int max;                            /* 0x08 */
+    int guilt;                          /* 0x0c, the weight of a crime against it (summed per culprit by gv_CulpritGuilt: the indulgence price, ai_EvalGuiltWeights) */
+    int crimeCount;                     /* 0x10, the CRIME.count a crime against it starts with (gv_Accuse) */
+    int rule;                           /* 0x14, low byte: how gv_Accuse compares cur with a deed's value (1 .. 7: broken unless ==, unless !=, ..) */
+    int cur;                            /* 0x18, the current value */
+    unsigned char office;               /* 0x1c, the office kind (AICHAR.officeKind) the decision belongs to (gv_FindTableRecord) */
+    unsigned char officeNo;             /* 0x1d, the decision's number within that office (1, 2, ..) */
+    char b1e;                           /* 0x1e, -1 or 0 .. 0x11 in the table */
+    char pad1f;
+    void *fn;                           /* 0x20 */
+} AIDEC;
 
 #endif

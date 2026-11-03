@@ -497,22 +497,7 @@ int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
 float gv_SeanceChance(char *o);           /* 0x4f2660 */
-typedef struct AIDEC {                  /* 0x24 bytes, a record of the AI decision table 0x611258 (29 records, gv_GetTableRecord copies one) */
-    unsigned char id;                   /* 0x00, the record's own index 0 .. 0x1c (CRIME.law of a crime against it) */
-    unsigned char valueText;            /* 0x01, how gv_TableRecordText shows cur: 0 the number, 1 / 2 / 3 a name of the texts 0x13dd / 0x13e6 / 0x13ec */
-    short pad02;
-    int min;                            /* 0x04 */
-    int max;                            /* 0x08 */
-    int guilt;                          /* 0x0c, the weight of a crime against it (summed per culprit by gv_CulpritGuilt: the indulgence price, ai_EvalGuiltWeights) */
-    int crimeCount;                     /* 0x10, the CRIME.count a crime against it starts with (gv_Accuse) */
-    int rule;                           /* 0x14, low byte: how gv_Accuse compares cur with a deed's value (1 .. 7: broken unless ==, unless !=, ..) */
-    int cur;                            /* 0x18, the current value */
-    unsigned char office;               /* 0x1c, the office kind (AICHAR.officeKind) the decision belongs to (gv_FindTableRecord) */
-    unsigned char officeNo;             /* 0x1d, the decision's number within that office (1, 2, ..) */
-    char b1e;                           /* 0x1e, -1 or 0 .. 0x11 in the table */
-    char pad1f;
-    void *fn;                           /* 0x20 */
-} AIDEC;
+#include "gv_types.h"                /* AIDEC, ORDSTATS, ORDSTATROUND, ORDMSGREC */
 int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */
 int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
 extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */
@@ -681,7 +666,6 @@ int unk_Unk4f5800(char *c, int *m);     /* 0x4f5800 */
 int ord_WageReportOrder(char *c, int *m);     /* 0x4f5a80 */
 int gm_CharacterWages(unsigned short id, int flag, unsigned char *out);  /* 0x4fa700, the wage record (ORDWAGES) of the character id for the report */
 
-#include "gv_types.h"                /* ORDSTATS, ORDSTATROUND, ORDMSGREC */
 
 /* the tables 0x4f82a0 clears */
 extern ORDMSGREC ord_MessageRecord;     /* 0x91b480, the record the messages carry */
