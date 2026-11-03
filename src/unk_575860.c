@@ -2025,7 +2025,7 @@ int ai_Unk577820(void)
         return -4;
     if (!*(int *)(per + 0x74))
         return -4;
-    he_Unk53d800(per);
+    he_ReleaseSlot(per);
     return 0;
 }
 /* 0x577850, -4 without a player / run record, else the run window's controls 1 and 2 (0x475f70) with the text

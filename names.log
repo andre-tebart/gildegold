@@ -1698,3 +1698,5 @@
 2026-11-03T21:33:22 0x004c5ef0 func ai_Unk4c5ef0 -> cm_SendCancelParty by:main why:message 0x58 with the party's id: cm_UpdateParties sends it when the kind's check fails (a reasoned guess from that use)
 2026-11-03T21:33:22 0x004e5180 func ai_Unk4e5180 -> cm_ClearParty by:main why:clears the party record of the id (its id -1 afterwards)
 2026-11-03T21:35:42 0x006f0dc4 data ai_Unk6f0dc4 -> cm_MessageBoxOpen by:main why:set to 1 while cm_MessageBox runs, tested at its entry (not reentrant)
+2026-11-03T21:39:52 0x0053d630 func he_Unk53d630 -> he_FreeOldestSlot by:main why:0x53d630 frees the event of the slot whose start time is the earliest (gm_CompareTime over the 16 he_EventSlots); 0x53d800 releases the slot of an event (closes its window, packs the slots below)
+2026-11-03T21:39:52 0x0053d800 func he_Unk53d800 -> he_ReleaseSlot by:main why:0x53d630 frees the event of the slot whose start time is the earliest (gm_CompareTime over the 16 he_EventSlots); 0x53d800 releases the slot of an event (closes its window, packs the slots below)

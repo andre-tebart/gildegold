@@ -386,44 +386,33 @@ int he_Unk53d600(int type, void *alloc, void *run)
     }
     return 1;
 }
-/* 0x53d630, makes room in the 16 slots: finds the slot whose event (record + 0x44, a clock) is the oldest, frees it (0x53d800 / 0x53e1f0) and returns 0xf; -1 when no slot is used */
+/* 0x53d630, makes room in the 16 slots: finds the slot whose event started earliest, releases the slot and frees the event (he_ReleaseSlot / he_FreeEvent) and returns 0xf; -1 when no slot holds an event */
 
-int he_Unk53d630(void)
+int he_FreeOldestSlot(void)
 {
-    int clk[4];
-    int best = 0;
+    AITIME oldest;
+    AIJOB *best = 0;
     int bi = -1;
-    int i = 0;
-    int *p;
+    int i;
 
-    clk[0] = U_I((unsigned)&ai_Time);
-    clk[1] = U_I((unsigned)&ai_Time.hour);
-    clk[2] = U_I(((unsigned)&ai_Time + 0x8));
-    *(short *)(clk + 3) = *(short *)((unsigned)&ai_Time + 0xc);
-    p = (int *)(unsigned)&he_EventSlots;
-    do {
-        if (p[0] != 0 && p[1] != -1) {
-            if (gm_CompareTime(p[0] + 0x44, clk) < 0) {
-                best = p[0];
-                clk[0] = *(int *)(best + 0x44);
-                clk[1] = *(int *)(best + 0x48);
-                clk[2] = *(int *)(best + 0x4c);
-                *(short *)(clk + 3) = *(short *)(best + 0x50);
-                bi = i;
-            }
+    oldest = ai_Time;
+    for (i = 0; i < 16; i++) {
+        if (he_EventSlots[i].ev != 0 && he_EventSlots[i].obj != -1
+            && gm_CompareTime(&he_EventSlots[i].ev->start, &oldest) < 0) {
+            oldest = he_EventSlots[i].ev->start;
+            best = he_EventSlots[i].ev;
+            bi = i;
         }
-        p += 3;
-        i++;
-    } while ((int)p < (unsigned)((unsigned)he_EventSlots + 0xc0));
+    }
     if (best != 0) {
-        he_Unk53d800(best);
-        he_FreeEvent(best);
+        he_ReleaseSlot((int)best);
+        he_FreeEvent((int *)best);
         return 0xf;
     }
     if (bi != -1) {
         __asm int 3
     }
-    return -1;
+    return bi;
 }
 /* 0x53d6f0, gives the event `ev` a slot (bit 8 of ev+0x78 must be set; 1 = no window wanted, 2 = no slot) with a message panel `b, c, d` and a window (0x4731d0); the slot is stored at ev+0x74 */
 
@@ -447,7 +436,7 @@ int he_Unk53d6f0(int ev, int b, int c, int d, int e)
         p += 3;
         i++;
     } while ((int)p < ((unsigned)((unsigned)full_data_6faa84 + 0xbc) + 0x4));
-    i = he_Unk53d630();
+    i = he_FreeOldestSlot();
 got:
     if (i == -1) {
         *(int *)(ev + 0x74) = 0;
@@ -474,7 +463,7 @@ got:
 }
 /* 0x53d800, releases the slot of the event `ev`: closes its window and panel, packs the slots below it up by one (0x46cda0 re-places the windows) and sets 0x625718 to the last used slot */
 
-void he_Unk53d800(int ev)
+void he_ReleaseSlot(int ev)
 {
     int *sl;
     int *q;
@@ -566,7 +555,7 @@ void he_CloseEventSlots(void)
 
     do {
         if (p[1] != -1)
-            he_Unk53d800(*p);
+            he_ReleaseSlot(*p);
         p += 3;
     } while ((int)p < (int)((unsigned)&full_data_6faa84 + 0xbc));
     d2_CloseView(U_I((unsigned)&full_data_6faa60));
@@ -903,7 +892,7 @@ void he_FreeEvent(int *r)
             if (q != r)
                 return;
             if (q[0x1d] != 0 && *(int *)(q[0x1d] + 8) != -1)
-                he_Unk53d800((int)q);
+                he_ReleaseSlot((int)q);
             u = U_I((unsigned)&ai_Unk6f2620);
             U_I((unsigned)&he_QuickList + i * 4) = 0;
             if (i == u) {
@@ -2929,7 +2918,7 @@ void he_Unk547430(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -1 || st == -2 || edi == 0 || ebp == 0 || ebx == 0) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         if (edi != 0) {
             *(AITIME *)(edi + 0x52) = ai_Time;
             cm_SendExSetHE(-1, edi);
@@ -2967,7 +2956,7 @@ void he_Unk547430(int ev)
     if (st == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
             he_Unk5472d0(edi, ebx, ebp);
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -2980,7 +2969,7 @@ void he_Unk547430(int ev)
             he_Unk5471e0(edi, (unsigned short *)ebx, (unsigned short *)ebp);
         else if (h == 1)
             he_Unk5472d0(edi, ebx, ebp);
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
 }
@@ -3353,7 +3342,7 @@ void he_Unk5485b0(int ev)
 
     if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -3380,13 +3369,13 @@ void he_Unk5485b0(int ev)
                 v = gm_GetWorth(*(unsigned short *)(ev + 8));
                 cm_SendMoveGoods(*(int *)(U_I((unsigned)&ai_PlayerChar) + 4), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_OwnPlayer), v);
                 gm_Unk50ca10(*(unsigned short *)(ev + 8), 8);
-                he_Unk53d800(ev);
+                he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
             if (U_I((unsigned)&d2_ClickedId) == 1) {
                 gm_Unk50ca10(*(unsigned short *)(ev + 8), -6);
-                he_Unk53d800(ev);
+                he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
@@ -3410,7 +3399,7 @@ void he_Unk548790(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -1 || st == -2) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -3433,7 +3422,7 @@ void he_Unk548790(int ev)
     }
     if (*(int *)(ev + 0x70) == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -3454,12 +3443,12 @@ void he_Unk548790(int ev)
                 msg[0x6c] = 4;
                 *(int *)(msg + 0x70) = amt;
                 cm_SendLongMessage(msg);
-                he_Unk53d800(ev);
+                he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
             if (h == 1) {
-                he_Unk53d800(ev);
+                he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
             }
         }
@@ -4404,7 +4393,7 @@ void he_Unk54ae60(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1 || esi == 0 || ebx == 0) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
     if (*(int *)(ev + 0x70) == 0) {
@@ -4429,7 +4418,7 @@ void he_Unk54ae60(int ev)
     if (*(int *)(ev + 0x70) != 1)
         return;
     if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -4453,7 +4442,7 @@ void he_Unk54ae60(int ev)
         *(AITIME *)(esi + 0x52) = ai_Time;
         cm_SendExSetHE(3, esi);
     }
-    he_Unk53d800(ev);
+    he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
 }
 
@@ -5061,7 +5050,7 @@ void he_Unk54cc50(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1 || *(unsigned short *)ebp == 0xffff || esi == 0) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -5125,7 +5114,7 @@ void he_Unk54cc50(int ev)
         if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -5134,7 +5123,7 @@ void he_Unk54cc50(int ev)
         if (U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
             return;
         *(unsigned char *)(unsigned)&he_SlotConfirmed = 0;
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
 }
@@ -5301,7 +5290,7 @@ void he_Unk54d7d0(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1 || *(unsigned short *)rec == 0xffff) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -5340,14 +5329,14 @@ void he_Unk54d7d0(int ev)
         if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0 && h == -1)
             return;
         if (h == 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
         if (*(unsigned char *)(unsigned)&he_SlotConfirmed == 0 || U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
             return;
         *(unsigned char *)(unsigned)&he_SlotConfirmed = 0;
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
 }
@@ -6663,7 +6652,7 @@ void he_Unk5432f0(int ev)
     if (st == -2 || p == 0 || q == 0 || r == 0) {
         he_FreeEvent((int *)ev);
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         return;
     }
     if (st == -1 || (*(char *)(r + 2) != 6 && *(char *)(r + 2) != 7))
@@ -6686,7 +6675,7 @@ void he_Unk5432f0(int ev)
     }
     if (st == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             *(int *)(ev + 0x70) = 2;
             return;
         }
@@ -6699,7 +6688,7 @@ void he_Unk5432f0(int ev)
             txt_Format(buf, 0x1764, *(unsigned short *)r, *(unsigned short *)p);
             he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
             cm_SendRelations(*(int *)(p + 4), *(int *)(r + 4), -20, 1);
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -6709,7 +6698,7 @@ void he_Unk5432f0(int ev)
             cm_SendRelations(*(int *)(q + 4), *(int *)(r + 4), -15, 1);
             cm_SendRelations(*(int *)(r + 4), *(int *)(q + 4), -15, 1);
         }
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -7038,7 +7027,7 @@ void he_Unk543ac0(int ev)
         return;
     case 1:
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
             return;
         }
@@ -7085,12 +7074,12 @@ void he_Unk543ac0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    he_Unk53d800(ev);
+    he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
     return;
 fail:
     if (*(int *)(ev + 0x74) != 0)
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
 done:
     he_FreeEvent((int *)ev);
 }
@@ -8547,7 +8536,7 @@ void he_Unk552090(int ev)
 
     if (st == -1 || st == -2) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -8567,7 +8556,7 @@ void he_Unk552090(int ev)
     }
     if (st == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -8583,10 +8572,10 @@ void he_Unk552090(int ev)
         if (h == 0) {
             r = he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 1, *(int *)(ev + 0xb0));
             *(int *)(r + 0xb0) = 1;
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         } else if (h == 1) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
     }
@@ -8935,7 +8924,7 @@ void he_Unk552ca0(int ev)
     st = *(int *)(ev + 0x70);
     if (st == -2 || st == -1 || *(unsigned short *)ch == 0xffff || p == 0) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -9010,14 +8999,14 @@ void he_Unk552ca0(int ev)
         if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && cl == 0)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
         if (cl == 0 || U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
             return;
         *(char *)(unsigned)&he_SlotConfirmed = 0;
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
 }
@@ -10332,7 +10321,7 @@ void he_Unk557190(int ev)
             if ((fl & 0x40) != 0 && (U_I((unsigned)&ai_GameFlags) & 4) != 0)
                 di_ClearButtons();
             sb_Stop(*(int *)(ev + 0xec));
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
         return;
@@ -11219,11 +11208,11 @@ void he_Unk55bfd0(int ev)
             he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(int *)(ev + 0xb0) * 0x21c), -1, text, 0, 0x5ec, -1, 0, 0, 0);
         }
         cm_SendSetField(*(int *)(buyer + 1), 0x5a, 2, 0x200, 0);
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     default:
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -11343,7 +11332,7 @@ void he_Unk55cc10(int ev)
         io_PrintText(0x159a);
         return;
     default:
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -11372,7 +11361,7 @@ void he_Unk55ce60(int ev)
         return;
     if (st < 0 || st > 2) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -11392,7 +11381,7 @@ void he_Unk55ce60(int ev)
     }
     if (U_I((unsigned)&d2_ClickedId) == -1)
         return;
-    he_Unk53d800(ev);
+    he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
 }
 
@@ -11659,7 +11648,7 @@ void he_Unk55e730(int ev)
 
     if (st < 0 || st > 1) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -11676,7 +11665,7 @@ void he_Unk55e730(int ev)
     if (U_I((unsigned)&d2_ClickedId) == -1)
         return;
     ((void (*)(int))cm_SendMessage5b)(*(int *)(ev + 0xac));
-    he_Unk53d800(ev);
+    he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
 }
 
@@ -11933,7 +11922,7 @@ void he_Unk5614c0(int ev)
 
     if (st < 0 || st > 1) {
         if (*(int *)(ev + 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -11952,7 +11941,7 @@ void he_Unk5614c0(int ev)
     if (U_I((unsigned)&d2_ClickedId) == 0)
         cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xb0));
     ((void (*)(int))cm_SendMessage5b)(*(int *)(ev + 0xac));
-    he_Unk53d800(ev);
+    he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
 }
 /* 0x5619a0, a Ghidra miss: the allocation handler of the event 0x3f: an older event of the type with the same +0xac makes this one -1 (free on its first run); the first run is now + 1 */
@@ -14146,7 +14135,7 @@ void he_Unk56a710(int ev)
     switch (*(int *)(ev + 0x70)) {
     case -2:
     case -1:
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     case 0:
@@ -14158,7 +14147,7 @@ void he_Unk56a710(int ev)
         return;
     case 1:
         if (U_I((unsigned)&d2_Unkf8aac4) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
         return;
@@ -16437,7 +16426,7 @@ void he_Unk570cc0(int ev)
     state = HM_I(ev, 0x70);
     if (state == -2) {
         if (HM_I(ev, 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -16460,7 +16449,7 @@ void he_Unk570cc0(int ev)
         return;
     if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
         he_Unk570c70((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -16475,14 +16464,14 @@ void he_Unk570cc0(int ev)
         return;
     if (state == 0) {
         he_Unk570bf0((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-        he_Unk53d800(ev);
+        he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
     if (state != 1)
         return;
     he_Unk570c70((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-    he_Unk53d800(ev);
+    he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
 }
 
@@ -17174,7 +17163,7 @@ void he_Unk572a50(int ev)
 
     if (state == -2) {
         if (HM_I(ev, 0x74) != 0)
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -17194,7 +17183,7 @@ void he_Unk572a50(int ev)
     } else if (state == 1) {
         if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
             he_Unk5729c0(ev);
-            he_Unk53d800(ev);
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
@@ -17205,13 +17194,13 @@ void he_Unk572a50(int ev)
         if (*(int *)(unsigned)&d2_Unkf8aac4 == HM_I(HM_I(ev, 0x74), 8) && *(int *)(unsigned)&d2_ClickedId != -1) {
             if (*(int *)(unsigned)&d2_ClickedId == 0) {
                 he_Unk5728d0(ev);
-                he_Unk53d800(ev);
+                he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
             if (*(int *)(unsigned)&d2_ClickedId == 1) {
                 he_Unk5729c0(ev);
-                he_Unk53d800(ev);
+                he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
