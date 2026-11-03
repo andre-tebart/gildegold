@@ -5730,21 +5730,17 @@ int cm_ExTableRequest(G17MSG *m, G17STAT *s)
     }
     return 1;
 }
-/* 0x4cc720, sets the position (a) and the direction (b) of the model of the character record c and its id x (+0x24);
-   a vector that is not within 8.0 of the current one replaces it */
+/* 0x4cc720, moves the body of the fighter c (its model's body object) to pos and turns it to rot, each only when it
+   is not already within 8.0 of it, and stores v in c->v024 (the fight message's field at 0x21) */
 
-void ai_Unk4cc720(char *c, float *a, float *b, int x)
+void cm_PlaceFighter(AICHAR *c, D3VECTOR *pos, D3VECTOR *rot, int v)
 {
-    char *o;
-
-    if (c != 0 && *(char **)(c + 0x184) != 0) {
-        o = *(char **)(*(char **)(c + 0x184) + 0x34);
-        if (d3_VecEqual((float *)(o + 0x4c), a, 8.0f) == 0)
-            d3_SetObjectPos(o, a);
-        o = *(char **)(*(char **)(c + 0x184) + 0x34);
-        if (d3_VecEqual((float *)(o + 0x84), b, 8.0f) == 0)
-            d3_SetObjectRot(o, b);
-        *(int *)(c + 0x24) = x;
+    if (c != 0 && c->model != 0) {
+        if (d3_VecEqual(&c->model->body->pos, pos, 8.0f) == 0)
+            d3_SetObjectPos(c->model->body, pos);
+        if (d3_VecEqual(&c->model->body->rotation, rot, 8.0f) == 0)
+            d3_SetObjectRot(c->model->body, rot);
+        c->v024 = v;
     }
 }
 /* 0x4cc7b0, handler of type 0x55: sub-commands data[4] (1..7) for the character data[0x25] when the message is
@@ -5760,13 +5756,13 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
     switch (m->data[4]) {
     case 2:
         if (c[8] != 0) {
-            ai_Unk4cc720(c, (float *)&m->data[5], (float *)&m->data[0x15], G17_I(*m, 0x21));
+            cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
             ai_Unk4d6ba0(&m->data[0x25]);
         }
         break;
     case 6:
         if (c[8] != 0) {
-            ai_Unk4cc720(c, (float *)&m->data[5], (float *)&m->data[0x15], G17_I(*m, 0x21));
+            cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
             ai_Unk4d6f60(&m->data[0x25]);
         }
         break;
@@ -5787,7 +5783,7 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
         break;
     case 3:
         if (c[8] != 0) {
-            ai_Unk4cc720(c, (float *)&m->data[5], (float *)&m->data[0x15], G17_I(*m, 0x21));
+            cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
             ai_Unk4d7190(&m->data[0x25]);
         }
         break;

@@ -441,7 +441,7 @@ int ai_BuildingName();  /* 0x58f640 */
 extern int ai_Unk5f8b10;  /* 0x5f8b10 */
 extern char cm_ChatLog[];  /* 0x75fba0 */
 
-void ai_Unk4cc720(char *c, float *a, float *b, int x);                              /* 0x4cc720 */
+void cm_PlaceFighter(struct AICHAR *c, struct D3VECTOR *pos, struct D3VECTOR *rot, int v);                              /* 0x4cc720 */
 void he_StammtischCommand();  /* 0x541b40 */
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 
