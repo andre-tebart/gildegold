@@ -3113,7 +3113,13 @@ fail:
    a step table ("FTInitScriptChapter3Step*"), the steps 2, 6, 8 and 10 the position marker's path
    ("FTInitAnimChapter3Step*"), whose points depend on the screen width (800, 1024, else). The voice bank
    "TUTORIAL_CHAPTER_3.sbf" is loaded into ai_TutorialBanks[3]. The first record, or 0 after a failed allocation
-   (the records built so far freed) */
+   (the records built so far freed)
+   @deep read against the original (1213 / 1213 instructions, same stores and calls): only the register
+   choice and placement of the hoisted float constants differ (0x447f0000 / 0x442f0000 / 0x44670000 cached
+   in edi/ecx/edx by ours, ecx/edi/ebx by the original around the [esi+0x64] stores at +0xec0, regs hunks
+   elsewhere); a VC6 register tie-break that flips on the declaration set of the headers the unit includes
+   alone (it went byte with he.h's he_LastSlot / he_BarView and back with he_BarShown; its debt item), so
+   the stores are the same values at the same offsets - allocation, not meaning */
 
 int ai_TutorialInitChapter3(void)
 {
