@@ -13639,37 +13639,40 @@ void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
     }
     cm_WaitTicks(4);
 }
-/* 0x4debe0, announces the result of a duel (the message m: +0x34 / +0x38 the duellists, +0xc the owner): the winner is the one with the
-   better 0x504ec0(.., 3); when he is a person of the player's side the text 0x10c7 (+ 0x10c8 for a woman) goes to every character of the
-   kinds 6 / 7 (0x53dda0) */
+/* 0x4debe0, the duel's outcome without the scene (cut_MainDuell when the events are skipped): of the duellists
+   m->members[0] / [1] the one with the lower gm_GetSkill(.., 3) (a on a tie) loses an office he holds
+   (amt_SendOfficeMessage 4) when m's host is the player's character, and every character of the kinds 6 / 7 gets the news
+   0x10c7 (with 0x10c8 + his sex) */
 
-void ai_Unk4debe0(char *m)
+void cm_DuelOutcome(G28REC *m)
 {
     char buf[0x400];
-    char *a, *b, *w;
+    AICHAR *a, *b, *w, *c;
     float fa;
-    int ids[2];
+    AMTKIND kind;
+    AMTREC office;
     int i;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
     if (a == 0 || b == 0)
         return;
-    fa = (float)gm_GetSkill(a, 3);
+    fa = gm_GetSkill((char *)a, 3);
     w = b;
-    if (gm_GetSkill(b, 3) < fa)
+    if (!(gm_GetSkill((char *)b, 3) < fa))
         w = a;
-    if (w[0x166] == 0)
+    if (w->officeKind == 0)
         return;
-    if (amt_FindOffice(w, buf + 0x18, ids) == 0)
+    if (amt_FindOffice((char *)w, &kind, &office) == 0)
         return;
-    if (*(int *)(m + 0xc) != ai_CharInts[ai_PlayerId][0])
+    if (m->host != ai_CharsT[ai_PlayerId].netId)
         return;
-    amt_SendOfficeMessage(ids[0], 0, 0, 4, 0xff);
+    amt_SendOfficeMessage(office.idx, 0, 0, 4, 0xff);
     for (i = 0; i < 768; i++) {
-        if (ai_Chars[i][2] == 6 || ai_Chars[i][2] == 7) {
-            txt_Format(buf, 0x10c7, *(unsigned short *)w, (w[9] != 0) + 0x10c8);
-            he_ShowNews(*(int *)(ai_Chars[i] + 4), -1, buf, 0, 0x5fe, &ch_EmptyName);
+        c = &ai_CharsT[i];
+        if (c->kind == 6 || c->kind == 7) {
+            txt_Format(buf, 0x10c7, w->id, (w->sex != 0) + 0x10c8);
+            he_ShowNews(c->netId, -1, buf, 0, 0x5fe, &ch_EmptyName);
         }
     }
 }
@@ -13697,7 +13700,7 @@ void ai_Unk4ded10(char *m)
         return;
     }
     if (cm_SkipEvents != 0) {
-        ai_Unk4debe0(m);
+        cm_DuelOutcome((G28REC *)m);
         return;
     }
     ai_Unk4e36a0();

@@ -952,7 +952,7 @@ void cm_DuelShotAction(struct CHACTION *a);  /* 0x4de640 */
 extern unsigned char cm_DuelLeftInsultWon;  /* 0x6f0daa */
 extern int cm_DuelRight;  /* 0x92bca0 */
 int amt_FindOffice();  /* 0x4e6030 */
-void ai_Unk4debe0(char *m);  /* 0x4debe0 */
+void cm_DuelOutcome(G28REC *m);  /* 0x4debe0 */
 int ai_Unk4e36a0();  /* 0x4e36a0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
 int ai_Unk4e2bf0();  /* 0x4e2bf0 */
