@@ -7,6 +7,8 @@
    Open: many callees are still declared K&R in this file (amt_HasTownObject must stay K&R: the typed prototype
    costs gm_Unk4fa4b0 a byte).
    Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
+   Open: gm_IsBankrupt calls ai_LiquidateAssets (0x5b92e0: netId, character, amount, message) without a prototype;
+   its definition in unk_58bbd0.c is still a one-parameter skeleton.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
    ORDCHAR / ORDBLD / ORDOBJ, the job record through GMJOB (AIJOB, next to GCLOCK), the long message through
    f3gm_types.h's GMMSG (AIMSG), the crime records through GM_CRIMES (cm_types.h CRIME over cm.c's char

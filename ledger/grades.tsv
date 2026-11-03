@@ -3136,17 +3136,17 @@ exe	0x0050a0f0	gm_ObjectBuilding	f3gm	byte	readable
 exe	0x0050a150	gm_Unk50a150	f3gm	byte	draft		
 exe	0x0050a1c0	gm_BuildingEvents	f3gm	byte	readable		
 exe	0x0050a250	gm_GetCreditOffers	f3gm	draft	readable	deep	
-exe	0x0050a640	gm_GetWorth	f3gm	draft	draft		
-exe	0x0050a6c0	gm_IsBankrupt	f3gm	draft	draft		
-exe	0x0050a810	gm_FindCharacterByMaster	f3gm	draft	draft		
-exe	0x0050a880	gm_Unk50a880	f3gm	draft	draft		
-exe	0x0050a970	gm_Unk50a970	f3gm	draft	draft		
-exe	0x0050aa00	gm_StallGoodsList	f3gm	draft	draft		
+exe	0x0050a640	gm_GetWorth	f3gm	shape	readable		
+exe	0x0050a6c0	gm_IsBankrupt	f3gm	shape	readable		
+exe	0x0050a810	gm_FindCharacterByMaster	f3gm	byte	readable		
+exe	0x0050a880	gm_SortCharsByName	f3gm	byte	readable		
+exe	0x0050a970	gm_LevelPayout	f3gm	byte	readable		
+exe	0x0050aa00	gm_StallGoodsList	f3gm	byte	readable		
 exe	0x0050aaf0	gm_ListAmount	f3gm	byte	draft		
 exe	0x0050ab20	gm_ListAmountById	f3gm	byte	draft		
 exe	0x0050ab50	gm_ListStock	f3gm	shape	draft		
-exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	draft		
-exe	0x0050acf0	gm_Unk50acf0	f3gm	draft	draft		
+exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	readable	deep	
+exe	0x0050acf0	gm_FreeStallCapacity	f3gm	draft	readable	deep	
 exe	0x0050ad70	gm_Unk50ad70	f3gm	draft	draft		
 exe	0x0050af00	gm_CollectCarried	f3gm	draft	draft		
 exe	0x0050b010	gm_FirstBuilding	f3gm	shape	readable		
@@ -4423,7 +4423,7 @@ exe	0x005b7dd0	ai_Unk5b7dd0	unk_58bbd0	draft	draft
 exe	0x005b82a0	ai_Unk5b82a0	unk_58bbd0	draft	draft		
 exe	0x005b84f0	ai_BuildingWindow	unk_58bbd0	draft	draft		
 exe	0x005b8fc0	ai_ManagedBuildingWindow	unk_58bbd0	draft	draft		
-exe	0x005b92e0	ai_Unk5b92e0	unk_58bbd0	draft	draft		
+exe	0x005b92e0	ai_LiquidateAssets	unk_58bbd0	draft	draft		
 exe	0x005b9730	ai_Unk5b9730	unk_58bbd0	draft	draft		
 exe	0x005b9db0	ai_Unk5b9db0	unk_58bbd0	draft	draft		
 exe	0x005b9f30	ai_Unk5b9f30	unk_58bbd0	draft	draft		
