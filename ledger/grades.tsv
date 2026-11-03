@@ -3147,16 +3147,16 @@ exe	0x0050ab20	gm_ListAmountById	f3gm	byte	draft
 exe	0x0050ab50	gm_ListStock	f3gm	shape	draft		
 exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	readable	deep	
 exe	0x0050acf0	gm_FreeStallCapacity	f3gm	draft	readable	deep	
-exe	0x0050ad70	gm_Unk50ad70	f3gm	draft	draft		
-exe	0x0050af00	gm_CollectCarried	f3gm	draft	draft		
+exe	0x0050ad70	gm_TakeableCount	f3gm	shape	readable		
+exe	0x0050af00	gm_CollectCarried	f3gm	byte	readable		
 exe	0x0050b010	gm_FirstBuilding	f3gm	shape	readable		
-exe	0x0050b090	gm_ResearchClass	f3gm	draft	readable		
-exe	0x0050b170	gm_Unk50b170	f3gm	draft	draft		
-exe	0x0050b1e0	gm_Unk50b1e0	f3gm	draft	draft		
-exe	0x0050b290	gm_Unk50b290	f3gm	draft	draft		
-exe	0x0050b2f0	gm_Unk50b2f0	f3gm	shape	draft		
-exe	0x0050b3a0	gm_Unk50b3a0	f3gm	draft	draft		
-exe	0x0050b9f0	gm_Unk50b9f0	f3gm	draft	draft		
+exe	0x0050b090	gm_ResearchClass	f3gm	byte	readable		
+exe	0x0050b170	gm_DonationRank	f3gm	byte	readable		
+exe	0x0050b1e0	gm_DonationTop5	f3gm	byte	readable		
+exe	0x0050b290	gm_LikingChance	f3gm	shape	readable		
+exe	0x0050b2f0	gm_TreeNodeRank	f3gm	shape	draft		
+exe	0x0050b3a0	gm_LayoutTree	f3gm	draft	readable	deep	
+exe	0x0050b9f0	gm_UpdateTechTree	f3gm	shape	readable		
 exe	0x0050c310	gm_Unk50c310	f3gm	byte	draft		
 exe	0x0050c340	gm_Unk50c340	f3gm	shape	draft		
 exe	0x0050c4d0	gm_Unk50c4d0	f3gm	byte	draft		
@@ -3253,7 +3253,7 @@ exe	0x00519aa0	ls_IdsToRefs	ls	byte	draft	deep
 exe	0x00519b50	ls_RelinkScene	ls	shape	draft	deep	
 exe	0x00519bf0	ls_WriteObjects	ls	shape	readable		
 exe	0x00519d20	ls_WriteBuildings	ls	draft	draft	deep	
-exe	0x0051a1a0	ls_WritePlayerRecords	ls	draft	draft	deep	
+exe	0x0051a1a0	ls_WritePlayerRecords	ls	draft	readable	deep	
 exe	0x0051a4b0	ls_WriteCharacters	ls	draft	draft	deep	
 exe	0x0051ad30	ls_ActionIndex	ls	byte	readable		
 exe	0x0051ad60	ls_ActionAt	ls	byte	readable		
