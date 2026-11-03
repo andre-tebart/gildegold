@@ -139,6 +139,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
+#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (unk_4a7140.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), and its caller 0x4dada0 passes a byte (mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 #define cm_PicsT (*(struct D2PIC **)&ai_Unk6ed918)  /* 0x6ed918, ai_Unk6ed918 (cm.h: char *), d2.c's d2_Pics, as the D2PIC records it points to */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
@@ -153,7 +154,7 @@ typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount
     int pad34;
 } CMAMOUNTROW;
 typedef struct CMSESSIONREQ {       /* 0x1c bytes, the request of a council session vote that cm_RunSceneParty hands to the
-                                       member callbacks (ai_Unk4dada0 reads it as int *) */
+                                       member callbacks (cm_SessionAskPlayer reads it as int *) */
     int mode;                       /* 0x00, 1: deposition, 2: election */
     unsigned char office;           /* 0x04, the office's index (AMTREC.idx) */
     char pad05[3];
@@ -12287,7 +12288,7 @@ int cm_AskDeposeVote(char *a, char *b, char *c, int *out)
    of the office) / 0x12dd, before the timer slider (cm_DialogTimer, 1500 ms) runs out; returns the netId clicked, else the
    pick ai_TrustedOfFour proposes. *click is cleared; -1 when the office, its kind or every applicant is missing */
 
-int cm_AskElectVote(int office, AICHAR *b, int *ids, int *click)
+int cm_AskElectVote(unsigned char office, AICHAR *b, int *ids, int *click)
 {
     AMTREC rec;
     AMTKIND kind;
@@ -12298,7 +12299,7 @@ int cm_AskElectVote(int office, AICHAR *b, int *ids, int *click)
     int n, i, k, view, dlg, res;
 
     *click = 0;
-    if (amt_GetOfficeI(office, &rec) == 0)
+    if (amt_GetOffice(office, &rec) == 0)
         return -1;
     if (amt_GetKind(rec.kind, &kind) == 0)
         return -1;
@@ -12310,7 +12311,7 @@ int cm_AskElectVote(int office, AICHAR *b, int *ids, int *click)
     }
     if (n == 0)
         return -1;
-    res = ai_TrustedOfFour(office, b, ids, proposed);
+    res = ai_TrustedOfFourB(office, b, ids, proposed);
     view = d2_OpenForm(0, 0, "cutscenes\\sitzungen");
     d2_PlaceMainWindow(view, 1);
     d2_SetForm(view, 0);
@@ -12341,37 +12342,41 @@ int cm_AskElectVote(int office, AICHAR *b, int *ids, int *click)
     d2_CloseView(view);
     return res;
 }
-/* 0x4dada0, answers the session request m (kind 1: a vote between two characters, kind 2: a pick among candidates) of the player's
-   record r: +0x94 the result, +0x98 the click, +0x9c a flag; the name at +0x14 cleared */
+/* 0x4dada0, the session member callback for the player's character (cm_RunSceneParty, scene kind 1): r is the member's record, m
+   the vote (cm_RunCouncilSession). No answer (-1) for an observer, or a character without an office or held; else the
+   player is asked: mode 1 the deposition of the holder m->ids[0] by the challenger m->ids[1] (cm_AskDeposeVote), mode 2 the
+   election among the applicants m->ids (cm_AskElectVote, when the character may take the office). The answer and its click
+   go to r's session fields, r's text is cleared */
 
-void ai_Unk4dada0(char *r, int *m)
+void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m)
 {
-    int c, x, y, res, click;
+    AICHAR *c, *holder, *challenger;
+    int res, click;
 
-    *(int *)(r + 0x94) = -1;
-    *(int *)(r + 0x98) = -1;
-    if (*(int *)(r + 0x9c) != 0)
+    r->session.answer = -1;
+    r->session.click = -1;
+    if (r->session.observer != 0)
         return;
-    c = gm_FindChar(*(int *)(r + 0x10));
-    if (c == 0 || *(char *)(c + 0x166) == 0 || *(char *)(c + 0x1b1) != 0)
+    c = (AICHAR *)gm_FindChar(r->playerId);
+    if (c == 0 || c->officeKind == 0 || c->heldRounds > 0)
         return;
-    if (m[0] == 1) {
-        x = gm_FindChar(m[3]);
-        y = gm_FindChar(m[4]);
-        if (x == 0 || y == 0)
+    if (m->mode == 1) {
+        holder = (AICHAR *)gm_FindChar(m->ids[0]);
+        challenger = (AICHAR *)gm_FindChar(m->ids[1]);
+        if (holder == 0 || challenger == 0)
             return;
-        res = cm_AskDeposeVote((char *)c, (char *)x, (char *)y, &click);
-        *(int *)(r + 0x98) = click;
+        res = cm_AskDeposeVote((char *)c, (char *)holder, (char *)challenger, &click);
+        r->session.click = click;
     } else {
-        if (m[0] != 2)
+        if (m->mode != 2)
             return;
-        if (amt_CanTakeOffice(c, m[2]) == 0)
+        if (amt_CanTakeOffice((char *)c, m->kind) == 0)
             return;
-        res = cm_AskElectVote((char)m[1], (AICHAR *)c, m + 3, &click);
-        *(int *)(r + 0x98) = click;
+        res = cm_AskElectVote(m->office, c, m->ids, &click);
+        r->session.click = click;
     }
-    *(int *)(r + 0x94) = res;
-    sprintf(r + 0x14, "%s", &ch_EmptyName);
+    r->session.answer = res;
+    sprintf(r->text, ch_EmptyName);
 }
 /* 0x4dae90, like 0x4dada0 for a record of the other kind (the AI side: 0x4aab90 / 0x4aad30 decide instead of the session pickers); the out
    value is written through the first parameter slot */
@@ -15796,7 +15801,7 @@ void ai_Unk4e5770(void)
     for (i = 0; i < 96; i++)
         ai_Unk925520[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
-    ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)ai_Unk4dada0, (int)ai_Unk4dae90, 0, 0);
+    ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)ai_Unk4dae90, 0, 0);
     ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)ai_Unk4daf80, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
