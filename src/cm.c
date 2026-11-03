@@ -13,6 +13,8 @@
    gv_CrimeText, gv_PassSentence (rt.h: its d2_SetObjValue). Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes (gv.h, f3gm.h, rt.h; RTPOINT
    from rt_types.h); the other calls into those headers stay M7.
+   Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
+   calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"
 extern D2WIN d2_Wins[];
@@ -7563,56 +7565,79 @@ void cm_DrawScrollArrows()
     else if (b == 1)
         d2_DrawShape(d2_ScreenW / 2 - 0x14, (int)(d2_ScreenScale * ai_Unk5eb7fc), d2_ScreenSurf, t, 7);
 }
-/* 0x4cf670, the mouse pick: the object under the cursor (ai_PickedObject, from the scene, else the ground point) and the
-   cursor look d2_PointerLook by the selected characters' kind (0x160 -> 0x18 .. 0x176 -> 0x25; more than one selected: 0x23;
-   "sp_ESCAPE" 0x1c, "sp_CONQUER" 0x1b, "WARE" 0xe). Rough draft. */
+/* 0x4cf670, the mouse pick: the object under the cursor (ai_PickedObject; with characters selected and nothing picked,
+   the ground cell under the cursor is looked up, else the pick marker is hidden) and the cursor look d2_PointerLook:
+   by the weapon of the selected characters cm_CutChar sees (0x160 -> 0x18 .. 0x176 -> 0x25; more than one: 0x23) over
+   a character it does not see (or with key 0x36 down), "sp_ESCAPE" 0x1c, "sp_CONQUER" 0x1b, "WARE" 0xe;
+   cm_HoverObject keeps the object the look was decided for
+   @deep Read whole against 0x4cf670..0x4cf9c0: the same calls and arguments (d3if_Pick, d3sm_Pick (x, z) /
+   d3sm_GetVertex, v.y += 10.0f into the escaped vector, d3if_Show of cm_PickMarker, the 31-entry
+   ai_SceneChars loop with the weapon if-chain and n, strcmp sp_ESCAPE inline, strncmp sp_CONQUER / WARE,
+   the kind 2 / owner test), the same stores and returns. Left: allocation. Ours keeps ai_PickedObject in a
+   callee-saved register across the calls of ai_LedSelectBits (VC6 sees its definition above in this unit:
+   a leaf that stores nothing) and reuses it for cm_HoverObject; the original reloads it after every call
+   (mov ecx, [ai_PickedObject] at +0x307 / +0x32b) and after the loop (+0x215), so it keeps n in ebx, cur
+   in ebp and the loop pointer in edi, where ours spills n and the loop pointer to the frame (0x1c vs 0x18)
+   and pushes 6 more instructions. Tried a pointer walk (jb instead of the original's jl: the index form is
+   right) and a call through a K&R cast: no change. Hypothesis: the fight code 0x4cf670.. was its own TU in
+   the original (the lead comment's join), so ai_LedSelectBits was external there (references: M8 at
+   +0x32c: ours refers to cm_HoverObject (0x6f0ce0), the original's field to 0x6f22e8 (ai_PickedObject),
+   explained: the M8 at +0x32c is the same store cm_HoverObject = ai_PickedObject: the original's field is
+   the reload of ai_PickedObject that ours replaces by the register it cached, not another object) */
 
-void ai_Unk4cf670()
+void cm_UpdatePointer()
 {
-    int n = 0, cur = 0x23;
-    char *sc, *c, *r, **pp;
-    int px, py;
-    float v[3];
-    float h;
+    int i, n = 0, cur = 0x23;
+    AICHAR *c;
+    AIWEAPON *w;
+    struct D3HMAP *map;
+    int z, x;
+    D3VECTOR v;
 
-    sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
+    map = d3_DefaultScene->hmap;
     ai_PickedObject = 0;
     d2_PointerLook = 0;
     if (dm_L.x > 0 && dm_L.x < d2_ScreenW && dm_L.y > 0 && dm_L.y < d2_ScreenH &&
         d2_PointerObj == -1) {
         ai_PickedObject = d3if_Pick((float)dm_L.x, (float)dm_L.y, 0x40, 1);
-        if (ai_PickedObject == 0 && ai_Unk6f0d08 != 0) {
-            if ((d3sm_PickK(sc, dm_L.x + 0x1a, dm_L.y + 0x1a, &py, &px) & 0xff) != -1) {
-                d3sm_GetVertexI(sc, py, px, v);
-                h = v[1] + ai_Unk5ebb68;
+        if (ai_PickedObject == 0 && cm_SelectedCount != 0) {
+            if ((d3sm_PickK(map, dm_L.x + 0x1a, dm_L.y + 0x1a, &x, &z) & 0xff) != -1) {
+                d3sm_GetVertexI(map, x, z, &v);
+                v.y += 10.0f;
                 d2_PointerLook = 0;
             }
-        } else if (ai_Unk6f0cf0 != 0) {
-            d3if_Show(ai_Unk6f0cf0, 0);
+        } else if (cm_PickMarker != 0) {
+            d3if_Show(cm_PickMarker, 0);
         }
     }
     if (ai_PickedObject == 0) {
-        ai_Unk6f0ce0 = 0;
+        cm_HoverObject = 0;
         ai_PickedChar = 0;
         return;
     }
-    for (pp = ai_Unk7603a0V; (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
-        c = *pp;
-        if (c != 0 && c[0x188] != 0) {
-            if (ai_LedSelectBits(*(unsigned short *)cm_CutChar, c) & 0x800) {
+    for (i = 0; i < 31; i++) {
+        c = ai_SceneCharsT[i];
+        if (c != 0 && c->selected != 0) {
+            if (ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)c) & 0x800) {
                 if (kb_Down[0x36] == 0) {
-                    r = cm_CharWeapon(c);
-                    if (r != 0) {
-                        switch (*(int *)r) {
-                        case 0x160: cur = 0x18; break;
-                        case 0x174: cur = 0x19; break;
-                        case 0x16e: cur = 0x1e; break;
-                        case 0x154: cur = 0x1a; break;
-                        case 0x158: cur = 0x1f; break;
-                        case 0x15e: cur = 0x21; break;
-                        case 0x156: cur = 0x23; break;
-                        case 0x176: cur = 0x25; break;
-                        }
+                    w = (AIWEAPON *)cm_CharWeapon((char *)c);
+                    if (w != 0) {
+                        if (w->id == 0x160)
+                            cur = 0x18;
+                        else if (w->id == 0x174)
+                            cur = 0x19;
+                        else if (w->id == 0x16e)
+                            cur = 0x1e;
+                        else if (w->id == 0x154)
+                            cur = 0x1a;
+                        else if (w->id == 0x158)
+                            cur = 0x1f;
+                        else if (w->id == 0x15e)
+                            cur = 0x21;
+                        else if (w->id == 0x156)
+                            cur = 0x23;
+                        else if (w->id == 0x176)
+                            cur = 0x25;
                     }
                     n++;
                 }
@@ -7624,29 +7649,29 @@ void ai_Unk4cf670()
     if (ai_PickedObject != 0 && d2_PointerObj == -1) {
         if (strcmp(ai_PickedObject, "sp_ESCAPE") == 0 && n != 0) {
             d2_PointerLook = 0x1c;
-            ai_Unk6f0ce0 = ai_PickedObject;
+            cm_HoverObject = ai_PickedObject;
             return;
         }
         if (strncmp(ai_PickedObject, "sp_CONQUER", 10) == 0 && n != 0) {
             d2_PointerLook = 0x1b;
-            ai_Unk6f0ce0 = ai_PickedObject;
+            cm_HoverObject = ai_PickedObject;
             return;
         }
         if (strncmp(ai_PickedObject, "WARE", 4) == 0 && n != 0) {
             d2_PointerLook = 0xe;
-            ai_Unk6f0ce0 = ai_PickedObject;
+            cm_HoverObject = ai_PickedObject;
             return;
         }
-        if (*(int *)(ai_PickedObject + 0x220) == 2 && n != 0) {
-            if (!(ai_LedSelectBits(*(unsigned short *)cm_CutChar, *(int *)(ai_PickedObject + 0x200)) & 0x800) ||
+        if (((D3OBJECT *)ai_PickedObject)->kind == 2 && n != 0) {
+            if (!(ai_LedSelectBits(((AICHAR *)cm_CutChar)->id, (char *)((D3OBJECT *)ai_PickedObject)->owner) & 0x800) ||
                 kb_Down[0x36] != 0) {
-                ai_Unk6f0ce0 = ai_PickedObject;
+                cm_HoverObject = ai_PickedObject;
                 d2_PointerLook = cur;
                 return;
             }
         } else
             d2_PointerLook = 0;
-        ai_Unk6f0ce0 = ai_PickedObject;
+        cm_HoverObject = ai_PickedObject;
         return;
     }
     d2_PointerLook = 0;
@@ -7675,7 +7700,7 @@ void ai_Unk4cf9c0()
         }
     }
     d2_ClearPointerItems();
-    ai_Unk6f0d08 = 0;
+    cm_SelectedCount = 0;
     for (e = ai_Unk930400; e < ai_Unk930400 + 0xc0; e += 0x20) {
         if (G19_E(e, 8) == -1)
             continue;
@@ -7688,7 +7713,7 @@ void ai_Unk4cf9c0()
         if (c[0x188] != 0) {
             d2_AddPointerItem(*(int *)(c + 0x18c), 1);
             d2_SetObjValue(G19_E(e, 0), 1);
-            ai_Unk6f0d08++;
+            cm_SelectedCount++;
         } else
             d2_SetObjValue(G19_E(e, 0), 0);
         t = (int)(gm_HealthRatio(c) * 100.0);
@@ -8536,9 +8561,9 @@ void ai_Unk4d1a10(char *rec)
     int i;
 
     ai_Unk4e3060();
-    if (ai_Unk6f0cf0 != 0) {
-        d3if_Delete((struct D3OBJECT *)ai_Unk6f0cf0);
-        ai_Unk6f0cf0 = 0;
+    if (cm_PickMarker != 0) {
+        d3if_Delete((struct D3OBJECT *)cm_PickMarker);
+        cm_PickMarker = 0;
     }
     sb_UnloadSampleBank(ai_Unk6f0d0c);
     sb_UnloadSampleBank(ai_Unk6f0d10);
@@ -10556,7 +10581,7 @@ void ai_Unk4d6970(char *r)
     d2_SetObjValue(ai_Unk60cb64, 0, ai_Unk60d364, ai_Unk6f0d84 - ai_Unk6f0d80 + 1);
     sv_BorderCameraView();
     ai_Unk4cf9c0();
-    ai_Unk4cf670();
+    cm_UpdatePointer();
     ai_Unk4cfeb0();
     ai_Unk4d0740(r);
     cm_UpdateSceneChars();
@@ -15398,16 +15423,16 @@ int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8 */
 int ai_Unk6f0cdc = 0;  /* 0x6f0cdc */
-char * ai_Unk6f0ce0 = 0;  /* 0x6f0ce0 */
+char * cm_HoverObject = 0;  /* 0x6f0ce0 */
 int ai_Unk6f0ce4 = 0;  /* 0x6f0ce4, fight paused */
 int ai_Unk6f0ce8 = 0;  /* 0x6f0ce8 */
 int cm_FightAttacker = 0;  /* 0x6f0cec */
-char * ai_Unk6f0cf0 = 0;  /* 0x6f0cf0 */
+char * cm_PickMarker = 0;  /* 0x6f0cf0 */
 int ai_Unk6f0cf4 = 0;  /* 0x6f0cf4 */
 int ai_Unk6f0cf8 = 0;  /* 0x6f0cf8 */
 int ai_Unk6f0cfc = 0;  /* 0x6f0cfc */
 char * cm_FightRecord = 0;  /* 0x6f0d04 */
-int ai_Unk6f0d08 = 0;  /* 0x6f0d08 */
+int cm_SelectedCount = 0;  /* 0x6f0d08 */
 int ai_Unk6f0d0c = 0;  /* 0x6f0d0c */
 int ai_Unk6f0d10 = 0;  /* 0x6f0d10 */
 int cm_BombSounds = 0;  /* 0x6f0d14 */

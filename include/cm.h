@@ -615,12 +615,12 @@ extern short d2_ScreenW;  /* 0xfb9072 */
 struct D3OBJECT * d3if_Pick(float x, float y, int mask, int one);  /* 0x448630 */
 struct D3SM; char d3sm_Pick(struct D3SM *h, int sx, int sy, int *px, int *pz);  /* 0x45f2b0 */
 char d3if_Show(struct D3OBJECT *obj, char show);  /* 0x4471b0 */
-void ai_Unk4cf670();  /* 0x4cf670 */
+void cm_UpdatePointer();  /* 0x4cf670 */
 extern char *ai_Unk5fb5b0;  /* 0x5fb5b0 */
 extern float ai_Unk5ebb68;  /* 0x5ebb68 */
-extern int ai_Unk6f0d08;  /* 0x6f0d08 */
-extern char *ai_Unk6f0ce0;  /* 0x6f0ce0 */
-extern char *ai_Unk6f0cf0;  /* 0x6f0cf0 */
+extern int cm_SelectedCount;  /* 0x6f0d08 */
+extern char *cm_HoverObject;  /* 0x6f0ce0 */
+extern char *cm_PickMarker;  /* 0x6f0cf0 */
 extern char *ai_PickedObject;  /* 0x6f22e8 */
 extern int ai_PickedChar;  /* 0x6f22f8 */
 
