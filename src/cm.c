@@ -94,6 +94,7 @@ extern GAPDATA full_data_92bcb8[];
 #include "he.h"
 #include "amt.h"
 #include "am_types.h"
+#include "gv.h"
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
@@ -10817,7 +10818,7 @@ void ai_Unk4d6a50()
     ai_Unk60cb64 = t;
     G19_R(t, 0x74, short) = 0x54;
     G19_R(*(int *)(ai_Unkf8f39c - 0x10 + d2_LastWindow * 0x3c4), 0x4c, int) = 1;
-    d2_SetForm(ai_Unk60d368, 0);
+    d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
     ai_Unk4cfe70();
     cm_BuildPortraits();
@@ -12577,262 +12578,612 @@ int cm_CheckTrial(G28REC *p)
 extern char ai_Unk60de4c;
 extern char ai_Unk60dd68;
 extern char ai_Unk60dd24;
-/* ai_Unk92caf0: view of cm_CutInfos (tools/data_views.py) */
-#define G26_BOX(sw) ai_Unk4e2bd0(ai_Unk60d368, (sw)); d2_SetForm(ai_Unk60d368, 0)
-#define G26_WAITV(h) if ((h) != 0) { while (sb_IsPlaying(h) != 0) ai_Unk4e3420(1); } ai_Unk4e3420(1)
+#define gv_PassSentenceK ((void (*)())gv_PassSentence)  /* 0x4f4460 (gv.h: two parameters): @original cm_RunTrial pushes five arguments (the accused, the sentence, the judge, the two assessors), a call without a prototype */
+#define CM_WAIT_VOICE(h) if ((h) != 0) { do { if (sb_IsPlaying(h) == 0) break; cm_WaitTicks(1); } while (1); } cm_WaitTicks(1)  /* waits until the voice sample h has played */
 
-/* 0x4db700 */
-void ai_Unk4db700(char *m)
+/* 0x4db700, the trial (the run function of scene kind 2, checked by cm_CheckTrial) of the party m in "Gericht.ed3": the
+   participants are m->members[0 .. 5] (c0 the accuser, c1 the accused, c2 the judge, c3 / c4 the assessors, c5 a sixth
+   one; the request plan carries them as ids). The judge opens (texts 0x1491 / 0x1492), the accuser states the charge
+   (0x1499), every group of crimes of the same law is read (gv_CrimeText, the guilt summed into the plan's score by the
+   severity of the law record 0's value), the accused pleads (cm_RunSceneParty, mode 4: guilty or not; a confession lowers
+   the score by the liking of the accused for the judge). Without a plea of guilt and with more than two crimes and a sixth
+   participant the accused is tortured (mode 1: the accuser decides; mode 2 picks the instrument of the seven, mode 3 the
+   accused's answer; the plan's roll decides whether he confesses: texts 0x14ca .. 0x1522, the torture chamber scene).
+   Then the judge and the assessors vote (0x1528 .. 0x152e); with fewer than two votes for guilt the accused goes free,
+   else the judge picks the sentence (mode 5, gv_CheckSentence / gv_PassSentence, texts 0x152f .. 0x1531). On the host the
+   accuser, the judge and the assessors get the fees (cm_SendMoveGoodsUnchecked, a third of the plan's rating each) and
+   with the item 0x22e the accused's relations change. Every voice bank loaded is freed at the end.
+   @deep Rebuilt whole from the original (2340 instructions), every region read against it: the plan record
+   init, the crime grouping and reading loops, the plea, the torture (instrument tables, rolls,
+   confession), the vote of judge and assessors, the verdict, fees, relations and the bank cleanup
+   (including the original's double unload of bankF2). The callees, arguments, literals and statement order
+   agree (ours 2333 vs 2340). Left is allocation and layout: the frame 0x784 vs 0x760 and its slot renaming
+   (slots 750), register choice (regs 134), and two clamps VC6 lowers differently: dec.cur to 0..4 (ours
+   inline jmp/mov eax,4 at +0xaa, the original out of line at +0x24f) and the instrument 0..6 (ours
+   setle/dec/and at +0x11ed, the original jle/jmp blocks). (references: M8 at +0x1297: ours refers to
+   sprintf (0x5de652), the original's field to 0x4e2bd0 (cm_SetViewEnabled) (and 2 more), explained: the
+   three M8 lines (+0x1297 sprintf|cm_SetViewEnabled, +0x1648, +0x1a4b) are alignment crossings: the same
+   calls in the same order on both sides, paired one call apart where the surrounding pushes are scheduled
+   differently; the proof stops only on the crime id array's frame offset (frame+0x154 vs +0x130)) */
+
+void cm_RunTrial(G28REC *m)
 {
-    int a, b, c;
-    int ids[6];
-    char *ch[6];
-    char names[0x200];
-    int i, n, h, v, guilty, mode, scene;
+    AIDEC dec;
+    CRIME crime, other;
+    AIPLAN plan;
+    float factors[5];
+    int crimeIds[32];                   /* the indexes of the crimes in the state m->crimeState (ai_Crimes) */
+    int groups[32];                     /* per crime: how many of the same law it reads out, -1: read with another */
+    int list[32];                       /* the crimes' ids, -1 filled */
+    char names[0x100];
+    char buf[0x200];                    /* a voice bank name, the sentence text */
+    AICHAR *c0, *c1, *c2, *c3, *c4, *c5, *p;
+    GMHEAD *head;
+    struct MSXTRACK *sound;
+    char *pathEnd, *end;
+    float severity, sum;
+    int ncrimes, nlist, plea, confessed, sel, scene, k, i, j, ev, ev2, h, votes, sentence, fee;
+    int bankTrial, bankPlea, bankV, bankVerdict, bank8, bankF1, bankF2, bankT1, bankT2, bankT3, bankT4, bankE, bank6;
 
-    n = *(unsigned char *)(m + 0x30);
-    for (i = 0; i < 6; i++)
-        ids[i] = *(int *)(m + 0x34 + i * 4);
-    a = ids[0];
-    b = ids[1];
-    c = ids[2];
-    gv_GetTableRecord(a, (int *)names);     /* ROUGH: the original pushes (edi, a local buffer) */
-    G26_BOX(0);
+    confessed = 0;
+    scene = -1;
+    sum = 0;
+    sound = 0;
+    bankT1 = 0;
+    bankT2 = 0;
+    bankT3 = 0;
+    bankF1 = 0;
+    bankF2 = 0;
+    bankT4 = 0;
+    factors[0] = 1.4f;
+    factors[1] = 1.2f;
+    factors[2] = 1.0f;
+    factors[3] = 0.8f;
+    factors[4] = 0.6f;
+    gv_GetTableRecord(0, (int *)&dec);
+    k = dec.cur;
+    if (k < 4) {
+        if (k <= 0)
+            k = 0;
+    } else
+        k = 4;
+    severity = factors[k];
+    cm_SetViewEnabled(cm_TextBox, 0);
     cm_LoadEventScene("Gericht.ed3");
-    for (i = 0; i < 5; i++) {
-        ch[i] = (char *)gm_FindChar(ids[i]);
-        if (ch[i] == 0)
-            goto done;
-    }
-    ch[5] = (char *)gm_FindChar(ids[5]);
-    if (ch[5] == 0 && (unsigned char)m[0x30] > 2 && *(int *)(m + 0x48) != -1)
-        goto done;
+    plan.score = 0;
+    plan.plea = 0;
+    plan.amount = 1000.0f;
+    plan.ids[0] = m->members[0];
+    plan.ids[1] = m->members[1];
+    plan.ids[2] = m->members[2];
+    plan.ids[3] = m->members[3];
+    plan.ids[4] = m->members[4];
+    plan.b10 = 0xa;
+    plan.crimes = 0;
+    plan.rating2c = 0;
+    plan.rating30 = 0;
+    plan.rating34 = 0;
+    plan.instrument = 0;
+    plan.tries = 0;
+    plan.answer = 0;
+    plan.tortured = 0;
+    plan.success = 0;
+    plan.penalty = 0;
+    plan.ids[5] = m->members[5];
+    plan.mode = 0;
+    ncrimes = gv_FindCrimesByState(m->crimeState, crimeIds);
+    plan.crimes = (unsigned char)ncrimes;
+    c0 = (AICHAR *)gm_FindChar(m->members[0]);
+    if (c0 == 0)
+        return;
+    c1 = (AICHAR *)gm_FindChar(m->members[1]);
+    if (c1 == 0)
+        return;
+    c2 = (AICHAR *)gm_FindChar(m->members[2]);
+    if (c2 == 0)
+        return;
+    c3 = (AICHAR *)gm_FindChar(m->members[3]);
+    if (c3 == 0)
+        return;
+    c4 = (AICHAR *)gm_FindChar(m->members[4]);
+    if (c4 == 0)
+        return;
+    c5 = (AICHAR *)gm_FindChar(m->members[5]);
+    if (c5 == 0 && plan.crimes > 2 && m->members[5] != -1)
+        return;
     if (cm_SkipEvents == 0)
-        msx_PlayAmbient(0x40, "Athmos\\Athmo_sitzung.mp3");
-    scene = cm_Random(2);
-    cm_PlaySpecialTrack("cd2\\ImKerker.mp3");
-    cm_LoadVoiceBank(0, "ADDON\\PROZESS_NEU.sbf");
-    ai_Unk4947a0(a, b);
-    sprintf(names, "%s ", (char *)gm_CharNameRecord(*(unsigned short *)ch[0]) + 4);
-    for (i = 1; i < 4; i++)
-        sprintf(names + strlen(names), "%s ", (char *)gm_CharNameRecord(*(unsigned short *)ch[i]) + 4);
-    sprintf(names + strlen(names), "%s", (char *)gm_CharNameRecord(*(unsigned short *)ch[4]) + 4);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-create2.esc", names);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", &ai_Unk60de4c);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60de4c);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", &ai_Unk60de4c);
-    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-intro.esc", &ch_EmptyName));
+        sound = msx_PlayAmbient("Athmos\\Athmo_sitzung.mp3", 0x40);
+    if (cm_Random(2) != 0)
+        cm_PlaySpecialTrack((int)"cd2\\ArmerDelinquent.mp3");
+    else
+        cm_PlaySpecialTrack((int)"cd2\\ImKerker.mp3");
+    bankTrial = cm_LoadVoiceBank((int)"ADDON\\PROZESS_NEU.sbf", 0);
+    plan.rating2c = ai_WealthRating(c0, c1);
+
+    /* the figures of the court */
+    sprintf(names, "%s ", ((GMHEAD *)gm_CharNameRecord(c2->id))->name);
+    end = names + strlen(names);
+    sprintf(end, "%s ", ((GMHEAD *)gm_CharNameRecord(c0->id))->name);
+    end = names + strlen(names);
+    sprintf(end, "%s ", ((GMHEAD *)gm_CharNameRecord(c1->id))->name);
+    end = names + strlen(names);
+    sprintf(end, "%s ", ((GMHEAD *)gm_CharNameRecord(c3->id))->name);
+    end = names + strlen(names);
+    sprintf(end, "%s", ((GMHEAD *)gm_CharNameRecord(c4->id))->name);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-create2.esc", (int)names);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", (int)"2");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"2");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"2");
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-intro.esc", (int)ch_EmptyName));
 
     /* the judge opens the session */
-    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
-    G26_BOX(1);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)ch_EmptyName);
+    cm_SetViewEnabled(cm_TextBox, 1);
+    d2_SetForm(cm_TextBox, 0);
     io_PrintText(0x1491);
-    h = ai_Unk4e32b0(5, "_PROZESS_NEU", 0, 0);
-    G26_WAITV(h);
-    G26_BOX(0);
-    io_PrintText(0x1492);
-    ai_Unk4e3420(4);
+    h = cm_PlayVoice(c2->id, bankTrial, (int)"_PROZESS_NEU", 5);
+    CM_WAIT_VOICE(h);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    io_PrintText(0x1492, c0->id, c1->id, c0->id);
+    cm_WaitTicks(4);
 
     /* the accuser states the charge */
-    cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", &ai_Unk60dd68);
-    G26_BOX(0);
-    io_PrintText(0x1499);
-    h = ai_Unk4e32b0(0, "_PROZESS_NEU", 0, 0);
-    G26_WAITV(h);
-    cm_WaitEvent(0);
-
-    /* the witnesses */
-    for (i = 0; i < n; i++) {
-        if (ids[i] == -1)
-            continue;
-        gv_GetTableRecord(ids[i], i);
-        v = gv_CrimeText(ids[i], i);
-        if (v == -1)
-            continue;
-        cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", &ai_Unk60dd68);
-        G26_BOX(0);
-        io_PrintText(0x14b0);
-        h = ai_Unk4e32b0(i, "_PROZESS_GESETZ", 0, 0);
-        G26_WAITV(h);
-        cm_Random(0x1e);
-        cm_WaitEvent(0);
-    }
-    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
-    io_PrintText(0x14ba);
-    h = ai_Unk4e32b0(0, "_PROZESS_NEU", 0, 0);
-    G26_WAITV(h);
-    G26_BOX(0);
+    ev = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"1");
+    d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
+    io_PrintText(0x1499, c1->id);
+    h = cm_PlayVoice(c0->id, bankTrial, (int)"_PROZESS_NEU", c1->sex == 1);
+    CM_WAIT_VOICE(h);
+    cm_WaitEvent(ev);
 
-    /* the accused answers: guilty / not guilty */
-    cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", &ai_Unk60dd24);
-    ai_Unk4e2bd0(ai_Unk60d368, 0);
-    cm_RunSceneParty(m, 0);
-    for (i = 0; i < n && *(int *)(ai_Unk92caf0 + i * 0x18) != ids[0]; i++)
-        ;
-    guilty = *(int *)(ai_Unk92caf0 + i * 0x18 + 0x84);
-    mode = *(int *)(ai_Unk92caf0 + i * 0x18 + 0x88);
-    G26_BOX(1);
-    io_PrintText("$C");
-    if (guilty == 1) {
-        gm_Liking(guilty, mode, 0);
-        cm_LoadVoiceBank(0, "PROZESS_3_SCHULDIG.sbf");
-        cm_QueueVoice(0, 0, "_PROZESS_3_SCHULDIG", 0, 0);
-        io_PrintText(0x14bd, 0, 0x14be);
-    } else {
-        cm_LoadVoiceBank(0, "PROZESS_3_NICHT_SCHULDIG.sbf");
-        cm_QueueVoice(0, 0, "_PROZESS_3_NICHT_SCHULDIG", 0, 0);
-        io_PrintText(0x14bd, 0, 0x14c4);
-    }
-    ai_Unk4e3420(2);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60dd68);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", &ai_Unk60dd68);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ai_Unk60dd68);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", &ch_EmptyName);
-
-    /* the torture (the instrument names 0x60dad0 .., "cutscenes\\prozess\\folter\\<name>.esc") */
-    if (cm_Random(2) == 1) {
-        ai_Unk494830(a, b);
-        G26_BOX(1);
-        io_PrintText("$C", 0x14ca);
-        ai_Unk4e3420(4);
-        cm_StartEventArg("cutscenes\\prozess\\prozess-folter-1.esc", &ch_EmptyName);
-        G26_BOX(0);
-        cm_RunSceneParty(m, 0);
-        cm_WaitEvent(0);
-        for (i = 0; i < n && *(int *)(ai_Unk92caf0 + i * 0x18) != ids[0]; i++)
-            ;
-        G26_BOX(1);
-        io_PrintText("$C");
-        if (*(int *)(ai_Unk92caf0 + i * 0x18 + 0x88) == 1) {
-            cm_Random(6);
-            cm_LoadVoiceBank(0, "PROZESS_4_FOLTER_1.sbf");
-            cm_LoadVoiceBank(0, "PROZESS_4_FOLTER_2.sbf");
-            cm_QueueVoice(0x32, 0, "_PROZESS_4_FOLTER_1", 0, 0);
-            cm_QueueVoice(0x12c, 0, "_PROZESS_4_FOLTER_2", 0, 0);
-            io_PrintText(0x14d9);
-            ai_Unk4e3420(1);
-            cm_StartEventArg("cutscenes\\prozess\\prozess-folter-3.esc", &ch_EmptyName);
-        } else {
-            cm_StartEventArg("cutscenes\\prozess\\prozess-folter-2.esc", &ch_EmptyName);
-            io_PrintText(0x14d8);
+    /* the crimes, grouped by the law broken */
+    memset(groups, 0, sizeof(groups));
+    for (nlist = 0; nlist < ncrimes; nlist++)
+        list[nlist] = ((CRIME *)ai_Crimes)[crimeIds[nlist]].id;
+    for (i = nlist; i < 32; i++)
+        list[i] = -1;
+    for (i = 0; i < ncrimes; i++) {
+        if (groups[i] == -1)
+            continue;
+        groups[i] = 1;
+        crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
+        for (j = i + 1; j < ncrimes; j++) {
+            if (groups[j] == -1)
+                continue;
+            other = ((CRIME *)ai_Crimes)[crimeIds[j]];
+            if (crime.law == other.law) {
+                groups[j] = -1;
+                groups[i]++;
+            }
         }
-        ai_Unk4e3420(4);
-        cm_LoadEventScene("ob_GEFAENGNIS_FOLTERKAMMER.ed3");
-        cm_StartEventArg("cutscenes\\prozess\\folter-create.esc", &ch_EmptyName);
-        G26_BOX(1);
-        io_PrintText(0x14e4);
-        h = ai_Unk4e32b0(4, "_PROZESS_NEU", 0, 0);
-        G26_WAITV(h);
-        ai_Unk4e3420(5);
-        cm_Random(5);
-        io_PrintText(0x14ec);
-        ai_Unk4e3420(5);
-        ai_Unk494300(0);
-        cm_WaitEvent(0);
-        cm_QueueVoice(0x1f4, 0, "_PROZESS_5_FOLTER2_UNSCHULDSBETEUERUNG", 0, 0);
-        cm_QueueVoice(0, 0, "_PROZESS_5_FOLTER2_GESTEHEN", 0, 0);
-        cm_QueueVoice(0x1f4, 0, "_PROZESS_5_FOLTER2_WEITER", 0, 0);
-        io_PrintText(0x1510);
-        ai_Unk4e3420(4);
-        cm_StartEventArg("cutscenes\\prozess\\folterexit.esc", &ch_EmptyName);
-        if (cm_SkipEvents == 0)
-            d3if_SelectScene(scene, 0);
-        cm_LoadVoiceBank(0, "PROZESS_6_FOLTERERGEBNIS.sbf");
-        cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
-        cm_QueueVoice(0, "_PROZESS_6_FOLTERERGEBNIS", 0, 0);
-        io_PrintText(0x1520, 0, 0x1522);
-        ai_Unk4e3420(4);
     }
-    cm_LoadVoiceBank(0, "PROZESS_6_ANKUENDIGUNG.sbf");
-    cm_QueueVoice(0, 0, "_PROZESS_6_ANKUENDIGUNG", 0, 0);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
-    io_PrintText(0x1523);
-    ai_Unk4e3420(4);
+    for (i = 0; i < ncrimes; i++) {
+        char text[0x100];
 
-    /* the vote */
-    cm_LoadVoiceBank(0, "PROZESS_6_ABSTIMMUNG_ERGEBNISSE.sbf");
-    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
-    G26_BOX(1);
-    io_PrintText(0x1528);
-    ai_Unk4e3420(2);
-    cm_Random(100, 3);
-    cm_QueueVoice(0, "_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", 0, 0);
-    ai_Unk4e3420(2);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-1.esc", &ch_EmptyName);
-    ai_Unk4e3420(2);
-    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-2.esc", &ch_EmptyName);
-    ai_Unk4e3420(2);
+        crime = ((CRIME *)ai_Crimes)[crimeIds[i]];
+        gv_GetTableRecord(crime.law, (int *)&dec);
+        k = groups[i];
+        sum += dec.guilt * severity;
+        if (k == -1)
+            continue;
+        ev = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"1");
+        gv_CrimeText(text, crime, k);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C$Z");
+        io_PrintText(text);
+        h = cm_PlayVoice(c0->id, bankTrial, (int)"_PROZESS_GESETZ", (unsigned char)dec.b1e);
+        CM_WAIT_VOICE(h);
+        cm_Random(0x1e);
+        io_PrintText("$C");
+        cm_WaitEvent(ev);
+    }
+    plan.score = sum;
+    bankV = 0;
+
+    /* the plea of the accused */
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)ch_EmptyName);
+    io_PrintText(0x14ba, c1->id, ncrimes);
+    h = cm_PlayVoice(c2->id, bankTrial, (int)"_PROZESS_NEU", (c1->sex != 0) + 2);
+    CM_WAIT_VOICE(h);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", (int)"0");
+    cm_SetViewEnabled(cm_TextBox, 0);
+    cm_RunSceneParty((char *)m, (int)&plan);
+    if (m->host == ai_CharsT[ai_PlayerId].netId)
+        gv_RetireCrimeIds(c1->netId, nlist, list);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", (int)"1");
+    for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[1]; i++)
+        ;
+    plea = cm_CutInfosT[i].session.answer;
+    plan.amount = cm_CutInfosT[i].session.amount;
+    cm_SetViewEnabled(cm_TextBox, 1);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    plan.mode = 4;
+    if (plea == 1) {
+        plan.plea = plea;
+        plan.score = sum - gm_Liking(c1->id, c2->id, 1) * sum * 0.002f;
+        h = cm_LoadVoiceBank((int)"PROZESS_3_SCHULDIG.sbf", 0);
+        cm_QueueVoice(c1->id, h, (int)"_PROZESS_3_SCHULDIG", 0, 0);
+        io_PrintText(0x14bd, c1->id, 0x14be);
+    } else {
+        plan.plea = 0;
+        h = cm_LoadVoiceBank((int)"PROZESS_3_NICHT_SCHULDIG.sbf", 0);
+        cm_QueueVoice(c1->id, h, (int)"_PROZESS_3_NICHT_SCHULDIG", 0, 0);
+        io_PrintText(0x14bd, c1->id, 0x14c4);
+        if (c5 != 0 && ncrimes > 2)
+            plan.mode = 1;
+    }
+    cm_WaitTicks(2);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", (int)ch_EmptyName);
+
+    /* the torture */
+    if (plan.mode == 1) {
+        plan.rating30 = ai_WealthRatingHalf(c0, c1);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        io_PrintText(0x14ca, c0->id, c1->id, plan.rating30);
+        cm_WaitTicks(4);
+        ev = cm_StartEventArg("cutscenes\\prozess\\prozess-folter-1.esc", (int)ch_EmptyName);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        cm_SetViewEnabled(cm_TextBox, 0);
+        cm_RunSceneParty((char *)m, (int)&plan);
+        cm_WaitEvent(ev);
+        for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[0]; i++)
+            ;
+        k = cm_CutInfosT[i].session.answer;
+        cm_SetViewEnabled(cm_TextBox, 1);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        if (k == 1) {
+            j = cm_Random(6);
+            k = cm_Random(6);
+            bankF1 = cm_LoadVoiceBank((int)"PROZESS_4_FOLTER_1.sbf", 0);
+            bankF2 = cm_LoadVoiceBank((int)"PROZESS_4_FOLTER_2.sbf", 0);
+            cm_QueueVoice(c0->id, bankF1, (int)"_PROZESS_4_FOLTER_1", j, 0x32);
+            cm_QueueVoice(c0->id, bankF2, (int)"_PROZESS_4_FOLTER_2", k, 0x12c);
+            io_PrintText(0x14d9);
+            cm_WaitTicks(1);
+            io_PrintText("$C");
+            ev = cm_StartEventArg("cutscenes\\prozess\\prozess-folter-3.esc", (int)ch_EmptyName);
+            plan.tortured = 1;
+        } else {
+            ev = cm_StartEventArg("cutscenes\\prozess\\prozess-folter-2.esc", (int)ch_EmptyName);
+            io_PrintText(0x14d8);
+            plan.tortured = 0;
+        }
+        cm_WaitTicks(4);
+        cm_WaitEvent(ev);
+        plan.success = 0;
+        if (plan.tortured != 0) {
+            char files[7][0x10] = {"dschraube.esc", "stiefel.esc", "peitsche.esc", "brandeisen.esc", "eistropfer.esc",
+                                   "kaefig.esc", "streckbank.esc"};
+            char instruments[7][0x20] = {"DAUMENSCHRAUBEN", "SPANISCHE_STIEFEL", "NEUNSCHWAENZIGE_PEITSCHE",
+                                         "ESSE_UND_BRANDEISEN", "EISWASSERTROPFER", "HAENGENDER_KAEFIG", "STRECKBANK"};
+            int texts[7] = {0x14ed, 0x14f2, 0x14f7, 0x14fc, 0x1501, 0x1506, 0x150b};
+            char path[0x100];
+
+            if (m->host == ai_CharsT[ai_PlayerId].netId) {
+                fee = plan.rating30 / 3;
+                cm_SendMoveGoodsUnchecked(c2->netId, c0->netId, ai_OwnPlayer, fee);
+                cm_SendMoveGoodsUnchecked(c3->netId, c0->netId, ai_OwnPlayer, fee);
+                cm_SendMoveGoodsUnchecked(c4->netId, c0->netId, ai_OwnPlayer, fee);
+            }
+            strcpy(path, "cutscenes\\prozess\\folter\\");
+            pathEnd = path + strlen(path);
+            p = (AICHAR *)gm_FindChar(m->members[5]);
+            d2_SetForm(cm_TextBox, 0);
+            io_PrintText("$C");
+            plan.mode = 2;
+            ev = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"0");
+            cm_SetViewEnabled(cm_TextBox, 0);
+            cm_RunSceneParty((char *)m, (int)&plan);
+            for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[0]; i++)
+                ;
+            cm_WaitEvent(ev);
+            ev2 = cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", (int)"1");
+            sel = cm_CutInfosT[i].session.answer & 0xf;
+            if (sel < 6) {
+                if (sel > 0)
+                    plan.instrument = sel;
+                else
+                    plan.instrument = 0;
+            } else
+                plan.instrument = 6;
+            plan.tries = ai_PlanLevel(&plan);
+            plan.answer = 0;
+            sprintf(buf, "PROZESS_5_FOLTER2_%s.sbf", instruments[sel]);
+            bankT1 = cm_LoadVoiceBank((int)"PROZESS_5_FOLTER2_GESTEHEN.sbf", 0);
+            bankT2 = cm_LoadVoiceBank((int)buf, 0);
+            bankT3 = cm_LoadVoiceBank((int)"PROZESS_5_FOLTER2_WEITER.sbf", 0);
+            bankT4 = cm_LoadVoiceBank((int)"PROZESS_5_FOLTER2_UNSCHULDSBETEUERUNG.sbf", 0);
+            sprintf(buf, "_PROZESS_5_FOLTER2_%s", instruments[sel]);
+            cm_SetViewEnabled(cm_TextBox, 1);
+            d2_SetForm(cm_TextBox, 0);
+            io_PrintText("$C");
+            io_PrintText(0x14dd, c0->id, 0xb20 + sel * 2);
+            cm_WaitTicks(4);
+            d2_SetForm(cm_TextBox, 0);
+            io_PrintText("$C");
+            cm_SetViewEnabled(cm_TextBox, 0);
+            cm_WaitTicks(2);
+            cm_WaitEvent(ev2);
+            plan.mode = 3;
+            cm_SetViewEnabled(cm_TextBox, 0);
+            cm_RunSceneParty((char *)m, (int)&plan);
+            for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[5]; i++)
+                ;
+            plan.answer = cm_CutInfosT[i].session.answer;
+            end = names + strlen(names);
+            head = (GMHEAD *)gm_CharNameRecord(p->id);
+            if (head != 0)
+                sprintf(end, " %s", head->name);
+            else
+                sprintf(end, " handwerker_MANN");
+            scene = d3_CurrentScene;
+            cm_LoadEventScene("ob_GEFAENGNIS_FOLTERKAMMER.ed3");
+            cm_StartEventArg("cutscenes\\prozess\\folter-create.esc", (int)names);
+            cm_SetViewEnabled(cm_TextBox, 1);
+            d2_SetForm(cm_TextBox, 0);
+            io_PrintText("$C");
+            io_PrintText(0x14e4);
+            h = cm_PlayVoice(c2->id, bankTrial, (int)"_PROZESS_NEU", 4);
+            CM_WAIT_VOICE(h);
+            strcpy(pathEnd, files[sel]);
+            cm_SetViewEnabled(cm_TextBox, 0);
+            d2_SetForm(cm_TextBox, 0);
+            io_PrintText("$C");
+            ev = cm_StartEventArg(path, (int)ch_EmptyName);
+            cm_WaitTicks(5);
+            cm_SetViewEnabled(cm_TextBox, 1);
+            d2_SetForm(cm_TextBox, 0);
+            k = cm_Random(5);
+            cm_QueueVoice(c0->id, bankT2, (int)buf, k, 0x320);
+            io_PrintText("$C");
+            io_PrintText(0x14ec, texts[sel] + k);
+            cm_WaitTicks(5);
+            cm_SetViewEnabled(cm_TextBox, 0);
+            ai_PlanRollTries(&plan);
+            cm_WaitEvent(ev);
+            cm_SetViewEnabled(cm_TextBox, 1);
+            d2_SetForm(cm_TextBox, 0);
+            if (plan.success == 0) {
+                confessed = 0;
+                k = cm_Random(6);
+                cm_SetViewEnabled(cm_TextBox, 1);
+                d2_SetForm(cm_TextBox, 0);
+                io_PrintText("$C");
+                io_PrintText(0x14e6 + k);
+                cm_QueueVoice(c1->id, bankT4, (int)"_PROZESS_5_FOLTER2_UNSCHULDSBETEUERUNG", k, 0x1f4);
+                cm_WaitTicks(5);
+            } else {
+                k = cm_Random(10);
+                cm_QueueVoice(c1->id, bankT1, (int)"_PROZESS_5_FOLTER2_GESTEHEN", k, 0);
+                cm_QueueVoice(c1->id, bankT3, (int)"_PROZESS_5_FOLTER2_WEITER", 0, 0x1f4);
+                cm_SetViewEnabled(cm_TextBox, 1);
+                d2_SetForm(cm_TextBox, 0);
+                io_PrintText("$C");
+                io_PrintText(0x1514 + k);
+                io_PrintText("$N");
+                io_PrintText(0x1510);
+                cm_WaitTicks(4);
+                confessed = 1;
+            }
+        }
+        plan.mode = 4;
+    }
+    if (plan.tortured != 0) {
+        cm_SetViewEnabled(cm_TextBox, 1);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        if (plan.success == 0) {
+            io_PrintText(0x151f, c1->id, c0->id);
+            plan.score *= 0.8f;
+        } else {
+            io_PrintText(0x151e, c1->id, c0->id);
+            plan.score *= 1.1f;
+        }
+        cm_WaitTicks(4);
+        ev = cm_StartEventArg("cutscenes\\prozess\\folterexit.esc", (int)ch_EmptyName);
+        if (ev != 0)
+            cm_WaitEvent(ev);
+        if (cm_SkipEvents == 0 && scene != -1)
+            d3if_SelectScene(scene, 0);
+    }
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"1");
+    cm_SetViewEnabled(cm_TextBox, 1);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    if (plan.tortured != 0) {
+        bankV = cm_LoadVoiceBank((int)"PROZESS_6_FOLTERERGEBNIS.sbf", 0);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)ch_EmptyName);
+        if (confessed != 0) {
+            cm_QueueVoice(c2->id, bankV, (int)"_PROZESS_6_FOLTERERGEBNIS", 0, 100);
+            io_PrintText(0x1520, c1->id, 0x1521);
+        } else {
+            cm_QueueVoice(c2->id, bankV, (int)"_PROZESS_6_FOLTERERGEBNIS", 1, 100);
+            io_PrintText(0x1520, c1->id, 0x1522);
+        }
+        cm_WaitTicks(4);
+    }
+
+    /* the vote of the judge and the assessors */
+    bank6 = cm_LoadVoiceBank((int)"PROZESS_6_ANKUENDIGUNG.sbf", 0);
+    cm_QueueVoice(c2->id, bank6, (int)"_PROZESS_6_ANKUENDIGUNG", 0, 0);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)ch_EmptyName);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    io_PrintText(0x1523);
+    cm_WaitTicks(4);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"1");
+    cm_SetViewEnabled(cm_TextBox, 0);
+    cm_RunSceneParty((char *)m, (int)&plan);
+    cm_UnloadVoiceBank(bank6);
+    for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[2]; i++)
+        ;
+    bankE = cm_LoadVoiceBank((int)"PROZESS_6_ABSTIMMUNG_ERGEBNISSE.sbf", 0);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", (int)ch_EmptyName);
+    cm_SetViewEnabled(cm_TextBox, 1);
+    d2_SetForm(cm_TextBox, 0);
+    io_PrintText("$C");
+    io_PrintText(0x1528, c2->id);
+    cm_WaitTicks(2);
+    votes = cm_CutInfosT[i].session.answer;
+    cm_QueueVoice(c2->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i].session.answer * 3, 100);
+    io_PrintText(0x152c + votes);
+    cm_WaitTicks(2);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"1");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"1");
+    if (plan.ids[3] != -1) {
+        k = cm_CutInfosT[i + 1].session.answer;
+        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-1.esc", (int)ch_EmptyName);
+        d2_SetForm(cm_TextBox, 0);
+        p = (AICHAR *)gm_FindChar(plan.ids[3]);
+        io_PrintText("$N");
+        io_PrintText(0x1528, p->id);
+        cm_WaitTicks(2);
+        io_PrintText(0x152c + k);
+        cm_QueueVoice(c3->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i + 1].session.answer * 3, 100);
+        cm_WaitTicks(2);
+        votes += cm_CutInfosT[i + 1].session.answer;
+        cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", (int)"2");
+    }
+    if (plan.ids[4] != -1) {
+        k = cm_CutInfosT[i + 2].session.answer;
+        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-2.esc", (int)ch_EmptyName);
+        d2_SetForm(cm_TextBox, 0);
+        p = (AICHAR *)gm_FindChar(plan.ids[4]);
+        io_PrintText("$N");
+        io_PrintText(0x1528, p->id);
+        cm_WaitTicks(2);
+        io_PrintText(0x152c + k);
+        cm_QueueVoice(c4->id, bankE, (int)"_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", cm_Random(3) + cm_CutInfosT[i + 2].session.answer * 3, 100);
+        cm_WaitTicks(2);
+        votes += cm_CutInfosT[i + 2].session.answer;
+        cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", (int)"2");
+    }
+    cm_UnloadVoiceBank(bankE);
+    cm_UnloadVoiceBank(bankV);
 
     /* the verdict */
-    cm_LoadVoiceBank(0, "PROZESS_8.sbf");
-    if (guilty < 2) {
-        cm_LoadVoiceBank(0, "PROZESS_7_SCHULDIG.sbf");
-        cm_LoadVoiceBank(0, "PROZESS_7_STRAFEN.sbf");
-        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
-        cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
-        ai_Unk4e2bd0(ai_Unk60d368, 0);
-        cm_RunSceneParty(m, 0);
-        if (mode >= 4 && ch[0][2] == 6 && cm_UnloadVoiceBank(0) != 0)
-            ai_CountMissionEvent(0x13, ch[0]);
-        G26_BOX(1);
-        io_PrintText(0x152f);
+    bank8 = cm_LoadVoiceBank((int)"PROZESS_8.sbf", 0);
+    if ((unsigned)votes < 2) {
+        bankVerdict = cm_LoadVoiceBank((int)"PROZESS_7_SCHULDIG.sbf", 0);
+        bankV = cm_LoadVoiceBank((int)"PROZESS_7_STRAFEN.sbf", 0);
+        plan.mode = 5;
+        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", (int)ch_EmptyName);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", (int)ch_EmptyName);
+        cm_SetViewEnabled(cm_TextBox, 0);
+        cm_RunSceneParty((char *)m, (int)&plan);
+        for (i = 0; i < m->used && cm_CutInfosT[i].playerId != plan.ids[2]; i++)
+            ;
+        sentence = cm_CutInfosT[i].session.answer;
+        if ((unsigned)sentence >= 4 && c0->kind == 6 && c1->officeKind != 0)
+            ai_CountMissionEvent(c0, 0x13);
+        cm_SetViewEnabled(cm_TextBox, 1);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        io_PrintText(0x152f, c1->id);
         io_PrintText(0x1530);
-        cm_QueueVoice(0x64, 0, "_PROZESS_7_SCHULDIG", 0, 0);
-        cm_QueueVoice(0xfa, 2, "_PROZESS_7_SCHULDIG", 0, 0);
-        ai_Unk4e3420(3);
-        gv_CheckSentence(mode, 0);
-        unk_Unk4f48f0(0, mode, 0);
-        cm_QueueVoice(0x64, mode, "_PROZESS_7_STRAFEN", 0, 0);
-        cm_QueueVoice(0xc8, 0, "_PROZESS_8", 0, 0);
-        if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0])
-            gv_PassSentence(0, 0, 0, mode, 0);
-        io_PrintText(0x1531);
-        if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
-            cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);
-            cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);
-            cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);
+        cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_SCHULDIG", c1->sex == 1, 100);
+        cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_SCHULDIG", 2, 0xfa);
+        cm_WaitTicks(3);
+        gv_CheckSentence(c1, sentence);
+        cm_SetViewEnabled(cm_TextBox, 1);
+        d2_SetForm(cm_TextBox, 0);
+        gv_SentenceText(c1, sentence, buf);
+        io_PrintText(buf);
+        if (c1->officeKind != 0 && (sentence == 4 || sentence == 6 || sentence == 8)) {
+            AIFIN *fin = (AIFIN *)gm_PlayerRecord((char *)c0);
+
+            if (fin != 0)
+                fin->officeSentences++;
         }
-        ai_Unk4e3420(6);
-        io_PrintText("$C", 0x1557);
-        ai_Unk4e3420(4);
+        cm_QueueVoice(c2->id, bankV, (int)"_PROZESS_7_STRAFEN", sentence, 100);
+        cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", c1->sex == 1, 200);
+        if (m->host == ai_CharsT[ai_PlayerId].netId)
+            gv_PassSentenceK(c1, sentence, c2, c3, c4);
+        io_PrintText(0x1531);
+        if (m->host == ai_CharsT[ai_PlayerId].netId) {
+            fee = plan.rating2c / 3;
+            cm_SendMoveGoodsUnchecked(c2->netId, c1->netId, ai_OwnPlayer, fee);
+            cm_SendMoveGoodsUnchecked(c3->netId, c1->netId, ai_OwnPlayer, fee);
+            cm_SendMoveGoodsUnchecked(c4->netId, c1->netId, ai_OwnPlayer, fee);
+        }
+        cm_WaitTicks(6);
+        io_PrintText("$C");
+        io_PrintText(0x1557, plan.rating2c, c1->id);
+        cm_WaitTicks(4);
     } else {
-        cm_LoadVoiceBank(0, "PROZESS_7_NICHT_SCHULDIG.sbf");
-        cm_QueueVoice(0x64, 0, "_PROZESS_7_NICHT_SCHULDIG", 0, 0);
-        cm_QueueVoice(0xc8, 0, "_PROZESS_8", 0, 0);
-        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
-        G26_BOX(1);
-        io_PrintText("$C", 0x152e);
-        ai_Unk4e3420(4);
-        io_PrintText("$C", 0x1557);
-        ai_Unk4e3420(4);
-        if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
-            cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);
-            cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);
-            cm_SendMoveGoodsUnchecked(mode, ai_OwnPlayer, 0, 0);
+        bankVerdict = cm_LoadVoiceBank((int)"PROZESS_7_NICHT_SCHULDIG.sbf", 0);
+        cm_QueueVoice(c2->id, bankVerdict, (int)"_PROZESS_7_NICHT_SCHULDIG", c1->sex == 1, 100);
+        cm_QueueVoice(c2->id, bank8, (int)"_PROZESS_8", (c0->sex == 1) + 2, 200);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", (int)ch_EmptyName);
+        cm_SetViewEnabled(cm_TextBox, 1);
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText("$C");
+        io_PrintText(0x152e, c1->id);
+        cm_WaitTicks(4);
+        io_PrintText("$C");
+        io_PrintText(0x1557, plan.rating2c, c0->id);
+        cm_WaitTicks(4);
+        if (m->host == ai_CharsT[ai_PlayerId].netId) {
+            fee = plan.rating2c / 3;
+            cm_SendMoveGoodsUnchecked(c2->netId, c0->netId, ai_OwnPlayer, fee);
+            cm_SendMoveGoodsUnchecked(c3->netId, c0->netId, ai_OwnPlayer, fee);
+            cm_SendMoveGoodsUnchecked(c4->netId, c0->netId, ai_OwnPlayer, fee);
         }
     }
-    /* the player's reputation: opinion changes of +-26 (0x4c4b00) when 0x4fca40 / 0x5ba6b0 (0x22e) allow it */
-    if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
-        if (gm_AddHealth(0, 0) != 0 && ai_InventoryHas(0x22e, 0) != 0) {
-            cm_SendRelations(1, -26, 0, 0);
-            cm_SendRelations(1, 26, 0, 0);
-            cm_SendRelations(1, -26, 0, 0);
-            cm_SendRelations(1, 26, 0, 0);
-            cm_SendRelations(1, -26, 0, 0);
-            cm_SendRelations(1, 26, 0, 0);
+    if (m->host == ai_CharsT[ai_PlayerId].netId) {
+        if (plan.tortured != 0 && plan.penalty < 0.0f)
+            gm_AddHealth(c1->id, (int)plan.penalty);
+        if (ai_InventoryHas(c1, 0x22e) != 0) {
+            cm_SendRelations(c1->netId, c2->netId, -26, 1);
+            cm_SendRelations(c0->netId, c2->netId, 26, 1);
+            cm_SendRelations(c1->netId, c3->netId, -26, 1);
+            cm_SendRelations(c0->netId, c3->netId, 26, 1);
+            cm_SendRelations(c1->netId, c4->netId, -26, 1);
+            cm_SendRelations(c0->netId, c4->netId, 26, 1);
         }
     }
     cm_FadeToBlack();
-    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-ende.esc", &ch_EmptyName));
-    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-exit.esc", &ch_EmptyName));
-done:
-    if (cm_SkipEvents == 0)
-        msx_StopAmbient(0);
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-ende.esc", (int)ch_EmptyName));
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-exit.esc", (int)ch_EmptyName));
+    if (sound != 0)
+        msx_StopAmbient(sound);
     cm_EndSpecialTrack();
     snd_ClearQueue();
-    /* the sound slots made by 0x4e3270 are freed one by one (0x4e3290) */
-    cm_UnloadVoiceBank(0);
+    if (bankTrial != 0)
+        cm_UnloadVoiceBank(bankTrial);
+    if (bankV != 0)
+        cm_UnloadVoiceBank(bankV);
+    if (bankVerdict != 0)
+        cm_UnloadVoiceBank(bankVerdict);
+    if (bank8 != 0)
+        cm_UnloadVoiceBank(bank8);
+    if (bankT1 != 0)
+        cm_UnloadVoiceBank(bankT1);
+    if (bankT2 != 0)
+        cm_UnloadVoiceBank(bankT2);
+    if (bankT3 != 0)
+        cm_UnloadVoiceBank(bankT3);
+    if (bankF1 != 0)
+        cm_UnloadVoiceBank(bankF1);
+    if (bankF2 != 0)
+        cm_UnloadVoiceBank(bankF2);
+    if (bankT4 != 0)
+        cm_UnloadVoiceBank(bankF2);     /* the original frees bankF2 a second time here, not bankT4 */
 }
 
 /* 0x4dd960, the court's (and torture's) question dialogs of the player for a request m of kinds 0 .. 6 ("cutscenes\\prozess": a yes / no
@@ -13166,7 +13517,7 @@ void ai_Unk4de640(char *o)
     float acc, b;
     int hit, dmg, n;
 
-    d2_SetForm(ai_Unk60d368, 0);
+    d2_SetForm(cm_TextBox, 0);
     acc = (float)gm_GetSkill(sh, 3);
     gm_GetSkill(tg, 3);
     acc = (float)(acc * 0.8);
@@ -13200,7 +13551,7 @@ void ai_Unk4de640(char *o)
         d3t_CreateBloodK(*(int *)(*(char **)(tg + 0x184) + 0x34), 0x40, 0x3e800000, 0x3dcccccd, 0x3e0f5c29, 0x425c0000);
         if (*(int *)(*(char **)(tg + 0x184) + 0x128) == 0)
             ch_QueueAnim(*(char **)(tg + 0x184), "kampf/taumeln", 1);
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         n = ai_Unk4de610(6);
         io_PrintText(n + 0x1102, *(unsigned short *)tg);
         snd_PlayVoice(*(unsigned short *)tg, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN_TREFFE", n);
@@ -13228,22 +13579,22 @@ void ai_Unk4de900(char *a, char *b)
     if (ai_Unk6f0d94 != 0)
         return;
     rec = (char *)ai_Unk4e50e0(*(int *)(a + 4));
-    d2_SetForm(ai_Unk60d368, 0);
+    d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
     if (rec[0x94] == 2) {
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         io_PrintText(0x10e8, *(unsigned short *)a);
         n = ai_Unk4de610(8);
         io_PrintText(n + 0x10e9);
         snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_LAESTERN", n);
         io_PrintText("$N");
         ch_QueueAnim(*(char **)(a + 0x184), "gestik/abfaellig", 1);
-        ai_Unk4e3420(2);
+        cm_WaitTicks(2);
         fa = gm_GetSkill(a, 4);
         fb = gm_GetSkill(b, 4);
         ra = cm_RandomFloat();
         rb = cm_RandomFloat();
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         if ((float)(ra + (float)fa) <= rb + (float)fb) {
             if (b[2] == 6 || b[2] == 7)
                 io_PrintText(0x10f4, *(unsigned short *)b);
@@ -13260,7 +13611,7 @@ void ai_Unk4de900(char *a, char *b)
                 ai_Unk6f0da8[3] = 1;
         }
     } else if (rec[0x94] == 3) {
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         fa = gm_GetSkill(a, 2);
         fb = cm_RandomFloat();
         if ((float)fa <= fb) {
@@ -13279,24 +13630,24 @@ void ai_Unk4de900(char *a, char *b)
                 ai_Unk6f0da8[5] = 1;
         }
     } else if (rec[0x94] == 4) {
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         n = ai_Unk4de610(7);
         io_PrintText(n + 0x10fa, *(unsigned short *)a);
         snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN", n);
-        ai_Unk4e3420(2);
+        cm_WaitTicks(2);
         io_PrintText("$N");
         n = ch_AddActionCBK(*(char **)(a + 0x184), ai_Unk4de640, 6, 0x2e, 1);
         *(char **)(n + 0x17c) = b;
         *(char **)(n + 0x180) = a;
         strcpy((char *)n + 0xf0, "kampf/schiessen_pistole");
-        ai_Unk4e3420(4);
+        cm_WaitTicks(4);
         return;
     } else {
-        ai_Unk4e3420(4);
+        cm_WaitTicks(4);
         return;
     }
     io_PrintText("$N");
-    ai_Unk4e3420(4);
+    cm_WaitTicks(4);
 }
 /* 0x4debe0, announces the result of a duel (the message m: +0x34 / +0x38 the duellists, +0xc the owner): the winner is the one with the
    better 0x504ec0(.., 3); when he is a person of the player's side the text 0x10c7 (+ 0x10c8 for a woman) goes to every character of the
@@ -13401,22 +13752,22 @@ void ai_Unk4ded10(char *m)
     *(unsigned char *)(oa + 0x240) = 4;
     *(unsigned char *)(ob + 0x240) = 4;
     for (i = 0; i < 3; i++) {
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         io_PrintText("$C");
         io_PrintText(*(char *)(m + 0x7c) * 3 + 0x10cb + i);
         sprintf(buf, "_DUELL_INTRO_NEU_0%d", i);
-        n = ai_Unk4e32b0(-7, buf, 0, -1);
+        n = cm_PlayVoice(-7, buf, 0, -1);
         while (n != 0 && sb_IsPlaying(n) != 0)
-            ai_Unk4e3420(2);
+            cm_WaitTicks(2);
     }
     ch_WalkToObject(oa, d3_FindObject(0, 0x100, 0, "dummy_DUELL_START_A"));
     ch_AddAction(oa, 0x35, d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_A"));
     ch_WalkToObject(ob, d3_FindObject(0, 0x100, 0, "dummy_DUELL_START_B"));
     ch_AddAction(ob, 0x35, d3_FindObject(0, 0x100, 0, "dummy_DUELL_SCHUSS_B"));
-    d2_SetForm(ai_Unk60d368, 0);
+    d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
     io_PrintText(0x10dd);
-    ai_Unk4e3420(4);
+    cm_WaitTicks(4);
     io_PrintText("$C");
     snd_PlayVoice(-7, "_DUELL_INTRO_BEGRUESSUNG_RUECKEN", 0, -1);
     cm_RunSceneParty(scene, 0);
@@ -13440,12 +13791,12 @@ void ai_Unk4ded10(char *m)
         }
         if ((ai_Unk6f0da8[2] != 0 || ai_Unk6f0da8[4] != 0) && (ai_Unk6f0da8[3] != 0 || ai_Unk6f0da8[5] != 0)) {
             n = cm_Random(9);
-            d2_SetForm(ai_Unk60d368, 0);
+            d2_SetForm(cm_TextBox, 0);
             io_PrintText(n + 0x1113);
             snd_PlayVoice(-5, "_DUELL_INTRO_C2_DOKTOR", 0, n);
-            ai_Unk4e3420(5);
+            cm_WaitTicks(5);
         }
-        d2_SetForm(ai_Unk60d368, 0);
+        d2_SetForm(cm_TextBox, 0);
         io_PrintText("$C");
     }
     /* result: who is down (the lower life 0x4fc8e0), the texts 0x111c / 0x111d, the damage 0x6f0da8 / 0x6f0da9 off the life */
@@ -13643,7 +13994,7 @@ int ai_Unk4e0010(int scene)
     cm_LoadEventScene("cutscene_toby.ed3");
     cm_RunSceneParty(scene, 0);
     cm_RunSceneParty(scene, 0);
-    ai_Unk4e3420(5);
+    cm_WaitTicks(5);
     return cm_LeaveEventScene();
 }
 /* 0x4e0040, tells the others of the party m (+0x30 count, +0x34 ids; +0x7d: the challenger is not the first) about the duel: the text
@@ -13817,7 +14168,7 @@ int ai_Unk4e06d0(int *s)
    "_HOCHZEIT_NEU_MAIN_0n" waited for with 0x426f20, pauses 0x3e8 / 0x1f4 / 0x5dc through 0x4e3490, which calls the cleanup 0x4e06d0 and
    returns nonzero when the player aborts. ROUGH: the pauses between the speeches are from the disassembly, not checked */
 #define G25_STEP(ms) if (ai_Unk4e3490((ms), ai_Unk4e06d0, st) != 0) goto done
-#define G25_VOICE(tag)     h = ai_Unk4e32b0(-7, tag, 0);     if (sb_IsPlaying(h) != 0) {         do {             G25_STEP(0x3e8);         } while (sb_IsPlaying(h) != 0);     }     G25_STEP(0x3e8)
+#define G25_VOICE(tag)     h = cm_PlayVoice(-7, tag, 0);     if (sb_IsPlaying(h) != 0) {         do {             G25_STEP(0x3e8);         } while (sb_IsPlaying(h) != 0);     }     G25_STEP(0x3e8)
 
 /* 0x4e0770 */
 int ai_Unk4e0770(char *m)
@@ -14330,7 +14681,7 @@ void ai_Unk4e1a80(char *m)
             cm_QueueVoice(cm_Random(4), "_VERSTEIGERUNG_GEBOTE", 0, 0);
         d2_SetForm(0, v);
         io_PrintText(0x1aa3, 0, 5, 0, best, 0);
-        ai_Unk4e3420(5);
+        cm_WaitTicks(5);
     }
     if (best > -1) {
         bid = ai_Time;
@@ -14482,7 +14833,7 @@ void ai_Unk4e2860(char *m)
         f = 1;
         cm_LoadEventScene("ob_SALON.ed3");
     }
-    ai_Unk4e3420(5);
+    cm_WaitTicks(5);
     p = (int *)(m + 0x38);
     for (i = 0; i < 4; i++, p++) {
         if (*p != -1) {
@@ -14569,7 +14920,7 @@ void ai_Unk4e2910(char *o, int id)
 
 
 /* 0x4e2bd0, the window call 0x475590 of the scene helpers; in the replay mode (0x6f0d8c) the second argument is 0 */
-int ai_Unk4e2bd0(int a, int b)
+int cm_SetViewEnabled(int a, int b)
 {
     if (cm_SkipEvents != 0)
         b = 0;
@@ -14851,7 +15202,7 @@ int cm_UnloadVoiceBank(int a)
 }
 /* 0x4e32b0 */
 
-int ai_Unk4e32b0(int a, int b, int c, int d)
+int cm_PlayVoice(int a, int b, int c, int d)
 {
     if (cm_SkipEvents != 0)
         return 0;
@@ -14910,20 +15261,20 @@ int ai_Unk4e33f0(void)
 }
 /* 0x4e3420, runs the scene for a ticks (frame wait with the flag 0x8000): the end sets the stop flag 0x6f22a0 */
 
-int ai_Unk4e3420(int a)
+int cm_WaitTicks(int a)
 {
     int end;
 
     end = ai_Unk6f0d80;
     if (cm_SkipEvents == 0) {
-        if (sv_RunFrame(ai_Unk4e3420, cm_DialogFrameFlags | 0x8000) != 0) {
+        if (sv_RunFrame(cm_WaitTicks, cm_DialogFrameFlags | 0x8000) != 0) {
             end += a;
             do {
                 if (ai_Unk6f0d80 >= end)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
                 ai_Unk4e37a0(cm_CurrentFight);
-            } while (sv_RunFrame(ai_Unk4e3420, cm_DialogFrameFlags | 0x8000) != 0);
+            } while (sv_RunFrame(cm_WaitTicks, cm_DialogFrameFlags | 0x8000) != 0);
         }
     }
 }
@@ -15316,18 +15667,18 @@ void ai_Unk4e4060(char *m)
         ai_Unk4d8b30();
     } else if (cm_CurrentFight == 0)
         ai_Unk4e36a0(m);
-    win_old = ai_Unk60d368;
+    win_old = cm_TextBox;
     *(int *)(m + 0x2c) = d2_OpenForm(m[8] == 2 ? "cutscenes\\prozess_main" : (m[0x26] & 0x20) ? "cutscenes\\announcement_cinemascope" : "cutscenes\\announcement", 0, 0);
-    ai_Unk60d368 = *(int *)(m + 0x2c);
-    ((void (*)(int, int))d2_PlaceMainWindow)(ai_Unk60d368, 3);
+    cm_TextBox = *(int *)(m + 0x2c);
+    ((void (*)(int, int))d2_PlaceMainWindow)(cm_TextBox, 3);
     if (cm_SkipEvents != 0)
-        d2_SetViewEnabled(ai_Unk60d368, 0);
+        d2_SetViewEnabled(cm_TextBox, 0);
     cut_RandSeed(*(int *)(m + 0x78));
     sprintf(buf, "Exec Cutscene(Mainfunc) <Type = %i>", (unsigned char)m[8]);
     cm_CurrentFight = (int *)m;
     ((void (*)())ai_Unk92c500[(unsigned char)m[8] * 5])(m);
     d2_CloseView(*(int *)(m + 0x2c));
-    ai_Unk60d368 = win_old;
+    cm_TextBox = win_old;
     if (cm_SkipEvents == 0) {
         ai_Unk4d8c40();
         ai_Unk631064 = sv_time;
@@ -15899,7 +16250,7 @@ void ai_Unk4e5770(void)
         ai_Unk925520[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
-    ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
+    ai_Unk4e5730(2, (int)cm_RunTrial, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
@@ -16145,7 +16496,7 @@ int ai_Unk60cb64 = -1;  /* 0x60cb64 */
 int ai_Unk60cb68 = -1;  /* 0x60cb68 */
 int cm_DialogFrameFlags = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
 int cm_SceneDuration = 10;  /* 0x60d364 */
-int ai_Unk60d368 = -1;  /* 0x60d368 */
+int cm_TextBox = -1;  /* 0x60d368 */
 int ai_Unk60d36c = -1;  /* 0x60d36c, -1 or the object waited for ( */
 int ai_Unk60d370 = 1;  /* 0x60d370 */
 int ai_Unk60d374 = 1;  /* 0x60d374 */

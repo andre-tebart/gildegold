@@ -828,7 +828,7 @@ extern int ai_Unk60cb64;  /* 0x60cb64 */
 extern int ai_Unk60cb68;  /* 0x60cb68 */
 extern int ai_Unk6f0d64;  /* 0x6f0d64 */
 
-extern int ai_Unk60d368;  /* 0x60d368 */
+extern int cm_TextBox;  /* 0x60d368 */
 void cm_RunFight(struct CMFIGHTREC *a);  /* 0x4d63e0, runs a fight record */
 unsigned int cut_GetRandSeed();  /* 0x4e52c0 */
 void cut_RandSeed();  /* 0x4e52a0 */
@@ -949,7 +949,7 @@ extern int ai_Unk6f0d94;  /* 0x6f0d94 */
 extern int ai_Unk92bca4;  /* 0x92bca4 */
 extern unsigned char ai_Unk6f0da8[];  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
 int ai_Unk4e50e0();  /* 0x4e50e0 */
-int ai_Unk4e3420();  /* 0x4e3420 */
+int cm_WaitTicks();  /* 0x4e3420 */
 void ai_Unk4de4b0(float a, char *o);  /* 0x4de4b0 */
 int ai_Unk4de530(char *c, int dmg);  /* 0x4de530 */
 void ai_Unk4de900(char *a, char *b);  /* 0x4de900 */
@@ -967,7 +967,7 @@ void ai_Unk4debe0(char *m);  /* 0x4debe0 */
 int ai_Unk4e36a0();  /* 0x4e36a0 */
 char d3_SetFogSet(unsigned int a, unsigned int b, float t);  /* 0x44a170 */
 int ai_Unk4e2bf0();  /* 0x4e2bf0 */
-int ai_Unk4e32b0();  /* 0x4e32b0 */
+int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int ai_Unk4e2d90();  /* 0x4e2d90 */
 void ai_Unk4ded10(char *m);  /* 0x4ded10 */
@@ -996,7 +996,7 @@ int ai_Unk4e06d0(int *s);  /* 0x4e06d0 */
 int ai_Unk4e3490();  /* 0x4e3490 */
 int ai_Unk4e2cc0();  /* 0x4e2cc0 */
 int cm_LoadVoiceBank();  /* 0x4e3270 */
-int ai_Unk4e32b0();  /* 0x4e32b0 */
+int cm_PlayVoice();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int ai_Unk4e0770(char *m);  /* 0x4e0770 */
 
@@ -1033,7 +1033,7 @@ int ai_PlanRank();  /* 0x4945c0 */
 int gv_CheckSentence();  /* 0x4f4420 */
 void d2_SetObjEnabled(int obj, int on);  /* 0x475e40 */
 extern char *ai_Unk6332b4;  /* 0x6332b4 */
-int ai_Unk4e2bd0();  /* 0x4e2bd0 */
+int cm_SetViewEnabled();  /* 0x4e2bd0 */
 int ai_Unk4e2dc0();  /* 0x4e2dc0 */
 int ai_Unk4e2e00();  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
@@ -1043,7 +1043,7 @@ extern int ai_Unk6f0db8;  /* 0x6f0db8 */
 struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */
 void d3sky_Destroy();  /* 0x45daa0 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
-int ai_Unk4e3420();  /* 0x4e3420 */
+int cm_WaitTicks();  /* 0x4e3420 */
 int ai_Unk4e3750();  /* 0x4e3750 */
 int ai_Unk4e3800();  /* 0x4e3800 */
 int ai_Unk4e37a0();  /* 0x4e37a0 */
@@ -1076,11 +1076,11 @@ int ai_Unk4e19a0(char *m);  /* 0x4e19a0 */
 int gv_GetTableRecord(int i, int *out);  /* 0x4f2720 */
 int gv_CrimeText();  /* 0x4f3580 */
 float gm_Liking();  /* 0x50c550 */
-void unk_Unk4f48f0();  /* 0x4f48f0 */
+void gv_SentenceText();  /* 0x4f48f0 */
 void gv_PassSentence();  /* 0x4f4460 */
-int ai_Unk494830();  /* 0x494830 */
-int ai_Unk494300();  /* 0x494300 */
-int ai_Unk4947a0();  /* 0x4947a0 */
+int ai_WealthRatingHalf();  /* 0x494830 */
+int ai_PlanRollTries();  /* 0x494300 */
+int ai_WealthRating();  /* 0x4947a0 */
 int sb_IsPlaying(struct SBSAMPLE *s);  /* 0x426f20 */
 void msx_StopAmbient(struct MSXTRACK *t);  /* 0x4244b0 */
 

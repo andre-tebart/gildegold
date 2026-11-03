@@ -3185,7 +3185,7 @@ int gv_CrimeText(char *out, CRIME r, int mode)
     return 0;
 }
 /* 0x4f3610, fills out[] with the indexes of the (up to 32) crime records whose state is state; returns their count
-   (eax: ai_Unk4db700 keeps it) */
+   (eax: cm_RunTrial keeps it) */
 
 int gv_FindCrimesByState(int state, int *out)
 {
@@ -4000,7 +4000,7 @@ void gv_PassSentence(AICHAR *c, int a)
 }
 /* 0x4f48f0, the text of a character action a: 1 text 0x1538 (with 0.03 * the 0x50a640 value), 3 text 0x153e (4, the value), otherwise text 0x1535 + 3 * a */
 
-void unk_Unk4f48f0(unsigned short *c, int a, char *out)
+void gv_SentenceText(unsigned short *c, int a, char *out)
 {
     int v;
 

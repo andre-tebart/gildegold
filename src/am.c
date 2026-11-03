@@ -2984,7 +2984,7 @@ int ai_Unk494020(AIPLAN *q)
         return 0;
     if (q->score >= 18.0f)
         return 1;
-    n = ai_Unk4942a0(q);
+    n = ai_PlanLevel(q);
     a = AI_C4(q->c18);
     b = AI_C4(q->c1c);
     c = AI_C4(q->c14);
@@ -3038,27 +3038,27 @@ int ai_Unk4941e0(AIPLAN *q)
 }
 /* 0x4942a0, a level from the score: score / 4, clamped to 2..6 */
 
-int ai_Unk4942a0(AIPLAN *q)
+int ai_PlanLevel(AIPLAN *q)
 {
     return (int)min(max(q->score * 0.25f, 2.0f), 6.0f);
 }
 /* 0x494300, rolls the plan's tries: sets unk48 on success, unk4c to the negated sum */
 
-int ai_Unk494300(AIPLAN *q)
+int ai_PlanRollTries(AIPLAN *q)
 {
     AIREC10 *t;
     float f, lim, scale, acc, v, sum;
     int i;
 
-    q->unk48 = 0;
-    t = ai_Unk4948c0(q->unk38);
-    f = q->unk0c;
+    q->success = 0;
+    t = ai_Unk4948c0(q->instrument);
+    f = q->amount;
     lim = f * 0.33f;
     i = 0;
     acc = 0.0f;
-    for (; i < q->unk3c; i++) {
+    for (; i < q->tries; i++) {
         scale = 0.5f;
-        if (q->unk40 == 0)
+        if (q->answer == 0)
             scale = 1.0f;
         v = cm_RandomFloat() * t->unk0c * scale + t->unk08;
         sum = acc + v;
@@ -3066,19 +3066,19 @@ int ai_Unk494300(AIPLAN *q)
             acc = v + acc;
             if (cm_Random(4))
                 acc = acc * 0.75;
-            q->unk48 = 1;
+            q->success = 1;
             break;
         }
         if (v > lim) {
             acc = acc + lim;
-            q->unk48 = 1;
+            q->success = 1;
             break;
         }
         lim = lim * 0.8f;
         acc = sum;
     }
-    q->unk4c = -acc;
-    return q->unk48;
+    q->penalty = -acc;
+    return q->success;
 }
 /* 0x494410, decides whether a plan between two characters loses against a third */
 
@@ -3087,7 +3087,7 @@ int ai_Unk494410(AIC4 *ch, AIPLAN *q)
     AIC4 *a, *b;
     float x, y, c, d;
 
-    if (q->unk48 != 1 && q->unk08 != 1) {
+    if (q->success != 1 && q->plea != 1) {
         a = AI_C4(q->c18);
         b = AI_C4(q->c14);
         x = gm_Liking(a->id, ch->id, 1) * 0.01f;
@@ -3101,7 +3101,7 @@ int ai_Unk494410(AIC4 *ch, AIPLAN *q)
         c = gm_Mix(a, ch, 4);
         d = gm_Mix(b, ch, 4);
         d = d + q->score * q->score * 0.0025f;
-        if (q->unk44) {
+        if (q->tortured) {
             x = x * 1.1f;
             y = y * 0.9f;
         }
@@ -3198,7 +3198,7 @@ int ai_Unk4946c0(AIC4 *ch, AIPLAN *q)
 }
 /* 0x4947a0, a rating from the wealth of two characters: x / (log10 x + 1) * 0.1 * 32, x at least 10000 */
 
-int ai_Unk4947a0(AIC4 *a, AIC4 *b)
+int ai_WealthRating(AIC4 *a, AIC4 *b)
 {
     int x, y;
     double d;
@@ -3212,7 +3212,7 @@ int ai_Unk4947a0(AIC4 *a, AIC4 *b)
 }
 /* 0x494830, the same with 0.05 */
 
-int ai_Unk494830(AIC4 *a, AIC4 *b)
+int ai_WealthRatingHalf(AIC4 *a, AIC4 *b)
 {
     int x, y;
     double d;

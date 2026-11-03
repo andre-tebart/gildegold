@@ -630,13 +630,13 @@ int ai_Unk494020(AIPLAN *q);                                    /* 0x494020 */
 int ai_Unk4941b0(void);                                         /* 0x4941b0 */
 int ai_Unk4941d0(void);                                         /* 0x4941d0 */
 int ai_Unk4941e0(AIPLAN *q);                                    /* 0x4941e0 */
-int ai_Unk4942a0(AIPLAN *q);                                    /* 0x4942a0 */
-int ai_Unk494300(AIPLAN *q);                                    /* 0x494300 */
+int ai_PlanLevel(AIPLAN *q);                                    /* 0x4942a0 */
+int ai_PlanRollTries(AIPLAN *q);                                    /* 0x494300 */
 int ai_Unk494410(AIC4 *ch, AIPLAN *q);                          /* 0x494410 */
 int ai_PlanRank(AIPLAN *q);                                    /* 0x4945c0 */
 int ai_Unk4946c0(AIC4 *ch, AIPLAN *q);                          /* 0x4946c0 */
-int ai_Unk4947a0(AIC4 *a, AIC4 *b);                             /* 0x4947a0 */
-int ai_Unk494830(AIC4 *a, AIC4 *b);                             /* 0x494830 */
+int ai_WealthRating(AIC4 *a, AIC4 *b);                             /* 0x4947a0 */
+int ai_WealthRatingHalf(AIC4 *a, AIC4 *b);                             /* 0x494830 */
 AIREC10 *ai_Unk4948c0(int key);                                 /* 0x4948c0 */
 void ai_Unk4948f0(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
 int ai_Unk494a30(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
