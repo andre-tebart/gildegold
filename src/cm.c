@@ -1974,7 +1974,7 @@ int cm_SendObjCell(const char *s, int a, int b, const char *s2)
 }
 /* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight) */
 
-void cm_SendCutEntry(int a, void *p)
+int cm_SendCutEntry(int a, void *p)
 {
     G17MSG m;
 
@@ -1985,11 +1985,11 @@ void cm_SendCutEntry(int a, void *p)
     else
         G17_I(m, 0x30) = *cm_CurrentFight;
     memcpy(&m.data[4], p, 0x2c);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5ca0, message 0x51, as 0x4c5c40 */
 
-void ai_Unk4c5ca0(int a, void *p)
+int cm_SendCutEntryUpdate(int a, void *p)
 {
     G17MSG m;
 
@@ -2000,7 +2000,7 @@ void ai_Unk4c5ca0(int a, void *p)
     else
         G17_I(m, 0x30) = *cm_CurrentFight;
     memcpy(&m.data[4], p, 0x2c);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5d00, message 0x52 */
 
@@ -8397,6 +8397,7 @@ typedef struct CMFIGHTREC {
 } CMFIGHTREC;
 #define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
 #define cm_FightAttackerC (*(AICHAR **)&cm_FightAttacker)  /* 0x6f0cec, cm_FightAttacker (cm.h: int) as the character it points to */
+#define cm_FightDefenderC (*(AICHAR **)&cm_FightDefender)  /* 0x6f0ce8, cm_FightDefender (cm.h: int) as the character it points to */
 
 /* 0x4d0fa0, sets up the fight scene for the fight record rec: the scenario "Kampfszenario_<place>.ed3" by the flags or
    the type of the defender's building (cm_LoadEventScene; a robbers' camp gets a 15 cells wide border), the fight
@@ -11140,383 +11141,417 @@ int cm_Attack(CMCUTINFO *rec, AICHAR *c, AICHAR *g)
     return cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
 }
 
-#define G21_BC0 ((int (*)(const char *, int, int, const char *))cm_SendObjCell)
-#define G21_C40 ((int (*)(int, void *))cm_SendCutEntry)
-#define G21_CA0 ((int (*)(int, void *))ai_Unk4c5ca0)
-#define G21_DC0 ((int (*)(char *, int, void *))cm_SendFightCommand)
-#define G21_CH(o) (*(char **)((o) + 0x184))
-#define G21_POS(o) (*(char **)(G21_CH(o) + 0x34) + 0x4c)
 
-/* 0x4d76a0, the fight commands of one fighter record: 16 slots of 0x2c bytes at rec + 0x94 (kind, state, request, ...); each kind
-   (1 walk, 2 attack, 3 .., 4 follow, 5 stand, 6 flee / goods, 7, 8) sends its messages. rough draft from the disassembly */
-void ai_Unk4d76a0(int *rec)
+/* 0x4d76a0, runs the orders of the fighters of the cutscene record rec (its 16 entries; until the fight has a winner):
+   an entry whose last order message went out (orderSlot 1 or no longer pending) takes its next step by its state:
+   5 stop (command 7), 1 / 7 walk to a cell ("cmb_<netId>" placed near it, command 6 on arrival), 2 attack the fighter
+   stateArg (in range the hit is rolled as in cm_Attack, with cm_DefenseFactor for the defender's side; the pot 0x174
+   and the bomb 0x176 have their own ranges; ranged weapons first walk to a free cell in reach; the stunning weapons
+   0x16e / 0x172 step back after a landing blow), 3 walk to a cell and stand (command 1), 6 carry goods: to the
+   dummy (step 0, command 4), to the goods store "dummy_sp_OFF_WARENSAVE" / "dummy_sp_DEF_WARENSAVE" of the side (step
+   1) and back (step 2, command 5), 4 follow the owner of a dummy (command 3, or cm_Attack on an enemy in reach),
+   8 hold (command 6). A finished order sends the entry back to state 0 (cm_SendCutEntry). A dead fighter with a
+   weapon frees its entry and ends the run.
+   @deep Reconstructed against the original in full (0x4d76a0..0x4d88b8, all 8 states): the case order of
+   the source (5, 1, 2, 3, 6, 4, 7, 8), the hit chance times cm_DefenseFactor for the defender's side, the
+   damage without a target 9.0 * n, the AI counter-order with one cm_CharWeaponItem call, the ranged walk
+   with cm_BestCellNear's reach (range / cell size * 0.9), the goods-carry state 6 on the bytes 0x20..0x22
+   (store cell, step) with cm_SendCutEntryUpdate, the four name buffers (0x30 each, frame 0x138 equal), the
+   senders' return values as the order slot (cm_SendCutEntry / cm_SendCutEntryUpdate now return
+   cm_QueueSend's slot). Switch tables equal, ins 1437 vs 1434. Left: allocation and block layout - the
+   loop keeps slot in edx at the top (ours reloads it from [esp+0x68]), the original cross-jumps the
+   identical tails differently (state 2's stop joins state 5's command at 0x4d7789 where ours joins state 5
+   into state 7's tail; the four fcompp of the reach test share one fnstsw/and/jne tail at 0x4d7a34, the
+   cell-distance path and the pot (0x174) block lie out of line after 0x4d7a3f), the damage's fild/fld
+   order in the x != 0 path; the rest regs / slots. (references: M10 at +0x587: our constant 9.0
+   (__real@4022000000000000) where the original's field refers to 0.01 at 0x5ece60 (and 2 more), explained:
+   the M8 / M10 lines are alignment pairings, not other objects: +0x587 pairs our 9.0 multiply of the x ==
+   0 path with the original's 0.01 multiply of the x != 0 path (both paths have both constants, the
+   original lays the 9.0 path out of line at 0x4d7cca); +0x920 / +0x9e8 pair the two pushes of
+   &cm_PickCellZ / &cm_PickCellX of one d3_GetHeightAt call (both sides push Z then X) across a
+   one-instruction shift) */
+void cm_RunCutOrders(CMCUTINFO *rec)
 {
-    char *h = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    int m[11];
-    char buf[48];
-    char *c, *k, *x, *other, *r2, *nm;
-    int *p;
-    int slot, i, n, res, hit, dmg, ix, iz, id, b;
-    float f, q[4];
+    D3SM *h = (D3SM *)d3_DefaultScene->hmap;
+    CMCUTENTRY m;
+    CMCUTENTRY *p;
+    AICHAR *c, *x;
+    AICHAR *tgt = 0;
+    AIWEAPON *k;
+    AIOBJ *item;
+    CMCUTINFO *other;
+    CMCUTENTRY *e;
+    D3OBJECT *o;
+    D3VECTOR4 q;
+    char *nm;
+    char name2[0x30];
+    char name3[0x30];
+    char name1[0x30];
+    char name7[0x30];
+    int slot, i, n, res, b, hit, ix, iz, st, cx, cz;
     unsigned short r;
-    int tmp[3];
+    float py;
 
     for (slot = 0; slot < 16; slot++) {
         if (cm_FightWinner != 0)
             return;
-        p = rec + slot * 11 + 0x25;
-        memcpy(m, p, 0x2c);
-        if (p[1] != 0 && p[0] != -1) {
-            if (p[1] == 5)
-                c = gm_FindChar(0);
-            else
-                c = cm_FindFighter(p[0]);
-            k = cm_CharWeapon(c);
-            if ((c == 0 || c[8] == 0) && k != 0) {
-                p[0] = -1;
-                p[1] = 0;
-                return;
-            }
-            switch (p[1]) {
-            case 1:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    if ((char)p[3] == 0) {
-                        if (cm_FindNearCell(p[4], p[5], &ix, &iz) != 0) {
-                            sprintf(buf, "cmb_%i", *(int *)(c + 4));
-                            ((char *)p)[0xc] = 1;
-                            cm_SendFightCommand(c, 6, m);
-                            res = G21_BC0(buf, ix, iz, 0);
-                            goto done;
-                        }
-                    } else {
-                        d3sm_GetVertexI(h, p[4], p[5], q);
-                        if (d3_VecEqual(q, (float *)G21_POS(c), 30.0f) != 0) {
-                            m[0] = *(int *)(c + 4);
-                            m[1] = 0;
-                            cm_SendFightCommand(c, 6, m);
-                            goto send;
-                        }
-                    }
-                }
+        p = &rec->entries[slot];
+        if (p != 0)
+            m = *p;
+        if (p->state == 0 || p->charId == -1)
+            continue;
+        if (p->state == 5)
+            c = (AICHAR *)gm_FindChar(p->charId);
+        else
+            c = (AICHAR *)cm_FindFighter(p->charId);
+        k = (AIWEAPON *)cm_CharWeapon((char *)c);
+        if ((c == 0 || c->health == 0) && k != 0) {
+            p->charId = -1;
+            p->state = 0;
+            return;
+        }
+        switch (p->state) {
+        case 5:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
                 break;
-            case 2:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    x = cm_FindFighter(p[4]);
-                    if (x != 0 && (x[8] == 0 || *(int *)(*(char **)(G21_CH(x) + 0x34) + 0x218) == 1 || c == 0 || c[8] == 0)) {
-                        m[0] = *(int *)(c + 4);
-                        id = 6;
-                        goto stop;
-                    }
-                    if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && (other = cm_CharWeaponItem(c)) != 0 && *(int *)(other + 0x20) < 1) {
-                        m[0] = *(int *)(c + 4);
-                        m[1] = 0;
-                        res = G21_C40(rec[4], m);
-                        goto done;
-                    }
-                    b = 1;
-                    if (*(int *)k == 0x174) {
-                        b = 0;
-                        if (((char *)p)[0x1d] == 0 && (char)p[3] == 0) {
-                            if (cm_FindNearCell(p[5], p[6], &ix, &iz) != 0) {
-                                p[5] = ix;
-                                p[6] = iz;
-                                cm_SendObjCell(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                            }
-                            ((char *)p)[0xc] = 1;
-                        } else if (*(int *)(G21_CH(c) + 0x128) == 0 && (char)p[3] != 0) {
-                            d3sm_GetVertexI(h, p[5], p[6], q);
-                            b = d3_VecEqual(q, (float *)G21_POS(c), 120.0f) != 0;
-                        }
+            p->orderSlot = -1;
+            m.state = 0;
+            m.charId = c->netId;
+            cm_SendFightCommand(c, 7, (CMFIGHTSLOT *)&m);
+            res = cm_SendCutEntry(rec->playerId, &m);
+            goto done;
+        case 1:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            if (p->b0c == 0) {
+                if (cm_FindNearCell(p->stateArg, p->x, &ix, &iz) == 0)
+                    break;
+                sprintf(name1, "cmb_%i", c->netId);
+                p->b0c = 1;
+                cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                res = cm_SendObjCell(name1, ix, iz, 0);
+                goto done;
+            }
+            d3sm_GetVertex(h, p->stateArg, p->x, (D3VECTOR *)&q);
+            if (!d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 30.0f))
+                break;
+            m.charId = c->netId;
+            m.state = 0;
+            cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+            res = cm_SendCutEntry(rec->playerId, &m);
+            goto done;
+        case 2:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            x = (AICHAR *)cm_FindFighter(p->stateArg);
+            if (x != 0 && (x->health == 0 || x->scene->obj->type == 1 || c == 0 || c->health == 0)) {
+                m.state = 0;
+                m.charId = c->netId;
+                cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                res = cm_SendCutEntry(rec->playerId, &m);
+                goto done;
+            }
+            if (k->kind == 1 || k->kind == 2) {
+                item = (AIOBJ *)cm_CharWeaponItem((char *)c);
+                if (item != 0 && item->usesLeft <= 0) {
+                    m.charId = c->netId;
+                    m.state = 0;
+                    res = cm_SendCutEntry(rec->playerId, &m);
+                    goto done;
+                }
+            }
+            b = 1;
+            if (k->id != 0x174) {
+                if (k->id == 0x176) {
+                    if (x != 0) {
+                        if (cm_CharObjDistXZ((char *)c, (char *)x->scene->obj) > k->range)
+                            b = 0;
+                        if (p->b0c == 0 && cm_CharObjDistXZ((char *)c, (char *)x->scene->obj) < k->range * 0.1)
+                            b = 0;
                     } else {
-                        if (x == 0)
-                            f = cm_CharCellDistXZ(c, p[5], p[6]);
-                        else
-                            f = cm_CharObjDistXZ(c, *(char **)(G21_CH(x) + 0x34));
-                        if (*(int *)k == 0x176) {
-                            b = f <= *(float *)(k + 0xc);
-                            if ((char)p[3] == 0 && f < *(float *)(k + 0xc) * 0.1f)
-                                b = 0;
-                        } else if (!(f <= *(float *)(k + 0xc)))
+                        if (cm_CharCellDistXZ((char *)c, p->x, p->z) > k->range)
+                            b = 0;
+                        if (p->b0c == 0 && cm_CharCellDistXZ((char *)c, p->x, p->z) < k->range * 0.1)
                             b = 0;
                     }
-                    if ((b != ((char *)p)[0x1d] || *(int *)(G21_CH(c) + 0x128) == 0) && (((char *)p)[0x1d] = b, b != 0)) {
-                        if (*(int *)(k + 0x58) != 2) {
-                            r = util_RandomU(0xff);
-                            if (0xff - (int)((unsigned char)k[4] * 0.01 * (unsigned char)c[0x83]) < (int)r)
-                                hit = 1;
-                            else
-                                hit = 0;
-                        } else
-                            hit = 1;
-                        if (hit != 0) {
-                            n = cm_Random((unsigned char)k[6] - (unsigned char)k[5]) + (unsigned char)k[5];
-                            if (x != 0)
-                                dmg = (int)((double)(unsigned int)n * *(float *)(x + 0x1c) * 0.01);
-                            else
-                                dmg = (int)((double)(unsigned int)n * 9.0);
-                        } else
-                            dmg = 0;
-                        p[8] = hit;
-                        p[9] = dmg;
-                        if (hit != 0 && *(int *)(c + 0x16c) != 0 && ai_InventoryHas(*(int *)(c + 0x16c), 0x2b9) != 0)
-                            p[9] = (int)(p[9] * 1.25f);
-                        if (*(int *)(cm_CutChar + 4) == cm_FightOwner && *(int *)(k + 0x58) == 0 && x != 0) {
-                            other = 0;
-                            n = (unsigned char)cm_FightRecord[0x30];
-                            for (i = 0; i < n; i++) {
-                                if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1 && (char *)rec != cm_CutInfos[i]) {
-                                    other = cm_CutInfos[i];
-                                    break;
-                                }
-                            }
-                            r2 = (char *)cm_CutEntrySlot(other, x);
-                            if ((*(int *)(r2 + 8) == -1 || cm_GetSlotState(*(int *)(r2 + 8)) != 0) &&
-                                (*(int *)(r2 + 8) = -1, *(int *)(r2 + 4) == 0) &&
-                                cm_CharWeaponItem(x) != 0 && *(int *)(cm_CharWeaponItem(x) + 0x20) > 0) {
-                                cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-                                *(int *)(r2 + 8) = cm_OrderAttack(other, x, c, 0, 0);
-                            }
-                        }
+                } else if (x != 0) {
+                    if (cm_CharObjDistXZ((char *)c, (char *)x->scene->obj) > k->range)
+                        b = 0;
+                } else if (cm_CharCellDistXZ((char *)c, p->x, p->z) > k->range)
+                    b = 0;
+            } else {
+                b = 0;
+                if (p->turn == 0 && p->b0c == 0) {
+                    if (cm_FindNearCell(p->x, p->z, &ix, &iz) != 0) {
+                        p->x = ix;
+                        p->z = iz;
+                        cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
                     }
-                    if (*(int *)(k + 0x58) == 0) {
-                        if (((char *)p)[0x1d] == 0) {
-                            if (*(int *)(G21_CH(c) + 0x128) == 0 && (char)p[7] == 0) {
-                                if (d3_GetHeightAt(h, G21_POS(x), &ix, &iz, tmp) == 0)
-                                    break;
-                                p[5] = ix;
-                                p[6] = iz;
-                                sprintf(buf, "cmb_%i", *(int *)(c + 4));
-                                res = G21_BC0(buf, ix, iz, *(char **)(G21_CH(x) + 0x34));
-                                p[2] = res;
-                            }
-                            goto test1d;
-                        }
-                        goto attack;
-                    } else {
-                        if (*(int *)(k + 0x58) == 1 || *(int *)k == 0x176) {
-                            if (((char *)p)[0x1d] != 0)
-                                goto attack;
-                            if (*(int *)(G21_CH(c) + 0x128) == 0 && (char)p[7] == 0) {
-                                if (d3_GetHeightAt(h, G21_POS(c), &q[2], &q[3], tmp) == 0 ||
-                                    (x != 0 && d3_GetHeightAt(h, G21_POS(x), p + 5, p + 6, tmp) == 0))
-                                    break;
-                                if (cm_BestCellNear(c, p[5], p[6], 0, &ix, &iz) != 0) {
-                                    res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                                    p[2] = res;
-                                }
-                            }
-                        }
-test1d:
-                        if (((char *)p)[0x1d] != 0)
-                            goto attack;
-                    }
-                    if ((*(int *)k == 0x16e || *(int *)k == 0x172) && p[8] != 0 &&
-                        d3_GetHeightAt(h, G21_POS(c), &cm_PickCellX, &cm_PickCellZ, tmp) != 0) {
-                        if (cm_BestCellNear(c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
-                            p[2] = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                        m[0] = *(int *)(c + 4);
-                        m[1] = 0;
-                        res = G21_C40(rec[4], m);
-                        goto done;
-                    }
+                    p->b0c = 1;
+                } else if (c->scene->actions == 0 && p->b0c != 0) {
+                    d3sm_GetVertex(h, p->x, p->z, (D3VECTOR *)&q);
+                    b = d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 120.0f) != 0;
                 }
-                break;
-attack:
-                if (*(int *)(G21_CH(c) + 0x128) == 0) {
-                    if (*(int *)(k + 0x58) == 2 && p[8] != 0) {
-                        cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-                        cm_SendFightCommand(c, 2, p);
-                        m[0] = *(int *)(c + 4);
-                        m[1] = 0;
-                        if (d3_GetHeightAt(h, G21_POS(c), &cm_PickCellX, &cm_PickCellZ, tmp) == 0)
-                            break;
-                        if (cm_BestCellNear(c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
-                            p[2] = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                        res = G21_C40(rec[4], m);
-                    } else {
-                        cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
-                        res = G21_DC0(c, 2, p);
-                    }
-                    p[2] = res;
-                }
-                break;
-            case 3:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    if ((char)p[3] == 0 && d3_VecEqual(q, (float *)G21_POS(c), 50.0f) == 0 &&
-                        cm_FindNearCell(p[4], p[5], &ix, &iz) != 0) {
-                        sprintf(buf, "cmb_%i", *(int *)(c + 4));
-                        ((char *)p)[0xc] = 1;
-                        p[2] = G21_DC0(c, 6, m);
-                        p[2] = G21_BC0(buf, ix, iz, 0);
-                    }
-                    d3sm_GetVertexI(h, p[4], p[5], q);
-                    if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
-                        cm_SendFightCommand(c, 1, m);
-                        m[0] = *(int *)(c + 4);
-                        m[1] = 0;
-                        res = G21_C40(rec[4], m);
-                        goto done;
-                    }
-                }
-                break;
-            case 4:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    id = d3_FindObject(0, 0x40, 0, p + 4);
-                    n = 0;
-                    if (id != 0) {
-                        n = *(int *)(id + 0x200);
-                        d3_PointToWorld(id, id + 0x4c, q);
-                        if (n == 0 || (cm_OtherBuilding(c, (char *)n) != 0 &&
-                                       (*(char *)(n + 8) == 0 || d3_VecEqual(q, (float *)G21_POS((char *)n), 49.5f) == 0))) {
-                            if ((char)p[3] == 0 && d3_VecEqual(q, (float *)G21_POS(c), 49.5f) == 0 &&
-                                cm_FindNearCell(p[8], p[9], &ix, &iz) != 0) {
-                                ((char *)p)[0xc] = 1;
-                                p[8] = ix;
-                                p[9] = iz;
-                                cm_SendFightCommand(c, 6, m);
-                                res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                                goto done;
-                            }
-                            if ((char)p[3] == 1 && *(int *)(G21_CH(c) + 0x128) == 0 && d3_VecEqual(q, (float *)G21_POS(c), 49.5f) == 0)
-                                ((char *)p)[0xc] = 0;
-                            else if (d3_VecEqual(q, (float *)G21_POS(c), 49.5f) != 0) {
-                                cm_SendFightCommand(c, 3, m);
-                                m[0] = *(int *)(c + 4);
-                                m[1] = 0;
-                                res = G21_C40(rec[4], m);
-                                goto done;
-                            }
-                            break;
-                        }
-                    }
-                    d3_PointToWorld(id, id + 0x4c, q);
-                    if (cm_OtherBuilding(c, *(char **)(id + 0x200)) != 0 && *(char *)(n + 8) != 0) {
-                        if (d3_VecEqual(q, (float *)G21_POS((char *)n), 49.5f) != 0) {
-                            res = cm_Attack((CMCUTINFO *)rec, (AICHAR *)c, *(AICHAR **)(id + 0x200));
-                            goto done;
-                        }
-                    }
-                    if (*(char *)(n + 8) != 0)
-                        break;
-                    m[0] = *(int *)(c + 4);
-                    m[1] = 0;
-                    res = G21_C40(rec[4], m);
-                    goto done;
-                }
-                break;
-            case 5:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    m[0] = *(int *)(c + 4);
-                    id = 7;
-stop:
-                    m[1] = 0;
-                    cm_SendFightCommand(c, id, m);
-                    res = G21_C40(rec[4], m);
-                    goto done;
-                }
-                break;
-            case 6:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    if (d3_FindObject(0, 0x40, 0, p + 4) == 0) {
-                        cm_SendFightCommand(c, 6, m);
-                        m[0] = *(int *)(c + 4);
-                        m[1] = 0;
-                        p[2] = G21_C40(rec[4], m);
-                    }
-                    n = *(int *)(G21_CH(c) + 0x128);
-                    switch (((char *)p)[0x22]) {
-                    case 0:
-                        if (n == 0) {
-                            ((char *)p)[0xc] = 1;
-                            cm_SendFightCommand(c, 6, m);
-                            if (cm_FindNearCell((char)p[8], ((char *)p)[0x21], &ix, &iz) != 0) {
-                                res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                                goto done;
-                            }
-                        } else {
-                            d3sm_GetVertexI(h, (char)p[8], ((char *)p)[0x21], q);
-                            if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
-                                cm_SendFightCommand(c, 4, m);
-                                ((char *)m)[0x2a] = 1;
-                                res = G21_CA0(rec[4], m);
-                                goto done;
-                            }
-                        }
-                        break;
-                    case 1:
-                        if (n == 0) {
-                            nm = *(int *)(c + 0x16c) == cm_FightAttacker ? "dummy_sp_OFF_WARENSAVE" : "dummy_sp_DEF_WARENSAVE";
-                            id = d3_FindObject(0, 0x100, 0, nm);
-                            d3_PointToWorld(id, id + 0x4c, q);
-                            if (d3_GetHeightAt(h, q, &ix, &iz, tmp) != 0 && cm_FindNearCell(ix, iz, &ix, &iz) != 0) {
-                                ((char *)m)[0x28] = (char)ix;
-                                ((char *)m)[0x29] = (char)iz;
-                                ((char *)m)[0x2a] = 2;
-                                ai_Unk4c5ca0(rec[4], m);
-                                res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
-                                goto done;
-                            }
-                        }
-                        break;
-                    case 2:
-                        d3sm_GetVertexI(h, (char)p[8], ((char *)p)[0x21], q);
-                        if (d3_VecEqual(q, (float *)G21_POS(c), 50.0f) != 0) {
-                            cm_SendFightCommand(c, 5, m);
-                            m[0] = *(int *)(c + 4);
-                            m[1] = 0;
-                            res = G21_C40(rec[4], m);
-                            goto done;
-                        }
-                        break;
-                    }
-                }
-                break;
-            case 7:
-                if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
-                    p[2] = -1;
-                    if ((char)p[3] == 0) {
-                        if (cm_FindNearCell(p[4], p[5], &ix, &iz) != 0) {
-                            sprintf(buf, "cmb_%i", *(int *)(c + 4));
-                            ((char *)p)[0xc] = 1;
-                            cm_SendFightCommand(c, 6, m);
-                            res = G21_BC0(buf, ix, iz, 0);
-                            goto done;
-                        }
-                    } else {
-                        d3sm_GetVertexI(h, p[4], p[5], q);
-                        if (d3_VecEqual(q, (float *)G21_POS(c), 30.0f) != 0) {
-                            m[0] = *(int *)(c + 4);
-                            m[1] = 0;
-                            cm_SendFightCommand(c, 6, m);
-                            res = G21_C40(rec[4], m);
-                            goto done;
-                        }
-                    }
-                }
-                break;
-            case 8:
-                if ((p[2] == 1 || cm_GetSlotState(p[2]) != 0) && (p[2] = -1, (char)p[3] == 0)) {
-                    ((char *)p)[0xc] = 1;
-                    res = G21_DC0(c, 6, m);
-                    goto done;
-                }
-                break;
             }
-            ai_Unk92bec0 += 0x1f;
-            continue;
-send:
-            m[1] = 0;
-            res = G21_C40(rec[4], m);
-done:
-            p[2] = res;
-            ai_Unk92bec0 += 0x1f;
+            if (b != p->turn || c->scene->actions == 0) {
+                p->turn = b;
+                if (b != 0) {
+                    if (k->kind == 2)
+                        hit = 1;
+                    else {
+                        r = util_RandomU(0xff);
+                        if ((AICHAR *)c->bld == cm_FightDefenderC)
+                            st = (int)(k->accuracy * 0.01 * c->sk83 * cm_DefenseFactor);
+                        else
+                            st = (int)(k->accuracy * 0.01 * c->sk83);
+                        hit = r > 0xff - st;
+                    }
+                    if (hit != 0) {
+                        n = cm_Random(k->dmgMax - k->dmgMin) + k->dmgMin;
+                        if (x != 0)
+                            p->damage = (int)((double)(unsigned int)n * x->f01c * 0.01);
+                        else
+                            p->damage = (int)((double)(unsigned int)n * 9.0);
+                    } else
+                        p->damage = 0;
+                    p->kill = hit;
+                    if (hit != 0 && c->bld != 0 && ai_InventoryHas(c->bld, 0x2b9) != 0)
+                        p->damage = (int)(p->damage * 1.25f);
+                    if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && k->kind == 0 && x != 0) {
+                        other = 0;
+                        n = cm_FightRecordT->nChars;
+                        for (i = 0; i < n; i++) {
+                            if (cm_FightRecordT->charIds[i] != -1 && rec != &cm_CutInfosT[i]) {
+                                other = &cm_CutInfosT[i];
+                                break;
+                            }
+                        }
+                        e = (CMCUTENTRY *)cm_CutEntrySlot((char *)other, (char *)x);
+                        if (e->orderSlot == -1 || cm_GetSlotState(e->orderSlot) != 0) {
+                            st = e->state;
+                            e->orderSlot = -1;
+                            if (st == 0) {
+                                item = (AIOBJ *)cm_CharWeaponItem((char *)x);
+                                if (item != 0 && item->usesLeft > 0) {
+                                    cm_SendSetField(c->netId, 0x1c8, 4, 0x20000000, 0);
+                                    e->orderSlot = cm_OrderAttack((char *)other, (char *)x, (char *)c, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (k->kind == 0) {
+                if (p->turn != 0)
+                    goto strike;
+                if (c->scene->actions == 0 && p->held == 0) {
+                    if (!d3_GetHeightAt(h, &x->scene->obj->pos, &ix, &iz, &py))
+                        break;
+                    p->x = ix;
+                    p->z = iz;
+                    sprintf(name2, "cmb_%i", c->netId);
+                    p->orderSlot = cm_SendObjCell(name2, ix, iz, x->scene->obj->name);
+                }
+            } else if (k->kind == 1 || k->id == 0x176) {
+                if (p->turn != 0)
+                    goto strike;
+                if (c->scene->actions == 0 && p->held == 0) {
+                    if (!d3_GetHeightAt(h, &c->scene->obj->pos, &cx, &cz, &py))
+                        break;
+                    if (x != 0 && !d3_GetHeightAt(h, &x->scene->obj->pos, &p->x, &p->z, &py))
+                        break;
+                    if (cm_BestCellNear((char *)c, p->x, p->z, (int)(k->range / h->cell.x * 0.9), &ix, &iz) != 0)
+                        p->orderSlot = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+                }
+            }
+            if (p->turn != 0) {
+            strike:
+                if (c->scene->actions == 0) {
+                    if (k->kind == 2 && p->kill != 0) {
+                        cm_SendSetField(c->netId, 0x1c8, 4, 0x20000000, 0);
+                        cm_SendFightCommand(c, 2, (CMFIGHTSLOT *)p);
+                        m.charId = c->netId;
+                        m.state = 0;
+                        if (!d3_GetHeightAt(h, &c->scene->obj->pos, &cm_PickCellX, &cm_PickCellZ, &py))
+                            break;
+                        if (cm_BestCellNear((char *)c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
+                            p->orderSlot = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+                        p->orderSlot = cm_SendCutEntry(rec->playerId, &m);
+                    } else {
+                        cm_SendSetField(c->netId, 0x1c8, 4, 0x20000000, 0);
+                        p->orderSlot = cm_SendFightCommand(c, 2, (CMFIGHTSLOT *)p);
+                    }
+                }
+            }
+            if ((k->id == 0x16e || k->id == 0x172) && p->kill != 0) {
+                if (!d3_GetHeightAt(h, &c->scene->obj->pos, &cm_PickCellX, &cm_PickCellZ, &py))
+                    break;
+                if (cm_BestCellNear((char *)c, cm_PickCellX, cm_PickCellZ, 0xc, &ix, &iz) != 0)
+                    p->orderSlot = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+                m.charId = c->netId;
+                m.state = 0;
+                res = cm_SendCutEntry(rec->playerId, &m);
+                goto done;
+            }
+            break;
+        case 3:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            if (p->b0c == 0 && !d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 50.0f) &&
+                cm_FindNearCell(p->stateArg, p->x, &ix, &iz) != 0) {
+                sprintf(name3, "cmb_%i", c->netId);
+                p->b0c = 1;
+                p->orderSlot = cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                p->orderSlot = cm_SendObjCell(name3, ix, iz, 0);
+            }
+            d3sm_GetVertex(h, p->stateArg, p->x, (D3VECTOR *)&q);
+            if (!d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 50.0f))
+                break;
+            cm_SendFightCommand(c, 1, (CMFIGHTSLOT *)&m);
+            m.state = 0;
+            m.charId = c->netId;
+            res = cm_SendCutEntry(rec->playerId, &m);
+            goto done;
+        case 6:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            if (d3_FindObject(0, 0x40, 0, p->dummy) == 0) {
+                cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                m.charId = c->netId;
+                m.state = 0;
+                p->orderSlot = cm_SendCutEntry(rec->playerId, &m);
+            }
+            if (p->storeStep == 0) {
+                if (c->scene->actions == 0) {
+                    p->b0c = 1;
+                    cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                    if (cm_FindNearCell(p->storeX, p->storeZ, &ix, &iz) == 0)
+                        break;
+                    res = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+                    goto done;
+                }
+                d3sm_GetVertex(h, p->storeX, p->storeZ, (D3VECTOR *)&q);
+                if (!d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 50.0f))
+                    break;
+                cm_SendFightCommand(c, 4, (CMFIGHTSLOT *)&m);
+                m.storeStep = 1;
+                res = cm_SendCutEntryUpdate(rec->playerId, &m);
+                goto done;
+            } else if (p->storeStep == 1) {
+                if (c->scene->actions != 0)
+                    break;
+                if ((AICHAR *)c->bld == cm_FightAttackerC)
+                    nm = "dummy_sp_OFF_WARENSAVE";
+                else
+                    nm = "dummy_sp_DEF_WARENSAVE";
+                o = d3_FindObject(0, 0x100, 0, nm);
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&q);
+                if (!d3_GetHeightAt(h, (D3VECTOR *)&q, &ix, &iz, &py))
+                    break;
+                if (cm_FindNearCell(ix, iz, &ix, &iz) == 0)
+                    break;
+                m.storeX = ix;
+                m.storeZ = iz;
+                m.storeStep = 2;
+                cm_SendCutEntryUpdate(rec->playerId, &m);
+                res = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+                goto done;
+            } else if (p->storeStep == 2) {
+                d3sm_GetVertex(h, p->storeX, p->storeZ, (D3VECTOR *)&q);
+                if (!d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 50.0f))
+                    break;
+                cm_SendFightCommand(c, 5, (CMFIGHTSLOT *)&m);
+                m.charId = c->netId;
+                m.state = 0;
+                res = cm_SendCutEntry(rec->playerId, &m);
+                goto done;
+            }
+            break;
+        case 4:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            o = d3_FindObject(0, 0x40, 0, p->dummy);
+            if (o != 0) {
+                tgt = (AICHAR *)o->owner;
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&q);
+                if (tgt == 0 || (cm_OtherBuilding((char *)c, (char *)tgt) != 0 &&
+                                 (tgt->health == 0 || !d3_VecEqual((D3VECTOR *)&q, &tgt->scene->obj->pos, 49.5f)))) {
+                    if (p->b0c == 0 && !d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 49.5f) &&
+                        cm_FindNearCell(p->cellX, p->cellZ, &ix, &iz) != 0) {
+                        p->b0c = 1;
+                        p->cellX = ix;
+                        p->cellZ = iz;
+                        cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                        res = cm_SendObjCell(c->scene->obj->name, ix, iz, 0);
+                        goto done;
+                    }
+                    if (p->b0c == 1 && c->scene->actions == 0 &&
+                        !d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 49.5f)) {
+                        p->b0c = 0;
+                        break;
+                    }
+                    if (!d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 49.5f))
+                        break;
+                    cm_SendFightCommand(c, 3, (CMFIGHTSLOT *)&m);
+                    m.state = 0;
+                    m.charId = c->netId;
+                    res = cm_SendCutEntry(rec->playerId, &m);
+                    goto done;
+                }
+            }
+            d3_PointToWorld(o, &o->pos, (D3VECTOR *)&q);
+            if (cm_OtherBuilding((char *)c, (char *)o->owner) != 0 && tgt->health > 0 &&
+                d3_VecEqual((D3VECTOR *)&q, &tgt->scene->obj->pos, 49.5f)) {
+                res = cm_Attack(rec, c, (AICHAR *)o->owner);
+                goto done;
+            }
+            if (tgt->health > 0)
+                break;
+            m.charId = c->netId;
+            m.state = 0;
+            res = cm_SendCutEntry(rec->playerId, &m);
+            goto done;
+        case 7:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            if (p->b0c == 0) {
+                if (cm_FindNearCell(p->stateArg, p->x, &ix, &iz) == 0)
+                    break;
+                sprintf(name7, "cmb_%i", c->netId);
+                p->b0c = 1;
+                cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+                res = cm_SendObjCell(name7, ix, iz, 0);
+                goto done;
+            }
+            d3sm_GetVertex(h, p->stateArg, p->x, (D3VECTOR *)&q);
+            if (!d3_VecEqual((D3VECTOR *)&q, &c->scene->obj->pos, 30.0f))
+                break;
+            m.charId = c->netId;
+            m.state = 0;
+            cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+            res = cm_SendCutEntry(rec->playerId, &m);
+            goto done;
+        case 8:
+            if (p->orderSlot != 1 && cm_GetSlotState(p->orderSlot) == 0)
+                break;
+            p->orderSlot = -1;
+            if (p->b0c != 0)
+                break;
+            p->b0c = 1;
+            res = cm_SendFightCommand(c, 6, (CMFIGHTSLOT *)&m);
+            goto done;
         }
+        cm_OrderTicks += 0x1f;
+        continue;
+    done:
+        p->orderSlot = res;
+        cm_OrderTicks += 0x1f;
     }
 }
 /* 0x4d88c0, the fight loop: starts one of two fight tracks, then runs until the fight ends (cm_FightWinner / cm_FightSettled): the pause
@@ -11568,7 +11603,7 @@ void ai_Unk4d88c0(char *a)
                 cm_CheckFightWinner(cm_FightRecordT);
                 for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
                     if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1)
-                        ai_Unk4d76a0((int *)cm_CutInfos[i]);
+                        cm_RunCutOrders(&cm_CutInfosT[i]);
                 }
             }
         }
@@ -15464,7 +15499,7 @@ extern int ai_Unk925510;
 extern int ai_Unk92bca0;
 extern int ai_Unk92bca4;
 extern int ai_Unk92bcc0[128];
-extern int ai_Unk92bec0;
+extern int cm_OrderTicks;
 extern unsigned short ai_Unk92bee0[768];
 extern unsigned int ai_Unk92c4e0;
 extern int ai_Unk92c500[1];
@@ -15710,7 +15745,7 @@ G28REC ai_Unk925520[96] = {0};  /* 0x925520 */
 int ai_Unk92bca0 = 0;  /* 0x92bca0 */
 int ai_Unk92bca4 = 0;  /* 0x92bca4 */
 int ai_Unk92bcc0[128] = {0};  /* 0x92bcc0 */
-int ai_Unk92bec0 = 0;  /* 0x92bec0 */
+int cm_OrderTicks = 0;  /* 0x92bec0 */
 unsigned short ai_Unk92bee0[768] = {0};  /* 0x92bee0 */
 unsigned int ai_Unk92c4e0 = 0;  /* 0x92c4e0, the random seed of the scenes */
 int ai_Unk92c500[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */

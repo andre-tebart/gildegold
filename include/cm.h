@@ -265,8 +265,8 @@ void cm_SendChat(void *p);                                                      
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
 void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
 int cm_SendObjCell(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
-void cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
-void ai_Unk4c5ca0(int a, void *p);                                               /* 0x4c5ca0 */
+int cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
+int cm_SendCutEntryUpdate(int a, void *p);                                               /* 0x4c5ca0 */
 void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
 void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
@@ -862,8 +862,8 @@ struct D3HMAP * ch_GetHMap();  /* 0x402140 */
 int ai_Unk405810();  /* 0x405810 */
 void ch_SetVisible();  /* 0x402480 */
 
-extern int ai_Unk92bec0;  /* 0x92bec0 */
-void ai_Unk4d76a0(int *rec);  /* 0x4d76a0 */
+extern int cm_OrderTicks;  /* 0x92bec0 */
+void cm_RunCutOrders(CMCUTINFO *rec);  /* 0x4d76a0 */
 
 extern int ai_Unk6f0ce4;  /* 0x6f0ce4, fight paused */
 

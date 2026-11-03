@@ -113,7 +113,7 @@ typedef struct G17GEBMSG {              /* 0x25 bytes, the data of message 0x4c 
     int rot[3];                         /* 0x19, the rotation (d3_SetObjectRot) */
 } G17GEBMSG;
 
-typedef struct CMFIGHTSLOT {            /* 0x2c bytes, a fighter slot of a fight record (16 at its +0x94, ai_Unk4d76a0) */
+typedef struct CMFIGHTSLOT {            /* 0x2c bytes, a fighter slot of a fight record (16 at its +0x94, cm_RunCutOrders) */
     int id;                             /* 0x00, the fighter's id (AICHAR.netId), -1: free */
     int active;                         /* 0x04 */
     char pad08[8];
@@ -249,18 +249,41 @@ typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a 
                                            result), -1: none; cm_GetSlotState tells whether it is still pending */
     unsigned char b0c;                  /* 0x0c, cleared in the record itself before an order copies it (cm_OrderAttack) */
     char pad0d[3];
-    int stateArg;                       /* 0x10, in state 2 message 0x51 also has to match it; in state 2 the netId of
+    union {
+        struct {
+            int stateArg;               /* 0x10, in state 2 message 0x51 also has to match it; in state 2 the netId of
                                            the partner the fighter turns towards (cm_UpdateSceneChars), 0 for an
-                                           attack on a ground cell (cm_OrderAttack) */
-    int x;                              /* 0x14, in state 2 the ground cell attacked (cm_OrderAttack: weapon kinds 0x15e .. 0x176) */
-    int z;                              /* 0x18 */
+                                           attack on a ground cell (cm_OrderAttack); in states 1 / 3 / 7 with x the
+                                           cell walked to (cm_RunCutOrders) */
+            int x;                      /* 0x14, in state 2 the ground cell attacked (cm_OrderAttack: weapon kinds 0x15e .. 0x176) */
+            int z;                      /* 0x18 */
+        };
+        char dummy[0xc];                /* 0x10, in states 4 / 6 the name of the dummy object gone to (cm_RunCutOrders) */
+    };
     unsigned char held;                 /* 0x1c, cm_OrderAttack sets it for the formation types 1 .. 3 (AICHAR.formation);
                                            reasoned name: the fighter holds its place */
-    unsigned char turn;                 /* 0x1d, in state 2: nonzero, the fighter turns towards stateArg (cm_UpdateSceneChars) */
-    char pad1e[0xe];
+    unsigned char turn;                 /* 0x1d, in state 2: nonzero, the fighter turns towards stateArg (cm_UpdateSceneChars);
+                                           the target is in reach (cm_RunCutOrders) */
+    char pad1e[2];
+    union {
+        struct {                        /* state 2, as CMFIGHTSLOT (the entry is sent as the fight command's slot) */
+            int kill;                   /* 0x20, the blow lands */
+            int damage;                 /* 0x24 */
+            int health;                 /* 0x28 */
+        };
+        struct {                        /* state 4 */
+            int cellX;                  /* 0x20, the cell walked to near the dummy */
+            int cellZ;                  /* 0x24 */
+        };
+        struct {                        /* state 6 */
+            unsigned char storeX;       /* 0x20, the cell of the goods store walked to */
+            unsigned char storeZ;       /* 0x21 */
+            unsigned char storeStep;    /* 0x22, 0 to the dummy, 1 to the store, 2 back */
+        };
+    };
 } CMCUTENTRY;
 
-typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (cm_SendCutEntry / ai_Unk4c5ca0
+typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (cm_SendCutEntry / cm_SendCutEntryUpdate
                                            send, the handlers 0x4cc1b0 / 0x4cc270 store the entry) */
     int playerId;                       /* 0x00, the player whose cutscene record (CMCUTINFO.playerId) it is */
     CMCUTENTRY entry;                   /* 0x04, the character's entry, copied whole */
