@@ -10591,7 +10591,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
         return 0;
     plot = s2->ref;
     strcpy(name, "gb_");
-    strcat(name, ai_BTypesT[s1->ref].pad001);
+    strcat(name, ai_BTypesT[s1->ref].name);
     _strupr(name + 2);
     alt = 0;
     for (;;) {
@@ -10618,7 +10618,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
             break;
         alt = 1;
     }
-    sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->ref].pad001);
+    sprintf(name, "amt_ExecGebaeudeBauen(): Keine Group f\xfcr %s gefunden", ai_BTypesT[s1->ref].name);
     return 0;
 }
 /* 0x4a5540: the first good of building type b->type that b's store does not hold yet while it holds both of its
@@ -10665,7 +10665,7 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
                     break;
                 }
             }
-            if (n >= (unsigned char)t->pad001[0x20] || found)
+            if (n >= (unsigned char)t->name[0x20] || found)
                 continue;
             for (o = gm_Query(b->objList, 1, 4, 6); o != 0; o = gm_QueryNext()) {
                 if (o->id == (*s & 0x7fff)) {
@@ -10675,7 +10675,7 @@ int ai_FindGoodToMake(int *item, int *obj, AIBLD *b, int f)
                     break;
                 }
             }
-            if (n >= (unsigned char)t->pad001[0x20] || found)
+            if (n >= (unsigned char)t->name[0x20] || found)
                 continue;
         }
         if (gm_Query(list, 1, 0, *s & 0x7fff) == 0

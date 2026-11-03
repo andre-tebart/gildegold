@@ -411,9 +411,9 @@ int ord_GetKindRecord();  /* 0x4f8890 */
 int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
-void ai_Unk58feb0(int obj, int target);  /* 0x58feb0 */
+void ai_DropObjectAt(int obj, int target);  /* 0x58feb0 */
 extern const char ai_AxisPair[];  /* 0x5ebb74 */
-extern const double ai_Unk5edc28;  /* 0x5edc28 */
+extern const double cm_EffectRadiusScale;  /* 0x5edc28 */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */
 extern char ai_DataPath[];  /* 0x75dca0 */
 

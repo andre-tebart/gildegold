@@ -2533,7 +2533,7 @@ char unk_Unk5115b0(int s, int r)
 /* 0x511600, in the scene s: for every "ub_FACKEL_" object (0x5115b0 collects them, up to 0x20) the children whose kind is above 4 and whose name contains "rLicht" are handed on (0x449960), then the object is released (0x447190) */
 
 
-void unk_Unk511600(int s)
+void init_StripTorches(int s)
 {
     int list[33];
     int i, c, next;
@@ -2560,7 +2560,7 @@ void unk_Unk511600(int s)
 
 void unk_Unk5116b0(void)
 {
-    d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, unk_Unk511600);
+    d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, init_StripTorches);
     if (d3_QuadTree != 0) {
         d3q_FreeNode((D3QNODE *)d3_QuadTree);
         d3_QuadTree = (int)d3q_Create(0, 0x40, 8, 7);

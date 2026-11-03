@@ -38,7 +38,7 @@ int init_StartNetworkGame(char *name);                                  /* 0x510
 int unk_Unk5112d0(int n);                                               /* 0x5112d0 */
 int init_SetupNewGame(int n);                                           /* 0x511400 */
 char unk_Unk5115b0(int s, int r);                                       /* 0x5115b0 */
-void unk_Unk511600(int s);                                              /* 0x511600 */
+void init_StripTorches(int s);                                              /* 0x511600 */
 void unk_Unk5116b0(void);                                               /* 0x5116b0 */
 char init_TownBuildingHook(char *o);                                    /* 0x511700 */
 void unk_Unk511790(void);                                               /* 0x511790 */

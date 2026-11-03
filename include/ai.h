@@ -143,7 +143,8 @@ typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
 
 typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
     char kind;                          /* 0x000 */
-    char pad001[0x21];
+    char name[0x21];                    /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (cm_ExGebUpgrade,
+                                           amt_ExecGebaeudeBauen), its ground plan "riss_<name>.bmp" (sv.c) */
     unsigned char nslots;               /* 0x022 */
     union {
         unsigned short slot[0x100];     /* 0x023, needed goods (bit 15 = flag) */

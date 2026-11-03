@@ -2824,7 +2824,7 @@ int ai_FindNearestObject(float *ref, int *list)
 /* 0x58feb0, drops an object onto the height of a target (78 B): the position is set (0x43b790) and the object
    dropped (0x412a70); when its y is below the target's +4, the position is set again */
 
-void ai_Unk58feb0(int obj, int target)
+void ai_DropObjectAt(int obj, int target)
 {
     float p[4];
 

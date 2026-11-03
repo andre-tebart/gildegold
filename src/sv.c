@@ -1144,7 +1144,7 @@ void sv_LoadGroundplan(void)
         sv_GroundplanSurf = 0;
     }
     bt = &ai_BTypesT[b->type];
-    sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->pad001);
+    sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->name);
     sv_GroundplanSurf = d2_LoadBmpSurface(name);
     if (sv_GroundplanSurf == 0) {
         cls = gm_BuildingClass(b->type);
@@ -1156,7 +1156,7 @@ void sv_LoadGroundplan(void)
             else if (bt->kind == 8)
                 sprintf(name, "%sbmp\groundplans\riss_tinkturei.bmp", d2_GfxDir);
             else {
-                sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->pad001);
+                sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->name);
                 sv_GroundplanSurf = d2_LoadBmpSurface(name);
                 if (sv_GroundplanSurf != 0)
                     goto loaded;
@@ -1178,7 +1178,7 @@ void sv_LoadGroundplan(void)
         else if (bt->kind == 0x13)
             sprintf(name, "%sbmp\groundplans\riss_stadtwache.bmp", d2_GfxDir);
         else {
-            sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->pad001);
+            sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->name);
             sv_GroundplanSurf = d2_LoadBmpSurface(name);
             if (sv_GroundplanSurf != 0)
                 goto loaded;

@@ -14719,7 +14719,7 @@ int he_Unk56bc50(void *rot, float *pos, unsigned char *type, char *model, int ev
     }
     d3_SetObjectPos(obj2, pos);
     d3_SetObjectRot(obj2, rot);
-    unk_Unk511600(obj2);
+    init_StripTorches(obj2);
     d3t_DropObject(obj2, 1, 0);
     if (*(float *)(obj2 + 0x50) < pos[1]) {
         *(float *)(obj2 + 0x4c) = pos[0];
