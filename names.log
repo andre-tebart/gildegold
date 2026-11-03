@@ -1661,3 +1661,14 @@
 2026-11-03T20:04:59 0x006f0db4 data ai_Unk6f0db4 -> cm_SkyLayer by:main why:the one D3SKYLAYER of cm_SceneSky (d3sky_CreateLayer in cm_CreateSceneSky, d3sky_DeleteLayer in cm_DestroySceneSky)
 2026-11-03T20:06:30 0x004e37a0 data ai_Unk4e37a0 -> cm_ShowPartyTexts by:main why:every used member record of cm_CutInfos (the scene party, m+0x30 members) not yet shown (+0xc) prints its text (+0x14, then cm_TextNewline) in the party's form; called each frame of the scene waits (cm_RunSceneTicksOrClick)
 2026-11-03T21:14:38 0x004e3750 data ai_Unk4e3750 -> cm_PartyAnswered by:main why:1 when no cutscene record of the party's members is still fresh, not valid and with a player; cm_RunSceneParty waits on it
+2026-11-03T21:19:06 0x01441488 data ai_Unk1441488 -> txt_ScenePartySync by:main why:the text cm_RunSceneParty syncs (sv_SyncText) when a scene party starts in the net run (a guess from the use)
+2026-11-03T21:19:06 0x004c4480 func ai_Unk4c4480 -> cm_SetLongMsg by:main why:sets the long message cm_SplitMsg that is sent as parts with the next message
+2026-11-03T21:19:06 0x004c4f50 data ai_Unk4c4f50 -> cm_RequestSendCutInfo by:main why:its trace string "cm_RequestSendCutInfo(): PlayerId:%i Time:%i"
+2026-11-03T21:19:06 0x004e3800 data ai_Unk4e3800 -> cm_PrevPartyMember by:main why:the highest index below n of the party's members that is not -1: the member before n
+2026-11-03T21:19:06 0x006f0d78 data ai_Unk6f0d78 -> cm_PartyTurn by:main why:cm_RunSceneParty sets it to the index of the member whose callback runs
+2026-11-03T21:19:06 0x006f0d80 data ai_Unk6f0d80 -> cm_SceneTicks by:main why:the scene's tick counter (0x4e3210 increments it)
+2026-11-03T21:19:06 0x006f0d84 data ai_Unk6f0d84 -> cm_SceneDeadline by:main why:cm_SceneTicks + cm_SceneDuration when a player's answer is asked; 0x4e3210 compares the ticks with it
+2026-11-03T21:19:06 0x006f0d88 data ai_Unk6f0d88 -> cm_SceneTimedOut by:main why:0x4e3210 sets it to cm_SceneTicks > cm_SceneDeadline
+2026-11-03T21:19:06 0x0092c504 data ai_Unk92c504 -> cm_KindAskPlayer by:main why:the scene kind's callback (+4) that fills the record of a player's character (kind 6), registered by 0x4e5730
+2026-11-03T21:19:06 0x0092c508 data ai_Unk92c508 -> cm_KindAskOther by:main why:the scene kind's callback (+8) for the other members (the computer ones), registered by 0x4e5730
+2026-11-03T21:19:06 0x0092c50c data ai_Unk92c50c -> cm_KindAllAtOnce by:main why:the scene kind's flag (+0xc): 1 cm_RunSceneParty asks all members at once, 0 one after the other

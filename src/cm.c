@@ -120,6 +120,10 @@ extern GAPDATA full_data_92bcb8[];
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
+typedef struct CMCUTTYPEMSG {      /* 0x7c bytes, the data of the system message 0x11 cm_RunSceneParty sends (cm_SendExSysMessage) */
+    int party;                      /* 0x00, the party's id (G28REC.id) */
+    char text[0x78];                /* 0x04, "cut_type:%i" with the scene kind */
+} CMCUTTYPEMSG;
 typedef struct CMGRENADE {          /* 0x10 bytes, one of the 32 thrown bombs of cm_Grenades */
     D3OBJECT *obj;                  /* the object "ob_BOMBE", 0 = a free slot */
     D3ANIM *anim;                   /* 0x04, its flight path (d3anim_CreatePath) */
@@ -1060,7 +1064,7 @@ int cm_ResolveId(int a, int id)
 }
 /* 0x4c4480, sets the long message (sent as parts with the next message); 0: one is pending or too long */
 
-int ai_Unk4c4480(unsigned short len, void *p)
+int cm_SetLongMsg(unsigned short len, void *p)
 {
     if (cm_SplitMsgLen != 0)
         return 0;
@@ -1348,7 +1352,7 @@ int cm_SendLongMessage(char *msg)
     for (i = 0; i < 8; i++)
         if (((int *)(msg + 0x38))[i] == 0)
             ((int *)(msg + 0x38))[i] = -1;
-    ai_Unk4c4480(0xf8, msg);
+    cm_SetLongMsg(0xf8, msg);
     cm_QueueSend(&m);
 }
 /* 0x4c4bc0, message 0x1c with len extra bytes after msg (0xf8 bytes) */
@@ -1364,7 +1368,7 @@ int ai_Unk4c4bc0(char *msg, unsigned int len, void *extra)
     buf = mem_Alloc(len + 0xf8, "tmp");
     memcpy(buf, msg, 0xf8);
     memcpy(buf + 0xf8, extra, len);
-    ai_Unk4c4480(len + 0xf8, buf);
+    cm_SetLongMsg(len + 0xf8, buf);
     mem_Free(buf);
     return cm_QueueSend(&m);
 }
@@ -1381,7 +1385,7 @@ void cm_SendExSetHE(unsigned char k, char *p)
     *(AITIME *)&m.data[0x20] = *(AITIME *)(p + 0x60);
     m.data[0x2e] = k;
     strcpy((char *)&m.data[0x2f], ai_Unk625820[*(unsigned char *)p]);
-    ai_Unk4c4480(0xa0, p + 0xac);
+    cm_SetLongMsg(0xa0, p + 0xac);
     cm_QueueSend(&m);
 }
 /* 0x4c4d40, message 0x1e with the time t; -1: t is not valid (0x4fe210) */
@@ -1468,7 +1472,7 @@ void ai_Unk4c4f10(int a, int b, int c)
 }
 /* 0x4c4f50, "cm_RequestSendCutInfo": message 0x26 */
 
-void ai_Unk4c4f50(int id, int b)
+int cm_RequestSendCutInfo(int id, int b)
 {
     G17MSG m;
     char buf[0x100];
@@ -1477,7 +1481,7 @@ void ai_Unk4c4f50(int id, int b)
     G17_I(m, 0) = id;
     G17_I(m, 4) = b;
     sprintf(buf, "cm_RequestSendCutInfo(): PlayerId:%i Time:%i", id, d3_Time);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c4fa0, message 0x27: p (0x114 bytes) as the long message */
 
@@ -1486,7 +1490,7 @@ int cm_SendNewParty(void *p)
     G17MSG m;
 
     m.type = 0x27;
-    ai_Unk4c4480(0x114, p);
+    cm_SetLongMsg(0x114, p);
     return cm_QueueSend(&m);
 }
 /* 0x4c4fd0, message 0x2a */
@@ -2289,7 +2293,7 @@ void ai_Unk4c62a0(char *o, char *pts)
         d += 0x40;
         pts = next;
     }
-    ai_Unk4c4480(G17_I(m, 4) << 6, buf);
+    cm_SetLongMsg(G17_I(m, 4) << 6, buf);
     cm_QueueSend(&m);
 }
 /* 0x4c6320, message 0x69: o's id (+2) */
@@ -10781,7 +10785,7 @@ void ai_Unk4d6970(char *r)
     int sl[11];
     int *q;
 
-    d2_SetObjValue(ai_Unk60cb64, 0, cm_SceneDuration, ai_Unk6f0d84 - ai_Unk6f0d80 + 1);
+    d2_SetObjValue(ai_Unk60cb64, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
     sv_BorderCameraView();
     cm_UpdatePortraits();
     cm_UpdatePointer();
@@ -10791,7 +10795,7 @@ void ai_Unk4d6970(char *r)
     ai_Unk4ced80(r);
     cm_UpdateBombs();
     cm_UpdateGrenades();
-    if (ai_Unk6f0d88 == 0 && cm_FightWinner == 0) {
+    if (cm_SceneTimedOut == 0 && cm_FightWinner == 0) {
         if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk60cb68) {
             q = cm_CutEntrySlot(r, cm_CutChar);
             memcpy(sl, q, 0x2c);
@@ -15421,8 +15425,8 @@ void cm_LeaveEventScene(void)
 
 int ai_Unk4e3210(void)
 {
-    ai_Unk6f0d88 = ai_Unk6f0d80 > ai_Unk6f0d84;
-    ai_Unk6f0d80++;
+    cm_SceneTimedOut = cm_SceneTicks > cm_SceneDeadline;
+    cm_SceneTicks++;
 }
 /* 0x4e3230, 0x403390 (arguments, if any, are passed on untouched) unless the replay mode is on */
 
@@ -15522,12 +15526,12 @@ int cm_WaitTicks(int a)
 {
     int end;
 
-    end = ai_Unk6f0d80;
+    end = cm_SceneTicks;
     if (cm_SkipEvents == 0) {
         if (sv_RunFrame(cm_WaitTicks, cm_DialogFrameFlags | 0x8000) != 0) {
             end += a;
             do {
-                if (ai_Unk6f0d80 >= end)
+                if (cm_SceneTicks >= end)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
                 cm_ShowPartyTexts(cm_CurrentFight);
@@ -15609,8 +15613,8 @@ void cm_ApplySeason(void)
     init_SetSeasonTextures();
 }
 /* 0x4e36a0, resets the 16 cutscene records cm_CutInfos for the party m: each one fresh 1, ready / valid 0, recvFlag 1, no
-   text, and the member's netId m->members[j] as its playerId (-1 without a party); for a council session (kind 3) the 16
-   entries of each of the first m->used records whose playerId is set are cleared (charId -1, state 0) */
+   text, and the member's netId m->members[j] as its playerId (-1 without a party); for a fight (kind 3) the 16 entries
+   of each of the first m->used records whose playerId is set are freed (charId -1, state 0) */
 
 int cm_ResetCutInfos(char *m)
 {
@@ -15677,7 +15681,7 @@ int cm_ShowPartyTexts(char *m)
 }
 /* 0x4e3800, the highest index below n (1 ..) of the ids m +0x34 that is not -1; 0 without */
 
-int ai_Unk4e3800(char *m, int n)
+int cm_PrevPartyMember(char *m, int n)
 {
     int i;
 
@@ -15686,114 +15690,178 @@ int ai_Unk4e3800(char *m, int n)
             return i;
     return 0;
 }
-/* 0x4e3830, runs the scene party m (+0 / +0xc the owner, +8 the kind of the scene, +0x2c the window, +0x30 count, +0x34 the character ids) for
-   the scene context ctx: the table 0x92c500 (5 ints per kind: +4 the callback of the kind 6 members, +8 the callback of the others, +0xc 1 when
-   the members answer one after the other, 0 when all are asked at once) is walked over the member slots of 0x92cae0 (0x35c bytes each: +0
-   the id, +8 the state, +0x14 the text). With 0x6f23f8 & 8 (the local run) every member's callback runs and its text is shown; with & 4 (the
-   net run) the owner's machine asks the members (0x4c4480 / 0x4c4f50 send the answers, 0x4c3ae0 waits for them with the frame wait 0x52fe00,
-   0x4e37a0 shows the texts, 0x4e3750 tells when nobody is left). The counter 0x6f0d7c grows by one per run. ROUGH: the net run is only sketched */
+/* 0x4e3830, runs the scene party m for the scene context ctx: the party's cutscene records are reset (cm_ResetCutInfos),
+   the owner announces the scene ("cut_type:%i", message 0x11). In the local run (ai_GameFlags & 8) every member's callback
+   of the scene kind (cm_KindAskPlayer for a player's character, kind 6, cm_KindAskOther for the others) fills his record and its
+   text is shown. In the net run (& 4) the records are sent as the long message with cm_RequestSendCutInfo: with the kind's
+   flag cm_KindAllAtOnce 1 the owner answers for the computer members, then each player for his own character, all at once;
+   with 0 the members answer one after the other (a member once the one before him has answered, the owner the computer
+   ones), until cm_PartyAnswered. The counter cm_ScenePartyRuns grows by one per run; the random seed is kept
+   @deep reconstructed from the original's 551 instructions, every block read and compared (the local run,
+   the all-at-once net run with the owner's loop over the computer members and the player's own answer, the
+   one-after-the-other run with its two waits); calls, stores and branches line up one to one (ours 554 /
+   551). Left is allocation: the loop induction variables (i, &members[i], &cm_CutInfosT[i].valid) sit in
+   other registers / slots (the original keeps the k==1 owner loop's counters at esp+0x14/0x10/0x18 and c
+   of the last loop in esp+0x10, ours in ebx), code hunks at +0x1f4 (mov ecx,[esp+0x10] vs [esp+0x14]) and
+   +0x68b (lea eax,[esi*8] vs [ebx*8]); the prover stops on the stack depth at a pushed block (references:
+   M8 at +0x55d: ours refers to cm_SceneDuration (0x60d364), the original's field to 0x6f0d80
+   (cm_SceneTicks) (and 1 more), explained: the two M8 lines are crossings of the alignment, not other
+   objects: at +0x55d both sides load cm_SceneTicks and cm_SceneDuration and add them (ours in the other
+   register order), at +0x6ba both store cm_PartyTurn then cm_CutChar, the alignment pairing one store with
+   the other) */
 
 void cm_RunSceneParty(char *m, int ctx)
 {
-    char msg[0x7c];
-    int saved, i, j, n, k, who, h;
-    char *c, *slot;
-    int *tab;
-    int (*cb)();
+    G28REC *party = (G28REC *)m;
+    CMCUTTYPEMSG msg;
+    CMCUTINFO rec;
+    CMCUTINFO next;
+    int saved, i, me, prev, h;
+    AICHAR *c;
+    int (*cb)(CMCUTINFO *, int);
 
     saved = cut_GetRandSeed();
     cm_ResetCutInfos(m);
     if (ai_GameFlags & 4) {
-        if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0] && cm_SkipEvents == 0) {
-            memset(msg, 0, sizeof(msg));
-            *(int *)msg = *(int *)m;
-            sprintf(msg + 4, "cut_type:%i", (unsigned char)m[8]);
-            cm_SendExSysMessage(0x11, msg);
+        if (party->host == ai_CharsT[ai_PlayerId].netId && cm_SkipEvents == 0) {
+            memset(&msg, 0, sizeof(msg));
+            msg.party = party->id;
+            sprintf(msg.text, "cut_type:%i", party->kind);
+            cm_SendExSysMessage(0x11, &msg);
         }
         if (cm_SkipEvents == 0)
-            sv_SyncText(ai_Unk1441488);
+            sv_SyncText(txt_ScenePartySync);
     }
     sv_SetStatusText(&ch_EmptyName);
     if (ai_GameFlags & 8) {
-        n = *(unsigned char *)(m + 0x30);
-        slot = cm_CutInfos[0];
-        for (i = 0; i < n; i++, slot += 0x35c) {
-            ai_Unk6f0d78 = i;
-            who = *(int *)(m + 0x34 + i * 4);
-            if (who == -1)
+        for (i = 0; i < party->used; i++) {
+            cm_PartyTurn = i;
+            if (party->members[i] == -1)
                 continue;
-            c = (char *)gm_FindChar(who);
-            cm_CutChar = c;
-            if (c == 0) {
-                *(int *)(m + 0x34 + i * 4) = -1;
+            cm_CutChar = (char *)gm_FindChar(party->members[i]);
+            if (cm_CutChar == 0) {
+                party->members[i] = -1;
                 continue;
             }
-            if (c[2] == 6) {
-                ai_Unk6f0d84 = cm_SceneDuration + ai_Unk6f0d80;
-                ai_Unk6f0d88 = 0;
-                ((int (*)())ai_Unk92c504[*(unsigned char *)(m + 8) * 5])(slot, ctx);
+            if (((AICHAR *)cm_CutChar)->kind == 6) {
+                cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
+                cm_SceneTimedOut = 0;
+                ((int (*)(CMCUTINFO *, int))cm_KindAskPlayer[party->kind * 5])(&cm_CutInfosT[i], ctx);
             } else {
-                cb = (int (*)())ai_Unk92c508[*(unsigned char *)(m + 8) * 5];
+                cb = (int (*)(CMCUTINFO *, int))cm_KindAskOther[party->kind * 5];
                 if (cb != 0)
-                    cb(slot, ctx);
+                    cb(&cm_CutInfosT[i], ctx);
             }
-            d2_SetForm(*(int *)(m + 0x2c), 0);
-            io_PrintText(slot + 0x14);
+            d2_SetForm(party->window, 0);
+            io_PrintText(cm_CutInfosT[i].text);
             io_PrintText(&cm_TextNewline);
         }
     } else if (ai_GameFlags & 4) {
-        cm_CutChar = (char *)ai_CharInts[ai_PlayerId] - 4;
-        k = ai_Unk92c50c[*(unsigned char *)(m + 8) * 20];
-        if (k == 1) {
-            if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
-                /* the owner asks every member in turn (the slots of the humans are sent, the computer ones answered at once) */
-                n = *(unsigned char *)(m + 0x30);
-                slot = cm_CutInfos[0];
-                for (i = 0; i < n; i++, slot += 0x35c) {
-                    c = (char *)gm_FindChar(*(int *)slot);
-                    if (c == 0 || c[2] == 6 || c[2] == 7 || *(int *)(slot + 8) != 0)
+        cm_CutChar = (char *)&ai_CharsT[ai_PlayerId];
+        if (cm_KindAllAtOnce[party->kind * 20] == 1) {
+            if (party->host == ai_CharsT[ai_PlayerId].netId) {
+                /* the owner answers for the computer members */
+                for (i = 0; i < party->used; i++) {
+                    c = (AICHAR *)gm_FindChar(party->members[i]);
+                    if (c == 0 || c->kind == 6 || c->kind == 7 || cm_CutInfosT[i].valid != 0)
                         continue;
-                    cm_CutChar = c;
-                    cb = (int (*)())ai_Unk92c508[*(unsigned char *)(m + 8) * 5];
+                    cm_CutChar = (char *)c;
+                    rec = cm_CutInfosT[i];
+                    cb = (int (*)(CMCUTINFO *, int))cm_KindAskOther[party->kind * 5];
                     if (cb != 0)
-                        cb(slot, ctx);
-                    ai_Unk4c4480(0x35c, slot);
-                    ai_Unk4c4f50(*(int *)slot, 0);
-                    h = cm_GetSlotState(*(int *)slot);
-                    while (h == 0)
-                        h = cm_GetSlotState(*(int *)slot) , sv_PumpNet();
-                    cm_ShowPartyTexts(m);
-                    sv_RunFrame(cm_DialogFrameFlags, 0);
-                }
-            } else {
-                /* the others wait for the owner's slots and answer for their own character */
-                n = *(unsigned char *)(m + 0x30);
-                for (j = 0; j < n; j++)
-                    if (*(int *)(cm_CutInfos[j]) == ai_CharInts[ai_PlayerId][0])
-                        break;
-                if (j < n) {
-                    ai_Unk6f0d84 = cm_SceneDuration + ai_Unk6f0d80;
-                    ai_Unk6f0d88 = 0;
-                    ai_Unk4c4480(0x35c, cm_CutInfos[j]);
-                    ai_Unk4c4f50(cm_CutChar != 0, 0);
-                    while (cm_GetSlotState(0) == 0)
+                        cb(&rec, ctx);
+                    rec.valid = 1;
+                    rec.ready = 0;
+                    cm_SetLongMsg(0x35c, &rec);
+                    h = cm_RequestSendCutInfo(c->netId, party->id);
+                    while (cm_GetSlotState(h) == 0)
                         sv_PumpNet();
-                }
-                while (cm_PartyAnswered(m) == 0) {
                     cm_ShowPartyTexts(m);
-                    sv_SetStatusText(&ch_EmptyName);
-                    sv_RunFrame(cm_DialogFrameFlags, 0);
+                    sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
                 }
             }
-        } else if (k == 0) {
-            /* all members answer at once: the owner waits for the slots (state +8 == 1), the others for their own */
-            n = *(unsigned char *)(m + 0x30);
-            cm_ShowPartyTexts(m);
-            sv_RunFrame(cm_DialogFrameFlags, 0);
+            /* each player answers for his own character */
+            cm_CutChar = (char *)&ai_CharsT[ai_PlayerId];
+            for (i = 0; i < party->used; i++) {
+                if (party->members[i] == ((AICHAR *)cm_CutChar)->netId) {
+                    rec = cm_CutInfosT[i];
+                    cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
+                    cm_SceneTimedOut = 0;
+                    ((int (*)(CMCUTINFO *, int))cm_KindAskPlayer[party->kind * 5])(&rec, ctx);
+                    rec.valid = 1;
+                    rec.ready = 0;
+                    cm_SetLongMsg(0x35c, &rec);
+                    h = cm_RequestSendCutInfo(((AICHAR *)cm_CutChar)->netId, party->id);
+                    while (cm_GetSlotState(h) == 0)
+                        sv_PumpNet();
+                    break;
+                }
+            }
             while (cm_PartyAnswered(m) == 0) {
                 cm_ShowPartyTexts(m);
-                sv_RunFrame(cm_DialogFrameFlags, 0);
+                sv_SetStatusText(txt_ScenePartyWait);
+                sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
             }
+        } else if (cm_KindAllAtOnce[party->kind * 20] == 0) {
+            /* one after the other: the player's character answers once the member before him has */
+            me = -1;
+            prev = -1;
+            for (i = 0; i < party->used; i++) {
+                if (party->members[i] == ai_CharsT[ai_PlayerId].netId) {
+                    me = i;
+                    break;
+                }
+            }
+            if (me != -1)
+                prev = cm_PrevPartyMember(m, me);
+            while (cm_PartyAnswered(m) == 0) {
+                cm_ShowPartyTexts(m);
+                sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
+                if (me != -1 && (me == 0 || cm_CutInfosT[prev].valid == 1) && cm_CutInfosT[me].valid == 0) {
+                    cm_PartyTurn = me;
+                    rec = cm_CutInfosT[me];
+                    cm_CutChar = (char *)gm_FindChar(party->members[me]);
+                    cm_ShowPartyTexts(m);
+                    cm_SceneDeadline = cm_SceneTicks + cm_SceneDuration;
+                    cm_SceneTimedOut = 0;
+                    ((int (*)(CMCUTINFO *, int))cm_KindAskPlayer[party->kind * 5])(&rec, ctx);
+                    rec.valid = 1;
+                    rec.ready = 0;
+                    cm_SetLongMsg(0x35c, &rec);
+                    h = cm_RequestSendCutInfo(((AICHAR *)cm_CutChar)->netId, party->id);
+                    while (cm_GetSlotState(h) == 0)
+                        sv_PumpNet();
+                    cm_ShowPartyTexts(m);
+                    sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
+                }
+                /* the owner answers for the first computer member whose turn it is */
+                if (party->host == ai_CharsT[ai_PlayerId].netId) {
+                    for (i = 0; i < party->used; i++) {
+                        c = (AICHAR *)gm_FindChar(party->members[i]);
+                        if (c == 0 || c->kind == 6 || c->kind == 7)
+                            continue;
+                        if (i != 0 && cm_CutInfosT[cm_PrevPartyMember(m, i)].valid != 1)
+                            continue;
+                        if (cm_CutInfosT[i].valid != 0)
+                            continue;
+                        cm_PartyTurn = i;
+                        cm_CutChar = (char *)c;
+                        next = cm_CutInfosT[i];
+                        cb = (int (*)(CMCUTINFO *, int))cm_KindAskOther[party->kind * 5];
+                        if (cb != 0)
+                            cb(&next, ctx);
+                        next.valid = 1;
+                        next.ready = 0;
+                        cm_SetLongMsg(0x35c, &next);
+                        h = cm_RequestSendCutInfo(c->netId, party->id);
+                        while (cm_GetSlotState(h) == 0)
+                            sv_PumpNet();
+                        break;
+                    }
+                }
+            }
+            cm_ShowPartyTexts(m);
+            sv_RunFrame(0, cm_DialogFrameFlags | 0x8000);
         }
     }
     cm_ScenePartyRuns = cm_ScenePartyRuns + 1;
@@ -16480,15 +16548,15 @@ int cm_MessageBox(int id, int flags)
     return ret;
 }
 /* 0x4e5730, registers the scene kind: the run function (+0), the callbacks of the members of the kind 6 (+4) and of the others (+8), the check (+0x10) and
-   the flag +0xc (the members answer one after the other) */
+   the flag +0xc (1: cm_RunSceneParty asks the members all at once, 0: one after the other) */
 
 void ai_Unk4e5730(int kind, int run, int cb4, int cb8, int check, char flag)
 {
     ai_Unk92c500[kind * 5] = run;
-    ai_Unk92c504[kind * 5] = cb4;
-    ai_Unk92c508[kind * 5] = cb8;
+    cm_KindAskPlayer[kind * 5] = cb4;
+    cm_KindAskOther[kind * 5] = cb8;
     ai_Unk92c510[kind * 5] = check;
-    ai_Unk92c50c[kind * 20] = flag;
+    cm_KindAllAtOnce[kind * 20] = flag;
 }
 /* 0x4e5770, the init of the scene code: the party records are cleared (id -1) and the scene kinds are registered: 0 the picture show (0x4e0010), 1 the council
    votes (0x4d8e20), 2 the trial (0x4db700), 3 the fight (0x4d63e0), 4 the duel, 5 the execution, 6 the wedding, 7 the birth, 8 the death, 9 the bankruptcy, 10
@@ -16615,9 +16683,9 @@ extern int cm_OrderTicks;
 extern unsigned short ai_Unk92bee0[768];
 extern unsigned int ai_Unk92c4e0;
 extern int ai_Unk92c500[1];
-extern int ai_Unk92c504[1];
-extern int ai_Unk92c508[1];
-extern char ai_Unk92c50c[4];
+extern int cm_KindAskPlayer[1];
+extern int cm_KindAskOther[1];
+extern char cm_KindAllAtOnce[4];
 extern int ai_Unk92c510[60];
 extern char ai_Unk92c600[1152];
 extern int ai_Unk92ca80[16];
@@ -16694,7 +16762,7 @@ extern int cm_PickCellZ;
 /* ai_Unk143e960: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DeathTreeCaption: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_SpeedNames: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk1441488: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_ScenePartySync: view of txt_Ptrs (build/mk_txt_views.py) */
 float ai_FloatZero = 0.0f;  /* 0x5eb788 */
 /* 0x5eb798 / 0x5eb79c are the pooled floats 70.0f / 0.25f (0x428c0000 / 0x3e800000), not a
    double: a 8-byte definition here claims two literals another unit owns. */
@@ -16808,11 +16876,11 @@ int ai_Unk6f0d68 = 0;  /* 0x6f0d68 */
 int ai_Unk6f0d6c = 0;  /* 0x6f0d6c */
 int ai_Unk6f0d70 = 0;  /* 0x6f0d70 */
 char * cm_CutChar = 0;  /* 0x6f0d74 */
-int ai_Unk6f0d78 = 0;  /* 0x6f0d78 */
+int cm_PartyTurn = 0;  /* 0x6f0d78 */
 int cm_ScenePartyRuns = 0;  /* 0x6f0d7c */
-int ai_Unk6f0d80 = 0;  /* 0x6f0d80 */
-int ai_Unk6f0d84 = 0;  /* 0x6f0d84 */
-int ai_Unk6f0d88 = 0;  /* 0x6f0d88 */
+int cm_SceneTicks = 0;  /* 0x6f0d80 */
+int cm_SceneDeadline = 0;  /* 0x6f0d84 */
+int cm_SceneTimedOut = 0;  /* 0x6f0d88 */
 int cm_SkipEvents = 0;  /* 0x6f0d8c */
 int * cm_CurrentFight = 0;  /* 0x6f0d90 */
 int cm_DuelOver = 0;  /* 0x6f0d94 */
@@ -16857,9 +16925,9 @@ int cm_OrderTicks = 0;  /* 0x92bec0 */
 unsigned short ai_Unk92bee0[768] = {0};  /* 0x92bee0 */
 unsigned int ai_Unk92c4e0 = 0;  /* 0x92c4e0, the random seed of the scenes */
 int ai_Unk92c500[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
-int ai_Unk92c504[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
-int ai_Unk92c508[1] = {0};  /* 0x92c508 */
-char ai_Unk92c50c[4] = {0};  /* 0x92c50c */
+int cm_KindAskPlayer[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
+int cm_KindAskOther[1] = {0};  /* 0x92c508 */
+char cm_KindAllAtOnce[4] = {0};  /* 0x92c50c */
 int ai_Unk92c510[60] = {0};  /* 0x92c510, the answer callbacks of the kind table (5 ints per kind) */
 char ai_Unk92c600[1152] = {0};  /* 0x92c600 */
 int ai_Unk92ca80[16] = {0};  /* 0x92ca80 */

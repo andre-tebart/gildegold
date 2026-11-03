@@ -530,7 +530,8 @@ typedef struct G28REC {
     int thing;                          /* 0x14 */
     AITIME time;                        /* 0x18, when it takes place (ai_Time plus some hours) */
     unsigned char flags;                /* 0x26 */
-    char pad27[9];
+    char pad27[5];
+    int window;                         /* 0x2c, the form the local run prints the members' texts in (d2_SetForm) */
     unsigned char used;                 /* 0x30, the number of members[] (ai_Unk4e51b0: at most 16) */
     char pad31[3];
     int members[16];                    /* 0x34, the members' netIds (-1 for one removed, ai_Unk4e5210) */

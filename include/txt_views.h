@@ -183,7 +183,8 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1441358                        (*(unsigned char (*)[112])((char *)txt_Ptrs + 0x07198))  /* 0x1441358 */
 #define txt_SpeedNames                            (*(char * (*)[10])((char *)txt_Ptrs + 0x07208))  /* 0x14413c8 */
 #define ai_DifficultyTexts                       (*(char * (*)[38])((char *)txt_Ptrs + 0x07230))  /* 0x14413f0 */
-#define ai_Unk1441488                            (*(int *)((char *)txt_Ptrs + 0x072c8))  /* 0x1441488 */
+#define txt_ScenePartySync                            (*(int *)((char *)txt_Ptrs + 0x072c8))  /* 0x1441488 */
+#define txt_ScenePartyWait                       (*(char **)((char *)txt_Ptrs + 0x072cc))  /* 0x144148c, the status text while the scene party's members answer (cm_RunSceneParty; a guess from the use) */
 #define init_StatusSendGame                      (*(int *)((char *)txt_Ptrs + 0x072d0))  /* 0x1441490 */
 #define init_StatusReceiveGame                   (*(int *)((char *)txt_Ptrs + 0x072d4))  /* 0x1441494 */
 #define init_StatusSetupGame                     (*(int *)((char *)txt_Ptrs + 0x072d8))  /* 0x1441498 */

@@ -192,7 +192,7 @@ void cm_FreeReceived(G17MSG *m);                                                
 int cm_ExecCommands(void);                                                          /* 0x4c4190, "cm_ExecCommand" */
 int cm_CheckGroup(G17MSG *grp);                                                   /* 0x4c43c0 */
 int cm_ResolveId(int a, int id);                                                 /* 0x4c4450 */
-int ai_Unk4c4480(unsigned short len, void *p);                                   /* 0x4c4480 */
+int cm_SetLongMsg(unsigned short len, void *p);                                   /* 0x4c4480 */
 void cm_SendLoadSize(int v);                                                        /* 0x4c44d0 */
 int cm_SendLoadBlock(void *p);                                                      /* 0x4c4500 */
 void cm_BeginGroup(const char *s);                                                /* 0x4c4540 */
@@ -224,7 +224,7 @@ int cm_SendCrime(void *p);                                                      
 int cm_SendRetireCrime(int a, int b);                                                  /* 0x4c4e90 */
 void cm_SendProofExecuted(int a, int b);                                                 /* 0x4c4ed0 */
 void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */
-void ai_Unk4c4f50(int id, int b);                                                /* 0x4c4f50, "cm_RequestSendCutInfo" */
+int cm_RequestSendCutInfo(int id, int b);                                                 /* 0x4c4f50, "cm_RequestSendCutInfo": its send slot (cm_GetSlotState) */
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 void ai_Unk4c4fd0(int a, int b);                                                 /* 0x4c4fd0 */
 void cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
@@ -812,9 +812,9 @@ extern int cm_PickCellX;  /* 0xfa5f00 */
 extern int cm_PickCellZ;  /* 0xfa5f04 */
 int d2_WinCreateSlider();  /* 0x46bf10 */
 void d2_CenterObj();  /* 0x46c1d0 */
-extern int ai_Unk6f0d84;  /* 0x6f0d84 */
-extern int ai_Unk6f0d80;  /* 0x6f0d80 */
-extern int ai_Unk6f0d88;  /* 0x6f0d88 */
+extern int cm_SceneDeadline;  /* 0x6f0d84 */
+extern int cm_SceneTicks;  /* 0x6f0d80 */
+extern int cm_SceneTimedOut;  /* 0x6f0d88 */
 extern int ai_Unk60cb64;  /* 0x60cb64 */
 extern int ai_Unk60cb68;  /* 0x60cb68 */
 extern int ai_Unk6f0d64;  /* 0x6f0d64 */
@@ -1034,7 +1034,7 @@ void d3sky_Destroy();  /* 0x45daa0 */
 int cm_ShowPartyTexts();  /* 0x4e37a0 */
 int cm_WaitTicks();  /* 0x4e3420 */
 int cm_PartyAnswered();  /* 0x4e3750 */
-int ai_Unk4e3800();  /* 0x4e3800 */
+int cm_PrevPartyMember();  /* 0x4e3800 */
 int cm_ShowPartyTexts();  /* 0x4e37a0 */
 struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale);  /* 0x45da30 */
 /* d3sky_CreateLayer (0x45d880): declared in cm's head after d3.h (its D3TEXFLAGS parameter is passed by value) */
@@ -1096,10 +1096,10 @@ void d3if_Prerender(char map);  /* 0x447860 */
 extern char ai_Unk6f35ca;  /* 0x6f35ca */
 #endif
 
-extern int ai_Unk6f0d78;  /* 0x6f0d78 */
-extern int ai_Unk92c504[];  /* 0x92c504, the scene kind table (5 ints per kind) */
-extern int ai_Unk92c508[];  /* 0x92c508 */
-extern char ai_Unk92c50c[];  /* 0x92c50c */
+extern int cm_PartyTurn;  /* 0x6f0d78 */
+extern int cm_KindAskPlayer[];  /* 0x92c504, the scene kind table (5 ints per kind) */
+extern int cm_KindAskOther[];  /* 0x92c508 */
+extern char cm_KindAllAtOnce[];  /* 0x92c50c */
 extern char cm_TextNewline[];  /* 0x60c6c0 */
 
 
