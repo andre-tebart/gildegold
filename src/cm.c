@@ -10203,19 +10203,19 @@ int ai_Unk4d4540(char *a)
             sv_PopRequest = 1;                                                                           \
     }
 /* the winner takes a share of the loser's money (message 0x4c47e0) and of the goods of ob (80 .. 99 %), the text lines
-   go to ba; the money part v is added to the winner's record afterwards (0x506430, +0x4d of the building) */
+   go to tc; the money part v is added to the winner's record afterwards (0x506430, +0x4d of the building) */
 #define G20_TAKE()                                                                                      \
     ba[0] = ch_EmptyName;                                                                               \
     memset(ba + 1, 0, 0x3ff);                                                                           \
-    txt_Format(ba, 0x11a5, G20_US(G20_DEF), ca);                                                      \
-    ai_Unk4e5470(ba, 0);                                                                                \
+    txt_Format(tc, 0x11a5, G20_US(G20_DEF), ca);                                                      \
+    ai_Unk4e5470(tc, 0);                                                                                \
     ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x2a);                                              \
     if (ob == 0)                                                                                        \
         ob = gm_Query(*(int *)(ca + 0x5d), 2, 6, 0, 0x116);                                         \
     v = gm_GetGoodsValue(cm_FightDefender);                                                                     \
     v = v < 0x9c400 ? v : 0x9c400;                                                                      \
     v = (int)(((double)(unsigned int)cm_Random(0x32) * 0.001 + 0.07) * (v < 0 ? 0 : v));             \
-    txt_Format(ba, "$Z%T$A", v);                                                                      \
+    txt_Format(tc, "$Z%T$A", v);                                                                      \
     cm_SendMoveGoods(*(int *)(G20_DEF + 4), *(int *)(G20_ATT + 4), ai_OwnPlayer, v);                        \
     if (ob != 0 && obj != 0) {                                                                          \
         for (q = gm_Query(*(int *)(ob + 0x14), 1, 5); q != 0; q = (char *)gm_QueryNext()) {         \
@@ -10223,14 +10223,16 @@ int ai_Unk4d4540(char *a)
             if (cnt < 1)                                                                                \
                 cnt = 1;                                                                                \
             sprintf(tmp, "%i %s$A", cnt, G20_NAME(G20_US(q)));                                          \
-            strcat(ba, tmp);                                                                            \
+            strcat(tc, tmp);                                                                            \
             if (G20_ME == cm_FightOwner)                                                                 \
                 G19_4C4880U(*(int *)(obj + 2), *(int *)(ob + 2), G20_US(q), cnt, ai_OwnPlayer, 0);      \
             v = (int)(gm_GoodsPrice(G20_US(q), ai_OwnPlayer) * cnt + v);                                 \
         }                                                                                               \
-    }                                                                                                   \
+    }
+/* the end of the take: the text shown, the money added to the winner's record and the building's */
+#define G20_TAKE_END()      \
     d2_SetForm(win, 1);                                                                                 \
-    io_PrintText(ba);                                                                                   \
+    io_PrintText(tc);                                                                                   \
     q = gm_PlayerRecord(G20_DEF);                                                                          \
     if (q != 0)                                                                                         \
         *(int *)(q + 0x1c) += v;                                                                        \
@@ -10240,15 +10242,15 @@ int ai_Unk4d4540(char *a)
     }
 /* the winner loses face: the text 0x11a6 and a drop of 0x14 - random of the defender's mood (0x50cad0) */
 #define G20_FACE()                                                                                      \
-    ba[0] = ch_EmptyName;                                                                               \
-    memset(ba + 1, 0, 0x3ff);                                                                           \
-    txt_Format(ba, 0x11a6, G20_US(G20_DEF), ca);                                                      \
-    ai_Unk4e5470(ba, 0);                                                                                \
+    tc[0] = ch_EmptyName;                                                                               \
+    memset(tc + 1, 0, 0x3ff);                                                                           \
+    txt_Format(tc, 0x11a6, G20_US(G20_DEF), ca);                                                      \
+    ai_Unk4e5470(tc, 0);                                                                                \
     if (G20_ME == cm_FightOwner)                                                                         \
         gm_ChangeBuildingState(ca, 0x14 - cm_Random(0x14));
 /* nothing taken: the text 0x11a7 and the fight with the tavern keepers' men: every character of the table of 0x770b80
    that is a guard (kinds 10 .. 12) gets 0x4c4b00 */
-#define G20_GUARDS()                                                                                    \
+#define G20_GUARDS(bb)                                                                                    \
     txt_Format(bb, 0x11a7, G20_US(G20_DEF), G20_US(G20_DEF));                                         \
     ai_Unk4e5470(bb, 0);                                                                                \
     for (p = (char *)ai_CharInts - 4; p < (char *)(unsigned)((unsigned)ai_CharInts + 0x653fc); p += 0x21c) {                                  \
@@ -10262,19 +10264,36 @@ int ai_Unk4d4540(char *a)
    sides (0x4d4340), then by the kind of the fight: the loot of the carts (bit 1: money 0x4d4090, goods moved to the
    winner), the destruction of a building (bit 4: the 0x5db cells with the bars, money by 0x4c47e0), or the capture
    of the defeated character (bit 2: texts 0x119f .. 0x11a7 pick one of four outcomes: 1 the building is taken,
-   2 a share of money and goods is taken, 3 the winner loses face, 0 the guards of the town are called). Rough draft. */
+   2 a share of money and goods is taken, 3 the winner loses face, 0 the guards of the town are called). Rough draft.
+   @deep Read against the original in full (0x4d4d70..0x4d60a3). Fixed: frame 0x1124 (ba 0x800, bb, tc
+   0x400, tmp 0x100: alloca_probe now on both sides), TAKE/FACE write tc (the 0x134 buffer), path 1's
+   guards text in ba and the AI branch's in bb, the AI branch tests gm_TitleJob once and picks k = 0 (text
+   0x11a4 only) or rand(3)+1, gm_PlayerFactor gets ai_OwnPlayer, 1.0f is ai_FloatOne, obj = 0 first. The
+   original shares code between branches (path 1 n==3 jumps into the AI branch's FACE at 0x4d5f72, the AI
+   TAKE joins path 1's TAKE tail at 0x4d590d, TAKE and the &4 branch join the &1 pump at 0x4d5402): written
+   as goto face / take_done / pump. Left: the shared pump at 0x4d5402 is unrotated in the original (one
+   sv_RunFrame, back edges jmp 0x4d5407), ours VC6 rotates it whatever the form (while, for(;;), goto loop
+   tried: 6 vs 5 sv_RunFrame); ours keeps total in esi like v so the &4 tail (+0x4d += total) merges with
+   TAKE_END (gm_BuildQuery 7 vs 8) where the original keeps total in a slot; side lives in a slot and edi
+   on our side, the original only edi then one store; the rest regs/slots. ins 1510 vs 1508. (references:
+   M8 at +0xfd5: ours refers to cm_FightAttacker (0x6f0cec), the original's field to 0x6f0ce8
+   (cm_FightDefender), explained: M8 +0xfd5 is the alignment pairing two loads of one cm_SendMoveGoods call
+   whose registers are swapped: both sides push (cm_FightAttacker+4, cm_FightDefender+4, ai_OwnPlayer, v) -
+   ours loads Defender into eax and Attacker into edx, the original Defender into edx and Attacker into
+   ecx) */
 void ai_Unk4d4d70(char *a)
 {
-    char ba[0x400];
+    char ba[0x800];
     char bb[0x400];
+    char tc[0x400];
     char tmp[0x100];
     char *obj, *side, *c, *ca, *ob, *q, *p, *kr;
     int win, i, n, role = 0, v, cnt, total, na, nb, id, k;
     int h, row, col, px, py;
 
+    obj = 0;
     d2_CopyCaption(&ch_EmptyName);
     sv_SetStatusText(&ch_EmptyName);
-    obj = 0;
     if (*(int *)(a + 0x10c) != -1) {
         c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
         obj = gm_Query(*(int *)(c + 0x5d), 2, 6, 0, 0x116);
@@ -10407,6 +10426,7 @@ void ai_Unk4d4d70(char *a)
                 }
             }
         }
+        pump:
         G20_PUMP();
     } else if ((a[0x7c] & 2) && side == G20_DEF && G20_US(side) == ai_PlayerId) {
         ca = gm_BuildQuery(1, 1, *(int *)(a + 0x14));
@@ -10427,19 +10447,21 @@ void ai_Unk4d4d70(char *a)
         if (k == 0x1e || k == 0x20 || k == 0x1f)
             n++;
         if (n == 1) {
-            kr = ai_BTypes + (unsigned char)ca[0] * 0x24d;
-            if (*kr == 4 || *kr == 0x10)
+            k = ai_BTypes[(unsigned char)ca[0] * 0x24d];
+            if (k == 4 || k == 0x10)
                 ai_CountMissionEvent(G20_DEF, 0x1c);
             cm_SendOwnership(*(int *)(ca + 1), *(int *)(G20_DEF + 4), *(int *)(G20_DEF + 4));
             txt_Format(ba, 0x11a4, G20_US(G20_DEF), ca);
             ai_Unk4e5470(ba, 0);
         } else if (n == 2) {
             G20_TAKE();
-            G20_PUMP();
+        take_done:
+            G20_TAKE_END();
+            goto pump;
         } else if (n == 3) {
-            G20_FACE();
+            goto face;
         } else if (n == 0) {
-            G20_GUARDS();
+            G20_GUARDS(ba);
         }
     } else if (a[0x7c] & 4) {
         c = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
@@ -10459,9 +10481,9 @@ void ai_Unk4d4d70(char *a)
                 sv_ValueBar(px, py + 0x3c, (unsigned char)c[0x83], 0x4eb);
                 h = 0;
                 if (c[8] == 0) {
-                    v = (int)((unsigned char)c[0x83] * 0.023809524f + 1.0f);
+                    v = (int)((unsigned char)c[0x83] * 0.023809524f + ai_FloatOne);
                     d2_WinOpenPic(px + 6, py + 6, 0x3b, d2_LastWindow);
-                    h = gm_PlayerFactor(v * 40, d2_LastWindow);
+                    h = gm_PlayerFactor(v * 40, ai_OwnPlayer);
                 }
                 if (side == G20_DEF) {
                     if ((unsigned char)c[8] > 0) {
@@ -10484,26 +10506,23 @@ void ai_Unk4d4d70(char *a)
                 q = gm_BuildQuery(1, 1, *(int *)(a + 0x10c));
                 *(int *)(q + 0x4d) += total;
             }
-            G20_PUMP();
+            goto pump;
         }
     } else if ((a[0x7c] & 2) && side == G20_DEF && G20_DEF[2] != 6 && G20_DEF[2] != 7) {
-        gm_TitleJob(G20_US(G20_DEF), gm_BuildingJob((unsigned char)*kr));
-        k = (unsigned short)util_RandomU(3) + 1;
-        if (!gm_TitleJob(G20_US(G20_DEF), 0) || *kr == 0xd || *kr == 0xc || *kr == 0xb) {
-            if (k == 2) {
-                G20_TAKE();
-                G20_PUMP();
-            } else if (k == 3) {
-                G20_FACE();
-            } else if (k == 1) {
-                G20_GUARDS();
-            } else {
-                txt_Format(ba, 0x11a4, G20_US(G20_DEF), ca);
-                ai_Unk4e5470(ba, 0);
-            }
-        } else {
-            txt_Format(ba, 0x11a4, G20_US(G20_DEF), ca);
-            ai_Unk4e5470(ba, 0);
+        k = 0;
+        if (!gm_TitleJob(G20_US(G20_DEF), gm_BuildingJob((unsigned char)*kr)) || *kr == 0xd || *kr == 0xc || *kr == 0xb)
+            k = (unsigned short)util_RandomU(3) + 1;
+        if (k == 0) {
+            txt_Format(bb, 0x11a4, G20_US(G20_DEF), ca);
+            ai_Unk4e5470(bb, 0);
+        } else if (k == 2) {
+            G20_TAKE();
+            goto take_done;
+        } else if (k == 3) {
+        face:
+            G20_FACE();
+        } else if (k == 1) {
+            G20_GUARDS(bb);
         }
     }
     di_ClearEvents(0x10);
