@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 1ff2d329: f3init.h now declares init_BuildingTextureSetHook as the D3OBJECTCB it is (D3OBJECT *o, void *ctx; the original reads o from the first parameter) instead of (int, unsigned char *, int); d3_engine.c includes f3init.h and only the order of two loads (ebp-4 / ebp-8) flips: a VC6 declaration-set tie-break on a prototype d3_CloneObject never uses, no evidence of its source [waits for: d3_engine.c's head / include set settling (it includes f3init.h only for aliases)]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -2376,17 +2376,17 @@ exe	0x004cd010	cm_ExAlchemistOrder	cm	byte	readable
 exe	0x004cd130	ai_Unk4cd130	cm	byte	draft		
 exe	0x004cd180	ai_Unk4cd180	cm	byte	draft		
 exe	0x004cd1e0	ai_Unk4cd1e0	cm	byte	draft		
-exe	0x004cd220	ai_Unk4cd220	cm	draft	draft		
+exe	0x004cd220	cm_ExSetRoute	cm	shape	readable		
 exe	0x004cd2f0	ai_Unk4cd2f0	cm	byte	draft		
-exe	0x004cd350	ai_Unk4cd350	cm	byte	draft		
-exe	0x004cd380	ai_Unk4cd380	cm	byte	draft		
-exe	0x004cd3c0	ai_Unk4cd3c0	cm	draft	draft		
+exe	0x004cd350	cm_LobbyFreeRecord	cm	byte	draft		
+exe	0x004cd380	cm_LobbyRecord	cm	byte	draft		
+exe	0x004cd3c0	cm_LobbyAddChat	cm	byte	readable		
 exe	0x004cd480	ai_Unk4cd480	cm	shape	draft		
 exe	0x004cd4c0	ai_Unk4cd4c0	cm	byte	draft		
 exe	0x004cd500	cm_LobbyClearChat	cm	byte	draft		
 exe	0x004cd510	cm_LobbyAllReady	cm	shape	draft		
 exe	0x004cd580	ai_Unk4cd580	cm	byte	draft		
-exe	0x004cd5d0	cm_LobbyPlayerList	cm	byte	draft		
+exe	0x004cd5d0	cm_LobbyPlayerList	cm	byte	readable		
 exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	draft		
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	byte	draft		
 exe	0x004cd600	cm_LobbyState	cm	byte	draft		
@@ -2397,19 +2397,19 @@ exe	0x004cd6e0	cm_LobbySendChat	cm	shape	draft
 exe	0x004cd760	cm_LobbyJoin	cm	byte	draft		
 exe	0x004cd7c0	cm_LobbyUpdatePlayer	cm	byte	draft		
 exe	0x004cd820	ai_Unk4cd820	cm	byte	draft		
-exe	0x004cd870	ai_Unk4cd870	cm	draft	draft		
+exe	0x004cd870	cm_ExLobby	cm	byte	readable		
 exe	0x004cd9d0	ai_FindWeaponRecord	cm	byte	draft		
 exe	0x004cda00	ai_Unk4cda00	cm	byte	draft		
 exe	0x004cda50	cm_CharWeapon	cm	byte	draft		
 exe	0x004cdac0	ai_Unk4cdac0	cm	byte	draft		
-exe	0x004cdb20	ai_Unk4cdb20	cm	byte	draft		
-exe	0x004cdb80	ai_Unk4cdb80	cm	draft	draft		
-exe	0x004cdcf0	ai_Unk4cdcf0	cm	draft	draft		
-exe	0x004cde20	cm_UpdateHandObject	cm	draft	draft		
-exe	0x004cdf00	cm_CutEntrySlot	cm	draft	draft		
-exe	0x004cdf80	ai_Unk4cdf80	cm	draft	draft		
-exe	0x004cdfe0	ai_Unk4cdfe0	cm	byte	draft		
-exe	0x004ce040	ai_Unk4ce040	cm	draft	draft		
+exe	0x004cdb20	cm_DiscardWeapons	cm	byte	draft		
+exe	0x004cdb80	cm_FightWeaponLoss	cm	byte	readable		
+exe	0x004cdcf0	cm_FightStrength	cm	byte	readable		
+exe	0x004cde20	cm_UpdateHandObject	cm	byte	readable		
+exe	0x004cdf00	cm_CutEntrySlot	cm	byte	readable		
+exe	0x004cdf80	cm_FightCutEntry	cm	shape	readable		
+exe	0x004cdfe0	cm_CellUsable	cm	byte	draft		
+exe	0x004ce040	cm_FindNearCell	cm	shape	readable		
 exe	0x004ce130	cm_FindFighter	cm	byte	draft		
 exe	0x004ce170	ai_LedSelectBits	cm	byte	draft		
 exe	0x004ce1b0	ai_Unk4ce1b0	cm	draft	draft		
