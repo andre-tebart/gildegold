@@ -45,7 +45,6 @@ extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
-extern GAPDATA full_data_62571c[];
 extern int ai_GameFlags;
 extern GAPDATA full_data_625708[];
 extern GAPDATA full_data_62570c[];
@@ -538,7 +537,7 @@ void he_ShowEventBar(int pl)
 {
     int *p;
 
-    if (U_I((unsigned)&full_data_62571c) != -1) {
+    if (he_BarShown != -1) {
         p = (int *)(unsigned)&full_data_6faa88;
         do {
             if (p[-1] != -1 && *p != -1)
@@ -556,23 +555,23 @@ void he_ShowEventBar(int pl)
         p = (int *)(unsigned)&full_data_6faa84;
         do {
             if (*p == -1) {
-                U_I((unsigned)&full_data_62571c) = he_BarView;
+                he_BarShown = he_BarView;
                 return;
             }
             p += 3;
             he_LastSlot++;
         } while ((int)p < ((unsigned)((unsigned)full_data_6faa84 + 0xbc) + 0x4));
-        U_I((unsigned)&full_data_62571c) = he_BarView;
+        he_BarShown = he_BarView;
         return;
     }
     he_LastSlot = -1;
-    U_I((unsigned)&full_data_62571c) = -1;
+    he_BarShown = -1;
 }
 /* 0x53dad0, sets the state of the event bar panel */
 
 void he_Unk53dad0(int state)
 {
-    if (U_I((unsigned)&full_data_62571c) != -1)
+    if (he_BarShown != -1)
         d2_SetViewEnabled(he_BarView, state);
 }
 
@@ -587,7 +586,7 @@ void he_PickActiveEvent(void)
     char *r;
     int k;
 
-    if (U_I((unsigned)&full_data_62571c) != -1) {
+    if (he_BarShown != -1) {
         cur = (int *)U_I((unsigned)&he_ActiveSlot);
         if (cur != 0 && cur[1] != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x28 + cur[1] * 0x2ec) == 0) {
             if (cur[2] != 0)
@@ -633,7 +632,7 @@ void he_ActivateSlot(int *sl)
 {
     char *r;
 
-    if (U_I((unsigned)&full_data_62571c) != -1) {
+    if (he_BarShown != -1) {
         if (U_I((unsigned)&he_ActiveSlot) != 0) {
             if (((int *)U_I((unsigned)&he_ActiveSlot))[1] != -1)
                 d2_SetObjValue(((int *)U_I((unsigned)&he_ActiveSlot))[1], 0);

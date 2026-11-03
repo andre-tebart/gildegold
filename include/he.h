@@ -143,6 +143,7 @@ int he_HasGraveWork(char *bld, int size, int index);  /* 0x573200, 1 when a work
 int he_Unk553db0(unsigned short *a, int b, int *count);  /* 0x553db0 */
 
 extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_OpenEventSlot), -1 = none; sv_UpdateCityPanel places the bar's end by it */
+extern int he_BarShown;                 /* 0x62571c, he_BarView while the event bar is shown (he_ShowEventBar), -1 = hidden */
 extern int he_BarView;                  /* 0x6faa60, the view "Panel\Event_Leiste" (he_Unk53d930 opens it) */
 
 #endif

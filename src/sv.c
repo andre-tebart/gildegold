@@ -66,7 +66,6 @@ extern int d2_TextDrawnH;
 extern int d2_TextDrawnW;
 extern D2WIN d2_Wins[];
 extern GAPDATA full_data_623e90[];
-extern GAPDATA full_data_62571c[];
 extern GAPDATA full_data_6f2364[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
@@ -4194,7 +4193,7 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         SV_WI(sv_ButtonFamilyTree, 0x1c0) = 3;
         SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
     }
-    if (SV_I((unsigned)&full_data_62571c) >= 0) {
+    if (he_BarShown >= 0) {
         if (he_LastSlot > 3) {
             d2_EnableObject(ai_Unk6238a4, 1);
         } else {
