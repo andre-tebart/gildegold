@@ -5520,8 +5520,8 @@ void ai_Unk596ff0(void)
             d2_SetForm(win, 2);
             if (n < 7) {
                 io_PrintText(0x15bc, U_W((unsigned)&ai_PlayerId), name);
-                c = d2_WinOpenSlider(0x1c, *(short *)((unsigned)&d2_LastWindowPtr + 10) - 0x3c,
-                                 *(short *)((unsigned)&d2_LastWindowPtr + 8) - 0x40, 0, 100, 0x83, 0x42,
+                c = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x3c,
+                                 d2_LastWindowPtr->w - 0x40, 0, 100, 0x83, 0x42,
                                  U_I((unsigned)&d2_LastWindow));
                 d2_SetObjValue(c, 0, 100, (int)total);
             } else {
@@ -6210,7 +6210,7 @@ void ai_Unk598b80(int param_1, int param_2)
                 io_PrintText(0x188e);
             } else {
                 margin = *(short *)((unsigned)&he_Events + 0x119b0);
-                w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) + margin * -2;
+                w = (int)d2_LastWindowPtr->w + margin * -2;
                 for (i = 0; i < n; i++) {
                     p = chars + i * 0xe;
                     p[0xc] = 1;
@@ -6317,7 +6317,7 @@ void ai_Unk598dc0(int param_1, int param_2)
                 io_PrintText(0x188e);
             } else {
                 margin = *(short *)((unsigned)&he_Events + 0x119b0);
-                w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) + margin * -2;
+                w = (int)d2_LastWindowPtr->w + margin * -2;
                 for (i = 0; i < n; i++) {
                     p = chars + i * 0xe;
                     p[0xc] = 1;
@@ -6459,7 +6459,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
             d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
             io_PrintText(0x18a3);
             y = 0x46;
-            w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) / 2;
+            w = (int)d2_LastWindowPtr->w / 2;
             x = (w - *(short *)((unsigned)&he_Events + 0x119b0)) - 0x28;
             for (i = 0; i < 3; i++) {
                 p = items + i * 0xe;
@@ -6572,7 +6572,7 @@ void ai_Unk5996b0(int param_1, int param_2)
             d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
             io_PrintText(0x18a3);
             y = 0x46;
-            w = (int)*(short *)((unsigned)&d2_LastWindowPtr + 8) / 2;
+            w = (int)d2_LastWindowPtr->w / 2;
             x = (w - *(short *)((unsigned)&he_Events + 0x119b0)) - 0x28;
             for (i = 0; i < 3; i++) {
                 p = items + i * 0xe;
@@ -7408,10 +7408,10 @@ void ai_Unk59b160(int param_1)
                 d2_SetForm(win, 2);
                 v = (*(short *)((unsigned)&he_Events + 0x197b2) + 8) * i;
                 list[i * 3] = d2_WinOpenPic(
-                    (*(short *)((unsigned)&d2_LastWindowPtr + 8) - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v, 0x75a,
+                    (d2_LastWindowPtr->w - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v, 0x75a,
                     U_I((unsigned)&d2_LastWindow));
                 list[i * 3 + 1] = d2_CreateChildWindow(
-                    (*(short *)((unsigned)&d2_LastWindowPtr + 8) - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v,
+                    (d2_LastWindowPtr->w - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v,
                     *(short *)((unsigned)&he_Events + 0x197b0), *(short *)((unsigned)&he_Events + 0x197b2), 0x10, U_I((unsigned)&d2_LastWindow));
                 recs[i] = offers[i];
                 list[i * 3 + 2] = offers[i];
@@ -7762,10 +7762,10 @@ void ai_Unk59be90(int *param_1)
         ctl = param_1[i * 7];
         if (ctl != -1) {
             d2_MoveObj(*(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x10 + ctl * 0x2ec),
-                         *(short *)((unsigned)&d2_LastWindowPtr + 6) + (short)i * 0x4c, ctl);
+                         d2_LastWindowPtr->y + (short)i * 0x4c, ctl);
             ctl = param_1[i * 7 + 1];
             d2_MoveObj(*(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x10 + ctl * 0x2ec),
-                         *(short *)((unsigned)&d2_LastWindowPtr + 6) + (short)i * 0x4c + 0x30, ctl);
+                         d2_LastWindowPtr->y + (short)i * 0x4c + 0x30, ctl);
         }
     }
 }
@@ -7800,11 +7800,11 @@ int ai_Unk59c120(int param_1, int *param_2, int param_3, int param_4, char param
                 if (param_2[i * 7 + 3] == 0) {
                     param_2[i * 7 + 3] = *good;
                     d2_SetForm(param_3, param_4);
-                    v = d2_WinOpenInputIcon((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0x30) >> 1, i * 0x4c, *good + 0xdf,
+                    v = d2_WinOpenInputIcon((d2_LastWindowPtr->w - 0x30) >> 1, i * 0x4c, *good + 0xdf,
                                      0x82, U_I((unsigned)&d2_LastWindow));
                     param_2[i * 7] = v;
                     U_I(U_I((unsigned)&d2_Objs) + 0x44 + v * 0x2ec) = 1;
-                    v = d2_CreateWinText((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0xbe) >> 1, i * 0x4c + 0x2e,
+                    v = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x2e,
                                      (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
                     param_2[i * 7 + 1] = v;
                     d2_SetObjFont(param_2[i * 7], 0x54);
@@ -7887,17 +7887,17 @@ void ai_Unk59c450(int param_1, int param_2, int param_3, int param_4)
             return;
         d2_SetForm(param_2, param_3);
         if (param_4 == 0) {
-            v = d2_WinOpenPic((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0x30) >> 1, i * 0x4c, rec[2] + 0xdf,
+            v = d2_WinOpenPic((d2_LastWindowPtr->w - 0x30) >> 1, i * 0x4c, rec[2] + 0xdf,
                              U_I((unsigned)&d2_LastWindow));
             rec[-1] = v;
             U_I(U_I((unsigned)&d2_Objs) + 0x4c + v * 0x2ec) = 1;
         } else {
-            v = d2_WinOpenInputIcon((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0x30) >> 1, y, rec[2] + 0xdf, 0x82,
+            v = d2_WinOpenInputIcon((d2_LastWindowPtr->w - 0x30) >> 1, y, rec[2] + 0xdf, 0x82,
                              U_I((unsigned)&d2_LastWindow));
             rec[-1] = v;
         }
         U_I(U_I((unsigned)&d2_Objs) + 0x44 + rec[-1] * 0x2ec) = 1;
-        v = d2_CreateWinText((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0xbe) >> 1, i * 0x4c + 0x30, (char *)(unsigned)&ch_EmptyName,
+        v = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x30, (char *)(unsigned)&ch_EmptyName,
                          U_I((unsigned)&d2_LastWindow));
         *rec = v;
         txt_Format(text, "%S", U_I((unsigned)&txt_ObjectNames + rec[2] * 8));
@@ -7906,7 +7906,7 @@ void ai_Unk59c450(int param_1, int param_2, int param_3, int param_4)
         d2_SetObjFont(*rec, 0x54);
         U_I(U_I((unsigned)&d2_Objs) + 0x5c + *rec * 0x2ec) = 1;
         *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + *rec * 0x2ec) = 0xbe;
-        v = d2_CreateWinText((*(short *)((unsigned)&d2_LastWindowPtr + 8) - 0xbe) >> 1, i * 0x4c + 0x3f, (char *)(unsigned)&ch_EmptyName,
+        v = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x3f, (char *)(unsigned)&ch_EmptyName,
                          U_I((unsigned)&d2_LastWindow));
         rec[1] = v;
         txt_Format(text, "%s", (char *)(unsigned)&ai_PlayerSlots + *(unsigned char *)(rec + 3) * 0x2f4);
@@ -7996,14 +7996,14 @@ void ai_Unk59c700(int param_1)
     d2_SetForm(win, 0);
     /* ROUGH: the two header texts at the control rectangles (0x473650, +2 / +2) */
     d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x10) -
-                         *(short *)((unsigned)&d2_LastWindowPtr + 4)) + 2,
+                         d2_LastWindowPtr->x) + 2,
                  (short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x16) -
-                         *(short *)((unsigned)&d2_LastWindowPtr + 6) + *(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x12)) + 2,
+                         d2_LastWindowPtr->y + *(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x12)) + 2,
                  (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
     d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x10) -
-                         *(short *)((unsigned)&d2_LastWindowPtr + 4)) + 2,
+                         d2_LastWindowPtr->x) + 2,
                  (short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x16) -
-                         *(short *)((unsigned)&d2_LastWindowPtr + 6) + *(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x12)) + 2,
+                         d2_LastWindowPtr->y + *(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x12)) + 2,
                  (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
     d2_SetForm(win, 1);
     n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
@@ -8315,13 +8315,13 @@ void ai_Unk59d5e0(int param_1)
     ctl[4] = d2_GetWinObj(win, 0, 4);
     d2_SetForm(win, 0);
     /* ROUGH: the two header texts at the control rectangles (0x473650, +2 / +2) */
-    d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x10) - *(short *)((unsigned)&d2_LastWindowPtr + 4)) + 2,
+    d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x10) - d2_LastWindowPtr->x) + 2,
                  (short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x16) -
-                         *(short *)((unsigned)&d2_LastWindowPtr + 6) + *(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x12)) + 2,
+                         d2_LastWindowPtr->y + *(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x12)) + 2,
                  (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
-    d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x10) - *(short *)((unsigned)&d2_LastWindowPtr + 4)) + 2,
+    d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x10) - d2_LastWindowPtr->x) + 2,
                  (short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x16) -
-                         *(short *)((unsigned)&d2_LastWindowPtr + 6) + *(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x12)) + 2,
+                         d2_LastWindowPtr->y + *(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x12)) + 2,
                  (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
     d2_SetForm(win, 1);
     n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
@@ -9445,7 +9445,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                     io_PrintText(0x1a0c);
                 } else {
                     k = 0;
-                    w = *(short *)((unsigned)&d2_LastWindowPtr + 8) + *(short *)((unsigned)&he_Events + 0x119b0) * -2;
+                    w = d2_LastWindowPtr->w + *(short *)((unsigned)&he_Events + 0x119b0) * -2;
                     for (i = 0; i < n; i++) {
                         s = *(short *)((unsigned)&he_Events + 0x119b0);
                         items[i * 0xe + 0xc] = 0;
