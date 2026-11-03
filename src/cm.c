@@ -13491,7 +13491,7 @@ int cm_DuelVariant(int n)
     ai_Unk6f0db0 = ai_Unk6f0db0 + 1;
     return r;
 }
-/* 0x4de640, the pistol shot of a duel (the action ai_Unk4de900 queues: a->shot.shooter shoots at a->shot.target): the hit
+/* 0x4de640, the pistol shot of a duel (the action cm_DuelRound queues: a->shot.shooter shoots at a->shot.target): the hit
    chance gm_GetSkill(shooter, 3) * 0.8 (* 1.5 with the item 0x16f, * 0.66 for the fighter who lost the insult round), on a hit
    the damage 5 + (0..15) when the other won the roll round, else 15 + (0..30) (* 0.75 when the target has the item 0x2b5), added
    to the target's score byte cm_DuelScore[0] / [1] and shown (cm_ShowDamage); the shot sound, then the target sinks
@@ -13553,87 +13553,90 @@ void cm_DuelShotAction(CHACTION *a)
     } else
         cm_DuelOver = 1;
 }
-/* 0x4de900, the intro text of the duel round of the fighter a against b ("_DUELL_INTRO_C2_AUSWAHL_*": kind of the round at +0x94 of the
-   record 0x4e50e0: 2 insult (laestern: the better insult value 0x504ec0(.., 4) + a roll wins, flag 0x6f0daa / 0x6f0dab), 3 a roll against
-   0x504ec0(a, 2) (flag 0x6f0dac / 0x6f0dad), 4 the pistol shot (an object with the callback 0x4de640, a / b in +0x17c / +0x180)). ROUGH */
+/* 0x4de900, one fighter's turn of a duel round, by the round its player chose (CMCUTINFO duel.round): 2 the insult
+   (texts 0x10e8 / 0x10e9 + variant, "gestik/abfaellig"; a's skill 4 + a roll against b's: the win sets a's insult byte
+   cm_DuelScore[2] / [3], texts 0x10f2 .. 0x10f5 by b's kind), 3 a roll against a's skill 2 (the win sets cm_DuelScore[4] /
+   [5], texts 0x10f6 .. 0x10f9), 4 the pistol shot (texts 0x10fa + variant, the action cm_DuelShotAction at b); nothing once
+   the duel is over. side ("A" / "B") is not read */
 
-void ai_Unk4de900(char *a, char *b)
+void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
 {
-    char *rec;
+    CMCUTINFO *rec;
+    CHACTION *act;
     int n;
-    double fa, fb, ra, rb;
+    float fa, fb;
 
     if (cm_DuelOver != 0)
         return;
-    rec = (char *)ai_Unk4e50e0(*(int *)(a + 4));
+    rec = (CMCUTINFO *)cm_CutInfoById(a->netId);
     d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
-    if (rec[0x94] == 2) {
+    switch (rec->duel.round) {
+    case 4:
         d2_SetForm(cm_TextBox, 0);
-        io_PrintText(0x10e8, *(unsigned short *)a);
-        n = cm_DuelVariant(8);
-        io_PrintText(n + 0x10e9);
-        snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_LAESTERN", n);
-        io_PrintText("$N");
-        ch_QueueAnim(*(char **)(a + 0x184), "gestik/abfaellig", 1);
+        n = cm_DuelVariant(7);
+        io_PrintText(n + 0x10fa, a->id);
+        snd_PlayVoice(a->id, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN", n);
         cm_WaitTicks(2);
-        fa = gm_GetSkill(a, 4);
-        fb = gm_GetSkill(b, 4);
-        ra = cm_RandomFloat();
-        rb = cm_RandomFloat();
+        io_PrintText("$N");
+        act = ch_AddActionCBK(a->scene, cm_DuelShotAction, 6, 0x2e, 1);
+        act->shot.target = b;
+        act->shot.shooter = a;
+        strcpy(act->u.name, "kampf/schiessen_pistole");
+        cm_WaitTicks(4);
+        return;
+    case 3:
         d2_SetForm(cm_TextBox, 0);
-        if ((float)(ra + (float)fa) <= rb + (float)fb) {
-            if (b[2] == 6 || b[2] == 7)
-                io_PrintText(0x10f4, *(unsigned short *)b);
+        fa = gm_GetSkill((char *)a, 2);
+        if ((float)cm_RandomFloat() < fa) {
+            if (a->kind == 6 || a->kind == 7)
+                io_PrintText(0x10f6, a->id);
             else
-                io_PrintText(0x10f5, *(unsigned short *)b);
-        } else {
-            if (b[2] == 6 || b[2] == 7)
-                io_PrintText(0x10f2, *(unsigned short *)b);
-            else
-                io_PrintText(0x10f3, *(unsigned short *)b);
-            if ((int)a == cm_DuelLeft)
-                cm_DuelScore[2] = 1;
-            else
-                cm_DuelScore[3] = 1;
-        }
-    } else if (rec[0x94] == 3) {
-        d2_SetForm(cm_TextBox, 0);
-        fa = gm_GetSkill(a, 2);
-        fb = cm_RandomFloat();
-        if ((float)fa <= fb) {
-            if (a[2] == 6 || a[2] == 7)
-                io_PrintText(0x10f8, *(unsigned short *)a);
-            else
-                io_PrintText(0x10f9, *(unsigned short *)a);
-        } else {
-            if (a[2] == 6 || a[2] == 7)
-                io_PrintText(0x10f6, *(unsigned short *)a);
-            else
-                io_PrintText(0x10f7, *(unsigned short *)a);
+                io_PrintText(0x10f7, a->id);
             if ((int)a == cm_DuelLeft)
                 cm_DuelScore[4] = 1;
             else
                 cm_DuelScore[5] = 1;
+        } else {
+            if (a->kind == 6 || a->kind == 7)
+                io_PrintText(0x10f8, a->id);
+            else
+                io_PrintText(0x10f9, a->id);
         }
-    } else if (rec[0x94] == 4) {
-        d2_SetForm(cm_TextBox, 0);
-        n = cm_DuelVariant(7);
-        io_PrintText(n + 0x10fa, *(unsigned short *)a);
-        snd_PlayVoice(*(unsigned short *)a, 0, "_DUELL_INTRO_C2_AUSWAHL_SCHIESSEN", n);
-        cm_WaitTicks(2);
         io_PrintText("$N");
-        n = ch_AddActionCBK(*(char **)(a + 0x184), cm_DuelShotAction, 6, 0x2e, 1);
-        *(char **)(n + 0x17c) = b;
-        *(char **)(n + 0x180) = a;
-        strcpy((char *)n + 0xf0, "kampf/schiessen_pistole");
-        cm_WaitTicks(4);
-        return;
-    } else {
-        cm_WaitTicks(4);
-        return;
+        break;
+    case 2:
+        d2_SetForm(cm_TextBox, 0);
+        io_PrintText(0x10e8, a->id);
+        n = cm_DuelVariant(8);
+        io_PrintText(n + 0x10e9);
+        snd_PlayVoice(a->id, 0, "_DUELL_INTRO_C2_AUSWAHL_LAESTERN", n);
+        io_PrintText("$N");
+        ch_QueueAnim(a->scene, "gestik/abfaellig", 1);
+        cm_WaitTicks(2);
+        fa = gm_GetSkill((char *)a, 4);
+        fb = gm_GetSkill((char *)b, 4);
+        fa = (float)(cm_RandomFloat() + fa);
+        if ((float)(cm_RandomFloat() + fb) < fa) {
+            d2_SetForm(cm_TextBox, 0);
+            if (b->kind == 6 || b->kind == 7)
+                io_PrintText(0x10f2, b->id);
+            else
+                io_PrintText(0x10f3, b->id);
+            if ((int)a == cm_DuelLeft)
+                cm_DuelLeftInsultWon = 1;
+            else
+                cm_DuelScore[3] = 1;
+        } else {
+            d2_SetForm(cm_TextBox, 0);
+            if (b->kind == 6 || b->kind == 7)
+                io_PrintText(0x10f4, b->id);
+            else
+                io_PrintText(0x10f5, b->id);
+        }
+        io_PrintText("$N");
+        break;
     }
-    io_PrintText("$N");
     cm_WaitTicks(4);
 }
 /* 0x4debe0, announces the result of a duel (the message m: +0x34 / +0x38 the duellists, +0xc the owner): the winner is the one with the
@@ -13758,23 +13761,23 @@ void ai_Unk4ded10(char *m)
     io_PrintText("$C");
     snd_PlayVoice(-7, "_DUELL_INTRO_BEGRUESSUNG_RUECKEN", 0, -1);
     cm_RunSceneParty(scene, 0);
-    rec = (char *)ai_Unk4e50e0(*(int *)(ca + 0x10 - 0x10 + 0));
+    rec = (char *)cm_CutInfoById(*(int *)(ca + 0x10 - 0x10 + 0));
     /* the seconds: with the first round of kind 1 each side gets a shot object (callback 0x4de640, "kampf/schiessen_pistole") */
     hita = 0;
     hitb = 0;
     for (i = 0; i < 3 && cm_DuelOver == 0; i++) {
         cm_RunSceneParty(scene, scene);
-        rec = (char *)ai_Unk4e50e0(*(int *)(m + 0x34));
+        rec = (char *)cm_CutInfoById(*(int *)(m + 0x34));
         cm_DuelScore[2] = 0;
         cm_DuelScore[3] = 0;
         cm_DuelScore[4] = 0;
         cm_DuelScore[5] = 0;
         if (rec[0x94] == 2 || rec[0x94] == 3) {
-            ai_Unk4de900(cb, "B");
-            ai_Unk4de900(ca, "A");
+            cm_DuelRound(cb, ca, "B");
+            cm_DuelRound(ca, cb, "A");
         } else {
-            ai_Unk4de900(ca, "A");
-            ai_Unk4de900(cb, "B");
+            cm_DuelRound(ca, cb, "A");
+            cm_DuelRound(cb, ca, "B");
         }
         if ((cm_DuelScore[2] != 0 || cm_DuelScore[4] != 0) && (cm_DuelScore[3] != 0 || cm_DuelScore[5] != 0)) {
             n = cm_Random(9);
@@ -15971,7 +15974,7 @@ int cm_PartyById(int id)
 }
 /* 0x4e50e0, the member slot (0x92cae0, 0x35c bytes; the id at +0x10) with the id */
 
-int ai_Unk4e50e0(int id)
+int cm_CutInfoById(int id)
 {
     int i;
 

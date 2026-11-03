@@ -937,11 +937,11 @@ void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m);  /* 0x4dada0 */
 extern int cm_DuelOver;  /* 0x6f0d94 */
 extern int cm_DuelLeft;  /* 0x92bca4 */
 extern unsigned char cm_DuelScore[];  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
-int ai_Unk4e50e0();  /* 0x4e50e0 */
+int cm_CutInfoById();  /* 0x4e50e0 */
 int cm_WaitTicks();  /* 0x4e3420 */
 void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
 int cm_DuelSinkDown(char *c, int dmg);  /* 0x4de530 */
-void ai_Unk4de900(char *a, char *b);  /* 0x4de900 */
+void cm_DuelRound(struct AICHAR *a, struct AICHAR *b, char *side);  /* 0x4de900 */
 extern int ai_Unk60d370;  /* 0x60d370 */
 extern int ai_Unk6f0db0;  /* 0x6f0db0 */
 extern int ai_Unk92bcc0[];  /* 0x92bcc0 */

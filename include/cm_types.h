@@ -311,6 +311,9 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
             };
             int observer;               /* 0x9c, 1: a present member without a vote (no answer is asked) */
         } session;
+        struct {                        /* 0x94, of a duel (cm_DuelRound, cut_MainDuell) */
+            unsigned char round;        /* 0x94, the round the player chose: 2 insult, 3 roll, 4 pistol shot */
+        } duel;
     };
     char pad354[8];
 } CMCUTINFO;
