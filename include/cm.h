@@ -562,7 +562,7 @@ extern int cm_FightAttacker;  /* 0x6f0cec */
 extern int cm_BombSounds;  /* 0x6f0d14 */
 extern char cm_Grenades[];  /* 0x935a00 */
 
-int ai_Unk4ce830();  /* 0x4ce830 */
+int cm_UpdateGrenades();  /* 0x4ce830 */
 int ai_Unk4ceb70(char *c);  /* 0x4ceb70 */
 void ai_Unk4ceb80(int id);  /* 0x4ceb80 */
 void ai_Unk4cec00();  /* 0x4cec00 */

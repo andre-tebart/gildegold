@@ -7124,86 +7124,104 @@ CMGRENADE *cm_ThrowGrenade(D3VECTOR *p, int x, int y)
     }
     return 0;
 }
-/* 0x4ce830, as 0x4ce300 for the grenades of cm_Grenades (0x10 bytes: object, effect, cell x, cell y): the effect
-   ends (flag 0x20 of its byte +0x2d), the cell of the map ai_Unk633738 loses 5 (and its mark is cleared), the
-   characters within 100.0 are hurt (action "kampf/arm_greifen"). Rough draft. */
+/* 0x4ce830, updates the thrown bombs of cm_Grenades: one whose path has ended (flag 0x20 of D3ANIM.flags2d) explodes
+   (smoke, earth and explosion effects at its position), lowers the terrain at its cell by 5 and clears the cell's
+   type there (the map rebuilt), sounds "Explosion_s" and hurts every scene character within 100.0 of the cell's
+   vertex by a random weapon damage (0x176) scaled by its life value and the distance; returns the number of used
+   slots
+   @deep read whole against the original: grenade walk (index loop over CMGRENADE, base +0xc, jl),
+   path-ended test D3ANIM.flags2d & 0x20, vectors a/b (D3VECTOR4, a reused for the vertex difference),
+   colour, Smoke/Earth/Explosion prototyped (float pushes, 70/50/20/60), the terrain cell (types / height
+   at x + y*size, reloaded d3_Terrain for the clear, MakeDivide then MakeLight), the sound, the scene-char
+   damage with the tail-merged cm_ShowDamage calls and kampf/arm_greifen all match. Left: allocation only,
+   as cm_UpdateBombs - the original caches 0 in ebx (xor ebx,ebx; push ebx / cmp eax,ebx, re-zeroed after
+   the inner loop) where ours uses immediates, so the terrain index and the vertex call use other registers
+   (imul edx,[eax] / add ecx,edx vs imul eax,[ecx] / add eax,ebp), c goes eax->ebp with ch read before the
+   health test, frame 0x40 vs 0x3c (one slot more), and the (1.0 - dist*0.01f) product is scheduled before
+   the k product in ours. (references: M8 at +0x1a1: ours refers to d3fl_MakeDivide (0x441300), the
+   original's field to 0x441860 (d3fl_MakeLight), explained: the M8 pairs offsets across a
+   register-allocation hunk: both sides call d3fl_MakeDivide then d3fl_MakeLight with d3_Terrain (asmdiff
+   --symbols: ours 0x4ce9d1 / 0x4ce9dd, the original 0x4ce9c2 / 0x4ce9ce)) */
 
-int ai_Unk4ce830()
+int cm_UpdateGrenades()
 {
-    float v[8];
-    float pos[3];
-    char col[4];
-    float dx, dy, dz, dist;
-    char *r, *g;
-    char **pp;
-    char *rec, *c, *gg, *e;
-    int cnt = 0;
-    int n, t1, amt;
+    int cnt;
+    AIWEAPON *w;
+    struct D3SM *g;
+    CMGRENADE *rec;
+    AICHAR *c;
+    CHARACTER *ch;
+    D3VECTOR4 a, b;
+    D3COLOR col;
+    D3FLMAP *map;
+    float dist;
     unsigned int k;
-    double d1;
-    int *map;
+    int i, j, t, amt, cell;
 
-    g = *(char **)(ai_Unk5fb5b0 + 0xb0);
-    r = ai_FindWeaponRecord(0x176);
-    for (rec = cm_Grenades; (int)rec < (int)(cm_Grenades + 0x200); rec += 0x10) {
-        if (*(int *)rec == 0)
+    g = (struct D3SM *)d3_DefaultScene->hmap;
+    cnt = 0;
+    w = (AIWEAPON *)ai_FindWeaponRecord(0x176);
+    for (i = 0; i < 32; i++) {
+        rec = &cm_GrenadesT[i];
+        if (rec->obj == 0)
             continue;
         cnt++;
-        if ((*(char *)(*(char **)(rec + 4) + 0x2d) & 0x20) == 0)
+        if (!(rec->anim->flags2d & 0x20))
             continue;
-        v[0] = -243.0f;
-        v[1] = -90.0f;
-        v[2] = 190.0f;
-        v[3] = 0;
-        v[4] = -50.0f;
-        v[5] = 0;
-        v[6] = 38.0f;
-        v[7] = 0;
-        e = *(char **)rec;
-        col[0] = 0xc0;
-        col[1] = 0xc0;
-        col[2] = 0xc0;
-        col[3] = 0x3f;
-        v[0] = *(float *)(e + 0x4c);
-        v[1] = *(float *)(e + 0x50);
-        v[2] = *(float *)(e + 0x54);
-        d3t_CreateSmokeK(0, v, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, pos, 0x190, 6, *(int *)col);
-        d3t_CreateEarthK(0, col, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, *(int *)col);
-        d3t_CreateExplosionK(0, v, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
-        map = (int *)ai_Unk633738;
-        if (*(char *)(*(char **)(map + 5) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * map[0]) != 0) {
-            *(char *)(*(char **)(map + 4) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * map[0]) -= 5;
-            *(char *)(*(char **)(((int *)ai_Unk633738) + 5) + *(int *)(rec + 8) + *(int *)(rec + 0xc) * *(int *)ai_Unk633738) = 0;
-            d3fl_MakeDivide(ai_Unk633738);
-            d3fl_MakeLight(ai_Unk633738);
+        a.x = -243.0f;
+        a.y = -90.0f;
+        a.z = 190.0f;
+        a.w = 0;
+        b.x = -50.0f;
+        b.y = 0.0f;
+        b.z = 38.0f;
+        b.w = 0;
+        col.r = 0xc0;
+        col.g = 0xc0;
+        col.b = 0xc0;
+        col.a = 0x3f;
+        a.x = rec->obj->pos.x;
+        a.y = rec->obj->pos.y;
+        a.z = rec->obj->pos.z;
+        d3t_CreateSmoke(0, (D3VECTOR *)&a, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, (D3VECTOR *)&b, 0x190, 6, col);
+        d3t_CreateEarth(0, (D3VECTOR *)&a, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, col);
+        d3t_CreateExplosion(0, (D3VECTOR *)&a, 0x1e, 70.0f, 50.0f, 20.0f, 60.0f, 0x3c);
+        map = (D3FLMAP *)d3_Terrain;
+        cell = rec->x + rec->y * map->size;
+        if (map->types[cell] != 0) {
+            map->height[cell] -= 5;
+            ((D3FLMAP *)d3_Terrain)->types[rec->x + rec->y * ((D3FLMAP *)d3_Terrain)->size] = 0;
+            d3fl_MakeDivide((D3FLMAP *)d3_Terrain);
+            d3fl_MakeLight((D3FLMAP *)d3_Terrain);
         }
         sb_PlaySampleI(cm_BombSounds, "Explosion_s", 1, 0x3f, 0x7f, 0, 0);
-        for (pp = (char **)ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
-            c = *pp;
+        for (j = 0; j < 32; j++) {
+            c = ai_SceneCharsT[j];
             if (c == 0)
                 continue;
-            gg = *(char **)(c + 0x184);
-            if (c[8] == 0)
+            ch = c->scene;
+            if (c->health == 0)
                 continue;
-            d3sm_GetVertexI(g, *(int *)(rec + 8), *(int *)(rec + 0xc), v);
-            dx = v[0] - *(float *)(*(char **)(gg + 0x34) + 0x4c);
-            dy = v[1] - *(float *)(*(char **)(gg + 0x34) + 0x50);
-            dz = v[2] - *(float *)(*(char **)(gg + 0x34) + 0x54);
-            dist = (float)sqrt(dz * dz + dy * dy + dx * dx);
+            d3sm_GetVertex(g, rec->x, rec->y, (D3VECTOR *)&a);
+            a.x -= ch->obj->pos.x;
+            a.y -= ch->obj->pos.y;
+            a.z -= ch->obj->pos.z;
+            dist = (float)sqrt(a.z * a.z + a.y * a.y + a.x * a.x);
             if (dist < 100.0f) {
-                n = cm_Random((unsigned char)r[6] - (unsigned char)r[5]);
-                k = n + (unsigned char)r[5];
-                d1 = (double)k * *(float *)(c + 0x1c) * 0.01;
-                t1 = (int)d1;
-                amt = (int)(t1 * (1.0 - dist * 0.01f));
-                *(int *)(*pp + 0x24) -= amt;
-                cm_ShowDamage(*pp, amt, *(int *)(*pp + 0x16c) == cm_FightAttacker ? 1 : 2);
-                if (cm_CheckDeath(c) == 0)
-                    ch_QueueAnim(gg, "kampf/arm_greifen", 1);
+                k = cm_Random(w->dmgMax - w->dmgMin) + w->dmgMin;
+                t = (int)(k * (c->f01c * 0.01));
+                amt = (int)(t * (1.0 - dist * 0.01f));
+                ai_SceneCharsT[j]->v024 -= amt;
+                if ((int)ai_SceneCharsT[j]->bld == cm_FightAttacker)
+                    cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 1);
+                else
+                    cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 2);
+                if (cm_CheckDeath((char *)c) == 0)
+                    ch_QueueAnim(ch, "kampf/arm_greifen", 1);
             }
         }
-        d3if_Delete((struct D3OBJECT *)*(int *)rec);
-        *(int *)rec = 0;
+        d3if_Delete(rec->obj);
+        rec->obj = 0;
     }
     return cnt;
 }
@@ -10539,7 +10557,7 @@ void ai_Unk4d6970(char *r)
     ai_Unk4cf000();
     ai_Unk4ced80(r);
     cm_UpdateBombs();
-    ai_Unk4ce830();
+    cm_UpdateGrenades();
     if (ai_Unk6f0d88 == 0 && ai_Unk6f0cf4 == 0) {
         if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk60cb68) {
             q = cm_CutEntrySlot(r, ai_Unk6f0d74);
