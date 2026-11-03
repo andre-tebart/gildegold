@@ -8239,17 +8239,20 @@ char *cm_AddFighter(int id, char *dummy)
     }
     return 0;
 }
-/* 0x4d0a30, fills ai_SceneChars[] (32 pointers) with the records of cm_Fighters whose object belongs to the scene ai_Unk5fb5b0 */
+/* 0x4d0a30, fills ai_SceneChars (32 pointers, cleared first) with the cm_Fighters whose scene character is in the scene
+   d3_DefaultScene, in record order; at most 31 are taken */
 
-void ai_Unk4d0a30()
+void cm_CollectSceneChars()
 {
-    char **p;
-    char *r;
+    AICHAR **p;
+    AICHAR *r;
 
-    memset(ai_Unk7603a0V, 0, 0x80);
-    p = ai_Unk7603a0V;
-    for (r = cm_Fighters; (int)p < ((unsigned)&ai_SceneChars + 0x7c) && (int)(r + 0x184) < ((unsigned)&cm_Fighters + 0x4504); r += 0x21c) {
-        if (*(int *)(r + 0x184) != 0 && *(char **)(*(char **)(r + 0x184) + 0x88) == ai_Unk5fb5b0)
+    memset(ai_SceneCharsT, 0, sizeof(ai_SceneCharsT));
+    p = ai_SceneCharsT;
+    for (r = cm_FightersT; (int)&r->scene < (int)&cm_FightersT[32].scene; r++) {
+        if ((int)p >= (int)&ai_SceneCharsT[31])
+            break;
+        if (r->scene != 0 && r->scene->scene == d3_DefaultScene)
             *p++ = r;
     }
 }
@@ -10525,7 +10528,7 @@ void ai_Unk4d63e0(char *a)
         ai_Unk60d364 = 200;
         cm_FightOwner = *(int *)(a + 0xc);
         ai_Unk4d0fa0(a);
-        ai_Unk4d0a30();
+        cm_CollectSceneChars();
         ai_Unk4d1c20(a + 0xc0, (int)"OFF");
         ai_Unk4d1c20(a + 0x80, (int)"DEF");
         ai_Unk4d1e00(a);
@@ -10538,8 +10541,8 @@ void ai_Unk4d63e0(char *a)
         ai_Unk6f0cfc = 0;
         ai_Unk4d4540(a);
         ai_Unk4e52a0(seed);
-        ai_Unk4d0a30();
-        ai_Unk4d0a30();
+        cm_CollectSceneChars();
+        cm_CollectSceneChars();
         ai_Unk4e3830(a, 0);
         if (ai_Unk6f0cf4 != 0 || ai_Unk6f0cf8 == 0) {
             if (ai_Unk6f0cf4 == 0)
@@ -11384,7 +11387,7 @@ void ai_Unk4d88c0(char *a)
 
     t = tb_Calls - 0x15e;
     r = util_RandomU(100);
-    ai_Unk4d0a30();
+    cm_CollectSceneChars();
     ai_Unk4d6a50(a);
     ai_Unk6f0d4c = 0;
     if (r < 0x32)

@@ -687,7 +687,7 @@ char *cm_AddFighter(int id, char *dummy);  /* 0x4d0920 */
 int gm_CreateCharModel();  /* 0x4fbb80 */
 extern const double cm_WeaponSpeedScale;  /* 0x5eb9b8 */
 
-void ai_Unk4d0a30();  /* 0x4d0a30 */
+void cm_CollectSceneChars();  /* 0x4d0a30 */
 char ai_Unk4d0a80(char *o);  /* 0x4d0a80 */
 extern int ai_Unk6f0d58;  /* 0x6f0d58 */
 extern char *ai_Unk935980[];  /* 0x935980 */
