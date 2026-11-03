@@ -7,10 +7,10 @@
    monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
    Names are ours.
    The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type.
-   Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h d2.h f3gm.h gfx.h gv.h he.h
+   Open: not included yet (dcp headers conflicts cm HEADER): am.h amt.h anm.h d2.h f3gm.h gfx.h gv.h
    hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
    definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints,
-   gv_CrimeText, gv_PassSentence, he_RandomTransporter (cm_ExChrGotoBuilding passes 1 of 4). Meanwhile cm.h's own declarations of ord_AddGridAmount and
+   gv_CrimeText, gv_PassSentence. Meanwhile cm.h's own declarations of ord_AddGridAmount and
    gm_RemoveOwned are the owner headers' prototypes (gv.h, f3gm.h); the other calls into those headers stay M7.
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */
 #include "d2_types.h"

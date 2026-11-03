@@ -2254,7 +2254,7 @@ exe	0x004c5f20	ai_Unk4c5f20	cm	byte	draft
 exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	draft		
 exe	0x004c5fa0	cm_SendMessage5b	cm	byte	draft		
 exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	draft		
-exe	0x004c6020	ai_Unk4c6020	cm	byte	draft		
+exe	0x004c6020	cm_SendAddSkill	cm	byte	draft		
 exe	0x004c6060	ai_Unk4c6060	cm	byte	draft		
 exe	0x004c60b0	cm_SendGraveOrder	cm	byte	readable		
 exe	0x004c60f0	cm_SendGraveMove	cm	byte	readable		
@@ -2347,16 +2347,16 @@ exe	0x004cb9b0	ai_Unk4cb9b0	cm	byte	draft
 exe	0x004cba10	cm_ExSpawnCharacter	cm	byte	readable		
 exe	0x004cbb90	ai_Unk4cbb90	cm	byte	draft		
 exe	0x004cbbd0	cm_ExChat	cm	byte	readable		
-exe	0x004cbca0	ai_Unk4cbca0	cm	draft	draft		
+exe	0x004cbca0	cm_ExCreateGeb	cm	shape	readable		
 exe	0x004cbff0	ai_Unk4cbff0	cm	byte	draft		
 exe	0x004cc050	ai_Unk4cc050	cm	shape	draft		
 exe	0x004cc110	ai_Unk4cc110	cm	shape	draft		
-exe	0x004cc1b0	ai_Unk4cc1b0	cm	draft	draft		
-exe	0x004cc270	ai_Unk4cc270	cm	draft	draft		
+exe	0x004cc1b0	cm_ExCutEntry	cm	byte	readable		
+exe	0x004cc270	cm_ExCutEntryUpdate	cm	byte	readable		
 exe	0x004cc330	ai_Unk4cc330	cm	byte	draft		
 exe	0x004cc390	ai_Unk4cc390	cm	shape	draft		
-exe	0x004cc510	ai_Unk4cc510	cm	draft	draft		
-exe	0x004cc720	ai_Unk4cc720	cm	draft	draft		
+exe	0x004cc510	cm_ExTableRequest	cm	byte	readable		
+exe	0x004cc720	cm_PlaceFighter	cm	byte	readable		
 exe	0x004cc7b0	ai_Unk4cc7b0	cm	byte	draft		
 exe	0x004cc8e0	ai_Unk4cc8e0	cm	byte	draft		
 exe	0x004cc920	ai_Unk4cc920	cm	byte	draft		
@@ -2365,14 +2365,14 @@ exe	0x004cca10	ai_Unk4cca10	cm	byte	draft
 exe	0x004ccaa0	ai_Unk4ccaa0	cm	byte	draft		
 exe	0x004ccb10	ai_Unk4ccb10	cm	shape	draft		
 exe	0x004ccbd0	ai_Unk4ccbd0	cm	shape	draft		
-exe	0x004ccc20	ai_Unk4ccc20	cm	draft	draft		
+exe	0x004ccc20	cm_ExAddSkill	cm	shape	readable		
 exe	0x004ccce0	ai_Unk4ccce0	cm	byte	draft		
 exe	0x004cce00	ai_Unk4cce00	cm	byte	draft		
 exe	0x004cce10	ai_Unk4cce10	cm	byte	draft		
 exe	0x004cced0	ai_Unk4cced0	cm	byte	draft		
 exe	0x004ccf10	ai_Unk4ccf10	cm	byte	draft		
 exe	0x004ccf90	ai_Unk4ccf90	cm	byte	draft		
-exe	0x004cd010	ai_Unk4cd010	cm	draft	draft		
+exe	0x004cd010	cm_ExAlchemistOrder	cm	byte	readable		
 exe	0x004cd130	ai_Unk4cd130	cm	byte	draft		
 exe	0x004cd180	ai_Unk4cd180	cm	byte	draft		
 exe	0x004cd1e0	ai_Unk4cd1e0	cm	byte	draft		
@@ -2406,7 +2406,7 @@ exe	0x004cdb20	ai_Unk4cdb20	cm	byte	draft
 exe	0x004cdb80	ai_Unk4cdb80	cm	draft	draft		
 exe	0x004cdcf0	ai_Unk4cdcf0	cm	draft	draft		
 exe	0x004cde20	cm_UpdateHandObject	cm	draft	draft		
-exe	0x004cdf00	ai_Unk4cdf00	cm	draft	draft		
+exe	0x004cdf00	cm_CutEntrySlot	cm	draft	draft		
 exe	0x004cdf80	ai_Unk4cdf80	cm	draft	draft		
 exe	0x004cdfe0	ai_Unk4cdfe0	cm	byte	draft		
 exe	0x004ce040	ai_Unk4ce040	cm	draft	draft		
@@ -3110,7 +3110,7 @@ exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable	deep
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
-exe	0x005090b0	gm_BuildingRank	f3gm	shape	readable	deep	
+exe	0x005090b0	gm_BuildingRank	f3gm	shape	readable		
 exe	0x00509120	gm_Unk509120	f3gm	shape	draft		
 exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
 exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
@@ -3146,7 +3146,7 @@ exe	0x0050aaf0	gm_ListAmount	f3gm	byte	draft
 exe	0x0050ab20	gm_ListAmountById	f3gm	byte	draft		
 exe	0x0050ab50	gm_ListStock	f3gm	shape	draft		
 exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	readable	deep	
-exe	0x0050acf0	gm_FreeStallCapacity	f3gm	shape	readable	deep	
+exe	0x0050acf0	gm_FreeStallCapacity	f3gm	shape	readable		
 exe	0x0050ad70	gm_TakeableCount	f3gm	shape	readable		
 exe	0x0050af00	gm_CollectCarried	f3gm	byte	readable		
 exe	0x0050b010	gm_FirstBuilding	f3gm	shape	readable		
@@ -3229,7 +3229,7 @@ exe	0x00512890	unk_Unk512890	f3init	byte	draft
 exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
 exe	0x00512e40	init_TextureSetHook	f3init	shape	readable	deep	
-exe	0x00512e80	init_BuildingTextureSetHook	f3init	draft	draft		shape+draft -> draft+draft at b0d436d8: branch targets as cut points (decompanion a7c8b6c): the original saves esi only inside the st != 2/3/4 block (push esi at +0x4a), so its three je to the exit skip the pop esi; ours saves it at entry. Never shape: the old check paired the jumps by text
+exe	0x00512e80	init_BuildingTextureSetHook	f3init	byte	readable		
 exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
 exe	0x00513050	init_ShowBuildingScene	f3init	draft	readable	deep	
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		
@@ -3433,7 +3433,7 @@ exe	0x00531670	main_DestroyWindow	main	byte	readable
 exe	0x00531690	main_ShutdownScreen	main	byte	readable		
 exe	0x005316d0	main_ShutdownModules	main	byte	readable		
 exe	0x00531750	main_Exit	main	byte	readable		
-exe	0x00531780	main_WindowProc	main	shape	readable	deep	
+exe	0x00531780	main_WindowProc	main	shape	readable		
 exe	0x00531a00	main_BuildVersionString	main	draft	readable	deep	
 exe	0x00531b50	main_CreateMutex	main	byte	readable		
 exe	0x00531b80	main_SetScreenSaver	main	byte	readable		
@@ -3550,7 +3550,7 @@ exe	0x005414a0	he_Unk5414a0	he	draft	draft
 exe	0x005417d0	he_Unk5417d0	he	draft	draft		
 exe	0x00541a50	he_Unk541a50	he	byte	draft		
 exe	0x00541a80	he_Unk541a80	he	byte	draft		
-exe	0x00541b40	he_Unk541b40	he	draft	draft		
+exe	0x00541b40	he_StammtischCommand	he	draft	draft		
 exe	0x00542100	he_Unk542100	he	draft	draft		
 exe	0x00542490	he_Unk542490	he	draft	draft		
 exe	0x00542590	he_Unk542590	he	draft	draft		
@@ -3697,7 +3697,7 @@ exe	0x00554820	he_Unk554820	he	byte	draft
 exe	0x00554860	he_Unk554860	he	draft	draft		
 exe	0x00554cb0	he_Unk554cb0	he	draft	draft		
 exe	0x005551c0	he_CollectTransporter	he	byte	readable		
-exe	0x00555210	he_RandomTransporter	he	draft	draft		
+exe	0x00555210	he_RandomTransporter	he	byte	draft		
 exe	0x005552c0	he_Unk5552c0	he	byte	draft		
 exe	0x00555350	he_Unk555350	he	draft	draft		
 exe	0x00555690	he_Unk555690	he	draft	draft		
