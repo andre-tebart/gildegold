@@ -1398,23 +1398,18 @@ HEAPEVENT *he_AddApEvent(int key, char *name, int income, int cost)
     strncpy(e->name, name, 0x3f);
     return e;
 }
-/* 0x53ef50, counts the AP events down; an expired one loses its values */
-
+/* 0x53ef50, counts the rounds of the he_ApEvents down; an expired one loses its income, cost and name (is free) */
 void he_CountDownApEvents(void)
 {
-    char c;
-    char *p = (char *)((unsigned)&he_RunHandlers + 0x6a0);
+    int i;
 
-    do {
-        c = *p;
-        *p = c - 1;
-        if ((char)(c - 1) < 1) {
-            p[8] = 0; p[9] = 0; p[10] = 0; p[11] = 0;
-            p[12] = 0; p[13] = 0; p[14] = 0; p[15] = 0;
-            p[16] = 0;
+    for (i = 0; i < 0x100; i++) {
+        if (--he_ApEvents[i].counter <= 0) {
+            he_ApEvents[i].income = 0;
+            he_ApEvents[i].cost = 0;
+            he_ApEvents[i].name[0] = 0;
         }
-        p += 0x50;
-    } while ((int)p < (unsigned)((unsigned)he_RunHandlers + 0x56a0));
+    }
 }
 /* 0x53ef80, the sum of the values (+8) of the AP events with key (+4) `key` */
 
