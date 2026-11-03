@@ -537,7 +537,7 @@ struct CMBOMB *cm_LayBomb(struct D3VECTOR *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
 int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
-float gm_HealthRatio();  /* 0x4fc8e0 */
+float gm_HealthRatio(short *c);  /* 0x4fc8e0, f3gm.h */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
 typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_Unk60c7c0 (ai_FindWeaponRecord) */
@@ -743,7 +743,7 @@ char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to,
 
 void ai_Unk4d1e00();  /* 0x4d1e00 */
 void ai_Unk4d1eb0();  /* 0x4d1eb0 */
-char *ai_Unk4d1f10(char *c);  /* 0x4d1f10 */
+struct AICHAR *cm_NearestEnemy(struct AICHAR *c);  /* 0x4d1f10, the enemy the fighter c goes for */
 void snd_PlaySpecialTrack(char *name);  /* 0x4c23f0 */
 extern int snd_MusicEnabled;  /* 0x6f2578 */
 extern int sv_FrameMask;  /* 0x760638 */

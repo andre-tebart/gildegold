@@ -8793,36 +8793,40 @@ void ai_Unk4d1eb0()
     }
     d2_CutsceneActive = 0;
 }
-/* 0x4d1f10, the selected character that is closest to the character c (distance 0x4ce1b0 times the factor 0x4fc8e0,
-   limit 1e6), or 0; the two loops are the same for the kinds 2 / other of c. Rough draft. */
+/* 0x4d1f10, the enemy of the fighter c to go for: among the scene characters ai_SceneChars of another side
+   (cm_OtherBuilding) still alive, the one whose distance to c weighted by its health ratio (gm_HealthRatio) is less
+   than the plain distance of the one found before (from 1e6 on); 0 when none. The loops for a weapon of kind 2 and
+   for the others are the same */
 
-char *ai_Unk4d1f10(char *c)
+AICHAR *cm_NearestEnemy(AICHAR *c)
 {
-    float best = 1000000.0f;
-    float w;
-    char *res = 0;
-    char **pp;
+    float best;
+    AICHAR *res;
+    int i;
+    float d;
 
-    if (*(int *)(cm_CharWeapon(c) + 0x58) == 2) {
-        for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
-            if (*pp != 0 && cm_OtherBuilding(c, *pp) != 0 && (*pp)[8] != 0) {
-                w = cm_CharObjDistXZ(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
-                w = gm_HealthRatio(*pp) * w;
-                if (w < best) {
-                    res = *pp;
-                    best = w;
+    best = 1000000.0f;
+    res = 0;
+    if (((AIWEAPON *)cm_CharWeapon((char *)c))->kind != 2) {
+        for (i = 0; i < 32; i++) {
+            if (ai_SceneCharsT[i] != 0 && cm_OtherBuilding((char *)c, (char *)ai_SceneCharsT[i]) != 0 &&
+                ai_SceneCharsT[i]->health != 0) {
+                d = cm_CharObjDistXZ((char *)c, (char *)ai_SceneCharsT[i]->scene->obj);
+                if (gm_HealthRatio((short *)ai_SceneCharsT[i]) * d < best) {
+                    res = ai_SceneCharsT[i];
+                    best = d;
                 }
             }
         }
-        return res;
-    }
-    for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
-        if (*pp != 0 && cm_OtherBuilding(c, *pp) != 0 && (*pp)[8] != 0) {
-            w = cm_CharObjDistXZ(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
-            w = gm_HealthRatio(*pp) * w;
-            if (w < best) {
-                res = *pp;
-                best = w;
+    } else {
+        for (i = 0; i < 32; i++) {
+            if (ai_SceneCharsT[i] != 0 && cm_OtherBuilding((char *)c, (char *)ai_SceneCharsT[i]) != 0 &&
+                ai_SceneCharsT[i]->health != 0) {
+                d = cm_CharObjDistXZ((char *)c, (char *)ai_SceneCharsT[i]->scene->obj);
+                if (gm_HealthRatio((short *)ai_SceneCharsT[i]) * d < best) {
+                    res = ai_SceneCharsT[i];
+                    best = d;
+                }
             }
         }
     }
@@ -9445,7 +9449,7 @@ void ai_Unk4d3120(char *rec, char *c)
             cm_OrderAttack(rec, c, 0, x, y);
             return;
         }
-        o = ai_Unk4d1f10(c);
+        o = (char *)cm_NearestEnemy((AICHAR *)c);
         if (o == 0)
             return;
         cm_OrderAttack(rec, c, o, 0, 0);
