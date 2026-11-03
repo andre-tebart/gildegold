@@ -516,8 +516,8 @@ float cm_FightStrength(char *c);  /* 0x4cdcf0 */
 void cm_UpdateHandObject(char *c);  /* 0x4cde20 */
 int *cm_CutEntrySlot(char *rec, char *c);  /* 0x4cdf00 */
 int *cm_FightCutEntry(char *c);  /* 0x4cdf80 */
-int ai_Unk4cdfe0(int x, int y);  /* 0x4cdfe0 */
-int ai_Unk4ce040(int a, int b, int *ox, int *oy);  /* 0x4ce040 */
+int cm_CellUsable(int x, int y);  /* 0x4cdfe0 */
+int cm_FindNearCell(int a, int b, int *ox, int *oy);  /* 0x4ce040 */
 char *cm_FindFighter(int id);  /* 0x4ce130 */
 int ai_LedSelectBits(int idx, char *c);  /* 0x4ce170 */
 float ai_Unk4ce1b0(char *c, char *o);  /* 0x4ce1b0 */

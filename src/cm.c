@@ -6842,7 +6842,7 @@ int *cm_FightCutEntry(char *c)
 }
 /* 0x4cdfe0, 1 when the cell (x, y) of the map ai_Unk5fb5b0 + 0xb0 is inside and passable */
 
-int ai_Unk4cdfe0(int x, int y)
+int cm_CellUsable(int x, int y)
 {
     char *g = *(char **)(ai_Unk5fb5b0 + 0xb0);
     int w = *(int *)(g + 0x20);
@@ -6853,23 +6853,23 @@ int ai_Unk4cdfe0(int x, int y)
         return 0;
     return 1;
 }
-/* 0x4ce040, the nearest passable cell around (a, b) (rings of the distance d = 0 .. 0x3f): *ox, *oy */
+/* 0x4ce040, the nearest usable cell (cm_CellUsable) of the current scene's height map around the cell (a, b), in
+   diamonds of the distance d = 0 .. 0x3f, rows top to bottom: *ox, *oy, returns 1; 0: none */
 
-int ai_Unk4ce040(int a, int b, int *ox, int *oy)
+int cm_FindNearCell(int a, int b, int *ox, int *oy)
 {
-    int w = *(int *)(*(char **)(ai_Unk5fb5b0 + 0xb0) + 0x20);
-    int d, y, x, k, ylo, yhi, xlo, xhi, t;
+    int w = ((D3SM *)d3_DefaultScene->hmap)->size;
+    int d, y, x, k, ylo, yhi, xlo, xhi;
 
     for (d = 0; d < 0x40; d++) {
         yhi = w - 1 < b + d ? w - 1 : b + d;
         ylo = b - d < 0 ? 0 : b - d;
         for (y = ylo; y <= yhi; y++) {
-            t = b - y;
-            k = d - (t < 0 ? -t : t);
+            k = d - abs(b - y);
             xhi = w - 1 < k + a ? w - 1 : k + a;
             xlo = a - k < 0 ? 0 : a - k;
             for (x = xlo; x <= xhi; x++) {
-                if (ai_Unk4cdfe0(x, y) != 0) {
+                if (cm_CellUsable(x, y) != 0) {
                     *ox = x;
                     *oy = y;
                     return 1;
@@ -10848,7 +10848,7 @@ walk:
         return -1;
     if (!d3_GetHeightAt(h, *(char **)(g + 0x34) + 0x4c, &ix, &iz, &py))
         return -1;
-    if (ai_Unk4ce040(ix, iz, &ix, &iz) == 0)
+    if (cm_FindNearCell(ix, iz, &ix, &iz) == 0)
         return -1;
     ai_Unk4c5bc0(*(char **)(*(char **)(c + 0x184) + 0x34), ix, iz, 0);
     return 0;
@@ -10896,7 +10896,7 @@ void ai_Unk4d76a0(int *rec)
                 if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
                     p[2] = -1;
                     if ((char)p[3] == 0) {
-                        if (ai_Unk4ce040(p[4], p[5], &ix, &iz) != 0) {
+                        if (cm_FindNearCell(p[4], p[5], &ix, &iz) != 0) {
                             sprintf(buf, "cmb_%i", *(int *)(c + 4));
                             ((char *)p)[0xc] = 1;
                             cm_SendFightCommand(c, 6, m);
@@ -10933,7 +10933,7 @@ void ai_Unk4d76a0(int *rec)
                     if (*(int *)k == 0x174) {
                         b = 0;
                         if (((char *)p)[0x1d] == 0 && (char)p[3] == 0) {
-                            if (ai_Unk4ce040(p[5], p[6], &ix, &iz) != 0) {
+                            if (cm_FindNearCell(p[5], p[6], &ix, &iz) != 0) {
                                 p[5] = ix;
                                 p[6] = iz;
                                 ai_Unk4c5bc0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
@@ -11060,7 +11060,7 @@ attack:
                 if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
                     p[2] = -1;
                     if ((char)p[3] == 0 && d3_VecEqual(q, (float *)G21_POS(c), 50.0f) == 0 &&
-                        ai_Unk4ce040(p[4], p[5], &ix, &iz) != 0) {
+                        cm_FindNearCell(p[4], p[5], &ix, &iz) != 0) {
                         sprintf(buf, "cmb_%i", *(int *)(c + 4));
                         ((char *)p)[0xc] = 1;
                         p[2] = G21_DC0(c, 6, m);
@@ -11087,7 +11087,7 @@ attack:
                         if (n == 0 || (ai_Unk4ce270(c, (char *)n) != 0 &&
                                        (*(char *)(n + 8) == 0 || d3_VecEqual(q, (float *)G21_POS((char *)n), 49.5f) == 0))) {
                             if ((char)p[3] == 0 && d3_VecEqual(q, (float *)G21_POS(c), 49.5f) == 0 &&
-                                ai_Unk4ce040(p[8], p[9], &ix, &iz) != 0) {
+                                cm_FindNearCell(p[8], p[9], &ix, &iz) != 0) {
                                 ((char *)p)[0xc] = 1;
                                 p[8] = ix;
                                 p[9] = iz;
@@ -11149,7 +11149,7 @@ stop:
                         if (n == 0) {
                             ((char *)p)[0xc] = 1;
                             cm_SendFightCommand(c, 6, m);
-                            if (ai_Unk4ce040((char)p[8], ((char *)p)[0x21], &ix, &iz) != 0) {
+                            if (cm_FindNearCell((char)p[8], ((char *)p)[0x21], &ix, &iz) != 0) {
                                 res = G21_BC0(*(char **)(G21_CH(c) + 0x34), ix, iz, 0);
                                 goto done;
                             }
@@ -11168,7 +11168,7 @@ stop:
                             nm = *(int *)(c + 0x16c) == ai_Unk6f0cec ? "dummy_sp_OFF_WARENSAVE" : "dummy_sp_DEF_WARENSAVE";
                             id = d3_FindObject(0, 0x100, 0, nm);
                             d3_PointToWorld(id, id + 0x4c, q);
-                            if (d3_GetHeightAt(h, q, &ix, &iz, tmp) != 0 && ai_Unk4ce040(ix, iz, &ix, &iz) != 0) {
+                            if (d3_GetHeightAt(h, q, &ix, &iz, tmp) != 0 && cm_FindNearCell(ix, iz, &ix, &iz) != 0) {
                                 ((char *)m)[0x28] = (char)ix;
                                 ((char *)m)[0x29] = (char)iz;
                                 ((char *)m)[0x2a] = 2;
@@ -11195,7 +11195,7 @@ stop:
                 if (p[2] == 1 || cm_GetSlotState(p[2]) != 0) {
                     p[2] = -1;
                     if ((char)p[3] == 0) {
-                        if (ai_Unk4ce040(p[4], p[5], &ix, &iz) != 0) {
+                        if (cm_FindNearCell(p[4], p[5], &ix, &iz) != 0) {
                             sprintf(buf, "cmb_%i", *(int *)(c + 4));
                             ((char *)p)[0xc] = 1;
                             cm_SendFightCommand(c, 6, m);
