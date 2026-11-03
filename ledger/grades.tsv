@@ -2478,7 +2478,7 @@ exe	0x004d3550	ai_Unk4d3550	cm	draft	draft
 exe	0x004d3980	ai_Unk4d3980	cm	byte	draft		
 exe	0x004d3a30	ai_Unk4d3a30	cm	byte	draft		
 exe	0x004d3ac0	ai_Unk4d3ac0	cm	byte	draft		
-exe	0x004d3ae0	ai_Unk4d3ae0	cm	shape	draft		
+exe	0x004d3ae0	ai_Unk4d3ae0	cm	byte	draft		
 exe	0x004d3b30	ai_Unk4d3b30	cm	draft	draft		
 exe	0x004d3d10	ai_Unk4d3d10	cm	byte	draft		
 exe	0x004d3ea0	ai_Unk4d3ea0	cm	byte	draft		
@@ -3110,7 +3110,7 @@ exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable	deep
 exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
 exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
-exe	0x005090b0	gm_BuildingRank	f3gm	draft	readable	deep	
+exe	0x005090b0	gm_BuildingRank	f3gm	shape	readable	deep	
 exe	0x00509120	gm_Unk509120	f3gm	shape	draft		
 exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
 exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
@@ -3146,7 +3146,7 @@ exe	0x0050aaf0	gm_ListAmount	f3gm	byte	draft
 exe	0x0050ab20	gm_ListAmountById	f3gm	byte	draft		
 exe	0x0050ab50	gm_ListStock	f3gm	shape	draft		
 exe	0x0050ab80	gm_FreeCapacity	f3gm	draft	readable	deep	
-exe	0x0050acf0	gm_FreeStallCapacity	f3gm	draft	readable	deep	
+exe	0x0050acf0	gm_FreeStallCapacity	f3gm	shape	readable	deep	
 exe	0x0050ad70	gm_TakeableCount	f3gm	shape	readable		
 exe	0x0050af00	gm_CollectCarried	f3gm	byte	readable		
 exe	0x0050b010	gm_FirstBuilding	f3gm	shape	readable		
@@ -3229,7 +3229,7 @@ exe	0x00512890	unk_Unk512890	f3init	byte	draft
 exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
 exe	0x00512e40	init_TextureSetHook	f3init	shape	readable	deep	
-exe	0x00512e80	init_BuildingTextureSetHook	f3init	shape	draft		
+exe	0x00512e80	init_BuildingTextureSetHook	f3init	draft	draft		shape+draft -> draft+draft at b0d436d8: branch targets as cut points (decompanion a7c8b6c): the original saves esi only inside the st != 2/3/4 block (push esi at +0x4a), so its three je to the exit skip the pop esi; ours saves it at entry. Never shape: the old check paired the jumps by text
 exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
 exe	0x00513050	init_ShowBuildingScene	f3init	draft	readable	deep	
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		

@@ -9486,9 +9486,10 @@ void ai_Unk4d3ae0(char *ev)
     char *p;
 
     p = ai_Unk4ceb70((char *)o);
-    if (p != 0)
+    if (p != 0) {
         *(int *)(p + 0xa) = *(unsigned short *)ai_Unk6f0cec;
-    *(int *)(att + 0x1ac) = o;
+        *(int *)(att + 0x1ac) = o;
+    }
     d3if_ShowTree(o, 0);
 }
 /* 0x4d3b30, the winning side of a fight record: the character record of the side (ai_Unk6f0cec attacker, ai_Unk6f0ce8
