@@ -936,7 +936,11 @@ void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m);  /* 0x4dada0 */
 
 extern int cm_DuelOver;  /* 0x6f0d94 */
 extern int cm_DuelLeft;  /* 0x92bca4 */
-extern unsigned char cm_DuelScore[];  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
+extern unsigned char cm_DuelScore[2];  /* 0x6f0da8, the damage taken by the left / right duellist */
+extern unsigned char cm_DuelLeftInsultWon;  /* 0x6f0daa, the left duellist won the insult round */
+extern unsigned char cm_DuelRightInsultWon;  /* 0x6f0dab, the right duellist won the insult round */
+extern unsigned char cm_DuelLeftRollWon;  /* 0x6f0dac, the left duellist won the roll round */
+extern unsigned char cm_DuelRightRollWon;  /* 0x6f0dad, the right duellist won the roll round */
 int cm_CutInfoById();  /* 0x4e50e0 */
 int cm_WaitTicks();  /* 0x4e3420 */
 void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
@@ -949,7 +953,6 @@ void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
 void cm_DuelInitVariants(int n);  /* 0x4de5e0 */
 int cm_DuelVariant(int n);  /* 0x4de610 */
 void cm_DuelShotAction(struct CHACTION *a);  /* 0x4de640 */
-extern unsigned char cm_DuelLeftInsultWon;  /* 0x6f0daa */
 extern int cm_DuelRight;  /* 0x92bca0 */
 int amt_FindOffice();  /* 0x4e6030 */
 void cm_DuelOutcome(G28REC *m);  /* 0x4debe0 */

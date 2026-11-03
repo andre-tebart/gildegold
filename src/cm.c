@@ -13512,11 +13512,11 @@ void cm_DuelShotAction(CHACTION *a)
     acc = (float)(acc * 0.8);
     if (ai_InventoryHas(sh, 0x16f) != 0)
         acc = (float)(acc * 1.5);
-    if (((int)sh == cm_DuelLeft && cm_DuelScore[3] != 0) || ((int)sh == cm_DuelRight && cm_DuelLeftInsultWon != 0))
+    if (((int)sh == cm_DuelLeft && cm_DuelRightInsultWon != 0) || ((int)sh == cm_DuelRight && cm_DuelLeftInsultWon != 0))
         acc = (float)(acc * 0.66);
     if ((float)cm_RandomFloat() < acc) {
         hit = 1;
-        if (((int)sh == cm_DuelLeft && cm_DuelScore[5] != 0) || ((int)sh == cm_DuelRight && cm_DuelScore[4] != 0))
+        if (((int)sh == cm_DuelLeft && cm_DuelRightRollWon != 0) || ((int)sh == cm_DuelRight && cm_DuelLeftRollWon != 0))
             dmg = cm_Random(0xf) + 5;
         else
             dmg = cm_Random(0x1e) + 0xf;
@@ -13556,8 +13556,8 @@ void cm_DuelShotAction(CHACTION *a)
 }
 /* 0x4de900, one fighter's turn of a duel round, by the round its player chose (CMCUTINFO duel.round): 2 the insult
    (texts 0x10e8 / 0x10e9 + variant, "gestik/abfaellig"; a's skill 4 + a roll against b's: the win sets a's insult byte
-   cm_DuelScore[2] / [3], texts 0x10f2 .. 0x10f5 by b's kind), 3 a roll against a's skill 2 (the win sets cm_DuelScore[4] /
-   [5], texts 0x10f6 .. 0x10f9), 4 the pistol shot (texts 0x10fa + variant, the action cm_DuelShotAction at b); nothing once
+   cm_DuelLeftInsultWon / cm_DuelRightInsultWon, texts 0x10f2 .. 0x10f5 by b's kind), 3 a roll against a's skill 2 (the win sets cm_DuelLeftRollWon /
+   cm_DuelRightRollWon, texts 0x10f6 .. 0x10f9), 4 the pistol shot (texts 0x10fa + variant, the action cm_DuelShotAction at b); nothing once
    the duel is over. side ("A" / "B") is not read */
 
 void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
@@ -13595,9 +13595,9 @@ void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
             else
                 io_PrintText(0x10f7, a->id);
             if ((int)a == cm_DuelLeft)
-                cm_DuelScore[4] = 1;
+                cm_DuelLeftRollWon = 1;
             else
-                cm_DuelScore[5] = 1;
+                cm_DuelRightRollWon = 1;
         } else {
             if (a->kind == 6 || a->kind == 7)
                 io_PrintText(0x10f8, a->id);
@@ -13627,7 +13627,7 @@ void cm_DuelRound(AICHAR *a, AICHAR *b, char *side)
             if ((int)a == cm_DuelLeft)
                 cm_DuelLeftInsultWon = 1;
             else
-                cm_DuelScore[3] = 1;
+                cm_DuelRightInsultWon = 1;
         } else {
             d2_SetForm(cm_TextBox, 0);
             if (b->kind == 6 || b->kind == 7)
@@ -13839,9 +13839,9 @@ void cm_RunDuel(G28REC *m)
         cm_RunSceneParty(m, m);
         rec = (CMCUTINFO *)cm_CutInfoById(cb.netId);
         cm_DuelLeftInsultWon = 0;
-        cm_DuelScore[3] = 0;
-        cm_DuelScore[4] = 0;
-        cm_DuelScore[5] = 0;
+        cm_DuelRightInsultWon = 0;
+        cm_DuelLeftRollWon = 0;
+        cm_DuelRightRollWon = 0;
         if (rec->duel.round == 2 || rec->duel.round == 3) {
             cm_DuelRound(&cb, &ca, "B");
             cm_DuelRound(&ca, &cb, "A");
@@ -13849,7 +13849,7 @@ void cm_RunDuel(G28REC *m)
             cm_DuelRound(&ca, &cb, "A");
             cm_DuelRound(&cb, &ca, "B");
         }
-        if ((cm_DuelLeftInsultWon != 0 || cm_DuelScore[4] != 0) && (cm_DuelScore[3] != 0 || cm_DuelScore[5] != 0)) {
+        if ((cm_DuelLeftInsultWon != 0 || cm_DuelLeftRollWon != 0) && (cm_DuelRightInsultWon != 0 || cm_DuelRightRollWon != 0)) {
             n = cm_Random(9);
             d2_SetForm(cm_TextBox, 0);
             io_PrintText(n + 0x1113);
@@ -16689,8 +16689,11 @@ unsigned int ai_Unk6f0d98 = 0;  /* 0x6f0d98 */
 int ai_Unk6f0d9c = 0;  /* 0x6f0d9c, the scene nesting depth */
 char * ai_Unk6f0da0 = 0;  /* 0x6f0da0, the fade */
 unsigned int cm_FightStart = 0;  /* 0x6f0da4, fight start (d3_Time) */
-unsigned char cm_DuelScore[2] = {0};  /* 0x6f0da8, +2 / +3: the left / right insult won, +4 / +5 the shot won */
-unsigned char cm_DuelLeftInsultWon = 0;  /* 0x6f0daa */
+unsigned char cm_DuelScore[2] = {0};  /* 0x6f0da8, the damage taken by the left / right duellist (cm_DuelShotAction adds it, cm_RunDuel heals it back) */
+unsigned char cm_DuelLeftInsultWon = 0;  /* 0x6f0daa, the left duellist won the insult round (cm_DuelRound): the right one shoots worse */
+unsigned char cm_DuelRightInsultWon = 0;  /* 0x6f0dab, the right duellist won the insult round: the left one shoots worse */
+unsigned char cm_DuelLeftRollWon = 0;  /* 0x6f0dac, the left duellist won the roll round (cm_DuelRound): the right one's shot does less damage */
+unsigned char cm_DuelRightRollWon = 0;  /* 0x6f0dad, the right duellist won the roll round: the left one's shot does less damage */
 int ai_Unk6f0db0 = 0;  /* 0x6f0db0 */
 int ai_Unk6f0db4 = 0;  /* 0x6f0db4 */
 int ai_Unk6f0db8 = 0;  /* 0x6f0db8 */
