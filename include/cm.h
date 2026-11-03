@@ -750,7 +750,7 @@ extern int sv_FrameMask;  /* 0x760638 */
 extern int ai_Unk6f0d4c;  /* 0x6f0d4c */
 extern char ai_Time[];  /* 0x770ae0 */
 
-float ai_Unk4d2010(char *c, int a, int b, float limit);  /* 0x4d2010 */
+float cm_ThreatAt(struct AICHAR *c, int a, int b, float limit);  /* 0x4d2010, the threat at a height map vertex for the fighter c */
 extern const double ai_Unk5edc60;  /* 0x5edc60 */
 
 int ai_Unk4d22d0(char *c, int cx, int cy, int r, int *ox, int *oy);  /* 0x4d22d0 */

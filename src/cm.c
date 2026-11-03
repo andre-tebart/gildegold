@@ -8385,6 +8385,7 @@ typedef struct CMFIGHTREC {
     int carts[3];                   /* 0x100, the object ids of the carts in the fight, -1 = none */
     int attackerBldId;              /* 0x10c, the attacker's building: its role picks the attacker voices */
 } CMFIGHTREC;
+#define cm_FightRecordT (*(CMFIGHTREC **)&cm_FightRecord)  /* 0x6f0d04, cm_FightRecord (cm.h: char *) as the fight record it points to */
 
 /* 0x4d0fa0, sets up the fight scene for the fight record rec: the scenario "Kampfszenario_<place>.ed3" by the flags or
    the type of the defender's building (cm_LoadEventScene; a robbers' camp gets a 15 cells wide border), the fight
@@ -8832,56 +8833,57 @@ AICHAR *cm_NearestEnemy(AICHAR *c)
     }
     return res;
 }
-/* 0x4d2010, the balance of forces at the ground point (a, b) for the character c: each living enemy within the radius adds
-   5eb798 / distance, each other friend subtracts it (the sides are the 16 ids of the fight record +0x80 / +0xc0). */
+/* 0x4d2010, the threat at the height map vertex (a, b) for the fighter c: every living enemy within limit of it adds
+   70 / its distance, every other living fighter of c's own side takes it off (the sides are the attackers / defenders
+   of the fight record cm_FightRecord) */
 
-float ai_Unk4d2010(char *c, int a, int b, float limit)
+float cm_ThreatAt(AICHAR *c, int a, int b, float limit)
 {
-    float acc = 0.0f;
-    float v[4];
+    float threat;
+    D3VECTOR4 v;
+    D3SM *sc;
+    int *own, *enemies;
+    AICHAR *o;
     float d, dx, dy, dz;
-    char *own, *oth, *o, *m;
-    char *rec = cm_FightRecord;
-    char *sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
     int i;
 
-    if (*(int *)(c + 0x16c) == cm_FightAttacker) {
-        own = rec + 0xc0;
-        oth = rec + 0x80;
+    sc = (D3SM *)d3_DefaultScene->hmap;
+    threat = 0.0f;
+    if ((int)c->bld == cm_FightAttacker) {      /* in a fight: the side's leader */
+        own = cm_FightRecordT->attackers;
+        enemies = cm_FightRecordT->defenders;
     } else {
-        own = rec + 0x80;
-        oth = rec + 0xc0;
+        own = cm_FightRecordT->defenders;
+        enemies = cm_FightRecordT->attackers;
     }
-    d3sm_GetVertexI(sc, a, b, v);
+    d3sm_GetVertex(sc, a, b, (D3VECTOR *)&v);
     for (i = 0; i < 16; i++) {
-        if (*(int *)(oth + i * 4) != -1) {
-            o = cm_FindFighter(*(int *)(oth + i * 4));
-            if (o != 0 && (unsigned char)o[8] > 0) {
-                m = *(char **)(*(char **)(o + 0x184) + 0x34);
-                dx = v[0] - *(float *)(m + 0x4c);
-                dy = v[1] - *(float *)(m + 0x50);
-                dz = v[2] - *(float *)(m + 0x54);
-                d = (float)sqrt(dx * dx + dy * dy + dz * dz);
+        if (enemies[i] != -1) {
+            o = (AICHAR *)cm_FindFighter(enemies[i]);
+            if (o != 0 && o->health > 0) {
+                dx = v.x - o->scene->obj->pos.x;
+                dy = v.y - o->scene->obj->pos.y;
+                dz = v.z - o->scene->obj->pos.z;
+                d = sqrt(dx * dx + dy * dy + dz * dz);
                 if (d <= limit)
-                    acc += 70.0f / d;
+                    threat += 70.0f / d;
             }
         }
     }
     for (i = 0; i < 16; i++) {
-        if (*(int *)(own + i * 4) != -1) {
-            o = cm_FindFighter(*(int *)(own + i * 4));
-            if (o != 0 && (unsigned char)o[8] > 0 && o != c) {
-                m = *(char **)(*(char **)(o + 0x184) + 0x34);
-                dx = v[0] - *(float *)(m + 0x4c);
-                dy = v[1] - *(float *)(m + 0x50);
-                dz = v[2] - *(float *)(m + 0x54);
-                d = (float)sqrt(dx * dx + dy * dy + dz * dz);
+        if (own[i] != -1) {
+            o = (AICHAR *)cm_FindFighter(own[i]);
+            if (o != 0 && o->health > 0 && o != c) {
+                dx = v.x - o->scene->obj->pos.x;
+                dy = v.y - o->scene->obj->pos.y;
+                dz = v.z - o->scene->obj->pos.z;
+                d = sqrt(dx * dx + dy * dy + dz * dz);
                 if (d <= limit)
-                    acc -= 70.0f / d;
+                    threat -= 70.0f / d;
             }
         }
     }
-    return acc;
+    return threat;
 }
 /* 0x4d2170, the best ground point (*ox, *oy) around the cell (cx, cy) within the rings 0 .. r - 1 of the scene's map: the
    cell types other than 0 / 0xd are rated with 0x4d2010 (limit r * radius * 2), the least value wins; returns 0 when no
@@ -8906,7 +8908,7 @@ int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy)
             for (col = (cx - m < 0) ? 0 : cx - m; col <= hic; col++) {
                 cell = (*(int **)(sc + 0x24))[(*(int *)(sc + 0x20) * row + col) * 7];
                 if (cell != 0 && cell != 0xd) {
-                    f = ai_Unk4d2010(c, col, row, (float)(r * *(float *)(sc + 0x10) * 2));
+                    f = cm_ThreatAt((AICHAR *)c, col, row, (float)(r * *(float *)(sc + 0x10) * 2));
                     if (f < best) {
                         best = f;
                         *ox = col;
@@ -8940,7 +8942,7 @@ int ai_Unk4d22d0(char *c, int cx, int cy, int r, int *ox, int *oy)
             for (col = (cx - m < 0) ? 0 : cx - m; col <= hic; col++) {
                 cell = (*(int **)(sc + 0x24))[(*(int *)(sc + 0x20) * row + col) * 7];
                 if (cell != 0 && cell != 0xd) {
-                    f = ai_Unk4d2010(c, col, row, (float)(r * *(float *)(sc + 0x10) * 2));
+                    f = cm_ThreatAt((AICHAR *)c, col, row, (float)(r * *(float *)(sc + 0x10) * 2));
                     if (f > best) {
                         best = f;
                         *ox = col;
