@@ -7545,7 +7545,7 @@ unsigned gm_TakeOverCharacter(int a, int b)
     return sa;
 }
 
-int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
+int gm_EquipmentValue(unsigned char *b, int level);                     /* 0x509b10 */
 int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
 void cm_SendMoveObject(int a, int b, int c);                     /* 0x4c5010 */
 #define ORD_F1C8_ANEW 0x800000  /* flags1c8 bit 23, set for a character that starts anew (gm_ForfeitEstate) */
@@ -9045,48 +9045,50 @@ int gm_BuildingGoodsList17(char *b, unsigned *out, int kind)
     out[0x2d] = (unsigned)stall;
     return 1;
 }
-/* 0x509b10, walks the building b's object words from +0x25: for a kind 2 / 6 object found in the instance, the price (0x5087f0) of the next one that is not 2 / 6 is added up. ROUGH */
+/* 0x509b10, the value of the building b at the level (percent): its type's base value x 0xf00 plus the price (gm_ItemPrice) of its equipment: each object of the type's list of the kinds 2 / 6 that the building holds, and the objects listed after it (up to the next kind 2 / 6) held inside that one; the sum times level / 100 */
 
-int gm_EquipmentValue(unsigned char *b, int unused)
+int gm_EquipmentValue(unsigned char *b, int level)
 {
-    char k;
-    int found, i;
+    char k, found;
+    int i;
     unsigned id;
-    unsigned short *l, *o, *w;
-    float tot;
+    ORDOBJ *holder, *o;
+    unsigned short *w;
+    GMBTYPE *t;
+    GMGOOD *g;
+    int value;
 
-    l = 0;
+    holder = 0;
     found = 0;
+    t = GM_BTYPE(((ORDBLD *)b)->type);
+    value = t->baseValue * 0xf00;
     i = 0;
-    tot = 0.0f;
-    w = (unsigned short *)(ai_BTypes + (unsigned)*b * 0x24d + 0x25);
+    w = &t->objs[1];
     do {
         if (w[-1] == 0)
             break;
         id = w[-1] & 0x7fff;
-        if (found) {
-            if (l != 0) {
-                o = (unsigned short *)gm_Query(*(void **)(l + 10), 1, 0, id);
-                if (o != 0)
-                    tot += gm_ItemPrice(*o, *(unsigned char *)(o + 9));
-                if (i < 0x3f && ((k = ai_Goods[(*w & 0x7fff) * 0x41]) == 2 || k == 6))
-                    found = 0;
-            }
-        } else {
-            k = ai_Goods[id * 0x41];
-            if (k == 2 || k == 6) {
-                l = (unsigned short *)gm_Query(*(void **)(b + 0x5d), 1, 0, id);
-                if (l != 0) {
-                    tot += gm_ItemPrice(*l, *(unsigned char *)(l + 9));
-                    if (i < 0x3f && (k = ai_Goods[(*w & 0x7fff) * 0x41]) != 2 && k != 6)
+        g = GM_GOOD(id);
+        if (!found) {
+            if (g->type == 2 || g->type == 6) {
+                holder = (ORDOBJ *)gm_Query((void *)((ORDBLD *)b)->objList, 1, 0, id);
+                if (holder != 0) {
+                    value += gm_ItemPrice(holder->type, holder->fill);
+                    if (i < 0x3f && (k = GM_GOOD(*w & 0x7fff)->type) != 2 && k != 6)
                         found = 1;
                 }
             }
+        } else if (holder != 0) {
+            o = (ORDOBJ *)gm_Query((void *)holder->list, 1, 0, id);
+            if (o != 0)
+                value += gm_ItemPrice(o->type, o->fill);
+            if (i < 0x3f && ((k = GM_GOOD(*w & 0x7fff)->type) == 2 || k == 6))
+                found = 0;
         }
         i++;
         w++;
     } while (i < 0x40);
-    return (int)tot;
+    return (int)(value * (level * 0.01f));
 }
 /* 0x509c80, the worth of the building b's owner: the value of the character's objects (0x509e60) for a person, plus (with flag) the prices of the building's first kind 0x2a object's goods (0x5089c0 for the player 0x6f1bc5) */
 
@@ -9203,7 +9205,7 @@ int gm_CharCurrency(char *c, char p)
 
 /* ---- layout 2026-10-23: the character / building worth helpers 0x509f20 .. 0x50af00 (ROUGH drafts) ---- */
 char * ai_FindWeaponRecord(int id);                     /* 0x4cd9d0 */
-int gm_EquipmentValue(unsigned char *b, int unused);
+int gm_EquipmentValue(unsigned char *b, int level);
 int gm_GetWorth(unsigned short id);
 int gm_ListAmount(short *l, char *o);
 

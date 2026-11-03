@@ -753,7 +753,7 @@ int gm_CharLevel(unsigned short id, int again);                              /* 
 short * gm_PlayerRecord(char *ch);                                         /* 0x506430 */
 float gm_ItemPrice(int item, unsigned char n);                           /* 0x5087f0 */
 float gm_GoodsPrice(unsigned id, unsigned char p);                           /* 0x5089c0, a price */
-int gm_EquipmentValue(unsigned char *b, int unused);                                     /* 0x509b10 */
+int gm_EquipmentValue(unsigned char *b, int level);                                     /* 0x509b10 */
 int gm_ListAmount(short *l, char *o);                                      /* 0x50aaf0 */
 float gm_Liking(unsigned a, unsigned b, int c);                                 /* 0x50c550 */
 char * he_NextEvent(void);                                             /* 0x53e300, next of he_FindEvent */

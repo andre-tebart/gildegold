@@ -41,6 +41,19 @@ typedef struct GMGOOD {
 typedef char gm_AssertGMGOOD[sizeof(GMGOOD) == 0x41 ? 1 : -1];
 #define GM_GOOD(i) ((GMGOOD *)ai_Goods + (i))  /* the goods prototype i of ai_Goods (char *) */
 
+#pragma pack(push, 1)
+/* a building type (ai.h AIBTYPE, 0x24d bytes, ai_BTypes) as this unit reads it: ai.h is not includable here */
+typedef struct GMBTYPE {
+    char kind;                          /* 0x000 */
+    char pad001[0x22];
+    unsigned short objs[0x40];          /* 0x023, the objects the type can hold, goods ids (bit 15 = flag) */
+    char pad0a3[0x1a6];
+    int baseValue;                      /* 0x249, the type's own value, x 0xf00 the base of gm_EquipmentValue (reasoned: the worth before the equipment) */
+} GMBTYPE;
+#pragma pack(pop)
+typedef char gm_AssertGMBTYPE[sizeof(GMBTYPE) == 0x24d ? 1 : -1];
+#define GM_BTYPE(i) ((GMBTYPE *)ai_BTypes + (i))  /* the building type i of ai_BTypes (char *) */
+
 
 /* the long message (ai.h AIMSG, 0xf8 bytes, cm_SendLongMessage) as this unit fills it: ai.h is not includable here */
 typedef struct GMMSG {

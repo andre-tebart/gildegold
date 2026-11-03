@@ -2068,7 +2068,7 @@ int cm_AddFieldDelta(int size, int n, short field, void *v);
 void cm_BeginFieldBlock(char *o, int id);
 void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
-int gm_EquipmentValue(unsigned char *b, int unused);
+int gm_EquipmentValue(unsigned char *b, int level);
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_Unk541200 / he_Unk543020 / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
 /* 0x540c90, from day 8, in 1 of 4 frames: when no event 0x67 exists, posts one for a random one of the figures of the player of 0x6f1bf8 (kinds 0x20 / 0x1e / 0x1f): +0x58 = the figure, +0x5c = an amount of the 0x4f2720 table plus its +0x69 value (ROUGH) */
@@ -4473,7 +4473,7 @@ void he_Unk54ae60(int ev)
     he_FreeEvent((int *)ev);
 }
 
-int gm_EquipmentValue(unsigned char *b, int unused);
+int gm_EquipmentValue(unsigned char *b, int level);
 int gm_BuildingLevel();
 
 /* 0x54b170, a Ghidra miss: the init of the protection money event: +0xb8 = -1, and (bit 4 of +0x78 clear) due now, state 1, posted 2 units ahead */
@@ -10825,7 +10825,7 @@ void he_Unk55a030(int ev)
 }
 
 int ai_Unk494d90();
-int gm_EquipmentValue(unsigned char *b, int unused);
+int gm_EquipmentValue(unsigned char *b, int level);
 int gm_SumListAmounts(void *list, unsigned char p);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 

@@ -710,7 +710,7 @@ int ord_GetGridCell(char *p, int *x, int *y);  /* 0x4f8300, the grid cell (x, y)
 
 unsigned char * gm_BuildNext(void);                     /* 0x501030 */
 int gm_FindById(int *bld, int *obj, int *chr, int id);  /* 0x4fea50, fills *bld with the object of the id (ai.h's prototype) */
-int gm_EquipmentValue(unsigned char *b, int unused);                     /* 0x509b10 */
+int gm_EquipmentValue(unsigned char *b, int level);                     /* 0x509b10 */
 void ord_CountGridObjects(void);               /* 0x4f8360 */
 
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */

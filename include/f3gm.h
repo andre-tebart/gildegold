@@ -151,7 +151,7 @@ int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0 */
 float gm_CharAge(unsigned short id);  /* 0x505e30, the age (+0x0a) of the character id */
 float gm_StaffFactor(unsigned char *b, int n, int *ids);  /* 0x50cdc0, the staff factor of the building b with the persons ids[0 .. n - 1] */
 int gm_CollectOffers(int goods);  /* 0x500c20 */
-int gm_EquipmentValue(unsigned char *b, int unused);  /* 0x509b10 */
+int gm_EquipmentValue(unsigned char *b, int level);  /* 0x509b10 */
 char *gm_FindGoods(int p, unsigned id);  /* 0x4ffc40 */
 int gm_FindMarketObject(int id);  /* 0x500ec0 */
 int gm_FreeCapacity(short *l, int id, int n);  /* 0x50ab80 */
