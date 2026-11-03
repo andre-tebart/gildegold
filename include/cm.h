@@ -58,11 +58,11 @@ extern G17MSG *cm_RecvQueue;            /* 0xa68d24, the received messages */
 extern char *cm_FieldObject;              /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 extern int ai_Unka68d30;                /* 0xa68d30, length of ai_Unka68800 */
 extern char *ai_Unka68d34;              /* 0xa68d34 */
-extern unsigned char ai_Unka68d40[];    /* 0xa68d40, a joined long message */
+extern unsigned char cm_LongMsg[];    /* 0xa68d40, a joined long message */
 extern G17MSG cm_SendRing[0x8000];     /* 0xa69140, the send ring */
 extern G17STAT cm_SendStates[0x8000];    /* 0xf31160 */
 extern G17MSG *cm_SendQueue;            /* 0xf81160, the messages to send */
-extern unsigned int ai_Unkf81164;       /* 0xf81164, length of ai_Unka68d40 */
+extern unsigned int cm_LongMsgLen;       /* 0xf81164, length of cm_LongMsg */
 extern int cm_LastSeq;       /* 0xf81168, the last sequence number */
 extern G17MSG cm_RecvMsg;             /* 0xf81180, the message being received */
 extern unsigned int cm_GroupFirstSeq;       /* 0xf8121c */
@@ -164,7 +164,7 @@ int cm_WaitHello(void);                                                         
 int cm_FlushSendQueue(void);                                                          /* 0x4c3680 */
 int ai_Unk4c3720(void);                                                          /* 0x4c3720 */
 int cm_SplitComplete(G17MSG *m);                                                     /* 0x4c3850 */
-unsigned int ai_Unk4c38e0(G17MSG *m);                                            /* 0x4c38e0 */
+unsigned int cm_JoinSplit(G17MSG *m);                                            /* 0x4c38e0 */
 int ai_Unk4c39c0(G17MSG *src);                                                   /* 0x4c39c0 */
 int cm_GetSlotState(int h);                                                         /* 0x4c3ae0 */
 int cm_GetSlotValue(int h);                                                         /* 0x4c3b10 */

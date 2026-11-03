@@ -462,35 +462,43 @@ int cm_SplitComplete(G17MSG *m)
     }
     return 0;
 }
-/* 0x4c38e0, joins the parts of the split message m into ai_Unka68d40 and frees them; returns the length */
+/* 0x4c38e0, joins the parts of the split message m into cm_LongMsg and frees them; returns the length
+   @deep read against the original in full: meaning matches (both search loops as
+   for(r=cm_RecvQueue;r;r=r->next) if(match) break; if(!r) return 0; p->next7 cleared after the part copy).
+   Tried: seq local, while forms, combined early return, store orders. Left: allocation only, m in ecx and
+   next7 in esi where the original has m in esi, next7 in ecx (slots 16 / regs 8 hunks), and the code hunk
+   at 0x4c391f '- mov [ecx+0xc],ebx; xor ecx,ecx | + xor ecx,ecx; mov [esi+0xc],ebx' (the same store under
+   that renaming, scheduled one later), order 10 at 0x4c398c */
 
-unsigned int ai_Unk4c38e0(G17MSG *m)
+unsigned int cm_JoinSplit(G17MSG *m)
 {
     G17MSG *r, *p;
     int n;
 
-    if (m->next7 == 0 || cm_RecvQueue == 0)
+    if (m->next7 == 0)
         return 0;
-    for (r = cm_RecvQueue; r->sender != m->sender || r->seq != m->next7; r = r->next)
-        if (r->next == 0)
-            return 0;
+    for (r = cm_RecvQueue; r != 0; r = r->next)
+        if (r->sender == m->sender && r->seq == m->next7)
+            break;
+    if (r == 0)
+        return 0;
     m->next7 = 0;
-    ai_Unkf81164 = r->splitLen;
-    memcpy(ai_Unka68d40, r->data + 2, 0x7e);
+    cm_LongMsgLen = r->splitLen;
+    memcpy(cm_LongMsg, r->data + 2, 0x7e);
     r->type = 0;
-    for (n = 0x7e, p = r; n < (int)ai_Unkf81164; n += 0x80) {
-        if (cm_RecvQueue == 0)
+    for (n = 0x7e, p = r; n < (int)cm_LongMsgLen; n += 0x80) {
+        for (r = cm_RecvQueue; r != 0; r = r->next)
+            if (r->sender == p->sender && r->seq == p->next7)
+                break;
+        if (r == 0)
             return 0;
-        for (r = cm_RecvQueue; r->sender != p->sender || r->seq != p->next7; r = r->next)
-            if (r->next == 0)
-                return 0;
+        memcpy(cm_LongMsg + n, r->data, 0x80);
         p->next7 = 0;
-        memcpy(ai_Unka68d40 + n, r->data, 0x80);
         r->type = 0;
         p = r;
     }
     r->next7 = 0;
-    return ai_Unkf81164;
+    return cm_LongMsgLen;
 }
 /* 0x4c39c0, queues a copy of src in the send ring; returns its slot, -1: closed or the slot is still in use */
 
@@ -898,7 +906,7 @@ int cm_ExecCommands(void)
             t->prev = 0;
             t->next = cm_RecvFree;
             cm_RecvFree = t;
-            ai_Unk4c38e0(t);
+            cm_JoinSplit(t);
             if (t->type < 0x6a) {
                 if (t->idx == -1) {
                     s = 0;
@@ -3340,14 +3348,14 @@ int ai_Unk4c8240(G17MSG *m, G17STAT *s)
     return 0;
 }
 /* 0x4c85c0, handler of type 0x1c: creates the job / message box of the long message (0xf8 bytes, AIMSG) and its
-   texts (after it in ai_Unka68d40) */
+   texts (after it in cm_LongMsg) */
 
 int ai_Unk4c85c0(G17MSG *m, G17STAT *s)
 {
     char msg[0xf8];
     char *c, *o, *t1, *t2;
 
-    memcpy(msg, ai_Unka68d40, 0xf8);
+    memcpy(msg, cm_LongMsg, 0xf8);
     c = gm_FindChar(*(int *)(msg + 8));
     if (net_Conn.s != INVALID_SOCKET) {
         if (msg[0x36] & 1) {
@@ -3372,7 +3380,7 @@ set:
     if (o == 0)
         return 1;
     if (o[0] == 0x11) {
-        t1 = (char *)ai_Unka68d40 + 0xf8;
+        t1 = (char *)cm_LongMsg + 0xf8;
         if (o[0xf0] & 0x10) {
             t2 = t1 + strlen(t1) + 1;
             *(char **)(o + 0x7c) = mem_Alloc(strlen(t1) + strlen(t2) + 2, "messagebox");
@@ -3413,7 +3421,7 @@ int ai_Unk4c87a0(G17MSG *m, G17STAT *s)
     *(G17T14 *)(p + 0x52) = *(G17T14 *)&m->data[0x12];
     *(G17T14 *)(p + 0x60) = *(G17T14 *)&m->data[0x20];
     *(int *)(p + 0x70) = (char)m->data[0x2e];
-    memcpy(p + 0xac, ai_Unka68d40, 0xa0);
+    memcpy(p + 0xac, cm_LongMsg, 0xa0);
     if (s != 0) {
         s->state = 1;
         s->unk01 = 4;
@@ -3758,7 +3766,7 @@ int ai_Unk4c9170(G17MSG *m, G17STAT *s)
     if (i < 16) {
         if (ai_Unk6f0d90 != 0 && *ai_Unk6f0d90 == G17_I(*m, 4)) {
             rec = ai_Unk92cae0[i];
-            memcpy(rec, ai_Unka68d40, 0x35c);
+            memcpy(rec, cm_LongMsg, 0x35c);
             *(int *)(rec + 0xc) = 0;
             sprintf(buf, "cm_ExSendCutInfo: PlayerId:%i Valid:%i  Ready:%i  Time:%i", *(int *)(rec + 0x10),
                     *(int *)(rec + 8), *(int *)(rec + 4), d3_Time);
@@ -3785,7 +3793,7 @@ int ai_Unk4c9280(G17MSG *m, G17STAT *s)
     char *o;
     int ret = 0;
 
-    memcpy(buf, ai_Unka68d40, 0x114);
+    memcpy(buf, cm_LongMsg, 0x114);
     if (ai_Unk1460ae0 != -1)
         ai_NextPartyId = G17_I(*m, 0);
     o = ai_Unk4e5150(buf);
@@ -3814,7 +3822,7 @@ int ai_Unk4c9340(G17MSG *m, G17STAT *s)
     char buf[0x114];
     char *o;
 
-    memcpy(buf, ai_Unka68d40, 0x114);
+    memcpy(buf, cm_LongMsg, 0x114);
     o = ai_Unk4e5150(buf);
     if (o == 0) {
         err_Message("cm_ExAllocCutscene(): Cutscene-Queue is full!");
@@ -6039,7 +6047,7 @@ int ai_Unk4cd220(G17MSG *m, G17STAT *s)
         *(int *)(q + 0x29) = 0;
     }
     n = G17_I(*m, 4);
-    memcpy(buf, ai_Unka68d40, n << 6);
+    memcpy(buf, cm_LongMsg, n << 6);
     prev = 0;
     for (i = 0; i < n; i++) {
         *(int *)(buf + i * 0x40 + 0x34) = prev;
@@ -14980,13 +14988,13 @@ extern G17MSG * cm_RecvQueue;
 extern char * cm_FieldObject;
 extern int ai_Unka68d30;
 extern char * ai_Unka68d34;
-extern unsigned char ai_Unka68d40[1024];
+extern unsigned char cm_LongMsg[1024];
 extern G17MSG cm_SendRing[0x8000];
 extern char * cm_LoadBuf;
 extern int cm_DayEndRequest;
 extern G17STAT cm_SendStates[0x8000];
 extern G17MSG * cm_SendQueue;
-extern unsigned int ai_Unkf81164;
+extern unsigned int cm_LongMsgLen;
 extern G17MSG cm_RecvMsg;
 extern unsigned int cm_GroupFirstSeq;
 extern char ai_Unkf895a0[0xb00];
@@ -15227,13 +15235,13 @@ G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
 char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 int ai_Unka68d30 = 0;  /* 0xa68d30, length of ai_Unka68800 */
 char * ai_Unka68d34 = 0;  /* 0xa68d34 */
-unsigned char ai_Unka68d40[1024] = {0};  /* 0xa68d40, a joined long message */
+unsigned char cm_LongMsg[1024] = {0};  /* 0xa68d40, a joined long message */
 G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
 char * cm_LoadBuf = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
 int cm_DayEndRequest = 0;  /* 0xf31144 */
 G17STAT cm_SendStates[0x8000] = {0};  /* 0xf31160 */
 G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
-unsigned int ai_Unkf81164 = 0;  /* 0xf81164, length of ai_Unka68d40 */
+unsigned int cm_LongMsgLen = 0;  /* 0xf81164, length of cm_LongMsg */
 G17MSG cm_RecvMsg = {0};  /* 0xf81180, the message being received */
 unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
 char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
