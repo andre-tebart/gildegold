@@ -3796,7 +3796,7 @@ void main_RoundReport(void)
             }
             b = (unsigned char *)gm_BuildNext();
         }
-        nrow = gm_Unk50a1c0(U_I((unsigned)&ai_PlayerId) & 0xffff, 0, 0xffff, lines);
+        nrow = gm_BuildingEvents(U_I((unsigned)&ai_PlayerId) & 0xffff, 0, 0xffff, lines);
         j = 0;
         v = 0;
         if (nrow > 0) {

@@ -1228,3 +1228,4 @@
 2026-11-03T08:28:53 0x005099e0 func gm_Unk5099e0 -> gm_BuildingGoodsList17 by:main why:gm_BuildingGoodsList with the goods filter type 0x17 (kind != 0) / all others (kind 0)
 2026-11-03T08:34:01 0x00509f80 func gm_Unk509f80 -> gm_StallValue by:main why:0x509f80 sums gm_ItemPrice over the goods objects (query 1, 5) of the building's stall (its object 0x2a, as gm_OwnerWorth); gm_GetWorth adds it per building
 2026-11-03T08:34:33 0x0050a0f0 func gm_Unk50a0f0 -> gm_ObjectBuilding by:main why:0x50a0f0 follows the object's ownerId (+6) through gm_FindById until a building holds it and returns that building (callers use its objList +0x5d / roundSum +0x4d); 0 when a character holds it
+2026-11-03T08:35:26 0x0050a1c0 func gm_Unk50a1c0 -> gm_BuildingEvents by:main why:0x50a1c0 collects up to 9 events of the kind 0x23 whose building (+0xac, gm_BuildQuery by id) belongs to the owner, optionally one building and one character (+0xb0 netId)

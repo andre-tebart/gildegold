@@ -54,6 +54,13 @@ typedef struct GMBTYPE {
 typedef char gm_AssertGMBTYPE[sizeof(GMBTYPE) == 0x24d ? 1 : -1];
 #define GM_BTYPE(i) ((GMBTYPE *)ai_BTypes + (i))  /* the building type i of ai_BTypes (char *) */
 
+/* an event of the kind 0x23 (he_FindEvent(1, 0, 0x23)) as gm_BuildingEvents / gm_Unk50a150 read it */
+typedef struct GMEVENT23 {
+    char pad000[0xac];
+    int bldId;                          /* 0x0ac, the building's id (ORDBLD.id) */
+    int charId;                         /* 0x0b0, the character's netId (ORDCHAR.netId) */
+} GMEVENT23;
+
 
 /* the long message (ai.h AIMSG, 0xf8 bytes, cm_SendLongMessage) as this unit fills it: ai.h is not includable here */
 typedef struct GMMSG {

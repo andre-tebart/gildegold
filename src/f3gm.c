@@ -9335,23 +9335,23 @@ int gm_Unk50a150(int c, int p, int *out)
     }
     return n;
 }
-/* 0x50a1c0, the same for the buildings of the owner o (+0x27 = o), optionally one building b and one character c */
+/* 0x50a1c0, collects into out (up to 9) the events of the kind 0x23 whose building belongs to the owner (ORDBLD.owner), only of the building b when b is not 0 and of the character slot c when c is not 0xffff; returns their number */
 
-int gm_Unk50a1c0(unsigned o, int b, int c, int *out)
+int gm_BuildingEvents(unsigned owner, int b, int c, int *out)
 {
     int n;
-    char *it, *bl;
+    GMEVENT23 *ev;
+    ORDBLD *bl;
 
     n = 0;
-    it = (char *)he_FindEvent(1, 0, 0x23);
-    while (it != 0 && n < 9) {
-        bl = (char *)gm_BuildQuery(1, 1, *(int *)(it + 0xac));
-        if (bl != 0 && *(unsigned short *)(bl + 0x27) == o && (b == 0 || b == (int)bl) &&
-            (c == 0xffff || *(int *)(ai_Chars[c] + 4) == *(int *)(it + 0xb0))) {
-            n++;
-            out[n - 1] = (int)it;
+    ev = (GMEVENT23 *)he_FindEvent(1, n, 0x23);
+    while (ev != 0 && n < 9) {
+        bl = (ORDBLD *)gm_BuildQuery(1, 1, ev->bldId);
+        if (bl != 0 && bl->owner == owner && (b == 0 || b == (int)bl) &&
+            (c == 0xffff || ORD_CHARS[c].netId == ev->charId)) {
+            out[n++] = (int)ev;
         }
-        it = (char *)he_NextEvent();
+        ev = (GMEVENT23 *)he_NextEvent();
     }
     return n;
 }
@@ -9401,7 +9401,7 @@ int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
             if (all == -1)
                 return 3;
         }
-        r = gm_Unk50a1c0(*(unsigned short *)(b + 0x27), 0, 0xffff, buf);
+        r = gm_BuildingEvents(*(unsigned short *)(b + 0x27), 0, 0xffff, buf);
         if (r < 9) {
             memset(out, 0, cnt * 12);
             gm_GetWorth(*p);
