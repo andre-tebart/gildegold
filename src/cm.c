@@ -7052,7 +7052,7 @@ int cm_UpdateBombs()
                     cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 1);
                 else
                     cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 2);
-                if (cm_CheckDeath((char *)c) == 0)
+                if (cm_CheckDeath(c) == 0)
                     ch_QueueAnim(ch, "kampf/bauch_greifen", 1);
             }
         }
@@ -7220,7 +7220,7 @@ int cm_UpdateGrenades()
                     cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 1);
                 else
                     cm_ShowDamage((char *)ai_SceneCharsT[j], amt, 2);
-                if (cm_CheckDeath((char *)c) == 0)
+                if (cm_CheckDeath(c) == 0)
                     ch_QueueAnim(ch, "kampf/arm_greifen", 1);
             }
         }
@@ -7231,7 +7231,7 @@ int cm_UpdateGrenades()
 }
 /* 0x4ceb70 */
 
-int ai_Unk4ceb70(char *c)
+int cm_ObjectOwner(char *c)
 {
     return *(int *)(c + 0x200);
 }
@@ -9524,7 +9524,7 @@ void cm_CarryOutOrder(char *rec, char *c)
 }
 /* 0x4d3300, a character falls: the sound "Koerperfaellt" and a blood puddle "ub_Blutlache" (random turn) at its place */
 
-void ai_Unk4d3300(char *c)
+void cm_FallDownAction(char *c)
 {
     float rot[3];
     char *b;
@@ -9537,45 +9537,45 @@ void ai_Unk4d3300(char *c)
     b = (char *)d3_CreateObject(0, *(char **)(*(char **)(c + 0x14) + 0x34) + 0x4c, rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
 }
-/* 0x4d3390, the death of the character c when its strength 0x4fc8e0 is below 5edbd0: the model is stopped (0x415e90 / 0x405610),
-   an object with the callback 0x4d3300 (blood puddle) and the sound name "kampf/todumfallen" is created (+0xf0), the character
-   marked dead (+8 = 0), the sound "Schmerzschrei", a random text 0x1181 / 0x1182 sent to the side, the carried object (+0x1ac)
-   put down and given to the defender; returns 1, else 0. Rough draft. */
+/* 0x4d3390, the death of the fighter c once its health ratio (gm_HealthRatio) is below 0.05: blood spray at the body
+   (d3t_CreateBlood), its actions stopped and the fall queued (cm_FallDownAction with the sound "kampf/todumfallen"),
+   health 0, the body's kind cleared, the cry "Schmerzschrei", v024 set below zero (-life - 20 with a chance of a half,
+   text 0x1181, else 10 - life, text 0x1182) and the text shown; a ware it carried (v1ac) is put at the body, shown and
+   handed to the defender. Returns 1, 0 while it lives */
 
-int cm_CheckDeath(char *c)
+int cm_CheckDeath(AICHAR *c)
 {
     char buf[0x100];
-    char *m, *b, *p;
-    int o;
+    CHACTION *a;
+    D3OBJECT *ware;
 
-    cm_CharWeapon(c);
-    if (!(gm_HealthRatio(c) < ai_Unk5edbd0))
-        return 0;
-    d3t_CreateBloodK(*(char **)(c + 0x184) + 0, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
-    ch_StopActions(*(char **)(c + 0x184));
-    b = (char *)ch_AddActionCBK(*(char **)(c + 0x184), ai_Unk4d3300, 0x14, 0x36, 1);
-    strcpy(b + 0xf0, "kampf/todumfallen");
-    c[8] = 0;
-    m = *(char **)(*(char **)(c + 0x184) + 0x34);
-    *(int *)(m + 0x220) = 0;
-    sb_PlaySampleI(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
-    if (cm_Random(100) > 0x32) {
-        *(int *)(c + 0x24) = (int)((double)(-(int)*(float *)(c + 0x1c)) - ai_Unk5eb8e0);
-        txt_FormatS(buf, (char *)0x1181, *(unsigned short *)c);
-    } else {
-        *(int *)(c + 0x24) = (int)(ai_Unk5eb990 - (double)(int)*(float *)(c + 0x1c));
-        txt_FormatS(buf, (char *)0x1182, *(unsigned short *)c);
+    cm_CharWeapon((char *)c);
+    if (gm_HealthRatio((short *)c) < 0.05) {
+        d3t_CreateBlood(c->scene->obj, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
+        ch_StopActions(c->scene);
+        a = ch_AddActionCB(c->scene, (CHACTFUNC)cm_FallDownAction, 0x14, 0x36, 1);
+        strcpy((char *)a + 0xf0, "kampf/todumfallen");
+        c->health = 0;
+        c->scene->obj->kind = 0;
+        sb_PlaySample(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
+        if (cm_Random(100) > 50) {
+            c->v024 = (int)(-(int)c->f01c - 20.0);
+            txt_Format(buf, 0x1181, c->id);
+        } else {
+            c->v024 = (int)(10.0 - (int)c->f01c);
+            txt_Format(buf, 0x1182, c->id);
+        }
+        ware = (D3OBJECT *)c->v1ac;
+        if (ware != 0) {
+            d3_SetWorldPosRot(ware, (float *)&c->scene->obj->pos, &c->scene->obj->matrix);
+            d3if_Show(ware, 1);
+            c->v1ac = 0;
+            ((AIOBJ *)cm_ObjectOwner((char *)ware))->fightSide = ((AICHAR *)cm_FightDefender)->id;
+        }
+        sv_SetStatusText(buf);
+        return 1;
     }
-    o = *(int *)(c + 0x1ac);
-    if (o != 0) {
-        d3_SetWorldPosRot(o, m + 0x4c, m + 0x18c);
-        d3if_Show(o, 1);
-        *(int *)(c + 0x1ac) = 0;
-        p = (char *)ai_Unk4ceb70(*(char **)cm_FightDefender);
-        *(int *)(p + 0xa) = *(unsigned short *)cm_FightDefender;
-    }
-    sv_SetStatusText(buf);
-    return 1;
+    return 0;
 }
 
 #define G19_FIGHTER_SYNC(ch)                                                          \
@@ -9652,7 +9652,7 @@ void ai_Unk4d3550(char *ev)
                 sb_PlaySampleI(0, "Treffer", 1, 0x3f, 0x7f, 0, 0);
             break;
         }
-        if (cm_CheckDeath(att) == 0) {
+        if (cm_CheckDeath((AICHAR *)att) == 0) {
             if (hitv != 0) {
                 d3t_CreateBloodK(*(char **)(*(char **)(att + 0x184) + 0x34), 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
                 if (*(char **)(*(char **)(att + 0x184) + 0x128) == 0 || (*(char **)(*(char **)(att + 0x184) + 0x128))[9] == 0x3b) {
@@ -9718,7 +9718,7 @@ void ai_Unk4d3ae0(char *ev)
     int o = *(int *)(ev + 0x180);
     char *p;
 
-    p = ai_Unk4ceb70((char *)o);
+    p = cm_ObjectOwner((char *)o);
     if (p != 0) {
         *(int *)(p + 0xa) = *(unsigned short *)cm_FightAttacker;
         *(int *)(att + 0x1ac) = o;

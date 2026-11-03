@@ -576,7 +576,7 @@ extern int cm_BombSounds;  /* 0x6f0d14 */
 extern char cm_Grenades[];  /* 0x935a00 */
 
 int cm_UpdateGrenades();  /* 0x4ce830 */
-int ai_Unk4ceb70(char *c);  /* 0x4ceb70 */
+int cm_ObjectOwner(char *c);  /* 0x4ceb70 */
 void ai_Unk4ceb80(int id);  /* 0x4ceb80 */
 void cm_CloseCharInfoWins();  /* 0x4cec00 */
 void cm_OpenCharInfoWin(int a, char *c);  /* 0x4cec30 */
@@ -785,11 +785,11 @@ extern float ai_FloatOne;  /* 0x5eb780 */
 extern double ai_Unk5eb9b0;  /* 0x5eb9b0 */
 
 void cm_CarryOutOrder(char *rec, char *c);  /* 0x4d3120 */
-void ai_Unk4d3300(char *c);  /* 0x4d3300 */
+void cm_FallDownAction(char *c);  /* 0x4d3300 */
 extern float ai_Unk5eb7dc;  /* 0x5eb7dc */
 extern const double ai_Unk5edc68;  /* 0x5edc68 */
 
-int cm_CheckDeath(char *c);  /* 0x4d3390 */
+int cm_CheckDeath(struct AICHAR *c);  /* 0x4d3390 */
 struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, int (*func2)(struct CHACTION *), unsigned char frame, unsigned int type, ...); /* 0x40b400, ch.h (CHACTFUNC func2; cm.c calls it through ch_AddActionCBK) */
 void d3_SetWorldPosRot();  /* 0x449920 */
 extern double ai_Unk5edbd0;  /* 0x5edbd0 */

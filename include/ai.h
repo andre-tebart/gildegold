@@ -72,7 +72,8 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     int objId;                          /* 0x02, the object's own id (0x500190 gives a new one; messages name the
                                            object by it, 0x4fea50 finds it by it) */
     int ownerId;                        /* 0x06, the id of the building / object / character holding it (gv.h ORDOBJ.ownerId) */
-    char pad0a[4];
+    int fightSide;                      /* 0x0a, a good shown as a fight scene's "WARE_" object: the id (AICHAR.id) of the
+                                           fight side's leader holding it (cm.c: cm_CheckDeath hands it to the defender) */
     union {
         int unk0e;                      /* 0x0e */
         int count;                      /* 0x0e */
