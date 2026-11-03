@@ -1500,35 +1500,28 @@ void he_PostEvent2b(void)
         }
     }
 }
-/* 0x53f270, posts the events 0x86 and 0xa2 (once each) for the player of 0x6f1bf8 */
-
-void he_Unk53f270(void)
+/* 0x53f270, posts the events 0x86 and 0xa2 to the player's character, each when none exists yet */
+void he_PostPlayerEvents86a2(void)
 {
-    char ev[0xf8];
+    AIMSG m;
 
     if (he_FindEvent(1, 0, 0x86) == 0) {
-        memset(ev, 0, 0xf8);
-        HM_B(ev, 4) = 0x86;
-        HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-        HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-        HM_I(ev, 0xc) = -1;
-        HM_B(ev, 0x36) = 2;
-        HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-        *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        cm_SendLongMessage(ev);
+        memset(&m, 0, sizeof(m));
+        m.type = 0x86;
+        m.to = he_PlayerCh->netId;
+        m.fromId = -1;
+        m.flags = 2;
+        m.time = ai_Time;
+        cm_SendLongMessage((char *)&m);
     }
     if (he_FindEvent(1, 0, 0xa2) == 0) {
-        memset(ev, 0, 0xf8);
-        HM_B(ev, 4) = 0xa2;
-        HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-        HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-        HM_I(ev, 0xc) = -1;
-        HM_B(ev, 0x36) = 2;
-        HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-        *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        cm_SendLongMessage(ev);
+        memset(&m, 0, sizeof(m));
+        m.type = 0xa2;
+        m.to = he_PlayerCh->netId;
+        m.fromId = -1;
+        m.flags = 2;
+        m.time = ai_Time;
+        cm_SendLongMessage((char *)&m);
     }
 }
 /* 0x53f370, posts the event 0x98 for every building of kind 0x1e (workshop; +0xc = its id) that has none and a record */
@@ -2086,7 +2079,7 @@ void he_Unk540e40(void)
 void he_Unk540fe0(void)
 {
     he_PostEvent2b();
-    he_Unk53f270();
+    he_PostPlayerEvents86a2();
     he_Unk540c90();
     he_Unk53f500();
     he_Unk53f430();
