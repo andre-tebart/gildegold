@@ -1689,3 +1689,7 @@
 2026-11-03T21:27:00 0x0092c600 data ai_Unk92c600 -> cm_SceneState by:main why:the 0x480 bytes of scene state cm_ExecCutscene clears before each cutscene
 2026-11-03T21:27:00 0x0092c500 data ai_Unk92c500 -> cm_KindRun by:main why:the scene kind's run function (+0 of the 5 ints per kind, ai_Unk4e5730 registers it)
 2026-11-03T21:29:38 0x004c4bc0 func ai_Unk4c4bc0 -> cm_SendLongMessageText by:main why:message 0x1c: the long message msg (0xf8 bytes, AIMSG) with len bytes of text after it (cm_SendLongMessage without a text)
+2026-11-03T21:32:00 0x004e4b50 func ai_Unk4e4b50 -> cm_CutsceneReady by:main why:its group name "cut_CutsceneReady": asks whether the party's members are ready (message 0x59) before the cutscene runs
+2026-11-03T21:32:00 0x004c4fd0 func ai_Unk4c4fd0 -> cm_SendLeaveParty by:main why:message 0x2a (party id, member netId): sent for a member that is gone or in another party (cm_CutsceneReady) and after ai_Unk4e5210 removes a character from a party (he.c)
+2026-11-03T21:32:00 0x004c5f20 func ai_Unk4c5f20 -> cm_SendCutsceneReady by:main why:message 0x59 with the party's id and its 16 members, sent by cm_CutsceneReady
+2026-11-03T21:32:00 0x004e4a50 func ai_Unk4e4a50 -> cm_CheckMaster by:main why:its trace "cut_CheckMaster": 1 when the party's owner is still a member, else a new master is chosen

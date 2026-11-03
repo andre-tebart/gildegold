@@ -226,7 +226,7 @@ void cm_SendProofExecuted(int a, int b);                                        
 void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */
 int cm_RequestSendCutInfo(int id, int b);                                                 /* 0x4c4f50, "cm_RequestSendCutInfo": its send slot (cm_GetSlotState) */
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
-void ai_Unk4c4fd0(int a, int b);                                                 /* 0x4c4fd0 */
+int cm_SendLeaveParty(int a, int b);                                                  /* 0x4c4fd0, its send slot (cm_GetSlotState) */
 void cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
 int cm_SendObject1b5(int owner, G17B7 value);                                        /* 0x4c50b0 */
@@ -271,7 +271,7 @@ int cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);             
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
 void ai_Unk4c5ec0(int a);                                                        /* 0x4c5ec0 */
 void ai_Unk4c5ef0(int a);                                                        /* 0x4c5ef0 */
-void ai_Unk4c5f20(void *p);                                                      /* 0x4c5f20 */
+int cm_SendCutsceneReady(void *p);                                                       /* 0x4c5f20, its send slot (cm_GetSlotState) */
 void cm_SendMoneyDelta(int a, int b);                                                 /* 0x4c5f60 */
 void cm_SendMessage5b(int a, int b, int c);                                          /* 0x4c5fa0 */
 void cm_SendTradeMessage(char *p);                                                      /* 0x4c5fe0 */

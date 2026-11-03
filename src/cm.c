@@ -1500,14 +1500,14 @@ int cm_SendNewParty(void *p)
 }
 /* 0x4c4fd0, message 0x2a */
 
-void ai_Unk4c4fd0(int a, int b)
+int cm_SendLeaveParty(int a, int b)
 {
     G17MSG m;
 
     m.type = 0x2a;
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5010, message 0x2b */
 
@@ -2133,13 +2133,13 @@ void ai_Unk4c5ef0(int a)
 }
 /* 0x4c5f20, message 0x59 (0x48 bytes of p) */
 
-void ai_Unk4c5f20(void *p)
+int cm_SendCutsceneReady(void *p)
 {
     G17MSG m;
 
     m.type = 0x59;
     memcpy(m.data, p, 0x48);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5f60, message 0x5a */
 
@@ -16171,7 +16171,7 @@ void cm_SendPartyNote(int *a, char *b, char *text, char *extra)
    still exists (as long as none was found, 16 slots) becomes the new owner: the log "new master for id %i => %i", a request (0x4c61f0) and the wait for its
    answer (0x4c3ae0 with the frame wait 0x52fe00); 0 then. The log "invalid master for id %i" comes first. ROUGH */
 
-int ai_Unk4e4a50(char *m)
+int cm_CheckMaster(char *m)
 {
     char buf[0x80];
     int flag, i, h;
@@ -16198,50 +16198,46 @@ int ai_Unk4e4a50(char *m)
     }
     return 1;
 }
-/* 0x4e4b50, "cut_CutsceneReady": the party m (+0 the id, +0x26 bit 7: the owner side, +0x30 count, +0x34 ids) is asked whether every member is ready: in the
-   owner's run (bit 7 clear) a request (0x4c4fd0) goes to every member that does not exist / belongs to another master (kinds 6 / 7), the last one is waited
-   for; otherwise the first such member ends the run with 0. A bad master (0x4e4a50) gives -1; else the message (id + the 0x10 ids) is sent
-   (0x4c4540 / 0x4c5f20 / 0x4c4580) and the answer 2 of the wait makes 0, anything else 1. ROUGH */
+/* 0x4e4b50, "cut_CutsceneReady": whether the party m can start. On its owner's side (flags bit 7 clear) every member that is
+   gone, or a player's character (kind 6 / 7) still in another party, is sent request 0x2a and the last request is waited
+   for; on the other side such a member makes 0. Then the owner is checked (cm_CheckMaster, -1 when it had to change) and the
+   party's id with its 16 members goes out as message 0x59: 0 when the answer is 2, else 1 */
 
-int ai_Unk4e4b50(char *m)
+int cm_CutsceneReady(char *m)
 {
+    G28REC *party = (G28REC *)m;
     int buf[0x12];
     int i, h;
-    int *p;
-    char *c;
+    AICHAR *c;
 
     memset(buf, 0, sizeof(buf));
     i = 0;
-    if ((signed char)m[0x26] >= 0) {
+    if (!(party->flags & 0x80)) {
         h = -1;
-        p = (int *)(m + 0x34);
-        for (i = 0; i < (unsigned char)m[0x30]; i++, p++) {
-            if (*p == -1)
+        for (; i < party->used; i++) {
+            if (party->members[i] == -1)
                 continue;
-            c = (char *)gm_FindChar(*p);
-            if (c == 0 || (*(int *)(c + 0x20c) != -1 && *(int *)(c + 0x20c) != *(int *)m && (c[2] == 6 || c[2] == 7)))
-                h = ((int (*)())ai_Unk4c4fd0)(*(int *)m, *p);
+            c = (AICHAR *)gm_FindChar(party->members[i]);
+            if (c == 0 || (c->partyId != -1 && c->partyId != party->id && (c->kind == 6 || c->kind == 7)))
+                h = cm_SendLeaveParty(party->id, party->members[i]);
         }
-        if (h != -1) {
-            while (cm_GetSlotState(h) == 0)
-                sv_PumpNet();
-        }
+        while (h != -1 && cm_GetSlotState(h) == 0)
+            sv_PumpNet();
     } else {
-        p = (int *)(m + 0x34);
-        for (i = 0; i < (unsigned char)m[0x30]; i++, p++) {
-            if (*p == -1)
+        for (; i < party->used; i++) {
+            if (party->members[i] == -1)
                 continue;
-            c = (char *)gm_FindChar(*p);
-            if (c != 0 && *(int *)(c + 0x20c) != -1 && *(int *)(c + 0x20c) != *(int *)m && (c[2] == 6 || c[2] == 7))
+            c = (AICHAR *)gm_FindChar(party->members[i]);
+            if (c != 0 && c->partyId != -1 && c->partyId != party->id && (c->kind == 6 || c->kind == 7))
                 return 0;
         }
     }
-    if (ai_Unk4e4a50(m) == 0)
+    if (cm_CheckMaster(m) == 0)
         return -1;
-    buf[0] = *(int *)m;
-    memcpy(buf + 1, m + 0x34, 0x40);
+    buf[0] = party->id;
+    memcpy(buf + 1, party->members, sizeof(party->members));
     cm_BeginGroup("cut_CutsceneReady");
-    h = ((int (*)())ai_Unk4c5f20)(buf);
+    h = cm_SendCutsceneReady(buf);
     cm_EndGroup("cut_CutsceneReady");
     while (cm_GetSlotState(h) == 0)
         sv_PumpNet();
@@ -16266,7 +16262,7 @@ int cm_UpdateParties(void)
         if (*(int *)(r - 0xc) == -1 && ((cm_NetFlags & 8) || (ai_GameFlags & 8)))
             *(int *)(r - 0xc) = ai_CharInts[ai_PlayerId][0];
         if (ai_CharInts[ai_PlayerId][0] == *(int *)(r - 0xc) && *(int *)(r + 0x10) == 0 && gm_CompareTime(&ai_Time, (char *)&x) > 0) {
-            k = ai_Unk4e4b50(r - 0x18);
+            k = cm_CutsceneReady(r - 0x18);
             if (k == -1) {
                 gm_AddTime(r, 0, 5, 0);
                 if (*(unsigned short *)(r + 4) >= 0x16)

@@ -10240,7 +10240,7 @@ void he_Unk557160(int ev)
 
 int cm_PartyById();
 int ai_Unk4e5210();
-void ai_Unk4c4fd0(int a, int b);
+int cm_SendLeaveParty(int a, int b);
 void sb_Stop();
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
@@ -10327,7 +10327,7 @@ void he_Unk557190(int ev)
                 if (w != 0)
                     sv_SelectPanelObjectK(w);
                 ai_Unk4e5210();
-                ((void (*)())ai_Unk4c4fd0)();
+                ((void (*)())cm_SendLeaveParty)();
             }
             if ((fl & 0x40) != 0 && (U_I((unsigned)&ai_GameFlags) & 4) != 0)
                 di_ClearButtons();
