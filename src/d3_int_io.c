@@ -608,7 +608,7 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                 if (d3sm_Shadow)
                     d3sm_Build(d3sm_Shadow, 0);
                 else
-                    d3sm_Shadow = d3sm_Create(0, -d3if_Unk633dcc, 1);
+                    d3sm_Shadow = d3sm_Create(0, -d3s_ShadowMapSize, 1);
             } else if (d3sm_Shadow) {
                 d3sm_Destroy(d3sm_Shadow);
                 d3sm_Shadow = 0;

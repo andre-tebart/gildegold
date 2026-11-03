@@ -464,7 +464,7 @@ void ai_FavourComment(char *a);
 /* ---- the town scene loading 0x5124f0 .. 0x5128d0, 0x510770, 0x510ad0, 0x513050 (ROUGH drafts) ---- */
 
 extern OPTIONBYTES ai_GfxFog;        /* 0x6f35cc, the detail byte */
-extern unsigned char ai_Unk633751;      /* 0x633751 */
+extern unsigned char d3fl_DetailSizeShift;      /* 0x633751 */
 /* 0x50d100, maps the name of the scene object o (copied: "ob_NAME_X" / "gb_NAME") to a prototype: a variant suffix "_A" .. "_H" is cut off, "ob" looks the name up in the object prototypes (the result 0x1000000 | number at SCENEOBJ.proto), "gb" in the building prototypes (0x2000000 | number), a name containing "KONTOR" is the building 0x47 (0x2000047). Returns 1 when found. */
 
 int init_SceneNameToPrototype(char *o)

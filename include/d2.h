@@ -199,7 +199,7 @@ extern short d2_MouseY;             /* 0xf8a676, mouse y */
 extern char d2_GfxPath[];         /* 0xfa5f20 */
 extern int d2_PointerX;            /* 0xfa5f08, pointer x */
 extern int d2_PointerY;            /* 0xfa5f0c, pointer y */
-extern int d2_Unk63120c;            /* 0x63120c, current page, = dd_Page (dd_vesa.h); d2.c uses dd_Page */
+extern int dd_Page;            /* 0x63120c, current page, = dd_Page (dd_vesa.h); d2.c uses dd_Page */
 extern int d2_PointerObj;            /* 0x5fe710, focused object */
 extern int d2_HitObjId;            /* 0x5fe714 */
 extern int d2_CurrentFont;            /* 0x5fe718 */
@@ -256,8 +256,8 @@ extern D2WIN *d2_LastWindowPtr;         /* 0x6ed980, window created last */
 extern int d2_WindowsOpen;            /* 0x6ed9b4, windows open */
 extern int d2_TextSegFlags;            /* 0x6ed9c0, flags of the next text piece */
 extern D2FADE *d2_Fades[32];        /* 0xf8f0a0, fades (d2_StartFade) */
-extern int d2_TextLayoutX;            /* 0xfa5f00, text layout x, running x of the piece being laid out */
-extern int d2_TextLayoutY;            /* 0xfa5f04, text layout y, top of the line being laid out */
+extern int cm_PickCellX;            /* 0xfa5f00, text layout x, running x of the piece being laid out */
+extern int cm_PickCellZ;            /* 0xfa5f04, text layout y, top of the line being laid out */
 extern float d2_ScreenScale;          /* 0x5fe708, screen width / 800 */
 extern int d2_PixelFormat;            /* 0x5fe720, display colour format code copied from dd_PixelFormat (888 / 565 / 555) */
 extern int d2_PointerPicIndex;            /* 0x5fe750, "_MOUSE_CURSOR" */

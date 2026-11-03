@@ -351,7 +351,7 @@ void d3fl_Draw(D3FLMAP *map, char water);                                       
 
 
 /* ---- 0x446990..0x446e10 (was unk_446990.h) ---- */
-extern D3VECTOR4 d3fl_Rays[5];                      /* 0xfc2960, view ray directions (x, y, z, w) */
+extern D3VECTOR4 d3_Frustum[5];                      /* 0xfc2960, view ray directions (x, y, z, w) */
 void d3fl_FreeTiles(D3FLMAP *map);                  /* 0x441db0 */
 void d3fl_Inflate(D3FLMAP *map);                    /* 0x441ea0 */
 void d3fl_MakeLight(D3FLMAP *map);                  /* 0x441860 */

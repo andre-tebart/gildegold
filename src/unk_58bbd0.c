@@ -472,7 +472,7 @@ extern int sv_PanelFlag;
 extern char * ai_PlayerBuilding;
 extern const float ai_Unk5ebba4[];
 extern int ch_CurrentGroup;
-extern int ai_Unk5f8438;
+extern int evt_LastId;
 extern char *ai_Unk5fb5b0;
 extern int sv_BorderViewX;
 extern int sv_BorderViewY;
@@ -8925,8 +8925,8 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             ai_CampaignStep(0x1a, room, 0, 0);
             U_I((unsigned)&full_data_6f2314) = (int)room;
             /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
-            if (U_I((unsigned)&ai_Unk5f8438) != -1)
-                sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
+            if (U_I((unsigned)&evt_LastId) != -1)
+                sv_Unk52bb70(U_I((unsigned)&evt_LastId));
             unk_Unk5136b0K(param_1);
             U_I((unsigned)&ai_FrameWait) = 1;
             if (U_I((unsigned)&ai_PlayerBuilding) == 0) {
@@ -9094,8 +9094,8 @@ void ai_Unk59ee40(unsigned char *param_1)
     U_I((unsigned)&sv_BorderViewX) = 0;
     U_I((unsigned)&sv_BorderViewY) = 0;
     /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
-    if (U_I((unsigned)&ai_Unk5f8438) != -1)
-        sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
+    if (U_I((unsigned)&evt_LastId) != -1)
+        sv_Unk52bb70(U_I((unsigned)&evt_LastId));
     snd_UnloadBuildingVoices();
     unk_Unk5136b0K(U_I((unsigned)&ai_FallbackBuilding));
     d3_DeflateScene(3);
@@ -9157,7 +9157,7 @@ void ai_Unk59f410(unsigned short *param_1)
         init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), *param_1);
         init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), param_1);
         /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
-        idx = U_I((unsigned)&ai_Unk5f8438);
+        idx = U_I((unsigned)&evt_LastId);
         d3_SetObjectPos((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x5c));
         d3_SetObjectRot((void *)U_I((unsigned)&sv_CameraObj), (void *)(U_I((unsigned)&sv_CameraObj) + 0x90));
         U_I((unsigned)&sv_ViewPosX) = U_I(U_I((unsigned)&sv_CameraObj) + 0x4c);
@@ -9191,8 +9191,8 @@ void ai_Unk59f410(unsigned short *param_1)
     sv_ReleaseNamePlates();
     U_I((unsigned)&sv_SelectedChar) = 0;
     /* ROUGH: the device callbacks as in 0x59ee40, then the room 0xfd restored (0x4ffe90, 0x5f1298) */
-    if (U_I((unsigned)&ai_Unk5f8438) != -1)
-        sv_Unk52bb70(U_I((unsigned)&ai_Unk5f8438));
+    if (U_I((unsigned)&evt_LastId) != -1)
+        sv_Unk52bb70(U_I((unsigned)&evt_LastId));
     d3_DeflateScene(3);
     d3if_SelectScene(kind, 0);
     U_I((unsigned)&sv_PanelShown) = 0;

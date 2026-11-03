@@ -132,16 +132,16 @@ char d3d_Init(int bitplanes, int a, int b)
 #line 228
         D3DCHECK(dd_DD->lpVtbl->QueryInterface(dd_DD, &IID_IDirect3D3, &d3d_D3D));
         if (!d3d_hr) {
-            d3d_NumCards = 0;
+            d3d_NumDevices = 0;
 #line 233
             D3DCHECK(d3d_D3D->lpVtbl->EnumDevices(d3d_D3D, d3d_EnumDeviceCallback, (void *)bitplanes));
-            if (!d3d_hr && d3d_NumCards) {
-                for (sel = 0; sel < d3d_NumCards; sel++)
+            if (!d3d_hr && d3d_NumDevices) {
+                for (sel = 0; sel < d3d_NumDevices; sel++)
                     if (!(d3d_Cards[sel].info.flags & 4))
                         break;
-                if (sel >= d3d_NumCards)
+                if (sel >= d3d_NumDevices)
                     sel = 0;
-                if (d3d_NumCards > 1) {
+                if (d3d_NumDevices > 1) {
                     ask = 1;
                     again = 0;
                     for (;;) {
@@ -150,7 +150,7 @@ char d3d_Init(int bitplanes, int a, int b)
                         h = reg_OpenKey("dd_vesa", 1);
                         if (h != -1) {
                             if (reg_GetString(h, "d3d_Guid", guidstr) && dd_StringToGuid(guidstr, &guid)) {
-                                for (i = 0; i < d3d_NumCards; i++) {
+                                for (i = 0; i < d3d_NumDevices; i++) {
                                     if (!memcmp(&guid, &d3d_Cards[i].Guid, sizeof(GUID))) {
                                         ask = 0;
                                         sel = i;
@@ -181,11 +181,11 @@ void d3d_Clear(D3RECT *r)
     D3DRECT mr;
     DWORD fl;
 
-    if (!dd_ZCleared || !dd_BackCleared) {
+    if (!dd_ZCleared || !dd_Cleared) {
         fl = 0;
         if (d3d_ZBuffer && !dd_ZCleared)
             fl = D3DCLEAR_ZBUFFER;
-        if (dd_BackBuffer && !dd_BackCleared)
+        if (dd_BackBuffer && !dd_Cleared)
             fl |= D3DCLEAR_TARGET;
         if (fl) {
             mr.x1 = d3_Viewport.left;
@@ -195,7 +195,7 @@ void d3d_Clear(D3RECT *r)
 #line 325
             D3DCHECK(d3d_Viewport->lpVtbl->Clear2(d3d_Viewport, 1, &mr, fl, d3_fog_color.col, 1.0f, 0));
         }
-        dd_BackCleared = 1;
+        dd_Cleared = 1;
         dd_ZCleared = 1;
     }
 }
@@ -231,7 +231,7 @@ char d3d_CreateDevice(DWORD texbpp, DWORD fourcc, DWORD texbpp2, DWORD zbpp)
 
     d3d_ZEnabled = 0;
     d3d_MinMipSize = 4;
-    d3d_TexShift = 0;
+    d3_MipSkip = 0;
     d3d_balpha = 0;
     d3d_glow = 0;
     d3d_colorkey = 0;
@@ -595,14 +595,14 @@ void d3d_LoadTexture(char *name, DDPIXELFORMAT *pf, LPDIRECTDRAWSURFACE4 *surf, 
     ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
     ddsd.ddpfPixelFormat = *pf;
     ddsd.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT | DDSD_PIXELFORMAT;
-    x = w >> d3d_TexShift;
+    x = w >> d3_MipSkip;
     if (x > d3d_UsedCard.info.maxw)
         ddsd.dwWidth = d3d_UsedCard.info.maxw;
     else if (x < d3d_UsedCard.info.minw)
         ddsd.dwWidth = d3d_UsedCard.info.minw;
     else
         ddsd.dwWidth = x;
-    x = h >> d3d_TexShift;
+    x = h >> d3_MipSkip;
     if (x > d3d_UsedCard.info.maxh)
         ddsd.dwHeight = d3d_UsedCard.info.maxh;
     else if (x < d3d_UsedCard.info.minh)

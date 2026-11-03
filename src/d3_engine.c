@@ -871,8 +871,8 @@ void d3_DrawSortedD3D(void)
             }
         }
         if (cur) {
-            d3_UOfs = d3_UOfsTab[cur->uofs & 0x1f] + *(float *)&t->unk1c;
-            d3_VOfs = d3_VOfsTab[cur->vofs & 0x1f] + *(float *)&t->unk20;
+            d3_UOfs = ts_ScrollV[cur->uofs & 0x1f] + *(float *)&t->unk1c;
+            d3_VOfs = ts_ScrollU[cur->vofs & 0x1f] + *(float *)&t->unk20;
         } else {
             d3_VOfs = 0.0f;
             d3_UOfs = 0.0f;
@@ -1270,7 +1270,7 @@ void d3_SetHardwareMode(int on)
 }
 /* 0x43bc20, starts the engine: copies the configuration, sets the display mode (and Direct3D), allocates
    the sort buffers and the shadow object, sets the viewport and fills the noise table.
-   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the list heads / sentinels d3_StockListHead = &d3_StockListEnd, d3_AnimListHead = d3_AnimListEnd, d3_Unkfc4c40 = d3_Unkfc2e00, d3_Unkfe75a4 = d3_Unkfc2580 and the flags d3_Unkfc26e4 / d3_Unkfc4c3c / d3_Unkfc3000 / d3_Unkfe75a0 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, header comments state the list role but not a reader; the d3_io_t.h names d3_StockHead / d3_AnimHead / d3_AnimList are different struct views at the same addresses and cannot replace the D3OPS / void* view); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried; d3_Unk1463570 / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3_AnimPath / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
+   @deep Q2: d3io_NoopCallback has no evidence (d3_io_a.c 0x44ee40: the empty no-op triangle filler assigned to d3_TriFuncs[0..5], called with different signatures, recorded @deep there); the list heads / sentinels d3_StockListHead = &d3_StockListEnd, d3_AnimListHead = d3_AnimListEnd, d3_Unkfc4c40 = d3_Unkfc2e00, d3_Unkfe75a4 = d3_Unkfc2580 and the flags d3_Unkfc26e4 / d3_Unkfc4c3c / d3_Unkfc3000 / d3_Unkfe75a0 / d3_Unkfe7400 / d3_Unkfc5064 / d3_Unkfc5065 / d3_Unkfe7600 / d3_Unkfe75bc are only stored here (write-only, header comments state the list role but not a reader; the d3_io_t.h names d3_StockHead / d3_AnimHead / d3_AnimList are different struct views at the same addresses and cannot replace the D3OPS / void* view); d3s_Object = d3s_Object would need its extern moved to d3s.h, which flipped d3_CloneObject and d3_MirDrawObject when tried; dd_RBits / 1463580 / 1464fbd are dd_RBits / dd_GBits / dd_BBits (dd_vesa.c) but d3_d3d.h declares them char where dd_vesa.c defines unsigned char and d3_d3d.c 0x436xxx reads them (the byte-matched use needs the unsigned char view). Renamed this session: d3_Camera / d3_Scenes / d3_AnimPath / d3_ShadeInit / d3fl_Init / par_Init. Q4: the D3_ZERO_AT-style macro raw dereference. */
 
 char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
 {
@@ -1334,12 +1334,12 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_Unkfe7400 = 0;
     tex_Init(d3_Cfg.texcount, 0, d3_Cfg.texParam, 0x40);
     if (d3_D3DActive) {
-        d3_D3DActive = d3d_CreateDevice(8, d3_Cfg.texbpp, d3_Unk1463570 + d3_Unk1463580 + d3_Unk1464fbd, d3_Cfg.zbpp);
+        d3_D3DActive = d3d_CreateDevice(8, d3_Cfg.texbpp, dd_RBits + dd_GBits + dd_BBits, d3_Cfg.zbpp);
         if (d3_D3DActive) {
             d3d_SetConfig(d3_DefaultD3DConfig);
             d3d_SetWBuffer(1);
             d3_FogColor = 0;
-            d3d_TexShift = d3_Cfg.texShift;
+            d3_MipSkip = d3_Cfg.texShift;
         }
     }
     d3fl_Init(0x400, 0x40 >> d3_Cfg.flShift, d3_Cfg.flArg, d3_Cfg.flFlag);
@@ -1468,15 +1468,15 @@ void d3_Shutdown(void)
 
 void d3_ApplyGraphicsOptions(int a, unsigned char b, unsigned char c, unsigned char mode, int e)
 {
-    if (d3_ShadowMode.mode != mode || d3d_TexShift != c) {
+    if (d3_ShadowMode.mode != mode || d3_MipSkip != c) {
         d3_ShadowMode.mode = mode;
         d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, d3s_ResetShadows);
     }
     d3fl_SetMips(a);
     d3fl_SetDetail(b);
-    if (d3d_TexShift != c) {
+    if (d3_MipSkip != c) {
         d3fl_Flush();
-        d3d_TexShift = c;
+        d3_MipSkip = c;
         tex_ReloadAll(1, e);
     }
 }

@@ -875,17 +875,17 @@ void sv_BuildScreenLayout(int s)
         d2_ClearSurface(ai_Unk6ed92c);
         d2_UnlockSurface(ai_Unk6ed92c);
     }
-    ai_Unkfb9068 = sv_ViewRectRight;
+    d2_DirtyRectRight = sv_ViewRectRight;
     q = sv_GroundplanButtons;
     for (i = 0xf; i != 0; i--)
         *q++ = -1;
     d2_DirtyRectLeft = sv_ViewRectLeft;
-    ai_Unkfb9064 = sv_ViewRectTop;
+    d2_DirtyRectTop = sv_ViewRectTop;
     q = tab;
     for (i = 0x10; i != 0; i--)
         *q++ = 0;
     sv_PanelPic = s;
-    ai_Unkfb906c = sv_ViewRectBottom;
+    d2_DirtyRectBottom = sv_ViewRectBottom;
     tab[1] = 0x68;
     tab[2] = 0x6e;
     sv_GroundplanView = d2_MakeSurface(tab, 3);
@@ -6642,7 +6642,7 @@ void sv_BookKeys(SVBOOK *bk)
    d3d_ZEnabled: ours 'mov ax, word ptr [d3_MipSkip]; test ah, ah; mov [esi+0x272], ah', the original's
    'mov al, byte ptr [0x63342d]; test al, al; mov [esi+0x272], al'. d3d_ZEnabled is the data_views.h view
    (*(char *)((char *)&d3_MipSkip + 1)) of the 1-byte d3_MipSkip (ts_texture.c, C.name.alias with
-   d3d_TexShift): VC6 folds the +1 byte into a word load. It needs the datum declared as its own char (a
+   d3_MipSkip): VC6 folds the +1 byte into a word load. It needs the datum declared as its own char (a
    data / owner question for d3_d3d / ts_texture), not a change in this function. */
 
 SVBOOK *sv_OpenBook(char *model, char *at, char n, ...)
@@ -7621,9 +7621,9 @@ extern int d3t_Snow;
 extern int d3_SkyLayers[6];
 extern int d2_HitWindow;
 extern int d2_DirtyRectLeft;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 extern int ai_Unkfba9c0[168];
 /* txt_NetworkSyncWait: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnBuild: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -7849,8 +7849,8 @@ int sv_SelectedExtra = 0;  /* 0x76631c, a fourth selection word, cleared with sv
 int cm_Bombs[0x40] = {0};  /* 0x935c00, cm's 32 bomb records (object, time), cm.h */
 int d2_HitWindow = 0;  /* 0xf8aad0 */
 int d2_DirtyRectLeft = {0}; /* 0xfb9060 */
-int ai_Unkfb9064 = {0}; /* 0xfb9064 */
-int ai_Unkfb9068 = {0}; /* 0xfb9068 */
-int ai_Unkfb906c = {0}; /* 0xfb906c */
+int d2_DirtyRectTop = {0}; /* 0xfb9064 */
+int d2_DirtyRectRight = {0}; /* 0xfb9068 */
+int d2_DirtyRectBottom = {0}; /* 0xfb906c */
 int ai_Unkfba9c0[168] = {0}; /* 0xfba9c0 */
 char * sv_CameraObj = {0}; /* 0xfc2dec, the camera object */

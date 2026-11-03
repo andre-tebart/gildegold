@@ -1060,7 +1060,7 @@ int ai_Unk4e3fe0();  /* 0x4e3fe0 */
 int ai_Unk4e4020();  /* 0x4e4020 */
 extern int ai_Unk6f0d9c;  /* 0x6f0d9c, the scene nesting depth */
 extern int ai_Unk60d36c;  /* 0x60d36c, -1 or the object waited for (0x4284a0) */
-extern int ai_Unk5f8438;  /* 0x5f8438 */
+extern int evt_LastId;  /* 0x5f8438 */
 extern int d3t_CamMoving;  /* 0x6310e4 */
 void d3sm_Destroy();  /* 0x45ef60 */
 void d3if_Reset();  /* 0x4473f0 */
@@ -1095,7 +1095,7 @@ void d2_ReleaseFade(struct D2FADE *f);  /* 0x476860 */
 struct D2FADE * d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags);  /* 0x4767d0 */
 char d3_InflateScene(unsigned int flags);  /* 0x43deb0 */
 extern char *ai_Unk6ed92c;  /* 0x6ed92c */
-extern unsigned int ai_Unk63349c;  /* 0x63349c */
+extern unsigned int d3_SceneFlags;  /* 0x63349c */
 extern unsigned int ai_Unk6f0d98;  /* 0x6f0d98 */
 
 char d3_LoadScene(char *name, void *f, void (*progress)(int a, int i, int n));  /* 0x44be60 */
@@ -1158,7 +1158,7 @@ extern char ai_Unk60eae0[][24];  /* 0x60eae0, the names of the NPC kinds */
 
 
 extern float cm_SpeedFactor;  /* 0x5f1290 */
-extern int ai_Unk631064;  /* 0x631064 */
+extern int ch_LowPoly;  /* 0x631064 */
 extern int ai_Unk925510;  /* 0x925510 */
 extern int ai_Unk92cac0;  /* 0x92cac0 */
 extern char ai_Unk92c600[];  /* 0x92c600, 0x480 bytes of scene state */

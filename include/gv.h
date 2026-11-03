@@ -536,7 +536,6 @@ extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes 
 
 int gv_WriteCrimes(void *f);             /* 0x4f28d0 */
 float gv_SchoolLevelFactor(short *c);          /* 0x4f2da0 */
-extern char gv_Graveyard[];            /* 0x91f700 */
 extern char unk_Tab91b6e0[];            /* 0x91b6e0 */
 int gm_BuildingSkill();                     /* 0x5092e0 */
 
@@ -738,7 +737,7 @@ int unk_Unk4f8700(char *c);             /* 0x4f8700 */
 
 void unk_Unk4f88c0(void);               /* 0x4f88c0 */
 
-extern char gv_Graveyard[], gv_GraveyardEnd[];  /* 0x91f700, 0x925100: 0x200 records of 0x2d bytes, and their end */
+extern char ai_Crimes[], gv_GraveyardEnd[];  /* 0x91f700, 0x925100: 0x200 records of 0x2d bytes, and their end */
 void ord_RebuildGridSums(void);               /* 0x4f8920 */
 
 void ord_GetMessageRecord(int *out);           /* 0x4f9170 */

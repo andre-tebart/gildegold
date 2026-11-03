@@ -25,7 +25,7 @@ extern D3ANIMDATA d3anim_Head;              /* 0xfc2580, list head; d3anim_Head.
 extern D3ANIMDATA d3anim_Tail;              /* 0xfe7440, list end */
 extern unsigned int d3anim_Clock;           /* 0x63343c */
 unsigned int d3anim_CacheMax = 4194304;  /* 0x5f927c, bytes */
-extern int d3anim_Busy;                     /* 0x633b04 */
+extern int d3_Busy;                     /* 0x633b04 */
 
 /* 0x4315c0, applies the root motion between two key frames: adds the frames' move delta (flags bit 0), in
    object space, to the object position, and the turn delta (flags bit 1) to its rotation. No return value */
@@ -1401,7 +1401,7 @@ int d3anim_StartAnim(void *list, char *name, D3ANIMFLAGS f)
             if (!ctl->slots[i].data)
                 break;
         if (data && data->nverts == ctl->nverts && i < 3) {
-            d3anim_Busy++;
+            d3_Busy++;
             s = &ctl->slots[i];
             obj = ctl->obj;
             obj->time = d3_Time;
@@ -1440,7 +1440,7 @@ int d3anim_StartAnim(void *list, char *name, D3ANIMFLAGS f)
             }
             d3anim_MapBones((D3OBJECT *)obj);
             d3anim_PoseBones((D3OBJECT *)obj);
-            d3anim_Busy--;
+            d3_Busy--;
             return (int)s;
         }
     }

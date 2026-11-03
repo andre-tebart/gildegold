@@ -494,8 +494,7 @@ extern int d2_HitWindow;                    /* 0xf8aad0, the window the pointer 
 /* ai_LoadGameConfirmText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_SaveProgressText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_SaveOverwriteText: view of txt_Ptrs (build/mk_txt_views.py) */
-extern int ai_GameFlagsWord;                /* 0x6f23f8, the dword view of ai_GameFlags: the load window
-                                               writes the load mode 10 whole */
+extern int ai_GameFlags;                /* 0x6f23f8, the game flags: the load window writes the load mode 10 whole */
 void d2_EnableObject(int obj, int on);      /* 0x475aa0, d2.h: enables / disables an object and its items */
 int sv_OpenMessageBox(int text, unsigned char flags); /* 0x521900, sv.c: opens the waiting box with text */
 
@@ -707,7 +706,7 @@ int ai_LoadGameWindow(void)
                     if (ai_GameState == 0 || ai_MessageBox(0x101, ai_LoadGameConfirmText) != 0) {
                         sprintf(path, "Gamedata\\Saves\\%s.SAV", slots[i].name);
                         strcpy(main_NetSaveName, path);
-                        ai_GameFlagsWord = 10;
+                        ai_GameFlags = 10;
                         sv_PopRequest = 1;
                         ret = 1;
                     }

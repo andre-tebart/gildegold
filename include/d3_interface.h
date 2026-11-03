@@ -61,7 +61,7 @@ extern int d3if_CamSeite;              /* 0x6338c0 */
 extern int d3if_Unk5fb5c0;              /* 0x5fb5c0 */
 #endif
 
-extern int d3if_Unk633dcc;          /* 0x633dcc */
+extern int d3s_ShadowMapSize;          /* 0x633dcc */
 extern unsigned char d3if_Unk6339db;    /* 0x6339db */
 #ifndef DATA_VIEWS_H
 extern unsigned int d3if_Unk6339dc;     /* 0x6339dc, counts the scene switches */

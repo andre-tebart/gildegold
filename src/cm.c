@@ -14879,9 +14879,9 @@ void ai_Unk4e2910(char *o, int id)
             }
         }
     }
-    if (ai_Unk63349c != 0) {
-        ai_Unk6f0d98 = ai_Unk63349c;
-        d3_InflateScene(ai_Unk63349c & ~2);
+    if (d3_SceneFlags != 0) {
+        ai_Unk6f0d98 = d3_SceneFlags;
+        d3_InflateScene(d3_SceneFlags & ~2);
         ai_Unk6f0d98 = ai_Unk6f0d98 & ~2;
     }
     if (((char *)cm_CurrentFight)[0x26] & 0x20) {
@@ -15077,7 +15077,7 @@ void cm_LoadEventScene(char *name)
                 cb(ai_Unk5fb5b0, 4, t + 0x214, 0);
         }
     }
-    ai_Unk60d36c = ai_Unk5f8438;
+    ai_Unk60d36c = evt_LastId;
     d3if_Prerender(1);
     if (ai_Unk6f0da0 != 0) {
         d2_ReleaseFade(ai_Unk6f0da0);
@@ -15116,12 +15116,12 @@ int cm_LeaveEventScene(void)
     t = (char *)ai_Unk5fb5b0;
     if (t != 0 && *(int *)(t + 0x3c8) != 0 && *(int *)(*(char **)(t + 0x3c8) + 0x294) != 0)
         (*(int (**)(char *, int, char *, int))(*(char **)(t + 0x3c8) + 0x294))(t, 5, *(char **)(t + 0x3c8) + 0x298, 0);
-    id = ai_Unk5f8438;
+    id = evt_LastId;
     if (id != -1) {
         o = (char *)evt_FindById(id);
         while (o != 0 && (*(unsigned char *)(o + 0x124) & 1)) {
             sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
-            o = (char *)evt_FindById(ai_Unk5f8438);
+            o = (char *)evt_FindById(evt_LastId);
         }
     }
     ai_Unk4e2dc0();
@@ -15571,13 +15571,13 @@ void ai_Unk4e4060(char *m)
     unsigned int fl;
 
     sv_fog = cm_SpeedFactor;
-    sv_time = ai_Unk631064;
+    sv_time = ch_LowPoly;
     sprintf(buf, "Exec Cutscene(Mainfunc start) <Type = %i> <id = %i>", (unsigned char)m[8], *(int *)m);
     shown = 0;
-    sv_view[2] = ai_Unkfb9068;
+    sv_view[2] = d2_DirtyRectRight;
     sv_view[0] = d2_DirtyRectLeft;
-    sv_view[1] = ai_Unkfb9064;
-    sv_view[3] = ai_Unkfb906c;
+    sv_view[1] = d2_DirtyRectTop;
+    sv_view[3] = d2_DirtyRectBottom;
     ai_Unk925510 = d3_CurrentScene;
     ai_Unk92cac0 = evt_NoGroup;
     cm_ScenePartyRuns = 0;
@@ -15634,7 +15634,7 @@ void ai_Unk4e4060(char *m)
         d3_FogByDistance = 0;
         cm_SpeedFactor = 0.6f;
         d3o_FogScale = 1.0f;
-        ai_Unk631064 = 0;
+        ch_LowPoly = 0;
         d2_SetPointerSprite(0, 0);
         sv_ClearSelection();
         d2_ClearPointerItems();
@@ -15665,7 +15665,7 @@ void ai_Unk4e4060(char *m)
     cm_TextBox = win_old;
     if (cm_SkipEvents == 0) {
         ai_Unk4d8c40();
-        ai_Unk631064 = sv_time;
+        ch_LowPoly = sv_time;
         if (ai_GameFlags & 8)
             ai_Unk4e4020();
         cm_SceneDuration = 10;
@@ -16459,7 +16459,7 @@ const float ai_Unk5edc50 = 525.0f;  /* 0x5edc50 */
 const double ai_Unk5edc58 = 1.1000000000000001;  /* 0x5edc58, read-only: the original keeps it in .rdata */
 const double ai_Unk5edc60 = 6.5012084524677184e-315;  /* 0x5edc60 */
 const double ai_Unk5edc68 = 0.0055555555555555558;  /* 0x5edc68 */
-int ai_Unk5f8438 = -1;  /* 0x5f8438 */
+int evt_LastId = -1;  /* 0x5f8438 */
 int ai_Unk5f8b10 = 6251111;  /* 0x5f8b10 */
 float d2_ScreenScale = 1.0f;  /* 0x5fe708 */
 int cm_SpeedTick = 770;  /* 0x60bd80 */
@@ -16500,11 +16500,11 @@ int ai_Unk624570 = 1;  /* 0x624570 */
 int ai_Unk624574 = 1;  /* 0x624574 */
 int ai_Unk624578 = 1;  /* 0x624578 */
 char ai_Unk625820[115][0x20] = { "HE_NULL", "HE_HISTORIE", "HE_UPGRADE_DUMMY", "HE_ABBAU", "HE_PRODUKTION", "HE_PRODUKTION_FERTIG_MSG", "HE_ARBEITER_EINSTELLEN", "HE_MEISTER_EINSTELLEN", "HE_VORKOMMEN_SUCHEN", "HE_NEUE_VORKOMMEN_SUCHEN", "HE_NEUE_VORKOMMEN_SUCHEN_MSG", "HE_AI_WATCH_TRANSPORT", "HE_OBJEKT_BAUEN", "HE_GEBAEUDE_BAUEN", "HE_MAUER_BAUEN", "HE_TRANSPORT", "HE_REPARATUR", "HE_MESSAGEBOX", "HE_LAGERSLOTS_BAUEN", "HE_LAGER_ERWEITERN", "HE_KRAEUTER_SAMMELN", "HE_GETIER_FANGEN", "HE_SPIELER_TRAINIEREN", "HE_GEHEIM_TREFFEN", "HE_SPIONAGE", "HE_SABOTAGE", "HE_PRUEGEL", "HE_GEB_VERKAUFEN", "HE_GEB_RENOVIEREN", "HE_GEB_VERMIETEN_DUMMY", "HE_GEB_UPGRADEN", "HE_GEB_RAUM_UPGRADEN", "HE_GEB_ABREISSEN", "HE_GEB_KAUFANGEBOT", "HE_SITZUNG", "HE_KREDIT", "HE_MEISTER_PRUEFUNG", "HE_MEISTER_PRUEFUNG_MSG", "HE_MEISTER_BESTANDEN", "HE_GELDBOTE", "HE_ERNTEN", "HE_STAMMTISCH_MSG", "HE_STAMMTISCH", "HE_GOTTESDIENST", "HE_PROZESS", "HE_DROHEN_MSG", "HE_DROHEN", "HE_ANSCHWAERZEN_MSG", "HE_BUCH_SCHREIBEN", "HE_ENTLASSEN", "HE_BEFOERDERN", "HE_PERSONAL_KUENDIGEN", "HE_PERSONAL_STEHLEN", "HE_PAMPHLET", "HE_FEST_MSG", "HE_FEST", "HE_GELAGE", "HE_KERKER_MEISTER_BESTECHEN", "HE_SIM_PERSONAL", "HE_MARKT_SUPERVISOR", "HE_ENTFUEHREN", "HE_SPIELER_ENTFUEHRT", "HE_LOESEGELD", "HE_EINBRUCH", "HE_GEB_SPIONAGE", "HE_WERBUNG", "HE_RANDOM_EVENT", "HE_STREIFE", "HE_RAZZIA", "HE_ERPRESSUNG", "HE_BELEIDIGUNG_MSG", "HE_BELEIDIGUNG", "HE_UEBERFALL", "HE_ANGRIFF", "HE_RANDOM_GESELLE", "HE_FURCHT_EINFLOESSEN", "HE_MISSION_SUPERVISOR", "HE_MISSION_DONE_MSG", "HE_EVT_GROSS_BRAND", "HE_EVT_BRAND", "HE_EVT_WIRBELSTURM", "HE_EVT_RAUBRITTER", "HE_EVT_KOMMENTARE", "HE_EVT_STADTFEST", "HE_EVT_SPENDE", "HE_EVT_BETEILIGUNG_MSG", "HE_EVT_BETEILIGUNG", "HE_EVT_SOELDNER_PLUENDERN", "HE_EVT_SOELDNER_MARODIEREN", "HE_EVT_PEST", "HE_ESKORTE_VERHINDERN", "HE_GELDSTRAFE", "HE_PRANGER", "HE_NACHWUCHS", "HE_BERUFSAUSBILDUNG", "HE_UNI", "HE_TALENT_SPIELER", "HE_TASCHENDIEB", "HE_SCHUTZGELD", "HE_SCHUTZGELD_MSG", "HE_BETRIEBS_PRUEFUNG", "HE_UMLAND_PATROL", "HE_SIM_UNFALL", "HE_PACHT", "HE_SIM_WIRTSHAUS", "HE_TITEL_VERGABE", "HE_AMT_VERGABE", "HE_BARDE", "HE_HEILEN", "HE_SIM_EINWANDERUNG", "HE_INIT_BETRIEB", "HE_GELIEBTE", "HE_SIM_KRANKHEITEN", "HE_DIE_PLAYER", "HE_KILL_PLAYER" };  /* 0x625820, names ("HE_NULL", ..) */
-int ai_Unk631064 = 0;  /* 0x631064 */
+int ch_LowPoly = 0;  /* 0x631064 */
 struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
 char * ai_Unk6332b4 = 0;  /* 0x6332b4 */
 int ai_ClockMs = 0;  /* 0x6333cc, a clock */
-unsigned int ai_Unk63349c = 0;  /* 0x63349c */
+unsigned int d3_SceneFlags = 0;  /* 0x63349c */
 int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8 */

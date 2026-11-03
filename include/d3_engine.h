@@ -206,7 +206,7 @@ extern struct D3BITS8 { unsigned int on : 8; } d3_HardwareBits;
 extern unsigned char d3_EngineReady;          /* 0x633451, engine up: set at the end of d3_Init, cleared in d3_Shutdown */
 extern unsigned char d3_D3DActive;          /* 0x63345c, a Direct3D device was created (d3d_Init / d3d_CreateDevice) */
 struct D3BITS3 { unsigned char mode : 3; };  /* d3_ShadowMode (0xfe7671) is a view of d3d_Config + 1 (data_views.h): bit 0 = object shadows on (d3_UpdateObject / d3_Render); set by d3_ApplyGraphicsOptions */
-extern unsigned char d3d_TexShift;          /* 0x63342c, d3_d3d.c */
+extern unsigned char d3_MipSkip;          /* 0x63342c, d3_d3d.c */
 extern int d3_FrameCount;                    /* 0x63343c */
 extern unsigned int d3_SceneFlags;           /* 0x63349c */
 
@@ -503,7 +503,7 @@ typedef struct D3INITCFG {          /* 0x60 bytes, d3_Init's configuration (copi
     int flFlag;                     /* 0x30, d3fl_Init's 4th argument (read as a byte) */
     int flShift;                    /* 0x34, d3fl_Init's 2nd argument is 0x40 >> flShift */
     int flArg;                      /* 0x38, d3fl_Init's 3rd argument (read as a byte) */
-    int texShift;                   /* 0x3c, d3d_TexShift (read as a byte) */
+    int texShift;                   /* 0x3c, d3_MipSkip (read as a byte) */
     int shadowSize;                 /* 0x40, d3_InitShadows' first argument */
     float viewW, viewH;             /* 0x44 */
     float viewX, viewY;             /* 0x4c */
@@ -532,7 +532,7 @@ extern void *d3_Unkfe75a4;                  /* d3_AnimHead.next (0xfe75a4, a vie
 #endif
 extern char d3_Unkfc2580[];                 /* 0xfc2580, the head sentinel; its next / prev fields at +0x160 / +0x164 are the animation list head */
 extern char d3_DefaultD3DConfig[];          /* 0x5fb5b4 */
-extern unsigned char d3_Unk1464fbd, d3_Unk1463580, d3_Unk1463570;  /* 0x1464fbd, 0x1463580, 0x1463570 */
+extern unsigned char dd_BBits, dd_GBits, dd_RBits;  /* 0x1464fbd, 0x1463580, 0x1463570 */
 extern float d3_Unkfe7600;              /* 0xfe7600 */
 extern float d3_Unkfe75bc;              /* 0xfe75bc */
 extern unsigned char d3_Noise[256][256];    /* 0xfc7b80 */
@@ -572,7 +572,7 @@ extern int d3_Unkfc2dc0;                    /* 0xfc2dc0, texture bytes used this
 extern float d3_ZScale;                     /* 0xfc532c */
 extern float d3_ZOfs;                       /* 0xfc7b64 */
 extern float d3_UOfs, d3_VOfs;              /* 0xfe73ac, 0xfc26ec */
-extern float d3_UOfsTab[32], d3_VOfsTab[32];    /* 0xfb9120, 0xfb90a0 */
+extern float ts_ScrollV[32], ts_ScrollU[32];    /* 0xfb9120, 0xfb90a0 */
 /* 0x63345d is the byte after d3_D3DActive, i.e. the first byte of the unaligned dword d3_NoTextures
    (ecmd.c's flag).  A separate definition cannot live inside the unit's block. */
 #define d3_Unk63345d (*(unsigned char *)((char *)&d3_D3DActive + 1))  /* 0x63345d */

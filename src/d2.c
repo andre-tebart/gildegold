@@ -2910,7 +2910,7 @@ void d2_LayoutButtons(int win)
    digit n: A (new line, n lines high), N / Y (paragraph, half line), < > (right / left margin n "M"s),
    T (tab), B Z R L (spread, centered, right, left), F (font n, FF: color n), C (clear), M, [ ], i (picture
    or button), l, m / mt (inputs), t (text of an input); the arguments of i, l, m, t come from w->args
-   @deep far layout draft: 1865 vs 1890 instructions, 565 differing asm lines, hunks code 603 / slots 198 / order 22 / regs 14. Same statements, another allocation and schedule: the prologue spills left/right/top/bottom to [ebp-0x8]/[-0x14]/[-0x34]/[-0x68] where ours uses -0x10/-0x14/-0x38/-0x64, the original repeats the four stores inside the style&4 arm, the command switch and the glyph loop run in another order. Read the head (margins + style&4), the command cases (A N Y C m i l t, the F/color path), the object creation, the wrap loop and the tail: every statement corresponds, no wrong type/signedness/offset/width found. spell.py leads: reload x6 (46fdb2 46fdfe 46fe4a 46fe6f 46fec8 46feed - the original re-reads id [ebp-0x8] and align [ebp-0x28] from their slots; all our uses are already the bare local, both are call results / command state, so there is no expression to re-read and no parameter to use instead), dup-tail 46fc3b (the four local stores the original repeats in both paths - the source already writes them once before the branch and once in the arm), dup-tail 46ff06 (6 instructions), slots swaps 46fe8d / 470098. Q2 left: D2WIN.unk30 (0x30) is written once by the C (clear) command (d2.c:3029) and read nowhere in src/ or include/ - no evidence for a role (name gap). Named this session: d2_TextLayoutX/Y, d2_TextSegFlags, d2_MiscPic, d2_ResizeWindow, d2_ReplaceInputText. */
+   @deep far layout draft: 1865 vs 1890 instructions, 565 differing asm lines, hunks code 603 / slots 198 / order 22 / regs 14. Same statements, another allocation and schedule: the prologue spills left/right/top/bottom to [ebp-0x8]/[-0x14]/[-0x34]/[-0x68] where ours uses -0x10/-0x14/-0x38/-0x64, the original repeats the four stores inside the style&4 arm, the command switch and the glyph loop run in another order. Read the head (margins + style&4), the command cases (A N Y C m i l t, the F/color path), the object creation, the wrap loop and the tail: every statement corresponds, no wrong type/signedness/offset/width found. spell.py leads: reload x6 (46fdb2 46fdfe 46fe4a 46fe6f 46fec8 46feed - the original re-reads id [ebp-0x8] and align [ebp-0x28] from their slots; all our uses are already the bare local, both are call results / command state, so there is no expression to re-read and no parameter to use instead), dup-tail 46fc3b (the four local stores the original repeats in both paths - the source already writes them once before the branch and once in the arm), dup-tail 46ff06 (6 instructions), slots swaps 46fe8d / 470098. Q2 left: D2WIN.unk30 (0x30) is written once by the C (clear) command (d2.c:3029) and read nowhere in src/ or include/ - no evidence for a role (name gap). Named this session: cm_PickCellX/Y, d2_TextSegFlags, d2_MiscPic, d2_ResizeWindow, d2_ReplaceInputText. */
 
 void d2_DrawWindowText(void *surf, int win)
 {
@@ -2962,8 +2962,8 @@ void d2_DrawWindowText(void *surf, int win)
         c1 = d2_ClipTop;
         c2 = d2_ClipRight;
         c3 = d2_ClipBottom;
-        d2_TextLayoutY = top - w->scrollY;
-        d2_TextLayoutX = left;
+        cm_PickCellZ = top - w->scrollY;
+        cm_PickCellX = left;
         d2_FontHeight = d2_FontPic->h;
         d2_TextSegCount = 0;
         pos = 0;
@@ -2983,7 +2983,7 @@ void d2_DrawWindowText(void *surf, int win)
                     text = w->text;
                     switch (text[pos]) {
                     case 'A':
-                        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
+                        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
                         k = w->text[pos - 1] - '0';
                         if (k > 0 && k < 9)
                             h = d2_FontHeight * k;
@@ -2993,8 +2993,8 @@ void d2_DrawWindowText(void *surf, int win)
                             h = extra;
                             extra = 0;
                         }
-                        d2_TextLayoutX = left;
-                        d2_TextLayoutY += h;
+                        cm_PickCellX = left;
+                        cm_PickCellZ += h;
                         d2_TextSegFlags = 0;
                         pos++;
                         nlines++;
@@ -3002,29 +3002,29 @@ void d2_DrawWindowText(void *surf, int win)
                     case 'N':
                         if (text[pos - 1] != '$')
                             break;
-                        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
-                        d2_TextLayoutX = left;
+                        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
+                        cm_PickCellX = left;
                         h = d2_FontHeight * 3 / 2;
                         if (extra) {
                             h = extra;
                             extra = 0;
                         }
                         d2_TextSegFlags = 0;
-                        d2_TextLayoutY += h;
+                        cm_PickCellZ += h;
                         pos++;
                         nlines++;
                         break;
                     case 'Y':
                         if (text[pos - 1] != '$')
                             break;
-                        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
-                        d2_TextLayoutX = left;
+                        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
+                        cm_PickCellX = left;
                         h = d2_FontHeight / 2;
                         if (extra) {
                             h = extra;
                             extra = 0;
                         }
-                        d2_TextLayoutY += h;
+                        cm_PickCellZ += h;
                         pos++;
                         nlines++;
                         break;
@@ -3033,7 +3033,7 @@ void d2_DrawWindowText(void *surf, int win)
                             hasinputs = 1;
                             if (w->args[argi] == -1) {
                                 k = d2_FindPic("_BUTTON_RED");
-                                id = d2_WinCreateSlider(d2_TextLayoutX - w->x, d2_TextLayoutY - w->y, k, (int)ch_EmptyName, win);
+                                id = d2_WinCreateSlider(cm_PickCellX - w->x, cm_PickCellZ - w->y, k, (int)ch_EmptyName, win);
                                 if (w->text[pos + 2] == '[') {
                                     char buf512[512];
                                     D3_ZERO(buf512, 0x200);
@@ -3053,7 +3053,7 @@ void d2_DrawWindowText(void *surf, int win)
                                 if (w->text[pos + 1] == 'n')
                                     d2_Objs[id].style |= 0x10;
                                 w->args[argi] = -1;
-                                d2_TextLayoutX += d2_Objs[id].w;
+                                cm_PickCellX += d2_Objs[id].w;
                                 w->args[argi] = id;
                                 h = d2_Objs[id].h;
                             } else
@@ -3062,12 +3062,12 @@ void d2_DrawWindowText(void *surf, int win)
                         } else {
                             arg = w->args[argi];
                             if (arg != -1) {
-                                yy = w->scrollY + d2_TextLayoutY;
-                                t = d2_TextLayoutX;
+                                yy = w->scrollY + cm_PickCellZ;
+                                t = cm_PickCellX;
                                 if (arg == 0 || arg == d2_MiscPic || arg == d2_MiscPic + 1)
                                     yy += 2;
                                 pw = d2_Pics[arg].w;
-                                if (pw + d2_TextLayoutX > right) {
+                                if (pw + cm_PickCellX > right) {
                                     xx = left;
                                     yy += d2_FontHeight;
                                 } else
@@ -3076,7 +3076,7 @@ void d2_DrawWindowText(void *surf, int win)
                                     pos++;
                                     break;
                                 }
-                                if (d2_TextLayoutX > left)
+                                if (cm_PickCellX > left)
                                     xx += 6;
                                 id = d2_WinOpenPic(xx - w->x, yy - w->y, arg, win);
                                 if (id != -1) {
@@ -3110,7 +3110,7 @@ void d2_DrawWindowText(void *surf, int win)
                                     }
                                 }
                                 w->args[argi] = -1;
-                                d2_TextLayoutX += d2_Objs[id].w;
+                                cm_PickCellX += d2_Objs[id].w;
                             }
                         }
                         pos += 2;
@@ -3118,8 +3118,8 @@ void d2_DrawWindowText(void *surf, int win)
                         break;
                     case 'C':
                         memmove(text, text + pos + 1, strlen(text + pos + 1) + 1);
-                        d2_TextLayoutY = top - w->scrollY;
-                        d2_TextLayoutX = left;
+                        cm_PickCellZ = top - w->scrollY;
+                        cm_PickCellX = left;
                         pos = 0;
                         w->unk30 = 0;
                         break;
@@ -3127,19 +3127,19 @@ void d2_DrawWindowText(void *surf, int win)
                         if (text[pos + 1] != 't') {
                             pos++;
                             if (w->args[argi] == -1) {
-                                xx = d2_TextLayoutX;
+                                xx = cm_PickCellX;
                                 if (xx > left)
                                     xx += 6;
-                                id = d2_WinOpenInput(xx - w->x, d2_TextLayoutY - w->y, 0x10, d2_FontHeight, 0x82, win);
+                                id = d2_WinOpenInput(xx - w->x, cm_PickCellZ - w->y, 0x10, d2_FontHeight, 0x82, win);
                                 k = d2_Objs[id].input;
                                 w->args[argi] = k;
-                                d2_TextLayoutX = d2_TextLayoutX + 6 + d2_Inputs[k].w;
+                                cm_PickCellX = cm_PickCellX + 6 + d2_Inputs[k].w;
                             }
                             argi++;
                         } else {
                             pos += 2;
                             if (w->args[argi] != -1) {
-                                id = d2_WinOpenInput(d2_TextLayoutX - w->x, d2_TextLayoutY - w->y, 8, d2_FontHeight, 0x10, win);
+                                id = d2_WinOpenInput(cm_PickCellX - w->x, cm_PickCellZ - w->y, 8, d2_FontHeight, 0x10, win);
                                 d2_Objs[id].hidden = 1;
                                 k = d2_Objs[id].input;
                                 d2_Inputs[k].firstTextId = w->args[argi];
@@ -3152,7 +3152,7 @@ void d2_DrawWindowText(void *surf, int win)
                                 len = strlen(w->text);
                             }
                             d2_Inputs[w->args[argi + 1]].buf = w->text + pos;
-                            d2_MoveObj((short)d2_TextLayoutX, (short)d2_TextLayoutY,
+                            d2_MoveObj((short)cm_PickCellX, (short)cm_PickCellZ,
                                                      d2_Inputs[w->args[argi + 1]].obj);
                             argi += 2;
                         }
@@ -3160,7 +3160,7 @@ void d2_DrawWindowText(void *surf, int win)
                     case 'l':
                         pos++;
                         if (w->args[argi] != -1) {
-                            id = d2_CreateWinCaption(d2_TextLayoutX - w->x, d2_TextLayoutY - w->y, (char *)w->args[argi], win);
+                            id = d2_CreateWinCaption(cm_PickCellX - w->x, cm_PickCellZ - w->y, (char *)w->args[argi], win);
                             d2_Objs[id].hidden = 1;
                             d2_Objs[id].u.raw = (unsigned short *)(w->text + pos);
                             d2_ReplaceInputText(id, (char *)w->args[argi]);
@@ -3177,10 +3177,10 @@ void d2_DrawWindowText(void *surf, int win)
                     case 't':
                         if (w->args[argi] != -1
                             && ((text[pos - 1] == '%' && num == -1) || (text[pos - 2] == '%' && num != -1))) {
-                            xx = d2_TextLayoutX;
+                            xx = cm_PickCellX;
                             if (xx > left)
                                 xx += 6;
-                            id = d2_WinOpenInput(xx - w->x, d2_TextLayoutY - w->y, 0, d2_FontHeight, 1, win);
+                            id = d2_WinOpenInput(xx - w->x, cm_PickCellZ - w->y, 0, d2_FontHeight, 1, win);
                             in = &d2_Inputs[d2_Objs[id].input];
                             arg = w->args[argi];
                             if (arg > 0x4800)
@@ -3198,12 +3198,12 @@ void d2_DrawWindowText(void *surf, int win)
                         if (num == -1)
                             num = 1;
                         xx = left + d2_TextWidth("M", w->font) * num * 3;
-                        if (xx > d2_TextLayoutX) {
-                            d2_TextLayoutX = xx;
+                        if (xx > cm_PickCellX) {
+                            cm_PickCellX = xx;
                             if (xx > right) {
-                                d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
-                                d2_TextLayoutY += d2_FontHeight;
-                                d2_TextLayoutX = left;
+                                d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
+                                cm_PickCellZ += d2_FontHeight;
+                                cm_PickCellX = left;
                             }
                             strcpy(d2_TextSegs[d2_TextSegCount].text, "$T");
                             d2_TextSegs[d2_TextSegCount].w = xx;
@@ -3214,14 +3214,14 @@ void d2_DrawWindowText(void *surf, int win)
                     case '>':
                         if (num == -1)
                             num = 0;
-                        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
-                        d2_TextLayoutX = left = w->x + d2_TextWidth("M", w->font) * num * 2 + w->ml;
+                        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
+                        cm_PickCellX = left = w->x + d2_TextWidth("M", w->font) * num * 2 + w->ml;
                         pos++;
                         break;
                     case '<':
                         if (num == -1)
                             num = 0;
-                        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
+                        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
                         right = w->x - w->mr - d2_TextWidth("M", w->font) * num * 2 + w->w;
                         pos++;
                         break;
@@ -3240,7 +3240,7 @@ void d2_DrawWindowText(void *surf, int win)
                         pos++;
                         break;
                     case 'R':
-                        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
+                        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
                         align = 0x40;
                         pos++;
                         break;
@@ -3250,7 +3250,7 @@ void d2_DrawWindowText(void *surf, int win)
                         break;
                     case 'L':
                         align = 0;
-                        d2_TextLayoutX = left;
+                        cm_PickCellX = left;
                         pos++;
                         break;
                     case 'F':
@@ -3307,15 +3307,15 @@ void d2_DrawWindowText(void *surf, int win)
                             word[wl + 1] = 0;
                         }
                         width = d2_TextWidth(word, w->font);
-                        if (width + d2_TextLayoutX > right) {
+                        if (width + cm_PickCellX > right) {
                             if (w->flags & 0x2000) {
-                                if (width + d2_TextLayoutX < d2_ScreenW)
+                                if (width + cm_PickCellX < d2_ScreenW)
                                     d2_ResizeWindow(w->w + width, w->h, win);
                                 else {
                                     d2_ResizeWindow(d2_ScreenW - w->x, w->h, win);
-                                    d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 0, align, left, right);
-                                    d2_TextLayoutY += d2_FontHeight;
-                                    d2_TextLayoutX = left;
+                                    d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 0, align, left, right);
+                                    cm_PickCellZ += d2_FontHeight;
+                                    cm_PickCellX = left;
                                     w->lines[w->firstline + nlines] = pos;
                                     nlines++;
                                 }
@@ -3332,7 +3332,7 @@ void d2_DrawWindowText(void *surf, int win)
                                             t = 1;
                                         word[id] = '-';
                                         word[id + 1] = 0;
-                                        if (d2_TextWidth(word, w->font) + d2_TextLayoutX <= right)
+                                        if (d2_TextWidth(word, w->font) + cm_PickCellX <= right)
                                             break;
                                     }
                                 }
@@ -3344,9 +3344,9 @@ void d2_DrawWindowText(void *surf, int win)
                                     pos = pos + t + wl - 1;
                                 } else
                                     strcpy(word, tmp2);
-                                d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 0, align, left, right);
-                                d2_TextLayoutY += d2_FontHeight;
-                                d2_TextLayoutX = left;
+                                d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 0, align, left, right);
+                                cm_PickCellZ += d2_FontHeight;
+                                cm_PickCellX = left;
                                 w->lines[w->firstline + nlines] = pos;
                                 nlines++;
                                 if (id > 0) {
@@ -3359,26 +3359,26 @@ void d2_DrawWindowText(void *surf, int win)
                         w->nlines = w->firstline + nlines;
                         for (t = ((int)(char)w->flags & 8U) >> 3; t < w->nobjs; t++) {
                             o = &d2_Objs[w->objs[t]];
-                            while (!o->hidden && width + d2_TextLayoutX > o->x) {
+                            while (!o->hidden && width + cm_PickCellX > o->x) {
                                 id = o->x + o->w;
-                                if (d2_TextLayoutX >= id || d2_FontHeight + d2_TextLayoutY <= o->y
-                                    || d2_TextLayoutY >= o->h + o->y)
+                                if (cm_PickCellX >= id || d2_FontHeight + cm_PickCellZ <= o->y
+                                    || cm_PickCellZ >= o->h + o->y)
                                     break;
-                                d2_TextLayoutX = id + 6;
-                                if (width + d2_TextLayoutX > right) {
-                                    d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 0, align, left, right);
-                                    d2_TextLayoutX = left;
-                                    d2_TextLayoutY += d2_FontHeight;
+                                cm_PickCellX = id + 6;
+                                if (width + cm_PickCellX > right) {
+                                    d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 0, align, left, right);
+                                    cm_PickCellX = left;
+                                    cm_PickCellZ += d2_FontHeight;
                                     w->lines[w->firstline + nlines] = pos;
                                     nlines++;
                                 }
                             }
                         }
-                        xx = d2_SpaceWidth - w->x + width + d2_TextLayoutX;
+                        xx = d2_SpaceWidth - w->x + width + cm_PickCellX;
                         if (xx > maxw)
                             maxw = xx;
                         if (wl)
-                            d2_TextLayoutX += d2_SpaceWidth + width;
+                            cm_PickCellX += d2_SpaceWidth + width;
                         memcpy(d2_TextSegs[d2_TextSegCount].text, word, wl + 1);
                         d2_TextSegs[d2_TextSegCount].w = width;
                         d2_TextSegs[d2_TextSegCount].flags = d2_TextSegFlags;
@@ -3391,24 +3391,24 @@ void d2_DrawWindowText(void *surf, int win)
                 }
             }
         }
-        d2_DrawTextLine(d2_TextLayoutX, d2_TextLayoutY, surf, win, 1, align, left, right);
+        d2_DrawTextLine(cm_PickCellX, cm_PickCellZ, surf, win, 1, align, left, right);
         if (w->flags & 0x4000) {
-            if (d2_FontHeight + d2_TextLayoutY - 8 > d2_ScreenH) {
+            if (d2_FontHeight + cm_PickCellZ - 8 > d2_ScreenH) {
                 D2WIN *pw2 = d2_Objs[w->parent].win;
                 if (pw2)
-                    d2_MoveObj(pw2->x, (short)(pw2->y - d2_FontHeight - d2_TextLayoutY + d2_ScreenH + 8),
+                    d2_MoveObj(pw2->x, (short)(pw2->y - d2_FontHeight - cm_PickCellZ + d2_ScreenH + 8),
                                              pw2->parent);
                 else
-                    d2_MoveObj(w->x, (short)(d2_ScreenH - d2_FontHeight - d2_TextLayoutY + w->y - 8),
+                    d2_MoveObj(w->x, (short)(d2_ScreenH - d2_FontHeight - cm_PickCellZ + w->y - 8),
                                              w->parent);
             }
-            d2_ResizeWindow(w->w, d2_FontHeight - w->y + d2_TextLayoutY, win);
+            d2_ResizeWindow(w->w, d2_FontHeight - w->y + cm_PickCellZ, win);
         }
-        d2_TextLayoutY += d2_FontHeight;
+        cm_PickCellZ += d2_FontHeight;
         if (w->flags & 0x2000)
             d2_ResizeWindow(maxw, w->h, win);
-        if (d2_TextLayoutY - w->y > w->contentHeight)
-            w->contentHeight = d2_TextLayoutY - w->y;
+        if (cm_PickCellZ - w->y > w->contentHeight)
+            w->contentHeight = cm_PickCellZ - w->y;
         d2_SetClipRect(c0, c1, c2, c3);
         if (w->flags & 0x20) {
             yy = (bottom - top - 0x10) / w->contentHeight + top;

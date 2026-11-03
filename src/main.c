@@ -93,9 +93,9 @@ extern int sv_PopRequest;
 
 
 extern int d2_DirtyRectLeft;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 
 
 
@@ -144,9 +144,9 @@ extern GAPDATA full_data_602568[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern int d2_DirtyRectLeft;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 #define main_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* @original this caller passes the id as a word ("mov ax,[id]; push eax") and pops the float result */
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 #pragma pack(push, 1)
@@ -210,9 +210,9 @@ extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
 extern int d2_DirtyRectLeft;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6253b0[];
 extern GAPDATA full_data_6253b4[];
@@ -231,9 +231,9 @@ extern GAPDATA full_data_92bca8[];
 extern unsigned char he_Events[339968];
 extern char * he_QuickList[10921];
 extern int d2_DirtyRectLeft;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 extern char * sv_CameraObj;
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
@@ -247,9 +247,9 @@ extern char ai_MissionMode;
 extern GAPDATA full_data_75e401[];
 extern INIT_PLAYER init_PlayerProfile;
 extern int d2_DirtyRectLeft;
-extern int ai_Unkfb9064;
-extern int ai_Unkfb9068;
-extern int ai_Unkfb906c;
+extern int d2_DirtyRectTop;
+extern int d2_DirtyRectRight;
+extern int d2_DirtyRectBottom;
 extern GAPDATA full_data_624560[];
 #include "f3snd_types.h"
 extern int sv_FrameMask;
@@ -1430,10 +1430,10 @@ void main_MoneyDialog(void)
 {
     int dlg, ed, run;
 
-    U_I((unsigned)&ai_Unkfb9068) = 0;
+    U_I((unsigned)&d2_DirtyRectRight) = 0;
     U_I((unsigned)&d2_DirtyRectLeft) = 1;
-    U_I((unsigned)&ai_Unkfb9064) = 1;
-    U_I((unsigned)&ai_Unkfb906c) = 2;
+    U_I((unsigned)&d2_DirtyRectTop) = 1;
+    U_I((unsigned)&d2_DirtyRectBottom) = 2;
     dlg = d2_CreateWindow(0x20, 0x60, 0x26c, 400, 0x15);
     ed = d2_GetWinObj(-1, dlg, io_PrintText("$3ABetrag:%m"));
     d2_SetObjValue(ed, 0, 10000, 0);
@@ -2128,7 +2128,7 @@ int main_ChooseFamily(int unused)
     p = (int *)U_I((unsigned)&ai_Unk5fb5b0);
     if (p != 0 && (q = p[0x3c8 / 4]) != 0 && *(int *)(q + 0x210) != 0)
         ((void (*)(int *, int, int, int))*(int *)(q + 0x210))(p, 4, q + 0x214, 0);
-    scene = U_I((unsigned)&ai_Unk5f8438);
+    scene = U_I((unsigned)&evt_LastId);
     if (U_I((unsigned)&ai_Unk633738) != 0)
         *(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) = (*(unsigned char *)(U_I((unsigned)&ai_Unk633738) + 0x1c70) & 0xeb) | 8;
     o1 = main_Unk5344f0((int)"dummy_NACHT_UND_NEBEL_MANN", (int)"dieb_MANN2", 0);
@@ -3863,10 +3863,10 @@ void main_RoundReport(void)
         d2_ClearSurface(U_I((unsigned)&d2_ScreenSurf));
         d2_ShowPicture(0x79d);
         U_I((unsigned)&d2_DirtyRectLeft) = (int)*(short *)(unsigned)&d2_ScreenW;
-        U_I((unsigned)&ai_Unkfb906c) = (int)*(short *)(unsigned)&d2_ScreenH;
+        U_I((unsigned)&d2_DirtyRectBottom) = (int)*(short *)(unsigned)&d2_ScreenH;
         U_I((unsigned)&full_data_6f25c0) = 1;
-        U_I((unsigned)&ai_Unkfb9068) = 0;
-        U_I((unsigned)&ai_Unkfb9064) = 0;
+        U_I((unsigned)&d2_DirtyRectRight) = 0;
+        U_I((unsigned)&d2_DirtyRectTop) = 0;
         d2_SetForm(win, 1);
         t = U_I((unsigned)&d2_LastWindow);
         d2_SetForm(win, 2);

@@ -128,7 +128,7 @@ extern D3DZBUFCTX d3d_UsedZBufferFormat;    /* 0xfe7620 */
 extern D3DCONFIG d3d_Config;               /* 0xfe7670 */
 extern D3DCARD d3d_UsedCard;                /* 0xfe7680 */
 extern D3DCARD d3d_Cards[];                 /* 0x14635e0, Dd_vesa.c */
-extern int d3d_NumCards;                    /* 0x1464fa8, Dd_vesa.c */
+extern int d3d_NumDevices;                    /* 0x1464fa8, Dd_vesa.c */
 extern D3DTLVERTEX d3d_PrecacheBuffer[3];   /* 0xfe7a20 */
 extern void *d3d_VertexBuffer;              /* 0x633410, 0x800 bytes */
 extern LPDIRECT3D3 d3d_D3D;                 /* 0x633414 */
@@ -140,7 +140,7 @@ extern char d3d_ZEnabled;                   /* 0x63342d */
 extern unsigned long d3d_RefCount;          /* 0x146356c, result of the last Release */
 extern LPDIRECTDRAW4 dd_DD;                 /* 0x631204, Dd_vesa.c */
 extern LPDIRECTDRAWSURFACE4 dd_BackBuffer;  /* 0x631208, Dd_vesa.c */
-extern char dd_BackCleared;                 /* 0x631222, Dd_vesa.c */
+extern char dd_Cleared;                 /* 0x631222, Dd_vesa.c */
 extern char dd_ZCleared;                    /* 0x631223, Dd_vesa.c */
 extern unsigned char dd_RBits, dd_GBits, dd_BBits;   /* 0x1463570, 0x1463580, 0x1464fbd, dd_vesa.c (d3_d3d.c reads them signed: dd_RBitsC / dd_GBitsC / dd_BBitsC) */
 typedef union D3COLORU {
@@ -157,7 +157,7 @@ extern float d3d_ViewY;                 /* 0x5f943c */
 extern float d3d_Near;                  /* 0x5f9440, last projection set */
 extern float d3d_Far;                   /* 0x5f9444 */
 extern unsigned char d3d_zbuffer;                    /* 0x5f9448, z buffer enabled (render state cache) */
-extern unsigned char d3d_TexShift;                 /* 0x63342c, shift applied to texture width/height, from d3_Cfg.texShift */
+extern unsigned char d3_MipSkip;                 /* 0x63342c, shift applied to texture width/height, from d3_Cfg.texShift */
 #ifndef DATA_VIEWS_H
 extern unsigned char d3d_balpha;                     /* 0x63342e, alpha blending enabled */
 #endif

@@ -2821,7 +2821,7 @@ float d3fl_FarDist(D3FLMAP *map, D3VECTOR *pos, D3MATRIX *m)
     pl[3].w = pl[3].x * u.x + pl[3].y * u.y + pl[3].z * u.z;
     zmin = min(pl[0].w, min(pl[1].w, min(pl[2].w, pl[3].w)));
     best = 1e10f;
-    for (r = d3fl_Rays, i = 0; i < 5; i++, r++)
+    for (r = d3_Frustum, i = 0; i < 5; i++, r++)
         for (j = 0; j < 4; j++) {
             t = pl[j].x * r->x + pl[j].z * r->z + r->y * pl[j].y;
             if ((t < -1e-07f || t > 1e-07f) && (t = pl[j].w / t, t > 0.0f) && (t > zmin && t < best))
@@ -2852,7 +2852,7 @@ float d3fl_LightMargin = 0;  /* 0x633740, world units added to map->scale when a
 unsigned int d3fl_Count = 0;  /* 0x633744 */
 D3FLCACHE * d3fl_Cache = 0;  /* 0x63374c */
 unsigned char d3fl_DetailShift = 0;  /* 0x633750, 6 - log2(detail scale): */
-unsigned char ai_Unk633751 = 0;  /* 0x633751, the byte right after d3fl_DetailShift (f3init.c's detail shift) */
+unsigned char d3fl_DetailSizeShift = 0;  /* 0x633751, the byte right after d3fl_DetailShift (f3init.c's detail shift) */
 D3VECTOR d3_Unk633b1c = {0};  /* 0x633b1c, point light color */
 float d3fl_Shade[1024] = {0};  /* 0xfb9940, sun shade by -cos(angle) * 1023 */
 unsigned long d3fl_ColorTab[3][256] = {0};  /* 0xfbac60, 8-bit channel -> 16-bit pixel bits */

@@ -1519,3 +1519,29 @@
 2026-11-03T16:21:03 0x00494300 data ai_Unk494300 -> ai_PlanRollTries by:main why:its comment: rolls the plan's tries, sets unk48 on success and unk4c to the negated sum
 2026-11-03T16:21:03 0x004f48f0 data unk_Unk4f48f0 -> gv_SentenceText by:main why:its comment: the text of the sentence a for the character (texts 0x1535 + 3 * a, 0x1538, 0x153e); the trial prints it with the verdict
 2026-11-03T16:32:00 0x004dd960 func ai_Unk4dd960 -> cm_TrialAskPlayer by:main why:the trial's member callback for the player's character (ai_Unk4e5730(2, cm_RunTrial, it, ...)): by the plan's mode the dialogs of the plea, the torture, the votes and the sentence
+2026-11-03T16:55:01 0x005f8438 data ai_Unk5f8438 -> evt_LastId by:main why:one object (0x5f8438): the defining unit's placeholder, evt.h's name
+2026-11-03T16:55:01 0x00631064 data ai_Unk631064 -> ch_LowPoly by:main why:one object (0x631064): the defining unit's placeholder, ch.h's name
+2026-11-03T16:55:01 0x0063120c data d2_Unk63120c -> dd_Page by:main why:one object (0x63120c): dd_vesa.c defines it
+2026-11-03T16:55:01 0x00631222 data dd_BackCleared -> dd_Cleared by:main why:one object (0x631222): dd_vesa.c defines it
+2026-11-03T16:55:01 0x0063342c data d3d_TexShift -> d3_MipSkip by:main why:one object (0x63342c): ts_texture.c defines it
+2026-11-03T16:55:01 0x0063349c data ai_Unk63349c -> d3_SceneFlags by:main why:one object (0x63349c): the defining unit's placeholder, the d3 name
+2026-11-03T16:55:01 0x00633751 data ai_Unk633751 -> d3fl_DetailSizeShift by:main why:one object (0x633751): the defining unit's placeholder, d3_fl.h's name
+2026-11-03T16:55:01 0x00633b04 data d3anim_Busy -> d3_Busy by:main why:one object (0x633b04): its definition's name
+2026-11-03T16:55:01 0x00633dcc data d3if_Unk633dcc -> d3s_ShadowMapSize by:main why:one object (0x633dcc): the definition's placeholder, d3s's name
+2026-11-03T16:55:01 0x006f23f8 data ai_GameFlagsWord -> ai_GameFlags by:main why:one object (0x6f23f8): the same int, not a narrower view
+2026-11-03T16:55:01 0x0091f700 data gv_Graveyard -> ai_Crimes by:main why:one object (0x91f700): cm.c defines the crime records; gv.h's name was a guess
+2026-11-03T16:55:01 0x00fa5f00 data d2_TextLayoutX -> cm_PickCellX by:main why:one object (0xfa5f00): cm.c defines it
+2026-11-03T16:55:01 0x00fa5f04 data d2_TextLayoutY -> cm_PickCellZ by:main why:one object (0xfa5f04): cm.c defines it
+2026-11-03T16:55:01 0x00fb9064 data ai_Unkfb9064 -> d2_DirtyRectTop by:main why:one object (0xfb9064): the defining unit's placeholder, d2's name
+2026-11-03T16:55:01 0x00fb9068 data ai_Unkfb9068 -> d2_DirtyRectRight by:main why:one object (0xfb9068): the defining unit's placeholder, d2's name
+2026-11-03T16:55:01 0x00fb906c data ai_Unkfb906c -> d2_DirtyRectBottom by:main why:one object (0xfb906c): the defining unit's placeholder, d2's name
+2026-11-03T16:55:01 0x00fb90a0 data d3_VOfsTab -> ts_ScrollU by:main why:one object (0xfb90a0): ts_texture.c defines it
+2026-11-03T16:55:01 0x00fb9120 data d3_UOfsTab -> ts_ScrollV by:main why:one object (0xfb9120): ts_texture.c defines it
+2026-11-03T16:55:01 0x00fc2960 data d3fl_Rays -> d3_Frustum by:main why:one object (0xfc2960): its definition's name
+2026-11-03T16:55:01 0x01463570 data d3_Unk1463570 -> dd_RBits by:main why:one object (0x1463570): dd_vesa.c defines it
+2026-11-03T16:55:01 0x01463580 data d3_Unk1463580 -> dd_GBits by:main why:one object (0x1463580): dd_vesa.c defines it
+2026-11-03T16:55:01 0x01464fbd data d3_Unk1464fbd -> dd_BBits by:main why:one object (0x1464fbd): dd_vesa.c defines it
+2026-11-03T16:55:01 0x01463588 data d3_Pitch8 -> dd_Pitch by:main why:one object (0x1463588): dd_vesa.c defines it
+2026-11-03T16:55:01 0x014661a0 data d3_Pitch16 -> dd_PitchPixels by:main why:one object (0x14661a0): dd_vesa.c defines it
+2026-11-03T16:55:01 0x01463590 data d3s_ShadowBits -> dd_Surface by:main why:one object (0x1463590): dd_vesa.c defines it
+2026-11-03T16:55:01 0x01464fa8 data d3d_NumCards -> d3d_NumDevices by:main why:one object (0x1464fa8): its definition's name

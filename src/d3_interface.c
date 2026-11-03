@@ -424,7 +424,7 @@ void d3if_Prerender(char map)
 }
 /* 0x4478e0, makes scene `index` the current one: saves the engine's global state into the old scene and
    loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are
-   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_Unk6339db/dc, d3if_Unk633dcc, d3if_Unkfba944, d3if_Unkfc29bc/40) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
+   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_Unk6339db/dc, d3s_ShadowMapSize, d3if_Unkfba944, d3if_Unkfc29bc/40) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
 
 char d3if_SelectScene(int index, char keep)  /* @original: the definition returns char and takes a char keep (byte-matched); the headers declare void (int, int) */
 {
@@ -514,7 +514,7 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
                 if (d3sm_Shadow)
                     d3sm_Build(d3sm_Shadow, 0);
                 else {
-                    d3sm_Shadow = d3sm_Create(0, -d3if_Unk633dcc, 1);
+                    d3sm_Shadow = d3sm_Create(0, -d3s_ShadowMapSize, 1);
                     d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, d3s_ResetShadows);
                 }
             } else if (d3sm_Shadow) {
@@ -1658,7 +1658,7 @@ int d3if_CamOben = 0;  /* 0x6338b8 */
 int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
 /* d3if_Unk6339dc: view of ai_Unk6339db (tools/data_views.py) */
-int d3if_Unk633dcc = 0;  /* 0x633dcc */
+int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 char d3if_ParList[788] = {0};  /* 0xfb95e0 */
 int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3_AnimPath is a 4-byte pointer) */
 D3IFTRIPLE d3if_Fog[6] = {0}; /* 0xfba960 */

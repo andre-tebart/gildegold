@@ -49,9 +49,9 @@ extern char d3s_Byte;
 extern unsigned short * d3s_Dst16;
 extern int d3s_SpanLen;
 extern int d3s_Fill;
-extern int d3_Pitch16;                      /* 0x14661a0 */
-extern int d3_Pitch8;                       /* 0x1463588 */
-extern void *d3s_ShadowBits;                 /* 0x1463590 */
+extern int dd_PitchPixels;                      /* 0x14661a0 */
+extern int dd_Pitch;                       /* 0x1463588 */
+extern void *dd_Surface;                 /* 0x1463590 */
 D3OBJECT * d3s_Object = 0;  /* 0x633448, object the shadow polygons go to */
 unsigned int d3s_CacheCount = 0;  /* 0x633db8 */
 unsigned int d3s_CacheAge = 0;  /* 0x633dbc */
@@ -371,7 +371,7 @@ void d3s_FillRows(int n)
             }
             d3s_XL += d3s_SlopeL;
             d3s_XR += d3s_SlopeR;
-            d3s_Dst += d3_Pitch8;
+            d3s_Dst += dd_Pitch;
         }
     } else {
         for (i = 0; i < n; i++) {
@@ -385,7 +385,7 @@ void d3s_FillRows(int n)
             }
             d3s_XL += d3s_SlopeL;
             d3s_XR += d3s_SlopeR;
-            d3s_Dst16 += d3_Pitch16;
+            d3s_Dst16 += dd_PitchPixels;
         }
     }
 }
@@ -452,11 +452,11 @@ void d3s_ShadowPoly(D3SPOLY *poly, unsigned char bpp, int size)
             d3s_Byte = (unsigned char)bpp < 9;
             y = size + 0xffff >> 16;
             if (d3s_Byte) {
-                d3s_Dst = (unsigned char *)d3s_ShadowBits + y * d3_Pitch8;
+                d3s_Dst = (unsigned char *)dd_Surface + y * dd_Pitch;
                 d3s_Fill = 1;
             } else {
                 d3s_Fill = 0xffff;
-                d3s_Dst16 = (unsigned short *)d3s_ShadowBits + y * d3_Pitch16;
+                d3s_Dst16 = (unsigned short *)dd_Surface + y * dd_PitchPixels;
             }
             left = d3s_EdgeY[b] < d3s_EdgeY[a];
             n = d3s_EdgeY[left ? b : a] + 0xffff >> 16;
@@ -1196,11 +1196,11 @@ void d3s_Project(D3OBJECT *obj, D3OBJINFO *info, D3OBJINFO *mesh, D3TERRAIN *t, 
             ts_CacheFetch(tex, 2, (int)d3s_Palette);
         if (tex->surf) {
             dd_FillSurface(tex->surf, 0, 0);
-            d3s_ShadowBits = dd_LockSurfaceFlags(tex->surf, 0x20);
+            dd_Surface = dd_LockSurfaceFlags(tex->surf, 0x20);
             for (i = 0, p = (D3SPOLY *)mesh->tris; i < mesh->ntris; i++, p++)
                 d3s_ShadowPoly(p, ((TSTEXSIZE *)tex)->bpp, ((TSTEXSIZE *)tex)->size);
             dd_UnlockSurface(tex->surf);
-            d3s_ShadowBits = 0;
+            dd_Surface = 0;
             if (slot->cache->flag)
                 d3d_BuildMipmaps(tex->surf, 0);
         }
