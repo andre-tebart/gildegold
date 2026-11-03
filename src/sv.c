@@ -2961,7 +2961,15 @@ int sv_UpdateCamera(void)
 /* 0x527840, moves the camera (animated, d3t_PlaceObjectV) to 600 units back along its view from the building
    b's 3D object, like sv_CameraToObject: the move takes the camera step ai_CameraStep scaled by the distance
    (0.0005 per unit), at least one step and at most three; the stored view sv_ViewPos / sv_ViewRot and the
-   player's camera record get the target position, b becomes sv_SelectedObject */
+   player's camera record get the target position, b becomes sv_SelectedObject
+   @deep read against the original (238 vs 238 ins): no code hunk; frame 0x8c vs the original's 0x9c (16
+   bytes more locals in the original, a slot layout question) and slot hunks at 0x527963 / 0x52798b /
+   0x527ae3..0x527b07: the final sv_ViewPos / sv_ViewRot stores take the same slots in another order
+   (references: M8 at +0x2b0: ours refers to sv_ViewPos+0x4 (0x75fb84), the original's field to 0x75fb80
+   (sv_ViewPos, sv_ViewPosX) (and 3 more), explained: the four M8 lines pair reordered stores crosswise:
+   ours ViewPos+0/+4/+8 <- [esp+0x20/0x24/0x28], ViewRot+0/+4/+8 <- [esp+0x34/0x38/0x3c]; the original
+   stores the same slots to the same fields (ViewPosX/Y/Z, ViewRotY/Z) in another order (recorded as debt
+   at 15bda65)) */
 
 void sv_FlyCameraToObject(int b)
 {
