@@ -2959,7 +2959,7 @@ void gm_InitPlayerRecord(int p)
 
 float gm_StockPrice();                   /* 0x4ffa10 */
 int gm_FreeList();                     /* 0x500140 */
-void cm_SendGoodsDelta(char *p, unsigned char k);                     /* 0x4c5710 */
+void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     /* 0x4c5710 */
 
 /* 0x4ffbf0, the 0x4ffa10 value of the goods record of the player p with the word at +0 equal to id (0x55 records of 0x80 bytes), -1 when there is none */
 float gm_GoodsValue(int p, unsigned id)
@@ -3074,7 +3074,7 @@ void gm_RandomMarketShake(int unused)
                     rec.mean = (float)(rec.demand * 0.5);
                     rec.price = (float)(gm_ItemPrice(g->item, 100) * 0.5);
                 }
-                cm_SendGoodsDelta((char *)&rec, ai_OwnPlayer);
+                cm_SendGoodsDelta(&rec, ai_OwnPlayer);
             }
         }
     }

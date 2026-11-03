@@ -80,6 +80,7 @@ extern GAPDATA full_data_92bcb8[];
 #include "unk_575860.h"
 #include "unk_58bbd0.h"
 #include "shp.h"
+#include "f3gm_types.h"
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
@@ -1744,28 +1745,34 @@ void cm_SendGoodsRecord(void *p, unsigned char k)
     memcpy(&m.data[1], p, 0x80);
     cm_QueueSend(&m);
 }
-/* 0x4c5710, message 0x40: the differences of p (0x80 bytes) to the object k / id of list k */
+/* 0x4c5710, message 0x40: the differences of the goods record p to the player k's own record of the same item
+   (gm_FindGoods), the deltas its handler 0x4cb730 adds */
 
-void cm_SendGoodsDelta(char *p, unsigned char k)
+void cm_SendGoodsDelta(GMSTOCK *p, unsigned char k)
 {
     G17MSG m;
-    char t[0x80];
-    char *o;
+    GMSTOCK t;
+    GMSTOCK *o;
 
-    o = gm_FindGoods(k, *(short *)p);
+    o = (GMSTOCK *)gm_FindGoods(k, p->item);
     m.type = 0x40;
-    memcpy(t, p, 0x80);
-    *(float *)&m.data[0xf] = *(float *)(t + 0x20) - *(float *)(o + 0x20);
-    *(float *)&m.data[0x13] = *(float *)(t + 0x24) - *(float *)(o + 0x24);
-    *(float *)(t + 0x2c) -= *(float *)(o + 0x2c);
-    *(float *)(t + 0x38) -= *(float *)(o + 0x38);
-    G17_I(m, 3) = *(int *)(t + 0x10) - *(int *)(o + 0x10);
-    G17_S(m, 1) = *(short *)p;
-    G17_I(m, 7) = *(int *)(t + 0x14) - *(int *)(o + 0x14);
-    G17_I(m, 0xb) = *(int *)(t + 0x18) - *(int *)(o + 0x18);
-    m.data[0] = k;
-    *(float *)&m.data[0x17] = *(float *)(t + 0x2c);
-    *(float *)&m.data[0x1b] = *(float *)(t + 0x38);
+    t = *p;
+    t.demand -= o->demand;
+    t.mean -= o->mean;
+    t.f2c -= o->f2c;
+    t.price -= o->price;
+    t.daily[0] -= o->daily[0];
+    t.daily[1] -= o->daily[1];
+    t.daily[2] -= o->daily[2];
+    m.goods.player = k;
+    m.goods.item = p->item;
+    m.goods.daily[0] = t.daily[0];
+    m.goods.daily[1] = t.daily[1];
+    m.goods.daily[2] = t.daily[2];
+    m.goods.demand = t.demand;
+    m.goods.mean = t.mean;
+    m.goods.f2c = t.f2c;
+    m.goods.price = t.price;
     cm_QueueSend(&m);
 }
 /* 0x4c5800, message 0x41 (0x3a bytes of p) */

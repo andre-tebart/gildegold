@@ -8,6 +8,7 @@ struct AMTMSG;
 struct CHACTION;
 struct CHARACTER;
 struct D3HMAP;
+struct GMSTOCK;
 struct D3IOOBJ;
 struct D3TRAIN;
 struct G15PLANT;
@@ -243,7 +244,7 @@ void ai_Unk4c5580(int a, int b, int c, int d);                                  
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);                        /* 0x4c55d0 */
 void cm_SendCharModel(int a, const char *s);                                         /* 0x4c5690 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                                     /* 0x4c56d0 */
-void cm_SendGoodsDelta(char *p, unsigned char k);                                     /* 0x4c5710 */
+void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                                     /* 0x4c5710 */
 void cm_SendMessage41(void *p);                                                      /* 0x4c5800 */
 void ai_Unk4c5840(int a);                                                        /* 0x4c5840 */
 void ai_Unk4c5870(int a);                                                        /* 0x4c5870 */

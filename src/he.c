@@ -11772,7 +11772,7 @@ void he_FindFigurePlace(int p)
 void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec);
 void cm_RequestChrMove(int a, int b, int c, const char *s);
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
-void cm_SendGoodsDelta(char *p, unsigned char k);
+void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);
 float ai_Unk4ffa10();
 int gm_ListAmount();
 int gm_CharCurrency(char *c, char p);

@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 56b0880: VC6 declaration-set tie-break: adding G17GOODSMSG to cm_types.h or splitting GMSTOCK's pad29 into the float at 0x2c in f3gm_types.h (each alone, both layout-neutral, neither touches this function) swaps eax/ecx for the constants 1 / 0x429; the match was no evidence of the source. The changes type message 0x40 and the goods record (cm_SendGoodsDelta to byte). [waits for: the declaration set of unk_575860's head (its includes settling)]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	shape+readable -> draft+readable at d4f0224: f3gm_types.h's GMGOOD names the cached price at +0x38 (int price, read and written by gm_ItemPrice, now byte) in place of pad38[8]; unk_575860 includes f3gm.h but never uses GMGOOD. Any change of that member list (tried int price_ / int v3c / unsigned char pad) flips this function's register allocation of three float constants (0x579df6, 0x57a1b6: the same stores, other registers): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: a stable declaration set for unk_575860 (its head and the f3gm.h include)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

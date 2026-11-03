@@ -2417,14 +2417,14 @@ int amt_ExecutePriceMessage(char *c, int *m)
                                 rec = *p;
                                 rec.mean = rec.amount * f;
                                 rec.price = gm_GoodsValue(ai_OwnPlayer, id);
-                                cm_SendGoodsDelta((char *)&rec, ai_OwnPlayer);
+                                cm_SendGoodsDelta((struct GMSTOCK *)&rec, ai_OwnPlayer);
                                 m[3] = id;
                                 p = (AMTGOODS *)gm_FindGoods(ai_OwnPlayer, id2);
                                 if (p != 0) {
                                     rec = *p;
                                     rec.mean = rec.amount * f;
                                     rec.price = gm_GoodsValue(ai_OwnPlayer, id2);
-                                    cm_SendGoodsDelta((char *)&rec, ai_OwnPlayer);
+                                    cm_SendGoodsDelta((struct GMSTOCK *)&rec, ai_OwnPlayer);
                                     m[4] = id2;
                                 }
                                 cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x4000000, 0);

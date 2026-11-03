@@ -47,6 +47,17 @@ typedef struct G17BUILDMSG {            /* 0x40 bytes, the data of message 10 (c
     unsigned char block[0x30];          /* 0x10 */
 } G17BUILDMSG;
 
+typedef struct G17GOODSMSG {            /* 0x1f bytes, the data of message 0x40 (cm_SendGoodsDelta, its handler 0x4cb730
+                                           adds the deltas to the goods record gm_FindGoods(player, item)) */
+    unsigned char player;               /* 0x00 */
+    unsigned short item;                /* 0x01, GMSTOCK.item */
+    int daily[3];                       /* 0x03, the deltas of GMSTOCK.daily[0..2] */
+    float demand;                       /* 0x0f, the deltas of the floats of GMSTOCK */
+    float mean;                         /* 0x13 */
+    float f2c;                          /* 0x17 */
+    float price;                        /* 0x1b */
+} G17GOODSMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -63,6 +74,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17OBJMSG obj;                  /* 0x10, message 0x2d */
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
+        G17GOODSMSG goods;              /* 0x10, message 0x40 */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */
