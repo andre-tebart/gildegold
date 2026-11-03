@@ -1706,7 +1706,7 @@ int amt_IsColumnDecided(int col)
 }
 /* 0x4e8530, 1 when the office r (state 2) of the column col has two valid candidates and its x14 character is in the list of the column */
 
-int amt_Unk4e8530(int col, AMTREC *r)
+int amt_HasDeposalVote(int col, AMTREC *r)
 {
     AMTREC list[6];
     int n, j;

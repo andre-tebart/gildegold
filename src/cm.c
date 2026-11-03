@@ -139,6 +139,26 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
+#define cm_PicsT (*(struct D2PIC **)&ai_Unk6ed918)  /* 0x6ed918, ai_Unk6ed918 (cm.h: char *), d2.c's d2_Pics, as the D2PIC records it points to */
+typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
+                                       as ints; unk_5d33b0.c GYPSYROW) */
+    AICHAR *rec;                    /* 0x00, the character the row shows */
+    int ctl;                        /* 0x04, the row's control object (d2_Objs index, ai_AmountRow) */
+    int pad08[3];
+    int y;                          /* 0x14 */
+    int pad18[5];
+    int x2c;                        /* 0x2c */
+    int x30;                        /* 0x30 */
+    int pad34;
+} CMAMOUNTROW;
+typedef struct CMSESSIONREQ {       /* 0x1c bytes, the request of a council session vote that cm_RunSceneParty hands to the
+                                       member callbacks (ai_Unk4dada0 reads it as int *) */
+    int mode;                       /* 0x00, 1: deposition, 2: election */
+    unsigned char office;           /* 0x04, the office's index (AMTREC.idx) */
+    char pad05[3];
+    int kind;                       /* 0x08, the office kind */
+    int ids[4];                     /* 0x0c, mode 1: the holder and the challenger, mode 2: the applicants (-1 none) */
+} CMSESSIONREQ;
 /* 0x4c3180, the size in bytes of the game message m by its type: fixed per type, the lists 0x16 / 0x17 a 0x15-byte
    head and data[4] records of w * h + 4 bytes, 0x18 a head and data[4] records of 5, 0x20 by its kind byte data[0];
    0x91 (the whole G17MSG body) for any other type
@@ -11665,7 +11685,7 @@ void ai_Unk4d8c40()
 /* ---- cut.c (joined) ---- */
 
 /* 0x4d8c70, draws the next picture 0x4df of a stack (o + 0x2c counts them, 10 up each) on the window 0x6ed938 */
-void ai_Unk4d8c70(int unused, char *o)
+void cm_StackPicture(int unused, char *o)
 {
     ((int (*)(short, short, int, int))d2_WinOpenPic)(0x8c, (short)(0x44 - *(short *)(o + 0x2c) * 10), 0x4df, d2_LastWindow);
     *(int *)(o + 0x2c) = *(int *)(o + 0x2c) + 1;
@@ -11673,7 +11693,7 @@ void ai_Unk4d8c70(int unused, char *o)
 /* 0x4d8cb0, the fight result list (a) or one more picture of its three stacks: b set: the three headings (texts 0x12d3 / 0x12d4 / 0x12d5)
    in the window 0x6ed938 and the counters 0x6f0d6c / 0x6f0d68 / 0x6f0d70 cleared; else the next picture 0x4df of stack c (0, 1, 2) */
 
-void ai_Unk4d8cb0(int a, int b, int c)
+void cm_TallyStack(int a, int b, int c)
 {
     char buf[0x40];
     int o;
@@ -11705,157 +11725,528 @@ void ai_Unk4d8cb0(int a, int b, int c)
         ai_Unk6f0d70++;
     }
 }
-/* 0x4d8e20, plays one council session ("sitzung_*" cutscenes; a: the 0x114-byte party record, +0x30 count, +0x34 ids, copied to the
-   stack and back): for each of the 6 kinds (6 .. 1: the six sitting groups, "Sitzung_Wohnsitz" .. "Sitzung_zunft" .ed3, "sitzungen_flug_*"
-   .esc) it collects the participants (0x4e6fc0), shows the heads of candidates (kind 2) and voters (kind 3) in the window 0x6ed938,
-   and walks the vote: the votes per participant, the winner (a tie is drawn with 0x4e52f0), the texts 0x12c4 .. 0x12e5, then the
-   dismissal ("_ABSETZEN_*") for the office of the player. ROUGH draft from the disassembly: the control flow of the two vote loops
-   and the exact argument orders are not checked. */
+/* 0x4d8e20, plays a council session (the run function of scene kind 1; a: its party record, saved on entry and put back at
+   the end). For each of the six columns of offices (6 .. 1: the sittings Wohnsitz, Kirche, Rat, Diebe, Wache, Zunft) it takes
+   the offices amt_GetColumnOffices gives; a column that is not decided yet is only elected (amt_ElectOffices, on the host).
+   Else the column's office holders (not held) become the party's voting members, the other present characters join as
+   observers, and
+   - every office with a deposition vote (amt_HasDeposalVote) is voted on (the "_ABSETZEN_*" voices, texts 0x12c4 .. 0x12d7):
+     more yes than no deposes the holder (the host sends the office message 3), else the holder keeps it (message 1, or 4
+     without a holder); the members' relations to the holder change by their answers;
+   - every office open for applications (state 3, with applicants) is filled from its applicants (at most 4, AICHAR
+     appliedOffice): a single one takes it, without voters one is drawn, else the members vote (texts 0x12d8 .. 0x12e5, a
+     tie drawn with cm_Random); the host sends the office message 1 for the winner.
+   The event scene "Sitzung_*.ed3" with the members' figures and its fly-in is loaded once per column when there is something
+   to vote on, and left at the end of the column.
+   @deep Rebuilt whole from the original (1985 instructions), every block read against it: the array
+   initialisers in the original's order, the voter/observer member setup, the deposition loop (answers,
+   voices, remarks, relations as an if/else chain, office messages) and the election loop (applicant scan
+   by index, the -1/0 fill loop, single/drawn/voted winner, tie draw). No call, store, reference or literal
+   differs (diffclass: no differs/ref lines; ours 1989 vs 1985). Left is allocation only: frame 0x904 vs
+   0x900 (one more spilled scalar; tie/win spilled to [esp+0x24]/[esp+0x14] where the original keeps them
+   in edx/esi because ours caches bankElect in edi: hunks +0x1845..+0x1870), the holders loop keeps 0 in
+   edi where the original keeps 1 (+0x48c: '- xor edi,edi' / '+ mov edi,1'), and the slot renaming that
+   follows from the frame shift. */
 
-void ai_Unk4d8e20(char *a)
+void cm_RunCouncilSession(G28REC *a)
 {
-    char flug[6][0x20] = {"sitzungen_flug_wohnsitz.esc", "sitzungen_flug_kirche.esc", "sitzungen_flug_rat.esc", "sitzungen_flug_diebe.esc",
-                          "sitzungen_flug_wache.esc", "sitzungen_flug_zunft.esc"};
-    char ed3[6][0x30] = {"Sitzung_Wohnsitz", "Sitzung_Kirche.ed3", "Sitzung_Rat.ed3", "Sitzung_Diebe.ed3", "Sitzung_Wache.ed3", "Sitzung_zunft.ed3"};
-    int kinds[6] = {6, 5, 4, 3, 2, 1};
-    int copy[0x45];
-    G22ENT ent[16];
-    char name[0x100];
-    int cand[8], votes[8], voted[8];
-    int *p;
-    int ids[8], idx[8];
-    int kind, k, n, nc, nv, nid, i, j, w, tie, best, win, win2, view1, view2, view3, track, ob, cur;
-    int sound;
+    int columns[6] = {6, 5, 4, 3, 2, 1};
+    char scene[6][0x30] = {"Sitzung_Wohnsitz.ed3", "Sitzung_Kirche.ed3", "Sitzung_Rat.ed3", "Sitzung_Diebe.ed3",
+                           "Sitzung_Wache.ed3", "Sitzung_zunft.ed3"};
+    char fly[6][0x20] = {"sitzungen_flug_wohnsitz.esc", "sitzungen_flug_kirche.esc", "sitzungen_flug_rat.esc",
+                         "sitzungen_flug_diebe.esc", "sitzungen_flug_wache.esc", "sitzungen_flug_zunft.esc"};
+    G28REC saved;
+    AMTREC offices[6];
+    AICHAR *present[8];                 /* the party's characters at the start */
+    AICHAR *holders[6];                 /* the column's office holders who are not held: the voters */
+    int holderIdx[6];                   /* their office's index in offices[] */
+    AICHAR *applicants[4];
+    CMAMOUNTROW holderRows[6], applicantRows[4], row;
+    CMSESSIONREQ depose, elect;
+    char name[0x100], name2[0x100];
+    int tally[3];                       /* the deposition answers: yes, no, abstain */
+    int votes[4];                       /* the votes per applicant */
+    AICHAR *c, *holder, *challenger;
+    GMHEAD *head;
+    CMCUTINFO *s;
+    struct MSXTRACK *sound;
+    int bankDepose, bankElect, loaded, view, viewBottom, viewTop, viewLeft;
+    int npresent, k, kind, n, nh, m, left, nvoters, shown, step, napp, best, win, tie, r, i, j, e, slot;
 
-    memcpy(copy, a, 0x114);
-    track = ai_Unk4e3270((unsigned)&full_data_60d5b4, 0);
-    cur = ai_Unk4e3270((unsigned)&full_data_60d5a4, 0);
-    ai_Unk4e3620(0);
-    nid = 0;
-    for (i = 0; i < (unsigned char)a[0x30]; i++) {
-        p = (int *)gm_FindChar(*(int *)(a + 0x34 + i * 4));
-        if (p != 0)
-            ids[nid++] = (int)p;
+    saved = *a;
+    sound = 0;
+    bankDepose = cm_LoadVoiceBank((int)"ABSETZUNG.sbf", 0);
+    bankElect = cm_LoadVoiceBank((int)"AMTSWAHL.sbf", 0);
+    cm_PlaySpecialTrack(0);
+    npresent = 0;
+    for (i = 0; i < a->used; i++) {
+        c = (AICHAR *)gm_FindChar(a->members[i]);
+        if (c != 0)
+            present[npresent++] = c;
     }
-    for (i = nid; i < 8; i++)
-        ids[i] = 0;
+    for (i = npresent; i < 8; i++)
+        present[i] = 0;
     for (k = 0; k < 6; k++) {
-        kind = kinds[k];
-        n = amt_GetColumnOffices(kind, 6, ent);
-        nc = 0;
+        kind = columns[k];
+        n = amt_GetColumnOffices(kind, 6, offices);
+        nh = 0;
         for (i = 0; i < n; i++) {
-            p = (int *)gm_FindChar(ent[i].id);
-            if (p != 0 && *((char *)p + 0x1b1) == 0) {
-                idx[nc] = i;
-                cand[nc++] = (int)p;
+            c = (AICHAR *)gm_FindChar(offices[i].owner);
+            if (c != 0 && c->heldRounds == 0) {
+                holderIdx[nh] = i;
+                holders[nh] = c;
+                nh++;
             }
         }
-        sv_Unk52fd80(&ch_EmptyName);
+        sv_SyncText(&ch_EmptyName);
         if (amt_IsColumnDecided(kind) == 0) {
-            if (ai_CharInts[ai_PlayerId * 0x21c / 0x21c * 0 + ai_PlayerId][0] == *(int *)(a + 0xc))
-                amt_ElectOffices(kind, n, ent);
-            goto next;
+            if (a->host == ai_CharsT[ai_PlayerId].netId)
+                amt_ElectOffices(kind, n, offices);
+            continue;
         }
         for (i = n; i < 6; i++)
-            cand[i] = 0;
-        for (i = 0; i < nc; i++) {
-            *(int *)(a + 0x34 + i * 4) = *(int *)(cand[i] + 4);
+            holders[i] = 0;
+        /* the members: the voters first, then the other present characters as observers */
+        for (i = 0; i < nh; i++) {
+            a->members[i] = holders[i]->netId;
+            cm_CutInfosT[i].playerId = holders[i]->netId;
+            cm_CutInfosT[i].session.observer = 0;
+            cm_CutInfosT[i].ready = 0;
+            cm_CutInfosT[i].valid = 1;
         }
-        *(unsigned char *)(a + 0x30) = (unsigned char)nc;
-        sv_Unk52fd80(&ch_EmptyName);
-        view1 = d2_OpenForm(0, 0, "cutscenes\\sitzung_main");
-        d2_SetViewEnabled(view1, 0);
-        d2_PlaceMainWindow(view1, 3);
-        nv = 0;
-        for (i = 0; i < n; i++) {
-            if (ent[i].kind == 2)
-                nv++;
+        m = nh;
+        for (i = 0; i < npresent; i++) {
+            for (j = 0; j < nh; j++)
+                if (cm_CutInfosT[j].playerId == present[i]->netId)
+                    goto member;        /* already a voter */
+            a->members[m] = present[i]->netId;
+            cm_CutInfosT[m].playerId = present[i]->netId;
+            cm_CutInfosT[m].ready = 0;
+            cm_CutInfosT[m].valid = 1;
+            cm_CutInfosT[m].session.observer = 1;
+            m++;
+        member:;
         }
-        if (nv != 0) {
-            cm_LoadEventScene(ed3[k]);
-            sound = msx_PlayAmbient("Athmos\\Athmo_sitzung.mp3", 0x40);
-            for (i = 0; i < nc; i++) {
-                if (gm_CharNameRecord(*(unsigned short *)cand[i]) != 0)
-                    sprintf(name, "%i %s", idx[i], gm_CharNameRecord(*(unsigned short *)cand[i]) + 4);
+        a->used = (unsigned char)m;
+        for (; m < 16; m++) {
+            a->members[m] = -1;
+            cm_CutInfosT[m].playerId = -1;
+        }
+        sv_SyncText(&ch_EmptyName);
+        view = d2_OpenForm(0, 0, "cutscenes\\sitzung_main");
+        d2_SetViewEnabled(view, 0);
+        d2_PlaceMainWindow(view, 3);
+
+        /* the depositions */
+        left = 0;
+        for (i = 0; i < n; i++)
+            if (offices[i].state == 2)
+                left++;
+        loaded = 0;
+        if (left != 0) {
+            cm_LoadEventScene(scene[k]);
+            if (sound == 0)
+                sound = msx_PlayAmbient("Athmos\\Athmo_sitzung.mp3", 0x40);
+            for (i = 0; i < nh; i++) {
+                head = (GMHEAD *)gm_CharNameRecord(holders[i]->id);
+                if (head != 0)
+                    sprintf(name, "%i %s", holderIdx[i], head->name);
                 else
-                    sprintf(name, "%i stallbursche_MANN", idx[i]);
-                ai_Unk4e2c30("cutscenes\\sitzungen\\sitzungen_create.esc", name);
+                    sprintf(name, "%i stallbursche_MANN", holderIdx[i]);
+                cm_StartEventArg("cutscenes\\sitzungen\\sitzungen_create.esc", (int)name);
             }
-            for (i = 0; i < nc; i++) {
-                sprintf(name, "%i", idx[i]);
-                ai_Unk4e2c30("cutscenes\\sitzungen\\sitzungen_create_2.esc", name);
+            for (i = 0; i < nh; i++) {
+                sprintf(name, "%i", holderIdx[i]);
+                cm_StartEventArg("cutscenes\\sitzungen\\sitzungen_create_2.esc", (int)name);
             }
-            txt_Format(name, "cutscenes\\sitzungen\\%s", flug[k]);
-            ai_Unk4e2c70(ai_Unk4e2c30(name, &ch_EmptyName));
-            sv_Unk52fd80(&ch_EmptyName);
+            txt_Format(name, (int)"cutscenes\\sitzungen\\%s", fly[k]);
+            cm_WaitEvent(cm_StartEventArg(name, (int)&ch_EmptyName));
+            loaded = 1;
+            sv_SyncText(&ch_EmptyName);
         }
-        for (j = 0; j < n; j++) {
-            if (nv == 0)
-                break;
-            if (ent[j].kind != 2 || ent[j].flag == 0)
+        for (j = 0; j < n && left != 0; j++) {
+            tally[0] = 0;
+            tally[1] = 0;
+            tally[2] = 0;
+            if (amt_HasDeposalVote(kind, &offices[j]) == 0)
                 continue;
-            nv--;
-            /* the head of a candidate: the views "sitzung_bottom" / "sitzung_top_absetzen", the number of supporters (0x4e75c0) in a row
-               of heads (0x5be1d0 / 0x5be3b0), the texts 0x12c4 / 0x12c5 and the pause 0x9c4 */
-            view2 = d2_OpenForm(0, 0, "cutscenes\\sitzung_bottom");
-            d2_PlaceMainWindow(view2, 3);
-            view3 = d2_OpenForm(0, 0, "cutscenes\\sitzung_top_absetzen");
-            d2_PlaceMainWindow(view3, 3);
-            d2_SetForm(view2, 1);
-            ai_AmountRowStatus(ent);
-            ai_AmountRow(0x28, 0, d2_LastWindow, 0x54, ent, 1);
-            d2_SetForm(view2, 2);
-            ai_Unk4d8cb0(d2_LastWindow, 1, 0);
-            ai_Unk4e32d0(-8, ids[0], "_INTRO", nc - 1, 0x32);
+            nvoters = 0;
+            for (i = 0; i < nh; i++)
+                if (holders[i]->officeKind != 0)
+                    nvoters++;
+            viewBottom = d2_OpenForm(0, 0, "cutscenes\\sitzung_bottom");
+            d2_PlaceMainWindow(viewBottom, 3);
+            viewTop = d2_OpenForm(0, 0, "cutscenes\\sitzung_top_absetzen");
+            d2_PlaceMainWindow(viewTop, 3);
+            left--;
+            holder = (AICHAR *)gm_FindChar(offices[j].owner);
+            challenger = (AICHAR *)gm_FindChar(offices[j].x14);
+            d2_SetForm(viewTop, 1);
+            row.rec = holder;
+            row.y = 0;
+            row.x30 = 0;
+            ai_AmountRowStatus(&row);
+            ai_AmountRow(0x28, 0, d2_LastWindow, 0x54, &row, 1);
+            d2_SetForm(viewTop, 2);
+            cm_TallyStack(d2_LastWindow, 1, 0);
+            cm_QueueVoice(-8, bankDepose, (int)"_ABSETZEN_KAMMERN", kind - 1, 0x32);
+            d2_SetViewEnabled(view, 1);
+            d2_SetForm(view, 0);
+            io_PrintText("$C");
             io_PrintText(0x12c4);
-            io_PrintText(0x12c5, *(unsigned short *)ent[j].id, j + 0x12bb, j + 0x12a9);
-            ai_Unk4e3570(0x9c4);
-            /* each voter shows its head and votes (texts 0x12c7 .. 0x12d1; kinds 0 / 1 / 2: yes / no / abstain, picked with 0x4e52f0),
-               4d8cb0(.., 0, 0 / 1 / 2) adds a picture to the stack of its answer */
-            win = -1;
-            best = -1;
-            tie = 0;
-            for (i = 0; i < nc; i++) {
-                if (votes[i] > best) {
-                    tie = 0;
-                    best = votes[i];
-                    win = i;
-                } else if (votes[i] == best)
-                    tie = 1;
+            io_PrintText(0x12c5, kind + 0x12a9, kind + 0x12bb, challenger->id, holder->id);
+            cm_RunSceneTicks(0x9c4);
+            d2_SetForm(viewBottom, 0);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            if (nvoters > 0) {
+                step = (0x320 - cm_PicsT[0x5da].w * nvoters) / (nvoters + 1);
+                shown = 0;
+                for (i = 0; i < nh; i++) {
+                    if (holders[i]->officeKind != 0) {
+                        holderRows[i].rec = holders[i];
+                        holderRows[i].y = 0;
+                        holderRows[i].x30 = 0;
+                        ai_AmountRowStatus(&holderRows[i]);
+                        ai_AmountRow((shown + 1) * step + cm_PicsT[0x5da].w * shown, 0, d2_LastWindow, 0x54, &holderRows[i], 0);
+                        shown++;
+                    }
+                }
             }
-            if (tie != 0 && win != -1)
-                win = cm_Random(nc);
-            if (win != -1) {
-                ai_Unk4e32d0(-8, ids[0], "_ERGEBNIS", 100, 3);
-                io_PrintText(0x12e1);
-                ai_Unk4e3570(0x3e8);
-                cm_SendRelations(ent[j].id, ent[win].id, 0, 1);
+            cm_RunSceneTicks(0x9c4);
+            depose.mode = 1;
+            depose.office = offices[j].idx;
+            depose.kind = offices[j].kind;
+            depose.ids[0] = offices[j].owner;
+            depose.ids[1] = offices[j].x14;
+            d2_SetViewEnabled(view, 0);
+            cm_RunSceneParty(a, &depose);
+            cm_RunSceneTicks(0x3e8);
+            d2_SetViewEnabled(view, 1);
+            /* each voter's answer: a picture on its stack, its voice and remark */
+            for (i = 0; i < nh; i++) {
+                s = &cm_CutInfosT[i];
+                if ((unsigned)s->session.answer >= 3)
+                    continue;
+                c = (AICHAR *)gm_FindChar(s->playerId);
+                tally[s->session.answer]++;
+                d2_SetForm(view, 0);
+                d2_Objs[holderRows[i].ctl].highlighted = 1;
+                io_PrintText("$C");
+                io_PrintText(0x12c7, c->id);
+                cm_RunSceneTicks(0x3e8);
+                d2_SetForm(view, 0);
+                if (s->session.answer == 0) {
+                    cm_QueueVoice(c->id, bankDepose, (int)"_ABSETZEN_JA", cm_Random(4), 100);
+                    io_PrintText(0x12c8);
+                    if (s->session.click == 1)
+                        io_PrintText(0x12cb + cm_Random(2), challenger->id);
+                    else if (s->session.click == 2)
+                        io_PrintText(0x12cf + cm_Random(2), challenger->id);
+                    d2_SetForm(viewTop, 2);
+                    cm_TallyStack(d2_LastWindow, 0, 0);
+                } else if (s->session.answer == 1) {
+                    cm_QueueVoice(c->id, bankDepose, (int)"_ABSETZEN_NEIN", cm_Random(4), 100);
+                    io_PrintText(0x12ca);
+                    if (s->session.click == 1)
+                        io_PrintText(0x12cd + cm_Random(2), holder->id, challenger->id);
+                    else if (s->session.click == 2)
+                        io_PrintText(0x12d1 + cm_Random(2), holder->id);
+                    d2_SetForm(viewTop, 2);
+                    cm_TallyStack(d2_LastWindow, 0, 1);
+                } else {
+                    cm_QueueVoice(c->id, bankDepose, (int)"_ABSETZEN_ENTHALTUNG", cm_Random(4), 100);
+                    io_PrintText(0x12c9);
+                    d2_SetForm(viewTop, 2);
+                    cm_TallyStack(d2_LastWindow, 0, 2);
+                }
+                cm_RunSceneTicks(0xfa0);
+                d2_Objs[holderRows[i].ctl].highlighted = 0;
+                cm_RunSceneTicks(0x3e8);
             }
-            d2_SetForm(view1, 0);
-            io_PrintText((unsigned)"$C");
-            d2_SetViewEnabled(view1, 0);
-            d2_CloseView(view3);
-            d2_CloseView(view2);
-            ai_Unk4e3570(0x3e8);
-            sv_Unk52fd80(&ch_EmptyName);
+            if (tally[0] > tally[1]) {
+                cm_QueueVoice(-8, bankDepose, (int)"_ABSETZEN_ERGEBNIS_ABGESETZT", cm_Random(3), 100);
+                d2_SetForm(view, 0);
+                io_PrintText("$C");
+                io_PrintText(0x12d6, tally[0], tally[1], holder->id);
+                cm_RunSceneTicks(0xfa0);
+                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                    for (i = 0; i < nh; i++) {
+                        s = &cm_CutInfosT[i];
+                        if (s->playerId == holder->netId)
+                            continue;
+                        if (s->session.answer == 0)
+                            cm_SendRelations(s->playerId, holder->netId, -40, 1);
+                        else if (s->session.answer == 1)
+                            cm_SendRelations(s->playerId, holder->netId, 10, 1);
+                        else
+                            cm_SendRelations(s->playerId, holder->netId, -20, 1);
+                    }
+                    slot = amt_SendOfficeMessage(offices[j].idx, 0, 0, 3, 0xff);
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                }
+            } else {
+                c = (AICHAR *)gm_FindChar(offices[j].owner);
+                cm_QueueVoice(-8, bankDepose, (int)"_ABSETZEN_ERGEBNIS_NICHT_ABGESETZT", cm_Random(3), 100);
+                d2_SetForm(view, 0);
+                io_PrintText("$C");
+                io_PrintText(0x12d7, tally[0], tally[1], holder->id, holder->id);
+                cm_RunSceneTicks(0xfa0);
+                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                    for (i = 0; i < nh; i++) {
+                        s = &cm_CutInfosT[i];
+                        if (s->playerId == holder->netId)
+                            continue;
+                        if (s->session.answer == 0)
+                            cm_SendRelations(s->playerId, holder->netId, -40, 1);
+                        else if (s->session.answer == 1)
+                            cm_SendRelations(s->playerId, holder->netId, 10, 1);
+                        else
+                            cm_SendRelations(s->playerId, holder->netId, 5, 1);
+                    }
+                    if (c != 0)
+                        slot = amt_SendOfficeMessage(offices[j].idx, (char *)c, 0, 1, 0xff);
+                    else
+                        slot = amt_SendOfficeMessage(offices[j].idx, 0, 0, 4, 0xff);
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                }
+            }
+            d2_SetForm(view, 0);
+            d2_SetViewEnabled(view, 0);
+            io_PrintText("$C");
+            d2_CloseView(viewTop);
+            d2_CloseView(viewBottom);
+            cm_RunSceneTicks(0x3e8);
+            sv_SyncText(&ch_EmptyName);
         }
-        if (nv != 0) {
+
+        /* the elections */
+        left = 0;
+        for (i = 0; i < n; i++)
+            if (offices[i].state == 3 && offices[i].cnt != 0)
+                left++;
+        if (left != 0 && loaded == 0) {
+            cm_LoadEventScene(scene[k]);
+            if (sound == 0)
+                sound = msx_PlayAmbient("Athmos\\Athmo_sitzung.mp3", 0x40);
+            for (i = 0; i < nh; i++) {
+                head = (GMHEAD *)gm_CharNameRecord(holders[i]->id);
+                if (head != 0)
+                    sprintf(name2, "%i %s", holderIdx[i], head->name);
+                else
+                    sprintf(name2, "%i stallbursche_MANN", holderIdx[i]);
+                cm_StartEventArg("cutscenes\\sitzungen\\sitzungen_create.esc", (int)name2);
+            }
+            for (i = 0; i < nh; i++) {
+                sprintf(name2, "%i", holderIdx[i]);
+                cm_StartEventArg("cutscenes\\sitzungen\\sitzungen_create_2.esc", (int)name2);
+            }
+            txt_Format(name2, (int)"cutscenes\\sitzungen\\%s", fly[k]);
+            cm_WaitEvent(cm_StartEventArg(name2, (int)&ch_EmptyName));
+            loaded = 1;
+            sv_SyncText(&ch_EmptyName);
+        }
+        for (j = 0; j < n && left != 0; j++) {
+            votes[0] = 0;
+            votes[1] = 0;
+            votes[2] = 0;
+            votes[3] = 0;
+            if (offices[j].state != 3 || offices[j].cnt == 0)
+                continue;
+            left--;
+            elect.mode = 2;
+            elect.office = offices[j].idx;
+            elect.kind = offices[j].kind;
+            nvoters = 0;
+            for (i = 0; i < nh; i++)
+                if (amt_CanTakeOffice((char *)holders[i], elect.kind) != 0 && holders[i]->heldRounds == 0)
+                    nvoters++;
+            viewBottom = d2_OpenForm(0, 0, "cutscenes\\sitzung_bottom");
+            d2_PlaceMainWindow(viewBottom, 3);
+            viewLeft = d2_OpenForm(0, 0, "cutscenes\\sitzung_left_wahl");
+            d2_PlaceMainWindow(viewLeft, 2);
+            d2_SetForm(viewLeft, 0);
+            napp = 0;
+            for (i = 0; i < 768 && napp < offices[j].cnt && napp < 4; i++) {
+                c = &ai_CharsT[i];
+                if (c->appliedOffice == offices[j].kind) {
+                    applicants[napp] = c;
+                    d2_SetForm(viewLeft, napp + 1);
+                    applicantRows[napp].rec = c;
+                    applicantRows[napp].y = 0;
+                    applicantRows[napp].x2c = 0;
+                    applicantRows[napp].x30 = 0;
+                    ai_AmountRowStatus(&applicantRows[napp]);
+                    ai_AmountRow((0xa0 - cm_PicsT[0x5da].w) / 2, 0, d2_LastWindow, 0x54, &applicantRows[napp], 1);
+                    elect.ids[napp] = c->netId;
+                    napp++;
+                }
+            }
+            if (napp == 0)
+                continue;
+            for (i = napp; i < 4; i++) {
+                applicants[i] = 0;
+                elect.ids[i] = -1;
+            }
+            cm_QueueVoice(-8, bankElect, (int)"_INTRO", kind - 1, 100);
+            cm_QueueVoice(-8, bankElect, (int)"_BEWERBER", napp - 1, 0x1f4);
+            d2_SetViewEnabled(view, 1);
+            d2_SetForm(view, 0);
+            io_PrintText("$C");
+            io_PrintText(0x12d8);
+            io_PrintText(0x12d9, kind + 0x12a9, kind + 0x12bb, offices[j].kind + 0x253);
+            for (i = 0; i < napp; i++)
+                io_PrintText(0x12db, applicants[i]->id, applicants[i]->id);
+            cm_RunSceneTicks(0x9c4);
+            d2_SetForm(viewBottom, 0);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            if (nvoters > 0) {
+                step = (0x320 - cm_PicsT[0x5da].w * nvoters) / (nvoters + 1);
+                shown = 0;
+                for (i = 0; i < nh; i++) {
+                    if (amt_CanTakeOffice((char *)holders[i], elect.kind) != 0) {
+                        holderRows[i].rec = holders[i];
+                        holderRows[i].y = 0;
+                        holderRows[i].x30 = 0;
+                        ai_AmountRowStatus(&holderRows[i]);
+                        ai_AmountRow((shown + 1) * step + cm_PicsT[0x5da].w * shown, 0, d2_LastWindow, 0x54, &holderRows[i], 0);
+                        shown++;
+                    }
+                }
+            }
+            cm_RunSceneTicks(0x9c4);
+            if (napp == 1) {
+                /* a single applicant takes the office */
+                cm_QueueVoice(-8, bankElect, (int)"_ERGEBNIS", 0, 100);
+                d2_Objs[applicantRows[0].ctl].highlighted = 1;
+                d2_SetForm(view, 0);
+                io_PrintText("$C");
+                io_PrintText(0x12e0, applicants[0]->id, offices[j].kind + 0x253);
+                cm_RunSceneTicks(0xfa0);
+                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                    slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[0], 0, 1, 0xff);
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                }
+            } else if (nvoters == 0) {
+                /* nobody to vote: one is drawn */
+                r = cm_Random(napp);
+                cm_QueueVoice(-8, bankElect, (int)"_ERGEBNIS", 1, 100);
+                d2_SetForm(view, 0);
+                io_PrintText("$C");
+                io_PrintText(0x12e1);
+                cm_RunSceneTicks(0x3e8);
+                d2_Objs[applicantRows[r].ctl].highlighted = 1;
+                io_PrintText(0x12e2, applicants[r]->id);
+                cm_RunSceneTicks(0xfa0);
+                if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                    slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[r], 0, 1, 0xff);
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_PumpNet();
+                }
+            } else {
+                d2_SetViewEnabled(view, 0);
+                cm_RunSceneParty(a, &elect);
+                cm_RunSceneTicks(0x3e8);
+                d2_SetViewEnabled(view, 1);
+                /* each voter's vote: its row and the applicant's row lit, a picture on the applicant's stack */
+                for (i = 0; i < nh; i++) {
+                    s = &cm_CutInfosT[i];
+                    if (s->session.answer == -1)
+                        continue;
+                    for (e = 0; e < napp; e++) {
+                        if (elect.ids[e] != s->session.answer)
+                            continue;
+                        d2_Objs[holderRows[i].ctl].highlighted = 1;
+                        d2_SetForm(view, 0);
+                        io_PrintText("$C");
+                        io_PrintText(0x12de, holders[i]->id);
+                        votes[e]++;
+                        cm_RunSceneTicks(0x3e8);
+                        d2_Objs[applicantRows[e].ctl].highlighted = 1;
+                        d2_SetForm(viewLeft, e + 1);
+                        cm_StackPicture(e + 1, (char *)&applicantRows[e]);
+                        d2_SetForm(view, 0);
+                        io_PrintText(0x12df, applicants[e]->id);
+                        cm_RunSceneTicks(0xfa0);
+                        d2_Objs[holderRows[i].ctl].highlighted = 0;
+                        d2_Objs[applicantRows[e].ctl].highlighted = 0;
+                        break;
+                    }
+                }
+                best = -1;
+                win = -1;
+                tie = 0;
+                for (e = 0; e < napp; e++) {
+                    if (votes[e] > best) {
+                        tie = 0;
+                        best = votes[e];
+                        win = e;
+                    } else if (votes[e] == best)
+                        tie = 1;
+                }
+                if (tie == 0) {
+                    if (win != -1) {
+                        d2_Objs[applicantRows[win].ctl].highlighted = 1;
+                        cm_QueueVoice(-8, bankElect, (int)"_ERGEBNIS", 3, 100);
+                        d2_SetForm(view, 0);
+                        io_PrintText("$C");
+                        io_PrintText(0x12e5, offices[j].kind + 0x253, applicants[win]->id);
+                        cm_RunSceneTicks(0xfa0);
+                        if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                            slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[win], 0, 1, 0xff);
+                            while (cm_GetSlotState(slot) == 0)
+                                sv_PumpNet();
+                        }
+                    }
+                } else if (win != -1) {
+                    /* a tie: from a random applicant on, the first with the most votes */
+                    r = cm_Random(napp);
+                    for (i = napp; i != 0; i--, r = (r + 1) % napp)
+                        if (votes[r] == best) {
+                            win = r;
+                            break;
+                        }
+                    cm_QueueVoice(-8, bankElect, (int)"_ERGEBNIS", 2, 100);
+                    d2_SetForm(view, 0);
+                    io_PrintText("$C");
+                    io_PrintText(0x12e3);
+                    cm_RunSceneTicks(0x3e8);
+                    d2_Objs[applicantRows[win].ctl].highlighted = 1;
+                    io_PrintText(0x12e4, applicants[win]->id);
+                    cm_RunSceneTicks(0xfa0);
+                    if (a->host == ai_CharsT[ai_PlayerId].netId) {
+                        slot = amt_SendOfficeMessage(offices[j].idx, (char *)applicants[win], 0, 1, 0xff);
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_PumpNet();
+                    }
+                }
+            }
+            d2_SetForm(view, 0);
+            io_PrintText("$C");
+            d2_SetViewEnabled(view, 0);
+            d2_CloseView(viewLeft);
+            d2_CloseView(viewBottom);
+            cm_RunSceneTicks(0x3e8);
+            sv_SyncText(&ch_EmptyName);
+        }
+        if (loaded != 0) {
             cm_FadeToBlack();
-            ai_Unk4e3570(0x3e8);
-            ai_Unk4e2d40(ai_Unk4e2c30("cutscenes\\sitzungen\\sitzungen_exit.esc", &ch_EmptyName));
+            cm_RunSceneTicks(0x3e8);
+            cm_WaitEventFull(cm_StartEventArg("cutscenes\\sitzungen\\sitzungen_exit.esc", (int)&ch_EmptyName));
             cm_LeaveEventScene();
         }
-next:
-        d2_CloseView(view1);
+        d2_CloseView(view);
     }
-    if (ai_CharInts[ai_PlayerId][0] == *(int *)(a + 0xc))
+    if (a->host == ai_CharsT[ai_PlayerId].netId)
         amt_UpdateOffices();
-    ai_Unk4e3290(cur);
-    ai_Unk4e3290(track);
+    cm_UnloadVoiceBank(bankDepose);
+    cm_UnloadVoiceBank(bankElect);
     if (sound != 0)
         msx_StopAmbient(sound);
-    ai_Unk4e3640();
-    memcpy(a, copy, 0x114);
+    cm_EndSpecialTrack();
+    *a = saved;
     ai_CampaignStep(0x30, 0, 0, 0);
 }
 /* 0x4da9e0, the vote dialog "cutscenes\\sitzungen" (buttons from the text 0x12c6): the answer of the player's choice; *out the click */
@@ -12112,21 +12503,21 @@ void ai_Unk4db700(char *m)
     if (cm_SkipEvents == 0)
         msx_PlayAmbient(0x40, "Athmos\\Athmo_sitzung.mp3");
     scene = cm_Random(2);
-    ai_Unk4e3620("cd2\\ImKerker.mp3");
-    ai_Unk4e3270(0, "ADDON\\PROZESS_NEU.sbf");
+    cm_PlaySpecialTrack("cd2\\ImKerker.mp3");
+    cm_LoadVoiceBank(0, "ADDON\\PROZESS_NEU.sbf");
     ai_Unk4947a0(a, b);
     sprintf(names, "%s ", (char *)gm_CharNameRecord(*(unsigned short *)ch[0]) + 4);
     for (i = 1; i < 4; i++)
         sprintf(names + strlen(names), "%s ", (char *)gm_CharNameRecord(*(unsigned short *)ch[i]) + 4);
     sprintf(names + strlen(names), "%s", (char *)gm_CharNameRecord(*(unsigned short *)ch[4]) + 4);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-create2.esc", names);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter.esc", &ai_Unk60de4c);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60de4c);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-beisitzer2.esc", &ai_Unk60de4c);
-    ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-intro.esc", &ch_EmptyName));
+    cm_StartEventArg("cutscenes\\prozess\\prozess-create2.esc", names);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", &ai_Unk60de4c);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60de4c);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", &ai_Unk60de4c);
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-intro.esc", &ch_EmptyName));
 
     /* the judge opens the session */
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
     G26_BOX(1);
     io_PrintText(0x1491);
     h = ai_Unk4e32b0(5, "_PROZESS_NEU", 0, 0);
@@ -12136,12 +12527,12 @@ void ai_Unk4db700(char *m)
     ai_Unk4e3420(4);
 
     /* the accuser states the charge */
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-klaeger.esc", &ai_Unk60dd68);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", &ai_Unk60dd68);
     G26_BOX(0);
     io_PrintText(0x1499);
     h = ai_Unk4e32b0(0, "_PROZESS_NEU", 0, 0);
     G26_WAITV(h);
-    ai_Unk4e2c70(0);
+    cm_WaitEvent(0);
 
     /* the witnesses */
     for (i = 0; i < n; i++) {
@@ -12151,15 +12542,15 @@ void ai_Unk4db700(char *m)
         v = gv_CrimeText(ids[i], i);
         if (v == -1)
             continue;
-        ai_Unk4e2c30("cutscenes\\prozess\\prozess-klaeger.esc", &ai_Unk60dd68);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-klaeger.esc", &ai_Unk60dd68);
         G26_BOX(0);
         io_PrintText(0x14b0);
         h = ai_Unk4e32b0(i, "_PROZESS_GESETZ", 0, 0);
         G26_WAITV(h);
         cm_Random(0x1e);
-        ai_Unk4e2c70(0);
+        cm_WaitEvent(0);
     }
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
     io_PrintText(0x14ba);
     h = ai_Unk4e32b0(0, "_PROZESS_NEU", 0, 0);
     G26_WAITV(h);
@@ -12167,7 +12558,7 @@ void ai_Unk4db700(char *m)
     io_PrintText("$C");
 
     /* the accused answers: guilty / not guilty */
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-angeklagter.esc", &ai_Unk60dd24);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-angeklagter.esc", &ai_Unk60dd24);
     ai_Unk4e2bd0(ai_Unk60d368, 0);
     cm_RunSceneParty(m, 0);
     for (i = 0; i < n && *(int *)(ai_Unk92caf0 + i * 0x18) != ids[0]; i++)
@@ -12178,19 +12569,19 @@ void ai_Unk4db700(char *m)
     io_PrintText("$C");
     if (guilty == 1) {
         gm_Liking(guilty, mode, 0);
-        ai_Unk4e3270(0, "PROZESS_3_SCHULDIG.sbf");
-        ai_Unk4e32d0(0, 0, "_PROZESS_3_SCHULDIG", 0, 0);
+        cm_LoadVoiceBank(0, "PROZESS_3_SCHULDIG.sbf");
+        cm_QueueVoice(0, 0, "_PROZESS_3_SCHULDIG", 0, 0);
         io_PrintText(0x14bd, 0, 0x14be);
     } else {
-        ai_Unk4e3270(0, "PROZESS_3_NICHT_SCHULDIG.sbf");
-        ai_Unk4e32d0(0, 0, "_PROZESS_3_NICHT_SCHULDIG", 0, 0);
+        cm_LoadVoiceBank(0, "PROZESS_3_NICHT_SCHULDIG.sbf");
+        cm_QueueVoice(0, 0, "_PROZESS_3_NICHT_SCHULDIG", 0, 0);
         io_PrintText(0x14bd, 0, 0x14c4);
     }
     ai_Unk4e3420(2);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60dd68);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-beisitzer2.esc", &ai_Unk60dd68);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ai_Unk60dd68);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer1.esc", &ai_Unk60dd68);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-beisitzer2.esc", &ai_Unk60dd68);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ai_Unk60dd68);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter.esc", &ch_EmptyName);
 
     /* the torture (the instrument names 0x60dad0 .., "cutscenes\\prozess\\folter\\<name>.esc") */
     if (cm_Random(2) == 1) {
@@ -12198,30 +12589,30 @@ void ai_Unk4db700(char *m)
         G26_BOX(1);
         io_PrintText("$C", 0x14ca);
         ai_Unk4e3420(4);
-        ai_Unk4e2c30("cutscenes\\prozess\\prozess-folter-1.esc", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-folter-1.esc", &ch_EmptyName);
         G26_BOX(0);
         cm_RunSceneParty(m, 0);
-        ai_Unk4e2c70(0);
+        cm_WaitEvent(0);
         for (i = 0; i < n && *(int *)(ai_Unk92caf0 + i * 0x18) != ids[0]; i++)
             ;
         G26_BOX(1);
         io_PrintText("$C");
         if (*(int *)(ai_Unk92caf0 + i * 0x18 + 0x88) == 1) {
             cm_Random(6);
-            ai_Unk4e3270(0, "PROZESS_4_FOLTER_1.sbf");
-            ai_Unk4e3270(0, "PROZESS_4_FOLTER_2.sbf");
-            ai_Unk4e32d0(0x32, 0, "_PROZESS_4_FOLTER_1", 0, 0);
-            ai_Unk4e32d0(0x12c, 0, "_PROZESS_4_FOLTER_2", 0, 0);
+            cm_LoadVoiceBank(0, "PROZESS_4_FOLTER_1.sbf");
+            cm_LoadVoiceBank(0, "PROZESS_4_FOLTER_2.sbf");
+            cm_QueueVoice(0x32, 0, "_PROZESS_4_FOLTER_1", 0, 0);
+            cm_QueueVoice(0x12c, 0, "_PROZESS_4_FOLTER_2", 0, 0);
             io_PrintText(0x14d9);
             ai_Unk4e3420(1);
-            ai_Unk4e2c30("cutscenes\\prozess\\prozess-folter-3.esc", &ch_EmptyName);
+            cm_StartEventArg("cutscenes\\prozess\\prozess-folter-3.esc", &ch_EmptyName);
         } else {
-            ai_Unk4e2c30("cutscenes\\prozess\\prozess-folter-2.esc", &ch_EmptyName);
+            cm_StartEventArg("cutscenes\\prozess\\prozess-folter-2.esc", &ch_EmptyName);
             io_PrintText(0x14d8);
         }
         ai_Unk4e3420(4);
         cm_LoadEventScene("ob_GEFAENGNIS_FOLTERKAMMER.ed3");
-        ai_Unk4e2c30("cutscenes\\prozess\\folter-create.esc", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\prozess\\folter-create.esc", &ch_EmptyName);
         G26_BOX(1);
         io_PrintText(0x14e4);
         h = ai_Unk4e32b0(4, "_PROZESS_NEU", 0, 0);
@@ -12231,62 +12622,62 @@ void ai_Unk4db700(char *m)
         io_PrintText(0x14ec);
         ai_Unk4e3420(5);
         ai_Unk494300(0);
-        ai_Unk4e2c70(0);
-        ai_Unk4e32d0(0x1f4, 0, "_PROZESS_5_FOLTER2_UNSCHULDSBETEUERUNG", 0, 0);
-        ai_Unk4e32d0(0, 0, "_PROZESS_5_FOLTER2_GESTEHEN", 0, 0);
-        ai_Unk4e32d0(0x1f4, 0, "_PROZESS_5_FOLTER2_WEITER", 0, 0);
+        cm_WaitEvent(0);
+        cm_QueueVoice(0x1f4, 0, "_PROZESS_5_FOLTER2_UNSCHULDSBETEUERUNG", 0, 0);
+        cm_QueueVoice(0, 0, "_PROZESS_5_FOLTER2_GESTEHEN", 0, 0);
+        cm_QueueVoice(0x1f4, 0, "_PROZESS_5_FOLTER2_WEITER", 0, 0);
         io_PrintText(0x1510);
         ai_Unk4e3420(4);
-        ai_Unk4e2c30("cutscenes\\prozess\\folterexit.esc", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\prozess\\folterexit.esc", &ch_EmptyName);
         if (cm_SkipEvents == 0)
             d3if_SelectScene(scene, 0);
-        ai_Unk4e3270(0, "PROZESS_6_FOLTERERGEBNIS.sbf");
-        ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
-        ai_Unk4e32d0(0, "_PROZESS_6_FOLTERERGEBNIS", 0, 0);
+        cm_LoadVoiceBank(0, "PROZESS_6_FOLTERERGEBNIS.sbf");
+        cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
+        cm_QueueVoice(0, "_PROZESS_6_FOLTERERGEBNIS", 0, 0);
         io_PrintText(0x1520, 0, 0x1522);
         ai_Unk4e3420(4);
     }
-    ai_Unk4e3270(0, "PROZESS_6_ANKUENDIGUNG.sbf");
-    ai_Unk4e32d0(0, 0, "_PROZESS_6_ANKUENDIGUNG", 0, 0);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
+    cm_LoadVoiceBank(0, "PROZESS_6_ANKUENDIGUNG.sbf");
+    cm_QueueVoice(0, 0, "_PROZESS_6_ANKUENDIGUNG", 0, 0);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
     io_PrintText(0x1523);
     ai_Unk4e3420(4);
 
     /* the vote */
-    ai_Unk4e3270(0, "PROZESS_6_ABSTIMMUNG_ERGEBNISSE.sbf");
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
+    cm_LoadVoiceBank(0, "PROZESS_6_ABSTIMMUNG_ERGEBNISSE.sbf");
+    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
     G26_BOX(1);
     io_PrintText(0x1528);
     ai_Unk4e3420(2);
     cm_Random(100, 3);
-    ai_Unk4e32d0(0, "_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", 0, 0);
+    cm_QueueVoice(0, "_PROZESS_6_ABSTIMMUNG_ERGEBNISSE", 0, 0);
     ai_Unk4e3420(2);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-abstimmen-1.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-1.esc", &ch_EmptyName);
     ai_Unk4e3420(2);
-    ai_Unk4e2c30("cutscenes\\prozess\\prozess-abstimmen-2.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-2.esc", &ch_EmptyName);
     ai_Unk4e3420(2);
 
     /* the verdict */
-    ai_Unk4e3270(0, "PROZESS_8.sbf");
+    cm_LoadVoiceBank(0, "PROZESS_8.sbf");
     if (guilty < 2) {
-        ai_Unk4e3270(0, "PROZESS_7_SCHULDIG.sbf");
-        ai_Unk4e3270(0, "PROZESS_7_STRAFEN.sbf");
-        ai_Unk4e2c30("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
-        ai_Unk4e2c30("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
+        cm_LoadVoiceBank(0, "PROZESS_7_SCHULDIG.sbf");
+        cm_LoadVoiceBank(0, "PROZESS_7_STRAFEN.sbf");
+        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-richter-reden.esc", &ch_EmptyName);
         ai_Unk4e2bd0(ai_Unk60d368, 0);
         cm_RunSceneParty(m, 0);
-        if (mode >= 4 && ch[0][2] == 6 && ai_Unk4e3290(0) != 0)
+        if (mode >= 4 && ch[0][2] == 6 && cm_UnloadVoiceBank(0) != 0)
             ai_CountMissionEvent(0x13, ch[0]);
         G26_BOX(1);
         io_PrintText(0x152f);
         io_PrintText(0x1530);
-        ai_Unk4e32d0(0x64, 0, "_PROZESS_7_SCHULDIG", 0, 0);
-        ai_Unk4e32d0(0xfa, 2, "_PROZESS_7_SCHULDIG", 0, 0);
+        cm_QueueVoice(0x64, 0, "_PROZESS_7_SCHULDIG", 0, 0);
+        cm_QueueVoice(0xfa, 2, "_PROZESS_7_SCHULDIG", 0, 0);
         ai_Unk4e3420(3);
         gv_CheckSentence(mode, 0);
         unk_Unk4f48f0(0, mode, 0);
-        ai_Unk4e32d0(0x64, mode, "_PROZESS_7_STRAFEN", 0, 0);
-        ai_Unk4e32d0(0xc8, 0, "_PROZESS_8", 0, 0);
+        cm_QueueVoice(0x64, mode, "_PROZESS_7_STRAFEN", 0, 0);
+        cm_QueueVoice(0xc8, 0, "_PROZESS_8", 0, 0);
         if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0])
             gv_PassSentence(0, 0, 0, mode, 0);
         io_PrintText(0x1531);
@@ -12299,10 +12690,10 @@ void ai_Unk4db700(char *m)
         io_PrintText("$C", 0x1557);
         ai_Unk4e3420(4);
     } else {
-        ai_Unk4e3270(0, "PROZESS_7_NICHT_SCHULDIG.sbf");
-        ai_Unk4e32d0(0x64, 0, "_PROZESS_7_NICHT_SCHULDIG", 0, 0);
-        ai_Unk4e32d0(0xc8, 0, "_PROZESS_8", 0, 0);
-        ai_Unk4e2c30("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
+        cm_LoadVoiceBank(0, "PROZESS_7_NICHT_SCHULDIG.sbf");
+        cm_QueueVoice(0x64, 0, "_PROZESS_7_NICHT_SCHULDIG", 0, 0);
+        cm_QueueVoice(0xc8, 0, "_PROZESS_8", 0, 0);
+        cm_StartEventArg("cutscenes\\prozess\\prozess-abstimmen-3.esc", &ch_EmptyName);
         G26_BOX(1);
         io_PrintText("$C", 0x152e);
         ai_Unk4e3420(4);
@@ -12326,15 +12717,15 @@ void ai_Unk4db700(char *m)
         }
     }
     cm_FadeToBlack();
-    ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-ende.esc", &ch_EmptyName));
-    ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\prozess\\prozess-exit.esc", &ch_EmptyName));
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-ende.esc", &ch_EmptyName));
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\prozess\\prozess-exit.esc", &ch_EmptyName));
 done:
     if (cm_SkipEvents == 0)
         msx_StopAmbient(0);
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
     snd_ClearQueue();
     /* the sound slots made by 0x4e3270 are freed one by one (0x4e3290) */
-    ai_Unk4e3290(0);
+    cm_UnloadVoiceBank(0);
 }
 
 /* 0x4dd960, the court's (and torture's) question dialogs of the player for a request m of kinds 0 .. 6 ("cutscenes\\prozess": a yes / no
@@ -12876,11 +13267,11 @@ void ai_Unk4ded10(char *m)
     d3_SetFogSet(0, 1, 0);
     cm_InitDamagePops();
     if (k == 0)
-        ai_Unk4e3620("cd2\\satisfaktion.mp3");
+        cm_PlaySpecialTrack("cd2\\satisfaktion.mp3");
     else if (k == 1)
-        ai_Unk4e3620("cd2\\DerSeuchenzug.mp3");
+        cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
     else
-        ai_Unk4e3620("cd2\\AmKuehlenGrabe.mp3");
+        cm_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
     snd1 = sb_LoadSampleBank("duell_sfx.sbf", 0);
     snd2 = snd_LoadVoiceBank("duell.sbf", 0);
     scene = ai_Unk4e2bf0("cutscenes\\duell\\enter_DUELL.esc");
@@ -12973,12 +13364,12 @@ void ai_Unk4ded10(char *m)
     ai_Unk4e3250(oa);
     ai_Unk4e3250(ob);
     ai_Unk4e2d90(scene);
-    ai_Unk4e2d40(scene);
+    cm_WaitEventFull(scene);
     cm_LeaveEventScene();
     sb_UnloadSampleBank(snd1);
     sb_UnloadSampleBank(snd2);
     cm_ClearDamagePops();
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
 }
 /* 0x4dfa20, after a duel (the message m: +0x34 / +0x38 the duellists): when one of them is down (life 0x4fc8e0 <= 0) the owner of the
    other gets the text 0x143e8f8 (0x53dda0, kind 0x5ec); when both stand each side with the kind 6 / 7 gets "0x11ca" + the text 0x143e8f4
@@ -13210,7 +13601,7 @@ void ai_Unk4e01e0(char *m)
         ai_Unk4e32f0(sv_SkyHeavy - 0xe8 + cm_Random(3) * 0x4c);
     else
         ai_Unk4e32f0(sv_SkyHeavy - 0x218 + cm_Random(4) * 0x4c);
-    ai_Unk4e3620("cd2\\ArmerDelinquent.mp3");
+    cm_PlaySpecialTrack("cd2\\ArmerDelinquent.mp3");
     if (w == 1)
         ai_Unk4e33d0(0x1f4);
     nm = v != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)v) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
@@ -13221,35 +13612,35 @@ void ai_Unk4e01e0(char *m)
     sprintf(buf + strlen(buf), "%s ", nm + 4);
     nm = p3 != 0 ? (char *)gm_CharNameRecord(*(unsigned short *)p3) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1);
     sprintf(buf + strlen(buf), "%s", nm + 4);
-    ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-create", buf);
-    ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-intro.", &ch_EmptyName));
+    cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-create", buf);
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-intro.", &ch_EmptyName));
     if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0])
         gm_AddHealth(*(unsigned short *)v, (int)-(*(float *)(v + 0x1c) + 5.0f));
     switch (m[0x7c]) {
     case 0:
-        ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-kopf.e", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-kopf.e", &ch_EmptyName);
         break;
     case 1:
     case 2:
-        ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-galgen", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-galgen", &ch_EmptyName);
         break;
     case 3:
-        ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-shaufe", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-shaufe", &ch_EmptyName);
         break;
     case 4:
-        ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-kanone", &ch_EmptyName);
+        cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-kanone", &ch_EmptyName);
         break;
     }
-    ai_Unk4e3570(dur[m[0x7c]]);
+    cm_RunSceneTicks(dur[m[0x7c]]);
     cm_FadeToBlack();
-    ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\hinrichtung\\hinrichtung-exit.e", &ch_EmptyName));
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\hinrichtung\\hinrichtung-exit.e", &ch_EmptyName));
     if (v != 0)
         ai_Unk4e33f0();
     ai_Unk4e3390();
     cm_FightStart = 0;
     cm_LeaveEventScene();
     d2_CutsceneActive = 0;
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
 }
 /* 0x4e0580, announces a wedding (the message m: +0x34 / +0x38 the two, of different sex): the text 0x11c3 for the first (0x4e48b0), the text
    0x11c4 (both names) to every character of the kinds 6 / 7 who is neither of them (0x53dda0); 1 when the first is a person of the kinds
@@ -13303,13 +13694,13 @@ int ai_Unk4e06d0(int *s)
         d2_CloseView(s[1]);
     if (s[0] != -1)
         ai_Unk4e2d90(s[0]);
-    s[0] = ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-exit.esc", &ch_EmptyName);
-    ai_Unk4e2c70(s[0]);
+    s[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-exit.esc", &ch_EmptyName);
+    cm_WaitEvent(s[0]);
     s[0] = -1;
     s[1] = -1;
     cm_FightStart = 0;
     cm_LeaveEventScene();
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
     d2_CutsceneActive = 0;
     return 1;
 }
@@ -13349,17 +13740,17 @@ int ai_Unk4e0770(char *m)
         b = t;
     }
     sprintf(buf, "%s %s %i", gm_CharNameRecord(*(unsigned short *)a) + 4, gm_CharNameRecord(*(unsigned short *)b) + 4, 1);
-    st[2] = ai_Unk4e3270("ADDON\\HOCHZEIT_NEU.sbf", 0);
+    st[2] = cm_LoadVoiceBank("ADDON\\HOCHZEIT_NEU.sbf", 0);
     cm_LoadEventScene("KIRCHE_HOCHZEIT.ed3");
-    ai_Unk4e3620("cd2\\Hochzeit.mp3");
+    cm_PlaySpecialTrack("cd2\\Hochzeit.mp3");
     v = d2_OpenForm(0, 0, "cutscenes\\hochzeit");
     ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
     d2_SetViewEnabled(v, 0);
     st[1] = v;
     st[3] = 0;
-    st[0] = ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-create.esc", buf);
-    ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-intro.esc", &ch_EmptyName);
-    st[0] = ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-reden1.esc", &ch_EmptyName);
+    st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-create.esc", buf);
+    cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-intro.esc", &ch_EmptyName);
+    st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden1.esc", &ch_EmptyName);
     G25_STEP(0x5dc);
     d2_SetViewEnabled(v, 1);
     d2_SetForm(v, 0);
@@ -13371,7 +13762,7 @@ int ai_Unk4e0770(char *m)
     if (ai_Unk4e2cc0(st[0], ai_Unk4e06d0, st) != 0)
         goto done;
     G25_STEP(0x3e8);
-    st[0] = ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-reden2.esc", &ch_EmptyName);
+    st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden2.esc", &ch_EmptyName);
     d2_SetForm(v, 0);
     d2_SetViewEnabled(v, 1);
     io_PrintText(0x1aac, *(unsigned short *)b, *(unsigned short *)a);
@@ -13386,7 +13777,7 @@ int ai_Unk4e0770(char *m)
     G25_VOICE("_HOCHZEIT_NEU_M");
     if (ai_Unk4e2cc0(st[0], ai_Unk4e06d0, st) != 0)
         goto done;
-    st[0] = ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-reden3.esc", &ch_EmptyName);
+    st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden3.esc", &ch_EmptyName);
     d2_SetViewEnabled(v, 0);
     d2_SetForm(v, 0);
     io_PrintText("$C");
@@ -13407,7 +13798,7 @@ int ai_Unk4e0770(char *m)
     G25_STEP(0x1f4);
     if (ai_Unk4e2cc0(st[0], ai_Unk4e06d0, st) != 0)
         goto done;
-    st[0] = ai_Unk4e2c30("cutscenes\\hochzeit\\hochzeit-reden4.esc", &ch_EmptyName);
+    st[0] = cm_StartEventArg("cutscenes\\hochzeit\\hochzeit-reden4.esc", &ch_EmptyName);
     d2_SetForm(v, 0);
     io_PrintText(0x1aad);
     G25_VOICE("_HOCHZEIT_NEU_MAIN_04");
@@ -13463,8 +13854,8 @@ int ai_Unk4e0f70(char *m)
     cm_SendFieldDeltas();
     ai_Unk60d360 = 0x702c6;
     d2_CutsceneActive = 1;
-    snd = ai_Unk4e3270("GEBURT.sbf", 0);
-    ai_Unk4e3620("cd2\\Geburt.mp3");
+    snd = cm_LoadVoiceBank("GEBURT.sbf", 0);
+    cm_PlaySpecialTrack("cd2\\Geburt.mp3");
     cm_LoadEventScene("Geburt.ed3");
     sc = ai_Unk4e2bf0("cutscenes\\geburt\\enter_Geburt.esc");
     if (ai_Unk4e3490(0x1964, 0, 0) == 0) {
@@ -13472,10 +13863,10 @@ int ai_Unk4e0f70(char *m)
             n = cm_Random(2) + (b[9] == 0 ? 0 : 2);
         else
             n = cm_Random(2) + (b[9] == 0 ? 4 : 6);
-        ai_Unk4e32d0(-8, "_GEBURT", n, 0);
+        cm_QueueVoice(-8, "_GEBURT", n, 0);
         if (ai_Unk4e3490(0x3e8, 0, 0) == 0) {
             for (n = cm_Random(4) + 2; n > 0; n--)
-                ai_Unk4e32d0(-8, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
+                cm_QueueVoice(-8, "_GEBURT_GESCHREI", cm_Random(5), (unsigned short)util_RandomU(0x800) + 0x3e8);
             ai_Unk4e3490(0x1b58, 0, 0);
         }
     }
@@ -13502,12 +13893,12 @@ int ai_Unk4e0f70(char *m)
     d2_CloseView(v);
     cm_FadeToBlack();
     ai_Unk4e2d90(sc);
-    ai_Unk4e2c70(sc);
+    cm_WaitEvent(sc);
     snd_ClearQueue();
-    ai_Unk4e3290(snd);
+    cm_UnloadVoiceBank(snd);
     cm_FightStart = 0;
     cm_LeaveEventScene();
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
     d2_CutsceneActive = 0;
     return 1;
 }
@@ -13543,17 +13934,17 @@ int ai_Unk4e1250(char *m)
             break;
         }
     }
-    ai_Unk4e3620("cd2\\AmKuehlenGrabe.mp3");
+    cm_PlaySpecialTrack("cd2\\AmKuehlenGrabe.mp3");
     snd = snd_LoadVoiceBank("tod.sbf", 1);
     cm_LoadEventScene("Tod.ed3");
     ai_Unk4e32f0("Sky_Schoen_02");
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
-    sc = ai_Unk4e2c30("cutscenes\\tod\\enter_TOD.esc", &ch_EmptyName);
+    sc = cm_StartEventArg("cutscenes\\tod\\enter_TOD.esc", &ch_EmptyName);
     rc = ai_Unk4e3490(0xbb8, 0, 0);
     if (rc == 0) {
         for (i = 0; i < 7; i++)
-            ai_Unk4e32d0(-8, "_TOD_HS", i, i == 0 ? 0 : i == 1 ? 0 : i == 2 ? 0xfa0 : i == 3 ? 0xbb8 : i == 4 ? 0x7d0 : i == 5 ? 0xfa0 : 0x1f4);
+            cm_QueueVoice(-8, "_TOD_HS", i, i == 0 ? 0 : i == 1 ? 0 : i == 2 ? 0xfa0 : i == 3 ? 0xbb8 : i == 4 ? 0x7d0 : i == 5 ? 0xfa0 : 0x1f4);
         rc = ai_Unk4e3490(0x2af8, 0, 0);
         if (rc == 0) {
             t0 = d3_Time;
@@ -13613,12 +14004,12 @@ int ai_Unk4e1250(char *m)
     }
     cm_FadeToBlack();
     ai_Unk4e2d90(sc);
-    ai_Unk4e2c70(sc);
+    cm_WaitEvent(sc);
     ai_Unk4e3390();
     cm_LeaveEventScene();
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
     cm_FightStart = 0;
     return 0;
 }
@@ -13645,26 +14036,26 @@ int ai_Unk4e1700(char *m)
         }
     }
     snd = snd_LoadVoiceBank("pleite.sbf", 1);
-    ai_Unk4e3620("cd2\\DerSeuchenzug.mp3");
+    cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
     cm_LoadEventScene("Pleite.ed3");
     d3_SetLightSet(stage, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 0, 0);
     ai_Unk4e32f0("sky_dunkel_01");
     sprintf(buf, "%i", stage);
-    sc = ai_Unk4e2c30("cutscenes\\pleite\\enter_Pleite.esc", buf);
+    sc = cm_StartEventArg("cutscenes\\pleite\\enter_Pleite.esc", buf);
     rc = ai_Unk4e3490(0x1770, 0, 0);
     if (rc == 0) {
-        ai_Unk4e32d0(-8, "_PLEITE_HS", 0, 0);
-        ai_Unk4e32d0(-8, "_PLEITE_HS", 1, 0x9c4);
-        ai_Unk4e32d0(-8, "_PLEITE_HS", 2, 0x1f4);
+        cm_QueueVoice(-8, "_PLEITE_HS", 0, 0);
+        cm_QueueVoice(-8, "_PLEITE_HS", 1, 0x9c4);
+        cm_QueueVoice(-8, "_PLEITE_HS", 2, 0x1f4);
         rc = ai_Unk4e3490(0x3e80, 0, 0);
         if (rc == 0) {
             ai_Unk4e33d0(0xfa);
             rc = ai_Unk4e3490(0x2af8, 0, 0);
             if (rc == 0) {
-                ai_Unk4e32d0(-8, "_PLEITE_HS", 3, 0x251c);
-                ai_Unk4e32d0(-8, "_PLEITE_HS", 4, 0x1194);
-                ai_Unk4e32d0(-8, "_PLEITE_HS", 5, 0x1f4);
+                cm_QueueVoice(-8, "_PLEITE_HS", 3, 0x251c);
+                cm_QueueVoice(-8, "_PLEITE_HS", 4, 0x1194);
+                cm_QueueVoice(-8, "_PLEITE_HS", 5, 0x1f4);
                 ai_Unk4e3490(0x5dc0, 0, 0);
             }
         }
@@ -13677,13 +14068,13 @@ int ai_Unk4e1700(char *m)
     cm_MessageBox(buf, 0);
     cm_FadeToBlack();
     ai_Unk4e2d90(sc);
-    ai_Unk4e2c70(sc);
+    cm_WaitEvent(sc);
     ai_Unk4e3390();
     ai_Unk4e33f0();
     cm_LeaveEventScene();
     snd_ClearQueue();
     sb_UnloadSampleBank(snd);
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
     cm_FightStart = 0;
     if ((ai_GameFlags & 8) != 0) {
         a[8] = 0;
@@ -13737,7 +14128,7 @@ void ai_Unk4e1a80(char *m)
     b = (char *)gm_BuildQuery(1, 1, *(int *)(m + 0x7c));
     best = -1;
     scene = cm_Random(3);
-    ai_Unk4e3620(0);
+    cm_PlaySpecialTrack(0);
     if (b == 0)
         goto done;
     kind = (char *)ai_BTypes + *(unsigned char *)b * 0x24d;
@@ -13759,9 +14150,9 @@ void ai_Unk4e1a80(char *m)
         ids[i] = -1;
         who_ok[i] = 0;
     }
-    ai_Unk4e3270(0, "VERSTEIGERUNG_INTRO.sbf");
-    ai_Unk4e3270(0, "VERSTEIGERUNG_GEBOTE.sbf");
-    ai_Unk4e3270(0, "VERSTEIGERUNG_KOMMENTARE.sbf");
+    cm_LoadVoiceBank(0, "VERSTEIGERUNG_INTRO.sbf");
+    cm_LoadVoiceBank(0, "VERSTEIGERUNG_GEBOTE.sbf");
+    cm_LoadVoiceBank(0, "VERSTEIGERUNG_KOMMENTARE.sbf");
     cm_LoadEventScene("Versteigerung.ed3");
     if (d3_FindObject("ub_STAFELEI", 0, 0x40, 0) != 0) {
         if (kind[0] == 0xb)
@@ -13800,43 +14191,43 @@ void ai_Unk4e1a80(char *m)
         if (pl != 0)
             ch_PlaceAtObject(pl, h);
     }
-    ai_Unk4e2c30("cutscenes\\auktion\\behavior_auktionator.esc", &ch_EmptyName);
-    ai_Unk4e2c30("cutscenes\\auktion\\Enterfly_auktion.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\auktion\\behavior_auktionator.esc", &ch_EmptyName);
+    cm_StartEventArg("cutscenes\\auktion\\Enterfly_auktion.esc", &ch_EmptyName);
     sprintf(buf, "_VERSTEIGERUNG_INTRO_%s_00", who);
-    ai_Unk4e32d0(0, -1, buf, 0, -7);
+    cm_QueueVoice(0, -1, buf, 0, -7);
     sprintf(buf, "_VERSTEIGERUNG_INTRO_%s", who);
-    ai_Unk4e32d0(0x1f4, cm_Random(3), buf, 0, 0);
+    cm_QueueVoice(0x1f4, cm_Random(3), buf, 0, 0);
     v = d2_OpenForm("cutscenes\\pacht_main", 0, 0);
     if (cm_SkipEvents == 0)
         d2_SetViewEnabled(v, 0);
     ((void (*)(int, int))d2_PlaceMainWindow)(3, v);
     d2_SetForm(0, v);
     io_PrintText(0x1aa2, 0, 0);
-    ai_Unk4e2c70(0);
+    cm_WaitEvent(0);
     /* the bids: up to 6 rounds, the bidders raise by turns (the slots 0x92cb74 hold the bids) */
     for (round = 0; round <= 5; round++) {
-        if (ai_Unk4e2c70(0) != 0)
+        if (cm_WaitEvent(0) != 0)
             break;
         cm_RunSceneParty(m, 0);
         if (n > 6 && cm_Random(3) != 0) {
             cm_Random(0x200);
             cm_Random(6, 0);
-            ai_Unk4e32d0(cm_Random(4), "_VERSTEIGERUNG_KOMMENTARE", 0, 0);
+            cm_QueueVoice(cm_Random(4), "_VERSTEIGERUNG_KOMMENTARE", 0, 0);
         }
         for (i = 0; i < n; i++)
             if (*(int *)(ai_Unk92caf0 + i * 0x18 + 0x84) != 0 && best < *(int *)(ai_Unk92caf0 + i * 0x18 + 0x84))
                 best = i;
         if (best < 2 || n <= 6)
-            ai_Unk4e32d0(cm_Random(2), "_VERSTEIGERUNG_GEBOTE", 0, 0);
+            cm_QueueVoice(cm_Random(2), "_VERSTEIGERUNG_GEBOTE", 0, 0);
         else
-            ai_Unk4e32d0(cm_Random(4), "_VERSTEIGERUNG_GEBOTE", 0, 0);
+            cm_QueueVoice(cm_Random(4), "_VERSTEIGERUNG_GEBOTE", 0, 0);
         d2_SetForm(0, v);
         io_PrintText(0x1aa3, 0, 5, 0, best, 0);
         ai_Unk4e3420(5);
     }
     if (best > -1) {
         bid = ai_Time;
-        ai_Unk4e32d0(6, "_VERSTEIGERUNG_GEBOTE", 0, 0);
+        cm_QueueVoice(6, "_VERSTEIGERUNG_GEBOTE", 0, 0);
         d2_SetForm(0, v);
         io_PrintText(0x1aa4, bid, 0);
         if (ids[best] == ai_CharInts[ai_PlayerId][0]) {
@@ -13850,25 +14241,25 @@ void ai_Unk4e1a80(char *m)
             cm_SendMoveGoodsUnchecked(util_RandomU(5) % 5, 0, 0, 0);
         }
     } else {
-        ai_Unk4e32d0(7, "_VERSTEIGERUNG_GEBOTE", 0, 0);
+        cm_QueueVoice(7, "_VERSTEIGERUNG_GEBOTE", 0, 0);
         d2_SetForm(0, v);
         io_PrintText(0x1aa5, 0);
         if (ids[0] == ai_CharInts[ai_PlayerId][0])
             cm_SendOwnership(ai_PlayerCharC, 0, 0);
     }
-    ai_Unk4e32d0(0x1f4, 8, "_VERSTEIGERUNG_GEBOTE", 0, 0);
-    ai_Unk4e2c70(ai_Unk4e2c30("cutscenes\\auktion\\Auktion_Outro.esc", &ch_EmptyName));
+    cm_QueueVoice(0x1f4, 8, "_VERSTEIGERUNG_GEBOTE", 0, 0);
+    cm_WaitEvent(cm_StartEventArg("cutscenes\\auktion\\Auktion_Outro.esc", &ch_EmptyName));
     d2_CloseView(v);
     cm_FadeToBlack();
-    ai_Unk4e2c70(ai_Unk4e2d90(0));
+    cm_WaitEvent(ai_Unk4e2d90(0));
     for (i = 0; i < n; i++)
         if (ai_Unk4e3230(0, 0) != 0)
             ai_Unk4e3250(0);
     cm_LeaveEventScene();
     snd_ClearQueue();
-    ai_Unk4e3290(0);
+    cm_UnloadVoiceBank(0);
 done:
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
 }
 /* 0x4e24c0, the player's answer to an offer m (+0x20 the price, +0x24 .. the persons in the deal, +0x44 the object, +0x48 their count, +0x4c a
    factor): when the asked character r + 0x10 is among them: the dialog "cutscenes\\pacht" (texts 0x1aa6 / 0x1aa7) with a slider between the two
@@ -13976,7 +14367,7 @@ void ai_Unk4e2860(char *m)
     int *p;
 
     f = 0;
-    ai_Unk4e3620(0);
+    cm_PlaySpecialTrack(0);
     gm_FindById(&o, 0, 0, *(int *)(m + 0x14));
     if (o != 0)
         ai_Unk4e2910(o, 0x17);
@@ -13996,7 +14387,7 @@ void ai_Unk4e2860(char *m)
         cm_FadeToBlack();
         cm_LeaveEventScene();
     }
-    ai_Unk4e3640();
+    cm_EndSpecialTrack();
 }
 
 /* 0x4e2910, leaves the scene of the object o (+0x29 the id, +0x5d its owner / place, +0 the building kind) for the place id: draws the
@@ -14094,7 +14485,7 @@ int ai_Unk4e2bf0(char *name)
 }
 /* 0x4e2c30, the same with a second argument for 0x429c40 */
 
-int ai_Unk4e2c30(char *name, int arg)
+int cm_StartEventArg(char *name, int arg)
 {
     char *p;
 
@@ -14109,7 +14500,7 @@ int ai_Unk4e2c30(char *name, int arg)
 }
 /* 0x4e2c70, runs the frame wait (0x5309a0, flag 0x8000) and 0x4284a0(a) until it says 0 */
 
-int ai_Unk4e2c70(int a)
+int cm_WaitEvent(int a)
 {
     if (cm_SkipEvents == 0) {
         if (sv_RunFrame(0, ai_Unk60d360 | 0x8000) != 0) {
@@ -14139,7 +14530,7 @@ int ai_Unk4e2cc0(int a, int (*cb)(int), int arg)
 }
 /* 0x4e2d40, 0x4e2c70 with the frame wait flags 0x79706 */
 
-int ai_Unk4e2d40(int a)
+int cm_WaitEventFull(int a)
 {
     if (cm_SkipEvents == 0) {
         if (sv_RunFrame(0, 0x79706) != 0) {
@@ -14337,7 +14728,7 @@ int ai_Unk4e3250(int a)
 }
 /* 0x4e3270 */
 
-int ai_Unk4e3270(int a, int b)
+int cm_LoadVoiceBank(int a, int b)
 {
     if (cm_SkipEvents != 0)
         return 0;
@@ -14345,7 +14736,7 @@ int ai_Unk4e3270(int a, int b)
 }
 /* 0x4e3290 */
 
-int ai_Unk4e3290(int a)
+int cm_UnloadVoiceBank(int a)
 {
     if (cm_SkipEvents != 0)
         return 0;
@@ -14361,7 +14752,7 @@ int ai_Unk4e32b0(int a, int b, int c, int d)
 }
 /* 0x4e32d0 */
 
-int ai_Unk4e32d0(int a, int b, int c, int d, int e)
+int cm_QueueVoice(int a, int b, int c, int d, int e)
 {
     if (cm_SkipEvents != 0)
         return 0;
@@ -14440,7 +14831,7 @@ int ai_Unk4e3490(int a, int (*cb)(int))
     res = 0;
     if (cm_SkipEvents != 0)
         return 0;
-    if (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0) {
+    if (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0) {
         do {
             if (dm_L.rup != 0) {
                 if (cb != 0)
@@ -14455,33 +14846,33 @@ int ai_Unk4e3490(int a, int (*cb)(int))
             }
             cm_UpdateDamagePops();
             ai_Unk4e37a0(cm_CurrentFight);
-        } while (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0);
+        } while (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0);
     }
     return res;
 }
 /* 0x4e3570, runs the scene for a ticks of 14 ms (d3_Time based): the end sets the stop flag 0x6f22a0 */
 
-int ai_Unk4e3570(int a)
+int cm_RunSceneTicks(int a)
 {
     int start;
     double lim;
 
     start = d3_Time;
     if (cm_SkipEvents == 0) {
-        if (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0) {
+        if (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0) {
             lim = (double)a * (1.0 / 14) + start;
             do {
                 if ((double)d3_Time >= lim)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
                 ai_Unk4e37a0(cm_CurrentFight);
-            } while (sv_RunFrame(ai_Unk4e3570, ai_Unk60d360 | 0x8000) != 0);
+            } while (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0);
         }
     }
 }
 /* 0x4e3620 */
 
-int ai_Unk4e3620(int a)
+int cm_PlaySpecialTrack(int a)
 {
     if (cm_SkipEvents == 0) {
         snd_ClearQueue();
@@ -14490,7 +14881,7 @@ int ai_Unk4e3620(int a)
 }
 /* 0x4e3640 */
 
-int ai_Unk4e3640(void)
+int cm_EndSpecialTrack(void)
 {
     if (cm_SkipEvents == 0)
         return ((int (*)())snd_EndSpecialTrack)();
@@ -14610,7 +15001,7 @@ void cm_RunSceneParty(char *m, int ctx)
             cm_SendExSysMessage(0x11, msg);
         }
         if (cm_SkipEvents == 0)
-            sv_Unk52fd80(ai_Unk1441488);
+            sv_SyncText(ai_Unk1441488);
     }
     sv_SetStatusText(&ch_EmptyName);
     if (ai_GameFlags & 8) {
@@ -15400,7 +15791,7 @@ void ai_Unk4e5770(void)
     for (i = 0; i < 96; i++)
         ai_Unk925520[i].id = -1;
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
-    ai_Unk4e5730(1, (int)ai_Unk4d8e20, (int)ai_Unk4dada0, (int)ai_Unk4dae90, 0, 0);
+    ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)ai_Unk4dada0, (int)ai_Unk4dae90, 0, 0);
     ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)ai_Unk4daf80, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);

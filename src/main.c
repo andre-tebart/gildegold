@@ -2546,13 +2546,13 @@ lback:
                 init_PlayerProfile.mission = hist;
                 if (!back) {
                     sv_FrameMask = 0x12d6;
-                    ai_Unk4e2c70(ai_Unk4e2bf0("Startmenu/B_Persoenliches.esc"));
+                    cm_WaitEvent(ai_Unk4e2bf0("Startmenu/B_Persoenliches.esc"));
                 }
                 back = 0;
                 ret = main_ChoosePlayer(0xc6, 0);
                 if (ret == 0) {
                     sv_FrameMask = 0x12d6;
-                    ai_Unk4e2c70(ai_Unk4e2bf0("Startmenu/A_Stadtwahl.esc"));
+                    cm_WaitEvent(ai_Unk4e2bf0("Startmenu/A_Stadtwahl.esc"));
                     again = 1;
                 } else {
                     r = main_CharacterIntro(0);
@@ -2791,7 +2791,7 @@ int main_ChooseCity(int unused, int host)
     d3if_Show(sel, 0);
     U_I((unsigned)&sv_FrameMask) = 0x12d6;
     U_I((unsigned)&ai_Unk60d360) = 0x12d6;
-    ai_Unk4e2c70(ai_Unk4e2bf0("Startmenu/A_Stadtwahl.esc"));
+    cm_WaitEvent(ai_Unk4e2bf0("Startmenu/A_Stadtwahl.esc"));
     f1 = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
     d2_PlaceMainWindowF(f1, 3);
     d2_PlaceViewWindows(f1, 1);

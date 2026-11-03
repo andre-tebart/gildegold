@@ -895,8 +895,8 @@ void d2_SetObjFont(int obj, int font);  /* 0x4760b0 */
 extern int ai_Unk6f0d6c;  /* 0x6f0d6c */
 extern int ai_Unk6f0d68;  /* 0x6f0d68 */
 extern int ai_Unk6f0d70;  /* 0x6f0d70 */
-void ai_Unk4d8c70(int unused, char *o);  /* 0x4d8c70 */
-void ai_Unk4d8cb0(int a, int b, int c);  /* 0x4d8cb0 */
+void cm_StackPicture(int unused, char *o);  /* 0x4d8c70 */
+void cm_TallyStack(int a, int b, int c);  /* 0x4d8cb0 */
 
 typedef struct G22ENT {                 /* 0x18 bytes, one participant of a session (amt_GetColumnOffices) */
     int unk00;
@@ -908,8 +908,8 @@ typedef struct G22ENT {                 /* 0x18 bytes, one participant of a sess
 } G22ENT;
 #define G22_4C5580 ((int (*)())ai_Unk4c5580)  /* cut.c calls it without arguments */
 extern char *ai_Unk6ed918;  /* 0x6ed918 */
-int ai_Unk4e3270();  /* 0x4e3270 */
-int ai_Unk4e3620();  /* 0x4e3620 */
+int cm_LoadVoiceBank();  /* 0x4e3270 */
+int cm_PlaySpecialTrack();  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
 int amt_IsColumnDecided();  /* 0x4e83b0 */
 void amt_ElectOffices();  /* 0x4e7c60 */
@@ -919,18 +919,18 @@ void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_CloseView(int view);  /* 0x4758f0 */
 int ai_AmountRowStatus();  /* 0x5be1d0 */
 int ai_AmountRow();  /* 0x5be3b0 */
-int ai_Unk4e32d0();  /* 0x4e32d0 */
-int ai_Unk4e3570();  /* 0x4e3570 */
+int cm_QueueVoice();  /* 0x4e32d0 */
+int cm_RunSceneTicks();  /* 0x4e3570 */
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);  /* 0x4e6680 */
 unsigned * gm_CharNameRecord();  /* 0x4fb390 */
-int ai_Unk4e2c30();  /* 0x4e2c30 */
-int ai_Unk4e2c70();  /* 0x4e2c70 */
-int ai_Unk4e3290();  /* 0x4e3290 */
-int ai_Unk4e2d40();  /* 0x4e2d40 */
-int ai_Unk4e3640();  /* 0x4e3640 */
+int cm_StartEventArg();  /* 0x4e2c30 */
+int cm_WaitEvent();  /* 0x4e2c70 */
+int cm_UnloadVoiceBank();  /* 0x4e3290 */
+int cm_WaitEventFull();  /* 0x4e2d40 */
+int cm_EndSpecialTrack();  /* 0x4e3640 */
 void amt_UpdateOffices();  /* 0x4e85d0 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040 */
-void ai_Unk4d8e20(char *a);  /* 0x4d8e20 */
+void cm_RunCouncilSession(G28REC *a);  /* 0x4d8e20 */
 extern int ai_Unk60d360;  /* 0x60d360, the frame wait of the dialogs (0x5309a0) */
 extern int d2_ClickedId;  /* 0xf8a668 */
 int d2_GetWinObj();  /* 0x475b80 */
@@ -995,7 +995,7 @@ void sb_Stop();  /* 0x427290 */
 int ai_Unk4e06d0(int *s);  /* 0x4e06d0 */
 int ai_Unk4e3490();  /* 0x4e3490 */
 int ai_Unk4e2cc0();  /* 0x4e2cc0 */
-int ai_Unk4e3270();  /* 0x4e3270 */
+int cm_LoadVoiceBank();  /* 0x4e3270 */
 int ai_Unk4e32b0();  /* 0x4e32b0 */
 int sb_IsPlaying();  /* 0x426f20 */
 int ai_Unk4e0770(char *m);  /* 0x4e0770 */
@@ -1004,13 +1004,13 @@ int ai_Unk4e0e90(char *m);  /* 0x4e0e90 */
 extern struct D2INPUT *d2_FocusedInput;  /* 0x6ed9dc, the focused input (as d2.h / rt.h) */
 extern int ai_Unk6f2438;  /* 0x6f2438 */
 void snd_ClearQueue(void);  /* 0x4c01b0 */
-int ai_Unk4e3290();  /* 0x4e3290 */
+int cm_UnloadVoiceBank();  /* 0x4e3290 */
 void d2_CentreViewWindows(int view);  /* 0x475600 */
 void d2_SetObjMax();  /* 0x475f40 */
 void d2_FocusInput();  /* 0x478320 */
 int d2_GetObjValue();  /* 0x475980 */
 int ai_Unk4e2bf0();  /* 0x4e2bf0 */
-int ai_Unk4e32d0();  /* 0x4e32d0 */
+int cm_QueueVoice();  /* 0x4e32d0 */
 int ai_Unk4e0f70(char *m);  /* 0x4e0f70 */
 int ai_Unk4e1220(char *m);  /* 0x4e1220 */
 float gm_CharacterHealth();  /* 0x4fc820 */
@@ -1052,7 +1052,7 @@ struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fo
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */
 void d3sky_FadeLayer(struct D3SKY *s, struct D3SKYLAYER *l, unsigned char alpha, float time);  /* 0x45d9a0 */
 int ai_Unk4e32f0();  /* 0x4e32f0 */
-int ai_Unk4e3570();  /* 0x4e3570 */
+int cm_RunSceneTicks();  /* 0x4e3570 */
 int ai_Unk4e3490();  /* 0x4e3490 */
 extern char *ai_Unk6f0da0;  /* 0x6f0da0, the fade 0x4e3060 started */
 int ai_Unk4e36a0();  /* 0x4e36a0 */

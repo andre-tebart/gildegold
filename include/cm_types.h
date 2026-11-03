@@ -300,7 +300,15 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
                                            flag of the local copy only, no other use known) */
     int playerId;                       /* 0x10, "PlayerId" */
     char pad14[0x80];
-    CMCUTENTRY entries[16];             /* 0x94 */
+    union {
+        CMCUTENTRY entries[16];         /* 0x94, of a fight */
+        struct {                        /* 0x94, of a council session (the member callbacks ai_Unk4dada0 / ai_Unk4dae90,
+                                           cm_RunCouncilSession counts them) */
+            int answer;                 /* 0x94, mode 1: 0 yes, 1 no, 2 abstain; mode 2: the netId voted for; -1 none */
+            int click;                  /* 0x98, how it was given (1 / 2 pick the remark texts) */
+            int observer;               /* 0x9c, 1: a present member without a vote (no answer is asked) */
+        } session;
+    };
     char pad354[8];
 } CMCUTINFO;
 typedef char cm_AssertCMCUTINFO[sizeof(CMCUTINFO) == 0x35c ? 1 : -1];

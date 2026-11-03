@@ -157,7 +157,7 @@ void sv_PopTo(int v);                                                   /* 0x52f
 int sv_PumpMessages(void);                                              /* 0x52fb80 */
 void sv_NetworkSyncWait(unsigned fl);                                   /* 0x52fc10 */
 void sv_BroadcastText(unsigned fl, char *t);                            /* 0x52fcf0 */
-void sv_Unk52fd80(char *t);                                             /* 0x52fd80 */
+void sv_SyncText(char *t);                                             /* 0x52fd80 */
 void sv_PumpNet(void);                                                  /* 0x52fe00 */
 void sv_ChatConsole(void);                                                /* 0x52fe10 */
 void sv_UpdateQuickChat(void);                                                /* 0x530100 */

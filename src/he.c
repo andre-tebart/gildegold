@@ -7909,8 +7909,8 @@ fail:
     return 0;
 }
 
-int ai_Unk4e3620();
-int ai_Unk4e3640();
+int cm_PlaySpecialTrack();
+int cm_EndSpecialTrack();
 void ai_Unk5a92b0(void);
 
 /* 0x5509f0, a Ghidra miss (disassembled): the allocation handler of the "Sensenmann" event: due now, walks the 0x100 buildings (+0xb8 the start, +0xbc the step, the mask 0x807c4110 as in the plague event 0x54a020) for the next one that is in use, notes it in +0xb4 (its first id word), creates the object (0x550070) and posts the event 0xf later; frees the record when nothing is found / the object fails (ROUGH) */
@@ -7961,7 +7961,7 @@ void he_Unk550b60(int ev)
         if (*(int *)(ev + 0xc8) != 0)
             d3if_Delete((struct D3OBJECT *)*(int *)(ev + 0xc8));
         if (U_I((unsigned)&full_data_6f2634) != 0)
-            ai_Unk4e3640();
+            cm_EndSpecialTrack();
         U_I((unsigned)&full_data_6f2634) = 0;
         he_FreeEvent((int *)ev);
         return;
@@ -7969,12 +7969,12 @@ void he_Unk550b60(int ev)
     if (*(int *)(ev + 0xc8) == 0 && he_Unk550070(ev) == 0) {
         he_FreeEvent((int *)ev);
         if (U_I((unsigned)&full_data_6f2634) != 0)
-            ai_Unk4e3640();
+            cm_EndSpecialTrack();
         U_I((unsigned)&full_data_6f2634) = 0;
         return;
     }
     if (U_I((unsigned)&full_data_6f2634) == 0) {
-        ai_Unk4e3620((void *)(unsigned)"cd2\\DerSeuchenzug.mp3");
+        cm_PlaySpecialTrack((void *)(unsigned)"cd2\\DerSeuchenzug.mp3");
         if (U_I((unsigned)&snd_TrackHandles) != 0)
             U_I((unsigned)&full_data_6f2634) = 1;
     }

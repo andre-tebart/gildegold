@@ -1485,3 +1485,17 @@
 2026-11-03T15:43:30 0x006f0d7c data ai_Unk6f0d7c -> cm_ScenePartyRuns by:main why:4d8b10 is the kind-6 member callback of the fight scene (ai_Unk4e5730(3, cm_RunFight, ...)); 6f0d7c counts the runs of cm_RunSceneParty (++ per run, 0 at scene start); 4d6930 writes the fight result into the record (+0x354/+0x358); 4d88c0 is the fight loop (its own comment)
 2026-11-03T15:43:30 0x004d6930 data ai_Unk4d6930 -> cm_FightResult by:main why:4d8b10 is the kind-6 member callback of the fight scene (ai_Unk4e5730(3, cm_RunFight, ...)); 6f0d7c counts the runs of cm_RunSceneParty (++ per run, 0 at scene start); 4d6930 writes the fight result into the record (+0x354/+0x358); 4d88c0 is the fight loop (its own comment)
 2026-11-03T15:43:30 0x004d88c0 data ai_Unk4d88c0 -> cm_FightLoop by:main why:4d8b10 is the kind-6 member callback of the fight scene (ai_Unk4e5730(3, cm_RunFight, ...)); 6f0d7c counts the runs of cm_RunSceneParty (++ per run, 0 at scene start); 4d6930 writes the fight result into the record (+0x354/+0x358); 4d88c0 is the fight loop (its own comment)
+2026-11-03T15:55:52 0x004d8e20 func ai_Unk4d8e20 -> cm_RunCouncilSession by:main why:the run function of scene kind 1 (ai_Unk4e5730(1, ..)): the council sittings (Sitzung_*.ed3), the deposition and election votes of a column of offices
+2026-11-03T15:55:52 0x004e2c30 data ai_Unk4e2c30 -> cm_StartEventArg by:main why:evt_Load(name) then evt_RunCommand(p, arg); returns the event's id (+0x100)
+2026-11-03T15:55:52 0x004e2c70 func ai_Unk4e2c70 -> cm_WaitEvent by:main why:runs frames (sv_RunFrame, ai_Unk60d360 | 0x8000) until evt_FindById(a) no longer finds the event
+2026-11-03T15:55:52 0x004e2d40 data ai_Unk4e2d40 -> cm_WaitEventFull by:main why:cm_WaitEvent with the frame flags 0x79706
+2026-11-03T15:55:52 0x004e3270 data ai_Unk4e3270 -> cm_LoadVoiceBank by:main why:snd_LoadVoiceBank(a, b) unless cm_SkipEvents; called with ABSETZUNG.sbf / AMTSWAHL.sbf
+2026-11-03T15:55:52 0x004e3290 data ai_Unk4e3290 -> cm_UnloadVoiceBank by:main why:sb_UnloadSampleBank(a) unless cm_SkipEvents
+2026-11-03T15:55:52 0x004e32d0 data ai_Unk4e32d0 -> cm_QueueVoice by:main why:snd_QueueVoice(a, b, c, d, e) unless cm_SkipEvents
+2026-11-03T15:55:52 0x004e3570 data ai_Unk4e3570 -> cm_RunSceneTicks by:main why:its comment: runs the scene for a ticks of 14 ms
+2026-11-03T15:55:52 0x004e3620 data ai_Unk4e3620 -> cm_PlaySpecialTrack by:main why:snd_ClearQueue then snd_PlaySpecialTrack(a) unless cm_SkipEvents
+2026-11-03T15:55:52 0x004e3640 data ai_Unk4e3640 -> cm_EndSpecialTrack by:main why:snd_EndSpecialTrack unless cm_SkipEvents
+2026-11-03T15:55:52 0x004d8cb0 data ai_Unk4d8cb0 -> cm_TallyStack by:main why:its comment: the three headings of the result stacks or one more picture of stack c (the council session adds one per yes / no / abstain)
+2026-11-03T15:55:52 0x004d8c70 data ai_Unk4d8c70 -> cm_StackPicture by:main why:its comment: draws the next picture 0x4df of a stack (o + 0x2c counts them)
+2026-11-03T15:55:52 0x004e8530 data amt_Unk4e8530 -> amt_HasDeposalVote by:main why:its comment: 1 when the office r (state 2) has two valid candidates; the council session holds a deposition vote for it
+2026-11-03T15:55:52 0x0052fd80 data sv_Unk52fd80 -> sv_SyncText by:main why:sends the text as message 0xe and runs frames showing it until the answer arrives (cm_GetSlotState)

@@ -6965,7 +6965,7 @@ void sv_BroadcastText(unsigned fl, char *t)
 }
 /* 0x52fd80, like 0x52fcf0 with the key mask 0x60d360 | 0x210000 and no clearing of the status line */
 
-void sv_Unk52fd80(char *t)
+void sv_SyncText(char *t)
 {
     char msg[0x7c];
     int m;

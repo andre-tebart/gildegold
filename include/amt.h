@@ -229,7 +229,7 @@ void amt_ElectOffices(int unused, int n, AMTREC *recs);  /* 0x4e7c60 */
 
 int amt_CheckOfficeColumns(void);                /* 0x4e8160 */
 int amt_IsColumnDecided(int col);       /* 0x4e83b0 */
-int amt_Unk4e8530(int col, AMTREC *r);  /* 0x4e8530 */
+int amt_HasDeposalVote(int col, AMTREC *r);  /* 0x4e8530 */
 void amt_UpdateOffices(void);           /* 0x4e85d0 */
 int amt_HasColumn7Holder(void);         /* 0x4e86e0 */
 void amt_SendOfficeNews(unsigned short *p, int v);  /* 0x4e8730 */
