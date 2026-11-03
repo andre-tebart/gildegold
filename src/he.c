@@ -12416,7 +12416,7 @@ void he_Unk565940(int ev)
             if (own != 0) {
                 if (*(char *)(own + 2) == 6 || *(char *)(own + 2) == 7) {
                     txt_Format(text, 0x17e6, o, *(unsigned short *)r);
-                    he_MessageBoxQuickjump(*(int *)(own + 4), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, ((unsigned)&gm_TagGebaeudePROT + 0x12c));
+                    he_MessageBoxQuickjump(*(int *)(own + 4), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, (unsigned)"_NACHRICHTEN_HS_30");
                 }
                 cm_SendMoveGoods(*(int *)(own + 4), -1, U_I((unsigned)&ai_OwnPlayer), *(int *)(ev + 0xbc));
             }
