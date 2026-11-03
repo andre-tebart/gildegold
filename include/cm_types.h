@@ -25,6 +25,18 @@ typedef struct G17GOTOMSG {             /* 0x4d bytes, the data of message 0x35 
     char reason[0x20];                  /* 0x2d, why it goes ("Unfall", "Pest", "RndGeselle") */
 } G17GOTOMSG;
 
+typedef struct G17HIREMSG {             /* 0x17 bytes, the data of message 0x3d (cm_SendMessage3d, its handler
+                                           0x4cb250 creates the character) */
+    int bldId;                          /* 0x00, the building the character works in */
+    int homeId;                         /* 0x04, its home, -1: none (the applicant's own) */
+    unsigned char kind;                 /* 0x08, the kind of character */
+    int charId;                         /* 0x09, the applicant taken over, -1: a new one */
+    unsigned char title;                /* 0x0d, gm_FindApplicant's title */
+    unsigned char job;                  /* 0x0e, gm_FindApplicant's job */
+    int objectId;                       /* 0x0f, the next object id (the server's, read when connected) */
+    int seed;                           /* 0x13, util_Seed (rand() when not connected) */
+} G17HIREMSG;
+
 typedef struct G17BUILDMSG {            /* 0x40 bytes, the data of message 10 (cm_SendMessage10, its handler
                                            0x4c6b20 creates the building) */
     int objectId;                       /* 0x00, the next object id (the server's, read when connected) */
@@ -50,6 +62,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17BUILDMSG build;              /* 0x10, message 10 */
         G17OBJMSG obj;                  /* 0x10, message 0x2d */
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
+        G17HIREMSG hire;                /* 0x10, message 0x3d */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */

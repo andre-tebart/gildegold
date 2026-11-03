@@ -1691,33 +1691,34 @@ void ai_Unk4c5580(int a, int b, int c, int d)
     G17_I(m, 0xc) = d;
     cm_QueueSend(&m);
 }
-/* 0x4c55d0, message 0x3d about p at (c, d) */
+/* 0x4c55d0, message 0x3d: hires a character of kind b for the building p (the applicant for title c / job d,
+   gm_FindApplicant, else a new one) with a home (gm_FindHome) */
 
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d)
 {
     G17MSG m;
-    unsigned short *q;
-    char *r;
+    AICHAR *q;
+    AIBLD *r;
 
     m.type = 0x3d;
     if (p == 0)
         return -1;
-    q = (unsigned short *)gm_FindApplicant((struct ORDBLD *)p, c, d);
-    G17_I(m, 0) = *(int *)(p + 1);
-    if (q == 0) {
-        G17_I(m, 9) = -1;
-        r = (char *)gm_FindHome(0xffff, (struct ORDBLD *)p);
+    q = (AICHAR *)gm_FindApplicant((struct ORDBLD *)p, c, d);
+    m.hire.bldId = ((AIBLD *)p)->id;
+    if (q != 0) {
+        m.hire.charId = q->netId;
+        r = q->bld2 == 0 ? (AIBLD *)gm_FindHome(q->id, (struct ORDBLD *)p) : 0;
     } else {
-        G17_I(m, 9) = *(int *)&q[2];
-        r = *(int *)&q[0xb8] == 0 ? (char *)gm_FindHome(q[0], (struct ORDBLD *)p) : 0;
+        m.hire.charId = -1;
+        r = (AIBLD *)gm_FindHome(0xffff, (struct ORDBLD *)p);
     }
     if (r != 0)
-        G17_I(m, 4) = *(int *)(r + 1);
+        m.hire.homeId = r->id;
     else
-        G17_I(m, 4) = -1;
-    m.data[8] = b;
-    m.data[0xd] = (unsigned char)c;
-    m.data[0xe] = (unsigned char)d;
+        m.hire.homeId = -1;
+    m.hire.kind = b;
+    m.hire.title = (unsigned char)c;
+    m.hire.job = (unsigned char)d;
     return cm_QueueSend(&m);
 }
 /* 0x4c5690, message 0x3e: the character a and a text, the model name it takes (reasoned guess: its one caller,
