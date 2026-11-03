@@ -3060,7 +3060,7 @@ int ai_Unk494300(AIPLAN *q)
         scale = 0.5f;
         if (q->unk40 == 0)
             scale = 1.0f;
-        v = ai_Unk4e5360() * t->unk0c * scale + t->unk08;
+        v = cm_RandomFloat() * t->unk0c * scale + t->unk08;
         sum = acc + v;
         if (sum >= f) {
             acc = v + acc;

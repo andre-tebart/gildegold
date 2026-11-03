@@ -8376,10 +8376,18 @@ typedef struct CMFIGHTREC {
     int owner;                      /* 0x00c, the player whose fight it is (cm_FightOwner) */
     char pad010[4];
     int placeId;                    /* 0x014, the defender's building: its type picks the scenario, its role the defender voices */
-    char pad018[0x1c];
-    int attackerId;                 /* 0x034, the attacking character (cm_FightAttacker) */
-    int defenderId;                 /* 0x038, the defending character (cm_FightDefender) */
-    char pad03c[0x40];
+    char pad018[0x18];
+    unsigned char nChars;           /* 0x030, the count of charIds */
+    char pad031[3];
+    union {
+        struct {
+            int attackerId;         /* 0x034, the attacking character (cm_FightAttacker) */
+            int defenderId;         /* 0x038, the defending character (cm_FightDefender) */
+        };
+        int charIds[16];            /* 0x034, the netIds of the fight's leading characters, -1 = none (cm_CutInfos[i]
+                                       is the cutscene record of charIds[i]) */
+    };
+    char pad074[8];
     unsigned char flags;            /* 0x07c, 1 in the open (8: in the town, else the mountain pass), 4 the mountain pass */
     char pad07d[3];
     int defenders[16];              /* 0x080, the netIds of the defending fighters, -1 = none */
@@ -9383,52 +9391,56 @@ float cm_OrderRating(AICHAR *c, int order)
     }
     return r;
 }
-/* 0x4d2f80, gives the characters of a side (the ids +0x80 / +0xc0 of the fight record) their formation: per character a
-   random roll against the row 0x4d2c00 picks the type 0 .. 5, the character with the best rating 0x4d2e30 for it takes it
-   (+0x1c4) unless it already has one and a second roll fails; then 0x4d3120 sets up each. Rough draft. */
+/* 0x4d2f80, gives the fighters of the leading character side (cm_FightAttacker: the attackers, else the defenders of
+   the fight record) their orders: once per fighter an order 0 .. 5 is drawn (util_RandomF against
+   cm_OrderChancesFor) and given (AICHAR.formation) to the fighter still without a new order rated best for it
+   (cm_OrderRating), a fighter holding an order already only on a second roll above 0.25; then each fighter carries
+   out its order (cm_CarryOutOrder, with the leader's cutscene record cm_CutInfos) */
 
-void ai_Unk4d2f80(int side)
+void cm_GiveFightOrders(int side)
 {
-    char *rec = cm_FightRecord;
-    char *c[16];
-    int *arr;
+    AICHAR *c[16];
+    int *ids;
     float *row;
-    char *rec2 = 0;
-    char *sel;
+    char *cut;
+    AICHAR *sel;
     float r, best, w;
-    int cnt = 0, i, j, k, n = 0, selidx = 0;
+    int i, j, order, n, left, selidx;
 
+    n = 0;
+    selidx = 0;
+    order = 0;
+    cut = 0;
     row = cm_OrderChancesFor(side);
-    for (i = 0; i < (unsigned char)rec[0x30]; i++) {
-        if (*(int *)(rec + 0x34 + i * 4) == *(int *)((char *)side + 4)) {
-            rec2 = cm_CutInfos[i];
+    for (i = 0; i < cm_FightRecordT->nChars; i++) {
+        if (cm_FightRecordT->charIds[i] == ((AICHAR *)side)->netId) {
+            cut = cm_CutInfos[i];
             break;
         }
     }
     if (side == cm_FightAttacker)
-        arr = (int *)(rec + 0xc0);
+        ids = cm_FightRecordT->attackers;
     else
-        arr = (int *)(rec + 0x80);
+        ids = cm_FightRecordT->defenders;
     for (i = 0; i < 16; i++) {
-        if (arr[i] != -1) {
-            c[i] = cm_FindFighter(arr[i]);
+        if (ids[i] != -1) {
+            c[i] = (AICHAR *)cm_FindFighter(ids[i]);
             n++;
         } else
             c[i] = 0;
     }
-    k = 0;
-    for (cnt = n; cnt > 0; cnt--) {
+    for (left = n; left > 0; left--) {
         r = util_RandomF();
         for (j = 0; j < 6; j++) {
             if (r <= row[j]) {
-                k = j;
+                order = j;
                 break;
             }
         }
         best = -1.0f;
         for (i = 0; i < 16; i++) {
             if (c[i] != 0) {
-                w = cm_OrderRating((AICHAR *)c[i], k);
+                w = cm_OrderRating(c[i], order);
                 if (w > best) {
                     best = w;
                     selidx = i;
@@ -9436,14 +9448,14 @@ void ai_Unk4d2f80(int side)
             }
         }
         sel = c[selidx];
-        if (sel[0x1c4] == 0 || ai_Unk4e5360() > ai_Unk5eb9b0) {
-            sel[0x1c4] = (char)k;
+        if (sel->formation == 0 || cm_RandomFloat() > 0.25) {
+            sel->formation = (unsigned char)order;
             c[selidx] = 0;
         }
     }
     for (i = 0; i < 16; i++) {
-        if (arr[i] != -1)
-            ai_Unk4d3120(rec2, cm_FindFighter(arr[i]));
+        if (ids[i] != -1)
+            cm_CarryOutOrder(cut, cm_FindFighter(ids[i]));
     }
 }
 /* 0x4d3120, the formation order for the character c of the fight record rec2 by its formation type (+0x1c4: 0 the best free
@@ -9451,7 +9463,7 @@ void ai_Unk4d2f80(int side)
    0x4d25a0 -> 0x4d0380; 2 the closest "sp_CONQUER" 0x4d2680 -> 0x4d02d0; 3 0x4d0520; 4 0x4d0460; 5 the closest "sp_ESCAPE"
    0x4d2490 -> 0x4d0200). Rough draft. */
 
-void ai_Unk4d3120(char *rec, char *c)
+void cm_CarryOutOrder(char *rec, char *c)
 {
     char *sc, *k, *o;
     int x, y, h;
@@ -11479,7 +11491,7 @@ void ai_Unk4d88c0(char *a)
                     if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1) {
                         o = gm_FindChar(*(int *)(cm_FightRecord + 0x34 + i * 4));
                         if (o != 0 && o[2] != 6 && o[2] != 7)
-                            ai_Unk4d2f80((int)o);
+                            cm_GiveFightOrders((int)o);
                     }
                 }
                 t = tb_Calls;
@@ -12551,7 +12563,7 @@ void ai_Unk4de640(char *o)
         acc = (float)(acc * 1.5);
     if (((int)sh == ai_Unk92bca4 && ai_Unk6f0da8[3] != 0) || ((int)sh == ai_Unk92bca0 && ai_Unk6f0daa != 0))
         acc = (float)(acc * 0.66);
-    if (ai_Unk4e5360() < acc) {
+    if (cm_RandomFloat() < acc) {
         hit = 1;
         if (((int)sh == ai_Unk92bca4 && ai_Unk6f0da8[5] != 0) || ((int)sh == ai_Unk92bca0 && ai_Unk6f0da8[4] != 0))
             dmg = cm_Random(0xf) + 5;
@@ -12618,8 +12630,8 @@ void ai_Unk4de900(char *a, char *b)
         ai_Unk4e3420(2);
         fa = gm_GetSkill(a, 4);
         fb = gm_GetSkill(b, 4);
-        ra = ai_Unk4e5360();
-        rb = ai_Unk4e5360();
+        ra = cm_RandomFloat();
+        rb = cm_RandomFloat();
         d2_SetForm(ai_Unk60d368, 0);
         if ((float)(ra + (float)fa) <= rb + (float)fb) {
             if (b[2] == 6 || b[2] == 7)
@@ -12639,7 +12651,7 @@ void ai_Unk4de900(char *a, char *b)
     } else if (rec[0x94] == 3) {
         d2_SetForm(ai_Unk60d368, 0);
         fa = gm_GetSkill(a, 2);
-        fb = ai_Unk4e5360();
+        fb = cm_RandomFloat();
         if ((float)fa <= fb) {
             if (a[2] == 6 || a[2] == 7)
                 io_PrintText(0x10f8, *(unsigned short *)a);
@@ -12839,7 +12851,7 @@ void ai_Unk4ded10(char *m)
             }
         }
     }
-    ai_Unk4e5360();
+    cm_RandomFloat();
     if (*(int *)(m + 0xc) == ai_CharInts[ai_PlayerId][0]) {
         cm_SendRelations(*(int *)(cb + 4), *(int *)(ca + 4), 0xf, 1);
         cm_SendRelations(*(int *)(ca + 4), *(int *)(cb + 4), 0xf, 1);
@@ -13822,18 +13834,18 @@ void ai_Unk4e26d0(char *r, char *m)
     if (c == 0)
         return;
     lim = (float)(*(int *)(m + 0x4c) * 32000 + pay);
-    k = ai_Unk4e5360() * 0.16666667f + 0.3f;
+    k = cm_RandomFloat() * 0.16666667f + 0.3f;
     x = gm_GetGoodsValue(c);
     if ((float)x * k > lim)
         v = (int)lim;
     else {
-        k = ai_Unk4e5360() * 0.16666667f + 0.3f;
+        k = cm_RandomFloat() * 0.16666667f + 0.3f;
         x = gm_GetGoodsValue(c);
         v = (int)(lim * x);
     }
     if (v < pay)
         return;
-    if (k < ai_Unk4e5360() / v)
+    if (k < cm_RandomFloat() / v)
         return;
     if (v > pay * 2)
         v = pay * 2;
@@ -15141,7 +15153,7 @@ unsigned int cm_Random(unsigned int n)
 }
 /* 0x4e5360, a random float in [0, 1) (logged "cut_rndfloat: %f") */
 
-double ai_Unk4e5360(void)
+double cm_RandomFloat(void)
 {
     char buf[0x40];
 

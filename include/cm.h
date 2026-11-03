@@ -778,13 +778,13 @@ extern const float ai_Unk5ecebc;  /* 0x5ecebc */
 extern float ai_Unk5eb94c;  /* 0x5eb94c */
 
 float cm_OrderRating(struct AICHAR *c, int order);  /* 0x4d2e30 */
-void ai_Unk4d2f80(int side);  /* 0x4d2f80 */
+void cm_GiveFightOrders(int side);  /* 0x4d2f80 */
 float util_RandomF();  /* 0x42ec20 */
-double ai_Unk4e5360();  /* 0x4e5360 */
+double cm_RandomFloat();  /* 0x4e5360 */
 extern float ai_FloatOne;  /* 0x5eb780 */
 extern double ai_Unk5eb9b0;  /* 0x5eb9b0 */
 
-void ai_Unk4d3120(char *rec, char *c);  /* 0x4d3120 */
+void cm_CarryOutOrder(char *rec, char *c);  /* 0x4d3120 */
 void ai_Unk4d3300(char *c);  /* 0x4d3300 */
 extern float ai_Unk5eb7dc;  /* 0x5eb7dc */
 extern const double ai_Unk5edc68;  /* 0x5edc68 */
