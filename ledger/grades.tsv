@@ -2243,7 +2243,7 @@ exe	0x004c5b90	ai_Unk4c5b90	cm	byte	draft
 exe	0x004c5bc0	ai_Unk4c5bc0	cm	byte	draft		
 exe	0x004c5c40	ai_Unk4c5c40	cm	shape	draft		
 exe	0x004c5ca0	ai_Unk4c5ca0	cm	shape	draft		
-exe	0x004c5d00	ai_Unk4c5d00	cm	byte	draft		
+exe	0x004c5d00	cm_SendDamage	cm	byte	draft		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable		
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
 exe	0x004c5dc0	cm_SendFightCommand	cm	draft	readable	deep	
@@ -2399,9 +2399,9 @@ exe	0x004cd7c0	cm_LobbyUpdatePlayer	cm	byte	draft
 exe	0x004cd820	ai_Unk4cd820	cm	byte	draft		
 exe	0x004cd870	cm_ExLobby	cm	byte	readable		
 exe	0x004cd9d0	ai_FindWeaponRecord	cm	byte	draft		
-exe	0x004cda00	ai_Unk4cda00	cm	byte	draft		
+exe	0x004cda00	cm_CharWeaponAny	cm	byte	draft		
 exe	0x004cda50	cm_CharWeapon	cm	byte	draft		
-exe	0x004cdac0	ai_Unk4cdac0	cm	byte	draft		
+exe	0x004cdac0	cm_CharWeaponItem	cm	byte	draft		
 exe	0x004cdb20	cm_DiscardWeapons	cm	byte	draft		
 exe	0x004cdb80	cm_FightWeaponLoss	cm	byte	readable		
 exe	0x004cdcf0	cm_FightStrength	cm	byte	readable		
@@ -2414,7 +2414,7 @@ exe	0x004ce130	cm_FindFighter	cm	byte	draft
 exe	0x004ce170	ai_LedSelectBits	cm	byte	draft		
 exe	0x004ce1b0	cm_CharObjDistXZ	cm	shape	readable		
 exe	0x004ce200	cm_CharCellDistXZ	cm	byte	readable		
-exe	0x004ce270	ai_Unk4ce270	cm	byte	draft		
+exe	0x004ce270	cm_OtherBuilding	cm	byte	draft		
 exe	0x004ce290	cm_LayBomb	cm	byte	readable		
 exe	0x004ce300	cm_UpdateBombs	cm	draft	readable	deep	
 exe	0x004ce5d0	cm_ThrowGrenade	cm	shape	readable		
@@ -2425,15 +2425,15 @@ exe	0x004cec00	ai_Unk4cec00	cm	byte	draft
 exe	0x004cec30	cm_OpenCharInfoWin	cm	shape	readable		
 exe	0x004ced80	ai_Unk4ced80	cm	byte	draft		
 exe	0x004cedc0	cm_ShowDamage	cm	byte	readable		
-exe	0x004cee20	ai_Unk4cee20	cm	draft	draft		
-exe	0x004cef80	ai_Unk4cef80	cm	draft	draft		
-exe	0x004cefa0	ai_Unk4cefa0	cm	draft	draft		
+exe	0x004cee20	cm_UpdateDamagePops	cm	shape	readable		
+exe	0x004cef80	cm_InitDamagePops	cm	byte	readable		
+exe	0x004cefa0	cm_ClearDamagePops	cm	byte	readable		
 exe	0x004cefe0	ai_Unk4cefe0	cm	byte	draft		
-exe	0x004cf000	ai_Unk4cf000	cm	draft	draft		
+exe	0x004cf000	cm_UpdateSceneChars	cm	draft	readable	deep	
 exe	0x004cf370	cm_DrawScrollArrows	cm	shape	draft		
-exe	0x004cf670	ai_Unk4cf670	cm	draft	draft		
-exe	0x004cf9c0	ai_Unk4cf9c0	cm	draft	draft		
-exe	0x004cfc10	ai_Unk4cfc10	cm	draft	draft		
+exe	0x004cf670	cm_UpdatePointer	cm	draft	readable	deep	
+exe	0x004cf9c0	cm_UpdatePortraits	cm	draft	readable	deep	
+exe	0x004cfc10	cm_BuildPortraits	cm	shape	readable		
 exe	0x004cfe70	ai_Unk4cfe70	cm	byte	draft		
 exe	0x004cfeb0	ai_Unk4cfeb0	cm	byte	draft		
 exe	0x004cffd0	ai_Unk4cffd0	cm	draft	draft		
@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	draft		
-exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	
+exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 4e58fd28: renaming he_Unk555210 to he_RandomTransporter (he.h, included by unk_575860; nothing there calls it) flips a VC6 register tie-break (eax/ecx swapped for the constants 1 / 0x429); other names flip it too (he_PickTransporter, he_FindTransporter also drop ai_TutorialInitChapter3): the byte match depended on an identifier's spelling, no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at d77794b7: CMCUTENTRY (cm_types.h, included through cm.h) gets its field turn at 0x1d (split from pad14; read by cm_UpdateSceneChars) instead of a raw offset: unk_575860 never uses CMCUTENTRY, yet the declaration-set change flips a VC6 register tie-break (edi/ebx/ecx for the float constants 0x420c0000 / 0x430e0000 / 0x428e0000, the same stores); the same function already flips on unrelated renames (see ai_TutorialInitChapter2's debt): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at d77794b7: CMCUTENTRY (cm_types.h, included through cm.h) gets its field turn at 0x1d (split from pad14; read by cm_UpdateSceneChars) instead of a raw offset: unk_575860 never uses CMCUTENTRY, yet the declaration-set change flips a VC6 register tie-break (edi/ebx/ecx for the float constants 0x420c0000 / 0x430e0000 / 0x428e0000, the same stores); the same function already flips on unrelated renames (see ai_TutorialInitChapter2's debt): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
