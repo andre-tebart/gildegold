@@ -9473,36 +9473,35 @@ int gm_GetWorth(unsigned short id)
     }
     return v;
 }
-/* 0x50a6c0, true when the character p (a person of the kinds 6 / 7 or another) is too far from its goal after n more: the pseudocode lost the float operands (0x509e60, 0x50a640, the two __ftol); the person of the kinds 6 / 7 is reported to its owner through 0x5b92e0 / 0x53dda0 (text 0x42c3 = ...) when the ratio is above 0.07 (above 0.2 for the others). ROUGH */
+/* 0x50a6c0, true when the character p is bankrupt after spending n more: when its money plus n is not above 0,
+   the debt is weighed against its worth (0x50a640) less that sum; a player (kinds 6 / 7) whose debt is above 0.07
+   of it has its assets liquidated for 0.07 of it (0x5b92e0, news text 0x42c3) and is bankrupt when that raised at
+   most half; another character is bankrupt when the debt is above 0.2 of it */
 
 int gm_IsBankrupt(unsigned short *p, int n)
 {
-    int a, b;
+    ORDCHAR *c = (ORDCHAR *)p;
     char msg[2048];
-    float ratio;
-    int r;
+    float money;
+    float rest;
+    int share, got;
 
-    a = gm_GetGoodsValue(p);
-    if (0.0f < (float)(a + n))
+    money = (float)(gm_GetGoodsValue((char *)c) + n);
+    if (money > 0.0f)
         return 0;
-    gm_GetWorth(*p);
-    if (*((char *)p + 2) == 6 || *((char *)p + 2) == 7) {
-        a = (int)gm_GetGoodsValue(p);                /* lost: float operand of the first __ftol */
-        b = (int)gm_GetGoodsValue(p);                /* lost */
-        ratio = (float)(b < 0 ? -b : b) / (float)a;
-        if (0.07f < ratio) {
-            txt_Format(msg, 0x42c3);
-            r = ai_Unk5b92e0(*(int *)(p + 2), p, a, msg);
-            he_ShowNews(*(int *)(p + 2), *(int *)(p + 2), msg, 1, 0x5ff, "_NACHRICHTEN_HS_69");
-            return r <= a / 2;
-        }
-    } else {
-        b = (int)gm_GetGoodsValue(p);                /* lost */
-        ratio = (float)(b < 0 ? -b : b) / (float)a;
-        if (0.2f < ratio)
+    rest = (float)gm_GetWorth(c->id) + -money;
+    if (c->kind != 6 && c->kind != 7) {
+        if (abs((int)money) / rest > 0.2)
             return 1;
+        return 0;
     }
-    return 0;
+    share = (int)(0.07f * rest);
+    if (!(abs((int)money) / rest > 0.07))
+        return 0;
+    txt_Format(msg, 0x42c3);
+    got = ai_LiquidateAssets(c->netId, c, share, msg);
+    he_ShowNews(c->netId, c->netId, msg, 1, 0x5ff, "_NACHRICHTEN_HS_69");
+    return got <= share / 2;
 }
 /* 0x50a810, the first kind 6 / 7 / 1 / 2 character with a job whose master (+0x16c) is m */
 

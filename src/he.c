@@ -11182,7 +11182,7 @@ void he_Unk55bd80(int ev)
 float gm_Liking();
 void cm_SendOwnership(int a, int b, int c);
 void cm_SendSetJob(int id, int job);
-int ai_Unk5b92e0();
+int ai_LiquidateAssets();
 
 /* 0x55bf50, a Ghidra miss: the allocation handler of the event 0x21 (ROUGH): the object 0x502020 (+0xac); the first run is random(10) + 10 units ahead; 0x4c4a60 (object + 1, 0x5a, 2, 0x200, 0) */
 void he_Unk55bf50(int ev)
