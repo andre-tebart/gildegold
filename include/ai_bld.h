@@ -1,4 +1,4 @@
-/* ai.h's building record for the units that read buildings without the rest of ai.h (he.c): types only.
+/* ai.h's building record and building type for the units that read buildings without the rest of ai.h (he.c): types only.
    ai.h includes it. */
 #ifndef AI_BLD_H
 #define AI_BLD_H
@@ -48,5 +48,40 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     char workSet[0x10];                 /* 0x99, the work settings a hired worker takes over into AICHAR flags1b4 ..
                                            target (cm_ExHire); begins with flags (ls.c) */
 } AIBLD;
+
+typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
+    char kind;                          /* 0x000 */
+    char name[0x21];                    /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (cm_ExGebUpgrade,
+                                           amt_ExecGebaeudeBauen), its ground plan "riss_<name>.bmp" (sv.c) */
+    unsigned char nslots;               /* 0x022 */
+    union {
+        unsigned short slot[0x100];     /* 0x023, needed goods (bit 15 = flag) */
+        struct {
+            unsigned short objs[0x40];  /* 0x023, the objects the type can hold, goods ids (bit 15 = flag; f3gm.c 0x509300) */
+            char pad0a3[0x100];
+            unsigned char objClass[0x40];   /* 0x1a3, per object its effect class (0x509300 sums by it) */
+            unsigned char objValue[0x40];   /* 0x1e3, per object its effect value */
+        };
+    };
+    unsigned char unk223;               /* 0x223 */
+    char pad224[0xc];
+    union {
+        unsigned char unk230;           /* 0x230 */
+        unsigned char k230;             /* 0x230 */
+    };
+    unsigned char k231;                 /* 0x231 */
+    unsigned char k232;                 /* 0x232 */
+    char pad233[0xd];
+    unsigned char min0;                 /* 0x240 */
+    unsigned char min1;                 /* 0x241 */
+    char pad242;
+    int v243;                           /* 0x243, a value the type's tooltip shows (ai_OpenBuildingTooltip, text 0x29) */
+    union {
+        char level;                     /* 0x247, the type's level 1 .. 3 (am.h AIBTYPEX: a count (level)); main_EndRound weighs a building's budget share 2 / 4 / 8 by it */
+        unsigned char cap247;           /* 0x247, read as unsigned (0x489cb0) */
+    };
+    unsigned char maxLevel;             /* 0x248, the highest level of the type's line (reasoned: ai_DecideUpgradeGuild builds the next type only while cap247 is below it) */
+    char pad249[4];
+} AIBTYPE;
 #pragma pack(pop)
 #endif
