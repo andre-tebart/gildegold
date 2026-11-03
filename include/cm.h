@@ -1031,11 +1031,11 @@ extern struct D3SKYLAYER *cm_SkyLayer;  /* 0x6f0db4, the layer of cm_CreateScene
 extern struct D3SKY *cm_SceneSky;  /* 0x6f0db8, the scene's sky (cm_CreateSceneSky) */
 struct D3SKY; struct D3SKYLAYER; void d3sky_DeleteLayer(struct D3SKY *s, struct D3SKYLAYER *l);  /* 0x45d800 */
 void d3sky_Destroy();  /* 0x45daa0 */
-int ai_Unk4e37a0();  /* 0x4e37a0 */
+int cm_ShowPartyTexts();  /* 0x4e37a0 */
 int cm_WaitTicks();  /* 0x4e3420 */
 int ai_Unk4e3750();  /* 0x4e3750 */
 int ai_Unk4e3800();  /* 0x4e3800 */
-int ai_Unk4e37a0();  /* 0x4e37a0 */
+int cm_ShowPartyTexts();  /* 0x4e37a0 */
 struct D3SKY; struct D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale);  /* 0x45da30 */
 /* d3sky_CreateLayer (0x45d880): declared in cm's head after d3.h (its D3TEXFLAGS parameter is passed by value) */
 void d3sky_SetLayerSpeed(struct D3SKY *s, struct D3SKYLAYER *l, float speed);  /* 0x45d960 */

@@ -15529,17 +15529,18 @@ int cm_WaitTicks(int a)
                 if (ai_Unk6f0d80 >= end)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
-                ai_Unk4e37a0(cm_CurrentFight);
+                cm_ShowPartyTexts(cm_CurrentFight);
             } while (sv_RunFrame(cm_WaitTicks, cm_DialogFrameFlags | 0x8000) != 0);
         }
     }
 }
-/* 0x4e3490, like 0x4e3570 for a ticks, but a click (0x14673a0) ends it at once with cb(a) (1 without cb) as the result */
+/* 0x4e3490, runs the scene's frames (sv_RunFrame with cm_RunSceneTicks) for ticks * 1/14 time units of d3_Time, showing the
+   party's texts each frame (cm_UpdateDamagePops, cm_ShowPartyTexts); a right click (dm_L.rup) ends it at once with cb(arg) as the
+   result (1 without cb), else 0. Nothing (0) when replaying */
 
-int cm_RunSceneTicksOrClick(int a, int (*cb)(int))
+int cm_RunSceneTicksOrClick(int ticks, int (*cb)(int), int arg)
 {
     int start, res;
-    double lim;
 
     start = d3_Time;
     res = 0;
@@ -15549,17 +15550,14 @@ int cm_RunSceneTicksOrClick(int a, int (*cb)(int))
         do {
             if (dm_L.rup != 0) {
                 if (cb != 0)
-                    res = cb(a);
+                    res = cb(arg);
                 else
                     res = 1;
                 sv_PopRequest = 1;
-            } else {
-                lim = (double)a * (1.0 / 14) + start;
-                if ((double)d3_Time >= lim)
-                    sv_PopRequest = 1;
-            }
+            } else if ((double)d3_Time >= ticks * (1.0 / 14) + start)
+                sv_PopRequest = 1;
             cm_UpdateDamagePops();
-            ai_Unk4e37a0(cm_CurrentFight);
+            cm_ShowPartyTexts(cm_CurrentFight);
         } while (sv_RunFrame(cm_RunSceneTicks, cm_DialogFrameFlags | 0x8000) != 0);
     }
     return res;
@@ -15579,7 +15577,7 @@ int cm_RunSceneTicks(int a)
                 if ((double)d3_Time >= lim)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
-                ai_Unk4e37a0(cm_CurrentFight);
+                cm_ShowPartyTexts(cm_CurrentFight);
             } while (sv_RunFrame(cm_RunSceneTicks, cm_DialogFrameFlags | 0x8000) != 0);
         }
     }
@@ -15664,7 +15662,7 @@ int ai_Unk4e3750(char *m)
 }
 /* 0x4e37a0, the scene party m (+0x30 count): every member slot of 0x92cae0 that is used and not yet announced (+0xc) shows its text (+0x14, then 0x60c6c0) */
 
-int ai_Unk4e37a0(char *m)
+int cm_ShowPartyTexts(char *m)
 {
     int i;
     char *s;
@@ -15766,7 +15764,7 @@ void cm_RunSceneParty(char *m, int ctx)
                     h = cm_GetSlotState(*(int *)slot);
                     while (h == 0)
                         h = cm_GetSlotState(*(int *)slot) , sv_PumpNet();
-                    ai_Unk4e37a0(m);
+                    cm_ShowPartyTexts(m);
                     sv_RunFrame(cm_DialogFrameFlags, 0);
                 }
             } else {
@@ -15784,7 +15782,7 @@ void cm_RunSceneParty(char *m, int ctx)
                         sv_PumpNet();
                 }
                 while (ai_Unk4e3750(m) == 0) {
-                    ai_Unk4e37a0(m);
+                    cm_ShowPartyTexts(m);
                     sv_SetStatusText(&ch_EmptyName);
                     sv_RunFrame(cm_DialogFrameFlags, 0);
                 }
@@ -15792,10 +15790,10 @@ void cm_RunSceneParty(char *m, int ctx)
         } else if (k == 0) {
             /* all members answer at once: the owner waits for the slots (state +8 == 1), the others for their own */
             n = *(unsigned char *)(m + 0x30);
-            ai_Unk4e37a0(m);
+            cm_ShowPartyTexts(m);
             sv_RunFrame(cm_DialogFrameFlags, 0);
             while (ai_Unk4e3750(m) == 0) {
-                ai_Unk4e37a0(m);
+                cm_ShowPartyTexts(m);
                 sv_RunFrame(cm_DialogFrameFlags, 0);
             }
         }

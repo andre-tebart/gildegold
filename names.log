@@ -1659,3 +1659,4 @@
 2026-11-03T20:03:12 0x004e2dc0 data ai_Unk4e2dc0 -> cm_StopGroupScripts by:main why:evt_Stop of every running script of evt_Scripts for the group -2 (the scene scripts, evt_NoGroup -2 in cm_LoadEventScene); cm_LeaveEventScene
 2026-11-03T20:04:59 0x006f0db8 data ai_Unk6f0db8 -> cm_SceneSky by:main why:the D3SKY cm_CreateSceneSky makes for an event scene (d3sky_Create, also d3_Sky); cm_DestroySceneSky destroys it
 2026-11-03T20:04:59 0x006f0db4 data ai_Unk6f0db4 -> cm_SkyLayer by:main why:the one D3SKYLAYER of cm_SceneSky (d3sky_CreateLayer in cm_CreateSceneSky, d3sky_DeleteLayer in cm_DestroySceneSky)
+2026-11-03T20:06:30 0x004e37a0 data ai_Unk4e37a0 -> cm_ShowPartyTexts by:main why:every used member record of cm_CutInfos (the scene party, m+0x30 members) not yet shown (+0xc) prints its text (+0x14, then cm_TextNewline) in the party's form; called each frame of the scene waits (cm_RunSceneTicksOrClick)
