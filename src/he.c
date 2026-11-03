@@ -6194,9 +6194,9 @@ int he_Unk550070(int ev)
         if (o2 != 0 && *(int *)(o2 + 0x61) != 0 && *(int *)(*(int *)(o2 + 0x61) + 0x1cc) != 0 && *(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) != 0) {
             if (*(int *)(ev + 0xc4) == 0) {
                 d3_PointToWorld(*(int *)(o1 + 0x61), *(int *)(o1 + 0x61) + 0x4c, p1);
-                p1[1] = p1[1] + *(float *)(*(int *)(*(int *)(*(int *)(o1 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + *(float *)((unsigned)&sv_PhaseMinutes + 0x140);
+                p1[1] = p1[1] + *(float *)(*(int *)(*(int *)(*(int *)(o1 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
                 d3_PointToWorld(*(int *)(o2 + 0x61), *(int *)(o2 + 0x61) + 0x4c, p2);
-                p2[1] = p2[1] + *(float *)(*(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + *(float *)((unsigned)&sv_PhaseMinutes + 0x140);
+                p2[1] = p2[1] + *(float *)(*(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
                 v[0] = p2[0] - p1[0];
                 v[1] = p2[1] - p1[1];
                 v[2] = p2[2] - p1[2];
@@ -6212,7 +6212,7 @@ int he_Unk550070(int ev)
                 p1[1] = *(float *)(ev + 0xd4);
                 p1[2] = *(float *)(ev + 0xd8);
                 d3_PointToWorld(*(int *)(o2 + 0x61), *(int *)(o2 + 0x61) + 0x4c, q);
-                q[1] = q[1] + *(float *)(*(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + *(float *)((unsigned)&sv_PhaseMinutes + 0x140);
+                q[1] = q[1] + *(float *)(*(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
                 v[0] = q[0] - p1[0];
                 v[1] = q[1] - p1[1];
                 v[2] = q[2] - p1[2];
@@ -7830,7 +7830,7 @@ int he_Unk5506c0(int ev)
     if (a == 0 || *(int *)(a + 0x1cc) == 0 || *(int *)(*(int *)(a + 0x1cc) + 0x10) == 0)
         goto fail;
     d3_PointToWorld(a, a + 0x4c, t);
-    t[1] = t[1] + *(float *)(*(int *)(*(int *)(*(int *)(o + 0x61) + 0x1cc) + 0x10) + 0x1d4) + *(float *)((unsigned)&sv_PhaseMinutes + 0x140);
+    t[1] = t[1] + *(float *)(*(int *)(*(int *)(*(int *)(o + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
     d3_PointToWorld(*(int *)(ev + 0xc8), *(int *)(ev + 0xc8) + 0x4c, c);
     d[0] = t[0] - c[0];
     d[1] = t[1] - c[1];
@@ -7870,7 +7870,7 @@ int he_Unk550850(int ev)
     if (a == 0 || *(int *)(a + 0x1cc) == 0 || *(int *)(*(int *)(a + 0x1cc) + 0x10) == 0)
         goto fail;
     d3_PointToWorld(a, a + 0x4c, t);
-    t[1] = t[1] + *(float *)(*(int *)(*(int *)(*(int *)(o + 0x61) + 0x1cc) + 0x10) + 0x1d4) + *(float *)((unsigned)&sv_PhaseMinutes + 0x140);
+    t[1] = t[1] + *(float *)(*(int *)(*(int *)(*(int *)(o + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
     d3_PointToWorld(*(int *)(ev + 0xc8), *(int *)(ev + 0xc8) + 0x4c, c);
     d[0] = t[0] - c[0];
     d[1] = t[1] - c[1];
@@ -16589,7 +16589,7 @@ void he_Unk571000(int ev)
             if (e == 3 && !(HM_B(grp, 0x5b) & 0x20))
                 x -= 0.5f;
         }
-        x = (x + 1.0f) * e * *(float *)((unsigned)&sv_PhaseMinutes + 0x198);
+        x = (x + 1.0f) * e * 0.01667f;
         for (i = alive; i > 0; i--)
             *(float *)(ev + 0xb0) += x;
         HM_I(ev, 0xb4) -= alive;
@@ -16826,7 +16826,7 @@ void he_Unk571c30(int ev)
     n = gm_BuildingSkill(bld, 0xc, 1);
     f = (float)n;
     v = gm_WorkMinutesBetween(ev + 0x60, &ai_Time, bld);
-    HM_B(per + HM_I(ev, 0xb0), 0x80) = (unsigned char)(int)((double)v * *(double *)((unsigned)&sv_PhaseMinutes + 0x158) * *(double *)((unsigned)&gm_MoodRanges + 0x7c8) * ((double)f * *(double *)(unsigned)&ai_Unk5ece60 + *(double *)(unsigned)&full_rdata_5eb8a8));
+    HM_B(per + HM_I(ev, 0xb0), 0x80) = (unsigned char)(int)((double)v * 0.03333333333333333 * 8.0 * ((double)f * *(double *)(unsigned)&ai_Unk5ece60 + *(double *)(unsigned)&full_rdata_5eb8a8));
     cm_BeginFieldBlock(per, *(int *)(per + 4));
     cm_AddFieldValues(1, 1, per + (*(unsigned short *)(ev + 0xb0) - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x80, &n);
     cm_SendFieldDeltas();
@@ -18283,7 +18283,7 @@ void ai_Unk575030(int ev)
     f = (float)v * *(float *)(unsigned)&full_rdata_5ee01c + *(float *)(unsigned)&ai_FloatOne;
     n = gm_GetSkill(per, 2);
     for (i = n; i > 0; i--)
-        HM_I(ev, 0xac) = HM_I(ev, 0xac) + (int)((util_RandomF() + f) * *(double *)((unsigned)&sv_PhaseMinutes + 0x1a0) + *(double *)(unsigned)&ai_Unk5ebbe8) * f;
+        HM_I(ev, 0xac) = HM_I(ev, 0xac) + (int)((util_RandomF() + f) * 75.0 + *(double *)(unsigned)&ai_Unk5ebbe8) * f;
     if (util_RandomF() + *(float *)(unsigned)&ai_FloatOne >= (-1.58818684e-23f))
         return;
     for (i = 0; i < 4; i++) {
