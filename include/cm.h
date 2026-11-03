@@ -966,9 +966,9 @@ void cm_RunDuel(G28REC *m);  /* 0x4ded10 */
 int gv_Accuse();  /* 0x4f2e30 */
 int cm_DuelAftermath(G28REC *m);  /* 0x4dfa20 */
 void cm_DuelAskPlayer(CMCUTINFO *r);  /* 0x4dfcb0 */
-void ai_Unk4dfdd0(char *m);  /* 0x4dfdd0 */
+void cm_DuelChooseRound(CMCUTINFO *, G28REC *);  /* 0x4dfdd0, the duel round dialog of the party scene (r, the duel record m) */
 void ai_Unk4dff80(char *m);  /* 0x4dff80 */
-void ai_Unk4dfff0(char *m);  /* 0x4dfff0 */
+void ai_Unk4dfff0(CMCUTINFO *r);  /* 0x4dfff0 */
 int ai_Unk4e0010(int scene);  /* 0x4e0010 */
 
 int ai_Unk4e0040(char *m);  /* 0x4e0040 */

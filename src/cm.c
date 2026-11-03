@@ -34,6 +34,7 @@ extern D2RADIO d2_Radios[];
 #include <d3d.h>
 #include "net.h"
 #include "cm.h"
+#define cm_DuelChooseRoundR ((void (*)(CMCUTINFO *))cm_DuelChooseRound)  /* @original 0x4dfff0 jumps to it with its own arguments in place (a tail jmp, byte-matched): called with r alone, the duel record stays on the stack */
 #include "d3.h"
 struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3SKY *s, int first, char *tex, D3TEXFLAGS flags, float scale, float offset, float vscale, float voffset);  /* 0x45d880 */
 #include "d3_tools.h"
@@ -14033,48 +14034,46 @@ void cm_DuelAskPlayer(CMCUTINFO *r)
     }
     d2_CloseView(view);
 }
-/* 0x4dfdd0, the choice of the challenged person (text 0x10e6, three answers: m + 0x94 = 2 / 3 / 4); the player's character is the
-   one of m + 0x34 / m + 0x38 that is not the first */
+/* 0x4dfdd0, the player's choice of the duel round when the party scene runs ("cutscenes\\duell", text 0x10e6 with
+   cm_ScenePartyRuns, cm_CutChar's name and the opponent's: of m->members[0] / [1] the one that is not cm_CutChar):
+   r->duel.round = 2 / 3 / 4 for the three answers, 4 when the time runs out; r's text cleared */
 
-void ai_Unk4dfdd0(char *m)
+void cm_DuelChooseRound(CMCUTINFO *r, G28REC *m)
 {
-    char *a, *b, *w;
-    int v, b1, b2, b3, dlg;
+    AICHAR *a, *b, *other;
+    int view, first, insult, roll, shot, dlg;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
-    w = b;
-    if (*(int *)(a + 4) != *(int *)(cm_CutChar + 4))
-        w = a;
-    v = d2_OpenForm(0, 0, "cutscenes\\duell");
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
-    d2_SetForm(v, 0);
-    {
-        int t = io_PrintText(0x10e6, cm_ScenePartyRuns, *(unsigned short *)cm_CutChar, *(unsigned short *)w);
-
-        b1 = d2_GetWinObj(v, 0, t);
-        b2 = d2_GetWinObj(v, 0, t + 1);
-        b3 = d2_GetWinObj(v, 0, t + 2);
-    }
-    m[0x94] = 4;
-    m[0x14] = ch_EmptyName;
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
+    other = b;
+    if (a->netId != ((AICHAR *)cm_CutChar)->netId)
+        other = a;
+    view = d2_OpenForm(0, 0, "cutscenes\\duell");
+    d2_PlaceMainWindow(view, 3);
+    d2_SetForm(view, 0);
+    first = io_PrintText(0x10e6, cm_ScenePartyRuns, ((AICHAR *)cm_CutChar)->id, other->id);
+    insult = d2_GetWinObj(view, 0, first);
+    roll = d2_GetWinObj(view, 0, first + 1);
+    shot = d2_GetWinObj(view, 0, first + 2);
+    r->duel.round = 4;
+    r->text[0] = ch_EmptyName[0];
+    dlg = CUT_BOX();
     cm_DialogTimer(dlg, cm_SceneDuration * 0x4b, 1);
-    while (sv_RunFrame(ai_Unk4dfdd0, cm_DialogFrameFlags) != 0) {
+    while (sv_RunFrame(cm_DuelChooseRound, cm_DialogFrameFlags) != 0) {
         cm_UpdateDamagePops();
         if (d2_ClickedId != -1) {
-            if (d2_PointerObj == b1)
-                m[0x94] = 2;
-            else if (d2_PointerObj == b2)
-                m[0x94] = 3;
-            else if (d2_PointerObj == b3)
-                m[0x94] = 4;
+            if (d2_PointerObj == insult)
+                r->duel.round = 2;
+            else if (d2_PointerObj == roll)
+                r->duel.round = 3;
+            else if (d2_PointerObj == shot)
+                r->duel.round = 4;
             sv_PopRequest = 1;
         }
         if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
     }
-    d2_CloseView(v);
+    d2_CloseView(view);
 }
 /* 0x4dff80, the answer of a computer challenged person (m + 0x94): with 0x6f0d7c == 0 the question of 0x4dfcb0 (1 / 0 by a roll of 10 > 7),
    else the choice of 0x4dfdd0 (4 with 50 %, 2 with 35 %, 3 with 15 %) */
@@ -14100,12 +14099,12 @@ void ai_Unk4dff80(char *m)
 }
 /* 0x4dfff0, asks the player (0x4dfcb0 without the flag 0x6f0d7c, else the choice 0x4dfdd0) */
 
-void ai_Unk4dfff0(char *m)
+void ai_Unk4dfff0(CMCUTINFO *r)
 {
     if (cm_ScenePartyRuns == 0)
-        cm_DuelAskPlayer((CMCUTINFO *)m);
+        cm_DuelAskPlayer(r);
     else
-        ai_Unk4dfdd0(m);
+        cm_DuelChooseRoundR(r);
 }
 /* 0x4e0010, plays the scene "cutscene_toby.ed3" and closes it */
 
