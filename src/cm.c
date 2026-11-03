@@ -6682,9 +6682,9 @@ char *ai_Unk4cdac0(char *c)
     }
     return 0;
 }
-/* 0x4cdb20 */
+/* 0x4cdb20, gives up every weapon item of the character c's inventory: sends each as sold to nobody (cm_SendExSellObject, buyer -1) */
 
-void ai_Unk4cdb20(char *c)
+void cm_DiscardWeapons(char *c)
 {
     char *q;
     int id;
@@ -6695,44 +6695,43 @@ void ai_Unk4cdb20(char *c)
             cm_SendExSellObject(-1, *(int *)(c + 4), id, *(int *)(q + 0xe), ai_OwnPlayer, 0);
     }
 }
-/* 0x4cdb80, a character with the flag 0x20000000: with chance (byte +0x1c5) / 10 it is hit (1), else the flag is
-   cleared (0) */
+/* 0x4cdb80, after a fight, of a character c with the flag 0x20000000: with the chance c->b1c5 in 10 its weapons are
+   taken (cm_DiscardWeapons), b1c5 is negated and the owner of its building (a character of kind 6 / 7) gets the news
+   0x1bca naming the weapon; returns 1. Else b1c5 becomes 1, the flag is cleared; returns 0 */
 
-char ai_Unk4cdb80(char *c)
+char cm_FightWeaponLoss(char *ch)
 {
     char buf[0x800];
-    char b = 1;
+    char one = 1;
     char neg;
-    char *ch, *g;
-    int *r;
-    int id;
+    AICHAR *c = (AICHAR *)ch;
+    AICHAR *owner;
+    AIWEAPON *w;
 
-    if (c != 0 && (*(int *)(c + 0x1c8) & 0x20000000) != 0) {
-        neg = c[0x1c5];
+    if (c != 0 && (c->flags1c8 & 0x20000000) != 0) {
+        neg = c->b1c5;
         if (util_RandomU(10) < (unsigned char)neg) {
             neg = -neg;
-            ai_Unk4cdb20(c);
-            cm_BeginFieldBlock(c, *(int *)(c + 4));
-            cm_AddFieldValues(1, 1, (int)(c - cm_FieldObject) + 0x1c5, &neg);
+            cm_DiscardWeapons((char *)c);
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &neg);
             cm_SendFieldDeltas();
-            g = *(char **)(c + 0x16c);
-            if (g != 0 && *(unsigned short *)(g + 0x27) != 0xffff) {
-                id = *(unsigned short *)(g + 0x27);
-                ch = ai_Chars[id];
-                if (ch[2] == 6 || ch[2] == 7) {
-                    r = (int *)cm_CharWeapon(c);
-                    if (*r != 0) {
-                        txt_Format(buf, 0x1bca, *r * 2 + 0x9a8, *(unsigned short *)c, g);
-                        he_ShowNews(*(int *)(ch + 4), -1, buf, 0, 0x5f2, 0);
+            if (c->bld != 0 && c->bld->owner != 0xffff) {
+                owner = &ai_CharsT[c->bld->owner];
+                if (owner->kind == 6 || owner->kind == 7) {
+                    w = (AIWEAPON *)cm_CharWeapon((char *)c);
+                    if (w->id != 0) {
+                        txt_Format(buf, 0x1bca, w->id * 2 + 0x9a8, c->id, c->bld);
+                        he_ShowNews(owner->netId, -1, buf, 0, 0x5f2, 0);
                     }
                 }
             }
             return 1;
         }
-        cm_BeginFieldBlock(c, *(int *)(c + 4));
-        cm_AddFieldValues(1, 1, (int)(c - cm_FieldObject) + 0x1c5, &b);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldValues(1, 1, (int)((char *)c - cm_FieldObject) + 0x1c5, &one);
         cm_SendFieldDeltas();
-        cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0, 0x20000000);
+        cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x20000000);
     }
     return 0;
 }
@@ -8171,7 +8170,7 @@ int ai_Unk4d0cd0(int *a)
 #define G19_GRANT(K, B)                                                                                 \
     i = ai_Unk4d0cd0((int *)(rec + 0x80));                                                              \
     *(int *)(rec + 0x80 + i * 4) = *(int *)(ai_KindBChars[i] + 4);                                       \
-    ai_Unk4cdb20(ai_KindBChars[i]);                                                                      \
+    cm_DiscardWeapons(ai_KindBChars[i]);                                                                      \
     cm_SendExSellObject(*(int *)(ai_KindBChars[i] + 4), -1, K, 1, ai_OwnPlayer, 0);                             \
     gm_AddHealth(*(unsigned short *)ai_KindBChars[i], -*(int *)(ai_KindBChars[i] + 0x24));                \
     buf[0] = B;                                                                                         \
@@ -10045,12 +10044,12 @@ void ai_Unk4d4d70(char *a)
         for (i = 0; i < 16; i++) {
             id = *(int *)(a + 0x80 + i * 4);
             if (id != -1 && (c = gm_FindChar(id)) != 0)
-                ai_Unk4cdb80(c);
+                cm_FightWeaponLoss(c);
         }
         for (i = 0; i < 16; i++) {
             id = *(int *)(a + 0xc0 + i * 4);
             if (id != -1 && (c = gm_FindChar(id)) != 0)
-                ai_Unk4cdb80(c);
+                cm_FightWeaponLoss(c);
         }
     }
     if (ai_Unk6f0cf4 == 0) {
@@ -10455,11 +10454,11 @@ void ai_Unk4d63e0(char *a)
     for (i = 0; i < 16; i++) {
         id = *(int *)(a + 0x80 + i * 4);
         if (id != -1 && (c = gm_FindChar(id)) != 0)
-            ai_Unk4cdb80(c);
+            cm_FightWeaponLoss(c);
     }
     for (i = 0; i < 16; i++) {
         if (*(int *)(a + 0xc0 + i * 4) != -1 && (c = gm_FindChar(*(int *)(a + 0x80 + i * 4))) != 0)
-            ai_Unk4cdb80(c);
+            cm_FightWeaponLoss(c);
     }
     if (a[0x7c] & 2) {
         if (win == G20_DEF) {

@@ -510,8 +510,8 @@ char *ai_FindWeaponRecord(int id);  /* 0x4cd9d0 */
 char *ai_Unk4cda00(char *c);  /* 0x4cda00 */
 char *cm_CharWeapon(char *c);  /* 0x4cda50 */
 char *ai_Unk4cdac0(char *c);  /* 0x4cdac0 */
-void ai_Unk4cdb20(char *c);  /* 0x4cdb20 */
-char ai_Unk4cdb80(char *c);  /* 0x4cdb80 */
+void cm_DiscardWeapons(char *c);  /* 0x4cdb20 */
+char cm_FightWeaponLoss(char *c);  /* 0x4cdb80 */
 float ai_Unk4cdcf0(char *c);  /* 0x4cdcf0 */
 void cm_UpdateHandObject(char *c);  /* 0x4cde20 */
 int *cm_CutEntrySlot(char *rec, char *c);  /* 0x4cdf00 */
