@@ -8808,24 +8808,29 @@ int gm_BuildingValues(unsigned char *b, int *out)
 }
 
 /* 0x509300, in the building's object words (+0x23) the objects with the class byte (+0x1a3) k that exist in the building's list: the sum of their bytes at +0x1e3; with flag the sum is scaled by the factor of 0x508d70 (0.01) */
-/* 0x5092e0 */
+/* 0x5092e0, the skill k of the building b: of the kind record's 0x40 object slots (+0x23, prototype ids, bit 15
+   a flag) those whose skill byte (+0x1a3) is k and whose object the building holds add their value (+0x1e3);
+   with flag the sum is scaled by the building's level in percent (rounded) */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag)
 {
-    char *p;
-    int i, s;
-    unsigned short *w;
+    ORDBLD *bld;
+    unsigned char *kind;
+    int i, s, proto;
+    unsigned short *slot;
 
+    bld = (ORDBLD *)b;
     i = 0;
     s = 0;
-    p = ai_BTypes + (unsigned)*b * 0x24d;
-    w = (unsigned short *)(p + 0x23);
+    kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
+    slot = (unsigned short *)(kind + 0x23);
     do {
-        if ((*w & 0x7fff) != 0 && (unsigned char)p[i + 0x1a3] == k) {
-            if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, *w & 0x7fff))
-                s += (unsigned char)p[i + 0x1e3];
+        proto = *slot & 0x7fff;
+        if (proto != 0 && kind[i + 0x1a3] == k) {
+            if (gm_Query((void *)bld->objList, 2, 6, 0, proto))
+                s += kind[i + 0x1e3];
         }
         i++;
-        w++;
+        slot++;
     } while (i < 0x40);
     if (flag)
         return (int)(gm_BuildingLevel((char *)b) * 0.01 * s + 0.5);
