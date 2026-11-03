@@ -3534,18 +3534,18 @@ exe	0x0053f270	he_PostPlayerEvents86a2	he	byte	readable
 exe	0x0053f370	he_PostWorkshopEvents98	he	shape	readable		
 exe	0x0053f430	he_Unk53f430	he	shape	draft		
 exe	0x0053f500	he_Unk53f500	he	shape	draft		
-exe	0x0053f5b0	he_Unk53f5b0	he	draft	draft		
-exe	0x0053f6b0	he_Unk53f6b0	he	draft	draft		
-exe	0x00540c90	he_Unk540c90	he	draft	draft		
-exe	0x00540e40	he_Unk540e40	he	draft	draft		
+exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
+exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
+exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
+exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_Unk540fe0	he	byte	draft		
-exe	0x00541010	he_Unk541010	he	draft	draft		
-exe	0x00541060	he_Unk541060	he	draft	draft		
+exe	0x00541010	he_PostEvent3a	he	byte	readable		
+exe	0x00541060	he_PostEvent3b	he	byte	readable		
 exe	0x005410f0	he_Unk5410f0	he	shape	draft		
-exe	0x00541170	he_Unk541170	he	draft	draft		
+exe	0x00541170	he_PostEventA6	he	byte	readable		
 exe	0x00541200	he_Unk541200	he	byte	draft		
 exe	0x00541250	he_Unk541250	he	byte	draft		
-exe	0x00541280	he_Unk541280	he	draft	draft		
+exe	0x00541280	he_CharacterBehavior	he	byte	readable		
 exe	0x005414a0	he_Unk5414a0	he	draft	draft		
 exe	0x005417d0	he_Unk5417d0	he	draft	draft		
 exe	0x00541a50	he_Unk541a50	he	byte	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 9676b2cb: he_LastSlot (0x625718) and he_BarView (0x6faa60) are typed and declared once in he.h instead of GAPDATA externs in he.c / sv.c: truer data; the function uses neither, its eax/ecx tie-break (two regs hunks, proof equal) flips on he.h's declaration set alone (as on cm.h's for ai_TutorialInitChapter3), so the match was no evidence [waits for: the headers' final declaration set (consistent declarations of the units unk_575860 includes)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 5d296bf7: ai_bld.h gained the inn view of AIBLD 0x65..0x70 (a union of the old fields and struct inn: takings / guests / served / lastTakings, evidenced by the inn simulation 0x54d260 and he_InnReport, which it makes byte + readable); the layout is unchanged and this function reads none of those fields: its regs-only shape flipped to draft by VC6's register allocation on the declaration set alone (a tie-break, no evidence of its source) [waits for: its own deep pass: the 100 regs hunks of its register allocation]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

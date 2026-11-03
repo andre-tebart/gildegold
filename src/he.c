@@ -16,11 +16,11 @@
    0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom),
    0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner he or main (typed in place in main.c's gap block; he.c and
    sv.c use them, they lie among main.c's data / bss).
-   Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h ch.h cm.h d3_tools.h
+   Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
    count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
-   gm_TitleGroup, ch_QueueAnim, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor.
+   gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor.
    unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;
