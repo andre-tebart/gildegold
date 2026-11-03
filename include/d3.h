@@ -8,13 +8,7 @@ struct XOBJ;
 struct D3IOPATH;                   /* d3_io_t.h: the return of d3_LoadObjectAnim */
 struct D3IOOBJ;
 
-typedef struct D3VECTOR {
-    float x, y, z;
-} D3VECTOR;
-
-typedef struct D3VECTOR4 {         /* the engine pads most vectors to 16 bytes */
-    float x, y, z, w;
-} D3VECTOR4;
+#include "d3_types.h"                /* D3VECTOR, D3VECTOR4, D3SCENE, D3TEXFLAGS */
 
 typedef struct D3MATRIX {
     float _11, _12, _13, _14;
@@ -50,7 +44,6 @@ typedef struct D3MATERIAL {
 } D3MATERIAL;
 
 struct D3OBJECT;
-#include "d3_types.h"                /* D3SCENE, D3TEXFLAGS */
 
 typedef struct D3OBJECT D3OBJECT;
 struct D3OBJECT {

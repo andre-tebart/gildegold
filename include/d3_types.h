@@ -1,9 +1,17 @@
 /* d3 records other units need without the rest of d3.h: the scene record of the table d3_Scenes and
    the texture flags tex_Load takes by value (ts_texture.c's TSFLAGS), the sort entry of d3_engine's
    d3_SortBuf (d3_sm fills it), the particle colour D3COLOR (d3_tools' d3t_CreateSmoke / CreateEarth take it
-   by value). Types only; d3.h and d3_engine.h include it. */
+   by value), the vectors D3VECTOR / D3VECTOR4. Types only; d3.h and d3_engine.h include it. */
 #ifndef D3_TYPES_H
 #define D3_TYPES_H
+
+typedef struct D3VECTOR {
+    float x, y, z;
+} D3VECTOR;
+
+typedef struct D3VECTOR4 {         /* the engine pads most vectors to 16 bytes */
+    float x, y, z, w;
+} D3VECTOR4;
 
 typedef struct D3TEXFLAGS {         /* passed by value to tex_Load (TSFLAGS in ts_texture.h) */
     union {
