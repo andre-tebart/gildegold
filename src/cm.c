@@ -95,7 +95,7 @@ extern GAPDATA full_data_92bcb8[];
 #define d3sm_PickK ((int (*)())d3sm_Pick)  /* 0x45f2b0 (d3_sm.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define d3sky_CreateLayerK ((int (*)())d3sky_CreateLayer)  /* 0x45d880 (d3_sky.c): @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) (floats as bit patterns, the flags as an int) */
 #define d3sky_CreateK ((int (*)())d3sky_Create)  /* 0x45da30 (d3_sky.c): @original the calls pass the three floats as dword bit patterns without a prototype (ai_Unk4e32f0 0x4e32f0: push 0x44160000 ..) */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, ai_Unk4d88c0 0x4d88c0 move it as a word / movzx) */
+#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests */
 #define d3t_CreateEarthK ((int (*)())d3t_CreateEarth)  /* 0x4168e0 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
 #define d3t_CreateSmokeK ((int (*)())d3t_CreateSmoke)  /* 0x416340 (d3_tools.c): @original this unit's calls were compiled without a prototype (float arguments as double, an int result) */
@@ -10744,7 +10744,7 @@ void cm_RunFight(CMFIGHTREC *a)
 }
 /* 0x4d6930, the result of the fight in the record r (+0x354 / +0x358): 0x6f0cf8 set -> 0 and the ransom 0x6f0cfc, else 1 */
 
-void ai_Unk4d6930(char *r)
+void cm_FightResult(char *r)
 {
     if (cm_FightSettled != 0) {
         *(int *)(r + 0x354) = 0;
@@ -11560,7 +11560,7 @@ void cm_RunCutOrders(CMCUTINFO *rec)
    toggle (key 0x39 = space) with the character animations and the "pause" text, the frame of the UI, and every 0x15e timer calls
    the characters' fight-AI (0x4d2f80) and the fighters' commands (0x4d76a0). Ends with the end-of-fight code 0x4d6b70. */
 
-void ai_Unk4d88c0(char *a)
+void cm_FightLoop(char *a)
 {
     unsigned int t;
     int i, r;
@@ -11576,7 +11576,7 @@ void ai_Unk4d88c0(char *a)
     else
         ai_Unk6f0d4c = msx_PlayAmbient("Athmos\\Kampfathmo_2.mp3", 0xb);
     ai_Unk6f0ce4 = 0;
-    while (sv_RunFrame(ai_Unk4d88c0, 0xfd6c6) != 0 && cm_FightSettled == 0) {
+    while (sv_RunFrame(cm_FightLoop, 0xfd6c6) != 0 && cm_FightSettled == 0) {
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
             ai_Unk6f0ce4 = ai_Unk6f0ce4 == 0;
             for (i = 0; i < 32; i++) {
@@ -11614,15 +11614,22 @@ void ai_Unk4d88c0(char *a)
     }
     ai_Unk4d6b70();
 }
-/* 0x4d8b10 */
+/* 0x4d8b10, the fight member callback (kind 3, a: the member record): on the first run of the scene party only the fight
+   result (cm_FightResult), on the later runs the fight loop
+   @deep read whole function against the original: same test of cm_ScenePartyRuns, same two callees with
+   the incoming a, same layout. Only difference: the original calls cm_FightResult with push
+   [esp+4]/call/add esp,4/ret where ours tail-jumps (jmp cm_FightResult); the second branch is a tail jmp
+   on both sides. Tried if/else, reversed condition (wrong order), int-cast callee, unprototyped cast,
+   int-returning caller: all still tail-call. Hunk: +0x19 '- jmp X' vs '+ mov eax,[esp+4]; push eax; call
+   X; add esp,4; ret'. A VC6 tail-call decision, no meaning difference. */
 
-void ai_Unk4d8b10(char *a)
+void cm_FightMember(char *a)
 {
-    if (ai_Unk6f0d7c == 0) {
-        ai_Unk4d6930(a);
+    if (cm_ScenePartyRuns == 0) {
+        cm_FightResult(a);
         return;
     }
-    ai_Unk4d88c0(a);
+    cm_FightLoop(a);
 }
 /* 0x4d8b30, clears the 16 ints at 0x92ca80 */
 
@@ -13073,7 +13080,7 @@ void ai_Unk4dfdd0(char *m)
     ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
     d2_SetForm(v, 0);
     {
-        int t = io_PrintText(0x10e6, ai_Unk6f0d7c, *(unsigned short *)cm_CutChar, *(unsigned short *)w);
+        int t = io_PrintText(0x10e6, cm_ScenePartyRuns, *(unsigned short *)cm_CutChar, *(unsigned short *)w);
 
         b1 = d2_GetWinObj(v, 0, t);
         b2 = d2_GetWinObj(v, 0, t + 1);
@@ -13106,7 +13113,7 @@ void ai_Unk4dff80(char *m)
 {
     int r;
 
-    if (ai_Unk6f0d7c == 0) {
+    if (cm_ScenePartyRuns == 0) {
         if ((unsigned int)cm_Random(10) > 7)
             m[0x94] = 1;
         else
@@ -13125,7 +13132,7 @@ void ai_Unk4dff80(char *m)
 
 void ai_Unk4dfff0(char *m)
 {
-    if (ai_Unk6f0d7c == 0)
+    if (cm_ScenePartyRuns == 0)
         ai_Unk4dfcb0(m);
     else
         ai_Unk4dfdd0(m);
@@ -14687,7 +14694,7 @@ void cm_RunSceneParty(char *m, int ctx)
             }
         }
     }
-    ai_Unk6f0d7c = ai_Unk6f0d7c + 1;
+    cm_ScenePartyRuns = cm_ScenePartyRuns + 1;
     cut_RandSeed(saved);
 }
 /* 0x4e3fe0, switches the scene mode on: 0x42ea10 (0x5315c0, 1), then 0x404c20 (o, 1) for every object whose +0x8c bit 4 is not set */
@@ -14739,7 +14746,7 @@ void ai_Unk4e4060(char *m)
     sv_view[3] = ai_Unkfb906c;
     ai_Unk925510 = d3_CurrentScene;
     ai_Unk92cac0 = evt_NoGroup;
-    ai_Unk6f0d7c = 0;
+    cm_ScenePartyRuns = 0;
     cm_InitDamagePops();
     AI_ZERO_AT(offset ai_Unk92c600, 0x480);  /* @vc6 clang's MS asm cannot take the offset of an incomplete array */
     cm_SkipEvents = 0;
@@ -15394,7 +15401,7 @@ void ai_Unk4e5770(void)
     ai_Unk4e5730(0, (int)ai_Unk4e0010, (int)d3io_NoopCallback, 0, 0, 0);
     ai_Unk4e5730(1, (int)ai_Unk4d8e20, (int)ai_Unk4dada0, (int)ai_Unk4dae90, 0, 0);
     ai_Unk4e5730(2, (int)ai_Unk4db700, (int)ai_Unk4dd960, (int)ai_Unk4de340, (int)ai_Unk4daf80, 0);
-    ai_Unk4e5730(3, (int)cm_RunFight, (int)ai_Unk4d8b10, 0, (int)ai_Unk4d60b0, 1);
+    ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)ai_Unk4ded10, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)ai_Unk4dfa20, 0);
     ai_Unk4e5730(5, (int)ai_Unk4e01e0, 0, 0, (int)ai_Unk4e0040, 0);
     ai_Unk4e5730(6, (int)ai_Unk4e0770, 0, 0, (int)ai_Unk4e0580, 0);
@@ -15706,7 +15713,7 @@ int ai_Unk6f0d6c = 0;  /* 0x6f0d6c */
 int ai_Unk6f0d70 = 0;  /* 0x6f0d70 */
 char * cm_CutChar = 0;  /* 0x6f0d74 */
 int ai_Unk6f0d78 = 0;  /* 0x6f0d78 */
-int ai_Unk6f0d7c = 0;  /* 0x6f0d7c */
+int cm_ScenePartyRuns = 0;  /* 0x6f0d7c */
 int ai_Unk6f0d80 = 0;  /* 0x6f0d80 */
 int ai_Unk6f0d84 = 0;  /* 0x6f0d84 */
 int ai_Unk6f0d88 = 0;  /* 0x6f0d88 */

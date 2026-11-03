@@ -179,7 +179,7 @@ typedef struct AMTPRICEROW {            /* 0x15 bytes, a row of amt_PriceRows */
 #pragma pack(pop)
 extern unsigned char amt_PriceRows[];   /* 0x61a348, the guild-house price table: 37 rows of 0x15 bytes (the building kind, 10 goods ids) */
 #define AMT_CHARS_END (&ai_CharInts[0x300][0])  /* 0x7d5f84, the word past the last character record */
-int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
+int util_Random(unsigned short n);      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);  /* 0x4c4830 */
 extern unsigned char ai_OwnPlayer;      /* 0x6f1bc5 */
 void cm_BeginFieldBlock(char *o, int id);     /* 0x4c3ba0 */

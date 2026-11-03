@@ -161,7 +161,7 @@ void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR
 int ch_CountAt(int scene, int all, struct D3VECTOR *pos, float eps);                               /* 0x402720 */
 int ch_Count(int scene, int a);                                                  /* 0x4026c0 */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);                                      /* 0x4243f0 */
-int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
+int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 struct MSXTRACK * msx_Play(char *name, int once);                                            /* 0x423a90, msx.h: MSXTRACK * */
 float util_RandomF(void);                                                        /* 0x42ec20 */
 struct SBSAMPLE *sb_GetVariation(struct SBBANK *bank, char *name, int idx);       /* 0x426190, sblib.c (f3snd.c: sb_GetVariationI) */

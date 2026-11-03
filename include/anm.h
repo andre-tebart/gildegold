@@ -40,7 +40,7 @@ int gm_IsHomeType(unsigned char *b);                                            
 int ch_QueueAnim(struct CHARACTER *ch, char *name, int n);                                   /* 0x4057a0, ch.c */
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);           /* 0x45f170, ch.h: D3SM *, D3VECTOR * */
 extern struct D3SCENE *d3_DefaultScene; /* 0x5fb5b0 (as d3.h / unk_58bbd0.h) */
-int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
+int util_Random(unsigned short n);                                               /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 
 
 ANMREC *anm_NewAnimal(void);

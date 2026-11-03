@@ -761,7 +761,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *obj);                 /* 0x48
                                                                             (same log strings) */
 
 /* callees outside this unit */
-int util_Random(unsigned short n);                                       /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
+int util_Random(unsigned short n);                                       /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 struct G15TREE * veg_FindType(int type);                                         /* 0x4bc5a0 */
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);                /* 0x4bc670, the plant record with the id (rd.c) */
 void cm_BeginFieldBlock(char *o, int id);                             /* 0x4c3ba0, starts a message about o */

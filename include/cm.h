@@ -535,7 +535,7 @@ float cm_CharCellDistXZ(char *c, int x, int y);  /* 0x4ce200 */
 int cm_OtherBuilding(char *a, char *b);  /* 0x4ce270 */
 struct CMBOMB *cm_LayBomb(struct D3VECTOR *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
-int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
+int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);                              /* 0x45f100, d3_sm.c (this unit's callers read an int: d3sm_GetVertexI) */
 float gm_HealthRatio(short *c);  /* 0x4fc8e0, f3gm.h */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
@@ -813,7 +813,7 @@ void ai_Unk4d4340(int *ids, int x, int y);  /* 0x4d4340 */
 int cm_FightStartDialog(char *a);  /* 0x4d4540 */
 void cm_FightEndDialog(char *a);  /* 0x4d4d70 */
 int ai_Unk4d60b0(char *a);  /* 0x4d60b0 */
-void ai_Unk4d6930(char *r);  /* 0x4d6930 */
+void cm_FightResult(char *r);  /* 0x4d6930 */
 void ai_Unk4d6970(char *r);  /* 0x4d6970 */
 void ai_Unk4d6a50();  /* 0x4d6a50 */
 void ai_Unk4d6b70();  /* 0x4d6b70 */
@@ -867,10 +867,10 @@ void cm_RunCutOrders(CMCUTINFO *rec);  /* 0x4d76a0 */
 
 extern int ai_Unk6f0ce4;  /* 0x6f0ce4, fight paused */
 
-extern int ai_Unk6f0d7c;  /* 0x6f0d7c */
+extern int cm_ScenePartyRuns;  /* 0x6f0d7c */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);  /* 0x4243f0 */
-void ai_Unk4d88c0(char *a);  /* 0x4d88c0 */
-void ai_Unk4d8b10(char *a);  /* 0x4d8b10 */
+void cm_FightLoop(char *a);  /* 0x4d88c0 */
+void cm_FightMember(char *a);  /* 0x4d8b10 */
 
 extern int ai_Unk92ca80[16];  /* 0x92ca80 */
 extern unsigned int cm_FightStart;  /* 0x6f0da4, fight start (d3_Time) */
