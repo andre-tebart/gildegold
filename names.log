@@ -1237,3 +1237,4 @@
 2026-11-03T08:51:48 0x0050ad70 func gm_Unk50ad70 -> gm_TakeableCount by:main why:callers (cm.c 0x4c63e0, transport window) clamp the wanted amount n to its result: how many of a goods prototype a character may take (3 per kind, 6+ kinds: none)
 2026-11-03T08:55:53 0x0050b170 func gm_Unk50b170 -> gm_DonationRank by:main why:ai_IndulgenceWindow (the church's Top5 window) shows the record +0x1ac with gm_Unk50b170 (the slot, 0): the rank of the character by the sum at +0x1ac
 2026-11-03T08:56:34 0x0050b1e0 func gm_Unk50b1e0 -> gm_DonationTop5 by:main why:ai_Top5Window (the church's Locations\Kirche\Top5 window) shows its five ids and values: the five characters with the largest ORDCHAR.donated
+2026-11-03T08:57:00 0x0050b290 func gm_Unk50b290 -> gm_LikingChance by:main why:a random draw against c percent of the liking of a for b (gm_Liking) divided by d; the exam handler 0x55e730 calls it

@@ -10009,15 +10009,16 @@ void gm_DonationTop5(unsigned *ids, int *sc)
         }
     }
 }
-/* 0x50b290, whether a random number plus 0.15 is below c * (the weight of 0x50c550) * 0.01 / d */
+/* 0x50b290, a chance by liking: 1 when a random number plus 0.15 is below c percent of the liking of a for b (gm_Liking) divided by d */
 
-int gm_Unk50b290(int a, int b, int c, int d)
+int gm_LikingChance(int a, int b, int c, int d)
 {
-    float f, r;
+    float share;
+    double limit;
 
-    f = gm_Liking(a, b, 1);
-    r = util_RandomF();
-    if (r + 0.15 < (double)(c * f * 0.01 / d))
+    share = gm_Liking(a, b, 1) * 0.01f;
+    limit = c * share / d;
+    if (util_RandomF() + 0.15 < limit)
         return 1;
     return 0;
 }
