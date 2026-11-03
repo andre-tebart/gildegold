@@ -2412,19 +2412,19 @@ exe	0x004cdfe0	cm_CellUsable	cm	byte	draft
 exe	0x004ce040	cm_FindNearCell	cm	shape	readable		
 exe	0x004ce130	cm_FindFighter	cm	byte	draft		
 exe	0x004ce170	ai_LedSelectBits	cm	byte	draft		
-exe	0x004ce1b0	ai_Unk4ce1b0	cm	draft	draft		
-exe	0x004ce200	ai_Unk4ce200	cm	draft	draft		
+exe	0x004ce1b0	cm_CharObjDistXZ	cm	shape	readable		
+exe	0x004ce200	cm_CharCellDistXZ	cm	byte	readable		
 exe	0x004ce270	ai_Unk4ce270	cm	byte	draft		
-exe	0x004ce290	ai_Unk4ce290	cm	draft	draft		
-exe	0x004ce300	ai_Unk4ce300	cm	draft	draft		
-exe	0x004ce5d0	ai_Unk4ce5d0	cm	draft	draft		
-exe	0x004ce830	ai_Unk4ce830	cm	draft	draft		
+exe	0x004ce290	cm_LayBomb	cm	byte	readable		
+exe	0x004ce300	cm_UpdateBombs	cm	draft	readable	deep	
+exe	0x004ce5d0	cm_ThrowGrenade	cm	shape	readable		
+exe	0x004ce830	cm_UpdateGrenades	cm	draft	readable	deep	
 exe	0x004ceb70	ai_Unk4ceb70	cm	byte	draft		
 exe	0x004ceb80	ai_Unk4ceb80	cm	shape	draft		
 exe	0x004cec00	ai_Unk4cec00	cm	byte	draft		
-exe	0x004cec30	ai_Unk4cec30	cm	draft	draft		
+exe	0x004cec30	cm_OpenCharInfoWin	cm	shape	readable		
 exe	0x004ced80	ai_Unk4ced80	cm	byte	draft		
-exe	0x004cedc0	ai_Unk4cedc0	cm	draft	draft		
+exe	0x004cedc0	cm_ShowDamage	cm	byte	readable		
 exe	0x004cee20	ai_Unk4cee20	cm	draft	draft		
 exe	0x004cef80	ai_Unk4cef80	cm	draft	draft		
 exe	0x004cefa0	ai_Unk4cefa0	cm	draft	draft		
@@ -2473,7 +2473,7 @@ exe	0x004d2e30	ai_Unk4d2e30	cm	draft	draft
 exe	0x004d2f80	ai_Unk4d2f80	cm	draft	draft		
 exe	0x004d3120	ai_Unk4d3120	cm	shape	draft		
 exe	0x004d3300	ai_Unk4d3300	cm	byte	draft		
-exe	0x004d3390	ai_Unk4d3390	cm	draft	draft		
+exe	0x004d3390	cm_CheckDeath	cm	draft	draft		
 exe	0x004d3550	ai_Unk4d3550	cm	draft	draft		
 exe	0x004d3980	ai_Unk4d3980	cm	byte	draft		
 exe	0x004d3a30	ai_Unk4d3a30	cm	byte	draft		
@@ -2602,7 +2602,7 @@ exe	0x004e51b0	ai_Unk4e51b0	cm	shape	draft
 exe	0x004e5210	ai_Unk4e5210	cm	shape	draft		
 exe	0x004e52a0	ai_Unk4e52a0	cm	byte	draft		
 exe	0x004e52c0	ai_Unk4e52c0	cm	byte	draft		
-exe	0x004e52f0	ai_Unk4e52f0	cm	byte	draft		
+exe	0x004e52f0	cm_Random	cm	byte	draft		
 exe	0x004e5360	ai_Unk4e5360	cm	byte	draft		
 exe	0x004e53e0	ai_Unk4e53e0	cm	byte	draft		
 exe	0x004e5470	ai_Unk4e5470	cm	draft	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 4e58fd28: renaming he_Unk555210 to he_RandomTransporter (he.h, included by unk_575860; nothing there calls it) flips a VC6 register tie-break (eax/ecx swapped for the constants 1 / 0x429); other names flip it too (he_PickTransporter, he_FindTransporter also drop ai_TutorialInitChapter3): the byte match depended on an identifier's spelling, no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	shape+readable -> draft+readable at f272952d: adding the message type G17GATEMSG to cm_types.h (reached through gv.h; unk_575860 uses neither it nor G17MSG here) swaps registers and the store order of float constants (0x420c0000 / 0x430e0000 / 0x428e0000) in this function; another member place in the union flips it the same way, and the he.h rename flipped it too: its shape grade depended on unrelated declarations, no evidence of the source; the typed message makes cm_ExChrUseGates readable [waits for: unk_575860's declaration set settling (its head and includes)]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	byte	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
