@@ -7367,16 +7367,16 @@ void cm_UpdateDamagePops()
         }
     }
 }
-/* 0x4cef80 */
+/* 0x4cef80, clears the 16 damage numbers of cm_DamagePops (no screen text, no value, no character) */
 
-void ai_Unk4cef80()
+void cm_InitDamagePops()
 {
-    G18POP *p;
+    int i;
 
-    for (p = cm_DamagePops; (int)p < (int)(cm_DamagePops + 16); p++) {
-        p->h = -1;
-        p->v = 0;
-        p->c = 0;
+    for (i = 0; i < 16; i++) {
+        cm_DamagePops[i].h = -1;
+        cm_DamagePops[i].v = 0;
+        cm_DamagePops[i].c = 0;
     }
 }
 /* 0x4cefa0, removes all floating numbers */
@@ -12591,7 +12591,7 @@ void ai_Unk4ded10(char *m)
         k = 2;
     d3_SetLightSet(k, 0, 0x3f800000, 1);
     d3_SetFogSet(0, 1, 0);
-    ai_Unk4cef80();
+    cm_InitDamagePops();
     if (k == 0)
         ai_Unk4e3620("cd2\\satisfaktion.mp3");
     else if (k == 1)
@@ -14465,7 +14465,7 @@ void ai_Unk4e4060(char *m)
     ai_Unk925510 = d3_CurrentScene;
     ai_Unk92cac0 = evt_NoGroup;
     ai_Unk6f0d7c = 0;
-    ai_Unk4cef80();
+    cm_InitDamagePops();
     AI_ZERO_AT(offset ai_Unk92c600, 0x480);  /* @vc6 clang's MS asm cannot take the offset of an incomplete array */
     cm_SkipEvents = 0;
     m[0x26] |= 4;

@@ -582,7 +582,7 @@ extern int cm_CharInfoWins[];  /* 0x935d20 */
 
 void cm_ShowDamage(char *c, int v, int kind);  /* 0x4cedc0 */
 void cm_UpdateDamagePops();  /* 0x4cee20 */
-void ai_Unk4cef80();  /* 0x4cef80 */
+void cm_InitDamagePops();  /* 0x4cef80 */
 void ai_Unk4cefa0();  /* 0x4cefa0 */
 void ai_Unk4cefe0();  /* 0x4cefe0 */
 void d2_MoveObj(short x, short y, int obj);  /* 0x46cda0 */
