@@ -107,6 +107,29 @@ typedef struct G17CHARMSG {             /* 0x1a bytes, the data of message 0xb (
     int seed;                           /* 0x16, util_Seed (rand() when not connected) */
 } G17CHARMSG;
 
+typedef struct G17NAMEDCHARMSG {        /* 0x39 bytes, the data of message 0xc (cm_SendMessage0c, its handler 0x4c6cd0 creates
+                                           a named character with gm_CreateCharacter) */
+    int objectId;                       /* 0x00, the next object id (the server's, read when connected) */
+    int parent1;                        /* 0x04, the parents' ids, -1: none */
+    int parent2;                        /* 0x08 */
+    union {
+        struct {
+            unsigned short age;         /* 0x0c */
+            unsigned char job;          /* 0x0e */
+            int ref54;                  /* 0x0f, the new character's AICHAR.ref54 */
+            unsigned char a8;           /* 0x13, gm_CreateCharacter's last argument */
+            unsigned char b00c;         /* 0x14, the new character's AICHAR.b00c */
+            char first[0x10];           /* 0x15, its first name */
+        };
+        struct {
+            char pad0c[6];
+            int seedRead;               /* 0x12, the dword the handler seeds the generator with (over ref54 / a8 / b00c) */
+        };
+    };
+    char family[0x10];                  /* 0x25, its family name (also its player record's and its relatives[1]'s) */
+    int seed;                           /* 0x35, rand() when not connected (the handler seeds with the dword at 0x12) */
+} G17NAMEDCHARMSG;
+
 typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
                                            handler 0x4cc510) */
     int op;                             /* 0x00, 'join', 'leav' or 'cler' */
@@ -130,6 +153,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17OBJMSG obj;                  /* 0x10, message 0x2d */
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
+        G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
