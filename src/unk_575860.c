@@ -4306,7 +4306,7 @@ void ai_TutorialMarkerUpdate(int mode)
             mode = 2;
         } else if (pick >= 0 && pick < ai_Tutorial->run->markCount && pick != ai_Tutorial->markerStep) {
             ai_Tutorial->markerPhase = 2;
-            ai_Tutorial->markerAt = ai_ClockMs;
+            ai_Tutorial->markerAt = ai_ClockMsVolatile;
             ai_Tutorial->markerStep = pick;
         }
     }
@@ -4319,7 +4319,7 @@ void ai_TutorialMarkerUpdate(int mode)
     }
     if (mode == 0) {
         ai_Tutorial->markerDepth = sv_FrameDepth;
-        ai_Tutorial->markerAt = ai_ClockMs;
+        ai_Tutorial->markerAt = ai_ClockMsVolatile;
         ai_Tutorial->markerPhase = 2;
         if (ai_Tutorial->markerObj == -1) {
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
@@ -4329,10 +4329,10 @@ void ai_TutorialMarkerUpdate(int mode)
         d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
     } else if (mode == 1) {
         if (ai_Tutorial->markerPhase == 2) {
-            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].wait > (float)(unsigned)ai_ClockMs)
+            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].wait > (float)(unsigned)ai_ClockMsVolatile)
                 return;
             ai_Tutorial->markerPhase = 3;
-            ai_Tutorial->markerAt = ai_ClockMs;
+            ai_Tutorial->markerAt = ai_ClockMsVolatile;
         }
         if (ai_Tutorial->markerPhase == 3) {
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
@@ -4343,15 +4343,15 @@ void ai_TutorialMarkerUpdate(int mode)
                 return;
             }
             ai_Tutorial->markerPhase = 4;
-            ai_Tutorial->markerAt = ai_ClockMs;
+            ai_Tutorial->markerAt = ai_ClockMsVolatile;
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
             d2_MoveObj((int)m->to[0], (int)m->to[1], ai_Tutorial->markerObj);
         }
         if (ai_Tutorial->markerPhase == 4) {
-            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].rest > (float)(unsigned)ai_ClockMs)
+            if ((float)ai_Tutorial->markerAt + ai_Tutorial->run->marks[ai_Tutorial->markerStep].rest > (float)(unsigned)ai_ClockMsVolatile)
                 return;
             ai_Tutorial->markerPhase = 2;
-            ai_Tutorial->markerAt = ai_ClockMs;
+            ai_Tutorial->markerAt = ai_ClockMsVolatile;
             m = &ai_Tutorial->run->marks[ai_Tutorial->markerStep];
             d2_MoveObj((int)m->from[0], (int)m->from[1], ai_Tutorial->markerObj);
         }
