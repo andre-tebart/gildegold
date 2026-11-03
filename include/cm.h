@@ -197,7 +197,7 @@ void cm_EndGroup(const char *s);                                                
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);                      /* 0x4c45c0 */
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h); /* 0x4c4650 */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2); /* 0x4c46d0 */
-void ai_Unk4c4770(int a, int b);                                                 /* 0x4c4770 */
+void cm_SendTakeOverCharacter(int a, int b);                                                 /* 0x4c4770 */
 void ai_Unk4c47b0(short a);                                                      /* 0x4c47b0 */
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
@@ -302,7 +302,7 @@ int ai_Unk4c6ad0(G17MSG *m, G17STAT *s);                                        
 int ai_Unk4c6b20(G17MSG *m, G17STAT *s);                                         /* 0x4c6b20, handler of 10 */
 int cm_ExCreateCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6bf0, handler of 0xb */
 int cm_ExCreateNamedCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6cd0, handler of 0xc */
-int ai_Unk4c6e10(G17MSG *m, G17STAT *s);                                         /* 0x4c6e10, handler of 0xd */
+int cm_ExTakeOverCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6e10, handler of 0xd */
 int ai_Unk4c6ec0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ec0, handler of 0xe */
 int ai_Unk4c6f60(G17MSG *m, G17STAT *s);                                         /* 0x4c6f60, handler of 0xf */
 int ai_Unk4c7010(G17MSG *m, G17STAT *s);                                         /* 0x4c7010, handler of 0x10 */

@@ -130,6 +130,11 @@ typedef struct G17NAMEDCHARMSG {        /* 0x39 bytes, the data of message 0xc (
     int seed;                           /* 0x35, rand() when not connected (the handler seeds with the dword at 0x12) */
 } G17NAMEDCHARMSG;
 
+typedef struct G17TAKEOVERMSG {         /* 8 bytes, the data of message 0xd (0x4c4770, its handler 0x4c6e10): gm_TakeOverCharacter */
+    int taker;                          /* 0x00, the character (netId) that takes over */
+    int taken;                          /* 0x04, the character taken over */
+} G17TAKEOVERMSG;
+
 typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (cm_SendTableRequest, its check 0x4c6870 and
                                            handler 0x4cc510) */
     int op;                             /* 0x00, 'join', 'leav' or 'cler' */
@@ -154,6 +159,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17GOTOMSG go;                  /* 0x10, message 0x35 */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
+        G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */

@@ -18851,7 +18851,7 @@ void ai_Unk5c5310(short *param_1, int param_2)
             if (U_I((unsigned)&d2_PointerObj) == b5) {
                 txt_Format(text, (char *)0x1f51, *param_1, *param_1);
                 if (sv_MessageBox(text, 1) != 0) {
-                    ai_Unk4c4770(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), *(int *)((char *)param_1 + 2));
+                    cm_SendTakeOverCharacter(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), *(int *)((char *)param_1 + 2));
                     U_I((unsigned)&sv_PopRequest) = 2;
                 }
             } else if (U_I((unsigned)&d2_PointerObj) == b3) {
