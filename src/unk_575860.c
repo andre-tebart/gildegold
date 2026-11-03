@@ -33,8 +33,12 @@
    (byte) read them as pointers to text records; which records is unknown.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
-   Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read, byte-matched through
-   the unit's view ai_ClockMsVolatile); its owner and the other units declare it plain int.
+   Open: ai_ClockMs is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
+   and the marker update load it in the original's order only through the unit's view ai_ClockMsVolatile); its
+   owner and the other units declare it plain int.
+   Open: head: include/d2.h not included (the d2_* calls lack prototypes, M7): it supersedes the local
+   d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts unk_575860
+   d2.h --trial). The byte matches of ai_TutorialInitChapter2 / 3 flip with the unit's declaration set (debt).
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: type debt - the graveyard detail window record GVDETAILWIN is typed in the seance and contact functions

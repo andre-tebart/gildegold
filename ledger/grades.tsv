@@ -1752,7 +1752,7 @@ exe	0x004a61d0	ai_PickPartnerChainLevel	am	byte	readable
 exe	0x004a63f0	ai_PickActionBuilding	am	draft	readable	deep	
 exe	0x004a6570	ai_PickActionBuildings	am	draft	readable	deep	
 exe	0x004a66f0	ai_BuildingAimPoints	am	byte	readable		
-exe	0x004a67a0	ai_AimCannon	am	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x004a67a0	ai_AimCannon	am	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x004a6ae0	ai_FireCannon	am	draft	readable	deep	
 exe	0x004a7140	ai_PokerStart	unk_4a7140	byte	readable		
 exe	0x004a7430	ai_PokerDealRound	unk_4a7140	byte	readable		
@@ -2289,11 +2289,11 @@ exe	0x004c6ec0	ai_Unk4c6ec0	cm	byte	draft
 exe	0x004c6f60	ai_Unk4c6f60	cm	byte	draft		
 exe	0x004c7010	ai_Unk4c7010	cm	byte	draft		
 exe	0x004c70b0	cm_ExSellObjekt	cm	draft	readable	deep	
-exe	0x004c78c0	ai_Unk4c78c0	cm	draft	draft		
-exe	0x004c7c30	ai_Unk4c7c30	cm	draft	draft		
+exe	0x004c78c0	cm_ExMakeGoods	cm	byte	readable		
+exe	0x004c7c30	cm_ExMoveObject	cm	byte	readable		
 exe	0x004c7d80	ai_Unk4c7d80	cm	byte	draft		
 exe	0x004c7e20	ai_Unk4c7e20	cm	byte	draft		
-exe	0x004c7e90	ai_Unk4c7e90	cm	draft	draft		
+exe	0x004c7e90	cm_ExFieldDeltas	cm	shape	readable		
 exe	0x004c7f70	ai_Unk4c7f70	cm	draft	draft		
 exe	0x004c8050	ai_Unk4c8050	cm	draft	draft		
 exe	0x004c8110	ai_Unk4c8110	cm	byte	draft		
@@ -2505,7 +2505,7 @@ exe	0x004d76a0	ai_Unk4d76a0	cm	draft	draft
 exe	0x004d88c0	ai_Unk4d88c0	cm	byte	draft		
 exe	0x004d8b10	ai_Unk4d8b10	cm	draft	draft		
 exe	0x004d8b30	ai_Unk4d8b30	cm	byte	draft		
-exe	0x004d8b50	cm_DrawFightTime	cm	draft	readable		
+exe	0x004d8b50	cm_DrawFightTime	cm	shape	readable		
 exe	0x004d8c40	ai_Unk4d8c40	cm	byte	draft		
 exe	0x004d8c70	ai_Unk4d8c70	cm	byte	draft		
 exe	0x004d8cb0	ai_Unk4d8cb0	cm	byte	draft		
@@ -2571,7 +2571,7 @@ exe	0x004e32f0	ai_Unk4e32f0	cm	draft	draft
 exe	0x004e3390	ai_Unk4e3390	cm	byte	draft		
 exe	0x004e33d0	ai_Unk4e33d0	cm	byte	draft		
 exe	0x004e33f0	ai_Unk4e33f0	cm	byte	draft		
-exe	0x004e3420	ai_Unk4e3420	cm	draft	draft		
+exe	0x004e3420	ai_Unk4e3420	cm	shape	draft		
 exe	0x004e3490	ai_Unk4e3490	cm	draft	draft		
 exe	0x004e3570	ai_Unk4e3570	cm	byte	draft		
 exe	0x004e3620	ai_Unk4e3620	cm	byte	draft		
@@ -2669,7 +2669,7 @@ exe	0x004e9400	amt_HasTownObject	amt	byte	readable
 exe	0x004e94a0	amt_MayorBonusStep	amt	byte	draft		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
-exe	0x004e9660	amt_ExecutePriceMessage	amt	shape	readable	deep	
+exe	0x004e9660	amt_ExecutePriceMessage	amt	shape	readable		
 exe	0x004e9a00	amt_ExecuteShareMessage	amt	byte	readable		
 exe	0x004e9ce0	amt_ExecuteMayorPowerMessage	amt	draft	readable	deep	
 exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable		
@@ -2712,12 +2712,12 @@ exe	0x004ec320	ahm_StepValue	ahm	draft	readable	deep
 exe	0x004ec3d0	ahm_ObjectValue	ahm	byte	readable		
 exe	0x004ec490	ahm_SendCreateAlchemist	ahm	byte	readable		
 exe	0x004ec500	ahm_CreateAlchemist	ahm	draft	draft	deep	
-exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable	deep	
+exe	0x004ec940	ahm_SendSetShare	ahm	shape	readable		
 exe	0x004eca00	ahm_SetShare	ahm	byte	readable		
 exe	0x004ecaa0	ahm_SendAddPlace	ahm	byte	readable		
 exe	0x004ecb30	ahm_AddPlace	ahm	byte	readable		
 exe	0x004ecbc0	ahm_RemovePlace	ahm	byte	readable		
-exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	shape	readable	deep	
+exe	0x004ecc30	ahm_SendSetPlaceValue	ahm	shape	readable		
 exe	0x004ecd10	ahm_SetPlaceValue	ahm	byte	readable		
 exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable		
 exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep	
@@ -3284,7 +3284,7 @@ exe	0x0051f080	ls_ReadPlayerSlots	ls	shape	readable	deep
 exe	0x0051f650	ls_ReadRelations	ls	shape	readable		
 exe	0x0051f720	ls_ReadStatistics	ls	byte	readable		
 exe	0x0051fb80	ls_ReadAvatars	ls	byte	readable		
-exe	0x0051fb90	unk_Unk51fb90	ls	draft	draft	deep	
+exe	0x0051fb90	unk_Unk51fb90	ls	shape	draft	deep	
 exe	0x00520000	unk_Unk520000	ls	draft	draft	deep	
 exe	0x00520200	unk_Unk520200	ls	draft	draft	deep	
 exe	0x00520310	unk_Unk520310	ls	draft	draft	deep	
@@ -3341,8 +3341,8 @@ exe	0x00525ff0	sv_BorderCameraView	sv	byte	readable
 exe	0x005263a0	sv_ScrollCamera	sv	draft	readable	deep	
 exe	0x00526cf0	sv_MouseCamera	sv	draft	readable	deep	
 exe	0x00527640	sv_UpdateCamera	sv	byte	readable		
-exe	0x00527840	sv_FlyCameraToObject	sv	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
-exe	0x00527bb0	sv_CameraToObject	sv	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x00527840	sv_FlyCameraToObject	sv	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x00527bb0	sv_CameraToObject	sv	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep	
 exe	0x00528140	sv_MoveCameraToView	sv	byte	draft		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
@@ -3962,7 +3962,7 @@ exe	0x00576ab0	ai_StepChapter2Step6	unk_575860	shape	draft
 exe	0x00576b50	ai_StepChapter2Step7	unk_575860	shape	draft		
 exe	0x00576ba0	ai_StepChapter4Step2	unk_575860	shape	draft		
 exe	0x00576cd0	ai_QueryChapter4Step2	unk_575860	byte	draft		
-exe	0x00576d40	ai_StepChapter4Step4	unk_575860	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x00576d40	ai_StepChapter4Step4	unk_575860	byte	readable		
 exe	0x00576e70	ai_QueryChapter4Step4	unk_575860	byte	draft		
 exe	0x00576ee0	ai_StepChapter4Step5	unk_575860	shape	draft		
 exe	0x00577020	ai_QueryChapter4Step5	unk_575860	byte	draft		
@@ -4011,7 +4011,7 @@ exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
 exe	0x0057b810	ai_TutorialBezier	unk_575860	shape	readable		
-exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	draft	readable		shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	shape	readable		
 exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft		
 exe	0x0057bce0	ai_TutorialWindow	unk_575860	shape	readable	deep	
 exe	0x0057bf00	ai_AlchemistCandidates	unk_575860	draft	readable	deep	
@@ -4636,7 +4636,7 @@ exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	byte	readable
 exe	0x005d8360	ai_TailorContact	unk_5d33b0	byte	readable		
 exe	0x005d8420	ai_ProductionContact	unk_5d33b0	shape	readable		
 exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	draft	readable	deep	
-exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	shape	readable	deep	
+exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	shape	readable		
 exe	0x005d90e0	ai_CurseTargetWindow	unk_5d33b0	draft	readable	deep	
 exe	0x005d95a0	ai_HomageWindow	unk_5d33b0	shape	readable	deep	
 exe	0x005d9890	ai_GypsyBeggingWindow	unk_5d33b0	byte	readable		
@@ -4648,7 +4648,7 @@ exe	0x005d9de0	ai_OpenPokerWindow	unk_5d33b0	draft	readable	deep
 exe	0x005d9f50	ai_PokerBetControl	unk_5d33b0	byte	readable		
 exe	0x005da010	ai_ClosePokerWindow	unk_5d33b0	byte	readable		
 exe	0x005da030	ai_PokerGame	unk_5d33b0	shape	readable	deep	
-exe	0x005dadf0	ai_PokerSeatPanel	unk_5d33b0	draft	readable	deep	
+exe	0x005dadf0	ai_PokerSeatPanel	unk_5d33b0	shape	readable	deep	
 exe	0x005db110	ai_PokerWindow2	unk_5d33b0	byte	readable		
 exe	0x005dbc10	ai_GetDefaultEffect	unk_5d33b0	byte	readable		
 exe	0x005dbc20	ai_GetDefaultEffectScale	unk_5d33b0	byte	readable		
@@ -4664,6 +4664,6 @@ exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable	deep
 exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable	deep	
 exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	draft	readable	deep	
 exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep	
-exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	shape	readable	deep	
+exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	shape	readable		
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable		
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	byte	readable		
