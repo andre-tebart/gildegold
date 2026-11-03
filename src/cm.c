@@ -1562,43 +1562,51 @@ void ai_Unk4c52a0(int a, int b, int c)
     G17_I(m, 8) = c;
     cm_QueueSend(&m);
 }
-/* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1) */
+/* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1)
+   @deep read against 0x4c52e0..0x4c5400: the branch polarities fixed (s2/s/gm_IsHomeType tested != 0 as
+   the original lays them out), the data typed (G17GOTOMSG, AIBLD/AIOBJ). Same statements and calls; left
+   is a tail duplication: after gm_Query the original repeats the o test and the objId store (test eax,eax
+   / je / mov edx,[eax+2] / mov [esp+0x28],edx / jmp) in the gm_IsHomeType branch where ours jumps to the
+   one shared copy after gm_GetGebaeudeHauptraum (code 4 at 0x4c53ba), plus the eax/ecx/edx renaming that
+   follows (regs 14). Tried a ?: in the condition: no change. 95 vs 99 ins = the duplicated 4. */
 
 int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2)
 {
     G17MSG m;
-    char *ch, *b, *o;
+    char *ch;
+    AIBLD *b;
+    AIOBJ *o;
 
     m.type = 0x35;
-    G17_I(m, 0) = id;
-    G17_I(m, 4) = bld;
-    G17_I(m, 8) = c;
-    m.data[0xc] = (unsigned char)f;
-    if (s2 == 0)
-        m.data[0x2d] = 0;
+    m.go.charId = id;
+    m.go.bldId = bld;
+    m.go.objId = c;
+    m.go.noObject = (unsigned char)f;
+    if (s2 != 0)
+        strncpy(m.go.reason, s2, 0x1f);
     else
-        strncpy((char *)&m.data[0x2d], s2, 0x1f);
-    if (s == 0)
-        m.data[0xd] = 0;
+        m.go.reason[0] = 0;
+    if (s != 0)
+        strcpy(m.go.text, s);
     else
-        strcpy((char *)&m.data[0xd], s);
+        m.go.text[0] = 0;
     ch = gm_FindChar(id);
     if (ch != 0 && ch[8] == 0)
         return -1;
     if (f == 0 && c == -1) {
         o = 0;
-        b = gm_FindBuildingById(bld);
+        b = (AIBLD *)gm_FindBuildingById(bld);
         if (b != 0) {
-            if (gm_IsHomeType(b) == 0)
-                o = gm_GetGebaeudeHauptraum(b);
+            if (gm_IsHomeType((unsigned char *)b) != 0)
+                o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0xfd);
             else
-                o = gm_Query(*(int *)(b + 0x5d), 1, 0, 0xfd);
+                o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
         }
         if (o != 0) {
-            G17_I(m, 8) = *(int *)(o + 2);
+            m.go.objId = o->objId;
         } else {
-            m.data[0xc] = 1;
-            G17_I(m, 8) = -1;
+            m.go.noObject = 1;
+            m.go.objId = -1;
         }
     }
     return cm_QueueSend(&m);

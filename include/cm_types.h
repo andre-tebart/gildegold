@@ -15,6 +15,16 @@ typedef struct G17OBJMSG {              /* 0xf bytes, the data of message 0x2d (
     G17B7 value;                        /* 0x08, copied to the new object's +0x1c */
 } G17OBJMSG;
 
+typedef struct G17GOTOMSG {             /* 0x4d bytes, the data of message 0x35 (cm_SendChrGotoBuilding, its handler
+                                           0x4c9dc0 "cm_ExChrGotoBuilding") */
+    int charId;                         /* 0x00, the character sent ("sp_<id>") */
+    int bldId;                          /* 0x04, the building it goes to, -1: none */
+    int objId;                          /* 0x08, the object (room) in it, -1: none */
+    unsigned char noObject;             /* 0x0c, 1: no object given (objId -1) */
+    char text[0x20];                    /* 0x0d, (reasoned guess: an action name; every caller passes 0) */
+    char reason[0x20];                  /* 0x2d, why it goes ("Unfall", "Pest", "RndGeselle") */
+} G17GOTOMSG;
+
 typedef struct G17BUILDMSG {            /* 0x40 bytes, the data of message 10 (cm_SendMessage10, its handler
                                            0x4c6b20 creates the building) */
     int objectId;                       /* 0x00, the next object id (the server's, read when connected) */
@@ -39,6 +49,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */
         G17OBJMSG obj;                  /* 0x10, message 0x2d */
+        G17GOTOMSG go;                  /* 0x10, message 0x35 */
     };
     struct G17MSG *prev;                /* 0x91 */
     struct G17MSG *next;                /* 0x95 */
