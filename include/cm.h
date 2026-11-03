@@ -591,7 +591,7 @@ int d2_CreateScreenText(short x, short y, char *text);  /* 0x473860 */
 void d2_CloseView(int view);  /* 0x4758f0 */
 void d2_EnableObject();  /* 0x475aa0 */
 extern int ai_Unk60cb60;  /* 0x60cb60 */
-extern G18POP ai_Unk9304c0[16];  /* 0x9304c0 */
+extern G18POP cm_DamagePops[16];  /* 0x9304c0 */
 
 void ai_Unk4cf000();  /* 0x4cf000 */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);  /* 0x447300 */

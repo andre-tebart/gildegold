@@ -7309,23 +7309,22 @@ void ai_Unk4ced80(int a)
             cm_OpenCharInfoWin(a, p);
     }
 }
-/* 0x4cedc0, a floating number (v / (c's +0x1c * 0.01)) over the character c in a free slot of the 16 of
-   ai_Unk9304c0 (kind 1 / 2 with signs, else plain) */
+/* 0x4cedc0, shows the damage v over the character c as a floating number (v relative to its life value f01c, in
+   percent) in a free slot of the 16 of cm_DamagePops (kind 1 / 2 drawn with signs, else plain) */
 
 void cm_ShowDamage(char *c, int v, int kind)
 {
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (ai_Unk9304c0[i].v == 0)
-            break;
-    }
-    if (i >= 16)
+        if (cm_DamagePops[i].v != 0)
+            continue;
+        cm_DamagePops[i].v = (int)((double)v / (((AICHAR *)c)->f01c * 0.01));
+        cm_DamagePops[i].c = c;
+        cm_DamagePops[i].t = 64.0f;
+        cm_DamagePops[i].kind = kind;
         return;
-    ai_Unk9304c0[i].v = (int)((double)v / (*(float *)(c + 0x1c) * 0.01));
-    ai_Unk9304c0[i].c = c;
-    ai_Unk9304c0[i].t = 64.0f;
-    ai_Unk9304c0[i].kind = kind;
+    }
 }
 /* 0x4cee20, shows / moves the floating numbers; one that rose for 128 steps is removed. Rough draft. */
 
@@ -7336,12 +7335,12 @@ void ai_Unk4cee20()
     int i, x, y0;
     G18POP *p;
 
-    for (i = 0, p = ai_Unk9304c0; (int)p < (int)(ai_Unk9304c0 + 16); i++, p++) {
+    for (i = 0, p = cm_DamagePops; (int)p < (int)(cm_DamagePops + 16); i++, p++) {
         if (p->v == 0)
             continue;
         if (d3if_ScreenBox(*(int *)(*(char **)(p->c + 0x184) + 0x34), box) == 0) {
-            if (ai_Unk9304c0[i].h != -1)
-                d2_EnableObject(ai_Unk9304c0[i].h, 0);
+            if (cm_DamagePops[i].h != -1)
+                d2_EnableObject(cm_DamagePops[i].h, 0);
             return;
         }
         x = box[0] + 0x10;
@@ -7373,7 +7372,7 @@ void ai_Unk4cef80()
 {
     G18POP *p;
 
-    for (p = ai_Unk9304c0; (int)p < (int)(ai_Unk9304c0 + 16); p++) {
+    for (p = cm_DamagePops; (int)p < (int)(cm_DamagePops + 16); p++) {
         p->h = -1;
         p->v = 0;
         p->c = 0;
@@ -7385,7 +7384,7 @@ void ai_Unk4cefa0()
 {
     G18POP *p;
 
-    for (p = ai_Unk9304c0; (int)p < (int)(ai_Unk9304c0 + 16); p++) {
+    for (p = cm_DamagePops; (int)p < (int)(cm_DamagePops + 16); p++) {
         if (p->h != -1)
             d2_RemoveObj(p->h);
         p->h = -1;
@@ -8350,7 +8349,7 @@ void ai_Unk4d0fa0(char *rec)
         d3sky_Init(ai_Unk633dd4, 1);
     }
     memset(cm_CharInfoWins, -1, 0x80);
-    for (p = (char *)ai_Unk9304c0 + 4; (int)p < ((unsigned)((unsigned)ai_Unk9304c0 + 0x140) + 0x4); p += 0x14) {
+    for (p = (char *)cm_DamagePops + 4; (int)p < ((unsigned)((unsigned)cm_DamagePops + 0x140) + 0x4); p += 0x14) {
         *(int *)(p + 4) = -1;
         *(int *)p = 0;
         *(int *)(p + 8) = 0;
@@ -10457,11 +10456,11 @@ void ai_Unk4d63e0(char *a)
             ai_Unk4e3830(a, 0);
         if (ai_Unk6f0cf8 == 0) {
             for (i = 0; i < 16; i++) {
-                if (ai_Unk9304c0[i].h != -1)
-                    d2_RemoveObj(ai_Unk9304c0[i].h);
-                ai_Unk9304c0[i].h = -1;
-                ai_Unk9304c0[i].v = 0;
-                ai_Unk9304c0[i].c = 0;
+                if (cm_DamagePops[i].h != -1)
+                    d2_RemoveObj(cm_DamagePops[i].h);
+                cm_DamagePops[i].h = -1;
+                cm_DamagePops[i].v = 0;
+                cm_DamagePops[i].c = 0;
             }
             ai_Unk4d4d70(a);
             ai_Unk4d1eb0(a);
@@ -15241,7 +15240,7 @@ extern char cm_CutInfos[16][0x35c];
 extern float ai_Unk9300a0[0xb4];
 extern char * ai_Unk930380[32];
 extern char ai_Unk930400[192];
-extern G18POP ai_Unk9304c0[16];
+extern G18POP cm_DamagePops[16];
 extern char ai_Unk930600[21376];
 extern char * ai_Unk935980[32];
 extern char cm_Grenades[512];
@@ -15487,7 +15486,7 @@ char cm_CutInfos[16][0x35c] = {0};  /* 0x92cae0 */
 float ai_Unk9300a0[0xb4] = {0};  /* 0x9300a0 */
 char * ai_Unk930380[32] = {0};  /* 0x930380 */
 char ai_Unk930400[192] = {0};  /* 0x930400 */
-G18POP ai_Unk9304c0[16] = {0};  /* 0x9304c0 */
+G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
 char ai_Unk930600[21376] = {0};  /* 0x930600 */
 char * ai_Unk935980[32] = {0};  /* 0x935980 */
 char cm_Grenades[512] = {0};  /* 0x935a00 */
