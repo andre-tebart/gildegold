@@ -1024,7 +1024,7 @@ int gv_CheckSentence();  /* 0x4f4420 */
 void d2_SetObjEnabled(int obj, int on);  /* 0x475e40 */
 void cm_SetViewEnabled(int view, int on);  /* 0x4e2bd0 */
 int ai_Unk4e2dc0();  /* 0x4e2dc0 */
-int ai_Unk4e2e00();  /* 0x4e2e00 */
+void cm_WaitGroupScripts(void);  /* 0x4e2e00 */
 void snd_EndSpecialTrack(void);  /* 0x4c2480 */
 extern int cm_SceneRain;  /* 0x6f0dbc */
 extern int ai_Unk6f0db4;  /* 0x6f0db4 */

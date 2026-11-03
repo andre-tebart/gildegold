@@ -15283,24 +15283,25 @@ int ai_Unk4e2dc0(void)
     }
     return 0;
 }
-/* 0x4e2e00, waits (frame wait 0x79706) until no used script of evt_Scripts runs for the group -2: -1 */
+/* 0x4e2e00, waits frame by frame (sv_RunFrame, flags 0x79706) until no used script of evt_Scripts (128) runs for the group
+   -2 (the ones ai_Unk4e2dc0 stops), or the frames end; cm_LeaveEventScene waits so */
 
-int ai_Unk4e2e00(void)
+void cm_WaitGroupScripts(void)
 {
-    int i, none;
+    int i;
     EVTSCRIPT *e;
 
-    none = -1;
-    if (sv_RunFrame(0, 0x79706) != 0) {
+    while (sv_RunFrame(0, 0x79706) != 0) {
+        e = evt_Scripts;
+        i = 0;
         do {
-            e = evt_Scripts;
-            for (i = 0; i < 0x80; i++, e++) {
-                if (e->id != none && e->group == -2)
-                    goto wait;
-            }
-            return none;
-        wait:;
-        } while (sv_RunFrame(0, 0x79706) != 0);
+            if (e->id != -1 && e->group == -2)
+                goto busy;
+            i++;
+            e++;
+        } while (i < 0x80);
+        return;
+    busy:;
     }
 }
 /* 0x4e2e60, loads the scene file name into a free scene ("scenes/*%s"), selects it, sets the detail flags of its +0x1c70 byte by the
@@ -15399,7 +15400,7 @@ int cm_LeaveEventScene(void)
         }
     }
     ai_Unk4e2dc0();
-    ai_Unk4e2e00();
+    cm_WaitGroupScripts();
     id = ai_Unk60d36c;
     if (id != -1) {
         o = (char *)evt_FindById(id);
