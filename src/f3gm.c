@@ -9707,30 +9707,38 @@ int gm_FreeCapacity(short *l, int id, int n)
         return stock;
     return n;
 }
-/* 0x50acf0, the same for the stall list of the object l */
+/* 0x50acf0, how many of the goods id the stall object l can still take, at most n, as gm_FreeCapacity without the
+   goods groups: the room left on its stock (gm_ListStock less the held object's count) when it holds the goods
+   already; else none when its goods fill cap[0], else the stock
+   @deep Read whole against the original and rewritten (ORDOBJ stall, the held-goods branch first with
+   stock - o->count spelled twice so the stock stays live as the original keeps it in ebx, the goods count
+   against cap[0], the final min): every call, field, constant and branch matches, 121 vs 121 bytes, no
+   code hunk left. Left: allocation only - the original saves ebx/esi first (stock in ebx, id in ecx, the
+   count in edi pushed inside the branch), ours esi/edi (stock in edi, id in edx, the count in ebx);
+   diffclass: slots 20 / order 64 under edi<->ebx. The grade stays draft only on 'branch targets differ: jg
+   at +0x35 ours to +0x76, the original's to +0x76' - the same offset, the epilogue pops in the other order
+   (tool note). */
 
-int gm_Unk50acf0(char *l, int id, int n)
+int gm_FreeStallCapacity(char *l, int id, int n)
 {
-    int cap, in, cnt, t;
+    ORDOBJ *s = (ORDOBJ *)l;
+    ORDOBJ *o;
+    int stock, cnt;
 
-    cap = gm_ListStock((short *)l, id);
-    in = (int)gm_Query(*(void **)(l + 0x14), 1, 0, id);
-    if (in == 0) {
-        cnt = 0;
-        t = (int)gm_Query(*(void **)(l + 0x14), 1, 5);
-        while (t != 0) {
-            cnt++;
-            t = (int)gm_QueryNext();
-        }
-        if (*(unsigned char *)(l + 0x1c) <= cnt)
-            return 0;
-        if (cap < n)
-            n = cap;
-    } else {
-        cap = cap - *(int *)(in + 0xe);
-        if (cap <= n)
-            return cap;
+    stock = gm_ListStock((short *)l, id);
+    o = (ORDOBJ *)gm_Query((void *)s->list, 1, 0, id);
+    if (o != 0) {
+        if (stock - o->count > n)
+            return n;
+        return stock - o->count;
     }
+    cnt = 0;
+    for (o = (ORDOBJ *)gm_Query((void *)s->list, 1, 5); o != 0; o = (ORDOBJ *)gm_QueryNext())
+        cnt++;
+    if (cnt >= s->cap[0])
+        return 0;
+    if (stock < n)
+        return stock;
     return n;
 }
 /* 0x50ad70, how many of the object id the character c may take (n wanted, at most 3 of one kind, at most 5 kinds); only the kinds 8 0xc 0x12 0x19 0x22 0x20 0x27 count (kind 9: n), none of the 0x179 / 0x17a and none that the town forbids (0x4cd9d0) for the kinds 6 / 7 */

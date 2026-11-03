@@ -15239,7 +15239,7 @@ int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, 
         n = d2_GetObjValue(row[4]);
         if (param_5 == 0) {
             if (rec != 0)
-                n = gm_Unk50acf0(rec, row[0], n);
+                n = gm_FreeStallCapacity(rec, row[0], n);
         } else {
             n = gm_Unk50ad70(param_5, row[0], n);
         }
@@ -15306,7 +15306,7 @@ order:
         if (row[4] != -1 && d2_GetObjValue(row[4]) != 0) {
             n = d2_GetObjValue(row[4]);
             if (param_5 == 0)
-                n = gm_Unk50acf0(rec, row[0]);
+                n = gm_FreeStallCapacity(rec, row[0]);
             else
                 n = gm_Unk50ad70(param_5, row[0], n);
             if (n > 0) {
