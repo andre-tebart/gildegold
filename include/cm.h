@@ -64,13 +64,13 @@ extern G17STAT cm_SendStates[0x8000];    /* 0xf31160 */
 extern G17MSG *cm_SendQueue;            /* 0xf81160, the messages to send */
 extern unsigned int ai_Unkf81164;       /* 0xf81164, length of ai_Unka68d40 */
 extern int cm_LastSeq;       /* 0xf81168, the last sequence number */
-extern G17MSG ai_Unkf81180;             /* 0xf81180, the message being received */
+extern G17MSG cm_RecvMsg;             /* 0xf81180, the message being received */
 extern unsigned int cm_GroupFirstSeq;       /* 0xf8121c */
 extern unsigned int cm_SpeedLevel;               /* 0x60bd84, = 2 (0..4) */
 extern int cm_LastCharId;                /* 0x60bd88, = -1 */
 extern int cm_LastBuildingId;                /* 0x60bd8c, = -1 */
 extern int cm_LastObjectId;                /* 0x60bd90, = -1 */
-extern int ai_Unk60bd94;                /* 0x60bd94, = -1 */
+extern int cm_LeftPlayerId;                /* 0x60bd94, = -1 */
 extern int (*ai_Unk60bd98[0x6a])(G17MSG *m, G17STAT *s);  /* 0x60bd98, the handler of each message type */
 extern int (*ai_Unk60bf40[0x6a])(G17MSG *m);             /* 0x60bf40, the check of each type (groups 5..6) */
 extern unsigned int ai_Unka68d1c;       /* 0xa68d1c, "cm_LastRequCount" */
@@ -159,8 +159,8 @@ extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai
 int cm_MessageSize(G17MSG *m);                                                     /* 0x4c3180 */
 void ai_InitStates(void);                                                         /* 0x4c3480 */
 void ai_ResetMessages(void);                                                         /* 0x4c3560 */
-void ai_Unk4c3600(void);                                                         /* 0x4c3600 */
-int ai_Unk4c3630(void);                                                          /* 0x4c3630 */
+void cm_SendHello(void);                                                         /* 0x4c3600 */
+int cm_WaitHello(void);                                                          /* 0x4c3630 */
 int cm_FlushSendQueue(void);                                                          /* 0x4c3680 */
 int ai_Unk4c3720(void);                                                          /* 0x4c3720 */
 int ai_Unk4c3850(G17MSG *m);                                                     /* 0x4c3850 */

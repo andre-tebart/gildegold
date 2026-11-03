@@ -5045,10 +5045,10 @@ L_next:
         main_Round++;
     }
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
-        if (U_I((unsigned)&ai_Unk60bd94) == -1) {
+        if (U_I((unsigned)&cm_LeftPlayerId) == -1) {
             pc = "$3AEs trat ein Netzwerkfehler auf! Das Spiel wurde beendet...$2A%ia[Okay]";
         } else {
-            if (U_I((unsigned)&ai_Unk60bd94) == U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c))
+            if (U_I((unsigned)&cm_LeftPlayerId) == U_I((unsigned)&ai_CharInts + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c))
                 goto L_end;
             pc = "$3AEin Spieler hat die Partie verlassen. Das Spiel wurde beendet...$2A%ia[Okay]";
         }

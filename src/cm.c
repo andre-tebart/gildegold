@@ -271,39 +271,38 @@ int cm_MessageSize(G17MSG *m)
     }
     return 0x91;
 }
-/* 0x4c3480, init: the free records, the lists, the states; asks the server for the start (0x4c3600 / 0x4c3630) */
+/* 0x4c3480, init of the message layer: chains the 0x2000 receive records into the free list, empties the queues,
+   sets the 0x8000 send states to idle, points the net receive at cm_RecvMsg and says hello to the server
+   (cm_SendHello / cm_WaitHello; the net is closed when no answer comes) */
 
 void ai_InitStates(void)
 {
     int i;
-    G17STAT *s;
 
-    ai_Unk60bd94 = -1;
+    cm_LeftPlayerId = -1;
     for (i = 0; i < 0x2000; i++) {
         cm_RecvPool[i].type = 0;
-        if (i == 0) {
-            cm_RecvPool[0].prev = 0;
-            cm_RecvPool[0].next = &cm_RecvPool[1];
-        } else {
+        if (i == 0)
+            cm_RecvPool[i].prev = 0;
+        else
             cm_RecvPool[i].prev = &cm_RecvPool[i - 1];
-            if (i < 0x1fff)
-                cm_RecvPool[i].next = &cm_RecvPool[i + 1];
-            else
-                cm_RecvPool[i].next = 0;
-        }
+        if (i < 0x1fff)
+            cm_RecvPool[i].next = &cm_RecvPool[i + 1];
+        else
+            cm_RecvPool[i].next = 0;
     }
     cm_RecvFree = cm_RecvPool;
     cm_RecvQueue = 0;
-    ai_Unkf81180.type = 0;
+    cm_RecvMsg.type = 0;
     cm_LastSeq = 0;
     cm_SendQueue = 0;
-    for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++) {
-        s->idx = -1;
-        s->state = 1;
+    for (i = 0; i < 0x8000; i++) {
+        cm_SendStates[i].idx = -1;
+        cm_SendStates[i].state = 1;
     }
-    net_Conn.rx = (NETPKT *)&ai_Unkf81180;
-    ai_Unk4c3600();
-    if (ai_Unk4c3630() != 0)
+    net_Conn.rx = (NETPKT *)&cm_RecvMsg;
+    cm_SendHello();
+    if (cm_WaitHello() != 0)
         net_Close();
     cm_NextNetStep = d3_Time;
 }
@@ -329,7 +328,7 @@ void ai_ResetMessages(void)
     }
     cm_RecvFree = cm_RecvPool;
     cm_RecvQueue = 0;
-    ai_Unkf81180.type = 0;
+    cm_RecvMsg.type = 0;
     cm_LastSeq = 0;
     cm_SendQueue = 0;
     for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++) {
@@ -339,7 +338,7 @@ void ai_ResetMessages(void)
 }
 /* 0x4c3600, sends message 3 (0xa03ef57c, 0) */
 
-void ai_Unk4c3600(void)
+void cm_SendHello(void)
 {
     G17MSG m;
 
@@ -350,7 +349,7 @@ void ai_Unk4c3600(void)
 }
 /* 0x4c3630, waits for the answer to 0x4c3600; 1: none */
 
-int ai_Unk4c3630(void)
+int cm_WaitHello(void)
 {
     G17MSG *m;
 
@@ -782,9 +781,9 @@ int cm_ReceiveMessages(void)
         }
         do {
             ai_Unk6f0cd0++;
-            if (ai_Unk4c4080(&ai_Unkf81180) != 0)
+            if (ai_Unk4c4080(&cm_RecvMsg) != 0)
                 return 1;
-            net_Conn.rx = (NETPKT *)&ai_Unkf81180;
+            net_Conn.rx = (NETPKT *)&cm_RecvMsg;
             net_Recv();
         } while (net_Conn.rx == 0);
     }
@@ -3598,7 +3597,7 @@ int ai_Unk4c89b0(G17MSG *m, G17STAT *s)
         ai_ApplyOptions();
         break;
     case 19:
-        ai_Unk60bd94 = G17_I(msg, 1);
+        cm_LeftPlayerId = G17_I(msg, 1);
         break;
     case 20:
         hmt_SetPendingElection(G17_I(msg, 1));
@@ -14992,7 +14991,7 @@ extern int cm_DayEndRequest;
 extern G17STAT cm_SendStates[0x8000];
 extern G17MSG * cm_SendQueue;
 extern unsigned int ai_Unkf81164;
-extern G17MSG ai_Unkf81180;
+extern G17MSG cm_RecvMsg;
 extern unsigned int cm_GroupFirstSeq;
 extern char ai_Unkf895a0[0xb00];
 extern char d2_CaptionCopy[0x80];
@@ -15064,7 +15063,7 @@ unsigned int cm_SpeedLevel = 2;  /* 0x60bd84, = 2 (0..4) */
 int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
-int ai_Unk60bd94 = -1;  /* 0x60bd94, = -1 */
+int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
 int (*ai_Unk60bd98[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, ai_Unk4c6bf0, ai_Unk4c6cd0, ai_Unk4c6e10, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*ai_Unk60bf40[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, ai_Unk4c6870, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
@@ -15239,7 +15238,7 @@ int cm_DayEndRequest = 0;  /* 0xf31144 */
 G17STAT cm_SendStates[0x8000] = {0};  /* 0xf31160 */
 G17MSG * cm_SendQueue = 0;  /* 0xf81160, the messages to send */
 unsigned int ai_Unkf81164 = 0;  /* 0xf81164, length of ai_Unka68d40 */
-G17MSG ai_Unkf81180 = {0};  /* 0xf81180, the message being received */
+G17MSG cm_RecvMsg = {0};  /* 0xf81180, the message being received */
 unsigned int cm_GroupFirstSeq = 0;  /* 0xf8121c */
 char ai_Unkf895a0[0xb00] = {0}; /* 0xf895a0 */
 char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffer (gfx.h's d2_CaptionCopy, 0x80 bytes up to d2_InputDragValue at 0xf8ab60) */
