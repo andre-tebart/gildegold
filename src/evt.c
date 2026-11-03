@@ -11,11 +11,8 @@
 #include <ctype.h>
 #include <windows.h>
 #include <d3d.h>
-/* ch.h's block (see ch.c): d3.h declares these two with other types, ch.h has ours */
-#define d3_Unk44e4a0 d3_Unk44e4a0_void
 #include "d3.h"
 #include "d3_anim.h"
-#undef d3_Unk44e4a0
 #include "d3_sm.h"
 #include "path.h"
 #include "ch.h"

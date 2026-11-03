@@ -260,7 +260,6 @@ typedef struct D3ANIMKEY {          /* 0x58 bytes */
 D3ANIM *d3anim_CreatePath(D3OBJECT *obj, D3ANIMFLAGS f, int nkeys, D3ANIMKEY *keys);          /* 0x433d70 */
 void d3_UnwrapAngles(float *a, float *b, float *ra, float *rb);                            /* 0x453d60, angles mod 2pi */
 int d3_FindAnim(char *name);                                                           /* 0x433f40, anim loaded? */
-void d3_Unk44e4a0(char *file, char *name, int unk);                                     /* 0x44e4a0, @original: d3_io_t.c defines D3IOANIMDATA * (char *, char *, char); this spelling keeps the /O2 operand order of the byte-matched d3_LoadScene44be60 (d3_int_io.c, 0x27f) */
 int d3anim_StartAnim(void *list, char *name, D3ANIMFLAGS f);                                /* 0x435550, @original: this typedef spelling (not struct D3ANIMFLAGS) keeps the /O2 operand order of the byte-matched d3_LoadScene44be60 (d3_int_io.c, 0x27f) */
 struct D3IOPATH *d3_LoadObjectAnim(char *file, struct D3IOOBJ *obj, char reload);                                 /* 0x44e2e0 */
 extern char *d3_AnimPath;                   /* 0xfba940 */

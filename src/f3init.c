@@ -284,8 +284,6 @@ struct D2FADE;
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */                     /* 0x4767d0 */
 void d2_ReleaseFade(struct D2FADE *f); /* 0x476860, d2.h */                     /* 0x476860 */
 int sv_RunFrame(int cb, unsigned mask);                     /* 0x5309a0 */
-int ai_Unk42ea50();                     /* 0x42ea50 */
-int ai_Unk402220();                     /* 0x402220 */
 
 /* the canonical declarations of the engine / other-unit functions the scene loaders call (their headers drag the
    gv.h conflicts in; the types match the canonical prototypes, the CHARACTER arguments are cast through the
@@ -445,9 +443,6 @@ int evt_NoGroup = -1;  /* 0x5f8430 */
 float d3o_FogScale = 1.0f;  /* 0x5fbd04 */
 /* init_SlotCurrency: view of ai_PlayerSlots (tools/data_views.py) */
 /* 0x50a810, f3gm.c: the first kind 6 / 7 / 1 / 2 character with a job whose master is m */
-int ai_Unk454510();                     /* 0x454510 */
-int ai_Unk43c570();                     /* 0x43c570 */
-int ai_Unk43ca20();                     /* 0x43ca20 */
 void amt_InitTable(void);               /* 0x4e5cd0, amt.h */
 void gv_ClearCrimes(void);           /* 0x4f4350, gv.c */
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);  /* 0x4c45c0, cm.h */
@@ -456,8 +451,6 @@ void gm_SyncMarket(unsigned p);         /* 0x4fec10, f3gm.c */
 void ai_MsgNoOp(struct AICHAR *c);                     /* 0x4b70f0 */
 struct G15PLANT;
 void gm_ShowBuildingObjects(unsigned char *b);                     /* 0x502e30, f3gm.c */
-int ai_Unk45f9f0();                     /* 0x45f9f0 */
-int ai_Unk442210();                     /* 0x442210 */
 void ai_FavourComment(char *a);
 
 /* ---- the start-of-game setup rules 0x50e0d0 .. 0x50e5a0 (no strings; ROUGH drafts) ---- */

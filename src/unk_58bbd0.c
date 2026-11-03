@@ -2825,7 +2825,6 @@ void ai_DropObjectAt(int obj, int target)
 unsigned char * gm_BuildQuery(int n, ...); unsigned char * gm_BuildNext(void); int gm_MayTakeJob(int k, int c);
 int sv_MessageBox(); char *_strupr(char *); int sprintf(char *buf, const char *fmt, ...); char * vfs_GetPath();
 struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int d3t_DropObject();
-int ai_Unk527e90();
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_BuildingKindCost(int c, int kind); void txt_Format(char *out, int id0, ...); int sv_UpdateCamera();
@@ -3042,10 +3041,10 @@ void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_Rese
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
 int gm_Unk50c340(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
-float gm_ItemPrice(int item, unsigned char n); int ai_Unk5049e0(); int sv_CheckStock(); int sv_CheckGoodAmount();
+float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); void cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-char *_strupr(char *); int ai_Unk50b9f0(); void gm_Unk50c4d0(void); int ai_Unk5ac110();
+char *_strupr(char *); void gm_Unk50c4d0(void); int ai_Unk5ac110();
 int ai_Unk5bb350(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
@@ -16643,7 +16642,7 @@ int ai_Unk5bdb60(int param_1, int param_2, int param_3, int param_4, int param_5
 }
 
 int gv_HeldCrimeCount(); float gm_CharacterHealth(); int amt_HasColumn7Holder(); int d2_WinCreateSlider();
-void d2_SetObjWidth(int obj, short w); int ai_Unk4e70f0(); int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
+void d2_SetObjWidth(int obj, short w); int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
 
 /* 0x5be1d0, the status of a special-amount record (100 B): the record id +4, the kind +0xc, the +0x1c8
    flags; field +0x1c = 0x6ca - (the byte +0xc != 0), +0x20 the 0x6cc carrier match (0x53e400 (1, 0, 0x6f)

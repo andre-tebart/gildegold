@@ -18,11 +18,8 @@
 #include <string.h>
 #include <windows.h>
 #include <d3d.h>
-/* d3.h declares these two with other types (void / int flag, D3ANIMFLAGS); ch.h has ours */
-#define d3_Unk44e4a0 d3_Unk44e4a0_void
 #include "d3.h"
 #include "d3_anim.h"
-#undef d3_Unk44e4a0
 #include "d3_sm.h"
 #include "path.h"
 #include "ch.h"
@@ -1593,7 +1590,7 @@ int ch_Update(void)
                     h = (D3SM *)ch_GetHMap(ch_List[i]);
                     ch_RandomNear(&ch_List[i]->obj->pos, (D3VECTOR *)&pos);
                     if (d3_GetHeightAt(h, (D3VECTOR *)&pos, &x, &z, &y))
-                        ch_Unk40b2f0(ch_List[i], 0x2d, x, z, d3_CurrentScene);
+                        ch_AddAction(ch_List[i], 0x2d, x, z, d3_CurrentScene);
                 }
             } else
                 ch_List[i]->flags.all &= ~8;
@@ -1692,7 +1689,7 @@ void ch_ActPlay(CHACTION *a)
 
 int ch_QueueAnim(CHARACTER *ch, char *name, int n)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (!a)
         return 0;
@@ -1713,7 +1710,7 @@ int ch_QueueAnim(CHARACTER *ch, char *name, int n)
 /* 0x405810, queues the animation name n times at the given speed */
 CHACTION *ch_QueueAnimSpeed(CHARACTER *ch, char *name, int n, float speed)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (!a)
         return 0;
@@ -1761,7 +1758,7 @@ void ch_ActSitDown(CHACTION *a)
 
 CHACTION *ch_SitDown(CHARACTER *ch, char *name)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (!a)
         return 0;
@@ -1826,7 +1823,7 @@ int ch_StandUp(CHARACTER *ch, char *name)
 
     if (!(ch->flags.all & 0x10))
         return 0;
-    a = ch_Unk40b270(ch);
+    a = ch_NewAction(ch);
     if (!a)
         return 0;
     a->ch = ch;
@@ -1882,7 +1879,7 @@ void ch_ActUsingGate(CHACTION *a)
 
 CHACTION *ch_UseGate(CHARACTER *ch, char *name, char *gate, int room, int unk174, int unk178)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (!a)
         return 0;
@@ -1938,7 +1935,7 @@ void ch_ActTakingObject(CHACTION *a)
 
 int ch_TakeObject(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (a) {
         a->ch = ch;
@@ -1963,7 +1960,7 @@ int ch_TakeObject(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
 
 int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (a) {
         a->ch = ch;
@@ -2025,7 +2022,7 @@ void ch_ActDroppingObject(CHACTION *a)
 
 int ch_DropObject(CHARACTER *ch, char *name, char *obj, int frame)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (!a)
         return 0;
@@ -2052,7 +2049,7 @@ int ch_DropObject(CHARACTER *ch, char *name, char *obj, int frame)
 
 int ch_DropObject1(CHARACTER *ch, char *name, char *obj, int frame)
 {
-    CHACTION *a = ch_Unk40b270(ch);
+    CHACTION *a = ch_NewAction(ch);
 
     if (!a)
         return 0;

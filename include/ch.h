@@ -153,7 +153,6 @@ typedef struct CHANIMFLAGS {
     unsigned int a : 1, b : 1, r : 30;                  /* 0x04 */
     unsigned char a8 : 1, b8 : 1, r8 : 6;               /* 0x08, b8 = D3ANIMSLOT.play */
 } CHANIMFLAGS;
-/* d3.h declares this one with another type (d3_Unk44e4a0); ch.c hides that prototype */
 struct D3IOANIMDATA *d3_LoadAnimStream(char *name, char *file, char unk);                              /* 0x44e4a0, loads an animation, d3_io_t.c */
 
 /* bits of the D3OBJECT flag bytes 0x210..0x213 (by offset; d3_engine.h's D3OBJBITS names the bits of 0x210) */
@@ -405,8 +404,6 @@ extern int ch_LastUpdate;                   /* 0x5f1224 */
 
 int util_Random(unsigned short n);                                                      /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, cm_FightLoop ..) call util_RandomU, a cast in their head */
 char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to, int x, int z, int *px, int *pz, int max, int flags); /* 0x4072a0, see ch4 block */
-CHACTION *ch_Unk40b270(CHARACTER *ch);                                                  /* 0x40b270 */
-CHACTION *ch_Unk40b2f0(CHARACTER *ch, unsigned int type, ...);                          /* 0x40b2f0 */
 
 /* ---- 0x405810..0x406e40 (worker ch3): sit / stand / gate / take / drop actions ---- */
 /* CHACTION.u as used by the gate and object actions */
@@ -575,7 +572,5 @@ struct CHACTION * ch_AddActionCB(struct CHARACTER *ch, CHACTFUNC func2, unsigned
 void ch_ClearSceneCallbacks(D3SCENE *scene);                                            /* 0x40b4d0 */
 void ch_SetSitAnim(CHARACTER *ch, char *name);                                          /* 0x40b530 */
 /* the ch2 block declares these two under their addresses */
-#define ch_Unk40b270 ch_NewAction
-#define ch_Unk40b2f0 ch_AddAction
 
 #endif

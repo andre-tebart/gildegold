@@ -10968,7 +10968,6 @@ void he_Unk55b140(int ev)
 void gm_ChangeBuildingState(unsigned char *b, int d);
 void ai_Unk4c54e0(int a);
 void cm_SendBuildingDestroyed(int a);
-int ai_Unk4fdcb0();
 
 /* 0x55b3e0, the allocation handler of a building event (ROUGH): the building +0xac (none: free) is the event place (+0x10), its figure gets the message 0x5a / 2 / 4, both clocks are now, the due clock + 0xa units, and the end clock +0xb8 = now + (the owner rank factor 0x5eb7b8 / 0x5ee020 / 0x5eb828 / 1.0 by the rank byte +0xd (>= 9 / 8 / 7) * +0xb0 * 0x5eb990) units */
 void he_Unk55b3e0(int ev)
@@ -11774,7 +11773,6 @@ void gm_SetTime(struct GCLOCK *c, unsigned char hour, unsigned min, unsigned sec
 void cm_RequestChrMove(int a, int b, int c, const char *s);
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);
-float ai_Unk4ffa10();
 int gm_ListAmount();
 int gm_CharCurrency(char *c, char p);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
@@ -14741,7 +14739,6 @@ int gm_CompareTime();
 short * gm_FindChar(int id);
 void cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 short *gm_PlayerRecord(char *c);
-int ai_Unk50c4e0();
 void cm_SendBuildingDestroyed(int a);
 int cm_SendExSysMessage(unsigned char id, void *msg);
 

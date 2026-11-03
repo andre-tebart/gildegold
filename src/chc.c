@@ -10,11 +10,8 @@
 #include <string.h>
 #include <windows.h>
 #include <d3d.h>
-/* d3.h declares these two with other types (void / int flag, D3ANIMFLAGS); ch.h has ours */
-#define d3_Unk44e4a0 d3_Unk44e4a0_void
 #include "d3.h"
 #include "d3_anim.h"
-#undef d3_Unk44e4a0
 #include "d3_sm.h"
 #include "path.h"
 #include "ch.h"

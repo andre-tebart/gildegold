@@ -129,8 +129,6 @@ void he_FreeEvents();                    /* 0x53d590 */
 /* ai_Unk1469700: view of ch_Motions (tools/data_views.py) */
 char *strstr();                   /* 0x5de6b0, strstr-like (the "hozfaeller" misspelling check) */
 
-int ai_Unk430fa0(struct VFSFILE *f, long offset, int origin);                    /* 0x430fa0, fseek */
-int ai_Unk431170();                     /* 0x431170, file length */
 /* 0x519010, the language number of the name s (case-insensitive, one of the five of the table 0x5ee978), 0xffff when unknown; kept in 0x62364c */
 
 int ls_LanguageOf(char *s)

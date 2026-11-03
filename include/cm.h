@@ -859,7 +859,6 @@ int cm_LootCarts(char *a, char *b, char *d, int unused, float f);  /* 0x4d3ea0 *
 float gm_GoodsPrice(unsigned id, unsigned char p);  /* 0x5089c0, a price */
 int gm_GetGoodsValue(char *ch);  /* 0x509e60 */
 struct D3HMAP * ch_GetHMap();  /* 0x402140 */
-int ai_Unk405810();  /* 0x405810 */
 void ch_SetVisible();  /* 0x402480 */
 
 extern int cm_OrderTicks;  /* 0x92bec0 */
@@ -913,7 +912,6 @@ int cm_PlaySpecialTrack();  /* 0x4e3620 */
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);  /* 0x4e6fc0 */
 int amt_IsColumnDecided();  /* 0x4e83b0 */
 void amt_ElectOffices();  /* 0x4e7c60 */
-int ai_Unk4e8530();  /* 0x4e8530 */
 int amt_CanTakeOffice();  /* 0x4e75c0 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
 void d2_CloseView(int view);  /* 0x4758f0 */
