@@ -1721,3 +1721,4 @@
 2026-11-03T23:52:47 0x00540e40 func he_Unk540e40 -> he_InnReport by:main why:reports the inn's round (the guests / served / takings counters the inn simulation 0x54d260 adds to) to its owner, texts 0x18a1 / 0x18a2, and resets them
 2026-11-03T23:54:38 0x00541010 func he_Unk541010 -> he_PostEvent3a by:main why:posts the message 0x3a for the player's character (main_GameLoop)
 2026-11-03T23:55:05 0x00541060 func he_Unk541060 -> he_PostEvent3b by:main why:posts the message 0x3b for the player's character, freeing a running event 0x3b first (main_GameLoop)
+2026-11-03T23:56:34 0x00541170 func he_Unk541170 -> he_PostEventA6 by:main why:posts the message 0xa6 for the player's character, freeing a running event 0xa6 first (main_GameLoop)
