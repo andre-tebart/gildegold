@@ -4209,7 +4209,7 @@ void main_BeginPlayerRound(void)
             ord_InitMessageRecord(1, 1.0f, 0.5f, (float)(10.0 - (4 - ai_Difficulty) * 2.5));
         else
             ord_UpdateMessageEvent();
-        he_Unk53f6b0();
+        he_SpawnFounders();
         sv_PumpNet();
         Sleep(100);
         for (i = 0; i < 0x300; i++)

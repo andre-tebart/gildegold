@@ -301,6 +301,9 @@ int gm_CompareTime();
 #include "f3gm_carry.h"
 #include "ai_char.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
+#define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
+#define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -1634,317 +1637,494 @@ void he_TopUpCharMoney(void)
 }
 
 int gm_TitleNumber();
+int gm_EquipmentValue(unsigned char *b, int level);
 int gm_BuildingKindValue();
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
 int cm_GetSlotValue(int h);
 float util_RandomF();
 
-/* the advice option of 0x53f6b0 (a macro, so that no extra function is emitted): when more than 2 figures of the kind `kind` exist, the first one that belongs to the player (owner 0xffff or the player of 0x6f1bf8) gives the amount (0x509b10 * 2) and the topic 0x5043d0(topic, level * 2 - 1); with fewer (or `nosearch`) the amount is 0x509d30(fbarg) * 2 and the topic 0x5043d0(fbtopic, fb2) (the table-less defaults) */
-#define HE_ADV_FIND(kind, found, fbarg, fbtopic, fb2, tv, amtv) \
-    do { \
-        int _k; \
-        unsigned char *_p = (unsigned char *)U_I((unsigned)&ai_Blds); \
-        amtv = -1; \
-        for (_k = 0; _k < 0x100; _k++, _p += 0xa9) { \
-            if (*_p != 0 && *(char *)(U_I((unsigned)&ai_BTypes) + *_p * 0x24d) == (kind) \
-                && (*(unsigned short *)(_p + 0x27) == 0xffff || *(unsigned short *)(_p + 0x27) == **(unsigned short **)(unsigned)&ai_PlayerChar)) { \
-                amtv = gm_EquipmentValue(_p, 100) * 2; \
-                tv = gm_TitleNumber(found, *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *_p * 0x24d + 0x247) * 2 - 1); \
+/* the ai_Blds walk of he_SpawnFounders: i is the first building of the kind k that is the player's or nobody's
+   (owner 0xffff), 0x100 when there is none (the original reuses the option loop's i for it) */
+#define HE_FIND_OWN(k) \
+    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) { \
+        if (b->type != 0) { \
+            bt = &ai_BTypesT[b->type]; \
+            if (bt->kind == (k) && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) \
                 break; \
-            } \
         } \
-        if (amtv == -1) \
-            return ev; \
+    }
+
+/* that building b (of the type bt)'s offer: twice its equipment value, the title of the group at its type's level */
+#define HE_OFFER_FOUND(group) \
+    do { \
+        amt = gm_EquipmentValue((unsigned char *)b, 100) * 2; \
+        title = gm_TitleNumber(group, bt->cap247 * 2 - 1); \
     } while (0)
 
-#define HE_ADV_FB(fbarg, fbtopic, fb2, tv, amtv) \
+/* the offer without a building: twice the value of the building kind bk, the title (group, rank) */
+#define HE_OFFER_KIND(bk, group, rank) \
     do { \
-        amtv = gm_BuildingKindValue(fbarg) * 2; \
-        tv = gm_TitleNumber(fbtopic, fb2); \
+        amt = gm_BuildingKindValue(bk) * 2; \
+        title = gm_TitleNumber(group, rank); \
     } while (0)
 
-/* the shared tail: builds the text (0x42ec00 .. topic, rnd), shows it as a quick message (0x4c4650) and, when it came up (result 1), pays amt (0x4c47e0) and marks it (0x4c3c00 flag 0xd = 2) */
-#define HE_ADV_SHOW(tv, amtv, rnd, extra) \
+/* creates the founder (a kind 4 character with the title), waits for its send slot and, when it was created, gives it
+   amt from the own player and sets its field 0xd to 2 (and what `extra` adds) */
+#define HE_SEND_FOUNDER(rnd, extra) \
     do { \
-        int _t, _h, _b; \
-        int _two = 2; \
-        _t = ((int (*)(int, int, int, int, int))util_Random)(4, -1, tv, 0, rnd); \
-        _h = ((int (*)(int, int, int, int))cm_SendCreateCharacter)(4, -1, -1, _t + 0xf); \
-        if (_h != -1) { \
-            while (cm_GetSlotState(_h) == 0) \
+        slot = cm_SendCreateCharacter(4, -1, -1, util_Random(4) + 0xf, -1, title, 0, rnd); \
+        if (slot != -1) \
+            do { \
+                if (cm_GetSlotState(slot) != 0) \
+                    break; \
                 sv_PumpNet(); \
-        } \
-        if (cm_GetSlotState(_h) == 1) { \
-            _b = cm_GetSlotValue(_h); \
-            cm_SendMoveGoods(*(int *)(_b + 4), -1, U_I((unsigned)&ai_OwnPlayer), amtv); \
-            cm_BeginFieldBlock(_b, *(int *)(_b + 4)); \
-            cm_AddFieldDelta(1, 1, 0xd, &_two); \
+            } while (1); \
+        if (cm_GetSlotState(slot) == 1) { \
+            two = 2; \
+            c = (AICHAR *)cm_GetSlotValue(slot); \
+            cm_SendMoveGoods(c->netId, -1, ai_OwnPlayer, amt); \
+            cm_BeginFieldBlock((char *)c, c->netId); \
+            cm_AddFieldDelta(1, 1, 0xd, &two); \
             extra; \
             cm_SendFieldDeltas(); \
         } \
     } while (0)
 
-/* 0x53f6b0, the daily advisor of the player's town (day % 5 picks one of five themes; the first 4 / 3 / 2 / 3 options use the kinds 4 / 0x13 / ?, 0x12 / 0x15 / 0x14 / 0xe, 8 / 0x16, 9 / 7 / 5, 0x20 / 0x1f / 0x1d): counts the figures by kind (all / the player's own), picks the theme's options that are short of figures (by the share < 0.5 or < 3 of them, zero first; with the probability gate x / (x + 0x5eebc4[level]), x = day / 4 + 1) and shows for each a message with a reward 0x4c47e0 (ROUGH: the 5 branches are written from the pseudocode, many details of the choice may differ) ; the per-theme tables kinds / ftop / fbarg are automatic arrays here, the original has their values as immediates in per-option code (push 0x29 at 0x53fd01, 0x32 at 0x53fdae, ..), it has no such tables in its data */
-unsigned he_Unk53f6b0(void)
-{
-    int cnt[0x21];
-    int own[0x21];
-    int lvl, i, k, ev = 0;
-    int x, nai = 0, nplay = 0;
-    float gate, ratio[8];
-    unsigned mask, zero, pick, elig;
-    unsigned char *pb;
-    int amt, tp;
-    unsigned short us;
-    unsigned char kind;
+const float he_FounderOdds[5] = { 4.0f, 3.0f, 2.5f, 1.5f, 1.0f };  /* 0x5eebc4, the odds of a founder by the difficulty: x / (x + odds) (he_SpawnFounders, its only reader; first in he.c's .rdata literals) */
 
-    lvl = U_I((unsigned)&ai_Difficulty);
-    if (lvl >= 5)
+/* 0x53f6b0, the founders of the round (main_BeginPlayerRound): tops up the money of the characters (he_TopUpCharMoney),
+   counts the buildings per kind (all, and the player's or nobody's; of kind 7 the others' by their owner's b00c) and
+   by the year % 5 looks at a group of building kinds (1: 4 / 0x13 / 0x10, 2: 0x12 / 0x15 / 0x14 / 0xe, 3: 8 / 0x16,
+   0: 9 / 7 / 5, 4: 0x20 / 0x1f / 0x1d); the kinds the town has few of (fewer than 3, or the player's share at least
+   a half) are eligible, the missing ones always, else one at random when util_RandomF() <= x / (x + odds[level]),
+   x = year / 4 + 1; for each chosen kind it creates a founder character paid twice the value of the player's first
+   building of the kind (or of the building kind) (reasoned: the character of kind 4 that he_TopUpCharMoney keeps in
+   money, its title from the kind's group)
+   @deep Rewritten in full from the original 0x53f6b0..0x540c8b (all five year%5 themes read instruction by
+   instruction: the per-kind counting over ai_Blds with the kind-7 owner b00c split, the eligible / missing
+   masks, the gate util_RandomF() > x/(x+he_FounderOdds[lvl]), the random pick loops, the per-option search
+   that reuses the option loop's i, the shared founder send with the 0xd field and theme 0's 0xc field, the
+   tail jmp to cm_SendFieldDeltas of theme 1). No call, store or reference differs (no ref:/differs: lines,
+   calls equal); ours 1764 vs 1751 instructions. What is left is allocation / layout: (1) the loop exits of
+   themes 2, 3, 0: ours 'inc ebx; cmp ebx,4; jl top' + a duplicated pop/ret epilogue, the original 'jge
+   0x540c80; reload esi/edi; jmp top' (tried for(;;) + goto next + if (++i >= 4) break, and a switch (t):
+   the same, the switch adds a jump table); (2) the lvl clamp's 'mov ecx,4' block placed out of line at
+   0x53f7af in the original, inline in ours (tried if (lvl > 4) / if (lvl < 5) {..} else / if (lvl <= 4)
+   {..} else); (3) the counted kind k spilled to [esp+0x20] in ours ('mov byte ptr [esp+0x20], dl'), kept
+   in edx by the original; (4) theme 0 keeps n7a / n7b in esi / edx reloaded at each loop top, ours reads
+   them from the frame and caches the constant 1 in edx (hunks 0x5404f6, 0x5405c8); (5) cnt[0x14] /
+   cnt[0x16] / ai_PlayerChar cached in registers on one side, frame / reload on the other (hunks 0x53fe09,
+   0x53fe5b, 0x53ff08, 0x5401a7, 0x540257); (6) a 'test esi, esi' after the dec of the theme 1 / 4 pick
+   counters (tried for (n = 0; n < 3; n++): worse); (7) pick = 0 stored from the zeroed mask register in
+   the original ('mov [esp+0x10], ebx'), as an immediate in ours. */
+void he_SpawnFounders(void)
+{
+    int cnt[0x21];              /* the buildings per kind */
+    int own[0x21];              /* the player's or nobody's per kind */
+    int lvl, x, i, n, r, t;
+    int n7a = 0, n7b;           /* the others' buildings of kind 7: owner's b00c 0 / not 0 */
+    float gate, r0, r1, r2, r3;
+    int d4, d13, d10, mask, zero, pick, elig, bit;
+    int amt, title, slot, two, fl, rnd;
+    unsigned char k;
+    AIBLD *b;
+    AIBTYPE *bt;
+    AICHAR *c;
+
+    n7b = 0;
+    lvl = ai_Difficulty;
+    if (lvl <= 4) {
+        if (lvl <= 0)
+            lvl = 0;
+    } else
         lvl = 4;
-    else if (lvl < 1)
-        lvl = 0;
-    x = (U_I((unsigned)&ai_Time) + ((U_I((unsigned)&ai_Time) >> 31) & 3)) / 4 + 1;
-    gate = (float)x / ((float)x + ((float *)((unsigned)&sv_PhaseMinutes + 0x10c))[lvl]);
+    x = ai_Time.year / 4 + 1;
+    gate = (float)x / ((float)x + he_FounderOdds[lvl]);
     he_TopUpCharMoney();
     memset(cnt, 0, sizeof(cnt));
     memset(own, 0, sizeof(own));
-    pb = (unsigned char *)U_I((unsigned)&ai_Blds);
-    for (i = 0; i < 0x100; i++, pb += 0xa9) {
-        if (*pb != 0 && (kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *pb * 0x24d)) < 0x21) {
-            cnt[kind]++;
-            us = *(unsigned short *)(pb + 0x27);
-            if (us == 0xffff || us == **(unsigned short **)(unsigned)&ai_PlayerChar)
-                own[kind]++;
-            else if (kind == 7) {
-                if (*(char *)(((unsigned)&ai_Unk770b89 + 0x3) + us * 0x21c) == 0)
-                    nai++;
-                else
-                    nplay++;
+    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+        if (b->type != 0) {
+            bt = &ai_BTypesT[b->type];
+            k = bt->kind;
+            if (k < 0x21) {
+                cnt[k]++;
+                if (b->owner == 0xffff || b->owner == *ai_PlayerChar)
+                    own[k]++;
+                else if (k == 7) {
+                    if (ai_CharsT[b->owner].b00c == 0)
+                        n7a++;
+                    else
+                        n7b++;
+                }
             }
         }
     }
-    k = U_I((unsigned)&ai_Time) % 5;
-    if (k == 1) {
-        int a = cnt[0x10] - own[0x10], b = cnt[4] - own[4], c = cnt[0x13] - own[0x13];
-
-        nai = 0;
-        mask = (b < 3) | ((c < 3) << 1) | ((a < 3) << 2);
-        zero = (b == 0) | ((c == 0) << 1) | ((a == 0) << 2);
-        if (zero == 0) {
-            if (util_RandomF() >= gate)
-                return mask;
-            if (c * 2 < b + a && (mask & 2))
+    t = ai_Time.year % 5;
+    if (t == 1) {
+        /* the others' buildings of the kinds 4 / 0x13 / 0x10 */
+        d10 = cnt[0x10] - own[0x10];
+        d4 = cnt[4] - own[4];
+        d13 = cnt[0x13] - own[0x13];
+        pick = 0;
+        mask = 0;
+        zero = 0;
+        if (d4 < 3)
+            mask |= 1;
+        if (d4 == 0)
+            zero |= 1;
+        if (d13 < 3)
+            mask |= 2;
+        if (d13 == 0)
+            zero |= 2;
+        if (d10 < 3)
+            mask |= 4;
+        if (d10 == 0)
+            zero |= 4;
+        if (zero != 0) {
+            r = util_RandomU(3);
+            for (n = 3; n != 0; n--) {
+                if (mask & (1 << r)) {
+                    pick = mask = 1 << r;
+                    break;
+                }
+                r = (r + 1) % 3;
+            }
+        } else {
+            if (util_RandomF() > gate)
+                return;
+            if (d4 + d10 > d13 * 2 && (mask & 2))
                 pick = 2;
-            else if (b + a < c * 2) {
-                pick = 0;
-                if (b < a) {
+            else if (d4 + d10 < d13 * 2) {
+                if (d4 < d10) {
                     if (mask & 1)
                         pick = 1;
                 } else if (mask & 4)
                     pick = 4;
             } else
-                pick = 1 << (util_Random(3) & 0xff);
-        } else {
-            us = util_Random(3);
-            pick = 0;
-            for (i = 3; i != 0; i--) {
-                if (zero & (1 << (us & 0x1f))) {
-                    pick = 1 << (us & 0x1f);
-                    break;
-                }
-                us = (us + 1) % 3;
-            }
+                pick = 1 << util_Random(3);
         }
-        if (pick == 0)
-            return pick;
+        if (!(mask & pick))
+            return;
         if (pick == 1) {
-            if (cnt[4] > 2)
-                HE_ADV_FIND(4, 0xb, 0, 0, 0, tp, amt);
-            else
-                HE_ADV_FB(0xb, 6, 0, tp, amt);
+            if (cnt[4] < 3) {
+                amt = gm_BuildingKindValue(0xb) * 2;
+                title = 6;
+            } else {
+                HE_FIND_OWN(4);
+                if (i >= 0x100)
+                    return;
+                HE_OFFER_FOUND(0xb);
+            }
         } else if (pick == 2) {
-            if (cnt[0x13] > 2)
-                HE_ADV_FIND(0x13, 10, 0, 0, 0, tp, amt);
-            else
-                HE_ADV_FB(0x2c, 0x39, 0, tp, amt);
+            if (cnt[0x13] < 3) {
+                amt = gm_BuildingKindValue(0x2c) * 2;
+                title = 0x39;
+            } else {
+                HE_FIND_OWN(0x13);
+                if (i >= 0x100)
+                    return;
+                HE_OFFER_FOUND(10);
+            }
         } else {
-            HE_ADV_FB(0x27, 0x2d, 0, tp, amt);
+            title = 0x2d;
+            amt = gm_BuildingKindValue(0x27) * 2;
         }
-        HE_ADV_SHOW(tp, amt, 0, (void)0);
-        return pick;
-    }
-    if (k == 2) {
-        int kinds[4] = { 0x12, 0x15, 0x14, 0xe };
-        int ftop[4] = { 1, 3, 2, 5 };
-        int fbarg[4] = { 0x29, 0x32, 0x2f, 0x21 };
-
+        HE_SEND_FOUNDER(0, (void)0);
+    } else if (t == 2) {
+        /* the kinds 0x12 / 0x15 / 0x14 / 0xe */
+        r0 = cnt[0x12] > 0 ? (float)own[0x12] / cnt[0x12] : 0.0f;
+        r1 = cnt[0x15] > 0 ? (float)own[0x15] / cnt[0x15] : 0.0f;
+        r2 = cnt[0x14] > 0 ? (float)own[0x14] / cnt[0x14] : 0.0f;
+        r3 = cnt[0xe] > 0 ? (float)own[0xe] / cnt[0xe] : 0.0f;
         elig = 0;
         zero = 0;
+        if (cnt[0x12] < 3 || r0 >= 0.5f) {
+            elig |= 1;
+            if (cnt[0x12] == 0)
+                zero |= 1;
+        }
+        if (cnt[0x15] < 3 || r1 >= 0.5f) {
+            elig |= 2;
+            if (cnt[0x15] == 0)
+                zero |= 2;
+        }
+        if (cnt[0x14] < 3 || r2 >= 0.5f) {
+            elig |= 4;
+            if (cnt[0x14] == 0)
+                zero |= 4;
+        }
+        if (cnt[0xe] < 3 || r3 >= 0.5f) {
+            elig |= 8;
+            if (cnt[0xe] == 0)
+                zero |= 8;
+        }
+        if (zero != 0)
+            elig = zero;
+        else {
+            if (util_RandomF() > gate)
+                return;
+            r = util_RandomU(4);
+            for (n = 4; n != 0; n--, r = (r + 1) % 4) {
+                if (elig & (1 << r)) {
+                    elig = 1 << r;
+                    break;
+                }
+            }
+        }
         for (i = 0; i < 4; i++) {
-            ratio[i] = cnt[kinds[i]] < 1 ? 0.0f : (float)own[kinds[i]] / (float)cnt[kinds[i]];
-            if (cnt[kinds[i]] < 3 || ratio[i] >= 0.5f) {
-                elig |= 1 << i;
-                if (cnt[kinds[i]] == 0)
-                    zero |= 1 << i;
-            }
-        }
-        if (zero == 0) {
-            if (util_RandomF() >= gate)
-                return elig;
-            us = util_Random(4);
-            zero = 0;
-            for (i = 4; i != 0; i--) {
-                if (elig & (1 << (us & 0x1f))) {
-                    zero = 1 << (us & 0x1f);
-                    break;
+            if (elig == 0)
+                return;
+            bit = elig & (1 << i);
+            if (bit == 1) {
+                if (cnt[0x12] < 3)
+                    HE_OFFER_KIND(0x29, 1, 1);
+                else {
+                    HE_FIND_OWN(0x12);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(1);
                 }
-                us = (us + 1) & 3;
-            }
-        }
-        for (i = 0; i < 4 && zero != 0; i++) {
-            if (!(zero & (1 << i)))
+            } else if (bit == 2) {
+                if (cnt[0x15] < 3)
+                    HE_OFFER_KIND(0x32, 3, 1);
+                else {
+                    HE_FIND_OWN(0x15);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(3);
+                }
+            } else if (bit == 4) {
+                if (cnt[0x14] < 3)
+                    HE_OFFER_KIND(0x2f, 2, 1);
+                else {
+                    HE_FIND_OWN(0x14);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(2);
+                }
+            } else if (bit == 8) {
+                if (cnt[0xe] < 3)
+                    HE_OFFER_KIND(0x21, 5, 1);
+                else {
+                    HE_FIND_OWN(0xe);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(5);
+                }
+            } else
                 continue;
-            if (cnt[kinds[i]] > 2)
-                HE_ADV_FIND(kinds[i], ftop[i], 0, 0, 0, tp, amt);
-            else
-                HE_ADV_FB(fbarg[i], ftop[i], 1, tp, amt);
-            HE_ADV_SHOW(tp, amt, util_Random(2), (void)0);
+            HE_SEND_FOUNDER(util_Random(2), (void)0);
         }
-        return elig;
-    }
-    if (k == 3) {
-        int kinds[2] = { 8, 0x16 };
-        int ftop[2] = { 6, 4 };
-        int fbarg[2] = { 0x17, 0x35 };
-
+    } else if (t == 3) {
+        /* the kinds 8 / 0x16 */
+        r0 = cnt[8] > 0 ? (float)own[8] / cnt[8] : 0.0f;
+        r1 = cnt[0x16] > 0 ? (float)own[0x16] / cnt[0x16] : 0.0f;
         elig = 0;
         zero = 0;
+        if (cnt[8] < 3 || r0 >= 0.5f) {
+            elig |= 1;
+            if (cnt[8] == 0)
+                zero |= 1;
+        }
+        if (cnt[0x16] < 3 || r1 >= 0.5f) {
+            elig |= 2;
+            if (cnt[0x16] == 0)
+                zero |= 2;
+        }
+        if (zero != 0)
+            elig = zero;
+        else {
+            if (util_RandomF() > gate)
+                return;
+            r = util_RandomU(2);
+            for (n = 2; n != 0; n--, r = (r + 1) % 2) {
+                if (elig & (1 << r)) {
+                    elig = 1 << r;
+                    break;
+                }
+            }
+        }
         for (i = 0; i < 2; i++) {
-            ratio[i] = cnt[kinds[i]] < 1 ? 0.0f : (float)own[kinds[i]] / (float)cnt[kinds[i]];
-            if (cnt[kinds[i]] < 3 || ratio[i] >= 0.5f) {
-                elig |= 1 << i;
-                if (cnt[kinds[i]] == 0)
-                    zero |= 1 << i;
-            }
-        }
-        if (zero == 0) {
-            if (util_RandomF() >= gate)
-                return elig;
-            us = util_Random(2);
-            zero = 0;
-            for (i = 2; i != 0; i--) {
-                if (elig & (1 << (us & 0x1f))) {
-                    zero = 1 << (us & 0x1f);
-                    break;
+            if (elig == 0)
+                return;
+            bit = elig & (1 << i);
+            if (bit == 1) {
+                if (cnt[8] < 3)
+                    HE_OFFER_KIND(0x17, 6, 1);
+                else {
+                    HE_FIND_OWN(8);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(6);
                 }
-                us = (us + 1) & 1;
-            }
-        }
-        for (i = 0; i < 2 && zero != 0; i++) {
-            if (!(zero & (1 << i)))
+            } else if (bit == 2) {
+                if (cnt[0x16] < 3)
+                    HE_OFFER_KIND(0x35, 4, 1);
+                else {
+                    HE_FIND_OWN(0x16);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(4);
+                }
+            } else
                 continue;
-            if (cnt[kinds[i]] > 2)
-                HE_ADV_FIND(kinds[i], ftop[i], 0, 0, 0, tp, amt);
-            else
-                HE_ADV_FB(fbarg[i], ftop[i], 1, tp, amt);
-            HE_ADV_SHOW(tp, amt, util_Random(2), (void)0);
+            HE_SEND_FOUNDER(util_Random(2), (void)0);
         }
-        return elig;
-    }
-    if (k == 0) {
-        int kinds[3] = { 9, 7, 5 };
-        int ftop[3] = { 8, 7, 9 };
-        int fbarg[3] = { 0x1a, 0x14, 0xe };
-
+    } else if (t == 0) {
+        /* the kinds 9 / 7 / 5; kind 7 also when the others' kind 7 buildings are all of one b00c class */
+        r0 = cnt[9] > 0 ? (float)own[9] / cnt[9] : 0.0f;
+        r2 = cnt[5] > 0 ? (float)own[5] / cnt[5] : 0.0f;
         elig = 0;
         zero = 0;
-        ratio[0] = cnt[9] < 1 ? 0.0f : (float)own[9] / (float)cnt[9];
-        ratio[2] = cnt[5] < 1 ? 0.0f : (float)own[5] / (float)cnt[5];
-        if (cnt[9] < 2 || 0.5f <= ratio[0]) {
+        fl = util_RandomU(2);
+        if (cnt[9] < 2 || r0 >= 0.5f) {
             elig |= 1;
             if (cnt[9] == 0)
                 zero |= 1;
         }
-        if (cnt[7] < 2 || (cnt[7] < 3 && (nai == 0 || nplay == 0))) {
+        if (cnt[7] < 2 || (cnt[7] < 3 && (n7a == 0 || n7b == 0))) {
             elig |= 2;
             if (cnt[7] == 0)
                 zero |= 2;
         }
-        if (cnt[5] < 2 || ratio[2] >= 0.5f) {
+        if (cnt[5] < 2 || r2 >= 0.5f) {
             elig |= 4;
             if (cnt[5] == 0)
                 zero |= 4;
         }
-        if (zero == 0) {
-            if (util_RandomF() >= gate)
-                return elig;
-            us = util_Random(3);
-            for (i = 3; i != 0; i--) {
-                if (elig & (1 << (us & 0x1f))) {
-                    zero = elig;
+        if (zero != 0)
+            elig = zero;
+        else {
+            if (util_RandomF() > gate)
+                return;
+            r = util_RandomU(3);
+            for (n = 3; n != 0; n--, r = (r + 1) % 3) {
+                if (elig & (1 << r))
                     break;
+            }
+        }
+        for (i = 0; i < 3; i++) {
+            if (elig == 0)
+                return;
+            bit = elig & (1 << i);
+            if (bit == 1) {
+                if (cnt[9] < 2)
+                    HE_OFFER_KIND(0x1a, 8, 1);
+                else {
+                    HE_FIND_OWN(9);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(8);
                 }
-                us = (us + 1) % 3;
-            }
-        }
-        for (i = 0; i < 3 && zero != 0; i++) {
-            if (!(zero & (1 << i)))
+            } else if (bit == 2) {
+                /* the field 0xc: the b00c class of the fewer others' kind 7 buildings (random when even) */
+                if (n7a < n7b)
+                    fl = 0;
+                else if (n7a > n7b)
+                    fl = 1;
+                for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+                    if (b->type != 0) {
+                        bt = &ai_BTypesT[b->type];
+                        if (bt->kind == 7 && (b->owner == 0xffff || b->owner == *ai_PlayerChar)) {
+                            HE_OFFER_FOUND(7);
+                            break;
+                        }
+                    }
+                }
+                if (i >= 0x100) {
+                    if (cnt[7] < 2)
+                        HE_OFFER_KIND(0x14, 7, 1);
+                    else
+                        HE_OFFER_KIND(0x15, 7, 3);
+                }
+            } else if (bit == 4) {
+                if (cnt[5] < 1)
+                    HE_OFFER_KIND(0xe, 9, 1);
+                else {
+                    HE_FIND_OWN(5);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(9);
+                }
+            } else
                 continue;
-            if (i == 1) {
-                int fl = ((int)nai < nplay) ? 0 : (nplay < nai) ? 1 : 0;
-
-                HE_ADV_FB(0x14, 7, 1, tp, amt);
-                HE_ADV_SHOW(tp, amt, util_Random(2), cm_AddFieldDelta(1, 1, 0xc, &fl));
-            } else {
-                if (cnt[kinds[i]] > (i == 0 ? 1 : 0))
-                    HE_ADV_FIND(kinds[i], ftop[i], 0, 0, 0, tp, amt);
-                else
-                    HE_ADV_FB(fbarg[i], ftop[i], 1, tp, amt);
-                HE_ADV_SHOW(tp, amt, util_Random(2), (void)0);
-            }
+            HE_SEND_FOUNDER(util_Random(2), cm_AddFieldDelta(1, 1, 0xc, &fl));
         }
-        return elig;
-    }
-    if (k == 4) {
-        int kinds[3] = { 0x20, 0x1f, 0x1d };
-        int ftop[3] = { 0xf, 0xe, 0xd };
-        int fbarg[3] = { 0x51, 0x4e, 0x48 };
-
+    } else if (t == 4) {
+        /* the kinds 0x20 / 0x1f / 0x1d */
+        r0 = cnt[0x20] > 0 ? (float)own[0x20] / cnt[0x20] : 0.0f;
+        r1 = cnt[0x1f] > 0 ? (float)own[0x1f] / cnt[0x1f] : 0.0f;
+        r2 = cnt[0x1d] > 0 ? (float)own[0x1d] / cnt[0x1d] : 0.0f;
         elig = 0;
         zero = 0;
-        for (i = 0; i < 3; i++) {
-            ratio[i] = cnt[kinds[i]] < 1 ? 0.0f : (float)own[kinds[i]] / (float)cnt[kinds[i]];
-            if (cnt[kinds[i]] < 3 || ratio[i] < 0.5f == 0) {
-                elig |= 1 << i;
-                if (cnt[kinds[i]] == 0)
-                    zero |= 1 << i;
-            }
+        if (cnt[0x20] < 3 || r0 >= 0.5f) {
+            elig |= 1;
+            if (cnt[0x20] == 0)
+                zero |= 1;
         }
-        if (zero == 0) {
-            if (util_RandomF() >= gate)
-                return elig;
-            us = util_Random(3);
-            zero = elig;
-            for (i = 3; i != 0; i--) {
-                if (elig & (1 << (us & 0x1f))) {
-                    zero = 1 << (us & 0x1f);
+        if (cnt[0x1f] < 3 || r1 >= 0.5f) {
+            elig |= 2;
+            if (cnt[0x1f] == 0)
+                zero |= 2;
+        }
+        if (cnt[0x1d] < 3 || r2 >= 0.5f) {
+            elig |= 4;
+            if (cnt[0x1d] == 0)
+                zero |= 4;
+        }
+        if (zero != 0)
+            elig = zero;
+        else {
+            if (util_RandomF() > gate)
+                return;
+            r = util_RandomU(3);
+            for (n = 3; n != 0; n--) {
+                if (elig & (1 << r)) {
+                    elig = 1 << r;
                     break;
                 }
-                us = (us + 1) % 3;
+                r = (r + 1) % 3;
             }
         }
-        for (i = 0; i < 3 && zero != 0; i++) {
-            if (!(zero & (1 << i)))
+        for (i = 0; i < 3; i++) {
+            if (elig == 0)
+                return;
+            rnd = 0;
+            bit = elig & (1 << i);
+            if (bit == 1) {
+                rnd = util_RandomU(2);
+                if (cnt[0x20] < 3)
+                    HE_OFFER_KIND(0x51, 0xf, 1);
+                else {
+                    HE_FIND_OWN(0x20);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(0xf);
+                }
+            } else if (bit == 2) {
+                if (cnt[0x1f] < 3)
+                    HE_OFFER_KIND(0x4e, 0xe, 1);
+                else {
+                    HE_FIND_OWN(0x1f);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(0xe);
+                }
+            } else if (bit == 4) {
+                if (cnt[0x1d] < 3)
+                    HE_OFFER_KIND(0x48, 0xd, 1);
+                else {
+                    HE_FIND_OWN(0x1d);
+                    if (i >= 0x100)
+                        return;
+                    HE_OFFER_FOUND(0xd);
+                }
+            } else
                 continue;
-            if (cnt[kinds[i]] > 2)
-                HE_ADV_FIND(kinds[i], ftop[i], 0, 0, 0, tp, amt);
-            else
-                HE_ADV_FB(fbarg[i], ftop[i], 1, tp, amt);
-            HE_ADV_SHOW(tp, amt, util_Random(2), (void)0);
+            HE_SEND_FOUNDER(rnd, (void)0);
         }
-        return elig;
     }
-    return ev;
 }
 
 float util_RandomF();
@@ -1953,7 +2133,6 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_BeginFieldBlock(char *o, int id);
 void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
-int gm_EquipmentValue(unsigned char *b, int level);
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_Unk541200 / he_Unk543020 / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
 /* 0x540c90, from day 8, in 1 of 4 frames: when no event 0x67 exists, posts one for a random one of the figures of the player of 0x6f1bf8 (kinds 0x20 / 0x1e / 0x1f): +0x58 = the figure, +0x5c = an amount of the 0x4f2720 table plus its +0x69 value (ROUGH) */

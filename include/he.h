@@ -118,7 +118,8 @@ void he_Unk545670(int ev);
 
 void he_Unk544070(int ev);
 
-unsigned he_Unk53f6b0(void);
+void he_SpawnFounders(void);
+extern const float he_FounderOdds[5];  /* 0x5eebc4 */
 
 void he_StammtischCommand(unsigned cmd, int a2, int a3, int a4);
 
