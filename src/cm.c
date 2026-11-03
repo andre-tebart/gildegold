@@ -306,34 +306,32 @@ void ai_InitStates(void)
         net_Close();
     cm_NextNetStep = d3_Time;
 }
-/* 0x4c3560, as 0x4c3480 without the start */
+/* 0x4c3560, resets the message layer as ai_InitStates does, without the hello to the server: the receive records
+   back on the free list, the queues empty, the send states idle */
 
 void ai_ResetMessages(void)
 {
     int i;
-    G17STAT *s;
 
     for (i = 0; i < 0x2000; i++) {
         cm_RecvPool[i].type = 0;
-        if (i == 0) {
-            cm_RecvPool[0].prev = 0;
-            cm_RecvPool[0].next = &cm_RecvPool[1];
-        } else {
+        if (i == 0)
+            cm_RecvPool[i].prev = 0;
+        else
             cm_RecvPool[i].prev = &cm_RecvPool[i - 1];
-            if (i < 0x1fff)
-                cm_RecvPool[i].next = &cm_RecvPool[i + 1];
-            else
-                cm_RecvPool[i].next = 0;
-        }
+        if (i < 0x1fff)
+            cm_RecvPool[i].next = &cm_RecvPool[i + 1];
+        else
+            cm_RecvPool[i].next = 0;
     }
     cm_RecvFree = cm_RecvPool;
     cm_RecvQueue = 0;
     cm_RecvMsg.type = 0;
     cm_LastSeq = 0;
     cm_SendQueue = 0;
-    for (s = cm_SendStates; s < cm_SendStates + 0x8000; s++) {
-        s->idx = -1;
-        s->state = 1;
+    for (i = 0; i < 0x8000; i++) {
+        cm_SendStates[i].idx = -1;
+        cm_SendStates[i].state = 1;
     }
 }
 /* 0x4c3600, sends message 3 (0xa03ef57c, 0) */
