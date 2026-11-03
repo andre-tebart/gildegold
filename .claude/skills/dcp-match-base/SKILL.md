@@ -76,9 +76,10 @@ experiment is shape or byte, only readability is missing. `gates=` names the fai
   error; two source names of one datum are a `C.name.alias` warning of `dcp check --strict`). A compare against
   an address (`cmp ecx, 0xfb91e4 (or d2_Views+0x81c4)`) also names the array below it the function uses: a
   loop's end pointer lies past the array's end, inside the next object. A `!` line ends with both addresses
-  (`0x770ae4 | 0x770ae0`); a floating constant shows its value on both sides; `calls differ: ours ... | the
-  original ...` lists the callees one side calls and the other does not, whatever the alignment (a wrong callee
-  in a hunk of other differences, or call sites merged on one side).
+  (`0x770ae4 | 0x770ae0`); a floating constant shows its value on both sides; `calls: _ftol ours x2, the
+  original x1` lists each callee the two sides call a different number of times, with both counts, whatever the
+  alignment (a wrong callee in a hunk of other differences, call sites merged or duplicated on one side); a tail
+  `jmp` to a function counts as a call. diffclass prints the same line, and the witness reads the same call set.
   Frames of other sizes are aligned as diffclass aligns them (`frame=0x3bc/0x3b8`): a line that differs only
   by the shift is equal (`~`), so only the real differences show; `--plain` diffs the texts as they are.
 - `dcp diffclass NAME` - the hunks and their classes: `fill`, `order`, `regs`, `slots`, `sib`, `fpu`,
@@ -124,9 +125,15 @@ experiment is shape or byte, only readability is missing. `gates=` names the fai
   prototyped, per call `safe` or re-grade) and the functions to re-grade; a call / other finding on a line marked
   `@original` / `@vc6` shows `exempt=<marker>` and blocks nothing (a redeclaration with another type never: VC6
   rejects it whatever the marker), an error the unit already had is no finding; `--write` makes the include when only
-  duplicates are in the way (`--at LINE` places the include when the default line fails the trial). `warning=declaration-set`: re-grade every function of the unit after the include,
+  duplicates are in the way, in the head region (after its last include, above the first function's address comment,
+  never right below a comment); a header the unit already includes is not included again (`already_included=`);
+  a text that would detach an address comment is refused (`--at LINE` places the include when the default line fails
+  the trial). `warning=declaration-set`: re-grade every function of the unit after the include,
   byte ones first (VC6 /O2 moves code by the declaration set alone): `--trial` compiles the unit with the include
-  (nothing written) and lists the functions whose grade would fall (`fall=ADDR ... code=byte trial=shape`). A dropped duplicate's
+  (nothing written), grades each function as G.grade does (the prover and the reference check too) and lists the
+  ones it changes with the grade now, the baseline's and the trial's (`fn=ADDR ... now=byte baseline=byte
+  trial=shape m1=yes`); `m1=yes` is a fall `dcp check` would report (below the baseline), and only those count
+  (`m1=N`, exit 1); below the current grade but not the baseline is no fall. A dropped duplicate's
   comment never describes its function (Q6 reads the function's own documentation only), so no words are lost to Q6.
 
 ### 2.2 Code below shape (`section=draft`)
@@ -217,7 +224,9 @@ work, however long.
 
 ### 2.4 Commit
 One function, one commit: `<unit>: <name> shape + readable (match-base)` (`byte + readable` when it got there).
-`dcp build` exits 0 first.
+`dcp build` exits 0 first. A message of more than one line goes through a file: write it to a scratch file and
+`git commit -F <file>` (on Windows a here-string piped into `git commit -F -` can arrive as a pathspec). Check that
+the commit went in (`git status` clean) before the next function.
 
 ### 2.5 Other units, headers, data
 - Another unit may change when the meaning needs it and the change is right for it too; a header edit
@@ -303,7 +312,8 @@ of a session; that is expected base work, not a reason to escalate it.
    revert; `dcp build` exits 0.
 2. `dcp session wrap`: builds, links, checks every target, promotes the grade baseline and prints the
    computed report (errors, byte and readable counts before -> after, `grades changed` per function, renames,
-   the next item). It must say `gate: ok`.
+   the next item). It must say `gate: ok`. It promotes nothing while src/, include/ or decl/ hold uncommitted
+   changes (`promote=refused  dirty=N`: a grade needs its commit): commit the last function first.
 3. Rewrite the lead comment of every unit you touched to its current state (a few lines): what the unit is,
    then one `Open:` line per unit-level question still open (head conflicts, data owners). Drop what is
    settled; never add a dated or "this session" line. Escalated functions carry their reason in their tag,
