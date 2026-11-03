@@ -58,7 +58,8 @@ typedef struct CHARACTER {         /* 0x244 bytes */
             unsigned short lowPolyAnimFailed : 1;   /* the low-poly animation could not be attached */
             unsigned short unk8 : 1;    /* 0x100 */
             unsigned short lowPoly : 1; /* 0x200, the low-poly body is shown (chc_SetLowPoly) */
-            unsigned short unk10 : 2;
+            unsigned short fled : 1;    /* 0x400, the fighter has fled: its escape flag is up (cm_PlantEscapeFlag) */
+            unsigned short unk11 : 1;
             unsigned short unk12 : 1;   /* 0x1000 */
             unsigned short unk13 : 3;
         };

@@ -88,7 +88,7 @@ struct D3OBJECT {
     D3OBJECT *parent;               /* 0x1f8, set with d3_SetParent */
     D3OBJECT *child;                /* 0x1fc */
     void *owner;                    /* 0x200, the game record the object stands for (a character's body: its AICHAR) */
-    char pad204[0x4];
+    D3OBJECT *flagObj;              /* 0x204, the flag put up at the object (cm.c: the escape flag at a fight's dummy) */
     D3SCENE *scene;                 /* 0x208 */
     struct D3SOUND *sound;          /* 0x20c, set by d3snd_Attach */
     unsigned char state;            /* 0x210, object state bits: 1 = starts an object group, 2 = linked, 4 = dirty,

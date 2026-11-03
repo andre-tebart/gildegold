@@ -1476,3 +1476,4 @@
 2026-11-03T15:19:03 0x004c5bc0 data ai_Unk4c5bc0 -> cm_SendObjCell by:main why:message 0x4e: an object name, a cell x / y and a second text (the pot placed at a cell)
 2026-11-03T15:19:03 0x00fa5f00 data ai_Unkfa5f00 -> cm_PickCellX by:main why:the cell x d3_GetHeightAt finds under a fighter (cm_FighterAct, the fight AI 0x4d8...)
 2026-11-03T15:19:03 0x00fa5f04 data ai_Unkfa5f04 -> cm_PickCellZ by:main why:the cell z d3_GetHeightAt finds under a fighter
+2026-11-03T15:25:02 0x004d7190 func ai_Unk4d7190 -> cm_PlantEscapeFlag by:main why:puts the flag "ub_FLUCHTFLAGGE" (escape flag, renamed CONQUER_FLAG) at the escape dummy of a fighter action (message 0x55)

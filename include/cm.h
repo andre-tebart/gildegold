@@ -465,7 +465,7 @@ void ai_Unk4d70a0(char *f);  /* 0x4d70a0 */
 void ai_Unk4d7150(char *r);  /* 0x4d7150 */
 int ai_Unk4d7360(char *rec, char *c, char *g);  /* 0x4d7360 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
-void ai_Unk4d7190(char *f);  /* 0x4d7190 */
+void cm_PlantEscapeFlag(struct CMFIGHTACT *f);  /* 0x4d7190 */
 void ai_Unk4e5180();  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */

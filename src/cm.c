@@ -5801,7 +5801,7 @@ int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
     case 3:
         if (c[8] != 0) {
             cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
-            ai_Unk4d7190(&m->data[0x25]);
+            cm_PlantEscapeFlag((struct CMFIGHTACT *)&m->data[0x25]);
         }
         break;
     }
@@ -10817,15 +10817,20 @@ typedef struct CMFIGHTACT {
     int id;                             /* 0x00, the fighter's netId, -1 = none */
     int active;                         /* 0x04, 0: nothing to do */
     char pad08[8];
-    int targetId;                       /* 0x10, the netId of the fighter attacked */
-    int x;                              /* 0x14, the place a pot or a bomb is thrown at */
-    int y;                              /* 0x18 */
-    char pad1c;
-    char strikes;                       /* 0x1d, nonzero: a blow is struck (a bomb thrown) */
-    char pad1e[2];
-    int lands;                          /* 0x20, nonzero: the blow lands (the pot is laid) */
-    int damage;                         /* 0x24 */
-    int health;                         /* 0x28, the target's health after it */
+    union {
+        struct {                        /* sub-command 2 (cm_FighterAct) */
+            int targetId;               /* 0x10, the netId of the fighter attacked */
+            int x;                      /* 0x14, the place a pot or a bomb is thrown at */
+            int y;                      /* 0x18 */
+            char pad1c;
+            char strikes;               /* 0x1d, nonzero: a blow is struck (a bomb thrown) */
+            char pad1e[2];
+            int lands;                  /* 0x20, nonzero: the blow lands (the pot is laid) */
+            int damage;                 /* 0x24 */
+            int health;                 /* 0x28, the target's health after it */
+        };
+        char dummy[0x1c];               /* 0x10, the object name of the escape dummy (cm_PlantEscapeFlag) */
+    };
 } CMFIGHTACT;
 
 /* 0x4d6ba0, the action of one fighter (f): the target's health is set; a blow (not with the pot 0x174 or the bomb
@@ -11001,57 +11006,65 @@ void ai_Unk4d7150(char *r)
     txt_Format(buf, 0x11b7, G20_US(c));
     sv_SetStatusText(buf);
 }
-/* 0x4d7190, the flag of the escape dummy: the object o at the place of the fighter slot f (+0x10) gets the character of
-   the slot as owner (+0x200): the old flag (+0x204) is deleted and a new "ub_FLUCHTFLAGGE" object with the animation
-   (and the texture set of the character's side) is put at the dummy; the character's flag bit 4 and text 0x11b8 for the
-   slot's character. Rough draft. */
+/* 0x4d7190, the escape flag of a fighter action f: the escape dummy named by f gets the fighter as its owner (the
+   fighter marked fled, text 0x11b8); when the owner changes the old flag is deleted and a new "ub_FLUCHTFLAGGE" object
+   (animated, the texture set 'g' + ref54 of the side leader of the kinds 5 .. 7, named "CONQUER_FLAG") is put at the
+   dummy's place (the name of the fled bit is a reasoned guess from the flag).
+   @deep Read against the original in full; typed (CMFIGHTACT with the dummy name, D3OBJECT.flagObj at
+   0x204, CHARACTER.flags.fled, AICHAR.ref54) and the fled bit set through the bitfield (or byte ptr
+   [eax+0x8d], 4 as the original). Left: one code hunk at 0x4d72cc: the original tests the texture set k
+   (mov al,[eax+0x54]; add al,0x67; test al,al; mov [esp+0xc],al; je), ours reuses the add's flags (no
+   test) - tried k char / unsigned char / int arithmetic, k = 0 before the if with the test after it, the
+   assignment inside the condition, if (k): all compile without the test; the rest is order (the 0x212 /
+   0x220 / 0x224 stores) and regs. ins 128 vs 129. */
 
-void ai_Unk4d7190(char *f)
+void cm_PlantEscapeFlag(CMFIGHTACT *f)
 {
-    char *c = 0;
-    char *o, *r, *side;
+    AICHAR *c = 0;
+    D3OBJECT *o, *r;
+    AICHAR *side;
     char buf[0x100];
-    float pos[4];
-    float rot[3];
+    D3VECTOR4 pos;
+    D3VECTOR rot;
     char k;
 
-    if (*(int *)(f + 4) != 0) {
-        o = (char *)d3_FindObject(0, 0x40, 0, f + 0x10);
-        if (*(int *)f != -1) {
-            c = cm_FindFighter(*(int *)f);
-            (*(char **)(c + 0x184))[0x8d] |= 4;
-            txt_Format(buf, 0x11b8, G20_US(c));
+    if (f->active != 0) {
+        o = d3_FindObject(0, 0x40, 0, f->dummy);
+        if (f->id != -1) {
+            c = (AICHAR *)cm_FindFighter(f->id);
+            c->scene->flags.fled = 1;
+            txt_Format(buf, 0x11b8, c->id);
             sv_SetStatusText(buf);
         }
-        if (*(char **)(o + 0x200) != c) {
-            if (*(int *)(o + 0x204) != 0) {
-                d3if_Delete((struct D3OBJECT *)*(int *)(o + 0x204));
-                *(int *)(o + 0x204) = 0;
+        if ((AICHAR *)o->owner != c) {
+            if (o->flagObj != 0) {
+                d3if_Delete(o->flagObj);
+                o->flagObj = 0;
             }
             if (c != 0) {
-                rot[0] = 0;
-                rot[1] = 0;
-                rot[2] = 0;
-                d3_PointToWorld(o, o + 0x4c, pos);
-                r = (char *)d3_CreateObject(0, pos, rot, "ub_FLUCHTFLAGGE");
-                cm_FlagObjects[cm_FlagObjectCount] = (char *)d3_CreateObject(0, pos, rot, &ch_EmptyName);
+                rot.x = 0;
+                rot.y = 0;
+                rot.z = 0;
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&pos);
+                r = d3_CreateObject(0, (D3VECTOR *)&pos, &rot, "ub_FLUCHTFLAGGE");
+                cm_FlagObjects[cm_FlagObjectCount] = (char *)d3_CreateObject(0, (D3VECTOR *)&pos, &rot, &ch_EmptyName);
                 d3t_PlayAnim(r, "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
-                side = *(char **)(c + 0x16c);
-                if (side != 0 && *(int *)(side + 0x54) != 0 && (side[2] == 5 || side[2] == 6 || side[2] == 7)) {
-                    k = side[0x54] + 0x67;
-                    if (k != 0)
-                        d3if_SelectTextureSet(r, *(int *)(r + 0x1cc), k, 1);
-                }
-                sprintf(r, "CONQUER_FLAG");
-                *(int *)(r + 0x200) = 0;
-                r[0x212] = (r[0x212] & 0xf7) | 0x44;
-                *(int *)(r + 0x220) = 4;
-                *(int *)(r + 0x224) = 1;
-                *(char **)(o + 0x204) = r;
+                side = (AICHAR *)c->bld;  /* in a fight: the leader of the fighter's side */
+                k = 0;
+                if (side != 0 && side->ref54 != 0 && (side->kind == 5 || side->kind == 6 || side->kind == 7))
+                    k = side->ref54 + 'g';
+                if (k != 0)
+                    d3if_SelectTextureSet(r, (struct D3SURF *)r->info, k, 1);
+                sprintf(r->name, "CONQUER_FLAG");
+                r->owner = 0;
+                r->stateFlags = (r->stateFlags & 0xf7) | 0x44;
+                r->kind = 4;
+                r->mask = 1;
+                o->flagObj = r;
             } else
-                *(int *)(o + 0x204) = 0;
+                o->flagObj = 0;
         }
-        *(char **)(o + 0x200) = c;
+        o->owner = c;
     }
 }
 /* 0x4d7360, the attack of the character c on the character g in the fight record rec: -1 when c cannot attack (no
