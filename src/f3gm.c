@@ -9459,23 +9459,19 @@ int gm_GetCreditOffers(int b, unsigned short *p, unsigned cnt, int *out)
 
 int gm_GetWorth(unsigned short id)
 {
-    int v, a, b;
+    int v;
     unsigned char *bl;
 
-    if (id > 0x2ff)
+    if (id >= 0x300)
         return -1;
-    if (*(short *)ai_Chars[id] != -1) {
-        v = gm_GetGoodsValue(ai_Chars[id]);
-        bl = gm_BuildQuery(1, 3, id);
-        while (bl != 0) {
-            a = gm_EquipmentValue(bl, (char)bl[0x5c]);
-            b = gm_StallValue((char *)bl);
-            v = v + a + b;
-            bl = gm_BuildNext();
-        }
-        return v;
+    if (ORD_CHARS[id].id == 0xffff)
+        return -1;
+    v = gm_GetGoodsValue((char *)&ORD_CHARS[id]);
+    for (bl = gm_BuildQuery(1, 3, id); bl != 0; bl = gm_BuildNext()) {
+        v += gm_EquipmentValue(bl, (char)bl[0x5c]);
+        v += gm_StallValue((char *)bl);
     }
-    return -1;
+    return v;
 }
 /* 0x50a6c0, true when the character p (a person of the kinds 6 / 7 or another) is too far from its goal after n more: the pseudocode lost the float operands (0x509e60, 0x50a640, the two __ftol); the person of the kinds 6 / 7 is reported to its owner through 0x5b92e0 / 0x53dda0 (text 0x42c3 = ...) when the ratio is above 0.07 (above 0.2 for the others). ROUGH */
 
