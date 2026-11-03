@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at d690dc7: ai.h AICHAR gains the field b1c5 (0x1c5, split from pad1c4) that ai_DecideUseMilitaryObject (am.c 0x49a390) reads instead of raw byte access; ai_Unk483a60 does not use it, the fall is the known VC6 declaration-set tie-break of this function ([esp+0x10]/[esp+0x18] slot swap, the same flip am.c's lead and hst.c 0x4afd.. record for AIJOB / AITIME member changes), so its byte match was no evidence of the original's declarations [waits for: ai.c's declaration set (the AICHAR / AIJOB / AITIME types in ai.h) settling; then a variant round on ai_Unk483a60]
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -2170,7 +2170,7 @@ exe	0x004c4080	cm_EnqueueReceived	cm	draft	readable	deep
 exe	0x004c4130	cm_FreeReceived	cm	byte	readable		
 exe	0x004c4190	cm_ExecCommands	cm	draft	readable	deep	
 exe	0x004c43c0	cm_CheckGroup	cm	byte	readable		
-exe	0x004c4450	ai_Unk4c4450	cm	byte	draft		
+exe	0x004c4450	cm_ResolveId	cm	byte	readable		
 exe	0x004c4480	ai_Unk4c4480	cm	byte	draft		
 exe	0x004c44d0	cm_SendLoadSize	cm	byte	draft		
 exe	0x004c4500	cm_SendLoadBlock	cm	byte	readable		
@@ -2179,7 +2179,7 @@ exe	0x004c4580	cm_EndGroup	cm	byte	readable
 exe	0x004c45c0	cm_SendMessage10	cm	byte	readable		
 exe	0x004c4650	cm_SendCreateCharacter	cm	byte	draft		
 exe	0x004c46d0	cm_SendMessage0c	cm	byte	draft		
-exe	0x004c4770	ai_Unk4c4770	cm	byte	draft		
+exe	0x004c4770	cm_SendTakeOverCharacter	cm	byte	draft		
 exe	0x004c47b0	ai_Unk4c47b0	cm	byte	draft		
 exe	0x004c47e0	cm_SendMoveGoods	cm	byte	draft		
 exe	0x004c4830	cm_SendMoveGoodsUnchecked	cm	byte	draft		
@@ -2226,7 +2226,7 @@ exe	0x004c5580	ai_Unk4c5580	cm	byte	draft
 exe	0x004c55d0	cm_SendMessage3d	cm	byte	readable		
 exe	0x004c5690	cm_SendCharModel	cm	byte	draft		
 exe	0x004c56d0	cm_SendGoodsRecord	cm	byte	readable		
-exe	0x004c5710	cm_SendGoodsDelta	cm	draft	draft		
+exe	0x004c5710	cm_SendGoodsDelta	cm	byte	readable		
 exe	0x004c5800	cm_SendMessage41	cm	byte	readable		
 exe	0x004c5840	ai_Unk4c5840	cm	byte	draft		
 exe	0x004c5870	ai_Unk4c5870	cm	byte	draft		
@@ -2238,7 +2238,7 @@ exe	0x004c59b0	cm_SendSetJob	cm	byte	draft
 exe	0x004c59f0	ai_Unk4c59f0	cm	shape	draft		
 exe	0x004c5a70	ai_Unk4c5a70	cm	byte	draft		
 exe	0x004c5aa0	cm_SendChat	cm	byte	readable		
-exe	0x004c5ae0	cm_RequestCreateGeb	cm	draft	draft		
+exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
 exe	0x004c5b90	ai_Unk4c5b90	cm	byte	draft		
 exe	0x004c5bc0	ai_Unk4c5bc0	cm	byte	draft		
 exe	0x004c5c40	ai_Unk4c5c40	cm	shape	draft		
@@ -2246,7 +2246,7 @@ exe	0x004c5ca0	ai_Unk4c5ca0	cm	shape	draft
 exe	0x004c5d00	ai_Unk4c5d00	cm	byte	draft		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable		
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
-exe	0x004c5dc0	ai_Unk4c5dc0	cm	draft	draft		
+exe	0x004c5dc0	cm_SendFightCommand	cm	draft	readable	deep	
 exe	0x004c5e80	cm_SendMessage56	cm	byte	readable		
 exe	0x004c5ec0	ai_Unk4c5ec0	cm	byte	draft		
 exe	0x004c5ef0	ai_Unk4c5ef0	cm	byte	draft		
@@ -2274,7 +2274,7 @@ exe	0x004c6750	ai_Unk4c6750	cm	byte	draft
 exe	0x004c6780	ai_Unk4c6780	cm	byte	draft		
 exe	0x004c67a0	ai_Unk4c67a0	cm	byte	draft		
 exe	0x004c67c0	ai_Unk4c67c0	cm	byte	draft		
-exe	0x004c6870	ai_Unk4c6870	cm	draft	draft		
+exe	0x004c6870	cm_CheckTableRequest	cm	byte	readable		
 exe	0x004c69c0	ai_Unk4c69c0	cm	shape	draft		
 exe	0x004c6a20	ai_Unk4c6a20	cm	byte	draft		
 exe	0x004c6a50	ai_Unk4c6a50	cm	byte	draft		
@@ -2282,13 +2282,13 @@ exe	0x004c6a60	ai_Unk4c6a60	cm	byte	draft
 exe	0x004c6a90	ai_Unk4c6a90	cm	byte	draft		
 exe	0x004c6ad0	ai_Unk4c6ad0	cm	byte	draft		
 exe	0x004c6b20	ai_Unk4c6b20	cm	byte	draft		
-exe	0x004c6bf0	ai_Unk4c6bf0	cm	draft	draft		
-exe	0x004c6cd0	ai_Unk4c6cd0	cm	draft	draft		
-exe	0x004c6e10	ai_Unk4c6e10	cm	draft	draft		
+exe	0x004c6bf0	cm_ExCreateCharacter	cm	byte	readable		
+exe	0x004c6cd0	cm_ExCreateNamedCharacter	cm	draft	readable	deep	
+exe	0x004c6e10	cm_ExTakeOverCharacter	cm	byte	readable		
 exe	0x004c6ec0	ai_Unk4c6ec0	cm	byte	draft		
 exe	0x004c6f60	ai_Unk4c6f60	cm	byte	draft		
 exe	0x004c7010	ai_Unk4c7010	cm	byte	draft		
-exe	0x004c70b0	ai_Unk4c70b0	cm	draft	draft		
+exe	0x004c70b0	cm_ExSellObjekt	cm	draft	readable	deep	
 exe	0x004c78c0	ai_Unk4c78c0	cm	draft	draft		
 exe	0x004c7c30	ai_Unk4c7c30	cm	draft	draft		
 exe	0x004c7d80	ai_Unk4c7d80	cm	byte	draft		
@@ -2410,7 +2410,7 @@ exe	0x004cdf00	ai_Unk4cdf00	cm	draft	draft
 exe	0x004cdf80	ai_Unk4cdf80	cm	draft	draft		
 exe	0x004cdfe0	ai_Unk4cdfe0	cm	byte	draft		
 exe	0x004ce040	ai_Unk4ce040	cm	draft	draft		
-exe	0x004ce130	ai_Unk4ce130	cm	byte	draft		
+exe	0x004ce130	cm_FindFighter	cm	byte	draft		
 exe	0x004ce170	ai_LedSelectBits	cm	byte	draft		
 exe	0x004ce1b0	ai_Unk4ce1b0	cm	draft	draft		
 exe	0x004ce200	ai_Unk4ce200	cm	draft	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 56b0880: VC6 declaration-set tie-break: adding G17GOODSMSG to cm_types.h or splitting GMSTOCK's pad29 into the float at 0x2c in f3gm_types.h (each alone, both layout-neutral, neither touches this function) swaps eax/ecx for the constants 1 / 0x429; the match was no evidence of the source. The changes type message 0x40 and the goods record (cm_SendGoodsDelta to byte). [waits for: the declaration set of unk_575860's head (its includes settling)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	shape+readable -> draft+readable at d4f0224: f3gm_types.h's GMGOOD names the cached price at +0x38 (int price, read and written by gm_ItemPrice, now byte) in place of pad38[8]; unk_575860 includes f3gm.h but never uses GMGOOD. Any change of that member list (tried int price_ / int v3c / unsigned char pad) flips this function's register allocation of three float constants (0x579df6, 0x57a1b6: the same stores, other registers): a VC6 declaration-set tie-break, no evidence of the original's source [waits for: a stable declaration set for unk_575860 (its head and the f3gm.h include)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
