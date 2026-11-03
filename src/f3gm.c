@@ -9567,37 +9567,36 @@ int gm_LevelPayout(int v, int level)
         fee = (int)(v * 0.15f);
     return (int)(fee + 0.5);
 }
-/* 0x50aa00, the list of the stall object 0x1dd of the object c: out[0] the capacity, out[1] the number of entries, per entry the amount (+0x68), the stock (0x50ab50) .., out[0x2a] / [0x2b] the sums, out[0x2c] the last price. ROUGH */
-
+/* 0x50aa00, the goods list of the stall object 0x1dd held by the object c, in gm_BuildingGoodsList's out record:
+   out[0] the stall's capacity (lvl1c), out[1] the number of entries, per entry its stock (gm_ListStock) at
+   out[2 + n], its item at the shorts from out[0x12], its count at out[0x1a + n]; out[0x2a] / [0x2b] the stock and
+   count sums, out[0x2c] the goods' value (gm_ItemPrice at 100 times the count), out[0x2d] the stall; 0 when c
+   holds no stall */
 
 int gm_StallGoodsList(char *c, unsigned *out)
 {
+    ORDOBJ *stall, *o;
     int i;
-    char *l;
-    unsigned short *o;
-    unsigned v;
 
     for (i = 0; i < 0x2e; i++)
         out[i] = 0;
-    l = gm_Query(*(void **)(c + 0x14), 1, 0, 0x1dd);
-    if (l != 0) {
-        o = (unsigned short *)gm_Query(*(void **)(l + 0x14), 1, 5);
-        out[0] = (unsigned char)l[0x1c];
-        while (o) {
-            out[out[1] + 0x1a] = *(unsigned *)(o + 7);
-            v = gm_ListStock((short *)l, *o);
-            out[out[1] + 2] = v;
-            out[0x2a] += out[out[1] + 2];
-            out[0x2b] += *(unsigned *)(o + 7);
-            *(unsigned short *)((char *)out + out[1] * 2 + 0x48) = *o;
-            out[1]++;
-            out[0x2c] = (int)gm_ItemPrice(*o, 100);
-            o = (unsigned short *)gm_QueryNext();
-        }
-        out[0x2d] = (unsigned)l;
-        return 1;
+    stall = (ORDOBJ *)gm_Query((void *)((ORDOBJ *)c)->list, 1, 0, 0x1dd);
+    if (stall == 0)
+        return 0;
+    o = (ORDOBJ *)gm_Query((void *)stall->list, 1, 5);
+    out[0] = stall->lvl1c;
+    while (o) {
+        out[0x1a + out[1]] = o->count;
+        out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
+        out[0x2a] += out[2 + out[1]];
+        out[0x2b] += o->count;
+        ((unsigned short *)(out + 0x12))[out[1]] = o->type;
+        out[1]++;
+        out[0x2c] = (int)(gm_ItemPrice(o->type, 100) * o->count + (int)out[0x2c]);
+        o = (ORDOBJ *)gm_QueryNext();
     }
-    return 0;
+    out[0x2d] = (unsigned)stall;
+    return 1;
 }
 /* 0x50aaf0, the amount of the object o in the list object l: minus one for the stall objects 0x2a / 0x116 / 0x1db / 0x1dc (the stall itself) */
 
