@@ -11,8 +11,10 @@
    hmt.h hst.h rt.h unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the
    definition (read the original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints,
    gv_CrimeText, gv_PassSentence (rt.h: its d2_SetObjValue). Meanwhile cm.h's own declarations of ord_AddGridAmount,
-   gm_RemoveOwned, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes (gv.h, f3gm.h, rt.h; RTPOINT
-   from rt_types.h); the other calls into those headers stay M7.
+   gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
+   (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
+   The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
+   layout, defined in this file; cm_FightRecordT views cm_FightRecord as it).
    Open: layout: the fight code 0x4cf670.. may be a TU of its own (cm_UpdatePointer reloads ai_PickedObject after
    calls of ai_LedSelectBits, a leaf defined above in this unit, as if it were external).
    unit of rea 8cef7d5b (src/game/cm.c); boundaries in decl/text.dcl */

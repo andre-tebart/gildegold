@@ -2448,19 +2448,19 @@ exe	0x004d08c0	cm_ClearMarks	cm	byte	readable
 exe	0x004d0920	cm_AddFighter	cm	byte	readable		
 exe	0x004d0a30	cm_CollectSceneChars	cm	byte	readable		
 exe	0x004d0a80	ai_Unk4d0a80	cm	byte	draft		
-exe	0x004d0ca0	ai_Unk4d0ca0	cm	byte	draft		
+exe	0x004d0ca0	cm_PlaceFlagObjects	cm	byte	draft		
 exe	0x004d0cd0	ai_Unk4d0cd0	cm	byte	draft		
-exe	0x004d0cf0	ai_Unk4d0cf0	cm	draft	draft		
-exe	0x004d0f80	ai_Unk4d0f80	cm	byte	draft		
-exe	0x004d0fa0	ai_Unk4d0fa0	cm	draft	draft		
-exe	0x004d1a10	ai_Unk4d1a10	cm	draft	draft		
-exe	0x004d1c20	ai_Unk4d1c20	cm	draft	draft		
+exe	0x004d0cf0	ai_ArmGateGuards	cm	byte	readable		
+exe	0x004d0f80	cm_ClearKind3MaskCB	cm	byte	draft		
+exe	0x004d0fa0	cm_SetupFightScene	cm	draft	readable	deep	
+exe	0x004d1a10	cm_EndFightScene	cm	byte	readable		
+exe	0x004d1c20	cm_PlaceFighters	cm	shape	readable		
 exe	0x004d1e00	ai_Unk4d1e00	cm	byte	draft		
 exe	0x004d1eb0	ai_Unk4d1eb0	cm	byte	draft		
-exe	0x004d1f10	ai_Unk4d1f10	cm	draft	draft		
-exe	0x004d2010	ai_Unk4d2010	cm	draft	draft		
-exe	0x004d2170	cm_BestCellNear	cm	draft	draft		
-exe	0x004d22d0	ai_Unk4d22d0	cm	draft	draft		
+exe	0x004d1f10	cm_NearestEnemy	cm	byte	readable		
+exe	0x004d2010	cm_ThreatAt	cm	byte	readable		
+exe	0x004d2170	cm_BestCellNear	cm	shape	readable		
+exe	0x004d22d0	cm_MostThreatenedCellNear	cm	shape	readable		
 exe	0x004d2450	ai_Unk4d2450	cm	byte	draft		
 exe	0x004d2490	ai_Unk4d2490	cm	shape	draft		
 exe	0x004d2550	ai_Unk4d2550	cm	byte	draft		
@@ -2482,7 +2482,7 @@ exe	0x004d3ae0	ai_Unk4d3ae0	cm	byte	draft
 exe	0x004d3b30	ai_Unk4d3b30	cm	draft	draft		
 exe	0x004d3d10	ai_Unk4d3d10	cm	byte	draft		
 exe	0x004d3ea0	ai_Unk4d3ea0	cm	byte	draft		
-exe	0x004d4050	ai_Unk4d4050	cm	shape	draft		
+exe	0x004d4050	cm_FightRole	cm	shape	readable		
 exe	0x004d4090	ai_Unk4d4090	cm	shape	draft		
 exe	0x004d4340	ai_Unk4d4340	cm	byte	draft		
 exe	0x004d4540	ai_Unk4d4540	cm	draft	draft		
@@ -2557,9 +2557,9 @@ exe	0x004e2d40	ai_Unk4e2d40	cm	byte	draft
 exe	0x004e2d90	ai_Unk4e2d90	cm	byte	draft		
 exe	0x004e2dc0	ai_Unk4e2dc0	cm	byte	draft		
 exe	0x004e2e00	ai_Unk4e2e00	cm	draft	draft		
-exe	0x004e2e60	ai_Unk4e2e60	cm	shape	draft		
-exe	0x004e3060	ai_Unk4e3060	cm	byte	draft		
-exe	0x004e30c0	ai_Unk4e30c0	cm	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
+exe	0x004e2e60	cm_LoadEventScene	cm	shape	draft		
+exe	0x004e3060	cm_FadeToBlack	cm	byte	draft		
+exe	0x004e30c0	cm_LeaveEventScene	cm	draft	draft		shape+draft -> draft+draft at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x004e3210	ai_Unk4e3210	cm	byte	draft		
 exe	0x004e3230	ai_Unk4e3230	cm	byte	draft		
 exe	0x004e3250	ai_Unk4e3250	cm	byte	draft		
@@ -2576,7 +2576,7 @@ exe	0x004e3490	ai_Unk4e3490	cm	draft	draft
 exe	0x004e3570	ai_Unk4e3570	cm	byte	draft		
 exe	0x004e3620	ai_Unk4e3620	cm	byte	draft		
 exe	0x004e3640	ai_Unk4e3640	cm	byte	draft		
-exe	0x004e3650	ai_Unk4e3650	cm	byte	draft		
+exe	0x004e3650	cm_ApplySeason	cm	byte	draft		
 exe	0x004e36a0	ai_Unk4e36a0	cm	draft	draft		
 exe	0x004e3750	ai_Unk4e3750	cm	draft	draft		
 exe	0x004e37a0	ai_Unk4e37a0	cm	byte	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at c69fda40: cm.h: ai_ArmGateGuards (0x4d0cf0) declared with its record type (struct CMGUARDREC *, the town gate event's guard record) instead of char *. unk_575860 never calls it, yet any new struct tag in cm.h flips a VC6 register tie-break in this 1839-byte function (regs 30 hunks only, the same statements; void * keeps it byte): the same declaration-set flip as ai_TutorialInitChapter3's debt, no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 0c023456: cm.h: cm_OrderToBestCell (0x4d0460) declared with the two parameters the original reads (rec, c; its third was never used and its one caller 0x4d3120 called it through a cast). unk_575860 never calls it, yet the declaration-set change flips a VC6 register tie-break in this 5377-byte function (code 36 / regs 10 hunks, the same statements); it already flips on unrelated renames and struct splits (see its earlier debt and ai_TutorialInitChapter2's): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable	deep	byte+readable -> draft+readable at 0c023456: cm.h: cm_OrderToBestCell (0x4d0460) declared with the two parameters the original reads (rec, c; its third was never used and its one caller 0x4d3120 called it through a cast). unk_575860 never calls it, yet the declaration-set change flips a VC6 register tie-break in this 5377-byte function (code 36 / regs 10 hunks, the same statements); it already flips on unrelated renames and struct splits (see its earlier debt and ai_TutorialInitChapter2's): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
