@@ -3267,7 +3267,6 @@ void main_RundenBeginn(void)
 #define MSG_I(m, o) (*(int *)((m) + (o)))
 #define main_PlayerIdInt (*(int *)&ai_PlayerId)  /* 0x6f25b8, ai_PlayerId (unsigned short) as the int the round change reads and masks */
 #define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
-#define main_ApEvents (*(HEAPEVENT (*)[0x100])((char *)&he_RunHandlers + 0x6a0))  /* 0x758ca0, the AP events (he.h; ls.c's he_RunHandlers block holds them) */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 #define main_GfxOn (*(int *)&full_data_624560)  /* 0x624560, nonzero when the round change shows its pages and fades (main_RoundReport tests it too) */
 #define main_NoRoundFade (*(int *)&full_data_6f25c0)  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared by the round start) */
@@ -3398,18 +3397,18 @@ void main_EndRound(void)
         io_PrintText(0x1eff, ai_CharsT[MAIN_PLAYER].v190);
         k = 0;
         do {
-            if ((main_ApEvents[k].income != 0 || main_ApEvents[k].cost != 0 || main_ApEvents[k].name[0] != 0) && main_ApEvents[k].key == MAIN_PLAYER) {
-                if (main_ApEvents[k].income != 0) {
-                    if (main_ApEvents[k].income >= 0)
-                        io_PrintText(0x1efc, main_ApEvents[k].name, main_ApEvents[k].income);
+            if ((he_ApEvents[k].income != 0 || he_ApEvents[k].cost != 0 || he_ApEvents[k].name[0] != 0) && he_ApEvents[k].key == MAIN_PLAYER) {
+                if (he_ApEvents[k].income != 0) {
+                    if (he_ApEvents[k].income >= 0)
+                        io_PrintText(0x1efc, he_ApEvents[k].name, he_ApEvents[k].income);
                     else
-                        io_PrintText(0x1efb, main_ApEvents[k].name, main_ApEvents[k].income);
-                } else if (main_ApEvents[k].cost > 0)
-                    io_PrintText(0x1efe, main_ApEvents[k].name, main_ApEvents[k].cost);
-                else if (main_ApEvents[k].cost < 0)
-                    io_PrintText(0x1efd, main_ApEvents[k].name, main_ApEvents[k].cost);
+                        io_PrintText(0x1efb, he_ApEvents[k].name, he_ApEvents[k].income);
+                } else if (he_ApEvents[k].cost > 0)
+                    io_PrintText(0x1efe, he_ApEvents[k].name, he_ApEvents[k].cost);
+                else if (he_ApEvents[k].cost < 0)
+                    io_PrintText(0x1efd, he_ApEvents[k].name, he_ApEvents[k].cost);
                 else
-                    io_PrintText(0x1efb, main_ApEvents[k].name);
+                    io_PrintText(0x1efb, he_ApEvents[k].name);
             }
             k++;
         } while (k < 0x100);

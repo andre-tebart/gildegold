@@ -74,8 +74,9 @@ typedef struct HEAPEVENT {              /* 0x50 bytes, an AP event (0x100 of the
     char name[0x40];                    /* 0x10, 0x3f characters */
 } HEAPEVENT;
 #pragma pack(pop)
+#define he_ApEvents (*(HEAPEVENT (*)[0x100])((char *)&he_RunHandlers + 0x6a0))  /* 0x758ca0, the AP events (ls.c's he_RunHandlers block holds them) */
 int he_SumApEvents(int key);
-int *he_AddApEvent(int a, char *name, int c, int d);  /* 0x53eec0, registers an AP event, returns its counter byte (0 when full) */
+HEAPEVENT *he_AddApEvent(int key, char *name, int income, int cost);  /* 0x53eec0, registers an AP event, returns it (0 when full) */
 int he_SumApEventCosts(int key);
 void he_PostEvent6d(void);
 void he_PostEvent6b(void);
