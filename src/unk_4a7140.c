@@ -2670,6 +2670,8 @@ int ai_RegisterSocialActions(int a)
     return am_RegisterMethod(&act, a) != 0;
 }
 
+/* the poker unit's one .rdata constant: it precedes the unit's literals (77.0f at 0x5ed1c0, ...), after am's */
+const int ai_CardBack = 0x18;  /* 0x5ed1bc, the picture offset of the card back (d2_Pics[0x775 + ai_CardBack], ai_PokerSeatPanel) */
 G10GAME * ai_PokerTable = 0;  /* 0xf83654 */
 G10CARD ai_PokerDeck[24] = {0};  /* 0xf83660 */
 G10NPC ai_PokerOpponents[2] = {0};  /* 0xf837e0 */
