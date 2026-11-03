@@ -2,6 +2,8 @@
 #ifndef HE_H
 #define HE_H
 
+struct D3OBJECT;
+
 void he_Unk53d430(unsigned char *ev);
 void he_Unk53d470(unsigned char *ev);
 int he_Unk53d4b0(void);
@@ -38,7 +40,7 @@ char *he_NextEvent(void);
 char *he_FindEvent(int n, ...);
 int he_NoEvent9bFor(int a);                     /* 0x56f3b0, 1 when no running type 0x9b event has +0xac == a + 4 */
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */
-void he_Unk53e4e0(int obj);
+void he_SpreadGfxInfos(struct D3OBJECT *obj);
 int he_Unk53e5f0(int e, int name, int obj);
 void he_Unk53e780(int rec, char *name, int obj);
 void he_Unk53e840(int *e);
