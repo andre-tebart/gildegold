@@ -33,6 +33,16 @@ struct D3SURF;
 struct AICHAR;
 struct D3FLMAP;
 typedef struct G18POP { float t; int v; int h; struct AICHAR *c; int kind; } G18POP;      /* 0x14 bytes, a floating number: its rise left (t), the value, the screen text, the character, the kind */
+typedef struct CMPORTRAIT {             /* 0x20 bytes, a portrait box of a selected fighter (cm_Portraits, built by 0x4cfc10) */
+    int portrait;                       /* 0x00, the portrait picture object (a click toggles D2OBJ.checked: the selection) */
+    int frame;                          /* 0x04, the frame picture object (0x5da) */
+    int win;                            /* 0x08, the box window, -1: the box is unused */
+    int unused0c;                       /* 0x0c, set to -1 only */
+    int text;                           /* 0x10, the name and health text */
+    int weaponPic;                      /* 0x14, the weapon picture (goods picture id + 0xdf) */
+    int countText;                      /* 0x18, the count left of the weapon item (kind 1 / 2) */
+    struct AICHAR *c;                   /* 0x1c, the character */
+} CMPORTRAIT;
 typedef struct G18LOG { char text[0x40]; char name[0x24]; int to; int id; } G18LOG;      /* 0x6c bytes, a lobby chat line: the text, the sender's name, the receiver (0: everybody), the sender */
 
 #pragma pack(push, 1)
@@ -507,9 +517,9 @@ int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
 void ai_Unk4cd820(int v);  /* 0x4cd820 */
 int cm_ExLobby(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
 char *ai_FindWeaponRecord(int id);  /* 0x4cd9d0 */
-char *ai_Unk4cda00(char *c);  /* 0x4cda00 */
+char *cm_CharWeaponAny(char *c);  /* 0x4cda00 */
 char *cm_CharWeapon(char *c);  /* 0x4cda50 */
-char *ai_Unk4cdac0(char *c);  /* 0x4cdac0 */
+char *cm_CharWeaponItem(char *c);  /* 0x4cdac0 */
 void cm_DiscardWeapons(char *c);  /* 0x4cdb20 */
 char cm_FightWeaponLoss(char *c);  /* 0x4cdb80 */
 float cm_FightStrength(char *c);  /* 0x4cdcf0 */
@@ -535,7 +545,8 @@ typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at 
     char pad04;
     unsigned char dmgMin;               /* 0x05, the least damage (the bomb adds a random part below dmgMax - dmgMin) */
     unsigned char dmgMax;               /* 0x06, the most damage */
-    char pad07[0x55];
+    char pad07[0x51];
+    int kind;                           /* 0x58, 1 / 2: used up with the item (cm_CharWeapon refuses an item with nothing left) */
 } AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
 extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
@@ -624,13 +635,13 @@ extern char *cm_PickMarker;  /* 0x6f0cf0 */
 extern char *ai_PickedObject;  /* 0x6f22e8 */
 extern int ai_PickedChar;  /* 0x6f22f8 */
 
-void ai_Unk4cf9c0();  /* 0x4cf9c0 */
+void cm_UpdatePortraits();  /* 0x4cf9c0 */
 void d2_SetObjText(int obj, char *text);  /* 0x4734d0 */
 void d2_ScaleObject(int obj, int a);  /* 0x475e80 */
 void d2_AddPointerItem(int id, int amount);  /* 0x476b90 */
 void d2_ClearPointerItems(void);  /* 0x476c70 */
 extern int d2_ClickedId;  /* 0xf8a668 */
-extern char ai_Unk930400[];  /* 0x930400 */
+extern CMPORTRAIT cm_Portraits[6];  /* 0x930400 */
 extern struct D2OBJ *d2_Objs;  /* 0xf8f080, 0x2ec bytes each (d2.c); this header's unit adds byte offsets through d2_ObjsC */
 
 void ai_Unk4cfc10();  /* 0x4cfc10 */

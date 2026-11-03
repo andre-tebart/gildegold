@@ -6654,7 +6654,7 @@ char *ai_FindWeaponRecord(int id)
 }
 /* 0x4cda00, the first record (ai_FindWeaponRecord) of the entries of kind 5 of the list +0x178 of the character */
 
-char *ai_Unk4cda00(char *c)
+char *cm_CharWeaponAny(char *c)
 {
     char *q, *r;
 
@@ -6683,7 +6683,7 @@ char *cm_CharWeapon(char *c)
 }
 /* 0x4cdac0, the entry (not the record) of that search, 0: none */
 
-char *ai_Unk4cdac0(char *c)
+char *cm_CharWeaponItem(char *c)
 {
     char *q, *r;
 
@@ -7678,88 +7678,96 @@ void cm_UpdatePointer()
 }
 
 #define G19_E(e, o) (*(int *)((e) + (o)))
-#define G19_5176D0 ((void (*)(char *, char *, ...))txt_Format)
+#define txt_FormatS ((void (*)(char *, char *, ...))txt_Format)  /* txt_Format with a format text where the id goes (the token engine takes either) */
 
-/* 0x4cf9c0, the portrait boxes ai_Unk930400[6] of 0x20 bytes (+0 scene, +4 / +8 window objects, +0x10 text, +0x14 picture,
-   +0x18 second text, +0x1c the character): shown for the selected characters, with the load (x 100 as "%1N1 %i%"), the
-   picture of the job and its count. Rough draft. */
-void ai_Unk4cf9c0()
+/* 0x4cf9c0, refreshes the portrait boxes cm_Portraits: after a click a portrait's checked state becomes its
+   character's selection; each box of a character whose body is of type 1 hides its window and frame, the others
+   show the selection, the name with the health in percent ("%1N1 %i%"), the picture of the weapon (replaced when the
+   weapon changed) and, for a kind 1 / 2 weapon, the count left; cm_SelectedCount counts the selected ones
+   @deep Read whole against 0x4cf9c0..0x4cfc0a: the same calls, arguments, stores and branches in the same
+   order (click loop on checked, the type 1 body hiding d2_Wins[win] / d2_Wins[frame].parent, selection,
+   txt_Format name / health, the weapon picture replaced when D2OBJ.pic differs, the uses left text). Left:
+   VC6's choices only: ours keeps -1 in ebp (or ebp, -1; cmp reg, ebp) where the original compares with the
+   immediate and uses ebp for d2_Objs, and ours biases the loop pointer of the second loop to
+   &cm_Portraits[0].win (mov esi, cm_Portraits+8; fields at -8 / -4 / +0 .. +0x14, end +0xc8) where the
+   original walks from the struct (+0 .. +0x1c, end +0xc0). Tried a CMPORTRAIT * walk (worse: 49 ins) and
+   the index form (this) (references: M8 at +0x74: ours refers to cm_Portraits+0x8 (0x930408), the
+   original's field to 0x930400 (cm_Portraits) (and 1 more), explained: the two M8 are the biased induction
+   pointer: +0x74 is the loop start &cm_Portraits[0].win against &cm_Portraits[0], +0x234 its end
+   &cm_Portraits[6].win against &cm_Portraits[6] (cm_DamagePops follows the array); every field access
+   lands on the same address) */
+
+void cm_UpdatePortraits()
 {
     char buf[0x100];
-    char *e, *c, *o, *p;
-    int t;
+    int i;
+    AICHAR *c;
+    AIWEAPON *w;
+    AIOBJ *item;
 
     if (d2_ClickedId != -1) {
-        for (e = ai_Unk930400; e < ai_Unk930400 + 0xc0; e += 0x20) {
-            if (G19_E(e, 8) != -1 && d2_PointerObj == G19_E(e, 0)) {
-                if (*(char **)(d2_ObjsC + G19_E(e, 0) * 0x2ec + 0x28) != 0)
-                    *(char *)(*(char **)(e + 0x1c) + 0x188) = 1;
+        for (i = 0; i < 6; i++) {
+            if (cm_Portraits[i].win != -1 && d2_PointerObj == cm_Portraits[i].portrait) {
+                if (d2_Objs[cm_Portraits[i].portrait].checked != 0)
+                    cm_Portraits[i].c->selected = 1;
                 else
-                    *(char *)(*(char **)(e + 0x1c) + 0x188) = 0;
+                    cm_Portraits[i].c->selected = 0;
             }
         }
     }
     d2_ClearPointerItems();
     cm_SelectedCount = 0;
-    for (e = ai_Unk930400; e < ai_Unk930400 + 0xc0; e += 0x20) {
-        if (G19_E(e, 8) == -1)
+    for (i = 0; i < 6; i++) {
+        if (cm_Portraits[i].win == -1)
             continue;
-        c = *(char **)(e + 0x1c);
-        if (*(int *)(*(char **)(*(char **)(c + 0x184) + 0x34) + 0x218) == 1) {
-            d2_EnableObject(*(int *)(ai_Unkf8f39c - 0x10 + G19_E(e, 8) * 0x3c4), 0);
-            d2_EnableObject(*(int *)(ai_Unkf8f39c - 0x10 + G19_E(e, 4) * 0x3c4), 0);
+        c = cm_Portraits[i].c;
+        if (c->scene->obj->type == 1) {
+            d2_EnableObject(d2_Wins[cm_Portraits[i].win].parent, 0);
+            d2_EnableObject(d2_Wins[cm_Portraits[i].frame].parent, 0);
             continue;
         }
-        if (c[0x188] != 0) {
-            d2_AddPointerItem(*(int *)(c + 0x18c), 1);
-            d2_SetObjValue(G19_E(e, 0), 1);
+        if (c->selected != 0) {
+            d2_AddPointerItem(c->picture, 1);
+            d2_SetObjValue(cm_Portraits[i].portrait, 1);
             cm_SelectedCount++;
         } else
-            d2_SetObjValue(G19_E(e, 0), 0);
-        t = (int)(gm_HealthRatio(c) * 100.0);
-        G19_5176D0(buf, "%1N1 %i%", *(unsigned short *)c, t);
-        d2_SetObjText(G19_E(e, 0x10), buf);
-        o = ai_Unk4cda00(c);
-        if (o == 0 || *(int *)o == 0)
+            d2_SetObjValue(cm_Portraits[i].portrait, 0);
+        txt_FormatS(buf, "%1N1 %i%", cm_Portraits[i].c->id, (int)(gm_HealthRatio(cm_Portraits[i].c) * 100.0));
+        d2_SetObjText(cm_Portraits[i].text, buf);
+        w = (AIWEAPON *)cm_CharWeaponAny((char *)cm_Portraits[i].c);
+        if (w == 0 || w->id == 0)
             continue;
-        if (G19_E(e, 0x14) != -1) {
-            if (*(int *)(d2_ObjsC + G19_E(e, 0x14) * 0x2ec + 8) != *(int *)o + 0xdf) {
-                if (G19_E(e, 0x14) != -1)
-                    d2_RemoveObj(G19_E(e, 0x14));
-                d2_LastWindow = G19_E(e, 8);
-                G19_E(e, 0x14) = d2_WinOpenPic(0x54, 0xf, *(int *)o + 0xdf, G19_E(e, 8));
-                d2_ScaleObject(G19_E(e, 0x14), -2);
-            }
-        } else {
-            d2_LastWindow = G19_E(e, 8);
-            G19_E(e, 0x14) = d2_WinOpenPic(0x54, 0xf, *(int *)o + 0xdf, G19_E(e, 8));
-            d2_ScaleObject(G19_E(e, 0x14), -2);
+        if (cm_Portraits[i].weaponPic == -1 || d2_Objs[cm_Portraits[i].weaponPic].pic != w->id + 0xdf) {
+            if (cm_Portraits[i].weaponPic != -1)
+                d2_RemoveObj(cm_Portraits[i].weaponPic);
+            d2_LastWindow = cm_Portraits[i].win;
+            cm_Portraits[i].weaponPic = d2_WinOpenPic(0x54, 0xf, w->id + 0xdf, cm_Portraits[i].win);
+            d2_ScaleObject(cm_Portraits[i].weaponPic, -2);
         }
-        if (G19_E(e, 0x18) == -1)
+        if (cm_Portraits[i].countText == -1)
             continue;
-        if (*(int *)(o + 0x58) == 1 || *(int *)(o + 0x58) == 2) {
-            p = ai_Unk4cdac0(c);
-            if (p != 0) {
-                sprintf(buf, "%i", *(int *)(p + 0x20));
-                d2_SetObjText(G19_E(e, 0x18), buf);
+        if (w->kind == 1 || w->kind == 2) {
+            item = (AIOBJ *)cm_CharWeaponItem((char *)cm_Portraits[i].c);
+            if (item != 0) {
+                sprintf(buf, "%i", item->usesLeft);
+                d2_SetObjText(cm_Portraits[i].countText, buf);
                 continue;
             }
         }
-        if (G19_E(e, 0x18) != -1)
-            d2_SetObjText(G19_E(e, 0x18), &ch_EmptyName);
+        if (cm_Portraits[i].countText != -1)
+            d2_SetObjText(cm_Portraits[i].countText, &ch_EmptyName);
     }
 }
-
 #define G19_R(id, o, t) (*(t *)(d2_ObjsC + (id) * 0x2ec + (o)))
 
-/* 0x4cfc10, builds the portrait boxes of ai_Unk930400[6] (see 0x4cf9c0) for the selected characters ai_SceneChars[]:
+/* 0x4cfc10, builds the portrait boxes of cm_Portraits[6] (see 0x4cf9c0) for the selected characters ai_SceneChars[]:
    window objects, the picture of the job, the texts, 0x80 pixels apart. Rough draft. */
 void ai_Unk4cfc10()
 {
     char *e, *o, **pp;
     int x = 0, t;
 
-    for (e = ai_Unk930400; e < ai_Unk930400 + 0xc0; e += 0x20) {
+    for (e = (char *)cm_Portraits; e < (char *)cm_Portraits + 0xc0; e += 0x20) {
         G19_E(e, 8) = -1;
         G19_E(e, 0) = -1;
         G19_E(e, 0xc) = -1;
@@ -7767,8 +7775,8 @@ void ai_Unk4cfc10()
         G19_E(e, 0x18) = -1;
         G19_E(e, 0x14) = -1;
     }
-    e = ai_Unk930400;
-    for (pp = ai_Unk7603a0V; e < ai_Unk930400 + 0xc0 && (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
+    e = (char *)cm_Portraits;
+    for (pp = ai_Unk7603a0V; e < (char *)cm_Portraits + 0xc0 && (int)pp < ((unsigned)&ai_SceneChars + 0x7c); pp++) {
         if (*pp == 0)
             continue;
         if (!(ai_LedSelectBits(*(unsigned short *)cm_CutChar, *pp) & 0x800))
@@ -7798,13 +7806,13 @@ void ai_Unk4cfc10()
         x += 0x80;
         e += 0x20;
     }
-    ai_Unk4cf9c0();
+    cm_UpdatePortraits();
 }
-/* 0x4cfe70, removes the portrait boxes ai_Unk930400[6] again */
+/* 0x4cfe70, removes the portrait boxes cm_Portraits[6] again */
 
 void ai_Unk4cfe70()
 {
-    int *p = (int *)(ai_Unk930400 + 8);
+    int *p = (int *)((char *)cm_Portraits + 8);
     int t;
 
     do {
@@ -7815,7 +7823,7 @@ void ai_Unk4cfe70()
             d2_RemoveObj(t);
         }
         p += 8;
-    } while ((int)p < (int)((unsigned)&ai_Unk930400 + 0xc8));
+    } while ((int)p < (int)((unsigned)&cm_Portraits + 0xc8));
 }
 /* 0x4cfeb0, the click on an own object of the pick ai_PickedObject (type 2) while characters are selected: the first selected
    character that stands still gets the comment "_ARBEITER_KOMMENTARE_KLICK", the object is marked (+0x188). Rough draft. */
@@ -7881,7 +7889,7 @@ int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z)
         L[0] = *(int *)(c + 4);
         L[1] = 2;
     } else if (*(int *)k == 0x15e || *(int *)k == 0x160) {
-        r = ai_Unk4cdac0(c);
+        r = cm_CharWeaponItem(c);
         if (r == 0 || *(int *)(r + 0x20) <= 0) {
             sv_SetStatusText((char *)ai_Unk143e8a4);
             return -1;
@@ -7892,7 +7900,7 @@ int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z)
         L[6] = z;
         L[1] = 2;
     } else if (*(int *)k == 0x174) {
-        r = ai_Unk4cdac0(c);
+        r = cm_CharWeaponItem(c);
         if (r == 0 || *(int *)(r + 0x20) <= 0) {
             sv_SetStatusText((char *)ai_Unk143e8a8);
             return -1;
@@ -7903,7 +7911,7 @@ int ai_Unk4cffd0(char *rec, char *c, char *tgt, int x, int z)
         L[6] = z;
         L[1] = 2;
     } else if (*(int *)k == 0x176) {
-        r = ai_Unk4cdac0(c);
+        r = cm_CharWeaponItem(c);
         if (r == 0 || *(int *)(r + 0x20) <= 0) {
             sv_SetStatusText((char *)ai_Unk143e8ac);
             return -1;
@@ -8169,7 +8177,7 @@ char *ai_Unk4d0920(char *c, int a)
     k = cm_CharWeapon(c);
     *(float *)(*(char **)(r + 0x184) + 0x1a0) = (float)(unsigned char)k[9] * ai_Unk5eb9b8;
     sprintf(*(char **)(*(char **)(r + 0x184) + 0x34), "%i", *(int *)(r + 4));
-    w = ai_Unk4cdac0(c);
+    w = cm_CharWeaponItem(c);
     if (w != 0) {
         if (*(int *)(k + 0x58) == 2)
             *(int *)(w + 0x20) = 6;
@@ -8391,7 +8399,7 @@ void ai_Unk4d0fa0(char *rec)
     memset(ai_Unk930600, 0, 0x4380);
     for (p = ai_Unk930600; (int)p < ((unsigned)&ai_Unk930600 + 0x4380); p += 0x21c)
         *(unsigned short *)p = 0xffff;
-    for (p = ai_Unk930400 + 8; (int)p < ((unsigned)((unsigned)ai_Unk930400 + 0xc0) + 0x8); p += 0x20)
+    for (p = (char *)cm_Portraits + 8; (int)p < ((unsigned)((unsigned)cm_Portraits + 0xc0) + 0x8); p += 0x20)
         *(int *)p = -1;
     ai_Unk6f0d0c = sb_LoadSampleBank("kampf.sbf", 1);
     ai_Unk6f0d10 = sb_LoadSampleBank("kampf\\armbrust.sbf", 1);
@@ -9225,7 +9233,7 @@ float ai_Unk4d2e30(char *c, int type)
         if (c[0x1c4] != 0)
             v = 0.5f;
         k = *(int *)(cm_CharWeapon(c) + 0x58);
-        if ((k == 1 || k == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
+        if ((k == 1 || k == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
             v = 0.2f;
         return cm_FightStrength(c) * v;
     case 1:
@@ -9238,7 +9246,7 @@ float ai_Unk4d2e30(char *c, int type)
                 v = 0.5f;
         }
         k = *(int *)(cm_CharWeapon(c) + 0x58);
-        if ((k == 1 || k == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
+        if ((k == 1 || k == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
             v = 1.0f;
         return v / cm_FightStrength(c);
     case 2:
@@ -9339,7 +9347,7 @@ void ai_Unk4d3120(char *rec, char *c)
     switch ((unsigned char)c[0x1c4]) {
     case 0:
         k = cm_CharWeapon(c);
-        if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && *(int *)(ai_Unk4cdac0(c) + 0x20) <= 0)
+        if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && *(int *)(cm_CharWeaponItem(c) + 0x20) <= 0)
             return;
         if (*(int *)(k + 0x58) == 2) {
             sc = *(char **)(ai_Unk5fb5b0 + 0xb0);
@@ -9421,10 +9429,10 @@ int cm_CheckDeath(char *c)
     sb_PlaySampleI(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
     if (cm_Random(100) > 0x32) {
         *(int *)(c + 0x24) = (int)((double)(-(int)*(float *)(c + 0x1c)) - ai_Unk5eb8e0);
-        G19_5176D0(buf, (char *)0x1181, *(unsigned short *)c);
+        txt_FormatS(buf, (char *)0x1181, *(unsigned short *)c);
     } else {
         *(int *)(c + 0x24) = (int)(ai_Unk5eb990 - (double)(int)*(float *)(c + 0x1c));
-        G19_5176D0(buf, (char *)0x1182, *(unsigned short *)c);
+        txt_FormatS(buf, (char *)0x1182, *(unsigned short *)c);
     }
     o = *(int *)(c + 0x1ac);
     if (o != 0) {
@@ -9439,7 +9447,7 @@ int cm_CheckDeath(char *c)
 }
 
 #define G19_FIGHTER_SYNC(ch)                                                          \
-    r = ai_Unk4cdac0(ch);                                                             \
+    r = cm_CharWeaponItem(ch);                                                             \
     if (r != 0) {                                                                     \
         vv = -1;                                                                      \
         cm_BeginFieldBlock(r, *(int *)(r + 2));                                             \
@@ -9522,7 +9530,7 @@ void ai_Unk4d3550(char *ev)
                 }
                 if (*(int *)ka == 0x16e) {
                     att[8] = 4;
-                    G19_5176D0(buf, (char *)0x1188, *(int *)(tbl + 0x54), *(unsigned short *)att);
+                    txt_FormatS(buf, (char *)0x1188, *(int *)(tbl + 0x54), *(unsigned short *)att);
                     sv_SetStatusText(buf);
                 }
             } else if (*(char **)(*(char **)(att + 0x184) + 0x128) == 0 ||
@@ -9776,7 +9784,7 @@ int ai_Unk4d4090(int x, int y, int mode)
             G19_R(t2, 0x74, short) = 0x56;
             G19_R(t2, 0x14, short) = 0x50;
             G19_R(t2, 0x5c, int) = 1;
-            G19_5176D0(buf, "%T", (int)gm_GoodsPrice(*(unsigned short *)q, ai_OwnPlayer) * *(int *)(q + 0xe));
+            txt_FormatS(buf, "%T", (int)gm_GoodsPrice(*(unsigned short *)q, ai_OwnPlayer) * *(int *)(q + 0xe));
             d2_SetObjText(t2, buf);
             total = (int)(gm_GoodsPrice(*(unsigned short *)q, ai_OwnPlayer) * *(int *)(q + 0xe) + total);
             j++;
@@ -9814,7 +9822,7 @@ void ai_Unk4d4340(int *ids, int x, int y)
         G19_R(t, 0x14, short) = 0x78;
         G19_R(t, 0x5c, int) = 1;
         G19_R(t, 0x74, short) = 0x56;
-        G19_5176D0(buf, "%1N1 %i%", *(unsigned short *)c, (int)(gm_HealthRatio(c) * 100.0));
+        txt_FormatS(buf, "%1N1 %i%", *(unsigned short *)c, (int)(gm_HealthRatio(c) * 100.0));
         d2_SetObjText(t, buf);
         o = cm_CharWeapon(c);
         if (o != 0 && *(int *)o != 0) {
@@ -10580,7 +10588,7 @@ void ai_Unk4d6970(char *r)
 
     d2_SetObjValue(ai_Unk60cb64, 0, ai_Unk60d364, ai_Unk6f0d84 - ai_Unk6f0d80 + 1);
     sv_BorderCameraView();
-    ai_Unk4cf9c0();
+    cm_UpdatePortraits();
     cm_UpdatePointer();
     ai_Unk4cfeb0();
     ai_Unk4d0740(r);
@@ -10872,7 +10880,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
         ((char *)s)[0x1c] = 1;
     k = cm_CharWeapon(c);
     if (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) {
-        x = ai_Unk4cdac0(c);
+        x = cm_CharWeaponItem(c);
         if (x != 0 && *(int *)(x + 0x20) <= 0)
             return -1;
     }
@@ -10912,7 +10920,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
             id = *(int *)(r2 + 4);
             *(int *)(r2 + 8) = -1;
             if (id == 0) {
-                x = ai_Unk4cdac0(g);
+                x = cm_CharWeaponItem(g);
                 if (x != 0 && *(int *)(x + 0x20) > 0)
                     *(int *)(r2 + 8) = ai_Unk4cffd0(other, g, c, 0, 0);
             }
@@ -11001,7 +11009,7 @@ void ai_Unk4d76a0(int *rec)
                         id = 6;
                         goto stop;
                     }
-                    if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && (other = ai_Unk4cdac0(c)) != 0 && *(int *)(other + 0x20) < 1) {
+                    if ((*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2) && (other = cm_CharWeaponItem(c)) != 0 && *(int *)(other + 0x20) < 1) {
                         m[0] = *(int *)(c + 4);
                         m[1] = 0;
                         res = G21_C40(rec[4], m);
@@ -11066,7 +11074,7 @@ void ai_Unk4d76a0(int *rec)
                             r2 = (char *)cm_CutEntrySlot(other, x);
                             if ((*(int *)(r2 + 8) == -1 || cm_GetSlotState(*(int *)(r2 + 8)) != 0) &&
                                 (*(int *)(r2 + 8) = -1, *(int *)(r2 + 4) == 0) &&
-                                ai_Unk4cdac0(x) != 0 && *(int *)(ai_Unk4cdac0(x) + 0x20) > 0) {
+                                cm_CharWeaponItem(x) != 0 && *(int *)(cm_CharWeaponItem(x) + 0x20) > 0) {
                                 cm_SendSetField(*(int *)(c + 4), 0x1c8, 4, 0x20000000, 0);
                                 *(int *)(r2 + 8) = ai_Unk4cffd0(other, x, c, 0, 0);
                             }
@@ -15270,7 +15278,7 @@ extern int ai_Unk92cac0;
 extern char cm_CutInfos[16][0x35c];
 extern float ai_Unk9300a0[0xb4];
 extern char * ai_Unk930380[32];
-extern char ai_Unk930400[192];
+extern CMPORTRAIT cm_Portraits[6];
 extern G18POP cm_DamagePops[16];
 extern char ai_Unk930600[21376];
 extern char * ai_Unk935980[32];
@@ -15516,7 +15524,7 @@ int ai_Unk92cac0 = 0;  /* 0x92cac0 */
 char cm_CutInfos[16][0x35c] = {0};  /* 0x92cae0 */
 float ai_Unk9300a0[0xb4] = {0};  /* 0x9300a0 */
 char * ai_Unk930380[32] = {0};  /* 0x930380 */
-char ai_Unk930400[192] = {0};  /* 0x930400 */
+CMPORTRAIT cm_Portraits[6] = {0};  /* 0x930400 */
 G18POP cm_DamagePops[16] = {0};  /* 0x9304c0 */
 char ai_Unk930600[21376] = {0};  /* 0x930600 */
 char * ai_Unk935980[32] = {0};  /* 0x935980 */
