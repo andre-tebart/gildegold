@@ -1499,3 +1499,7 @@
 2026-11-03T15:55:52 0x004d8c70 data ai_Unk4d8c70 -> cm_StackPicture by:main why:its comment: draws the next picture 0x4df of a stack (o + 0x2c counts them)
 2026-11-03T15:55:52 0x004e8530 data amt_Unk4e8530 -> amt_HasDeposalVote by:main why:its comment: 1 when the office r (state 2) has two valid candidates; the council session holds a deposition vote for it
 2026-11-03T15:55:52 0x0052fd80 data sv_Unk52fd80 -> sv_SyncText by:main why:sends the text as message 0xe and runs frames showing it until the answer arrives (cm_GetSlotState)
+2026-11-03T16:04:11 0x004e53e0 data ai_Unk4e53e0 -> cm_DialogTimer by:main why:its comment: the progress of a timed dialog, the slider set to the percent of the duration left; every dialog of the cutscenes starts it with (dlg, ms, 1) and polls it with (dlg, 0, 0)
+2026-11-03T16:04:11 0x004da9e0 data ai_Unk4da9e0 -> cm_AskDeposeVote by:main why:the player's deposition vote dialog (text 0x12c6: yes / no / abstain), called by the session member callback for mode 1 (cm.c 0x4dada0)
+2026-11-03T16:04:11 0x004dab50 func ai_Unk4dab50 -> cm_AskElectVote by:main why:the player's election vote dialog: a button per applicant (texts 0x12dc / 0x12dd), called by the session member callback for mode 2 (cm.c 0x4dada0)
+2026-11-03T16:04:11 0x0060d360 data ai_Unk60d360 -> cm_DialogFrameFlags by:main why:its declaration: the frame wait flags of the dialogs (sv_RunFrame's second argument in every cutscene dialog loop)

@@ -931,18 +931,18 @@ int cm_EndSpecialTrack();  /* 0x4e3640 */
 void amt_UpdateOffices();  /* 0x4e85d0 */
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040 */
 void cm_RunCouncilSession(G28REC *a);  /* 0x4d8e20 */
-extern int ai_Unk60d360;  /* 0x60d360, the frame wait of the dialogs (0x5309a0) */
+extern int cm_DialogFrameFlags;  /* 0x60d360, the frame wait of the dialogs (0x5309a0) */
 extern int d2_ClickedId;  /* 0xf8a668 */
 int d2_GetWinObj();  /* 0x475b80 */
-int ai_Unk4e53e0();  /* 0x4e53e0 */
+int cm_DialogTimer();  /* 0x4e53e0 */
 int ai_TrustedOfTwo();  /* 0x4aab90 */
 int ai_TrustedOfFour();  /* 0x4aad30 */
 int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c (this unit calls it through amt_GetOfficeI) */
 int amt_GetKind(int k, struct AMTKIND *out);  /* 0x4e6f80 */
 int amt_GetOfficeApplicants();  /* 0x4e76b0 */
 
-int ai_Unk4da9e0(char *a, char *b, char *c, int *out);  /* 0x4da9e0 */
-int ai_Unk4dab50(int a, char *b, int *c, int *out);  /* 0x4dab50 */
+int cm_AskDeposeVote(char *a, char *b, char *c, int *out);  /* 0x4da9e0 */
+int cm_AskElectVote(int office, struct AICHAR *b, int *ids, int *click);  /* 0x4dab50 */
 void ai_Unk4dada0(char *r, int *m);  /* 0x4dada0 */
 
 extern int ai_Unk6f0d94;  /* 0x6f0d94 */

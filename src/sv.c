@@ -6905,7 +6905,7 @@ int sv_PumpMessages(void)
 
 extern unsigned sv_ChatTime;  /* 0x623ec4 */
 extern int sv_QuickChatForm;  /* 0x623ec8 */
-extern int ai_Unk60d360;  /* 0x60d360 */
+extern int cm_DialogFrameFlags;  /* 0x60d360 */
 int cm_SendExSysMessage(unsigned char id, void *msg);                     /* 0x4c4db0 */
 int cm_GetSlotState();                     /* 0x4c3ae0 */
 void d2_SetViewEnabled(int view, int on);  /* 0x475590 */
@@ -6975,7 +6975,7 @@ void sv_SyncText(char *t)
     m = ((int (*)(int, int))cm_SendExSysMessage)(0xe, msg);
     while (cm_GetSlotState(m) == 0) {
         sv_SetStatusText(t);
-        sv_RunFrame(0, ai_Unk60d360 | 0x210000);
+        sv_RunFrame(0, cm_DialogFrameFlags | 0x210000);
     }
 }
 /* 0x52fe00, the three network shutdown steps */

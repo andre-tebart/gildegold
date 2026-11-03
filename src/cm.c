@@ -139,6 +139,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
+#define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 #define cm_PicsT (*(struct D2PIC **)&ai_Unk6ed918)  /* 0x6ed918, ai_Unk6ed918 (cm.h: char *), d2.c's d2_Pics, as the D2PIC records it points to */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
                                        as ints; unk_5d33b0.c GYPSYROW) */
@@ -12251,7 +12252,7 @@ void cm_RunCouncilSession(G28REC *a)
 }
 /* 0x4da9e0, the vote dialog "cutscenes\\sitzungen" (buttons from the text 0x12c6): the answer of the player's choice; *out the click */
 
-int ai_Unk4da9e0(char *a, char *b, char *c, int *out)
+int cm_AskDeposeVote(char *a, char *b, char *c, int *out)
 {
     int v, b1, b2, b3, dlg, r;
     int tmp[1];
@@ -12265,11 +12266,11 @@ int ai_Unk4da9e0(char *a, char *b, char *c, int *out)
     d2_GetWinObj(v, 0, r + 1);
     b3 = d2_GetWinObj(v, 0, r + 2);
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, 0x5dc, 1);
+    cm_DialogTimer(dlg, 0x5dc, 1);
     r = ai_TrustedOfTwo(a, b, c, tmp);
     d2_ClickedId = -1;
-    while (sv_RunFrame(ai_Unk4da9e0, ai_Unk60d360) != 0) {
-        if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+    while (sv_RunFrame(cm_AskDeposeVote, cm_DialogFrameFlags) != 0) {
+        if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         else if (d2_ClickedId != -1) {
             r = 0;
@@ -12281,59 +12282,63 @@ int ai_Unk4da9e0(char *a, char *b, char *c, int *out)
     d2_CloseView(v);
     return r;
 }
-/* 0x4dab50, the dialog of one candidate vote: up to 4 candidates of the list c (ids), returns the id picked in *out / the result */
+/* 0x4dab50, the player's election vote dialog (the session member callback 0x4dada0, mode 2): b, the player's member, picks one of
+   the applicants ids (netIds, up to 4) of the office office by its button under the text 0x12dc (fewer than two applicants
+   of the office) / 0x12dd, before the timer slider (cm_DialogTimer, 1500 ms) runs out; returns the netId clicked, else the
+   pick ai_TrustedOfFour proposes. *click is cleared; -1 when the office, its kind or every applicant is missing */
 
-int ai_Unk4dab50(int a, char *b, int *c, int *out)
+int cm_AskElectVote(int office, AICHAR *b, int *ids, int *click)
 {
-    int hdr[2], kind[2], cand[4], btn[4], rec[8];
-    int n, i, r, v, dlg, res, k;
-    unsigned int f;
-    int tmp[1];
+    AMTREC rec;
+    AMTKIND kind;
+    AICHAR *cand[4];                    /* first the office's applicants, then the characters of ids */
+    int btn[4];
+    int proposed[1];
+    AICHAR *c;
+    int n, i, k, view, dlg, res;
 
-    *out = 0;
-    if (amt_GetOfficeI(a, hdr) == 0)
+    *click = 0;
+    if (amt_GetOfficeI(office, &rec) == 0)
         return -1;
-    f = (unsigned char)hdr[2];
-    if (amt_GetKind(f, rec) == 0)
+    if (amt_GetKind(rec.kind, &kind) == 0)
         return -1;
-    k = amt_GetOfficeApplicants(f, 2, cand);
-    n = 0;
-    for (i = 0; i < 4; i++) {
-        r = gm_FindChar(c[i]);
-        if (r != 0)
-            cand[n++] = r;
+    k = amt_GetOfficeApplicants(rec.kind, 2, (char **)cand);
+    for (i = 0, n = 0; i < 4; i++) {
+        c = (AICHAR *)gm_FindChar(ids[i]);
+        if (c != 0)
+            cand[n++] = c;
     }
     if (n == 0)
         return -1;
-    res = ai_TrustedOfFour(a, b, c, tmp);
-    v = d2_OpenForm(0, 0, "cutscenes\\sitzungen");
-    ((void (*)(int, int))d2_PlaceMainWindow)(v, 1);
-    d2_SetForm(v, 0);
+    res = ai_TrustedOfFour(office, b, ids, proposed);
+    view = d2_OpenForm(0, 0, "cutscenes\\sitzungen");
+    d2_PlaceMainWindow(view, 1);
+    d2_SetForm(view, 0);
     if (k < 2)
-        io_PrintText(0x12dc, *(unsigned short *)b, *(unsigned short *)b, f + 0x253);
+        io_PrintText(0x12dc, b->id, b->id, rec.kind + 0x253);
     else
-        io_PrintText(0x12dd, *(unsigned short *)b, *(unsigned short *)b, f + 0x253);
+        io_PrintText(0x12dd, b->id, b->id, rec.kind + 0x253);
     for (i = 0; i < n; i++)
-        btn[i] = d2_GetWinObj(v, 0, io_PrintText("$a%1N3$A", *(unsigned short *)cand[i]));
-    for (; i < 4; i++)
+        btn[i] = d2_GetWinObj(view, 0, io_PrintText("%ia[%1N3]$A", cand[i]->id));
+    for (i = n; i < 4; i++)
         btn[i] = -1;
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, 0x5dc, 1);
+    dlg = d2_WinOpenSlider((d2_LastWindowPtrT->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    cm_DialogTimer(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
-    while (sv_RunFrame(ai_Unk4da9e0, ai_Unk60d360) != 0) {
-        if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+    while (sv_RunFrame(cm_AskDeposeVote, cm_DialogFrameFlags) != 0) {
+        if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         else if (d2_ClickedId != -1) {
             for (i = 0; i < n; i++) {
                 if (d2_PointerObj == btn[i]) {
-                    res = *(int *)(cand[i] + 4);
+                    res = cand[i]->netId;
                     sv_PopRequest = 1;
                     break;
                 }
             }
         }
     }
-    d2_CloseView(v);
+    d2_CloseView(view);
     return res;
 }
 /* 0x4dada0, answers the session request m (kind 1: a vote between two characters, kind 2: a pick among candidates) of the player's
@@ -12355,14 +12360,14 @@ void ai_Unk4dada0(char *r, int *m)
         y = gm_FindChar(m[4]);
         if (x == 0 || y == 0)
             return;
-        res = ai_Unk4da9e0((char *)c, (char *)x, (char *)y, &click);
+        res = cm_AskDeposeVote((char *)c, (char *)x, (char *)y, &click);
         *(int *)(r + 0x98) = click;
     } else {
         if (m[0] != 2)
             return;
         if (amt_CanTakeOffice(c, m[2]) == 0)
             return;
-        res = ai_Unk4dab50((char)m[1], (char *)c, m + 3, &click);
+        res = cm_AskElectVote((char)m[1], (AICHAR *)c, m + 3, &click);
         *(int *)(r + 0x98) = click;
     }
     *(int *)(r + 0x94) = res;
@@ -12757,9 +12762,9 @@ void ai_Unk4dd960(char *r, int *m)
         d2_ClickedId = -1;
         *(int *)(r + 0x94) = 0;
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
@@ -12781,9 +12786,9 @@ void ai_Unk4dd960(char *r, int *m)
         d2_ClickedId = -1;
         *(int *)(r + 0x94) = 0;
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
@@ -12813,9 +12818,9 @@ void ai_Unk4dd960(char *r, int *m)
         d2_ClickedId = -1;
         *(int *)(r + 0x94) = btn[cm_Random(3)];
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 for (i = 0; i < 3; i++)
@@ -12838,9 +12843,9 @@ void ai_Unk4dd960(char *r, int *m)
         d2_ClickedId = -1;
         *(int *)(r + 0x94) = 0;
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
@@ -12864,9 +12869,9 @@ void ai_Unk4dd960(char *r, int *m)
         d2_ClickedId = -1;
         *(int *)(r + 0x94) = 0;
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
@@ -12891,9 +12896,9 @@ void ai_Unk4dd960(char *r, int *m)
         d2_ClickedId = -1;
         *(int *)(r + 0x94) = 1;
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
@@ -12928,9 +12933,9 @@ void ai_Unk4dd960(char *r, int *m)
             *(int *)(r + 0x94) = n;
         d2_ClickedId = -1;
         dlg = CUT_BOX();
-        ai_Unk4e53e0(dlg, 0x5dc, 1);
-        while (sv_RunFrame(ai_Unk4dd960, ai_Unk60d360) != 0) {
-            if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        cm_DialogTimer(dlg, 0x5dc, 1);
+        while (sv_RunFrame(ai_Unk4dd960, cm_DialogFrameFlags) != 0) {
+            if (cm_DialogTimer(dlg, 0, 0) == 0)
                 sv_PopRequest = 1;
             else if (d2_ClickedId != -1) {
                 sv_PopRequest = 1;
@@ -13441,9 +13446,9 @@ void ai_Unk4dfcb0(char *m)
     m[0x94] = 0;
     m[0x14] = ch_EmptyName;
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, cm_SceneDuration * 0x4b, 1);
-    while (sv_RunFrame(ai_Unk4dfcb0, ai_Unk60d360) != 0) {
-        if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+    cm_DialogTimer(dlg, cm_SceneDuration * 0x4b, 1);
+    while (sv_RunFrame(ai_Unk4dfcb0, cm_DialogFrameFlags) != 0) {
+        if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0) {
             m[0x94] = 1;
@@ -13481,8 +13486,8 @@ void ai_Unk4dfdd0(char *m)
     m[0x94] = 4;
     m[0x14] = ch_EmptyName;
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, cm_SceneDuration * 0x4b, 1);
-    while (sv_RunFrame(ai_Unk4dfdd0, ai_Unk60d360) != 0) {
+    cm_DialogTimer(dlg, cm_SceneDuration * 0x4b, 1);
+    while (sv_RunFrame(ai_Unk4dfdd0, cm_DialogFrameFlags) != 0) {
         cm_UpdateDamagePops();
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == b1)
@@ -13493,7 +13498,7 @@ void ai_Unk4dfdd0(char *m)
                 m[0x94] = 4;
             sv_PopRequest = 1;
         }
-        if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+        if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
     }
     d2_CloseView(v);
@@ -13590,7 +13595,7 @@ void ai_Unk4e01e0(char *m)
     p1 = (char *)gm_FindChar(*(int *)(m + 0x38));
     p2 = (char *)gm_FindChar(*(int *)(m + 0x3c));
     p3 = (char *)gm_FindChar(*(int *)(m + 0x40));
-    ai_Unk60d360 = 0x702c6;
+    cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     cm_LoadEventScene("Richtplatz.ed3");
     d3_SetLightSet(0, 0, 0x3f800000, 1);
@@ -13730,7 +13735,7 @@ int ai_Unk4e0770(char *m)
         ai_CountMissionEvent(a, 0x28);
     if (b[2] == 6)
         ai_CountMissionEvent(b, 0x28);
-    ai_Unk60d360 = 0x702c6;
+    cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000);
     cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x40000);
@@ -13852,7 +13857,7 @@ int ai_Unk4e0f70(char *m)
     cm_BeginFieldBlock(b, *(int *)(b + 4));
     cm_AddFieldDelta(1, 1, 2, &n);
     cm_SendFieldDeltas();
-    ai_Unk60d360 = 0x702c6;
+    cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     snd = cm_LoadVoiceBank("GEBURT.sbf", 0);
     cm_PlaySpecialTrack("cd2\\Geburt.mp3");
@@ -13886,7 +13891,7 @@ int ai_Unk4e0f70(char *m)
         if (name[0] != 0)
             break;
         d2_FocusInput(w);
-    } while (sv_RunFrame(0, ai_Unk60d360) != 0 && ai_Unk6f2438 == 0);
+    } while (sv_RunFrame(0, cm_DialogFrameFlags) != 0 && ai_Unk6f2438 == 0);
     cm_BeginFieldBlock(b, *(int *)(b + 4));
     cm_AddFieldDelta(1, 0x10, 0x30, &n);
     cm_SendFieldDeltas();
@@ -13926,7 +13931,7 @@ int ai_Unk4e1250(char *m)
 
     a = (char *)gm_FindChar(*(int *)(m + 0x34));
     stage = 6;
-    ai_Unk60d360 = 0x702c6;
+    cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     for (i = 0; i < 6; i++) {
         if ((unsigned short)ai_TimeHour < ages[i]) {
@@ -13949,7 +13954,7 @@ int ai_Unk4e1250(char *m)
         if (rc == 0) {
             t0 = d3_Time;
             while (d3_Time < t0 + 0x339 && rc == 0) {
-                if (sv_RunFrame(0, ai_Unk60d360) != 0 && dm_L.rup != 0)
+                if (sv_RunFrame(0, cm_DialogFrameFlags) != 0 && dm_L.rup != 0)
                     rc = 1;
                 f = (float)(d3_Time - t0) * 0.0012121212f;
                 if (!(f < 1.0f))
@@ -13968,7 +13973,7 @@ int ai_Unk4e1250(char *m)
         if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
             txt_Format(buf, 0x40fb, 0x40f5, *(unsigned short *)a);
             if (cm_MessageBox(buf, 0x10) == 0)
-                ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
+                ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, cm_DialogFrameFlags);
             else {
                 v[2] = 100.0f;
                 cm_BeginFieldBlock(a, *(int *)(a + 4));
@@ -13978,7 +13983,7 @@ int ai_Unk4e1250(char *m)
                 cm_SendSetField(*(int *)(a + 4), 0x1cc, 4, 2, 0);
             }
         } else
-            ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, ai_Unk60d360);
+            ai_FamilyTreeWindow(ai_CharInts[ai_PlayerId][0], 0xa, ai_Unk1440c88, cm_DialogFrameFlags);
     } else {
         if ((*(unsigned int *)(a + 0x1cc) & 1) != 0 && (*(unsigned int *)(a + 0x1cc) & 2) == 0) {
             txt_Format(buf, 0x40fc, 0x40f5, *(unsigned short *)a);
@@ -14027,7 +14032,7 @@ int ai_Unk4e1700(char *m)
 
     a = (char *)gm_FindChar(*(int *)(m + 0x34));
     stage = 6;
-    ai_Unk60d360 = 0x702c6;
+    cm_DialogFrameFlags = 0x702c6;
     d2_CutsceneActive = 1;
     for (i = 0; i < 6; i++) {
         if ((unsigned short)ai_TimeHour < ages[i]) {
@@ -14299,10 +14304,10 @@ void ai_Unk4e24c0(char *r, char *m)
     dlg = d2_GetWinObj(v, 0, t);
     d2_SetObjValue(dlg, lo, sl, lo);
     dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
-    ai_Unk4e53e0(dlg, 0x5dc, 1);
+    cm_DialogTimer(dlg, 0x5dc, 1);
     d2_ClickedId = -1;
-    while (sv_RunFrame(ai_Unk60d360, ai_Unk4e24c0) != 0) {
-        if (ai_Unk4e53e0(dlg, 0, 0) == 0)
+    while (sv_RunFrame(cm_DialogFrameFlags, ai_Unk4e24c0) != 0) {
+        if (cm_DialogTimer(dlg, 0, 0) == 0)
             sv_PopRequest = 1;
         else if (d2_ClickedId != -1) {
             sv_PopRequest = 1;
@@ -14503,11 +14508,11 @@ int cm_StartEventArg(char *name, int arg)
 int cm_WaitEvent(int a)
 {
     if (cm_SkipEvents == 0) {
-        if (sv_RunFrame(0, ai_Unk60d360 | 0x8000) != 0) {
+        if (sv_RunFrame(0, cm_DialogFrameFlags | 0x8000) != 0) {
             do {
                 if (evt_FindById(a) == 0)
                     break;
-            } while (sv_RunFrame(0, ai_Unk60d360 | 0x8000) != 0);
+            } while (sv_RunFrame(0, cm_DialogFrameFlags | 0x8000) != 0);
         }
     }
 }
@@ -14517,7 +14522,7 @@ int ai_Unk4e2cc0(int a, int (*cb)(int), int arg)
 {
     if (cm_SkipEvents != 0)
         return 0;
-    while (sv_RunFrame(0, ai_Unk60d360 | 0x8000) != 0) {
+    while (sv_RunFrame(0, cm_DialogFrameFlags | 0x8000) != 0) {
         if (evt_FindById(a) == 0)
             return 0;
         if (dm_L.rup != 0) {
@@ -14651,7 +14656,7 @@ int cm_FadeToBlack(void)
         ai_Unk6f0da0 = (char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x5a, 1);
         if (!(*ai_Unk6f0da0 & 4)) {
             do {
-                sv_RunFrame(0, ai_Unk60d360 | 0x80);
+                sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
             } while (!(*ai_Unk6f0da0 & 4));
         }
     }
@@ -14678,7 +14683,7 @@ int cm_LeaveEventScene(void)
     if (id != -1) {
         o = (char *)evt_FindById(id);
         while (o != 0 && (*(unsigned char *)(o + 0x124) & 1)) {
-            sv_RunFrame(0, ai_Unk60d360 | 0x80);
+            sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
             o = (char *)evt_FindById(ai_Unk5f8438);
         }
     }
@@ -14688,7 +14693,7 @@ int cm_LeaveEventScene(void)
     if (id != -1) {
         o = (char *)evt_FindById(id);
         while (o != 0 && (*(unsigned char *)(o + 0x124) & 1)) {
-            sv_RunFrame(0, ai_Unk60d360 | 0x80);
+            sv_RunFrame(0, cm_DialogFrameFlags | 0x80);
             o = (char *)evt_FindById(ai_Unk60d36c);
         }
     }
@@ -14809,14 +14814,14 @@ int ai_Unk4e3420(int a)
 
     end = ai_Unk6f0d80;
     if (cm_SkipEvents == 0) {
-        if (sv_RunFrame(ai_Unk4e3420, ai_Unk60d360 | 0x8000) != 0) {
+        if (sv_RunFrame(ai_Unk4e3420, cm_DialogFrameFlags | 0x8000) != 0) {
             end += a;
             do {
                 if (ai_Unk6f0d80 >= end)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
                 ai_Unk4e37a0(cm_CurrentFight);
-            } while (sv_RunFrame(ai_Unk4e3420, ai_Unk60d360 | 0x8000) != 0);
+            } while (sv_RunFrame(ai_Unk4e3420, cm_DialogFrameFlags | 0x8000) != 0);
         }
     }
 }
@@ -14831,7 +14836,7 @@ int ai_Unk4e3490(int a, int (*cb)(int))
     res = 0;
     if (cm_SkipEvents != 0)
         return 0;
-    if (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0) {
+    if (sv_RunFrame(cm_RunSceneTicks, cm_DialogFrameFlags | 0x8000) != 0) {
         do {
             if (dm_L.rup != 0) {
                 if (cb != 0)
@@ -14846,7 +14851,7 @@ int ai_Unk4e3490(int a, int (*cb)(int))
             }
             cm_UpdateDamagePops();
             ai_Unk4e37a0(cm_CurrentFight);
-        } while (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0);
+        } while (sv_RunFrame(cm_RunSceneTicks, cm_DialogFrameFlags | 0x8000) != 0);
     }
     return res;
 }
@@ -14859,14 +14864,14 @@ int cm_RunSceneTicks(int a)
 
     start = d3_Time;
     if (cm_SkipEvents == 0) {
-        if (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0) {
+        if (sv_RunFrame(cm_RunSceneTicks, cm_DialogFrameFlags | 0x8000) != 0) {
             lim = (double)a * (1.0 / 14) + start;
             do {
                 if ((double)d3_Time >= lim)
                     sv_PopRequest = 1;
                 cm_UpdateDamagePops();
                 ai_Unk4e37a0(cm_CurrentFight);
-            } while (sv_RunFrame(cm_RunSceneTicks, ai_Unk60d360 | 0x8000) != 0);
+            } while (sv_RunFrame(cm_RunSceneTicks, cm_DialogFrameFlags | 0x8000) != 0);
         }
     }
 }
@@ -15053,7 +15058,7 @@ void cm_RunSceneParty(char *m, int ctx)
                     while (h == 0)
                         h = cm_GetSlotState(*(int *)slot) , sv_PumpNet();
                     ai_Unk4e37a0(m);
-                    sv_RunFrame(ai_Unk60d360, 0);
+                    sv_RunFrame(cm_DialogFrameFlags, 0);
                 }
             } else {
                 /* the others wait for the owner's slots and answer for their own character */
@@ -15072,17 +15077,17 @@ void cm_RunSceneParty(char *m, int ctx)
                 while (ai_Unk4e3750(m) == 0) {
                     ai_Unk4e37a0(m);
                     sv_SetStatusText(&ch_EmptyName);
-                    sv_RunFrame(ai_Unk60d360, 0);
+                    sv_RunFrame(cm_DialogFrameFlags, 0);
                 }
             }
         } else if (k == 0) {
             /* all members answer at once: the owner waits for the slots (state +8 == 1), the others for their own */
             n = *(unsigned char *)(m + 0x30);
             ai_Unk4e37a0(m);
-            sv_RunFrame(ai_Unk60d360, 0);
+            sv_RunFrame(cm_DialogFrameFlags, 0);
             while (ai_Unk4e3750(m) == 0) {
                 ai_Unk4e37a0(m);
-                sv_RunFrame(ai_Unk60d360, 0);
+                sv_RunFrame(cm_DialogFrameFlags, 0);
             }
         }
     }
@@ -15145,9 +15150,9 @@ void ai_Unk4e4060(char *m)
     m[0x26] |= 4;
     if (sv_FrameMask & 0x200000)
         m[0x26] |= 0x40;
-    ai_Unk60d360 = 0x717c6;
+    cm_DialogFrameFlags = 0x717c6;
     if (m[0x26] & 0x40)
-        ai_Unk60d360 = 0x716c6;
+        cm_DialogFrameFlags = 0x716c6;
     replay = 0;
     if (ai_GameFlags & 8) {
         ours = 1;
@@ -15668,7 +15673,7 @@ double cm_RandomFloat(void)
 /* 0x4e53e0, the progress of the dialog dlg: with c set the clock 0x6333cc and the duration a are stored (and the window cleared, 0x475e40);
    else the left percent of the duration is the value; the slider (0x475cb0, 0 .. 100) is set to it, returned */
 
-int ai_Unk4e53e0(int dlg, int a, int c)
+int cm_DialogTimer(int dlg, int a, int c)
 {
     int v;
 
@@ -16036,7 +16041,7 @@ int cm_FightOwner = -1;  /* 0x60cb5c */
 int cm_FightView = -1;  /* 0x60cb60 */
 int ai_Unk60cb64 = -1;  /* 0x60cb64 */
 int ai_Unk60cb68 = -1;  /* 0x60cb68 */
-int ai_Unk60d360 = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
+int cm_DialogFrameFlags = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
 int cm_SceneDuration = 10;  /* 0x60d364 */
 int ai_Unk60d368 = -1;  /* 0x60d368 */
 int ai_Unk60d36c = -1;  /* 0x60d36c, -1 or the object waited for ( */
