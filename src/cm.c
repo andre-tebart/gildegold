@@ -998,7 +998,7 @@ int cm_CheckGroup(G17MSG *grp)
 }
 /* 0x4c4450, resolves the ids -2 / -3 / -4 */
 
-int ai_Unk4c4450(int a, int id)
+int cm_ResolveId(int a, int id)
 {
     if (id == -2)
         return cm_LastCharId;
@@ -2260,7 +2260,7 @@ int ai_Unk4c6350(G17MSG *m)
     int *v;
 
     if (*(int *)&m->data[4] != -1) {
-        *(int *)&m->data[4] = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+        *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
         if (gm_FindById(&x, &y, &z, *(int *)&m->data[4]) == 0)
             return 1;
         if (x != 0)
@@ -2282,7 +2282,7 @@ int ai_Unk4c63e0(G17MSG *m)
     int *v;
 
     if (*(int *)&m->data[4] != -1) {
-        *(int *)&m->data[4] = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+        *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
         if (gm_FindById(&x, &y, &z, *(int *)&m->data[4]) == 0)
             return 1;
         if (x != 0)
@@ -2298,7 +2298,7 @@ int ai_Unk4c63e0(G17MSG *m)
             return 1;
     }
     if (*(int *)&m->data[0] != -1) {
-        *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+        *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
         if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
             return 1;
         if (x != 0) {
@@ -2334,7 +2334,7 @@ int ai_Unk4c65b0(G17MSG *m)
     unsigned int i, j, n;
     int size;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
         return 1;
     if (x != 0)
@@ -2383,7 +2383,7 @@ int ai_Unk4c66c0(G17MSG *m)
 {
     char *x, *y, *z, *base;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
         return 1;
     base = x;
@@ -2568,7 +2568,7 @@ int ai_Unk4c6b20(G17MSG *m, G17STAT *s)
     if (*(int *)&m->data[6] == -1) {
         k = 0xffff;
     } else {
-        id = ai_Unk4c4450((int)m, *(int *)&m->data[6]);
+        id = cm_ResolveId((int)m, *(int *)&m->data[6]);
         *(int *)&m->data[6] = id;
         for (k = 0; k < 0x300; k++)
             if (*(unsigned short *)ai_Chars[k] != 0xffff && *(int *)(ai_Chars[k] + 4) == id)
@@ -2590,34 +2590,35 @@ int ai_Unk4c6b20(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4c6bf0, handler of type 0xb: creates a character (0x507690), seeded with data[0x16] */
+/* 0x4c6bf0, handler of type 0xb: creates the character of the message (gm_CreateCharacter) in the building bldId,
+   the random generator seeded with its seed; the new character is cm_LastCharId and s's value */
 
-int ai_Unk4c6bf0(G17MSG *m, G17STAT *s)
+int cm_ExCreateCharacter(G17MSG *m, G17STAT *s)
 {
-    char *b;
+    struct ORDBLD *b;
     unsigned int k;
 
     if (net_Conn.s != INVALID_SOCKET)
-        ai_NextObjectId = *(int *)&m->data[0];
+        ai_NextObjectId = m->chr.objectId;
     else
-        *(int *)&m->data[0x16] = rand();
-    util_Seed(*(int *)&m->data[0x16]);
-    if (*(int *)&m->data[0xf] == -1) {
+        m->chr.seed = rand();
+    util_Seed(m->chr.seed);
+    if (m->chr.bldId == -1) {
         b = 0;
     } else {
-        *(int *)&m->data[0xf] = ai_Unk4c4450((int)m, *(int *)&m->data[0xf]);
-        b = gm_BuildQuery(1, 1, *(int *)&m->data[0xf]);
+        m->chr.bldId = cm_ResolveId((int)m, m->chr.bldId);
+        b = (struct ORDBLD *)gm_BuildQuery(1, 1, m->chr.bldId);
         if (b == 0)
             return 1;
     }
-    k = gm_CreateCharacter(m->data[4], *(int *)&m->data[5], *(int *)&m->data[9], *(unsigned short *)&m->data[0xd], b, m->data[0x13], m->data[0x14], m->data[0x15]);
+    k = gm_CreateCharacter(m->chr.type, m->chr.parent1, m->chr.parent2, m->chr.age, b, m->chr.job, m->chr.title, m->chr.a8);
     if (k == 0xffff)
         return 1;
-    cm_LastCharId = *(int *)(ai_Chars[k] + 4);
+    cm_LastCharId = ai_CharsT[k].netId;
     if (s != 0) {
         s->state = 1;
         s->kind = 1;
-        s->value = (int)ai_Chars[k];
+        s->value = (int)&ai_CharsT[k];
     }
     return 0;
 }
@@ -2688,7 +2689,7 @@ int ai_Unk4c6ec0(G17MSG *m, G17STAT *s)
 {
     char *x, *y, *z;
 
-    *(unsigned short *)&m->data[0] = (unsigned short)ai_Unk4c4450((int)m, *(unsigned short *)&m->data[0]);
+    *(unsigned short *)&m->data[0] = (unsigned short)cm_ResolveId((int)m, *(unsigned short *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(unsigned short *)&m->data[0]) == 0)
         return 1;
     if (x != 0) {
@@ -2710,12 +2711,12 @@ int ai_Unk4c6f60(G17MSG *m, G17STAT *s)
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = *(int *)&m->data[8];
     if (*(int *)&m->data[4] != -1) {
-        *(int *)&m->data[4] = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+        *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
         if (gm_TakeObjekt(*(int *)&m->data[4], *(unsigned short *)(ai_PlayerSlots[m->data[0xc]] + 0x54), *(int *)&m->data[0xd]) == 0)
             return 1;
     }
     if (*(int *)&m->data[0] != -1) {
-        *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+        *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
         if (gm_AddObjekt(*(int *)&m->data[0], *(unsigned short *)(ai_PlayerSlots[m->data[0xc]] + 0x54), *(int *)&m->data[0xd]) == 0)
             return 1;
     }
@@ -2730,11 +2731,11 @@ int ai_Unk4c7010(G17MSG *m, G17STAT *s)
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = *(int *)&m->data[8];
     if (*(int *)&m->data[4] != -1) {
-        *(int *)&m->data[4] = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+        *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
         gm_AddNegative(*(int *)&m->data[4], *(unsigned short *)(ai_PlayerSlots[m->data[0xc]] + 0x54), *(int *)&m->data[0xd]);
     }
     if (*(int *)&m->data[0] != -1) {
-        *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+        *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
         gm_AddObjekt(*(int *)&m->data[0], *(unsigned short *)(ai_PlayerSlots[m->data[0xc]] + 0x54), *(int *)&m->data[0xd]);
     }
     if (s != 0)
@@ -2766,7 +2767,7 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = *(int *)&m->data[0xa];
     if (*(int *)&m->data[4] != -1) {
-        *(int *)&m->data[4] = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+        *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
         if (gm_FindById(&x1, &y, &z, *(int *)&m->data[4]) == 0)
             return 1;
         if (x1 != 0) {
@@ -2803,7 +2804,7 @@ int ai_Unk4c70b0(G17MSG *m, G17STAT *s)
             gm_SumSlotAmounts(*(int *)(r1 + 0x178), m->data[0xe]);
     }
     if (*(int *)&m->data[0] != -1) {
-        *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+        *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
         if (gm_FindById(&x2, &y, &z, *(int *)&m->data[0]) == 0)
             return 1;
         if (x2 != 0) {
@@ -2945,7 +2946,7 @@ int ai_Unk4c78c0(G17MSG *m, G17STAT *s)
 
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = *(int *)&m->data[0xa];
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(0, &y, 0, *(int *)&m->data[0]) == 0)
         return 1;
     if (*(short *)y != 0x2a && *(short *)y != 0x116)
@@ -3033,7 +3034,7 @@ int ai_Unk4c7c30(G17MSG *m, G17STAT *s)
     int *p1, *p2;
     int c;
 
-    *(int *)&m->data[4] = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+    *(int *)&m->data[4] = cm_ResolveId((int)m, *(int *)&m->data[4]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[4]) == 0)
         return 1;
     if (x != 0)
@@ -3042,7 +3043,7 @@ int ai_Unk4c7c30(G17MSG *m, G17STAT *s)
         p1 = (int *)(y + 0x14);
     else
         p1 = (int *)(z + 0x178);
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
         return 1;
     if (x != 0)
@@ -3051,7 +3052,7 @@ int ai_Unk4c7c30(G17MSG *m, G17STAT *s)
         p2 = (int *)(y + 0x14);
     else
         p2 = (int *)(z + 0x178);
-    c = ai_Unk4c4450((int)m, *(int *)&m->data[8]);
+    c = cm_ResolveId((int)m, *(int *)&m->data[8]);
     *(int *)&m->data[8] = c;
     prev = 0;
     for (o = (char *)*p1; o != 0; o = *(char **)(o + 0x3f)) {
@@ -3079,7 +3080,7 @@ int ai_Unk4c7d80(G17MSG *m, G17STAT *s)
 {
     char *y, *o;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(0, &y, 0, *(int *)&m->data[0]) == 0)
         return 1;
     if (*(short *)y != 0x2a && *(short *)y != 0x116)
@@ -3102,7 +3103,7 @@ int ai_Unk4c7e20(G17MSG *m, G17STAT *s)
 
     if (net_Conn.s != INVALID_SOCKET)
         ai_NextObjectId = *(int *)&m->data[0x25];
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     o = gm_CreateObject(*(int *)&m->data[0], *(unsigned short *)&m->data[4], 1);
     if (o == 0)
         return 1;
@@ -3121,7 +3122,7 @@ int ai_Unk4c7e90(G17MSG *m, G17STAT *s)
     unsigned int i, n;
     int size, id;
 
-    id = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    id = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, id) == 0)
         return 1;
     *(int *)&m->data[0] = id;
@@ -3171,7 +3172,7 @@ int ai_Unk4c7f70(G17MSG *m, G17STAT *s)
     unsigned int i, n;
     int size;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
         return 1;
     if (x != 0)
@@ -3221,7 +3222,7 @@ int ai_Unk4c8050(G17MSG *m, G17STAT *s)
     unsigned int i;
     float *f;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(0, 0, &z, *(int *)&m->data[0]) == 0)
         return 1;
     p = &m->data[5];
@@ -3241,7 +3242,7 @@ int ai_Unk4c8110(G17MSG *m, G17STAT *s)
 {
     char *x, *y, *z, *a;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
         return 1;
     a = x;
@@ -3275,7 +3276,7 @@ int ai_Unk4c81d0(G17MSG *m, G17STAT *s)
 {
     char *x, *y, *z, *a;
 
-    *(int *)&m->data[0] = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    *(int *)&m->data[0] = cm_ResolveId((int)m, *(int *)&m->data[0]);
     if (gm_FindById(&x, &y, &z, *(int *)&m->data[0]) == 0)
         return 1;
     a = z;
@@ -3298,9 +3299,9 @@ int ai_Unk4c8240(G17MSG *m, G17STAT *s)
     int a, b, kind, i, j, v, hi, lo, dn, dp;
     unsigned int n;
 
-    a = ai_Unk4c4450((int)m, *(int *)&m->data[0]);
+    a = cm_ResolveId((int)m, *(int *)&m->data[0]);
     *(int *)&m->data[0] = a;
-    b = ai_Unk4c4450((int)m, *(int *)&m->data[4]);
+    b = cm_ResolveId((int)m, *(int *)&m->data[4]);
     kind = *(int *)&m->data[0xc];
     *(int *)&m->data[4] = b;
     if (kind == 4) {
@@ -4022,7 +4023,7 @@ int ai_Unk4c9740(G17MSG *m, G17STAT *s)
 
     if (ai_Unk1460ae0 != -1)
         ai_NextObjectId = G17_I(*m, 0);
-    k = ai_Unk4c4450((int)m, G17_I(*m, 4));
+    k = cm_ResolveId((int)m, G17_I(*m, 4));
     G17_I(*m, 4) = k;
     o = gm_CreateObject(k, 0x1b5, 1);
     if (o == 0)
@@ -5105,7 +5106,7 @@ int ai_Unk4cba10(G17MSG *m, G17STAT *s)
     }
     util_Seed(G17_I(*m, 0x12));
     if (G17_I(*m, 7) != -1) {
-        k = ai_Unk4c4450((int)m, G17_I(*m, 7));
+        k = cm_ResolveId((int)m, G17_I(*m, 7));
         G17_I(*m, 7) = k;
         bo = gm_BuildQuery(1, 1, k);
         if (bo == 0)
@@ -15127,7 +15128,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, ai_Unk4c6bf0, ai_Unk4c6cd0, ai_Unk4c6e10, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { ai_Unk4c6a20, ai_Unk4c6a50, ai_AlwaysTrue, ai_Unk4c6a20, ai_Unk4c6a60, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a20, ai_Unk4c6a90, ai_Unk4c6ad0, ai_Unk4c6b20, cm_ExCreateCharacter, ai_Unk4c6cd0, ai_Unk4c6e10, ai_Unk4c6ec0, ai_Unk4c6f60, ai_Unk4c7010, ai_Unk4c70b0, ai_Unk4c78c0, ai_Unk4c7c30, ai_Unk4c7d80, ai_Unk4c7e20, ai_Unk4c7e90, ai_Unk4c7f70, ai_Unk4c8050, ai_Unk4c8110, ai_Unk4c81d0, ai_Unk4c8240, ai_Unk4c85c0, ai_Unk4c87a0, ai_Unk4c88a0, ai_Unk4c8990, ai_Unk4c89b0, ai_Unk4c8de0, ai_Unk4c8e70, ai_Unk4c9090, ai_Unk4c90d0, ai_Unk4c9110, ai_Unk4c9170, ai_Unk4c9280, ai_Unk4c9340, ai_Unk4c93b0, ai_Unk4c9400, ai_Unk4c9450, ai_Unk4c9520, ai_Unk4c9740, ai_Unk4c97c0, ai_Unk4c9830, ai_Unk4c99b0, ai_Unk4c9c10, ai_Unk4c9c80, ai_Unk4c9d00, ai_Unk4c9d80, ai_Unk4c9dc0, ai_Unk4ca8a0, ai_Unk4caa20, ai_Unk4caaa0, ai_Unk4cab40, ai_Unk4cac40, ai_Unk4cb100, ai_Unk4cb210, ai_Unk4cb250, ai_Unk4cb4a0, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, ai_Unk4cba10, ai_Unk4cbb90, ai_Unk4cbbd0, ai_Unk4cbca0, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, ai_Unk4cc1b0, ai_Unk4cc270, ai_Unk4cc330, ai_Unk4cc390, ai_Unk4cc510, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, ai_Unk4ccc20, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, ai_Unk4cd010, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, ai_Unk4cd220, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6350, sv_ReturnZero, ai_Unk4c63e0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c65b0, sv_ReturnZero, sv_ReturnZero, ai_Unk4c66c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6750, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c6780, ai_Unk4c67a0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c67c0, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, ai_Unk4c69c0, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char ai_Unk60c4a0[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

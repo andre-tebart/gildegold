@@ -2103,7 +2103,7 @@ extern char d2_GfxDir[256];
 int gm_HomeSearchStart = 0;  /* 0x6f1bb4 */
 extern char gm_CharacterStatistics[128];
 char * ai_Unk60c1ec = (void *)((unsigned)&he_Events + 0xc234);  /* 0x60c1ec, the memory pool tag */
-unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, ORDBLD *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
+unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, ORDBLD *a5, unsigned a6, int a7, int a8);                     /* 0x507690 */
 int gm_SexForJob(int x);                   /* 0x503f30 */
 int gm_SexForTitle(int x);                   /* 0x503f50 */
 int gm_Opinion(int a, int b);                     /* 0x50c520 */
@@ -8011,7 +8011,7 @@ int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
    ORD_CHARS[idx], netId++ split, x float / direct stores / continue for the skill cases, both operand
    orders of the mixes, float vs int vs unsigned short random terms (the inline call form fixed the f010
    fild) */
-unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, struct ORDBLD *a5, unsigned a6, int a7, int a8)
+unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, struct ORDBLD *a5, unsigned a6, int a7, int a8)
 {
     int idx, i, k, w, r, n, mx1, mx2, v;
     ORDCHAR *c;

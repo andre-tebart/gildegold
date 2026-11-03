@@ -125,7 +125,7 @@ unsigned char * he_Unk53e040(unsigned char *m);                                 
 char * he_FindEvent(int n, ...);                                                  /* 0x53e400, ai.h: AIJOB * */
 extern int ai_NextObjectId;                /* 0x61a654 */
 unsigned char * gm_CreateBuilding(unsigned char kind, unsigned short owner);                    /* 0x501580 */
-struct ORDBLD; unsigned short gm_CreateCharacter(int type, int a2, int a3, int a4, struct ORDBLD *a5, unsigned a6, int a7, int a8); /* 0x507690 */
+struct ORDBLD; unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, struct ORDBLD *a5, unsigned a6, int a7, int a8); /* 0x507690 */
 short * gm_PlayerRecord(char *ch);                                                    /* 0x506430, ai.h: AIFIN *(AICHAR *) */
 unsigned gm_TakeOverCharacter(int a, int b);                                                  /* 0x5064d0 */
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);                                    /* 0x4f2540 */
@@ -188,7 +188,7 @@ int cm_EnqueueReceived(G17MSG *src);                                            
 void cm_FreeReceived(G17MSG *m);                                                    /* 0x4c4130 */
 int cm_ExecCommands(void);                                                          /* 0x4c4190, "cm_ExecCommand" */
 int cm_CheckGroup(G17MSG *grp);                                                   /* 0x4c43c0 */
-int ai_Unk4c4450(int a, int id);                                                 /* 0x4c4450 */
+int cm_ResolveId(int a, int id);                                                 /* 0x4c4450 */
 int ai_Unk4c4480(unsigned short len, void *p);                                   /* 0x4c4480 */
 void cm_SendLoadSize(int v);                                                        /* 0x4c44d0 */
 int cm_SendLoadBlock(void *p);                                                      /* 0x4c4500 */
@@ -300,7 +300,7 @@ int ai_Unk4c6a60(G17MSG *m, G17STAT *s);                                        
 int ai_Unk4c6a90(G17MSG *m, G17STAT *s);                                         /* 0x4c6a90, handler of 8: starts a load buffer */
 int ai_Unk4c6ad0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ad0, handler of 9: appends to it */
 int ai_Unk4c6b20(G17MSG *m, G17STAT *s);                                         /* 0x4c6b20, handler of 10 */
-int ai_Unk4c6bf0(G17MSG *m, G17STAT *s);                                         /* 0x4c6bf0, handler of 0xb */
+int cm_ExCreateCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6bf0, handler of 0xb */
 int ai_Unk4c6cd0(G17MSG *m, G17STAT *s);                                         /* 0x4c6cd0, handler of 0xc */
 int ai_Unk4c6e10(G17MSG *m, G17STAT *s);                                         /* 0x4c6e10, handler of 0xd */
 int ai_Unk4c6ec0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ec0, handler of 0xe */
