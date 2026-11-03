@@ -10532,7 +10532,13 @@ void ai_Unk4d4d70(char *a)
    line each, by the kind of the fight (bit 1: 0x11e0 / 0x11e1, bit 2: 0x11e3 / 0x11e4 with the role of the target
    building 0x4d4050, bit 4: 0x11e6 / 0x11e7), the suffix of the kind (0x143e948 / 0x143e954 / 0x143e960) appended and
    handed to 0x4e48b0. 0 when a leader is missing or the leaders are the same, a cart has no goods (0x50aa00) or the
-   target is gone. Rough draft. */
+   target is gone. Rough draft.
+   @deep Read against the original in full: each branch ends with its own ai_Unk4e48b0(cb, ...) call (the
+   original has 5 calls: &1 and &4 share the second call's tail at 0x4d6373, &2 keeps its own with its own
+   return 1), now on our side too (calls equal, frame equal, ins 283 vs 282). Left: allocation - the
+   original keeps i in a slot ([esp+0x10], 0x4d60fc / 0x4d6142..0x4d614d) and cb in esi + slot [esp+0x18],
+   ca in ebp; ours i in edi, cb only in the slot (mov eax,[esp+0x10] before each mov dx,[eax]), the target
+   building in esi vs edi; role kept in ebp on our side vs a slot ([esp+0x30]). */
 
 int ai_Unk4d60b0(char *a)
 {
@@ -10566,6 +10572,7 @@ int ai_Unk4d60b0(char *a)
         ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
         txt_Format(buf, 0x11e1, G20_US(ca));
         strcat(buf, ai_Unk143e948);
+        ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
     } else if (a[0x7c] & 2) {
         role = cm_FightRole((unsigned char *)gm_FindBuildingById(*(int *)(a + 0x10c))) + 0x1125;
         txt_Format(buf, 0x11e3, role, G20_US(cb), edi);
@@ -10573,15 +10580,15 @@ int ai_Unk4d60b0(char *a)
         ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
         txt_Format(buf, 0x11e4, G20_US(ca), role, edi);
         strcat(buf, ai_Unk143e954);
+        ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
     } else if (a[0x7c] & 4) {
         txt_Format(buf, 0x11e6, G20_US(cb));
         strcat(buf, ai_Unk143e960);
         ai_Unk4e48b0(ca, a, buf, &ch_EmptyName);
         txt_Format(buf, 0x11e7, G20_US(ca));
         strcat(buf, ai_Unk143e960);
-    } else
-        return 1;
-    ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
+        ai_Unk4e48b0(cb, a, buf, &ch_EmptyName);
+    }
     return 1;
 }
 /* 0x4d63e0, a fight starts (a: the fight record): characters that are gone are dropped from both id lists, a cart
