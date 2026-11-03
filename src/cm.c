@@ -6908,13 +6908,16 @@ int ai_LedSelectBits(int idx, char *c)
 }
 /* 0x4ce1b0, the distance of the character c's model to the object o (x / z) */
 
-float ai_Unk4ce1b0(char *c, char *o)
+float cm_CharObjDistXZ(char *c, char *o)
 {
-    char *p = *(char **)(*(char **)(c + 0x184) + 0x34);
-    float dx = *(float *)(o + 0x4c) - *(float *)(p + 0x4c);
-    float dz = *(float *)(o + 0x54) - *(float *)(p + 0x54);
+    D3VECTOR d, b;
 
-    return (float)sqrt(dx * dx + dz * dz);
+    d.x = ((D3OBJECT *)o)->pos.x;
+    d.z = ((D3OBJECT *)o)->pos.z;
+    b = ((AICHAR *)c)->scene->obj->pos;
+    d.x -= b.x;
+    d.z -= b.z;
+    return (float)sqrt(d.z * d.z + d.x * d.x);
 }
 /* 0x4ce200, the distance of the character c's model to the cell (x, y) */
 
@@ -7413,7 +7416,7 @@ void ai_Unk4cf000()
                 for (qq = (char **)ai_Unk7603a0V; (int)qq < (int)ai_Unk760420V; qq++) {
                     d = *qq;
                     if (d != 0 && ai_Unk4ce270(c, d) != 0 && d[8] != 0) {
-                        dist = ai_Unk4ce1b0(c, *(char **)(*(char **)(d + 0x184) + 0x34));
+                        dist = cm_CharObjDistXZ(c, *(char **)(*(char **)(d + 0x184) + 0x34));
                         if (dist < 100.0f) {
                             found = 1;
                             if (dist < best)
@@ -8635,7 +8638,7 @@ char *ai_Unk4d1f10(char *c)
     if (*(int *)(cm_CharWeapon(c) + 0x58) == 2) {
         for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
             if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
-                w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
+                w = cm_CharObjDistXZ(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
                 w = gm_HealthRatio(*pp) * w;
                 if (w < best) {
                     res = *pp;
@@ -8647,7 +8650,7 @@ char *ai_Unk4d1f10(char *c)
     }
     for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
         if (*pp != 0 && ai_Unk4ce270(c, *pp) != 0 && (*pp)[8] != 0) {
-            w = ai_Unk4ce1b0(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
+            w = cm_CharObjDistXZ(c, *(char **)(*(char **)(*pp + 0x184) + 0x34));
             w = gm_HealthRatio(*pp) * w;
             if (w < best) {
                 res = *pp;
@@ -9389,7 +9392,7 @@ void ai_Unk4d3550(char *ev)
     ka = cm_CharWeapon(att);
     kt = cm_CharWeapon(tgt);
     ch_GetHMap(*(struct CHARACTER **)(att + 0x184));
-    if (kt != 0 && ai_Unk4ce1b0(tgt, *(char **)(*(char **)(att + 0x184) + 0x34)) <= *(float *)(kt + 0xc))
+    if (kt != 0 && cm_CharObjDistXZ(tgt, *(char **)(*(char **)(att + 0x184) + 0x34)) <= *(float *)(kt + 0xc))
         ;
     else {
         hitv = 0;
@@ -10801,7 +10804,7 @@ int ai_Unk4d7360(char *rec, char *c, char *g)
     }
     if (*(int *)k == 0x154 || *(int *)k == 0x156 || *(int *)k == 0x158 || *(int *)k == 0x16e || *(int *)k == 0x172 ||
         *(int *)k == 0 || *(int *)k == 0x176) {
-        if (ai_Unk4ce1b0(c, *(char **)(*(char **)(g + 0x184) + 0x34)) > *(float *)(k + 0xc))
+        if (cm_CharObjDistXZ(c, *(char **)(*(char **)(g + 0x184) + 0x34)) > *(float *)(k + 0xc))
             goto walk;
     }
     if (*(int *)(*(char **)(c + 0x184) + 0x128) != 0)
@@ -10948,7 +10951,7 @@ void ai_Unk4d76a0(int *rec)
                         if (x == 0)
                             f = ai_Unk4ce200(c, p[5], p[6]);
                         else
-                            f = ai_Unk4ce1b0(c, *(char **)(G21_CH(x) + 0x34));
+                            f = cm_CharObjDistXZ(c, *(char **)(G21_CH(x) + 0x34));
                         if (*(int *)k == 0x176) {
                             b = f <= *(float *)(k + 0xc);
                             if ((char)p[3] == 0 && f < *(float *)(k + 0xc) * 0.1f)

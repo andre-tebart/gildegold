@@ -520,7 +520,7 @@ int cm_CellUsable(int x, int y);  /* 0x4cdfe0 */
 int cm_FindNearCell(int a, int b, int *ox, int *oy);  /* 0x4ce040 */
 char *cm_FindFighter(int id);  /* 0x4ce130 */
 int ai_LedSelectBits(int idx, char *c);  /* 0x4ce170 */
-float ai_Unk4ce1b0(char *c, char *o);  /* 0x4ce1b0 */
+float cm_CharObjDistXZ(char *c, char *o);  /* 0x4ce1b0 */
 float ai_Unk4ce200(char *c, int x, int y);  /* 0x4ce200 */
 int ai_Unk4ce270(char *a, char *b);  /* 0x4ce270 */
 char *ai_Unk4ce290(char *p);  /* 0x4ce290 */
