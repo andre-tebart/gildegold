@@ -240,8 +240,11 @@ typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a 
     int state;                          /* 0x04, 0 frees the slot (cm_ExCutEntry); message 0x51 updates only an entry
                                            in the same state */
     char pad08[8];
-    int stateArg;                       /* 0x10, in state 2 message 0x51 also has to match it (meaning unknown) */
-    char pad14[0x18];
+    int stateArg;                       /* 0x10, in state 2 message 0x51 also has to match it; in state 2 the netId of
+                                           the partner the fighter turns towards (cm_UpdateSceneChars) */
+    char pad14[9];
+    unsigned char turn;                 /* 0x1d, in state 2: nonzero, the fighter turns towards stateArg (cm_UpdateSceneChars) */
+    char pad1e[0xe];
 } CMCUTENTRY;
 
 typedef struct G17CUTENTRYMSG {         /* 0x34 bytes, the data of messages 0x50 / 0x51 (ai_Unk4c5c40 / ai_Unk4c5ca0

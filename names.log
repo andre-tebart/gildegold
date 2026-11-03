@@ -1366,3 +1366,8 @@
 2026-11-03T13:25:22 0x004cee20 func ai_Unk4cee20 -> cm_UpdateDamagePops by:main why:moves / creates / removes the cm_DamagePops texts that cm_ShowDamage fills
 2026-11-03T13:25:43 0x004cef80 func ai_Unk4cef80 -> cm_InitDamagePops by:main why:sets every cm_DamagePops slot empty (h -1, v 0, c 0)
 2026-11-03T13:26:01 0x004cefa0 data ai_Unk4cefa0 -> cm_ClearDamagePops by:main why:removes each cm_DamagePops screen text and empties the slot
+2026-11-03T13:31:44 0x004cf000 func ai_Unk4cf000 -> cm_UpdateSceneChars by:main why:the per-tick update of ai_SceneChars (health countdown, weapon 0x172 fading, cutscene turning), then cm_UpdateDamagePops
+2026-11-03T13:31:44 0x006f0d74 data ai_Unk6f0d74 -> cm_CutChar by:main why:the character the cutscene code acts for: the slot's character in the cutscene loop (gm_FindChar of the slot id), else the player's own AICHAR (ai_CharInts[ai_PlayerId] - 4)
+2026-11-03T13:31:44 0x0060cb5c data ai_Unk60cb5c -> cm_FightOwner by:main why:the netId of the player who started the fight (0x4d63e0 stores the fight record's +0xc); only that machine computes the outcomes (G20_ME == it)
+2026-11-03T13:31:44 0x004c5d00 data ai_Unk4c5d00 -> cm_SendDamage by:main why:message 0x52 (netId, damage, health); its handler 0x4cc330 shows the damage, subtracts it from v024 and sets the health byte
+2026-11-03T13:31:44 0x004ce270 data ai_Unk4ce270 -> cm_OtherBuilding by:main why:returns 1 when the two characters' AICHAR.bld (+0x16c) differ

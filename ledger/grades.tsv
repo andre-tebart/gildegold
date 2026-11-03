@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 4e58fd28: renaming he_Unk555210 to he_RandomTransporter (he.h, included by unk_575860; nothing there calls it) flips a VC6 register tie-break (eax/ecx swapped for the constants 1 / 0x429); other names flip it too (he_PickTransporter, he_FindTransporter also drop ai_TutorialInitChapter3): the byte match depended on an identifier's spelling, no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at d77794b7: CMCUTENTRY (cm_types.h, included through cm.h) gets its field turn at 0x1d (split from pad14; read by cm_UpdateSceneChars) instead of a raw offset: unk_575860 never uses CMCUTENTRY, yet the declaration-set change flips a VC6 register tie-break (edi/ebx/ecx for the float constants 0x420c0000 / 0x430e0000 / 0x428e0000, the same stores); the same function already flips on unrelated renames (see ai_TutorialInitChapter2's debt): no evidence of the source [waits for: unk_575860's declaration set settling (its head and includes)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		

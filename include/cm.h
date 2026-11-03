@@ -257,7 +257,7 @@ void ai_Unk4c5b90(int a);                                                       
 void ai_Unk4c5bc0(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
 void ai_Unk4c5c40(int a, void *p);                                               /* 0x4c5c40 */
 void ai_Unk4c5ca0(int a, void *p);                                               /* 0x4c5ca0 */
-void ai_Unk4c5d00(int a, int b, int c);                                          /* 0x4c5d00 */
+void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
 void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
 void cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
@@ -522,7 +522,7 @@ char *cm_FindFighter(int id);  /* 0x4ce130 */
 int ai_LedSelectBits(int idx, char *c);  /* 0x4ce170 */
 float cm_CharObjDistXZ(char *c, char *o);  /* 0x4ce1b0 */
 float cm_CharCellDistXZ(char *c, int x, int y);  /* 0x4ce200 */
-int ai_Unk4ce270(char *a, char *b);  /* 0x4ce270 */
+int cm_OtherBuilding(char *a, char *b);  /* 0x4ce270 */
 struct CMBOMB *cm_LayBomb(struct D3VECTOR *p);  /* 0x4ce290 */
 void ch_SetHandObject();  /* 0x406c60 */
 int util_Random(unsigned short n);  /* 0x42ec00, tr.c; the callers that read a 16-bit result (ch_RandomNear, anm_Update, ai_Unk4d88c0 ..) call util_RandomU, a cast in their head */
@@ -593,11 +593,11 @@ void d2_EnableObject();  /* 0x475aa0 */
 extern int ai_Unk60cb60;  /* 0x60cb60 */
 extern G18POP cm_DamagePops[16];  /* 0x9304c0 */
 
-void ai_Unk4cf000();  /* 0x4cf000 */
+void cm_UpdateSceneChars();  /* 0x4cf000 */
 char d3if_ShowTree(struct D3OBJECT *obj, char show);  /* 0x447300 */
 float d3_YawTo();  /* 0x448ac0 */
-extern int ai_Unk60cb5c;  /* 0x60cb5c */
-extern char *ai_Unk6f0d74;  /* 0x6f0d74 */
+extern int cm_FightOwner;  /* 0x60cb5c */
+extern char *cm_CutChar;  /* 0x6f0d74 */
 
 void cm_DrawScrollArrows();  /* 0x4cf370 */
 void * d2_GetPic();  /* 0x4690b0 */
