@@ -54,7 +54,7 @@ void init_SyncSceneObjects(char *o);                                    /* 0x511
 void init_LoadTypeBScene(void);                                               /* 0x5124d0 */
 void init_LoadShopScript(unsigned char *b, unsigned short *o);          /* 0x5124f0 */
 void init_SoundObjectHook(char *o);                                     /* 0x5126a0 */
-void init_GateObjectHook(int o);                                        /* 0x512780 */
+void init_GateObjectHook(struct D3OBJECT *o);                           /* 0x512780 */
 void init_SoundObjectFreeHook(char *o);                                 /* 0x5127c0 */
 void init_PlayTownSound(char *name, int volume, int delay);             /* 0x5127f0 */
 void init_PlayGraveyardSound(char *b);                                  /* 0x512840 */

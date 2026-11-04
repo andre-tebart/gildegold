@@ -3126,14 +3126,14 @@ void init_SoundObjectHook(char *o)
 /* 0x512780, the scene object callback for "gate" objects: sets the state (+0x224 = 1, the flag 1 of +0x211 cleared) when the name contains "gate", else the state 0 */
 
 
-void init_GateObjectHook(int o)
+void init_GateObjectHook(D3OBJECT *o)
 {
-    if (strstr((char *)o, "gate") != 0) {
-        *(int *)(o + 0x224) = 1;
-        *(unsigned char *)(o + 0x211) &= 0xfe;
+    if (strstr(o->name, "gate") != 0) {
+        o->mask = 1;
+        o->objectFlags &= 0xfe;
         return;
     }
-    *(int *)(o + 0x224) = 0;
+    o->mask = 0;
 }
 /* 0x5127c0, the sound hook of the "sfx_" scene objects: frees the sound at SCENEOBJ.sound (0x4179d0) */
 
