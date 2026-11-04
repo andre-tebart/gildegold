@@ -7360,7 +7360,7 @@ void ai_Unk59b030(int param_1, int param_2)
    0x18cd (with the "$C" page markers), the buttons 0x52e350 (screen, 0, out, 1 / 2, 0x14404fc / 0x14404f8) and
    the selection 0x5fe710: the first button opens 0x59ad60 (param_1), the second 0x59b030 (param_1, the offer) */
 
-void ai_Unk59b160(int param_1)
+void ai_CreditListWindow(int param_1)
 {
     int list[9 * 3];
     int offers[0x10];
@@ -7399,7 +7399,7 @@ void ai_Unk59b160(int param_1)
     rebuild = 1;
     n = 0;
     for (;;) {
-        if (sv_RunFrame(ai_Unk59b160, 0x677c7) == 0)
+        if (sv_RunFrame(ai_CreditListWindow, 0x677c7) == 0)
             break;
         if (rebuild) {
             for (i = 0; i < 9; i++) {
@@ -7638,7 +7638,7 @@ void d2_SetObjText(); void d2_MoveObj(short x, short y, int obj); int d2_WinOpen
    (count, cities, 0), then each city a row 0x18df (city, the count, the summed +0xb4) and the control
    0x475b80; a click on the release control (local_120[0]) opens 0x59b880 (param_1), one on a city row
    0x59b630 (param_1, city); 0x4758f0 / 0x52d7a0 on exit */
-void ai_Unk59bad0(int param_1)
+void ai_CreditGiverWindow(int param_1)
 {
     int recs[16 * 3];
     int cities[16];
@@ -7679,7 +7679,7 @@ void ai_Unk59bad0(int param_1)
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, sel, 1, U_I((unsigned)&full_data_1440534));
     cnt = 0;
     for (;;) {
-        if (sv_RunFrame(ai_Unk59bad0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_CreditGiverWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_CameraFollow();
             return;
@@ -7996,7 +7996,7 @@ int ai_UsedRecordCount(int *recs)
    0x4c4880 ("kredit") and 0x4c4580; 0x46c70 / 0x46c90 / 0x477530 refresh the lists; 0x476c70 / 0x4758f0 /
    0x52d7a0 on exit */
 
-void ai_Unk59c700(int param_1)
+void ai_ExchangeWindow(int param_1)
 {
     int recsA[16 * 7];
     int recsB[16 * 7];
@@ -8183,7 +8183,7 @@ void ai_Unk59c700(int param_1)
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk59c700, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_ExchangeWindow, 0x677c7) == 0) {
             d2_ClearPointerItems();
             d2_CloseView(win);
             sv_CameraFollow();
@@ -8307,7 +8307,7 @@ void ai_Unk59fca0();
    0x59c120 (param_1 + 0x5d, 5 / 4) and 0x59c6e0, the buttons 0x475aa0 / 0x5e56c4, the panel 0x472760, the
    fee window 0x59d2d0 and the exchange 0x59c700; a click on a city row opens 0x59d410 (param_1, the goods of
    the selected list record +0x3 / +0x5, the city byte) and refreshes the lists (0x477530) */
-void ai_Unk59d5e0(int param_1)
+void ai_MoneyExchangeWindow(int param_1)
 {
     int recsA[16 * 7];
     int recsB[16 * 7];
@@ -8375,7 +8375,7 @@ void ai_Unk59d5e0(int param_1)
             d2_SetObjEnabled(recsB[i * 7], 0);
     sel = -1;
     for (;;) {
-        if (sv_RunFrame(ai_Unk59d5e0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_MoneyExchangeWindow, 0x677c7) == 0) {
             d2_ClearPointerItems();
             d2_CloseView(win);
             sv_CameraFollow();
@@ -8452,7 +8452,7 @@ void ai_Unk59d5e0(int param_1)
             if (U_I((unsigned)&d2_PointerObj) == ctl[1])
                 ai_Unk59d2d0(param_1);
             else if (U_I((unsigned)&d2_PointerObj) == ctl[3])
-                ai_Unk59c700(param_1);
+                ai_ExchangeWindow(param_1);
         }
     }
 }
@@ -8585,12 +8585,12 @@ void ai_FortuneOverview(AIBLD *bld)
     sv_CameraFollow();
 }
 /* 0x59df80, the money lender contact listener (288 B): the pump 0x5309a0 (0x59df80, 0x67fff) and the lookups
-   "contact_GELDWECHSEL" (0x1440590) / "contact_KREDITE" (0x14404e0) / with the flags 0x6f231c & 0x200
-   "contact_MEISTERBRIEF" (0x143cbc8) and "contact_VERMOEGENSUEBERSICHT" (0x1442050); the master letter opens
-   0x5c3200, the overview 0x59df10; the player's own building (param_1 + 0x27 == 0x6f25b8) opens 0x59d5e0
-   (money exchange) / 0x59bad0 (credits), another player's 0x59c700 / 0x59b160 */
+   "contact_GELDWECHSEL" (text 0x18f4) / "contact_KREDITE" (text 0x18c8), with the building permission 0x200
+   "contact_MEISTERBRIEF" (ai_ContactTextMasterLetter) and "contact_VERMOEGENSUEBERSICHT" (text 0x1fa4); the
+   master letter opens 0x5c3200, the overview 0x59df10; the player's own building (bld->owner == ai_PlayerId)
+   opens 0x59d5e0 (money exchange) / 0x59bad0 (credits), another player's 0x59c700 / 0x59b160 */
 
-void ai_Unk59df80(int param_1, int room)
+void ai_MoneyLenderContact(AIBLD *bld, int room)
 {
     int meister = 0;
     int overview = 0;
@@ -8598,28 +8598,28 @@ void ai_Unk59df80(int param_1, int room)
     int kredite;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk59df80, 0x67fff) != 0) {
-        wechsel = sv_RegisterNamePlate("contact_GELDWECHSEL", U_I((unsigned)&full_data_1440590), 0x10);
-        kredite = sv_RegisterNamePlate("contact_KREDITE", U_I((unsigned)&full_data_14404e0), 0x10);
-        if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
-            meister = sv_RegisterNamePlate("contact_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0x16);
-            overview = sv_RegisterNamePlate("contact_VERMOEGENSUEBERSICHT", U_I((unsigned)&full_data_1442050), 0x16);
+    while (sv_RunFrame(ai_MoneyLenderContact, 0x67fff) != 0) {
+        wechsel = sv_RegisterNamePlate("contact_GELDWECHSEL", txt_Ptrs[0x18f4], 0x10);
+        kredite = sv_RegisterNamePlate("contact_KREDITE", txt_Ptrs[0x18c8], 0x10);
+        if ((ai_BuildingPerms & 0x200) != 0) {
+            meister = sv_RegisterNamePlate("contact_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
+            overview = sv_RegisterNamePlate("contact_VERMOEGENSUEBERSICHT", txt_Ptrs[0x1fa4], 0x16);
         }
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == meister)
-                ai_MasterLetterWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == overview)
-                ai_FortuneOverview(param_1);
-            if (U_I((unsigned)&ai_ClickedObject) != 0) {
-                if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId)) {
-                    if (U_I((unsigned)&ai_ClickedObject) == wechsel)
-                        ai_Unk59d5e0(param_1);
-                    else if (U_I((unsigned)&ai_ClickedObject) == kredite)
-                        ai_Unk59bad0(param_1);
-                } else if (U_I((unsigned)&ai_ClickedObject) == wechsel) {
-                    ai_Unk59c700(param_1);
-                } else if (U_I((unsigned)&ai_ClickedObject) == kredite) {
-                    ai_Unk59b160(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == meister)
+                ai_MasterLetterWindow((unsigned char *)bld);
+            else if (ai_ClickedObject == overview)
+                ai_FortuneOverview(bld);
+            if (ai_ClickedObject != 0) {
+                if (bld->owner == ai_PlayerId) {
+                    if (ai_ClickedObject == wechsel)
+                        ai_MoneyExchangeWindow((int)bld);
+                    else if (ai_ClickedObject == kredite)
+                        ai_CreditGiverWindow((int)bld);
+                } else if (ai_ClickedObject == wechsel) {
+                    ai_ExchangeWindow((int)bld);
+                } else if (ai_ClickedObject == kredite) {
+                    ai_CreditListWindow((int)bld);
                 }
             }
         }
@@ -8862,7 +8862,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x74: ai_SmithyContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x85: ai_CarpenterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x9b: ai_StonecutterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xa5: ai_Unk59df80(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0xa5: ai_MoneyLenderContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xb7: ai_DungeonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xba: ai_Unk5a3df0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xbb: ai_DungeonEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
