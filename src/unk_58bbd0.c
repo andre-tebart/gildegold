@@ -9267,6 +9267,7 @@ void ai_Unk59fca0(int param_1)
     }
 }
 void ai_OpenAmountKindMenu(void);
+void ai_OpenAgendaMenu(void);
 /* 0x59fd30, the Rathaus contact listener (272 B): the pump 0x5309a0 (0x59fd30, 0x67fff), the flags
    0x576410 (0x200 / 0x400 / 0x800) gate "contact_GEB_KAUFEN" (0x14420f0) / "contact_TAGESORDNUNG"
    (0x1442100) / "contact_AMT_INFO" (0x143a3f0); with the gate 0x6f2448 and the key 0x1468410 byte 0x14,
@@ -9300,7 +9301,7 @@ void ai_Unk59fd30(void)
             if (clicked == kaufen)
                 ai_Unk59f9a0();
             else if (clicked == agenda)
-                ai_Unk5c1df0();
+                ai_OpenAgendaMenu();
             else if (clicked == amt)
                 ai_OpenAmountKindMenu();
         }
@@ -17579,7 +17580,7 @@ void ai_AmountInfoWindow(int kind)
     d2_CloseView(win);
 }
 
-int ai_AmountListWindow(); int ai_Unk5c1e10();
+int ai_AmountListWindow(); int ai_AgendaOfficeList();
 
 /* 0x5c1b20, the office info entry of the Rathaus name plate: opens the seven-button amount kind menu
    (ai_AmountKindMenu) with the amount list window (ai_AmountListWindow) as its callback and the
@@ -17663,20 +17664,20 @@ int ai_AmountKindMenu(int param_1, int param_2, int param_3)
     d2_CloseView(win);
     return 0;
 }
-/* 0x5c1df0, opens the special-amount menu 0x5c1b40 with the callback 0x5c1e10 and the caption record
-   0x143f030 (36 B), then exits through 0x52d7a0 */
+/* 0x5c1df0, the agenda entry of the Rathaus name plate: opens the seven-button amount kind menu
+   (ai_AmountKindMenu) with the office list (ai_AgendaOfficeList) as its callback and the Tagesordnung
+   caption text (txt_Ptrs[0x139c]) as its caption, then gives the camera back to the player */
 
-int ai_Unk5c1df0(void)
+void ai_OpenAgendaMenu(void)
 {
-    ai_AmountKindMenu((int)ai_Unk5c1e10, U_I((unsigned)&full_data_143f030), 1);
+    ai_AmountKindMenu((int)ai_AgendaOfficeList, (int)txt_Ptrs[0x139c], 1);
     sv_CameraFollow();
-    return 0;
 }
 /* 0x5c1e10, the menu callback of 0x5c1df0 (846 B, ROUGH SKELETON): 0x4e6fc0 (param_1, 6, the local 0x8c
    record buffer) first, then the list rows; the body is left as a comment. The frame is 0xac, the tail at
    0x5c2159 */
 
-int ai_Unk5c1e10(int param_1)
+int ai_AgendaOfficeList(int param_1)
 {
     char buf[0x8c];
     int n;
