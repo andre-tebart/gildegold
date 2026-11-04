@@ -1728,7 +1728,7 @@ char dd_Lock(void)
     }
     return 0;
 }
-/* 0x41df80 */
+/* 0x41df80, locks the drawing surface now (no wait), by display mode */
 
 char dd_LockNoWait(void)
 {
