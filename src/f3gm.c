@@ -5129,7 +5129,7 @@ void sv_RemoveBanners(char *b);                     /* 0x5286a0 */
 void sv_CreateBanners(char *b);                     /* 0x5282f0 */
 void ch_InflateModel();                     /* 0x402540 */
 int ch_Delete();                     /* 0x4028a0 */
-void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
+void ai_ShowEvidenceVoidNews(unsigned short *toldRec, unsigned short *culpritRec);     /* 0x5a9430 */
 int gm_FreeList(int *list);                     /* 0x500140 */
 int gm_TitlesLeft(int n);                     /* 0x504ce0 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
@@ -5783,7 +5783,7 @@ void gm_KillSpieler(int c, int mode)
             }
         }
         if (cnt != 0 && peer != 0 && peer != ch)
-            ai_ShowEvidenceVoidNews((int)peer, (unsigned short *)ch);
+            ai_ShowEvidenceVoidNews((unsigned short *)peer, (unsigned short *)ch);
     }
     gm_FreeList(&ch->inventory);
     if (ch->model != 0) {

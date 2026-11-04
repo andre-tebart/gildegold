@@ -14413,12 +14413,18 @@ void ai_SendSwapText(unsigned short *cRec, unsigned short *o1Rec, unsigned short
         he_ShowNews(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1, ai_NewsText, 0, 0x5fe, ch_EmptyName);
     }
 }
-/* 0x5a9430, a message (61 B): the text 0x1747 with the word of param_2 and the +4 id of param_1 (0x5fa) */
+/* 0x5a9430, tells a character that its evidence against a culprit is void (61 B): the text 0x1747 with the
+   culprit's id, shown to the told character's netId (event 0x5fa) */
 
-void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2)
+void ai_ShowEvidenceVoidNews(unsigned short *toldRec, unsigned short *culpritRec)
 {
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x1747, *param_2);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *told;
+    G8CHARREC *culprit;
+
+    told = (G8CHARREC *)toldRec;
+    culprit = (G8CHARREC *)culpritRec;
+    txt_Format(ai_NewsText, 0x1747, culprit->id);
+    he_ShowNews(told->netId, -1, ai_NewsText, 0, 0x5fa, ch_EmptyName);
 }
 /* 0x5a9470, the gypsy delivery text (536 B, ROUGH: the string copies are written as strcpy / strcat): with
    one to three characters param_3 (the 0x41bf header, the kinds 6 / 7 of the first param_2 records get the
