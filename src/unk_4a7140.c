@@ -1989,14 +1989,14 @@ int aip_ExecPamphlet(AIPER *p, int c, AIARG *m)
 /* 0x4aaa10, execute callback "aip_ExecDrohen": p threatens the character of m (message 0x2e, by chance after
    0x504e20) */
 
-int ai_Unk4aaa10(AIPER *p, int c, unsigned char *m)
+int aip_ExecDrohen(AIPER *p, int c, AIARG *m)
 {
     AIMSG msg;
     AIPER *o;
 
-    if (m[0] != 7)
+    if (m->kind != 7)
         return 0;
-    o = gm_FindPer(*(int *)(m + 4));
+    o = gm_FindPer(m->ref);
     if (o == 0)
         return 0;
     cm_BeginGroup("aip_ExecDrohen");

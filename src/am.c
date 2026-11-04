@@ -7234,7 +7234,7 @@ done:
 
 int ai_ExecuteThreaten(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    return ai_Unk4aaa10(p, s1, s2) ? 0x28 : 0;
+    return aip_ExecDrohen(p, s1, s2) ? 0x28 : 0;
 }
 /* 0x49d050, eval callback 0x28: decision 3 decides the rating; none while f is set */
 
