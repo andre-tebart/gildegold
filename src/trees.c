@@ -503,7 +503,7 @@ local void gen_bitlen(s, desc)
  * OUT assertion: the field code is set for all tree elements of non
  *     zero code length.
  */
-/* 0x466890 */
+/* 0x466890, turns the bit lengths of a tree into the reversed Huffman codes: the per-length code sequence, then one reversed code per leaf */
 local void gen_codes (tree, max_code, bl_count)
     ct_data *tree;             /* the tree to decorate */
     int max_code;              /* largest code with non zero frequency */
