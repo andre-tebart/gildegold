@@ -4863,7 +4863,7 @@ void ai_UnloadCarts(AICHAR *ch)
                 fill = car->fill;
                 msg.dst[0] = 5;
                 msg.car = id;
-                msg.u.s.unk84 = 0;
+                msg.u.s.cost = 0;
                 msg.n = 100 - fill;
                 cm_SendLongMessage(&msg);
             }
@@ -4881,7 +4881,7 @@ void ai_UnloadCarts(AICHAR *ch)
    sellAmount counts down) and the buys of the slots with a make plan are collected into one message 11 (up to
    three sells and three buys), sent unless the ai_TradeMsgOff gate is set (then ai_TradeMsgCount counts it).
    The gm_Query lists are walked to their end (the second loop drains the cursor).
-   @deep behaviour draft: 1955 code hunks / 4851 of 6032 bytes. Meaning fix found and kept this session: the field-delta block compared o->unk1c with 4 and wrote 4; the original tests o->unk1c != 0 and writes 0 (0x48aa34: mov eax,[esi+0x1c]; test eax,eax; je; mov [esp+0x10],0; cm_AddFieldDelta(4,1,o - cm_FieldObject + 0x1c,&v)) - 4894 -> 4851 bytes, 1316 -> 1310 asm lines. The rest of the diff (tools/asmdiff.py) is allocation / scheduling: the frame 0x74c vs 0x754 (one spilled local), the ebp / edi register pair and the block order. Q2 evidence gaps: ai_TradeMsgOff (a gate global, read only, no writer in any source, no reader names it), AIOBJ.unk1c (a state here, a building id / count / level elsewhere in its union), AIMSG.u.s.unk84 (only ever written 0 in the trade messages), AIMSG.unk9d (written 1 in the 0x10 messages, no other reader). Readability advanced this session: AIENTRY.unk44 -> sellAmount, AISLOT.unk18 -> sellAmount, AIOBJ.unk12 -> fill, AISLOT.unk08 -> the existing bld alias, gm_AddTime / gm_BuildingGoodsList / ai_SettingFactor names, Q6 rewritten. */
+   @deep behaviour draft: 1955 code hunks / 4851 of 6032 bytes. Meaning fix found and kept this session: the field-delta block compared o->unk1c with 4 and wrote 4; the original tests o->unk1c != 0 and writes 0 (0x48aa34: mov eax,[esi+0x1c]; test eax,eax; je; mov [esp+0x10],0; cm_AddFieldDelta(4,1,o - cm_FieldObject + 0x1c,&v)) - 4894 -> 4851 bytes, 1316 -> 1310 asm lines. The rest of the diff (tools/asmdiff.py) is allocation / scheduling: the frame 0x74c vs 0x754 (one spilled local), the ebp / edi register pair and the block order. Q2 evidence gaps: ai_TradeMsgOff (a gate global, read only, no writer in any source, no reader names it), AIOBJ.unk1c (a state here, a building id / count / level elsewhere in its union), AIMSG.u.s.cost (only ever written 0 in the trade messages), AIMSG.unk9d (written 1 in the 0x10 messages, no other reader). Readability advanced this session: AIENTRY.unk44 -> sellAmount, AISLOT.unk18 -> sellAmount, AIOBJ.unk12 -> fill, AISLOT.unk08 -> the existing bld alias, gm_AddTime / gm_BuildingGoodsList / ai_SettingFactor names, Q6 rewritten. */
 
 int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
 {
@@ -5002,7 +5002,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
                 gm_AddTime(&msg.time, 0, 0, 10);
                 msg.car = car->objId;
                 msg.dst[0] = 5;
-                msg.u.s.unk84 = 0;
+                msg.u.s.cost = 0;
                 msg.n = 100 - car->fill;
                 cm_SendLongMessage(&msg);
                 continue;
@@ -5293,7 +5293,7 @@ int ai_MeisterTrade(AICHAR *ch, AIOBJ *b)
    message 0x10 (10 seconds ahead); a full one without a running job 11 is unloaded against the market - the stall
    goods are sold to the market stalls (cm_SendExSellObject) and the buys collected into one message 11, sent
    unless the ai_TradeMsgOff gate is set.
-   @deep behaviour draft: 238 code + 132 slots + 14 fpu + 7 fill + 4 order hunks (1414 of 5008 bytes). Read with tools/spell.py: every entry is allocation - the slot rotation (48beb1 +0x18/+0x24, 48c08c +0x28/+0x30, 48c28b / 48c2af +0x24/+0x2c), the reloads of [esp+0x24] and [esp+0x200] (48bf16, 48bf5e, 48c211) and the 48bd87 iv-shift (the loop base only; the body was read against the source and the statements match ai_MeisterTrade's plan / cart blocks). Q2 evidence gaps (the same four as ai_MeisterTrade): ai_TradeMsgOff (a gate global, no writer in any source), AIOBJ.unk1c (a state here, a building id / count elsewhere in its union), AIMSG.u.s.unk84 (written 0 only), AIMSG.unk9d (written 1 only in the 0x10 messages). Q6 rewritten. */
+   @deep behaviour draft: 238 code + 132 slots + 14 fpu + 7 fill + 4 order hunks (1414 of 5008 bytes). Read with tools/spell.py: every entry is allocation - the slot rotation (48beb1 +0x18/+0x24, 48c08c +0x28/+0x30, 48c28b / 48c2af +0x24/+0x2c), the reloads of [esp+0x24] and [esp+0x200] (48bf16, 48bf5e, 48c211) and the 48bd87 iv-shift (the loop base only; the body was read against the source and the statements match ai_MeisterTrade's plan / cart blocks). Q2 evidence gaps (the same four as ai_MeisterTrade): ai_TradeMsgOff (a gate global, no writer in any source), AIOBJ.unk1c (a state here, a building id / count elsewhere in its union), AIMSG.u.s.cost (written 0 only), AIMSG.unk9d (written 1 only in the 0x10 messages). Q6 rewritten. */
 
 int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
 {
@@ -5375,7 +5375,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
                 gm_AddTime(&msg.time, 0, 0, 10);
                 msg.car = car->objId;
                 msg.dst[0] = 5;
-                msg.u.s.unk84 = 0;
+                msg.u.s.cost = 0;
                 msg.n = 100 - car->fill;
                 cm_SendLongMessage(&msg);
                 continue;
@@ -5623,7 +5623,7 @@ int ai_MeisterTradeAllgemein(AICHAR *ch, AIOBJ *b)
 }
 /* 0x48d010, ai_MeisterTradeFernEinkauf: the long-distance buyer sends every cart that is in the world to a
    market store (unloads it, then orders the purchases of the slots / entries)
-   @deep behaviour draft: 547 code + 32 slots hunks (1460 of 2064 bytes). The diff was read with tools/asmdiff.py: the whole delta is the frame (sub esp,0x69c vs the original 0x694 = one local too many) and the stack-slot rotation it causes - the spell.py 'code (no menu rule)' hunks are the same instructions at shifted slots (48d170 BYTE [esp+0xdd] vs [esp+0xd5], 48d24f [esp+edi*4+0x1a0] vs +0x198, 48d30a +0x1cc vs +0x1c4), no missing / extra statement, constant or callee. Lead for match-deep: merge two locals that never overlap to shrink the frame by 8. Q2 evidence gaps: ai_TradeMsgOff (a gate global, no writer), ai_Carts / ai_NumCarts (ledger globals, roles documented in the ai.c header comment but no source names them), AISLOT.unk20 (the buy sort key, no name in any source), AIENTRY.unk4c (how many to buy, the slot's unk34 is already buyAmount - a shared-header decision), AIMSG.u.s.unk84 / AIMSG.unk9d (written only). Q4: the two raw accesses *(int *)(bl + 1) and *(int *)(bl + 0x65) - bl is a char * view of an AIBLD record; AIBLD.id covers the first, the second is AIBLD.unk65 which has no evidenced role (a work record pointer in gv.c / f3gm.c, a number in ai_CalcMeisterBank). */
+   @deep behaviour draft: 547 code + 32 slots hunks (1460 of 2064 bytes). The diff was read with tools/asmdiff.py: the whole delta is the frame (sub esp,0x69c vs the original 0x694 = one local too many) and the stack-slot rotation it causes - the spell.py 'code (no menu rule)' hunks are the same instructions at shifted slots (48d170 BYTE [esp+0xdd] vs [esp+0xd5], 48d24f [esp+edi*4+0x1a0] vs +0x198, 48d30a +0x1cc vs +0x1c4), no missing / extra statement, constant or callee. Lead for match-deep: merge two locals that never overlap to shrink the frame by 8. Q2 evidence gaps: ai_TradeMsgOff (a gate global, no writer), ai_Carts / ai_NumCarts (ledger globals, roles documented in the ai.c header comment but no source names them), AISLOT.unk20 (the buy sort key, no name in any source), AIENTRY.unk4c (how many to buy, the slot's unk34 is already buyAmount - a shared-header decision), AIMSG.u.s.cost / AIMSG.unk9d (written only). Q4: the two raw accesses *(int *)(bl + 1) and *(int *)(bl + 0x65) - bl is a char * view of an AIBLD record; AIBLD.id covers the first, the second is AIBLD.unk65 which has no evidenced role (a work record pointer in gv.c / f3gm.c, a number in ai_CalcMeisterBank). */
 
 int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
 {
@@ -5656,7 +5656,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
             gm_AddTime(&msg.time, 0, 0, 10);
             msg.car = car->objId;
             msg.dst[0] = 5;
-            msg.u.s.unk84 = 0;
+            msg.u.s.cost = 0;
             msg.n = 100 - car->fill;
             cm_SendLongMessage(&msg);
         } else {
@@ -5801,7 +5801,7 @@ int ai_MeisterTradeFernEinkauf(AICHAR *ch, AIOBJ *b)
    market's price credits the budget), then buys entry 0 and up to two more entries whose building is dst[3],
    then the slots (up to three buys per player, the expected value exp[] per player from the banks of the type
    'G'), and sends the trade message 0xb (unless ai_TradeMsgOff)
-   @deep behaviour: 610/611 insns, 69 differing, 6 code hunks, all allocation / scheduling - 48db76 + 48dbc2 (the original keeps b in edi and amt in esi, ours market in esi / amt in edi, b->objId reloaded from [ebp+0xc]), 48dd6f (the original loads nB into eax before the exp[] / i zero stores and zeroes from edx, ours zeroes from eax and loads nB after), 48ddbc (eax / ecx roles), 48de19 (the original cmp BYTE PTR [ecx],0x47, ours mov al,[ecx]; cmp al,0x47) plus an extra amt home store at the gm_ListStock result in ours, 48e06d (3 nop fill). Every hunk read against asmdiff / disasm.py: no missing / extra statement, constant, callee or field offset. spell.py: dup-tail 48db76 (no if/else at that hunk - the sides differ by b vs market in a register), reload 48dd6f (both sides load nB, only the schedule differs), code 48de19 / 48e06d (no rule). One edit one build each: bl as AIBLD* with bl->id / bl->type / bl->unk65 instead of the char* view - byte-identical, kept (Q4); buf[1028] (Ghidra local_408) frame 0x69c / 71 differing, reverted; reusing d for amt in the slots block - byte-identical, reverted. Q2 left: AIBLD.unk65 (a player slot 0..4 in the shop / bank uses - gm_GoodsPrice's p, this function's exp[] per player - and a char* work record for a kind-0x1d building, gv_EntryIndex's r; a union playerSlot / work compiled byte-identical here but flipped ai_Unk483a60 (byte) to 5 differing bytes - the header tie-break - reverted), AIMSG.u.s.unk84 and AIMSG.unk9d (written only, no reader in any source). */
+   @deep behaviour: 610/611 insns, 69 differing, 6 code hunks, all allocation / scheduling - 48db76 + 48dbc2 (the original keeps b in edi and amt in esi, ours market in esi / amt in edi, b->objId reloaded from [ebp+0xc]), 48dd6f (the original loads nB into eax before the exp[] / i zero stores and zeroes from edx, ours zeroes from eax and loads nB after), 48ddbc (eax / ecx roles), 48de19 (the original cmp BYTE PTR [ecx],0x47, ours mov al,[ecx]; cmp al,0x47) plus an extra amt home store at the gm_ListStock result in ours, 48e06d (3 nop fill). Every hunk read against asmdiff / disasm.py: no missing / extra statement, constant, callee or field offset. spell.py: dup-tail 48db76 (no if/else at that hunk - the sides differ by b vs market in a register), reload 48dd6f (both sides load nB, only the schedule differs), code 48de19 / 48e06d (no rule). One edit one build each: bl as AIBLD* with bl->id / bl->type / bl->unk65 instead of the char* view - byte-identical, kept (Q4); buf[1028] (Ghidra local_408) frame 0x69c / 71 differing, reverted; reusing d for amt in the slots block - byte-identical, reverted. Q2 left: AIBLD.unk65 (a player slot 0..4 in the shop / bank uses - gm_GoodsPrice's p, this function's exp[] per player - and a char* work record for a kind-0x1d building, gv_EntryIndex's r; a union playerSlot / work compiled byte-identical here but flipped ai_Unk483a60 (byte) to 5 differing bytes - the header tie-break - reverted), AIMSG.u.s.cost and AIMSG.unk9d (written only, no reader in any source). */
 
 int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
 {
@@ -5832,7 +5832,7 @@ int ai_MeisterTradeFernEinkauf2(AICHAR *ch, AIOBJ *b)
             gm_AddTime(&msg.time, 0, 0, 10);
             msg.car = car->objId;
             msg.dst[0] = 5;
-            msg.u.s.unk84 = 0;
+            msg.u.s.cost = 0;
             msg.n = 100 - car->fill;
             cm_SendLongMessage(&msg);
         } else {

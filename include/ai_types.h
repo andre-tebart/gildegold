@@ -282,7 +282,9 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                         unsigned short item[6]; /* 0x7c */
                         struct {
                             int pad7c[2];
-                            int unk84;          /* 0x84 */
+                            int cost;           /* 0x84, the beat-up message 0x1a: the amount the decide callback
+                                                   (ai_DecideBeatUp's worth estimate) puts on the brawl
+                                                   (ai_ExecuteBeatUp); the trade messages set it 0 */
                         } s;
                     } u;
                 };

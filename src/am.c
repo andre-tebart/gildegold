@@ -5675,7 +5675,7 @@ int ai_ExecuteBeatUp(AIPER *p, AIARG *s1, AIARG *s2)
     else
         msg.fromId = -1;
     msg.flags = 1;
-    msg.u.s.unk84 = s1->arg2;
+    msg.u.s.cost = s1->arg2;
     msg.ch = c->netId;
     msg.arg[0] = ord_RandomObjectId(c);
     ai_Unkf84cf4[0] = ai_Unkf84cd4[0] * s1->fvalue;
