@@ -1455,19 +1455,25 @@ void ai_HookChapter2Step5(int arg)
 
 int ai_StepChapter2Step6(int *p)
 {
-    if (p[0] == 0x19 && p[1] && U_I(S + 4) == 4) {
-        if (*(unsigned short *)p[1] != 0x13)
+    if (p[0] == 0x19 && p[1] && ai_Tutorial->next == 4) {
+        unsigned short *room = (unsigned short *)(unsigned)p[1];
+
+        if (*room != 0x13)
             return 3;
-        U_I(S) = 0xa;
-        U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        ai_Tutorial->state = 0xa;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->stepAt = d3_Time;
         return 1;
     }
-    if (p[0] == 0x1a && p[1] && *(unsigned short *)p[1] == 0x13) {
-        U_I(S) = 0xb;
-        U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
-        return 1;
+    if (p[0] == 0x1a && p[1]) {
+        unsigned short *room = (unsigned short *)(unsigned)p[1];
+
+        if (*room == 0x13) {
+            ai_Tutorial->state = 0xb;
+            ai_Tutorial->next = 0xb;
+            ai_Tutorial->stepAt = d3_Time;
+            return 1;
+        }
     }
     return 3;
 }
