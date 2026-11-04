@@ -2602,7 +2602,7 @@ int init_FlagTreeObject(char *o)
 }
 /* 0x511840, frees and re-creates the quad tree 0x6f1c28 from the scene's objects (0x511810) */
 
-void unk_Unk511840(void)
+void init_RecreateQuadTree(void)
 {
     if (d3_QuadTree != 0) {
         d3q_FreeNode((D3QNODE *)d3_QuadTree);

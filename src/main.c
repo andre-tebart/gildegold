@@ -4821,7 +4821,7 @@ void main_GameLoop(int ctl)
     d3if_SelectScene(0, 0);
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && (U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
         init_PrepareTownScene();
-        unk_Unk511840();
+        init_RecreateQuadTree();
         ai_BookmarksPreset();
     }
     ai_ApplyOptions();

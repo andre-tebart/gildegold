@@ -1411,7 +1411,7 @@ int ls_LoadGame(int name, int kind)
         goto close;
     d3if_SelectScene(0, 1);
     init_PrepareTownScene();
-    unk_Unk511840();
+    init_RecreateQuadTree();
     if (ls_ReadSceneRecords(h) == 0)
         LS_LOADFAIL
     ai_JudgeCatholic = gm_FindChar(ai_JudgeCatholic);

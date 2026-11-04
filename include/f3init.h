@@ -43,7 +43,7 @@ void init_RebuildQuadTree(void);                                               /
 char init_TownBuildingHook(char *o);                                    /* 0x511700 */
 void init_PrepareTownScene(void);                                               /* 0x511790 */
 int init_FlagTreeObject(char *o);                                              /* 0x511810 */
-void unk_Unk511840(void);                                               /* 0x511840 */
+void init_RecreateQuadTree(void);                                               /* 0x511840 */
 int init_NameBuildings(void);                                           /* 0x511890 */
 void init_LocalData(void);                                              /* 0x511ad0 */
 void init_FillMarkets(int p);                                           /* 0x511bc0 */
