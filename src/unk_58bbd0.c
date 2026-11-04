@@ -16270,23 +16270,23 @@ int ai_AmountLimit(int from, int money, int steps, int *out)
     *out = limit;
     return 1;
 }
-/* 0x5bd0c0, a text control of width param_4 on a screen (128 B): 0x476030 (param_5) first, then, when the
-   screen record 0xf8f148 + screen * 0x3c4 is set, the background 0x46f1a0 and the clip 0x476760; the control
-   0x473650 (centred) gets the visible flag +0x5c and the width +0x14, then 0x4760b0 (the id, param_5) */
+/* 0x5bd0c0, a centred text control of width w in the current window (128 B): sets the font, and when the window
+   has flags draws the text box (d2_DrawTextBox, centred on x, flags 8) and paints the measured bounds, then
+   creates the centred text control (d2_CreateWinText) at x - w / 2 with its width and font */
 
-void ai_Unk5bd0c0(int param_1, int param_2, int param_3, int param_4, int param_5)
+void ai_CentredText(char *text, int x, int y, int w, int font)
 {
     int ctrl;
 
-    d2_SetFont(param_5);
-    if (U_I(((unsigned)&ai_Unkf8f13c + 0xc) + U_I((unsigned)&d2_LastWindow) * 0x3c4) != 0) {
-        d2_DrawTextBox(param_2 - param_4 / 2, param_3, param_4, 0x140, 0, param_1, 8);
-        d2_FillPaintbox(U_I((unsigned)&d2_TextLeft), U_I((unsigned)&d2_TextTop), U_I((unsigned)&d2_TextDrawnW), U_I((unsigned)&d2_TextDrawnH));
+    d2_SetFont(font);
+    if (d2_Wins[d2_LastWindow].surf2 != 0) {
+        d2_DrawTextBox(x - w / 2, y, w, 0x140, 0, text, 8);
+        d2_FillPaintbox(d2_TextLeft, d2_TextTop, d2_TextDrawnW, d2_TextDrawnH);
     }
-    ctrl = d2_CreateWinText(param_2 - param_4 / 2, param_3, param_1, U_I((unsigned)&d2_LastWindow));
-    U_I((unsigned)&d2_Objs + ctrl * 0x2ec + 0x5c) = 1;
-    *(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x14) = (short)param_4;
-    d2_SetObjFont(ctrl, param_5);
+    ctrl = d2_CreateWinText(x - w / 2, y, text, d2_LastWindow);
+    d2_Objs[ctrl].centred = 1;
+    d2_Objs[ctrl].w = w;
+    d2_SetObjFont(ctrl, font);
 }
 /* 0x5bd190, a text control right-aligned by param_4 (96 B): the control 0x473650 (x - width), the visible
    flag +0x60 = 1 and the width +0x14, then 0x4760b0 (the id, param_5) */
@@ -16506,14 +16506,14 @@ int ai_Unk5bd5e0(int param_1, int param_2, int param_3, int param_4, int *param_
             txt_Format(buf, (char *)(unsigned)&full_data_62d1f4,
                          (-(*(char *)(chr + 9) != 0) & 10) + 0x114 + *(unsigned char *)(chr + 0xd),
                          *(unsigned short *)chr);
-            ai_Unk5bd0c0((int)buf, x, rec[5], 0xca, 0x56);
+            ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
             if (param_2 == 7) {
                 txt_Format(buf, "%s",
                              (-(*(char *)(chr + 9) != 0) & 0x28) + 0x253 + *(unsigned char *)(chr + 0x169));
             } else {
                 txt_Format(buf, (char *)(unsigned)&full_data_62d1ec, *(unsigned short *)chr);
             }
-            ai_Unk5bd0c0((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
+            ai_CentredText((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
             if ((unsigned short *)chr != param_6 && *(char *)(chr + 2) != 6) {
                 rec[2] = d2_WinOpenSlider(rec[4] + 0x42, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 5 + y, 0x40, 0,
                                       100, 0x75, 0x442, U_I((unsigned)&d2_LastWindow));
@@ -16609,7 +16609,7 @@ int ai_Unk5bdb60(int param_1, int param_2, int param_3, int param_4, int param_5
             d2_WinOpenPic((x - *(short *)(U_I((unsigned)&d2_Pics) + 0x1a2ac) / 2) - 3, rec[5] + 0x24, 0x4fb,
                          U_I((unsigned)&d2_LastWindow));
             txt_Format(buf, "%s", rec[3] + 0x253);
-            ai_Unk5bd0c0((int)buf, x, rec[5], 0xca, 0x56);
+            ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
             U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x4c) = 1;
             U_I((unsigned)&d2_Objs + rec[1] * 0x2ec + 0x2e8) = 0;
             d2_SetObjEnabled(rec[1], 0);
@@ -16642,17 +16642,17 @@ int ai_Unk5bdb60(int param_1, int param_2, int param_3, int param_4, int param_5
                     page = (flags & 0x200) ? 0x23 : 0;
                 txt_Format(buf, (char *)(unsigned)&full_data_62d1fc, *(unsigned short *)chr);
 
-                ai_Unk5bd0c0((int)buf, x, rec[5], 0xca, 0x56);
+                ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
                 txt_Format(buf, "%s",
                              (-(*(char *)(chr + 9) != 0) & 0x28) + 0x253 + page);
-                ai_Unk5bd0c0((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
+                ai_CentredText((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
             } else {
                 txt_Format(buf, (char *)(unsigned)&full_data_62d1f4,
                              (-(*(char *)(chr + 9) != 0) & 10) + 0x114 + *(unsigned char *)(chr + 0xd),
                              *(unsigned short *)chr);
-                ai_Unk5bd0c0((int)buf, x, rec[5], 0xca, 0x56);
+                ai_CentredText((int)buf, x, rec[5], 0xca, 0x56);
                 txt_Format(buf, (char *)(unsigned)&full_data_62d1ec, *(unsigned short *)chr);
-                ai_Unk5bd0c0((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
+                ai_CentredText((int)buf, x, rec[5] + 0xf, 0xca, 0x56);
             }
             if ((unsigned short *)chr != param_6 && *(char *)(chr + 2) != 6) {
                 rec[2] = d2_WinOpenSlider(rec[4] + 0x42, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 5 + y, 0x40, 0,
@@ -16782,9 +16782,9 @@ int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_
             txt_Format(buf, (char *)(unsigned)&full_data_62d1f4,
                          (-(*(char *)(chr + 9) != 0) & 10) + 0x114 + *(unsigned char *)(chr + 0xd),
                          *(unsigned short *)chr);
-        ai_Unk5bd0c0((int)buf, ix, param_5[5], 0xca, param_4);
+        ai_CentredText((int)buf, ix, param_5[5], 0xca, param_4);
         txt_Format(buf, (char *)(unsigned)&full_data_62d1ec, *(unsigned short *)chr);
-        ai_Unk5bd0c0((int)buf, ix, param_5[5] + 0xe, 0xca, param_4);
+        ai_CentredText((int)buf, ix, param_5[5] + 0xe, 0xca, param_4);
         if (*(char *)(chr + 2) != 6) {
             param_5[2] = d2_WinOpenSlider(ix - 0x23, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 0x1e + y, 0x40, 0,
                                       100, 0x75, 0x442, U_I((unsigned)&d2_LastWindow));
@@ -17465,7 +17465,7 @@ int ai_AmountMenu(int param_1, int param_2, int param_3, int param_4)
             U_I((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x1c0) = 3;
         }
         *(unsigned short *)((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x74) = 0x55;
-        ai_Unk5bd0c0(U_I((unsigned)&full_data_143ec88 + order[i] * 4),
+        ai_CentredText(U_I((unsigned)&full_data_143ec88 + order[i] * 4),
                      (*(short *)((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x10) - *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 4)) + 0x20,
                      (*(short *)((unsigned)&d2_Objs + btn[i] * 0x2ec + 0x12) - *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 6)) - 0x19,
                      200, 0x55);
@@ -17600,7 +17600,7 @@ int ai_Unk5c1b40(int param_1, int param_2, int param_3)
         }
         ctrl = btn[i];
         *(unsigned short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x74) = 0x55;
-        ai_Unk5bd0c0(U_I((unsigned)&full_data_143ec88 + btn[i + 7] * 4),
+        ai_CentredText(U_I((unsigned)&full_data_143ec88 + btn[i + 7] * 4),
                      (*(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x10) - *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 4)) + 0x20,
                      (*(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x12) - *(short *)(U_I((unsigned)&d2_LastWindowPtr) + 6)) - 0x19,
                      200, 0x55);
@@ -18767,7 +18767,7 @@ void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int pa
                     else
                         U_I(U_I((unsigned)&d2_Objs) + 0x4c + ctrl * 0x2ec) = 0;
                     txt_Format((char *)0x300, (char *)(unsigned)&full_data_62d1fc, ids[i]);   /* ROUGH: the real buffer */
-                    ai_Unk5bd0c0((char *)0x300, x, y + 3, 0x50, 0x56);
+                    ai_CentredText((char *)0x300, x, y + 3, 0x50, 0x56);
                 }
             }
             /* ROUGH: the same for the two parents (the flag = (param_2 & 0xc) == 0) and the five
@@ -19209,7 +19209,7 @@ int ai_Unk5c6aa0(short *param_1)
         row[0xb] = ai_Unk5c6620(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I(row[0] + 4));
         txt_Format(text, (char *)0x1ce4, row[0xb]);
         ai_AmountRow(row[4], row[5], U_I((unsigned)&d2_LastWindow), 0x56, row, 1);
-        ai_Unk5bd0c0(text, row[4] + 0x20, row[5] + 0x2b, 0xca, 0x56);
+        ai_CentredText(text, row[4] + 0x20, row[5] + 0x2b, 0xca, 0x56);
     }
     U_I((unsigned)&d2_ClickedId) = -1;
     for (;;) {
@@ -19736,14 +19736,14 @@ void ai_PlayerComparePanel(void)
         *(int *)((unsigned)&d2_Objs + id + 0x1c0) = 3;
         *(int *)((unsigned)&d2_Objs + id + 0x2e8) = (unsigned)&ai_Chars + idx * 0x21c;
         txt_Format(buf, (char *)(unsigned)&full_data_62a564, idx);
-        ai_Unk5bd0c0(buf, 0x36, x + 0x24, 300, 0x56);
+        ai_CentredText(buf, 0x36, x + 0x24, 300, 0x56);
         n = *(int *)((unsigned)&ai_CharInts + idx * 0x21c + 0x50) - 0x59a;
         if (n > 7)
             n = 7;
         ctrl = d2_WinOpenSlider(0x5a, x + 9, 300, 0, 100, pos[n], 0x42, *(int *)(unsigned)&d2_LastWindow);
         d2_SetObjValue(ctrl, 0, 100, win);
         txt_Format(buf, (char *)(unsigned)"%i", *(int *)(list + i * 0x12 + 0x10));
-        ai_Unk5bd0c0(buf, 500, x + 2, 200, 0x55);
+        ai_CentredText(buf, 500, x + 2, 200, 0x55);
     }
     *(int *)(unsigned)&d2_ClickedId = -1;
     do {
