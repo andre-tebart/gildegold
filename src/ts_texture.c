@@ -765,11 +765,11 @@ char tex_Animate(D3OBJECT *obj, unsigned int time)
     unsigned int seed;
     int i, k, n, ntris, group;
 
-    if (obj->info && ((TSMESH *)obj->info)->unk10 && ((TSMESH *)obj->info)->nkeys > 0) {
+    if (obj->info && ((TSMESH *)obj->info)->ops && ((TSMESH *)obj->info)->nkeys > 0) {
         texs = ((TSMESH *)obj->info)->texs;
         seed = util_Hash(&obj, 4);
         ntris = ((TSMESH *)obj->info)->ntris;
-        n = ((TSMESH *)obj->info)->unk10->ntex;
+        n = ((TSMESH *)obj->info)->ops->count;
         for (i = 0; i < n; i++) {
             tex = texs[i];
             if (tex && tex->frames > 0 && !tex->frame && tex->speed > 0 && tex->refs > 0) {

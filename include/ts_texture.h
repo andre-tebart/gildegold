@@ -71,7 +71,7 @@ typedef struct TSMESH {
     TSTRI *tris;                    /* 0x04 */
     int nkeys;                      /* 0x08 */
     int ntris;                      /* 0x0c */
-    struct { char pad[0x1e0]; int ntex; } *unk10;   /* 0x10 */
+    struct D3OPS *ops;              /* 0x10, the mesh driver (d3_engine.h: D3OPS); ops->count texture names */
     TSTEXTURE **texs;               /* 0x14, ntex entries */
 } TSMESH;
 

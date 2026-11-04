@@ -1014,7 +1014,7 @@ exe	0x00454890	d3_MirCreateOutline	d3_mir	shape	readable
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	byte	readable		
 exe	0x00454ec0	d3_MirTransform	d3_mir	byte	readable		
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	byte	readable		
-exe	0x004550e0	d3_MirDrawObject	d3_mir	byte	readable		
+exe	0x004550e0	d3_MirDrawObject	d3_mir	shape	readable		byte+readable -> shape+readable at 66cd9658: include/ts_texture.h: TSMESH.unk10 is D3OPS* (d3_engine.h) with its count field, not an anonymous pad struct; a view type d3_mir does not use, and the flip is two order hunks of the declaration set (8 of 976 bytes) [waits for: a d3_mir declaration-set pass]
 exe	0x004554b0	d3_MirBeginFrame	d3_mir	byte	readable		
 exe	0x00455630	par_Init	d3_par	byte	readable		
 exe	0x004556b0	par_DeleteAll	d3_par	byte	readable		
