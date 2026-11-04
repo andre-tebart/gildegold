@@ -3680,34 +3680,34 @@ void gm_FreeObjectExtra(unsigned short *o)
         obj->route = 0;
     }
 }
-/* 0x5000c0, removes the object instance with the owner id (+2) from the list *list: like 0x4ffff0 but by the id field */
+/* 0x5000c0, removes the object instance whose own id (objId, +2) is id from the singly linked list *list (the next pointer sits at +0x3f of each node): like 0x4ffff0 but compared by objId instead of the prototype id; frees the node's extra list and part, relinks, marks the record free and decrements the count 0x6f1bdc. Returns 0, -1 for an empty list, -2 when not found */
 
 int gm_RemoveOwned(int *list, int id)
 {
-    unsigned short *prev, *cur;
+    ORDOBJ *prev, *cur;
     int n;
 
     n = 0;
     prev = 0;
-    if ((unsigned short *)*list == 0)
+    if ((ORDOBJ *)*list == 0)
         return -1;
-    cur = (unsigned short *)*list;
+    cur = (ORDOBJ *)*list;
     do {
-        if (*(int *)(cur + 1) == id) {
-            if (*(int *)(cur + 10) != 0)
-                gm_FreeList(cur + 10);
-            gm_FreeObjectExtra(cur);
+        if (cur->objId == id) {
+            if (cur->list != 0)
+                gm_FreeList(&cur->list);
+            gm_FreeObjectExtra((unsigned short *)cur);
             if (n == 0)
-                *list = *(int *)((char *)cur + 0x3f);
+                *list = (int)cur->next;
             else
-                *(int *)((char *)prev + 0x3f) = *(int *)((char *)cur + 0x3f);
-            *cur = 0;
+                prev->next = cur->next;
+            cur->type = 0;
             f3gm_ObjectCount--;
             return 0;
         }
         n++;
         prev = cur;
-        cur = *(unsigned short **)((char *)cur + 0x3f);
+        cur = cur->next;
     } while (cur != 0);
     return -2;
 }
