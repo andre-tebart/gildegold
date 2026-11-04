@@ -1877,3 +1877,4 @@
 2026-11-04T15:28:19 0x004b4630 data ai_Unk4b4630 -> ai_CondMoney by:main why:mission type 31: the amount of the character's city currency (gm_CharCurrency of the player's city id, in player money) reaches t->goal
 2026-11-04T15:28:34 0x004b4670 data ai_Unk4b4670 -> ai_CondSkills by:main why:mission types 4 / 9 / 29: at least t->goal of the character's five skills (AICHAR.skills +0x80, each byte / 42) reach t->threshold
 2026-11-04T15:28:48 0x004b46c0 data ai_Unk4b46c0 -> ai_CondOfficeTimed by:main why:mission types 15 .. 18 / 34 / 35: the character's office kind (AICHAR.officeKind +0x166) equals t->goal, held for t->threshold minutes (ai_TimedCondition)
+2026-11-04T15:29:36 0x004b46f0 data ai_Unk4b46f0 -> ai_CondOldBuilding by:main why:mission type 8: the character owns a building (gm_BuildQuery owner c, class 2) of type >= 5 whose v65 is its netId and which was created more than t->threshold minutes ago (ORDBLD.created)

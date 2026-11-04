@@ -548,14 +548,15 @@ int ai_CondOfficeTimed(AICHAR *c, int x, G13TYPE *t)
 
 int gm_BuildingTypeOfJob(int k);                                                         /* 0x503fa0, defined elsewhere */
 
-/* 0x4b46f0, mission condition: c has a building (kind >= 5, owner c) older than t->threshold minutes */
-int ai_Unk4b46f0(AICHAR *c, G13TYPE *t)
+/* 0x4b46f0, mission condition (type 8): the character owns a building (gm_BuildQuery owner c, class 2) of type
+   >= 5 whose v65 is its netId and that was created more than t->threshold minutes ago */
+int ai_CondOldBuilding(AICHAR *c, G13TYPE *t)
 {
-    AIBLD *b;
+    ORDBLD *b;
 
-    for (b = gm_BuildQuery(2, 4, c->id, 5, 2); b != 0; b = gm_BuildNext()) {
-        if (G13_B(b, 0) >= 5 && *(int *)((char *)b + 0x65) == c->netId
-            && gm_MinutesBetween((AITIME *)((char *)b + 0x69), &ai_Time) > t->threshold)
+    for (b = (ORDBLD *)gm_BuildQuery(2, 4, c->id, 5, 2); b != 0; b = (ORDBLD *)gm_BuildNext()) {
+        if (b->type >= 5 && b->v65 == c->netId
+            && gm_MinutesBetween(&b->created, &ai_Time) > t->threshold)
             return 1;
     }
     return 0;
@@ -887,7 +888,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 40:
         return m->progress >= t->goal;
     case 8:
-        return ai_Unk4b46f0(c, t);
+        return ai_CondOldBuilding(c, t);
     case 12:
         return ai_HasThreeStockedBuildings(c, t);
     case 20:
