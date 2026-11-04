@@ -37,6 +37,17 @@ typedef unsigned int SOCKET;            /* <winsock.h>, for net.h (as ai.c) */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_Unk4b86c0) */
+/* a list reference's mode ("_SET" / "_USE") is its four characters, which the parser compares as one dword */
+typedef union HST_MODE {
+    char text[4];                       /* the characters, without the terminator */
+    int  tag;                           /* the same four bytes as the dword VC6 compares */
+} HST_MODE;
+#pragma pack(push, 1)
+typedef struct HST_LABEL {              /* the start of a text label: "[_SET..." / "[_USE..." */
+    char     lead;                      /* +0, the '[' */
+    HST_MODE mode;                      /* +1, the mode's four characters */
+} HST_LABEL;
+#pragma pack(pop)
 /* 0x4adf40, copies src to dst up to the second '-', '%' becomes " %" after a non-blank; *n1 = the characters
    read, *n2 = the length of the rest */
 void ai_SplitTokenFormat(char *src, char *dst, int *n1, int *n2)
@@ -2157,19 +2168,24 @@ int hst_ParseContext(char *s, char *out, G12ARG *ctx)
 }
 
 char hst_ListModes[2][5] = { "_SET", "_USE" };  /* 0x601b00, the modes of a list reference: "_SET", "_USE" */
+#define hst_ListModeSet (*(int *)((char *)&hst_ListModes + 0x0))  /* 0x601b00, hst_ListModes[0] ("_SET") as one dword */
+#define hst_ListModeUse (*(int *)((char *)&hst_ListModes + 0x5))  /* 0x601b05, hst_ListModes[1] ("_USE") as one dword */
 
 /* 0x4b2380, leaked name (its messages): text k (or a string above 0x4800) "[_SET_n..." / "[_USE_n...":
    returns list n of hst_Lists (_SET empties it first) */
 G12ROW *hst_ParseCommandline_1st_Pass(int k)
 {
-    char buf[0x17d0];
+    union {
+        char      text[0x17d0];
+        HST_LABEL label;
+    } buf;
     char err[0x100];
     int set, n;
 
     set = 0;
     if (!txt_Loaded)
         return 0;
-    AI_ZERO(buf, 0x17d0);
+    AI_ZERO(buf.text, 0x17d0);
     AI_ZERO(err, 0x100);
     if (k < 0x4800) {
         if (txt_Ptrs[k] == 0)
@@ -2178,19 +2194,19 @@ G12ROW *hst_ParseCommandline_1st_Pass(int k)
             sprintf(err, "hst_ParseCommandline_1st_Pass() failed: Label %i is too long", k);
             return 0;
         }
-        strncpy(buf, txt_Ptrs[k], 0x17c0);
+        strncpy(buf.text, txt_Ptrs[k], 0x17c0);
     } else {
-        char *s = (char *)k, *d = buf;
+        char *s = (char *)k, *d = buf.text;
 
         while ((*d++ = *s++) != 0)
             ;
     }
-    if (*(int *)(buf + 1) == *(int *)hst_ListModes[0]) {
-        err[0] = buf[6];
+    if (buf.label.mode.tag == hst_ListModeSet) {
+        err[0] = buf.text[6];
         n = atoi(err);
         set = 1;
-    } else if (*(int *)(buf + 1) == *(int *)hst_ListModes[1]) {
-        err[0] = buf[6];
+    } else if (buf.label.mode.tag == hst_ListModeUse) {
+        err[0] = buf.text[6];
         n = atoi(err);
     } else
         return 0;
