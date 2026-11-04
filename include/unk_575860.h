@@ -164,7 +164,7 @@ void ai_HookChapter5Step4(int arg);             /* 0x5775c0, posts two character
 void ai_HookChapter5Step5(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
 void ai_HookChapter5Step6(int arg);             /* 0x577690, builds a save record (ROUGH) */
 int ai_TutorialOpenIntro(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
-int ai_Unk577820(void);                 /* 0x577820, 0x53d800 (player) */
+int ai_TutorialCloseIntro(void);                 /* 0x577820, closes the tutorial's main event (he_ReleaseSlot) */
 int ai_TutorialClearRunWindow(void);                 /* 0x577850, run window controls 1 / 2 */
 int ai_TutorialShowRunText(void);                 /* 0x5778b0, the run window's text tick */
 int ai_TutorialIntroAnswered(void);                 /* 0x577a00, the tutorial's escape check */

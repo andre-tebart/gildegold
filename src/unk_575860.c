@@ -2029,18 +2029,19 @@ int ai_TutorialOpenIntro(void)
             io_PrintText("$Z%s", 0x7d));
     return 0;
 }
-/* 0x577820, -4 without a player / run record, else 0x53d800 (player) and 0 */
+/* 0x577820, closes the tutorial's main event: -4 without a host / with no open event slot, else releases the slot
+   (he_ReleaseSlot) and answers 0 */
 
-int ai_Unk577820(void)
+int ai_TutorialCloseIntro(void)
 {
-    char *per;
+    TUTHOST *host;
 
-    per = *(char **)(S + 0x1c);
-    if (!per)
+    host = ai_Tutorial->host;
+    if (!host)
         return -4;
-    if (!*(int *)(per + 0x74))
+    if (!host->slot)
         return -4;
-    he_ReleaseSlot(per);
+    he_ReleaseSlot((int)host);
     return 0;
 }
 /* 0x577850, -4 without a player / run record, else the run window's controls 1 and 2 (0x475f70) with the text

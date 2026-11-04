@@ -8975,7 +8975,7 @@ reset:
 int ai_Unk578120();
 int ai_TutorialOpenIntro();
 int ai_TutorialTick();
-int ai_Unk577820();
+int ai_TutorialCloseIntro();
 void ai_Unk578150(void);
 void sv_PopTo(int v);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
@@ -9004,7 +9004,7 @@ void he_Unk552bc0(int ev)
             *(int *)(ev + 0x70) = 2;
         break;
     case 2:
-        ai_Unk577820();
+        ai_TutorialCloseIntro();
         ai_Unk578150();
         he_FreeEvent((int *)ev);
         U_I((unsigned)&ai_GameOver) = 1;
