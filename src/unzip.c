@@ -347,7 +347,7 @@ local uLong unzlocal_SearchCentralDir(fin)
      Else, the return value is a unzFile Handle, usable with other function
 	   of this unzip package.
 */
-/* 0x467840 */
+/* 0x467840, opens a zip archive: finds and reads the central directory's header (disk numbers, entry counts, size, offset; a spanned / inconsistent archive is UNZ_BADZIPFILE) and returns the unzFile handle, NULL when the file or the directory cannot be read */
 extern unzFile ZEXPORT unzOpen (path)
 	const char *path;
 {
