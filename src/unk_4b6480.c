@@ -551,10 +551,11 @@ int ai_MsgPartnerRelation6to18Type17(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4b7bc0, message: the holders of up to 16 buildings of the 0x501190(1, 5, 7) list (each once) get 0x4c4b00
-   6..12 from c; v = 2..5 % of 0x50a640 (not with item 0x290) */
+/* 0x4b7bc0, message 0x18: the holders of up to 16 buildings of the gm_BuildQuery(1, 5, 7) list (each once) get a
+   6..12 relation gift from c (cm_SendRelations); c pays v = 2..5 % of its worth (0x50a640), skipped with item
+   0x290 */
 
-int ai_Unk4b7bc0(G14MSG *m)
+int ai_MsgBuildingOwnerRelationsType18(G14MSG *m)
 {
     AICHAR *c;
     AIBLD *b;
@@ -570,8 +571,8 @@ int ai_Unk4b7bc0(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (b = gm_BuildQuery(1, 5, 7); b != 0 && n < 16; b = gm_BuildNext()) {
-        if (*(unsigned short *)((char *)b + 0x27) != 0xffff)
-            ids[n++] = ai_CharsT[*(unsigned short *)((char *)b + 0x27)].netId;
+        if (b->owner != 0xffff)
+            ids[n++] = ai_CharsT[b->owner].netId;
     }
     if (n == 0)
         return 0x400;
@@ -1944,7 +1945,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
-    ai_Unk4b7bc0, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
+    ai_MsgBuildingOwnerRelationsType18, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
