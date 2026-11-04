@@ -13574,23 +13574,32 @@ void ai_Unk5a7cd0(int *m_)
     if (*(unsigned char *)(((unsigned)&kb_Down + 0xcd)) != 0)
         d2_ScrollWindowBy(4, 0, *(int *)((unsigned)&d2_LastWindow));
 }
-/* 0x5a82f0, the map window's close (78 B): the saved screen 0x6ed930 (+0x27a8) is restored, the view 0x4758f0,
-   the 0x300 controls +0x18dc are removed (0x46e710) and the view is cleared */
+typedef struct MAPWINDOW {          /* 0x27ac bytes, the record of the town map window (ai_Unk5a78a0 fills it, ai_MapPick holds one) */
+    int view;                       /* +0x000, the window */
+    char pad04[0x18dc - 4];
+    int controls[0x300];            /* +0x18dc, the control objects, -1 free */
+    char pad24dc[0x27a8 - 0x24dc];
+    struct D2SURF *tile;            /* +0x27a8, the background tile the open saved */
+} MAPWINDOW;
 
-void ai_Unk5a82f0(int *m_)
+/* 0x5a82f0, the town map window's close (78 B): the background tile saved at +0x27a8 goes back to
+   d2_BackgroundTile, d2_CloseView closes the window, the 0x300 control objects of +0x18dc are removed
+   (d2_RemoveObj) and set to -1, and the window is set to -1 */
+
+void ai_CloseMapWindow(int *m_)
 {
-    char *p = (char *)m_;
+    MAPWINDOW *m = (MAPWINDOW *)m_;
     int i;
 
-    *(int *)((unsigned)&d2_BackgroundTile) = m_[0x9ea];
-    d2_CloseView(m_[0]);
+    d2_BackgroundTile = m->tile;
+    d2_CloseView(m->view);
     for (i = 0; i < 0x300; i++) {
-        if (*(int *)(p + 0x18dc + i * 4) != -1) {
-            d2_RemoveObj(*(int *)(p + 0x18dc + i * 4));
-            *(int *)(p + 0x18dc + i * 4) = -1;
+        if (m->controls[i] != -1) {
+            d2_RemoveObj(m->controls[i]);
+            m->controls[i] = -1;
         }
     }
-    m_[0] = -1;
+    m->view = -1;
 }
 #pragma pack(push, 1)
 typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */

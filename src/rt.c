@@ -984,7 +984,7 @@ void rt_EditCartRoute(char *c)
         cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x33, &v);
         cm_SendFieldValues();
     }
-    ai_Unk5a82f0(m);
+    ai_CloseMapWindow(m);
     if (rt_Unk6f074c != 0) {
         d2_BlitPart(0, 0, *(int *)(ai_Unk6f26ac + 4), *(int *)(ai_Unk6f26ac + 8), rt_Unk6f074c, 0, 0, ai_Unk6f26ac);
         d2_FreeSurface(rt_Unk6f074c);

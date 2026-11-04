@@ -140,7 +140,7 @@ void ai_Unk5a6b70(int param_1, int param_2, int param_3);  /* 0x5a6b70 */
 void ai_Unk5a6cb0(int *m_);  /* 0x5a6cb0 */
 void ai_Unk5a78a0(int *m_);  /* 0x5a78a0 */
 void ai_Unk5a7cd0(int *m_);  /* 0x5a7cd0 */
-void ai_Unk5a82f0(int *m_);  /* 0x5a82f0 */
+void ai_CloseMapWindow(int *m_);  /* 0x5a82f0 */
 void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3);  /* 0x5a9470 */
 int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2);  /* 0x5c9550 */
 int ai_BlackmailContact(int param_1, int param_2);  /* 0x5c9c50 */
