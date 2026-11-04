@@ -10509,21 +10509,19 @@ void ai_ClearBookmark(AIBOOKMARK *b)
     b->building = -1;
     b->object = -1;
 }
-/* 0x589410, the init of the 12-byte slot table 0x6f5ec0 (63 B, 0xb slots up to 0x6f5f43): cleared, then each
-   slot's byte 0 = i + 0x3b (0x57 for the last one, 0x6f5f38) and 0x589400 (the slot) */
+/* 0x589410, the init of the bookmark table ai_Bookmarks (0xb slots of 12 bytes, up to 0x6f5f44): cleared, then
+   each slot's key = i + 0x3b (0x3b .. 0x44: F1 .. F10) or 0x57 (F11) and the slot cleared by 0x589400 */
 
 void ai_InitBookmarks(void)
 {
-    char *p;
     int i;
 
     memset(ai_Bookmarks, 0, sizeof(ai_Bookmarks));
     for (i = 0; i < 0xb; i++) {
-        p = (char *)&ai_Bookmarks[i];
-        *(unsigned char *)p = (unsigned char)(i + 0x3b);
+        ai_Bookmarks[i].key = (unsigned char)(i + 0x3b);
         if (i == 0xa)
             ai_Bookmarks[10].key = 0x57;
-        ai_ClearBookmark((AIBOOKMARK *)p);
+        ai_ClearBookmark(&ai_Bookmarks[i]);
     }
 }
 
