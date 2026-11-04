@@ -960,19 +960,19 @@ exe	0x0044f470	bgi_PolyVerts	d3_io_b	byte	readable
 exe	0x0044f500	bgi_PolyUV	d3_io_b	byte	readable		
 exe	0x0044f580	bgi_SkipInt3	d3_io_b	byte	readable		
 exe	0x0044f5a0	bgi_PolyMat	d3_io_b	byte	readable		
-exe	0x0044f650	bgi_Unk04	d3_io_b	byte	draft		
+exe	0x0044f650	bgi_GeomInt	d3_io_b	byte	readable		
 exe	0x0044f660	bgi_NumPoints	d3_io_b	byte	readable		
 exe	0x0044f6b0	bgi_NumPolys	d3_io_b	byte	readable		
 exe	0x0044f700	bgi_Points	d3_io_b	byte	readable		
 exe	0x0044f770	bgi_SkipStr	d3_io_b	byte	readable		
-exe	0x0044f790	bgi_SkipInt2	d3_io_b	byte	draft		
+exe	0x0044f790	bgi_SkipInt2	d3_io_b	byte	readable		
 exe	0x0044f7a0	bgi_Flags	d3_io_b	byte	readable		
-exe	0x0044f7d0	bgi_SkipDword	d3_io_b	byte	draft		
+exe	0x0044f7d0	bgi_SkipDword	d3_io_b	byte	readable		
 exe	0x0044f7f0	bgi_Attach	d3_io_b	byte	readable		
 exe	0x0044f870	d3_ReadBGF	d3_io_b	byte	readable		
 exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	shape	draft		
-exe	0x004506f0	d3_Unk4506f0	d3_io_b	byte	draft		
-exe	0x004507a0	d3_Unk4507a0	d3_io_b	byte	draft		
+exe	0x004506f0	d3_BGFCanWeld	d3_io_b	byte	readable		
+exe	0x004507a0	d3_OpenFastChunk	d3_io_b	byte	readable		
 exe	0x00450860	d3_FindBGF	d3_io_fl	draft	draft	deep	
 exe	0x00450dc0	d3_CalcNormals	d3_io_fl	byte	readable		
 exe	0x00450ec0	d3_CalcBounds	d3_io_fl	byte	draft	deep	
@@ -1188,9 +1188,9 @@ exe	0x00465650	huft_build	inftrees	byte	draft
 exe	0x00465b00	inflate_trees_dynamic	inftrees	byte	readable		
 exe	0x00465c90	inflate_trees_fixed	inftrees	byte	readable		
 exe	0x00465cc0	inflate_flush	infutil	byte	readable		
-exe	0x00465e00	_tr_init	trees	byte	draft		
-exe	0x00465e70	init_block	trees	byte	draft		
-exe	0x00465ee0	_tr_stored_block	trees	byte	draft		
+exe	0x00465e00	_tr_init	trees	byte	readable		
+exe	0x00465e70	init_block	trees	byte	readable		
+exe	0x00465ee0	_tr_stored_block	trees	byte	readable		
 exe	0x00465f80	_tr_align	trees	byte	draft		
 exe	0x00466190	_tr_flush_block	trees	byte	draft		
 exe	0x00466380	build_tree	trees	byte	draft		
