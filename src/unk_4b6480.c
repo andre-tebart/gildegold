@@ -634,9 +634,10 @@ int ai_MsgOfficeGroupRelationsType19(G14MSG *m)
     }
     return 0x400;
 }
-/* 0x4b7f40, message: as 0x4b78c0, negative (0..100, -6..-14; not with item 0x290) */
+/* 0x4b7f40, message 0x1a: as 0x4b78c0 but c's relation to the random partner (liking 0..100) falls by 6..14;
+   skipped with item 0x290 */
 
-int ai_Unk4b7f40(G14MSG *m)
+int ai_MsgPartnerRelationMinus6to14Type1a(G14MSG *m)
 {
     AICHAR *c, *p;
     unsigned short id;
@@ -648,7 +649,7 @@ int ai_Unk4b7f40(G14MSG *m)
         return 1;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    fl = (unsigned)&full_data_600c00;
+    fl = AI_PARTNER_FILTER_MINOR_SERVANT;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
@@ -1946,7 +1947,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
-    ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_Unk4b7f40, ai_Unk4b8060,
+    ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
