@@ -1207,8 +1207,8 @@ exe	0x00467670	bi_reverse	trees	byte	draft
 exe	0x00467690	bi_flush	trees	byte	draft		
 exe	0x00467720	bi_windup	trees	byte	draft		
 exe	0x004677a0	copy_block	trees	byte	draft		
-exe	0x00467840	unzOpen	unzip	byte	draft		
-exe	0x004679d0	unzlocal_getShort	unzip	byte	draft		
+exe	0x00467840	unzOpen	unzip	byte	readable		
+exe	0x004679d0	unzlocal_getShort	unzip	byte	readable		
 exe	0x00467a20	unzlocal_getByte	unzip	byte	draft		
 exe	0x00467a60	unzlocal_getLong	unzip	byte	readable		
 exe	0x00467af0	unzlocal_SearchCentralDir	unzip	byte	draft		
@@ -2607,7 +2607,7 @@ exe	0x004e5360	cm_RandomFloat	cm	byte	draft
 exe	0x004e53e0	cm_DialogTimer	cm	byte	draft		
 exe	0x004e5470	cm_MessageBox	cm	draft	readable	deep	
 exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
-exe	0x004e5770	ai_Unk4e5770	cm	byte	draft		
+exe	0x004e5770	cm_InitScenes	cm	byte	draft		
 exe	0x004e58e0	ai_Unk4e58e0	cm	shape	draft		
 exe	0x004e5980	ai_Unk4e5980	cm	byte	draft		
 exe	0x004e5a40	ai_Unk4e5a40	cm	byte	draft		
@@ -3468,35 +3468,35 @@ exe	0x00537930	main_NewSinglePlayerGame	main	byte	readable
 exe	0x00537980	main_LoadingScreen	main	byte	readable		
 exe	0x00537af0	main_SetLoadProgress	main	byte	readable		
 exe	0x00537b60	main_LoadProgressCallback	main	byte	readable		
-exe	0x00537be0	main_Unk537be0	main	byte	draft		
-exe	0x00537c70	main_PreloadSound	main	byte	draft		
-exe	0x00537db0	main_FreeSoundBanks	main	byte	draft		
-exe	0x00537de0	main_Unk537de0	main	byte	draft		
+exe	0x00537be0	main_CloseLoadingScreen	main	byte	readable		
+exe	0x00537c70	main_PreloadSound	main	byte	readable		
+exe	0x00537db0	main_FreeSoundBanks	main	byte	readable		
+exe	0x00537de0	main_StartGame	main	byte	readable		
 exe	0x00537f40	main_EndGame	main	byte	readable		
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
 exe	0x005384e0	main_EndRound	main	draft	draft	deep	
 exe	0x00539620	main_ReplaceFigure	main	shape	draft	deep	
 exe	0x00539870	main_RoundReport	main	draft	draft	deep	
 exe	0x0053a250	main_UpdateFigure	main	draft	draft	deep	
-exe	0x0053a450	main_UpdateFigures	main	byte	draft		
+exe	0x0053a450	main_UpdateFigures	main	byte	readable		
 exe	0x0053a520	main_SettleRound	main	draft	draft	deep	
 exe	0x0053b2e0	main_BeginPlayerRound	main	draft	draft	deep	
-exe	0x0053b830	main_Unk53b830	main	byte	draft		
+exe	0x0053b830	main_CheckCD	main	byte	readable		
 exe	0x0053b840	main_CreateStartCouple	main	shape	readable	deep	
 exe	0x0053bb20	main_GameLoop	main	draft	draft	deep	
-exe	0x0053c9b0	main_Unk53c9b0	main	byte	draft		
+exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
 exe	0x0053ccf0	WinMain	main	draft	draft	deep	
 exe	0x0053d430	he_Unk53d430	he	byte	draft		
 exe	0x0053d470	he_Unk53d470	he	byte	draft		
-exe	0x0053d4b0	he_Unk53d4b0	he	byte	draft		
+exe	0x0053d4b0	he_InitEvents	he	byte	draft		
 exe	0x0053d590	he_FreeEvents	he	byte	draft		
 exe	0x0053d5d0	he_ReleaseEvents	he	byte	readable		
 exe	0x0053d600	he_Unk53d600	he	byte	draft		
 exe	0x0053d630	he_FreeOldestSlot	he	byte	readable		
 exe	0x0053d6f0	he_OpenEventSlot	he	byte	readable		
 exe	0x0053d800	he_ReleaseSlot	he	byte	readable		
-exe	0x0053d930	he_Unk53d930	he	byte	draft		
+exe	0x0053d930	he_CreateEventBar	he	byte	draft		
 exe	0x0053d9b0	he_CloseEventSlots	he	byte	draft		
 exe	0x0053d9f0	he_ShowEventBar	he	byte	readable		
 exe	0x0053dad0	he_Unk53dad0	he	byte	draft		
@@ -4099,7 +4099,7 @@ exe	0x00588bb0	ai_OpenHelpTooltip	unk_575860	byte	readable
 exe	0x00588c60	ai_OpenCharTooltip	unk_575860	byte	readable		
 exe	0x005890c0	ai_CharInfoWindow	unk_575860	byte	readable		
 exe	0x00589400	ai_ClearBookmark	unk_575860	byte	readable		
-exe	0x00589410	ai_Unk589410	unk_575860	byte	draft		
+exe	0x00589410	ai_InitBookmarks	unk_575860	byte	draft		
 exe	0x00589450	ai_ValidateBookmarks	unk_575860	byte	readable		
 exe	0x005894d0	ai_SelectBookmark	unk_575860	byte	readable		
 exe	0x00589570	ai_SetBookmark	unk_575860	draft	readable	deep	
