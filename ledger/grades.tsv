@@ -190,7 +190,7 @@ exe	0x0040d150	chc_SetCharacterTransperancy	chc	byte	readable
 exe	0x0040d1e0	chc_CharacterSitsDown	chc	byte	readable		
 exe	0x0040d220	chc_FindInCharacterName	chc	byte	readable		
 exe	0x0040d270	chc_Register	chc	byte	readable		
-exe	0x0040d680	ocmd_GetObjectHandle	ecmd	byte	draft		
+exe	0x0040d680	ocmd_GetObjectHandle	ecmd	byte	readable		
 exe	0x0040d6e0	ocmd_FindCB	ecmd	byte	readable		
 exe	0x0040d730	ocmd_GetRndObjectHandle	ecmd	byte	readable		
 exe	0x0040d7b0	ocmd_GetRndSubObjectHandle	ecmd	byte	readable		
@@ -436,9 +436,9 @@ exe	0x004220b0	err_Init	err	byte	readable
 exe	0x00422250	err_Exit	err	byte	readable		
 exe	0x004222b0	err_Message	err	byte	readable		
 exe	0x00422330	err_Log	err	byte	readable		
-exe	0x004223c0	mem_Alloc	mem	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x004223c0	mem_Alloc	mem	byte	readable		
 exe	0x004225e0	mem_IsValid	mem	byte	readable		
-exe	0x00422620	mem_Free	mem	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00422620	mem_Free	mem	byte	readable		
 exe	0x004226a0	mem_Init	mem	byte	readable		
 exe	0x00422750	mem_Dump	mem	byte	readable		
 exe	0x00422910	mem_Exit	mem	byte	readable		
@@ -459,7 +459,7 @@ exe	0x00423660	mov_Alloc	mov	byte	readable
 exe	0x004236b0	mov_Free	mov	byte	readable		
 exe	0x00423720	mov_Find	mov	byte	readable		
 exe	0x00423740	mov_FindWnd	mov	byte	readable		
-exe	0x00423770	msx_Thread	msx	byte	draft		
+exe	0x00423770	msx_Thread	msx	byte	readable		
 exe	0x00423830	msx_Init	msx	byte	readable		
 exe	0x004238e0	msx_Exit	msx	byte	readable		
 exe	0x00423930	msx_SetTrackVolume	msx	byte	readable		
@@ -1142,8 +1142,8 @@ exe	0x004614c0	tex_Prepare	ts_texture	byte	draft		byte+readable -> byte+draft at
 exe	0x004614f0	tex_CreateAlias	ts_texture	byte	readable		
 exe	0x00461610	tex_ReleaseAlias	ts_texture	byte	readable		
 exe	0x004616a0	tex_AliasForFlags	ts_texture	byte	readable		
-exe	0x004616d0	adler32	adler32	byte	draft		
-exe	0x00461800	crc32	crc32	byte	draft		
+exe	0x004616d0	adler32	adler32	byte	readable		
+exe	0x00461800	crc32	crc32	byte	readable		
 exe	0x00461940	deflateInit2_	deflate	byte	draft		
 exe	0x00461b40	deflateReset	deflate	byte	draft		
 exe	0x00461bc0	deflate	deflate	byte	draft		
@@ -1171,14 +1171,14 @@ exe	0x00463660	gztell	gzio	byte	draft
 exe	0x00463680	getLong	gzio	byte	draft		
 exe	0x004636d0	gzclose	gzio	byte	draft		
 exe	0x00463720	putLong	gzio	byte	draft		
-exe	0x00463750	inflate_blocks_reset	infblock	byte	draft		
+exe	0x00463750	inflate_blocks_reset	infblock	byte	readable		
 exe	0x004637d0	inflate_blocks_new	infblock	byte	readable		
 exe	0x00463870	inflate_blocks	infblock	byte	readable		
 exe	0x004644c0	inflate_blocks_free	infblock	byte	readable		
 exe	0x00464500	inflate_codes_new	infcodes	byte	readable		
 exe	0x00464540	inflate_codes	infcodes	byte	readable		
 exe	0x00464c40	inflate_codes_free	infcodes	byte	readable		
-exe	0x00464c60	inflate_fast	inffast	byte	draft		
+exe	0x00464c60	inflate_fast	inffast	byte	readable		
 exe	0x00464fc0	inflateReset	inflate	byte	readable		
 exe	0x00465010	inflateEnd	inflate	byte	readable		
 exe	0x00465060	inflateInit2_	inflate	byte	readable		
@@ -2722,7 +2722,7 @@ exe	0x004ecd10	ahm_SetPlaceValue	ahm	byte	readable
 exe	0x004ecd50	ahm_SendAddValue	ahm	byte	readable		
 exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep	
 exe	0x004ece10	ahm_SendDelete	ahm	byte	readable		
-exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	draft		
+exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	readable		
 exe	0x004ecf10	ahm_WriteRecord	ahm	byte	readable		
 exe	0x004ed040	ahm_ReadRecord	ahm	byte	readable		
 exe	0x004ed170	gv_AllocAvatar	gv	shape	readable		
