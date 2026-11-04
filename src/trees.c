@@ -303,7 +303,8 @@ local void tr_static_init()
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
  */
-/* 0x465e00 */
+/* 0x465e00, initializes the tree data of a new deflate stream: the tree descriptors, the bit buffer and the
+   first block */
 void _tr_init(s)
     deflate_state *s;
 {
