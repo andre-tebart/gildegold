@@ -1632,7 +1632,7 @@ int ai_SellBuildingGoodsShare(AICHAR *c, int *id, float f)
 /* 0x4ba970, message: 0x4ba840 takes 13..25 % of the goods of one of c's buildings; the text names its 0x501190
    (1, 1, id) entry and the share in % (not with item 0x290) */
 
-int ai_Unk4ba970(G14MSG *m)
+int ai_MsgTakeBuildingGoodsPct13to25Type32(G14MSG *m)
 {
     AICHAR *c;
     AIBLD *b;
@@ -1951,7 +1951,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
     ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
-    ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
+    ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_Unk4baa80,
     ai_Unk4baba0, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
     ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
