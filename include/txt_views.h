@@ -39,7 +39,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_BuildingNames                         (*(int (*)[1304])((char *)txt_Ptrs + 0x01240))  /* 0x143b400 */
 #define txt_ObjectNames                            (*(int (*)[50][2])((char *)txt_Ptrs + 0x026a0))  /* 0x143c860 */
 #define ai_ContactTextPersonnelBook              (*(char * *)((char *)txt_Ptrs + 0x02830))  /* 0x143c9f0 */
-#define full_data_143cb38                        (*(unsigned char (*)[144])((char *)txt_Ptrs + 0x02978))  /* 0x143cb38 */
+#define ai_ContactTextInformation                        (*(char * *)((char *)txt_Ptrs + 0x02978))  /* 0x143cb38, the hover text of the contact_INFORMATION plate and of ob_INFORMATIONSPERGAMENT (both open ai_SpyRingWindow) */
 #define ai_ContactTextMasterLetter               (*(char * *)((char *)txt_Ptrs + 0x02a08))  /* 0x143cbc8 */
 #define full_data_143ccf0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x02b30))  /* 0x143ccf0 */
 #define full_data_143ccf8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x02b38))  /* 0x143ccf8 */

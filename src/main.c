@@ -5911,7 +5911,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_143a3f4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143a63c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143b3f8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_143cb38: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextInformation: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143ccf0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143ccf8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143cd00: view of txt_Ptrs (build/mk_txt_views.py) */

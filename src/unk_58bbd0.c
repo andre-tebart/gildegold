@@ -4088,13 +4088,14 @@ void ai_StoneKontorContact(AIBLD *bld)
     }
 }
 
-int ai_Unk5b9db0(); int ai_Unk5b9730(); void ai_Unk5a45c0(); 
+int ai_Unk5b9db0(); int ai_Unk5b9730();
 int ai_MapPick();
 
-/* 0x593e80, the information listener (186 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); the contacts
-   INFORMATION (0x143cb38, 0xc) -> 0x5a45c0, MEISTERBRIEF (0x143cbc8, 0xc) -> 0x5c3200, PERSONALBUCH
-   (0x143c9f0, 0xc) -> 0x5aab80 (param_1, the name), each when it is the pending 0x6f22e4 */
-void ai_Unk593e80(int param_1)
+/* 0x593e80, the information listener (186 B): the plates released (0x52e190) and registered again every frame
+   (0x52e1c0): INFORMATION (0x143cb38, 0xc) -> the spy ring window 0x5a45c0, MEISTERBRIEF (0x143cbc8, 0xc) ->
+   0x5c3200, PERSONALBUCH (0x143c9f0, 0xc) -> 0x5aab80 (the building, the name); the clicked plate (0x6f22e4)
+   opens its window; the frame pump 0x5309a0 (this, 0x67fff) */
+void ai_InformationContact(int building)
 {
     int r;
     int inf;
@@ -4102,20 +4103,20 @@ void ai_Unk593e80(int param_1)
     int personal;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk593e80, 0x67fff);
+    r = sv_RunFrame(ai_InformationContact, 0x67fff);
     while (r != 0) {
-        inf = sv_RegisterNamePlate("contact_INFORMATION", U_I((unsigned)&full_data_143cb38), 0xc);
-        meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0xc);
-        personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == meister)
-                ai_MasterLetterWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == personal)
-                ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
-            else if (U_I((unsigned)&ai_ClickedObject) == inf)
-                ai_Unk5a45c0(param_1);
+        inf = sv_RegisterNamePlate("contact_INFORMATION", ai_ContactTextInformation, 0xc);
+        meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0xc);
+        personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == meister)
+                ai_MasterLetterWindow((unsigned char *)building);
+            else if (ai_ClickedObject == personal)
+                ai_PersonnelBook(building, "ob_PERSONALBUCH");
+            else if (ai_ClickedObject == inf)
+                ai_SpyRingWindow(building);
         }
-        r = sv_RunFrame(ai_Unk593e80, 0x67fff);
+        r = sv_RunFrame(ai_InformationContact, 0x67fff);
     }
 }
 /* 0x593f40, the burglar-guild break-in callback (562 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra
@@ -9108,7 +9109,7 @@ void ai_Unk59f410(unsigned short *param_1)
     case 0x2d: ai_BookContact(ai_FallbackBuilding); break;
     case 0x33: ai_MercenaryBookContact(ai_FallbackBuilding); break;
     case 0x37: ai_MiningContact(ai_FallbackBuilding); break;
-    case 0x107: ai_Unk593e80(U_I((unsigned)&ai_FallbackBuilding)); break;
+    case 0x107: ai_InformationContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x205: ai_GraveyardTradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x211: ai_GraveyardFogContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x21b: ai_GraveyardSeanceContact(U_I((unsigned)&ai_FallbackBuilding)); break;
@@ -11449,7 +11450,7 @@ int d2_GetViewWin(); void d2_CreateScrollButtons(); void d2_ClearInput(void); vo
    0x46c600; a click on the button picks the list index 0x46c6a0 and pays 0x4c5010 (param_1 + 1, -1, the room
    + 2) with 0x4c3ae0 / 0x52fe00; the pump 0x5309a0 (this, 0x677c7), the exit 0x52d7a0 / 0x4758f0. ROUGH
    SKELETON: the list bookkeeping (0x2ec-byte window records, the 0x23-dword table 0xfa5aa8) is condensed */
-void ai_Unk5a45c0(int param_1)
+void ai_SpyRingWindow(int param_1)
 {
     int rows[8];
     int ctl[16];
@@ -11534,7 +11535,7 @@ void ai_Unk5a45c0(int param_1)
                 sv_PumpNet();
             rebuild = 1;
         }
-        if (sv_RunFrame(ai_Unk5a45c0, 0x677c7) == 0)
+        if (sv_RunFrame(ai_SpyRingWindow, 0x677c7) == 0)
             break;
     }
     if (idx != -1)
@@ -11771,7 +11772,7 @@ void ai_Unk5a4d40(int param_1)
             if (*(unsigned char *)(krec + 0x247) >= 2)
                 angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&full_data_1441fa8), 0x17);
             taschen = sv_RegisterNamePlate("contact_TASCHENDIEBSTAHL", U_I((unsigned)&full_data_1442018), 0x17);
-            pergament = sv_RegisterNamePlate("ob_INFORMATIONSPERGAMENT", U_I((unsigned)&full_data_143cb38), 0x16);
+            pergament = sv_RegisterNamePlate("ob_INFORMATIONSPERGAMENT", U_I((unsigned)&ai_ContactTextInformation), 0x16);
         }
         if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
             personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
@@ -11790,7 +11791,7 @@ void ai_Unk5a4d40(int param_1)
             else if (click == personal)
                 ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
             else if (click == pergament)
-                ai_Unk5a45c0(param_1);
+                ai_SpyRingWindow(param_1);
             else if (click == meister)
                 ai_MasterLetterWindow(param_1);
         }
@@ -12705,7 +12706,7 @@ void ai_Unk5a6920(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == ausspionieren)
                 ai_Unk5a44e0((unsigned char *)param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == pergament)
-                ai_Unk5a45c0(param_1);
+                ai_SpyRingWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == transport)
                 ai_OpenTransport(param_1);
         }

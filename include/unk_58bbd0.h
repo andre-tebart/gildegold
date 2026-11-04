@@ -41,6 +41,7 @@ void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master 
 int ai_TransportWindow(int building, int mode);          /* 0x5af1d0, the transport window of a building (sv_UpdatePanel: mode 1) */
 int ai_StorageWindow(int building, int list);           /* 0x5b26b0, the store window */
 int ai_ProductionGoodsWindow(int building);             /* 0x593150, the goods / production window a kontor contact opens */
+void ai_SpyRingWindow(int building);                    /* 0x5a45c0, the "locations\diebesgilde\diebesgilde_spionagering" window */
 int ai_GelageWindow(int building);                      /* 0x5b9f30, the "special\gelage" window of the kontor contacts */
 int ai_TrainingWindow(int building);                    /* 0x5bba00, the "special\training" window (regeneration / target / straw-dummy plates) */
 int ai_BuildingWindow(int building);                     /* 0x5b84f0, the window the building panel's action button opens (reasoned) */
