@@ -3898,7 +3898,7 @@ int cm_ExAddStraftat(G17MSG *m, G17STAT *s)
                 if (s != 0) {
                     c = (AICHAR *)gm_FindChar(j->id4);
                     if (c != 0)
-                        ai_NotifyPlayerOfChar((unsigned short *)c, (int)&ai_CharsT[j->chr]);
+                        ai_NotifyPlayerOfChar((unsigned short *)c, (unsigned short *)&ai_CharsT[j->chr]);
                 }
             }
         }

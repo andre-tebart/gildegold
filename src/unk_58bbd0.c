@@ -14299,14 +14299,20 @@ void ai_ShowCharacterNews(unsigned short *cRec, char *text)
         he_ShowNews(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1, ai_NewsText, 0, 0x605, ch_EmptyName);
     }
 }
-/* 0x5a9170, a production message (95 B): for a character of the kind 6 / 7 (+2) the text 0x20c6 with the word
-   of param_1 and the +4 id (0x5fa, the key 0x62c2ac) */
+/* 0x5a9170, tells a player character about another character (74 B): for a kind 6 / 7 character the text 0x20c6
+   with the other character's id, shown to its netId (event 0x5fa, the second text ai_NewsKeyHS46); called by
+   cm_ExAddStraftat with the culprit and the character to tell */
 
-void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2)
+void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec)
 {
-    if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c6, *param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, ai_NewsKeyHS46);
+    G8CHARREC *c;
+    G8CHARREC *p;
+
+    c = (G8CHARREC *)cRec;
+    p = (G8CHARREC *)pRec;
+    if (p->kind == 6 || p->kind == 7) {
+        txt_Format(ai_NewsText, 0x20c6, c->id);
+        he_ShowNews(p->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyHS46);
     }
 }
 /* 0x5a91c0, the plague message (91 B): 0x42ec00 (3) picks the text (0x20c7 + the value) into 0x6f26c8 and the
