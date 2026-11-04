@@ -1416,7 +1416,7 @@ int ls_LoadGame(int name, int kind)
         LS_LOADFAIL
     ai_JudgeCatholic = gm_FindChar(ai_JudgeCatholic);
     ai_JudgeProtestant = gm_FindChar(ai_JudgeProtestant);
-    if (ai_Unk4b63b0(h) == 0)
+    if (ai_LoadMissions(h) == 0)
         LS_LOADFAIL
     if (ls_Version >= 0x10029 && ai_LoadBookmarks(h) == 0)
         LS_LOADFAIL
