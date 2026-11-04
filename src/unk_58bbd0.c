@@ -2369,11 +2369,11 @@ char ai_BauplatzFilter(int obj, char *prefix)
             _strnicmp((char *)(obj + 1), prefix, c) != 0)
             return 1;
     }
-    d3_PointToWorld((struct D3OBJECT *)obj, (struct D3VECTOR *)(obj + 0x4c), (struct D3VECTOR *)pos);
+    d3_PointToWorld((struct D3OBJECT *)obj, &((D3OBJECT *)obj)->pos, (struct D3VECTOR *)pos);
     for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
         c = b->object;
         if (c != 0) {
-            d3_PointToWorld((struct D3OBJECT *)c, (struct D3VECTOR *)(c + 0x4c), (struct D3VECTOR *)q);
+            d3_PointToWorld((struct D3OBJECT *)c, &((D3OBJECT *)c)->pos, (struct D3VECTOR *)q);
             if (d3_VecEqual((struct D3VECTOR *)q, (struct D3VECTOR *)pos, 100.0f) != 0)
                 return 1;
         }
@@ -2515,12 +2515,12 @@ void ai_CheckBuildable(int obj)
     buildable = 1;
     owner = ((AIOBJVIEW *)obj)->parent;
     if (owner != 0) {
-        d3_PointToWorld((struct D3OBJECT *)owner, (struct D3VECTOR *)((char *)owner + 0x4c),
+        d3_PointToWorld((struct D3OBJECT *)owner, &((D3OBJECT *)owner)->pos,
                         (struct D3VECTOR *)here);
         for (bld = (AIBLD *)gm_BuildQuery(1, 6); bld != 0; bld = (AIBLD *)gm_BuildNext()) {
             site = (AIOBJVIEW *)bld->object;
             if (site != 0) {
-                d3_PointToWorld((struct D3OBJECT *)site, (struct D3VECTOR *)((char *)site + 0x4c),
+                d3_PointToWorld((struct D3OBJECT *)site, &((D3OBJECT *)site)->pos,
                                 (struct D3VECTOR *)there);
                 if (d3_VecEqual((struct D3VECTOR *)there, (struct D3VECTOR *)here, 100.0f) != 0) {
                     buildable = 0;
@@ -2531,12 +2531,12 @@ void ai_CheckBuildable(int obj)
     }
     for (view = ((AIOBJVIEW *)obj)->child; view != 0; view = view->next) {
         if (strncmp((char *)view, "bk_", 3) == 0 || strncmp((char *)view, "!bk_", 4) == 0) {
-            d3_PointToWorld((struct D3OBJECT *)view, (struct D3VECTOR *)((char *)view + 0x4c),
+            d3_PointToWorld((struct D3OBJECT *)view, &((D3OBJECT *)view)->pos,
                             (struct D3VECTOR *)here);
             for (bld = (AIBLD *)gm_BuildQuery(1, 6); bld != 0; bld = (AIBLD *)gm_BuildNext()) {
                 site = (AIOBJVIEW *)bld->object;
                 if (site != 0) {
-                    d3_PointToWorld((struct D3OBJECT *)site, (struct D3VECTOR *)((char *)site + 0x4c),
+                    d3_PointToWorld((struct D3OBJECT *)site, &((D3OBJECT *)site)->pos,
                                     (struct D3VECTOR *)there);
                     if (d3_VecEqual((struct D3VECTOR *)there, (struct D3VECTOR *)here, 100.0f) != 0) {
                         buildable = 0;
@@ -2576,7 +2576,7 @@ char ai_FindBauplatz(int obj, AIBUILDSITE *ctx)
 
     if (_strnicmp((char *)obj, "bk_", 3) != 0 && _strnicmp((char *)(obj + 1), "bk_", 3) != 0)
         return 1;
-    d3_PointToWorld((struct D3OBJECT *)obj, (struct D3VECTOR *)(obj + 0x4c), (struct D3VECTOR *)pos);
+    d3_PointToWorld((struct D3OBJECT *)obj, &((D3OBJECT *)obj)->pos, (struct D3VECTOR *)pos);
     if (d3_VecEqual((struct D3VECTOR *)ctx->pos, (struct D3VECTOR *)pos, 100.0f) != 0) {
         ctx->object = obj;
         s = strstr((char *)obj, "bk_");
@@ -2612,7 +2612,7 @@ int lc_GetGebaeudeBauplatz(AIBUILDSITE *out, AIBLD *b)
         d3if_SelectScene(scene, 1);
         return 0;
     }
-    d3_PointToWorld((struct D3OBJECT *)owner, (struct D3VECTOR *)(owner + 0x4c),
+    d3_PointToWorld((struct D3OBJECT *)owner, &((D3OBJECT *)owner)->pos,
                     (struct D3VECTOR *)out->pos);
     sprintf(text, "lc_GetGebaeudeBauplatz(): FindPos->Pos:%f  %f  %f",
             (double)out->pos[0], (double)out->pos[1], (double)out->pos[2]);
