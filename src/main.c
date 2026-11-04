@@ -3972,7 +3972,7 @@ void main_UpdateFigures(void)
                 main_UpdateFigure(i);
             if (ch->kind == 2 || ch->kind == 5 || ch->kind == 4) {
                 if (gm_IsBankrupt((unsigned short *)ch, 0) != 0) {
-                    k = (int)-(*(float *)((char *)ch + 0x1c) + 5.0f);
+                    k = (int)-(ch->f01c + 5.0f);
                     main_AddHealthS(ch->id, k);
                 }
             }
