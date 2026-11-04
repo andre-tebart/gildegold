@@ -9673,7 +9673,7 @@ int gm_ListStock(short *l, int id)
 {
     int a;
 
-    a = *(int *)(l + 7);
+    a = ((ORDOBJ *)l)->count;
     if (*l == 0x1dd) {
         a += 2;
         return a * 5;
