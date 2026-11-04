@@ -1323,7 +1323,7 @@ int ch_UpdateAction(CHARACTER *ch)
     }
     return 1;
 }
-/* 0x404c20 */
+/* 0x404c20, pauses (pause non-zero) or resumes the character's current animation slot */
 
 void ch_PauseAnim(CHARACTER *ch, int pause)
 {
