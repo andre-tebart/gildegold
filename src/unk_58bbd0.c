@@ -8221,10 +8221,10 @@ int ai_Unk59d410(int param_1, int param_2, int param_3, unsigned char param_4)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || U_I((unsigned)&d2_ClickedId) == 1)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
-            fee = gm_Unk508620(param_3, param_2);
-            r2 = gm_Unk508620(1, param_2);
+            fee = gm_CityFactor(param_3, param_2);
+            r2 = gm_CityFactor(1, param_2);
             if ((float)fee * 0.03f <= (float)r2)
-                gm_Unk508620(1, param_2);
+                gm_CityFactor(1, param_2);
             cm_SendExSellObject(-1, U_I(param_1 + 1), param_2, fee, U_I((unsigned)&ai_OwnPlayer), 0);
             memset(msg, 0, 0xf8);
             *(unsigned char *)(msg + 4) = 0x27;

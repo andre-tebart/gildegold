@@ -8370,9 +8370,9 @@ int gm_PlayerFactor(int a, unsigned char k)
 {
     return PLTAB(PLW54(k)) * a;
 }
-/* 0x508620 */
+/* 0x508620, the amount a scaled by the factor of the city i (PLTAB, the city-factor table at 0x61a8ac) */
 
-int gm_Unk508620(int a, int i)
+int gm_CityFactor(int a, int i)
 {
     return PLTAB(i) * a;
 }
