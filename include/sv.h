@@ -222,9 +222,9 @@ extern int sv_LoadSlider;                                    /* 0x623e84 */
 extern int sv_PanelEnabled;                                    /* 0x623e88 */
 extern int sv_GroundplanScene;                                    /* 0x623e8c */
 extern float sv_DayPhaseFrac;                                  /* 0x623e94 */
-extern int ai_Unk623ea0;                                    /* 0x623ea0 */
-extern int ai_Unk623ea4;                                    /* 0x623ea4 */
-extern int ai_Unk623ea8;                                    /* 0x623ea8 */
+extern int sv_ScrollForm;                                    /* 0x623ea0 */
+extern int sv_ScrollEndTop;                                    /* 0x623ea4 */
+extern int sv_ScrollEndBottom;                                    /* 0x623ea8 */
 extern unsigned char sv_ChatRecipients[8];                  /* 0x623ebc */
 extern unsigned sv_ChatTime;                               /* 0x623ec4 */
 extern int sv_QuickChatForm;                                    /* 0x623ec8 */

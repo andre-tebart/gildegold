@@ -6826,30 +6826,32 @@ void sv_BookBack(SVBOOK *bk)
     sv_TurnBook(bk, -2);
 }
 
-extern int ai_Unk623ea0, ai_Unk623ea4, ai_Unk623ea8;  /* 0x623ea0, 0x623ea4, 0x623ea8 */
-/* 0x52fa10, creates the scroll parchment form "misc\scroll_perga" (0x623ea0) with its two end pieces (0x623ea4 / 0x623ea8, picture 0x6e0) in the current form; returns the form or -1 */
+extern int sv_ScrollForm, sv_ScrollEndTop, sv_ScrollEndBottom;  /* 0x623ea0, 0x623ea4, 0x623ea8 */
+/* 0x52fa10, creates the scroll parchment form sv_ScrollForm ("misc\scroll_perga") with its two end pieces
+   sv_ScrollEndTop / sv_ScrollEndBottom (picture 0x6e0) in the current form; returns the form, -1 when one is open
+   already or the form failed */
 int sv_CreateScrollForm(void)
 {
-    if (ai_Unk623ea0 != -1)
+    if (sv_ScrollForm != -1)
         return -1;
-    ai_Unk623ea0 = d2_OpenForm(0, 0, "misc\\scroll_perga");
-    d2_CentreViewWindows(ai_Unk623ea0);
-    if (ai_Unk623ea0 == -1)
+    sv_ScrollForm = d2_OpenForm(0, 0, "misc\\scroll_perga");
+    d2_CentreViewWindows(sv_ScrollForm);
+    if (sv_ScrollForm == -1)
         return -1;
-    d2_SetForm(ai_Unk623ea0, 0);
-    ai_Unk623ea4 = d2_WinOpenPic(0, 0, 0x6e0, d2_LastWindow);
-    ai_Unk623ea8 = d2_WinOpenPic(0, 0x1d1, 0x6e0, d2_LastWindow);
-    return ai_Unk623ea0;
+    d2_SetForm(sv_ScrollForm, 0);
+    sv_ScrollEndTop = d2_WinOpenPic(0, 0, 0x6e0, d2_LastWindow);
+    sv_ScrollEndBottom = d2_WinOpenPic(0, 0x1d1, 0x6e0, d2_LastWindow);
+    return sv_ScrollForm;
 }
 /* 0x52fa90, destroys the scroll form */
 
 void sv_DestroyScrollForm(void)
 {
-    if (ai_Unk623ea0 != -1) {
-        d2_CloseView(ai_Unk623ea0);
-        ai_Unk623ea0 = -1;
-        ai_Unk623ea4 = -1;
-        ai_Unk623ea8 = -1;
+    if (sv_ScrollForm != -1) {
+        d2_CloseView(sv_ScrollForm);
+        sv_ScrollForm = -1;
+        sv_ScrollEndTop = -1;
+        sv_ScrollEndBottom = -1;
     }
 }
 /* 0x52fad0, shows the scroll and sets the animation frame (the clock 0x6ed980 +0x248 / 6 % 12) of both end pieces */
@@ -6858,13 +6860,13 @@ void sv_ScrollFormAnimate(void)
 {
     int f;
 
-    if (SV_I((unsigned)&ai_Unk623ea0) != -1) {
-        d2_SetForm(SV_I((unsigned)&ai_Unk623ea0), 1);
+    if (SV_I((unsigned)&sv_ScrollForm) != -1) {
+        d2_SetForm(SV_I((unsigned)&sv_ScrollForm), 1);
         f = (*(int *)(SV_I((unsigned)&d2_LastWindowPtr) + 0x248) / 6) % 0xc;
         if (f < 0)
             f = 0;
-        SV_WI(SV_I((unsigned)&ai_Unk623ea4), 0x78) = f;
-        SV_WI(SV_I((unsigned)&ai_Unk623ea8), 0x78) = f;
+        SV_WI(SV_I((unsigned)&sv_ScrollEndTop), 0x78) = f;
+        SV_WI(SV_I((unsigned)&sv_ScrollEndBottom), 0x78) = f;
     }
 }
 /* 0x52fb50, requests popping the frame stack down to the frame whose callback is cb: sets sv_PopRequest to its distance from the top sv_FrameDepth (nothing when cb is not on the stack) */
@@ -7712,9 +7714,9 @@ int sv_GroundplanScene = -1;  /* 0x623e8c */
 float sv_DayPhaseFrac = 0.5f;  /* 0x623e94 */
 int sv_PickX = -1;  /* 0x623e98, the pointer x of the last hover pick (sv_HoverPick) */
 int sv_PickY = -1;  /* 0x623e9c, the pointer y of the last hover pick */
-int ai_Unk623ea0 = -1;  /* 0x623ea0 */
-int ai_Unk623ea4 = -1;  /* 0x623ea4 */
-int ai_Unk623ea8 = -1;  /* 0x623ea8 */
+int sv_ScrollForm = -1;  /* 0x623ea0 */
+int sv_ScrollEndTop = -1;  /* 0x623ea4 */
+int sv_ScrollEndBottom = -1;  /* 0x623ea8 */
 int sv_CharsOn = 1;  /* 0x623eac, nonzero: sv_RunFrame updates the characters (ch_UpdatePositions, ch_Update, ..) */
 int sv_WorldOn = 1;  /* 0x623eb0, nonzero: sv_RunFrame steps the 3D world (sky phase, quad tree, camera, view clear) */
 int sv_CityPanelOn = 1;  /* 0x623eb4, nonzero: sv_RunFrame redraws the city panel */
