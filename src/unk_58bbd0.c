@@ -13603,12 +13603,13 @@ void ai_CloseMapWindow(int *m_)
 }
 #pragma pack(push, 1)
 typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
-    int id;                             /* +0x00, the setting id (ai_Unk5a84b0 looks it up by this) */
+    int id;                             /* +0x00, the setting id (ai_FindSetting looks it up by this) */
     int seed;                           /* +0x04, the LCG state of the record's random */
     char pad08[0x48 - 8];
     struct G8SETTING *next;             /* +0x48, the next setting of the chain (ai_FreeSettingChain frees it first) */
 } G8SETTING;
 #pragma pack(pop)
+#define ai_Settings (*(G8SETTING * *)((char *)&full_data_6f26c0 + 0x0))  /* 0x6f26c0, the head of the production settings chain */
 
 /* 0x5a8340, the record's random in [0, 1) (68 B): the LCG at +4 (0x41c64e6d, 0x3039) advanced, then its high
    word modulo 0x7fff scaled by 1 / 0x7fff (0x5eb8f8) */
@@ -13696,17 +13697,18 @@ void ai_Unk5a83b0(int param_1, char *tbl)
         }
     }
 }
-/* 0x5a84b0, the record lookup in the list 0x6f26c0 by the id at +0 (the next is +0x48) (27 B) */
+/* 0x5a84b0, the production setting of an id (27 B): the chain ai_Settings (0x6f26c0) walked by the next at
+   +0x48, the record whose id at +0 is the argument, else 0 */
 
-int *ai_Unk5a84b0(int param_1)
+int *ai_FindSetting(int id)
 {
-    int *p;
+    G8SETTING *s;
 
-    p = (int *)*(int *)((unsigned)&full_data_6f26c0);
-    while (p != 0) {
-        if (*p == param_1)
-            return p;
-        p = (int *)p[0x12];
+    s = ai_Settings;
+    while (s != 0) {
+        if (s->id == id)
+            return (int *)s;
+        s = s->next;
     }
     return 0;
 }
@@ -13839,7 +13841,7 @@ unsigned char *ai_Unk5a8710(int param_1, int good, unsigned char weight)
     int rest;
     unsigned char old;
 
-    rec = (char *)ai_Unk5a84b0(*(int *)(param_1 + 1));
+    rec = (char *)ai_FindSetting(*(int *)(param_1 + 1));
     p = 0;
     if (good == 0)
         return p;
@@ -13892,7 +13894,7 @@ void ai_Unk5a8850(int param_1)
 {
     int rec;
 
-    rec = ai_Unk5a84b0(*(int *)(param_1 + 1));
+    rec = ai_FindSetting(*(int *)(param_1 + 1));
     if (rec != 0)
         ai_Unk5a83b0(param_1, (char *)rec);
 }
@@ -13909,7 +13911,7 @@ int ai_DrawSettingGood(int param_1)
     int sum;
     int pick;
 
-    rec = ai_Unk5a84b0(*(int *)(param_1 + 1));
+    rec = ai_FindSetting(*(int *)(param_1 + 1));
     if (rec == 0)
         return 0;
     draw = (int)((float)ai_SettingRandom(rec) * *(float *)((unsigned)&full_rdata_5ebb40));
@@ -13947,7 +13949,7 @@ void ai_Unk5a8900(int param_1, float param_2)
 {
     int rec;
 
-    rec = ai_Unk5a84b0(*(int *)(param_1 + 1));
+    rec = ai_FindSetting(*(int *)(param_1 + 1));
     if (rec != 0)
         *(float *)(rec + 0x44) = param_2;
 }
