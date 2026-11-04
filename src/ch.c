@@ -297,7 +297,8 @@ void ch_SyncObjectOffsets(void)
             d3_SetObject078(ch->obj, &ch->offset);
     }
 }
-/* 0x402800 */
+/* 0x402800, moves every dirty character of the default scene to its object position plus its offset and clears
+   the dirty flag */
 
 void ch_UpdatePositions(void)
 {
