@@ -854,7 +854,7 @@ void _tr_align(s)
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and output the encoded block to the zip file.
  */
-/* 0x466190 */
+/* 0x466190, picks the cheapest encoding of the current block (stored, static or dynamic), writes its header and data, then starts a new block */
 void _tr_flush_block(s, buf, stored_len, eof)
     deflate_state *s;
     charf *buf;       /* input block, or NULL if too old */
