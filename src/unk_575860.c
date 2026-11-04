@@ -2001,8 +2001,6 @@ void ai_HookChapter5Step6(int end)
     cm_SendNewParty(&party);
 }
 
-#define R8 (*(int *)(*(char **)(*(char **)(S + 0x1c) + 0x74) + 8))
-
 /* 0x577740, the start of the tutorial's main event ("tutorial\main"): -4 without a host / with a running run
    record, else the event message 0x5ec (he_OpenEventSlot) with the form and picture 0x5ec, the run window's
    controls (d2_PlaceMainWindow, d2_CentreViewWindows, d2_SetForm (win, 0) / (win, 3)), sv_FitForm (d2_LastWindow),
@@ -2044,22 +2042,22 @@ int ai_TutorialCloseIntro(void)
     he_ReleaseSlot((int)host);
     return 0;
 }
-/* 0x577850, -4 without a player / run record, else the run window's controls 1 and 2 (0x475f70) with the text
-   0x602568 (0x515960) and 0 */
+/* 0x577850, clears the run window's two text controls: -4 without a host / with no open event slot, else sets the
+   slot window's form 1 and 2, each followed by the "$C" text clear (io_PrintText); 0 */
 
 int ai_TutorialClearRunWindow(void)
 {
-    char *per;
+    TUTHOST *host;
 
-    per = *(char **)(S + 0x1c);
-    if (!per)
+    host = ai_Tutorial->host;
+    if (!host)
         return -4;
-    if (!*(int *)(per + 0x74))
+    if (!host->slot)
         return -4;
-    d2_SetForm(*(int *)(*(char **)(per + 0x74) + 8), 1);
-    io_PrintText((char *)(unsigned)"$C");
-    d2_SetForm(R8, 2);
-    io_PrintText((char *)(unsigned)"$C");
+    d2_SetForm(host->slot->win, 1);
+    io_PrintText("$C");
+    d2_SetForm(ai_Tutorial->host->slot->win, 2);
+    io_PrintText("$C");
     return 0;
 }
 /* 0x5778b0, shows the current run's texts in the run window (the tutorial host's event slot window): clears it
