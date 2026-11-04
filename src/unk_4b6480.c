@@ -862,9 +862,9 @@ int ai_MsgLoseMoney2to4Type20(G14MSG *m)
     gm_SendMoneyDelta(c->netId, -s);
     return 0;
 }
-/* 0x4b8950, message: c gains 3..5 0x50cc50 (the text gets 0x5085f0(1, ai_OwnPlayer) and the amount) */
+/* 0x4b8950, message 0x21: c gains 3..5 money (0x50cc50; the text gets 0x5085f0(1, ai_OwnPlayer) and the amount) */
 
-int ai_Unk4b8950(G14MSG *m)
+int ai_MsgGainMoney3to5Type21(G14MSG *m)
 {
     AICHAR *c;
     int s;
@@ -1947,7 +1947,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
     ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1f,
-    ai_MsgLoseMoney2to4Type20, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
+    ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
     ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
     ai_Unk4b9f30, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,

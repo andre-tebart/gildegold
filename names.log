@@ -1933,3 +1933,4 @@
 2026-11-04T17:21:59 0x004b8870 data ai_Unk4b8870 -> ai_MsgLoseMoney2to4Type1f by:main why:message table slot 0x1f (0x602570): c (money at least the rolled 2..4) loses that much money (gm_SendMoneyDelta), not with item 0x290
 2026-11-04T17:22:44 0x004b86c0 data ai_MsgWorkerOwnHealthLossType1e -> ai_MsgWorkerOwnHealthLossType1f by:main why:message table slot 0x1f (index 31 of 0x602570, after 0x4b84b0 at 0x1e)
 2026-11-04T17:22:52 0x004b8870 data ai_MsgLoseMoney2to4Type1f -> ai_MsgLoseMoney2to4Type20 by:main why:message table slot 0x20 (index 32 of 0x602570, after 0x4b86c0 at 0x1f)
+2026-11-04T17:23:14 0x004b8950 data ai_Unk4b8950 -> ai_MsgGainMoney3to5Type21 by:main why:message table slot 0x21 (index 33 of 0x602570): c gains a rolled 3..5 money (gm_SendMoneyDelta); the text gets gm_PlayerFactor(1, ai_OwnPlayer) and the amount
