@@ -4341,17 +4341,17 @@ exe	0x005a8d40	ai_ShowTributeCollectNews	unk_58bbd0	byte	readable
 exe	0x005a8d80	ai_ShowTributeClaimNews	unk_58bbd0	byte	readable		
 exe	0x005a8e10	ai_ShowTavernHelperNews	unk_58bbd0	byte	readable		
 exe	0x005a8ee0	ai_ShowPartingNews	unk_58bbd0	shape	readable		
-exe	0x005a8f90	ai_Unk5a8f90	unk_58bbd0	shape	draft		
-exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	shape	draft		
-exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	draft		
-exe	0x005a9170	ai_NotifyPlayerOfChar	unk_58bbd0	byte	draft		
-exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	shape	draft		
+exe	0x005a8f90	ai_ShowFeudNews	unk_58bbd0	shape	readable		
+exe	0x005a9050	ai_ShowPartnerNews	unk_58bbd0	shape	readable		
+exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	readable		
+exe	0x005a9170	ai_NotifyPlayerOfChar	unk_58bbd0	byte	readable		
+exe	0x005a91c0	ai_PlagueNews	unk_58bbd0	shape	readable		
 exe	0x005a9240	ai_PlagueMessage	unk_58bbd0	draft	readable	deep	
 exe	0x005a92b0	ai_PlagueMessageAll	unk_58bbd0	shape	readable		
-exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft		
-exe	0x005a9430	ai_ShowEvidenceVoidNews	unk_58bbd0	byte	draft		
+exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	readable		
+exe	0x005a9430	ai_ShowEvidenceVoidNews	unk_58bbd0	byte	readable		
 exe	0x005a9470	ai_GypsyDeliveryText	unk_58bbd0	draft	draft		
-exe	0x005a9690	ai_TellGraveNeglect	unk_58bbd0	byte	draft		
+exe	0x005a9690	ai_TellGraveNeglect	unk_58bbd0	byte	readable		
 exe	0x005a96e0	ai_NotifySale	unk_58bbd0	draft	draft		
 exe	0x005a9780	ai_TellGravesPaid	unk_58bbd0	byte	draft		
 exe	0x005a97e0	ai_Unk5a97e0	unk_58bbd0	draft	draft		
