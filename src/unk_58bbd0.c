@@ -11,7 +11,10 @@
    object record views (G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW), the
    Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
    the gv record (AIWINDOWROW, AIPOSVIEW) are local views here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h /
-   am_types.h / ai.h hold the owners' types); they settle when those headers can be included.
+   am_types.h / ai.h hold the owners' types); they settle when those headers can be included. The "hp_" production
+   settings are typed the same way: G8SETTING / G8SLOT / G8SETTAIL and G8BLD (a building's good id, gv.h's ORDBLD).
+   Open: data: the production settings head 0x6f26c0 (ai_Settings) and the shared float 0x5ebb40 (ai_FloatHundred,
+   he.c reads it too) still sit in the full_data / full_rdata gap blocks of main.c.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h
