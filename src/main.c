@@ -4166,7 +4166,7 @@ void main_BeginPlayerRound(void)
         b = (AIBLD *)gm_BuildNext();
     }
     gm_UpdatePlayers();
-    unk_Unk4f88c0();
+    ord_AppendStatisticsRound();
     if ((cm_NetFlags & 8) == 0 && net_Conn.s != -1)
         gm_EndDayIncomes(2);
     else {

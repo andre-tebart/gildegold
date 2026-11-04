@@ -1889,7 +1889,7 @@ done:
 }
 /* 0x4f88c0, shifts the 15 rounds of ord_StatisticsHistory down by one (the oldest drops out) and fills the last one from ord_Statistics (out[1] .. out[3] and the score out[9]) and ai_RatingBase truncated */
 
-void unk_Unk4f88c0(void)
+void ord_AppendStatisticsRound(void)
 {
     memmove(&ord_StatisticsHistory[0], &ord_StatisticsHistory[1], 0x12c);
     ord_StatisticsHistory[15].noFirst = ord_Statistics.col[1];

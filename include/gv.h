@@ -698,7 +698,7 @@ void ord_SubGridAmount(int who, unsigned char kind);  /* 0x4f8590 */
 
 int ord_RandomObjectId(char *c);             /* 0x4f8700 */
 
-void unk_Unk4f88c0(void);               /* 0x4f88c0 */
+void ord_AppendStatisticsRound(void);               /* 0x4f88c0 */
 
 extern char ai_Crimes[];  /* 0x91f700, 0x200 records of 0x2d bytes (to 0x925100) */
 void ord_RebuildGridSums(void);               /* 0x4f8920 */
