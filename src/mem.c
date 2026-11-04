@@ -16,7 +16,7 @@
 #include "err.h"
 #include "mem.h"
 
-/* 0x4223c0 */
+/* 0x4223c0, allocates size bytes and records them under the group of the tag ("group:..."), NULL when it fails or the debug table is not open */
 void *mem_Alloc(int size, char *tag)
 {
     char buf[256];
