@@ -1951,3 +1951,4 @@
 2026-11-04T17:39:34 0x004baba0 data ai_Unk4baba0 -> ai_MsgTakeBuildingGoodsPct5to24Type34 by:main why:message type 0x34 (table index 52): as 0x33 but 5..24 % and the share comes first in the text
 2026-11-04T17:40:00 0x004bae20 data ai_Unk4bae20 -> ai_MsgRewardPct1to3Skill82Type39 by:main why:message type 0x39 (table index 57): as ai_MsgRewardPct1to3 but only when a 0..255 roll is not above c's skill 0x82
 2026-11-04T17:40:13 0x004baf30 data ai_Unk4baf30 -> ai_MsgAddSkill8to24Type3a by:main why:message type 0x3a (table index 58): adds 8..24 (up to 0xfc) to one random of c's five skills 0x80..0x84 through cm_SendAddSkill and reports it in text 0x12e7 + type
+2026-11-04T17:40:33 0x004bb030 data ai_Unk4bb030 -> ai_MsgLoseSkill6to17Type3b by:main why:message type 0x3b (table index 59): the counterpart of ai_MsgAddSkill8to24Type3a, c loses 6..17 of one random skill (not with item 0x290) through cm_SendAddSkill
