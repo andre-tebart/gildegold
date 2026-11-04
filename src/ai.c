@@ -4055,8 +4055,8 @@ void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n)
         a = b->lvl1c;
         d = b->lvl1d;
         for (job = he_FindEvent(2, 0, 0x12, 3, c->bld->id); job; job = he_NextEvent()) {
-            a += job->unkb0;
-            d += job->unkb4;
+            a += job->slotOrder1c;
+            d += job->slotOrder1d;
         }
         bld = c->bld;
         mb = ai_BTypesT[bld->type].min1;

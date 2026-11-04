@@ -79,10 +79,18 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                                    alloc handler 0x54fb50 clears it) */
                 int dropSlot;                   /* 0xb0, of a promotion event 0x32 the cm slot handle gm_DropRank leaves, -1: none
                                                    (its alloc handler 0x55dd70 sets -1) */
+                int slotOrder1c;                /* 0xb0, of a kind 0x12 slot order event (the type 0x12 message
+                                                   ai_BuySlots posts): the number of first-kind slots it adds, added
+                                                   to AIOBJ.lvl1c and checked against AIBTYPE.min0 */
             };
             union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
                 struct {
-                    int unkb4;                          /* 0xb4 */
+                    union {
+                        int unkb4;                      /* 0xb4 */
+                        int slotOrder1d;                /* 0xb4, of a kind 0x12 slot order event: the number of
+                                                           second-kind slots it adds, added to AIOBJ.lvl1d and checked
+                                                           against AIBTYPE.min1 (ai_BuySlots) */
+                    };
                     int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
                                                            plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
                                                            id / a news id (he.c per kind); no single role name */
