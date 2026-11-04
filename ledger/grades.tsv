@@ -1109,14 +1109,14 @@ exe	0x0045f2b0	d3sm_Pick	d3_sm	draft	readable	deep
 exe	0x0045f610	ts_InitCache	ts_texture	byte	readable		
 exe	0x0045f650	ts_FreeCache	ts_texture	byte	readable		
 exe	0x0045f6d0	ts_CacheStore	ts_texture	byte	readable		
-exe	0x0045f790	ts_CacheRelease	ts_texture	byte	draft		
-exe	0x0045f860	ts_CreateSurface	ts_texture	byte	draft		
-exe	0x0045f8d0	ts_CacheFetch	ts_texture	byte	draft		
-exe	0x0045f980	tex_Find	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x0045f9f0	tex_FindFile	ts_texture	byte	draft		
-exe	0x0045fa80	tex_Init	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x0045fb30	tex_SetPalette	ts_texture	byte	draft		
-exe	0x0045fb50	tex_Free	ts_texture	byte	draft		
+exe	0x0045f790	ts_CacheRelease	ts_texture	byte	readable		
+exe	0x0045f860	ts_CreateSurface	ts_texture	byte	readable		
+exe	0x0045f8d0	ts_CacheFetch	ts_texture	byte	readable		
+exe	0x0045f980	tex_Find	ts_texture	byte	readable		
+exe	0x0045f9f0	tex_FindFile	ts_texture	byte	readable		
+exe	0x0045fa80	tex_Init	ts_texture	byte	readable		
+exe	0x0045fb30	tex_SetPalette	ts_texture	byte	readable		
+exe	0x0045fb50	tex_Free	ts_texture	byte	readable		
 exe	0x0045fbc0	tex_Release	ts_texture	byte	draft		
 exe	0x0045fd00	tex_Exit	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x0045fdd0	ts_Lerp	ts_texture	byte	readable		
