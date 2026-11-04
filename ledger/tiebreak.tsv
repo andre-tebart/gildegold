@@ -2806,8 +2806,8 @@ exe	0x004f27d0	gv_OnDecisionValue	gv	a5f58b3ba768c74b	no	byte	control=byte p1=by
 exe	0x004f2870	gv_FindTableRecord	gv	0766dc149c69815e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f28d0	gv_WriteCrimes	gv	29fd502746284aa7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2b30	gv_ReadCrimes	gv	7afcdc2919d35598	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f2da0	gv_SchoolLevelFactor	gv	1134396f2323812b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004f2e30	gv_Accuse	gv	bb4bbfc9d35a0a2c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f2da0	gv_SchoolLevelFactor	gv	8c5191b635785606	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f2e30	gv_Accuse	gv	fb47d82496937a3e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2fe0	gv_TableRecordText	gv	39d3575df0669c14	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f30a0	gv_CrimeTextLaw2to8	gv	a86e65c9a172e8d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f31d0	gv_CrimeTextLaw9to16	gv	f534463c7dff5366	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -2821,7 +2821,7 @@ exe	0x004f3700	gv_SendCrimes	gv	2f3eaefc1b11aeac	no	draft	control=draft p1=draft
 exe	0x004f3780	gv_EvidenceSlot	gv	1bd43d33eac354f0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f37e0	gv_RetireCrime	gv	df9c896be872a099	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f3910	gv_HandOverCrimes	gv	62a4cbdd85493f1d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f39b0	gv_CountOwnedGraves	gv	5175651b7e7ee32b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f39b0	gv_CountOwnedGraves	gv	cf3db2dcabfd30ed	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f39e0	gv_CulpritGuilt	gv	b4eecb6b7ded8c53	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f3a30	gv_RetireCrimesOf	gv	b390699dfc362127	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f3b40	gv_RetireCrimeIds	gv	909e71c2e96db1f5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

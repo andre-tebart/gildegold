@@ -3328,15 +3328,13 @@ int gv_HandOverCrimes(int owner, int culprit, int state, int hand)
 int gv_CountOwnedGraves(int c)
 {
     int cnt;
-    int *p;
+    int i;
 
     cnt = 0;
-    p = (int *)(ai_Crimes + 0x25);
-    do {
-        if (*(int *)((char *)p - 0xf) == c && *p == 1)
+    for (i = 0; i < 0x200; i++) {
+        if (gv_CrimesT[i].culprit == c && gv_CrimesT[i].state == 1)
             cnt++;
-        p = (int *)((char *)p + 0x2d);
-    } while ((int)p < (int)((unsigned)&amt_Table + 0x5));
+    }
     return cnt;
 }
 /* 0x4f39e0, the guilt of the culprit c: the sum of AIDEC.guilt of the laws broken by the open crimes (state 1) of the culprit c */
