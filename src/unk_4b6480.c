@@ -25,7 +25,7 @@
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_Unk4baa80 / ai_Unk4baba0) */
-#define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_MsgWorkerOwnHealthLossType1e) */
+#define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_MsgWorkerOwnHealthLossType1f) */
 #define cm_SendExSetHEI ((void (*)(int, void *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers push the key as an int (byte-matched ai_Unk4b8c80) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT 0x600c00  /* the ai_PassesPartnerFilter bits of the 0x15 / 0x16 messages: underage (0x400), office +0x166/+0x169 (0x800), kind 5 (0x200000) or works for a master (0x400000) */
@@ -800,10 +800,10 @@ int ai_Unk4b84b0(G14MSG *m)
     }
     return 0;
 }
-/* 0x4b86c0, message 0x1e: as 0x4b82c0, but needs any worker (title set) in the chosen building; 0x4fca40 of c by
+/* 0x4b86c0, message 0x1f: as 0x4b82c0, but needs any worker (title set) in the chosen building; 0x4fca40 of c by
    -(0.05 .. 0.30 of c's 0x1c float) (not with item 0x290) */
 
-int ai_MsgWorkerOwnHealthLossType1e(G14MSG *m)
+int ai_MsgWorkerOwnHealthLossType1f(G14MSG *m)
 {
     AICHAR *c;
     AIBLD *b;
@@ -841,9 +841,9 @@ int ai_MsgWorkerOwnHealthLossType1e(G14MSG *m)
     }
     return 0;
 }
-/* 0x4b8870, message 0x1f: c (money at least 2..4) loses that much money (0x50cc50; not with item 0x290) */
+/* 0x4b8870, message 0x20: c (money at least 2..4) loses that much money (0x50cc50; not with item 0x290) */
 
-int ai_MsgLoseMoney2to4Type1f(G14MSG *m)
+int ai_MsgLoseMoney2to4Type20(G14MSG *m)
 {
     AICHAR *c;
     int s;
@@ -1946,8 +1946,8 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
-    ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1e,
-    ai_MsgLoseMoney2to4Type1f, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
+    ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1f,
+    ai_MsgLoseMoney2to4Type20, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
     ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
     ai_Unk4b9f30, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,

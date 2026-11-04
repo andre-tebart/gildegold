@@ -1931,3 +1931,5 @@
 2026-11-04T17:20:09 0x004b82c0 data ai_Unk4b82c0 -> ai_MsgWorkerHealthLossType1d by:main why:message table slot 0x1d (0x602570): one of c's class-1/2 buildings and one titled worker there; half the time a news text and 0.1..0.4 of the worker's life value (AICHAR.f01c) is taken as health (gm_AddHealth)
 2026-11-04T17:21:16 0x004b86c0 data ai_Unk4b86c0 -> ai_MsgWorkerOwnHealthLossType1e by:main why:message table slot 0x1e (0x602570): as 0x4b82c0 but needs any titled worker in the chosen building, and takes 0.05..0.30 of c's own life value (AICHAR.f01c) as health (gm_AddHealth)
 2026-11-04T17:21:59 0x004b8870 data ai_Unk4b8870 -> ai_MsgLoseMoney2to4Type1f by:main why:message table slot 0x1f (0x602570): c (money at least the rolled 2..4) loses that much money (gm_SendMoneyDelta), not with item 0x290
+2026-11-04T17:22:44 0x004b86c0 data ai_MsgWorkerOwnHealthLossType1e -> ai_MsgWorkerOwnHealthLossType1f by:main why:message table slot 0x1f (index 31 of 0x602570, after 0x4b84b0 at 0x1e)
+2026-11-04T17:22:52 0x004b8870 data ai_MsgLoseMoney2to4Type1f -> ai_MsgLoseMoney2to4Type20 by:main why:message table slot 0x20 (index 32 of 0x602570, after 0x4b86c0 at 0x1f)
