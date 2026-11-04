@@ -1956,7 +1956,7 @@ int ch_TakeObject(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
     }
     return 0;
 }
-/* 0x405f10 */
+/* 0x405f10, queues the take-object action (type 0x31) for the left hand (args[2] = 1): the animation name and the object's model name */
 
 int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
 {
