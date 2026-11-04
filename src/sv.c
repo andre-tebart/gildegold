@@ -6074,13 +6074,14 @@ int d2_TextWidth();                     /* 0x46ea10 */
 int d2_WinCreateSlider();                     /* 0x46bf10 */
 void d2_SetObjWidth(int obj, short w);                     /* 0x46c260 */
 
-/* 0x52e050, draws the hint text 0xf8aae0 at the mouse position when the hint flag (0x6f3618 +2) is set */
+/* 0x52e050, draws the hint text (d2_CaptionCopy) at the mouse position when it is not empty and the option
+   ai_GameSwitches byte 2 (show_cursor_txt) is set */
 void sv_DrawHint(void)
 {
-    if (SV_B((unsigned)&d2_CaptionCopy) != 0 && SV_B(((unsigned)&ai_GameSwitches + 0x2)) != 0) {
+    if (d2_CaptionCopy[0] != 0 && ai_GameSwitches.byte[2] != 0) {
         d2_SetFont(0x54);
-        d2_DrawTextBox(SV_S((unsigned)&d2_MouseX) - 0x36, SV_S((unsigned)&d2_MouseY) + 0x34, 0xa0, 0x60, d2_ScreenSurf, (char *)(unsigned)&d2_CaptionCopy, 0xa8);
-        d2_AddDirty(SV_I((unsigned)&d2_TextLeft), SV_I((unsigned)&d2_TextTop), SV_I((unsigned)&d2_TextDrawnW), SV_I((unsigned)&d2_TextDrawnH));
+        d2_DrawTextBox(d2_MouseX - 0x36, d2_MouseY + 0x34, 0xa0, 0x60, d2_ScreenSurf, d2_CaptionCopy, 0xa8);
+        d2_AddDirty(d2_TextLeft, d2_TextTop, d2_TextDrawnW, d2_TextDrawnH);
     }
 }
 /* 0x52e0c0, draws the status line sv_StatusText (font 0x53, 600 wide, centred, at y 505 (the 0x8000 frame mask) or
