@@ -6111,17 +6111,25 @@ void ai_Unk4c5970(int a, int b, int c);
 void ai_Unk4c5b90(int a);
 
 /* 0x54fb50, a Ghidra miss: the init of the effect event: the object +0xac (0x4fea50) must have a scene record (+0x61) and the effect word +0xc2 a table record (0x5ba620) with a duration (+4): +0xb4 = now + that duration (0x4fe140), +0xb0 = 0, state 0; else the event is freed */
-void he_Unk54fb50(int ev)
+void he_StartEffectEvent(int ev)
 {
-    int o = 0, r;
+    AIJOB *e = (AIJOB *)ev;
+    unsigned short *goodId = (unsigned short *)((char *)e + 0xc2);  /* the effect word, a Domizil table id */
+    int *handle = (int *)((char *)e + 0xb0);                        /* the effect object's handle, 0: none yet */
+    AIBLD *bld;
+    int *duration;
+    int r;
 
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-    if (o != 0 && *(int *)(o + 0x61) != 0 && (r = ai_FindUsableGood(*(unsigned short *)(ev + 0xc2))) != 0 && *(int *)(r + 4) != 0) {
-        *(AITIME *)(ev + 0xb4) = ai_Time;
-        gm_AddTime(ev + 0xb4, 0, *(int *)(r + 4), 0);
-        *(int *)(ev + 0xb0) = 0;
-        *(int *)(ev + 0x70) = 0;
-        return;
+    gm_FindById((int *)&bld, 0, 0, e->bldId);
+    if (bld != 0 && bld->object != 0 && (r = ai_FindUsableGood(*goodId)) != 0) {
+        duration = (int *)(r + 4);
+        if (*duration != 0) {
+            e->end6c = ai_Time;
+            gm_AddTime(&e->end6c, 0, *duration, 0);
+            *handle = 0;
+            e->stage = 0;
+            return;
+        }
     }
     he_FreeEvent((int *)ev);
 }
@@ -9222,7 +9230,7 @@ int he_Unk553060(void)
         return 1;
     if (he_Unk53d600(0x74, (void *)he_Unk54ef70, (void *)he_Unk54f160) != 0)
         return 1;
-    if (he_Unk53d600(0x76, (void *)he_Unk54fb50, (void *)he_Unk54fce0) != 0)
+    if (he_Unk53d600(0x76, (void *)he_StartEffectEvent, (void *)he_Unk54fce0) != 0)
         return 1;
     if (he_Unk53d600(0x77, (void *)he_Unk54fe80, (void *)he_Unk54ff20) != 0)
         return 1;
