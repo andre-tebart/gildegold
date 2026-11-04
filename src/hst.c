@@ -788,7 +788,7 @@ int ai_TokenRandomNpcInhabitant(int mode, G12ARG *args, int k, char *fmt, char *
                     return 0;
             } else {
                 i = 0;
-                for (q = ai_CharInts[0]; (int)q < (int)((char *)ai_CharInts + 768 * 0x21c); q += 0x87) {
+                for (q = ai_CharInts[0]; (int)q < (int)ai_CharInts[768]; q += 0x87) {
                     if (ai_NotInLists(*q)) {
                         c = (AICHAR *)(q - 1);
                         if (filt == 0 || ((unsigned char *)q)[5] == sex) {
