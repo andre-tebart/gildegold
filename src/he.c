@@ -13462,35 +13462,38 @@ void he_PatrolStep(int ev, unsigned short *c)
         }
     }
 }
-/* 0x568220, a Ghidra miss: the run handler of the event 0xa6, the patrol of the guards (only with the sound / game flag 0x6f25ac; waits for the sound handle +0x84): state 0 puts the player 0x501190 (1, 0, 0x44)
-   in 0x6f2638 and calls 0x567f50 (ev, g) for every guard group (0x4ffe90 (0, 2, 7, 4, 0x1d) / 0x4ffcc0) with a route (+0x29), not flagged (+0x20 & 1, +0x13 & 0x20) and with a pause counter (+0x33); the next run is 15
-   units ahead; -1 / -2 free */
+/* 0x568220, the run handler of the guard patrol event 0xa6 (only while the game state byte ai_GameState is set; waits for
+   the sound handle exSlot): state 0 looks up the patrol building (kind 0x44) and calls he_PatrolStep for every guard group
+   cart (gm_Query (0, 2, 7, 4, 0x1d)) that has a route, is not flagged and has a pause counter; it runs again 15 minutes
+   later; the negative states free the record */
 
 void he_RunPatrolEvent(int ev)
 {
-    int st, g;
+    AIJOB *e = (AIJOB *)ev;
+    AIOBJ *g;
+    int st;
 
-    if (*(char *)(unsigned)&ai_GameState == 0)
+    if (ai_GameState == 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    st = *(int *)(ev + 0x70);
-    *(int *)(ev + 0x84) = -1;
+    st = e->stage;
+    e->exSlot = -1;
     if (st < -2)
         return;
-    if (st < 0) {
-        he_FreeEvent((int *)ev);
+    if (st >= 0) {
+        if (st != 0)
+            return;
+        he_PatrolBuilding = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+        for (g = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); g != 0; g = (AIOBJ *)gm_QueryNext()) {
+            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->pad13 & 0x20) == 0 && g->pad2e[5] != 0)
+                he_PatrolStep(ev, (unsigned short *)g);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0xf, 0);
         return;
     }
-    if (st != 0)
-        return;
-    he_PatrolBuilding = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
-    for (g = gm_Query(0, 2, 7, 4, 0x1d); g != 0; g = gm_QueryNext()) {
-        if (*(int *)(g + 0x29) != 0 && (*(unsigned char *)(g + 0x20) & 1) == 0 && (*(unsigned char *)(g + 0x13) & 0x20) == 0 && *(char *)(g + 0x33) != 0)
-            he_PatrolStep(ev, (unsigned short *)g);
-    }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0xf, 0);
+    he_FreeEvent((int *)ev);
 }
 /* 0x568310, registers the event types 0x02 .. 0xa6 (second part, after 0x553060): he_Unk53d600 (type, alloc, run) for each (a non-zero result = out of table space: return 1), the type texts 0x52b350 (type, name, 0, menu id, icon) for the types with an entry in the event list, and the tip table 0x505ca0 (0x1a, 0x6fa1e0); returns 0 */
 int he_Unk568310(void)
