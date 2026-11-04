@@ -13973,15 +13973,18 @@ float ai_SettingFactor(int bld)
         return t->factor;
     return ai_FloatOne;
 }
-/* 0x5a8900, the factor of a setting set (28 B): the +0x44 of the 0x5a84b0 record */
+/* 0x5a8900, the factor of a building's production setting set (28 B): the +0x44 of the record ai_FindSetting
+   returns, when the building has a setting */
 
-void ai_Unk5a8900(int param_1, float param_2)
+void ai_SetSettingFactor(int bld, float factor)
 {
-    int rec;
+    G8SETTING *rec;
+    G8BLD *b;
 
-    rec = ai_FindSetting(*(int *)(param_1 + 1));
+    b = (G8BLD *)bld;
+    rec = (G8SETTING *)ai_FindSetting(b->id);
     if (rec != 0)
-        *(float *)(rec + 0x44) = param_2;
+        rec->factor = factor;
 }
 /* 0x5a8920, the settings freed (29 B): 0x5a8390 over the list 0x6f26c0 */
 
@@ -18312,7 +18315,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                     }
                 } else if (U_I((unsigned)&full_data_6f2f90) == 0 && master != -1 && U_I((unsigned)&d2_PointerObj) == master) {
                     v = d2_GetObjValue(master);
-                    ai_Unk5a8900(param_1, (float)v * 0.01);
+                    ai_SetSettingFactor(param_1, (float)v * 0.01);
                 }
             }
         } else {
