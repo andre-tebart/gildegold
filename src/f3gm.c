@@ -2933,7 +2933,7 @@ void gm_InitPlayerRecord(int p)
 }
 
 float gm_StockPrice();                   /* 0x4ffa10 */
-int gm_FreeList();                     /* 0x500140 */
+int gm_FreeList(int *list);                     /* 0x500140 */
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     /* 0x4c5710 */
 
 /* 0x4ffbf0, the 0x4ffa10 value of the goods record of the player p with the word at +0 equal to id (0x55 records of 0x80 bytes), -1 when there is none */
@@ -2998,32 +2998,32 @@ short *gm_FindFreeObject(void)
 
 int gm_RemoveObject(int *list, unsigned id)
 {
-    unsigned short *prev, *cur;
+    ORDOBJ *prev, *cur;
     int n;
 
+    prev = 0;
     if (list == 0)
         return -1;
-    if ((unsigned short *)*list == 0)
+    if ((ORDOBJ *)*list == 0)
         return -1;
     n = 0;
-    prev = 0;
-    cur = (unsigned short *)*list;
+    cur = (ORDOBJ *)*list;
     do {
-        if (*cur == id) {
-            if (*(int *)(cur + 10) != 0)
-                gm_FreeList(cur + 10);
-            gm_FreeObjectExtra(cur);
+        if (cur->type == id) {
+            if (cur->list != 0)
+                gm_FreeList(&cur->list);
+            gm_FreeObjectExtra((unsigned short *)cur);
             if (n == 0)
-                *list = *(int *)((char *)cur + 0x3f);
+                *list = (int)cur->next;
             else
-                *(int *)((char *)prev + 0x3f) = *(int *)((char *)cur + 0x3f);
-            *cur = 0;
+                prev->next = cur->next;
+            cur->type = 0;
             f3gm_ObjectCount--;
             return 0;
         }
         n++;
         prev = cur;
-        cur = *(unsigned short **)((char *)cur + 0x3f);
+        cur = cur->next;
     } while (cur != 0);
     return -2;
 }
@@ -5120,7 +5120,7 @@ void sv_CreateBanners(char *b);                     /* 0x5282f0 */
 void ch_InflateModel();                     /* 0x402540 */
 int ch_Delete();                     /* 0x4028a0 */
 void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2);                     /* 0x5a9430 */
-int gm_FreeList();                     /* 0x500140 */
+int gm_FreeList(int *list);                     /* 0x500140 */
 int gm_TitlesLeft(int n);                     /* 0x504ce0 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                     /* 0x4fe140 */
