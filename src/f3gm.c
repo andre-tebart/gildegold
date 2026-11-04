@@ -10414,7 +10414,7 @@ void gm_UpdateTechTree(unsigned char *bld, unsigned short *item)
 }
 /* 0x50c310, a line of the family tree (the colour 0x58, the widths 0x1f / 0x14) */
 
-void gm_Unk50c310(int a, int b, int c, int d)
+void gm_TreeLine(int a, int b, int c, int d)
 {
     d2_PlotLine(a, b, c, d, 0x58, 0x1f, 0x14);
 }
@@ -10456,13 +10456,13 @@ int gm_Unk50c340(int form, unsigned char *p, unsigned short *q)
                         b = *(int *)(gm_TreeNodes + 0x10 + j);
                         c = *r;
                         d = r[-1];
-                        gm_Unk50c310(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
+                        gm_TreeLine(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
                     } else if (r[-5] == *(int *)(gm_TreeNodes + 8 + j)) {
                         a = *(int *)(gm_TreeNodes + 0x14 + j);
                         b = *(int *)(gm_TreeNodes + 0x10 + j);
                         c = *r;
                         d = r[-1];
-                        gm_Unk50c310(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
+                        gm_TreeLine(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
                     }
                     r += 0xd;
                     t--;
