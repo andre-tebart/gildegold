@@ -1309,14 +1309,14 @@ int ai_StepChapter1Step5(int *args)
 
 int ai_StepChapter1Step10(int *p)
 {
-    int kind;
+    AIBTYPE *type;
 
     if (p[0] == 0xd && p[1]) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 0xa) {
-            U_I(S) = 0xb;
-            U_I(S + 4) = 0xb;
-            U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)p[1])->type];
+        if (type->kind == 0xa) {
+            ai_Tutorial->state = 0xb;
+            ai_Tutorial->next = 0xb;
+            ai_Tutorial->stepAt = d3_Time;
             return 1;
         }
     }
