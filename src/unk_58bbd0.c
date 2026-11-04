@@ -5096,13 +5096,15 @@ void ai_AquariumContact(int building, int room)
         r = sv_RunFrame(ai_AquariumContact, 0x67fff);
     }
 }
-/* 0x596120, the perfume / mixing contact listener (388 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with
-   0x200 SAMMELN (0x14401b4, 0x16) -> 0x595480 (param_1, param_2) and PRODUKTION_MISCHEN (0x1442090, 0x13) ->
-   0x58bd60; with 0x400 MEISTERBRIEF (0x143cbc8, 0x16) -> 0x5c3200, PERSONALBUCH (0x143c9f0, 0xc) -> 0x5aab80,
-   LAGER (0x1441f90, 0xe) -> 0x5b26b0 (param_1, param_1 + 0x5d), TRANSPORT (0x1441fa0, 0x15) -> 0x5af1a0;
-   0x58f510 every frame */
+/* 0x596120, the contact listener of the mixing workshop (room kind 0xcf, the profession itself unidentified): it
+   releases the name plates, pumps the frame (sv_RunFrame, this, mask 0x67fff) while the screen stays on top and,
+   every frame, registers the contact plates ai_BuildingPerms allows: with 0x200 SAMMELN (which opens the trade
+   search window for the room) and PRODUKTION_MISCHEN (text ai_ContactTextProductionMixing); with 0x400
+   ob_MEISTERBRIEF, ob_PERSONALBUCH, LAGER and TRANSPORT. ai_MarketContact runs every frame; a clicked plate opens
+   its window (ai_ProductionWindow, ai_OpenTransport, ai_PersonnelBook, the store window ai_StorageWindow on the
+   building's object list, ai_TradeSearchWindow, ai_MasterLetterWindow) */
 
-void ai_Unk596120(int param_1, int param_2)
+void ai_MixingContact(AIBLD *bld, int room)
 {
     int r;
     int sammeln;
@@ -5119,34 +5121,34 @@ void ai_Unk596120(int param_1, int param_2)
     lager = 0;
     transport = 0;
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk596120, 0x67fff);
+    r = sv_RunFrame(ai_MixingContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            sammeln = sv_RegisterNamePlate("contact_SAMMELN", U_I((unsigned)&ai_ContactTextRawMaterialSearch), 0x16);
-            mischen = sv_RegisterNamePlate("contact_PRODUKTION_MISCHEN", U_I((unsigned)&full_data_1442090), 0x13);
+        if (ai_BuildingPerms & 0x200) {
+            sammeln = sv_RegisterNamePlate("contact_SAMMELN", ai_ContactTextRawMaterialSearch, 0x16);
+            mischen = sv_RegisterNamePlate("contact_PRODUKTION_MISCHEN", ai_ContactTextProductionMixing, 0x13);
         }
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0x16);
-            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
+        if (ai_BuildingPerms & 0x400) {
+            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
+            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
         }
-        ai_MarketContact((AIBLD *)param_1);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == mischen)
-                ai_ProductionWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == personal)
-                ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
-            else if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
-            else if (U_I((unsigned)&ai_ClickedObject) == sammeln)
-                ai_TradeSearchWindow((unsigned char *)param_1, param_2);
-            else if (U_I((unsigned)&ai_ClickedObject) == meister)
-                ai_MasterLetterWindow(param_1);
+        ai_MarketContact(bld);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == mischen)
+                ai_ProductionWindow((unsigned char *)bld);
+            else if (ai_ClickedObject == transport)
+                ai_OpenTransport((int)bld);
+            else if (ai_ClickedObject == personal)
+                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+            else if (ai_ClickedObject == lager)
+                ai_StorageWindow((int)bld, bld->objList);
+            else if (ai_ClickedObject == sammeln)
+                ai_TradeSearchWindow((unsigned char *)bld, room);
+            else if (ai_ClickedObject == meister)
+                ai_MasterLetterWindow((unsigned char *)bld);
         }
-        r = sv_RunFrame(ai_Unk596120, 0x67fff);
+        r = sv_RunFrame(ai_MixingContact, 0x67fff);
     }
 }
 
@@ -8846,7 +8848,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0xb7: ai_DungeonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xba: ai_Unk5a3df0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xbb: ai_DungeonEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xcf: ai_Unk596120(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0xcf: ai_MixingContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xd6: ai_IdleContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xdd: ai_AquariumContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xe5:

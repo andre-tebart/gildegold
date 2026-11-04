@@ -228,7 +228,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1442050                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07e90))  /* 0x1442050 */
 #define ai_TextEinkaufSkripte                    (*(int *)((char *)txt_Ptrs + 0x07ea8))  /* 0x1442068 */
 #define full_data_1442078                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07eb8))  /* 0x1442078 */
-#define full_data_1442090                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07ed0))  /* 0x1442090 */
+#define ai_ContactTextProductionMixing           (*(char * *)((char *)txt_Ptrs + 0x07ed0))  /* 0x1442090, the hover text of the contact_PRODUKTION_MISCHEN plate (ai_MixingContact) */
 #define ai_ContactTextProductionPerfumery        (*(char * *)((char *)txt_Ptrs + 0x07ed8))  /* 0x1442098 */
 #define ai_ContactTextExtract                        (*(char * *)((char *)txt_Ptrs + 0x07ee8))  /* 0x14420a8, the hover text of the extraction plate (contact_ABBAUEN / contact_ABBAU, ai_MiningContact); the wording is unknown */
 #define ai_TextEinkaufMetall                     (*(int *)((char *)txt_Ptrs + 0x07ef0))  /* 0x14420b0 */
