@@ -102,6 +102,11 @@ typedef struct D3ANIMSLOT {         /* 0x7c bytes */
             unsigned char unk74_0 : 1;
             unsigned char play : 1; /* 0x74 bit 1 */
         };
+        struct {                    /* D3ANIMFLAGS.b[4..7] as the dword the flag bitfields live in */
+            unsigned char pad6c4[4];
+            unsigned int rootFlags; /* 0x70, bits 0/1 (CHANIMFLAGS.a / .b): the root motion
+                                       ch_ReleaseSlot applies; a sit animation clears them */
+        };
     };
     unsigned char map[4];           /* 0x78, bone index per child object (d3anim_MapBones), 0xff = none */
 } D3ANIMSLOT;

@@ -4210,7 +4210,7 @@ void ch_SetSitAnim(CHARACTER *ch, char *name)
     if (s) {
         d3anim_SetFrame(ch->obj, s, -1);
         ch->sitSlot->flags.b[0] = 1;
-        *(unsigned int *)&ch->sitSlot->flags.b[4] &= ~3;
+        ch->sitSlot->rootFlags &= ~3;   /* the sit animation must not move the character */
         ch->sitSlot->flags.b[1] |= 0x10;
     }
 }
