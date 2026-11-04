@@ -1047,6 +1047,14 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 #define U_W(a) (*(unsigned short *)(a))
 
 #pragma pack(push, 1)
+typedef struct AICHARREC {         /* the character record fields this unit reads (ai_char.h AICHAR, same layout;
+                                      G8CHARREC below is the view of the news messages) */
+    unsigned short id;             /* 0x000, the character's id (AIBLD.owner refers to it) */
+    char pad002[0x21a];
+} AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
+#pragma pack(pop)
+
+#pragma pack(push, 1)
 typedef struct AIBLD {             /* the building record fields this unit reads (ai.h AIBLD, same layout) */
     unsigned char kind;            /* 0x00, the building kind (the index into the name tables) */
     int id;                        /* 0x01, the building's id (ai_bld.h AIBLD.id) */
@@ -6187,7 +6195,7 @@ void ai_Unk598170(int param_1)
    (width / 3) - 10 + (width % 3) / 2 + (the margin + 10) * (i % 2), y = (i / 2) * 0x82 + 100, font 0x54);
    0x1892 when four sit at the table; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
 
-void ai_Unk598b80(int param_1, int param_2)
+void ai_StammtischWindow(int param_1, int param_2)
 {
     int chars[0x38];
     int win;
@@ -6251,7 +6259,7 @@ void ai_Unk598b80(int param_1, int param_2)
         }
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
-    } while (sv_RunFrame(ai_Unk598b80, 0x677c7) != 0);
+    } while (sv_RunFrame(ai_StammtischWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
 void cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
@@ -6264,7 +6272,7 @@ unsigned char * gm_BuildNext(void);
    (0x189f / 0x188f + the join button), 4 = the player's own table elsewhere (0x1891); the join click 0 on the
    button posts the "stammtisch_join_H_Plr" message (0x4c4540 / 0x4c5d80 / 0x4c4580 / 0x4c3ae0) and the text
    0x189e / 0x189f; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
-void ai_Unk598dc0(int param_1, int param_2)
+void ai_StammtischJoinWindow(int param_1, int param_2)
 {
     int chars[0x38];
     int win;
@@ -6388,30 +6396,30 @@ void ai_Unk598dc0(int param_1, int param_2)
         } else {
             U_I((unsigned)&sv_PopRequest) = 1;
         }
-    } while (sv_RunFrame(ai_Unk598dc0, 0x677c7) != 0);
+    } while (sv_RunFrame(ai_StammtischJoinWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x599240, opens the regulars' table (124 B): the table record 0x4ffe90 (param_2 + 0x14, 1, 0, 0x12d) and the
-   table building 0x53e400 (2, 0, 0x2a, 3, param_1 + 1); when the player's word 0x770b80 + player * 0x21c is the
-   record's +0x27 the plain table 0x598b80 opens, else the joinable one 0x598dc0; then 0x52d7a0 */
 
+/* 0x599240, opens the regulars' table (Stammtisch) of a tavern room: it finds the table object (kind 0x12d) in the
+   room's object list and the table event (kind 0x2a) of the building; when the building belongs to the player (the
+   player's AICHAR.id equals its owner) the plain table window opens, else the joinable one; the camera follows in
+   every case */
 
-void ai_Unk599240(int param_1, int param_2)
+void ai_OpenStammtisch(AIBLD *bld, AIOBJ *room)
 {
     int rec;
     int b;
 
-    rec = gm_Query(*(int *)(param_2 + 0x14), 1, 0, 0x12d);
+    rec = gm_Query(room->list, 1, 0, 0x12d);
     if (rec != 0) {
-        b = he_FindEvent(2, 0, 0x2a, 3, U_I(param_1 + 1));
+        b = he_FindEvent(2, 0, 0x2a, 3, bld->id);
         if (b != 0) {
-            if (*(unsigned short *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c) ==
-                *(unsigned short *)(param_1 + 0x27)) {
-                ai_Unk598b80(param_1, rec);
+            if (((AICHARREC *)ai_Chars)[ai_PlayerId].id == bld->owner) {
+                ai_StammtischWindow((int)bld, rec);
                 sv_CameraFollow();
                 return;
             }
-            ai_Unk598dc0(param_1, rec);
+            ai_StammtischJoinWindow((int)bld, rec);
         }
     }
     sv_CameraFollow();
@@ -6693,7 +6701,7 @@ void ai_Unk599af0(int param_1, int param_2)
             if (U_I((unsigned)&ai_ClickedObject) == p1)
                 ai_Unk598170(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == p2)
-                ai_Unk599240(param_1, param_2);
+                ai_OpenStammtisch(param_1, param_2);
             else if (U_I((unsigned)&ai_ClickedObject) == p3)
                 ai_DarkCornerTable(param_1, param_2);
         }
