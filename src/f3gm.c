@@ -2208,20 +2208,23 @@ ORDBLD *gm_FindHome(int unused, ORDBLD *o)
     }
     return pick;
 }
-/* 0x4fda10, moves the character c into the building b (+0x170) when b (+0x65 its occupancy) has room (0x4f8890 capacity): the old building loses one */
+/* 0x4fda10, makes the building b the home (bld2) of the character c when b still has room for one more
+   inhabitant (the kind's capacity, ord_GetKindRecord): b gains an inhabitant, the old home loses one */
 
 void gm_MoveIntoHome(char *c, char *b)
 {
     unsigned short cap[4];
-    char *old;
+    ORDCHAR *ch = ORD_CHAR(c);
+    ORDBLD *bld = (ORDBLD *)b;
+    ORDBLD *old;
 
-    ord_GetKindRecord(*(unsigned char *)b, (int *)cap);
-    if ((unsigned char)b[0x65] < cap[0]) {
-        old = *(char **)(c + 0x170);
-        if (old != 0 && (unsigned char)old[0x65] > 0)
-            old[0x65]--;
-        *(char **)(c + 0x170) = b;
-        b[0x65]++;
+    ord_GetKindRecord(bld->type, (int *)cap);
+    if (bld->people < cap[0]) {
+        old = ch->bld2;
+        if (old != 0 && old->people > 0)
+            old->people--;
+        ch->bld2 = bld;
+        bld->people++;
     }
 }
 /* 0x4fda70, finds the applicant the building o hires for the job (and, when title is not 0, the title): a
