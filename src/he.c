@@ -316,7 +316,7 @@ void he_Unk53d430(unsigned char *ev)
 {
     char buf[256];
 
-    sprintf(buf, "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s", *ev, (char *)(((unsigned)&ai_Unk770b89 + 0x27) + *(unsigned short *)(ev + 8) * 0x21c));
+    sprintf(buf, "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s", *ev, (char *)(((unsigned)&ai_CharSex + 0x27) + *(unsigned short *)(ev + 8) * 0x21c));
 }
 /* 0x53d470, the run handler of an event of an unknown type (debug text only) */
 
@@ -324,7 +324,7 @@ void he_Unk53d470(unsigned char *ev)
 {
     char buf[256];
 
-    sprintf(buf, "he_RunNone(): Invalid HE-Type : %i, von Spieler %s", *ev, (char *)(((unsigned)&ai_Unk770b89 + 0x27) + *(unsigned short *)(ev + 8) * 0x21c));
+    sprintf(buf, "he_RunNone(): Invalid HE-Type : %i, von Spieler %s", *ev, (char *)(((unsigned)&ai_CharSex + 0x27) + *(unsigned short *)(ev + 8) * 0x21c));
 }
 /* 0x53d4b0, the init of the event module: registers the alloc / run handlers of the types 0 and 1, runs the init of the other event modules (0x553060 .. 0x573260; non 0 = failed) and clears the tables */
 
@@ -3558,7 +3558,7 @@ void he_Unk5489b0(int ev)
         return;
     }
     r = (unsigned short)util_Random(0x100);
-    x = (double)*(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x77) + *(unsigned short *)(ev + 8) * 0x21c) * 0.5 + 64.0;
+    x = (double)*(unsigned char *)(((unsigned)&ai_CharSex + 0x77) + *(unsigned short *)(ev + 8) * 0x21c) * 0.5 + 64.0;
     if (x > (double)r) {
         txt_Format(text, 0x10b5, *(int *)(ev + 0xb0) * 2);
         he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ff, (char *)0);
@@ -3989,7 +3989,7 @@ void he_Unk549970(int ev)
 {
     int e, a;
 
-    a = *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
+    a = *(unsigned char *)(((unsigned)&ai_CharSex + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
     if (!((float)a < (252.0f))) {
         he_FreeEvent((int *)ev);
         return;
@@ -4007,7 +4007,7 @@ void he_Unk549970(int ev)
             }
         }
     }
-    a = *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
+    a = *(unsigned char *)(((unsigned)&ai_CharSex + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
     *(unsigned char *)(ev + 0xac) = 0x15;
     *(unsigned char *)(ev + 0xad) = (unsigned char)(((int)((float)a * 0.5f + 1.0f) + 2) * 2);
     *(int *)(ev + 0x70) = 0;
@@ -4633,8 +4633,8 @@ void he_Unk54b1e0(int ev)
         *(int *)(ev + 0x70) = 3;
         if ((*(unsigned char *)(ebp + 0x5b) & 1) != 0) {
             *(int *)(ev + 0xb8) = 2;
-        } else if (*(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x127) + *(unsigned short *)(ebp + 0x27) * 0x14) != 0xb
-                   && util_RandomF() < *(float *)(((unsigned)&ai_Unk770b89 + 0x10b) + *(unsigned short *)(ebp + 0x27) * 0x14) * 0.001f) {
+        } else if (*(unsigned char *)(((unsigned)&ai_CharSex + 0x127) + *(unsigned short *)(ebp + 0x27) * 0x14) != 0xb
+                   && util_RandomF() < *(float *)(((unsigned)&ai_CharSex + 0x10b) + *(unsigned short *)(ebp + 0x27) * 0x14) * 0.001f) {
             *(int *)(ev + 0xb8) = (unsigned short)util_Random(2);
         } else {
             *(int *)(ev + 0xb8) = 1;

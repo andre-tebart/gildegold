@@ -16740,7 +16740,7 @@ extern int ai_TimeCopy[4];
 extern char * sv_SelectedObject;
 extern char cm_ChatLog[2048];
 extern int cm_SaveAcks[8][2];
-/* ai_Unk770b89: view of ai_Chars (tools/data_views.py) */
+/* ai_CharSex: view of ai_Chars (tools/data_views.py) */
 /* ai_Unk770cec: view of ai_Chars (tools/data_views.py) */
 extern int ai_Evidence[0x800][2];
 extern char ai_Crimes[0x5a00];

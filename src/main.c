@@ -3799,7 +3799,7 @@ void main_RoundReport(void)
         if (*(char *)(((unsigned)&ai_CharInts + 0x162) + k) != 0 || *(char *)(((unsigned)&ai_CharInts + 0x165) + k) != 0) {
             gm_CharacterWages(U_I((unsigned)&ai_PlayerId), 0, (unsigned char *)a);
             k = (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c;
-            t = (-(*(char *)((unsigned)&ai_Unk770b89 + k) != 0) & 0x28) + 0x253;
+            t = (-(*(char *)((unsigned)&ai_CharSex + k) != 0) & 0x28) + 0x253;
             if (*(char *)(((unsigned)&ai_CharInts + 0x162) + k) != 0)
                 io_PrintText(0x2049, *(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + k) + t, a[1]);
             if (*(char *)(((unsigned)&ai_CharInts + 0x165) + (U_I((unsigned)&ai_PlayerId) & 0xffff) * 0x21c) != 0)

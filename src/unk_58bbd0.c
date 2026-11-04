@@ -2822,7 +2822,7 @@ int ai_Unk58ff00(int kind, char *out)
     }
     best = ((int (*)())util_Random)() & 0xffff;
     if (*(char *)B_REC(kind) == '!')
-        best = (*(unsigned char *)((unsigned)&ai_Unk770b89 + (U_W((unsigned)&ai_PlayerId) * 0x21c)) != 1);
+        best = (*(unsigned char *)((unsigned)&ai_CharSex + (U_W((unsigned)&ai_PlayerId) * 0x21c)) != 1);
     if (ai_BuildingName(kind, chosen) != 0) {
         n = ai_FindBauplaetze(names[best], list2);
         U_I((unsigned)&full_data_6f26b0) = (int)list2;
@@ -3141,7 +3141,7 @@ void ai_GameFrame(void)
     if (U_I((unsigned)&ai_GameFlags) & 4) {
         for (p = (char *)((unsigned)&ai_Chars + 0x2); p < (char *)(unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
             if (*(unsigned short *)(p - 2) != 0xffff &&
-                *(int *)(p + 0x52) == U_I(((unsigned)&ai_Unk770b89 + 0x4b) + U_W((unsigned)&ai_PlayerId) * 0x87) &&
+                *(int *)(p + 0x52) == U_I(((unsigned)&ai_CharSex + 0x4b) + U_W((unsigned)&ai_PlayerId) * 0x87) &&
                 *(unsigned short *)(p - 2) != U_W((unsigned)&ai_PlayerId) &&
                 (*p == 6 || *p == 7 || *p == 5) &&
                 U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87) < *(unsigned int *)(p + 2)) {
@@ -5445,7 +5445,7 @@ void ai_MistressWindow(int param_1)
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 2);
-    ctl = d2_GetWinObj(win, 2, io_PrintText(*(unsigned char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0
+    ctl = d2_GetWinObj(win, 2, io_PrintText(*(unsigned char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0
                                                 ? 0x1a50 : 0x1a51));
     U_I((unsigned)&d2_ClickedId) = -1;
     while (sv_RunFrame(ai_MistressWindow, 0x67fff) != 0) {
@@ -5561,7 +5561,7 @@ void ai_Unk596ff0(void)
                 io_PrintText(0x15be, U_W((unsigned)&ai_PlayerId));
             }
         } else {
-            c = *(unsigned char *)((unsigned)&ai_Unk770b89 + player * 0x21c);
+            c = *(unsigned char *)((unsigned)&ai_CharSex + player * 0x21c);
             gm_TitleGroup(*(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + player * 0x21c));
             d2_SetForm(win, 1);
             io_PrintText(0x15bb);
@@ -5580,7 +5580,7 @@ void ai_Unk596ff0(void)
         d2_SetForm(win, 2);
         io_PrintText(0x15bd, U_W((unsigned)&ai_PlayerId),
                      *(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + player * 0x21c) +
-                         (*(unsigned char *)((unsigned)&ai_Unk770b89 + player * 0x21c) != 0 ? 0x5f : 0) + 0x12f);
+                         (*(unsigned char *)((unsigned)&ai_CharSex + player * 0x21c) != 0 ? 0x5f : 0) + 0x12f);
     }
     while (sv_RunFrame(ai_Unk596ff0, 0x677c7) != 0) {
         if (U_I((unsigned)&d2_ClickedId) != -1 && total >= 1.0f) {
@@ -9563,7 +9563,7 @@ void ai_OfficeApplicationWindow(void)
     int changed;
 
     per = (char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c;
-    if (*(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) < 2) {
+    if (*(unsigned char *)(((unsigned)&ai_CharSex + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) < 2) {
         sv_MessageBox((char *)U_I((unsigned)&full_data_14409cc), 0);
         return;
     }
@@ -9790,7 +9790,7 @@ int ai_Unk5a0ca0(int param_1)
     d2_SetForm(win, 1);
     io_PrintText(0x165f);
     d2_SetForm(win, 2);
-    if (*(unsigned char *)((unsigned)&ai_Unk770b89 + slot * 0x21c) == 0)
+    if (*(unsigned char *)((unsigned)&ai_CharSex + slot * 0x21c) == 0)
         id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + slot * 0x21c) + 0x253;
     else
         id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + slot * 0x21c) + 0x27b;
@@ -9901,7 +9901,7 @@ void ai_Unk5a1000(int param_1)
     cur = 0;
     U_I(U_I((unsigned)&d2_Objs) + 0x2c + ctls[0] * 0x2ec) = 1;
     d2_SetForm(win, 3);
-    if (*(unsigned char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
+    if (*(unsigned char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
         id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x253;
     else
         id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x27b;
@@ -9934,7 +9934,7 @@ void ai_Unk5a1000(int param_1)
                         U_I(U_I((unsigned)&d2_Objs) + 0x2c + ctls[i] * 0x2ec) = 1;
                         d2_SetForm(win, 3);
                         io_PrintText("$C");
-                        if (*(unsigned char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
+                        if (*(unsigned char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                             id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x253;
                         else
                             id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x27b;
@@ -10048,12 +10048,14 @@ void ai_GuildLevel2RequestCB(int column)
         }
     }
 }
-/* 0x5a1670, the callback of the guild level 3 window of the office 0x20 (308 B, Ghidra-missed start: the
-   callback of 0x5a17b0): the same window "LOCATIONS\ZUNFTHAUS\LEVEL3", the text 0x1674, the text 0x1677
-   (the office id, 8, param_1 + 0x1663), the pump 0x5309a0 (0x5a1670, 0x677c7); a click (0xf8a668 == 0)
-   sends 0x4e9ce0 (the player, {4, param_1}) and 0x6f22a0 = 2; 0xf8a668 == 1 raises 0x6f22a0; 0x4758f0 */
+/* 0x5a1670, the callback of the guild level 3 power window, the amount-kind menu the guild level 3 entry
+   (0x5a17b0) opens for a mayor whose second office is 0x20 (308 B, Ghidra-missed start: the callback of
+   0x5a17b0): the window "LOCATIONS\ZUNFTHAUS\LEVEL3", the text 0x1674, the text 0x1677 (the office id from
+   the player's second office and sex, 8, the column name 0x1663 + column), the pump 0x5309a0 (0x5a1670,
+   0x677c7); a click (0xf8a668 == 0) sends 0x4e9ce0 (the player, {4, column}) and 0x6f22a0 = 2; 0xf8a668 == 1
+   raises 0x6f22a0; 0x4758f0 at the end */
 
-void ai_Unk5a1670(int param_1)
+void ai_GuildLevel3PowerCB(int column)
 {
     int req[2];
     int win;
@@ -10063,27 +10065,27 @@ void ai_Unk5a1670(int param_1)
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x1674);
     d2_SetForm(win, 2);
-    if (*(unsigned char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
-        id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x253;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+        id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x253;
     else
-        id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x27b;
-    io_PrintText(0x1677, id, 8, param_1 + 0x1663);
+        id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x27b;
+    io_PrintText(0x1677, id, 8, column + 0x1663);
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
             req[0] = 4;
-            req[1] = param_1;
-            amt_ExecuteMayorPowerMessage((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, req);
-            U_I((unsigned)&sv_PopRequest) = 2;
-        } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+            req[1] = column;
+            amt_ExecuteMayorPowerMessage((char *)ai_Chars + ai_PlayerId * 0x21c, req);
+            sv_PopRequest = 2;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
         }
-        if (sv_RunFrame(ai_Unk5a1670, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GuildLevel3PowerCB, 0x677c7) == 0) {
             d2_CloseView(win);
             return;
         }
@@ -10119,7 +10121,7 @@ void ai_Unk5a17b0(void)
             *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x21) {
             ai_AmountKindMenu((void *)(unsigned)&ai_GuildLevel2RequestCB, (char *)U_I((unsigned)&full_data_143fb70), 0);
         } else if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x20) {
-            ai_AmountKindMenu((void *)(unsigned)&ai_Unk5a1670, (char *)U_I((unsigned)&full_data_143fb98), 0);
+            ai_AmountKindMenu((void *)(unsigned)&ai_GuildLevel3PowerCB, (char *)U_I((unsigned)&full_data_143fb98), 0);
             sv_CameraFollow();
             return;
         }
@@ -10290,8 +10292,8 @@ void ai_Unk5a1af0(int param_1)
                         id = U_I((unsigned)&ai_CharInts + i * 0x21c);
                         if (i != U_W((unsigned)&ai_PlayerId) && id != -1 &&
                             id != U_I((unsigned)&ai_CharInts + U_W(param_1 + 0x27) * 0x21c) &&
-                            *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x3) + U_W(param_1 + 0x27) * 0x21c) ==
-                            *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x3) + i * 0x21c))
+                            *(unsigned char *)(((unsigned)&ai_CharSex + 0x3) + U_W(param_1 + 0x27) * 0x21c) ==
+                            *(unsigned char *)(((unsigned)&ai_CharSex + 0x3) + i * 0x21c))
                             ((void (*)(int, int, int))cm_SendRelations)(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), id,
                                          (int)f);
                     }
@@ -10499,7 +10501,7 @@ void ai_Unk5a23a0(int param_1, int param_2)
                         cm_AddFieldDelta(1, 1, 0xc, &v);
                         cm_SendFieldDeltas();
                         for (i = 3; i < 8; i++) {
-                            id = U_I(((unsigned)&ai_Unk770b89 + 0x53) + slot * 0x21c + i * 4);
+                            id = U_I(((unsigned)&ai_CharSex + 0x53) + slot * 0x21c + i * 4);
                             if (id != -1 && (r = gm_FindChar(id)) != 0) {
                                 cm_BeginFieldBlock((char *)r, U_I(r + 4));
                                 cm_AddFieldDelta(1, 1, 0xc, &v);
@@ -16795,7 +16797,7 @@ int ai_AmountRowStatus(int *param_1)
         return 0;
     param_1[8] = 0;
     param_1[7] = 0x6ca - (*(char *)(chr + 0xc) != 0);
-    if (*(char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) != *(char *)(chr + 9) &&
+    if (*(char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) != *(char *)(chr + 9) &&
         (U_I(chr + 0x1c8) & ((unsigned)&ai_Relations + 0x1aca0)) != 0) {
         car = he_FindEvent(1, 0, 0x6f);
         while (car != 0) {
@@ -23117,7 +23119,7 @@ int ai_Unk5d0b20(int param_1, int param_2)
             cfg[i] = -1;
         txt_Format(text, (char *)0x9c);
         cfg[0] = 1;
-        cfg[1] = *(char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 ? 0x402 : 0x401;
+        cfg[1] = *(char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 ? 0x402 : 0x401;
         cfg[2] = U_I(((unsigned)&gypsyFilter));
         cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
         cfg[4] = 6;

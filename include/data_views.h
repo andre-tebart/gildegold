@@ -10,7 +10,7 @@
 
 /* ai_Chars */
 #define ai_CharInts              (*(int (*)[768][0x87])((char *)&ai_Chars + 0x4))  /* 0x770b84 */
-#define ai_Unk770b89             (*(char (*)[347])((char *)&ai_Chars + 0x9))  /* 0x770b89 */
+#define ai_CharSex             (*(char (*)[347])((char *)&ai_Chars + 0x9))  /* 0x770b89 */
 #define ai_Unk770cec             (*(char (*)[28])((char *)&ai_Chars + 0x16c))  /* 0x770cec */
 #define ai_Selected              (*(char (*)[132])((char *)&ai_Chars + 0x188))  /* 0x770d08 */
 #define ai_Unk770d8c             (*(char (*)[414196])((char *)&ai_Chars + 0x20c))  /* 0x770d8c */
