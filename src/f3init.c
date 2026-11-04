@@ -3022,7 +3022,7 @@ void init_SyncSceneObjects(char *o)
 /* 0x5124d0, the first building of the type 0xb: 0x511e60 */
 
 
-void unk_Unk5124d0(void)
+void init_LoadTypeBScene(void)
 {
     int b;
 

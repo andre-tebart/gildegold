@@ -4788,7 +4788,7 @@ void main_GameLoop(int ctl)
         sv_FillDayPhases((int)&ai_Time);
         main_Season = sv_ClockSeason(&ai_Time);
     }
-    unk_Unk5124d0();
+    init_LoadTypeBScene();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0) {
         if ((U_I((unsigned)&ai_GameFlags) & 4) == 0) {
             clk[0] = 0;

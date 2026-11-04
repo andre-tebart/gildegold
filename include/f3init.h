@@ -51,7 +51,7 @@ void init_GiveFirstPlayerBuildings(void);                                       
 int init_ObjectSceneUniverse(unsigned short *p);                        /* 0x511dc0 */
 int init_BuildingSceneUniverse(unsigned char *b);                       /* 0x511e60 */
 void init_SyncSceneObjects(char *o);                                    /* 0x511f20 */
-void unk_Unk5124d0(void);                                               /* 0x5124d0 */
+void init_LoadTypeBScene(void);                                               /* 0x5124d0 */
 void init_LoadShopScript(unsigned char *b, unsigned short *o);          /* 0x5124f0 */
 void init_SoundObjectHook(char *o);                                     /* 0x5126a0 */
 void init_GateObjectHook(int o);                                        /* 0x512780 */
