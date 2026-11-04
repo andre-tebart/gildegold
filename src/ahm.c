@@ -12,6 +12,7 @@ table of 8 ints, then the strings "RCPID" .. "alchemy_data.ini"). Starts at 0x4e
 #include <stdlib.h>
 #include <string.h>
 #include "ahm.h"
+#include "ai_char.h"
 #include "f3gm.h"
 #include "net.h"
 #include "vfs.h"
@@ -1119,16 +1120,16 @@ int ahm_SendDelete(char *c)
 
 int ahm_DeleteAlchemist(int unused, int *rec, unsigned char *o)
 {
-    char *c;
+    AICHAR *c;
     char *sp;
     int *q;
     int i;
 
-    c = gm_FindChar(rec[0]);
+    c = (AICHAR *)gm_FindChar(rec[0]);
     if (c != 0) {
-        sp = gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0xff);
-        *(int *)(c + 0x170) = 0;
-        *(int *)(c + 0x16c) = 0;
+        sp = gm_Query(((AHMOBJ *)o)->objs, 2, 6, 0, 0xff);
+        c->bld2 = 0;
+        c->bld = 0;
         q = rec + 3;
         for (i = 6; i != 0; i--) {
             if (*q != 0) {
@@ -1140,7 +1141,7 @@ int ahm_DeleteAlchemist(int unused, int *rec, unsigned char *o)
             q += 2;
         }
         memset(rec, 0, 0x3c);
-        gm_KillSpieler(*(unsigned short *)c, 1);
+        gm_KillSpieler(c->id, 1);
         return 1;
     }
     return 0;
