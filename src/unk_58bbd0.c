@@ -1,12 +1,13 @@
 /* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
    screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below. The
    contact listeners and the map picks of the kontor / thieves' guild / information scenes read their plate texts
-   through the txt_views.h slots (ai_ContactText*) and the building record as AIBLD.
+   through the txt_views.h slots (ai_ContactText*) and the building record as AIBLD (id, owner, mainRoom, objList,
+   object); the character record view AICHARREC names id, sex, b00d, officeKind, secondOffice and powerFlags.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood).
-   Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the character / object
-   record views (AICHARREC here, G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW),
-   the Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
+   Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
+   object record views (G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW), the
+   Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
    the gv record (AIWINDOWROW, AIPOSVIEW) are local views here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h /
    am_types.h / ai.h hold the owners' types); they settle when those headers can be included.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
