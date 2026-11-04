@@ -377,7 +377,7 @@ void bgi_Flags(void *f, BGIRD *c)
     c->flag0 = b & 1;
     c->flag1 = (b >> 1) & 1;
 }
-/* 0x44f7d0 */
+/* 0x44f7d0, chunk 0 of the top-level table: reads a dword that is not used */
 
 void bgi_SkipDword(void *f, BGIRD *c)
 {
