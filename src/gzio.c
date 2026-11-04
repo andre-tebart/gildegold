@@ -655,7 +655,7 @@ int ZEXPORT gzflush (file, flush)
       SEEK_END is not implemented, returns error.
       In this version of the library, gzseek can be extremely slow.
 */
-/* 0x4634a0 */
+/* 0x4634a0, seeks inside a gzip file, skipping input or padding output with zeros */
 z_off_t ZEXPORT gzseek (file, offset, whence)
     gzFile file;
     z_off_t offset;
