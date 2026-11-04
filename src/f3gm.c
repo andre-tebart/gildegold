@@ -5229,15 +5229,15 @@ void gm_ShowBuildingObjects(unsigned char *b)
     int n, i, o;
 
     n = 0;
-    if (ai_BTypes[*b * 0x24d] == 2) {
-        o = (int)gm_Query(*(int *)(b + 0x5d), 1, 4, 2);
+    if (ai_BTypes[((ORDBLD *)b)->type * 0x24d] == 2) {
+        o = (int)gm_Query(((ORDBLD *)b)->objList, 1, 4, 2);
         while (o != 0) {
             l[n] = o;
             n++;
             o = (int)gm_QueryNext();
         }
         for (i = 0; i < n; i++)
-            gm_ShowSlotObjects((int)b, l[i], *(unsigned short *)(b + 0x27));
+            gm_ShowSlotObjects((int)b, l[i], ((ORDBLD *)b)->owner);
     }
 }
 /* 0x502eb0, lists the characters working in the building b (their building, bld, is b) into out and returns their number (also out[0]): out[1 ..] (0xc) those with the title of the kind's first job rank (+0x22f), out[0xd ..] (0xc) of the second (+0x230), out[0x19 ..] (0xc) the others, out[0x25] the one whose job is one of the kind's two jobs (+0x223 / +0x224, both set); the lists are filled with 0xffff
