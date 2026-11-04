@@ -6611,10 +6611,11 @@ void d3d_SetWBuffer(char w);                     /* 0x437060 */
 char *util_BaseName();                   /* 0x401040 */
 #define SV_ANIMCTL(o) ((D3ANIMCTL *)(o)->material->animCtl)  /* the animation control of an object's material (D3MATERIAL.animCtl at 0xf4) */
 
-/* 0x52f2c0, draws the rubber band rectangle (0x41e8f0, colour -1) between the corners 0x760444 / 0x760448 and 0x76044c / 0x760450 while 0x760440 is set */
+/* 0x52f2c0, draws the rubber band rectangle (four dd_Line in colour -1) between the corners of sv_Band while
+   sv_BandActive is set */
 void sv_DrawRubberBand(void)
 {
-    if (SV_I((unsigned)&sv_BandActive) != 0) {
+    if (sv_BandActive != 0) {
         dd_Line(sv_Band.x0, sv_Band.y0, sv_Band.x1, sv_Band.y0, -1);
         dd_Line(sv_Band.x1, sv_Band.y0, sv_Band.x1, sv_Band.y1 + 1, -1);
         dd_Line(sv_Band.x1, sv_Band.y1, sv_Band.x0, sv_Band.y1, -1);
