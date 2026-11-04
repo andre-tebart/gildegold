@@ -1082,6 +1082,15 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     int object;                    /* 0x61, its object in the scene */
 } AIBLD;
 #pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct AIBTYPE {           /* the building-type record fields this unit reads (ai_bld.h AIBTYPE); the size
+                                      matters: ai_BTypes is walked by the record */
+    char pad000[0x247];
+    unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
+    char pad248[5];
+} AIBTYPE;                         /* 0x24d bytes, ai_BTypes[] */
+#pragma pack(pop)
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
 #include "ls.h"
@@ -8306,7 +8315,7 @@ char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flag
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
-struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
+struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
@@ -8869,7 +8878,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x18: ai_MistressContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x1f: ai_Unk59a560(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x4d: ai_ThievesGuildEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x54: ai_Unk5a4d40(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x54: ai_ThievesGuildListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x5c: ai_Unk5a4f70(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x60: ai_Unk5a5080(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x65: ai_Unk5a5bc0(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -11484,7 +11493,7 @@ int ai_Unk5a41d0(int param_1)
    (kind 0x13 ? 0x90010 : 0xa7fd43b4), the flag, 7, ..., 0x727} and 0x525220 (param_1, 0), the text 0x19f6 and
    the request 0x5b2180 (1, the record, the text, the callback 0x5a41d0, 0), then 0x525440 and 0x52ae40 */
 
-void ai_Unk5a44e0(unsigned char *param_1)
+void ai_EspionageStart(unsigned char *param_1)
 {
     int req[20];
     int k;
@@ -11739,7 +11748,7 @@ void sv_UpdateMemberList(unsigned char *g);
    +0xc, the clock +0x28 .. +0x34, 1 at +0x36, the ids at +0x38 and the owner's id again at +0x80) and sends
    0x4c4b70 / 0x4c2d20 / 0x52ae40, or shows the text 0x144094c with none; a right click only sets 0x6f22a0;
    the exit 0x4758f0 / 0x525440 / 0x52d7a0 */
-void ai_Unk5a4b90(int param_1)
+void ai_PickpocketVictimWindow(int param_1)
 {
     int win;
     int list[6];
@@ -11797,7 +11806,7 @@ void ai_Unk5a4b90(int param_1)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a4b90, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_PickpocketVictimWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_ClosePlayerBar();
             sv_CameraFollow();
@@ -11806,15 +11815,14 @@ void ai_Unk5a4b90(int param_1)
     }
 }
 /* 0x5a4d40, the thieves' guild listener (522 B, room 0x54 of the building driver 0x59e420): 0x52e190, the
-   great sword object 0x449690 (0, 0xc0, 0) shown by 0x447300 only from the crew size byte +0x247 of the kind
-   record >= 2, then the pump 0x5309a0 (this, 0x67fff) fetches the contact_EINBRUCH (0x1440944) /
-   contact_GEBAEUDE_AUSSPIONIEREN (0x1440994) / contact_ANGRIFF (0x1441fa8, only with the byte >= 2) /
-   contact_TASCHENDIEBSTAHL (0x1442018) / ob_INFORMATIONSPERGAMENT (0x143cb38) windows through 0x52e1c0 when
-   the mask 0x200 is set, ob_PERSONALBUCH (0x143c9f0) / ob_MEISTERBRIEF (0x143cbc8) when 0x400 is set, and
-   dispatches the pending click 0x6f22e4 to the starts 0x5a4130 / 0x5a44e0 / 0x5a4b30, the windows 0x5a4b90 /
-   0x5a45c0 and the controls 0x5aab80 / 0x5c3200 */
+   great sword object 0x449690 (0, 0xc0, 0) shown by 0x447300 only from the building type's level byte +0x247
+   >= 2, then the pump 0x5309a0 (this, 0x67fff) fetches the contact_EINBRUCH / contact_GEBAEUDE_AUSSPIONIEREN /
+   contact_ANGRIFF (only with the level byte >= 2) / contact_TASCHENDIEBSTAHL / ob_INFORMATIONSPERGAMENT plates
+   through 0x52e1c0 when the mask 0x200 is set, ob_PERSONALBUCH / ob_MEISTERBRIEF when 0x400 is set, and
+   dispatches the pending click 0x6f22e4 to ai_BurglaryStart / ai_EspionageStart / ai_AttackStart,
+   ai_PickpocketVictimWindow / ai_SpyRingWindow / ai_PersonnelBook / ai_MasterLetterWindow */
 
-void ai_Unk5a4d40(int param_1)
+void ai_ThievesGuildListener(int building)
 {
     int burglary = 0;
     int espionage = 0;
@@ -11825,11 +11833,13 @@ void ai_Unk5a4d40(int param_1)
     int meister = 0;
     int obj;
     int click;
-    char *krec;
+    AIBLD *bld;
+    AIBTYPE *type;
 
     sv_ReleaseNamePlates();
-    krec = (char *)B_REC(*(unsigned char *)param_1);
-    if (*(unsigned char *)(krec + 0x247) >= 2) {
+    bld = (AIBLD *)building;
+    type = (AIBTYPE *)ai_BTypes + bld->kind;
+    if (type->level >= 2) {
         obj = d3_FindObject(0, 0xc0, 0, "ub_GROSSSCHWERT");
         if (obj != 0)
             d3if_ShowTree(obj, 1);
@@ -11838,39 +11848,39 @@ void ai_Unk5a4d40(int param_1)
         if (obj != 0)
             d3if_ShowTree(obj, 0);
     }
-    if (sv_RunFrame(ai_Unk5a4d40, 0x67fff) == 0)
+    if (sv_RunFrame(ai_ThievesGuildListener, 0x67fff) == 0)
         return;
     do {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            burglary = sv_RegisterNamePlate("contact_EINBRUCH", U_I((unsigned)&full_data_1440944), 0x17);
-            espionage = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&full_data_1440994), 0x17);
-            if (*(unsigned char *)(krec + 0x247) >= 2)
-                angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&ai_ContactTextAttack), 0x17);
-            taschen = sv_RegisterNamePlate("contact_TASCHENDIEBSTAHL", U_I((unsigned)&full_data_1442018), 0x17);
-            pergament = sv_RegisterNamePlate("ob_INFORMATIONSPERGAMENT", U_I((unsigned)&ai_ContactTextInformation), 0x16);
+        if (ai_BuildingPerms & 0x200) {
+            burglary = sv_RegisterNamePlate("contact_EINBRUCH", ai_ContactTextBurglary, 0x17);
+            espionage = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", ai_ContactTextSpyBuilding, 0x17);
+            if (type->level >= 2)
+                angriff = sv_RegisterNamePlate("contact_ANGRIFF", ai_ContactTextAttack, 0x17);
+            taschen = sv_RegisterNamePlate("contact_TASCHENDIEBSTAHL", ai_ContactTextPickpocket, 0x17);
+            pergament = sv_RegisterNamePlate("ob_INFORMATIONSPERGAMENT", ai_ContactTextInformation, 0x16);
         }
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
-            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0x16);
+        if (ai_BuildingPerms & 0x400) {
+            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
+            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
         }
-        click = U_I((unsigned)&ai_ClickedObject);
+        click = ai_ClickedObject;
         if (click != 0) {
             if (click == burglary)
-                ai_BurglaryStart(param_1);
+                ai_BurglaryStart(building);
             else if (click == espionage)
-                ai_Unk5a44e0((unsigned char *)param_1);
+                ai_EspionageStart((unsigned char *)building);
             else if (click == angriff)
-                ai_AttackStart(param_1);
+                ai_AttackStart(building);
             else if (click == taschen)
-                ai_Unk5a4b90(param_1);
+                ai_PickpocketVictimWindow(building);
             else if (click == personal)
-                ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
+                ai_PersonnelBook(building, "ob_PERSONALBUCH");
             else if (click == pergament)
-                ai_SpyRingWindow(param_1);
+                ai_SpyRingWindow(building);
             else if (click == meister)
-                ai_MasterLetterWindow(param_1);
+                ai_MasterLetterWindow(building);
         }
-    } while (sv_RunFrame(ai_Unk5a4d40, 0x67fff) != 0);
+    } while (sv_RunFrame(ai_ThievesGuildListener, 0x67fff) != 0);
 }
 /* 0x5a4f50, an empty listener (28 B, room 0x4d of the building driver 0x59e420): 0x52e190 and the pump
    0x5309a0 (this, 0x67fff) until it returns 0 */
@@ -12779,7 +12789,7 @@ void ai_Unk5a6920(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == razzia)
                 ai_Unk5a61f0(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ausspionieren)
-                ai_Unk5a44e0((unsigned char *)param_1);
+                ai_EspionageStart((unsigned char *)param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == pergament)
                 ai_SpyRingWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == transport)

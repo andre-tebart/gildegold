@@ -124,11 +124,11 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14408cc                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x0670c))  /* 0x14408cc */
 #define full_data_14408e0                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x06720))  /* 0x14408e0 */
 #define full_data_14408e8                        (*(unsigned char (*)[92])((char *)txt_Ptrs + 0x06728))  /* 0x14408e8 */
-#define full_data_1440944                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06784))  /* 0x1440944 */
+#define ai_ContactTextBurglary                   (*(char * *)((char *)txt_Ptrs + 0x06784))  /* 0x1440944, the hover text of the contact_EINBRUCH plate of the thieves' guild hall (ai_ThievesGuildListener) */
 #define full_data_144094c                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0678c))  /* 0x144094c */
 #define full_data_1440954                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x06794))  /* 0x1440954 */
-#define ai_MapPickPrompt                        (*(char * *)((char *)txt_Ptrs + 0x067b4))  /* 0x1440974, the prompt text the burglar-guild map picks (ai_OpenPickpocket, 0x5a4b30) pass to ai_MapPick */
-#define full_data_1440994                        (*(unsigned char (*)[52])((char *)txt_Ptrs + 0x067d4))  /* 0x1440994 */
+#define ai_MapPickPrompt                        (*(char * *)((char *)txt_Ptrs + 0x067b4))  /* 0x1440974, the prompt text the burglar-guild map picks (ai_OpenPickpocket, ai_AttackStart) pass to ai_MapPick */
+#define ai_ContactTextSpyBuilding                (*(char * *)((char *)txt_Ptrs + 0x067d4))  /* 0x1440994, the hover text of the contact_GEBAEUDE_AUSSPIONIEREN plate (ai_ThievesGuildListener -> ai_EspionageStart) */
 #define full_data_14409c8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06808))  /* 0x14409c8 */
 #define full_data_14409cc                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x0680c))  /* 0x14409cc */
 #define full_data_14409d8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06818))  /* 0x14409d8 */
@@ -222,7 +222,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1442000                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e40))  /* 0x1442000 */
 #define ai_ContactTextRegeneration                        (*(char * *)((char *)txt_Ptrs + 0x07e48))  /* 0x1442008, the hover text of the contact_REGENERATION plate (its click opens ai_TrainingWindow) */
 #define ai_ContactTextExtort                        (*(char * *)((char *)txt_Ptrs + 0x07e50))  /* 0x1442010, the hover text of the contact_SCHUTZGELD_ERPRESSEN plate (its click opens ai_OpenBribe) */
-#define full_data_1442018                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07e58))  /* 0x1442018 */
+#define ai_ContactTextPickpocket                 (*(char * *)((char *)txt_Ptrs + 0x07e58))  /* 0x1442018, the hover text of the contact_TASCHENDIEBSTAHL plate (ai_ThievesGuildListener -> ai_PickpocketVictimWindow) */
 #define ai_ContactTextFarBuy                     (*(char * *)((char *)txt_Ptrs + 0x07e68))  /* 0x1442028, the hover text of the FERNEINKAUF plate (ai_FarTradeContact) */
 #define ai_ContactTextSell                       (*(char * *)((char *)txt_Ptrs + 0x07e88))  /* 0x1442048, the hover text of the VERKAUF plate (ai_FarTradeContact) */
 #define full_data_1442050                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07e90))  /* 0x1442050 */
