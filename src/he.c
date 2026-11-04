@@ -16306,8 +16306,8 @@ void he_Unk570130(int ev)
     gv_Accuse(0x1b, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), r, id);
 }
 
-void ai_TellGraveWorkNews(int param_1);                 /* 0x5a9990 */
-void ai_Unk5a99e0(int param_1);                 /* 0x5a99e0 */
+void ai_TellGraveWorkSuccess(int param_1);                 /* 0x5a9990 */
+void ai_TellGraveWorkFailure(int param_1);                 /* 0x5a99e0 */
 void ai_GraveyardMessage(int param_1, unsigned short *param_2, unsigned short *param_3, int param_4);                 /* 0x5a9a30 */
 void ai_Unk5a9af0(int param_1, unsigned short *param_2, unsigned short *param_3);                 /* 0x5a9af0 */
 
@@ -16363,11 +16363,11 @@ void he_Unk5702e0(int ev)
                     job = *(unsigned char **)(r + 0x16c);
                     HM_I(ev, 0xbc) = 1;
                     he_SetLifeByAge(b2, (char)job[0x5c] / 0x32 + (util_Random(3) & 0xffff) + *(unsigned char *)((unsigned)&ai_BTypes + *job * 0x24d + 0x247) * 2);
-                    ai_TellGraveWorkNews(b2);
+                    ai_TellGraveWorkSuccess(b2);
                     HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
                     return;
                 }
-                ai_Unk5a99e0(b2);
+                ai_TellGraveWorkFailure(b2);
                 HM_I(ev, 0xbc) = 0;
             }
             HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
