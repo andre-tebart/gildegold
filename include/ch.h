@@ -123,9 +123,6 @@ typedef struct CHFADE {             /* 12 bytes, 16 of them in ch_Fades */
     int start;                      /* 0x08, ch_Time when the fade started */
 } CHFADE;
 
-/* the scene field at 0x3d8 (inside D3SCENE.pad3d6) */
-#define D3SCENE_UNK3D8(s) (*(unsigned int *)((char *)(s) + 0x3d8))
-
 extern CHARACTER *ch_List[CH_MAX];  /* 0x1468ae0 */
 extern int ch_Time;                 /* 0x631054 */
 extern unsigned int d3_SceneFlags;   /* 0x63349c */
