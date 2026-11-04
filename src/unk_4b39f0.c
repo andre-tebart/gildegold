@@ -6,7 +6,7 @@
    G13TYPE.offerSpeech, G13MIS.progress / fulfilled stand on their users (the _AUFTRAEGE_VERGABE speech,
    ai_CountMissionEvent and the completion flag of he.c 0x56ce40). AIFIN.missionMoney (ai.h) holds the five saved
    money statistics of the player record the money conditions read (no writer in the build).
-   Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / G13_501190 views (type debt).
+   Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / gm_BuildQueryT views (type debt).
    Open: not included yet (dcp headers conflicts unk_4b39f0 HEADER): d2.h; held by own declarations that differ
    from the owner's: d2_Radios.
    unit of rea 8cef7d5b (src/game/unk_4b39f0.c); boundaries in decl/text.dcl */
@@ -455,7 +455,7 @@ int ai_ChooseMissionFrom(int n)
 }
 
 #define G13_B(c, off) (((unsigned char *)(c))[off])
-#define G13_501190 ((AIBLD *(*)(int, ...))gm_BuildQuery)  /* the variadic view (am.h repeats a 3-int one) */
+#define gm_BuildQueryT ((AIBLD *(*)(int, ...))gm_BuildQuery)  /* the variadic view (am.h repeats a 3-int one) */
 
 int ai_TimedCondition(int x, int ok, int y);                                          /* 0x4b5160 */
 
@@ -812,16 +812,15 @@ int ai_CondTownDecline(AICHAR *c, G13TYPE *t)
         return 0;
     return 1;
 }
-/* 0x4b4eb0, mission condition: no building of the 0x501190(1, 6) list is held by a character of kind 5 */
+/* 0x4b4eb0, mission condition (type 49): no building (the whole gm_BuildQuery(1, 6) list, all buildings) is
+   owned by a character of kind 5 (a player character) */
 
-int ai_Unk4b4eb0(AICHAR *c, G13TYPE *t)
+int ai_CondPlayerHoldsNoBuilding(AICHAR *c, G13TYPE *t)
 {
     AIBLD *b;
-    unsigned short w;
 
-    for (b = G13_501190(1, 6); b != 0; b = gm_BuildNext()) {
-        w = *(unsigned short *)((char *)b + 0x27);
-        if (w != 0xffff && ai_CharsT[w].kind == 5)
+    for (b = gm_BuildQueryT(1, 6); b != 0; b = gm_BuildNext()) {
+        if (b->owner != 0xffff && ai_CharsT[b->owner].kind == 5)
             return 0;
     }
     return 1;
@@ -919,7 +918,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 48:
         return ai_CondDecisionSumZero(c, t);
     case 49:
-        return ai_Unk4b4eb0(c, t);
+        return ai_CondPlayerHoldsNoBuilding(c, t);
     }
     return 0;
 }
@@ -953,9 +952,9 @@ void ai_CharBuildingShare(AICHAR *c, int k, G13STAT *s)
 
     same = 0;
     if (k != 0)
-        b = G13_501190(1, 5, k);
+        b = gm_BuildQueryT(1, 5, k);
     else
-        b = G13_501190(1, 6);
+        b = gm_BuildQueryT(1, 6);
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
         if (*(unsigned short *)((char *)b + 0x27) == c->id)
@@ -979,9 +978,9 @@ void ai_PlayerShare(int k, G13STAT *s)
 
     same = 0;
     if (k != 0)
-        b = G13_501190(1, 5, k);
+        b = gm_BuildQueryT(1, 5, k);
     else
-        b = G13_501190(1, 6);
+        b = gm_BuildQueryT(1, 6);
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
         w = *(unsigned short *)((char *)b + 0x27);
