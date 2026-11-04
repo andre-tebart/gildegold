@@ -284,7 +284,7 @@ int ch_CountAt(int scene, int all, D3VECTOR *pos, float eps)
     }
     return n;
 }
-/* 0x4027b0 */
+/* 0x4027b0, gives the 3D object of every dirty character of the default scene the character's offset */
 
 void ch_SyncObjectOffsets(void)
 {
