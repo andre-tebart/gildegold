@@ -2829,15 +2829,16 @@ int amt_LoadAemter(void *f, int version)
 void amt_TellOpenOffices(char *c)
 {
     AMTCAND cand[6];
+    AICHAR *ch = (AICHAR *)c;
     char buf[2048];
     int n, i;
 
-    if ((unsigned char)c[0xd] >= 2 && (n = amt_GetOfficeCandidates(c, 6, cand)) != 0) {
+    if (ch->b00d >= 2 && (n = amt_GetOfficeCandidates(c, 6, cand)) != 0) {
         memset(buf, 0, sizeof(buf));
         txt_Format(buf, 0x13ac);
         for (i = 0; i < n; i++)
             txt_Format(buf + strlen(buf), "%s$A", cand[i].kind + 0x253);
-        he_ShowNews(*(int *)(c + 4), -1, buf, 1, 0x5ec, 0);
+        he_ShowNews(ch->netId, -1, buf, 1, 0x5ec, 0);
     }
 }
 /* 0x4ea990, the yearly pay of all the owned offices: the salary of each office's kind (AMTKIND.salary, times 32) times
