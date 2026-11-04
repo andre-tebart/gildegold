@@ -49,6 +49,7 @@ int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and fre
 extern int *ai_BauplatzList;            /* 0x6f5308 */
 extern int ai_BauplatzCount;            /* 0x6f2688 */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
+extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
 
 /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */

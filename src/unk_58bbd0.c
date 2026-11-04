@@ -715,7 +715,6 @@ extern GAPDATA full_data_62c348[];
 extern GAPDATA full_data_62c364[];
 extern GAPDATA full_data_62c380[];
 extern GAPDATA full_data_62c39c[];
-extern GAPDATA full_data_6f2ac8[];
 extern GAPDATA full_data_62c3b8[];
 extern GAPDATA full_data_62c3e8[];
 extern GAPDATA full_data_62c400[];
@@ -10994,12 +10993,18 @@ void ai_ChurchContact(int building, int arg)
 int gm_Homeless();
 
 #pragma pack(push, 1)
-typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHAR, ai.h), the words the
-                                           dungeon plan / the plague messages read */
-    unsigned short id;                  /* +0x00, the character's id (AICHAR.id) */
-    unsigned char kind;                 /* +0x02, the character kind (AICHAR.kind) */
+typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHAR, ai_char.h): the fields the
+                                           news messages of this unit read */
+    unsigned short id;                  /* +0x000, the character's id */
+    unsigned char kind;                 /* +0x002, the character kind */
     char pad03;
-    int netId;                          /* +0x04, the id the news events carry (AICHAR.netId) */
+    int netId;                          /* +0x004, the id the news events carry */
+    unsigned char health;               /* +0x008, > 0 = alive */
+    unsigned char sex;                  /* +0x009, 0 / 1 (the text's feminine form) */
+    char pad0a[0x15b];
+    unsigned char title;                /* +0x165, the title rank */
+    char pad166[6];
+    char *bld;                          /* +0x16c, the building the character is in */
 } G8CHARREC;
 #pragma pack(pop)
 
@@ -14356,21 +14361,30 @@ void ai_Unk5a99e0(int param_1)
     txt_Format((char *)(unsigned)&ai_NewsText, 0x40ac, (v & 0xffff) + 0x40a9);
     he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c380);
 }
-/* 0x5a9a30, a graveyard message with an optional second part (188 B): the text 0x40ad (0x40a3, the word of
-   param_2, its +0x16c, the word of param_3); with param_4 the text 0x40ae (0x20d + the flag +9 of param_2 (0x23)
-   + the byte +0x165) into 0x6f2ac8 is appended; the +4 id sends it (0, 0x5fa, the key 0x62c39c) */
+/* 0x5a9a30, the graveyard news of the two characters worker / other to `to` (188 B): the text 0x40ad (0x40a3,
+   worker's id, its building +0x16c, other's id); with detail the text 0x40ae (0x20d + 0x23 for a feminine worker
+   + its title +0x165) is formatted into ai_NewsSecond and appended; the news 0x5fa goes to to->netId with the
+   sound "_NACHRICHTEN_FRIEDHOF_00"
+   @deep read whole against 0x5a9a30..0x5a9aec and the meaning is right: txt_Format(ai_NewsText, 0x40ad,
+   0x40a3, worker->id, worker->bld, other->id), with detail the second text 0x40ae (0x20d + 0x23 for a
+   feminine worker + its title +0x165) into ai_NewsSecond and strcat onto ai_NewsText, then
+   he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, _NACHRICHTEN_FRIEDHOF_00); the records are G8CHARREC
+   (AICHAR: id +0, kind +2, netId +4, sex +9, title +0x165, bld +0x16c). All that is left is the second
+   text's argument: the original adds it up in ecx (and ecx,0x23; add ecx,0x20d; add ecx,edx) while ours
+   folds the sum into one lea (lea eax,[ecx+edx+0x20d]; push eax), one instruction and one byte of
+   difference. Tried, one build each, all the same lea: (sex ? 0x23 : 0) + 0x20d + title, title + 0x20d +
+   (sex ? 0x23 : 0), (sex != 0 ? 0x23 : 0) + 0x20d + title, and a local n = (sex ? 0x23 : 0) + 0x20d;
+   txt_Format(.., n + title) - VC6 12.00.9044 always folds the 3-operand sum to lea here. */
 
-void ai_Unk5a9a30(int param_1, unsigned short *param_2, unsigned short *param_3, int param_4)
+void ai_GraveyardMessage(G8CHARREC *to, G8CHARREC *worker, G8CHARREC *other, int detail)
 {
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x40ad, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
-                 *param_3);
-    if (param_4 != 0) {
-        txt_Format((char *)(unsigned)&full_data_6f2ac8, 0x40ae,
-                     (*(char *)((char *)param_2 + 9) != 0 ? 0x23 : 0) + 0x20d +
-                     *(unsigned char *)((char *)param_2 + 0x165));
-        strcat((char *)(unsigned)&ai_NewsText, (char *)(unsigned)&full_data_6f2ac8);
+    txt_Format(ai_NewsText, 0x40ad, 0x40a3, worker->id, worker->bld, other->id);
+    if (detail != 0) {
+        txt_Format(ai_NewsSecond, 0x40ae,
+                     (worker->sex ? 0x23 : 0) + 0x20d + worker->title);
+        strcat(ai_NewsText, ai_NewsSecond);
     }
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&full_data_62c39c);
+    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, "_NACHRICHTEN_FRIEDHOF_00");
 }
 /* 0x5a9af0, a graveyard message (83 B): the text 0x40af (0x40a3, the word of param_2, its +0x16c, the word of
    param_3), the +4 id (0, 0x5fa, the key 0x62c39c) */
@@ -23304,4 +23318,5 @@ int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h de
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
+char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
 int * ai_BauplatzList = 0;  /* 0x6f5308 */
