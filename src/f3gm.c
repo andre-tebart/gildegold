@@ -614,7 +614,7 @@ int gm_CharacterWages(unsigned short id, int flag, unsigned char *rec_)  /* the 
 }
 /* 0x4fa9b0, runs 0x4fa700 (i, 1, out) for all 0x300 characters, flushing the messages every 0x40 */
 
-void unk_Unk4fa9b0(void)
+void gm_PayAllCharacterWages(void)
 {
     unsigned char out[16];
     int i;

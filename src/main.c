@@ -4186,7 +4186,7 @@ void main_BeginPlayerRound(void)
         gm_CharacterUpkeep();
         sv_PumpNet();
         Sleep(100);
-        unk_Unk4fa9b0();
+        gm_PayAllCharacterWages();
         amt_CheckOffices();
         sv_PumpNet();
         Sleep(100);

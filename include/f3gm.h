@@ -66,7 +66,7 @@ void gm_EndDayIncomes(unsigned flags);  /* 0x4fabe0, the end of the day for the 
 void gm_DailyCharacters(void);  /* 0x4fc920, the daily step of all characters */
 void gm_UpdatePlayers(void);  /* 0x4feb30 */
 void gm_CharacterUpkeep(void);  /* 0x4fa580, the daily upkeep of the characters */
-void unk_Unk4fa9b0(void);  /* 0x4fa9b0 */
+void gm_PayAllCharacterWages(void);  /* 0x4fa9b0 */
 void gm_UpdateWorthMood(void);  /* 0x4faa00 */
 float gm_JobWage(char *c, int k, int a, int b);  /* 0x508740, the wage of a job (a) or title (b) of the building kind k for the character c */
 int gm_BuildingBalance(unsigned char *b, unsigned id, int *out);  /* 0x508d80, the income / cost summary of the building b for the owner id */
