@@ -297,7 +297,7 @@ extern int sv_PopRequest;
 extern HWND main_Window;
 
 void main_EndGame(void);
-void main_Unk537be0(void);
+void main_CloseLoadingScreen(void);
 void main_RundenBeginn(void);
 void main_EndRound(void);
 void main_RoundReport(void);
@@ -2960,7 +2960,7 @@ void main_LoadProgressCallback(int kind, int cur, int total)
 }
 /* 0x537be0, closes the loading screen: fades to black (0x4767d0 "BLACK" 0x1e), runs the frame loop until the fade ends, frees the form 0x75df00 and clears the busy flag 0x6ed9d4 */
 
-void main_Unk537be0(void)
+void main_CloseLoadingScreen(void)
 {
     unsigned char *fade;
     unsigned mask;
@@ -2969,13 +2969,13 @@ void main_Unk537be0(void)
     if (net_Conn.s == -1)
         mask = 0x24086;
     tb_CloseFunction(d3io_NoopCallback);
-    fade = (unsigned char *)d2_StartFade(0, 0, (int)*(short *)(unsigned)&d2_ScreenW, (int)*(short *)(unsigned)&d2_ScreenH, "BLACK", 0x1e, 1);
+    fade = (unsigned char *)d2_StartFade(0, 0, d2_ScreenW, d2_ScreenH, "BLACK", 0x1e, 1);
     while ((*fade & 4) == 0)
         sv_RunFrame(0, mask);
-    d2_CloseView(U_I((unsigned)&init_StatusForm));
+    d2_CloseView(init_StatusForm);
     ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     d2_ClearSurface(d2_ScreenSurf);
-    U_I((unsigned)&d2_CutsceneActive) = 0;
+    d2_CutsceneActive = 0;
     d2_ReleaseFade(fade);
 }
 
@@ -4763,7 +4763,7 @@ void main_GameLoop(int ctl)
         } else {
             sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
             main_EndGame();
-            main_Unk537be0();
+            main_CloseLoadingScreen();
             return;
         }
     } else if ((ai_GameFlags & 0x40) != 0) {
@@ -4773,7 +4773,7 @@ void main_GameLoop(int ctl)
         else {
             sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
             main_EndGame();
-            main_Unk537be0();
+            main_CloseLoadingScreen();
             return;
         }
     } else if ((ai_GameFlags & 2) != 0) {
@@ -4783,7 +4783,7 @@ void main_GameLoop(int ctl)
             sv_MessageBox(U_I((unsigned)&full_data_14414d0), 0);
             ai_GameOver = 1;
             main_EndGame();
-            main_Unk537be0();
+            main_CloseLoadingScreen();
             return;
         }
         sv_FillDayPhases((int)&ai_Time);
@@ -4815,7 +4815,7 @@ void main_GameLoop(int ctl)
     sv_PumpMessages();
     ai_Unk5b2090();
     sv_PumpMessages();
-    main_Unk537be0();
+    main_CloseLoadingScreen();
     U_I((unsigned)&d2_CutsceneActive) = 0;
     w = sv_PanelImage();
     sv_BuildScreenLayout(w);
