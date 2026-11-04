@@ -53,7 +53,17 @@ G13MIS *ai_FindOwnerMission(G13MIS *m)
     }
     return 0;
 }
-/* 0x4b3a90, restarts the running mission of m's owner now */
+/* 0x4b3a90, restarts the running mission of m's owner now
+   @hard read in full, byte-exact against the original (ai_FindOwnerMission, ai_Time into e->time, then
+   0x18 / 0x1c / 0x20 = 0); the only open gate is Q2 on G13MIS's names (unk_4b39f0_types.h, a shared type
+   he.c reads at 0x56ce40; a field rename is manual, dcp rename would hit every unk20). unk1c is the event
+   count ai_CountMissionEvent (0x4b44e0) increments and ai_Unk4b4f00's cases 11 / 19 / 23 / 28 / 40 compare
+   with t->goal -> progress. unk20 is the flag he.c's offer state machine sets once ai_Unk4b4f00 (1 =
+   fulfilled) holds and then reports the owner -> fulfilled / reported. unk18 has no evidence: written 0
+   here, in ai_NewMission (0x4b3ca0) and ai_SetFirstMission (0x4b3bd0), saved and loaded (0x4b62e0 /
+   0x4b63b0), read by no drafted function and by no relocation to ai_Missions+0x18 (dcp phi 0xf82338: no
+   object) -> a name would be invention, and its rename is a shared-header decision; the other two names
+   are ready once unk18 is settled. */
 
 void ai_RestartMission(G13MIS *m)
 {
