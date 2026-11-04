@@ -687,7 +687,8 @@ local int unzlocal_GetCurrentFileInfoInternal (file,
   No preparation of the structure is needed
   return UNZ_OK if there is no problem.
 */
-/* 0x467c60 */
+/* 0x467c60, returns the current entry's public info, name, extra field and comment into the caller's
+ * buffers (the internal record is not wanted here); the status of the central-directory read */
 extern int ZEXPORT unzGetCurrentFileInfo (file,
                                                   pfile_info,
                                                   szFileName, fileNameBufferSize,
