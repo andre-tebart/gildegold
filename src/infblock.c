@@ -66,7 +66,7 @@ local const uInt border[] = { /* Order of the bit length code lengths */
  */
 
 
-/* 0x463750 */
+/* 0x463750, resets a block state, optionally returning its running check value */
 void inflate_blocks_reset(s, z, c)
 inflate_blocks_statef *s;
 z_streamp z;
