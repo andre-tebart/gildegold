@@ -8110,12 +8110,13 @@ int ai_GraveRentConfirm(AIBLD *rec, int size)
     d2_CloseView(win);
     return r;
 }
-/* 0x5847a0, the rent-a-grave selection window (340 B): rec; the window "Locations_Friedhof_RentAGrave"
-   (0x62a5d8) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x410a / 0x4108 and 0x625150 (0x4117) in
-   the entry 0x475b80 (window, 3), the four buttons 0x583c50 (rec, window, 2, the buttons, the selection),
-   0xf8a668 = -1; the pump loop 0x5309a0 (this window, 0x677c7): the escape 0x14673a0 -> 0x6f22a0 = 1; the
-   confirm -> 0x475590 (window, 0), 0x584520 (rec, the selection) == 1 -> 0x6f22a0 = 1, 0x475590 (window, 1); a
-   clicked button != the selection -> the selection, 0x583c50 again; the pump 0 -> 0x4758f0 (window) */
+/* 0x5847a0, the rent-a-grave selection window (340 B): rec = the record; the form
+   "Locations\Friedhof\RentAGrave" (d2_OpenForm (0, 0), the pointer sprite off, centred, fitted), the texts 0x410a
+   / 0x4108 and "%ia[%s]" (0x4117) in the third section, the four size buttons ai_GraveSizeButtonsAt (rec, window,
+   2, the buttons, the selection), d2_ClickedId cleared; the pump loop (this window, 0x677c7): a right button
+   release (dm_L.rup) sets sv_PopRequest; the confirm disables the window, ai_GraveRentConfirm (rec, the selection)
+   == 1 -> sv_PopRequest, the window enabled again; a clicked button != the selection -> the selection and the
+   buttons redone; the close of the window */
 
 void ai_RentGraveSelect(char *rec)
 {
@@ -8126,30 +8127,30 @@ void ai_RentGraveSelect(char *rec)
     int btns[4];
 
     sel = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5d8);
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\RentAGrave");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x410a, 0x4108);
     ai_GraveSizeButtonsAt((AIBLD *)rec, win, 2, btns, &sel);
     d2_SetForm(win, 3);
-    i = io_PrintText((char *)(unsigned)&full_data_625150, 0x4117);
+    i = io_PrintText("%ia[%s]", 0x4117);
     btn = d2_GetWinObj(win, 3, i);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    d2_ClickedId = -1;
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == btn) {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btn) {
                 d2_SetViewEnabled(win, 0);
                 if (ai_GraveRentConfirm((AIBLD *)rec, sel) == 1)
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    sv_PopRequest = 1;
                 d2_SetViewEnabled(win, 1);
             } else {
                 for (i = 0; i < 4; i++) {
-                    if (U_I((unsigned)&d2_PointerObj) == btns[i] && i != sel) {
+                    if (d2_PointerObj == btns[i] && i != sel) {
                         sel = i;
                         ai_GraveSizeButtonsAt((AIBLD *)rec, win, 2, btns, &sel);
                         break;
