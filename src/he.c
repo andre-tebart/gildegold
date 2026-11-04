@@ -50,7 +50,7 @@ struct D3SM;
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 #define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
-#define ai_Unk5a9240K ((int (*)())ai_Unk5a9240)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define ai_Unk5a9240K ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_Unk5a9c30K ((int (*)())ai_Unk5a9c30)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
 
@@ -4108,7 +4108,7 @@ void he_Unk549ce0(int ev)
 
 int sv_IsAtDoor();
 void cm_SendKillCharacter(int a, int b);
-void ai_Unk5a9240(int param_1);
+void ai_PlagueMessage(int param_1);
 float gm_CatchPlague();
 float util_RandomF2();
 

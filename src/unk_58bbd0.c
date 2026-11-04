@@ -700,7 +700,6 @@ extern GAPDATA full_data_62c284[];
 extern GAPDATA full_rdata_5ebb40[];
 extern GAPDATA full_data_62c298[];
 extern char ch_EmptyName[1];
-extern GAPDATA full_data_6f26c8[];
 extern GAPDATA full_data_62c2ac[];
 extern GAPDATA full_data_62c2c0[];
 extern GAPDATA full_data_62c2dc[];
@@ -709,7 +708,6 @@ extern GAPDATA full_data_62c2dc[];
 
 extern GAPDATA full_data_62c2f4[];
 extern GAPDATA full_data_62c310[];
-extern GAPDATA full_data_6f26c8[];
 extern char ch_EmptyName[1];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_62c32c[];
@@ -10996,9 +10994,12 @@ void ai_ChurchContact(int building, int arg)
 int gm_Homeless();
 
 #pragma pack(push, 1)
-typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHAR, ai.h), the first word the
-                                           dungeon plan prints */
+typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHAR, ai.h), the words the
+                                           dungeon plan / the plague messages read */
     unsigned short id;                  /* +0x00, the character's id (AICHAR.id) */
+    unsigned char kind;                 /* +0x02, the character kind (AICHAR.kind) */
+    char pad03;
+    int netId;                          /* +0x04, the id the news events carry (AICHAR.netId) */
 } G8CHARREC;
 #pragma pack(pop)
 
@@ -13882,8 +13883,8 @@ void ai_Unk5a8b80(unsigned short *param_1, char *param_2, int param_3, int param
             id = 0x20b7;
         else
             id = (0x75 <= *(int *)((unsigned)&ai_Time)) + 0x20b8;
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20b6, *param_1, param_3, param_5, param_4, id);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20b6, *param_1, param_3, param_5, param_4, id);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8c00, a production message with one value (79 B): the text 0x20ba and 0x53dda0 (the +4 id, 0x5ec) */
@@ -13891,8 +13892,8 @@ void ai_Unk5a8b80(unsigned short *param_1, char *param_2, int param_3, int param
 void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3)
 {
     if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20ba, *param_1, param_3);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20ba, *param_1, param_3);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8c50, a production message with two values (84 B): the text 0x20bc and 0x53dda0 (the +4 id, 0x5ff) */
@@ -13900,8 +13901,8 @@ void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3)
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4)
 {
     if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20bc, *param_1, param_3, param_4);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bc, *param_1, param_3, param_4);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8cb0, a production message without a value (74 B): the text 0x20bb and 0x53dda0 (the +4 id, 0x5fd) */
@@ -13909,8 +13910,8 @@ void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param
 void ai_Unk5a8cb0(unsigned short *param_1, char *param_2)
 {
     if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20bb, *param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bb, *param_1);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8d00, a production message (64 B, a Ghidra-missed start, called from 0x544070): the text 0x20bd and
@@ -13919,8 +13920,8 @@ void ai_Unk5a8cb0(unsigned short *param_1, char *param_2)
 void ai_Unk5a8d00(int param_1)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20bd);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bd);
+        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8d40, a production message (31 B): the text 0x20be and 0x53dda0 (the +4 id, 0x5fb) for a character of
@@ -13929,8 +13930,8 @@ void ai_Unk5a8d00(int param_1)
 void ai_Unk5a8d40(int param_1)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20be);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20be);
+        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8d80, two production messages (133 B, a Ghidra-missed start from 0x544070): the body runs for a kind
@@ -13941,12 +13942,12 @@ void ai_Unk5a8d40(int param_1)
 void ai_Unk5a8d80(int param_1, int param_2)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) != 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20bf);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bf);
+        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
     }
     if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) != 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20c0, *(unsigned short *)param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c0, *(unsigned short *)param_1);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a8e10, three production messages (201 B): for a character of the kind 6 / 7 (+2) the text 0x20c1 with the
@@ -13959,15 +13960,15 @@ void ai_Unk5a8e10(char *param_1, char *param_2, int param_3)
     char *p;
 
     if (param_2[2] == 6 || param_2[2] == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20c1, *(unsigned short *)param_1, param_3);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c1, *(unsigned short *)param_1, param_3);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
     }
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20c2, param_3, *(unsigned short *)param_1,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x20c2, param_3, *(unsigned short *)param_1,
                  (param_1[9] != 0) + 0x20c3, *(unsigned short *)param_2);
     p = (char *)((unsigned)&ai_Chars + 0x2);
     do {
         if (p - 2 != param_1 && p - 2 != param_2 && (*p == 6 || *p == 7))
-            he_ShowNews(*(int *)(p + 2), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
+            he_ShowNews(*(int *)(p + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
         p += 0x21c;
     } while ((int)p < (int)((unsigned)&ai_Chars + 0x65402));
 }
@@ -13982,9 +13983,9 @@ void ai_Unk5a8ee0(unsigned short *param_1, unsigned short *param_2)
     if (*(char *)(param_2 + 1) == 6 || *(char *)(param_2 + 1) == 7) {
         v = ((int (*)(int, void *))util_Random)(3, (unsigned)&ai_PlayerSlots + *(unsigned char *)((unsigned)&ai_OwnPlayer) * 0x2f4);
         v = ((int (*)(int, void *, int))util_Random)(3, *param_2, (v & 0xffff) + 0x1336);
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x132f, *param_1,
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x132f, *param_1,
                      (v & 0xffff) + (*(char *)((char *)param_2 + 9) != 0 ? 3 : 0) + 0x1330);
-        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, 0);
+        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, 0);
     }
 }
 /* 0x5a8f90, a production message from a character pair (162 B): the text of the first record into the 512-byte
@@ -14000,9 +14001,9 @@ void ai_Unk5a8f90(unsigned short *param_1, unsigned short *param_2)
         v = ((int (*)(int, void *))util_Random)(3, *param_1);
         txt_Format(local, (v & 0xffff) + 0x1340);
         v = ((int (*)(int, void *, int))util_Random)(3, *param_2, local);
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x1339, *param_1,
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x1339, *param_1,
                      (v & 0xffff) + (*(char *)((char *)param_2 + 9) != 0 ? 3 : 0) + 0x133a);
-        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, 0);
+        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, 0);
     }
 }
 /* 0x5a9050, a production message from a character pair (162 B): as 0x5a8f90 with the texts 0x134a / 0x1343 /
@@ -14017,9 +14018,9 @@ void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2)
         v = ((int (*)(int, void *))util_Random)(3, *param_1);
         txt_Format(local, (v & 0xffff) + 0x134a);
         v = ((int (*)(int, void *, int))util_Random)(3, *param_2, local);
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x1343, *param_1,
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x1343, *param_1,
                      (v & 0xffff) + (*(char *)((char *)param_2 + 9) != 0 ? 3 : 0) + 0x1344);
-        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, 0);
+        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, 0);
     }
 }
 /* 0x5a9110, a production message to the player (95 B): when the word of param_1 is not the player 0x6f25b8,
@@ -14028,9 +14029,9 @@ void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2)
 void ai_ShowCharacterNews(unsigned short *param_1, int param_2)
 {
     if (*param_1 != *(unsigned short *)((unsigned)&ai_PlayerId)) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20c5, *param_1, param_2);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c5, *param_1, param_2);
         he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)((unsigned)&ai_PlayerId) * 0x21c), -1,
-                     (char *)(unsigned)&full_data_6f26c8, 0, 0x605, (char *)(unsigned)&ch_EmptyName);
+                     (char *)(unsigned)&ai_NewsText, 0, 0x605, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a9170, a production message (95 B): for a character of the kind 6 / 7 (+2) the text 0x20c6 with the word
@@ -14039,8 +14040,8 @@ void ai_ShowCharacterNews(unsigned short *param_1, int param_2)
 void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2)
 {
     if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x20c6, *param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fa, (char *)(unsigned)&full_data_62c2ac);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c6, *param_1);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&full_data_62c2ac);
     }
 }
 /* 0x5a91c0, the plague message (91 B): 0x42ec00 (3) picks the text (0x20c7 + the value) into 0x6f26c8 and the
@@ -14055,27 +14056,41 @@ void ai_Unk5a91c0(void)
 
     v = (unsigned short)util_Random(3);
     sprintf(local, (char *)(unsigned)&full_data_62c2c0, (unsigned int)v);
-    txt_Format((char *)(unsigned)&full_data_6f26c8, v + 0x20c7);
+    txt_Format((char *)(unsigned)&ai_NewsText, v + 0x20c7);
     p = (char *)((unsigned)&ai_Chars + 0x2);
     do {
         if (*p == 6 || *p == 7)
-            he_ShowNews(*(int *)(p + 2), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x600, local);
+            he_ShowNews(*(int *)(p + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x600, local);
         p += 0x21c;
     } while ((int)p < (int)((unsigned)&ai_Chars + 0x65402));
 }
-/* 0x5a9240, a plague message (112 B): 0x42ec00 (2) picks the text (0x20ca + the value) and the key 0x62c2c0
-   formatted with the value + 3; for a character of the kind 6 / 7 (+2) the +4 id gets it (0x600) */
+/* 0x5a9240, a plague message (112 B): util_Random (2) picks the sound "_KATASTROPHE_PEST_HS_0<v + 3>" and the
+   text 0x20ca + the value; a character of the kind 6 / 7 sends the text and the sound with the news 0x600 to its
+   netId
+   @deep read whole against 0x5a9240..0x5a92b0 and the meaning is right: the sound literal
+   _KATASTROPHE_PEST_HS_0%i (the 0x62c2c0 bytes) formatted with v + 3, the text 0x20ca + v into ai_NewsText
+   (0x6f26c8), the kind test at +2 on a G8CHARREC (id +0, kind +2, netId +4) and the news 0x600 to netId;
+   the callers push two arguments (he.c ai_Unk5a9240K(0, o) uses the K&R cast) and the second is unused, as
+   the original. All that is left is the allocation of the random v: ours keeps the util_Random result in
+   eax and emits mov esi,eax / and esi,0xffff inside the branch (and the kind byte into cl, push esi inside
+   the branch), the original truncates at the definition (mov si,ax right after the call, and esi,0xffff
+   before the test) so the kind byte lands in al and its esi is saved in the prologue; the two
+   materialisations are the same value (mov si,ax; and esi,0xffff = mov esi,eax; and esi,0xffff), so this
+   is the 16-bit truncation VC6 keeps or drops. Tried, one build each, all identical or worse: plain
+   assignment, an initializer at the declaration, (unsigned short) casts at both uses, a char kind local,
+   the direct c->kind test, a two-case switch (turns the compares into jb/ja), an int parameter with the
+   raw +2 / +4 reads, and an unsigned short v[1] (spilled, frame 0x44). */
 
-void ai_Unk5a9240(int param_1)
+void ai_PlagueMessage(G8CHARREC *c)
 {
     char local[64];
     unsigned short v;
 
-    v = (unsigned short)util_Random(2);
-    if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        sprintf(local, (char *)(unsigned)&full_data_62c2c0, v + 3);
-        txt_Format((char *)(unsigned)&full_data_6f26c8, v + 0x20ca);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x600, local);
+    v = util_Random(2);
+    if (c->kind == 6 || c->kind == 7) {
+        sprintf(local, "_KATASTROPHE_PEST_HS_0%i", v + 3);
+        txt_Format(ai_NewsText, v + 0x20ca);
+        he_ShowNews(c->netId, -1, ai_NewsText, 0, 0x600, local);
     }
 }
 /* 0x5a92b0, a plague message to every kind 6 character (119 B): 0x42ec00 (2) picks the text (0x20cd + the
@@ -14090,11 +14105,11 @@ void ai_Unk5a92b0(void)
 
     v = (unsigned short)util_Random(2);
     sprintf(local, (char *)(unsigned)&full_data_62c2dc, v + 0x12);
-    txt_Format((char *)(unsigned)&full_data_6f26c8, v + 0x20cd);
+    txt_Format((char *)(unsigned)&ai_NewsText, v + 0x20cd);
     p = (int *)(unsigned)&ai_CharInts;
     do {
         if (*(char *)((char *)p - 2) == 6)
-            he_ShowNews(*p, -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x600, local);
+            he_ShowNews(*p, -1, (char *)(unsigned)&ai_NewsText, 0, 0x600, local);
         p += 0x87;
     } while ((int)p < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
 }
@@ -14106,27 +14121,27 @@ void ai_Unk5a92b0(void)
 void ai_SendSwapText(unsigned short *param_1, unsigned short *param_2, unsigned short *param_3)
 {
     if (*(char *)(param_2 + 1) == 6) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x1dcc, *param_1, *param_3);
-        he_ShowNews(*(int *)(param_2 + 2), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x1dcc, *param_1, *param_3);
+        he_ShowNews(*(int *)(param_2 + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
         return;
     }
     if (*(char *)(param_3 + 1) == 6) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x1dcc, *param_1, *param_2);
-        he_ShowNews(*(int *)(param_3 + 2), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x1dcc, *param_1, *param_2);
+        he_ShowNews(*(int *)(param_3 + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
         return;
     }
     if (*(char *)(param_1 + 1) != 6) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x1dcd, *param_1, *param_2, *param_3);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x1dcd, *param_1, *param_2, *param_3);
         he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)((unsigned)&ai_PlayerId) * 0x21c), -1,
-                     (char *)(unsigned)&full_data_6f26c8, 0, 0x5fe, (char *)(unsigned)&ch_EmptyName);
+                     (char *)(unsigned)&ai_NewsText, 0, 0x5fe, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a9430, a message (61 B): the text 0x1747 with the word of param_2 and the +4 id of param_1 (0x5fa) */
 
 void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2)
 {
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x1747, *param_2);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fa, (char *)(unsigned)&ch_EmptyName);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x1747, *param_2);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&ch_EmptyName);
 }
 /* 0x5a9470, the gypsy delivery text (536 B, ROUGH: the string copies are written as strcpy / strcat): with
    one to three characters param_3 (the 0x41bf header, the kinds 6 / 7 of the first param_2 records get the
@@ -14142,37 +14157,37 @@ void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3)
 
     if (param_2 <= 0 || param_2 >= 4)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x41bf, *param_1);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x41bf, *param_1);
     for (i = 0; i < param_2; i++) {
         if (*(char *)(param_3[i] + 2) == 6 || *(char *)(param_3[i] + 2) == 7)
-            he_ShowNews(*(int *)(param_3[i] + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5fb, (char *)(unsigned)&full_data_62c310);
+            he_ShowNews(*(int *)(param_3[i] + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c310);
     }
-    strcpy((char *)(unsigned)&full_data_6f26c8, (char *)*(int *)((unsigned)&full_data_144a8a8));
+    strcpy((char *)(unsigned)&ai_NewsText, (char *)*(int *)((unsigned)&full_data_144a8a8));
     if (param_2 < 2) {
         for (i = 0; i < 4; i++) {
             if (i > 0)
                 break;
             txt_Format(local, 0x41bb, *(unsigned short *)param_3[i]);
-            strcat((char *)(unsigned)&full_data_6f26c8, local);
+            strcat((char *)(unsigned)&ai_NewsText, local);
         }
-        strcat((char *)(unsigned)&full_data_6f26c8, (char *)*(int *)((unsigned)&full_data_144a8b4));
+        strcat((char *)(unsigned)&ai_NewsText, (char *)*(int *)((unsigned)&full_data_144a8b4));
     } else {
         for (i = 0; i < 4; i++) {
             if (param_2 - 1 <= i)
                 break;
             txt_Format(local, 0x41bb, *(unsigned short *)param_3[i]);
-            strcat((char *)(unsigned)&full_data_6f26c8, local);
+            strcat((char *)(unsigned)&ai_NewsText, local);
         }
         done = 0;
         while (i < 4 && !done) {
             txt_Format(local, 0x41bc, *(unsigned short *)param_3[i]);
-            strcat((char *)(unsigned)&full_data_6f26c8, local);
+            strcat((char *)(unsigned)&ai_NewsText, local);
             done = 1;
             i++;
         }
-        strcat((char *)(unsigned)&full_data_6f26c8, (char *)*(int *)((unsigned)&full_data_144a8b8));
+        strcat((char *)(unsigned)&ai_NewsText, (char *)*(int *)((unsigned)&full_data_144a8b8));
     }
-    he_ShowNews(*(int *)((char *)param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5fb, (char *)(unsigned)&full_data_62c2f4);
+    he_ShowNews(*(int *)((char *)param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c2f4);
 }
 /* 0x5a9690, a message (69 B): the text 0x4154 with param_2 to a character of the kind 6 / 7 (+2), the +4 id
    (0x5fc) */
@@ -14180,8 +14195,8 @@ void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3)
 void ai_TellGraveNeglect(int param_1, int param_2)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4154, param_2);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x4154, param_2);
+        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a96e0, a message with three values in two orders (123 B): for a character of the kind 6 / 7 (+2) the
@@ -14214,9 +14229,9 @@ void ai_NotifySale(int param_1, unsigned short *param_2, int param_3, int param_
     } else {
         goto send;
     }
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x414e, v, a, b, param_5, param_6);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x414e, v, a, b, param_5, param_6);
 send:
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fc, (char *)(unsigned)&full_data_62c32c);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&full_data_62c32c);
 }
 /* 0x5a9780, a graveyard message (94 B): for a character of the kind 6 / 7 (+2) the text 0x4151 (0x4152 when
    param_3 != 1) with param_2, param_3, the text and param_4, the +4 id (0x5fc) */
@@ -14224,8 +14239,8 @@ send:
 void ai_TellGravesPaid(int param_1, int param_2, int param_3, int param_4)
 {
     if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4151, param_2, param_3, (param_3 != 1) + 0x4152, param_4);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+        txt_Format((char *)(unsigned)&ai_NewsText, 0x4151, param_2, param_3, (param_3 != 1) + 0x4152, param_4);
+        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
     }
 }
 /* 0x5a97e0, a graveyard message with three values in two orders (159 B): as 0x5a96e0 with the text 0x414f
@@ -14256,9 +14271,9 @@ void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4
     } else {
         goto send;
     }
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x414f, v, a, b, param_5, param_6);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x414f, v, a, b, param_5, param_6);
 send:
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
 }
 /* 0x5a9880, a graveyard message with three values in two orders (139 B): as 0x5a97e0 with the text 0x4150 */
 
@@ -14287,9 +14302,9 @@ void ai_ShowGraveOrderCancelled(int param_1, unsigned short *param_2, int param_
     } else {
         goto send;
     }
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4150, v, a, b);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x4150, v, a, b);
 send:
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
 }
 /* 0x5a9910, a graveyard text (124 B): 0x5190a0 orders the word of param_1 and param_3 (0 / 2: param_3 first,
    1: the word first, other: no text) and 0x42ec00 (3) picks the text 0x409c + the value; the +4 id of param_2
@@ -14318,9 +14333,9 @@ void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3)
         goto send;
     }
     r = ((int (*)(int, int, int, int))util_Random)(3, u, v, param_3);
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x409b, (r & 0xffff) + 0x409c);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x409b, (r & 0xffff) + 0x409c);
 send:
-    he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5fb, (char *)(unsigned)&full_data_62c348);
+    he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c348);
 }
 /* 0x5a9990, a graveyard message (69 B): 0x42ec00 (3) picks the text 0x40a9 + the value, the +4 id (1, 0x5fb,
    the key 0x62c364) */
@@ -14330,8 +14345,8 @@ void ai_Unk5a9990(int param_1)
     unsigned int v;
 
     v = util_Random(3);
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x40a8, (v & 0xffff) + 0x40a9);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5fb, (char *)(unsigned)&full_data_62c364);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x40a8, (v & 0xffff) + 0x40a9);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c364);
 }
 /* 0x5a99e0, a graveyard message (69 B): the text 0x40ac with the value, the +4 id (1, 0x5fb, the key 0x62c380) */
 
@@ -14340,8 +14355,8 @@ void ai_Unk5a99e0(int param_1)
     unsigned int v;
 
     v = util_Random(3);
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x40ac, (v & 0xffff) + 0x40a9);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5fb, (char *)(unsigned)&full_data_62c380);
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x40ac, (v & 0xffff) + 0x40a9);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c380);
 }
 /* 0x5a9a30, a graveyard message with an optional second part (188 B): the text 0x40ad (0x40a3, the word of
    param_2, its +0x16c, the word of param_3); with param_4 the text 0x40ae (0x20d + the flag +9 of param_2 (0x23)
@@ -14349,24 +14364,24 @@ void ai_Unk5a99e0(int param_1)
 
 void ai_Unk5a9a30(int param_1, unsigned short *param_2, unsigned short *param_3, int param_4)
 {
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x40ad, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x40ad, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
                  *param_3);
     if (param_4 != 0) {
         txt_Format((char *)(unsigned)&full_data_6f2ac8, 0x40ae,
                      (*(char *)((char *)param_2 + 9) != 0 ? 0x23 : 0) + 0x20d +
                      *(unsigned char *)((char *)param_2 + 0x165));
-        strcat((char *)(unsigned)&full_data_6f26c8, (char *)(unsigned)&full_data_6f2ac8);
+        strcat((char *)(unsigned)&ai_NewsText, (char *)(unsigned)&full_data_6f2ac8);
     }
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fa, (char *)(unsigned)&full_data_62c39c);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&full_data_62c39c);
 }
 /* 0x5a9af0, a graveyard message (83 B): the text 0x40af (0x40a3, the word of param_2, its +0x16c, the word of
    param_3), the +4 id (0, 0x5fa, the key 0x62c39c) */
 
 void ai_Unk5a9af0(int param_1, unsigned short *param_2, unsigned short *param_3)
 {
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x40af, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x40af, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
                  *param_3);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5fa, (char *)(unsigned)&full_data_62c39c);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&full_data_62c39c);
 }
 
 int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out); 
@@ -14381,8 +14396,8 @@ void ai_Unk5a9b50(int param_1, int param_2, int param_3, int param_4)
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4074, param_2 + 0x30, param_2 + 0x40, param_4 + 0x4172);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ec,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x4074, param_2 + 0x30, param_2 + 0x40, param_4 + 0x4172);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec,
                  *(int *)(*(int *)(param_2 + 0x16c) + 1), *(int *)(param_3 + 2), 0, (char *)(unsigned)&full_data_62c3b8);
 }
 /* 0x5a9bc0, a Domizil message (108 B): as 0x5a9b50 with the text 0x4075 and the kind text 2 * param_4 + 0x9a8 in
@@ -14392,8 +14407,8 @@ void ai_Unk5a9bc0(int param_1, int param_2, int param_3, int param_4)
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4075, param_2 + 0x30, param_2 + 0x40, param_4 * 2 + 0x9a8);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 0, 0x5ec,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x4075, param_2 + 0x30, param_2 + 0x40, param_4 * 2 + 0x9a8);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec,
                  *(int *)(*(int *)(param_2 + 0x16c) + 1), *(int *)(param_3 + 2), 0, (char *)(unsigned)&full_data_62c3b8);
 }
 /* 0x5a9c30, a Domizil message (108 B): as 0x5a9bc0 with the text 0x4077, the key "_NACHRICHTEN_DOMIZIL_01"
@@ -14404,8 +14419,8 @@ void ai_Unk5a9c30(int param_1, int param_2, int param_3)
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4077, param_2 + 0x30, param_2 + 0x40, param_3);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x4077, param_2 + 0x30, param_2 + 0x40, param_3);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c3e8);
 }
 /* 0x5a9ca0, a Domizil message (98 B): the text 0x407a with the +0x30 / +0x40 fields of param_2, and 0x53dee0
@@ -14415,8 +14430,8 @@ void ai_Unk5a9ca0(int param_1, int param_2, int param_3)
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x407a, param_2 + 0x30, param_2 + 0x40);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x407a, param_2 + 0x30, param_2 + 0x40);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c3e8);
 }
 /* 0x5a9d00, a Domizil message (94 B): as 0x5a9ca0 with the text 0x407b (four text arguments) */
@@ -14425,8 +14440,8 @@ void ai_Unk5a9d00(int param_1, int param_2, int param_3)
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x407b, param_2 + 0x30, param_2 + 0x40);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x407b, param_2 + 0x30, param_2 + 0x40);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c3e8);
 }
 /* 0x5a9d60, a Domizil message (114 B): the text 0x407c with the +0x30 / +0x40 fields of param_2, param_3 and the
@@ -14437,8 +14452,8 @@ void ai_Unk5a9d60(int param_1, int param_2, int param_3, unsigned short *param_4
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x407c, param_2 + 0x30, param_2 + 0x40, param_3, *param_4 * 2 + 0x9a8);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_3 + 1),
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x407c, param_2 + 0x30, param_2 + 0x40, param_3, *param_4 * 2 + 0x9a8);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1),
                  *(int *)((char *)param_4 + 2), 0, (char *)(unsigned)&full_data_62c3e8);
 }
 /* 0x5a9dd0, a Domizil message (98 B): the text 0x407f with the +0x30 / +0x40 fields of param_2 and the kind text
@@ -14448,8 +14463,8 @@ void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4)
 {
     if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
         return;
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x407f, param_2 + 0x30, param_2 + 0x40, param_4 * 2 + 0x9a8);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x407f, param_2 + 0x30, param_2 + 0x40, param_4 * 2 + 0x9a8);
+    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c3e8);
 }
 /* 0x5a9e40, a Domizil message without the kind test (76 B): formats the text 0x4070 with the building b and the
@@ -14458,8 +14473,8 @@ void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4)
 
 void ai_DomizilMessage12(char *ch, char *b, int n)
 {
-    txt_Format((char *)(unsigned)&full_data_6f26c8, 0x4070, b, n + 0x4071);
-    he_MessageBoxQuickjump(*(int *)(ch + 4), -1, (char *)(unsigned)&full_data_6f26c8, 1, 0x5ec, *(int *)(b + 1), -1, 0,
+    txt_Format((char *)(unsigned)&ai_NewsText, 0x4070, b, n + 0x4071);
+    he_MessageBoxQuickjump(*(int *)(ch + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(b + 1), -1, 0,
                  (char *)(unsigned)&full_data_62c400);
 }
 /* 0x5a9e90, a free entry of the Domizil table (215 B): 0x42ec00 (the count 0x62cb58) picks an index into the 0x42
@@ -23290,4 +23305,5 @@ AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0,
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
+char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 int * ai_BauplatzList = 0;  /* 0x6f5308 */
