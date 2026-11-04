@@ -16,6 +16,7 @@ typedef struct AIBUILDNAME {
 extern AIBUILDNAME ai_BuildNames[0xf];  /* 0x62aae8 */
 extern char ai_NewsKeyHS46[20];         /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa): the key "_NACHRICHTEN_HS_46" */
 extern char ai_NewsKeyFriedhof12[28];   /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkNews (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_12" */
+extern char ai_NewsKeyFriedhof13[28];   /* 0x62c380, the sound of the graveyard work news (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_13" */
 
 void ai_Unk58bbd0(void);                /* 0x58bbd0, the production window's table init */
 void ai_MarketContact(struct AIBLD *b); /* 0x58f510, the shop-counter contact of a building */
