@@ -5380,7 +5380,7 @@ void ai_CannonBuildPanel(); void ai_CannonPanel(); char d3if_ShowTree(struct D3O
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);                 /* 0x447190, d3_interface.h */
 char d3if_Show(struct D3OBJECT *obj, char show);        /* 0x4471b0, d3_interface.h */
-void he_ShowObjectInfos(); void ai_CannonAxes(); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
+void he_ShowObjectInfos(); void ai_CannonAxes(CANNONSCENE *sc); void ai_CannonAim(CANNONSCENE *sc, float dt); void ai_CannonCamera();
 void ai_CannonShotResults(CANNONSCENE *sc); void ai_CannonSwitchAnim(char *rec, CANNONSCENE *sc, GVEFFECT *run, int sel, int mask); int ai_CannonFireCheck(CANNONSCENE *sc); void ai_CannonExplosion(CANNONSCENE *sc, char *rec);
 void sv_SetStatusText(char *s); void d2_RemoveObj(); void sv_RedrawScreen();
 void d3if_Prerender(char map); 
@@ -5818,7 +5818,7 @@ void ai_CannonCamera(CANNONSCENE *sc)
     pos.z = 0;
     d3_SetObjectRot(sc->obj9c, (char *)&pos);
     if (sc->fired == 0)
-        ai_CannonAxes((char *)sc);
+        ai_CannonAxes(sc);
     v.x = d3_ZAxis.x * sc->obj98->matrix._11 + d3_ZAxis.y * sc->obj98->matrix._21 + d3_ZAxis.z * sc->obj98->matrix._31;
     v.y = d3_ZAxis.x * sc->obj98->matrix._12 + d3_ZAxis.y * sc->obj98->matrix._22 + d3_ZAxis.z * sc->obj98->matrix._32;
     v.z = d3_ZAxis.x * sc->obj98->matrix._13 + d3_ZAxis.y * sc->obj98->matrix._23 + d3_ZAxis.z * sc->obj98->matrix._33;
@@ -5852,7 +5852,7 @@ void ai_CannonCamera(CANNONSCENE *sc)
     d3_SetObjectPos(d3_Camera, (char *)&pos);
     d3_SetObjectRot(d3_Camera, (char *)&v);
     if (sc->fired == 0)
-        ai_CannonAxes((char *)sc);
+        ai_CannonAxes(sc);
     if (sc->fired != 0) {
         if (sc->recoilStart + 0x54 <= sc->now) {
             sc->fired = 0;
@@ -5899,13 +5899,14 @@ void ai_CannonCamera(CANNONSCENE *sc)
 void d3_DirToWorld();
 int gm_FindById();
 
-/* 0x57f5d0, the cannon's three axes in world space (55 B): d3_DirToWorld of the object sc + 0x8c turns
-   d3_ZAxis into sc + 0x24, d3_YAxis into sc + 0x44 and d3_XAxis into sc + 0x34 */
-void ai_CannonAxes(char *sc)
+/* 0x57f5d0, the cannon's three axes in world space: d3_DirToWorld of the first barrel (sc->obj8c[0]) turns
+   d3_ZAxis into the aim direction sc->dir, d3_YAxis into the up vector sc->up and d3_XAxis into the side
+   vector sc->side */
+void ai_CannonAxes(CANNONSCENE *sc)
 {
-    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)&d3_ZAxis, sc + 0x24);
-    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)&d3_YAxis, sc + 0x44);
-    d3_DirToWorld(*(int *)(sc + 0x8c), (char *)&d3_XAxis, sc + 0x34);
+    d3_DirToWorld(sc->obj8c[0], (char *)&d3_ZAxis, (char *)&sc->dir);
+    d3_DirToWorld(sc->obj8c[0], (char *)&d3_YAxis, (char *)&sc->up);
+    d3_DirToWorld(sc->obj8c[0], (char *)&d3_XAxis, (char *)&sc->side);
 }
 /* 0x57f620, the fire check: nothing (0) while a shot runs (sc->fired) or the zoom is above 0.01; a click on the
    fire button (sc->fireBtn) or the key kb_Down[0x32] (DIK_M) fires: the key is cleared, the recoil clock starts
