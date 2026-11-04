@@ -779,52 +779,54 @@ void sv_DrawPanelPointer(void)
 
 #define SV_I(a) (*(int *)(a))
 
-/* 0x521c10, a Ghidra miss (inside the span of 0x521ba0): the progress callback of the scene load (kind, cur, total): the first call creates the bar object 0x623e84 (0x46a4c0, 0x190 wide, below the screen
-   centre: 0xfe73c8 * 0.5 + 0xfe73a8 - 205), kind 0 sets it to cur * 200 / total, kind 1 to 200 + cur * 200 / total and at the last step destroys it (0x46e710) and redraws the screen (0x4796c0 .. 0x479480,
-   0x522f10 (1, 0), 0x6f22bc = 1); every 10th frame (0x6f2354) the screen is blitted (0x479020 / 0x46aa00 / 0x521ba0 / 0x4790e0 / 0x41e390) (ROUGH) */
+/* 0x521c10, the progress callback of the scene load (a Ghidra miss inside the span of 0x521ba0): kind is the load
+   stage, cur / total the step. The first call creates the progress slider sv_LoadSlider (d2_OpenSlider, 0x190 long,
+   just below the screen centre) and blits the back surface onto the screen; kind 0 sets it to cur * 200 / total,
+   kind 1 to 200 + cur * 200 / total and at the last step removes it and rebuilds the city panel; every 10th frame
+   (sv_LoadFrame) the slider and the panel pointer are drawn and the screen is flipped. */
 void sv_SceneLoadProgress(int kind, int cur, int total)
 {
     int h;
 
-    if (SV_I((unsigned)&sv_LoadSlider) == -1) {
-        SV_I((unsigned)&d2_CutsceneActive) = 1;
-        SV_I((unsigned)&sv_LoadFrame) = 0;
-        h = d2_OpenSlider((int)(*(float *)(unsigned)&d3_ViewW * 0.5f + *(float *)(unsigned)&d3_ViewX - 205.0f), *(short *)(unsigned)&d2_ScreenH - 0x40, 0x190, 0, 0x190, 0x83, 0x42);
-        SV_I((unsigned)&sv_LoadSlider) = h;
+    if (sv_LoadSlider == -1) {
+        d2_CutsceneActive = 1;
+        sv_LoadFrame = 0;
+        h = d2_OpenSlider((int)(d3_ViewW * 0.5f + d3_ViewX - 205.0f), d2_ScreenH - 0x40, 0x190, 0, 0x190, 0x83, 0x42);
+        sv_LoadSlider = h;
         d2_SetObjValue(h, 0, 0x190, 0);
-        d2_BlitPart(0, 0, *(int *)(SV_I((unsigned)&d2_BackSurf) + 4), *(int *)(SV_I((unsigned)&d2_BackSurf) + 8), SV_I((unsigned)&d2_ScreenSurf), 0, 0, SV_I((unsigned)&d2_BackSurf));
-        if (SV_I((unsigned)&sv_LoadSlider) == -1)
+        d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
+        if (sv_LoadSlider == -1)
             goto lend;
     }
-    if (kind == 0 || SV_I((unsigned)&sv_LoadFrame) % 10 == 0)
-        d2_BlitPart(0, 0, *(int *)(SV_I((unsigned)&d2_BackSurf) + 4), *(int *)(SV_I((unsigned)&d2_BackSurf) + 8), SV_I((unsigned)&d2_ScreenSurf), 0, 0, SV_I((unsigned)&d2_BackSurf));
+    if (kind == 0 || sv_LoadFrame % 10 == 0)
+        d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_BackSurf, 0, 0, d2_ScreenSurf);
     if (kind == 0) {
-        d2_SetObjValue(SV_I((unsigned)&sv_LoadSlider), 0, 0x190, cur * 200 / total);
+        d2_SetObjValue(sv_LoadSlider, 0, 0x190, cur * 200 / total);
     } else if (kind == 1) {
-        d2_SetObjValue(SV_I((unsigned)&sv_LoadSlider), 0, 0x190, cur * 200 / total + 200);
+        d2_SetObjValue(sv_LoadSlider, 0, 0x190, cur * 200 / total + 200);
         if (cur >= total - 1) {
-            d2_RemoveObj(SV_I((unsigned)&sv_LoadSlider));
-            SV_I((unsigned)&sv_LoadSlider) = -1;
-            SV_I((unsigned)&d2_CutsceneActive) = 0;
-            if (SV_I((unsigned)&sv_PanelPic) != -1) {
-                d2_ClearSurface(SV_I((unsigned)&d2_ScreenSurf));
-                d2_DrawPic(0, 0, SV_I((unsigned)&sv_PanelPic), SV_I((unsigned)&d2_ScreenSurf));
-                d2_LockSurface(SV_I((unsigned)&d2_ScreenSurf));
+            d2_RemoveObj(sv_LoadSlider);
+            sv_LoadSlider = -1;
+            d2_CutsceneActive = 0;
+            if (sv_PanelPic != -1) {
+                d2_ClearSurface(d2_ScreenSurf);
+                d2_DrawPic(0, 0, sv_PanelPic, d2_ScreenSurf);
+                d2_LockSurface(d2_ScreenSurf);
                 sv_UpdateCityPanel(1, 0);
-                d2_UnlockSurface(SV_I((unsigned)&d2_ScreenSurf));
-                d2_BlitPart(0, 0, *(int *)(SV_I((unsigned)&d2_BackSurf) + 4), *(int *)(SV_I((unsigned)&d2_BackSurf) + 8), SV_I((unsigned)&d2_ScreenSurf), 0, 0, SV_I((unsigned)&d2_BackSurf));
+                d2_UnlockSurface(d2_ScreenSurf);
+                d2_BlitPart(0, 0, ((D2SURF *)d2_BackSurf)->w, ((D2SURF *)d2_BackSurf)->h, d2_ScreenSurf, 0, 0, d2_BackSurf);
             }
-            SV_I((unsigned)&ai_FrameWait) = 1;
+            ai_FrameWait = 1;
         }
     }
-    if (SV_I((unsigned)&sv_LoadFrame) % 10 == 0 && SV_I((unsigned)&sv_LoadSlider) != -1 && d2_LockSurface(SV_I((unsigned)&d2_ScreenSurf)) != 0) {
-        d2_DrawSlider(SV_I((unsigned)&sv_LoadSlider), SV_I((unsigned)&d2_ScreenSurf));
+    if (sv_LoadFrame % 10 == 0 && sv_LoadSlider != -1 && d2_LockSurface(d2_ScreenSurf) != 0) {
+        d2_DrawSlider(sv_LoadSlider, d2_ScreenSurf);
         sv_DrawPanelPointer();
-        d2_UnlockSurface(SV_I((unsigned)&d2_ScreenSurf));
+        d2_UnlockSurface(d2_ScreenSurf);
         dd_Flip();
     }
 lend:
-    SV_I((unsigned)&sv_LoadFrame) = SV_I((unsigned)&sv_LoadFrame) + 1;
+    sv_LoadFrame = sv_LoadFrame + 1;
 }
 /* 0x521e70, builds the main screen layout for the scene s: clears the clip, creates the bar widgets 0x623850 / 0x623840 (a 0x288 x 0x30 strip), redraws the background bitmap (0x6ed92c, the rectangle 0x6248a4 ..
    0x6248b0) and sets up the groundplan view 0x6f22c8 (0x478cc0 with a table of 0x10 words: 0x68 / 0x6e) and the button 0x6238a4 (0x46cd80 (0x286, 0x23c, 0x544)). ROUGH */
