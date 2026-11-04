@@ -665,7 +665,9 @@ char d3fl_TileLod(D3FLMAP *map, D3FLTILE *t, float unused, int detail)
     }
     return lod;
 }
-/* 0x43ff90 */
+/* 0x43ff90, frees a floor map and everything it owns: the source images, every tile's geometry (and its
+   water data), the height / type / water / light arrays, the regions' textures and the divide arrays, then
+   the map itself */
 
 void d3fl_FreeMap(D3FLMAP *map)
 {
