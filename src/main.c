@@ -5975,7 +5975,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1440944: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144094c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440954: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440974: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_MapPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440994: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14409c8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14409cc: view of txt_Ptrs (build/mk_txt_views.py) */

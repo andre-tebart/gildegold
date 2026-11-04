@@ -127,7 +127,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440944                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06784))  /* 0x1440944 */
 #define full_data_144094c                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0678c))  /* 0x144094c */
 #define full_data_1440954                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x06794))  /* 0x1440954 */
-#define full_data_1440974                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x067b4))  /* 0x1440974 */
+#define ai_MapPickPrompt                        (*(char * *)((char *)txt_Ptrs + 0x067b4))  /* 0x1440974, the prompt text the burglar-guild map picks (ai_OpenPickpocket, 0x5a4b30) pass to ai_MapPick */
 #define full_data_1440994                        (*(unsigned char (*)[52])((char *)txt_Ptrs + 0x067d4))  /* 0x1440994 */
 #define full_data_14409c8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06808))  /* 0x14409c8 */
 #define full_data_14409cc                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x0680c))  /* 0x14409cc */

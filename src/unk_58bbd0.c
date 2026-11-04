@@ -4218,7 +4218,7 @@ void ai_BreakInWindow(int building)
    0x53e300, the messages 0x521150 / 0x4c4b70 / 0x4c2d20 / 0x5176d0, the carriers 0x524260, the pump 0x5309a0
    (this, 0x677c7) and the exit 0x4758f0 */
 
-int ai_Unk5941c0(int param_1, int param_2, int rec)
+int ai_PickpocketWindow(int param_1, int param_2, int rec)
 {
     char buf[0x504];
     int win;
@@ -4238,7 +4238,7 @@ int ai_Unk5941c0(int param_1, int param_2, int rec)
     /* ROUGH: the loop reads the click 0xf8a668 / 0x5fe710, searches the building / character (0x53e400,
        0x53e300), posts the messages (0x521150, 0x4c4b70, 0x4c2d20, 0x5176d0) and the carrier marks
        0x524260, then pumps 0x5309a0 (this, 0x677c7) */
-    while (sv_RunFrame(ai_Unk5941c0, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_PickpocketWindow, 0x677c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         b = he_FindEvent(3, 0, 0x48, 2, *(unsigned short *)(rec + 0x27), 3, U_I(rec + 1));
@@ -4253,10 +4253,11 @@ int ai_Unk5941c0(int param_1, int param_2, int rec)
 
 int he_Unk553cc0();
 
-/* 0x594470, opens the pickpocket window (99 B): the 0x50-byte config local zeroed with +4 = 0x400, +8 =
-   0x93810, +0x10 = 7; 0x525220 (param_1, 0); the record 0x5b2180 (1, the config, 0x1440974, the callback
-   0x5941c0, 0); 0x525440 and 0x52ae40 */
-void ai_Unk594470(int param_1)
+/* 0x594470, opens the pickpocket map pick (99 B): the 0x50-byte config local zeroed, its flags +4 = 0x400, +8 =
+   0x93810 and +0x10 = 7; the player bar opens (0x525220), the map pick runs (0x5b2180: 1, the config, the
+   prompt 0x1440974, the pickpocket window 0x5941c0 as callback, 0), then the player bar closes (0x525440) and the
+   selection is cleared (0x52ae40) */
+void ai_OpenPickpocket(int building)
 {
     int cfg[0x14];
 
@@ -4265,8 +4266,8 @@ void ai_Unk594470(int param_1)
     cfg[1] = 0x400;
     cfg[4] = 7;
     cfg[2] = 0x93810;
-    sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(1, cfg, U_I((unsigned)&full_data_1440974), (void *)ai_Unk5941c0, 0);
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, cfg, ai_MapPickPrompt, (int)ai_PickpocketWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -4554,7 +4555,7 @@ void ai_Unk594e50(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == lauer)
                 ai_BreakInWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == angriff)
-                ai_Unk594470(param_1);
+                ai_OpenPickpocket(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == schutzgeld)
                 ai_Unk594790(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == spionieren)
@@ -11651,7 +11652,7 @@ void ai_Unk5a4b30(int param_1)
     req[4] = 7;
     req[2] = 0x90010;
     sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440974), (void *)(unsigned)&ai_Unk5a48d0, 0);
+    ai_MapPick(1, req, (char *)U_I((unsigned)&ai_MapPickPrompt), (void *)(unsigned)&ai_Unk5a48d0, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
