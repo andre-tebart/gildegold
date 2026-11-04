@@ -765,7 +765,7 @@ int ZEXPORT gzrewind (file)
    given compressed file. This position represents a number of bytes in the
    uncompressed data stream.
 */
-/* 0x463660 */
+/* 0x463660, returns the current position in a gzip file */
 z_off_t ZEXPORT gztell (file)
     gzFile file;
 {
