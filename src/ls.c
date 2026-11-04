@@ -19,6 +19,7 @@ struct D3TERRAIN;
 #define ai_PlayerCharC (*(char **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) read bytewise, as this unit does (ai_PlayerChar + 4, ch[2]) */
 #define ai_PlayerBuildingT (*(struct AIBLD **)&ai_PlayerBuilding)  /* 0x6f2308, ai_PlayerBuilding (sv.c: char *) as the AIBLD it points to */
 #define ai_FallbackBuildingT (*(struct AIBLD **)&ai_FallbackBuilding)  /* 0x6f230c, ai_FallbackBuilding (sv.c: char *) as the AIBLD it points to */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the player slots */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.c: int[4]) as the AITIME it holds */
 #define sv_PanelShownT (*(struct AIOBJ **)&sv_PanelShown)  /* 0x6f2310, sv_PanelShown (sv.c: unsigned short *) as the AIOBJ (room object) it points to */
@@ -229,7 +230,7 @@ int ls_WriteSaveHeader(int f, unsigned flags)
     char noText[0x10] = "SCENARIO";
     LSHDR hdr;
     int i, x, k;
-    char *slot;
+    GMPLAYERSLOT *slot;
 
     noByte9 = noByteD = noOffice = noJob = 0;
     ref = -1;
@@ -241,11 +242,11 @@ int ls_WriteSaveHeader(int f, unsigned flags)
         return 0;
     if (vfs_fwrite(&flags, 1, 1, f) <= 0)
         return 0;
-    slot = ai_PlayerSlots[ai_OwnPlayer];
-    strcpy(hdr.player, slot);
-    hdr.playerWords[0] = ((int *)(slot + 0x40))[0];
-    hdr.playerWords[1] = ((int *)(slot + 0x40))[1];
-    hdr.playerByte = slot[0x48];
+    slot = &ai_PlayerSlotsT[ai_OwnPlayer];
+    strcpy(hdr.player, slot->name);
+    hdr.playerWords[0] = slot->map[0];
+    hdr.playerWords[1] = slot->map[1];
+    hdr.playerByte = slot->b48;
     hdr.players = ai_NumPlayers;
     if (vfs_fwrite(hdr.player, 0x20, 1, f) <= 0)
         return 0;
@@ -412,14 +413,14 @@ int ls_WriteObjects(int f)
 {
     int n = 0;
     int i, off;
-    short *p = ai_Objects;
+    AIOBJ *p = ai_Objects;
     short *q;
     char *r;
 
     for (i = 0x5008; i != 0; i--) {
-        if (*p != 0)
+        if (p->id != 0)
             n++;
-        p = (short *)((char *)p + 0x43);
+        p++;
     }
     if (vfs_fwrite(&n, 4, 1, f) <= 0)
         return 0;
@@ -1905,38 +1906,32 @@ int ls_ReadCharacters(int f)
 
 struct CHARACTER *ls_ReadCharacter(int f)
 {
-    int id, ent, v;
-    unsigned short *fl;         /* the flag word at +0x8c */
-    unsigned char *flagByte;    /* its low byte (bit 5 = 0x20) */
-    int *ref;                   /* the saved reference index at +0x12c */
+    int id, v;
+    CHARACTER *c;
     char b;
 
     LS_R(&id, 4)
-    ent = (int)ch_AllocAt(id);
-    LS_R(ent + 8, 0x20)
-    LS_R(ent + 0x2c, 4)
-    LS_R(ent + 0x30, 4)
-    fl = (unsigned short *)(ent + 0x8c);
-    LS_R(fl, 2)
-    LS_R(ent + 0x170, 0x30)
-    LS_R(ent + 0x130, 0x40)
-    LS_R(ent + 0x38, 0x10)
-    LS_R(ent + 0x48, 0xc)
+    c = ch_AllocAt(id);
+    LS_R(c->name, 0x20)
+    LS_R(&c->group, 4)
+    LS_R(&c->scriptGroup, 4)
+    LS_R(&c->flags.all, 2)
+    LS_R(c->fullname, 0x30)
+    LS_R(c->body, 0x40)
+    LS_R(&c->pos, 0x10)
+    LS_R(&c->rot, 0xc)
     LS_R(&b, 1)
-    if (b == 1) {
-        flagByte = (unsigned char *)(ent + 0x8c);
-        *flagByte |= 0x20;
-    }
+    if (b == 1)
+        c->flags.bytes.lo |= 0x20;
     LS_R(&id, 4)
     if (ls_Version >= 0x10013)
-        LS_R(ent + 0x1a8, 0x40)
+        LS_R(c->handObject, 0x40)
     if (ls_Version >= 0x1005a)
-        LS_R(ent + 0x1e8, 0x40)
+        LS_R(c->sitAnim, 0x40)
     v = id;
-    *fl &= 0xdffb;
-    ref = (int *)(ent + 0x12c);
-    *ref = v;
-    return (struct CHARACTER *)ent;
+    c->flags.all &= 0xdffb;
+    c->owner = (void *)v;
+    return c;
 }
 /* 0x51e900, reads what ls_WriteSceneRecords writes: two lists of scene characters (ls_ReadCharacter; the owner id of
    the first turned back into its AICHAR with gm_FindChar, of the second into its AIOBJ with gm_Query), then for every

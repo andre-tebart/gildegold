@@ -156,7 +156,12 @@ typedef struct GMPOINT {
 
 /* a player slot (0x2f4 bytes, four of them at ai_PlayerSlots 0x7e3f40, declared char[4][0x2f4]) as far as known */
 typedef struct GMPLAYERSLOT {
-    char pad000[0x54];
+    char name[0x40];                    /* 0x00, the player's name (ls_WriteSaveHeader copies it into LSHDR.player); the
+                                           size is reasoned: up to mapX */
+    int map[2];                         /* 0x40, the player's place on the map, x / y (am.c 0x4948f0 measures gm_MapDistance
+                                           from it to the other slots' places; the save header keeps both) */
+    unsigned char b48;                  /* 0x48, saved in the save header (LSHDR.playerByte); the meaning is unknown */
+    char pad049[0xb];
     unsigned short moneyGood;           /* 0x54, the good the player's money is counted in (cm.c 0x4c70b0 pays a sale's price
                                            with gm_AddObjekt / gm_TakeObjekt of it) */
     char pad056[0xe];
