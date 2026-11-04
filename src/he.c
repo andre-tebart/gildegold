@@ -15100,7 +15100,6 @@ int ahm_HasRecord();
 void ai_Unk5a9c30(int param_1, int param_2, int param_3);
 int ahm_SendAddPlace();
 int gm_MinutesBetween();
-int he_RoomBusy();
 
 /* 0x56d3d0, the run handler of the research event 0x95: states -2 / -1 free; in the night of the day (the float ranges 0x617830 / 0x617840) the clock +0xbc is reset and the event retried after 1; state 1 hands the result over (0x5a9c30, 0x4ecaa0), releases the building group and frees; state 0 waits for the research (0x56ddc0), takes the elapsed time from +0xbc (0x4fe280) off the amount +0xb4 and retries after 5 until the amount is used up (state 1) */
 void he_Unk56d3d0(int ev)
@@ -15565,7 +15564,6 @@ int he_Unk56f1b0();                 /* 0x56f1b0 */
 int he_Unk56f260();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
 int he_Unk56f2e0();                 /* 0x56f2e0 */
-int he_NoEvent9aFor();                 /* 0x56f360 */
 int he_NoEvent9bFor();                 /* 0x56f3b0 */
 int he_Unk56f3f0();                 /* 0x56f3f0 */
 int he_Unk56f3f0();                 /* 0x56f3f0 */
