@@ -873,7 +873,7 @@ void ch_StopAnim(CHARACTER *ch)
         }
     }
 }
-/* 0x403d60 */
+/* 0x403d60, releases the character's morph animation (its texture and anim data) and clears it */
 
 void ch_ReleaseMorph(CHARACTER *ch)
 {
