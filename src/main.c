@@ -3861,7 +3861,7 @@ void main_RoundReport(void)
         sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
         t = sv_RunFrame((int)main_RoundReport, 0x24087);
         while (t != 0) {
-            sv_Unk52fad0();
+            sv_ScrollFormAnimate();
             if (U_I((unsigned)&d2_ClickedId) == 0 || *(char *)(unsigned)&kb_Last == 0x1c)
                 sv_PopRequest = 1;
             t = sv_RunFrame((int)main_RoundReport, 0x24087);

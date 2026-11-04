@@ -152,7 +152,7 @@ void sv_BookForward(SVBOOK *bk);                                           /* 0x
 void sv_BookBack(SVBOOK *bk);                                           /* 0x52fa00 */
 int sv_CreateScrollForm(void);                                                 /* 0x52fa10 */
 void sv_DestroyScrollForm(void);                                                /* 0x52fa90 */
-void sv_Unk52fad0(void);                                                /* 0x52fad0 */
+void sv_ScrollFormAnimate(void);                                                /* 0x52fad0 */
 void sv_PopTo(int v);                                                   /* 0x52fb50 */
 int sv_PumpMessages(void);                                              /* 0x52fb80 */
 void sv_NetworkSyncWait(unsigned fl);                                   /* 0x52fc10 */

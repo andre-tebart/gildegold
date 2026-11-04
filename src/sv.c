@@ -6829,7 +6829,7 @@ void sv_DestroyScrollForm(void)
 }
 /* 0x52fad0, shows the scroll and sets the animation frame (the clock 0x6ed980 +0x248 / 6 % 12) of both end pieces */
 
-void sv_Unk52fad0(void)
+void sv_ScrollFormAnimate(void)
 {
     int f;
 

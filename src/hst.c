@@ -2628,14 +2628,14 @@ void d2_SetPointerSprite(int a, int pic);                                       
 int d2_SetForm(int view, int n);                                                 /* 0x475f70 */
 void d2_CreateScrollButtons(int x, int y, int win, int obj, int pic);                      /* 0x472270 */
 int sv_CreateScrollForm(void);                                                          /* 0x52fa10, defined elsewhere */
-void sv_Unk52fad0(void);                                                         /* 0x52fad0, defined elsewhere */
+void sv_ScrollFormAnimate(void);                                                         /* 0x52fad0, defined elsewhere */
 void sv_DestroyScrollForm(void);                                                         /* 0x52fa90, defined elsewhere */
 int io_PrintText(char *fmt, ...);                                               /* 0x515960, defined elsewhere */
 int sv_RunFrame(int cb, unsigned mask);                                      /* 0x5309a0, defined elsewhere */
 extern int sv_PopRequest;                /* 0x6f22a0 */
 
 /* 0x4b3350, the history dialog: shows the events of last year (0x4b3280) one after the other */
-void ai_Unk4b3350(void)
+void hst_LastYearDialog(void)
 {
     char text[0x1fb8];
     char name[0x100];
@@ -2661,7 +2661,7 @@ void ai_Unk4b3350(void)
     io_PrintText("$C$Z$[%s$]", name);
     d2_ClickedId = -1;
     do {
-        sv_Unk52fad0();
+        sv_ScrollFormAnimate();
         if (d2_ClickedId == 0) {
             AI_ZERO(text, 0x1fb8);
             AI_ZERO(name, 0x100);
@@ -2680,7 +2680,7 @@ void ai_Unk4b3350(void)
                 io_PrintText("$C$Z$[%s$]", name);
             }
         }
-    } while (sv_RunFrame(ai_Unk4b3350, 0x66087));
+    } while (sv_RunFrame(hst_LastYearDialog, 0x66087));
     sv_DestroyScrollForm();
 }
 /* 0x4b35e0, 0x4b3280 with both passes (0x4b2c90, commands if cmd): 5 when they fail */
@@ -2744,7 +2744,7 @@ void ai_Unk4b36d0(int cmd)
     io_PrintText("$C$Z$[%s$]", name);
     d2_ClickedId = -1;
     do {
-        sv_Unk52fad0();
+        sv_ScrollFormAnimate();
         if (d2_ClickedId == 0) {
             AI_ZERO(text, 0x1fb8);
             AI_ZERO(name, 0x100);
@@ -2790,7 +2790,7 @@ void hst_YearlyHistory(int cmd)
     }
     if (net_Conn.closed == 0 && hst_TextsOn != 0) {
         if (hst_TextsOn == 1)
-            ai_Unk4b3350();
+            hst_LastYearDialog();
         else if (hst_TextsOn == 2)
             ai_Unk4b36d0(cmd);
     }
