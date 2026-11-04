@@ -223,7 +223,7 @@ void bgi_MatSv(void *f, BGIRD *c)
 {
     bio_rd_i(f, (int *)&BGI_M(c).sv);
 }
-/* 0x44f390 */
+/* 0x44f390, binary-format record 0x11: reads the current material's u offset (ou) */
 
 void bgi_MatOu(void *f, BGIRD *c)
 {
