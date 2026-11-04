@@ -913,7 +913,7 @@ void ai_PokerEndRound(void)
 
     ai_PokerTable->winner = (short)ai_PokerShowdown();
     if (ai_PokerTable->winner == 0)
-        cm_SendMoveGoodsUnchecked(*(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), -1, ai_OwnPlayer,
+        cm_SendMoveGoodsUnchecked(((AIPER *)ai_PokerTable->seat[0].who)->netId, -1, ai_OwnPlayer,
                      ai_PokerTable->pot);
     for (i = 0; i < 24; i++) {
         ai_PokerDeck[i].owner = 3;
