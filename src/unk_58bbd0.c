@@ -60,7 +60,6 @@ extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
 extern GAPDATA full_data_6f5a84[];
-extern GAPDATA full_data_62d148[];
 extern GAPDATA full_data_6f40e0[];
 extern char * ai_BTypes;
 extern int d2_LastWindow;
@@ -17373,14 +17372,24 @@ int ai_Unk5c0790(int param_1, int param_2, int param_3, int param_4)
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
-/* 0x5c08b0, clears the tab table (96 B): the count (+4) and the control id (+8) of the eight 0x14-byte entries
-   {id, count, control, two handlers} at 0x62d148 .. 0x62d1e8 */
+typedef struct AIAMOUNTTAB {            /* 0x14 bytes, one tab of the special-amount list window's tab table:
+                                           {id, count, control, fill function of the page, row builder} */
+    int id;                             /* +0x00, 0 .. 7 */
+    int count;                          /* +0x04, the rows of the page */
+    int control;                        /* +0x08, the tab's control object, -1: none yet */
+    int (*fill)();                      /* +0x0c, the page fill (0x5bf0d0 .. 0x5bfd90) */
+    int (*rows)();                      /* +0x10, the page's row builder (0x5bffb0 .. 0x5c0790) */
+} AIAMOUNTTAB;
+extern AIAMOUNTTAB ai_AmountTabs[];     /* 0x62d148, the eight tabs */
 
-void ai_Unk5c08b0(void)
+/* 0x5c08b0, clears the count and the control of the eight tabs of the special-amount list window (the ids and
+   the two handlers stay): the count (+4) and the control (+8) of every tab */
+
+void ai_ClearAmountTabs(void)
 {
     int *p;
 
-    for (p = (int *)(unsigned)(full_data_62d148 + 0x8); p < (int *)(unsigned)((unsigned)(full_data_62d148 + 0xa8)); p += 5) {
+    for (p = &ai_AmountTabs[0].control; (int)p < (int)&ai_AmountTabs[8].control; p += 5) {
         p[-1] = 0;
         p[0] = 0;
     }
@@ -17423,7 +17432,7 @@ int ai_Unk5c0970(int param_1, int param_2, unsigned int param_3, int param_4)
         U_I((unsigned)&full_data_6f2f8c) = param_3;
     if (U_I((unsigned)&full_data_6f2f8c) > 7)
         U_I((unsigned)&full_data_6f2f8c) = 0;
-    ai_Unk5c08b0();
+    ai_ClearAmountTabs();
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d214);
     d2_CentreViewWindows(win);
     /* ROUGH SKELETON: the tab table fill through the function pointers 0x62d154 (page fill) and 0x62d158
@@ -23404,6 +23413,16 @@ extern int * ai_BauplatzList;
 /* ai_TextEinkaufStein: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextEinkaufHolz: view of txt_Ptrs (build/mk_txt_views.py) */
 AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_GEFAENGNIS", { 17, 18, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_HANDWERK", { 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28 } }, { "bk_HANDWERK", { 41, 42, 43, 47, 48, 49, 50, 51, 52, 33, 34, 35 } }, { "bk_HANDWERK", { 72, 73, 74, 81, 82, 83, 78, 79, 80, 0, 0, 0 } }, { "bk_KIRCHE_KL", { 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_KIRCHE_GR", { 22, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_RATHAUS", { 36, 37, 38, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_STADTWACHE", { 44, 45, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WIRTSHAUS_GR", { 53, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_KL", { 4, 5, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_GR", { 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_ZUNFTHAUS", { 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67 } }, { "bk_STATUEN", { 84, 85, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_DOMIZIL", { 75, 76, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x62aae8 */
+AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
+    { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
+    { 1, 0, -1, ai_Unk5bf300, ai_Unk5c00b0 },
+    { 2, 0, -1, ai_Unk5bf4f0, ai_Unk5c01c0 },
+    { 3, 0, -1, ai_Unk5bf6f0, ai_Unk5c02d0 },
+    { 4, 0, -1, ai_Unk5bf7c0, ai_Unk5c03e0 },
+    { 5, 0, -1, ai_Unk5bfa90, ai_Unk5c0550 },
+    { 6, 0, -1, ai_Unk5bfc40, ai_Unk5c0650 },
+    { 7, 0, -1, ai_Unk5bfd90, ai_Unk5c0790 },
+};
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
