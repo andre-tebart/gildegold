@@ -255,7 +255,7 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_602568[];
 extern struct D2WIN *d2_LastWindowPtr;
-extern int ai_Unk5b3ad0();
+extern int ai_EspionageAmountCB();
 extern char ai_Chars[768][0x21c];
 
 extern int sv_PopRequest;
@@ -796,7 +796,7 @@ extern GAPDATA full_data_6f4ee4[];
 extern char ch_EmptyName[1];
 extern GAPDATA full_data_62ccfc[];
 extern int ai_Unk5b3630();
-extern int ai_Unk5b3ad0();
+extern int ai_EspionageAmountCB();
 extern int ai_Unk5b3f30();
 extern char ai_Crimes[];
 extern GAPDATA full_data_62cd7c[];
@@ -5560,21 +5560,34 @@ void ai_Unk596ff0(void)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x597380, the master-exam demand (107 B): the config (0x400, 0xa7fdfbb6, 1, 6) and the text 0x5176d0
-   (0x16f9) go to 0x5c1130 (the config, the text, 0, the callback 0x5b3ad0), then 0x52d7a0 */
+typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu
+                                           (unk_5d33b0.h, same layout) */
+    int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a */
+    int mode;                           /* +0x04, 0x400 */
+    unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
+    int kind;                           /* +0x10, 6 */
+    int option14;                       /* +0x14 */
+    int unk18;                          /* +0x18 */
+    unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
+    char pad3c[0x10];
+    int option4c;                       /* +0x4c, 0x727 / 0x71f */
+} AMOUNTCFG;
 
-void ai_Unk597380(void)
+/* 0x597380, the espionage contact's amount menu (107 B): the config (mode 0x400, kind 6, the filter
+   gypsyFilter 0x5eed68, the rest cleared) and the text 0x16f9 go to 0x5c1130 (the config, the text, 0, the
+   callback 0x5b3ad0), then the camera follows */
+
+void ai_EspionageAmountMenu(void)
 {
-    int cfg[0x14];
+    AMOUNTCFG cfg;
     char text[0x80];
 
-    memset(cfg, 0, 0x50);
-    cfg[1] = 0x400;
-    cfg[4] = 6;
-    cfg[2] = 0xa7fdfbb6;
-    cfg[3] = 1;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
     txt_Format(text, 0x16f9);
-    ai_AmountMenu(cfg, text, 0, (void *)(unsigned)&ai_Unk5b3ad0);
+    ai_AmountMenu(&cfg, text, 0, (void *)ai_EspionageAmountCB);
     sv_CameraFollow();
 }
 
@@ -5666,7 +5679,7 @@ void ai_Unk597500(int param_1, int param_2)
         } else if (U_I((unsigned)&ai_ClickedObject) == meister) {
             ai_Unk596ff0();
         } else if (U_I((unsigned)&ai_ClickedObject) == spionage) {
-            ai_Unk597380();
+            ai_EspionageAmountMenu();
         } else if (U_I((unsigned)&ai_ClickedObject) == selbstmord) {
             ai_Unk5973f0();
         }
@@ -15509,7 +15522,7 @@ int ai_Unk5b3630(int param_1)
    callback); a 0x510-byte frame, the player 0x6f25b8 and 0x53e400 (... 0x18 ...) first; the body is left as a
    comment */
 
-int ai_Unk5b3ad0(void)
+int ai_EspionageAmountCB(void)
 {
     /* ROUGH SKELETON: the 0x510-byte frame */
     return 0;
