@@ -788,7 +788,7 @@ int ZEXPORT gzeof (file)
 /* ===========================================================================
    Outputs a long in LSB order to the given file
 */
-/* 0x463720 */
+/* 0x463720, writes a 32-bit value to the file, low byte first */
 local void putLong (file, x)
     FILE *file;
     uLong x;
