@@ -9662,7 +9662,7 @@ int gm_ListAmountById(char *l, int id)
 {
     char *o;
 
-    o = gm_Query(*(void **)(l + 0x14), 1, 0, id);
+    o = gm_Query((void *)((ORDOBJ *)l)->list, 1, 0, id);
     if (o == 0)
         return 0;
     return gm_ListAmount((short *)l, o);
