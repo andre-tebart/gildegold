@@ -13602,9 +13602,14 @@ void ai_CloseMapWindow(int *m_)
     m->view = -1;
 }
 #pragma pack(push, 1)
+typedef struct G8BLD {                  /* a local view of gv.h's ORDBLD (gv.h cannot be included here yet): the
+                                           fields the production settings read */
+    unsigned char type;                 /* +0x00, the building kind */
+    int id;                             /* +0x01, the building's id (the production settings chain's key) */
+} G8BLD;
 typedef struct G8SLOT {                 /* one {good, weight, lock} slot of a setting (the table at +0xc, stride 8) */
     int good;                           /* +0x00, the good id of the slot */
-    unsigned char weight;               /* +0x04, the slot's weight in percent (ai_Unk5a83b0 sums the seven to 100) */
+    unsigned char weight;               /* +0x04, the slot's weight in percent (ai_FillSettingWeights sums the seven to 100) */
     unsigned char lock;                 /* +0x05, 1 when the row is locked (ai_Unk5c2b90 toggles it) */
     char pad06[2];
 } G8SLOT;
@@ -13641,7 +13646,7 @@ void ai_FreeSettingChain(G8SETTING *rec)
    to the seven {id, weight} slots at +0xc (stride 8, the weight 0xe), the weights then adjusted by 1 to sum 100
    (0x100 / 0x65 per slot) */
 
-void ai_Unk5a83b0(int param_1, char *tbl)
+void ai_FillSettingWeights(int param_1, char *tbl)
 {
     unsigned short *list;
     unsigned char *w;
@@ -13787,7 +13792,7 @@ void *ai_ProdSetting(int param_1)
         *(int *)rec = *(int *)(param_1 + 1);
         *(int *)(rec + 4) = rand();
         *(float *)(rec + 0x44) = 1.0f;
-        ai_Unk5a83b0(param_1, rec);
+        ai_FillSettingWeights(param_1, rec);
         *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
         return rec + 0xc;
     }
@@ -13803,7 +13808,7 @@ void *ai_ProdSetting(int param_1)
     *(int *)rec = *(int *)(param_1 + 1);
     *(int *)(rec + 4) = rand();
     *(float *)(rec + 0x44) = 1.0f;
-    ai_Unk5a83b0(param_1, rec);
+    ai_FillSettingWeights(param_1, rec);
     *(int *)(rec + 0x48) = *(int *)((unsigned)&full_data_6f26c0);
     *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
     return rec + 0xc;
@@ -13900,15 +13905,16 @@ unsigned char *ai_Unk5a8710(int param_1, int good, unsigned char weight)
     }
     return p;
 }
-/* 0x5a8850, the weights of a setting refreshed (31 B): 0x5a84b0 then 0x5a83b0 (param_1, the record) */
+/* 0x5a8850, the weights of a building's production setting refreshed (31 B): the setting of the building's id
+   (ai_FindSetting, 0x5a84b0) has its slots refilled from the building's goods (ai_FillSettingWeights), if it exists */
 
-void ai_Unk5a8850(int param_1)
+void ai_RefreshProdSetting(G8BLD *b)
 {
-    int rec;
+    G8SETTING *rec;
 
-    rec = ai_FindSetting(*(int *)(param_1 + 1));
+    rec = (G8SETTING *)ai_FindSetting(b->id);
     if (rec != 0)
-        ai_Unk5a83b0(param_1, (char *)rec);
+        ai_FillSettingWeights((int)b, (char *)rec);
 }
 /* 0x5a8870, a good drawn by the weights of a setting (111 B): the record of 0x5a84b0 (+4 of param_1), the
    random of 0x5a8340 * 100.0f (0x5ebb40) against the running sum of the weights +0x10, the good of the first
@@ -18250,7 +18256,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
         mode = -1;
         U_I((unsigned)&full_data_6f2f90) = 0;
     } else {
-        ai_Unk5a8850(param_1);
+        ai_RefreshProdSetting(param_1);
     }
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d2d4);
     d2_SetForm(win, 0);
