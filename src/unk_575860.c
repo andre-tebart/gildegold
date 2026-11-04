@@ -1328,15 +1328,15 @@ int ai_StepChapter1Step10(int *p)
 int ai_StepChapter2Step1(int *p)
 {
     if (p[0] == 0x17) {
-        U_I(S) = 0xa;
-        U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        ai_Tutorial->state = 0xa;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->stepAt = d3_Time;
         return 1;
     }
     if (p[0] == 0x18) {
-        U_I(S) = 0xb;
-        U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        ai_Tutorial->state = 0xb;
+        ai_Tutorial->next = 0xb;
+        ai_Tutorial->stepAt = d3_Time;
         return 1;
     }
     return 3;
