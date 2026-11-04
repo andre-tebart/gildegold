@@ -9838,10 +9838,10 @@ int gm_TakeableCount(char *c, int proto, int n)
 int ai_Difficulty = 0;  /* 0x6f23fc */
 int gm_AllowAll = 0;  /* 0x6f2448 */
 unsigned short gm_KindObjCount = 0;  /* 0x76fdc4 */
-int ai_Unk76fdc8 = 0;  /* 0x76fdc8 */
+int gm_TechTreeTime = 0;  /* 0x76fdc8 */
 /* ---- layout 2026-10-23: the standing / family helpers 0x50b010 .. 0x50d0b0 (ROUGH drafts) ---- */
 char gm_TreeNodes[3328] = {0};  /* 0x76fde0, the family records ( */
-int gm_TechTreeView = 0;  /* 0x770af0, the view of the tech tree form (gm_Unk50c340) */
+int gm_TechTreeView = 0;  /* 0x770af0, the view of the tech tree form (gm_TechTreeWindow) */
 /* ai_Unkfb1030: view of d2_Views (tools/data_views.py) */
 /* ai_Unkf8f128: view of d2_Wins (tools/data_views.py) */
 void d2_PlotLine();                     /* 0x4764f0 */
@@ -10418,58 +10418,61 @@ void gm_TreeLine(int a, int b, int c, int d)
 {
     d2_PlotLine(a, b, c, d, 0x58, 0x1f, 0x14);
 }
-/* 0x50c340, opens the family tree window for the character (the form name 0x4741f0), prints the title ("$[%s$]", 0x19: the name text 0x48e + 0xe * kind or 0x9a8 + 2 * id), draws the boxes (0x50b3a0) and the lines between the records (0x50b9f0 positions them), returns the window or -1. ROUGH */
+/* 0x50c340, opens the tech tree form (the name passed, the caller's is "techtree\\TechTree") for the building
+   type bld and its item: the view goes into gm_TreeView, the opening time into gm_TechTreeTime; the title
+   ("$[%s$]", text 0x19) is the building kind's name (0x48e + 0xe * bld) or, for the 0xfd workshop, the item's
+   goods name (0x9a8 + 2 * id); gm_LayoutTree lays the nodes out in the form's window size (d2_Views.wins[3] is
+   that window, d2_Wins its width / height), gm_UpdateTechTree builds their widgets, then a line (gm_TreeLine)
+   joins every node to each of its two parents; returns the view, or -1 when the layout failed */
 
-int gm_Unk50c340(int form, unsigned char *p, unsigned short *q)
+int gm_TechTreeWindow(char *form, unsigned char *bld, unsigned short *item)
 {
-    int i, j, w, t, n;
-    int *r;
+    int i, w, t, n;
+    RTNODE *node;
     int a, b, c, d;
 
     gm_TechTreeView = d2_OpenForm(0, 0, form);
     d2_CentreViewWindows(gm_TechTreeView);
-    ai_Unk76fdc8 = d3_Time;
-    w = *(int *)(ai_Unkfb1030 + gm_TechTreeView * 0x2ac);
+    gm_TechTreeTime = d3_Time;
+    w = d2_Views[gm_TechTreeView].wins[3];
     d2_SetForm(0, 1);
-    if (*q == 0xfd)
-        t = *p * 0xe + 0x48e;
+    if (*item == 0xfd)
+        t = *bld * 0xe + 0x48e;
     else
-        t = *q * 2 + 0x9a8;
+        t = *item * 2 + 0x9a8;
     io_PrintText("$[%s$]", 0x19, t);
     d2_SetForm(0, 3);
-    n = gm_LayoutTree(p, q, (int)*(short *)(ai_Unkf8f128 + w * 0x3c4), (int)*(short *)(ai_Unkf8f128 + 2 + w * 0x3c4));
+    n = gm_LayoutTree(bld, item, d2_Wins[w].w, d2_Wins[w].h);
     if (n != 0) {
         d2_CloseView(gm_TechTreeView);
         return -1;
     }
-    gm_UpdateTechTree(p, q);
+    gm_UpdateTechTree(bld, item);
     i = 0;
     if (0 < gm_TreeNodeCount) {
-        j = 0;
         do {
-            if (0 < j) {
-                r = (int *)(gm_TreeNodes + 0x14);
+            if (0 < i) {
+                node = NODES;
                 t = i;
                 do {
-                    if (r[-5] == *(int *)(gm_TreeNodes + 4 + j)) {
-                        a = *(int *)(gm_TreeNodes + 0x14 + j);
-                        b = *(int *)(gm_TreeNodes + 0x10 + j);
-                        c = *r;
-                        d = r[-1];
+                    if (node->id == NODES[i].p1) {
+                        a = NODES[i].y;
+                        b = NODES[i].x;
+                        c = node->y;
+                        d = node->x;
                         gm_TreeLine(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
-                    } else if (r[-5] == *(int *)(gm_TreeNodes + 8 + j)) {
-                        a = *(int *)(gm_TreeNodes + 0x14 + j);
-                        b = *(int *)(gm_TreeNodes + 0x10 + j);
-                        c = *r;
-                        d = r[-1];
+                    } else if (node->id == NODES[i].p2) {
+                        a = NODES[i].y;
+                        b = NODES[i].x;
+                        c = node->y;
+                        d = node->x;
                         gm_TreeLine(d + 0x18, c + 0x30, b + 0x18, a + 0x18);
                     }
-                    r += 0xd;
+                    node++;
                     t--;
                 } while (t != 0);
             }
             i++;
-            j += 0x34;
         } while (i < gm_TreeNodeCount);
     }
     return gm_TechTreeView;

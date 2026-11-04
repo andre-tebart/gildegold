@@ -2937,7 +2937,7 @@ int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff();
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
-int gm_Unk50c340(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
+int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
@@ -3322,7 +3322,7 @@ void ai_TechTreeWindow(int param_1, int param_2)
     if (tr == 0)
         tr = (short *)gm_Query(*(int *)(param_1 + 0x5d), 1, 4, 2);
     if (tr != 0) {
-        i = gm_Unk50c340("techtree\\TechTree", param_1, tr);
+        i = gm_TechTreeWindow("techtree\\TechTree", param_1, tr);
         if (i < 0) {
             sv_MessageBox(U_I(((unsigned)&d2_Strings + 0x78)), 0);
             return;
