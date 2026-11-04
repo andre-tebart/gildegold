@@ -2102,17 +2102,18 @@ int gv_OpenSize(GVORDER *m)
 
 int gv_OrderAdjustEntry(char *o, int v, int b, int x)
 {
-    char m[0x1d];
+    AIBLD *bld = (AIBLD *)o;
+    GVORDER m;
 
     if (o != 0 && b != -1) {
-        *(int *)(m + 8) = *(int *)(o + 1);
-        m[0x10] = (char)b;
-        *(int *)m = 5;
-        *(int *)(m + 4) = -1;
-        *(int *)(m + 0xc) = v;
-        *(short *)(m + 0x11) = 0;
-        *(int *)(m + 0x13) = x;
-        return ((int (*)(void *))cm_SendGraveOrder)(m);
+        m.bld = bld->id;
+        m.entry = (unsigned char)b;
+        m.type = 5;
+        m.chr = -1;
+        m.size = v;
+        m.years = 0;
+        m.price = x;
+        return ((int (*)(void *))cm_SendGraveOrder)(&m);
     }
     return -1;
 }
