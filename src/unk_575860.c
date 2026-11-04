@@ -38,7 +38,7 @@
    owner and the other units declare it plain int.
    Open: head: include/d2.h not included (the d2_* calls lack prototypes, M7): it supersedes the local
    d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts unk_575860
-   d2.h --trial). The byte matches of ai_TutorialInitChapter2 / 3 flip with the unit's declaration set (debt).
+   d2.h --trial).
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
    Open: type debt - the graveyard detail window record GVDETAILWIN is typed in the seance and contact functions
