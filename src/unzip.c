@@ -283,7 +283,8 @@ extern int ZEXPORT unzStringFileNameCompare (fileName1,fileName2,iCaseSensitivit
   Locate the Central directory of a zipfile (at the end, just before
     the global comment)
 */
-/* 0x467af0 */
+/* 0x467af0, searches the end of fin backwards in BUFREADCOMMENT blocks for the central-directory end
+ * signature ("PK\5\6", the comment follows it) and returns its offset; 0 when it is not found */
 local uLong unzlocal_SearchCentralDir(fin)
 	FILE *fin;
 {
