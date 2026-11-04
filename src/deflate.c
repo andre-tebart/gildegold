@@ -968,7 +968,8 @@ local void fill_window(s)
  * NOTE: this function should be optimized to avoid extra copying from
  * window to pending_buf.
  */
-/* 0x462070 */
+/* 0x462070, copies input to output in stored blocks, flushing when the
+ * pending buffer fills or the window is about to slide */
 local block_state deflate_stored(s, flush)
     deflate_state *s;
     int flush;
