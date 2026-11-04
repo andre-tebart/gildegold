@@ -9884,11 +9884,12 @@ void ai_GraveyardChatter(char *unused)
     if (script != 0)
         evt_RunScriptArgs(script, 3, (int)x->model, a, b);
 }
-/* 0x587de0, clears the 0x4000-byte table 0x6f5f60 (17 B), called from main.c 0x532160 (the per-turn reset) */
+/* 0x587de0, clears the 0x4000-byte table ai_TurnTable (17 B), called from main.c main_OpenEngine 0x532160 right after
+   ai_InitStates; the table has no other reader or writer in the binary, so its role is the function's name */
 
 void ai_ClearTurnTable(void)
 {
-    memset((char *)(unsigned)&ai_TurnTable, 0, 0x4000);
+    memset(ai_TurnTable, 0, sizeof ai_TurnTable);
 }
 
 /* 0x587e00, the right-button tooltip handler: while the right button holds a d2 object (d2_RightHeldObj) it shows
