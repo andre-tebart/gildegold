@@ -1086,7 +1086,7 @@ local unsigned bi_reverse(code, len)
 /* ===========================================================================
  * Flush the bit buffer, keeping at most 7 bits in it.
  */
-/* 0x467690 */
+/* 0x467690, flushes the bit buffer, keeping at most 7 bits in it */
 local void bi_flush(s)
     deflate_state *s;
 {
