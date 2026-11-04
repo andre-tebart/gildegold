@@ -2160,8 +2160,8 @@ exe	0x004c3d90	cm_AddFieldValue	cm	shape	readable
 exe	0x004c3e70	ai_BeginNeedBlock	cm	byte	draft		
 exe	0x004c3eb0	ai_AddNeedDelta	cm	byte	readable		
 exe	0x004c3ef0	cm_SetSpeedLevel	cm	byte	readable		
-exe	0x004c3f20	ai_Unk4c3f20	cm	byte	draft		
-exe	0x004c3f50	ai_Unk4c3f50	cm	byte	draft		
+exe	0x004c3f20	cm_RaiseSpeedLevel	cm	byte	readable		
+exe	0x004c3f50	cm_LowerSpeedLevel	cm	byte	readable		
 exe	0x004c3f80	ai_Unk4c3f80	cm	byte	draft		
 exe	0x004c3f90	cm_SendPlayerId	cm	byte	readable		
 exe	0x004c3fd0	cm_ReceiveMessages	cm	byte	draft		
@@ -4090,7 +4090,7 @@ exe	0x00587ad0	ai_GraveyardFogContact	unk_575860	byte	readable
 exe	0x00587b70	ai_PermissionBits1d	unk_575860	shape	readable		
 exe	0x00587c40	ai_EndCharExtra	unk_575860	byte	readable		
 exe	0x00587c90	ai_GraveyardChatter	unk_575860	byte	readable		
-exe	0x00587de0	ai_ClearTurnTable	unk_575860	byte	draft		
+exe	0x00587de0	ai_ClearTurnTable	unk_575860	byte	readable		
 exe	0x00587e00	ai_HandleItemDrag	unk_575860	draft	readable	deep	
 exe	0x00588160	ai_OpenBuildingTooltip	unk_575860	byte	readable		
 exe	0x00588310	ai_OpenItemTooltip	unk_575860	draft	readable	deep	
@@ -4099,7 +4099,7 @@ exe	0x00588bb0	ai_OpenHelpTooltip	unk_575860	byte	readable
 exe	0x00588c60	ai_OpenCharTooltip	unk_575860	byte	readable		
 exe	0x005890c0	ai_CharInfoWindow	unk_575860	byte	readable		
 exe	0x00589400	ai_ClearBookmark	unk_575860	byte	readable		
-exe	0x00589410	ai_InitBookmarks	unk_575860	byte	draft		
+exe	0x00589410	ai_InitBookmarks	unk_575860	byte	readable		
 exe	0x00589450	ai_ValidateBookmarks	unk_575860	byte	readable		
 exe	0x005894d0	ai_SelectBookmark	unk_575860	byte	readable		
 exe	0x00589570	ai_SetBookmark	unk_575860	draft	readable	deep	
@@ -4108,8 +4108,8 @@ exe	0x00589aa0	ai_SaveBookmarks	unk_575860	byte	readable
 exe	0x00589b30	ai_LoadBookmarks	unk_575860	byte	readable		
 exe	0x00589bc0	ai_SaveScreenshot	unk_575860	byte	readable		
 exe	0x00589c90	ai_SlotKeys	unk_575860	byte	readable		
-exe	0x00589cf0	ai_SpeedKeys	unk_575860	byte	draft		
-exe	0x00589e00	ai_BookmarkSetBuilding	unk_575860	byte	draft		
+exe	0x00589cf0	ai_SpeedKeys	unk_575860	byte	readable		
+exe	0x00589e00	ai_BookmarkSetBuilding	unk_575860	byte	readable		
 exe	0x00589e50	ai_BookmarksPreset	unk_575860	byte	readable		
 exe	0x00589f10	lobby_Screen	unk_589f10	draft	readable	deep	
 exe	0x0058a940	lobby_AddButtons	unk_589f10	byte	draft	deep	
@@ -4146,7 +4146,7 @@ exe	0x0058fc40	lc_GetGebaeudeBauplatz	unk_58bbd0	draft	readable	deep
 exe	0x0058fd40	ai_ObjectPosition	unk_58bbd0	byte	readable		
 exe	0x0058fd90	ai_ObjectAngle	unk_58bbd0	byte	readable		
 exe	0x0058fe10	ai_FindNearestObject	unk_58bbd0	shape	readable		
-exe	0x0058feb0	ai_DropObjectAt	unk_58bbd0	byte	draft		
+exe	0x0058feb0	ai_DropObjectAt	unk_58bbd0	byte	readable		
 exe	0x0058ff00	ai_Unk58ff00	unk_58bbd0	draft	draft		
 exe	0x005909a0	ai_Unk5909a0	unk_58bbd0	draft	draft		
 exe	0x00591170	ai_HandleMapKey	unk_58bbd0	draft	draft		
@@ -4156,12 +4156,12 @@ exe	0x00591520	ai_GameFrame	unk_58bbd0	draft	draft
 exe	0x00591ad0	ai_Unk591ad0	unk_58bbd0	draft	draft		
 exe	0x00591bf0	ai_TechTreeWindow	unk_58bbd0	draft	draft		
 exe	0x00592230	ai_UpgradeContact	unk_58bbd0	byte	readable		
-exe	0x00592290	ai_Unk592290	unk_58bbd0	byte	draft		
-exe	0x00592320	ai_Unk592320	unk_58bbd0	byte	draft		
-exe	0x005923c0	ai_Unk5923c0	unk_58bbd0	draft	draft		
-exe	0x00592b90	ai_Unk592b90	unk_58bbd0	draft	draft		
+exe	0x00592290	ai_BookContact	unk_58bbd0	byte	readable		
+exe	0x00592320	ai_MercenaryBookContact	unk_58bbd0	byte	readable		
+exe	0x005923c0	ai_SearchResourceWindow	unk_58bbd0	draft	draft		
+exe	0x00592b90	ai_ExtractResourceWindow	unk_58bbd0	draft	draft		
 exe	0x00593150	ai_Unk593150	unk_58bbd0	draft	draft		
-exe	0x005938c0	ai_Unk5938c0	unk_58bbd0	byte	draft		
+exe	0x005938c0	ai_MiningContact	unk_58bbd0	byte	readable		
 exe	0x00593960	ai_Unk593960	unk_58bbd0	shape	draft		
 exe	0x00593b00	ai_Unk593b00	unk_58bbd0	draft	draft		
 exe	0x00593ca0	ai_Unk593ca0	unk_58bbd0	shape	draft		
@@ -4379,7 +4379,7 @@ exe	0x005aa520	ai_Unk5aa520	unk_58bbd0	draft	draft
 exe	0x005aa700	ai_Unk5aa700	unk_58bbd0	draft	draft		
 exe	0x005aa9a0	ai_Unk5aa9a0	unk_58bbd0	draft	draft		
 exe	0x005aab80	ai_PersonnelBook	unk_58bbd0	draft	draft		
-exe	0x005ac110	ai_Unk5ac110	unk_58bbd0	draft	draft		
+exe	0x005ac110	ai_MercenaryBook	unk_58bbd0	draft	draft		
 exe	0x005ad000	ai_Unk5ad000	unk_58bbd0	draft	draft		
 exe	0x005ad150	ai_PersonnelBookWindow	unk_58bbd0	draft	draft		
 exe	0x005ae240	ai_Unk5ae240	unk_58bbd0	draft	draft		
@@ -4440,7 +4440,7 @@ exe	0x005bac10	ai_InventoryPanel	unk_58bbd0	draft	draft
 exe	0x005bae10	ai_EquipRowsInit	unk_58bbd0	draft	readable	deep	
 exe	0x005bae50	ai_Unk5bae50	unk_58bbd0	draft	draft		
 exe	0x005bb2d0	ai_GoodFitsBuilding	unk_58bbd0	byte	draft		
-exe	0x005bb350	ai_Unk5bb350	unk_58bbd0	draft	draft		
+exe	0x005bb350	ai_EquipWindow	unk_58bbd0	draft	draft		
 exe	0x005bb950	ai_Unk5bb950	unk_58bbd0	draft	draft		
 exe	0x005bba00	ai_Unk5bba00	unk_58bbd0	draft	draft		
 exe	0x005bc0f0	ai_FreePicture	unk_58bbd0	byte	draft		
