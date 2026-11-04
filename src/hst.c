@@ -2718,7 +2718,7 @@ int hst_NextEventCmd(char *name, char *out, int cmd)
 }
 /* 0x4b36d0, the same with 0x4b35e0 (commands if cmd) */
 
-void ai_Unk4b36d0(int cmd)
+void hst_LastYearCmdDialog(int cmd)
 {
     char text[0x1fb8];
     char name[0x100];
@@ -2763,7 +2763,7 @@ void ai_Unk4b36d0(int cmd)
                 io_PrintText("$C$Z$[%s$]", name);
             }
         }
-    } while (sv_RunFrame((void (*)(void))ai_Unk4b36d0, 0x66087));
+    } while (sv_RunFrame((void (*)(void))hst_LastYearCmdDialog, 0x66087));
     sv_DestroyScrollForm();
 }
 
@@ -2792,7 +2792,7 @@ void hst_YearlyHistory(int cmd)
         if (hst_TextsOn == 1)
             hst_LastYearDialog();
         else if (hst_TextsOn == 2)
-            ai_Unk4b36d0(cmd);
+            hst_LastYearCmdDialog(cmd);
     }
 }
 
