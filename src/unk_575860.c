@@ -1161,16 +1161,14 @@ int ai_RunAllowsContact(int mask)
         return 0;
     return (ai_Tutorial->run->allowMask2 & mask) != 0;
 }
-/* 0x576460, 1 while the gate 0x6f265c is 0; else 0 in the mode 2 / state 5, 1 otherwise */
+/* 0x576460, 1 while the tutorial lets a building window open: 1 while it is off (ai_TutorialOn), else 0 in the
+   phase 2 or the state 5, 1 otherwise */
 
-int ai_Unk576460(void)
+int ai_RunAllowsWindow(void)
 {
-    char *st;
-
     if (!ai_TutorialOn)
         return 1;
-    st = S;
-    if (*(int *)(st + 0x3c) == 2 || U_I(st) == 5)
+    if (ai_Tutorial->phase == 2 || ai_Tutorial->state == 5)
         return 0;
     return 1;
 }
