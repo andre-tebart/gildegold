@@ -9226,18 +9226,18 @@ int gm_GetGoodsValue(char *c)
     }
     return s;
 }
-/* 0x509eb0 */
+/* 0x509eb0, the character c's money: the sum of the amounts (count +0x0e) of its inventory's objects of the prototype kind 9 */
 
 int gm_CharSumAmounts(char *c)
 {
     int s;
-    char *o;
+    ORDOBJ *o;
 
     s = 0;
-    o = gm_Query(*(void **)(c + 0x178), 1, 4, 9);
+    o = (ORDOBJ *)gm_Query((void *)((ORDCHAR *)c)->inventory, 1, 4, 9);
     while (o) {
-        s += *(int *)(o + 0xe);
-        o = (char *)gm_QueryNext();
+        s += o->count;
+        o = (ORDOBJ *)gm_QueryNext();
     }
     return s;
 }
