@@ -2752,7 +2752,7 @@ int gv_LeasePrice(unsigned short *c, unsigned char care, int kind, int flag, int
 }
 /* 0x4f2440, the cost difference of two kinds: 0x4f2330 (c, 100, k1, 1) minus half of the one of k2; *out the difference times the factor of k2 */
 
-int unk_Unk4f2440(unsigned short *c, int k1, int k2, int *out)
+int gv_MovePrice(unsigned short *c, int k1, int k2, int *out)
 {
     int a, b, d;
 

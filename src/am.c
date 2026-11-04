@@ -1336,7 +1336,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
         for (k = 3; k > *r; k--) {
             r2 = gv_FindEntry(0, bld, 0, gv_EntryIsFree, k);
             if (r2 != 0) {
-                v = unk_Unk4f2440(p, *r, *r2, &i);
+                v = gv_MovePrice(p, *r, *r2, &i);
                 m = gm_CharCurrency(p, ai_OwnPlayer);
                 if ((int)(m * 0.22f) <= v)
                     return 0;
