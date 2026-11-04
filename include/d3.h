@@ -335,7 +335,8 @@ struct D3PARTSYS {                  /* 0x31c bytes */
     void *points;                   /* 0xdc, 4 D3PVERT per particle ("d3_par:ParticlePoints") */
     void *polys;                    /* 0xe0, 2 D3PTRI per particle ("d3_par:ParticlePolys") */
     float size;                     /* 0xe4, initial particle size */
-    char obj[0x1f8];                /* 0xe8, embedded object */
+    char obj[0x1f8];                /* 0xe8, embedded object: a whole D3OBJECT (PAR_OBJ, d3_par.h) up to 0x310, its
+                                       flags byte at 0x2fb (par_Create), parent and scene below are its fields */
     void *parent;                   /* 0x2e0 */
     char pad2e4[0xc];
     D3SCENE *scene;                 /* 0x2f0 */

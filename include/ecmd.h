@@ -72,30 +72,6 @@ typedef struct OCMDOBJBITS {
     unsigned char b0 : 1, b1 : 1, transient : 2, blocked : 1, b5 : 3;
 } OCMDOBJBITS;
 
-/* a particle system created by par_CreateEmitter (0x457b30); the commands fill in its parameters */
-typedef struct D3EMITTER {
-    char pad00[0x40];
-    float amp[3];                   /* 0x40 */
-    float amp3;                     /* 0x4c */
-    float phase[3];                 /* 0x50 */
-    float phase3;                   /* 0x5c */
-    float size[3];                  /* 0x60 */
-    float dir[3];                   /* 0x6c */
-    float vel[3];                   /* 0x78 */
-    float rnd[3];                   /* 0x84 */
-    float acc[3];                   /* 0x90 */
-    float plane[3];                 /* 0x9c */
-    float plane3;                   /* 0xa8 */
-    float maxtrigger;               /* 0xac, also set by SetEmitterFlags */
-    float amp4;                     /* 0xb0 */
-    float phase4;                   /* 0xb4 */
-    float time;                     /* 0xb8 */
-    int alpha[3];                   /* 0xbc */
-    unsigned char b, g, r, a;       /* 0xc8 */
-    unsigned char texmode : 5, initfill : 1, rebirthfill : 1, istrigger : 1;   /* 0xcc */
-    unsigned char triggeronce : 1, trigger : 1, bcd : 6;                        /* 0xcd */
-} D3EMITTER;
-
 /* the template par_CreateEmitter reads (global at 0x1468620, 0xa4 bytes) */
 typedef struct D3EMITTERCFG {
     int type;                       /* 0x00, emitter type: 0/1/2 -> par_EmitterCB0/1/2 */
@@ -111,6 +87,38 @@ typedef struct D3EMITTERCFG {
     unsigned char flags;            /* 0xa0 */
     char pada1[3];
 } D3EMITTERCFG;
+
+/* a particle system created by par_CreateEmitter (0x457b30); the commands fill in its parameters */
+typedef struct D3EMITTER {
+    union {
+        struct {
+            char padcfg[0x2c];
+            D3EMITTERCFG cfg;       /* 0x2c..0xd0, the template par_CreateEmitter copies in */
+        };
+        struct {
+            char pad00[0x40];
+            float amp[3];                   /* 0x40 */
+            float amp3;                     /* 0x4c */
+            float phase[3];                 /* 0x50 */
+            float phase3;                   /* 0x5c */
+            float size[3];                  /* 0x60 */
+            float dir[3];                   /* 0x6c */
+            float vel[3];                   /* 0x78 */
+            float rnd[3];                   /* 0x84 */
+            float acc[3];                   /* 0x90 */
+            float plane[3];                 /* 0x9c */
+            float plane3;                   /* 0xa8 */
+            float maxtrigger;               /* 0xac, also set by SetEmitterFlags */
+            float amp4;                     /* 0xb0 */
+            float phase4;                   /* 0xb4 */
+            float time;                     /* 0xb8 */
+            int alpha[3];                   /* 0xbc */
+            unsigned char b, g, r, a;       /* 0xc8 */
+            unsigned char texmode : 5, initfill : 1, rebirthfill : 1, istrigger : 1;   /* 0xcc */
+            unsigned char triggeronce : 1, trigger : 1, bcd : 6;                        /* 0xcd */
+        };
+    };
+} D3EMITTER;
 
 typedef struct OCMDTEXFLAGS {       /* D3TEXFLAGS with the bits par_CreateEmitter's callers set */
     union {

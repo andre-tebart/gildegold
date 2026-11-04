@@ -158,7 +158,7 @@ D3PARTSYS *par_Create(int count, char *tex, D3TEXFLAGS flags, float size, void *
                     j += 0x54;
                 } while (i < ps->count);
             }
-            *((unsigned char *)ps + 0x2fb) |= 8;
+            PAR_OBJ(ps)->flags |= 8;
             d3_InitObject((D3OBJECT *)ps->obj);
             ps->parent = parent;
             ps->scene = d3_DefaultScene;
@@ -817,7 +817,7 @@ D3PARTSYS *par_CreateEmitter(int parent, D3VECTOR *pos, int count, char *tex, OC
         ps = par_Create(count, tex, flags.tex, size, (void *)parent, par_EmitterCB2);
     if (ps) {
         par_SetPos(ps, pos);
-        D3_COPY((char *)ps + 0x2c, cfg, sizeof(D3EMITTERCFG));
+        D3_COPY(&PAR_EMITTER(ps)->cfg, cfg, sizeof(D3EMITTERCFG));
         par_SetDir(ps, (D3VECTOR *)PAR_EMITTER(ps)->dir, 0.0f);
         if (PAR_EMITTER(ps)->triggeronce) {
             ps->flags = 0;
