@@ -182,7 +182,7 @@ void ch_UpdateFades(void)
         }
     }
 }
-/* 0x402480 */
+/* 0x402480, shows or hides a character and its objects (relights them when shown) */
 
 void ch_SetVisible(CHARACTER *ch, int show)
 {
