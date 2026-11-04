@@ -716,7 +716,6 @@ extern GAPDATA full_data_62c284[];
 extern GAPDATA full_rdata_5ebb40[];
 extern GAPDATA full_data_62c298[];
 extern char ch_EmptyName[1];
-extern GAPDATA full_data_62c2ac[];
 extern GAPDATA full_data_62c2c0[];
 extern GAPDATA full_data_62c2dc[];
 
@@ -14307,7 +14306,7 @@ void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2)
 {
     if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
         txt_Format((char *)(unsigned)&ai_NewsText, 0x20c6, *param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&full_data_62c2ac);
+        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, ai_NewsKeyHS46);
     }
 }
 /* 0x5a91c0, the plague message (91 B): 0x42ec00 (3) picks the text (0x20c7 + the value) into 0x6f26c8 and the
@@ -23699,6 +23698,7 @@ extern int * ai_BauplatzList;
 /* ai_TextEinkaufStein: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextEinkaufHolz: view of txt_Ptrs (build/mk_txt_views.py) */
 AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_GEFAENGNIS", { 17, 18, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_HANDWERK", { 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28 } }, { "bk_HANDWERK", { 41, 42, 43, 47, 48, 49, 50, 51, 52, 33, 34, 35 } }, { "bk_HANDWERK", { 72, 73, 74, 81, 82, 83, 78, 79, 80, 0, 0, 0 } }, { "bk_KIRCHE_KL", { 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_KIRCHE_GR", { 22, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_RATHAUS", { 36, 37, 38, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_STADTWACHE", { 44, 45, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WIRTSHAUS_GR", { 53, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_KL", { 4, 5, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_GR", { 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_ZUNFTHAUS", { 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67 } }, { "bk_STATUEN", { 84, 85, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_DOMIZIL", { 75, 76, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x62aae8 */
+char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa) */
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
