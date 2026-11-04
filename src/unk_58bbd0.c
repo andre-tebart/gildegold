@@ -7955,16 +7955,17 @@ void ai_Unk59c450(int param_1, int param_2, int param_3, int param_4)
             return;
     }
 }
-/* 0x59c6b0, the clicked record of the exchange list (48 B): with 0x1467398 set, the index of the record whose
-   control (record + 0) is the clicked control 0x5fe710, else -1 */
+/* 0x59c6b0, the index of the clicked record of the money lender's exchange list: while the latched left click
+   (dm_L.lclick) is down it returns the first of the 16 records (7 ints each) whose control (+0) is the clicked
+   control d2_PointerObj, else -1 */
 
-int ai_Unk59c6b0(int *param_1)
+int ai_ClickedExchangeRecord(int *records)
 {
     int i;
 
-    if (U_I(((unsigned)&dm_L + 0x18)) != 0) {
+    if (dm_L.lclick != 0) {
         for (i = 0; i < 16; i++) {
-            if (param_1[i * 7] != -1 && U_I((unsigned)&d2_PointerObj) == param_1[i * 7])
+            if (records[i * 7] != -1 && d2_PointerObj == records[i * 7])
                 return i;
         }
     }
@@ -8130,7 +8131,7 @@ void ai_Unk59c700(int param_1)
             }
         }
         if (side == 1) {
-            idx = ai_Unk59c6b0(recsB);
+            idx = ai_ClickedExchangeRecord(recsB);
             if (idx != -1) {
                 a = recsB[idx * 7 + 3];
                 b = recsA[sel * 7 + 3];
@@ -8158,7 +8159,7 @@ void ai_Unk59c700(int param_1)
                 }
             }
         } else if (side == 2) {
-            idx = ai_Unk59c6b0(recsA);
+            idx = ai_ClickedExchangeRecord(recsA);
             if (idx != -1) {
                 a = recsA[idx * 7 + 3];
                 b = recsB[sel * 7 + 3];
@@ -8392,7 +8393,7 @@ void ai_Unk59d5e0(int param_1)
         d2_ClearPointerItems();
         if (carrier == 0)
             sel = ai_Unk59c120(U_I(param_1 + 0x5d), recsA, win, 5, 1);
-        idx = ai_Unk59c6b0(recsB);
+        idx = ai_ClickedExchangeRecord(recsB);
         if (carrier == 0 && idx != -1 && sel != -1) {
             d2_ClearPointerItems();
             if (ai_Unk59d410(param_1, recsA[sel * 7 + 3], recsA[sel * 7 + 5], citybytes[idx * 0x1c]) != 0) {
