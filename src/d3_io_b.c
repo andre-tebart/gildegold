@@ -217,7 +217,7 @@ void bgi_MatSu(void *f, BGIRD *c)
 {
     bio_rd_i(f, (int *)&BGI_M(c).su);
 }
-/* 0x44f360 */
+/* 0x44f360, binary-format record 0x10: reads the current material's v scale (sv) */
 
 void bgi_MatSv(void *f, BGIRD *c)
 {
