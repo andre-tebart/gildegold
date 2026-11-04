@@ -2724,7 +2724,7 @@ exe	0x004ecdb0	ahm_AddValue	ahm	draft	readable	deep
 exe	0x004ece10	ahm_SendDelete	ahm	byte	readable		
 exe	0x004ece60	ahm_DeleteAlchemist	ahm	byte	draft		
 exe	0x004ecf10	ahm_WriteRecord	ahm	byte	readable		
-exe	0x004ed040	ahm_ReadRecord	ahm	draft	readable	deep	
+exe	0x004ed040	ahm_ReadRecord	ahm	byte	readable		
 exe	0x004ed170	gv_AllocAvatar	gv	shape	readable		
 exe	0x004ed1e0	gv_WriteAvatars	gv	byte	readable		
 exe	0x004ed270	gv_ReadAvatars	gv	shape	readable		
@@ -3810,7 +3810,7 @@ exe	0x00567f50	he_PatrolStep	he	draft	draft
 exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
 exe	0x00568310	he_Unk568310	he	byte	draft		
 exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
-exe	0x00568ae0	he_AllocIncomeEvent	he	shape	readable		
+exe	0x00568ae0	he_AllocIncomeEvent	he	byte	readable		
 exe	0x00568be0	he_Unk568be0	he	draft	draft		
 exe	0x005690c0	he_Unk5690c0	he	draft	draft		
 exe	0x00569210	he_Unk569210	he	draft	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> draft+readable at 5d296bf7: ai_bld.h gained the inn view of AIBLD 0x65..0x70 (a union of the old fields and struct inn: takings / guests / served / lastTakings, evidenced by the inn simulation 0x54d260 and he_InnReport, which it makes byte + readable); the layout is unchanged and this function reads none of those fields: its regs-only shape flipped to draft by VC6's register allocation on the declaration set alone (a tie-break, no evidence of its source) [waits for: its own deep pass: the 100 regs hunks of its register allocation]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 1a13a826: VC6 register tie-break on the declaration set of ai_types.h: the AIJOB / AIMSG unions (e3844d9d, 3ab54cac, the Q4 typing) flip it; an unused typedef there flips it the same way, its own source is unchanged and reads neither type; regs only (30) [waits for: the ai_types.h declaration set settling (the original's header layout), or a tie-break-stable spelling]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at 1a13a826: VC6 register tie-break on the declaration set of ai_types.h (the AIJOB / AIMSG unions, e3844d9d, 3ab54cac; unused typedefs move it: 80 / 84 ins): the same stores of the same float constants (0x420c0000 / 0x428e0000 / 0x430e0000 at [esi+0x64]+0x20..0x28) with the registers permuted and the constant loads reordered; diffclass counts that as code, so the grade is draft [waits for: the ai_types.h declaration set settling, and diffclass classifying permuted constant loads as allocation]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
