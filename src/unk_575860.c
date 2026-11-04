@@ -2198,18 +2198,19 @@ void ai_TutorialShowText2(void)
     }
     ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->text2Voice, -1);
 }
-/* 0x577c60, clears the second text window S+0x34 (106 B): control 0 off (0x475f70), the text 0x602568
-   (0x515960), 0x475590 (S+0x34, 0); then the window S+0x14 is released (0x426f20 / 0x427290) and cleared */
+/* 0x577c60, clears the second text window text2Win: control 0 turned off (0x475f70), the text cleared to "$C"
+   (0x602568, 0x515960) and the window disabled (0x475590); then the playing voice is stopped (0x426f20 /
+   0x427290) and cleared; no return value */
 
 void ai_TutorialHideText2(void)
 {
-    d2_SetForm(U_I(S + 0x34), 0);
-    io_PrintText((char *)(unsigned)"$C");
-    d2_SetViewEnabled(U_I(S + 0x34), 0);
-    if (U_I(S + 0x14)) {
-        if (sb_IsPlaying(U_I(S + 0x14)))
-            sb_Stop(U_I(S + 0x14), 0);
-        U_I(S + 0x14) = 0;
+    d2_SetForm(ai_Tutorial->text2Win, 0);
+    io_PrintText("$C");
+    d2_SetViewEnabled(ai_Tutorial->text2Win, 0);
+    if (ai_Tutorial->voice) {
+        if (sb_IsPlaying(ai_Tutorial->voice))
+            sb_Stop(ai_Tutorial->voice, 0);
+        ai_Tutorial->voice = 0;
     }
 }
 /* 0x577cd0, creates the tutorial progress form ("tutorial\progress" 0x629314, 129 B): the form id
