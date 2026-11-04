@@ -537,9 +537,10 @@ int ai_CondSkills(AICHAR *c, G13TYPE *t)
     }
     return n >= t->goal;
 }
-/* 0x4b46c0, mission condition: 0x4b5160 with c's byte 0x166 equal to t->goal */
+/* 0x4b46c0, mission condition (types 15 .. 18 / 34 / 35): the character's office kind (byte 0x166,
+   AICHAR.officeKind) equals t->goal, held for t->threshold minutes */
 
-int ai_Unk4b46c0(AICHAR *c, int x, G13TYPE *t)
+int ai_CondOfficeTimed(AICHAR *c, int x, G13TYPE *t)
 {
     return ai_TimedCondition(x, G13_B(c, 0x166) == t->goal, t->threshold);
 }
@@ -877,7 +878,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 18:
     case 34:
     case 35:
-        return ai_Unk4b46c0(c, (int)m, t);
+        return ai_CondOfficeTimed(c, (int)m, t);
     case 11:
     case 19:
     case 23:
