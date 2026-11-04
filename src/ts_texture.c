@@ -278,7 +278,8 @@ char *tex_FindFile(char *name)
     strcat(path, ".BMP");
     return vfs_GetPath(path, ts_Palette, vfs_Root, ts_PathBuf);
 }
-/* 0x45fa80 */
+/* 0x45fa80, initializes the texture manager: count texture slots, maxhicol hi-colour tables, the mip level and
+   the surface cache of cache entries */
 
 void tex_Init(int count, int maxhicol, int mips, unsigned int cache)
 {
