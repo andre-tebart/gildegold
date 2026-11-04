@@ -1,20 +1,23 @@
 /* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
-   screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below.
+   screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below. The
+   contact listeners and the map picks of the kontor / thieves' guild / information scenes read their plate texts
+   through the txt_views.h slots (ai_ContactText*) and the building record as AIBLD.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood).
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the character / object
    record views the news messages read (G8CHARREC, G8OBJ), the use callback's request (G8USEVIEW), the Domizil
-   entry (G9DOMIZILRANGE), the equip window's
-   rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and the gv record (AIWINDOWROW, AIPOSVIEW) are local views
-   here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h / am_types.h / ai.h hold the owners' types); they settle
-   when those headers can be included.
-   Open: not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h ai.h am.h amt.h anm.h ch.h chc.h cm.h
-   d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h sv.h unk_4b39f0.h unk_5d33b0.h vfs.h; held by
-   own declarations that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD,
-   cm_SendExSetHE, d3sm_Pick; calls whose argument count differs from the definition (read the
-   original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText, d2_GetObjValue,
-   d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine, sv_CheckGoodAmount,
-   d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor, sv_CreateScrollButtons.
+   entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and the gv
+   record (AIWINDOWROW, AIPOSVIEW) are local views here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h /
+   am_types.h / ai.h hold the owners' types); they settle when those headers can be included.
+   Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
+   picks stay without a prototype (M7); and not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h
+   ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h
+   unk_4b39f0.h unk_5d33b0.h vfs.h; held by own declarations that differ from the owner's: ai_Time,
+   d3sm_GetVertex, d2_CreateWinText, AIBLD, cm_SendExSetHE, d3sm_Pick; calls whose argument count differs from
+   the definition (read the original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText,
+   d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine,
+   sv_CheckGoodAmount, d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor,
+   sv_CreateScrollButtons.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define unk_Unk5136b0K ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
@@ -27,7 +30,7 @@
    "locations\Wirtshaus", the dice game and the dark corner), the money lender family
    ("locations\geldleihe\*", 0x59ad60 .. 0x59d5e0) and the Rathaus / guild rooms (0x59df10 ..: the enter check
    0x59e210 and the building driver 0x59e420 with its room dispatch switch).
-   Unit start (layout 2026-10-23 session 21): 0x58bbd0 has no literals and is called from 0x58bd60 (and from the
+   Unit start: 0x58bbd0 has no literals and is called from 0x58bd60 (and from the
    "HANDEL\HANDEL_SUCHEN" helper 0x584d70 of the previous unit); it initializes the tables 0x6f4f08 .. 0x6f5a64
    that 0x58bd60 / 0x58c680 use. The first literal of the unit is "Handel\Handel_PRODUKTION" 0x62b038 (0x58bd60),
    a +0x568 jump past the previous unit's last literal 0x62aad0 (data order D8); no literal belongs to 0x58bbd0
