@@ -393,7 +393,7 @@ CHARACTER *ch_AllocAt(int id)
     ch->id = id;
     return ch;
 }
-/* 0x402a70 */
+/* 0x402a70, finds the character whose object's name matches name (case-insensitive), 0 when none */
 
 CHARACTER *ch_FindByName(char *name)
 {
