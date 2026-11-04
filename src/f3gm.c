@@ -2138,7 +2138,7 @@ unsigned short gm_CreateRandomChild(int age)
 
 int gm_IsUnderAge(unsigned short id)
 {
-    if ((float)*(unsigned short *)(ai_Chars[id] + 10) < *(float *)(ai_Chars[id] + 0x20))
+    if ((float)ORD_CHARS[id].w00a < ORD_CHARS[id].f020)
         return 1;
     return 0;
 }
