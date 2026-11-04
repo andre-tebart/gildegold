@@ -6900,11 +6900,11 @@ short *gm_FindChar(int id)
     }
     return (short *)ai_Chars[i];
 }
-/* 0x505e30, the age (word +10) of the character with the number id as a float */
+/* 0x505e30, the age (its w00a word) of the character with the number id as a float */
 
 float gm_CharAge(unsigned short id)
 {
-    return (float)*(unsigned short *)(ai_Chars[id] + 10);
+    return (float)ORD_CHARS[id].w00a;
 }
 /* 0x505e60, the level of the character id: 0 for a free slot or a dead one, 1 when its job has no kind record
    (amt_GetKind), else the kind's level + 1; below the top level 10 and unless again is set, the level of its
