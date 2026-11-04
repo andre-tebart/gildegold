@@ -546,7 +546,7 @@ local void gen_codes (tree, max_code, bl_count)
  *     and corresponding code. The length opt_len is updated; static_len is
  *     also updated if stree is not null. The field max_code is set.
  */
-/* 0x466380 */
+/* 0x466380, builds the Huffman tree of a descriptor: the heap of nonzero frequencies, forced codes, the merge loop, then the bit lengths and codes */
 local void build_tree(s, desc)
     deflate_state *s;
     tree_desc *desc; /* the tree descriptor */
