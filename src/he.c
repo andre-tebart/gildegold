@@ -15411,7 +15411,7 @@ void he_Unk56de10(int ev)
 void cm_BeginFieldBlock(char *o, int id);
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
 void cm_SendFieldDeltas(void);
-void ai_Unk5a9d60(int param_1, int param_2, int param_3, unsigned short *param_4);
+void ai_DomizilMessageTask(int param_1, int param_2, int param_3, unsigned short *param_4);
 void ai_DomizilMessage04(int param_1, int param_2, int param_3);
 void ai_DomizilMessageAge(int param_1, int param_2, int param_3);
 void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4);
@@ -15474,7 +15474,7 @@ void he_Unk56e070(char *c, int ev, unsigned char *b, int task)
             cm_AddFieldDelta(4, 1, 0x1c, &t);
             cm_AddFieldDelta(4, 1, 0x20, &v);
             cm_SendFieldDeltas();
-            ai_Unk5a9d60((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b, h[0]);
+            ai_DomizilMessageTask((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b, h[0]);
         }
         break;
     case 2:

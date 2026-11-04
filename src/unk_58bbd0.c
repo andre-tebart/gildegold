@@ -14792,17 +14792,19 @@ void ai_DomizilMessageAge(int toRec, int cRec, int bldRec)
     he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
                  "_NACHRICHTEN_DOMIZIL_04");
 }
-/* 0x5a9d60, a Domizil message (114 B): the text 0x407c with the +0x30 / +0x40 fields of param_2, param_3 and the
-   kind text 2 * the word of param_4 + 0x9a8; 0x53dee0 with the +2 field of param_4, the +1 field of param_3 and
-   the key 0x62c3e8 */
+/* 0x5a9d60, the Domizil message of a task (114 B): for a kind 6 / 7 character the text 0x407c with the
+   character's name and family (+0x30 / +0x40), the building and the task kind text 0x9a8 + 2 * the object's
+   type id into ai_NewsText, then the quick-jump message 0x5ec to its netId with the building's id (+1), the
+   object's id (+2) and the sound "_NACHRICHTEN_DOMIZIL_04"; he_Unk56e070's pick 1 sets the task's +0x1c /
+   +0x20 fields and sends it */
 
-void ai_Unk5a9d60(int param_1, int param_2, int param_3, unsigned short *param_4)
+void ai_DomizilMessageTask(G8CHARREC *to, G8CHARREC *c, AIBLD *bld, G8OBJ *obj)
 {
-    if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
+    if (to->kind != 6 && to->kind != 7)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x407c, param_2 + 0x30, param_2 + 0x40, param_3, *param_4 * 2 + 0x9a8);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1),
-                 *(int *)((char *)param_4 + 2), 0, (char *)(unsigned)&full_data_62c3e8);
+    txt_Format(ai_NewsText, 0x407c, c->name, c->family, bld, obj->id * 2 + 0x9a8);
+    he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, obj->objId, 0,
+                 "_NACHRICHTEN_DOMIZIL_04");
 }
 /* 0x5a9dd0, a Domizil message (98 B): the text 0x407f with the +0x30 / +0x40 fields of param_2 and the kind text
    2 * param_4 + 0x9a8; 0x53dee0 with the +1 field of param_3 and the key 0x62c3e8 */
