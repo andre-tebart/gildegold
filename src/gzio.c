@@ -70,7 +70,10 @@ local uLong  getLong      OF((gz_stream *s));
    can be checked to distinguish the two cases (if errno is zero, the
    zlib error is Z_MEM_ERROR).
 */
-/* 0x462c70 */
+/* 0x462c70, allocates and initializes a gz_stream: parses the mode string
+   (r/w/a, a digit level, f/h strategy, the rest as fopen mode), starts the
+   deflate or inflate side with a raw window, opens the file by path or
+   descriptor fd, and writes or checks the gzip header; Z_NULL on failure */
 local gzFile gz_open (path, mode, fd)
     const char *path;
     const char *mode;
