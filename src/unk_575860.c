@@ -9053,7 +9053,7 @@ int ai_SeancePick(char *rec, GVDETAILWIN *w, GVSEANCE *out)
 void gm_SendMoneyDelta(int a, int b);
 
 #define SEANCE_HELD 0x800000  /* the bit of AICHAR flags1cc a seance sets (cm_SendSetField(id, 0x1cc, 4, bit, 0)); the name is a reasoned guess */
-/* 0x586610, the graveyard seance (the contact ai_Unk5876a0): rec = the graveyard. The player's character's grave
+/* 0x586610, the graveyard seance (the contact ai_GraveyardSeanceContact): rec = the graveyard. The player's character's grave
    entry (gv_FindEntry with gv_EntrySameId); none: the message box txt 0x40d5 and out. Else the detail window
    record gets the entry, its size and its index in that list, the line txt 0x4107 (the size's name; formatted,
    not shown) and the detail window opens with the title txt 0x40cc; the pick of the dead person
@@ -9598,17 +9598,17 @@ void ai_GraveyardTradeContact(char *rec)
         }
     }
 }
-/* 0x5876a0, the graveyard seance contact dispatcher (95 B): rec = the record. The pump loop 0x5309a0 (this
-   dispatcher, 0x67fff): the contact 0x62a83c (U_I (0x144a764), 0x16) via 0x52e1c0 (name, text, kind); the
-   clicked contact 0x6f22e4 (not 0) on it -> 0x586610 (rec) */
+/* 0x5876a0, the graveyard seance contact dispatcher (95 B): rec = the building record. Each frame (sv_RunFrame,
+   pump 0x67fff) the "contact_SEANCE" name plate is registered (sv_RegisterNamePlate, text 0x4169, look 0x16); a
+   click on it (ai_ClickedObject) opens the seance (ai_GraveSeance) */
 
-void ai_Unk5876a0(char *rec)
+void ai_GraveyardSeanceContact(char *rec)
 {
     int c;
 
-    while (sv_RunFrame(ai_Unk5876a0, 0x67fff) != 0) {
-        c = sv_RegisterNamePlate((char *)(unsigned)&full_data_62a83c, U_I((unsigned)&full_data_144a764), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && U_I((unsigned)&ai_ClickedObject) == c)
+    while (sv_RunFrame(ai_GraveyardSeanceContact, 0x67fff) != 0) {
+        c = sv_RegisterNamePlate("contact_SEANCE", txt_Ptrs[0x4169], 0x16);
+        if (ai_ClickedObject != 0 && ai_ClickedObject == c)
             ai_GraveSeance((AIBLD *)rec);
     }
 }
