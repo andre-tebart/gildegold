@@ -1170,7 +1170,7 @@ exe	0x004635f0	gzrewind	gzio	byte	readable
 exe	0x00463660	gztell	gzio	byte	readable		
 exe	0x00463680	getLong	gzio	byte	readable		
 exe	0x004636d0	gzclose	gzio	byte	readable		
-exe	0x00463720	putLong	gzio	byte	draft		
+exe	0x00463720	putLong	gzio	byte	readable		
 exe	0x00463750	inflate_blocks_reset	infblock	byte	readable		
 exe	0x004637d0	inflate_blocks_new	infblock	byte	readable		
 exe	0x00463870	inflate_blocks	infblock	byte	readable		
@@ -3446,15 +3446,15 @@ exe	0x00532700	main_StartCityGame	main	byte	readable
 exe	0x005327e0	main_PlayerCountDialog	main	draft	readable	deep	
 exe	0x005328f0	main_HostNetworkGame	main	byte	readable		
 exe	0x00532a70	main_JoinNetworkGame	main	draft	readable	deep	
-exe	0x00532c30	main_EnterHostAddress	main	byte	draft		
+exe	0x00532c30	main_EnterHostAddress	main	byte	readable		
 exe	0x00532da0	main_SearchNetworkGame	main	draft	readable	deep	
 exe	0x00533470	main_ChooseNetworkGame	main	byte	readable		
 exe	0x005335b0	main_NetworkMenu	main	byte	readable		
-exe	0x00533740	main_MoneyDialog	main	byte	draft		
-exe	0x005337f0	main_MenuButton	main	byte	draft		
+exe	0x00533740	main_MoneyDialog	main	byte	readable		
+exe	0x005337f0	main_MenuButton	main	byte	readable		
 exe	0x00533850	main_Menue	main	draft	readable	deep	
 exe	0x00534040	main_GiveStartBuildings	main	byte	readable		
-exe	0x005344f0	main_Unk5344f0	main	shape	draft		
+exe	0x005344f0	main_PlaceFamilyModel	main	shape	readable		
 exe	0x00534610	main_ChooseTalents	main	shape	readable		
 exe	0x00534b30	main_ChooseModel	main	draft	draft	deep	
 exe	0x005359f0	main_ChooseFamily	main	draft	draft	deep	
@@ -3464,10 +3464,10 @@ exe	0x00536d80	main_CharacterIntro	main	byte	readable
 exe	0x00536e80	main_ChooseDifficulty	main	byte	readable		
 exe	0x00537040	main_ChooseOpponents	main	draft	readable	deep	
 exe	0x00537230	main_ChooseCity	main	draft	draft	deep	
-exe	0x00537930	main_NewSinglePlayerGame	main	byte	draft		
+exe	0x00537930	main_NewSinglePlayerGame	main	byte	readable		
 exe	0x00537980	main_LoadingScreen	main	byte	readable		
-exe	0x00537af0	main_SetLoadProgress	main	byte	draft		
-exe	0x00537b60	main_Unk537b60	main	byte	draft		
+exe	0x00537af0	main_SetLoadProgress	main	byte	readable		
+exe	0x00537b60	main_LoadProgressCallback	main	byte	readable		
 exe	0x00537be0	main_Unk537be0	main	byte	draft		
 exe	0x00537c70	main_PreloadSound	main	byte	draft		
 exe	0x00537db0	main_FreeSoundBanks	main	byte	draft		
