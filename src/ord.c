@@ -1721,20 +1721,20 @@ void ord_CountGridObjects(void)
         }
     }
 }
-/* 0x4f86a0, a random point inside the cell (x, y) of the scene 0xfd7c50 points to (cell size = +0x20 over 8): asks d3sm_GetVertex (0x45f100) for it with the third argument z */
+/* 0x4f86a0, a random point inside the cell (x, y) of scene 0's height map (d3_Scenes[0].hmap; the map's cell count per side (D3SM.size, +0x20) over 8 is the span of the grid cell): d3sm_GetVertex (0x45f100) with the third argument z */
 
 int ord_RandomCellPoint(int x, int y, int z)
 {
+    D3SM *hmap;
     int n;
-    char *s;
     unsigned a;
     unsigned b;
 
-    s = unk_Ptrfd7c50;
-    n = *(int *)(s + 0x20) / 8;
+    hmap = (D3SM *)d3_Scenes[0].hmap;
+    n = hmap->size / 8;
     a = util_RandomU(n) + n * x;
     b = util_RandomU(n) + n * y;
-    return d3sm_GetVertexI(s, a, b, z);
+    return d3sm_GetVertexI(hmap, a, b, z);
 }
 
 /* the kind table 0x617468: one 8-byte record per kind (ORD_KIND reads the same pair as four shorts) */
