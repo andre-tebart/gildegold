@@ -90,7 +90,7 @@ void util_Randomize(void)
 {
     srand(timeGetTime());
 }
-/* 0x42ec90 */
+/* 0x42ec90, seeds the C run-time random generator */
 
 void util_Seed(unsigned int seed)
 {
