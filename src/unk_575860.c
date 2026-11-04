@@ -1736,14 +1736,14 @@ int ai_QueryChapter3Step6(int *p)
 {
     int kind;
 
-    if (U_I(S + 0x38) >= 0 && p[0] == 0x25 && p[3] == 0x155) {
-        U_I(S + 0x38) = 1;
+    if (ai_Tutorial->goalDone >= 0 && p[0] == 0x25 && p[3] == 0x155) {
+        ai_Tutorial->goalDone = 1;
         return 1;
     }
-    if (U_I(S + 0x38) >= 1 && p[1] && p[0] == 0x24) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 0xa) {
-            U_I(S + 0x38) = 2;
+    if (ai_Tutorial->goalDone >= 1 && p[1] && p[0] == 0x24) {
+        kind = ((AIBLD *)p[1])->type;
+        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0xa) {
+            ai_Tutorial->goalDone = 2;
             return 1;
         }
         return 0;
