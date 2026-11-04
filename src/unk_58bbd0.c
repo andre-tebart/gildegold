@@ -804,7 +804,7 @@ extern GAPDATA full_data_62cda8[];
 extern char * ai_PickedObject;
 extern GAPDATA full_data_62c418[];
 extern GAPDATA ai_DomizilTable[];
-extern GAPDATA full_data_6f3880[];
+extern GAPDATA ai_EquipRows[];
 extern char * cm_FieldObject;
 extern struct D2OBJ *d2_Objs;
 extern D2RADIO d2_Radios[];
@@ -15994,14 +15994,46 @@ int ai_InventoryPanel(void)
     /* ROUGH SKELETON: the 0x1000 allocation path */
     return 0;
 }
-/* 0x5bae10, the init of the table 0x6f3888 (64 B, ROUGH): the four dwords at -8 .. +4 (-1 / 0) */
+#pragma pack(push, 1)
+typedef struct AIEQUIPSLOT {            /* 8 bytes, an equipment slot of an equip window row */
+    int pic;                            /* 0x00, the slot's picture object, -1 none */
+    int obj;                            /* 0x04, the slot's object, 0 none */
+} AIEQUIPSLOT;
 
-int ai_Unk5bae10(void)
+typedef struct AIEQUIPROW {             /* 0x40 bytes, a row of the equip window's table ai_EquipRows (32 rows) */
+    unsigned char *ch;                  /* 0x00, the scene character shown, 0: a free row */
+    int obj04;                          /* 0x04, a list object (d2_RemoveObj), -1 none */
+    int obj08;                          /* 0x08, a list object (d2_RemoveObj), -1 none */
+    int window;                         /* 0x0c, the row's window (d2_LastWindow), -1 none */
+    AIEQUIPSLOT slot[6];                /* 0x10, the six equipment slots */
+} AIEQUIPROW;
+#pragma pack(pop)
+
+/* 0x5bae10, the init of the equip window's row table (64 B): every row of ai_EquipRows is freed (the character 0,
+   the objects -1, the six slots -1 / 0), so that ai_Unk5bae50 finds no row in use
+   @deep read whole against 0x5bae10 to 0x5bae4b: every statement matches - the four header fields 0 and
+   -1, the 6-count slot loop with -1 and 0, the 32-row walk; 20 vs 19 instructions, the only hunk is the
+   outer loop bound: ours lea eax, ecx-8; cmp eax, ai_EquipRows+0x800; jl, the original cmp ecx,
+   ai_EquipRows+0x808; jl. The original keeps the row plus 8 field as the induction variable base, ours
+   normalises the row pointer. Tried: a count loop (mov ebx,0x20, dec ebx, jne), a pointer end variable
+   (jb), an int pointer walk from the table plus 8 (matched the cmp but folded the bound to the literal
+   address, rejected). Allocation of the induction variable base offset */
+
+void ai_EquipRowsInit(void)
 {
-    U_I((unsigned)&full_data_6f3880) = 0;
-    U_I((unsigned)(full_data_6f3880 + 0x4)) = -1;
-    /* ROUGH: the rest of the table */
-    return 0;
+    int k;
+    AIEQUIPROW *row;
+
+    for (row = (AIEQUIPROW *)ai_EquipRows; (int)row < (int)((AIEQUIPROW *)ai_EquipRows + 0x20); row++) {
+        row->ch = 0;
+        row->obj04 = -1;
+        row->obj08 = -1;
+        row->window = -1;
+        for (k = 0; k < 6; k++) {
+            row->slot[k].pic = -1;
+            row->slot[k].obj = 0;
+        }
+    }
 }
 /* 0x5bae50, a helper with two parameters (192 B, ROUGH SKELETON): a 0xc-byte frame; the body is a comment */
 
