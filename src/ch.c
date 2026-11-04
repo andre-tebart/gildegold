@@ -61,6 +61,7 @@ extern int ch_Ground0[65536];
 extern int ch_Ground1[65536];
 extern CHFADE ch_Fades[16];
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
+extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 CHACTION * ch_Queue = 0;  /* 0x631050 */
 int ch_Time = 0;  /* 0x631054 */
 char ch_MarkWalkErrors = 0;  /* 0x631058, when set, a failed walk animation marks the character's
@@ -3964,10 +3965,10 @@ void ch_ActFade(CHACTION *a)
         CHACT_FSTART(a) = (float)(ch_Time - 1);
         ch->flags.all = ch->flags.all & ~CH_NOFADE | 0x40;
     }
-    t = a->args[0] ? ((float)ch_Time - CHACT_FSTART(a)) * 0.02f : 1.0f - ((float)ch_Time - CHACT_FSTART(a)) * 0.02f;
-    if (!(t > 0.0f))
+    t = a->args[0] ? ((float)ch_Time - CHACT_FSTART(a)) * 0.02f : ai_FloatOne - ((float)ch_Time - CHACT_FSTART(a)) * 0.02f;
+    if (!(t > ai_FloatZero))
         t = 0.0f;
-    else if (!(t < 1.0f))
+    else if (!(t < ai_FloatOne))
         t = 1.0f;
     if (ch->scene == d3_DefaultScene && a->args[0] && !(ch->flags.all & CH_NOFADE) && t < 0.1
         && ch_FindNear(ch, others, 30.0f)) {
@@ -3980,14 +3981,14 @@ void ch_ActFade(CHACTION *a)
     memset(&f, 0, sizeof(f));
     f.b[2] &= 0xfe;
     f.b[0] = (unsigned char)t;
-    if (t != 255.0f && t != 0.0f) {
+    if (t != 255.0f && t != ai_FloatZero) {
         d3_SetObjectAlpha(ch->obj, ch->obj->info, f);
         if (ch->transport)
             d3_SetObjectAlpha(*ch->transport, (*ch->transport)->info, f);
         if (ch->lowPolyBody)
             d3_SetObjectAlpha(ch->lowPolyBody, ch->lowPolyBody->info, f);
     }
-    if (t == 0.0f || t == 255.0f) {
+    if (t == ai_FloatZero || t == 255.0f) {
         ch->flags.fading = 0;
         f.b[2] &= 0xfe;
         f.b[0] = 0xff;
@@ -3996,7 +3997,7 @@ void ch_ActFade(CHACTION *a)
             d3_SetObjectAlpha(*ch->transport, (*ch->transport)->info, f);
         if (ch->lowPolyBody)
             d3_SetObjectAlpha(ch->lowPolyBody, ch->lowPolyBody->info, f);
-        if (t == 0.0f)
+        if (t == ai_FloatZero)
             ch_SetVisible(ch, 0);
         else if (t == 255.0f)
             ch_SetVisible(ch, 1);

@@ -244,6 +244,10 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
     char pad2c[0x4];
     union {                         /* 0x30 */
         int args[0x30];             /* from ch_InsertAction's varargs */
+        struct {                    /* fade actions (0x38): the time the fade started */
+            char pad30f[0x20];
+            float fstart;           /* 0x50 */
+        };
         struct {
             char pad30w[0x40];
             char why[0x20];         /* 0x70, the reason the action was queued (cm_ExChrGotoBuilding copies its
@@ -537,7 +541,7 @@ void ch_ActWalkCells(CHACTION *a);                                              
 /* ---- 0x40a900..0x40b8a0 (worker ch6): walk-to helpers, fade/wait actions, open/close, action queue ---- */
 /* the TU ends at 0x40b580 (script builtins follow, src/game/evtc.c) */
 #define CHACT_NAME70(a) ((char *)(a) + 0x70)                         /* debug name of an action ("Walk2RndDummy") */
-#define CHACT_FSTART(a) (*(float *)&(a)->args[8])                    /* 0x50, fade actions: start time */
+#define CHACT_FSTART(a) ((a)->fstart)                                /* 0x50, fade actions: start time */
 #define CH_NOFADE       0x4000                                       /* CH_FLAGW: fade-in pending (met another character) */
 extern char ch_EmptyName[];         /* 0x631090, "" */
 
