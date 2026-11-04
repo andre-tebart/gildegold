@@ -113,6 +113,14 @@ typedef struct GMDISEASE {
     int range;                          /* 0x08, the severity is util_Random(range) */
 } GMDISEASE;
 
+/* one of the four production groups of a goods record: the goods' building group and the amount one of its
+   buildings adds to the player's stock (gm_GoodsStock) */
+typedef struct GMSTOCKGROUP {
+    unsigned char group;                /* 0x00, the building group (gm_BuildQuery(1, 5, group) finds its buildings) */
+    char pad01[3];
+    float factor;                       /* 0x04, the amount one building of the group adds */
+} GMSTOCKGROUP;
+
 /* a player's goods record (0x80 bytes; 0x55 of them at 0x7d6a70 + player * 0x2a90, gm_StockBlocks + 0x10; the
    template gm_DefaultStock has the same layout) */
 typedef struct GMSTOCK {
@@ -132,8 +140,11 @@ typedef struct GMSTOCK {
     float price;                        /* 0x38, the stored price (gm_ItemPrice of the item, 100) */
     unsigned short marketKind;          /* 0x3c, the kind of the market object (0x92 .. 0x97, 0x2db) that holds the good (gm_SyncMarket) */
     char pad3e[2];
-    unsigned char demandIsStock;        /* 0x40, set: gm_UpdatePrices takes the stock as the demand */
-    char pad41[0x3f];
+    union {
+        unsigned char demandIsStock;    /* 0x40, set: gm_UpdatePrices takes the stock as the demand */
+        GMSTOCKGROUP groups[4];         /* 0x40, the four production groups (gm_GoodsStock) */
+    };
+    char pad60[0x20];
 } GMSTOCK;
 
 /* a player's stock block (0x2a90 bytes, five of them at gm_StockBlocks 0x7d6a60): two seasonal indices in

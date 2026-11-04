@@ -3631,31 +3631,33 @@ int gm_GoodsDemand(int p, int i)
     }
     return 0;
 }
-/* 0x4ff950, the stock of the goods record i of the player p: the sum over the four buildings (the group (1, 5, number) of the bytes at +0x40 + 8k, each with the float at +4 of its slot added once per match) times 0.5, scaled by the float +0x24 / +0x20 when +0x24 is not 0; 0 when the first building byte is 0. ROUGH */
+/* 0x4ff950, the stock of the goods record i of the player p: 0.5 times the sum over its four production groups
+   of the group's factor taken once per building of the group (gm_BuildQuery(1, 5, group) / gm_BuildNext), scaled
+   by mean / demand when the mean is not 0; 0 when the record's first group is unset */
 
 int gm_GoodsStock(int p, int i)
 {
     int sum;
-    char *g;
-    char *s;
+    GMSTOCK *g;
+    GMSTOCKGROUP *s;
     int k, o;
 
     sum = 0;
-    g = GM_GOODS(p, i);
-    s = g + 0x40;
-    if (*s == 0)
+    g = &GM_BLOCK(p)->goods[i];
+    s = g->groups;
+    if (s->group == 0)
         return 0;
-    for (k = 4; k != 0; k--, s += 8) {
-        if (*s != 0 && (o = gm_BuildQuery(1, 5, (unsigned char)*s)) != 0) {
+    for (k = 4; k != 0; k--, s++) {
+        if (s->group != 0 && (o = gm_BuildQuery(1, 5, s->group)) != 0) {
             do {
-                sum = (int)((float)sum + *(float *)(s + 4));
+                sum = (int)((float)sum + s->factor);
                 o = gm_BuildNext();
             } while (o != 0);
         }
     }
     sum = (int)(sum * 0.5);
-    if (*(float *)(g + 0x24) != 0.0f)
-        sum = (int)(*(float *)(g + 0x24) / *(float *)(g + 0x20) * sum);
+    if (g->mean != ai_FloatZero)
+        sum = (int)(g->mean / g->demand * sum);
     return sum;
 }
 

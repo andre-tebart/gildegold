@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 32cdea41: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads: a group byte, an unaligned int and a factor per 8 bytes at 0x40); d3_engine includes f3gm.h but d3_CloneObject reads no goods record, and its byte match flips on that declaration set alone (VC6 tie-break, no evidence of the original's source) [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
