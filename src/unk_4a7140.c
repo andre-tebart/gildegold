@@ -1402,10 +1402,10 @@ int ai_DecideFarChar(int a, AIPER *p, int c, int d, AIARG *m)
     m->ref = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
-/* 0x4a9660, decide callback: p (not flagged 0x40000, money >= 8) picks a character within 18..33 units, into m
-   (kind 7) */
+/* 0x4a9660, decide callback: p (not flagged 0x40000, money >= 8) picks a character within 18..33 units who
+   holds an office, into m (kind 7) */
 
-int ai_DecideCloseChar(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideCloseChar(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags;
     unsigned short id;
@@ -1414,11 +1414,11 @@ int ai_DecideCloseChar(int a, AIPER *p, int c, int d, unsigned char *m)
         return 0;
     if (p->money < 8)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x497bc0);
+    flags = PARTNER_FLAGS_ANY_OFFICE;
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x10) + 18.0f, &id) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
+    m->kind = 7;
+    m->ref = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
 /* 0x4a9700, decide callback: p (not flagged 0x100, money >= 4) picks one of the holders of the offices of
