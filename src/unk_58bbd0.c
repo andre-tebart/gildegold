@@ -5299,13 +5299,13 @@ int ai_FeastWindow(); int ai_DenounceWindow(); void sv_FitForm(int f); void sv_B
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_Unk5ae870), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
-/* 0x5966f0, the contact listener of the tavern's common room (room kind 0x17 in ai_Unk59e420): it releases the
-   name plates and pumps the frame (sv_RunFrame, this, mask 0x67fff) while the screen stays on top; every frame it
-   registers the three plates contact_FESTGEBEN (text txt_Ptrs[0x1766], throw a feast), contact_KAMPF (text
-   0x16ae, the brawl) and contact_ANSCHWAERZEN (text 0x175e, denounce). A clicked plate opens its window: the feast
-   window ai_FeastWindow, the five-text window ai_FiveTextWindow in mode 3, or the denounce window ai_DenounceWindow
-   (then the camera follows) */
-void ai_TavernContact(AIBLD *bld, int room)
+/* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_Unk59e420; the feast window
+   it opens is "locations\wohnsitz\fest"): it releases the name plates and pumps the frame (sv_RunFrame, this, mask
+   0x67fff) while the screen stays on top; every frame it registers the three plates contact_FESTGEBEN (text
+   txt_Ptrs[0x1766], throw a feast), contact_KAMPF (text 0x16ae, the brawl) and contact_ANSCHWAERZEN (text 0x175e,
+   denounce). A clicked plate opens its window: the feast window ai_FeastWindow, the five-text window
+   ai_FiveTextWindow in mode 3, or the denounce window ai_DenounceWindow (then the camera follows) */
+void ai_FeastContact(AIBLD *bld, int room)
 {
     int r;
     int fest;
@@ -5313,7 +5313,7 @@ void ai_TavernContact(AIBLD *bld, int room)
     int ansch;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_TavernContact, 0x67fff);
+    r = sv_RunFrame(ai_FeastContact, 0x67fff);
     while (r != 0) {
         fest = sv_RegisterNamePlate("contact_FESTGEBEN", txt_Ptrs[0x1766], 0x16);
         kampf = sv_RegisterNamePlate("contact_KAMPF", txt_Ptrs[0x16ae], 0xc);
@@ -5328,7 +5328,7 @@ void ai_TavernContact(AIBLD *bld, int room)
                 sv_CameraFollow();
             }
         }
-        r = sv_RunFrame(ai_TavernContact, 0x67fff);
+        r = sv_RunFrame(ai_FeastContact, 0x67fff);
     }
 }
 /* 0x5967c0, the mistress window "locations\wohnsitz\geliebte2" (990 B, ROUGH SKELETON from the Ghidra
@@ -8838,7 +8838,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x14: ai_Unk596400(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x15: ai_RhetoricContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x16: ai_WineCellarContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x17: ai_TavernContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x17: ai_FeastContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x18: ai_MistressContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x1f: ai_Unk59a560(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x4d: ai_ThievesGuildEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
