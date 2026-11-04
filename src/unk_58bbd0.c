@@ -1053,11 +1053,15 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 typedef struct AICHARREC {         /* the character record fields this unit reads (ai_char.h AICHAR, same layout;
                                       G8CHARREC below is the view of the news messages) */
     unsigned short id;             /* 0x000, the character's id (AIBLD.owner refers to it) */
-    char pad002[0xb];
+    char pad002[0x7];
+    unsigned char sex;             /* 0x009, 0 / non-0 (ai_char.h AICHAR.sex; it picks the male / female name table) */
+    char pad00a[0x3];
     unsigned char b00d;            /* 0x00d, 1 .. 2 (ai_char.h AICHAR.b00d, gv.c copies it to the grave's v30) */
     char pad00e[0x158];
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
-    char pad167[0x61];
+    char pad167[2];
+    unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
+    char pad16a[0x5e];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
     char pad1cc[0x50];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
@@ -9950,12 +9954,19 @@ void ai_Unk5a1000(int param_1)
 
 int amt_ExecuteMayorPowerMessage(char *c, int *m);
 
+typedef struct AMTPICK {           /* the row record the special-amount list hands its callback (8 bytes): the
+                                      office index and the owner (0x5bea50 compares the word with 0xffff) */
+    unsigned short office;         /* 0x00, the office index, 0xffff = an empty row */
+    unsigned short pad02;
+    int charId;                    /* 0x04, the office owner's character id (amt_ExecuteMayorPowerMessage's m[1]) */
+} AMTPICK;
+
 /* 0x5a13f0, the callback of the guild level 3 request (313 B, Ghidra-missed start: the callback of 0x5a17b0):
-   the window "LOCATIONS\ZUNFTHAUS\LEVEL3" 0x4741f0, the text 0x167c, the text 0x167f (the office id, 8,
-   the word of param_1) and the pump 0x5309a0 (0x5a13f0, 0x677c7); a click (0xf8a668 == 0) sends the request
-   0x4e9ce0 (the player, {1, param_1 + 4}) and 0x6f22a0 = 3 (returns 1); 0xf8a668 == 1 only raises 0x6f22a0;
-   0x4758f0 at the end, returns whether the request went through */
-int ai_Unk5a13f0(int param_1)
+   the window "LOCATIONS\ZUNFTHAUS\LEVEL3" 0x4741f0, the text 0x167c, the text 0x167f (the office name from the
+   player's second office and sex, 8, pick->office) and the pump 0x5309a0 (0x5a13f0, 0x677c7); a click
+   (0xf8a668 == 0) sends the request 0x4e9ce0 (the player, {1, pick->charId}) and 0x6f22a0 = 3 (returns 1);
+   0xf8a668 == 1 only raises 0x6f22a0; 0x4758f0 at the end, returns whether the request went through */
+int ai_GuildLevel3RequestCB(AMTPICK *pick)
 {
     int req[2];
     int win;
@@ -9967,28 +9978,28 @@ int ai_Unk5a13f0(int param_1)
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x167c);
     d2_SetForm(win, 2);
-    if (*(unsigned char *)((unsigned)&ai_Unk770b89 + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
-        id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x253;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+        id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x253;
     else
-        id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) + 0x27b;
-    io_PrintText(0x167f, id, 8, *(unsigned short *)param_1);
+        id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x27b;
+    io_PrintText(0x167f, id, 8, pick->office);
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
             req[0] = 1;
-            req[1] = U_I(param_1 + 4);
-            amt_ExecuteMayorPowerMessage((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, req);
-            U_I((unsigned)&sv_PopRequest) = 3;
+            req[1] = pick->charId;
+            amt_ExecuteMayorPowerMessage((char *)ai_Chars + ai_PlayerId * 0x21c, req);
+            sv_PopRequest = 3;
             ok = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
         }
-        if (sv_RunFrame(ai_Unk5a13f0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GuildLevel3RequestCB, 0x677c7) == 0) {
             d2_CloseView(win);
             return ok;
         }
@@ -10098,7 +10109,7 @@ void ai_Unk5a17b0(void)
             req[1] = 0xc00;
             req[4] = 6;
             req[6] = 1;
-            ai_AmountMenu(req, (char *)U_I((unsigned)&full_data_143fbb8), 0, (void *)(unsigned)&ai_Unk5a13f0);
+            ai_AmountMenu(req, (char *)U_I((unsigned)&full_data_143fbb8), 0, (void *)(unsigned)&ai_GuildLevel3RequestCB);
             sv_CameraFollow();
             return;
         }
