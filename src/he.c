@@ -14938,7 +14938,7 @@ void he_Unk56cdd0(int ev)
     gm_AddTime(ev + 0x52, 0, 0xa, 0);
 }
 
-int ai_Unk4b4f00();
+int ai_IsMissionFulfilled();
 int cm_SendExSysMessage(unsigned char id, void *msg);
 
 /* 0x56ce40, the run handler of the type 0x4c (a character action of the player below 22 h): the player byte 0x624580 (negative = no player: free the record), the record of the player *(unsigned short *)(ev + 8) in the 0x80-entry table 0xf82320 (0x24 bytes: +4 the character's +4, +0x20 the handled flag), the states (-2 / -1 free) 0 = wait for the flag, 1 = start the action 0x4c4db0 (8, &the record's +4) and wait for its handle +0xac, 2 = the handle result (1 = done, state 0 and wait 24; else state 1 and wait 30) */
@@ -14965,7 +14965,7 @@ void he_Unk56ce40(int ev)
         break;
     case 0:
         if (ai_Missions[i].fulfilled == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16) {
-            if (ai_Unk4b4f00(&ai_Missions[i]) != 0) {
+            if (ai_IsMissionFulfilled(&ai_Missions[i]) != 0) {
                 ai_Missions[i].fulfilled = 1;
                 gm_AddTime(ev + 0x52, 0, 1, 0);
                 *(int *)(ev + 0x70) = 1;

@@ -65,7 +65,7 @@ G13MIS *ai_FindOwnerMission(G13MIS *m)
    and ai_SetFirstMission (0x4b3bd0), saved and loaded (0x4b62e0 / 0x4b63b0), and read by no drafted function
    and by no relocation to ai_Missions+0x18 (dcp phi 0xf82338: no object) -> a name would be invention, and its
    rename is a shared-header decision. progress (0x1c: the events ai_CountMissionEvent counts, compared with
-   t->goal) and fulfilled (0x20: set by he.c once ai_Unk4b4f00 holds) are named. */
+   t->goal) and fulfilled (0x20: set by he.c once ai_IsMissionFulfilled holds) are named. */
 
 void ai_RestartMission(G13MIS *m)
 {
@@ -489,7 +489,7 @@ int ai_CountMissionEvent(G13MIS *m, int ev)
    The mission texts that would name the category (t->text, not in the repo) are the only remaining evidence: a
    function name would be invention (Q1). Q4 is typed now (f->missionMoney[3] is +0x38). */
 
-int ai_Unk4b4550(AICHAR *c, G13TYPE *t)
+int ai_CondMissionMoney3(AICHAR *c, G13TYPE *t)
 {
     AIFIN *f = gm_PlayerRecord(c);
 
@@ -827,11 +827,11 @@ int ai_CondPlayerHoldsNoBuilding(AICHAR *c, G13TYPE *t)
 }
 
 extern unsigned char ai_GameState;      /* 0x6f25ac, missions on */
-int ai_Unk6f0728 = 0;  /* 0x6f0728 */
+int ai_MissionForceDone = 0;  /* 0x6f0728, 1: the next fulfilled test passes once (no writer in the build) */
 
 /* 0x4b4f00, 1 if mission m is fulfilled (the condition of its type; 11 / 19 / 23 / 28 / 40: events counted by
-   0x4b44e0) */
-int ai_Unk4b4f00(G13MIS *m)
+   ai_CountMissionEvent). ai_MissionForceDone == 1 passes once and clears (a debug / scripted completion) */
+int ai_IsMissionFulfilled(G13MIS *m)
 {
     G13TYPE *t;
     AICHAR *c;
@@ -839,8 +839,8 @@ int ai_Unk4b4f00(G13MIS *m)
     t = ai_GetMissionType(m->type);
     if (!ai_GameState || t == 0)
         return 0;
-    if (ai_Unk6f0728 == 1 && ai_MissionMode >= 0 && ai_MissionMode <= 5) {
-        ai_Unk6f0728 = 0;
+    if (ai_MissionForceDone == 1 && ai_MissionMode >= 0 && ai_MissionMode <= 5) {
+        ai_MissionForceDone = 0;
         return 1;
     }
     c = gm_FindChar(m->owner);
@@ -852,7 +852,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 14:
     case 22:
     case 32:
-        return ai_Unk4b4550(c, t);
+        return ai_CondMissionMoney3(c, t);
     case 2:
     case 7:
         return ai_CondTitlesLeft(c, t);
