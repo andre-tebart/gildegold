@@ -701,7 +701,8 @@ local int read_buf(strm, buf, size)
 /* ===========================================================================
  * Initialize the "longest match" routines for a new zlib stream
  */
-/* 0x461fd0 */
+/* 0x461fd0, sets the window size, clears the hash heads and loads the
+ * level's match parameters, resetting the match state */
 local void lm_init (s)
     deflate_state *s;
 {
