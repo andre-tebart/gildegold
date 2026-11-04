@@ -14628,16 +14628,19 @@ void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3)
 send:
     he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c348);
 }
-/* 0x5a9990, a graveyard message (69 B): 0x42ec00 (3) picks the text 0x40a9 + the value, the +4 id (1, 0x5fb,
-   the key 0x62c364) */
+/* 0x5a9990, tells a character of the graveyard work's outcome (69 B): the text 0x40a8 with one of the three
+   sub-texts 0x40a9 .. 0x40ab (util_Random(3)) into ai_NewsText, shown to its netId (1, event 0x5fb, the sound
+   ai_NewsKeyFriedhof12); he_Unk5702e0 sends it after he_SetLifeByAge set the second character's value */
 
-void ai_Unk5a9990(int param_1)
+void ai_TellGraveWorkNews(int chRec)
 {
     unsigned int v;
+    G8CHARREC *c;
 
+    c = (G8CHARREC *)chRec;
     v = util_Random(3);
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x40a8, (v & 0xffff) + 0x40a9);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, ai_NewsKeyFriedhof12);
+    txt_Format(ai_NewsText, 0x40a8, (v & 0xffff) + 0x40a9);
+    he_ShowNews(c->netId, -1, ai_NewsText, 1, 0x5fb, ai_NewsKeyFriedhof12);
 }
 /* 0x5a99e0, a graveyard message (69 B): the text 0x40ac with the value, the +4 id (1, 0x5fb, the key 0x62c380) */
 
