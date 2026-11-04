@@ -13986,13 +13986,14 @@ void ai_SetSettingFactor(int bld, float factor)
     if (rec != 0)
         rec->factor = factor;
 }
-/* 0x5a8920, the settings freed (29 B): 0x5a8390 over the list 0x6f26c0 */
+/* 0x5a8920, the production settings freed (29 B): ai_FreeSettingChain over the chain ai_Settings (0x6f26c0),
+   then the head cleared */
 
 void ai_FreeSettings(void)
 {
-    if (*(int *)((unsigned)&full_data_6f26c0) != 0)
-        ai_FreeSettingChain((G8SETTING *)*(int *)((unsigned)&full_data_6f26c0));
-    *(int *)((unsigned)&full_data_6f26c0) = 0;
+    if (ai_Settings != 0)
+        ai_FreeSettingChain(ai_Settings);
+    ai_Settings = 0;
 }
 /* 0x5a8940, the settings saved (213 B): the count, then every record +0 / +4 / +0x44 and the seven slots
    {good, weight} by 0x430e30 (the file param_1); 1 done, 0 on a write error */
