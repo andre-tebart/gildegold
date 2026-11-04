@@ -10867,20 +10867,23 @@ int gm_BathObjectCount(char *b)
         n = n + 1;
     return n;
 }
-/* 0x50cfd0, the same with 0x274 / 0x27e / 0x28e / 0x291 (2 + ..) */
+/* 0x50cfd0, the number of the curse objects (0x274, 0x27e, 0x28e, 0x291) the building b has: 2 plus one per
+   prototype found in its object list (the count gm_BathObjectCount keeps for the kitchen / bath) */
 
 int gm_CurseObjectCount(char *b)
 {
     int n;
+    ORDBLD *bld;
 
+    bld = (ORDBLD *)b;
     n = 2;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x274) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x274) != 0)
         n = 3;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x27e) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x27e) != 0)
         n = n + 1;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x28e) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x28e) != 0)
         n = n + 1;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x291) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x291) != 0)
         n = n + 1;
     return n;
 }
