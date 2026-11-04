@@ -6486,7 +6486,7 @@ void sv_StartBand(void)
 
 void sv_EndBand(void)
 {
-    SV_I((unsigned)&sv_BandActive) = 0;
+    sv_BandActive = 0;
 }
 /* 0x52eee0, during the rubber band: moves sv_Band's mouse corner (clamped to d3_Viewport like sv_StartBand) and
    selects the characters of ai_SceneChars the band holds: a live character the player may select
