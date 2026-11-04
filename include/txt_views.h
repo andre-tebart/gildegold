@@ -160,7 +160,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440b88                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x069c8))  /* 0x1440b88 */
 #define full_data_1440b90                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x069d0))  /* 0x1440b90 */
 #define full_data_1440ba4                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x069e4))  /* 0x1440ba4 */
-#define full_data_1440bc8                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x06a08))  /* 0x1440bc8 */
+#define ai_ContactTextRaid                        (*(char * *)((char *)txt_Ptrs + 0x06a08))  /* 0x1440bc8, the hover text of the contact_RAUBUEBERFALL plate (its click opens ai_OpenRaid) */
 #define ai_BribePickText                        (*(char * *)((char *)txt_Ptrs + 0x06a28))  /* 0x1440be8, the pick prompt ai_OpenBribe hands to ai_MapPick for the bribe */
 #define ai_BreakInPickText                        (*(char * *)((char *)txt_Ptrs + 0x06a50))  /* 0x1440c10, the pick prompt ai_BreakInWindow hands to ai_MapPick for the burglar-guild break-in */
 #define txt_DeathTreeCaption                            (*(int *)((char *)txt_Ptrs + 0x06ac8))  /* 0x1440c88 */
@@ -215,13 +215,13 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextStorage                    (*(char * *)((char *)txt_Ptrs + 0x07dd0))  /* 0x1441f90 */
 #define ai_ContactTextProduction                        (*(char * *)((char *)txt_Ptrs + 0x07dd8))  /* 0x1441f98, the hover text of the production plates (contact_PRODUKTION / _METALL; ai_ProductionGoodsWindow) */
 #define ai_ContactTextTransport                  (*(char * *)((char *)txt_Ptrs + 0x07de0))  /* 0x1441fa0 */
-#define full_data_1441fa8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07de8))  /* 0x1441fa8 */
-#define full_data_1441fb0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07df0))  /* 0x1441fb0 */
+#define ai_ContactTextAttack                        (*(char * *)((char *)txt_Ptrs + 0x07de8))  /* 0x1441fa8, the hover text of the contact_ANGRIFF plate (its click opens ai_OpenPickpocket) */
+#define ai_ContactTextAmbush                        (*(char * *)((char *)txt_Ptrs + 0x07df0))  /* 0x1441fb0, the hover text of the contact_AUF_LAUER_LEGEN plate (its click opens ai_BreakInWindow) */
 #define ai_ContactTextEquip                        (*(char * *)((char *)txt_Ptrs + 0x07df8))  /* 0x1441fb8, the hover text of the AUSRUESTEN plate and of the weapon stand ub_STAENDER_WAFFEN (both open ai_EquipWindow); the wording is unknown */
-#define full_data_1441fe0                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x07e20))  /* 0x1441fe0 */
+#define ai_ContactTextSpy                        (*(char * *)((char *)txt_Ptrs + 0x07e20))  /* 0x1441fe0, the hover text of the contact_GEBAEUDE_AUSSPIONIEREN plate (its click opens ai_OpenSpying) */
 #define full_data_1442000                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e40))  /* 0x1442000 */
-#define full_data_1442008                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e48))  /* 0x1442008 */
-#define full_data_1442010                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e50))  /* 0x1442010 */
+#define ai_ContactTextRegeneration                        (*(char * *)((char *)txt_Ptrs + 0x07e48))  /* 0x1442008, the hover text of the contact_REGENERATION plate (its click opens ai_TrainingWindow) */
+#define ai_ContactTextExtort                        (*(char * *)((char *)txt_Ptrs + 0x07e50))  /* 0x1442010, the hover text of the contact_SCHUTZGELD_ERPRESSEN plate (its click opens ai_OpenBribe) */
 #define full_data_1442018                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07e58))  /* 0x1442018 */
 #define full_data_1442028                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x07e68))  /* 0x1442028 */
 #define full_data_1442048                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e88))  /* 0x1442048 */

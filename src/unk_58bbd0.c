@@ -2942,7 +2942,7 @@ float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_Check
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
 char *_strupr(char *); void gm_CloseTechTree(void); int ai_MercenaryBook();
-int ai_EquipWindow(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
+void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
 void ai_Unk591ad0(void);
@@ -4489,14 +4489,16 @@ void ai_OpenRaid(int building)
 
 int ai_OpenTransportBuy(); int ai_OpenTransportSell();
 
-/* 0x594e50, the criminal contact listener (643 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); while the flag
-   0x6f231c has 0x200: AUSRUESTEN (0x1441fb8, 0xd) -> 0x5bb350, AUF_LAUER_LEGEN (0x1441fb0, 0x15) -> 0x594180,
-   ANGRIFF (0x1441fa8, 0x17) -> 0x594470, SCHUTZGELD_ERPRESSEN (0x1442010, 0x17) -> 0x594790,
-   GEBAEUDE_AUSSPIONIEREN (0x1441fe0, 0x17) -> 0x594b10, RAUBUEBERFALL (0x1440bc8, 0x17) -> 0x594db0,
-   REGENERATION (0x1442008, 0x17) and ZIELSCHEIBE / STROHPUPPE (0x1440acc / 0x1440ad0, 0x17) -> 0x5bba00;
-   with the flag 0x400: LAGER (0x1441f90) -> 0x5b26b0 (param_1, param_1 + 0x5d), GELAGE (0x1441f88) ->
-   0x5b9f30, TRANSPORT (0x1441fa0) -> 0x5af1a0; 0x5912c0 every frame */
-void ai_Unk594e50(int param_1)
+/* 0x594e50, the criminal contact listener (643 B): the plates released (0x52e190) and, while the building
+   permission 0x200 (0x6f231c) is set, registered again (0x52e1c0): AUSRUESTEN (0x1441fb8, 0xd), AUF_LAUER_LEGEN
+   (0x1441fb0, 0x15), ANGRIFF (0x1441fa8, 0x17), and with the records 0x4ffe90 (0x35 / 0x34) of the building's
+   objList STROHPUPPE / ZIELSCHEIBE (0x1440ad0 / 0x1440acc, 0x17), then SCHUTZGELD_ERPRESSEN (0x1442010),
+   GEBAEUDE_AUSSPIONIEREN (0x1441fe0), RAUBUEBERFALL (0x1440bc8) and REGENERATION (0x1442008), all 0x17; with the
+   permission 0x400: LAGER (0x1441f90, 0xe), GELAGE (0x1441f88, 0xe) and TRANSPORT (0x1441fa0, 0x15); 0x5912c0
+   runs every frame; a clicked plate (0x6f22e4) opens its window: 0x5bb350, 0x594180, 0x594470, 0x5bba00,
+   0x594790, 0x594b10, 0x594db0, 0x5b26b0 (bld, bld->objList), 0x5b9f30, 0x5af1a0; the frame pump 0x5309a0
+   (this, 0x67fff) */
+void ai_CriminalContact(AIBLD *bld)
 {
     int r;
     int ausruesten;
@@ -4525,51 +4527,51 @@ void ai_Unk594e50(int param_1)
     gelage = 0;
     transport = 0;
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk594e50, 0x67fff);
+    r = sv_RunFrame(ai_CriminalContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
-            lauer = sv_RegisterNamePlate("contact_AUF_LAUER_LEGEN", U_I((unsigned)&full_data_1441fb0), 0x15);
-            angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&full_data_1441fa8), 0x17);
-            if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x35) != 0)
-                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&ai_ContactTextTraining), 0x17);
-            if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x34) != 0)
-                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0x17);
-            schutzgeld = sv_RegisterNamePlate("contact_SCHUTZGELD_ERPRESSEN", U_I((unsigned)&full_data_1442010), 0x17);
-            spionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&full_data_1441fe0), 0x17);
-            raub = sv_RegisterNamePlate("contact_RAUBUEBERFALL", U_I((unsigned)&full_data_1440bc8), 0x17);
-            regen = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&full_data_1442008), 0x17);
+        if (ai_BuildingPerms & 0x200) {
+            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", ai_ContactTextEquip, 0xd);
+            lauer = sv_RegisterNamePlate("contact_AUF_LAUER_LEGEN", ai_ContactTextAmbush, 0x15);
+            angriff = sv_RegisterNamePlate("contact_ANGRIFF", ai_ContactTextAttack, 0x17);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x35) != 0)
+                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", ai_ContactTextTraining, 0x17);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x34) != 0)
+                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", ai_ContactTextTarget, 0x17);
+            schutzgeld = sv_RegisterNamePlate("contact_SCHUTZGELD_ERPRESSEN", ai_ContactTextExtort, 0x17);
+            spionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", ai_ContactTextSpy, 0x17);
+            raub = sv_RegisterNamePlate("contact_RAUBUEBERFALL", ai_ContactTextRaid, 0x17);
+            regen = sv_RegisterNamePlate("contact_REGENERATION", ai_ContactTextRegeneration, 0x17);
         }
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&ai_ContactTextGelage), 0xe);
-            transport = sv_RegisterNamePlate("TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
+        if (ai_BuildingPerms & 0x400) {
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", ai_ContactTextGelage, 0xe);
+            transport = sv_RegisterNamePlate("TRANSPORT", ai_ContactTextTransport, 0x15);
         }
         ai_TradeContactChecks();
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
-            else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_GelageWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ausruesten)
-                ai_EquipWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh ||
-                     U_I((unsigned)&ai_ClickedObject) == regen)
-                ai_TrainingWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == lauer)
-                ai_BreakInWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == angriff)
-                ai_OpenPickpocket(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == schutzgeld)
-                ai_OpenBribe(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == spionieren)
-                ai_OpenSpying(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == raub)
-                ai_OpenRaid(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == lager)
+                ai_StorageWindow((int)bld, bld->objList);
+            else if (ai_ClickedObject == gelage)
+                ai_GelageWindow((int)bld);
+            else if (ai_ClickedObject == transport)
+                ai_OpenTransport((int)bld);
+            else if (ai_ClickedObject == ausruesten)
+                ai_EquipWindow((int)bld);
+            else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh ||
+                     ai_ClickedObject == regen)
+                ai_TrainingWindow((int)bld);
+            else if (ai_ClickedObject == lauer)
+                ai_BreakInWindow((int)bld);
+            else if (ai_ClickedObject == angriff)
+                ai_OpenPickpocket((int)bld);
+            else if (ai_ClickedObject == schutzgeld)
+                ai_OpenBribe((int)bld);
+            else if (ai_ClickedObject == spionieren)
+                ai_OpenSpying((int)bld);
+            else if (ai_ClickedObject == raub)
+                ai_OpenRaid((int)bld);
         }
-        r = sv_RunFrame(ai_Unk594e50, 0x67fff);
+        r = sv_RunFrame(ai_CriminalContact, 0x67fff);
     }
 }
 /* 0x5950e0, the trade listener (143 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); the contacts FERNEINKAUF
@@ -9008,7 +9010,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         ai_KontorContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x27:
-        ai_Unk594e50(U_I((unsigned)&ai_FallbackBuilding));
+        ai_CriminalContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x47:
         ai_Unk5950e0(U_I((unsigned)&ai_FallbackBuilding));
@@ -11779,7 +11781,7 @@ void ai_Unk5a4d40(int param_1)
             burglary = sv_RegisterNamePlate("contact_EINBRUCH", U_I((unsigned)&full_data_1440944), 0x17);
             espionage = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&full_data_1440994), 0x17);
             if (*(unsigned char *)(krec + 0x247) >= 2)
-                angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&full_data_1441fa8), 0x17);
+                angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&ai_ContactTextAttack), 0x17);
             taschen = sv_RegisterNamePlate("contact_TASCHENDIEBSTAHL", U_I((unsigned)&full_data_1442018), 0x17);
             pergament = sv_RegisterNamePlate("ob_INFORMATIONSPERGAMENT", U_I((unsigned)&ai_ContactTextInformation), 0x16);
         }
@@ -11835,7 +11837,7 @@ void ai_Unk5a4f70(int param_1)
     do {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
-            regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&full_data_1442008), 0x17);
+            regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&ai_ContactTextRegeneration), 0x17);
         }
         if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
@@ -12701,7 +12703,7 @@ void ai_Unk5a6920(int param_1)
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
             ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
             razzia = sv_RegisterNamePlate("contact_RAZZIA", U_I((unsigned)&full_data_1442000), 0x16);
-            ausspionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&full_data_1441fe0), 0x17);
+            ausspionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&ai_ContactTextSpy), 0x17);
             pergament = sv_RegisterNamePlate("ub_INFORMATIONSPERGAMENT", U_I((unsigned)&full_data_143a3f4), 0xc);
             transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
         }
@@ -12740,7 +12742,7 @@ void ai_Unk5a6a90(int param_1)
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
             nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&ai_ContactTextTraining), 0xc);
-            regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&full_data_1442008), 0x17);
+            regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&ai_ContactTextRegeneration), 0x17);
             if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) && U_I((unsigned)&ai_ClickedObject) != 0 &&
                 (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == nacht || U_I((unsigned)&ai_ClickedObject) == regeneration))
                 ai_TrainingWindow(param_1);
