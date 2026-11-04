@@ -223,6 +223,11 @@ typedef struct INIT_SITELIST {
     D3OBJECT *obj[0x200];           /* 0x004, the collected objects */
     char key[0x80];                 /* 0x804, the name substring the collector searches (the site name) */
 } INIT_SITELIST;                    /* 0x884 bytes */
+/* the object list of init_StripTorches (0x511600): the collected "ub_FACKEL_" objects, the count after them */
+typedef struct INIT_TORCHLIST {
+    D3OBJECT *obj[0x20];            /* 0x000, the collected objects */
+    int n;                          /* 0x080, the number collected */
+} INIT_TORCHLIST;                   /* 0x84 bytes */
 #define INIT_PROTO_OBJECT   0x1000000u   /* SCENEOBJ.proto: an index into the object prototypes ai_Goods */
 #define INIT_PROTO_BUILDING 0x2000000u   /* SCENEOBJ.proto: an index into the building prototypes ai_BTypes */
 #define INIT_KONTOR_BUILDING 0x47        /* the building prototype index the special name "KONTOR" maps to */
@@ -2480,16 +2485,19 @@ int init_SetupNewGame(int n)
     }
     return 1;
 }
-/* 0x5115b0, collects the name s into the list r (count at r + 0x80, at most 0x20) when it contains "ub_FACKEL_" */
+/* 0x5115b0, d3_ForEachObject callback of init_StripTorches: collects o into the list when its name contains
+   "ub_FACKEL_"; returns 0 once 0x20 objects are collected */
 
 
-char unk_Unk5115b0(int s, int r)
+char init_CollectTorchObject(D3OBJECT *o, void *ctx)
 {
-    if (strstr((char *)s, "ub_FACKEL_") != 0) {
-        *(int *)(r + *(int *)(r + 0x80) * 4) = s;
-        *(int *)(r + 0x80) = *(int *)(r + 0x80) + 1;
+    INIT_TORCHLIST *list = (INIT_TORCHLIST *)ctx;
+
+    if (strstr(o->name, "ub_FACKEL_") != 0) {
+        list->obj[list->n] = o;
+        list->n++;
     }
-    return *(int *)(r + 0x80) < 0x20;
+    return list->n < 0x20;
 }
 /* 0x511600, in the scene s: for every "ub_FACKEL_" object (0x5115b0 collects them, up to 0x20) the children whose kind is above 4 and whose name contains "rLicht" are handed on (0x449960), then the object is released (0x447190) */
 
@@ -2501,7 +2509,7 @@ void init_StripTorches(int s)
 
     i = 0;
     list[32] = 0;
-    d3_ForEachObject(d3_DefaultScene, s, 0x2c0, unk_Unk5115b0, list);
+    d3_ForEachObject(d3_DefaultScene, s, 0x2c0, init_CollectTorchObject, list);
     if (0 < list[32]) {
         do {
             c = *(int *)(list[i] + 0x1fc);
