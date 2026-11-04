@@ -4577,29 +4577,30 @@ void ai_CriminalContact(AIBLD *bld)
         r = sv_RunFrame(ai_CriminalContact, 0x67fff);
     }
 }
-/* 0x5950e0, the trade listener (143 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); the contacts FERNEINKAUF
-   (0x1442028, 0x10) -> 0x5af1c0 and VERKAUF (0x1442048, 0x10) -> 0x5af1b0 when they are the pending 0x6f22e4;
-   0x5912c0 every frame */
+/* 0x5950e0, the contact listener of the long-distance trade building (kind 0x47): it releases the name plates and
+   pumps the frame (sv_RunFrame, this, mask 0x67fff) while its screen stays on top; every frame it registers the
+   FERNEINKAUF plate (text ai_ContactTextFarBuy) and the VERKAUF plate (ai_ContactTextSell), runs the trade checks
+   and opens the transport window of the building in buy (mode 4) / sell (mode 2) mode when that plate was clicked */
 
-void ai_Unk5950e0(int param_1)
+void ai_FarTradeContact(int building)
 {
     int r;
     int buy;
     int sell;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5950e0, 0x67fff);
+    r = sv_RunFrame(ai_FarTradeContact, 0x67fff);
     while (r != 0) {
-        buy = sv_RegisterNamePlate("FERNEINKAUF", U_I((unsigned)&full_data_1442028), 0x10);
-        sell = sv_RegisterNamePlate("VERKAUF", U_I((unsigned)&full_data_1442048), 0x10);
+        buy = sv_RegisterNamePlate("FERNEINKAUF", ai_ContactTextFarBuy, 0x10);
+        sell = sv_RegisterNamePlate("VERKAUF", ai_ContactTextSell, 0x10);
         ai_TradeContactChecks();
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == buy)
-                ai_OpenTransportBuy(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == sell)
-                ai_OpenTransportSell(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == buy)
+                ai_OpenTransportBuy(building);
+            else if (ai_ClickedObject == sell)
+                ai_OpenTransportSell(building);
         }
-        r = sv_RunFrame(ai_Unk5950e0, 0x67fff);
+        r = sv_RunFrame(ai_FarTradeContact, 0x67fff);
     }
 }
 
@@ -9016,7 +9017,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         ai_CriminalContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x47:
-        ai_Unk5950e0(U_I((unsigned)&ai_FallbackBuilding));
+        ai_FarTradeContact(U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x48:
     case 0x49:

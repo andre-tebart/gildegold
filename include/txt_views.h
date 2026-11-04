@@ -223,8 +223,8 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextRegeneration                        (*(char * *)((char *)txt_Ptrs + 0x07e48))  /* 0x1442008, the hover text of the contact_REGENERATION plate (its click opens ai_TrainingWindow) */
 #define ai_ContactTextExtort                        (*(char * *)((char *)txt_Ptrs + 0x07e50))  /* 0x1442010, the hover text of the contact_SCHUTZGELD_ERPRESSEN plate (its click opens ai_OpenBribe) */
 #define full_data_1442018                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07e58))  /* 0x1442018 */
-#define full_data_1442028                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x07e68))  /* 0x1442028 */
-#define full_data_1442048                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e88))  /* 0x1442048 */
+#define ai_ContactTextFarBuy                     (*(char * *)((char *)txt_Ptrs + 0x07e68))  /* 0x1442028, the hover text of the FERNEINKAUF plate (ai_FarTradeContact) */
+#define ai_ContactTextSell                       (*(char * *)((char *)txt_Ptrs + 0x07e88))  /* 0x1442048, the hover text of the VERKAUF plate (ai_FarTradeContact) */
 #define full_data_1442050                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07e90))  /* 0x1442050 */
 #define ai_TextEinkaufSkripte                    (*(int *)((char *)txt_Ptrs + 0x07ea8))  /* 0x1442068 */
 #define full_data_1442078                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07eb8))  /* 0x1442078 */

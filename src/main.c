@@ -6034,8 +6034,8 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* ai_ContactTextRegeneration: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextExtort: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1442018: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1442028: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1442048: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextFarBuy: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextSell: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1442050: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1442078: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1442090: view of txt_Ptrs (build/mk_txt_views.py) */
