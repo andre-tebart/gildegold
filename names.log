@@ -1795,3 +1795,4 @@
 2026-11-04T12:24:35 0x005bea00 func ai_Unk5bea00 -> ai_SpecialAmountList by:main why:0x5d09d0/0x5d0a40/0x5d0ab0 are the use callbacks of the Domizil records 9/10/11 that run the trial step 1/3/4; 0x5bea00 opens the special-amount list (gypsy filter); 0x5d08c0 rolls and applies the trial step
 2026-11-04T12:24:35 0x005d08c0 func ai_Unk5d08c0 -> ai_ApplyTrialStep by:main why:0x5d09d0/0x5d0a40/0x5d0ab0 are the use callbacks of the Domizil records 9/10/11 that run the trial step 1/3/4; 0x5bea00 opens the special-amount list (gypsy filter); 0x5d08c0 rolls and applies the trial step
 2026-11-04T12:25:07 0x005d0a40 func ai_Unk5d0a40 -> ai_TrialStep3 by:main why:the use callback of the Domizil record 10 (the good 0x163, 0x62c538): it runs the trial step 3
+2026-11-04T12:25:58 0x005d0ab0 func ai_Unk5d0ab0 -> ai_TrialStep4 by:main why:the use callback of the Domizil record 11 (the good 0x164, 0x62c554): it runs the trial step 4
