@@ -450,7 +450,7 @@ extern unzFile ZEXPORT unzOpen (path)
   If there is files inside the .Zip opened with unzipOpenCurrentFile (see later),
     these files MUST be closed with unzipCloseCurrentFile before call unzipClose.
   return UNZ_OK if there is no problem. */
-/* 0x467c20 */
+/* 0x467c20, closes the open entry of the archive and frees the archive handle (UNZ_PARAMERROR for NULL) */
 extern int ZEXPORT unzClose (file)
 	unzFile file;
 {
