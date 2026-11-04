@@ -416,7 +416,7 @@ char *gv_FindEffect(int id);            /* 0x4eded0 */
 void gv_ReleaseEffect(int id);             /* 0x4edf10 */
 void gv_ExplodeShot(int damage, int effectId, struct SHOTREC *shot, GVEFFARG *out);  /* 0x4ee360 */
 void gv_UpdateEffects(void);               /* 0x4edf80 */
-int gv_RequestEffectLoad(char *o);            /* 0x4eea70 */
+int gv_RequestEffectLoad(struct AIBLD *bld);            /* 0x4eea70 */
 int gv_ReserveEffect(int id);              /* 0x4eeaa0 */
 int gv_StopEffect(int id);              /* 0x4eeb00 */
 int gv_FireShots(struct AIBLD *bld, struct AICHAR *ch, struct SHOTREC *a, struct SHOTREC *b, struct SHOTREC *d, float v, int cost, int x);  /* 0x4eeb70 */

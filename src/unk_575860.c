@@ -5361,7 +5361,7 @@ typedef struct CANNONSCENE { /* 0xe4 bytes, the scene struct of ai_CannonScene (
     float padf0;
     D3VECTOR bmin;           /* +0xf4 */
 } CANNONSCENE;
-char * gv_FindEffect(int id); int gv_RequestEffectLoad(char *o); int cm_GetSlotState(); void gv_SetEffectCallback();
+char * gv_FindEffect(int id); int gv_RequestEffectLoad(struct AIBLD *bld); int cm_GetSlotState(); void gv_SetEffectCallback();
 struct D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0, d2.h */
 void d3_SetViewport(float w, float h, float x, float y, float zn, float zf, float scale, int a, int b); void sv_SetPanelEnabled(); void d3sky_Init(struct D3SKY *s, char build);
 void d3t_GetObjectBounds(); 

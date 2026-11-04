@@ -283,7 +283,7 @@ void cm_SendRaiseDead(void *p);                                                 
 void cm_SendCreateAlchemist(void *p);                                                      /* 0x4c6170 */
 void cm_SendCommand(void *p);                                                      /* 0x4c61b0 */
 void ai_Unk4c61f0(int *p, char *q);                                              /* 0x4c61f0 */
-int ai_Unk4c6230(int *p);                                                       /* 0x4c6230 */
+int cm_SendEffectLoad(int *p);                                                       /* 0x4c6230 */
 int cm_SendShots(void *p);                                                      /* 0x4c6260 */
 void ai_Unk4c62a0(char *o, char *pts);                                           /* 0x4c62a0, rt.c's route points */
 void ai_Unk4c6320(char *o);                                                      /* 0x4c6320 */

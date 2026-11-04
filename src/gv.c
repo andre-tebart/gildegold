@@ -822,15 +822,15 @@ void gv_UpdateEffects(void)
     }
     d3if_SelectScene(scene, 1);
 }
-/* 0x4eea70, the message 'nCTa' (0x4c6230) with the id at +1 of the object o; returns its result (ai_CannonScene waits on the slot it names) */
+/* 0x4eea70, the message 'nCTa' (0x4c6230) with the building bld's id; returns its result (ai_CannonScene waits on the slot it names) */
 
-int gv_RequestEffectLoad(char *o)
+int gv_RequestEffectLoad(struct AIBLD *bld)
 {
     int m[2];
 
     m[0] = 0x6154436e;
-    m[1] = *(int *)(o + 1);
-    return ai_Unk4c6230(m);
+    m[1] = bld->id;
+    return cm_SendEffectLoad(m);
 }
 /* 0x4eeaa0, reserves the effect slot of the id: 1 when it has one already or a free one (id -1) is found (the first free one is taken);
    0 for id -1. The original tests first >= -1, so with no free slot it writes the id before slot 0 and returns 1 as well; the slots

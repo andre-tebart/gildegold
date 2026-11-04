@@ -1865,3 +1865,4 @@
 2026-11-04T14:54:24 0x00fe7a0d data d3_Unkfe7a0d -> d3_TexFormatsSame by:main why:d3d_UsedTexFormat.same (+0x4d): the 8- and 16-bit texture formats are the same, so either surface fits
 2026-11-04T14:55:00 0x00633e00 data d3_Unk633e00 -> ts_PathBuf by:main why:256-byte buffer vfs_GetPath fills with the found texture's path, returned by tex_FindFile
 2026-11-04T14:59:06 0x00633f00 data ts_Unk633f00 -> ts_ReloadDone by:main why:tex_ReloadAll clears it once every texture is reloaded; no reader in the game code, so a completion flag (reasoned name)
+2026-11-04T15:02:22 0x004c6230 func ai_Unk4c6230 -> cm_SendEffectLoad by:main why:the sender of message 0x66 'nCTa' (0x6154436e): the handler 0x4cd180 calls gv_ReserveEffect with the id at +4, the pair gv_RequestEffectLoad sends

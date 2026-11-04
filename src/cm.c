@@ -2259,9 +2259,9 @@ void ai_Unk4c61f0(int *p, char *q)
     G17_I(m, 4) = *(int *)(q + 4);
     cm_QueueSend(&m);
 }
-/* 0x4c6230, message 0x66 (two ints of p); returns what cm_QueueSend returns */
+/* 0x4c6230, message 0x66 'nCTa' (reserve an effect, the id at p[1]); returns what cm_QueueSend returns */
 
-int ai_Unk4c6230(int *p)
+int cm_SendEffectLoad(int *p)
 {
     G17MSG m;
 
