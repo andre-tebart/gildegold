@@ -2,8 +2,8 @@
    action queue and its callbacks, path search and walking. Extent in GildeGold.exe: 0x402140 (right after
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
-   Open: no evidenced role / type yet for fields and globals the action and walk code share:
-   u.walk.unk0fc (written -1, never read), ch_Unk631058.
+   Open: no evidenced role / type yet for fields the action and walk code share:
+   u.walk.unk0fc (written -1, never read).
    cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
@@ -63,7 +63,8 @@ extern CHFADE ch_Fades[16];
 extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 CHACTION * ch_Queue = 0;  /* 0x631050 */
 int ch_Time = 0;  /* 0x631054 */
-char ch_Unk631058 = 0;  /* 0x631058 */
+char ch_MarkWalkErrors = 0;  /* 0x631058, when set, a failed walk animation marks the character's
+                                flags bit 8; a debug switch (no writer in the image, always 0) */
 int ch_SndLib = 0;  /* 0x63105c, sound library for step sounds */
 int ch_StepSounds = 0;  /* 0x631060 */
 D3VECTOR ch_PathOffset = {0};  /* 0x631068, added to the last path cell */
@@ -2961,7 +2962,7 @@ int ch_PathToTarget(CHACTION *a)
 
 /* ---- 0x408690..0x40a900 (worker ch5) ---- */
 
-/* 0x408690, walk actions: drops the current animation and finds the path to args[0], args[1] in scene args[2] @deep B3 draft, 15/1056 bytes, 32 differing instructions (1056/1056 same multiset): the whole diff is the slot order of the target cell and y - original z,x,t[0],t[1],y,name (t at frame+0x8, y at +0x10), ours z,x,y,t (y +0x8, t +0xc); x/z, name and the frame size (0x74) match. Read against tools/disasm 0x408690 and the VC6 listing (slot map _x=-112 _z=-116 _y=-108 _t=-104 _name=-96). Tried this session, one build each: int t[2] declared after y (byte-identical, the listing's map does not move), name declared first (byte-identical), scalars tx/tz instead of t[2] (24 bytes / 50 asm lines, reverted). Earlier attempts: declaration orders, y as float[1], 4-byte struct, x/z arrays, t as a struct, dead x=z=0; VC6 puts the address-taken array above the float whatever the declaration order. Q2 gaps: ch_Unk631058 (0x631058, read by 10 sites in ch.c only, never written in any drafted source, no data alias or string names it) and u.walk.unk0fc (written -1 by the four path builders, no reader in the whole ch TU). Q4 gaps: CH_UNK080 (0x80: the struct calls it D3ANIMDATA *next, but ch_TakingObject prints it with %s, so its type needs a decision with evidence) and CH_UNK110 (0x110: a single byte store 0 at 0x4088ec, no reader). Readability advanced for the unit this session: CH_SLOT/CH_FLAGB/CH_FLAGW are gone from ch.c (ch->slot, ch->flags.bytes.lo, ch->flags.all; CH_XSLOT now casts ch->slot). */
+/* 0x408690, walk actions: drops the current animation and finds the path to args[0], args[1] in scene args[2] @deep B3 draft, 15/1056 bytes, 32 differing instructions (1056/1056 same multiset): the whole diff is the slot order of the target cell and y - original z,x,t[0],t[1],y,name (t at frame+0x8, y at +0x10), ours z,x,y,t (y +0x8, t +0xc); x/z, name and the frame size (0x74) match. Read against tools/disasm 0x408690 and the VC6 listing (slot map _x=-112 _z=-116 _y=-108 _t=-104 _name=-96). Tried this session, one build each: int t[2] declared after y (byte-identical, the listing's map does not move), name declared first (byte-identical), scalars tx/tz instead of t[2] (24 bytes / 50 asm lines, reverted). Earlier attempts: declaration orders, y as float[1], 4-byte struct, x/z arrays, t as a struct, dead x=z=0; VC6 puts the address-taken array above the float whatever the declaration order. Q2 gaps: u.walk.unk0fc (written -1 by the four path builders, no reader in the whole ch TU). Q4 gaps: CH_UNK080 (0x80: the struct calls it D3ANIMDATA *next, but ch_TakingObject prints it with %s, so its type needs a decision with evidence) and CH_UNK110 (0x110: a single byte store 0 at 0x4088ec, no reader). Readability advanced for the unit this session: CH_SLOT/CH_FLAGB/CH_FLAGW are gone from ch.c (ch->slot, ch->flags.bytes.lo, ch->flags.all; CH_XSLOT now casts ch->slot). */
 int ch_InitWalk(CHACTION *a, D3SM *h)
 {
     CHARACTER *ch = a->ch;
@@ -2996,7 +2997,7 @@ int ch_InitWalk(CHACTION *a, D3SM *h)
     if (a->u.walk.flags & CH_WALK_TARGET)
         a->u.walk.target = ch_FindByName(a->u.walk.tname);
     if (!d3_GetHeightAt(h, &a->ch->obj->pos, &x, &z, &y)) {
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.bytes.lo |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3023,7 +3024,7 @@ int ch_InitWalk(CHACTION *a, D3SM *h)
     ch_Path.max = 0x200;
     if (path_Find(&ch_Path, (PMAP *)h, x, z, t[1], t[0], ch->pathType) == 0xffff) {
         CH_UNK110(a->ch) = 0;
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.bytes.lo |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3123,7 +3124,7 @@ int ch_StartWalkAnim(CHACTION *a, D3SM *h)
     else
         s = (CHSLOT *)ch_AttachAni(ch, "bewegung/gehen", 1);
     if (!(ch->slot = (D3ANIMSLOT *)s)) {
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.bytes.lo |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3196,7 +3197,7 @@ int ch_NextWaypoint(CHACTION *a, D3SM *h)
                 return 0;
             } else if (r == -2) {
                 ch_StopAnim(ch);
-                if (ch_Unk631058)
+                if (ch_MarkWalkErrors)
                     a->ch->flags.bytes.lo |= 8;
                 if (a->u.walk.path) {
                     mem_Free(a->u.walk.path);
@@ -3247,7 +3248,7 @@ int ch_NextWaypoint(CHACTION *a, D3SM *h)
                 ch_PlaceOnGround(ch, 1);
             }
             ch_StopAnim(ch);
-            if (ch_Unk631058)
+            if (ch_MarkWalkErrors)
                 a->ch->flags.bytes.lo |= 8;
             ch_RemoveAction(a);
             return 0;
@@ -3391,7 +3392,7 @@ void ch_WalkRotate(CHACTION *a)
         }
     }
 }
-/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] @deep B3 draft, 440/1024 bytes, 8 differing instructions of 323: exactly one redundant test is missing - the original tests ch->slot a third time after the f6d_20 bit test (4099c4 mov eax,[edi+0x70]; cmp eax,ebx; je start; test [eax+0x6d],0x20; jne start; cmp eax,ebx; jne skip), ours drops that last cmp/jne; the other hunk is the 409bcc alignment fill. The source condition is 'if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot))' and VC6 propagates the value in eax across the three terms. spell: 4099cf has no menu rule (meaning check: the third term is the same load), 409bcc dup-tail is the fill. Earlier attempts (== 0 / == NULL / CH_XSLOT spellings, a->ch for one term -> reloads, ternary, !(slot && !f6d_20 && slot), nested ifs, else-if with the call duplicated, goto, call folded into the condition, a static __inline helper, f6d_20 == 1/!= 0, a raw byte test); this session only re-read the original flow (the same shape is kept correctly in the following block, where the original re-tests started at 4099fc and our build reproduces it). Q2 gaps: cm_SpeedFactor (0x5f1290 = 1.0f, read only here as the speed factor of a group -1 object with D3OBJ_UNK200 set; no other reader or data alias), ch_Unk631058 (0x631058, read-only in ch.c, never written anywhere), Q4 gap: D3OBJ_UNK200 is D3OBJECT.pad200[0] (0x200); its role is evidenced (the per-object int d3_WriteObject saves and rd_object restores, the item pointer the sprite spawners store), so a typed d3.h field is the next step, but d3.h is shared and was not touched in this session. Readability advanced: CHSLOT.unk60 -> playSpeed (0x60, the playback speed the walk code sets from ground type x speedScale). */
+/* 0x4097d0, action callback 0x2d: walks along the path to the cell args[0], args[1] in scene args[2] @deep B3 draft, 440/1024 bytes, 8 differing instructions of 323: exactly one redundant test is missing - the original tests ch->slot a third time after the f6d_20 bit test (4099c4 mov eax,[edi+0x70]; cmp eax,ebx; je start; test [eax+0x6d],0x20; jne start; cmp eax,ebx; jne skip), ours drops that last cmp/jne; the other hunk is the 409bcc alignment fill. The source condition is 'if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot))' and VC6 propagates the value in eax across the three terms. spell: 4099cf has no menu rule (meaning check: the third term is the same load), 409bcc dup-tail is the fill. Earlier attempts (== 0 / == NULL / CH_XSLOT spellings, a->ch for one term -> reloads, ternary, !(slot && !f6d_20 && slot), nested ifs, else-if with the call duplicated, goto, call folded into the condition, a static __inline helper, f6d_20 == 1/!= 0, a raw byte test); this session only re-read the original flow (the same shape is kept correctly in the following block, where the original re-tests started at 4099fc and our build reproduces it). Q2 gaps: cm_SpeedFactor (0x5f1290 = 1.0f, read only here as the speed factor of a group -1 object with D3OBJ_UNK200 set; no other reader or data alias), Q4 gap: D3OBJ_UNK200 is D3OBJECT.pad200[0] (0x200); its role is evidenced (the per-object int d3_WriteObject saves and rd_object restores, the item pointer the sprite spawners store), so a typed d3.h field is the next step, but d3.h is shared and was not touched in this session. Readability advanced: CHSLOT.unk60 -> playSpeed (0x60, the playback speed the walk code sets from ground type x speedScale). */
 
 void ch_ActWalk(CHACTION *a)
 {
@@ -3413,7 +3414,7 @@ void ch_ActWalk(CHACTION *a)
             d3_ReleaseTexture(a->ch->obj->material->animCtl, (char *)CH_XSLOT(ch)->data);
         ch->slot = 0;
         ch_FollowGround(a);
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.bytes.lo |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3457,7 +3458,7 @@ void ch_ActWalk(CHACTION *a)
             return;
     }
     if (!a->u.walk.started && !ch->slot) {
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.bytes.lo |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3476,7 +3477,7 @@ void ch_ActWalk(CHACTION *a)
         return;
     if (!a->u.walk.path && (a->u.walk.flags & CH_WALK_DEST) && ch->slot && CH_XSLOT(ch)->f74_8) {
         ch_StopAnim(ch);
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.all |= 8;
         a->u.walk.flags |= CH_WALK_ARRIVED;
         d3_SetObjectPos(ch->obj, &a->u.walk.dest);
@@ -3503,7 +3504,7 @@ void ch_ActWalk(CHACTION *a)
 }
 /* 0x409bd0, action callback 0x3a: walks along the cells of a->u.walk.path (0x100 cells, filled by the caller;
    empty cells are skipped) to the cell args[0], args[1] in scene args[2]
-   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_InflateModel, cm_SpeedFactor, ch_Unk631058/60, u.walk.unk0fc). */
+   @deep B3 far draft, 2130/3376 bytes, 138 differing instructions of 971 (ours 969, two fewer - the same redundant ch->slot test as ch_ActWalk: the source writes '!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot' and VC6 propagates the slot value, see ch_ActWalk's @deep for the exhaustive spelling list). All other code hunks were read against the original (the function is the inline copy of ch_InitWalk/ch_StartWalkAnim/ch_WalkSound/ch_NextWaypoint/ch_WalkRotate; the noted sign bug of the original's right turn - the 2.0943952f branch subtracting, step*0.32f - is already reproduced) and are allocation: 104 slots hunks, the frame 4 bytes larger (n in a stack slot) and the cell-skip loop bound min(0x100, n+32) hoisted (the 'n = cur + 1; for (i = n; ...)' form reproduces the original loop but moves ground into edi and spills the constant 0 - tried and reverted). Readability: no gap left beyond the unit-wide ones in the lead comment (CH_UNK080, D3OBJ_UNK200, ch_InflateModel, cm_SpeedFactor, u.walk.unk0fc). */
 
 void ch_ActWalkCells(CHACTION *a)
 {
@@ -3582,7 +3583,7 @@ void ch_ActWalkCells(CHACTION *a)
         else
             s = (CHSLOT *)ch_AttachAni(ch, "bewegung/gehen", 1);
         if (!(ch->slot = (D3ANIMSLOT *)s)) {
-            if (ch_Unk631058)
+            if (ch_MarkWalkErrors)
                 a->ch->flags.bytes.lo |= 8;
             if (a->u.walk.path) {
                 mem_Free(a->u.walk.path);
@@ -3617,7 +3618,7 @@ void ch_ActWalkCells(CHACTION *a)
             d3_ReleaseTexture(a->ch->obj->material->animCtl, (char *)CH_XSLOT(ch)->data);
         ch->slot = 0;
         ch_FollowGround(a);
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.all |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3627,7 +3628,7 @@ void ch_ActWalkCells(CHACTION *a)
         return;
     }
     if (!a->u.walk.started && !ch->slot) {
-        if (ch_Unk631058)
+        if (ch_MarkWalkErrors)
             a->ch->flags.all |= 8;
         if (a->u.walk.path) {
             mem_Free(a->u.walk.path);
@@ -3691,7 +3692,7 @@ next:
         a->u.walk.cur++;
         if (a->u.walk.cur >= a->u.walk.pathLen) {
             ch_StopAnim(ch);
-            if (ch_Unk631058)
+            if (ch_MarkWalkErrors)
                 a->ch->flags.bytes.lo |= 8;
             if (a->u.walk.path) {
                 mem_Free(a->u.walk.path);
