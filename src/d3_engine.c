@@ -1132,7 +1132,7 @@ void d3_UpdateAll(unsigned char full)
         d3s_NumVerts = 0;
     }
 }
-/* 0x43b790 */
+/* 0x43b790, moves an object to pos, redoing its transform (the whole scene for the camera) and its shadows */
 
 void d3_SetObjectPos(D3OBJECT *obj, D3VECTOR *pos)
 {
