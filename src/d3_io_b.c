@@ -199,7 +199,7 @@ void bgi_MatFlags2(void *f, BGIRD *c)
     BGI_M(c).pad4 = b & 1;
     BGI_M(c).c7 = b & 0xfe;
 }
-/* 0x44f2d0 */
+/* 0x44f2d0, binary-format record 0xd: reads the current material's c8 byte (0xc8) */
 
 void bgi_MatC8(void *f, BGIRD *c)
 {
