@@ -96,13 +96,13 @@ struct D3HMAP *ch_GetHMap(CHARACTER *ch)
     if (!(h = ch->scene->hmap)) {
         df = d3_SceneFlags;
         if (ch->scene != d3_DefaultScene)
-            df = D3SCENE_UNK3D8(ch->scene);
+            df = ((D3IFSCENE *)ch->scene)->sceneFlags;
         if (!ch->scene->dirty && df) {
             d3if_SelectScene(d3t_SceneIndex(ch->scene), 1);
             flags = df & ~2;
             d3_InflateScene(flags);
         }
-        ch->scene->hmap = d3sm_Create(d3_Terrain, D3SCENE_UNKB4(ch->scene), 2);
+        ch->scene->hmap = d3sm_Create(d3_Terrain, ((D3IFSCENE *)ch->scene)->mapSize, 2);
         h = ch->scene->hmap;
         if (ch->scene != &d3_Scenes[0] && d3_DefaultScene == ch->scene && h)
             ch_SaveGround(h);
