@@ -1791,7 +1791,7 @@ int ai_MsgLoseSkill6to17Type3b(G14MSG *m)
 }
 /* 0x4bb150, message for c with field 0x2c set: c pays 1..4 % of 0x50a640 */
 
-int ai_Unk4bb150(G14MSG *m)
+int ai_MsgPayPct1to4Type3c(G14MSG *m)
 {
     AICHAR *c;
     double k;
@@ -1801,7 +1801,7 @@ int ai_Unk4bb150(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    if (*(int *)((char *)c + 0x2c) == 0)
+    if (c->v02c == 0)
         return 0x400;
     k = util_RandomU(4) + 1.0;
     v = (int)(gm_GetWorth(c->id) * k * 0.01);
@@ -1954,7 +1954,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,
-    ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
+    ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
     ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
     ai_Unk4bb630
 };
