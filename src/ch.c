@@ -1754,7 +1754,7 @@ void ch_ActSitDown(CHACTION *a)
         ch_RemoveAction(a);
     }
 }
-/* 0x405970 */
+/* 0x405970, queues the sit-down action (type 0x2f) with the animation name */
 
 CHACTION *ch_SitDown(CHARACTER *ch, char *name)
 {
