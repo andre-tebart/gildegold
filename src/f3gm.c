@@ -10849,18 +10849,21 @@ float gm_StaffFactor(unsigned char *b, int n, int *ids)
         f = f + 0.1f;
     return (fit + health) * (opinion + f + (bld->workRate - 2) * 0.1);
 }
-/* 0x50cf60, the number of the kitchen / bath objects (0x27a, 0x27b, 0x292) the building b has: 1 + .. */
+/* 0x50cf60, the number of the kitchen / bath objects (0x27a, 0x27b, 0x292) the building b has: 1 plus one
+   per prototype found in its object list */
 
 int gm_BathObjectCount(char *b)
 {
     int n;
+    ORDBLD *bld;
 
+    bld = (ORDBLD *)b;
     n = 1;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x27a) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x27a) != 0)
         n = 2;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x27b) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x27b) != 0)
         n = n + 1;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x292) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x292) != 0)
         n = n + 1;
     return n;
 }
