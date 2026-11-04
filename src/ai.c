@@ -4691,7 +4691,7 @@ void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *b)
                     q++;
                 }
             }
-            if (sel && sel->amount && ai_FindWeaponRecord(sel->item) && ai_Unk5bb2d0(ch, sel->item)) {
+            if (sel && sel->amount && ai_FindWeaponRecord(sel->item) && ai_GoodFitsBuilding(ch, sel->item)) {
                 sprintf(buf, "Meister %s bewaffnet %s mit %s", ch->name, c->name, ai_GoodsT[sel->item].name);
                 sprintf(buf, SELL_FMT, c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);
                 cm_SendExSellObjectI(c->netId, b->objId, sel->item, 1, ai_OwnPlayer, 0);

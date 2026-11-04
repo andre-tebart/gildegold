@@ -156,7 +156,7 @@ float ai_SettingFactor(int param_1);  /* 0x5a88e0 */
 void ai_Unk5a8ee0(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8ee0 */
 void ai_Unk5a8f90(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8f90 */
 void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2);  /* 0x5a9050 */
-int ai_Unk5bb2d0(int param_1, int param_2);  /* 0x5bb2d0 */
+int ai_GoodFitsBuilding(int param_1, int param_2);  /* 0x5bb2d0 */
 int ai_FindBauplaetze(char *prefix, int *list);  /* 0x58f7a0 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
 void ai_ObjectAngle(void *out_, int plot);  /* 0x58fd90 */

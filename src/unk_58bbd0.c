@@ -16061,7 +16061,7 @@ int ai_Unk5bae50(int param_1, int param_2)
    the kind record 0x7e3f30 + kind * 0x24d must be 4 for the kinds 0x172 / 0x174, 0x13 for 0x158 / 0x160 and
    0x10 for 0x16e / 0x176; 1 otherwise */
 
-int ai_Unk5bb2d0(int param_1, int param_2)
+int ai_GoodFitsBuilding(int param_1, int param_2)
 {
     char *kind;
     int rec;
