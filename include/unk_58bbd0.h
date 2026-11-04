@@ -155,7 +155,7 @@ int ai_AmountRowStatus(int *param_1);  /* 0x5be1d0 */
 int ai_DrawAmountRow(int x, int y, int win, int *row);  /* 0x5be720, draws the amount row row at (x, y) of the window win */
 void ai_GameFrame(void);  /* 0x591520 */
 void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
-void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
+void ai_ShowPurchaseNews(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2);  /* 0x5a9170 */
 int ai_Unk5ba750(void);  /* 0x5ba750 */
 int ai_DrawSettingGood(int param_1);  /* 0x5a8870 */

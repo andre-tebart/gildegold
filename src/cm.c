@@ -5686,7 +5686,7 @@ int ai_Unk4cc390(G17MSG *m, G17STAT *s)
             return 1;
         *(int *)(q + 0x1c + i * 4) = -1;
         if (ai_PlayerId == *(unsigned short *)(b + 0x27))
-            ai_Unk5a8c50(c, ai_Chars[ai_PlayerId], b, G17_I(*m, 0x10));
+            ai_ShowPurchaseNews(c, ai_Chars[ai_PlayerId], b, G17_I(*m, 0x10));
     }
     if (s != 0)
         s->state = 1;

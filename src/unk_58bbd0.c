@@ -14110,13 +14110,18 @@ void ai_ShowPaymentNews(unsigned short *buyer, char *ownerRec, int bld)
         he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5ec, ch_EmptyName);
     }
 }
-/* 0x5a8c50, a production message with two values (84 B): the text 0x20bc and 0x53dda0 (the +4 id, 0x5ff) */
+/* 0x5a8c50, the news of a purchase in a building (84 B): for the building owner of the kinds 6 / 7 the text
+   0x20bc with the buyer's id, the building and the paid value into ai_NewsText, shown to the owner's netId
+   (he_ShowNews, kind 0x5ff); nothing for another owner kind */
 
-void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4)
+void ai_ShowPurchaseNews(unsigned short *buyer, char *ownerRec, int bld, int value)
 {
-    if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bc, *param_1, param_3, param_4);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *owner;
+
+    owner = (G8CHARREC *)ownerRec;
+    if (owner->kind == 6 || owner->kind == 7) {
+        txt_Format(ai_NewsText, 0x20bc, *buyer, bld, value);
+        he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5ff, ch_EmptyName);
     }
 }
 /* 0x5a8cb0, a production message without a value (74 B): the text 0x20bb and 0x53dda0 (the +4 id, 0x5fd) */
