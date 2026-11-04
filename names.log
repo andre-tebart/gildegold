@@ -2074,3 +2074,5 @@
 2026-11-04T21:18:52 0x0059b160 func ai_Unk59b160 -> ai_CreditListWindow by:main why:the money lender contact listener of 0x59df80 and the four windows it opens: the own building's money exchange (0x59d5e0) and credit giver (0x59bad0), the exchange dialog (0x59c700) and the credit list (0x59b160)
 2026-11-04T21:21:20 0x0059fbf0 func ai_Unk59fbf0 -> ai_GuildCashWindow by:main why:the guild cash window, the form 'locations\\zunfthaus\\gildenkasse'
 2026-11-04T21:23:25 0x0059fca0 func ai_Unk59fca0 -> ai_TownCashContact by:main why:the town cash office listener that registers the ob_STADTKASSE plate and opens the guild cash window
+2026-11-04T21:24:10 0x0059fd30 func ai_Unk59fd30 -> ai_TownHallContact by:main why:the Rathaus contact listener (0x59fd30) and the guild hall window its buy-building plate opens (0x59f9a0, the form 'locations\\Rathaus\\Rathaus_Geb_Info')
+2026-11-04T21:24:10 0x0059f9a0 func ai_Unk59f9a0 -> ai_BuyBuildingWindow by:main why:the Rathaus contact listener (0x59fd30) and the guild hall window its buy-building plate opens (0x59f9a0, the form 'locations\\Rathaus\\Rathaus_Geb_Info')

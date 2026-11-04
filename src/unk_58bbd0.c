@@ -8300,7 +8300,7 @@ void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_Dung
 void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0();
 void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
-void ai_Unk5a2de0(); void ai_Unk59fd30();
+void ai_Unk5a2de0(); void ai_TownHallContact();
 void ai_TownCashContact();
 
 /* 0x59d5e0, the money lender's exchange window with the city list "..geldleihe_Wechsel" (2352 B, ROUGH: the
@@ -8877,7 +8877,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0xf0: ai_ChurchContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf2: ai_Unk5a2de0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf7: ai_Unk5a36c0(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x10e: ai_Unk59fd30(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x10e: ai_TownHallContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x110: ai_Unk5a07d0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x114: ai_TownCashContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x118: ai_PerfumeryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -9191,7 +9191,7 @@ void ai_Unk59f410(unsigned short *param_1)
    player, the carrier + 0xb0, the player byte) and 0x521960 (the record, -1, text 0x631090); the pump
    0x5309a0 (0x59f9a0, 0x677c7) and 0x4758f0 */
 
-void ai_Unk59f9a0(void)
+void ai_BuyBuildingWindow(void)
 {
     int list[512];
     int win;
@@ -9267,7 +9267,7 @@ void ai_Unk59f9a0(void)
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk59f9a0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_BuyBuildingWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             return;
         }
@@ -9316,12 +9316,12 @@ void ai_TownCashContact(AIBLD *bld)
 }
 void ai_OpenAmountKindMenu(void);
 void ai_OpenAgendaMenu(void);
-/* 0x59fd30, the Rathaus contact listener (272 B): the pump 0x5309a0 (0x59fd30, 0x67fff), the flags
-   0x576410 (0x200 / 0x400 / 0x800) gate "contact_GEB_KAUFEN" (0x14420f0) / "contact_TAGESORDNUNG"
-   (0x1442100) / "contact_AMT_INFO" (0x143a3f0); with the gate 0x6f2448 and the key 0x1468410 byte 0x14,
+/* 0x59fd30, the Rathaus contact listener (264 B): the pump 0x5309a0 (0x59fd30, 0x67fff), the flags
+   0x576410 (0x200 / 0x400 / 0x800) gate "contact_GEB_KAUFEN" (text 0x1fcc) / "contact_TAGESORDNUNG"
+   (text 0x1fd0) / "contact_AMT_INFO" (text 0x8c); with the gate 0x6f2448 and the key 0x1468410 byte 0x14,
    0x4f9e30 opens; the clicks open 0x59f9a0 (buy building), 0x5c1df0 (agenda) and 0x5c1b20 (office info) */
 
-void ai_Unk59fd30(void)
+void ai_TownHallContact(void)
 {
     int kaufen = 0;
     int agenda = 0;
@@ -9329,25 +9329,25 @@ void ai_Unk59fd30(void)
     int clicked;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk59fd30, 0x67fff) != 0) {
+    while (sv_RunFrame(ai_TownHallContact, 0x67fff) != 0) {
         if (ai_RunAllowsContact(0x200) == 1)
-            kaufen = sv_RegisterNamePlate("contact_GEB_KAUFEN", U_I((unsigned)&full_data_14420f0), 0x10);
+            kaufen = sv_RegisterNamePlate("contact_GEB_KAUFEN", txt_Ptrs[0x1fcc], 0x10);
         else
             kaufen = 0;
         if (ai_RunAllowsContact(0x400) == 1)
-            agenda = sv_RegisterNamePlate("contact_TAGESORDNUNG", U_I((unsigned)&full_data_1442100), 0x16);
+            agenda = sv_RegisterNamePlate("contact_TAGESORDNUNG", txt_Ptrs[0x1fd0], 0x16);
         else
             agenda = 0;
         if (ai_RunAllowsContact(0x800) == 1)
-            amt = sv_RegisterNamePlate("contact_AMT_INFO", U_I((unsigned)&full_data_143a3f0), 0x16);
+            amt = sv_RegisterNamePlate("contact_AMT_INFO", txt_Ptrs[0x8c], 0x16);
         else
             amt = 0;
-        if (U_I((unsigned)&gm_AllowAll) != 0 && *(unsigned char *)(unsigned)&kb_Last == 0x14)
+        if (gm_AllowAll != 0 && kb_Last == 0x14)
             gm_StatisticsScreen();
-        clicked = U_I((unsigned)&ai_ClickedObject);
+        clicked = ai_ClickedObject;
         if (clicked != 0) {
             if (clicked == kaufen)
-                ai_Unk59f9a0();
+                ai_BuyBuildingWindow();
             else if (clicked == agenda)
                 ai_OpenAgendaMenu();
             else if (clicked == amt)
