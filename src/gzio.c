@@ -269,7 +269,9 @@ local int get_byte(s)
        s->stream.avail_in is zero for the first time, but may be non-zero
        for concatenated .gz files.
 */
-/* 0x462eb0 */
+/* 0x462eb0, checks the gzip header at the start of a read stream: on a bad
+   magic makes the stream transparent (pass the bytes through), and skips the
+   method, flags, time, extra field, name, comment and header crc; sets z_err */
 local void check_header(s)
     gz_stream *s;
 {
