@@ -10767,18 +10767,19 @@ void gm_ResetStock(void)
         b = (ORDBLD *)gm_BuildNext();
     }
 }
-/* 0x50ccd0, 1 when the character c (flag +0x1b1) has no building of the type 4 (a home) of his id (+0x65) */
+/* 0x50ccd0, 1 when the character c (flag b1b1 set) owns no home: none of the 0x100 buildings has a type of
+   the class 4 and the owner's netId (+0x65) equal to c's netId */
 
 int gm_Homeless(char *c)
 {
     int i;
-    unsigned char *b;
+    ORDBLD *b;
 
-    if (c[0x1b1] != 0) {
+    if (ORD_CHAR(c)->b1b1 != 0) {
         i = 0;
-        b = (unsigned char *)ai_Blds;
-        while (*b == 0 || ai_BTypes[*b * 0x24d] != 4 || *(int *)(b + 0x65) != *(int *)(c + 4)) {
-            b += 0xa9;
+        b = (ORDBLD *)ai_Blds;
+        while (b->type == 0 || ai_BTypes[b->type * 0x24d] != 4 || b->v65 != (int)ORD_CHAR(c)->netId) {
+            b++;
             i++;
             if (i > 0xff)
                 return 1;
