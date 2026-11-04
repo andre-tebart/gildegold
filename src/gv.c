@@ -2634,73 +2634,74 @@ unsigned gv_RaiseDead(GVRAISE *m)
 
 int gv_ReadGraveyard(void *f, unsigned char *o)
 {
-    char *g;
-    char *z;
+    GVYARD *g;
+    GVGRAVE *z;
+    GVENTRY *e;
     int i, idx;
 
-    g = (char *)gv_AllocGraveyard(o);
+    g = gv_AllocGraveyard(o);
     if (g == 0)
         return 0;
-    if (UNK_FR(g, 4, 1, f) == 0)
+    if (UNK_FR(&g->id, 4, 1, f) == 0)
         return 0;
-    if (UNK_FR(g + 4, 4, 1, f) == 0)
+    if (UNK_FR(&g->kind, 4, 1, f) == 0)
         return 0;
-    if (UNK_FR(g + 0x18, 1, 1, f) == 0)
+    if (UNK_FR(&g->open[0], 1, 1, f) == 0)
         return 0;
-    if (UNK_FR(g + 0x19, 1, 1, f) == 0)
+    if (UNK_FR(&g->open[1], 1, 1, f) == 0)
         return 0;
-    if (UNK_FR(g + 0x1a, 1, 1, f) == 0)
+    if (UNK_FR(&g->open[2], 1, 1, f) == 0)
         return 0;
-    if (UNK_FR(g + 0x1b, 1, 1, f) == 0)
+    if (UNK_FR(&g->open[3], 1, 1, f) == 0)
         return 0;
-    z = *(char **)(g + 0x20);
+    z = g->graves;
     i = 0;
-    if (gv_GraveTotals[*(int *)(g + 4)] > 0) {
+    if (gv_GraveTotals[g->kind] > 0) {
         do {
-            if (UNK_FR(z, 4, 1, f) == 0)
+            if (UNK_FR(&z->id, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 4, 0x10, 1, f) == 0)
+            if (UNK_FR(z->first, 0x10, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x14, 0x10, 1, f) == 0)
+            if (UNK_FR(z->family, 0x10, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x24, 5, 1, f) == 0)
+            if (UNK_FR(z->traits, 5, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x2c, 4, 1, f) == 0)
+            if (UNK_FR(&z->v2c, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x30, 4, 1, f) == 0)
+            if (UNK_FR(&z->v30, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x34, 4, 1, f) == 0)
+            if (UNK_FR(&z->nameId, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x38, 4, 1, f) == 0)
+            if (UNK_FR(&z->sex, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x3c, 4, 1, f) == 0)
+            if (UNK_FR(&z->icon, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0x40, 4, 1, f) == 0)
+            if (UNK_FR(&z->year, 4, 1, f) == 0)
                 return 0;
             i++;
-            z += 0x44;
-        } while (i < gv_GraveTotals[*(int *)(g + 4)]);
+            z++;
+        } while (i < gv_GraveTotals[g->kind]);
     }
     i = 0;
-    z = *(char **)(g + 0x1c);
-    if (gv_EntryTotals[*(int *)(g + 4)] > 0) {
+    e = g->entries;
+    if (gv_EntryTotals[g->kind] > 0) {
         do {
-            if (UNK_FR(z, 4, 1, f) == 0)
+            if (UNK_FR(&e->size, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 4, 4, 1, f) == 0)
+            if (UNK_FR(&e->id, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 8, 2, 1, f) == 0)
+            if (UNK_FR(&e->w08, 2, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 10, 2, 1, f) == 0)
+            if (UNK_FR(&e->until, 2, 1, f) == 0)
                 return 0;
-            if (UNK_FR(z + 0xc, 1, 1, f) == 0)
+            if (UNK_FR(&e->b0c, 1, 1, f) == 0)
                 return 0;
             if (UNK_FR(&idx, 4, 1, f) == 0)
                 return 0;
-            *(int *)(z + 0x10) = *(int *)(g + 0x20) + idx * 0x44;
-            z += 0x14;
+            e->grave = g->graves + idx;
+            e++;
             i++;
-        } while (i < gv_EntryTotals[*(int *)(g + 4)]);
+        } while (i < gv_EntryTotals[g->kind]);
     }
     return 1;
 }
