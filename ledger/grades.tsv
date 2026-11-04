@@ -3375,7 +3375,7 @@ exe	0x0052b500	sv_RunLocationScripts	sv	byte	readable
 exe	0x0052bb70	sv_RunFramesUntilStopped	sv	byte	readable		
 exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep	
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
-exe	0x0052c420	sv_Unk52c420	sv	byte	draft		
+exe	0x0052c420	sv_MarkMasterCarts	sv	byte	readable		
 exe	0x0052c4a0	sv_ReleaseBubble	sv	byte	readable		
 exe	0x0052c4e0	sv_ShowBubble	sv	draft	readable	deep	
 exe	0x0052c5c0	sv_SpeakPicked	sv	draft	readable	deep	
@@ -3386,7 +3386,7 @@ exe	0x0052d2a0	sv_DrawItemNames	sv	byte	readable
 exe	0x0052d480	sv_DrawBorderArrows	sv	byte	readable		
 exe	0x0052d7a0	sv_CameraFollow	sv	byte	readable		
 exe	0x0052d940	sv_HandleRightClick	sv	draft	readable	deep	
-exe	0x0052e050	sv_DrawHint	sv	byte	draft		
+exe	0x0052e050	sv_DrawHint	sv	byte	readable		
 exe	0x0052e0c0	sv_DrawStatusText	sv	byte	readable		
 exe	0x0052e170	sv_ClearNamePlates	sv	byte	readable		
 exe	0x0052e190	sv_ReleaseNamePlates	sv	byte	readable		
@@ -3397,24 +3397,24 @@ exe	0x0052e4b0	sv_TabButtonRow	sv	shape	readable	deep
 exe	0x0052e600	sv_DisableVisibleWidgets	sv	shape	readable		
 exe	0x0052e6d0	sv_OpenWindowFrame	sv	byte	readable		
 exe	0x0052e860	sv_CreateScrollButtons	sv	byte	readable		
-exe	0x0052ea30	sv_FitForm	sv	byte	draft		
+exe	0x0052ea30	sv_FitForm	sv	byte	readable		
 exe	0x0052eaa0	sv_ValueBar	sv	shape	readable		
 exe	0x0052eb50	sv_DrawBalanceBar	sv	byte	readable		
 exe	0x0052ee50	sv_StartBand	sv	byte	readable		
-exe	0x0052eed0	sv_EndBand	sv	byte	draft		
+exe	0x0052eed0	sv_EndBand	sv	byte	readable		
 exe	0x0052eee0	sv_UpdateBand	sv	draft	readable	deep	
 exe	0x0052f0d0	sv_UpdateBandLed	sv	draft	readable	deep	
-exe	0x0052f2c0	sv_DrawRubberBand	sv	byte	draft		
-exe	0x0052f340	sv_BookKeys	sv	byte	draft		
+exe	0x0052f2c0	sv_DrawRubberBand	sv	byte	readable		
+exe	0x0052f340	sv_BookKeys	sv	byte	readable		
 exe	0x0052f360	sv_OpenBook	sv	byte	readable		
-exe	0x0052f530	sv_Unk52f530	sv	byte	draft		
+exe	0x0052f530	sv_CloseBook	sv	byte	readable		
 exe	0x0052f600	sv_UpdateBook	sv	byte	readable		
 exe	0x0052f710	sv_TurnBook	sv	byte	readable		
 exe	0x0052f9f0	sv_BookForward	sv	byte	readable		
 exe	0x0052fa00	sv_BookBack	sv	byte	readable		
-exe	0x0052fa10	sv_CreateScrollForm	sv	byte	draft		
-exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	draft		
-exe	0x0052fad0	sv_ScrollFormAnimate	sv	byte	draft		
+exe	0x0052fa10	sv_CreateScrollForm	sv	byte	readable		
+exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	readable		
+exe	0x0052fad0	sv_ScrollFormAnimate	sv	byte	readable		
 exe	0x0052fb50	sv_PopTo	sv	byte	readable		
 exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
 exe	0x0052fc10	sv_NetworkSyncWait	sv	byte	readable		
