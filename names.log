@@ -1989,3 +1989,4 @@
 2026-11-04T19:45:56 0x00577820 data ai_Unk577820 -> ai_TutorialCloseIntro by:main why:closes the tutorial's main event, releasing the host's event-bar slot (he_ReleaseSlot); the twin of ai_TutorialOpenIntro (0x577740), called by he.c's end-of-game event handler when the tutorial shuts down
 2026-11-04T19:52:54 0x00578120 data ai_Unk578120 -> ai_TutorialSetHost by:main why:stores the tutorial's event record (TUTSTATE.host, +0x1c) from the 0x87 event run handler he_Unk552b90 and resets continueObj
 2026-11-04T19:53:34 0x00578150 data ai_Unk578150 -> ai_TutorialClearHost by:main why:clears TUTSTATE.host (+0x1c) and resets continueObj (+0x20, -1); he_Unk552bc0 calls it when the tutorial's 0x87 event shuts down
+2026-11-04T19:54:20 0x00578170 func ai_Unk578170 -> ai_TutorialOff by:main why:1 while the tutorial is off (ai_TutorialOn == 0): gates the master contact's BEWEISBUCH / SPIONAGE / MEISTERPRUEFUNG / SELBSTMORD plates in ai_Unk597500

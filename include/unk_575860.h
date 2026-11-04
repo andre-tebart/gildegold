@@ -179,7 +179,7 @@ int ai_TutorialStepForm(void);                 /* 0x577e50, the tutorial chapter
 int ai_TutorialStepClicked(void);                 /* 0x5780e0, the control predicate on S+0x4c */
 int ai_TutorialSetHost(char *per);            /* 0x578120, attaches the tutorial's event record (host) */
 void ai_TutorialClearHost(void);                /* 0x578150, detaches the tutorial's event record (host) */
-int ai_Unk578170(void);                 /* 0x578170, the gate predicate */
+int ai_TutorialOff(void);                 /* 0x578170, 1 while the tutorial does not run */
 int ai_TutorialStart(void);                 /* 0x578180, the tutorial start / record reset */
 void ai_TutorialStop(void);                /* 0x578370, the tutorial stop (handle + chain reset) */
 void ai_TutorialFreeRuns(char *rec);           /* 0x578440, frees the tutorial record chain */

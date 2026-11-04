@@ -5593,7 +5593,7 @@ void ai_EspionageAmountMenu(void)
     sv_CameraFollow();
 }
 
-int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_Unk578170(); int ai_Unk5b4590();
+int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_TutorialOff(); int ai_Unk5b4590();
 
 /* 0x5973f0, the wine-cellar window "locations\wohnsitz\weinkeller" (272 B): 0x4741f0 / 0x475600, the texts
    0x515960 (0x42cf / 0x42d1), the pump 0x5309a0 (this, 0x677c7); the click 0 (0xf8a668) resolves the
@@ -5658,7 +5658,7 @@ void ai_Unk597500(int param_1, int param_2)
             verhandeln = 0;
             handwerk = 0;
         }
-        if (ai_Unk578170() == 1) {
+        if (ai_TutorialOff() == 1) {
             beweis = sv_RegisterNamePlate("contact_BEWEISBUCH", U_I((unsigned)&full_data_143feb8), 0xc);
             spionage = sv_RegisterNamePlate("contact_SPIONAGE", U_I((unsigned)&full_data_143fda0), 0x17);
             meister = sv_RegisterNamePlate("contact_MEISTERPRUEFUNG", U_I((unsigned)&full_data_1442190), 0xc);
