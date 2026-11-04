@@ -1004,7 +1004,7 @@ extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern GAPDATA full_data_60d224[];
 extern GAPDATA full_data_62d6bc[];
-extern GAPDATA full_data_62d010[];
+extern char ai_UseObjForm[];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
 extern float ai_Unk5eb94c;
@@ -22433,26 +22433,25 @@ int ai_Unk5cf4f0(int param_1, unsigned short *param_2)
         }
     }
 }
-/* 0x5cf820, the "panel_useobj" text window 0x62d010 (128 B): 0x4741f0 (0, 0, 0x62d010) page 1 with
-   0x515960 (the "%s" 0x5f8318, param_1), 0x476f80 (0, 0), the pump 0x5309a0 (0x677c7) and the exit
-   0x4758f0. */
+/* 0x5cf820, the use-object panel (form "panel\useobj" 0x62d010): opens the form, page 1, prints
+   text through the "%s" 0x5f8318, and pumps frames until the right mouse button (dm_L.rup) or a pop request
+   closes it. */
 
-int ai_Unk5cf820(int param_1)
+void ai_UseObjPanel(char *text)
 {
     int win;
 
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d010);
+    win = d2_OpenForm(0, 0, ai_UseObjForm);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText("%s", param_1);
+    io_PrintText("%s", text);
     d2_SetPointerSprite(0, 0);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    while (sv_RunFrame(ai_Unk5cf820, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    }
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_UseObjPanel, 0x677c7) != 0);
     d2_CloseView(win);
-    return 0;
 }
 /* 0x5cf8a0, the use / target object of a window entry (1744 B): param_1 the user record (+0x1ec the
    allowed class mask, +4 the window holder, +0x170 the owner record, +2 the type), param_2 the entry
@@ -22535,7 +22534,7 @@ int ai_UseGood(int param_1, int *param_2)
         h = ai_Unk5ba660(*param_2, &out);
         if (param_2[3] == 1)
             txt_Format(buf, (char *)0xfe8, *(unsigned short *)(h + 0x18) + 1);
-        ai_Unk5cf820((int)buf);
+        ai_UseObjPanel(buf);
     }
     return ret;
 }
@@ -22563,7 +22562,7 @@ int ai_Unk5cfb80(int param_1, int param_2)
     } else if (*(int *)(param_2 + 0xc) == 0 && *(char *)(param_1 + 2) == 6) {
         *(int *)(param_2 + 0x10) = 1;
         txt_Format(text, (char *)0xff0);
-        ai_Unk5cf820((int)text);
+        ai_UseObjPanel(text);
     }
     return 1;
 }
@@ -23149,7 +23148,7 @@ int ai_Unk5d0e60(int param_1, int param_2, int param_3)
         ai_Unk4c5870(*(int *)(param_3 + 4));
         txt_Format(text, (char *)0xfe8,
                       *(unsigned short *)(*(int *)param_3) * 2 + 0xd71, found + 0x16b7);
-        ai_Unk5cf820((int)text);
+        ai_UseObjPanel(text);
     }
     return 1;
 }
@@ -23424,6 +23423,7 @@ extern int * ai_BauplatzList;
 /* ai_TextEinkaufStein: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextEinkaufHolz: view of txt_Ptrs (build/mk_txt_views.py) */
 AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_GEFAENGNIS", { 17, 18, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_HANDWERK", { 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28 } }, { "bk_HANDWERK", { 41, 42, 43, 47, 48, 49, 50, 51, 52, 33, 34, 35 } }, { "bk_HANDWERK", { 72, 73, 74, 81, 82, 83, 78, 79, 80, 0, 0, 0 } }, { "bk_KIRCHE_KL", { 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_KIRCHE_GR", { 22, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_RATHAUS", { 36, 37, 38, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_STADTWACHE", { 44, 45, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WIRTSHAUS_GR", { 53, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_KL", { 4, 5, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_GR", { 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_ZUNFTHAUS", { 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67 } }, { "bk_STATUEN", { 84, 85, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_DOMIZIL", { 75, 76, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x62aae8 */
+char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
     { 1, 0, -1, ai_Unk5bf300, ai_Unk5c00b0 },
