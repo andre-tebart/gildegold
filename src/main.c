@@ -2887,9 +2887,9 @@ int main_NewSinglePlayerGame(void)
 {
     int r;
 
-    U_I((unsigned)&ai_GameFlags) = 0;
+    ai_GameFlags = 0;
     d2_SetPointerSprite(0, 0);
-    *(unsigned char *)(unsigned)&ai_NumPlayers = 1;
+    ai_NumPlayers = 1;
     r = main_ChooseCity(1, 0);
     if (r == 0) {
         d2_ClearSurface(d2_ScreenSurf);
