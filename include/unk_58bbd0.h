@@ -5,6 +5,8 @@
 
 struct AIBLD;
 struct D3SCENE;
+struct D3OBJECT;
+struct D3VECTOR;
 
 /* 0x62aae8: the 15 building groups, 0x50 bytes each: the name, then its 12 kind ids (ai_BuildingName) */
 typedef struct AIBUILDNAME {
@@ -147,7 +149,7 @@ int ai_AmountRow(int param_1, int param_2, int param_3, int param_4, int *param_
 int ai_AmountRowStatus(int *param_1);  /* 0x5be1d0 */
 int ai_DrawAmountRow(int x, int y, int win, int *row);  /* 0x5be720, draws the amount row row at (x, y) of the window win */
 void ai_GameFrame(void);  /* 0x591520 */
-void ai_DropObjectAt(int obj, int target);  /* 0x58feb0 */
+void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
 void ai_Unk5a8c50(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2);  /* 0x5a9170 */
 int ai_Unk5ba750(void);  /* 0x5ba750 */

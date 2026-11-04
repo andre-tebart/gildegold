@@ -2705,17 +2705,17 @@ int ai_FindNearestObject(float *ref, int *list)
     }
     return obj;
 }
-/* 0x58feb0, drops an object onto the height of a target (78 B): the position is set (0x43b790) and the object
-   dropped (0x412a70); when its y is below the target's +4, the position is set again */
-
-void ai_DropObjectAt(int obj, int target)
+/* 0x58feb0, drops the object obj onto the target position (78 B): the position is set (d3_SetObjectPos) and the
+   object dropped (d3t_DropObject); when its world y (d3_PointToWorld of the local position obj->pos, written into
+   the engine's padded vector) is below target->y, the position is set again */
+void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target)
 {
-    float p[4];
+    D3VECTOR4 p;
 
     d3_SetObjectPos(obj, target);
     d3t_DropObject(obj, 1, 0);
-    d3_PointToWorld(obj, obj + 0x4c, p);
-    if (p[1] < *(float *)(target + 4))
+    d3_PointToWorld(obj, &obj->pos, (struct D3VECTOR *)&p);
+    if (p.y < target->y)
         d3_SetObjectPos(obj, target);
 }
 

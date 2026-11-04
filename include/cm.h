@@ -416,7 +416,7 @@ int ord_GetKindRecord();  /* 0x4f8890 */
 int gm_ClockSeason();  /* 0x4fe350 */
 void gm_RefreshGoodsLists(unsigned p);  /* 0x4ff190 */
 void gm_AssignBuilding(unsigned char *b, unsigned short place, unsigned own);  /* 0x502b60 */
-void ai_DropObjectAt(int obj, int target);  /* 0x58feb0 */
+void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
 extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */
 extern const double cm_EffectRadiusScale;  /* 0x5edc28 */
 extern struct VFSDIR *vfs_Root;  /* 0x6333fc */

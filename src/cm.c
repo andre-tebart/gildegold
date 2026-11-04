@@ -4870,7 +4870,7 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
                 rot.y = d3_VecAngle(&d3_ZAxis, &dir);
                 d3_SetObjectPos(o, &v);
                 d3_SetObjectRot(o, &rot);
-                ai_DropObjectAt((int)o, (int)&v);
+                ai_DropObjectAt(o, &v);
                 if (d3_QuadTree != 0)
                     d3q_RemoveObject((D3OBJECT *)b->object, (D3QNODE *)d3_QuadTree);
                 d3if_Delete((D3OBJECT *)b->object);
@@ -5448,7 +5448,7 @@ int cm_ExCreateGeb(G17MSG *m, G17STAT *s)
                 memset(&site, 0, sizeof(site));
                 d3_SetObjectPos(o, (D3VECTOR *)&pos);
                 d3_SetObjectRot(o, m->geb.rot);
-                ai_DropObjectAt((int)o, (int)&pos);
+                ai_DropObjectAt(o, (D3VECTOR *)&pos);
                 init_HookObject((char *)o, (unsigned short *)b, 2);
                 ai_BuildingName(b->type, tmp);
                 strcpy(site.name, tmp);
