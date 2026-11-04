@@ -183,7 +183,10 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     int madeValue;                      /* 0x24, the price value of the goods its workshops made (cm.c 0x4c78c0 adds it
                                            with the building's AIBLD.roundSums[0]) */
     int spyPaid;                        /* 0x28, the money the player paid to the cabinet's spies (ai_CabinetSpyWindow adds each payment) */
-    char pad2c[0x14];
+    int missionMoney[5];                /* 0x2c .. 0x3f, saved money statistics: no writer in the build (they come
+                                           from older save files), read only by the mission conditions, converted with
+                                           gm_ConvertMoney: 0x38 by the types 1 / 6 / 14 / 22 / 32, 0x2c + 0x34 by
+                                           20 / 25 / 36, 0x30 by 26 / 37, 0x3c by 27 */
     int upgradeSpent;                   /* 0x40, the money the record has paid for workshop upgrades (ai_BuyUpgrade) */
     int renovationSpent;                /* 0x44, the money it has paid for renovations (ai_BuyUpgrade, am.c 0x497ee0) */
     char pad48[0x10];
