@@ -1252,7 +1252,7 @@ extern int ZEXPORT unzGetLocalExtrafield (file,buf,len)
   Close the file in zip opened with unzipOpenCurrentFile
   Return UNZ_CRCERROR if all the file was read but the CRC is not good
 */
-/* 0x468640 */
+/* 0x468640, ends reading of the current file: checks the CRC, frees the read state */
 extern int ZEXPORT unzCloseCurrentFile (file)
 	unzFile file;
 {
