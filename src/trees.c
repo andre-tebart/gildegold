@@ -634,7 +634,7 @@ local void build_tree(s, desc)
  * Scan a literal or distance tree to determine the frequencies of the codes
  * in the bit length tree.
  */
-/* 0x466980 */
+/* 0x466980, adds one tree's bit length frequencies to bl_tree: runs of a length and the repeat codes (3-6, 3-10 zeros, 11-138 zeros) */
 local void scan_tree (s, tree, max_code)
     deflate_state *s;
     ct_data *tree;   /* the tree to be scanned */
