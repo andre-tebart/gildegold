@@ -1990,13 +1990,13 @@ exe	0x004b6bf0	ai_MsgPayForBuilding	unk_4b6480	byte	readable
 exe	0x004b6d30	ai_MsgPayPct2to4	unk_4b6480	byte	readable		
 exe	0x004b6e10	ai_MsgPayPct125	unk_4b6480	byte	readable		
 exe	0x004b6ef0	ai_MsgPayPctOver120	unk_4b6480	byte	readable		
-exe	0x004b6fd0	ai_Unk4b6fd0	unk_4b6480	byte	draft		
+exe	0x004b6fd0	ai_MsgPayPct1to3Type0c	unk_4b6480	byte	readable		
 exe	0x004b70f0	ai_MsgNoOp	unk_4b6480	byte	readable		
-exe	0x004b7100	ai_Unk4b7100	unk_4b6480	byte	draft		
-exe	0x004b7200	ai_Unk4b7200	unk_4b6480	byte	draft		
-exe	0x004b7310	ai_Unk4b7310	unk_4b6480	byte	draft		
-exe	0x004b7430	ai_Unk4b7430	unk_4b6480	byte	draft		
-exe	0x004b7550	ai_Unk4b7550	unk_4b6480	byte	draft		
+exe	0x004b7100	ai_MsgPayPct2to4Type0d	unk_4b6480	byte	readable		
+exe	0x004b7200	ai_MsgPayPct1to2Type0e	unk_4b6480	byte	readable		
+exe	0x004b7310	ai_MsgPayPct1to4Type0f	unk_4b6480	byte	readable		
+exe	0x004b7430	ai_MsgPayPct1to4OfficeType10	unk_4b6480	byte	readable		
+exe	0x004b7550	ai_MsgPayPct1to3BuildingType11	unk_4b6480	byte	readable		
 exe	0x004b76b0	ai_Unk4b76b0	unk_4b6480	byte	draft		
 exe	0x004b77b0	ai_Unk4b77b0	unk_4b6480	byte	draft		
 exe	0x004b78c0	ai_Unk4b78c0	unk_4b6480	byte	draft		
@@ -3416,7 +3416,7 @@ exe	0x0052fa10	sv_CreateScrollForm	sv	byte	readable
 exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	readable		
 exe	0x0052fad0	sv_ScrollFormAnimate	sv	byte	readable		
 exe	0x0052fb50	sv_PopTo	sv	byte	readable		
-exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
+exe	0x0052fb80	sv_PumpMessages	sv	byte	readable		
 exe	0x0052fc10	sv_NetworkSyncWait	sv	byte	readable		
 exe	0x0052fcf0	sv_BroadcastText	sv	byte	readable		
 exe	0x0052fd80	sv_SyncText	sv	byte	readable		
@@ -3428,7 +3428,7 @@ exe	0x00530670	sv_WeatherFrame	sv	draft	readable	deep
 exe	0x005307f0	sv_AdvanceGame	sv	shape	readable		
 exe	0x00530900	sv_SetScreenCenter	sv	byte	readable		
 exe	0x005309a0	sv_RunFrame	sv	draft	readable	deep	
-exe	0x005315c0	sv_UpdateClock	sv	byte	draft		
+exe	0x005315c0	sv_UpdateClock	sv	byte	readable		
 exe	0x00531670	main_DestroyWindow	main	byte	readable		
 exe	0x00531690	main_ShutdownScreen	main	byte	readable		
 exe	0x005316d0	main_ShutdownModules	main	byte	readable		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at f90d38f0: adding the ai_InitBookmarks prototype to include/unk_575860.h (its caller main_StartGame had no prototype) changed the declaration set of every includer; ai_TutorialInitChapter2 never calls it, so the byte match it cost was no evidence of the original's source (same tie-break as the ai_ClearTurnTable note in main.c) [waits for: the declaration set of include/unk_575860.h settles]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> shape+readable at 303309ef: include/sv.h now includes <windows.h> (the MSG of sv_Message); that declaration-set change flips this function's byte match (34 ins / 50 bytes, the prover shows the same behaviour) and the flip is a VC6 tie-break, no evidence of the original's source; ai_TutorialInitChapter2 gained its byte match by the same flip [waits for: the declaration set of include/sv.h settling (the <windows.h> include for MSG)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
