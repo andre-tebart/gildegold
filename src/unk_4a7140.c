@@ -26,6 +26,7 @@
 #define PARTNER_FLAGS_SEX0 0xf00502  /* the partner-chain flags 0x4a8ad0 asks for a character with sex 0 (reasoned: the other sex; the low byte 2 against 1) */
 #define PARTNER_FLAGS_SEX1 0xf00501  /* ditto for sex != 0 */
 #define PARTNER_FLAGS_ANY 0xf00500  /* the same flags with the low byte 0, either sex (0x4a8f20; reasoned) */
+#define PARTNER_FLAGS_ANY_OFFICE 0xf00d00  /* PARTNER_FLAGS_ANY | 0x800: either sex and an office holder (0x5c33c0: a candidate whose +0x166 officeKind / +0x169 secondOffice is set), 0x4a95d0 */
 #define SUITOR_FLAGS_SEX0 0xc0140a  /* the candidate flags 0x4a91a0 passes ai_FindCandidates for a character with sex 0 (reasoned: the other sex, as PARTNER_FLAGS_SEX0) */
 #define SUITOR_FLAGS_SEX1 0xc01409  /* ditto for sex != 0 */
 #define AIPER_F1CC_DISTRUST 0x400000  /* the flags1cc bit that costs a candidate 0.2 trust in 0x4aad30 (reasoned name: its only reader) */
@@ -1384,20 +1385,21 @@ int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, AIARG *m)
     }
     return 0;
 }
-/* 0x4a95d0, decide callback: p (not flagged 0x80000) picks a character 20..63 units away, into m (kind 7) */
+/* 0x4a95d0, decide callback: p (not flagged 0x80000) picks a character 20..63 units away who holds an office,
+   into m (kind 7) */
 
-int ai_DecideFarChar(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideFarChar(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags;
     unsigned short id;
 
     if ((p->flags1cc & 0x80000) != 0)
         return 0;
-    flags = ((unsigned)&cm_SendRing + 0x497bc0);
+    flags = PARTNER_FLAGS_ANY_OFFICE;
     if (ai_PickPartnerChain(p, 1, &flags, 20.0f, (float)util_RandomU(0x20) + 32.0f, &id) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
+    m->kind = 7;
+    m->ref = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
 /* 0x4a9660, decide callback: p (not flagged 0x40000, money >= 8) picks a character within 18..33 units, into m

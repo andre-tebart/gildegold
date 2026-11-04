@@ -114,7 +114,7 @@ int ai_DecideCloseAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);  /* 0x
 int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m);  /* 0x4a9350 */
 int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a9420 */
 int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a94e0 */
-int ai_DecideFarChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a95d0 */
+int ai_DecideFarChar(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a95d0 */
 int ai_DecideCloseChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a9660 */
 int ai_DecideColumn4Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m);  /* 0x4a9700 */
 int ai_DecideColumn5Officer(int a, AICHAR *p, int *ctx, int d, AIARG *m);  /* 0x4a9880 */
