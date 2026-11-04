@@ -13622,6 +13622,10 @@ typedef struct G8SETTING {              /* a production setting record (the list
     float factor;                       /* +0x44, the weight factor (1.0f at creation, ai_SettingFactor) */
     struct G8SETTING *next;             /* +0x48, the next setting of the chain (ai_FreeSettingChain frees it first) */
 } G8SETTING;
+typedef struct G8SETTAIL {              /* the tail a setting's slot table points at: the seven slots, then the factor */
+    G8SLOT slots[7];
+    float factor;                       /* +0x38 of the table (= +0x44 of the record), ai_SettingFactor */
+} G8SETTAIL;
 #pragma pack(pop)
 #define ai_Settings (*(G8SETTING * *)((char *)&full_data_6f26c0 + 0x0))  /* 0x6f26c0, the head of the production settings chain */
 #define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, the float 100.0f */
@@ -13953,16 +13957,21 @@ int ai_DrawSettingGood(int bld)
     } while (i < 7);
     return pick;
 }
-/* 0x5a88e0, the factor of a setting (31 B): the +0x38 of the 0x5a8540 record (= +0x44 of the record), else 1.0f */
+extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) */
 
-float ai_SettingFactor(int param_1)
+/* 0x5a88e0, the factor of a building's production setting (31 B): the +0x38 of the slot table ai_FindSettingSlots
+   returns (= the record's +0x44), else the shared 1.0f (ai_FloatOne, 0x5eb780) */
+
+float ai_SettingFactor(int bld)
 {
-    int p;
+    G8SETTAIL *t;
+    G8BLD *b;
 
-    p = ai_FindSettingSlots(*(int *)(param_1 + 1));
-    if (p != 0)
-        return *(float *)(p + 0x38);
-    return 1.0f;
+    b = (G8BLD *)bld;
+    t = (G8SETTAIL *)ai_FindSettingSlots(b->id);
+    if (t != 0)
+        return t->factor;
+    return ai_FloatOne;
 }
 /* 0x5a8900, the factor of a setting set (28 B): the +0x44 of the 0x5a84b0 record */
 
