@@ -496,9 +496,10 @@ int ai_Unk4b4550(AICHAR *c, G13TYPE *t)
         return 0;
     return gm_ConvertMoney(*(int *)((char *)f + 0x38), ai_OwnPlayer) > t->goal;
 }
-/* 0x4b4590, mission condition: 0x504ce0 of c's byte 0x164 reaches t->goal */
+/* 0x4b4590, mission condition (types 2 / 7): the titles left in the job title group of c's title number
+   (byte 0x164, gm_TitlesLeft) reach t->goal */
 
-int ai_Unk4b4590(AICHAR *c, G13TYPE *t)
+int ai_CondTitlesLeft(AICHAR *c, G13TYPE *t)
 {
     return gm_TitlesLeft(G13_B(c, 0x164)) >= t->goal;
 }
@@ -850,7 +851,7 @@ int ai_Unk4b4f00(G13MIS *m)
         return ai_Unk4b4550(c, t);
     case 2:
     case 7:
-        return ai_Unk4b4590(c, t);
+        return ai_CondTitlesLeft(c, t);
     case 3:
     case 10:
     case 24:
