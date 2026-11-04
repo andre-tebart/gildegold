@@ -4346,7 +4346,7 @@ unsigned short * gm_QueryNext(void); void txt_Format(char *out, int id0, ...);
    records 0x4ffe90 (+0x5d, 1, 0, 0xca) / 0x4ffcc0 (the +0x2a != rec + 1 collected), the window 0x4741f0 /
    0x475600 / 0x476f80 / 0x475f70, the text 0x515960 and the controls 0x475b80, the messages 0x4c4b70 /
    0x4c2d20 / 0x52ae40, the pump 0x5309a0 (this, 0x657c7) and the exit 0x4758f0 */
-int ai_Unk594810(int param_1, int rec)
+int ai_BriberyWindow(int param_1, int rec)
 {
     char buf[0x200];
     int list[0x80];
@@ -4386,32 +4386,34 @@ int ai_Unk594810(int param_1, int rec)
     ctl2 = d2_GetWinObj(win, 1, i + 1);
     /* ROUGH: the selection over the collected records, the offer / money texts (0x4c4b70 / 0x4c2d20), the
        confirmation 0x52ae40, the frame pump 0x5309a0 (this, 0x657c7) and the exit 0x4758f0 (win) */
-    while (sv_RunFrame(ai_Unk594810, 0x657c7) != 0) {
+    while (sv_RunFrame(ai_BriberyWindow, 0x657c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
     }
     d2_CloseView(win);
     return 0;
 }
-/* 0x594b10, opens the spying window (150 B): 0x520fe0; the 0x50-byte config zeroed with +4 = 0x400, +0x4c =
-   0x727, +0x10 = 6, +8 = 0; the text 0x5176d0 (0x19f6) into the 0x400 buffer; 0x525220 (param_1, 0), the
-   record 0x5b2180 (1, the config, the text, the callback 0x594810, 0); 0x525440 and 0x52ae40 */
+/* 0x594b10, opens the spying map pick (150 B): when the character of the building is free (sv_CheckCharacterFlag
+   0x520fe0 is 0) and the building is not 0, the 0x50-byte config is zeroed (flags +4 = 0x400, +0x4c = 0x727,
+   +0x10 = 6, +8 = 0) and the prompt 0x19f6 is formatted (txt_Format 0x5176d0) into the 0x400 buffer; the player
+   bar opens (0x525220), the map pick runs (0x5b2180: 1, the config, the text, the bribery window 0x594810, 0),
+   then the bar closes (0x525440) and the selection is cleared (0x52ae40) */
 
-void ai_Unk594b10(int param_1)
+void ai_OpenSpying(int building)
 {
     int cfg[0x14];
     char text[0x400];
 
-    if (sv_CheckCharacterFlag(param_1) == 0) {
+    if (sv_CheckCharacterFlag(building) == 0) {
         memset(cfg, 0, 0x50);
         cfg[1] = 0x400;
-        if (param_1 != 0) {
-            sv_OpenPlayerBar(param_1, 0);
+        if (building != 0) {
+            sv_OpenPlayerBar(building, 0);
             cfg[0x13] = 0x727;
             cfg[4] = 6;
             cfg[2] = 0;
             txt_Format(text, 0x19f6);
-            ai_MapPick(1, cfg, text, (void *)ai_Unk594810, 0);
+            ai_MapPick(1, cfg, text, (int)ai_BriberyWindow, 0);
             sv_ClosePlayerBar();
             sv_ClearSelection();
         }
@@ -4561,7 +4563,7 @@ void ai_Unk594e50(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == schutzgeld)
                 ai_OpenBribe(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == spionieren)
-                ai_Unk594b10(param_1);
+                ai_OpenSpying(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == raub)
                 ai_Unk594db0(param_1);
         }
