@@ -10750,21 +10750,21 @@ void gm_SendMoneyDelta(int a, int b)
 
 void gm_ResetStock(void)
 {
-    unsigned char *b;
-    char *l, *o;
+    ORDBLD *b;
+    ORDOBJ *l, *o;
 
-    b = gm_BuildQuery(1, 0, 0x1e);
+    b = (ORDBLD *)gm_BuildQuery(1, 0, 0x1e);
     while (b != 0) {
-        l = gm_Query(*(void **)(b + 0x5d), 1, 0, 0xff);
+        l = (ORDOBJ *)gm_Query((void *)b->objList, 1, 0, 0xff);
         if (l != 0) {
-            o = gm_Query(*(void **)(l + 0x14), 1, 5);
+            o = (ORDOBJ *)gm_Query((void *)l->list, 1, 5);
             while (o != 0) {
-                if (*(int *)(o + 0xe) != 2)
-                    *(int *)(o + 0xe) = 2;
-                o = (char *)gm_QueryNext();
+                if (o->count != 2)
+                    o->count = 2;
+                o = (ORDOBJ *)gm_QueryNext();
             }
         }
-        b = gm_BuildNext();
+        b = (ORDBLD *)gm_BuildNext();
     }
 }
 /* 0x50ccd0, 1 when the character c (flag +0x1b1) has no building of the type 4 (a home) of his id (+0x65) */
