@@ -1755,15 +1755,15 @@ int ai_QueryChapter3Step6(int *p)
 
 void ai_HookChapter5Step2(int arg)
 {
-    char *r;
+    ORDOBJ *r;
     int id;
 
     if (arg)
         return;
-    r = (char *)gm_FindMarketObject(0x155);
-    id = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
+    r = (ORDOBJ *)gm_FindMarketObject(0x155);
+    id = ai_CharInts[ai_PlayerId][0];
     cm_SendMoveGoodsUnchecked(id, -1, 0, 0x2bc0);
-    cm_SendExSellObject(*(int *)(r + 2), -1, 0x155, 3, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+    cm_SendExSellObject(r->objId, -1, 0x155, 3, ai_OwnPlayer, 0);
 }
 /* 0x577290, the query callback of the run record FTInitChapter5Step2: once its goal is done (goalDone > 0) it
    allows only the event 0x29 on the market object 0x155 (and sets goalDone back to 1), refusing everything else;
