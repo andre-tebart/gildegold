@@ -3824,25 +3824,29 @@ void he_Unk549120(int ev)
     *(int *)(ev + 0x70) = 0;
     *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + (unsigned short)util_Random(8) + 1;
 }
-/* 0x5493a0, the init of the event 0x5e: looks for a running event of the type 0x5e of the player (0x53e400 (2, 0, 0x5e, 2, player)); none: state 0, +0xb8 = 0 and the event is posted, else the clock is set and it is posted as failed */
+/* 0x5493a0, the alloc handler of the trial event (type 0x5e, the run handler 0x549430): it looks for another
+   running 0x5e event of its player (he_FindEvent (2, 0, 0x5e, 2, chr), skipping itself); none: the event starts
+   in state 0 with unkb8 cleared and is posted, else it ends at the clock now (posted as failed) */
 
-void he_Unk5493a0(int ev)
+void he_StartTrialEvent(int ev)
 {
-    int e = (int)he_FindEvent(2, 0, 0x5e, 2, *(unsigned short *)(ev + 8));
+    AIJOB *e = (AIJOB *)ev;
+    AIJOB *found = (AIJOB *)he_FindEvent(2, 0, 0x5e, 2, e->chr);
 
-    while (1) {
-        if (e == 0) {
-            *(int *)(ev + 0x70) = 0;
-            *(char *)(ev + 0xb8) = 0;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
-            return;
-        }
-        if (e != ev)
-            break;
-        e = (int)he_NextEvent();
+    if (found != 0) {
+        do {
+            if (found == e) {
+                found = (AIJOB *)he_NextEvent();
+            } else {
+                e->end = ai_Time;
+                e->exSlot = cm_SendExSetHE(-1, ev);
+                return;
+            }
+        } while (found != 0);
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->stage = 0;
+    e->rounds = 0;
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x549430, a Ghidra miss (disassembled): the run handler of the trial of the figure +0xac for the player (word +8): state 0 counts the rounds (+0xb8, +0x56 += 0x18 units, the news 0x1a9b, the player pays the cost -+0xb4 with 0x53eec0; the 3rd round goes to the state 1), state 1 picks two random abilities of the player (0x504ad0 / 0x504100, +0x10 random bytes each at +0x80 by 0x4c3d00), sets the party flags 0x4c59b0 (+0xb0) and tells the figure the news 0x1a9c (ROUGH) */
 
@@ -9169,7 +9173,7 @@ int he_Unk553060(void)
         return 1;
     if (he_Unk53d600(0x5d, (void *)he_Unk549110, (void *)he_Unk549120) != 0)
         return 1;
-    if (he_Unk53d600(0x5e, (void *)he_Unk5493a0, (void *)he_Unk549430) != 0)
+    if (he_Unk53d600(0x5e, (void *)he_StartTrialEvent, (void *)he_Unk549430) != 0)
         return 1;
     if (he_Unk53d600(0x5f, (void *)he_Unk5496f0, (void *)he_Unk549770) != 0)
         return 1;

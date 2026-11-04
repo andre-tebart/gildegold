@@ -91,6 +91,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
         struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
         struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
+        struct { char padb8[4]; unsigned char rounds; };  /* 0xb8, of a trial event 0x5e the round counter (he.c 0x549430:
+                                                      1 at the first round, the third one moves the event to the state 1) */
         struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark
                                                        while argc8 is set), of a tribute event 0x35 the collector's netId (he.c) */
         struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */
