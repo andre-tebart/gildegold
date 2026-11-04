@@ -779,16 +779,6 @@ int ai_CondDecisionSumZero(AICHAR *c, G13TYPE *t)
     return 0;
 }
 
-typedef struct G13ECON {                /* 0x28 bytes, filled by 0x4f9e00 */
-    float unk00;
-    float unk04;                        /* 0x04 */
-    float unk08;                        /* 0x08 */
-    float unk0c;                        /* 0x0c */
-    char pad10[8];
-    float unk18;                        /* 0x18 */
-    char pad1c[0x0c];
-} G13ECON;
-
 struct VFSFILE; float ord_GetStatistics(int *o);                                                /* 0x4f9e00, defined elsewhere */
 
 /* 0x4b4dc0, mission condition (type 46, from year 10): the order statistics' rating base (ai_RatingBase,
@@ -804,19 +794,21 @@ int ai_CondRatingBaseTimed(AICHAR *c, int x, G13TYPE *t)
         return ai_TimedCondition(x, 0, t->threshold);
     return ai_TimedCondition(x, 1, t->threshold);
 }
-/* 0x4b4e30, mission condition: 0x4f9e00 at most 0.1 and its values 0x0c, 0x04, 0x08 at least 0.3 */
+/* 0x4b4e30, mission condition (type 45): the order statistics' overall score at most 0.1 (the town at its
+   worst) and the shares of the kind 0 / 1 characters without a first / second building (out[1] / out[3]) and the
+   combined rating out[2] each at least 0.3 */
 
-int ai_Unk4b4e30(AICHAR *c, G13TYPE *t)
+int ai_CondTownDecline(AICHAR *c, G13TYPE *t)
 {
-    G13ECON e;
+    ORDSTATS e;
 
-    if (ord_GetStatistics(&e) > 0.1)
+    if (ord_GetStatistics((int *)&e) > 0.1)
         return 0;
-    if (e.unk0c < 0.3f)
+    if (e.col[3] < 0.3f)
         return 0;
-    if (e.unk04 < 0.3f)
+    if (e.col[1] < 0.3f)
         return 0;
-    if (e.unk08 < 0.3f)
+    if (e.col[2] < 0.3f)
         return 0;
     return 1;
 }
@@ -919,7 +911,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 44:
         return ai_CondPlayerHeldKindsTimed(c, (int)m, t);
     case 45:
-        return ai_Unk4b4e30(c, t);
+        return ai_CondTownDecline(c, t);
     case 46:
         return ai_CondRatingBaseTimed(c, (int)m, t);
     case 47:
