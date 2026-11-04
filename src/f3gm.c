@@ -9320,12 +9320,12 @@ unsigned short *gm_ObjectOwnerChar(unsigned short *o)
 
 unsigned short *gm_ObjectBuildingOwner(unsigned short *o)
 {
-    int b;
+    ORDBLD *b;
 
-    gm_FindById(&b, 0, (int *)&o, *(int *)(o + 5));
+    gm_FindById((int *)&b, 0, (int *)&o, ((ORDOBJ *)o)->holderId);
     if (o == 0) {
-        if (b != 0 && *(unsigned short *)(b + 0x27) != 0xffff)
-            return (unsigned short *)ai_Chars[*(unsigned short *)(b + 0x27)];
+        if (b != 0 && b->owner != 0xffff)
+            return (unsigned short *)ai_Chars[b->owner];
         o = 0;
     }
     return o;
