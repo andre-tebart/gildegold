@@ -9216,13 +9216,13 @@ int gm_SumListAmounts(void *list, unsigned char p)
 int gm_GetGoodsValue(char *c)
 {
     int s;
-    char *o;
+    ORDOBJ *o;
 
     s = 0;
-    o = gm_Query(*(void **)(c + 0x178), 1, 0, PLW54(ai_OwnPlayer));
+    o = (ORDOBJ *)gm_Query((void *)((ORDCHAR *)c)->inventory, 1, 0, PLW54(ai_OwnPlayer));
     while (o) {
-        s += *(int *)(o + 0xe);
-        o = (char *)gm_QueryNext();
+        s += o->count;
+        o = (ORDOBJ *)gm_QueryNext();
     }
     return s;
 }
