@@ -9424,12 +9424,12 @@ void ai_GraveAgeContact(AIBLD *rec)
     sv_ClearSelection();
     sv_CameraFollow();
 }
-/* 0x5871c0, the graveyard "GRAB_MIETEN" contact (30 B): the contact window 0x583240 (0, rec,
-   U_I (0x144a5d0), 0, 0), then 0x52d7a0 () */
+/* 0x5871c0, the graveyard "GRAB_MIETEN" contact (30 B): opens the grave window (ai_GraveWindow: no output, rec,
+   the title text 0x4104, flag 0, no callback), then follows the camera again (sv_CameraFollow) */
 
 void ai_GravePlanContact(char *rec)
 {
-    ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a5d0), 0, 0);
+    ai_GraveWindow(0, rec, txt_Ptrs[0x4104], 0, 0);
     sv_CameraFollow();
 }
 
