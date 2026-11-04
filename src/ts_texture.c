@@ -106,14 +106,16 @@ TSHICOL *ts_HiCol = 0;                  /* 0xfb91a4 */
 int ts_TexUsed = 0;                     /* 0xfb91a8 */
 unsigned long ts_LastTime = 0;          /* 0xfb91ac */
 unsigned int ts_HiColCount = 0;         /* 0xfb91b0 */
-int ts_Unkfb91b4 = 0;                   /* 0xfb91b4 */
+int ts_CacheReset = 0;                  /* 0xfb91b4, always 0: zeroed with the cache counters at init, never read (reasoned name) */
 void *ts_Palette = 0;                   /* 0xfb91b8 */
 int ts_Mips = 8;  /* 0x5fd0b0, initialized to 8; TODO define here once .data is matched */
-/* 0x45f610 */
+/* 0x45f610, sets the surface cache to size entries: clears the cache counters and (when size > 0) allocates
+   the TSCACHE array */
+
 void ts_InitCache(unsigned int size)
 {
     ts_CacheSize = size;
-    ts_Unkfb91b4 = 0;
+    ts_CacheReset = 0;
     ts_CacheUsed = 0;
     if (size > 0)
         ts_Cache = mem_Alloc(size * sizeof(TSCACHE), "d3_ts:SurfaceCache");
