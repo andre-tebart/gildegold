@@ -1407,31 +1407,31 @@ int ai_StepChapter2Step4(int *p)
 
 int ai_StepChapter2Step5(int *p)
 {
-    int kind;
+    AIBLD *b;
 
     if (p[0] == 0x1b) {
         if (!p[1])
             goto next;
-        if (U_I(S + 4) != 4)
+        if (ai_Tutorial->next != 4)
             goto next;
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0xd)
+        b = (AIBLD *)p[1];
+        if (((AIBTYPE *)ai_BTypes)[b->type].kind != 0xd)
             goto fail;
-        U_I(S) = 0xa;
-        U_I(S + 4) = 0xa;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        ai_Tutorial->state = 0xa;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->stepAt = d3_Time;
         return 1;
     }
 next:
     if (p[0] == 0x1c) {
         if (!p[1])
             goto fail;
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 0xd)
+        b = (AIBLD *)p[1];
+        if (((AIBTYPE *)ai_BTypes)[b->type].kind != 0xd)
             goto fail;
-        U_I(S) = 0xb;
-        U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        ai_Tutorial->state = 0xb;
+        ai_Tutorial->next = 0xb;
+        ai_Tutorial->stepAt = d3_Time;
         return 1;
     }
 fail:
