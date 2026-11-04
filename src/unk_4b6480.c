@@ -1728,7 +1728,7 @@ int ai_MsgLoseGood(G14MSG *m)
 }
 /* 0x4bae20, message (if 0..255 is not above c's skill 0x82): c gets 1..3 % of 0x50a640 */
 
-int ai_Unk4bae20(G14MSG *m)
+int ai_MsgRewardPct1to3Skill82Type39(G14MSG *m)
 {
     AICHAR *c;
     double k;
@@ -1953,7 +1953,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
     ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
-    ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
+    ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_Unk4baf30, ai_Unk4bb030,
     ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
     ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
     ai_Unk4bb630
