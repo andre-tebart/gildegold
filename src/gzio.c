@@ -241,7 +241,9 @@ int ZEXPORT gzsetparams (file, level, strategy)
    for end of file.
    IN assertion: the stream s has been sucessfully opened for reading.
 */
-/* 0x462fe0 */
+/* 0x462fe0, returns the next byte of the gzip stream, refilling inbuf from
+   the file when it is empty; EOF once the input is exhausted or the read
+   failed (z_err Z_ERRNO then) */
 local int get_byte(s)
     gz_stream *s;
 {
