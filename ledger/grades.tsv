@@ -4364,13 +4364,13 @@ exe	0x005a9af0	ai_Unk5a9af0	unk_58bbd0	byte	draft
 exe	0x005a9b50	ai_Unk5a9b50	unk_58bbd0	byte	draft		
 exe	0x005a9bc0	ai_Unk5a9bc0	unk_58bbd0	byte	draft		
 exe	0x005a9c30	ai_DomizilMessage	unk_58bbd0	byte	readable		
-exe	0x005a9ca0	ai_Unk5a9ca0	unk_58bbd0	draft	draft		
+exe	0x005a9ca0	ai_DomizilMessage04	unk_58bbd0	byte	readable		
 exe	0x005a9d00	ai_Unk5a9d00	unk_58bbd0	byte	draft		
 exe	0x005a9d60	ai_Unk5a9d60	unk_58bbd0	byte	draft		
 exe	0x005a9dd0	ai_Unk5a9dd0	unk_58bbd0	byte	draft		
 exe	0x005a9e40	ai_DomizilMessage12	unk_58bbd0	byte	draft		
 exe	0x005a9e90	ai_Unk5a9e90	unk_58bbd0	draft	draft		
-exe	0x005a9f10	ai_Unk5a9f10	unk_58bbd0	draft	draft		
+exe	0x005a9f10	ai_DomizilGoodInRange	unk_58bbd0	shape	readable		
 exe	0x005a9f80	ai_Unk5a9f80	unk_58bbd0	draft	draft		
 exe	0x005aa0d0	ai_Unk5aa0d0	unk_58bbd0	draft	draft		
 exe	0x005aa1f0	ai_Unk5aa1f0	unk_58bbd0	draft	draft		
@@ -4405,8 +4405,8 @@ exe	0x005b4340	ai_Unk5b4340	unk_58bbd0	draft	draft
 exe	0x005b4590	ai_Unk5b4590	unk_58bbd0	draft	draft		
 exe	0x005b4820	ai_Unk5b4820	unk_58bbd0	draft	draft		
 exe	0x005b4bf0	ai_Unk5b4bf0	unk_58bbd0	draft	draft		
-exe	0x005b4c60	ai_Unk5b4c60	unk_58bbd0	draft	draft		
-exe	0x005b4fb0	ai_DrohbriefWindow	unk_58bbd0	draft	draft		
+exe	0x005b4c60	ai_DrohbriefAmountCB	unk_58bbd0	draft	draft		
+exe	0x005b4fb0	ai_DrohbriefWindow	unk_58bbd0	byte	readable		
 exe	0x005b5010	ai_Unk5b5010	unk_58bbd0	draft	draft		
 exe	0x005b5310	ai_Unk5b5310	unk_58bbd0	draft	draft		
 exe	0x005b5610	ai_PamphletWindow	unk_58bbd0	draft	draft		
@@ -4437,7 +4437,7 @@ exe	0x005ba700	ai_Unk5ba700	unk_58bbd0	draft	draft
 exe	0x005ba750	ai_Unk5ba750	unk_58bbd0	draft	draft		
 exe	0x005ba980	ai_Unk5ba980	unk_58bbd0	draft	draft		
 exe	0x005bac10	ai_InventoryPanel	unk_58bbd0	draft	draft		
-exe	0x005bae10	ai_Unk5bae10	unk_58bbd0	draft	draft		
+exe	0x005bae10	ai_EquipRowsInit	unk_58bbd0	draft	readable	deep	
 exe	0x005bae50	ai_Unk5bae50	unk_58bbd0	draft	draft		
 exe	0x005bb2d0	ai_Unk5bb2d0	unk_58bbd0	byte	draft		
 exe	0x005bb350	ai_Unk5bb350	unk_58bbd0	draft	draft		
@@ -4450,11 +4450,11 @@ exe	0x005bc6d0	ai_Unk5bc6d0	unk_58bbd0	draft	draft
 exe	0x005bc790	ai_Unk5bc790	unk_58bbd0	draft	draft		
 exe	0x005bc9c0	ai_Unk5bc9c0	unk_58bbd0	draft	draft		
 exe	0x005bcc70	ai_PlayerStatsPanel	unk_58bbd0	draft	draft		
-exe	0x005bd060	ai_AmountLimit	unk_58bbd0	draft	draft		
-exe	0x005bd0c0	ai_Unk5bd0c0	unk_58bbd0	draft	draft		
-exe	0x005bd190	ai_Unk5bd190	unk_58bbd0	draft	draft		
-exe	0x005bd1f0	ai_Unk5bd1f0	unk_58bbd0	draft	draft		
-exe	0x005bd250	ai_Unk5bd250	unk_58bbd0	draft	draft		
+exe	0x005bd060	ai_AmountLimit	unk_58bbd0	byte	readable		
+exe	0x005bd0c0	ai_CentredText	unk_58bbd0	byte	readable		
+exe	0x005bd190	ai_RightAlignedText	unk_58bbd0	byte	readable		
+exe	0x005bd1f0	ai_LeftAlignedText	unk_58bbd0	byte	readable		
+exe	0x005bd250	ai_ShowWindowRow	unk_58bbd0	byte	readable		
 exe	0x005bd330	ai_Unk5bd330	unk_58bbd0	draft	draft		
 exe	0x005bd470	ai_Unk5bd470	unk_58bbd0	draft	draft		
 exe	0x005bd5e0	ai_Unk5bd5e0	unk_58bbd0	draft	draft		
