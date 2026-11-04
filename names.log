@@ -1798,3 +1798,5 @@
 2026-11-04T12:25:58 0x005d0ab0 func ai_Unk5d0ab0 -> ai_TrialStep4 by:main why:the use callback of the Domizil record 11 (the good 0x164, 0x62c554): it runs the trial step 4
 2026-11-04T12:26:51 0x005d22e0 func ai_Unk5d22e0 -> ai_UsePayGood by:main why:the use callback of the Domizil record 59: it checks the character can pay 3 and sends the money delta -3
 2026-11-04T12:28:21 0x005d2f20 func ai_Unk5d2f20 -> ai_UseEventGood by:main why:the use callback of the Domizil record 49: it sends the message type 0xa4 (the event 0xa4) to the character's netId with the clock
+2026-11-04T12:46:42 0x004f5070 data unk_Unk4f5070 -> ord_MedicusOrder by:main why:table 0x611768 entry 2, the medicus order: a sick character (v024 below -20 or v02c bits above 0xf) opens the medicus privilege window (0x5c8bc0, privillegien_medicus); the kind-1 text 0x1d3a is the order's text
+2026-11-04T12:46:42 0x005c8bc0 func ai_Unk5c8bc0 -> ai_MedicusHandler by:main why:table 0x611768 entry 2, the medicus order: a sick character (v024 below -20 or v02c bits above 0xf) opens the medicus privilege window (0x5c8bc0, privillegien_medicus); the kind-1 text 0x1d3a is the order's text

@@ -196,18 +196,20 @@ int ord_EspionageResultOrder(char *c, int *m)
         txt_Format(ORD_MSG(m)->text, "%s", 0x1d35);
     return r;
 }
-/* 0x4f5070, the first of a long run of small order handlers (c the character, m the message, kind 1 / 3; 1 = not handled, 2 = handled, text into m + 0x14): characters without flag 0x40 of +0x1c8 whose float +0x24 is below -20 or whose int +0x2c has bits above 0xf
-   go to 0x5c8bc0 (kind 3) or get the text 0x1d3a (kind 1, a player) */
+/* 0x4f5070, the medicus order: a sick character (v024 below -20, the int read as a double, or v02c's
+   bits above 0xf) that is not already waiting on the flag 0x40 opens the medicus privilege window (kind 3)
+   or, for a player's do (kind 1, kind 6), gets the text 0x1d3a into m + 0x14; else 1 (not handled), 2 */
 
-int unk_Unk4f5070(char *c, int *m)
+int ord_MedicusOrder(char *c, int *m)
 {
     int k;
 
     k = m[0];
-    if ((k == 3 || k == 1) && (c[0x1c8] & 0x40) == 0 && ((double)*(int *)(c + 0x24) < -20.0 || (*(unsigned *)(c + 0x2c) & 0xfffffff0) != 0)) {
+    if ((k == 3 || k == 1) && (ORD_CHAR(c)->flags1c8 & 0x40) == 0
+        && (ORD_CHAR(c)->v024 < -20.0 || (ORD_CHAR(c)->v02c & 0xfffffff0) != 0)) {
         if (k == 3)
-            return ai_Unk5c8bc0(c, m);
-        if (k == 1 && c[2] == 6)
+            return ai_MedicusHandler(c, m);
+        if (k == 1 && ORD_CHAR(c)->kind == 6)
             txt_Format(m + 5, "%s", 0x1d3a);
         return 2;
     }

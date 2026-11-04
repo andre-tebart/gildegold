@@ -590,7 +590,7 @@ int cm_ExecCommands();                     /* 0x4c4190 */
 int cm_SendRelations(int a, int b, int c, int d);                     /* 0x4c4b00 */
 int gm_CharCurrency(char *c, char p);                   /* 0x509ee0 */
 
-int unk_Unk4f5070(char *c, int *m);     /* 0x4f5070 */
+int ord_MedicusOrder(char *c, int *m);     /* 0x4f5070 */
 
 int ord_SpyTargetOrder(char *c, int *m);     /* 0x4f50f0 */
 

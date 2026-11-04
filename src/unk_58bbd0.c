@@ -19989,7 +19989,7 @@ found:
    (0x4c4a60 (handle, 0x1c8, 4, 0x40, 0)) with the pump 0x52fe00, shows 0x521150 and sets 0x6f22a0; the
    return 0x81. The other types pay 0x4c47e0 when the amount > 1 and return 0x11, else 0; the pump
    0x5309a0 and the end 0x4758f0. ROUGH: the strcpy blocks of the pseudocode are written as strcpy. */
-int ai_Unk5c8bc0(unsigned short *param_1, void *unused)
+int ai_MedicusHandler(unsigned short *param_1, void *unused)
 {
     char buf[256];
     char text[1024];
@@ -20061,7 +20061,7 @@ int ai_Unk5c8bc0(unsigned short *param_1, void *unused)
         }
         if (*(int *)((unsigned)&dm_L + 0x20))
             *(int *)(unsigned)&sv_PopRequest = 1;
-        if (sv_RunFrame(ai_Unk5c8bc0, 0x657c7) == 0) {
+        if (sv_RunFrame(ai_MedicusHandler, 0x657c7) == 0) {
             d2_CloseView(win);
             return ret;
         }
