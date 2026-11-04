@@ -990,17 +990,17 @@ int ai_MsgJobTime(G14MSG *m)
     }
     return 0;
 }
-/* 0x4b8f70, message: one of up to 8 jobs (0x53e400(1, 0, 0xf)) of c's objects (0x4fea50 of 0xac) whose ends are
+/* 0x4b8f70, message 0x24: one of up to 8 jobs (0x53e400(1, 0, 0xf)) of c's carts (0x4fea50 of 0xac) whose ends are
    0x502520 buildings, one of kind 0x47; the text names the player of that end */
 
-int ai_Unk4b8f70(G14MSG *m)
+int ai_MsgJobEndPlayerType24(G14MSG *m)
 {
     AICHAR *c;
     AIJOB *j;
-    char *o;
+    AIOBJ *o;
     AIBLD *w, *u;
     int n;
-    char *os[8];
+    AIOBJ *os[8];
     AIJOB *js[8];
     char buf[0x800];
 
@@ -1009,12 +1009,12 @@ int ai_Unk4b8f70(G14MSG *m)
     if (c == 0)
         return 1;
     for (j = he_FindEvent(1, 0, 0xf); j != 0 && n < 8; j = he_NextEvent()) {
-        G14_4FEA50(0, &o, 0, *(int *)((char *)j + 0xac));
-        if (o != 0 && *(int *)(o + 0xa) == c->id) {
-            G8_4FEA50((int *)&u, 0, 0, *(int *)((char *)j + 0xb4));
-            G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));
-            if ((u != 0 && gm_IsHomeType(u)) || (w != 0 && gm_IsHomeType(w))) {
-                if (*(char *)w == 0x47 || *(char *)u == 0x47) {
+        gm_FindById(0, (int *)&o, 0, j->u.id);
+        if (o != 0 && o->fightSide == c->id) {
+            gm_FindById((int *)&u, 0, 0, j->id3);
+            gm_FindById((int *)&w, 0, 0, j->id2);
+            if ((u != 0 && gm_IsHomeType((unsigned char *)u)) || (w != 0 && gm_IsHomeType((unsigned char *)w))) {
+                if (w->type == 0x47 || u->type == 0x47) {
                     js[n] = j;
                     os[n] = o;
                     n++;
@@ -1027,13 +1027,13 @@ int ai_Unk4b8f70(G14MSG *m)
     n = util_RandomU(n);
     j = js[n];
     o = os[n];
-    G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));
-    G8_4FEA50((int *)&u, 0, 0, *(int *)((char *)j + 0xb4));
-    if (*(char *)w == 0x47)
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[*(int *)((char *)w + 0x65)], ai_PlayerSlots[0], ai_PlayerSlots[0]);
+    gm_FindById((int *)&w, 0, 0, j->id2);
+    gm_FindById((int *)&u, 0, 0, j->id3);
+    if (w->type == 0x47)
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0], ai_PlayerSlots[0]);
     else
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[*(int *)((char *)u + 0x65)],
-                     ai_PlayerSlots[*(int *)((char *)u + 0x65)]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot],
+                     ai_PlayerSlots[u->playerSlot]);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x5ef, 0);
     return 0;
 }
@@ -1948,7 +1948,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
     ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1f,
     ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
-    ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
+    ai_MsgJobEndPlayerType24, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
     ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
     ai_Unk4b9f30, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,
     ai_Unk4ba470, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
