@@ -3169,7 +3169,7 @@ exe	0x0050ca50	gm_Unk50ca50	f3gm	byte	draft
 exe	0x0050cad0	gm_ChangeBuildingState	f3gm	draft	readable	deep	
 exe	0x0050cc50	gm_SendMoneyDelta	f3gm	byte	readable		
 exe	0x0050cc60	gm_ResetStock	f3gm	byte	draft		
-exe	0x0050ccd0	gm_Unk50ccd0	f3gm	shape	draft		
+exe	0x0050ccd0	gm_Homeless	f3gm	shape	draft		
 exe	0x0050cd40	gm_Unk50cd40	f3gm	byte	draft		
 exe	0x0050cdc0	gm_StaffFactor	f3gm	shape	readable		
 exe	0x0050cf60	gm_BathObjectCount	f3gm	byte	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 1a13a826: VC6 register tie-break on the declaration set of ai_types.h: the AIJOB / AIMSG unions (e3844d9d, 3ab54cac, the Q4 typing) flip it; an unused typedef there flips it the same way, its own source is unchanged and reads neither type; regs only (30) [waits for: the ai_types.h declaration set settling (the original's header layout), or a tie-break-stable spelling]
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at 1a13a826: VC6 register tie-break on the declaration set of ai_types.h (the AIJOB / AIMSG unions, e3844d9d, 3ab54cac; unused typedefs move it: 80 / 84 ins): the same stores of the same float constants (0x420c0000 / 0x428e0000 / 0x430e0000 at [esi+0x64]+0x20..0x28) with the registers permuted and the constant loads reordered; diffclass counts that as code, so the grade is draft [waits for: the ai_types.h declaration set settling, and diffclass classifying permuted constant loads as allocation]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> draft+readable at 1a13a826: VC6 register tie-break on the declaration set of ai_types.h (the AIJOB / AIMSG unions, e3844d9d, 3ab54cac; unused typedefs move it: 80 / 84 ins): the same stores of the same float constants (0x420c0000 / 0x428e0000 / 0x430e0000 at [esi+0x64]+0x20..0x28) with the registers permuted and the constant loads reordered; diffclass counts that as code, so the grade is draft [waits for: the ai_types.h declaration set settling, and diffclass classifying permuted constant loads as allocation]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
@@ -4217,7 +4217,7 @@ exe	0x00599ef0	ai_Unk599ef0	unk_58bbd0	draft	draft
 exe	0x0059a2c0	ai_Unk59a2c0	unk_58bbd0	draft	draft		
 exe	0x0059a3c0	ai_Unk59a3c0	unk_58bbd0	draft	draft		
 exe	0x0059a560	ai_Unk59a560	unk_58bbd0	draft	draft		
-exe	0x0059a710	ai_Unk59a710	unk_58bbd0	draft	draft		
+exe	0x0059a710	ai_MarketStandWindow	unk_58bbd0	byte	readable		
 exe	0x0059a800	ai_Unk59a800	unk_58bbd0	draft	draft		
 exe	0x0059aae0	ai_WineCellarWindow	unk_58bbd0	draft	draft		
 exe	0x0059ad00	ai_WineCellarContact	unk_58bbd0	byte	readable		
@@ -4236,8 +4236,8 @@ exe	0x0059c700	ai_Unk59c700	unk_58bbd0	draft	draft
 exe	0x0059d2d0	ai_Unk59d2d0	unk_58bbd0	draft	draft		
 exe	0x0059d410	ai_Unk59d410	unk_58bbd0	draft	draft		
 exe	0x0059d5e0	ai_Unk59d5e0	unk_58bbd0	draft	draft		
-exe	0x0059dc00	ai_Unk59dc00	unk_58bbd0	draft	draft		
-exe	0x0059df10	ai_Unk59df10	unk_58bbd0	draft	draft		
+exe	0x0059dc00	ai_MoneyLenderInfoWindow	unk_58bbd0	draft	draft		
+exe	0x0059df10	ai_FortuneOverview	unk_58bbd0	byte	readable		
 exe	0x0059df80	ai_Unk59df80	unk_58bbd0	byte	draft		
 exe	0x0059e0a0	ai_SwitchRoom	unk_58bbd0	shape	draft		
 exe	0x0059e170	ai_Unk59e170	unk_58bbd0	draft	draft		
@@ -4274,7 +4274,7 @@ exe	0x005a2e60	ai_Unk5a2e60	unk_58bbd0	draft	draft
 exe	0x005a36c0	ai_Unk5a36c0	unk_58bbd0	shape	draft		
 exe	0x005a3810	ai_Unk5a3810	unk_58bbd0	shape	draft		
 exe	0x005a39b0	ai_ChurchContact	unk_58bbd0	byte	readable		
-exe	0x005a3a40	ai_DungeonPlanWindow	unk_58bbd0	draft	draft		
+exe	0x005a3a40	ai_DungeonPlanWindow	unk_58bbd0	shape	readable		
 exe	0x005a3b20	ai_DungeonContact	unk_58bbd0	byte	readable		
 exe	0x005a3b90	ai_Unk5a3b90	unk_58bbd0	draft	draft		
 exe	0x005a3df0	ai_Unk5a3df0	unk_58bbd0	draft	draft		
@@ -4316,7 +4316,7 @@ exe	0x005a79e0	ai_Unk5a79e0	unk_58bbd0	draft	draft
 exe	0x005a7bc0	ai_Unk5a7bc0	unk_58bbd0	draft	draft		
 exe	0x005a7cd0	ai_Unk5a7cd0	unk_58bbd0	draft	draft		
 exe	0x005a82f0	ai_Unk5a82f0	unk_58bbd0	byte	draft		
-exe	0x005a8340	ai_Unk5a8340	unk_58bbd0	draft	draft		
+exe	0x005a8340	ai_SettingRandom	unk_58bbd0	byte	readable		
 exe	0x005a8390	ai_Unk5a8390	unk_58bbd0	byte	draft		
 exe	0x005a83b0	ai_Unk5a83b0	unk_58bbd0	draft	draft		
 exe	0x005a84b0	ai_Unk5a84b0	unk_58bbd0	byte	draft		
@@ -4326,7 +4326,7 @@ exe	0x005a8560	ai_ProdSetting	unk_58bbd0	draft	draft
 exe	0x005a86c0	ai_FreeProdSetting	unk_58bbd0	byte	draft		
 exe	0x005a8710	ai_Unk5a8710	unk_58bbd0	draft	draft		
 exe	0x005a8850	ai_Unk5a8850	unk_58bbd0	byte	draft		
-exe	0x005a8870	ai_DrawSettingGood	unk_58bbd0	draft	draft		
+exe	0x005a8870	ai_DrawSettingGood	unk_58bbd0	shape	draft		
 exe	0x005a88e0	ai_SettingFactor	unk_58bbd0	byte	draft		
 exe	0x005a8900	ai_Unk5a8900	unk_58bbd0	byte	draft		
 exe	0x005a8920	ai_FreeSettings	unk_58bbd0	byte	draft		
@@ -4346,8 +4346,8 @@ exe	0x005a9050	ai_Unk5a9050	unk_58bbd0	shape	draft
 exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	draft		
 exe	0x005a9170	ai_NotifyPlayerOfChar	unk_58bbd0	byte	draft		
 exe	0x005a91c0	ai_Unk5a91c0	unk_58bbd0	shape	draft		
-exe	0x005a9240	ai_Unk5a9240	unk_58bbd0	draft	draft		
-exe	0x005a92b0	ai_Unk5a92b0	unk_58bbd0	draft	draft		
+exe	0x005a9240	ai_PlagueMessage	unk_58bbd0	draft	readable	deep	
+exe	0x005a92b0	ai_PlagueMessageAll	unk_58bbd0	shape	readable		
 exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	draft		
 exe	0x005a9430	ai_ShowEvidenceVoidNews	unk_58bbd0	byte	draft		
 exe	0x005a9470	ai_GypsyDeliveryText	unk_58bbd0	draft	draft		
@@ -4359,11 +4359,11 @@ exe	0x005a9880	ai_ShowGraveOrderCancelled	unk_58bbd0	draft	draft
 exe	0x005a9910	ai_Unk5a9910	unk_58bbd0	draft	draft		
 exe	0x005a9990	ai_Unk5a9990	unk_58bbd0	byte	draft		
 exe	0x005a99e0	ai_Unk5a99e0	unk_58bbd0	byte	draft		
-exe	0x005a9a30	ai_Unk5a9a30	unk_58bbd0	draft	draft		
+exe	0x005a9a30	ai_GraveyardMessage	unk_58bbd0	draft	readable	deep	
 exe	0x005a9af0	ai_Unk5a9af0	unk_58bbd0	byte	draft		
 exe	0x005a9b50	ai_Unk5a9b50	unk_58bbd0	byte	draft		
 exe	0x005a9bc0	ai_Unk5a9bc0	unk_58bbd0	byte	draft		
-exe	0x005a9c30	ai_Unk5a9c30	unk_58bbd0	draft	draft		
+exe	0x005a9c30	ai_DomizilMessage	unk_58bbd0	byte	readable		
 exe	0x005a9ca0	ai_Unk5a9ca0	unk_58bbd0	draft	draft		
 exe	0x005a9d00	ai_Unk5a9d00	unk_58bbd0	byte	draft		
 exe	0x005a9d60	ai_Unk5a9d60	unk_58bbd0	byte	draft		
