@@ -6041,7 +6041,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1442090: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextExtract: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextSearchOre: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_14420d8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextSearchStone: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14420e0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14420e8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14420f0: view of txt_Ptrs (build/mk_txt_views.py) */

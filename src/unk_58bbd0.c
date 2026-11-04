@@ -4024,14 +4024,15 @@ void ai_Unk593b00(int param_1)
         r = sv_RunFrame(ai_Unk593b00, 0x67fff);
     }
 }
-/* 0x593ca0, the stone-kontor contact listener (468 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); while the
-   flag 0x6f231c has 0x200: LAGER (0x1441f90, 0xe), ABBAU (0x14420a8, 10), SUCHEN_STEIN (0x14420d8, 0x16),
-   PRODUKTION (0x1441f98, 0x13), TRANSPORT (0x1441fa0, 0x15), GELAGE (0x1441f88, 0x16), and with the records
-   0x4ffe90 (0x35 / 0x34) STROHPUPPE / ZIELSCHEIBE (0x1440ad0 / 0x1440acc, 0x17); 0x5912c0 every frame; the
-   dispatcher: LAGER -> 0x5b26b0 (param_1, param_1 + 0x5d), GELAGE -> 0x5b9f30, ABBAU -> 0x592b90,
-   SUCHEN_STEIN -> 0x5923c0, TRANSPORT -> 0x5af1a0, PRODUKTION -> 0x593150, ZIEL / STROH -> 0x5bba00 */
+/* 0x593ca0, the stone-kontor contact listener (468 B): the plates released (0x52e190) and, while the building
+   permission 0x200 (0x6f231c) is set, registered again (0x52e1c0): LAGER (0x1441f90, 0xe), ABBAU (0x14420a8, 10),
+   SUCHEN_STEIN (0x14420d8, 0x16), PRODUKTION (0x1441f98, 0x13), TRANSPORT (0x1441fa0, 0x15), GELAGE (0x1441f88,
+   0x16), and with the records 0x4ffe90 (0x35 / 0x34) of the building's objList STROHPUPPE / ZIELSCHEIBE (0x1440ad0
+   / 0x1440acc, 0x17); 0x5912c0 runs every frame; a clicked plate (0x6f22e4) opens its window: 0x5b26b0 (bld,
+   bld->objList), 0x5b9f30, 0x592b90, 0x5923c0, 0x5af1a0, 0x593150, 0x5bba00; the frame pump 0x5309a0
+   (this, 0x67fff) */
 
-void ai_Unk593ca0(int param_1)
+void ai_StoneKontorContact(AIBLD *bld)
 {
     int r;
     int lager;
@@ -4052,38 +4053,38 @@ void ai_Unk593ca0(int param_1)
     stroh = 0;
     ziel = 0;
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk593ca0, 0x67fff);
+    r = sv_RunFrame(ai_StoneKontorContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            abbau = sv_RegisterNamePlate("contact_ABBAU", U_I((unsigned)&ai_ContactTextExtract), 10);
-            stein = sv_RegisterNamePlate("contact_SUCHEN_STEIN", U_I((unsigned)&full_data_14420d8), 0x16);
-            produktion = sv_RegisterNamePlate("contact_PRODUKTION", U_I((unsigned)&ai_ContactTextProduction), 0x13);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&ai_ContactTextGelage), 0x16);
-            if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x35) != 0)
-                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&ai_ContactTextTraining), 0x17);
-            if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x34) != 0)
-                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0x17);
+        if (ai_BuildingPerms & 0x200) {
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            abbau = sv_RegisterNamePlate("contact_ABBAU", ai_ContactTextExtract, 10);
+            stein = sv_RegisterNamePlate("contact_SUCHEN_STEIN", ai_ContactTextSearchStone, 0x16);
+            produktion = sv_RegisterNamePlate("contact_PRODUKTION", ai_ContactTextProduction, 0x13);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", ai_ContactTextGelage, 0x16);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x35) != 0)
+                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", ai_ContactTextTraining, 0x17);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x34) != 0)
+                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", ai_ContactTextTarget, 0x17);
         }
         ai_TradeContactChecks();
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
-            else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_GelageWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == abbau)
-                ai_ExtractResourceWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == stein)
-                ai_SearchResourceWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == produktion)
-                ai_ProductionGoodsWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh)
-                ai_TrainingWindow(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == lager)
+                ai_StorageWindow((int)bld, bld->objList);
+            else if (ai_ClickedObject == gelage)
+                ai_GelageWindow((int)bld);
+            else if (ai_ClickedObject == abbau)
+                ai_ExtractResourceWindow((int)bld);
+            else if (ai_ClickedObject == stein)
+                ai_SearchResourceWindow((int)bld);
+            else if (ai_ClickedObject == transport)
+                ai_OpenTransport((int)bld);
+            else if (ai_ClickedObject == produktion)
+                ai_ProductionGoodsWindow((int)bld);
+            else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh)
+                ai_TrainingWindow((int)bld);
         }
-        r = sv_RunFrame(ai_Unk593ca0, 0x67fff);
+        r = sv_RunFrame(ai_StoneKontorContact, 0x67fff);
     }
 }
 
@@ -8991,7 +8992,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         veg_HidePlants(U_I(param_1 + 0x71));
         break;
     case 0x1f:
-        ai_Unk593ca0(U_I((unsigned)&ai_FallbackBuilding));
+        ai_StoneKontorContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x20:
         ai_KontorContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
