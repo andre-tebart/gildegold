@@ -2300,22 +2300,23 @@ int gv_OrderRaiseDead(char *o, int size, int entry, int grave, int kind)
 
 int gv_SendGrave(unsigned char *o)
 {
-    int *z;
-    int *e;
+    AIBLD *bld = (AIBLD *)o;
+    GVGRAVE *z;
+    GVENTRY *e;
     int k;
 
     if (gv_RoomForRaised(o, 0) != 1)
         return -1;
-    z = (int *)gv_RandomGrave(o);
+    z = gv_RandomGrave(o);
     if (z == 0)
         return -1;
-    e = (int *)gv_LoadGraveyard(o, z);
+    e = (GVENTRY *)gv_LoadGraveyard(o, (int *)z);
     if (e == 0)
         return -1;
-    k = gv_EntryIndex(*(char **)(o + 0x65), e);
+    k = gv_EntryIndex((char *)bld->yard, (int *)e);
     if (k == -1)
         return -1;
-    return gv_OrderRaiseDead((char *)o, *e, k, *z, 0x1c);
+    return gv_OrderRaiseDead((char *)o, e->size, k, z->id, 0x1c);
 }
 /* 0x4f1660, the daily decay of a raised dead person c (kind 0x14, gv_RaiseDead; the daily character step of f3gm.c
    0x4fbe90 removes it when this returns 1): its life value f01c loses f014 less 50 * gv_PreserveRate of its graveyard
