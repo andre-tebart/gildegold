@@ -337,7 +337,7 @@ int gm_TitlesLeft(int k);                                                       
 float gm_Mix(int a, int b, int c);                                  /* 0x504e20 */
 int gm_BuildingKindValue(int k);                                                        /* 0x509d30 */
 int gm_BuildingKindCost(int c, int kind);                                              /* 0x509dc0 */
-int unk_Unk4f8700(char *c);                                                     /* 0x4f8700 */
+int ord_RandomObjectId(char *c);                                                     /* 0x4f8700 */
 unsigned short *gm_ObjectOwnerChar(unsigned short *o);                                                  /* 0x509ff0 */
 
 /* ---- 0x48e070..0x490b90 (was unk_48e070.h) ---- */

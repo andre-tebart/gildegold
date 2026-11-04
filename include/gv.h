@@ -696,7 +696,7 @@ int ord_GetKindRecord(int i, int *out);     /* 0x4f8890 */
 void ord_AddGridAmount(int who, unsigned char kind, int *px, int *py);  /* 0x4f8460, kind: a law record (CRIME.law; the caller cm_ExAddCrime pushes the byte unwidened) */
 void ord_SubGridAmount(int who, unsigned char kind);  /* 0x4f8590 */
 
-int unk_Unk4f8700(char *c);             /* 0x4f8700 */
+int ord_RandomObjectId(char *c);             /* 0x4f8700 */
 
 void unk_Unk4f88c0(void);               /* 0x4f88c0 */
 

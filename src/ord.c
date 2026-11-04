@@ -1821,9 +1821,12 @@ void ord_SubGridAmount(int who, unsigned char kind)
         }
     }
 }
-/* 0x4f8700, picks a random object id for the character c (-1 without one): the ids (+1) of the two objects c[0x16c] / c[0x170] (when they have a +0x61 record) and, up to 0x20 times, of up to 3 random objects (3 of 4 chances each) of a random one of the 20 object kinds of the table (4 x 5) as the kind 5 of the list 0x501190 (1, 5, kind), until 16 are collected; then one of them at random */
+/* 0x4f8700, picks a random object id for the character c (-1 without one): the ids of its two buildings
+   (bld / bld2, when their object is present) and, up to 0x20 times, of up to 3 random buildings (3 of 4
+   chances each) of a random one of the 20 kinds of the table (4 x 5), through gm_BuildQuery(1, 5, kind),
+   until 16 are collected; then one of them at random */
 
-int unk_Unk4f8700(char *c)
+int ord_RandomObjectId(char *c)
 {
     int kinds[20];
     int list[16];
@@ -1831,7 +1834,7 @@ int unk_Unk4f8700(char *c)
     int tries;
     int k;
     int idx;
-    char *o;
+    ORDBLD *o;
 
     kinds[0] = 1;
     kinds[1] = 2;
@@ -1857,28 +1860,28 @@ int unk_Unk4f8700(char *c)
         return -1;
     n = 0;
     tries = 0x20;
-    if (*(char **)(c + 0x16c) != 0 && *(int *)(*(char **)(c + 0x16c) + 0x61) != 0) {
-        list[0] = *(int *)(*(char **)(c + 0x16c) + 1);
+    if (ORD_CHAR(c)->bld != 0 && ORD_CHAR(c)->bld->object != 0) {
+        list[0] = ORD_CHAR(c)->bld->id;
         n = 1;
     }
-    if (*(char **)(c + 0x170) != 0 && *(int *)(*(char **)(c + 0x170) + 0x61) != 0) {
-        list[n] = *(int *)(*(char **)(c + 0x170) + 1);
+    if (ORD_CHAR(c)->bld2 != 0 && ORD_CHAR(c)->bld2->object != 0) {
+        list[n] = ORD_CHAR(c)->bld2->id;
         n++;
     }
     while (n < 16 && tries != 0) {
         tries--;
         idx = util_RandomU(4) * 5 + util_RandomU(5);
         k = 0;
-        o = (char *)gm_BuildQuery(1, 5, kinds[idx]);
+        o = (ORDBLD *)gm_BuildQuery(1, 5, kinds[idx]);
         while (o != 0 && k < 3) {
             if (n >= 16)
                 goto done;
             if (util_RandomU(4) < 3) {
-                list[n] = *(int *)(o + 1);
+                list[n] = o->id;
                 n++;
                 k++;
             }
-            o = (char *)gm_BuildNext();
+            o = (ORDBLD *)gm_BuildNext();
         }
     }
 done:
