@@ -46,7 +46,7 @@ struct D3SM;
 #include "evt.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-#define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_Unk54fc70 call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
+#define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
 #define ai_Unk5a9240K ((int (*)())ai_Unk5a9240)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_Unk5a9c30K ((int (*)())ai_Unk5a9c30)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
@@ -6152,20 +6152,24 @@ int he_CreateSmokeEffect(int o)
     v[2] = 0.0f;
     return d3t_CreateEmitterK(bld->object, "Rauch", 1, *color, v, 0x12c, 1, 0x41f00000, 0x40000000, 0x40f00000, 0x3ecccccd, 0x3f800000);
 }
-/* 0x54fc70, a Ghidra miss: creates the effect 0x178 on the scene record of the object p (like 0x54fc00, other colour 0x321e50 and size) */
+/* 0x54fc70, the points emitter of the effect event (like he_CreateSmokeEffect, the other colour 0x321e50 and
+   size): creates the effect 0x178 ("punkte_nm_2", a 50 / 1 / 2 / 0.5 / 0.5 emitter) on the scene record
+   (AIBLD.object) of the building o and returns its handle; the five floats go as dword bit patterns */
 
-int he_Unk54fc70(int o)
+int he_CreatePointsEffect(int o)
 {
+    AIBLD *bld = (AIBLD *)o;
     unsigned char col[4];
-    int v[3];
+    int *color = (int *)col;
+    float v[4];
 
-    col[0] = 0x32;
-    col[1] = 0x1e;
     col[2] = 0x50;
-    v[0] = 0;
-    v[1] = 0x42480000;
-    v[2] = 0;
-    return d3t_CreateEmitterK(*(int *)(o + 0x61), "punkte_nm_2", 1, *(int *)col, v, 0x12c, 1, 0x42480000, 0x3f800000, 0x40000000, 0x3f000000, 0x3f000000);
+    col[1] = 0x1e;
+    col[0] = 0x32;
+    v[0] = 0.0f;
+    v[1] = 50.0f;
+    v[2] = 0.0f;
+    return d3t_CreateEmitterK(bld->object, "punkte_nm_2", 1, *color, v, 0x12c, 1, 0x42480000, 0x3f800000, 0x40000000, 0x3f000000, 0x3f000000);
 }
 /* 0x54fce0, a Ghidra miss (disassembled): the run handler of the effect event: state -2 creates the effect (0x54fc00 for the type word +0xc2 == 0x177, 0x54fc70 for 0x178, +0xb0 = its handle; the scene switch 0x4478e0 around it) and goes to state 0 (or ends it), state 0 waits for the due time +0xb4 then clears the flag at +0x24 of the handle (0x4225e0) and goes to 1, state 1 waits for the end flag (+0x20 bit 1) of the handle, and a free of the event kills the effect (0x455760) (ROUGH) */
 
@@ -6183,7 +6187,7 @@ void he_Unk54fce0(int ev)
             if (*(unsigned short *)(ev + 0xc2) == 0x177)
                 *(int *)(ev + 0xb0) = he_CreateSmokeEffect(o);
             else if (*(unsigned short *)(ev + 0xc2) == 0x178)
-                *(int *)(ev + 0xb0) = he_Unk54fc70(o);
+                *(int *)(ev + 0xb0) = he_CreatePointsEffect(o);
             d3if_SelectScene(sc, 1);
             *(int *)(ev + 0x70) = (*(int *)(ev + 0xb0) != 0) * 2 - 1;
             return;
