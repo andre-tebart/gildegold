@@ -1864,3 +1864,4 @@
 2026-11-04T14:51:49 0x00fb91b4 data ts_Unkfb91b4 -> ts_CacheReset by:main why:written only in ts_InitCache (0x45f610), zeroed beside ts_CacheSize / ts_CacheUsed and never read; the original has no other use of 0xfb91b4
 2026-11-04T14:54:24 0x00fe7a0d data d3_Unkfe7a0d -> d3_TexFormatsSame by:main why:d3d_UsedTexFormat.same (+0x4d): the 8- and 16-bit texture formats are the same, so either surface fits
 2026-11-04T14:55:00 0x00633e00 data d3_Unk633e00 -> ts_PathBuf by:main why:256-byte buffer vfs_GetPath fills with the found texture's path, returned by tex_FindFile
+2026-11-04T14:59:06 0x00633f00 data ts_Unk633f00 -> ts_ReloadDone by:main why:tex_ReloadAll clears it once every texture is reloaded; no reader in the game code, so a completion flag (reasoned name)

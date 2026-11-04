@@ -94,7 +94,7 @@ TSTEXTURE *tex_CreateAlias(TSTEXTURE *src, TSFLAGS flags, char group);          
 
 struct TSTEXTURE * tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsigned char fmt);/* 0x4605c0 */
 
-int ts_Unk633f00 = 0;               /* 0x633f00 */
+int ts_ReloadDone = 0;               /* 0x633f00, 0 once a reload-all has finished; only written here (reasoned name) */
 TSCACHE *ts_Cache = 0;              /* 0x633f08 */
 TSTEXTURE *d3_Textures = 0;             /* 0xfb9074 */
 unsigned int ts_MaxHiCol = 0;                   /* 0xfb9078 */
@@ -931,7 +931,7 @@ void tex_ReloadAll(char keep, void (*cb)(int, int, int))
             n++;
         }
     }
-    ts_Unk633f00 = 0;
+    ts_ReloadDone = 0;
 }
 /* 0x461140, drops the surfaces of a texture and reloads it */
 
