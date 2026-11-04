@@ -713,7 +713,8 @@ extern int ZEXPORT unzGetCurrentFileInfo (file,
   Set the current file of the zipfile to the first file.
   return UNZ_OK if there is no problem
 */
-/* 0x468030 */
+/* 0x468030, rewinds the archive to its first entry: reads that entry's central-directory record and
+ * sets current_file_ok from the read's status */
 extern int ZEXPORT unzGoToFirstFile (file)
 	unzFile file;
 {
