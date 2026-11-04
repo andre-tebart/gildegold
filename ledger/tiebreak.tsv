@@ -3375,7 +3375,7 @@ exe	0x0052b500	sv_RunLocationScripts	sv	77f6aaec3357aab1	no	byte	control=byte p1
 exe	0x0052bb70	sv_RunFramesUntilStopped	sv	1f7313733c101605	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	898605bb93595dc7	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	7bdda73bcec71485	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0052c420	sv_MarkMasterCarts	sv	5bf3c7d8825dada0	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0052c420	sv_MarkMasterCarts	sv	5d86094c06c8d502	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052c4a0	sv_ReleaseBubble	sv	7f5d8ff5381fbec0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052c4e0	sv_ShowBubble	sv	44b5e6fe853cf156	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052c5c0	sv_SpeakPicked	sv	8091bcdd0d55b2e2	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
@@ -3386,7 +3386,7 @@ exe	0x0052d2a0	sv_DrawItemNames	sv	a887de759cfe6534	no	byte	control=byte p1=byte
 exe	0x0052d480	sv_DrawBorderArrows	sv	4ef40ccf319b7e2b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052d7a0	sv_CameraFollow	sv	01421ce10b27495d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052d940	sv_HandleRightClick	sv	8da56be255391d52	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0052e050	sv_DrawHint	sv	0f75fd5b6cb1e805	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0052e050	sv_DrawHint	sv	7409700d08d14fd5	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052e0c0	sv_DrawStatusText	sv	6987652e7ad5cf24	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052e170	sv_ClearNamePlates	sv	5f820273789fcd34	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052e190	sv_ReleaseNamePlates	sv	ef7cd46572a61cfc	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -3397,7 +3397,7 @@ exe	0x0052e4b0	sv_TabButtonRow	sv	74f8d6a9c511eaf8	no	shape	control=shape p1=sha
 exe	0x0052e600	sv_DisableVisibleWidgets	sv	ba753d0ee9e10263	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0052e6d0	sv_OpenWindowFrame	sv	2aae4a6ba10b087d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052e860	sv_CreateScrollButtons	sv	5e41e432fdd08104	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0052ea30	sv_FitForm	sv	caa6dbb6c3eb9446	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0052ea30	sv_FitForm	sv	4dbf2663ad7e144b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0052eaa0	sv_ValueBar	sv	4bb7b1c899645573	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0052eb50	sv_DrawBalanceBar	sv	701d646de4aa6655	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0052ee50	sv_StartBand	sv	98f7817056050b5b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
