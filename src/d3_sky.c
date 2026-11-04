@@ -340,7 +340,7 @@ void d3sky_InitColors(void)
     d3sky_Colors[4].col = D3SKY_COLOR_INNER;
     d3sky_Colors[5].col = D3SKY_COLOR_EDGE;
 }
-/* 0x45db20 */
+/* 0x45db20, destroys the current sky and clears it */
 
 void d3sky_Free(void)
 {
