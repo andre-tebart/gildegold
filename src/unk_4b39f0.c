@@ -791,15 +791,16 @@ typedef struct G13ECON {                /* 0x28 bytes, filled by 0x4f9e00 */
 
 struct VFSFILE; float ord_GetStatistics(int *o);                                                /* 0x4f9e00, defined elsewhere */
 
-/* 0x4b4dc0, mission condition (from year 10): 0x4b5160 with "t->goal is not below value 0x18 of 0x4f9e00" */
-int ai_Unk4b4dc0(AICHAR *c, int x, G13TYPE *t)
+/* 0x4b4dc0, mission condition (type 46, from year 10): the order statistics' rating base (ai_RatingBase,
+   ORDSTATS.base) is at or above t->goal, held for t->threshold minutes (ai_TimedCondition) */
+int ai_CondRatingBaseTimed(AICHAR *c, int x, G13TYPE *t)
 {
-    G13ECON e;
+    ORDSTATS e;
 
     if (ai_Time.year < 10)
         return 0;
-    ord_GetStatistics(&e);
-    if (t->goal < e.unk18)
+    ord_GetStatistics((int *)&e);
+    if (t->goal < e.base)
         return ai_TimedCondition(x, 0, t->threshold);
     return ai_TimedCondition(x, 1, t->threshold);
 }
@@ -920,7 +921,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 45:
         return ai_Unk4b4e30(c, t);
     case 46:
-        return ai_Unk4b4dc0(c, (int)m, t);
+        return ai_CondRatingBaseTimed(c, (int)m, t);
     case 47:
         return ai_CondPlayerShare(c, t);
     case 48:
