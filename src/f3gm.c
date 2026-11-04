@@ -10671,21 +10671,22 @@ void gm_ChangeRelationToJobs(unsigned short a, int b)
         i++;
     } while ((int)job < (int)&ai_Chars[0][0x166] + 0x300 * 0x21c);
 }
-/* 0x50ca50, changes the state byte (+0x12) of the town object id by d (not below 0) and sends the record */
+/* 0x50ca50, changes the state byte of the object id (fill at +0x12, how full a cart is) by d, not below 0, and
+   sends the field delta (its debug text names it gm_ChangeObjektZustand) */
 
-void gm_Unk50ca50(int id, int d)
+void gm_ChangeObjektZustand(int id, int d)
 {
     char buf[0x80];
     char v;
-    char *o;
+    ORDOBJ *o;
 
     v = d;
-    o = gm_Query(0, 2, 7, 1, id);
+    o = (ORDOBJ *)gm_Query(0, 2, 7, 1, id);
     if (o == 0) {
         sprintf(buf, "gm_ChangeObjektZustand():Could not find Object-ID: %i", id);
         return;
     }
-    if ((unsigned char)o[0x12] + d < 0)
+    if (o->fill + d < 0)
         v = 0;
     cm_BeginFieldBlock(o, id);
     cm_AddFieldValues(1, 1, 0x12, &v);
