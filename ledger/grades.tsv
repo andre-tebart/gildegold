@@ -3974,18 +3974,18 @@ exe	0x00577230	ai_HookChapter5Step2	unk_575860	byte	readable
 exe	0x00577290	ai_QueryChapter5Step2	unk_575860	byte	readable		
 exe	0x005772d0	ai_MarkerChapter5Step2	unk_575860	byte	readable		
 exe	0x00577320	ai_MarkerChapter3Step6	unk_575860	byte	readable		
-exe	0x00577330	ai_QueryChapter3Step8	unk_575860	byte	draft		
+exe	0x00577330	ai_QueryChapter3Step8	unk_575860	byte	readable		
 exe	0x005773f0	ai_MarkerChapter3Step8	unk_575860	byte	readable		
-exe	0x00577450	ai_QueryChapter3Step10	unk_575860	byte	draft		
-exe	0x00577490	ai_StepShownChapter3Step4	unk_575860	byte	draft		
-exe	0x005774d0	ai_HookChapter3Intro	unk_575860	byte	draft		
-exe	0x00577540	ai_HookChapter5Intro	unk_575860	byte	draft		
+exe	0x00577450	ai_QueryChapter3Step10	unk_575860	byte	readable		
+exe	0x00577490	ai_StepShownChapter3Step4	unk_575860	byte	readable		
+exe	0x005774d0	ai_HookChapter3Intro	unk_575860	byte	readable		
+exe	0x00577540	ai_HookChapter5Intro	unk_575860	byte	readable		
 exe	0x005775c0	ai_HookChapter5Step4	unk_575860	byte	readable		
 exe	0x00577610	ai_HookChapter5Step5	unk_575860	byte	readable		
 exe	0x00577690	ai_HookChapter5Step6	unk_575860	shape	readable		
-exe	0x00577740	ai_Unk577740	unk_575860	byte	draft		
-exe	0x00577820	ai_Unk577820	unk_575860	byte	draft		
-exe	0x00577850	ai_TutorialClearRunWindow	unk_575860	byte	draft		
+exe	0x00577740	ai_TutorialOpenIntro	unk_575860	byte	readable		
+exe	0x00577820	ai_TutorialCloseIntro	unk_575860	byte	readable		
+exe	0x00577850	ai_TutorialClearRunWindow	unk_575860	byte	readable		
 exe	0x005778b0	ai_TutorialShowRunText	unk_575860	byte	readable		
 exe	0x00577a00	ai_TutorialIntroAnswered	unk_575860	shape	readable	deep	
 exe	0x00577a90	ai_TutorialShowText	unk_575860	byte	readable		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> draft+readable at a105a42a: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads), a declaration-set change in a header this unit includes (f3gm.h); the experiment falls shape -> draft (12 code hunks, 82 differing instructions) on that change alone, and the shape grade it held was itself a declared tie-break debt, so neither is evidence of the original's source [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at a105a42a: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads), a declaration-set change in a header this unit includes (f3gm.h); the experiment falls shape -> draft (12 code hunks, 82 differing instructions) on that change alone, and the shape grade it held was itself a declared tie-break debt, so neither is evidence of the original's source [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
