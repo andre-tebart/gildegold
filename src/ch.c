@@ -2018,7 +2018,7 @@ void ch_ActDroppingObject(CHACTION *a)
     ch_CheckAniMorph(ch);
     ch_RemoveAction(a);
 }
-/* 0x4060d0 */
+/* 0x4060d0, queues the drop-object action (type 0x32) for the right hand (args[2] = 2): the animation name and the object's model name */
 
 int ch_DropObject(CHARACTER *ch, char *name, char *obj, int frame)
 {
