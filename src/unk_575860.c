@@ -4358,30 +4358,25 @@ void ai_TutorialMarkerUpdate(int mode)
     }
 }
 
-int gm_HeadIconNumber();
-
-/* 0x57bc30, the tutorial info block (168 B, ROUGH): the bytes 0x75e5a0 = 0x4b, 0x75e5a1 = 0x18, 0x75e5a2 =
-   0x10, 0x75e5a3 = 0x33, the dword 0x75e5a4 = 0x59a, 0x75e5a8 / 0x75e5a9 = 0; 0x75e628 = 0x4fb770 (0x624ee0)
-   + 0x639; the strings U_I(0x1449e48) / U_I(0x1449e4c) copied to 0x75e5aa / 0x75e5ca; 0x503ee0 (the local
-   buffer, the byte 0x75e5a3) returns a record whose dword +0 goes to 0x75e5f0 and whose word +4 (low byte) to the
-   local and 0x75e5f4 */
+/* 0x57bc30, the tutorial character: sets init_PlayerProfile to the tutorial player - the tools 0x4b / 0x18, the
+   status 0x10, the job 0x33, the coat 0x59a, sex 0 / faith 0, the model id of "patrizier_MANN2" (gm_HeadIconNumber
+   + 0x639), the default first / family name (texts 0x3f22 / 0x3f23) and the talents of the job */
 void ai_SetupTutorialPlayer(void)
 {
     JOBTALENTS t;
 
-    *(unsigned char *)(unsigned)&init_PlayerProfile = 0x4b;
-    *(unsigned char *)((unsigned)&init_PlayerProfile + 0x1) = 0x18;
-    *(unsigned char *)((unsigned)&init_PlayerProfile + 0x2) = 0x10;
-    *(unsigned char *)((unsigned)&init_PlayerProfile + 0x3) = 0x33;
-    U_I(((unsigned)&init_PlayerProfile + 0x4)) = 0x59a;
-    *(unsigned char *)((unsigned)&init_PlayerProfile + 0x8) = 0;
-    *(unsigned char *)((unsigned)&init_PlayerProfile + 0x9) = 0;
-    init_PlayerProfile.modelId = gm_HeadIconNumber((char *)(unsigned)&full_data_624ee0) + 0x639;
-    strcpy((char *)((unsigned)&init_PlayerProfile + 0xa), *(char **)(unsigned)&full_data_1449e48);
-    strcpy((char *)((unsigned)&init_PlayerProfile + 0x2a), *(char **)(unsigned)&full_data_1449e4c);
-    t = gm_GetJobTalents(*(unsigned char *)((unsigned)&init_PlayerProfile + 0x3));
-    *(int *)init_PlayerProfile.talents = *(int *)t.skills;
-    init_PlayerProfile.talents[4] = t.skills[4];
+    init_PlayerProfile.tool1 = 0x4b;
+    init_PlayerProfile.tool2 = 0x18;
+    init_PlayerProfile.status = 0x10;
+    init_PlayerProfile.job = 0x33;
+    init_PlayerProfile.coat = 0x59a;
+    init_PlayerProfile.sex = 0;
+    init_PlayerProfile.faith = 0;
+    init_PlayerProfile.modelId = gm_HeadIconNumber("patrizier_MANN2") + 0x639;
+    strcpy(init_PlayerProfile.firstName, txt_Ptrs[0x3f22]);
+    strcpy(init_PlayerProfile.familyName, txt_Ptrs[0x3f23]);
+    t = gm_GetJobTalents(init_PlayerProfile.job);
+    memcpy(init_PlayerProfile.talents, t.skills, 5);
 }
 
 int sv_RunFrame(int cb, unsigned mask);
