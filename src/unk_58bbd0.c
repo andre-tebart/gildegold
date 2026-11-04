@@ -8309,7 +8309,7 @@ void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_Dung
 void ai_GuildLevel1Listener(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
-void ai_Unk5a2de0(); void ai_TownHallContact();
+void ai_ConfessionListener(); void ai_TownHallContact();
 void ai_TownCashContact();
 
 /* 0x59d5e0, the money lender's exchange window with the city list "..geldleihe_Wechsel" (2352 B, ROUGH: the
@@ -8884,7 +8884,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0xe5:
             case 0xe6: ai_Unk5a3810(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf0: ai_ChurchContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xf2: ai_Unk5a2de0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0xf2: ai_ConfessionListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf7: ai_Unk5a36c0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x10e: ai_TownHallContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x110: ai_LawBookContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -10676,7 +10676,7 @@ int sv_CheckMoney(); void cm_SendMoneyDelta(int a, int b); void ai_Unk5a8c00(); 
    0x677c7): the slider pays 0x520f90 (the player, the amount): 0x4c5f60 (the id, -amount), for another owner
    0x4c5f60 (the owner id, 1) and 0x5a8c00 (the player, the owner, the building), 0x4f3a30 (the id, amount / 2),
    the text 0x14407d0 and 0x521150; the cancel button only sets 0x6f22a0; the exit 0x52d7a0 / 0x4758f0 */
-void ai_Unk5a2b60(int param_1)
+void ai_ConfessionWindow(int param_1)
 {
     int win;
     int fame;
@@ -10731,7 +10731,7 @@ void ai_Unk5a2b60(int param_1)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a2b60, 0x677c7) == 0)
+        if (sv_RunFrame(ai_ConfessionWindow, 0x677c7) == 0)
             break;
     }
     sv_CameraFollow();
@@ -10740,18 +10740,20 @@ void ai_Unk5a2b60(int param_1)
 
 void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate();
 
-/* 0x5a2de0, the confession listener (128 B): the pump 0x5309a0 (this, 0x67fff) looks up "contact_BEICHTE"
-   (0x14407b8, class 0x16) while the flag 0x6f231c bit 0x200 is clear and opens 0x5a2b60 on its id */
-void ai_Unk5a2de0(int param_1)
+/* 0x5a2de0, the confession listener, the room 0xf2 handler of the enter-building driver (128 B): the pump
+   0x5309a0 (0x5a2de0, 0x67fff) looks up the "contact_BEICHTE" plate (txt_Ptrs[0x197e], class 0x16) while the
+   building permission 0x200 (0x6f231c) is clear and a click on it opens the confession window (0x5a2b60) */
+
+void ai_ConfessionListener(int building)
 {
     int c = 0;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk5a2de0, 0x67fff) != 0) {
-        if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) == 0)
-            c = sv_RegisterNamePlate("contact_BEICHTE", U_I((unsigned)&full_data_14407b8), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && (U_I((unsigned)&ai_BuildingPerms) & 0x200) == 0 && U_I((unsigned)&ai_ClickedObject) == c)
-            ai_Unk5a2b60(param_1);
+    while (sv_RunFrame(ai_ConfessionListener, 0x67fff) != 0) {
+        if ((ai_BuildingPerms & 0x200) == 0)
+            c = sv_RegisterNamePlate("contact_BEICHTE", txt_Ptrs[0x197e], 0x16);
+        if (ai_ClickedObject != 0 && (ai_BuildingPerms & 0x200) == 0 && ai_ClickedObject == c)
+            ai_ConfessionWindow(building);
     }
 }
 
@@ -11023,7 +11025,7 @@ void ai_Unk5a3810(int param_1, int param_2)
         }
         if (U_I((unsigned)&ai_ClickedObject) == 0) {
             if (*(char *)(unsigned)&kb_Last == '0' && U_I((unsigned)&gm_AllowAll) != 0)
-                ai_Unk5a2b60(param_1);
+                ai_ConfessionWindow(param_1);
         } else {
             if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
                 if (U_I((unsigned)&ai_ClickedObject) == predigt)
@@ -11033,7 +11035,7 @@ void ai_Unk5a3810(int param_1, int param_2)
             }
             if (U_W(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId)) {
                 if (U_I((unsigned)&ai_ClickedObject) == beichtstuhl)
-                    ai_Unk5a2b60(param_1);
+                    ai_ConfessionWindow(param_1);
                 if (U_I((unsigned)&ai_ClickedObject) == spendenkasten)
                     ai_Unk5a1af0(param_1);
                 if (U_I((unsigned)&ai_ClickedObject) == becken)
