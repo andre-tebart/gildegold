@@ -4980,18 +4980,18 @@ lstop:
         }
     }
 }
-/* 0x52bb70, runs the key handler 0x5309a0 (0, keys & ~0xc0 | 0x100200) for as long as the object id (0x4284a0) is flagged +0x124 & 1 */
+/* 0x52bb70, runs the frame handler 0x5309a0 (0, keys & ~0xc0 | 0x100200) for as long as the event script id (0x4284a0) is flagged running (+0x124 & 1) */
 
 void sv_RunFramesUntilStopped(int id)
 {
     unsigned fl;
-    char *o;
+    EVTSCRIPT *s;
 
-    fl = (SV_U((unsigned)&sv_FrameMask) & 0xffffff3f) | 0x100200;
-    o = (int)evt_FindById(id);
-    while (o != 0 && (*(unsigned char *)(o + 0x124) & 1) != 0) {
+    fl = (sv_FrameMask & 0xffffff3f) | 0x100200;
+    s = evt_FindById(id);
+    while (s != 0 && (s->flags & 1) != 0) {
         sv_RunFrame(0, fl);
-        o = (int)evt_FindById(id);
+        s = evt_FindById(id);
     }
 }
 /* 0x52bbc0, sends the selected characters of the first selected one's group job ('C') to the clicked building
