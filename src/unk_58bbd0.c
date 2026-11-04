@@ -16288,17 +16288,17 @@ void ai_CentredText(char *text, int x, int y, int w, int font)
     d2_Objs[ctrl].w = w;
     d2_SetObjFont(ctrl, font);
 }
-/* 0x5bd190, a text control right-aligned by param_4 (96 B): the control 0x473650 (x - width), the visible
-   flag +0x60 = 1 and the width +0x14, then 0x4760b0 (the id, param_5) */
+/* 0x5bd190, a right-aligned text control of width w in the current window (96 B): creates it at x - w
+   (d2_CreateWinText), sets its right alignment and its width, then its font */
 
-void ai_Unk5bd190(int param_1, int param_2, int param_3, int param_4, int param_5)
+void ai_RightAlignedText(char *text, int x, int y, int w, int font)
 {
     int ctrl;
 
-    ctrl = d2_CreateWinText(param_2 - param_4, param_3, param_1, U_I((unsigned)&d2_LastWindow));
-    U_I((unsigned)&d2_Objs + ctrl * 0x2ec + 0x60) = 1;
-    *(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x14) = (short)param_4;
-    d2_SetObjFont(ctrl, param_5);
+    ctrl = d2_CreateWinText(x - w, y, text, d2_LastWindow);
+    d2_Objs[ctrl].rightAligned = 1;
+    d2_Objs[ctrl].w = w;
+    d2_SetObjFont(ctrl, font);
 }
 /* 0x5bd1f0, a text control at a position (96 B): the control 0x473650 (x, y), the flag +0x60 = 0 and the
    width +0x14 (a word), then 0x4760b0 (the id, param_5) */
@@ -20322,7 +20322,7 @@ int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2)  /* @orig
             p[-7] = 0x32;
             p[-6] = y;
             ai_AmountRow(0x32, y, *(int *)(unsigned)&d2_LastWindow, 0x56, p - 0xb, 1);
-            ai_Unk5bd190(names, *(short *)((unsigned)&ai_Unkf8f128 + *(int *)(unsigned)&d2_LastWindow * 0x3c4) - 0xf, y + 0x2d, 200,
+            ai_RightAlignedText(names, *(short *)((unsigned)&ai_Unkf8f128 + *(int *)(unsigned)&d2_LastWindow * 0x3c4) - 0xf, y + 0x2d, 200,
                          0x55);
             y += 0x69;
         }
