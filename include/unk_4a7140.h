@@ -143,6 +143,6 @@ int ai_ExecVerfluchen(AIPER *p, struct AIARG *m);                               
 int ai_DecideTheater(int a, AIPER *p, int c, struct AIARG *m);                     /* 0x4abac0 */
 int ai_ExecTheater(struct AIPER *p, struct AIARG *m);                                    /* 0x4abc60 */
 int ai_DecideEhrerbietung(int a, struct AIPER *p, int c, struct AIARG *m);                     /* 0x4abd00 */
-int ai_Unk4abe60(AIPER *p, unsigned char *m);                                    /* 0x4abe60 */
+int ai_ExecEhrerbietung(struct AIPER *p, struct AIARG *m);                                    /* 0x4abe60 */
 int ai_RegisterSocialActions(int a);                                                         /* 0x4abed0 */
 #endif

@@ -2613,19 +2613,19 @@ int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
     }
     return 0;
 }
-/* 0x4abe60, execute callback of action 0x47 "Ehrerbietung": p is flagged (0x1cc bit 5), pays m + 0x10 and wins
-   five times that in standing with the character of m */
+/* 0x4abe60, execute callback of action 0x47 "Ehrerbietung": p is flagged (0x1cc bit 5), pays m->arg2 and wins
+   five times that in standing with the character of m->ref */
 
-int ai_Unk4abe60(AIPER *p, unsigned char *m)
+int ai_ExecEhrerbietung(AIPER *p, AIARG *m)
 {
     AIPER *o;
 
-    o = gm_FindPer(*(int *)(m + 4));
+    o = gm_FindPer(m->ref);
     if (o == 0)
         return 0;
     cm_SendSetField(p->netId, 0x1cc, 4, 0x20, 0);
-    gm_SendMoneyDelta(p->netId, -*(int *)(m + 0x10));
-    cm_SendRelations(p->id, o->id, *(int *)(m + 0x10) * 5, 1);
+    gm_SendMoneyDelta(p->netId, -m->arg2);
+    cm_SendRelations(p->id, o->id, m->arg2 * 5, 1);
     return 0x47;
 }
 /* 0x4abed0, registers the actions 0x44 "Blutrache", 0x45 "Verfluchen", 0x46 "Theater" and 0x47 "Ehrerbietung" */
@@ -2666,7 +2666,7 @@ int ai_RegisterSocialActions(int a)
     strcpy(act.name, "Ehrerbietung");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideEhrerbietung;
-    act.exec = ai_Unk4abe60;
+    act.exec = ai_ExecEhrerbietung;
     act.flags = 3;
     return am_RegisterMethod(&act, a) != 0;
 }
