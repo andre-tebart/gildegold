@@ -110,7 +110,7 @@ int sv_RegisterActivity(int kind, char *name, int dayOnly, int icon, int valueOf
 int sv_ActivityName(struct AICHAR *c, struct AIBLD *b, char *out);                 /* 0x52b3c0 */
 int sv_Unk52b490(char *a, int b);                                       /* 0x52b490 */
 void sv_RunLocationScripts(struct AIBLD *a);                                      /* 0x52b500 */
-void sv_Unk52bb70(int id);                                              /* 0x52bb70 */
+void sv_RunFramesUntilStopped(int id);                                              /* 0x52bb70 */
 void sv_SendSelectedToBuilding(void);                                                /* 0x52bbc0 */
 void sv_HandleSelectionMouse(void);                                                /* 0x52bec0 */
 void sv_Unk52c420(void);                                                /* 0x52c420 */

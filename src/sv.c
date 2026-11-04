@@ -4958,7 +4958,7 @@ lstop:
 }
 /* 0x52bb70, runs the key handler 0x5309a0 (0, keys & ~0xc0 | 0x100200) for as long as the object id (0x4284a0) is flagged +0x124 & 1 */
 
-void sv_Unk52bb70(int id)
+void sv_RunFramesUntilStopped(int id)
 {
     unsigned fl;
     char *o;

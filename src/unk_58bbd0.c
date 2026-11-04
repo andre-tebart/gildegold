@@ -17,7 +17,7 @@
    d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor, sv_CreateScrollButtons.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
-#define unk_Unk5136b0K ((int (*)())unk_Unk5136b0)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define unk_Unk5136b0K ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 /* unk_58bbd0.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
@@ -8248,8 +8248,8 @@ int gm_BuildingClass(); unsigned gm_PermissionBits(unsigned p1, unsigned char *b
 void sv_ResetSelection(void); void init_LoadObjectScene();
 char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flags); void init_SetCharacterAnimations(unsigned char *b);
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
-int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_Unk52bb70(int id);
-void unk_Unk5136b0(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
+int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
+void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
 void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0();
@@ -8854,7 +8854,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             U_I((unsigned)&full_data_6f2314) = (int)room;
             /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
             if (U_I((unsigned)&evt_LastId) != -1)
-                sv_Unk52bb70(U_I((unsigned)&evt_LastId));
+                sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
             unk_Unk5136b0K(param_1);
             U_I((unsigned)&ai_FrameWait) = 1;
             if (U_I((unsigned)&ai_PlayerBuilding) == 0) {
@@ -9023,7 +9023,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     U_I((unsigned)&sv_BorderViewY) = 0;
     /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
     if (U_I((unsigned)&evt_LastId) != -1)
-        sv_Unk52bb70(U_I((unsigned)&evt_LastId));
+        sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
     snd_UnloadBuildingVoices();
     unk_Unk5136b0K(U_I((unsigned)&ai_FallbackBuilding));
     d3_DeflateScene(3);
@@ -9120,7 +9120,7 @@ void ai_Unk59f410(unsigned short *param_1)
     U_I((unsigned)&sv_SelectedChar) = 0;
     /* ROUGH: the device callbacks as in 0x59ee40, then the room 0xfd restored (0x4ffe90, 0x5f1298) */
     if (U_I((unsigned)&evt_LastId) != -1)
-        sv_Unk52bb70(U_I((unsigned)&evt_LastId));
+        sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
     d3_DeflateScene(3);
     d3if_SelectScene(kind, 0);
     U_I((unsigned)&sv_PanelShown) = 0;

@@ -2259,7 +2259,7 @@ lskip:
         h = (int)evt_FindById(scene);
         if (h != 0)
             evt_Stop((EVTSCRIPT *)h);
-        sv_Unk52bb70(scene);
+        sv_RunFramesUntilStopped(scene);
     }
     if ((int)d3_DefaultScene->hmap != 0) {
         d3sm_Destroy((int)d3_DefaultScene->hmap);

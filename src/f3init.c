@@ -368,7 +368,7 @@ void sv_CollectGroupCharacters(char *b);                 /* 0x52b2a0, sv.c: the 
 void d3if_Prerender(char map);                     /* 0x447860, d3_interface.c */
 void sv_UpdateSkyColors();                     /* 0x525940 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0x446dc0, d3_fl.c */
-void sv_Unk52bb70(int id);                     /* 0x52bb70 */
+void sv_RunFramesUntilStopped(int id);                     /* 0x52bb70 */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
 #include "unk_5d33b0_types.h"
@@ -3616,22 +3616,24 @@ upd:
     if (oldlvl != s->lod || f != 0)
         d3fl_SetShift(s, lvl >> 1, 1);
 }
-/* 0x5136b0, leaves the town scene: releases the hooks (0x5127c0), the sounds (0x512890), resets the frame limits and frees the scene handle 0x61ae00 */
+/* 0x5136b0, leaves the town scene (a building is entered): unregisters the sound hooks (0x5127c0), stops the town
+   sounds (0x512890), restores the frame limits, stops the shop script (init_ShopScript, whose scene object runs to
+   its end) and clears the scene callbacks and the current group */
 
 
-void unk_Unk5136b0(void)
+void init_LeaveTownScene(void)
 {
-    int h;
+    EVTSCRIPT *h;
 
     d3_ForEachObject2(d3_DefaultScene, 0, 0xa0, init_SoundObjectFreeHook);
     init_StopTownSounds();
     d3_LightKeyBudgetVisible = 0x400;
     d3_LightKeyBudgetCulled = 0x40;
     if (init_ShopScript != -1) {
-        h = (int)evt_FindById(init_ShopScript);
+        h = evt_FindById(init_ShopScript);
         if (h != 0) {
-            evt_Stop((EVTSCRIPT *)h);
-            sv_Unk52bb70(*(int *)(h + 0x100));
+            evt_Stop(h);
+            sv_RunFramesUntilStopped(h->id);
             init_ShopScript = -1;
         }
     }
