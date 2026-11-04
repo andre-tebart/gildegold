@@ -1027,18 +1027,18 @@ found:
 
 void gv_SetEffectCallback(int id, void *cb, void *arg)
 {
-    char *e;
+    GVEFFECT *e;
 
     if (id != -1) {
-        e = gv_GetEffect(id);
+        e = (GVEFFECT *)gv_GetEffect(id);
         if (e != 0) {
             if (cb != 0) {
-                *(void **)(e + 0x168) = cb;
-                *(void **)(e + 0x16c) = arg;
+                e->cb = (int (*)(GVEFFARG *))cb;
+                e->arg = arg;
                 return;
             }
-            *(void **)(e + 0x168) = gv_EffectNotifyOwner;
-            *(char **)(e + 0x16c) = (char *)gv_EffectArgs + ((e - gv_Effects) / 0x170) * 0x38;
+            e->cb = gv_EffectNotifyOwner;
+            e->arg = &gv_EffectArgs[e - gv_EffectsT];
         }
     }
 }
