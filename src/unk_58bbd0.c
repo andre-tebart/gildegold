@@ -16252,19 +16252,22 @@ int ai_PlayerStatsPanel(void)
     ai_CampaignStep(0x13, 0, 1, 0);
     return 0;
 }
-/* 0x5bd060, the upper limit of an amount box (88 B): with param_1 (the lower end) and param_3 (steps of 10000) positive,
-   out = the larger of param_1 and min(param_2, param_3 * 10000 + param_1); returns 1, else 0 */
+/* 0x5bd060, the upper limit of an amount box (88 B): with from (the lower end) and steps (of 10000) positive,
+   *out = the larger of from and min(money, steps * 10000 + from); returns 1, else 0. The original computes the
+   min twice (once for the comparison and once for the value) */
 
-int ai_AmountLimit(int param_1, int param_2, int param_3, int *param_4)
+int ai_AmountLimit(int from, int money, int steps, int *out)
 {
-    int v;
-    int m;
+    int limit;
 
-    if (param_1 < 1 || param_3 < 1)
+    if (from < 1 || steps < 1)
         return 0;
-    v = param_3 * 10000 + param_1;
-    m = v <= param_2 ? v : param_2;
-    *param_4 = param_1 < m ? m : param_1;
+    limit = steps * 10000 + from;
+    if ((money < limit ? money : limit) > from)
+        limit = money < limit ? money : limit;
+    else
+        limit = from;
+    *out = limit;
     return 1;
 }
 /* 0x5bd0c0, a text control of width param_4 on a screen (128 B): 0x476030 (param_5) first, then, when the
