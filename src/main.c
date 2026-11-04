@@ -192,6 +192,7 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
     char ownName[0x1c];             /* 0x1f4, the model name (AICHAR.ownName; from INIT_PLAYER.model) */
 } MAINCHARNEW;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
+#define main_LastLoadProgress (*(int *)((char *)&cm_RequestedSaveName + 0x40))  /* 0x6f2610, the last loading progress the callback drew (below the book object at +0x44) */
 extern GAPDATA full_data_75df20[];
 extern char cm_RequestedSaveName[72];
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
@@ -2940,10 +2941,10 @@ void main_SetLoadProgress(int unused, int pct)
         d2_DrawAll();
     }
 }
-/* 0x537b60, a Ghidra miss (inside the span of 0x537af0): the loading progress callback (kind, cur, total): kind 0 sets the bar to 10 + cur * 70 / (2 * total) percent, kind 1 to 45 + cur * 70 / (2 * total) (only
-   when it differs from the last value 0x6f2610) */
+/* 0x537b60, the scene load's progress callback (kind, cur, total): kind 0 sets the bar to 10 + cur * 70 / (2 * total) percent, kind 1 to 45 + cur * 70 / (2 * total) (only
+   when it differs from the last value main_LastLoadProgress) */
 
-void main_Unk537b60(int kind, int cur, int total)
+void main_LoadProgressCallback(int kind, int cur, int total)
 {
     int v;
 
@@ -2951,8 +2952,8 @@ void main_Unk537b60(int kind, int cur, int total)
         main_SetLoadProgress(0, cur * 70 / (total * 2) + 10);
     } else if (kind == 1) {
         v = cur * 70 / (total * 2) + 0x2d;
-        if (v != U_I(((unsigned)&cm_RequestedSaveName + 0x40))) {
-            U_I(((unsigned)&cm_RequestedSaveName + 0x40)) = v;
+        if (v != main_LastLoadProgress) {
+            main_LastLoadProgress = v;
             main_SetLoadProgress(0, v);
         }
     }

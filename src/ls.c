@@ -31,7 +31,7 @@ extern int gm_TreeNodeCount;
 extern unsigned gm_OwnNameHeads[136];
 extern GAPDATA full_data_92bcb3[];
 #include "cm_types.h"
-extern void main_Unk537b60(int kind, int cur, int total);
+extern void main_LoadProgressCallback(int kind, int cur, int total);
 extern int gm_TreeNodeCount;
 extern int gm_QueryDepth;
 
@@ -1517,7 +1517,7 @@ int ls_LoadScene(int f)
     d3if_SelectScene(1, 0);
     d3if_ClearScene(0);
     d3if_SelectScene(0, 0);
-    d3_LoadScene(0, f, (void *)(unsigned)&main_Unk537b60);
+    d3_LoadScene(0, f, (void *)(unsigned)&main_LoadProgressCallback);
     d3if_SelectScene(1, 0);
     d3if_SelectScene(0, 0);
     *(int *)ai_Unkfd7c50 = d3sm_Create(d3_Terrain,
