@@ -707,7 +707,7 @@ extern D2VIEW d2_Views[];
 extern GAPDATA full_data_6f26c0[];
 #include "am_types.h"
 extern G7GRP gm_BuildingItemGroups[];           /* 0x61a348 */
-extern GAPDATA full_rdata_5eed94[];
+extern GAPDATA gm_SpecialItemGroups[];
 extern GAPDATA full_rdata_5eedd3[];
 extern GAPDATA full_data_62c284[];
 extern GAPDATA full_rdata_5ebb40[];
@@ -13266,7 +13266,7 @@ void ai_Unk5a6cb0(int *m_)
 int d2_OpenForm(); void d2_PlaceMainWindow(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
 int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
-void ai_CharInfoWindow(); int d2_CreatePicObj(); unsigned char *ai_Unk5a84d0();
+void ai_CharInfoWindow(); int d2_CreatePicObj(); unsigned char *ai_FindItemGroup();
 
 /* 0x5a78a0, the map window's open (317 B): the previous screen 0x6ed930 is saved (+0x27a8), the window
    "Misc\Landkarte2" 0x62c274 (0x4741f0) takes the screen 0x6f26ac, the map screen 0x472aa0 (0x4a, 0x4c, 0x206,
@@ -13646,7 +13646,7 @@ void ai_Unk5a83b0(int param_1, char *tbl)
     int step;
     int found;
 
-    list = (unsigned short *)ai_Unk5a84d0((char *)param_1);
+    list = (unsigned short *)ai_FindItemGroup((char *)param_1);
     if (list == 0)
         return;
     list = (unsigned short *)((char *)list + 1);
@@ -13712,21 +13712,22 @@ int *ai_FindSetting(int id)
     }
     return 0;
 }
-/* 0x5a84d0, the character block of a good (102 B): the byte is searched in the 3 records of 0x15 bytes at
-   0x5eed94 (for the bytes ' ', 0x1e, 0x1f) and then in the 37 records at 0x61a348; returns the record or 0 */
+/* 0x5a84d0, the item group of a good (102 B): the good's first byte is looked up as the key of a group (a
+   G7GRP: the key byte and ten good ids) in the three special groups gm_SpecialItemGroups (the kinds ' ', 0x1e
+   and 0x1f) first, then in the 37 groups of gm_BuildingItemGroups; the group or 0 */
 
-unsigned char *ai_Unk5a84d0(char *param_1)
+unsigned char *ai_FindItemGroup(char *good)
 {
     char c;
     unsigned char *q;
     int i;
 
-    c = *param_1;
+    c = *good;
     if (c == ' ' || c == 0x1e || c == 0x1f) {
         i = 0;
-        for (q = (unsigned char *)(unsigned)&full_rdata_5eed94; (int)q < (int)((unsigned)&full_rdata_5eed94 + 0x3f); q += 0x15, i++)
+        for (q = (unsigned char *)(unsigned)&gm_SpecialItemGroups; (int)q < (int)((unsigned)&gm_SpecialItemGroups + 0x3f); q += 0x15, i++)
             if ((char)*q == c)
-                return (unsigned char *)(unsigned)&full_rdata_5eed94 + i * 0x15;
+                return (unsigned char *)(unsigned)&gm_SpecialItemGroups + i * 0x15;
     }
     i = 0;
     for (q = (unsigned char *)(unsigned)&gm_BuildingItemGroups; (int)q < (int)((unsigned)&gm_BuildingItemGroups + 0x309); q += 0x15, i++)
@@ -13766,7 +13767,7 @@ void *ai_ProdSetting(int param_1)
     void *found;
 
     if (*(int *)((unsigned)&full_data_6f26c0) == 0) {
-        if (ai_Unk5a84d0((char *)param_1) == 0)
+        if (ai_FindItemGroup((char *)param_1) == 0)
             return 0;
         rec = (char *)mem_Alloc(0x4c, (char *)(unsigned)&full_data_62c284);
         if (rec == 0)
@@ -13782,7 +13783,7 @@ void *ai_ProdSetting(int param_1)
     found = ai_Unk5a8540(*(int *)(param_1 + 1));
     if (found != 0)
         return found;
-    if (ai_Unk5a84d0((char *)param_1) == 0)
+    if (ai_FindItemGroup((char *)param_1) == 0)
         return 0;
     rec = (char *)mem_Alloc(0x4c, (char *)(unsigned)&full_data_62c284);
     if (rec == 0)
