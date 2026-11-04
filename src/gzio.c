@@ -502,7 +502,7 @@ char * ZEXPORT gzgets(file, buf, len)
      Writes the given number of uncompressed bytes into the compressed file.
    gzwrite returns the number of bytes actually written (0 in case of error).
 */
-/* 0x463340 */
+/* 0x463340, compresses len bytes from buf and writes them to a gzip file */
 int ZEXPORT gzwrite (file, buf, len)
     gzFile file;
     const voidp buf;
