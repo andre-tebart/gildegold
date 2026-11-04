@@ -5,9 +5,9 @@
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood).
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the character / object
-   record views the news messages read (G8CHARREC, G8OBJ), the use callback's request (G8USEVIEW), the Domizil
-   entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and the gv
-   record (AIWINDOWROW, AIPOSVIEW) are local views here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h /
+   record views (AICHARREC here, G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW),
+   the Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
+   the gv record (AIWINDOWROW, AIPOSVIEW) are local views here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h /
    am_types.h / ai.h hold the owners' types); they settle when those headers can be included.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h
@@ -25,7 +25,10 @@
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
    goods columns 0x58c680 ..), then the building purchase / construction screens (0x58f510 .. 0x593960: the
-   "contact_EINKAUF" / "BAUEN_GEB_BAUEN" strings), the trade search windows (0x595480 / 0x595a00), the
+   "contact_EINKAUF" / "BAUEN_GEB_BAUEN" strings), the trade search windows (0x595480 / 0x595a00), the contact
+   listeners of the building rooms and locations (0x5950e0 .. 0x599cb0: the long-distance trade, smithy, carpenter,
+   mixing, stonecutter and brewery rooms, the residence's social room with its feast / brawl / denounce plates and
+   the Stammtisch of the tavern), the
    Wirtshaus / locations module (0x593e80 .. 0x599af0: "locations\diebesgilde", "locations\wohnsitz",
    "locations\Wirtshaus", the dice game and the dark corner), the money lender family
    ("locations\geldleihe\*", 0x59ad60 .. 0x59d5e0) and the Rathaus / guild rooms (0x59df10 ..: the enter check
