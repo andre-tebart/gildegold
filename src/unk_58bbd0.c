@@ -1,6 +1,8 @@
 /* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
    screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below.
    Open: the AIMSG message records are built by raw offsets throughout (ai.h's AIMSG view is not used yet).
+   Open: types: the amount-menu config (AMOUNTCFG) and the frame stack (SVFRAME, 0x75f780) are local views here
+   (unk_5d33b0.h / sv.h hold the owners' types); they settle when those headers can be included.
    Open: not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h ai.h am.h amt.h anm.h ch.h chc.h cm.h
    d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h sv.h unk_4b39f0.h unk_5d33b0.h vfs.h; held by
    own declarations that differ from the owner's: ai_Time, d3sm_GetVertex, d2_CreateWinText, AIBLD,
