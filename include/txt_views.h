@@ -18,7 +18,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_GatePlaceSuffix                      (*(char * *)((char *)txt_Ptrs + 0x00210))  /* 0x143a3d0, text 0x84: what sv_DrawGateName appends to a room / building kind name (a guess from the use) */
 #define txt_SpeedHostOnly                        (*(char * *)((char *)txt_Ptrs + 0x00218))  /* 0x143a3d8, the status text ai_SpeedKeys shows to a network client that presses a speed key (only the host sets the speed); its wording is unknown */
 #define full_data_143a3e4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x00224))  /* 0x143a3e4 */
-#define full_data_143a3e8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x00228))  /* 0x143a3e8 */
+#define ai_ContactTextMercenaryBook                        (*(char * *)((char *)txt_Ptrs + 0x00228))  /* 0x143a3e8, the hover text of the mercenary book ob_SOELDNERBUCH (ai_MercenaryBookContact); the wording is unknown */
 #define full_data_143a3ec                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0022c))  /* 0x143a3ec */
 #define full_data_143a3f0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x00230))  /* 0x143a3f0 */
 #define full_data_143a3f4                        (*(unsigned char (*)[408])((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4 */
@@ -217,7 +217,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextTransport                  (*(char * *)((char *)txt_Ptrs + 0x07de0))  /* 0x1441fa0 */
 #define full_data_1441fa8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07de8))  /* 0x1441fa8 */
 #define full_data_1441fb0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07df0))  /* 0x1441fb0 */
-#define full_data_1441fb8                        (*(unsigned char (*)[40])((char *)txt_Ptrs + 0x07df8))  /* 0x1441fb8 */
+#define ai_ContactTextEquip                        (*(char * *)((char *)txt_Ptrs + 0x07df8))  /* 0x1441fb8, the hover text of the AUSRUESTEN plate and of the weapon stand ub_STAENDER_WAFFEN (both open ai_EquipWindow); the wording is unknown */
 #define full_data_1441fe0                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x07e20))  /* 0x1441fe0 */
 #define full_data_1442000                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e40))  /* 0x1442000 */
 #define full_data_1442008                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e48))  /* 0x1442008 */

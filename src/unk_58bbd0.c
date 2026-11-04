@@ -2941,8 +2941,8 @@ int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned c
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-char *_strupr(char *); void gm_CloseTechTree(void); int ai_Unk5ac110();
-int ai_Unk5bb350(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
+char *_strupr(char *); void gm_CloseTechTree(void); int ai_MercenaryBook();
+int ai_EquipWindow(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
 void ai_Unk591ad0(void);
@@ -3394,12 +3394,12 @@ void ai_BookContact(char *bld)
         r = sv_RunFrame(ai_BookContact, 0x67fff);
     }
 }
-/* 0x592320, the mercenary-book listener (160 B): 0x52e190, then the pump 0x5309a0 (this, 0x67fff); while the
-   flag 0x6f231c has 0x200 the two contacts 0x52e1c0 ("ob_SOELDNERBUCH", 0x143a3e8, 0xc) /
-   ("ub_STAENDER_WAFFEN", 0x1441fb8, 0xd) are fetched, and when one is the pending 0x6f22e4, 0x5ac110 (param_1,
-   the name) / 0x5bb350 (param_1) open */
+/* 0x592320, the mercenary-book contact of the building bld (160 B): releases the name plates, then per frame of
+   the pump sv_RunFrame, while ai_BuildingPerms has 0x200, registers the two plates ob_SOELDNERBUCH (the hover
+   text ai_ContactTextMercenaryBook) and ub_STAENDER_WAFFEN (ai_ContactTextEquip) and opens ai_MercenaryBook /
+   ai_EquipWindow when one is the clicked object (ai_ClickedObject) */
 
-void ai_Unk592320(int param_1)
+void ai_MercenaryBookContact(char *bld)
 {
     int r;
     int a;
@@ -3408,19 +3408,19 @@ void ai_Unk592320(int param_1)
     a = 0;
     b = 0;
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk592320, 0x67fff);
+    r = sv_RunFrame(ai_MercenaryBookContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            a = sv_RegisterNamePlate("ob_SOELDNERBUCH", U_I((unsigned)&full_data_143a3e8), 0xc);
-            b = sv_RegisterNamePlate("ub_STAENDER_WAFFEN", U_I((unsigned)&full_data_1441fb8), 0xd);
+        if (ai_BuildingPerms & 0x200) {
+            a = sv_RegisterNamePlate("ob_SOELDNERBUCH", ai_ContactTextMercenaryBook, 0xc);
+            b = sv_RegisterNamePlate("ub_STAENDER_WAFFEN", ai_ContactTextEquip, 0xd);
         }
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == a)
-                ai_Unk5ac110(param_1, "ob_SOELDNERBUCH");
-            else if (U_I((unsigned)&ai_ClickedObject) == b)
-                ai_Unk5bb350(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == a)
+                ai_MercenaryBook(bld, "ob_SOELDNERBUCH");
+            else if (ai_ClickedObject == b)
+                ai_EquipWindow(bld);
         }
-        r = sv_RunFrame(ai_Unk592320, 0x67fff);
+        r = sv_RunFrame(ai_MercenaryBookContact, 0x67fff);
     }
 }
 
@@ -4515,7 +4515,7 @@ void ai_Unk594e50(int param_1)
     r = sv_RunFrame(ai_Unk594e50, 0x67fff);
     while (r != 0) {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&full_data_1441fb8), 0xd);
+            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
             lauer = sv_RegisterNamePlate("contact_AUF_LAUER_LEGEN", U_I((unsigned)&full_data_1441fb0), 0x15);
             angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&full_data_1441fa8), 0x17);
             if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x35) != 0)
@@ -4541,7 +4541,7 @@ void ai_Unk594e50(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == transport)
                 ai_OpenTransport(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ausruesten)
-                ai_Unk5bb350(param_1);
+                ai_EquipWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh ||
                      U_I((unsigned)&ai_ClickedObject) == regen)
                 ai_Unk5bba00(param_1);
@@ -9103,7 +9103,7 @@ void ai_Unk59f410(unsigned short *param_1)
     case 0x2c:
     case 0x109: ai_UpgradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x2d: ai_BookContact(ai_FallbackBuilding); break;
-    case 0x33: ai_Unk592320(U_I((unsigned)&ai_FallbackBuilding)); break;
+    case 0x33: ai_MercenaryBookContact(ai_FallbackBuilding); break;
     case 0x37: ai_Unk5938c0(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x107: ai_Unk593e80(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x205: ai_GraveyardTradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
@@ -11821,7 +11821,7 @@ void ai_Unk5a4f70(int param_1)
         return;
     do {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&full_data_1441fb8), 0xd);
+            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
             regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&full_data_1442008), 0x17);
         }
         if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
@@ -11835,7 +11835,7 @@ void ai_Unk5a4f70(int param_1)
             else if (click == transport)
                 ai_OpenTransport(param_1);
             else if (click == ausruesten)
-                ai_Unk5bb350(param_1);
+                ai_EquipWindow(param_1);
             else if (click == regeneration)
                 ai_Unk5bba00(param_1);
         }
@@ -12686,7 +12686,7 @@ void ai_Unk5a6920(int param_1)
     while (r != 0) {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&full_data_1441fb8), 0xd);
+            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
             razzia = sv_RegisterNamePlate("contact_RAZZIA", U_I((unsigned)&full_data_1442000), 0x16);
             ausspionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&full_data_1441fe0), 0x17);
             pergament = sv_RegisterNamePlate("ub_INFORMATIONSPERGAMENT", U_I((unsigned)&full_data_143a3f4), 0xc);
@@ -12696,7 +12696,7 @@ void ai_Unk5a6920(int param_1)
             if (U_I((unsigned)&ai_ClickedObject) == lager)
                 ai_StorageWindow(param_1, U_I(U_I((unsigned)&sv_PanelShown) + 0x14));
             else if (U_I((unsigned)&ai_ClickedObject) == ausruesten)
-                ai_Unk5bb350(param_1);
+                ai_EquipWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == razzia)
                 ai_Unk5a61f0(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ausspionieren)
@@ -14914,7 +14914,7 @@ int ai_PersonnelBook(int param_1, char *param_2)
    clock 0x770ae0, the character 0x770b84), the exit 0x52d7a0. ROUGH: the Ghidra pseudocode lost the call
    arguments (a 0x1110-byte frame) */
 
-int ai_Unk5ac110(int param_1, char *param_2)
+int ai_MercenaryBook(int param_1, char *param_2)
 {
     /* ROUGH: not written yet - see the comment above */
     return 0;
@@ -16078,9 +16078,11 @@ int ai_GoodFitsBuilding(int param_1, int param_2)
     }
     return 0;
 }
-/* 0x5bb350, a window (1536 B, ROUGH SKELETON): param_1, a 0x120-byte frame; the body is a comment */
+/* 0x5bb350, the equip window (1536 B, ROUGH SKELETON): opened by the AUSRUESTEN / ub_STAENDER_WAFFEN plate of
+   three contacts (ai_MercenaryBookContact among them); param_1 is the building, a 0x120-byte frame; the body is a
+   comment */
 
-int ai_Unk5bb350(int param_1)
+int ai_EquipWindow(int param_1)
 {
     /* ROUGH SKELETON: the 0x120-byte frame */
     (void)param_1;
