@@ -1320,7 +1320,8 @@ void d3s_CollectLights(void)
     d3s_NumLights = 0;
     d3_ForEachObject(d3_DefaultScene, 0, 0x10, d3s_LightCB, 0);
 }
-/* 0x45ca20 */
+/* 0x45ca20, updates obj's shadow slots against every collected light (d3s_Lights), when obj's
+   objectFlags bit 2 (shadow mode) asks for a shadow */
 
 void d3s_UpdateObject(D3OBJECT *obj)
 {
