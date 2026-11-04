@@ -1652,7 +1652,7 @@ int ord_PrivilegeDialog(char *text, int mode, int arg)
     }
     d2_CloseView(v);
 }
-/* 0x4f82a0, resets the statistics at the start of a game (the only caller is main_Unk537de0, 0x537e3f, after
+/* 0x4f82a0, resets the statistics at the start of a game (the only caller is main_StartGame, 0x537e3f, after
    the graveyard clear): clears the message record 0x91b480 (0x24 bytes, then its first int = -1 = no event),
    the income history gm_IncomeHistory (0x154), the character statistics 0x91b500 (0x68), the 8 x 8 grid
    ai_Grid (0x600), the statistics history (0x140), the last statistics record (0x28) and the base rating

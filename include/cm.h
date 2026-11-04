@@ -1117,6 +1117,7 @@ char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the
 void ai_DebugDumpPerson(char *c);  /* 0x4e5bf0, the debug dump of a person */
 int ai_Unk4e5050();  /* 0x4e5050 */
 int ai_Unk4e5120();  /* 0x4e5120 */
+void cm_InitScenes(void);  /* 0x4e5770, clears the party records and registers the 12 scene kinds */
 
 
 extern unsigned int ai_Unk92c4e0;  /* 0x92c4e0, the random seed of the scenes */

@@ -10494,7 +10494,7 @@ void ai_ClearBookmark(AIBOOKMARK *b)
 /* 0x589410, the init of the 12-byte slot table 0x6f5ec0 (63 B, 0xb slots up to 0x6f5f43): cleared, then each
    slot's byte 0 = i + 0x3b (0x57 for the last one, 0x6f5f38) and 0x589400 (the slot) */
 
-void ai_Unk589410(void)
+void ai_InitBookmarks(void)
 {
     char *p;
     int i;

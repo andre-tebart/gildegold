@@ -58,6 +58,7 @@ void anm_UpdateSheep(ANMREC *a);
 #include "rd.h"
 struct D3VECTOR;
 
+void anm_Alloc(void);  /* 0x4bb810, allocates the animal list and resets the count */
 void anm_Free(void);  /* 0x4bb840, frees the animal list */
 
 #endif

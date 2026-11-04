@@ -14,7 +14,7 @@ typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model show
 
 void he_Unk53d430(unsigned char *ev);
 void he_Unk53d470(unsigned char *ev);
-int he_Unk53d4b0(void);
+int he_InitEvents(void);
 void he_FreeEvents(void);
 int he_ReleaseEvents(void);
 int he_FigureContact(int p);                 /* 0x55ea60, the contact id of the figure p, or -1 */
@@ -22,7 +22,7 @@ int he_Unk53d600(int type, void *alloc, void *run);
 int he_FreeOldestSlot(void);
 int he_OpenEventSlot(int ev, int x, int y, char *form, int pic);
 void he_ReleaseSlot(int ev);
-void he_Unk53d930(void);
+void he_CreateEventBar(void);
 void he_CloseEventSlots(void);
 void he_ShowEventBar(int pl);
 void he_Unk53dad0(int state);
@@ -168,6 +168,6 @@ extern char he_FindFirst;               /* 0x6f2624, 1 while he_Cursor stands on
                                            he_NextEvent tests it before stepping on */
 extern int he_LastSlot;                 /* 0x625718, the highest slot index given an event (he_OpenEventSlot), -1 = none; sv_UpdateCityPanel places the bar's end by it */
 extern int he_BarShown;                 /* 0x62571c, he_BarView while the event bar is shown (he_ShowEventBar), -1 = hidden */
-extern int he_BarView;                  /* 0x6faa60, the view "Panel\Event_Leiste" (he_Unk53d930 opens it) */
+extern int he_BarView;                  /* 0x6faa60, the view "Panel\Event_Leiste" (he_CreateEventBar opens it) */
 
 #endif

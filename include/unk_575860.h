@@ -216,6 +216,7 @@ int ai_OpenUpgradeTooltip(int idx);  /* 0x588950, opens the upgrade tooltip view
 int ai_OpenHelpTooltip(char *s);  /* 0x588bb0, opens the help tooltip of the record named s */
 int ai_OpenCharTooltip(char *ch);  /* 0x588c60, opens the tooltip view of the character ch */
 
+void ai_InitBookmarks(void);  /* 0x589410, clears the 11 bookmark slots and sets their function keys */
 int ai_SaveBookmarks(int fh);  /* 0x589aa0, writes the slot table 0x6f5ec0 */
 
 extern const float ai_CannonPitchMax;   /* 0x5eec6c, 45 degrees: the highest pitch of the cannon */

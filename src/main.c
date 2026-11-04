@@ -196,8 +196,9 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
 extern int main_SoundBanks[0x80];   /* 0x75df20 */
 extern char cm_RequestedSaveName[72];
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
-extern GAPDATA full_data_6f25c0[];
-extern GAPDATA full_data_75e630[];
+extern int main_NoRoundFade;        /* 0x6f25c0, 1 skips the black fade before the round page */
+extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c: nonzero when the player reached the game's goal */
+extern int main_WindBank;           /* 0x75e630, the wind sound bank */
 extern int sv_FrameMask;
 extern OPTIONBYTES ai_GamePanel;
 extern char ai_MissionMode;
@@ -229,7 +230,6 @@ extern int d2_DirtyRectLeft[4];         /* 0xfb9060, the rectangle d2_AddDirty t
 extern GAPDATA full_data_6024e4[];
 extern GAPDATA full_data_624560[];
 extern GAPDATA full_data_6f25b0[];
-extern GAPDATA full_data_6f25c0[];
 extern int sv_FrameMask;
 extern int sv_PopRequest;
 extern char ai_MissionMode;
@@ -3043,16 +3043,16 @@ void main_FreeSoundBanks(void)
    (0x42e970 (cb, 0x47) / 0x42ea10), starts the sound banks (natur\regen, wind, blitzunddonner, objekte\buecher, TuerenUndRaeume, Transporter, Lebewesen\schritte) when the sound is on, and
    clears the selection (0x6f2308 .. 0x75ec60) before starting the modules (0x4bb810 anm, 0x50d460, 0x4e5770 ..) */
 
-void main_Unk537de0(void)
+void main_StartGame(void)
 {
-    he_Unk53d4b0();
-    U_I((unsigned)&sv_ScreenDirty) = 1;
+    he_InitEvents();
+    sv_ScreenDirty = 1;
     main_Round = 1;
-    U_I((unsigned)&ai_Time) = 2;
-    U_I((unsigned)&ai_GameOver) = 0;
-    U_I((unsigned)&ai_LeaveGame) = 0;
-    *(char *)((unsigned)&ai_GameState + 0x1) = 0;
-    U_I((unsigned)&cm_SpeedLevel) = 2;
+    ai_Time.year = 2;
+    ai_GameOver = 0;
+    ai_LeaveGame = 0;
+    main_GameEnded = 0;
+    cm_SpeedLevel = 2;
     tb_OpenFunction(sv_UpdateClock, 0x47);
     tb_SetFunctionOff(sv_UpdateClock, 1);
     he_AgeCarryRecs();
@@ -3060,29 +3060,29 @@ void main_Unk537de0(void)
     ord_ResetStatistics();
     main_BookObject = d3io_LoadObjectRef("Buch", "Buch");
     if (snd_SfxEnabled != 0) {
-        U_I((unsigned)&snd_Bank) = sb_LoadSampleBank("natur\\regen.sbf", 0);
-        U_I((unsigned)&full_data_75e630) = sb_LoadSampleBank("natur\\wind.sbf", 0);
+        snd_Bank = sb_LoadSampleBank("natur\\regen.sbf", 0);
+        main_WindBank = sb_LoadSampleBank("natur\\wind.sbf", 0);
         snd_ThunderBank = sb_LoadSampleBank("natur\\blitzunddonner.sbf", 0);
         snd_BookBank = sb_LoadSampleBank("objekte\\buecher.sbf", 0);
         snd_RoomBank = sb_LoadSampleBank("objekte\\TuerenUndRaeume.sbf", 0);
         snd_TransportBank = sb_LoadSampleBank("objekte\\Transporter.sbf", 0);
-        U_I((unsigned)&ch_SndLib) = sb_LoadSampleBank("Lebewesen\\schritte.sbf", 1);
+        ch_SndLib = sb_LoadSampleBank("Lebewesen\\schritte.sbf", 1);
     }
     msx_SetFadeTime(3000);
-    he_Unk53d930();
+    he_CreateEventBar();
     sv_ClearNamePlates();
     sv_ReleaseNamePlates();
-    U_I((unsigned)&full_data_6f25c0) = 0;
-    U_I((unsigned)&sv_SelectedObject) = 0;
-    U_I((unsigned)&sv_PanelShown) = 0;
-    U_I((unsigned)&ai_PlayerBuilding) = 0;
-    U_I((unsigned)&ai_FallbackBuilding) = 0;
+    main_NoRoundFade = 0;
+    sv_SelectedObject = 0;
+    sv_PanelShown = 0;
+    ai_PlayerBuilding = 0;
+    ai_FallbackBuilding = 0;
     ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
     anm_Alloc();
     ch_Reset();
-    ai_Unk589410();
+    ai_InitBookmarks();
     init_ResetSceneUniverses();
-    ai_Unk4e5770();
+    cm_InitScenes();
 }
 /* 0x537f40, "end of a game": the reverse of 0x537de0: plates / hints cleared, the tick callback removed, the sound banks and the weather emitters (0x76061c / 0x760618 / the sky layers 0x760620 ..) freed, the
    modules shut down (0x4b1e40, 0x4b39f0, 0x53d590 / 0x53d9b0 / 0x53d5d0, sv's 0x5223c0, 0x503e80, 0x4fe7f0 / 0x4fe830, the objects 0x1468ae0 ..), and the selection state cleared */
@@ -3268,7 +3268,6 @@ void main_RundenBeginn(void)
 #define MAIN_PLAYER (main_PlayerIdInt & 0xffff)  /* the player character's index */
 extern unsigned char main_GameEnded;  /* 0x6f25ad, sv.c */
 #define main_GfxOn (*(int *)&full_data_624560)  /* 0x624560, nonzero when the round change shows its pages and fades (main_RoundReport tests it too) */
-#define main_NoRoundFade (*(int *)&full_data_6f25c0)  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared by the round start) */
 #define main_Season (*(int *)&full_data_760454)  /* 0x760454, the season of the game clock (sv_ClockSeason / gm_ClockSeason) */
 /* the announcement message of the kind `kind` to the player's own character (fromId -1), stamped with the game clock */
 #define MAIN_NOTE(m, kind) do { memset(&(m), 0, sizeof(m)); (m).type = (kind); (m).fromId = -1; (m).flags = 1; (m).to = ai_CharsT[MAIN_PLAYER].netId; (m).time = ai_Time; } while (0)
@@ -3851,7 +3850,7 @@ void main_RoundReport(void)
         d2_ShowPicture(0x79d);
         U_I((unsigned)&d2_DirtyRectLeft) = (int)*(short *)(unsigned)&d2_ScreenW;
         U_I((unsigned)&d2_DirtyRectBottom) = (int)*(short *)(unsigned)&d2_ScreenH;
-        U_I((unsigned)&full_data_6f25c0) = 1;
+        U_I((unsigned)&main_NoRoundFade) = 1;
         U_I((unsigned)&d2_DirtyRectRight) = 0;
         U_I((unsigned)&d2_DirtyRectTop) = 0;
         d2_SetForm(win, 1);
@@ -4734,7 +4733,7 @@ void main_GameLoop(int ctl)
         main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b4)), 5);
     sv_PumpMessages();
     main_SetLoadProgress(U_I(((unsigned)&d2_Strings + 0x1b0)), 5);
-    main_Unk537de0();
+    main_StartGame();
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && U_I((unsigned)&full_data_6f2428) != 0)
         main_CreateStartCouple();
     main_SetLoadProgress(0, 10);
@@ -5814,7 +5813,7 @@ int main_DayEnding = 0;  /* 0x6f25a8, set by sv_RunFrame when the day ends (hour
 GAPDATA full_data_6f25b0[4] = { 0 };  /* 0x6f25b0 */
 int main_QuitProgram = 0;  /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
 int main_ScreenSaverOff = 0;  /* 0x6f25bc, the screen saver was switched off and is restored at exit */
-GAPDATA full_data_6f25c0[4] = { 0 };  /* 0x6f25c0 */
+int main_NoRoundFade = 0;  /* 0x6f25c0, 1 skips the black fade before the round page (set by main_RoundReport, cleared at the game start) */
 int main_UdpOpen = 0;  /* 0x6f25c4, the udp socket of the network game is open (udp_Init .. udp_Exit) */
 char he_FindFirst = 0;  /* 0x6f2624, he.h */
 GAPDATA full_data_6f2625[3] = { 0 };  /* 0x6f2625 */
@@ -5896,7 +5895,8 @@ char main_AppDir[288] = { 0 };  /* 0x75e240 */
 char main_NetSaveName[161] = { 0 };  /* 0x75e360, the network game's city / save name (sprintf "%s/%s.net", read for "gamedata/network/%s.SAV"); size: up to the address 0x75e401, which is only 0x53b840's copy-loop base constant, so the name may run to ai_OptionsFile 0x75e480 */
 GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
 int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
-GAPDATA full_data_75e630[16] = { 0 };  /* 0x75e630 */
+int main_WindBank = 0;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
+GAPDATA full_data_75e634[12] = { 0 };  /* 0x75e634 */
 GAPDATA full_data_75ec40[28] = { 0 };  /* 0x75ec40 */
 GAPDATA full_data_760454[4] = { 0 };  /* 0x760454 */
 /* full_data_76f990 / full_data_76f994: views of ai_Unk76f920 (data_views.h), the save header's +0x70 / +0x74 */

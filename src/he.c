@@ -328,7 +328,7 @@ void he_Unk53d470(unsigned char *ev)
 }
 /* 0x53d4b0, the init of the event module: registers the alloc / run handlers of the types 0 and 1, runs the init of the other event modules (0x553060 .. 0x573260; non 0 = failed) and clears the tables */
 
-int he_Unk53d4b0(void)
+int he_InitEvents(void)
 {
     if (he_Unk53d600(0, (void *)he_Unk53d430, (void *)he_Unk53d470) != 0)
         return 1;
@@ -517,7 +517,7 @@ void he_ReleaseSlot(int ev)
 }
 /* 0x53d930, creates the panel "Panel\Event_Leiste" (bottom right: screen size - 0x7d / - 0x21) and frees all slots */
 
-void he_Unk53d930(void)
+void he_CreateEventBar(void)
 {
     int *p;
 

@@ -7,7 +7,7 @@
    monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
    Names are ours.
    The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type; the scene
-   callbacks registered by ai_Unk4e5770 (cm_RunDuel, cm_RunExecution, cm_RunWedding, cm_RunBirth, cm_RunDeath,
+   callbacks registered by cm_InitScenes (cm_RunDuel, cm_RunExecution, cm_RunWedding, cm_RunBirth, cm_RunDeath,
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION.
    Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h d2.h f3gm.h gfx.h hmt.h hst.h rt.h
@@ -16631,7 +16631,7 @@ void ai_Unk4e5730(int kind, int run, int cb4, int cb8, int check, char flag)
    votes (0x4d8e20), 2 the trial (0x4db700), 3 the fight (0x4d63e0), 4 the duel, 5 the execution, 6 the wedding, 7 the birth, 8 the death, 9 the bankruptcy, 10
    the auction (0x4e1a80), 11 the sale (0x4e2860) */
 
-void ai_Unk4e5770(void)
+void cm_InitScenes(void)
 {
     int i;
 
