@@ -4368,21 +4368,24 @@ int sv_ActivityName(AICHAR *c, AIBLD *b, char *out)
     }
     return 0;
 }
-/* 0x52b490, creates the "sp_<id>" object of a character record a (+4 id, +0x184 the character) from the template b and links it back (+0xc94 / +0x28) */
+/* 0x52b490, starts the role pose script "sp_<netId>" of the character a from the template b (an .esc name) and
+   links it back: the script's character (+0xc94) and the character model's scriptId (+0x28 of the model at +0x184) */
 
-int sv_Unk52b490(char *a, int b)
+int sv_StartPoseScript(char *a, int b)
 {
-    int o;
+    AICHAR *c;
+    EVTSCRIPT *script;
     char buf[0x80];
 
-    sprintf(buf, "sp_%i", *(int *)(a + 4));
-    o = (int)evt_Load(b);
-    if (o != 0) {
-        evt_RunScriptArgs((EVTSCRIPT *)o, 1, buf);
-        *(int *)(o + 0xc94) = *(int *)(a + 0x184);
-        *(int *)(*(int *)(a + 0x184) + 0x28) = *(int *)(o + 0x100);
+    c = (AICHAR *)a;
+    sprintf(buf, "sp_%i", c->netId);
+    script = evt_Load((char *)b);
+    if (script != 0) {
+        evt_RunScriptArgs(script, 1, buf);
+        script->character = (CHARACTER *)c->model;
+        c->model->scriptId = script->id;
     }
-    return o;
+    return (int)script;
 }
 
 void d2_SetObjEnabled();                     /* 0x475e40 */
