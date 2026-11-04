@@ -517,9 +517,10 @@ int ai_CondWorth(AICHAR *c, G13TYPE *t)
 {
     return gm_ConvertMoney(gm_GetWorth(c->id), ai_OwnPlayer) >= t->goal;
 }
-/* 0x4b4630, mission condition: 0x509ee0 of c (as money, 0x5085b0) reaches t->goal */
+/* 0x4b4630, mission condition (type 31): the amount of the character's city currency (gm_CharCurrency, in
+   player money) reaches t->goal */
 
-int ai_Unk4b4630(AICHAR *c, G13TYPE *t)
+int ai_CondMoney(AICHAR *c, G13TYPE *t)
 {
     return gm_ConvertMoney(gm_CharCurrency((void *)c, ai_OwnPlayer), ai_OwnPlayer) >= t->goal;
 }
@@ -864,7 +865,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 30:
         return ai_CondWorth(c, t);
     case 31:
-        return ai_Unk4b4630(c, t);
+        return ai_CondMoney(c, t);
     case 4:
     case 9:
     case 29:

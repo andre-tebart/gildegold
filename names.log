@@ -1874,3 +1874,4 @@
 2026-11-04T15:26:06 0x004b4590 data ai_Unk4b4590 -> ai_CondTitlesLeft by:main why:mission types 2/7: gm_TitlesLeft(G13_B(c, 0x164)) >= t->goal (the titles left in the character's job title group reaches the mission goal)
 2026-11-04T15:27:36 0x004b45c0 data ai_Unk4b45c0 -> ai_CondRankTimed by:main why:mission types 3 / 10 / 24: the character's rank (AICHAR.b00d +0x0d, gv.c's rank, am.c 0x.. raises to rank 2) reaches t->goal, held for t->threshold minutes (ai_TimedCondition)
 2026-11-04T15:27:59 0x004b45f0 data ai_Unk4b45f0 -> ai_CondWorth by:main why:mission types 5 / 13 / 21 / 30: the worth of the character (gm_GetWorth, its objects and buildings in player money, gm_ConvertMoney) reaches t->goal
+2026-11-04T15:28:19 0x004b4630 data ai_Unk4b4630 -> ai_CondMoney by:main why:mission type 31: the amount of the character's city currency (gm_CharCurrency of the player's city id, in player money) reaches t->goal
