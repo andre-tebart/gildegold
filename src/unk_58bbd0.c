@@ -3369,28 +3369,29 @@ void ai_UpgradeContact(int building)
         r = sv_RunFrame(ai_UpgradeContact, 0x67fff);
     }
 }
-/* 0x592290, the book listener (143 B): 0x52e190, then the pump 0x5309a0 (this, 0x67fff); the two book contacts
-   0x52e1c0 ("ob_MEISTERBRIEF", 0x143cbc8, 0xc) / ("ob_PERSONALBUCH", 0x143c9f0, 0xc) open 0x5c3200 (param_1)
-   / 0x5aab80 (param_1, the name) when they are the pending 0x6f22e4 */
+/* 0x592290, the book contact of the building bld (143 B): releases the name plates, then per frame of the pump
+   sv_RunFrame registers the two book objects (ob_MEISTERBRIEF with ai_ContactTextMasterLetter, ob_PERSONALBUCH
+   with ai_ContactTextPersonnelBook) and opens ai_MasterLetterWindow / ai_PersonnelBook when one is the clicked
+   object (ai_ClickedObject) */
 
-void ai_Unk592290(int param_1)
+void ai_BookContact(char *bld)
 {
     int r;
     int a;
     int b;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk592290, 0x67fff);
+    r = sv_RunFrame(ai_BookContact, 0x67fff);
     while (r != 0) {
-        a = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0xc);
-        b = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == a)
-                ai_MasterLetterWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == b)
-                ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
+        a = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0xc);
+        b = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == a)
+                ai_MasterLetterWindow(bld);
+            else if (ai_ClickedObject == b)
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
         }
-        r = sv_RunFrame(ai_Unk592290, 0x67fff);
+        r = sv_RunFrame(ai_BookContact, 0x67fff);
     }
 }
 /* 0x592320, the mercenary-book listener (160 B): 0x52e190, then the pump 0x5309a0 (this, 0x67fff); while the
@@ -9101,7 +9102,7 @@ void ai_Unk59f410(unsigned short *param_1)
     switch (*param_1) {
     case 0x2c:
     case 0x109: ai_UpgradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x2d: ai_Unk592290(U_I((unsigned)&ai_FallbackBuilding)); break;
+    case 0x2d: ai_BookContact(ai_FallbackBuilding); break;
     case 0x33: ai_Unk592320(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x37: ai_Unk5938c0(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x107: ai_Unk593e80(U_I((unsigned)&ai_FallbackBuilding)); break;
