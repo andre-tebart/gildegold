@@ -189,12 +189,12 @@ extern int sv_ButtonCityStats;                                    /* 0x623828 */
 extern int sv_ButtonInventory;                                    /* 0x62382c */
 extern int sv_ButtonPlayerStats;                                    /* 0x623830 */
 extern int sv_ButtonMessages;                                    /* 0x623834 */
-extern int ai_Unk623838;                                    /* 0x623838 */
-extern int ai_Unk62383c;                                    /* 0x62383c */
+extern int sv_PanelBuildingIcon;                                    /* 0x623838 */
+extern int sv_PanelCompass;                                    /* 0x62383c */
 extern int sv_BarWindow;                                    /* 0x623840 */
-extern int ai_Unk623844;                                    /* 0x623844 */
+extern int sv_PanelUnusedObj;                                    /* 0x623844 */
 extern int sv_ButtonPrivileges;                                    /* 0x623848 */
-extern int ai_Unk62384c;                                    /* 0x62384c */
+extern int sv_PanelMoneyText;                                    /* 0x62384c */
 extern int sv_AdvanceHit;                                    /* 0x623850 */
 extern int sv_PanelPic;                                     /* 0x623854 */
 extern int sv_PlayerBarForm;                                /* 0x62385c */

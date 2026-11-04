@@ -114,8 +114,8 @@ extern int sv_ResearchClass;
 extern char * ai_FallbackBuilding;
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
-extern int ai_Unk623838;
-extern int ai_Unk62383c;
+extern int sv_PanelBuildingIcon;
+extern int sv_PanelCompass;
 extern char ch_EmptyName[1];
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 (sv.c) */
 extern unsigned char kb_Last;
@@ -2961,7 +2961,7 @@ void ai_HandleMapKey(void)
 
     if (U_I((unsigned)&kb_Last) == '2' ||
         (U_I(((unsigned)&dm_L + 0x18)) != 0 &&
-         (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&ai_Unk623838) || U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&ai_Unk62383c)))) {
+         (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelBuildingIcon) || U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelCompass)))) {
         memset(msg, 0, 0x50);
         msg[4] = 0;
         msg[2] = 0;

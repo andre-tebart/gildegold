@@ -25,7 +25,7 @@ void he_ReleaseSlot(int ev);
 void he_CreateEventBar(void);
 void he_CloseEventSlots(void);
 void he_ShowEventBar(int pl);
-void he_Unk53dad0(int state);
+void he_SetBarEnabled(int state);
 void he_PickActiveEvent(void);
 void he_ActivateSlot(int *sl);
 

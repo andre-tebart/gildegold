@@ -575,7 +575,7 @@ void he_ShowEventBar(int pl)
 }
 /* 0x53dad0, sets the state of the event bar panel */
 
-void he_Unk53dad0(int state)
+void he_SetBarEnabled(int state)
 {
     if (he_BarShown != -1)
         d2_SetViewEnabled(he_BarView, state);
