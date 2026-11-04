@@ -1833,9 +1833,10 @@ int ai_Unk4bb250(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4bb330, message if 0x5054f0 of c: c pays 0x5085f0(1..5, ai_OwnPlayer) (not with item 0x290) */
+/* 0x4bb330, message 0x3e: c (not holding item 0x290) catches a minor disease (gm_CatchMinorDisease; nothing caught
+   is 0x400) and pays 1..5 times the player factor; the text gets the amount */
 
-int ai_Unk4bb330(G14MSG *m)
+int ai_MsgPayMinorDisease(G14MSG *m)
 {
     AICHAR *c;
     int v;
@@ -1955,7 +1956,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,
-    ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
+    ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_MsgPayMinorDisease, ai_Unk4bb430,
     ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
     ai_Unk4bb630
 };
