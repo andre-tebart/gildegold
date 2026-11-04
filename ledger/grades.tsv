@@ -1997,15 +1997,15 @@ exe	0x004b7200	ai_MsgPayPct1to2Type0e	unk_4b6480	byte	readable
 exe	0x004b7310	ai_MsgPayPct1to4Type0f	unk_4b6480	byte	readable		
 exe	0x004b7430	ai_MsgPayPct1to4OfficeType10	unk_4b6480	byte	readable		
 exe	0x004b7550	ai_MsgPayPct1to3BuildingType11	unk_4b6480	byte	readable		
-exe	0x004b76b0	ai_Unk4b76b0	unk_4b6480	byte	draft		
-exe	0x004b77b0	ai_Unk4b77b0	unk_4b6480	byte	draft		
-exe	0x004b78c0	ai_Unk4b78c0	unk_4b6480	byte	draft		
-exe	0x004b79c0	ai_Unk4b79c0	unk_4b6480	byte	draft		
-exe	0x004b7ac0	ai_Unk4b7ac0	unk_4b6480	byte	draft		
-exe	0x004b7bc0	ai_Unk4b7bc0	unk_4b6480	byte	draft		
-exe	0x004b7d80	ai_Unk4b7d80	unk_4b6480	byte	draft		
-exe	0x004b7f40	ai_Unk4b7f40	unk_4b6480	byte	draft		
-exe	0x004b8060	ai_Unk4b8060	unk_4b6480	byte	draft		
+exe	0x004b76b0	ai_MsgPayPct1to2Type1213	unk_4b6480	byte	readable		
+exe	0x004b77b0	ai_MsgPayPct1to3Count2to16Type14	unk_4b6480	byte	readable		
+exe	0x004b78c0	ai_MsgPartnerRelation4to10Type15	unk_4b6480	byte	readable		
+exe	0x004b79c0	ai_MsgPartnerRelation6to14Type16	unk_4b6480	byte	readable		
+exe	0x004b7ac0	ai_MsgPartnerRelation6to18Type17	unk_4b6480	byte	readable		
+exe	0x004b7bc0	ai_MsgBuildingOwnerRelationsType18	unk_4b6480	byte	readable		
+exe	0x004b7d80	ai_MsgOfficeGroupRelationsType19	unk_4b6480	byte	readable		
+exe	0x004b7f40	ai_MsgPartnerRelationMinus6to14Type1a	unk_4b6480	byte	readable		
+exe	0x004b8060	ai_MsgPartnerRelationMinus10to38Type1b	unk_4b6480	byte	readable		
 exe	0x004b81a0	ai_Unk4b81a0	unk_4b6480	byte	draft		
 exe	0x004b82c0	ai_Unk4b82c0	unk_4b6480	byte	draft		
 exe	0x004b84b0	ai_Unk4b84b0	unk_4b6480	draft	draft	deep	
