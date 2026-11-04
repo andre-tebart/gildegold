@@ -23387,12 +23387,21 @@ int ai_Unk5d2e80(void)
 {
     return 0;
 }
-/* 0x5d2f20, an action callback of the record table 0x62c420 (record 49 at 0x62c97c, the text id 0x2b7,
-   the value 0x10e0, 112 B): the record builder 0x4c4b70. */
+/* 0x5d2f20, the use callback of the Domizil record 49 (0x62c97c, the text id 0x2b7, the value 0x10e0):
+   sends the message type 0xa4 (the event 0xa4, he.c 0x5753a0) to the character's netId, fromId -1, the
+   current clock ai_Time and the flag 1 (0x4c4b70); returns 1. */
 
-int ai_Unk5d2f20(void)
+int ai_UseEventGood(G8CHARREC *ch)
 {
-    return 0;
+    AIMSG msg;
+
+    msg.time = ai_Time;
+    msg.to = ch->netId;
+    msg.type = 0xa4;
+    msg.fromId = -1;
+    msg.flags = 1;
+    cm_SendLongMessage((char *)&msg);
+    return 1;
 }
 /* 0x5d2f90, an action callback of the record table 0x62c420 (record 39 at 0x62c864, the text id 0x298,
    160 B): the request 0x5b2180, 0x502020 and the close 0x4c4a60 (the twin of 0x5d2e80). */
