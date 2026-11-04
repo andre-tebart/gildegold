@@ -2,8 +2,8 @@
    action queue and its callbacks, path search and walking. Extent in GildeGold.exe: 0x402140 (right after
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
-   Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_ACTOBJ.unk170 /
-   unk174 (a room id or an animation, per action), u.walk.unk0fc (written -1, never read), ch_Unk631058.
+   Open: no evidenced role / type yet for fields and globals the action and walk code share:
+   u.walk.unk0fc (written -1, never read), ch_Unk631058.
    cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
@@ -1835,7 +1835,7 @@ int ch_StandUp(CHARACTER *ch, char *name)
     strcpy(a->u.name, name);
     return 1;
 }
-/* 0x405b30, action callback: walks to the gate object name2 in room unk170, then changes the scene */
+/* 0x405b30, action callback: walks to the gate object name2 in the action's target scene, then moves there */
 
 void ch_ActUsingGate(CHACTION *a)
 {
@@ -1853,7 +1853,7 @@ void ch_ActUsingGate(CHACTION *a)
         return;
     cur = d3_CurrentScene;
     scene = d3t_SceneIndex(ch->scene);
-    if (scene == CH_ACTOBJ(a)->unk170) {
+    if (scene == CH_ACTOBJ(a)->data[0]) {
         ch_RemoveAction(a);
         return;
     }
@@ -1870,14 +1870,14 @@ void ch_ActUsingGate(CHACTION *a)
     d3if_SelectScene(cur, 1);
     if (ch->obj->type != 1)
         ch_InsertAction(ch, a, 0x38, 0);
-    b = ch_InsertAction(ch, a, 0x33, CH_ACTOBJ(a)->unk170, CH_ACTOBJ(a)->unk174, CH_ACTOBJ(a)->unk178);
+    b = ch_InsertAction(ch, a, 0x33, CH_ACTOBJ(a)->data[0], CH_ACTOBJ(a)->data[1], CH_ACTOBJ(a)->data[2]);
     strcpy(b->u.name, a->u.name);
     ch_InsertAction(ch, b, 0x38, 1);
     ch_RemoveAction(a);
 }
-/* 0x405cb0 */
+/* 0x405cb0, queues a walk to the gate object and the move to the scene/group/scriptGroup it carries */
 
-CHACTION *ch_UseGate(CHARACTER *ch, char *name, char *gate, int room, int unk174, int unk178)
+CHACTION *ch_UseGate(CHARACTER *ch, char *name, char *gate, int scene, int group, int scriptGroup)
 {
     CHACTION *a = ch_NewAction(ch);
 
@@ -1887,11 +1887,11 @@ CHACTION *ch_UseGate(CHARACTER *ch, char *name, char *gate, int room, int unk174
     a->type = 0x34;
     strcpy(CH_ACTOBJ(a)->name, name);
     strcpy(CH_ACTOBJ(a)->name2, gate);
-    CH_ACTOBJ(a)->unk170 = room;
-    CH_ACTOBJ(a)->unk174 = unk174;
-    if (CH_ACTOBJ(a)->unk178 == -1)
+    CH_ACTOBJ(a)->data[0] = scene;
+    CH_ACTOBJ(a)->data[1] = group;
+    if (CH_ACTOBJ(a)->data[2] == -1)
         err_Message("ch_UseGate: room_id == ID_NONE");
-    CH_ACTOBJ(a)->unk178 = unk178;
+    CH_ACTOBJ(a)->data[2] = scriptGroup;
     return a;
 }
 /* 0x405d40, action callback: plays a->u.name and takes the object name2 at frame args[0] */
@@ -1903,7 +1903,7 @@ void ch_ActTakingObject(CHACTION *a)
 
     if (!a->count) {
         if (a->u.name[0])
-            CH_ACTOBJ(a)->unk170 = (int)ch_SetNextAnim(ch, a->u.name, 1);
+            CH_ACTOBJ(a)->data[0] = (int)ch_SetNextAnim(ch, a->u.name, 1);
         else {
             ch_SetHandObject(ch, a->args[2], CH_ACTOBJ(a)->name2);
             ch_RemoveAction(a);
@@ -1981,7 +1981,7 @@ int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
     }
     return 0;
 }
-/* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0] @deep behaviour: the only meaning-class hunk left is 406050 (7 instr): the original reloads a->ch ([esi+0x14]) into ecx for the ch_SetHandObject call inside the frame check, ours forwards the entry local ch (edi); the other two ch_SetHandObject sites reload a->ch in both sides. Same statements and call arguments (read against 405fb0..4060d7). Tried this session: source already passes a->ch (spell reload prescription 'drop the local, re-read the source expression'; the local is required for ch->next/ch->slot/ch_AnimDone), an explicit ch = a->ch; before the call (optimised away, byte-identical 85/272), and the spell push-pop/dup-tail hunks at 406083/4060c3 are regs/order consequences of the same load. Previous attempts: shared unk080 re-test, count re-test, raw offsets, inline helper, first flag, slot local, no ch local. Needs vargen/alias forms. Readability advanced: CHARACTER.unk064 named rightHand (0x64, ch_SetHandObject hand 2, ch_SetVisible), CH_SLOT/CH_UNK080 replaced by ch->slot/ch->next, Q4 clean. Q2 left (evidence gap, deep): CH_ACTOBJ.unk174 is a per-action int payload - gate actions store a room id / ch_InsertAction arg, take/drop store the D3ANIMDATA * of the started animation; no single evidenced name, and CHACTOBJ.unk170 has the same conflict (room id vs animation) so the three ints need a unit-wide decision. */
+/* 0x405fb0, action callback: plays a->u.name and drops the object at frame args[0] @deep behaviour: the only meaning-class hunk left is 406050 (7 instr): the original reloads a->ch ([esi+0x14]) into ecx for the ch_SetHandObject call inside the frame check, ours forwards the entry local ch (edi); the other two ch_SetHandObject sites reload a->ch in both sides. Same statements and call arguments (read against 405fb0..4060d7). Tried this session: source already passes a->ch (spell reload prescription 'drop the local, re-read the source expression'; the local is required for ch->next/ch->slot/ch_AnimDone), an explicit ch = a->ch; before the call (optimised away, byte-identical 85/272), and the spell push-pop/dup-tail hunks at 406083/4060c3 are regs/order consequences of the same load. Previous attempts: shared unk080 re-test, count re-test, raw offsets, inline helper, first flag, slot local, no ch local. Needs vargen/alias forms. Readability advanced: CHARACTER.unk064 named rightHand (0x64, ch_SetHandObject hand 2, ch_SetVisible), CH_SLOT/CH_UNK080 replaced by ch->slot/ch->next, Q4 clean. Q2: CH_ACTOBJ.data[3] is the action's int payload now, its per-action meanings in its comment (gate: scene / group / scriptGroup; take / drop: the animation it started). */
 
 void ch_ActDroppingObject(CHACTION *a)
 {
@@ -1994,7 +1994,7 @@ void ch_ActDroppingObject(CHACTION *a)
             return;
         }
         if (a->u.name[0])
-            CH_ACTOBJ(a)->unk174 = (int)ch_SetNextAnim(ch, a->u.name, 1);
+            CH_ACTOBJ(a)->data[1] = (int)ch_SetNextAnim(ch, a->u.name, 1);
         if (ch->next)
             return;
         ch_SetHandObject(a->ch, a->args[2], 0);

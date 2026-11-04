@@ -409,9 +409,9 @@ char ch_FindFreeCell(struct D3SM *h, struct D3VECTOR *from, struct D3VECTOR *to,
 typedef struct CHACTOBJ {
     char name[0x40];                /* 0xf0, animation */
     char name2[0x40];               /* 0x130, object / gate name */
-    int unk170;                     /* gate: room id; take: D3ANIMDATA of the animation */
-    int unk174;
-    int unk178;                     /* overlaps CHACTION.speed */
+    int data[3];                    /* 0x170, the action's int payload: gate - the target scene, the group
+                                       and the scriptGroup of the move it queues; take - data[0] the
+                                       animation it started (a D3ANIMDATA *); data[2] also CHACTION.speed */
 } CHACTOBJ;
 #define CH_ACTOBJ(a)    ((CHACTOBJ *)&(a)->u)
 #define D3MATERIAL_NAME104(m) (*(char **)((char *)(m) + 0x104))
