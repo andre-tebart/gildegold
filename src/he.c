@@ -46,7 +46,7 @@ struct D3SM;
 #include "evt.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
-#define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_Unk54fc00 / he_Unk54fc70 call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
+#define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_Unk54fc70 call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
 #define ai_Unk5a9240K ((int (*)())ai_Unk5a9240)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_Unk5a9c30K ((int (*)())ai_Unk5a9c30)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
@@ -6133,20 +6133,24 @@ void he_StartEffectEvent(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x54fc00, a Ghidra miss: creates the effect 0x177 on the scene record of the object p (0x415ad0 (scene, 0x5f36ec, 1, colour 0x64ffa0.., .., 0x12c, 1, ..)); returns its handle (ROUGH, the float arguments are raw) */
+/* 0x54fc00, the smoke emitter of the effect event: creates the effect 0x177 ("Rauch", the colour 0x64ffa0, a
+   30 / 2 / 7.5 / 0.4 / 1 emitter) on the scene record (AIBLD.object) of the building o and returns its handle;
+   the five floats go as dword bit patterns through d3t_CreateEmitterK */
 
-int he_Unk54fc00(int o)
+int he_CreateSmokeEffect(int o)
 {
+    AIBLD *bld = (AIBLD *)o;
     unsigned char col[4];
-    int v[3];
+    int *color = (int *)col;
+    float v[4];
 
-    col[0] = 0x64;
-    col[1] = 0xff;
     col[2] = 0xa0;
-    v[0] = 0;
-    v[1] = 0x43480000;
-    v[2] = 0;
-    return d3t_CreateEmitterK(*(int *)(o + 0x61), "Rauch", 1, *(int *)col, v, 0x12c, 1, 0x41f00000, 0x40000000, 0x40f00000, 0x3ecccccd, 0x3f800000);
+    col[1] = 0xff;
+    col[0] = 0x64;
+    v[0] = 0.0f;
+    v[1] = 200.0f;
+    v[2] = 0.0f;
+    return d3t_CreateEmitterK(bld->object, "Rauch", 1, *color, v, 0x12c, 1, 0x41f00000, 0x40000000, 0x40f00000, 0x3ecccccd, 0x3f800000);
 }
 /* 0x54fc70, a Ghidra miss: creates the effect 0x178 on the scene record of the object p (like 0x54fc00, other colour 0x321e50 and size) */
 
@@ -6177,7 +6181,7 @@ void he_Unk54fce0(int ev)
             sc = U_I((unsigned)&d3_CurrentScene);
             d3if_SelectScene(0, 1);
             if (*(unsigned short *)(ev + 0xc2) == 0x177)
-                *(int *)(ev + 0xb0) = he_Unk54fc00(o);
+                *(int *)(ev + 0xb0) = he_CreateSmokeEffect(o);
             else if (*(unsigned short *)(ev + 0xc2) == 0x178)
                 *(int *)(ev + 0xb0) = he_Unk54fc70(o);
             d3if_SelectScene(sc, 1);
