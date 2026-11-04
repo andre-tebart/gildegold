@@ -41,6 +41,7 @@
 #include "tb.h"
 #include "ts_texture.h"
 #include "vfs.h"
+#include "shp.h"
 #define d2_OpenPicS ((int (*)(short, short, int))d2_OpenPic)  /* 0x46cb20 (K&R, int x, y): @original d2_CreatePicObj (0x46cd80, byte) was compiled against the short prototype */
 #define d2_MoveObjI ((void (*)(int, int, int))d2_MoveObj)  /* 0x46cda0 (d2.c: short x, short y): @original this unit passes the coordinates as ints (d2_CreatePicObj) */
 
@@ -5125,8 +5126,8 @@ int d2_GetObjValue(int obj)
         return o->u.s.value;
     return -1;
 }
-/* 0x4759f0, size of a picture object; 0 if it has none. The picture's per-frame offset table starts at
-   byte 0x45 of the picture header; its entry for the object's input holds the frame's offset. */
+/* 0x4759f0, size of a picture object; 0 if it has none. A picture of type 8 / 5 is a shape bank (D2BANK,
+   shp.h): its offset table entry for the object's input holds the frame's offset. */
 
 int d2_GetObjPicSize(int obj, int *w, int *h)
 {
@@ -5145,7 +5146,7 @@ int d2_GetObjPicSize(int obj, int *w, int *h)
                     *h = ((D2PICHDR *)p)->h;
                     return 1;
                 }
-                frameOffsets = (int *)(p + 0x45);
+                frameOffsets = ((D2BANK *)p)->offs;
                 f = (D2FRAME *)(p + frameOffsets[o->input]);
                 if (f) {
                     *w = f->w;
