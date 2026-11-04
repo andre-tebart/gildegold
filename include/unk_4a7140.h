@@ -124,7 +124,7 @@ int ai_CheckLeisureAction(struct AIPER *p, struct AIARG *in, struct AIARG *out);
 extern int ai_VisitActions[3];                                                      /* 0x600e5c */
 int ai_DecideVisitAction(int a, struct AIPER *p, int c, struct AIARG *in, struct AIARG *m);  /* 0x4aa120 */
 int ai_CheckVisitAction(struct AICHAR *p, struct AIARG *in, struct AIARG *out);              /* 0x4aa430 */
-int ai_PickPamphletTarget(struct AIPER *p, int c, unsigned char *m);                             /* 0x4aa580 */
+int ai_PickPamphletTarget(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa580 */
 int ai_DecideLittleKnownChar(struct AICHAR *p, struct AIARG *in, struct AIARG *m);                 /* 0x4aa6a0 */
 int ai_DecideCharPair(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa800 */
 int aip_ExecPamphlet(struct AIPER *p, int c, struct AIARG *m);                             /* 0x4aa940 */

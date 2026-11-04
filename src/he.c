@@ -9450,7 +9450,7 @@ int he_NoEvent4bPair(int a, int b)
 }
 /* 0x553db0, 1 unless a record of type 0x35 of the player *a (kind 2, 2) has +0xbc = the id (+4) of b (then 0); *count (when given) receives the number of records visited */
 
-int he_Unk553db0(unsigned short *a, int b, int *count)
+int he_NoEvent35Pair(unsigned short *a, int b, int *count)
 {
     char *e;
     int n = 0;
@@ -16655,7 +16655,7 @@ int gm_CharCurrency(char *c, char p);                 /* 0x509ee0 */
 void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
 /* 0x570ea0, 1 when no running event 0x88 has the player +8 == b + 4 and the building +0xb0 == a + 4; 0 when one does */
-int he_Unk570ea0(int a, int b)
+int he_NoEvent88Pair(int a, int b)
 {
     int r;
 

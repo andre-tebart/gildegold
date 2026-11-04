@@ -5475,7 +5475,7 @@ int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             if ((ai_Partner && (ai_PickActionBuilding((AIPER *)ai_Partner, 4, mask.QuadPart, 0, 100.0f, &x), x != -1))
                 || ai_PickActionBuilding(p, 6, mask.QuadPart, 0, util_RandomU(0x20) + 19.0f, &x)) {
                 gm_FindById((int)&y, 0, 0, x);
-                if (y && y->owner != 0xffff && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
+                if (y && y->owner != 0xffff && he_NoEvent88Pair((AIPER *)&ai_CharsT[y->owner], p)) {
                     memset(buf, 0, sizeof(buf));
                     buf[0] = 1;
                     v = (int)(gm_EquipmentValue(y, 100) * 0.05f + gm_GetWorth(p->id) * 0.02f);
@@ -5501,7 +5501,7 @@ int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         }
                         if (he_NoEvent4bPair((AIPER *)&ai_CharsT[y->owner], p)
                             && he_NoEvent2ePair((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
-                            && he_Unk570ea0((AIPER *)&ai_CharsT[y->owner], p)) {
+                            && he_NoEvent88Pair((AIPER *)&ai_CharsT[y->owner], p)) {
                             o1->kind = 4;
                             o1->ref = y->id;
                             o1->arg = 1;
