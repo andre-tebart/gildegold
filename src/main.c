@@ -1416,16 +1416,16 @@ void main_MoneyDialog(void)
 {
     int dlg, ed, run;
 
-    U_I((unsigned)&d2_DirtyRectRight) = 0;
-    U_I((unsigned)&d2_DirtyRectLeft) = 1;
-    U_I((unsigned)&d2_DirtyRectTop) = 1;
-    U_I((unsigned)&d2_DirtyRectBottom) = 2;
+    d2_DirtyRectRight = 0;
+    d2_DirtyRectLeft[0] = 1;
+    d2_DirtyRectTop = 1;
+    d2_DirtyRectBottom = 2;
     dlg = d2_CreateWindow(0x20, 0x60, 0x26c, 400, 0x15);
     ed = d2_GetWinObj(-1, dlg, io_PrintText("$3ABetrag:%m"));
     d2_SetObjValue(ed, 0, 10000, 0);
     run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     while (run != 0) {
-        if (*(char *)(unsigned)&kb_Last == 1)
+        if (kb_Last == 1)
             sv_PopRequest = 1;
         run = sv_RunFrame((int)main_MoneyDialog, 0x24087);
     }
