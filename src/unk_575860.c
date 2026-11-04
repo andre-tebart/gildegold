@@ -2228,14 +2228,14 @@ void ai_TutorialOpenProgress(void)
     ai_Tutorial->progressSlider = d2_WinOpenSlider(d2_Wins[i].w / 2 - 0xc8, 5, 0x190, 0, 0x190,
                                  0x75, 0x42, i);
 }
-/* 0x577d60, releases the tutorial progress form S+0x68 (36 B, a Ghidra-missed start after 0x577cd0's nop fill):
-   nothing while the id is -1; else 0x4758f0 (id) and the id reset to -1 */
+/* 0x577d60, releases the tutorial progress form (36 B, a Ghidra-missed start after 0x577cd0's nop fill): nothing
+   while progressForm is -1; else the view is closed (0x4758f0) and progressForm reset to -1 */
 
 void ai_TutorialCloseProgress(void)
 {
-    if (U_I(S + 0x68) != -1) {
-        d2_CloseView(U_I(S + 0x68));
-        U_I(S + 0x68) = -1;
+    if (ai_Tutorial->progressForm != -1) {
+        d2_CloseView(ai_Tutorial->progressForm);
+        ai_Tutorial->progressForm = -1;
     }
 }
 
