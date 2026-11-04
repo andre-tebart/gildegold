@@ -1367,7 +1367,7 @@ int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, AIARG *m)
 /* 0x4a94e0, decide callback: p (money > 2, not flagged 0x400) picks a character within 18..49 units, not flagged
    0x400, by chance after 0x504e20, into m (kind 7) */
 
-int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags;
     unsigned short id;
@@ -1377,8 +1377,8 @@ int ai_DecideUnflaggedChar(int a, AIPER *p, int c, int d, unsigned char *m)
         if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x20) + 18.0f, &id) != 0
             && (((AIPER *)ai_CharsT)[id].flags1c8 & 0x400) == 0
             && util_RandomF() + gm_Mix(p, &((AIPER *)ai_CharsT)[id], 3) >= 1.0f) {
-            m[0] = 7;
-            *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
+            m->kind = 7;
+            m->ref = ((AIPER *)ai_CharsT)[id].netId;
             return 1;
         }
     }
