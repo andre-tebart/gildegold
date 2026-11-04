@@ -1202,11 +1202,11 @@ exe	0x00466980	scan_tree	trees	byte	readable
 exe	0x00466a70	send_all_trees	trees	byte	readable		
 exe	0x00466cc0	send_tree	trees	byte	draft		
 exe	0x004671e0	compress_block	trees	byte	draft		
-exe	0x004675f0	set_data_type	trees	byte	draft		
-exe	0x00467670	bi_reverse	trees	byte	draft		
-exe	0x00467690	bi_flush	trees	byte	draft		
-exe	0x00467720	bi_windup	trees	byte	draft		
-exe	0x004677a0	copy_block	trees	byte	draft		
+exe	0x004675f0	set_data_type	trees	byte	readable		
+exe	0x00467670	bi_reverse	trees	byte	readable		
+exe	0x00467690	bi_flush	trees	byte	readable		
+exe	0x00467720	bi_windup	trees	byte	readable		
+exe	0x004677a0	copy_block	trees	byte	readable		
 exe	0x00467840	unzOpen	unzip	byte	readable		
 exe	0x004679d0	unzlocal_getShort	unzip	byte	readable		
 exe	0x00467a20	unzlocal_getByte	unzip	byte	readable		
@@ -1762,7 +1762,7 @@ exe	0x004a76d0	ai_PokerHighCard	unk_4a7140	draft	readable	deep
 exe	0x004a7760	ai_PokerDrawCard	unk_4a7140	byte	readable		
 exe	0x004a77e0	ai_PokerNpcExchange	unk_4a7140	shape	readable		
 exe	0x004a79d0	ai_PokerSwapCard	unk_4a7140	byte	readable		
-exe	0x004a7a20	ai_PokerPayStakes	unk_4a7140	byte	draft		
+exe	0x004a7a20	ai_PokerPayStakes	unk_4a7140	byte	readable		
 exe	0x004a7ac0	ai_PokerPickStrategies	unk_4a7140	draft	readable	deep	
 exe	0x004a7c20	ai_PokerNpcFold	unk_4a7140	shape	readable		
 exe	0x004a7e70	ai_PokerOpenCounts	unk_4a7140	draft	readable	deep	
@@ -1772,8 +1772,8 @@ exe	0x004a8520	ai_PokerDealThree	unk_4a7140	byte	readable
 exe	0x004a8590	ai_PokerDealFourth	unk_4a7140	byte	readable		
 exe	0x004a85e0	ai_PokerDealFifth	unk_4a7140	byte	readable		
 exe	0x004a8630	ai_PokerExchange	unk_4a7140	byte	readable		
-exe	0x004a8650	ai_PokerAnte	unk_4a7140	byte	draft		
-exe	0x004a8690	ai_PokerEndRound	unk_4a7140	byte	draft		
+exe	0x004a8650	ai_PokerAnte	unk_4a7140	byte	readable		
+exe	0x004a8690	ai_PokerEndRound	unk_4a7140	byte	readable		
 exe	0x004a86f0	ai_PokerNpcSetStake	unk_4a7140	shape	readable		
 exe	0x004a8760	ai_DecideOfficePartner	unk_4a7140	shape	readable		
 exe	0x004a8a50	ai_DecideTableValue	unk_4a7140	byte	draft		
