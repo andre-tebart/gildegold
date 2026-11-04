@@ -1529,7 +1529,6 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     VFSFILE *h;
     unsigned int hash = 0;
     unsigned char count;
-    unsigned char *p;
     AICHARVIEW *c;
     int i, n;
 
@@ -1541,18 +1540,18 @@ void ai_SaveNetworkGame(char *saveName, char *name)
     sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
     count = 0;
     ai_NumPlayers = count;
-    p = (unsigned char *)ai_CharsC + 2;
+    i = 0;
     do {
-        c = (AICHARVIEW *)(p - 2);
+        c = &((AICHARVIEW *)ai_CharsC)[i];
         if (c->id != 0xffff && (c->kind == 6 || c->kind == 7))
             count++;
-        p += 0x21c;
-    } while ((int)p < (int)gm_PlayerRecordBytes);
+        i++;
+    } while (i < 768);
     ai_NumPlayers = count;
     strcpy(ls_SavePath.path, name);
     ls_SaveSlot = cm_RequestedSaveSlot;
     ai_LoadScreenImage("Gamedata/cities/standard.scr");
-    sprintf(path, "Gamedata/network/%s.SAV", saveName);
+    sprintf(path, "Gamedata\\network\\%s.SAV", saveName);
     h = vfs_Tfopen(path, "wb", vfs_Root);
     if (h != 0) {
         ls_WriteSaveHeader(h, 5);
@@ -1578,9 +1577,9 @@ void ai_SaveNetworkGame(char *saveName, char *name)
         } while (n < ai_NumPlayers);
     }
     sv_BroadcastText(sv_FrameMask, ai_SaveWaitText);
-    sprintf(path, "Gamedata/network/%s.SRV", saveName);
+    sprintf(path, "Gamedata\\network\\%s.SRV", saveName);
     ls_SaveGame(path, name, 6);
-    sprintf(path, "Gamedata/network/%s.SAV", saveName);
+    sprintf(path, "Gamedata\\network\\%s.SAV", saveName);
     ls_SaveGame(path, name, 5);
     sv_SetStatusText(ch_EmptyName);
 }
