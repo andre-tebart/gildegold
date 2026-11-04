@@ -732,7 +732,7 @@ local void send_tree (s, tree, max_code)
  * Construct the Huffman tree for the bit lengths and return the index in
  * bl_order of the last bit length code to send.
  */
-/* 0x466910 */
+/* 0x466910, builds the bit length tree for the literal and distance trees, counts its cost into opt_len and returns the index of its last nonzero code */
 local int build_bl_tree(s)
     deflate_state *s;
 {
