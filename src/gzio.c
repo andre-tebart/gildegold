@@ -181,7 +181,8 @@ local gzFile gz_open (path, mode, fd)
 /* ===========================================================================
      Opens a gzip (.gz) file for reading or writing.
 */
-/* 0x462c50 */
+/* 0x462c50, opens the named gzip file for reading or writing (mode as in
+   fopen with an optional compression level) on a real file, by path */
 gzFile ZEXPORT gzopen (path, mode)
     const char *path;
     const char *mode;
