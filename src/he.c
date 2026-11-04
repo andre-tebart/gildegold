@@ -6582,7 +6582,7 @@ void he_Unk542490(int ev)
 
 int ai_ChooseObjectTarget();
 int gm_HandOutMoney();
-void ai_Unk5a8e10(char *param_1, char *param_2, int param_3);
+void ai_ShowTavernHelperNews(char *param_1, char *param_2, int param_3);
 
 /* 0x542590, a Ghidra miss (disassembled): the run handler of the tavern event (state +0x70: 0 = pick the next step by the owner / the 0x1b5 record of the building (+0x10), 1 = wait 1 .. 2 units, 2 = the tavern record's helper figure (+0x1e) is sent off with the news 0x19a7 and paid); the next due time is always 0x18 units (state word 7) or 1 unit away (ROUGH) */
 void he_Unk542590(int ev)
@@ -6650,7 +6650,7 @@ void he_Unk542590(int ev)
         if (r != 0 && *(char *)(r + 0x22) != 0) {
             f = gm_FindChar(*(int *)(r + 0x1e));
             if (f != 0)
-                ai_Unk5a8e10((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c, f, bld);
+                ai_ShowTavernHelperNews((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c, f, bld);
             cm_BeginFieldBlock(r, *(int *)(r + 2));
             cm_AddFieldDelta(1, 1, 0x22, &z);
             cm_AddFieldDelta(1, 1, 0x1c, &ff);
