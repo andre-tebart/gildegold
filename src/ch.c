@@ -2045,7 +2045,7 @@ int ch_DropObject(CHARACTER *ch, char *name, char *obj, int frame)
         CH_ACTOBJ(a)->name2[0] = 0;
     return 1;
 }
-/* 0x406170 */
+/* 0x406170, queues the drop-object action (type 0x32) for the left hand (args[2] = 1): the animation name and the object's model name */
 
 int ch_DropObject1(CHARACTER *ch, char *name, char *obj, int frame)
 {
