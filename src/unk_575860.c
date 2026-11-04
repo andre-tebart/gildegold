@@ -18,8 +18,7 @@
    to ai_TutorialWindow and the chapter transition callbacks use them; most later functions still reach the
    state record through the S / U_I byte-offset macros; the message (AIMSG, ai.h) is typed from
    ai_CabinetSpyWindow on, earlier senders and the contact-list records still use byte offsets; the cannon
-   scene struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonBuildPanel, ai_CannonAxes /
-   ai_CannonPitchRatio still address it by byte offset.
+   scene struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonBuildPanel.
    Open: d2_CreatePicObj: d2.h declares int parameters, the original's callers here (and d2.c's) pass a short y
    (ai_CannonBuildPanel through the cast macro d2_CreatePicObjS).
    Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:
@@ -29,8 +28,9 @@
    Open: data: ai_DragWindow (0x62a8cc) lies in this unit's .data block between its literals and next to
    ai_DragObj / ai_DragViewWin, but sv.c defines it (sv.h declares it; sv.c and unk_58bbd0.c use it): owner
    unk_575860 or sv.
-   Open: GVGRAVE.v2c / v30 / nameId: gv.c stores small numbers there, ai_GraveDeadName / ai_GraveDeadDescription
-   (byte) read them as pointers to text records; which records is unknown.
+   Open: GVGRAVE.v2c / v30 / nameId: gv.c stores small numbers there, ai_GraveDeadName reads v2c as the office
+   (1 .. 9, gv.c's prevOffice / random) and ai_GraveDeadDescription v30 / nameId as text ids; which texts the
+   bases 0x114 / 0x130 / 0x11e / 0x18f (and the office ones 0x253 / 0x27b) name is unknown.
    Open: sv_CheckGoodAmount's third parameter: the original's callers push the player byte unextended (a char
    parameter, kept as the cast macro sv_CheckGoodAmountB), sv.h / sv.c declare it unsigned and mask it.
    Open: d3_Time is volatile in the original (ai_TutorialTick reloads it after every read; the step callbacks
