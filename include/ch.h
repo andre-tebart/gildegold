@@ -450,10 +450,7 @@ typedef struct CHWALKDEF {
 int ch_ThinPath(CHARACTER *ch, struct PATHOUT *path, CHPATHPT *out, CHWALKDEF *w);              /* 0x406bc0 */
 void ch_SetHandObject(CHARACTER *ch, int hand, char *name);                             /* 0x406c60, 1 left, 2 right, 3 head */
 
-#define CH_UNK038(ch)   ((int *)((char *)(ch) + 0x38))
 #define CH_HAND(ch, off) ((D3OBJECT **)((char *)(ch) + (off)))                     /* 0x64 right, 0x68 left, 0x6c head */
-#define CHACT_HASPOS(a) (*(char *)((char *)(a) + 0x17c))
-#define CHACT_POS(a)    ((D3VECTOR *)((char *)(a) + 0x180))
 char d3if_SelectTextureSet(struct D3OBJECT *obj, struct D3SURF *surf, unsigned char set, char reload);                       /* 0x446f30 */
 char d3_AttachToBone(D3OBJECT *obj, char *name);                                           /* 0x43d6c0 */
 

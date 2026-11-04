@@ -2191,8 +2191,8 @@ void ch_ActMove2Universe(CHACTION *a)
     else if (ch_CurrentGroup == ch->group)
         d3if_SelectTextureSet(ch->obj, ch->obj->material->animCtl, ch->texSet, 1);
     ch_ReleaseSit(ch);
-    if (CHACT_HASPOS(a))
-        ch_SetPos(ch, CHACT_POS(a), 0);
+    if (a->move.hasPos)
+        ch_SetPos(ch, &a->move.pos, 0);
     else {
         if (a->u.name[0])
             strcpy(name, a->u.name);
@@ -2210,9 +2210,9 @@ void ch_ActMove2Universe(CHACTION *a)
     }
     ch->group = a->args[1];
     ch->scriptGroup = a->args[2];
-    CH_UNK038(ch)[0] = 0;
-    CH_UNK038(ch)[1] = 0;
-    CH_UNK038(ch)[2] = 0;
+    ch->pos.x = 0;
+    ch->pos.y = 0;
+    ch->pos.z = 0;
     ch_SetVisible(ch, 1);
     if (cur == a->args[0]) {
         if (ch->group != -1 && ch_CurrentGroup != ch->group || ch_CurrentScriptGroup != -1 && ch_CurrentScriptGroup != ch->scriptGroup)
