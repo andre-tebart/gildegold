@@ -164,7 +164,7 @@ void bgi_Bitmap2(void *f, BGIRD *c)
         *dot = 0;
     strcpy(BGI_M(c).name[2], buf);
 }
-/* 0x44f160 */
+/* 0x44f160, binary-format record 0xa: reads the current material's kind byte (0xc0) */
 
 void bgi_MatKind(void *f, BGIRD *c)
 {
