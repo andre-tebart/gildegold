@@ -2572,7 +2572,7 @@ void ch_MapFree(void *p)
 {
     mem_Free(p);
 }
-/* 0x4076c0 */
+/* 0x4076c0, copies the vector src to dst */
 
 void ch_CopyVec(D3VECTOR *dst, D3VECTOR *src)
 {
