@@ -14383,27 +14383,34 @@ void ai_PlagueMessageAll(void)
             he_ShowNews(ai_CharInts[i][0], -1, ai_NewsText, 0, 0x600, local);
     }
 }
-/* 0x5a9330, the swap text of a delivery (253 B; the only caller is amt.c amt_ExecuteSwapMessage 0x4e6c50, message 0x5c): the text 0x1dcc with the first and the third word for a
-   kind 6 (+2) second record (sent with its +4 id, 0x5fd), the same with the first and the second word for a
-   kind 6 third record, else the text 0x1dcd with the three words to the player's character (0x770b84 + the
-   player * 0x21c, 0x5fe) */
+/* 0x5a9330, the swap text of an office swap (253 B; its only caller is amt.c amt_ExecuteSwapMessage 0x4e6c50,
+   message 0x5c): the text 0x1dcc with the first and the third character's ids for a kind 6 (+2) second character
+   (sent to its +4 netId, 0x5fd), the same with the first and the second character's ids for a kind 6 third
+   character, else the text 0x1dcd with the three ids to the local player's character (0x770b84 + the player *
+   0x21c, 0x5fe) */
 
-void ai_SendSwapText(unsigned short *param_1, unsigned short *param_2, unsigned short *param_3)
+void ai_SendSwapText(unsigned short *cRec, unsigned short *o1Rec, unsigned short *o2Rec)
 {
-    if (*(char *)(param_2 + 1) == 6) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x1dcc, *param_1, *param_3);
-        he_ShowNews(*(int *)(param_2 + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *c;
+    G8CHARREC *o1;
+    G8CHARREC *o2;
+
+    c = (G8CHARREC *)cRec;
+    o1 = (G8CHARREC *)o1Rec;
+    o2 = (G8CHARREC *)o2Rec;
+    if (o1->kind == 6) {
+        txt_Format(ai_NewsText, 0x1dcc, c->id, o2->id);
+        he_ShowNews(o1->netId, -1, ai_NewsText, 0, 0x5fd, ch_EmptyName);
         return;
     }
-    if (*(char *)(param_3 + 1) == 6) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x1dcc, *param_1, *param_2);
-        he_ShowNews(*(int *)(param_3 + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+    if (o2->kind == 6) {
+        txt_Format(ai_NewsText, 0x1dcc, c->id, o1->id);
+        he_ShowNews(o2->netId, -1, ai_NewsText, 0, 0x5fd, ch_EmptyName);
         return;
     }
-    if (*(char *)(param_1 + 1) != 6) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x1dcd, *param_1, *param_2, *param_3);
-        he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)((unsigned)&ai_PlayerId) * 0x21c), -1,
-                     (char *)(unsigned)&ai_NewsText, 0, 0x5fe, (char *)(unsigned)&ch_EmptyName);
+    if (c->kind != 6) {
+        txt_Format(ai_NewsText, 0x1dcd, c->id, o1->id, o2->id);
+        he_ShowNews(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1, ai_NewsText, 0, 0x5fe, ch_EmptyName);
     }
 }
 /* 0x5a9430, a message (61 B): the text 0x1747 with the word of param_2 and the +4 id of param_1 (0x5fa) */
