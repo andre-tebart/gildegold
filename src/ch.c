@@ -1143,7 +1143,7 @@ int ch_ActAnim(CHACTION *a)
         return -1;
     return a->started;
 }
-/* 0x404760 */
+/* 0x404760, returns the first free entry of the action queue ch_Queue, 0 when all are in use */
 
 CHACTION *ch_GetFreeQueueEntry(void)
 {
