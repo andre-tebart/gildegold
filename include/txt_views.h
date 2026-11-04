@@ -119,9 +119,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextDungeonPlan                (*(char * *)((char *)txt_Ptrs + 0x066b0))  /* 0x1440870 */
 #define full_data_1440880                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x066c0))  /* 0x1440880 */
 #define full_data_1440894                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x066d4))  /* 0x1440894 */
-#define full_data_144089c                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x066dc))  /* 0x144089c */
+#define ai_ContactTextKidnap                     (*(char * *)((char *)txt_Ptrs + 0x066dc))  /* 0x144089c, the hover text of the contact_ENTFUEHREN plate (ai_KidnapContact -> ai_KidnapStart) */
 #define full_data_14408ac                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x066ec))  /* 0x14408ac */
-#define full_data_14408cc                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x0670c))  /* 0x14408cc */
+#define ai_ContactTextRansom                     (*(char * *)((char *)txt_Ptrs + 0x0670c))  /* 0x14408cc, the hover text of the contact_LOESEGELD plate (ai_KidnapContact -> ai_RansomWindow) */
 #define full_data_14408e0                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x06720))  /* 0x14408e0 */
 #define full_data_14408e8                        (*(unsigned char (*)[92])((char *)txt_Ptrs + 0x06728))  /* 0x14408e8 */
 #define ai_ContactTextBurglary                   (*(char * *)((char *)txt_Ptrs + 0x06784))  /* 0x1440944, the hover text of the contact_EINBRUCH plate of the thieves' guild hall (ai_ThievesGuildListener) */
@@ -265,7 +265,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144a138                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ff78))  /* 0x144a138 */
 #define full_data_144a13c                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x0ff7c))  /* 0x144a13c */
 #define ai_Unk144a160                            (*(char * *)((char *)txt_Ptrs + 0x0ffa0))  /* 0x144a160 */
-#define full_data_144a17c                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x0ffbc))  /* 0x144a17c */
+#define ai_ContactTextBreakOut                   (*(char * *)((char *)txt_Ptrs + 0x0ffbc))  /* 0x144a17c, the hover text of the contact_AUSBRECHEN plate (ai_KidnapContact -> ai_KidnapAttempt) */
 #define full_data_144a19c                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0ffdc))  /* 0x144a19c */
 #define full_data_144a1a4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ffe4))  /* 0x144a1a4 */
 #define full_data_144a1a8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0ffe8))  /* 0x144a1a8 */

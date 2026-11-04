@@ -1053,10 +1053,18 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 #define U_W(a) (*(unsigned short *)(a))
 
 #pragma pack(push, 1)
+typedef struct AITASKVIEW {       /* the character's model record fields this unit reads (ai_char.h AITASK) */
+    char pad000[0x30];
+    int scriptGroup;               /* 0x30, the group of the script that created / moved it (the room object's id) */
+} AITASKVIEW;
+
 typedef struct AICHARREC {         /* the character record fields this unit reads (ai_char.h AICHAR, same layout;
                                       G8CHARREC below is the view of the news messages) */
     unsigned short id;             /* 0x000, the character's id (AIBLD.owner refers to it) */
-    char pad002[0x7];
+    unsigned char kind;            /* 0x002, the character kind (ai_char.h AICHAR.kind; 6 / 7 need no cell model) */
+    char pad003;
+    unsigned int netId;            /* 0x004, the character's network id (ai_char.h AICHAR.netId) */
+    unsigned char health;          /* 0x008 */
     unsigned char sex;             /* 0x009, 0 / non-0 (ai_char.h AICHAR.sex; it picks the male / female name table) */
     char pad00a[0x3];
     unsigned char b00d;            /* 0x00d, 1 .. 2 (ai_char.h AICHAR.b00d, gv.c copies it to the grave's v30) */
@@ -1064,7 +1072,11 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
     char pad167[2];
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
-    char pad16a[0x5e];
+    char pad16a[0x1a];
+    struct AITASKVIEW *model;      /* 0x184, the character's model record, 0 when none (ai_char.h AICHAR.model) */
+    char pad188[0x29];
+    unsigned char heldRounds;      /* 0x1b1, the rounds the character is held (ai_char.h AICHAR.heldRounds) */
+    char pad1b2[0x16];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
     char pad1cc[0x50];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
@@ -1080,6 +1092,7 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     char pad2b[0x32];
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
     int object;                    /* 0x61, its object in the scene */
+    int victimId;                  /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
 } AIBLD;
 #pragma pack(pop)
 
@@ -1093,9 +1106,10 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-typedef struct AIROOM {            /* the room object sv_PanelShown points to (ai_types.h AIOBJ, the fields this unit reads) */
+typedef struct AIROOM {            /* the room object sv_PanelShown / the driver's room parameter points to (ai_types.h AIOBJ) */
     unsigned short id;             /* 0x00, the room (scene record) id */
-    char pad002[0x12];
+    int objId;                     /* 0x02, the object's own id (AIOBJ.objId) */
+    char pad006[0xe];
     int list;                      /* 0x14, its object list (ai_types.h AIOBJ.list; ai_StorageWindow / gm_SumListAmounts) */
 } AIROOM;
 #pragma pack(pop)
@@ -8324,7 +8338,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildin
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_TrainingContact();
-void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
+void ai_KidnapContact(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
@@ -8889,7 +8903,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x54: ai_ThievesGuildListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x5c: ai_StorageContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x60: ai_TrainingContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x65: ai_Unk5a5bc0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x65: ai_KidnapContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x74: ai_SmithyContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x85: ai_CarpenterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x9b: ai_StonecutterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -12064,7 +12078,7 @@ int ai_Unk5a5120(int param_1)
    0x5eed68, 0x5eed6c, 6, the eight -1 at +0x1c) and the text 0x19b8 go to 0x525220 (param_1, 0) / 0x5c1130
    (the request, the text, 0, the callback 0x5a5120), then 0x525440 / 0x52d7a0 */
 
-void ai_Unk5a53e0(int param_1)
+void ai_KidnapStart(int param_1)
 {
     int req[20];
     char buf[0x40];
@@ -12124,7 +12138,7 @@ void cm_SendMessage5b(int a, int b, int c);
    +0x60, the amount at +0x64) and shows 0x19c5, the second releases the victim through 0x4c3ba0 / 0x4c3c00
    (4, 1, param_1 - 0xa68d2c + 0x65, -1) / 0x4c49a0 / 0x4c5fa0 (the victim, -the byte, 0) and shows 0x19c6,
    the third shows 0x19c7; the exit 0x52d7a0 / 0x4758f0 */
-void ai_Unk5a5530(int param_1)
+void ai_RansomWindow(int param_1)
 {
     float factor;
     int total;
@@ -12224,7 +12238,7 @@ void ai_Unk5a5530(int param_1)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a5530, 0x677c7) == 0)
+        if (sv_RunFrame(ai_RansomWindow, 0x677c7) == 0)
             break;
     }
     sv_CameraFollow();
@@ -12241,7 +12255,7 @@ float gm_GetSkill(char *c, int skill); int cm_SendChrGotoBuilding();
    -the byte, 0), the 0x55eba0 (the character, &a, &b, 0) record sent by 0x4c52e0, the type 0x3d record with the
    owner +0xb0 and the character +0xac released 0x4c4c60 (-1, the record) and the texts 0x3feb / 0x3fed through
    0x53dda0; else the texts 0x3fec / 0x3fee; the exit 0x52d7a0 */
-void ai_Unk5a5910(int param_1)
+void ai_KidnapAttempt(int param_1)
 {
     float s;
     int ok;
@@ -12297,53 +12311,54 @@ void ai_Unk5a5910(int param_1)
 int gm_CreateCharModel(); void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s); int ch_Delete();
 
 /* 0x5a5bc0, the kidnapping contact listener (694 B, room 0x65 of the building driver 0x59e420): the victim
-   0x505df0 (param_1 + 0x65): without a cell record 0x4fbb80 (the victim, 0x633444, 0, 0, 0, "dummy_EINGANG_ZELLE")
-   when +0x184 is clear and the kind +2 is not 6 / 7, or 0x4c51b0 (the victim, the owner, param_2 + 2, the name)
-   when the cell 0x184 belongs to another record; 0x52e190, the pump 0x5309a0 (this, 0x67fff) fetches
-   contact_ENTFUEHREN (0x144089c, 0x16) / contact_LOESEGELD (0x14408cc, 0x16) under the mask 0x200 and
-   contact_AUSBRECHEN (0x144a17c, 0x16) for an own victim with the byte +0x1b1 set; the pending click 0x6f22e4
-   opens 0x5a53e0 / 0x5a5530 / 0x5a5910; the cell 0x4028a0 (the record) and +0x184 = 0 on the exit */
-void ai_Unk5a5bc0(int param_1, int param_2)
+   (building +0x65, a character): without a model record 0x4fbb80 (the victim, 0x633444, 0, 0, 0,
+   "dummy_EINGANG_ZELLE") when +0x184 is clear and the kind is not 6 / 7, or 0x4c51b0 (the victim, the owner,
+   room +2, the name) when the model belongs to another room; 0x52e190, the pump 0x5309a0 (this, 0x67fff)
+   fetches contact_ENTFUEHREN / contact_LOESEGELD under the mask 0x200 and contact_AUSBRECHEN for an own victim
+   with the held-rounds byte +0x1b1 set; the pending click 0x6f22e4 opens ai_KidnapStart / ai_RansomWindow /
+   ai_KidnapAttempt; the model 0x4028a0 (the record) and +0x184 = 0 on the exit */
+void ai_KidnapContact(int building, int room)
 {
+    AIBLD *bld = (AIBLD *)building;
+    AIROOM *rm = (AIROOM *)room;
     int entfuehren = 0;
     int loesegeld = 0;
     int ausbrechen = 0;
-    int ch = 0;
+    AICHARREC *ch = 0;
     int cell = 0;
     int r;
 
-    if (U_I(param_1 + 0x65) != -1) {
-        ch = gm_FindChar(U_I(param_1 + 0x65));
+    if (bld->victimId != -1) {
+        ch = (AICHARREC *)gm_FindChar(bld->victimId);
         if (ch != 0) {
-            if (U_I(ch + 0x184) == 0 && *(char *)(ch + 2) != 6 && *(char *)(ch + 2) != 7)
-                cell = gm_CreateCharModel(ch, U_I((unsigned)&d3_CurrentScene), 0, 0, 0, "dummy_EINGANG_ZELLE");
-            if (U_I(ch + 0x184) != 0 && U_I(U_I(ch + 0x184) + 0x30) != U_I(param_2 + 2))
-                cm_RequestChrMoveToUniverse(U_I(ch + 4), U_I(param_1 + 1), U_I(param_2 + 2), "dummy_EINGANG_ZELLE");
+            if (ch->model == 0 && ch->kind != 6 && ch->kind != 7)
+                cell = gm_CreateCharModel(ch, d3_CurrentScene, 0, 0, 0, "dummy_EINGANG_ZELLE");
+            if (ch->model != 0 && ch->model->scriptGroup != rm->objId)
+                cm_RequestChrMoveToUniverse(ch->netId, bld->id, rm->objId, "dummy_EINGANG_ZELLE");
         }
     }
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5a5bc0, 0x67fff);
+    r = sv_RunFrame(ai_KidnapContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            entfuehren = sv_RegisterNamePlate("contact_ENTFUEHREN", U_I((unsigned)&full_data_144089c), 0x16);
-            loesegeld = sv_RegisterNamePlate("contact_LOESEGELD", U_I((unsigned)&full_data_14408cc), 0x16);
+        if (ai_BuildingPerms & 0x200) {
+            entfuehren = sv_RegisterNamePlate("contact_ENTFUEHREN", ai_ContactTextKidnap, 0x16);
+            loesegeld = sv_RegisterNamePlate("contact_LOESEGELD", ai_ContactTextRansom, 0x16);
         }
-        if (ch != 0 && U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c) == U_I(ch + 4) &&
-            *(char *)(ch + 0x1b1) != 0)
-            ausbrechen = sv_RegisterNamePlate("contact_AUSBRECHEN", U_I((unsigned)&full_data_144a17c), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == entfuehren)
-                ai_Unk5a53e0(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == loesegeld)
-                ai_Unk5a5530(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ausbrechen)
-                ai_Unk5a5910(param_1);
+        if (ch != 0 && ai_CharInts[ai_PlayerId][0] == ch->netId && ch->heldRounds > 0)
+            ausbrechen = sv_RegisterNamePlate("contact_AUSBRECHEN", ai_ContactTextBreakOut, 0x16);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == entfuehren)
+                ai_KidnapStart(building);
+            else if (ai_ClickedObject == loesegeld)
+                ai_RansomWindow(building);
+            else if (ai_ClickedObject == ausbrechen)
+                ai_KidnapAttempt(building);
         }
-        r = sv_RunFrame(ai_Unk5a5bc0, 0x67fff);
+        r = sv_RunFrame(ai_KidnapContact, 0x67fff);
     }
     if (cell != 0 && ch != 0) {
         ch_Delete(cell);
-        U_I(ch + 0x184) = 0;
+        ch->model = 0;
     }
 }
 /* 0x5a5f60, a kidnapping request start (0x50 frame): 0x520fe0 (param_1); the request (0, 0x400, 0, 2) and
