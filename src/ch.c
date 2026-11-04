@@ -617,7 +617,7 @@ int ch_CreateMesh(CHARACTER *ch, char *name, D3VECTOR *pos)
     ch->flags.idlePending = 1;
     return 1;
 }
-/* 0x403390 */
+/* 0x403390, allocates a character and builds its mesh from name at pos (deletes it, 0 when the mesh fails) */
 
 CHARACTER *ch_Create(char *name, D3VECTOR *pos)
 {
