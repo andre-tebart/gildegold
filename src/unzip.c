@@ -918,7 +918,8 @@ local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
   Open for reading data the current file in the zipfile.
   If there is no error and the file is opened, the return value is UNZ_OK.
 */
-/* 0x468100 */
+/* 0x468100, opens the current entry for reading: verifies its local header, allocates the read buffer and,
+ * for a deflated entry, starts its inflate stream; UNZ_OK or UNZ_BADZIPFILE / UNZ_INTERNALERROR */
 extern int ZEXPORT unzOpenCurrentFile (file)
 	unzFile file;
 {
