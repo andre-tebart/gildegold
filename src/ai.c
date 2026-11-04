@@ -302,7 +302,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
     cm_SendFieldDeltas();
     if (p) {
         cm_SendRelations(c->partner, c->netId, 0x3c, 2);
-        ai_Unk5a8ee0(c, p);
+        ai_ShowPartingNews(c, p);
     }
     return 0;
 }

@@ -160,7 +160,7 @@ void ai_NotifyPlayerOfChar(unsigned short *param_1, int param_2);  /* 0x5a9170 *
 int ai_Unk5ba750(void);  /* 0x5ba750 */
 int ai_DrawSettingGood(int param_1);  /* 0x5a8870 */
 float ai_SettingFactor(int param_1);  /* 0x5a88e0 */
-void ai_Unk5a8ee0(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8ee0 */
+void ai_ShowPartingNews(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8ee0 */
 void ai_Unk5a8f90(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8f90 */
 void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2);  /* 0x5a9050 */
 int ai_GoodFitsBuilding(int param_1, int param_2);  /* 0x5bb2d0 */
