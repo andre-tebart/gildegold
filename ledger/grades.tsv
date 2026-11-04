@@ -1678,7 +1678,7 @@ exe	0x0049cd30	ai_DecideUseOffice	am	byte	readable
 exe	0x0049cdb0	ai_ExecuteUseOffice	am	byte	readable		
 exe	0x0049cdd0	ai_EvalThreaten	am	byte	readable		
 exe	0x0049ce50	ai_DecideThreaten	am	draft	readable	deep	
-exe	0x0049d030	ai_ExecuteThreaten	am	byte	draft		
+exe	0x0049d030	ai_ExecuteThreaten	am	byte	readable		
 exe	0x0049d050	ai_EvalPamphlets	am	byte	readable		
 exe	0x0049d0f0	ai_DecidePamphlets	am	shape	readable		
 exe	0x0049d280	ai_ExecutePamphlets	am	byte	readable		
@@ -1776,13 +1776,13 @@ exe	0x004a8650	ai_PokerAnte	unk_4a7140	byte	readable
 exe	0x004a8690	ai_PokerEndRound	unk_4a7140	byte	readable		
 exe	0x004a86f0	ai_PokerNpcSetStake	unk_4a7140	shape	readable		
 exe	0x004a8760	ai_DecideOfficePartner	unk_4a7140	shape	readable		
-exe	0x004a8a50	ai_DecideTableValue	unk_4a7140	byte	draft		
+exe	0x004a8a50	ai_DecideTableValue	unk_4a7140	byte	readable		
 exe	0x004a8ad0	ai_DecidePartnerOtherSex	unk_4a7140	byte	readable		
 exe	0x004a8bf0	ai_EvalOneInFour	unk_4a7140	byte	readable		
 exe	0x004a8c10	ai_AlwaysTrue	unk_4a7140	byte	readable		
 exe	0x004a8c20	ai_EvalOwnTimeSlot	unk_4a7140	byte	readable		
-exe	0x004a8c80	ai_DecideTwoNearChars	unk_4a7140	byte	draft		
-exe	0x004a8d20	ai_DecideNearChar	unk_4a7140	byte	draft		
+exe	0x004a8c80	ai_DecideTwoNearChars	unk_4a7140	byte	readable		
+exe	0x004a8d20	ai_DecideNearChar	unk_4a7140	byte	readable		
 exe	0x004a8db0	ai_DecideBuildingResident	unk_4a7140	draft	readable	deep	
 exe	0x004a8ee0	ai_EvalTitleGroup7	unk_4a7140	byte	readable		
 exe	0x004a8f20	ai_DecideUnfriendlyPair	unk_4a7140	byte	readable		
@@ -1792,21 +1792,21 @@ exe	0x004a9150	ai_EvalOwnYearTurn	unk_4a7140	byte	readable
 exe	0x004a91a0	ai_DecideSuitor	unk_4a7140	shape	readable		
 exe	0x004a9280	ai_DecideCloseAcquaintance	unk_4a7140	byte	readable		
 exe	0x004a9350	ai_DecideOfficeAcquaintance	unk_4a7140	byte	readable		
-exe	0x004a9420	ai_DecideAcceptedChar	unk_4a7140	byte	draft		
-exe	0x004a94e0	ai_DecideUnflaggedChar	unk_4a7140	byte	draft		
-exe	0x004a95d0	ai_DecideFarChar	unk_4a7140	byte	draft		
-exe	0x004a9660	ai_DecideCloseChar	unk_4a7140	byte	draft		
+exe	0x004a9420	ai_DecideAcceptedChar	unk_4a7140	byte	readable		
+exe	0x004a94e0	ai_DecideUnflaggedChar	unk_4a7140	byte	readable		
+exe	0x004a95d0	ai_DecideFarChar	unk_4a7140	byte	readable		
+exe	0x004a9660	ai_DecideCloseChar	unk_4a7140	byte	readable		
 exe	0x004a9700	ai_DecideColumn4Officer	unk_4a7140	byte	readable		
 exe	0x004a9880	ai_DecideColumn5Officer	unk_4a7140	byte	readable		
 exe	0x004a9a00	ai_DecideLeisureAction	unk_4a7140	draft	readable	deep	
 exe	0x004a9fa0	ai_CheckLeisureAction	unk_4a7140	byte	readable		
 exe	0x004aa120	ai_DecideVisitAction	unk_4a7140	draft	readable	deep	
 exe	0x004aa430	ai_CheckVisitAction	unk_4a7140	draft	readable	deep	
-exe	0x004aa580	ai_PickPamphletTarget	unk_4a7140	byte	draft		
+exe	0x004aa580	ai_PickPamphletTarget	unk_4a7140	byte	readable		
 exe	0x004aa6a0	ai_DecideLittleKnownChar	unk_4a7140	byte	readable		
 exe	0x004aa800	ai_DecideCharPair	unk_4a7140	byte	readable		
 exe	0x004aa940	aip_ExecPamphlet	unk_4a7140	byte	readable		
-exe	0x004aaa10	ai_Unk4aaa10	unk_4a7140	byte	draft		
+exe	0x004aaa10	aip_ExecDrohen	unk_4a7140	byte	readable		
 exe	0x004aaae0	aip_ExecAnschwaerzen	unk_4a7140	byte	readable		
 exe	0x004aab90	ai_TrustedOfTwo	unk_4a7140	draft	readable	deep	
 exe	0x004aad30	ai_TrustedOfFour	unk_4a7140	shape	readable	deep	
@@ -3689,7 +3689,7 @@ exe	0x00553ae0	he_Unk553ae0	he	draft	draft
 exe	0x00553cc0	he_Unk553cc0	he	byte	draft		
 exe	0x00553d10	he_NoEvent2ePair	he	byte	draft		
 exe	0x00553d60	he_NoEvent4bPair	he	byte	draft		
-exe	0x00553db0	he_Unk553db0	he	shape	draft		
+exe	0x00553db0	he_NoEvent35Pair	he	shape	draft		
 exe	0x00553e10	he_Unk553e10	he	byte	draft		
 exe	0x00553e90	he_Unk553e90	he	draft	draft		
 exe	0x00554320	he_Unk554320	he	draft	draft		
@@ -3871,7 +3871,7 @@ exe	0x005707a0	he_Unk5707a0	he	draft	draft
 exe	0x00570bf0	he_Unk570bf0	he	byte	draft		
 exe	0x00570c70	he_Unk570c70	he	byte	draft		
 exe	0x00570cc0	he_Unk570cc0	he	draft	draft		
-exe	0x00570ea0	he_Unk570ea0	he	byte	draft		
+exe	0x00570ea0	he_NoEvent88Pair	he	byte	draft		
 exe	0x00570ef0	he_Unk570ef0	he	shape	draft		
 exe	0x00571000	he_Unk571000	he	draft	draft		
 exe	0x00571550	he_Unk571550	he	shape	draft		
