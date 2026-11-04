@@ -594,7 +594,7 @@ int ZEXPORT gzputs(file, s)
      Flushes all pending output into the compressed file. The parameter
    flush is as in the deflate() function.
 */
-/* 0x4633e0 */
+/* 0x4633e0, flushes a gzip stream's pending output to its file */
 local int do_flush (file, flush)
     gzFile file;
     int flush;
