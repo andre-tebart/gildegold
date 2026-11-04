@@ -114,7 +114,6 @@ extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
    ord_ResetStatistics memset would zero whatever the COMMON linker put inside it (it hit ai_BTypes). */
 #define ai_Unk91b648 (gm_IncomeHistory + 0xc8)   /* 0x91b648, row 2 */
 #define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
-#define ai_Unk91b6d0 (gm_IncomeHistory + 0x150)  /* 0x91b6d0, row 4 */
 #define gm_IncomeRows (*(int (*)[5][17])&gm_IncomeHistory)  /* 0x91b580, the five rows of 17 ints; [row][16] is the current sum */
 #include "f3gm_carry.h"            /* GMCARRYSPEC, GMCARRYREC, gm_CarryRecs */
 #pragma pack(push, 1)
@@ -396,9 +395,11 @@ int gm_IncomeKind4(unsigned id, GMINCOME *out, unsigned char flags)
     }
     return 1;
 }
-/* 0x4fa3d0, income kind 5 (the record 0xb, the int at +0x19c; sum 0x91b6d0); the message goes to all players (-1). ROUGH */
+/* 0x4fa3d0, income kind 5 of the character id: the rate of the record 0xb percent of the character's wage at
+   0x19c into the first free entry of out; flag 1 sends the amount from the character to all players (-1), flag 2
+   adds it to the income sum of row 4 */
 
-int gm_IncomeKind5(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind5(unsigned id, GMINCOME *out, unsigned char flags)
 {
     int rec[9];
     int k, n, cnt;
@@ -406,25 +407,25 @@ int gm_IncomeKind5(unsigned id, char *out, unsigned char flags)
 
     gv_GetTableRecord(0xb, rec);
     for (k = 0; k < 6; k++) {
-        if (out[k] == 0) {
+        if (out->kind[k] == 0) {
             if (k >= 6)
                 return 0;
-            cnt = *(int *)(CH(id) + 0x19c);
+            cnt = ORD_CHARS[(unsigned short)id].wage;
             x = (float)(rec[6] * 0.01f);
             x = (float)(x * cnt);
-            if (!(x > 0))
-                x = 0;
+            if (!(x > ai_FloatZero))
+                x = ai_FloatZero;
             n = (int)x;
             if (cnt > 0) {
-                out[k] = 5;
-                *(int *)(out + 8 + k * 4) = n;
-                *(int *)(out + 0x20 + k * 4) = rec[6];
+                out->kind[k] = 5;
+                out->amount[k] = n;
+                out->rate[k] = rec[6];
                 if (flags & 1) {
-                    cm_SendMoveGoodsUnchecked(-1, *(int *)(CH(id) + 4), 0, n);
+                    cm_SendMoveGoodsUnchecked(-1, ORD_CHARS[(unsigned short)id].netId, 0, n);
                     gm_NetMsgCount++;
                 }
                 if (flags & 2)
-                    *(int *)ai_Unk91b6d0 += n;
+                    gm_IncomeRows[4][16] += n;
             }
             return 1;
         }
@@ -462,7 +463,7 @@ int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags)
         gm_IncomeKind2(id, out, flags);
     else
         gm_IncomeKind1(id, out, flags);
-    gm_IncomeKind5(id, (char *)out, flags);
+    gm_IncomeKind5(id, out, flags);
     if (ORD_CHARS[i].v1a8 > 0)
         gm_IncomeKind3(id, out, flags);
     gm_IncomeKind4(id, out, flags);
