@@ -1348,7 +1348,7 @@ int ai_DecideOfficeAcquaintance(int a, AICHAR *p, int c, int d, AIARG *m)
 /* 0x4a9420, decide callback: p (money >= 2) picks a character within 40..71 units that 0x553d60 accepts, into
    m (kind 7) */
 
-int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags;
     unsigned short id;
@@ -1360,8 +1360,8 @@ int ai_DecideAcceptedChar(int a, AIPER *p, int c, int d, unsigned char *m)
         return 0;
     if (he_NoEvent4bPair(p, &((AIPER *)ai_CharsT)[id]) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
+    m->kind = 7;
+    m->ref = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
 /* 0x4a94e0, decide callback: p (money > 2, not flagged 0x400) picks a character within 18..49 units, not flagged
