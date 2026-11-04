@@ -2528,7 +2528,7 @@ void init_StripTorches(D3OBJECT *s)
 /* 0x5116b0, collects the torch objects of the scene (0x511600) and re-creates the quad tree 0x6f1c28 */
 
 
-void unk_Unk5116b0(void)
+void init_RebuildQuadTree(void)
 {
     d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, init_StripTorches);
     if (d3_QuadTree != 0) {
@@ -2581,7 +2581,7 @@ void unk_Unk511790(void)
         b = (char *)gm_BuildNext();
     }
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, init_TownBuildingHook, 0);
-    unk_Unk5116b0();
+    init_RebuildQuadTree();
     ai_CheckBuildSites();
     d3sm_Build(*(int *)((char *)d3_DefaultScene + 0xb0), d3_Terrain);
 }
