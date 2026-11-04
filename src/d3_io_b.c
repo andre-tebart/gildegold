@@ -150,7 +150,8 @@ void bgi_Bitmap1(void *f, BGIRD *c)
         *dot = 0;
     strcpy(BGI_M(c).name[1], buf);
 }
-/* 0x44f0f0 */
+/* 0x44f0f0, binary-format record 8: stores the third bitmap name of the current material (file extension
+   stripped) */
 
 void bgi_Bitmap2(void *f, BGIRD *c)
 {
