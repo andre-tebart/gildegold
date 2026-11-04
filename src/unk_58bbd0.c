@@ -8306,7 +8306,7 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunF
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
-void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_Unk5a18d0();
+void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_TownHallContact();
@@ -8892,7 +8892,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x118: ai_PerfumeryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x120: ai_Unk599af0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x12e: ai_BreweryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x137: ai_Unk5a18d0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x137: ai_GuildLevel2Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x138: ai_Unk5a1a60(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x139: ai_Unk5a1960(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x145: ai_Unk5a6a90(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -9825,7 +9825,7 @@ int ai_Unk5a0ca0(int param_1)
    (1, the 0x50-byte record: +0 = 1, +4 = -1, +0x10 = 6, +0xc = 0x7d4190, +0x4 = 1, +0x18 = 0x727, the text
    0x143fb3c, the callback 0x5a0ca0); == -1 shows the text 0x143fbd8 (0x521150); else 0x520f90 (the player, 5) */
 
-void ai_Unk5a0f10(int param_1)
+void ai_OfficeApplyEntry(int param_1)
 {
     int req[20];
     int r;
@@ -10134,19 +10134,21 @@ void ai_Unk5a17b0(void)
     }
     sv_CheckMoney(per, 8);
 }
-/* 0x5a18d0, the guild level 2 listener (144 B): with 0x4e94e0 (the player) set, the pump 0x5309a0 (0x5a18d0,
-   0x67fff) looks up "contact_ZUNFTLEVEL2" (0x143fb34, class 0x16) and opens 0x5a0f10 */
+/* 0x5a18d0, the guild level 2 listener, the room 0x137 handler of the enter-building driver (144 B): with the
+   guild office power (0x4e94e0, the player) set, the pump 0x5309a0 (0x5a18d0, 0x67fff) looks up the
+   "contact_ZUNFTLEVEL2" plate (txt_Ptrs[0x165d], class 0x16) and a click on it opens the office application
+   entry (0x5a0f10) */
 
-void ai_Unk5a18d0(int param_1)
+void ai_GuildLevel2Listener(int building)
 {
     int c = 0;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk5a18d0, 0x67fff) != 0) {
-        if (amt_CanUseMayorPower2((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
-            c = sv_RegisterNamePlate("contact_ZUNFTLEVEL2", U_I((unsigned)&full_data_143fb34), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && U_I((unsigned)&ai_ClickedObject) == c)
-            ai_Unk5a0f10(param_1);
+    while (sv_RunFrame(ai_GuildLevel2Listener, 0x67fff) != 0) {
+        if (amt_CanUseMayorPower2((char *)ai_Chars + ai_PlayerId * 0x21c) != 0)
+            c = sv_RegisterNamePlate("contact_ZUNFTLEVEL2", txt_Ptrs[0x165d], 0x16);
+        if (ai_ClickedObject != 0 && ai_ClickedObject == c)
+            ai_OfficeApplyEntry(building);
     }
 }
 /* 0x5a1960, the guild level 3 listener (256 B): the text id by the office byte 0x770ce9 + slot * 0x21c (0x1e
@@ -10170,7 +10172,7 @@ void ai_Unk5a1960(int param_1)
     else if (c == 0x20)
         id = 0x1674;
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk5a18d0, 0x67fff) != 0) {
+    while (sv_RunFrame(ai_GuildLevel2Listener, 0x67fff) != 0) {
         kasse = sv_RegisterNamePlate("ob_ZUNFTKASSE", U_I((unsigned)&full_data_1440a24), 0x16);
         r = amt_CanUseMayorPower3((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
         if (r != 0 && id != 0)
