@@ -1050,7 +1050,7 @@ TSTEXTURE *tex_CreateHi(char *name, int size, TSFLAGS flags, unsigned char f0, u
     }
     return 0;
 }
-/* 0x4614c0 */
+/* 0x4614c0, prepares tex for drawing: a hardware high-colour texture fetches its surface from the cache; tex is returned */
 
 TSTEXTURE *tex_Prepare(TSTEXTURE *tex)
 {
