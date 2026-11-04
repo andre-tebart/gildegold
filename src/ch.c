@@ -675,7 +675,7 @@ CHTRANSPORT *ch_AttachTransport(CHARACTER *ch, D3OBJECT *obj)
     t->obj = obj;
     return t;
 }
-/* 0x4035f0 */
+/* 0x4035f0, frees the transport record of ch and clears its transport */
 
 void ch_DetachTransport(CHARACTER *ch)
 {
