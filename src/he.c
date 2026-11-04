@@ -304,6 +304,7 @@ int gm_CompareTime();
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
+#define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -12357,44 +12358,54 @@ void he_Unk5652b0(int ev)
     *(int *)(ev + 0x104) = 0;
     *(AITIME *)(ev + 0x52) = ai_Time;
 }
-/* 0x565410, the run handler of an event that hurts the stock of several buildings (ROUGH): state 0 sets the three days after today in the tables 0x760488 (1000) / 0x7604e8 (3), the next run 2 days ahead; state 1: when the flag +0x78 & 2 and +0xec are set every building of the 16 slots at +0xac gets a random change 0x50cad0 (-(random(5) + 5)); then freed */
+/* 0x565410, the run handler of the storm event (type 0x50, its alloc handler 0x5652b0): state 0 writes the storm forecast into
+   sv_Weather for the three hours after now (clouds 1000, storm 3) and runs again two hours ahead; state 1 damages the stock of
+   the 16 buildings the alloc handler collected (gm_ChangeBuildingState, -(random(5) + 5)) once, then frees the record */
 
-void he_Unk565410(int ev)
+void he_RunStormEvent(int ev)
 {
-    unsigned i, last, base;
-    int *p;
-    int n, b;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
+    unsigned base;
+    int i, last;
 
-    switch (*(int *)(ev + 0x70)) {
+    switch (e->stage) {
     case 0:
-        base = U_I((unsigned)&ai_Time.hour);
+        base = ai_TimeHourW;
         i = (base & 0xffff) + 1;
         last = (base & 0xffff) + 4;
         if (i < last) {
             do {
-                ((int *)sv_Weather.clouds)[i] = 1000;
-                ((int *)sv_Weather.storm)[i] = 3;
+                sv_Weather.clouds[i] = 1000;
+                sv_Weather.storm[i] = 3;
                 i++;
-            } while ((int)i < (int)last);
+            } while (i < last);
         }
-        *(short *)(ev + 0x56) = (short)base + 2;
-        *(int *)(ev + 0x58) = 0;
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        e->end.hour = base + 2;
+        e->end.min = 0;
+        e->stage = e->stage + 1;
         return;
-    case 1:
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0 && *(char *)(ev + 0xec) != 0) {
-            p = (int *)(ev + 0xac);
+    case 1: {
+        int n, dmg;
+        AIBLD *b;
+        int *bldIds;
+
+        if ((e->opts & 2) != 0 && e->pade8[4] != 0) {   /* pade8[4] = +0xec, the flag the alloc handler set */
+            bldIds = (int *)((char *)e + 0xac);         /* the 16 building ids the alloc handler collected */
             n = 0x10;
             do {
-                if (*p != -1 && (b = gm_BuildQuery(1, 1, *p)) != 0)
-                    gm_ChangeBuildingState(b, -((unsigned short)util_Random(5) + 5));
-                p++;
+                if (*bldIds != -1 && (b = (AIBLD *)gm_BuildQuery(1, 1, *bldIds)) != 0) {
+                    dmg = (unsigned short)util_Random(5) + 5;
+                    gm_ChangeBuildingState((unsigned char *)b, -dmg);
+                }
+                bldIds++;
                 n--;
             } while (n != 0);
-            *(char *)(ev + 0xec) = 0;
+            e->pade8[4] = 0;
         }
         he_FreeEvent((int *)ev);
         return;
+    }
     case -2:
     case -1:
         he_FreeEvent((int *)ev);
@@ -13582,7 +13593,7 @@ int he_Unk568310(void)
         return 1;
     if (he_Unk53d600(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
         return 1;
-    if (he_Unk53d600(80, (void *)he_Unk5652b0, (void *)he_Unk565410) != 0)
+    if (he_Unk53d600(80, (void *)he_Unk5652b0, (void *)he_RunStormEvent) != 0)
         return 1;
     if (he_Unk53d600(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
         return 1;
