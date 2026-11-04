@@ -22,7 +22,7 @@ extern volatile unsigned long d3_Time;      /* 0x6333cc, see d3.h */
 
 extern LARGE_INTEGER msx_Last;
 
-/* 0x423770 */
+/* 0x423770, the render thread's loop: updates the scene at about 20 Hz until msx_Quit, then deletes the lock */
 void msx_Thread(void)
 {
     LARGE_INTEGER now;
