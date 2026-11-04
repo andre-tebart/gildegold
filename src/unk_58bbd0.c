@@ -7001,34 +7001,35 @@ void ai_Unk59a560(int param_1, int room)
         }
     }
 }
-/* 0x59a710, leaves the market of the building 0x6f1bc8 with the record param_2 (240 B): 0x75ec60 / 0x6f2304 =
-   0, 0x529fb0 / 0x52ae40, 0x6f2318 = 1, the window 0x623860 hidden (0x475590); 0x6f2310 = the person
-   0x4ffe90 (building + 0x5d, 1, 0, param_2); the event 0x576040 (0x17, person, 0, param_2) and the loop
-   0x5af1d0 (param_1, 9) while the person exists (0x6f2318 = 1); then 0x576040 (0x18, ..), 0x576040 (0x17,
-   person, 1, ..), the person cleared and 0x475590 () */
+/* 0x59a710, the window of the market stand `kind` of the building bld (the market, ai_MarketBuilding): the
+   selection (sv_SelectedObject / sv_SelectedModel) cleared, the info panel closed (sv_ClosePanel /
+   sv_ClearSelection, ai_PermsDirty = 1, sv_PanelForm hidden); the stand record (gm_Query, 1, 0, kind) of
+   the building's object list shown (sv_PanelShown); with a record the tutorial step 0x17 posts and the
+   transport window (mode 9) runs on the record until it is gone (ai_PermsDirty = 1 each round), then the
+   steps 0x18 and 0x17 (result 1), the record cleared and the panel form shown again */
 
-void ai_Unk59a710(int param_1, int param_2)
+void ai_MarketStandWindow(AIBLD *bld, int kind)
 {
-    U_I((unsigned)&sv_SelectedObject) = 0;
-    U_I((unsigned)&sv_SelectedModel) = 0;
+    sv_SelectedObject = 0;
+    sv_SelectedModel = 0;
     sv_ClosePanel();
     sv_ClearSelection();
-    U_I((unsigned)&ai_PermsDirty) = 1;
-    if (U_I((unsigned)&sv_PanelForm) != -1)
-        d2_SetViewEnabled(U_I((unsigned)&sv_PanelForm), 0);
-    U_I((unsigned)&sv_PanelShown) = gm_Query(U_I(U_I((unsigned)&ai_MarketBuilding) + 0x5d), 1, 0, param_2);
-    if (U_I((unsigned)&sv_PanelShown) != 0) {
-        ai_CampaignStep(0x17, U_I((unsigned)&sv_PanelShown), 0, param_2);
-        while (U_I((unsigned)&sv_PanelShown) != 0) {
-            U_I((unsigned)&ai_PermsDirty) = 1;
-            ai_TransportWindow(param_1, 9);
+    ai_PermsDirty = 1;
+    if (sv_PanelForm != -1)
+        d2_SetViewEnabled(sv_PanelForm, 0);
+    sv_PanelShown = (unsigned short *)gm_Query((void *)ai_MarketBuilding->objList, 1, 0, kind);
+    if (sv_PanelShown != 0) {
+        ai_CampaignStep(0x17, (int)sv_PanelShown, 0, kind);
+        while (sv_PanelShown != 0) {
+            ai_PermsDirty = 1;
+            ai_TransportWindow((int)bld, 9);
         }
     }
-    ai_CampaignStep(0x18, U_I((unsigned)&sv_PanelShown), 0, param_2);
-    ai_CampaignStep(0x17, U_I((unsigned)&sv_PanelShown), 1, param_2);
-    U_I((unsigned)&sv_PanelShown) = 0;
-    if (U_I((unsigned)&sv_PanelForm) != -1)
-        d2_SetViewEnabled();
+    ai_CampaignStep(0x18, (int)sv_PanelShown, 0, kind);
+    ai_CampaignStep(0x17, (int)sv_PanelShown, 1, kind);
+    sv_PanelShown = 0;
+    if (sv_PanelForm != -1)
+        d2_SetViewEnabled(sv_PanelForm, 1);
 }
 /* 0x59a800, the market stand listener (736 B): nine stand contacts (0x52e1c0, class 0x10) and, in Nuernberg
    (strcmp of the city name 0x7e3f40 + city * 0x2f4), the three "contact_MARKTFLECKEN_0x" (state 0x143c700); the
@@ -7061,31 +7062,31 @@ void ai_Unk59a800(int param_1)
     if (c == 0)
         return;
     if (strcmp(c, "ob_MARKTSTAND_TISCHLER_SCHMIEDE") == 0) {
-        ai_Unk59a710(param_1, 0x92);
+        ai_MarketStandWindow(param_1, 0x92);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_STEINMETZ_WIRT") == 0) {
-        ai_Unk59a710(param_1, 0x93);
+        ai_MarketStandWindow(param_1, 0x93);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_PARFUM_KRAEUTER") == 0) {
-        ai_Unk59a710(param_1, 0x94);
+        ai_MarketStandWindow(param_1, 0x94);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_ROHSTOFFE") == 0) {
-        ai_Unk59a710(param_1, 0x95);
+        ai_MarketStandWindow(param_1, 0x95);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_IMPORTEUR") == 0) {
-        ai_Unk59a710(param_1, 0x96);
+        ai_MarketStandWindow(param_1, 0x96);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_KIRCHE") == 0) {
-        ai_Unk59a710(param_1, 0x97);
+        ai_MarketStandWindow(param_1, 0x97);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_OKKULT") == 0) {
-        ai_Unk59a710(param_1, 0x2db);
+        ai_MarketStandWindow(param_1, 0x2db);
         return;
     }
     if (strcmp(c, "contact_ob_SCHWARZES_BRETT") == 0) {
@@ -7104,7 +7105,7 @@ void ai_Unk59a800(int param_1)
         return;
     if (U_I(U_I(c + 0x1f8) + 0x200) == 0)
         return;
-    ai_Unk59a710(U_I(U_I(c + 0x1f8) + 0x200), 0x95);
+    ai_MarketStandWindow(U_I(U_I(c + 0x1f8) + 0x200), 0x95);
 }
 /* 0x59aae0, the wine cellar of the player's house (544 B): "locations\wohnsitz\weinkeller" 0x4741f0, the
    player's own money 0x509e60 (0x770b80 + player * 0x21c) against the cellar's 0x509e30 (0x6f2310 + 0x14);
