@@ -117,6 +117,12 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                 unsigned char graveEntry;       /* 0xb4, of the graveyard order events 0x92 / 0x93 (the master exam at a
                                                    graveyard): the grave entry the order names (gv_OrderSetGraveHolder's
                                                    entry, a byte) */
+                struct { char padidx8[8]; int meetStart; };     /* 0xbc, of the meeting event 0xa1 (0x574550): the index
+                                                                  into meetClasses its room query starts at */
+                struct { char padmeet[0xc]; unsigned short meetClasses[5]; };  /* 0xc0, of the meeting event 0xa1: the
+                                                                  words its room query 0x574fe0 hands to the building query
+                                                                  0x501190 as its class (key 5), picked by 0x574550 from
+                                                                  7 / 0x16 / 0xf / 0xa */
             };
             char pade8[4];
         };

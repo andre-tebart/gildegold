@@ -18334,7 +18334,6 @@ void cm_SendChrStop(int a); /* 0x4c5230 */
 int cm_SendChrGotoBuilding();                 /* 0x4c52e0 */
 void ai_Unk4c5410(int a, const char *s, unsigned char c); /* 0x4c5410 */
 int sv_IsAtDoor();                 /* 0x524770 */
-int ai_Unk574fe0();                 /* 0x574fe0 */
 void ai_Unk575030();                /* 0x575030 */
 
 /* 0x5748d0, the run of the event 0xa1 (the meeting, ROUGH SKELETON): the four figures +0x8c .. (0x505df0) are collected; -2 / -1
@@ -18364,7 +18363,7 @@ void he_Unk5748d0(int ev)
     if (state == 0) {
         x = -1;
         if (HM_I(ev, 0xb0) > 0) {
-            x = ai_Unk574fe0(ev);
+            x = he_FindMeetingRoom(ev);
             HM_I(ev, 0xbc) = HM_I(ev, 0xbc) + 1;
         } else {
             bld = 0;
@@ -18394,18 +18393,22 @@ void he_Unk5748d0(int ev)
     ai_Unk575030(ev);
     he_FreeEvent((int *)ev);
 }
-/* 0x574fe0, the meeting room of the event 0xa1: up to three of the words +0xc0 .. (+0xc0 + n * 2, n stepping by n % 4 + 1 from
-   +0xbc) are looked up as buildings (0x501190 (1, 5, word)); returns the first hit, 0 when none */
+/* 0x574fe0, the meeting room of the event 0xa1: up to three of the event's words meetClasses[meetStart],
+   [meetStart % 4 + 1], ... are looked up as buildings by their class (0x501190 (1, 5, word)); returns the
+   first hit, 0 when none */
 
-int ai_Unk574fe0(int ev)
+int he_FindMeetingRoom(int ev)
 {
+    AIJOB *e = (AIOBJ *)ev;
     int i, n, r;
 
-    n = HM_I(ev, 0xbc);
+    n = e->meetStart;
     r = 0;
     i = 3;
-    while (i != 0) {
-        r = gm_BuildQuery(1, 5, *(unsigned short *)(ev + 0xc0 + n * 2));
+    while (1) {
+        if (i == 0)
+            break;
+        r = gm_BuildQuery(1, 5, e->meetClasses[n]);
         i--;
         n = n % 4 + 1;
         if (r != 0)

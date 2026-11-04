@@ -51,6 +51,7 @@ char *he_FindEvent(int n, ...);
 int he_NoEvent9aFor(int a, int b);              /* 0x56f360, 1 when no running type 0x9a event has both +0xac == a and +0xb0 == b + 4 */
 int he_NoEvent9bFor(int a);                     /* 0x56f3b0, 1 when no running type 0x9b event has +0xac == a + 4 */
 int he_RoomBusy(struct AIBLD *b, unsigned short kind);     /* 0x56ddc0, 1 when the room `kind` of the building b is locked */
+int he_FindMeetingRoom(int ev);                 /* 0x574fe0, the first building of the meeting event's room classes, 0 when none */
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */
 void he_SpreadGfxInfos(struct D3OBJECT *obj);
 struct D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, struct D3OBJECT *obj);
