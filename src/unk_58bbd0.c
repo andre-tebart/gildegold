@@ -14139,14 +14139,19 @@ void ai_ShowOfficeNews(unsigned short *holder, char *ownerRec)
         he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5fd, ch_EmptyName);
     }
 }
-/* 0x5a8d00, a production message (64 B, a Ghidra-missed start, called from 0x544070): the text 0x20bd and
-   0x53dda0 (the +4 id, 0x5ec) for a character of the kind 6 / 7 (+2) */
+/* 0x5a8d00, the tribute event's news that it has to wait (64 B, a Ghidra-missed start, called from 0x544070;
+   a reasoned guess at the text's meaning): for a character of the kinds 6 / 7 the text 0x20bd (no values) into
+   ai_NewsText, shown to its netId (he_ShowNews, kind 0x5ec); nothing for another kind. Its only caller is the
+   tribute / levy event's init when more than 4 of its events already run and the event is posted again */
 
-void ai_Unk5a8d00(int param_1)
+void ai_ShowTributeDelayedNews(int rec)
 {
-    if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bd);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *c;
+
+    c = (G8CHARREC *)rec;
+    if (c->kind == 6 || c->kind == 7) {
+        txt_Format(ai_NewsText, 0x20bd);
+        he_ShowNews(c->netId, -1, ai_NewsText, 0, 0x5ec, ch_EmptyName);
     }
 }
 /* 0x5a8d40, a production message (31 B): the text 0x20be and 0x53dda0 (the +4 id, 0x5fb) for a character of

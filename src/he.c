@@ -2519,7 +2519,7 @@ void he_Unk541a80(int r)
 float gm_GetSkill(char *c, int skill);
 void gm_SendMoneyDelta(int a, int b);
 int gv_Accuse();
-void ai_Unk5a8d00(int param_1);
+void ai_ShowTributeDelayedNews(int param_1);
 void ai_Unk5a8d40(int param_1);
 void ai_Unk5a8d80(int param_1, int param_2);
 
@@ -2544,7 +2544,7 @@ void he_Unk544070(int ev)
             if (n > 4) {
                 *(AITIME *)(ev + 0x52) = ai_Time;
                 *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-                ai_Unk5a8d00((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
+                ai_ShowTributeDelayedNews((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
                 return;
             }
         }
