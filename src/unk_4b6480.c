@@ -24,7 +24,7 @@
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
-#define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_Unk4baa80 / ai_Unk4baba0) */
+#define he_MessageBoxQuickjumpI ((void (*)(int, int, char *, int, int, int, int, int, int))he_MessageBoxQuickjump)  /* 0x53dee0 (he.c: char fl): @original this unit builds the flag as an int (byte-matched ai_MsgTakeBuildingGoodsPct5to19Type33 / ai_Unk4baba0) */
 #define gm_AddHealthS ((float (*)(unsigned short, int))gm_AddHealth)  /* 0x4fca40 (f3gm.c: unsigned id): @original this unit pushes the id as 16 bits (byte-matched ai_CommandKillPlayer / ai_MsgWorkerOwnHealthLossType1f) */
 #define cm_SendExSetHEI ((void (*)(int, void *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers push the key as an int (byte-matched ai_Unk4b8c80) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
@@ -1653,7 +1653,7 @@ int ai_MsgTakeBuildingGoodsPct13to25Type32(G14MSG *m)
 }
 /* 0x4baa80, message: as 0x4ba970 (5..19 %), sent with 0x53dee0 and the building */
 
-int ai_Unk4baa80(G14MSG *m)
+int ai_MsgTakeBuildingGoodsPct5to19Type33(G14MSG *m)
 {
     AICHAR *c;
     AIBLD *b;
@@ -1667,7 +1667,7 @@ int ai_Unk4baa80(G14MSG *m)
         return 1;
     if (!ai_InventoryHas(c, 0x290) && ai_SellBuildingGoodsShare(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, b, (int)(f * 100.0f));
-        he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, *(int *)((char *)b + 1), -1, 0, 0);
+        he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, b->id, -1, 0, 0);
         return 0;
     }
     return 0x400;
@@ -1951,7 +1951,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
     ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
-    ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_Unk4baa80,
+    ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_Unk4baba0, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
     ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
