@@ -4291,13 +4291,13 @@ void sv_ClearSelection(void)
     char *q;
 
     q = (char *)(unsigned)&ai_Selected;
-    SV_I((unsigned)&sv_SelectedChar) = 0;
-    SV_I((unsigned)&sv_SelectedModel) = 0;
+    sv_SelectedChar = 0;
+    sv_SelectedModel = 0;
     do {
         *q = 0;
         q += 0x21c;
     } while ((int)q < (int)((unsigned)&ai_Selected + 0x65400));
-    SV_I((unsigned)&ai_SelectedCount) = 0;
+    ai_SelectedCount = 0;
 }
 /* 0x52b2a0, collects into ai_SceneChars the characters whose scene character (AICHAR.model, its +0x2c) belongs to the
    building b (b == 0: the ones in no building, -1), at most 31; past the eighth one of a building the scene character
