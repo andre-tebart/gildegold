@@ -612,7 +612,7 @@ extern GAPDATA full_data_627978[];
 
 extern int ai_CityWatchWindow();
 
-extern int ai_Unk5a5fd0();
+extern int ai_CityWatchCrewWindow();
 
 extern int ai_CityWatchWindow();
 extern int ai_Unk5a6270();
@@ -622,13 +622,13 @@ extern int d2_ClickedId;
 
 extern int sv_PopRequest;
 extern int ai_CityWatchWindow();
-extern int ai_Unk5a5fd0();
+extern int ai_CityWatchCrewWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 
 extern int sv_PopRequest;
-extern int ai_Unk5a5fd0();
+extern int ai_CityWatchCrewWindow();
 extern int ai_Unk5a6270();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
@@ -12388,27 +12388,29 @@ void ai_PatrolStart(int building)
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
-/* 0x5a61f0, a kidnapping request start (0x50 frame): 0x520fe0 (param_1); the request (0, 0x400, 0x90010, 7,
-   0x727 at +0x4c) and 0x525220 (param_1, 0) / 0x5b2180 (1, the request, 0x1440b70, the callback 0x5a5fd0, 0),
-   then 0x525440 / 0x52ae40 */
+/* 0x5a61f0, the city watch raid start, the click of the contact_RAZZIA plate (124 B): 0x520fe0 (the building);
+   the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0x90010, +0x10 = 7 and +0x4c = 0x727; the player
+   bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
+   ai_RaidPickPrompt, the city watch crew window ai_CityWatchCrewWindow as callback, 0), then the player bar
+   closes (0x525440) and the selection is cleared (0x52ae40) */
 
-void ai_Unk5a61f0(int param_1)
+void ai_RaidStart(int building)
 {
     int req[20];
     int i;
 
-    if (sv_CheckCharacterFlag(param_1) != 0)
+    if (sv_CheckCharacterFlag(building) != 0)
         return;
     for (i = 0; i < 0x14; i++)
         req[i] = 0;
     req[1] = 0x400;
     req[4] = 7;
     req[2] = 0x90010;
-    if (param_1 == 0)
+    if (building == 0)
         return;
     req[19] = 0x727;
-    sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440b70), (void *)(unsigned)&ai_Unk5a5fd0, 0);
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, req, ai_RaidPickPrompt, (int)ai_CityWatchCrewWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12509,7 +12511,7 @@ int ai_CityWatchWindow(int param_1, int param_2)
    with the up to six crew ids at +0x38 and, after 0x4c4b70 / 0x4c2d20, the count of every crew character: above
    six the text 0x19ef (6) shown; 0x6f22a0 = 2; the exit 0x4758f0 / 0x52d7a0, returns 1 */
 
-int ai_Unk5a5fd0(int param_1, int param_2)
+int ai_CityWatchCrewWindow(int param_1, int param_2)
 {
     int list[8];
     int win;
@@ -12580,7 +12582,7 @@ int ai_Unk5a5fd0(int param_1, int param_2)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a5fd0, 0x677c7) == 0)
+        if (sv_RunFrame(ai_CityWatchCrewWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -12812,7 +12814,7 @@ void ai_Unk5a6920(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == ausruesten)
                 ai_EquipWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == razzia)
-                ai_Unk5a61f0(param_1);
+                ai_RaidStart(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ausspionieren)
                 ai_EspionageStart((unsigned char *)param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == pergament)
