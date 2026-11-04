@@ -451,7 +451,7 @@ found:
                 m->planes = 0;
             }
             if (m->flags.visible) {
-                d3_DirToRefD(obj, d3_Camera, (D3VECTOR *)((char *)m->tri->src + 0x2c), &m->plane);
+                d3_DirToRefD(obj, d3_Camera, &((D3SRCPOLY *)m->tri->src)->normal, &m->plane);
                 m->plane.w = m->plane.x * m->tri->v[0]->x + m->plane.y * m->tri->v[0]->y + m->plane.z * m->tri->v[0]->z;
                 m->planes = d3_MirCreatePlanes(m->obj, m->tex);
             }

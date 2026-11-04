@@ -399,7 +399,8 @@ typedef struct D3SRCPOLY {          /* 0x38 bytes */
     int idx[3];                     /* 0x18, point indices */
     int mat;                        /* 0x24, material index, < 0: none */
     int slot;                       /* 0x28, texture slot: index into the surf's texture handles (D3IOPOLY.slot) */
-    char pad2c[0xc];
+    D3VECTOR normal;                /* 0x2c, the plane normal: d3_MirBeginFrame turns it (a direction) into the
+                                       mirror plane; the name is a reasoned guess from that use */
 } D3SRCPOLY;
 
 typedef struct D3MESHSRC {          /* view of D3OPS: the loaded mesh data */
