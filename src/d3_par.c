@@ -75,7 +75,8 @@ void par_Unlink(D3PARTSYS *ps)
         d3_ParTail = D3PAR_SCENE_PAR(s)->tail;
     }
 }
-/* 0x455760 */
+/* 0x455760, deletes a particle system: unlinks it from its scene (or its list), releases its texture and
+   frees its particle, point and polygon arrays and the system itself */
 
 void par_Delete(D3PARTSYS *ps)
 {
