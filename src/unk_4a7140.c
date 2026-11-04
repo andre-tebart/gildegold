@@ -2422,7 +2422,7 @@ int ai_ExecBlutrache(AIPER *p, AIARG *m, AIARG *m2)
    building of kind 0x1f holding object 0x28a curses a character within 25..57 units with a strength it can
    afford (32000 per level from a quarter of its money), into m (kind 7) */
 
-int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
+int ai_DecideVerfluchen(int a, AIPER *p, int c, AIARG *m)
 {
     int v, i, k, r, money;
     int bestv, n;
@@ -2462,7 +2462,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     if (ai_PickPartnerChain(p, 1, (int *)&flags, 0.0f, (float)util_RandomU(0x20) + 25.0f, &id) == 0)
         return 0;
     o = &((AIPER *)ai_CharsT)[id];
-    money = (int)(gm_SumListAmounts(*(int *)((unsigned char *)p + 0x178), ai_OwnPlayer) * 0.25f);
+    money = (int)(gm_SumListAmounts(p->inventory, ai_OwnPlayer) * 0.25f);
     gm_GetWorth(p->id);
     for (k = bestv - 1; k > 0; k--) {
         if (money > (k > 1 ? k : 1) * 32000)
@@ -2471,11 +2471,11 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
     if (k == 0)
         return 0;
     r = util_RandomU(k + 1);
-    *(int *)(m + 4) = o->netId;
+    m->ref = o->netId;
     k = r > 1 ? r : 1;
-    *(int *)(m + 0xc) = r;
-    *(int *)(m + 0x10) = k * 32;
-    m[0] = 7;
+    m->ref2 = r;
+    m->arg2 = k * 32;
+    m->kind = 7;
     return 0x45;
 }
 /* 0x4ab9f0, execute callback of action 0x45 "Verfluchen": p is flagged (0x1cc bit 4), pays, and the curse goes
@@ -2648,7 +2648,7 @@ int ai_RegisterSocialActions(int a)
     act.id = 0x45;
     strcpy(act.name, "Verfluchen");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4ab7f0;
+    act.decide = ai_DecideVerfluchen;
     act.exec = ai_Unk4ab9f0;
     act.flags = 0x1c3;
     if (!am_RegisterMethod(&act, a))
