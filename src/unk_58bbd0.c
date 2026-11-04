@@ -17279,16 +17279,15 @@ int ai_AmountPageSwitch(int view, int page, int scrollPage)
     }
     return saved;
 }
-/* 0x5bff80, the release of a record list (39 B): 0x475e40 (the slider +8, 1) for each of the n records of
-   0x38 bytes */
+/* 0x5bff80, enables the slider (row +8, the object of d2_WinOpenSlider that ai_AmountRow makes) of every one
+   of the count rows of 0x38 bytes (0xe dwords) of a special-amount row list */
 
-int ai_Unk5bff80(int param_1, int param_2)
+void ai_EnableAmountRows(int count, int *rows)
 {
-    for (; param_1 > 0; param_1--) {
-        d2_SetObjEnabled(U_I(param_2 + 8), 1);
-        param_2 += 0x38;
+    for (; count > 0; count--) {
+        d2_SetObjEnabled(rows[2], 1);
+        rows += 0xe;
     }
-    return 0;
 }
 /* 0x5bffb0, a tab fill of the special-amount window (249 B, ROUGH SKELETON): with the count param_4 set, the
    page switch 0x5bfed0 (param_1, param_2, param_3) and the rows of the page; only reached through the fill
