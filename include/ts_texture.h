@@ -29,7 +29,7 @@ typedef struct TSTEXTURE {          /* 0x80 bytes, d3_TexCount of them at d3_Tex
     int mask;                       /* 0x4c, size*size-1 | size-1; for an alias: index of the original */
     int group;                      /* 0x50, animation group, -1 = none */
     int stamp;                      /* 0x54, d3_FrameCount of the last use (D3FLTEX.stamp) */
-    int unk58;
+    int reserved;                   /* 0x58, no reader in the game: cleared whenever the slot is created, evicted or unloaded (reasoned: unused) */
     struct TSTEXTURE *src;          /* 0x5c */
     IDirectDrawSurface4 *surf;      /* 0x60 */
     IDirect3DTexture2 *d3dtex;      /* 0x64 */
