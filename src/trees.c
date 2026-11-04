@@ -1070,7 +1070,7 @@ local void set_data_type(s)
  * method would use a table)
  * IN assertion: 1 <= len <= 15
  */
-/* 0x467670 */
+/* 0x467670, reverses the first len bits of a code */
 local unsigned bi_reverse(code, len)
     unsigned code; /* the value to invert */
     int len;       /* its bit length */
