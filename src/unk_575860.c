@@ -9101,23 +9101,25 @@ void ai_GraveSeance(AIBLD *rec)
     }
 }
 
-void ai_EndCharExtra(char *ch, int f); int cm_SendRelations(int a, int b, int c, int d); int sv_StartPoseScript();
+void ai_EndCharExtra(char *ch, int f); int cm_SendRelations(int a, int b, int c, int d); int sv_StartPoseScript(char *a, int b);
 
-/* 0x5867c0, the graveyard "Schlag" action (114 B): when the grave object 0x6f22f8 exists with the flag +0x1b4
-   bit 0 and U_I (0x146738c) is set: 0x587c40 (the object, 0), 0x4c4b00 (the character + 4, the object's +4, -5,
-   0), then 0x52b490 (the object, "locations/friedhof/schlag_FRIEDHOF.esc" 0x62a718) +0xc8c = 1 */
+/* 0x5867c0, the graveyard "Schlag" action (114 B): when the character under the pointer (ai_PickedChar) exists
+   with the at-work flag bit 0 of +0x1b4 and the left button (dm_L.lup) is latched: ends its extra (ai_EndCharExtra,
+   0), sends the player character's relation change towards it (-5, 0), then starts its role pose
+   "locations/friedhof/schlag_FRIEDHOF.esc" (sv_StartPoseScript) and marks that script to run in its own scene */
 void ai_GraveyardSchlag(char *unused)
 {
-    char *p;
+    AICHAR *c;
+    EVTSCRIPT *script;
 
-    p = *(char **)(unsigned)&ai_PickedChar;
-    if (p != 0 && (*(unsigned char *)(p + 0x1b4) & 1) && U_I(((unsigned)&dm_L + 0xc)) != 0) {
-        ai_EndCharExtra(p, 0);
-        p = *(char **)(unsigned)&ai_PickedChar;
-        cm_SendRelations(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c), *(int *)(p + 4), -5, 0);
-        p = (char *)sv_StartPoseScript((int)*(char **)(unsigned)&ai_PickedChar, (char *)(unsigned)&full_data_62a718);
-        if (p != 0)
-            *(int *)(p + 0xc8c) = 1;
+    c = (AICHAR *)ai_PickedChar;
+    if (c != 0 && (c->flags1b4 & 1) != 0 && dm_L.lup != 0) {
+        ai_EndCharExtra((char *)c, 0);
+        c = (AICHAR *)ai_PickedChar;
+        cm_SendRelations(ai_CharInts[ai_PlayerId][0], c->netId, -5, 0);
+        script = (EVTSCRIPT *)sv_StartPoseScript((char *)ai_PickedChar, "locations/friedhof/schlag_FRIEDHOF.esc");
+        if (script != 0)
+            script->ownScene = 1;
     }
 }
 
