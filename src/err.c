@@ -302,7 +302,7 @@ ERRSTR *err_GetString(ERRMAP *map, unsigned int i)
     ERRSTR *s;
 
     if (i < map->nstrings) {
-        s = (ERRSTR *)((char *)map + 0x10);
+        s = (ERRSTR *)(map + 1);
         for (; i > 0; i--)
             s = (ERRSTR *)((char *)s + s->len + 4);
         return s;
