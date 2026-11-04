@@ -9,7 +9,9 @@
    carried-goods records GMCARRYREC (f3gm_carry.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the
    event create / free / search, the gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
    Open: types: the handlers past 0x53f370 still read the event and message records through raw offsets
-   (HM_I / U_I); AIJOB's fields between 0x14 and 0xac are named only as the message's words.
+   (HM_I / U_I); AIJOB's fields between 0x14 and 0xac are named only as the message's words. AIJOB has no named
+   field at +0xb0 (the effect handle of 0x76), +0xba (the next-trial-step count) or +0xc2 (the effect word):
+   he.c reads them through local pointers, since a field there flips d3_CloneObject's bytes (declaration set).
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
