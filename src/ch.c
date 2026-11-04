@@ -321,7 +321,7 @@ void ch_UpdatePositions(void)
         }
     }
 }
-/* 0x4028a0 */
+/* 0x4028a0, deletes a character: takes it out of the list, releases its objects and frees it (1: deleted) */
 
 int ch_Delete(CHARACTER *ch)
 {
