@@ -48,7 +48,7 @@ void sv_SceneLoadProgress(int kind, int cur, int total);                /* 0x521
 void sv_BuildScreenLayout(int s);                                       /* 0x521e70 */
 int sv_PanelImage(void);                                                /* 0x522040 */
 void sv_SetPanelEnabled(int n);                                         /* 0x522100 */
-void sv_Unk522280(void);                                                /* 0x522280 */
+void sv_ClosePanelWidgets(void);                                                /* 0x522280 */
 void sv_DestroyScreen(void);                                            /* 0x5223c0 */
 void sv_LoadGroundplan(void);                                                /* 0x5224a0 */
 void sv_UpdateGroundplan(unsigned flags);                                      /* 0x5229b0 */

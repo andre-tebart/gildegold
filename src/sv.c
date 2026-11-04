@@ -963,7 +963,7 @@ void sv_SetPanelEnabled(int n)
 }
 /* 0x522280, closes the panel widgets (0x46e710, id := -1) and hides the rest */
 
-void sv_Unk522280(void)
+void sv_ClosePanelWidgets(void)
 {
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, 0);
@@ -1047,7 +1047,7 @@ void sv_DestroyScreen(void)
     }
     if (sv_AdvanceHit != -1)
         d2_RemoveHitRect(sv_AdvanceHit);
-    sv_Unk522280();
+    sv_ClosePanelWidgets();
     sv_PanelPic = -1;
     if (sv_BarWindow != -1) {
         d2_RemoveWindow(sv_BarWindow);

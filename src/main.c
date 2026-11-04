@@ -3682,7 +3682,7 @@ void main_RoundReport(void)
     if (U_I((unsigned)&full_data_624560) != 0) {
         w1f8 = 0;
         d2_SetPointerSprite(0, 0);
-        sv_Unk522280();
+        sv_ClosePanelWidgets();
         sv_SetScreenCenter(0x24087);
         win = sv_CreateScrollForm();
         d2_CentreViewWindows(win);
