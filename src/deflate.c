@@ -580,7 +580,8 @@ int ZEXPORT deflate (strm, flush)
 }
 
 /* ========================================================================= */
-/* 0x461f20 */
+/* 0x461f20, frees a stream state's buffers in reverse allocation order and
+ * returns Z_DATA_ERROR when the stream was left mid-block */
 int ZEXPORT deflateEnd (strm)
     z_streamp strm;
 {
