@@ -9266,6 +9266,7 @@ void ai_Unk59fca0(int param_1)
             ai_Unk59fbf0(param_1);
     }
 }
+void ai_OpenAmountKindMenu(void);
 /* 0x59fd30, the Rathaus contact listener (272 B): the pump 0x5309a0 (0x59fd30, 0x67fff), the flags
    0x576410 (0x200 / 0x400 / 0x800) gate "contact_GEB_KAUFEN" (0x14420f0) / "contact_TAGESORDNUNG"
    (0x1442100) / "contact_AMT_INFO" (0x143a3f0); with the gate 0x6f2448 and the key 0x1468410 byte 0x14,
@@ -9301,7 +9302,7 @@ void ai_Unk59fd30(void)
             else if (clicked == agenda)
                 ai_Unk5c1df0();
             else if (clicked == amt)
-                ai_Unk5c1b20();
+                ai_OpenAmountKindMenu();
         }
     }
 }
@@ -9792,7 +9793,7 @@ void ai_Unk5a0f10(int param_1)
     sv_MessageBox((char *)U_I((unsigned)&full_data_143fbd8), 0);
 }
 
-int amt_MayorBonusStep(); int amt_CanUseMayorPower3(); int amt_ExecutePriceMessage(char *c, int *m); int ai_Unk5c1b40();
+int amt_MayorBonusStep(); int amt_CanUseMayorPower3(); int amt_ExecutePriceMessage(char *c, int *m); int ai_AmountKindMenu();
 int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
 
 /* 0x5a1000, the guild level 1 window "LOCATIONS\ZUNFTHAUS\LEVEL1" (1968 B, ROUGH): 0x4e94a0 (the player) == 1
@@ -10050,9 +10051,9 @@ void ai_Unk5a17b0(void)
         }
         if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x1f ||
             *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x21) {
-            ai_Unk5c1b40((void *)(unsigned)&ai_Unk5a1530, (char *)U_I((unsigned)&full_data_143fb70), 0);
+            ai_AmountKindMenu((void *)(unsigned)&ai_Unk5a1530, (char *)U_I((unsigned)&full_data_143fb70), 0);
         } else if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x20) {
-            ai_Unk5c1b40((void *)(unsigned)&ai_Unk5a1670, (char *)U_I((unsigned)&full_data_143fb98), 0);
+            ai_AmountKindMenu((void *)(unsigned)&ai_Unk5a1670, (char *)U_I((unsigned)&full_data_143fb98), 0);
             sv_CameraFollow();
             return;
         }
@@ -17541,7 +17542,7 @@ done:
    click dispatch and the pump 0x5309a0) is left as a comment. The tail returns through 0x52d7a0 (the caller
    0x5c1b20 exits there) */
 
-int ai_Unk5c1500(int param_1)
+int ai_AmountListWindow(int param_1)
 {
     int win;
 
@@ -17578,22 +17579,24 @@ void ai_AmountInfoWindow(int kind)
     d2_CloseView(win);
 }
 
-int ai_Unk5c1500(); int ai_Unk5c1e10();
+int ai_AmountListWindow(); int ai_Unk5c1e10();
 
-/* 0x5c1b20, opens the special-amount menu 0x5c1b40 with the callback 0x5c1500 and the caption record
-   0x143a3f0 (36 B), then exits through 0x52d7a0 */
-int ai_Unk5c1b20(void)
+/* 0x5c1b20, the office info entry of the Rathaus name plate: opens the seven-button amount kind menu
+   (ai_AmountKindMenu) with the amount list window (ai_AmountListWindow) as its callback and the
+   contact_AMT_INFO name plate text (txt_Ptrs[0x8c]) as its caption, then gives the camera back to the
+   player */
+
+void ai_OpenAmountKindMenu(void)
 {
-    ai_Unk5c1b40((int)ai_Unk5c1500, U_I((unsigned)&full_data_143a3f0), 1);
+    ai_AmountKindMenu((int)ai_AmountListWindow, (int)txt_Ptrs[0x8c], 1);
     sv_CameraFollow();
-    return 0;
 }
 /* 0x5c1b40, the seven-button special-amount menu "special_amt1" 0x62d224 (820 B): the texts 0x599 / 0x58d /
    0x590 / 0x58c / 0x58a / 0x58f / 0x58b, the image order 8, 6, 4, 5, 1, 2, 3 (the images 0x143ec88), the
    captions 0x5bd0c0 (200) and the callback param_1 (called with the order value of the clicked button);
    0x4758f0 (win) at the end */
 
-int ai_Unk5c1b40(int param_1, int param_2, int param_3)
+int ai_AmountKindMenu(int param_1, int param_2, int param_3)
 {
     int win;
     int i;
@@ -17654,7 +17657,7 @@ int ai_Unk5c1b40(int param_1, int param_2, int param_3)
                 d2_SetViewEnabled(win, 1);
             }
         }
-        if (sv_RunFrame(ai_Unk5c1b40, 0x657c7) == 0)
+        if (sv_RunFrame(ai_AmountKindMenu, 0x657c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -17665,7 +17668,7 @@ int ai_Unk5c1b40(int param_1, int param_2, int param_3)
 
 int ai_Unk5c1df0(void)
 {
-    ai_Unk5c1b40((int)ai_Unk5c1e10, U_I((unsigned)&full_data_143f030), 1);
+    ai_AmountKindMenu((int)ai_Unk5c1e10, U_I((unsigned)&full_data_143f030), 1);
     sv_CameraFollow();
     return 0;
 }
