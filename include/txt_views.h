@@ -152,7 +152,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440b34                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06974))  /* 0x1440b34 */
 #define full_data_1440b38                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x06978))  /* 0x1440b38 */
 #define full_data_1440b5c                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0699c))  /* 0x1440b5c */
-#define full_data_1440b60                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x069a0))  /* 0x1440b60 */
+#define ai_PatrolPickPrompt                     (*(char * *)((char *)txt_Ptrs + 0x069a0))  /* 0x1440b60, the prompt text of the city watch patrol map pick (ai_PatrolStart) */
 #define full_data_1440b70                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x069b0))  /* 0x1440b70 */
 #define full_data_1440b78                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x069b8))  /* 0x1440b78 */
 #define full_data_1440b7c                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x069bc))  /* 0x1440b7c */

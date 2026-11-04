@@ -610,18 +610,18 @@ extern GAPDATA full_data_627978[];
 
 
 
-extern int ai_Unk5a5d70();
+extern int ai_CityWatchWindow();
 
 extern int ai_Unk5a5fd0();
 
-extern int ai_Unk5a5d70();
+extern int ai_CityWatchWindow();
 extern int ai_Unk5a6270();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
 
 extern int sv_PopRequest;
-extern int ai_Unk5a5d70();
+extern int ai_CityWatchWindow();
 extern int ai_Unk5a5fd0();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
@@ -12361,17 +12361,19 @@ void ai_KidnapContact(int building, int room)
         ch->model = 0;
     }
 }
-/* 0x5a5f60, a kidnapping request start (0x50 frame): 0x520fe0 (param_1); the request (0, 0x400, 0, 2) and
-   0x525220 (param_1, 0) / 0x5b2180 (1, the request, 0x1440b60, the callback 0x5a5d70, 0), then 0x525440 /
-   0x52ae40 */
+/* 0x5a5f60, the city watch patrol start, the click of the contact_PATROL plate (112 B): 0x520fe0 (the
+   building); the 20-int map pick record zeroed with its +4 = 0x400, +8 = 0 (the check's result) and +0x10 = 2;
+   the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 1, the record, the prompt text
+   ai_PatrolPickPrompt, the city watch window ai_CityWatchWindow as callback, 0), then the player bar closes
+   (0x525440) and the selection is cleared (0x52ae40) */
 
-void ai_Unk5a5f60(int param_1)
+void ai_PatrolStart(int building)
 {
     int req[20];
     int i;
     int r;
 
-    r = sv_CheckCharacterFlag(param_1);
+    r = sv_CheckCharacterFlag(building);
     if (r != 0)
         return;
     for (i = 0; i < 0x14; i++)
@@ -12379,10 +12381,10 @@ void ai_Unk5a5f60(int param_1)
     req[1] = 0x400;
     req[4] = 2;
     req[2] = r;
-    if (param_1 == 0)
+    if (building == 0)
         return;
-    sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440b60), (void *)(unsigned)&ai_Unk5a5d70, 0);
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, req, ai_PatrolPickPrompt, (int)ai_CityWatchWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12431,7 +12433,7 @@ void ai_Unk5a6480(int param_1)
    0x4c2d20 / 0x52ae40 with 0x6f22a0 = 2, or only 0x52ae40 with no crew; the second control sets 0x6f22a0 = 1;
    the exit 0x4758f0 / 0x52d7a0, returns 1 */
 
-int ai_Unk5a5d70(int param_1, int param_2)
+int ai_CityWatchWindow(int param_1, int param_2)
 {
     int list[4];
     int win;
@@ -12494,7 +12496,7 @@ int ai_Unk5a5d70(int param_1, int param_2)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a5d70, 0x677c7) == 0)
+        if (sv_RunFrame(ai_CityWatchWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -12913,7 +12915,7 @@ void ai_Unk5a67a0(int param_1)
                 if (U_I((unsigned)&ai_ClickedObject) == personal)
                     ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
                 else if (U_I((unsigned)&ai_ClickedObject) == patrol)
-                    ai_Unk5a5f60(param_1);
+                    ai_PatrolStart(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == wachplan)
                     ai_Unk5a6480(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == zoll)
