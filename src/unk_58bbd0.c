@@ -4671,13 +4671,14 @@ void ai_SmithyContact(AIBLD *bld, int room)
     }
     sv_ReleaseNamePlates();
 }
-/* 0x595330, the carpenter contact listener (331 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with 0x200 the
-   contact PRODUKTION_TISCHLER (0x1442118, 0x13); with 0x400 LAGER (0x1441f90, 0xe), TRANSPORT (0x1441fa0,
-   0x15), MEISTERBRIEF (0x143cbc8, 0xc) and PERSONALBUCH (0x143c9f0, 0xc); the dispatcher: TISCHLER ->
-   0x58bd60, TRANSPORT -> 0x5af1a0, PERSONALBUCH -> 0x5aab80, LAGER -> 0x5b26b0 (param_1, param_1 + 0x5d),
-   MEISTERBRIEF -> 0x5c3200; 0x58f510 every frame */
+/* 0x595330, the carpenter contact listener: it releases the name plates, pumps the frame (sv_RunFrame, this, mask
+   0x67fff) while the screen stays on top and, every frame, registers the contact plates ai_BuildingPerms allows:
+   with 0x200 the production plate PRODUKTION_TISCHLER (text ai_ContactTextProductionCarpenter); with 0x400 LAGER,
+   TRANSPORT, ob_MEISTERBRIEF and ob_PERSONALBUCH. ai_MarketContact runs every frame; a clicked plate opens its
+   window (ai_ProductionWindow, ai_OpenTransport, ai_PersonnelBook, the store window ai_StorageWindow on the
+   building's object list, ai_MasterLetterWindow) */
 
-void ai_Unk595330(int param_1, int room)
+void ai_CarpenterContact(AIBLD *bld, int room)
 {
     int r;
     int tischler;
@@ -4692,30 +4693,30 @@ void ai_Unk595330(int param_1, int room)
     meister = 0;
     personal = 0;
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk595330, 0x67fff);
+    r = sv_RunFrame(ai_CarpenterContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200)
-            tischler = sv_RegisterNamePlate("contact_PRODUKTION_TISCHLER", U_I((unsigned)&full_data_1442118), 0x13);
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0xc);
-            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
+        if (ai_BuildingPerms & 0x200)
+            tischler = sv_RegisterNamePlate("contact_PRODUKTION_TISCHLER", ai_ContactTextProductionCarpenter, 0x13);
+        if (ai_BuildingPerms & 0x400) {
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
+            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0xc);
+            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
         }
-        ai_MarketContact((AIBLD *)param_1);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == tischler)
-                ai_ProductionWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == personal)
-                ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
-            else if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
-            else if (U_I((unsigned)&ai_ClickedObject) == meister)
-                ai_MasterLetterWindow(param_1);
+        ai_MarketContact(bld);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == tischler)
+                ai_ProductionWindow((unsigned char *)bld);
+            else if (ai_ClickedObject == transport)
+                ai_OpenTransport((int)bld);
+            else if (ai_ClickedObject == personal)
+                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+            else if (ai_ClickedObject == lager)
+                ai_StorageWindow((int)bld, bld->objList);
+            else if (ai_ClickedObject == meister)
+                ai_MasterLetterWindow((unsigned char *)bld);
         }
-        r = sv_RunFrame(ai_Unk595330, 0x67fff);
+        r = sv_RunFrame(ai_CarpenterContact, 0x67fff);
     }
 }
 
@@ -8839,7 +8840,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x60: ai_Unk5a5080(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x65: ai_Unk5a5bc0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x74: ai_SmithyContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x85: ai_Unk595330(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x85: ai_CarpenterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x9b: ai_Unk5962b0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xa5: ai_Unk59df80(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xb7: ai_DungeonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
