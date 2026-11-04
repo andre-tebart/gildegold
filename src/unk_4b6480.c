@@ -1452,10 +1452,10 @@ int ai_Unk4ba0c0(G14MSG *m)
 none:               /* the guards share this one 0x400 exit, as in the original */
     return 0x400;
 }
-/* 0x4ba2d0, message: the first worker of kind 1 in one of c's buildings of kind 1 gains 5..14 of skill 0x81 (up to
-   0xfc) through 0x4c6020 */
+/* 0x4ba2d0, message 0x2f: the first worker of kind 1 in one of c's buildings of kind 1 gains 5..14 of skill 0x81
+   (up to 0xfc) through 0x4c6020 */
 
-int ai_Unk4ba2d0(G14MSG *m)
+int ai_MsgWorkerAddSkillType2f(G14MSG *m)
 {
     AICHAR *c, *p;
     AIBLD *b;
@@ -1469,7 +1469,7 @@ int ai_Unk4ba2d0(G14MSG *m)
     if (c == 0)
         return 1;
     for (b = gm_BuildQuery(1, 3, c->id); b != 0 && n < 8; b = gm_BuildNext()) {
-        if (gm_BuildingClass(*(unsigned char *)b) == 1)
+        if (gm_BuildingClass(b->type) == 1)
             a[n++] = b;
     }
     if (n == 0)
@@ -1950,7 +1950,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
-    ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,
+    ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
     ai_Unk4ba470, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
     ai_Unk4baba0, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
