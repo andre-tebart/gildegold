@@ -169,7 +169,7 @@ int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
 void ai_ObjectAngle(void *out_, int plot);  /* 0x58fd90 */
 void ai_ObjectPosition(void *out, int plot);  /* 0x58fd40 */
 void ai_ShowIndulgenceNews(unsigned short *param_1, char *param_2, int param_3, int param_4, int param_5);  /* 0x5a8b80 */
-void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3);  /* 0x5a8c00 */
+void ai_ShowPaymentNews(unsigned short *param_1, char *param_2, int param_3);  /* 0x5a8c00 */
 int ai_FindUsableGood(int param_1);  /* 0x5ba620 */
 int ai_PassesPartnerFilter(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4);  /* 0x5c33c0 */
 int ai_PassesBuildingFilter(short *param_1, char *param_2, unsigned char *param_3);  /* 0x5c37a0 */

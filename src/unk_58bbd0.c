@@ -10703,7 +10703,7 @@ void ai_Top5Window(void)
     d2_CloseView(win);
 }
 
-int sv_CheckMoney(); void cm_SendMoneyDelta(int a, int b); void ai_Unk5a8c00(); void d2_SetObjValue();
+int sv_CheckMoney(); void cm_SendMoneyDelta(int a, int b); void ai_ShowPaymentNews(); void d2_SetObjValue();
 
 /* 0x5a2b60, the confession window "Locations\Kirche\Beichte" (625 B): closed for the unknown owner (0xffff);
    the player's fame 0x4f39b0 (the id); the window 0x4741f0 / 0x475600 / 0x475f70 / 0x52ea30 (the screen
@@ -10755,7 +10755,7 @@ void ai_ConfessionWindow(int param_1)
                     owner = U_W(param_1 + 0x27);
                     if (owner != 0xffff && owner != U_W((unsigned)&ai_PlayerId)) {
                         cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + owner * 0x21c), 1);
-                        ai_Unk5a8c00((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c,
+                        ai_ShowPaymentNews((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c,
                                      (char *)(unsigned)&ai_Chars + U_W(param_1 + 0x27) * 0x21c,
                                      (char *)param_1);
                     }
@@ -14095,13 +14095,19 @@ void ai_ShowIndulgenceNews(unsigned short *buyer, char *ownerRec, int bld, int s
         he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5ff, ch_EmptyName);
     }
 }
-/* 0x5a8c00, a production message with one value (79 B): the text 0x20ba and 0x53dda0 (the +4 id, 0x5ec) */
+/* 0x5a8c00, the news of a payment to a building's owner (79 B): for an owner character of the kinds 6 / 7 the
+   text 0x20ba with the payer's id and the building into ai_NewsText, shown to the owner's netId (he_ShowNews,
+   kind 0x5ec); nothing for another owner kind. Both callers pay money to the building's owner
+   (ai_ExecuteBuyIndulgence 0x49cb60 on taking over the rooms, ai_ConfessionWindow 0x5a2b60 at the church) */
 
-void ai_Unk5a8c00(unsigned short *param_1, char *param_2, int param_3)
+void ai_ShowPaymentNews(unsigned short *buyer, char *ownerRec, int bld)
 {
-    if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20ba, *param_1, param_3);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *owner;
+
+    owner = (G8CHARREC *)ownerRec;
+    if (owner->kind == 6 || owner->kind == 7) {
+        txt_Format(ai_NewsText, 0x20ba, *buyer, bld);
+        he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5ec, ch_EmptyName);
     }
 }
 /* 0x5a8c50, a production message with two values (84 B): the text 0x20bc and 0x53dda0 (the +4 id, 0x5ff) */

@@ -7107,7 +7107,7 @@ int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
         gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
         gm_SendMoneyDelta(p->netId, -s1->arg2);
         gm_SendMoneyDelta(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, 1);
-        ai_Unk5a8c00(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b);
+        ai_ShowPaymentNews(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b);
         return 0x26;
     }
     return 0;
