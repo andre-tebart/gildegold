@@ -1354,9 +1354,9 @@ int ai_MsgWorkerStop(G14MSG *m)
     }
     return 0x400;
 }
-/* 0x4b9f30, message: a worker (kind 0) of one of c's buildings of kind 1 / 2 is named in the text */
+/* 0x4b9f30, message 0x2c: a worker (kind 0) of one of c's buildings of kind 1 / 2 is named in the text */
 
-int ai_Unk4b9f30(G14MSG *m)
+int ai_MsgWorkerTitleType2c(G14MSG *m)
 {
     AICHAR *c, *p;
     AIBLD *b;
@@ -1370,7 +1370,7 @@ int ai_Unk4b9f30(G14MSG *m)
     if (c == 0)
         return 1;
     for (b = gm_BuildQuery(1, 3, c->id); b != 0 && n < 8; b = gm_BuildNext()) {
-        i = gm_BuildingClass(*(unsigned char *)b);
+        i = gm_BuildingClass(b->type);
         if (i == 1 || i == 2)
             a[n++] = b;
     }
@@ -1386,7 +1386,7 @@ int ai_Unk4b9f30(G14MSG *m)
         p = a[util_RandomU(k)];
     if (b == 0 || p == 0)
         return 0x400;
-    t = (((char *)p)[9] ? 0x230 : 0x20d) + (unsigned char)p->title;
+    t = (p->sex ? 0x230 : 0x20d) + (unsigned char)p->title;
     txt_Format(buf, m->type + 0x12e7, t, p->id, p->id, t);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
@@ -1950,7 +1950,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
-    ai_Unk4b9f30, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,
+    ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,
     ai_Unk4ba470, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
     ai_Unk4baba0, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
