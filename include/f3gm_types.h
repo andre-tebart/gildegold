@@ -184,6 +184,7 @@ typedef struct GMRANK {
     int points;                         /* 0x20, sum * the highest worth / 10000 */
 } GMRANK;
 
+#pragma pack(push, 1)
 /* the calendar record gm_ClockToDate fills (10 bytes) */
 typedef struct GMDATE {
     unsigned char one;                  /* 0x0, always 1 */
@@ -191,7 +192,8 @@ typedef struct GMDATE {
     short year;                         /* 0x2, day + 0x578 */
     unsigned char hour;                 /* 0x4 */
     unsigned char min;                  /* 0x5 */
-    unsigned char sec[4];               /* 0x6, the clock's seconds field (an unaligned int) */
+    int sec;                            /* 0x6, the clock's seconds field (unaligned) */
 } GMDATE;
+#pragma pack(pop)
 
 #endif

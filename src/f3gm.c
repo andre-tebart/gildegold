@@ -2526,19 +2526,21 @@ int gm_MinutesBetween(AITIME *a, AITIME *b)
 {
     return ((((b->year - a->year) * 0x18 - a->hour) + b->hour) * 0x3c - a->min) + b->min;
 }
-/* 0x4fe2c0, converts the clock c into the calendar record out: byte 0 = 1, byte 1 = season (day % 4) * 3 + 1, word at +2 = year (day + 0x578), byte 4 = hour, byte 5 = minute, int at +6 = the seconds field */
+/* 0x4fe2c0, converts the clock c into the calendar record out: the season's first month (the day % 4 * 3 + 1),
+   the year (day + 0x578), the hour, the minute and the seconds */
 
 void gm_ClockToDate(AITIME *c, unsigned char *out)
 {
+    GMDATE *d = (GMDATE *)out;
     int r;
 
-    *(short *)(out + 2) = (short)c->year + 0x578;
+    d->year = (short)c->year + 0x578;
     r = c->year % 4;
-    out[0] = 1;
-    out[1] = (char)r * 3 + 1;
-    out[4] = (char)c->hour;
-    out[5] = (char)c->min;
-    *(int *)(out + 6) = c->sec;
+    d->one = 1;
+    d->month = (char)r * 3 + 1;
+    d->hour = (char)c->hour;
+    d->min = (char)c->min;
+    d->sec = c->sec;
 }
 /* 0x4fe310, a forward to 0x4fe140 with the first two arguments left out (the second is unused) */
 
