@@ -804,7 +804,7 @@ local void putLong (file, x)
    Reads a long in LSB order from the given gz_stream. Sets z_err in case
    of error.
 */
-/* 0x463680 */
+/* 0x463680, reads a 32-bit little-endian value from a gzip stream */
 local uLong getLong (s)
     gz_stream *s;
 {
