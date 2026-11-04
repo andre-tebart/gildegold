@@ -1146,22 +1146,20 @@ int ai_RunAllows(int mask)
         return 0;
     return (ai_Tutorial->run->allowMask & mask) != 0;
 }
-/* 0x576410, the same predicate as 0x5763c0 on the run record's word +0x6c */
+/* 0x576410, the same predicate as ai_RunAllows on the run record's second allow mask (TUTRUN.allowMask2): the
+   contact menu entries the tutorial allows */
 
-int ai_Unk576410(int mask)
+int ai_RunAllowsContact(int mask)
 {
-    char *st;
-
     if (!ai_TutorialOn)
         return 1;
-    st = S;
-    if (*(int *)(st + 0x3c) == 2 || U_I(st) == 5)
+    if (ai_Tutorial->phase == 2 || ai_Tutorial->state == 5)
         return 0;
-    if (!*(int *)(st + 0x18))
+    if (!ai_Tutorial->run)
         return 1;
-    if (U_I((unsigned)&tb_Paused))
+    if (tb_Paused)
         return 0;
-    return (*(int *)(*(char **)(st + 0x18) + 0x6c) & mask) != 0;
+    return (ai_Tutorial->run->allowMask2 & mask) != 0;
 }
 /* 0x576460, 1 while the gate 0x6f265c is 0; else 0 in the mode 2 / state 5, 1 otherwise */
 

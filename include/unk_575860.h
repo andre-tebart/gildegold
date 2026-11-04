@@ -120,7 +120,7 @@ void unk_SetEndGameGate(void);                /* 0x576030, sets the gate 0x6f266
 void ai_CampaignStep(int a, int b, int c, int d);  /* 0x576040, one step of the campaign state machine */
 int ai_ScriptQuery(int a, int b, int c, int d);   /* 0x576340, calls the run record's callback +0x3c */
 int ai_RunAllows(int mask);             /* 0x5763c0, run mask +0x68 */
-int ai_Unk576410(int mask);             /* 0x576410, run mask +0x6c */
+int ai_RunAllowsContact(int mask);             /* 0x576410, run mask +0x6c */
 int ai_Unk576460(void);                 /* 0x576460, mode 2 / state 5 query */
 int ai_TutorialQueryDefault(int *p);               /* 0x576490, step callback predicate */
 int ai_QueryDefault(int *p);               /* 0x5764b0, step callback predicate */

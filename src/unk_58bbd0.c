@@ -4584,7 +4584,7 @@ void ai_Unk5950e0(int param_1)
     }
 }
 
-int ai_Unk576410();
+int ai_RunAllowsContact();
 
 /* 0x595170, the smithy contact listener (448 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); while the flag
    0x6f231c has 0x200: with 0x576410 (0x20) the smithy contact PRODUKTION_SCHMIEDEN (0x1442108, 0x13) and with
@@ -4610,25 +4610,25 @@ void ai_Unk595170(int param_1, int room)
     r = sv_RunFrame(ai_Unk595170, 0x67fff);
     while (r != 0) {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            if (ai_Unk576410(0x20) == 1)
+            if (ai_RunAllowsContact(0x20) == 1)
                 schmieden = sv_RegisterNamePlate("contact_PRODUKTION_SCHMIEDEN", U_I((unsigned)&full_data_1442108), 0x13);
             else
                 schmieden = 0;
-            if (ai_Unk576410(0x80) == 1)
+            if (ai_RunAllowsContact(0x80) == 1)
                 meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0x16);
             else
                 meister = 0;
         }
         if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            if (ai_Unk576410(0x10) == 1)
+            if (ai_RunAllowsContact(0x10) == 1)
                 lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
             else
                 lager = 0;
-            if (ai_Unk576410(0x100) == 1)
+            if (ai_RunAllowsContact(0x100) == 1)
                 transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
             else
                 transport = 0;
-            if (ai_Unk576410(0x40) == 1)
+            if (ai_RunAllowsContact(0x40) == 1)
                 personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
             else
                 personal = 0;
@@ -5651,7 +5651,7 @@ void ai_Unk597500(int param_1, int param_2)
     sv_ReleaseNamePlates();
     r = sv_RunFrame(ai_Unk597500, 0x67fff);
     while (r != 0) {
-        if (ai_Unk576410(8) == 1) {
+        if (ai_RunAllowsContact(8) == 1) {
             verhandeln = sv_RegisterNamePlate("contact_VERHANDELN", U_I((unsigned)&full_data_14421b8), 0xc);
             handwerk = sv_RegisterNamePlate("contact_HANDWERKSKUNST", U_I((unsigned)&full_data_1442180), 0xc);
         } else {
@@ -9284,15 +9284,15 @@ void ai_Unk59fd30(void)
 
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_Unk59fd30, 0x67fff) != 0) {
-        if (ai_Unk576410(0x200) == 1)
+        if (ai_RunAllowsContact(0x200) == 1)
             kaufen = sv_RegisterNamePlate("contact_GEB_KAUFEN", U_I((unsigned)&full_data_14420f0), 0x10);
         else
             kaufen = 0;
-        if (ai_Unk576410(0x400) == 1)
+        if (ai_RunAllowsContact(0x400) == 1)
             agenda = sv_RegisterNamePlate("contact_TAGESORDNUNG", U_I((unsigned)&full_data_1442100), 0x16);
         else
             agenda = 0;
-        if (ai_Unk576410(0x800) == 1)
+        if (ai_RunAllowsContact(0x800) == 1)
             amt = sv_RegisterNamePlate("contact_AMT_INFO", U_I((unsigned)&full_data_143a3f0), 0x16);
         else
             amt = 0;
@@ -9584,7 +9584,7 @@ void ai_Unk5a07d0(int param_1)
 
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_Unk5a07d0, 0x67fff) != 0) {
-        if (ai_Unk576410(0x1000) == 1) {
+        if (ai_RunAllowsContact(0x1000) == 1) {
             steuern = sv_RegisterNamePlate("ob_GESETZBUCH_STEUERN", U_I((unsigned)&full_data_143f190), 0xc);
             strafrecht = sv_RegisterNamePlate("ob_GESETZBUCH_STRAFRECHT", U_I((unsigned)&full_data_143f194), 0xc);
             verfassung = sv_RegisterNamePlate("ob_GESETZBUCH_VERFASSUNG", U_I((unsigned)&full_data_143f18c), 0xc);
@@ -9593,13 +9593,13 @@ void ai_Unk5a07d0(int param_1)
             strafrecht = 0;
             steuern = 0;
         }
-        if (ai_Unk576410(0x8000) == 1)
+        if (ai_RunAllowsContact(0x8000) == 1)
             bewerben = sv_RegisterNamePlate("contact_BEWERBEN", U_I((unsigned)&full_data_14420e0), 0x16);
         else
             bewerben = 0;
         if ((U_I(((unsigned)&ai_Selected + 0x40) + U_W((unsigned)&ai_PlayerId) * 0x21c) & 0x4000) == 0 ||
             *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 1 ||
-            ai_Unk576410(0x2000) != 1)
+            ai_RunAllowsContact(0x2000) != 1)
             recht = 0;
         else
             recht = sv_RegisterNamePlate("contact_BUERGERRECHT", U_I((unsigned)&full_data_14420e8), 0x16);
