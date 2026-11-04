@@ -312,7 +312,7 @@ void ai_BuyCapacity(AIOBJ *b, AICHAR *ch, int n);                          /* 0x
 void ai_FreeJobCharacters(AICHAR *ch, int n);                                    /* 0x4888c0 */
 void ai_SendJobOrders(AIINFO *info);                                         /* 0x4889f0 */
 int ai_CheckFreeThieves(AICHAR *ch);                                            /* 0x489300, a thief master: free characters, what they know */
-int ai_Unk489480(AICHAR *ch);                                            /* 0x489480, the same for three skills */
+int ai_CheckFreeStaff(AICHAR *ch);                                            /* 0x489480, a three-skill master: free characters (job none / 4 / 0x8c) */
 void ai_SendFreeThieves(AICHAR *ch);                                           /* 0x489660, sends the free thieves out */
 void ai_SendFreeSpies(AICHAR *ch);                                           /* 0x489870, sends the free spies out */
 void ai_MeisterBewaffnen(AICHAR *ch, AIOBJ *obj);                        /* 0x489a70, hands a weapon out of a slot */

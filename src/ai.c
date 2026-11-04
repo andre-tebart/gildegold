@@ -2393,7 +2393,7 @@ void ai_EndWorkerPose(AICHAR *ch)
             ai_EndCharExtra(f, 0);
     }
 }
-/* 0x483fc0, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) @deep B3 far draft (668 code / 40 regs / 22 slots / 2 fill hunks). Every hunk of the first blocks was read against tools/disasm.py 0x483fc0 and the VC6 listing (tools/listing.py): statements, constants, callees and field offsets match; the whole diff is one form - the original keeps the AIENTRY byte offset (i*0x58) in esi and folds each field into the absolute address ([esi+0xf88a80] = capacity, [esi+0xf88a94] = flags, [esi+0xf88a40] = item) while ours materializes &ai_Entries[i] and uses [esi+0x40] / [esi+0x54]; the compare operands and the esi/edi roles follow from that. Last-bytes pass lead (source spelling, the meaning-class lead): spell the entry accesses as ai_Entries[i].item / ai_Entries[i].capacity and pass &ai_Entries[i] as the argument; the pattern occurs three times in this function and the trial edit was cut off by the session end, the source is unchanged (no WORSE: unitdiff ai.c 29/55, 37601 B before and after). What is left is that rewrite plus the allocation/scheduling of the other blocks = match-deep. Q1 blocked: the five production variants of 0x47e990 differ only in the AIENTRY flags they test and the kind-to-profession table is in no source (0x47e990's note). Q2 gaps: ai_Unk489480 / ai_SendFreeSpies (roles readable from the bodies but not evidenced by a name) and AIENTRY.unk1c / unk20 (the ai.h need1c / need20 aliases exist; the project-wide rename is undecided - AIOBJ has unk1c / unk20 with other roles). Q6 done (description above the definition). */
+/* 0x483fc0, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) @deep B3 far draft (668 code / 40 regs / 22 slots / 2 fill hunks). Every hunk of the first blocks was read against tools/disasm.py 0x483fc0 and the VC6 listing (tools/listing.py): statements, constants, callees and field offsets match; the whole diff is one form - the original keeps the AIENTRY byte offset (i*0x58) in esi and folds each field into the absolute address ([esi+0xf88a80] = capacity, [esi+0xf88a94] = flags, [esi+0xf88a40] = item) while ours materializes &ai_Entries[i] and uses [esi+0x40] / [esi+0x54]; the compare operands and the esi/edi roles follow from that. Last-bytes pass lead (source spelling, the meaning-class lead): spell the entry accesses as ai_Entries[i].item / ai_Entries[i].capacity and pass &ai_Entries[i] as the argument; the pattern occurs three times in this function and the trial edit was cut off by the session end, the source is unchanged (no WORSE: unitdiff ai.c 29/55, 37601 B before and after). What is left is that rewrite plus the allocation/scheduling of the other blocks = match-deep. Q1 blocked: the five production variants of 0x47e990 differ only in the AIENTRY flags they test and the kind-to-profession table is in no source (0x47e990's note). Q2 gaps: ai_CheckFreeStaff / ai_SendFreeSpies (roles readable from the bodies but not evidenced by a name) and AIENTRY.unk1c / unk20 (the ai.h need1c / need20 aliases exist; the project-wide rename is undecided - AIOBJ has unk1c / unk20 with other roles). Q6 done (description above the definition). */
 
 void ai_Unk483fc0(AICHAR *ch)
 {
@@ -2416,7 +2416,7 @@ void ai_Unk483fc0(AICHAR *ch)
     ai_BuySlots(b, ch, 0x4b);
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
-    ai_Unk489480(ch);
+    ai_CheckFreeStaff(ch);
     ai_SendFreeSpies(ch);
     ai_EndWorkerPose(ch);
     if (ai_Time.hour == 8 || ai_Time.hour == 0xd) {
@@ -4459,9 +4459,13 @@ int ai_CheckFreeThieves(AICHAR *ch)
     }
     return 1;
 }
-/* 0x489480, the same for a master with three skills */
+/* 0x489480, the three-skill master's free-character check: it marks the building's titled characters whose job is
+   none or of the kinds 4 / 0x8c (a building or a helper job) and whose skills sk81, sk82 or sk84 are below 168 with
+   the free mark (flags1b4 bit 0x10) that the worker orders read, unless a 0x80 roll cancels it (below 0x60 when one
+   is found, above 0x20 when none is); 1 when the marks were set, 0 when the master already checked (flags1c8 bit 4)
+   or the roll did not pass */
 
-int ai_Unk489480(AICHAR *ch)
+int ai_CheckFreeStaff(AICHAR *ch)
 {
     AICHAR *c = (AICHAR *)ch;
     int i, found;
