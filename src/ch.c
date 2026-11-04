@@ -43,8 +43,6 @@
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
-#define D3SCENE_UNKB4(s) (*(int *)((char *)(s) + 0xb4))
-
 char ch_AnimPath[0x100] = "x:\\gfx\\engine\\animations\\character";  /* 0x5f1120 */
 int ch_LastUpdate = -1;  /* 0x5f1224 */
 char ch_ShadowEnabled = 1;  /* 0x5f122c */
@@ -1258,8 +1256,8 @@ CHACTION *ch_InsertAction(CHARACTER *ch, CHACTION *before, unsigned int type, ..
             ch_RemoveAction(a);
             return 0;
         }
-        if (ch->scene->hmap && (a->args[0] > D3SCENE_UNKB4(&d3_Scenes[a->args[2]])
-                                || a->args[1] > D3SCENE_UNKB4(&d3_Scenes[a->args[2]]))) {
+        if (ch->scene->hmap && (a->args[0] > D3IF_SCENE(a->args[2]).mapSize
+                                || a->args[1] > D3IF_SCENE(a->args[2]).mapSize)) {
             ch_RemoveAction(before);
             return 0;
         }
