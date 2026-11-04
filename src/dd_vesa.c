@@ -1953,7 +1953,7 @@ void dd_Flip(void)
         break;
     }
 }
-/* 0x41e670 */
+/* 0x41e670, packs r/g/b into the current display's pixel format */
 
 DWORD dd_RGB(unsigned char r, unsigned char g, unsigned char b)
 {
