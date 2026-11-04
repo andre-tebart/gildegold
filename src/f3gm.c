@@ -10015,44 +10015,53 @@ int gm_LikingChance(int a, int b, int c, int d)
         return 1;
     return 0;
 }
+typedef struct {
+    int id, p1, p2;
+    unsigned short rank, pad;
+    int x, y, z;
+    int l[5];
+    unsigned char flag;
+} RTNODE;       /* 0x34 bytes, the nodes of the research tree layout 0x76fde0 */
+#define NODES ((RTNODE *)gm_TreeNodes)
+
 /* 0x50b2f0, the generation of the family record p: 0 without parents, else one more than the older parent's (cached in the word at +0xc) */
 
 unsigned gm_TreeNodeRank(int p)
 {
     unsigned a, b, i;
     int n, j;
-    int *q;
+    RTNODE *q;
 
     n = gm_TreeNodeCount;
     a = 0;
     b = 0;
-    if (*(unsigned short *)(gm_TreeNodes + p * 0x34 + 0xc) != 0xffff)
-        return *(unsigned short *)(gm_TreeNodes + p * 0x34 + 0xc);
+    if (NODES[p].rank != 0xffff)
+        return NODES[p].rank;
     i = 0;
-    if (*(int *)(gm_TreeNodes + p * 0x34 + 4) != 0) {
+    if (NODES[p].p1 != 0) {
         if (0 < gm_TreeNodeCount) {
-            q = (int *)gm_TreeNodes;
+            q = NODES;
             do {
-                if (*(int *)(gm_TreeNodes + p * 0x34 + 4) == *q) {
+                if (NODES[p].p1 == q->id) {
                     a = gm_TreeNodeRank(i) + 1;
                     break;
                 }
                 i++;
-                q += 0xd;
+                q++;
             } while ((int)i < gm_TreeNodeCount);
         }
-        if (*(int *)(gm_TreeNodes + p * 0x34 + 8) == 0)
+        if (NODES[p].p2 == 0)
             return a;
         j = 0;
         if (0 < n) {
-            q = (int *)gm_TreeNodes;
+            q = NODES;
             do {
-                if (*(int *)(gm_TreeNodes + p * 0x34 + 8) == *q) {
+                if (NODES[p].p2 == q->id) {
                     b = gm_TreeNodeRank(j) + 1;
                     break;
                 }
                 j++;
-                q += 0xd;
+                q++;
             } while (j < n);
         }
         i = a;
@@ -10062,14 +10071,6 @@ unsigned gm_TreeNodeRank(int p)
     return i;
 }
 
-typedef struct {
-    int id, p1, p2;
-    unsigned short rank, pad;
-    int x, y, z;
-    int l[5];
-    unsigned char flag;
-} RTNODE;       /* 0x34 bytes, the nodes of the research tree layout 0x76fde0 */
-#define NODES ((RTNODE *)gm_TreeNodes)
 extern int gm_TreeRanks;
 unsigned short gm_TreeRankStart[64] = {0};  /* 0x770b00 */
 unsigned gm_TreeNodeRank();                /* 0x50b2f0 */
