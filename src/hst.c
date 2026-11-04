@@ -9,6 +9,9 @@
    Open: gm_FirstBuilding (0x50b010) returns unsigned char * (am.h, f3gm.c) while the callers here use AIBLD *.
    Open: hst_KeyFirst / hst_KeyLast are only ever set -1 (0x520200 reads hst_KeyFirst for hst_KeyNext = hst_KeyFirst + n),
    so ai_CommandComments returns 0 at every call: is the key list ever filled?
+   Open: hst_ParseContext (hst_Modes 0x601af0) and hst_ParseCommandline_2nd_Pass still compare their
+   four-character modes as raw dwords; the unit's typed spelling is HST_MODE / HST_LABEL with the
+   hst_ListModeSet / hst_ListModeUse views (as hst_ParseCommandline_1st_Pass uses them).
    unit of rea 8cef7d5b (src/game/hst.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

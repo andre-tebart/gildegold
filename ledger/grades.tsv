@@ -941,11 +941,11 @@ exe	0x0044eee0	bgi_Find	d3_io_b	byte	readable
 exe	0x0044ef10	bgi_Parse	d3_io_b	byte	readable		
 exe	0x0044f000	bgi_NextMat	d3_io_b	byte	readable		
 exe	0x0044f010	bgi_SkipInt	d3_io_b	byte	readable		
-exe	0x0044f030	bgi_Bitmap0	d3_io_b	byte	draft		
-exe	0x0044f090	bgi_Bitmap1	d3_io_b	byte	draft		
-exe	0x0044f0f0	bgi_Bitmap2	d3_io_b	byte	draft		
-exe	0x0044f160	bgi_MatKind	d3_io_b	byte	draft		
-exe	0x0044f190	bgi_MatC1	d3_io_b	byte	draft		
+exe	0x0044f030	bgi_Bitmap0	d3_io_b	byte	readable		
+exe	0x0044f090	bgi_Bitmap1	d3_io_b	byte	readable		
+exe	0x0044f0f0	bgi_Bitmap2	d3_io_b	byte	readable		
+exe	0x0044f160	bgi_MatKind	d3_io_b	byte	readable		
+exe	0x0044f190	bgi_MatC1	d3_io_b	byte	readable		
 exe	0x0044f1c0	bgi_MatFlags1	d3_io_b	byte	readable		
 exe	0x0044f270	bgi_MatFlags2	d3_io_b	byte	draft		
 exe	0x0044f2d0	bgi_MatC8	d3_io_b	byte	draft		
@@ -1909,17 +1909,17 @@ exe	0x004b1f30	hst_ResetLists	hst	byte	readable
 exe	0x004b1f90	hst_SetTextsOn	hst	byte	readable		
 exe	0x004b1fa0	hst_ParseText_Fake_1st_Pass	hst	byte	readable		
 exe	0x004b21c0	hst_ParseContext	hst	draft	draft	deep	
-exe	0x004b2380	hst_ParseCommandline_1st_Pass	hst	byte	draft		
+exe	0x004b2380	hst_ParseCommandline_1st_Pass	hst	byte	readable		
 exe	0x004b2530	hst_ParseCommandline_2nd_Pass	hst	draft	draft	deep	
 exe	0x004b28d0	hst_ParseText_Fake_2nd_Pass	hst	draft	readable	deep	
 exe	0x004b2c90	hst_ParseEventText	hst	byte	readable		
 exe	0x004b2ce0	hst_ParseText_Real	hst	byte	readable		
 exe	0x004b2ed0	hst_ParseDate	hst	draft	readable	deep	
 exe	0x004b3280	hst_NextEvent	hst	shape	readable		
-exe	0x004b3350	ai_Unk4b3350	hst	byte	draft		
+exe	0x004b3350	hst_LastYearDialog	hst	byte	readable		
 exe	0x004b35e0	hst_NextEventCmd	hst	shape	readable		
-exe	0x004b36d0	ai_Unk4b36d0	hst	byte	draft		
-exe	0x004b3960	hst_YearlyHistory	hst	byte	draft		
+exe	0x004b36d0	hst_LastYearCmdDialog	hst	byte	readable		
+exe	0x004b3960	hst_YearlyHistory	hst	byte	readable		
 exe	0x004b39f0	ai_ClearMissions	unk_4b39f0	byte	readable		
 exe	0x004b3a10	ai_MissionRandom	unk_4b39f0	byte	readable		
 exe	0x004b3a50	ai_FindOwnerMission	unk_4b39f0	byte	readable		
@@ -3414,7 +3414,7 @@ exe	0x0052f9f0	sv_BookForward	sv	byte	readable
 exe	0x0052fa00	sv_BookBack	sv	byte	readable		
 exe	0x0052fa10	sv_CreateScrollForm	sv	byte	draft		
 exe	0x0052fa90	sv_DestroyScrollForm	sv	byte	draft		
-exe	0x0052fad0	sv_Unk52fad0	sv	byte	draft		
+exe	0x0052fad0	sv_ScrollFormAnimate	sv	byte	draft		
 exe	0x0052fb50	sv_PopTo	sv	byte	readable		
 exe	0x0052fb80	sv_PumpMessages	sv	byte	draft		
 exe	0x0052fc10	sv_NetworkSyncWait	sv	byte	readable		
