@@ -50,6 +50,7 @@ struct D3SM;
 #define ai_Unk5a9240K ((int (*)())ai_Unk5a9240)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_Unk5a9c30K ((int (*)())ai_Unk5a9c30)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
+
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
@@ -3906,24 +3907,30 @@ void he_Unk549430(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     cm_SendExSetHE(-1, ev);
 }
-/* 0x5496f0, the init of the event 0x5f (like 0x5493a0, without the posting) */
+/* 0x5496f0, the alloc handler of the next trial step event (type 0x5f, the run handler 0x549770), like the
+   trial's own alloc handler 0x5493a0 without the posting: it looks for another running 0x5f event of its player
+   (he_FindEvent (2, 0, 0x5f, 2, chr), skipping itself); none: the event starts in state 0 with its step count
+   cleared, else it ends at the clock now */
 
-void he_Unk5496f0(int ev)
+void he_StartNextTrialStep(int ev)
 {
-    int e = (int)he_FindEvent(2, 0, 0x5f, 2, *(unsigned short *)(ev + 8));
+    AIJOB *e = (AIJOB *)ev;
+    unsigned char *stepCount = (unsigned char *)e + 0xba;  /* the byte in the event's word unkb8 that counts its rounds */
+    AIJOB *found = (AIJOB *)he_FindEvent(2, 0, 0x5f, 2, e->chr);
 
-    while (1) {
-        if (e == 0) {
-            *(int *)(ev + 0x70) = 0;
-            *(char *)(ev + 0xba) = 0;
-            return;
-        }
-        if (e != ev)
-            break;
-        e = (int)he_NextEvent();
+    if (found != 0) {
+        do {
+            if (found == e) {
+                found = (AIJOB *)he_NextEvent();
+            } else {
+                e->end = ai_Time;
+                e->exSlot = cm_SendExSetHE(-1, ev);
+                return;
+            }
+        } while (found != 0);
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->stage = 0;
+    *stepCount = 0;
 }
 /* 0x549770, a Ghidra miss (disassembled): the run handler of the next trial step for the player (word +8): state 0 shows the news 0x1a9f to the figure +0xac and raises the 0x506430 counter (+0x64); state 1 spends the 0x5d08c0 of +0xb8 / +0xb9, shows 0x1a9e, counts +0xba (5 rounds end it) and pays the cost -+0xb4 (0x53eec0) (ROUGH) */
 
@@ -9175,7 +9182,7 @@ int he_Unk553060(void)
         return 1;
     if (he_Unk53d600(0x5e, (void *)he_StartTrialEvent, (void *)he_Unk549430) != 0)
         return 1;
-    if (he_Unk53d600(0x5f, (void *)he_Unk5496f0, (void *)he_Unk549770) != 0)
+    if (he_Unk53d600(0x5f, (void *)he_StartNextTrialStep, (void *)he_Unk549770) != 0)
         return 1;
     if (he_Unk53d600(0x60, (void *)he_Unk549970, (void *)he_Unk549aa0) != 0)
         return 1;
