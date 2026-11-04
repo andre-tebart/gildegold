@@ -18553,7 +18553,7 @@ void he_Unk575430(char *per)
     char *rec;
 
     memset(w, 0, sizeof w);
-    w[0] = ai_Unk5a9f10(3, 6) & 0xffff;
+    w[0] = ai_DomizilGoodInRange(3, 6) & 0xffff;
     memset(out, 0, sizeof out);
     ai_FindWantedItems(per, 1, w, out);
     rec = (char *)out[0];

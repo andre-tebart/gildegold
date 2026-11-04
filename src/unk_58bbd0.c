@@ -719,8 +719,8 @@ extern GAPDATA full_data_62c39c[];
 extern GAPDATA full_data_62c3b8[];
 extern GAPDATA full_data_62c3e8[];
 extern GAPDATA full_data_62c400[];
-extern GAPDATA full_data_62c420[];
-extern GAPDATA full_data_62cb58[];
+extern GAPDATA ai_DomizilTable[];
+extern int ai_DomizilCount;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -803,7 +803,7 @@ extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
 extern char * ai_PickedObject;
 extern GAPDATA full_data_62c418[];
-extern GAPDATA full_data_62c420[];
+extern GAPDATA ai_DomizilTable[];
 extern GAPDATA full_data_6f3880[];
 extern char * cm_FieldObject;
 extern struct D2OBJ *d2_Objs;
@@ -14518,40 +14518,51 @@ unsigned short ai_Unk5a9e90(int param_1, unsigned short *param_2)
     int i;
     int k;
 
-    i = util_Random(U_I((unsigned)&full_data_62cb58)) & 0xffff;
-    n = U_I((unsigned)&full_data_62cb58);
+    i = util_Random(U_I((unsigned)&ai_DomizilCount)) & 0xffff;
+    n = U_I((unsigned)&ai_DomizilCount);
     if (n == 0)
         return 0;
     while (n != 0) {
         for (k = 0; k < param_1; k++) {
-            if (param_2[k] == U_I((unsigned)&full_data_62c420 + i * 0x1c))
+            if (param_2[k] == U_I((unsigned)&ai_DomizilTable + i * 0x1c))
                 break;
         }
         if (k >= param_1)
-            return U_W((unsigned)&full_data_62c420 + i * 0x1c);
-        i = (i + 1) % U_I((unsigned)&full_data_62cb58);
+            return U_W((unsigned)&ai_DomizilTable + i * 0x1c);
+        i = (i + 1) % U_I((unsigned)&ai_DomizilCount);
         n--;
     }
     return 0;
 }
-/* 0x5a9f10, a Domizil entry in a range (191 B): 0x42ec00 (the count) picks an index into the table 0x62c420; each
-   try returns the entry's +0 id when its +0x18 word lies in param_1 .. param_2, else the index advances modulo
-   the count; 0 when no entry does */
+#pragma pack(push, 1)
+typedef struct G9DOMIZILRANGE {         /* 0x1c bytes, an entry of the Domizil table 0x62c420 as this range lookup
+                                           reads it (G9DOMIZIL, am_types.h: the int id at +0 and the padding at +0x18) */
+    unsigned short id;                  /* 0x00, the good id (the low word of G9DOMIZIL.id) */
+    char pad02[0x16];
+    unsigned short rank;                /* 0x18, the entry's rank word, tested against the range */
+    char pad1a[2];
+} G9DOMIZILRANGE;
+#pragma pack(pop)
 
-unsigned short ai_Unk5a9f10(int param_1, int param_2)
+/* 0x5a9f10, a Domizil entry in a range (191 B): util_Random (the count) picks an index into the 0x42 entries of
+   the Domizil table 0x62c420; each try returns the entry's +0 id when its +0x18 rank word lies in from .. to, else
+   the index advances modulo the count; 0 when no entry does */
+
+unsigned short ai_DomizilGoodInRange(int from, int to)
 {
     int n;
     int i;
+    G9DOMIZILRANGE *entry;
 
-    i = util_Random(U_I((unsigned)&full_data_62cb58)) & 0xffff;
-    n = U_I((unsigned)&full_data_62cb58);
+    i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
+    n = ai_DomizilCount;
     if (n == 0)
         return 0;
     while (n != 0) {
-        if ((int)U_W((unsigned)&full_data_62c420 + i * 0x1c + 0x18) >= param_1 &&
-            (int)U_W((unsigned)&full_data_62c420 + i * 0x1c + 0x18) <= param_2)
-            return U_W((unsigned)&full_data_62c420 + i * 0x1c);
-        i = (i + 1) % U_I((unsigned)&full_data_62cb58);
+        entry = (G9DOMIZILRANGE *)((char *)&ai_DomizilTable + i * 0x1c);
+        if ((int)entry->rank >= from && (int)entry->rank <= to)
+            return entry->id;
+        i = (i + 1) % ai_DomizilCount;
         n--;
     }
     return 0;
@@ -15913,9 +15924,9 @@ int ai_FindUsableGood(int param_1)
 {
     int i;
 
-    for (i = 0; U_I((unsigned)&full_data_62c420 + i * 0x1c) != 0; i++)
-        if (U_I((unsigned)&full_data_62c420 + i * 0x1c) == param_1)
-            return (unsigned)&full_data_62c420 + i * 0x1c;
+    for (i = 0; U_I((unsigned)&ai_DomizilTable + i * 0x1c) != 0; i++)
+        if (U_I((unsigned)&ai_DomizilTable + i * 0x1c) == param_1)
+            return (unsigned)&ai_DomizilTable + i * 0x1c;
     return 0;
 }
 /* 0x5ba660, the Domizil table lookup with the index out (80 B): like 0x5ba620, and the index of the entry is
@@ -15925,11 +15936,11 @@ int ai_Unk5ba660(int param_1, int *param_2)
 {
     int i;
 
-    for (i = 0; U_I((unsigned)&full_data_62c420 + i * 0x1c) != 0; i++)
-        if (U_I((unsigned)&full_data_62c420 + i * 0x1c) == param_1) {
+    for (i = 0; U_I((unsigned)&ai_DomizilTable + i * 0x1c) != 0; i++)
+        if (U_I((unsigned)&ai_DomizilTable + i * 0x1c) == param_1) {
             if (param_2 != 0)
                 *param_2 = i;
-            return (unsigned)&full_data_62c420 + i * 0x1c;
+            return (unsigned)&ai_DomizilTable + i * 0x1c;
         }
     return 0;
 }
