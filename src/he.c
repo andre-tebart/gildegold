@@ -6,8 +6,9 @@
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
    The event record is AIJOB (0x14c bytes, he_Jobs over he_Events), the message record AIMSG (both in ai_types.h,
    readable without ai.h); the buildings and characters are AIBLD / AICHAR (ai_bld.h / ai_char.h, he_PlayerCh), the
-   carried-goods records GMCARRYREC (f3gm_carry.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the
-   event create / free / search, the gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
+   carts AIOBJ (ai_types.h), the carried-goods records GMCARRYREC (f3gm_carry.h), the goods prototypes GMGOOD
+   (f3gm_types.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the event create / free / search, the
+   gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
    Open: types: the handlers past 0x53f370 still read the event and message records through raw offsets
    (HM_I / U_I); AIJOB's fields between 0x14 and 0xac are named only as the message's words. AIJOB has no named
    field at +0xb0 (the effect handle of 0x76), +0xba (the next-trial-step count) or +0xc2 (the effect word):
@@ -15,9 +16,9 @@
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
-   0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom),
-   0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner he or main (typed in place in main.c's gap block; he.c and
-   sv.c use them, they lie among main.c's data / bss).
+   0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714
+   (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner he or main (typed in place in
+   main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument

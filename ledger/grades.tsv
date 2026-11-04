@@ -3718,7 +3718,7 @@ exe	0x00558550	he_Unk558550	he	draft	draft
 exe	0x005588c0	he_Unk5588c0	he	draft	draft		
 exe	0x00558a40	he_Unk558a40	he	draft	draft		
 exe	0x00558de0	he_Unk558de0	he	byte	draft		
-exe	0x00558e10	he_Unk558e10	he	draft	draft		
+exe	0x00558e10	he_RunEvent17	he	byte	readable		
 exe	0x00558e70	he_Unk558e70	he	byte	draft		
 exe	0x00558f10	he_Unk558f10	he	draft	draft		
 exe	0x00559d20	he_Unk559d20	he	draft	draft		
@@ -3731,7 +3731,7 @@ exe	0x0055b3e0	he_Unk55b3e0	he	draft	draft
 exe	0x0055b530	he_Unk55b530	he	draft	draft		
 exe	0x0055b720	he_Unk55b720	he	draft	draft		
 exe	0x0055b830	he_Unk55b830	he	draft	draft		
-exe	0x0055ba00	he_Unk55ba00	he	draft	draft		
+exe	0x0055ba00	he_AllocEvent1f	he	byte	readable		
 exe	0x0055bad0	he_Unk55bad0	he	draft	draft		
 exe	0x0055bd20	he_Unk55bd20	he	byte	draft		
 exe	0x0055bd80	he_Unk55bd80	he	draft	draft		
@@ -3743,13 +3743,13 @@ exe	0x0055cb00	he_Unk55cb00	he	draft	draft
 exe	0x0055cc10	he_Unk55cc10	he	draft	draft		
 exe	0x0055ce00	he_Unk55ce00	he	byte	draft		
 exe	0x0055ce60	he_Unk55ce60	he	draft	draft		
-exe	0x0055d310	he_Unk55d310	he	draft	draft		
+exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_Unk55d390	he	draft	draft		
 exe	0x0055d490	he_Unk55d490	he	draft	draft		
 exe	0x0055d5c0	he_Unk55d5c0	he	draft	draft		
 exe	0x0055db60	he_Unk55db60	he	draft	draft		
 exe	0x0055dbe0	he_Unk55dbe0	he	draft	draft		
-exe	0x0055dd70	he_Unk55dd70	he	draft	draft		
+exe	0x0055dd70	he_AllocEvent32	he	shape	readable		
 exe	0x0055de30	he_Unk55de30	he	draft	draft		
 exe	0x0055e180	he_Unk55e180	he	byte	draft		
 exe	0x0055e1d0	he_Unk55e1d0	he	draft	draft		
@@ -3769,7 +3769,7 @@ exe	0x00560820	he_Unk560820	he	draft	draft
 exe	0x00560900	he_Unk560900	he	draft	draft		
 exe	0x00561130	he_Unk561130	he	byte	draft		
 exe	0x00561190	he_Unk561190	he	draft	draft		
-exe	0x00561470	he_Unk561470	he	draft	draft		
+exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_Unk5614c0	he	draft	draft		
 exe	0x005619a0	he_Unk5619a0	he	byte	draft		
 exe	0x00561a20	he_Unk561a20	he	draft	draft		
@@ -3784,7 +3784,7 @@ exe	0x005644e0	he_Unk5644e0	he	draft	draft
 exe	0x00564860	he_Unk564860	he	draft	draft		
 exe	0x005649b0	he_Unk5649b0	he	draft	draft		
 exe	0x005652b0	he_Unk5652b0	he	draft	draft		
-exe	0x00565410	he_Unk565410	he	draft	draft		
+exe	0x00565410	he_RunStormEvent	he	shape	readable		
 exe	0x00565500	he_Unk565500	he	byte	draft		
 exe	0x00565620	he_Unk565620	he	shape	draft		
 exe	0x00565850	he_Unk565850	he	draft	draft		
@@ -3806,11 +3806,11 @@ exe	0x00567c00	he_Unk567c00	he	draft	draft
 exe	0x00567d20	he_Unk567d20	he	byte	draft		
 exe	0x00567d60	he_Unk567d60	he	draft	draft		
 exe	0x00567f00	he_Unk567f00	he	byte	draft		
-exe	0x00567f50	he_Unk567f50	he	draft	draft		
-exe	0x00568220	he_Unk568220	he	draft	draft		
+exe	0x00567f50	he_PatrolStep	he	draft	draft		
+exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
 exe	0x00568310	he_Unk568310	he	byte	draft		
 exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
-exe	0x00568ae0	he_Unk568ae0	he	draft	draft		
+exe	0x00568ae0	he_AllocIncomeEvent	he	shape	readable		
 exe	0x00568be0	he_Unk568be0	he	draft	draft		
 exe	0x005690c0	he_Unk5690c0	he	draft	draft		
 exe	0x00569210	he_Unk569210	he	draft	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable	deep	byte+readable -> draft+readable at 5d296bf7: ai_bld.h gained the inn view of AIBLD 0x65..0x70 (a union of the old fields and struct inn: takings / guests / served / lastTakings, evidenced by the inn simulation 0x54d260 and he_InnReport, which it makes byte + readable); the layout is unchanged and this function reads none of those fields: its regs-only shape flipped to draft by VC6's register allocation on the declaration set alone (a tie-break, no evidence of its source) [waits for: its own deep pass: the 100 regs hunks of its register allocation]
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> draft+readable at 5d296bf7: ai_bld.h gained the inn view of AIBLD 0x65..0x70 (a union of the old fields and struct inn: takings / guests / served / lastTakings, evidenced by the inn simulation 0x54d260 and he_InnReport, which it makes byte + readable); the layout is unchanged and this function reads none of those fields: its regs-only shape flipped to draft by VC6's register allocation on the declaration set alone (a tie-break, no evidence of its source) [waits for: its own deep pass: the 100 regs hunks of its register allocation]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
