@@ -2170,17 +2170,18 @@ int gv_OrderNewDead(char *o, int x)
 
 int gv_AddNewDead(unsigned char *p)
 {
-    unsigned char *o;
+    GVORDER *m = (GVORDER *)p;
+    AIBLD *bld;
     int n;
 
-    gm_FindById(&o, 0, 0, *(int *)(p + 8));
-    if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff || ai_Chars[*(unsigned short *)(o + 0x27)] == ai_PlayerCharC)
+    gm_FindById((int *)&bld, 0, 0, m->bld);
+    if (bld == 0 || bld->owner == 0xffff || ai_Chars[bld->owner] == ai_PlayerCharC)
         return -1;
-    if (ai_BTypes[o[0] * 0x24d] != 0x1d)
+    if (((AIBTYPE *)(ai_BTypes + bld->type * 0x24d))->kind != 0x1d)
         return -2;
-    if (*(int *)(o + 0x65) == 0)
+    if (bld->yard == 0)
         return -3;
-    n = gv_BuryNewDead(o, *(int *)(p + 0x13));
+    n = gv_BuryNewDead((unsigned char *)bld, m->price);
     return (n > 0) - 1 & 0xfffffffc;
 }
 /* 0x4f0e80, sends a grave move (GVMOVE, message 0x61, cm_SendGraveMove): the character c (c[1]: its AICHAR.netId) moves the
