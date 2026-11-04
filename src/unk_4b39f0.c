@@ -688,9 +688,10 @@ int ai_CondCharHoldsThreeOfEach(AICHAR *c, G13TYPE *t)
         return 0;
     return 1;
 }
-/* 0x4b4aa0, mission condition: 0x4b45c0 and at least three buildings of kind 7 */
+/* 0x4b4aa0, mission condition (type 33): the rank condition of ai_CondRankTimed holds and the character owns at
+   least three buildings of the type 7 (the owner criterion +0x27 and the type criterion of the building query) */
 
-int ai_Unk4b4aa0(AICHAR *c, int x, G13TYPE *t)
+int ai_CondRankTimedThreeBuildings(AICHAR *c, int x, G13TYPE *t)
 {
     AIBLD *b;
     int n;
@@ -698,7 +699,7 @@ int ai_Unk4b4aa0(AICHAR *c, int x, G13TYPE *t)
     if (!ai_CondRankTimed(c, x, t))
         return 0;
     n = 0;
-    for (b = gm_BuildQuery(2, 4, c->id, n, 7); b != 0; b = gm_BuildNext())
+    for (b = gm_BuildQuery(2, 4, c->id, 0, 7); b != 0; b = gm_BuildNext())
         n++;
     return n >= 3;
 }
@@ -912,7 +913,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 38:
         return ai_CondCharHoldsThreeOfEach(c, t);
     case 33:
-        return ai_Unk4b4aa0(c, (int)m, t);
+        return ai_CondRankTimedThreeBuildings(c, (int)m, t);
     case 43:
         return ai_PlayerHeldBuildings(c, t);
     case 44:
