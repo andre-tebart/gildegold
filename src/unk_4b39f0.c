@@ -26,6 +26,7 @@
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define io_PrintTextId ((int (*)(int, ...))io_PrintText)  /* 0x515960 (io_text.h: int io_PrintText(char *fmt, ...)): the call with a text id for fmt (an id of txt_Ptrs, computed from a mission type's text) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 /* 0x4b39f0, clears the running missions */
 int ai_ClearMissions(void)
@@ -216,7 +217,7 @@ int ai_Unk4b3d50(int type, int id)
     view = d2_OpenForm(0, 0, "special\\mission");
     d2_CentreViewWindows(view);
     d2_SetForm(view, 1);
-    io_PrintText((char *)(t->text + 1));
+    io_PrintTextId(t->text + 1);
     io_PrintText("$N");
     io_PrintText((char *)0x7d);
     io_PrintText("$N");
@@ -995,7 +996,7 @@ void ai_MissionInfoDialog(int type, int id)
     view = d2_OpenForm(0, 0, "special\\mission");
     d2_CentreViewWindows(view);
     d2_SetForm(view, 1);
-    io_PrintText((char *)(t->text + 1));
+    io_PrintTextId(t->text + 1);
     io_PrintText("$N");
     io_PrintText((char *)0x7d);
     sprintf(name, "_AUFTRAEGE_VERGABE_HS_%.2d", t->unk0c);
@@ -1077,7 +1078,7 @@ void ai_MissionSuccessDialog(G13TYPE *t, int id)
     d2_SetForm(view, 1);
     io_PrintText("$C");
     io_PrintText((char *)0x1b9e);
-    io_PrintText((char *)(t->text + 2));
+    io_PrintTextId(t->text + 2);
     if (sb_IsInit()) {
         sprintf(name, "_AUFTRAEGE_ERFOLG_HS_%.2d", t->speech);
         snd = snd_PlayVoice(-7, 0, name, -1);
