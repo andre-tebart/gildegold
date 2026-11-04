@@ -2,9 +2,8 @@
    action queue and its callbacks, path search and walking. Extent in GildeGold.exe: 0x402140 (right after
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
-   Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_UNK080
-   (D3ANIMDATA *next, but ch_TakingObject prints it with %s), CH_ACTOBJ.unk170 / unk174 (a room id or an
-   animation, per action), u.walk.unk0fc (written -1, never read), ch_Unk631058 /
+   Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_ACTOBJ.unk170 /
+   unk174 (a room id or an animation, per action), u.walk.unk0fc (written -1, never read), ch_Unk631058 /
    ch_Unk631060. cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
