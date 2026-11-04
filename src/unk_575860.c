@@ -1859,13 +1859,13 @@ int ai_MarkerChapter3Step8(int mode)
     }
     return -1;
 }
-/* 0x577450, a step predicate: 1 for the kind 0x26 with the step word 0x1d0 while the flag S+0x38 is not negative
+/* 0x577450, a step predicate: 1 for the kind 0x26 with the step word 0x1d0 while the goalDone flag is not negative
    (which sets the flag to 1), and for the kinds 0x1a / 0x1c; else 0 */
 
 int ai_QueryChapter3Step10(int *p)
 {
-    if (U_I(S + 0x38) >= 0 && p[0] == 0x26 && p[3] == 0x1d0) {
-        U_I(S + 0x38) = 1;
+    if (ai_Tutorial->goalDone >= 0 && p[0] == 0x26 && p[3] == 0x1d0) {
+        ai_Tutorial->goalDone = 1;
         return 1;
     }
     if (p[0] == 0x1a || p[0] == 0x1c)
