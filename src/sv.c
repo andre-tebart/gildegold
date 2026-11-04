@@ -188,7 +188,7 @@ extern D2WIN d2_Wins[];  /* 0xf8f120, d2.h */
 void d2_CloseView(int view);            /* 0x4758f0 */
 /* ai_SeasonCloudChance: view of ai_PlayerSlots (tools/data_views.py) */
 /* ai_SeasonClimate: view of ai_PlayerSlots (tools/data_views.py) */
-extern int ai_Unk6f22c0;  /* 0x6f22c0 */
+extern int sv_ViewShape;  /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf, *sv_GroundplanView;  /* 0x6f22c4, 0x6f22c8 */
 extern void *d2_BackSurf;  /* 0x6ed92c */
 extern OPTIONBYTES ai_GamePanel;  /* 0x6f3668 */
@@ -828,8 +828,11 @@ void sv_SceneLoadProgress(int kind, int cur, int total)
 lend:
     sv_LoadFrame = sv_LoadFrame + 1;
 }
-/* 0x521e70, builds the main screen layout for the scene s: clears the clip, creates the bar widgets 0x623850 / 0x623840 (a 0x288 x 0x30 strip), redraws the background bitmap (0x6ed92c, the rectangle 0x6248a4 ..
-   0x6248b0) and sets up the groundplan view 0x6f22c8 (0x478cc0 with a table of 0x10 words: 0x68 / 0x6e) and the button 0x6238a4 (0x46cd80 (0x286, 0x23c, 0x544)). ROUGH */
+/* 0x521e70, builds the main screen layout for the scene s: clears the clip and the 0x10 groundplan buttons, creates
+   the player bar window sv_BarWindow (0x288 x 0x30) and its toggle button sv_BarToggle (a picture object the bar
+   collapses with), redraws the background bitmap over the view rectangle sv_ViewRect* into d2_BackSurf, grabs that
+   rectangle as sv_ViewShape (so the city panel can restore it), points the dirty rectangle at the view and creates
+   the groundplan surface sv_GroundplanView (d2_MakeSurface, 0x68 x 0x6e). */
 
 void sv_BuildScreenLayout(int s)
 {
@@ -839,11 +842,11 @@ void sv_BuildScreenLayout(int s)
 
     d2_SetClipRect(0, 0, (int)d2_ScreenW, (int)d2_ScreenH);
     sv_AdvanceHit = d2_AddHitRect(d2_ScreenW - 0x50, 0x11, 0x30, 0x30, 0);
-    ai_Unk623840 = d2_CreateWindow(4, 10, 0x288, 0x30, 0);
-    d2_PlaceWindowScaled(ai_Unk623840, 1);
-    if (ai_Unk6f22c0 != 0) {
-        mem_Free(ai_Unk6f22c0);
-        ai_Unk6f22c0 = 0;
+    sv_BarWindow = d2_CreateWindow(4, 10, 0x288, 0x30, 0);
+    d2_PlaceWindowScaled(sv_BarWindow, 1);
+    if (sv_ViewShape != 0) {
+        mem_Free(sv_ViewShape);
+        sv_ViewShape = 0;
     }
     t = d2_GetPic(s);
     if (d2_LockSurface(d2_BackSurf) != 0) {
@@ -852,14 +855,14 @@ void sv_BuildScreenLayout(int s)
         d2_TransparentBytes[0] = 0;
         d2_TransparentBytes[1] = 0;
         d2_TransparentBytes[2] = 0;
-        ai_Unk6f22c0 = d2_GrabShape(sv_ViewRectLeft, sv_ViewRectTop, (sv_ViewRectRight - sv_ViewRectLeft) + 1, sv_ViewRectBottom - sv_ViewRectTop, d2_BackSurf, 0, 1);
+        sv_ViewShape = d2_GrabShape(sv_ViewRectLeft, sv_ViewRectTop, (sv_ViewRectRight - sv_ViewRectLeft) + 1, sv_ViewRectBottom - sv_ViewRectTop, d2_BackSurf, 0, 1);
         d2_ClearSurface(d2_BackSurf);
         d2_UnlockSurface(d2_BackSurf);
     }
-    d2_DirtyRectRight = sv_ViewRectRight;
     q = sv_GroundplanButtons;
     for (i = 0xf; i != 0; i--)
         *q++ = -1;
+    d2_DirtyRectRight = sv_ViewRectRight;
     d2_DirtyRectLeft[0] = sv_ViewRectLeft;
     d2_DirtyRectTop = sv_ViewRectTop;
     q = tab;
@@ -871,9 +874,9 @@ void sv_BuildScreenLayout(int s)
     tab[2] = 0x6e;
     sv_GroundplanView = d2_MakeSurface(tab, 3);
     d2_ClearSurface(sv_GroundplanView);
-    ai_Unk6238a4 = d2_CreatePicObj(0x286, 0x23c, 0x544);
-    *(int *)(d2_Objs + 0x4c + ai_Unk6238a4 * 0x2ec) = 1;
-    d2_EnableObject(ai_Unk6238a4, 0);
+    sv_BarToggle = d2_CreatePicObj(0x286, 0x23c, 0x544);
+    ((D2OBJ *)d2_Objs)[sv_BarToggle].interactive = 1;
+    d2_EnableObject(sv_BarToggle, 0);
 }
 /* 0x522040, the image number of the panel for the player's group (0x6f3668, or when 0: the kind number 0x504ad0 of the first player character): 0x534 (1, 2, 10), 0x538 (3, 4), 0x53c (0xb, 0xc, 6), 0x540 (5, 7, 8, 9); 0x534 else */
 
@@ -944,14 +947,14 @@ void sv_SetPanelEnabled(int n)
         d2_EnableObject(ai_Unk623838, n);
     if (ai_Unk62383c != -1)
         d2_EnableObject(ai_Unk62383c, n);
-    if (ai_Unk6238a4 != -1 && n == 0)
-        d2_EnableObject(ai_Unk6238a4, 0);
+    if (sv_BarToggle != -1 && n == 0)
+        d2_EnableObject(sv_BarToggle, 0);
     if (sv_ButtonPrivileges != -1)
         d2_EnableObject(sv_ButtonPrivileges, n);
     if (ai_Unk62384c != -1)
         d2_EnableObject(ai_Unk62384c, n);
-    if (ai_Unk623840 != -1)
-        d2_EnableObject(*(int *)(ai_Unkf8f128 + 0x264 + ai_Unk623840 * 0x3c4), n);
+    if (sv_BarWindow != -1)
+        d2_EnableObject(*(int *)(ai_Unkf8f128 + 0x264 + sv_BarWindow * 0x3c4), n);
     q = sv_GroundplanButtons;
     do {
         if (*q != -1)
@@ -1009,8 +1012,8 @@ void sv_Unk522280(void)
         d2_RemoveObj(ai_Unk62384c);
         ai_Unk62384c = -1;
     }
-    if (ai_Unk6238a4 != -1)
-        d2_EnableObject(ai_Unk6238a4, 0);
+    if (sv_BarToggle != -1)
+        d2_EnableObject(sv_BarToggle, 0);
 }
 /* 0x5223c0, destroys the screen: the widgets of the table 0x7662e0, the groundplan views 0x6f22c4 / 0x6f22c8 (0x478fc0), the background 0x6f22c0, the button 0x6238a4, the strips 0x623850 / 0x623840, the panel
    widgets (0x522280), 0x529fb0, and sets the flag 0x6237cc */
@@ -1035,21 +1038,21 @@ void sv_DestroyScreen(void)
         d2_FreeSurface(sv_GroundplanView);
         sv_GroundplanView = 0;
     }
-    if (ai_Unk6f22c0 != 0) {
-        mem_Free(ai_Unk6f22c0);
-        ai_Unk6f22c0 = 0;
+    if (sv_ViewShape != 0) {
+        mem_Free(sv_ViewShape);
+        sv_ViewShape = 0;
     }
-    if (ai_Unk6238a4 != -1) {
-        d2_RemoveObj(ai_Unk6238a4);
-        ai_Unk6238a4 = -1;
+    if (sv_BarToggle != -1) {
+        d2_RemoveObj(sv_BarToggle);
+        sv_BarToggle = -1;
     }
     if (sv_AdvanceHit != -1)
         d2_RemoveHitRect(sv_AdvanceHit);
     sv_Unk522280();
     sv_PanelPic = -1;
-    if (ai_Unk623840 != -1) {
-        d2_RemoveWindow(ai_Unk623840);
-        ai_Unk623840 = -1;
+    if (sv_BarWindow != -1) {
+        d2_RemoveWindow(sv_BarWindow);
+        sv_BarWindow = -1;
     }
     sv_ClosePanel();
     sv_PanelRebuild = 1;
@@ -1414,7 +1417,7 @@ void sv_RedrawScreen(void)
     r = d2_StartFade(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, "BLACK", 0, 1);
     sv_RunFrame(0, 0x1c6);
     d2_ReleaseFade(r);
-    d2_PlaceWindow(ai_Unk623840, 1);
+    d2_PlaceWindow(sv_BarWindow, 1);
     d2_BlitPart(0, 0, (int)d2_ScreenW, (int)d2_ScreenH, d2_BackSurf, 0, 0, d2_ScreenSurf);
 }
 /* 0x524100, enters the character c (index) into the first free (-1) of the 8 member slots of the group record
@@ -4029,9 +4032,9 @@ void sv_UpdateCityPanel(unsigned char a, int b)
     /* 0x522f42: the grabbed view shape back onto the screen at the view rectangle. The skeleton called
        d2_ShpBlit(0, 0, 0), so the shape was whatever the stack held (a click on "Weiter" then crashed in
        d2_ShpBlit with esi = 1); the original pushes sv_ViewRectLeft, sv_ViewRectTop, d2_ScreenSurf,
-       ai_Unk6f22c0. */
-    if (SV_I((unsigned)&ai_Unk6f22c0) != 0)
-        d2_ShpBlit(sv_ViewRectLeft, sv_ViewRectTop, (struct D2SURF *)d2_ScreenSurf, (struct D2SHP *)ai_Unk6f22c0);
+       sv_ViewShape. */
+    if (SV_I((unsigned)&sv_ViewShape) != 0)
+        d2_ShpBlit(sv_ViewRectLeft, sv_ViewRectTop, (struct D2SURF *)d2_ScreenSurf, (struct D2SHP *)sv_ViewShape);
     if (a & 1) {
         if (sv_ButtonFamilyTree != -1) { d2_RemoveObj(sv_ButtonFamilyTree); sv_ButtonFamilyTree = -1; }
         if (sv_ButtonCompare != -1) { d2_RemoveObj(sv_ButtonCompare); sv_ButtonCompare = -1; }
@@ -4043,13 +4046,13 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         if (sv_ButtonMessages != -1) { d2_RemoveObj(sv_ButtonMessages); sv_ButtonMessages = -1; }
         if (ai_Unk623838 != -1) { d2_RemoveObj(ai_Unk623838); ai_Unk623838 = -1; }
         if (ai_Unk62383c != -1) { d2_RemoveObj(ai_Unk62383c); ai_Unk62383c = -1; }
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), ai_Unk623840);
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), sv_BarWindow);
         SV_WI(sv_ButtonFamilyTree, 0x1c0) = 0x43;
         SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
-        sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, ai_Unk623840);
+        sv_ButtonCompare = d2_WinOpenPic(0x23a, 0xd, 0x522, sv_BarWindow);
         SV_WI(sv_ButtonCompare, 0x1c0) = 0x43;
         SV_WI(sv_ButtonCompare, 0x4c) = 1;
-        sv_ButtonPrivileges = d2_CreateWinText(0x39, 0xd, ch_EmptyName, ai_Unk623840);
+        sv_ButtonPrivileges = d2_CreateWinText(0x39, 0xd, ch_EmptyName, sv_BarWindow);
         SV_WI(sv_ButtonPrivileges, 0x1c0) = 0x43;
         SV_WI(sv_ButtonPrivileges, 0x4c) = 1;
         SV_WS(sv_ButtonPrivileges, 0x74) = 0x55;
@@ -4096,10 +4099,10 @@ void sv_UpdateCityPanel(unsigned char a, int b)
         gm_ClockToDate((struct AITIME *)&ai_Time, (unsigned char *)&t);
         if (ls_GetLanguage() == 2) {
             sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
-            d2_DrawText(d2_Wins[ai_Unk623840].x + 0x181, 0x17, d2_ScreenSurf, buf, 0);
+            d2_DrawText(d2_Wins[sv_BarWindow].x + 0x181, 0x17, d2_ScreenSurf, buf, 0);
         } else {
             sprintf(buf, "%s A.D.%i", d2_Strings[0x4c + gm_Season((char *)&t)], t.year);
-            d2_DrawText(d2_Wins[ai_Unk623840].x + 0x195, 0x17, d2_ScreenSurf, buf, 0);
+            d2_DrawText(d2_Wins[sv_BarWindow].x + 0x195, 0x17, d2_ScreenSurf, buf, 0);
         }
         h = (int)((SV_I(((unsigned)&ai_Time + 0x6)) % 0x3c) * 0.8);
         shape = d2_GetPic(0x581);
@@ -4138,9 +4141,9 @@ void sv_UpdateCityPanel(unsigned char a, int b)
             d2_SetObjText(sv_ButtonPrivileges, buf);
         }
         sprintf(buf, "%i", SV_I(((unsigned)&ai_Selected + 0xc) + ai_PlayerId * 0x21c));
-        d2_DrawText(d2_Wins[ai_Unk623840].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
+        d2_DrawText(d2_Wins[sv_BarWindow].x + 0x23a, 0x17, d2_ScreenSurf, buf, 0);
         if (sv_ButtonCompare != -1)
-            d2_MoveObj(d2_Wins[ai_Unk623840].x + SV_S((unsigned)&d2_TextDrawnW) + 0x23d, 0x18, sv_ButtonCompare);
+            d2_MoveObj(d2_Wins[sv_BarWindow].x + SV_S((unsigned)&d2_TextDrawnW) + 0x23d, 0x18, sv_ButtonCompare);
         if (SV_I((unsigned)&ai_PlayerBuilding) == 0 && SV_I((unsigned)&ai_FallbackBuilding) == 0) {
             if (sv_ButtonCityStats == -1) {
                 strcpy(name, (char *)(unsigned)&ai_PlayerSlots + SV_B((unsigned)&ai_OwnPlayer) * 0x2f4);
@@ -4190,28 +4193,28 @@ void sv_UpdateCityPanel(unsigned char a, int b)
     if (sv_ButtonFamilyTree != -1 && SV_WI(sv_ButtonFamilyTree, 8) != SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c)) {
         d2_RemoveObj(sv_ButtonFamilyTree);
         sv_ButtonFamilyTree = -1;
-        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), ai_Unk623840);
+        sv_ButtonFamilyTree = d2_WinOpenPic(0x10, 8, SV_I(((unsigned)&ai_Unk770b89 + 0x4b) + ai_PlayerId * 0x21c), sv_BarWindow);
         SV_WI(sv_ButtonFamilyTree, 0x1c0) = 3;
         SV_WI(sv_ButtonFamilyTree, 0x4c) = 1;
     }
     if (he_BarShown >= 0) {
         if (he_LastSlot > 3) {
-            d2_EnableObject(ai_Unk6238a4, 1);
+            d2_EnableObject(sv_BarToggle, 1);
         } else {
-            d2_EnableObject(ai_Unk6238a4, 0);
+            d2_EnableObject(sv_BarToggle, 0);
             SV_I((unsigned)&full_data_6f2364) = 0;
         }
-        if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)
+        if (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)
             SV_I((unsigned)&full_data_6f2364) = SV_I((unsigned)&full_data_6f2364) == 0;
-        if (SV_I((unsigned)&full_data_623e90) != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == ai_Unk6238a4)) {
+        if (SV_I((unsigned)&full_data_623e90) != he_LastSlot || (d2_ClickedId != -1 && d2_PointerObj == sv_BarToggle)) {
             if (SV_I((unsigned)&full_data_6f2364) != 0) {
                 d2_SetForm(he_BarView, 0);
                 d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x1d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
-                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, ai_Unk6238a4);
+                d2_MoveObj(d2_ScreenW - (he_LastSlot << 5) - 0x4d, d2_ScreenH - 0x21, sv_BarToggle);
             } else {
                 d2_SetForm(he_BarView, 0);
                 d2_MoveObj(d2_ScreenW - 0x7d, d2_Wins[d2_LastWindow].y, d2_Wins[d2_LastWindow].parent);
-                d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, ai_Unk6238a4);
+                d2_MoveObj(d2_ScreenW - 0xad, d2_ScreenH - 0x21, sv_BarToggle);
             }
             SV_I((unsigned)&full_data_623e90) = he_LastSlot;
         }
@@ -7635,7 +7638,7 @@ int sv_ButtonPlayerStats = -1;  /* 0x623830 */
 int sv_ButtonMessages = -1;  /* 0x623834 */
 int ai_Unk623838 = -1;  /* 0x623838 */
 int ai_Unk62383c = -1;  /* 0x62383c */
-int ai_Unk623840 = -1;  /* 0x623840 */
+int sv_BarWindow = -1;  /* 0x623840 */
 int ai_Unk623844 = -1;  /* 0x623844 */
 int sv_ButtonPrivileges = -1;  /* 0x623848 */
 int ai_Unk62384c = -1;  /* 0x62384c */
@@ -7654,7 +7657,7 @@ int sv_PanelTransportBtn = -1;  /* 0x62388c */
 int sv_PanelCartBtn = -1;  /* 0x623890 */
 int sv_PanelActionBtn = -1;  /* 0x623894 */
 int sv_PanelKind1eBtn = -1;  /* 0x623898 */
-int ai_Unk6238a4 = -1;  /* 0x6238a4 */
+int sv_BarToggle = -1;  /* 0x6238a4 */
 /* 0x6238a8, the skies of fair weather (sv_UpdateWeather picks one below 50 clouds, cm picks one for the fair cutscene) */
 SVSKYREC sv_SkyFair[4] = {
     { "Sky_Schoen_01", 3.0f, 0.8f, -0.25f },
@@ -7724,7 +7727,7 @@ int sv_FrameBase = 0;  /* 0x6f22a4, the depth a screen was entered at (the base 
 int sv_FocusDepth = 0;  /* 0x6f22a8, sv_FrameDepth when sv_FocusObject was focused (sv_HandleObjects); the camera code releases the focus when the frame stack drops below it */
 unsigned char sv_Advancing = 0;  /* 0x6f22ac, nonzero while the advance game screen runs (0x5307f0, form "misc\advancegame"); sv_RunFrame tests it */
 int sv_CameraScrolled = 0;  /* 0x6f22b4 */
-int ai_Unk6f22c0 = 0;  /* 0x6f22c0 */
+int sv_ViewShape = 0;  /* 0x6f22c0 */
 struct D2SURF *sv_GroundplanSurf = 0;  /* 0x6f22c4, the groundplan bitmap while sv_LoadGroundplan reads it */
 struct D2SURF *sv_GroundplanView = 0;  /* 0x6f22c8, the groundplan copy the panel blits */
 int sv_BorderViewX = 0;  /* 0x6f22cc */

@@ -191,7 +191,7 @@ extern int sv_ButtonPlayerStats;                                    /* 0x623830 
 extern int sv_ButtonMessages;                                    /* 0x623834 */
 extern int ai_Unk623838;                                    /* 0x623838 */
 extern int ai_Unk62383c;                                    /* 0x62383c */
-extern int ai_Unk623840;                                    /* 0x623840 */
+extern int sv_BarWindow;                                    /* 0x623840 */
 extern int ai_Unk623844;                                    /* 0x623844 */
 extern int sv_ButtonPrivileges;                                    /* 0x623848 */
 extern int ai_Unk62384c;                                    /* 0x62384c */
@@ -210,7 +210,7 @@ extern int sv_PanelTransportBtn;                                    /* 0x62388c 
 extern int sv_PanelCartBtn;                                    /* 0x623890 */
 extern int sv_PanelActionBtn;                                    /* 0x623894 */
 extern int sv_PanelKind1eBtn;                                    /* 0x623898 */
-extern int ai_Unk6238a4;                                    /* 0x6238a4 */
+extern int sv_BarToggle;                                    /* 0x6238a4 */
 extern SVSKYREC sv_SkyFair[4];                              /* 0x6238a8 */
 extern SVSKYREC sv_SkyMedium[3];                            /* 0x6239d8 */
 extern SVSKYREC sv_SkyHeavy[3];                             /* 0x623ac0 */
@@ -253,7 +253,7 @@ extern int sv_FrameBase;                                    /* 0x6f22a4 */
 extern int sv_FocusDepth;                                    /* 0x6f22a8 */
 extern unsigned char sv_Advancing;                           /* 0x6f22ac */
 extern int sv_CameraScrolled;                                    /* 0x6f22b4 */
-extern int ai_Unk6f22c0;                                    /* 0x6f22c0 */
+extern int sv_ViewShape;                                    /* 0x6f22c0 */
 extern struct D2SURF *sv_GroundplanSurf;                                   /* 0x6f22c4 */
 extern struct D2SURF *sv_GroundplanView;                                   /* 0x6f22c8 */
 extern int sv_BorderViewX;                                    /* 0x6f22cc */
