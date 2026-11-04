@@ -409,7 +409,7 @@ void ai_PokerPayStakes(void)
             ai_PokerTable->pot += ai_PokerTable->stake2;
             if (i == 0) {
                 gm_PlayerFactor(ai_PokerTable->stake2, ai_OwnPlayer);
-                cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), ai_OwnPlayer,
+                cm_SendMoveGoodsUnchecked(-1, ((AIPER *)ai_PokerTable->seat[0].who)->netId, ai_OwnPlayer,
                              ai_PokerTable->stake2);
             }
             ai_PokerTable->seat[i].bet += ai_PokerTable->stake2;
