@@ -2933,25 +2933,21 @@ int gv_WriteCrimes(void *f)
 }
 /* 0x4f2da0, the highest level (0x5092e0 (b, 10, 1)) among the school buildings (kind 7) of the character *c's, times 0.01; 0.75 when one has exactly 0x4b */
 
-float gv_SchoolLevelFactor(short *c)
+float gv_SchoolLevelFactor(unsigned short *c)
 {
     int best, i, v;
-    unsigned char *b;
+    AIBLD *b;
 
     best = 0;
-    i = 0;
-    b = (unsigned char *)ai_Blds;
-    do {
-        if (*b != 0 && *(short *)(b + 0x27) == *c && ai_BTypes[*b * 0x24d] == 7) {
-            v = gm_BuildingSkill(b, 10, 1);
+    for (i = 0, b = ai_BldsT; i < 0x100; i++, b++) {
+        if (b->type != 0 && b->owner == *c && ((AIBTYPE *)(ai_BTypes + b->type * 0x24d))->kind == 7) {
+            v = gm_BuildingSkill((unsigned char *)b, 10, 1);
             if (v == 0x4b)
                 return 0.75f;
             if (v > best)
                 best = v;
         }
-        i++;
-        b += 0xa9;
-    } while (i < 0x100);
+    }
     return (float)best * 0.01f;
 }
 /* 0x4f2b30, reads the crime state gv_WriteCrimes wrote from the save file f (the tag must be 0x1d): the AIDEC.cur values,
@@ -4215,7 +4211,7 @@ int gv_Accuse(int i, int v, int a, int b, int obj)
     default:
         goto unreported;
     }
-    escape = gv_SchoolLevelFactor((short *)culprit);
+    escape = gv_SchoolLevelFactor((unsigned short *)culprit);
     if (util_RandomF() < escape)
         goto unreported;
     if (ai_InventoryHas(culprit, 0x22a) != 0 && util_RandomF() > 0.5)

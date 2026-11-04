@@ -2799,14 +2799,14 @@ exe	0x004f2440	gv_MovePrice	gv	4689238f8f0b2a7b	no	byte	control=byte p1=byte p2=
 exe	0x004f24a0	gv_ProtectionPrice	gv	ce128288177bb7e8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2540	gv_FindHeldEntry	gv	24054121f18b286d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f25d0	gv_FindReservedEntry	gv	c7341aa498e9ee1d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f2660	gv_SeanceChance	gv	bb2cd95dc216cb43	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004f2660	gv_SeanceChance	gv	a0c628b609f2b1ef	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x004f2720	gv_GetTableRecord	gv	9c2f708a38ad877f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2750	gv_SetTableRecord	gv	288d5536d71edb9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f27d0	gv_OnDecisionValue	gv	a5f58b3ba768c74b	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2870	gv_FindTableRecord	gv	0766dc149c69815e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f28d0	gv_WriteCrimes	gv	29fd502746284aa7	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2b30	gv_ReadCrimes	gv	7afcdc2919d35598	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004f2da0	gv_SchoolLevelFactor	gv	934ba310dfcbdb91	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004f2da0	gv_SchoolLevelFactor	gv	1134396f2323812b	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004f2e30	gv_Accuse	gv	bb4bbfc9d35a0a2c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f2fe0	gv_TableRecordText	gv	39d3575df0669c14	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004f30a0	gv_CrimeTextLaw2to8	gv	a86e65c9a172e8d3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

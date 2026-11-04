@@ -503,7 +503,7 @@ int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
 extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */
 
 int gv_WriteCrimes(void *f);             /* 0x4f28d0 */
-float gv_SchoolLevelFactor(short *c);          /* 0x4f2da0 */
+float gv_SchoolLevelFactor(unsigned short *c);          /* 0x4f2da0 */
 int gm_BuildingSkill();                     /* 0x5092e0 */
 
 int gv_ReadCrimes(int f);             /* 0x4f2b30 */
