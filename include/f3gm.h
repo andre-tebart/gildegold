@@ -135,7 +135,7 @@ int gm_CharPrevLevel(unsigned short id, int again);  /* 0x505f30, gm_CharLevel f
 struct ORDCHAR; struct GMDATE; void gm_BirthDate(struct ORDCHAR *c, struct GMDATE *out);  /* 0x506000, the birthday of the character c (its birth year, a month and day from its first name) */
 struct ORDCHAR; struct GMDATE; int gm_DeathDate(struct ORDCHAR *c, struct GMDATE *out);  /* 0x5060d0, the day of death of the character c; 0 for a living one */
 struct GMRANK; void gm_RankPlayers(int *count, struct GMRANK *out);  /* 0x506180, the ranking of the up to 8 players into out, *count of them */
-float gm_Unk50cd40(char *c, int k, int a, int b);  /* 0x50cd40 */
+float gm_JobCost(char *c, int k, int a, int b);  /* 0x50cd40 */
 unsigned short *gm_QueryNext(void);  /* 0x4ffcc0 */
 int gm_OwnerWorth(char *b, int flag);  /* 0x509c80 */
 short *gm_PlayerRecord(char *c);  /* 0x506430 */

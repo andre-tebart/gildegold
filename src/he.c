@@ -9576,7 +9576,7 @@ void he_Unk553e90(int ev)
     he_FreeEvent((int *)ev);
 }
 
-float gm_Unk50cd40();
+float gm_JobCost();
 int gm_GetGoodsValue();
 int cm_SendMessage3d(char *p, unsigned char b, int c, int d);
 int gm_BuildingMainObject(unsigned char *b);
@@ -9609,7 +9609,7 @@ void he_Unk554320(int ev)
             return;
         }
         ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-        gm_Unk50cd40(ch, *(unsigned char *)b, -1, 1);
+        gm_JobCost(ch, *(unsigned char *)b, -1, 1);
         r = (int)gm_GetGoodsValue(ch);
         if (r < 0) {
             txt_Format(text, 0x1a40, b);
@@ -9668,7 +9668,7 @@ void he_Unk554320(int ev)
         }
         if (i < 12) {
             ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-            gm_Unk50cd40(ch, *(unsigned char *)b, -1, 1);
+            gm_JobCost(ch, *(unsigned char *)b, -1, 1);
             r = (int)gm_GetGoodsValue(ch);
             *(int *)(ev + 0xb0 + i * 4) = *(int *)(ev + 0xb0 + i * 4) - 1;
             o = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);
@@ -9733,7 +9733,7 @@ void he_Unk554860(int ev)
             return;
         }
         ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-        gm_Unk50cd40(ch, *(unsigned char *)b, *(unsigned char *)(ev + 0xac), -1);
+        gm_JobCost(ch, *(unsigned char *)b, *(unsigned char *)(ev + 0xac), -1);
         r = (int)gm_GetGoodsValue(ch);
         kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
         if (r < 0) {
@@ -9771,7 +9771,7 @@ void he_Unk554860(int ev)
         *(unsigned char *)(p + 0x165) = 0;
         if (*(int *)(ev + 0xb0) > 0) {
             ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-            gm_Unk50cd40(ch, *(unsigned char *)b, *(unsigned char *)(ev + 0xac), -1);
+            gm_JobCost(ch, *(unsigned char *)b, *(unsigned char *)(ev + 0xac), -1);
             n = (int)gm_GetGoodsValue(ch);
             *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
             q = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);

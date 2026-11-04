@@ -3797,7 +3797,13 @@ void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int limit)
         }
     }
 }
-/* 0x487b40 */
+/* 0x487b40, the staff update of the building ch->bld at the clock's hours 7, 12 and 18 (once each: flags1b4 bit
+   0x40, cleared at any other hour): for a building of a player (owner kind 6 / 7) or one whose flags1b4 bit 2 is
+   set, it tells the owner (message 0x32 from the building) the titled characters of the building whose job days
+   (v174) have reached 4, counts the building's titled characters plus the nonzero ware counters of its kind 6
+   sales-tour event, and hires a title-1 worker (message 6 from the building, arg[1] 1, arg[0] the type's title byte
+   k230) when the count is below the type's k231 + k232 - the existing staff (flags1c8 bit 8), the master's budget
+   and a random 0x48 roll permitting; the hire costs gm_JobCost(owner, type, -1, 1), taken from the master's budget */
 
 void ai_UpdateStaff(AICHAR *ch)
 {
@@ -3822,7 +3828,7 @@ void ai_UpdateStaff(AICHAR *ch)
             bt = &ai_BTypesT[ch->bld->type];
             for (i = 0; i < 768; i++) {
                 if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == ch->bld && ai_CharsT[i].title != 0 &&
-                    ai_CharsT[i].title == (char)bt->k230 && *(int *)((char *)&ai_CharsT[i] + 0x174) >= 4) {
+                    ai_CharsT[i].title == (char)bt->k230 && ai_CharsT[i].v174 >= 4) {
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x32;
                     msg.to = ai_CharsT[ch->bld->owner].netId;
@@ -3840,7 +3846,7 @@ void ai_UpdateStaff(AICHAR *ch)
             }
             job = he_FindEvent(2, 0, 6, 3, ch->bld->id);
             if (job != 0) {
-                jp = (int *)((char *)job + 0xb0);
+                jp = job->tourCounters;
                 for (k = 0; k < 12; k++) {
                     if (*jp != 0)
                         n++;
@@ -3850,7 +3856,7 @@ void ai_UpdateStaff(AICHAR *ch)
             t = ch->bld->type;
             if (n < ai_BTypesT[t].k231 + ai_BTypesT[t].k232) {
                 oc = &ai_CharsT[ch->bld->owner];
-                v = (int)gm_Unk50cd40(oc, t, -1, 1);
+                v = (int)gm_JobCost(oc, t, -1, 1);
                 if (n != 0) {
                     if (ch->flags1c8 & 8)
                         return;
@@ -3868,7 +3874,7 @@ void ai_UpdateStaff(AICHAR *ch)
                     msg.time = ai_Time;
                     msg.arg[1] = 1;
                     gm_IsHomeType(ch->bld);
-                    *(int *)((char *)&msg + 0x8c) = -1;
+                    msg.amount[1] = -1;
                     ((unsigned char *)&msg.arg[0])[1] = 1;
                     ((unsigned char *)&msg.arg[0])[0] = ai_BTypesT[ch->bld->type].k230;
                     cm_SendLongMessage(&msg);

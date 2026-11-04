@@ -128,6 +128,12 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         };
         int stormBlds[16];              /* 0xac, of a storm event 0x50 the ids of the 16 buildings its alloc handler 0x5652b0
                                            collected, -1: none */
+        struct {                        /* 0xac, of the kind 6 sales-tour event (its run handler 0x554320, the
+                                           single-ware variant 0x554860) */
+            int padac;                  /* 0xac, the tour's ware / kind word */
+            int tourCounters[12];       /* 0xb0 .. 0xdc, the twelve ware counters it hands over one by one;
+                                           ai_UpdateStaff counts the nonzero ones as staff already busy */
+        };
         struct { int padgrp; int groups[6]; };  /* 0xb0, of a six-group event 0x7d its six figure groups (its alloc
                                                    handler 0x551d00: gm_Shuffled, each + 1) */
         struct {                        /* 0xac, of a running income event 3 (its alloc handler 0x568ae0) */

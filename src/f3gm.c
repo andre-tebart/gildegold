@@ -10737,7 +10737,7 @@ int gm_Homeless(char *c)
 }
 /* 0x50cd40, the wage of 0x508740 times 3 (9 for the jobs 10 .. 12 of the building kind k) */
 
-float gm_Unk50cd40(char *c, int k, int a, int b)
+float gm_JobCost(char *c, int k, int a, int b)
 {
     int j;
 
