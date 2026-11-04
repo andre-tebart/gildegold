@@ -2743,20 +2743,20 @@ exe	0x004eeb00	gv_StopEffect	gv	byte	readable
 exe	0x004eeb70	gv_FireShots	gv	shape	readable	deep	
 exe	0x004eedd0	gv_GetEffect	gv	byte	readable		
 exe	0x004eee00	gv_StartShot	gv	byte	readable		
-exe	0x004eeee0	gv_SetEffectCallback	gv	byte	draft		
+exe	0x004eeee0	gv_SetEffectCallback	gv	byte	readable		
 exe	0x004eef50	gv_SalvoCharge	gv	byte	readable		
 exe	0x004ef000	gv_CannonKind	gv	shape	readable		
 exe	0x004ef090	gv_CannonCost	gv	byte	readable		
 exe	0x004ef170	gv_BuildingCannon	gv	byte	readable		
 exe	0x004ef260	gv_CannonScatter	gv	byte	readable		
-exe	0x004ef330	gv_CannonItemFactor	gv	byte	draft		
+exe	0x004ef330	gv_CannonItemFactor	gv	byte	readable		
 exe	0x004ef3c0	gv_GraveCount	gv	byte	readable		
-exe	0x004ef440	gv_GravesInUse	gv	byte	draft		
+exe	0x004ef440	gv_GravesInUse	gv	byte	readable		
 exe	0x004ef470	gv_EntryCount	gv	byte	readable		
-exe	0x004ef4f0	gv_SizeOpen	gv	byte	draft		
+exe	0x004ef4f0	gv_SizeOpen	gv	byte	readable		
 exe	0x004ef570	gv_ListEntry	gv	byte	readable		
 exe	0x004ef6b0	gv_EntryIndex	gv	byte	readable		
-exe	0x004ef710	gv_EntryHeldBy	gv	byte	draft		
+exe	0x004ef710	gv_EntryHeldBy	gv	byte	readable		
 exe	0x004ef740	gv_EntrySameId	gv	byte	readable		
 exe	0x004ef760	gv_EntryIsFree	gv	byte	readable		
 exe	0x004ef770	gv_EntryIsUsed	gv	byte	readable		
@@ -2768,17 +2768,17 @@ exe	0x004ef9c0	gv_BuryNewDead	gv	shape	readable	deep
 exe	0x004efc10	gv_AllocGraveyard	gv	shape	readable	deep	
 exe	0x004eff50	gv_GrowGraveyard	gv	draft	readable	deep	
 exe	0x004f0180	gv_FreeGraveyard	gv	byte	readable		
-exe	0x004f01d0	gv_OrderBury	gv	shape	draft		
+exe	0x004f01d0	gv_OrderBury	gv	shape	readable		
 exe	0x004f0240	gv_BuryCharacter	gv	shape	readable		
 exe	0x004f0430	gv_OrderReserveGrave	gv	byte	readable		
 exe	0x004f0490	gv_ReserveGrave	gv	byte	readable		
-exe	0x004f0700	gv_OrderExtendGrave	gv	byte	draft		
+exe	0x004f0700	gv_OrderExtendGrave	gv	byte	readable		
 exe	0x004f0770	gv_ExtendGrave	gv	byte	readable		
 exe	0x004f0900	gv_OrderSetGraveHolder	gv	byte	readable		
 exe	0x004f0970	gv_SetGraveHolder	gv	byte	readable		
 exe	0x004f0a90	gv_OrderOpenSize	gv	byte	readable		
 exe	0x004f0af0	gv_OpenSize	gv	shape	readable	deep	
-exe	0x004f0c20	gv_OrderAdjustEntry	gv	byte	draft		
+exe	0x004f0c20	gv_OrderAdjustEntry	gv	byte	readable		
 exe	0x004f0c80	gv_AdjustEntry	gv	shape	readable		
 exe	0x004f0d70	gv_OrderNewDead	gv	byte	draft		
 exe	0x004f0dd0	gv_AddNewDead	gv	byte	draft		
