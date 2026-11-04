@@ -2961,21 +2961,21 @@ exe	0x004fd120	gm_PopulationStep	f3gm	shape	readable
 exe	0x004fd5c0	gm_CreateRandomChild	f3gm	byte	readable		
 exe	0x004fd7e0	gm_IsUnderAge	f3gm	byte	readable		
 exe	0x004fd820	gm_FindHome	f3gm	draft	readable	deep	
-exe	0x004fda10	gm_MoveIntoHome	f3gm	byte	draft		
+exe	0x004fda10	gm_MoveIntoHome	f3gm	byte	readable		
 exe	0x004fda70	gm_FindApplicant	f3gm	byte	readable		
 exe	0x004fdc10	gm_HomeObject	f3gm	byte	readable		
 exe	0x004fdcb0	gm_CharacterHome	f3gm	byte	readable		
 exe	0x004fddb0	gm_SpawnCharacter	f3gm	draft	readable	deep	
-exe	0x004fde90	unk_LoadIconNames	f3gm	byte	draft		
+exe	0x004fde90	unk_LoadIconNames	f3gm	byte	readable		
 exe	0x004fdfb0	gm_FreeIconNames	f3gm	byte	readable		
 exe	0x004fdfd0	gm_CountCharacters	f3gm	draft	readable	deep	
 exe	0x004fe140	gm_AddTime	f3gm	draft	readable	deep	
 exe	0x004fe1e0	gm_SetTime	f3gm	byte	readable		
 exe	0x004fe210	gm_CompareTime	f3gm	byte	readable		
 exe	0x004fe280	gm_MinutesBetween	f3gm	byte	readable		
-exe	0x004fe2c0	gm_ClockToDate	f3gm	byte	draft		
+exe	0x004fe2c0	gm_ClockToDate	f3gm	byte	readable		
 exe	0x004fe310	gm_AddTime2	f3gm	byte	readable		
-exe	0x004fe330	gm_Season	f3gm	byte	draft		
+exe	0x004fe330	gm_Season	f3gm	byte	readable		
 exe	0x004fe350	gm_ClockSeason	f3gm	byte	readable		
 exe	0x004fe370	gm_InitBuildingTables	f3gm	draft	readable	deep	
 exe	0x004fe570	gm_LoadTables	f3gm	draft	readable	deep	
@@ -2983,7 +2983,7 @@ exe	0x004fe7f0	gm_ClearBuildings	f3gm	byte	readable
 exe	0x004fe830	gm_ClearObjects	f3gm	shape	readable	deep	
 exe	0x004fe900	gm_FindObjectProto	f3gm	shape	readable		
 exe	0x004fe940	gm_IsBuildingKind	f3gm	byte	readable		
-exe	0x004fe980	gm_FindObjectInst	f3gm	byte	draft		
+exe	0x004fe980	gm_FindObjectInst	f3gm	byte	readable		
 exe	0x004fe9c0	gm_Free	f3gm	byte	readable		
 exe	0x004fea50	gm_FindById	f3gm	byte	readable		
 exe	0x004feb30	gm_UpdatePlayers	f3gm	byte	readable		
@@ -2993,7 +2993,7 @@ exe	0x004ff190	gm_RefreshGoodsLists	f3gm	shape	readable
 exe	0x004ff450	gm_RandomMarketShake	f3gm	shape	readable		
 exe	0x004ff550	gm_UpdatePrices	f3gm	draft	readable	deep	
 exe	0x004ff8c0	gm_GoodsDemand	f3gm	byte	readable		
-exe	0x004ff950	gm_GoodsStock	f3gm	byte	draft		
+exe	0x004ff950	gm_GoodsStock	f3gm	byte	readable		
 exe	0x004ffa10	gm_StockPrice	f3gm	draft	readable	deep	
 exe	0x004ffbf0	gm_GoodsValue	f3gm	byte	readable		
 exe	0x004ffc40	gm_FindGoods	f3gm	byte	readable		
@@ -3001,8 +3001,8 @@ exe	0x004ffc90	gm_MapDistance	f3gm	byte	readable
 exe	0x004ffcc0	gm_QueryNext	f3gm	draft	readable	deep	
 exe	0x004ffe90	gm_Query	f3gm	draft	readable	deep	
 exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
-exe	0x004ffff0	gm_RemoveObject	f3gm	shape	draft		
-exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	draft		
+exe	0x004ffff0	gm_RemoveObject	f3gm	byte	readable		
+exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	readable		
 exe	0x005000c0	gm_RemoveOwned	f3gm	shape	draft		
 exe	0x00500140	gm_FreeList	f3gm	byte	draft		
 exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
