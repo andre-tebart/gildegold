@@ -3678,21 +3678,28 @@ void he_Unk548ef0(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0x60, 0, 0);
 }
-/* 0x548f30, the run handler of a one-shot event (like 0x548230 without the pending check) */
+/* 0x548f30, the run handler of the HE event type 0x5a, a one-shot event without the pending-slot check of
+   0x548230: a freed state (-2) ends it, a negative one frees it, and in state 0 with opts bit 2 it is posted
+   again two minutes later (the end time = the clock now, cm_SendExSetHE) */
 
-void he_Unk548f30(int ev)
+void he_RunRepostEvent(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    int st = e->stage;
 
-    if (st >= -2) {
-        if (st < 0) {
-            he_FreeEvent((int *)ev);
-        } else if (st == 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        }
+    if (st < -2)
+        return;
+    if (st >= 0) {
+        if (st != 0)
+            return;
+        if ((e->opts & 2) == 0)
+            return;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x548fa0, a repeating payment: every 0x18 units the player of the event (word +8) gets +0xac (0x4c47e0, from the bank -1) for +0xb0 days */
 
@@ -9154,7 +9161,7 @@ int he_Unk553060(void)
         return 1;
     if (he_Unk53d600(0x58, (void *)he_Unk548b70, (void *)he_Unk548de0) != 0)
         return 1;
-    if (he_Unk53d600(0x5a, (void *)he_Unk548ef0, (void *)he_Unk548f30) != 0)
+    if (he_Unk53d600(0x5a, (void *)he_Unk548ef0, (void *)he_RunRepostEvent) != 0)
         return 1;
     if (he_Unk53d600(0x5b, (void *)he_Unk549040, (void *)he_Unk548fa0) != 0)
         return 1;

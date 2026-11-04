@@ -1724,3 +1724,4 @@
 2026-11-03T23:56:34 0x00541170 func he_Unk541170 -> he_PostEventA6 by:main why:posts the message 0xa6 for the player's character, freeing a running event 0xa6 first (main_GameLoop)
 2026-11-03T23:59:55 0x00541280 func he_Unk541280 -> he_CharacterBehavior by:main why:the string it tags its walk actions with, "he_CharacterBehavior"
 2026-11-04T08:48:30 0x00548230 func he_Unk548230 -> he_RunInsultNews by:main why:the alloc handler of its event type 0x4b (0x548110) starts the insult news event (news 0x1d64); this is the matching run handler registered by 0x553060
+2026-11-04T08:50:07 0x00548f30 func he_Unk548f30 -> he_RunRepostEvent by:main why:the run handler of the HE event type 0x5a (registered at 0x553060 next to its start handler 0x548ef0): in state 0 with opts bit 2 it stamps the clock, adds 2 minutes and posts the event again (cm_SendExSetHE); a negative state frees it
