@@ -1591,7 +1591,7 @@ int ai_Unk4ba630(G14MSG *m)
 /* 0x4ba840, takes a share f of the goods (0x4ffe90 (1, 5) list, more than 1 each) of the object (2, 6, 0, 0x2a) of
    one of c's buildings of kind 1 / 2 (0x4c4880 to -1); *id = the building; 0: none */
 
-int ai_Unk4ba840(AICHAR *c, int *id, float f)
+int ai_SellBuildingGoodsShare(AICHAR *c, int *id, float f)
 {
     AIBLD *b;
     AIOBJ *o, *e;
@@ -1600,27 +1600,27 @@ int ai_Unk4ba840(AICHAR *c, int *id, float f)
 
     n = 0;
     for (b = gm_BuildQuery(1, 3, c->id); b != 0 && n < 8; b = gm_BuildNext()) {
-        i = gm_BuildingClass(*(unsigned char *)b);
+        i = gm_BuildingClass(b->type);
         if (i == 1 || i == 2)
             a[n++] = b;
     }
     if (n != 0) {
         k = 0;
         b = a[util_RandomU(n)];
-        *id = *(int *)((char *)b + 1);
-        o = gm_Query(*(int *)((char *)b + 0x5d), 2, 6, k, 0x2a);
+        *id = b->id;
+        o = gm_Query(b->objList, 2, 6, k, 0x2a);
         if (o != 0) {
-            for (e = gm_Query(*(int *)((char *)o + 0x14), 1, 5); e != 0 && k < 12; e = gm_QueryNext())
+            for (e = gm_Query(o->list, 1, 5); e != 0 && k < 12; e = gm_QueryNext())
                 a[k++] = e;
             if (k != 0) {
                 for (i = 0; i < k; i++) {
                     e = a[i];
-                    v = *(int *)((char *)e + 0xe);
+                    v = e->count;
                     if (v > 1) {
                         v = (int)(v * f);
                         if (v < 1)
                             v = 1;
-                        cm_SendExSellObjectI(-1, *(int *)((char *)o + 2), *(unsigned short *)e, v, ai_OwnPlayer, 0);
+                        cm_SendExSellObjectI(-1, o->objId, e->id, v, ai_OwnPlayer, 0);
                     }
                 }
                 return 1;
@@ -1644,7 +1644,7 @@ int ai_Unk4ba970(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    if (!ai_InventoryHas(c, 0x290) && ai_Unk4ba840(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
+    if (!ai_InventoryHas(c, 0x290) && ai_SellBuildingGoodsShare(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, b, (int)(f * 100.0f));
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
         return 0;
@@ -1665,7 +1665,7 @@ int ai_Unk4baa80(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    if (!ai_InventoryHas(c, 0x290) && ai_Unk4ba840(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
+    if (!ai_InventoryHas(c, 0x290) && ai_SellBuildingGoodsShare(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, b, (int)(f * 100.0f));
         he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, *(int *)((char *)b + 1), -1, 0, 0);
         return 0;
@@ -1686,7 +1686,7 @@ int ai_Unk4baba0(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    if (!ai_InventoryHas(c, 0x290) && ai_Unk4ba840(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
+    if (!ai_InventoryHas(c, 0x290) && ai_SellBuildingGoodsShare(c, &id, f) && (b = gm_BuildQuery(1, 1, id)) != 0) {
         txt_Format(buf, m->type + 0x12e7, (int)(f * 100.0f), b);
         he_MessageBoxQuickjumpI(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, *(int *)((char *)b + 1), -1, 0, 0);
         return 0;
