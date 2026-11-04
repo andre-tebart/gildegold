@@ -6854,19 +6854,20 @@ void sv_DestroyScrollForm(void)
         sv_ScrollEndBottom = -1;
     }
 }
-/* 0x52fad0, shows the scroll and sets the animation frame (the clock 0x6ed980 +0x248 / 6 % 12) of both end pieces */
+/* 0x52fad0, shows the scroll form sv_ScrollForm and sets the animation frame of both end pieces from the scroll
+   offset of the window created last (its D2WIN.scrollY / 6 % 12), 0 when that is negative */
 
 void sv_ScrollFormAnimate(void)
 {
     int f;
 
-    if (SV_I((unsigned)&sv_ScrollForm) != -1) {
-        d2_SetForm(SV_I((unsigned)&sv_ScrollForm), 1);
-        f = (*(int *)(SV_I((unsigned)&d2_LastWindowPtr) + 0x248) / 6) % 0xc;
+    if (sv_ScrollForm != -1) {
+        d2_SetForm(sv_ScrollForm, 1);
+        f = (((D2WIN *)d2_LastWindowPtr)->scrollY / 6) % 0xc;
         if (f < 0)
             f = 0;
-        SV_WI(SV_I((unsigned)&sv_ScrollEndTop), 0x78) = f;
-        SV_WI(SV_I((unsigned)&sv_ScrollEndBottom), 0x78) = f;
+        ((D2OBJ *)d2_Objs)[sv_ScrollEndTop].input = f;
+        ((D2OBJ *)d2_Objs)[sv_ScrollEndBottom].input = f;
     }
 }
 /* 0x52fb50, requests popping the frame stack down to the frame whose callback is cb: sets sv_PopRequest to its distance from the top sv_FrameDepth (nothing when cb is not on the stack) */
