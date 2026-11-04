@@ -737,7 +737,7 @@ z_off_t ZEXPORT gzseek (file, offset, whence)
 /* ===========================================================================
      Rewinds input file. 
 */
-/* 0x4635f0 */
+/* 0x4635f0, rewinds a gzip file to its start for reading again */
 int ZEXPORT gzrewind (file)
     gzFile file;
 {
