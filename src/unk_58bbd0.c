@@ -13605,6 +13605,8 @@ void ai_CloseMapWindow(int *m_)
 typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
     int id;                             /* +0x00, the setting id (ai_Unk5a84b0 looks it up by this) */
     int seed;                           /* +0x04, the LCG state of the record's random */
+    char pad08[0x48 - 8];
+    struct G8SETTING *next;             /* +0x48, the next setting of the chain (ai_FreeSettingChain frees it first) */
 } G8SETTING;
 #pragma pack(pop)
 
@@ -13616,13 +13618,14 @@ float ai_SettingRandom(G8SETTING *rec)
     rec->seed = rec->seed * 0x41c64e6d + 0x3039;
     return (float)((unsigned int)(unsigned short)(rec->seed >> 16) % 0x7fff) * 0.00003051851f;
 }
-/* 0x5a8390, the record's recursive free (32 B): the child +0x48 first, then 0x422620 */
+/* 0x5a8390, the recursive free of a production setting chain (32 B): the next setting at +0x48 is freed first,
+   then the record (mem_Free) */
 
-void ai_Unk5a8390(int param_1)
+void ai_FreeSettingChain(G8SETTING *rec)
 {
-    if (*(int *)(param_1 + 0x48) != 0)
-        ai_Unk5a8390(*(int *)(param_1 + 0x48));
-    mem_Free(param_1);
+    if (rec->next != 0)
+        ai_FreeSettingChain(rec->next);
+    mem_Free(rec);
 }
 /* 0x5a83b0, the goods weights of a record (256 B): the first ten ushort ids of 0x5a84d0 (a character) are added
    to the seven {id, weight} slots at +0xc (stride 8, the weight 0xe), the weights then adjusted by 1 to sum 100
@@ -13953,7 +13956,7 @@ void ai_Unk5a8900(int param_1, float param_2)
 void ai_FreeSettings(void)
 {
     if (*(int *)((unsigned)&full_data_6f26c0) != 0)
-        ai_Unk5a8390(*(int *)((unsigned)&full_data_6f26c0));
+        ai_FreeSettingChain((G8SETTING *)*(int *)((unsigned)&full_data_6f26c0));
     *(int *)((unsigned)&full_data_6f26c0) = 0;
 }
 /* 0x5a8940, the settings saved (213 B): the count, then every record +0 / +4 / +0x44 and the seven slots
