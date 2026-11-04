@@ -768,7 +768,7 @@ local int build_bl_tree(s)
  * lengths of the bit length codes, the literal tree and the distance tree.
  * IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
  */
-/* 0x466a70 */
+/* 0x466a70, writes a dynamic block's tree header: the three code counts, the bit length tree in bl_order, then the literal and distance trees */
 local void send_all_trees(s, lcodes, dcodes, blcodes)
     deflate_state *s;
     int lcodes, dcodes, blcodes; /* number of codes for each tree */
