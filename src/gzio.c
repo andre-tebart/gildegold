@@ -327,7 +327,9 @@ local void check_header(s)
  * Cleanup then free the given gz_stream. Return a zlib error code.
    Try freeing in the reverse order of allocations.
  */
-/* 0x463060 */
+/* 0x463060, closes a gz_stream: frees its message, ends the deflate or
+   inflate side, closes the file, frees the buffers, path and stream, and
+   returns the first error seen (Z_OK when clean) */
 local int destroy (s)
     gz_stream *s;
 {
