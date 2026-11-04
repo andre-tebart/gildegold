@@ -1545,9 +1545,9 @@ int ai_QueryChapter4Step2(int *p)
     int kind;
 
     if (p[0] == 0x2b && p[1]) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 0x12
-                && *(unsigned short *)(p[1] + 0x27) == *(unsigned short *)(unsigned)&ai_PlayerId
+        kind = ((AIBLD *)p[1])->type;
+        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0x12
+                && ((AIBLD *)p[1])->owner == ai_PlayerId
                 && (p[3] == 0xc || p[3] == 0x1df))
             return 1;
     }
