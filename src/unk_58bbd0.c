@@ -6634,7 +6634,7 @@ void ai_DarkCornerTable(AIBLD *bld, AIOBJ *room)
 
 void sv_ReleaseNamePlates(void); int d3t_PlaceAtObject(); void d2_SetBackgroundTexture(); 
 void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int flags, int mask); int gm_GetGoodsValue(); int gm_SumListAmounts(void *list, unsigned char p);
-int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Unk50a150(); void d2_EnableViewObjects();
+int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_CreditEvents(); void d2_EnableViewObjects();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
@@ -7268,7 +7268,7 @@ done:
 }
 
 short * gm_FindChar(int id); void txt_Format(char *out, int id0, ...); int sv_CheckGoodAmount(); int sv_MessageBox();
-short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); int gm_Unk50a150();
+short * gm_PlayerRecord(char *c); void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); int gm_CreditEvents();
 void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...); void d2_SetObjText(); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 int d2_RemoveWindow(); void d2_RemoveObj(); int gm_BuildingEvents(); int gm_SumSlotAmounts(void *list, unsigned char i);
 void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
@@ -7370,8 +7370,8 @@ void ai_Unk59b160(int param_1)
                     list[i * 3 + 2] = 0;
                 }
             }
-            money = gm_Unk50a150(U_I((unsigned)&ai_PlayerId), 0, offers);
-            n = gm_Unk50a150(U_I((unsigned)&ai_PlayerId), param_1, offers);
+            money = gm_CreditEvents(U_I((unsigned)&ai_PlayerId), 0, offers);
+            n = gm_CreditEvents(U_I((unsigned)&ai_PlayerId), param_1, offers);
             d2_SetForm(win, 4);
             io_PrintText("$C");
             if (n < 9) {
@@ -7493,7 +7493,7 @@ void ai_Unk59b630(int param_1, int param_2)
                     list[i * 3 + 2] = 0;
                 }
             }
-            n = gm_Unk50a150(param_2, param_1, offers);
+            n = gm_CreditEvents(param_2, param_1, offers);
             h = *(short *)((unsigned)&he_Events + 0x197b0);
             w = *(short *)((unsigned)&he_Events + 0x197b2);
             for (i = 0; i < n; i++) {
@@ -16388,7 +16388,7 @@ int ai_Unk5bd330(unsigned short *param_1, int param_2, int param_3, int param_4,
 
     if (param_2 > 8)
         param_2 = 9;
-    n = gm_Unk50a150(*param_1, 0, ids);
+    n = gm_CreditEvents(*param_1, 0, ids);
     half = *(short *)(U_I((unsigned)&d2_Pics) + 0x269d8);
     if (n > param_2)
         n = param_2;

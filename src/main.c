@@ -3822,7 +3822,7 @@ void main_RoundReport(void)
         }
         if (w1ec != 0)
             io_PrintText(0x204a, w1ec);
-        j = gm_Unk50a150(U_I((unsigned)&ai_PlayerId) & 0xffff, 0, lines);
+        j = gm_CreditEvents(U_I((unsigned)&ai_PlayerId) & 0xffff, 0, lines);
         iv = 0;
         k = 0;
         if (0 < j) {

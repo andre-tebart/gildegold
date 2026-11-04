@@ -9363,21 +9363,23 @@ int gm_ObjectBuilding(int o)
     }
     return 0;
 }
-/* 0x50a150, the (up to 9) group (1, 0, 0x23) items of the character slot c (the owner id at +0xb0), optionally of the party p (+0xac) */
+/* 0x50a150, collects into out (up to 9) the running credit events (kind 0x23) of the character slot c (their
+   charId +0xb0 is its netId), only of the building bld when it is not 0 (their bldId +0xac is its id);
+   returns their number */
 
-int gm_Unk50a150(int c, int p, int *out)
+int gm_CreditEvents(int c, ORDBLD *bld, int *out)
 {
     int n;
-    char *it;
+    GMEVENT23 *ev;
 
     n = 0;
-    it = (char *)he_FindEvent(1, 0, 0x23);
-    while (it != 0 && n < 9) {
-        if (*(int *)(it + 0xb0) == *(int *)(ai_Chars[c] + 4) && (p == 0 || *(int *)(it + 0xac) == *(int *)(p + 1))) {
-            out[n] = (int)it;
+    ev = (GMEVENT23 *)he_FindEvent(1, 0, 0x23);
+    while (ev != 0 && n < 9) {
+        if (ev->charId == ORD_CHARS[c].netId && (bld == 0 || ev->bldId == bld->id)) {
+            out[n] = (int)ev;
             n++;
         }
-        it = (char *)he_NextEvent();
+        ev = (GMEVENT23 *)he_NextEvent();
     }
     return n;
 }
