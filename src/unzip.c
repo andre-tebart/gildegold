@@ -827,7 +827,7 @@ extern int ZEXPORT unzLocateFile (file, szFileName, iCaseSensitivity)
   store in *piSizeVar the size of extra info in local header
         (filename and size of extra field data)
 */
-/* 0x468240 */
+/* 0x468240, reads the current file's local header and checks it against cur_file_info */
 local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
 													poffset_local_extrafield,
 													psize_local_extrafield)
