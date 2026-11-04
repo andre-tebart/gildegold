@@ -946,7 +946,7 @@ void sb_SetLoops(SBSAMPLE *s, int loops)
         sfx_SetSampleLoopCount(s->handle, loops);
     }
 }
-/* 0x4273c0 */
+/* 0x4273c0, whether a sound driver is open (sb_Driver set) */
 
 int sb_IsInit(void)
 {
