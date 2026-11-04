@@ -3360,17 +3360,21 @@ int sv_AddPanelButton(int x, int y, int text);
 void sv_RemoveBanners(char *b)
 {
     int list[33];
-    int i, m, save;
+    int i;
+    AIBLD *bld;
+    D3OBJECT *m;
+    D3OBJECT *save;
 
-    m = *(int *)(b + 0x61);
+    bld = (AIBLD *)b;
+    m = (D3OBJECT *)bld->object;
     if (m != 0) {
         for (i = 0; i < 0x21; i++)
             list[i] = 0;
-        if ((*(unsigned char *)(m + 0x210) & 1) == 0) {
-            save = *(int *)(m + 0x1f0);
-            *(int *)(m + 0x1f0) = 0;
-            d3_ForEachObject(d3_DefaultScene, *(int *)(b + 0x61), 0x40, sv_CollectBannerCB, list);
-            *(int *)(*(int *)(b + 0x61) + 0x1f0) = save;
+        if ((m->state & 1) == 0) {
+            save = m->next;
+            m->next = 0;
+            d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)bld->object, 0x40, sv_CollectBannerCB, list);
+            ((D3OBJECT *)bld->object)->next = save;
         } else
             d3_ForEachObject(d3_DefaultScene, m, 0x40, sv_CollectBannerCB, list);
         i = 0;
