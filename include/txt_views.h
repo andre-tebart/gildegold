@@ -230,10 +230,10 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1442078                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07eb8))  /* 0x1442078 */
 #define full_data_1442090                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07ed0))  /* 0x1442090 */
 #define ai_ContactTextProductionPerfumery        (*(char * *)((char *)txt_Ptrs + 0x07ed8))  /* 0x1442098 */
-#define full_data_14420a8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07ee8))  /* 0x14420a8 */
+#define ai_ContactTextExtract                        (*(char * *)((char *)txt_Ptrs + 0x07ee8))  /* 0x14420a8, the hover text of the extraction plate (contact_ABBAUEN / contact_ABBAU, ai_MiningContact); the wording is unknown */
 #define ai_TextEinkaufMetall                     (*(int *)((char *)txt_Ptrs + 0x07ef0))  /* 0x14420b0 */
 #define ai_TextEinkaufStein                      (*(int *)((char *)txt_Ptrs + 0x07ef8))  /* 0x14420b8 */
-#define full_data_14420d0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f10))  /* 0x14420d0 */
+#define ai_ContactTextSearchOre                        (*(char * *)((char *)txt_Ptrs + 0x07f10))  /* 0x14420d0, the hover text of the ore-search plate (contact_SUCHEN_ERZ, ai_MiningContact); the wording is unknown */
 #define full_data_14420d8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f18))  /* 0x14420d8 */
 #define full_data_14420e0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f20))  /* 0x14420e0 */
 #define full_data_14420e8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f28))  /* 0x14420e8 */

@@ -3426,7 +3426,7 @@ void ai_MercenaryBookContact(char *bld)
 
 void sv_CameraFollow();
 
-/* 0x5923c0, the production window of a building (1998 B, ROUGH SKELETON from the Ghidra pseudocode): the screen
+/* 0x5923c0, the resource-search window (the SUCHEN_ERZ / SUCHEN_STEIN plate opens it): the production window of a building (1998 B, ROUGH SKELETON from the Ghidra pseudocode): the screen
    "Handel\Handel_PRODUKTION" 0x62b038 opens (0x520fe0, 0x4741f0 / 0x475600, 0x525220, the frames 0x475f70
    (3 / 0 / 2), the text 0x515960 (199), the table init 0x58bbd0, 0x6f5320 = 0, the skin 0xf8f4b8.. = 0xe, the
    controls 0x52e6d0 / 0x475ff0 / 0x52e860 with the word 0x54 at +0x74, 0x476f80 (0, 0)); the loop reads the
@@ -3436,7 +3436,7 @@ void sv_CameraFollow();
    (+, 1, 4, 0x17) / 0x4ffcc0, the prices 0x50aaf0 and the amounts 0x91aaf0); the texts 0x5e56c4 / 0x4734d0,
    the columns 0x58c680 / 0x58d720 / 0x58dd00; the pump 0x5309a0 (0x58bd60, 0x677c7); the exit 0x4758f0 /
    0x525440 */
-int ai_Unk5923c0(int param_1)
+int ai_SearchResourceWindow(int param_1)
 {
     int win;
     int cols;
@@ -3595,12 +3595,12 @@ int ai_Unk5923c0(int param_1)
     }
     return 0;
 }
-/* 0x592b90, the second production window (1457 B, ROUGH SKELETON from the Ghidra pseudocode): the same screen
+/* 0x592b90, the resource-extraction window (the ABBAUEN / ABBAU plate opens it): the second production window (1457 B, ROUGH SKELETON from the Ghidra pseudocode): the same screen
    and setup as 0x5923c0, but the click opens the building type 3 (0x53e400 (2, 0, 3, 3)) and the character
    record's +0 byte must be 3 (not 9 / 8), the columns come from the goods offer without the > 1 filter, the
    prices / amounts are stored at +0x50 / +0x54, and the goods rows are 0x58cc10 (win, 2, cols, rec1, 1) */
 
-int ai_Unk592b90(int param_1)
+int ai_ExtractResourceWindow(int param_1)
 {
     int win;
     int cols;
@@ -3718,7 +3718,7 @@ int ai_Unk592b90(int param_1)
             ai_Unk58cc10(win, 2, cols, rec2, 1);
             ai_Unk58d720(param_1, rec1);
             ai_Unk58dd00(win, 1, 0, param_1);
-            n = sv_RunFrame(ai_Unk592b90, 0x677c7);
+            n = sv_RunFrame(ai_ExtractResourceWindow, 0x677c7);
         } while (n != 0);
         d2_CloseView(win);
         sv_ClosePlayerBar();
@@ -3882,14 +3882,14 @@ int ai_Unk593150(int param_1)
     return 0;
 }
 
-int ai_Unk5923c0(int param_1);
-int ai_Unk592b90(int param_1);
+int ai_SearchResourceWindow(int param_1);
+int ai_ExtractResourceWindow(int param_1);
 
-/* 0x5938c0, the mining contact listener (152 B): 0x52e190, then the pump 0x5309a0 (this, 0x67fff); while the
-   flag 0x6f231c has 0x200, the contacts 0x52e1c0 ("contact_SUCHEN_ERZ", 0x14420d0, 0x16) /
-   ("contact_ABBAUEN", 0x14420a8, 10) are asked; when one is the pending 0x6f22e4, 0x5923c0 (param_1) /
-   0x592b90 (param_1) open */
-void ai_Unk5938c0(int param_1)
+/* 0x5938c0, the mining contact of the building bld (152 B): releases the name plates, then per frame of the
+   pump sv_RunFrame, while ai_BuildingPerms has 0x200, registers the two plates contact_SUCHEN_ERZ (the hover
+   text ai_ContactTextSearchOre) and contact_ABBAUEN (ai_ContactTextExtract) and opens ai_SearchResourceWindow /
+   ai_ExtractResourceWindow when one is the clicked object (ai_ClickedObject) */
+void ai_MiningContact(char *bld)
 {
     int r;
     int a;
@@ -3898,19 +3898,19 @@ void ai_Unk5938c0(int param_1)
     a = 0;
     b = 0;
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5938c0, 0x67fff);
+    r = sv_RunFrame(ai_MiningContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            a = sv_RegisterNamePlate("contact_SUCHEN_ERZ", U_I((unsigned)&full_data_14420d0), 0x16);
-            b = sv_RegisterNamePlate("contact_ABBAUEN", U_I((unsigned)&full_data_14420a8), 10);
+        if (ai_BuildingPerms & 0x200) {
+            a = sv_RegisterNamePlate("contact_SUCHEN_ERZ", ai_ContactTextSearchOre, 0x16);
+            b = sv_RegisterNamePlate("contact_ABBAUEN", ai_ContactTextExtract, 10);
         }
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == a)
-                ai_Unk5923c0(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == b)
-                ai_Unk592b90(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == a)
+                ai_SearchResourceWindow(bld);
+            else if (ai_ClickedObject == b)
+                ai_ExtractResourceWindow(bld);
         }
-        r = sv_RunFrame(ai_Unk5938c0, 0x67fff);
+        r = sv_RunFrame(ai_MiningContact, 0x67fff);
     }
 }
 /* 0x593960, the kontor contact listener (407 B): 0x576040 (0x1b, param_1, 0, 0); 0x52e190, the pump 0x5309a0
@@ -4054,7 +4054,7 @@ void ai_Unk593ca0(int param_1)
     while (r != 0) {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            abbau = sv_RegisterNamePlate("contact_ABBAU", U_I((unsigned)&full_data_14420a8), 10);
+            abbau = sv_RegisterNamePlate("contact_ABBAU", U_I((unsigned)&ai_ContactTextExtract), 10);
             stein = sv_RegisterNamePlate("contact_SUCHEN_STEIN", U_I((unsigned)&full_data_14420d8), 0x16);
             produktion = sv_RegisterNamePlate("contact_PRODUKTION", U_I((unsigned)&full_data_1441f98), 0x13);
             transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
@@ -4071,9 +4071,9 @@ void ai_Unk593ca0(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == gelage)
                 ai_Unk5b9f30(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == abbau)
-                ai_Unk592b90(param_1);
+                ai_ExtractResourceWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == stein)
-                ai_Unk5923c0(param_1);
+                ai_SearchResourceWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == transport)
                 ai_OpenTransport(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == produktion)
@@ -9104,7 +9104,7 @@ void ai_Unk59f410(unsigned short *param_1)
     case 0x109: ai_UpgradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x2d: ai_BookContact(ai_FallbackBuilding); break;
     case 0x33: ai_MercenaryBookContact(ai_FallbackBuilding); break;
-    case 0x37: ai_Unk5938c0(U_I((unsigned)&ai_FallbackBuilding)); break;
+    case 0x37: ai_MiningContact(ai_FallbackBuilding); break;
     case 0x107: ai_Unk593e80(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x205: ai_GraveyardTradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x211: ai_GraveyardFogContact(U_I((unsigned)&ai_FallbackBuilding)); break;
