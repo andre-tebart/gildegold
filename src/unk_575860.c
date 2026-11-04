@@ -1481,11 +1481,15 @@ int ai_StepChapter2Step6(int *p)
 
 int ai_StepChapter2Step7(int *p)
 {
-    if (p[0] == 0x19 && p[1] && *(unsigned short *)p[1] == 0x74) {
-        U_I(S) = 0xb;
-        U_I(S + 4) = 0xb;
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
-        return 1;
+    if (p[0] == 0x19 && p[1]) {
+        unsigned short *room = (unsigned short *)(unsigned)p[1];
+
+        if (*room == 0x74) {
+            ai_Tutorial->state = 0xb;
+            ai_Tutorial->next = 0xb;
+            ai_Tutorial->stepAt = d3_Time;
+            return 1;
+        }
     }
     return 3;
 }
