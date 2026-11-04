@@ -8482,7 +8482,8 @@ float gm_ItemPrice(int item, unsigned char n)
     f = n * s * 0.01f;
     return f * 2.2f;
 }
-/* 0x5089c0, the price of the goods id for the player slot p: the goods record's value (+0x38) or the base price */
+/* 0x5089c0, the price of the goods id for the player slot p: the stored price of its stock record (GMSTOCK.price)
+   or the base price (gm_ItemPrice at 100) when the block has no record for it */
 
 float gm_GoodsPrice(unsigned id, unsigned char p)
 {
@@ -8493,7 +8494,7 @@ float gm_GoodsPrice(unsigned id, unsigned char p)
     r = (unsigned short *)(init_StockBlocks + p * 0x2a90);
     do {
         if (*r == id)
-            return *(float *)(init_StockBlocks + 0x38 + p * 0x2a90 + i * 0x80);
+            return ((GMSTOCK *)(init_StockBlocks + p * 0x2a90 + i * 0x80))->price;
         i++;
         r += 0x40;
     } while (i < 0x55);
