@@ -1341,18 +1341,18 @@ int ai_StepChapter2Step1(int *p)
     }
     return 3;
 }
-/* 0x5768a0, when `arg` is 0, finds a record (0x501190 (1, 5, 0xf)) and writes 0x10e into its word +0x29; no return
-   value (0x501190 returns the record) */
+/* 0x5768a0, the step hook of the run record FTInitChapter2Step2: with `arg` 0 it opens the town hall (the
+   building type 0xf, gm_BuildQuery (1, 5, 0xf)) at the room 0x10e; no return value */
 
 void ai_HookChapter2Step2(int arg)
 {
-    char *r;
+    AIBLD *b;
 
     if (arg)
         return;
-    r = (char *)gm_BuildQuery(1, 5, 0xf);
-    if (r)
-        *(unsigned short *)(r + 0x29) = 0x10e;
+    b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
+    if (b)
+        b->mainRoom = 0x10e;
 }
 /* 0x5768d0, the kind 0x19 with a record whose word is 0x10e moves the pending state to 0xb (1), else 3 */
 
