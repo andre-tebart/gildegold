@@ -3857,13 +3857,13 @@ int gm_BuildKindObjects(char *b)
 
 int gm_FindPlayerBuilding(int p)
 {
-    int b;
+    ORDBLD *b;
 
-    b = gm_BuildQuery(1, 0, 0x47);
+    b = (ORDBLD *)gm_BuildQuery(1, 0, 0x47);
     while (b != 0) {
-        if (*(int *)(b + 0x65) == p)
-            return b;
-        b = gm_BuildNext();
+        if (b->v65 == p)
+            return (int)b;
+        b = (ORDBLD *)gm_BuildNext();
     }
     return 0;
 }
