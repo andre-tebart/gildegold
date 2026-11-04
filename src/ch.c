@@ -2566,7 +2566,7 @@ void *ch_MapAlloc(float cellSize)
     p->cellSize = cellSize;
     return p;
 }
-/* 0x4076b0 */
+/* 0x4076b0, frees a path map node allocated by ch_MapAlloc */
 
 void ch_MapFree(void *p)
 {
