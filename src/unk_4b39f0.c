@@ -475,7 +475,18 @@ int ai_CountMissionEvent(G13MIS *m, int ev)
     }
     return 0;
 }
-/* 0x4b4550, mission condition: the value of what 0x506430 finds for c is above t->goal */
+/* 0x4b4550, mission condition: the value of what 0x506430 finds for c is above t->goal
+   @hard read in full, byte-exact (gm_PlayerRecord, 0 for none, gm_ConvertMoney(value +0x38, ai_OwnPlayer)
+   > t->goal). Q1 / Q4 are both blocked on the five AIFIN money statistics at 0x2c .. 0x3c (ai.h AIFIN
+   pad2c[0x14]): this condition reads +0x38, the three siblings ai_Unk4b4830 (0x2c + 0x34), ai_Unk4b4870
+   (0x30) and ai_Unk4b48b0 (0x3c) read the others. No drafted function writes any of them (every
+   player-record writer is named: madeValue, spyPaid, upgradeSpent, renovationSpent, officeSentences,
+   roundFactors, the camera fields); ls_WritePlayerRecords (0x51a1a0) saves 0x2c / 0x30 / 0x34 and 0x3c,
+   and 0x38 only for ls_Version > 0x10013, so the values come from saved data of an older build, and the
+   only readers are these four mission conditions. The mission texts that would name the category (t->text,
+   not in the repo) are the only remaining evidence; a field name (Q4 needs a typed AIFIN member) and a
+   function name (Q1) would both be invention. Fixing Q4 alone means naming AIFIN+0x38, which Q2 then
+   judges: that is the shared-header decision this hand-up is for. */
 
 int ai_Unk4b4550(AICHAR *c, G13TYPE *t)
 {
