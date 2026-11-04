@@ -19,7 +19,7 @@ typedef struct BGIRD {              /* reader context; the first 0x38 bytes are 
     unsigned char flag0;            /* 0x00 */
     unsigned char flag1;            /* 0x01 */
     char pad02[2];
-    int unk04;                      /* 0x04 */
+    int geomInt;                    /* 0x04, int of chunk 0x18; the description never reads it */
     int cur;                        /* 0x08, current material */
     int nmats;                      /* 0x0c */
     D3BGFMAT *mats;                 /* 0x10 */

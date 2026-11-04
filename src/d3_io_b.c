@@ -309,11 +309,12 @@ void bgi_PolyMat(void *f, BGIRD *c)
     BGI_P(c).mat = b;
     c->polyidx++;
 }
-/* 0x44f650 */
+/* 0x44f650, chunk 0x18 of the object geometry table: reads one int into the reader context; the description
+   leaves offset 0x04 as padding, so nothing reads the value */
 
-void bgi_Unk04(void *f, BGIRD *c)
+void bgi_GeomInt(void *f, BGIRD *c)
 {
-    bio_rd_i(f, &c->unk04);
+    bio_rd_i(f, &c->geomInt);
 }
 /* 0x44f660, number of points; allocates the point buffer once */
 
@@ -424,7 +425,7 @@ static BGIENT bgi_TabPoly[5] = {
 
 /* 0x5fc818 */
 static BGIENT bgi_TabGeom[6] = {
-    {0x18, bgi_Unk04, 0}, {0x19, bgi_NumPoints, 0}, {0x1a, bgi_NumPolys, 0}, {0x1b, bgi_Points, 0},
+    {0x18, bgi_GeomInt, 0}, {0x19, bgi_NumPoints, 0}, {0x1a, bgi_NumPolys, 0}, {0x1b, bgi_Points, 0},
     {0x1c, bgi_TabPoly, 5}, {0x28, agi_EndObject, 0}
 };
 
