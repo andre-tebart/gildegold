@@ -122,7 +122,8 @@ void bgi_SkipInt(void *f, BGIRD *c)
 
     bio_rd_i(f, &t);
 }
-/* 0x44f030 */
+/* 0x44f030, binary-format record 7: stores the first bitmap name of the current material (file extension
+   stripped) */
 
 void bgi_Bitmap0(void *f, BGIRD *c)
 {
