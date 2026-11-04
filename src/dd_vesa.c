@@ -1073,7 +1073,7 @@ char *dd_GuidToString(GUID *guid, char *s)
     }
     return ret;
 }
-/* 0x41c760 */
+/* 0x41c760, parses "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx" into guid (1, or 0 for a NULL or empty string) */
 
 char dd_StringToGuid(char *s, GUID *guid)
 {
