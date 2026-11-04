@@ -1219,11 +1219,11 @@ exe	0x00467fe0	unzlocal_DosDateToTmuDate	unzip	byte	readable
 exe	0x00468030	unzGoToFirstFile	unzip	byte	readable		
 exe	0x00468080	unzGoToNextFile	unzip	byte	readable		
 exe	0x00468100	unzOpenCurrentFile	unzip	byte	readable		
-exe	0x00468240	unzlocal_CheckCurrentFileCoherencyHeader	unzip	byte	draft		
-exe	0x00468430	unzReadCurrentFile	unzip	byte	draft		
-exe	0x00468620	unztell	unzip	byte	draft		
-exe	0x00468640	unzCloseCurrentFile	unzip	byte	draft		
-exe	0x004686d0	unzGetFilePos	unzip	byte	draft		
+exe	0x00468240	unzlocal_CheckCurrentFileCoherencyHeader	unzip	byte	readable		
+exe	0x00468430	unzReadCurrentFile	unzip	byte	readable		
+exe	0x00468620	unztell	unzip	byte	readable		
+exe	0x00468640	unzCloseCurrentFile	unzip	byte	readable		
+exe	0x004686d0	unzGetFilePos	unzip	byte	readable		
 exe	0x00468710	unzGoToFilePos	unzip	byte	readable		
 exe	0x00468770	zcalloc	zutil	byte	readable		
 exe	0x00468790	zcfree	zutil	byte	readable		
@@ -3198,14 +3198,14 @@ exe	0x0050f570	init_Betrieb	f3init	draft	readable	deep
 exe	0x0050f750	init_OpenBuilding	f3init	shape	readable	deep	
 exe	0x0050f910	init_OpenTown	f3init	draft	readable	deep	
 exe	0x00510730	init_CollectSiteObject	f3init	byte	readable		
-exe	0x00510770	init_LoadSiteScene	f3init	shape	draft		shape+readable -> shape+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00510770	init_LoadSiteScene	f3init	shape	readable		
 exe	0x00510ad0	init_InitTown	f3init	shape	readable		
 exe	0x00510e20	init_ShowStatus	f3init	byte	readable		
 exe	0x00510e50	init_StartNetworkGame	f3init	draft	draft	deep	draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x005112d0	unk_Unk5112d0	f3init	byte	draft		
+exe	0x005112d0	init_JoinNetworkGame	f3init	byte	readable		
 exe	0x00511400	init_SetupNewGame	f3init	byte	readable		
-exe	0x005115b0	unk_Unk5115b0	f3init	byte	draft		
-exe	0x00511600	init_StripTorches	f3init	byte	draft		
+exe	0x005115b0	init_CollectTorchObject	f3init	byte	readable		
+exe	0x00511600	init_StripTorches	f3init	byte	readable		
 exe	0x005116b0	unk_Unk5116b0	f3init	byte	draft		
 exe	0x00511700	init_TownBuildingHook	f3init	draft	readable	deep	
 exe	0x00511790	unk_Unk511790	f3init	byte	draft		
