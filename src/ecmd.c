@@ -37,7 +37,7 @@ struct D3SURF;
 #define OCMD_DEG 0.017453292f       /* degrees to radians */
 
 
-/* 0x40d680 */
+/* 0x40d680, the handle of the object with the name, or 0 after reporting an error */
 int ocmd_GetObjectHandle(char **name)
 {
     char msg[0x200];
