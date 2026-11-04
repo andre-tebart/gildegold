@@ -182,7 +182,7 @@ void ai_TutorialClearHost(void);                /* 0x578150, detaches the tutori
 int ai_TutorialOff(void);                 /* 0x578170, 1 while the tutorial does not run */
 int ai_TutorialStart(void);                 /* 0x578180, the tutorial start / record reset */
 void ai_TutorialStop(void);                /* 0x578370, the tutorial stop (handle + chain reset) */
-void ai_TutorialFreeRuns(char *rec);           /* 0x578440, frees the tutorial record chain */
+void ai_TutorialFreeRuns(TUTRUN *rec);         /* 0x578440, frees the tutorial record chain */
 int ai_TutorialInitMainIntro(void);                 /* 0x5784a0, allocates the main-intro record */
 int ai_TutorialInitChapter1(void);      /* 0x578570, the chapter 1 chain */
 int ai_TutorialInitChapter2(void);      /* 0x578e40, the chapter 2 chain */

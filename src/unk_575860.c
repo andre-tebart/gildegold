@@ -2386,7 +2386,7 @@ void ai_TutorialStop();
 int sb_UnloadSampleBank();
 int snd_LoadVoiceBank();
 void * mem_Alloc(int size, char *tag);
-void ai_TutorialFreeRuns();
+void ai_TutorialFreeRuns(TUTRUN *rec);
 
 /* 0x578180, starts the tutorial (called from 0x53bb20): -3 while it runs, -2 when no chapter is played; the run
    chain ai_TutorialRuns is built from the main intro, the chain of every chapter played (ai_TutorialChapterOn /
@@ -2478,7 +2478,7 @@ void ai_TutorialStop(void)
         if (ai_TutorialBanks[i])
             sb_UnloadSampleBank(ai_TutorialBanks[i]);
     }
-    ai_TutorialFreeRuns((char *)ai_TutorialRuns);
+    ai_TutorialFreeRuns(ai_TutorialRuns);
     ai_TutorialRuns = 0;
     ai_Tutorial->state = 0;
     ai_Tutorial->textAt = 0;
@@ -2496,22 +2496,22 @@ void ai_TutorialStop(void)
     ai_TutorialOn = 0;
     ai_TutorialRunning = 0;
 }
-/* 0x578440, frees the tutorial record chain (82 B, recursive): nothing for a null record; else its +0x70 next
-   record, its +0x58 and +0x64 tables (mem_Free, both cleared) and then the record itself */
+/* 0x578440, frees the tutorial record chain (82 B, recursive): nothing for a null record; else its next record,
+   then its step table (steps) and marker table (marks) (mem_Free, both cleared) and then the record itself */
 
-void ai_TutorialFreeRuns(char *rec)
+void ai_TutorialFreeRuns(TUTRUN *rec)
 {
     if (!rec)
         return;
-    if (*(char **)(rec + 0x70))
-        ai_TutorialFreeRuns(*(char **)(rec + 0x70));
-    if (*(int *)(rec + 0x58)) {
-        mem_Free(*(int *)(rec + 0x58));
-        *(int *)(rec + 0x58) = 0;
+    if (rec->next)
+        ai_TutorialFreeRuns(rec->next);
+    if (rec->steps) {
+        mem_Free(rec->steps);
+        rec->steps = 0;
     }
-    if (*(int *)(rec + 0x64)) {
-        mem_Free(*(int *)(rec + 0x64));
-        *(int *)(rec + 0x64) = 0;
+    if (rec->marks) {
+        mem_Free(rec->marks);
+        rec->marks = 0;
     }
     mem_Free(rec);
 }
@@ -2864,7 +2864,7 @@ int ai_TutorialInitChapter1(void)
     ai_TutorialBanks[1] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_1.sbf", 0);
     return (int)head;
 fail:
-    ai_TutorialFreeRuns((char *)head);
+    ai_TutorialFreeRuns(head);
     return 0;
 }
 /* 0x578e40, builds the run chain of the tutorial's chapter 2 (ai_TutorialChapterInit[1]): nine run records (the
@@ -3118,7 +3118,7 @@ int ai_TutorialInitChapter2(void)
     ai_TutorialBanks[2] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_2.sbf", 0);
     return (int)head;
 fail:
-    ai_TutorialFreeRuns((char *)head);
+    ai_TutorialFreeRuns(head);
     return 0;
 }
 
@@ -3771,7 +3771,7 @@ int ai_TutorialInitChapter3(void)
     ai_TutorialBanks[3] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_3.sbf", 0);
     return (int)head;
 fail:
-    ai_TutorialFreeRuns((char *)head);
+    ai_TutorialFreeRuns(head);
     return 0;
 }
 /* 0x57aa80, builds the run chain of the tutorial's chapter 4 (ai_TutorialChapterInit[3]): five run records (the
@@ -3920,7 +3920,7 @@ int ai_TutorialInitChapter4(void)
     ai_TutorialBanks[4] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_4.sbf", 0);
     return (int)head;
 fail:
-    ai_TutorialFreeRuns((char *)head);
+    ai_TutorialFreeRuns(head);
     return 0;
 }
 /* 0x57aeb0, builds the run chain of the tutorial's chapter 5 (ai_TutorialChapterInit[4]): eight run records (the
@@ -4216,7 +4216,7 @@ int ai_TutorialInitChapter5(void)
     ai_TutorialBanks[5] = snd_LoadVoiceBank("TUTORIAL_CHAPTER_5.sbf", 0);
     return (int)head;
 fail:
-    ai_TutorialFreeRuns((char *)head);
+    ai_TutorialFreeRuns(head);
     return 0;
 }
 /* 0x57b750, allocates the run record of the tutorial's main outro ("FTInitMainOutro"): 0 when that fails (the
