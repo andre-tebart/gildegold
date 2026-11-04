@@ -1208,23 +1208,24 @@ int gv_GraveCount(unsigned char *o)
     }
     return n;
 }
-/* 0x4ef440, how many of the slots (0x4ef3c0 of them, 0x44 bytes each from the table at +0x20 of the record) are in use (first word not -1) */
+/* 0x4ef440, how many of the graves of gv_GraveCount are in use (GVYARD.graves, GVGRAVE.id not -1) */
 
 int gv_GravesInUse(unsigned char *o)
 {
+    AIBLD *bld = (AIBLD *)o;
+    GVGRAVE *g;
     int n, cnt;
-    int *p;
 
     n = gv_GraveCount(o);
     cnt = 0;
     if (n == 0)
         return 0;
     if (n > 0) {
-        p = *(int **)(*(char **)(o + 0x65) + 0x20);
+        g = bld->yard->graves;
         do {
-            if (*p != -1)
+            if (g->id != -1)
                 cnt++;
-            p += 0x11;
+            g++;
             n--;
         } while (n != 0);
     }
