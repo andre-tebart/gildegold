@@ -195,7 +195,7 @@ void d3snd_DetachAll(void)
         if (d3snd_List[i].obj)
             d3snd_Detach(&d3snd_List[i]);
 }
-/* 0x4179d0 */
+/* 0x4179d0, detaches a sound slot from its sample and object (NULL is ignored) */
 
 void d3snd_Free(D3SOUND *s)
 {
