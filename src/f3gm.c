@@ -107,11 +107,11 @@ extern int gm_NetMsgCount;
 extern int gm_RichestYear;
 extern int gm_RichestWorth;
 extern ORDCHAR *gm_RichestChar;
+extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 /* The five income sums are the last int of the five 17-int rows of gm_IncomeHistory (0x91b580, 0x154
    bytes): the rows start 0x44 apart, so these aliases sit at the end of each row. They are views, not
    separate globals - a separate definition would reserve its own memory here and the 0x154-byte
    ord_ResetStatistics memset would zero whatever the COMMON linker put inside it (it hit ai_BTypes). */
-#define ai_Unk91b5c0 (gm_IncomeHistory + 0x40)   /* 0x91b5c0, the current sum of row 0 */
 #define ai_Unk91b604 (gm_IncomeHistory + 0x84)   /* 0x91b604, row 1 */
 #define ai_Unk91b648 (gm_IncomeHistory + 0xc8)   /* 0x91b648, row 2 */
 #define ai_Unk91b68c (gm_IncomeHistory + 0x10c)  /* 0x91b68c, row 3 */
@@ -227,35 +227,37 @@ float gm_IncomeRating(void)
 /* 0x4f9f60, income kind 1 of the character id (rate of the record 9 * 0.01 * the character's int at +0x19c, not below 0): stores kind 1, the amount (+8 + 4k) and the record's rate (+0x20 + 4k) in the first free slot k of the 6 of out;
    flag 1 sends the amount to the player, flag 2 adds it to the sum 0x91b5c0. Returns 1 (slot found) or 0 */
 
-int gm_IncomeKind1(unsigned id, char *out, unsigned char flags)
+int gm_IncomeKind1(unsigned id, GMINCOME *out, unsigned char flags)
 {
     int rec[9];
     int k, n, cnt;
     float x;
+    ORDBLD *b;
+    ORDOBJ *o;
 
     gv_GetTableRecord(9, rec);
     for (k = 0; k < 6; k++) {
-        if (out[k] == 0) {
+        if (out->kind[k] == 0) {
             if (k >= 6)
                 return 0;
-            cnt = *(int *)(CH(id) + 0x19c);
+            cnt = ORD_CHARS[(unsigned short)id].wage;
             x = (float)(rec[6] * 0.01f);
             x = (float)(x * cnt);
-            if (!(x > 0))
-                x = 0;
+            if (!(x > ai_FloatZero))
+                x = ai_FloatZero;
             n = (int)x;
             if (cnt > 0) {
-                out[k] = 1;
-                *(int *)(out + 8 + k * 4) = n;
-                *(int *)(out + 0x20 + k * 4) = rec[6];
+                out->kind[k] = 1;
+                out->amount[k] = n;
+                out->rate[k] = rec[6];
                 if (flags & 1) {
-                    char *o, *b = (char *)gm_FirstBuilding(1);
-                    o = (char *)gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x115);
-                    cm_SendMoveGoodsUnchecked(*(int *)(o + 2), *(int *)(CH(id) + 4), 0, n);
+                    b = (ORDBLD *)gm_FirstBuilding(1);
+                    o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+                    cm_SendMoveGoodsUnchecked(o->objId, ORD_CHARS[(unsigned short)id].netId, 0, n);
                     gm_NetMsgCount++;
                 }
                 if (flags & 2)
-                    *(int *)ai_Unk91b5c0 += n;
+                    gm_IncomeRows[0][16] += n;
             }
             return 1;
         }
@@ -458,7 +460,7 @@ int gm_CharacterIncomes(unsigned id, GMINCOME *out, unsigned char flags)
     if (amt_HasTownObject(gm_TitleGroup(ORD_CHARS[i].jobId)) != 0)
         gm_IncomeKind2(id, (char *)out, flags);
     else
-        gm_IncomeKind1(id, (char *)out, flags);
+        gm_IncomeKind1(id, out, flags);
     gm_IncomeKind5(id, (char *)out, flags);
     if (ORD_CHARS[i].v1a8 > 0)
         gm_IncomeKind3(id, out, flags);
