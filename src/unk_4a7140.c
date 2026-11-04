@@ -2579,7 +2579,7 @@ int ai_ExecTheater(AIPER *p, AIARG *m)
    building of kind 0x1f holding object 0x276 picks a character within 25..57 units to honour, into m (kind 7, a
    cost 2..7); returns 0x45 (sic) */
 
-int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
+int ai_DecideEhrerbietung(int a, AIPER *p, int c, AIARG *m)
 {
     int v, i, n;
     unsigned int flags;
@@ -2594,7 +2594,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
     if ((a != 0x47 && a != 0) || c != 0 || v == 0 || p->kind == 3)
         return 0;
     b = ai_BldsT;
-    for (i = 0; i < 0x100; i++) {
+    for (i = 0; i < 0x100; i++, b++) {
         if (b->type != 0 && b->owner == p->id && ai_BTypesT[b->type].kind == 0x1f
             && gm_Query(b->objList, 2, 6, 0, 0x276) != 0) {
             flags = PARTNER_FLAGS_ANY;
@@ -2604,13 +2604,12 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
             n = util_RandomU(p->money < 8 ? p->money : 8);
             if (n <= 2)
                 n = 2;
-            *(int *)(m + 0x10) = n;
-            *(int *)(m + 4) = o->netId;
-            *(int *)(m + 0xc) = 0;
-            m[0] = 7;
+            m->arg2 = n;
+            m->ref = o->netId;
+            m->ref2 = 0;
+            m->kind = 7;
             return 0x45;
         }
-        b++;
     }
     return 0;
 }
@@ -2666,7 +2665,7 @@ int ai_RegisterSocialActions(int a)
     act.id = 0x47;
     strcpy(act.name, "Ehrerbietung");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4abd00;
+    act.decide = ai_DecideEhrerbietung;
     act.exec = ai_Unk4abe60;
     act.flags = 3;
     return am_RegisterMethod(&act, a) != 0;
