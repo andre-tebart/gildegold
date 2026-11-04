@@ -205,7 +205,7 @@ void bgi_MatC8(void *f, BGIRD *c)
 {
     bio_rd_c(f, &BGI_M(c).c8);
 }
-/* 0x44f300 */
+/* 0x44f300, binary-format record 0xe: reads the current material's c9 byte (0xc9) */
 
 void bgi_MatC9(void *f, BGIRD *c)
 {
