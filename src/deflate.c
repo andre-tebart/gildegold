@@ -407,7 +407,7 @@ int ZEXPORT deflateParams(strm, level, strategy)
  * IN assertion: the stream state is correct and there is enough room in
  * pending_buf.
  */
-/* 0x461e70 */
+/* 0x461e70, appends a 16-bit value to the pending output high byte first */
 local void putShortMSB (s, b)
     deflate_state *s;
     uInt b;
