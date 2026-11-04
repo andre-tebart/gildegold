@@ -1913,24 +1913,24 @@ void ai_HookChapter3Intro(int arg)
 
 void ai_HookChapter5Intro(int arg)
 {
-    char *r;
-    char *q;
+    AIBLD *r;
+    AIOBJ *q;
     int kind;
 
     if (arg)
         return;
-    if (U_I((unsigned)&ai_PlayerBuilding)) {
-        kind = *(unsigned char *)U_I((unsigned)&ai_PlayerBuilding);
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 2)
+    if (ai_PlayerBuilding) {
+        kind = ((AIBLD *)ai_PlayerBuilding)->type;
+        if (((AIBTYPE *)ai_BTypes)[kind].kind == 2)
             return;
     }
-    r = (char *)gm_BuildQuery(2, 5, 2, 4, *(unsigned short *)(unsigned)&ai_PlayerId);
+    r = (AIBLD *)gm_BuildQuery(2, 5, 2, 4, ai_PlayerId);
     if (!r)
         return;
-    q = (char *)gm_Query(*(int *)(r + 0x5d), 1, 0, 0x13);
+    q = (AIOBJ *)gm_Query((void *)r->objList, 1, 0, 0x13);
     if (!q)
         return;
-    sv_SelectPanelObjectK(r, *(int *)(q + 2), (char *)(unsigned)&ch_EmptyName);
+    sv_SelectPanelObjectK(r, q->objId, ch_EmptyName);
 }
 /* 0x5775c0, the run hook of the run record FTInitChapter5Step4: at the run's start (end 0) sends two messages for
    the player's character - cm_SendSetField (netId, 0x1c8, 4, 0x4000, 0) and cm_SendMoveGoodsUnchecked (netId, -1,
