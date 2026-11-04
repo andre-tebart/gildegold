@@ -3285,7 +3285,7 @@ void gm_ChangeRelationToJobs(unsigned short a, int b);
 void cm_SendAddSkill(int a, int b, int c);
 void ai_Unk4c5870(int a);
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
-void ai_Unk5a91c0(void);
+void ai_PlagueNews(void);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
 void amt_ChangeDistrictOpinion();
@@ -4097,7 +4097,7 @@ void he_Unk549ce0(int ev)
             *(int *)(ev + 0xd0) = *(int *)(b + 1);
             gm_AddTime(ev + 0x52, 0, 1, 0);
             *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
-            ai_Unk5a91c0();
+            ai_PlagueNews();
             return;
         }
         n--;

@@ -14315,25 +14315,26 @@ void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec)
         he_ShowNews(p->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyHS46);
     }
 }
-/* 0x5a91c0, the plague message (91 B): 0x42ec00 (3) picks the text (0x20c7 + the value) into 0x6f26c8 and the
-   key 0x62c2c0 is formatted by 0x5de652 into the 256-byte buffer; every character of the kind 6 / 7 (0x770b82,
-   0x300 records) gets it with the +4 id (0x600) */
+/* 0x5a91c0, the plague news to every player character (91 B): a random 0 .. 2 picks the news text 0x20c7 + r and
+   the sound key "_KATASTROPHE_PEST_HS_0%i" (r + 0), formatted with r into the 256-byte buffer; every kind 6 / 7
+   character gets the text and the sound with the event 0x600 to its netId. Called by the plague event's init
+   (he_Unk549ce0, "HE_EVT_PEST") after its message */
 
-void ai_Unk5a91c0(void)
+void ai_PlagueNews(void)
 {
     char local[256];
-    char *p;
+    G8CHARREC *c;
     unsigned short v;
 
     v = (unsigned short)util_Random(3);
-    sprintf(local, (char *)(unsigned)&full_data_62c2c0, (unsigned int)v);
-    txt_Format((char *)(unsigned)&ai_NewsText, v + 0x20c7);
-    p = (char *)((unsigned)&ai_Chars + 0x2);
+    sprintf(local, "_KATASTROPHE_PEST_HS_0%i", (unsigned int)v);
+    txt_Format(ai_NewsText, v + 0x20c7);
+    c = (G8CHARREC *)ai_Chars;
     do {
-        if (*p == 6 || *p == 7)
-            he_ShowNews(*(int *)(p + 2), -1, (char *)(unsigned)&ai_NewsText, 0, 0x600, local);
-        p += 0x21c;
-    } while ((int)p < (int)((unsigned)&ai_Chars + 0x65402));
+        if (c->kind == 6 || c->kind == 7)
+            he_ShowNews(c->netId, -1, ai_NewsText, 0, 0x600, local);
+        c++;
+    } while ((int)&c->kind < (int)&gm_PlayerRecordBytes);
 }
 /* 0x5a9240, a plague message (112 B): util_Random (2) picks the sound "_KATASTROPHE_PEST_HS_0<v + 3>" and the
    text 0x20ca + the value; a character of the kind 6 / 7 sends the text and the sound with the news 0x600 to its
