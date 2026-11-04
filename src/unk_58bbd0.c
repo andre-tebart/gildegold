@@ -8426,7 +8426,7 @@ int gm_GetWorth(unsigned short id); int ai_Unk5bd470(); int ai_Unk5bd330(); void
    list 0x5bd470 (param_1, 0, 0) / 0x5bd330 (param_1, 9, rows, win, 2) is rebuilt (the texts 0x18f2 / 0x18f3
    when it is empty) or the clicked control selects 1 / 2; the 9 row triples 0x472ce0 / 0x46e710 are freed on
    each rebuild and at the end; the pump 0x5309a0 (0x59dc00, 0x677c7), 0x4758f0 at the end */
-void ai_Unk59dc00(unsigned short *param_1)
+void ai_MoneyLenderInfoWindow(unsigned short *param_1)
 {
     int rows[9 * 3];
     int a;
@@ -8514,7 +8514,7 @@ void ai_Unk59dc00(unsigned short *param_1)
         }
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_Unk59dc00, 0x677c7) == 0)
+        if (sv_RunFrame(ai_MoneyLenderInfoWindow, 0x677c7) == 0)
             break;
     }
     for (i = 0; i < 9; i++) {
@@ -8525,24 +8525,21 @@ void ai_Unk59dc00(unsigned short *param_1)
     }
     d2_CloseView(win);
 }
-/* 0x59df10, opens the fortune overview (0x18ec) through the window helper 0x5c1130 (a 0x50-byte request
-   record: +4 = 0x400, +8 = 0xa7fdfbb6, +0xc = 1, +0x10 = 6, the text 0x18ec, the callback 0x59dc00) and
-   0x52d7a0 */
+/* 0x59df10, the fortune overview of the money lender (the contact_VERMOEGENSUEBERSICHT of 0x59df80) through
+   the amount menu 0x5c1130: the config (mode 0x400, kind 6, the filter gypsyFilter, the rest cleared), the
+   text 0x18ec and the callback 0x59dc00 (the info window), then the camera follows; bld is not read */
 
-void ai_Unk59df10(int param_1)
+void ai_FortuneOverview(AIBLD *bld)
 {
-    int req[20];
+    AMOUNTCFG cfg;
     char text[0x40];
-    int i;
 
-    for (i = 0; i < 20; i++)
-        req[i] = 0;
-    req[1] = 0x400;
-    req[4] = 6;
-    req[2] = 0xa7fdfbb6;
-    req[3] = 1;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
     txt_Format(text, 0x18ec);
-    ai_AmountMenu(req, text, 0, (void *)(unsigned)&ai_Unk59dc00);
+    ai_AmountMenu(&cfg, text, 0, (void *)ai_MoneyLenderInfoWindow);
     sv_CameraFollow();
 }
 /* 0x59df80, the money lender contact listener (288 B): the pump 0x5309a0 (0x59df80, 0x67fff) and the lookups
@@ -8570,7 +8567,7 @@ void ai_Unk59df80(int param_1, int room)
             if (U_I((unsigned)&ai_ClickedObject) == meister)
                 ai_MasterLetterWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == overview)
-                ai_Unk59df10(param_1);
+                ai_FortuneOverview(param_1);
             if (U_I((unsigned)&ai_ClickedObject) != 0) {
                 if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId)) {
                     if (U_I((unsigned)&ai_ClickedObject) == wechsel)
