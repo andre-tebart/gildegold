@@ -10768,19 +10768,20 @@ void he_Unk558de0(int ev)
 {
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0xb4);
 }
-/* 0x558e10, a run handler: state 3 posts the event 1 later, state 9 frees the record */
+/* 0x558e10, the run handler of the event type 0x17: state 3 sets its due clock to now + 1 minute, state 9 frees the record */
 
-void he_Unk558e10(int ev)
+void he_RunEvent17(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
 
-    if (st == 9) {
+    switch (e->stage) {
+    case 3:
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 1, 0);
+        break;
+    case 9:
         he_FreeEvent((int *)ev);
-        return;
-    }
-    if (st == 3) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
+        break;
     }
 }
 /* 0x558e70, the allocation handler of the "SABOTAGE" message event: due now + 1; with no building (+0x10 = -1) the first of the kind 0x16 (else 0xf) is taken; +0xc4 = -1 and +0xc8 = 0x4c59f0 (0, +0x10, -1, 0, 1, 0x174, "SABOTAGE") */
@@ -13487,7 +13488,7 @@ int he_Unk568310(void)
     if (he_Unk53d600(22, (void *)he_Unk5588c0, (void *)he_Unk558a40) != 0)
         return 1;
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
-    if (he_Unk53d600(23, (void *)he_Unk558de0, (void *)he_Unk558e10) != 0)
+    if (he_Unk53d600(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
         return 1;
     if (he_Unk53d600(25, (void *)he_Unk558e70, (void *)he_Unk558f10) != 0)
         return 1;
