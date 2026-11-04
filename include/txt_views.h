@@ -21,7 +21,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextMercenaryBook                        (*(char * *)((char *)txt_Ptrs + 0x00228))  /* 0x143a3e8, the hover text of the mercenary book ob_SOELDNERBUCH (ai_MercenaryBookContact); the wording is unknown */
 #define full_data_143a3ec                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0022c))  /* 0x143a3ec */
 #define full_data_143a3f0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x00230))  /* 0x143a3f0 */
-#define full_data_143a3f4                        (*(unsigned char (*)[408])((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4 */
+#define ai_ContactTextParchment                 (*(char * *)((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4, the text the ub_INFORMATIONSPERGAMENT plate of the room 0x14c listener shows (ai_GuildHallListener); the wording is unknown */
 #define ai_Unk143a588                            (*(int (*)[7])((char *)txt_Ptrs + 0x003c8))  /* 0x143a588 */
 #define ai_Unk143a610                            (*(char * (*)[2])((char *)txt_Ptrs + 0x00450))  /* 0x143a610 */
 #define txt_PseudoCharName                            (*(char * *)((char *)txt_Ptrs + 0x00458))  /* 0x143a618 */
@@ -219,7 +219,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextAmbush                        (*(char * *)((char *)txt_Ptrs + 0x07df0))  /* 0x1441fb0, the hover text of the contact_AUF_LAUER_LEGEN plate (its click opens ai_BreakInWindow) */
 #define ai_ContactTextEquip                        (*(char * *)((char *)txt_Ptrs + 0x07df8))  /* 0x1441fb8, the hover text of the AUSRUESTEN plate and of the weapon stand ub_STAENDER_WAFFEN (both open ai_EquipWindow); the wording is unknown */
 #define ai_ContactTextSpy                        (*(char * *)((char *)txt_Ptrs + 0x07e20))  /* 0x1441fe0, the hover text of the contact_GEBAEUDE_AUSSPIONIEREN plate (its click opens ai_OpenSpying) */
-#define full_data_1442000                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07e40))  /* 0x1442000 */
+#define ai_ContactTextRazzia                     (*(char * *)((char *)txt_Ptrs + 0x07e40))  /* 0x1442000, the hover text of the contact_RAZZIA plate of the room 0x14c listener (ai_GuildHallListener); the wording is unknown */
 #define ai_ContactTextRegeneration                        (*(char * *)((char *)txt_Ptrs + 0x07e48))  /* 0x1442008, the hover text of the contact_REGENERATION plate (its click opens ai_TrainingWindow) */
 #define ai_ContactTextExtort                        (*(char * *)((char *)txt_Ptrs + 0x07e50))  /* 0x1442010, the hover text of the contact_SCHUTZGELD_ERPRESSEN plate (its click opens ai_OpenBribe) */
 #define ai_ContactTextPickpocket                 (*(char * *)((char *)txt_Ptrs + 0x07e58))  /* 0x1442018, the hover text of the contact_TASCHENDIEBSTAHL plate (ai_ThievesGuildListener -> ai_PickpocketVictimWindow) */

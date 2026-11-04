@@ -8340,7 +8340,7 @@ void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_A
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_TrainingContact();
 void ai_KidnapContact(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
-void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_CityWatchListener(); void ai_Unk5a6920();
+void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_CityWatchListener(); void ai_GuildHallListener();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_ConfessionListener(); void ai_TownHallContact();
 void ai_TownCashContact();
@@ -8930,7 +8930,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x139: ai_GuildLevel3Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x145: ai_Unk5a6a90(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x146: ai_CityWatchListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x14c: ai_Unk5a6920(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x14c: ai_GuildHallListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x24b: ai_AlchemistLabContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x256: ai_CannonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x266: ai_CabinetContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -12785,13 +12785,14 @@ void ai_ArrestStart(int building)
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
-/* 0x5a6920, a contact listener (183 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with the mask 0x200 the
-   contacts contact_LAGER (0x1441f90, 0xe), contact_AUSRUESTEN (0x1441fb8, 0xd), contact_RAZZIA (0x1442000,
-   0x16), contact_GEBAEUDE_AUSSPIONIEREN (0x1441fe0, 0x17), ub_INFORMATIONSPERGAMENT (0x143a3f4, 0xc) and
-   contact_TRANSPORT (0x1441fa0, 0x15); the pending click 0x6f22e4 opens 0x5b26b0 (param_1, the record 0x6f2310
-   +0x14) / 0x5bb350 / 0x5a61f0 / 0x5a44e0 / 0x5a45c0 / 0x5af1a0 */
+/* 0x5a6920, the guild hall contact listener, the room 0x14c of the building driver 0x59e420 (183 B; the guild
+   hall is a reasoned reading of the plates: the watch's raid and the thieves' guild's espionage next to the
+   store, equip and transport offers): releases the name plates, then every frame registers contact_LAGER
+   (class 0xe), contact_AUSRUESTEN (0xd), contact_RAZZIA (0x16), contact_GEBAEUDE_AUSSPIONIEREN (0x17),
+   ub_INFORMATIONSPERGAMENT (0xc) and contact_TRANSPORT (0x15); a click opens ai_StorageWindow (the building, the
+   shown room's objList), ai_EquipWindow, ai_RaidStart, ai_EspionageStart, ai_SpyRingWindow or ai_OpenTransport */
 
-void ai_Unk5a6920(int param_1)
+void ai_GuildHallListener(AIBLD *bld)
 {
     int lager = 0;
     int ausruesten = 0;
@@ -12802,31 +12803,31 @@ void ai_Unk5a6920(int param_1)
     int r;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5a6920, 0x67fff);
+    r = sv_RunFrame(ai_GuildHallListener, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
-            razzia = sv_RegisterNamePlate("contact_RAZZIA", U_I((unsigned)&full_data_1442000), 0x16);
-            ausspionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&ai_ContactTextSpy), 0x17);
-            pergament = sv_RegisterNamePlate("ub_INFORMATIONSPERGAMENT", U_I((unsigned)&full_data_143a3f4), 0xc);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
+        if (ai_BuildingPerms & 0x200) {
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", ai_ContactTextEquip, 0xd);
+            razzia = sv_RegisterNamePlate("contact_RAZZIA", ai_ContactTextRazzia, 0x16);
+            ausspionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", ai_ContactTextSpy, 0x17);
+            pergament = sv_RegisterNamePlate("ub_INFORMATIONSPERGAMENT", ai_ContactTextParchment, 0xc);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
         }
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && (U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(U_I((unsigned)&sv_PanelShown) + 0x14));
-            else if (U_I((unsigned)&ai_ClickedObject) == ausruesten)
-                ai_EquipWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == razzia)
-                ai_RaidStart(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ausspionieren)
-                ai_EspionageStart((unsigned char *)param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == pergament)
-                ai_SpyRingWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
+        if (ai_ClickedObject != 0 && (ai_BuildingPerms & 0x200) != 0) {
+            if (ai_ClickedObject == lager)
+                ai_StorageWindow((int)bld, ((AIOBJ *)sv_PanelShown)->list);
+            else if (ai_ClickedObject == ausruesten)
+                ai_EquipWindow((int)bld);
+            else if (ai_ClickedObject == razzia)
+                ai_RaidStart((int)bld);
+            else if (ai_ClickedObject == ausspionieren)
+                ai_EspionageStart((unsigned char *)bld);
+            else if (ai_ClickedObject == pergament)
+                ai_SpyRingWindow((int)bld);
+            else if (ai_ClickedObject == transport)
+                ai_OpenTransport((int)bld);
         }
-        r = sv_RunFrame(ai_Unk5a6920, 0x67fff);
+        r = sv_RunFrame(ai_GuildHallListener, 0x67fff);
     }
 }
 /* 0x5a6a90, a contact listener (172 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with the mask 0x200 the
