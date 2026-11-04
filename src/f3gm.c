@@ -8876,23 +8876,25 @@ int gm_BuildingSkill(unsigned char *b, unsigned k, int flag)
         return (int)(gm_BuildingLevel((char *)b) * 0.01 * s + 0.5);
     return s;
 }
-/* 0x5093a0, the same sum over the building kind p without asking for the instance */
+/* 0x5093a0, the sum over the building kind `kind` alone (the same as gm_BuildingSkill's, without the query for
+   the instance): of the kind record's 0x40 object slots (+0x23) those whose skill byte (+0x1a3) is k add
+   their value (+0x1e3) */
 
-int gm_Unk5093a0(int kind, unsigned k)
+int gm_BuildingKindSkill(int kind, unsigned k)
 {
-    char *p;
+    unsigned char *p;
     int i, s;
-    unsigned short *w;
+    unsigned short *slot;
 
     i = 0;
-    p = ai_BTypes + kind * 0x24d;
+    p = (unsigned char *)ai_BTypes + kind * 0x24d;
     s = 0;
-    w = (unsigned short *)(p + 0x23);
+    slot = ((GMBTYPE *)p)->objs;
     do {
-        if ((*w & 0x7fff) != 0 && (unsigned char)p[s + 0x1a3] == k)
-            i += (unsigned char)p[s + 0x1e3];
+        if ((*slot & 0x7fff) != 0 && p[s + 0x1a3] == k)
+            i += p[s + 0x1e3];
         s++;
-        w++;
+        slot++;
     } while (s < 0x40);
     return i;
 }
