@@ -1063,7 +1063,8 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     int id;                        /* 0x01, the building's id (ai_bld.h AIBLD.id) */
     char pad05[0x22];
     unsigned short owner;          /* 0x27, the owner's character id */
-    char pad29[0x34];
+    unsigned short mainRoom;       /* 0x29, the room the building's panel opens with (ai_bld.h AIBLD.mainRoom) */
+    char pad2b[0x32];
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
     int object;                    /* 0x61, its object in the scene */
 } AIBLD;
@@ -8625,34 +8626,34 @@ void ai_MoneyLenderContact(AIBLD *bld, int room)
         }
     }
 }
-/* 0x59e0a0, switches the current building room (the record 0x6f2308 + 0x29) to the param_1-th entry of the
-   building 0x4ffe90 (0x6f2308 + 0x5d, 1, 4, 2), or to the word param_2 when param_1 == -1; 0x6f22a0 = the
+/* 0x59e0a0, switches the current building room (the record 0x6f2308 + 0x29) to the index-th entry of the
+   building 0x4ffe90 (0x6f2308 + 0x5d, 1, 4, 2), or to the word room when index == -1; 0x6f22a0 = the
    0x6f229c - 0x6f22a4 + 1 count, the room matrices 0x43b790 / 0x43b860 (0xfc2dec + 0 / + 0x10), the counters
    0x6f22cc / 0x6f22d0 = 0 and the sound "RaumWechseln_s" (0x426fa0) */
 
-void ai_SwitchRoom(int param_1, unsigned short param_2)
+void ai_SwitchRoom(int index, unsigned short room)
 {
     unsigned short *p;
     int i;
 
-    if (param_1 == -1) {
-        *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29) = param_2;
+    if (index == -1) {
+        ((AIBLD *)ai_PlayerBuilding)->mainRoom = room;
     } else {
-        p = (unsigned short *)gm_Query(U_I(U_I((unsigned)&ai_PlayerBuilding) + 0x5d), 1, 4, 2);
+        p = (unsigned short *)gm_Query(((AIBLD *)ai_PlayerBuilding)->objList, 1, 4, 2);
         if (p == 0)
             return;
-        for (i = 1; i < param_1; i++) {
+        for (i = 1; i < index; i++) {
             p = (unsigned short *)gm_QueryNext();
             if (p == 0)
                 return;
         }
-        *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29) = *p;
+        ((AIBLD *)ai_PlayerBuilding)->mainRoom = *p;
     }
-    U_I((unsigned)&sv_PopRequest) = (U_I((unsigned)&sv_FrameDepth) - U_I((unsigned)&sv_FrameBase)) + 1;
+    sv_PopRequest = (sv_FrameDepth - sv_FrameBase) + 1;
     d3_SetObjectPos(d3_Camera, sv_ViewPos);
     d3_SetObjectRot(d3_Camera, sv_ViewRot);
-    U_I((unsigned)&sv_BorderViewX) = 0;
-    U_I((unsigned)&sv_BorderViewY) = 0;
+    sv_BorderViewX = 0;
+    sv_BorderViewY = 0;
     sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
 }
 /* 0x59e170, the opening hours of a building kind (112 B): the table 0x62afa0 (kind dword, the open byte +4,
