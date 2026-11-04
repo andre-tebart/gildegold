@@ -134,7 +134,7 @@ typedef struct
 */
 
 
-/* 0x467a20 */
+/* 0x467a20, reads one byte from fin into *pi; returns UNZ_OK, UNZ_ERRNO (a read error) or UNZ_EOF (no byte to read) */
 local int unzlocal_getByte(fin,pi)
 	FILE *fin;
 	int *pi;
