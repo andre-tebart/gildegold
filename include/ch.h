@@ -178,7 +178,7 @@ struct D3HMAP *ch_GetSceneHMap(D3SCENE *scene);                                 
 void ch_UpdateFades(void);                                                              /* 0x4022e0 */
 void ch_SetVisible(CHARACTER *ch, int show);                                            /* 0x402480 */
 void ch_InflateModel(CHARACTER *ch);                                                       /* 0x402540 */
-void ch_SetPos(CHARACTER *ch, D3VECTOR *pos, int unk);                                  /* 0x4025c0 */
+void ch_SetPos(CHARACTER *ch, D3VECTOR *pos, int relight);                                  /* 0x4025c0 */
 void ch_PlaceAtObject(CHARACTER *ch, D3OBJECT *obj);                                    /* 0x402640 */
 int ch_Count(int scene, int all);                                                       /* 0x4026c0 */
 int ch_CountAt(int scene, int all, D3VECTOR *pos, float eps);                           /* 0x402720 */

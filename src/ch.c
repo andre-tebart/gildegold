@@ -220,17 +220,17 @@ void ch_InflateModel(CHARACTER *ch)
     if (ch->lowPolyBody && !ch->lowPolyBody->info)
         d3_InflateObject(ch->lowPolyBody);
 }
-/* 0x4025c0 */
+/* 0x4025c0, moves a character to a position, puts it and its transport on the ground (relight: relight them) */
 
-void ch_SetPos(CHARACTER *ch, D3VECTOR *pos, int unk)
+void ch_SetPos(CHARACTER *ch, D3VECTOR *pos, int relight)
 {
     d3_SetObjectPos(ch->obj, pos);
-    if (unk)
+    if (relight)
         d3_RelightObject(ch->obj);
     ch_PlaceOnGround(ch, 0);
     if (ch->transport) {
         ch_PlaceTransport(ch, 0);
-        if (unk)
+        if (relight)
             d3_RelightObject(*ch->transport);
     }
     if (ch->lowPolyBody)
