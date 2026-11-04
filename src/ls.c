@@ -1410,7 +1410,7 @@ int ls_LoadGame(int name, int kind)
     if ((ls_Version >= 0x1002e && unk_Unk5205f0(h) == 0) || ls_FixupAfterLoad() == 0)
         goto close;
     d3if_SelectScene(0, 1);
-    unk_Unk511790();
+    init_PrepareTownScene();
     unk_Unk511840();
     if (ls_ReadSceneRecords(h) == 0)
         LS_LOADFAIL
@@ -1430,7 +1430,7 @@ int ls_LoadGame(int name, int kind)
         LS_LOADFAIL
     vfs_fclose(h);
     sv_Unk528770();
-    unk_Unk511790();
+    init_PrepareTownScene();
     init_AfterTownLoad();
     init_SetDetailLevel(d3_Terrain, 1);
     strcpy(ls_SavePath.path, ai_Unk76f9bc);

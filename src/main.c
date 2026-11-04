@@ -4820,7 +4820,7 @@ void main_GameLoop(int ctl)
     sv_BuildScreenLayout(w);
     d3if_SelectScene(0, 0);
     if ((U_I((unsigned)&ai_GameFlags) & 1) != 0 && (U_I((unsigned)&ai_GameFlags) & 0x40) == 0) {
-        unk_Unk511790();
+        init_PrepareTownScene();
         unk_Unk511840();
         ai_BookmarksPreset();
     }

@@ -102,7 +102,7 @@ typedef struct INIT_BLD {
     unsigned char level;            /* 0x5c, the building's level 0 .. 100 (ai.h's AIBLD.level; the value the
                                        building's worth 0x509b10 is weighted by) */
     int objList;                    /* 0x5d, the head of the building's object-instance list (gm_Query 0x4ffe90) */
-    char pad61[4];                  /* 0x61 .. 0x64 */
+    D3OBJECT *object;               /* 0x61, its 3D object in the scene (ai.h's AIBLD.object) */
     int player;                     /* 0x65, the city the building belongs to: an index into the player slots
                                        ai_PlayerSlots (init_StockMarketStalls reads the city's import / export
                                        goods through it, he.c / sv.c its name) */
@@ -2567,23 +2567,24 @@ char init_TownBuildingHook(char *o)
 /* 0x511790, prepares the town scene: the flag 4 on every building scene object of the class 6, the hook 0x511700 on all "gb_" objects, the torches (0x5116b0), and the scene's tree is rebuilt */
 
 
-void unk_Unk511790(void)
+void init_PrepareTownScene(void)
 {
-    char *b, *o;
+    INIT_BLD *b;
+    D3OBJECT *o;
 
-    b = (char *)gm_BuildQuery(1, 6);
+    b = (INIT_BLD *)gm_BuildQuery(1, 6);
     while (b != 0) {
-        o = *(char **)(b + 0x61);
+        o = b->object;
         if (o != 0) {
-            o[0x212] = (o[0x212] & 0xf7) | 4;
-            sv_UpdateChimneySmoke(b);
+            o->stateFlags = (o->stateFlags & 0xf7) | 4;
+            sv_UpdateChimneySmoke((struct AIBLD *)b);
         }
-        b = (char *)gm_BuildNext();
+        b = (INIT_BLD *)gm_BuildNext();
     }
     d3_ForEachObject(d3_DefaultScene, 0, 0x40, init_TownBuildingHook, 0);
     init_RebuildQuadTree();
     ai_CheckBuildSites();
-    d3sm_Build(*(int *)((char *)d3_DefaultScene + 0xb0), d3_Terrain);
+    d3sm_Build(d3_DefaultScene->hmap, d3_Terrain);
 }
 /* 0x511810, scene object callback: an object of the type 0 / 1 / 3 / 4 (+0x220) gets the flag 4 in +0x213 */
 

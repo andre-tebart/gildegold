@@ -41,7 +41,7 @@ char init_CollectTorchObject(struct D3OBJECT *o, void *ctx);           /* 0x5115
 void init_StripTorches(struct D3OBJECT *s);                                              /* 0x511600 */
 void init_RebuildQuadTree(void);                                               /* 0x5116b0 */
 char init_TownBuildingHook(char *o);                                    /* 0x511700 */
-void unk_Unk511790(void);                                               /* 0x511790 */
+void init_PrepareTownScene(void);                                               /* 0x511790 */
 int ai_Unk511810(char *o);                                              /* 0x511810 */
 void unk_Unk511840(void);                                               /* 0x511840 */
 int init_NameBuildings(void);                                           /* 0x511890 */
