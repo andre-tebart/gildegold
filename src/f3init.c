@@ -2589,13 +2589,15 @@ void init_PrepareTownScene(void)
 /* 0x511810, scene object callback: an object of the type 0 / 1 / 3 / 4 (+0x220) gets the flag 4 in +0x213 */
 
 
-int ai_Unk511810(char *o)
+int init_FlagTreeObject(char *o)
 {
+    D3OBJECT *obj;
     int t;
 
-    t = *(int *)(o + 0x220);
+    obj = (D3OBJECT *)o;
+    t = obj->kind;
     if (t == 3 || t == 4 || t == 1 || t == 0)
-        o[0x213] |= 4;
+        obj->flags |= 4;
     return t;
 }
 /* 0x511840, frees and re-creates the quad tree 0x6f1c28 from the scene's objects (0x511810) */
@@ -2606,7 +2608,7 @@ void unk_Unk511840(void)
         d3q_FreeNode((D3QNODE *)d3_QuadTree);
         d3_QuadTree = 0;
     }
-    d3_ForEachObject2(d3_DefaultScene, 0, 0x40, ai_Unk511810);
+    d3_ForEachObject2(d3_DefaultScene, 0, 0x40, init_FlagTreeObject);
     d3_QuadTree = (int)d3q_Create(0, 0x40, 8, 7);
 }
 /* 0x511890, gives every building of the class 6 (not the type 0x1c) a name: the names of its kind (the 0xc names at 0x143b400 + 0x38 per kind) that no building uses yet, up to 0x20 characters ("Building name too long: %s" is the error text), one picked at random into the building's name field (+5) @deep behaviour: 178 code hunks / 404 of 544 bytes, meaning read whole against the original 0x511890..0x511ad0 (both gm_BuildQuery(1,6) walks, the 0xc x 0xe name table walk, the 0x100 x 0xa9 ai_Blds compare, the 0x20 length check, the random pick, the two error formats) - no meaning difference left; the frame now matches 0x810 exactly. Frame finding of this session: the original has TWO 0x200-byte error buffers, one per "Building name too long" format (0x120..0x320 for the arm that calls err_Message, 0x620..0x810 for the arm that drops the text); our single err[0x200] left the frame 0x610 and every buffer 0x200 too low. After adding the second (char text[0x200]) the anchors match: one at 0x20, names at 0x320, the sprintf/err_Message pair at 0x124/0x12c, the dead format at 0x620. Left (allocation only): the original pushes ebx/ebp/edi mid-function (at 0x5118ee, the second walk) where ours pushes them in the prologue, the first walk keeps cnt/zero in esi vs the original's [esp+0xc] + test eax, and the register assignment of the strcpy/strlen blocks (109 +/- lines, every one read). Also tried and reverted: util_Random((unsigned char)cnt) - the original zero-extends the count with xor dx,dx / mov dl,al (a char parameter in its TU), our cast gives and eax,0xff and 179 code hunks, plain cnt gives 178. */

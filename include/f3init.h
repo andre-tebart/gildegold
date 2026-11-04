@@ -42,7 +42,7 @@ void init_StripTorches(struct D3OBJECT *s);                                     
 void init_RebuildQuadTree(void);                                               /* 0x5116b0 */
 char init_TownBuildingHook(char *o);                                    /* 0x511700 */
 void init_PrepareTownScene(void);                                               /* 0x511790 */
-int ai_Unk511810(char *o);                                              /* 0x511810 */
+int init_FlagTreeObject(char *o);                                              /* 0x511810 */
 void unk_Unk511840(void);                                               /* 0x511840 */
 int init_NameBuildings(void);                                           /* 0x511890 */
 void init_LocalData(void);                                              /* 0x511ad0 */
