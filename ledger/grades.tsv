@@ -2027,15 +2027,15 @@ exe	0x004ba0c0	ai_Unk4ba0c0	unk_4b6480	shape	draft	deep
 exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	unk_4b6480	byte	readable		
 exe	0x004ba470	ai_MsgWorkerLoseSkillType30	unk_4b6480	byte	readable		
 exe	0x004ba630	ai_Unk4ba630	unk_4b6480	draft	draft	deep	
-exe	0x004ba840	ai_Unk4ba840	unk_4b6480	byte	draft		
-exe	0x004ba970	ai_Unk4ba970	unk_4b6480	byte	draft		
-exe	0x004baa80	ai_Unk4baa80	unk_4b6480	byte	draft		
-exe	0x004baba0	ai_Unk4baba0	unk_4b6480	byte	draft		
+exe	0x004ba840	ai_SellBuildingGoodsShare	unk_4b6480	byte	readable		
+exe	0x004ba970	ai_MsgTakeBuildingGoodsPct13to25Type32	unk_4b6480	byte	readable		
+exe	0x004baa80	ai_MsgTakeBuildingGoodsPct5to19Type33	unk_4b6480	byte	readable		
+exe	0x004baba0	ai_MsgTakeBuildingGoodsPct5to24Type34	unk_4b6480	byte	readable		
 exe	0x004bacc0	ai_MsgLoseGood	unk_4b6480	byte	readable		
-exe	0x004bae20	ai_Unk4bae20	unk_4b6480	byte	draft		
-exe	0x004baf30	ai_Unk4baf30	unk_4b6480	byte	draft		
-exe	0x004bb030	ai_Unk4bb030	unk_4b6480	byte	draft		
-exe	0x004bb150	ai_Unk4bb150	unk_4b6480	byte	draft		
+exe	0x004bae20	ai_MsgRewardPct1to3Skill82Type39	unk_4b6480	byte	readable		
+exe	0x004baf30	ai_MsgAddSkill8to24Type3a	unk_4b6480	byte	readable		
+exe	0x004bb030	ai_MsgLoseSkill6to17Type3b	unk_4b6480	byte	readable		
+exe	0x004bb150	ai_MsgPayPct1to4Type3c	unk_4b6480	byte	readable		
 exe	0x004bb250	ai_Unk4bb250	unk_4b6480	byte	draft	deep	
 exe	0x004bb330	ai_Unk4bb330	unk_4b6480	byte	draft		
 exe	0x004bb430	ai_Unk4bb430	unk_4b6480	byte	draft		
