@@ -334,7 +334,8 @@ int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
 }
 
 /* ========================================================================= */
-/* 0x461b40 */
+/* 0x461b40, clears a stream to its initial state (counters, pending
+ * output, checksum, hash heads) and returns Z_OK */
 int ZEXPORT deflateReset (strm)
     z_streamp strm;
 {
