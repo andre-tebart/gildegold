@@ -290,7 +290,7 @@ int ai_MsgPayPctOver120(G14MSG *m)
 void ai_MsgNoOp(struct AICHAR *c);
 
 /* 0x4b6fd0, message: c pays 1..3 % (not for officeKind 0x0e; with item 0x290 only 0x4b70f0, which does nothing) */
-int ai_Unk4b6fd0(G14MSG *m)
+int ai_MsgPayPct1to3Type0c(G14MSG *m)
 {
     AICHAR *c;
     double k;
@@ -1935,7 +1935,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgRewardPct1to3, ai_MsgRewardPct2to4, ai_MsgOfficeApplicantPayment, ai_MsgPayPct1to3,
     ai_MsgPayPct1to4, ai_MsgRewardPct2to5, ai_MsgRewardPct1to3Type68, ai_MsgPayForBuilding,
     ai_MsgRewardPct1to3Type68, ai_MsgPayPct2to4, ai_MsgPayPct125, ai_MsgPayPctOver120,
-    ai_Unk4b6fd0, ai_Unk4b7100, ai_Unk4b7200, ai_Unk4b7310,
+    ai_MsgPayPct1to3Type0c, ai_Unk4b7100, ai_Unk4b7200, ai_Unk4b7310,
     ai_Unk4b7430, ai_Unk4b7550, ai_Unk4b76b0, ai_Unk4b76b0,
     ai_Unk4b77b0, ai_Unk4b78c0, ai_Unk4b79c0, ai_Unk4b7ac0,
     ai_Unk4b7bc0, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
