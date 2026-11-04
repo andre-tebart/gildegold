@@ -6882,21 +6882,21 @@ void sv_PopTo(int cb)
         }
     }
 }
-/* 0x52fb80, pumps the window messages of 0x6f2588 (the message struct 0x75ec40); WM_QUIT sets 0x6f25b4; returns 1 */
+/* 0x52fb80, pumps the messages of the game window main_Window (reading them into sv_Message): WM_QUIT sets main_QuitProgram; returns 1 */
 
 int sv_PumpMessages(void)
 {
     int r;
 
-    r = PeekMessageA((MSG *)(unsigned)&sv_Message, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
+    r = PeekMessageA(&sv_Message, main_Window, 0, 0, 0);
     while (r != 0) {
-        if (GetMessageA((MSG *)(unsigned)&sv_Message, (HWND)SV_I((unsigned)&main_Window), 0, 0) == 0)
-            SV_I((unsigned)&main_QuitProgram) = 1;
+        if (GetMessageA(&sv_Message, main_Window, 0, 0) == 0)
+            main_QuitProgram = 1;
         else {
-            TranslateMessage((MSG *)(unsigned)&sv_Message);
-            DispatchMessageA((MSG *)(unsigned)&sv_Message);
+            TranslateMessage(&sv_Message);
+            DispatchMessageA(&sv_Message);
         }
-        r = PeekMessageA((MSG *)(unsigned)&sv_Message, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
+        r = PeekMessageA(&sv_Message, main_Window, 0, 0, 0);
     }
     return 1;
 }
