@@ -1021,7 +1021,7 @@ extern int ZEXPORT unzOpenCurrentFile (file)
   return <0 with error code if there is an error
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
 */
-/* 0x468430 */
+/* 0x468430, reads up to len uncompressed bytes of the current file into buf */
 extern int ZEXPORT unzReadCurrentFile  (file, buf, len)
 	unzFile file;
 	voidp buf;
