@@ -439,7 +439,7 @@ int ai_MsgPayPct1to3BuildingType11(G14MSG *m)
 }
 /* 0x4b76b0, message: v = 1..2 % of 0x50a640 (not with item 0x290; types 0x12 and 0x13) */
 
-int ai_Unk4b76b0(G14MSG *m)
+int ai_MsgPayPct1to2Type1213(G14MSG *m)
 {
     AICHAR *c;
     double k;
@@ -1936,7 +1936,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to4, ai_MsgRewardPct2to5, ai_MsgRewardPct1to3Type68, ai_MsgPayForBuilding,
     ai_MsgRewardPct1to3Type68, ai_MsgPayPct2to4, ai_MsgPayPct125, ai_MsgPayPctOver120,
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
-    ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_Unk4b76b0, ai_Unk4b76b0,
+    ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_Unk4b77b0, ai_Unk4b78c0, ai_Unk4b79c0, ai_Unk4b7ac0,
     ai_Unk4b7bc0, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
