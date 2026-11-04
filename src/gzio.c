@@ -369,7 +369,7 @@ local int destroy (s)
      Reads the given number of uncompressed bytes from the compressed file.
    gzread returns the number of bytes actually read (0 for end of file).
 */
-/* 0x463110 */
+/* 0x463110, reads up to len decompressed bytes from a gzip file into buf */
 int ZEXPORT gzread (file, buf, len)
     gzFile file;
     voidp buf;
