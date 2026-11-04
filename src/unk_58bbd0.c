@@ -8889,7 +8889,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
 int init_BuildingSceneUniverse(); void init_LoadBuildingScene(int k); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
 void ai_GraveyardContact(char *rec); void ai_GypsyProductionContact(int building); void ai_Unk587ad0(char *rec);
 void ai_Unk5876a0(char *rec); void ai_GypsyContact(int building); void ai_TheatreContact(int building); void ai_CurseContact(int buildingArg);
-void ai_Unk587560(char *rec);
+void ai_GraveyardTradeContact(char *rec);
 
 /* 0x59ee40, the enter-building driver for the player's own / kind 0x1c buildings (1398 B, ROUGH: the view and
    device bookkeeping is condensed): 0x59e210 refuses -> 0x75e8c0 = 0; the room record 0x511e60 (param_1) is
@@ -9105,7 +9105,7 @@ void ai_Unk59f410(unsigned short *param_1)
     case 0x33: ai_Unk592320(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x37: ai_Unk5938c0(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x107: ai_Unk593e80(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x205: ai_Unk587560(U_I((unsigned)&ai_FallbackBuilding)); break;
+    case 0x205: ai_GraveyardTradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x211: ai_Unk587ad0(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x21b: ai_Unk5876a0(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x276: ai_GypsyContact(U_I((unsigned)&ai_FallbackBuilding)); break;
@@ -14964,7 +14964,7 @@ int ai_Unk5ad000(void)
    0x5aa700 and the pump 0x5309a0 loop with 0x5aa9a0, the percent box 0x5ad000, the selected record through
    0x50a810 / 0x5aa1f0 / 0x5aa4b0, the slider 0x50c520, the AIMSG messages 7 / 0x31, the free path 0x4fca40 and
    the exit 0x52d7a0). ROUGH: the Ghidra pseudocode lost the call arguments (a 0x136c-byte frame) */
-int ai_Unk5ad150(int param_1, char *param_2)
+int ai_PersonnelBookWindow(int param_1, char *param_2)
 {
     /* ROUGH: not written yet - see the comment above */
     return 0;
