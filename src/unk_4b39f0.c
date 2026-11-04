@@ -524,9 +524,10 @@ int ai_CondMoney(AICHAR *c, G13TYPE *t)
 {
     return gm_ConvertMoney(gm_CharCurrency((void *)c, ai_OwnPlayer), ai_OwnPlayer) >= t->goal;
 }
-/* 0x4b4670, mission condition: at least t->goal of c's five values (bytes 0x80..0x84, / 42) reach t->threshold */
+/* 0x4b4670, mission condition (types 4 / 9 / 29): at least t->goal of the character's five skills (bytes
+   0x80 .. 0x84, each / 42) reach t->threshold */
 
-int ai_Unk4b4670(AICHAR *c, G13TYPE *t)
+int ai_CondSkills(AICHAR *c, G13TYPE *t)
 {
     int i, n;
 
@@ -869,7 +870,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 4:
     case 9:
     case 29:
-        return ai_Unk4b4670(c, t);
+        return ai_CondSkills(c, t);
     case 15:
     case 16:
     case 17:
