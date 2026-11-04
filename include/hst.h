@@ -50,7 +50,7 @@ int ai_CommandLaw(int a, int b, char *fmt);                                     
 int ai_CommandLawChange(int s, int b, char *fmt);                                /* 0x4b0b50 */
 int ai_CommandFaithChange(int a, int b, char *fmt);                               /* 0x4b0d40 */
 int ai_CommandRiot(void);                                                        /* 0x4b0fd0 */
-int ai_Unk4b1060(int a, int b, char *fmt);                                       /* 0x4b1060 */
+int ai_CommandBreakGuildSeats(int a, int b, char *fmt);                                       /* 0x4b1060 */
 void hst_ResetLists(void);                                                /* 0x4b1f30 */
 
 /* declared in other units' headers before (moved to the owner) */
