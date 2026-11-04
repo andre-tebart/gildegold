@@ -3985,9 +3985,9 @@ void main_UpdateFigures(void)
         }
     }
 }
-/* 0x53b830, returns 1 */
+/* 0x53b830, the CD check: returns 1 (the retry loops of main_BeginPlayerRound and main_GameLoop wait for 1; this build always passes) */
 
-int main_Unk53b830(void)
+int main_CheckCD(void)
 {
     return 1;
 }
@@ -4108,7 +4108,7 @@ void main_BeginPlayerRound(void)
     }
     ai_PlayerId = (unsigned short)cur;
     he_Unk53ee40();
-    if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_Unk53b830() != 1) {
+    if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_CheckCD() != 1) {
         do {
             d2_CutsceneActive = 0;
             sv_FrameMask = 0x24087;
@@ -4120,7 +4120,7 @@ void main_BeginPlayerRound(void)
             }
             d2_DrawAll();
             Sleep(1000);
-        } while (main_Unk53b830() != 1);
+        } while (main_CheckCD() != 1);
     }
     sv_FrameMask = 0x24087;
     if ((ai_GameFlags & 4) != 0)
@@ -4634,7 +4634,7 @@ void main_GameLoop(int ctl)
         w = -1;
         ai_Unk4b1f90();
         if ((U_I((unsigned)&ai_GameFlags) & 0x10) != 0) {
-            iv = main_Unk53b830();
+            iv = main_CheckCD();
             if (iv != 1) {
                 while (1) {
                     U_I((unsigned)&sv_FrameMask) = 0x24087;
@@ -4691,7 +4691,7 @@ void main_GameLoop(int ctl)
         d2_CloseView(w);
     } else {
         net_Connect(0, 0);
-        iv = main_Unk53b830();
+        iv = main_CheckCD();
         if (iv != 1) {
             while (1) {
                 U_I((unsigned)&d2_CutsceneActive) = 0;
