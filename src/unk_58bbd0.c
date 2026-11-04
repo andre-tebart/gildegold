@@ -15678,21 +15678,24 @@ int ai_Unk5b4820(void)
    0x5b4c54 and seven nops to 0x5b4c60; the start is the callback that 0x5b4fb0 pushes (and the immediate at
    0x5b4f80); a 0x51c-byte frame. The body is a comment */
 
-int ai_Unk5b4c60(void)
+int ai_DrohbriefAmountCB(void)
 {
     /* ROUGH SKELETON: the 0x51c-byte frame */
     return 0;
 }
-/* 0x5b4fb0, a callback window (83 B, ROUGH SKELETON): a 0x50-byte record (cleared), the callback 0x5b4c60, the
-   globals 0x143ff20 and the floats 0x5eed68 / 0x5eed6c; a 0x50-byte frame. The body is a comment */
+/* 0x5b4fb0, the threatening-letter ("Drohbrief") window of the rhetoric contact 0x5965f0 (83 B): the amount
+   menu 0x5c1130 with the config (mode 0x400, kind 6, the filter gypsyFilter, the rest cleared), the contact's
+   text 0x1758 and the callback 0x5b4c60, whose result it returns; bld is not read */
 
 int ai_DrohbriefWindow(void)
 {
-    int rec[0x14];
+    AMOUNTCFG cfg;
 
-    memset(rec, 0, sizeof(rec));
-    /* ROUGH SKELETON: the fields 0x5eed68 / 0x5eed6c and the callback 0x5b4c60 */
-    return 0;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    return ai_AmountMenu(&cfg, txt_Ptrs[0x1758], 0, (void *)ai_DrohbriefAmountCB);
 }
 /* 0x5b5010, a window over the player's character record (779 B, ROUGH SKELETON): the record 0x770b80 +
    0x6f25b8 * 0x21c and the object walk 0x4ffe90 (2, ...); a 0x390-byte frame. The body is a comment */
