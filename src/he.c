@@ -301,27 +301,6 @@ int gm_CompareTime();
 #include "gv_types.h"
 #include "ch.h"
 #include "am_types.h"
-typedef union HEPAYLOAD {               /* the kind-specific words of an event from AIJOB +0xac (its id union u) on, of the kinds
-                                           whose words run over AIJOB's unions there */
-    struct {                            /* a storm event 0x50 (the alloc handler 0x5652b0, the run handler 0x565410) */
-        int blds[16];                   /* 0xac, the ids of the 16 buildings the alloc handler collected, -1: none */
-        unsigned char due;              /* 0xec, set by the alloc handler: the run handler damages them once, then clears it */
-    } storm;
-    struct {                            /* a six-group event 0x7d (the alloc handler 0x551d00, the run handler 0x551d70) */
-        int padac;
-        int groups[6];                  /* 0xb0, its six figure groups (gm_Shuffled, each + 1) */
-    } six;
-    struct {                            /* a running income event 3 (the alloc handler 0x568ae0, the run handler 0x568be0) */
-        unsigned short good;            /* 0xac, the goods (an ai_Goods index) */
-        char padae[2];
-        int amount;                     /* 0xb0, the stock amount the run handler pays out: the goods' work time */
-        float amountF;                  /* 0xb4, the same as a float */
-        int bld;                        /* 0xb8, the building whose group its workers join */
-        char padbc[8];
-        float rate;                     /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
-        unsigned char counter;          /* 0xc8, 0 at the start */
-    } income;
-} HEPAYLOAD;
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -8584,8 +8563,8 @@ void he_InitSixGroupEvent(int ev)
     int i;
     int *q;
 
-    gm_Shuffled(6, ((HEPAYLOAD *)&e->u)->six.groups);
-    for (q = ((HEPAYLOAD *)&e->u)->six.groups, i = 0; i < 6; i++)
+    gm_Shuffled(6, e->groups);
+    for (q = e->groups, i = 0; i < 6; i++)
         *q++ += 1;
     e->end = ai_Time;
     e->stage = 0xc;
@@ -12406,8 +12385,8 @@ void he_RunStormEvent(int ev)
         AIBLD *b;
         int *bldIds;
 
-        if ((e->opts & 2) != 0 && ((HEPAYLOAD *)&e->u)->storm.due != 0) {
-            bldIds = ((HEPAYLOAD *)&e->u)->storm.blds;
+        if ((e->opts & 2) != 0 && e->stormDue != 0) {
+            bldIds = e->stormBlds;
             n = 0x10;
             do {
                 if (*bldIds != -1 && (b = (AIBLD *)gm_BuildQuery(1, 1, *bldIds)) != 0) {
@@ -12417,7 +12396,7 @@ void he_RunStormEvent(int ev)
                 bldIds++;
                 n--;
             } while (n != 0);
-            ((HEPAYLOAD *)&e->u)->storm.due = 0;
+            e->stormDue = 0;
         }
         he_FreeEvent((int *)ev);
         return;
@@ -13663,21 +13642,20 @@ float gm_MeanLiking(int c, int n, int *ids);
 void he_AllocIncomeEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    HEPAYLOAD *pay = (HEPAYLOAD *)&e->u;
     AIBLD *b;
     AICHAR *rec;
     double d;
     int v;
 
-    v = (int)GM_GOOD(pay->income.good)->workTime;
-    pay->income.amount = v;
+    v = (int)GM_GOOD(e->incomeGood)->workTime;
+    e->incomeAmount = v;
     e->end = e->start;
-    pay->income.amountF = (float)v;
+    e->incomeAmountF = (float)v;
     e->clock60 = e->start;
     d = gm_MeanLiking(e->chr, 8, e->ids) - 0.5;
-    pay->income.counter = 0;
-    pay->income.rate = (float)(d * 0.25);
-    b = (AIBLD *)gm_FindBuildingById(pay->income.bld);
+    e->incomeCounter = 0;
+    e->incomeRate = (float)(d * 0.25);
+    b = (AIBLD *)gm_FindBuildingById(e->incomeBld);
     for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
         if (rec->job == e)
             sv_MoveToGroup((unsigned char *)b, 0, rec->id, (char *)ev);

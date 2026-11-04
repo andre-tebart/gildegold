@@ -50,67 +50,88 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         int helpers[4];                 /* 0x8c, of a helper job 0x8c the characters on it, -1: a free place
                                            (ai_GypsyHelperWindow counts them) */
     };
-    union {
-        int unkac;                      /* 0xac, a building id */
-        int bldId;                      /* 0xac, of the building events (0x1b, 0x1c, 0x1e, 0x1f, 0x40) their building's id
-                                           (he_AddEventGfxInfo shows their gfx info over it) */
-        int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_EndPersonEvents) the first partner's netId */
-        int ownerCh;                    /* 0xac, of an event 0x24 / 0x32 the netId of the character it is for (ai_DecideChangeProfession
-                                           skips a character that has one; the promotion handlers find it with gm_FindChar) */
-        union {
-            int id;                     /* 0xac */
-            struct {
-                unsigned short lo;      /* 0xac */
-                unsigned short hi;      /* 0xae */
-            } w;
-        } u;
-    };
-    union {
-        int unkb0;                      /* 0xb0 */
-        int partner2;                   /* 0xb0, of a pair event the second partner's netId */
-        int id2;                        /* 0xb0, a second id: a building (kind 100) or a character (kind 0x89) as
-                                           sv_SpeakPicked looks them up */
-        int effectObj;                  /* 0xb0, of an effect event 0x76 the effect object's handle, 0: none yet (its
-                                           alloc handler 0x54fb50 clears it) */
-        int dropSlot;                   /* 0xb0, of a promotion event 0x32 the cm slot handle gm_DropRank leaves, -1: none
-                                           (its alloc handler 0x55dd70 sets -1) */
-    };
-    union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
+    union {                             /* 0xac..0xeb: the three unions, or a kind's own words over them */
         struct {
-            int unkb4;                          /* 0xb4 */
-            int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
-                                                   plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
-                                                   id / a news id (he.c per kind); no single role name */
-            char padbc[8];
-            int workTotal;                      /* 0xc4, of a building job 0xd the total that argc8 counts up to (sv_RefreshPanel: progress argc8 / workTotal) */
-            int argc8;                          /* 0xc8, a job-kind specific word (he.c: a random table entry, a task, an
-                                                   object); a workshop's chimney smokes only while its job has none
-                                                   (sv.c 0x528490) */
-            char padcc[4];
-            unsigned short in[3];               /* 0xd0, the workshop kinds */
-            unsigned short out[3];              /* 0xd6 */
-            int amount[3];                      /* 0xdc */
+            union {
+                int unkac;                      /* 0xac, a building id */
+                int bldId;                      /* 0xac, of the building events (0x1b, 0x1c, 0x1e, 0x1f, 0x40) their building's id
+                                                   (he_AddEventGfxInfo shows their gfx info over it) */
+                int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_EndPersonEvents) the first partner's netId */
+                int ownerCh;                    /* 0xac, of an event 0x24 / 0x32 the netId of the character it is for (ai_DecideChangeProfession
+                                                   skips a character that has one; the promotion handlers find it with gm_FindChar) */
+                union {
+                    int id;                     /* 0xac */
+                    struct {
+                        unsigned short lo;      /* 0xac */
+                        unsigned short hi;      /* 0xae */
+                    } w;
+                } u;
+            };
+            union {
+                int unkb0;                      /* 0xb0 */
+                int partner2;                   /* 0xb0, of a pair event the second partner's netId */
+                int id2;                        /* 0xb0, a second id: a building (kind 100) or a character (kind 0x89) as
+                                                   sv_SpeakPicked looks them up */
+                int effectObj;                  /* 0xb0, of an effect event 0x76 the effect object's handle, 0: none yet (its
+                                                   alloc handler 0x54fb50 clears it) */
+                int dropSlot;                   /* 0xb0, of a promotion event 0x32 the cm slot handle gm_DropRank leaves, -1: none
+                                                   (its alloc handler 0x55dd70 sets -1) */
+            };
+            union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
+                struct {
+                    int unkb4;                          /* 0xb4 */
+                    int unkb8;                          /* 0xb8, a job-kind specific payload word: of a harvest job (0x28) the
+                                                           plant it works (veg_FindPlantId, ai_SendJobOrders), else a counter / an
+                                                           id / a news id (he.c per kind); no single role name */
+                    char padbc[8];
+                    int workTotal;                      /* 0xc4, of a building job 0xd the total that argc8 counts up to (sv_RefreshPanel: progress argc8 / workTotal) */
+                    int argc8;                          /* 0xc8, a job-kind specific word (he.c: a random table entry, a task, an
+                                                           object); a workshop's chimney smokes only while its job has none
+                                                           (sv.c 0x528490) */
+                    char padcc[4];
+                    unsigned short in[3];               /* 0xd0, the workshop kinds */
+                    unsigned short out[3];              /* 0xd6 */
+                    int amount[3];                      /* 0xdc */
+                };
+                AITIME end6c;                   /* 0xb4, of a job kind 0x6c: the end time */
+                int cartBld;                    /* 0xb4, of the job a cart runs (AIOBJ.job24): the building (sv_RefreshPanel prints its kind) */
+                int id3;                        /* 0xb4, a third id: of a kind 0x1a the character sv_SpeakPicked looks up */
+                struct { char padid4[0x10]; int id4; };       /* 0xc4, of a kind 0x18: the character sv_SpeakPicked looks up */
+                struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
+                struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
+                struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
+                struct { char padsteps[6]; unsigned char steps; };  /* 0xba, of a next trial step event 0x5f its step count
+                                                              (its alloc handler 0x5496f0 clears it) */
+                struct { char padeff[0xe]; unsigned short effectGood; };  /* 0xc2, of an effect event 0x76 the Domizil table id
+                                                              (ai_FindUsableGood) whose duration sets its end time end6c */
+                struct { char padb8[4]; unsigned char rounds; };  /* 0xb8, of a trial event 0x5e the round counter (he.c 0x549430:
+                                                              1 at the first round, the third one moves the event to the state 1) */
+                struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark
+                                                               while argc8 is set), of a tribute event 0x35 the collector's netId (he.c) */
+                struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */
+                struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
+                                                                  members, -1 = free (sv_SendSelectedToBuilding) */
+            };
+            char pade8[4];
         };
-        AITIME end6c;                   /* 0xb4, of a job kind 0x6c: the end time */
-        int cartBld;                    /* 0xb4, of the job a cart runs (AIOBJ.job24): the building (sv_RefreshPanel prints its kind) */
-        int id3;                        /* 0xb4, a third id: of a kind 0x1a the character sv_SpeakPicked looks up */
-        struct { char padid4[0x10]; int id4; };       /* 0xc4, of a kind 0x18: the character sv_SpeakPicked looks up */
-        struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
-        struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
-        struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
-        struct { char padsteps[6]; unsigned char steps; };  /* 0xba, of a next trial step event 0x5f its step count
-                                                      (its alloc handler 0x5496f0 clears it) */
-        struct { char padeff[0xe]; unsigned short effectGood; };  /* 0xc2, of an effect event 0x76 the Domizil table id
-                                                      (ai_FindUsableGood) whose duration sets its end time end6c */
-        struct { char padb8[4]; unsigned char rounds; };  /* 0xb8, of a trial event 0x5e the round counter (he.c 0x549430:
-                                                      1 at the first round, the third one moves the event to the state 1) */
-        struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark
-                                                       while argc8 is set), of a tribute event 0x35 the collector's netId (he.c) */
-        struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */
-        struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
-                                                          members, -1 = free (sv_SendSelectedToBuilding) */
+        int stormBlds[16];              /* 0xac, of a storm event 0x50 the ids of the 16 buildings its alloc handler 0x5652b0
+                                           collected, -1: none */
+        struct { int padgrp; int groups[6]; };  /* 0xb0, of a six-group event 0x7d its six figure groups (its alloc
+                                                   handler 0x551d00: gm_Shuffled, each + 1) */
+        struct {                        /* 0xac, of a running income event 3 (its alloc handler 0x568ae0) */
+            unsigned short incomeGood;  /* 0xac, the goods (an ai_Goods index) */
+            char padinc[2];
+            int incomeAmount;           /* 0xb0, the stock amount the run handler pays out: the goods' work time */
+            float incomeAmountF;        /* 0xb4, the same as a float */
+            int incomeBld;              /* 0xb8, the building whose group its workers join */
+            char padinc2[8];
+            float incomeRate;           /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
+            unsigned char incomeCounter; /* 0xc8, 0 at the start */
+        };
     };
-    char pade8[8];
+    unsigned char stormDue;             /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
+                                           damages the buildings once, then clears it */
+    char paded[3];
     unsigned char modes;                /* 0xf0, of a kind 0x11 bit 0x40: the game pauses while its event window is active (he_PickActiveEvent) */
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
     char padf2[0x5a];                   /* up to 0x14c: the rest of the message's words from +0x58 (0xac..0x14c) */
