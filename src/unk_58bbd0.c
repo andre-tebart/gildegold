@@ -11629,7 +11629,7 @@ void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);
    guild id at +0xc, the clock 0x770ae0 .. +0x34, 1 at +0x36, param_1 + 1 at +0x58, the guild id at +0x5c and
    at +0x38 the +4 of up to 8 live table entries) and sent 0x4c4b70 / 0x4c2d20 with 0x6f22a0 = 2, or the text
    0x1440ae4 with none; the second button only sets 0x6f22a0; the exit 0x4758f0; returns 1 after the click */
-int ai_Unk5a48d0(int param_1)
+int ai_AttackWindow(int param_1)
 {
     int win;
     int ctl1;
@@ -11702,17 +11702,18 @@ int ai_Unk5a48d0(int param_1)
         } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
             U_I((unsigned)&sv_PopRequest) = 1;
         }
-        if (sv_RunFrame(ai_Unk5a48d0, 0x677c7) == 0)
+        if (sv_RunFrame(ai_AttackWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
     return done;
 }
-/* 0x5a4b30, the pickpocket start (95 B): the request record {0, 0x400, 0x90010, 0, 7}, 0x525220 (param_1, 0),
-   the text 0x1440974 and the request 0x5b2180 (1, the record, the text, the callback 0x5a48d0, 0), then
-   0x525440 and 0x52ae40 */
+/* 0x5a4b30, the attack start of the thieves' guild hall, the click of its contact_ANGRIFF plate (95 B): the
+   20-int map pick record is zeroed, its +4 = 0x400, +8 = 0x90010 and +0x10 = 7; the player bar opens (0x525220,
+   the building), the map pick runs (0x5b2180: 1, the record, the prompt text ai_MapPickPrompt, the attack window
+   ai_AttackWindow as callback, 0), then the player bar closes (0x525440) and the selection is cleared (0x52ae40) */
 
-void ai_Unk5a4b30(int param_1)
+void ai_AttackStart(int building)
 {
     int req[20];
     int i;
@@ -11722,8 +11723,8 @@ void ai_Unk5a4b30(int param_1)
     req[1] = 0x400;
     req[4] = 7;
     req[2] = 0x90010;
-    sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(1, req, (char *)U_I((unsigned)&ai_MapPickPrompt), (void *)(unsigned)&ai_Unk5a48d0, 0);
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, req, ai_MapPickPrompt, (int)ai_AttackWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -11859,7 +11860,7 @@ void ai_Unk5a4d40(int param_1)
             else if (click == espionage)
                 ai_Unk5a44e0((unsigned char *)param_1);
             else if (click == angriff)
-                ai_Unk5a4b30(param_1);
+                ai_AttackStart(param_1);
             else if (click == taschen)
                 ai_Unk5a4b90(param_1);
             else if (click == personal)
