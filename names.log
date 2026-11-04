@@ -1858,3 +1858,4 @@
 2026-11-04T14:46:44 0x004aaa10 data ai_Unk4aaa10 -> aip_ExecDrohen by:main why:execute callback of action 0x28 (threaten): sends message 0x2e (he_NoEvent2ePair), called by am.c's ai_ExecuteThreaten; the address comment names it aip_ExecDrohen
 2026-11-04T14:48:39 0x004ab7f0 data ai_Unk4ab7f0 -> ai_DecideVerfluchen by:main why:registered as act.decide of action 0x45 'Verfluchen' in ai_RegisterSocialActions (0x4abed0)
 2026-11-04T14:49:07 0x004ab9f0 data ai_Unk4ab9f0 -> ai_ExecVerfluchen by:main why:registered as act.exec of action 0x45 'Verfluchen' in ai_RegisterSocialActions (0x4abed0)
+2026-11-04T14:49:39 0x004abc60 func ai_Unk4abc60 -> ai_ExecTheater by:main why:registered as act.exec of action 0x46 'Theater' in ai_RegisterSocialActions (0x4abed0)

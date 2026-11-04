@@ -2557,21 +2557,21 @@ int ai_DecideTheater(int a, AIPER *p, int c, AIARG *m)
     }
     return 0;
 }
-/* 0x4abc60, execute callback of action 0x46 "Theater": p pays and puts on the play in building m + 4
-   (message 0xa0, length m + 0xc) */
+/* 0x4abc60, execute callback of action 0x46 "Theater": p pays m->arg2 and puts on the play in building m->ref
+   (message 0xa0, length m->ref2) */
 
-int ai_Unk4abc60(AIPER *p, unsigned char *m)
+int ai_ExecTheater(AIPER *p, AIARG *m)
 {
     AIMSG msg;
 
-    gm_SendMoneyDelta(p->netId, -*(int *)(m + 0x10));
+    gm_SendMoneyDelta(p->netId, -m->arg2);
     memset(&msg, 0, sizeof(msg));
     msg.to = p->netId;
-    msg.fromId = *(int *)(m + 4);
-    msg.time = ai_Time;
+    msg.fromId = m->ref;
     msg.type = 0xa0;
+    msg.time = ai_Time;
     msg.flags = 2;
-    msg.arg[0] = *(int *)(m + 0xc);
+    msg.arg[0] = m->ref2;
     cm_SendLongMessage(&msg);
     return 0x46;
 }
@@ -2658,7 +2658,7 @@ int ai_RegisterSocialActions(int a)
     strcpy(act.name, "Theater");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideTheater;
-    act.exec = ai_Unk4abc60;
+    act.exec = ai_ExecTheater;
     act.flags = 1;
     if (!am_RegisterMethod(&act, a))
         return 0;
