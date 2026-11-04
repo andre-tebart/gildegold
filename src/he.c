@@ -11160,23 +11160,29 @@ void he_Unk55b830(int ev)
     cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x40, 0);
     he_FreeEvent((int *)ev);
 }
-/* 0x55ba00, the allocation handler of a building event: both clocks now, due 1 unit later, the building +0xac (none: free) is +0x10 and gets the message 0x5a / 2 / 0x80 when its byte +0x5a is 0 */
+/* 0x55ba00, the allocation handler of the event type 0x1f: both clocks now, then the due clock 1 second later (5 hours with
+   gm_AllowAll); the building +0xac (none: the record is freed) is copied to +0x10 and gets the field 0x5a / 2 / 0x80
+   while the 0x80 bit of its byte +0x5a is clear */
 
-void he_Unk55ba00(int ev)
+void he_AllocEvent1f(int ev)
 {
-    int b;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+    e->end = ai_Time;
+    e->start = ai_Time;
+    if (gm_AllowAll != 0)
+        gm_AddTime(&e->end, 0, 0, 1);
+    else
+        gm_AddTime(&e->end, 5, 0, 0);
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
     if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    *(int *)(ev + 0x10) = *(int *)(b + 1);
-    if (*(unsigned char *)(b + 0x5a) == 0)
-        cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x80, 0);
+    e->from = b->id;
+    if ((b->flags5a & 0x80) == 0)
+        cm_SendSetField(b->id, 0x5a, 2, 0x80, 0);
 }
 /* 0x55bad0, the run handler of a building event (4 states by the jump table 0x55bd10; ROUGH): state 0 orders (0x4c4880 (+0xac building, -1, +0xb0, 1, 0, 0)) and marks the building (0x5a / 2 / 0x80), state 1 takes the owner figure (0x4ffe90), tells the player the news 0x1c2b (text 0x9a8 + +0xb0 * 2, "_NACHRICHTEN_HS_53", 0x606 / 0x60b by the 0x50a810 flag), the last state sends the goods (0x4c4db0 (4, ..)) and frees */
 
@@ -13506,7 +13512,7 @@ int he_Unk568310(void)
         return 1;
     if (he_Unk53d600(33, (void *)he_Unk55bf50, (void *)he_Unk55bfd0) != 0)
         return 1;
-    if (he_Unk53d600(31, (void *)he_Unk55ba00, (void *)he_Unk55bad0) != 0)
+    if (he_Unk53d600(31, (void *)he_AllocEvent1f, (void *)he_Unk55bad0) != 0)
         return 1;
     if (he_Unk53d600(35, (void *)he_Unk55c540, (void *)he_Unk55c700) != 0)
         return 1;
