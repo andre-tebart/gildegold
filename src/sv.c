@@ -395,12 +395,12 @@ int sv_CheckMoney(char *o, int n)
 
 int sv_CheckCharacterFlag(int id)
 {
-    unsigned short *p;
+    AICHAR *p;
     char buf[0x100];
 
-    p = (unsigned short *)gm_FindCharacterByMaster(id);
-    if (p != 0 && (*((unsigned char *)p + 0x1b4) & 1) != 0) {
-        txt_Format(buf, 0x78, *p);
+    p = (AICHAR *)gm_FindCharacterByMaster(id);
+    if (p != 0 && (p->flags1b4 & 1) != 0) {
+        txt_Format(buf, 0x78, p->id);
         sv_MessageBox(buf, 0x100);
         return 1;
     }
@@ -1058,6 +1058,7 @@ void sv_DestroyScreen(void)
 extern char *ai_Goods;              /* 0x91aaf0 */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define sv_ClickedObjectT (*(D3OBJECT **)&ai_ClickedObject)  /* 0x6f22e4, ai_ClickedObject (cm.h: int) as the scene object picked (d3if_Pick) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 int d2_BlitPartMode();                     /* 0x479150 */  /* @original: sv.c's call at 1099 passes 1 argument to d2.h's 8-parameter prototype */
 extern int sv_ResearchClass, sv_ScreenDirty, sv_GroundplanBuilding, sv_GroundplanRoom, sv_GroundplanScene;  /* 0x6f233c, 0x6f2358, 0x6f235c, 0x6f2360, 0x623e8c */
@@ -1465,7 +1466,7 @@ int sv_UsedGroupSlots(char *g)
     int *p;
 
     n = 0;
-    p = (int *)(g + 0x8c);
+    p = ((SVGROUP *)g)->member;
     i = 8;
     do {
         if (*p != -1)
@@ -5162,9 +5163,9 @@ void sv_HandleSelectionMouse(void)
             char name[0x80];
 
             t = -1;
-            sprintf(name, "dummy_%s", (char *)ai_ClickedObject + 8);
-            if (d3_FindObject((int)ai_ClickedObject, 0x100, 0, name) == 0)
-                strcpy(name, (char *)ai_ClickedObject);
+            sprintf(name, "dummy_%s", sv_ClickedObjectT->name + 8);
+            if (d3_FindObject((int)sv_ClickedObjectT, 0x100, 0, name) == 0)
+                strcpy(name, sv_ClickedObjectT->name);
             for (j = 0; j < 0x20; j++) {
                 c = (AICHAR *)ai_SceneChars[j];
                 b = 0;
