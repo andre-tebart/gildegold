@@ -296,6 +296,7 @@ int gm_CompareTime();
 #include "ai_bld.h"
 #include "f3gm_carry.h"
 #include "ai_char.h"
+#include "f3gm_types.h"              /* GMGOOD / GM_GOOD (the goods prototypes) */
 #include "gv_types.h"
 #include "ch.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -13638,27 +13639,40 @@ void he_EndKind23Events(int ev)
 
 float gm_MeanLiking(int c, int n, int *ids);
 
-/* 0x568ae0, the allocation handler of a building event (a Ghidra miss; ROUGH): +0xb0 = the value at 0x91aaf0 [+0xac * 0x41 + 0x22] (+0xb4 as a float), the clocks +0x52 / +0x60 are the start clock (+0x44), 0x50c980 (player id, 8, +0x8c) - 0.5 times 0.25 is the float +0xc4,
-   +0xc8 = 0; every player record whose +0x17c is this event is locked (0x524260 (object of +0xb8, id, 0, ev)); the first run is one unit ahead */
-void he_Unk568ae0(int ev)
-{
-    int v, o, rec;
-    double d;
+/* 0x568ae0, the allocation handler of the event type 3 (the running income, its run handler 0x568be0): the stock amount +0xb0
+   and its float at +0xb4 are the work time of the goods +0xac (ai_Goods), both clocks +0x52 / +0x60 are the start clock +0x44,
+   the rate +0xc4 is (gm_MeanLiking (+8, 8, +0x8c) - 0.5) * 0.25 and the counter +0xc8 is 0; every character whose job +0x17c is
+   this event joins the group of the building +0xb8; the next run is one minute ahead */
 
-    v = *(int *)(U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41 + 0x22);
-    *(int *)(ev + 0xb0) = v;
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(float *)(ev + 0xb4) = (float)v;
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
-    d = gm_MeanLiking(*(unsigned short *)(ev + 8), 8, ev + 0x8c) - 0.5;
-    *(char *)(ev + 0xc8) = 0;
-    *(float *)(ev + 0xc4) = (float)(d * 0.25);
-    o = gm_FindBuildingById(*(int *)(ev + 0xb8));
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(int *)(rec + 0x17c) == ev)
-            sv_MoveToGroup(o, *(unsigned short *)rec, 0, ev);
+void he_AllocIncomeEvent(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    unsigned short *goodsId = (unsigned short *)((char *)e + 0xac);   /* the goods index, AIJOB's +0xac word */
+    int *amount = (int *)((char *)e + 0xb0);    /* the stock amount the run handler pays out */
+    float *amountF = (float *)((char *)e + 0xb4);
+    AITIME *clock2 = (AITIME *)((char *)e + 0x60);  /* the second clock (AIJOB's +0x60 padding, an AITIME copy) */
+    int *bldId = (int *)((char *)e + 0xb8);
+    float *rate = (float *)((char *)e + 0xc4);
+    unsigned char *counter = (unsigned char *)e + 0xc8;
+    AIBLD *b;
+    AICHAR *rec;
+    double d;
+    int v;
+
+    v = (int)GM_GOOD(*goodsId)->workTime;
+    *amount = v;
+    e->end = e->start;
+    *amountF = (float)v;
+    *clock2 = e->start;
+    d = gm_MeanLiking(e->chr, 8, e->ids) - 0.5;
+    *counter = 0;
+    *rate = (float)(d * 0.25);
+    b = (AIBLD *)gm_FindBuildingById(*bldId);
+    for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
+        if (rec->job == e)
+            sv_MoveToGroup((unsigned char *)b, 0, rec->id, (char *)ev);
     }
-    gm_AddTime(ev + 0x52, 0, 0, 1);
+    gm_AddTime(&e->end, 0, 0, 1);
 }
 /* 0x568be0, the run handler of a building event with a running income (a Ghidra miss; ROUGH skeleton, 1248 bytes, jump table 0x5690a4): the building 0x4fea50 (+0xb8); the owner record ebp (+0x27, not the local player); every player record
    whose +0x17c is this event is released (0x524260 (0, 0, id, 0)) when it ends: -1 / -2 / no building free; state 0 goes to 1; state 1 (while the counters +0x14 / +0x18 are non-zero) each minute step (0x509400 (+0x60, now, 0)) adds to the
@@ -15003,7 +15017,7 @@ void he_Unk56ce40(int ev)
 
 int ai_Unk56d050(void)
 {
-    if (he_Unk53d600(3, (void *)he_Unk568ae0, (void *)he_Unk568be0) != 0)
+    if (he_Unk53d600(3, (void *)he_AllocIncomeEvent, (void *)he_Unk568be0) != 0)
         return 1;
     sv_RegisterActivity(3, "Abbau", 1, 0x501, 0xac);
     if (he_Unk53d600(4, (void *)he_Unk5690c0, (void *)he_Unk569210) != 0)
