@@ -100,7 +100,9 @@ typedef struct CHARACTER {         /* 0x244 bytes */
     char lowname[0xa];              /* 0x230 */
     unsigned char texSet;           /* 0x23a, the body's texture set (gm_SelectModelVariant: the owner's id modulo the
                                        mesh's set count), selected again when the character changes scene */
-    char pad23b[0x5];
+    char pad23b;
+    int familySlot;                 /* 0x23c, the family-choose slot the character was placed at (0 .. 5,
+                                       main_ChooseFamily), -1: not placed */
     unsigned char pathType;         /* 0x240, the path_Find unit type (selects the terrain cost table
                                        path_Terrain[type] for this character; all three readers pass it
                                        straight to path_Find's type argument) */

@@ -1699,38 +1699,39 @@ void main_Menue(void)
     }
     msx_SetFadeTime(5000);
 }
-/* 0x5344f0, puts a person (the template model name n of the list 0x1440d80, index k) at the dummy "n" of the scene object named a: the dummy position (0x458a20), a character object (0x403390 (b, pos)) that
-   looks along the dummy's heading (0x458810 / 0x4539f0, 0x43b860), walks ("bewegung/gehen", speed 0.7, 0x1a0), is registered as a status text plate (0x52e1c0); returns the new object or 0 */
+/* 0x5344f0, puts a person (the template model name n of the list main_FamilyModelNames, index k) at the dummy "a" of the scene: the dummy position (0x458a20), a character object (0x403390 (b, pos)) that
+   looks along the dummy's heading (0x458810 / 0x4539f0, 0x43b860), walks ("bewegung/gehen", walkSpeed 0.7), is registered as a status text plate (0x52e1c0); returns the new object or 0 */
 
-int main_Unk5344f0(int a, int b, int k)
+int main_PlaceFamilyModel(int a, int b, int k)
 {
-    int o, p;
+    D3OBJECT *o;
+    CHARACTER *ch;
     float dir[3], pos[4], loc[3];
 
-    o = d3_FindObject(0, 0x100, 0, a);
+    o = d3_FindObject(0, 0x100, 0, (char *)a);
     if (o == 0)
         return 0;
-    d3_PointToWorld(o, o + 0x4c, pos);
-    p = ch_Create(b, pos);
-    if (p != 0) {
+    d3_PointToWorld(o, &o->pos, (D3VECTOR *)pos);
+    ch = ch_Create((char *)b, (D3VECTOR *)pos);
+    if (ch != 0) {
         dir[0] = 0;
         dir[1] = 0.0f;
         dir[2] = 0;
-        d3_DirToWorld(o, (char *)&d3_ZAxis, loc);
-        dir[1] = d3_VecAngle((char *)&d3_ZAxis, loc);
-        d3_SetObjectRot(*(int *)(p + 0x34), dir);
-        ch_PlaceOnGround(p, 0);
-        *(int *)(*(int *)(p + 0x34) + 0x200) = p;
-        d3_UpdateObject(*(int *)(p + 0x34), 1);
-        ch_PreloadAnims(p, 1, "bewegung/gehen");
-        *(int *)(*(int *)(p + 0x34) + 0x48) = 0;
-        *(int *)(p + 0x1a0) = 0x3f333333;
-        *(int *)(p + 0x23c) = -1;
-        *(int *)(p + 0x2c) = 1;
-        *(char *)(p + 0x240) = 4;
-        sv_RegisterNamePlate(*(int *)(p + 0x34), U_I((unsigned)&full_data_1440d80 + k * 4), 0);
+        d3_DirToWorld((struct XOBJ *)o, (float *)&d3_ZAxis, loc);
+        dir[1] = d3_VecAngle((D3VECTOR *)&d3_ZAxis, (D3VECTOR *)loc);
+        d3_SetObjectRot(ch->obj, (D3VECTOR *)dir);
+        ch_PlaceOnGround(ch, 0);
+        ch->obj->owner = ch;
+        d3_UpdateObject(ch->obj, 1);
+        ch_PreloadAnims(ch, 1, "bewegung/gehen");
+        ch->obj->pickId = 0;
+        ch->walkSpeed = 0.7f;
+        ch->familySlot = -1;
+        ch->group = 1;
+        ch->pathType = 4;
+        sv_RegisterNamePlate((char *)ch->obj, main_FamilyModelNames[k], 0);
     }
-    return p;
+    return (int)ch;
 }
 /* 0x534040, gives the player p the start buildings: the home (kind 6, named "Home-Sweet-Home", its 0x13 objects
    shown by the character's slots, the start messages 0x15 / 0x17 / 0x18 / 0x14 to its id) and the buildings of
@@ -2117,15 +2118,15 @@ int main_ChooseFamily(int unused)
     scene = U_I((unsigned)&evt_LastId);
     if ((int)d3_Terrain != 0)
         *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xeb) | 8;
-    o1 = main_Unk5344f0((int)"dummy_NACHT_UND_NEBEL_MANN", (int)"dieb_MANN2", 0);
-    o2 = main_Unk5344f0((int)"dummy_NACHT_UND_NEBEL_FRAU", (int)"zigeunerin_FRAU", 8);
-    o3 = main_Unk5344f0((int)"dummy_HANDWERKSKUNST_MANN", (int)"handwerker_MANN", 1);
-    o4 = main_Unk5344f0((int)"dummy_HANDWERKSKUNST_FRAU", (int)"handwerkerin2_FRAU", 7);
-    o5 = main_Unk5344f0((int)"dummy_KAMPF_MANN", (int)"offizier_SOLDAT", 4);
-    o6 = main_Unk5344f0((int)"dummy_VERHANDELN_MANN", (int)"buerger3_DICKER", 3);
-    o7 = main_Unk5344f0((int)"dummy_VERHANDELN_FRAU", (int)"buergerin2_FRAU", 5);
-    o8 = main_Unk5344f0((int)"dummy_RHETORIK_MANN", (int)"priester_KUTTE", 2);
-    o9 = main_Unk5344f0((int)"dummy_RHETORIK_FRAU", (int)"buergerin_FRAU", 6);
+    o1 = main_PlaceFamilyModel((int)"dummy_NACHT_UND_NEBEL_MANN", (int)"dieb_MANN2", 0);
+    o2 = main_PlaceFamilyModel((int)"dummy_NACHT_UND_NEBEL_FRAU", (int)"zigeunerin_FRAU", 8);
+    o3 = main_PlaceFamilyModel((int)"dummy_HANDWERKSKUNST_MANN", (int)"handwerker_MANN", 1);
+    o4 = main_PlaceFamilyModel((int)"dummy_HANDWERKSKUNST_FRAU", (int)"handwerkerin2_FRAU", 7);
+    o5 = main_PlaceFamilyModel((int)"dummy_KAMPF_MANN", (int)"offizier_SOLDAT", 4);
+    o6 = main_PlaceFamilyModel((int)"dummy_VERHANDELN_MANN", (int)"buerger3_DICKER", 3);
+    o7 = main_PlaceFamilyModel((int)"dummy_VERHANDELN_FRAU", (int)"buergerin2_FRAU", 5);
+    o8 = main_PlaceFamilyModel((int)"dummy_RHETORIK_MANN", (int)"priester_KUTTE", 2);
+    o9 = main_PlaceFamilyModel((int)"dummy_RHETORIK_FRAU", (int)"buergerin_FRAU", 6);
     f = d2_OpenForm(0, 0, "Menu\\CHOOSECITY_HEADER");
     d2_PlaceMainWindowF(f, 1);
     k = 4;
@@ -6016,7 +6017,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* txt_Female: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_Faith0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_Faith1: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440d80: view of txt_Ptrs (build/mk_txt_views.py) */
+/* main_FamilyModelNames: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440da4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_144134c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1441350: view of txt_Ptrs (build/mk_txt_views.py) */

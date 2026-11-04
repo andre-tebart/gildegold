@@ -168,7 +168,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_Female                        (*(char **)((char *)txt_Ptrs + 0x06b58))  /* 0x1440d18 */
 #define txt_Faith0                        (*(char **)((char *)txt_Ptrs + 0x06b60))  /* 0x1440d20 */
 #define txt_Faith1                        (*(char **)((char *)txt_Ptrs + 0x06b64))  /* 0x1440d24 */
-#define full_data_1440d80                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x06bc0))  /* 0x1440d80 */
+#define main_FamilyModelNames                    (*(char * (*)[9])((char *)txt_Ptrs + 0x06bc0))  /* 0x1440d80, the nine template model names main_ChooseFamily places (the family figure k) */
 #define full_data_1440da4                        (*(unsigned char (*)[1420])((char *)txt_Ptrs + 0x06be4))  /* 0x1440da4 */
 #define ai_TextLoadGame                          (*(char * *)((char *)txt_Ptrs + 0x07170))  /* 0x1441330 */
 #define ai_TextSaveGame                          (*(char * *)((char *)txt_Ptrs + 0x07174))  /* 0x1441334 */
