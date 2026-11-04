@@ -482,7 +482,8 @@ char d3d_Restore(void)
 {
     return 1;
 }
-/* 0x4370e0 */
+/* 0x4370e0, shuts Direct3D down: frees the vertex buffer and releases the z-buffer (and its attached
+   surface), the viewport, the device and the Direct3D object */
 
 void d3d_Exit(void)
 {
