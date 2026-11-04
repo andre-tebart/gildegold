@@ -738,7 +738,8 @@ extern int ZEXPORT unzGoToFirstFile (file)
   return UNZ_OK if there is no problem
   return UNZ_END_OF_LIST_OF_FILE if the actual file was the latest.
 */
-/* 0x468080 */
+/* 0x468080, advances to the next entry (stepping over the current record's name, extra field and comment)
+ * and reads its central-directory record; UNZ_END_OF_LIST_OF_FILE past the last one */
 extern int ZEXPORT unzGoToNextFile (file)
 	unzFile file;
 {
