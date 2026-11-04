@@ -240,8 +240,8 @@ int cm_MessageSize(G17MSG *m)
     case 0x16:
     case 0x17:
         n = 0x15;
-        p = (unsigned char *)m + 0x15;
-        for (i = m->data[4]; i > 0; i--) {
+        p = m->fields.buf;
+        for (i = m->fields.n; i > 0; i--) {
             k = p[1] * p[0] + 4;
             n += k;
             p += k;
@@ -1356,8 +1356,8 @@ int cm_SendLongMessage(char *msg)
 
     m.type = 0x1c;
     for (i = 0; i < 8; i++)
-        if (((int *)(msg + 0x38))[i] == 0)
-            ((int *)(msg + 0x38))[i] = -1;
+        if (((AIMSG *)msg)->ids[i] == 0)
+            ((AIMSG *)msg)->ids[i] = -1;
     cm_SetLongMsg(0xf8, msg);
     cm_QueueSend(&m);
 }
@@ -9588,7 +9588,7 @@ int cm_CheckDeath(AICHAR *c)
         d3t_CreateBlood(c->scene->obj, 0x40, 0.25f, 0.1f, 0.14f, 55.0f);
         ch_StopActions(c->scene);
         a = ch_AddActionCB(c->scene, (CHACTFUNC)cm_FallDownAction, 0x14, 0x36, 1);
-        strcpy((char *)a + 0xf0, "kampf/todumfallen");
+        strcpy(a->u.name, "kampf/todumfallen");
         c->health = 0;
         c->scene->obj->kind = 0;
         sb_PlaySample(0, "Schmerzschrei", 1, 0x3f, 0x7f, 0, 0);
