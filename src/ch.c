@@ -756,7 +756,7 @@ done:
     CH_TRANSPORT(ch)->pos.y = body->pos.y;
     CH_TRANSPORT(ch)->pos.z = body->pos.z;
 }
-/* 0x403950 */
+/* 0x403950, loads and attaches action motion <motion> of the character's body (0 when it cannot be attached) */
 
 D3ANIMSLOT *ch_AttachMotion(CHARACTER *ch, int motion)
 {
