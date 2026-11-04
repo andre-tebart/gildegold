@@ -1749,7 +1749,7 @@ int ai_MsgRewardPct1to3Skill82Type39(G14MSG *m)
 }
 /* 0x4baf30, message: c gains 8..24 of one of the skills 0x80..0x84 (up to 0xfc) through 0x4c6020 */
 
-int ai_Unk4baf30(G14MSG *m)
+int ai_MsgAddSkill8to24Type3a(G14MSG *m)
 {
     AICHAR *c;
     int s, d;
@@ -1759,7 +1759,7 @@ int ai_Unk4baf30(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    d = 0xfc - ((unsigned char *)c)[0x80 + s];
+    d = 0xfc - c->skills[s];
     if (d <= 0)
         return 0x400;
     cm_SendAddSkill(c->netId, s, (char)min(d, util_RandomU(0x11) + 8));
@@ -1953,7 +1953,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
     ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
-    ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_Unk4baf30, ai_Unk4bb030,
+    ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_Unk4bb030,
     ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
     ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
     ai_Unk4bb630

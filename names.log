@@ -1950,3 +1950,4 @@
 2026-11-04T17:39:09 0x004baa80 data ai_Unk4baa80 -> ai_MsgTakeBuildingGoodsPct5to19Type33 by:main why:message type 0x33 (table index 51): as 0x32 but 5..19 %, reports with he_MessageBoxQuickjump (0x53dee0) and the building id
 2026-11-04T17:39:34 0x004baba0 data ai_Unk4baba0 -> ai_MsgTakeBuildingGoodsPct5to24Type34 by:main why:message type 0x34 (table index 52): as 0x33 but 5..24 % and the share comes first in the text
 2026-11-04T17:40:00 0x004bae20 data ai_Unk4bae20 -> ai_MsgRewardPct1to3Skill82Type39 by:main why:message type 0x39 (table index 57): as ai_MsgRewardPct1to3 but only when a 0..255 roll is not above c's skill 0x82
+2026-11-04T17:40:13 0x004baf30 data ai_Unk4baf30 -> ai_MsgAddSkill8to24Type3a by:main why:message type 0x3a (table index 58): adds 8..24 (up to 0xfc) to one random of c's five skills 0x80..0x84 through cm_SendAddSkill and reports it in text 0x12e7 + type
