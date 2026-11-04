@@ -4547,12 +4547,12 @@ void ai_SendFreeThieves(AICHAR *ch)
                     if (ai_CharsT[i].model && ai_CharsT[i].model->bldId == ai_CharsT[i].bld->id) {
                         if (ai_CharsT[i].sk83 < ai_CharsT[i].sk82) {
                             msg.arg[1] = ai_CharsT[i].netId;
-                            *(char *)&msg.arg[0] = 3;
+                            msg.thiefClass = 3;
                             cm_SendLongMessage(&msg);
                             n--;
                         } else {
                             msg.arg[1] = ai_CharsT[i].netId;
-                            *(char *)&msg.arg[0] = 2;
+                            msg.thiefClass = 2;
                             cm_SendLongMessage(&msg);
                             n--;
                         }

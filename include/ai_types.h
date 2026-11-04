@@ -271,6 +271,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             union {
                 int arg[11];                    /* 0x58 */
                 unsigned short itemId;          /* 0x58, the good a buy / move message is about (the 16-bit stores) */
+                unsigned char thiefClass;       /* 0x58, of the thief message 0x16 (ai_SendFreeThieves): 3 when the
+                                                   candidate's sk83 is below its sk82, else 2 */
                 struct {                        /* the trade kinds */
                     int car;                    /* 0x58 */
                     int n;                      /* 0x5c */
