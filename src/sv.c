@@ -3420,7 +3420,7 @@ int sv_AddPanelButton(int x, int y, int text)
 
     w = d2_WinCreateSlider(x + 3, y, 0xc5, text, d2_LastWindow);
     d2_SetObjFont(w, 0x54);
-    *(int *)(d2_Objs + 0x5c + w * 0x2ec) = 1;
+    ((D2OBJ *)d2_Objs)[w].centred = 1;
     d2_SetObjWidth(w, 0x60);
     return w;
 }
