@@ -595,10 +595,11 @@ int ai_MsgBuildingOwnerRelationsType18(G14MSG *m)
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);
     return 0;
 }
-/* 0x4b7d80, message for c with secondOffice 0x1e..0x21: every character (not kind 6 / 7) of the same 0x504ad0 group gets
-   0x4c4b00 1..8 from c; v = 1..4 % of 0x50a640, text 0x2a3 + secondOffice - 0x1e (not with item 0x290) */
+/* 0x4b7d80, message 0x19, for a character c with secondOffice 0x1e..0x21: every character (not kind 6 / 7) of
+   the same gm_TitleGroup gets a 1..8 relation gift from c (cm_SendRelations); c pays v = 1..4 % of its worth
+   (0x50a640), the text carries 0x2a3 + secondOffice - 0x1e; skipped with item 0x290 */
 
-int ai_Unk4b7d80(G14MSG *m)
+int ai_MsgOfficeGroupRelationsType19(G14MSG *m)
 {
     AICHAR *c;
     int g, i, s, v;
@@ -1945,7 +1946,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
-    ai_MsgBuildingOwnerRelationsType18, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
+    ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_Unk4b7f40, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
