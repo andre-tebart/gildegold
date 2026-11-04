@@ -163,7 +163,7 @@ void ai_HookChapter5Intro(int arg);             /* 0x577540, posts a record mess
 void ai_HookChapter5Step4(int arg);             /* 0x5775c0, posts two character messages */
 void ai_HookChapter5Step5(int arg);             /* 0x577610, character record lookup + 0x4e6180 */
 void ai_HookChapter5Step6(int arg);             /* 0x577690, builds a save record (ROUGH) */
-int ai_Unk577740(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
+int ai_TutorialOpenIntro(void);                 /* 0x577740, the tutorial start ("tutorial\main") */
 int ai_Unk577820(void);                 /* 0x577820, 0x53d800 (player) */
 int ai_TutorialClearRunWindow(void);                 /* 0x577850, run window controls 1 / 2 */
 int ai_TutorialShowRunText(void);                 /* 0x5778b0, the run window's text tick */

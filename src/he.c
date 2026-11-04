@@ -8973,7 +8973,7 @@ reset:
 }
 
 int ai_Unk578120();
-int ai_Unk577740();
+int ai_TutorialOpenIntro();
 int ai_TutorialTick();
 int ai_Unk577820();
 void ai_Unk578150(void);
@@ -8997,7 +8997,7 @@ void he_Unk552bc0(int ev)
         return;
     switch (*(int *)(ev + 0x70)) {
     case 0:
-        *(int *)(ev + 0x70) = (ai_Unk577740() != 0) + 1;
+        *(int *)(ev + 0x70) = (ai_TutorialOpenIntro() != 0) + 1;
         break;
     case 1:
         if (ai_TutorialTick() != 0)
