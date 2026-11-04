@@ -73,6 +73,7 @@ extern GMBLOCK gm_StockBlocks[];             /* 0x7d6a60, the five stock blocks 
 #define GM_BLOCK(p) ((GMBLOCK *)gm_StockBlocks + (p))  /* the stock block of the player p */
 #define GM_TABLE_A(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0x64))  /* the player slot's first yearly table */
 #define GM_TABLE_B(p) ((GMPOINT *)(ai_PlayerSlots[p] + 0xb4))  /* its second yearly table */
+#define GM_OBJ_PROTO_MASK 0xffffff  /* the prototype reference's index bits of a scene object's pickId (D3OBJECT +0x48) */
 #define ai_PlayerCity (*(unsigned short (*)[4][0x17a])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94, the city id (word +0x54) of each 0x2f4-byte player slot: ai_PlayerCity[player][0] */
 
 #include "am_types.h"
@@ -5077,7 +5078,7 @@ char gm_CollectSlotObject(char *o, int *list)
 {
     int key;
 
-    key = *(int *)(o + 0x48) & ((unsigned)&txt_Keys + 0x181bf);
+    key = ((D3OBJECT *)o)->pickId & GM_OBJ_PROTO_MASK;
     if (o[0x4b] == 1 && ai_Goods[key * 0x40 + key] == 0x21) {
         list[list[0x80] + 0x40] = key;
         list[list[0x80]] = (int)o;
