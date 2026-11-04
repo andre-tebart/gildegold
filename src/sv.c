@@ -3223,19 +3223,21 @@ char sv_ColourBannerCB(D3OBJECT *o, AIBLD *b)
 
 void sv_CreateBanners(char *b)
 {
-    char *m;
+    AIBLD *bld;
+    D3OBJECT *m;
+    D3OBJECT *save;
     char c;
-    int save;
 
-    m = *(char **)(b + 0x61);
-    if (m != 0 && *(unsigned short *)(b + 0x27) != 0xffff) {
-        c = ai_Chars[*(unsigned short *)(b + 0x27)][2];
+    bld = (AIBLD *)b;
+    m = (D3OBJECT *)bld->object;
+    if (m != 0 && bld->owner != 0xffff) {
+        c = ai_CharsT[bld->owner].kind;
         if (c == 6 || c == 7 || c == 5) {
-            if ((*(unsigned char *)(m + 0x210) & 1) == 0) {
-                save = *(int *)(m + 0x1f0);
-                *(int *)(m + 0x1f0) = 0;
-                d3_ForEachObject(d3_DefaultScene, *(int *)(b + 0x61), 0x100, sv_CreateBannerCB, b);
-                *(int *)(*(int *)(b + 0x61) + 0x1f0) = save;
+            if ((m->state & 1) == 0) {
+                save = m->next;
+                m->next = 0;
+                d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)bld->object, 0x100, sv_CreateBannerCB, b);
+                ((D3OBJECT *)bld->object)->next = save;
                 return;
             }
             d3_ForEachObject(d3_DefaultScene, m, 0x100, sv_CreateBannerCB, b);
