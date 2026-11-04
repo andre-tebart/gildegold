@@ -13624,6 +13624,7 @@ typedef struct G8SETTING {              /* a production setting record (the list
 } G8SETTING;
 #pragma pack(pop)
 #define ai_Settings (*(G8SETTING * *)((char *)&full_data_6f26c0 + 0x0))  /* 0x6f26c0, the head of the production settings chain */
+#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, the float 100.0f */
 
 /* 0x5a8340, the record's random in [0, 1) (68 B): the LCG at +4 (0x41c64e6d, 0x3039) advanced, then its high
    word modulo 0x7fff scaled by 1 / 0x7fff (0x5eb8f8) */
@@ -13916,37 +13917,39 @@ void ai_RefreshProdSetting(G8BLD *b)
     if (rec != 0)
         ai_FillSettingWeights((int)b, (char *)rec);
 }
-/* 0x5a8870, a good drawn by the weights of a setting (111 B): the record of 0x5a84b0 (+4 of param_1), the
-   random of 0x5a8340 * 100.0f (0x5ebb40) against the running sum of the weights +0x10, the good of the first
-   slot over it */
+/* 0x5a8870, a good drawn by the weights of a building's setting (111 B): the setting of the building's id
+   (ai_FindSetting), the random of 0x5a8340 * 100.0f (0x5ebb40) against the running sum of the slot weights, the
+   good of the first slot over it; 0 when the building has no setting */
 
-int ai_DrawSettingGood(int param_1)
+int ai_DrawSettingGood(int bld)
 {
-    int rec;
-    int *p;
+    G8SETTING *rec;
+    G8SLOT *p;
+    G8BLD *b;
     int i;
     int draw;
     int sum;
     int pick;
 
-    rec = ai_FindSetting(*(int *)(param_1 + 1));
+    b = (G8BLD *)bld;
+    rec = (G8SETTING *)ai_FindSetting(b->id);
     if (rec == 0)
         return 0;
-    draw = (int)((float)ai_SettingRandom(rec) * *(float *)((unsigned)&full_rdata_5ebb40));
+    draw = (int)((float)ai_SettingRandom(rec) * ai_FloatHundred);
     sum = 0;
     pick = 0;
     i = 0;
-    p = (int *)(rec + 0xc);
+    p = rec->slots;
     do {
         if (pick != 0)
             return pick;
-        if (*p != 0) {
-            sum += *(unsigned char *)(p + 1);
-            if (*(unsigned char *)(p + 1) != 0 && draw < sum)
-                pick = *p;
+        if (p->good != 0) {
+            sum += p->weight;
+            if (p->weight != 0 && draw < sum)
+                pick = p->good;
         }
         i++;
-        p += 2;
+        p++;
     } while (i < 7);
     return pick;
 }
