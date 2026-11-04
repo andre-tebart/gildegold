@@ -14958,7 +14958,8 @@ int ai_Unk5ad000(void)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5ad150, the transport window "contact_TRANSPORT", ROUGH SKELETON (4158 B): the third sibling of 0x5aab80 /
+/* 0x5ad150, the personnel book window (sv_OpenBook "Buch" 0x52f360 with the pages "Buch\Personalbuch_2..4" and
+   the caption 0x62cc58, param_2 the building's object name), ROUGH SKELETON (4158 B): the third sibling of 0x5aab80 /
    0x5ac110 (the building record, the kind table, the entry array at r + 0x22c of 0xc entries 0x5c bytes and up to
    three rows, the 0x4731d0 / 0x473650 controls, the screen width / height 0xf8f128 / 0xf8f12a, the worker list
    0x5aa700 and the pump 0x5309a0 loop with 0x5aa9a0, the percent box 0x5ad000, the selected record through

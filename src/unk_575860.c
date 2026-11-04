@@ -44,8 +44,7 @@
    Open: type debt - the graveyard detail window record GVDETAILWIN is typed in the seance and contact functions
    (ai_SeanceWindow .. ai_UpgradeWorkerWindow); ai_GraveDetailOpen / ai_RentGraveDetail / ai_GraveDetailButtons
    still take int *w (the callers cast), the graveyard contacts before ai_GraveHauntContact take char *rec.
-   Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h unk_58bbd0.h (ai_OpenTransport,
-   defined there with int); held by own declarations that
+   Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h; held by own declarations that
    differ from the owner's: d2_CreateWinText; calls whose argument count differs from the definition (read the
    original's pushes): d2_GetObjValue, sv_DrawBalanceBar (d2_PlaceMainWindow goes through d2_PlaceMainWindowF).
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
