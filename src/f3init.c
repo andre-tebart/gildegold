@@ -98,7 +98,8 @@ typedef struct INIT_BLD {
                                        the new-town message 0x1b asks for every building with 0xffff here) */
     unsigned short owner;           /* 0x27, the character id of the building's person, 0xffff = none
                                        (ai.h's AIBLD.owner; init_OpenBuilding reads its kind) */
-    char pad29[0x33];               /* 0x29 .. 0x5b */
+    unsigned short mainRoom;        /* 0x29, the room the building's panel opens with (ai.h's AIBLD.mainRoom) */
+    char pad2b[0x31];               /* 0x2b .. 0x5b */
     unsigned char level;            /* 0x5c, the building's level 0 .. 100 (ai.h's AIBLD.level; the value the
                                        building's worth 0x509b10 is weighted by) */
     int objList;                    /* 0x5d, the head of the building's object-instance list (gm_Query 0x4ffe90) */
@@ -3162,9 +3163,12 @@ void init_PlayTownSound(char *name, int volume, int delay)
 
 void init_PlayGraveyardSound(char *b)
 {
+    INIT_BLD *bld;
+
     gm_ClockSeason(&ai_Time);
     if (b != 0) {
-        if (gm_IsHomeType(b) != 0 && *(short *)(b + 0x29) == 0xfd && *b == 0x1e)
+        bld = (INIT_BLD *)b;
+        if (gm_IsHomeType((unsigned char *)b) != 0 && bld->mainRoom == 0xfd && bld->type == 0x1e)
             init_PlayTownSound("AesteKnacken_s", 0x50, 8000);
     }
 }
