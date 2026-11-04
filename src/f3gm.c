@@ -8628,7 +8628,7 @@ int gm_ListObjectsAfter(unsigned char *b, unsigned short *proto, int *out)
     }
     return n;
 }
-/* 0x508d70 */
+/* 0x508d70, the building's level (its byte at +0x5c) */
 
 int gm_BuildingLevel(char *c)
 {
