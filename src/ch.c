@@ -63,6 +63,7 @@ extern CHACTDEF ch_ActDefs[64];
 extern int ch_Ground0[65536];
 extern int ch_Ground1[65536];
 extern CHFADE ch_Fades[16];
+extern float ai_FloatZero;  /* 0x5eb788, the shared 0.0f (cm.c) */
 CHACTION * ch_Queue = 0;  /* 0x631050 */
 int ch_Time = 0;  /* 0x631054 */
 char ch_Unk631058 = 0;  /* 0x631058 */
@@ -661,16 +662,16 @@ CHTRANSPORT *ch_AttachTransport(CHARACTER *ch, D3OBJECT *obj)
     CHTRANSPORT *t = mem_Alloc(sizeof(CHTRANSPORT), "ch:ch_AttachTransport");
     D3VECTOR4 pos;
 
-    pos.x = 0.0f * ch->obj->matrix._11 + 0.0f * ch->obj->matrix._21 - 70.0f * ch->obj->matrix._31 + ch->obj->matrix._41;
-    pos.y = 0.0f * ch->obj->matrix._12 + 0.0f * ch->obj->matrix._22 - 70.0f * ch->obj->matrix._32 + ch->obj->matrix._42;
-    pos.z = 0.0f * ch->obj->matrix._13 + 0.0f * ch->obj->matrix._23 - 70.0f * ch->obj->matrix._33 + ch->obj->matrix._43;
+    pos.x = ai_FloatZero * ch->obj->matrix._11 + ai_FloatZero * ch->obj->matrix._21 - 70.0f * ch->obj->matrix._31 + ch->obj->matrix._41;
+    pos.y = ai_FloatZero * ch->obj->matrix._12 + ai_FloatZero * ch->obj->matrix._22 - 70.0f * ch->obj->matrix._32 + ch->obj->matrix._42;
+    pos.z = ai_FloatZero * ch->obj->matrix._13 + ai_FloatZero * ch->obj->matrix._23 - 70.0f * ch->obj->matrix._33 + ch->obj->matrix._43;
     d3_SetObjectPos(obj, (D3VECTOR *)&pos);
     d3_SetObjectRot(obj, &ch->obj->rotation);
     obj->flags &= ~4;
     obj->stateFlags = obj->stateFlags & ~8 | 4;
     obj->objectFlags &= ~2;
     ch->transport = (D3OBJECT **)t;
-    t->unk14 = 0;
+    t->reserved14 = 0;
     t->obj = obj;
     return t;
 }

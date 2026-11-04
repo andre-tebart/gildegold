@@ -115,7 +115,7 @@ typedef struct CHTRANSPORT {        /* 0x18 bytes, what CHARACTER.transport poin
     D3OBJECT *obj;
     D3VECTOR pos;                   /* 0x04, character position at the last update */
     int unk10;
-    int unk14;
+    int reserved14;                 /* 0x14, only ever written 0 (ch_AttachTransport); no reader names it */
 } CHTRANSPORT;
 #define CH_TRANSPORT(ch) ((CHTRANSPORT *)(ch)->transport)
 
