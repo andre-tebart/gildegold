@@ -9,8 +9,9 @@
    TU evidence: the unit's .data starts at 0x5fef04 (0x5fef00 belongs to the blit code before it) and its string
    literals 0x5fef0c..0x5ffd18 follow the function order without a new data block; 0x5ffd1c starts the next obj.
    Names are ours except the ones taken from the strings.
-   Open: any new member in ai.h's AIMSG.arg union (a text id, an order count / item) flips ai_Unk483a60 to 5 differing
-   bytes (slot tie-break).
+   Open: ai_types.h's AIMSG / AIJOB declarations are shared with unk_575860.c, whose tutorial builders flip their VC6
+   tie-break when a member is added (debt ai_TutorialInitChapter2, ai_TutorialInitChapter3); ai_Unk483a60's slot match
+   was lost the same way to the AIJOB field split.
    Open: AIOBJ.unk1c (a building id in the trade code, a count / level elsewhere) - its rename across units is undecided.
    unit of rea 8cef7d5b (src/game/ai.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
