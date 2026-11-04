@@ -17274,11 +17274,11 @@ void he_Unk572860(int ev)
 }
 
 void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
-void ai_Unk5a9880(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
+void ai_ShowGraveOrderCancelled(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
 int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
 int gv_OrderSetGraveHolder();                 /* 0x4f0900 */
 void he_Unk5728d0(int ev);          /* 0x5728d0 */
-void he_Unk5729c0(int ev);          /* 0x5729c0 */
+void he_ExamCancelled(int ev);          /* 0x5729c0 */
 
 /* 0x5728d0, the exam result: the building 0x501190 (1, 1, +0xac) of the kind 0x1d (0x7e3f30) and the character +0xc: 0x4f0700 (character, building, +0xb0, +0xb4, +0xbc, +0xb8); when the character is not the building's owner record and its kind is 6 / 7: 0x5a97e0 (the owner record, character, building, +0xb0, +0xb8, (int)(+0xb8 * 0x5ee034[+0xb0])) */
 void he_Unk5728d0(int ev)
@@ -17301,19 +17301,23 @@ void he_Unk5728d0(int ev)
     n = (int)((float)HM_I(ev, 0xb8) * *(float *)((unsigned)&gv_SaleShares + HM_I(ev, 0xb0) * 4));
     ai_Unk5a97e0(own, per, bld, HM_I(ev, 0xb0), HM_I(ev, 0xb8), n);
 }
-/* 0x5729c0, the exam cancelled: the building 0x501190 (1, 1, +0xac) of the kind 0x1d and the character +0xc: 0x4f0900 (0, building, +0xb0, +0xb4) and 0x5a9880 (the owner record, character, building, +0xb0) */
+/* 0x5729c0, the master exam cancelled (the answer "no" of the exam window, its due time over): when the
+   answer's building (0x501190 (1, 1, bldId)) is of the kind 0x1d (a graveyard), the grave order is freed
+   (0x4f0900 (0, building, graveSize, graveEntry)) and the owner of the building is told of the character
+   (0x5a9880 (the owner record, the character, the building, graveSize)) */
 
-void he_Unk5729c0(int ev)
+void he_ExamCancelled(int ev)
 {
-    char *bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0xac));
-    char *per;
+    AIJOB *e = (AIOBJ *)ev;
+    AIBLD *bld = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+    AICHAR *per;
 
-    if (bld == 0 || *(char *)((unsigned)&ai_BTypes + *(unsigned char *)bld * 0x24d) != 0x1d)
+    if (bld == 0 || ai_BTypesT[bld->type].kind != 0x1d)
         return;
-    gv_OrderSetGraveHolder(0, bld, HM_I(ev, 0xb0), HM_B(ev, 0xb4));
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
+    gv_OrderSetGraveHolder(0, bld, e->graveSize, e->graveEntry);
+    per = (AICHAR *)gm_FindChar(e->netId);
     if (per != 0)
-        ai_Unk5a9880((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c, per, bld, HM_I(ev, 0xb0));
+        ai_ShowGraveOrderCancelled((int *)&ai_CharsT[bld->owner], (unsigned short *)per, (int)bld, e->graveSize);
 }
 /* 0x572a50, the run of the event 0x92: state -2 releases the window +0x74 and frees; state 0 opens the window 0x53d6f0 (0x6269c0, 0x5ec), 0x475600 / 0x475f70, the texts 0x602568 and 0x411c, 0x4c27d0 (-7, 0, 0x628fe4, -1, 0) and state 1; state 1: due (0x4fe210) -> 0x5729c0, 0x53d800 and free; the window missing -> state 0; the actor 0xf8aac4 == window +8 and 0xf8a668: 0 -> 0x5728d0, 1 -> 0x5729c0, then 0x53d800 and free */
 
@@ -17342,7 +17346,7 @@ void he_Unk572a50(int ev)
         HM_I(ev, 0x70) = 1;
     } else if (state == 1) {
         if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
-            he_Unk5729c0(ev);
+            he_ExamCancelled(ev);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
@@ -17359,7 +17363,7 @@ void he_Unk572a50(int ev)
                 return;
             }
             if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                he_Unk5729c0(ev);
+                he_ExamCancelled(ev);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;

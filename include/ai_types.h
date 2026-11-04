@@ -69,6 +69,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             };
             union {
                 int unkb0;                      /* 0xb0 */
+                int graveSize;                  /* 0xb0, of the graveyard order events 0x92 / 0x93 (the master exam at
+                                                   a graveyard): the size of the grave the order names, an index into
+                                                   ai_GraveNames (he.c 0x5729c0 passes it as the order's size) */
                 int partner2;                   /* 0xb0, of a pair event the second partner's netId */
                 int id2;                        /* 0xb0, a second id: a building (kind 100) or a character (kind 0x89) as
                                                    sv_SpeakPicked looks them up */
@@ -111,6 +114,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                 struct { char padbldd0[0x1c]; int bldd0; };  /* 0xd0, of a kind 0x1a the building id the blows are shown over (he.c 0x53e8b0) */
                 struct { char padgc4[0x10]; int members[4]; };  /* 0xc4, of a group job 'C' (0x43): the netIds of its up to four
                                                                   members, -1 = free (sv_SendSelectedToBuilding) */
+                unsigned char graveEntry;       /* 0xb4, of the graveyard order events 0x92 / 0x93 (the master exam at a
+                                                   graveyard): the grave entry the order names (gv_OrderSetGraveHolder's
+                                                   entry, a byte) */
             };
             char pade8[4];
         };

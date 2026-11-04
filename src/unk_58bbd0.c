@@ -14214,7 +14214,7 @@ send:
 }
 /* 0x5a9880, a graveyard message with three values in two orders (139 B): as 0x5a97e0 with the text 0x4150 */
 
-void ai_Unk5a9880(int param_1, unsigned short *param_2, int param_3, int param_4)
+void ai_ShowGraveOrderCancelled(int param_1, unsigned short *param_2, int param_3, int param_4)
 {
     unsigned short v;
     int a;
