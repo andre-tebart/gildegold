@@ -11646,26 +11646,36 @@ void he_Unk55dbe0(int ev)
     cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
     he_FreeEvent((int *)ev);
 }
-/* 0x55dd70, the allocation handler of the 0x55de30 event (ROUGH): another record of type 0x32 for the same figure (+0xac) is ended (+0xb0 = -1), the due clock is now + 1 and a missing figure frees the record; a flagged (2) record sends the message 0x1cc / 4 / 0x1000000 to the figure */
+#define HE_PROMOTION_BIT 0x1000000  /* bit 24 of AICHAR.flags1cc: the promotion alloc handler 0x55dd70 sets it, the run handler 0x55de30 clears it (cm_SendSetField(id, 0x1cc, 4, bit, 0)); the meaning is a reasoned guess */
 
-void he_Unk55dd70(int ev)
+/* 0x55dd70, the allocation handler of the event type 0x32 (the promotion, its run handler 0x55de30): when another record of
+   the type 0x32 is already running for the same figure (+0xac) this one is freed; else +0xb0 = -1, the due clock is now + 1
+   second and a figure that does not exist frees the record; a record with the option bit 2 sends the field 0x1cc / 4 /
+   HE_PROMOTION_BIT to the figure */
+
+void he_AllocEvent32(int ev)
 {
-    char *e;
-    int p;
+    AIJOB *j = (AIJOB *)ev;
+    AIJOB *e;
+    AICHAR *p;
+    int *dropSlot = (int *)((char *)j + 0xb0);  /* the cm slot handle gm_DropRank leaves in the event's word at +0xb0, -1: none */
 
-    for (e = he_FindEvent(1, 0, 0x32); e != 0; e = he_NextEvent()) {
-        if ((int)e != ev && *(int *)(e + 0xac) == *(int *)(ev + 0xac))
-            *(int *)(e + 0xb0) = -1;
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x32); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if (e != j && e->ownerCh == j->ownerCh) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
-    p = gm_FindChar(*(int *)(ev + 0xac));
+    *dropSlot = -1;
+    j->end = ai_Time;
+    gm_AddTime(&j->end, 0, 0, 1);
+    p = (AICHAR *)gm_FindChar(j->ownerCh);
     if (p == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 2) != 0)
-        cm_SendSetField(*(int *)(p + 4), 0x1cc, 4, ((unsigned)&txt_Keys + 0x181c0), 0);
+    if ((j->opts & 2) != 0)
+        cm_SendSetField(p->netId, 0x1cc, 4, HE_PROMOTION_BIT, 0);
 }
 /* 0x55de30, the run handler of the promotion event ("Effekte/befoerdern.esc" cutscene; ROUGH skeleton, 928 bytes): the figure +0xac and its building (gm_FindBuildingById) are looked up, the old rank is dropped (gm_DropRank), the effect script is loaded and run in the scene (evt_Load, evt_RunScriptArgs, d3if_SelectScene, ch_Delete of the old hand object, ch_SetHandObject), the job handle is cleaned (0x4c3ae0, 0x4c4c60, 0x4c4a60) and the record freed */
 
@@ -13532,7 +13542,7 @@ int he_Unk568310(void)
     sv_RegisterActivity(40, 0, 1, 1279, 188);
     if (he_Unk53d600(49, (void *)he_Unk563980, (void *)he_Unk55dbe0) != 0)
         return 1;
-    if (he_Unk53d600(50, (void *)he_Unk55dd70, (void *)he_Unk55de30) != 0)
+    if (he_Unk53d600(50, (void *)he_AllocEvent32, (void *)he_Unk55de30) != 0)
         return 1;
     if (he_Unk53d600(51, (void *)he_Unk55e180, (void *)he_Unk55e1d0) != 0)
         return 1;

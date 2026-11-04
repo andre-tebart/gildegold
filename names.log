@@ -1734,3 +1734,4 @@
 2026-11-04T09:04:50 0x00558e10 func he_Unk558e10 -> he_RunEvent17 by:main why:the run handler of event type 0x17: he_Unk53d600(23, he_Unk558de0, he_Unk558e10) in 0x568310, the type has no text entry so its number names it
 2026-11-04T09:06:27 0x0055ba00 func he_Unk55ba00 -> he_AllocEvent1f by:main why:the allocation handler registered for event type 0x1f: he_Unk53d600(31, he_Unk55ba00, he_Unk55bad0) in 0x568310; type 0x1f is one of the building jobs, no type text names it
 2026-11-04T09:08:39 0x0055d310 func he_Unk55d310 -> he_AllocEvent27 by:main why:the allocation handler registered for event type 0x27: he_Unk53d600(39, he_Unk55d310, he_Unk55d390) in 0x568310; no type text names it
+2026-11-04T09:09:37 0x0055dd70 func he_Unk55dd70 -> he_AllocEvent32 by:main why:the allocation handler registered for event type 0x32 (the promotion event, whose run handler 0x55de30 runs befoerdern.esc): he_Unk53d600(50, he_Unk55dd70, he_Unk55de30) in 0x568310

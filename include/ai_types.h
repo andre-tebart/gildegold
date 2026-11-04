@@ -53,7 +53,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         int bldId;                      /* 0xac, of the building events (0x1b, 0x1c, 0x1e, 0x1f, 0x40) their building's id
                                            (he_AddEventGfxInfo shows their gfx info over it) */
         int partner1;                   /* 0xac, of a pair event (kinds 0x41 / 0x6f / 0x45, he_EndPersonEvents) the first partner's netId */
-        int ownerCh;                    /* 0xac, of an event 0x24 the netId of the character it is for (ai_DecideChangeProfession skips a character that has one) */
+        int ownerCh;                    /* 0xac, of an event 0x24 / 0x32 the netId of the character it is for (ai_DecideChangeProfession
+                                           skips a character that has one; the promotion handlers find it with gm_FindChar) */
         union {
             int id;                     /* 0xac */
             struct {
