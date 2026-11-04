@@ -1395,7 +1395,7 @@ void ch_SetCamera(CHARACTER *ch, int view)
     d3_SetObjectRot(d3_Camera, &rot);
     d3_SetObjectPos(d3_Camera, (D3VECTOR *)&pos);
 }
-/* 0x404dd0 */
+/* 0x404dd0, moves d3_Camera over time to the character's view 0..3 (ch_GetCamera) */
 
 void ch_MoveCamera(CHARACTER *ch, int view, int time)
 {
