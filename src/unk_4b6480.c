@@ -707,11 +707,11 @@ int ai_MsgPartnerRelationMinus4to18Type1c(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4b82c0, message: one of c's buildings (0x501190(1, 3, id), up to 8 of kind 1 / 2) and one of up to 6 characters
+/* 0x4b82c0, message 0x1d: one of c's buildings (0x501190(1, 3, id), up to 8 of kind 1 / 2) and one of up to 6 characters
    working there (title set) are chosen; half the time a text and 0x4fca40 of p by -(0.1 .. 0.4 of p's 0x1c float)
    (not with item 0x290) */
 
-int ai_Unk4b82c0(G14MSG *m)
+int ai_MsgWorkerHealthLossType1d(G14MSG *m)
 {
     AICHAR *c, *p;
     AIBLD *b;
@@ -727,7 +727,7 @@ int ai_Unk4b82c0(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (b = gm_BuildQuery(1, 3, c->id); b != 0 && n < 8; b = gm_BuildNext()) {
-        i = gm_BuildingClass(*(unsigned char *)b);
+        i = gm_BuildingClass(b->type);
         if (i == 1 || i == 2)
             a[n++] = b;
     }
@@ -744,17 +744,17 @@ int ai_Unk4b82c0(G14MSG *m)
     if (b == 0 || p == 0)
         return 0x400;
     if (util_RandomU(2)) {
-        txt_Format(buf, m->type + 0x12e7, b, (((char *)p)[9] ? 0x230 : 0x20d) + (unsigned char)p->title, p->id);
+        txt_Format(buf, m->type + 0x12e7, b, (p->sex ? 0x230 : 0x20d) + (unsigned char)p->title, p->id);
         he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
-        x = (int)(*(float *)((char *)p + 0x1c) * 0.3);
-        y = (int)(*(float *)((char *)p + 0x1c) * 0.1);
+        x = (int)(p->f01c * 0.3);
+        y = (int)(p->f01c * 0.1);
         gm_AddHealthS(p->id, -(util_RandomU(x) + y));
     }
     return 0;
 }
 /* 0x4b84b0, message: as 0x4b82c0, the worker chosen from more than 2; 0x4fca40 of p by -(p's 0x1c float + 1) (not
    with item 0x290)
-   @deep behaviour draft (5 -> 1 close after the sibling idiom): 10 differing instructions in one hunk. The 0x230/0x20d ternary spelling of its sibling ai_Unk4b82c0 is applied and took 54 -> 11; the rest is the while (util_Random(k) == s) test: the original pushes k (push edi) before loading p = a[s] and merges the cleanup of the previous util_Random argument into add esp,0x8 after the test call, ours does add esp,4 / and esi / mov ebp / push edi / call. Read: the loop, s, p and the two calls are the same statements (p = a[s] before the loop matches the original's load order), no meaning error. spell.py: no hunk matches the menu ('no menu rule; meaning check first'), the fill hunk is only the tail. Pure argument-push scheduling/instruction order - match-deep's scheduling work. */
+   @deep behaviour draft (5 -> 1 close after the sibling idiom): 10 differing instructions in one hunk. The 0x230/0x20d ternary spelling of its sibling ai_MsgWorkerHealthLossType1d is applied and took 54 -> 11; the rest is the while (util_Random(k) == s) test: the original pushes k (push edi) before loading p = a[s] and merges the cleanup of the previous util_Random argument into add esp,0x8 after the test call, ours does add esp,4 / and esi / mov ebp / push edi / call. Read: the loop, s, p and the two calls are the same statements (p = a[s] before the loop matches the original's load order), no meaning error. spell.py: no hunk matches the menu ('no menu rule; meaning check first'), the fill hunk is only the tail. Pure argument-push scheduling/instruction order - match-deep's scheduling work. */
 
 int ai_Unk4b84b0(G14MSG *m)
 {
@@ -1946,7 +1946,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
-    ai_MsgPartnerRelationMinus4to18Type1c, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
+    ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
     ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
