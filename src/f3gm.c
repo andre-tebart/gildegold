@@ -3711,22 +3711,22 @@ int gm_RemoveOwned(int *list, int id)
     } while (cur != 0);
     return -2;
 }
-/* 0x500140, frees a whole list of object instances (and, recursively, the lists they hold at +0x14) */
+/* 0x500140, frees a whole list of object instances (and, recursively, the lists they hold at +0x14): walks the next pointers from *list */
 
 int gm_FreeList(int *list)
 {
-    int o;
+    ORDOBJ *o;
 
     if (list != 0) {
-        o = *list;
+        o = (ORDOBJ *)*list;
         if (o == 0)
             return -1;
         do {
-            *list = *(int *)(o + 0x3f);
-            if (*(int *)(o + 0x14) != 0)
-                gm_FreeList((int *)(o + 0x14));
+            *list = (int)o->next;
+            if (o->list != 0)
+                gm_FreeList(&o->list);
             gm_FreeObjectExtra((unsigned short *)o);
-            o = *list;
+            o = (ORDOBJ *)*list;
         } while (o != 0);
     }
     return 0;
