@@ -498,7 +498,8 @@ TSTEXTURE *ts_AllocSlot(TSFLAGS flags, int *index)
         *index = i;
     return tex;
 }
-/* 0x4601b0 */
+/* 0x4601b0, takes one more reference to tex; with all, an animated master of a real group gives the
+   reference to every live texture of its group instead */
 
 void tex_AddRef(TSTEXTURE *tex, char all)
 {
