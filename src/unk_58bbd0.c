@@ -8323,7 +8323,7 @@ char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flag
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
-struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_Unk5a5080();
+struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_TrainingContact();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
@@ -8888,7 +8888,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x4d: ai_ThievesGuildEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x54: ai_ThievesGuildListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x5c: ai_StorageContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x60: ai_Unk5a5080(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x60: ai_TrainingContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x65: ai_Unk5a5bc0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x74: ai_SmithyContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x85: ai_CarpenterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -11938,27 +11938,27 @@ void ai_StorageContact(int building)
         }
     } while (sv_RunFrame(ai_StorageContact, 0x67fff) != 0);
 }
-/* 0x5a5080, a contact listener (200 B, room 0x60 of the driver 0x59e420): 0x52e190, the pump 0x5309a0 (this,
-   0x67fff); with the mask 0x200 the targets ob_ZIELSCHEIBE (0x1440acc, 0xc) / contact_NACHT (0x1440ad0, 0xc)
-   and, when the mask is still set and the pending click 0x6f22e4 is one of them, 0x5bba00 (param_1) */
+/* 0x5a5080, the training-room listener (200 B, room 0x60 of the building driver 0x59e420): 0x52e190, the pump
+   0x5309a0 (this, 0x67fff); with the mask 0x200 the ob_ZIELSCHEIBE / contact_NACHT plates, and when the mask is
+   still set and the pending click 0x6f22e4 is one of them, ai_TrainingWindow (the building) */
 
-void ai_Unk5a5080(int param_1)
+void ai_TrainingContact(int building)
 {
     int ziel = 0;
     int nacht = 0;
 
     sv_ReleaseNamePlates();
-    if (sv_RunFrame(ai_Unk5a5080, 0x67fff) == 0)
+    if (sv_RunFrame(ai_TrainingContact, 0x67fff) == 0)
         return;
     do {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
-            nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&ai_ContactTextTraining), 0xc);
+        if (ai_BuildingPerms & 0x200) {
+            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", ai_ContactTextTarget, 0xc);
+            nacht = sv_RegisterNamePlate("contact_NACHT", ai_ContactTextTraining, 0xc);
         }
-        if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) && U_I((unsigned)&ai_ClickedObject) != 0 &&
-            (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == nacht))
-            ai_TrainingWindow(param_1);
-    } while (sv_RunFrame(ai_Unk5a5080, 0x67fff) != 0);
+        if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0 &&
+            (ai_ClickedObject == ziel || ai_ClickedObject == nacht))
+            ai_TrainingWindow(building);
+    } while (sv_RunFrame(ai_TrainingContact, 0x67fff) != 0);
 }
 
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int gv_Accuse();
