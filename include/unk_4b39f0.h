@@ -13,7 +13,9 @@ typedef struct G13TYPE {                /* 0x1c bytes, ai_MissionTypes[48], the 
                                            that shows the mission and asks; ai_MissionOfferDialog / ai_MissionInfoDialog) */
     int speech;                         /* 0x10, the speech number nn (_AUFTRAEGE_ERFOLG_HS_nn) */
     int goal;                           /* 0x14, the goal amount a condition compares against (count, sum, percent or minutes) */
-    int unk18;                          /* 0x18 */
+    int threshold;                      /* 0x18, the condition's second amount: the skill level each of the five
+                                           skills must reach (types 4 / 9 / 29), the minutes a timed condition must
+                                           hold (the other timed readers); -1: unused */
 } G13TYPE;
 
 extern G13MIS ai_Missions[0x80];       /* 0xf82320 */

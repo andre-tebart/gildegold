@@ -503,11 +503,12 @@ int ai_CondTitlesLeft(AICHAR *c, G13TYPE *t)
 {
     return gm_TitlesLeft(G13_B(c, 0x164)) >= t->goal;
 }
-/* 0x4b45c0, mission condition: 0x4b5160 with c's byte 0x0d reaching t->goal */
+/* 0x4b45c0, mission condition (types 3 / 10 / 24): the character's rank (byte 0x0d, AICHAR.b00d) reaches
+   t->goal, held for t->threshold minutes */
 
-int ai_Unk4b45c0(AICHAR *c, int x, G13TYPE *t)
+int ai_CondRankTimed(AICHAR *c, int x, G13TYPE *t)
 {
-    return ai_TimedCondition(x, G13_B(c, 0x0d) >= t->goal, t->unk18);
+    return ai_TimedCondition(x, G13_B(c, 0x0d) >= t->goal, t->threshold);
 }
 /* 0x4b45f0, mission condition: 0x50a640 of c (as money, 0x5085b0) reaches t->goal */
 
@@ -521,14 +522,14 @@ int ai_Unk4b4630(AICHAR *c, G13TYPE *t)
 {
     return gm_ConvertMoney(gm_CharCurrency((void *)c, ai_OwnPlayer), ai_OwnPlayer) >= t->goal;
 }
-/* 0x4b4670, mission condition: at least t->goal of c's five values (bytes 0x80..0x84, / 42) reach t->unk18 */
+/* 0x4b4670, mission condition: at least t->goal of c's five values (bytes 0x80..0x84, / 42) reach t->threshold */
 
 int ai_Unk4b4670(AICHAR *c, G13TYPE *t)
 {
     int i, n;
 
     for (i = 0, n = 0; i < 5; i++) {
-        if (G13_B(c, 0x80 + i) * 0.023809524f >= t->unk18)
+        if (G13_B(c, 0x80 + i) * 0.023809524f >= t->threshold)
             n++;
     }
     return n >= t->goal;
@@ -537,19 +538,19 @@ int ai_Unk4b4670(AICHAR *c, G13TYPE *t)
 
 int ai_Unk4b46c0(AICHAR *c, int x, G13TYPE *t)
 {
-    return ai_TimedCondition(x, G13_B(c, 0x166) == t->goal, t->unk18);
+    return ai_TimedCondition(x, G13_B(c, 0x166) == t->goal, t->threshold);
 }
 
 int gm_BuildingTypeOfJob(int k);                                                         /* 0x503fa0, defined elsewhere */
 
-/* 0x4b46f0, mission condition: c has a building (kind >= 5, owner c) older than t->unk18 minutes */
+/* 0x4b46f0, mission condition: c has a building (kind >= 5, owner c) older than t->threshold minutes */
 int ai_Unk4b46f0(AICHAR *c, G13TYPE *t)
 {
     AIBLD *b;
 
     for (b = gm_BuildQuery(2, 4, c->id, 5, 2); b != 0; b = gm_BuildNext()) {
         if (G13_B(b, 0) >= 5 && *(int *)((char *)b + 0x65) == c->netId
-            && gm_MinutesBetween((AITIME *)((char *)b + 0x69), &ai_Time) > t->unk18)
+            && gm_MinutesBetween((AITIME *)((char *)b + 0x69), &ai_Time) > t->threshold)
             return 1;
     }
     return 0;
@@ -683,7 +684,7 @@ int ai_Unk4b4aa0(AICHAR *c, int x, G13TYPE *t)
     AIBLD *b;
     int n;
 
-    if (!ai_Unk4b45c0(c, x, t))
+    if (!ai_CondRankTimed(c, x, t))
         return 0;
     n = 0;
     for (b = gm_BuildQuery(2, 4, c->id, n, 7); b != 0; b = gm_BuildNext())
@@ -734,14 +735,14 @@ int ai_Unk4b4c50(AICHAR *c, int x, G13TYPE *t)
 
     ai_PlayerShare(0x0b, &s);
     if (s.n > 0 && s.v < 1.0f)
-        return ai_TimedCondition(x, 0, t->unk18);
+        return ai_TimedCondition(x, 0, t->threshold);
     ai_PlayerShare(0x0c, &s);
     if (s.n > 0 && s.v < 1.0f)
-        return ai_TimedCondition(x, 0, t->unk18);
+        return ai_TimedCondition(x, 0, t->threshold);
     ai_PlayerShare(0x0d, &s);
     if (s.n > 0 && s.v < 1.0f)
-        return ai_TimedCondition(x, 0, t->unk18);
-    return ai_TimedCondition(x, t->goal <= 3, t->unk18);
+        return ai_TimedCondition(x, 0, t->threshold);
+    return ai_TimedCondition(x, t->goal <= 3, t->threshold);
 }
 /* 0x4b4d50, mission condition: value 0 of 0x4b5270 reaches t->goal percent */
 
@@ -788,8 +789,8 @@ int ai_Unk4b4dc0(AICHAR *c, int x, G13TYPE *t)
         return 0;
     ord_GetStatistics(&e);
     if (t->goal < e.unk18)
-        return ai_TimedCondition(x, 0, t->unk18);
-    return ai_TimedCondition(x, 1, t->unk18);
+        return ai_TimedCondition(x, 0, t->threshold);
+    return ai_TimedCondition(x, 1, t->threshold);
 }
 /* 0x4b4e30, mission condition: 0x4f9e00 at most 0.1 and its values 0x0c, 0x04, 0x08 at least 0.3 */
 
@@ -855,7 +856,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 3:
     case 10:
     case 24:
-        return ai_Unk4b45c0(c, (int)m, t);
+        return ai_CondRankTimed(c, (int)m, t);
     case 5:
     case 13:
     case 21:
