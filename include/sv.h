@@ -218,6 +218,7 @@ extern char sv_DayTables[278];                              /* 0x623ba8 */
 extern int ai_Unk623cc0[];                                  /* 0x623cc0 */
 extern int ai_Unk623e10[];                                  /* 0x623e10 */
 extern int sv_LampPhase;                                    /* 0x623e80 */
+extern int sv_LoadSlider;                                    /* 0x623e84 */
 extern int sv_PanelEnabled;                                    /* 0x623e88 */
 extern int sv_GroundplanScene;                                    /* 0x623e8c */
 extern float sv_DayPhaseFrac;                                  /* 0x623e94 */
@@ -270,6 +271,7 @@ extern char sv_LampSwitches;                                   /* 0x6f2340 */
 extern char sv_MessageBoxOpen;                              /* 0x6f2350 */
 extern char sv_MessageBoxGreenOpen;                         /* 0x6f2351 */
 extern char sv_MessageBoxYesNoOpen;                         /* 0x6f2352 */
+extern int sv_LoadFrame;                                  /* 0x6f2354 */
 extern int sv_ScreenDirty;                                  /* 0x6f2358 */
 extern int sv_GroundplanBuilding;                                    /* 0x6f235c */
 extern int sv_GroundplanRoom;                                    /* 0x6f2360 */
