@@ -4319,22 +4319,23 @@ unsigned short *gm_CreateObject(int id, int proto, int n)
 
 int gm_FindMarketObject(int id)
 {
-    int l[8];
-    int o, i;
+    ORDOBJ *l[8];
+    ORDOBJ *o;
+    int i;
 
     if (ai_MarketBuilding != 0) {
-        l[0] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x92);
-        l[1] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x93);
-        l[2] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x94);
-        l[3] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x95);
-        l[4] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x96);
-        l[5] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x97);
-        l[6] = (int)gm_Query(*(int *)((char *)ai_MarketBuilding + 0x5d), 1, 0, 0x2db);
+        l[0] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x92);
+        l[1] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x93);
+        l[2] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x94);
+        l[3] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x95);
+        l[4] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x96);
+        l[5] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x97);
+        l[6] = (ORDOBJ *)gm_Query(((ORDBLD *)ai_MarketBuilding)->objList, 1, 0, 0x2db);
         l[7] = 0;
         i = 0;
         for (o = l[0]; o != 0; o = l[i]) {
-            if (gm_Query(*(int *)(o + 0x14), 2, 6, 0, id) != 0)
-                return (int)gm_Query(*(int *)(l[i] + 0x14), 1, 0, 0x116);
+            if (gm_Query(o->list, 2, 6, 0, id) != 0)
+                return (int)gm_Query(l[i]->list, 1, 0, 0x116);
             i++;
         }
     }
