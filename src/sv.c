@@ -3337,7 +3337,7 @@ void sv_UpdateChimneySmoke(AIBLD *b)
 }
 /* 0x528660, a callback collecting the names o that contain "sp_WIMPEL" into the list p (p[0] the count, then the pointers); 1 while below 0x20 */
 
-char sv_Unk528660(char *o, int *p)
+char sv_CollectBannerCB(char *o, int *p)
 {
     if (strstr(o, "sp_WIMPEL") != 0) {
         p[p[0] + 1] = (int)o;
@@ -3369,10 +3369,10 @@ void sv_RemoveBanners(char *b)
         if ((*(unsigned char *)(m + 0x210) & 1) == 0) {
             save = *(int *)(m + 0x1f0);
             *(int *)(m + 0x1f0) = 0;
-            d3_ForEachObject(d3_DefaultScene, *(int *)(b + 0x61), 0x40, sv_Unk528660, list);
+            d3_ForEachObject(d3_DefaultScene, *(int *)(b + 0x61), 0x40, sv_CollectBannerCB, list);
             *(int *)(*(int *)(b + 0x61) + 0x1f0) = save;
         } else
-            d3_ForEachObject(d3_DefaultScene, m, 0x40, sv_Unk528660, list);
+            d3_ForEachObject(d3_DefaultScene, m, 0x40, sv_CollectBannerCB, list);
         i = 0;
         if (0 < list[0]) {
             do {
