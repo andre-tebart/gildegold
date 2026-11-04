@@ -6002,7 +6002,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1440b78: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_WatchPlanPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b84: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440b88: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ArrestPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b90: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440ba4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextRaid: view of txt_Ptrs (build/mk_txt_views.py) */

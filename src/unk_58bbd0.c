@@ -12681,7 +12681,7 @@ int ai_WatchSearchWindow(int param_1, char *param_2)
    0x760420, byte +0x188) +4) through 0x4c4b70 / 0x4c2d20, and above one live entry the text 0x1440b90 (4);
    0x6f22a0 = 2; the second control sets 0x6f22a0 = 1; the exit 0x4758f0, returns 0 */
 
-int ai_Unk5a64d0(int param_1, char *param_2)
+int ai_ArrestWindow(int param_1, char *param_2)
 {
     int win;
     int ctl1;
@@ -12756,21 +12756,23 @@ int ai_Unk5a64d0(int param_1, char *param_2)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a64d0, 0x677c7) == 0)
+        if (sv_RunFrame(ai_ArrestWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
     return 0;
 }
-/* 0x5a6720, the city watch arrest request (127 B): 0x520fe0 (param_1); the request (1, -1, 0xa0744300, 1, 6,
-   0x727 at +0x4c) and 0x525220 (param_1, 0) / 0x5b2180 (1, the request, 0x1440b88, the callback 0x5a64d0, 0),
-   then 0x525440 / 0x52ae40 */
+/* 0x5a6720, the city watch arrest map pick, the click of the customs box ob_ZOLLKASSE (the zoll branch of
+   ai_Unk5a67a0's contact dispatch, 127 B): the building's character gate (sv_CheckCharacterFlag, 0 with a free
+   character) and the building; the 20-int request 1, -1, 0xa0744300, 1, 6 with 0x727 at +0x4c; the player bar
+   opens, ai_MapPick runs (1, the request, the prompt text ai_ArrestPickPrompt, the city watch arrest window
+   ai_ArrestWindow as callback, 0), then the player bar closes and the selection is cleared */
 
-void ai_Unk5a6720(int param_1)
+void ai_ArrestStart(int building)
 {
     int req[20];
 
-    if (sv_CheckCharacterFlag(param_1) != 0 || param_1 == 0)
+    if (sv_CheckCharacterFlag(building) != 0 || building == 0)
         return;
     req[0] = 1;
     req[1] = -1;
@@ -12778,8 +12780,8 @@ void ai_Unk5a6720(int param_1)
     req[2] = 0xa0744300;
     req[3] = 1;
     req[19] = 0x727;
-    sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(1, req, (char *)U_I((unsigned)&full_data_1440b88), (void *)(unsigned)&ai_Unk5a64d0, 0);
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(1, req, ai_ArrestPickPrompt, (void *)(unsigned)&ai_ArrestWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12923,7 +12925,7 @@ void ai_Unk5a67a0(int param_1)
                 else if (U_I((unsigned)&ai_ClickedObject) == wachplan)
                     ai_WatchPlanStart(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == zoll)
-                    ai_Unk5a6720(param_1);
+                    ai_ArrestStart(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == meister)
                     ai_MasterLetterWindow(param_1);
             }

@@ -157,7 +157,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440b78                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x069b8))  /* 0x1440b78 */
 #define ai_WatchPlanPickPrompt                  (*(char * *)((char *)txt_Ptrs + 0x069bc))  /* 0x1440b7c, the prompt text of the city watch plan map pick (ai_WatchPlanStart) */
 #define full_data_1440b84                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x069c4))  /* 0x1440b84 */
-#define full_data_1440b88                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x069c8))  /* 0x1440b88 */
+#define ai_ArrestPickPrompt                     (*(char * *)((char *)txt_Ptrs + 0x069c8))  /* 0x1440b88, the prompt text of the city watch arrest map pick (ai_ArrestStart -> ai_ArrestWindow); the wording is unknown */
 #define full_data_1440b90                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x069d0))  /* 0x1440b90 */
 #define full_data_1440ba4                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x069e4))  /* 0x1440ba4 */
 #define ai_ContactTextRaid                        (*(char * *)((char *)txt_Ptrs + 0x06a08))  /* 0x1440bc8, the hover text of the contact_RAUBUEBERFALL plate (its click opens ai_OpenRaid) */
