@@ -8307,7 +8307,7 @@ void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_A
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
 void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
-void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
+void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_TownHallContact();
 void ai_TownCashContact();
@@ -8894,7 +8894,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x12e: ai_BreweryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x137: ai_GuildLevel2Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x138: ai_Unk5a1a60(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x139: ai_Unk5a1960(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x139: ai_GuildLevel3Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x145: ai_Unk5a6a90(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x146: ai_Unk5a67a0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x14c: ai_Unk5a6920(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -9682,7 +9682,7 @@ void ai_LawBookContact(AIBLD *bld)
    amount, the player byte) confirms; the second button only sets 0x6f22a0; the pump 0x5309a0 (0x5a0950,
    0x677c7), 0x52d7a0 / 0x4758f0 at the end */
 
-void ai_Unk5a0950(unsigned char *param_1)
+void ai_GuildCashPayWindow(unsigned char *param_1)
 {
     int win;
     int room;
@@ -9731,7 +9731,7 @@ void ai_Unk5a0950(unsigned char *param_1)
         i = d2_GetWinObj(win, 1, text + 2);
     }
     U_I((unsigned)&d2_ClickedId) = -1;
-    while (sv_RunFrame(ai_Unk5a0950, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_GuildCashPayWindow, 0x677c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (k && U_I((unsigned)&d2_ClickedId) != -1) {
@@ -10097,7 +10097,7 @@ void ai_GuildLevel3PowerCB(int column)
    0x20 the window 0x5c1b40 (0x5a1670, the text 0x143fb98, 0); else 0x520f90 (the player, 8) or the text
    0x143fbd8 when the player does not qualify (0x52d7a0 on every exit) */
 
-void ai_Unk5a17b0(void)
+void ai_GuildLevel3Entry(void)
 {
     int req[20];
     char *per;
@@ -10151,12 +10151,13 @@ void ai_GuildLevel2Listener(int building)
             ai_OfficeApplyEntry(building);
     }
 }
-/* 0x5a1960, the guild level 3 listener (256 B): the text id by the office byte 0x770ce9 + slot * 0x21c (0x1e
-   0x167c, 0x1f / 0x21 0x166a, 0x20 0x1674); the pump 0x5309a0 (0x5a18d0, 0x67fff) looks up "ob_ZUNFTKASSE"
-   (0x1440a24, class 0x16) and, with 0x4e95a0 (the player) and the id, "contact_ZUNFTLEVEL3" (the text of the
-   id from 0x143a1c0); the clicks open 0x5a0950 (param_1) or 0x5a17b0 */
+/* 0x5a1960, the guild level 3 listener, the room 0x139 handler of the enter-building driver (256 B): the text
+   id of the level 3 plate by the player's second office (0x1e 0x167c, 0x1f / 0x21 0x166a, 0x20 0x1674); the
+   pump 0x5309a0 (0x5a18d0, 0x67fff) looks up the "ob_ZUNFTKASSE" plate (txt_Ptrs[0x1a19], class 0x16) and,
+   with the guild office power (0x4e95a0, the player) and the id, the "contact_ZUNFTLEVEL3" plate (the text
+   txt_Ptrs[id]); a click opens the guild cash payment window (0x5a0950) or the level 3 entry (0x5a17b0) */
 
-void ai_Unk5a1960(int param_1)
+void ai_GuildLevel3Listener(int building)
 {
     int kasse;
     int level3 = 0;
@@ -10164,7 +10165,7 @@ void ai_Unk5a1960(int param_1)
     int r;
     char c;
 
-    c = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c);
+    c = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice;
     if (c == 0x1e)
         id = 0x167c;
     else if (c == 0x1f || c == 0x21)
@@ -10173,15 +10174,15 @@ void ai_Unk5a1960(int param_1)
         id = 0x1674;
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_GuildLevel2Listener, 0x67fff) != 0) {
-        kasse = sv_RegisterNamePlate("ob_ZUNFTKASSE", U_I((unsigned)&full_data_1440a24), 0x16);
-        r = amt_CanUseMayorPower3((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
+        kasse = sv_RegisterNamePlate("ob_ZUNFTKASSE", txt_Ptrs[0x1a19], 0x16);
+        r = amt_CanUseMayorPower3((char *)ai_Chars + ai_PlayerId * 0x21c);
         if (r != 0 && id != 0)
-            level3 = sv_RegisterNamePlate("contact_ZUNFTLEVEL3", (char *)U_I((unsigned)&d2_Strings + id * 4), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == kasse)
-                ai_Unk5a0950(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == level3)
-                ai_Unk5a17b0();
+            level3 = sv_RegisterNamePlate("contact_ZUNFTLEVEL3", txt_Ptrs[id], 0x16);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == kasse)
+                ai_GuildCashPayWindow((unsigned char *)building);
+            else if (ai_ClickedObject == level3)
+                ai_GuildLevel3Entry();
         }
     }
 }
