@@ -2797,13 +2797,13 @@ int gm_IsBuildingKind(int n)
 int gm_FindObjectInst(int id)
 {
     int i;
-    short *p;
+    ORDOBJ *o;
 
     i = 0;
-    p = (short *)ai_Objects;
-    while (*p == 0 || *(int *)(p + 1) != id) {
+    o = (ORDOBJ *)ai_Objects;
+    while (o->type == 0 || o->objId != id) {
         i++;
-        p = (short *)((char *)p + 0x43);
+        o++;
         if (i >= 0x5008)
             return 0;
     }
