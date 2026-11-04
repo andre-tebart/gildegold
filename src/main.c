@@ -2510,11 +2510,11 @@ int main_ChooseHistory(void)
             }
             if (!back) {
                 if (d2_PointerObj == b0)
-                    ai_Unk4b1f90(1);
+                    hst_SetTextsOn(1);
                 else if (d2_PointerObj == b1)
-                    ai_Unk4b1f90(2);
+                    hst_SetTextsOn(2);
                 else if (d2_PointerObj == b2 || kb_Last == 0x1c)
-                    ai_Unk4b1f90(0);
+                    hst_SetTextsOn(0);
                 ai_OptionHistorie = hst_TextsOn;
                 if (ai_OptionHistorie == 0)
                     d2_RadioSelect(grp, 2);
@@ -4631,7 +4631,7 @@ void main_GameLoop(int ctl)
     U_I(((unsigned)&ls_SavePath + 0x80)) = 0;
     if ((U_I((unsigned)&ai_GameFlags) & 4) != 0) {
         w = -1;
-        ai_Unk4b1f90();
+        hst_SetTextsOn();
         if ((U_I((unsigned)&ai_GameFlags) & 0x10) != 0) {
             iv = main_CheckCD();
             if (iv != 1) {
@@ -5313,7 +5313,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             init_PlayerProfile.talents[3] = (char)0xa8;
             init_PlayerProfile.talents[0] = 0;
             init_PlayerProfile.talents[1] = 0;
-            ai_Unk4b1f90(1);
+            hst_SetTextsOn(1);
         }
         U_I((unsigned)&ai_LeaveGame) = 1;
         if (U_I((unsigned)&ai_GameFlags) != 0 && U_I((unsigned)&main_QuitProgram) == 0) {
