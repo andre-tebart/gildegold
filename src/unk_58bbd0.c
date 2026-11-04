@@ -22977,25 +22977,26 @@ int ai_TrialStep1(G8CHARREC *ch, G8USEVIEW *use)
     }
     return 0;
 }
-/* 0x5d0a40, a message callback (108 B), the twin of 0x5d09d0 with the trial step index 3: type 6 ->
-   the text 0x5176d0 (0x9d) through 0x5bea00; other types -> the target 0x505df0 (param_2 + 4); no
-   target -> 0; else 0x5d08c0 (the target, 3) and 1. */
+/* 0x5d0a40, the use callback of the Domizil record 10 (the good 0x163, 0x62c538): the character kind 6 picks
+   the target in the special-amount list 0x5bea00 (the text 0x5176d0 0x9d), every other kind takes the use's
+   target 0x505df0; the target's trial step 3 (0x5d08c0) runs and 1, 0 without a target. */
 
-int ai_Unk5d0a40(int param_1, int param_2)
+int ai_TrialStep3(G8CHARREC *ch, G8USEVIEW *use)
 {
     char text[0x100];
-    int target;
+    G8CHARREC *target;
 
-    if (*(char *)(param_1 + 2) == 6) {
+    if (ch->kind == 6) {
         txt_Format(text, (char *)0x9d);
-        target = ai_SpecialAmountList(param_1, text);
+        target = (G8CHARREC *)ai_SpecialAmountList((int)ch, text);
     } else {
-        target = gm_FindChar(*(int *)(param_2 + 4));
+        target = (G8CHARREC *)gm_FindChar(use->target);
     }
-    if (target == 0)
-        return 0;
-    ai_ApplyTrialStep(target, 3);
-    return 1;
+    if (target != 0) {
+        ai_ApplyTrialStep((int)target, 3);
+        return 1;
+    }
+    return 0;
 }
 /* 0x5d0ab0, a message callback (108 B), the twin of 0x5d09d0 with the trial step index 4: type 6 ->
    the text 0x5176d0 (0x9d) through 0x5bea00; other types -> the target 0x505df0 (param_2 + 4); no
