@@ -8383,20 +8383,21 @@ int gm_CurrencyDivide(int a, int i)
 {
     return a / PLTAB(i);
 }
-/* 0x508660, the sum of the amounts of the objects of the list (prototype kind 9, group 1) whose prototype word is the one of the player slot p */
+/* 0x508660, the sum of the amounts of the objects of the list (prototype kind 9, group 1) whose prototype word is
+   the currency object the player slot p carries at +0x54 */
 
 int gm_SumSlotAmounts(void *list, unsigned char p)
 {
     int s;
-    unsigned short *o;
+    ORDOBJ *o;
 
     s = 0;
-    o = (unsigned short *)gm_Query(list, 1, 4, 9);
+    o = (ORDOBJ *)gm_Query(list, 1, 4, 9);
     if (o) {
         do {
-            if (PLW54(p) == *o)
-                s += *(int *)(o + 7);
-            o = (unsigned short *)gm_QueryNext();
+            if (PLW54(p) == o->type)
+                s += o->count;
+            o = (ORDOBJ *)gm_QueryNext();
         } while (o);
     }
     return s;
