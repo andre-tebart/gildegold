@@ -58,7 +58,7 @@ void init_GateObjectHook(struct D3OBJECT *o);                           /* 0x512
 void init_SoundObjectFreeHook(char *o);                                 /* 0x5127c0 */
 void init_PlayTownSound(char *name, int volume, int delay);             /* 0x5127f0 */
 void init_PlayGraveyardSound(char *b);                                  /* 0x512840 */
-void unk_Unk512890(void);                                               /* 0x512890 */
+void init_StopTownSounds(void);                                               /* 0x512890 */
 void init_SetSeasonTextures(void);                                      /* 0x5128d0 */
 void init_PlantTextureSetHook(char *o);                                 /* 0x512de0 */
 char init_TextureSetHook(int o);                                        /* 0x512e40 */

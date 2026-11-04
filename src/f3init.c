@@ -3175,7 +3175,7 @@ void init_PlayGraveyardSound(char *b)
 /* 0x512890, stops all sounds of the town table (0x427290) */
 
 
-void unk_Unk512890(void)
+void init_StopTownSounds(void)
 {
     int i, n;
 
@@ -3623,7 +3623,7 @@ void unk_Unk5136b0(void)
     int h;
 
     d3_ForEachObject2(d3_DefaultScene, 0, 0xa0, init_SoundObjectFreeHook);
-    unk_Unk512890();
+    init_StopTownSounds();
     d3_LightKeyBudgetVisible = 0x400;
     d3_LightKeyBudgetCulled = 0x40;
     if (init_ShopScript != -1) {
