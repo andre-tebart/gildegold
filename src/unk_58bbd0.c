@@ -14520,14 +14520,19 @@ void ai_NotifySale(int param_1, unsigned short *param_2, int param_3, int param_
 send:
     he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&full_data_62c32c);
 }
-/* 0x5a9780, a graveyard message (94 B): for a character of the kind 6 / 7 (+2) the text 0x4151 (0x4152 when
-   param_3 != 1) with param_2, param_3, the text and param_4, the +4 id (0x5fc) */
+/* 0x5a9780, tells a player character that its graves were leased (94 B): for a kind 6 / 7 character the text
+   0x4151 with the building, the number of paid leases, the singular / plural text (0x4152 for exactly one paid
+   lease, 0x4153 otherwise) and the owner's total share, shown to its netId (event 0x5fc); its only caller is
+   gv_GraveyardTurn, when it paid leases (paid > 0) */
 
-void ai_TellGravesPaid(int param_1, int param_2, int param_3, int param_4)
+void ai_TellGravesPaid(int plRec, int bld, int paid, int sum)
 {
-    if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x4151, param_2, param_3, (param_3 != 1) + 0x4152, param_4);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *pl;
+
+    pl = (G8CHARREC *)plRec;
+    if (pl->kind == 6 || pl->kind == 7) {
+        txt_Format(ai_NewsText, 0x4151, bld, paid, (paid != 1) + 0x4152, sum);
+        he_ShowNews(pl->netId, -1, ai_NewsText, 0, 0x5fc, ch_EmptyName);
     }
 }
 /* 0x5a97e0, a graveyard message with three values in two orders (159 B): as 0x5a96e0 with the text 0x414f
