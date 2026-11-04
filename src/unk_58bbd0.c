@@ -14264,21 +14264,26 @@ void ai_ShowFeudNews(unsigned short *cRec, unsigned short *pRec)
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
-/* 0x5a9050, a production message from a character pair (162 B): as 0x5a8f90 with the texts 0x134a / 0x1343 /
-   0x1344 */
+/* 0x5a9050, the partner news of a character pair (162 B, a reasoned guess at the texts' meaning): as ai_ShowFeudNews
+   with the texts 0x134a + r, 0x1343 and 0x1344 + 3 * sex + r; its only caller is ai_FindPartner (0x47ddf0) on
+   the path where the courtship completes and the pair becomes partners */
 
-void ai_Unk5a9050(unsigned short *param_1, unsigned short *param_2)
+void ai_ShowPartnerNews(unsigned short *cRec, unsigned short *pRec)
 {
+    G8CHARREC *c;
+    G8CHARREC *p;
     char local[512];
     unsigned int v;
 
-    if (*(char *)(param_2 + 1) == 6 || *(char *)(param_2 + 1) == 7) {
-        v = ((int (*)(int, void *))util_Random)(3, *param_1);
+    c = (G8CHARREC *)cRec;
+    p = (G8CHARREC *)pRec;
+    if (p->kind == 6 || p->kind == 7) {
+        v = ((int (*)(int, void *))util_Random)(3, c->id);
         txt_Format(local, (v & 0xffff) + 0x134a);
-        v = ((int (*)(int, void *, int))util_Random)(3, *param_2, local);
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x1343, *param_1,
-                     (v & 0xffff) + (*(char *)((char *)param_2 + 9) != 0 ? 3 : 0) + 0x1344);
-        he_ShowNews(*(int *)((char *)param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, 0);
+        v = ((int (*)(int, void *, int))util_Random)(3, p->id, local);
+        txt_Format(ai_NewsText, 0x1343, c->id,
+                     (v & 0xffff) + (p->sex != 0 ? 3 : 0) + 0x1344);
+        he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
 /* 0x5a9110, a production message to the player (95 B): when the word of param_1 is not the player 0x6f25b8,

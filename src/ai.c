@@ -285,7 +285,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
             cm_SendFieldDeltas();
             if (c->b215 + a < 4)
                 return 0;
-            ai_Unk5a9050(c, p);
+            ai_ShowPartnerNews(c, p);
             return p;
         }
     }
