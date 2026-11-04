@@ -122,7 +122,8 @@ void ts_InitCache(unsigned int size)
     else
         ts_Cache = 0;
 }
-/* 0x45f650 */
+/* 0x45f650, frees the surface cache: releases the texture and surface of every used entry, frees the
+   TSCACHE array and resets the counters */
 
 void ts_FreeCache(void)
 {
