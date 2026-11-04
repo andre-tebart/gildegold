@@ -1685,7 +1685,7 @@ void ai_HookChapter4Step(int arg)
 
     if (arg)
         return;
-    id = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
+    id = ai_CharInts[ai_PlayerId][0];
     cm_SendMoveGoodsUnchecked(id, -1, 0, 0x2bc0);
 }
 /* 0x5770e0, a transition callback (0x30 B; a start the ret+nop scan missed: it follows 0x5770a0's nop fill and
