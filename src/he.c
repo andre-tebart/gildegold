@@ -15100,7 +15100,7 @@ int ahm_HasRecord();
 void ai_Unk5a9c30(int param_1, int param_2, int param_3);
 int ahm_SendAddPlace();
 int gm_MinutesBetween();
-int he_Unk56ddc0();
+int he_RoomBusy();
 
 /* 0x56d3d0, the run handler of the research event 0x95: states -2 / -1 free; in the night of the day (the float ranges 0x617830 / 0x617840) the clock +0xbc is reset and the event retried after 1; state 1 hands the result over (0x5a9c30, 0x4ecaa0), releases the building group and frees; state 0 waits for the research (0x56ddc0), takes the elapsed time from +0xbc (0x4fe280) off the amount +0xb4 and retries after 5 until the amount is used up (state 1) */
 void he_Unk56d3d0(int ev)
@@ -15133,7 +15133,7 @@ void he_Unk56d3d0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (he_Unk56ddc0(*(int *)(c + 0x16c), 0x24b) != 0) {
+    if (he_RoomBusy(*(int *)(c + 0x16c), 0x24b) != 0) {
         *(AITIME *)(ev + 0xbc) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0xf, 0);
         return;
@@ -15206,7 +15206,7 @@ void he_Unk56d730(int ev)
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
     }
-    if (he_Unk56ddc0(*(int *)(c + 0x16c), 0x24b) != 0) {
+    if (he_RoomBusy(*(int *)(c + 0x16c), 0x24b) != 0) {
         *(AITIME *)(ev + 0xc0) = ai_Time;
         gm_AddTime(ev + 0x52, 0, 0xf, 0);
         return;
@@ -15282,7 +15282,7 @@ void he_Unk56daa0(int ev)
         gm_AddTime(ev + 0x52, 1, 0, 0);
         return;
     }
-    if (he_Unk56ddc0(*(int *)(c + 0x16c), 0x24b) != 0) {
+    if (he_RoomBusy(*(int *)(c + 0x16c), 0x24b) != 0) {
         gm_AddTime(ev + 0x52, 0, 0xf, 0);
         return;
     }
@@ -15329,15 +15329,17 @@ void he_Unk56dd20(int ev)
     *(int *)(ev + 0xb4) = -1;
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
-/* 0x56ddc0, true when the building b has a task of the message kinds 0x24b / 0x256 / 0x266 in progress (0x4ffe90 (b's +0x5d, 2, 6, 0, kind), its +0x1c above 0) */
+/* 0x56ddc0, true when the room `kind` of the building b (0x24b the alchemist's laboratory, 0x256 the cannon
+   room, 0x266 the cabinet) is locked (a task runs in it): its object (0x4ffe90 (b->objList, 2, 6, 0, kind))
+   has a nonzero locked; the calls outside those three kinds answer 0 */
 
-int he_Unk56ddc0(int b, int kind)
+int he_RoomBusy(AIBLD *b, unsigned short kind)
 {
-    int h;
+    AIOBJ *o;
 
     if (kind == 0x24b || kind == 0x256 || kind == 0x266) {
-        h = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, kind);
-        if (h != 0 && *(int *)(h + 0x1c) > 0)
+        o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, kind);
+        if (o != 0 && o->locked > 0)
             return 1;
     }
     return 0;
