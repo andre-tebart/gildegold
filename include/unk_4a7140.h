@@ -102,7 +102,7 @@ int ai_EvalOneInFour(void);                                                     
 int ai_AlwaysTrue(void);                                                          /* 0x4a8c10 */
 int ai_EvalOwnTimeSlot(int a, AIPER *p);                                               /* 0x4a8c20 */
 int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8c80 */
-int ai_DecideNearChar(int a, AIPER *p, int c, int d, unsigned char *m);              /* 0x4a8d20 */
+int ai_DecideNearChar(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8d20 */
 int ai_DecideBuildingResident(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8db0 */
 int ai_EvalTitleGroup7(int a, AIPER *p);                                               /* 0x4a8ee0 */
 int ai_DecideUnfriendlyPair(int a, AIPER *p, int c, int d, struct AIARG *m);              /* 0x4a8f20 */

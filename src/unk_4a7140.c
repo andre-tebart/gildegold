@@ -1098,7 +1098,7 @@ int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, AIARG *m)
 }
 /* 0x4a8d20, decide callback: p (money >= 3) picks a character within 32..49 units, into m (kind 7) */
 
-int ai_DecideNearChar(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideNearChar(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags;
     unsigned short id;
@@ -1108,8 +1108,8 @@ int ai_DecideNearChar(int a, AIPER *p, int c, int d, unsigned char *m)
     flags = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChain(p, 1, &flags, 0, (float)util_RandomU(0x12) + 32.0f, &id) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id].netId;
+    m->kind = 7;
+    m->ref = ((AIPER *)ai_CharsT)[id].netId;
     return 1;
 }
 /* 0x4a8db0, decide callback: a building for action 4 of ai_Partner (or action 6 of p, rated 32..63), then from a
