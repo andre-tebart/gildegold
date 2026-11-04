@@ -2552,7 +2552,9 @@ void gm_AddTime2(AITIME *c, int unused, int hours, int mins, int secs)
 
 int gm_Season(char *d)
 {
-    return *(short *)(d + 2) % 4;
+    GMDATE *date = (GMDATE *)d;
+
+    return date->year % 4;
 }
 /* 0x4fe350, the season of the clock c (day % 4) */
 
