@@ -1180,7 +1180,7 @@ int ch_RemoveAction(CHACTION *a)
     memset(a, 0, sizeof(*a));
     return 1;
 }
-/* 0x404810 */
+/* 0x404810, removes every action of the character's queue, freeing the path of a walk action */
 
 int ch_ClearActions(CHARACTER *ch)
 {
