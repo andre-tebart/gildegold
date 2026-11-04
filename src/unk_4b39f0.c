@@ -738,10 +738,10 @@ int ai_PlayerHeldBuildings(AICHAR *c, G13TYPE *t)
         return 0;
     return s.same + n >= t->goal;
 }
-/* 0x4b4c50, mission condition: 0x4b5160 with "values 0x0b, 0x0c and 0x0d of 0x4b5270 reach 1 (where present)
-   and t->goal <= 3" */
+/* 0x4b4c50, mission condition (type 44): the players (kinds 6 / 7) hold every building of the kinds 0x0b, 0x0c
+   and 0x0d (where such buildings exist) and t->goal <= 3, held for t->threshold minutes (ai_TimedCondition) */
 
-int ai_Unk4b4c50(AICHAR *c, int x, G13TYPE *t)
+int ai_CondPlayerHeldKindsTimed(AICHAR *c, int x, G13TYPE *t)
 {
     G13STAT s;
 
@@ -917,7 +917,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 43:
         return ai_PlayerHeldBuildings(c, t);
     case 44:
-        return ai_Unk4b4c50(c, (int)m, t);
+        return ai_CondPlayerHeldKindsTimed(c, (int)m, t);
     case 45:
         return ai_Unk4b4e30(c, t);
     case 46:
