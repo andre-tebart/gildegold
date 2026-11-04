@@ -9201,13 +9201,13 @@ int gm_BuildingKindCost(int c, int kind)
 int gm_SumListAmounts(void *list, unsigned char p)
 {
     int s;
-    char *o;
+    ORDOBJ *o;
 
     s = 0;
-    o = gm_Query(list, 1, 4, 9);
+    o = (ORDOBJ *)gm_Query(list, 1, 4, 9);
     while (o) {
-        s += *(int *)(o + 0xe);
-        o = (char *)gm_QueryNext();
+        s += o->count;
+        o = (ORDOBJ *)gm_QueryNext();
     }
     return s;
 }
