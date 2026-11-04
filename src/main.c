@@ -5892,7 +5892,6 @@ GAPDATA full_data_75e401[127] = { 0 };  /* 0x75e401 */
 int main_PlatformNT = 0;  /* 0x75e62c, the OS is NT based (dwPlatformId != VER_PLATFORM_WIN32_WINDOWS) */
 int main_WindBank = 0;  /* 0x75e630, the wind sample bank (sb_LoadSampleBank "natur\wind.sbf" at the game start) */
 GAPDATA full_data_75e634[12] = { 0 };  /* 0x75e634 */
-GAPDATA full_data_75ec40[28] = { 0 };  /* 0x75ec40 */
 GAPDATA full_data_760454[4] = { 0 };  /* 0x760454 */
 /* full_data_76f990 / full_data_76f994: views of ai_Unk76f920 (data_views.h), the save header's +0x70 / +0x74 */
 GAPDATA full_data_91f6e0[3] = { 0 };  /* 0x91f6e0 */

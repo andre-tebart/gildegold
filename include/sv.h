@@ -4,6 +4,7 @@
 #define SV_H
 
 #include "sv_types.h"
+#include <windows.h>                    /* MSG (sv_Message) */
 
 typedef struct SVSKYREC {               /* 0x4c bytes, a sky layer: the texture and its scale / v scale / v offset (d3sky_CreateLayer) */
     char name[0x40];
@@ -329,6 +330,7 @@ extern unsigned short * sv_PanelRecord;                     /* 0x75e8c8 */
 extern char sv_PanelText[76];                               /* 0x75e8d4 */
 extern int sv_SelectionFlags[0xc0];                         /* 0x75e920 */
 extern int sv_SkyScene;                                    /* 0x75ec20 */
+extern MSG sv_Message;                                     /* 0x75ec40, the window message sv_PumpMessages reads */
 extern unsigned short * sv_SelectedItem;                       /* 0x75ec5c */
 extern SVACTIVITY sv_Activities[0x30];                          /* 0x75ec80 */
 extern int ai_Unk75f280[576];                               /* 0x75f280 */

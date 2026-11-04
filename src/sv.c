@@ -121,7 +121,6 @@ extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern float d3s_QuadUV[6];
 extern struct D2PIC *d2_Pics;
 extern int ai_SceneChars[32];
-extern GAPDATA full_data_75ec40[];
 extern char cm_ChatLog[2048];
 
 extern GAPDATA full_data_602568[];
@@ -6889,15 +6888,15 @@ int sv_PumpMessages(void)
 {
     int r;
 
-    r = PeekMessageA((MSG *)(unsigned)&full_data_75ec40, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
+    r = PeekMessageA((MSG *)(unsigned)&sv_Message, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
     while (r != 0) {
-        if (GetMessageA((MSG *)(unsigned)&full_data_75ec40, (HWND)SV_I((unsigned)&main_Window), 0, 0) == 0)
+        if (GetMessageA((MSG *)(unsigned)&sv_Message, (HWND)SV_I((unsigned)&main_Window), 0, 0) == 0)
             SV_I((unsigned)&main_QuitProgram) = 1;
         else {
-            TranslateMessage((MSG *)(unsigned)&full_data_75ec40);
-            DispatchMessageA((MSG *)(unsigned)&full_data_75ec40);
+            TranslateMessage((MSG *)(unsigned)&sv_Message);
+            DispatchMessageA((MSG *)(unsigned)&sv_Message);
         }
-        r = PeekMessageA((MSG *)(unsigned)&full_data_75ec40, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
+        r = PeekMessageA((MSG *)(unsigned)&sv_Message, (HWND)SV_I((unsigned)&main_Window), 0, 0, 0);
     }
     return 1;
 }
@@ -7826,6 +7825,7 @@ unsigned short * sv_PanelRecord = 0;  /* 0x75e8c8, its scene record */
 char sv_PanelText[76] = {0};  /* 0x75e8d4, the panel text */
 int sv_SelectionFlags[0xc0] = {0};  /* 0x75e920, the mirror of the character selection flags (byte i per character) */
 int sv_SkyScene = 0;  /* 0x75ec20 */
+MSG sv_Message = {0};  /* 0x75ec40, the window message sv_PumpMessages reads (PeekMessageA / GetMessageA) */
 unsigned short * sv_SelectedItem = 0;  /* 0x75ec5c */
 SVACTIVITY sv_Activities[0x30] = {0};  /* 0x75ec80, the character activities the he.c scripts register (sv_RegisterActivity) */
 int ai_Unk75f280[576] = {0};  /* 0x75f280, the member panel: */
