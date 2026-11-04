@@ -5126,8 +5126,8 @@ void ai_Unk596120(int param_1, int param_2)
     }
 }
 
-int ai_AmountMenu(); int ai_Unk5b3130(); int ai_Unk5b4bf0(); int ai_Unk5b4fb0();
-int ai_Unk5b5610();
+int ai_AmountMenu(); int ai_FiveTextWindow(); int ai_Unk5b4bf0(); int ai_DrohbriefWindow();
+int ai_PamphletWindow();
 
 /* 0x5962b0, the stonecutter contact listener (396 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with 0x200
    PRODUKTION_STEINMETZ (0x1442110, 0x13) -> 0x58bd60; with 0x400 MEISTERBRIEF (0x143cbc8, 0x16) -> 0x5c3200,
@@ -5220,7 +5220,7 @@ void ai_Unk596400(int param_1, int param_2)
                 ai_AmountMenu(cfg, text, 0, (void *)(unsigned)&ai_Unk5b3f30);
                 sv_CameraFollow();
             } else if (U_I((unsigned)&ai_ClickedObject) == nebel) {
-                ai_Unk5b3130(param_1, param_2, 2);
+                ai_FiveTextWindow(param_1, param_2, 2);
             } else if (U_I((unsigned)&ai_ClickedObject) == bestechung) {
                 ai_Unk5b4bf0(param_1);
             }
@@ -5228,12 +5228,13 @@ void ai_Unk596400(int param_1, int param_2)
         r = sv_RunFrame(ai_Unk596400, 0x67fff);
     }
 }
-/* 0x5965f0, the rhetoric contact listener (300 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); DROHBRIEF
-   (0x143ff1c, 0xc) -> 0x5b4fb0 (param_1) + 0x52d7a0; PAMPHLET (0x14405f0, 0xc) -> 0x5b5610 (param_1);
-   RHETORIK (0x143fc78, 0xc) -> 0x5b3130 (param_1, param_2, 4); while 0x6f2448 is set: the state 0x1468410
-   0x19 -> 0x5b5610 and ' ' -> 0x5b4fb0 */
+/* 0x5965f0, the rhetoric contact listener (300 B): releases the name plates, then pumps the frame (0x5309a0,
+   this, 0x67fff) while the pump returns 1: the three contact plates (contact_DROHBRIEF / contact_PAMPHLET /
+   contact_RHETORIK, the texts 0x1757 / 0x190c / 0x16ae of txt_Ptrs, look 0xc) are registered; with gm_AllowAll
+   the P key opens the pamphlet window and the space key the drohbrief window; a clicked plate opens the
+   drohbrief window (then the camera follows), the pamphlet window, or the five-text window in mode 4 */
 
-void ai_Unk5965f0(int param_1, int param_2)
+void ai_RhetoricContact(int bld, int room)
 {
     int r;
     int drohbrief;
@@ -5241,28 +5242,28 @@ void ai_Unk5965f0(int param_1, int param_2)
     int rhetorik;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5965f0, 0x67fff);
+    r = sv_RunFrame(ai_RhetoricContact, 0x67fff);
     while (r != 0) {
-        drohbrief = sv_RegisterNamePlate("contact_DROHBRIEF", U_I((unsigned)&full_data_143ff1c), 0xc);
-        pamphlet = sv_RegisterNamePlate("contact_PAMPHLET", U_I((unsigned)&full_data_14405f0), 0xc);
-        rhetorik = sv_RegisterNamePlate("contact_RHETORIK", U_I((unsigned)&full_data_143fc78), 0xc);
-        if (U_I((unsigned)&gm_AllowAll) != 0) {
-            if (U_I((unsigned)&kb_Last) == 0x19)
-                ai_Unk5b5610(param_1);
-            if (U_I((unsigned)&kb_Last) == ' ')
-                ai_Unk5b4fb0(param_1);
+        drohbrief = sv_RegisterNamePlate("contact_DROHBRIEF", txt_Ptrs[0x1757], 0xc);
+        pamphlet = sv_RegisterNamePlate("contact_PAMPHLET", txt_Ptrs[0x190c], 0xc);
+        rhetorik = sv_RegisterNamePlate("contact_RHETORIK", txt_Ptrs[0x16ae], 0xc);
+        if (gm_AllowAll != 0) {
+            if (kb_Last == 0x19)
+                ai_PamphletWindow(bld);
+            if (kb_Last == ' ')
+                ai_DrohbriefWindow(bld);
         }
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == drohbrief) {
-                ai_Unk5b4fb0(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == drohbrief) {
+                ai_DrohbriefWindow(bld);
                 sv_CameraFollow();
-            } else if (U_I((unsigned)&ai_ClickedObject) == pamphlet) {
-                ai_Unk5b5610(param_1);
-            } else if (U_I((unsigned)&ai_ClickedObject) == rhetorik) {
-                ai_Unk5b3130(param_1, param_2, 4);
+            } else if (ai_ClickedObject == pamphlet) {
+                ai_PamphletWindow(bld);
+            } else if (ai_ClickedObject == rhetorik) {
+                ai_FiveTextWindow(bld, room, 4);
             }
         }
-        r = sv_RunFrame(ai_Unk5965f0, 0x67fff);
+        r = sv_RunFrame(ai_RhetoricContact, 0x67fff);
     }
 }
 
@@ -5290,7 +5291,7 @@ void ai_Unk5966f0(int param_1, int param_2)
             if (U_I((unsigned)&ai_ClickedObject) == fest) {
                 ai_Unk5b5e80(param_1, param_2);
             } else if (U_I((unsigned)&ai_ClickedObject) == kampf) {
-                ai_Unk5b3130(param_1, param_2, 3);
+                ai_FiveTextWindow(param_1, param_2, 3);
             } else if (U_I((unsigned)&ai_ClickedObject) == ansch) {
                 ai_Unk5b5010(param_1);
                 sv_CameraFollow();
@@ -5657,9 +5658,9 @@ void ai_Unk597500(int param_1, int param_2)
             if (U_I((unsigned)&full_data_6f2450) != 0 && U_I((unsigned)&kb_Last) == '-')
                 ai_MistressWindow(param_1);
         } else if (U_I((unsigned)&ai_ClickedObject) == verhandeln) {
-            ai_Unk5b3130(param_1, param_2, 0);
+            ai_FiveTextWindow(param_1, param_2, 0);
         } else if (U_I((unsigned)&ai_ClickedObject) == handwerk) {
-            ai_Unk5b3130(param_1, param_2, 1);
+            ai_FiveTextWindow(param_1, param_2, 1);
         } else if (U_I((unsigned)&ai_ClickedObject) == beweis) {
             ai_Unk5b4590(param_1);
         } else if (U_I((unsigned)&ai_ClickedObject) == meister) {
@@ -8792,7 +8793,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             switch (vid) {
             case 0x13: ai_Unk597500(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x14: ai_Unk596400(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x15: ai_Unk5965f0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x15: ai_RhetoricContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x16: ai_WineCellarContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x17: ai_Unk5966f0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x18: ai_MistressContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -15480,7 +15481,7 @@ int ai_StorageWindow(int param_1, int param_2)
    player 0x6f25b8) first, the five caption ids 0x25e / 0x264 / 0x26a / 0x270 / 0x276 in a 0x358-byte frame;
    the window body is left as a comment */
 
-int ai_Unk5b3130(void)
+int ai_FiveTextWindow(void)
 {
     int rec;
     int texts[5];
@@ -15599,7 +15600,7 @@ int ai_Unk5b4c60(void)
 /* 0x5b4fb0, a callback window (83 B, ROUGH SKELETON): a 0x50-byte record (cleared), the callback 0x5b4c60, the
    globals 0x143ff20 and the floats 0x5eed68 / 0x5eed6c; a 0x50-byte frame. The body is a comment */
 
-int ai_Unk5b4fb0(void)
+int ai_DrohbriefWindow(void)
 {
     int rec[0x14];
 
@@ -15633,7 +15634,7 @@ int ai_Unk5b5310(int param_1)
 /* 0x5b5610, a record window (121 B, ROUGH SKELETON): param_1 == 0 returns, else a 0x50-byte record (cleared) with
    the floats 0x5eed68 / 0x5eed6c; a 0x90-byte frame. The body is a comment */
 
-int ai_Unk5b5610(int param_1)
+int ai_PamphletWindow(int param_1)
 {
     int rec[0x14];
 
