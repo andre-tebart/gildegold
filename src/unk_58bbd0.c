@@ -13439,12 +13439,20 @@ void ai_Unk5a82f0(int *m_)
     }
     m_[0] = -1;
 }
-/* 0x5a8340, the record's random (68 B): the LCG at +4 (0x41c64e6d, 0x3039) and the high word / 0x7fff */
+#pragma pack(push, 1)
+typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
+    int id;                             /* +0x00, the setting id (ai_Unk5a84b0 looks it up by this) */
+    int seed;                           /* +0x04, the LCG state of the record's random */
+} G8SETTING;
+#pragma pack(pop)
 
-unsigned int ai_Unk5a8340(int param_1)
+/* 0x5a8340, the record's random in [0, 1) (68 B): the LCG at +4 (0x41c64e6d, 0x3039) advanced, then its high
+   word modulo 0x7fff scaled by 1 / 0x7fff (0x5eb8f8) */
+
+float ai_SettingRandom(G8SETTING *rec)
 {
-    *(int *)(param_1 + 4) = *(int *)(param_1 + 4) * 0x41c64e6d + 0x3039;
-    return *(unsigned short *)(param_1 + 6) / 0x7fff;
+    rec->seed = rec->seed * 0x41c64e6d + 0x3039;
+    return (float)((unsigned int)(unsigned short)(rec->seed >> 16) % 0x7fff) * 0.00003051851f;
 }
 /* 0x5a8390, the record's recursive free (32 B): the child +0x48 first, then 0x422620 */
 
@@ -13739,7 +13747,7 @@ int ai_DrawSettingGood(int param_1)
     rec = ai_Unk5a84b0(*(int *)(param_1 + 1));
     if (rec == 0)
         return 0;
-    draw = (int)((float)ai_Unk5a8340(rec) * *(float *)((unsigned)&full_rdata_5ebb40));
+    draw = (int)((float)ai_SettingRandom(rec) * *(float *)((unsigned)&full_rdata_5ebb40));
     sum = 0;
     pick = 0;
     i = 0;
