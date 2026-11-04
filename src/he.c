@@ -2709,7 +2709,7 @@ void he_Unk544630(int ev)
     }
 }
 
-unsigned int ai_Unk5c6530(int param_1, int param_2);
+unsigned int ai_MarriageTest(int param_1, int param_2);
 int gv_FindReservedEntry();
 int gv_EntryIndex(char *r, int *e);
 int gv_OrderSetGraveHolder();
@@ -2768,7 +2768,7 @@ void he_Unk544840(int ev)
     *(int *)(ev + 0x84) = -1;
     switch (st) {
     case 0:
-        r = ai_Unk5c6530(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
+        r = ai_MarriageTest(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
         if (r == -0x405 || r == -0x406) {
             *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 0, 2, 0);

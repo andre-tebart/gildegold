@@ -11011,11 +11011,19 @@ typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHA
             char first[0x10];           /* +0x030 */
             char family[0x10];          /* +0x040 */
         };
+        struct {
+            char padname5c[0x2c];       /* +0x030 .. 0x05b */
+            int partner;                /* +0x05c, the netId of the character's partner (AICHAR.relatives[0]) */
+            int relatives[7];           /* +0x060 .. 0x07b */
+        };
     };
     char pad88[0xdd];                   /* +0x088 .. 0x164 */
     unsigned char title;                /* +0x165, the title rank */
-    char pad166[6];
+    char pad166[6];                     /* +0x166 .. 0x16b */
     AIBLD *bld;                         /* +0x16c, the building the character is in */
+    char pad170[0x41];                  /* +0x170 .. 0x1b0 */
+    unsigned char heldRounds;           /* +0x1b1, the rounds the character is held */
+    char pad1b2[0x6a];                  /* +0x1b2 .. 0x21b */
 } G8CHARREC;
 #pragma pack(pop)
 
@@ -19042,40 +19050,38 @@ void ai_FindCandidateIds(G8CHARREC *p, int *n, int *out)
     for (i = 0; i < *n; i++)
         out[i] = ai_CharInts[ids[i]][0];
 }
-/* 0x5c6530, the marriage test of two characters (240 B): param_1 / param_2 the two character ids;
-   0x505df0 resolves both; the errors 0xfffffc00 (missing), 0xfffffbff / 0xfffffbfe (the +8 byte 0),
-   0xfffffbfd / 0xfffffbfc (the +0x5c partner word of the other), 0xfffffbfb / 0xfffffbfa (the +0x1b1
-   flag); the age difference 0x505e60 (the id) under 6 -> 1, else 0 */
+/* 0x5c6530, the marriage test of two characters, idA / idB their net ids: gm_FindChar resolves both;
+   the codes 0xfffffc00 (no record), 0xfffffbff / 0xfffffbfe (health 0), 0xfffffbfd / 0xfffffbfc (the partner
+   link +0x5c is another net id), 0xfffffbfb / 0xfffffbfa (held); the level difference (gm_CharLevel) under
+   6 -> 1 */
 
-unsigned int ai_Unk5c6530(int param_1, int param_2)
+unsigned int ai_MarriageTest(int idA, int idB)
 {
-    char *a;
-    char *b;
+    G8CHARREC *a;
+    G8CHARREC *b;
     int i;
     int j;
-    int d;
 
-    a = (char *)gm_FindChar(param_1);
-    b = (char *)gm_FindChar(param_2);
+    a = (G8CHARREC *)gm_FindChar(idA);
+    b = (G8CHARREC *)gm_FindChar(idB);
     if (a == 0 || b == 0)
         return 0xfffffc00;
-    if (a[8] == 0)
+    if (a->health <= 0)
         return 0xfffffbff;
-    if (b[8] == 0)
+    if (b->health <= 0)
         return 0xfffffbfe;
-    if (U_I(b + 0x5c) != -1 && U_I(b + 0x5c) != param_1)
+    if (b->partner != -1 && b->partner != idA)
         return 0xfffffbfd;
-    i = U_I(a + 0x5c);
-    if (i != -1 && i != param_2)
+    i = a->partner;
+    if (i != -1 && i != idB)
         return 0xfffffbfc;
-    if (a[0x1b1] != 0)
+    if (a->heldRounds > 0)
         return 0xfffffbfb;
-    if (b[0x1b1] != 0)
+    if (b->heldRounds > 0)
         return 0xfffffbfa;
-    i = gm_CharLevel(*(unsigned short *)a, 0);
-    j = gm_CharLevel(*(unsigned short *)b, 0);
-    d = i - j;
-    return (unsigned int)((d < 0 ? -d : d) < 6);
+    i = gm_CharLevel(a->id, 0);
+    j = gm_CharLevel(b->id, 0);
+    return (unsigned int)(abs(i - j) < 6);
 }
 /* 0x5c6620, the marriage rating of two characters (752 B, ROUGH): param_1 / param_2 the ids; the 0x220
    local score record (0x88 dwords, [0] = 1); 0x505df0 resolves both; the partner records +0x30 / +0x32
