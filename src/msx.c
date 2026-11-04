@@ -121,7 +121,8 @@ void msx_SetAmbVolume(int vol)
         LeaveCriticalSection(&msx_Lock);
     }
 }
-/* 0x423a90 */
+/* 0x423a90, plays the named music track: finds its slot or allocates one (zeroed, the name copied),
+   clears the ambient flag and starts it; NULL when there is no driver or the start fails */
 
 MSXTRACK *msx_Play(char *name, int once)
 {
