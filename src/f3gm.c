@@ -10903,16 +10903,19 @@ int gm_TrialBuildingKind(char *b)
         n = n + 1;
     return n;
 }
-/* 0x50d0b0, 0x284 (4 -> 7) / 0x289 (+ 3) */
+/* 0x50d0b0, the number of curse victims the building b offers (the range of the strength slider of the curse
+   target window, 0x5d90e0): 4, 7 with the curse object 0x284, plus 3 with the 0x289 */
 
 int gm_CurseTargetCount(char *b)
 {
+    ORDBLD *bld;
     int n;
 
+    bld = (ORDBLD *)b;
     n = 4;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x284) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x284) != 0)
         n = 7;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x289) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x289) != 0)
         n = n + 3;
     return n;
 }
