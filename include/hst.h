@@ -35,7 +35,7 @@ int ai_TokenRandomMerchant(int mode, G12ARG *args, int k, char *fmt, char *out);
 int ai_TokenRandomPlayer(int mode, G12ARG *args, int k, char *fmt, char *out);           /* 0x4afc30 */
 int ai_CommandFest(int a, int b, char *fmt);                                     /* 0x4afdd0 */
 int ai_CommandSiegeStart(void);                                                          /* 0x4afe80 */
-int ai_Unk4aff30(void);                                                          /* 0x4aff30 */
+int ai_CommandUprising(void);                                                          /* 0x4aff30 */
 int ai_CommandFire(void);                                                        /* 0x4affc0 */
 int ai_CommandTornado(void);                                                     /* 0x4b0050 */
 int ai_CommandCityTreasury(int a, int b, char *fmt);                             /* 0x4b00e0 */
