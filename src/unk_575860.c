@@ -7810,11 +7810,11 @@ void ai_GraveSizeButtonsAt(AIBLD *rec, int win, int section, int *btns, int *sel
 
 int gv_OrderSetGraveHolder(); int gv_SizeOpen();
 
-/* 0x583de0, a graveyard confirmation window (272 B): rec / the two values passed on to 0x4f0900; the window
-   "Locations_Friedhof_Friedhof" (0x62a5bc) with 0x476f80 / 0x475600, the sound 0x52ea30, the texts 0x410f /
-   0x410e and the entries 0x4111 / +1 in 0x475b80 (window, 2, text), 0xf8a668 = -1; the pump loop 0x5309a0
-   (this window, 0x677c7): the click 0x14673a0 -> 0x6f22a0 = 1; the first entry -> 0x4f0900 (0, rec, the two
-   values), 1; the second -> 0x6f22a0 = 1; the pump 0 -> 0x4758f0 (window), the result */
+/* 0x583de0, the confirmation window of a grave release (272 B): rec / a / b are passed on to
+   gv_OrderSetGraveHolder; the form "Locations\Friedhof\Friedhof" (d2_OpenForm (0, 0), the pointer sprite off,
+   centred, fitted), the texts 0x410f / 0x410e and the two entries 0x4111 / +1 (d2_GetWinObj), d2_ClickedId
+   cleared; the pump loop (this window, 0x677c7): a right button release (dm_L.rup) or the second entry sets
+   sv_PopRequest, the first sets the grave holder (0, rec, a, b) and returns 1; the close of the window, the result */
 int ai_GraveFreeConfirm(char *rec, int a, unsigned char b)
 {
     int win;
@@ -7824,28 +7824,28 @@ int ai_GraveFreeConfirm(char *rec, int a, unsigned char b)
     int done;
 
     done = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62a5bc);
+    win = d2_OpenForm(0, 0, "Locations\\Friedhof\\Friedhof");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x410f, 0x410e);
     d2_SetForm(win, 2);
     v = io_PrintText(0x4111);
     b1 = d2_GetWinObj(win, 2, v);
     b2 = d2_GetWinObj(win, 2, v + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    d2_ClickedId = -1;
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == b1) {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == b1) {
                 gv_OrderSetGraveHolder(0, rec, a, b);
                 done = 1;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == b2) {
+                sv_PopRequest = 1;
             }
         }
         if (sv_RunFrame(ai_GraveFreeConfirm, 0x677c7) == 0) {
