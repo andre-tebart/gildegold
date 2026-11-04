@@ -1983,9 +1983,9 @@ void hst_ResetPlayerTexts(void)
     hst_KeyLast = -1;
     hst_KeyNext = -1;
 }
-/* 0x4b1ee0, marks list i of hst_Lists used and empty */
+/* 0x4b1ee0, marks list i of hst_Lists used and empty (the [_SET_n command of a history text) */
 
-int ai_Unk4b1ee0(unsigned short i)
+int hst_ResetList(unsigned short i)
 {
     int j;
 
@@ -2196,7 +2196,7 @@ G12ROW *hst_ParseCommandline_1st_Pass(int k)
         G12ROW *row = &hst_Lists[n];
 
         if (set)
-            ai_Unk4b1ee0((unsigned short)n);
+            hst_ResetList((unsigned short)n);
         return row;
     }
     if (n >= 4)
