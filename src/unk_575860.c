@@ -1888,24 +1888,24 @@ int ai_StepShownChapter3Step4(void)
 
 void ai_HookChapter3Intro(int arg)
 {
-    char *r;
-    char *q;
+    AIBLD *r;
+    AIOBJ *q;
     int kind;
 
     if (arg)
         return;
-    if (U_I((unsigned)&ai_PlayerBuilding)) {
-        kind = *(unsigned char *)U_I((unsigned)&ai_PlayerBuilding);
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) == 0x12)
+    if (ai_PlayerBuilding) {
+        kind = ((AIBLD *)ai_PlayerBuilding)->type;
+        if (((AIBTYPE *)ai_BTypes)[kind].kind == 0x12)
             return;
     }
-    r = (char *)gm_BuildQuery(1, 5, 0x12);
+    r = (AIBLD *)gm_BuildQuery(1, 5, 0x12);
     if (!r)
         return;
-    q = (char *)gm_Query(*(int *)(r + 0x5d), 1, 0, 0x74);
+    q = (AIOBJ *)gm_Query((void *)r->objList, 1, 0, 0x74);
     if (!q)
         return;
-    sv_SelectPanelObjectK(r, *(int *)(q + 2), (char *)(unsigned)&ch_EmptyName);
+    sv_SelectPanelObjectK(r, q->objId, ch_EmptyName);
 }
 /* 0x577540, when `arg` is 0 and the building 0x6f2308 is not already of the table byte 0x2: finds a record
    (0x501190 (2, 5, 2, 4, player) with the player word 0x6f25b8), picks 0x4ffe90 (r+0x5d, 1, 0, 0x13) and passes
