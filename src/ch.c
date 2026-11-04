@@ -361,7 +361,7 @@ int ch_Delete(CHARACTER *ch)
     }
     return 0;
 }
-/* 0x4029c0 */
+/* 0x4029c0, allocates an empty character and takes the first free list slot (0 when the list is full) */
 
 CHARACTER *ch_Alloc(void)
 {
