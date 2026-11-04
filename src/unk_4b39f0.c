@@ -670,9 +670,10 @@ int ai_CondCharHoldsKinds(AICHAR *c, G13TYPE *t)
         return 0;
     return 1;
 }
-/* 0x4b4a00, mission condition: 0x4b51f0 values 0x15, 0x14 and 0x12 of c: at least 3 each, all reaching 1 */
+/* 0x4b4a00, mission condition (type 38): the character holds at least three buildings (and the whole share) of
+   each of the kinds 0x15, 0x14 and 0x12 */
 
-int ai_Unk4b4a00(AICHAR *c, G13TYPE *t)
+int ai_CondCharHoldsThreeOfEach(AICHAR *c, G13TYPE *t)
 {
     G13STAT s;
 
@@ -909,7 +910,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 39:
         return ai_CondCharHoldsKinds(c, t);
     case 38:
-        return ai_Unk4b4a00(c, t);
+        return ai_CondCharHoldsThreeOfEach(c, t);
     case 33:
         return ai_Unk4b4aa0(c, (int)m, t);
     case 43:
