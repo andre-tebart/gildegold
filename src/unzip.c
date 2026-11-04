@@ -1331,7 +1331,7 @@ extern int ZEXPORT unzGetGlobalComment (file, szComment, uSizeBuf)
    They save and restore the position of the current file in the central directory,
    like unzGetFilePos/unzGoToFilePos of later minizip versions. Names are ours. */
 
-/* 0x4686d0 */
+/* 0x4686d0, returns the current file's index and its position in the central directory */
 extern int ZEXPORT unzGetFilePos (file, pos_in_central_dir, num_file)
 	unzFile file;
 	uLong *pos_in_central_dir;
