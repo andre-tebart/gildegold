@@ -17253,25 +17253,28 @@ int ai_Unk5bfd90(int param_1, int param_2, int *param_3, int param_4)
     (void)param_4;
     return 0;
 }
-/* 0x5bfed0, the page switch of the special-amount window (144 B): 0x475f70 (win, page), the saved +0x2e8
-   control of the screen 0xf8f368 + screen * 0x3c4, the caption 0x515960 (0x602568) and 0x472d20
-   (screen, 1); with param_3 != -1 the screen control is cleared and the 0x472270 (-1, -1, screen, screen,
-   0x767) page follows; returns the saved control */
+/* 0x5bfed0, prepares a page of the special-amount window (144 B): selects the page param_2 of the view
+   param_1, saves the page window's scroll offset, clears its text ("$C") and removes its objects. With the
+   scroll page param_3 (not -1) the page's scroll offset is cleared, the scroll page's text is cleared and
+   its scroll buttons (0x767) are created, then the page is selected again; returns 0. Without it the saved
+   scroll offset is returned. */
 
-int ai_Unk5bfed0(int param_1, int param_2, int param_3)
+int ai_AmountPageSwitch(int view, int page, int scrollPage)
 {
     int saved;
+    int win;
 
-    d2_SetForm(param_1, param_2);
-    saved = U_I(((unsigned)&ai_Unkf8f13c + 0x22c) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
-    io_PrintText((unsigned)"$C");
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-    if (param_3 != -1) {
-        U_I(((unsigned)&ai_Unkf8f13c + 0x22c) + U_I((unsigned)&d2_LastWindow) * 0x3c4) = 0;
-        d2_SetForm(param_1, param_3);
-        io_PrintText((unsigned)"$C");
-        d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), U_I((unsigned)&d2_LastWindow), 0x767);
-        d2_SetForm(param_1, param_2);
+    d2_SetForm(view, page);
+    saved = d2_Wins[d2_LastWindow].scrollY;
+    io_PrintText("$C");
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    if (scrollPage != -1) {
+        win = d2_LastWindow;
+        d2_Wins[win].scrollY = 0;
+        d2_SetForm(view, scrollPage);
+        io_PrintText("$C");
+        d2_CreateScrollButtons(-1, -1, d2_LastWindow, win, 0x767);
+        d2_SetForm(view, page);
         return 0;
     }
     return saved;
@@ -17295,7 +17298,7 @@ int ai_Unk5bffb0(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
@@ -17306,7 +17309,7 @@ int ai_Unk5c00b0(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
@@ -17316,7 +17319,7 @@ int ai_Unk5c01c0(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
@@ -17326,7 +17329,7 @@ int ai_Unk5c02d0(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
@@ -17336,7 +17339,7 @@ int ai_Unk5c03e0(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page (frame 0x104) */
     return 0;
 }
@@ -17346,7 +17349,7 @@ int ai_Unk5c0550(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
@@ -17356,7 +17359,7 @@ int ai_Unk5c0650(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page (frame 0x204) */
     return 0;
 }
@@ -17367,7 +17370,7 @@ int ai_Unk5c0790(int param_1, int param_2, int param_3, int param_4)
 {
     if (param_4 == 0)
         return 0;
-    ai_Unk5bfed0(param_1, param_2, param_3);
+    ai_AmountPageSwitch(param_1, param_2, param_3);
     /* ROUGH SKELETON: the rows of the page */
     return 0;
 }
