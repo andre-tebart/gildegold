@@ -458,9 +458,10 @@ int ai_MsgPayPct1to2Type1213(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4b77b0, message: v = 1..3 %, a number 2..16 in the text (not with item 0x290) */
+/* 0x4b77b0, message 0x14: c pays v = 1..3 % of its worth (0x50a640), a number 2..16 in the text,
+   skipped with item 0x290 */
 
-int ai_Unk4b77b0(G14MSG *m)
+int ai_MsgPayPct1to3Count2to16Type14(G14MSG *m)
 {
     AICHAR *c;
     double k;
@@ -1937,7 +1938,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgRewardPct1to3Type68, ai_MsgPayPct2to4, ai_MsgPayPct125, ai_MsgPayPctOver120,
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
-    ai_Unk4b77b0, ai_Unk4b78c0, ai_Unk4b79c0, ai_Unk4b7ac0,
+    ai_MsgPayPct1to3Count2to16Type14, ai_Unk4b78c0, ai_Unk4b79c0, ai_Unk4b7ac0,
     ai_Unk4b7bc0, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
