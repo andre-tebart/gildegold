@@ -16312,29 +16312,47 @@ void ai_LeftAlignedText(char *text, int x, int y, int w, int font)
     d2_Objs[ctrl].w = w;
     d2_SetObjFont(ctrl, font);
 }
-/* 0x5bd250, the picture and text block of a window record (192 B): the record fields +0 the window, +4 / +8 /
-   +0xc the pages, +0x10 the entry index, +0x14 the record id. With the window set, the row record 0x4f2720
-   (AIPOS: the picture count at +0xc, the text count at +0x18) fills the page +4 with the pictures 0x4731d0
-   (0x526); with the entry below 5 the pages +8 / +0xc get the text "%s" (0x62a578, param_1[4] + 0x16b7) and
-   0x52eb50 (0, 6, the character 0x770b80 + player * 0x21c, the entry, 0x4df) */
+#pragma pack(push, 1)
+typedef struct AIWINDOWROW {            /* the row record the window page functions take (ai_Unk5c9990 builds it) */
+    int win;                            /* 0x00, the window, -1 none */
+    int pageA;                          /* 0x04, the page of the pictures */
+    int pageB;                          /* 0x08, the page of the text */
+    int pageC;                          /* 0x0c, the page of the balance bar */
+    int entry;                          /* 0x10, the page entry index */
+    int record;                         /* 0x14, the gv table record id */
+} AIWINDOWROW;
 
-void ai_Unk5bd250(int *param_1)
+typedef struct AIPOSVIEW {              /* 0x24 bytes, the record gv_GetTableRecord (0x4f2720) fills (AIPOS, ai.h) */
+    char pad00[0xc];
+    int pics;                           /* 0x0c, the page's picture count */
+    char pad10[8];
+    int texts;                          /* 0x18, the text count (AIPOS.unk18) */
+    char pad1c[8];
+} AIPOSVIEW;
+#pragma pack(pop)
+
+/* 0x5bd250, the pictures and text block of a window row (192 B): with the window set, the gv record (0x4f2720
+   fills AIPOSVIEW: the picture count at +0xc, the text count at +0x18) fills the picture page of the row with
+   0x4731d0 (0x526); with an entry at most 4 the text page gets "$C$Z%s" (0x62a578, entry + 0x16b7) and
+   0x52eb50 (0, 6, the player's character, the entry, 0x4df) */
+
+void ai_ShowWindowRow(AIWINDOWROW *row)
 {
     int i;
-    char pos[0x24];
+    AIPOSVIEW pos;
 
-    if (*param_1 != -1) {
-        if (gv_GetTableRecord(param_1[5], (int *)pos) != 0 &&
-            *(int *)(pos + 0xc) != 0 && *(int *)(pos + 0x18) != 0) {
-            d2_SetForm(*param_1, param_1[1]);
-            for (i = 0; i < *(int *)(pos + 0xc); i++)
-                d2_WinOpenPic(i * 0x10 + 5, 5, 0x526, U_I((unsigned)&d2_LastWindow));
+    if (row->win != -1) {
+        if (gv_GetTableRecord(row->record, (int *)&pos) != 0 &&
+            pos.texts != 0 && pos.pics != 0) {
+            d2_SetForm(row->win, row->pageA);
+            for (i = 0; i < pos.pics; i++)
+                d2_WinOpenPic(i * 0x10 + 5, 5, 0x526, d2_LastWindow);
         }
-        if (param_1[4] < 5) {
-            d2_SetForm(*param_1, param_1[2]);
-            io_PrintText((char *)(unsigned)&full_data_62a578, param_1[4] + 0x16b7);
-            d2_SetForm(*param_1, param_1[3]);
-            sv_DrawBalanceBar(0, 6, (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), param_1[4], 0x4df);
+        if (row->entry <= 4) {
+            d2_SetForm(row->win, row->pageB);
+            io_PrintText("$C$Z%s", row->entry + 0x16b7);
+            d2_SetForm(row->win, row->pageC);
+            sv_DrawBalanceBar(0, 6, (char *)((unsigned)&ai_Chars + ai_PlayerId * 0x21c), row->entry, 0x4df);
         }
     }
 }
@@ -20403,7 +20421,7 @@ int ai_Unk5c9990(unsigned short *param_1)
     tbl[3] = 4;
     tbl[4] = 4;
     tbl[5] = 4;
-    ai_Unk5bd250(tbl);
+    ai_ShowWindowRow(tbl);
     *(int *)(unsigned)&d2_ClickedId = -1;
     do {
         if (*(int *)(unsigned)&d2_ClickedId != -1) {
