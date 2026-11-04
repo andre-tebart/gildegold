@@ -239,7 +239,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14420e8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f28))  /* 0x14420e8 */
 #define full_data_14420f0                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07f30))  /* 0x14420f0 */
 #define full_data_1442100                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f40))  /* 0x1442100 */
-#define full_data_1442108                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f48))  /* 0x1442108 */
+#define ai_ContactTextProductionSmithy           (*(char * *)((char *)txt_Ptrs + 0x07f48))  /* 0x1442108, the hover text of the contact_PRODUKTION_SCHMIEDEN plate (ai_SmithyContact) */
 #define full_data_1442110                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f50))  /* 0x1442110 */
 #define full_data_1442118                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f58))  /* 0x1442118 */
 #define ai_TextEinkaufHolz                       (*(int *)((char *)txt_Ptrs + 0x07f60))  /* 0x1442120 */
