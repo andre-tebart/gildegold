@@ -1053,7 +1053,9 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 typedef struct AICHARREC {         /* the character record fields this unit reads (ai_char.h AICHAR, same layout;
                                       G8CHARREC below is the view of the news messages) */
     unsigned short id;             /* 0x000, the character's id (AIBLD.owner refers to it) */
-    char pad002[0x21a];
+    char pad002[0x164];
+    unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
+    char pad167[0xb5];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
 #pragma pack(pop)
 
@@ -8299,7 +8301,7 @@ void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0
 void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_Unk59fd30();
-void ai_Unk59fca0();
+void ai_TownCashContact();
 
 /* 0x59d5e0, the money lender's exchange window with the city list "..geldleihe_Wechsel" (2352 B, ROUGH: the
    two lists and the exchange are condensed): the 16 cities of 0x7e3f94 + i * 0x2f4 with their open flags
@@ -8877,7 +8879,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0xf7: ai_Unk5a36c0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x10e: ai_Unk59fd30(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x110: ai_Unk5a07d0(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x114: ai_Unk59fca0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x114: ai_TownCashContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x118: ai_PerfumeryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x120: ai_Unk599af0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x12e: ai_BreweryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -9294,21 +9296,22 @@ void ai_GuildCashWindow(AIBLD *bld)
     sv_CameraFollow();
     d2_CloseView(win);
 }
-/* 0x59fca0, the town cash office listener (144 B): with the player's byte 0x770ce6 + player * 0x21c set, the
-   pump 0x5309a0 (0x59fca0, 0x67fff) looks up "ob_STADTKASSE" (0x14409f8, class 0x16) and opens 0x59fbf0 */
+/* 0x59fca0, the town cash office listener (133 B): with the player's office (the character record's officeKind,
+   0x770ce6 of the first record) set, the pump 0x5309a0 (0x59fca0, 0x67fff) looks up "ob_STADTKASSE" (text
+   0x1a0e, class 0x16) and opens 0x59fbf0 */
 
-void ai_Unk59fca0(int param_1)
+void ai_TownCashContact(AIBLD *bld)
 {
     int c;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk59fca0, 0x67fff) != 0) {
-        if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
-            c = sv_RegisterNamePlate("ob_STADTKASSE", U_I((unsigned)&full_data_14409f8), 0x16);
+    while (sv_RunFrame(ai_TownCashContact, 0x67fff) != 0) {
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].officeKind != 0)
+            c = sv_RegisterNamePlate("ob_STADTKASSE", txt_Ptrs[0x1a0e], 0x16);
         else
             c = 0;
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && U_I((unsigned)&ai_ClickedObject) == c)
-            ai_GuildCashWindow(param_1);
+        if (ai_ClickedObject != 0 && ai_ClickedObject == c)
+            ai_GuildCashWindow(bld);
     }
 }
 void ai_OpenAmountKindMenu(void);
