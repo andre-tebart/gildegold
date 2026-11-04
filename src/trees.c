@@ -1052,7 +1052,7 @@ local void compress_block(s, ltree, dtree)
  * IN assertion: the fields freq of dyn_ltree are set and the total of all
  * frequencies does not exceed 64K (to fit in an int on 16 bit machines).
  */
-/* 0x4675f0 */
+/* 0x4675f0, sets data_type to Z_BINARY or Z_ASCII: binary when the literal frequencies outside 7..127 outweigh a quarter of those inside */
 local void set_data_type(s)
     deflate_state *s;
 {
