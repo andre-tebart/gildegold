@@ -1491,9 +1491,9 @@ int ai_MsgWorkerAddSkillType2f(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4ba470, message: as 0x4ba2d0, the worker loses 5..14 of skill 0x81 (not with item 0x290) */
+/* 0x4ba470, message 0x30: as 0x2f (0x4ba2d0), the worker loses 5..14 of skill 0x81 (skipped with item 0x290) */
 
-int ai_Unk4ba470(G14MSG *m)
+int ai_MsgWorkerLoseSkillType30(G14MSG *m)
 {
     AICHAR *c, *p;
     AIBLD *b;
@@ -1509,7 +1509,7 @@ int ai_Unk4ba470(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (b = gm_BuildQuery(1, 3, c->id); b != 0 && n < 8; b = gm_BuildNext()) {
-        if (gm_BuildingClass(*(unsigned char *)b) == 1)
+        if (gm_BuildingClass(b->type) == 1)
             a[n++] = b;
     }
     if (n == 0)
@@ -1951,7 +1951,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
     ai_MsgUnusedSlot, ai_MsgJobEndDateType29, ai_MsgJobEndValueType2a, ai_MsgWorkerStop,
     ai_MsgWorkerTitleType2c, sv_ReturnZero, ai_Unk4ba0c0, ai_MsgWorkerAddSkillType2f,
-    ai_Unk4ba470, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
+    ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
     ai_Unk4baba0, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
     ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
