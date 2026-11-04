@@ -5295,14 +5295,17 @@ void ai_RhetoricContact(int bld, int room)
     }
 }
 
-int ai_Unk5b5e80(); int ai_Unk5b5010(); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
+int ai_FeastWindow(); int ai_DenounceWindow(); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_Unk5ae870), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
-/* 0x5966f0, the arrest / fight / denunciation listener (199 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff);
-   FESTGEBEN (0x143ff58, 0x16) -> 0x5b5e80 (param_1, param_2); KAMPF (0x143fc78, 0xc) -> 0x5b3130 (param_1,
-   param_2, 3); ANSCHWAERZEN (0x143ff38, 0xc) -> 0x5b5010 (param_1) + 0x52d7a0 */
-void ai_Unk5966f0(int param_1, int param_2)
+/* 0x5966f0, the contact listener of the tavern's common room (room kind 0x17 in ai_Unk59e420): it releases the
+   name plates and pumps the frame (sv_RunFrame, this, mask 0x67fff) while the screen stays on top; every frame it
+   registers the three plates contact_FESTGEBEN (text txt_Ptrs[0x1766], throw a feast), contact_KAMPF (text
+   0x16ae, the brawl) and contact_ANSCHWAERZEN (text 0x175e, denounce). A clicked plate opens its window: the feast
+   window ai_FeastWindow, the five-text window ai_FiveTextWindow in mode 3, or the denounce window ai_DenounceWindow
+   (then the camera follows) */
+void ai_TavernContact(AIBLD *bld, int room)
 {
     int r;
     int fest;
@@ -5310,22 +5313,22 @@ void ai_Unk5966f0(int param_1, int param_2)
     int ansch;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5966f0, 0x67fff);
+    r = sv_RunFrame(ai_TavernContact, 0x67fff);
     while (r != 0) {
-        fest = sv_RegisterNamePlate("contact_FESTGEBEN", U_I((unsigned)&full_data_143ff58), 0x16);
-        kampf = sv_RegisterNamePlate("contact_KAMPF", U_I((unsigned)&full_data_143fc78), 0xc);
-        ansch = sv_RegisterNamePlate("contact_ANSCHWAERZEN", U_I((unsigned)&full_data_143ff38), 0xc);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == fest) {
-                ai_Unk5b5e80(param_1, param_2);
-            } else if (U_I((unsigned)&ai_ClickedObject) == kampf) {
-                ai_FiveTextWindow(param_1, param_2, 3);
-            } else if (U_I((unsigned)&ai_ClickedObject) == ansch) {
-                ai_Unk5b5010(param_1);
+        fest = sv_RegisterNamePlate("contact_FESTGEBEN", txt_Ptrs[0x1766], 0x16);
+        kampf = sv_RegisterNamePlate("contact_KAMPF", txt_Ptrs[0x16ae], 0xc);
+        ansch = sv_RegisterNamePlate("contact_ANSCHWAERZEN", txt_Ptrs[0x175e], 0xc);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == fest) {
+                ai_FeastWindow(bld, room);
+            } else if (ai_ClickedObject == kampf) {
+                ai_FiveTextWindow(bld, room, 3);
+            } else if (ai_ClickedObject == ansch) {
+                ai_DenounceWindow(bld);
                 sv_CameraFollow();
             }
         }
-        r = sv_RunFrame(ai_Unk5966f0, 0x67fff);
+        r = sv_RunFrame(ai_TavernContact, 0x67fff);
     }
 }
 /* 0x5967c0, the mistress window "locations\wohnsitz\geliebte2" (990 B, ROUGH SKELETON from the Ghidra
@@ -8835,7 +8838,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x14: ai_Unk596400(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x15: ai_RhetoricContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x16: ai_WineCellarContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x17: ai_Unk5966f0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x17: ai_TavernContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x18: ai_MistressContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x1f: ai_Unk59a560(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x4d: ai_ThievesGuildEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -15740,7 +15743,7 @@ int ai_DrohbriefWindow(void)
 /* 0x5b5010, a window over the player's character record (779 B, ROUGH SKELETON): the record 0x770b80 +
    0x6f25b8 * 0x21c and the object walk 0x4ffe90 (2, ...); a 0x390-byte frame. The body is a comment */
 
-int ai_Unk5b5010(void)
+int ai_DenounceWindow(void)
 {
     char *per;
 
@@ -15793,7 +15796,7 @@ int ai_Unk5b5a20(void)
 /* 0x5b5e80, (2753 B, ROUGH SKELETON): the game clock 0x770ae0 is copied FIELD BY FIELD into the frame (+0x1c ..
    +0x34, the `mov ds:0x770ae0` form, not an AITIME assignment), then a 0x3e4-byte frame; the body is a comment */
 
-int ai_Unk5b5e80(void)
+int ai_FeastWindow(void)
 {
     int clock[4];
 
