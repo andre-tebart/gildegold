@@ -1868,9 +1868,10 @@ int ai_CommandComments(void)
     } while (hst_KeyNext < hst_KeyLast);
     return 0;
 }
-/* 0x4b1bd0, text command "-n": message 0x59 with n clamped to 1..10, today 11:00 */
+/* 0x4b1bd0, the PEST text command (callback 0x601b50[25], name 0x601070[25]) "-n": message 0x59 with n clamped to
+   1..10, today 11:00 */
 
-int ai_Unk4b1bd0(int a, int b, char *fmt)
+int ai_CommandPlague(int a, int b, char *fmt)
 {
     AIMSG msg;
     int n;
@@ -1885,7 +1886,7 @@ int ai_Unk4b1bd0(int a, int b, char *fmt)
         n = 10;
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x59;
-    msg.to = *(int *)((char *)ai_PlayerChar + 4);
+    msg.to = ((AICHAR *)ai_PlayerChar)->netId;
     msg.car = n;
     msg.fromId = -1;
     msg.flags = 2;
@@ -2204,7 +2205,7 @@ G12ROW *hst_ParseCommandline_1st_Pass(int k)
 }
 
 int (*hst_TokenCallbacks[15])(int mode, G12ARG *args, int k, char *fmt, char *out) = { ai_TokenMayor, ai_TokenBishop, ai_TokenRandomGuildMaster, ai_TokenRandomOfficeHolderFemale, ai_TokenRandomOfficeHolder, ai_TokenRandomOfficePerson, ai_TokenRichestInhabitant, ai_TokenBestInn, ai_TokenMoney, ai_TokenCityTreasury, ai_TokenRandomChurchProfession, ai_TokenRandomRich, ai_TokenRandomNpcInhabitant, ai_TokenRandomMerchant, ai_TokenRandomPlayer };  /* 0x601b10 */
-int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_CommandFest, ai_CommandSiegeStart, ai_CommandUprising, ai_CommandFire, ai_CommandTornado, ai_CommandCityTreasury, ai_CommandWealthTax, ai_CommandWealth, ai_CommandOfficeStanding, ai_CommandKillPlayer, ai_CommandExecution, ai_CommandPrison, ai_CommandOfficeInventoryPlus, ai_CommandLaw, ai_CommandLawChange, ai_CommandFaithChange, ai_CommandRiot, ai_CommandBreakGuildSeats, ai_CommandDemand, ai_CommandMercenariesPlunder, ai_CommandMercenariesMaraud, ai_CommandRemoteTradeRaider, ai_CommandViewDonation, ai_CommandParticipation, ai_CommandComments, ai_Unk4b1bd0, ai_CommandInventoryPlus };  /* 0x601b50 */
+int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_CommandFest, ai_CommandSiegeStart, ai_CommandUprising, ai_CommandFire, ai_CommandTornado, ai_CommandCityTreasury, ai_CommandWealthTax, ai_CommandWealth, ai_CommandOfficeStanding, ai_CommandKillPlayer, ai_CommandExecution, ai_CommandPrison, ai_CommandOfficeInventoryPlus, ai_CommandLaw, ai_CommandLawChange, ai_CommandFaithChange, ai_CommandRiot, ai_CommandBreakGuildSeats, ai_CommandDemand, ai_CommandMercenariesPlunder, ai_CommandMercenariesMaraud, ai_CommandRemoteTradeRaider, ai_CommandViewDonation, ai_CommandParticipation, ai_CommandComments, ai_CommandPlague, ai_CommandInventoryPlus };  /* 0x601b50 */
 
 /* 0x4b2530, leaked name (its messages): runs every word of text k (or a string above 0x4800) through the text
    commands of hst_CommandNames / hst_CommandCallbacks; a leading "[_SET_n" / "[_USE_n" selects list n of hst_Lists (it
