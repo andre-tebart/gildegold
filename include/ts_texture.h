@@ -28,7 +28,7 @@ typedef struct TSTEXTURE {          /* 0x80 bytes, d3_TexCount of them at d3_Tex
     unsigned short *hicol;          /* 0x48, colour table from ts_GetHiColTab */
     int mask;                       /* 0x4c, size*size-1 | size-1; for an alias: index of the original */
     int group;                      /* 0x50, animation group, -1 = none */
-    int unk54;
+    int stamp;                      /* 0x54, d3_FrameCount of the last use (D3FLTEX.stamp) */
     int unk58;
     struct TSTEXTURE *src;          /* 0x5c */
     IDirectDrawSurface4 *surf;      /* 0x60 */

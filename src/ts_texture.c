@@ -641,7 +641,7 @@ TSTEXTURE *tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsigned char
         else
             a->mask = tex - d3_Textures;
         a->unk58 = 0;
-        a->unk54 = 0;
+        a->stamp = 0;
         a->flags = flags;
         a->f0 = f0;
         a->f5 = f5;
@@ -683,7 +683,7 @@ TSTEXTURE *tex_Load(char *name, TSFLAGS flags, unsigned char opts, unsigned char
         tex->mask = tex->size * tex->size - 1 | tex->size - 1;
         tex->filebpp = bpp;
         tex->unk58 = 0;
-        tex->unk54 = 0;
+        tex->stamp = 0;
         tex->flags = flags;
         tex->f5 = f5;
         tex->f0 = f0;
@@ -979,7 +979,7 @@ TSTEXTURE *tex_Create(char *name, int size, char hicol, TSFLAGS flags, unsigned 
     tex->d3dtex = 0;
     tex->src = 0;
     tex->unk58 = 0;
-    tex->unk54 = 0;
+    tex->stamp = 0;
     tex->f0 = f0;
     tex->f6a = f6a;
     tex->alias = 0;
@@ -1021,7 +1021,7 @@ TSTEXTURE *tex_CreateHi(char *name, int size, TSFLAGS flags, unsigned char f0, u
         tex->d3dtex = 0;
         tex->src = 0;
         tex->unk58 = 0;
-        tex->unk54 = 0;
+        tex->stamp = 0;
         tex->f0 = f0;
         tex->f6a = f6a;
         tex->alias = 0;

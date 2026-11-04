@@ -24,10 +24,8 @@
 #define d3_DirToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_DirToRef)  /* 0x458950 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 
 #define D3M_SURF(o) ((D3MIRSURF *)(o)->info)
-#define D3M_BITS(o) (*(D3MIRBITS *)&(o)->objectFlags)
 #define D3M_PTS(mesh) ((mesh)->mirrorPoints)                     /* "d3_mir:MirroredPoints" */
 #define D3M_TRIS(mesh) ((mesh)->mirrorPolys)                     /* "d3_mir:MirroredPolys" */
-#define D3M_SRC(mesh) (*(D3MIRSURF **)&(mesh)->mirrorSource)    /* the surface they were made from */
 
 /* 0x454780, the boundary edges of the point set pts: for every pair (i, j) not taken yet the triangle
    (origin, i, j) is a hull edge when all other points lie on its positive side; the pairs go to out (2 per
@@ -326,6 +324,7 @@ char d3_MirDrawObject(D3OBJECT *obj, D3MIRROR *m)
     D3PTRI *t;
     D3TEXTURE *tex, *tt;
     D3PVERT *a, *b, *c;
+    D3MIRBITS *bits;
     char redo;
     int i, k, n;
 
@@ -334,20 +333,21 @@ char d3_MirDrawObject(D3OBJECT *obj, D3MIRROR *m)
         return 1;
     if (obj == d3s_Object)
         return 1;
-    D3M_BITS(obj).mirrored = d3_MirBoxInPlanes(obj, m);
-    if (D3M_BITS(obj).mirrored) {
+    bits = (D3MIRBITS *)&obj->objectFlags;
+    bits->mirrored = d3_MirBoxInPlanes(obj, m);
+    if (bits->mirrored) {
         if (m->flags.on || (obj->state & 8))
             redo = 1;
         else
             redo = 0;
-        if (s != D3M_SRC(D3_MESH(obj))) {
-            if (D3M_SRC(D3_MESH(obj))) {
+        if (s != (D3MIRSURF *)D3_MESH(obj)->mirrorSource) {
+            if (D3_MESH(obj)->mirrorSource) {
                 mem_Free(D3M_PTS(D3_MESH(obj)));
                 D3M_PTS(D3_MESH(obj)) = 0;
                 mem_Free(D3M_TRIS(D3_MESH(obj)));
                 D3M_TRIS(D3_MESH(obj)) = 0;
             }
-            D3M_SRC(D3_MESH(obj)) = s;
+            D3_MESH(obj)->mirrorSource = (D3SURF *)s;
             D3M_PTS(D3_MESH(obj)) = mem_Alloc(s->info.nkeys * 0x50, "d3_mir:MirroredPoints");
             D3M_TRIS(D3_MESH(obj)) = mem_Alloc(s->info.ntris * 0x28, "d3_mir:MirroredPolys");
             D3M_COPY(D3M_TRIS(D3_MESH(obj)), s->info.tris, s->info.ntris * 0x28);
@@ -389,7 +389,7 @@ char d3_MirDrawObject(D3OBJECT *obj, D3MIRROR *m)
                 d3_SortPtr->item = t;
                 if (tt) {
                     d3_SortPtr->key = (tt - (D3TEXTURE *)d3_Textures) + 1;
-                    *(int *)((char *)tt + 0x54) = d3_FrameCount;
+                    ((TSTEXTURE *)tt)->stamp = d3_FrameCount;
                 } else
                     d3_SortPtr->key = 0;
                 t->clip = m->planes;
