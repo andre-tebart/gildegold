@@ -615,7 +615,7 @@ extern int ai_CityWatchWindow();
 extern int ai_CityWatchCrewWindow();
 
 extern int ai_CityWatchWindow();
-extern int ai_Unk5a6270();
+extern int ai_WatchSearchWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -629,7 +629,7 @@ extern int d2_ClickedId;
 
 extern int sv_PopRequest;
 extern int ai_CityWatchCrewWindow();
-extern int ai_Unk5a6270();
+extern int ai_WatchSearchWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
@@ -638,7 +638,7 @@ extern int d2_ClickedId;
 
 extern unsigned short * sv_PanelShown;
 extern int sv_PopRequest;
-extern int ai_Unk5a6270();
+extern int ai_WatchSearchWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
@@ -12414,15 +12414,17 @@ void ai_RaidStart(int building)
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
-/* 0x5a6480, a kidnapping request start: 0x520fe0 (param_1); 0x525220 (param_1, 0) / 0x5b2180 (4, 0,
-   0x1440b7c, the callback 0x5a6270, 0), then 0x525440 / 0x52ae40 */
+/* 0x5a6480, the city watch plan start, the click of the ob_WACHPLAN plate (67 B): 0x520fe0 (the building);
+   the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 4, 0, the prompt text
+   ai_WatchPlanPickPrompt, the city watch search window ai_WatchSearchWindow as callback, 0), then the player bar
+   closes (0x525440) and the selection is cleared (0x52ae40) */
 
-void ai_Unk5a6480(int param_1)
+void ai_WatchPlanStart(int building)
 {
-    if (sv_CheckCharacterFlag(param_1) != 0 || param_1 == 0)
+    if (sv_CheckCharacterFlag(building) != 0 || building == 0)
         return;
-    sv_OpenPlayerBar(param_1, 0);
-    ai_MapPick(4, 0, (char *)U_I((unsigned)&full_data_1440b7c), (void *)(unsigned)&ai_Unk5a6270, 0);
+    sv_OpenPlayerBar(building, 0);
+    ai_MapPick(4, 0, ai_WatchPlanPickPrompt, (int)ai_WatchSearchWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -12597,7 +12599,7 @@ int ai_CityWatchCrewWindow(int param_1, int param_2)
    +2 at +0x7c and the up to six wanted ids (the live table 0x7603a0 .. 0x760420, byte +0x188) at +0x38) and
    0x4c2d20, 0x6f22a0 = 2; the second control sets 0x6f22a0 = 1; the exit 0x4758f0, returns 0 */
 
-int ai_Unk5a6270(int param_1, char *param_2)
+int ai_WatchSearchWindow(int param_1, char *param_2)
 {
     int list[6];
     int win;
@@ -12664,7 +12666,7 @@ int ai_Unk5a6270(int param_1, char *param_2)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a6270, 0x677c7) == 0)
+        if (sv_RunFrame(ai_WatchSearchWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -12919,7 +12921,7 @@ void ai_Unk5a67a0(int param_1)
                 else if (U_I((unsigned)&ai_ClickedObject) == patrol)
                     ai_PatrolStart(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == wachplan)
-                    ai_Unk5a6480(param_1);
+                    ai_WatchPlanStart(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == zoll)
                     ai_Unk5a6720(param_1);
                 else if (U_I((unsigned)&ai_ClickedObject) == meister)
