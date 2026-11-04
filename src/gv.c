@@ -1755,17 +1755,19 @@ void gv_FreeGraveyard(int *g)
 
 int gv_OrderBury(int *g, char *o, int v, int b)
 {
-    char m[0x1d];
+    AICHAR *ch = (AICHAR *)g;
+    AIBLD *bld = (AIBLD *)o;
+    GVORDER m;
 
     if (g != 0 && o != 0 && b != -1) {
-        *(int *)(m + 4) = g[1];
-        *(int *)(m + 8) = *(int *)(o + 1);
-        *(int *)m = 0;
-        m[0x10] = (char)b;
-        *(int *)(m + 0xc) = v;
-        *(short *)(m + 0x11) = 0;
-        *(int *)(m + 0x13) = 0;
-        return ((int (*)(void *))cm_SendGraveOrder)(m);
+        m.chr = ch->netId;
+        m.bld = bld->id;
+        m.type = 0;
+        m.entry = (unsigned char)b;
+        m.size = v;
+        m.years = 0;
+        m.price = 0;
+        return ((int (*)(void *))cm_SendGraveOrder)(&m);
     }
     return -1;
 }
