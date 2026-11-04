@@ -491,25 +491,25 @@ void unk_ResetEffectSlots(void)
 void gv_FreeEffectObjects(void)
 {
     int sc;
-    int *p, *q;
-    int i;
+    struct D3OBJECT **q;
+    int i, k;
 
     sc = d3_CurrentScene;
     d3if_SelectScene(0, 1);
-    p = (int *)(gv_Effects + 0x15c);
+    k = 0;
     do {
         i = 3;
-        q = p;
+        q = gv_EffectsT[k].objs;
         do {
             if (*q != 0) {
-                d3if_Delete((struct D3OBJECT *)*q);
+                d3if_Delete(*q);
                 *q = 0;
             }
             q++;
             i--;
         } while (i != 0);
-        p += 0x5c;
-    } while ((int)p < (int)((unsigned)&gv_Effects + 0xcdc));
+        k++;
+    } while (k < 8);
     d3if_SelectScene(sc, 1);
 }
 /* 0x4eded0, the effect slot (gv_Effects) whose id (+0) is id, 0 when none; -1 never matches */
@@ -3238,16 +3238,13 @@ int gv_FreeCrimeSlot(void)
 int gv_FindCrime(int id)
 {
     int i;
-    int *p;
 
     i = 0;
-    p = (int *)ai_Crimes;
     do {
-        if (*p == id)
+        if (gv_CrimesT[i].id == id)
             return i;
-        p = (int *)((char *)p + 0x2d);
         i++;
-    } while ((int)p < (int)((unsigned)&gv_Cannon.bld));
+    } while (i < 0x200);
     return -1;
 }
 /* 0x4f3780, the slot for the pair (a, b) in the table ai_Evidence (2048 pairs): -2 when it exists already, else the first free one or -1 */
