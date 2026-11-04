@@ -2521,7 +2521,7 @@ void gm_SendMoneyDelta(int a, int b);
 int gv_Accuse();
 void ai_ShowTributeDelayedNews(int param_1);
 void ai_ShowTributeCollectNews(int param_1);
-void ai_Unk5a8d80(int param_1, int param_2);
+void ai_ShowTributeClaimNews(int param_1, int param_2);
 
 /* 0x544070, a Ghidra miss (disassembled): the init of the tribute / levy event (record fields +0xbc = the collector's id, +0xc4 = a random start slot of 0x300, +0xc8 = a random entry of the table 0x5ed100, +0xcc = 0x300 players left, +0xd0 = the 0x504ec0 amount): with more than 4 running events of type 0x35 the event is posted again (and 0x5a8d00 called), else the clocks are set, the message 0x4f2e30 (3, 1, ..) is sent and, by the 0x15c ability (0x5ba6b0) of the collector, 0x5a8d80 / 0x5a8d40 is called (ROUGH) */
 void he_Unk544070(int ev)
@@ -2568,7 +2568,7 @@ void he_Unk544070(int ev)
         if (ai_InventoryHas(pl, 0x15c) != 0) {
             *(AITIME *)(ev + 0x52) = ai_Time;
             *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-            ai_Unk5a8d80(pl, (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
+            ai_ShowTributeClaimNews(pl, (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
             return;
         }
         ai_ShowTributeCollectNews(pl);

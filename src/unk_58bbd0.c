@@ -14169,20 +14169,25 @@ void ai_ShowTributeCollectNews(int rec)
         he_ShowNews(c->netId, -1, ai_NewsText, 0, 0x5fb, ch_EmptyName);
     }
 }
-/* 0x5a8d80, two production messages (133 B, a Ghidra-missed start from 0x544070): the body runs for a kind
-   (+2) 6 and for every kind except 7 - the original's redundant `== 6 || != 7`, needed for the bytes; the text
-   0x20bf with the +4 id of the first character, then the text 0x20c0 with the word of the first record and the
-   +4 id of the second (0x5fb) */
+/* 0x5a8d80, the tribute collector's two messages (133 B, a Ghidra-missed start from 0x544070; a reasoned guess at
+   the texts' meaning): the body runs for a kind (+2) 6 and for every kind except 7 - the original's redundant
+   `== 6 || != 7`, needed for the bytes; the text 0x20bf (no values) to the collector's netId, then the text
+   0x20c0 with the collector's id to the event character's netId (both kind 0x5fb) */
 
-void ai_Unk5a8d80(int param_1, int param_2)
+void ai_ShowTributeClaimNews(int collectorRec, int payerRec)
 {
-    if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) != 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bf);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *collector;
+    G8CHARREC *payer;
+
+    collector = (G8CHARREC *)collectorRec;
+    payer = (G8CHARREC *)payerRec;
+    if (collector->kind == 6 || collector->kind != 7) {
+        txt_Format(ai_NewsText, 0x20bf);
+        he_ShowNews(collector->netId, -1, ai_NewsText, 0, 0x5fb, ch_EmptyName);
     }
-    if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) != 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c0, *(unsigned short *)param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+    if (payer->kind == 6 || payer->kind != 7) {
+        txt_Format(ai_NewsText, 0x20c0, collector->id);
+        he_ShowNews(payer->netId, -1, ai_NewsText, 0, 0x5fb, ch_EmptyName);
     }
 }
 /* 0x5a8e10, three production messages (201 B): for a character of the kind 6 / 7 (+2) the text 0x20c1 with the
