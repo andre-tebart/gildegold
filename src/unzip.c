@@ -489,7 +489,7 @@ extern int ZEXPORT unzGetGlobalInfo (file,pglobal_info)
 /*
    Translate date/time from Dos format to tm_unz (readable more easilty)
 */
-/* 0x467fe0 */
+/* 0x467fe0, splits the DOS date and time packed in ulDosDate into *ptm (year, month, day, hour, minute, second; the seconds at 2-second resolution) */
 local void unzlocal_DosDateToTmuDate (ulDosDate, ptm)
     uLong ulDosDate;
     tm_unz* ptm;
