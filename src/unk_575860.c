@@ -8319,7 +8319,7 @@ int ai_GraveRaiseHelper(AIBLD *rec, GVPICK *pick)
     return r;
 }
 
-int sv_CheckCharacterFlag(); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c); void d2_SetCaption();
+int sv_CheckCharacterFlag(int id); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c); void d2_SetCaption();
 void ai_Unk58bbd0(void); int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4);
 
 /* 0x584d70, the helpers window of a building (the form "HANDEL\HANDEL_SUCHEN"): rec = the building. Its type
@@ -9465,14 +9465,16 @@ void ai_GraveRentContact(AIBLD *rec)
         sv_MessageBox(txt_Ptrs[0x42f8], 0);
     }
 }
-/* 0x587300, the graveyard "GRAEBER_PFLEGEN" contact (50 B): 0x520fe0 (rec) == 0 -> the contact window 0x583240
-   (0, rec, U_I (0x144a638), 1, 0x584900) and 0x52d7a0 () */
+/* 0x587300, the graveyard "GRAEBER_PFLEGEN" contact (50 B): when no character of the graveyard's staff shows the
+   at-work flag (sv_CheckCharacterFlag, 0), opens the grave window (ai_GraveWindow: no output, rec, the title text
+   0x411e, flag 1 = the detail's slider picks, the callback ai_GraveCare) and follows the camera again
+   (sv_CameraFollow) */
 
 void ai_GraveCareContact(char *rec)
 {
     if (sv_CheckCharacterFlag(rec) != 0)
         return;
-    ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a638), 1, (void (*)(AIBLD *, GVPICK *))ai_GraveCare);
+    ai_GraveWindow(0, rec, txt_Ptrs[0x411e], 1, (void (*)(AIBLD *, GVPICK *))ai_GraveCare);
     sv_CameraFollow();
 }
 /* 0x587340, the graveyard "GEHILFEN_ERSCHAFFEN" contact (47 B): 0x520fe0 (rec) == 0 -> the contact window
