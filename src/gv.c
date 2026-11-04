@@ -1913,17 +1913,19 @@ int gv_ReserveGrave(GVORDER *m)
 
 int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x)
 {
-    char m[0x1d];
+    AICHAR *ch = (AICHAR *)g;
+    AIBLD *bld = (AIBLD *)o;
+    GVORDER m;
 
     if (g != 0 && o != 0 && b != -1) {
-        *(int *)(m + 4) = g[1];
-        *(int *)(m + 8) = *(int *)(o + 1);
-        *(int *)(m + 0xc) = v;
-        m[0x10] = (char)b;
-        *(int *)m = 2;
-        *(short *)(m + 0x11) = s;
-        *(int *)(m + 0x13) = x;
-        return ((int (*)(void *))cm_SendGraveOrder)(m);
+        m.chr = ch->netId;
+        m.bld = bld->id;
+        m.size = v;
+        m.entry = (unsigned char)b;
+        m.type = 2;
+        m.years = s;
+        m.price = x;
+        return ((int (*)(void *))cm_SendGraveOrder)(&m);
     }
     return -1;
 }
