@@ -15233,7 +15233,7 @@ void he_Unk56d730(int ev)
 
 float ahm_ShareProgress();
 float ahm_Share();
-void ai_Unk5a9b50(int param_1, int param_2, int param_3, int param_4);
+void ai_DomizilMessageResearch(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetShare();  /* @original: he.c's call at 14930 passes 2 arguments to ahm.h's 3-parameter prototype, so this TU was compiled against the non-prototype declaration */
 
 /* 0x56d990, the alloc of the research event 0x97: like 0x56d610 but the amount is 0x4eb0b0 (character, the +0xb0 kind, &clock +0xbc), no separate record; the clock +0xc0 and the registration as there */
@@ -15289,7 +15289,7 @@ void he_Unk56daa0(int ev)
         v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b);
         h = gm_FindChar(*(int *)(ev + 0xc));
         if (h != 0)
-            ai_Unk5a9b50(h, c, v, *(int *)(ev + 0xb0));
+            ai_DomizilMessageResearch(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendSetShare(c, *(int *)(ev + 0xb0));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
         he_FreeEvent((int *)ev);

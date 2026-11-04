@@ -14701,17 +14701,25 @@ int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(int 
 /* the ai.h view of 0x50c520 (the opinion of two characters, word arguments as the original pushes them) */
 int gm_Opinion(int a, int b);
 
-/* 0x5a9b50, a Domizil message (108 B): only for the kinds 6 / 7 of the record param_1 (+2): the text 0x4074 with
-   the two +0x30 / +0x40 fields of param_2 and param_4 + 0x4172, then 0x53dee0 with the +4 id of param_1, the
-   +1 field of the record at +0x16c of param_2, the +2 field of param_3 and the key "_NACHRICHTEN_DOMIZIL_03"
-   0x62c3b8 */
-void ai_Unk5a9b50(int param_1, int param_2, int param_3, int param_4)
+/* 0x5a9b50, the Domizil message of a finished research (108 B): for a kind 6 / 7 character the text 0x4074 with
+   the researcher's name and family (+0x30 / +0x40) and the name of its study (0x4172 + kind) into ai_NewsText,
+   then the quick-jump message 0x5ec to its netId with its building's id (+0x16c, +1), the object's id (+2) and
+   the sound "_NACHRICHTEN_DOMIZIL_03"; he_Unk56daa0 sends it when the research event 0x97 hands the result over */
+
+void ai_DomizilMessageResearch(int toRec, int cRec, int objRec, int kind)
 {
-    if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
+    G8CHARREC *to;
+    G8CHARREC *c;
+    AIROOM *obj;
+
+    to = (G8CHARREC *)toRec;
+    if (to->kind != 6 && to->kind != 7)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x4074, param_2 + 0x30, param_2 + 0x40, param_4 + 0x4172);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec,
-                 *(int *)(*(int *)(param_2 + 0x16c) + 1), *(int *)(param_3 + 2), 0, (char *)(unsigned)&full_data_62c3b8);
+    c = (G8CHARREC *)cRec;
+    obj = (AIROOM *)objRec;
+    txt_Format(ai_NewsText, 0x4074, c->name, c->family, kind + 0x4172);
+    he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 0, 0x5ec, c->bld->id, obj->objId, 0,
+                 "_NACHRICHTEN_DOMIZIL_03");
 }
 /* 0x5a9bc0, a Domizil message (108 B): as 0x5a9b50 with the text 0x4075 and the kind text 2 * param_4 + 0x9a8 in
    place of param_4 + 0x4172 (the key 0x62c3b8) */
