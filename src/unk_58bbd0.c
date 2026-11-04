@@ -2941,7 +2941,7 @@ int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned c
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-char *_strupr(char *); void gm_Unk50c4d0(void); int ai_Unk5ac110();
+char *_strupr(char *); void gm_CloseTechTree(void); int ai_Unk5ac110();
 int ai_Unk5bb350(); void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
@@ -3349,7 +3349,7 @@ void ai_TechTreeWindow(int param_1, int param_2)
             }
             it = sv_RunFrame(ai_TechTreeWindow, 0x657c7);
         }
-        gm_Unk50c4d0();
+        gm_CloseTechTree();
         U_I((unsigned)&sv_ResearchClass) = 0;
         if (param_1 == U_I((unsigned)&ai_PlayerBuilding))
             ai_CampaignStep(0x11, param_1, 1, param_2);

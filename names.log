@@ -1978,3 +1978,4 @@
 2026-11-04T19:13:23 0x0050c310 func gm_Unk50c310 -> gm_TreeLine by:main why:draws one connection line of the family tree for gm_Unk50c340 (the tech tree form): d2_PlotLine with the tree's colour 0x58 and widths 0x1f / 0x14
 2026-11-04T19:14:47 0x0076fdc8 data ai_Unk76fdc8 -> gm_TechTreeTime by:main why:the d3_Time the tech tree window was opened (written by gm_TechTreeWindow, no reader drafted)
 2026-11-04T19:14:53 0x0050c340 func gm_Unk50c340 -> gm_TechTreeWindow by:main why:opens the tech tree form of a building type and item: lays out and updates the tree, then joins the nodes to their parents
+2026-11-04T19:18:50 0x0050c4d0 func gm_Unk50c4d0 -> gm_CloseTechTree by:main why:closes the tech tree view (gm_TechTreeView) that gm_TechTreeWindow opened; called at the end of ai_TechTreeWindow's frame loop

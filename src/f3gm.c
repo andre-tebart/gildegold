@@ -10479,9 +10479,9 @@ int gm_TechTreeWindow(char *form, unsigned char *bld, unsigned short *item)
     }
     return gm_TechTreeView;
 }
-/* 0x50c4d0, closes the family tree window */
+/* 0x50c4d0, closes the tech tree window: the view gm_TechTreeWindow opened */
 
-void gm_Unk50c4d0(void)
+void gm_CloseTechTree(void)
 {
     d2_CloseView(gm_TechTreeView);
 }
