@@ -13602,10 +13602,19 @@ void ai_CloseMapWindow(int *m_)
     m->view = -1;
 }
 #pragma pack(push, 1)
+typedef struct G8SLOT {                 /* one {good, weight, lock} slot of a setting (the table at +0xc, stride 8) */
+    int good;                           /* +0x00, the good id of the slot */
+    unsigned char weight;               /* +0x04, the slot's weight in percent (ai_Unk5a83b0 sums the seven to 100) */
+    unsigned char lock;                 /* +0x05, 1 when the row is locked (ai_Unk5c2b90 toggles it) */
+    char pad06[2];
+} G8SLOT;
 typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
-    int id;                             /* +0x00, the setting id (ai_FindSetting looks it up by this) */
+    int good;                           /* +0x00, the good id (the chain's key, ai_FindSetting / ai_FindSettingSlots) */
     int seed;                           /* +0x04, the LCG state of the record's random */
-    char pad08[0x48 - 8];
+    unsigned char rotate;               /* +0x08, the rotation index ai_Unk5a8710 advances */
+    char pad09[3];
+    G8SLOT slots[7];                    /* +0x0c, the seven good slots (ai_FindSettingSlots returns this table) */
+    float factor;                       /* +0x44, the weight factor (1.0f at creation, ai_SettingFactor) */
     struct G8SETTING *next;             /* +0x48, the next setting of the chain (ai_FreeSettingChain frees it first) */
 } G8SETTING;
 #pragma pack(pop)
@@ -13706,7 +13715,7 @@ int *ai_FindSetting(int id)
 
     s = ai_Settings;
     while (s != 0) {
-        if (s->id == id)
+        if (s->good == id)
             return (int *)s;
         s = s->next;
     }
@@ -13744,16 +13753,18 @@ unsigned vfs_fwrite();
    0x6f26c0 of 0x4c-byte records {the good +0, the seed +4, the rotation index byte +8, seven {good, weight, lock}
    slots at +0xc (stride 8), the factor +0x44 (1.0f), next +0x48}; 0x5a83b0 / 0x5a84d0 fill the weights. */
 
-/* 0x5a8540, the setting lookup by the good (31 B): the record of 0x5a84b0, its slot table +0xc, else 0 */
-int *ai_Unk5a8540(int param_1)
-{
-    int *p;
+/* 0x5a8540, the slot table of a good's setting (31 B): the chain ai_Settings (0x6f26c0) walked by the next at
+   +0x48, the record whose good at +0 is the argument: its seven slots at +0xc; else 0 */
 
-    p = (int *)*(int *)((unsigned)&full_data_6f26c0);
-    while (p != 0) {
-        if (*p == param_1)
-            return p + 3;
-        p = (int *)p[0x12];
+G8SLOT *ai_FindSettingSlots(int good)
+{
+    G8SETTING *s;
+
+    s = ai_Settings;
+    while (s != 0) {
+        if (s->good == good)
+            return s->slots;
+        s = s->next;
     }
     return 0;
 }
@@ -13780,7 +13791,7 @@ void *ai_ProdSetting(int param_1)
         *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
         return rec + 0xc;
     }
-    found = ai_Unk5a8540(*(int *)(param_1 + 1));
+    found = ai_FindSettingSlots(*(int *)(param_1 + 1));
     if (found != 0)
         return found;
     if (ai_FindItemGroup((char *)param_1) == 0)
@@ -13939,7 +13950,7 @@ float ai_SettingFactor(int param_1)
 {
     int p;
 
-    p = ai_Unk5a8540(*(int *)(param_1 + 1));
+    p = ai_FindSettingSlots(*(int *)(param_1 + 1));
     if (p != 0)
         return *(float *)(p + 0x38);
     return 1.0f;
@@ -18232,7 +18243,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     master = -1;
     tab2 = -1;
     flags = -1;
-    recs = (char *)ai_Unk5a8540(*(int *)(param_1 + 1));
+    recs = (char *)ai_FindSettingSlots(*(int *)(param_1 + 1));
     for (i = 0; i < 7; i++)
         pics[i] = -1;
     if (recs == 0 && (recs = (char *)ai_ProdSetting(param_1)) == 0) {
