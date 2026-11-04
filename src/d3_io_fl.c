@@ -21,7 +21,7 @@
 
 /* 0x450860, loads a mesh from its fast chunk file (the cache the BGF loader looks in first); returns 0 when
    there is none
-   @deep behaviour: the 220 code hunks are register allocation only (the original keeps the file handle in ebp and compares against the zero register edi - cmp ebp,edi / cmp eax,edi - where ours uses ebx as zero and test against 0; same instructions otherwise), readable not: Q2 d3_Unk4507a0 (callee in d3_io_b.c, opens the chunk file, no naming evidence beyond that) and the unk1e4 parameter (the field is D3BGF.nsets now, the parameter name stays), Q4 the 9 poly accesses (a typed D3BGFPOLY *p loop was tried and reverted: 102 -> 296 differing asm lines, the original computes m->polys + byte offset per write; the +0x2c block has no named field and Q2 forbids an unk name) */
+   @deep behaviour: the 220 code hunks are register allocation only (the original keeps the file handle in ebp and compares against the zero register edi - cmp ebp,edi / cmp eax,edi - where ours uses ebx as zero and test against 0; same instructions otherwise), readable not: Q2 d3_OpenFastChunk (callee in d3_io_b.c, opens the chunk file, no naming evidence beyond that) and the unk1e4 parameter (the field is D3BGF.nsets now, the parameter name stays), Q4 the 9 poly accesses (a typed D3BGFPOLY *p loop was tried and reverted: 102 -> 296 differing asm lines, the original computes m->polys + byte offset per write; the +0x2c block has no named field and Q2 forbids an unk name) */
 D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
 {
     int a = 0;
@@ -37,7 +37,7 @@ D3BGF *d3_FindBGF(char *path, char *name, char *texnames, int unk1e4, int ntex)
     D3BGFFLAGS fl;
     D3TEXHANDLE *tex;
 
-    f = d3_Unk4507a0(path);
+    f = d3_OpenFastChunk(path);
     if (f) {
         m = (D3BGF *)mem_Alloc(0x20c, "d3_io_fl:LoadFastChunk(obj)");
         strncpy(m->name, name, 0x3f);

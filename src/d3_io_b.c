@@ -775,7 +775,7 @@ char d3_BGFCanWeld(char *path)
 }
 /* 0x4507a0, opens a chunk file and skips to the chunk with id 0xfab50005; 0 if there is none */
 
-VFSFILE *d3_Unk4507a0(char *path)
+VFSFILE *d3_OpenFastChunk(char *path)
 {
     VFSFILE *f;
     int hdr, len, id, tag;

@@ -10,7 +10,7 @@ struct VFSFILE;
 
 typedef struct D3BGFVERT { float x, y, z, nx, ny, nz; } D3BGFVERT;
 
-struct VFSFILE * d3_Unk4507a0(char *path);                                                 /* 0x4507a0, opens the fast chunk file */
+struct VFSFILE * d3_OpenFastChunk(char *path);                                                 /* 0x4507a0, opens the fast chunk file */
 void d3_CalcBounds(D3BGF *m);                                                    /* 0x450ec0 */
 int d3_FLChunkSize(D3BGF *m, D3BGFDESC *d);                                       /* 0x451180 */
 
