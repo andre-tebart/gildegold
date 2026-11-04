@@ -178,12 +178,11 @@ void kb_SetBase(int v)
     kb_Base = v + 0x100;
 }
 
-/* 0x410620 */
 #define di_A (&dm_L.ldown)              /* 0x1467390 */
 #define di_B (&dm_P.ldown)              /* 0x14683d0 */
 #define di_C (&dm_S.ldown)              /* 0x14673f0 */
 
-/* 0x410620 */
+/* 0x410620, clear the button events (ldown / lhold / lclick / rup / rdown / rhold / rclick, not lextra) of dm_L, dm_P and dm_S */
 void di_ClearButtons(void)
 {
     di_A[2] = 0;
