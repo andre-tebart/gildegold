@@ -150,7 +150,6 @@ extern int snd_SfxEnabled;
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern int ai_OptionSpeed;
 extern int ai_TimeCopy[4];
-extern GAPDATA full_data_6248b4[];
 
 int d2_CreateWinText(short x, short y, char *text, int win);
 int d2_WinOpenPic(short x, short y, int pic, int win);
@@ -7601,7 +7600,7 @@ void sv_UpdateClock(void)
 
     if ((SV_US((unsigned)&ai_Unk75e134) >= 0x17 || SV_US((unsigned)&ai_Time.hour) >= 0x17) && (SV_B((unsigned)&ai_GameFlags) & 0x80) == 0)
         return;
-    t = (int)(((float)SV_I((unsigned)&ai_OptionSpeed) * 0.00625f + 0.5) * SV_I((unsigned)&full_data_6248b4));
+    t = (int)(((float)SV_I((unsigned)&ai_OptionSpeed) * 0.00625f + 0.5) * main_ClockScale);
     h = t / 3600;
     m = (t - h * 3600) / 60;
     gm_AddTime((unsigned)&ai_TimeCopy, h, m, t - (m + h * 60) * 60);

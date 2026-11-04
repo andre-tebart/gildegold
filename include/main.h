@@ -27,6 +27,7 @@ extern struct MSXTRACK *main_MenuSong;  /* 0x6f2418, the main menu's song (msx_P
 extern int main_DevMenu;                /* 0x6f245c, nonzero: the main menu shows the data-tool buttons */
 extern MAINFAMILY main_Family;          /* 0x75e180 */
 extern int main_QuitProgram;            /* 0x6f25b4, set by quit / Escape / WM_QUIT: WinMain exits */
+extern int main_ClockScale;              /* 0x6248b4, 100: the game seconds of a clock update per speed step (sv_UpdateClock) */
 extern char main_NetHost[0x80];        /* 0x75e1c0, the network host address (game.INI [Network] Host) */
 extern char main_NetSaveName[161];      /* 0x75e360, the network game's name */
 
