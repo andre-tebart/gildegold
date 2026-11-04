@@ -3206,26 +3206,26 @@ exe	0x005112d0	init_JoinNetworkGame	f3init	byte	readable
 exe	0x00511400	init_SetupNewGame	f3init	byte	readable		
 exe	0x005115b0	init_CollectTorchObject	f3init	byte	readable		
 exe	0x00511600	init_StripTorches	f3init	byte	readable		
-exe	0x005116b0	unk_Unk5116b0	f3init	byte	draft		
+exe	0x005116b0	init_RebuildQuadTree	f3init	byte	readable		
 exe	0x00511700	init_TownBuildingHook	f3init	draft	readable	deep	
-exe	0x00511790	unk_Unk511790	f3init	byte	draft		
-exe	0x00511810	ai_Unk511810	f3init	byte	draft		
-exe	0x00511840	unk_Unk511840	f3init	byte	draft		
+exe	0x00511790	init_PrepareTownScene	f3init	byte	readable		
+exe	0x00511810	init_FlagTreeObject	f3init	byte	readable		
+exe	0x00511840	init_RecreateQuadTree	f3init	byte	readable		
 exe	0x00511890	init_NameBuildings	f3init	draft	readable	deep	
 exe	0x00511ad0	init_LocalData	f3init	draft	readable	deep	
 exe	0x00511bc0	init_FillMarkets	f3init	byte	readable		
-exe	0x00511c70	unk_Unk511c70	f3init	shape	draft		
+exe	0x00511c70	init_GiveFirstPlayerBuildings	f3init	shape	readable		
 exe	0x00511dc0	init_ObjectSceneUniverse	f3init	byte	readable		
 exe	0x00511e60	init_BuildingSceneUniverse	f3init	draft	readable	deep	
 exe	0x00511f20	init_SyncSceneObjects	f3init	draft	readable	deep	
-exe	0x005124d0	unk_Unk5124d0	f3init	byte	draft		
+exe	0x005124d0	init_LoadTypeBScene	f3init	byte	readable		
 exe	0x005124f0	init_LoadShopScript	f3init	draft	readable	deep	
 exe	0x005126a0	init_SoundObjectHook	f3init	shape	readable	deep	
-exe	0x00512780	init_GateObjectHook	f3init	byte	draft		
+exe	0x00512780	init_GateObjectHook	f3init	byte	readable		
 exe	0x005127c0	init_SoundObjectFreeHook	f3init	byte	readable		
 exe	0x005127f0	init_PlayTownSound	f3init	byte	readable		
-exe	0x00512840	init_PlayGraveyardSound	f3init	byte	draft		
-exe	0x00512890	unk_Unk512890	f3init	byte	draft		
+exe	0x00512840	init_PlayGraveyardSound	f3init	byte	readable		
+exe	0x00512890	init_StopTownSounds	f3init	byte	readable		
 exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
 exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
 exe	0x00512e40	init_TextureSetHook	f3init	shape	readable	deep	
