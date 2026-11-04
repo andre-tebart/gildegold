@@ -15180,7 +15180,7 @@ done:
 }
 
 struct AHMSLOT * ahm_FindSlot();
-void ai_Unk5a9bc0(int param_1, int param_2, int param_3, int param_4);
+void ai_DomizilMessageResearchKind(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetPlaceValue(char *c, int id, float v);
 
 /* 0x56d730, the run handler of the research event 0x96: like 0x56d3d0 but the record is 0x4eabe0 (the +0xb0 kind) and the clock is +0xc0; state 1 hands the result over (0x5a9bc0, 0x4ecc30 with +0xb4 + the record's +4), releases the building group and frees; state 0 takes the elapsed time off +0xb8 and retries after 5 until it is used up */
@@ -15214,7 +15214,7 @@ void he_Unk56d730(int ev)
         v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b);
         h = gm_FindChar(*(int *)(ev + 0xc));
         if (h != 0)
-            ai_Unk5a9bc0(h, c, v, *(int *)(ev + 0xb0));
+            ai_DomizilMessageResearchKind(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendSetPlaceValue(c, *(int *)(ev + 0xb0), *(float *)(ev + 0xb4) + *(float *)(p + 4));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
         he_FreeEvent((int *)ev);
