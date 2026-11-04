@@ -382,19 +382,19 @@ exe	0x0041c760	dd_StringToGuid	dd_vesa	byte	readable
 exe	0x0041c830	dd_DlgProc	dd_vesa	byte	readable		
 exe	0x0041cf60	dd_DeviceDialog	dd_vesa	byte	readable		
 exe	0x0041cfb0	dd_Init	dd_vesa	byte	readable		
-exe	0x0041d190	dd_SetClipRect	dd_vesa	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0041d190	dd_SetClipRect	dd_vesa	byte	readable		
 exe	0x0041d1c0	dd_EnumVideoModesCallback	dd_vesa	byte	readable		
 exe	0x0041d230	dd_CheckModes	dd_vesa	byte	readable		
 exe	0x0041d2e0	dd_SetMode	dd_vesa	draft	draft	deep	
 exe	0x0041ddb0	dd_LockSurface	dd_vesa	byte	readable		
 exe	0x0041de30	dd_LockSurfaceFlags	dd_vesa	byte	readable		
 exe	0x0041dec0	dd_Lock	dd_vesa	byte	readable		
-exe	0x0041df80	dd_LockNoWait	dd_vesa	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x0041e050	dd_Unlock	dd_vesa	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0041df80	dd_LockNoWait	dd_vesa	byte	readable		
+exe	0x0041e050	dd_Unlock	dd_vesa	byte	readable		
 exe	0x0041e0a0	dd_FillSurface	dd_vesa	byte	readable		
 exe	0x0041e100	dd_Clear	dd_vesa	byte	readable		
 exe	0x0041e390	dd_Flip	dd_vesa	byte	readable		
-exe	0x0041e670	dd_RGB	dd_vesa	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0041e670	dd_RGB	dd_vesa	byte	readable		
 exe	0x0041e6d0	dd_SplitRGB	dd_vesa	byte	readable		
 exe	0x0041e720	dd_ReleaseSurface	dd_vesa	byte	readable		
 exe	0x0041e740	dd_UnlockSurface	dd_vesa	byte	readable		
@@ -2842,7 +2842,7 @@ exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable
 exe	0x004f4e20	ord_ApplyForOffice	ord	shape	readable	deep	
 exe	0x004f4f20	ord_LevelOrder	ord	shape	readable	deep	
 exe	0x004f4ff0	ord_EspionageResultOrder	ord	byte	readable		
-exe	0x004f5070	unk_Unk4f5070	ord	byte	draft		
+exe	0x004f5070	ord_MedicusOrder	ord	byte	readable		
 exe	0x004f50f0	ord_SpyTargetOrder	ord	byte	readable		
 exe	0x004f5190	ord_BlackmailBuildingOrder	ord	byte	readable		
 exe	0x004f5200	ord_Level3Order	ord	byte	readable		
@@ -2900,12 +2900,12 @@ exe	0x004f8140	ord_DismissWorkerOrder	ord	draft	readable	deep
 exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable		
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
-exe	0x004f8300	ord_GetGridCell	ord	byte	draft		
+exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
 exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at 322b60fd: the fighter slot record unified: cm_types.h's CMFIGHTSLOT gets the escape dummy name in a union (the duplicate CMFIGHTACT of cm.c dropped) and cm.h's cm_FighterAct / cm_PlantEscapeFlag take CMFIGHTSLOT (closer: one record, typed). The change flips whether this function keeps an address constant in edx (mov edx, X / mov eax, edx: 4 instructions, regs only): a VC6 declaration-set tie-break of the headers ord.c includes, no evidence of the original's source [waits for: ord.c's head (its includes of cm.h / cm_types.h); re-grade when its declarations settle]
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
-exe	0x004f86a0	ord_RandomCellPoint	ord	byte	draft		
-exe	0x004f8700	unk_Unk4f8700	ord	shape	draft		
+exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		
+exe	0x004f8700	ord_RandomObjectId	ord	shape	readable		
 exe	0x004f8890	ord_GetKindRecord	ord	byte	readable		
 exe	0x004f88c0	unk_Unk4f88c0	ord	byte	draft		
 exe	0x004f8920	ord_RebuildGridSums	ord	draft	draft	deep	
@@ -4524,7 +4524,7 @@ exe	0x005c7970	ai_Unk5c7970	unk_58bbd0	draft	draft
 exe	0x005c7f00	ai_CityStatsPanel	unk_58bbd0	draft	draft		
 exe	0x005c82f0	ai_PlayerComparePanel	unk_58bbd0	draft	draft		
 exe	0x005c8640	ai_PrivilegesPanel	unk_58bbd0	draft	draft		
-exe	0x005c8bc0	ai_Unk5c8bc0	unk_58bbd0	draft	draft		
+exe	0x005c8bc0	ai_MedicusHandler	unk_58bbd0	draft	draft		
 exe	0x005c8ef0	ai_Unk5c8ef0	unk_58bbd0	draft	draft		
 exe	0x005c9290	ai_Unk5c9290	unk_58bbd0	draft	draft		
 exe	0x005c9550	ai_BlackmailBuildingListener	unk_58bbd0	draft	draft		
