@@ -159,7 +159,9 @@ local int unzlocal_getByte(fin,pi)
 /* ===========================================================================
    Reads a long in LSB order from the given gz_stream. Sets 
 */
-/* 0x4679d0 */
+/* 0x4679d0, reads a 2-byte little-endian value from fin into *pX (0 on error); returns the status of the
+ * byte reads: UNZ_OK or what unzlocal_getByte reported */
+
 local int unzlocal_getShort (fin,pX)
 	FILE* fin;
     uLong *pX;
