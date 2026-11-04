@@ -2464,10 +2464,11 @@ fail:
     ai_TutorialStop();
     return -1;
 }
-/* 0x578370, the tutorial stop (196 B): the six handles 0x6f2640 .. 0x6f2658 unloaded when set (0x426ba0), the
-   record chain 0x6f2658 freed by 0x578440 and cleared; the state record 0x5eec60 reset (+0, +8, +0xc, +0x10,
-   +0x14, +0x18, +0x1c = 0, +0x20 = -1, the forms +0x24 / +0x34 released (0x4758f0) and -1, +0x14 = 0 again),
-   the gates 0x6f265c / 0x6f2660 = 0; no return value */
+/* 0x578370, the tutorial stop (196 B): the six voice banks (0x6f2640) unloaded when set (0x426ba0), the run
+   record chain (ai_TutorialRuns, 0x6f2658) freed by 0x578440 and cleared; the state record 0x5eec60 reset (state,
+   textAt, stepAt, campaignSteps, voice, run, host = 0, continueObj = -1, the windows text1Win / text2Win released
+   (0x4758f0) and set to -1, voice cleared again), the gates ai_TutorialOn / ai_TutorialRunning = 0; no return
+   value */
 
 void ai_TutorialStop(void)
 {
@@ -2479,19 +2480,19 @@ void ai_TutorialStop(void)
     }
     ai_TutorialFreeRuns((char *)ai_TutorialRuns);
     ai_TutorialRuns = 0;
-    U_I(S) = 0;
-    U_I(S + 8) = 0;
-    U_I(S + 0xc) = 0;
-    U_I(S + 0x10) = 0;
-    U_I(S + 0x14) = 0;
-    U_I(S + 0x18) = 0;
-    U_I(S + 0x1c) = 0;
-    U_I(S + 0x20) = -1;
-    d2_CloseView(U_I(S + 0x24));
-    U_I(S + 0x24) = -1;
-    d2_CloseView(U_I(S + 0x34));
-    U_I(S + 0x34) = -1;
-    U_I(S + 0x14) = 0;
+    ai_Tutorial->state = 0;
+    ai_Tutorial->textAt = 0;
+    ai_Tutorial->stepAt = 0;
+    ai_Tutorial->campaignSteps = 0;
+    ai_Tutorial->voice = 0;
+    ai_Tutorial->run = 0;
+    ai_Tutorial->host = 0;
+    ai_Tutorial->continueObj = -1;
+    d2_CloseView(ai_Tutorial->text1Win);
+    ai_Tutorial->text1Win = -1;
+    d2_CloseView(ai_Tutorial->text2Win);
+    ai_Tutorial->text2Win = -1;
+    ai_Tutorial->voice = 0;
     ai_TutorialOn = 0;
     ai_TutorialRunning = 0;
 }
