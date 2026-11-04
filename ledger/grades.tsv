@@ -3347,13 +3347,13 @@ exe	0x00527e90	sv_FlyCameraToModel	sv	shape	readable	deep
 exe	0x00528140	sv_MoveCameraToView	sv	byte	readable		
 exe	0x00528180	sv_CreateBannerCB	sv	byte	readable		
 exe	0x00528290	sv_ColourBannerCB	sv	byte	readable		
-exe	0x005282f0	sv_CreateBanners	sv	byte	draft		
+exe	0x005282f0	sv_CreateBanners	sv	byte	readable		
 exe	0x00528390	sv_ColourBanners	sv	byte	readable		
 exe	0x00528490	sv_UpdateChimneySmoke	sv	draft	readable	deep	
-exe	0x00528660	sv_Unk528660	sv	byte	draft		
-exe	0x005286a0	sv_RemoveBanners	sv	byte	draft		
-exe	0x00528770	sv_Unk528770	sv	byte	draft		
-exe	0x00528800	sv_AddPanelButton	sv	byte	draft		
+exe	0x00528660	sv_CollectBannerCB	sv	byte	readable		
+exe	0x005286a0	sv_RemoveBanners	sv	byte	readable		
+exe	0x00528770	sv_RefreshBanners	sv	byte	readable		
+exe	0x00528800	sv_AddPanelButton	sv	byte	readable		
 exe	0x00528860	sv_OpenBuildingPanel	sv	draft	readable	deep	
 exe	0x00528b80	sv_OpenItemPanel	sv	byte	readable		
 exe	0x00528d90	sv_OpenCartPanel	sv	byte	readable		
@@ -3365,14 +3365,14 @@ exe	0x0052a040	sv_ReturnZero	sv	byte	readable
 exe	0x0052a050	sv_UpdatePanel	sv	byte	readable		
 exe	0x0052a680	sv_HoverPick	sv	draft	draft	deep	
 exe	0x0052adb0	sv_ResetSelection	sv	draft	readable	deep	
-exe	0x0052ae40	sv_ClearSelection	sv	byte	draft		
+exe	0x0052ae40	sv_ClearSelection	sv	byte	readable		
 exe	0x0052ae70	sv_HandleObjects	sv	draft	readable	deep	
 exe	0x0052b2a0	sv_CollectGroupCharacters	sv	shape	readable		
 exe	0x0052b350	sv_RegisterActivity	sv	byte	readable		
 exe	0x0052b3c0	sv_ActivityName	sv	byte	readable		
-exe	0x0052b490	sv_Unk52b490	sv	byte	draft		
+exe	0x0052b490	sv_StartPoseScript	sv	byte	readable		
 exe	0x0052b500	sv_RunLocationScripts	sv	byte	readable		
-exe	0x0052bb70	sv_RunFramesUntilStopped	sv	byte	draft		
+exe	0x0052bb70	sv_RunFramesUntilStopped	sv	byte	readable		
 exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep	
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
 exe	0x0052c420	sv_Unk52c420	sv	byte	draft		
