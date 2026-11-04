@@ -1757,7 +1757,7 @@ char dd_LockNoWait(void)
     }
     return 0;
 }
-/* 0x41e050 */
+/* 0x41e050, unlocks the drawing surface (releases the back buffer in fullscreen modes) */
 
 void dd_Unlock(void)
 {
