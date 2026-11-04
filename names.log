@@ -1819,3 +1819,6 @@
 2026-11-04T13:19:43 0x006f25c0 data full_data_6f25c0 -> main_NoRoundFade by:main why:a 4-byte flag at 0x6f25c0: set by main_RoundReport, cleared at the game start, read before the round page's black fade (1 skips it)
 2026-11-04T13:19:50 0x0075e630 data full_data_75e630 -> main_WindBank by:main why:the handle of the wind sample bank stored at the game start, 0x75e630: 16 bytes, only the first int is used
 2026-11-04T13:22:00 0x0053b830 func main_Unk53b830 -> main_CheckCD by:main why:the CD check of main_BeginPlayerRound / main_GameLoop (their retry loops wait for it to return 1, the message box is text 0x79); this build's body is the original's mov eax,1 / ret
+2026-11-04T13:22:39 0x0053c9b0 func main_Unk53c9b0 -> main_PlayIntroMovies by:main why:WinMain's intro: plays jowood.mpg, 4head.mpg, intro.mpg and intro_addon.mpg in the 0xdc square window before the menu
+2026-11-04T13:22:56 0x00624798 data full_data_624798 -> main_MoviePath by:main why:the movie directory (%soutro.mpg, %sjowood.mpg ..) read from [General] MoviePath with size 0x104 at 0x53d2d0, default project movie
+2026-11-04T13:23:02 0x006f241c data full_data_6f241c -> main_Movie by:main why:the id mov_Open gives the movie that plays (intro movies at the start, outro.mpg in main_PlayOutro)
