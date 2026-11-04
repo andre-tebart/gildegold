@@ -188,7 +188,8 @@ void bgi_MatFlags1(void *f, BGIRD *c)
     BGI_M(c).c6 = (b >> 2) & 0xf;
     BGI_M(c).c3 = (b >> 6) & 1;
 }
-/* 0x44f270 */
+/* 0x44f270, binary-format record 0xc: reads the current material's second flag byte (bit 0 to pad4, the
+   other seven bits to c7) */
 
 void bgi_MatFlags2(void *f, BGIRD *c)
 {
