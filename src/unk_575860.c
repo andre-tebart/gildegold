@@ -1872,18 +1872,15 @@ int ai_QueryChapter3Step10(int *p)
         return 1;
     return 0;
 }
-/* 0x577490, releases the pending id S+0x50: with the kind S+0x40 2 through 0x52f9f0, with the kind 3 through
-   0x52fa00; returns 0 */
+/* 0x577490, releases the pending step argument (stepArg): with the step 2 through sv_BookForward, with the step 3
+   through sv_BookBack; returns 0 */
 
 int ai_StepShownChapter3Step4(void)
 {
-    char *st;
-
-    st = S;
-    if (*(int *)(st + 0x40) == 2 && *(int *)(st + 0x50))
-        sv_BookForward(*(int *)(st + 0x50));
-    else if (*(int *)(st + 0x40) == 3 && *(int *)(st + 0x50))
-        sv_BookBack(*(int *)(st + 0x50));
+    if (ai_Tutorial->step == 2 && ai_Tutorial->stepArg)
+        sv_BookForward(ai_Tutorial->stepArg);
+    else if (ai_Tutorial->step == 3 && ai_Tutorial->stepArg)
+        sv_BookBack(ai_Tutorial->stepArg);
     return 0;
 }
 /* 0x5774d0, when `arg` is 0 and the building 0x6f2308 is not already of the table byte 0x12: finds a record
