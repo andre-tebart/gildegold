@@ -418,7 +418,8 @@ void err_Exit(void)
     err_Hwnd = 0;
     err_Flags = 0;
 }
-/* 0x4222b0 */
+/* 0x4222b0, reports a plain message: logs it in the on channels and shows it in a message box when
+   ERR_MSGBOX is set; warns when the error handler has not been started */
 
 void err_Message(char *text)
 {
