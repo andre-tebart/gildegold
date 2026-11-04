@@ -161,7 +161,6 @@ extern int cm_TutorialActive;
 extern char ch_EmptyName[1];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
-extern GAPDATA full_data_6f2638[];
 extern char * ai_Goods;
 extern int gm_PlayerRecords[688];
 extern unsigned short * ai_PlayerChar;
@@ -13390,7 +13389,7 @@ void he_Unk567f00(int ev)
    table {12, 8, 4, 2, 0} by +0x31 counts +0x32 up (0x524810, 0x5024f0, 0x4bdaa0 wraps the index at the route length), 0x4c3ba0 / 0x4c3d90 set the route index (+0x2d) and the result 0x4c49e0 goes to +0x84;
    a blocked step with the neighbour 0x50a0f0 sends the message type 0xf */
 
-void he_Unk567f50(int ev, unsigned short *c)
+void he_PatrolStep(int ev, unsigned short *c)
 {
     int o, w, iv, n, k, t;
     int pause[7];
@@ -13434,7 +13433,7 @@ void he_Unk567f50(int ev, unsigned short *c)
                 return;
             *(unsigned char *)(c + 0x19) = 0;
         }
-        if (sv_IsCartAtDoor(c, w) != 0 && (gm_IsType10(w) == 0 || *(int *)(c + 3) == *(int *)(U_I((unsigned)&full_data_6f2638) + 1))) {
+        if (sv_IsCartAtDoor(c, w) != 0 && (gm_IsType10(w) == 0 || *(int *)(c + 3) == he_PatrolBuilding->id)) {
             iv = rt_PointCount(*(int *)((char *)c + 0x29));
             n = *(int *)((char *)c + 0x2d) + 1;
             if (iv <= n)
@@ -13467,7 +13466,7 @@ void he_Unk567f50(int ev, unsigned short *c)
    in 0x6f2638 and calls 0x567f50 (ev, g) for every guard group (0x4ffe90 (0, 2, 7, 4, 0x1d) / 0x4ffcc0) with a route (+0x29), not flagged (+0x20 & 1, +0x13 & 0x20) and with a pause counter (+0x33); the next run is 15
    units ahead; -1 / -2 free */
 
-void he_Unk568220(int ev)
+void he_RunPatrolEvent(int ev)
 {
     int st, g;
 
@@ -13485,10 +13484,10 @@ void he_Unk568220(int ev)
     }
     if (st != 0)
         return;
-    U_I((unsigned)&full_data_6f2638) = gm_BuildQuery(1, 0, 0x44);
+    he_PatrolBuilding = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
     for (g = gm_Query(0, 2, 7, 4, 0x1d); g != 0; g = gm_QueryNext()) {
         if (*(int *)(g + 0x29) != 0 && (*(unsigned char *)(g + 0x20) & 1) == 0 && (*(unsigned char *)(g + 0x13) & 0x20) == 0 && *(char *)(g + 0x33) != 0)
-            he_Unk567f50(ev, (unsigned short *)g);
+            he_PatrolStep(ev, (unsigned short *)g);
     }
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0xf, 0);
@@ -13617,7 +13616,7 @@ int he_Unk568310(void)
         return 1;
     if (he_Unk53d600(133, (void *)he_Unk567d20, (void *)he_Unk567d60) != 0)
         return 1;
-    if (he_Unk53d600(166, (void *)he_Unk567f00, (void *)he_Unk568220) != 0)
+    if (he_Unk53d600(166, (void *)he_Unk567f00, (void *)he_RunPatrolEvent) != 0)
         return 1;
     gm_Shuffled(0x1a, (unsigned)&full_data_6fa1e0);
     return 0;
