@@ -11080,7 +11080,7 @@ void ai_DungeonContact(int building)
     }
 }
 
-int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int gm_Unk509f20(); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
+int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int gm_CharMoney(); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
 
 /* 0x5a3b90, the bribe window "locations\kerker\kerker_besteche" (599 B): the record 0x4e6ec0 (0x11, {?, the
    id}) and its character 0x505df0; without one the text 0x1440894 and out; with the object 0x53e400 (2, 0, 0x39,
@@ -11123,7 +11123,7 @@ void ai_Unk5a3b90(int param_1)
     id = io_PrintText(0x19b1, U_I((unsigned)&ai_OwnPlayer), U_I((unsigned)&ai_OwnPlayer), U_W(priest));
     ctl = d2_GetWinObj(win, 1, id);
     btn = d2_GetWinObj(win, 1, id + 1);
-    amount = ((int (*)(int, int, int))gm_ConvertMoney)(gm_Unk509f20(U_W((unsigned)&ai_PlayerId)), U_I((unsigned)&ai_OwnPlayer), 0xfa);
+    amount = ((int (*)(int, int, int))gm_ConvertMoney)(gm_CharMoney(U_W((unsigned)&ai_PlayerId)), U_I((unsigned)&ai_OwnPlayer), 0xfa);
     d2_SetObjValue(ctl, 0x96, amount);
     d2_SetPointerSprite(0, 0);
     for (;;) {

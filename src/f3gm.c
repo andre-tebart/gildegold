@@ -9261,20 +9261,22 @@ int gm_EquipmentValue(unsigned char *b, int level);
 int gm_GetWorth(unsigned short id);
 int gm_ListAmount(short *l, char *o);
 
-/* 0x509f20, the amount of the objects (prototype kind 9) of the character with the id of slot c, or -1 when it does not exist */
-int gm_Unk509f20(int c)
-{
-    char *p;
-    int s;
-    char *o;
+/* 0x509f20, the money of the character record at slot c: the sum of the amounts (count +0x0e) of the inventory's
+   objects of the prototype kind 9, the record found by its netId (+0x4) through gm_FindChar; -1 when there is none */
 
-    p = gm_FindChar(*(int *)(ai_Chars[c] + 4));
+int gm_CharMoney(int c)
+{
+    ORDCHAR *p;
+    int s;
+    ORDOBJ *o;
+
+    p = (ORDCHAR *)gm_FindChar(ORD_CHAR(ai_Chars[c])->netId);
     if (p != 0) {
         s = 0;
-        o = gm_Query(*(void **)(p + 0x178), 1, 4, 9);
+        o = (ORDOBJ *)gm_Query((void *)p->inventory, 1, 4, 9);
         while (o) {
-            s += *(int *)(o + 0xe);
-            o = (char *)gm_QueryNext();
+            s += o->count;
+            o = (ORDOBJ *)gm_QueryNext();
         }
         return s;
     }
