@@ -422,7 +422,8 @@ local void putShortMSB (s, b)
  * to avoid allocating a large strm->next_out buffer and copying into it.
  * (See also read_buf()).
  */
-/* 0x461ea0 */
+/* 0x461ea0, copies the buffered pending output to next_out, stopping at
+ * avail_out, and updates the stream counters */
 local void flush_pending(strm)
     z_streamp strm;
 {
