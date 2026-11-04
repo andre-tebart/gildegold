@@ -40,7 +40,7 @@ typedef struct CHARACTER {         /* 0x244 bytes */
     D3OBJECT *rightHand;            /* 0x64, the object in the right hand (ch_SetHandObject hand 2, ch_SetVisible) */
     char pad068[0x8];
     struct D3ANIMSLOT *slot;        /* 0x70, current animation */
-    char pad074[0x4];
+    struct D3ANIMSLOT *sitSlot;     /* 0x74, the sitting animation (ch_SetSitAnim), 0: none */
     D3ANIM *turnAnim;               /* 0x78, the path animation a turn action created (CH_ANIM078) */
     struct D3ANIMSLOT *morph;       /* 0x7c, blend between two animations ("morph_%i") */
     struct D3ANIMDATA *next;        /* 0x80, animation to start next */
@@ -414,8 +414,6 @@ typedef struct CHACTOBJ {
     int unk178;                     /* overlaps CHACTION.speed */
 } CHACTOBJ;
 #define CH_ACTOBJ(a)    ((CHACTOBJ *)&(a)->u)
-#define CH_SLOT2(ch)    (*(D3ANIMSLOT **)((char *)(ch) + 0x74))    /* sitting animation */
-#define CHACT_UNK18C(a) (*(unsigned char *)((char *)(a) + 0x18c))
 #define D3MATERIAL_NAME104(m) (*(char **)((char *)(m) + 0x104))
 
 

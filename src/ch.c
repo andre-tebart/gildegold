@@ -1734,11 +1734,11 @@ void ch_ActSitDown(CHACTION *a)
     if (!a->count) {
         if (a->u.name[0] && !D3OBJ_ANIM(ch->obj)->slots[0].data) {
             ch->flags.all |= 2;
-            if (CHACT_UNK18C(a) & 1) {
-                CH_SLOT2(ch) = ch->slot = (D3ANIMSLOT *)ch_AttachAni(a->ch, a->u.name, 1);
+            if (a->scriptAction.flags & 1) {
+                ch->sitSlot = ch->slot = (D3ANIMSLOT *)ch_AttachAni(a->ch, a->u.name, 1);
                 d3anim_SetFrame(ch->obj, ch->slot, -1);
             } else
-                CH_SLOT2(ch) = ch->slot = (D3ANIMSLOT *)ch_AttachAni(a->ch, a->u.name, 1);
+                ch->sitSlot = ch->slot = (D3ANIMSLOT *)ch_AttachAni(a->ch, a->u.name, 1);
         }
         if (ch->slot) {
             ch->slot->flags.b[0] = 1;
@@ -1776,12 +1776,12 @@ CHACTION *ch_SitDown(CHARACTER *ch, char *name)
 void ch_ReleaseSit(CHARACTER *ch)
 {
     if (ch->flags.all & 0x10) {
-        if (CH_SLOT2(ch)) {
+        if (ch->sitSlot) {
             if (!ch->obj->info)
                 ch_InflateModel(ch);
-            if (CH_SLOT2(ch)->data)
-                d3_ReleaseTexture(ch->obj->material->animCtl, CH_SLOT2(ch)->data->name);
-            CH_SLOT2(ch) = 0;
+            if (ch->sitSlot->data)
+                d3_ReleaseTexture(ch->obj->material->animCtl, ch->sitSlot->data->name);
+            ch->sitSlot = 0;
         }
         ch->flags.all &= ~0x10;
     }
@@ -4202,12 +4202,12 @@ void ch_SetSitAnim(CHARACTER *ch, char *name)
 {
     D3ANIMSLOT *s;
 
-    CH_SLOT2(ch) = s = (D3ANIMSLOT *)ch_AttachAni(ch, name, 1);
+    ch->sitSlot = s = (D3ANIMSLOT *)ch_AttachAni(ch, name, 1);
     ch->slot = 0;
     if (s) {
         d3anim_SetFrame(ch->obj, s, -1);
-        CH_SLOT2(ch)->flags.b[0] = 1;
-        *(unsigned int *)&CH_SLOT2(ch)->flags.b[4] &= ~3;
-        CH_SLOT2(ch)->flags.b[1] |= 0x10;
+        ch->sitSlot->flags.b[0] = 1;
+        *(unsigned int *)&ch->sitSlot->flags.b[4] &= ~3;
+        ch->sitSlot->flags.b[1] |= 0x10;
     }
 }
