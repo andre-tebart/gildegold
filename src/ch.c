@@ -406,7 +406,7 @@ CHARACTER *ch_FindByName(char *name)
         return ch_List[i];
     return 0;
 }
-/* 0x402ac0 */
+/* 0x402ac0, finds the character whose object is obj, 0 when none */
 
 CHARACTER *ch_FindByObject(D3OBJECT *obj)
 {
