@@ -851,8 +851,6 @@ extern GAPDATA full_data_62d224[];
 extern int sv_PopRequest;
 extern GAPDATA full_data_62d204[];
 extern int d2_ClickedId;
-extern GAPDATA full_data_62d234[];
-extern GAPDATA full_data_62d244[];
 
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -9371,7 +9369,7 @@ void ai_Unk59fe40(int param_1)
 }
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
-int ai_Unk5bea50(); int ai_Unk5c1a80(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
+int ai_Unk5bea50(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
 int ai_AmountRowStatus(); int ai_AmountRow(); int ai_Unk5c2160(); int ai_AmountLimit();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
@@ -9469,7 +9467,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
                     r = amt_KindColumn(param_2);
                     ai_Unk5bea50(r, 0, 0, 0, (void *)(unsigned)&sv_ReturnZero);
                 } else if (U_I((unsigned)&d2_PointerObj) == ctl3) {
-                    ai_Unk5c1a80(param_2, 0);
+                    ai_AmountInfoWindow(param_2, 0);
                 }
             }
         } else {
@@ -17555,28 +17553,29 @@ int ai_Unk5c1500(int param_1)
     (void)param_1;
     return 0;
 }
-/* 0x5c1a80, the special-amount info box "special_amtinfo" 0x62d244 (240 B): the caption "%s: %s (%A %Z)"
-   (0x62d234) over param_1 + 0x253, the two texts param_1 * 2 + 0x134b / 0x134c, the pump 0x5309a0 (this,
-   0x657c7) and 0x4758f0 (win) */
+extern char ai_AmountInfoFmt[16];
+extern char ai_AmountInfoForm[16];
+/* 0x5c1a80, the info box of an amount kind (the form "special\amtinfo"): the caption ai_AmountInfoFmt over
+   the kind's name text (0x253 + kind), the two texts 2 * kind + 0x134b / 0x134c, then the frame pump
+   (0x5309a0, this, 0x657c7) with dm_L.rup ending it; closes the view */
 
-int ai_Unk5c1a80(int param_1)
+void ai_AmountInfoWindow(int kind)
 {
     int win;
 
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d244);
+    win = d2_OpenForm(0, 0, ai_AmountInfoForm);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    io_PrintText((int)(unsigned)&full_data_62d234, param_1 + 0x253);
+    io_PrintText(ai_AmountInfoFmt, kind + 0x253);
     d2_SetForm(win, 1);
-    io_PrintText(param_1 * 2 + 0x134b);
-    io_PrintText(param_1 * 2 + 0x134c);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    io_PrintText(kind * 2 + 0x134b);
+    io_PrintText(kind * 2 + 0x134c);
+    d2_ClickedId = -1;
     do {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    } while (sv_RunFrame(ai_Unk5c1a80, 0x657c7) != 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_AmountInfoWindow, 0x657c7) != 0);
     d2_CloseView(win);
-    return 0;
 }
 
 int ai_Unk5c1500(); int ai_Unk5c1e10();
@@ -23423,6 +23422,8 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 6, 0, -1, ai_Unk5bfc40, ai_Unk5c0650 },
     { 7, 0, -1, ai_Unk5bfd90, ai_Unk5c0790 },
 };
+char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
+char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
