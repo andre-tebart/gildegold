@@ -3300,24 +3300,31 @@ int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int 
 short *gm_PlayerRecord(char *c);
 int ai_Unk5d08c0();
 
-/* 0x548230, the run handler of a one-shot event: state 0 (flag 2 of +0x78) posts it again with the clock now, a freed state ends it (ROUGH) */
-void he_Unk548230(int ev)
+/* 0x548230, the run handler of the insult news event (type 0x4b, whose start handler is 0x548110): a pending cm
+   slot still in state 0 keeps it; a freed state (-2) ends it, a negative one frees it, and in state 0 with opts
+   bit 2 it is posted again two minutes later (the end time = the clock now, cm_SendExSetHE) */
+void he_RunInsultNews(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     int st;
 
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    st = *(int *)(ev + 0x70);
-    *(int *)(ev + 0x84) = -1;
-    if (st >= -2) {
-        if (st < 0) {
-            he_FreeEvent((int *)ev);
-        } else if (st == 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        }
+    st = e->stage;
+    e->exSlot = -1;
+    if (st < -2)
+        return;
+    if (st >= 0) {
+        if (st != 0)
+            return;
+        if ((e->opts & 2) == 0)
+            return;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x5482c0, a Ghidra miss: the start handler: the due clock +0x52 = now, posted 0x18 units ahead */
 
@@ -9129,7 +9136,7 @@ int he_Unk553060(void)
         return 1;
     if (he_Unk53d600(0x4a, (void *)he_Unk547ee0, (void *)he_Unk547f90) != 0)
         return 1;
-    if (he_Unk53d600(0x4b, (void *)he_Unk548110, (void *)he_Unk548230) != 0)
+    if (he_Unk53d600(0x4b, (void *)he_Unk548110, (void *)he_RunInsultNews) != 0)
         return 1;
     if (he_Unk53d600(0x51, (void *)he_Unk5482c0, (void *)he_Unk548300) != 0)
         return 1;

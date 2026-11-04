@@ -1723,3 +1723,4 @@
 2026-11-03T23:55:05 0x00541060 func he_Unk541060 -> he_PostEvent3b by:main why:posts the message 0x3b for the player's character, freeing a running event 0x3b first (main_GameLoop)
 2026-11-03T23:56:34 0x00541170 func he_Unk541170 -> he_PostEventA6 by:main why:posts the message 0xa6 for the player's character, freeing a running event 0xa6 first (main_GameLoop)
 2026-11-03T23:59:55 0x00541280 func he_Unk541280 -> he_CharacterBehavior by:main why:the string it tags its walk actions with, "he_CharacterBehavior"
+2026-11-04T08:48:30 0x00548230 func he_Unk548230 -> he_RunInsultNews by:main why:the alloc handler of its event type 0x4b (0x548110) starts the insult news event (news 0x1d64); this is the matching run handler registered by 0x553060
