@@ -1315,8 +1315,8 @@ int ch_UpdateAction(CHARACTER *ch)
     if (a && a->ch && a->func) {
         a->func(a);
         a->count++;
-        if (a->func2 && (s = ch->slot) && !CH_UNK080(ch) && CH_FRAME(ch) != s->flags.b[0]
-            && s->frame >= a->unk08) {
+        if (a->func2 && (s = ch->slot) && !ch->next && CH_FRAME(ch) != s->flags.b[0]
+            && s->frame >= a->func2Frame) {
             a->func2(a);
             CH_FRAME(ch) = ch->slot->flags.b[0];
         }
@@ -1912,14 +1912,14 @@ void ch_ActTakingObject(CHACTION *a)
         }
     }
     if (a->args[0] != 99999999) {
-        if (CH_UNK080(ch))
+        if (ch->next)
             return;
         if (ch->slot && ch->slot->frame >= a->args[0]) {
             ch_SetHandObject(a->ch, a->args[2], CH_ACTOBJ(a)->name2);
             a->args[0] = 99999999;
         }
     }
-    if (CH_UNK080(ch))
+    if (ch->next)
         return;
     if (!ch_AnimDone(ch))
         return;
@@ -1927,8 +1927,8 @@ void ch_ActTakingObject(CHACTION *a)
         sprintf(buf, "ch_TakingObject(): object not taken yet (should be in frame:%i)!", a->args[0]);
         ch_SetHandObject(a->ch, a->args[2], CH_ACTOBJ(a)->name2);
     }
-    if (CH_UNK080(ch))
-        sprintf(buf, "ch_TakingObject(): c->NextAnim still valid %s!\n", CH_UNK080(ch));
+    if (ch->next)
+        sprintf(buf, "ch_TakingObject(): c->NextAnim still valid %s!\n", ch->next->name);
     ch_CheckAniMorph(ch);
     ch_RemoveAction(a);
 }
@@ -2979,7 +2979,7 @@ int ch_InitWalk(CHACTION *a, D3SM *h)
         ch->morph = 0;
     }
     d3t_ReleaseObjectTextures(ch->obj);
-    CH_UNK080(ch) = 0;
+    ch->next = 0;
     ch->morph = 0;
     ch->slot = 0;
     ch->speedScale = 1.0f;
@@ -3108,7 +3108,7 @@ int ch_StartWalkAnim(CHACTION *a, D3SM *h)
     D3ANIMDATA *ad;
     char name[0x60];
 
-    CH_UNK080(ch) = 0;
+    ch->next = 0;
     if (ch->morph) {
         sprintf(name, "morph_%i", ch);
         d3_ReleaseTexture(ch->obj->material->animCtl, name);
@@ -3539,7 +3539,7 @@ void ch_ActWalkCells(CHACTION *a)
         }
         d3t_ReleaseObjectTextures(ch->obj);
         ch->speedScale = 1.0f;
-        CH_UNK080(ch) = 0;
+        ch->next = 0;
         ch->morph = 0;
         ch->slot = 0;
         a->ch->flags.all &= ~8;
@@ -3567,7 +3567,7 @@ void ch_ActWalkCells(CHACTION *a)
         return;
     }
     if (!a->u.walk.started && (!ch->slot || CH_XSLOT(ch)->f6d_20 || !ch->slot)) {
-        CH_UNK080(ch) = 0;
+        ch->next = 0;
         if (ch->morph) {
             sprintf(name, "morph_%i", ch);
             d3_ReleaseTexture(ch->obj->material->animCtl, name);
@@ -4180,7 +4180,7 @@ CHACTION *ch_AddActionCB(CHARACTER *ch, CHACTFUNC func2, unsigned char frame, un
     a->next = 0;
     a->started = 0;
     a->func2 = func2;
-    a->unk08 = frame;
+    a->func2Frame = frame;
     if (a->func == (CHACTFUNC)ch_ActAnimOnce)
         a->args[0] = a->type;
     return a;

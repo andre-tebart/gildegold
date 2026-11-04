@@ -229,8 +229,8 @@ typedef int (*CHACTFUNC)(CHACTION *a);
 
 struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; func == 0: free */
     CHACTFUNC func;                 /* 0x00, called every update */
-    CHACTFUNC func2;                /* 0x04, called when the animation reaches frame unk08 */
-    unsigned char unk08;
+    CHACTFUNC func2;                /* 0x04, called when the animation reaches frame func2Frame */
+    unsigned char func2Frame;       /* 0x08, the slot frame func2 is called at (ch_AddActionCB) */
     unsigned char type;             /* 0x09, index into ch_ActDefs; '-' (0x2d): walk */
     char pad0a[0x2];
     int count;                      /* 0x0c, updates so far */
@@ -344,7 +344,6 @@ typedef struct CHACTDEF {           /* 0x4c bytes, 64 of them in ch_ActDefs */
 } CHACTDEF;
 
 /* CHARACTER fields that the declaration above does not name yet */
-#define CH_UNK080(ch)   (*(int *)((char *)(ch) + 0x80))
 #define CH_FRAME(ch)    ((ch)->lastActionFrame)                 /* last frame func2 ran for */
 #define CH_ACTIONS(ch)  ((ch)->actions)                             /* 0x128, queue head */
 #define CH_MODEL(ch)    ((char *)(ch) + 0x130)                      /* model name */
