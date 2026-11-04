@@ -356,7 +356,7 @@ exe	0x004177b0	d3snd_Detach	d3_snd	byte	readable
 exe	0x00417800	d3snd_Alloc	d3_snd	byte	readable		
 exe	0x00417840	d3snd_Update	d3_snd	byte	readable		
 exe	0x00417990	d3snd_DetachAll	d3_snd	byte	readable		
-exe	0x004179d0	d3snd_Free	d3_snd	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x004179d0	d3snd_Free	d3_snd	byte	readable		
 exe	0x004179f0	d3snd_UpdatePan	d3_snd	byte	readable		
 exe	0x00417b10	d3snd_UpdateVolume	d3_snd	byte	readable		
 exe	0x00417cf0	d3snd_Play	d3_snd	byte	readable		
@@ -365,7 +365,7 @@ exe	0x00417dd0	d3snd_SetHold	d3_snd	byte	readable
 exe	0x00417e00	d3snd_SetVolume	d3_snd	byte	readable		
 exe	0x00417e10	d3snd_IsPlaying	d3_snd	byte	readable		
 exe	0x00417e30	d3snd_PlayAt	d3_snd	byte	readable		
-exe	0x00417ec0	d3sndw_Init	d3_snd	byte	draft		
+exe	0x00417ec0	d3sndw_Init	d3_snd	byte	readable		
 exe	0x00418030	d3sndw_Exit	d3_snd	byte	readable		
 exe	0x00418080	d3sndw_GetSound	d3_snd	byte	readable		
 exe	0x004183d0	d3sndw_Update	d3_snd	draft	readable	deep	
@@ -378,7 +378,7 @@ exe	0x0041c080	d3d_GetDeviceInfo	dd_vesa	byte	readable
 exe	0x0041c420	dd_BppToDDBD	dd_vesa	byte	readable		
 exe	0x0041c460	d3d_EnumDeviceCallback	dd_vesa	shape	readable	deep	
 exe	0x0041c6f0	dd_GuidToString	dd_vesa	byte	readable		
-exe	0x0041c760	dd_StringToGuid	dd_vesa	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0041c760	dd_StringToGuid	dd_vesa	byte	readable		
 exe	0x0041c830	dd_DlgProc	dd_vesa	byte	readable		
 exe	0x0041cf60	dd_DeviceDialog	dd_vesa	byte	readable		
 exe	0x0041cfb0	dd_Init	dd_vesa	byte	readable		
@@ -747,7 +747,7 @@ exe	0x0043b600	d3_DrawSorted	d3_engine	byte	readable
 exe	0x0043b670	d3_MarkDirtyCB	d3_engine	byte	readable		
 exe	0x0043b6b0	d3_UpdateObject	d3_engine	byte	readable		
 exe	0x0043b6e0	d3_UpdateAll	d3_engine	byte	readable		
-exe	0x0043b790	d3_SetObjectPos	d3_engine	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0043b790	d3_SetObjectPos	d3_engine	byte	readable		
 exe	0x0043b7f0	d3_SetObjectPosXYZ	d3_engine	byte	readable		
 exe	0x0043b820	d3_SetObject078	d3_engine	byte	readable		
 exe	0x0043b860	d3_SetObjectRot	d3_engine	byte	readable		
@@ -763,7 +763,7 @@ exe	0x0043c7a0	d3_DisposeObject	d3_engine	byte	readable
 exe	0x0043ca20	d3_LinkTop	d3_engine	byte	readable		
 exe	0x0043cab0	d3_UnlinkTop	d3_engine	byte	readable		
 exe	0x0043cb20	d3_AppendSibling	d3_engine	shape	readable	deep	
-exe	0x0043cb80	d3_AddChild	d3_engine	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0043cb80	d3_AddChild	d3_engine	byte	readable		
 exe	0x0043cbe0	d3_SetCamera	d3_engine	byte	readable		
 exe	0x0043cc10	d3_AllocObjectPolys	d3_engine	byte	readable		
 exe	0x0043cc90	d3_FreeSurf	d3_engine	byte	readable		
@@ -791,7 +791,7 @@ exe	0x0043e180	d3_SetRLights	d3_engine	byte	readable
 exe	0x0043e1b0	d3_EndFrame	d3_engine	byte	readable		
 exe	0x0043e200	d3_Render	d3_engine	byte	draft	deep	
 exe	0x0043e4d0	d3_Animate	d3_engine	shape	readable	deep	
-exe	0x0043e680	d3_Frame	d3_engine	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0043e680	d3_Frame	d3_engine	byte	readable		
 exe	0x0043e6b0	d3e_DefaultResolve	d3_engine	byte	readable		
 exe	0x0043e6c0	d3e_EventId	d3_engine	byte	readable		
 exe	0x0043e710	d3e_EventName	d3_engine	byte	readable		
@@ -1081,7 +1081,7 @@ exe	0x0045cc90	d3s_FreeSlot	d3s	byte	readable
 exe	0x0045ccd0	d3s_FreeShadows	d3s	byte	readable		
 exe	0x0045cd60	d3s_FreeLightCB	d3s	byte	readable		
 exe	0x0045ce00	d3s_ResetShadows	d3s	byte	readable		
-exe	0x0045ce60	d3sky_DrawLayer	d3_sky	byte	draft		
+exe	0x0045ce60	d3sky_DrawLayer	d3_sky	byte	readable		
 exe	0x0045d030	d3sky_Build	d3_sky	byte	readable		
 exe	0x0045d500	d3sky_Draw	d3_sky	byte	readable		
 exe	0x0045d690	d3sky_Init	d3_sky	byte	readable		
@@ -1091,9 +1091,9 @@ exe	0x0045d960	d3sky_SetLayerSpeed	d3_sky	byte	readable
 exe	0x0045d9a0	d3sky_FadeLayer	d3_sky	byte	readable		
 exe	0x0045d9f0	d3sky_SetLayerTex	d3_sky	byte	readable		
 exe	0x0045da30	d3sky_Create	d3_sky	byte	draft	deep	
-exe	0x0045daa0	d3sky_Destroy	d3_sky	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0045daa0	d3sky_Destroy	d3_sky	byte	readable		
 exe	0x0045dae0	d3sky_InitColors	d3_sky	byte	readable		
-exe	0x0045db20	d3sky_Free	d3_sky	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0045db20	d3sky_Free	d3_sky	byte	readable		
 exe	0x0045db40	d3sm_GetGround	d3_sm	byte	readable		
 exe	0x0045dc00	d3sm_Sample	d3_sm	draft	readable	deep	
 exe	0x0045e180	d3sm_BoundsCB	d3_sm	byte	readable		
