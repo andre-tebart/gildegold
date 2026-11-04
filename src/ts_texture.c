@@ -300,7 +300,7 @@ void tex_Init(int count, int maxhicol, int mips, unsigned int cache)
     ts_LastTime = d3_Time;
     ts_InitCache(cache);
 }
-/* 0x45fb30 */
+/* 0x45fb30, sets the VFS directory the texture loader takes its palettes from (under the VFS root) */
 
 void tex_SetPalette(void *pal)
 {
