@@ -5253,23 +5253,23 @@ void sv_HandleSelectionMouse(void)
     if (dm_L.rup != 0 && ai_SelectedCount != 0)
         sv_ClearSelection();
 }
-/* 0x52c420, for every group record (0x4ffe90 (0, 2, 7, 4, 0x1d)) sets bit 1 of +0x20 when some character (0x770cec stride 0x21c: kind 1, owner +0x1c matching, flag +0x48 & 1) belongs to it */
+/* 0x52c420, marks the carts (gm_Query kind 0x1d) of every building whose master works (a kind 1 character with a
+   building whose job flag flags1b4 bit 0 is set): clears AIOBJ.flags20 of each cart, then sets its bit 0 when such a
+   character's building is the cart's (AICHAR.bld id vs AIOBJ.bldId) */
 
-void sv_Unk52c420(void)
+void sv_MarkMasterCarts(void)
 {
-    char *g;
-    int *p;
+    AIOBJ *cart;
+    AICHAR *ch;
 
-    g = (char *)gm_Query(0, 2, 7, 4, 0x1d);
-    while (g != 0) {
-        *(int *)(g + 0x20) = 0;
-        p = (int *)(unsigned)&ai_Unk770cec;
-        do {
-            if ((unsigned short)p[-0x5b] != 0xffff && *(char *)((int)p - 0x16a) == 1 && *p != 0 && *(int *)(*p + 1) == *(int *)(g + 0x1c) && (*(unsigned char *)(p + 0x12) & 1) != 0)
-                *(unsigned *)(g + 0x20) |= 1;
-            p += 0x87;
-        } while ((int)p < (int)((unsigned)&ai_Unk770cec + 0x65400));
-        g = gm_QueryNext();
+    for (cart = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); cart != 0; cart = (AIOBJ *)gm_QueryNext()) {
+        cart->flags20 = 0;
+        /* the original walks the records and ends at the bld field (a signed compare on that address) */
+        for (ch = ai_CharsT; (int)&ch->bld < (int)&ai_CharsT[768].bld; ch++) {
+            if (ch->id != 0xffff && ch->kind == 1 && ch->bld != 0 &&
+                ch->bld->id == cart->bldId && (ch->flags1b4 & 1) != 0)
+                cart->flags20 |= 1;
+        }
     }
 }
 /* 0x52c4a0, releases the speech bubble of the object o (the object field sv_BubbleObjects of its bubble record) */

@@ -113,7 +113,7 @@ void sv_RunLocationScripts(struct AIBLD *a);                                    
 void sv_RunFramesUntilStopped(int id);                                              /* 0x52bb70 */
 void sv_SendSelectedToBuilding(void);                                                /* 0x52bbc0 */
 void sv_HandleSelectionMouse(void);                                                /* 0x52bec0 */
-void sv_Unk52c420(void);                                                /* 0x52c420 */
+void sv_MarkMasterCarts(void);                                                /* 0x52c420 */
 void sv_ReleaseBubble(int o);                                           /* 0x52c4a0 */
 void sv_ShowBubble(struct CHARACTER *ch, int text, char *name);         /* 0x52c4e0, shows a speech bubble over the character ch */
 void sv_SpeakPicked(void);                                                /* 0x52c5c0 */

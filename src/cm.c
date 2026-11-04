@@ -3649,7 +3649,7 @@ int ai_Unk4c88a0(G17MSG *m, G17STAT *s)
             ai_UpdateCharacters();
         }
         ai_Unk5ba750();
-        sv_Unk52c420();
+        sv_MarkMasterCarts();
     }
     if (s != 0)
         s->state = 1;
