@@ -305,7 +305,7 @@ int ai_HasMaterials(AICHAR *ch, AIENTRY *e, int f);                         /* 0
 int ai_StartProduction(AICHAR *ch, AIENTRY *e);                                /* 0x487410 */
 void ai_AddEquipmentNeeds(AICHAR *ch, AIOBJ *obj, int v);                        /* 0x487780 */
 void ai_UpdateStaff(AICHAR *ch);                                           /* 0x487b40 */
-void ai_Unk487ea0(AICHAR *ch);                                           /* 0x487ea0 */
+void ai_OfferGrave(AICHAR *ch);                                           /* 0x487ea0 */
 void ai_BuyUpgrade(AICHAR *ch);                                           /* 0x487fb0 */
 void ai_BuySlots(AIOBJ *b, AICHAR *ch, int n);                          /* 0x4884b0 */
 void ai_BuyCapacity(AIOBJ *b, AICHAR *ch, int n);                          /* 0x488740 */

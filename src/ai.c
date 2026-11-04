@@ -2393,7 +2393,7 @@ void ai_EndWorkerPose(AICHAR *ch)
             ai_EndCharExtra(f, 0);
     }
 }
-/* 0x483fc0, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) @deep B3 far draft (668 code / 40 regs / 22 slots / 2 fill hunks). Every hunk of the first blocks was read against tools/disasm.py 0x483fc0 and the VC6 listing (tools/listing.py): statements, constants, callees and field offsets match; the whole diff is one form - the original keeps the AIENTRY byte offset (i*0x58) in esi and folds each field into the absolute address ([esi+0xf88a80] = capacity, [esi+0xf88a94] = flags, [esi+0xf88a40] = item) while ours materializes &ai_Entries[i] and uses [esi+0x40] / [esi+0x54]; the compare operands and the esi/edi roles follow from that. Last-bytes pass lead (source spelling, the meaning-class lead): spell the entry accesses as ai_Entries[i].item / ai_Entries[i].capacity and pass &ai_Entries[i] as the argument; the pattern occurs three times in this function and the trial edit was cut off by the session end, the source is unchanged (no WORSE: unitdiff ai.c 29/55, 37601 B before and after). What is left is that rewrite plus the allocation/scheduling of the other blocks = match-deep. Q1 blocked: the five production variants of 0x47e990 differ only in the AIENTRY flags they test and the kind-to-profession table is in no source (0x47e990's note). Q2 gaps: ai_Unk487ea0 / ai_Unk489480 / ai_SendFreeSpies (roles readable from the bodies but not evidenced by a name) and AIENTRY.unk1c / unk20 (the ai.h need1c / need20 aliases exist; the project-wide rename is undecided - AIOBJ has unk1c / unk20 with other roles). Q6 done (description above the definition). */
+/* 0x483fc0, evaluates the production of a master's workshop (the variant with the 0x400 entry flag) @deep B3 far draft (668 code / 40 regs / 22 slots / 2 fill hunks). Every hunk of the first blocks was read against tools/disasm.py 0x483fc0 and the VC6 listing (tools/listing.py): statements, constants, callees and field offsets match; the whole diff is one form - the original keeps the AIENTRY byte offset (i*0x58) in esi and folds each field into the absolute address ([esi+0xf88a80] = capacity, [esi+0xf88a94] = flags, [esi+0xf88a40] = item) while ours materializes &ai_Entries[i] and uses [esi+0x40] / [esi+0x54]; the compare operands and the esi/edi roles follow from that. Last-bytes pass lead (source spelling, the meaning-class lead): spell the entry accesses as ai_Entries[i].item / ai_Entries[i].capacity and pass &ai_Entries[i] as the argument; the pattern occurs three times in this function and the trial edit was cut off by the session end, the source is unchanged (no WORSE: unitdiff ai.c 29/55, 37601 B before and after). What is left is that rewrite plus the allocation/scheduling of the other blocks = match-deep. Q1 blocked: the five production variants of 0x47e990 differ only in the AIENTRY flags they test and the kind-to-profession table is in no source (0x47e990's note). Q2 gaps: ai_Unk489480 / ai_SendFreeSpies (roles readable from the bodies but not evidenced by a name) and AIENTRY.unk1c / unk20 (the ai.h need1c / need20 aliases exist; the project-wide rename is undecided - AIOBJ has unk1c / unk20 with other roles). Q6 done (description above the definition). */
 
 void ai_Unk483fc0(AICHAR *ch)
 {
@@ -2412,7 +2412,7 @@ void ai_Unk483fc0(AICHAR *ch)
     if (!b)
         return;
     ai_UpdateProduction(ch, a, b);
-    ai_Unk487ea0(ch);
+    ai_OfferGrave(ch);
     ai_BuySlots(b, ch, 0x4b);
     ai_BuyCapacity(b, ch, 0x19);
     ai_BuyUpgrade(ch);
@@ -3884,9 +3884,13 @@ void ai_UpdateStaff(AICHAR *ch)
         }
     }
 }
-/* 0x487ea0 */
+/* 0x487ea0, the undertaker's production step: at the clock's hours 7, 12 and 18 (once each: flags1b4 bit 0x40,
+   cleared at any other hour), for a building of a player (owner kind 6 / 7) or one whose flags1b4 bit 2 is set, it
+   offers a grave of the building (gv_SendGrave of a random grave) when the building's titled characters are fewer
+   than the type's k231 + k232 staff limits; an existing titled staff (flags1c8 bit 8, unless there is none) and a
+   random 0x48 roll against (0x12 - the count) * 2 can cancel the offer */
 
-void ai_Unk487ea0(AICHAR *ch)
+void ai_OfferGrave(AICHAR *ch)
 {
     AIBLD *bld;
     unsigned int fl;
