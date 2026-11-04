@@ -2165,14 +2165,14 @@ void ai_TutorialShowText(void)
     }
     ai_Tutorial->voice = (struct SBSAMPLE *)snd_PlayVoice(-7, 0, ai_Tutorial->run->text1Voice, -1);
 }
-/* 0x577b60, clears the text window S+0x24: control 0 off (0x475f70), the text 0x602568 (0x515960), 0x475590
-   (S+0x24, 0); no return value */
+/* 0x577b60, clears the first text window text1Win: control 0 turned off (0x475f70), the text cleared to "$C"
+   (0x602568, 0x515960) and the window disabled (0x475590); no return value */
 
 void ai_TutorialHideText(void)
 {
-    d2_SetForm(U_I(S + 0x24), 0);
-    io_PrintText((char *)(unsigned)"$C");
-    d2_SetViewEnabled(U_I(S + 0x24), 0);
+    d2_SetForm(ai_Tutorial->text1Win, 0);
+    io_PrintText("$C");
+    d2_SetViewEnabled(ai_Tutorial->text1Win, 0);
 }
 /* 0x577b90, shows the run's second text window, the sibling of ai_TutorialShowText: nothing without a run record
    or its text2; else the status text is cleared and the window text2Win rewritten with the run's text2 and
