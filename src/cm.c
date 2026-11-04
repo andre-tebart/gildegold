@@ -4939,7 +4939,7 @@ int ai_Unk4cb100(G17MSG *m, G17STAT *s)
         sv_ResetSelection();
     for (o = gm_Query(0, 2, 7, 4, 0x1d); o != 0; o = gm_QueryNext()) {
         if (*(int *)(o + 0x1c) == *(int *)(b + 1))
-            gm_Unk5034b0(o);
+            gm_FreeObject(o);
     }
     for (p = ai_Unk770cec; (int)p < (int)(ai_Unk770cec + 0x300 * 0x21c); p += 0x21c) {
         if (*(char **)p == b)
@@ -5351,7 +5351,7 @@ int ai_Unk4cbb90(G17MSG *m, G17STAT *s)
     t = gm_FindObjectInst(G17_I(*m, 0));
     if (t == 0)
         return 1;
-    gm_Unk5034b0(t);
+    gm_FreeObject(t);
     if (s != 0) {
         s->state = 1;
         s->kind = 0;

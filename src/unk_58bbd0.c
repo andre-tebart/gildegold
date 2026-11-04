@@ -14971,7 +14971,7 @@ int ai_Unk5ad150(int param_1, char *param_2)
 }
 
 
-void d2_CenterObj(); void gm_Unk5034b0(int o); int gm_LevelPayout(int v, int kind);
+void d2_CenterObj(); void gm_FreeObject(int o); int gm_LevelPayout(int v, int kind);
 
 /* 0x5ae240, the transport purchase window "Handel\Handel_Transport_neuer_Kauf" (791 B): 0x509060 counts the
    selected characters (more than 2: the text 0xf1 and out); the window 0x4741f0, the three controls 0xd8 of the
@@ -15082,7 +15082,7 @@ void ai_Unk5ae570(int param_1, int *param_2)
         txt_Format(text, 0xdc, param_1, id, qty);
     if (sv_MessageBox(text, 0x101) != 0) {
         for (i = 0; i < param_1; i++)
-            gm_Unk5034b0(param_2[i]);
+            gm_FreeObject(param_2[i]);
         cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, qty);
     }
 }

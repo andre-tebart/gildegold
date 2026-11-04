@@ -2438,13 +2438,15 @@ void gm_CountCharacters(void)
 }
 
 
-/* a job record (ai.h AIJOB, he_NextEvent's list) as gm_SellBuilding stamps it */
+/* a job record (ai.h AIJOB, he_NextEvent's list) as gm_SellBuilding and gm_FreeObject stamp it */
 #pragma pack(push, 1)
 typedef struct GMJOB {
     char pad00[0x44];
     AITIME start;                       /* 0x44, the start time (gm_UpdateTechTree's progress) */
     AITIME end;                         /* 0x52, the end time (ai.h AIJOB.end) */
-    char pad60[0x24];
+    char pad60[0x18];
+    unsigned char opts;                 /* 0x78, the event's options (ai.h AIJOB.opts); bit 2 = posted when due */
+    char pad79[0xb];
     int msgSlot;                        /* 0x84, the slot handle of its HE message (cm_SendExSetHE) */
     char pad88[0x24];
     unsigned short good;                /* 0xac, of an order (event kind 2): the goods it makes */
@@ -5406,25 +5408,31 @@ int gm_RemoveObjectFromBuilding(int b, int id)
     r = gm_RemoveObject(&((ORDBLD *)b)->objList, id);
     return (r != -2) ? 0 : -3;
 }
-/* 0x5034b0, tears down the extra parts of the object o: its record at +0x24 (flag 2 at +0x78: 0x4c4c60 message), its model at +0x3b (0x4028a0 in the scene 0x411be0 gives), and unlinks it from the owner's list (0x50a0f0, 0x5000c0 by id). ROUGH */
+/* 0x5034b0, frees the object o: its job is posted again and the new slot kept when the job's option 2 is set
+   (0x4c4c60), its model character is deleted in its own scene (0x4028a0), and its record is removed from the
+   list of the building that holds it (0x50a0f0 finds the building, 0x5000c0 frees the record by its objId) */
 
-void gm_Unk5034b0(int o)
+void gm_FreeObject(int o)
 {
-    int saved, r, m;
+    ORDOBJ *obj = (ORDOBJ *)o;
+    GMJOB *job;
+    ORDBLD *bld;
+    struct CHARACTER *model;
+    int saved;
 
     saved = d3_CurrentScene;
-    r = *(int *)(o + 0x24);
-    if (r != 0 && (*(unsigned char *)(r + 0x78) & 2) != 0)
-        *(int *)(r + 0x84) = ((int (*)(int, int))cm_SendExSetHE)(-1, r);
-    m = *(int *)(o + 0x3b);
-    if (m != 0) {
-        d3if_SelectScene(d3t_SceneIndex(*(int *)(m + 0x88)), 1);
-        ch_Delete(m);
+    job = (GMJOB *)obj->cart24;
+    if (job != 0 && (job->opts & 2) != 0)
+        job->msgSlot = ((int (*)(int, char *))cm_SendExSetHE)(-1, (char *)job);
+    model = obj->model;
+    if (model != 0) {
+        d3if_SelectScene(d3t_SceneIndex(model->scene), 1);
+        ch_Delete(model);
         d3if_SelectScene(saved, 1);
     }
-    r = gm_ObjectBuilding(o);
-    if (r != 0)
-        gm_RemoveOwned((int *)(r + 0x5d), *(int *)(o + 2));
+    bld = (ORDBLD *)gm_ObjectBuilding(o);
+    if (bld != 0)
+        gm_RemoveOwned(&bld->objList, obj->objId);
 }
 
 int ai_PermissionBits1d();                     /* 0x587b70 */
