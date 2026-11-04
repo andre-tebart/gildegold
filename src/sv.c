@@ -2256,7 +2256,8 @@ void sv_FillDayPhases(struct AITIME *t)
         sv_DayPhases[i].sec = (m + h * 60) * 60;
     }
 }
-/* 0x525a80, a callback (the object o, a flag f): sets the float +0x1a4 of the record +0x1e8 of o to a random 0.3 .. 0.9 (f = 0) or -0.3 + 0.6 * ... (f != 0); returns 1 */
+/* 0x525a80, a d3_ForEachObject callback (the object o, the flag f): sets the brightness ramp of the object's light
+   (0x1e8, a D3LDATA) to a random 0.3 .. 0.6 + 0.3 (f = 0) or -0.3 - 0.6 * random (f != 0); returns 1 */
 
 char sv_SetLampRamp(char *o, int f)
 {
@@ -2266,8 +2267,8 @@ char sv_SetLampRamp(char *o, int f)
         v = util_RandomF() * 0.6 + 0.3;
     else
         v = -0.3 - util_RandomF() * 0.6;
-    if (*(int *)(o + 0x1e8) != 0)
-        *(float *)(*(int *)(o + 0x1e8) + 0x1a4) = (float)v;
+    if (D3_L(o)->light != 0)
+        D3_L(o)->light->ramp = (float)v;
     return 1;
 }
 /* 0x525ad0, applies the sky phase of the clock t: the second of the day is mapped through the day phases to the sky phase k

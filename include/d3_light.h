@@ -85,7 +85,10 @@ typedef struct D3LDATA {            /* D3_L(o)->light, D3LIGHTINFO in d3_engine.
     D3LREC *list;                   /* 0x198 */
     float flicker;                  /* 0x19c */
     unsigned int interval;          /* 0x1a0 */
-    int unk1a4;
+    union {
+        int unk1a4;                 /* 0x1a4 */
+        float ramp;                 /* 0x1a4, the random 0.3 .. 0.9 brightness ramp sv_SetLampRamp sets */
+    };
     unsigned char on;               /* 0x1a8, the light reaches the object being lit */
     char pad1a9[0x3];
 } D3LDATA;
