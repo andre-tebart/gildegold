@@ -5995,7 +5995,7 @@ void ai_CannonShotResults(CANNONSCENE *sc)
 }
 
 float gv_SalvoCharge(); void gv_BuildingCannon(char *o, unsigned *a, unsigned *b); int gv_CannonCost(); float ai_GetDefaultEffectScale();
-int _ftol(); float ai_CannonPitchRatio(); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
+int _ftol(); float ai_CannonPitchRatio(CANNONSCENE *sc); int d2_CreateWinText(); void d2_SetObjFont();  /* @original: the call at 4110 passes 1 argument to d2.h's 4-parameter prototype */
 void txt_Format(char *out, int id0, ...); int gm_CharCurrency(char *c, char p);
 
 /* 0x57f890, the cannon control panel: rec = the building record, sc = the scene, run = its effect slot. The two
@@ -6072,11 +6072,12 @@ void ai_CannonPanel(char *rec, CANNONSCENE *sc, GVEFFECT *run)
     gv_Cannon.camTarget[1] = sc->rot.y;
     gv_Cannon.camTarget[2] = sc->rot.z;
 }
-/* 0x57fdb0, the cannon's pitch as 0 .. 1 (28 B): (sc + 0x10 + 0.2617994) / (0.7853982 + 0.2617994) */
+/* 0x57fdb0, the cannon's pitch as 0 .. 1 (28 B): (sc->rot.x - ai_CannonPitchMin) / (ai_CannonPitchMax -
+   ai_CannonPitchMin) */
 
-float ai_CannonPitchRatio(char *sc)
+float ai_CannonPitchRatio(CANNONSCENE *sc)
 {
-    return (*(float *)(sc + 0x10) - -0.2617994f) / (0.7853982f - -0.2617994f);
+    return (sc->rot.x - ai_CannonPitchMin) / (ai_CannonPitchMax - ai_CannonPitchMin);
 }
 /* 0x57fdd0, the barrel switch: rec = the building record, sc = the scene, run = its effect slot, sel = the barrel
    (0 .. 2), mask = the pump mask; nothing for the selected barrel or one above sc->maxSel. Two halves of
