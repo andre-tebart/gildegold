@@ -14679,14 +14679,22 @@ void ai_GraveyardMessage(G8CHARREC *to, G8CHARREC *worker, G8CHARREC *other, int
     }
     he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, "_NACHRICHTEN_FRIEDHOF_00");
 }
-/* 0x5a9af0, a graveyard message (83 B): the text 0x40af (0x40a3, the word of param_2, its +0x16c, the word of
-   param_3), the +4 id (0, 0x5fa, the key 0x62c39c) */
+/* 0x5a9af0, the graveyard news of the worker / other characters to `to`, without a detail sentence (83 B):
+   the text 0x40af (0x40a3, the worker's id, its building +0x16c, the other's id) into ai_NewsText, shown to
+   to's netId (0, event 0x5fa, the sound ai_NewsKeyFriedhof00); he_Unk5702e0 sends it for a work without a
+   result (+0xbc = 0), in place of the detailed ai_GraveyardMessage */
 
-void ai_Unk5a9af0(int param_1, unsigned short *param_2, unsigned short *param_3)
+void ai_GraveyardMessagePlain(int toRec, unsigned short *workerRec, unsigned short *otherRec)
 {
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x40af, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
-                 *param_3);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, ai_NewsKeyFriedhof00);
+    G8CHARREC *to;
+    G8CHARREC *worker;
+    G8CHARREC *other;
+
+    to = (G8CHARREC *)toRec;
+    worker = (G8CHARREC *)workerRec;
+    other = (G8CHARREC *)otherRec;
+    txt_Format(ai_NewsText, 0x40af, 0x40a3, worker->id, worker->bld, other->id);
+    he_ShowNews(to->netId, -1, ai_NewsText, 0, 0x5fa, ai_NewsKeyFriedhof00);
 }
 
 int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out); 
