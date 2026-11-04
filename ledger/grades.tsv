@@ -3040,7 +3040,7 @@ exe	0x00502eb0	gm_ListWorkers	f3gm	draft	readable	deep
 exe	0x00502fd0	gm_SellBuilding	f3gm	byte	readable		
 exe	0x005031b0	gm_AllocRaum	f3gm	byte	readable		
 exe	0x00503480	gm_RemoveObjectFromBuilding	f3gm	byte	readable		
-exe	0x005034b0	gm_Unk5034b0	f3gm	byte	draft		
+exe	0x005034b0	gm_FreeObject	f3gm	byte	readable		
 exe	0x00503530	gm_PermissionBits	f3gm	draft	readable	deep	
 exe	0x00503c20	gm_ReleaseCharacter	f3gm	byte	readable		
 exe	0x00503c60	gm_KillSpieler	f3gm	draft	readable	deep	
@@ -3061,7 +3061,7 @@ exe	0x00504840	gm_DropRank	f3gm	byte	readable
 exe	0x005048e0	gm_BuildingJob	f3gm	byte	readable		
 exe	0x005049c0	gm_HasBuilding	f3gm	byte	readable		
 exe	0x005049e0	gm_ClassTreasury	f3gm	byte	readable		
-exe	0x00504a80	gm_PlayerSeat	f3gm	byte	draft		
+exe	0x00504a80	gm_PlayerSeat	f3gm	byte	readable		
 exe	0x00504ad0	gm_TitleGroup	f3gm	byte	readable		
 exe	0x00504c00	gm_TitleJobGroup	f3gm	byte	readable		
 exe	0x00504ce0	gm_TitlesLeft	f3gm	shape	readable		
@@ -3082,14 +3082,14 @@ exe	0x00505ca0	gm_Shuffled	f3gm	shape	readable
 exe	0x00505d30	gm_Shuffle	f3gm	byte	readable		
 exe	0x00505da0	gm_RandomAge	f3gm	shape	readable		
 exe	0x00505df0	gm_FindChar	f3gm	shape	readable		
-exe	0x00505e30	gm_CharAge	f3gm	byte	draft		
+exe	0x00505e30	gm_CharAge	f3gm	byte	readable		
 exe	0x00505e60	gm_CharLevel	f3gm	shape	readable		
 exe	0x00505f30	gm_CharPrevLevel	f3gm	shape	readable		
 exe	0x00506000	gm_BirthDate	f3gm	shape	readable		
 exe	0x005060d0	gm_DeathDate	f3gm	shape	readable		
 exe	0x00506180	gm_RankPlayers	f3gm	shape	readable		
 exe	0x00506430	gm_PlayerRecord	f3gm	shape	readable		
-exe	0x00506480	gm_HasAdultRelative	f3gm	shape	draft		
+exe	0x00506480	gm_HasAdultRelative	f3gm	byte	readable		
 exe	0x005064d0	gm_TakeOverCharacter	f3gm	draft	readable	deep	
 exe	0x00506890	gm_InheritEstate	f3gm	shape	readable		
 exe	0x00506e70	gm_ForfeitEstate	f3gm	draft	readable	deep	
@@ -3097,13 +3097,13 @@ exe	0x005075c0	gm_MayRemoveChar	f3gm	byte	readable
 exe	0x00507690	gm_CreateCharacter	f3gm	draft	readable	deep	
 exe	0x005085b0	gm_ConvertMoney	f3gm	byte	readable		
 exe	0x005085f0	gm_PlayerFactor	f3gm	byte	readable		
-exe	0x00508620	gm_Unk508620	f3gm	byte	draft		
-exe	0x00508640	gm_Unk508640	f3gm	byte	draft		
-exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	draft		
+exe	0x00508620	gm_CurrencyFactor	f3gm	byte	readable		
+exe	0x00508640	gm_CurrencyDivide	f3gm	byte	readable		
+exe	0x00508660	gm_SumSlotAmounts	f3gm	byte	readable		
 exe	0x005086b0	gm_ObjectValue	f3gm	shape	readable		
 exe	0x00508740	gm_JobWage	f3gm	shape	readable		
 exe	0x005087f0	gm_ItemPrice	f3gm	byte	readable		
-exe	0x005089c0	gm_GoodsPrice	f3gm	byte	draft		
+exe	0x005089c0	gm_GoodsPrice	f3gm	byte	readable		
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
 exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable	deep	

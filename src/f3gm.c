@@ -18,8 +18,9 @@
    byte offset), the kind 0x23 events through GMEVENT23, or by byte offset (the rest, GM_GOODS).
    Open: data: gm_QueryKind (0x61a686) is defined as 550 bytes, but only its first byte is the query kind; the
    job table gm_JobTalents (0x61a688) is a view inside it, and its last 0x1c bytes, the title table
-   gm_TitleTalents (0x61a8c8) and the player-slot factor ints (indexed from 0x61a8ac) are one 0x140-byte block
-   ai_Unk61a8ac: the objects and their bounds are unsettled.
+   gm_TitleTalents (0x61a8c8) and the per-currency rate ints at 0x61a8ac (gm_CurrencyFactor; a player slot's
+   +0x54 word is the Waehrung object's prototype id, init_LoadCityINI) are one 0x140-byte block ai_Unk61a8ac:
+   the objects and their bounds are unsettled.
    Open: gm_QueryNext returns unsigned short * in every header though the cursor is an ORDOBJ *.
    Open: head: cm_SendExSellObject returns its message's slot handle (gm_SyncMarket waits on it), cm.h declares
    it void; this unit calls it through the cast cm_SendExSellObjectH.
