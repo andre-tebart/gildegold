@@ -1088,7 +1088,8 @@ void ch_SetLowPoly(unsigned char mode);         /* 0x402af0, ch.c */
 void d3fl_SetMips(char a);                      /* 0x43f930, d3_fl.c */
 void ai_CheckBuildSites(void);                  /* 0x58fb60, unk_58bbd0.c */
 void d3_SetRLights(unsigned char on);           /* 0x43e180, d3_engine.c */
-void init_SetDetailLevel(int *s, char f);       /* 0x513590, f3init.c */
+struct D3FLMAP;
+void init_SetDetailLevel(struct D3FLMAP *s, char f);       /* 0x513590, f3init.c */
 void sv_PlaceCamera(float f);                   /* 0x525dd0, sv.c */
 char d3_ForEachObject2(struct D3SCENE *scene, struct D3OBJECT *obj, unsigned int mask, void (*cb)(struct D3OBJECT *obj)); /* 0x438e60, d3_engine.h */
 /* the LOD mask at 0x5fbf78 as this unit stores it (the whole dword, d3_int_io.h's D3IOLOD bits) */
@@ -1143,7 +1144,7 @@ int ai_ApplyGfxOptions(void)
             d3s_TexSize = d3s_MaxTexSize;
         d3_UpdateAll(0);
     }
-    init_SetDetailLevel((int *)ai_MapRefs, 0);
+    init_SetDetailLevel(ai_MapRefs, 0);
     lod = 0;
     if (ai_GfxLodHandling == 0)
         lod = 2;

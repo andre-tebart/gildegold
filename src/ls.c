@@ -1432,7 +1432,7 @@ int ls_LoadGame(int name, int kind)
     sv_Unk528770();
     unk_Unk511790();
     init_AfterTownLoad();
-    init_SetDetailLevel((int)d3_Terrain, 1);
+    init_SetDetailLevel(d3_Terrain, 1);
     strcpy(ls_SavePath.path, ai_Unk76f9bc);
     return 1;
 close:
