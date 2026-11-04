@@ -207,7 +207,7 @@ void ch_SetVisible(CHARACTER *ch, int show)
     } else
         err_Message("ch_SetVisible(): invalid character");
 }
-/* 0x402540 */
+/* 0x402540, inflates the models of a character and its parts (each not loaded yet) */
 
 void ch_InflateModel(CHARACTER *ch)
 {
