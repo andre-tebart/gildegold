@@ -492,7 +492,7 @@ float util_RandomF(void);               /* 0x42ec20 */
 extern int ai_CharCount;                /* 0x6f1bc0, the number of characters in use (of ai_Chars[0x300]) */
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);                     /* 0x4fbd10 */
 void gm_ChooseHeadIcon(unsigned short *c);                     /* 0x4fb890 */
-int unk_Unk4f22a0(char *o, unsigned char m);  /* 0x4f22a0 */
+GVENTRY *gv_FindWornEntry(struct AIBLD *bld, unsigned char m);  /* 0x4f22a0 */
 
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
