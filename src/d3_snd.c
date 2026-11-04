@@ -63,7 +63,8 @@ typedef struct D3SOUND {            /* 0x54 bytes, d3snd_Max of them at d3snd_Li
 static D3SOUND *d3snd_List = 0;          /* 0x631130 */
 int d3snd_Max = 10;  /* 0x5f38a0, initialized to 10; TODO define here once .data is matched */
 
-/* 0x417650 */
+/* 0x417650, allocates the sound slot array (d3snd_Max D3SOUNDs, 10 by default) and clears it; `max`
+   overrides the count when nonzero. 0 ok, -1 when the array exists already or the allocation fails */
 int d3snd_Init(int max)
 {
     int ret = 0;
