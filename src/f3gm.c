@@ -4857,7 +4857,7 @@ char *gm_FindBuildingById(int id)
 
     i = 0;
     p = ai_Blds;
-    while (*p == 0 || *(int *)(p + 1) != id) {
+    while (((ORDBLD *)p)->type == 0 || ((ORDBLD *)p)->id != id) {
         i++;
         p += 0xa9;
         if (i >= 0x100)
