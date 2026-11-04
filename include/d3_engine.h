@@ -176,7 +176,9 @@ typedef struct D3MESH {             /* 0x970 bytes, what D3OBJECT::material poin
     int frameStamp;                 /* 0x0b0, the frame the mesh was last transformed/clipped in (d3_FrameCount);
                                        equal to the current frame: already current, only flag 0x40 is set;
                                        -1 = never (d3_AddObjectDrawData) */
-    char pad0b4[0x40];
+    char boneName[0x40];            /* 0x0b4, the parent's bone the object is attached to (d3_AttachToBone writes it,
+                                       d3anim_MapBones / d3anim_PoseBones match the children by it); the length is the
+                                       room to surf */
     D3SURF surf[4];                 /* 0x0f4, surf[3] at 0x5bc */
     D3MESHSUB sub[4];               /* 0x754 */
     int groundOffsetRaw;            /* 0x954, the ground offset written as a whole dword (cleared and copied) */
