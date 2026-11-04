@@ -1914,3 +1914,4 @@
 2026-11-04T16:55:21 0x006248b4 data full_data_6248b4 -> main_ClockScale by:main why:100, the scale sv_UpdateClock multiplies the speed setting by to get the game seconds of one clock update ((speed * 0.00625 + 0.5) * this)
 2026-11-04T16:59:54 0x004b6fd0 data ai_Unk4b6fd0 -> ai_MsgPayPct1to3Type0c by:main why:table 0x602570 entry 0x0c: character c pays 1..3 % of its worth (to -1), skipped for officeKind 0x0e and with item 0x290 (0x4b70f0, a no-op)
 2026-11-04T17:01:17 0x004b7100 data ai_Unk4b7100 -> ai_MsgPayPct2to4Type0d by:main why:table 0x602570 entry 0x0d: c pays 2..4 % of its worth (to -1), skipped with item 0x290
+2026-11-04T17:01:50 0x004b7200 data ai_Unk4b7200 -> ai_MsgPayPct1to2Type0e by:main why:table 0x602570 entry 0x0e: c pays 1..2 % of its worth (to -1), skipped with item 0x290 and when the amount is above the worth
