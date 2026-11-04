@@ -12934,15 +12934,17 @@ void ai_CityWatchListener(AIBLD *bld)
         r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
     }
 }
-/* 0x5a6c40, four map controls (102 B): 0x4731d0 (0, 0, the id, the screen) / (0, 0x1a2, the id + 1) /
-   (0, 0x78, the id + 2) / (0x243, 0x78, the id + 3) placed by 0x472f50 */
+/* 0x5a6c40, the four control pictures of the map window (102 B): on the screen window at (0, 0) the picture
+   id, at (0, 0x1a2) id + 1, at (0, 0x78) id + 2 and at (0x243, 0x78) id + 3, each raised (d2_WinOpenPic,
+   d2_RaiseObject); its caller ai_Unk5a78a0 passes the map's child window and the base id (0x727 / 0x72b / 0x723 /
+   0x71f, by the record's flags) */
 
-void ai_Unk5a6c40(int param_1, int param_2)
+void ai_PlaceMapControls(int screen, int id)
 {
-    d2_RaiseObject(d2_WinOpenPic(0, 0, param_2, param_1));
-    d2_RaiseObject(d2_WinOpenPic(0, 0x1a2, param_2 + 1, param_1));
-    d2_RaiseObject(d2_WinOpenPic(0, 0x78, param_2 + 2, param_1));
-    d2_RaiseObject(d2_WinOpenPic(0x243, 0x78, param_2 + 3, param_1));
+    d2_RaiseObject(d2_WinOpenPic(0, 0, id, screen));
+    d2_RaiseObject(d2_WinOpenPic(0, 0x1a2, id + 1, screen));
+    d2_RaiseObject(d2_WinOpenPic(0, 0x78, id + 2, screen));
+    d2_RaiseObject(d2_WinOpenPic(0x243, 0x78, id + 3, screen));
 }
 
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py); void d2_RaiseObject(); int ai_Unk5c39a0(); void d2_ScrollWindow();
@@ -13302,7 +13304,7 @@ void ai_Unk5a78a0(int *m_)
         else
             id = 0x71f;
     }
-    ai_Unk5a6c40(screen, id);
+    ai_PlaceMapControls(screen, id);
     if ((char *)(p + 0x5c) != 0) {
         d2_SetForm(view, 1);
         d2_RaiseWindow(screen);
