@@ -23,18 +23,18 @@ exe	0x00401e50	udp_Exit	udp	byte	readable
 exe	0x00401e70	udp_Send	udp	byte	readable		
 exe	0x00401ea0	udp_FindServers	udp	byte	readable		
 exe	0x00402140	ch_GetHMap	ch	byte	readable		
-exe	0x00402220	ch_GetSceneHMap	ch	byte	draft		
+exe	0x00402220	ch_GetSceneHMap	ch	byte	readable		
 exe	0x004022e0	ch_UpdateFades	ch	byte	readable		
-exe	0x00402480	ch_SetVisible	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x00402540	ch_InflateModel	ch	byte	draft		
-exe	0x004025c0	ch_SetPos	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00402480	ch_SetVisible	ch	byte	readable		
+exe	0x00402540	ch_InflateModel	ch	byte	readable		
+exe	0x004025c0	ch_SetPos	ch	byte	readable		
 exe	0x00402640	ch_PlaceAtObject	ch	byte	readable		
 exe	0x004026c0	ch_Count	ch	byte	readable		
 exe	0x00402720	ch_CountAt	ch	byte	readable		
-exe	0x004027b0	ch_SyncObjectOffsets	ch	byte	draft		
-exe	0x00402800	ch_UpdatePositions	ch	byte	draft		
-exe	0x004028a0	ch_Delete	ch	byte	draft		
-exe	0x004029c0	ch_Alloc	ch	byte	draft		
+exe	0x004027b0	ch_SyncObjectOffsets	ch	byte	readable		
+exe	0x00402800	ch_UpdatePositions	ch	byte	readable		
+exe	0x004028a0	ch_Delete	ch	byte	readable		
+exe	0x004029c0	ch_Alloc	ch	byte	readable		
 exe	0x00402a30	ch_AllocAt	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x00402a70	ch_FindByName	ch	byte	draft		
 exe	0x00402ac0	ch_FindByObject	ch	byte	draft		
