@@ -92,7 +92,7 @@ typedef struct D3BASTREAM {         /* 0x16c bytes, "tp_veranimstream" */
 
 
 D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative);             /* 0x44f8c0 */
-char d3_Unk4506f0(char *path);                                                          /* 0x4506f0 */
+char d3_BGFCanWeld(char *path);                                                          /* 0x4506f0 */
 VFSFILE *d3_Unk4507a0(char *path);                                                      /* 0x4507a0 */
 
 /* declared in other units' headers before (moved to the owner) */

@@ -748,7 +748,7 @@ D3BASTREAM *d3_LoadBinaryAnimStream(char *path, char *name, char relative)
 }
 /* 0x4506f0, 0 when the file's header flags have bit 1 set (format 2 only), else 1 */
 
-char d3_Unk4506f0(char *path)
+char d3_BGFCanWeld(char *path)
 {
     VFSFILE *f;
     int hdr, n;
