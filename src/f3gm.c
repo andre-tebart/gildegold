@@ -3666,15 +3666,18 @@ extern char gm_BQStopFirst, gm_BQFirstCall; /* 0x6f1bd4, 0x6f1bd5, stop at the f
 ORDBLD *gm_BQCursor = 0;  /* 0x6f1bf0, the current building of the query */
 extern unsigned gm_KindObjs[732];
 extern unsigned short gm_KindObjCount;
-void rt_FreePoints();                     /* 0x4bd9e0 */
+void rt_FreePoints(struct RTPOINT *p);                     /* 0x4bd9e0 */
 /* 0x500190 */
 
-/* 0x500080, an object instance of the prototype kind 0x1d frees the record at +0x29 (0x4bd9e0) */
+/* 0x500080, an object instance of the prototype kind 0x1d frees the route it holds (+0x29) */
+
 void gm_FreeObjectExtra(unsigned short *o)
 {
-    if (ai_Goods[*o * 0x41] == 0x1d && *(int *)((char *)o + 0x29) != 0) {
-        rt_FreePoints(*(int *)((char *)o + 0x29));
-        *(int *)((char *)o + 0x29) = 0;
+    struct AIOBJ *obj = (struct AIOBJ *)o;
+
+    if (ai_Goods[obj->type * 0x41] == 0x1d && obj->route != 0) {
+        rt_FreePoints(obj->route);
+        obj->route = 0;
     }
 }
 /* 0x5000c0, removes the object instance with the owner id (+2) from the list *list: like 0x4ffff0 but by the id field */
