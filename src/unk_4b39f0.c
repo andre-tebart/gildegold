@@ -1,7 +1,9 @@
 /* unk_4b39f0.c -- missions ("_AUFTRAEGE_VERGABE_HS_%.2d", "special\mission"): the running missions
    ai_Missions, the mission types ai_MissionTypes (.data right after hst.c's literals), an own random generator.
    Unit start and name are guesses (open boundary); it ends with save / load 0x4b62e0 / 0x4b63b0. Names are ours.
-   Open: G13TYPE.unk0c / unk18 and G13MIS.unk18 / unk1c / unk20 have no name evidence yet (several Q2s wait on them).
+   Open: G13TYPE.unk0c / unk18 and G13MIS.unk18 have no name evidence yet; G13MIS.progress / fulfilled stand on their
+   users (ai_CountMissionEvent and the completion flag of he.c 0x56ce40). G13MIS.unk18 stays unk (only ever zeroed /
+   saved).
    Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / G13_501190 views (type debt).
    Open: not included yet (dcp headers conflicts unk_4b39f0 HEADER): d2.h; held by own declarations that differ
    from the owner's: d2_Radios.
@@ -55,15 +57,12 @@ G13MIS *ai_FindOwnerMission(G13MIS *m)
 }
 /* 0x4b3a90, restarts the running mission of m's owner now
    @hard read in full, byte-exact against the original (ai_FindOwnerMission, ai_Time into e->time, then
-   0x18 / 0x1c / 0x20 = 0); the only open gate is Q2 on G13MIS's names (unk_4b39f0_types.h, a shared type
-   he.c reads at 0x56ce40; a field rename is manual, dcp rename would hit every unk20). unk1c is the event
-   count ai_CountMissionEvent (0x4b44e0) increments and ai_Unk4b4f00's cases 11 / 19 / 23 / 28 / 40 compare
-   with t->goal -> progress. unk20 is the flag he.c's offer state machine sets once ai_Unk4b4f00 (1 =
-   fulfilled) holds and then reports the owner -> fulfilled / reported. unk18 has no evidence: written 0
-   here, in ai_NewMission (0x4b3ca0) and ai_SetFirstMission (0x4b3bd0), saved and loaded (0x4b62e0 /
-   0x4b63b0), read by no drafted function and by no relocation to ai_Missions+0x18 (dcp phi 0xf82338: no
-   object) -> a name would be invention, and its rename is a shared-header decision; the other two names
-   are ready once unk18 is settled. */
+   0x18 / progress / fulfilled = 0); the only open gate is Q2 on G13MIS.unk18 (unk_4b39f0_types.h, a shared
+   type he.c reads at 0x56ce40; a field rename is manual): it is written 0 here, in ai_NewMission (0x4b3ca0)
+   and ai_SetFirstMission (0x4b3bd0), saved and loaded (0x4b62e0 / 0x4b63b0), and read by no drafted function
+   and by no relocation to ai_Missions+0x18 (dcp phi 0xf82338: no object) -> a name would be invention, and its
+   rename is a shared-header decision. progress (0x1c: the events ai_CountMissionEvent counts, compared with
+   t->goal) and fulfilled (0x20: set by he.c once ai_Unk4b4f00 holds) are named. */
 
 void ai_RestartMission(G13MIS *m)
 {
@@ -72,8 +71,8 @@ void ai_RestartMission(G13MIS *m)
     if (e != 0) {
         e->time = ai_Time;
         e->unk18 = 0;
-        e->unk1c = 0;
-        e->unk20 = 0;
+        e->progress = 0;
+        e->fulfilled = 0;
     }
 }
 /* 0x4b3ae0, the mission type type */
@@ -148,7 +147,7 @@ void ai_SetFirstMission(int owner, int type)
     ai_Missions[0].owner = owner;
     ai_Missions[0].time.year = 0;
     gm_SetTime(&ai_Missions[0].time, 0, 0, 0);
-    ai_Missions[0].unk20 = 0;
+    ai_Missions[0].fulfilled = 0;
 }
 /* 0x4b3c10, gives owner a random mission of kind */
 
@@ -174,7 +173,7 @@ int ai_RandomMissionType(int kind)
     }
     return 0xff;
 }
-/* 0x4b3ca0, gives owner a mission of type (in a free slot; game mode 5: always slot 0) @deep Q2 only, byte: the store order of the mode-5 block and of the loop was the behaviour gap (type before owner in BOTH blocks - the original loads type into eax first and stores it first; the loop draft had owner first, 10 -> 4 differing instructions, then the mode-5 block back to type first gave the byte match, check 2567 -> 2568). The only open rule is G13MIS.unk20 (+0x20, a byte zeroed at creation / restart and saved / read back by 0x4b62e0 / 0x4b63b0, never read otherwise in any drafted function): no evidence for a name, so the field stays unk and Q2 cannot clear. Q1 done (ai_NewMission -> ai_NewMission: gives the owner a mission of the type in a free slot). */
+/* 0x4b3ca0, gives owner a mission of type (in a free slot; game mode 5: always slot 0) */
 
 G13MIS *ai_NewMission(int owner, int type, int x)
 {
@@ -185,7 +184,7 @@ G13MIS *ai_NewMission(int owner, int type, int x)
         ai_Missions[0].owner = owner;
         ai_Missions[0].time.year = 0;
         gm_SetTime(&ai_Missions[0].time, 0, 0, 0);
-        ai_Missions[0].unk20 = 0;
+        ai_Missions[0].fulfilled = 0;
         return &ai_Missions[0];
     }
     for (i = 0; i < 0x80; i++) {
@@ -194,7 +193,7 @@ G13MIS *ai_NewMission(int owner, int type, int x)
             ai_Missions[i].owner = owner;
             ai_Missions[i].time.year = 0;
             gm_SetTime(&ai_Missions[i].time, 0, 0, 0);
-            ai_Missions[i].unk20 = 0;
+            ai_Missions[i].fulfilled = 0;
             return &ai_Missions[i];
         }
     }
@@ -470,7 +469,7 @@ int ai_CountMissionEvent(G13MIS *m, int ev)
         case 28:
         case 40:
             if (e->type == ev)
-                e->unk1c++;
+                e->progress++;
             return 1;
         }
     }
@@ -868,7 +867,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 23:
     case 28:
     case 40:
-        return m->unk1c >= t->goal;
+        return m->progress >= t->goal;
     case 8:
         return ai_Unk4b46f0(c, t);
     case 12:
@@ -1463,9 +1462,9 @@ int ai_SaveMissions(void *f)
             return 0;
         if (vfs_fwrite(&ai_Missions[i].unk18, 4, 1, f) == -1)
             return 0;
-        if (vfs_fwrite(&ai_Missions[i].unk1c, 4, 1, f) == -1)
+        if (vfs_fwrite(&ai_Missions[i].progress, 4, 1, f) == -1)
             return 0;
-        if (vfs_fwrite(&ai_Missions[i].unk20, 1, 1, f) == -1)
+        if (vfs_fwrite(&ai_Missions[i].fulfilled, 1, 1, f) == -1)
             return 0;
     }
     return 1;
@@ -1491,9 +1490,9 @@ int ai_Unk4b63b0(void *f)
             return 0;
         if (!ls_Read(&ai_Missions[i].unk18, 4, 1, f))
             return 0;
-        if (!ls_Read(&ai_Missions[i].unk1c, 4, 1, f))
+        if (!ls_Read(&ai_Missions[i].progress, 4, 1, f))
             return 0;
-        if (!ls_Read(&ai_Missions[i].unk20, 1, 1, f))
+        if (!ls_Read(&ai_Missions[i].fulfilled, 1, 1, f))
             return 0;
     }
     return 1;

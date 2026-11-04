@@ -14964,9 +14964,9 @@ void he_Unk56ce40(int ev)
         he_FreeEvent((int *)ev);
         break;
     case 0:
-        if (ai_Missions[i].unk20 == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16) {
+        if (ai_Missions[i].fulfilled == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16) {
             if (ai_Unk4b4f00(&ai_Missions[i]) != 0) {
-                ai_Missions[i].unk20 = 1;
+                ai_Missions[i].fulfilled = 1;
                 gm_AddTime(ev + 0x52, 0, 1, 0);
                 *(int *)(ev + 0x70) = 1;
                 return;
@@ -14976,7 +14976,7 @@ void he_Unk56ce40(int ev)
         break;
     case 1:
         gm_AddTime(ev + 0x52, 0, 1, 0);
-        if (ai_Missions[i].unk20 == 1 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16 &&
+        if (ai_Missions[i].fulfilled == 1 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16 &&
             U_I((unsigned)&ai_MissionPartner) == -1) {
             arg = ai_Missions[i].owner;
             *(int *)(ev + 0xac) = ((int (*)(unsigned char, void *))cm_SendExSysMessage)(8, &arg);
