@@ -235,7 +235,7 @@ void bgi_MatOv(void *f, BGIRD *c)
 {
     bio_rd_i(f, (int *)&BGI_M(c).ov);
 }
-/* 0x44f3f0 */
+/* 0x44f3f0, binary-format record 0x13: reads the current material's rotation (rot) */
 
 void bgi_MatRot(void *f, BGIRD *c)
 {
