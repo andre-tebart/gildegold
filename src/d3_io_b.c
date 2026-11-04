@@ -211,7 +211,7 @@ void bgi_MatC9(void *f, BGIRD *c)
 {
     bio_rd_c(f, &BGI_M(c).c9);
 }
-/* 0x44f330 */
+/* 0x44f330, binary-format record 0xf: reads the current material's u scale (su) */
 
 void bgi_MatSu(void *f, BGIRD *c)
 {
