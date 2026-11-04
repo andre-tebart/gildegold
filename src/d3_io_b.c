@@ -136,7 +136,8 @@ void bgi_Bitmap0(void *f, BGIRD *c)
         *dot = 0;
     strcpy(BGI_M(c).name[0], buf);
 }
-/* 0x44f090 */
+/* 0x44f090, binary-format record 9: stores the second bitmap name of the current material (file extension
+   stripped) */
 
 void bgi_Bitmap1(void *f, BGIRD *c)
 {
