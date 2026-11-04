@@ -34,6 +34,7 @@ extern int gm_PlayerRecords[688];
 #include "d3_interface.h"
 #include "err.h"
 #include "unk_458810.h"
+#define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ai.h: char[768][0x21c]) as the AICHAR records they are */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 
 /* 0x4e5cd0, clears the office table (42 records of 0x18 bytes at 0x925120) and numbers them: +0 the index, +4 and +0x14 -1, +8 the kind of the office
@@ -1578,8 +1579,8 @@ int amt_CheckOfficeColumns(void)
     unsigned int fl[6];
     int cols[6];
     AMTREC list[6];
-    int ret, i, n, j, r;
-    char *a, *b, *ch;
+    int ret, i, n, j, r, k;
+    char *a, *b;
 
     fl[0] = 0;
     fl[1] = 0;
@@ -1618,17 +1619,17 @@ int amt_CheckOfficeColumns(void)
                     }
                 }
             } else if (list[j].state == 3 && list[j].cnt > 0) {
-                ch = (char *)ai_Chars + 2;     /* the AICHAR kind byte */
+                k = 0;
                 do {
-                    if (ch[0x166] == (char)list[j].kind) {
+                    if (ai_CharsT[k].appliedOffice == (unsigned char)list[j].kind) {
                         fl[i] |= 1;
-                        if ((ch[0] == 6 || ch[0] == 7) && ch[0x1af] == 0) {
+                        if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].heldRounds == 0) {
                             fl[i] |= 2;
                             break;
                         }
                     }
-                    ch += 0x21c;
-                } while ((int)ch < (int)((char *)ai_Chars + 2 + 768 * 0x21c));
+                    k++;
+                } while (k < 768);
             }
         }
         if ((fl[i] & 1) != 0) {
@@ -1658,7 +1659,7 @@ int amt_IsColumnDecided(int col)
     unsigned int f;
     AMTREC list[6];
     int n, j, k;
-    char *a, *b, *ch;
+    char *a, *b;
 
     f = 0;
     n = amt_GetColumnOffices(col, 6, list);
@@ -1675,17 +1676,17 @@ int amt_IsColumnDecided(int col)
                 }
             }
         } else if (list[j].state == 3 && list[j].cnt > 0) {
-            ch = (char *)ai_Chars + 2;
+            k = 0;
             do {
-                if (ch[0x166] == (char)list[j].kind) {
+                if (ai_CharsT[k].appliedOffice == (unsigned char)list[j].kind) {
                     f |= 1;
-                    if ((ch[0] == 6 || ch[0] == 7) && ch[0x1af] == 0) {
+                    if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].heldRounds == 0) {
                         f |= 2;
                         break;
                     }
                 }
-                ch += 0x21c;
-            } while ((int)ch < (int)((char *)ai_Chars + 2 + 768 * 0x21c));
+                k++;
+            } while (k < 768);
         }
     }
     if ((f & 1) != 0 && n > 0) {
@@ -1792,20 +1793,20 @@ int amt_HasColumn7Holder(void)
 void amt_SendOfficeNews(unsigned short *p, int v)
 {
     char buf[512];
-    int *q;
+    int i;
     char k;
 
     k = ((char *)p)[2];
     if (k == 6 || k == 7 || k == 5) {
         txt_Format(buf, 0x1c19, *p, 0x1c1b, (((char *)p)[9] != 0 ? 0x27b : 0x253) + v);
-        q = ai_CharInts[0];
+        i = 0;
         do {
-            if (((char *)q)[-2] == 6)
-                he_ShowNews(*q, -1, buf, 0, 0x5fd, ch_EmptyName);
-            else if (((char *)q)[-2] == 7)
-                he_ShowNews(*q, -1, buf, 0, 0x5fe, ch_EmptyName);
-            q += 0x87;
-        } while ((int)q < (int)((char *)ai_CharInts + 768 * 0x21c));
+            if (ai_CharsT[i].kind == 6)
+                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fd, ch_EmptyName);
+            else if (ai_CharsT[i].kind == 7)
+                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fe, ch_EmptyName);
+            i++;
+        } while (i < 768);
     }
 }
 /* 0x4e87e0, amt_SendOfficeNews with the text 0x1c21 (no second text): the character p lost the office v (the election replaces it, or it no longer
@@ -1814,19 +1815,19 @@ void amt_SendOfficeNews(unsigned short *p, int v)
 void amt_SendOfficeLost(unsigned short *p, int v)
 {
     char buf[512];
-    int *q;
+    int i;
     char k;
 
     if (p != 0 && ((k = ((char *)p)[2]) == 6 || k == 7 || k == 5)) {
         txt_Format(buf, 0x1c21, *p, (((char *)p)[9] != 0 ? 0x27b : 0x253) + v);
-        q = ai_CharInts[0];
+        i = 0;
         do {
-            if (((char *)q)[-2] == 6)
-                he_ShowNews(*q, -1, buf, 0, 0x5fd, ch_EmptyName);
-            else if (((char *)q)[-2] == 7)
-                he_ShowNews(*q, -1, buf, 0, 0x5fe, ch_EmptyName);
-            q += 0x87;
-        } while ((int)q < (int)((char *)ai_CharInts + 768 * 0x21c));
+            if (ai_CharsT[i].kind == 6)
+                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fd, ch_EmptyName);
+            else if (ai_CharsT[i].kind == 7)
+                he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fe, ch_EmptyName);
+            i++;
+        } while (i < 768);
     }
 }
 /* 0x4e88a0, elects the two deputy offices (the kinds 0x1c and 0x1d): the candidates are the owner characters (AIBLD.owner) of the buildings of type 4
@@ -2463,7 +2464,6 @@ int amt_ExecuteShareMessage(short *c, int *m)
 {
     AMTBLDVIEW *o;
     int loss, cnt, i;
-    unsigned int k;
     float f;
     int *q;
     char msg[1024];
@@ -2476,27 +2476,21 @@ int amt_ExecuteShareMessage(short *c, int *m)
                 f = (util_RandomF() + 1.0f) * f * 15.0f;
                 loss = (int)((f + 5.0) * 2.55f);
                 cm_SendMoveGoodsUnchecked(-1, AMT_NETID(c), ai_OwnPlayer, m[2]);
-                k = 0;
+                i = 0;
                 cnt = 0;
-                q = (int *)((char *)ai_CharInts + 0x168);
                 do {
-                    if ((unsigned short)q[-0x5b] != 0xffff && *q == (int)o && o->owner != k) {
-                        cm_SendRelations(ai_CharInts[o->owner][0], q[-0x5a], -loss, 1);
+                    if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == (AIBLD *)o && o->owner != i) {
+                        cm_SendRelations(ai_CharInts[o->owner][0], ai_CharsT[i].netId, -loss, 1);
                         cnt++;
                     }
-                    q += 0x87;
-                    k++;
-                } while ((int)q < (int)AMT_CHARS_END + 0x168);
+                    i++;
+                } while (i < 768);
                 if (cnt != 0) {
                     loss = (int)((float)m[2] / cnt) + 0x20;
-                    q = (int *)((char *)ai_CharInts + 0x168);
-                    k = 0;
-                    do {
-                        if ((unsigned short)q[-0x5b] != 0xffff && *q == (int)o && o->owner != k)
-                            cm_SendMoveGoodsUnchecked(q[-0x5a], -1, ai_OwnPlayer, loss);
-                        q += 0x87;
-                        k++;
-                    } while ((int)q < (int)AMT_CHARS_END + 0x168);
+                    for (i = 0; i < 768; i++) {
+                        if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == (AIBLD *)o && o->owner != i)
+                            cm_SendMoveGoodsUnchecked(ai_CharsT[i].netId, -1, ai_OwnPlayer, loss);
+                    }
                 }
                 gm_SendMoneyDelta(AMT_NETID(c), -5);
                 cm_SendSetField(AMT_NETID(c), 0x1c8, 4, 0x8000000, 0);
