@@ -7205,13 +7205,13 @@ void he_Unk5455e0(int ev)
     *(int *)(ev + 0x5c) = 0;
 }
 
-int ai_Unk4bb6c0();
+int ai_RunMessage();
 
-/* 0x545640, frees the event record (and its job record 0x4bb6c0 at +0xac unless the state is -2) */
+/* 0x545640, runs the message kept at +0xac (unless the state is -2) and frees the event record */
 void he_Unk545640(int ev)
 {
     if (*(int *)(ev + 0x70) != -2)
-        ai_Unk4bb6c0(ev + 0xac);
+        ai_RunMessage(ev + 0xac);
     he_FreeEvent((int *)ev);
 }
 

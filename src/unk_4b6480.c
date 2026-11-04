@@ -1,6 +1,6 @@
 /* unk_4b6480.c -- the AI's message callbacks (G14MSG, m->type 0 .. 0x44): each one writes text 0x12e7 + type for a
-   character and sends it (0x53dda0); named ai_Msg<effect>TypeNN. Called through the table ai_Unk602570 by
-   0x4bb6c0 (from the 8th day on). Its .data (the table) follows unk_4b39f0.c's literals; unit start and name are
+   character and sends it (0x53dda0); named ai_Msg<effect>TypeNN. Run through the table ai_MsgCallbacks by
+   ai_RunMessage (from the 8th day on). Its .data (the table) follows unk_4b39f0.c's literals; unit start and name are
    guesses (no module tag; could be the missions' tail). Names are ours. Ends before 0x4bb810, anm.c's first user
    of "anm:animals".
    Open: 0x4bb720 (posts random message types as AIMSG 0x42) / 0x4bb7d0 (LCG, seed 0x6f0730) may be anm.c's.
@@ -1920,10 +1920,10 @@ int ai_MsgNewsOnly(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4bb6c0, sends message m (from the 8th day on): -1 without m, 0x400 without its character or with heldRounds set,
-   -2 for an unknown type */
+/* 0x4bb6c0, runs the message m through ai_MsgCallbacks (from the 8th day on): -1 without m, 0x400 without its
+   character or with heldRounds set, -2 for an unknown type */
 
-int ai_Unk4bb6c0(G14MSG *m)
+int ai_RunMessage(G14MSG *m)
 {
     AICHAR *c;
 
@@ -1935,13 +1935,13 @@ int ai_Unk4bb6c0(G14MSG *m)
     if (c == 0 || c->heldRounds > 0)
         return 0x400;
     if (m->type < 0x45)
-        return ai_Unk602570[m->type](m);
+        return ai_MsgCallbacks[m->type](m);
     return -2;
 }
 
 int sv_ReturnZero(void);                                                          /* 0x52a040, defined elsewhere */
 
-G14CB ai_Unk602570[0x45] = {                                                     /* 0x602570 */
+G14CB ai_MsgCallbacks[0x45] = {                                                     /* 0x602570 */
     ai_MsgRewardPct1to3, ai_MsgRewardPct2to4, ai_MsgOfficeApplicantPayment, ai_MsgPayPct1to3,
     ai_MsgPayPct1to4, ai_MsgRewardPct2to5, ai_MsgRewardPct1to3Type68, ai_MsgPayForBuilding,
     ai_MsgRewardPct1to3Type68, ai_MsgPayPct2to4, ai_MsgPayPct125, ai_MsgPayPctOver120,

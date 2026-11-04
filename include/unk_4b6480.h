@@ -32,7 +32,7 @@ void gm_ClockToDate(struct AITIME *c, unsigned char *out);                      
 extern unsigned int ai_Unk6f0730;       /* 0x6f0730, random seed of the messages */
 
 typedef int (*G14CB)(G14MSG *m);
-extern G14CB ai_Unk602570[0x45];        /* 0x602570 */
+extern G14CB ai_MsgCallbacks[0x45];        /* 0x602570 */
 int ai_PostRandomMessages(int n, int id);   /* 0x4bb720, posts 0..n random messages (AIMSG 0x42) for the character id */
 
 #endif
