@@ -1874,9 +1874,9 @@ int ai_MsgCatchUpperDisease(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4bb4f0, message if 0x5059d0 of c */
+/* 0x4bb4f0, message 0x40: c cures one of the minor diseases 2..5; 0x400 when none is cured */
 
-int ai_Unk4bb4f0(G14MSG *m)
+int ai_MsgCureMinorDisease(G14MSG *m)
 {
     AICHAR *c;
     char buf[0x400];
@@ -1958,7 +1958,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,
     ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_MsgPayMinorDisease, ai_MsgCatchUpperDisease,
-    ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
+    ai_MsgCureMinorDisease, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
     ai_Unk4bb630
 };
 unsigned int ai_Unk6f0730 = 0;  /* 0x6f0730, random seed of the messages */
