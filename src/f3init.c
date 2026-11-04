@@ -32,6 +32,7 @@ extern int gm_PlayerRecords[688];
 #include "ai_types.h"
 extern AISTORE gm_Offers[];            /* 0x7e4b20 */
 extern float sv_SkyScale;
+extern const float ai_FloatOne;         /* 0x5eb780, bio.c: the shared 1.0f the original loads rather than folding it */
 
 /* the scene object view of this unit: a CHARACTER (ch.h, 0x244 bytes, the list 0x1468ae0); the unit cannot
    include ch.h (gv.h's d3sm_GetVertex is a K&R declaration), so the fields this unit reads are declared here
@@ -43,7 +44,7 @@ typedef struct SCENEOBJ {
                                        ch_CurrentGroup / evt_NoGroup; here with the building's id) */
     int scriptGroup;                /* 0x30, ch.h CHARACTER.scriptGroup: the group of the script that created / moved it
                                        (here compared with the room object's instance id) */
-    char pad034[0x4];               /* 0x34, ch.h CHARACTER.obj */
+    D3OBJECT *obj;                  /* 0x34, ch.h CHARACTER.obj: the character's body */
     D3VECTOR pos;                   /* 0x38, ch.h CHARACTER.pos: the character's stored position (ls_ReadCharacter) */
     char pad044[0x4];               /* 0x44 .. 0x47 */
     unsigned proto;                 /* 0x48, the prototype reference: 0x1000000 | object index (ai_Goods), 0x2000000 | building index (ai_BTypes) */
@@ -68,6 +69,8 @@ typedef struct SCENEOBJ {
     char pad21c[0x4];               /* 0x21c, D3OBJECT.type0 */
     int kind;                       /* 0x220, D3OBJECT.kind */
     int mask;                       /* 0x224, D3OBJECT.mask */
+    char pad228[0x4];               /* 0x228, ch.h CHARACTER.onDelete */
+    D3OBJECT *lowPolyBody;          /* 0x22c, ch.h CHARACTER.lowPolyBody: the low-poly body of a character */
 } SCENEOBJ;
 
 /* the chain of the character records the info panel walks (gm_Query(0, 2, 7, 4, 0x1d)): the next record at +0x3b,
@@ -196,6 +199,22 @@ typedef struct INIT_CHAR {
     char pad188[0x94];              /* 0x188 .. 0x21b */
 } INIT_CHAR;
 
+/* AIFIN.camAngle (0x88) in both spellings the unit needs: the factor, and its bits for sv_PlaceCamera (whose
+   prototype is not in scope here, M7: a float argument would be pushed as a double) */
+typedef union INIT_CAMANGLE {
+    float f;
+    int bits;
+} INIT_CAMANGLE;
+
+/* the player record view (ai.h's AIFIN, 0xac bytes, gm_PlayerRecords): the camera fields this unit reads */
+typedef struct INIT_CAMREC {
+    char pad000[0x88];              /* 0x00 .. 0x87 */
+    INIT_CAMANGLE angle;            /* 0x88, AIFIN.camAngle: the camera angle factor */
+    D3VECTOR pos;                   /* 0x8c, AIFIN.camPos: the camera position */
+    char pad098[0x4];               /* 0x98 .. 0x9b */
+    float rot[3];                   /* 0x9c, AIFIN.camRot: the camera's angles (rot[1] = the stored y angle) */
+} INIT_CAMREC;
+
 /* d3_sm.h's D3TERRAIN as far as this unit reads it (written before the unit included d3_sm.h; the uses can
    read D3TERRAIN now); type debt, see the lead comment */
 typedef struct INIT_TERRAIN {
@@ -321,7 +340,7 @@ unsigned short * gm_QueryNext(void);                   /* 0x4ffcc0 */
 float gm_ItemPrice(int item, unsigned char n);
 int gm_ListStock(short *l, int id);               /* 0x50ab50, f3gm.c */
 unsigned int d3fl_DetailScale = 0;  /* 0x633748 */
-unsigned char d3if_Unk6339db = 0;  /* 0x6339db */
+unsigned char d3if_TexturesEvicted = 0;  /* 0x6339db */
 /* init_StatusFormat: view of txt_Ptrs (build/mk_txt_views.py) */
 int d2_CutsceneActive = 0;  /* 0x6ed9d4 */
 char * ai_KindBChars[8] = {0};  /* 0x6f1c04, the characters of the kind */
@@ -3640,39 +3659,45 @@ void init_LeaveTownScene(void)
     ch_ClearSceneCallbacks(d3_DefaultScene);
     ch_CurrentGroup = -1;
 }
-/* 0x513740, after loading a town: the "now" of the game clock (0x4fe350 of the clock 0x770ae0, kept as the season / day part 0..3 in 0x6f1c24), the camera of the player's character (0x506430, 0x43b790 / 0x525dd0 / 0x43b860, the default 0.33 when it has none), the characters without a house (0x2c = -1) that are not in the shown scene are hidden (0x402540 / 0x402480 / 0x4fb5a0), the scene callbacks 0x512de0 (0xe0) / 0x512e40 (0xc0), the scene's own hook (+0x210 of its parent), the frame limits (0x5128d0 / 0x513590) and the light factor 0x5fbd04 = 1 - 0.01 * the detail byte 0x6f35cc; then 0x525ad0 and the scene switch 0x447860 (0 when 0x6339db is set, else 1). ROUGH */
+/* 0x513740, after loading a town: the season's texture set (gm_ClockSeason), the camera of the player's character
+   (its player record: the saved camera angle / position / angle, the default 0.33 when it has none), the characters
+   without a house (-1) that are not in the shown scene (ch_InflateModel / ch_SetVisible / gm_SelectModelVariant),
+   the scene callbacks 0x512de0 (0xe0) / 0x512e40 (0xc0), the scene's own event 4 handler, the frame limits
+   (init_SetSeasonTextures / init_SetDetailLevel) and the fog factor ai_FloatOne - 0.01 * the detail byte; then the
+   sky (sv_UpdateSkyPhase) and the prerender (the map only when no scene switch evicted the textures) */
 
 
 void init_AfterTownLoad(void)
 {
-    int phase, c;
-    int *p;
-    char *e;
+    INIT_CAMREC *cam;
+    INIT_CHAR *c;
+    D3EVENT *events;
+    int phase;
 
     phase = gm_ClockSeason(&ai_Time);
     if (d3_CurrentScene == 0) {
-        c = (int)gm_PlayerRecord(ai_Chars[(unsigned short)ai_PlayerId]);
-        if (c == 0 || *(int *)(c + 0x88) == -0x40800000) {
+        cam = (INIT_CAMREC *)gm_PlayerRecord(ai_Chars[(unsigned short)ai_PlayerId]);
+        if (cam == 0 || cam->angle.f == -1.0f) {
             sv_PlaceCamera(0x3ea8f5c3);
         } else {
-            d3_SetObjectPos(d3_Camera, c + 0x8c);
-            sv_PlaceCamera(*(int *)(c + 0x88));
-            *(int *)&d3_Camera->rotation.y = *(int *)(c + 0xa0);
+            d3_SetObjectPos(d3_Camera, &cam->pos);
+            sv_PlaceCamera(cam->angle.bits);
+            d3_Camera->rotation.y = cam->rot[1];
             d3_SetObjectRot(d3_Camera, &d3_Camera->rotation);
         }
-        for (p = (int *)((unsigned)&ai_Unk770cec + 0x18); (int)p < (int)((unsigned)&ai_Unk770cec + 0x65418); p += 0x87) {
-            if (*p != 0) {
-                if (d3t_SceneIndex(*(int *)(*p + 0x88)) == 0 && *(int *)(*p + 0x2c) == -1) {
-                    int o = *p;
-
-                    if (*(int *)(*(int *)(o + 0x34) + 0x1cc) == 0
-                        || (*(int *)(o + 0x22c) != 0 && *(int *)(*(int *)(o + 0x22c) + 0x1cc) == 0))
-                        ch_InflateModel(o);
-                    ch_SetVisible(*p, 1);
-                    gm_SelectModelVariant(p - 0x61);
+        c = (INIT_CHAR *)ai_Chars;
+        do {
+            if (c->model != 0) {
+                if (d3t_SceneIndex(c->model->scene) == 0 && c->model->group == -1) {
+                    if (c->model->obj->info == 0
+                        || (c->model->lowPolyBody != 0 && c->model->lowPolyBody->info == 0))
+                        ch_InflateModel((CHARACTER *)c->model);
+                    ch_SetVisible((CHARACTER *)c->model, 1);
+                    gm_SelectModelVariant((char *)c);
                 }
             }
-        }
+            c++;
+        } while ((int)&c->model < (int)&((INIT_CHAR *)ai_Chars)[INIT_CHARACTER_COUNT].model);
         if (phase == 1)
             init_TextureSet = 1;
         else if (phase == 0)
@@ -3684,18 +3709,18 @@ void init_AfterTownLoad(void)
         d3_ForEachObject2(d3_DefaultScene, 0, 0xe0, init_PlantTextureSetHook);
         d3_ForEachObject2(d3_DefaultScene, 0, 0xc0, init_TextureSetHook);
         if (d3_DefaultScene != 0) {
-            int hook = *(int *)((char *)d3_DefaultScene + 0x3c8);
+            events = d3_DefaultScene->events;
 
-            if (hook != 0 && *(void (**)())(hook + 0x210) != 0)
-                (*(void (**)())(hook + 0x210))(d3_DefaultScene, 4, hook + 0x214, 0);
+            if (events != 0 && events[4].fn != 0)
+                events[4].fn(d3_DefaultScene, 4, events[4].name, 0);
         }
         init_SetSeasonTextures();
         init_SetDetailLevel(d3_Terrain, 0);
         d3_FogByDistance = 1;
         evt_NoGroup = 0;
-        d3o_FogScale = 1.0f - (float)(ai_GfxFog.word & 0xff) * 0.01f;
+        d3o_FogScale = ai_FloatOne - (float)(ai_GfxFog.word & 0xff) * 0.01f;
         sv_UpdateSkyPhase(&ai_Time);
-        if (d3if_Unk6339db != 0) {
+        if (d3if_TexturesEvicted != 0) {
             d3if_Prerender(0);
             return;
         }

@@ -424,7 +424,7 @@ void d3if_Prerender(char map)
 }
 /* 0x4478e0, makes scene `index` the current one: saves the engine's global state into the old scene and
    loads the new scene's; with `keep` the objects, sky and map of the old state stay as they are
-   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_Unk6339db/dc, d3s_ShadowMapSize, d3if_Unkfba944) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
+   @deep Q2 d3if_Unk5fb5c0 / d3if_Unk5fb5c4: the same write-only scene pair as d3if_Reset (.text scan: only this function's two save/restore pairs and d3if_Reset's stores; .data initials 4 / 0xf; no reader, no pointer to it, no meaning derivable). The other 12 identifiers (d3s_ResetShadows/45e620, d3sm_Shadow, d3_Mirror.obj, d3_Mirror.info/08, d3if_TexturesEvicted/dc, d3s_ShadowMapSize, d3if_Unkfba944) still need reading; behaviour is already reached (the 22 code hunks are moved instructions per diffclass) */
 
 char d3if_SelectScene(int index, char keep)  /* @original: the definition returns char and takes a char keep (byte-matched); the headers declare void (int, int) */
 {
@@ -527,11 +527,11 @@ char d3if_SelectScene(int index, char keep)  /* @original: the definition return
         }
     }
     if (!keep) {
-        d3if_Unk6339db = 0;
+        d3if_TexturesEvicted = 0;
         if (d3_Hardware && d3d_D3D && d3_Busy <= 0 && (d3if_Unk6339dc++ & 0xf) == 0 &&
         (d3d_hr = d3d_D3D->lpVtbl->EvictManagedTextures(d3d_D3D)) != 0)
             d3d_Error(__FILE__, 682, "d3d_D3D->lpVtbl->EvictManagedTextures(d3d_D3D)");
-        d3if_Unk6339db = 1;
+        d3if_TexturesEvicted = 1;
     }
     return 1;
 }
@@ -1659,7 +1659,7 @@ D3VECTOR d3_AmbientColor = {200.0f, 200.0f, 200.0f};  /* 0x5fcc78, the ambient c
 int d3if_CamOben = 0;  /* 0x6338b8 */
 int d3if_CamVorne = 0;  /* 0x6338bc */
 int d3if_CamSeite = 0;  /* 0x6338c0 */
-unsigned int d3if_Unk6339dc = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_Unk6339db) */
+unsigned int d3if_Unk6339dc = 0;  /* 0x6339dc, counts the scene switches (an object of its own: 4-aligned after the byte d3if_TexturesEvicted) */
 int d3s_ShadowMapSize = 0;  /* 0x633dcc */
 char d3if_ParList[0x31c] = {0};  /* 0xfb95e0, the default scene's particle list head node (a D3PARTSYS, 0x31c bytes: d3_ParHead is its next field, +0x318 its prev) */
 int d3if_Unkfba944 = 0;  /* 0xfba944 (own object: d3io_StockDir is a 4-byte pointer) */

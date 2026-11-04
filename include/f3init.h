@@ -80,7 +80,7 @@ extern float init_SoundVolume;                              /* 0x61adfc */
 extern int init_ShopScript;                                 /* 0x61ae00 */
 extern int init_AiTown;                                     /* 0x624564 */
 extern unsigned int d3fl_DetailScale;                       /* 0x633748 */
-extern unsigned char d3if_Unk6339db;                        /* 0x6339db */
+extern unsigned char d3if_TexturesEvicted;                        /* 0x6339db */
 extern int d2_CutsceneActive;                               /* 0x6ed9d4 */
 extern char * ai_KindBChars[8];                             /* 0x6f1c04 */
 extern unsigned char init_TextureSet;                       /* 0x6f1c24 */
