@@ -1117,28 +1117,28 @@ exe	0x0045f9f0	tex_FindFile	ts_texture	byte	readable
 exe	0x0045fa80	tex_Init	ts_texture	byte	readable		
 exe	0x0045fb30	tex_SetPalette	ts_texture	byte	readable		
 exe	0x0045fb50	tex_Free	ts_texture	byte	readable		
-exe	0x0045fbc0	tex_Release	ts_texture	byte	draft		
-exe	0x0045fd00	tex_Exit	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0045fbc0	tex_Release	ts_texture	byte	readable		
+exe	0x0045fd00	tex_Exit	ts_texture	byte	readable		
 exe	0x0045fdd0	ts_Lerp	ts_texture	byte	readable		
 exe	0x0045fe10	ts_AddColor	ts_texture	byte	readable		
 exe	0x0045ff70	ts_GetHiColTab	ts_texture	byte	readable		
 exe	0x00460130	ts_AllocSlot	ts_texture	byte	readable		
-exe	0x004601b0	tex_AddRef	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x004601b0	tex_AddRef	ts_texture	byte	readable		
 exe	0x00460220	ts_LoadSoft	ts_texture	shape	readable	deep	
 exe	0x00460380	ts_LoadAnim	ts_texture	byte	readable		
-exe	0x004605c0	tex_Load	ts_texture	byte	draft		
+exe	0x004605c0	tex_Load	ts_texture	byte	readable		
 exe	0x00460aa0	tex_GetParams	ts_texture	byte	readable		
 exe	0x00460b00	tex_GetFrame	ts_texture	byte	readable		
-exe	0x00460b90	tex_Animate	ts_texture	byte	draft		
+exe	0x00460b90	tex_Animate	ts_texture	byte	readable		
 exe	0x00460cb0	ts_UpdateScroll	ts_texture	byte	readable		
 exe	0x00460de0	ts_SyncAliases	ts_texture	byte	readable		
 exe	0x00460e50	tex_Reload	ts_texture	byte	readable		
-exe	0x00461090	tex_ReloadAll	ts_texture	byte	draft		
+exe	0x00461090	tex_ReloadAll	ts_texture	byte	readable		
 exe	0x00461140	tex_Unload	ts_texture	byte	readable		
 exe	0x004611b0	tex_SetHiColor	ts_texture	byte	readable		
-exe	0x00461230	tex_Create	ts_texture	byte	draft		
-exe	0x004613b0	tex_CreateHi	ts_texture	byte	draft		
-exe	0x004614c0	tex_Prepare	ts_texture	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00461230	tex_Create	ts_texture	byte	readable		
+exe	0x004613b0	tex_CreateHi	ts_texture	byte	readable		
+exe	0x004614c0	tex_Prepare	ts_texture	byte	readable		
 exe	0x004614f0	tex_CreateAlias	ts_texture	byte	readable		
 exe	0x00461610	tex_ReleaseAlias	ts_texture	byte	readable		
 exe	0x004616a0	tex_AliasForFlags	ts_texture	byte	readable		
@@ -2262,7 +2262,7 @@ exe	0x004c6130	cm_SendRaiseDead	cm	byte	readable
 exe	0x004c6170	cm_SendCreateAlchemist	cm	byte	readable		
 exe	0x004c61b0	cm_SendCommand	cm	byte	readable		
 exe	0x004c61f0	ai_Unk4c61f0	cm	byte	draft		
-exe	0x004c6230	ai_Unk4c6230	cm	byte	draft		
+exe	0x004c6230	cm_SendEffectLoad	cm	byte	draft		
 exe	0x004c6260	cm_SendShots	cm	byte	readable		
 exe	0x004c62a0	ai_Unk4c62a0	cm	shape	draft		
 exe	0x004c6320	ai_Unk4c6320	cm	byte	draft		
@@ -2737,7 +2737,7 @@ exe	0x004eded0	gv_FindEffect	gv	byte	readable
 exe	0x004edf10	gv_ReleaseEffect	gv	byte	readable		
 exe	0x004edf80	gv_UpdateEffects	gv	draft	readable	deep	
 exe	0x004ee360	gv_ExplodeShot	gv	draft	readable	deep	
-exe	0x004eea70	gv_RequestEffectLoad	gv	byte	draft		
+exe	0x004eea70	gv_RequestEffectLoad	gv	byte	readable		
 exe	0x004eeaa0	gv_ReserveEffect	gv	byte	readable		
 exe	0x004eeb00	gv_StopEffect	gv	byte	readable		
 exe	0x004eeb70	gv_FireShots	gv	shape	readable	deep	
