@@ -14286,15 +14286,18 @@ void ai_ShowPartnerNews(unsigned short *cRec, unsigned short *pRec)
         he_ShowNews(p->netId, -1, ai_NewsText, 1, 0x5ec, 0);
     }
 }
-/* 0x5a9110, a production message to the player (95 B): when the word of param_1 is not the player 0x6f25b8,
-   the text 0x20c5 and the id +4 of the player's character record 0x770b80 + 0x21c * the player (0x605) */
+/* 0x5a9110, shows the local player a character's text (95 B): unless the record's id is the local player's own
+   (ai_PlayerId), the text 0x20c5 with the id and the given text is formatted into ai_NewsText and shown to the
+   local player's netId (event 0x605) */
 
-void ai_ShowCharacterNews(unsigned short *param_1, int param_2)
+void ai_ShowCharacterNews(unsigned short *cRec, char *text)
 {
-    if (*param_1 != *(unsigned short *)((unsigned)&ai_PlayerId)) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20c5, *param_1, param_2);
-        he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)((unsigned)&ai_PlayerId) * 0x21c), -1,
-                     (char *)(unsigned)&ai_NewsText, 0, 0x605, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *c;
+
+    c = (G8CHARREC *)cRec;
+    if (c->id != ai_PlayerId) {
+        txt_Format(ai_NewsText, 0x20c5, c->id, text);
+        he_ShowNews(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1, ai_NewsText, 0, 0x605, ch_EmptyName);
     }
 }
 /* 0x5a9170, a production message (95 B): for a character of the kind 6 / 7 (+2) the text 0x20c6 with the word

@@ -127,7 +127,7 @@ int ai_MisappropriationWindow(unsigned short *param_1, int *param_2);  /* 0x5ca8
 int ai_OfficeApplication(short *param_1, int param_2);  /* 0x5c6d00 */
 int ai_SpyTargetFlagHandler(int param_1, int *param_2);  /* 0x5ce1a0 */
 int ai_SpyTargetHandler(int param_1, int *param_2);  /* 0x5cde90 */
-void ai_ShowCharacterNews(unsigned short *param_1, int param_2);  /* 0x5a9110 */
+void ai_ShowCharacterNews(unsigned short *cRec, char *text);  /* 0x5a9110 */
 void ai_ShowEvidenceVoidNews(int param_1, unsigned short *param_2);  /* 0x5a9430 */
 void ai_TellGraveNeglect(int param_1, int param_2);  /* 0x5a9690 */
 void ai_NotifySale(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);  /* 0x5a96e0 */
