@@ -376,7 +376,8 @@ void tex_Release(TSTEXTURE *tex)
         }
     }
 }
-/* 0x45fd00 */
+/* 0x45fd00, shuts the texture manager down: every texture's references are released, the slot table and
+   the hi-colour tables are freed, the manager's counters reset and the surface cache freed */
 
 void tex_Exit(void)
 {
