@@ -10993,20 +10993,27 @@ void ai_ChurchContact(int building, int arg)
     }
 }
 
-int gm_Unk50ccd0();
+int gm_Homeless();
 
-/* 0x5a3a40, the dungeon plan window "locations\kerker\kerkerplan" (219 B): the room 0x4ffe90 (param_1 +
-   0x5d, 1, 0, 0xba); the window 0x4741f0 / 0x475600 / 0x475f70 (1) with the text 0x19ad, then every character
-   record (0x770b80 + i * 0x21c .. 0x7d5f80) with 0x50ccd0 set gets the line 0x19ae (the count, the record word)
-   and, with no line, 0x19af; the pump 0x5309a0 (this, 0x677c7), the exit 0x52d7a0 / 0x4758f0 */
-void ai_DungeonPlanWindow(int param_1)
+#pragma pack(push, 1)
+typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHAR, ai.h), the first word the
+                                           dungeon plan prints */
+    unsigned short id;                  /* +0x00, the character's id (AICHAR.id) */
+} G8CHARREC;
+#pragma pack(pop)
+
+/* 0x5a3a40, the dungeon plan window "locations\kerker\kerkerplan" (219 B): the room 0x4ffe90 (bld->objList,
+   1, 0, 0xba); the window 0x4741f0 / 0x475600 / 0x475f70 (1) with the text 0x19ad, then every character
+   record (ai_Chars + i * 0x21c up to gm_PlayerRecords) with gm_Homeless set gets the line 0x19ae (the count,
+   its id) and, with no line, 0x19af; the pump 0x5309a0 (this, 0x677c7), the exit 0x52d7a0 / 0x4758f0 */
+void ai_DungeonPlanWindow(AIBLD *bld)
 {
     int room;
     int win;
     int n = 0;
-    char *p;
+    int i;
 
-    room = gm_Query(U_I(param_1 + 0x5d), 1, 0, 0xba);
+    room = gm_Query((void *)bld->objList, 1, 0, 0xba);
     if (room == 0)
         return;
     win = d2_OpenForm(0, 0, "locations\\kerker\\kerkerplan");
@@ -11014,15 +11021,15 @@ void ai_DungeonPlanWindow(int param_1)
     d2_SetForm(win, 1);
     io_PrintText(0x19ad);
     d2_SetForm(win, 1);
-    for (p = (char *)(unsigned)&ai_Chars; (int)p < (unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
-        if (gm_Unk50ccd0(p) != 0)
-            io_PrintText(0x19ae, ++n, U_W(p));
+    for (i = 0; i < 0x300; i++) {
+        if (gm_Homeless(ai_Chars[i]) != 0)
+            io_PrintText(0x19ae, ++n, ((G8CHARREC *)ai_Chars[i])->id);
     }
     if (n == 0)
         io_PrintText(0x19af);
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
         if (sv_RunFrame(ai_DungeonPlanWindow, 0x677c7) == 0)
             break;
     }
