@@ -217,7 +217,8 @@ void ts_CacheRelease(TSTEXTURE *tex)
         }
     }
 }
-/* 0x45f860 */
+/* 0x45f860, creates tex's D3D texture: the 16-bit format when hicolor, else the 8-bit one with a, b passed through,
+   and mips from ts_Mips unless tex->nomip */
 
 void ts_CreateSurface(TSTEXTURE *tex, int a, int b)
 {
