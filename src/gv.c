@@ -2823,18 +2823,19 @@ int gv_FindReservedEntry(void *a, unsigned char **o, int *e)
 
 float gv_SeanceChance(char *o)
 {
+    AIBLD *bld = (AIBLD *)o;
     float x;
 
     x = 0.0f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x20f) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x20f) != 0)
         x = 30.0f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x21f) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x21f) != 0)
         x = x + 10.0f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x222) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x222) != 0)
         x = x + 15.0f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x223) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x223) != 0)
         x = x + 25.0f;
-    return 0.5f * (x * 0.0125f) + 0.5f;  /* the original multiplies by 0.0125 and 0.5 apart (x * 0.0125f * 0.5f folds to 0.00625) */
+    return 0.5f * (x * 0.0125f) + 0.5f;     /* the original keeps the * 0.5 and the + 0.5 apart (fmul 0.0125, fmul 0.5, fadd 0.5); this folds them into fadd 1.0, fmul 0.5 */
 }
 /* 0x4f2720, copies the AI decision record i (0 .. 0x1c, an AIDEC of the table 0x611258) to out (a struct copy); 0 for i > 0x1c */
 
