@@ -10355,7 +10355,7 @@ int gv_CountOwnedGraves(); int gv_CulpritGuilt(int c); int gm_GetWorth(unsigned 
 int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); 
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
 int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
-int gv_RetireCrimesOf(int p, int n); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_Unk5a8b80(); int cm_GetSlotState();
+int gv_RetireCrimesOf(int p, int n); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_ShowIndulgenceNews(); int cm_GetSlotState();
 void sv_PumpNet(); int gm_DonationRank(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
 void ai_Top5Window();
@@ -10446,7 +10446,7 @@ void ai_IndulgenceWindow(int param_1, int param_2)
                     d = (int)(w / log10((double)w));
                     h = ((int (*)(int, int, int, int))cm_SendMoveGoods)(-1, id, k, w);
                     h = ((int (*)(void *, int, int, int))cm_SendMoveGoods)(U_I((unsigned)&ai_CharInts + owner * 0x21c), -1, k, d);
-                    ai_Unk5a8b80((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c,
+                    ai_ShowIndulgenceNews((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c,
                                  (char *)(unsigned)&ai_Chars + owner * 0x21c, (char *)param_1, d, w);
                 } else {
                     h = ((int (*)(int, int, int, int))cm_SendMoveGoods)(-1, id, k, w);
@@ -11114,7 +11114,9 @@ typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHA
     int netId;                          /* +0x004, the id the news events carry */
     unsigned char health;               /* +0x008, > 0 = alive */
     unsigned char sex;                  /* +0x009, 0 / 1 (the text's feminine form) */
-    char pad0a[0x26];                   /* +0x00a .. 0x02f */
+    char pad0a[2];                      /* +0x00a .. 0x00b */
+    unsigned char b00c;                 /* +0x00c, a kind the person tooltip names (AICHAR.b00c); picks the news text */
+    char pad0d[0x23];                   /* +0x00d .. 0x02f */
     union {
         char name[0x58];                /* +0x030, the character's name (AICHAR.name) */
         struct {
@@ -14070,21 +14072,24 @@ fail:
     ai_FreeSettings();
     return 0;
 }
-/* 0x5a8b80, a production message with two values (123 B): for a character of the kind 6 / 7 (+2) the text
-   0x20b6 (0x20b7 without +0xc, else 0x20b8 / 0x20b9 by the clock 0x770ae0 > 0x74) into the buffer 0x6f26c8 and
-   0x53dda0 (the +4 id, -1, the buffer, 0, 0x5ff, "0x631090") */
+/* 0x5a8b80, the news of an indulgence purchase with two values (123 B): for the owner character of the kinds
+   6 / 7 the text 0x20b6 (0x20b7 when the owner's kind byte +0xc is 0, else 0x20b8 / 0x20b9 by the clock
+   ai_Time.year > 0x74) with the buyer's id, the building, the amount and the owner's share into ai_NewsText, shown
+   to the owner's netId (he_ShowNews, kind 0x5ff); nothing for another owner kind */
 
-void ai_Unk5a8b80(unsigned short *param_1, char *param_2, int param_3, int param_4, int param_5)
+void ai_ShowIndulgenceNews(unsigned short *buyer, char *ownerRec, int bld, int share, int amount)
 {
-    int id;
+    G8CHARREC *owner;
+    int text;
 
-    if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        if (*(char *)(param_2 + 0xc) == 0)
-            id = 0x20b7;
+    owner = (G8CHARREC *)ownerRec;
+    if (owner->kind == 6 || owner->kind == 7) {
+        if (owner->b00c == 0)
+            text = 0x20b7;
         else
-            id = (0x75 <= *(int *)((unsigned)&ai_Time)) + 0x20b8;
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20b6, *param_1, param_3, param_5, param_4, id);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
+            text = (0x75 <= ai_Time.year) + 0x20b8;
+        txt_Format(ai_NewsText, 0x20b6, *buyer, bld, amount, share, text);
+        he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5ff, ch_EmptyName);
     }
 }
 /* 0x5a8c00, a production message with one value (79 B): the text 0x20ba and 0x53dda0 (the +4 id, 0x5ec) */

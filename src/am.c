@@ -7097,7 +7097,7 @@ int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
         G8_4C4830(-1, p->netId, ai_OwnPlayer, s1->arg2);
         G8_4C4830(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, -1, ai_OwnPlayer, d);
         gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
-        ai_Unk5a8b80(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b, d, s1->arg2);
+        ai_ShowIndulgenceNews(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b, d, s1->arg2);
         G5_ACTS[0x26].w3[0].w = G5_ACTS[0x26].w1[0].w * s1->fvalue;
         G5_ACTS[0x26].w3[1].w = G5_ACTS[0x26].w1[1].w * s1->fvalue;
         G5_ACTS[0x26].w3[2].w = G5_ACTS[0x26].w1[2].w * s1->fvalue;
