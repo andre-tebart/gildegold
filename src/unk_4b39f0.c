@@ -958,7 +958,7 @@ void ai_CharBuildingShare(AICHAR *c, int k, G13STAT *s)
         b = gm_BuildQueryT(1, 6);
     n = 0;
     for (; b != 0; b = gm_BuildNext(), n++) {
-        if (*(unsigned short *)((char *)b + 0x27) == c->id)
+        if (b->owner == c->id)
             same++;
     }
     s->same = same;
