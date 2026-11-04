@@ -903,7 +903,7 @@ void ai_PokerExchange(int k)
 void ai_PokerAnte(void)
 {
     ai_PokerTable->pot = ai_PokerTable->stake2 * 3;
-    cm_SendMoveGoodsUnchecked(-1, *(int *)((unsigned char *)ai_PokerTable->seat[0].who + 4), ai_OwnPlayer, ai_PokerTable->stake2);
+    cm_SendMoveGoodsUnchecked(-1, ((AIPER *)ai_PokerTable->seat[0].who)->netId, ai_OwnPlayer, ai_PokerTable->stake2);
 }
 /* 0x4a8690, ends the round: the winner into winner, the pot to the player if he won, all cards back */
 
