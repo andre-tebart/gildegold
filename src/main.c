@@ -4753,7 +4753,7 @@ void main_GameLoop(int ctl)
                 unk_Unk511c70();
         } else if (net_Conn.s != -1) {
             if ((ai_GameFlags & 0x40) != 0) {
-                unk_Unk5112d0(((unsigned)&ls_SavePath + 0xca));
+                init_JoinNetworkGame(((unsigned)&ls_SavePath + 0xca));
                 ai_Difficulty = 2;
             } else {
                 init_StartNetworkGame(main_NetSaveName);
@@ -4768,7 +4768,7 @@ void main_GameLoop(int ctl)
     } else if ((ai_GameFlags & 0x40) != 0) {
         ai_Difficulty = 2;
         if (net_Conn.s != -1)
-            unk_Unk5112d0(main_NetSaveName);
+            init_JoinNetworkGame(main_NetSaveName);
         else {
             sv_MessageBox(U_I(((unsigned)&ai_DifficultyTexts + 0x80)), 0);
             main_EndGame();

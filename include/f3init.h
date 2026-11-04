@@ -35,7 +35,7 @@ void init_LoadSiteScene(char *name);                                    /* 0x510
 int init_InitTown(char *city);                                          /* 0x510ad0 */
 void init_ShowStatus(int t);                                            /* 0x510e20 */
 int init_StartNetworkGame(char *name);                                  /* 0x510e50 */
-int unk_Unk5112d0(int n);                                               /* 0x5112d0 */
+int init_JoinNetworkGame(int saveName);                                               /* 0x5112d0 */
 int init_SetupNewGame(int n);                                           /* 0x511400 */
 char unk_Unk5115b0(int s, int r);                                       /* 0x5115b0 */
 void init_StripTorches(int s);                                              /* 0x511600 */
