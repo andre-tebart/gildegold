@@ -9,7 +9,8 @@ typedef struct G13TYPE {                /* 0x1c bytes, ai_MissionTypes[48], the 
     int type;                           /* 0x00 */
     int kind;                           /* 0x04, 0..5 */
     int text;                           /* 0x08, text id */
-    int unk0c;                          /* 0x0c */
+    int offerSpeech;                    /* 0x0c, the nn of the offer speech "_AUFTRAEGE_VERGABE_HS_nn" (the dialog
+                                           that shows the mission and asks; ai_MissionOfferDialog / ai_MissionInfoDialog) */
     int speech;                         /* 0x10, the speech number nn (_AUFTRAEGE_ERFOLG_HS_nn) */
     int goal;                           /* 0x14, the goal amount a condition compares against (count, sum, percent or minutes) */
     int unk18;                          /* 0x18 */

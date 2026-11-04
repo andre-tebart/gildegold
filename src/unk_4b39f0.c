@@ -1,9 +1,9 @@
 /* unk_4b39f0.c -- missions ("_AUFTRAEGE_VERGABE_HS_%.2d", "special\mission"): the running missions
    ai_Missions, the mission types ai_MissionTypes (.data right after hst.c's literals), an own random generator.
    Unit start and name are guesses (open boundary); it ends with save / load 0x4b62e0 / 0x4b63b0. Names are ours.
-   Open: G13TYPE.unk0c / unk18 and G13MIS.unk18 have no name evidence yet; G13MIS.progress / fulfilled stand on their
-   users (ai_CountMissionEvent and the completion flag of he.c 0x56ce40). G13MIS.unk18 stays unk (only ever zeroed /
-   saved).
+   Open: G13TYPE.unk18 and G13MIS.unk18 have no name evidence yet; G13TYPE.offerSpeech, G13MIS.progress / fulfilled stand
+   on their users (the _AUFTRAEGE_VERGABE speech, ai_CountMissionEvent and the completion flag of he.c 0x56ce40). The
+   two unk18 fields stay unk (zeroed / saved only).
    Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / G13_501190 views (type debt).
    Open: not included yet (dcp headers conflicts unk_4b39f0 HEADER): d2.h; held by own declarations that differ
    from the owner's: d2_Radios.
@@ -212,9 +212,9 @@ int sb_IsPlaying(struct SBSAMPLE *s);                                           
 void sb_Stop(struct SBSAMPLE *s, int fade);                                                 /* 0x427290 */
 extern int sv_PopRequest;                /* 0x6f22a0 */
 
-/* 0x4b3d50, the mission offer dialog of mission type type ("special\mission" with its texts and the speech
-   "_AUFTRAEGE_VERGABE_HS_nn"): 1 if accepted */
-int ai_Unk4b3d50(int type, int id)
+/* 0x4b3d50, the mission offer dialog of the type: shows the mission form and its texts, plays the offer speech
+   "_AUFTRAEGE_VERGABE_HS_nn", 1 when the player accepts */
+int ai_MissionOfferDialog(int type, int id)
 {
     char name[0x100];
     G13TYPE *t;
@@ -231,9 +231,9 @@ int ai_Unk4b3d50(int type, int id)
     io_PrintText((char *)0x7d);
     io_PrintText("$N");
     io_PrintText((char *)0x7e);
-    sprintf(name, "_AUFTRAEGE_VERGABE_HS_%.2d", t->unk0c);
+    sprintf(name, "_AUFTRAEGE_VERGABE_HS_%.2d", t->offerSpeech);
     snd = snd_PlayVoice(-7, 0, name, -1);
-    while (sv_RunFrame((void (*)(void))ai_Unk4b3d50, id)) {
+    while (sv_RunFrame((void (*)(void))ai_MissionOfferDialog, id)) {
         if (dm_L.rup != 0 || d2_ClickedId == 1)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0) {
@@ -299,7 +299,7 @@ int ai_ChooseMissionType(int kind)
         if (d2_ClickedId != -1 && d2_Radios[g].sel != -1
             && d2_PointerObj == d2_Radios[g].objs[d2_Radios[g].sel]) {
             t = (G13TYPE *)d2_Objs[d2_Radios[g].objs[d2_Radios[g].sel]].user;
-            if (ai_Unk4b3d50(t->type, sv_FrameMask)) {
+            if (ai_MissionOfferDialog(t->type, sv_FrameMask)) {
                 chosen = t->type;
                 sv_PopRequest = 1;
             }
@@ -992,7 +992,7 @@ void ai_ShowMissions(int owner)
             ai_MissionInfoDialog(ai_Missions[i].type, id | 0x80);
     }
 }
-/* 0x4b5360, the mission dialog of type type, information only (cf. 0x4b3d50) */
+/* 0x4b5360, the mission dialog of type type, information only (cf. ai_MissionOfferDialog) */
 
 void ai_MissionInfoDialog(int type, int id)
 {
@@ -1008,7 +1008,7 @@ void ai_MissionInfoDialog(int type, int id)
     io_PrintTextId(t->text + 1);
     io_PrintText("$N");
     io_PrintText((char *)0x7d);
-    sprintf(name, "_AUFTRAEGE_VERGABE_HS_%.2d", t->unk0c);
+    sprintf(name, "_AUFTRAEGE_VERGABE_HS_%.2d", t->offerSpeech);
     snd = snd_PlayVoice(-7, 0, name, -1);
     while (sv_RunFrame((void (*)(void))ai_MissionInfoDialog, id)) {
         if (dm_L.rup != 0)
@@ -1099,7 +1099,7 @@ void ai_MissionSuccessDialog(G13TYPE *t, int id)
 /* 0x4b58b0, the dialog that ends the mission chain (text 0x1b99, the same text the result dialogs 0x4b5970 /
    0x4b5c20 show as their "no more missions" option): shown by 0x4b5f10 after the result dialog when the
    mission ended outside mission mode 5, one OK form, pops on a click or a mouse move
-   @deep behaviour draft is one register decision: the original keeps the literal 1 in ebx (push ebx/pop ebx in the prologue, mov ebx,1; push ebx for d2_SetForm(view,1), mov [sv_PopRequest],ebx in the loop), ours emits push 1 / mov [sv_PopRequest],1; the slots [esp+0x38]->[esp+0x3c] and the fill hunks follow from the extra ebx push. The loop body reads the same (one shared store of the || form). spell.py has no menu rule on the code hunks. Tried, one edit + one build each, reverted with the bytes unchanged: 'ok = 1; d2_SetForm(view, ok); ... sv_PopRequest = ok', 'ok = 1; d2_SetForm(view, 1); ... sv_PopRequest = ok', 'for (ok = 1; sv_RunFrame(...); ) { ... sv_PopRequest = ok; }', and the 2026-10-25 'ok = 1' local: VC6 constant-folds every one (no ebx at all). Left: the constant materialisation / register allocation (c2prio: const#0 not materialised); the only matched sibling with this idiom (ai_Unk4b3d50) gets ebx from 'r = 1', a variable with two definitions that is returned. */
+   @deep behaviour draft is one register decision: the original keeps the literal 1 in ebx (push ebx/pop ebx in the prologue, mov ebx,1; push ebx for d2_SetForm(view,1), mov [sv_PopRequest],ebx in the loop), ours emits push 1 / mov [sv_PopRequest],1; the slots [esp+0x38]->[esp+0x3c] and the fill hunks follow from the extra ebx push. The loop body reads the same (one shared store of the || form). spell.py has no menu rule on the code hunks. Tried, one edit + one build each, reverted with the bytes unchanged: 'ok = 1; d2_SetForm(view, ok); ... sv_PopRequest = ok', 'ok = 1; d2_SetForm(view, 1); ... sv_PopRequest = ok', 'for (ok = 1; sv_RunFrame(...); ) { ... sv_PopRequest = ok; }', and the 2026-10-25 'ok = 1' local: VC6 constant-folds every one (no ebx at all). Left: the constant materialisation / register allocation (c2prio: const#0 not materialised); the only matched sibling with this idiom (ai_MissionOfferDialog) gets ebx from 'r = 1', a variable with two definitions that is returned. */
 
 void ai_MissionEndDialog(int id)
 {
