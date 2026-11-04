@@ -1435,7 +1435,8 @@ char d3s_FreeLightCB(D3OBJECT *obj, D3OBJECT *light)
     }
     return 1;
 }
-/* 0x45ce00 */
+/* 0x45ce00, drops the light direction of every shadow slot of obj (its mesh's four D3SSLOTs), so no
+   shadow is drawn until d3s_Update refills them; only for an object that casts shadows (objectFlags bit 2) */
 
 void d3s_ResetShadows(D3OBJECT *obj)
 {
