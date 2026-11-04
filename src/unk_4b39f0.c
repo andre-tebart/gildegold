@@ -652,9 +652,10 @@ int ai_CondCharShare(AICHAR *c, G13TYPE *t)
         return 1;
     return 0;
 }
-/* 0x4b4960, mission condition: 0x4b51f0 values 0x13, 4 and 0x10 of c reach 1 (4 / 0x10 only if present) */
+/* 0x4b4960, mission condition (type 39): the character holds every building of the kind 0x13 and, where such
+   buildings exist, of the kinds 4 and 0x10 (ai_CharBuildingShare of each kind reaches 1) */
 
-int ai_Unk4b4960(AICHAR *c, G13TYPE *t)
+int ai_CondCharHoldsKinds(AICHAR *c, G13TYPE *t)
 {
     G13STAT s;
 
@@ -906,7 +907,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 41:
         return ai_CondCharShare(c, t);
     case 39:
-        return ai_Unk4b4960(c, t);
+        return ai_CondCharHoldsKinds(c, t);
     case 38:
         return ai_Unk4b4a00(c, t);
     case 33:
