@@ -1091,6 +1091,14 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
     char pad248[5];
 } AIBTYPE;                         /* 0x24d bytes, ai_BTypes[] */
 #pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct AIROOM {            /* the room object sv_PanelShown points to (ai_types.h AIOBJ, the fields this unit reads) */
+    unsigned short id;             /* 0x00, the room (scene record) id */
+    char pad002[0x12];
+    int list;                      /* 0x14, its object list (ai_types.h AIOBJ.list; ai_StorageWindow / gm_SumListAmounts) */
+} AIROOM;
+#pragma pack(pop)
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
 #include "ls.h"
@@ -8315,7 +8323,7 @@ char d3_DeflateScene(unsigned int flags); char d3_InflateScene(unsigned int flag
 void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o); 
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
-struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_Unk5a4f70(); void ai_Unk5a5080();
+struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
@@ -8879,7 +8887,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x1f: ai_Unk59a560(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x4d: ai_ThievesGuildEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x54: ai_ThievesGuildListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x5c: ai_Unk5a4f70(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x5c: ai_StorageContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x60: ai_Unk5a5080(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x65: ai_Unk5a5bc0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x74: ai_SmithyContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -11891,13 +11899,13 @@ void ai_ThievesGuildEmptyListener(void)
     while (sv_RunFrame(ai_ThievesGuildEmptyListener, 0x67fff) != 0)
         ;
 }
-/* 0x5a4f70, a contact listener (260 B, room 0x5c of the driver 0x59e420): 0x52e190, the pump 0x5309a0 (this,
-   0x67fff); with the mask 0x200 the contacts contact_AUSRUESTEN (0x1441fb8, 0xd) / contact_REGENERATION
-   (0x1442008, 0x17), with 0x400 contact_LAGER (0x1441f90, 0xe) / contact_TRANSPORT (0x1441fa0, 0x15); the
-   pending click 0x6f22e4 opens 0x5b26b0 (param_1, the record 0x6f2310 field +0x14) for LAGER, 0x5af1a0 for
-   TRANSPORT, 0x5bb350 for AUSRUESTEN and 0x5bba00 for REGENERATION */
+/* 0x5a4f70, the storage-room listener (260 B, room 0x5c of the building driver 0x59e420): 0x52e190, the pump
+   0x5309a0 (this, 0x67fff); with the mask 0x200 the contact_AUSRUESTEN / contact_REGENERATION plates, with 0x400
+   the contact_LAGER / contact_TRANSPORT plates; the pending click 0x6f22e4 opens ai_StorageWindow (the building,
+   the shown room's object list) for LAGER, ai_OpenTransport for TRANSPORT, ai_EquipWindow for AUSRUESTEN and
+   ai_TrainingWindow for REGENERATION */
 
-void ai_Unk5a4f70(int param_1)
+void ai_StorageContact(int building)
 {
     int ausruesten = 0;
     int regeneration = 0;
@@ -11906,29 +11914,29 @@ void ai_Unk5a4f70(int param_1)
     int click;
 
     sv_ReleaseNamePlates();
-    if (sv_RunFrame(ai_Unk5a4f70, 0x67fff) == 0)
+    if (sv_RunFrame(ai_StorageContact, 0x67fff) == 0)
         return;
     do {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", U_I((unsigned)&ai_ContactTextEquip), 0xd);
-            regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&ai_ContactTextRegeneration), 0x17);
+        if (ai_BuildingPerms & 0x200) {
+            ausruesten = sv_RegisterNamePlate("contact_AUSRUESTEN", ai_ContactTextEquip, 0xd);
+            regeneration = sv_RegisterNamePlate("contact_REGENERATION", ai_ContactTextRegeneration, 0x17);
         }
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
+        if (ai_BuildingPerms & 0x400) {
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
         }
-        click = U_I((unsigned)&ai_ClickedObject);
+        click = ai_ClickedObject;
         if (click != 0) {
             if (click == lager)
-                ai_StorageWindow(param_1, U_I(U_I((unsigned)&sv_PanelShown) + 0x14));
+                ai_StorageWindow(building, ((AIROOM *)sv_PanelShown)->list);
             else if (click == transport)
-                ai_OpenTransport(param_1);
+                ai_OpenTransport(building);
             else if (click == ausruesten)
-                ai_EquipWindow(param_1);
+                ai_EquipWindow(building);
             else if (click == regeneration)
-                ai_TrainingWindow(param_1);
+                ai_TrainingWindow(building);
         }
-    } while (sv_RunFrame(ai_Unk5a4f70, 0x67fff) != 0);
+    } while (sv_RunFrame(ai_StorageContact, 0x67fff) != 0);
 }
 /* 0x5a5080, a contact listener (200 B, room 0x60 of the driver 0x59e420): 0x52e190, the pump 0x5309a0 (this,
    0x67fff); with the mask 0x200 the targets ob_ZIELSCHEIBE (0x1440acc, 0xc) / contact_NACHT (0x1440ad0, 0xc)
