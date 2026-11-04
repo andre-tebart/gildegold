@@ -15,10 +15,11 @@
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.
    Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in unk_575860.h and the tutorial code up
-   to ai_TutorialWindow uses them; the later functions still reach the state record through the S / U_I
-   byte-offset macros; the message (AIMSG, ai.h) is typed from ai_CabinetSpyWindow on, earlier senders and the
-   contact-list records still use byte offsets; the cannon scene struct (CANNONSCENE, CANNONREC) is typed from
-   ai_CannonScene to ai_CannonBuildPanel, ai_CannonAxes / ai_CannonPitchRatio still address it by byte offset.
+   to ai_TutorialWindow and the chapter transition callbacks use them; most later functions still reach the
+   state record through the S / U_I byte-offset macros; the message (AIMSG, ai.h) is typed from
+   ai_CabinetSpyWindow on, earlier senders and the contact-list records still use byte offsets; the cannon
+   scene struct (CANNONSCENE, CANNONREC) is typed from ai_CannonScene to ai_CannonBuildPanel, ai_CannonAxes /
+   ai_CannonPitchRatio still address it by byte offset.
    Open: d2_CreatePicObj: d2.h declares int parameters, the original's callers here (and d2.c's) pass a short y
    (ai_CannonBuildPanel through the cast macro d2_CreatePicObjS).
    Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:

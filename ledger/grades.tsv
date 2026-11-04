@@ -3953,15 +3953,15 @@ exe	0x005766d0	ai_StepChapter1Step5	unk_575860	byte	readable
 exe	0x005767d0	ai_StepChapter1Step10	unk_575860	byte	readable		
 exe	0x00576830	ai_StepChapter2Step1	unk_575860	byte	readable		
 exe	0x005768a0	ai_HookChapter2Step2	unk_575860	byte	readable		
-exe	0x005768d0	ai_StepChapter2Step2	unk_575860	shape	draft		
-exe	0x00576920	ai_StepChapter2Step3	unk_575860	shape	draft		
-exe	0x00576970	ai_StepChapter2Step4	unk_575860	shape	draft		
-exe	0x005769c0	ai_StepChapter2Step5	unk_575860	shape	draft		
+exe	0x005768d0	ai_StepChapter2Step2	unk_575860	byte	readable		
+exe	0x00576920	ai_StepChapter2Step3	unk_575860	byte	readable		
+exe	0x00576970	ai_StepChapter2Step4	unk_575860	byte	readable		
+exe	0x005769c0	ai_StepChapter2Step5	unk_575860	byte	readable		
 exe	0x00576a80	ai_HookChapter2Step5	unk_575860	byte	readable		
-exe	0x00576ab0	ai_StepChapter2Step6	unk_575860	shape	draft		
-exe	0x00576b50	ai_StepChapter2Step7	unk_575860	shape	draft		
-exe	0x00576ba0	ai_StepChapter4Step2	unk_575860	shape	draft		
-exe	0x00576cd0	ai_QueryChapter4Step2	unk_575860	byte	draft		
+exe	0x00576ab0	ai_StepChapter2Step6	unk_575860	byte	readable		
+exe	0x00576b50	ai_StepChapter2Step7	unk_575860	byte	readable		
+exe	0x00576ba0	ai_StepChapter4Step2	unk_575860	byte	readable		
+exe	0x00576cd0	ai_QueryChapter4Step2	unk_575860	byte	readable		
 exe	0x00576d40	ai_StepChapter4Step4	unk_575860	byte	readable		
 exe	0x00576e70	ai_QueryChapter4Step4	unk_575860	byte	draft		
 exe	0x00576ee0	ai_StepChapter4Step5	unk_575860	shape	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at a105a42a: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads), a declaration-set change in a header this unit includes (f3gm.h); the experiment falls shape -> draft (12 code hunks, 82 differing instructions) on that change alone, and the shape grade it held was itself a declared tie-break debt, so neither is evidence of the original's source [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> draft+readable at a105a42a: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads), a declaration-set change in a header this unit includes (f3gm.h); the experiment falls shape -> draft (12 code hunks, 82 differing instructions) on that change alone, and the shape grade it held was itself a declared tie-break debt, so neither is evidence of the original's source [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
