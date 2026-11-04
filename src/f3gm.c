@@ -9300,16 +9300,18 @@ int gm_StallValue(char *b)
     }
     return v;
 }
-/* 0x509ff0, the character that lives in the building the object o is in (word +0x25 of the building), or o's own character */
+/* 0x509ff0, the character that owns the object o: the character of its holderId (+0x0a), else the master
+   (+0x25) of the building holding it, else 0. The found character goes back through o's own argument slot
+   (the original passes its address as gm_FindById's character out) */
 
 unsigned short *gm_ObjectOwnerChar(unsigned short *o)
 {
-    int b;
+    ORDBLD *b;
 
-    gm_FindById(&b, 0, (int *)&o, *(int *)(o + 5));
+    gm_FindById((int *)&b, 0, (int *)&o, ((ORDOBJ *)o)->holderId);
     if (o == 0) {
-        if (b != 0 && *(unsigned short *)(b + 0x25) != 0xffff)
-            return (unsigned short *)ai_Chars[*(unsigned short *)(b + 0x25)];
+        if (b != 0 && b->masterId != 0xffff)
+            return (unsigned short *)ai_Chars[b->masterId];
         o = 0;
     }
     return o;
