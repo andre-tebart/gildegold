@@ -201,7 +201,8 @@ int ZEXPORT deflateInit_(strm, level, version, stream_size)
 }
 
 /* ========================================================================= */
-/* 0x461940 */
+/* 0x461940, allocates a stream state for the given level, window bits,
+ * memLevel and strategy, then resets it; returns a zlib status code */
 int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
 		  version, stream_size)
     z_streamp strm;
