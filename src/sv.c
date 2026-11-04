@@ -6689,34 +6689,36 @@ SVBOOK *sv_OpenBook(char *model, char *at, char n, ...)
     sb_PlaySample(snd_BookBank, "Aufklappen_s", 1, 0x3f, 0x7f, 0, 0);
     return bk;
 }
-/* 0x52f530, closes a book: frees the model (0x411b70, back to the parent 0x447190 when it had one), the page widgets (0x474d10 / 0x4758f0), the two buttons, restores 0x437060 and plays "Zuklappen_s" */
+/* 0x52f530, closes a book: releases the model's textures (and shows the hidden model again, which becomes the book's
+   when it had one), clears and closes the npages page views, removes the two buttons, restores the w-buffer state
+   (the zbuffer of the opening) and plays the closing sound "Zuklappen_s"; frees the record */
 
-void sv_Unk52f530(int *bk)
+void sv_CloseBook(SVBOOK *bk)
 {
     int i, *p;
 
     if (bk != 0) {
-        d3t_ReleaseObjectTextures(bk[0]);
-        if (bk[1] != 0) {
-            d3if_Show(bk[1], 1);
-            d3if_Delete((struct D3OBJECT *)bk[0]);
-            bk[0] = bk[1];
+        d3t_ReleaseObjectTextures(bk->obj);
+        if (bk->hidden != 0) {
+            d3if_Show(bk->hidden, 1);
+            d3if_Delete(bk->obj);
+            bk->obj = bk->hidden;
         }
         i = 0;
-        if (0 < *((char *)bk + 0x271)) {
-            p = bk + 0x8a;
+        if (0 < bk->npages) {
+            p = bk->views;
             do {
                 d2_ClearViewTextures(*p);
                 d2_CloseView(*p);
                 i++;
                 p++;
-            } while (i < *((char *)bk + 0x271));
+            } while (i < bk->npages);
         }
-        if (bk[0x9a] != -1)
-            d2_RemoveObj(bk[0x9a]);
-        if (bk[0x9b] != -1)
-            d2_RemoveObj(bk[0x9b]);
-        if (*((char *)bk + 0x272) != 0)
+        if (bk->btnNext != -1)
+            d2_RemoveObj(bk->btnNext);
+        if (bk->btnPrev != -1)
+            d2_RemoveObj(bk->btnPrev);
+        if (bk->zbuffer != 0)
             d3d_SetWBuffer(1);
         mem_Free(bk);
         sb_PlaySample(snd_BookBank, "Zuklappen_s", 1, 0x3f, 0x7f, 0, 0);

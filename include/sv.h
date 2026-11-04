@@ -145,7 +145,7 @@ void sv_UpdateBandLed(void);                                                /* 0
 void sv_DrawRubberBand(void);                                                /* 0x52f2c0 */
 void sv_BookKeys(SVBOOK *bk);                                           /* 0x52f340 */
 SVBOOK *sv_OpenBook(char *model, char *at, char n, ...);                         /* 0x52f360 */
-void sv_Unk52f530(int *bk);                                             /* 0x52f530 */
+void sv_CloseBook(SVBOOK *bk);                                          /* 0x52f530 */
 void sv_UpdateBook(SVBOOK *bk);                                           /* 0x52f600 */
 int sv_TurnBook(SVBOOK *bk, char dir);                                  /* 0x52f710 */
 void sv_BookForward(SVBOOK *bk);                                           /* 0x52f9f0 */
