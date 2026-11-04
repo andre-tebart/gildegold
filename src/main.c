@@ -4809,7 +4809,7 @@ void main_GameLoop(int ctl)
             }
         }
         if ((U_I((unsigned)&ai_GameFlags) & 1) != 0)
-            ai_Unk4b1d20();
+            hst_LoadPlayerTexts();
     }
     sv_PumpMessages();
     ai_Unk5b2090();

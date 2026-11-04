@@ -1932,7 +1932,7 @@ unsigned char hst_TextsOn = 0;  /* 0x6f0724, history texts on */
 
 /* 0x4b1d20, resets the lists hst_Lists and opens the player's history texts "historie\text_H_<name>"
    (txt.c); none: hst_TextsOn = 0 */
-void ai_Unk4b1d20(void)
+void hst_LoadPlayerTexts(void)
 {
     char path[0x40];
     int i, j, k;

@@ -2490,7 +2490,7 @@ int unk_Unk520000(int f)
     }
     return 1;
 }
-/* 0x520200, reads the mission table 0x6f0724 / 0x601058 .. 0x60106c, 0xf83520 (0x10 bytes), and the 0x11-word records from 0xf83548 (8 pairs of words each). Returns 1 @deep diff read against the source and the original: meaning verified - the 1-byte hst_TextsOn read, ai_Unk4b1d20, the two 4-byte counts (hst_TextCurrent / hst_KeyNext = the first + n), the 16 bytes at 0xf83520, the record loop p = 0xf83548 with the 8 word pairs read from p-4 / p and p += 0x11 to > 0xf83657 - all match. The 100 code hunks are the known epilogue shape (the original inlines pop pop pop pop ret after every failed read, ours shares one return-0 block) plus register/order scheduling (inc ebx before/after add esi, xor ebx placement). Readability: Q1, Q2 ai_Unk4b1d20 (also Q7: undeclared), Q3 the 0xf83520 / 0xf83548 / 0xf83657 image literals. */
+/* 0x520200, reads the mission table 0x6f0724 / 0x601058 .. 0x60106c, 0xf83520 (0x10 bytes), and the 0x11-word records from 0xf83548 (8 pairs of words each). Returns 1 @deep diff read against the source and the original: meaning verified - the 1-byte hst_TextsOn read, hst_LoadPlayerTexts, the two 4-byte counts (hst_TextCurrent / hst_KeyNext = the first + n), the 16 bytes at 0xf83520, the record loop p = 0xf83548 with the 8 word pairs read from p-4 / p and p += 0x11 to > 0xf83657 - all match. The 100 code hunks are the known epilogue shape (the original inlines pop pop pop pop ret after every failed read, ours shares one return-0 block) plus register/order scheduling (inc ebx before/after add esi, xor ebx placement). Readability: Q1, Q2 hst_LoadPlayerTexts (also Q7: undeclared), Q3 the 0xf83520 / 0xf83548 / 0xf83657 image literals. */
 
 
 int unk_Unk520200(int f)
@@ -2499,7 +2499,7 @@ int unk_Unk520200(int f)
     int *p, *q;
 
     LS_R(&hst_TextsOn, 1)
-    ai_Unk4b1d20();
+    hst_LoadPlayerTexts();
     LS_R(&n, 4)
     hst_TextCurrent = hst_TextFirst + n;
     if (ls_Read((int)&n, 4, 1, f) == 0)
