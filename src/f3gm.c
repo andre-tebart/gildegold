@@ -37,6 +37,8 @@
    cast gm_AssignBuildingI until the definition and headers are settled.
    Open: gm_TitlePeriodServed writes an AITIME through its int *out (he.c, main.c, unk_58bbd0.c declare it so in
    their own prototypes); the typed parameter waits for those units to include f3gm.h.
+   Open: data: gm_TechTreeTime (0x76fdc8) takes d3_Time when gm_TechTreeWindow opens the tree, but no drafted
+   reader uses it: its purpose (the tree's age, a refresh stamp) is unsettled.
    unit of rea 8cef7d5b (src/game/f3gm.c); boundaries in decl/text.dcl */
 struct CHARACTER;
 struct CHTRANSPORT;
