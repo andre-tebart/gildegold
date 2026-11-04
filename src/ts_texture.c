@@ -50,7 +50,7 @@ extern unsigned char d3_MipSkip;
 #define d3_TexFormat8 d3d_UsedTexFormat.pf            /* 0xfe79c8 */
 #define d3_TexFormat16Bpp d3d_UsedTexFormat.bpp2      /* 0xfe79e8 */
 #define d3_TexFormat16 d3d_UsedTexFormat.pf2          /* 0xfe79ec */
-#define d3_Unkfe7a0d d3d_UsedTexFormat.same           /* 0xfe7a0d */
+#define d3_TexFormatsSame d3d_UsedTexFormat.same           /* 0xfe7a0d */
 extern ULONG dd_Ref;                        /* 0x146356c, result of the last Release (dd_vesa.c) */
 char d3_Unk633e00[256] = {0};  /* 0x633e00 */
 /* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
@@ -217,39 +217,40 @@ void ts_CacheRelease(TSTEXTURE *tex)
         }
     }
 }
-/* 0x45f860, creates tex's D3D texture: the 16-bit format when hicolor, else the 8-bit one with a, b passed through,
-   and mips from ts_Mips unless tex->nomip */
+/* 0x45f860, creates tex's D3D texture: the 16-bit format when hicolor, else the 8-bit one with npal, pal passed
+   through, and mips from ts_Mips unless tex->nomip */
 
-void ts_CreateSurface(TSTEXTURE *tex, int a, int b)
+void ts_CreateSurface(TSTEXTURE *tex, int npal, unsigned char *pal)
 {
     unsigned char mips = tex->nomip ? 0 : ts_Mips;
 
     if (tex->hicolor)
         d3d_CreateTexture(tex->size, &d3_TexFormat16, &tex->surf, &tex->d3dtex, 0, 0, mips);
     else
-        d3d_CreateTexture(tex->size, &d3_TexFormat8, &tex->surf, &tex->d3dtex, a, b, mips);
+        d3d_CreateTexture(tex->size, &d3_TexFormat8, &tex->surf, &tex->d3dtex, npal, pal, mips);
 }
-/* 0x45f8d0 */
+/* 0x45f8d0, gives tex the surfaces of a cache entry of the same size, palettization and mip setting (the entry
+   freed, its palette applied), the 8-bit palette set on it; with no such entry, creates a new surface */
 
-void ts_CacheFetch(TSTEXTURE *tex, int a, int b)
+void ts_CacheFetch(TSTEXTURE *tex, int npal, unsigned char *pal)
 {
     TSCACHE *sce;
     unsigned int i;
 
     if (ts_CacheUsed > 0) {
         for (i = 0, sce = ts_Cache; i < ts_CacheSize; i++, sce++) {
-            if (sce->size == tex->size && (sce->hicolor == tex->hicolor || d3_Unkfe7a0d)
+            if (sce->size == tex->size && (sce->hicolor == tex->hicolor || d3_TexFormatsSame)
                 && tex->nomip == sce->nomip) {
                 sce->size = 0;
                 ts_CacheUsed--;
                 tex->surf = sce->surf;
                 tex->d3dtex = sce->d3dtex;
-                d3d_SetSurfacePalette(0, tex->surf, a, b);
+                d3d_SetSurfacePalette(0, tex->surf, npal, pal);
                 return;
             }
         }
     }
-    ts_CreateSurface(tex, a, b);
+    ts_CreateSurface(tex, npal, pal);
 }
 /* 0x45f980 */
 
@@ -999,7 +1000,7 @@ TSTEXTURE *tex_Create(char *name, int size, char hicol, TSFLAGS flags, unsigned 
     tex->group = -1;
     ts_TexUsed++;
     if (d3_Hardware) {
-        ts_CacheFetch(tex, npal, (int)pal);
+        ts_CacheFetch(tex, npal, pal);
         return tex;
     }
     tex->hicol = ts_GetHiColTab(pal, npal, map);

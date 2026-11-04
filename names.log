@@ -1862,3 +1862,4 @@
 2026-11-04T14:50:08 0x004abd00 func ai_Unk4abd00 -> ai_DecideEhrerbietung by:main why:registered as act.decide of action 0x47 'Ehrerbietung' in ai_RegisterSocialActions (0x4abed0)
 2026-11-04T14:50:43 0x004abe60 data ai_Unk4abe60 -> ai_ExecEhrerbietung by:main why:registered as act.exec of action 0x47 'Ehrerbietung' in ai_RegisterSocialActions (0x4abed0)
 2026-11-04T14:51:49 0x00fb91b4 data ts_Unkfb91b4 -> ts_CacheReset by:main why:written only in ts_InitCache (0x45f610), zeroed beside ts_CacheSize / ts_CacheUsed and never read; the original has no other use of 0xfb91b4
+2026-11-04T14:54:24 0x00fe7a0d data d3_Unkfe7a0d -> d3_TexFormatsSame by:main why:d3d_UsedTexFormat.same (+0x4d): the 8- and 16-bit texture formats are the same, so either surface fits
