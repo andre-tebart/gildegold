@@ -1934,3 +1934,4 @@
 2026-11-04T17:22:44 0x004b86c0 data ai_MsgWorkerOwnHealthLossType1e -> ai_MsgWorkerOwnHealthLossType1f by:main why:message table slot 0x1f (index 31 of 0x602570, after 0x4b84b0 at 0x1e)
 2026-11-04T17:22:52 0x004b8870 data ai_MsgLoseMoney2to4Type1f -> ai_MsgLoseMoney2to4Type20 by:main why:message table slot 0x20 (index 32 of 0x602570, after 0x4b86c0 at 0x1f)
 2026-11-04T17:23:14 0x004b8950 data ai_Unk4b8950 -> ai_MsgGainMoney3to5Type21 by:main why:message table slot 0x21 (index 33 of 0x602570): c gains a rolled 3..5 money (gm_SendMoneyDelta); the text gets gm_PlayerFactor(1, ai_OwnPlayer) and the amount
+2026-11-04T17:24:19 0x004b8a10 data ai_Unk4b8a10 -> ai_MsgCartFillDropType22 by:main why:message table slot 0x22 (index 34 of 0x602570): one of up to 8 jobs of c's carts whose job ends (0xb0 / 0xb4, gm_FindById) are homes with a kind 0x47 building; the cart's fill (AIOBJ.fill) drops to 60..94 % and the text names the 0x47 end's player

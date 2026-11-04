@@ -879,19 +879,19 @@ int ai_MsgGainMoney3to5Type21(G14MSG *m)
     gm_SendMoneyDelta(c->netId, s);
     return 0;
 }
-/* 0x4b8a10, message: one of up to 8 jobs (0x53e400(1, 0, 0xf)) of c's objects whose ends (0xb0 / 0xb4, via
-   0x4fea50) are 0x502520 buildings and one of kind 0x47; the object's byte 0x12 drops to 60..94 % (0x4c3c00), the
-   text names the player of the 0x47 end (not with item 0x290) */
+/* 0x4b8a10, message 0x22: one of up to 8 jobs (0x53e400(1, 0, 0xf)) of c's carts whose ends (0xb0 / 0xb4, via
+   0x4fea50) are 0x502520 buildings and one of kind 0x47; the cart's fill (byte 0x12) drops to 60..94 % (0x4c3c00),
+   the text names the player of the 0x47 end (not with item 0x290) */
 
-int ai_Unk4b8a10(G14MSG *m)
+int ai_MsgCartFillDropType22(G14MSG *m)
 {
     AICHAR *c;
     AIJOB *j;
-    char *o;
+    AIOBJ *o;
     AIBLD *w, *u;
     int n, r;
     unsigned char v;
-    char *os[8];
+    AIOBJ *os[8];
     AIJOB *js[8];
     char buf[0x200];
 
@@ -902,12 +902,12 @@ int ai_Unk4b8a10(G14MSG *m)
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
     for (j = he_FindEvent(1, 0, 0xf); j != 0 && n < 8; j = he_NextEvent()) {
-        o = gm_FindObjectInst(*(int *)((char *)j + 0xac));
-        if (o != 0 && *(int *)(o + 0xa) == c->id) {
-            G8_4FEA50((int *)&u, 0, 0, *(int *)((char *)j + 0xb4));
-            G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));
-            if ((u != 0 && gm_IsHomeType(u)) || (w != 0 && gm_IsHomeType(w))) {
-                if ((w != 0 && u != 0 && *(char *)w == 0x47) || *(char *)u == 0x47) {
+        o = (AIOBJ *)gm_FindObjectInst(j->u.id);
+        if (o != 0 && o->fightSide == c->id) {
+            gm_FindById((int *)&u, 0, 0, j->id3);
+            gm_FindById((int *)&w, 0, 0, j->id2);
+            if ((u != 0 && gm_IsHomeType((unsigned char *)u)) || (w != 0 && gm_IsHomeType((unsigned char *)w))) {
+                if ((w != 0 && u != 0 && w->type == 0x47) || u->type == 0x47) {
                     js[n] = j;
                     os[n] = o;
                     n++;
@@ -920,16 +920,16 @@ int ai_Unk4b8a10(G14MSG *m)
     r = util_RandomU(n);
     j = js[r];
     o = os[r];
-    G8_4FEA50((int *)&w, 0, 0, *(int *)((char *)j + 0xb0));
-    G8_4FEA50((int *)&u, 0, 0, *(int *)((char *)j + 0xb4));
-    v = (unsigned char)(((unsigned char *)o)[0x12] * ((util_RandomU(0x23) + 0x3c) * 0.01f));
-    cm_BeginFieldBlock(o, *(int *)(o + 2));
+    gm_FindById((int *)&w, 0, 0, j->id2);
+    gm_FindById((int *)&u, 0, 0, j->id3);
+    v = (unsigned char)(o->fill * ((util_RandomU(0x23) + 0x3c) * 0.01f));
+    cm_BeginFieldBlock((char *)o, o->objId);
     cm_AddFieldDelta(1, 1, 0x12, &v);
     cm_SendFieldDeltas();
-    if (*(char *)w == 0x47)
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[*(int *)((char *)w + 0x65)], ai_PlayerSlots[0]);
+    if (w->type == 0x47)
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[w->playerSlot], ai_PlayerSlots[0]);
     else
-        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[*(int *)((char *)u + 0x65)]);
+        txt_Format(buf, m->type + 0x12e7, ai_PlayerSlots[0], ai_PlayerSlots[u->playerSlot]);
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
@@ -1947,7 +1947,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
     ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1f,
-    ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_Unk4b8a10, ai_MsgJobTime,
+    ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
     ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
     ai_Unk4b9f30, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,
