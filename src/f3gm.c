@@ -2597,7 +2597,7 @@ void gm_InitBuildingTables(void)
         } else {
             run++;
         }
-        slots = (unsigned short *)(p + 0x23);
+        slots = ((GMBTYPE *)p)->objs;
         for (k = 0; k < p[0x22]; k++) {
             if (slots[k] != 0xffff) {
                 u = slots[k] & 0x7fff;
@@ -2874,7 +2874,7 @@ int gm_FindById(int *bld, int *obj, int *chr, int id)
                     }
                     i++;
                 }
-                o = (ORDOBJ *)((char *)o + 0x43);
+                o++;
             } while (i < f3gm_ObjectCount);
         }
     }
@@ -3362,7 +3362,7 @@ void gm_RefreshGoodsLists(unsigned p)
                     for (j = 0; j < 0x55; j++) {
                         g2 = &stock[j];
                         for (k = 0; k < 4; k++)
-                            if (g2->item == ((unsigned short *)(gp + 0x2e))[k])
+                            if (g2->item == ((GMGOOD *)gp)->in[k])
                                 g2->amount = 1;
                     }
                 }
@@ -3523,7 +3523,7 @@ void gm_SyncMarket(unsigned p)
                             for (j = 0; j < 0x55; j++) {
                                 g2 = &stock[j];
                                 for (k = 0; k < 4; k++)
-                                    if (g2->item == ((unsigned short *)(gp + 0x2e))[k])
+                                    if (g2->item == ((GMGOOD *)gp)->in[k])
                                         g2->amount = 1;
                             }
                         }
@@ -4125,7 +4125,7 @@ unsigned short *gm_CreateObject(int id, int proto, int n)
     else if (o != 0)
         list = &o->list;
     else if (c != 0)
-        list = (int *)((char *)c + 0x178);
+        list = &c->inventory;
     else
         return 0;
     if (list != 0) {
@@ -4542,7 +4542,7 @@ unsigned char *gm_CreateBuilding(unsigned char k, unsigned short own)
     }
     if (n != 0)
         strcpy(b->name, names[util_RandomU(n)]);
-    w = (unsigned short *)(proto + 0x23);
+    w = ((GMBTYPE *)proto)->objs;
     for (i = 0; i < 0x40; i++, w++) {
         if (*w == 0)
             break;
@@ -4679,7 +4679,7 @@ int gm_BuildingMainObject(unsigned char *p)
             return (int)gm_Query((void *)b->objList, 1, 0, 0xf7);
         if (gm_IsHomeType((unsigned char *)b) != 0)
             return (int)gm_Query((void *)b->objList, 1, 0, 0xfd);
-        w = (unsigned short *)(k + 0x23);
+        w = ((GMBTYPE *)k)->objs;
         for (i = 0; i < 0x40; i++, w++) {
             if (*w != 0xffff) {
                 id = *w & 0x7fff;
@@ -4698,7 +4698,7 @@ int gm_BuildingMainObject(unsigned char *p)
     else if (*k == 0x1f)
         o = gm_Query((void *)b->objList, 1, 0, 0xfd);
     if (o == 0) {
-        w = (unsigned short *)(k + 0x23);
+        w = ((GMBTYPE *)k)->objs;
         for (i = 0; i < 0x40; i++, w++) {
             if (*w != 0xffff) {
                 id = *w & 0x7fff;
@@ -5184,7 +5184,7 @@ void gm_AssignBuilding(unsigned char *b, unsigned short master, unsigned own)
                 d3if_SelectTextureSet(*ob->transport, (struct D3SURF *)(*ob->transport)->info, owid, 1);
                 d3if_SelectScene(scn, 1);
             }
-            w = (ORDOBJ *)((char *)w + 0x43);
+            w++;
             cnt--;
         } while (cnt != 0);
         ch = &ORD_CHARS[own];
@@ -5321,10 +5321,10 @@ unsigned short *gm_AllocRaum(unsigned char *b, unsigned n)
     o = (ORDOBJ *)gm_CreateObject(((ORDBLD *)b)->id, n, 1);
     bp = (unsigned char *)ai_BTypes + *b * 0x24d;
     i = 0;
-    for (q = (unsigned short *)(bp + 0x23); (*q & 0x7fff) != n; q++)
+    for (q = ((GMBTYPE *)bp)->objs; (*q & 0x7fff) != n; q++)
         i++;
     for (i++; i < 0x40; i++) {
-        w = ((unsigned short *)(bp + 0x23))[i];
+        w = ((GMBTYPE *)bp)->objs[i];
         if (w == 0)
             break;
         if (w != 0xffff) {
@@ -5385,7 +5385,7 @@ int gm_RemoveObjectFromBuilding(int b, int id)
 {
     int r;
 
-    r = gm_RemoveObject((int *)(b + 0x5d), id);
+    r = gm_RemoveObject(&((ORDBLD *)b)->objList, id);
     return (r != -2) ? 0 : -3;
 }
 /* 0x5034b0, tears down the extra parts of the object o: its record at +0x24 (flag 2 at +0x78: 0x4c4c60 message), its model at +0x3b (0x4028a0 in the scene 0x411be0 gives), and unlinks it from the owner's list (0x50a0f0, 0x5000c0 by id). ROUGH */
@@ -8570,7 +8570,7 @@ int gm_ListObjectsAfter(unsigned char *b, unsigned short *proto, int *out)
     n = 0;
     i = 0;
     if (i < t[0x22]) {
-        w = (unsigned short *)(t + 0x23);   /* the goods words */
+        w = ((GMBTYPE *)t)->objs;   /* the goods words */
         do {
             if ((unsigned short)(*w & 0x7fff) == *proto)
                 break;
@@ -8580,7 +8580,7 @@ int gm_ListObjectsAfter(unsigned char *b, unsigned short *proto, int *out)
     if (i >= t[0x22])
         return 0;
     if (++i < 0x40) {
-        w = (unsigned short *)(t + 0x23) + i;
+        w = ((GMBTYPE *)t)->objs + i;
         do {
             if (*w == 0)
                 break;
@@ -8829,7 +8829,7 @@ int gm_BuildingSkill(unsigned char *b, unsigned k, int flag)
     i = 0;
     s = 0;
     kind = (unsigned char *)ai_BTypes + bld->type * 0x24d;
-    slot = (unsigned short *)(kind + 0x23);
+    slot = ((GMBTYPE *)kind)->objs;
     do {
         proto = *slot & 0x7fff;
         if (proto != 0 && kind[i + 0x1a3] == k) {
@@ -9001,7 +9001,7 @@ int gm_BuildingGoodsList(char *b, unsigned *out, int kind)
             || stall->type == 0x116) {
             out[0x1a + out[1]] = gm_ListAmount((short *)stall, (char *)o);
             out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
-            ((unsigned short *)(out + 0x12))[out[1]] = o->type;
+            ((AIRECIPE *)out)->item[out[1]] = o->type;
             out[1]++;
         }
         o = (ORDOBJ *)gm_QueryNext();
@@ -9044,7 +9044,7 @@ int gm_BuildingGoodsList17(char *b, unsigned *out, int kind)
         if ((type == 0x17 && kind != 0) || (type != 0x17 && kind == 0)) {
             out[0x1a + out[1]] = gm_ListAmount((short *)stall, (char *)o);
             out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
-            ((unsigned short *)(out + 0x12))[out[1]] = o->type;
+            ((AIRECIPE *)out)->item[out[1]] = o->type;
             out[1]++;
         }
         o = (ORDOBJ *)gm_QueryNext();
@@ -9595,7 +9595,7 @@ int gm_StallGoodsList(char *c, unsigned *out)
         out[2 + out[1]] = gm_ListStock((short *)stall, o->type);
         out[0x2a] += out[2 + out[1]];
         out[0x2b] += o->count;
-        ((unsigned short *)(out + 0x12))[out[1]] = o->type;
+        ((AIRECIPE *)out)->item[out[1]] = o->type;
         out[1]++;
         out[0x2c] = (int)(gm_ItemPrice(o->type, 100) * o->count + (int)out[0x2c]);
         o = (ORDOBJ *)gm_QueryNext();

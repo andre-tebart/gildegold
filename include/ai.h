@@ -176,15 +176,6 @@ typedef struct AIPOS {                  /* filled by gv_GetTableRecord */
     int unk20;
 } AIPOS;
 
-typedef struct AIRECIPE {               /* 0xb8 bytes, filled by gm_StallGoodsList / gm_BuildingGoodsList */
-    int n;                              /* 0x00 */
-    int unk04;                          /* 0x04 */
-    int max[16];                        /* 0x08 */
-    unsigned short item[16];            /* 0x48 */
-    int amount[16];                     /* 0x68 */
-    int pada8[4];
-} AIRECIPE;
-
 typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a character */
     unsigned short w00;                 /* 0x00, the character's AICHAR.w050 (cm.c 0x4c6cd0 copies it) */
     char family[0x10];                  /* 0x02, the family name (cm.c 0x4c6cd0 sets it with the character's) */
