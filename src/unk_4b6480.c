@@ -32,9 +32,6 @@
 #define AI_PARTNER_FILTER_MINOR_SERVANT_MALE 0x600c01  /* as AI_PARTNER_FILTER_MINOR_SERVANT and a male candidate: bit 0 rejects sex 1 (AICHAR.sex 0 male / 1 female) */
 #define GAPDATA __declspec(align(1)) unsigned char
 
-/* full rebuild: the symbols whose original addresses the code above spells literally */
-extern GAPDATA full_data_600c00[];
-extern GAPDATA full_data_600c01[];
 
 /* 0x4b6480, message 0: c gets a reward of 1..3 % of 0x50a640 */
 
@@ -686,9 +683,9 @@ int ai_MsgPartnerRelationMinus10to38Type1b(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4b81a0, message: as 0x4b78c0, negative (0..100, -4..-18; not with item 0x290) */
+/* 0x4b81a0, message 0x1c: as 0x4b78c0, negative (0..100, -4..-18; not with item 0x290) */
 
-int ai_Unk4b81a0(G14MSG *m)
+int ai_MsgPartnerRelationMinus4to18Type1c(G14MSG *m)
 {
     AICHAR *c, *p;
     unsigned short id;
@@ -700,7 +697,7 @@ int ai_Unk4b81a0(G14MSG *m)
         return 1;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    fl = (unsigned)&full_data_600c00;
+    fl = AI_PARTNER_FILTER_MINOR_SERVANT;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 0.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
@@ -1949,7 +1946,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
     ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_MsgBuildingOwnerRelationsType18, ai_MsgOfficeGroupRelationsType19, ai_MsgPartnerRelationMinus6to14Type1a, ai_MsgPartnerRelationMinus10to38Type1b,
-    ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
+    ai_MsgPartnerRelationMinus4to18Type1c, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
     ai_Unk4b8f70, ai_Unk4b9180, ai_Unk4b9420, ai_Unk4b9630,
     ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
