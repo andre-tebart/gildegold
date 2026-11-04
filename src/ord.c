@@ -1665,16 +1665,18 @@ void ord_ResetStatistics(void)
     ord_MessageRecord.enabled = -1;
     ai_RatingBase = 0;
 }
-/* 0x4f8300, asks 0x45f170 (the scene 0xfd7c50 points to, a, x, y, &y) for a position and divides *x and *y by the scene's cell size (+0x20, over 8); 0 when it fails */
+/* 0x4f8300, the 8 x 8 grid cell of a position: d3_GetHeightAt gives the cell on scene 0's height map (d3_Scenes[0].hmap) and x / y are divided by the map's cell count per side (D3SM.size, +0x20) over 8; 0 when the call fails */
 
 int ord_GetGridCell(char *p, int *x, int *y)
 {
+    D3SM *hmap;
     int n;
     int *py;
 
     py = y;
-    n = *(int *)(unk_Ptrfd7c50 + 0x20) / 8;
-    if (d3_GetHeightAt(unk_Ptrfd7c50, p, x, y, &y) != 0) {
+    hmap = (D3SM *)d3_Scenes[0].hmap;
+    n = hmap->size / 8;
+    if (d3_GetHeightAt(hmap, p, x, y, &y) != 0) {
         *x = *x / n;
         *py = *py / n;
         return 1;
