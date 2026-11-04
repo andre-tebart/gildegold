@@ -338,7 +338,8 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
 
 typedef struct CHACTDEF {           /* 0x4c bytes, 64 of them in ch_ActDefs */
     CHACTFUNC func;
-    char unk04;
+    char flags;                     /* 0x04, written 1 for every declared action; no reader in the drafted code
+                                       (a guessed name, the original's role is unknown) */
     char name[0x43];                /* 0x05 */
     int nargs;                      /* 0x48 */
 } CHACTDEF;

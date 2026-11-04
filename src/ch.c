@@ -1645,9 +1645,9 @@ int ch_StopActions(CHARACTER *ch)
         ch_StandUp(ch, "sitzend/aufstehen");
     return 1;
 }
-/* 0x405670 */
+/* 0x405670, declares an action type once: its function, name and argument count */
 
-int ch_DeclareAction(int id, CHACTFUNC func, char unk, char *name, int nargs)
+int ch_DeclareAction(int id, CHACTFUNC func, char flags, char *name, int nargs)
 {
     if (id > 63)
         return 0;
@@ -1656,7 +1656,7 @@ int ch_DeclareAction(int id, CHACTFUNC func, char unk, char *name, int nargs)
         return 0;
     }
     ch_ActDefs[id].func = func;
-    ch_ActDefs[id].unk04 = unk;
+    ch_ActDefs[id].flags = flags;
     ch_ActDefs[id].nargs = nargs;
     strcpy(ch_ActDefs[id].name, name);
     return 1;
