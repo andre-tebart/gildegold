@@ -4422,12 +4422,12 @@ void ai_OpenSpying(int building)
 
 void gm_SendMoneyDelta(int a, int b);
 
-/* 0x594bb0, the bribe callback of 0x594db0 (502 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra
+/* 0x594bb0, the raid window of 0x594db0 (502 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra
    start): rec (0 / +0x27 == 0xffff returns); 0x553cc0 (rec) == 0 gives the text 0x1a92 (0x5176d0 / 0x521150);
    else the window (0x62b3b8, 0x4741f0 / 0x475600 / 0x476f80 / 0x475f70 (1)), the text 0x515960 (0x1a84, rec)
    and the two controls 0x475b80; the click 0xf8a668 / 0x5fe710 drives the message 0x4c4b70, the money
    0x50cc50, 0x4c2d20 and 0x521150; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
-void ai_Unk594bb0(int param_1, int rec)
+void ai_RaidWindow(int param_1, int rec)
 {
     char text[0x100];
     char buf[0x400];
@@ -4456,29 +4456,31 @@ void ai_Unk594bb0(int param_1, int rec)
             U_I((unsigned)&sv_PopRequest) = 1;
         /* ROUGH: the click on the two controls: the message 0x4c4b70, the money 0x50cc50, 0x4c2d20 and the
            text 0x521150 */
-        i = sv_RunFrame(ai_Unk594bb0, 0x677c7);
+        i = sv_RunFrame(ai_RaidWindow, 0x677c7);
     } while (i != 0);
     d2_CloseView(win);
 }
-/* 0x594db0, opens the raid window (158 B): as 0x594b10 but +8 = 0xa07443a0, +0xc = 1, the text 0x5176d0
-   (0x1a83) and the callback 0x594bb0 */
+/* 0x594db0, opens the raid map pick (158 B): as ai_OpenSpying (the character flag 0x520fe0, the 0x50-byte config
+   zeroed with +4 = 0x400, +0x4c = 0x727, +0x10 = 6) but +8 = 0xa07443a0, +0xc = 1, the prompt 0x1a83
+   (txt_Format 0x5176d0) and the raid window 0x594bb0 as map-pick callback; the bar closes (0x525440) and the
+   selection is cleared (0x52ae40) */
 
-void ai_Unk594db0(int param_1)
+void ai_OpenRaid(int building)
 {
     int cfg[0x14];
     char text[0x400];
 
-    if (sv_CheckCharacterFlag(param_1) == 0) {
+    if (sv_CheckCharacterFlag(building) == 0) {
         memset(cfg, 0, 0x50);
         cfg[1] = 0x400;
-        if (param_1 != 0) {
-            sv_OpenPlayerBar(param_1, 0);
+        if (building != 0) {
+            sv_OpenPlayerBar(building, 0);
             cfg[0x13] = 0x727;
             cfg[4] = 6;
             cfg[2] = 0xa07443a0;
             cfg[3] = 1;
             txt_Format(text, 0x1a83);
-            ai_MapPick(1, cfg, text, (void *)ai_Unk594bb0, 0);
+            ai_MapPick(1, cfg, text, (int)ai_RaidWindow, 0);
             sv_ClosePlayerBar();
             sv_ClearSelection();
         }
@@ -4565,7 +4567,7 @@ void ai_Unk594e50(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == spionieren)
                 ai_OpenSpying(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == raub)
-                ai_Unk594db0(param_1);
+                ai_OpenRaid(param_1);
         }
         r = sv_RunFrame(ai_Unk594e50, 0x67fff);
     }
