@@ -8306,7 +8306,7 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunF
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
-void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
+void ai_GuildLevel1Listener(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_TownHallContact();
@@ -8893,7 +8893,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x120: ai_Unk599af0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x12e: ai_BreweryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x137: ai_GuildLevel2Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x138: ai_Unk5a1a60(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x138: ai_GuildLevel1Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x139: ai_GuildLevel3Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x145: ai_Unk5a6a90(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x146: ai_Unk5a67a0(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -9862,7 +9862,7 @@ int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
    0x1649 + the current icon); the three buttons 0x52e350 (0x143fad4 / d8 / dc): the third only 0x6f22a0, the
    first / second 0x4e9660 (the player, {3, the level, 1 / -1}); an icon button moves the flag and the text
    0x1644 (the "$C" form 0x602568); the pump 0x5309a0 (0x5a1000, 0x677c7), 0x4758f0 / 0x52d7a0 at the end */
-void ai_Unk5a1000(int param_1)
+void ai_GuildLevel1Window(int param_1)
 {
     short pos[7][2] = { {0x40, 0x50}, {0xc0, 0x50}, {0x140, 0x50}, {0x1c0, 0x50},
                         {0x80, 0xb8}, {0x100, 0xb8}, {0x180, 0xb8} };
@@ -9945,7 +9945,7 @@ void ai_Unk5a1000(int param_1)
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk5a1000, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_GuildLevel1Window, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_CameraFollow();
             return;
@@ -10186,19 +10186,21 @@ void ai_GuildLevel3Listener(int building)
         }
     }
 }
-/* 0x5a1a60, the guild level 1 listener (144 B): with 0x4e94a0 (the player) set, the pump 0x5309a0 (0x5a1a60,
-   0x67fff) looks up "contact_ZUNFTLEVEL1" (0x143fac4, class 0x16) and opens 0x5a1000 */
+/* 0x5a1a60, the guild level 1 listener, the room 0x138 handler of the enter-building driver (144 B): with the
+   guild office level power (0x4e94a0, the player) set, the pump 0x5309a0 (0x5a1a60, 0x67fff) looks up the
+   "contact_ZUNFTLEVEL1" plate (txt_Ptrs[0x1641], class 0x16) and a click on it opens the guild level 1 window
+   (0x5a1000) */
 
-void ai_Unk5a1a60(int param_1)
+void ai_GuildLevel1Listener(int building)
 {
     int c = 0;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk5a1a60, 0x67fff) != 0) {
-        if (amt_MayorBonusStep((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
-            c = sv_RegisterNamePlate("contact_ZUNFTLEVEL1", U_I((unsigned)&full_data_143fac4), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0 && U_I((unsigned)&ai_ClickedObject) == c)
-            ai_Unk5a1000(param_1);
+    while (sv_RunFrame(ai_GuildLevel1Listener, 0x67fff) != 0) {
+        if (amt_MayorBonusStep((char *)ai_Chars + ai_PlayerId * 0x21c) != 0)
+            c = sv_RegisterNamePlate("contact_ZUNFTLEVEL1", txt_Ptrs[0x1641], 0x16);
+        if (ai_ClickedObject != 0 && ai_ClickedObject == c)
+            ai_GuildLevel1Window(building);
     }
 }
 
