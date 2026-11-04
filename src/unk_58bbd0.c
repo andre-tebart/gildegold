@@ -6387,7 +6387,7 @@ void ai_Unk599240(int param_1, int param_2)
     sv_CameraFollow();
 }
 
-int gv_EvidencePrice(); void ai_Unk5bd1f0(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
+int gv_EvidencePrice(); void ai_LeftAlignedText(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x5992c0, the dark-corner menu of the player's own table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
    the window "locations\Wirtshaus_DUNKLEECKE" (0x4741f0 / 0x475600 / 0x475f70 (0) / 0x52ea30 / 0x476f80); the
@@ -6466,7 +6466,7 @@ void ai_DarkCornerMenu(int param_1, int param_2, int param_3)
                     txt_Format(text, 0x18a6);
                 else
                     txt_Format(text, 0x18a5, vals[i] * 5 + 0x13fd, vals[i]);
-                ai_Unk5bd1f0(text, w, y, 0xf0, 0x54);
+                ai_LeftAlignedText(text, w, y, 0xf0, 0x54);
                 y += 0x69;
             }
             b = 0;
@@ -6579,7 +6579,7 @@ void ai_DarkCornerBuy(int param_1, int param_2)
                     txt_Format(text, 0x18a6);
                 else
                     txt_Format(text, 0x18a5, vals[i] * 5 + 0x13fd, vals[i]);
-                ai_Unk5bd1f0(text, w, y, 0xf0, 0x54);
+                ai_LeftAlignedText(text, w, y, 0xf0, 0x54);
                 y += 0x69;
             }
             changed = 0;
@@ -6637,7 +6637,7 @@ int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_Un
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
-void ai_Unk5bd1f0(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
+void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern contact listener "contact_WUERFELSPIEL" / "contact_STAMMTISCH" / "ob_DUNKLE_ECKE"
    (440 B): the pump 0x5309a0 (0x599af0, 0x67fff), the contact list 0x58f510 (param_1) and the three lookups
@@ -10517,7 +10517,7 @@ void ai_Unk5a23a0(int param_1, int param_2)
     sv_MessageBox(buf, 0);
 }
 
-void gm_DonationTop5(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_Unk5bd1f0();
+void gm_DonationTop5(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_LeftAlignedText();
 int d2_RemoveWindowObjects();
 
 /* 0x5a28f0, the church top-5 window "Locations\Kirche\Top5" (620 B, Ghidra-missed start: the tail call of
@@ -10577,10 +10577,10 @@ void ai_Top5Window(void)
                     strcpy(buf, (char *)U_I((unsigned)&txt_NoRelative));
                 else
                     txt_Format(buf, 0x196d, id[i]);
-                ai_Unk5bd1f0(buf, x, y, (*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - x) + 0x14,
+                ai_LeftAlignedText(buf, x, y, (*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - x) + 0x14,
                              0x53);
                 txt_Format(buf, 0x196e, val[i]);
-                ai_Unk5bd1f0(buf, x, y + 0x19,
+                ai_LeftAlignedText(buf, x, y + 0x19,
                              (*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) - x) + 0x14, 0x53);
             }
             changed = 0;
@@ -16300,17 +16300,17 @@ void ai_RightAlignedText(char *text, int x, int y, int w, int font)
     d2_Objs[ctrl].w = w;
     d2_SetObjFont(ctrl, font);
 }
-/* 0x5bd1f0, a text control at a position (96 B): the control 0x473650 (x, y), the flag +0x60 = 0 and the
-   width +0x14 (a word), then 0x4760b0 (the id, param_5) */
+/* 0x5bd1f0, a left-aligned text control of width w at x, y in the current window (96 B): creates it
+   (d2_CreateWinText), clears its right alignment, sets its width, then its font */
 
-void ai_Unk5bd1f0(int param_1, int param_2, int param_3, int param_4, int param_5)
+void ai_LeftAlignedText(char *text, int x, int y, int w, int font)
 {
     int ctrl;
 
-    ctrl = d2_CreateWinText(param_2, param_3, param_1, U_I((unsigned)&d2_LastWindow));
-    U_I((unsigned)&d2_Objs + ctrl * 0x2ec + 0x60) = 0;
-    *(unsigned short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x14) = param_4;
-    d2_SetObjFont(ctrl, param_5);
+    ctrl = d2_CreateWinText(x, y, text, d2_LastWindow);
+    d2_Objs[ctrl].rightAligned = 0;
+    d2_Objs[ctrl].w = w;
+    d2_SetObjFont(ctrl, font);
 }
 /* 0x5bd250, the picture and text block of a window record (192 B): the record fields +0 the window, +4 / +8 /
    +0xc the pages, +0x10 the entry index, +0x14 the record id. With the window set, the row record 0x4f2720
