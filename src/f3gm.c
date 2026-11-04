@@ -9330,17 +9330,18 @@ unsigned short *gm_ObjectBuildingOwner(unsigned short *o)
     }
     return o;
 }
-/* 0x50a0b0, the character number of the owner of the object o */
+/* 0x50a0b0, the character number of the owner of the object o: the id (+0x00) of the character holding
+   it (holderId +0x0a), else the owner word (+0x27) of the building holding it, else 0xffff */
 
 unsigned short gm_ObjectOwnerNo(unsigned short *o)
 {
-    int b;
+    ORDBLD *b;
 
-    gm_FindById(&b, 0, (int *)&o, *(int *)(o + 5));
+    gm_FindById((int *)&b, 0, (int *)&o, ((ORDOBJ *)o)->holderId);
     if (o != 0)
-        return *o;
+        return ((ORDCHAR *)o)->id;
     if (b != 0)
-        return *(unsigned short *)(b + 0x27);
+        return b->owner;
     return 0xffff;
 }
 /* 0x50a0f0, the building that holds the object o (an ORDOBJ as int), through any objects holding it in turn: its holder's id (ownerId) is looked up (gm_FindById) until a building is found; 0 when a character holds it or an id is unknown */
