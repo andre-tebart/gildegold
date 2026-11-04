@@ -1923,21 +1923,21 @@ exe	0x004b3960	hst_YearlyHistory	hst	byte	readable
 exe	0x004b39f0	ai_ClearMissions	unk_4b39f0	byte	readable		
 exe	0x004b3a10	ai_MissionRandom	unk_4b39f0	byte	readable		
 exe	0x004b3a50	ai_FindOwnerMission	unk_4b39f0	byte	readable		
-exe	0x004b3a90	ai_RestartMission	unk_4b39f0	byte	draft		
+exe	0x004b3a90	ai_RestartMission	unk_4b39f0	byte	draft	hard	
 exe	0x004b3ae0	ai_GetMissionType	unk_4b39f0	byte	readable		
 exe	0x004b3b10	ai_HasMission	unk_4b39f0	byte	readable		
 exe	0x004b3b40	ai_CountMissionTypes	unk_4b39f0	byte	readable		
 exe	0x004b3b70	ai_FindMissionType	unk_4b39f0	shape	readable	deep	
-exe	0x004b3bd0	ai_SetFirstMission	unk_4b39f0	byte	draft		
+exe	0x004b3bd0	ai_SetFirstMission	unk_4b39f0	byte	readable		
 exe	0x004b3c10	ai_NewRandomMission	unk_4b39f0	byte	readable		
 exe	0x004b3c40	ai_RandomMissionType	unk_4b39f0	byte	readable		
-exe	0x004b3ca0	ai_NewMission	unk_4b39f0	byte	draft	deep	
-exe	0x004b3d50	ai_Unk4b3d50	unk_4b39f0	byte	draft		
-exe	0x004b3e70	ai_ChooseMissionType	unk_4b39f0	byte	draft		
+exe	0x004b3ca0	ai_NewMission	unk_4b39f0	byte	readable		
+exe	0x004b3d50	ai_MissionOfferDialog	unk_4b39f0	byte	readable		
+exe	0x004b3e70	ai_ChooseMissionType	unk_4b39f0	byte	readable		
 exe	0x004b4040	ai_ChooseMission	unk_4b39f0	shape	readable	deep	
 exe	0x004b4280	ai_ChooseMissionFrom	unk_4b39f0	byte	readable		
-exe	0x004b44e0	ai_CountMissionEvent	unk_4b39f0	byte	draft		
-exe	0x004b4550	ai_Unk4b4550	unk_4b39f0	byte	draft		
+exe	0x004b44e0	ai_CountMissionEvent	unk_4b39f0	byte	readable		
+exe	0x004b4550	ai_Unk4b4550	unk_4b39f0	byte	draft	hard	
 exe	0x004b4590	ai_Unk4b4590	unk_4b39f0	byte	draft		
 exe	0x004b45c0	ai_Unk4b45c0	unk_4b39f0	byte	draft		
 exe	0x004b45f0	ai_Unk4b45f0	unk_4b39f0	byte	draft		
@@ -1965,7 +1965,7 @@ exe	0x004b5160	ai_TimedCondition	unk_4b39f0	byte	draft
 exe	0x004b51f0	ai_CharBuildingShare	unk_4b39f0	byte	draft		
 exe	0x004b5270	ai_PlayerShare	unk_4b39f0	byte	draft		
 exe	0x004b5310	ai_ShowMissions	unk_4b39f0	byte	readable		
-exe	0x004b5360	ai_MissionInfoDialog	unk_4b39f0	byte	draft		
+exe	0x004b5360	ai_MissionInfoDialog	unk_4b39f0	byte	readable		
 exe	0x004b5460	ai_MissionSuccessDialog	unk_4b39f0	shape	readable	deep	
 exe	0x004b58b0	ai_MissionEndDialog	unk_4b39f0	shape	readable	deep	
 exe	0x004b5950	ai_QuitGame	unk_4b39f0	byte	readable		
@@ -2799,14 +2799,14 @@ exe	0x004f2440	gv_MovePrice	gv	byte	readable
 exe	0x004f24a0	gv_ProtectionPrice	gv	byte	readable		
 exe	0x004f2540	gv_FindHeldEntry	gv	byte	readable		
 exe	0x004f25d0	gv_FindReservedEntry	gv	byte	readable		
-exe	0x004f2660	gv_SeanceChance	gv	shape	draft		
+exe	0x004f2660	gv_SeanceChance	gv	shape	readable		
 exe	0x004f2720	gv_GetTableRecord	gv	byte	readable		
 exe	0x004f2750	gv_SetTableRecord	gv	byte	readable		
 exe	0x004f27d0	gv_OnDecisionValue	gv	byte	readable		
 exe	0x004f2870	gv_FindTableRecord	gv	byte	readable		
 exe	0x004f28d0	gv_WriteCrimes	gv	byte	readable		
 exe	0x004f2b30	gv_ReadCrimes	gv	byte	readable		
-exe	0x004f2da0	gv_SchoolLevelFactor	gv	byte	draft		
+exe	0x004f2da0	gv_SchoolLevelFactor	gv	byte	readable		
 exe	0x004f2e30	gv_Accuse	gv	byte	readable		
 exe	0x004f2fe0	gv_TableRecordText	gv	byte	readable		
 exe	0x004f30a0	gv_CrimeTextLaw2to8	gv	byte	readable		
@@ -2821,7 +2821,7 @@ exe	0x004f3700	gv_SendCrimes	gv	draft	readable	deep
 exe	0x004f3780	gv_EvidenceSlot	gv	byte	readable		
 exe	0x004f37e0	gv_RetireCrime	gv	byte	readable		
 exe	0x004f3910	gv_HandOverCrimes	gv	byte	readable		
-exe	0x004f39b0	gv_CountOwnedGraves	gv	byte	draft		
+exe	0x004f39b0	gv_CountOwnedGraves	gv	byte	readable		
 exe	0x004f39e0	gv_CulpritGuilt	gv	byte	readable		
 exe	0x004f3a30	gv_RetireCrimesOf	gv	byte	readable		
 exe	0x004f3b40	gv_RetireCrimeIds	gv	byte	readable		
@@ -2837,7 +2837,7 @@ exe	0x004f4420	gv_CheckSentence	gv	byte	readable
 exe	0x004f4460	gv_PassSentence	gv	byte	readable		
 exe	0x004f48f0	gv_SentenceText	gv	byte	readable		
 exe	0x004f4970	gv_CheckRankUp	gv	shape	readable		
-exe	0x004f4d10	unk_Unk4f4d10	gv	byte	draft		
+exe	0x004f4d10	gv_CheckRankUps	gv	byte	readable		
 exe	0x004f4d30	gv_EvidencePrice	gv	byte	readable		
 exe	0x004f4e20	ord_ApplyForOffice	ord	shape	readable	deep	
 exe	0x004f4f20	ord_LevelOrder	ord	shape	readable	deep	
