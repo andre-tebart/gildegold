@@ -11180,7 +11180,7 @@ void ai_DungeonEmptyListener(void)
         ;
 }
 
-int he_Unk553cc0(); int gm_Unk509120(); void snd_PlayFavourComment(void); 
+int he_Unk553cc0(); int gm_BuildingRankGate(); void snd_PlayFavourComment(void); 
 void sv_OpenPlayerBar(int a, char k); int ai_MapPick(); void sv_ClosePlayerBar(void);
 
 /* 0x5a3f10, the burglary window "locations\diebesgilde\diebesgilde_einbruch" (542 B, ROUGH): the owner's
@@ -11213,7 +11213,7 @@ int ai_Unk5a3f10(int param_1)
         sv_MessageBox(buf, 0);
         return 0;
     }
-    if (gm_Unk509120(U_I((unsigned)&ai_PlayerBuilding)) == 0) {
+    if (gm_BuildingRankGate(U_I((unsigned)&ai_PlayerBuilding)) == 0) {
         sv_MessageBox((char *)U_I((unsigned)&full_data_1440954), 0);
         return 0;
     }
