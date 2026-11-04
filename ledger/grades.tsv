@@ -2015,17 +2015,17 @@ exe	0x004b8950	ai_MsgGainMoney3to5Type21	unk_4b6480	byte	readable
 exe	0x004b8a10	ai_MsgCartFillDropType22	unk_4b6480	byte	readable		
 exe	0x004b8c80	ai_MsgJobTime	unk_4b6480	shape	readable		
 exe	0x004b8f70	ai_MsgJobEndPlayerType24	unk_4b6480	byte	readable		
-exe	0x004b9180	ai_Unk4b9180	unk_4b6480	byte	draft		
-exe	0x004b9420	ai_Unk4b9420	unk_4b6480	byte	draft		
-exe	0x004b9630	ai_Unk4b9630	unk_4b6480	byte	draft		
-exe	0x004b9810	ai_Unk4b9810	unk_4b6480	byte	draft		
-exe	0x004b9820	ai_Unk4b9820	unk_4b6480	byte	draft		
-exe	0x004b9ab0	ai_Unk4b9ab0	unk_4b6480	byte	draft		
+exe	0x004b9180	ai_MsgJobEndPayType25	unk_4b6480	byte	readable		
+exe	0x004b9420	ai_MsgJobBothEndsType26	unk_4b6480	byte	readable		
+exe	0x004b9630	ai_MsgJobBothEndsType27	unk_4b6480	byte	readable		
+exe	0x004b9810	ai_MsgUnusedSlot	unk_4b6480	byte	readable		
+exe	0x004b9820	ai_MsgJobEndDateType29	unk_4b6480	byte	readable		
+exe	0x004b9ab0	ai_MsgJobEndValueType2a	unk_4b6480	byte	readable		
 exe	0x004b9cd0	ai_MsgWorkerStop	unk_4b6480	draft	readable	deep	
-exe	0x004b9f30	ai_Unk4b9f30	unk_4b6480	byte	draft		
+exe	0x004b9f30	ai_MsgWorkerTitleType2c	unk_4b6480	byte	readable		
 exe	0x004ba0c0	ai_Unk4ba0c0	unk_4b6480	shape	draft	deep	
-exe	0x004ba2d0	ai_Unk4ba2d0	unk_4b6480	byte	draft		
-exe	0x004ba470	ai_Unk4ba470	unk_4b6480	byte	draft		
+exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	unk_4b6480	byte	readable		
+exe	0x004ba470	ai_MsgWorkerLoseSkillType30	unk_4b6480	byte	readable		
 exe	0x004ba630	ai_Unk4ba630	unk_4b6480	draft	draft	deep	
 exe	0x004ba840	ai_Unk4ba840	unk_4b6480	byte	draft		
 exe	0x004ba970	ai_Unk4ba970	unk_4b6480	byte	draft		
