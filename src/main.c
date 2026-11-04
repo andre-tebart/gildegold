@@ -4750,7 +4750,7 @@ void main_GameLoop(int ctl)
             main_SetLoadProgress(0, 100);
             main_SetLoadProgress(0, 100);
             if (ai_Unk6f2440 != 0)
-                unk_Unk511c70();
+                init_GiveFirstPlayerBuildings();
         } else if (net_Conn.s != -1) {
             if ((ai_GameFlags & 0x40) != 0) {
                 init_JoinNetworkGame(((unsigned)&ls_SavePath + 0xca));

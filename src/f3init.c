@@ -2769,35 +2769,35 @@ void init_FillMarkets(int p)
 /* 0x511c70, gives the buildings of the classes 1 / 4 / 2 and of the types 0x13 / 4 / 0x10 / 5 / 9 (not 0xb) to the first character of the kind 6: 64000 in the building's money word (+0x39), the ownership (0x4c54a0), the staff (0x4c55d0) and the object 0x135 */
 
 
-void unk_Unk511c70(void)
+void init_GiveFirstPlayerBuildings(void)
 {
-    char *c;
+    INIT_CHAR *c;
     int i;
-    unsigned char *b;
+    INIT_BLD *b;
     char k;
     int v;
 
-    c = ai_Chars[0];
+    c = (INIT_CHAR *)ai_Chars[0];
     for (i = 0; i < 0x300; i++) {
-        if (c[2] == 6)
+        if (c->kind == 6)
             break;
-        c += 0x21c;
+        c += 1;
     }
-    b = (unsigned char *)ai_Blds;
+    b = (INIT_BLD *)ai_Blds;
     while (1) {
-        if (*b != 0 &&
-            ((gm_BuildingClass(*b) == 1 || gm_BuildingClass(*b) == 4 || gm_BuildingClass(*b) == 2 ||
-              ((k = ai_BTypes[*b * 0x24d]) == 0x13 || k == 4)) || (k == 0x10 || (k == 5 || k == 9))) &&
-            ai_BTypes[*b * 0x24d] != 0xb) {
+        if (b->type != 0 &&
+            ((gm_BuildingClass(b->type) == 1 || gm_BuildingClass(b->type) == 4 || gm_BuildingClass(b->type) == 2 ||
+              ((k = ai_BTypes[b->type * 0x24d]) == 0x13 || k == 4)) || (k == 0x10 || (k == 5 || k == 9))) &&
+            ai_BTypes[b->type * 0x24d] != 0xb) {
             v = 64000;
-            cm_BeginFieldBlock(b, *(int *)(b + 1));
+            cm_BeginFieldBlock((char *)b, b->id);
             cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x39, &v);
             cm_SendFieldDeltas();
-            cm_SendOwnership(*(int *)(b + 1), *(int *)(c + 4), *(int *)(c + 4));
-            cm_SendMessage3d(b, 1, 0, (unsigned char)ai_BTypes[*b * 0x24d + 0x223]);
-            cm_SendExSellObject(*(int *)(b + 1), -1, 0x135, 1, ai_OwnPlayer, 0);
+            cm_SendOwnership(b->id, c->netId, c->netId);
+            cm_SendMessage3d((char *)b, 1, 0, (unsigned char)ai_BTypes[b->type * 0x24d + 0x223]);
+            cm_SendExSellObject(b->id, -1, 0x135, 1, ai_OwnPlayer, 0);
         }
-        b += 0xa9;
+        b += 1;
     }
 }
 /* 0x511dc0, the universe of the scene of the object prototype p (a new one marked dirty (0xfd7f75) is only reserved, named after the prototype, and loaded later; the current prototype 0x6f2310 is loaded at once by 0x50d7f0) */
