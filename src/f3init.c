@@ -2029,7 +2029,7 @@ char init_CollectSiteObject(D3OBJECT *o, void *ctx)
    then every collected object is replaced by ONE object spawned from the loaded site scene (d3_SpawnObject
    type 2, named like the site) that takes over its parent, position, rotation and children, and the old
    objects are disposed. The site name is the collector key. */
-/* 0x510770 */
+/* 0x510770, adopts the site scene named name: adds a bk_ site's bounds to ai_Bauplaetze, then re-spawns the scene's objects */
 void init_LoadSiteScene(char *name)
 {
     INIT_SITELIST list;
