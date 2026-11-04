@@ -1965,3 +1965,4 @@
 2026-11-04T18:11:55 0x00631060 data ch_Unk631060 -> ch_StepSounds by:main why:reset at the start of ch_Update and incremented per walk step sound played, capped at 3 a frame (ch_WalkSound, ch_ActWalkCells)
 2026-11-04T18:24:12 0x00631058 data ch_Unk631058 -> ch_MarkWalkErrors by:main why:read at 10 walk-action sites in ch.c: when it is set, a failed walk animation (no animation, no path, animation not done) marks CHARACTER.flags bit 8; no writer in any drafted source, so a reasoned guess: a debug switch, always 0 in the shipped image
 2026-11-04T18:32:25 0x004fa9b0 func unk_Unk4fa9b0 -> gm_PayAllCharacterWages by:main why:0x4fa9b0 pays every character: gm_CharacterWages(i, 1, out) for all 0x300 (flag 1 = pay), flushing the messages every 0x40; main_BeginPlayerRound calls it
+2026-11-04T18:34:55 0x0060c1ec data ai_Unk60c1ec -> gm_TagTmp by:main why:the bytes at 0x60c1ec are the string "tmp"; its address is the mem_Alloc tag of unk_LoadIconNames and main

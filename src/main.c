@@ -246,7 +246,7 @@ extern int sv_FrameMask;
 extern int sv_PopRequest;
 
 extern OPTIONBYTES ai_GamePanel;
-extern char * ai_Unk60c1ec;
+extern char gm_TagTmp[4];
 extern int cm_NetFlags;
 
 
@@ -4919,7 +4919,7 @@ void main_GameLoop(int ctl)
                         fseek(i5, 0, 2);
                         w = ftell(i5);
                         fseek(i5, 0, 0);
-                        i6 = mem_Alloc(w, (unsigned)&ai_Unk60c1ec);
+                        i6 = mem_Alloc(w, (unsigned)gm_TagTmp);
                         iv = fopen(ab, "wb");
                         if (i6 != 0) {
                             if (iv != 0) {
