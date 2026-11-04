@@ -1021,7 +1021,7 @@ int ai_DecideOfficePartner(int a, AICHAR *p, int *ctx, int d, AIARG *m)
 /* 0x4a8a50, decide callback: the decision record ctx[1] proposes a value (its fn) within min..max, into m
    (kind 0x11) */
 
-int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, unsigned char *m)
+int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, AIARG *m)
 {
     AIDEC dec;
     int v;
@@ -1029,9 +1029,9 @@ int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, unsigned char *m)
     if (gv_GetTableRecord(ctx[1], &dec) != 0) {
         if (((int (*)(AIPER *, int, int *))dec.fn)(p, (unsigned char)dec.id, &v) != 0 && v != dec.cur
             && v >= dec.min && v <= dec.max) {
-            m[0] = 0x11;
-            *(unsigned int *)(m + 4) = (unsigned char)dec.id;
-            *(int *)(m + 8) = v;
+            m->kind = 0x11;
+            m->ref = (unsigned char)dec.id;
+            m->arg = v;
             return 1;
         }
     }

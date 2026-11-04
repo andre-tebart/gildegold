@@ -96,7 +96,7 @@ void ai_PokerAnte(void);                                                        
 void ai_PokerEndRound(void);                                                         /* 0x4a8690 */
 void ai_PokerNpcSetStake(void);                                                         /* 0x4a86f0 */
 int ai_DecideOfficePartner(int a, struct AICHAR *p, int *ctx, int d, struct AIARG *m);   /* 0x4a8760 */
-int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, unsigned char *m);           /* 0x4a8a50 */
+int ai_DecideTableValue(int a, AIPER *p, int *ctx, int d, struct AIARG *m);           /* 0x4a8a50 */
 int ai_DecidePartnerOtherSex(int a, struct AICHAR *p, int c, int d, struct AIARG *m);              /* 0x4a8ad0 */
 int ai_EvalOneInFour(void);                                                          /* 0x4a8bf0 */
 int ai_AlwaysTrue(void);                                                          /* 0x4a8c10 */
