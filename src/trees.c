@@ -334,7 +334,7 @@ void _tr_init(s)
 /* ===========================================================================
  * Initialize a new block.
  */
-/* 0x465e70 */
+/* 0x465e70, clears the dynamic trees of a deflate stream and starts a new block (one end-of-block literal) */
 local void init_block(s)
     deflate_state *s;
 {
