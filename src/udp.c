@@ -34,7 +34,9 @@ static SOCKET udp_Socket = INVALID_SOCKET;  /* 0x5f10f8 */
 struct sockaddr_in udp_Bcast = {0};        /* 0x14eaae0 */
 struct sockaddr_in udp_Local = {0};        /* 0x14eaaf0 */
 
-/* 0x401d50 */
+/* 0x401d50, opens the udp socket once (WSAStartup 2, a broadcast datagram socket): binds the local address
+   (port 0) and puts the game port into the broadcast address; a failed socket reports the Winsock error and
+   leaves it invalid. Nothing when udp_Socket is already open. */
 void udp_Init(u_short port)
 {
     WSADATA wsa;
