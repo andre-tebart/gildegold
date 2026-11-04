@@ -1,6 +1,8 @@
 /* hst.c -- the history texts (0x4adf40..0x4b39f0, after hmt.c): character predicates, the text tokens and text
    commands of a history text, its parser (the hst_* names are leaked by its error texts), the date labels and the
-   yearly history dialogs. Its .data block starts at 0x601058. Names are ours except the hst_* ones.
+   yearly history dialogs. Its .data block starts at 0x601058; the text commands' callbacks are 0x601b50 and their
+   names (0x40-byte keys such as "FEST" / "BELAGERUNG_START") 0x601070, which is what the ai_Command* names rest on.
+   Names are ours except the hst_* ones.
    Open: the ai_Token* siblings still take AI_ZERO with its own _zp slot (frame 0x20c vs 0x208); AI_ZERO_AT plus
    the ai_CharInts pointer walk fixed this in ai_TokenRandomNpcInhabitant and is untried in the others.
    Open: G12OBJ repeats hmt.h's HMTOBJ (0x4e6ec0 / 0x4e6680 declared in both files); G12_B reads AICHAR bytes.

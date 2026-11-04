@@ -1876,8 +1876,8 @@ exe	0x004af8d0	ai_TokenRandomNpcInhabitant	hst	shape	readable
 exe	0x004afa20	ai_TokenRandomMerchant	hst	draft	readable	deep	
 exe	0x004afc30	ai_TokenRandomPlayer	hst	draft	readable	deep	
 exe	0x004afdd0	ai_CommandFest	hst	draft	draft	deep	
-exe	0x004afe80	ai_Unk4afe80	hst	byte	draft		
-exe	0x004aff30	ai_Unk4aff30	hst	shape	draft		
+exe	0x004afe80	ai_CommandSiegeStart	hst	byte	readable		
+exe	0x004aff30	ai_CommandUprising	hst	shape	readable		
 exe	0x004affc0	ai_CommandFire	hst	byte	draft	deep	
 exe	0x004b0050	ai_CommandTornado	hst	byte	draft	deep	
 exe	0x004b00e0	ai_CommandCityTreasury	hst	shape	draft	deep	
@@ -1892,10 +1892,10 @@ exe	0x004b09f0	ai_CommandLaw	hst	byte	readable
 exe	0x004b0b50	ai_CommandLawChange	hst	shape	readable	deep	
 exe	0x004b0d40	ai_CommandFaithChange	hst	shape	readable	deep	
 exe	0x004b0fd0	ai_CommandRiot	hst	draft	readable	deep	
-exe	0x004b1060	ai_Unk4b1060	hst	shape	draft		
+exe	0x004b1060	ai_CommandBreakGuildSeats	hst	shape	readable		
 exe	0x004b11e0	ai_CommandDemand	hst	draft	readable	deep	
-exe	0x004b1600	ai_Unk4b1600	hst	byte	draft		
-exe	0x004b16e0	ai_Unk4b16e0	hst	byte	draft		
+exe	0x004b1600	ai_CommandMercenariesPlunder	hst	byte	readable		
+exe	0x004b16e0	ai_CommandMercenariesMaraud	hst	byte	readable		
 exe	0x004b17c0	ai_Unk4b17c0	hst	byte	draft		
 exe	0x004b1880	ai_Unk4b1880	hst	byte	draft		
 exe	0x004b1950	ai_Unk4b1950	hst	byte	draft		
@@ -3227,15 +3227,15 @@ exe	0x005127f0	init_PlayTownSound	f3init	byte	readable
 exe	0x00512840	init_PlayGraveyardSound	f3init	byte	readable		
 exe	0x00512890	init_StopTownSounds	f3init	byte	readable		
 exe	0x005128d0	init_SetSeasonTextures	f3init	shape	readable		
-exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	draft		
+exe	0x00512de0	init_PlantTextureSetHook	f3init	byte	readable		
 exe	0x00512e40	init_TextureSetHook	f3init	shape	readable	deep	
 exe	0x00512e80	init_BuildingTextureSetHook	f3init	byte	readable		
 exe	0x00512f30	init_SetCharacterAnimations	f3init	shape	readable	deep	
 exe	0x00513050	init_ShowBuildingScene	f3init	draft	readable	deep	
 exe	0x00513400	init_FinishBuildingScene	f3init	byte	readable		
 exe	0x00513590	init_SetDetailLevel	f3init	draft	readable	deep	
-exe	0x005136b0	unk_Unk5136b0	f3init	byte	draft		
-exe	0x00513740	init_AfterTownLoad	f3init	byte	draft		
+exe	0x005136b0	init_LeaveTownScene	f3init	byte	readable		
+exe	0x00513740	init_AfterTownLoad	f3init	byte	readable		
 exe	0x00513970	init_ParseNumberList	f3init	byte	readable		
 exe	0x00513a20	init_LoadCityINI	f3init	draft	draft	deep	
 exe	0x005142e0	io_TownDisplayName	io_text	byte	readable		
@@ -3372,7 +3372,7 @@ exe	0x0052b350	sv_RegisterActivity	sv	byte	readable
 exe	0x0052b3c0	sv_ActivityName	sv	byte	readable		
 exe	0x0052b490	sv_Unk52b490	sv	byte	draft		
 exe	0x0052b500	sv_RunLocationScripts	sv	byte	readable		
-exe	0x0052bb70	sv_Unk52bb70	sv	byte	draft		
+exe	0x0052bb70	sv_RunFramesUntilStopped	sv	byte	draft		
 exe	0x0052bbc0	sv_SendSelectedToBuilding	sv	draft	readable	deep	
 exe	0x0052bec0	sv_HandleSelectionMouse	sv	draft	readable	deep	
 exe	0x0052c420	sv_Unk52c420	sv	byte	draft		
