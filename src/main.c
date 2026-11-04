@@ -1065,9 +1065,9 @@ int main_EnterHostAddress(void)
     ok = d2_GetWinObj(f, 1, io_PrintText(0x1cb0));
     run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
     while (run != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || *(char *)(unsigned)&kb_Last == 1)
+        if (dm_L.rup != 0 || kb_Last == 1)
             sv_PopRequest = 1;
-        if ((U_I((unsigned)&d2_ClickedId) != -1 || *(char *)(unsigned)&kb_Last == 0x1c) && (d2_PointerObj == ok || *(char *)(unsigned)&kb_Last == 0x1c)) {
+        if ((d2_ClickedId != -1 || kb_Last == 0x1c) && (d2_PointerObj == ok || kb_Last == 0x1c)) {
             r = 1;
             s = (char *)d2_GetObjValue(ed);
             strcpy(buf, s);
@@ -1077,7 +1077,7 @@ int main_EnterHostAddress(void)
                 main_NetHost[i] = c;
                 i++;
             } while (c != 0);
-            WritePrivateProfileStringA("Network", "Host", buf, (char *)(unsigned)&ai_OptionsFile);
+            WritePrivateProfileStringA("Network", "Host", buf, ai_OptionsFile);
             sv_PopRequest = 1;
         }
         run = sv_RunFrame((int)main_EnterHostAddress, 0x24087);
