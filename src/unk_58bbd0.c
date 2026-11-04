@@ -14124,13 +14124,19 @@ void ai_ShowPurchaseNews(unsigned short *buyer, char *ownerRec, int bld, int val
         he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5ff, ch_EmptyName);
     }
 }
-/* 0x5a8cb0, a production message without a value (74 B): the text 0x20bb and 0x53dda0 (the +4 id, 0x5fd) */
+/* 0x5a8cb0, the news an office's new owner gets about its holder (74 B, a reasoned guess at the text's meaning):
+   for a character of the kinds 6 / 7 the text 0x20bb with the holder's id into ai_NewsText, shown to its netId
+   (he_ShowNews, kind 0x5fd); nothing for another kind. The only caller is the office message
+   amt_ExecuteOfficeMessage (0x4e67a0), which announces its x14 character to the new office owner */
 
-void ai_Unk5a8cb0(unsigned short *param_1, char *param_2)
+void ai_ShowOfficeNews(unsigned short *holder, char *ownerRec)
 {
-    if (*(char *)(param_2 + 2) == 6 || *(char *)(param_2 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x20bb, *param_1);
-        he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *owner;
+
+    owner = (G8CHARREC *)ownerRec;
+    if (owner->kind == 6 || owner->kind == 7) {
+        txt_Format(ai_NewsText, 0x20bb, *holder);
+        he_ShowNews(owner->netId, -1, ai_NewsText, 0, 0x5fd, ch_EmptyName);
     }
 }
 /* 0x5a8d00, a production message (64 B, a Ghidra-missed start, called from 0x544070): the text 0x20bd and
