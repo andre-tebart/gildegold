@@ -4194,7 +4194,7 @@ void main_BeginPlayerRound(void)
         ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
         sv_PumpNet();
         Sleep(100);
-        unk_Unk4f4d10();
+        gv_CheckRankUps();
         sv_PumpNet();
         Sleep(100);
         ai_Unk495ee0();

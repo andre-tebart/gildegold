@@ -3543,17 +3543,14 @@ int gv_CheckSentence(AICHAR *c, unsigned k)
     }
     return r;
 }
-/* 0x4f4d10, runs 0x4f4970 for each of the 768 characters */
+/* 0x4f4d10, the rank check (gv_CheckRankUp) of every one of the 768 character slots */
 
-void unk_Unk4f4d10(void)
+void gv_CheckRankUps(void)
 {
     int i;
 
-    i = 0;
-    do {
+    for (i = 0; i < 0x300; i++)
         gv_CheckRankUp(i);
-        i++;
-    } while (i < 0x300);
 }
 /* 0x4f4d30, the price of the evidence of the crime id offered by the character seller (the 'dunkle ecke' shops,
    ai_DecideBuyDunkleEcke): (liking of the culprit for the seller * 0.005 + 0.5) * (the culprit's level gm_CharLevel + the

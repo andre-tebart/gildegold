@@ -526,7 +526,7 @@ void gv_ClearCrimes(void);               /* 0x4f4350 */
 int gv_CheckSentence(struct AICHAR *c, unsigned k); /* 0x4f4420 */
 short * gm_FindChar(int id);                   /* 0x505df0 */
 
-void unk_Unk4f4d10(void);               /* 0x4f4d10 */
+void gv_CheckRankUps(void);               /* 0x4f4d10 */
 int gv_EvidencePrice(int id, struct AICHAR *seller, int *price, short *culprit, unsigned *law);  /* 0x4f4d30 */
 void gv_CheckRankUp(unsigned i);              /* 0x4f4970 */
 int gm_CharLevel(unsigned short id, int again);                     /* 0x505e60 */
