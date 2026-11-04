@@ -1149,7 +1149,7 @@ extern int ZEXPORT unzReadCurrentFile  (file, buf, len)
 /*
   Give the current position in uncompressed data
 */
-/* 0x468620 */
+/* 0x468620, reports how many uncompressed bytes of the current file have been read */
 extern z_off_t ZEXPORT unztell (file)
 	unzFile file;
 {
