@@ -252,7 +252,7 @@ void ts_CacheFetch(TSTEXTURE *tex, int npal, unsigned char *pal)
     }
     ts_CreateSurface(tex, npal, pal);
 }
-/* 0x45f980 */
+/* 0x45f980, the live texture slot whose name matches name (case-insensitive), or 0 */
 
 TSTEXTURE *tex_Find(char *name)
 {
