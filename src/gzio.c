@@ -823,7 +823,7 @@ local uLong getLong (s)
      Flushes all pending output if necessary, closes the compressed file
    and deallocates all the (de)compression state.
 */
-/* 0x4636d0 */
+/* 0x4636d0, flushes and closes a gzip file, writing its trailer when writing */
 int ZEXPORT gzclose (file)
     gzFile file;
 {
