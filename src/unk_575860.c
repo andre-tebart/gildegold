@@ -7292,7 +7292,7 @@ void ai_GraveList(AIBLD *rec, int *w, int sel)
     d2_ScrollWindow(w[2]);
 }
 
-void ai_GraveDeadName(); void ai_GraveDeadDescription();
+void ai_GraveDeadName(GVGRAVE *e, char *out); void ai_GraveDeadDescription();
 
 
 /* 0x582b40, the detail of the selected grave in the graveyard contact window: rec = the graveyard building, w = the
@@ -7378,7 +7378,7 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
         item->btn = d2_WinOpenPic(x + 2, d2_Wins[w[3]].h * i + 4, item->grave->icon, w[3]);
         d2_Objs[item->btn].interactive = flag == 0;
         d2_Objs[item->btn].style = 3;
-        ai_GraveDeadName((char *)item->grave, buf);
+        ai_GraveDeadName(item->grave, buf);
         ai_GraveDeadDescription((char *)item->grave, line2);
         y = d2_Wins[w[3]].h * i + 0x38;
         k = d2_CreateWinText(0, y, buf, w[3]);
@@ -7415,7 +7415,7 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
         } else {
             for (i = 0; i < n; i++) {
                 if (items[i].grave->id == e->id) {
-                    ai_GraveDeadName((char *)items[i].grave, buf);
+                    ai_GraveDeadName(items[i].grave, buf);
                     break;
                 }
             }
@@ -7434,23 +7434,19 @@ void ai_GraveDetail(AIBLD *rec, int *w, int clicked, int flag)
     d2_Wins[w[3]].scrollY = saved;
     d2_ScrollWindow(w[3]);
 }
-/* 0x5830f0, a contact entry's name line (90 B): the record's +0x2c text (the German +0x253 / the English +0x27b
-   by the flag +0x38) with the two name parts +4 / +0x14 through 0x5176d0 ("%s %s %s %s" 0x623594), or just the
-   two parts ("%s %s" 0x60c7b8) */
-
-void ai_GraveDeadName(char *e, char *out)
+/* 0x5830f0, the name line of a dead person in a grave (ai_GraveDetail, ai_RentGraveDetail): his office (v2c,
+   1 .. 9) as a text id on top of the male 0x253 / female 0x27b base of the office titles by his sex, then his
+   first and family name ("%s %s %s" 0x623594), or just the two names ("%s %s" 0x60c7b8) */
+void ai_GraveDeadName(GVGRAVE *e, char *out)
 {
-    char *p;
-
-    p = (char *)U_I(e + 0x2c);
-    if (p) {
-        if (U_I(e + 0x38) == 0)
-            txt_Format(out, (char *)(unsigned)"%s %s %s", p + 0x253, e + 4, e + 0x14);
+    if (e->v2c) {
+        if (e->sex == 0)
+            txt_Format(out, (char *)(unsigned)"%s %s %s", e->v2c + 0x253, e->first, e->family);
         else
-            txt_Format(out, (char *)(unsigned)"%s %s %s", p + 0x27b, e + 4, e + 0x14);
+            txt_Format(out, (char *)(unsigned)"%s %s %s", e->v2c + 0x27b, e->first, e->family);
         return;
     }
-    txt_Format(out, (char *)(unsigned)"%s %s", e + 4, e + 0x14);
+    txt_Format(out, (char *)(unsigned)"%s %s", e->first, e->family);
 }
 /* 0x583150, the second line of a dead person in a grave (ai_GraveDetail): the two texts the record points to at
    +0x30 / +0x34 as text ids (their male v30 + 0x114 / nameId + 0x130 or female + 0x11e / + 0x18f forms by g->sex;
