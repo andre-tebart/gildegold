@@ -306,7 +306,7 @@ void tex_SetPalette(void *pal)
 {
     ts_Palette = vfs_FindDir(pal, vfs_Root);
 }
-/* 0x45fb50 */
+/* 0x45fb50, frees tex: a hardware texture's surfaces go through the cache (or are released), then its data buffer */
 
 void tex_Free(TSTEXTURE *tex)
 {
