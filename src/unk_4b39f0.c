@@ -923,7 +923,9 @@ int ai_IsMissionFulfilled(G13MIS *m)
     return 0;
 }
 
-#define G13_4FE1E0 ((void (*)(AITIME *, char, char, char))gm_SetTime)
+#define gm_SetTimeT ((void (*)(AITIME *, char, char, char))gm_SetTime)  /* 0x4fe1e0, gm_SetTime with char arguments: the
+                                                                         original's call passes the clock's bytes (ai.h
+                                                                         declares the arguments unsigned char) */
 
 /* 0x4b5160, timed condition of mission x: not ok resets its time; ok starts it (once) and holds after min
    minutes */
@@ -932,10 +934,9 @@ int ai_TimedCondition(int x, int ok, int min)
     G13MIS *m = (G13MIS *)x;
 
     if (ok) {
-        if (m->time.year == 0 && m->time.hour == 0 && *(int *)((char *)m + 0x0e) == 0
-            && *(int *)((char *)m + 0x12) == 0) {
+        if (m->time.year == 0 && m->time.hour == 0 && m->time.min == 0 && m->time.sec == 0) {
             m->time.year = ai_Time.year;
-            G13_4FE1E0(&m->time, (char)ai_Time.hour, (char)ai_Time.min, (char)ai_Time.sec);
+            gm_SetTimeT(&m->time, (char)ai_Time.hour, (char)ai_Time.min, (char)ai_Time.sec);
         }
         return gm_MinutesBetween(&m->time, &ai_Time) >= min;
     }
