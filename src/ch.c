@@ -4079,7 +4079,7 @@ void ch_Close(void)
         ch_Queue = 0;
     }
 }
-/* 0x40b240 */
+/* 0x40b240, deletes every live character and empties ch_List (ls_LoadGame clears the old game with it) */
 
 void ch_DeleteAll(void)
 {
