@@ -3,8 +3,8 @@
    the UDP code; its .data starts at 0x5f1120 with the animation path) .. 0x40b580.
    Functions are kept in their original order. Names are ours.
    Open: no evidenced role / type yet for fields and globals the action and walk code share: CH_ACTOBJ.unk170 /
-   unk174 (a room id or an animation, per action), u.walk.unk0fc (written -1, never read), ch_Unk631058 /
-   ch_Unk631060. cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
+   unk174 (a room id or an animation, per action), u.walk.unk0fc (written -1, never read), ch_Unk631058.
+   cm_SpeedFactor (0x5f1290, the game speed factor) is defined here under cm's name.
    Open: D3OBJ_UNK200 reads D3OBJECT.owner (d3.h, the game record of the object) as the int d3_WriteObject
    saves and rd_object restores (the item pointer of the sprite spawners).
    Open: not included yet (dcp headers conflicts ch HEADER): sv.h; held by calls whose argument count differs
@@ -65,7 +65,7 @@ CHACTION * ch_Queue = 0;  /* 0x631050 */
 int ch_Time = 0;  /* 0x631054 */
 char ch_Unk631058 = 0;  /* 0x631058 */
 int ch_SndLib = 0;  /* 0x63105c, sound library for step sounds */
-int ch_Unk631060 = 0;  /* 0x631060 */
+int ch_StepSounds = 0;  /* 0x631060 */
 D3VECTOR ch_PathOffset = {0};  /* 0x631068, added to the last path cell */
 int ch_DirtyX1 = 0;  /* 0x63107c */
 int ch_DirtyZ1 = 0;  /* 0x631080 */
@@ -1560,7 +1560,7 @@ int ch_Update(void)
     CHARACTER *found[32];
 
     ch_Time = d3_Time;
-    ch_Unk631060 = 0;
+    ch_StepSounds = 0;
     if (!ch_Enabled)
         return 0;
     if (ch_Saved0 != d3_DefaultScene || ch_Saved1 != d3_DefaultScene) {
@@ -1600,7 +1600,7 @@ int ch_Update(void)
                 ch_UpdateLowPoly(ch_List[i]);
             if (!act && d3_DefaultScene == ch_List[i]->scene && d3_CurrentScene && !ch_List[i]->slot
                 && (ch_List[i]->flags.all & 0x1000) && !(ch_List[i]->flags.all & 2)
-                && !(D3MATERIAL_UNK96D(ch_List[i]->obj->material) & 0x40)) {
+                && !(D3_MESH(ch_List[i]->obj)->flags & 0x40)) {
                 if (ch_List[i]->flags.all & 0x10) {
                     ch_AttachAni(ch_List[i], "sitzend/sitz_newnoise", 0);
                     if (ch_List[i]->slot) {
@@ -3072,7 +3072,7 @@ void ch_WalkSound(CHACTION *a, int ground)
         && ch->slot->frame != a->u.walk.lastframe) {
         if (ch->slot->frame == 4 || ch->slot->frame == 12 || ch->slot->frame == 18
             || ch->slot->frame == 24) {
-            if ((ch->kind & 1) && ch_Unk631060 < 3 && d3t_SceneIndex(ch->scene)) {
+            if ((ch->kind & 1) && ch_StepSounds < 3 && d3t_SceneIndex(ch->scene)) {
                 if (ch->scene->map) {
                     strcpy(name, "Normal_s");
                     if (ground == 6 || ground == 11)
@@ -3090,7 +3090,7 @@ void ch_WalkSound(CHACTION *a, int ground)
                     snd = sb_GetSample(ch_SndLib, "normal_s");
                 if (snd) {
                     d3snd_PlayAt(snd, ch->obj, 40, 500.0f);
-                    ch_Unk631060++;
+                    ch_StepSounds++;
                 }
             }
             a->u.walk.lastframe = ch->slot->frame;
@@ -3643,7 +3643,7 @@ void ch_ActWalkCells(CHACTION *a)
         && ch->slot->frame != a->u.walk.lastframe) {
         if (ch->slot->frame == 4 || ch->slot->frame == 12 || ch->slot->frame == 18
             || ch->slot->frame == 24) {
-            if ((ch->kind & 1) && ch_Unk631060 < 3 && d3t_SceneIndex(ch->scene)) {
+            if ((ch->kind & 1) && ch_StepSounds < 3 && d3t_SceneIndex(ch->scene)) {
                 if (ch->scene->map) {
                     strcpy(name, "Normal_s");
                     if (ground == 6 || ground == 11)
@@ -3661,7 +3661,7 @@ void ch_ActWalkCells(CHACTION *a)
                     snd = sb_GetSample(ch_SndLib, "normal_s");
                 if (snd) {
                     d3snd_PlayAt(snd, ch->obj, 40, 500.0f);
-                    ch_Unk631060++;
+                    ch_StepSounds++;
                 }
             }
             a->u.walk.lastframe = ch->slot->frame;

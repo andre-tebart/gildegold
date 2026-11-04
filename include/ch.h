@@ -394,9 +394,7 @@ int ch_DeclareAction(int id, CHACTFUNC func, char unk, char *name, int nargs);  
 void ch_ActPlay(CHACTION *a);                                                           /* 0x4056e0 */
 int ch_QueueAnim(CHARACTER *ch, char *name, int n);                                     /* 0x4057a0 */
 
-#define D3MATERIAL_UNK96D(m) (*(unsigned char *)((char *)(m) + 0x96d))
-
-extern int ch_Unk631060;                    /* 0x631060 */
+extern int ch_StepSounds;                    /* 0x631060 */
 extern int ch_Enabled;                      /* 0x5f12a4 */
 extern D3SCENE *ch_Saved0;                  /* 0x631084, scene whose ground ch_Ground0 holds */
 extern D3SCENE *ch_Saved1;                  /* 0x631088, the same for ch_Ground1 */
