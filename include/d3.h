@@ -38,7 +38,11 @@ typedef struct D3MATERIAL {
                                        passed to d3_GetBoxVerts / GetBox), cameraMatrix 0x48, zMin/zMax, frameStamp */
     char animCtl[0x10];             /* 0xf4, the animation control (a D3ANIMCTL at 0xf4) passed to
                                        d3anim_StartAnim / d3_ReleaseTexture as their "list" */
-    D3MESHOPS *ops;                 /* 0x104 */
+    union {
+        D3MESHOPS *ops;             /* 0x104, the mesh driver's function table (d3_GetBoxVerts, GetBox) */
+        char *name;                 /* 0x104, an animated mesh's model name (ch_TakeObject, chc_TakeObjectScript,
+                                       d3_interface.c: the same pointer, read as a string) */
+    };
     char pad108[0x70];
     D3TEXSLOT tex[3];               /* 0x178 */
 } D3MATERIAL;

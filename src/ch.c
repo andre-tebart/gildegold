@@ -1931,7 +1931,7 @@ void ch_ActTakingObject(CHACTION *a)
     ch_CheckAniMorph(ch);
     ch_RemoveAction(a);
 }
-/* 0x405e70 */
+/* 0x405e70, queues the take-object action (type 0x31): the animation name, and the object's model name */
 
 int ch_TakeObject(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
 {
@@ -1948,8 +1948,8 @@ int ch_TakeObject(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
         a->args[1] = 0;
         a->args[2] = 2;
         strcpy(a->u.name, name);
-        if (obj && obj->material && D3MATERIAL_NAME104(obj->material)) {
-            strcpy(CH_ACTOBJ(a)->name2, D3MATERIAL_NAME104(obj->material));
+        if (obj && obj->material && obj->material->name) {
+            strcpy(CH_ACTOBJ(a)->name2, obj->material->name);
             return 1;
         }
         ch_RemoveAction(a);
@@ -1973,8 +1973,8 @@ int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
         a->args[1] = 0;
         a->args[2] = 1;
         strcpy(a->u.name, name);
-        if (obj && obj->material && D3MATERIAL_NAME104(obj->material)) {
-            strcpy(CH_ACTOBJ(a)->name2, D3MATERIAL_NAME104(obj->material));
+        if (obj && obj->material && obj->material->name) {
+            strcpy(CH_ACTOBJ(a)->name2, obj->material->name);
             return 1;
         }
         ch_RemoveAction(a);

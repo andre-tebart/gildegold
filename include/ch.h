@@ -414,7 +414,6 @@ typedef struct CHACTOBJ {
                                        animation it started (a D3ANIMDATA *); data[2] also CHACTION.speed */
 } CHACTOBJ;
 #define CH_ACTOBJ(a)    ((CHACTOBJ *)&(a)->u)
-#define D3MATERIAL_NAME104(m) (*(char **)((char *)(m) + 0x104))
 
 
 CHACTION *ch_QueueAnimSpeed(CHARACTER *ch, char *name, int n, float speed);                  /* 0x405810 */
