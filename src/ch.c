@@ -1409,7 +1409,7 @@ void ch_MoveCamera(CHARACTER *ch, int view, int time)
         d3t_PlaceObjectV(d3_Camera, (D3VECTOR *)&pos, &rot, time, 0x28);
     }
 }
-/* 0x404e40 */
+/* 0x404e40, a random number in 0..n-1 (0 when n is 0), the pick of ch_FindDummy */
 
 int ch_Random(unsigned short n)
 {
