@@ -8553,20 +8553,24 @@ void he_Unk551b70(int ev)
     }
     cm_SendExSetHE(0, ev);
 }
-/* 0x551d00, the allocation handler of the event with the six ids at +0xb0 (ROUGH): 0x505ca0 (6, +0xb0) fills six ids, each is incremented, the due clock is now, state 0xc, minute word 9 */
+/* 0x551d00, the alloc handler of the six-group event (type 0x7d, the run handler 0x551d70 walks its six figure
+   groups at +0xb0): gm_Shuffled fills the six ids and each is incremented (0 -> the first figure), the due time
+   is the clock now with hour 9 / min 0, and the state becomes 0xc */
 
-void he_Unk551d00(int ev)
+void he_InitSixGroupEvent(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     int i;
     int *p = (int *)(ev + 0xb0);
+    int *q;
 
     gm_Shuffled(6, p);
-    for (i = 0; i < 6; i++)
-        p[i] = p[i] + 1;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x70) = 0xc;
-    *(unsigned short *)(ev + 0x56) = 9;
-    *(int *)(ev + 0x58) = 0;
+    for (q = p, i = 0; i < 6; i++)
+        *q++ += 1;
+    e->end = ai_Time;
+    e->stage = 0xc;
+    e->end.hour = 9;
+    e->end.min = 0;
 }
 
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
@@ -9250,7 +9254,7 @@ int he_Unk553060(void)
         return 1;
     if (he_Unk53d600(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_Unk53d600(0x7d, (void *)he_Unk551d00, (void *)he_Unk551d70) != 0)
+    if (he_Unk53d600(0x7d, (void *)he_InitSixGroupEvent, (void *)he_Unk551d70) != 0)
         return 1;
     if (he_Unk53d600(0x7e, (void *)he_Unk552040, (void *)he_Unk552090) != 0)
         return 1;
