@@ -181,8 +181,8 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
 void ai_BeginNeedBlock(char *p);                                                      /* 0x4c3e70 */
 int ai_AddNeedDelta(int k, float v);                                        /* 0x4c3eb0 */
 void cm_SetSpeedLevel(unsigned int v);                                               /* 0x4c3ef0 */
-void ai_Unk4c3f20(void);                                                         /* 0x4c3f20 */
-void ai_Unk4c3f50(void);                                                         /* 0x4c3f50 */
+void cm_RaiseSpeedLevel(void);                                                         /* 0x4c3f20 */
+void cm_LowerSpeedLevel(void);                                                         /* 0x4c3f50 */
 int ai_Unk4c3f80(void);                                                          /* 0x4c3f80 */
 int cm_SendPlayerId(void);                                                         /* 0x4c3f90 */
 int cm_ReceiveMessages(void);                                                          /* 0x4c3fd0 */

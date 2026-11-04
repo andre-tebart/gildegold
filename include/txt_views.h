@@ -16,7 +16,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143a3c4                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x00204))  /* 0x143a3c4 */
 #define txt_GateItemSuffix                       (*(char * *)((char *)txt_Ptrs + 0x0020c))  /* 0x143a3cc, text 0x83: what sv_DrawGateName appends to a gate's item name (a guess from the use) */
 #define txt_GatePlaceSuffix                      (*(char * *)((char *)txt_Ptrs + 0x00210))  /* 0x143a3d0, text 0x84: what sv_DrawGateName appends to a room / building kind name (a guess from the use) */
-#define full_data_143a3d8                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x00218))  /* 0x143a3d8 */
+#define txt_SpeedHostOnly                        (*(char * *)((char *)txt_Ptrs + 0x00218))  /* 0x143a3d8, the status text ai_SpeedKeys shows to a network client that presses a speed key (only the host sets the speed); its wording is unknown */
 #define full_data_143a3e4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x00224))  /* 0x143a3e4 */
 #define full_data_143a3e8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x00228))  /* 0x143a3e8 */
 #define full_data_143a3ec                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0022c))  /* 0x143a3ec */

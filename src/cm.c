@@ -818,7 +818,7 @@ void cm_SetSpeedLevel(unsigned int v)
 }
 /* 0x4c3f20, raises cm_SpeedLevel */
 
-void ai_Unk4c3f20(void)
+void cm_RaiseSpeedLevel(void)
 {
     int buf[31];
 
@@ -829,7 +829,7 @@ void ai_Unk4c3f20(void)
 }
 /* 0x4c3f50, lowers cm_SpeedLevel */
 
-void ai_Unk4c3f50(void)
+void cm_LowerSpeedLevel(void)
 {
     int buf[31];
 
