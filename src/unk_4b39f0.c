@@ -510,9 +510,10 @@ int ai_CondRankTimed(AICHAR *c, int x, G13TYPE *t)
 {
     return ai_TimedCondition(x, G13_B(c, 0x0d) >= t->goal, t->threshold);
 }
-/* 0x4b45f0, mission condition: 0x50a640 of c (as money, 0x5085b0) reaches t->goal */
+/* 0x4b45f0, mission condition (types 5 / 13 / 21 / 30): the worth of the character (gm_GetWorth, its objects
+   and buildings in player money) reaches t->goal */
 
-int ai_Unk4b45f0(AICHAR *c, G13TYPE *t)
+int ai_CondWorth(AICHAR *c, G13TYPE *t)
 {
     return gm_ConvertMoney(gm_GetWorth(c->id), ai_OwnPlayer) >= t->goal;
 }
@@ -861,7 +862,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 13:
     case 21:
     case 30:
-        return ai_Unk4b45f0(c, t);
+        return ai_CondWorth(c, t);
     case 31:
         return ai_Unk4b4630(c, t);
     case 4:
