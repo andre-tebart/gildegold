@@ -1031,7 +1031,9 @@ local block_state deflate_stored(s, flush)
  * new strings in the dictionary only for unmatched strings or for short
  * matches. It is used only for the fast compression options.
  */
-/* 0x462370 */
+/* 0x462370, compresses the input without lazy match evaluation: emits a
+   found match at once, inserting only unmatched or short-match strings into
+   the dictionary; returns the block state reached for this flush */
 local block_state deflate_fast(s, flush)
     deflate_state *s;
     int flush;
