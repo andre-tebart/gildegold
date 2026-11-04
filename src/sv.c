@@ -7591,19 +7591,20 @@ l473:
         ai_FrameWait--;
     return r;
 }
-/* 0x5315c0, a callback of 0x42ea10 (the screens' wait loops): while the clock is shown by a game speed (0x6f3608: seconds = (speed * 0.00625 + 0.5) * 0x6248b4) it stores that time of day (hours / minutes /
-   seconds) in the clock record 0x75e130 (0x4fe140); skipped in the day phase 0x17 and later unless the flag bit 7 of 0x6f23f8 is set; a start Ghidra merged into 0x5309a0 */
+/* 0x5315c0, a callback of the screens' wait loop 0x42ea10: adds the game seconds of one clock update (ai_OptionSpeed
+   scaled by main_ClockScale) in hours / minutes / seconds to the clock copy ai_TimeCopy (gm_AddTime); nothing in the
+   day phase 0x17 and later unless bit 7 of ai_GameFlags is set; a start Ghidra merged into sv_RunFrame (0x5309a0) */
 
 void sv_UpdateClock(void)
 {
     int t, h, m;
 
-    if ((SV_US((unsigned)&ai_Unk75e134) >= 0x17 || SV_US((unsigned)&ai_Time.hour) >= 0x17) && (SV_B((unsigned)&ai_GameFlags) & 0x80) == 0)
+    if ((ai_TimeCopyHour >= 0x17 || ai_Time.hour >= 0x17) && (ai_GameFlagsB & 0x80) == 0)
         return;
-    t = (int)(((float)SV_I((unsigned)&ai_OptionSpeed) * 0.00625f + 0.5) * main_ClockScale);
+    t = (int)(((float)ai_OptionSpeed * 0.00625f + 0.5) * main_ClockScale);
     h = t / 3600;
     m = (t - h * 3600) / 60;
-    gm_AddTime((unsigned)&ai_TimeCopy, h, m, t - (m + h * 60) * 60);
+    gm_AddTime((struct AITIME *)&ai_TimeCopy, h, m, t - (m + h * 60) * 60);
 }
 
 extern int sv_SkyScene;
