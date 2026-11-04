@@ -2557,13 +2557,13 @@ char ch_FindFreeCell(D3SM *h, D3VECTOR *from, D3VECTOR *to, int x, int z, int *p
     }
     return 0;
 }
-/* 0x407690 */
+/* 0x407690, allocates the path map's origin / cell-size node (0x14 bytes, "ch_map") */
 
-void *ch_MapAlloc(int unk)
+void *ch_MapAlloc(float cellSize)
 {
     CHMAPNODE *p = mem_Alloc(sizeof(CHMAPNODE), "ch_map");
 
-    p->unk10 = unk;
+    p->cellSize = cellSize;
     return p;
 }
 /* 0x4076b0 */
@@ -4047,7 +4047,7 @@ int ch_Open(void)
     ch_DeclareAction(0x3b, (CHACTFUNC)ch_ActWait, 1, ch_EmptyName, 1);
     ch_DeclareAction(0x34, (CHACTFUNC)ch_ActUsingGate, 1, ch_EmptyName, 5);
     memset(ch_Fades, 0, sizeof(ch_Fades));
-    ch_PathMap = ch_MapAllocF(60.0f);
+    ch_PathMap = ch_MapAlloc(60.0f);
     return 1;
 }
 /* 0x40b1a0, frees the walk paths, the characters and the action queue */

@@ -456,15 +456,15 @@ char d3_AttachToBone(D3OBJECT *obj, char *name);                                
 
 
 /* ---- 0x406e40..0x408690 (worker ch4): turning, path search helpers ---- */
-typedef struct CHMAPNODE {          /* 0x14 bytes, "ch_map" */
-    char pad00[0x10];
-    int unk10;
+typedef struct CHMAPNODE {          /* 0x14 bytes, "ch_map": the path map's origin and cell size */
+    D3VECTOR4 origin;               /* 0x00 */
+    float cellSize;                 /* 0x10, cell size x */
 } CHMAPNODE;
 
 void ch_ActAnimOnce(CHACTION *a);                                                       /* 0x406e40 */
 int ch_FindNear300(CHARACTER *ch, CHARACTER **out);                                     /* 0x407200 */
 /* ch_FindFreeCell 0x4072a0 is declared above (ch2 block) */
-void *ch_MapAlloc(int unk);                                                             /* 0x407690 */
+void *ch_MapAlloc(float cellSize);                                                      /* 0x407690 */
 void ch_MapFree(void *p);                                                               /* 0x4076b0 */
 void ch_CopyVec(D3VECTOR *dst, D3VECTOR *src);                                          /* 0x4076c0 */
 int ch_PosToCell(D3SM *h, D3VECTOR *pos, int *x, int *z);                               /* 0x4076e0 */
@@ -540,9 +540,6 @@ void ch_ActWalkCells(CHACTION *a);                                              
 #define CHACT_FSTART(a) (*(float *)&(a)->args[8])                    /* 0x50, fade actions: start time */
 #define CH_NOFADE       0x4000                                       /* CH_FLAGW: fade-in pending (met another character) */
 extern char ch_EmptyName[];         /* 0x631090, "" */
-
-
-#define ch_MapAllocF ((void *(*)(float))ch_MapAlloc)                /* 0x407690 takes a float */
 
 CHACTION *ch_WalkToObject(CHARACTER *ch, D3OBJECT *obj);                                /* 0x40a900 */
 void ch_ActWalk2RndDummy(CHACTION *a);                                                  /* 0x40a9c0 */
