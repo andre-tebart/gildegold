@@ -76,8 +76,7 @@ char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PV
     D3PVERT **res;
     D3PVERT *start, *end, *p, *q;
     D3VECTOR4 dir, d, nd;
-    unsigned int i, j, nres, tail, head;
-#define nedge (*(unsigned int *)&pts)
+    unsigned int i, j, nres, tail, head, nedge;
 
     /* dead stores: they rank mark / tail for the operand order of VC6's addresses (2 of 4 orders) */
     mark = 0;
@@ -86,7 +85,7 @@ char d3_MirCreateOutline(D3PVERT **pts, unsigned int n, unsigned int *nout, D3PV
         return 0;
     edges = mem_Alloc(n << 5, "d3_mir:CreateOutlineMaxOut");
     used = mem_Alloc((n + 8) * n, "d3_mir:track_connections");
-    d3_MirBoundaryEdges(n, used, pts, (unsigned int *)&pts, edges);
+    d3_MirBoundaryEdges(n, used, pts, &nedge, edges);
     i = nedge;
     res = mem_Alloc(i * 4, "d3_mir:CreateOutlineOutput");
     nres = 0;
@@ -179,7 +178,6 @@ done:
     *nout = nres;
     *out = res;
     return 1;
-#undef nedge
 }
 /* 0x454be0: the clipping planes of the mirror: one per outline edge of the visible polygons with tex (through
    the eye point), followed by the view clip planes those polygons touch */
