@@ -240,76 +240,87 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
     unsigned char flags;                /* 0x36, the message flags (1 / 2 / 9; he.md's message record) */
     char pad37;
     int ids[8];                         /* 0x38 */
-    union {
-        int arg[11];                    /* 0x58 */
-        unsigned short itemId;          /* 0x58, the good a buy / move message is about (the 16-bit stores) */
-        struct {                        /* the trade kinds */
-            int car;                    /* 0x58 */
-            int n;                      /* 0x5c */
-            int ch;                     /* 0x60 */
-            int dst[6];                 /* 0x64, 0..2 sold, 3..5 bought */
-            union {
-                unsigned short item[6]; /* 0x7c */
-                struct {
-                    int pad7c[2];
-                    int unk84;          /* 0x84 */
-                } s;
-            } u;
-        };
-        struct {                        /* the rank message 0x69 (gv_CheckRankUp) */
-            unsigned char rank;         /* 0x58, the new rank (AICHAR.b00d) */
-            char pad59[3];
-            int ch;                     /* 0x5c, the netId of the character who rose */
-        } rankUp;
-        struct {                        /* the pamphlet message 0x35 (0x4aa940) */
-            AITIME when;                /* 0x58, the game time it was sent */
-            char pad66[2];
-            int about;                  /* 0x68, the netId of the character it is about */
-            char pad6c;
-            unsigned char variant;      /* 0x6d, a random text variant 0..0x1c */
-        } pamphlet;
-        struct {                        /* the tavern message 0x2b (he_PostEvent2b, one per tavern building) */
-            int pad58;
-            unsigned char mode;         /* 0x5c, posted 0; the event keeps it at +0xb0 (a reasoned guess: a mode byte, its
-                                           reader is not read yet) */
-        } tavern;
-        struct {                        /* the grave lease offer 0x92 to a player (gv_GraveyardTurn; he_Unk5728d0 answers it with gv_OrderExtendGrave) */
-            int bld;                    /* 0x58, the graveyard building's id */
-            int size;                   /* 0x5c, the grave size */
-            unsigned char entry;        /* 0x60, the entry of that size */
-            char pad61[3];
-            int price;                  /* 0x64, the lease price (gv_LeasePrice) */
-            int years;                  /* 0x68, the years the lease is extended by (10) */
-        } lease;
-        struct {                        /* the graveyard work 0x8d on a grave (ai_GraveCare; he_HasGraveWork finds its event) */
-            int pad58;
-            int size;                   /* 0x5c, the grave's size (list) */
-            unsigned char index;        /* 0x60, its index in that list */
-        } graveWork;
-        struct {                        /* the study message 0x5f ("Studium", ai_ExecuteStudy) */
-            int ch;                     /* 0x58, the netId of the character who pays */
-            int pad5c;
-            int child;                  /* 0x60, the child's value from the decide callback (s1->arg2) */
-            unsigned char subject;      /* 0x64, the offer chosen (s2->ref) */
-            unsigned char level;        /* 0x65, the offer's second value (s2->arg2) */
-        } study;
-    };
-    union {
-        int amount[3];                  /* 0x88, of the bought goods */
+    union {                             /* 0x58..0xf7: the kinds' words */
         struct {
-            char pad88;
-            char unk89;                 /* 0x89 */
+            union {
+                int arg[11];                    /* 0x58 */
+                unsigned short itemId;          /* 0x58, the good a buy / move message is about (the 16-bit stores) */
+                struct {                        /* the trade kinds */
+                    int car;                    /* 0x58 */
+                    int n;                      /* 0x5c */
+                    int ch;                     /* 0x60 */
+                    int dst[6];                 /* 0x64, 0..2 sold, 3..5 bought */
+                    union {
+                        unsigned short item[6]; /* 0x7c */
+                        struct {
+                            int pad7c[2];
+                            int unk84;          /* 0x84 */
+                        } s;
+                    } u;
+                };
+                struct {                        /* the rank message 0x69 (gv_CheckRankUp) */
+                    unsigned char rank;         /* 0x58, the new rank (AICHAR.b00d) */
+                    char pad59[3];
+                    int ch;                     /* 0x5c, the netId of the character who rose */
+                } rankUp;
+                struct {                        /* the pamphlet message 0x35 (0x4aa940) */
+                    AITIME when;                /* 0x58, the game time it was sent */
+                    char pad66[2];
+                    int about;                  /* 0x68, the netId of the character it is about */
+                    char pad6c;
+                    unsigned char variant;      /* 0x6d, a random text variant 0..0x1c */
+                } pamphlet;
+                struct {                        /* the tavern message 0x2b (he_PostEvent2b, one per tavern building) */
+                    int pad58;
+                    unsigned char mode;         /* 0x5c, posted 0; the event keeps it at +0xb0 (a reasoned guess: a mode byte, its
+                                                   reader is not read yet) */
+                } tavern;
+                struct {                        /* the grave lease offer 0x92 to a player (gv_GraveyardTurn; he_Unk5728d0 answers it with gv_OrderExtendGrave) */
+                    int bld;                    /* 0x58, the graveyard building's id */
+                    int size;                   /* 0x5c, the grave size */
+                    unsigned char entry;        /* 0x60, the entry of that size */
+                    char pad61[3];
+                    int price;                  /* 0x64, the lease price (gv_LeasePrice) */
+                    int years;                  /* 0x68, the years the lease is extended by (10) */
+                } lease;
+                struct {                        /* the graveyard work 0x8d on a grave (ai_GraveCare; he_HasGraveWork finds its event) */
+                    int pad58;
+                    int size;                   /* 0x5c, the grave's size (list) */
+                    unsigned char index;        /* 0x60, its index in that list */
+                } graveWork;
+                struct {                        /* the study message 0x5f ("Studium", ai_ExecuteStudy) */
+                    int ch;                     /* 0x58, the netId of the character who pays */
+                    int pad5c;
+                    int child;                  /* 0x60, the child's value from the decide callback (s1->arg2) */
+                    unsigned char subject;      /* 0x64, the offer chosen (s2->ref) */
+                    unsigned char level;        /* 0x65, the offer's second value (s2->arg2) */
+                } study;
+            };
+            union {
+                int amount[3];                  /* 0x88, of the bought goods */
+                struct {
+                    char pad88;
+                    char unk89;                 /* 0x89 */
+                };
+            };
+            char pad94[8];
+            unsigned char textFlags;            /* 0x9c, of a note with a text (cm_SendPartyNote): 0xc, 0xe with the party's building,
+                                                   | 0x10 when a second text follows the first */
+            unsigned char unk9d;                /* 0x9d */
+            char pad9e[2];
+            int unka0;                          /* 0xa0 */
+            char pada4[0xc];
+            unsigned char extraFlag;            /* 0xb0, 1 in the explosion message 0x4f (gv_ExplodeShot); the meaning is not known */
+            char padb1[0x47];
+        };
+        struct {                        /* the build message 0xd (ai_ExecBuildBuilding 0x4a5320) */
+            char padbuild58[0x28];
+            float buildPos[4];          /* 0x80, the plot's world position (ai_ObjectPosition, a 0x10-byte vector) */
+            float buildRot[3];          /* 0x90, the plot's angles (ai_ObjectAngle: [1] the turn) */
+            char buildPath[0x5c];       /* 0x9c, the path of the building's model group ("...gebaeude/*gb_<NAME>.ogr");
+                                           the size is reasoned: up to the record's end */
         };
     };
-    char pad94[8];
-    unsigned char textFlags;            /* 0x9c, of a note with a text (cm_SendPartyNote): 0xc, 0xe with the party's building,
-                                           | 0x10 when a second text follows the first */
-    unsigned char unk9d;                /* 0x9d */
-    char pad9e[2];
-    int unka0;                          /* 0xa0 */
-    char pada4[0xc];
-    unsigned char extraFlag;            /* 0xb0, 1 in the explosion message 0x4f (gv_ExplodeShot); the meaning is not known */
-    char padb1[0x47];
 } AIMSG;
 
 typedef char ai_AssertAIMSG[sizeof(AIMSG) == 0xf8 ? 1 : -1];

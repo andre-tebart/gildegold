@@ -10598,7 +10598,7 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
         else
             sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, name);
         if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
-            sprintf((char *)&m + 0x9c, "%s", path);
+            sprintf(m.buildPath, "%s", path);
             m.time = ai_Time;
             m.to = p->netId;
             m.fromId = p->netId;
@@ -10607,8 +10607,8 @@ int ai_ExecBuildBuilding(AIPER *p, AIARG *s1, AIARG *s2)
             m.arg[1] = s1->ref;
             m.flags = 2;
             m.arg[2] = gm_BuildingKindCost(p, s1->ref);
-            ai_ObjectPosition((char *)&m + 0x80, plot);
-            ai_ObjectAngle((char *)&m + 0x90, plot);
+            ai_ObjectPosition(m.buildPos, plot);
+            ai_ObjectAngle(m.buildRot, plot);
             cm_SendLongMessage(&m);
             return 1;
         }
