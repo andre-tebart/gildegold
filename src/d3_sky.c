@@ -319,7 +319,7 @@ D3SKY *d3sky_Create(float horizon, float fogstart, float fogscale)
     }
     return s;
 }
-/* 0x45daa0 */
+/* 0x45daa0, frees a sky: deletes its layers one by one, then the sky itself */
 
 void d3sky_Destroy(D3SKY *s)
 {
