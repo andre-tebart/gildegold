@@ -1384,7 +1384,7 @@ void ch_GetCamera(CHARACTER *ch, int view, D3VECTOR4 *pos, D3VECTOR *rot)
     rot->y += ch->obj->rotation.y;
     rot->z += ch->obj->rotation.z;
 }
-/* 0x404d80 */
+/* 0x404d80, puts d3_Camera at the character's view 0..3 (ch_GetCamera) */
 
 void ch_SetCamera(CHARACTER *ch, int view)
 {
