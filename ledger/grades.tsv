@@ -35,18 +35,18 @@ exe	0x004027b0	ch_SyncObjectOffsets	ch	byte	readable
 exe	0x00402800	ch_UpdatePositions	ch	byte	readable		
 exe	0x004028a0	ch_Delete	ch	byte	readable		
 exe	0x004029c0	ch_Alloc	ch	byte	readable		
-exe	0x00402a30	ch_AllocAt	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
-exe	0x00402a70	ch_FindByName	ch	byte	draft		
-exe	0x00402ac0	ch_FindByObject	ch	byte	draft		
+exe	0x00402a30	ch_AllocAt	ch	byte	readable		
+exe	0x00402a70	ch_FindByName	ch	byte	readable		
+exe	0x00402ac0	ch_FindByObject	ch	byte	readable		
 exe	0x00402af0	ch_SetLowPoly	ch	byte	readable		
 exe	0x00402ba0	ch_UpdateLowPoly	ch	draft	draft	deep	
-exe	0x00403070	ch_CreateMesh	ch	byte	draft		
-exe	0x00403390	ch_Create	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00403070	ch_CreateMesh	ch	byte	readable		
+exe	0x00403390	ch_Create	ch	byte	readable		
 exe	0x004033c0	ch_MoveToScene	ch	byte	readable		
-exe	0x004034e0	ch_AttachTransport	ch	byte	draft		
-exe	0x004035f0	ch_DetachTransport	ch	byte	draft		
+exe	0x004034e0	ch_AttachTransport	ch	byte	readable		
+exe	0x004035f0	ch_DetachTransport	ch	byte	readable		
 exe	0x00403620	ch_PlaceTransport	ch	byte	readable		
-exe	0x00403950	ch_AttachMotion	ch	byte	draft		
+exe	0x00403950	ch_AttachMotion	ch	byte	readable		
 exe	0x00403ab0	ch_AnimDone	ch	draft	readable	deep	
 exe	0x00403b00	ch_SetNextAnim	ch	byte	readable		
 exe	0x00403c10	ch_StopAnim	ch	byte	readable		
