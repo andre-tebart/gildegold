@@ -3206,14 +3206,15 @@ void sv_MoveCameraToView(void)
 {
     d3t_PlaceObject(d3_Camera, sv_ViewPos[0], sv_ViewPos[1], sv_ViewPos[2], sv_ViewRot[0], sv_ViewRot[1], sv_ViewRot[2], ai_CameraStep, 8);
 }
-/* 0x528290, a callback over the objects of a model (name o): for the one named "sp_WIMPEL" (the banner) sets its colour (0x446f30 (o, o +0x1cc, 0x66 + the byte +0x54 of the character record (0x770bd4) of the owner, 1))
-   when the owner (+0x27) is valid; returns 1 */
+/* 0x528290, an object callback (the object o, the building b): for the model part named "sp_WIMPEL" (the banner)
+   sets its texture set to 'f' + the low byte of its owner's character ref54 (the owner's colour) when the owner
+   is valid; returns 1 */
 
-char sv_ColourBannerCB(char *o, char *b)
+char sv_ColourBannerCB(D3OBJECT *o, AIBLD *b)
 {
-    if (_stricmp(o, "sp_WIMPEL") == 0) {
-        if (*(unsigned short *)(b + 0x27) != 0xffff)
-            d3if_SelectTextureSet(o, *(int *)(o + 0x1cc), (char)(*(char *)(ai_Chars[*(unsigned short *)(b + 0x27)] + 0x54) + 'f'), 1);
+    if (_stricmp(o->name, "sp_WIMPEL") == 0) {
+        if (b->owner != 0xffff)
+            d3if_SelectTextureSet(o, (struct D3SURF *)o->info, (unsigned char)((char)ai_CharsT[b->owner].ref54 + 'f'), 1);
     }
     return 1;
 }

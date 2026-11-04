@@ -84,7 +84,7 @@ void sv_CameraToObject(int o);                                               /* 
 void sv_FlyCameraToModel(int m);                                               /* 0x527e90 */
 void sv_MoveCameraToView(void);                                                /* 0x528140 */
 struct D3OBJECT; struct AIBLD; char sv_CreateBannerCB(struct D3OBJECT *part, struct AIBLD *b);                             /* 0x528180 */
-char sv_ColourBannerCB(char *o, char *b);                                    /* 0x528290 */
+char sv_ColourBannerCB(struct D3OBJECT *o, struct AIBLD *b);                                    /* 0x528290 */
 void sv_CreateBanners(char *b);                                             /* 0x5282f0 */
 void sv_ColourBanners(int c);                                               /* 0x528390 */
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b);                                /* 0x528490 */
