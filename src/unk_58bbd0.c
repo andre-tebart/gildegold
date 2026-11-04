@@ -3726,7 +3726,7 @@ int ai_ExtractResourceWindow(int param_1)
     return 0;
 }
 
-int ai_StorageWindow(); int ai_Unk5b9f30(); int ai_Unk5bba00(); int gm_BuildKindObjects(char *b);
+int gm_BuildKindObjects(char *b);
 char *_itoa(int, char *, int);
 
 /* 0x593150, the production window of a type 4 building (1894 B, ROUGH SKELETON from the Ghidra pseudocode): as
@@ -3736,7 +3736,7 @@ char *_itoa(int, char *, int);
    the goods offer 0x500b90, the goods list 0x889400 / 0x76fdc4 (kind 0x17 skipped, the four needs at +0x2e), the
    price / amount loop (0x91aaf0, 0x50aaf0), 0x58cc10 (win, 2, cols, the record, 2), 0x58d720, 0x58dd00; the
    pump 0x5309a0 (this, 0x677c7) */
-int ai_Unk593150(int param_1)
+int ai_ProductionGoodsWindow(int param_1)
 {
     int win;
     int cols;
@@ -3874,7 +3874,7 @@ int ai_Unk593150(int param_1)
             ai_Unk58cc10(win, 2, cols, rec2, 2);
             ai_Unk58d720(param_1, rec2);
             ai_Unk58dd00(win, 1, 0, param_1);
-            n = sv_RunFrame(ai_Unk593150, 0x677c7);
+            n = sv_RunFrame(ai_ProductionGoodsWindow, 0x677c7);
         } while (n != 0);
         d2_CloseView(win);
         sv_ClosePlayerBar();
@@ -3913,13 +3913,15 @@ void ai_MiningContact(char *bld)
         r = sv_RunFrame(ai_MiningContact, 0x67fff);
     }
 }
-/* 0x593960, the kontor contact listener (407 B): 0x576040 (0x1b, param_1, 0, 0); 0x52e190, the pump 0x5309a0
-   (this, 0x67fff); while the flag 0x6f231c has 0x200 the contacts are fetched: PRODUKTION_METALL (0x1441f98,
-   0x13) -> 0x593150, TRANSPORT (0x1441fa0, 0x15) -> 0x5af1a0, LAGER (0x1441f90, 0xe) -> 0x5b26b0 (param_1, 0),
-   GELAGE (0x1441f88, 0x16) -> 0x5b9f30, and with the records 0x4ffe90 (0x35 / 0x34) STROHPUPPE (0x1440ad0) /
-   ZIELSCHEIBE (0x1440acc) -> 0x5bba00; 0x5912c0 runs every frame; the exit 0x576040 (0x1c, param_1, 0, 0) */
+/* 0x593960, the kontor contact listener (407 B): the campaign step 0x1b in and 0x1c out (0x576040); the plates
+   released (0x52e190) and, while the building permission 0x200 (0x6f231c) is set, registered again through
+   0x52e1c0: PRODUKTION_METALL (0x1441f98, 0x13) -> the goods window 0x593150, TRANSPORT (0x1441fa0, 0x15) ->
+   0x5af1a0, LAGER (0x1441f90, 0xe) -> 0x5b26b0 (bld, 0), GELAGE (0x1441f88, 0x16) -> 0x5b9f30 and, with the
+   records 0x4ffe90 (0x35 / 0x34) of the building's objList, STROHPUPPE (0x1440ad0) / ZIELSCHEIBE (0x1440acc) ->
+   0x5bba00; 0x5912c0 runs every frame; a clicked plate (0x6f22e4) opens its window; the frame pump 0x5309a0
+   (this, 0x67fff) */
 
-void ai_Unk593960(int param_1)
+void ai_KontorContact(AIBLD *bld)
 {
     int r;
     int metall;
@@ -3935,36 +3937,36 @@ void ai_Unk593960(int param_1)
     gelage = 0;
     stroh = 0;
     ziel = 0;
-    ai_CampaignStep(0x1b, param_1, 0, 0);
+    ai_CampaignStep(0x1b, (int)bld, 0, 0);
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk593960, 0x67fff);
+    r = sv_RunFrame(ai_KontorContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            metall = sv_RegisterNamePlate("contact_PRODUKTION_METALL", U_I((unsigned)&full_data_1441f98), 0x13);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&full_data_1441f88), 0x16);
-            if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x35) != 0)
-                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&full_data_1440ad0), 0x17);
-            if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x34) != 0)
-                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0x17);
+        if (ai_BuildingPerms & 0x200) {
+            metall = sv_RegisterNamePlate("contact_PRODUKTION_METALL", ai_ContactTextProduction, 0x13);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", ai_ContactTextGelage, 0x16);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x35) != 0)
+                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", ai_ContactTextTraining, 0x17);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x34) != 0)
+                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", ai_ContactTextTarget, 0x17);
         }
         ai_TradeContactChecks();
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, 0);
-            else if (U_I((unsigned)&ai_ClickedObject) == metall)
-                ai_Unk593150(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_Unk5b9f30(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh)
-                ai_Unk5bba00(param_1);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == transport)
+                ai_OpenTransport((int)bld);
+            else if (ai_ClickedObject == lager)
+                ai_StorageWindow((int)bld, 0);
+            else if (ai_ClickedObject == metall)
+                ai_ProductionGoodsWindow((int)bld);
+            else if (ai_ClickedObject == gelage)
+                ai_GelageWindow((int)bld);
+            else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh)
+                ai_TrainingWindow((int)bld);
         }
-        r = sv_RunFrame(ai_Unk593960, 0x67fff);
+        r = sv_RunFrame(ai_KontorContact, 0x67fff);
     }
-    ai_CampaignStep(0x1c, param_1, 0, 0);
+    ai_CampaignStep(0x1c, (int)bld, 0, 0);
 }
 /* 0x593b00, the wood-kontor contact listener (416 B): 0x52e190; the context *(param_1 + 0x71); the pump
    0x5309a0 (this, 0x67fff); while the flag 0x6f231c has 0x200: LAGER (0x1441f90, 0xe), PRODUKTION_HOLZ
@@ -3998,10 +4000,10 @@ void ai_Unk593b00(int param_1)
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
             holz = sv_RegisterNamePlate("contact_PRODUKTION_HOLZ", U_I((unsigned)&full_data_1442128), 0x13);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&full_data_1441f88), 0x16);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&ai_ContactTextGelage), 0x16);
             transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0xc);
-            stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&full_data_1440ad0), 0xc);
+            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
+            stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&ai_ContactTextTraining), 0xc);
         }
         ai_TradeContactChecks();
         ai_Unk5b9db0(param_1, ctx);
@@ -4011,11 +4013,11 @@ void ai_Unk593b00(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == lager)
                 ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
             else if (U_I((unsigned)&ai_ClickedObject) == holz)
-                ai_Unk593150(param_1);
+                ai_ProductionGoodsWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_Unk5b9f30(param_1);
+                ai_GelageWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh)
-                ai_Unk5bba00(param_1);
+                ai_TrainingWindow(param_1);
         }
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelKind1eBtn))
             ai_Unk5b9730(param_1);
@@ -4056,20 +4058,20 @@ void ai_Unk593ca0(int param_1)
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
             abbau = sv_RegisterNamePlate("contact_ABBAU", U_I((unsigned)&ai_ContactTextExtract), 10);
             stein = sv_RegisterNamePlate("contact_SUCHEN_STEIN", U_I((unsigned)&full_data_14420d8), 0x16);
-            produktion = sv_RegisterNamePlate("contact_PRODUKTION", U_I((unsigned)&full_data_1441f98), 0x13);
+            produktion = sv_RegisterNamePlate("contact_PRODUKTION", U_I((unsigned)&ai_ContactTextProduction), 0x13);
             transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&full_data_1441f88), 0x16);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&ai_ContactTextGelage), 0x16);
             if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x35) != 0)
-                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&full_data_1440ad0), 0x17);
+                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&ai_ContactTextTraining), 0x17);
             if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x34) != 0)
-                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0x17);
+                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0x17);
         }
         ai_TradeContactChecks();
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == lager)
                 ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
             else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_Unk5b9f30(param_1);
+                ai_GelageWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == abbau)
                 ai_ExtractResourceWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == stein)
@@ -4077,9 +4079,9 @@ void ai_Unk593ca0(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == transport)
                 ai_OpenTransport(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == produktion)
-                ai_Unk593150(param_1);
+                ai_ProductionGoodsWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh)
-                ai_Unk5bba00(param_1);
+                ai_TrainingWindow(param_1);
         }
         r = sv_RunFrame(ai_Unk593ca0, 0x67fff);
     }
@@ -4519,9 +4521,9 @@ void ai_Unk594e50(int param_1)
             lauer = sv_RegisterNamePlate("contact_AUF_LAUER_LEGEN", U_I((unsigned)&full_data_1441fb0), 0x15);
             angriff = sv_RegisterNamePlate("contact_ANGRIFF", U_I((unsigned)&full_data_1441fa8), 0x17);
             if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x35) != 0)
-                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&full_data_1440ad0), 0x17);
+                stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&ai_ContactTextTraining), 0x17);
             if (gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x34) != 0)
-                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0x17);
+                ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0x17);
             schutzgeld = sv_RegisterNamePlate("contact_SCHUTZGELD_ERPRESSEN", U_I((unsigned)&full_data_1442010), 0x17);
             spionieren = sv_RegisterNamePlate("contact_GEBAEUDE_AUSSPIONIEREN", U_I((unsigned)&full_data_1441fe0), 0x17);
             raub = sv_RegisterNamePlate("contact_RAUBUEBERFALL", U_I((unsigned)&full_data_1440bc8), 0x17);
@@ -4529,7 +4531,7 @@ void ai_Unk594e50(int param_1)
         }
         if (U_I((unsigned)&ai_BuildingPerms) & 0x400) {
             lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&full_data_1441f88), 0xe);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&ai_ContactTextGelage), 0xe);
             transport = sv_RegisterNamePlate("TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
         }
         ai_TradeContactChecks();
@@ -4537,14 +4539,14 @@ void ai_Unk594e50(int param_1)
             if (U_I((unsigned)&ai_ClickedObject) == lager)
                 ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
             else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_Unk5b9f30(param_1);
+                ai_GelageWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == transport)
                 ai_OpenTransport(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ausruesten)
                 ai_EquipWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh ||
                      U_I((unsigned)&ai_ClickedObject) == regen)
-                ai_Unk5bba00(param_1);
+                ai_TrainingWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == lauer)
                 ai_Unk594180(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == angriff)
@@ -8992,7 +8994,7 @@ void ai_Unk59ee40(unsigned char *param_1)
         ai_Unk593ca0(U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x20:
-        ai_Unk593960(U_I((unsigned)&ai_FallbackBuilding));
+        ai_KontorContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
         break;
     case 0x27:
         ai_Unk594e50(U_I((unsigned)&ai_FallbackBuilding));
@@ -11837,7 +11839,7 @@ void ai_Unk5a4f70(int param_1)
             else if (click == ausruesten)
                 ai_EquipWindow(param_1);
             else if (click == regeneration)
-                ai_Unk5bba00(param_1);
+                ai_TrainingWindow(param_1);
         }
     } while (sv_RunFrame(ai_Unk5a4f70, 0x67fff) != 0);
 }
@@ -11855,12 +11857,12 @@ void ai_Unk5a5080(int param_1)
         return;
     do {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0xc);
-            nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&full_data_1440ad0), 0xc);
+            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
+            nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&ai_ContactTextTraining), 0xc);
         }
         if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) && U_I((unsigned)&ai_ClickedObject) != 0 &&
             (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == nacht))
-            ai_Unk5bba00(param_1);
+            ai_TrainingWindow(param_1);
     } while (sv_RunFrame(ai_Unk5a5080, 0x67fff) != 0);
 }
 
@@ -12725,12 +12727,12 @@ void ai_Unk5a6a90(int param_1)
     r = sv_RunFrame(ai_Unk5a6a90, 0x67fff);
     while (r != 0) {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&full_data_1440acc), 0xc);
-            nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&full_data_1440ad0), 0xc);
+            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
+            nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&ai_ContactTextTraining), 0xc);
             regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&full_data_1442008), 0x17);
             if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) && U_I((unsigned)&ai_ClickedObject) != 0 &&
                 (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == nacht || U_I((unsigned)&ai_ClickedObject) == regeneration))
-                ai_Unk5bba00(param_1);
+                ai_TrainingWindow(param_1);
         }
         r = sv_RunFrame(ai_Unk5a6a90, 0x67fff);
     }
@@ -15904,9 +15906,10 @@ int ai_Unk5b9db0(void)
 }
 /* 0x5b9f30, a window "0x62cfdc" (560 B, ROUGH SKELETON): a 0xfc-byte frame; the body is a comment */
 
-int ai_Unk5b9f30(void)
+int ai_GelageWindow(int building)
 {
     /* ROUGH SKELETON: the window "0x62cfdc" and the 0xfc-byte frame */
+    (void)building;
     return 0;
 }
 /* 0x5ba1c0, a cleanup gated by 0x62c418 (208 B, ROUGH SKELETON): only when 0x62c418 == -1; the body is a
@@ -16101,7 +16104,7 @@ int ai_Unk5bb950(int param_1, int param_2, int param_3)
 }
 /* 0x5bba00, a window (2368 B, ROUGH SKELETON): param_1, a 0x938-byte frame; the body is a comment */
 
-int ai_Unk5bba00(int param_1)
+int ai_TrainingWindow(int param_1)
 {
     /* ROUGH SKELETON: the 0x938-byte frame */
     (void)param_1;

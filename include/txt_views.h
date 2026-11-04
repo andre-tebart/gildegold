@@ -143,8 +143,8 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440a94                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x068d4))  /* 0x1440a94 */
 #define full_data_1440ab4                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x068f4))  /* 0x1440ab4 */
 #define txt_NoCharacter                            (*(char * *)((char *)txt_Ptrs + 0x06908))  /* 0x1440ac8 */
-#define full_data_1440acc                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0690c))  /* 0x1440acc */
-#define full_data_1440ad0                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x06910))  /* 0x1440ad0 */
+#define ai_ContactTextTarget                        (*(char * *)((char *)txt_Ptrs + 0x0690c))  /* 0x1440acc, the hover text of the ob_ZIELSCHEIBE plate (its click opens ai_TrainingWindow) */
+#define ai_ContactTextTraining                        (*(char * *)((char *)txt_Ptrs + 0x06910))  /* 0x1440ad0, the hover text of the ob_STROHPUPPE and contact_NACHT plates (both open ai_TrainingWindow) */
 #define full_data_1440ae4                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06924))  /* 0x1440ae4 */
 #define ai_ContactTextWineCellar                 (*(char * *)((char *)txt_Ptrs + 0x0692c))  /* 0x1440aec */
 #define ai_ContactTextMistress                   (*(char * *)((char *)txt_Ptrs + 0x06938))  /* 0x1440af8 */
@@ -211,9 +211,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_PanelBtnItemOwn                            (*(int *)((char *)txt_Ptrs + 0x07db8))  /* 0x1441f78 */
 #define txt_PanelBtnItem                            (*(int *)((char *)txt_Ptrs + 0x07dbc))  /* 0x1441f7c */
 #define ai_TextEinkauf                           (*(int *)((char *)txt_Ptrs + 0x07dc0))  /* 0x1441f80 */
-#define full_data_1441f88                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07dc8))  /* 0x1441f88 */
+#define ai_ContactTextGelage                        (*(char * *)((char *)txt_Ptrs + 0x07dc8))  /* 0x1441f88, the hover text of the contact_GELAGE plate (ai_GelageWindow) */
 #define ai_ContactTextStorage                    (*(char * *)((char *)txt_Ptrs + 0x07dd0))  /* 0x1441f90 */
-#define full_data_1441f98                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07dd8))  /* 0x1441f98 */
+#define ai_ContactTextProduction                        (*(char * *)((char *)txt_Ptrs + 0x07dd8))  /* 0x1441f98, the hover text of the production plates (contact_PRODUKTION / _METALL; ai_ProductionGoodsWindow) */
 #define ai_ContactTextTransport                  (*(char * *)((char *)txt_Ptrs + 0x07de0))  /* 0x1441fa0 */
 #define full_data_1441fa8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07de8))  /* 0x1441fa8 */
 #define full_data_1441fb0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07df0))  /* 0x1441fb0 */

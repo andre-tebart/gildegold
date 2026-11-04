@@ -5990,8 +5990,8 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1440a50: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440a94: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440ab4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440acc: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440ad0: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextTarget: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextTraining: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440ae4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b30: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b34: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -6024,8 +6024,8 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* txt_ChatConsoleSlider: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14414d0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_DefaultFileName: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1441f88: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1441f98: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextGelage: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextProduction: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1441fa8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1441fb0: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextEquip: view of txt_Ptrs (build/mk_txt_views.py) */

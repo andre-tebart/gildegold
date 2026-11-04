@@ -40,6 +40,9 @@ void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master 
 /* The windows the building contacts open (defined far below their callers in the .c). */
 int ai_TransportWindow(int building, int mode);          /* 0x5af1d0, the transport window of a building (sv_UpdatePanel: mode 1) */
 int ai_StorageWindow(int building, int list);           /* 0x5b26b0, the store window */
+int ai_ProductionGoodsWindow(int building);             /* 0x593150, the goods / production window a kontor contact opens */
+int ai_GelageWindow(int building);                      /* 0x5b9f30, the "special\gelage" window of the kontor contacts */
+int ai_TrainingWindow(int building);                    /* 0x5bba00, the "special\training" window (regeneration / target / straw-dummy plates) */
 int ai_BuildingWindow(int building);                     /* 0x5b84f0, the window the building panel's action button opens (reasoned) */
 int ai_ManagedBuildingWindow(int building);              /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 (reasoned) */
 int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, unk_5d33b0.h) */
