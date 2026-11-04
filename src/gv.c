@@ -1161,14 +1161,16 @@ void gv_CannonScatter(char *o, float *spread, float *speedSpread)
 
 float gv_CannonItemFactor(char *o)
 {
+    AIBLD *bld;
     float x;
 
+    bld = (AIBLD *)o;
     x = 1.0f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x259) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x259) != 0)
         x = 1.05f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x25b) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x25b) != 0)
         x = x + 0.05f;
-    if (gm_Query(*(int *)(o + 0x5d), 2, 6, 0, 0x261) != 0)
+    if (gm_Query(bld->objList, 2, 6, 0, 0x261) != 0)
         return x + 0.05f;
     return x;
 }
