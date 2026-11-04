@@ -9653,8 +9653,8 @@ int gm_ListAmount(short *l, char *o)
 
     k = *l;
     if (k != 0x2a && k != 0x116 && k != 0x1db && k != 0x1dc)
-        return *(int *)(o + 0xe);
-    return *(int *)(o + 0xe) - 1;
+        return ((ORDOBJ *)o)->count;
+    return ((ORDOBJ *)o)->count - 1;
 }
 /* 0x50ab20, the amount (0x50aaf0) of the object id in the list of l */
 
