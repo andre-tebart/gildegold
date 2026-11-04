@@ -244,8 +244,8 @@ int ls_WriteSaveHeader(int f, unsigned flags)
         return 0;
     slot = &ai_PlayerSlotsT[ai_OwnPlayer];
     strcpy(hdr.player, slot->name);
-    hdr.playerWords[0] = slot->map[0];
-    hdr.playerWords[1] = slot->map[1];
+    hdr.playerWords[0] = slot->mapX;
+    hdr.playerWords[1] = slot->mapY;
     hdr.playerByte = slot->b48;
     hdr.players = ai_NumPlayers;
     if (vfs_fwrite(hdr.player, 0x20, 1, f) <= 0)
