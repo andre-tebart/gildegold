@@ -218,7 +218,11 @@ typedef struct SVPLATEOBJ {             /* the 3D object fields the plate code c
 } SVPLATEOBJ;
 typedef struct SVGROUP {                 /* the group record fields sv.c reads (AICHAR.job, ai.h AIJOB) */
     unsigned char kind;                 /* +0x00, the job kind (sv_MoveToGroup's switch) */
-    char pad01[0x51];
+    char pad01[0x13];
+    int rank1Count;                     /* +0x14, members whose title is their building type's first rank (+0x22f;
+                                           sv_CountGroupMembers, or of a kind 0x1e building accepted by ahm_HasRecord) */
+    int rank2Count;                     /* +0x18, members whose title is the type's second rank (+0x230) */
+    char pad1c[0x36];
     AITIME time;                        /* +0x52, when the job was left empty (kinds 0x14 / 0x15 / 0x28 / 0x8c) */
     char pad60[0x10];
     int state;                          /* +0x70, of a kind 0x28 job: below 3 the job is reset (-1) when a member leaves */
@@ -1478,7 +1482,9 @@ int sv_UsedGroupSlots(char *g)
     } while (i != 0);
     return n;
 }
-/* 0x5241d0, counts the members of the group record g by their home building (+0x16c): +0x14 those whose title byte (+0x165) is the building's byte +0x22f (or, for kind 0x1e, accepted by 0x4eaad0), +0x18 those with +0x230 */
+/* 0x5241d0, counts the members of the group record g by their home building: rank1Count those whose title is the
+   first title rank of their building's type (+0x22f; for a kind 0x1e building, one accepted by ahm_HasRecord),
+   rank2Count those of the second rank (+0x230). */
 
 void sv_CountGroupMembers(char *g)
 {
@@ -1487,22 +1493,23 @@ void sv_CountGroupMembers(char *g)
     char *c;
     char *b;
 
-    *(int *)(g + 0x14) = 0;
-    *(int *)(g + 0x18) = 0;
-    p = (int *)(g + 0x8c);
+    ((SVGROUP *)g)->rank1Count = 0;
+    ((SVGROUP *)g)->rank2Count = 0;
+    p = ((SVGROUP *)g)->member;
     i = 8;
     do {
         if (*p != -1) {
-            c = gm_FindChar(*p);
-            if (c != 0 && *(unsigned char **)(c + 0x16c) != 0) {
-                b = ai_BTypes + **(unsigned char **)(c + 0x16c) * 0x24d;
+            c = (char *)gm_FindChar(*p);
+            if (c != 0 && ((SVCHARREC *)c)->bld != 0) {
+                b = ai_BTypes + *((SVCHARREC *)c)->bld * 0x24d;
+                /* b: the building's type record (AIBTYPE, 0x24d bytes): +0x22f / +0x230 its two title ranks, +0x00 the kind */
                 if (c[0x165] == b[0x22f]) {
-                    (*(int *)(g + 0x14))++;
+                    ((SVGROUP *)g)->rank1Count++;
                 } else if (c[0x165] == b[0x230]) {
-                    (*(int *)(g + 0x18))++;
+                    ((SVGROUP *)g)->rank2Count++;
                 } else if (b[0] == 0x1e) {
                     if (ahm_HasRecord(c) != 0)
-                        (*(int *)(g + 0x14))++;
+                        ((SVGROUP *)g)->rank1Count++;
                 }
             }
         }

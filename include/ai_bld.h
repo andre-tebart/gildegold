@@ -75,9 +75,11 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
         };
     };
     unsigned char unk223;               /* 0x223 */
-    char pad224[0xc];
+    char pad224[0xb];
+    unsigned char title;                /* 0x22f, the title rank of the type's first job (f3gm_types.h GMBTYPE.title:
+                                           f3gm.c's worker lists take the characters whose AICHAR.title is this) */
     union {
-        unsigned char unk230;           /* 0x230 */
+        unsigned char unk230;           /* 0x230, the title rank of the type's second job */
         unsigned char k230;             /* 0x230 */
     };
     unsigned char k231;                 /* 0x231 */
