@@ -4129,7 +4129,7 @@ void ai_InformationContact(int building)
    0x4c4b70 (the table 0x7603a0 .. 0x760420) and 0x52ae40; the click on the second control sets 0x6f22a0; the
    pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 (the window), returns 1 */
 
-int ai_Unk593f40(char *name)
+int ai_BreakInCallback(char *name)
 {
     char buf[0x104];
     int win;
@@ -4153,7 +4153,7 @@ int ai_Unk593f40(char *name)
     ctl2 = d2_GetWinObj(win, 1, id + 1);
     U_I((unsigned)&d2_ClickedId) = -1;
     b = 0;
-    while (sv_RunFrame(ai_Unk593f40, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_BreakInCallback, 0x677c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I((unsigned)&d2_ClickedId) == -1)
@@ -4198,14 +4198,16 @@ int ai_Unk593f40(char *name)
     d2_CloseView(win);
     return 1;
 }
-/* 0x594180, opens the burglar-guild break-in window (63 B): 0x520fe0, 0x525220; the record 0x5b2180 (4, 0,
-   0x1440c10, the callback 0x593f40, 0); then 0x525440 and 0x52ae40 */
+/* 0x594180, opens the burglar-guild break-in window (63 B): when the character of the building is free
+   (sv_CheckCharacterFlag 0x520fe0 is 0) the player bar opens (0x525220), the map pick runs (0x5b2180: 4, 0, the
+   prompt 0x1440c10, the break-in callback 0x593f40, 0), then the player bar closes (0x525440) and the selection is
+   cleared (0x52ae40) */
 
-void ai_Unk594180(int param_1)
+void ai_BreakInWindow(int building)
 {
-    if (sv_CheckCharacterFlag(param_1) == 0) {
-        sv_OpenPlayerBar(param_1, 0);
-        ai_MapPick(4, 0, U_I((unsigned)&full_data_1440c10), (void *)ai_Unk593f40, 0);
+    if (sv_CheckCharacterFlag(building) == 0) {
+        sv_OpenPlayerBar(building, 0);
+        ai_MapPick(4, 0, ai_BreakInPickText, (int)ai_BreakInCallback, 0);
         sv_ClosePlayerBar();
         sv_ClearSelection();
     }
@@ -4550,7 +4552,7 @@ void ai_Unk594e50(int param_1)
                      U_I((unsigned)&ai_ClickedObject) == regen)
                 ai_TrainingWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == lauer)
-                ai_Unk594180(param_1);
+                ai_BreakInWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == angriff)
                 ai_Unk594470(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == schutzgeld)
