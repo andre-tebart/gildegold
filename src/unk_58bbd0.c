@@ -1,8 +1,10 @@
 /* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
    screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below. The
-   contact listeners and the map picks of the kontor / thieves' guild / information scenes read their plate texts
-   through the txt_views.h slots (ai_ContactText*) and the building record as AIBLD (id, owner, mainRoom, objList,
-   object); the character record view AICHARREC names id, sex, b00d, officeKind, secondOffice and powerFlags.
+   contact listeners and the map picks of the kontor / thieves' guild / church / guild-hall scenes read their
+   plate texts through the txt_views.h slots (ai_ContactText*) or their txt_Ptrs text id and the building record
+   as AIBLD (id, owner, mainRoom, objList, object); the character record view AICHARREC names id, sex, b00d,
+   officeKind, secondOffice and powerFlags. The guild-hall windows split by the player's second office (0x1e
+   the request, 0x1f / 0x21 and 0x20 the amount-kind menus that send the district request {4, column}).
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood).
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
