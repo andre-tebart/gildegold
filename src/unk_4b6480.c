@@ -408,10 +408,10 @@ int ai_MsgPayPct1to4OfficeType10(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4b7550, message: v = 1..3 % of 0x50a640, with the 0x4fea50 value of the 0x4a63f0 hit (mask 0x400000, 100.0) in
-   the text (not with item 0x290, not without a hit) */
+/* 0x4b7550, message 0x11: c pays 1..3 % of its worth (0x50a640), with the building ai_PickActionBuilding finds (kind
+   bit 0x400000) and its gm_FindById result in the text; skipped with item 0x290 and without a building */
 
-int ai_Unk4b7550(G14MSG *m)
+int ai_MsgPayPct1to3BuildingType11(G14MSG *m)
 {
     AICHAR *c;
     double k;
@@ -424,7 +424,7 @@ int ai_Unk4b7550(G14MSG *m)
         return 1;
     if (ai_InventoryHas(c, 0x290))
         return 0x400;
-    mask.LowPart = 0x400000;
+    mask.LowPart = 1 << 22;  /* 0x400000: the building kind bit of the filter */
     mask.HighPart = 0;
     if (!ai_PickActionBuilding((AIPER *)c, 6, mask.QuadPart, 0, 100.0f, &o))
         return 0x400;
@@ -1936,7 +1936,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPayPct1to4, ai_MsgRewardPct2to5, ai_MsgRewardPct1to3Type68, ai_MsgPayForBuilding,
     ai_MsgRewardPct1to3Type68, ai_MsgPayPct2to4, ai_MsgPayPct125, ai_MsgPayPctOver120,
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
-    ai_MsgPayPct1to4OfficeType10, ai_Unk4b7550, ai_Unk4b76b0, ai_Unk4b76b0,
+    ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_Unk4b76b0, ai_Unk4b76b0,
     ai_Unk4b77b0, ai_Unk4b78c0, ai_Unk4b79c0, ai_Unk4b7ac0,
     ai_Unk4b7bc0, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
