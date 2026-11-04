@@ -768,14 +768,13 @@ int ai_CondPlayerShare(AICHAR *c, G13TYPE *t)
     return 0;
 }
 
-float ord_WeightedRecordSum(int *out);                                                   /* 0x4f9d40, defined elsewhere */
-
-/* 0x4b4d90, mission condition: 0x4f9d40 gives 0 */
-int ai_Unk4b4d90(AICHAR *c, G13TYPE *t)
+/* 0x4b4d90, mission condition (type 48): the weighted sum of the AI decision records' current values
+   (ord_WeightedRecordSum over gv_Decisions 0x11 .. 0x1c) is 0 */
+int ai_CondDecisionSumZero(AICHAR *c, G13TYPE *t)
 {
-    char buf[0x30];
+    int rec[12];
 
-    if (ord_WeightedRecordSum(buf) == 0.0f)
+    if (ord_WeightedRecordSum(rec) == 0.0f)
         return 1;
     return 0;
 }
@@ -925,7 +924,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 47:
         return ai_CondPlayerShare(c, t);
     case 48:
-        return ai_Unk4b4d90(c, t);
+        return ai_CondDecisionSumZero(c, t);
     case 49:
         return ai_Unk4b4eb0(c, t);
     }
