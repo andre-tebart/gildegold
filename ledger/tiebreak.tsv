@@ -3158,13 +3158,13 @@ exe	0x0050b2f0	gm_TreeNodeRank	f3gm	d69d727c8c701b2d	no	shape	control=shape p1=s
 exe	0x0050b3a0	gm_LayoutTree	f3gm	4a9f6770591fbf57	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0050b9f0	gm_UpdateTechTree	f3gm	014c54fb9fb2e8e4	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
 exe	0x0050c310	gm_TreeLine	f3gm	cc18a68c6060a3ba	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0050c340	gm_TechTreeWindow	f3gm	790e144fb3a58136	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0050c4d0	gm_Unk50c4d0	f3gm	c6bf38dd60469dd4	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x0050c4e0	gm_Unk50c4e0	f3gm	f2e289fd8019d3e3	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0050c340	gm_TechTreeWindow	f3gm	01ad04d71911bad0	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
+exe	0x0050c4d0	gm_CloseTechTree	f3gm	816c6c209434b0be	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0050c4e0	gm_AddToTreasury	f3gm	e5462578a46a474f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050c520	gm_Opinion	f3gm	55cd3ce9f894657f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050c550	gm_Liking	f3gm	87bf244ee19b247c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050c980	gm_MeanLiking	f3gm	091a66a98d6a0807	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
-exe	0x0050ca10	gm_Unk50ca10	f3gm	7dc67256b50d7f3d	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x0050ca10	gm_ChangeRelationToJobs	f3gm	86089e28afd0bb43	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0050ca50	gm_Unk50ca50	f3gm	3a31f7082490db9e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0050cad0	gm_ChangeBuildingState	f3gm	3f94f6eea38b9198	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0050cc50	gm_SendMoneyDelta	f3gm	43becc2d460acaed	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

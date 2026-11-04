@@ -3281,7 +3281,7 @@ void he_Unk548110(int ev)
 }
 
 int gm_GetWorth(unsigned short id);
-void gm_Unk50ca10(unsigned short a, int b);
+void gm_ChangeRelationToJobs(unsigned short a, int b);
 void cm_SendAddSkill(int a, int b, int c);
 void ai_Unk4c5870(int a);
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
@@ -3452,13 +3452,13 @@ void he_Unk5485b0(int ev)
             if (U_I((unsigned)&d2_ClickedId) == 0) {
                 v = gm_GetWorth(*(unsigned short *)(ev + 8));
                 cm_SendMoveGoods(*(int *)(U_I((unsigned)&ai_PlayerChar) + 4), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_OwnPlayer), v);
-                gm_Unk50ca10(*(unsigned short *)(ev + 8), 8);
+                gm_ChangeRelationToJobs(*(unsigned short *)(ev + 8), 8);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
             if (U_I((unsigned)&d2_ClickedId) == 1) {
-                gm_Unk50ca10(*(unsigned short *)(ev + 8), -6);
+                gm_ChangeRelationToJobs(*(unsigned short *)(ev + 8), -6);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;

@@ -1980,3 +1980,4 @@
 2026-11-04T19:14:53 0x0050c340 func gm_Unk50c340 -> gm_TechTreeWindow by:main why:opens the tech tree form of a building type and item: lays out and updates the tree, then joins the nodes to their parents
 2026-11-04T19:18:50 0x0050c4d0 func gm_Unk50c4d0 -> gm_CloseTechTree by:main why:closes the tech tree view (gm_TechTreeView) that gm_TechTreeWindow opened; called at the end of ai_TechTreeWindow's frame loop
 2026-11-04T19:20:17 0x0050c4e0 data gm_Unk50c4e0 -> gm_AddToTreasury by:main why:sends the amount from none to the town treasury (object 0x115 of the town hall, the first building of class 1) for the player; only caller he_Unk56be30 (the construction event, state 0) passes its +0xb4 amount
+2026-11-04T19:21:27 0x0050ca10 data gm_Unk50ca10 -> gm_ChangeRelationToJobs by:main why:changes the relation of the character a to every character whose profession (job at +0x166) is set, by the delta b; the master exam calls it with 8 (pass) and -6 (fail)

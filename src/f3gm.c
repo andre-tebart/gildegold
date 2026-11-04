@@ -10654,21 +10654,22 @@ float gm_MeanLiking(int c, int n, int *ids)
     }
     return 0.5f;
 }
-/* 0x50ca10, tells every character that has the flag byte at +0x166 the message a about b */
+/* 0x50ca10, changes the relation of the character a to every character that has a profession (job at +0x166)
+   set, by the delta b (the master exam: 8 passed, -6 failed); the job byte of the 0x300 records is walked */
 
-void gm_Unk50ca10(unsigned short a, int b)
+void gm_ChangeRelationToJobs(unsigned short a, int b)
 {
     int i;
-    char *p;
+    char *job;
 
     i = 0;
-    p = ai_Chars[0] + 0x166;
+    job = &ai_Chars[0][0x166];
     do {
-        if (*p != 0)
+        if (*job != 0)
             cm_SendRelations(a, i, b, 1);
-        p += 0x21c;
+        job += 0x21c;
         i++;
-    } while ((int)p < (int)((unsigned)&ai_Chars + 0x65566));
+    } while ((int)job < (int)&ai_Chars[0][0x166] + 0x300 * 0x21c);
 }
 /* 0x50ca50, changes the state byte (+0x12) of the town object id by d (not below 0) and sends the record */
 
