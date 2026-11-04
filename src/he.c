@@ -11519,20 +11519,23 @@ int gm_Opinion(int a, int b);
 void cm_SendMessage5b(int a, int b, int c);
 int gm_PlayerFactor(int a, unsigned char k);
 
-/* 0x55d310, the allocation handler of a building event: the building +0xac (none: free) gets a due time of 0x18 units + a random 0x5092e0 (building, 0x10, 1) part, +0x58 = 0 */
-void he_Unk55d310(int ev)
+/* 0x55d310, the allocation handler of the event type 0x27: the building +0xac (none: the record is freed) is asked for its
+   skill 0x10 / 1, the due clock is now + 0x18 hours with its minute field cleared */
+void he_AllocEvent27(int ev)
 {
-    int b;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
 
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+    if (b != 0) {
+        gm_BuildingSkill((unsigned char *)b, 0x10, 1);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.min = 0;
     }
-    gm_BuildingSkill(b, 0x10, 1);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 0x18);
-    *(int *)(ev + 0x58) = 0;
+    else {
+        he_FreeEvent((int *)ev);
+    }
 }
 /* 0x55d390, the run handler of a payment event (ROUGH): states -2 / -1 free; the building +0xac (none: free), the news 0x190b (+0xb4, +0xb0) to the player (0x53dda0 .., 0x5ff) and the payment 0x4c4880 (+0xb4, .., +0xb0, ..); then the record is freed */
 
@@ -13522,7 +13525,7 @@ int he_Unk568310(void)
         return 1;
     if (he_Unk53d600(38, (void *)he_Unk55ce00, (void *)he_Unk55ce60) != 0)
         return 1;
-    if (he_Unk53d600(39, (void *)he_Unk55d310, (void *)he_Unk55d390) != 0)
+    if (he_Unk53d600(39, (void *)he_AllocEvent27, (void *)he_Unk55d390) != 0)
         return 1;
     if (he_Unk53d600(40, (void *)he_Unk55d490, (void *)he_Unk55d5c0) != 0)
         return 1;
