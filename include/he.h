@@ -151,7 +151,7 @@ void he_SaveMessageFilter(void);                                       /* 0x5756
 int he_Unk553cc0(int p);  /* 0x553cc0 */
 int he_NoEvent2ePair(int a, int b);  /* 0x553d10 */
 int he_NoEvent4bPair(int a, int b);  /* 0x553d60 */
-int he_Unk56f170(int owner);  /* 0x56f170 */
+int he_EventOnBuilding(int owner);  /* 0x56f170 */
 int he_NoEvent88Pair(int a, int b);  /* 0x570ea0 */
 int he_IsMessageKindFiltered(int id);  /* 0x575640 */
 int he_RandomTransporter(char *obj);  /* 0x555210 */

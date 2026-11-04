@@ -1990,3 +1990,4 @@
 2026-11-04T19:52:54 0x00578120 data ai_Unk578120 -> ai_TutorialSetHost by:main why:stores the tutorial's event record (TUTSTATE.host, +0x1c) from the 0x87 event run handler he_Unk552b90 and resets continueObj
 2026-11-04T19:53:34 0x00578150 data ai_Unk578150 -> ai_TutorialClearHost by:main why:clears TUTSTATE.host (+0x1c) and resets continueObj (+0x20, -1); he_Unk552bc0 calls it when the tutorial's 0x87 event shuts down
 2026-11-04T19:54:20 0x00578170 func ai_Unk578170 -> ai_TutorialOff by:main why:1 while the tutorial is off (ai_TutorialOn == 0): gates the master contact's BEWEISBUCH / SPIONAGE / MEISTERPRUEFUNG / SELBSTMORD plates in ai_Unk597500
+2026-11-04T20:02:16 0x0056f170 func he_Unk56f170 -> he_EventOnBuilding by:main why:0x56f170 returns 1 when a running event of the type 0x99 has its +0xb0 equal to the argument; every caller passes a building id (am.c bld->id, ai_CanSpyOn / the cabinet spy and intrigue windows rec->id)

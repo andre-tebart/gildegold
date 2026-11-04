@@ -248,7 +248,7 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         }
         return r;
     }
-    if (he_Unk56f170(bld->id))
+    if (he_EventOnBuilding(bld->id))
         return 0;
     switch (util_RandomU(4)) {
     case 0:

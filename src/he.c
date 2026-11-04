@@ -15834,7 +15834,7 @@ void he_Unk56f0b0(int ev)
 }
 /* 0x56f170, 1 when a running event of the type 0x99 has the owner +0xb0 == `owner` (the search 0x53e400 / 0x53e300) */
 
-int he_Unk56f170(int owner)
+int he_EventOnBuilding(int owner)
 {
     int r;
 

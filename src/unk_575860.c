@@ -6493,17 +6493,17 @@ void ai_CannonBuildPanel(CANNONSCENE *sc, GVEFFECT *run)
     sc->resultClock = d3_Time;
 }
 
-int he_Unk56f170(); int sv_MessageBox();
+int he_EventOnBuilding(); int sv_MessageBox();
 
-/* 0x580fe0, a scene check (49 B): 0x56f170 (the record + 1); when it answers non-zero, 0x521150 (0x144a19c,
-   0); 1 when 0x56f170 answered 0, else 0 */
-int ai_CanSpyOn(char *rec)
+/* 0x580fe0, whether the building rec may be spied on: 0 when an event already runs on it (he_EventOnBuilding of
+   rec->id), the message text 0x3ff7 shown; 1 when it is free */
+int ai_CanSpyOn(AIBLD *rec)
 {
     int r;
 
-    r = he_Unk56f170(U_I(rec + 1));
+    r = he_EventOnBuilding(rec->id);
     if (r)
-        sv_MessageBox(U_I((unsigned)&full_data_144a19c), 0);
+        sv_MessageBox((int)txt_Ptrs[0x3ff7], 0);
     return r == 0;
 }
 
@@ -6568,7 +6568,7 @@ void ai_CabinetSpyWindow(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn((char *)rec) != 0) {
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], amount, ai_OwnPlayer) != 0 && ai_CanSpyOn(rec) != 0) {
                     AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)
@@ -6683,7 +6683,7 @@ void ai_CabinetSpyOnCharacter(AIBLD *rec)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
                 if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost[i], ai_OwnPlayer) != 0 &&
-                    sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn((char *)rec) != 0) {
+                    sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
                     AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)
@@ -6798,7 +6798,7 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
             sv_PopRequest = 1;
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
-                if (sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn((char *)rec) != 0) {
+                if (sv_CheckMoney(ai_Chars[ai_PlayerId], amt[i]) == 1 && ai_CanSpyOn(rec) != 0) {
                     gm_SendMoneyDelta(((AICHAR *)ai_Chars[ai_PlayerId])->netId, -amt[i]);
                     memset(&msg, 0, sizeof(msg));
                     msg.type = 0x99;
@@ -6909,7 +6909,7 @@ void ai_CabinetIntrigueWindow(AIBLD *rec)
         } else if (d2_ClickedId != -1) {
             if (d2_PointerObj == btnPay) {
                 if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0 &&
-                    sv_CheckMoney(ai_Chars[ai_PlayerId], 0x10) == 1 && ai_CanSpyOn((char *)rec) != 0) {
+                    sv_CheckMoney(ai_Chars[ai_PlayerId], 0x10) == 1 && ai_CanSpyOn(rec) != 0) {
                     AIFIN *fin = (AIFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
 
                     if (fin != 0)
