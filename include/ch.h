@@ -234,7 +234,8 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
     unsigned char type;             /* 0x09, index into ch_ActDefs; '-' (0x2d): walk */
     char pad0a[0x2];
     int count;                      /* 0x0c, updates so far */
-    unsigned char unk10;            /* returned by the animation action while it runs */
+    unsigned char started;          /* 0x10, set once the action's initial wait for a free slot is over
+                                       (ch_ActStandUp); ch_ActAnim returns it while its animation runs */
     char pad11[0x3];
     CHARACTER *ch;                  /* 0x14 */
     D3VECTOR rot;                   /* 0x18, turn actions: final angles (worker ch4) */

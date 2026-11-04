@@ -1119,7 +1119,7 @@ int ch_ActAnim(CHACTION *a)
 
     if (!ch->slot && !a->count) {
         ch->slot = ch_AttachMotion(ch, a->type);
-        return a->unk10;
+        return a->started;
     }
     if (ch->slot && (ch->slot->flags.b[1] & 0x20)) {
         s = ch->slot;
@@ -1141,7 +1141,7 @@ int ch_ActAnim(CHACTION *a)
     }
     if (!ch->slot)
         return -1;
-    return a->unk10;
+    return a->started;
 }
 /* 0x404760 */
 
@@ -1265,7 +1265,7 @@ CHACTION *ch_InsertAction(CHARACTER *ch, CHACTION *before, unsigned int type, ..
         }
     } else if (type == 0)
         a->args[0] = arg0;
-    a->unk10 = 0;
+    a->started = 0;
     ch_CheckQueue(ch, a);
     return a;
 }
@@ -1703,7 +1703,7 @@ int ch_QueueAnim(CHARACTER *ch, char *name, int n)
     a->type = 0x2e;
     a->speed = 1.0f;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     strcpy(a->u.name, name);
     return 1;
 }
@@ -1722,7 +1722,7 @@ CHACTION *ch_QueueAnimSpeed(CHARACTER *ch, char *name, int n, float speed)
     a->type = 0x2e;
     a->speed = 1.0f;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     strcpy(a->u.name, name);
     a->speed = speed;
     return a;
@@ -1770,7 +1770,7 @@ CHACTION *ch_SitDown(CHARACTER *ch, char *name)
     a->func = (CHACTFUNC)ch_ActSitDown;
     a->type = 0x2f;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     strcpy(a->u.name, name);
     return a;
 }
@@ -1795,11 +1795,11 @@ void ch_ActStandUp(CHACTION *a)
 {
     CHARACTER *ch = a->ch;
 
-    if ((ch->slot || ch->morph) && !(a->unk10 & 1)) {
+    if ((ch->slot || ch->morph) && !(a->started & 1)) {
         a->count = -1;
         return;
     }
-    a->unk10 |= 1;
+    a->started |= 1;
     if (!a->count) {
         if (!(ch->flags.all & 0x10)) {
             ch_RemoveAction(a);
@@ -1834,7 +1834,7 @@ int ch_StandUp(CHARACTER *ch, char *name)
     a->func = (CHACTFUNC)ch_ActStandUp;
     a->type = 0x30;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     strcpy(a->u.name, name);
     return 1;
 }
@@ -1947,7 +1947,7 @@ int ch_TakeObject(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
         a->func = (CHACTFUNC)ch_ActTakingObject;
         a->type = 0x31;
         a->next = 0;
-        a->unk10 = 0;
+        a->started = 0;
         a->args[1] = 0;
         a->args[2] = 2;
         strcpy(a->u.name, name);
@@ -1972,7 +1972,7 @@ int ch_TakeObject1(CHARACTER *ch, char *name, D3OBJECT *obj, int frame)
         a->func = (CHACTFUNC)ch_ActTakingObject;
         a->type = 0x31;
         a->next = 0;
-        a->unk10 = 0;
+        a->started = 0;
         a->args[1] = 0;
         a->args[2] = 1;
         strcpy(a->u.name, name);
@@ -2035,7 +2035,7 @@ int ch_DropObject(CHARACTER *ch, char *name, char *obj, int frame)
     a->func = (CHACTFUNC)ch_ActDroppingObject;
     a->type = 0x32;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     a->args[1] = 0;
     a->args[2] = 2;
     if (name)
@@ -2062,7 +2062,7 @@ int ch_DropObject1(CHARACTER *ch, char *name, char *obj, int frame)
     a->func = (CHACTFUNC)ch_ActDroppingObject;
     a->type = 0x32;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     a->args[1] = 0;
     a->args[2] = 1;
     if (name)
@@ -4116,7 +4116,7 @@ CHACTION *ch_NewAction(CHARACTER *ch)
     a->count = 0;
     a->func = 0;
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     ch_CheckQueue(ch, a);
     return a;
 }
@@ -4143,7 +4143,7 @@ CHACTION *ch_AddAction(CHARACTER *ch, unsigned int type, ...)
     for (i = 0; i < ch_ActDefs[a->type].nargs; i++)
         a->args[i] = va_arg(args, int);
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     if (type == 0x33) {
         if (a->args[1] != -1 && a->args[2] == -1)
             __asm int 3
@@ -4180,7 +4180,7 @@ CHACTION *ch_AddActionCB(CHARACTER *ch, CHACTFUNC func2, unsigned char frame, un
     for (i = 0; i < ch_ActDefs[a->type].nargs; i++)
         a->args[i] = va_arg(args, int);
     a->next = 0;
-    a->unk10 = 0;
+    a->started = 0;
     a->func2 = func2;
     a->unk08 = frame;
     if (a->func == (CHACTFUNC)ch_ActAnimOnce)
