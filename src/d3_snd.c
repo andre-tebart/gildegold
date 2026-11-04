@@ -361,7 +361,7 @@ static int *d3sndw_State = 0;            /* 0x63113c, per ray: 0 done, 1 searchi
 static unsigned short d3sndw_N = 0;      /* 0x631140, number of rays */
 static D3SOUND d3sndw_Snd[2] = {0};        /* 0x631148 */
 
-/* 0x417ec0 */
+/* 0x417ec0, allocates the water-ambience sine, type and state arrays and fills the sine table */
 int d3sndw_Init(unsigned short n)
 {
     unsigned short i;
