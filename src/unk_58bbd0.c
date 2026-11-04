@@ -727,8 +727,7 @@ extern char ch_EmptyName[1];
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_data_62c32c[];
 extern GAPDATA full_data_62c348[];
-extern GAPDATA full_data_62c39c[]; 
-extern GAPDATA full_data_62c3b8[];
+extern GAPDATA full_data_62c3b8[]; 
 extern GAPDATA full_data_62c3e8[];
 extern GAPDATA full_data_62c400[];
 extern GAPDATA ai_DomizilTable[];
@@ -14687,7 +14686,7 @@ void ai_Unk5a9af0(int param_1, unsigned short *param_2, unsigned short *param_3)
 {
     txt_Format((char *)(unsigned)&ai_NewsText, 0x40af, 0x40a3, *param_2, *(int *)((char *)param_2 + 0x16c),
                  *param_3);
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, (char *)(unsigned)&full_data_62c39c);
+    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fa, ai_NewsKeyFriedhof00);
 }
 
 int d2_WinOpenPic(short x, short y, int pic, int win); int io_CharacterName(int id, unsigned char c, unsigned char kind, char *out); 
@@ -23735,6 +23734,7 @@ AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0,
 char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa) */
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
+char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa) */
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
