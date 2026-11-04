@@ -1797,11 +1797,12 @@ int ai_MarkerChapter5Step2(int mode)
     }
     return -1;
 }
-/* 0x577320, the flag S+0x38 */
+/* 0x577320, the chapter 3 step 6 marker: the tutorial's goalDone flag (0 nothing, 1 the event kind 0x25 with the
+   step word 0x155, 2 the building of the table byte 0xa visited) */
 
 int ai_MarkerChapter3Step6(int mode)
 {
-    return U_I(S + 0x38);
+    return ai_Tutorial->goalDone;
 }
 /* 0x577330, a transition callback on the flag S+0x38: it is raised to 1 by the kind 0x28 (step word 0x155), to 2
    by the kind 0x27 (0x1d0) and to 3 by the kind 0x24 on the player's building (table byte 0x12, word +0x27 =
