@@ -675,7 +675,8 @@ int ZEXPORT deflateCopy (dest, source)
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-/* 0x4622f0 */
+/* 0x4622f0, reads the next input buffer from the stream into buf, feeding
+   it through adler32 and counting it in total_in; returns the bytes read */
 local int read_buf(strm, buf, size)
     z_streamp strm;
     Bytef *buf;
