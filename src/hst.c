@@ -1750,9 +1750,10 @@ int ai_CommandRemoteTradeRaider(int a, int b, char *fmt)
     }
     return 1;
 }
-/* 0x4b1880, sends message 0x54 to the first 8 characters of 0x4ae0d0, today 12:00 */
+/* 0x4b1880, the SPENDE_ANSEHEN text command (callback 0x601b50[22], name 0x601070[22]): sends message 0x54, flags 9,
+   from the character itself, to the first 8 living characters (ai_IsLivingHuman), today 12:00 */
 
-int ai_Unk4b1880(void)
+int ai_CommandViewDonation(void)
 {
     AITIME t;
     AIMSG msg;
@@ -2202,7 +2203,7 @@ G12ROW *hst_ParseCommandline_1st_Pass(int k)
 }
 
 int (*hst_TokenCallbacks[15])(int mode, G12ARG *args, int k, char *fmt, char *out) = { ai_TokenMayor, ai_TokenBishop, ai_TokenRandomGuildMaster, ai_TokenRandomOfficeHolderFemale, ai_TokenRandomOfficeHolder, ai_TokenRandomOfficePerson, ai_TokenRichestInhabitant, ai_TokenBestInn, ai_TokenMoney, ai_TokenCityTreasury, ai_TokenRandomChurchProfession, ai_TokenRandomRich, ai_TokenRandomNpcInhabitant, ai_TokenRandomMerchant, ai_TokenRandomPlayer };  /* 0x601b10 */
-int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_CommandFest, ai_CommandSiegeStart, ai_CommandUprising, ai_CommandFire, ai_CommandTornado, ai_CommandCityTreasury, ai_CommandWealthTax, ai_CommandWealth, ai_CommandOfficeStanding, ai_CommandKillPlayer, ai_CommandExecution, ai_CommandPrison, ai_CommandOfficeInventoryPlus, ai_CommandLaw, ai_CommandLawChange, ai_CommandFaithChange, ai_CommandRiot, ai_CommandBreakGuildSeats, ai_CommandDemand, ai_CommandMercenariesPlunder, ai_CommandMercenariesMaraud, ai_CommandRemoteTradeRaider, ai_Unk4b1880, ai_Unk4b1950, ai_Unk4b1a20, ai_Unk4b1bd0, ai_CommandInventoryPlus };  /* 0x601b50 */
+int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_CommandFest, ai_CommandSiegeStart, ai_CommandUprising, ai_CommandFire, ai_CommandTornado, ai_CommandCityTreasury, ai_CommandWealthTax, ai_CommandWealth, ai_CommandOfficeStanding, ai_CommandKillPlayer, ai_CommandExecution, ai_CommandPrison, ai_CommandOfficeInventoryPlus, ai_CommandLaw, ai_CommandLawChange, ai_CommandFaithChange, ai_CommandRiot, ai_CommandBreakGuildSeats, ai_CommandDemand, ai_CommandMercenariesPlunder, ai_CommandMercenariesMaraud, ai_CommandRemoteTradeRaider, ai_CommandViewDonation, ai_Unk4b1950, ai_Unk4b1a20, ai_Unk4b1bd0, ai_CommandInventoryPlus };  /* 0x601b50 */
 
 /* 0x4b2530, leaked name (its messages): runs every word of text k (or a string above 0x4800) through the text
    commands of hst_CommandNames / hst_CommandCallbacks; a leading "[_SET_n" / "[_USE_n" selects list n of hst_Lists (it
