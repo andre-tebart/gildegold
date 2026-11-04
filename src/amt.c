@@ -2282,10 +2282,12 @@ int amt_HasTownObject(int k)
 
 int amt_MayorBonusStep(char *c)
 {
-    if ((unsigned char)c[0x169] >= 0x1e && (unsigned char)c[0x169] <= 0x21) {
-        if ((*(unsigned int *)(c + 0x1c8) & 0x4000000) != 0)
+    AMTCHARVIEW *v = (AMTCHARVIEW *)c;
+
+    if (v->secondOffice >= 0x1e && v->secondOffice <= 0x21) {
+        if ((v->powerFlags & 0x4000000) != 0)
             return -1;
-        return (((*(int *)(c + 0x194) >= 3) - 1) & -3) + 1;
+        return (((v->money >= 3) - 1) & -3) + 1;
     }
     return 0;
 }
