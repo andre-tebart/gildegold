@@ -15413,7 +15413,7 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_SendFieldDeltas(void);
 void ai_Unk5a9d60(int param_1, int param_2, int param_3, unsigned short *param_4);
 void ai_DomizilMessage04(int param_1, int param_2, int param_3);
-void ai_Unk5a9d00(int param_1, int param_2, int param_3);
+void ai_DomizilMessageAge(int param_1, int param_2, int param_3);
 void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4);
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);
 
@@ -15489,7 +15489,7 @@ void he_Unk56e070(char *c, int ev, unsigned char *b, int task)
         break;
     case 3:
         he_SetLifeByAge(c, (util_Random(3) & 0xffff) + 1);
-        ai_Unk5a9d00((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b);
+        ai_DomizilMessageAge((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b);
         break;
     case 4:
         {

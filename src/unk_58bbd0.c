@@ -14772,15 +14772,25 @@ void ai_DomizilMessage04(G8CHARREC *to, G8CHARREC *c, AIBLD *bld)
     he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
                  "_NACHRICHTEN_DOMIZIL_04");
 }
-/* 0x5a9d00, a Domizil message (94 B): as 0x5a9ca0 with the text 0x407b (four text arguments) */
+/* 0x5a9d00, the Domizil message of the age research (94 B): for a kind 6 / 7 character the text 0x407b with the
+   character's name and family (+0x30 / +0x40) into ai_NewsText, then the quick-jump message 0x5ec to its netId
+   with its building's id (+1) and the sound "_NACHRICHTEN_DOMIZIL_04"; he_Unk56e070 sends it for the pick that
+   sets the character's life by age (he_SetLifeByAge) */
 
-void ai_Unk5a9d00(int param_1, int param_2, int param_3)
+void ai_DomizilMessageAge(int toRec, int cRec, int bldRec)
 {
-    if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
+    G8CHARREC *to;
+    G8CHARREC *c;
+    AIBLD *bld;
+
+    to = (G8CHARREC *)toRec;
+    if (to->kind != 6 && to->kind != 7)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x407b, param_2 + 0x30, param_2 + 0x40);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
-                 (char *)(unsigned)&full_data_62c3e8);
+    c = (G8CHARREC *)cRec;
+    bld = (AIBLD *)bldRec;
+    txt_Format(ai_NewsText, 0x407b, c->name, c->family);
+    he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
+                 "_NACHRICHTEN_DOMIZIL_04");
 }
 /* 0x5a9d60, a Domizil message (114 B): the text 0x407c with the +0x30 / +0x40 fields of param_2, param_3 and the
    kind text 2 * the word of param_4 + 0x9a8; 0x53dee0 with the +2 field of param_4, the +1 field of param_3 and
