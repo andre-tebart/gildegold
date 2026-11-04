@@ -22,7 +22,7 @@ exe	0x00401d50	udp_Init	udp	byte	readable
 exe	0x00401e50	udp_Exit	udp	byte	readable		
 exe	0x00401e70	udp_Send	udp	byte	readable		
 exe	0x00401ea0	udp_FindServers	udp	byte	readable		
-exe	0x00402140	ch_GetHMap	ch	byte	draft		
+exe	0x00402140	ch_GetHMap	ch	byte	readable		
 exe	0x00402220	ch_GetSceneHMap	ch	byte	draft		
 exe	0x004022e0	ch_UpdateFades	ch	byte	readable		
 exe	0x00402480	ch_SetVisible	ch	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
@@ -2037,14 +2037,14 @@ exe	0x004baf30	ai_MsgAddSkill8to24Type3a	unk_4b6480	byte	readable
 exe	0x004bb030	ai_MsgLoseSkill6to17Type3b	unk_4b6480	byte	readable		
 exe	0x004bb150	ai_MsgPayPct1to4Type3c	unk_4b6480	byte	readable		
 exe	0x004bb250	ai_Unk4bb250	unk_4b6480	byte	draft	deep	
-exe	0x004bb330	ai_Unk4bb330	unk_4b6480	byte	draft		
-exe	0x004bb430	ai_Unk4bb430	unk_4b6480	byte	draft		
-exe	0x004bb4f0	ai_Unk4bb4f0	unk_4b6480	byte	draft		
-exe	0x004bb590	ai_Unk4bb590	unk_4b6480	byte	draft		
-exe	0x004bb630	ai_Unk4bb630	unk_4b6480	byte	draft		
-exe	0x004bb6c0	ai_Unk4bb6c0	unk_4b6480	byte	draft		
-exe	0x004bb720	ai_PostRandomMessages	unk_4b6480	byte	draft		
-exe	0x004bb7d0	ai_Unk4bb7d0	unk_4b6480	byte	draft		
+exe	0x004bb330	ai_MsgPayMinorDisease	unk_4b6480	byte	readable		
+exe	0x004bb430	ai_MsgCatchUpperDisease	unk_4b6480	byte	readable		
+exe	0x004bb4f0	ai_MsgCureMinorDisease	unk_4b6480	byte	readable		
+exe	0x004bb590	ai_MsgCureUpperDisease	unk_4b6480	byte	readable		
+exe	0x004bb630	ai_MsgNewsOnly	unk_4b6480	byte	readable		
+exe	0x004bb6c0	ai_RunMessage	unk_4b6480	byte	readable		
+exe	0x004bb720	ai_PostRandomMessages	unk_4b6480	byte	readable		
+exe	0x004bb7d0	ai_NextRandom	unk_4b6480	byte	readable		
 exe	0x004bb810	anm_Alloc	anm	byte	readable		
 exe	0x004bb840	anm_Free	anm	byte	readable		
 exe	0x004bb860	anm_Update	anm	byte	draft	deep	
