@@ -379,7 +379,7 @@ local void init_block(s)
  * when the heap property is re-established (each father smaller than its
  * two sons).
  */
-/* 0x4665a0 */
+/* 0x4665a0, sifts heap node k down to its place, swapping it with the smaller son while it is larger */
 local void pqdownheap(s, tree, k)
     deflate_state *s;
     ct_data *tree;  /* the tree to restore */
