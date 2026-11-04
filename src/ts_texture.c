@@ -331,7 +331,9 @@ void tex_Free(TSTEXTURE *tex)
         tex->data = 0;
     }
 }
-/* 0x45fbc0 */
+/* 0x45fbc0, drops one reference to tex: an animated master releases its frames first; at the last
+   reference an alias only clears its surface handles, otherwise the slot passes to its first live alias
+   (the other aliases re-pointed to it) or the texture is freed; ts_TexUsed counts the live textures */
 
 void tex_Release(TSTEXTURE *tex)
 {
