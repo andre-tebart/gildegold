@@ -3037,23 +3037,41 @@ void ai_TradeContactChecks(void)
         (c = *(char *)(U_I((unsigned)&ai_BTypes) + p * 0x24d), c == 0x1f || c == 0x1d))
         ai_MarketContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
 }
-/* 0x591480, the "near the build site" tick (150 B): in the '1' state with the camera 0xfc2dec, when the scene's
-   current run function (the table 0x75f780, 8 bytes per entry, at 0x6f229c) is 0x591520, the event 0x576040
-   (0x16) runs and the camera's target 0xfc2dec + 0x84 (the x / z, y = 0) is compared with 0.1; when the camera
-   already sits there, 0x411860 (the frame?) moves it */
+typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 0x75f780 (sv.c sv_RunFrame: "MASTER()") */
+    int cb;                             /* 0x00, the frame callback registered at this depth */
+    char pad04[4];
+} SVFRAME;
+#define sv_Frames (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the screen's frame stack, indexed by sv_FrameDepth */
 
-void ai_Unk591480(void)
+/* 0x591480, the '1' key of the game frame (called every frame by ai_GameFrame 0x591520; 150 B): when no
+   other screen runs on top (the frame stack's entry is ai_GameFrame) and the camera exists, the tutorial
+   event 0x16 runs and the camera is levelled: its rotation (x, 0, z) is compared with 0.1 and, when it still
+   pitches, 0x411860 places the camera there
+   @deep read whole against the original 0x591480..0x591516 and fixed: kb_Last as a byte (was U_I's dword
+   read), the frame stack through a typed SVFRAME view (Q2/Q4), the d3_VecEqual argument order (v first,
+   camera rotation second) and the vector typed as D3VECTOR. Left (asmdiff 0x5914c3): the two float copies
+   are fld/fstp on the original (fld [ecx+0x84] / fstp [esp+0x14], fld [ecx+0x8c] / fstp [esp+0x20]) where
+   ours moves them through a GPR (mov edx,[ecx+0x84] / mov [esp+0x14],edx / ...); and the d3_Camera load
+   for the d3t_PlaceObjectV call sits before the pushes on the original (mov eax,[d3_Camera] at 0x5914f7)
+   and after them on ours (0x591500). Tried float v[3] member assignments, the aggregate initializer
+   {x,0,z}, D3VECTOR member assignments, the struct copy v = d3_Camera->rotation + v.y = 0, and explicit
+   (float) / raw (float *) casts: all give the same 18 differing instructions. Instruction counts equal
+   (42/42), size equal (150/150), no call or reference differs; only the order in which the prover sees the
+   v stores differs (the original's FPU-delayed fstp of v.x after the v.y store). That is the compiler's
+   instruction choice and register allocation, not a statement difference */
+
+void ai_CampaignKey1(void)
 {
-    float v[3];
+    if (kb_Last == '1' && d3_Camera != 0 &&
+        sv_Frames[sv_FrameDepth].cb == (int)ai_GameFrame) {
+        D3VECTOR v;
 
-    if (U_I((unsigned)&kb_Last) == '1' && d3_Camera != 0 &&
-        *(int *)(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (int)ai_GameFrame) {
         ai_CampaignStep(0x16, 0, 0, 0);
-        v[0] = d3_Camera->rotation.x;
-        v[1] = 0;
-        v[2] = d3_Camera->rotation.z;
-        if (d3_VecEqual(&d3_Camera->rotation, v, 0.1f) == 0)
-            d3t_PlaceObjectV((int)d3_Camera, &d3_Camera->pos, v, 0x1e, 0x28);
+        v.x = d3_Camera->rotation.x;
+        v.y = 0;
+        v.z = d3_Camera->rotation.z;
+        if (d3_VecEqual(&v, &d3_Camera->rotation, 0.1f) == 0)
+            d3t_PlaceObjectV(d3_Camera, &d3_Camera->pos, &v, 0x1e, 0x28);
     }
 }
 /* 0x591520, the main game frame callback (1445 B, ROUGH SKELETON from the Ghidra pseudocode): the clock index
@@ -3155,7 +3173,7 @@ void ai_GameFrame(void)
             }
             mode = 3;
         }
-        ai_Unk591480();
+        ai_CampaignKey1();
         if (U_I(((unsigned)&dm_L + 0x14)) != 0 && U_I(((unsigned)&dm_L + 0x24)) == 0 && sv_HoverBuilding != 0 &&
             U_I((unsigned)&d3t_CamMove) == 0)
             sv_FlyCameraToObject(sv_HoverBuilding);
