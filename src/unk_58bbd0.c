@@ -11021,7 +11021,9 @@ typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHA
     unsigned char title;                /* +0x165, the title rank */
     char pad166[6];                     /* +0x166 .. 0x16b */
     AIBLD *bld;                         /* +0x16c, the building the character is in */
-    char pad170[0x41];                  /* +0x170 .. 0x1b0 */
+    char pad170[0x24];                  /* +0x170 .. 0x193 */
+    int money;                          /* +0x194, the character's money (AICHAR.money) */
+    char pad198[0x19];                  /* +0x198 .. 0x1b0 */
     unsigned char heldRounds;           /* +0x1b1, the rounds the character is held */
     char pad1b2[0x6a];                  /* +0x1b2 .. 0x21b */
 } G8CHARREC;
@@ -23313,12 +23315,20 @@ int ai_Unk5d1fb0(void)
 {
     return 0;
 }
-/* 0x5d22e0, an action callback of the record table 0x62c420 (record 59 at 0x62ca94, the text id 0x2c1,
-   the value 0x5a0, 64 B): 0x520f90 (4) and the close 0x50cc50. */
+/* 0x5d22e0, the use callback of the Domizil record 59 (0x62ca94, the text id 0x2c1, the mask 0x5a0): a
+   character of kind 6 needs sv_CheckMoney (ch, 3) to pass (it shows the text 0x74 "not enough money"), every
+   other kind needs 3 money silently; then the money delta -3 (0x50cc50, ch->netId) and 1, 0 otherwise. */
 
-int ai_Unk5d22e0(void)
+int ai_UsePayGood(G8CHARREC *ch)
 {
-    return 0;
+    if (ch->kind == 6) {
+        if (sv_CheckMoney((char *)ch, 3) == 0)
+            return 0;
+    } else if (ch->money < 3) {
+        return 0;
+    }
+    gm_SendMoneyDelta(ch->netId, -3);
+    return 1;
 }
 /* 0x5d2320, an action callback of the record table 0x62c420 (record 60 at 0x62cab0, the text id 0x2c2,
    288 B): the character (0x5c1130 menu / 0x505df0), 0x4c4a60, the texts 0x5176d0 and the panel
