@@ -847,7 +847,9 @@ local uInt longest_match(s, cur_match)
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-/* 0x4621c0 */
+/* 0x4621c0, reads more input into the window, sliding half of it down (and
+   the hash chains with it) when the upper half is used up, until the
+   lookahead reaches MIN_LOOKAHEAD or the input runs out */
 local void fill_window(s)
     deflate_state *s;
 {
