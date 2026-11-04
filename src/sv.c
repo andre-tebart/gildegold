@@ -3390,25 +3390,25 @@ void sv_RemoveBanners(char *b)
 }
 /* 0x528770, in scene 0 goes over the objects of kind 6 (0x501190 (1, 6)): for those whose owner (+0x27) is another character of type 5 / 6 / 7 and which are not flagged (+0x5a & 1) the banner is tinted (0x5286a0) and coloured (0x5282f0) */
 
-void sv_Unk528770(void)
+void sv_RefreshBanners(void)
 {
     int scene;
-    char *o;
-    char *c;
+    AIBLD *o;
+    AICHAR *c;
     char t;
 
     scene = d3_CurrentScene;
     c = 0;
     d3if_SelectScene(0, 1);
-    o = (char *)gm_BuildQuery(1, 6);
+    o = (AIBLD *)gm_BuildQuery(1, 6);
     while (o != 0) {
-        if (*(unsigned short *)(o + 0x27) != 0xffff)
-            c = ai_Chars[*(unsigned short *)(o + 0x27)];
-        if (c != 0 && c != ai_PlayerCharC && ((t = c[2]) == 6 || t == 7 || t == 5) && (o[0x5a] & 1) == 0) {
-            sv_RemoveBanners(o);
-            sv_CreateBanners(o);
+        if (o->owner != 0xffff)
+            c = &ai_CharsT[o->owner];
+        if (c != 0 && (char *)c != ai_PlayerCharC && ((t = c->kind) == 6 || t == 7 || t == 5) && (o->flags5a & 1) == 0) {
+            sv_RemoveBanners((char *)o);
+            sv_CreateBanners((char *)o);
         }
-        o = (char *)gm_BuildNext();
+        o = (AIBLD *)gm_BuildNext();
     }
     d3if_SelectScene(scene, 1);
 }

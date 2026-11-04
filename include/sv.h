@@ -90,7 +90,7 @@ void sv_ColourBanners(int c);                                               /* 0
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b);                                /* 0x528490 */
 char sv_CollectBannerCB(char *o, int *p);                                     /* 0x528660 */
 void sv_RemoveBanners(char *b);                                             /* 0x5286a0 */
-void sv_Unk528770(void);                                                /* 0x528770 */
+void sv_RefreshBanners(void);                                                /* 0x528770 */
 int sv_AddPanelButton(int x, int y, int text);                               /* 0x528800 */
 struct AIBLD; void sv_OpenBuildingPanel(struct AIBLD *b);                                /* 0x528860 */
 void sv_OpenItemPanel(unsigned short *p);                                   /* 0x528b80 */

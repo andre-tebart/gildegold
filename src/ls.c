@@ -1429,7 +1429,7 @@ int ls_LoadGame(int name, int kind)
     if (ls_Version >= 0x10053 && rt_LoadRoutes(h) == 0)
         LS_LOADFAIL
     vfs_fclose(h);
-    sv_Unk528770();
+    sv_RefreshBanners();
     init_PrepareTownScene();
     init_AfterTownLoad();
     init_SetDetailLevel(d3_Terrain, 1);
