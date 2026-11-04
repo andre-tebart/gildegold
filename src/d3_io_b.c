@@ -359,7 +359,7 @@ void bgi_SkipStr(void *f, BGIRD *c)
 
     bio_rd_s(f, buf);
 }
-/* 0x44f790 */
+/* 0x44f790, chunk 0x16 of the object block: reads one int that is not used */
 
 void bgi_SkipInt2(void *f, BGIRD *c)
 {
