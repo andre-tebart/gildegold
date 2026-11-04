@@ -3,7 +3,7 @@
    ai_RunMessage (from the 8th day on). Its .data (the table) follows unk_4b39f0.c's literals; unit start and name are
    guesses (no module tag; could be the missions' tail). Names are ours. Ends before 0x4bb810, anm.c's first user
    of "anm:animals".
-   Open: 0x4bb720 (posts random message types as AIMSG 0x42) / 0x4bb7d0 (LCG, seed 0x6f0730) may be anm.c's.
+   Open: 0x4bb720 (posts random message types as AIMSG 0x42) / ai_NextRandom (LCG, seed ai_RandomSeed) may be anm.c's.
    unit of rea 8cef7d5b (src/game/unk_4b6480.c); boundaries in decl/text.dcl */
 #include <string.h>
 #include <windows.h>
@@ -1961,21 +1961,21 @@ G14CB ai_MsgCallbacks[0x45] = {                                                 
     ai_MsgCureMinorDisease, ai_MsgCureUpperDisease, ai_MsgNewsOnly, ai_MsgNewsOnly,
     ai_MsgNewsOnly
 };
-unsigned int ai_Unk6f0730 = 0;  /* 0x6f0730, random seed of the messages */
+unsigned int ai_RandomSeed = 0;  /* 0x6f0730, random seed of the messages */
 
-unsigned int ai_Unk4bb7d0(unsigned int n);
+unsigned int ai_NextRandom(unsigned int n);
 
 __declspec(dllimport) unsigned long __stdcall timeGetTime(void);
 
-/* 0x4bb720, posts 0..n random messages for character id (AIMSG type 0x42 with the message type in n); returns the
-   number; reseeds ai_Unk6f0730 with timeGetTime() */
+/* 0x4bb720, posts 0..n random messages for character id (AIMSG type 0x42, aiMsg.car = id and aiMsg.type = a random
+   message type 0 .. 0x44); returns the number; reseeds ai_RandomSeed with timeGetTime() */
 int ai_PostRandomMessages(int n, int id)
 {
     int k, i;
     AIMSG msg;
 
-    k = ai_Unk4bb7d0(n + 1);
-    ai_Unk6f0730 = timeGetTime();
+    k = ai_NextRandom(n + 1);
+    ai_RandomSeed = timeGetTime();
     memset(&msg, 0, sizeof(msg));
     msg.type = 0x42;
     msg.to = id;
@@ -1983,18 +1983,18 @@ int ai_PostRandomMessages(int n, int id)
     msg.time = ai_Time;
     msg.flags = 1;
     for (i = k; i > 0; i--) {
-        *(unsigned short *)&msg.n = ai_Unk4bb7d0(0x45);
-        msg.car = id;
+        msg.aiMsg.type = ai_NextRandom(0x45);
+        msg.aiMsg.car = id;
         cm_SendLongMessage(&msg);
     }
     return k;
 }
-/* 0x4bb7d0, a random number below n (LCG ai_Unk6f0730; 0 for n 0) */
+/* 0x4bb7d0, a random number below n (LCG ai_RandomSeed; 0 for n 0) */
 
-unsigned int ai_Unk4bb7d0(unsigned int n)
+unsigned int ai_NextRandom(unsigned int n)
 {
     if (n == 0)
         return 0;
-    ai_Unk6f0730 = ai_Unk6f0730 * 0x41c64e6d + 0x3039;
-    return (*((unsigned short *)&ai_Unk6f0730 + 1) % 0x7fffu) % n;
+    ai_RandomSeed = ai_RandomSeed * 0x41c64e6d + 0x3039;
+    return (*((unsigned short *)&ai_RandomSeed + 1) % 0x7fffu) % n;
 }

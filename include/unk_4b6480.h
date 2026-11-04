@@ -29,7 +29,7 @@ void gm_ClockToDate(struct AITIME *c, unsigned char *out);                      
 #define G14_5087F0(a, b) ((float (*)(int, unsigned char))gm_ItemPrice)(a, b)  /* ai.h: int n */
 
 
-extern unsigned int ai_Unk6f0730;       /* 0x6f0730, random seed of the messages */
+extern unsigned int ai_RandomSeed;       /* 0x6f0730, random seed of the messages */
 
 typedef int (*G14CB)(G14MSG *m);
 extern G14CB ai_MsgCallbacks[0x45];        /* 0x602570 */

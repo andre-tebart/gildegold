@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 7337df53: include/ai_types.h gains the AIMSG aiMsg arm (int car 0x58, unsigned short type 0x5c) for the AI message 0x42, which removes the raw (unsigned short *)&msg.n store in ai_PostRandomMessages (Q4) and types the record a G14MSG points at; this function's byte match flips on that declaration-set change alone (its sibling ai_TutorialInitChapter3's debt item already records the same flip: its match is a VC6 tie-break, no evidence of the original's source) [waits for: the declaration set of include/ai_types.h settling (the AIMSG union arms)]
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		byte+readable -> shape+readable at 303309ef: include/sv.h now includes <windows.h> (the MSG of sv_Message); that declaration-set change flips this function's byte match (34 ins / 50 bytes, the prover shows the same behaviour) and the flip is a VC6 tie-break, no evidence of the original's source; ai_TutorialInitChapter2 gained its byte match by the same flip [waits for: the declaration set of include/sv.h settling (the <windows.h> include for MSG)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		

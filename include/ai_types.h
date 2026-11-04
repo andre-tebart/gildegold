@@ -288,6 +288,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                         } s;
                     } u;
                 };
+                struct {                        /* the AI message 0x42 (ai_PostRandomMessages): the record a G14MSG view points
+                                                   at (id at 0x58, type at 0x5c) */
+                    int car;                    /* 0x58, the character the message is for (G14MSG.id) */
+                    unsigned short type;        /* 0x5c, the message type 0 .. 0x44 (G14MSG.type) */
+                } aiMsg;
                 struct {                        /* the rank message 0x69 (gv_CheckRankUp) */
                     unsigned char rank;         /* 0x58, the new rank (AICHAR.b00d) */
                     char pad59[3];
