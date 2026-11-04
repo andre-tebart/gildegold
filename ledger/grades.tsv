@@ -3851,7 +3851,7 @@ exe	0x0056efc0	he_AllocEvent9a	he	byte	readable
 exe	0x0056f040	ai_Unk56f040	he	byte	draft		
 exe	0x0056f050	he_Unk56f050	he	byte	draft		
 exe	0x0056f0b0	he_Unk56f0b0	he	draft	draft		
-exe	0x0056f170	he_Unk56f170	he	byte	draft		
+exe	0x0056f170	he_EventOnBuilding	he	byte	draft		
 exe	0x0056f1b0	he_Unk56f1b0	he	byte	draft		
 exe	0x0056f260	he_Unk56f260	he	shape	draft		
 exe	0x0056f2e0	he_Unk56f2e0	he	byte	draft		
@@ -4012,7 +4012,7 @@ exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
 exe	0x0057b810	ai_TutorialBezier	unk_575860	shape	readable		
 exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	shape	readable		
-exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	draft		
+exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	readable		
 exe	0x0057bce0	ai_TutorialWindow	unk_575860	shape	readable	deep	
 exe	0x0057bf00	ai_AlchemistCandidates	unk_575860	draft	readable	deep	
 exe	0x0057c560	ai_AlchemistHire	unk_575860	byte	readable		
@@ -4027,16 +4027,16 @@ exe	0x0057e230	ai_ShotTableStore	unk_575860	byte	readable
 exe	0x0057e270	ai_CannonScene	unk_575860	draft	readable	deep	
 exe	0x0057ec40	ai_CannonAim	unk_575860	draft	readable	deep	
 exe	0x0057f0e0	ai_CannonCamera	unk_575860	draft	readable	deep	
-exe	0x0057f5d0	ai_CannonAxes	unk_575860	byte	draft		
+exe	0x0057f5d0	ai_CannonAxes	unk_575860	byte	readable		
 exe	0x0057f620	ai_CannonFireCheck	unk_575860	byte	readable		
 exe	0x0057f690	ai_CannonShotResults	unk_575860	byte	readable		
 exe	0x0057f890	ai_CannonPanel	unk_575860	byte	readable		
-exe	0x0057fdb0	ai_CannonPitchRatio	unk_575860	shape	draft		
+exe	0x0057fdb0	ai_CannonPitchRatio	unk_575860	byte	readable		
 exe	0x0057fdd0	ai_CannonSwitchAnim	unk_575860	draft	readable	deep	
 exe	0x00580160	ai_CannonExplosion	unk_575860	draft	readable	deep	
 exe	0x00580a50	ai_ShotTableReset	unk_575860	byte	readable		
 exe	0x00580a90	ai_CannonBuildPanel	unk_575860	draft	readable	deep	
-exe	0x00580fe0	ai_CanSpyOn	unk_575860	byte	draft		
+exe	0x00580fe0	ai_CanSpyOn	unk_575860	byte	readable		
 exe	0x00581020	ai_CabinetSpyWindow	unk_575860	shape	readable		
 exe	0x00581400	ai_CabinetSpyOnCharacter	unk_575860	shape	readable		
 exe	0x00581950	ai_CabinetSpyByMoney	unk_575860	shape	readable		
@@ -4048,19 +4048,19 @@ exe	0x00582600	ai_CabinetContact	unk_575860	byte	readable
 exe	0x00582730	ai_GraveSizeButtons	unk_575860	byte	readable		
 exe	0x005828c0	ai_GraveList	unk_575860	byte	readable		
 exe	0x00582b40	ai_GraveDetail	unk_575860	draft	readable	deep	
-exe	0x005830f0	ai_GraveDeadName	unk_575860	byte	draft		
+exe	0x005830f0	ai_GraveDeadName	unk_575860	byte	readable		
 exe	0x00583150	ai_GraveDeadDescription	unk_575860	byte	readable		
 exe	0x00583240	ai_GraveWindow	unk_575860	draft	readable	deep	
 exe	0x00583700	ai_RentGraveDetail	unk_575860	draft	readable	deep	
-exe	0x00583b70	ai_GraveDetailOpen	unk_575860	byte	draft		
+exe	0x00583b70	ai_GraveDetailOpen	unk_575860	byte	readable		
 exe	0x00583c50	ai_GraveSizeButtonsAt	unk_575860	byte	readable		
-exe	0x00583de0	ai_GraveFreeConfirm	unk_575860	byte	draft		
+exe	0x00583de0	ai_GraveFreeConfirm	unk_575860	byte	readable		
 exe	0x00583ef0	ai_GraveSizeEnable	unk_575860	byte	readable		
 exe	0x00584010	ai_GraveMoveConfirm	unk_575860	byte	readable		
-exe	0x00584260	ai_GraveMoveWindow	unk_575860	byte	draft		
+exe	0x00584260	ai_GraveMoveWindow	unk_575860	byte	readable		
 exe	0x00584410	ai_GraveDetailButtons	unk_575860	byte	readable		
 exe	0x00584520	ai_GraveRentConfirm	unk_575860	byte	readable		
-exe	0x005847a0	ai_RentGraveSelect	unk_575860	byte	draft		
+exe	0x005847a0	ai_RentGraveSelect	unk_575860	byte	readable		
 exe	0x00584900	ai_GraveCare	unk_575860	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	unk_575860	byte	readable		
 exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	deep	
