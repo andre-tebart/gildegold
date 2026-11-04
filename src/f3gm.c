@@ -8370,15 +8370,16 @@ int gm_PlayerFactor(int a, unsigned char k)
 {
     return PLTAB(PLW54(k)) * a;
 }
-/* 0x508620, the amount a scaled by the factor of the city i (PLTAB, the city-factor table at 0x61a8ac) */
+/* 0x508620, the amount a scaled by the rate of the currency object i (PLTAB, the rate table at 0x61a8ac; a
+   player slot's currency is the Waehrung object's prototype id at its +0x54) */
 
-int gm_CityFactor(int a, int i)
+int gm_CurrencyFactor(int a, int i)
 {
     return PLTAB(i) * a;
 }
-/* 0x508640 */
+/* 0x508640, the amount a divided by the rate of the currency object i (the inverse of gm_CurrencyFactor) */
 
-int gm_Unk508640(int a, int i)
+int gm_CurrencyDivide(int a, int i)
 {
     return a / PLTAB(i);
 }

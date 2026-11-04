@@ -7826,7 +7826,7 @@ int ai_Unk59c120(int param_1, int *param_2, int param_3, int param_4, char param
             v = d2_GetObjValue(param_2[i * 7]);
             param_2[i * 7 + 4] = v;
             r = gm_Query(param_1, 1, 0, param_2[i * 7 + 2]);
-            if (r == 0 || gm_Unk508640(U_I(r + 0xe), param_2[i * 7 + 2]) == 0) {
+            if (r == 0 || gm_CurrencyDivide(U_I(r + 0xe), param_2[i * 7 + 2]) == 0) {
                 d2_RemoveObj(param_2[i * 7 + 1]);
                 param_2[i * 7 + 1] = -1;
                 d2_RemoveObj(param_2[i * 7]);
@@ -7835,7 +7835,7 @@ int ai_Unk59c120(int param_1, int *param_2, int param_3, int param_4, char param
                 param_2[i * 7 + 2] = 0;
                 changed = 1;
             } else {
-                r = gm_Unk508640(U_I(r + 0xe), param_2[i * 7 + 2]);
+                r = gm_CurrencyDivide(U_I(r + 0xe), param_2[i * 7 + 2]);
                 d2_SetObjValue(param_2[i * 7], 0, r, v);
                 txt_Format(text, "%I %s", r, U_I((unsigned)&txt_ObjectNames + param_2[i * 7 + 2] * 8));
                 d2_SetObjText(param_2[i * 7 + 1], text);
@@ -8221,10 +8221,10 @@ int ai_Unk59d410(int param_1, int param_2, int param_3, unsigned char param_4)
         if (U_I(((unsigned)&dm_L + 0x20)) != 0 || U_I((unsigned)&d2_ClickedId) == 1)
             U_I((unsigned)&sv_PopRequest) = 1;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
-            fee = gm_CityFactor(param_3, param_2);
-            r2 = gm_CityFactor(1, param_2);
+            fee = gm_CurrencyFactor(param_3, param_2);
+            r2 = gm_CurrencyFactor(1, param_2);
             if ((float)fee * 0.03f <= (float)r2)
-                gm_CityFactor(1, param_2);
+                gm_CurrencyFactor(1, param_2);
             cm_SendExSellObject(-1, U_I(param_1 + 1), param_2, fee, U_I((unsigned)&ai_OwnPlayer), 0);
             memset(msg, 0, 0xf8);
             *(unsigned char *)(msg + 4) = 0x27;
