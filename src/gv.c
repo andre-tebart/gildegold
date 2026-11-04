@@ -2152,18 +2152,19 @@ int gv_AdjustEntry(GVORDER *m)
 
 int gv_OrderNewDead(char *o, int x)
 {
-    char m[0x1d];
+    AIBLD *bld = (AIBLD *)o;
+    GVORDER m;
 
     if (o == 0)
         return -1;
-    *(int *)(m + 0xc) = 0;
-    m[0x10] = 0;
-    *(short *)(m + 0x11) = 0;
-    *(int *)m = 6;
-    *(int *)(m + 4) = -1;
-    *(int *)(m + 8) = *(int *)(o + 1);
-    *(int *)(m + 0x13) = x;
-    return ((int (*)(void *))cm_SendGraveOrder)(m);
+    m.size = 0;
+    m.entry = 0;
+    m.years = 0;
+    m.type = 6;
+    m.chr = -1;
+    m.bld = bld->id;
+    m.price = x;
+    return ((int (*)(void *))cm_SendGraveOrder)(&m);
 }
 /* 0x4f0dd0, graveyard order type 6 (p: +8 the object id, +0x13 the number): makes that many new dead (0x4ef9c0); 0 when some were made, else -4 */
 
