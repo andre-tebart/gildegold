@@ -6626,11 +6626,11 @@ void sv_DrawRubberBand(void)
 
 void sv_BookKeys(SVBOOK *bk)
 {
-    if (SV_I((unsigned)&d2_ClickedId) == 0x767) {
+    if (d2_ClickedId == 0x767) {
         sv_BookForward(bk);
         return;
     }
-    if (SV_I((unsigned)&d2_ClickedId) == 0x768)
+    if (d2_ClickedId == 0x768)
         sv_BookBack(bk);
 }
 /* 0x52f360, opens a book: the model named model (d3t_FindObject), or, given the scene object name at, a copy of it
