@@ -19,78 +19,6 @@ struct AITIME;
 #pragma pack(push, 1)
 #include "ai_bld.h"                  /* AIBLD */
 
-typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind ai_Objects): carts, stores, the
-                                           goods in a store, a workshop's level object; what gm_Query finds */
-    union {
-        unsigned short id;              /* 0x00, index into ai_Goods */
-        unsigned short type;            /* 0x00, 0x116: ... */
-    };
-    int objId;                          /* 0x02, the object's own id (0x500190 gives a new one; messages name the
-                                           object by it, 0x4fea50 finds it by it) */
-    int ownerId;                        /* 0x06, the id of the building / object / character holding it (gv.h ORDOBJ.ownerId) */
-    int fightSide;                      /* 0x0a, a good shown as a fight scene's "WARE_" object: the id (AICHAR.id) of the
-                                           fight side's leader holding it (cm.c: cm_CheckDeath hands it to the defender) */
-    union {
-        int unk0e;                      /* 0x0e */
-        int count;                      /* 0x0e */
-    };
-    unsigned char fill;                 /* 0x12, how full the cart is in percent (msg.n = 100 - fill; below 0x21 a cart is free for a load, ai_MeisterTrade / ai_UnloadCarts) */
-    char pad13;
-    union {
-        int unk14;                      /* 0x14, the object list it holds */
-        int list;                       /* 0x14 */
-    };
-    struct D3OBJECT *obj;               /* 0x18, the scene object that shows it (sv_DrawItemNames draws its name above it) */
-    union {
-        struct {
-            union {
-                int unk1c;                      /* 0x1c, a building id / a state / a count */
-                int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
-                int cnt;                        /* 0x1c */
-                int reserve;                    /* 0x1c, of goods in a store: the quarters of the store's stock (gm_ListStock)
-                                                   kept from buyers other than its owner (cm.c 0x4c70b0); 4 when created
-                                                   there for a character of kind 6 / 7 */
-                struct {
-                    unsigned char lvl1c;        /* 0x1c, a workshop's levels, compared with AIENTRY need1c / need20 */
-                    unsigned char lvl1d;        /* 0x1d */
-                };
-                struct {
-                    int pad1c20;
-                    unsigned int flags20;       /* 0x20, of a cart (kind 0x1d): bit 1 (2) is cleared for the carts of the current building when the selection resets (sv_ResetSelection) */
-                };
-                struct {
-                    int pad1c20w;
-                    int usesLeft;               /* 0x20, of a weapon item (kind 5 in a character's inventory): the uses left of
-                                                   a kind 1 / 2 weapon (cm_CharWeapon refuses it at 0; the portrait box shows it) */
-                };
-                struct {
-                    int pad1c24[2];
-                    struct AIJOB *job24;        /* 0x24, of a cart: a job whose cartBld names a building (sv_RefreshPanel prints that building's kind; reasoned: the job the cart runs) */
-                };
-                int recs[3];                    /* 0x1c..0x27, of a gm_Query kind 300 object in a shop: three record ids for gv_EvidencePrice (0x4ab080 tries them in turn) */
-                struct {                        /* of a room of a building (the objects of AIBLD.objList the enter-building driver walks) */
-                    int locked;                 /* 0x1c, nonzero: the room's contacts open ai_UnlockRoomWindow, which clears it when paid */
-                    int unlockPrice;            /* 0x20, the money ai_UnlockRoomWindow asks; cleared with locked */
-                };
-            };
-            char pad28[2];
-            int unk2a;                          /* 0x2a */
-        };
-        struct {
-            char pad1c29[0xd];
-            struct RTPOINT *route;              /* 0x29, of a cart: its route, a list of rt.c's RTPOINT (rt_CopyPoints; message 0x68 sets it) */
-        };
-        int seats[4];                   /* 0x1c..0x2b, of a table (kind 0x12d in a building): the ids of the characters at its
-                                           four seats, -1 free (message 0x54 'join' / 'leav' / 'cler', cm_SendTableRequest) */
-    };
-    char pad2e[8];
-    unsigned char unk36;                /* 0x36 */
-    unsigned char unk37;                /* 0x37 */
-    char pad38[3];
-    void *sceneObj;                     /* 0x3b, the scene character (ch.h CHARACTER) that shows a cart */
-    struct AIOBJ *next;                 /* 0x3f, the next object of its list (an inventory, a store) */
-} AIOBJ;
-
 typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
     char type;                          /* 0x00 */
     union {
@@ -111,7 +39,7 @@ typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
 /* AIBTYPE: ai_bld.h */
 #pragma pack(pop)
 
-#include "ai_types.h"                /* AITIME, AISTORE */
+#include "ai_types.h"                /* AITIME, AISTORE, AIOBJ */
 
 #include "ai_char.h"                 /* AITASK, AICHAR */
 
