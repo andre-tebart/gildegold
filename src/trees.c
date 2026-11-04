@@ -824,7 +824,7 @@ void _tr_stored_block(s, buf, stored_len, eof)
  * To simplify the code, we assume the worst case of last real code encoded
  * on one bit only.
  */
-/* 0x465f80 */
+/* 0x465f80, sends an empty static block (10 bits) so inflate has enough lookahead, and sets last_eob_len */
 void _tr_align(s)
     deflate_state *s;
 {
