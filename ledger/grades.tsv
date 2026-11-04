@@ -349,7 +349,7 @@ exe	0x00417270	d3t_SmoothStep	d3_tools	byte	readable
 exe	0x004172e0	d3t_UpdateSunRays	d3_tools	byte	readable		
 exe	0x00417560	d3t_RemoveSunRays	d3_tools	byte	readable		
 exe	0x004175c0	d3t_FreeSnowMipmaps	d3_tools	byte	readable		
-exe	0x00417650	d3snd_Init	d3_snd	byte	draft		
+exe	0x00417650	d3snd_Init	d3_snd	byte	readable		
 exe	0x004176f0	d3snd_Exit	d3_snd	byte	readable		
 exe	0x00417710	d3snd_Attach	d3_snd	byte	readable		
 exe	0x004177b0	d3snd_Detach	d3_snd	byte	readable		
@@ -465,7 +465,7 @@ exe	0x004238e0	msx_Exit	msx	byte	readable
 exe	0x00423930	msx_SetTrackVolume	msx	byte	readable		
 exe	0x004239a0	msx_SetVolume	msx	byte	readable		
 exe	0x00423a50	msx_SetAmbVolume	msx	byte	readable		
-exe	0x00423a90	msx_Play	msx	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x00423a90	msx_Play	msx	byte	readable		
 exe	0x00423b30	msx_Start	msx	byte	readable		
 exe	0x00423df0	msx_Stop	msx	byte	readable		
 exe	0x00423e70	msx_SetFadeTime	msx	byte	readable		
@@ -1010,11 +1010,11 @@ exe	0x004545c0	d3_MatFromAngles	d3_vec	byte	readable
 exe	0x00454690	d3_MatToAngles	d3_vec	byte	readable		
 exe	0x00454700	d3_TriNormal	d3_vec	byte	readable		
 exe	0x00454780	d3_MirBoundaryEdges	d3_mir	byte	readable		
-exe	0x00454890	d3_MirCreateOutline	d3_mir	shape	draft		
+exe	0x00454890	d3_MirCreateOutline	d3_mir	shape	readable		
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	byte	readable		
 exe	0x00454ec0	d3_MirTransform	d3_mir	byte	readable		
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	byte	readable		
-exe	0x004550e0	d3_MirDrawObject	d3_mir	byte	draft		
+exe	0x004550e0	d3_MirDrawObject	d3_mir	byte	readable		
 exe	0x004554b0	d3_MirBeginFrame	d3_mir	byte	readable		
 exe	0x00455630	par_Init	d3_par	byte	readable		
 exe	0x004556b0	par_DeleteAll	d3_par	byte	readable		
@@ -1075,12 +1075,12 @@ exe	0x0045be10	d3s_Project	d3s	draft	draft	deep
 exe	0x0045c620	d3s_Update	d3s	draft	draft	deep	
 exe	0x0045c9c0	d3s_LightCB	d3s	byte	readable		
 exe	0x0045c9f0	d3s_CollectLights	d3s	byte	readable		
-exe	0x0045ca20	d3s_UpdateObject	d3s	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0045ca20	d3s_UpdateObject	d3s	byte	readable		
 exe	0x0045ca60	d3s_UpdateObjectAt	d3s	draft	draft	deep	draft+readable -> draft+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
 exe	0x0045cc90	d3s_FreeSlot	d3s	byte	readable		
 exe	0x0045ccd0	d3s_FreeShadows	d3s	byte	readable		
 exe	0x0045cd60	d3s_FreeLightCB	d3s	byte	readable		
-exe	0x0045ce00	d3s_ResetShadows	d3s	byte	draft		byte+readable -> byte+draft at f274727: Q6: the description came from a foreign declaration copy or a file name only (decompanion 399f0a8); the definition has none
+exe	0x0045ce00	d3s_ResetShadows	d3s	byte	readable		
 exe	0x0045ce60	d3sky_DrawLayer	d3_sky	byte	draft		
 exe	0x0045d030	d3sky_Build	d3_sky	byte	readable		
 exe	0x0045d500	d3sky_Draw	d3_sky	byte	readable		
@@ -2666,7 +2666,7 @@ exe	0x004e8c20	amt_ElectKind22	amt	byte	readable
 exe	0x004e8dc0	amt_CalcZuenfte	amt	draft	draft	deep	
 exe	0x004e9260	amt_CheckOffices	amt	byte	readable		
 exe	0x004e9400	amt_HasTownObject	amt	byte	readable		
-exe	0x004e94a0	amt_MayorBonusStep	amt	byte	draft		
+exe	0x004e94a0	amt_MayorBonusStep	amt	byte	readable		
 exe	0x004e94e0	amt_CanUseMayorPower2	amt	byte	readable		
 exe	0x004e95a0	amt_CanUseMayorPower3	amt	byte	readable		
 exe	0x004e9660	amt_ExecutePriceMessage	amt	shape	readable		
@@ -2676,7 +2676,7 @@ exe	0x004ea550	amt_ChangeDistrictOpinion	amt	byte	readable
 exe	0x004ea5c0	amt_GetDistrictLiking	amt	byte	readable		
 exe	0x004ea690	amt_SaveAemter	amt	draft	readable	deep	
 exe	0x004ea7a0	amt_LoadAemter	amt	byte	readable		
-exe	0x004ea8e0	amt_TellOpenOffices	amt	byte	draft		
+exe	0x004ea8e0	amt_TellOpenOffices	amt	byte	readable		
 exe	0x004ea990	amt_GetOwnedOfficePay	amt	byte	readable		
 exe	0x004eaa00	amt_AnnounceOfficeFree	amt	byte	readable		
 exe	0x004eaa50	ahm_OwnerChar	ahm	byte	readable		
