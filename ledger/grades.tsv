@@ -88,15 +88,15 @@ exe	0x00405b30	ch_ActUsingGate	ch	byte	readable
 exe	0x00405cb0	ch_UseGate	ch	byte	readable		
 exe	0x00405d40	ch_ActTakingObject	ch	byte	readable		
 exe	0x00405e70	ch_TakeObject	ch	byte	readable		
-exe	0x00405f10	ch_TakeObject1	ch	byte	draft		
+exe	0x00405f10	ch_TakeObject1	ch	byte	readable		
 exe	0x00405fb0	ch_ActDroppingObject	ch	draft	readable	deep	
-exe	0x004060d0	ch_DropObject	ch	byte	draft		
-exe	0x00406170	ch_DropObject1	ch	byte	draft		
+exe	0x004060d0	ch_DropObject	ch	byte	readable		
+exe	0x00406170	ch_DropObject1	ch	byte	readable		
 exe	0x00406210	ch_ActTurnTo	ch	byte	readable		
 exe	0x004062d0	ch_ActPlayOnce	ch	byte	readable		
 exe	0x00406340	ch_FindDummyCB	ch	byte	readable		
 exe	0x00406790	ch_FindDummy	ch	byte	readable		
-exe	0x004067f0	ch_ActMove2Universe	ch	byte	draft		
+exe	0x004067f0	ch_ActMove2Universe	ch	byte	readable		
 exe	0x00406a70	ch_FollowGround	ch	byte	readable		
 exe	0x00406bc0	ch_ThinPath	ch	byte	readable		
 exe	0x00406c60	ch_SetHandObject	ch	byte	readable		
@@ -104,9 +104,9 @@ exe	0x00406e40	ch_ActAnimOnce	ch	byte	readable
 exe	0x00406e60	ch_ActTurn	ch	draft	readable	deep	
 exe	0x00407200	ch_FindNear300	ch	byte	readable		
 exe	0x004072a0	ch_FindFreeCell	ch	draft	readable	deep	
-exe	0x00407690	ch_MapAlloc	ch	byte	draft		
-exe	0x004076b0	ch_MapFree	ch	byte	draft		
-exe	0x004076c0	ch_CopyVec	ch	byte	draft		
+exe	0x00407690	ch_MapAlloc	ch	byte	readable		
+exe	0x004076b0	ch_MapFree	ch	byte	readable		
+exe	0x004076c0	ch_CopyVec	ch	byte	readable		
 exe	0x004076e0	ch_PosToCell	ch	byte	readable		
 exe	0x00407740	ch_CellToCell	ch	byte	readable		
 exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep	
@@ -114,8 +114,8 @@ exe	0x004079b0	ch_GetNewPath	ch	draft	draft	deep
 exe	0x00408490	ch_PathToTarget	ch	shape	draft	deep	
 exe	0x00408690	ch_InitWalk	ch	shape	draft	deep	
 exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
-exe	0x00408cb0	ch_StartWalkAnim	ch	byte	draft		
-exe	0x00408e60	ch_NextWaypoint	ch	byte	draft		
+exe	0x00408cb0	ch_StartWalkAnim	ch	byte	readable		
+exe	0x00408e60	ch_NextWaypoint	ch	byte	readable		
 exe	0x004093d0	ch_WalkRotate	ch	byte	readable		
 exe	0x004097d0	ch_ActWalk	ch	draft	draft	deep	
 exe	0x00409bd0	ch_ActWalkCells	ch	draft	draft	deep	
