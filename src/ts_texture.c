@@ -180,7 +180,8 @@ void ts_CacheStore(TSCACHE *sce, TSTEXTURE *tex)
     } else
         sce->d3dtex = tex->d3dtex;
 }
-/* 0x45f790 */
+/* 0x45f790, puts tex's surface into the texture cache: a free entry when one exists, else the entry unused longest
+   (its contents released); when every entry was used this frame, releases tex's D3D texture and surface instead */
 
 void ts_CacheRelease(TSTEXTURE *tex)
 {
