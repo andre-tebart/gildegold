@@ -1947,17 +1947,17 @@ exe	0x004b46c0	ai_CondOfficeTimed	unk_4b39f0	byte	readable
 exe	0x004b46f0	ai_CondOldBuilding	unk_4b39f0	byte	readable		
 exe	0x004b4760	ai_HasThreeStockedBuildings	unk_4b39f0	draft	readable	deep	
 exe	0x004b4830	ai_CondMissionMoney02	unk_4b39f0	byte	readable		
-exe	0x004b4870	ai_Unk4b4870	unk_4b39f0	byte	draft		
-exe	0x004b48b0	ai_Unk4b48b0	unk_4b39f0	byte	draft		
+exe	0x004b4870	ai_CondMissionMoney1	unk_4b39f0	byte	readable		
+exe	0x004b48b0	ai_CondMissionMoney4	unk_4b39f0	byte	readable		
 exe	0x004b48f0	ai_CondCharShare	unk_4b39f0	byte	readable		
-exe	0x004b4960	ai_Unk4b4960	unk_4b39f0	byte	draft		
-exe	0x004b4a00	ai_Unk4b4a00	unk_4b39f0	byte	draft		
-exe	0x004b4aa0	ai_Unk4b4aa0	unk_4b39f0	byte	draft		
+exe	0x004b4960	ai_CondCharHoldsKinds	unk_4b39f0	byte	readable		
+exe	0x004b4a00	ai_CondCharHoldsThreeOfEach	unk_4b39f0	byte	readable		
+exe	0x004b4aa0	ai_CondRankTimedThreeBuildings	unk_4b39f0	byte	readable		
 exe	0x004b4af0	ai_PlayerHeldBuildings	unk_4b39f0	byte	readable		
-exe	0x004b4c50	ai_Unk4b4c50	unk_4b39f0	byte	draft		
+exe	0x004b4c50	ai_CondPlayerHeldKindsTimed	unk_4b39f0	byte	readable		
 exe	0x004b4d50	ai_CondPlayerShare	unk_4b39f0	byte	readable		
-exe	0x004b4d90	ai_Unk4b4d90	unk_4b39f0	byte	draft		
-exe	0x004b4dc0	ai_Unk4b4dc0	unk_4b39f0	byte	draft		
+exe	0x004b4d90	ai_CondDecisionSumZero	unk_4b39f0	byte	readable		
+exe	0x004b4dc0	ai_CondRatingBaseTimed	unk_4b39f0	byte	readable		
 exe	0x004b4e30	ai_Unk4b4e30	unk_4b39f0	byte	draft		
 exe	0x004b4eb0	ai_Unk4b4eb0	unk_4b39f0	byte	draft		
 exe	0x004b4f00	ai_Unk4b4f00	unk_4b39f0	byte	draft		
