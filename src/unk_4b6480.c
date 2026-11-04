@@ -1855,9 +1855,10 @@ int ai_MsgPayMinorDisease(G14MSG *m)
     cm_SendMoveGoodsUnchecked(-1, m->id, ai_OwnPlayer, v);
     return 0;
 }
-/* 0x4bb430, message if 0x5056a0 of c (not with item 0x290) */
+/* 0x4bb430, message 0x3f: c (not holding item 0x290) catches one of the upper diseases 5..8; 0x400 when none is
+   caught */
 
-int ai_Unk4bb430(G14MSG *m)
+int ai_MsgCatchUpperDisease(G14MSG *m)
 {
     AICHAR *c;
     char buf[0x400];
@@ -1956,7 +1957,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgWorkerLoseSkillType30, ai_Unk4ba630, ai_MsgTakeBuildingGoodsPct13to25Type32, ai_MsgTakeBuildingGoodsPct5to19Type33,
     ai_MsgTakeBuildingGoodsPct5to24Type34, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_MsgRewardPct1to3Skill82Type39, ai_MsgAddSkill8to24Type3a, ai_MsgLoseSkill6to17Type3b,
-    ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_MsgPayMinorDisease, ai_Unk4bb430,
+    ai_MsgPayPct1to4Type3c, ai_Unk4bb250, ai_MsgPayMinorDisease, ai_MsgCatchUpperDisease,
     ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
     ai_Unk4bb630
 };
