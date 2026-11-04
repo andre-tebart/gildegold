@@ -1815,7 +1815,7 @@ void ch_ActStandUp(CHACTION *a)
         ch_RemoveAction(a);
     }
 }
-/* 0x405ad0 */
+/* 0x405ad0, queues the stand-up action (type 0x30) for a sitting character; 0 if it is not seated */
 
 int ch_StandUp(CHARACTER *ch, char *name)
 {
