@@ -29,8 +29,7 @@
    17to28) words a crime; gv_FindAccused / gv_EvidencePrice / gv_SortCrimesByLaw / gv_ClearCrimes serve the crime windows
    and the evidence trade. A trial's sentence 0 .. 9 is checked by gv_CheckSentence and carried out by gv_PassSentence;
    gv_CheckRankUp raises a character's rank (AICHAR.b00d) by his worth (gv_RankWorth).
-   Open: gv_FindCrime, gv_EvidenceSlot and gv_CountOwnedGraves still read ai_Crimes (cm.c's char[], the 0x2d-byte
-   CRIME records) and ai_Evidence (cm.c, the int pairs) through raw offsets; unk_Tab611258's initializer holds the callbacks (AIDEC.fn) as raw original addresses.
+   Open: gv_FindCrime and gv_EvidenceSlot still read ai_Crimes (cm.c's char[], the 0x2d-byte CRIME records) and ai_Evidence (cm.c, the int pairs) through raw offsets; unk_Tab611258's initializer holds the callbacks (AIDEC.fn) as raw original addresses.
    Open: data: gv_RankWorth (0x5ee0f8) is declared with 7 entries, gv_CheckRankUp reads 11 (the last 4 lie under
    hmt_Unk5ee114 ..).
    Open: some functions index ai_PlayerSlots with the stride 0x5e8 where gv_ReserveGrave shows 0x2f4 (gv_PlayerRecs);
