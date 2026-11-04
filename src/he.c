@@ -12045,12 +12045,15 @@ void he_Unk561190(int ev)
     cm_SendFieldDeltas();
     he_FreeEvent((int *)ev);
 }
-/* 0x561470, the allocation handler: the due clock is now + a random 0x42ec00(0x1e) units */
+/* 0x561470, the allocation handler the events 0x39 and 0x3e share: the due clock is now + 1 hour + a random
+   0 .. 0x1d minutes less 0x14 */
 
-void he_Unk561470(int ev)
+void he_AllocEvent39_3e(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 1, 0, (unsigned short)util_Random(0x1e) - 0x14);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 1, (unsigned short)util_Random(0x1e) - 0x14, 0);
 }
 /* 0x5614c0, the run handler of the ransom demand ("locations\diebesgilde\Diebesgilde_Loesegeld_Msg" window; ROUGH skeleton, 1376 bytes): opens the thieves guild message (0x53d6f0, d2_SetForm), shows the demand (0x515960, the news 0x53dda0), the answer pays (0x4c4830 / 0x4c5fa0, 0x4c3ba0 / 0x4c3c00 / 0x4c49a0, the player record) or refuses (a random reaction 0x53dee0), the thief figure leaves (0x55eba0, 0x4c52e0); the window is closed and the record freed */
 
@@ -13550,7 +13553,7 @@ int he_Unk568310(void)
         return 1;
     if (he_Unk53d600(56, (void *)he_Unk55e5c0, (void *)he_Unk55e600) != 0)
         return 1;
-    if (he_Unk53d600(57, (void *)he_Unk561470, (void *)he_Unk55e730) != 0)
+    if (he_Unk53d600(57, (void *)he_AllocEvent39_3e, (void *)he_Unk55e730) != 0)
         return 1;
     if (he_Unk53d600(58, (void *)he_Unk55e9d0, (void *)he_Unk55efc0) != 0)
         return 1;
@@ -13561,7 +13564,7 @@ int he_Unk568310(void)
     sv_RegisterActivity(60, 0, 0, 1284, -1);
     if (he_Unk53d600(61, (void *)he_Unk561130, (void *)he_Unk561190) != 0)
         return 1;
-    if (he_Unk53d600(62, (void *)he_Unk561470, (void *)he_Unk5614c0) != 0)
+    if (he_Unk53d600(62, (void *)he_AllocEvent39_3e, (void *)he_Unk5614c0) != 0)
         return 1;
     if (he_Unk53d600(63, (void *)he_Unk5619a0, (void *)he_Unk561a20) != 0)
         return 1;
