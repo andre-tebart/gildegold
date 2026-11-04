@@ -11267,7 +11267,7 @@ void sv_OpenPlayerBar(int a, char k); int ai_MapPick(); void sv_ClosePlayerBar(v
    records with the byte +0x184 set of the 0x300), sends it 0x4c4b70 / 0x4c2d20 or shows the text 0x144094c with
    none, then 0x52ae40; the second button only sets 0x6f22a0; the exit 0x4758f0; returns 1 after a send. ROUGH:
    the frame slots of the message and the two gates are from the disassembly */
-int ai_Unk5a3f10(int param_1)
+int ai_BurglaryWindow(int param_1)
 {
     int win;
     int ctl1;
@@ -11330,36 +11330,38 @@ int ai_Unk5a3f10(int param_1)
         } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
             U_I((unsigned)&sv_PopRequest) = 1;
         }
-        if (sv_RunFrame(ai_Unk5a3f10, 0x677c7) == 0)
+        if (sv_RunFrame(ai_BurglaryWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
     return done;
 }
-/* 0x5a4130, the burglary start (158 B, ROUGH): the building gate 0x520fe0; the request record {0, 0x400,
-   0xa07443b4, 1, 7, 0x727} and 0x525220 (param_1, 0), the text 0x19e2 and the request 0x5b2180 (1, the record,
-   the text, the callback 0x5a3f10, 0), then 0x525440 and 0x52ae40 */
+/* 0x5a4130, the burglary start of the thieves' guild hall, the click of its contact_EINBRUCH plate (158 B): a
+   building whose character is free (0x520fe0) zeroes the 20-int map pick record, sets {+4 = 0x400, +0x10 =
+   0xa07443b4, +0x14 = 1, +0x18 = 7, +0x1c = 0x727}, opens the player bar (0x525220, the building) and the map
+   pick 0x5b2180 (1, the record, the text 0x19e2, the burglary window 0x5a3f10, 0), then closes the bar
+   (0x525440) and clears the selection (0x52ae40) */
 
-void ai_Unk5a4130(int param_1)
+void ai_BurglaryStart(int building)
 {
     int req[20];
     char buf[0x40];
     int i;
 
-    if (sv_CheckCharacterFlag(param_1) != 0)
+    if (sv_CheckCharacterFlag(building) != 0)
         return;
     for (i = 0; i < 20; i++)
         req[i] = 0;
-    if (param_1 == 0)
+    if (building == 0)
         return;
     req[1] = 0x400;
-    sv_OpenPlayerBar(param_1, 0);
+    sv_OpenPlayerBar(building, 0);
     txt_Format(buf, 0x19e2);
     req[4] = 0xa07443b4;
     req[5] = 1;
     req[6] = 7;
     req[7] = 0x727;
-    ai_MapPick(1, req, buf, (void *)(unsigned)&ai_Unk5a3f10, 0);
+    ai_MapPick(1, req, buf, (int)ai_BurglaryWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -11851,7 +11853,7 @@ void ai_Unk5a4d40(int param_1)
         click = U_I((unsigned)&ai_ClickedObject);
         if (click != 0) {
             if (click == burglary)
-                ai_Unk5a4130(param_1);
+                ai_BurglaryStart(param_1);
             else if (click == espionage)
                 ai_Unk5a44e0((unsigned char *)param_1);
             else if (click == angriff)

@@ -8788,7 +8788,7 @@ int gm_BuildingRank(unsigned char *b)
 }
 /* 0x509120, 1 when the rank of the building c (gm_BuildingRank) fits the limit that the kind rank of the
    building b (+0x247) sets: 1 allows c's rank below 2, 2 below 3, 3 up to 7, anything else only 0; the
-   gate of the burglary window (ai_Unk5a3f10 on the player's building) */
+   gate of the burglary window (ai_BurglaryWindow on the player's building) */
 
 int gm_BuildingRankGate(unsigned char *b, unsigned char *c)
 {
