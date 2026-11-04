@@ -3003,16 +3003,16 @@ exe	0x004ffe90	gm_Query	f3gm	draft	readable	deep
 exe	0x004fffc0	gm_FindFreeObject	f3gm	byte	readable		
 exe	0x004ffff0	gm_RemoveObject	f3gm	byte	readable		
 exe	0x00500080	gm_FreeObjectExtra	f3gm	byte	readable		
-exe	0x005000c0	gm_RemoveOwned	f3gm	shape	draft		
-exe	0x00500140	gm_FreeList	f3gm	byte	draft		
+exe	0x005000c0	gm_RemoveOwned	f3gm	shape	readable		
+exe	0x00500140	gm_FreeList	f3gm	byte	readable		
 exe	0x00500190	gm_CreateObject	f3gm	draft	readable	deep	
 exe	0x00500970	gm_AddObjekt	f3gm	byte	readable		
 exe	0x00500a40	gm_TakeObjekt	f3gm	byte	readable		
 exe	0x00500ae0	gm_AddNegative	f3gm	byte	readable		
 exe	0x00500b90	gm_BuildKindObjects	f3gm	draft	readable	deep	
 exe	0x00500c20	gm_CollectOffers	f3gm	draft	readable	deep	
-exe	0x00500ec0	gm_FindMarketObject	f3gm	shape	draft		
-exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	draft		
+exe	0x00500ec0	gm_FindMarketObject	f3gm	shape	readable		
+exe	0x00501000	gm_FindPlayerBuilding	f3gm	byte	readable		
 exe	0x00501030	gm_BuildNext	f3gm	draft	readable	deep	
 exe	0x00501190	gm_BuildQuery	f3gm	shape	readable	deep	
 exe	0x005012b0	gm_FindFreeBuilding	f3gm	byte	readable		
@@ -3023,19 +3023,19 @@ exe	0x00501580	gm_CreateBuilding	f3gm	draft	readable	deep
 exe	0x00501b50	gm_BuildingMainObject	f3gm	draft	readable	deep	
 exe	0x00501ce0	gm_GetGebaeudeHauptraum	f3gm	byte	readable		
 exe	0x00501d80	gm_BuildingClass	f3gm	byte	readable		
-exe	0x00501e40	gm_NearestBuilding	f3gm	shape	draft		
+exe	0x00501e40	gm_NearestBuilding	f3gm	shape	readable		
 exe	0x00501f60	gm_NearestFreeBuilding	f3gm	byte	readable		
-exe	0x00502020	gm_FindBuildingById	f3gm	byte	draft		
+exe	0x00502020	gm_FindBuildingById	f3gm	byte	readable		
 exe	0x00502060	gm_FindBuildingKind	f3gm	shape	readable		
 exe	0x005020a0	gm_ListBuildingsOfType	f3gm	shape	readable		
 exe	0x005020e0	gm_MayTakeJob	f3gm	shape	readable		
 exe	0x005024f0	gm_IsType10	f3gm	byte	readable		
 exe	0x00502520	gm_IsHomeType	f3gm	byte	readable		
 exe	0x00502570	gm_GoodPicture	f3gm	byte	readable		
-exe	0x005029f0	gm_CollectSlotObject	f3gm	byte	draft		
+exe	0x005029f0	gm_CollectSlotObject	f3gm	byte	readable		
 exe	0x00502a60	gm_ShowSlotObjects	f3gm	byte	readable		
 exe	0x00502b60	gm_AssignBuilding	f3gm	byte	readable		
-exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	draft		
+exe	0x00502e30	gm_ShowBuildingObjects	f3gm	byte	readable		
 exe	0x00502eb0	gm_ListWorkers	f3gm	draft	readable	deep	
 exe	0x00502fd0	gm_SellBuilding	f3gm	byte	readable		
 exe	0x005031b0	gm_AllocRaum	f3gm	byte	readable		
