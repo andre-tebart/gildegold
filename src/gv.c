@@ -1360,14 +1360,16 @@ int gv_EntryIndex(char *r, int *e)
         return en - g->lists[3];
     return -1;
 }
-/* 0x4ef710, 1 when the +8 word of b is the +0x50 word of a and not 0x7fff */
+/* 0x4ef710, 1 when the entry b is held by the character a (GVENTRY.w08 == AICHAR.w050) and the holder is not 0x7fff */
 
 int gv_EntryHeldBy(char *a, char *b)
 {
-    short v;
+    AICHAR *ch = (AICHAR *)a;
+    GVENTRY *e = (GVENTRY *)b;
+    unsigned short v;
 
-    v = *(short *)(a + 0x50);
-    if (*(short *)(b + 8) == v && v != 0x7fff)
+    v = ch->w050;
+    if (e->w08 == v && v != 0x7fff)
         return 1;
     return 0;
 }
