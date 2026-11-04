@@ -415,7 +415,7 @@ local void pqdownheap(s, tree, k)
  *     The length opt_len is updated; static_len is also updated if stree is
  *     not null.
  */
-/* 0x466680 */
+/* 0x466680, computes the bit lengths of a tree in frequency order, clamps them at max_length, fixes an overflow by moving leaves and recounts opt_len / static_len */
 local void gen_bitlen(s, desc)
     deflate_state *s;
     tree_desc *desc;    /* the tree descriptor */
