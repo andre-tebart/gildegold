@@ -2371,75 +2371,77 @@ float gv_PreserveRate(char *o)
 /* 0x4f17f0, writes the graveyard record of the object o to the file f: +0, +4 (4 each), the four flag bytes +0x18 .. +0x1b, the zombie records (0x44 bytes: 4, 0x10, 0x10, 5, then six ints) of the
    kind's table 0x5ee074, then the graves (+0 +4 +8 short +10 short +0xc byte, and the index of the zombie record at +0x10) of the table 0x5ee064; 1 when all was written */
 
-int unk_Unk4f17f0(void *f, unsigned char *o)
+int gv_WriteGraveyard(void *f, unsigned char *o)
 {
-    char *g;
-    char *z;
+    AIBLD *bld = (AIBLD *)o;
+    GVYARD *g;
+    GVGRAVE *z;
+    GVENTRY *e;
     int i, n, idx;
 
-    g = *(char **)(o + 0x65);
+    g = bld->yard;
     if (g == 0)
         return 0;
-    if (UNK_FW(g, 4, 1, f) == 0)
+    if (UNK_FW(&g->id, 4, 1, f) == 0)
         return 0;
-    if (UNK_FW(g + 4, 4, 1, f) == 0)
+    if (UNK_FW(&g->kind, 4, 1, f) == 0)
         return 0;
-    if (UNK_FW(g + 0x18, 1, 1, f) == 0)
+    if (UNK_FW(&g->open[0], 1, 1, f) == 0)
         return 0;
-    if (UNK_FW(g + 0x19, 1, 1, f) == 0)
+    if (UNK_FW(&g->open[1], 1, 1, f) == 0)
         return 0;
-    if (UNK_FW(g + 0x1a, 1, 1, f) == 0)
+    if (UNK_FW(&g->open[2], 1, 1, f) == 0)
         return 0;
-    if (UNK_FW(g + 0x1b, 1, 1, f) == 0)
+    if (UNK_FW(&g->open[3], 1, 1, f) == 0)
         return 0;
-    z = *(char **)(g + 0x20);
+    z = g->graves;
     i = 0;
-    if (gv_GraveTotals[*(int *)(g + 4)] > 0) {
+    if (gv_GraveTotals[g->kind] > 0) {
         do {
-            if (UNK_FW(z, 4, 1, f) == 0)
+            if (UNK_FW(&z->id, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 4, 0x10, 1, f) == 0)
+            if (UNK_FW(z->first, 0x10, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x14, 0x10, 1, f) == 0)
+            if (UNK_FW(z->family, 0x10, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x24, 5, 1, f) == 0)
+            if (UNK_FW(z->traits, 5, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x2c, 4, 1, f) == 0)
+            if (UNK_FW(&z->v2c, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x30, 4, 1, f) == 0)
+            if (UNK_FW(&z->v30, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x34, 4, 1, f) == 0)
+            if (UNK_FW(&z->nameId, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x38, 4, 1, f) == 0)
+            if (UNK_FW(&z->sex, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x3c, 4, 1, f) == 0)
+            if (UNK_FW(&z->icon, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0x40, 4, 1, f) == 0)
+            if (UNK_FW(&z->year, 4, 1, f) == 0)
                 return 0;
             i++;
-            z += 0x44;
-        } while (i < gv_GraveTotals[*(int *)(g + 4)]);
+            z++;
+        } while (i < gv_GraveTotals[g->kind]);
     }
-    z = *(char **)(g + 0x1c);
+    e = g->entries;
     i = 0;
-    if (gv_EntryTotals[*(int *)(g + 4)] > 0) {
+    if (gv_EntryTotals[g->kind] > 0) {
         do {
-            if (UNK_FW(z, 4, 1, f) == 0)
+            if (UNK_FW(&e->size, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 4, 4, 1, f) == 0)
+            if (UNK_FW(&e->id, 4, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 8, 2, 1, f) == 0)
+            if (UNK_FW(&e->w08, 2, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 10, 2, 1, f) == 0)
+            if (UNK_FW(&e->until, 2, 1, f) == 0)
                 return 0;
-            if (UNK_FW(z + 0xc, 1, 1, f) == 0)
+            if (UNK_FW(&e->b0c, 1, 1, f) == 0)
                 return 0;
-            idx = (*(int *)(z + 0x10) - *(int *)(g + 0x20)) / 0x44;
+            idx = e->grave - g->graves;
             if (UNK_FW(&idx, 4, 1, f) == 0)
                 return 0;
             i++;
-            z += 0x14;
-        } while (i < gv_EntryTotals[*(int *)(g + 4)]);
+            e++;
+        } while (i < gv_EntryTotals[g->kind]);
     }
     return 1;
 }

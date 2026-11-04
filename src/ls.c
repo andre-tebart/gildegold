@@ -54,7 +54,7 @@ int gv_WriteCrimes();                     /* 0x4f28d0 */
 
 #define LS_W(p, sz) if (vfs_fwrite((p), (sz), 1, f) <= 0) return 0;
 #include "rd_types.h"                 /* G15BK */
-int unk_Unk4f17f0();                     /* 0x4f17f0 */
+int gv_WriteGraveyard();                     /* 0x4f17f0 */
 
 #define LS_R(p, sz) if (ls_Read((int)(p), (sz), 1, f) == 0) return 0;
 
@@ -503,7 +503,7 @@ int ls_WriteBuildings(int f)
                     LS_W(q + j + 0xd, 1)
                 }
             } else if (c == 'H' || c == 'I' || c == 'J') {
-                if (unk_Unk4f17f0(f, p) == 0)
+                if (gv_WriteGraveyard(f, p) == 0)
                     return 0;
             } else if (c == 'K' || c == 'L' || c == 'M') {
                 if (ahm_WriteRecord(f, p) == 0)
