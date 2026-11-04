@@ -1053,9 +1053,13 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 typedef struct AICHARREC {         /* the character record fields this unit reads (ai_char.h AICHAR, same layout;
                                       G8CHARREC below is the view of the news messages) */
     unsigned short id;             /* 0x000, the character's id (AIBLD.owner refers to it) */
-    char pad002[0x164];
+    char pad002[0xb];
+    unsigned char b00d;            /* 0x00d, 1 .. 2 (ai_char.h AICHAR.b00d, gv.c copies it to the grave's v30) */
+    char pad00e[0x158];
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
-    char pad167[0xb5];
+    char pad167[0x61];
+    unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
+    char pad1cc[0x50];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
 #pragma pack(pop)
 
@@ -8297,7 +8301,7 @@ int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunF
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
 void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
-void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_Unk5a07d0(); void ai_Unk5a18d0();
+void ai_Unk5a1a60(); void ai_Unk5a36c0(); void ai_LawBookContact(); void ai_Unk5a18d0();
 void ai_Unk5a1960(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_Unk5a2de0(); void ai_TownHallContact();
@@ -8878,7 +8882,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0xf2: ai_Unk5a2de0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf7: ai_Unk5a36c0(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x10e: ai_TownHallContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x110: ai_Unk5a07d0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x110: ai_LawBookContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x114: ai_TownCashContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x118: ai_PerfumeryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x120: ai_Unk599af0(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -9363,7 +9367,7 @@ void ai_TownHallContact(void)
    message 0x69 to every other kind 6 / 7 character of the town, the text 0x19ff via 0x521150 and the event
    0x576040 (0x2e, 0, 0 / 1); the pump 0x5309a0 (0x59fe40, 0x677c7) */
 
-void ai_Unk59fe40(int param_1)
+void ai_CitizenRightWindow(int param_1)
 {
     char msg[0x200];
     char text[0x100];
@@ -9409,7 +9413,7 @@ void ai_Unk59fe40(int param_1)
             }
             U_I((unsigned)&sv_PopRequest) = 1;
         }
-        if (sv_RunFrame(ai_Unk59fe40, 0x677c7) == 0)
+        if (sv_RunFrame(ai_CitizenRightWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -9420,7 +9424,7 @@ void ai_Unk59fe40(int param_1)
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
 int ai_Unk5bea50(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
-int ai_AmountRowStatus(); int ai_AmountRow(); int ai_Unk5c2160(); int ai_AmountLimit();
+int ai_AmountRowStatus(); int ai_AmountRow(); int ai_OpenLawBook(); int ai_AmountLimit();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
@@ -9541,7 +9545,7 @@ int ai_Unk5a0220(int param_1, unsigned int param_2)
    and per town a button 0x515960 (0x1a04, town + 0x253) 0x475b80; a click on a town opens 0x5a0220 (the
    player, town + 3) and the text 0x14409f4 on success; the pump 0x5309a0 (0x5a0590, 0x677c7) */
 
-void ai_Unk5a0590(void)
+void ai_OfficeApplicationWindow(void)
 {
     int list[18];
     int ctls[6];
@@ -9606,20 +9610,20 @@ void ai_Unk5a0590(void)
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk5a0590, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_OfficeApplicationWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_CameraFollow();
             return;
         }
     }
 }
-/* 0x5a07d0, the law book / application listener of the town hall (384 B): the pump 0x5309a0 (0x5a07d0,
-   0x67fff); the flags 0x576410 (0x1000: the three "ob_GESETZBUCH_*" 0x143f190 / 0x143f194 / 0x143f18c,
-   0x8000: "contact_BEWERBEN" 0x14420e0, 0x2000 with the player's flag +0x1c8 & 0x4000 and the byte
-   0x770b8d == 1: "contact_BUERGERRECHT" 0x14420e8); the clicks open 0x5c2160 (0x112 / 0x111 / 0x113), the
-   citizen right 0x59fe40 (param_1) or the application 0x5a0590 */
+/* 0x5a07d0, the law book / application listener of the town hall (381 B): the pump 0x5309a0 (0x5a07d0,
+   0x67fff); the flags 0x576410 (0x1000: the three "ob_GESETZBUCH_*" texts 0x13f4 / 0x13f5 / 0x13f3,
+   0x8000: "contact_BEWERBEN" text 0x1fc8, 0x2000 with the player's powerFlags 0x4000 and the byte b00d == 1:
+   "contact_BUERGERRECHT" text 0x1fca); the clicks open the law book (0x112 / 0x111 / 0x113), the citizen
+   right 0x59fe40 (bld) or the application 0x5a0590 */
 
-void ai_Unk5a07d0(int param_1)
+void ai_LawBookContact(AIBLD *bld)
 {
     int steuern = 0;
     int strafrecht = 0;
@@ -9629,38 +9633,38 @@ void ai_Unk5a07d0(int param_1)
     int c;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk5a07d0, 0x67fff) != 0) {
+    while (sv_RunFrame(ai_LawBookContact, 0x67fff) != 0) {
         if (ai_RunAllowsContact(0x1000) == 1) {
-            steuern = sv_RegisterNamePlate("ob_GESETZBUCH_STEUERN", U_I((unsigned)&full_data_143f190), 0xc);
-            strafrecht = sv_RegisterNamePlate("ob_GESETZBUCH_STRAFRECHT", U_I((unsigned)&full_data_143f194), 0xc);
-            verfassung = sv_RegisterNamePlate("ob_GESETZBUCH_VERFASSUNG", U_I((unsigned)&full_data_143f18c), 0xc);
+            steuern = sv_RegisterNamePlate("ob_GESETZBUCH_STEUERN", txt_Ptrs[0x13f4], 0xc);
+            strafrecht = sv_RegisterNamePlate("ob_GESETZBUCH_STRAFRECHT", txt_Ptrs[0x13f5], 0xc);
+            verfassung = sv_RegisterNamePlate("ob_GESETZBUCH_VERFASSUNG", txt_Ptrs[0x13f3], 0xc);
         } else {
             verfassung = 0;
             strafrecht = 0;
             steuern = 0;
         }
         if (ai_RunAllowsContact(0x8000) == 1)
-            bewerben = sv_RegisterNamePlate("contact_BEWERBEN", U_I((unsigned)&full_data_14420e0), 0x16);
+            bewerben = sv_RegisterNamePlate("contact_BEWERBEN", txt_Ptrs[0x1fc8], 0x16);
         else
             bewerben = 0;
-        if ((U_I(((unsigned)&ai_Selected + 0x40) + U_W((unsigned)&ai_PlayerId) * 0x21c) & 0x4000) == 0 ||
-            *(unsigned char *)(((unsigned)&ai_Unk770b89 + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 1 ||
+        if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x4000) == 0 ||
+            ((AICHARREC *)ai_Chars)[ai_PlayerId].b00d != 1 ||
             ai_RunAllowsContact(0x2000) != 1)
             recht = 0;
         else
-            recht = sv_RegisterNamePlate("contact_BUERGERRECHT", U_I((unsigned)&full_data_14420e8), 0x16);
-        c = U_I((unsigned)&ai_ClickedObject);
+            recht = sv_RegisterNamePlate("contact_BUERGERRECHT", txt_Ptrs[0x1fca], 0x16);
+        c = ai_ClickedObject;
         if (c != 0) {
             if (c == steuern)
-                ai_Unk5c2160(0x112);
+                ai_OpenLawBook(0x112);
             else if (c == strafrecht)
-                ai_Unk5c2160(0x111);
+                ai_OpenLawBook(0x111);
             else if (c == verfassung)
-                ai_Unk5c2160(0x113);
+                ai_OpenLawBook(0x113);
             else if (c == recht)
-                ai_Unk59fe40(param_1);
+                ai_CitizenRightWindow(bld);
             else if (c == bewerben)
-                ai_Unk5a0590();
+                ai_OfficeApplicationWindow();
         }
     }
 }
@@ -17761,7 +17765,7 @@ void ai_Unk5c2410();
    (0x62d284) + 0x475b80; the click opens 0x5c2410 (base 0x1452 / 0x142a / 0x13fd + i * 5, the kind text of
    the record 0x4f2720 +0x18 by the byte +1: 0 / +0x13dd / +0x13e6 / +0x13ec); the pump 0x5309a0 (this,
    0x677c7) and 0x52f530 / 0x52d7a0 at the end */
-int ai_Unk5c2160(int param_1)
+int ai_OpenLawBook(int param_1)
 {
     int win;
     int page;
@@ -17847,7 +17851,7 @@ int ai_Unk5c2160(int param_1)
         sv_UpdateBook(win);
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_Unk5c2160, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_OpenLawBook, 0x677c7) == 0) {
             sv_CloseBook(win);
             sv_CameraFollow();
             return 0;
