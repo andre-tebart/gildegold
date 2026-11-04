@@ -13811,26 +13811,26 @@ void *ai_ProdSetting(int param_1)
 /* 0x5a86c0, the setting removed by the good (75 B): the list 0x6f26c0 is relinked and the record 0x422620
    freed; -1 when the good is not in the list */
 
-int ai_FreeProdSetting(int param_1)
+int ai_FreeProdSetting(int good)
 {
-    int *prev;
-    int *p;
+    G8SETTING *prev;
+    G8SETTING *s;
 
     prev = 0;
-    p = (int *)*(int *)((unsigned)&full_data_6f26c0);
-    while (p != 0) {
-        if (*p == param_1)
+    s = ai_Settings;
+    while (s != 0) {
+        if (s->good == good)
             break;
-        prev = p;
-        p = (int *)p[0x12];
+        prev = s;
+        s = s->next;
     }
-    if (p == 0)
+    if (s == 0)
         return -1;
     if (prev != 0)
-        prev[0x12] = p[0x12];
+        prev->next = s->next;
     else
-        *(int *)((unsigned)&full_data_6f26c0) = p[0x12];
-    mem_Free((int)p);
+        ai_Settings = s->next;
+    mem_Free(s);
     return 0;
 }
 /* 0x5a8710, a weight added to one good of a setting (306 B): the record of 0x5a84b0 (the base record +4 of
