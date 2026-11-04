@@ -29,6 +29,7 @@
 #define cm_SendExSetHEI ((void (*)(int, void *))cm_SendExSetHE)  /* 0x4c4c60 (cm.h: unsigned char k): @original the callers push the key as an int (byte-matched ai_Unk4b8c80) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define AI_PARTNER_FILTER_MINOR_SERVANT 0x600c00  /* the ai_PassesPartnerFilter bits of the 0x15 / 0x16 messages: underage (0x400), office +0x166/+0x169 (0x800), kind 5 (0x200000) or works for a master (0x400000) */
+#define AI_PARTNER_FILTER_MINOR_SERVANT_MALE 0x600c01  /* as AI_PARTNER_FILTER_MINOR_SERVANT and a male candidate: bit 0 rejects sex 1 (AICHAR.sex 0 male / 1 female) */
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -527,9 +528,10 @@ int ai_MsgPartnerRelation6to14Type16(G14MSG *m)
     he_ShowNews(c->netId, c->netId, buf, strlen(buf) > 0x100, 0x603, 0);
     return 0;
 }
-/* 0x4b7ac0, message: as 0x4b78c0 (33..100, 6..18) */
+/* 0x4b7ac0, message 0x17: as 0x4b79c0 (liking 33..100) but the partner must be male, and the relation rises
+   by 6..18 */
 
-int ai_Unk4b7ac0(G14MSG *m)
+int ai_MsgPartnerRelation6to18Type17(G14MSG *m)
 {
     AICHAR *c, *p;
     unsigned short id;
@@ -539,7 +541,7 @@ int ai_Unk4b7ac0(G14MSG *m)
     c = gm_FindChar(m->id);
     if (c == 0)
         return 1;
-    fl = (unsigned)&full_data_600c01;
+    fl = AI_PARTNER_FILTER_MINOR_SERVANT_MALE;
     if (!ai_FindPartnersRandomWalk((AIPER *)c, 1, &fl, 33.0f, 100.0f, &id))
         return 0x400;
     p = &ai_CharsT[id];
@@ -1941,7 +1943,7 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgRewardPct1to3Type68, ai_MsgPayPct2to4, ai_MsgPayPct125, ai_MsgPayPctOver120,
     ai_MsgPayPct1to3Type0c, ai_MsgPayPct2to4Type0d, ai_MsgPayPct1to2Type0e, ai_MsgPayPct1to4Type0f,
     ai_MsgPayPct1to4OfficeType10, ai_MsgPayPct1to3BuildingType11, ai_MsgPayPct1to2Type1213, ai_MsgPayPct1to2Type1213,
-    ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_Unk4b7ac0,
+    ai_MsgPayPct1to3Count2to16Type14, ai_MsgPartnerRelation4to10Type15, ai_MsgPartnerRelation6to14Type16, ai_MsgPartnerRelation6to18Type17,
     ai_Unk4b7bc0, ai_Unk4b7d80, ai_Unk4b7f40, ai_Unk4b8060,
     ai_Unk4b81a0, ai_Unk4b82c0, ai_Unk4b84b0, ai_Unk4b86c0,
     ai_Unk4b8870, ai_Unk4b8950, ai_Unk4b8a10, ai_MsgJobTime,
