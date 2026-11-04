@@ -24,8 +24,7 @@
    Open: data: the unit's .rdata block 0x5eec60..0x5eed70 is typed up to ai_CannonZoomRange (0x5eec6c .. 0x5eecac:
    const data, the original loads it); 0x5eec64 / 0x5eec68 / 0x5eec8c / 0x5eec90 (0x54, the recoil time the code
    uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecf0 are not declared yet (the
-   grave size tables 0x5eecb0 .. 0x5eecef are; ai_TutorialInitChapter2's byte match flips with the declaration
-   set, a VC6 tie-break).
+   grave size tables 0x5eecb0 .. 0x5eecef are).
    Open: data: ai_DragWindow (0x62a8cc) lies in this unit's .data block between its literals and next to
    ai_DragObj / ai_DragViewWin, but sv.c defines it (sv.h declares it; sv.c and unk_58bbd0.c use it): owner
    unk_575860 or sv.

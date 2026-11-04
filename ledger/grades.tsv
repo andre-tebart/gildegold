@@ -3174,8 +3174,8 @@ exe	0x0050cd40	gm_JobCost	f3gm	byte	readable
 exe	0x0050cdc0	gm_StaffFactor	f3gm	shape	readable		
 exe	0x0050cf60	gm_BathObjectCount	f3gm	byte	readable		
 exe	0x0050cfd0	gm_CurseObjectCount	f3gm	byte	readable		
-exe	0x0050d060	gm_Unk50d060	f3gm	byte	draft		
-exe	0x0050d0b0	gm_CurseTargetCount	f3gm	byte	draft		
+exe	0x0050d060	gm_TrialBuildingKind	f3gm	byte	readable		
+exe	0x0050d0b0	gm_CurseTargetCount	f3gm	byte	readable		
 exe	0x0050d100	init_SceneNameToPrototype	f3init	shape	readable		
 exe	0x0050d350	init_SceneObjectDestroyCB	f3init	byte	readable		
 exe	0x0050d380	init_HookObject	f3init	byte	draft	deep	
@@ -3938,9 +3938,9 @@ exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	readable
 exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	readable		
 exe	0x00576040	ai_CampaignStep	unk_575860	draft	readable	deep	
 exe	0x00576340	ai_ScriptQuery	unk_575860	byte	readable		
-exe	0x005763c0	ai_RunAllows	unk_575860	byte	draft		
-exe	0x00576410	ai_Unk576410	unk_575860	byte	draft		
-exe	0x00576460	ai_Unk576460	unk_575860	byte	draft		
+exe	0x005763c0	ai_RunAllows	unk_575860	byte	readable		
+exe	0x00576410	ai_RunAllowsContact	unk_575860	byte	readable		
+exe	0x00576460	ai_RunAllowsWindow	unk_575860	byte	readable		
 exe	0x00576490	ai_TutorialQueryDefault	unk_575860	byte	readable		
 exe	0x005764b0	ai_QueryDefault	unk_575860	byte	readable		
 exe	0x00576500	ai_QueryBuilding0f	unk_575860	byte	readable		
@@ -3950,9 +3950,9 @@ exe	0x00576600	ai_QueryChapter2Step5	unk_575860	byte	readable
 exe	0x00576640	ai_QueryChapter2Step6	unk_575860	byte	readable		
 exe	0x00576680	ai_QueryChapter2Step7	unk_575860	byte	readable		
 exe	0x005766d0	ai_StepChapter1Step5	unk_575860	byte	readable		
-exe	0x005767d0	ai_StepChapter1Step10	unk_575860	shape	draft		
-exe	0x00576830	ai_StepChapter2Step1	unk_575860	shape	draft		
-exe	0x005768a0	ai_HookChapter2Step2	unk_575860	byte	draft		
+exe	0x005767d0	ai_StepChapter1Step10	unk_575860	byte	readable		
+exe	0x00576830	ai_StepChapter2Step1	unk_575860	byte	readable		
+exe	0x005768a0	ai_HookChapter2Step2	unk_575860	byte	readable		
 exe	0x005768d0	ai_StepChapter2Step2	unk_575860	shape	draft		
 exe	0x00576920	ai_StepChapter2Step3	unk_575860	shape	draft		
 exe	0x00576970	ai_StepChapter2Step4	unk_575860	shape	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	draft
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	draft		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		byte+readable -> shape+readable at 7337df53: include/ai_types.h gains the AIMSG aiMsg arm (int car 0x58, unsigned short type 0x5c) for the AI message 0x42, which removes the raw (unsigned short *)&msg.n store in ai_PostRandomMessages (Q4) and types the record a G14MSG points at; this function's byte match flips on that declaration-set change alone (its sibling ai_TutorialInitChapter3's debt item already records the same flip: its match is a VC6 tie-break, no evidence of the original's source) [waits for: the declaration set of include/ai_types.h settling (the AIMSG union arms)]
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		byte+readable -> draft+readable at a105a42a: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads), a declaration-set change in a header this unit includes (f3gm.h); the experiment falls shape -> draft (12 code hunks, 82 differing instructions) on that change alone, and the shape grade it held was itself a declared tie-break debt, so neither is evidence of the original's source [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
