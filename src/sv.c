@@ -1711,25 +1711,29 @@ int sv_IsCartAtDoor(char *g, unsigned char *o)
         return 1;
     return 0;
 }
-/* 0x524900, collects the image numbers for the character c into out[]: from the table 0x75ec98 (records of 8 words: [-6] the kind, [0] the first image, [1] the index of a short in the character's +0x17c record + 0xdf)
-   and the image of 0x4cda50 (+ 0xdf); returns the count */
+/* 0x524900, collects the state icon numbers of the character c into out[]: the icons sv_Activities holds for the
+   kind of c's job (SVGROUP.kind: the entry's icon, and, when the entry's valueOff is not -1, a short of the job
+   record at that offset + 0xdf), then cm_CharWeapon's image + 0xdf; returns the count. */
 
 int sv_CharStateIcons(char *c, int *out)
 {
-    unsigned char *r;
+    SVGROUP *job;
+    unsigned short *word;
     int n, i, *p;
     int *q;
 
-    r = *(unsigned char **)(c + 0x17c);
+    job = ((SVCHARREC *)c)->group;
     n = 0;
-    if (r != 0 && *r != 0) {
+    if (job != 0 && job->kind != 0) {
         i = 0;
         p = (int *)(unsigned)&sv_Activities[0].icon;
         for (; (int)p < (int)((unsigned)&sv_Activities[0].icon + 0x600); p += 8, i++) {
-            if (p[-6] == *r) {
+            if (p[-6] == job->kind) {
                 out[n++] = *p;
                 if (p[1] != -1) {
-                    out[n++] = *(unsigned short *)(r + ((int *)(unsigned)&sv_Activities[0].valueOff)[i * 8]) + 0xdf;
+                    /* the entry's valueOff: the offset of a short of the job record (0xac / 0xae / 0xbc) */
+                    word = (unsigned short *)((char *)job + ((int *)(unsigned)&sv_Activities[0].valueOff)[i * 8]);
+                    out[n++] = *word + 0xdf;
                     break;
                 }
             }
