@@ -1695,7 +1695,7 @@ void ai_HookChapter4Step(int arg)
 int ai_QueryChapter3Step2(int *p)
 {
     if (p[0] == 0x20) {
-        if (p[3] == 0x155 && U_I(S + 0x3c) == 3)
+        if (p[3] == 0x155 && ai_Tutorial->phase == 3)
             return 1;
         return 0;
     }
