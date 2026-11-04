@@ -228,4 +228,5 @@ extern const struct D3VECTOR ai_WimpelPos;  /* 0x5eec80, the wimpel's place on t
 extern const float ai_CannonSwitchMs;    /* 0x5eec94, the length of each half of the barrel switch (ms) */
 extern const float ai_CannonSwitchDist;  /* 0x5eec98, how far the cannon sinks back while the barrel switches */
 extern const float ai_CannonZoomRange;  /* 0x5eecac, the distance the zoom moves the camera out */
+extern unsigned char ai_TurnTable[0x4000];  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears at engine open (nothing else refers to it) */
 #endif

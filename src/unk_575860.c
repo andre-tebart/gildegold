@@ -570,7 +570,6 @@ extern GAPDATA full_data_62a870[];
 extern GAPDATA full_data_62a88c[];
 extern int gm_AllowAll;
 extern volatile unsigned long d3_Time;
-extern GAPDATA full_data_6f5f60[];
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int ai_DragWindow;
@@ -689,6 +688,7 @@ char *ai_DragPicked = 0;  /* 0x6f266c, the picked object (ai_PickedObject) the t
 int ai_DragCutscene = 0;  /* 0x6f2670, 1 while the tooltip view holds d2_CutsceneActive set */
 int ai_ScreenshotCount = 0;  /* 0x6f2674, the number of the next screenshot (gamedata/screenshots/gilde%04i.bmp, ai_SaveScreenshot) */
 AIBOOKMARK ai_Bookmarks[11] = { 0 };  /* 0x6f5ec0, the function-key building bookmarks (ai_BookmarksInit sets the keys F1 .. F11) */
+unsigned char ai_TurnTable[0x4000] = { 0 };  /* 0x6f5f60, the 0x4000-byte table ai_ClearTurnTable clears once at engine open; no other code refers to it (its role is taken from that function's name), it ends where ai_ShotTable starts */
 SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot results (the callback ai_ShotTableStore fills it, ai_ShotTableReset resets it) */
 
 #include "ls.h"
@@ -9888,7 +9888,7 @@ void ai_GraveyardChatter(char *unused)
 
 void ai_ClearTurnTable(void)
 {
-    memset((char *)(unsigned)&full_data_6f5f60, 0, 0x4000);
+    memset((char *)(unsigned)&ai_TurnTable, 0, 0x4000);
 }
 
 /* 0x587e00, the right-button tooltip handler: while the right button holds a d2 object (d2_RightHeldObj) it shows

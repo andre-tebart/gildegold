@@ -5867,7 +5867,6 @@ GAPDATA full_data_6f5ea8[24] = { 0 };  /* 0x6f5ea8 */
 GAPDATA full_data_6f5f44[4] = { 0 };  /* 0x6f5f44 */
 GAPDATA full_data_6f5f48[4] = { 0 };  /* 0x6f5f48 */
 GAPDATA full_data_6f5f4c[20] = { 0 };  /* 0x6f5f4c */
-GAPDATA full_data_6f5f60[16384] = { 0 };  /* 0x6f5f60 */
 GAPDATA full_data_6fa008[24] = { 0 };  /* 0x6fa008 */
 GAPDATA full_data_6fa060[128] = { 0 };  /* 0x6fa060 */
 GAPDATA full_data_6fa0e0[256] = { 0 };  /* 0x6fa0e0 */
