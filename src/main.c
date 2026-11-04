@@ -193,7 +193,7 @@ typedef struct MAINCHARNEW {        /* the AICHAR fields the character replaceme
 } MAINCHARNEW;
 #define main_BookObject (*(int *)((char *)&cm_RequestedSaveName + 0x44))  /* 0x6f2614, the book object "Buch" loaded at the game start (reasoned: a pointer-sized field after the 64-byte name and the int at +0x40) */
 #define main_LastLoadProgress (*(int *)((char *)&cm_RequestedSaveName + 0x40))  /* 0x6f2610, the last loading progress the callback drew (below the book object at +0x44) */
-extern GAPDATA full_data_75df20[];
+extern int main_SoundBanks[0x80];   /* 0x75df20 */
 extern char cm_RequestedSaveName[72];
 extern float gm_DayStartHours[], gm_DayEndHours[];  /* 0x617830 / 0x617840 (f3gm.c) */
 extern GAPDATA full_data_6f25c0[];
@@ -2987,17 +2987,18 @@ int main_PreloadSound(char *f)
 {
     int *slot;
     int *line;
-    char *fp, *q, *inc;
+    FILE *fp;
+    char *q, *inc;
     char buf[0x100];
     int i;
 
-    memset((char *)(unsigned)&full_data_75df20, 0, 0x200);
-    fp = (char *)fopen(f, "rt");
+    memset(main_SoundBanks, 0, sizeof(main_SoundBanks));
+    fp = fopen(f, "rt");
     if (fp == 0) {
         MessageBoxA(0, "main_PreloadSound(): Could not open sound-definition!", "Error", 0x30);
         return 0;
     }
-    slot = (int *)(unsigned)&full_data_75df20;
+    slot = main_SoundBanks;
     do {
         memset(buf, 0, 0x100);
         fgets(buf, 0x100, fp);
@@ -3016,10 +3017,10 @@ int main_PreloadSound(char *f)
             } else
                 *slot = sb_LoadSampleBank(q, 0);
             slot++;
-            if ((int)slot > (int)((unsigned)&ai_MissionSeed))
+            if ((int)slot > (int)&main_SoundBanks[0x80])
                 return 0;
         }
-        if ((*(unsigned char *)(fp + 0xc) & 0x10) != 0) {
+        if ((fp->_flag & 0x10) != 0) {
             fclose(fp);
             return 1;
         }
@@ -3031,12 +3032,12 @@ void main_FreeSoundBanks(void)
 {
     int *p;
 
-    p = (int *)(unsigned)&full_data_75df20;
+    p = main_SoundBanks;
     do {
         if (*p != 0)
             sb_UnloadSampleBank(*p);
         p++;
-    } while ((int)p < (int)((unsigned)&full_data_75df20 + 0x200));
+    } while ((int)p < (int)&main_SoundBanks[0x80]);
 }
 /* 0x537de0, "start of a game": resets the global state (0x6f2358 = 1, 0x6f2598 = 1 the round number, the day 0x770ae0 = 2, the quit flags 0x6f259c / 0x6f25a0 / 0x6f25ad), registers the tick callback 0x5315c0
    (0x42e970 (cb, 0x47) / 0x42ea10), starts the sound banks (natur\regen, wind, blitzunddonner, objekte\buecher, TuerenUndRaeume, Transporter, Lebewesen\schritte) when the sound is on, and
@@ -5886,7 +5887,7 @@ GAPDATA full_data_6faa64[28] = { 0 };  /* 0x6faa64 */
 HEEVSLOT he_EventSlots[16] = { 0 };  /* 0x6faa80, he.h: the event bar's 16 slots */
 /* full_data_6faa84 / 6faa88 / 6faa90: views of he_EventSlots */
 GAPDATA full_data_7585f4[12] = { 0 };  /* 0x7585f4 */
-GAPDATA full_data_75df20[512] = { 0 };  /* 0x75df20 */
+int main_SoundBanks[0x80] = { 0 };  /* 0x75df20, the loaded sample-bank handles (main_PreloadSound fills, main_FreeSoundBanks frees; the next object is ai_MissionSeed 0x75e120) */
 void * main_Instance = 0;  /* 0x75e140, its instance handle (HINSTANCE) */
 MAINFAMILY main_Family = { 0 };  /* 0x75e180, the character creation's family and talents */
 GAPDATA full_data_75e1ac[20] = { 0 };  /* 0x75e1ac */
