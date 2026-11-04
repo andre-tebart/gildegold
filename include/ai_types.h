@@ -33,7 +33,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
     int words14[12];                    /* 0x14, the message's 12 words from +0x10 */
     AITIME start;                       /* 0x44, the start time (sv_RefreshPanel measures the progress from it) */
     AITIME end;                         /* 0x52, the end time of the kinds whose length is fixed at the start (0x40, the building jobs 0x1e / 0x1f) */
-    char pad60[0x10];
+    AITIME clock60;                     /* 0x60, of a running income event 3 its second clock (the alloc handler 0x568ae0
+                                           sets it to the start clock with the due clock +0x52) */
+    char pad6e[2];
     int stage;                          /* 0x70, the stage the job has reached (sv_RefreshPanel shows progress only from a kind's timed stage on) */
     struct HEEVSLOT *slot;              /* 0x74, of an event shown in the event bar its slot (he.h he_EventSlots), 0: none */
     unsigned char opts;                 /* 0x78, the event's options from its message: 2 posts it when due, 4 not started yet,
@@ -68,6 +70,10 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         int partner2;                   /* 0xb0, of a pair event the second partner's netId */
         int id2;                        /* 0xb0, a second id: a building (kind 100) or a character (kind 0x89) as
                                            sv_SpeakPicked looks them up */
+        int effectObj;                  /* 0xb0, of an effect event 0x76 the effect object's handle, 0: none yet (its
+                                           alloc handler 0x54fb50 clears it) */
+        int dropSlot;                   /* 0xb0, of a promotion event 0x32 the cm slot handle gm_DropRank leaves, -1: none
+                                           (its alloc handler 0x55dd70 sets -1) */
     };
     union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
         struct {
@@ -92,6 +98,10 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
         struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
         struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */
+        struct { char padsteps[6]; unsigned char steps; };  /* 0xba, of a next trial step event 0x5f its step count
+                                                      (its alloc handler 0x5496f0 clears it) */
+        struct { char padeff[0xe]; unsigned short effectGood; };  /* 0xc2, of an effect event 0x76 the Domizil table id
+                                                      (ai_FindUsableGood) whose duration sets its end time end6c */
         struct { char padb8[4]; unsigned char rounds; };  /* 0xb8, of a trial event 0x5e the round counter (he.c 0x549430:
                                                       1 at the first round, the third one moves the event to the state 1) */
         struct { char padidbc[8]; int idbc; };      /* 0xbc, a kind-specific id: of a kind 4 a building (shown with an exclamation mark

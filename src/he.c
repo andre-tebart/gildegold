@@ -300,6 +300,28 @@ int gm_CompareTime();
 #include "f3gm_types.h"              /* GMGOOD / GM_GOOD (the goods prototypes) */
 #include "gv_types.h"
 #include "ch.h"
+#include "am_types.h"
+typedef union HEPAYLOAD {               /* the kind-specific words of an event from AIJOB +0xac (its id union u) on, of the kinds
+                                           whose words run over AIJOB's unions there */
+    struct {                            /* a storm event 0x50 (the alloc handler 0x5652b0, the run handler 0x565410) */
+        int blds[16];                   /* 0xac, the ids of the 16 buildings the alloc handler collected, -1: none */
+        unsigned char due;              /* 0xec, set by the alloc handler: the run handler damages them once, then clears it */
+    } storm;
+    struct {                            /* a six-group event 0x7d (the alloc handler 0x551d00, the run handler 0x551d70) */
+        int padac;
+        int groups[6];                  /* 0xb0, its six figure groups (gm_Shuffled, each + 1) */
+    } six;
+    struct {                            /* a running income event 3 (the alloc handler 0x568ae0, the run handler 0x568be0) */
+        unsigned short good;            /* 0xac, the goods (an ai_Goods index) */
+        char padae[2];
+        int amount;                     /* 0xb0, the stock amount the run handler pays out: the goods' work time */
+        float amountF;                  /* 0xb4, the same as a float */
+        int bld;                        /* 0xb8, the building whose group its workers join */
+        char padbc[8];
+        float rate;                     /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
+        unsigned char counter;          /* 0xc8, 0 at the start */
+    } income;
+} HEPAYLOAD;
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -3919,7 +3941,6 @@ void he_Unk549430(int ev)
 void he_StartNextTrialStep(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    unsigned char *stepCount = (unsigned char *)e + 0xba;  /* the byte in the event's word unkb8 that counts its rounds */
     AIJOB *found = (AIJOB *)he_FindEvent(2, 0, 0x5f, 2, e->chr);
 
     if (found != 0) {
@@ -3934,7 +3955,7 @@ void he_StartNextTrialStep(int ev)
         } while (found != 0);
     }
     e->stage = 0;
-    *stepCount = 0;
+    e->steps = 0;
 }
 /* 0x549770, a Ghidra miss (disassembled): the run handler of the next trial step for the player (word +8): state 0 shows the news 0x1a9f to the figure +0xac and raises the 0x506430 counter (+0x64); state 1 spends the 0x5d08c0 of +0xb8 / +0xb9, shows 0x1a9e, counts +0xba (5 rounds end it) and pays the cost -+0xb4 (0x53eec0) (ROUGH) */
 
@@ -6118,19 +6139,15 @@ void ai_Unk4c5b90(int a);
 void he_StartEffectEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    unsigned short *goodId = (unsigned short *)((char *)e + 0xc2);  /* the effect word, a Domizil table id */
-    int *handle = (int *)((char *)e + 0xb0);                        /* the effect object's handle, 0: none yet */
     AIBLD *bld;
-    int *duration;
-    int r;
+    G9DOMIZIL *d;
 
     gm_FindById((int *)&bld, 0, 0, e->bldId);
-    if (bld != 0 && bld->object != 0 && (r = ai_FindUsableGood(*goodId)) != 0) {
-        duration = (int *)(r + 4);
-        if (*duration != 0) {
+    if (bld != 0 && bld->object != 0 && (d = (G9DOMIZIL *)ai_FindUsableGood(e->effectGood)) != 0) {
+        if (d->minutes != 0) {
             e->end6c = ai_Time;
-            gm_AddTime(&e->end6c, 0, *duration, 0);
-            *handle = 0;
+            gm_AddTime(&e->end6c, 0, d->minutes, 0);
+            e->effectObj = 0;
             e->stage = 0;
             return;
         }
@@ -8565,11 +8582,10 @@ void he_InitSixGroupEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     int i;
-    int *p = (int *)(ev + 0xb0);
     int *q;
 
-    gm_Shuffled(6, p);
-    for (q = p, i = 0; i < 6; i++)
+    gm_Shuffled(6, ((HEPAYLOAD *)&e->u)->six.groups);
+    for (q = ((HEPAYLOAD *)&e->u)->six.groups, i = 0; i < 6; i++)
         *q++ += 1;
     e->end = ai_Time;
     e->stage = 0xc;
@@ -11660,7 +11676,6 @@ void he_AllocEvent32(int ev)
     AIJOB *j = (AIJOB *)ev;
     AIJOB *e;
     AICHAR *p;
-    int *dropSlot = (int *)((char *)j + 0xb0);  /* the cm slot handle gm_DropRank leaves in the event's word at +0xb0, -1: none */
 
     for (e = (AIJOB *)he_FindEvent(1, 0, 0x32); e != 0; e = (AIJOB *)he_NextEvent()) {
         if (e != j && e->ownerCh == j->ownerCh) {
@@ -11668,7 +11683,7 @@ void he_AllocEvent32(int ev)
             return;
         }
     }
-    *dropSlot = -1;
+    j->dropSlot = -1;
     j->end = ai_Time;
     gm_AddTime(&j->end, 0, 0, 1);
     p = (AICHAR *)gm_FindChar(j->ownerCh);
@@ -12391,8 +12406,8 @@ void he_RunStormEvent(int ev)
         AIBLD *b;
         int *bldIds;
 
-        if ((e->opts & 2) != 0 && e->pade8[4] != 0) {   /* pade8[4] = +0xec, the flag the alloc handler set */
-            bldIds = (int *)((char *)e + 0xac);         /* the 16 building ids the alloc handler collected */
+        if ((e->opts & 2) != 0 && ((HEPAYLOAD *)&e->u)->storm.due != 0) {
+            bldIds = ((HEPAYLOAD *)&e->u)->storm.blds;
             n = 0x10;
             do {
                 if (*bldIds != -1 && (b = (AIBLD *)gm_BuildQuery(1, 1, *bldIds)) != 0) {
@@ -12402,7 +12417,7 @@ void he_RunStormEvent(int ev)
                 bldIds++;
                 n--;
             } while (n != 0);
-            e->pade8[4] = 0;
+            ((HEPAYLOAD *)&e->u)->storm.due = 0;
         }
         he_FreeEvent((int *)ev);
         return;
@@ -13648,27 +13663,21 @@ float gm_MeanLiking(int c, int n, int *ids);
 void he_AllocIncomeEvent(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    unsigned short *goodsId = (unsigned short *)((char *)e + 0xac);   /* the goods index, AIJOB's +0xac word */
-    int *amount = (int *)((char *)e + 0xb0);    /* the stock amount the run handler pays out */
-    float *amountF = (float *)((char *)e + 0xb4);
-    AITIME *clock2 = (AITIME *)((char *)e + 0x60);  /* the second clock (AIJOB's +0x60 padding, an AITIME copy) */
-    int *bldId = (int *)((char *)e + 0xb8);
-    float *rate = (float *)((char *)e + 0xc4);
-    unsigned char *counter = (unsigned char *)e + 0xc8;
+    HEPAYLOAD *pay = (HEPAYLOAD *)&e->u;
     AIBLD *b;
     AICHAR *rec;
     double d;
     int v;
 
-    v = (int)GM_GOOD(*goodsId)->workTime;
-    *amount = v;
+    v = (int)GM_GOOD(pay->income.good)->workTime;
+    pay->income.amount = v;
     e->end = e->start;
-    *amountF = (float)v;
-    *clock2 = e->start;
+    pay->income.amountF = (float)v;
+    e->clock60 = e->start;
     d = gm_MeanLiking(e->chr, 8, e->ids) - 0.5;
-    *counter = 0;
-    *rate = (float)(d * 0.25);
-    b = (AIBLD *)gm_FindBuildingById(*bldId);
+    pay->income.counter = 0;
+    pay->income.rate = (float)(d * 0.25);
+    b = (AIBLD *)gm_FindBuildingById(pay->income.bld);
     for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
         if (rec->job == e)
             sv_MoveToGroup((unsigned char *)b, 0, rec->id, (char *)ev);

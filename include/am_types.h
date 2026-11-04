@@ -1,8 +1,18 @@
 /* The item group record of f3gm.c's table gm_BuildingItemGroups (G7GRP) and the action record of am.c's
-   ai_Actions (AIACT), for the units that declare or define them without the rest of am.h: types only.
+   ai_Actions (AIACT), the Domizil table entry (G9DOMIZIL, he.c reads its duration), for the units that declare
+   or define them without the rest of am.h: types only.
    am.h includes it. */
 #ifndef AM_TYPES_H
 #define AM_TYPES_H
+
+typedef struct G9DOMIZIL {              /* 0x1c bytes, an entry of the Domizil table 0x62c420 (ai_FindUsableGood returns it) */
+    int id;                             /* 0x00, the good, 0 ends the table */
+    int minutes;                        /* 0x04, the duration of its effect in minutes (he.c 0x54fb50 adds it to the clock
+                                           with gm_AddTime's minute argument), 0: none */
+    char pad08[8];
+    unsigned int mask;                  /* 0x10, tested against the character's goodsMask (0x1ec) */
+    char pad14[8];
+} G9DOMIZIL;
 
 #pragma pack(push, 1)
 typedef struct G7GRP {                  /* 0x15 bytes, the item groups at 0x61a348 */
