@@ -1,7 +1,8 @@
-/* unk_4b6480.c -- message callbacks: each one writes text 0x12e7 + type for a character and sends it (0x53dda0);
-   called through the table ai_Unk602570 by 0x4bb6c0. Its .data (the table) follows unk_4b39f0.c's literals; unit
-   start and name are guesses (no module tag; could be the missions' tail). Names are ours. Ends before 0x4bb810,
-   anm.c's first user of "anm:animals".
+/* unk_4b6480.c -- the AI's message callbacks (G14MSG, m->type 0 .. 0x44): each one writes text 0x12e7 + type for a
+   character and sends it (0x53dda0); named ai_Msg<effect>TypeNN. Called through the table ai_Unk602570 by
+   0x4bb6c0 (from the 8th day on). Its .data (the table) follows unk_4b39f0.c's literals; unit start and name are
+   guesses (no module tag; could be the missions' tail). Names are ours. Ends before 0x4bb810, anm.c's first user
+   of "anm:animals".
    Open: 0x4bb720 (posts random message types as AIMSG 0x42) / 0x4bb7d0 (LCG, seed 0x6f0730) may be anm.c's.
    unit of rea 8cef7d5b (src/game/unk_4b6480.c); boundaries in decl/text.dcl */
 #include <string.h>
