@@ -1130,23 +1130,21 @@ int ai_ScriptQuery(int a, int b, int c, int d)
     args[3] = d;
     return ai_Tutorial->run->query(args);
 }
-/* 0x5763c0, 1 when the run record's word +0x68 has a bit of `mask` (the run mask), else 0; 1 while 0x6f265c is 0
-   and when there is no run record, 0 in the mode 2 / state 5 and while a transition 0x6333e0 is pending */
+/* 0x5763c0, 1 when the current run record's allow mask (TUTRUN.allowMask) has a bit of `mask`, else 0; 1 while
+   the tutorial is off (ai_TutorialOn) and when the state record holds no run, 0 in the phase 2 or the state 5 and
+   while the time base is paused (tb_Paused) */
 
 int ai_RunAllows(int mask)
 {
-    char *st;
-
     if (!ai_TutorialOn)
         return 1;
-    st = S;
-    if (*(int *)(st + 0x3c) == 2 || U_I(st) == 5)
+    if (ai_Tutorial->phase == 2 || ai_Tutorial->state == 5)
         return 0;
-    if (!*(int *)(st + 0x18))
+    if (!ai_Tutorial->run)
         return 1;
-    if (U_I((unsigned)&tb_Paused))
+    if (tb_Paused)
         return 0;
-    return (*(int *)(*(char **)(st + 0x18) + 0x68) & mask) != 0;
+    return (ai_Tutorial->run->allowMask & mask) != 0;
 }
 /* 0x576410, the same predicate as 0x5763c0 on the run record's word +0x6c */
 
