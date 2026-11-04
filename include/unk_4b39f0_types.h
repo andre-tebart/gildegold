@@ -10,7 +10,8 @@ typedef struct G13MIS {                 /* 0x24 bytes, ai_Missions[0x80], the ru
     int owner;                          /* 0x04, a character id */
     AITIME time;                        /* 0x08, when it was given */
     short pad16;
-    int unk18;                          /* 0x18 */
+    int v18;                            /* 0x18, zeroed at the start of a mission and saved / loaded; no reader
+                                           in the build */
     int progress;                       /* 0x1c, the events counted for the mission so far (ai_CountMissionEvent);
                                            the types 11 / 19 / 23 / 28 / 40 compare it with the type's goal */
     unsigned char fulfilled;            /* 0x20, 1 once the mission's condition holds (he.c 0x56ce40 sets it

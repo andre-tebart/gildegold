@@ -58,14 +58,7 @@ G13MIS *ai_FindOwnerMission(G13MIS *m)
     }
     return 0;
 }
-/* 0x4b3a90, restarts the running mission of m's owner now
-   @hard read in full, byte-exact against the original (ai_FindOwnerMission, ai_Time into e->time, then
-   0x18 / progress / fulfilled = 0); the only open gate is Q2 on G13MIS.unk18 (unk_4b39f0_types.h, a shared
-   type he.c reads at 0x56ce40; a field rename is manual): it is written 0 here, in ai_NewMission (0x4b3ca0)
-   and ai_SetFirstMission (0x4b3bd0), saved and loaded (0x4b62e0 / 0x4b63b0), and read by no drafted function
-   and by no relocation to ai_Missions+0x18 (dcp phi 0xf82338: no object) -> a name would be invention, and its
-   rename is a shared-header decision. progress (0x1c: the events ai_CountMissionEvent counts, compared with
-   t->goal) and fulfilled (0x20: set by he.c once ai_IsMissionFulfilled holds) are named. */
+/* 0x4b3a90, restarts the running mission of m's owner now */
 
 void ai_RestartMission(G13MIS *m)
 {
@@ -73,7 +66,7 @@ void ai_RestartMission(G13MIS *m)
 
     if (e != 0) {
         e->time = ai_Time;
-        e->unk18 = 0;
+        e->v18 = 0;
         e->progress = 0;
         e->fulfilled = 0;
     }
@@ -1477,7 +1470,7 @@ int ai_SaveMissions(void *f)
             return 0;
         if (vfs_fwrite(&ai_Missions[i].time, 0x0e, 1, f) == -1)
             return 0;
-        if (vfs_fwrite(&ai_Missions[i].unk18, 4, 1, f) == -1)
+        if (vfs_fwrite(&ai_Missions[i].v18, 4, 1, f) == -1)
             return 0;
         if (vfs_fwrite(&ai_Missions[i].progress, 4, 1, f) == -1)
             return 0;
@@ -1505,7 +1498,7 @@ int ai_Unk4b63b0(void *f)
             return 0;
         if (!ls_Read(&ai_Missions[i].time, 0x0e, 1, f))
             return 0;
-        if (!ls_Read(&ai_Missions[i].unk18, 4, 1, f))
+        if (!ls_Read(&ai_Missions[i].v18, 4, 1, f))
             return 0;
         if (!ls_Read(&ai_Missions[i].progress, 4, 1, f))
             return 0;
