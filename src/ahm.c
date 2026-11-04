@@ -984,12 +984,12 @@ int ahm_AddPlace(int *p, char *rec, unsigned char *o)
     AHMORDER *m = (AHMORDER *)p;
     int i;
     AHMGOOD *sp;
-    int *q;
+    AHMSLOT *q;
 
-    q = (int *)(rec + 0xc);
+    q = r->slots;
     i = 0;
     do {
-        if (*q == 0) {
+        if (q->id == 0) {
             sp = (AHMGOOD *)gm_Query(obj->objs, 2, 6, 0, 0xff);
             if (net_Conn.s != INVALID_SOCKET)   /* a network game: the server's id counter wins */
                 ai_NextObjectId = m->nextObjectId;
@@ -1001,7 +1001,7 @@ int ahm_AddPlace(int *p, char *rec, unsigned char *o)
             return 1;
         }
         i++;
-        q += 2;
+        q++;
     } while (i < 6);
     return 0;
 }
@@ -1013,12 +1013,12 @@ int ahm_RemovePlace(int *p, char *rec, unsigned char *o)
     AHMREC *r = (AHMREC *)rec;
     int i;
     char *sp;
-    int *q;
+    AHMSLOT *q;
 
-    q = (int *)(rec + 0xc);
+    q = r->slots;
     i = 0;
     do {
-        if (*q == p[2]) {
+        if (q->id == p[2]) {
             sp = gm_Query(obj->objs, 2, 6, 0, 0xff);
             if (sp != 0)
                 gm_RemoveObject(sp + 0x14, p[2]);
@@ -1027,7 +1027,7 @@ int ahm_RemovePlace(int *p, char *rec, unsigned char *o)
             return 1;
         }
         i++;
-        q += 2;
+        q++;
     } while (i < 6);
     return 0;
 }
@@ -1151,75 +1151,65 @@ int ahm_DeleteAlchemist(int unused, int *rec, unsigned char *o)
 int ahm_WriteRecord(void *f, unsigned char *o)
 {
     AHMOBJ *obj = (AHMOBJ *)o;
-    int *r;
-    int rec[15];
+    AHMREC *r;
+    AHMREC blank;
     int i;
 
-    r = (int *)obj->rec;
-    memset(rec, 0, 0x3c);
-    rec[0] = -1;
+    r = obj->rec;
+    memset(&blank, 0, 0x3c);
+    blank.id = -1;
     if (r == 0)
-        r = rec;
-    if (vfs_fwrite(r, 4, 1, f) <= 0)
+        r = &blank;
+    if (vfs_fwrite(&r->id, 4, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite(r + 1, 4, 1, f) <= 0)
+    if (vfs_fwrite(&r->value, 4, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite(r + 2, 1, 1, f) <= 0)
+    if (vfs_fwrite(&r->share[0], 1, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite((char *)r + 9, 1, 1, f) <= 0)
+    if (vfs_fwrite(&r->share[1], 1, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite((char *)r + 10, 1, 1, f) <= 0)
+    if (vfs_fwrite(&r->share[2], 1, 1, f) <= 0)
         return 0;
-    if (vfs_fwrite((char *)r + 11, 1, 1, f) <= 0)
+    if (vfs_fwrite(&r->share[3], 1, 1, f) <= 0)
         return 0;
     for (i = 0; i < 6; i++) {
-        if (vfs_fwrite(r + 3 + i * 2, 4, 1, f) <= 0)
+        if (vfs_fwrite(&r->slots[i].id, 4, 1, f) <= 0)
             return 0;
-        if (vfs_fwrite(r + 4 + i * 2, 4, 1, f) <= 0)
+        if (vfs_fwrite(&r->slots[i].v, 4, 1, f) <= 0)
             return 0;
     }
     return 1;
 }
-/* 0x4ed040, reads the record of 0x4ecf10 from the file f into the object o (+0x65, allocated when missing); 1 when all was read @deep B3 draft, 136 differing instructions: the body was read against the original and is complete (the id, float, 4 share bytes, 6 place pairs and the record copy into the allocated +0x65 block; ls_Read is ls.c's 0x51c920). The hunks are the prologue (the original keeps the file in edi, ours in esi), the frame slots, and the return-0 block placement: the original inlines pop edi/pop esi/pop ebx/add esp,0x3c/ret after every failed read and skips it with jne, ours routes every return 0 to one shared out-of-line tail with je. Lead tried this session: the !ls_Read(...) form (compiles to the same 136 differing instructions - the source comparison is not the cause); the same family lesson from ahm_WriteRecord (0x4ecf10, escalated): the shared-tail / prologue difference is compiler block placement. */
+/* 0x4ed040, reads the record of 0x4ecf10 from the file f into the object o (+0x65, allocated when missing); 1 when all was read */
 
 int ahm_ReadRecord(void *f, unsigned char *o)
 {
     AHMOBJ *obj = (AHMOBJ *)o;
-    int rec[15];
+    AHMREC rec;
     int i;
-    int *s, *d;
 
-    if (ls_Read(&rec[0], 4, 1, f) == 0)
+    if (ls_Read(&rec.id, 4, 1, f) == 0)
         return 0;
-    if (ls_Read(&rec[1], 4, 1, f) == 0)
+    if (ls_Read(&rec.value, 4, 1, f) == 0)
         return 0;
-    if (ls_Read((char *)rec + 8, 1, 1, f) == 0)
+    if (ls_Read(&rec.share[0], 1, 1, f) == 0)
         return 0;
-    if (ls_Read((char *)rec + 9, 1, 1, f) != 0) {
-        if (ls_Read((char *)rec + 10, 1, 1, f) == 0)
+    if (ls_Read(&rec.share[1], 1, 1, f) == 0)
+        return 0;
+    if (ls_Read(&rec.share[2], 1, 1, f) == 0)
+        return 0;
+    if (ls_Read(&rec.share[3], 1, 1, f) == 0)
+        return 0;
+    for (i = 0; i < 6; i++) {
+        if (ls_Read(&rec.slots[i].id, 4, 1, f) == 0)
             return 0;
-        if (ls_Read((char *)rec + 11, 1, 1, f) != 0) {
-            i = 0;
-            d = &rec[3];
-            while (ls_Read(d - 1 + 0, 4, 1, f) != 0) {
-                if (ls_Read(d, 4, 1, f) == 0)
-                    return 0;
-                i++;
-                d += 2;
-                if (i > 5) {
-                    if (obj->rec == 0)
-                        obj->rec = mem_Alloc(0x3c, "ahm_AllocAhmInfo");
-                    s = rec;
-                    d = (int *)obj->rec;
-                    for (i = 15; i != 0; i--)
-                        *d++ = *s++;
-                    return 1;
-                }
-            }
-        }
-        return 0;
+        if (ls_Read(&rec.slots[i].v, 4, 1, f) == 0)
+            return 0;
     }
-    return 0;
+    if (obj->rec == 0)
+        obj->rec = mem_Alloc(0x3c, "ahm_AllocAhmInfo");
+    *obj->rec = rec;
+    return 1;
 }
 
 extern char ai_Chars[768][0x21c];
