@@ -1941,3 +1941,4 @@
 2026-11-04T17:31:53 0x004b9630 data ai_Unk4b9630 -> ai_MsgJobBothEndsType27 by:main why:message 0x27 of the callback table ai_Unk602570 (0x60260c): as the message 0x26 handler but without the item 0x290 check
 2026-11-04T17:32:29 0x004b9810 data ai_Unk4b9810 -> ai_MsgUnusedSlot by:main why:the callback of the table ai_Unk602570's unused slots (0x28 / 0x34..0x37): it only returns 0x400 (message not handled)
 2026-11-04T17:32:52 0x004b9820 data ai_Unk4b9820 -> ai_MsgJobEndDateType29 by:main why:message 0x29 of the callback table ai_Unk602570 (0x602614): as the message 0x24 handler, the text also gets tomorrow's date
+2026-11-04T17:33:26 0x004b9ab0 data ai_Unk4b9ab0 -> ai_MsgJobEndValueType2a by:main why:message 0x2a of the callback table ai_Unk602570 (0x602618): as the message 0x24 handler, the text also gets a 2..4 value
