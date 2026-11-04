@@ -1104,7 +1104,7 @@ local void bi_flush(s)
 /* ===========================================================================
  * Flush the bit buffer and align the output on a byte boundary
  */
-/* 0x467720 */
+/* 0x467720, flushes the last bits and aligns the output on a byte boundary */
 local void bi_windup(s)
     deflate_state *s;
 {
