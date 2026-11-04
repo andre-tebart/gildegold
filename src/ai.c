@@ -249,7 +249,7 @@ AICHAR *ai_FindPartner(AICHAR *c)
             cm_AddFieldDelta(1, 1, 0x214, &ai_RelationMemory[best][c->id]);
             cm_SendFieldDeltas();
             cm_SendRelations(ai_CharsT[best].netId, c->netId, 0, 2);
-            ai_Unk5a8f90(c, &ai_CharsT[best]);
+            ai_ShowFeudNews(c, &ai_CharsT[best]);
         }
         return 0;
     }
