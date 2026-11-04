@@ -1082,18 +1082,18 @@ int ai_EvalOwnTimeSlot(int a, AIPER *p)
 }
 /* 0x4a8c80, decide callback: two characters near p (0x4a58d0), into m (kind 7) */
 
-int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, unsigned char *m)
+int ai_DecideTwoNearChars(int a, AIPER *p, int c, int d, AIARG *m)
 {
     int flags[2];
     unsigned short id[2];
 
-    flags[0] = ((unsigned)&cm_SendRing + 0x4973c0);
-    flags[1] = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags[0] = PARTNER_FLAGS_ANY;
+    flags[1] = PARTNER_FLAGS_ANY;
     if (ai_PickPartnerChain(p, 2, flags, 0, (float)util_RandomU(0x40), id) == 0)
         return 0;
-    m[0] = 7;
-    *(int *)(m + 4) = ((AIPER *)ai_CharsT)[id[0]].netId;
-    *(int *)(m + 8) = ((AIPER *)ai_CharsT)[id[1]].netId;
+    m->kind = 7;
+    m->ref = ((AIPER *)ai_CharsT)[id[0]].netId;
+    m->arg = ((AIPER *)ai_CharsT)[id[1]].netId;
     return 1;
 }
 /* 0x4a8d20, decide callback: p (money >= 3) picks a character within 32..49 units, into m (kind 7) */
