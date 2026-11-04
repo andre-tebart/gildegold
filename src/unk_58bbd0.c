@@ -16893,7 +16893,7 @@ int ai_DrawAmountRow(int param_1, int param_2, int param_3, int *param_4)
    zeroed and gets +4 = 0x204, +8 = 0x5eed68, +0xc = 0x5eed6c and +0x10 = 6, then 0x5c0970 (the config, the
    second argument, 0, 0) runs the tabbed list; its result is returned */
 
-int ai_Unk5bea00(int param_1, int param_2)
+int ai_SpecialAmountList(int param_1, int param_2)
 {
     int cfg[0x14];
     int i;
@@ -22920,7 +22920,7 @@ int ai_Unk5d0780(int param_1, int param_2)
    the low byte of (int)(252.0f - n) instead. A nonzero amount goes through 0x4c6020 (the record + 4,
    the index, the amount). Returns 1 (0 when the index is 5 or more or the counter is 252.0 or more). */
 
-int ai_Unk5d08c0(int param_1, int param_2)
+int ai_ApplyTrialStep(int param_1, int param_2)
 {
     unsigned char n;
     unsigned char amount;
@@ -22945,26 +22945,37 @@ int ai_Unk5d08c0(int param_1, int param_2)
         cm_SendAddSkill(param_1 + 4, param_2, amount);
     return 1;
 }
-/* 0x5d09d0, a message callback (108 B): param_1 the message record (+2 the type), param_2 the request
-   record (+4 the target id). Type 6: the text 0x5176d0 (0x9d) through 0x5bea00 (the record, text);
-   other types: the target 0x505df0 (param_2 + 4). No target -> 0; else the trial step 0x5d08c0 (the
-   target, 1) and 1. */
+#pragma pack(push, 1)
+typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h cannot be included here yet): the
+                                           record ai_UseGood hands to a Domizil record's use callback (+0x14) */
+    void *obj;                          /* 0x00, the object record used */
+    int target;                         /* 0x04, the target reference (G8USE.target) */
+    int arg;                            /* 0x08 */
+    int effect;                         /* 0x0c */
+    int handled;                        /* 0x10 */
+} G8USEVIEW;
+#pragma pack(pop)
 
-int ai_Unk5d09d0(int param_1, int param_2)
+/* 0x5d09d0, the use callback of the Domizil record 9 (the good 0x162, 0x62c51c): the character kind 6 picks
+   the target in the special-amount list 0x5bea00 (the text 0x5176d0 0x9d), every other kind takes the use's
+   target 0x505df0; the target's trial step 1 (0x5d08c0) runs and 1, 0 without a target. */
+
+int ai_TrialStep1(G8CHARREC *ch, G8USEVIEW *use)
 {
     char text[0x100];
-    int target;
+    G8CHARREC *target;
 
-    if (*(char *)(param_1 + 2) == 6) {
+    if (ch->kind == 6) {
         txt_Format(text, (char *)0x9d);
-        target = ai_Unk5bea00(param_1, text);
+        target = (G8CHARREC *)ai_SpecialAmountList((int)ch, text);
     } else {
-        target = gm_FindChar(*(int *)(param_2 + 4));
+        target = (G8CHARREC *)gm_FindChar(use->target);
     }
-    if (target == 0)
-        return 0;
-    ai_Unk5d08c0(target, 1);
-    return 1;
+    if (target != 0) {
+        ai_ApplyTrialStep((int)target, 1);
+        return 1;
+    }
+    return 0;
 }
 /* 0x5d0a40, a message callback (108 B), the twin of 0x5d09d0 with the trial step index 3: type 6 ->
    the text 0x5176d0 (0x9d) through 0x5bea00; other types -> the target 0x505df0 (param_2 + 4); no
@@ -22977,13 +22988,13 @@ int ai_Unk5d0a40(int param_1, int param_2)
 
     if (*(char *)(param_1 + 2) == 6) {
         txt_Format(text, (char *)0x9d);
-        target = ai_Unk5bea00(param_1, text);
+        target = ai_SpecialAmountList(param_1, text);
     } else {
         target = gm_FindChar(*(int *)(param_2 + 4));
     }
     if (target == 0)
         return 0;
-    ai_Unk5d08c0(target, 3);
+    ai_ApplyTrialStep(target, 3);
     return 1;
 }
 /* 0x5d0ab0, a message callback (108 B), the twin of 0x5d09d0 with the trial step index 4: type 6 ->
@@ -22997,13 +23008,13 @@ int ai_Unk5d0ab0(int param_1, int param_2)
 
     if (*(char *)(param_1 + 2) == 6) {
         txt_Format(text, (char *)0x9d);
-        target = ai_Unk5bea00(param_1, text);
+        target = ai_SpecialAmountList(param_1, text);
     } else {
         target = gm_FindChar(*(int *)(param_2 + 4));
     }
     if (target == 0)
         return 0;
-    ai_Unk5d08c0(target, 4);
+    ai_ApplyTrialStep(target, 4);
     return 1;
 }
 /* 0x5d0b20, a message callback (335 B): param_1 the message record (+2 the type, +4 the handle, +0
@@ -23139,7 +23150,7 @@ int ai_Unk5d0e60(int param_1, int param_2, int param_3)
     found = 0;
     for (i = 0; i < 5 && n < 1; i++) {
         if (*(unsigned char *)(param_3 + pick[i] + 0x80) < 0xfc) {
-            ai_Unk5d08c0(param_3, pick[i]);
+            ai_ApplyTrialStep(param_3, pick[i]);
             found = pick[i];
             n++;
         }

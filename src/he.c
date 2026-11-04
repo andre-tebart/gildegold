@@ -3304,7 +3304,7 @@ int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field,
 void cm_SendSetJob(int id, int job);
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h);
 short *gm_PlayerRecord(char *c);
-int ai_Unk5d08c0();
+int ai_ApplyTrialStep();
 
 /* 0x548230, the run handler of the insult news event (type 0x4b, whose start handler is 0x548110): a pending cm
    slot still in state 0 keeps it; a freed state (-2) ends it, a negative one frees it, and in state 0 with opts
@@ -3974,8 +3974,8 @@ void he_Unk549770(int ev)
         cm_SendExSetHE(-1, ev);
         return;
     }
-    ai_Unk5d08c0(rec, *(unsigned char *)(ev + 0xb8));
-    ai_Unk5d08c0(rec, *(unsigned char *)(ev + 0xb9));
+    ai_ApplyTrialStep(rec, *(unsigned char *)(ev + 0xb8));
+    ai_ApplyTrialStep(rec, *(unsigned char *)(ev + 0xb9));
     txt_Format(text, 0x1a9e, *(unsigned short *)rec);
     *(unsigned char *)(ev + 0xba) = *(unsigned char *)(ev + 0xba) + 1;
     cnt = *(unsigned char *)(ev + 0xba);
