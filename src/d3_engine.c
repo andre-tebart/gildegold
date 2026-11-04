@@ -1683,7 +1683,7 @@ void d3_AppendSibling(D3OBJECT *first, D3OBJECT *obj)
     first->next = obj;
     obj->prev = first;
 }
-/* 0x43cb80 */
+/* 0x43cb80, makes obj a child of parent (a top-level object when parent is NULL) */
 
 void d3_AddChild(D3OBJECT *parent, D3OBJECT *obj)
 {
