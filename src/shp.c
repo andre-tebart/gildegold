@@ -307,7 +307,7 @@ D2SHP *d2_GrabShape24NoRuns(int x, int y, int w, int h, unsigned char *pix, unsi
     shp->bx1 = (unsigned short)maxx;
     shp->by1 = (unsigned short)maxy;
     shp->size = 0x32;
-    dst = (unsigned char *)shp + 0x32;
+    dst = (unsigned char *)(shp + 1);
     w = 0;
     if (shp->h != 0) {
         n = shp->w * 3;
@@ -679,7 +679,7 @@ D2SHP *d2_GrabShape(int x, int y, int w, int h, D2SURF *surf, unsigned char mode
 
     r = 0;
     if (grab8 != 0) {
-        switch (*((char *)surf + 0x14)) {
+        switch ((char)surf->bpp) {
         case 8:
             r = d2_GrabShape8Runs(x, y, w, h, (unsigned char *)surf->bits, mode, (unsigned short)surf->w);
             type = 0;
@@ -696,7 +696,7 @@ D2SHP *d2_GrabShape(int x, int y, int w, int h, D2SURF *surf, unsigned char mode
             break;
         }
     } else {
-        switch (*((char *)surf + 0x14)) {
+        switch ((char)surf->bpp) {
         case 16:
             r = d2_GrabShape16NoRuns(x, y, w, h, surf->bits, mode, (unsigned short)surf->w);
             type = 1;
@@ -718,22 +718,23 @@ D2SHP *d2_GrabShape(int x, int y, int w, int h, D2SURF *surf, unsigned char mode
 /* 0x47b350, draws a 16 bit run-length shape at 1/n size, clipped to d2_ClipLeft / d2_ClipRight / d2_ClipTop /
    d2_ClipBottom: skip runs are divided by n with the fractional accumulator carried across runs and rows, and
    every n-th source pixel of a literal run lands on the destination; returns 0 when the shape is completely
-   clipped, else 1. @deep match-base 2026-10-31: read the whole function against the original; 270 vs 270 instructions (was 210), differing 24. The setup was missing from our source (cp / line / run, the four clip early-outs against ClipTop / ClipRight / ClipLeft and h clipped to ClipBottom): reconstructed; n is an unsigned char (and edi,0xff) and y an int (signed compares); the unclipped branch comes first (y >= d2_ClipTop); the run and pixel loops are for loops (k < *cp, m < (run[1] + acc) / n: the jbe entry tests) and the row ends with cp = run; run++ (no next pointer). Left (allocation only): in the clipped branch ours keeps row in ebp and zeroes it with its own xor ebp,ebp where the original reloads row from its slot [esp+0x2c] and uses ebp for row % n (hunks 0x47b40d, 0x47b516, 0x47b5f0, 0x47b60e). */
+   clipped, else 1. @deep match-base 2026-10-31: read the whole function against the original; 270 vs 270 instructions (was 210), differing 24. The setup was missing from our source (cp / line / run, the four clip early-outs against ClipTop / ClipRight / ClipLeft and h clipped to ClipBottom): reconstructed; n is an unsigned char (and edi,0xff) and y an int (signed compares); the unclipped branch comes first (y >= d2_ClipTop); the run and pixel loops are for loops (k < *cp, m < (run->n + acc) / n: the jbe entry tests) and the row ends with cp = run; run++ (no next pointer). Left (allocation only): in the clipped branch ours keeps row in ebp and zeroes it with its own xor ebp,ebp where the original reloads row from its slot [esp+0x2c] and uses ebp for row % n (hunks 0x47b40d, 0x47b516, 0x47b5f0, 0x47b60e). */
 
 int d2_ShpBlit16Scaled(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
 {
     int h, row, first;
     unsigned int acc, k, m;
-    unsigned int *cp, *run;
+    unsigned int *cp;
+    D2RUN *run;
     unsigned short *line, *d, *px;
 
 #ifdef REA_FRAME_DUMP
     if (s->w > 300)
         REA_DUMP_TRACE((rd_f, "%u ShpBlit16%s %dx%d at %d,%d mode=%d bpp=%d\n", GetTickCount(), "Scaled", s->w, s->h, x, y, s->mode, surf->bpp));
 #endif
-    cp = (unsigned int *)((char *)s + 0x32);
+    cp = (unsigned int *)(s + 1);
     line = surf->bits + (surf->pitch * y + x);
-    run = (unsigned int *)((char *)s + 0x36);
+    run = (D2RUN *)((unsigned int *)(s + 1) + 1);
     if (s->h + y < d2_ClipTop)
         return 0;
     if (s->w / n + x > d2_ClipRight)
@@ -750,49 +751,49 @@ int d2_ShpBlit16Scaled(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
             first = row % n == 0;
             d = line;
             for (k = 0; k < *cp; k++) {
-                d += ((*run >> 1) + acc) / n;
+                d += ((run->skip >> 1) + acc) / n;
                 acc++;
-                acc = (*run >> acc) % n;
+                acc = (run->skip >> acc) % n;
                 if (first) {
-                    px = (unsigned short *)(run + 2);
-                    for (m = 0; m < (run[1] + acc) / n; m++) {
+                    px = (unsigned short *)(run + 1);
+                    for (m = 0; m < (run->n + acc) / n; m++) {
                         *d = *px;
                         px += n;
                         d++;
                     }
-                    acc = (run[1] + acc) % n;
+                    acc = (run->n + acc) % n;
                 }
-                run = (unsigned int *)((char *)run + run[1] * 2 + 8);
+                run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
             }
             if (first)
                 line += surf->pitch;
-            cp = run;
-            run++;
+            cp = (unsigned int *)run;
+            run = (D2RUN *)(cp + 1);
         }
     } else {
         for (row = 0; row < h; row++) {
             first = row % n == 0;
             d = line;
             for (k = 0; k < *cp; k++) {
-                d += ((*run >> 1) + acc) / n;
+                d += ((run->skip >> 1) + acc) / n;
                 acc++;
-                acc = (*run >> acc) % n;
+                acc = (run->skip >> acc) % n;
                 if (first) {
-                    px = (unsigned short *)(run + 2);
-                    for (m = 0; m < (run[1] + acc) / n; m++) {
+                    px = (unsigned short *)(run + 1);
+                    for (m = 0; m < (run->n + acc) / n; m++) {
                         if (row / n + y >= d2_ClipTop)
                             *d = *px;
                         px += n;
                         d++;
                     }
-                    acc = (run[1] + acc) % n;
+                    acc = (run->n + acc) % n;
                 }
-                run = (unsigned int *)((char *)run + run[1] * 2 + 8);
+                run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
             }
             if (first)
                 line += surf->pitch;
-            cp = run;
-            run++;
+            cp = (unsigned int *)run;
+            run = (D2RUN *)(cp + 1);
         }
     }
     return 1;
@@ -800,13 +801,14 @@ int d2_ShpBlit16Scaled(int x, int y, D2SURF *surf, D2SHP *s, unsigned char n)
 /* 0x47b640, the light-table variant of d2_ShpBlit16Scaled: the same 1/n scaled, clipped draw of a 16 bit
    run-length shape, but every destination pixel goes through d2_ShpLightTable (used when the shape was grabbed
    with a palette); returns 0 when completely clipped, else 1.
-   @deep behaviour draft (332 code hunks, 619/720 bytes): the light-table twin of 0x47b350 - every meaning read against 47b640..47b8ff and corresponds (the acc arithmetic made explicit: acc++; acc = (*run >> acc) % n, byte-neutral; the two clipped branches, d += ((*run>>1)+acc)/n, first = row%n==0, the literal run through d2_ShpLightTable[*px] every nth source pixel, the acc remainder, the run chain, line += pitch on first, early-outs vs ClipTop/ClipRight/ClipLeft/ClipBottom). The remaining hunks are the same codegen-only register/slot homes as 0x47b350 (line/acc/row spilled into parameter slots here, other homes in the original); no source meaning fix found */
+   @deep behaviour draft (332 code hunks, 619/720 bytes): the light-table twin of 0x47b350 - every meaning read against 47b640..47b8ff and corresponds (the acc arithmetic made explicit: acc++; acc = (run->skip >> acc) % n, byte-neutral; the two clipped branches, d += ((*run>>1)+acc)/n, first = row%n==0, the literal run through d2_ShpLightTable[*px] every nth source pixel, the acc remainder, the run chain, line += pitch on first, early-outs vs ClipTop/ClipRight/ClipLeft/ClipBottom). The remaining hunks are the same codegen-only register/slot homes as 0x47b350 (line/acc/row spilled into parameter slots here, other homes in the original); no source meaning fix found */
 
 int d2_ShpBlit16ScaledLit(int x, unsigned int y, D2SURF *surf, D2SHP *s, unsigned int n)
 {
     int h, row, first;
     unsigned int acc, k, m;
-    unsigned int *cp, *run, *next;
+    unsigned int *cp, *next;
+    D2RUN *run;
     unsigned short *line, *d, *px;
 
 #ifdef REA_FRAME_DUMP
@@ -814,8 +816,8 @@ int d2_ShpBlit16ScaledLit(int x, unsigned int y, D2SURF *surf, D2SHP *s, unsigne
         REA_DUMP_TRACE((rd_f, "%u ShpBlit16%s %dx%d at %d,%d mode=%d bpp=%d\n", GetTickCount(), "ScaledLit", s->w, s->h, x, y, s->mode, surf->bpp));
 #endif
 
-    cp = (unsigned int *)((char *)s + 0x32);
-    run = (unsigned int *)((char *)s + 0x36);
+    cp = (unsigned int *)(s + 1);
+    run = (D2RUN *)((unsigned int *)(s + 1) + 1);
     line = surf->bits + (surf->pitch * y + x);
     h = s->h;
     if ((int)(h + y) < d2_ClipTop)
@@ -827,69 +829,69 @@ int d2_ShpBlit16ScaledLit(int x, unsigned int y, D2SURF *surf, D2SHP *s, unsigne
         for (row = 0; row < h; row++) {
             first = row % n == 0;
             d = line;
-            next = run;
+            next = (unsigned int *)run;
             if (*cp != 0) {
                 k = 0;
                 do {
-                    d += ((*run >> 1) + acc) / n;
+                    d += ((run->skip >> 1) + acc) / n;
                     acc++;
-                    acc = (*run >> acc) % n;
+                    acc = (run->skip >> acc) % n;
                     if (first) {
-                        px = (unsigned short *)(run + 2);
+                        px = (unsigned short *)(run + 1);
                         m = 0;
-                        if ((run[1] + acc) / n != 0) {
+                        if ((run->n + acc) / n != 0) {
                             do {
                                 if (d2_ClipTop <= row / n + (int)y)
                                     *d = d2_ShpLightTable[*px];
                                 px += n;
                                 d++;
                                 m++;
-                            } while (m < (run[1] + acc) / n);
+                            } while (m < (run->n + acc) / n);
                         }
-                        acc = (run[1] + acc) % n;
+                        acc = (run->n + acc) % n;
                     }
                     k++;
-                    run = (unsigned int *)((char *)run + run[1] * 2 + 8);
-                    next = run;
+                    run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
+                    next = (unsigned int *)run;
                 } while (k < *cp);
             }
             if (first)
                 line += surf->pitch;
-            run = next + 1;
+            run = (D2RUN *)(next + 1);
             cp = next;
         }
     } else {
         for (row = 0; row < h; row++) {
             first = row % n == 0;
             d = line;
-            next = run;
+            next = (unsigned int *)run;
             if (*cp != 0) {
                 k = 0;
                 do {
-                    d += ((*run >> 1) + acc) / n;
+                    d += ((run->skip >> 1) + acc) / n;
                     acc++;
-                    acc = (*run >> acc) % n;
+                    acc = (run->skip >> acc) % n;
                     if (first) {
-                        px = (unsigned short *)(run + 2);
+                        px = (unsigned short *)(run + 1);
                         m = 0;
-                        if ((run[1] + acc) / n != 0) {
+                        if ((run->n + acc) / n != 0) {
                             do {
                                 *d = d2_ShpLightTable[*px];
                                 px += n;
                                 d++;
                                 m++;
-                            } while (m < (run[1] + acc) / n);
+                            } while (m < (run->n + acc) / n);
                         }
-                        acc = (run[1] + acc) % n;
+                        acc = (run->n + acc) % n;
                     }
                     k++;
-                    run = (unsigned int *)((char *)run + run[1] * 2 + 8);
-                    next = run;
+                    run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
+                    next = (unsigned int *)run;
                 } while (k < *cp);
             }
             if (first)
                 line += surf->pitch;
-            run = next + 1;
+            run = (D2RUN *)(next + 1);
             cp = next;
         }
     }
@@ -898,11 +900,12 @@ int d2_ShpBlit16ScaledLit(int x, unsigned int y, D2SURF *surf, D2SHP *s, unsigne
 /* 0x47b900, draws a 16 bit run-length shape half dark: every pixel of the literal runs is replaced by its grey
    (r + b) * 0.2f + g * 0.59f through dd_RGB, the skip runs are stepped over (the x / y parameters are reused as
    the run / pixel counters).
-   @deep behaviour draft (186 code hunks, 302/336 bytes, frame 0x18 vs 0x1c): the meaning was read against 47b900..47ba5f and corresponds - line = bits + (pitch*y + x), the row loop over s->h reusing the x and y parameters as the run / pixel counters, d += run[0] >> 1, the pixel loop with dd_SplitRGB(*px, &r,&g,&b), v = (int)((r + b) * 0.2f + g * 0.59f) (the original's fild/fiadd/fmul 0.2f, fild/fmul 0.59f, faddp, _ftol), dd_RGB(v,v,v), the run chain run + run[1]*2 + 8 and cp = run, line += pitch. What differs is codegen only: frame 0x18 vs 0x1c and other register/slot homes for cp/run/line/d; no source meaning fix found */
+   @deep behaviour draft (186 code hunks, 302/336 bytes, frame 0x18 vs 0x1c): the meaning was read against 47b900..47ba5f and corresponds - line = bits + (pitch*y + x), the row loop over s->h reusing the x and y parameters as the run / pixel counters, d += run->skip >> 1, the pixel loop with dd_SplitRGB(*px, &r,&g,&b), v = (int)((r + b) * 0.2f + g * 0.59f) (the original's fild/fiadd/fmul 0.2f, fild/fmul 0.59f, faddp, _ftol), dd_RGB(v,v,v), the run chain run + run->n*2 + 8 and cp = run, line += pitch. What differs is codegen only: frame 0x18 vs 0x1c and other register/slot homes for cp/run/line/d; no source meaning fix found */
 
 void d2_ShpBlit16HalfDark(unsigned int x, unsigned int y, D2SURF *surf, D2SHP *s)
 {
-    unsigned int *cp, *run;
+    unsigned int *cp;
+    D2RUN *run;
     unsigned int i;
     unsigned short *line, *d;
     unsigned short *px;
@@ -914,26 +917,26 @@ void d2_ShpBlit16HalfDark(unsigned int x, unsigned int y, D2SURF *surf, D2SHP *s
         REA_DUMP_TRACE((rd_f, "%u ShpBlit16%s %dx%d at %d,%d mode=%d bpp=%d\n", GetTickCount(), "HalfDark", s->w, s->h, x, y, s->mode, surf->bpp));
 #endif
 
-    cp = (unsigned int *)((char *)s + 0x32);
+    cp = (unsigned int *)(s + 1);
     line = surf->bits + (surf->pitch * y + x);
-    run = (unsigned int *)((char *)s + 0x36);
+    run = (D2RUN *)((unsigned int *)(s + 1) + 1);
     for (i = 0; i < s->h; i++) {
         d = line;
         for (x = 0; x < *cp; x++) {
-            px = (unsigned short *)(run + 2);
-            d += run[0] >> 1;
-            for (y = 0; y < run[1]; y++) {
+            px = (unsigned short *)(run + 1);
+            d += run->skip >> 1;
+            for (y = 0; y < run->n; y++) {
                 dd_SplitRGB(*px, (unsigned char *)&r, (unsigned char *)&g, (unsigned char *)&b);
                 v = (int)(((float)(r & 0xff) + (b & 0xff)) * 0.2f + (g & 0xff) * 0.59f);
                 *d = (unsigned short)dd_RGB(v, v, v);
                 px++;
                 d++;
             }
-            run = (unsigned int *)((char *)run + run[1] * 2 + 8);
+            run = (D2RUN *)((unsigned short *)(run + 1) + run->n);
         }
-        cp = run;
+        cp = (unsigned int *)run;
         line += surf->pitch;
-        run = cp + 1;
+        run = (D2RUN *)(cp + 1);
     }
 }
 /* 0x47ba60, draws a 16 bit shape made of plain rows (nruns == -1) onto a surface, clipped to the ClipLeft /
@@ -995,7 +998,7 @@ void d2_ShpBlit16Rows(int x, int y, D2SURF *surf, D2SHP *s)
 clip2:
     d = surf->bits + (surf->pitch * y + x);
     mode = s->mode;
-    p = (unsigned short *)((char *)s + 0x32);
+    p = (unsigned short *)(s + 1);
     if (clipped) {
         if (mode == 0) {
             p = p + w * rows;
@@ -1156,10 +1159,10 @@ D2SHP *d2_ShpConvert8To16(D2SHP *s)
     r->type = 1;
     for (i = 0; i < 256; i++)
         pal[i] = dd_RGB(d2_Palette[i][0], d2_Palette[i][1], d2_Palette[i][2]);
-    src = (unsigned int *)((char *)s + 0x36);
-    dst = (unsigned int *)((char *)r + 0x32);
-    dstcnt = (unsigned int *)((char *)r + 0x36);
-    srccnt = (unsigned int *)((char *)s + 0x32);
+    src = (unsigned int *)(s + 1) + 1;
+    dst = (unsigned int *)(r + 1);
+    dstcnt = (unsigned int *)(r + 1) + 1;
+    srccnt = (unsigned int *)(s + 1);
     for (i = 0; i < s->h; i++) {
         *dst = *srccnt;
         lines[i] = (char *)dst - (char *)r;
@@ -1194,7 +1197,7 @@ D2SHP *d2_ShpConvert8To16(D2SHP *s)
     d2_SetLineTable(lines, r);
     return r;
 }
-/* 0x47c0e0, converts a 24 bit shape into a 16 bit one @deep B3, 39 code + 30 order hunks after the unsigned guard fix (0 < src[1], jbe now matches): the rest is scheduling (npix/size loads hoisted before the branch, the lea placed before vs after the stores, xor edi,edi hoisted) and one addressing form (the original keeps pix+1 and reads -1/+0/+1, ours pix with 0/+1/+2), no meaning error found in the read hunks */
+/* 0x47c0e0, converts a 24 bit shape into a 16 bit one @deep B3, 39 code + 30 order hunks after the unsigned guard fix (0 < src->n, jbe now matches): the rest is scheduling (npix/size loads hoisted before the branch, the lea placed before vs after the stores, xor edi,edi hoisted) and one addressing form (the original keeps pix+1 and reads -1/+0/+1, ours pix with 0/+1/+2), no meaning error found in the read hunks */
 
 D2SHP *d2_ShpConvert24To16(D2SHP *s)
 {
@@ -1202,7 +1205,8 @@ D2SHP *d2_ShpConvert24To16(D2SHP *s)
     int lines[864];
     int i, j;
     unsigned int k, m;
-    unsigned int *src, *srccnt, *dst, *dstcnt;
+    unsigned int *srccnt, *dst, *dstcnt;
+    D2RUN *src;
     unsigned char *pix;
     unsigned short c;
     D2SHP *r;
@@ -1214,10 +1218,10 @@ D2SHP *d2_ShpConvert24To16(D2SHP *s)
         r->type = 1;
         r->nruns = 0;
         r->npix = 0;
-        src = (unsigned int *)((char *)s + 0x36);
-        dst = (unsigned int *)((char *)r + 0x32);
-        dstcnt = (unsigned int *)((char *)r + 0x36);
-        srccnt = (unsigned int *)((char *)s + 0x32);
+        src = (D2RUN *)((unsigned int *)(s + 1) + 1);
+        dst = (unsigned int *)(r + 1);
+        dstcnt = (unsigned int *)(r + 1) + 1;
+        srccnt = (unsigned int *)(s + 1);
         for (i = 0; i < s->h; i++) {
             *dst = *srccnt;
             lines[i] = (char *)dst - (char *)r;
@@ -1225,10 +1229,10 @@ D2SHP *d2_ShpConvert24To16(D2SHP *s)
             m = 0;
             if (0 < *srccnt) {
                 do {
-                    *dstcnt = (*src * 2) / 3;
-                    dstcnt[1] = src[1];
-                    if (0 < src[1]) {
-                        pix = (unsigned char *)src + 8;
+                    *dstcnt = (src->skip * 2) / 3;
+                    dstcnt[1] = src->n;
+                    if (0 < src->n) {
+                        pix = (unsigned char *)(src + 1);
                         k = 0;
                         do {
                             c = dd_RGB(pix[0], pix[1], pix[2]);
@@ -1239,21 +1243,21 @@ D2SHP *d2_ShpConvert24To16(D2SHP *s)
                                 buf[k] = buf[k] >> 1 & d2_HighBitMask;
                             k++;
                             pix += 3;
-                        } while (k < src[1]);
+                        } while (k < src->n);
                     }
-                    memcpy(dstcnt + 2, buf, src[1] * 2);
+                    memcpy(dstcnt + 2, buf, src->n * 2);
                     r->nruns++;
-                    r->npix += src[1];
-                    r->size += src[1] * 2 + 8;
-                    src = (unsigned int *)((char *)src + src[1] * 3 + 8);
+                    r->npix += src->n;
+                    r->size += src->n * 2 + 8;
+                    src = (D2RUN *)((unsigned char *)(src + 1) + src->n * 3);
                     dstcnt = (unsigned int *)((char *)dstcnt + dstcnt[1] * 2 + 8);
                     m++;
                 } while (m < *srccnt);
             }
             dst = dstcnt;
             dstcnt = dstcnt + 1;
-            srccnt = src;
-            src = src + 1;
+            srccnt = (unsigned int *)src;
+            src = (D2RUN *)(srccnt + 1);
         }
         r->lineoff = r->size;
         r->size += r->h * 4;
@@ -1277,10 +1281,10 @@ D2SHP *d2_ShpConvert24To16(D2SHP *s)
         r->size = 0x32;
         r->type = 1;
         r->npix = 0;
-        dst = (unsigned int *)((char *)r + 0x32);
+        dst = (unsigned int *)(r + 1);
         for (i = 0; i < s->h; i++) {
             for (j = 0; j < s->w; j++) {
-                pix = (unsigned char *)s + 0x32 + (s->w * i + j) * 3;
+                pix = (unsigned char *)(s + 1) + (s->w * i + j) * 3;
                 buf[j] = dd_RGB(pix[0], pix[1], pix[2]);
                 if (s->mode == 1)
                     buf[j] = buf[j] >> 1 & d2_HighBitMask;
@@ -1383,7 +1387,7 @@ int d2_BankSetPalette(D2BANK *bank, void *pal)
 {
     if (bank == 0)
         return 0;
-    memcpy((char *)bank + 0x445, pal, 0x400);
+    memcpy(bank->palette, pal, 0x400);
     return 1;
 }
 /* 0x47c610, appends a shape to a bank */
@@ -1397,7 +1401,7 @@ int d2_BankAppendShape(D2SHP *s, D2BANK *bank)
     if (bank->size == 0 || bank->n == 0) {
         bank->size = 0x845;
         memcpy(bank, tag, 8);
-        bank->pad00[8] = 1;
+        bank->version = 1;
         bank->kind = s->type;
         if (bank->kind == 0)
             d2_BankSetPalette(bank, d2_Palette);
@@ -1424,7 +1428,7 @@ int d2_DrawShape(int x, int y, void *surf, void *pic, unsigned char i)
     if (bank == 0)
         return 0;
     if (i > bank->n) {
-        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", (char *)bank + 10);
+        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", bank->name);
         return 0;
     }
     d2_ShpBlit(x, y, (D2SURF *)surf, (D2SHP *)((char *)bank + bank->offs[i]));
@@ -1442,7 +1446,7 @@ int d2_DrawShapeHalfDark(int x, int y, void *surf, void *pic, char i)
     if (bank == 0)
         return 0;
     if ((unsigned char)i > bank->n) {
-        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", (char *)bank + 10);
+        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", bank->name);
         return 0;
     }
     s = (D2SHP *)((char *)bank + bank->offs[(unsigned char)i]);
@@ -1474,7 +1478,7 @@ int d2_DrawShapeScaled(int x, int y, void *surf, void *pic, char i, char mode, i
     if (bank == 0)
         return 0;
     if ((unsigned char)i > bank->n) {
-        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", (char *)bank + 10);
+        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", bank->name);
         return 0;
     }
     s = (D2SHP *)((char *)bank + bank->offs[(unsigned char)i]);
@@ -1512,7 +1516,7 @@ int d2_DrawShapeMode2(int x, int y, void *surf, void *pic, unsigned char i)
     if (bank == 0)
         return 0;
     if (i > bank->n) {
-        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", (char *)bank + 10);
+        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", bank->name);
         return 0;
     }
     s = (D2SHP *)((char *)bank + bank->offs[i]);
@@ -1542,7 +1546,7 @@ int d2_DrawShapeMode5(int x, int y, void *surf, void *pic, unsigned char i)
     if (bank == 0)
         return 0;
     if (i > bank->n) {
-        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", (char *)bank + 10);
+        sprintf(buf, "shp_ShowShapeFromBank:Shapenr is invalidate! Bank:%s", bank->name);
         return 0;
     }
     s = (D2SHP *)((char *)bank + bank->offs[i]);

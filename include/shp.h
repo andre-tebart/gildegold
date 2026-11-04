@@ -11,7 +11,9 @@ struct D2SURF;
 struct D2RGB;
 
 #pragma pack(push, 1)
-typedef struct D2SHP {              /* a shape: this 0x32 byte header, then the lines */
+typedef struct D2SHP {              /* a shape: this 0x32 byte header, then the lines (s + 1): plain rows of pixels
+                                       (nruns == -1), or per line an unsigned int run count followed by its runs,
+                                       each two unsigned ints (skip in bytes, n) and n pixels */
     unsigned int size;              /* 0x00, bytes used */
     unsigned short x0, w, y0, h;    /* 0x04, bounding box (w, h = right / bottom + 1) */
     unsigned char type;             /* 0x0c, 0 = 8 bit, 1 = 16 bit, 2 = 24 bit */
@@ -24,8 +26,17 @@ typedef struct D2SHP {              /* a shape: this 0x32 byte header, then the 
     int npix;                       /* 0x2e, number of pixels in the runs */
 } D2SHP;                            /* 0x32 */
 
-typedef struct D2BANK {             /* a bank of shapes (0x845 byte header) */
-    char pad00[0x2a];
+typedef struct D2RUN {              /* a run of a shape line (D2SHP): this header, then its n pixels */
+    unsigned int skip;              /* 0x00, the gap before the pixels, in bytes of the shape's depth */
+    unsigned int n;                 /* 0x04, number of pixels */
+} D2RUN;
+
+typedef struct D2BANK {             /* a bank of shapes: this 0x845 byte header, then the shapes */
+    char tag[8];                    /* 0x00, "SHAPBANK" (d2_BankAppendShape) */
+    char version;                   /* 0x08, 1 (d2_BankAppendShape writes it; the name is a reasoned guess) */
+    char pad09;
+    char name[0x20];                /* 0x0a, the bank's name (the "Bank:%s" of the invalid shape number message);
+                                       the length is the room to n */
     unsigned short n;               /* 0x2a, number of shapes */
     unsigned short w, h;            /* 0x2c, widest / highest shape added */
     int size;                       /* 0x30 */
@@ -34,7 +45,8 @@ typedef struct D2BANK {             /* a bank of shapes (0x845 byte header) */
     int pal;                        /* 0x3e */
     char pad42;
     unsigned short npal;            /* 0x43 */
-    int offs[0x200];                /* 0x45, offsets of the shapes */
+    int offs[0x100];                /* 0x45, offsets of the shapes (at most 0xff, d2_BankAppendShape) */
+    unsigned char palette[0x100][4]; /* 0x445, the colours of an 8 bit bank (d2_BankSetPalette: d2_Palette) */
 } D2BANK;
 #pragma pack(pop)
 
