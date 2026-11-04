@@ -1995,3 +1995,4 @@
 2026-11-04T20:12:36 0x005ad150 func ai_Unk5ad150 -> ai_PersonnelBookWindow by:main why:opens the book "Buch\Personalbuch_2..4" (sv_OpenBook 0x5ad1c3) with the building master's and owner's names: the personnel book window; the graveyard's ob_GEHILFENBUCH contact opens it
 2026-11-04T20:14:38 0x005876a0 func ai_Unk5876a0 -> ai_GraveyardSeanceContact by:main why:the graveyard seance contact dispatcher (room handler 0x21b): registers the contact_SEANCE name plate and opens ai_GraveSeance on its click
 2026-11-04T20:15:11 0x00587ad0 func ai_Unk587ad0 -> ai_GraveyardFogContact by:main why:the graveyard fog room's (0x211) contact dispatcher: registers contact_NEBEL_DES_GRAUENS (opens ai_GraveFogWindow) and contact_GEHILFEN_VERBESSERN (opens ai_UpgradeWorkerWindow)
+2026-11-04T20:18:40 - ident unk223 -> jobBytes by:main why:the first of the six job ids of a building kind at +0x223 (0-terminated; f3gm.c gm_PermissionBits scans the six bytes, ai.c sends the first)

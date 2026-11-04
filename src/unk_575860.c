@@ -9767,43 +9767,41 @@ void ai_GraveyardFogContact(char *rec)
 
 int gm_BuildingJob(); 
 
-/* 0x587b70, the building flag mask of a character (201 B), called from f3gm.c 0x50359b: ch = the character
-   (+0 the word), b = the building record (+0 the kind, +0x25 / +0x27 the owner words), x = a record (+0 a word)
-   or 0. bldg = 0x7e3f30 + the kind * 0x24d; v = 0x5044b0 (the character's word, 0x5048e0 (the building kind));
-   the mask 0x81, 0x10bd when the building's +0x25 is the character's word; x with the word 0x211 / 0x205 ->
-   bit 0 cleared. When the building's +0x27 is the character's word: 0x4461 set and, when one of the six bytes at
-   bldg + 0x223 is v (a 0 byte ends the scan), 0x2200; x with the word 0x21b -> 0x5000; U_I (0x6f2448) != 0 ->
-   -1 */
+/* 0x587b70, the permission bits of the class 0x1d buildings, the graveyard (201 B), called from f3gm.c 0x50359b
+   (gm_PermissionBits): ch = the character, b = the building record, x = the picked object or 0. bldg = the
+   building kind's record (ai_BTypes + kind * 0x24d); v = the job of the character in the kind
+   (gm_TitleJob, gm_BuildingJob). The mask 0x81, 0x10bd when the building's masterId is the character; x of the
+   prototypes 0x211 / 0x205 clears bit 0. When the building's owner is the character: 0x4461 set and, when one of
+   the six job bytes at bldg + 0x223 is v (a 0 byte ends the scan), 0x2200; x of the prototype 0x21b -> 0x5000.
+   gm_AllowAll set: -1 */
 int ai_PermissionBits1d(char *ch, char *b, char *x)
 {
-    char *bldg;
-    int kind;
+    AIBTYPE *bldg;
     int v;
     int f;
     int i;
 
-    kind = *(unsigned char *)b;
-    bldg = (char *)U_I((unsigned)&ai_BTypes) + kind * 0x24d;
-    v = gm_TitleJobI(*(unsigned short *)ch, gm_BuildingJob(*(unsigned char *)bldg));
+    bldg = &((AIBTYPE *)ai_BTypes)[((AIBLD *)b)->type];
+    v = gm_TitleJobI(((AICHAR *)ch)->id, gm_BuildingJob((unsigned char)bldg->kind));
     f = 0x81;
-    if (*(unsigned short *)(b + 0x25) == *(unsigned short *)ch)
+    if (((AIBLD *)b)->masterId == ((AICHAR *)ch)->id)
         f = 0x10bd;
-    if (x != 0 && (*(unsigned short *)x == 0x211 || *(unsigned short *)x == 0x205))
+    if (x != 0 && (((ORDOBJ *)x)->type == 0x211 || ((ORDOBJ *)x)->type == 0x205))
         f &= ~1;
-    if (*(unsigned short *)(b + 0x27) == *(unsigned short *)ch) {
+    if (((AIBLD *)b)->owner == ((AICHAR *)ch)->id) {
         f |= 0x4461;
         for (i = 0; i < 6; i++) {
-            if (*(unsigned char *)(bldg + 0x223 + i) == 0)
+            if ((&bldg->jobBytes)[i] == 0)
                 break;
-            if (*(unsigned char *)(bldg + 0x223 + i) == v) {
+            if ((&bldg->jobBytes)[i] == v) {
                 f |= 0x2200;
                 break;
             }
         }
     }
-    if (x != 0 && *(unsigned short *)x == 0x21b)
+    if (x != 0 && ((ORDOBJ *)x)->type == 0x21b)
         f |= 0x5000;
-    if (U_I((unsigned)&gm_AllowAll) != 0)
+    if (gm_AllowAll != 0)
         return -1;
     return f;
 }

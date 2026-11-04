@@ -4343,7 +4343,7 @@ void main_SettleRound(unsigned short pl)
 
                         if (m == 0) {
                             cnt++;
-                            cm_SendMessage3d((char *)c, 1, 0, ai_BTypesT[c->type].unk223);
+                            cm_SendMessage3d((char *)c, 1, 0, ai_BTypesT[c->type].jobBytes);
                         } else if ((m->flags1b4 & 1) == 0) {
                             ev[0] = m->flags1b4 | 1;
                             ev[1] = m->budget;
