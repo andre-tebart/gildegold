@@ -139,7 +139,7 @@ int ai_ExecBuyDunkleEcke(struct AIPER *p, struct AIARG *a, struct AIARG *b);    
 int ai_DecideBlutrache(int a, AIPER *p, int c, struct AIARG *m, struct AIARG *m2);  /* 0x4ab3e0 */
 int ai_ExecBlutrache(AIPER *p, struct AIARG *m, struct AIARG *m2);                 /* 0x4ab6b0 */
 int ai_DecideVerfluchen(int a, AIPER *p, int c, struct AIARG *m);                     /* 0x4ab7f0 */
-int ai_Unk4ab9f0(AIPER *p, unsigned char *m);                                    /* 0x4ab9f0 */
+int ai_ExecVerfluchen(AIPER *p, struct AIARG *m);                                    /* 0x4ab9f0 */
 int ai_DecideTheater(int a, AIPER *p, int c, struct AIARG *m);                     /* 0x4abac0 */
 int ai_Unk4abc60(AIPER *p, unsigned char *m);                                    /* 0x4abc60 */
 int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m);                     /* 0x4abd00 */
