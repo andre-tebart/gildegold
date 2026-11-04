@@ -19027,18 +19027,20 @@ struct AIPER;
 int gm_CharLevel(unsigned short id, int again); int ord_DispatchOrder();
 unsigned int ai_FindCandidates(struct AIPER *p, unsigned int n, unsigned int fl, float lo, float hi, unsigned short *out);
 
-/* 0x5c64c0, the candidate list of a type 9 search (100 B): 0x4a5ef0 (param_1, 9, 0xc0540a - the +9
-   byte, 0.0f, 100.0f, ids); the ids become the character dwords 0x770b84 + id * 0x87 into param_3 */
-void ai_Unk5c64c0(int param_1, int *param_2, int param_3)
+#define AI_CANDIDATE_FLAGS_SEX0 0xc0540a    /* the candidate flags of the kind 9 (advertising) search for a character with sex 0 (the mask bits of ai_PassesPartnerFilter) */
+#define AI_CANDIDATE_FLAGS_SEX1 0xc05409    /* ditto for sex != 0 */
+/* 0x5c64c0, collects the candidate net ids of a kind 9 search into out[] and their count into *n: up to 10
+   candidates of character p (ai_FindCandidates, the filter 0xc0540a, one less for a female character, sex +9);
+   the ids are the characters' net ids, ai_CharInts[id][0] (the caller finds them again with gm_FindChar) */
+
+void ai_FindCandidateIds(G8CHARREC *p, int *n, int *out)
 {
     unsigned short ids[10];
     int i;
-    int n;
 
-    n = ai_FindCandidates((struct AIPER *)param_1, 9, ((unsigned)&cm_SendRing + 0x19c2ca) - (*(char *)(param_1 + 9) != 0), 0.0f, 100.0f, ids);
-    *param_2 = n;
-    for (i = 0; i < *param_2; i++)
-        *(int *)(param_3 + i * 4) = U_I((unsigned)&ai_CharInts + ids[i] * 0x87);
+    *n = ai_FindCandidates((struct AIPER *)p, 9, p->sex != 0 ? AI_CANDIDATE_FLAGS_SEX1 : AI_CANDIDATE_FLAGS_SEX0, 0.0f, 100.0f, ids);
+    for (i = 0; i < *n; i++)
+        out[i] = ai_CharInts[ids[i]][0];
 }
 /* 0x5c6530, the marriage test of two characters (240 B): param_1 / param_2 the two character ids;
    0x505df0 resolves both; the errors 0xfffffc00 (missing), 0xfffffbff / 0xfffffbfe (the +8 byte 0),
@@ -19227,7 +19229,7 @@ int ai_Unk5c6aa0(short *param_1)
     char text[128];
 
     result = 2;
-    ai_Unk5c64c0((int)param_1, &n, ids);
+    ai_FindCandidateIds((int)param_1, &n, ids);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d424);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
