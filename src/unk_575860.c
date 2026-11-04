@@ -10886,26 +10886,24 @@ void ai_SpeedKeys(void)
 
 int gm_BuildingMainObject(unsigned char *b); void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
-/* 0x589e00, fills slot i of the table 0x6f5ec0 from the building b (79 B): the building's byte +0 is its kind, its
-   id at +1 -> the slot's +4; the main object of the building (0x501b50, else 0x501ce0; none for the kind 0x1d)
-   gives its id at +2 -> the slot's +8, -1 without an object */
-void ai_BookmarkSetBuilding(int i, char *b)
+/* 0x589e00, fills bookmark slot i from the building b (79 B): the slot's building = b->id, and its object = the id
+   (AIOBJ.objId) of the building's main object (gm_BuildingMainObject, else gm_GetGebaeudeHauptraum; none for the
+   kind 0x1d), -1 without an object */
+void ai_BookmarkSetBuilding(int i, AIBLD *b)
 {
-    char *o;
-    int off;
+    AIOBJ *o;
 
     o = 0;
-    if (*(unsigned char *)b != 0x1d) {
-        o = (char *)gm_BuildingMainObject(b);
+    if (b->type != 0x1d) {
+        o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
         if (o == 0)
-            o = (char *)gm_GetGebaeudeHauptraum(b);
+            o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
     }
-    off = i * 0xc;
-    *(int *)((char *)&ai_Bookmarks[0].building + off) = *(int *)(b + 1);
+    ai_Bookmarks[i].building = b->id;
     if (o != 0)
-        *(int *)((char *)&ai_Bookmarks[0].object + off) = *(int *)(o + 2);
+        ai_Bookmarks[i].object = o->objId;
     else
-        *(int *)((char *)&ai_Bookmarks[0].object + off) = -1;
+        ai_Bookmarks[i].object = -1;
 }
 
 unsigned char * gm_BuildNext(void); unsigned char * gm_BuildQuery(int n, ...);
@@ -10924,18 +10922,18 @@ void ai_BookmarksPreset(void)
             break;
     }
     n = 1;
-    ai_BookmarkSetBuilding(0, (char *)ai_MarketBuilding);
+    ai_BookmarkSetBuilding(0, ai_MarketBuilding);
     b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
     if (b != 0)
-        ai_BookmarkSetBuilding(n++, (char *)b);
+        ai_BookmarkSetBuilding(n++, b);
     b = ai_CharsT[i].bld2;
     if (b != 0)
-        ai_BookmarkSetBuilding(n, (char *)b);
+        ai_BookmarkSetBuilding(n, b);
     n = 3;
     b = (AIBLD *)gm_BuildQuery(1, 4, i);
     while (b != 0) {
         if (((AIBTYPE *)ai_BTypes)[b->type].kind != 2)
-            ai_BookmarkSetBuilding(n++, (char *)b);
+            ai_BookmarkSetBuilding(n++, b);
         b = (AIBLD *)gm_BuildNext();
     }
 }
