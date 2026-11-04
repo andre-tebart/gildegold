@@ -443,7 +443,8 @@ local void flush_pending(strm)
 }
 
 /* ========================================================================= */
-/* 0x461bc0 */
+/* 0x461bc0, compresses as much input as the output buffer allows at the
+ * given flush level, writes the zlib header/trailer and returns a zlib status */
 int ZEXPORT deflate (strm, flush)
     z_streamp strm;
     int flush;
