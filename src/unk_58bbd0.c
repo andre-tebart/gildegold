@@ -8887,7 +8887,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
 }
 
 int init_BuildingSceneUniverse(); void init_LoadBuildingScene(int k); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
-void ai_GraveyardContact(char *rec); void ai_GypsyProductionContact(int building); void ai_Unk587ad0(char *rec);
+void ai_GraveyardContact(char *rec); void ai_GypsyProductionContact(int building); void ai_GraveyardFogContact(char *rec);
 void ai_GraveyardSeanceContact(char *rec); void ai_GypsyContact(int building); void ai_TheatreContact(int building); void ai_CurseContact(int buildingArg);
 void ai_GraveyardTradeContact(char *rec);
 
@@ -9106,7 +9106,7 @@ void ai_Unk59f410(unsigned short *param_1)
     case 0x37: ai_Unk5938c0(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x107: ai_Unk593e80(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x205: ai_GraveyardTradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x211: ai_Unk587ad0(U_I((unsigned)&ai_FallbackBuilding)); break;
+    case 0x211: ai_GraveyardFogContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x21b: ai_GraveyardSeanceContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x276: ai_GypsyContact(U_I((unsigned)&ai_FallbackBuilding)); break;
     case 0x27f: ai_TheatreContact(U_I((unsigned)&ai_FallbackBuilding)); break;
