@@ -1060,7 +1060,8 @@ int vfs_fseek(VFSFILE *f, long offset, int origin)
     }
     return ret;
 }
-/* 0x431170 */
+/* 0x431170, current position of an open virtual file: the memory offset, the zlib input count or the
+   underlying stream position; -1 when the file is not open */
 
 long vfs_ftell(VFSFILE *f)
 {
