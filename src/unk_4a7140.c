@@ -2346,7 +2346,7 @@ int ai_DecideBlutrache(int a, AIPER *p, int c, AIARG *m, AIARG *m2)
                 }
             }
         }
-        b = (AIBLD *)((unsigned char *)b + 0xa9);
+        b++;
     }
     if (best == 0 || bestv == 0)
         return 0;
@@ -2452,7 +2452,7 @@ int ai_Unk4ab7f0(int a, AIPER *p, int c, unsigned char *m)
                 }
             }
         }
-        b = (AIBLD *)((unsigned char *)b + 0xa9);
+        b++;
     }
     if (best == 0 || bestv == 0)
         return 0;
@@ -2608,7 +2608,7 @@ int ai_Unk4abd00(int a, AIPER *p, int c, unsigned char *m)
             m[0] = 7;
             return 0x45;
         }
-        b = (AIBLD *)((unsigned char *)b + 0xa9);
+        b++;
     }
     return 0;
 }
