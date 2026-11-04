@@ -8740,22 +8740,22 @@ int gm_BuildingBalance(unsigned char *b, unsigned id, int *out)
         return 0;
     return 1;
 }
-/* 0x509060, up to three town objects (query group 2: kinds 7, 4 = 0x1d) whose owner word (+0x1c) is the id of the character c; returns the count and stores them in out */
+/* 0x509060, up to three carts of the building b: the instance table's objects of the goods kind 0x1d whose cartBld (+0x1c) is the building's id; returns the count and stores the objects in out */
 
-int gm_Unk509060(char *c, int *out)
+int gm_BuildingCarts(ORDBLD *b, int *out)
 {
     int n;
-    char *o;
+    ORDOBJ *o;
 
     n = 0;
-    o = gm_Query(0, 2, 7, 4, 0x1d);
+    o = (ORDOBJ *)gm_Query(0, 2, 7, 4, 0x1d);
     while (o && n < 3) {
-        if (*(int *)(o + 0x1c) == *(int *)(c + 1)) {
+        if (o->cartBld == b->id) {
             if (out)
                 out[n] = (int)o;
             n++;
         }
-        o = (char *)gm_QueryNext();
+        o = (ORDOBJ *)gm_QueryNext();
     }
     return n;
 }

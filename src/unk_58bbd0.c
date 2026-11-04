@@ -14707,7 +14707,7 @@ void ai_Unk5aa1f0(int param_1, int *param_2, int param_3)
     }
 }
 
-void d2_RemoveObj(); int gm_Unk509060(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
+void d2_RemoveObj(); int gm_BuildingCarts(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
 void d2_SetObjFont(); void d2_SetCaption(); void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 
 /* 0x5aa4b0, frees the controls of a Domizil record (106 B): +0x1c and +0x10, then the six pairs at +0x40
@@ -14801,7 +14801,7 @@ void ai_Unk5aa700(int param_1, char *param_2)
     io_PrintText((char *)(unsigned)"$C");
     io_PrintText(0x1a1f);
     d2_SetForm(*(int *)(param_1 + 0x234), 3);
-    n = gm_Unk509060(param_2, (char *)(unsigned)&full_data_6f40a4);
+    n = gm_BuildingCarts(param_2, (char *)(unsigned)&full_data_6f40a4);
     if (n > 3)
         n = 3;
     U_I((unsigned)&full_data_6f40a0) = n;
@@ -14995,7 +14995,7 @@ void ai_Unk5ae240(int param_1)
     int fam;
 
     i = 0;
-    if (gm_Unk509060(param_1, 0, 0) > 2) {
+    if (gm_BuildingCarts(param_1, 0, 0) > 2) {
         txt_Format(text, 0xf1, 3);
         sv_MessageBox(text, 0);
         return;
