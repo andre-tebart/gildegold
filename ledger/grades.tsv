@@ -2006,15 +2006,15 @@ exe	0x004b7bc0	ai_MsgBuildingOwnerRelationsType18	unk_4b6480	byte	readable
 exe	0x004b7d80	ai_MsgOfficeGroupRelationsType19	unk_4b6480	byte	readable		
 exe	0x004b7f40	ai_MsgPartnerRelationMinus6to14Type1a	unk_4b6480	byte	readable		
 exe	0x004b8060	ai_MsgPartnerRelationMinus10to38Type1b	unk_4b6480	byte	readable		
-exe	0x004b81a0	ai_Unk4b81a0	unk_4b6480	byte	draft		
-exe	0x004b82c0	ai_Unk4b82c0	unk_4b6480	byte	draft		
+exe	0x004b81a0	ai_MsgPartnerRelationMinus4to18Type1c	unk_4b6480	byte	readable		
+exe	0x004b82c0	ai_MsgWorkerHealthLossType1d	unk_4b6480	byte	readable		
 exe	0x004b84b0	ai_Unk4b84b0	unk_4b6480	draft	draft	deep	
-exe	0x004b86c0	ai_Unk4b86c0	unk_4b6480	byte	draft		
-exe	0x004b8870	ai_Unk4b8870	unk_4b6480	byte	draft		
-exe	0x004b8950	ai_Unk4b8950	unk_4b6480	byte	draft		
-exe	0x004b8a10	ai_Unk4b8a10	unk_4b6480	byte	draft		
-exe	0x004b8c80	ai_MsgJobTime	unk_4b6480	shape	draft		
-exe	0x004b8f70	ai_Unk4b8f70	unk_4b6480	byte	draft		
+exe	0x004b86c0	ai_MsgWorkerOwnHealthLossType1f	unk_4b6480	byte	readable		
+exe	0x004b8870	ai_MsgLoseMoney2to4Type20	unk_4b6480	byte	readable		
+exe	0x004b8950	ai_MsgGainMoney3to5Type21	unk_4b6480	byte	readable		
+exe	0x004b8a10	ai_MsgCartFillDropType22	unk_4b6480	byte	readable		
+exe	0x004b8c80	ai_MsgJobTime	unk_4b6480	shape	readable		
+exe	0x004b8f70	ai_MsgJobEndPlayerType24	unk_4b6480	byte	readable		
 exe	0x004b9180	ai_Unk4b9180	unk_4b6480	byte	draft		
 exe	0x004b9420	ai_Unk4b9420	unk_4b6480	byte	draft		
 exe	0x004b9630	ai_Unk4b9630	unk_4b6480	byte	draft		
