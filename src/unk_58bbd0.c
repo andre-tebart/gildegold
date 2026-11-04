@@ -1044,7 +1044,8 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 #pragma pack(push, 1)
 typedef struct AIBLD {             /* the building record fields this unit reads (ai.h AIBLD, same layout) */
     unsigned char kind;            /* 0x00, the building kind (the index into the name tables) */
-    char pad1[0x26];
+    int id;                        /* 0x01, the building's id (ai_bld.h AIBLD.id) */
+    char pad05[0x22];
     unsigned short owner;          /* 0x27, the owner's character id */
     char pad29[0x34];
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
@@ -11001,10 +11002,18 @@ typedef struct G8CHARREC {              /* a character record of ai_Chars (AICHA
     int netId;                          /* +0x004, the id the news events carry */
     unsigned char health;               /* +0x008, > 0 = alive */
     unsigned char sex;                  /* +0x009, 0 / 1 (the text's feminine form) */
-    char pad0a[0x15b];
+    char pad0a[0x26];                   /* +0x00a .. 0x02f */
+    union {
+        char name[0x58];                /* +0x030, the character's name (AICHAR.name) */
+        struct {
+            char first[0x10];           /* +0x030 */
+            char family[0x10];          /* +0x040 */
+        };
+    };
+    char pad88[0xdd];                   /* +0x088 .. 0x164 */
     unsigned char title;                /* +0x165, the title rank */
     char pad166[6];
-    char *bld;                          /* +0x16c, the building the character is in */
+    AIBLD *bld;                         /* +0x16c, the building the character is in */
 } G8CHARREC;
 #pragma pack(pop)
 
@@ -14423,17 +14432,24 @@ void ai_Unk5a9bc0(int param_1, int param_2, int param_3, int param_4)
     he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5ec,
                  *(int *)(*(int *)(param_2 + 0x16c) + 1), *(int *)(param_3 + 2), 0, (char *)(unsigned)&full_data_62c3b8);
 }
-/* 0x5a9c30, a Domizil message (108 B): as 0x5a9bc0 with the text 0x4077, the key "_NACHRICHTEN_DOMIZIL_01"
-   0x62c3d0, the flag 1 and param_3 (a string) as the last text argument; 0x53dee0 gets the +1 field of param_3
-   and -1 */
+#pragma pack(push, 1)
+typedef struct G8OBJ {                  /* an object record of the ai_ lists (AIOBJ, ai_types.h) */
+    unsigned short id;                  /* +0x00, the object's type id */
+    int objId;                          /* +0x02, the object's own id */
+} G8OBJ;
+#pragma pack(pop)
 
-void ai_Unk5a9c30(int param_1, int param_2, int param_3)
+/* 0x5a9c30, the Domizil message of the character c to `to` (108 B): for a kind 6 / 7 character the text 0x4077
+   (c's name, its family, 0x9a8 + 2 * level) into ai_NewsText, then the quick-jump message 0x5ec to to->netId with
+   the id of c's building, the object's id and the sound "_NACHRICHTEN_DOMIZIL_01" */
+
+void ai_DomizilMessage(G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level)
 {
-    if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
+    if (to->kind != 6 && to->kind != 7)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x4077, param_2 + 0x30, param_2 + 0x40, param_3);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
-                 (char *)(unsigned)&full_data_62c3e8);
+    txt_Format(ai_NewsText, 0x4077, c->name, c->family, level * 2 + 0x9a8);
+    he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 0, 0x5ec, c->bld->id, obj->objId, 0,
+                 "_NACHRICHTEN_DOMIZIL_01");
 }
 /* 0x5a9ca0, a Domizil message (98 B): the text 0x407a with the +0x30 / +0x40 fields of param_2, and 0x53dee0
    (flag 1, the text 0x5ec, the +1 field of param_3, the key "_NACHRICHTEN_DOMIZIL_04" 0x62c3e8) */

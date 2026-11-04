@@ -51,7 +51,7 @@ struct D3SM;
 #define GAPDATA __declspec(align(1)) unsigned char
 #define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
 #define ai_Unk5a9240K ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
-#define ai_Unk5a9c30K ((int (*)())ai_Unk5a9c30)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define ai_DomizilMessageK ((int (*)())ai_DomizilMessage)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
 
 extern int ai_TransportWindow();
@@ -15097,7 +15097,7 @@ void he_Unk56d2d0(int ev)
 
 int gm_ClockSeason();
 int ahm_HasRecord();
-void ai_Unk5a9c30(int param_1, int param_2, int param_3);
+void ai_DomizilMessage(int param_1, int param_2, int param_3);
 int ahm_SendAddPlace();
 int gm_MinutesBetween();
 
@@ -15126,7 +15126,7 @@ void he_Unk56d3d0(int ev)
         v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0);
         h = gm_FindChar(*(int *)(ev + 0xc));
         if (h != 0)
-            ai_Unk5a9c30K(h, c, v, *(int *)(ev + 0xb0));
+            ai_DomizilMessageK(h, c, v, *(int *)(ev + 0xb0));
         ahm_SendAddPlace(c, *(int *)(ev + 0xb0));
         sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
         he_FreeEvent((int *)ev);
