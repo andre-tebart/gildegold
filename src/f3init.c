@@ -43,7 +43,9 @@ typedef struct SCENEOBJ {
                                        ch_CurrentGroup / evt_NoGroup; here with the building's id) */
     int scriptGroup;                /* 0x30, ch.h CHARACTER.scriptGroup: the group of the script that created / moved it
                                        (here compared with the room object's instance id) */
-    char pad034[0x14];              /* 0x34 .. 0x47 */
+    char pad034[0x4];               /* 0x34, ch.h CHARACTER.obj */
+    D3VECTOR pos;                   /* 0x38, ch.h CHARACTER.pos: the character's stored position (ls_ReadCharacter) */
+    char pad044[0x4];               /* 0x44 .. 0x47 */
     unsigned proto;                 /* 0x48, the prototype reference: 0x1000000 | object index (ai_Goods), 0x2000000 | building index (ai_BTypes) */
     char pad04c[0x1c];              /* 0x4c .. 0x67 */
     float soundRange;               /* 0x68, the radius of the object's sound (0x5126a0: + 50 = the range) */
@@ -54,7 +56,7 @@ typedef struct SCENEOBJ {
     char pad128[0xa4];              /* 0x128 .. 0x1cb */
     void *info;                     /* 0x1cc, D3OBJECT.info: the mesh data (0 until d3_InflateObject loads it) */
     char pad1d0[0x1c];              /* 0x1d0 .. 0x1eb */
-    void *mesh;                     /* 0x1ec, D3OBJX.mesh: the mesh driver (its texture-set list is at +0xf4) */
+    struct D3MATERIAL *mesh;        /* 0x1ec, D3OBJECT.material: the mesh driver (its texture-set list is animCtl, +0xf4) */
     char pad1f0[0x8];               /* 0x1f0 .. 0x1f7 */
     struct SCENEOBJ *parent;        /* 0x1f8, D3OBJECT.parent */
     char pad1fc[0x4];               /* 0x1fc, D3OBJECT.child */
@@ -91,7 +93,7 @@ typedef struct INIT_OFFICE {
 typedef struct INIT_BLD {
     unsigned char type;             /* 0x00, the index into ai_BTypes */
     int id;                         /* 0x01, the building's id (0x500190 / gm_Query use it) */
-    char pad05[0x20];               /* 0x05 .. 0x24 (ai.h's AIBLD.name) */
+    char name[0x20];                /* 0x05, the building's name (ai.h's AIBLD.name; init_NameBuildings) */
     unsigned short masterId;        /* 0x25, the character id of the building's master (ai.h's AIBLD.masterId;
                                        the new-town message 0x1b asks for every building with 0xffff here) */
     unsigned short owner;           /* 0x27, the character id of the building's person, 0xffff = none
@@ -126,7 +128,9 @@ typedef struct INIT_BTYPEREC {
     unsigned char kind;             /* 0x000, the class (init_OpenTown's cls[] index) */
     char pad001[0x21];              /* 0x001 .. 0x021 */
     unsigned char nParts;           /* 0x022, how many of parts[] are used */
-    unsigned short parts[0x100];    /* 0x023, the object prototypes of the building's parts in build order (bit 15 a flag) */
+    unsigned short parts[0x40];     /* 0x023, the object prototypes of the building's parts in build order (bit 15 a flag;
+                                       0x40 of them: f3gm.h GMBTYPE.objs, the gm_ walks stop at 0x40) */
+    char pad0a3[0x180];             /* 0x0a3 .. 0x222 (GMBTYPE: the parents of each part, the skill bytes 0x1a3, their values 0x1e3) */
     char pad223[0x2a];              /* 0x223 .. 0x24c (the jobs at 0x223, the person prototypes at 0x22f / 0x230) */
 } INIT_BTYPEREC;
 #pragma pack(pop)
@@ -751,16 +755,14 @@ void init_LoadObjectScene(int n)
                 for (q = (struct SCENEOBJ **)ch_List; (int)q < (int)(ch_List + INIT_CHARACTER_COUNT); q++) {
                     o = *q;
                     if (o != 0 && o->scene == &d3_Scenes[uni]) {
-                        /* 0x38: the character's stored position, a D3VECTOR the sources do not name yet */
-                        if (d3_VecEqual((D3VECTOR *)((char *)o + 0x38), &d3_Origin, 0.5f) != 0) {
+                        if (d3_VecEqual(&o->pos, &d3_Origin, 0.5f) != 0) {
                             if ((o->transport != 0 && (d = d3_FindObject(0, 0x100, 0, "dummy_TRANSPORTER")) != 0) || (d = ch_FindDummy()) != 0 ||
                                 ((d = d3_FindObject(0, 0x100, 0, "dummy_EINGANG")) != 0 || (d = d3_FindObject(0, 0x100, 0, "dummy_TRANSPORTER_ENTRY")) != 0)) {
-                                /* d + 0x4c: D3OBJECT.pos, the dummy's position */
-                                d3_PointToWorld(d, (D3VECTOR *)((char *)d + 0x4c), &tmp.vec);
+                                d3_PointToWorld(d, &d->pos, &tmp.vec);
                                 ch_SetPos((struct CHARACTER *)o, &tmp.vec, 1);
                             }
                         } else {
-                            ch_SetPos((struct CHARACTER *)o, (D3VECTOR *)((char *)o + 0x38), 1);
+                            ch_SetPos((struct CHARACTER *)o, &o->pos, 1);
                             ch_PlaceOnGround((struct CHARACTER *)o, 1);
                         }
                     }
@@ -889,15 +891,15 @@ void init_LoadBuildingScene(int k)
             for (q = (struct SCENEOBJ **)ch_List; (int)q < (int)(ch_List + INIT_CHARACTER_COUNT); q++) {
                 co = *q;
                 if (co != 0 && co->scene == &d3_Scenes[cls]) {
-                    if (d3_VecEqual((D3VECTOR *)((char *)co + 0x38), &d3_Origin, 0.5f) != 0) {
+                    if (d3_VecEqual(&co->pos, &d3_Origin, 0.5f) != 0) {
                         if ((co->transport != 0 && (d = d3_FindObject(0, 0x100, 0, "dummy_TRANSPORTER")) != 0) || (d = ch_FindDummy()) != 0 ||
                             ((d = d3_FindObject(0, 0x100, 0, "dummy_EINGANG")) != 0 || (d = d3_FindObject(0, 0x100, 0, "dummy_TRANSPORTER_ENTRY")) != 0)) {
                             /* d + 0x4c: D3OBJECT.pos, the dummy's position */
-                            d3_PointToWorld(d, (D3VECTOR *)((char *)d + 0x4c), &tmp.vec);
+                            d3_PointToWorld(d, &d->pos, &tmp.vec);
                             ch_SetPos((struct CHARACTER *)co, &tmp.vec, 1);
                         }
                     } else {
-                        ch_SetPos((struct CHARACTER *)co, (D3VECTOR *)((char *)co + 0x38), 1);
+                        ch_SetPos((struct CHARACTER *)co, &co->pos, 1);
                     }
                 }
             }
@@ -1213,7 +1215,7 @@ int init_CreateStartCharacters(void)
             f0[n] = p;
             n++;
         }
-        p = (INIT_CHAR *)((char *)p + 0x21c);
+        p++;
     } while ((int)p < (int)INIT_CHARACTERS_END);
     for (i = 0; i < 30; i++)
         ids[i] = i;
@@ -1715,7 +1717,7 @@ void init_OpenTown(void)
     memset(pl, 0, sizeof(pl));
     memset(ch2, 0, sizeof(ch2));
     ncl = 0;
-    p = (char *)ai_Chars + 2;
+    p = (char *)&((INIT_CHAR *)ai_Chars)->kind;
     do {
         if (ncl >= 8)
             break;
@@ -1965,7 +1967,7 @@ void init_OpenTown(void)
         AITIME *clock = &ai_Time;
 
         i = 0;
-        p = (char *)ai_Chars + 2;
+        p = (char *)&((INIT_CHAR *)ai_Chars)->kind;
         do {
             if (*p == 6)
                 break;
@@ -1986,7 +1988,7 @@ void init_OpenTown(void)
     he_PostEvent6b();
     he_PostEvent7a();
     he_PostEvent2b();
-    p = (char *)ai_Chars + 2;
+    p = (char *)&((INIT_CHAR *)ai_Chars)->kind;
     for (i = 0; i < 0x2ff; i++, p += 0x21c) {
         if (*p == 6 || *p == 7 || *p == 5 || *p == 3 || *p == 4 || *p == 2) {
             char *p2;
@@ -2649,7 +2651,7 @@ int init_NameBuildings(void)
                 r = util_RandomU(cnt);
                 u = names[r & 0xffff];
                 if (strlen(u) < 0x20)
-                    strcpy((char *)b + 5, u);
+                    strcpy(((INIT_BLD *)b)->name, u);
                 else {
                     sprintf(err, "Building name too long: %s", u);
                     err_Message(err);
@@ -3004,7 +3006,7 @@ void init_SyncSceneObjects(char *o)
         if (so->info != 0)
             d3if_SelectTextureSet((struct D3OBJECT *)o, (struct D3SURF *)so->info, init_TextureSet, 1);
         else
-            d3if_SelectTextureSet((struct D3OBJECT *)o, (struct D3SURF *)((char *)so->mesh + 0xf4), init_TextureSet, 1);
+            d3if_SelectTextureSet((struct D3OBJECT *)o, (struct D3SURF *)so->mesh->animCtl, init_TextureSet, 1);
     }
 }
 /* 0x5124d0, the first building of the type 0xb: 0x511e60 */
@@ -3174,7 +3176,7 @@ void unk_Unk512890(void)
     }
     init_TownSoundCount = 0;
 }
-/* 0x5128d0, switches the seasonal textures of the town scene (d3_Terrain, the names of 0x40 bytes at +0x1a64) to
+/* 0x5128d0, switches the seasonal textures of the town scene (the 8 tile type names D3FLMAP.typenames of d3_Terrain) to
    the current season (gm_ClockSeason): when no name carries the season's suffix yet, each is cut at its old suffix
    ("_FRUEHLING" / "_HERBST" / "_SNOW") and gets the season's suffix when that texture exists (tex_FindFile), then
    the tile is set again (d3fl_ReplaceTexture). The summer (1) only cuts the suffixes (a name without one stays as
@@ -3196,7 +3198,7 @@ void init_SetSeasonTextures(void)
         while (!found) {
             if (i >= 0x200)
                 break;
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0 && strstr(nm, "_SNOW") != 0)
                 found = 1;
             i += 0x40;
@@ -3205,7 +3207,7 @@ void init_SetSeasonTextures(void)
             return;
         j = 0;
         for (i = 0; i < 0x200; i += 0x40, j++) {
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0) {
                 strcpy(a, nm);
                 if ((u = strstr(a, "_FRUEHLING")) != 0 || (u = strstr(a, "_HERBST")) != 0 || (u = strstr(a, "_SNOW")) != 0)
@@ -3225,7 +3227,7 @@ void init_SetSeasonTextures(void)
         while (!found) {
             if (i >= 0x200)
                 break;
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0 && strstr(nm, "_HERBST") != 0)
                 found = 1;
             i += 0x40;
@@ -3234,7 +3236,7 @@ void init_SetSeasonTextures(void)
             return;
         j = 0;
         for (i = 0; i < 0x200; i += 0x40, j++) {
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0) {
                 strcpy(a, nm);
                 if ((u = strstr(a, "_FRUEHLING")) != 0 || (u = strstr(a, "_HERBST")) != 0 || (u = strstr(a, "_SNOW")) != 0)
@@ -3254,7 +3256,7 @@ void init_SetSeasonTextures(void)
         while (!found) {
             if (i >= 0x200)
                 break;
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0 && strstr(nm, "_FRUEHLING") != 0)
                 found = 1;
             i += 0x40;
@@ -3263,7 +3265,7 @@ void init_SetSeasonTextures(void)
             return;
         j = 0;
         for (i = 0; i < 0x200; i += 0x40, j++) {
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0) {
                 strcpy(a, nm);
                 if ((u = strstr(a, "_FRUEHLING")) != 0 || (u = strstr(a, "_HERBST")) != 0 || (u = strstr(a, "_SNOW")) != 0)
@@ -3283,10 +3285,10 @@ void init_SetSeasonTextures(void)
         while (!found) {
             if (i >= 0x200)
                 break;
-            if (*((char *)d3_Terrain + 0x1a64 + i) != 0
-                && (strstr((char *)d3_Terrain + 0x1a64 + i, "_FRUEHLING") != 0
-                    || strstr((char *)d3_Terrain + 0x1a64 + i, "_HERBST") != 0
-                    || strstr((char *)d3_Terrain + 0x1a64 + i, "_SNOW") != 0))
+            if (*((char *)((D3FLMAP *)d3_Terrain)->typenames + i) != 0
+                && (strstr((char *)((D3FLMAP *)d3_Terrain)->typenames + i, "_FRUEHLING") != 0
+                    || strstr((char *)((D3FLMAP *)d3_Terrain)->typenames + i, "_HERBST") != 0
+                    || strstr((char *)((D3FLMAP *)d3_Terrain)->typenames + i, "_SNOW") != 0))
                 found = 1;
             i += 0x40;
         }
@@ -3294,7 +3296,7 @@ void init_SetSeasonTextures(void)
             return;
         j = 0;
         for (i = 0; i < 0x200; i += 0x40, j++) {
-            nm = (char *)d3_Terrain + 0x1a64 + i;
+            nm = (char *)((D3FLMAP *)d3_Terrain)->typenames + i;
             if (*nm != 0) {
                 strcpy(a, nm);
                 if ((u = strstr(a, "_FRUEHLING")) != 0 || (u = strstr(a, "_HERBST")) != 0 || (u = strstr(a, "_SNOW")) != 0) {
@@ -3326,7 +3328,7 @@ char init_TextureSetHook(int o)
 
     s = ((SCENEOBJ *)o)->kind;
     if (s != 2 && s != 4)
-        d3if_SelectTextureSet((D3OBJECT *)o, (char *)((SCENEOBJ *)o)->mesh + 0xf4, init_TextureSet, 1);
+        d3if_SelectTextureSet((D3OBJECT *)o, ((SCENEOBJ *)o)->mesh->animCtl, init_TextureSet, 1);
     return 1;
 }
 /* 0x512e80, the scene callback (a function start Ghidra missed) for the objects of a building b whose state is not 2 / 3 / 4 and whose name does not start with "pfl_" / "vg_" / "!vg_": registers (0x446f30) the object with its list for every slot 0 .. (the building kind's rank byte (+0x247) - 1, + 1 for the type 2) */
@@ -3362,7 +3364,7 @@ void init_SetCharacterAnimations(unsigned char *b)
 {
     int idx;
     unsigned k;
-    int *q;
+    INIT_CHAR *c;
     int ch;
     INIT_ANIMSET *r;
 
@@ -3378,16 +3380,16 @@ void init_SetCharacterAnimations(unsigned char *b)
     }
     r = init_ClassAnims + idx;
     sv_CollectGroupCharacters((char *)b);
-    q = (int *)((char *)ai_Chars + 0x184);
+    c = (INIT_CHAR *)ai_Chars;
     do {
-        ch = *q;
-        if (ch != 0 && (q[-6] == (int)b || ((INIT_CHAR *)ch)->group == ((INIT_BLD *)b)->id)) {
+        ch = (int)c->model;
+        if (ch != 0 && (c->bld == (INIT_BLD *)b || ((INIT_CHAR *)ch)->group == ((INIT_BLD *)b)->id)) {
             ch_PreloadAnims((struct CHARACTER *)ch, 0x10, r->names[0], r->names[1], r->names[2], r->names[3],
                             r->names[4], r->names[5], r->names[6], r->names[7], r->names[8], r->names[9],
                             r->names[10], r->names[11], r->names[12], r->names[13], r->names[14], r->names[15]);
         }
-        q += 0x87;
-    } while ((int)q < (int)((char *)ai_Chars + 0x184 + 0x300 * 0x21c));
+        c++;
+    } while ((int)&c->model < (int)&((INIT_CHAR *)ai_Chars)[INIT_CHARACTER_COUNT].model);  /* the original walks and compares the model field's address */
 }
 /* 0x513050, enters the scene of the building b (init_ShowBuildingScene): the room object o (the slot of b's object
    list, or 0xfd = the building's own scene) selects the universe (init_ObjectUniverse / init_BuildingUniverse),
@@ -3407,6 +3409,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
     unsigned short *o;
     SCENEOBJ *t;
     SCENEOBJ **q;
+    INIT_CHAR *c;
     struct D3OBJECT *d;
     int season, cls, i, uni, limit;
     unsigned short proto;
@@ -3473,21 +3476,21 @@ void init_ShowBuildingScene(unsigned char *b, int slot)
             }
             q++;
         } while ((int)q < (int)(ch_List + INIT_CHARACTER_COUNT));
-        q = &((INIT_CHAR *)ai_Chars)->model;
+        c = (INIT_CHAR *)ai_Chars;
         do {
-            if (*q != 0 && d3t_SceneIndex((*q)->scene) == uni) {
-                t = *q;
+            if (c->model != 0 && d3t_SceneIndex(c->model->scene) == uni) {
+                t = c->model;
                 if ((t->group == bd->id || t->scriptGroup == ((INIT_OBJ *)o)->objId) && i < limit) {
                     ch_SetVisible((struct CHARACTER *)t, 1);
-                    ch_PlaceOnGround(*q, 0);
-                    gm_SelectModelVariant((char *)q - 0x184);
-                    gm_ChooseHeadIcon((unsigned short *)((char *)q - 0x184));
+                    ch_PlaceOnGround(c->model, 0);
+                    gm_SelectModelVariant((char *)c);
+                    gm_ChooseHeadIcon(&c->id);
                     i++;
                 } else
                     ch_SetVisible((struct CHARACTER *)t, 0);
             }
-            q += 0x87;
-        } while ((int)q < (int)((char *)ai_Chars + 0x184 + INIT_CHARACTER_COUNT * 0x21c));
+            c++;
+        } while ((int)&c->model < (int)&((INIT_CHAR *)ai_Chars)[INIT_CHARACTER_COUNT].model);  /* the original walks and compares the model field's address */
         t = (SCENEOBJ *)gm_Query(0, 2, 7, 4, 0x1d);
         while (t != 0) {
             t = ((INIT_PANELCHAR *)t)->next;
