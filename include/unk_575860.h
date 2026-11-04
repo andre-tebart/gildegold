@@ -178,7 +178,7 @@ void ai_TutorialProgressSlider(void);                /* 0x577d90, the progress s
 int ai_TutorialStepForm(void);                 /* 0x577e50, the tutorial chapter form */
 int ai_TutorialStepClicked(void);                 /* 0x5780e0, the control predicate on S+0x4c */
 int ai_TutorialSetHost(char *per);            /* 0x578120, attaches the tutorial's event record (host) */
-void ai_Unk578150(void);                /* 0x578150, clears the player S+0x1c */
+void ai_TutorialClearHost(void);                /* 0x578150, detaches the tutorial's event record (host) */
 int ai_Unk578170(void);                 /* 0x578170, the gate predicate */
 int ai_TutorialStart(void);                 /* 0x578180, the tutorial start / record reset */
 void ai_TutorialStop(void);                /* 0x578370, the tutorial stop (handle + chain reset) */

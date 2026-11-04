@@ -8976,7 +8976,7 @@ int ai_TutorialSetHost();
 int ai_TutorialOpenIntro();
 int ai_TutorialTick();
 int ai_TutorialCloseIntro();
-void ai_Unk578150(void);
+void ai_TutorialClearHost(void);
 void sv_PopTo(int v);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 
@@ -9005,7 +9005,7 @@ void he_Unk552bc0(int ev)
         break;
     case 2:
         ai_TutorialCloseIntro();
-        ai_Unk578150();
+        ai_TutorialClearHost();
         he_FreeEvent((int *)ev);
         U_I((unsigned)&ai_GameOver) = 1;
         sv_PopTo((void *)(unsigned)&main_GameLoop);

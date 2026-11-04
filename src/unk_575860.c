@@ -2365,12 +2365,13 @@ int ai_TutorialSetHost(char *per)
     ai_Tutorial->continueObj = -1;
     return 0;
 }
-/* 0x578150, clears the player S+0x1c and resets the window id S+0x20 = -1 (26 B, no return value) */
+/* 0x578150, detaches the tutorial's event record (host) and resets the intro window's control object (continueObj)
+   to -1 (26 B, no return value) */
 
-void ai_Unk578150(void)
+void ai_TutorialClearHost(void)
 {
-    U_I(S + 0x1c) = 0;
-    U_I(S + 0x20) = -1;
+    ai_Tutorial->host = 0;
+    ai_Tutorial->continueObj = -1;
 }
 /* 0x578170, the gate predicate (14 B): 1 while the gate 0x6f265c is clear, else 0 */
 
