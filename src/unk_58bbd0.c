@@ -8340,7 +8340,7 @@ void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_A
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_TrainingContact();
 void ai_KidnapContact(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
-void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
+void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_CityWatchListener(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_ConfessionListener(); void ai_TownHallContact();
 void ai_TownCashContact();
@@ -8929,7 +8929,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0x138: ai_GuildLevel1Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x139: ai_GuildLevel3Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x145: ai_Unk5a6a90(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x146: ai_Unk5a67a0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x146: ai_CityWatchListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x14c: ai_Unk5a6920(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x24b: ai_AlchemistLabContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x256: ai_CannonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -12763,7 +12763,7 @@ int ai_ArrestWindow(int param_1, char *param_2)
     return 0;
 }
 /* 0x5a6720, the city watch arrest map pick, the click of the customs box ob_ZOLLKASSE (the zoll branch of
-   ai_Unk5a67a0's contact dispatch, 127 B): the building's character gate (sv_CheckCharacterFlag, 0 with a free
+   ai_CityWatchListener's contact dispatch, 127 B): the building's character gate (sv_CheckCharacterFlag, 0 with a free
    character) and the building; the 20-int request 1, -1, 0xa0744300, 1, 6 with 0x727 at +0x4c; the player bar
    opens, ai_MapPick runs (1, the request, the prompt text ai_ArrestPickPrompt, the city watch arrest window
    ai_ArrestWindow as callback, 0), then the player bar closes and the selection is cleared */
@@ -12889,48 +12889,48 @@ void ai_Unk5a6b70(int param_1, int param_2, int param_3)
     *(float *)(param_1 + 0x10) = (float)param_2 + (float)U_I((unsigned)&ai_MapSize) * 0.5f + cx;
     *(float *)(param_1 + 0x14) = (float)U_I((unsigned)&full_data_6f4ee4) * 0.5f + (float)param_3 + cy;
 }
-/* 0x5a67a0, the city watch contact listener (376 B, a room of the building driver 0x59e420): 0x52e190, the
-   pump 0x5309a0 (this, 0x67fff); with the mask 0x200 the contacts contact_PATROL (0x1440b5c, 0x16),
-   ob_WACHPLAN (0x1440b78, 0x16), ob_PERSONALBUCH (0x143c9f0, 0xc), ob_MEISTERBRIEF (0x143cbc8, 0x16) and the
-   customs box ob_ZOLLKASSE / ob_ZOLLKASSE_MIT_GEHEIMFACH (0x1440b84, 0x16) by the 0x4ffe90 (the context +0x5d,
-   2, 6, 0, 0x147 / 0x148) records; the pending click 0x6f22e4 opens 0x5aab80 (param_1, the name) / 0x5a5f60 /
-   0x5a6480 / 0x5a6720 / 0x5c3200 */
+/* 0x5a67a0, the city watch contact listener, the room 0x146 of the building driver 0x59e420 (376 B): releases
+   the name plates, then every frame registers the plates contact_PATROL, ob_WACHPLAN, ob_PERSONALBUCH,
+   ob_MEISTERBRIEF and the customs box ob_ZOLLKASSE / ob_ZOLLKASSE_MIT_GEHEIMFACH (sv_RegisterNamePlate, 0x16 /
+   0xc); the customs box only with the record 0x147 / 0x148 of the building's objList (gm_Query); a click on a
+   plate opens its window: ai_PersonnelBook, ai_PatrolStart, ai_WatchPlanStart, ai_ArrestStart,
+   ai_MasterLetterWindow */
 
-void ai_Unk5a67a0(int param_1)
+void ai_CityWatchListener(AIBLD *bld)
 {
-    int patrol;
-    int wachplan;
-    int personal;
-    int meister;
+    int patrol = 0;
+    int wachplan = 0;
+    int personal = 0;
+    int meister = 0;
     int zoll = 0;
     int r;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5a67a0, 0x67fff);
+    r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            patrol = sv_RegisterNamePlate("contact_PATROL", U_I((unsigned)&full_data_1440b5c), 0x16);
-            wachplan = sv_RegisterNamePlate("ob_WACHPLAN", U_I((unsigned)&full_data_1440b78), 0x16);
-            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", U_I((unsigned)&ai_ContactTextPersonnelBook), 0xc);
-            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0x16);
-            if (gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0x147) != 0)
-                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE", U_I((unsigned)&full_data_1440b84), 0x16);
-            else if (gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0x148) != 0)
-                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE_MIT_GEHEIMFACH", U_I((unsigned)&full_data_1440b84), 0x16);
-            if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) && U_I((unsigned)&ai_ClickedObject) != 0) {
-                if (U_I((unsigned)&ai_ClickedObject) == personal)
-                    ai_PersonnelBook(param_1, "ob_PERSONALBUCH");
-                else if (U_I((unsigned)&ai_ClickedObject) == patrol)
-                    ai_PatrolStart(param_1);
-                else if (U_I((unsigned)&ai_ClickedObject) == wachplan)
-                    ai_WatchPlanStart(param_1);
-                else if (U_I((unsigned)&ai_ClickedObject) == zoll)
-                    ai_ArrestStart(param_1);
-                else if (U_I((unsigned)&ai_ClickedObject) == meister)
-                    ai_MasterLetterWindow(param_1);
+        if (ai_BuildingPerms & 0x200) {
+            patrol = sv_RegisterNamePlate("contact_PATROL", ai_ContactTextPatrol, 0x16);
+            wachplan = sv_RegisterNamePlate("ob_WACHPLAN", ai_ContactTextWatchPlan, 0x16);
+            personal = sv_RegisterNamePlate("ob_PERSONALBUCH", ai_ContactTextPersonnelBook, 0xc);
+            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
+            if (gm_Query(bld->objList, 2, 6, 0, 0x147) != 0)
+                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE", ai_ContactTextCustomsBox, 0x16);
+            else if (gm_Query(bld->objList, 2, 6, 0, 0x148) != 0)
+                zoll = sv_RegisterNamePlate("ob_ZOLLKASSE_MIT_GEHEIMFACH", ai_ContactTextCustomsBox, 0x16);
+            if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0) {
+                if (ai_ClickedObject == personal)
+                    ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                else if (ai_ClickedObject == patrol)
+                    ai_PatrolStart((int)bld);
+                else if (ai_ClickedObject == wachplan)
+                    ai_WatchPlanStart((int)bld);
+                else if (ai_ClickedObject == zoll)
+                    ai_ArrestStart((int)bld);
+                else if (ai_ClickedObject == meister)
+                    ai_MasterLetterWindow((unsigned char *)bld);
             }
         }
-        r = sv_RunFrame(ai_Unk5a67a0, 0x67fff);
+        r = sv_RunFrame(ai_CityWatchListener, 0x67fff);
     }
 }
 /* 0x5a6c40, four map controls (102 B): 0x4731d0 (0, 0, the id, the screen) / (0, 0x1a2, the id + 1) /

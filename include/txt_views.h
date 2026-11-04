@@ -151,12 +151,12 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440b30                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06970))  /* 0x1440b30 */
 #define full_data_1440b34                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06974))  /* 0x1440b34 */
 #define full_data_1440b38                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x06978))  /* 0x1440b38 */
-#define full_data_1440b5c                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0699c))  /* 0x1440b5c */
+#define ai_ContactTextPatrol                     (*(char * *)((char *)txt_Ptrs + 0x0699c))  /* 0x1440b5c, the hover text of the contact_PATROL plate (ai_CityWatchListener); the wording is unknown */
 #define ai_PatrolPickPrompt                     (*(char * *)((char *)txt_Ptrs + 0x069a0))  /* 0x1440b60, the prompt text of the city watch patrol map pick (ai_PatrolStart) */
 #define ai_RaidPickPrompt                       (*(char * *)((char *)txt_Ptrs + 0x069b0))  /* 0x1440b70, the prompt text of the city watch raid map pick (ai_RaidStart) */
-#define full_data_1440b78                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x069b8))  /* 0x1440b78 */
+#define ai_ContactTextWatchPlan                  (*(char * *)((char *)txt_Ptrs + 0x069b8))  /* 0x1440b78, the hover text of the ob_WACHPLAN plate (ai_CityWatchListener); the wording is unknown */
 #define ai_WatchPlanPickPrompt                  (*(char * *)((char *)txt_Ptrs + 0x069bc))  /* 0x1440b7c, the prompt text of the city watch plan map pick (ai_WatchPlanStart) */
-#define full_data_1440b84                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x069c4))  /* 0x1440b84 */
+#define ai_ContactTextCustomsBox                 (*(char * *)((char *)txt_Ptrs + 0x069c4))  /* 0x1440b84, the hover text of the ob_ZOLLKASSE and ob_ZOLLKASSE_MIT_GEHEIMFACH plates (ai_CityWatchListener); the wording is unknown */
 #define ai_ArrestPickPrompt                     (*(char * *)((char *)txt_Ptrs + 0x069c8))  /* 0x1440b88, the prompt text of the city watch arrest map pick (ai_ArrestStart -> ai_ArrestWindow); the wording is unknown */
 #define full_data_1440b90                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x069d0))  /* 0x1440b90 */
 #define full_data_1440ba4                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x069e4))  /* 0x1440ba4 */

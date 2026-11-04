@@ -5996,12 +5996,12 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1440b30: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b34: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b38: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440b5c: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextPatrol: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_PatrolPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_RaidPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440b78: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextWatchPlan: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_WatchPlanPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440b84: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextCustomsBox: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ArrestPickPrompt: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440b90: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440ba4: view of txt_Ptrs (build/mk_txt_views.py) */
