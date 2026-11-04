@@ -1938,3 +1938,4 @@
 2026-11-04T17:26:37 0x004b8f70 data ai_Unk4b8f70 -> ai_MsgJobEndPlayerType24 by:main why:message table slot 0x24 (index 36 of 0x602570): one of up to 8 jobs of c's carts whose ends (0xb0 / 0xb4) are homes with a kind 0x47 building; the text names that end's player (0x5ef)
 2026-11-04T17:30:14 0x004b9180 data ai_Unk4b9180 -> ai_MsgJobEndPayType25 by:main why:message 0x25 of the callback table ai_Unk602570 (0x602604): as ai_MsgJobEndPlayerType24 and pays 1..2 % of the character's worth
 2026-11-04T17:31:15 0x004b9420 data ai_Unk4b9420 -> ai_MsgJobBothEndsType26 by:main why:message 0x26 of the callback table ai_Unk602570 (0x602608): as the message 0x24 job handler but for the jobs between two buildings, the text gets both ends
+2026-11-04T17:31:53 0x004b9630 data ai_Unk4b9630 -> ai_MsgJobBothEndsType27 by:main why:message 0x27 of the callback table ai_Unk602570 (0x60260c): as the message 0x26 handler but without the item 0x290 check
