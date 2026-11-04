@@ -3107,14 +3107,14 @@ exe	0x005089c0	gm_GoodsPrice	f3gm	byte	readable
 exe	0x00508a20	gm_HealthFactor	f3gm	byte	readable		
 exe	0x00508a80	gm_FormatAmount	f3gm	shape	readable		
 exe	0x00508cc0	gm_ListObjectsAfter	f3gm	draft	readable	deep	
-exe	0x00508d70	gm_BuildingLevel	f3gm	byte	draft		
+exe	0x00508d70	gm_BuildingLevel	f3gm	byte	readable		
 exe	0x00508d80	gm_BuildingBalance	f3gm	draft	readable	deep	
-exe	0x00509060	gm_Unk509060	f3gm	byte	draft		
+exe	0x00509060	gm_BuildingCarts	f3gm	byte	readable		
 exe	0x005090b0	gm_BuildingRank	f3gm	shape	readable		
-exe	0x00509120	gm_Unk509120	f3gm	shape	draft		
+exe	0x00509120	gm_BuildingRankGate	f3gm	shape	readable		
 exe	0x005091a0	gm_BuildingValues	f3gm	byte	readable		
 exe	0x005092e0	gm_BuildingSkill	f3gm	shape	readable		
-exe	0x005093a0	gm_Unk5093a0	f3gm	byte	draft		
+exe	0x005093a0	gm_BuildingKindSkill	f3gm	byte	readable		
 exe	0x00509400	gm_WorkMinutesBetween	f3gm	draft	readable	deep	
 exe	0x005096a0	gm_FixedWorkMinutesBetween	f3gm	draft	readable	deep	
 exe	0x005098a0	gm_BuildingGoodsList	f3gm	draft	readable	deep	
@@ -3123,13 +3123,13 @@ exe	0x00509b10	gm_EquipmentValue	f3gm	byte	readable
 exe	0x00509c80	gm_OwnerWorth	f3gm	byte	readable		
 exe	0x00509d30	gm_BuildingKindValue	f3gm	byte	readable		
 exe	0x00509dc0	gm_BuildingKindCost	f3gm	byte	readable		
-exe	0x00509e30	gm_SumListAmounts	f3gm	byte	draft		
-exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	draft		
-exe	0x00509eb0	gm_CharSumAmounts	f3gm	byte	draft		
+exe	0x00509e30	gm_SumListAmounts	f3gm	byte	readable		
+exe	0x00509e60	gm_GetGoodsValue	f3gm	byte	readable		
+exe	0x00509eb0	gm_CharSumAmounts	f3gm	byte	readable		
 exe	0x00509ee0	gm_CharCurrency	f3gm	byte	readable		
-exe	0x00509f20	gm_Unk509f20	f3gm	shape	draft		
+exe	0x00509f20	gm_CharMoney	f3gm	shape	readable		
 exe	0x00509f80	gm_StallValue	f3gm	byte	readable		
-exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	draft		
+exe	0x00509ff0	gm_ObjectOwnerChar	f3gm	byte	readable		
 exe	0x0050a050	gm_ObjectBuildingOwner	f3gm	byte	draft		
 exe	0x0050a0b0	gm_ObjectOwnerNo	f3gm	byte	draft		
 exe	0x0050a0f0	gm_ObjectBuilding	f3gm	byte	readable		
