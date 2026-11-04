@@ -6395,7 +6395,7 @@ int gv_EvidencePrice(); void ai_Unk5bd1f0(); void cm_SendScriptMessage(void *p);
    (0x18a5 the goods * 5 + 0x13fd / 0x18a6 empty) and 0x5bd1f0; the buy button 0x18a7 / 0x18a8; the click builds
    the message (type 0x74, the character, the building, the clock 0x770ae0 ..) through 0x4c4b70 and sets
    0x6f22a0; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
-void ai_Unk5992c0(int param_1, int param_2, int param_3)
+void ai_DarkCornerMenu(int param_1, int param_2, int param_3)
 {
     int slots[3];
     int vals[3];
@@ -6428,7 +6428,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
     memset(items, 0, 0xa8);
     changed = 1;
     ctl = -1;
-    while (sv_RunFrame(ai_Unk5992c0, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_DarkCornerMenu, 0x677c7) != 0) {
         for (i = 0; i < 3; i++) {
             r = gv_EvidencePrice(*(int *)(param_3 + 0x1c + i * 4),
                              (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
@@ -6509,7 +6509,7 @@ void ai_Unk5992c0(int param_1, int param_2, int param_3)
    0x62b83c ("Diese Information steht nicht ...") goes to 0x521150; the pump 0x5309a0 (0x5992c0, 0x677c7); the
    exit 0x4758f0 */
 
-void ai_Unk5996b0(int param_1, int param_2)
+void ai_DarkCornerBuy(int param_1, int param_2)
 {
     int slots[3];
     int vals[3];
@@ -6541,7 +6541,7 @@ void ai_Unk5996b0(int param_1, int param_2)
     d2_SetPointerSprite(0, 0);
     memset(items, 0, 0xa8);
     changed = 1;
-    while (sv_RunFrame(ai_Unk5992c0, 0x677c7) != 0) {
+    while (sv_RunFrame(ai_DarkCornerMenu, 0x677c7) != 0) {
         for (i = 0; i < 3; i++) {
             r = gv_EvidencePrice(*(int *)(param_2 + 0x1c + i * 4),
                              (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
@@ -6609,23 +6609,23 @@ void ai_Unk5996b0(int param_1, int param_2)
     }
     d2_CloseView(win);
 }
-/* 0x599aa0, opens the dark corner of a table (79 B): the record 0x4ffe90 (param_2 + 0x14, 1, 0, 300); when the
-   table's +0x27 is the player, the menu 0x5992c0 (param_1, param_2) opens, else the buying screen 0x5996b0
-   (param_1, the record); then 0x52d7a0 */
+/* 0x599aa0, opens the dark corner of a table (79 B): the table's record (0x4ffe90 (room->list, 1, 0, 300));
+   when the table belongs to the player, the dark-corner menu opens with the record as the offer source
+   (0x5992c0 (building, room, record)), else the buying screen (0x5996b0 (building, record)); then the camera
+   follows */
 
-void ai_Unk599aa0(int param_1, int param_2)
+void ai_DarkCornerTable(AIBLD *bld, AIOBJ *room)
 {
-    int rec;
+    AIOBJ *rec;
 
-    rec = gm_Query(*(int *)(param_2 + 0x14), 1, 0, 300);
+    rec = (AIOBJ *)gm_Query((void *)room->list, 1, 0, 300);
     if (rec != 0) {
-        if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId)) {
-            /* ROUGH: the third argument is lost in the Ghidra call (the offer source) */
-            ai_Unk5992c0(param_1, param_2, param_2);
+        if (bld->owner == ai_PlayerId) {
+            ai_DarkCornerMenu(bld, room, rec);
             sv_CameraFollow();
             return;
         }
-        ai_Unk5996b0(param_1, rec);
+        ai_DarkCornerBuy(bld, rec);
     }
     sv_CameraFollow();
 }
@@ -6664,7 +6664,7 @@ void ai_Unk599af0(int param_1, int param_2)
             else if (U_I((unsigned)&ai_ClickedObject) == p2)
                 ai_Unk599240(param_1, param_2);
             else if (U_I((unsigned)&ai_ClickedObject) == p3)
-                ai_Unk599aa0(param_1, param_2);
+                ai_DarkCornerTable(param_1, param_2);
         }
         if (U_I((unsigned)&full_data_6f2450) != 0) {
             if (*(unsigned char *)(unsigned)&kb_Last == 0x12) {
@@ -6681,7 +6681,7 @@ void ai_Unk599af0(int param_1, int param_2)
                 *(int *)(msg + 0x60) = U_I(param_2 + 2);
                 cm_SendLongMessage(msg);
             } else if (*(unsigned char *)(unsigned)&kb_Last == 0x17) {
-                ai_Unk599aa0(param_1, param_2);
+                ai_DarkCornerTable(param_1, param_2);
             }
         }
     }
