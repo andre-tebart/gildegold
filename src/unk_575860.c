@@ -9477,13 +9477,15 @@ void ai_GraveCareContact(char *rec)
     ai_GraveWindow(0, rec, txt_Ptrs[0x411e], 1, (void (*)(AIBLD *, GVPICK *))ai_GraveCare);
     sv_CameraFollow();
 }
-/* 0x587340, the graveyard "GEHILFEN_ERSCHAFFEN" contact (47 B): 0x520fe0 (rec) == 0 -> the contact window
-   0x583240 (0, rec, U_I (0x144a684), 0, 0x584b70) and 0x52d7a0 () */
+/* 0x587340, the graveyard "GEHILFEN_ERSCHAFFEN" contact (47 B): when no character of the graveyard's staff shows
+   the at-work flag (sv_CheckCharacterFlag, 0), opens the grave window (ai_GraveWindow: no output, rec, the title
+   text 0x4131, flag 0 = a dead person is picked, the callback ai_GraveRaiseHelper) and follows the camera again
+   (sv_CameraFollow) */
 
 void ai_GraveHelperContact(char *rec)
 {
     if (sv_CheckCharacterFlag(rec) == 0)
-        ai_GraveWindow(0, rec, (char *)U_I((unsigned)&full_data_144a684), 0, (void (*)(AIBLD *, GVPICK *))ai_GraveRaiseHelper);
+        ai_GraveWindow(0, rec, txt_Ptrs[0x4131], 0, (void (*)(AIBLD *, GVPICK *))ai_GraveRaiseHelper);
     sv_CameraFollow();
 }
 /* 0x587370, the graveyard contact VERSICHERUNG (the insurance) for the graveyard rec: the player bar, the form
