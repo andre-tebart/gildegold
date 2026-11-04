@@ -10887,16 +10887,19 @@ int gm_CurseObjectCount(char *b)
         n = n + 1;
     return n;
 }
-/* 0x50d060, 0x285 / 0x288 (1 + ..) */
+/* 0x50d060, the trial building's kind (the trial of the event 0xa0, 0x5741f0): 1, plus one for each of the
+   trial objects it holds (the 0x285 gives 2, the 0x288 one more, so 3 with both) */
 
-int gm_Unk50d060(char *b)
+int gm_TrialBuildingKind(char *b)
 {
+    ORDBLD *bld;
     int n;
 
+    bld = (ORDBLD *)b;
     n = 1;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x285) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x285) != 0)
         n = 2;
-    if (gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x288) != 0)
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x288) != 0)
         n = n + 1;
     return n;
 }

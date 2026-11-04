@@ -18108,7 +18108,7 @@ void he_Unk574120(int ev)
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }
 
-int gm_Unk50d060();                 /* 0x50d060 */
+int gm_TrialBuildingKind();                 /* 0x50d060 */
 
 /* 0x5741f0, the trial of the event 0xa0 (ROUGH): the building +0x10 (0x4fea50) and the figure +0xc (0x505df0) must exist; by the
    building kind (0x50d060) 3 / 2 / else the approach +0xac gives a base value (0x14 / 0xa / 0 for a below 4 / below 7) plus the
@@ -18129,7 +18129,7 @@ void he_Unk5741f0(int ev)
     if (per == 0)
         return;
     a = HM_I(ev, 0xac);
-    kind = gm_Unk50d060(bld);
+    kind = gm_TrialBuildingKind(bld);
     cnt = 0;
     x = 0;
     if (kind == 3) {
