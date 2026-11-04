@@ -1269,16 +1269,19 @@ int gv_EntryCount(unsigned char *o)
 
 int gv_SizeOpen(char *r, int i)
 {
+    GVYARD *g;
+
+    g = (GVYARD *)r;
     if (i == 0) {
-        if (*(int *)(r + 8) == 0 || r[0x18] == 0)
+        if (g->lists[0] == 0 || g->open[0] == 0)
             return 0;
     } else if (i == 1) {
-        if (*(int *)(r + 0xc) == 0 || r[0x19] == 0)
+        if (g->lists[1] == 0 || g->open[1] == 0)
             return 0;
     } else if (i == 2) {
-        if (*(int *)(r + 0x10) == 0 || r[0x1a] == 0)
+        if (g->lists[2] == 0 || g->open[2] == 0)
             return 0;
-    } else if (i == 3 && (*(int *)(r + 0x14) == 0 || r[0x1b] == 0))
+    } else if (i == 3 && (g->lists[3] == 0 || g->open[3] == 0))
         return 0;
     return 1;
 }
