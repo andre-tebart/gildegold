@@ -14472,14 +14472,18 @@ void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3)
     }
     he_ShowNews(*(int *)((char *)param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c2f4);
 }
-/* 0x5a9690, a message (69 B): the text 0x4154 with param_2 to a character of the kind 6 / 7 (+2), the +4 id
-   (0x5fc) */
+/* 0x5a9690, tells a player character that relatives were angered by neglected graves (69 B): for a kind 6 / 7
+   character the text 0x4154 with the building, shown to its netId (event 0x5fc); gv_GraveyardTurn sends it when
+   the turn lowered the relations */
 
-void ai_TellGraveNeglect(int param_1, int param_2)
+void ai_TellGraveNeglect(unsigned short *plRec, int bld)
 {
-    if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-        txt_Format((char *)(unsigned)&ai_NewsText, 0x4154, param_2);
-        he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+    G8CHARREC *pl;
+
+    pl = (G8CHARREC *)plRec;
+    if (pl->kind == 6 || pl->kind == 7) {
+        txt_Format(ai_NewsText, 0x4154, bld);
+        he_ShowNews(pl->netId, -1, ai_NewsText, 0, 0x5fc, ch_EmptyName);
     }
 }
 /* 0x5a96e0, a message with three values in two orders (123 B): for a character of the kind 6 / 7 (+2) the

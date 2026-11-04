@@ -4349,7 +4349,7 @@ void gv_GraveyardTurn(char *o)
         if (paid > 0)
             ai_TellGravesPaid((int)pl, (int)bld, paid, sum);
         if (nrel != 0)
-            ai_TellGraveNeglect((int)pl, (int)bld);
+            ai_TellGraveNeglect((unsigned short *)pl, (int)bld);
     }
 }
 
