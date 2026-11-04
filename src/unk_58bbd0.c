@@ -14452,16 +14452,18 @@ void ai_DomizilMessage(G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level)
     he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 0, 0x5ec, c->bld->id, obj->objId, 0,
                  "_NACHRICHTEN_DOMIZIL_01");
 }
-/* 0x5a9ca0, a Domizil message (98 B): the text 0x407a with the +0x30 / +0x40 fields of param_2, and 0x53dee0
-   (flag 1, the text 0x5ec, the +1 field of param_3, the key "_NACHRICHTEN_DOMIZIL_04" 0x62c3e8) */
+/* 0x5a9ca0, the Domizil news _NACHRICHTEN_DOMIZIL_04 of the building bld to the character to (98 B): for a
+   kind 6 / 7 character, the text 0x407a with the first and family names of c and bld as its third argument
+   (the original pushes the record pointer), then the quick-jump message 0x5ec with the building's id
+   (he_Unk56e070 case 2 sends it after the building's level +0x5c fell) */
 
-void ai_Unk5a9ca0(int param_1, int param_2, int param_3)
+void ai_DomizilMessage04(G8CHARREC *to, G8CHARREC *c, AIBLD *bld)
 {
-    if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
+    if (to->kind != 6 && to->kind != 7)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x407a, param_2 + 0x30, param_2 + 0x40);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
-                 (char *)(unsigned)&full_data_62c3e8);
+    txt_Format(ai_NewsText, 0x407a, c->first, c->family, bld);
+    he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
+                 "_NACHRICHTEN_DOMIZIL_04");
 }
 /* 0x5a9d00, a Domizil message (94 B): as 0x5a9ca0 with the text 0x407b (four text arguments) */
 
