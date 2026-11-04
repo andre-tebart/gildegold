@@ -50,23 +50,23 @@ exe	0x00403950	ch_AttachMotion	ch	byte	readable
 exe	0x00403ab0	ch_AnimDone	ch	draft	readable	deep	
 exe	0x00403b00	ch_SetNextAnim	ch	byte	readable		
 exe	0x00403c10	ch_StopAnim	ch	byte	readable		
-exe	0x00403d60	ch_ReleaseMorph	ch	byte	draft		
+exe	0x00403d60	ch_ReleaseMorph	ch	byte	readable		
 exe	0x00403dc0	ch_CheckAniMorph	ch	draft	draft	deep	
 exe	0x00404200	ch_PreloadAnims	ch	byte	readable		
 exe	0x00404360	ch_LoadLowAnims	ch	shape	readable	deep	
 exe	0x004044a0	ch_AttachAni	ch	draft	readable	deep	
-exe	0x00404640	ch_ActAnim	ch	byte	draft		
-exe	0x00404760	ch_GetFreeQueueEntry	ch	byte	draft		
+exe	0x00404640	ch_ActAnim	ch	byte	readable		
+exe	0x00404760	ch_GetFreeQueueEntry	ch	byte	readable		
 exe	0x004047a0	ch_RemoveAction	ch	shape	readable		
-exe	0x00404810	ch_ClearActions	ch	byte	draft		
+exe	0x00404810	ch_ClearActions	ch	byte	readable		
 exe	0x00404860	ch_CheckQueue	ch	byte	readable		
-exe	0x004048b0	ch_InsertAction	ch	byte	draft		
+exe	0x004048b0	ch_InsertAction	ch	byte	readable		
 exe	0x00404a80	ch_PlaceOnGround	ch	draft	readable	deep	
-exe	0x00404b90	ch_UpdateAction	ch	byte	draft		
-exe	0x00404c20	ch_PauseAnim	ch	byte	draft		
+exe	0x00404b90	ch_UpdateAction	ch	byte	readable		
+exe	0x00404c20	ch_PauseAnim	ch	byte	readable		
 exe	0x00404c80	ch_GetCamera	ch	byte	readable		
-exe	0x00404d80	ch_SetCamera	ch	byte	draft		
-exe	0x00404dd0	ch_MoveCamera	ch	byte	draft		
+exe	0x00404d80	ch_SetCamera	ch	byte	readable		
+exe	0x00404dd0	ch_MoveCamera	ch	byte	readable		
 exe	0x00404e40	ch_Random	ch	byte	draft		
 exe	0x00404e60	ch_SaveGround	ch	byte	readable		
 exe	0x00404ed0	ch_RestoreGround	ch	byte	readable		
@@ -77,12 +77,12 @@ exe	0x00405310	ch_Update	ch	byte	draft
 exe	0x00405610	ch_StopActions	ch	byte	readable		
 exe	0x00405670	ch_DeclareAction	ch	byte	draft		
 exe	0x004056e0	ch_ActPlay	ch	byte	readable		
-exe	0x004057a0	ch_QueueAnim	ch	byte	draft		
-exe	0x00405810	ch_QueueAnimSpeed	ch	byte	draft		
+exe	0x004057a0	ch_QueueAnim	ch	byte	readable		
+exe	0x00405810	ch_QueueAnimSpeed	ch	byte	readable		
 exe	0x00405870	ch_ActSitDown	ch	byte	draft		
 exe	0x00405970	ch_SitDown	ch	byte	draft		
 exe	0x004059c0	ch_ReleaseSit	ch	byte	draft		
-exe	0x00405a20	ch_ActStandUp	ch	byte	draft		
+exe	0x00405a20	ch_ActStandUp	ch	byte	readable		
 exe	0x00405ad0	ch_StandUp	ch	byte	draft		
 exe	0x00405b30	ch_ActUsingGate	ch	byte	draft		
 exe	0x00405cb0	ch_UseGate	ch	byte	draft		
@@ -129,9 +129,9 @@ exe	0x0040af90	ch_Reset	ch	byte	draft
 exe	0x0040afb0	ch_Open	ch	byte	readable		
 exe	0x0040b1a0	ch_Close	ch	byte	readable		
 exe	0x0040b240	ch_DeleteAll	ch	byte	draft		
-exe	0x0040b270	ch_NewAction	ch	byte	draft		
-exe	0x0040b2f0	ch_AddAction	ch	byte	draft		
-exe	0x0040b400	ch_AddActionCB	ch	byte	draft		
+exe	0x0040b270	ch_NewAction	ch	byte	readable		
+exe	0x0040b2f0	ch_AddAction	ch	byte	readable		
+exe	0x0040b400	ch_AddActionCB	ch	byte	readable		
 exe	0x0040b4d0	ch_ClearSceneCallbacks	ch	byte	readable		
 exe	0x0040b530	ch_SetSitAnim	ch	byte	draft		
 exe	0x0040b580	evtc_Random	evtc	byte	readable		
