@@ -380,7 +380,7 @@ CHARACTER *ch_Alloc(void)
     err_Message("ch_Create:Too many characters!");
     return 0;
 }
-/* 0x402a30 */
+/* 0x402a30, allocates an empty character for the given id and puts it in that list slot (0 when the slot is taken) */
 
 CHARACTER *ch_AllocAt(int id)
 {
