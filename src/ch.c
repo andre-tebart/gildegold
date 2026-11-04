@@ -460,7 +460,7 @@ void ch_UpdateLowPoly(CHARACTER *ch)
         return;
     if (ch_LowPoly) {
         D3OBJ_UNK200(ch->lowPolyBody) = D3OBJ_UNK200(ch->obj);
-        D3OBJ_UNK048(ch->lowPolyBody) = D3OBJ_UNK048(ch->obj);
+        ch->lowPolyBody->pickId = ch->obj->pickId;
         if (ch->flags.lowPoly) {
             if (ch->obj->type != 1)
                 d3if_Show(ch->obj, 0);
@@ -575,14 +575,14 @@ int ch_CreateMesh(CHARACTER *ch, char *name, D3VECTOR *pos)
         p[-1] = 0;
         strcpy(ch->fullname, buf);
     } else
-        strcpy(ch->body, "");
+        ch->body[0] = ch_EmptyName[0];
     ch->scene = d3_DefaultScene;
     ch->obj->stateFlags |= 0xc;
     ch->obj->objectFlags &= ~2;
     ch->obj->kind = 2;
     ch->obj->mask = 1;
     ch->obj->flags &= ~4;
-    D3MATERIAL_UNK958(ch->obj->material) = 1.8f;
+    D3_MESH(ch->obj)->lightScale = 1.8f;
     ch->walkSpeed = 1.0f;
     ch->group = -1;
     ch->scriptGroup = -1;
@@ -592,7 +592,7 @@ int ch_CreateMesh(CHARACTER *ch, char *name, D3VECTOR *pos)
         D3OBJ_BITS(ch->obj, 0x211)->b3 = ch_ShadowEnabled;
     else
         D3OBJ_BITS(ch->obj, 0x211)->b3 = 0;
-    D3OBJ_UNK048(ch->obj) = 0x3000000;
+    ch->obj->pickId = 0x3000000;
     ch_PlaceOnGround(ch, 0);
     d3_RelightObject(ch->obj);
     d3_UpdateObject(ch->obj, 1);
@@ -614,7 +614,7 @@ int ch_CreateMesh(CHARACTER *ch, char *name, D3VECTOR *pos)
         ch_LoadLowAnims(ch, 1, "gehen");
         ch_UpdateLowPoly(ch);
     }
-    ch->flags.unk12 = 1;
+    ch->flags.idlePending = 1;
     return 1;
 }
 /* 0x403390 */

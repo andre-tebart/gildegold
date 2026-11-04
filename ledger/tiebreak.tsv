@@ -22,12 +22,12 @@ exe	0x00401d50	udp_Init	udp	817c24edc2cad296	no	byte	control=byte p1=byte p2=byt
 exe	0x00401e50	udp_Exit	udp	9bf8969119375a19	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00401e70	udp_Send	udp	c66b35c0ea78291c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00401ea0	udp_FindServers	udp	7a99a0be443baf2e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00402140	ch_GetHMap	ch	3cf50ec623adce74	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00402220	ch_GetSceneHMap	ch	ca28b2f0c03e707c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00402140	ch_GetHMap	ch	4820a27d44d2a592	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00402220	ch_GetSceneHMap	ch	94b700b9f0778011	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004022e0	ch_UpdateFades	ch	a781060770d03b21	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00402480	ch_SetVisible	ch	323cc15fd34067fa	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00402540	ch_InflateModel	ch	b5eed0d0f0b9c315	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004025c0	ch_SetPos	ch	dd3a251fb9c2d436	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x004025c0	ch_SetPos	ch	5ccea5fa3708ed27	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00402640	ch_PlaceAtObject	ch	db15bcb973e475cd	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004026c0	ch_Count	ch	866110b5e64c2808	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00402720	ch_CountAt	ch	608f714384a878e8	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -39,8 +39,8 @@ exe	0x00402a30	ch_AllocAt	ch	bc6612cacb5ef2b0	no	byte	control=byte p1=byte p2=by
 exe	0x00402a70	ch_FindByName	ch	352f5f921d40202c	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00402ac0	ch_FindByObject	ch	9933dc6ec70d58ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00402af0	ch_SetLowPoly	ch	b3cae89fd45d4d9f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x00402ba0	ch_UpdateLowPoly	ch	31eaa44867c24b53	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00403070	ch_CreateMesh	ch	1a2d020f1af772de	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
+exe	0x00402ba0	ch_UpdateLowPoly	ch	7628d66dd597d28e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00403070	ch_CreateMesh	ch	8fabf613e666e795	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00403390	ch_Create	ch	90db5dcafce8d909	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004033c0	ch_MoveToScene	ch	4ab013095862080f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004034e0	ch_AttachTransport	ch	a9a624ad4ab1f609	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

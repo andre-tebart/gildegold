@@ -60,7 +60,9 @@ typedef struct CHARACTER {         /* 0x244 bytes */
             unsigned short lowPoly : 1; /* 0x200, the low-poly body is shown (chc_SetLowPoly) */
             unsigned short fled : 1;    /* 0x400, the fighter has fled: its escape flag is up (cm_PlantEscapeFlag) */
             unsigned short unk11 : 1;
-            unsigned short unk12 : 1;   /* 0x1000 */
+            unsigned short idlePending : 1;   /* 0x1000, the character still needs its idle animation started:
+                                                  ch_CreateMesh sets it, ch_Update attaches sitzend/stehen and
+                                                  clears it when that fails, the save loader clears it */
             unsigned short unk13 : 3;
         };
         unsigned short all;             /* 0x8c, the same bits as a word */
@@ -160,9 +162,7 @@ typedef struct CHOBJBITS {
 } CHOBJBITS;
 #define D3OBJ_BITS(obj, off) ((CHOBJBITS *)((char *)(obj) + (off)))
 float d3_YawTo(struct D3OBJECT *obj, float *p);                                     /* 0x448ac0, angle towards target */
-#define D3OBJ_UNK048(obj) (*(int *)&(obj)->name[0x48])
 #define D3OBJ_UNK200(obj) (*(int *)&(obj)->owner)
-#define D3MATERIAL_UNK958(m) (*(float *)((char *)(m) + 0x958))
 /* D3OBJECT.info is the D3ANIMCTL of animated objects */
 #define D3OBJ_ANIM(obj) ((D3ANIMCTL *)(obj)->info)
 
