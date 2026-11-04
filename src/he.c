@@ -7996,7 +7996,7 @@ fail:
 
 int cm_PlaySpecialTrack();
 int cm_EndSpecialTrack();
-void ai_Unk5a92b0(void);
+void ai_PlagueMessageAll(void);
 
 /* 0x5509f0, a Ghidra miss (disassembled): the allocation handler of the "Sensenmann" event: due now, walks the 0x100 buildings (+0xb8 the start, +0xbc the step, the mask 0x807c4110 as in the plague event 0x54a020) for the next one that is in use, notes it in +0xb4 (its first id word), creates the object (0x550070) and posts the event 0xf later; frees the record when nothing is found / the object fails (ROUGH) */
 void he_Unk5509f0(int ev)
@@ -8133,7 +8133,7 @@ void he_Unk550b60(int ev)
         if (he_Unk5506c0(ev) != 0) {
             *(int *)(ev + 0x70) = 0;
         } else {
-            ai_Unk5a92b0();
+            ai_PlagueMessageAll();
             *(int *)(ev + 0x70) = -1;
         }
     }

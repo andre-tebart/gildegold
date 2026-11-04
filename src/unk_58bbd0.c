@@ -14093,25 +14093,23 @@ void ai_PlagueMessage(G8CHARREC *c)
         he_ShowNews(c->netId, -1, ai_NewsText, 0, 0x600, local);
     }
 }
-/* 0x5a92b0, a plague message to every kind 6 character (119 B): 0x42ec00 (2) picks the text (0x20cd + the
-   value) and the key 0x62c2dc formatted with the value + 0x12; every character of the 0x300 records with the
-   kind 6 (+2) gets it with the +4 id (0x600) */
+/* 0x5a92b0, a plague message to every kind 6 character (119 B): util_Random (2) picks the sound
+   "_KATASTROPHE_PEST_HS_<v + 0x12>" and the text 0x20cd + the value; every character of the 0x300 records
+   with the kind 6 (+2) sends it with the news 0x600 to its netId (+4) */
 
-void ai_Unk5a92b0(void)
+void ai_PlagueMessageAll(void)
 {
     char local[64];
-    int *p;
     unsigned short v;
+    int i;
 
-    v = (unsigned short)util_Random(2);
-    sprintf(local, (char *)(unsigned)&full_data_62c2dc, v + 0x12);
-    txt_Format((char *)(unsigned)&ai_NewsText, v + 0x20cd);
-    p = (int *)(unsigned)&ai_CharInts;
-    do {
-        if (*(char *)((char *)p - 2) == 6)
-            he_ShowNews(*p, -1, (char *)(unsigned)&ai_NewsText, 0, 0x600, local);
-        p += 0x87;
-    } while ((int)p < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
+    v = util_Random(2);
+    sprintf(local, "_KATASTROPHE_PEST_HS_%i", v + 0x12);
+    txt_Format(ai_NewsText, v + 0x20cd);
+    for (i = 0; i < 0x300; i++) {
+        if (ai_Chars[i][2] == 6)
+            he_ShowNews(ai_CharInts[i][0], -1, ai_NewsText, 0, 0x600, local);
+    }
 }
 /* 0x5a9330, the swap text of a delivery (253 B; the only caller is amt.c amt_ExecuteSwapMessage 0x4e6c50, message 0x5c): the text 0x1dcc with the first and the third word for a
    kind 6 (+2) second record (sent with its +4 id, 0x5fd), the same with the first and the second word for a
