@@ -67,29 +67,29 @@ exe	0x00404c20	ch_PauseAnim	ch	byte	readable
 exe	0x00404c80	ch_GetCamera	ch	byte	readable		
 exe	0x00404d80	ch_SetCamera	ch	byte	readable		
 exe	0x00404dd0	ch_MoveCamera	ch	byte	readable		
-exe	0x00404e40	ch_Random	ch	byte	draft		
+exe	0x00404e40	ch_Random	ch	byte	readable		
 exe	0x00404e60	ch_SaveGround	ch	byte	readable		
 exe	0x00404ed0	ch_RestoreGround	ch	byte	readable		
 exe	0x00404fc0	ch_SetGroundDiamond	ch	byte	readable		
 exe	0x00405160	ch_RandomNear	ch	byte	readable		
 exe	0x00405260	ch_FindNear	ch	byte	readable		
-exe	0x00405310	ch_Update	ch	byte	draft		
+exe	0x00405310	ch_Update	ch	byte	readable		
 exe	0x00405610	ch_StopActions	ch	byte	readable		
-exe	0x00405670	ch_DeclareAction	ch	byte	draft		
+exe	0x00405670	ch_DeclareAction	ch	byte	readable		
 exe	0x004056e0	ch_ActPlay	ch	byte	readable		
 exe	0x004057a0	ch_QueueAnim	ch	byte	readable		
 exe	0x00405810	ch_QueueAnimSpeed	ch	byte	readable		
-exe	0x00405870	ch_ActSitDown	ch	byte	draft		
-exe	0x00405970	ch_SitDown	ch	byte	draft		
-exe	0x004059c0	ch_ReleaseSit	ch	byte	draft		
+exe	0x00405870	ch_ActSitDown	ch	byte	readable		
+exe	0x00405970	ch_SitDown	ch	byte	readable		
+exe	0x004059c0	ch_ReleaseSit	ch	byte	readable		
 exe	0x00405a20	ch_ActStandUp	ch	byte	readable		
-exe	0x00405ad0	ch_StandUp	ch	byte	draft		
-exe	0x00405b30	ch_ActUsingGate	ch	byte	draft		
-exe	0x00405cb0	ch_UseGate	ch	byte	draft		
-exe	0x00405d40	ch_ActTakingObject	ch	byte	draft		
-exe	0x00405e70	ch_TakeObject	ch	byte	draft		
+exe	0x00405ad0	ch_StandUp	ch	byte	readable		
+exe	0x00405b30	ch_ActUsingGate	ch	byte	readable		
+exe	0x00405cb0	ch_UseGate	ch	byte	readable		
+exe	0x00405d40	ch_ActTakingObject	ch	byte	readable		
+exe	0x00405e70	ch_TakeObject	ch	byte	readable		
 exe	0x00405f10	ch_TakeObject1	ch	byte	draft		
-exe	0x00405fb0	ch_ActDroppingObject	ch	draft	draft	deep	
+exe	0x00405fb0	ch_ActDroppingObject	ch	draft	readable	deep	
 exe	0x004060d0	ch_DropObject	ch	byte	draft		
 exe	0x00406170	ch_DropObject1	ch	byte	draft		
 exe	0x00406210	ch_ActTurnTo	ch	byte	readable		
@@ -113,7 +113,7 @@ exe	0x00407790	ch_GetWaypoints	ch	draft	readable	deep
 exe	0x004079b0	ch_GetNewPath	ch	draft	draft	deep	
 exe	0x00408490	ch_PathToTarget	ch	shape	draft	deep	
 exe	0x00408690	ch_InitWalk	ch	shape	draft	deep	
-exe	0x00408ab0	ch_WalkSound	ch	byte	draft		
+exe	0x00408ab0	ch_WalkSound	ch	byte	readable		
 exe	0x00408cb0	ch_StartWalkAnim	ch	byte	draft		
 exe	0x00408e60	ch_NextWaypoint	ch	byte	draft		
 exe	0x004093d0	ch_WalkRotate	ch	byte	readable		
@@ -163,7 +163,7 @@ exe	0x0040c210	chc_PlayAnimationScriptInt	chc	byte	readable
 exe	0x0040c330	chc_GetCharacterHandle	chc	byte	readable		
 exe	0x0040c390	chc_TakeObject	chc	byte	readable		
 exe	0x0040c440	chc_TakeObjectLeft	chc	byte	readable		
-exe	0x0040c4f0	chc_TakeObjectScript	chc	byte	draft	deep	
+exe	0x0040c4f0	chc_TakeObjectScript	chc	byte	readable		
 exe	0x0040c630	chc_GiveObject	chc	byte	readable		
 exe	0x0040c660	chc_DropObject	chc	byte	readable		
 exe	0x0040c720	chc_DropObjectLeft	chc	byte	readable		
@@ -1014,7 +1014,7 @@ exe	0x00454890	d3_MirCreateOutline	d3_mir	shape	readable
 exe	0x00454be0	d3_MirCreatePlanes	d3_mir	byte	readable		
 exe	0x00454ec0	d3_MirTransform	d3_mir	byte	readable		
 exe	0x00454f70	d3_MirBoxInPlanes	d3_mir	byte	readable		
-exe	0x004550e0	d3_MirDrawObject	d3_mir	shape	readable		byte+readable -> shape+readable at 66cd9658: include/ts_texture.h: TSMESH.unk10 is D3OPS* (d3_engine.h) with its count field, not an anonymous pad struct; a view type d3_mir does not use, and the flip is two order hunks of the declaration set (8 of 976 bytes) [waits for: a d3_mir declaration-set pass]
+exe	0x004550e0	d3_MirDrawObject	d3_mir	byte	readable		
 exe	0x004554b0	d3_MirBeginFrame	d3_mir	byte	readable		
 exe	0x00455630	par_Init	d3_par	byte	readable		
 exe	0x004556b0	par_DeleteAll	d3_par	byte	readable		
