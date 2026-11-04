@@ -18,7 +18,7 @@ exe	0x00401380	bio_rd_array_quick	bio	byte	readable
 exe	0x00401410	bmp_GetInfo	bmp	byte	readable		
 exe	0x004014d0	bmp_Load	bmp	byte	readable		
 exe	0x00401b90	bmp_Save24	bmp	byte	readable		
-exe	0x00401d50	udp_Init	udp	byte	draft		
+exe	0x00401d50	udp_Init	udp	byte	readable		
 exe	0x00401e50	udp_Exit	udp	byte	readable		
 exe	0x00401e70	udp_Send	udp	byte	readable		
 exe	0x00401ea0	udp_FindServers	udp	byte	readable		
@@ -258,7 +258,7 @@ exe	0x0040f850	ocmd_SetEmitterMaxTrigger	ecmd	byte	readable
 exe	0x0040f8a0	ocmd_TriggerEmitter	ecmd	byte	readable		
 exe	0x0040f8f0	ocmd_SetParticlePos	ecmd	byte	readable		
 exe	0x0040f960	ocmd_Register	ecmd	byte	draft		
-exe	0x0040ffc0	sndc_LoadSampleBank	sndc	byte	draft		
+exe	0x0040ffc0	sndc_LoadSampleBank	sndc	byte	readable		
 exe	0x0040ffe0	sndc_KillSampleBank	sndc	byte	readable		
 exe	0x00410000	sndc_PlaySampleHandle	sndc	byte	readable		
 exe	0x00410040	sndc_PlaySample	sndc	byte	readable		
@@ -4462,7 +4462,7 @@ exe	0x005bdb60	ai_Unk5bdb60	unk_58bbd0	draft	draft
 exe	0x005be1d0	ai_AmountRowStatus	unk_58bbd0	draft	draft		
 exe	0x005be3b0	ai_AmountRow	unk_58bbd0	draft	draft		
 exe	0x005be720	ai_DrawAmountRow	unk_58bbd0	draft	draft		
-exe	0x005bea00	ai_Unk5bea00	unk_58bbd0	shape	draft		
+exe	0x005bea00	ai_SpecialAmountList	unk_58bbd0	shape	draft		
 exe	0x005bea50	ai_Unk5bea50	unk_58bbd0	draft	draft		
 exe	0x005bf0d0	ai_Unk5bf0d0	unk_58bbd0	draft	draft		
 exe	0x005bf300	ai_Unk5bf300	unk_58bbd0	draft	draft		
@@ -4562,7 +4562,7 @@ exe	0x005cede0	ai_InterrogationWindow1	unk_58bbd0	draft	draft
 exe	0x005cf020	ai_InterrogationWindow2	unk_58bbd0	draft	draft		
 exe	0x005cf260	ai_Unk5cf260	unk_58bbd0	draft	draft		
 exe	0x005cf4f0	ai_Unk5cf4f0	unk_58bbd0	draft	draft		
-exe	0x005cf820	ai_Unk5cf820	unk_58bbd0	draft	draft		
+exe	0x005cf820	ai_UseObjPanel	unk_58bbd0	byte	readable		
 exe	0x005cf8a0	ai_UseGood	unk_58bbd0	draft	draft		
 exe	0x005cfb60	ai_Unk5cfb60	unk_58bbd0	byte	draft		
 exe	0x005cfb80	ai_Unk5cfb80	unk_58bbd0	byte	draft		
@@ -4572,10 +4572,10 @@ exe	0x005d0320	ai_Unk5d0320	unk_58bbd0	draft	draft
 exe	0x005d0530	ai_Unk5d0530	unk_58bbd0	draft	draft		
 exe	0x005d06e0	ai_Unk5d06e0	unk_58bbd0	byte	draft		
 exe	0x005d0780	ai_Unk5d0780	unk_58bbd0	draft	draft		
-exe	0x005d08c0	ai_Unk5d08c0	unk_58bbd0	draft	draft		
-exe	0x005d09d0	ai_Unk5d09d0	unk_58bbd0	draft	draft		
-exe	0x005d0a40	ai_Unk5d0a40	unk_58bbd0	draft	draft		
-exe	0x005d0ab0	ai_Unk5d0ab0	unk_58bbd0	draft	draft		
+exe	0x005d08c0	ai_ApplyTrialStep	unk_58bbd0	draft	draft		
+exe	0x005d09d0	ai_TrialStep1	unk_58bbd0	shape	readable		
+exe	0x005d0a40	ai_TrialStep3	unk_58bbd0	shape	readable		
+exe	0x005d0ab0	ai_TrialStep4	unk_58bbd0	shape	readable		
 exe	0x005d0b20	ai_Unk5d0b20	unk_58bbd0	draft	draft		
 exe	0x005d0c70	ai_Unk5d0c70	unk_58bbd0	draft	draft		
 exe	0x005d0e60	ai_Unk5d0e60	unk_58bbd0	draft	draft		
@@ -4589,7 +4589,7 @@ exe	0x005d1990	ai_Unk5d1990	unk_58bbd0	draft	draft
 exe	0x005d1b30	ai_Unk5d1b30	unk_58bbd0	draft	draft		
 exe	0x005d1da0	ai_Unk5d1da0	unk_58bbd0	draft	draft		
 exe	0x005d1fb0	ai_Unk5d1fb0	unk_58bbd0	draft	draft		
-exe	0x005d22e0	ai_Unk5d22e0	unk_58bbd0	draft	draft		
+exe	0x005d22e0	ai_UsePayGood	unk_58bbd0	byte	readable		
 exe	0x005d2320	ai_Unk5d2320	unk_58bbd0	draft	draft		
 exe	0x005d2440	ai_Unk5d2440	unk_58bbd0	draft	draft		
 exe	0x005d2580	ai_Unk5d2580	unk_58bbd0	draft	draft		
@@ -4597,7 +4597,7 @@ exe	0x005d2720	ai_Unk5d2720	unk_58bbd0	draft	draft
 exe	0x005d2960	ai_Unk5d2960	unk_58bbd0	draft	draft		
 exe	0x005d2bc0	ai_Unk5d2bc0	unk_58bbd0	draft	draft		
 exe	0x005d2e80	ai_Unk5d2e80	unk_58bbd0	draft	draft		
-exe	0x005d2f20	ai_Unk5d2f20	unk_58bbd0	draft	draft		
+exe	0x005d2f20	ai_UseEventGood	unk_58bbd0	shape	readable		
 exe	0x005d2f90	ai_Unk5d2f90	unk_58bbd0	draft	draft		
 exe	0x005d3030	ai_Unk5d3030	unk_58bbd0	draft	draft		
 exe	0x005d31c0	ai_Unk5d31c0	unk_58bbd0	draft	draft		
