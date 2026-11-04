@@ -10485,16 +10485,17 @@ void gm_CloseTechTree(void)
 {
     d2_CloseView(gm_TechTreeView);
 }
-/* 0x50c4e0 */
+/* 0x50c4e0, gives the amount a to the town treasury: the object 0x115 of the town hall (the first building of
+   class 1), from none, for the player (the construction event's payment) */
 
-void gm_Unk50c4e0(int a)
+void gm_AddToTreasury(int a)
 {
-    unsigned char *b;
-    char *o;
+    ORDBLD *b;
+    ORDOBJ *o;
 
-    b = gm_FirstBuilding(1);
-    o = gm_Query(*(void **)(b + 0x5d), 2, 6, 0, 0x115);
-    cm_SendMoveGoodsUnchecked(-1, *(int *)(o + 2), ai_OwnPlayer, a);
+    b = (ORDBLD *)gm_FirstBuilding(1);
+    o = (ORDOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+    cm_SendMoveGoodsUnchecked(-1, o->objId, ai_OwnPlayer, a);
 }
 /* 0x50c520, the opinion of the character a of the character b (0x7f for oneself) */
 

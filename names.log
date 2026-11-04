@@ -1979,3 +1979,4 @@
 2026-11-04T19:14:47 0x0076fdc8 data ai_Unk76fdc8 -> gm_TechTreeTime by:main why:the d3_Time the tech tree window was opened (written by gm_TechTreeWindow, no reader drafted)
 2026-11-04T19:14:53 0x0050c340 func gm_Unk50c340 -> gm_TechTreeWindow by:main why:opens the tech tree form of a building type and item: lays out and updates the tree, then joins the nodes to their parents
 2026-11-04T19:18:50 0x0050c4d0 func gm_Unk50c4d0 -> gm_CloseTechTree by:main why:closes the tech tree view (gm_TechTreeView) that gm_TechTreeWindow opened; called at the end of ai_TechTreeWindow's frame loop
+2026-11-04T19:20:17 0x0050c4e0 data gm_Unk50c4e0 -> gm_AddToTreasury by:main why:sends the amount from none to the town treasury (object 0x115 of the town hall, the first building of class 1) for the player; only caller he_Unk56be30 (the construction event, state 0) passes its +0xb4 amount
