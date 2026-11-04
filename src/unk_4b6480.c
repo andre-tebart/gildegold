@@ -1185,7 +1185,7 @@ int ai_MsgJobBothEndsType27(G14MSG *m)
 }
 /* 0x4b9810, message without effect (the unused table slots) */
 
-int ai_Unk4b9810(G14MSG *m)
+int ai_MsgUnusedSlot(G14MSG *m)
 {
     return 0x400;
 }
@@ -1949,10 +1949,10 @@ G14CB ai_Unk602570[0x45] = {                                                    
     ai_MsgPartnerRelationMinus4to18Type1c, ai_MsgWorkerHealthLossType1d, ai_Unk4b84b0, ai_MsgWorkerOwnHealthLossType1f,
     ai_MsgLoseMoney2to4Type20, ai_MsgGainMoney3to5Type21, ai_MsgCartFillDropType22, ai_MsgJobTime,
     ai_MsgJobEndPlayerType24, ai_MsgJobEndPayType25, ai_MsgJobBothEndsType26, ai_MsgJobBothEndsType27,
-    ai_Unk4b9810, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
+    ai_MsgUnusedSlot, ai_Unk4b9820, ai_Unk4b9ab0, ai_MsgWorkerStop,
     ai_Unk4b9f30, sv_ReturnZero, ai_Unk4ba0c0, ai_Unk4ba2d0,
     ai_Unk4ba470, ai_Unk4ba630, ai_Unk4ba970, ai_Unk4baa80,
-    ai_Unk4baba0, ai_Unk4b9810, ai_Unk4b9810, ai_Unk4b9810,
+    ai_Unk4baba0, ai_MsgUnusedSlot, ai_MsgUnusedSlot, ai_MsgUnusedSlot,
     ai_MsgLoseGood, ai_Unk4bae20, ai_Unk4baf30, ai_Unk4bb030,
     ai_Unk4bb150, ai_Unk4bb250, ai_Unk4bb330, ai_Unk4bb430,
     ai_Unk4bb4f0, ai_Unk4bb590, ai_Unk4bb630, ai_Unk4bb630,
