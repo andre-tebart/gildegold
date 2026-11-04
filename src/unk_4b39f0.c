@@ -482,7 +482,7 @@ int ai_CountMissionEvent(G13MIS *m, int ev)
    @hard read in full, byte-exact (gm_PlayerRecord, 0 for none, gm_ConvertMoney(value +0x38, ai_OwnPlayer)
    > t->goal). Q1 is blocked on the five AIFIN money statistics at 0x2c .. 0x3c (ai.h AIFIN missionMoney[5]):
    this condition reads +0x38, the three siblings ai_CondMissionMoney02 (0x2c + 0x34), ai_CondMissionMoney1 (0x30) and
-   ai_Unk4b48b0 (0x3c) read the others. No drafted function writes any of them (every player-record writer is
+   ai_CondMissionMoney4 (0x3c) read the others. No drafted function writes any of them (every player-record writer is
    named: madeValue, spyPaid, upgradeSpent, renovationSpent, officeSentences, roundFactors, the camera fields);
    ls_WritePlayerRecords (0x51a1a0) saves 0x2c / 0x30 / 0x34 and 0x3c, and 0x38 only for ls_Version > 0x10013,
    so the values come from saved data of an older build, and the only readers are these four mission conditions.
@@ -612,15 +612,17 @@ int ai_CondMissionMoney1(AICHAR *c, G13TYPE *t)
         return 0;
     return gm_ConvertMoney(f->missionMoney[1], ai_OwnPlayer) > t->goal;
 }
-/* 0x4b48b0, the same with value 0x3c */
+/* 0x4b48b0, mission condition (type 27): the player record's saved money statistic missionMoney[4] (0x3c),
+   converted to player money, is above t->goal. The statistic's category is unknown (no writer in the build, it
+   comes from saved data); the name follows the field it reads, like ai_CondMissionMoney1 */
 
-int ai_Unk4b48b0(AICHAR *c, G13TYPE *t)
+int ai_CondMissionMoney4(AICHAR *c, G13TYPE *t)
 {
     AIFIN *f = gm_PlayerRecord(c);
 
     if (f == 0)
         return 0;
-    return gm_ConvertMoney(*(int *)((char *)f + 0x3c), ai_OwnPlayer) > t->goal;
+    return gm_ConvertMoney(f->missionMoney[4], ai_OwnPlayer) > t->goal;
 }
 
 typedef struct G13STAT {                /* 0x0c bytes, filled by 0x4b51f0 */
@@ -900,7 +902,7 @@ int ai_Unk4b4f00(G13MIS *m)
     case 37:
         return ai_CondMissionMoney1(c, t);
     case 27:
-        return ai_Unk4b48b0(c, t);
+        return ai_CondMissionMoney4(c, t);
     case 41:
         return ai_CondCharShare(c, t);
     case 39:
