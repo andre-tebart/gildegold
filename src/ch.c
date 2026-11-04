@@ -4014,7 +4014,8 @@ void ch_ActWait(CHACTION *a)
     if (d3_Time > (unsigned long)(a->args[1] + a->args[0]) || a->stop)
         ch_RemoveAction(a);
 }
-/* 0x40af90 */
+/* 0x40af90, drops the character's current group and its script group (-1: none) and the two saved
+   scenes; main_StartGame calls it when it starts a game */
 
 void ch_Reset(void)
 {
