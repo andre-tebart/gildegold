@@ -1,8 +1,8 @@
 /* unk_4b39f0.c -- missions ("_AUFTRAEGE_VERGABE_HS_%.2d", "special\mission"): the running missions
    ai_Missions, the mission types ai_MissionTypes (.data right after hst.c's literals), an own random generator.
-   Unit start and name are guesses (open boundary); it ends with save / load 0x4b62e0 / 0x4b63b0. Names are ours.
+   Unit start and name are guesses (open boundary); it ends with ai_SaveMissions / ai_LoadMissions.
    G13TYPE.threshold (0x18) is named from its users: the minutes a timed condition holds (ai_TimedCondition) or the
-   skill level the five skills must reach (types 4 / 9 / 29). G13MIS.unk18 stays unk: zeroed and saved only, no reader.
+   skill level the five skills must reach (types 4 / 9 / 29). G13MIS.v18 (0x18) is only zeroed and saved, no reader.
    G13TYPE.offerSpeech, G13MIS.progress / fulfilled stand on their users (the _AUFTRAEGE_VERGABE speech,
    ai_CountMissionEvent and the completion flag of he.c 0x56ce40). AIFIN.missionMoney (ai.h) holds the five saved
    money statistics of the player record the money conditions read (no writer in the build).
