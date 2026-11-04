@@ -52,7 +52,7 @@ extern unsigned char d3_MipSkip;
 #define d3_TexFormat16 d3d_UsedTexFormat.pf2          /* 0xfe79ec */
 #define d3_TexFormatsSame d3d_UsedTexFormat.same           /* 0xfe7a0d */
 extern ULONG dd_Ref;                        /* 0x146356c, result of the last Release (dd_vesa.c) */
-char d3_Unk633e00[256] = {0};  /* 0x633e00 */
+char ts_PathBuf[256] = {0};  /* 0x633e00 */
 /* 0x5ebc20, the epsilon of d3sm_Pick and the scroll speed table are one block in the original: the double
    (a float 0.0001f promoted, d3_SnapEpsilon at +0) is at 0x5ebc20 and the speed table starts in its upper
    half at 0x5ebc24, so the two names keep their bytes only as views of one definition; the frame duration
@@ -267,7 +267,7 @@ TSTEXTURE *tex_Find(char *name)
     }
     return 0;
 }
-/* 0x45f9f0 */
+/* 0x45f9f0, the VFS path of the "*<name>.BMP" file (the VFS search ignores case), or 0 */
 
 char *tex_FindFile(char *name)
 {
@@ -276,7 +276,7 @@ char *tex_FindFile(char *name)
     strcpy(path, "*");
     strcat(path, name);
     strcat(path, ".BMP");
-    return vfs_GetPath(path, ts_Palette, vfs_Root, d3_Unk633e00);
+    return vfs_GetPath(path, ts_Palette, vfs_Root, ts_PathBuf);
 }
 /* 0x45fa80 */
 
