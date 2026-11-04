@@ -62,7 +62,8 @@ typedef struct D3SPOLY {            /* 0x28 bytes */
     char pad27;
 } D3SPOLY;
 
-typedef struct D3SBUF {             /* the shadow mesh being built (at material + 0xf4) */
+typedef struct D3SBUF {             /* the shadow mesh being built: the shadow object's surf[0].info (D3MESH,
+                                       material + 0xf4) with the shadow's vertex and polygon types */
     D3SVERT *verts;                 /* 0x00 (0xf4) */
     D3SPOLY *polys;                 /* 0x04 (0xf8) */
     int nverts;                     /* 0x08 (0xfc) */

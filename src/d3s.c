@@ -897,7 +897,7 @@ char d3s_AddShadow(D3SSLOT *slot, D3STERR *grid)
     char ok = 0;
     D3TEXHANDLE *tex;
 
-    buf = (D3SBUF *)((char *)d3s_Object->material + 0xf4);
+    buf = (D3SBUF *)&D3_MESH(d3s_Object)->surf[0].info;
     tex = slot->tex;
     col.c.r = (unsigned char)D3_L(slot->light)->color.x;
     col.c.g = (unsigned char)D3_L(slot->light)->color.y;
@@ -1035,7 +1035,7 @@ float d3s_GetGround(D3OBJECT *obj, D3OBJINFO *info, D3OBJECT *light)
     if (!found && obj->material) {
         if (obj->objectFlags & 0x20)
             return pos.y - info->mesh->radius + D3S_MESH(obj->material)->groundOffset;
-        box = ((D3MESHOPS *)info->mesh)->GetBox(obj, info, (char *)obj->material + 8);
+        box = ((D3MESHOPS *)info->mesh)->GetBox(obj, info, D3_MESH(obj)->worldMatrix);
         y = 1e10f;
         for (i = 8; i; i--, box++)
             y = min(y, box->y);
