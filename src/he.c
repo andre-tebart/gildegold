@@ -15513,7 +15513,7 @@ void he_Unk56e070(char *c, int ev, unsigned char *b, int task)
 
 void he_Unk56e460();
 void he_Unk56e5b0();
-void he_Unk56efc0();
+void he_AllocEvent9a();
 void he_Unk56f0b0();
 void he_Unk56f050();
 
@@ -15521,7 +15521,7 @@ void he_Unk56f050();
 int ai_Unk56e400(void)
 {
     if (he_Unk53d600(0x99, (void *)he_Unk56e460, (void *)he_Unk56e5b0) == 0) {
-        if (he_Unk53d600(0x9a, (void *)he_Unk56efc0, (void *)ai_Unk56f040) == 0) {
+        if (he_Unk53d600(0x9a, (void *)he_AllocEvent9a, (void *)ai_Unk56f040) == 0) {
             if (he_Unk53d600(0x9b, (void *)he_Unk56f050, (void *)he_Unk56f0b0) == 0)
                 return 0;
         }
@@ -15565,7 +15565,7 @@ int he_Unk56f1b0();                 /* 0x56f1b0 */
 int he_Unk56f260();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
 int he_Unk56f2e0();                 /* 0x56f2e0 */
-int he_Unk56f360();                 /* 0x56f360 */
+int he_NoEvent9aFor();                 /* 0x56f360 */
 int he_NoEvent9bFor();                 /* 0x56f3b0 */
 int he_Unk56f3f0();                 /* 0x56f3f0 */
 int he_Unk56f3f0();                 /* 0x56f3f0 */
@@ -15781,16 +15781,20 @@ void he_Unk56e5b0(int ev)
         return;
     }
 }
-/* 0x56efc0, the alloc of the event 0x9a (the run 0x56f0b0, freed by 0x56f040): the due clock +0x52 = now; when the search 0x56f360 (the record of +0xb0, the owner of +0xac) finds, due +0x18 hours and the state 0 scheduled (0x4c4c60), else the handle -1 */
+/* 0x56efc0, the alloc of the event 0x9a (the run 0x56f040 only frees it): the due clock +0x52 = now; when
+   0x56f360 (no event 0x9a holds the building +0xac and the character of +0xb0 yet) answers 1, due in 0x18
+   hours and the stage 0 posted; the stage -1 is posted in every case and its send slot kept at +0x84 */
 
-void he_Unk56efc0(int ev)
+void he_AllocEvent9a(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (he_Unk56f360(HM_I(ev, 0xac), gm_FindChar(HM_I(ev, 0xb0))) != 0) {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
-    } else
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    if (he_NoEvent9aFor(e->bldId, gm_FindChar(e->id2)) != 0) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        cm_SendExSetHE(0, ev);
+    }
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x56f040, the free forwarder of the event 0x9a (jmp 0x53e1f0) */
 
@@ -15907,7 +15911,7 @@ int he_Unk56f2e0(int a, unsigned short *b, int c)
 }
 /* 0x56f360, 1 when no running event of the type 0x9a has both +0xac == a and +0xb0 == the dword at b + 4; 0 when one does */
 
-int he_Unk56f360(int a, int b)
+int he_NoEvent9aFor(int a, int b)
 {
     int r;
 
