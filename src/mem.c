@@ -106,8 +106,7 @@ int mem_IsValid(void *p)
     }
     return 1;
 }
-/* 0x422620 */
-
+/* 0x422620, frees the block p and takes it out of the debug table and its group's counters */
 void mem_Free(void *p)
 {
     int i, size;
