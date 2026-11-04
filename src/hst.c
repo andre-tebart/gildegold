@@ -7,6 +7,8 @@
    the ai_CharInts pointer walk fixed this in ai_TokenRandomNpcInhabitant and is untried in the others.
    Open: G12OBJ repeats hmt.h's HMTOBJ (0x4e6ec0 / 0x4e6680 declared in both files); G12_B reads AICHAR bytes.
    Open: gm_FirstBuilding (0x50b010) returns unsigned char * (am.h, f3gm.c) while the callers here use AIBLD *.
+   Open: hst_KeyFirst / hst_KeyLast are only ever set -1 (0x520200 reads hst_KeyFirst for hst_KeyNext = hst_KeyFirst + n),
+   so ai_CommandComments returns 0 at every call: is the key list ever filled?
    unit of rea 8cef7d5b (src/game/hst.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

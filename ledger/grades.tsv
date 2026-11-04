@@ -1896,17 +1896,17 @@ exe	0x004b1060	ai_CommandBreakGuildSeats	hst	shape	readable
 exe	0x004b11e0	ai_CommandDemand	hst	draft	readable	deep	
 exe	0x004b1600	ai_CommandMercenariesPlunder	hst	byte	readable		
 exe	0x004b16e0	ai_CommandMercenariesMaraud	hst	byte	readable		
-exe	0x004b17c0	ai_Unk4b17c0	hst	byte	draft		
-exe	0x004b1880	ai_Unk4b1880	hst	byte	draft		
-exe	0x004b1950	ai_Unk4b1950	hst	byte	draft		
-exe	0x004b1a20	ai_Unk4b1a20	hst	byte	draft		
-exe	0x004b1bd0	ai_Unk4b1bd0	hst	shape	draft		
+exe	0x004b17c0	ai_CommandRemoteTradeRaider	hst	byte	readable		
+exe	0x004b1880	ai_CommandViewDonation	hst	byte	readable		
+exe	0x004b1950	ai_CommandParticipation	hst	byte	readable		
+exe	0x004b1a20	ai_CommandComments	hst	byte	readable		
+exe	0x004b1bd0	ai_CommandPlague	hst	shape	readable		
 exe	0x004b1c90	ai_CommandInventoryPlus	hst	byte	readable		
-exe	0x004b1d20	ai_Unk4b1d20	hst	byte	draft		
-exe	0x004b1e40	hst_ResetPlayerTexts	hst	byte	draft		
-exe	0x004b1ee0	ai_Unk4b1ee0	hst	byte	draft		
+exe	0x004b1d20	hst_LoadPlayerTexts	hst	byte	readable		
+exe	0x004b1e40	hst_ResetPlayerTexts	hst	byte	readable		
+exe	0x004b1ee0	hst_ResetList	hst	byte	readable		
 exe	0x004b1f30	hst_ResetLists	hst	byte	readable		
-exe	0x004b1f90	ai_Unk4b1f90	hst	byte	draft		
+exe	0x004b1f90	hst_SetTextsOn	hst	byte	readable		
 exe	0x004b1fa0	hst_ParseText_Fake_1st_Pass	hst	byte	readable		
 exe	0x004b21c0	hst_ParseContext	hst	draft	draft	deep	
 exe	0x004b2380	hst_ParseCommandline_1st_Pass	hst	byte	draft		
