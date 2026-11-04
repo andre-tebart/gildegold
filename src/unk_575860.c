@@ -1625,38 +1625,38 @@ int ai_StepChapter4Step5(int *p)
     int kind;
 
     if (p[0] == 0x2b && p[1]) {
-        kind = *(unsigned char *)p[1];
-        if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 2)
+        kind = ((AIBLD *)p[1])->type;
+        if (((AIBTYPE *)ai_BTypes)[kind].kind != 2)
             return 3;
-        if (*(unsigned short *)(p[1] + 0x27) != *(unsigned short *)(unsigned)&ai_PlayerId)
+        if (((AIBLD *)p[1])->owner != ai_PlayerId)
             return 3;
-        if (U_I(S + 0x38))
+        if (ai_Tutorial->goalDone)
             return 3;
         if (p[3] != 5 && p[3] != 2 && p[3] != 0xd && p[3] != 8)
             return 3;
-        U_I(S + 0x38) = 1;
-        U_I(S + 4) = 0xa;
-        U_I(S) = U_I(S + 4);
-        U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+        ai_Tutorial->goalDone = 1;
+        ai_Tutorial->next = 0xa;
+        ai_Tutorial->state = ai_Tutorial->next;
+        ai_Tutorial->stepAt = d3_Time;
         return 3;
     }
     if (p[0] != 0x10 || !p[1])
         return 3;
-    kind = *(unsigned char *)p[1];
-    if (*(unsigned char *)(*(char **)(unsigned)&ai_BTypes + kind * 0x24d) != 2)
+    kind = ((AIBLD *)p[1])->type;
+    if (((AIBTYPE *)ai_BTypes)[kind].kind != 2)
         return 3;
-    if (*(unsigned short *)(p[1] + 0x27) != *(unsigned short *)(unsigned)&ai_PlayerId)
+    if (((AIBLD *)p[1])->owner != ai_PlayerId)
         return 3;
-    if (p[2] == 0 && !U_I(S + 0x38))
-        U_I(S + 4) = 9;
+    if (p[2] == 0 && !ai_Tutorial->goalDone)
+        ai_Tutorial->next = 9;
     if (p[2] == 1) {
-        if (U_I(S + 0x38) == 1)
-            U_I(S + 4) = 0xb;
+        if (ai_Tutorial->goalDone == 1)
+            ai_Tutorial->next = 0xb;
         else
-            U_I(S + 4) = 4;
+            ai_Tutorial->next = 4;
     }
-    U_I(S) = U_I(S + 4);
-    U_I(S + 0xc) = U_I((unsigned)&d3_Time);
+    ai_Tutorial->state = ai_Tutorial->next;
+    ai_Tutorial->stepAt = d3_Time;
     return 1;
 }
 /* 0x577020, the predicate twin of 0x576ee0: 1 for a building of the table byte 0x2 with the step word
