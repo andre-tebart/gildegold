@@ -2510,7 +2510,7 @@ void d3_Animate(unsigned int mask, char anim, char tick, char all)
         d3_Busy--;
     }
 }
-/* 0x43e680 */
+/* 0x43e680, one frame: renders, then animates, the objects the mask selects */
 
 void d3_Frame(unsigned int mask, char flag, char tick)
 {
