@@ -1825,14 +1825,14 @@ int ai_CommandParticipation(void)
 }
 
 extern int hst_KeyFirst;
-extern int ai_Unk601068;
+extern int hst_KeyLast;
 extern int hst_KeyNext;
 extern char hst_Key[0x20];
 int hst_ParseDate(int k, unsigned char mode, int *year, char *name);              /* 0x4b2ed0 */
 
-/* 0x4b1a20, looks for the key hst_Key in the list from hst_KeyNext on (entries of 6, up to today); found:
-   sends message 0x52 with its index */
-int ai_Unk4b1a20(void)
+/* 0x4b1a20, the KOMMENTARE text command (callback 0x601b50[24], name 0x601070[24]): looks for the key hst_Key in
+   the list from hst_KeyNext on (entries of 6, up to today); found: sends message 0x52 with its index */
+int ai_CommandComments(void)
 {
     AIMSG msg;
     char key[16];
@@ -1841,7 +1841,7 @@ int ai_Unk4b1a20(void)
     int pos;
 
     pos = hst_KeyNext;
-    if (hst_KeyFirst <= -1 && (hst_KeyNext < hst_KeyFirst || hst_KeyNext >= ai_Unk601068))
+    if (hst_KeyFirst <= -1 && (hst_KeyNext < hst_KeyFirst || hst_KeyNext >= hst_KeyLast))
         return 0;
     AI_ZERO(key, 16);
     G12_COPY(key, hst_Key, strlen(hst_Key));
@@ -1853,7 +1853,7 @@ int ai_Unk4b1a20(void)
             hst_KeyNext = pos + 6;
             memset(&msg, 0, sizeof(msg));
             msg.type = 0x52;
-            msg.to = *(int *)((char *)ai_PlayerChar + 4);
+            msg.to = ((AICHAR *)ai_PlayerChar)->netId;
             msg.car = pos - hst_KeyFirst;
             msg.fromId = -1;
             msg.flags = 0x12;
@@ -1865,7 +1865,7 @@ int ai_Unk4b1a20(void)
         pos += 6;
         if (!hst_ParseDate(pos, 4, day, name))
             break;
-    } while (hst_KeyNext < ai_Unk601068);
+    } while (hst_KeyNext < hst_KeyLast);
     return 0;
 }
 /* 0x4b1bd0, text command "-n": message 0x59 with n clamped to 1..10, today 11:00 */
@@ -1956,7 +1956,7 @@ void ai_Unk4b1d20(void)
     hst_TextCurrent = txt_Files[k].first;
     G12_ZERO_G(hst_Key, 16);
     hst_KeyFirst = -1;
-    ai_Unk601068 = -1;
+    hst_KeyLast = -1;
 }
 /* 0x4b1e40, marks the lists hst_Lists used and empty, frees the player's history texts, resets the text
    positions */
@@ -1979,7 +1979,7 @@ void hst_ResetPlayerTexts(void)
     hst_TextLast = -1;
     hst_TextCurrent = -1;
     hst_KeyFirst = -1;
-    ai_Unk601068 = -1;
+    hst_KeyLast = -1;
     hst_KeyNext = -1;
 }
 /* 0x4b1ee0, marks list i of hst_Lists used and empty */
@@ -2089,7 +2089,7 @@ int hst_ParseText_Fake_1st_Pass(char *out, int k)
 }
 
 int hst_KeyFirst = -1;  /* 0x601064, first entry of the key list (-1: none) */
-int ai_Unk601068 = -1;  /* 0x601068, end of the key list */
+int hst_KeyLast = -1;  /* 0x601068, end of the key list (-1: none) */
 int hst_KeyNext = -1;  /* 0x60106c, next entry to look at */
 char hst_CommandNames[27][0x40] = { "FEST", "BELAGERUNG_START", "AUFSTAND", "BRAND", "WIRBELSTURM", "STADTKASSE", "VERMOEGEN_STEUER", "VERMOEGEN", "ANSEHEN_BEI_AMTSTRAEGERN", "KILL_PLAYER", "STRAFE_HINRICHTUNG", "STRAFE_KERKER", "AMTSTRAEGER_INVENTAR_PLUS", "GESETZ", "GESETZ_REL", "GLAUBENSWECHSEL", "AUFRUHR", "GILDENSITZE_BRACH", "NACHFRAGE", "SOELDNER_PLUENDERN", "SOELDNER_MARODIEREN", "FERNHANDEL_RAUBRITTER", "SPENDE_ANSEHEN", "BETEILIGUNG", "KOMMENTARE", "PEST", "INVENTAR_PLUS" };  /* 0x601070, the text command names ("FEST" .. "INVENTAR_PLUS") */
 char hst_TokenNames[15][0x40] = { "BUERGERMEISTER", "BISCHOF", "RND_GILDENMEISTER", "RND_AMTSTRAEGERIN", "RND_AMTSTRAEGER", "RND_AMTSPERSON", "REICHSTER_EINWOHNER", "BESTES_WIRTSHAUS", "GELD", "STADTKASSE", "RND_KIRCHENBERUF", "RND_REICH", "RND_NPC_EINWOHNER", "RND_HANDELSHERR", "RND_SPIELER" };  /* 0x601730, the names of the text tokens (callback */
@@ -2204,7 +2204,7 @@ G12ROW *hst_ParseCommandline_1st_Pass(int k)
 }
 
 int (*hst_TokenCallbacks[15])(int mode, G12ARG *args, int k, char *fmt, char *out) = { ai_TokenMayor, ai_TokenBishop, ai_TokenRandomGuildMaster, ai_TokenRandomOfficeHolderFemale, ai_TokenRandomOfficeHolder, ai_TokenRandomOfficePerson, ai_TokenRichestInhabitant, ai_TokenBestInn, ai_TokenMoney, ai_TokenCityTreasury, ai_TokenRandomChurchProfession, ai_TokenRandomRich, ai_TokenRandomNpcInhabitant, ai_TokenRandomMerchant, ai_TokenRandomPlayer };  /* 0x601b10 */
-int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_CommandFest, ai_CommandSiegeStart, ai_CommandUprising, ai_CommandFire, ai_CommandTornado, ai_CommandCityTreasury, ai_CommandWealthTax, ai_CommandWealth, ai_CommandOfficeStanding, ai_CommandKillPlayer, ai_CommandExecution, ai_CommandPrison, ai_CommandOfficeInventoryPlus, ai_CommandLaw, ai_CommandLawChange, ai_CommandFaithChange, ai_CommandRiot, ai_CommandBreakGuildSeats, ai_CommandDemand, ai_CommandMercenariesPlunder, ai_CommandMercenariesMaraud, ai_CommandRemoteTradeRaider, ai_CommandViewDonation, ai_CommandParticipation, ai_Unk4b1a20, ai_Unk4b1bd0, ai_CommandInventoryPlus };  /* 0x601b50 */
+int (*hst_CommandCallbacks[27])(G12ROW *row, int slot, char *fmt) = { ai_CommandFest, ai_CommandSiegeStart, ai_CommandUprising, ai_CommandFire, ai_CommandTornado, ai_CommandCityTreasury, ai_CommandWealthTax, ai_CommandWealth, ai_CommandOfficeStanding, ai_CommandKillPlayer, ai_CommandExecution, ai_CommandPrison, ai_CommandOfficeInventoryPlus, ai_CommandLaw, ai_CommandLawChange, ai_CommandFaithChange, ai_CommandRiot, ai_CommandBreakGuildSeats, ai_CommandDemand, ai_CommandMercenariesPlunder, ai_CommandMercenariesMaraud, ai_CommandRemoteTradeRaider, ai_CommandViewDonation, ai_CommandParticipation, ai_CommandComments, ai_Unk4b1bd0, ai_CommandInventoryPlus };  /* 0x601b50 */
 
 /* 0x4b2530, leaked name (its messages): runs every word of text k (or a string above 0x4800) through the text
    commands of hst_CommandNames / hst_CommandCallbacks; a leading "[_SET_n" / "[_USE_n" selects list n of hst_Lists (it
