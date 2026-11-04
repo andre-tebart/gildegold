@@ -1106,9 +1106,9 @@ exe	0x0045efc0	d3sm_FindGround	d3_sm	byte	readable
 exe	0x0045f100	d3sm_GetVertex	d3_sm	byte	readable		
 exe	0x0045f170	d3_GetHeightAt	d3_sm	shape	readable	deep	
 exe	0x0045f2b0	d3sm_Pick	d3_sm	draft	readable	deep	
-exe	0x0045f610	ts_InitCache	ts_texture	byte	draft		
-exe	0x0045f650	ts_FreeCache	ts_texture	byte	draft		
-exe	0x0045f6d0	ts_CacheStore	ts_texture	byte	draft		
+exe	0x0045f610	ts_InitCache	ts_texture	byte	readable		
+exe	0x0045f650	ts_FreeCache	ts_texture	byte	readable		
+exe	0x0045f6d0	ts_CacheStore	ts_texture	byte	readable		
 exe	0x0045f790	ts_CacheRelease	ts_texture	byte	draft		
 exe	0x0045f860	ts_CreateSurface	ts_texture	byte	draft		
 exe	0x0045f8d0	ts_CacheFetch	ts_texture	byte	draft		
@@ -1810,19 +1810,19 @@ exe	0x004aaa10	aip_ExecDrohen	unk_4a7140	byte	readable
 exe	0x004aaae0	aip_ExecAnschwaerzen	unk_4a7140	byte	readable		
 exe	0x004aab90	ai_TrustedOfTwo	unk_4a7140	draft	readable	deep	
 exe	0x004aad30	ai_TrustedOfFour	unk_4a7140	shape	readable	deep	
-exe	0x004aaef0	ai_FindDarkCornerTarget	unk_4a7140	byte	draft		
+exe	0x004aaef0	ai_FindDarkCornerTarget	unk_4a7140	byte	readable		
 exe	0x004aafb0	ai_ExecMessage74	unk_4a7140	byte	readable		
 exe	0x004ab080	ai_DecideBuyDunkleEcke	unk_4a7140	byte	readable		
 exe	0x004ab2c0	ai_ExecBuyDunkleEcke	unk_4a7140	byte	readable		
 exe	0x004ab3e0	ai_DecideBlutrache	unk_4a7140	shape	readable	deep	
 exe	0x004ab6b0	ai_ExecBlutrache	unk_4a7140	byte	readable		
-exe	0x004ab7f0	ai_Unk4ab7f0	unk_4a7140	byte	draft		
-exe	0x004ab9f0	ai_Unk4ab9f0	unk_4a7140	byte	draft		
+exe	0x004ab7f0	ai_DecideVerfluchen	unk_4a7140	byte	readable		
+exe	0x004ab9f0	ai_ExecVerfluchen	unk_4a7140	byte	readable		
 exe	0x004abac0	ai_DecideTheater	unk_4a7140	byte	readable		
-exe	0x004abc60	ai_Unk4abc60	unk_4a7140	shape	draft		
-exe	0x004abd00	ai_Unk4abd00	unk_4a7140	shape	draft		
-exe	0x004abe60	ai_Unk4abe60	unk_4a7140	byte	draft		
-exe	0x004abed0	ai_RegisterSocialActions	unk_4a7140	byte	draft		
+exe	0x004abc60	ai_ExecTheater	unk_4a7140	byte	readable		
+exe	0x004abd00	ai_DecideEhrerbietung	unk_4a7140	shape	readable		
+exe	0x004abe60	ai_ExecEhrerbietung	unk_4a7140	byte	readable		
+exe	0x004abed0	ai_RegisterSocialActions	unk_4a7140	byte	readable		
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
 exe	0x004ac150	hmt_RandomRecord	hmt	byte	readable		
 exe	0x004ac170	hmt_RandomTextOffset	hmt	draft	readable	deep	
