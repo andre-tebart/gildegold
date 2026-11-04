@@ -798,7 +798,7 @@ local void send_all_trees(s, lcodes, dcodes, blcodes)
 /* ===========================================================================
  * Send a stored block
  */
-/* 0x465ee0 */
+/* 0x465ee0, writes a stored (uncompressed) block: the 3-bit block header, then the bytes with their length */
 void _tr_stored_block(s, buf, stored_len, eof)
     deflate_state *s;
     charf *buf;       /* input block */
