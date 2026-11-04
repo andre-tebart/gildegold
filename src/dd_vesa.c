@@ -1299,7 +1299,7 @@ char dd_Init(int mode, int bpp, HWND parent, int unk)
     dd_DDBase = NULL;
     return 0;
 }
-/* 0x41d190 */
+/* 0x41d190, sets the clip rectangle's bounds */
 
 void dd_SetClipRect(int left, int top, int right, int bottom)
 {
