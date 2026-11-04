@@ -8305,7 +8305,7 @@ void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildin
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_Unk5a4d40(); void ai_Unk5a4f70(); void ai_Unk5a5080();
-void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_Unk5a3810(); void ai_ChurchContact();
+void ai_Unk5a5bc0(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
 void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_Unk5a67a0(); void ai_Unk5a6920();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
@@ -8882,7 +8882,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
             case 0xd6: ai_IdleContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xdd: ai_AquariumContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xe5:
-            case 0xe6: ai_Unk5a3810(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0xe6: ai_ChurchListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf0: ai_ChurchContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf2: ai_ConfessionListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0xf7: ai_ProductionWriteContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -10224,7 +10224,7 @@ int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_Cam
    player, the owner, the amount * 0xff / the sum) and a fifth of it (0.2f) to every same-religion character
    (0x770b8c) of the 0x300 records, then the text 0x5176d0 ("%s%s", 0x1986, 0x198a) and 0x521150; 0x4758f0 /
    0x52d7a0 at the end */
-void ai_Unk5a1af0(int param_1)
+void ai_DonationWindow(int param_1)
 {
     int room;
     int sum;
@@ -10310,7 +10310,7 @@ void ai_Unk5a1af0(int param_1)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a1af0, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_DonationWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_CameraFollow();
             return;
@@ -10455,7 +10455,7 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_Add
    / 0x53dda0 (0x5ff) for the kinds 6 / 7, then 0x1973 and 0x521150. The same religion: only the text 0x1970.
    The pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 / 0x52d7a0. ROUGH: the button slots and the frame
    overlaps are from the disassembly, not checked */
-void ai_Unk5a23a0(int param_1, int param_2)
+void ai_BaptismWindow(int param_1, int param_2)
 {
     int slot = U_W((unsigned)&ai_PlayerId);
     char *per = (char *)(unsigned)&ai_Chars + slot * 0x21c;
@@ -10531,7 +10531,7 @@ void ai_Unk5a23a0(int param_1, int param_2)
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
             }
-            if (sv_RunFrame(ai_Unk5a23a0, 0x677c7) == 0)
+            if (sv_RunFrame(ai_BaptismWindow, 0x677c7) == 0)
                 break;
         }
         d2_CloseView(win);
@@ -10579,7 +10579,7 @@ void ai_Unk5a23a0(int param_1, int param_2)
                     U_I((unsigned)&sv_PopRequest) = 1;
                 }
             }
-            if (sv_RunFrame(ai_Unk5a23a0, 0x677c7) == 0)
+            if (sv_RunFrame(ai_BaptismWindow, 0x677c7) == 0)
                 break;
         }
         d2_CloseView(win);
@@ -10773,7 +10773,7 @@ int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
    0x4c3c00 (4, 1, 0x1e) / (1, 1, 0x1c) / (1, 1, 0x1d), and the 0xff reset of the same three fields; the pump
    0x5309a0 (0, 0x677c7) waits for the answers; the exit 0x4758f0 / 0x52d7a0. ROUGH SKELETON: the three case
    bodies keep the calls in order, the widget records are not typed */
-void ai_Unk5a2e60(int param_1)
+void ai_SermonWindow(int param_1)
 {
     int win;
     int rec;
@@ -10943,7 +10943,7 @@ void ai_Unk5a2e60(int param_1)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a2e60, 0x677c7) == 0) {
+        if (sv_RunFrame(ai_SermonWindow, 0x677c7) == 0) {
             d2_CloseView(win);
             sv_CameraFollow();
             return;
@@ -10994,54 +10994,55 @@ void ai_ProductionWriteContact(int building)
         }
     }
 }
-/* 0x5a3810, the church listener (412 B): the pump 0x5309a0 (this, 0x67fff); with 0x6f231c bit 0x200 the
-   contacts "contact_PREDIGT" (0x14407f4) and "ob_WEIHWASSERBECKEN" (0x1440794, both 0x16); for a building of
-   another owner (param_1 + 0x27 neither the player nor 0xffff) the room 0x4ffe90 (param_1 + 0x5d, 2, 6, 0, 0xf2)
-   and the contacts "ob_KIRCHE_BEICHTSTUHLRAUM" (0x14407b8), "ob_SPENDENKAESTCHEN" (0x14407d4) and
-   "ob_WEIHWASSERBECKEN"; with no click and 0x1468410 == '0' and 0x6f2448 set the confession 0x5a2b60 opens
-   itself; the clicks open 0x5a2e60 (sermon), 0x5a23a0 (baptism, param_2), 0x5a2b60 (confession), 0x5a1af0
-   (donation) */
+/* 0x5a3810, the church listener, the rooms 0xe5 / 0xe6 handler of the enter-building driver (412 B): the
+   pump 0x5309a0 (0x5a3810, 0x67fff); with the building permission 0x200 (0x6f231c) the plates
+   "contact_PREDIGT" (txt_Ptrs[0x198d]) and "ob_WEIHWASSERBECKEN" (txt_Ptrs[0x1975], both class 0x16); for a
+   building of another owner (the owner slot neither the player nor 0xffff) the confession room (0x4ffe90 on
+   the building's object list, 2, 6, 0, 0xf2) and the plates "ob_KIRCHE_BEICHTSTUHLRAUM" (txt_Ptrs[0x197e]),
+   "ob_SPENDENKAESTCHEN" (txt_Ptrs[0x1985]) and "ob_WEIHWASSERBECKEN"; with no click, the key '0' (0x1468410)
+   and gm_AllowAll (0x6f2448) set the confession window opens itself; the clicks open the sermon window
+   (0x5a2e60), the baptism window (0x5a23a0, the room) or the confession / donation windows (0x5a2b60 / 0x5a1af0) */
 
-void ai_Unk5a3810(int param_1, int param_2)
+void ai_ChurchListener(int building, int room)
 {
     int predigt = 0;
     int becken = 0;
     int beichtstuhl = 0;
     int spendenkasten = 0;
-    int room;
+    int confessionRoom;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk5a3810, 0x67fff) != 0) {
-        if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
-            predigt = sv_RegisterNamePlate("contact_PREDIGT", U_I((unsigned)&full_data_14407f4), 0x16);
-            becken = sv_RegisterNamePlate("ob_WEIHWASSERBECKEN", U_I((unsigned)&full_data_1440794), 0x16);
+    while (sv_RunFrame(ai_ChurchListener, 0x67fff) != 0) {
+        if ((ai_BuildingPerms & 0x200) != 0) {
+            predigt = sv_RegisterNamePlate("contact_PREDIGT", txt_Ptrs[0x198d], 0x16);
+            becken = sv_RegisterNamePlate("ob_WEIHWASSERBECKEN", txt_Ptrs[0x1975], 0x16);
         }
-        if (U_W(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId) && U_W(param_1 + 0x27) != 0xffff) {
-            room = gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0xf2);
-            if (room == 0)
+        if (((AIBLD *)building)->owner != ai_PlayerId && ((AIBLD *)building)->owner != 0xffff) {
+            confessionRoom = gm_Query(((AIBLD *)building)->objList, 2, 6, 0, 0xf2);
+            if (confessionRoom == 0)
                 beichtstuhl = 0;
             else
-                beichtstuhl = sv_RegisterNamePlate("ob_KIRCHE_BEICHTSTUHLRAUM", U_I((unsigned)&full_data_14407b8), 0x16);
-            spendenkasten = sv_RegisterNamePlate("ob_SPENDENKAESTCHEN", U_I((unsigned)&full_data_14407d4), 0x16);
-            becken = sv_RegisterNamePlate("ob_WEIHWASSERBECKEN", U_I((unsigned)&full_data_1440794), 0x16);
+                beichtstuhl = sv_RegisterNamePlate("ob_KIRCHE_BEICHTSTUHLRAUM", txt_Ptrs[0x197e], 0x16);
+            spendenkasten = sv_RegisterNamePlate("ob_SPENDENKAESTCHEN", txt_Ptrs[0x1985], 0x16);
+            becken = sv_RegisterNamePlate("ob_WEIHWASSERBECKEN", txt_Ptrs[0x1975], 0x16);
         }
-        if (U_I((unsigned)&ai_ClickedObject) == 0) {
-            if (*(char *)(unsigned)&kb_Last == '0' && U_I((unsigned)&gm_AllowAll) != 0)
-                ai_ConfessionWindow(param_1);
+        if (ai_ClickedObject == 0) {
+            if (kb_Last == '0' && gm_AllowAll != 0)
+                ai_ConfessionWindow(building);
         } else {
-            if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
-                if (U_I((unsigned)&ai_ClickedObject) == predigt)
-                    ai_Unk5a2e60(param_1);
-                else if (U_I((unsigned)&ai_ClickedObject) == becken)
-                    ai_Unk5a23a0(param_1, param_2);
+            if ((ai_BuildingPerms & 0x200) != 0) {
+                if (ai_ClickedObject == predigt)
+                    ai_SermonWindow(building);
+                else if (ai_ClickedObject == becken)
+                    ai_BaptismWindow(building, room);
             }
-            if (U_W(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId)) {
-                if (U_I((unsigned)&ai_ClickedObject) == beichtstuhl)
-                    ai_ConfessionWindow(param_1);
-                if (U_I((unsigned)&ai_ClickedObject) == spendenkasten)
-                    ai_Unk5a1af0(param_1);
-                if (U_I((unsigned)&ai_ClickedObject) == becken)
-                    ai_Unk5a23a0(param_1, param_2);
+            if (((AIBLD *)building)->owner != ai_PlayerId) {
+                if (ai_ClickedObject == beichtstuhl)
+                    ai_ConfessionWindow(building);
+                if (ai_ClickedObject == spendenkasten)
+                    ai_DonationWindow(building);
+                if (ai_ClickedObject == becken)
+                    ai_BaptismWindow(building, room);
             }
         }
     }
