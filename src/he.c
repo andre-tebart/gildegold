@@ -8972,7 +8972,7 @@ reset:
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
 
-int ai_Unk578120();
+int ai_TutorialSetHost();
 int ai_TutorialOpenIntro();
 int ai_TutorialTick();
 int ai_TutorialCloseIntro();
@@ -8983,7 +8983,7 @@ int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 /* 0x552b90, the run handler of an event driven by 0x578120: when it returns nonzero the record is freed, else the state is 0 */
 void he_Unk552b90(int ev)
 {
-    if (ai_Unk578120(ev) != 0) {
+    if (ai_TutorialSetHost(ev) != 0) {
         he_FreeEvent((int *)ev);
         return;
     }

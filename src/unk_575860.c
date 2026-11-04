@@ -2354,15 +2354,15 @@ int ai_TutorialStepClicked(void)
         return 1;
     return 0;
 }
-/* 0x578120, sets the player S+0x1c = per and resets the window id S+0x20 = -1 (43 B): -4 without the gate
-   0x6f265c, else 0 */
+/* 0x578120, attaches the tutorial's event record (host, the 0x87 event's record he_Unk552b90 runs) and resets the
+   intro window's control object (continueObj) to -1 (43 B): -4 without the gate 0x6f265c, else 0 */
 
-int ai_Unk578120(char *per)
+int ai_TutorialSetHost(char *per)
 {
     if (!ai_TutorialOn)
         return -4;
-    *(char **)(S + 0x1c) = per;
-    U_I(S + 0x20) = -1;
+    ai_Tutorial->host = (TUTHOST *)per;
+    ai_Tutorial->continueObj = -1;
     return 0;
 }
 /* 0x578150, clears the player S+0x1c and resets the window id S+0x20 = -1 (26 B, no return value) */
