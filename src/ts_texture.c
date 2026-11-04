@@ -150,7 +150,8 @@ void ts_FreeCache(void)
     ts_CacheSize = 0;
     ts_CacheUsed = 0;
 }
-/* 0x45f6d0 */
+/* 0x45f6d0, stores tex's surface in cache entry sce (releasing what the entry held): its size, frame time,
+   flags and palette, and the surface's texture */
 
 void ts_CacheStore(TSCACHE *sce, TSTEXTURE *tex)
 {
