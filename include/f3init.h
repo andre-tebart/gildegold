@@ -38,7 +38,7 @@ int init_StartNetworkGame(char *name);                                  /* 0x510
 int init_JoinNetworkGame(int saveName);                                               /* 0x5112d0 */
 int init_SetupNewGame(int n);                                           /* 0x511400 */
 char init_CollectTorchObject(struct D3OBJECT *o, void *ctx);           /* 0x5115b0 */
-void init_StripTorches(int s);                                              /* 0x511600 */
+void init_StripTorches(struct D3OBJECT *s);                                              /* 0x511600 */
 void unk_Unk5116b0(void);                                               /* 0x5116b0 */
 char init_TownBuildingHook(char *o);                                    /* 0x511700 */
 void unk_Unk511790(void);                                               /* 0x511790 */

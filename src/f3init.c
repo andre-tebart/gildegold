@@ -2499,29 +2499,30 @@ char init_CollectTorchObject(D3OBJECT *o, void *ctx)
     }
     return list->n < 0x20;
 }
-/* 0x511600, in the scene s: for every "ub_FACKEL_" object (0x5115b0 collects them, up to 0x20) the children whose kind is above 4 and whose name contains "rLicht" are handed on (0x449960), then the object is released (0x447190) */
-
-
-void init_StripTorches(int s)
+/* 0x511600, under the object s: for every "ub_FACKEL_" object (0x5115b0 collects them, up to 0x20) the
+   children whose type is above 4 and whose name contains "rLicht" are handed on (0x449960), then the object
+   is released (0x447190) */
+void init_StripTorches(D3OBJECT *s)
 {
-    int list[33];
-    int i, c, next;
+    INIT_TORCHLIST list;
+    D3OBJECT *c, *next;
+    int i;
 
     i = 0;
-    list[32] = 0;
-    d3_ForEachObject(d3_DefaultScene, s, 0x2c0, init_CollectTorchObject, list);
-    if (0 < list[32]) {
+    list.n = 0;
+    d3_ForEachObject(d3_DefaultScene, s, 0x2c0, init_CollectTorchObject, &list);
+    if (0 < list.n) {
         do {
-            c = *(int *)(list[i] + 0x1fc);
+            c = list.obj[i]->child;
             while (c != 0) {
-                next = *(int *)(c + 0x1f0);
-                if (*(int *)(c + 0x218) >= 5 && strstr((char *)c, "rLicht") != 0)
+                next = c->next;
+                if (c->type >= 5 && strstr(c->name, "rLicht") != 0)
                     d3_SetParent(c, s);
                 c = next;
             }
-            d3if_Delete((struct D3OBJECT *)list[i]);
+            d3if_Delete(list.obj[i]);
             i++;
-        } while (i < list[32]);
+        } while (i < list.n);
     }
 }
 /* 0x5116b0, collects the torch objects of the scene (0x511600) and re-creates the quad tree 0x6f1c28 */
