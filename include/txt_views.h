@@ -161,7 +161,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1440b90                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x069d0))  /* 0x1440b90 */
 #define full_data_1440ba4                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x069e4))  /* 0x1440ba4 */
 #define full_data_1440bc8                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x06a08))  /* 0x1440bc8 */
-#define full_data_1440be8                        (*(unsigned char (*)[40])((char *)txt_Ptrs + 0x06a28))  /* 0x1440be8 */
+#define ai_BribePickText                        (*(char * *)((char *)txt_Ptrs + 0x06a28))  /* 0x1440be8, the pick prompt ai_OpenBribe hands to ai_MapPick for the bribe */
 #define ai_BreakInPickText                        (*(char * *)((char *)txt_Ptrs + 0x06a50))  /* 0x1440c10, the pick prompt ai_BreakInWindow hands to ai_MapPick for the burglar-guild break-in */
 #define txt_DeathTreeCaption                            (*(int *)((char *)txt_Ptrs + 0x06ac8))  /* 0x1440c88 */
 #define txt_Male                        (*(char **)((char *)txt_Ptrs + 0x06b54))  /* 0x1440d14 */

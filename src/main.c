@@ -6006,7 +6006,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_1440b90: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440ba4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440bc8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1440be8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_BribePickText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_BreakInPickText: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_Male: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_Female: view of txt_Ptrs (build/mk_txt_views.py) */

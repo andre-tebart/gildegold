@@ -4271,13 +4271,13 @@ void ai_OpenPickpocket(int building)
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
-/* 0x5944e0, the pickpocket callback (685 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra start, the
+/* 0x5944e0, the bribe pick callback (685 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra start, the
    callback of 0x594790): rec (0 = return); 0x53e400 (1, 0, 0x62) walks the buildings, the one with +0xb0 ==
    rec + 1 gives the text 0x5176d0 (0x1a91, rec + 0x27, rec) and 0x521150; else the first character flag
    0x770d08 (0x300 entries of 0x21c bytes); when none is set the message 0x1440ba4 goes to 0x521150; else
    0x553cc0 (rec) decides: 0 gives the text 0x1a89 (0x5176d0 / 0x521150), else the bribe result (ROUGH) */
 
-int ai_Unk5944e0(int param_1, int rec)
+int ai_BribeCallback(int param_1, int rec)
 {
     char text[0x100];
     int b;
@@ -4314,23 +4314,25 @@ int ai_Unk5944e0(int param_1, int rec)
     sv_MessageBox(text, 0);
     return 0;
 }
-/* 0x594790, opens the bribe window (128 B): 0x520fe0 (param_1) == 0 and param_1 != 0; the 0x50-byte config
-   zeroed with +0 = 1, +4 = -1, +0x10 = 6, +8 = 0xa07c43a0 (the float weight), +0xc = 1; 0x525220 (param_1, 0);
-   0x5b2180 (1, the config, 0x1440be8, the callback 0x5944e0, 0); 0x525440 and 0x52ae40 */
+/* 0x594790, opens the bribe map pick (128 B): when the character of the building is free (sv_CheckCharacterFlag
+   0x520fe0 is 0) and the building is not 0, the 0x50-byte config is zeroed (flags +0 = 1, +4 = -1, +0x10 = 6,
+   weight +8 = 0xa07c43a0, +0xc = 1); the player bar opens (0x525220), the map pick runs (0x5b2180: 1, the config,
+   the prompt 0x1440be8, the bribe callback 0x5944e0, 0), then the bar closes (0x525440) and the selection is
+   cleared (0x52ae40) */
 
-void ai_Unk594790(int param_1)
+void ai_OpenBribe(int building)
 {
     int cfg[0x14];
 
-    if (sv_CheckCharacterFlag(param_1) == 0 && param_1 != 0) {
+    if (sv_CheckCharacterFlag(building) == 0 && building != 0) {
         memset(cfg, 0, 0x50);
         cfg[0] = 1;
         cfg[1] = -1;
         cfg[4] = 6;
         cfg[2] = 0xa07c43a0;
         cfg[3] = 1;
-        sv_OpenPlayerBar(param_1, 0);
-        ai_MapPick(1, cfg, U_I((unsigned)&full_data_1440be8), (void *)ai_Unk5944e0, 0);
+        sv_OpenPlayerBar(building, 0);
+        ai_MapPick(1, cfg, ai_BribePickText, (int)ai_BribeCallback, 0);
         sv_ClosePlayerBar();
         sv_ClearSelection();
     }
@@ -4557,7 +4559,7 @@ void ai_Unk594e50(int param_1)
             else if (U_I((unsigned)&ai_ClickedObject) == angriff)
                 ai_OpenPickpocket(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == schutzgeld)
-                ai_Unk594790(param_1);
+                ai_OpenBribe(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == spionieren)
                 ai_Unk594b10(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == raub)
