@@ -13412,7 +13412,7 @@ void ai_Unk4de340(char *r, int *m)
             return;
         c = gm_FindChar(m[6]);
         *(float *)(r + 0x98) = (float)*(int *)(c + 0x24) + *(float *)(c + 0x1c);
-        *(int *)(r + 0x94) = ai_Unk494020(m);
+        *(int *)(r + 0x94) = ai_PlanWorth(m);
         return;
     case 1:
         if (*(int *)(r + 0x10) != m[5])

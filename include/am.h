@@ -566,12 +566,12 @@ typedef struct AIC4 {                   /* 0x21c bytes, ai_Chars[] with the fiel
     char pad008[5];
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0xe];
-    float unk01c;                       /* 0x01c */
+    float life;                         /* 0x01c, AICHAR.f01c: the life value the daily step ages (part of the death test's f01c + v024) */
     char pad020[4];
-    int unk024;                         /* 0x024 */
-    char pad028[0xe4];
-    float unk10c;                       /* 0x10c */
-    char pad110[0x56];
+    int health;                         /* 0x024, AICHAR.v024: added to life by the death test; the combat messages carry it as health */
+    char pad028[0x60];
+    float mood[14][3];                  /* 0x088, the mood triples (AICHAR.mood); ai_PlanWorth subtracts 2 from mood[11][0] */
+    char pad130[0x36];
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none (ai.h AICHAR) */
     char pad167[0xa9];
     int partner;                        /* 0x210 */
@@ -617,7 +617,7 @@ int gm_ConvertMoney(int a, unsigned char b);                       /* 0x5085b0 *
 int gm_GetWorth(unsigned short id);                            /* 0x50a640 */
 int ord_DispatchOrder(int id, char *c, int *m);           /* 0x4f81c0 */
 
-int ai_Unk494020(AIPLAN *q);                                    /* 0x494020 */
+int ai_PlanWorth(AIPLAN *q);                                    /* 0x494020 */
 int ai_Unk4941b0(void);                                         /* 0x4941b0 */
 int ai_Unk4941d0(void);                                         /* 0x4941d0 */
 int ai_Unk4941e0(AIPLAN *q);                                    /* 0x4941e0 */
