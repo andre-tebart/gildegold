@@ -386,6 +386,36 @@ typedef struct HEHIRE {                 /* the hire event 7's words over AIJOB's
     int slot;                           /* 0xb8, the spawn's send slot */
     int person;                         /* 0xbc, the netId of the hired character */
 } HEHIRE;
+typedef struct HETRANSPORT {            /* the transport event 15's words over AIJOB's union (he_AllocTransport / he_Unk556600):
+                                           a cart driven from one building to another */
+    char pad00[0xac];
+    int cart;                           /* 0xac, the cart's objId (gm_FindById) */
+    int start;                          /* 0xb0, the id of the start building */
+    int goal;                           /* 0xb4, the id of the goal building (a kind 0xa goal of an escorted cart: the
+                                           nearest one) */
+    int travel;                         /* 0xb8, the two buildings' AIBLD.travel30 summed */
+    char padbc[4];
+    float speed;                        /* 0xc0, the cart's walk speed (its CHARACTER.walkSpeed after the driver's skill) */
+    int at;                             /* 0xc4, the id of the building the cart is at (the start) */
+    int mode;                           /* 0xc8, by gm_IsHomeType of start / goal: 3 neither, 2 the start, 1 the goal, 4 both */
+    int escorts;                        /* 0xcc, the escort kind 0 .. 2 (the goods' value / 16000 + random 0 .. 1) */
+    unsigned char stepd0;               /* 0xd0, 0 at the start (its run handler's) */
+    char padd1[3];
+    int vd4;                            /* 0xd4, 0 at the start (its run handler's) */
+    char padd8[0x10];
+    int slotE8;                         /* 0xe8, -1 at the start (its run handler's slot) */
+    int slotEC;                         /* 0xec, -1 at the start (its run handler's slot) */
+    char padf0[4];
+    int order;                          /* 0xf4, the id of the event that ordered the transport, 0 / -1 none */
+} HETRANSPORT;
+typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
+                                           moves a replaced goal in them */
+    char pad00[0xb0];
+    int bld;                            /* 0xb0 */
+    char padb4[4];
+    int stopsB8[3];                     /* 0xb8 */
+    int stopsC4[3];                     /* 0xc4 */
+} HEROUTEREFS;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -11182,93 +11212,142 @@ int gm_BuildingSkill();
 int gm_StallGoodsList(char *c, unsigned *out);
 int gm_LevelPayout(int v, int kind);
 
-/* 0x554cb0, the allocation handler of the two-building event (a Ghidra miss; ROUGH, the tail is only sketched): the clocks +0x52 / +0x60 are the start clock, +0xe8 = -1, the buildings +0xb0 / +0xb4 (0x501190) and the person +0xac (0x4fea50) are looked up (any missing: free the record); when the second building is of the kind 0xa and the person has flag 1 (+0x20) the nearest building of the kind 5 / 0xa list (0x501190 (1, 5, 0xa), 0x458a20 positions, start range 1e8) replaces it in all records of type +0xf4 (+0xb8 .. / +0xb0) and +0xb4; the two buildings' 0x502520 flags choose the mode +0xc8 (1 / 2 / 3, 4 when both: equal buildings = error text 0x62728c and free), +0xb8 = the sum of both +0x30, +0xc4 = the first building's id, the event is posted 1 later and the person's data (0x502020, 0x5092e0, the +0x1a0 factor from the person's byte +0x12 with the type 0x135 / 0x136 correction) is set up; flag 2 of +0x78 sends the person the message 0x13 / 0x40, the person gets +0x24 = ev and +0x10 = its id; with flag 1 the 0x50aa00 / 0x627258 text decides a count +0xcc (<= the person's limit) and its tag +0x28 (0x50a970), the handle +0x84 / +0xec = -1 */
-void he_Unk554cb0(int ev)
+/* 0x554cb0, he_AllocTransport (its error texts), the allocation handler of the transport event 15 (HETRANSPORT): due
+   now (the start clock) with the second clock, the start building, the cart and the goal building looked up (any
+   missing: the event is freed). An escorted cart (AIOBJ.flags20 bit 0) bound for a kind 0xa building goes to the
+   nearest kind 0xa building instead (d3_PointToWorld of their objects), which replaces the old goal in the ordering
+   event's ids too. The mode by gm_IsHomeType of the two (start and goal both homes and the same building: the error
+   "Start and goal are the same!" and the event is freed), the travel sum, due an hour later; the cart's walk speed
+   from its load (fill * 0.01 * 0.5 + 0.9, -0.4 for the cart 0x136, +0.3 for 0x135) times the driver building's
+   skill 0x11 (gm_BuildingSkill, * 0.01 + 1), kept as speed; the cart is marked 0x40 (sent with opts bit 1) and bound
+   to the event, the event's AIJOB.from is the cart. An escorted cart gets the escort kind by its goods' value
+   (gm_StallGoodsList: value / 16000 + random 0 .. 1, at most 2), and the escort is paid (gm_LevelPayout, sent with
+   opts bit 1) */
+void he_AllocTransport(int ev)
 {
-    int b1, b2, o = 0, best, e, f1 = 0, f2 = 0, mode;
-    float mind, dist;
-    float p1[3], p2[3];
-    char tmp[0x100];
+    AIJOB *e = (AIJOB *)ev;
+    HETRANSPORT *t = (HETRANSPORT *)ev;
+    AIOBJ *o;
+    AIBLD *from, *to, *b, *best, *drv;
+    HEROUTEREFS *r;
+    CHARACTER *ch;
+    int home1, home2, k, skill, pay;
+    unsigned short rnd;
+    float mind, dist, dx, dy, dz;
+    D3VECTOR4 p1, p2;                   /* d3_PointToWorld writes past the vector */
+    unsigned goods[0x2e];
+    char text[0x100];
 
-    *(int *)(ev + 0xe8) = -1;
-    *(int *)(ev + 0xd4) = 0;
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(unsigned char *)(ev + 0xd0) = 0;
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
-    b1 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    if (b1 == 0)
+    home1 = 0;
+    home2 = 0;
+    t->slotE8 = -1;
+    t->vd4 = 0;
+    e->end = e->start;
+    t->stepd0 = 0;
+    e->clock60 = e->start;
+    from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
+    if (from == 0)
         goto fail;
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
+    gm_FindById(0, &o, 0, t->cart);
     if (o == 0)
         goto fail;
-    b2 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4));
-    if (b2 == 0)
+    to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+    if (to == 0)
         goto fail;
-    if (*(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b2 * 0x24d) == 0xa && (*(unsigned char *)(o + 0x20) & 1) != 0) {
-        best = b2;
+    if (ai_BTypesT[to->type].kind == 0xa && o != 0 && (o->flags20 & 1) != 0) {
+        best = to;
         mind = 1e8f;
-        d3_PointToWorld(*(int *)(b1 + 0x61), *(int *)(b1 + 0x61) + 0x4c, p1);
-        for (e = gm_BuildQuery(1, 5, 0xa); e != 0; e = gm_BuildNext()) {
-            float dx, dy, dz;
-
-            d3_PointToWorld(*(int *)(e + 0x61), *(int *)(e + 0x61) + 0x4c, p2);
-            dx = p2[0] - p1[0];
-            dy = p2[1] - p1[1];
-            dz = p2[2] - p1[2];
-            dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
-            if (!(dist > mind)) {
+        d3_PointToWorld((D3OBJECT *)from->object, &((D3OBJECT *)from->object)->pos, (D3VECTOR *)&p1);
+        for (b = (AIBLD *)gm_BuildQuery(1, 5, 0xa); b != 0; b = (AIBLD *)gm_BuildNext()) {
+            d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)&p2);
+            dx = p2.x - p1.x;
+            dy = p2.y - p1.y;
+            dz = p2.z - p1.z;
+            dist = (float)sqrt(dz * dz + dy * dy + dx * dx);
+            if (dist < mind) {
                 mind = dist;
-                best = e;
+                best = b;
             }
         }
-        if (best != b2) {
-            if (*(int *)(ev + 0xf4) != 0 && *(int *)(ev + 0xf4) != -1) {
-                char *r = he_FindEvent(1, 1, *(int *)(ev + 0xf4));
-                int k;
-
+        if (best != to) {
+            if (t->order != 0 && t->order != -1) {
+                r = (HEROUTEREFS *)he_FindEvent(1, 1, t->order);
                 if (r != 0) {
                     for (k = 0; k < 3; k++) {
-                        if (*(int *)(r + 0xc4 + k * 4) == *(int *)(b2 + 1))
-                            *(int *)(r + 0xc4 + k * 4) = *(int *)(best + 1);
+                        if (r->stopsC4[k] == to->id)
+                            r->stopsC4[k] = best->id;
+                        if (r->stopsB8[k] == to->id)
+                            r->stopsB8[k] = best->id;
                     }
-                    if (*(int *)(r + 0xb0) == *(int *)(b2 + 1))
-                        *(int *)(r + 0xb0) = *(int *)(best + 1);
+                    if (r->bld == to->id)
+                        r->bld = best->id;
                 }
             }
-            *(int *)(ev + 0xb4) = *(int *)(best + 1);
-            b2 = best;
+            t->goal = best->id;
+            to = best;
         }
     }
-    if (gm_IsHomeType(b1) != 0)
-        f1 = 1;
-    if (gm_IsHomeType(b2) != 0)
-        f2 = 1;
-    mode = f1 ? (f2 ? 4 : 2) : (f2 ? 1 : 3);
-    *(int *)(ev + 0xc8) = mode;
-    if (mode == 4 && b1 == b2) {
-        err_Message("he_AllocTransport(): Start and goal are the same!");
-        he_FreeEvent((int *)ev);
+    if (gm_IsHomeType(from) != 0)
+        home1 = 1;
+    if (gm_IsHomeType(to) != 0)
+        home2 = 1;
+    if (home1 != 0 && home2 == 0)
+        t->mode = 2;
+    else if (home1 == 0 && home2 != 0)
+        t->mode = 1;
+    else if (home1 == 0 && home2 == 0)
+        t->mode = 3;
+    else {
+        t->mode = 4;
+        if (from == to) {
+            err_Message("he_AllocTransport(): Start and goal are the same!");
+            he_FreeEvent((int *)ev);
+            return;
+        }
+    }
+    t->travel = to->travel30 + from->travel30;
+    t->at = from->id;
+    t->stepd0 = 0;
+    gm_AddTime(&e->end, 0, 0, 1);
+    if (o != 0) {
+        drv = (AIBLD *)gm_FindBuildingById(o->bldId);
+        ch = (CHARACTER *)o->sceneObj;
+        ch->walkSpeed = o->fill * 0.01f * 0.5 + 0.9;
+        if (o->type == 0x136)
+            ch->walkSpeed = ch->walkSpeed - 0.4;
+        else if (o->type == 0x135)
+            ch->walkSpeed = ch->walkSpeed + 0.3;
+        if (drv != 0) {
+            skill = gm_BuildingSkill(drv, 0x11, 1);
+            ch->walkSpeed = (skill * 0.01 + 1.0) * ch->walkSpeed;
+            t->speed = ch->walkSpeed;
+        }
+        o->flags13 |= 0x40;
+        if ((e->opts & 2) != 0)
+            cm_SendSetField(o->objId, 0x13, 1, 0x40, 0);
+        o->job24 = e;
+        e->from = o->objId;
+        if ((o->flags20 & 1) != 0) {
+            gm_StallGoodsList((char *)o, goods);
+            if ((int)goods[0x2c] > 0) {
+                rnd = util_Random(2);
+                t->escorts = (int)goods[0x2c] / 16000 + rnd;
+            } else
+                t->escorts = 0;
+            t->escorts = t->escorts > 2 ? 2 : t->escorts;
+            if (t->escorts != 0) {
+                sprintf(text, "he_AllocTransport(): master choose eskorte type %i", t->escorts);
+                o->escort = (char)t->escorts;
+                pay = gm_LevelPayout(goods[0x2c], o->escort);
+                if ((e->opts & 2) != 0)
+                    cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, pay);
+            } else
+                o->escort = 0;
+        }
+        e->exSlot = -1;
+        t->slotEC = -1;
         return;
     }
-    *(int *)(ev + 0xb8) = *(int *)(b2 + 0x30) + *(int *)(b1 + 0x30);
-    *(int *)(ev + 0xc4) = *(int *)(b1 + 1);
-    *(unsigned char *)(ev + 0xd0) = 0;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
-    gm_FindBuildingById(*(int *)(o + 0x1c));
-    *(unsigned char *)(o + 0x13) |= 0x40;
-    if ((*(unsigned char *)(ev + 0x78) & 2) != 0)
-        cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0x40, 0);
-    *(int *)(o + 0x24) = ev;
-    *(int *)(ev + 0x10) = *(int *)(o + 2);
-    if ((*(unsigned char *)(o + 0x20) & 1) != 0) {
-        gm_StallGoodsList(o, tmp);
-        sprintf(tmp, "%s", "");
-        *(unsigned char *)(o + 0x28) = *(unsigned char *)(ev + 0xcc);
-        gm_LevelPayoutK(*(int *)(ev + 0xcc), *(char *)(o + 0x28));
-    }
-    *(int *)(ev + 0x84) = -1;
-    *(int *)(ev + 0xec) = -1;
-    return;
 fail:
     he_FreeEvent((int *)ev);
 }
@@ -14876,7 +14955,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(7, (void *)he_Unk554820, (void *)he_RunHire) != 0)
         return 1;
-    if (he_SetEventHandlers(15, (void *)he_Unk554cb0, (void *)he_Unk556600) != 0)
+    if (he_SetEventHandlers(15, (void *)he_AllocTransport, (void *)he_Unk556600) != 0)
         return 1;
     if (he_SetEventHandlers(16, (void *)he_Unk556dc0, (void *)he_Unk556ed0) != 0)
         return 1;

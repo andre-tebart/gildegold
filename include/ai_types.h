@@ -313,7 +313,9 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                     int unlockPrice;            /* 0x20, the money ai_UnlockRoomWindow asks; cleared with locked */
                 };
             };
-            char pad28[2];
+            char escort;                        /* 0x28, of a cart: its escort kind 0 .. 2 (he_AllocTransport picks it by the goods'
+                                                   value, gm_LevelPayout prices it) */
+            char pad29;
             int reportBld;                      /* 0x2a, of a spy report (gm_Query kind 0xca in a building): the id of the
                                                    building it reports on (ai.c 0x4817a0, he.c's raid 0x5461c0) */
         };

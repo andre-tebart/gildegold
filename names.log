@@ -2380,3 +2380,4 @@
 2026-11-05T14:47:47 0x00553e90 func he_Unk553e90 -> he_RunSale by:main why:the run handler of event 2: sells the event's object of its building (cm_SendExSellObject) and tells the owner (_NACHRICHTEN_HS_53 / _54)
 2026-11-05T14:50:04 0x00554320 func he_Unk554320 -> he_RunCustomers by:main why:the run handler of event 6: spawns customers at the building (cm_SendMessage3d, 'Einwohnerlimit erreicht!'), walks them to the entrance and has them pay the job cost
 2026-11-05T14:52:59 0x00554860 func he_Unk554860 -> he_RunHire by:main why:the run handler of event 7: spawns a character with the building type's job (cm_SendMessage3d, 'Einwohnerlimit erreicht!'), the owner pays the job cost (gm_JobCost), news 0x1bb1
+2026-11-05T14:57:12 0x00554cb0 func he_Unk554cb0 -> he_AllocTransport by:main why:its own error texts 'he_AllocTransport(): Start and goal are the same!' / 'master choose eskorte type %i'

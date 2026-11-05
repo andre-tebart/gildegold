@@ -16,7 +16,10 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     };
     unsigned short owner;               /* 0x27, index into ai_Chars */
     unsigned short mainRoom;            /* 0x29, the room (scene record) the building's panel opens with: sv_UpdatePanel passes it to ai_TechTreeWindow where it passes *sv_PanelShown for a shown room (reasoned) */
-    char pad2b[0xe];
+    char pad2b[5];
+    int travel30;                       /* 0x30, he_AllocTransport sums it over the start and the goal building into
+                                           HETRANSPORT.travel (reasoned guess: a travel weight; no other reader read yet) */
+    char pad34[5];
     int budget;                         /* 0x39, the money the building may spend this round: main_EndRound spreads its owner's goods value (x 75) over the buildings by AIBTYPE.level (2 / 4 / 8 shares, capped) and copies it to the AICHAR.budget of the local jobs; ai.c buys up to it */
     int wageRate;                       /* 0x3d, the percent of the job wages its workers get (main_SettleRound pays wage * rate / 100; below 100 lowers their opinion of the owner, above raises it) */
     int workRate;                       /* 0x41, a percent setting whose distance from 100 moves the workers' opinion the other way (main_SettleRound; reasoned guess: the working hours) */
