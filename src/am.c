@@ -408,9 +408,9 @@ int ai_DecideSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
     s2->arg = a[sel];
     return 1;
 }
-/* 0x48eab0, execute dispatcher of 0x48e470: by the way to pay in s1->unk10 */
+/* 0x48eab0, execute of "UseSecretRoom" (0x41): the way to pay in s1->arg2 picks ai_ExecSecretRoom0..3 */
 
-int ai_Unk48eab0(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_ExecSecretRoom(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     switch (s1->arg2) {
     case 0:
@@ -963,7 +963,7 @@ int ai_RegisterBuildingActions(int a)
     strcpy(act.name, "UseSecretRoom");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideSecretRoom;
-    act.exec = ai_Unk48eab0;
+    act.exec = ai_ExecSecretRoom;
     act.flags = 0x1c3;
     if (!am_RegisterMethod(&act, a))
         return 0;

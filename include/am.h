@@ -512,7 +512,7 @@ int ai_DecideSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2);                      
 int ai_DecideSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e730 */
 int ai_DecideSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e830 */
 int ai_DecideSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e9f0 */
-int ai_Unk48eab0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48eab0 */
+int ai_ExecSecretRoom(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48eab0 */
 int ai_ExecSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48eb50 */
 int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48ec90 */
 int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48edc0 */
