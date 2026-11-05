@@ -2563,3 +2563,5 @@
 2026-11-05T23:34:50 0x0056bac0 data he_Unk56bac0 -> he_ConstructionStage by:main why:returns the highest _nn suffix of the children of he_<id>, the construction stage as he_ShowConstruction parses it
 2026-11-05T23:37:25 0x0056bc50 data he_Unk56bc50 -> he_CreateConstruction by:main why:loads the construction model (he_BuildingModels) as he_<id> and the building's group at pos/rot, shows stage -1
 2026-11-05T23:48:07 0x0056be30 func he_Unk56be30 -> he_RunConstruction by:main why:the run handler of the building construction event 0xd: pays, creates the construction objects, counts the work into stages, finishes the building
+2026-11-05T23:50:25 0x0056ce40 data he_Unk56ce40 -> he_RunMissionCheck by:main why:the run / alloc handlers of the event 0x4c (he_SetEventHandlers 0x4c): checks the character's running mission (ai_IsMissionFulfilled) and tells its owner (system message 8)
+2026-11-05T23:50:25 0x0056cdd0 data he_Unk56cdd0 -> he_AllocMissionCheck by:main why:the run / alloc handlers of the event 0x4c (he_SetEventHandlers 0x4c): checks the character's running mission (ai_IsMissionFulfilled) and tells its owner (system message 8)

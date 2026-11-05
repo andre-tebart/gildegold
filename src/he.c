@@ -1057,6 +1057,10 @@ typedef struct HECONSTRUCTION {         /* the building construction event 0xd's
     D3VECTOR rot;                       /* 0xe4, its rotation */
     char model[0x40];                   /* 0xf0, the building's group model file (the length reasoned: what fits in AIJOB) */
 } HECONSTRUCTION;
+typedef struct HEMISSIONCHECK {         /* the mission check event 0x4c's words over AIJOB's union (he_AllocMissionCheck / he_RunMissionCheck) */
+    char pad00[0xac];
+    int slot;                           /* 0xac, the cm slot of the system message 8 that tells the mission's owner, -1: none */
+} HEMISSIONCHECK;
 typedef struct HECHILDLIST {            /* the children of a scene object, collected by he_CollectChild */
     D3OBJECT *root;                     /* 0x000, the object walked */
     D3OBJECT *items[0x40];              /* 0x004 */
@@ -21840,7 +21844,7 @@ void he_RunConstruction(int ev)
 }
 /* 0x56cdd0, the alloc of an event of the type 0x4c: both clocks (+0x52 / +0x60) = the start clock (+0x44), due 10 units later (0x4fe140), state 0, +0xac = -1 */
 
-void he_Unk56cdd0(int ev)
+void he_AllocMissionCheck(int ev)
 {
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
@@ -21852,63 +21856,69 @@ void he_Unk56cdd0(int ev)
 int ai_IsMissionFulfilled();
 int cm_SendExSysMessage(unsigned char id, void *msg);
 
-/* 0x56ce40, the run handler of the type 0x4c (a character action of the player below 22 h): the player byte 0x624580 (negative = no player: free the record), the record of the player *(unsigned short *)(ev + 8) in the 0x80-entry table 0xf82320 (0x24 bytes: +4 the character's +4, +0x20 the handled flag), the states (-2 / -1 free) 0 = wait for the flag, 1 = start the action 0x4c4db0 (8, &the record's +4) and wait for its handle +0xac, 2 = the handle result (1 = done, state 0 and wait 24; else state 1 and wait 30) */
-void he_Unk56ce40(int ev)
+/* 0x56ce40, the run handler of the mission check event 0x4c (alloc he_AllocMissionCheck): without a mission mode
+   (ai_MissionMode negative) it frees the event; it finds the running mission (ai_Missions) of its character, none:
+   due in 30 minutes; by its stage (-2 / -1 free) 0 checks the mission before 22 h (ai_IsMissionFulfilled: fulfilled,
+   stage 1), 1 tells its owner with the system message 8 (before 22 h, outside a network mission: stage 2), 2 waits
+   for that message's slot (1: stage 0, due in a day; else back to stage 1) */
+void he_RunMissionCheck(int ev)
 {
-    int i, h, arg;
+    AIJOB *e = (AIJOB *)ev;
+    HEMISSIONCHECK *m = (HEMISSIONCHECK *)ev;
+    int msg[0x1f];
+    int i, h;
 
-    if (*(signed char *)(unsigned)&ai_MissionMode < 0) {
+    if (ai_MissionMode <= -1) {
         he_FreeEvent((int *)ev);
         return;
     }
     for (i = 0; i < 0x80; i++) {
-        if (ai_Missions[i].type != 0 && ai_Missions[i].owner == *(int *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c + 4))
+        if (ai_Missions[i].type != 0 && ai_Missions[i].owner == ai_CharsT[e->chr].netId)
             break;
     }
     if (i >= 0x80) {
-        gm_AddTime(ev + 0x52, 0, 0x1e, 0);
+        gm_AddTime(&e->end, 0, 0x1e, 0);
         return;
     }
-    switch (*(int *)(ev + 0x70)) {
-    case -2:
-    case -1:
-        he_FreeEvent((int *)ev);
-        break;
+    switch (e->stage) {
     case 0:
-        if (ai_Missions[i].fulfilled == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16) {
+        if (ai_Missions[i].fulfilled == 0 && ai_Time.hour < 0x16) {
             if (ai_IsMissionFulfilled(&ai_Missions[i]) != 0) {
                 ai_Missions[i].fulfilled = 1;
-                gm_AddTime(ev + 0x52, 0, 1, 0);
-                *(int *)(ev + 0x70) = 1;
+                gm_AddTime(&e->end, 0, 1, 0);
+                e->stage = 1;
                 return;
             }
         }
-        gm_AddTime(ev + 0x52, 0, 0xa, 0);
+        gm_AddTime(&e->end, 0, 0xa, 0);
         break;
     case 1:
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        if (ai_Missions[i].fulfilled == 1 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16 &&
-            U_I((unsigned)&ai_MissionPartner) == -1) {
-            arg = ai_Missions[i].owner;
-            *(int *)(ev + 0xac) = ((int (*)(unsigned char, void *))cm_SendExSysMessage)(8, &arg);
-            *(int *)(ev + 0x70) = 2;
+        gm_AddTime(&e->end, 0, 1, 0);
+        if (ai_Missions[i].fulfilled == 1 && ai_Time.hour < 0x16 && ai_MissionPartner == -1) {
+            msg[0] = ai_Missions[i].owner;
+            m->slot = cm_SendExSysMessage(8, msg);
+            e->stage = 2;
             return;
         }
-        gm_AddTime(ev + 0x52, 1, 0, 0);
-        *(int *)(ev + 0x70) = 1;
+        gm_AddTime(&e->end, 1, 0, 0);
+        e->stage = 1;
         break;
     case 2:
-        h = cm_GetSlotState(*(int *)(ev + 0xac));
-        gm_AddTime(ev + 0x52, 0, 1, 0);
+        h = cm_GetSlotState(m->slot);
+        gm_AddTime(&e->end, 0, 1, 0);
         if (h == 0)
             return;
         if (h == 1) {
-            *(int *)(ev + 0x70) = 0;
-            gm_AddTime(ev + 0x52, 0x18, 0, 0);
+            e->stage = 0;
+            gm_AddTime(&e->end, 0x18, 0, 0);
             return;
         }
-        *(int *)(ev + 0x70) = 1;
-        gm_AddTime(ev + 0x52, 0, 0x1e, 0);
+        e->stage = 1;
+        gm_AddTime(&e->end, 0, 0x1e, 0);
+        break;
+    case -2:
+    case -1:
+        he_FreeEvent((int *)ev);
         break;
     }
 }
@@ -21940,7 +21950,7 @@ int he_RegisterEventTypes03(void)
         return 1;
     if (he_SetEventHandlers(0xe, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_SetEventHandlers(0x4c, (void *)he_Unk56cdd0, (void *)he_Unk56ce40) != 0)
+    if (he_SetEventHandlers(0x4c, (void *)he_AllocMissionCheck, (void *)he_RunMissionCheck) != 0)
         return 1;
     if (he_SetEventHandlers(0x4d, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
         return 1;
