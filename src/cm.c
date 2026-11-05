@@ -3631,7 +3631,7 @@ int ai_Unk4c88a0(G17MSG *m, G17STAT *s)
     if (gm_CompareTime(&ai_Time, t) < 0) {
         ai_Time = *(AITIME *)t;
         if (ai_Unk624578)
-            he_Unk53ed70();
+            he_RunEvents();
         if (ai_Unk624574) {
             ord_AdvanceRatingBase();
             if (ai_Time.min % 6 == 0)

@@ -346,7 +346,7 @@ int ord_RandomCellPoint();  /* 0x4f86a0 */
 void ord_AdvanceRatingBase(void);  /* 0x4f9c00, ord.c */
 void gm_CountCharacters(void);  /* 0x4fdfd0 */
 char * he_NextEvent(void);  /* 0x53e300 */
-void he_Unk53ed70();  /* 0x53ed70 */
+void he_RunEvents();  /* 0x53ed70 */
 void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec);  /* 0x5a9170 */
 int ai_Unk5ba750();  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */

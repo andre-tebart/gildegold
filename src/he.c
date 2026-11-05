@@ -1300,29 +1300,29 @@ void he_RecheckPersonEvents(unsigned short *pl)
 }
 /* 0x53ed70, the per-frame run of the event records: updates the gfx infos, then calls the run handler (0x758600) of every record (not 0x18 flagged) that is due */
 
-void he_Unk53ed70(void)
+void he_RunEvents(void)
 {
     int iv, i;
-    unsigned char *pb;
+    AIJOB *pb;
 
     he_RemoveStaleGfxInfos();
     i = 0;
-    if (U_I((unsigned)&he_EventTop) >= 0) {
-        pb = (unsigned char *)(unsigned)&he_Events;
+    if (he_EventTop >= 0) {
+        pb = he_Jobs;
         do {
-            if ((int)pb >= (int)((unsigned)&he_Events + 0x53000))
+            if ((int)pb >= (int)(he_Jobs + 0x400))
                 return;
-            if (*pb != 0 && (pb[0x78] & 0x18) == 0) {
-                he_AddEventGfxInfo((AIJOB *)pb);
-                iv = gm_CompareTime((unsigned)&ai_Time, pb + 0x52);
-                if (iv > 0 && *pb < 0xa7) {
-                    he_RecheckEventPerson(pb);
-                    ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
+            if (pb->kind != 0 && (pb->opts & 0x18) == 0) {
+                he_AddEventGfxInfo(pb);
+                iv = gm_CompareTime(&ai_Time, &pb->end);
+                if (iv > 0 && (unsigned char)pb->kind < 0xa7) {
+                    he_RecheckEventPerson((unsigned char *)pb);
+                    he_RunHandlers[(unsigned char)pb->kind](pb);
                 }
             }
             i++;
-            pb += 0x14c;
-        } while (i <= U_I((unsigned)&he_EventTop));
+            pb++;
+        } while (i <= he_EventTop);
     }
 }
 /* 0x53edf0, runs the run handler of the quick list records (0x74db40) */
