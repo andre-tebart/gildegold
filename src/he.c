@@ -341,6 +341,18 @@ typedef struct HEDUEL {                 /* the duel challenge's words over AIJOB
     unsigned short newsArg1;            /* 0xb4, of the duel event: the first value of the challenge's news 0x1d6b */
     unsigned short newsArg2;            /* 0xb6, of the duel event: the third value of that news (both not read further) */
 } HEDUEL;
+typedef struct HEGESELLE {              /* the "RndGeselle" (a random journeyman) event's words over AIJOB's union (event 0x4a:
+                                           its init 0x547ee0, run handler he_RunGeselle) */
+    char pad00[0xac];
+    int chrId;                          /* 0xac, the character the news goes to (gm_FindById's character) */
+    int bldId;                          /* 0xb0, the building the journeyman is sent to (gm_FindById's building) */
+    int bldArg;                         /* 0xb4, cm_SendChrGotoBuilding's third value with that building, also the
+                                           news box's jump target's second word */
+    unsigned short newsId;              /* 0xb8, the text id of the news */
+    char padba[2];
+    int slot;                           /* 0xbc, the cm slot of the journeyman's creation (cm_SendMessage3d); its value
+                                           is the new character */
+} HEGESELLE;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -3374,27 +3386,34 @@ void he_Unk547ee0(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 6, 0);
 }
-/* 0x547f90, a Ghidra miss (disassembled): the run handler of the "RndGeselle" event: the objects of +0xb0 / +0xac are fetched (0x4fea50); a gone one ends the event, in the state 0 with the finished job +0xbc the figure it returns (0x4c3b10) is sent to +0xb0 / +0xb4 ("RndGeselle", 0x4c52e0) and the news (id +0xb8, 0x20d + 0x23 for party 0 + its record byte +0x165) is shown (0x53dee0) (ROUGH) */
+/* 0x547f90, a Ghidra miss (disassembled): the run handler of the "RndGeselle" event 0x4a (a random journeyman):
+   pushes the end four units ahead, frees the event at stage -2 or when its building is gone; at stage 0, once the
+   cm slot is answered, sends the new character it holds to the building ("RndGeselle"), shows the news newsId
+   (the character, its title text 0x20d / 0x230 by sex + title, the receiver) in a quick-jump message box and frees
+   the event */
 
-void he_Unk547f90(int ev)
+void he_RunGeselle(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEGESELLE *g = (HEGESELLE *)ev;
     char text[0x200];
-    int o2 = 0, o1 = 0;
-    int r, k;
+    int bld = 0, chr = 0;
+    AICHAR *c;
+    int title;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 4, 0);
-    gm_FindById(&o1, 0, 0, *(int *)(ev + 0xb0));
-    gm_FindById(0, 0, &o2, *(int *)(ev + 0xac));
-    if (*(int *)(ev + 0x70) == -2 || o1 == 0)
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 4, 0);
+    gm_FindById(&bld, 0, 0, g->bldId);
+    gm_FindById(0, 0, &chr, g->chrId);
+    if (e->stage == -2 || bld == 0)
         he_FreeEvent((int *)ev);
-    if (*(int *)(ev + 0x70) == 0 && cm_GetSlotState(*(int *)(ev + 0xbc)) != 0) {
-        r = cm_GetSlotValue(*(int *)(ev + 0xbc));
-        if (r != 0) {
-            k = ((*(char *)(r + 9) != 0) ? 0x23 : 0) + 0x20d + *(unsigned char *)(r + 0x165);
-            cm_SendChrGotoBuilding(*(int *)(r + 4), *(int *)(ev + 0xb0), *(int *)(ev + 0xb4), 0, 0, "RndGeselle");
-            txt_Format(text, *(unsigned short *)(ev + 0xb8), *(unsigned short *)r, k, o2);
-            he_MessageBoxQuickjump(*(int *)(ev + 0xac), *(int *)(ev + 0xac), text, 0, 0x5ec, *(int *)(ev + 0xb0), *(int *)(ev + 0xb4), 0, "_NACHRICHTEN_HS_00");
+    if (e->stage == 0 && cm_GetSlotState(g->slot) != 0) {
+        c = (AICHAR *)cm_GetSlotValue(g->slot);
+        if (c != 0) {
+            title = (c->sex ? 0x230 : 0x20d) + (unsigned char)c->title;
+            cm_SendChrGotoBuilding(c->netId, g->bldId, g->bldArg, 0, 0, "RndGeselle");
+            txt_Format(text, g->newsId, c->id, title, chr);
+            he_MessageBoxQuickjump(g->chrId, g->chrId, text, 0, 0x5ec, g->bldId, g->bldArg, 0, "_NACHRICHTEN_HS_00");
         }
         he_FreeEvent((int *)ev);
     }
@@ -9461,7 +9480,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x47, (void *)he_AllocInsult, (void *)he_RunInsult) != 0)
         return 1;
-    if (he_SetEventHandlers(0x4a, (void *)he_Unk547ee0, (void *)he_Unk547f90) != 0)
+    if (he_SetEventHandlers(0x4a, (void *)he_Unk547ee0, (void *)he_RunGeselle) != 0)
         return 1;
     if (he_SetEventHandlers(0x4b, (void *)he_Unk548110, (void *)he_RunInsultNews) != 0)
         return 1;
