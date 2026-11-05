@@ -366,6 +366,16 @@ typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunS
         int objId;                      /* 0x4, the sold object's id (AIOBJ.objId) */
     } sold;
 } HESOLDMSG;
+typedef struct HECUSTOMERS {            /* the customers event 6's words over AIJOB's union (he_Unk554820 / he_RunCustomers);
+                                           the building is AIJOB.from */
+    char pad00[0xac];
+    unsigned char kind;                 /* 0xac, the kind of the customers spawned (cm_SendMessage3d) */
+    char padad[3];
+    int count[12];                      /* 0xb0, the customers left, per kind (one is served per round) */
+    int target;                         /* 0xe0, the objId the customer walks to, -1: the building's main object */
+    int slot;                           /* 0xe4, the spawn's send slot, -1 none */
+    int person;                         /* 0xe8, the netId of the spawned customer */
+} HECUSTOMERS;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -652,7 +662,9 @@ typedef struct HETITLE {                /* the title ceremony event 0x69's words
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
-    char pad1c[0x48];
+    char pad1c[0x30];
+    int customerTakings;                /* 0x4c, the money its character's customers paid (he_RunCustomers adds it) */
+    char pad50[0x14];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
                                            counts it; reasoned, its reader is not read yet) */
 } HEFINVIEW;
@@ -10899,121 +10911,135 @@ int gm_BuildingMainObject(unsigned char *b);
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 short *gm_PlayerRecord(char *c);
 
-/* 0x554320, the run handler of the sales-tour event (a Ghidra miss; ROUGH): +0xb0 .. +0xdc twelve counters of wares to deliver, +0xac the kind, +0xe4 the order handle, +0xe8 the person's id, +0xe0 the target. State 0 -> 1; state 1 waits for the due time and takes the building of the kind +0x10 (none: free), the price check 0x50cd40 / 0x509e60 (a roll above the building's budget: the news 0x1a40, 0x5f2, free), picks the first counter > 0 (none: free) and orders (0x4c55d0, handle +0xe4), state 2; state 2 waits for the order and the person (0x4c3ae0 / 0x4c3b10; gone: the message 0x62720c and free), takes its id, fixes the target (0x501b50) and sends it (0x4c51b0 .. 0x5f1890), state 3; state 3 hands one ware over (counter - 1, a player gets the news 0x1bab, 0x60c / 0x5f2 with "0x626b04", 0x4c4830 pays, 0x506430 raises a field +0x4c) and goes on to the next counter after a random 0x1e + 0x42ec00(10) units (state 1), or frees the record when all are done; states -2 / -1 free */
-void he_Unk554320(int ev)
+/* 0x554320, the run handler of the customers event 6 (HECUSTOMERS; its alloc handler he_Unk554820): stages -2 / -1
+   free it, stage 0 goes to 1. Stage 1, once due: the building AIJOB.from (gone: freed); when the job cost of its
+   kind (gm_JobCost for the owner) is above the owner's goods value (gm_GetGoodsValue) the owner gets the news
+   0x1a40 and the event is freed; else the first kind with customers left (count[] > 0) has a customer of the kind
+   `kind` spawned at the building (cm_SendMessage3d, its slot), none: freed; due an hour later (stage 2). Stage 2
+   waits for the spawn: none ("Einwohnerlimit erreicht!", the population limit) frees the event; else the customer
+   (person) walks to the target object's entrance ("dummy_EINGANG"; the building's main object when target is -1),
+   stage 3 an hour later. Stage 3 serves one: the customer pays the job cost (cm_SendMoveGoodsUnchecked) to the
+   event's character, whose player record counts it (HEFINVIEW.customerTakings), a player character (kind 6 / 7)
+   gets the news 0x1bab (0x60c when the building's master is a character with flags1b4 bit 0, else 0x5f2); with
+   customers left stage 1 again after 30 .. 39 minutes, else the event is freed
+   @deep Read all of it against the original and rewrote it typed (AIJOB / HECUSTOMERS / AIBLD / AICHAR /
+   HEFINVIEW): the shared free tail (the cases break to one he_FreeEvent after the switch), the spawn call
+   inside the search loop, the serve body inside its loop, the cost check (cost > gm_GetGoodsValue), the
+   0x1bab quick jump's argument order, no gm_GetGoodsValue in stage 3. 408 = 408 instructions, the same
+   blocks; left: regs (220) and scheduling: the argument loads of the 0x1a40 news (+0x3e6 / +0x3f3: e->from
+   loaded before / after the text pointer), the person's netId vs e->from load order at +0x524, the 0x1bab
+   txt_Format arguments (+0x67b, ecx/eax swapped), and the two he_MessageBoxQuickjump calls of +0x6a8 /
+   +0x716 (the same pushes, the original loads target, the chr index and b->id in another order)
+   (references: M8 at +0x283: ours refers to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4
+   (ai_TimeHourW) (and 1 more), explained: the two M8 lines (+0x283, +0x493) are the AITIME copies e->end =
+   ai_Time under a register renaming (ours eax/ecx/eax/cx, the original edx/eax/edx/ax): both copy [T],
+   [T+4], [T+8], [T+0xc] in order; the aligner pairs ours' T+8 load with the original's T+4 load because of
+   the renamed registers) */
+void he_RunCustomers(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, i, p, r, o, q, ch;
+    AIJOB *e = (AIJOB *)ev;
+    HECUSTOMERS *c = (HECUSTOMERS *)ev;
+    AIBLD *b;
+    AICHAR *p, *m;
+    AIOBJ *o;
+    HEFINVIEW *f;
+    int i, cost;
     char text[0x400];
 
-    if (st < -2 || st > 3)
-        return;
-    switch (st) {
+    switch (e->stage) {
     case -2:
     case -1:
-        he_FreeEvent((int *)ev);
-        return;
+        break;
     case 0:
-        *(int *)(ev + 0x70) = st + 1;
+        e->stage = e->stage + 1;
         return;
     case 1:
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-        gm_JobCost(ch, *(unsigned char *)b, -1, 1);
-        r = (int)gm_GetGoodsValue(ch);
-        if (r < 0) {
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0)
+            break;
+        cost = (int)gm_JobCost(&ai_CharsT[b->owner], b->type, -1, 1);
+        if (cost > gm_GetGoodsValue(&ai_CharsT[b->owner])) {
             txt_Format(text, 0x1a40, b);
-            he_MessageBoxQuickjump(*(int *)(ch + 4), *(int *)(ev + 0x10), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xe0), 0, 0);
+            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, 0x5f2, b->id, c->target, 0, 0);
             he_FreeEvent((int *)ev);
             return;
         }
         for (i = 0; i < 12; i++) {
-            if (*(int *)(ev + 0xb0 + i * 4) > 0)
+            if (c->count[i] > 0) {
+                c->slot = cm_SendMessage3d((char *)b, 0, c->kind, 0);
                 break;
+            }
         }
-        if (i >= 12) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        *(int *)(ev + 0xe4) = cm_SendMessage3d(b, *(unsigned char *)(ev + 0xac), 0, 0);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        if (i >= 12)
+            break;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->stage = e->stage + 1;
         return;
     case 2:
-        if (*(int *)(ev + 0xe4) == -1 || cm_GetSlotState(*(int *)(ev + 0xe4)) == 0)
+        if (c->slot == -1 || cm_GetSlotState(c->slot) == 0)
             return;
-        p = cm_GetSlotValue(*(int *)(ev + 0xe4));
+        p = (AICHAR *)cm_GetSlotValue(c->slot);
         if (p == 0) {
-            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, "$2AEinwohnerlimit erreicht!", 0, 0x5f2, 0);
+            he_ShowNews(ai_CharsT[e->chr].netId, -1, "$2AEinwohnerlimit erreicht!", 0, 0x5f2, 0);
             he_FreeEvent((int *)ev);
             return;
         }
-        *(int *)(ev + 0xe8) = *(int *)(p + 4);
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
+        c->person = p->netId;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0)
+            break;
+        if (c->target == -1) {
+            o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
+            if (o != 0)
+                c->target = o->objId;
         }
-        if (*(int *)(ev + 0xe0) == -1) {
-            q = gm_BuildingMainObject(b);
-            if (q != 0)
-                *(int *)(ev + 0xe0) = *(int *)(q + 2);
-        }
-        cm_RequestChrMoveToUniverse(*(int *)(ev + 0xe8), *(int *)(ev + 0x10), *(int *)(ev + 0xe0), (char *)(unsigned)"dummy_EINGANG");
-        *(int *)(ev + 0x70) = 3;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
+        cm_RequestChrMoveToUniverse(c->person, e->from, c->target, "dummy_EINGANG");
+        e->stage = 3;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
         return;
     case 3:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        p = gm_FindChar(*(int *)(ev + 0xe8));
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0)
+            break;
+        p = (AICHAR *)gm_FindChar(c->person);
         for (i = 0; i < 12; i++) {
-            if (p != 0 && *(int *)(ev + 0xb0 + i * 4) > 0)
+            if (p != 0 && c->count[i] > 0) {
+                cost = (int)gm_JobCost(&ai_CharsT[b->owner], b->type, -1, 1);
+                c->count[i]--;
+                if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+                    m = (AICHAR *)gm_FindCharacterByMaster(b);
+                    txt_Format(text, 0x1bab, cost, p->id, b);
+                    if (m != 0 && (m->flags1b4 & 1) != 0)
+                        he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, b->id, text, 0, 0x60c, b->id, c->target, 0, "_NACHRICHTEN_HS_00");
+                    else
+                        he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, b->id, text, 0, 0x5f2, b->id, c->target, 0, "_NACHRICHTEN_HS_00");
+                }
+                cm_SendMoveGoodsUnchecked(p->netId, ai_CharsT[e->chr].netId, ai_OwnPlayer, cost);
+                f = (HEFINVIEW *)gm_PlayerRecord(&ai_CharsT[e->chr]);
+                if (f != 0)
+                    f->customerTakings += cost;
+                break;
+            }
+        }
+        for (i = 0; i < 12; i++) {
+            if (c->count[i] > 0)
                 break;
         }
         if (i < 12) {
-            ch = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-            gm_JobCost(ch, *(unsigned char *)b, -1, 1);
-            r = (int)gm_GetGoodsValue(ch);
-            *(int *)(ev + 0xb0 + i * 4) = *(int *)(ev + 0xb0 + i * 4) - 1;
-            o = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);
-            if (o == 6 || o == 7) {
-                q = gm_FindCharacterByMaster(b);
-                txt_Format(text, 0x1bab, r, *(unsigned short *)p, b);
-                if (q != 0 && (*(unsigned char *)(q + 0x1b4) & 1) != 0)
-                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x60c, *(int *)(b + 1), *(int *)(ev + 0xe0), "_NACHRICHTEN_HS_00", 0);
-                else
-                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f2, *(int *)(b + 1), *(int *)(ev + 0xe0), "_NACHRICHTEN_HS_00", 0);
-            }
-            cm_SendMoveGoodsUnchecked(*(int *)(p + 4), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, r);
-            q = gm_PlayerRecord((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
-            if (q != 0)
-                *(int *)(q + 0x4c) = *(int *)(q + 0x4c) + r;
-        }
-        for (i = 0; i < 12; i++) {
-            if (*(int *)(ev + 0xb0 + i * 4) > 0)
-                break;
-        }
-        if (i >= 12) {
-            he_FreeEvent((int *)ev);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, (unsigned short)util_Random(10) + 0x1e, 0);
+            e->stage = 1;
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(10) + 0x1e, 0);
-        *(int *)(ev + 0x70) = 1;
+        break;
+    default:
         return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x554820, the allocation handler of the 0x554860 event: the due clock is the start clock (+0x44) and the event posted 0xf later */
 
@@ -14812,7 +14838,7 @@ int he_RegisterEventTypes02(void)
 {
     if (he_SetEventHandlers(2, (void *)he_Unk553e10, (void *)he_RunSale) != 0)
         return 1;
-    if (he_SetEventHandlers(6, (void *)he_Unk554820, (void *)he_Unk554320) != 0)
+    if (he_SetEventHandlers(6, (void *)he_Unk554820, (void *)he_RunCustomers) != 0)
         return 1;
     if (he_SetEventHandlers(7, (void *)he_Unk554820, (void *)he_Unk554860) != 0)
         return 1;
