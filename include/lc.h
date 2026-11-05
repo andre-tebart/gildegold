@@ -39,6 +39,7 @@ typedef struct AIBUILDSITE {
 } AIBUILDSITE;
 char ai_VgFilter(int obj, AIVGLIST *ctx);                       /* 0x58f920, d3_ForEachObject callback: collects "vg_" objects */
 int lc_GetGebaeudeBauplatz(AIBUILDSITE *out, struct AIBLD *b);  /* 0x58fc40, the construction site of a building */
+void ai_CheckBuildSites(void);          /* 0x58fb60 */
 /* 0x61168c: the "%1G" format of the map's city names (ai_FormatCityName). */
 void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master checks every contact listener runs once per frame */
 /* The windows the building contacts open (defined far below their callers in the .c). */

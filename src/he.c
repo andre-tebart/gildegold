@@ -505,7 +505,7 @@ typedef struct HERESEARCH {             /* the research event 0xc's words over A
     int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObjectH) */
 } HERESEARCH;
 typedef struct HEBUILD {                /* the building event 0xd's words over AIJOB's union (he_AllocGebaeudeBauen and
-                                           its run handler 0x56be30): the building type it builds and the position it
+                                           its run handler he_RunConstruction): the building type it builds and the position it
                                            searches the plot around */
     char pad00[0xb0];
     int bldType;                        /* 0xb0, the building kind id (ai_BuildingName's id) */
@@ -1037,13 +1037,25 @@ typedef struct HESEARCH9 {              /* the search event 9's words over AIJOB
     int source;                         /* 0xb0, the id of the object searched (its list holds the kind 0x17 goods) */
     int store;                          /* 0xb4, the id of the object the found goods go to */
 } HESEARCH9;
-typedef struct HECONSTRUCTION {         /* the building construction event 0xd's words over AIJOB's union (he_ShowConstruction) */
-    char pad00[0xb8];
+typedef struct HECONSTRUCTION {         /* the building construction event 0xd's words over AIJOB's union (its run handler
+                                           he_RunConstruction, he_ShowConstruction) */
+    char pad00[0xac];
+    int payer;                          /* 0xac, the netId of the character paying for the building */
+    int bldType;                        /* 0xb0, the building kind id (HEBUILD.bldType), sent with the message 10 */
+    int carry;                          /* 0xb4, the price paid in stage 0; from stage 6 on the work minutes carried over
+                                           to the next stage */
     int bld;                            /* 0xb8, the id of the building under construction */
     int script;                         /* 0xbc, the id of the event script playing (evt_FindById), -1: none */
-    char padc0[4];
-    int stages;                         /* 0xc4, the last construction stage */
-    int stage;                          /* 0xc8, the stage reached, -1: not started */
+    int minutes;                        /* 0xc0, the work minutes per construction stage */
+    int stages;                         /* 0xc4, the last construction stage (AIJOB.workTotal) */
+    int stage;                          /* 0xc8, the stage reached, -1: not started (AIJOB.argc8) */
+    int slot;                           /* 0xcc, the cm slot of the payment / the building message (cm_GetSlotState) */
+    unsigned char placing;              /* 0xd0, the "vg_" objects still being placed (HEBUILD.count) */
+    char padd1[3];
+    D3VECTOR pos;                       /* 0xd4, where the building stands (HEBUILD.pos) */
+    char pade0[4];
+    D3VECTOR rot;                       /* 0xe4, its rotation */
+    char model[0x40];                   /* 0xf0, the building's group model file (the length reasoned: what fits in AIJOB) */
 } HECONSTRUCTION;
 typedef struct HECHILDLIST {            /* the children of a scene object, collected by he_CollectChild */
     D3OBJECT *root;                     /* 0x000, the object walked */
@@ -1104,7 +1116,10 @@ typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord fin
     int spyPaid;                        /* 0x28, the money paid for spies and saboteurs (ai.h AIFIN.spyPaid; he_RunSabotage adds the fee) */
     char pad2c[0x20];
     int customerTakings;                /* 0x4c, the money its character's customers paid (he_RunCustomers adds it) */
-    char pad50[0x14];
+    char pad50[4];
+    int buildPaid;                      /* 0x54, the money its character paid for new buildings (the construction event's
+                                           run handler he_RunConstruction adds the price) */
+    char pad58[0xc];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
                                            counts it; reasoned, its reader is not read yet) */
 } HEFINVIEW;
@@ -21437,59 +21452,389 @@ short *gm_PlayerRecord(char *c);
 void cm_SendBuildingDestroyed(int a);
 int cm_SendExSysMessage(unsigned char id, void *msg);
 
-/* 0x56be30, the run handler of the building construction event (the type 0xd; ROUGH SKELETON: the states 0x70 = -2 .. 7 from the jump table 0x56cda8, the calls in order from the disassembly; the conditions and most call arguments are not recovered yet; the states -1 / -2 hand the building back, rebuild its scene object and free the record) */
-void he_Unk56be30(int ev)
-{
-    int o;
+void gm_AddToTreasury(int a);
+/* @original the construction event's run handler stores what gm_AddToTreasury leaves in eax as the payment's slot
+   (0x56bf1a .. 0x56bf22): it called the function without a prototype, as returning int */
+#define gm_AddToTreasuryI ((int (*)(int))gm_AddToTreasury)
+int cm_SendMessage10(unsigned char n, int b, void *p, short d);
+void gm_MoveIntoHome(char *c, char *b);
+void sv_CreateBanners(char *b);
+extern const double cm_EffectRadiusScale;  /* 0x5edc28, cm.h (not included here: Open head) */
 
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+/* 0x56be30, the run handler of the building construction event 0xd, by its stage: 0 pays the price when due (the
+   player's own money to the treasury, else moved from the payer), 1 waits for the payment, 2 sends the building
+   message 10, 3 takes the new building from its answer, 4 creates the construction objects (he_CreateConstruction)
+   and sets the work minutes per stage, 5 sends the "vg_" objects of the site to the building nearest to it
+   (SpecialEvents\\Hausbau.esc), 6 deletes them once placed, 7 counts the work minutes into stages (the workers'
+   script SpecialEvents\\Hausbau_2.esc from stage 2 on) and at the last one shows the building, builds its road,
+   sends the news and moves the owner in; -1 / -2 tear the construction down; every stage but the waiting ones goes
+   on through the cm slot cm_SendExSetHE gives
+   @deep reconstructed the whole function (1213 vs 1211 instructions) against the original
+   0x56be30..0x56cda7, every stage 0..7 and -1/-2 read and written (HECONSTRUCTION words,
+   HEFINVIEW.buildPaid, gm_AddToTreasury's eax kept @original); no call, store or reference differs
+   (diffclass: no differs/ref lines). Left: (1) VC6 cross-jumping of the identical cm_SendExSetHE tails in
+   stages 0..3 lands the other way: the original's stage 0 jumps forward into stage 3's copies (0x56bf0e
+   jmp 0x56c050, je 0x56c00a) and stage 3's bld==0 into stage 1's (je 0x56bf6f), ours keeps stage 0's
+   copies and stage 3 jumps back (code hunks +0x9c, +0x10c, +0x200..+0x225; gotos to labels in stage 3
+   tried: worse, 1228 instructions, VC6 moves labelled blocks out of line); (2) the frame 0x394 vs 0x38c
+   and the slot packing: the original shares [esp+0x14] best / i / radius, [esp+0x18] dist / nearest,
+   [esp+0x30] the PointToWorld vector / the AITIME copy; ours lays out list/site/v at other offsets (slots
+   138; declaration order tried, no effect); (3) one memset scheduling in stage -1 (lea before rep stosd,
+   +0xf26) */
+void he_RunConstruction(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    HECONSTRUCTION *c = (HECONSTRUCTION *)ev;
+    AIBLD *bld;
+    float best;
+    float dist;
+    int scene;
+    D3VECTOR v;
+    D3VECTOR at;
+    AITIME now;
+    int minutes;
+    AIBUILDSITE site;
+    AIVGLIST list;
+    union {
+        char name[0x80];                /* the construction object's name "he_<id>" */
+        int msg[0x1f];                  /* the data of the system message 0xc (cm_SendExSysMessage copies 0x7c bytes) */
+    } u;
+    char text[0x200];
+    AIBLD *nearest;
+    D3OBJECT *door;
+    D3OBJECT *o;
+    D3OBJECT *house;
+    EVTSCRIPT *sc;
+    AICHAR *ch;
+    AIBLD *home;
+    HEFINVIEW *fin;
+    AIBTYPE *bt;
+    int i, size, season;
+
+    scene = d3_CurrentScene;
+    bld = 0;
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    switch (*(int *)(ev + 0x70)) {
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        if (gm_CompareTime(&e->end, &ai_Time) > 0)
+            break;
+        if (!(e->opts & 2))
+            break;
+        if (c->payer != he_PlayerCh->netId) {
+            ch = (AICHAR *)gm_FindChar(c->payer);
+            if (ch == 0) {
+                e->exSlot = cm_SendExSetHE(-1, ev);
+                return;
+            }
+            c->slot = cm_SendMoveGoods(-1, c->payer, ai_OwnPlayer, c->carry);
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)ch);
+            if (fin != 0)
+                fin->buildPaid += c->carry;
+        } else {
+            c->slot = gm_AddToTreasuryI(c->carry);
+        }
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
+        return;
+    case 1:
+        e->exSlot = -1;
+        if (e->opts & 4)
+            break;
+        if (cm_GetSlotState(c->slot) == 0)
+            break;
+        if (cm_GetSlotState(c->slot) == 2) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
+        return;
+    case 2:
+        if (!(e->opts & 2))
+            break;
+        c->slot = cm_SendMessage10((unsigned char)c->bldType, c->payer, 0, 1);
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
+        return;
+    case 3:
+        e->exSlot = -1;
+        if (e->opts & 4)
+            break;
+        if (cm_GetSlotState(c->slot) == 0)
+            break;
+        if (cm_GetSlotState(c->slot) == 2) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        bld = (AIBLD *)cm_GetSlotValue(c->slot);
+        if (bld == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        c->bld = bld->id;
+        e->from = bld->id;
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
+        return;
+    case 4:
+        e->exSlot = -1;
+        gm_FindById((int *)&bld, 0, 0, c->bld);
+        if (bld == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (he_CreateConstruction(&c->rot, &c->pos, &bld->type, c->model, ev) == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            d3if_SelectScene(scene, 1);
+            return;
+        }
+        init_HookObject(bld->object, (unsigned short *)bld, 2);
+        bt = &ai_BTypesT[bld->type];
+        if (gm_AllowAll != 0) {
+            c->stages = he_ConstructionStage(ev);
+            c->minutes = 10;
+        } else {
+            c->stages = he_ConstructionStage(ev);
+            c->minutes = (unsigned)(bt->v243 * 0x3fc) / c->stages;
+        }
+        c->stage = 0;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->stage++;
+        return;
+    case 5:
+        e->exSlot = -1;
+        d3if_SelectScene(0, 1);
+        gm_FindById((int *)&bld, 0, 0, c->bld);
+        if (bld == 0 || lc_GetGebaeudeBauplatz(&site, bld) == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            d3if_SelectScene(scene, 1);
+            return;
+        }
+        nearest = 0;
+        best = 1e35f;
+        for (i = 0; i < 0x100; i++) {
+            if (&ai_BldsT[i] != bld && ai_BldsT[i].type != 0 && ai_BldsT[i].object != 0) {
+                house = (D3OBJECT *)ai_BldsT[i].object;
+                d3_PointToWorld(house, &house->pos, &v);
+                v.x -= site.pos[0];
+                v.y -= site.pos[1];
+                v.z -= site.pos[2];
+                dist = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+                if (dist < best && d3_FindObject((int)ai_BldsT[i].object, 0x100, 0, "dummy_TUER") != 0) {
+                    best = dist;
+                    nearest = &ai_BldsT[i];
+                }
+            }
+        }
+        if (nearest == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            d3if_SelectScene(scene, 1);
+            return;
+        }
+        memset(&list, 0, sizeof(list));
+        d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)site.object, 0x2c0, (D3OBJECTCB)ai_VgFilter, &list);
+        c->placing = 0;
+        for (i = 0; i < list.count; i++) {
+            o = (D3OBJECT *)list.objs[i];
+            door = d3_FindObject((int)nearest->object, 0x100, 0, "dummy_TUER");
+            if (o != 0 && o->type != 1 && door != 0) {
+                sc = evt_Load("SpecialEvents\\Hausbau.esc");
+                if (sc != 0) {
+                    evt_RunScriptArgs(sc, 4, door, o, he_PlaceGebaeudeObject, ev);
+                    sc->group = 0;
+                    sc->ownScene = 1;
+                    evt_Step(sc);
+                }
+                c->placing++;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
+        e->stage++;
+        d3if_SelectScene(scene, 1);
+        return;
+    case 6:
+        e->exSlot = -1;
+        gm_AddTime(&e->end, 0, 0x14, 0);
+        if (c->placing != 0)
+            break;
+        d3if_SelectScene(0, 1);
+        gm_FindById((int *)&bld, 0, 0, c->bld);
+        if (lc_GetGebaeudeBauplatz(&site, bld) == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            d3if_SelectScene(scene, 1);
+            return;
+        }
+        memset(&list, 0, sizeof(list));
+        d3_ForEachObject(d3_DefaultScene, (D3OBJECT *)site.object, 0x2c0, (D3OBJECTCB)ai_VgFilter, &list);
+        for (i = 0; i < list.count; i++) {
+            if (d3_QuadTree != 0)
+                d3q_RemoveObject((D3OBJECT *)list.objs[i], (D3QNODE *)d3_QuadTree);
+            d3if_Delete((D3OBJECT *)list.objs[i]);
+        }
+        e->clock60 = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
+        e->stage++;
+        c->carry = 0;
+        d3if_SelectScene(scene, 1);
+        return;
+    case 7:
+        minutes = gm_FixedWorkMinutesBetween(&e->clock60, &ai_Time) + c->carry;
+        if (minutes < c->minutes) {
+            gm_AddTime(&e->end, 0, 0x1e, 0);
+            return;
+        }
+        e->clock60 = e->end;
+        if (bld == 0)
+            gm_FindById((int *)&bld, 0, 0, c->bld);
+        if (c->script == -1 && c->stage >= 2) {
+            d3if_SelectScene(0, 1);
+            sprintf(u.name, "he_%i", e->id);
+            door = 0;
+            o = d3_FindObject(0, 0x1c0, 0, u.name);
+            d3_PointToWorld(o, &o->pos, &at);
+            best = 1e35f;
+            for (i = 0; i < 0x100; i++) {
+                if (&ai_BldsT[i] != bld && ai_BldsT[i].type != 0 && ai_BldsT[i].object != 0) {
+                    house = (D3OBJECT *)ai_BldsT[i].object;
+                    d3_PointToWorld(house, &house->pos, &v);
+                    v.x -= at.x;
+                    v.y -= at.y;
+                    v.z -= at.z;
+                    dist = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+                    if (dist < best && (house = d3_FindObject((int)ai_BldsT[i].object, 0x100, 0, "dummy_TUER")) != 0) {
+                        best = dist;
+                        door = house;
+                    }
+                }
+            }
+            if (door != 0 && o != 0) {
+                sc = evt_Load("SpecialEvents\\Hausbau_2.esc");
+                if (sc != 0) {
+                    evt_RunScriptArgs(sc, 3, o, door, 2);
+                    sc->ownScene = 1;
+                    sc->group = 0;
+                    c->script = sc->id;
+                    evt_Step(sc);
+                }
+            }
+            d3if_SelectScene(scene, 1);
+        }
+        c->stage += minutes / c->minutes;
+        c->carry = minutes % c->minutes;
+        gm_AddTime(&e->end, 0, c->minutes, 0);
+        if (d3_CurrentScene == 0) {
+            if (c->stage <= c->stages)
+                he_ShowConstruction(ev);
+            if (c->stage == 2 && (e->opts & 2)) {
+                memset(u.msg, 0, sizeof(u.msg));
+                cm_SendExSysMessage(0xc, u.msg);
+            }
+        }
+        if (c->stage <= c->stages)
+            break;
+        d3if_SelectScene(0, 1);
+        if (c->script != -1) {
+            sc = evt_FindById(c->script);
+            if (sc != 0)
+                evt_Stop(sc);
+            c->script = -1;
+        }
+        if (scene != 0) {
+            d3t_InflateObjectTree((D3OBJECT *)bld->object);
+            ((D3OBJECT *)bld->object)->flags |= 4;
+        }
+        he_ShowConstruction(ev);
+        if (bld->object != 0) {
+            season = gm_ClockSeason(&ai_Time);
+            if (season == 1)
+                init_TextureSet = 1;
+            else if (season == 0)
+                init_TextureSet = 0;
+            else if (season == 2)
+                init_TextureSet = 2;
+            else if (season == 3)
+                init_TextureSet = 3;
+            init_TextureSetHook((int)bld->object);
+        }
+        if (d3_QuadTree != 0)
+            d3q_Rebuild((D3OBJECT *)bld->object, (D3QNODE *)d3_QuadTree);
+        if (bld->object != 0 && ((D3OBJECT *)bld->object)->type == 1)
+            d3if_ShowTree((D3OBJECT *)bld->object, 1);
+        if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 5 || ai_CharsT[bld->owner].kind == 7)
+            sv_CreateBanners((char *)bld);
+        ai_CheckBuildSites();
+        if (((D3OBJECT *)bld->object)->info == 0)
+            d3_InflateObject((D3OBJECT *)bld->object);
+        if (((D3OBJECT *)bld->object)->material != 0
+            && d3t_GetBoundingSphere((D3OBJECT *)bld->object, d3_Camera, &v, &best) != 0) {
+            size = (int)(best * cm_EffectRadiusScale);
+            sc = evt_Load("Effekte/geb_bauen.esc");
+            if (sc != 0) {
+                evt_RunScriptArgs(sc, 6, (int)v.x, (int)v.y, (int)v.z, (int)best, size, bld->object);
+                sc->group = 0;
+            }
+        }
+        rd_BuildRoad(bld->object, bld->type);
+        if (e->opts & 2) {
+            cm_SendSetField(bld->id, 0x5a, 2, 0, 1);
+            if (bld->type >= 4 && bld->type <= 7) {
+                now = ai_Time;
+                cm_BeginFieldBlock((char *)bld, bld->id);
+                cm_AddFieldDelta(1, 0xe, 0x69, &now);
+                cm_SendFieldDeltas();
+            }
+            if (ai_CharsT[bld->owner].kind == 6) {
+                if (bld->type >= 4 && bld->type <= 7) {
+                    txt_Format(text, 0x1c2f, bld);
+                    he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, e->from, text, 1, 0x5f6, bld->id, -1, 0,
+                                           "_NACHRICHTEN_HS_49");
+                } else {
+                    txt_Format(text, 0x1c27, bld);
+                    he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, e->from, text, 0, 0x5f6, bld->id, -1, 0,
+                                           "_NACHRICHTEN_HS_49");
+                }
+                sb_PlaySample(snd_SystemBank, "NeuesGebaeude_s", 1, 0x3f, 0x7f, 0, 0);
+            }
+            if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 5) {
+                for (ch = ai_CharsT; (int)&ch->netId < (int)&ai_CharsT[0x300].netId; ch++) {
+                    if ((ch->kind == 6 || ch->kind == 7) && ch->netId != ai_CharsT[bld->owner].netId) {
+                        txt_Format(text, 0x1c30, bld->owner, bld->type * 14 + 0x48e);
+                        he_MessageBoxQuickjump(ch->netId, -1, text, 0, 0x607, bld->id, -1, 0, "_NACHRICHTEN_HS_50");
+                    }
+                }
+            }
+            memset(u.msg, 0, sizeof(u.msg));
+            cm_SendExSysMessage(0xc, u.msg);
+        }
+        if (bld->type >= 4 && bld->type <= 7) {
+            home = ai_CharsT[bld->owner].bld2;
+            if (home == 0 || home->type <= bld->type)
+                ai_CharsT[bld->owner].bld2 = bld;
+        }
+        gm_MoveIntoHome((char *)&ai_CharsT[bld->owner], (char *)bld);
+        d3if_SelectScene(scene, 1);
+        e->text = 0;
+        he_FreeEvent((int *)ev);
+        return;
     case -2:
     case -1:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xb8));
+        gm_FindById((int *)&bld, 0, 0, c->bld);
         d3if_SelectScene(0, 1);
-        if (*(int *)(ev + 0xbc) != -1) {
-            o = (int)evt_FindById(*(int *)(ev + 0xbc));
-            if (o != 0)
-                evt_Stop((EVTSCRIPT *)o);
-            *(int *)(ev + 0xbc) = -1;
+        if (c->script != -1) {
+            sc = evt_FindById(c->script);
+            if (sc != 0)
+                evt_Stop(sc);
+            c->script = -1;
         }
-        *(int *)(ev + 0xc8) = *(int *)(ev + 0xc4) + 1;
+        c->stage = c->stages + 1;
         he_ShowConstruction(ev);
-        if (*(unsigned char *)(ev + 0x78) & 2)
-            ((void (*)(int))cm_SendExSysMessage)(0);
-        d3if_SelectScene(U_I((unsigned)&d3_CurrentScene), 1);
+        if ((e->opts & 2) && bld != 0) {
+            cm_SendBuildingDestroyed(bld->id);
+            memset(u.msg, 0, sizeof(u.msg));
+            cm_SendExSysMessage(0xc, u.msg);
+        }
+        d3if_SelectScene(scene, 1);
         he_FreeEvent((int *)ev);
-        break;
-    case 0:
-        /* 0x4fe210 (ev + 0x52, &ai_Time); 0x505df0 (ev + 0xac); 0x4c47e0 (4 args) -> +0xcc; 0x506430; 0x50c4e0 (ev + 0xb4) */
-        break;
-    case 1:
-        if (*(unsigned char *)(ev + 0x78) & 4)
-            break;
-        if (cm_GetSlotState(*(int *)(ev + 0xcc)) == 0)
-            break;
-        if (cm_GetSlotState(*(int *)(ev + 0xcc)) == 2)
-            cm_SendExSetHE(-1, ev);
-        break;
-    case 2:
-        /* 0x4c45c0 (4 args); 0x4c4c60 */
-        break;
-    case 3:
-        /* 0x4c3b10; 0x4c4c60 */
-        break;
-    case 4:
-        /* 0x4fea50 (out, 0, 0, id); 0x56bc50 (rot, pos, type, model, ev); 0x4c4c60; 0x4478e0 */
-        break;
-    case 5:
-        /* 0x50d380; 0x56bac0 x2; 0x4fe140; 0x4478e0; 0x4fea50; 0x58fc40; 0x458a20; 0x449690; 0x4c4c60; 0x438d40; 0x4287b0; 0x429ab0; 0x42ada0 */
-        break;
-    case 6:
-        /* 0x4fe140; 0x4fea50; 0x58fc40; 0x4c4c60; 0x438d40; 0x458780; 0x447190 */
-        break;
-    default:
-        /* state 7: see the disassembly 0x56c5a9 .. 0x56ccf2 (the long final part) */
         break;
     }
 }
@@ -21591,7 +21936,7 @@ int he_RegisterEventTypes03(void)
         return 1;
     if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_RunResearch) != 0)
         return 1;
-    if (he_SetEventHandlers(0xd, (void *)he_AllocGebaeudeBauen, (void *)he_Unk56be30) != 0)
+    if (he_SetEventHandlers(0xd, (void *)he_AllocGebaeudeBauen, (void *)he_RunConstruction) != 0)
         return 1;
     if (he_SetEventHandlers(0xe, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
