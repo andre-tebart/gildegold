@@ -2497,11 +2497,12 @@ void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
     txt_Format(buf, news, *p2, p4, p5 + 0x1626);
     he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x5ed, *(int *)(p4 + 1), -1, 0, 0);
 }
-/* 0x541a50, a Ghidra miss (disassembled): sets the due clock (+0x52) of the event record to now */
+/* 0x541a50, the run handler of the event types 0x29 / 0x2f / 0x25: sets the event's end clock (AIJOB.end) to
+   ai_Time, so it is due at once */
 
-void he_Unk541a50(int ev)
+void he_RunDueNow(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    ((AIJOB *)ev)->end = ai_Time;
 }
 /* 0x541a80, starts the event record `r` (when bit 4 of +0x78 is clear): due now + 1, a second clock (+0xb0) due in 0x18 units, a random 0x13 .. 0x16 at +0xb4, state 1 at +0xc0, posts it (0x4c4c60) and keeps the result at +0x84 */
 
@@ -9140,7 +9141,7 @@ int he_RegisterEventTypes22(void)
 {
     if (he_SetEventHandlers(0x22, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_SetEventHandlers(0x29, (void *)he_Unk541a50, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x29, (void *)he_RunDueNow, (void *)ai_Unk56f040) != 0)
         return 1;
     if (he_SetEventHandlers(0x2a, (void *)he_Unk541a80, (void *)he_Unk542100) != 0)
         return 1;
@@ -9152,7 +9153,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2e, (void *)he_Unk543020, (void *)he_Unk543180) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2f, (void *)he_Unk541a50, (void *)he_Unk5432f0) != 0)
+    if (he_SetEventHandlers(0x2f, (void *)he_RunDueNow, (void *)he_Unk5432f0) != 0)
         return 1;
     if (he_SetEventHandlers(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
@@ -13549,7 +13550,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_Unk55cb00) != 0)
         return 1;
-    if (he_SetEventHandlers(37, (void *)he_Unk541a50, (void *)he_Unk55cc10) != 0)
+    if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_Unk55cc10) != 0)
         return 1;
     if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_Unk55ce60) != 0)
         return 1;
