@@ -2476,3 +2476,4 @@
 2026-11-05T18:57:50 0x00567c00 func he_Unk567c00 -> he_RunTip by:main why:the run handler of the tips event 0x84: it walks he_TipOrder / txt_TipTexts and shows each tip to the local player; the unit names its run handlers he_RunX
 2026-11-05T19:01:32 0x005690c0 func he_Unk5690c0 -> he_AllocProduktion by:main why:the allocation handler of the production event (its own debug text he_AllocProduktion(): geb:%G): it sets the good's work time, the clocks and the owner's rate
 2026-11-05T19:04:36 0x0056a7b0 func he_Unk56a7b0 -> he_AllocTrade by:main why:the alloc handler of the trade event 0xb (its run handler 0x56a960 is the trade event): it posts the move-goods message and sets the handles
+2026-11-05T19:09:33 0x0056b3f0 func he_Unk56b3f0 -> he_RunResearch by:main why:the run handler of the research event 0xc (f3gm.c GMJOB.research: the good it researches; it orders it and hooks the object made)

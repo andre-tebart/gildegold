@@ -412,6 +412,19 @@ typedef struct HEHIRE {                 /* the hire event 7's words over AIJOB's
     int slot;                           /* 0xb8, the spawn's send slot */
     int person;                         /* 0xbc, the netId of the hired character */
 } HEHIRE;
+typedef struct HERESEARCH {             /* the research event 0xc's words over AIJOB's union (its alloc 0x56b380, run handler
+                                           he_RunResearch): a building orders the good it researches and hooks the object
+                                           the order made */
+    char pad00[0xac];
+    int buyer;                          /* 0xac, the id of the building the good is ordered to (the message's buyer) */
+    char padb0[4];
+    int good;                           /* 0xb4, the goods prototype researched (f3gm.c GMJOB.research) */
+    int objId;                          /* 0xb8, the objId of the object the order made (the reply's AIOBJ.objId) */
+    char padbc[4];
+    int limit;                          /* 0xc0, the rounds waited for that object (0x20) */
+    int rounds;                         /* 0xc4, the rounds since the order (one per minute) */
+    int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObjectH) */
+} HERESEARCH;
 typedef struct HETRANSPORT {            /* the transport event 15's words over AIJOB's union (he_AllocTransport / he_RunTransport):
                                            a cart driven from one building to another */
     char pad00[0xac];
@@ -18075,50 +18088,68 @@ void he_Unk56b380(int ev)
 
 void init_HookObject(char *o, unsigned short *p, int kind);
 
-/* 0x56b3f0, a run handler (state 0 when due: the order 0x4c4880 of the good +0xac to the building +0xb4, its handle at +0xc8; state 1 waits for the handle (0x4c3ae0), and when it ended without error
-   (not 2) takes the building (+0xb8 = its +2) and starts a countdown of 0x20 (+0xc0 / +0xc4); state 2 each round looks the building up (0x4fea50) and at the end of the countdown runs 0x50d380 for it and frees the record) */
-void he_Unk56b3f0(int ev)
+/* 0x56b3f0, the run handler of the research event 0xc (HERESEARCH): stage 0, once due, orders the good it
+   researches (cm_SendExSellObjectH: the building +0xac as buyer, the good +0xb4, one piece) and keeps the send
+   slot (+0xc8); stage 1 waits for that slot (cm_GetSlotState): an error (2) frees the event, else the objId of
+   the object the order made (+0xb8, the reply's AIOBJ.objId) is kept and 0x20 rounds (+0xc0 / +0xc4) are
+   counted from now; stage 2 looks the object up each minute (gm_FindById) and at the end of the countdown hooks
+   its scene object into the building (init_HookObject) and frees the event
+   @deep only allocation is left: ours 116 ins vs the original's 117, one hunk at 0x56b493 (+0xa3). The
+   original spills g (cm_GetSlotValue's result) to the ev argument slot reused as a local ([esp+0x14] with
+   the deferred push 0 still on the stack) and schedules that push 0 (gm_AddTime's seconds) before the
+   AIOBJ.objId load; ours keeps g in eax and loads objId first. Read whole against 0x56b3f0..0x56b56c: the
+   meaning is equal - same calls in the same order, same stores, same constants, the switch table equal (5
+   entries) and the block layout equal (case order 0, 1, 2, -2, -1 puts the shared free tail and case 2's
+   copy where the original has them). Tried: int g with a raw *(int *)(g + 2), g declared before bo, the g
+   store before/after the limit and rounds stores, and the AIOBJ* typed form (all identical); the dead slot
+   store does not come from the source form. The store is to a stack slot, not a global; no call or
+   reference differs. */
+void he_RunResearch(int ev)
 {
-    int bo[1], g;
+    AIJOB *e = (AIJOB *)ev;
+    HERESEARCH *r = (HERESEARCH *)ev;
+    AIOBJ *bo[1];
+    AIOBJ *g;
 
-    switch (*(int *)(ev + 0x70)) {
+    switch (e->stage) {
+    case 0:
+        if (gm_CompareTime(&e->end, &ai_Time) > 0)
+            return;
+        r->slot = cm_SendExSellObjectH(r->buyer, -1, r->good, 1, ai_OwnPlayer, 0);
+        e->stage++;
+        return;
+    case 1:
+        if (cm_GetSlotState(r->slot) == 0)
+            return;
+        if (cm_GetSlotState(r->slot) == 2)
+            goto done;
+        g = (AIOBJ *)cm_GetSlotValue(r->slot);
+        r->objId = g->objId;
+        r->limit = 0x20;
+        r->rounds = 0;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->stage++;
+        return;
+    case 2:
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+            return;
+        do {
+            gm_FindById(0, (int *)bo, 0, r->objId);
+            gm_AddTime(&e->end, 0, 1, 0);
+            if (r->rounds > r->limit) {
+                init_HookObject((char *)bo[0]->obj, (unsigned short *)bo[0], 1);
+                he_FreeEvent(ev);
+                return;
+            }
+        } while (gm_CompareTime(&e->end, &ai_Time) < 0);
+        return;
     case -2:
     case -1:
         goto done;
-    case 0:
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) > 0)
-            return;
-        *(int *)(ev + 0xc8) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(ev + 0xac), -1, *(int *)(ev + 0xb4), 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
-        return;
-    case 1:
-        if (cm_GetSlotState(*(int *)(ev + 0xc8)) == 0)
-            return;
-        if (cm_GetSlotState(*(int *)(ev + 0xc8)) == 2)
-            goto done;
-        g = cm_GetSlotValue(*(int *)(ev + 0xc8));
-        *(int *)(ev + 0xb8) = *(int *)(g + 2);
-        *(int *)(ev + 0xc0) = 0x20;
-        *(int *)(ev + 0xc4) = 0;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
-        return;
-    case 2:
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
-            return;
-        do {
-            gm_FindById(0, bo, 0, *(int *)(ev + 0xb8));
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            if (*(int *)(ev + 0xc4) > *(int *)(ev + 0xc0)) {
-                init_HookObject(*(int *)(bo[0] + 0x18), bo[0], 1);
-                goto done;
-            }
-        } while (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) < 0);
-        return;
     }
     return;
 done:
-    he_FreeEvent((int *)ev);
+    he_FreeEvent(ev);
 }
 
 int ai_BuildingName();
@@ -18538,7 +18569,7 @@ int he_RegisterEventTypes03(void)
         return 1;
     if (he_SetEventHandlers(0xb, (void *)he_AllocTrade, (void *)he_Unk56a960) != 0)
         return 1;
-    if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_Unk56b3f0) != 0)
+    if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_RunResearch) != 0)
         return 1;
     if (he_SetEventHandlers(0xd, (void *)he_Unk56b570, (void *)he_Unk56be30) != 0)
         return 1;
