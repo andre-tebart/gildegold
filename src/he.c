@@ -7529,17 +7529,20 @@ void he_RunEffectEvent(int ev)
         return;
     }
 }
-/* 0x54fe80, a Ghidra miss: the init of the effect event: the due clock now, +0xb0 = now + the duration of the effect record 0x178 (0x5ba620, +4); no record: freed */
+/* 0x54fe80, the init of the send-home event 0x77 (its run handler he_RunSendHomeEvent): the due clock is now and
+   homeUntil (+0xb0) is now + the minutes of the Domizil record 0x178; without that record (or without minutes) the
+   event is freed */
 
-void he_Unk54fe80(int ev)
+void he_StartSendHomeEvent(int ev)
 {
-    int r;
+    AIJOB *e = (AIJOB *)ev;
+    G9DOMIZIL *goods;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    r = ai_FindUsableGood(0x178);
-    if (r != 0 && *(int *)(r + 4) != 0) {
-        *(AITIME *)(ev + 0xb0) = ai_Time;
-        gm_AddTime(ev + 0xb0, 0, *(int *)(r + 4), 0);
+    e->end = ai_Time;
+    goods = (G9DOMIZIL *)ai_FindUsableGood(0x178);
+    if (goods != 0 && goods->minutes != 0) {
+        e->homeUntil = ai_Time;
+        gm_AddTime(&e->homeUntil, 0, goods->minutes, 0);
         return;
     }
     he_FreeEvent((int *)ev);
@@ -10894,7 +10897,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_RunEffectEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_RunSendHomeEvent) != 0)
+    if (he_SetEventHandlers(0x77, (void *)he_StartSendHomeEvent, (void *)he_RunSendHomeEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x78, (void *)he_StartReaper, (void *)he_RunReaper) != 0)
         return 1;
