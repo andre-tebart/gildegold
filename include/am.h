@@ -422,7 +422,7 @@ int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2);  /* 0x490
 int ai_ExecHandleGrave(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490b90 */
 unsigned int ai_MakeDuelOpponent(unsigned int k);                      /* 0x492fd0 */
 int ai_DuelStart(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
-int ai_Unk493390(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
+int ai_DuelAcceptAction(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
 int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
 int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */

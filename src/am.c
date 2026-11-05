@@ -2474,7 +2474,7 @@ int ai_DuelStart(AGCH *p, AGDUEL *d, int k)
 }
 /* 0x493390, 1 when (the kind of side c, k) is a pair the duel accepts */
 
-int ai_Unk493390(AGDUEL *d, AGCH *c, int k)
+int ai_DuelAcceptAction(AGDUEL *d, AGCH *c, int k)
 {
     int v;
     const int *q;
@@ -2670,7 +2670,7 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
 
 int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
 {
-    if (ai_Unk493390(d, c, k) == 0)
+    if (ai_DuelAcceptAction(d, c, k) == 0)
         return 0;
     switch (k) {
     case 1:
