@@ -3767,7 +3767,7 @@ int ai_DecideDummySafety(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     return b ? 0 : 7;
 }
-/* 0x495ff0 */
+/* 0x495ff0, execute of the dummy action "DummySicherheit" (7): returns the action id 7, no other effect */
 
 int ai_ExecuteDummySafety(AIPER *p, AIARG *s1, AIARG *s2)
 {
