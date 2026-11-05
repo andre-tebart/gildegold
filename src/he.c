@@ -43,7 +43,11 @@
    HEBARD / HEPOPULATION / HELOVER / HEDARKCORNER (the events 0x6a / 0x6b / 0x6d / 0x6f / 0x74; the bard's script
    mark HEBARDSCRIPT, the job table's proofs / year HEJOBTABLE), HEINN (the inn
    simulation's list), HEFINVIEW (AIFIN's +0x18 / +0x64; ai.h is not
-   included), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5). AIJOB's fields between
+   included), the tutorial / tip / routine / storm / new-worker / production / trade words in HEHINTEVENT,
+   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HEPRODUCTIONMSG and HETRADEMSG, and over AIOBJ
+   HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5); the hint table he_Hints (0x6fa260, HEHINT), the tip
+   order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20)
+   is named. AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
