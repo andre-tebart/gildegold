@@ -1049,7 +1049,8 @@ typedef struct HETITLE {                /* the title ceremony event 0x69's words
     int sent;                           /* 0xb4, 1 once the title was sent as the character's field 0xd, 0 at the start */
 } HETITLE;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
-    char pad00[0x18];
+    char pad00[0x14];
+    int burglaryTakings;                /* 0x14, the money its character's burglaries took (he_RunBurglary adds it) */
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
     char pad1c[4];
     int ransomTakings;                  /* 0x20, the ransoms its character took as a thieves' guild master (he_RunRansomDemand adds them) */
@@ -17183,9 +17184,19 @@ void he_RunRansomDemand(AIJOB *ev)
         return;
     }
 }
+typedef struct HEBURGLARY {             /* the burglary event 0x3f's words over AIJOB's union (he_AllocBurglary / he_RunBurglary);
+                                           the gang is AIJOB.ids */
+    char pad00[0xac];
+    int target;                         /* 0xac, the id of the building broken into */
+    int guild;                          /* 0xb0, the id of the thieves' guild the gang comes from */
+    int slot;                           /* 0xb4, the cm slot of the accusation (gv_Accuse) when the watch saw it, -1: none */
+    int watch;                          /* 0xb8, the id of the patrol event 0x43 that saw it (HEDETECT.found) */
+    int guardBld;                       /* 0xbc, that patrol's start building (patrolStart), which counts the reward */
+} HEBURGLARY;
+
 /* 0x5619a0, a Ghidra miss: the allocation handler of the event 0x3f: an older event of the type with the same +0xac makes this one -1 (free on its first run); the first run is now + 1 */
 
-void he_Unk5619a0(int ev)
+void he_AllocBurglary(int ev)
 {
     int o;
 
@@ -17198,58 +17209,299 @@ void he_Unk5619a0(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
-/* 0x561a20, the run handler "Einbruch" (the burglary walk; 8 states by the jump table 0x5628bc; ROUGH): state 0 sends the burglars (the group 0x524260 (building, .., id, ev), 0x4c5230, 0x4c52e0 "Einbruch" 0x627a24) towards the building +0xac (none: state -1), state 1 waits for their arrival (0x524770, a figure count of 8) and goes on with the entry in 0x561c20; the clock is posted by 0x4fe140 */
-
-void he_Unk561a20(int ev)
+/* 0x561a20, the run handler of the burglary event 0x3f ("Einbruch", HEBURGLARY; its alloc handler he_AllocBurglary): the
+   gang is the up to 8 characters of AIJOB.ids (-1: none); the function runs to 0x5628dc with its jump table 0x5628bc.
+   Stage 0 sends the gang (sv_MoveToGroup into the event) to the target building (none: cancelled) and waits 4 minutes;
+   stage 1 waits (4 minutes more) until every member with a model stands at the target's door, then stage 2 in a
+   second. Stage 2 asks the watch (he_DetectAttack, range 5000): a patrol that sees it accuses the event's character
+   (gv_Accuse 0x17, the cm slot kept) and is bound (stage 3); else the gang breaks in (stage 5 in 15 minutes).
+   Stage 3 waits for the accusation, then the patrol's character executes the proof (stage 4, 10 minutes); stage 4
+   waits (6 minutes) while the patrol is still bound, then the guild's master pays the patrol's character a reward
+   (gm_PlayerFactor of 550 + a random 0 .. 199; the news 0x19ea / 0x19eb), the patrol's start building counts it (field
+   0x65), every gang member loses 100 + a random 0 .. 99 health and the gang walks back to the guild ("Entdeckt"); the
+   record ends. Stage 5 brings the gang into the guild (gm_SkillPoints 2 each) and rolls the theft: the guild's spy
+   report on the target (object 0xca: reportKnow %, at least 0.1 %) less 0.35 * 1 % of the target's skill 7 against a
+   random number, and only an unprotected target (he_NoProtectionEvent); the accusation 0x17 is made either way. A
+   theft moves the share of the owner's worth (gm_BuildingValues) times 1 .. 1.05 and the guild's skill 1 bonus from
+   the owner to the master, and with a guild store (0x116) each goods of the target's stall (0x2a) but 0x1c1 .. 0x1c7
+   and 0x2af / 0x2b0, by half a chance, n * 0.1 of its amount (at least 1, n the gang's size) is sold into the store and
+   counted at its price; the loot list goes to the master (0x19e6, "_NACHRICHTEN_HS_74") and the owner is told 0x19e8
+   ("_NACHRICHTEN_HS_27"); a failed one tells the master 0x19e7 ("_NACHRICHTEN_HS_75") and the owner 0x19e9. The spy
+   report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it */
+void he_RunBurglary(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, i, p;
-
-    if (st < 0 || st > 7)
-        return;
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        *(int *)(ev + 0x70) = -1;
-        return;
-    }
-    for (i = 0; i < 8; i++) {
-        p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-        if (p == 0)
-            continue;
-        if (st == 0) {
-            sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-            cm_SendChrStop(*(int *)(p + 4));
-            cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Einbruch");
-        } else {
-            sv_IsAtDoor(p, 0);
-        }
-    }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    *(int *)(ev + 0x70) = st + 1;
-}
-/* 0x561c20, the run handler of the burglary ("Einbruch" / "Entdeckt", the news "_NACHRICHTEN_HS_76" / "_77", the formats "$Z%T$A" and "%i %s$A"; ROUGH skeleton, 3264 bytes): the detection check 0x553ae0 / 0x4f2e30, the guards (0x53e400 over the type records, 0x4c4ed0), the loot by a random roll (util_Random, 0x5085f0) taken from the owner (0x4c4830), the news to the owner and the thieves (0x53dda0) and the end releases the group and frees the record */
-
-void he_Unk561c20(int ev)
-{
-    int st = *(int *)(ev + 0x70);
-    int b;
+    HEBURGLARY *x = (HEBURGLARY *)ev;
+    AIBLD *b, *g, *gb;
+    AICHAR *c, *owner, *master = 0, *guard;
+    AIOBJ *room = 0, *stall, *store = 0, *it;
+    HEWATCH *w;
+    HEDETECT d;
+    AIJOB *patrol;
+    HEFINVIEW *fin;
+    CRIME *cr;
+    int vals[2];
     char text[0x200];
+    char line[0x100];
+    int k, ok, money, amt, skill;
+    union {                             /* one word: the reward in stage 4, the spy report in stage 5 */
+        int reward;
+        AIOBJ *report;
+    } u = { 0 };
+    int n = 0;
+    float know, sk;
 
-    if (st < 0) {
+    switch (ev->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], b->id, -1, 0, 1, "Einbruch");
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 4, 0);
+        ev->stage = 1;
+        return;
+    case 1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0 && c->model != 0
+                && sv_IsAtDoor(c, b) == 0) {
+                ev->end = ai_Time;
+                gm_AddTime(&ev->end, 0, 4, 0);
+                return;
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0, 1);
+        ev->stage = 2;
+        return;
+    case 2:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b != 0) {
+            owner = &ai_CharsT[b->owner];
+            d.bld = b;
+            d.range = 5000.0f;
+            d.ev = ev;
+            d.found = 0;
+            if (he_DetectAttack(&d) != 0) {
+                patrol = d.found;
+                x->slot = gv_Accuse(0x17, 1, ai_CharInts[ev->chr][0], owner->netId, b->id);
+                x->watch = patrol->id;
+                x->guardBld = patrol->patrolStart;
+                ev->stage = 3;
+                ev->end = ai_Time;
+                return;
+            }
+        }
+        ev->stage = 5;
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0xf, 0);
+        return;
+    case 3:
+        if (x->slot != -1 && cm_GetSlotState(x->slot) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
+        if (b == 0 || w == 0 || w->attackId != ev->id || x->slot == -1) {
+            ev->stage = -1;
+            return;
+        }
+        guard = &ai_CharsT[((AIJOB *)w)->chr];
+        cr = (CRIME *)cm_GetSlotValue(x->slot);
+        if (guard != 0 && cr != 0)
+            cm_SendProofExecuted(cr->id, guard->netId);
+        ev->stage = 4;
+        gm_AddTime(&ev->end, 0, 10, 0);
+        return;
+    case 4:
+        w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
+        if (w == 0) {
+            ev->stage = -1;
+            return;
+        }
+        if (w->attackId == ev->id) {
+            gm_AddTime(&ev->end, 0, 6, 0);
+            return;
+        }
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b != 0) {
+            g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+            if (g != 0)
+                master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
+            guard = &ai_CharsT[((AIJOB *)w)->chr];
+            if (guard != 0 && master != 0) {
+                u.reward = gm_PlayerFactor((unsigned short)util_Random(200) + 0x226, ai_OwnPlayer);
+                txt_Format(text, 0x19ea, b, u.reward, guard->id);
+                he_ShowNews(master->netId, master->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_76");
+                txt_Format(text, 0x19eb, b, u.reward);
+                he_ShowNews(guard->netId, guard->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_77");
+                cm_SendMoveGoodsUnchecked(guard->netId, master->netId, ai_OwnPlayer, u.reward);
+            }
+            gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
+            if (gb != 0) {
+                cm_BeginFieldBlock((char *)gb, gb->id);
+                cm_AddFieldValues(4, 1, 0x65, &u.reward);  /* 0x65: the counter AIBLD.unk65 */
+                cm_SendFieldDeltas();
+            }
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0)
+                gm_AddHealth(c->id, -100 - (unsigned short)util_Random(100));
+        }
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+        if (g != 0) {
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1) {
+                    cm_SendChrStop(ev->ids[k]);
+                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Entdeckt");
+                }
+            }
+        }
+        ev->stage = -1;
+        return;
+    case 5:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+        if (g != 0)
+            master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
+        if (b == 0 || master == 0) {
+            ev->stage = -1;
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        if (owner == 0) {
+            ev->stage = -1;
+            return;
+        }
+        if (g != 0) {
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+            store = (AIOBJ *)gm_Query((void *)g->objList, 2, 6, 0, 0x116);
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                    cm_SendChrStop(ev->ids[k]);
+                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Einbruch");
+                    n++;
+                    gm_SkillPoints(c, 2);
+                    sv_MoveToGroup((unsigned char *)g, 0, c->id, 0);
+                }
+            }
+            for (u.report = (AIOBJ *)gm_Query((void *)g->objList, 1, 0, 0xca); u.report != 0;
+                 u.report = (AIOBJ *)gm_QueryNext()) {
+                if (u.report->reportBld == b->id)
+                    break;
+            }
+            if (u.report != 0) {
+                know = (float)(u.report->reportKnow * 0.01);
+                if (0.001f > know)
+                    know = 0.001f;
+            } else
+                know = 0.001f;
+            owner = &ai_CharsT[b->owner];
+            skill = gm_BuildingSkill(b, 7, 1);
+            sk = skill * 0.01f;
+            ok = util_RandomF() < (know = (float)(know - sk * 0.35));
+        } else
+            ok = 0;
+        if (he_NoProtectionEvent((int)b) == 0)
+            ok = 0;
+        gv_Accuse(0x17, 1, ai_CharInts[g->owner][0], owner->netId, b->id);
+        if (ok) {
+            char loot[0x400];
+
+            loot[0] = ch_EmptyName[0];
+            memset(loot + 1, 0, sizeof(loot) - 1);
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+            gm_BuildingValues(b, vals);
+            money = vals[0];
+            money = (int)(((unsigned short)util_Random(50) * 0.001f + 1.0) * money);
+            money = (int)((gm_BuildingSkill(g, 1, 1) * 0.0025f + ai_FloatOne) * money);
+            money = money < 0 ? 0 : money;
+            txt_Format(line, "$Z%T$A", money);
+            strcat(loot, line);
+            cm_SendMoveGoodsUnchecked(master->netId, owner->netId, ai_OwnPlayer, money);
+            cm_BeginFieldBlock((char *)g, g->id);
+            cm_AddFieldValues(4, 1, 0x69, &money);  /* 0x69: AIBLD.unk69 */
+            cm_SendFieldDeltas();
+            if (stall != 0) {
+                if (store != 0) {
+                    for (it = (AIOBJ *)gm_Query((void *)stall->list, 1, 5); it != 0; it = (AIOBJ *)gm_QueryNext()) {
+                        if ((unsigned short)util_Random(100) > 0x32 && it->id != 0x1c7 && it->id != 0x1c4
+                            && it->id != 0x1c5 && it->id != 0x1c6 && it->id != 0x2af && it->id != 0x2b0
+                            && it->id != 0x1c1 && it->id != 0x1c2 && it->id != 0x1c3) {
+                            amt = gm_ListAmount(stall, it);
+                            amt = (int)(amt * (n * 0.1));
+                            if (amt < 1)
+                                amt = 1;
+                            sprintf(line, "%i %s$A", amt, (char *)txt_ObjectNames[it->id][0]);
+                            strcat(loot, line);
+                            cm_SendExSellObject(store->objId, stall->objId, it->id, amt, ai_OwnPlayer, 0);
+                            money = (int)(gm_GoodsPrice(it->id, ai_OwnPlayer) * amt + money);
+                        }
+                    }
+                } else
+                    strcpy(loot, txt_Ptrs[0x19ec]);
+            }
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)master);
+            if (fin != 0)
+                fin->burglaryTakings += money;
+            g->roundSums[0] += money;
+            if (master->kind == 6 || master->kind == 7) {
+                txt_Format(text, 0x19e6, 0x19c1, owner->id, b);
+                strcat(text, loot);
+                he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_74");
+            }
+            if (owner->kind == 6 || owner->kind == 7) {
+                txt_Format(text, 0x19e8, b, money);
+                he_MessageBoxQuickjump(owner->netId, owner->netId, text, 0, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_27");
+            }
+        } else {
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            if (b != 0) {
+                if (master->kind == 6 || master->kind == 7) {
+                    txt_Format(text, 0x19e7, owner->id, b, 0x19c1);
+                    he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_75");
+                }
+                if (owner->kind == 6 || owner->kind == 7) {
+                    txt_Format(text, 0x19e9, b);
+                    he_MessageBoxQuickjump(owner->netId, owner->netId, text, 1, 0x5f0, b->id, -1, 0, 0);
+                }
+            }
+        }
+        if (u.report != 0 && (gb = (AIBLD *)gm_BuildQuery(1, 1, x->guild)) != 0)
+            cm_SendMoveObject(gb->id, -1, u.report->objId);
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+        if (g != 0)
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                cm_SendChrStop(ev->ids[k]);
+                if (g != 0 && room != 0)
+                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Einbruch");
+                else
+                    cm_SendChrGotoBuilding(ev->ids[k], -1, -1, 0, 0, "Einbruch");
+                sv_MoveToGroup(0, 0, c->id, 0);
+            }
+        }
         he_FreeEvent((int *)ev);
         return;
     }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    txt_Format(text, 0x1bba, b);
-    he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fb, 0);
-    ((void (*)(int))gm_PlayerFactor)((unsigned short)util_Random(100));
-    cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, 0, 0);
-    he_FreeEvent((int *)ev);
 }
 /* 0x5628e0, the run handler "GebSpionage" (spying on a building; ROUGH skeleton, 2064 bytes): like the espionage walk 0x55a030 the spies (group 0x524260 (building, .., id, ev), 0x4c5230, 0x4c52e0 "GebSpionage") walk to the building (0x524770), look around (gm_SkillPoints, 0x5090b0, _ftol rolls), the owner is told (the news "_NACHRICHTEN_HS_78", 0x501ce0 shows the building) and the group released; the record is freed at the end */
 
@@ -18695,7 +18947,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(62, (void *)he_AllocEvent39_3e, (void *)he_RunRansomDemand) != 0)
         return 1;
-    if (he_SetEventHandlers(63, (void *)he_Unk5619a0, (void *)he_Unk561a20) != 0)
+    if (he_SetEventHandlers(63, (void *)he_AllocBurglary, (void *)he_RunBurglary) != 0)
         return 1;
     sv_RegisterActivity(63, 0, 0, 1290, -1);
     if (he_SetEventHandlers(64, (void *)he_Unk563980, (void *)he_Unk5628e0) != 0)

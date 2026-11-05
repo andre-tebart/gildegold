@@ -2526,3 +2526,5 @@
 2026-11-05T21:55:20 0x00561190 func he_Unk561190 -> he_RunRansom by:main why:registered for event 61 (0x3d), the ransom message he_RunKidnap sends the master; text 'L\366segeld', news 0x19c2 with the kidnap time the alloc handler sets
 2026-11-05T21:55:20 0x00561130 func he_Unk561130 -> he_AllocRansom by:main why:registered for event 61 (0x3d), the ransom message he_RunKidnap sends the master; text 'L\366segeld', news 0x19c2 with the kidnap time the alloc handler sets
 2026-11-05T21:59:31 0x005614c0 func he_Unk5614c0 -> he_RunRansomDemand by:main why:registered for event 62 (0x3e), the ransom message he_RunRansom sends the victim; window Diebesgilde_Loesegeld_Msg, pay / refuse
+2026-11-05T22:06:34 0x00561a20 func he_Unk561a20 -> he_RunBurglary by:main why:registered for event 63 (0x3f), the run handler's walk is 'Einbruch' (burglary): the gang breaks into the target building
+2026-11-05T22:06:34 0x005619a0 func he_Unk5619a0 -> he_AllocBurglary by:main why:registered for event 63 (0x3f), the run handler's walk is 'Einbruch' (burglary): the gang breaks into the target building
