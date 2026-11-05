@@ -3841,44 +3841,46 @@ void he_RunStoreSale(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x548de0, a Ghidra miss: the run handler of the event of the player (word +8): in the state 0 one of the figures of the player (0x501190 kind 4) with 0x501d80 == 6 is picked at random and 0x50cad0 (-0x32) is called for it; a player of kind 6 hears the news 0x10b8 (ROUGH) */
+/* 0x548de0, a Ghidra miss: the run handler of event 0x58: stage -2 frees it; at stage 0 it collects up to 16 of
+   the character's buildings (gm_BuildQuery key 4) of class 6, picks one at random and lowers its state by 50
+   (gm_ChangeBuildingState); a character of kind 6 gets the news 0x10b8 (the building) in a quick-jump box; then
+   frees the event */
 
-void he_Unk548de0(int ev)
+void he_RunBuildingDecay(int ev)
 {
-    char text[0x400];
-    int sel[16];
-    int n = 0, esi;
+    AIJOB *e = (AIJOB *)ev;
+    char text[0x418];
+    AIBLD *sel[16];
+    int n = 0;
+    AIBLD *b;
 
-    if (*(int *)(ev + 0x70) == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0x70) != 0)
+    if (e->stage != 0)
         return;
-    esi = gm_BuildQuery(1, 4, *(unsigned short *)(ev + 8));
-    if (esi == 0) {
+    b = (AIBLD *)gm_BuildQuery(1, 4, e->chr);
+    if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    while (n < 16) {
-        if (gm_BuildingClass(*(unsigned char *)esi) == 6) {
-            sel[n] = esi;
-            n++;
-        }
-        esi = gm_BuildNext();
-        if (esi == 0)
+    do {
+        if (n >= 16)
             break;
-    }
+        if (gm_BuildingClass(b->type) == 6)
+            sel[n++] = b;
+    } while ((b = (AIBLD *)gm_BuildNext()) != 0);
     if (n == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    esi = sel[(unsigned short)util_Random(n)];
-    if (esi != 0)
-        gm_ChangeBuildingState(esi, -0x32);
-    if (*(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) == 6) {
-        txt_Format(text, 0x10b8, esi);
-        he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ec, *(int *)(esi + 1), -1, 0, (char *)0);
+    b = sel[(unsigned short)util_Random(n)];
+    if (b != 0)
+        gm_ChangeBuildingState((unsigned char *)b, -50);
+    if (ai_CharsT[e->chr].kind == 6) {
+        txt_Format(text, 0x10b8, b);
+        he_MessageBoxQuickjump(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ec, b->id, -1, 0, (char *)0);
     }
     he_FreeEvent((int *)ev);
 }
@@ -9537,7 +9539,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_RunStoreSale) != 0)
         return 1;
-    if (he_SetEventHandlers(0x58, (void *)he_Unk548b70, (void *)he_Unk548de0) != 0)
+    if (he_SetEventHandlers(0x58, (void *)he_Unk548b70, (void *)he_RunBuildingDecay) != 0)
         return 1;
     if (he_SetEventHandlers(0x5a, (void *)he_Unk548ef0, (void *)he_RunRepostEvent) != 0)
         return 1;
