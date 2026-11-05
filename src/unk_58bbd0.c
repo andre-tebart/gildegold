@@ -1068,7 +1068,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned char sex;             /* 0x009, 0 / non-0 (ai_char.h AICHAR.sex; it picks the male / female name table) */
     char pad00a[0x3];
     unsigned char b00d;            /* 0x00d, 1 .. 2 (ai_char.h AICHAR.b00d, gv.c copies it to the grave's v30) */
-    char pad00e[0x158];
+    char pad00e[0xe];
+    float f01c;                    /* 0x01c, the life value (ai_char.h AICHAR.f01c: 1000.0 at creation, aged
+                                      by gm_AgeCharacter, the character dies when it is used up) */
+    char pad020[0x146];
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
     char pad167[2];
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
@@ -1115,6 +1118,18 @@ typedef struct AIROOM {            /* the room object sv_PanelShown / the driver
     int list;                      /* 0x14, its object list (ai_types.h AIOBJ.list; ai_StorageWindow / gm_SumListAmounts) */
 } AIROOM;
 #pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h cannot be included here yet): the
+                                           record ai_UseGood hands to a Domizil record's use callback (+0x14) */
+    void *obj;                          /* 0x00, the object record used */
+    int target;                         /* 0x04, the target reference (G8USE.target) */
+    int arg;                            /* 0x08 */
+    int effect;                         /* 0x0c, 1 the use took effect, 0 not, -1 backfired (G8USE.effect) */
+    int handled;                        /* 0x10, set by a callback that reported the use itself (G8USE.handled) */
+} G8USEVIEW;
+#pragma pack(pop)
+
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
 #include "ls.h"
@@ -22887,22 +22902,20 @@ int ai_UseGoodAddMoney(AICHARREC *ch)
     gm_SendMoneyDelta(ch->netId, 2);
     return 1;
 }
-/* 0x5cfb80, a message callback (128 B): param_1 the record (+2 the type, +4 the handle, +0x1c a
-   float), param_2 the request (+0xc the mode, +0x10 a flag). Mode 1: 0x4c4ac0 (the handle, 0x1c, the
-   float +0x1c * 0x5eb91c) - the third argument is the raw 4-byte float (the cm.h int view of 0x4c4ac0
-   is wrong for this call site, so the call goes through the cast). Mode 0 with the type 6: the request
-   +0x10 = 1 and the text 0x5176d0 (0xff0) through the panel 0x5cf820. Returns 1. */
+/* 0x5cfb80, the use callback of the Domizil good 0x175 (the +0x14 pointer of the table entry 0x62c6dc;
+   ai_UseGood gives it the effect 1 only one time in three): effect 1 adds 10% of the character's life
+   (AICHAR.f01c) with cm_SendFloatDelta (0x4c4ac0); effect 0 for a player (kind 6) sets use->handled and
+   shows the text 0xff0 (ai_UseObjPanel); returns 1. */
 
-int ai_Unk5cfb80(int param_1, int param_2)
+int ai_UseGoodHeal(AICHARREC *ch, G8USEVIEW *use)
 {
     char text[0x800];
 
-    if (*(int *)(param_2 + 0xc) == 1) {
-        ((void (*)(int, int, float))(unsigned)&cm_SendFloatDelta)(*(int *)(param_1 + 4), 0x1c,
-                                             *(float *)(param_1 + 0x1c) * (0.100000001f));
-    } else if (*(int *)(param_2 + 0xc) == 0 && *(char *)(param_1 + 2) == 6) {
-        *(int *)(param_2 + 0x10) = 1;
-        txt_Format(text, (char *)0xff0);
+    if (use->effect == 1) {
+        cm_SendFloatDelta(ch->netId, 0x1c, ch->f01c * 0.1f);
+    } else if (use->effect == 0 && ch->kind == 6) {
+        use->handled = 1;
+        txt_Format(text, 0xff0);
         ai_UseObjPanel(text);
     }
     return 1;
@@ -23286,17 +23299,6 @@ int ai_ApplyTrialStep(int param_1, int param_2)
         cm_SendAddSkill(param_1 + 4, param_2, amount);
     return 1;
 }
-#pragma pack(push, 1)
-typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h cannot be included here yet): the
-                                           record ai_UseGood hands to a Domizil record's use callback (+0x14) */
-    void *obj;                          /* 0x00, the object record used */
-    int target;                         /* 0x04, the target reference (G8USE.target) */
-    int arg;                            /* 0x08 */
-    int effect;                         /* 0x0c */
-    int handled;                        /* 0x10 */
-} G8USEVIEW;
-#pragma pack(pop)
-
 /* 0x5d09d0, the use callback of the Domizil record 9 (the good 0x162, 0x62c51c): the character kind 6 picks
    the target in the special-amount list 0x5bea00 (the text 0x5176d0 0x9d), every other kind takes the use's
    target 0x505df0; the target's trial step 1 (0x5d08c0) runs and 1, 0 without a target. */
