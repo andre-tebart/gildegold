@@ -3757,12 +3757,12 @@ exe	0x0055e3d0	he_Unk55e3d0	he	draft	draft
 exe	0x0055e5c0	he_Unk55e5c0	he	byte	draft		
 exe	0x0055e600	he_Unk55e600	he	draft	draft		
 exe	0x0055e730	he_Unk55e730	he	draft	draft		
-exe	0x0055e9d0	he_Unk55e9d0	he	draft	draft		
+exe	0x0055e9d0	he_AllocRoutine	he	byte	readable		
 exe	0x0055ea60	he_FigureContact	he	draft	draft		
 exe	0x0055eba0	he_FindFigurePlace	he	draft	draft		
 exe	0x0055ee40	he_PickNearBuilding	he	draft	draft		
 exe	0x0055efc0	he_Unk55efc0	he	draft	draft		
-exe	0x0055fa20	he_Unk55fa20	he	draft	draft		
+exe	0x0055fa20	he_AllocMarket	he	byte	readable		
 exe	0x0055fa90	he_Unk55fa90	he	draft	draft		
 exe	0x00560820	he_Unk560820	he	draft	draft		
 exe	0x00560900	he_Unk560900	he	draft	draft		
@@ -3782,12 +3782,12 @@ exe	0x005642e0	he_Unk5642e0	he	draft	draft
 exe	0x005644e0	he_Unk5644e0	he	draft	draft		
 exe	0x00564860	he_Unk564860	he	draft	draft		
 exe	0x005649b0	he_Unk5649b0	he	draft	draft		
-exe	0x005652b0	he_Unk5652b0	he	draft	draft		
+exe	0x005652b0	he_AllocStorm	he	byte	readable		
 exe	0x00565410	he_RunStormEvent	he	shape	readable		
 exe	0x00565500	he_Unk565500	he	byte	draft		
 exe	0x00565620	he_Unk565620	he	shape	draft		
 exe	0x00565850	he_Unk565850	he	draft	draft		
-exe	0x00565940	he_Unk565940	he	draft	draft		
+exe	0x00565940	he_RunNewWorker	he	byte	readable		
 exe	0x00565b00	he_Unk565b00	he	byte	draft		
 exe	0x00565b60	he_Unk565b60	he	byte	draft		
 exe	0x00565d10	he_Unk565d10	he	byte	draft		
@@ -3799,9 +3799,9 @@ exe	0x00567620	he_Unk567620	he	byte	draft
 exe	0x00567660	he_Unk567660	he	draft	draft		
 exe	0x00567810	he_Unk567810	he	draft	draft		
 exe	0x005679b0	he_Unk5679b0	he	byte	draft		
-exe	0x00567a80	he_Unk567a80	he	draft	draft		
+exe	0x00567a80	he_RunHint	he	draft	readable	deep	
 exe	0x00567b80	he_Unk567b80	he	byte	draft		
-exe	0x00567c00	he_Unk567c00	he	draft	draft		
+exe	0x00567c00	he_RunTip	he	draft	readable	deep	
 exe	0x00567d20	he_Unk567d20	he	byte	draft		
 exe	0x00567d60	he_Unk567d60	he	draft	draft		
 exe	0x00567f00	he_Unk567f00	he	byte	draft		
@@ -3811,14 +3811,14 @@ exe	0x00568310	he_RegisterEventTypes02	he	byte	draft
 exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
 exe	0x00568ae0	he_AllocIncomeEvent	he	byte	readable		
 exe	0x00568be0	he_Unk568be0	he	draft	draft		
-exe	0x005690c0	he_Unk5690c0	he	draft	draft		
+exe	0x005690c0	he_AllocProduktion	he	byte	readable		
 exe	0x00569210	he_Unk569210	he	draft	draft		
 exe	0x0056a100	he_Unk56a100	he	byte	draft		
 exe	0x0056a170	he_Unk56a170	he	draft	draft		
 exe	0x0056a360	he_Unk56a360	he	byte	draft		
 exe	0x0056a3d0	he_Unk56a3d0	he	draft	draft		
 exe	0x0056a710	he_Unk56a710	he	byte	draft		
-exe	0x0056a7b0	he_Unk56a7b0	he	draft	draft		
+exe	0x0056a7b0	he_AllocTrade	he	draft	readable	deep	
 exe	0x0056a960	he_Unk56a960	he	draft	draft		
 exe	0x0056b380	he_Unk56b380	he	byte	draft		
 exe	0x0056b3f0	he_Unk56b3f0	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
