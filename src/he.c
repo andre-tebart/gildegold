@@ -482,6 +482,18 @@ typedef struct HESTUDY {                /* the study event 22's words over AIJOB
     int room;                           /* 0xb4, the objId of its room in the building (an object of type 1), -1: none */
     AITIME until;                       /* 0xb8, the latest end: 6 units after the first due clock */
 } HESTUDY;
+typedef struct HESABOTAGE {             /* the sabotage event 25's words over AIJOB's union (he_Unk558e70 / he_RunSabotage);
+                                           AIJOB.from is the building the saboteur is hired at and goes back to */
+    char pad00[0xac];
+    int target;                         /* 0xac, the id of the building attacked */
+    char padb0[0x12];
+    unsigned char blasts;               /* 0xc2, the explosions set off so far (stage 5) */
+    char padc3;
+    int saboteur;                       /* 0xc4, the netId of the saboteur (the character the spawn request made), -1: none */
+    int slot;                           /* 0xc8, the cm slot of the pending request (the spawn, the walk, the accusation), -1: none */
+    int watch;                          /* 0xcc, the id of the watch event that caught the saboteur (HEDETECT.found, HEWATCH) */
+    int fee;                            /* 0xd0, the money the event's character pays for it */
+} HESABOTAGE;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -783,7 +795,9 @@ typedef struct HETITLE {                /* the title ceremony event 0x69's words
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
-    char pad1c[0x30];
+    char pad1c[0xc];
+    int spyPaid;                        /* 0x28, the money paid for spies and saboteurs (ai.h AIFIN.spyPaid; he_RunSabotage adds the fee) */
+    char pad2c[0x20];
     int customerTakings;                /* 0x4c, the money its character's customers paid (he_RunCustomers adds it) */
     char pad50[0x14];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
@@ -13035,46 +13049,318 @@ int ord_DispatchOrder(int id, char *c, int *m);
 int ai_InventoryHas(void *ch, int id);
 void gm_SendMoneyDelta(int a, int b);
 
-/* 0x558f10, the run handler of the sabotage event "Sabotage" (3600 bytes, 11 states by the jump table 0x559ce8; ROUGH skeleton, the details of every state are not drafted): the saboteur +0xb0 (the handle +0xb4 / +0xb8 of its job 0x4c3ae0 / 0x4c3b10, 0x4c52e0 "Sabotage" sends it), the building +0x10 and the target person +0xb4 are followed through the states: walk to the building, take the tool ("spezial/einhaendig_vom_boden_nehmen" 0x4c5410), the 0x553ae0 detection check and the guards (0x53e400 over the type 0x1d / 0x2c records), the success roll (0x5ba6b0 skill, 0x50cc50, a random float util_RandomF / gm_Mix), the damage (0x4c4b00 relation, 0x4c4ed0 / 0x4c4830 payment, 0x4f2e30 the relation check) and the news to the owner / the saboteur ("_NACHRICHTEN_HS_17" / "_18", 0x53dee0 / 0x53dda0); the end releases the group (0x524260) and frees the record */
-void he_Unk558f10(int ev)
+/* 0x558f10, the run handler of the sabotage event 25 (HESABOTAGE; allocated by he_Unk558e70, which asks for the
+   saboteur, "SABOTAGE"). Every stage waits while a cm request is pending (HESABOTAGE.slot). Stage 0: the spawned
+   saboteur (none: cancelled) is paid for by the event's character (its player record's spyPaid, a money move to the
+   own player) and joins the event's group. 1: it walks to the target building (gone: cancelled). 2: once arrived
+   (its scene character has no actions left; else 4 more minutes) the next stage. 3: a watch event may see it
+   (he_DetectAttack, range 4000): then the owner accuses the event's character (gv_Accuse 0x18) and the stage is 7;
+   else it picks something up ("spezial/einhaendig_vom_boden_nehmen") and walks back. 4, once due: a random
+   1.0 + gm_Mix (attacker, owner, 2) of at least 1 against an owner without the item 0x2c0 succeeds: the news 0x1735
+   to the attacker, 0x1736 ("_NACHRICHTEN_HS_18") to an owner of kind 6 / 7 or a relation loss of 25, the accusation,
+   the news 0x1737 to the other players, the explosions in 10 minutes; an owner with the item 0x2c0 catches it (the
+   attacker loses money: the news 0x1013 / 0x1011 "_NACHRICHTEN_HS_17"), else it fails (the news 0x1738 / 0x1739,
+   the accusation) and the event is cancelled. 5: the first blast posts the explosion message 0x4f (strength
+   20 + random 16 - 3 * the type's level) and plays "Explosion"; every blast up to the first one (blasts < 1) shows
+   smoke, earth and an explosion (3 times bigger for the first in the town scene) at a random dummy object of the
+   building ("dummy_TUER" / "dummy_FAHNE" / "dummy_RAUCH_0") and the next follows in random 2 minutes; after it the
+   stage is 6. 6: back home (else 4 more minutes) it is cancelled. 7: the accusation answered, the proof goes to the
+   watch (cm_SendProofExecuted), the stage is 8 in 10 minutes. 8: while the watch event still holds it 6 more
+   minutes, then the saboteur walks home (stage 6). Stages -2 / -1 kill the saboteur and free the event
+   @deep reconstructed from the 425-byte stub against 0x558f10..0x559d14: all 11 stages read and written
+   (the switch tables now equal: case order 0,1,2,3,7,8,4,5,6,-2/-1 as the original lays them out), every
+   call, argument and string checked (refs_differ=0; the explosion message 0x4f, smoke / earth / explosion
+   arguments as cm.c's bomb, the dummy object names, HEDETECT, gv_Accuse, CRIME.id for
+   cm_SendProofExecuted, HEWATCH.attackId), the effect block's FPU order matches. Left (diffclass): regs
+   144, order 20, tail 20 and code 88 that are allocation / scheduling: stage 3 found path ours stores
+   stage 7 before add esp,0x14 where the original rebases on add esi,0x52 first (mov [esi+0x1e],7 / mov
+   [esi+0x7a],edx); stage 4's failure path recomputes owner / me with ours lea ebx before push ebx, the
+   original lea ecx then lea ebx (+0x55961b..+0x559635), and the gv_Accuse argument loads in another order
+   (+0x559775..+0x55979d); stage 5 the original caches 0 in ebx (xor ebx,ebx; mov [esp+0x34],ebx; cmp
+   [d3_CurrentScene],ebx; push ebx; cmp eax,ebx) where ours uses immediates / test; tails: the original
+   shares the stage++ block at +0x7cd and the stage = 6 block at +0x10f that ours keeps inline. Tried:
+   case-0 failure after the success path (matched), the blasts test outside the block-scoped arrays
+   (matched), util_RandomU for the message strength (matched), the col stores after a.z (FPU hunk gone), o
+   = 0 at declaration (no change), stage 3 store orders (worse, reverted) (size: 16 of the instruction
+   difference are shared / inline tails) */
+void he_RunSabotage(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p, b, h, o = 0;
-    char text[0x200];
+    AIJOB *e = (AIJOB *)ev;
+    HESABOTAGE *x = (HESABOTAGE *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    char text[0x400];
 
-    if (st < -2 || st > 8) {
-        he_FreeEvent((int *)ev);
+    if (x->slot != -1 && cm_GetSlotState(x->slot) == 0)
         return;
-    }
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0 || st < 0) {
-        if (p != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (st) {
-    case 0:
-        cm_SendMoveGoodsUnchecked(*(int *)(p + 4), 0, 0, 0);
-        cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Sabotage");
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x70) = 1;
-        return;
-    default:
-        h = *(int *)(ev + 0xc4);
-        if (h != -1 && cm_GetSlotState(h) == 0)
+    switch (e->stage) {
+    case 0: {
+        HEFINVIEW *fin;
+
+        if (x->slot != -1 && cm_GetSlotState(x->slot) == 0)
             return;
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xb4));
-        txt_Format(text, 0x1bba, b);
-        he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_18", 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
+        c = (AICHAR *)cm_GetSlotValue(x->slot);
+        if (c != 0) {
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_CharsT[e->chr]);
+            if (fin != 0)
+                fin->spyPaid += x->fee;
+            x->saboteur = c->netId;
+            sv_MoveToGroup(0, 0, c->id, (char *)ev);
+            cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, x->fee);
+            x->slot = -1;
+            e->stage++;
+            return;
+        }
+        x->saboteur = -1;
+        e->stage = -1;
+        return;
+    }
+    case 1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            e->stage = -1;
+            return;
+        }
+        x->slot = cm_SendChrGotoBuilding(x->saboteur, b->id, -1, 0, 1, "Sabotage");
+        e->stage++;
+        return;
+    case 2:
+        x->slot = -1;
+        c = (AICHAR *)gm_FindChar(x->saboteur);
+        if (c == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (c->scene->actions == 0) {
+            e->stage++;
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
+        e->stage = 2;
+        return;
+    case 3: {
+        HEDETECT d;
+
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0 || b->owner == 0xffff) {
+            e->stage = -1;
+            return;
+        }
+        d.bld = b;
+        d.range = 4000.0f;
+        d.ev = e;
+        d.found = 0;
+        if (he_DetectAttack(&d) != 0) {
+            x->slot = gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, x->target);
+            e->stage = 7;
+            x->watch = d.found->id;
+            e->end = ai_Time;
+            return;
+        }
+        cm_SendChrAnim(x->saboteur, "spezial/einhaendig_vom_boden_nehmen", 1);
+        cm_SendChrGotoBuilding(x->saboteur, e->from, -1, 0, 1, "Sabotage");
+        e->stage++;
+        return;
+    }
+    case 7: {
+        HEWATCH *w;
+        CRIME *cr;
+
+        if (x->slot != -1 && cm_GetSlotState(x->slot) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
+        if (b == 0 || w == 0 || w->attackId != e->id || x->slot == -1) {
+            e->stage = -1;
+            return;
+        }
+        c = (AICHAR *)gm_FindChar(x->watch);
+        cr = (CRIME *)cm_GetSlotValue(x->slot);
+        if (cr != 0 && c != 0)
+            cm_SendProofExecuted(cr->id, c->netId);
+        e->stage = 8;
+        gm_AddTime(&e->end, 0, 10, 0);
+        return;
+    }
+    case 8: {
+        HEWATCH *w;
+
+        w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
+        if (w == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (w->attackId == e->id) {
+            gm_AddTime(&e->end, 0, 6, 0);
+            return;
+        }
+        cm_SendChrGotoBuilding(x->saboteur, e->from, -1, 0, 1, "Sabotage");
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
+        e->stage = 6;
+        return;
+    }
+    case 4: {
+        float chance;
+        AICHAR *me, *owner;
+        int i;
+
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+            return;
+        x->blasts = 0;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0 || b->owner == 0xffff) {
+            e->stage = -1;
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        me = &ai_CharsT[e->chr];
+        chance = gm_Mix((int)me, (int)owner, 2);
+        if (util_RandomF() + chance >= ai_FloatOne && ai_InventoryHas(owner, 0x2c0) == 0) {
+            txt_Format(text, 0x1735, owner->id, b);
+            he_MessageBoxQuickjump(me->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+            if (b->owner != 0xffff) {
+                if (owner->kind == 6 || owner->kind == 7) {
+                    txt_Format(text, 0x1736, b);
+                    he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_18");
+                } else
+                    cm_SendRelations(me->netId, owner->netId, -0x19, 1);
+                gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
+            }
+            for (i = 0; i < 768; i++) {
+                if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && ai_CharsT[i].netId != owner->netId && ai_CharsT[i].netId != me->netId) {
+                    txt_Format(text, 0x1737, owner->id, b);
+                    he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+                }
+            }
+            e->stage++;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 10, 0);
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        me = &ai_CharsT[e->chr];
+        if (ai_InventoryHas(owner, 0x2c0) != 0) {
+            gm_SendMoneyDelta(me->netId, -1);
+            if (me->kind == 6 || me->kind == 7) {
+                txt_Format(text, 0x1013, owner->id, b);
+                he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+            }
+            if (owner->kind == 6 || owner->kind == 7) {
+                txt_Format(text, 0x1011, b);
+                he_ShowNews(owner->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_17");
+            }
+            e->stage++;
+            return;
+        }
+        txt_Format(text, 0x1738, b->owner, b);
+        he_MessageBoxQuickjump(me->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+        if (b->owner != 0xffff) {
+            txt_Format(text, 0x1739, b);
+            he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5f0, b->id, -1, 0, 0);
+            gv_Accuse(0x18, 1, ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, b->id);
+            e->stage = -1;
+            return;
+        }
+        e->stage = -1;
+        return;
+    }
+    case 5:
+        if (x->blasts < 1) {
+            int scene;
+            float scale;
+            D3COLOR col;
+            D3VECTOR4 a, dir;
+            char dummies[3][0x40] = { "dummy_TUER", "dummy_FAHNE", "dummy_RAUCH_0" };
+            AIMSG msg;
+            D3OBJECT *o;
+            AIBTYPE *bt;
+            struct SBSAMPLE *snd;
+
+            scene = d3_CurrentScene;
+            a.x = -243.0f;
+            a.y = -90.0f;
+            a.z = 190.0f;
+            a.w = 0;
+            dir.x = -50.0f;
+            dir.y = 0;
+            dir.z = 38.0f;
+            dir.w = 0;
+            scale = 1.0f;
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            if (b == 0) {
+                e->stage = -1;
+                return;
+            }
+            if (x->blasts == 0 && d3_CurrentScene == 0) {
+                snd = sb_GetSample(0, "Explosion");
+                if (snd != 0)
+                    d3snd_PlayAt((struct SNDHANDLE *)snd, (D3OBJECT *)b->object, 0x6b, 12200.0f);
+                scale = 3.0f;
+            }
+            d3if_SelectScene(0, 1);
+            o = (D3OBJECT *)b->object;
+            if (o != 0) {
+                if (x->blasts == 0) {
+                    msg.type = 0x4f;
+                    msg.fromId = -1;
+                    msg.flags = 2;
+                    msg.extraFlag = 0;
+                    bt = &ai_BTypesT[b->type];
+                    msg.to = ai_CharsT[e->chr].netId;
+                    msg.time = ai_Time;
+                    msg.arg[0] = b->id;
+                    msg.arg[1] = util_RandomU(0x10) - bt->cap247 * 3 + 0x14;
+                    cm_SendLongMessage((char *)&msg);
+                } else {
+                    o = d3_FindObject((int)b->object, 0x100, 0, dummies[(unsigned short)util_Random(3)]);
+                    if (o != 0)
+                        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&a);
+                    else
+                        o = d3_FindObject((int)b->object, 0x100, 0, "dummy_TUER");
+                }
+                if (o != 0 && scene == 0) {
+                    d3_PointToWorld(o, &o->pos, (D3VECTOR *)&a);
+                    a.x = (unsigned short)util_Random(0x40) + a.x - 32.0f;
+                    a.y = (unsigned short)util_Random(0x40) + a.y;
+                    a.z = (unsigned short)util_Random(0x40) + a.z - 32.0f;
+                    col.a = 0x3f;
+                    col.r = 0xc0;
+                    col.g = 0xc0;
+                    col.b = 0xc0;
+                    d3t_CreateSmoke((void *)scene, (D3VECTOR *)&a, 0x1e, 15.0f, 50.0f, 100.0f, 150.0f, 140.0f, 35.0f, (D3VECTOR *)&dir, 0x190, 6, col);
+                    d3t_CreateEarth((void *)scene, (D3VECTOR *)&a, 0x1e, 5.0f, 2.5f, 1.0f, 3.0f, -3.0f, 4.0f, 7.0f, 8.0f, col);
+                    d3t_CreateExplosion((void *)scene, (D3VECTOR *)&a, (int)(scale * 40.0f), scale * 140.0f, scale * 100.0f, 20.0f, 60.0f, 0x50);
+                }
+            }
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, (unsigned short)util_Random(2), 0);
+            x->blasts++;
+            d3if_SelectScene(scene, 1);
+            return;
+        }
+        e->stage = 6;
+        return;
+    case 6:
+        c = (AICHAR *)gm_FindChar(x->saboteur);
+        if (c == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (c->scene->actions == 0) {
+            e->stage = -1;
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
+        e->stage = 6;
+        return;
+    case -2:
+    case -1:
+        if (x->saboteur != -1)
+            cm_SendKillCharacter(x->saboteur, 1);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -15748,7 +16034,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
     if (he_SetEventHandlers(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
         return 1;
-    if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_Unk558f10) != 0)
+    if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_RunSabotage) != 0)
         return 1;
     if (he_SetEventHandlers(24, (void *)he_Unk559d20, (void *)he_Unk55a030) != 0)
         return 1;
