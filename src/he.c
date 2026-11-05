@@ -420,6 +420,13 @@ typedef struct HEDISMISS {              /* the dismissal event 0x31's word over 
     char pad00[0xac];
     int worker;                         /* 0xac, the netId of the worker dismissed (gm_FindChar) */
 } HEDISMISS;
+typedef struct HEEV39 {                 /* the event 0x39's words over AIJOB's union (he_AllocEvent39_3e / he_RunEvent39) */
+    char pad00[0xac];
+    int held;                           /* 0xac, the netId of the held character (AICHAR.heldRounds) the payment frees */
+    int payer;                          /* 0xb0, the netId of the character asked to pay; kind 6 / 7 (a player) answers in
+                                           the message box, any other decides by gm_LikingChance */
+    int amount;                         /* 0xb4, the sum asked for */
+} HEEV39;
 typedef struct HEEV38 {                 /* the event 0x38's word over AIJOB's union (he_Unk55e5c0 / he_RunEvent38); the
                                            building is AIJOB.from */
     char pad00[0xac];
@@ -15982,33 +15989,69 @@ void he_RunEvent38(int ev)
         break;
     }
 }
-/* 0x55e730, the run handler of the exam repeat event ("Berufe\Messagebox_Meisterpruefung"; ROUGH skeleton, 815 bytes): opens the window for the player (0x53d6f0, d2_SetForm), shows the offer (0x515960, the news 0x53dda0 via 0x5176d0), the answer pays / refuses (0x4c5fa0, 0x50b290, 0x4c4b00 relation) and closes (0x53d800, free) */
-
-void he_Unk55e730(int ev)
+/* 0x55e730, the run handler of the event 0x39 (HEEV39, its alloc handler he_AllocEvent39_3e): the held character
+   and the payer (gm_FindChar; either gone: the record is freed). A payer that is no player (kind 6 / 7) waits for
+   the due time and then decides (stage 2); stages -2 / -1 close the slot and free the record. Stage 0 opens
+   "Berufe\Messagebox_Meisterpruefung" (0x5ec) and prints the request 0x19b2 (the held character, the amount);
+   stage 1 reads the answer: yes tells the held character 0x19b3 (the payer) and frees it (message 0x5b takes its
+   held rounds back), no tells it 0x19b4 (the payer, the amount). Stage 2 pays by gm_LikingChance (the amount
+   against 16000 per held round): paid as yes, refused as no and the held character's relation to the payer
+   changes (cm_SendRelations 10, 1) */
+void he_RunEvent39(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    HEEV39 *x = (HEEV39 *)ev;
+    AICHAR *held, *payer;
+    char text[0x100];
 
-    if (st < 0 || st > 1) {
-        if (*(int *)(ev + 0x74) != 0)
-            he_ReleaseSlot(ev);
+    held = (AICHAR *)gm_FindChar(x->held);
+    payer = (AICHAR *)gm_FindChar(x->payer);
+    if (held == 0 || payer == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
-        if (*(int *)(ev + 0x74) == 0) {
-            he_FreeEvent((int *)ev);
+    if (payer->kind != 6 && payer->kind != 7) {
+        if (gm_CompareTime(&e->end, &ai_Time) > 0)
             return;
-        }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
-        *(int *)(ev + 0x70) = 1;
-        return;
+        e->stage = 2;
     }
-    if (U_I((unsigned)&d2_ClickedId) == -1)
+    switch (e->stage) {
+    case 0:
+        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText(0x19b2, held->id, x->amount, held->id, held->id);
+        e->stage++;
         return;
-    ((void (*)(int))cm_SendMessage5b)(*(int *)(ev + 0xac));
-    he_ReleaseSlot(ev);
-    he_FreeEvent((int *)ev);
+    case 1:
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
+            return;
+        if (d2_ClickedId == 0) {
+            txt_Format(text, 0x19b3, payer->id);
+            he_ShowNews(held->netId, held->netId, text, 0, 0x5fa, 0);
+            cm_SendMessage5b(held->netId, -held->heldRounds, 0);
+        } else if (d2_ClickedId == 1) {
+            txt_Format(text, 0x19b4, payer->id, x->amount);
+            he_ShowNews(held->netId, held->netId, text, 0, 0x5fa, 0);
+        }
+        /* fall through: the answer closes the slot */
+    case -2:
+    case -1:
+        he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
+        break;
+    case 2:
+        if (gm_LikingChance(held->id, payer->id, x->amount, held->heldRounds * 16000) != 0) {
+            txt_Format(text, 0x19b3, payer->id);
+            he_ShowNews(held->netId, held->netId, text, 0, 0x5fa, 0);
+            cm_SendMessage5b(held->netId, -held->heldRounds, 0);
+        } else {
+            txt_Format(text, 0x19b4, payer->id, x->amount);
+            he_ShowNews(held->netId, held->netId, text, 0, 0x5fa, 0);
+            cm_SendRelations(held->netId, payer->netId, 10, 1);
+        }
+        he_FreeEvent((int *)ev);
+        break;
+    }
 }
 
 int init_ObjectSceneUniverse();
@@ -17793,7 +17836,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_RunEvent38) != 0)
         return 1;
-    if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_Unk55e730) != 0)
+    if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_RunEvent39) != 0)
         return 1;
     if (he_SetEventHandlers(58, (void *)he_AllocRoutine, (void *)he_Unk55efc0) != 0)
         return 1;
