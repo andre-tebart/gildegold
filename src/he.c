@@ -5737,18 +5737,23 @@ void he_RunAudit(int ev)
         return;
     }
 }
-/* 0x54be20, a Ghidra miss: the init of the patrol-meeting event: +0xd4 = -1, +0xdc = 0, the start (+0x44) and the due clock (+0x52) = now, posted at once (0x4fe140 (.., 0, 1, 0), state 0) */
+/* 0x54be20, the allocation handler of the patrol gathering event 0x65: unless the event is paused (opts 4) it clears
+   the fight party (-1) and the gathering's dc, sets the start and due clocks to now, makes it due a minute later and
+   posts it at once (cm_SendExSetHE 0, state 0, the slot in exSlot) */
 
 
 void he_StartGathering(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(int *)(ev + 0xd4) = -1;
-        *(unsigned char *)(ev + 0xdc) = 0;
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+    HEGATHERING *g = (HEGATHERING *)ev;
+
+    if ((e->opts & 4) == 0) {
+        g->party = -1;
+        g->dc = 0;
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54bec0, a Ghidra miss: the run handler of the patrol gathering event 0x65 ("Patrol", HEGATHERING: the figures
