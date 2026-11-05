@@ -413,6 +413,11 @@ typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's un
     char pad00[0xb8];
     int daysLeft;                       /* 0xb8, the runs left: counted down once per run, below 0 the event ends */
 } HEEV24;
+typedef struct HEDISMISS {              /* the dismissal event 0x31's word over AIJOB's union (he_Unk563980 /
+                                           he_RunDismissal) */
+    char pad00[0xac];
+    int worker;                         /* 0xac, the netId of the worker dismissed (gm_FindChar) */
+} HEDISMISS;
 typedef struct HEEV27 {                 /* the payment event 0x27's words over AIJOB's union (he_AllocEvent27 /
                                            he_RunEvent27); the building is AIJOB.bldId */
     char pad00[0xb0];
@@ -15619,33 +15624,50 @@ void he_RunHarvest(int ev)
         return;
     }
 }
-/* 0x55dbe0, the run handler "Entlassen" (the dismissal of a worker; ROUGH): states -2 / -1 free; the figure +0xac (0x505df0), its job record +0x16c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0 mark it, 0x50c520 the wage check against -0x1e), the relation 0x4c4b00, the job end 0x4c5970 / 0x4c5b90, the contact 0x4fdcb0 and the walk away (0x4c52e0 (.., "Entlassen" 0x627860)); the record is freed, state -1 on a failed check */
-
-void he_Unk55dbe0(int ev)
+/* 0x55dbe0, the run handler of the dismissal event 0x31 ("Entlassen"): stages -2 / -1 free the record, a later stage
+   leaves it. At stage 0 the worker HEDISMISS.worker (missing or dead: stage -1) loses its building (AICHAR.bld is sent
+   as 0); the building's owner's liking of it drops to -30 at most (cm_SendRelations by -30 - the liking when that is
+   above -30, else by 0). The worker is cleared and halted and sent home (gm_CharacterHome: to its home object, else
+   into the building); the record is freed */
+void he_RunDismissal(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p;
+    AIJOB *e = (AIJOB *)ev;
+    HEDISMISS *d = (HEDISMISS *)ev;
+    AICHAR *c;
+    int drop = 0;
+    int homeBld, homeObj;
 
-    if (st == -2 || st == -1) {
+    switch (e->stage) {
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
-        return;
+        break;
+    case 0:
+        c = (AICHAR *)gm_FindChar(d->worker);
+        if (c == 0 || c->health == 0) {
+            e->stage = -1;
+            return;
+        }
+        drop = 0;
+        if (c->bld != 0) {
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &drop);
+            cm_SendFieldValues();
+            if (gm_Opinion(c->bld->owner, c->id) > -30)
+                drop = -30 - gm_Opinion(c->bld->owner, c->id);
+            cm_SendRelations(ai_CharInts[c->bld->owner][0], c->netId, drop, 1);
+        }
+        cm_SendCharClear(c->netId, 0, 0);
+        cm_SendCharHalt(c->netId);
+        if (gm_CharacterHome((char *)c, &homeBld, &homeObj) != 0) {
+            if (homeObj != -1)
+                cm_SendChrGotoBuilding(c->netId, homeBld, homeObj, 0, 0, "Entlassen");
+            else
+                cm_SendChrGotoBuilding(c->netId, homeBld, -1, 0, 1, "Entlassen");
+        }
+        he_FreeEvent((int *)ev);
+        break;
     }
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p == 0) {
-        *(int *)(ev + 0x70) = -1;
-        return;
-    }
-    if (*(int *)(p + 0x16c) != 0) {
-        cm_BeginFieldBlock(p, *(int *)(p + 4));
-        cm_AddFieldValue(1, 1, 4, 0);
-        cm_SendFieldValues();
-        ((void (*)(int))gm_Opinion)(*(int *)(p + 0x16c));
-        cm_SendRelations(*(int *)(p + 4), *(int *)(p + 0x16c), -0x1e, 1);
-    }
-    ((void (*)(int, int))cm_SendCharClear)(0, 0);
-    cm_SendCharHalt(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
-    he_FreeEvent((int *)ev);
 }
 #define HE_PROMOTION_BIT 0x1000000  /* bit 24 of AICHAR.flags1cc: the promotion alloc handler 0x55dd70 sets it, the run handler 0x55de30 clears it (cm_SendSetField(id, 0x1cc, 4, bit, 0)); the meaning is a reasoned guess */
 
@@ -17579,7 +17601,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(40, (void *)he_AllocHarvest, (void *)he_RunHarvest) != 0)
         return 1;
     sv_RegisterActivity(40, 0, 1, 1279, 188);
-    if (he_SetEventHandlers(49, (void *)he_Unk563980, (void *)he_Unk55dbe0) != 0)
+    if (he_SetEventHandlers(49, (void *)he_Unk563980, (void *)he_RunDismissal) != 0)
         return 1;
     if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_Unk55de30) != 0)
         return 1;
