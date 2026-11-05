@@ -1169,7 +1169,7 @@ typedef struct HETAVERNOBJ {            /* the tavern's object 0x1b5 (he_AllocTa
     char hired;                         /* 0x22, nonzero while a helper is hired */
 } HETAVERNOBJ;
 typedef struct HEAHMRESEARCH {          /* the alchemist research event 0x96's words over AIJOB's union (he_AllocResearchRecipe
-                                           and its run handler 0x56d730); ahm.h's AHMRESEARCH names the same words from ahm.c */
+                                           and its run handler he_RunResearchRecipe); ahm.h's AHMRESEARCH names the same words from ahm.c */
     char pad00[0xac];
     int chr;                            /* 0xac, the id of the character researching (gm_FindChar) */
     int id;                             /* 0xb0, the recipe / share researched (ahm_FindRecipe) */
@@ -21969,7 +21969,7 @@ int he_RegisterEventTypes03(void)
 void he_AllocRecipeResearch();
 void he_RunRecipeResearch();
 void he_AllocResearchRecipe();
-void he_Unk56d730();
+void he_RunResearchRecipe();
 void he_AllocTrainShare();
 void he_Unk56daa0();
 void he_Unk56dd20();
@@ -21979,7 +21979,7 @@ void he_Unk56de10();
 int he_RegisterEventTypes95(void)
 {
     if (he_SetEventHandlers(0x95, (void *)he_AllocRecipeResearch, (void *)he_RunRecipeResearch) == 0) {
-        if (he_SetEventHandlers(0x96, (void *)he_AllocResearchRecipe, (void *)he_Unk56d730) == 0) {
+        if (he_SetEventHandlers(0x96, (void *)he_AllocResearchRecipe, (void *)he_RunResearchRecipe) == 0) {
             if (he_SetEventHandlers(0x97, (void *)he_AllocTrainShare, (void *)he_Unk56daa0) == 0) {
                 if (he_SetEventHandlers(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
                     sv_RegisterActivity(0x95, "erforschen", 1, 0x500, -1);
@@ -22123,55 +22123,64 @@ done:
 }
 
 struct AHMSLOT * ahm_FindSlot();
+AHMSLOT *ahm_SlotOf(char *c, int id);
 void ai_DomizilMessageResearchKind(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetPlaceValue(char *c, int id, float v);
 
-/* 0x56d730, the run handler of the research event 0x96: like 0x56d3d0 but the record is 0x4eabe0 (the +0xb0 kind) and the clock is +0xc0; state 1 hands the result over (0x5a9bc0, 0x4ecc30 with +0xb4 + the record's +4), releases the building group and frees; state 0 takes the elapsed time off +0xb8 and retries after 5 until it is used up */
-void he_Unk56d730(int ev)
+/* 0x56d730, the run handler of the alchemist research event 0x96 (alloc he_AllocResearchRecipe): without its character,
+   the character's alchemist record or the record's place of the recipe (ahm_SlotOf) the event ends (stage -2, freed);
+   outside the day hours of the season it waits an hour, the clock restarted; while the laboratory (room 0x24b of the
+   character's building) is busy it waits 15 minutes; stage 1 finishes: the Domizil message about the research to the
+   event's character, the place's value raised by the progress (ahm_SendSetPlaceValue), the alchemist out of the
+   laboratory group, the event freed; stage 0 takes the minutes worked off the amount and goes on in 5 minutes, at
+   none left stage 1 */
+void he_RunResearchRecipe(int ev)
 {
-    char *c, *p;
-    int d, st, h, v;
+    AIJOB *e = (AIJOB *)ev;
+    HEAHMRESEARCH *r = (HEAHMRESEARCH *)ev;
+    AICHAR *c;
+    AICHAR *to;
+    AHMSLOT *p;
+    char *o;
+    int season;
 
-    d = gm_ClockSeason((void *)(unsigned)&ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     p = 0;
-    c = (char *)gm_FindChar(*(int *)(ev + 0xac));
-    if (c == 0 || ahm_HasRecord(c) == 0 || (p = (char *)ahm_FindSlot(c, *(int *)(ev + 0xb0))) == 0)
-        *(int *)(ev + 0x70) = -2;
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1) {
-        he_FreeEvent((int *)ev);
+    c = (AICHAR *)gm_FindChar(r->chr);
+    if (c == 0 || ahm_HasRecord((char *)c) == 0 || (p = ahm_SlotOf((char *)c, r->id)) == 0)
+        e->stage = -2;
+    if (e->stage != -2) {
+        if (!((float)ai_Time.hour >= gm_DayEndHours[season] || (float)ai_Time.hour < gm_DayStartHours[season])) {
+            if (he_RoomBusy(c->bld, 0x24b) != 0) {
+                r->clock = ai_Time;
+                gm_AddTime(&e->end, 0, 0xf, 0);
+                return;
+            }
+            if (e->stage == 1) {
+                o = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b);
+                to = (AICHAR *)gm_FindChar(e->netId);
+                if (to != 0)
+                    ai_DomizilMessageResearchKind((int)to, (int)c, (int)o, r->id);
+                ahm_SendSetPlaceValue((char *)c, r->id, r->progress + p->v);
+                sv_MoveToGroup(0, 0, c->id, 0);
+                he_FreeEvent((int *)ev);
+                return;
+            }
+            if (e->stage == 0) {
+                r->amount -= gm_MinutesBetween(&r->clock, &ai_Time);
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 5, 0);
+                r->clock = ai_Time;
+                if (r->amount <= 0)
+                    e->stage = 1;
+            }
+            return;
+        }
+        r->clock = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
         return;
     }
-    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_Time.hour ||
-        (float)*(unsigned short *)(unsigned)&ai_Time.hour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
-        *(AITIME *)(ev + 0xc0) = ai_Time;
-        gm_AddTime(ev + 0x52, 1, 0, 0);
-        return;
-    }
-    if (he_RoomBusy(*(int *)(c + 0x16c), 0x24b) != 0) {
-        *(AITIME *)(ev + 0xc0) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0xf, 0);
-        return;
-    }
-    if (st == 1) {
-        v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b);
-        h = gm_FindChar(*(int *)(ev + 0xc));
-        if (h != 0)
-            ai_DomizilMessageResearchKind(h, c, v, *(int *)(ev + 0xb0));
-        ahm_SendSetPlaceValue(c, *(int *)(ev + 0xb0), *(float *)(ev + 0xb4) + *(float *)(p + 4));
-        sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (st == 0) {
-        v = gm_MinutesBetween((void *)(ev + 0xc0), (void *)(unsigned)&ai_Time);
-        *(int *)(ev + 0xb8) -= v;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(AITIME *)(ev + 0xc0) = ai_Time;
-        if (*(int *)(ev + 0xb8) < 1)
-            *(int *)(ev + 0x70) = 1;
-    }
+    he_FreeEvent((int *)ev);
 }
 
 float ahm_ShareProgress();

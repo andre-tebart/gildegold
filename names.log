@@ -2567,3 +2567,4 @@
 2026-11-05T23:50:25 0x0056cdd0 data he_Unk56cdd0 -> he_AllocMissionCheck by:main why:the run / alloc handlers of the event 0x4c (he_SetEventHandlers 0x4c): checks the character's running mission (ai_IsMissionFulfilled) and tells its owner (system message 8)
 2026-11-05T23:52:14 0x0056d3d0 data he_Unk56d3d0 -> he_RunRecipeResearch by:main why:the run / alloc handlers of the research event 0x95 (sv activity 'erforschen'): the alchemist researches a recipe (ahm_RandomRecipe, ahm_SendAddPlace)
 2026-11-05T23:52:14 0x0056d2d0 func he_Unk56d2d0 -> he_AllocRecipeResearch by:main why:the run / alloc handlers of the research event 0x95 (sv activity 'erforschen'): the alchemist researches a recipe (ahm_RandomRecipe, ahm_SendAddPlace)
+2026-11-05T23:53:50 0x0056d730 data he_Unk56d730 -> he_RunResearchRecipe by:main why:the run handler of the alchemist research event 0x96 (alloc he_AllocResearchRecipe): counts the research minutes down, then raises the recipe place's value
