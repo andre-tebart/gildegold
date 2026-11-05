@@ -7028,59 +7028,57 @@ int he_CreatePointsEffect(int o)
     v[2] = 0.0f;
     return d3t_CreateEmitterK(bld->object, "punkte_nm_2", 1, *color, v, 0x12c, 1, 0x42480000, 0x3f800000, 0x40000000, 0x3f000000, 0x3f000000);
 }
-/* 0x54fce0, a Ghidra miss (disassembled): the run handler of the effect event: state -2 creates the effect (0x54fc00 for the type word +0xc2 == 0x177, 0x54fc70 for 0x178, +0xb0 = its handle; the scene switch 0x4478e0 around it) and goes to state 0 (or ends it), state 0 waits for the due time +0xb4 then clears the flag at +0x24 of the handle (0x4225e0) and goes to 1, state 1 waits for the end flag (+0x20 bit 1) of the handle, and a free of the event kills the effect (0x455760) (ROUGH) */
+/* 0x54fce0, the run handler of the effect event 0x76: stage 0 creates the emitter on the building's scene object
+   (he_CreateSmokeEffect for the Domizil good 0x177, he_CreatePointsEffect for 0x178, in scene 0) and goes on to 1
+   (no emitter: -1); stage 1 waits for the end time end6c, then stops the emitter's spawning and goes to 2; stage
+   2 waits until the emitter has run out (flag 2) and ends; freed (-1 / -2) it deletes a valid emitter */
 
-void he_Unk54fce0(int ev)
+void he_RunEffectEvent(int ev)
 {
-    int st, o = 0, h, sc, r;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *bld;
+    int scene;
 
-    st = *(int *)(ev + 0x70);
-    switch (st) {
-    case -2:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-        if (o != 0 && *(int *)(o + 0x61) != 0) {
-            sc = U_I((unsigned)&d3_CurrentScene);
-            d3if_SelectScene(0, 1);
-            if (*(unsigned short *)(ev + 0xc2) == 0x177)
-                *(int *)(ev + 0xb0) = he_CreateSmokeEffect(o);
-            else if (*(unsigned short *)(ev + 0xc2) == 0x178)
-                *(int *)(ev + 0xb0) = he_CreatePointsEffect(o);
-            d3if_SelectScene(sc, 1);
-            *(int *)(ev + 0x70) = (*(int *)(ev + 0xb0) != 0) * 2 - 1;
-            return;
-        }
-        he_FreeEvent((int *)ev);
-        return;
+    switch (e->stage) {
     case 0:
-        r = gm_CompareTime((unsigned)&ai_Time, ev + 0xb4);
-        h = *(int *)(ev + 0xb0);
-        if (r == 1) {
-            if (h != 0 && mem_IsValid(h) != 0)
-                *(int *)(h + 0x24) = 0;
-            *(int *)(ev + 0x70) = 2;
+        gm_FindById(&bld, 0, 0, e->bldId);
+        if (bld == 0 || bld->object == 0) {
+            he_FreeEvent((int *)ev);
             return;
         }
-        if (h == 0)
-            *(int *)(ev + 0x70) = 0;
+        scene = d3_CurrentScene;
+        d3if_SelectScene(0, 1);
+        if (e->effectGood == 0x177)
+            e->effectObj = he_CreateSmokeEffect((int)bld);
+        else if (e->effectGood == 0x178)
+            e->effectObj = he_CreatePointsEffect((int)bld);
+        d3if_SelectScene(scene, 1);
+        e->stage = (e->effectObj != 0) * 2 - 1;
         return;
     case 1:
-        h = *(int *)(ev + 0xb0);
-        if (h != 0 && (*(unsigned char *)(h + 0x20) & 2) == 0)
+        if (gm_CompareTime(&ai_Time, &e->end6c) == 1) {
+            if (e->effectObj != 0 && mem_IsValid(e->effectObj) != 0)
+                ((D3PARTSYS *)e->effectObj)->spawnCount = 0;
+            e->stage = 2;
             return;
-        *(int *)(ev + 0x70) = -1;
+        }
+        if (e->effectObj == 0)
+            e->stage = 0;
         return;
     case 2:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-        h = *(int *)(ev + 0xb0);
-        if (h != 0 && mem_IsValid(h) != 0) {
-            sc = U_I((unsigned)&d3_CurrentScene);
+        if (e->effectObj == 0 || (((D3PARTSYS *)e->effectObj)->flags & 2) != 0)
+            e->stage = -1;
+        return;
+    case -2:
+    case -1:
+        gm_FindById(&bld, 0, 0, e->bldId);
+        if (e->effectObj != 0 && mem_IsValid(e->effectObj) != 0) {
+            scene = d3_CurrentScene;
             d3if_SelectScene(0, 1);
-            par_Delete(*(int *)(ev + 0xb0));
-            d3if_SelectScene(sc, 1);
+            par_Delete(e->effectObj);
+            d3if_SelectScene(scene, 1);
         }
         he_FreeEvent((int *)ev);
-        return;
-    default:
         return;
     }
 }
@@ -10241,7 +10239,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x74, (void *)he_StartDarkCorner, (void *)he_RunDarkCorner) != 0)
         return 1;
-    if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_Unk54fce0) != 0)
+    if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_RunEffectEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_Unk54ff20) != 0)
         return 1;
