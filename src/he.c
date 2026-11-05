@@ -539,6 +539,15 @@ typedef struct HETHEFT {                /* the theft event 27's words over AIJOB
     char padb4[4];
     int rounds;                         /* 0xb8, 0 at the start (the run handler acts from 2 on) */
 } HETHEFT;
+typedef struct HEREPAIR {               /* the repair event 28's words over AIJOB's union (he_AllocRepair / he_Unk55b530):
+                                           the run handler raises the building's state (gm_ChangeBuildingState) by the
+                                           minutes passed since AIJOB.clock60 */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the id of the building repaired */
+    int points;                         /* 0xb0, the state points still to repair (the run handler counts them down) */
+    char padb4[4];
+    AITIME until;                       /* 0xb8, the planned end: 10 minutes per point, less for a higher ranked character */
+} HEREPAIR;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -14050,34 +14059,48 @@ void gm_ChangeBuildingState(unsigned char *b, int d);
 void ai_Unk4c54e0(int a);
 void cm_SendBuildingDestroyed(int a);
 
-/* 0x55b3e0, the allocation handler of a building event (ROUGH): the building +0xac (none: free) is the event place (+0x10), its figure gets the message 0x5a / 2 / 4, both clocks are now, the due clock + 0xa units, and the end clock +0xb8 = now + (the owner rank factor 0x5eb7b8 / 0x5ee020 / 0x5eb828 / 1.0 by the rank byte +0xd (>= 9 / 8 / 7) * +0xb0 * 0x5eb990) units */
-void he_Unk55b3e0(int ev)
+/* 0x55b3e0, the allocation handler of the repair event 28 (HEREPAIR; run handler he_Unk55b530): without the
+   building the event is freed; else it is the event's place, the building's field 0x5a gets the mark 4
+   (cm_SendSetField), the clocks start now, the event is due in 10 minutes, and the planned end is 10 minutes per
+   point from then, times 0.4 / 0.6 / 0.8 for an event character of the rank 9 and up / 8 / 7
+   @deep read whole against 0x55b3e0..0x55b530 and typed (HEREPAIR over AIJOB): the place, the 0x5a mark 4,
+   clock60 / end / start = now in the original's order, due in 10 minutes, until = end + rank factor 0.4 /
+   0.6 / 0.8 / 1.0 (b00d >= 9 / 8 / 7) * points * 10.0 minutes; refs_differ 0, every constant equal. Left:
+   the factor's FPU allocation (- fild [edi+0xb0] / fmul st,st(1) / fstp st(0) after the call; + fimul
+   [edi+0xb0]: ours keeps the joined factor on the stack) and the rank load's address fold (- mov
+   al,[eax*4+ai_Chars+0xd]; + lea eax,[eax*4+ai_Chars] / mov al,[eax+0xd]). Tried: a nested ternary, the
+   if-chain into a float, a double factor (worse: qword constants, reverted), points * f order, an AICHAR
+   pointer for the rank: no change. Open: 1.0f where the original's field is ai_FloatOne (VC6's pooled
+   1.0f, kept as the literal) */
+void he_AllocRepair(AIJOB *e)
 {
-    int b, rank;
+    HEREPAIR *r = (HEREPAIR *)e;
+    AIBLD *b;
+    unsigned char rank;
     float f;
 
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+    b = (AIBLD *)gm_BuildQuery(1, 1, r->bld);
     if (b == 0) {
-        he_FreeEvent((int *)ev);
+        he_FreeEvent((int *)e);
         return;
     }
-    *(int *)(ev + 0x10) = *(int *)(b + 1);
-    cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 4, 0);
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0xa, 0);
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0xb8) = *(AITIME *)(ev + 0x52);
-    rank = *(unsigned char *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c + 0xd);
+    e->from = b->id;
+    cm_SendSetField(b->id, 0x5a, 2, 4, 0);
+    e->clock60 = ai_Time;
+    e->end = ai_Time;
+    e->start = ai_Time;
+    gm_AddTime(&e->end, 0, 10, 0);
+    r->until = e->end;
+    rank = ai_CharsT[e->chr].b00d;
     if (rank >= 9)
-        f = (0.400000006f);
+        f = 0.4f;
     else if (rank == 8)
-        f = *(float *)(unsigned)&full_rdata_5ee020;
+        f = 0.6f;
     else if (rank == 7)
-        f = (0.800000012f);
+        f = 0.8f;
     else
         f = 1.0f;
-    gm_AddTime(ev + 0xb8, 0, (int)(f * *(int *)(ev + 0xb0) * *(double *)(unsigned)&ai_Unk5eb990), 0);
+    gm_AddTime(&r->until, 0, (int)(f * r->points * 10.0), 0);
 }
 /* 0x55b530, the run handler of a building event (ROUGH): states -2 / -1 free; the building +0xac is looked up (none: free), the minutes since the clock +0x60 (0x4fe280) scale a value (+0xb0 .. 0x50cad0), the news 0x17cb ("_NACHRICHTEN_HS_68") goes to the owner (0x53dee0) and the event is posted 0xa later */
 
@@ -16521,7 +16544,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(27, (void *)he_AllocTheft, (void *)he_RunTheft) != 0)
         return 1;
-    if (he_SetEventHandlers(28, (void *)he_Unk55b3e0, (void *)he_Unk55b530) != 0)
+    if (he_SetEventHandlers(28, (void *)he_AllocRepair, (void *)he_Unk55b530) != 0)
         return 1;
     if (he_SetEventHandlers(30, (void *)he_Unk55b720, (void *)he_Unk55b830) != 0)
         return 1;
