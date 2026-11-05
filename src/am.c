@@ -1820,9 +1820,9 @@ int ai_DecideInheritanceTaxRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491cb0, decision 14 */
+/* 0x491cb0, the callback of law record 14 (AIDEC.fn, office 0x10 no 1, a rate 0xa .. 0x19): the record's current value is the bank's rate (ai_CalcMeisterBank, ai.c 0x4836a0, steers a bank's v65 toward the record's +0x18; ai_DecideTakeCredit takes cur - 2 into its offer rating); from the 4th year the rate is pushed up to max - 0 .. 5 when it is below 55% of the range for the title group 9, and down to min + 0 .. 5 when it is above 45% for the other groups */
 
-int ai_Unk491cb0(AIPER *p, int a, int *out)
+int ai_DecideBankRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     int t, k;

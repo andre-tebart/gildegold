@@ -121,7 +121,7 @@ int ai_DecideGuildTaxRate(AIPER *p, int a, int *out);                    /* 0x49
 int ai_DecideChurchTaxRate(AIPER *p, int a, int *out);                    /* 0x491a40, decision 11 */
 int ai_DecideTradeTaxRate(AIPER *p, int a, int *out);                    /* 0x491b20, decision 12 */
 int ai_DecideInheritanceTaxRate(AIPER *p, int a, int *out);                    /* 0x491bf0, decision 13 */
-int ai_Unk491cb0(AIPER *p, int a, int *out);                    /* 0x491cb0, decision 14 */
+int ai_DecideBankRate(AIPER *p, int a, int *out);                    /* 0x491cb0, decision 14 */
 int ai_Unk491d80(AIPER *p, int a, int *out);                    /* 0x491d80, decision 15 */
 int ai_Unk491e80(AIPER *p, int a, int *out);                    /* 0x491e80, decision 16 */
 int ai_Unk491fb0(AIPER *p, int a, int *out);                    /* 0x491fb0, decision 17 */
