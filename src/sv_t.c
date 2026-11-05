@@ -2355,7 +2355,7 @@ int ai_TutorialStepClicked(void)
         return 1;
     return 0;
 }
-/* 0x578120, attaches the tutorial's event record (host, the 0x87 event's record he_Unk552b90 runs) and resets the
+/* 0x578120, attaches the tutorial's event record (host, the tutorial intro event 0x87's record) and resets the
    intro window's control object (continueObj) to -1 (43 B): -4 without the gate 0x6f265c, else 0 */
 
 int ai_TutorialSetHost(char *per)

@@ -10665,14 +10665,15 @@ void ai_TutorialClearHost(void);
 void sv_PopTo(int v);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 
-/* 0x552b90, the run handler of an event driven by 0x578120: when it returns nonzero the record is freed, else the state is 0 */
-void he_Unk552b90(int ev)
+/* 0x552b90, the alloc handler of the tutorial intro event 0x87: makes the record the tutorial's host (0x578120);
+   when the tutorial is not running the record is freed, else it starts in stage 0 */
+void he_AllocTutorialIntro(AIJOB *ev)
 {
-    if (ai_TutorialSetHost(ev) != 0) {
+    if (ai_TutorialSetHost((char *)ev) != 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    *(int *)(ev + 0x70) = 0;
+    ev->stage = 0;
 }
 /* 0x552bc0, the run handler of the end-of-game style event (only with 0x6f25ac set; ROUGH): state 0 -> 1 or 2 by 0x577740, state 1 -> 2 when 0x575860 says so, state 2 shuts down (0x577820, 0x578150), frees the record, sets the flag 0x6f259c and continues in 0x52fb50 (0x53bb20) */
 
@@ -10978,7 +10979,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x86, (void *)he_StartApplicants, (void *)he_RunApplicants) != 0)
         return 1;
-    if (he_SetEventHandlers(0x87, (void *)he_Unk552b90, (void *)he_Unk552bc0) != 0)
+    if (he_SetEventHandlers(0x87, (void *)he_AllocTutorialIntro, (void *)he_Unk552bc0) != 0)
         return 1;
     return he_SetEventHandlers(0xa5, (void *)he_StartOfficeAward, (void *)he_RunOfficeAward) != 0;
 }
