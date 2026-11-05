@@ -1992,9 +1992,9 @@ int ai_DecideThreatenGuiltWeights(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4922e0, decision 20 */
+/* 0x4922e0, the callback of law record 20 (AIDEC.fn, office 0x13 no 2, a boolean law): no reader of its cur is in the exe outside the table; the normalized skill 4 against its rating (always x0.8) against 1 raises the law (cur 0 -> 1) when mood 11 outweighs mood 9, and lowers it (cur 1 -> 0) when mood 10 outweighs mood 9 */
 
-int ai_Unk4922e0(AIPER *p, int a, int *out)
+int ai_DecideLaw20(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
