@@ -420,11 +420,11 @@ typedef struct HEDISMISS {              /* the dismissal event 0x31's word over 
     char pad00[0xac];
     int worker;                         /* 0xac, the netId of the worker dismissed (gm_FindChar) */
 } HEDISMISS;
-typedef struct HEEV3C {                 /* the kidnap event 0x3c's words over AIJOB's union (he_AllocEvent3c / 0x560900) */
+typedef struct HEEV3C {                 /* the kidnap event 0x3c's words over AIJOB's union (he_AllocEvent3c / he_RunKidnap) */
     char pad00[0xac];
-    int chr;                            /* 0xac, the netId of the character (gm_FindChar) */
-    char padb0[4];
-    int bldId;                          /* 0xb4, the thieves' guild's id (gm_BuildQuery(1, 1, id)) */
+    int chr;                            /* 0xac, the netId of the victim (gm_FindChar) */
+    int target;                         /* 0xb0, the id of the building the gang goes to for the victim */
+    int guild;                          /* 0xb4, the thieves' guild's id (gm_BuildQuery(1, 1, id)) */
 } HEEV3C;
 typedef struct HEEV39 {                 /* the event 0x39's words over AIJOB's union (he_AllocEvent39_3e / he_RunEvent39) */
     char pad00[0xac];
@@ -16725,7 +16725,7 @@ void he_RunMarketSupervisor(AIJOB *ev)
     ev->stage = 0;
 }
 /* 0x560820, the alloc handler of the kidnap event 0x3c (HEEV3C; ai_CalcMeisterDiebe posts it for a thieves' guild,
-   its run handler 0x560900): the record is cancelled (stage -1) when another event 0x3c (he_FindEvent / he_NextEvent)
+   its run handler he_RunKidnap): the record is cancelled (stage -1) when another event 0x3c (he_FindEvent / he_NextEvent)
    has the same building or the same character, when the guild (gm_BuildQuery) already holds a hostage (AIBLD.hostage
    not -1), or when the character is held (AICHAR.heldRounds); it is due in a second */
 void he_AllocEvent3c(AIJOB *ev)
@@ -16736,10 +16736,10 @@ void he_AllocEvent3c(AIJOB *ev)
     AICHAR *c;
 
     for (e = (HEEV3C *)he_FindEvent(1, 0, 0x3c); e != 0; e = (HEEV3C *)he_NextEvent()) {
-        if (e != x && (e->bldId == x->bldId || e->chr == x->chr))
+        if (e != x && (e->guild == x->guild || e->chr == x->chr))
             break;
     }
-    b = (AIBLD *)gm_BuildQuery(1, 1, x->bldId);
+    b = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
     if (e != 0 || (b != 0 && b->hostage != -1))
         ev->stage = -1;
     c = (AICHAR *)gm_FindChar(x->chr);
@@ -16748,32 +16748,200 @@ void he_AllocEvent3c(AIJOB *ev)
     ev->end = ai_Time;
     gm_AddTime(&ev->end, 0, 0, 1);
 }
-/* 0x560900, the run handler of the prison visit / arrest event (dummy "dummy_EINGANG_ZELLE", the news "_NACHRICHTEN_HS_71" / "_26" / "_72" / "_73"; ROUGH skeleton, 2096 bytes): the guard and the prisoner (+0xac, group 0x524260, 0x4c5230 / 0x4c52e0 send them, 0x524770 arrival), the cell entrance and the sentence by a roll (util_RandomF, gm_BuildingSkill, 0x5ba6b0 skill), the news to the player (0x53dee0 / 0x53dda0) and the release; the end frees the record */
-
-void he_Unk560900(int ev)
+/* 0x560900, the run handler of the kidnap event 0x3c (HEEV3C, its alloc handler he_AllocEvent3c; ai_CalcMeisterDiebe
+   posts it for a thieves' guild): the gang is the up to 8 characters of AIJOB.ids (-1: none).
+   Stage 0 sends the gang (sv_MoveToGroup into the event, stopped) to the main room of the target building
+   ("Entführen"; no building or room: cancelled) and waits 30 minutes in stage 1; stage 1 waits (10 minutes more)
+   until every gang member with a model stands at the target's door, then stage 2 in a second. Stage 2 (no guild,
+   victim or master, or a held victim: cancelled) sends the gang back to the guild and rolls the kidnap: the guild's
+   skill 15, the gang's size and mean skill 3 against the victim's skill 3; a victim with the item 0x17c escapes (the
+   master is told 0xff4). A kidnap into a guild without a hostage moves the victim into its cell ("dummy_EINGANG_ZELLE",
+   object 0x65), tells the master (0x19bc, quick jump to the cell), the victim (0x19be) and, for a victim of the kinds
+   6 / 5, every other player (0x19c0), makes it the guild's hostage (field 0x65), holds the victim (message 0x5b, 5)
+   and sends the master the ransom message 0x3d; a failed one tells the master 0x19bd and the victim 0x19bf and costs
+   each gang member half its life value plus a random share. The gang is released (sv_MoveToGroup) and the record
+   freed. Stages -2 / -1 send the gang back to the target building and free the record
+   @deep Reconstructed whole from the old stub against the original 0x560900..0x561128 (672 ins): the five
+   stages (0 send the gang of AIJOB.ids to the target building's main room 'Entführen', 1 wait for them at
+   the door, 2 the kidnap roll by the guild's skill 15, the gang's size and mean skill 3 against the
+   victim's skill 3, the item 0x17c escape, the cell move 'dummy_EINGANG_ZELLE', the news 0x19bc / 0x19be /
+   0x19c0 / 0x19bd / 0x19bf, the hostage field delta, message 0x5b and the ransom message 0x3d, the gang's
+   health loss, the release; -2 / -1 send the gang back), every call with its arguments, every constant
+   (0.01f, 1.0, 0.1f, 0.5f, 0.7, 0.5), text[0x200] (frame 0x310 equal), the message fields. Same calls,
+   switch tables equal, 665 vs 672 instructions, no ref / literal difference. Left: (1) the AIMSG fill at
+   0x560eac (35 lines): the same stores to m scheduled across the push of &m in another order, ours loading
+   b->id twice where the original keeps it in eax for fromId and arg[1] (tried: the fields in other orders,
+   a chained m.arg[1] = m.fromId = b->id and m.arg[1] = m.fromId, both worse: 111); (2) tail: ours shares
+   stage 2's cancel block (stage -1; return) with another, the original keeps it inline at +0x271 (7
+   instructions, returns 10 / 11); (3) fpu at 0x560c60, the operand order of the ratio product. (size: 7 of
+   the instruction difference are shared / inline tails) */
+void he_RunKidnap(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p, b, x, y;
+    HEEV3C *x = (HEEV3C *)ev;
+    AIBLD *b;
+    AIOBJ *room = 0;
+    AIOBJ *cell;
+    AICHAR *c, *victim, *master;
+    AIMSG m;
     char text[0x200];
+    int ok = 0;
+    int n = 0;
+    int k;
+    float sum, ratio;
 
-    if (st < 0) {
+    switch (ev->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
+        if (room == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1) {
+                sv_MoveToGroup(0, 0, ((AICHAR *)gm_FindChar(ev->ids[k]))->id, (char *)ev);
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], b->id, room->objId, 0, 1, "Entf\374hren");
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0x1e, 0);
+        ev->stage = 1;
+        return;
+    case 1:
+        b = (AIBLD *)gm_FindBuildingById(x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1) {
+                c = (AICHAR *)gm_FindChar(ev->ids[k]);
+                if (c->model != 0 && sv_IsAtDoor(c, b) == 0) {
+                    ev->end = ai_Time;
+                    gm_AddTime(&ev->end, 0, 10, 0);
+                    return;
+                }
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0, 1);
+        ev->stage = 2;
+        return;
+    case 2:
+        victim = (AICHAR *)gm_FindChar(x->chr);
+        master = (AICHAR *)gm_FindChar(ai_CharInts[ev->chr][0]);
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+        if (b == 0 || victim == 0 || master == 0 || victim->heldRounds != 0) {
+            ev->stage = -1;
+            return;
+        }
+        room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
+        sum = 0.0f;
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1) {
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], b->id, room->objId, 0, 0, "Entf\374hren");
+                n++;
+                sum += ((AICHAR *)gm_FindChar(ev->ids[k]))->skills[3];
+            }
+        }
+        ratio = (float)((gm_BuildingSkill((unsigned char *)b, 0xf, 1) * 0.01f + 1.0) * ((n * 0.1f + ai_FloatOne) * (sum / n))
+                / victim->skills[3]);
+        if (util_RandomF() + 0.5f < ratio)
+            ok = 1;
+        if (ai_InventoryHas(victim, 0x17c) != 0) {
+            if (master->kind == 6 || master->kind == 7) {
+                txt_Format(text, 0xff4);
+                he_ShowNews(master->netId, -1, text, 0, 0x5fa, 0);
+            }
+            ev->stage = -1;
+            return;
+        }
+        if (ok) {
+            if (b->hostage != -1) {
+                ev->stage = -1;
+                return;
+            }
+            cell = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x65);
+            if (victim->model != 0) {
+                cm_SendChrStop(victim->netId);
+                cm_RequestChrMoveToUniverse(victim->netId, b->id, cell->objId, "dummy_EINGANG_ZELLE");
+            }
+            if (master->kind == 6 || master->kind == 7) {
+                txt_Format(text, 0x19bc, 0x19c1, victim->id, victim->id, b);
+                he_MessageBoxQuickjump(master->netId, master->netId, text, 0, 0x5fa, b->id, cell->objId, 0, "_NACHRICHTEN_HS_71");
+            }
+            if (victim->kind == 6 || victim->kind == 7) {
+                txt_Format(text, 0x19be);
+                he_ShowNews(victim->netId, victim->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_26");
+            }
+            if (victim->kind == 6 || victim->kind == 5) {
+                for (k = 0; k < 768; k++) {
+                    if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].netId != victim->netId
+                        && ai_CharsT[k].netId != master->netId) {
+                        txt_Format(text, 0x19c0, victim->id);
+                        he_ShowNews(ai_CharsT[k].netId, -1, text, 0, 0x5ec, "_NACHRICHTEN_HS_73");
+                    }
+                }
+            }
+            cm_BeginFieldBlock(b, b->id);
+            cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x65, &victim->netId);
+            cm_SendFieldDeltas();
+            cm_SendMessage5b(victim->netId, 5, 0);
+            memset(&m, 0, sizeof(m));
+            m.type = 0x3d;
+            m.to = master->netId;
+            m.time = ai_Time;
+            m.fromId = b->id;
+            m.flags = 0x12;
+            m.arg[0] = victim->netId;
+            m.arg[1] = b->id;
+            cm_SendLongMessage((char *)&m);
+        } else {
+            if (master->kind == 6 || master->kind == 7) {
+                txt_Format(text, 0x19bd, victim->id, 0x19c1);
+                he_ShowNews(master->netId, master->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_72");
+            }
+            if (victim->kind == 6 || victim->kind == 7) {
+                txt_Format(text, 0x19bf, master->id);
+                he_ShowNews(victim->netId, victim->netId, text, 1, 0x5fa, 0);
+            }
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1) {
+                    c = (AICHAR *)gm_FindChar(ev->ids[k]);
+                    gm_AddHealth(c->id, (int)-((unsigned short)util_Random((int)c->f01c) * 0.7 + c->f01c * 0.5));
+                }
+            }
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0)
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+        }
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b != 0)
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                cm_SendChrStop(ev->ids[k]);
+                if (b != 0) {
+                    if (room != 0)
+                        cm_SendChrGotoBuilding(ev->ids[k], b->id, room->objId, 0, 0, "Entf\374hren");
+                    sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+                }
+            }
+        }
         he_FreeEvent((int *)ev);
         return;
     }
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (p == 0 || b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    gm_GetGebaeudeHauptraum(b);
-    cm_SendChrStop(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "dummy_EINGANG_ZELLE");
-    txt_Format(text, 0x1bba, b);
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_71", 0);
-    sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x561130, the allocation handler: the due clock and the clock +0xb4 are now (copy of the game clock twice) */
 
@@ -18357,7 +18525,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(59, (void *)he_AllocMarket, (void *)he_RunMarketSupervisor) != 0)
         return 1;
-    if (he_SetEventHandlers(60, (void *)he_AllocEvent3c, (void *)he_Unk560900) != 0)
+    if (he_SetEventHandlers(60, (void *)he_AllocEvent3c, (void *)he_RunKidnap) != 0)
         return 1;
     sv_RegisterActivity(60, 0, 0, 1284, -1);
     if (he_SetEventHandlers(61, (void *)he_Unk561130, (void *)he_Unk561190) != 0)
