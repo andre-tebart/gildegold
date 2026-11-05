@@ -1879,9 +1879,9 @@ int ai_DecideOfficePayRate(AIPER *p, int a, int *out)
     *out = max(min(n, d.max), d.min);
     return 1;
 }
-/* 0x491e80, decision 16 */
+/* 0x491e80, the callback of law record 16 (AIDEC.fn, office 0x0d no 1, a boolean law): the fallback of 0x496b10 takes its cur != 0 to evaluate an action with the character's guilt (ai_EvalGuiltWeights, gv_CulpritGuilt) instead of the mood weights; the growth of needs 6 / 7 (the larger, times 1.2 for the title groups 0xb / 0xc, 0.8 for 7, else 1.1) against 0.5 turns it on when mood 9 outweighs mood 11, and off when mood 11 outweighs mood 9 */
 
-int ai_Unk491e80(AIPER *p, int a, int *out)
+int ai_DecideGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float x, u, w;
