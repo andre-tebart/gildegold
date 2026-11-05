@@ -30,13 +30,7 @@ typedef struct HMTCAND {                /* a candidate of the election 0x4ad1c0 
     float score;
 } HMTCAND;
 
-typedef struct G11REC {                 /* 0x30 bytes, a record of the table at 0x5ed1e8 (51: 7 talents, 21 professions, 23 events) */
-    int kind;                           /* 0x00, 0 talent (id 1..4 = the skill at +0x80 + id), 1 profession (id 1..12), 2 historical event */
-    unsigned short id;                  /* 0x04 */
-    short pad06;
-    int textSet;                        /* 0x08, 0 / 1: selects the text block 0x1e2b or 0x1e35 (+n) */
-    char pad0c[0x24];                   /* 0x0c a text id, 0x0e the name string (e.g. "KAMPF_1", "PEST") */
-} G11REC;
+#include "hmt_types.h"
 extern const G11REC hmt_Records[51];                                                  /* 0x5ed1e8 */
 unsigned short hmt_RecordCount(void);                                               /* 0x4ac140 */
 unsigned short hmt_RandomRecord(short k);                                            /* 0x4ac150 */

@@ -54,6 +54,7 @@ struct D3SM;
 #include <stdlib.h>
 #include <d3d.h>
 #include "he.h"
+#include "hmt_types.h"
 #include "d3.h"
 #include "d3_quad.h"
 #include "d3.h"
@@ -424,6 +425,19 @@ typedef struct HESKILLUP {              /* the skill level-up event 0x6a's words
     int level;                          /* 0xb0, its new level: below 6 the news 0x16e6 + level, else the skill's master news */
     int variant;                        /* 0xb4, one of six texts per skill (random(6), its init) */
 } HESKILLUP;
+typedef struct HEBARD {                 /* the bard event's words over AIJOB's union (its init he_StartBard, run handler
+                                           he_RunBard) */
+    char pad00[0xac];
+    unsigned short rec;                 /* 0xac, first the number of hmt records (hmt_RecordCount), then the record
+                                           drawn from it (hmt_RandomRecord): the song's subject */
+    unsigned short textOff;             /* 0xae, its text offset (hmt_RandomTextOffset) */
+    char padb0[4];
+    int script;                         /* 0xb4, the id of the bard's script (barde_create.esc), -1: none */
+} HEBARD;
+typedef struct HEBARDSCRIPT {           /* the bard's script as he_RunBard marks it: 'DrBh' over the first bytes of its name */
+    unsigned int mark;                  /* 0x00 */
+} HEBARDSCRIPT;
+#define HE_BARD_MARK 0x68427244         /* 'DrBh' */
 typedef struct HEPLAGUE {               /* the plague event 0x59's words over AIJOB's union (he_BeginPlague, its run handler 0x54a020) */
     char pad00[0xac];
     int left;                           /* 0xac, counted down by the run handler at every infected target */
@@ -6077,7 +6091,7 @@ void he_RunSkillUp(int ev)
 }
 /* 0x54da20, a Ghidra miss: the init of the talent event: +0xac = the number of the talent (0x4ac140), +0xb4 = -1, the due clock now, posted (state 0) */
 
-void he_Unk54da20(int ev)
+void he_StartBard(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(unsigned short *)(ev + 0xac) = (unsigned short)hmt_RecordCount();
@@ -6086,98 +6100,103 @@ void he_Unk54da20(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
-/* 0x54da80, a Ghidra miss (disassembled; 960 B): the run handler of the talent teaching event (a 3D "DrBh" object: magic 0x68427244): state 0 draws the talent (0x4ac150 / 0x4ac170), the due clock 3 + random(4) ahead; state 1 shows the news 0x1e29 to every player figure; state 2 creates the object (0x4287b0 "0x626e8c" + 0x429ab0, the model of the talent record 0x4ac1e0) and waits (+0x56 >= 0x14 frees it with 0x429e90), clears the flag 0x20000 of the own player; state 3 clears the flag 0x20000 (+0x1c8) of everybody and ends (ROUGH) */
+/* 0x54da80, the run handler of the bard event: stage 0 draws the song's subject (an hmt record and its text) and
+   sets the due clock 3 + random(4) ahead at 10:00; stage 1 shows the news 0x1e29 to every player figure (kinds 6 /
+   7); stage 2 creates the bard (SpecialEvents\barde\barde_create.esc, marked 'DrBh', run with the record's text
+   set) and keeps it until 20:00, then stops it; it frees the gfx info once the own player has the flag 0x20000;
+   stage 3 clears the flag 0x20000 of everybody and ends the event a day later at 6:00 */
 
-void he_Unk54da80(int ev)
+void he_RunBard(int ev)
 {
     char text[0x200];
-    int st, rec, a, b, obj, tal;
+    AIJOB *e = (AIJOB *)ev;
+    HEBARD *b = (HEBARD *)ev;
+    int i;
+    EVTSCRIPT *sc;
+    struct G11REC *rec;
+    int scene;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
+    if (e->stage == -1 || e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    switch (st) {
+    e->exSlot = -1;
+    switch (e->stage) {
     case 0:
-        if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+        if ((e->opts & 4) != 0)
             return;
-        a = hmt_RandomRecord(*(unsigned short *)(ev + 0xac));
-        *(unsigned short *)(ev + 0xac) = (unsigned short)a;
-        *(unsigned short *)(ev + 0xae) = (unsigned short)hmt_RandomTextOffset(a);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + (unsigned short)util_Random(4) + 3;
-        *(short *)(ev + 0x56) = 0xa;
-        *(int *)(ev + 0x58) = 0;
+        b->rec = hmt_RandomRecord(b->rec);
+        b->textOff = hmt_RandomTextOffset(b->rec);
+        e->end = ai_Time;
+        e->end.year += (unsigned short)util_Random(4) + 3;
+        e->end.hour = 0xa;
+        e->end.min = 0;
         cm_SendExSetHE(1, ev);
-        *(int *)(ev + 0x84) = -1;
+        e->exSlot = -1;
         return;
     case 1:
-        if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+        if ((e->opts & 4) != 0)
             return;
         txt_Format(text, 0x1e29);
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-            if (*(unsigned short *)rec != 0xffff && (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7))
-                he_ShowNews(*(int *)(rec + 4), *(int *)(ev + 4), text, 0, 0x601, "");
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].id != 0xffff && (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7))
+                he_ShowNews(ai_CharsT[i].netId, e->id, text, 0, 0x601, ch_EmptyName);
         }
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        gm_AddTime(&e->end, 0, 5, 0);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        obj = (int)evt_FindById(*(int *)(ev + 0xb4));
-        if (*(unsigned short *)(ev + 0x56) >= 0x14) {
-            if (obj != 0 && *(int *)obj == 0x68427244)
-                evt_Stop((EVTSCRIPT *)obj);
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            *(int *)(ev + 0x70) = 3;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        sc = evt_FindById(b->script);
+        if (e->end.hour < 0x14) {
+            if (sc == 0 || ((HEBARDSCRIPT *)sc)->mark != HE_BARD_MARK) {
+                b->script = -1;
+                rec = hmt_GetRecord(b->rec);
+                sprintf(text, "%i", rec->textSet);
+                scene = d3_CurrentScene;
+                d3if_SelectScene(0, 1);
+                sc = evt_Load("SpecialEvents\\barde\\barde_create.esc");
+                if (sc != 0) {
+                    ((HEBARDSCRIPT *)sc)->mark = HE_BARD_MARK;
+                    b->script = sc->id;
+                    evt_RunScriptArgs(sc, 1, rec->textSet);
+                    sc->group = 0;
+                }
+                d3if_SelectScene(scene, 1);
+            }
+            e->stage = 2;
+            if (e->gfx != 0 && (ai_CharsT[ai_PlayerId].flags1c8 & 0x20000) != 0) {
+                he_FreeGfxInfo((int *)e->gfx);
+                e->gfx = 0;
+            }
             return;
         }
-        if (obj == 0 || *(int *)obj != 0x68427244) {
-            tal = hmt_GetRecord(*(unsigned short *)(ev + 0xac));
-            *(int *)(ev + 0xb4) = -1;
-            sprintf(text, (char *)(unsigned)"%i", *(int *)(tal + 8));
-            b = U_I((unsigned)&d3_CurrentScene);
-            d3if_SelectScene(0, 1);
-            obj = evt_Load("DrB");
-            if (obj != 0) {
-                *(int *)(ev + 0xb4) = *(int *)(obj + 0x100);
-                *(int *)obj = 0x68427244;
-                evt_RunScriptArgs((EVTSCRIPT *)obj, 1, *(int *)(tal + 8));
-                *(int *)(obj + 0x104) = 0;
-            }
-            d3if_SelectScene(b, 1);
-        }
-        *(int *)(ev + 0x70) = 2;
-        if (*(int *)(ev + 0x88) != 0 && (U_I(((unsigned)&ai_Selected + 0x40) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c) & 0x20000) != 0) {
-            he_FreeGfxInfo(*(int *)(ev + 0x88));
-            *(int *)(ev + 0x88) = 0;
-        }
+        if (sc != 0 && ((HEBARDSCRIPT *)sc)->mark == HE_BARD_MARK)
+            evt_Stop(sc);
+        gm_AddTime(&e->end, 0, 5, 0);
+        e->stage = 3;
         return;
     case 3:
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-                if (*(unsigned short *)rec != 0xffff && (U_I(rec + 0x1c8) & 0x20000) != 0)
-                    cm_SendSetField(*(int *)(rec + 4), 0x1c8, 4, 0, 0x20000);
+        if ((e->opts & 2) != 0) {
+            for (i = 0; i < 768; i++) {
+                if (ai_CharsT[i].id != 0xffff && (ai_CharsT[i].flags1c8 & 0x20000) != 0)
+                    cm_SendSetField(ai_CharsT[i].netId, 0x1c8, 4, 0, 0x20000);
             }
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-        *(short *)(ev + 0x56) = 6;
-        *(int *)(ev + 0x58) = 0;
-        if (*(int *)(ev + 0x88) != 0) {
-            he_FreeGfxInfo(*(int *)(ev + 0x88));
-            *(int *)(ev + 0x88) = 0;
+        e->end = ai_Time;
+        e->end.year++;
+        e->end.hour = 6;
+        e->end.min = 0;
+        if (e->gfx != 0) {
+            he_FreeGfxInfo((int *)e->gfx);
+            e->gfx = 0;
         }
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0)
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
-        *(int *)(ev + 0x84) = -1;
-        return;
-    default:
+        if ((e->opts & 2) != 0)
+            e->exSlot = cm_SendExSetHE(0, ev);
+        e->exSlot = -1;
         return;
     }
 }
@@ -10009,7 +10028,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x6a, (void *)he_StartSkillUp, (void *)he_RunSkillUp) != 0)
         return 1;
-    if (he_SetEventHandlers(0x6b, (void *)he_Unk54da20, (void *)he_Unk54da80) != 0)
+    if (he_SetEventHandlers(0x6b, (void *)he_StartBard, (void *)he_RunBard) != 0)
         return 1;
     if (he_SetEventHandlers(0x6d, (void *)he_Unk54de60, (void *)he_Unk54dec0) != 0)
         return 1;
