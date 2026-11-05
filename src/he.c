@@ -2463,53 +2463,55 @@ void he_CharAccident(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, float value
     txt_Format(buf, 0x1bae, c->id, bld);
     he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x60a, bld->id, -1, 0, "_NACHRICHTEN_HS_61");
 }
-/* 0x5417d0, the other accident report (the news 0x1630 / 0x1631 / 0x1632, +p5 + 0x1626): p6 <= 0 the 0x1632 news plus the message 0x71, else like 0x5414a0 with the scene "Unfall" (ROUGH) */
+/* 0x5417d0, the illness of the character c at the workplace bld (the callers roll it: gm_CatchDisease's disease
+   and value, the plague): for value <= 0 a playing boss (kind 6 / 7) gets the news 0x1632 and the death message
+   0x71 is posted (to the event ev's character, else the boss); for a value below half its base health with a place
+   to carry it to (he_FindFigurePlace) it is carried there ("Unfall") and the boss gets the news 0x1631, else
+   0x1630; both name the disease (text 0x1626 + disease) */
 
-void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6)
+void he_CharIllness(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, int disease, float value)
 {
-    char ev[0xf8];
-    char buf[2048];
-    int l900, l8fc;
-    int u1, news;
+    AIMSG m;
+    char buf[0x800];
+    int place, obj;
 
-    if (p6 <= 0.0f) {
-        if (*(char *)(p3 + 2) == 6 || *(char *)(p3 + 2) == 7) {
-            txt_Format(buf, 0x1632, *p2, p4);
-            he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x5ed, *(int *)(p4 + 1), -1, 0, 0);
+    if (value <= 0.0f) {
+        if (boss->kind == 6 || boss->kind == 7) {
+            txt_Format(buf, 0x1632, c->id, bld);
+            he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x5ed, bld->id, -1, 0, 0);
         }
-        memset(ev, 0, 0xf8);
-        HM_B(ev, 4) = 0x71;
-        if (p1 == 0)
-            HM_I(ev, 8) = *(int *)(p3 + 4);
+        memset(&m, 0, sizeof(m));
+        m.type = 0x71;
+        if (ev != 0)
+            m.to = ai_CharInts[ev->chr][0];
         else
-            HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(p1 + 8) * 0x21c);
-        HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-        HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-        HM_I(ev, 0x58) = *(int *)(p2 + 2);
-        HM_I(ev, 0xc) = -1;
-        *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        HM_B(ev, 0x36) = 2;
-        cm_SendLongMessage(ev);
+            m.to = boss->netId;
+        m.time = ai_Time;
+        m.fromId = -1;
+        m.flags = 2;
+        m.arg[0] = c->netId;
+        cm_SendLongMessage((char *)&m);
         return;
     }
-    if (p6 >= gm_CharacterBaseHealth(p2) * 0.5 || ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) == 0 || *(int *)(p2 + 0xc2) == 0) {
-        if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
+    if (gm_CharacterBaseHealth(c) * 0.5f > value
+        && ((int (*)(AICHAR *, int *, int *, int))he_FindFigurePlace)(c, &place, &obj, 0) != 0 && c->model != 0) {
+        sv_MoveToGroup(0, 0, c->id, 0);
+        if (c->model->scriptId != -1)
+            evt_Stop(evt_FindById(c->model->scriptId));
+        if (obj == -1)
+            cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Unfall");
+        else
+            cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Unfall");
+        if (boss->kind != 6 && boss->kind != 7)
             return;
-        news = 0x1630;
-    } else {
-        sv_MoveToGroup(0, 0, *p2, 0);
-        if (*(int *)(*(int *)(p2 + 0xc2) + 0x28) != -1) {
-            u1 = (int)evt_FindById(*(int *)(*(int *)(p2 + 0xc2) + 0x28));
-            evt_Stop((EVTSCRIPT *)u1);
-        }
-        cm_SendChrGotoBuilding(*(int *)(p2 + 2), l900, l8fc, 0, l8fc == -1, "Unfall");
-        if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
-            return;
-        news = 0x1631;
+        txt_Format(buf, 0x1631, c->id, bld, disease + 0x1626);
+        he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x5ed, bld->id, -1, 0, 0);
+        return;
     }
-    txt_Format(buf, news, *p2, p4, p5 + 0x1626);
-    he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x5ed, *(int *)(p4 + 1), -1, 0, 0);
+    if (boss->kind != 6 && boss->kind != 7)
+        return;
+    txt_Format(buf, 0x1630, c->id, bld, disease + 0x1626);
+    he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x5ed, bld->id, -1, 0, 0);
 }
 /* 0x541a50, the run handler of the event types 0x29 / 0x2f / 0x25: sets the event's end clock (AIJOB.end) to
    ai_Time, so it is due at once */
@@ -4292,7 +4294,7 @@ void he_Unk54a020(int ev)
                     ai_Unk5a9240K(0, o);
                 for (j = 0; j < m; j++)
                     if (strength[j] > 0.0f)
-                        he_Unk5417d0(ev, (unsigned short *)((unsigned)&ai_Chars + ids[j] * 0x21c), 0, o, 1, strength[j]);
+                        he_CharIllness((AIJOB *)ev, (AICHAR *)((unsigned)&ai_Chars + ids[j] * 0x21c), 0, (AIBLD *)o, 1, strength[j]);
             }
         }
         if (*(int *)(ev + 0xac) > 0) {
@@ -5873,7 +5875,7 @@ void he_Unk54ebd0(int ev)
                 if (gm_CatchDisease(rec, &k1, &k2) != 0) {
                     boss = *(int *)(rec + 0x16c);
                     if (boss != 0 && *(unsigned short *)(boss + 0x27) != 0xffff && (unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c != 0) {
-                        he_Unk5417d0(ev, (unsigned short *)((unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c), boss, rec, k1, (float)k2);
+                        he_CharIllness((AIJOB *)ev, (AICHAR *)((unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c), (AICHAR *)boss, (AIBLD *)rec, k1, (float)k2);
                     } else if (gm_CharacterHealth(rec) <= thr && (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7)) {
                         txt_Format(text, 0x163c, k1 + 0x1632);
                         he_ShowNews(*(int *)(rec + 4), -1, text, 0, 0x5f7, "");
@@ -17213,7 +17215,7 @@ void he_Unk572310(int a, int b, int c, unsigned int d)
             v = he_Unk5720f0((unsigned short *)ch, (1.0f - dist / lim) * 0.5f + 0.25f, c, &f);
             if (v != 0) {
                 if (mode == 3)
-                    he_Unk5417d0(0, ch, bldrec, rec, v, f);
+                    he_CharIllness(0, (AICHAR *)ch, (AICHAR *)bldrec, (AIBLD *)rec, v, f);
                 else if (mode == 1 && (HM_B(ch, 2) == 6 || HM_B(ch, 2) == 7)) {
                     txt_Format(text, 0x163c, v + 0x1632);
                     he_ShowNews(HM_I(ch, 4), -1, text, 0, 0x5f7, (char *)(unsigned)&ch_EmptyName);
