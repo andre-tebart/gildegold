@@ -4430,20 +4430,20 @@ exe	0x005b9f30	ai_GelageWindow	unk_58bbd0	draft	draft
 exe	0x005ba1c0	ai_Unk5ba1c0	unk_58bbd0	draft	draft		
 exe	0x005ba290	ai_Unk5ba290	unk_58bbd0	draft	draft		
 exe	0x005ba600	ai_CloseChildWindow	unk_58bbd0	byte	readable		
-exe	0x005ba620	ai_FindUsableGood	unk_58bbd0	byte	draft		
-exe	0x005ba660	ai_Unk5ba660	unk_58bbd0	byte	draft		
-exe	0x005ba6b0	ai_InventoryHas	unk_58bbd0	byte	draft		
+exe	0x005ba620	ai_FindUsableGood	unk_58bbd0	byte	readable		
+exe	0x005ba660	ai_FindUsableGoodIndex	unk_58bbd0	byte	readable		
+exe	0x005ba6b0	ai_InventoryHas	unk_58bbd0	byte	readable		
 exe	0x005ba700	ai_Unk5ba700	unk_58bbd0	draft	draft		
 exe	0x005ba750	ai_Unk5ba750	unk_58bbd0	draft	draft		
 exe	0x005ba980	ai_Unk5ba980	unk_58bbd0	draft	draft		
 exe	0x005bac10	ai_InventoryPanel	unk_58bbd0	draft	draft		
 exe	0x005bae10	ai_EquipRowsInit	unk_58bbd0	draft	readable	deep	
 exe	0x005bae50	ai_Unk5bae50	unk_58bbd0	draft	draft		
-exe	0x005bb2d0	ai_GoodFitsBuilding	unk_58bbd0	byte	draft		
+exe	0x005bb2d0	ai_GoodFitsBuilding	unk_58bbd0	byte	readable		
 exe	0x005bb350	ai_EquipWindow	unk_58bbd0	draft	draft		
 exe	0x005bb950	ai_Unk5bb950	unk_58bbd0	draft	draft		
 exe	0x005bba00	ai_TrainingWindow	unk_58bbd0	draft	draft		
-exe	0x005bc0f0	ai_FreePicture	unk_58bbd0	byte	draft		
+exe	0x005bc0f0	ai_FreePicture	unk_58bbd0	byte	readable		
 exe	0x005bc110	ai_Unk5bc110	unk_58bbd0	draft	draft		
 exe	0x005bc420	ai_Unk5bc420	unk_58bbd0	draft	draft		
 exe	0x005bc6d0	ai_Unk5bc6d0	unk_58bbd0	draft	draft		
@@ -4462,7 +4462,7 @@ exe	0x005bdb60	ai_Unk5bdb60	unk_58bbd0	draft	draft
 exe	0x005be1d0	ai_AmountRowStatus	unk_58bbd0	draft	draft		
 exe	0x005be3b0	ai_AmountRow	unk_58bbd0	draft	draft		
 exe	0x005be720	ai_DrawAmountRow	unk_58bbd0	draft	draft		
-exe	0x005bea00	ai_SpecialAmountList	unk_58bbd0	shape	draft		
+exe	0x005bea00	ai_SpecialAmountList	unk_58bbd0	shape	readable		
 exe	0x005bea50	ai_Unk5bea50	unk_58bbd0	draft	draft		
 exe	0x005bf0d0	ai_Unk5bf0d0	unk_58bbd0	draft	draft		
 exe	0x005bf300	ai_Unk5bf300	unk_58bbd0	draft	draft		
@@ -4484,7 +4484,7 @@ exe	0x005c0650	ai_Unk5c0650	unk_58bbd0	draft	draft
 exe	0x005c0790	ai_Unk5c0790	unk_58bbd0	draft	draft		
 exe	0x005c08b0	ai_ClearAmountTabs	unk_58bbd0	byte	readable		
 exe	0x005c08d0	ai_Unk5c08d0	unk_58bbd0	draft	draft		
-exe	0x005c0970	ai_Unk5c0970	unk_58bbd0	draft	draft		
+exe	0x005c0970	ai_SpecialAmountWindow	unk_58bbd0	draft	draft		
 exe	0x005c1130	ai_AmountMenu	unk_58bbd0	draft	draft		
 exe	0x005c1500	ai_AmountListWindow	unk_58bbd0	draft	draft		
 exe	0x005c1a80	ai_AmountInfoWindow	unk_58bbd0	byte	readable		
@@ -4493,9 +4493,9 @@ exe	0x005c1b40	ai_AmountKindMenu	unk_58bbd0	draft	draft
 exe	0x005c1df0	ai_OpenAgendaMenu	unk_58bbd0	byte	readable		
 exe	0x005c1e10	ai_AgendaOfficeList	unk_58bbd0	draft	draft		
 exe	0x005c2160	ai_OpenLawBook	unk_58bbd0	draft	draft		
-exe	0x005c2410	ai_Unk5c2410	unk_58bbd0	byte	draft		
+exe	0x005c2410	ai_LawBookInfoWindow	unk_58bbd0	byte	readable		
 exe	0x005c2490	ai_Unk5c2490	unk_58bbd0	draft	draft		
-exe	0x005c26a0	ai_Unk5c26a0	unk_58bbd0	byte	draft		
+exe	0x005c26a0	ai_MasterLetterNoticeWindow	unk_58bbd0	byte	readable		
 exe	0x005c2730	ai_Unk5c2730	unk_58bbd0	byte	draft		
 exe	0x005c27b0	ai_Unk5c27b0	unk_58bbd0	draft	draft		
 exe	0x005c2a10	ai_Unk5c2a10	unk_58bbd0	draft	draft		
