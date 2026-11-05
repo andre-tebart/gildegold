@@ -3766,13 +3766,12 @@ exe	0x0055fa20	he_AllocMarket	he	byte	readable
 exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep	
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
 exe	0x00560900	he_RunKidnap	he	draft	readable	deep	
-exe	0x00561130	he_Unk561130	he	byte	draft		
-exe	0x00561190	he_Unk561190	he	draft	draft		
+exe	0x00561130	he_AllocRansom	he	byte	draft		
+exe	0x00561190	he_RunRansom	he	shape	readable		
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
-exe	0x005614c0	he_Unk5614c0	he	draft	draft		
-exe	0x005619a0	he_Unk5619a0	he	byte	draft		
-exe	0x00561a20	he_Unk561a20	he	draft	draft		
-exe	0x00561c20	he_Unk561c20	he	draft	draft		
+exe	0x005614c0	he_RunRansomDemand	he	shape	readable		
+exe	0x005619a0	he_AllocBurglary	he	byte	draft		
+exe	0x00561a20	he_RunBurglary	he	draft	readable		
 exe	0x005628e0	he_Unk5628e0	he	draft	draft		
 exe	0x00563070	he_Unk563070	he	shape	draft		
 exe	0x005630f0	he_Unk5630f0	he	draft	draft		
