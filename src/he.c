@@ -6319,16 +6319,20 @@ void he_RunTitleCeremony(int ev)
         return;
     }
 }
-/* 0x54d190, a Ghidra miss: the init of the title event: the due clock now, +0x56 = 0x16, +0x58 = 0x1e, +0x5c / +0xac / +0xb0 = 0 */
-
+/* 0x54d190, the allocation handler of the inn simulation event 0x68 ("SIM_WIRTSHAUS"; HESIM's cursor): the due clock
+   is now at 22:30 with its second cleared, and HESIM's cursor and step are cleared (the round starts at the first
+   character) */
 void he_StartInnSim(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(short *)(ev + 0x56) = 0x16;
-    *(int *)(ev + 0x58) = 0x1e;
-    *(int *)(ev + 0x5c) = 0;
-    *(int *)(ev + 0xac) = 0;
-    *(int *)(ev + 0xb0) = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HESIM *s = (HESIM *)ev;
+
+    e->end = ai_Time;
+    e->end.hour = 0x16;
+    e->end.min = 0x1e;
+    e->end.sec = 0;
+    s->cursor = 0;
+    s->step = 0;
 }
 
 int ai_CanAct();
