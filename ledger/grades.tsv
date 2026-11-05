@@ -1587,19 +1587,19 @@ exe	0x00494830	ai_WealthRatingHalf	am	byte	readable
 exe	0x004948c0	ai_FindInstrumentRecord	am	byte	readable		
 exe	0x004948f0	ai_RollStudyOffers	am	byte	readable		
 exe	0x00494a30	ai_MasterExamPassed	am	byte	readable		
-exe	0x00494ac0	ai_Unk494ac0	am	byte	draft		
-exe	0x00494d40	ai_Unk494d40	am	byte	draft		
-exe	0x00494d90	ai_Unk494d90	am	byte	draft		
+exe	0x00494ac0	ai_EvalFest	am	byte	readable		
+exe	0x00494d40	ai_RelationGain	am	byte	readable		
+exe	0x00494d90	ai_BrawlWin	am	byte	readable		
 exe	0x00494e70	ai_LoadActionTable	am	byte	readable		
 exe	0x00495520	am_RegisterMethod	am	byte	readable		
-exe	0x00495770	ai_PushAction	am	byte	draft		
-exe	0x00495790	ai_PopAction	am	byte	draft		
-exe	0x004957a0	ai_ActionOnStack	am	byte	draft		
+exe	0x00495770	ai_PushAction	am	byte	readable		
+exe	0x00495790	ai_PopAction	am	byte	readable		
+exe	0x004957a0	ai_ActionOnStack	am	byte	readable		
 exe	0x004957d0	ai_ChooseAction	am	draft	readable	deep	
 exe	0x00495a50	ai_ChooseSubAction	am	shape	readable		
 exe	0x00495ce0	ai_ExecuteAction	am	shape	readable	deep	
-exe	0x00495ee0	ai_Unk495ee0	am	byte	draft		
-exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	draft		
+exe	0x00495ee0	ai_RollCharFlags	am	byte	readable		
+exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	readable		
 exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	byte	draft		
 exe	0x00495fd0	ai_DecideDummySafety	am	byte	draft		
 exe	0x00495ff0	ai_ExecuteDummySafety	am	byte	draft		
