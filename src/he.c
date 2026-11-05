@@ -2140,7 +2140,7 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_BeginFieldBlock(char *o, int id);
 void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_Unk541200 / he_Unk543020 / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
+int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_Unk543020 / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
 /* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the message 0x67 about one of the
    player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at random):
@@ -2306,12 +2306,13 @@ void he_PostEventA6(void)
     m.time = ai_Time;
     cm_SendLongMessage((char *)&m);
 }
-/* 0x541200, sets the due clock (+0x52) of the event record to now and posts it when flag 2 of +0x78 is set */
+/* 0x541200, sets the end clock (AIJOB.end) of the event record to ai_Time and posts it again when its opts bit 2
+   (post when due) is set */
 
-void he_Unk541200(int r)
+void he_EndEventNow(int r)
 {
-    *(AITIME *)(r + 0x52) = ai_Time;
-    if ((*(unsigned char *)(r + 0x78) & 2) != 0)
+    ((AIJOB *)r)->end = ai_Time;
+    if ((((AIJOB *)r)->opts & 2) != 0)
         cm_SendExSetHE(-1, r);
 }
 /* 0x541250, sets the player (word +8) and its id (+0xc) of the record */
@@ -9296,7 +9297,7 @@ void he_EndPersonEvents(unsigned short *p)
             gm_FindChar(a);
         else
             continue;
-        he_Unk541200((int)e);
+        he_EndEventNow((int)e);
     }
     for (e = he_FindEvent(1, 0, 0x6f); e != 0; e = he_NextEvent()) {
         if ((*(unsigned char *)(e + 0x78) & 3) == 0)
@@ -9309,7 +9310,7 @@ void he_EndPersonEvents(unsigned short *p)
         else
             continue;
         gm_FindChar(b);
-        he_Unk541200((int)e);
+        he_EndEventNow((int)e);
     }
     for (e = he_FindEvent(1, 0, 0x45); e != 0; e = he_NextEvent()) {
         if ((*(unsigned char *)(e + 0x78) & 3) == 0)
@@ -9322,7 +9323,7 @@ void he_EndPersonEvents(unsigned short *p)
             gm_FindChar(a);
         else
             continue;
-        he_Unk541200((int)e);
+        he_EndEventNow((int)e);
     }
     for (e = he_FindEvent(1, 0, 0x2c); e != 0; e = he_NextEvent()) {
         if ((*(unsigned char *)(e + 0x78) & 3) == 0)
@@ -9330,24 +9331,24 @@ void he_EndPersonEvents(unsigned short *p)
         a = *(int *)(e + 0xac);
         if (a == id || *(int *)(e + 0xb4) == id || *(int *)(e + 0xc0) == id) {
             cm_SendHandOverCrimes(a, *(int *)(e + 0xb0), *(int *)(e + 4), 0);
-            he_Unk541200((int)e);
+            he_EndEventNow((int)e);
         } else if (*(int *)(e + 0xb0) == id) {
-            he_Unk541200((int)e);
+            he_EndEventNow((int)e);
         }
     }
     for (e = he_FindEvent(1, 0, 0x47); e != 0; e = he_NextEvent()) {
         if ((*(unsigned char *)(e + 0x78) & 3) == 0)
             continue;
         if (*(int *)(e + 0xac) == id || *(int *)(e + 0xb0) == id)
-            he_Unk541200((int)e);
+            he_EndEventNow((int)e);
     }
     for (e = he_FindEvent(1, 0, 0x5e); e != 0; e = he_NextEvent()) {
         if ((*(unsigned char *)(e + 0x78) & 3) != 0 && *(int *)(e + 0xac) == id)
-            he_Unk541200((int)e);
+            he_EndEventNow((int)e);
     }
     for (e = he_FindEvent(1, 0, 0x5f); e != 0; e = he_NextEvent()) {
         if ((*(unsigned char *)(e + 0x78) & 3) != 0 && *(int *)(e + 0xac) == id)
-            he_Unk541200((int)e);
+            he_EndEventNow((int)e);
     }
 }
 
@@ -13631,7 +13632,7 @@ void he_EndKind23Events(int ev)
 
     for (o = (int)he_FindEvent(1, 0, 0x23); o != 0; o = (int)he_NextEvent()) {
         if ((*(unsigned char *)(o + 0x78) & 3) != 0 && *(int *)(o + 0xb0) == *(int *)(ev + 4))
-            he_Unk541200(o);
+            he_EndEventNow(o);
     }
 }
 
