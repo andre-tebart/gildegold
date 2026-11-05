@@ -624,28 +624,26 @@ void he_PickActiveEvent(void)
 
 void he_ActivateSlot(int *sl)
 {
-    char *r;
+    HEEVSLOT *s = (HEEVSLOT *)sl;
 
     if (he_BarShown != -1) {
-        if (U_I((unsigned)&he_ActiveSlot) != 0) {
-            if (((int *)U_I((unsigned)&he_ActiveSlot))[1] != -1)
-                d2_SetObjValue(((int *)U_I((unsigned)&he_ActiveSlot))[1], 0);
-            d2_SetViewEnabled(((int *)U_I((unsigned)&he_ActiveSlot))[2], 0);
-            r = (char *)*(int *)U_I((unsigned)&he_ActiveSlot);
-            if (HE_JUMP(r))
-                U_I((unsigned)&tb_Paused) = 0;
-            U_I((unsigned)&he_ActiveSlot) = 0;
+        if (he_ActiveSlot != 0) {
+            if (he_ActiveSlot->obj != -1)
+                d2_SetObjValue(he_ActiveSlot->obj, 0);
+            d2_SetViewEnabled(he_ActiveSlot->win, 0);
+            if (HE_PAUSES(he_ActiveSlot->ev))
+                tb_Paused = 0;
+            he_ActiveSlot = 0;
         }
-        if (sl != 0 && sl[2] != -1) {
-            if (sl[1] != -1)
-                d2_SetObjValue(sl[1], 1);
-            d2_SetViewEnabled(sl[2], 1);
-            d2_RaiseViewWindows(sl[2]);
-            r = (char *)*sl;
-            if (HE_JUMP(r))
-                U_I((unsigned)&tb_Paused) = 1;
+        if (s != 0 && s->win != -1) {
+            if (s->obj != -1)
+                d2_SetObjValue(s->obj, 1);
+            d2_SetViewEnabled(s->win, 1);
+            d2_RaiseViewWindows(s->win);
+            if (HE_PAUSES(s->ev))
+                tb_Paused = 1;
         }
-        U_I((unsigned)&he_ActiveSlot) = (int)sl;
+        he_ActiveSlot = s;
     }
 }
 
