@@ -6970,8 +6970,8 @@ int mem_IsValid();
 void par_Delete();
 char *gm_FindBuildingById(int id);
 char *gm_HomeObject(unsigned char *b);
-void ai_Unk4c5970(int a, int b, int c);
-void ai_Unk4c5b90(int a);
+void cm_SendCharClear(int a, int b, int c);
+void cm_SendCharHalt(int a);
 
 /* 0x54fb50, a Ghidra miss: the init of the effect event: the object +0xac (0x4fea50) must have a scene record (+0x61) and the effect word +0xc2 a table record (0x5ba620) with a duration (+4): +0xb4 = now + that duration (0x4fe140), +0xb0 = 0, state 0; else the event is freed */
 void he_StartEffectEvent(int ev)
@@ -7099,39 +7099,59 @@ void he_Unk54fe80(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x54ff20, a Ghidra miss (disassembled): the run handler of the "Taschendieb" cleanup (+0xac a building id of 0x502020): in the state 0 every figure of the tavern (job record +0x180 with +0x2c == +0xac, boss +0x16c, 0.5 chance) gets the 0x4fdc10 object, is stopped (0x4c5970 / 0x4c5b90) and sent (0x4c52e0 "0x626f58") to its object; posted 0x1e units ahead and ends when the due time +0xb0 is over (ROUGH) */
+/* 0x54ff20, the run handler of the send-home event 0x77 (its init 0x54fe80): every 30 minutes until homeUntil, each
+   living character standing in the building bldId and sent there (model->bldId) who has a home goes home with a
+   chance of one half: its action is cleared (messages 0x47 / 0x4d) and it walks to its home object ("Unkendunk");
+   a missing building or a freed event (-1 / -2) frees it
+   @deep Read whole against the original and rewritten typed (AIJOB stage/bldId/end, the new
+   AIJOB.homeUntil at 0xb0, AICHAR health/model/bld/bld2/netId, the rand > 0.5 test as and 0x4100/jne, the
+   768 loop with jl). Every statement, call and argument now equal. Left: VC6's choice of the loop's
+   induction pointer inside ai_Chars: ours esi = ai_Chars+0x184 (model) with fields at [esi-0x17c],
+   [esi-0x18], [esi-0x14], [esi-0x180], end cmp esi,0x7d6104; the original esi = ai_Chars+4 (netId,
+   ai_CharInts) with [esi+4], [esi+0x168], [esi+0x16c], [esi], end 0x7d5f84; each access names the same
+   absolute field. Its side effect: ours cmp dword ptr [esi],0 where the original has mov eax,[esi+0x180];
+   test eax,eax (+0x4e, 99 vs 100 instructions). Tried: c = &ai_CharsT[i] pointer, direct ai_CharsT[i],
+   ((AICHAR *)ai_Chars)[i]: all pick +0x184. Lead: the original may address the record through a sub-object
+   at +4. (references: M8 at +0x3b: ours refers to ai_Chars+0x184 (0x770d04), the original's field to
+   0x770b84 (ai_CharInts) (and 1 more), explained: the two ref: lines (M8 +0x3b ai_Chars+0x184 vs
+   ai_Chars+4, +0xdd the end 0x7d6104 vs 0x7d5f84) are the same induction pointer over ai_Chars at another
+   base offset, 0x180 apart on both lines; every load through it reads the same absolute field) */
 
-void he_Unk54ff20(int ev)
+void he_RunSendHomeEvent(int ev)
 {
-    int st, ebp, esi, o;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *bld;
+    AIOBJ *home;
+    AICHAR *c;
+    int i;
 
-    st = *(int *)(ev + 0x70);
-    if (st < -2)
+    if (e->stage < -2)
         return;
-    if (st < 0) {
+    if (e->stage < 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st != 0)
+    if (e->stage != 0)
         return;
-    ebp = gm_FindBuildingById(*(int *)(ev + 0xac));
-    if (ebp == 0) {
+    bld = (AIBLD *)gm_FindBuildingById(e->bldId);
+    if (bld == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    for (esi = (unsigned)&ai_CharInts; esi < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); esi += 0x21c) {
-        if (*(unsigned char *)(esi + 4) > 0 && *(int *)(esi + 0x180) != 0 && *(int *)(esi + 0x168) == ebp && *(int *)(esi + 0x16c) != 0
-            && !(util_RandomF() >= 0.5) && *(int *)(*(int *)(esi + 0x180) + 0x2c) == *(int *)(ev + 0xac)) {
-            o = gm_HomeObject(*(int *)(esi + 0x16c));
-            ai_Unk4c5970(*(int *)esi, 0, 0);
-            ai_Unk4c5b90(*(int *)esi);
-            if (o != 0)
-                cm_SendChrGotoBuilding(*(int *)esi, *(int *)(*(int *)(esi + 0x16c) + 1), *(int *)(o + 2), 0, 0, "Unkendunk");
+    for (i = 0; i < 768; i++) {
+        c = &ai_CharsT[i];
+        if (c->health > 0 && c->model != 0 && c->bld == bld && c->bld2 != 0
+            && util_RandomF() > 0.5 && c->model->bldId == e->bldId) {
+            home = (AIOBJ *)gm_HomeObject((unsigned char *)c->bld2);
+            cm_SendCharClear(c->netId, 0, 0);
+            cm_SendCharHalt(c->netId);
+            if (home != 0)
+                cm_SendChrGotoBuilding(c->netId, c->bld2->id, home->objId, 0, 0, "Unkendunk");
         }
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    if (gm_CompareTime((unsigned)&ai_Time, ev + 0xb0) == 1)
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 0x1e, 0);
+    if (gm_CompareTime(&ai_Time, &e->homeUntil) == 1)
         he_FreeEvent((int *)ev);
 }
 
@@ -9373,7 +9393,7 @@ unsigned char *gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 char *gm_FindBuildingById(int id);
 int he_Unk55ee40();
-void ai_Unk4c5b90(int a);
+void cm_SendCharHalt(int a);
 int cm_SendChrGotoBuilding();
 
 /* 0x551780, steps one 16-byte slot of the 0x5512c0 event (a person on a walk through town; bytes: +8 the stage counter, +9 flags 0x40 / 0x10 / 0x04 (done), +0xa the step, +0xb the building index, +0xc the hour it started): the person (0x505df0) is gone -> the slot is cleared; with a target (0x4fea50) the walk is checked (0x524770) and a person with a work object (+0x184) is held / released by the hour (message 0x1c8 / 0x1000, 0x4c5b90); every 1 + budget / 2 stages (budget = 2 + random 0x42ec00(6) + the two flags) the person plays an animation (0x5516a0); else a new target building is looked for, with a chance above 0.5 from the 0x20 buildings of the list 0x501190 (1, 5, 0x16) through 0x55ee40, else by walking the 0x100 buildings with step +0xa for one of the kinds in the mask 0xa7f4c3a0; the found building number goes to +0xb, its id to +4, and the person is sent there (0x4c52e0 "...", the flag differs for the kinds 0x16 / 7 / 0xf) (ROUGH) */
@@ -9418,7 +9438,7 @@ void he_Unk551780(unsigned char *s)
             return;
         s[9] &= 0xbf;
         cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x1000);
-        ai_Unk4c5b90(*(int *)(a + 4));
+        cm_SendCharHalt(*(int *)(a + 4));
         s[0xc] = 0xff;
     }
     n = s[8];
@@ -10243,7 +10263,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_RunEffectEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_Unk54ff20) != 0)
+    if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_RunSendHomeEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x78, (void *)he_Unk5509f0, (void *)he_Unk550b60) != 0)
         return 1;
@@ -12254,7 +12274,7 @@ void he_Unk55bd80(int ev)
     case 0:
         for (c = (unsigned)&ai_CharInts; c < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); c += 0x21c) {
             if (*(int *)(c + 0x168) == b && *(int *)(c + 0x180) != 0) {
-                ai_Unk4c5b90(*(int *)c);
+                cm_SendCharHalt(*(int *)c);
                 cm_SendChrGotoBuilding(*(int *)c, -1, -1, 0, 0, "GebAbreissen");
             }
         }
@@ -12509,7 +12529,7 @@ void he_Unk55ce60(int ev)
 
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);
 void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f);
-void ai_Unk4c5970(int a, int b, int c);
+void cm_SendCharClear(int a, int b, int c);
 void cm_SendFieldValues(void);
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);
 int gm_Opinion(int a, int b);
@@ -12638,8 +12658,8 @@ void he_Unk55dbe0(int ev)
         ((void (*)(int))gm_Opinion)(*(int *)(p + 0x16c));
         cm_SendRelations(*(int *)(p + 4), *(int *)(p + 0x16c), -0x1e, 1);
     }
-    ((void (*)(int, int))ai_Unk4c5970)(0, 0);
-    ai_Unk4c5b90(*(int *)(p + 4));
+    ((void (*)(int, int))cm_SendCharClear)(0, 0);
+    cm_SendCharHalt(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
     he_FreeEvent((int *)ev);
 }
@@ -12715,8 +12735,8 @@ void he_Unk55e1d0(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    ((void (*)(int, int))ai_Unk4c5970)(0, 0);
-    ai_Unk4c5b90(*(int *)(p + 4));
+    ((void (*)(int, int))cm_SendCharClear)(0, 0);
+    cm_SendCharHalt(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
     txt_Format(text, 0x1bba, p);
     he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(p + 4), -1, "_NACHRICHTEN_HS_01", 0);
@@ -12921,7 +12941,7 @@ void he_Unk55efc0(int ev)
         return;
     }
     c = he_FigureContact(p);
-    ai_Unk4c5b90(*(int *)(p + 4));
+    cm_SendCharHalt(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
     he_FindFigurePlace(p);

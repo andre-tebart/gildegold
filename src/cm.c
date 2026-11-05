@@ -1899,9 +1899,9 @@ int cm_SendDecisionValue(char *p)
     *(G17B9 *)m.data = *(G17B9 *)p;
     return cm_QueueSend(&m);
 }
-/* 0x4c5970, message 0x47 */
+/* 0x4c5970, sends message 0x47 (character a, b, c); the event handlers send (a, 0, 0) before they walk a character away (reasoned: clears what it is doing) */
 
-void ai_Unk4c5970(int a, int b, int c)
+void cm_SendCharClear(int a, int b, int c)
 {
     G17MSG m;
 
@@ -1978,9 +1978,9 @@ int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot)
     sprintf(buf, "cm_RequestCreateGeb(): pos %f   %f   %f", pos->x, pos->y, pos->z);
     return cm_QueueSend(&m);
 }
-/* 0x4c5b90, message 0x4d */
+/* 0x4c5b90, sends message 0x4d (character a); the event handlers send it before they walk a character away (reasoned: halts it) */
 
-void ai_Unk4c5b90(int a)
+void cm_SendCharHalt(int a)
 {
     G17MSG m;
 

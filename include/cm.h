@@ -254,13 +254,13 @@ void cm_SendSkillsChanged(int a);                                               
 int cm_SendApplication(char *p);                                                       /* 0x4c58a0 */
 int cm_SendOfficeRecord(char *p);                                                      /* 0x4c58e0 */
 int cm_SendDecisionValue(char *p);                                                       /* 0x4c5930 */
-void ai_Unk4c5970(int a, int b, int c);                                          /* 0x4c5970 */
+void cm_SendCharClear(int a, int b, int c);                                          /* 0x4c5970 */
 void cm_SendSetJob(int id, int job);                                       /* 0x4c59b0 */
 void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s); /* 0x4c59f0 */
 void ai_Unk4c5a70(int a);                                                        /* 0x4c5a70 */
 void cm_SendChat(void *p);                                                      /* 0x4c5aa0 */
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);                /* 0x4c5ae0, "cm_RequestCreateGeb" */
-void ai_Unk4c5b90(int a);                                                        /* 0x4c5b90 */
+void cm_SendCharHalt(int a);                                                        /* 0x4c5b90 */
 int cm_SendObjCell(const char *s, int a, int b, const char *s2);                  /* 0x4c5bc0 */
 int cm_SendCutEntry(int a, void *p);                                               /* 0x4c5c40 */
 int cm_SendCutEntryUpdate(int a, void *p);                                               /* 0x4c5ca0 */
