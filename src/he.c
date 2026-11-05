@@ -16253,7 +16253,7 @@ int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId)
    home ("Go home"; up to 0x40 of the players'); with any sent, the event is due in 5 minutes. Two hours past the day
    end every remaining one with an own building moves at once (to the inn, its place or the door "dummy_TUER") and
    the record is freed
-   @deep Reconstructed whole from the ROUGH stub against the original 0x55efc0..0x55fa18 (790 ins): the
+   @deep Reconstructed whole from the old skeleton against the original 0x55efc0..0x55fa18 (790 ins): the
    stage switch (-2/-1 free, 0 morning, 1 evening), all five ai_Chars passes (stage 0: send to work with
    the 7000 distance / day-start-minus-one test, then everyone at once from the day start; stage 1: inns
    list, players' buildings' workers, the first other one, then two hours past the day end everyone at
