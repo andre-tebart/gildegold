@@ -14723,9 +14723,9 @@ void he_RunEvent1f(int ev)
         return;
     }
 }
-/* 0x55bd20, the allocation handler of a building event: the building +0xac (when found) gets the message 0x5a / 2 / 0x400, the due clock is now */
+/* 0x55bd20, the allocation handler of the demolition event 0x20 (he_RunDemolish): the building +0xac (when found) gets the message 0x5a / 2 / 0x400, the due clock is now */
 
-void he_Unk55bd20(int ev)
+void he_AllocDemolish(int ev)
 {
     int b;
 
@@ -14734,42 +14734,59 @@ void he_Unk55bd20(int ev)
         cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x400, 0);
     *(AITIME *)(ev + 0x52) = ai_Time;
 }
-/* 0x55bd80, the run handler "GebAbreissen" (the demolition of a building, 4 states by the jump table 0x55bf40; ROUGH): state 0 sends the figures of the building away (0x4c5b90, 0x4c52e0 (.., "GebAbreissen")) and waits, the later state demolishes (0x4c5510) after the news for the kind 0xf (0x53dda0) and frees the record */
+/* 0x55bd80, the run handler of the demolition event 0x20 ("GebAbreissen"; its init he_AllocDemolish sets the building's
+   0x5a mark 0x400). Stage 0 (the building found): every character working in the building (AICHAR.bld) is halted
+   when it has a model and sent home (gm_CharacterHome: to its home object, else into the building), the due
+   clock is set 5 minutes from now. Stage 1: unless the building is of the kind 0xf, every other player (kind 6 / 7,
+   not the owner) gets the news 0x1c52 (0x5ed, "_NACHRICHTEN_HS_67") and the building is destroyed
+   (cm_SendBuildingDestroyed); the event is freed. Stages -2 / -1 free the event */
 
-void he_Unk55bd80(int ev)
+void he_RunDemolish(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, c, k;
-    char text[0x200];
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    int i, homeBld, homeObj;
+    char text[0x400];
 
-    if (st < 0 || st > 3) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        for (c = (unsigned)&ai_CharInts; c < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); c += 0x21c) {
-            if (*(int *)(c + 0x168) == b && *(int *)(c + 0x180) != 0) {
-                cm_SendCharHalt(*(int *)c);
-                cm_SendChrGotoBuilding(*(int *)c, -1, -1, 0, 0, "GebAbreissen");
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b == 0)
+            return;
+        for (i = 0; i < 768; i++) {
+            c = &ai_CharsT[i];
+            if (c->bld == b) {
+                if (c->model != 0)
+                    cm_SendCharHalt(c->netId);
+                if (gm_CharacterHome((char *)c, &homeBld, &homeObj) != 0) {
+                    if (homeObj != -1)
+                        cm_SendChrGotoBuilding(c->netId, homeBld, homeObj, 0, 0, "GebAbreissen");
+                    else
+                        cm_SendChrGotoBuilding(c->netId, homeBld, -1, 0, 1, "GebAbreissen");
+                }
             }
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x70) = st + 1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        e->stage++;
         return;
-    default:
-        k = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d);
-        if (k == 0xf) {
-            txt_Format(text, 0x1bbb, b);
-            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
+    case 1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0 && ai_BTypesT[b->type].kind != 0xf) {
+            for (i = 0; i < 768; i++) {
+                c = &ai_CharsT[i];
+                if ((c->kind == 6 || c->kind == 7) && c->id != b->owner) {
+                    txt_Format(text, 0x1c52, b->owner, b);
+                    he_ShowNews(c->netId, -1, text, 0, 0x5ed, "_NACHRICHTEN_HS_67");
+                }
+            }
+            cm_SendBuildingDestroyed(b->id);
         }
-        cm_SendBuildingDestroyed(b);
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
         return;
     }
@@ -17154,7 +17171,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(30, (void *)he_AllocUpgrade, (void *)he_RunUpgrade) != 0)
         return 1;
-    if (he_SetEventHandlers(32, (void *)he_Unk55bd20, (void *)he_Unk55bd80) != 0)
+    if (he_SetEventHandlers(32, (void *)he_AllocDemolish, (void *)he_RunDemolish) != 0)
         return 1;
     if (he_SetEventHandlers(33, (void *)he_Unk55bf50, (void *)he_Unk55bfd0) != 0)
         return 1;
