@@ -1035,6 +1035,14 @@ typedef struct HEPLUNDER {              /* the plunder event 0x8a's words over A
     int at;                             /* 0xb0, the index of the building being plundered */
     int bld[5];                         /* 0xb4, the ids of the buildings to plunder (ai_PickActionBuildings' out) */
 } HEPLUNDER;
+typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
+                                           run handler 0x5725b0) */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the id of the building the meeting is held in */
+    int radius;                         /* 0xb0, the radius kind of the meeting search (0x572310's b), capped at 2 */
+    int kind;                           /* 0xb4, the kind of the meeting (0x572310's c), capped at 2 */
+    int rounds;                         /* 0xb8, the rounds held (the run handler holds up to 4) */
+} HEMEETING;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -19663,7 +19671,7 @@ void he_Unk571990(int ev);          /* 0x571990 */
 void he_Unk5719e0(int ev);          /* 0x5719e0 */
 void he_Unk571ac0(int ev);          /* 0x571ac0 */
 void he_Unk571c30(int ev);          /* 0x571c30 */
-void he_Unk571f60(int ev);          /* 0x571f60 */
+void he_AllocMeeting(int ev);          /* 0x571f60 */
 void he_Unk5725b0(int ev);          /* 0x5725b0 */
 void he_Unk5726a0(int ev);          /* 0x5726a0 */
 void he_Unk5726b0(int ev);          /* 0x5726b0 */
@@ -19684,7 +19692,7 @@ int he_RegisterEventTypes88(void)
                             if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
                                     if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
-                                        if (he_SetEventHandlers(0x90, (void *)he_Unk571f60, (void *)he_Unk5725b0) == 0) {
+                                        if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_Unk5726a0, (void *)he_Unk5726b0) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
@@ -20613,41 +20621,46 @@ released:
 free_ev:
     he_FreeEvent((int *)ev);
 }
-/* 0x571f60, the alloc of the event 0x90: paused -> nothing; state 0; the due clock +0x52 = now; 0x53e400 (2, 0, 0x90, 3, +0x10) finds another running event 0x90 of the building -> state -1 (0x4c4c60); else the message 0x91 (+0x28 the clock, +0x36 0xa, +0x58 +4, +0x5c -1, +0x60 +0xb0) through 0x4c4b70, +0xb4 / +0xb0 capped at 2, +0xb8 = 0, 0x50cc50 (pid, -(+0xb4 + 2) * (+0xb0 + 2)), due now + 5 hours, state 0 */
-
-void he_Unk571f60(int ev)
+/* 0x571f60, the alloc of the meeting event 0x90: stage 0, then paused -> nothing; the due clock = now; another
+   running event 0x90 of the building (from) -> exSlot = cm_SendExSetHE(-1, ev) and return; else the message 0x91
+   (to the netId, from the building bldId, the clock, flags 0xa, arg 0 = the id, arg 1 = -1, arg 2 = unkb0) is
+   sent, unkb4 / unkb0 are capped at 2, unkb8 = 0, the money -((unkb4 + 2) * (unkb0 + 2)) is taken from the
+   character, due now + 5 hours, then the event is scheduled (cm_SendExSetHE) */
+void he_AllocMeeting(int ev)
 {
-    char msg[0xf8];
+    AIJOB *e = (AIJOB *)ev;
+    HEMEETING *m = (HEMEETING *)ev;
+    AIMSG msg;
     char *r;
 
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    e->stage = 0;
+    if (e->opts & 4)
         return;
-    HM_I(ev, 0x70) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    for (r = he_FindEvent(2, 0, 0x90, 3, HM_I(ev, 0x10)); r != 0; r = he_NextEvent()) {
+    e->end = ai_Time;
+    for (r = he_FindEvent(2, 0, 0x90, 3, e->from); r != 0; r = he_NextEvent()) {
         if ((int)r != ev) {
-            HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
-    memset(msg, 0, 0xf8);
-    HM_B(msg, 4) = 0x91;
-    HM_I(msg, 8) = HM_I(ev, 0xc);
-    HM_I(msg, 0xc) = HM_I(ev, 0xac);
-    *(AITIME *)(msg + 0x28) = ai_Time;
-    HM_B(msg, 0x36) = 0xa;
-    HM_I(msg, 0x58) = HM_I(ev, 4);
-    HM_I(msg, 0x5c) = -1;
-    HM_I(msg, 0x60) = HM_I(ev, 0xb0);
-    cm_SendLongMessage(msg);
-    if (HM_I(ev, 0xb4) > 2)
-        HM_I(ev, 0xb4) = 2;
-    if (HM_I(ev, 0xb0) > 2)
-        HM_I(ev, 0xb0) = 2;
-    HM_I(ev, 0xb8) = 0;
-    gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -((HM_I(ev, 0xb4) + 2) * (HM_I(ev, 0xb0) + 2)));
-    gm_AddTime(ev + 0x52, 0, 5, 0);
-    HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
+    memset(&msg, 0, sizeof(msg));
+    msg.type = 0x91;
+    msg.to = e->netId;
+    msg.fromId = m->bld;
+    msg.time = ai_Time;
+    msg.flags = 0xa;
+    msg.arg[0] = e->id;
+    msg.arg[1] = -1;
+    msg.arg[2] = m->radius;
+    cm_SendLongMessage((char *)&msg);
+    if (m->kind > 2)
+        m->kind = 2;
+    if (m->radius > 2)
+        m->radius = 2;
+    m->rounds = 0;
+    gm_SendMoneyDelta(ai_CharInts[e->chr][0], -((m->kind + 2) * (m->radius + 2)));
+    gm_AddTime(&e->end, 0, 5, 0);
+    cm_SendExSetHE(0, ev);
 }
 
 int gm_GetDisease();                 /* 0x5051d0 */

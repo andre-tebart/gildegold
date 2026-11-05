@@ -2483,3 +2483,4 @@
 2026-11-05T19:42:36 0x0056d990 func he_Unk56d990 -> he_AllocTrainShare by:main why:the alloc of the alchemist event 0x97: it starts training one of the character's shares (ahm_ShareProgress) when there is progress to make
 2026-11-05T19:45:28 0x0056f0b0 func he_Unk56f0b0 -> he_RunDomizilEvent by:main why:the run handler of the domicile event 0x9b: it sends the domicile news about the two characters the construction run found
 2026-11-05T19:46:46 0x005706e0 func he_Unk5706e0 -> he_AllocPlunder by:main why:the alloc of the plunder event 0x8a: it picks the buildings the character plunders
+2026-11-05T19:49:49 0x00571f60 func he_Unk571f60 -> he_AllocMeeting by:main why:the alloc of the meeting event 0x90: it sends the meeting message and takes the money for the meeting's rounds
