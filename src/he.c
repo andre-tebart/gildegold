@@ -395,6 +395,17 @@ typedef struct HEBUYBLD {               /* the building purchase event 0x21's wo
     int price;                          /* 0xb0, the price offered (paid with cm_SendMoveGoodsUnchecked) */
     int buyer;                          /* 0xb4, the buyer's netId (gm_FindChar) */
 } HEBUYBLD;
+typedef struct HELOAN {                 /* the loan event 0x23's words over AIJOB's union (he_AllocKredit / he_Unk55c700
+                                           "he_RunKredit"); the building is AIJOB.bldId */
+    char pad00[0xb0];
+    int partner;                        /* 0xb0, the netId of the other party (gm_FindChar; the loan's money moves
+                                           between it and the event character, cm_SendMoveGoodsUnchecked) */
+    int amount;                         /* 0xb4, the sum (reasoned: the news 0x18d7 names it before the interest) */
+    int days;                           /* 0xb8, the term in days (the payback date is days * 24 hours ahead) */
+    int daysLeft;                       /* 0xbc, days at the start */
+    int interest;                       /* 0xc0, the interest (the value gv_Accuse checks against the law 0xe) */
+    AITIME due;                         /* 0xc4, the payback date, at 8:00 */
+} HELOAN;
 typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunSale sends: an hour from now as AITIME, of
                                            which the building and the object overwrite the first 8 bytes (the
                                            original's order) */
@@ -14938,34 +14949,42 @@ void he_RunBuyBuilding(int ev)
         return;
     }
 }
-/* 0x55c540, the allocation handler of the purchase event (ROUGH): the due clock is now, the end clock +0xc4 = now + the delay +0xb8, +0xc8 = 8, +0xca / +0xce = 0, +0xbc = +0xb8; the building +0xac is looked up (none: free), the buyer +0xb0 (0x505df0); for a player buyer (kind 6 / 7) the offer window is prepared (0x4ffe90, the news 0x18d7 with 0x5d, 0x53dee0 (.., 0x5ec)) */
+/* 0x55c540, the allocation handler of the loan event 0x23 (HELOAN; run handler he_Unk55c700 "he_RunKredit"): the
+   due clock is now, the payback date is days days from now at 8:00, daysLeft = days. A posted event (opts 2) whose
+   building has a player owner (kind 6 / 7) gives the owner the news 0x18d7 (the partner, the building, amount,
+   interest, days, the building's money: its object of the player's moneyGood) and reports the owner for the law
+   0xe with the interest (gv_Accuse) */
 
-void he_Unk55c540(int ev)
+void he_AllocKredit(int ev)
 {
-    int b, buyer, o;
+    AIJOB *e = (AIJOB *)ev;
+    HELOAN *l = (HELOAN *)ev;
+    AIBLD *b;
+    AICHAR *owner, *partner;
+    AIOBJ *o;
+    int cash;
     char text[0x200];
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0xc4) = ai_Time;
-    gm_AddTime(ev + 0xc4, 0, *(int *)(ev + 0xb8), 0);
-    *(unsigned short *)(ev + 0xc8) = 8;
-    *(int *)(ev + 0xca) = 0;
-    *(int *)(ev + 0xce) = 0;
-    *(int *)(ev + 0xbc) = *(int *)(ev + 0xb8);
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
+    e->end = ai_Time;
+    l->due = ai_Time;
+    gm_AddTime(&l->due, l->days * 24, 0, 0);
+    l->due.hour = 8;
+    l->due.min = 0;
+    l->due.sec = 0;
+    l->daysLeft = l->days;
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+    if (b == 0 || (e->opts & 2) == 0)
         return;
-    }
-    if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
-        return;
-    buyer = gm_FindChar(*(int *)(ev + 0xb0));
-    if (buyer != 0 && (*(unsigned char *)(buyer + 2) == 6 || *(unsigned char *)(buyer + 2) == 7)) {
-        o = gm_Query(*(int *)(b + 0x5d), 2, 6, 1, *(unsigned short *)(ev + 0xb0));
-        if (o != 0) {
-            txt_Format(text, 0x18d7, 0x5d);
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, -1, 0, 0, 0);
-        }
+    owner = &ai_CharsT[b->owner];
+    partner = (AICHAR *)gm_FindChar(l->partner);
+    if (owner->kind == 6 || owner->kind == 7) {
+        cash = 0;
+        o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, ai_PlayerSlotsT[ai_OwnPlayer].moneyGood);
+        if (o != 0)
+            cash = o->count;
+        txt_Format(text, 0x18d7, partner->id, b, l->amount, l->interest, l->days, 0x5d, cash);
+        he_MessageBoxQuickjump(owner->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+        gv_Accuse(0xe, l->interest, owner->netId, l->partner, b->id);
     }
 }
 /* 0x55c700, the run handler "he_RunKredit" (the loan event, 4 states; the debug text "he_RunKredit(): Could not find GebaeudeId '%i'" when the building +0xac is missing; ROUGH skeleton): the player figure gets the offer news (0x5ec / "_NACHRICHTEN_HS_69", the amount 0x5b92e0, the interest from 0x509e60 through _ftol / 0x5de652 (sprintf)) and 0x4c4830 books the payment; the end frees the record */
@@ -17258,7 +17277,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(31, (void *)he_AllocEvent1f, (void *)he_RunEvent1f) != 0)
         return 1;
-    if (he_SetEventHandlers(35, (void *)he_Unk55c540, (void *)he_Unk55c700) != 0)
+    if (he_SetEventHandlers(35, (void *)he_AllocKredit, (void *)he_Unk55c700) != 0)
         return 1;
     if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_Unk55cb00) != 0)
         return 1;
