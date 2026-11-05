@@ -2396,3 +2396,4 @@
 2026-11-05T15:06:20 - unit unk_58bbd0 -> lc by:main why:by=tag: the lc_ prefix of its error strings ("lc_GetGebaeudeBauplatz():", "lc_PlayerInJail():"); lc_GetGebaeudeBauplatz is defined here
 2026-11-05T15:06:36 - unit unk_5d33b0 -> menu by:main why:by=guess: the front-end screens: options, load / save / join game, credits, pause, message filter (then location windows, wind and cannon shots)
 2026-11-05T15:11:46 0x00555690 func he_Unk555690 -> he_TransportToHome by:main why:leg of mode 1 of he_Unk556600 (HETRANSPORT.mode 1: only the goal a home); sibling of he_TransportFromHome (mode 2)
+2026-11-05T15:14:27 0x00555b60 func he_Unk555b60 -> he_TransportStadtStadt by:main why:its debug text 0x627330 'he_TransportStadtStadt(): character-action not attached ...'; mode 3 leg of he_Unk556600

@@ -4,7 +4,7 @@
    single event types.
    0x53d430 .. 0x575860: starts right after main.c's program entry (its globals 0x625718 / 0x62571c follow
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
-   (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
+   (no @bytes: the block after he_TransportStadtStadt's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
    The event record is AIJOB (0x14c bytes, he_Jobs over he_Events), the message record AIMSG (both in ai_types.h,
    readable without ai.h); the buildings and characters are AIBLD / AICHAR (ai_bld.h / ai_char.h, he_PlayerCh), the
    carts AIOBJ (ai_types.h), the carried-goods records GMCARRYREC (f3gm_carry.h), the goods prototypes GMGOOD
@@ -11584,71 +11584,132 @@ struct D3HMAP * ch_GetHMap();
 char d3_GetHeightAt(struct D3SM *h, struct D3VECTOR *pos, int *px, int *pz, float *py);
 void cm_SendChrWalkTo(int a, int b, int c, int d);
 
-/* 0x555b60, the run handler "he_TransportStadtStadt()" of the city-to-city transport (the error text "character-action not attached but target should be reached : %s" is in the 0x627330 literal; ROUGH, outlined from the disassembly): +0xb0 / +0xb4 the buildings (0x501190 (1, 1, id)), +0xc4 the id of the building the cart is at, +0xd0 started, +0xd4 rounds, +0xac the cart's id. Before the start (+0xc4 = the first building's id, +0xd0 = 0): a start position is taken (the building's transporter dummy 0x555210 or its +0x61 object, 0x458a20, the ground 0x45f170), the cart object is looked up (0x4ffe90 (building object, 1, 1, +0xac), else 0x4fe980) and put on the road (0x4c5260, 0x4c5100, the guide 0x4c4920) and +0xd0 = 1; with +0xc4 = the second building's id the cart's arrival (0x453e80 against the target, or more than 6 rounds) ends the trip: the guide is dropped, the cart gets the message 0x13 / 0x40, the arrival news is formatted (0x1c39 .. 0x1c44 by kind) and shown to a player character (0x53dee0, unless the world map shows the building: 0x6f229c / 0x6f2308 / 0x6f2310 with the ranges 0x92 .. 0x97 and 0x2db), the event is posted with the handle 3; the cart not found while it should have arrived gives the debug error 0x4222b0 */
-void he_Unk555b60(int ev)
+/* 0x555b60, "he_TransportStadtStadt" (its debug text), the leg of the transport event 15 (HETRANSPORT) of mode 3
+   (neither building a home), called by its run handler 0x556600 each round. The cart travels in two stages by
+   HETRANSPORT.at. At the start (at == the start's id, not started): in scene 0 the goal's transporter dummy
+   (he_RandomTransporter, else its object) gives the point the cart walks to, the cart is looked up in the 0x44
+   building's objects (a start of the type 10) or the start's (else gm_FindObjectInst), gets its speed, its place on
+   the ground cell of that point (lastPos) and, unless the start is of the type 10, its state 1 and the route from
+   the 0x44 building to the start; then it walks to the cell, the scene is selected again and `at` becomes the 0x44
+   building. At the 0x44 building: the cart (its objects, else gm_Query 2) records the target of its walk action
+   while it walks; idle and not moved (d3_VecEqual within 300.0) or after more than 6 rounds, it has arrived: the
+   bit 0x40 is cleared, a goal not of the type 10 gets the cart's state 0 and the route on to the 0x44 building,
+   the news 0x1c43 (type 10) / 0x1c44 goes to the event's character unless the transport window shows the goal (or
+   a market stall 0x92 .. 0x97 / 0x2db of a type 10 goal), the cart is escorted or the transport is quiet, `at`
+   becomes the goal and the event is posted again (cm_SendExSetHE 3); arrived after 6 rounds while still far from
+   its last place gives the debug text "character-action not attached but target should be reached" */
+void he_TransportStadtStadt(int ev)
 {
-    int sc = U_I((unsigned)&d3_CurrentScene);
-    int a44, a45, b0, b1, cart, o, e;
-    float pos[3];
+    AIJOB *e = (AIJOB *)ev;
+    HETRANSPORT *t = (HETRANSPORT *)ev;
+    AIBLD *guards, *from, *to;
+    AIOBJ *tr, *o;
+    CHARACTER *ch;
+    D3SM *hmap;
+    D3OBJECT *bo;
+    CHACTION *walk;
+    D3VECTOR pos, back;
+    int sc, px, pz;
+    float py;
     char text[0x400];
-    char err[0x200];
+    char err[0x400];
 
-    a44 = gm_BuildQuery(1, 0, 0x44);
-    a45 = gm_BuildQuery(1, 0, 0x45);
-    b0 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    b1 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4));
-    if (*(int *)(ev + 0xc4) == *(int *)(b0 + 1) && *(unsigned char *)(ev + 0xd0) == 0) {
+    guards = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    gm_BuildQuery(1, 0, 0x45);
+    from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
+    to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+    if (t->at == from->id && t->started == 0) {
+        sc = d3_CurrentScene;
         d3if_SelectScene(0, 1);
-        o = *(int *)(b1 + 0x61);
-        d3_PointToWorld(o, o + 0x4c, pos);
-        if (gm_IsType10(b0) != 0)
-            cart = gm_Query(*(int *)(a44 + 0x5d), 1, 1, *(int *)(ev + 0xac));
+        o = (AIOBJ *)he_RandomTransporter(to->object);
+        if (o != 0)
+            d3_PointToWorld((D3OBJECT *)o, &((D3OBJECT *)o)->pos, &pos);
         else
-            cart = gm_Query(*(int *)(b0 + 0x5d), 1, 1, *(int *)(ev + 0xac));
-        if (cart == 0)
-            cart = gm_FindObjectInst(*(int *)(ev + 0xac));
-        if (cart != 0) {
-            he_SetCartSpeed(ev, cart);
-            ch_GetHMap(*(int *)(cart + 0x3b));
-            d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), pos, 0, 0, 0);
-            if (gm_IsType10(b0) == 0) {
-                cm_SendCartState(*(int *)(cart + 2), 0);
-                ((void (*)(int, int))cm_SendChrWalkTo)(*(int *)(cart + 2), pos);
-                if (gm_IsType10(b0) == 0)
-                    *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
+            d3_PointToWorld((D3OBJECT *)to->object, &((D3OBJECT *)to->object)->pos, &pos);
+        if (gm_IsType10((unsigned char *)from) != 0)
+            tr = (AIOBJ *)gm_Query((void *)guards->objList, 1, 1, t->cart);
+        else
+            tr = (AIOBJ *)gm_Query((void *)from->objList, 1, 1, t->cart);
+        if (tr == 0)
+            tr = (AIOBJ *)gm_FindObjectInst(t->cart);
+        if (tr != 0) {
+            ch = (CHARACTER *)tr->sceneObj;
+            he_SetCartSpeed(ev, (int)tr);
+            hmap = (D3SM *)ch_GetHMap(ch);
+            t->started = 1;
+            d3_GetHeightAt(hmap, &pos, &px, &pz, &py);
+            t->lastPos.x = pos.x;
+            t->lastPos.y = pos.y;
+            t->lastPos.z = pos.z;
+            if (gm_IsType10((unsigned char *)from) == 0) {
+                if (from->object != 0) {
+                    o = (AIOBJ *)he_RandomTransporter(from->object);
+                    if (o != 0)
+                        d3_PointToWorld((D3OBJECT *)o, &((D3OBJECT *)o)->pos, &back);
+                    else {
+                        bo = (D3OBJECT *)to->object;
+                        back.x = bo->pos.x;
+                        back.y = bo->pos.y;
+                        back.z = bo->pos.z;
+                    }
+                }
+                cm_SendCartState(tr->objId, 1);
             }
-            *(unsigned char *)(ev + 0xd0) = 1;
-        }
+            cm_SendChrWalkTo(tr->objId, px, pz, 0);
+            if (gm_IsType10((unsigned char *)from) == 0)
+                t->route = cm_SendCartRouteH(guards->id, t->start, t->cart);
+        } else
+            gm_Query(0, 2, 7, 1, t->cart);
         d3if_SelectScene(sc, 1);
+        t->at = guards->id;
         return;
     }
-    if (*(int *)(ev + 0xc4) != *(int *)(b1 + 1))
+    if (t->at != guards->id)
         return;
-    cart = gm_Query(*(int *)(b1 + 0x5d), 1, 1, *(int *)(ev + 0xac));                 /* 0x555daf */
-    if (cart == 0)
-        cart = gm_Query(cart, 2, 7, 1, *(int *)(ev + 0xac));                        /* 0x555dcb: (0, 2, 7, 1, +0xac) */
-    if (cart == 0) {
-        __asm int 3                                                                     /* 0x556055: the original traps here, repeats the query and returns */
-        gm_Query(0, 2, 7, 1, *(int *)(ev + 0xac));
-        return;
-    }
-    he_SetCartSpeed(ev, cart);
-    if (*(unsigned char *)(cart + 9) == 0x2d || (d3_VecEqual(*(int *)(*(int *)(cart + 0x3b) + 0x34) + 0x4c, ev + 0xd8, 100.0f) != 0) || *(int *)(ev + 0xd4) > 6) {
-        cm_SendSetField(*(int *)(cart + 2), 0x13, 1, 0, 0x40);
-        if (gm_IsType10(b1) == 0)
-            *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(b1 + 1), *(int *)(a45 + 1), *(int *)(cart + 2));
-        if (gm_IsType10(b1) != 0)
-            txt_Format(text, 0x1c43);
-        else
-            txt_Format(text, 0x1c44, b1);
-        e = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);
-        if ((e == 6 || e == 7) && U_I((unsigned)&ai_PlayerBuilding) != b1)
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(cart + 2), text, 0, 0x608, *(int *)(b1 + 1), -1, 0, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+    tr = (AIOBJ *)gm_Query((void *)guards->objList, 1, 1, t->cart);
+    if (tr == 0)
+        tr = (AIOBJ *)gm_Query(0, 2, 7, 1, t->cart);
+    if (tr != 0) {
+        ch = (CHARACTER *)tr->sceneObj;
+        he_SetCartSpeed(ev, (int)tr);
+        walk = ch->actions;
+        if (walk != 0 && walk->type == 0x2d) {
+            t->lastPos.x = walk->u.walk.tpos.x;
+            t->lastPos.y = walk->u.walk.tpos.y;
+            t->lastPos.z = walk->u.walk.tpos.z;
+        }
+        if (ch->actions == 0 && (d3_VecEqual(&ch->obj->pos, &t->lastPos, 300.0f) != 0 || t->rounds > 6)) {
+            cm_SendSetField(tr->objId, 0x13, 1, 0, 0x40);
+            if (gm_IsType10((unsigned char *)to) == 0) {
+                cm_SendCartState(tr->objId, 0);
+                t->route = cm_SendCartRouteH(to->id, guards->id, t->cart);
+            }
+            if (gm_IsType10((unsigned char *)to) != 0)
+                txt_Format(text, 0x1c43);
+            else
+                txt_Format(text, 0x1c44, to);
+            if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow
+                 || (ai_PlayerBuilding != (char *)to
+                     && (gm_IsType10((unsigned char *)to) == 0 || sv_PanelShown == 0
+                         || (ai_PlayerBuilding != (char *)to
+                             && (gm_IsType10((unsigned char *)to) == 0
+                                 || ((*sv_PanelShown < 0x92 || *sv_PanelShown > 0x97) && *sv_PanelShown != 0x2db))))))
+                && (tr->flags20 & 1) == 0 && t->quiet == 0) {
+                o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)to);
+                if (o != 0)
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, o->objId, 0, 0);
+                else
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
+            }
+            t->at = t->goal;
+            e->exSlot = cm_SendExSetHE(3, ev);
+            if (ch->actions == 0 && t->rounds > 6 && d3_VecEqual(&ch->obj->pos, &t->lastPos, 100.0f) == 0)
+                sprintf(err, "he_TransportStadtStadt(): character-action not attached but target should be reached : %s",
+                        txt_Ptrs[0x48e + to->type * 14]);
+        }
     } else {
-        /* 0x556022..0x556054 (ROUGH: the name index is a guess): the target should have been reached */
-        sprintf(err, "he_TransportStadtStadt(): character-action not attached but target should be reached : %s",
-                *(char **)((unsigned)&full_data_143b3f8 + *(unsigned char *)b1 * 7 * 8));
+        __asm int 3                                     /* the original traps here and repeats the query */
+        gm_Query(0, 2, 7, 1, t->cart);
     }
 }
 
@@ -11751,7 +11812,7 @@ void he_Unk556600(int ev)
         else if (mode == 1)
             he_TransportToHome(ev);
         else if (mode == 3)
-            he_Unk555b60(ev);
+            he_TransportStadtStadt(ev);
         else if (mode == 4)
             he_Unk556080(ev);
         else
