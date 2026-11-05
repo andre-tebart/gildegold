@@ -1561,19 +1561,19 @@ exe	0x004927c0	ai_DecideSabotageGuiltWeights	am	byte	readable
 exe	0x00492900	ai_DecideLaw25	am	byte	readable		
 exe	0x00492a40	ai_DecideLaw26	am	byte	readable		
 exe	0x00492b80	ai_DecideLaw8	am	byte	readable		
-exe	0x00492d50	ai_Unk492d50	am	byte	draft		
-exe	0x00492e90	ai_Unk492e90	am	byte	draft		
+exe	0x00492d50	ai_DecideLaw27	am	byte	readable		
+exe	0x00492e90	ai_DecideLaw28	am	byte	readable		
 exe	0x00492fd0	ai_MakeDuelOpponent	am	draft	readable	deep	
-exe	0x00493200	ai_Unk493200	am	byte	draft		
-exe	0x00493390	ai_Unk493390	am	byte	draft		
-exe	0x004933d0	ai_Unk4933d0	am	byte	draft		
+exe	0x00493200	ai_DuelStart	am	byte	readable		
+exe	0x00493390	ai_DuelAcceptAction	am	byte	readable		
+exe	0x004933d0	ai_DuelSetAction	am	byte	readable		
 exe	0x00493420	ai_DuelThrow	am	draft	readable	deep	
-exe	0x004937a0	ai_Unk4937a0	am	byte	draft		
+exe	0x004937a0	ai_DuelAct	am	byte	readable		
 exe	0x00493890	ai_DuelOpponentAction	am	byte	readable		
 exe	0x00493a40	ai_DuelNextPhase	am	draft	readable	deep	
 exe	0x00493be0	ai_ChooseObjectTarget	am	draft	readable	deep	
-exe	0x00493ea0	ai_Unk493ea0	am	byte	draft		
-exe	0x00494020	ai_Unk494020	am	byte	draft		
+exe	0x00493ea0	ai_FindSuccessor	am	byte	readable		
+exe	0x00494020	ai_PlanWorth	am	byte	readable		
 exe	0x004941b0	ai_Unk4941b0	am	byte	draft		
 exe	0x004941d0	ai_Unk4941d0	am	byte	draft		
 exe	0x004941e0	ai_Unk4941e0	am	byte	draft		
