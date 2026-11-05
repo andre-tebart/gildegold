@@ -15722,9 +15722,9 @@ int ai_OpenTransport(int building)
 }
 /* 0x5af1b0, a forwarder of 0x5af1d0 with the mode 2 (16 B) */
 
-int ai_OpenTransportSell(int param_1)
+int ai_OpenTransportSell(int building)
 {
-    return ai_TransportWindow(param_1, 2);
+    return ai_TransportWindow(building, 2);
 }
 /* 0x5af1c0, a forwarder of 0x5af1d0 with the mode 4 (16 B) */
 
