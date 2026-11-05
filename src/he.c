@@ -415,6 +415,16 @@ typedef struct HETRANSPORT {            /* the transport event 15's words over A
     char padf3;
     int order;                          /* 0xf4, the id of the event that ordered the transport, 0 / -1 none */
 } HETRANSPORT;
+typedef struct HECARTREPAIR {           /* the event 16's words over AIJOB's union (he_AllocCartRepair / he_Unk556ed0); reasoned: a
+                                           cart repair */
+    char pad00[0xac];
+    int cart;                           /* 0xac, the cart's objId (gm_FindById) */
+    int points;                         /* 0xb0, the points the cart's byte +0x12 rises by */
+    int target;                         /* 0xb4, that byte after the work, 100 at most */
+    int per;                            /* 0xb8, the minutes per point */
+    char padbc[4];
+    AITIME done;                        /* 0xc0, the start + per * points minutes */
+} HECARTREPAIR;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12017,28 +12027,35 @@ void he_RunTransport(int ev)
 
 int gm_MinutesBetween();
 
-/* 0x556dc0, the allocation handler of the delivery event (ROUGH): the clock +0xc0 = the start clock + (+0xb8 * +0xb0) units (the duration), the due clock (+0x52) is the start clock + 1, the person +0xac (0x4fea50) is freed from an older job (flag 0x20 of +0x13 set: the record is freed) or gets the message 0x13 / 0x20, +0x60 = now, +0xb4 = min(+0xb0 + the person's byte +0x12, 100) */
-void he_Unk556dc0(int ev)
+/* 0x556dc0, the allocation handler of the event 16 (HECARTREPAIR; run by 0x556ed0): the work ends `per` minutes per
+   point after the start (done), the event is due one second after the start; a cart already under such work (flags13
+   bit 0x20) frees the event, else it gets the bit (cm_SendSetField 0x13); the clock60 starts now and the cart's byte
+   +0x12 is to rise by `points`, to 100 at most (target). Reasoned: a repair of the cart (its run handler changes
+   the object's state, gm_ChangeObjektZustand, and the transport damages the same byte) */
+void he_AllocCartRepair(int ev)
 {
-    int o = 0, n;
+    AIJOB *e = (AIJOB *)ev;
+    HECARTREPAIR *r = (HECARTREPAIR *)ev;
+    AIOBJ *o = 0;
+    int n;
 
-    *(AITIME *)(ev + 0xc0) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0xc0, 0, *(int *)(ev + 0xb8) * *(int *)(ev + 0xb0), 0);
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 0, 0, 1);
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
+    r->done = e->start;
+    gm_AddTime(&r->done, 0, r->per * r->points, 0);
+    e->end = e->start;
+    gm_AddTime(&e->end, 0, 0, 1);
+    gm_FindById(0, &o, 0, r->cart);
     if (o != 0) {
-        if ((*(unsigned char *)(o + 0x13) & 0x20) != 0) {
+        if ((o->flags13 & 0x20) != 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0x20, 0);
+        cm_SendSetField(o->objId, 0x13, 1, 0x20, 0);
     }
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    n = *(unsigned char *)(o + 0x12) + *(int *)(ev + 0xb0);
-    if (n >= 0x64)
-        n = 0x64;
-    *(int *)(ev + 0xb4) = n;
+    e->clock60 = ai_Time;
+    n = o->fill + r->points;
+    if (n >= 100)
+        n = 100;
+    r->target = n;
 }
 /* 0x556ed0, the run handler of the delivery event (a Ghidra function with a jump table 0x557150 for 4 states; ROUGH): state 0 waits for the duration clock (0x4fe280 against +0xc0), asks the buildings of the person (0x4ffe90, none: free), state 1 / 2 hands the goods over and tells the owner (0x50ca50, the news 0x1c49 and 0x6273bc text, 0x53dee0 with 0x5ec, the person gets 0x4c4a60 / 0x4c3ba0 / 0x4c3c00 / 0x4c49a0 and the record is freed), the last state frees the person's flag 0x13 / 0x20 and the record */
 
@@ -15256,7 +15273,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(15, (void *)he_AllocTransport, (void *)he_RunTransport) != 0)
         return 1;
-    if (he_SetEventHandlers(16, (void *)he_Unk556dc0, (void *)he_Unk556ed0) != 0)
+    if (he_SetEventHandlers(16, (void *)he_AllocCartRepair, (void *)he_Unk556ed0) != 0)
         return 1;
     if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_Unk557190) != 0)
         return 1;
