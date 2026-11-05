@@ -376,7 +376,7 @@ typedef struct HEWATCH {                /* the watch event 0x43's words over AIJ
     int attackId;                       /* 0xd4, the id of the attack event it is bound to, -1 free (the attack's
                                            run handler 0x566830 looks for it by that) */
 } HEWATCH;
-typedef struct HEDETECT {               /* he_DetectAttack's question and answer (he_Unk566830 builds it on its stack) */
+typedef struct HEDETECT {               /* he_DetectAttack's question and answer (he_RunRobbery builds it on its stack) */
     struct AIBLD *bld;                  /* 0x0, the building attacked */
     float range;                        /* 0x4, how near a watch character has to stand to see it (5000.0f) */
     AIJOB *ev;                          /* 0x8, the attack event */
@@ -11297,7 +11297,7 @@ void cm_SendChrAnim(int a, const char *s, int c);
 int cm_SendChrGotoBuilding();
 void cm_SendChrStop(int a);
 
-/* 0x553ae0, the detection check of an attack on a building (he_Unk566830 asks it with the range 5000.0f): looks
+/* 0x553ae0, the detection check of an attack on a building (he_RunRobbery asks it with the range 5000.0f): looks
    for a free watch event 0x43 (no attack bound to it yet, of another character than the attacker's event) one of
    whose four characters stands closer to the building than the range (the 3D distance of its body to the
    building's object). Found: the event goes to d->found, its characters are stopped, the one that saw it beckons
@@ -17310,7 +17310,7 @@ void he_RunBurglary(AIJOB *ev)
         if (b != 0) {
             owner = &ai_CharsT[b->owner];
             d.bld = b;
-            d.range = 5000.0f;
+            d.range = 2500.0f;
             d.ev = ev;
             d.found = 0;
             if (he_DetectAttack(&d) != 0) {
@@ -19201,183 +19201,287 @@ void he_RunNightWatch(AIJOB *ev)
     }
     gm_AddTime(&ai_Time, 0, 0, 1);
 }
-/* 0x566830, the run handler of the attack event with up to eight attackers (the player ids at +0x8c .. +0xab, -1 = free; the target building +0xac, the attacker building +0xb0; a Ghidra miss, 3568 bytes with the jump
-   table 0x5675f4 (states -2 .. 5); ROUGH skeleton: states 0 .. 3 follow the disassembly, 4 / 5 (the fight result: loot 0x4c47e0 / 0x4c4880, the news 0x19e7 / 0x19e9 / 0x1a85 / 0x1a86 through 0x53dee0, the
-   cases 0x4c3ba0 / 0x4c3d00 (4, 1, 0x65 / 0x69) and 0x4c49a0) are summarised): the end handler (-1 / -2) releases the attackers (0x4c5230, 0x4c52e0 (id, target, leader, 0, 0, 0x627d74), 0x524260 (0, 0, id, 0)) and
-   frees; state 0 sends every attacker to the building (0x524260 (b, id, 0, ev), 0x4c5230, 0x4c52e0) and waits 4 units; state 1 waits until every attacker with a figure has arrived (0x524770 (p, b)); state 2 starts the
-   fight scene (0x553ae0 on a record {b, 5000.0f, ev, 0}, 0x4f2e30 (0x17, 1, owner, +4, b + 1); +0xb4 / +0xb8 / +0xbc = the scene, the opponent, its value) or, without a scene, ends the attack with a random
-   sound text (0x4c5410 from the three names of the table 0x62689c / 0x627d8c) and state 5; state 3 waits for the scene (0x4c3ae0) and the opponent event (0x53e400 (1, 1, +0xb8), day +0xd4 == +4) and then
-   hands the scene result (0x4c3b10, 0x4c4ed0) over; state 4 (waits 6 units while the opponent event runs) and state 5 settle the result (ROUGH) */
-
-void he_Unk566830(int ev)
+typedef struct HEROBBERY {                 /* the robbery event 0x75's words over AIJOB's union (he_AllocDueInOne / he_RunRobbery),
+                                           laid out as the burglary's HEBURGLARY; the gang is AIJOB.ids */
+    char pad00[0xac];
+    int target;                         /* 0xac, the id of the building raided */
+    int home;                           /* 0xb0, the id of the gang's building, where it goes back to */
+    int slot;                           /* 0xb4, the cm slot of the accusation (gv_Accuse) when the watch saw it, -1: none */
+    int watch;                          /* 0xb8, the id of the patrol event 0x43 that saw it (HEDETECT.found) */
+    int guardBld;                       /* 0xbc, that patrol's start building (patrolStart), which counts the reward */
+} HEROBBERY;
+/* 0x566830, the run handler of the robbery event 0x75 ("Raubzug", HEROBBERY; alloc handler he_AllocDueInOne), the
+   burglary's twin (he_RunBurglary): the gang is AIJOB.ids. Stage 0 sends the gang to the target ("Raubzug"; no
+   target: freed), stage 1 waits (4 minutes) until every member with a scene character is at its door; stage 2: a
+   patrol that sees it (he_DetectAttack, range 5000) makes the accusation 0x17 (gv_Accuse, the slot kept) and binds
+   it (stage 3); else the gang breaks in, each member with a gesture of three (cm_SendChrAnim), stage 5 in 15 minutes.
+   Stage 3 waits for the accusation, then the patrol's character executes the proof (stage 4, 10 minutes); stage 4
+   waits (6 minutes) while the patrol is still bound, then the gang's player pays the patrol's character a reward
+   (gm_PlayerFactor of 550 + a random 0 .. 199; the news 0x19ea / 0x19eb), the patrol's start building counts it
+   (field 0x65), every member loses 100 + a random 0 .. 99 health and the gang walks home ("Entdeckt"); freed.
+   Stage 5 (no target or player: stage -2) brings the gang home (gm_SkillPoints 2 each) and accuses the owner's
+   building; an unprotected target (he_NoProtectionEvent) loses 0.35 of its worth (gm_BuildingValues) to the
+   player and, with a home store (0x116), each goods of the target's stall (0x2a), by half a chance, n * 0.1 of its
+   amount (at least 1, n the gang's size) sold into the store and counted at its price (no store: the loot is lost);
+   the player gets the loot list (0x1a85), the owner 0x1a86; a failed robbery tells the player 0x19e7 and the owner
+   0x19e9; freed. Stages -2 / -1 send the gang home ("Raubzug") and free the record
+   @deep Reconstructed whole against 0x566830..0x5675f3 as the twin of he_RunBurglary (switch tables equal,
+   1155 vs 1151 instructions, no ref / literal difference): stage 0 the gang to the target 'Raubzug', 1 the
+   door wait (index loop), 2 he_DetectAttack range 2500 / gv_Accuse 0x17 or the break-in with the three
+   gestures names[3][64] (cm_SendChrAnim), 3 cm_GetSlotState / cm_SendProofExecuted (gm_FindChar of the
+   watch id), 4 the reward gm_PlayerFactor(550 + rand 200), news 0x19ea / 0x19eb, field 0x65, health -100 -
+   rand 100, home 'Entdeckt', 5 the theft (gm_SkillPoints, 0.35 of gm_BuildingValues, the field 0x69 with
+   &store as the original, the stall goods into the 0x116 store, the no-store text, gm_PlayerRecord, news
+   0x1a85 / 0x1a86 / 0x19e7 / 0x19e9), -2 / -1 home. Tried: room without the zero init (fixed most regs),
+   ok = 1 before gv_Accuse (push esi). Left: allocation as in he_RunBurglary's @deep: ours keeps a
+   zero-valued variable (store / n) in ebp and uses it for the 0 pushes and compares (cmp reg, ebp vs test
+   reg, reg; push ebp vs push 0 at +0xd0, +0x26d, +0x34e, +0x3e8 ..), the original spills both to
+   [esp+0x14] / [esp+0x30] and reuses ebp (room in case -1, +0xd22; the counter in case 0 / 2); d.found
+   held in esi across gv_Accuse in the original, reloaded after it in ours (+0x2de, 27 lines); frame 0x800
+   vs 0x7f4 (the original packs reward with master and room with stall into one slot each). */
+void he_RunRobbery(AIJOB *ev)
 {
-    int st, b, p, i, id, lead, e, r, idx, owner;
-    int *slot;
-    HEDETECT rec;
-    char names[3][0x40];
+    HEROBBERY *x = (HEROBBERY *)ev;
+    AIBLD *b, *g, *gb;
+    AICHAR *c, *owner, *master, *guard;
+    AIOBJ *room, *stall, *store = 0, *it;
+    HEWATCH *w;
+    HEDETECT d;
+    AIJOB *patrol;
+    HEFINVIEW *fin;
+    CRIME *cr;
+    int vals[2];
+    char names[3][64] = { "gestik/mit_faust_droh", "gestikg/herranwinken", "spezial/meckern" };
     char text[0x200];
+    char line[0x100];
+    int k, ok, money, amt, reward;
+    int n = 0;
 
-    memset(names, 0, sizeof(names));
-    lead = 0;
-    st = *(int *)(ev + 0x70);
-    switch (st) {
-    case -2:
-    case -1:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-        if (b != 0)
-            lead = gm_GetGebaeudeHauptraum(b);
-        for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
-            if (*slot == -1)
-                continue;
-            p = gm_FindChar(*slot);
-            if (p == 0)
-                continue;
-            cm_SendChrStop(*slot);
-            if (b != 0 && lead != 0)
-                cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_627d74);
-            else
-                cm_SendChrGotoBuilding(*slot, -1, -1, 0, 0, (unsigned)&full_data_627d74);
-            sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
-        }
-        he_FreeEvent((int *)ev);
-        return;
+    switch (ev->stage) {
     case 0:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0)
+            break;
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], b->id, -1, 0, 1, "Raubzug");
+            }
         }
-        for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
-            if (*slot == -1)
-                continue;
-            p = gm_FindChar(*slot);
-            if (p == 0)
-                continue;
-            sv_MoveToGroup(b, *(unsigned short *)p, 0, ev);
-            cm_SendChrStop(*slot);
-            cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), -1, 0, 1, (unsigned)&full_data_627d74);
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 4, 0);
-        *(int *)(ev + 0x70) = 1;
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 4, 0);
+        ev->stage = 1;
         return;
     case 1:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
-            if (*slot == -1)
-                continue;
-            p = gm_FindChar(*slot);
-            if (p != 0 && *(int *)(p + 0x184) != 0 && sv_IsAtDoor(p, b) == 0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0, 4, 0);
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0 && c->model != 0
+                && sv_IsAtDoor(c, b) == 0) {
+                ev->end = ai_Time;
+                gm_AddTime(&ev->end, 0, 4, 0);
                 return;
             }
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        *(int *)(ev + 0x70) = 2;
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0, 1);
+        ev->stage = 2;
         return;
     case 2:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
         if (b != 0) {
-            idx = *(unsigned short *)(b + 0x27);
-            rec.bld = (AIBLD *)b;
-            rec.range = 5000.0f;
-            rec.ev = (AIJOB *)ev;
-            rec.found = 0;
-            if (he_DetectAttack(&rec) != 0) {
-                *(int *)(ev + 0xb4) = gv_Accuse(0x17, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)((unsigned)&ai_Chars + idx * 0x21c + 4), *(int *)(b + 1));
-                *(int *)(ev + 0xb8) = rec.found->id;
-                *(int *)(ev + 0xbc) = rec.found->unkb0;
-                *(int *)(ev + 0x70) = 3;
-                *(AITIME *)(ev + 0x52) = ai_Time;
+            owner = &ai_CharsT[b->owner];
+            d.bld = b;
+            d.range = 2500.0f;
+            d.ev = ev;
+            d.found = 0;
+            if (he_DetectAttack(&d) != 0) {
+                patrol = d.found;
+                x->slot = gv_Accuse(0x17, 1, ai_CharInts[ev->chr][0], owner->netId, b->id);
+                x->watch = patrol->id;
+                x->guardBld = patrol->patrolStart;
+                ev->stage = 3;
+                ev->end = ai_Time;
                 return;
             }
         }
-        for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
-            if (*slot == -1)
-                continue;
-            p = gm_FindChar(*slot);
-            if (p == 0)
-                continue;
-            sv_MoveToGroup(b, *(unsigned short *)p, 0, ev);
-            cm_SendChrStop(*slot);
-            cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), -1, 0, 0, (unsigned)&full_data_627d74);
-            ((void (*)(int, const char *))cm_SendChrAnim)(*slot, names[(unsigned short)((int (*)(int, int))util_Random)(3, 1)]);
-        }
-        *(int *)(ev + 0x70) = 5;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0xf, 0);
-        return;
-    case 3:
-        if (*(int *)(ev + 0xb4) != -1 && cm_GetSlotState(*(int *)(ev + 0xb4)) == 0)
-            return;
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        e = (int)he_FindEvent(1, 1, *(int *)(ev + 0xb8));
-        if (b != 0 && e != 0 && *(int *)(e + 0xd4) == *(int *)(ev + 4) && *(int *)(ev + 0xb4) != -1) {
-            p = gm_FindChar(*(int *)(ev + 0xb8));
-            r = cm_GetSlotValue(*(int *)(ev + 0xb4));
-            if (p != 0 && r != 0)
-                cm_SendProofExecuted(*(int *)r, *(int *)(p + 4));
-            *(int *)(ev + 0x70) = 4;
-            gm_AddTime(ev + 0x52, 0, 10, 0);
-            return;
-        }
-        *(int *)(ev + 0x70) = -1;
-        return;
-    case 4:
-        e = (int)he_FindEvent(1, 1, *(int *)(ev + 0xb8));
-        if (e == 0) {
-            *(int *)(ev + 0x70) = -1;
-            return;
-        }
-        if (*(int *)(e + 0xd4) == *(int *)(ev + 4)) {
-            gm_AddTime(ev + 0x52, 0, 6, 0);
-            return;
-        }
-        /* the fight result: loot from the opponent building to the attackers, the news of the owner / attacker, the cases
-           of the attackers released (ROUGH, see the header) */
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        owner = gm_FindChar(*(unsigned short *)(ev + 8) * 0 + *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c));
-        if (b != 0 && owner != 0) {
-            ((void (*)(int))gm_PlayerFactor)(0x226 + (unsigned short)((int (*)(int, int))util_Random)(0xc8, U_I((unsigned)&ai_OwnPlayer)));
-            txt_Format(text, 0x19ea, b, 0, 0);
-            he_ShowNews(*(int *)(owner + 4), *(int *)(owner + 4), text, 1, 0x5f0, (unsigned)&full_data_627a10);
-        }
-        for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
-            if (*slot == -1)
-                continue;
-            p = gm_FindChar(*slot);
-            if (p != 0)
-                gm_AddHealth(*(unsigned short *)p, -100 - (unsigned short)util_Random(100));
-        }
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        lead = gm_GetGebaeudeHauptraum(b);
-        for (i = 0, slot = (int *)(ev + 0x8c); i < 8; i++, slot++) {
-            if (*slot != -1) {
-                cm_SendChrStop(*slot);
-                cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), *(int *)(lead + 2), 0, 0, (unsigned)&full_data_6279f0);
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], b->id, -1, 0, 0, "Raubzug");
+                cm_SendChrAnim(ev->ids[k], names[(unsigned short)util_Random(3)], 1);
             }
         }
-        he_FreeEvent((int *)ev);
+        ev->stage = 5;
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0xf, 0);
         return;
-    case 5:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        owner = gm_FindChar(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c));
-        if (b != 0 && owner != 0) {
-            txt_Format(text, 0x19e7, *(unsigned short *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), 0x19c1, b);
-            he_MessageBoxQuickjump(*(int *)(owner + 4), *(int *)(owner + 4), text, 1, 0x5f0, *(int *)(b + 1), -1, 0, (unsigned)&ch_EmptyName);
+    case 3:
+        if (x->slot != -1 && cm_GetSlotState(x->slot) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
+        if (b == 0 || w == 0 || w->attackId != ev->id || x->slot == -1) {
+            ev->stage = -1;
+            return;
         }
-        *(int *)(ev + 0x70) = -2;
+        guard = (AICHAR *)gm_FindChar(x->watch);
+        cr = (CRIME *)cm_GetSlotValue(x->slot);
+        if (guard != 0 && cr != 0)
+            cm_SendProofExecuted(cr->id, guard->netId);
+        ev->stage = 4;
+        gm_AddTime(&ev->end, 0, 10, 0);
         return;
+    case 4:
+        w = (HEWATCH *)he_FindEvent(1, 1, x->watch);
+        if (w == 0) {
+            ev->stage = -1;
+            return;
+        }
+        if (w->attackId == ev->id) {
+            gm_AddTime(&ev->end, 0, 6, 0);
+            return;
+        }
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b != 0) {
+            master = (AICHAR *)gm_FindChar(ai_CharInts[ev->chr][0]);
+            guard = &ai_CharsT[((AIJOB *)w)->chr];
+            if (guard != 0 && master != 0) {
+                reward = gm_PlayerFactor((unsigned short)util_Random(200) + 0x226, ai_OwnPlayer);
+                txt_Format(text, 0x19ea, b, reward, guard->id);
+                he_ShowNews(master->netId, master->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_76");
+                txt_Format(text, 0x19eb, b, reward);
+                he_ShowNews(guard->netId, guard->netId, text, 1, 0x5f0, "_NACHRICHTEN_HS_77");
+                cm_SendMoveGoodsUnchecked(guard->netId, master->netId, ai_OwnPlayer, reward);
+            }
+            gb = (AIBLD *)gm_BuildQuery(1, 1, x->guardBld);
+            if (gb != 0) {
+                cm_BeginFieldBlock((char *)gb, gb->id);
+                cm_AddFieldValues(4, 1, 0x65, &reward);  /* 0x65: the counter AIBLD.unk65 */
+                cm_SendFieldDeltas();
+            }
+        }
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0)
+                gm_AddHealth(c->id, -100 - (unsigned short)util_Random(100));
+        }
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
+        if (g == 0)
+            break;
+        room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1) {
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Entdeckt");
+            }
+        }
+        break;
+    case 5:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        master = (AICHAR *)gm_FindChar(ai_CharInts[ev->chr][0]);
+        if (b == 0 || master == 0) {
+            ev->stage = -2;
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
+        if (g != 0) {
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+            store = (AIOBJ *)gm_Query((void *)g->objList, 2, 6, 0, 0x116);
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                    cm_SendChrStop(ev->ids[k]);
+                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Raubzug");
+                    n++;
+                    gm_SkillPoints(c, 2);
+                    sv_MoveToGroup((unsigned char *)g, 0, c->id, 0);
+                }
+            }
+            ok = 1;
+            gv_Accuse(0x17, ok, ai_CharInts[ev->chr][0], owner->netId, b->id);
+        } else {
+            ok = 0;
+        }
+        if (he_NoProtectionEvent((int)b) != 0 && ok) {
+            char loot[0x400];
+
+            loot[0] = ch_EmptyName[0];
+            memset(loot + 1, 0, sizeof(loot) - 1);
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+            gm_BuildingValues(b, vals);
+            money = (int)(vals[0] * 0.35);
+            txt_Format(line, "$Z%T$A", money);
+            strcat(loot, line);
+            cm_SendMoveGoods(master->netId, owner->netId, ai_OwnPlayer, money);
+            cm_BeginFieldBlock((char *)g, g->id);
+            cm_AddFieldValues(4, 1, 0x69, &store);  /* @original: the address of store, not of money (he_RunBurglary passes &money) */
+            cm_SendFieldDeltas();
+            if (stall != 0) {
+                if (store != 0) {
+                    for (it = (AIOBJ *)gm_Query((void *)stall->list, 1, 5); it != 0; it = (AIOBJ *)gm_QueryNext()) {
+                        if ((unsigned short)util_Random(100) > 0x32) {
+                            amt = gm_ListAmount(stall, it);
+                            amt = (int)(amt * (n * 0.1));
+                            if (amt < 1)
+                                amt = 1;
+                            sprintf(line, "%i %s$A", amt, (char *)txt_ObjectNames[it->id][0]);
+                            strcat(loot, line);
+                            cm_SendExSellObject(store->objId, stall->objId, it->id, amt, ai_OwnPlayer, 0);
+                            money = (int)(gm_GoodsPrice(it->id, ai_OwnPlayer) * amt + money);
+                        }
+                    }
+                } else {
+                    strcpy(loot, "Leider besitzt Ihr keinen Lagerraum und m\xfc\xdft einiges Diebsgut zur\xfc" "cklassen!");
+                }
+            }
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)master);
+            if (fin != 0)
+                fin->burglaryTakings += money;
+            if (master->kind == 6 || master->kind == 7) {
+                txt_Format(text, 0x1a85, owner->id, b);
+                strcat(text, loot);
+                he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, b->id, -1, 0, ch_EmptyName);
+            }
+            if (owner->kind == 6 || owner->kind == 7) {
+                txt_Format(text, 0x1a86, b, money);
+                he_MessageBoxQuickjump(owner->netId, owner->netId, text, 0, 0x5f0, b->id, -1, 0, ch_EmptyName);
+            }
+        } else {
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            if (b == 0)
+                break;
+            if (master->kind == 6 || master->kind == 7) {
+                txt_Format(text, 0x19e7, owner->id, b, 0x19c1);
+                he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, b->id, -1, 0, ch_EmptyName);
+            }
+            if (owner->kind == 6 || owner->kind == 7) {
+                txt_Format(text, 0x19e9, b);
+                he_MessageBoxQuickjump(owner->netId, owner->netId, text, 1, 0x5f0, b->id, -1, 0, 0);
+            }
+        }
+        break;
+    case -2:
+    case -1:
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
+        if (g != 0)
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+        for (k = 0; k < 8; k++) {
+            if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                cm_SendChrStop(ev->ids[k]);
+                if (g != 0 && room != 0)
+                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "Raubzug");
+                else
+                    cm_SendChrGotoBuilding(ev->ids[k], -1, -1, 0, 0, "Raubzug");
+                sv_MoveToGroup(0, 0, c->id, 0);
+            }
+        }
+        break;
     default:
-        he_FreeEvent((int *)ev);
         return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x567620, a Ghidra miss: the allocation handler of a periodic check, the next run is 20 units ahead */
 
@@ -19903,7 +20007,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(115, (void *)he_Unk5662d0, (void *)he_RunNightWatch) != 0)
         return 1;
-    if (he_SetEventHandlers(117, (void *)he_AllocDueInOne, (void *)he_Unk566830) != 0)
+    if (he_SetEventHandlers(117, (void *)he_AllocDueInOne, (void *)he_RunRobbery) != 0)
         return 1;
     sv_RegisterActivity(117, 0, 0, 1282, -1);
     if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_Unk567660) != 0)

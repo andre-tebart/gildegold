@@ -2543,3 +2543,4 @@
 2026-11-05T22:42:39 0x00565850 func he_Unk565850 -> he_AllocNewWorker by:main why:the alloc handler of event 0x6e (he_SetEventHandlers 110 with he_RunNewWorker): fills HENEWWORKER.slot with the hire message's send slot
 2026-11-05T22:44:59 0x00565db0 func he_Unk565db0 -> he_RunKillPlayer by:main why:the run handler of event 0x72 (he_SetEventHandlers 114), the alloc handler's error he_AllocKillPlayer: player not found; kills the character (cm_SendKillCharacter)
 2026-11-05T22:47:29 0x00566370 func he_Unk566370 -> he_RunNightWatch by:main why:the run handler of event 0x73 (he_SetEventHandlers 115): the _NACHTWAECHTER_ bell and announcements at the morning / evening hours
+2026-11-05T22:53:01 0x00566830 func he_Unk566830 -> he_RunRobbery by:main why:the run handler of event 0x75 (he_SetEventHandlers 117): the gang sent with Raubzug, the burglary's twin (he_RunRaid is the Razzia 0x44)
