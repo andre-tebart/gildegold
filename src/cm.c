@@ -838,9 +838,9 @@ void cm_LowerSpeedLevel(void)
         cm_SendExSysMessage(0x12, buf);
     }
 }
-/* 0x4c3f80 */
+/* 0x4c3f80, returns the speed level cm_SpeedLevel (unsigned: he_MoveReaper converts it as one) */
 
-int ai_Unk4c3f80(void)
+unsigned int cm_GetSpeedLevel(void)
 {
     return cm_SpeedLevel;
 }

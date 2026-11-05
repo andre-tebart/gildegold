@@ -8880,74 +8880,91 @@ void he_Unk547170(int ev)
     gm_AddTime(ev + 0x52, 2, 0, 0);
 }
 
-int ai_Unk4c3f80();
+unsigned int cm_GetSpeedLevel(void);
 
-/* 0x550370, per-tick move of the "Sensenmann" object (+0xc8) of the event record towards the scene record of +0xb4 (ROUGH, from the disassembly; the vector math is approximate): cached object missing or without lamp -> 0; when the object flag +0x1d0 of the target lamp is set the clock +0xec is refreshed and 1 returned; the horizontal distance (0x458a20 positions) below 45.0 ends the movement (+0xc4 = 0, returns 2), else the object is moved by the time since +0xec times a random wobble (0x4c3f80, 0x454560 normalises, 0x45f170 reads the ground height, + 80.0 above it) and 1 is returned */
-int he_Unk550370(int ev)
+/* 0x550370, one step of the reaper's flight to the building reaperTo (in scene 0): while the object follows a path
+   animation only the clock reaperClock is refreshed; else the target is the point 80 above the ground under
+   reaperTo's object: closer than 45 (horizontally) the flight ends (reaperPlaced = 0, returns 2); otherwise the
+   object moves along the direction by the time since reaperClock times a speed of 0.5 + 0.25 per cm_SpeedLevel,
+   rising (0.978 per time unit, with a tenth of the step) while it is less than 80 above the ground there, and its
+   position and angles are cached; 1 = flying, 0 = the object or the building missing
+   @deep Read whole against the original and rewritten typed: AIJOB reaper fields, reaperClock unsigned
+   (the original zero-extends it to a qword before the fisub), D3OBJECT.path at 0x1d0 (the path animation,
+   d3_anim.h D3PATH) for the early clock refresh, d3_Scenes[0].hmap for both d3_GetHeightAt calls, the
+   D3VECTOR4 target/at/dir with target reused for the new position, dist < 45.0f (test ah,5/jp), ground +
+   80 > target.y (and 0x4100/jne), step = (float)d3_Time - reaperClock then * (cm_GetSpeedLevel()
+   (unsigned: fild qword) * 0.25f + 0.5f), the 0.978 double and the 0.1f rise, ret 2 / 1 through ebx. 234
+   vs 236 instructions; diffclass: slots 80, frame 78, regs 56, order 44, fpu 26 and code 28 that are all
+   allocation: the original zeroes ebp and compares / pushes it (ours test reg,reg / push 0), keeps the
+   scene in edi and also spills it to [esp+0x14] (reloaded mov edi,[esp+0x20] before the last
+   d3if_SelectScene), loads the height map into edi before the second d3_GetHeightAt (ours mov eax,[X] at
+   the push), returns ebx where ours returns edi, and its frame is 0x50 vs ours 0x48 (stack offsets shifted
+   by 8). The prover stops on the escaped frame layout (ours frame+0x8 = nothing, the original's = the
+   spilled d3_CurrentScene). */
+int he_MoveReaper(int ev)
 {
-    int sc = U_I((unsigned)&d3_CurrentScene);
-    int out[2];
-    int o, a, rv;
-    float A[3], B[3], d[3], n[3], np[3], dist, dt, w, h, ground;
+    AIJOB *e = (AIJOB *)ev;
+    int scene = d3_CurrentScene;
+    AIBLD *bld;
+    D3VECTOR4 target, at, dir;
+    float dist, step, ground;
+    int x, z, ret;
 
-    out[0] = 0;
-    out[1] = 0;
     d3if_SelectScene(0, 1);
-    if (*(int *)(ev + 0xc8) == 0 || *(int *)(*(int *)(ev + 0xc8) + 0x1cc) == 0 || *(int *)(*(int *)(*(int *)(ev + 0xc8) + 0x1cc) + 0x10) == 0)
-        goto fail;
-    gm_FindById(out, 0, 0, *(int *)(ev + 0xb4));
-    o = out[0];
-    if (o == 0)
-        goto fail;
-    a = *(int *)(o + 0x61);
-    if (a == 0 || *(int *)(a + 0x1cc) == 0 || *(int *)(*(int *)(a + 0x1cc) + 0x10) == 0)
-        goto fail;
-    if (*(int *)(*(int *)(ev + 0xc8) + 0x1d0) != 0) {
-        *(int *)(ev + 0xec) = U_I((unsigned)&d3_Time);
-        d3if_SelectScene(sc, 1);
-        return 1;
+    if (e->reaper != 0 && e->reaper->info != 0 && e->reaper->info->mesh != 0) {
+        gm_FindById((int *)&bld, 0, 0, e->reaperTo);
+        if (bld != 0 && bld->object != 0 && ((D3OBJECT *)bld->object)->info != 0
+            && ((D3OBJECT *)bld->object)->info->mesh != 0) {
+            if (e->reaper->path != 0) {
+                e->reaperClock = d3_Time;
+                d3if_SelectScene(scene, 1);
+                return 1;
+            }
+            d3_PointToWorld((D3OBJECT *)bld->object, &((D3OBJECT *)bld->object)->pos, (D3VECTOR *)&target);
+            d3_PointToWorld(e->reaper, &e->reaper->pos, (D3VECTOR *)&at);
+            dir.x = target.x - at.x;
+            dir.y = 0.0f;
+            dir.z = target.z - at.z;
+            dist = (float)sqrt(dir.z * dir.z + dir.x * dir.x);
+            d3_GetHeightAt((D3SM *)d3_Scenes[0].hmap, (D3VECTOR *)&target, &x, &z, &ground);
+            target.y = ground + 80.0f;
+            dir.x = target.x - at.x;
+            dir.y = target.y - at.y;
+            dir.z = target.z - at.z;
+            if (dist < 45.0f) {
+                e->reaperPlaced = 0;
+                ret = 2;
+            } else {
+                ret = 1;
+                step = (float)d3_Time - e->reaperClock;
+                step = ((float)cm_GetSpeedLevel() * 0.25f + 0.5f) * step;
+                e->reaperClock = d3_Time;
+                d3_Normalize(&dir);
+                dir.x = step * dir.x;
+                dir.y = step * dir.y;
+                dir.z = step * dir.z;
+                target.x = dir.x + at.x;
+                target.y = dir.y + at.y;
+                target.z = dir.z + at.z;
+                d3_GetHeightAt((D3SM *)d3_Scenes[0].hmap, (D3VECTOR *)&target, &z, &x, &ground);
+                if (ground + 80.0f > target.y) {
+                    target.y = step * 0.978 + target.y;
+                    target.x = step * dir.x * 0.1f + at.x;
+                    target.z = step * dir.z * 0.1f + at.z;
+                }
+                e->reaperRot.x = e->reaper->rotation.x;
+                e->reaperRot.y = e->reaper->rotation.y;
+                e->reaperRot.z = e->reaper->rotation.z;
+                e->reaperPos.x = target.x;
+                e->reaperPos.y = target.y;
+                e->reaperPos.z = target.z;
+                d3_SetObjectPos(e->reaper, (D3VECTOR *)&target);
+            }
+            d3if_SelectScene(scene, 1);
+            return ret;
+        }
     }
-    d3_PointToWorld(a, a + 0x4c, A);
-    d3_PointToWorld(*(int *)(ev + 0xc8), *(int *)(ev + 0xc8) + 0x4c, B);
-    d[0] = A[0] - B[0];
-    d[2] = A[2] - B[2];
-    d[1] = 0.0f;
-    dist = (float)sqrt(d[0] * d[0] + d[2] * d[2]);
-    d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), B, &ground, 0, 0);
-    h = ground + 80.0f;
-    n[0] = dist - B[0];
-    n[1] = h - B[1];
-    n[2] = d[1] - B[2];
-    if (*(float *)&out[1] == 45.0f) {
-        *(int *)(ev + 0xc4) = 0;
-        rv = 2;
-        d3if_SelectScene(sc, 1);
-        return rv;
-    }
-    dt = (float)((double)U_I((unsigned)&d3_Time) - (double)*(unsigned int *)(ev + 0xec));
-    w = (float)ai_Unk4c3f80() * 0.25f + 0.5f;
-    *(int *)(ev + 0xec) = U_I((unsigned)&d3_Time);
-    d3_Normalize(np);
-    np[0] = np[0] * w * dt + n[0];
-    np[1] = np[1] * w * dt + n[1];
-    np[2] = np[2] * w * dt + n[2];
-    d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), np, &ground, 0, 0);
-    if (!(ground + 80.0f > np[1])) {
-        np[1] = dt * 0.978 + np[1];
-        np[0] = dt * n[0] * 0.1f + np[0];
-        np[2] = dt * n[2] * 0.1f + np[2];
-    }
-    *(int *)(ev + 0xe0) = *(int *)(*(int *)(ev + 0xc8) + 0x84);
-    *(int *)(ev + 0xe4) = *(int *)(*(int *)(ev + 0xc8) + 0x88);
-    *(int *)(ev + 0xe8) = *(int *)(*(int *)(ev + 0xc8) + 0x8c);
-    *(float *)(ev + 0xd0) = np[0];
-    *(float *)(ev + 0xd4) = np[1];
-    *(float *)(ev + 0xd8) = np[2];
-    d3_SetObjectPos(*(int *)(ev + 0xc8), np);
-    d3if_SelectScene(sc, 1);
-    return 1;
-fail:
-    d3if_SelectScene(sc, 1);
+    d3if_SelectScene(scene, 1);
     return 0;
 }
 /* 0x5506c0, starts the "Sensenmann" flight (ROUGH, disassembled): needs the lamp of the object +0xc8 and of the scene record +0xb4 (0x4fea50); the target position (0x458a20 of the record's object, + the lamp height +0x1d4 + 80.0) and the current one give a vector, 0x453b40 normalises it against the object's +0x84 vector, the object's +0x84 .. is cached in +0xe0 .. and the target in +0xd0 .., +0xc4 = 1; returns 1 or 0 */
@@ -9101,7 +9118,7 @@ void he_Unk550b60(int ev)
     }
     *(AITIME *)(ev + 0x52) = ai_Time;
     if (st == 0) {
-        r = he_Unk550370(ev);
+        r = he_MoveReaper(ev);
         if (r == 1) {
             *(int *)(ev + 0x70) = 0;
             gm_AddTime(ev + 0x52, 0, 2, 0);

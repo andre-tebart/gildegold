@@ -80,7 +80,7 @@ struct D3OBJECT {
     } views[10];
     D3MATRIX matrix;                /* 0x18c */
     struct D3OBJINFO *info;         /* 0x1cc, the mesh data holder (D3OBJINFO / D3SMMESH / D3ANIMCTL views) */
-    char pad1d0[0x4];
+    struct D3PATH *path;            /* 0x1d0, the path animation it follows (d3_anim.h D3PATH, D3_OBJPATH), 0: none */
     union {
         float radius;               /* 0x1d4, the mesh driver's radius (D3LOPS::radius, d3_light.h); read as obj->info->mesh->radius */
         D3EVENT *events;            /* 0x1d4, the object's D3E_NEVENTS event handlers (d3e_RegisterEvent: D3OBJX.events), 0 = none */

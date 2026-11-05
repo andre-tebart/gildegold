@@ -233,7 +233,7 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
     union {
         unsigned char stormDue;         /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
                                            damages the buildings once, then clears it */
-        int reaperClock;                /* 0xec, of the reaper event: d3_Time when its object was placed / last moved */
+        unsigned long reaperClock;      /* 0xec, of the reaper event: d3_Time when its object was placed / last moved */
     };
     unsigned char modes;                /* 0xf0, of a kind 0x11 bit 0x40: the game pauses while its event window is active (he_PickActiveEvent) */
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
