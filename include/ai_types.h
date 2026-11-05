@@ -167,6 +167,17 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                            examines), 1 the feast event examFeast (its host examines) */
             int examFeast;              /* 0xc0, the id of that feast event (kind 0x37, he_FindEvent) */
         };
+        struct {                        /* 0xac, of the tribute event 0x35 (alloc handler 0x544070, run handler 0x544330;
+                                           the collector's netId is idbc) */
+            AITIME tributeEnd;          /* 0xac, the end of the collection: a day after its start */
+            char padtrib[0xa];
+            int tributeNext;            /* 0xc4, the ai_Chars index the next round starts at, random at the start */
+            int tributeStride;          /* 0xc8, the step from one character to the next (mod 0x300), a random
+                                           ai_CharWalkSteps entry */
+            int tributeLeft;            /* 0xcc, the characters left to visit, 0x300 at the start */
+            float tributeSkill;         /* 0xd0, the event character's skill 4 (gm_GetSkill), mixed with each visited
+                                           character's to the relation change */
+        };
     };
     unsigned char stormDue;             /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
                                            damages the buildings once, then clears it */

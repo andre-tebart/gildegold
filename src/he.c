@@ -2575,57 +2575,58 @@ void ai_ShowTributeDelayedNews(int param_1);
 void ai_ShowTributeCollectNews(int param_1);
 void ai_ShowTributeClaimNews(int param_1, int param_2);
 
-/* 0x544070, a Ghidra miss (disassembled): the init of the tribute / levy event (record fields +0xbc = the collector's id, +0xc4 = a random start slot of 0x300, +0xc8 = a random entry of the table 0x5ed100, +0xcc = 0x300 players left, +0xd0 = the 0x504ec0 amount): with more than 4 running events of type 0x35 the event is posted again (and 0x5a8d00 called), else the clocks are set, the message 0x4f2e30 (3, 1, ..) is sent and, by the 0x15c ability (0x5ba6b0) of the collector, 0x5a8d80 / 0x5a8d40 is called (ROUGH) */
-void he_Unk544070(int ev)
+/* 0x544070, a Ghidra miss (disassembled): the alloc handler of the tribute event 0x35, once it is started (opts bit 4
+   clear). Without its collector (idbc) the event is re-posted; with more than four tribute events running it is
+   re-posted and the event's character hears the delay (ai_ShowTributeDelayedNews). Else it runs from now to a day
+   later (tributeEnd), the first round due in a minute; the character pays 1 (gm_SendMoneyDelta) and is accused
+   (gv_Accuse 3, 1 with the collector and the character's home building), the round robin over all 0x300 characters
+   starts at a random one with a random stride, and the character's skill 4 is kept. A collector holding the good
+   0x15c re-posts it and tells of the claim (ai_ShowTributeClaimNews), else ai_ShowTributeCollectNews and the event is
+   posted with key 0 */
+void he_AllocTribute(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *coll;
     int n = 0;
-    int pl, r, t, t2, idx;
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        pl = gm_FindChar(*(int *)(ev + 0xbc));
-        if (pl == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-            return;
-        }
-        r = (int)he_FindEvent(1, 0, 0x35);
-        if (r != 0) {
-            do {
-                n++;
-            } while ((r = (int)he_NextEvent()) != 0);
-            if (n > 4) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-                ai_ShowTributeDelayedNews((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
-                return;
-            }
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0xac) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        gm_AddTime(ev + 0xac, 0x18, 0, 0);
-        idx = *(unsigned short *)(ev + 8) * 0x21c;
-        gm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + idx), -1);
-        t = U_I(((unsigned)&ai_Unk770cec + 0x4) + idx);
-        if (t != 0)
-            t2 = *(int *)(t + 1);
-        else
-            t2 = -1;
-        gv_Accuse(3, 1, U_I((unsigned)&ai_CharInts + idx), *(int *)(ev + 0xbc), t2);
-        *(int *)(ev + 0xc4) = util_Random(0x300) & 0xffff;
-        *(int *)(ev + 0xc8) = U_I((unsigned)&ai_CharWalkSteps + (util_Random(0x10) & 0xffff) * 4);
-        *(float *)(ev + 0xd0) = gm_GetSkill((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 4);
-        *(int *)(ev + 0xcc) = 0x300;
-        if (ai_InventoryHas(pl, 0x15c) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-            ai_ShowTributeClaimNews(pl, (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
-            return;
-        }
-        ai_ShowTributeCollectNews(pl);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    if (e->opts & 4)
+        return;
+    coll = (AICHAR *)gm_FindChar(e->idbc);
+    if (coll == 0) {
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
     }
+    if (he_FindEvent(1, 0, 0x35) != 0) {
+        do
+            n++;
+        while (he_NextEvent() != 0);
+        if (n > 4) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            ai_ShowTributeDelayedNews((int)&ai_CharsT[e->chr]);
+            return;
+        }
+    }
+    e->end = ai_Time;
+    e->start = ai_Time;
+    e->tributeEnd = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    gm_AddTime(&e->tributeEnd, 0x18, 0, 0);
+    gm_SendMoneyDelta(ai_CharsT[e->chr].netId, -1);
+    gv_Accuse(3, 1, ai_CharsT[e->chr].netId, e->idbc, ai_CharsT[e->chr].bld2 != 0 ? ai_CharsT[e->chr].bld2->id : -1);
+    e->tributeNext = util_RandomU(0x300);
+    e->tributeStride = ai_CharWalkSteps[util_RandomU(0x10)];
+    e->tributeSkill = gm_GetSkill((char *)&ai_CharsT[e->chr], 4);
+    e->tributeLeft = 0x300;
+    if (ai_InventoryHas(coll, 0x15c) != 0) {
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        ai_ShowTributeClaimNews((int)coll, (int)&ai_CharsT[e->chr]);
+        return;
+    }
+    ai_ShowTributeCollectNews((int)coll);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 /* ---- drafted out of address order (the big 0x53f6b0 / 0x541b40 / 0x5437c0 are still missing above this point; move the functions below into address order when those exist) ---- */
@@ -9313,7 +9314,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_RunFeastExam) != 0)
         return 1;
-    if (he_SetEventHandlers(0x35, (void *)he_Unk544070, (void *)he_Unk544330) != 0)
+    if (he_SetEventHandlers(0x35, (void *)he_AllocTribute, (void *)he_Unk544330) != 0)
         return 1;
     if (he_SetEventHandlers(0x41, (void *)he_Unk544630, (void *)he_Unk544840) != 0)
         return 1;

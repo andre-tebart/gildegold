@@ -124,7 +124,7 @@ void he_Unk545640(int ev);
 
 void he_Unk545670(int ev);
 
-void he_Unk544070(int ev);
+void he_AllocTribute(int ev);
 
 void he_SpawnFounders(void);
 extern const float he_FounderOdds[5];  /* 0x5eebc4 */
