@@ -1051,7 +1051,9 @@ typedef struct HETITLE {                /* the title ceremony event 0x69's words
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
-    char pad1c[0xc];
+    char pad1c[4];
+    int ransomTakings;                  /* 0x20, the ransoms its character took as a thieves' guild master (he_RunRansomDemand adds them) */
+    char pad24[4];
     int spyPaid;                        /* 0x28, the money paid for spies and saboteurs (ai.h AIFIN.spyPaid; he_RunSabotage adds the fee) */
     char pad2c[0x20];
     int customerTakings;                /* 0x4c, the money its character's customers paid (he_RunCustomers adds it) */
@@ -17052,35 +17054,134 @@ void he_AllocEvent39_3e(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 1, (unsigned short)util_Random(0x1e) - 0x14, 0);
 }
-/* 0x5614c0, the run handler of the ransom demand ("locations\diebesgilde\Diebesgilde_Loesegeld_Msg" window; ROUGH skeleton, 1376 bytes): opens the thieves guild message (0x53d6f0, d2_SetForm), shows the demand (0x515960, the news 0x53dda0), the answer pays (0x4c4830 / 0x4c5fa0, 0x4c3ba0 / 0x4c3c00 / 0x4c49a0, the player record) or refuses (a random reaction 0x53dee0), the thief figure leaves (0x55eba0, 0x4c52e0); the window is closed and the record freed */
+typedef struct HEEV3E {                 /* the ransom demand event 0x3e's words over AIJOB's union (he_RunRansom's message 0x3e) */
+    char pad00[0xac];
+    int victim;                         /* 0xac, the netId of the kidnapped character (gm_FindChar), who is asked to pay */
+    int master;                         /* 0xb0, the netId of the guild's master (gm_FindChar), who is paid */
+    int ransom;                         /* 0xb4, the ransom */
+} HEEV3E;
 
-void he_Unk5614c0(int ev)
+/* 0x5614c0, the run handler of the ransom demand event 0x3e (HEEV3E; he_RunRansom sends its message, alloc handler
+   he_AllocEvent39_3e): no victim or master: freed. A victim that is no player character (kind 6 / 7) decides when the
+   event is due (stage 2). Stage 0 opens the window "locations\diebesgilde\Diebesgilde_Loesegeld_Msg" with the
+   demand 0x19cb; stage 1 waits for its click: 0 pays (the master is told 0x19d4, the guild's hostage field is sent -1,
+   the victim is released (message 0x5b, minus its held rounds), the ransom moves from the victim to the master, the
+   victim's figure walks back ("L\366segeld"), the guild's field 0x69, the master's player record and the guild's
+   roundSums[0] count the ransom), 1 refuses (the master gets the message box 0x19d5 with a quick jump to the guild);
+   either way the record ends (stage -1). Stage 2, the AI victim: pays as above in 79 of 100 (stage 3), else the
+   master is told 0x19d5 and the record freed. Stage 3 hands the victim's ransom event 0x3d (he_FindEvent) to the cm
+   (cm_SendExSetHE) and frees the record; stages -2 / -1 free it */
+void he_RunRansomDemand(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
+    HEEV3E *x = (HEEV3E *)ev;
+    HEEV3D *r;
+    AICHAR *victim, *master;
+    AIBLD *b;
+    HEFINVIEW *fin;
+    char text[0x200];
+    int none, bld, obj;
 
-    if (st < 0 || st > 1) {
-        if (*(int *)(ev + 0x74) != 0)
-            he_ReleaseSlot(ev);
+    victim = (AICHAR *)gm_FindChar(x->victim);
+    master = (AICHAR *)gm_FindChar(x->master);
+    if (victim == 0 || master == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        he_OpenEventSlot(ev, 0, 0, (int)"locations\\diebesgilde\\Diebesgilde_Loesegeld_Msg", 0x5fd);
-        if (*(int *)(ev + 0x74) == 0) {
-            he_FreeEvent((int *)ev);
+    if (victim->kind != 6 && victim->kind != 7 && (ev->stage == 0 || ev->stage == 2)) {
+        if (gm_CompareTime(&ev->end, &ai_Time) > 0)
+            return;
+        ev->stage = 2;
+    }
+    switch (ev->stage) {
+    case -2:
+    case -1:
+        he_FreeEvent((int *)ev);
+        return;
+    case 0:
+        he_OpenEventSlot((int)ev, 0, 0, "locations\\diebesgilde\\Diebesgilde_Loesegeld_Msg", 0x5ec);
+        d2_SetForm(ev->slot->win, 0);
+        io_PrintText(0x19cb, x->ransom);
+        ev->stage++;
+        return;
+    case 1:
+        if (d2_ClickedForm != ev->slot->win || d2_ClickedId == -1)
+            return;
+        if (d2_ClickedId == 0) {
+            none = -1;
+            b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
+            txt_Format(text, 0x19d4, victim->id, x->ransom, victim->id);
+            he_ShowNews(master->netId, master->netId, text, 0, 0x5fa, 0);
+            if (b != 0) {
+                cm_BeginFieldBlock((char *)b, b->id);
+                cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x65, &none);
+                cm_SendFieldDeltas();
+            }
+            cm_SendMessage5b(victim->netId, -victim->heldRounds, 0);
+            cm_SendMoveGoodsUnchecked(master->netId, victim->netId, ai_OwnPlayer, x->ransom);
+            if (victim->model != 0 && he_FindFigurePlace(victim, &bld, &obj, 0) != 0)
+                cm_SendChrGotoBuilding(victim->netId, bld, obj, 0, 0, "L\366segeld");
+            if (b != 0) {
+                fin = (HEFINVIEW *)gm_PlayerRecord((char *)master);
+                cm_BeginFieldBlock((char *)b, b->id);
+                cm_AddFieldValues(4, 1, 0x69, &x->ransom);  /* 0x69: AIBLD.unk69 */
+                cm_SendFieldDeltas();
+                if (fin != 0)
+                    fin->ransomTakings += x->ransom;
+                b->roundSums[0] += x->ransom;
+            }
+            ev->stage = 3;
+        } else if (d2_ClickedId == 1) {
+            b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
+            if (b == 0) {
+                he_FreeEvent((int *)ev);
+                return;
+            }
+            txt_Format(text, 0x19d5, victim->id);
+            he_MessageBoxQuickjump(master->netId, master->netId, text, 0, 0x5f0, b->id, -1, 0, 0);
+        }
+        ev->stage = -1;
+        return;
+    case 2:
+        if ((unsigned short)util_Random(100) > 0x14) {
+            none = -1;
+            b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
+            if (b == 0) {
+                he_FreeEvent((int *)ev);
+                return;
+            }
+            txt_Format(text, 0x19d4, victim->id, x->ransom, victim->id);
+            he_ShowNews(master->netId, ev->from, text, 0, 0x5fa, 0);
+            cm_BeginFieldBlock((char *)b, b->id);
+            cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x65, &none);
+            cm_SendFieldDeltas();
+            cm_SendMessage5b(victim->netId, -victim->heldRounds, 0);
+            cm_SendMoveGoodsUnchecked(master->netId, victim->netId, ai_OwnPlayer, x->ransom);
+            if (victim->model != 0 && he_FindFigurePlace(victim, &bld, &obj, 0) != 0)
+                cm_SendChrGotoBuilding(victim->netId, bld, obj, 0, 0, "L\366segeld");
+            cm_BeginFieldBlock((char *)b, b->id);
+            cm_AddFieldValues(4, 1, 0x69, &x->ransom);  /* 0x69: AIBLD.unk69 */
+            cm_SendFieldDeltas();
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)master);
+            if (fin != 0)
+                fin->ransomTakings += x->ransom;
+            b->roundSums[0] += x->ransom;
+            ev->stage = 3;
             return;
         }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
-        *(int *)(ev + 0x70) = 1;
+        txt_Format(text, 0x19d5, victim->id);
+        he_ShowNews(master->netId, master->netId, text, 0, 0x5fb, 0);
+        he_FreeEvent((int *)ev);
+        return;
+    case 3:
+        for (r = (HEEV3D *)he_FindEvent(1, 0, 0x3d); r != 0; r = (HEEV3D *)he_NextEvent()) {
+            if (r->victim == x->victim) {
+                ev->exSlot = cm_SendExSetHE(-1, ev);
+                break;
+            }
+        }
+        he_FreeEvent((int *)ev);
         return;
     }
-    if (U_I((unsigned)&d2_ClickedId) == -1)
-        return;
-    if (U_I((unsigned)&d2_ClickedId) == 0)
-        cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xb0));
-    ((void (*)(int))cm_SendMessage5b)(*(int *)(ev + 0xac));
-    he_ReleaseSlot(ev);
-    he_FreeEvent((int *)ev);
 }
 /* 0x5619a0, a Ghidra miss: the allocation handler of the event 0x3f: an older event of the type with the same +0xac makes this one -1 (free on its first run); the first run is now + 1 */
 
@@ -18592,7 +18693,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(60, 0, 0, 1284, -1);
     if (he_SetEventHandlers(61, (void *)he_AllocRansom, (void *)he_RunRansom) != 0)
         return 1;
-    if (he_SetEventHandlers(62, (void *)he_AllocEvent39_3e, (void *)he_Unk5614c0) != 0)
+    if (he_SetEventHandlers(62, (void *)he_AllocEvent39_3e, (void *)he_RunRansomDemand) != 0)
         return 1;
     if (he_SetEventHandlers(63, (void *)he_Unk5619a0, (void *)he_Unk561a20) != 0)
         return 1;
