@@ -1752,9 +1752,9 @@ int ai_DecideGuildTaxRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491a40, decision 11 */
+/* 0x491a40, the callback of law record 11 (AIDEC.fn, office 0x15, a church office: hst.c's BISCHOF token takes 0x15 / 0x1a, a rate 6 .. 0xa): the record's rate is the percent of a character's wage that gm_IncomeKind5 (f3gm.c 0x4fa3d0) takes and gives to all players; from the worth mood (mood 3, gm_UpdateWorthMood) the rate rises with the mood for the title group 7 and falls with it for the other groups, clamped between the record's min and max; it moves only when it is above (group 7) / below (the others) the current value */
 
-int ai_Unk491a40(AIPER *p, int a, int *out)
+int ai_DecideChurchTaxRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     int t, n, k;
