@@ -878,6 +878,21 @@ typedef struct HEHINTEVENT {            /* the tutorial hint event 0x83's words 
     char pad00[0xac];
     int entry;                          /* 0xac, the index into he_Hints the run handler is at */
 } HEHINTEVENT;
+typedef struct HEPRODUCTION {           /* the production event's words over AIJOB's union (he_AllocProduktion 0x5690c0) */
+    char pad00[0xac];
+    unsigned short good;                /* 0xac, the good produced (an ai_Goods index) */
+    char padg[2];
+    char padb0[4];
+    float amount;                       /* 0xb4, the work time of the good (its record's 0x22) */
+    float amount2;                      /* 0xb8, the same */
+    int bld;                            /* 0xbc, the producing building's id */
+    char padc0[4];
+    int state;                          /* 0xc4, -1 at the allocation */
+    int started;                        /* 0xc8, 0 at the allocation */
+    float rate;                         /* 0xcc, (the owner's mean liking - 0.5) * 0.25 */
+    char padd0[4];
+    float done;                         /* 0xd4, 1.0 at the allocation */
+} HEPRODUCTION;
 typedef struct HETIPEVENT {             /* the tips event 0x84's words over AIJOB's union (its alloc handler 0x567b80,
                                            run handler 0x567c00) */
     char pad00[0xac];
@@ -17248,37 +17263,39 @@ void he_Unk568be0(int ev)
         return;
     }
 }
-/* 0x5690c0, "he_AllocProduktion()": prepares the production event record r (the building +0xbc, the good +0xac): both clocks (+0x52 / +0x60) = the start clock (+0x44), the amount (+0xb4 / +0xb8) = the 0x22 field of the good's record in 0x91aaf0 (0x41 bytes each), due 1 unit later, state +0xc4 = -1, +0xc8 = 0, every character record that holds this event (+0x17c) is handed to 0x524260 with the building, +0xd4 = 1.0 and +0xcc = (the 0x50c980 value of the owner (+8) - 0.5) * 0.25. A building that is not found with the owner unset (+8 = 0xffff) prints the debug text. ROUGH */
+/* 0x5690c0, the allocation handler of the production event ("he_AllocProduktion()"): the building (0xbc) and the good (0xac) are taken; both clocks (0x52 / 0x60) are the start clock (0x44), the amount (0xb4 / 0xb8) is the good's work time (its record's 0x22), due 1 unit later; the state 0xc4 = -1 and 0xc8 = 0; every character whose job (0x17c) is this event moves to the building's group; the rate 0xcc = (the owner's mean liking - 0.5) * 0.25 and 0xd4 = 1.0; an unset owner (chr 0xffff) with a found building prints the debug text */
 
-void he_Unk5690c0(int r)
+void he_AllocProduktion(AIJOB *ev)
 {
+    HEPRODUCTION *p = (HEPRODUCTION *)ev;
     char buf[0x200];
-    int b, o, rec, id;
-    char *t;
+    AIBLD *b;
+    GMGOOD *g;
+    int o, id, rec;
     float v;
 
-    if (*(unsigned short *)(r + 8) == 0xffff) {
-        o = gm_FindBuildingById(*(int *)(r + 0xbc));
+    if (ev->chr == 0xffff) {
+        o = (int)gm_FindBuildingById(p->bld);
         if (o != 0)
             txt_Format(buf, "he_AllocProduktion(): geb:%G", o);
     }
-    b = gm_FindBuildingById(*(int *)(r + 0xbc));
-    t = (char *)U_I((unsigned)&ai_Goods);
-    id = *(unsigned short *)(r + 0xac);
-    v = (float)*(unsigned int *)(t + (id << 6) + id + 0x22);
-    *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
-    *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
-    *(float *)(r + 0xb4) = v;
-    *(float *)(r + 0xb8) = v;
-    gm_AddTime(r + 0x52, 0, 0, 1);
-    *(int *)(r + 0xc4) = -1;
-    *(int *)(r + 0xc8) = 0;
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(int *)(rec + 0x17c) == r)
-            sv_MoveToGroup(b, *(unsigned short *)rec, 0, r);
+    b = (AIBLD *)gm_FindBuildingById(p->bld);
+    g = (GMGOOD *)ai_Goods;
+    id = p->good;
+    v = (float)g[id].workTime;
+    ev->end = ev->start;
+    ev->clock60 = ev->start;
+    p->amount = v;
+    p->amount2 = v;
+    gm_AddTime(&ev->end, 0, 0, 1);
+    p->state = -1;
+    p->started = 0;
+    for (rec = (int)ai_Chars; rec < (int)ai_Chars + 0x65400; rec += 0x21c) {
+        if (((AICHAR *)rec)->job == ev)
+            sv_MoveToGroup(b, 0, ((AICHAR *)rec)->id, ev);
     }
-    *(float *)(r + 0xcc) = (gm_MeanLiking(*(unsigned short *)(r + 8), 8, r + 0x8c) - 0.5) * 0.25;
-    *(int *)(r + 0xd4) = 0x3f800000;
+    p->rate = (gm_MeanLiking(ev->chr, 8, ev->ids) - 0.5) * 0.25;
+    p->done = 1.0f;
 }
 
 float ahm_PlaceFactor();
@@ -18481,7 +18498,7 @@ int he_RegisterEventTypes03(void)
     if (he_SetEventHandlers(3, (void *)he_AllocIncomeEvent, (void *)he_Unk568be0) != 0)
         return 1;
     sv_RegisterActivity(3, "Abbau", 1, 0x501, 0xac);
-    if (he_SetEventHandlers(4, (void *)he_Unk5690c0, (void *)he_Unk569210) != 0)
+    if (he_SetEventHandlers(4, (void *)he_AllocProduktion, (void *)he_Unk569210) != 0)
         return 1;
     sv_RegisterActivity(4, "Produktion", 1, 0x4ff, 0xac);
     if (he_SetEventHandlers(5, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
