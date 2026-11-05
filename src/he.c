@@ -22586,7 +22586,7 @@ int he_SecretRoomAttack();                 /* 0x56f2e0 */
 int he_NoEvent9bFor();                 /* 0x56f3b0 */
 int he_SecretRoomDomizil();                 /* 0x56f3f0 */
 int he_SecretRoomDomizil();                 /* 0x56f3f0 */
-int he_FindNearestSpying();                 /* 0x56f600 */
+AIJOB *he_FindNearestSpying();                 /* 0x56f600 */
 int he_SecretRoomCatchSpy();                 /* 0x56f740 */
 int gm_FindById();                 /* 0x4fea50 */
 void cm_SendChrStop(int a); /* 0x4c5230 */
@@ -23045,39 +23045,51 @@ int he_SecretRoomDomizil(int bldId, AICHAR *victim)
     }
     return 0;
 }
-/* 0x56f600, the running event 0x18 (of the person a: its +4) not owned by c (its +4) whose building (0x4fea50 of +0xb4) is nearest to the place +0x4c .. of the workplace (+0x184 -> +0x34) of b; 0 when none */
-
-int he_FindNearestSpying(int a, int b, int c)
+/* 0x56f600, the spy hunt's search (he_RunSecretRoom stage 6): of the running spying events 24 that spy on the
+   character per (HESPYING.victim) and are not the event skip (an event id), the one whose spied building
+   (HESPYING.at, gm_FindById) stands nearest to the agent's body; 0 when none (or the agent has no scene character)
+   @deep read against the original (101 vs 104 instructions): typed (AICHAR agent->scene->obj, HESPYING
+   victim / at, the building's D3OBJECT), the found-first / nearer branches as two stores like the
+   original, best > d. Left: the original copies the agent's body position into its locals through the FPU
+   (fld/fstp at +0x29..+0x3a) where ours copies the three floats through ecx/edx/eax, and its loop spills
+   dx and the loaded z into frame slots (frame 0x24 vs 0x10; the fpu hunks at +0xba / +0xd6); tried floats,
+   a D3VECTOR here / diff, the loads into px/py/pz first: same code. */
+AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
 {
     float best = 1.0e7f;
-    float x, y, z, dx, dy, dz, d;
-    int job, found;
-    char *ev;
+    D3VECTOR here, diff;
+    float d;
+    AIJOB *found, *ev;
+    AIBLD *bld;
+    D3OBJECT *body;
 
-    if (HM_I(b, 0x184) == 0)
-        return 0;
-    job = HM_I(HM_I(b, 0x184), 0x34);
-    x = *(float *)(job + 0x4c);
-    y = *(float *)(job + 0x50);
-    z = *(float *)(job + 0x54);
-    he_FindEvent(1, 0, 0x18);
     found = 0;
-    for (ev = he_FindEvent(1, 0, 0x18); ev != 0; ev = he_NextEvent()) {
-        if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2 || c == HM_I(ev, 4))
+    if (agent->scene == 0)
+        return 0;
+    body = agent->scene->obj;
+    here.x = body->pos.x;
+    here.y = body->pos.y;
+    here.z = body->pos.z;
+    he_FindEvent(1, 0, 0x18);
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->stage == -1 || ev->stage == -2 || skip == ev->id)
             continue;
-        if (HM_I(ev, 0xc4) != HM_I(a, 4))
+        if (((HESPYING *)ev)->victim != per->netId)
             continue;
-        gm_FindById(&b, 0, 0, HM_I(ev, 0xb4));
-        if (b == 0)
+        gm_FindById((int *)&bld, 0, 0, ((HESPYING *)ev)->at);
+        if (bld == 0)
             continue;
-        job = HM_I(b, 0x61);
-        dx = *(float *)(job + 0x4c) - x;
-        dy = *(float *)(job + 0x50) - y;
-        dz = *(float *)(job + 0x54) - z;
-        d = sqrt(dx * dx + dy * dy + dz * dz);
-        if (found == 0 || d < best) {
-            found = (int)ev;
+        body = (D3OBJECT *)bld->object;
+        diff.x = body->pos.x - here.x;
+        diff.y = body->pos.y - here.y;
+        diff.z = body->pos.z - here.z;
+        d = sqrt(diff.z * diff.z + diff.y * diff.y + diff.x * diff.x);
+        if (found == 0) {
             best = d;
+            found = ev;
+        } else if (best > d) {
+            best = d;
+            found = ev;
         }
     }
     return found;
