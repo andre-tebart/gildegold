@@ -177,7 +177,7 @@ extern int ai_Unk75f280[576];
 extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern int d2_Unkf8aac4;
+extern int d2_ClickedForm;
 extern GAPDATA full_data_6f5320[];
 extern unsigned short * sv_PanelShown;
 extern unsigned short gm_KindObjCount;
@@ -3569,7 +3569,7 @@ int ai_SearchResourceWindow(int param_1)
             rec3 = gm_Query(*(int *)(param_1 + 0x5d), 1, 0, 0xfe);
             if (rec3 == 0)
                 return 0;
-            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_Unkf8aac4) == win) {
+            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedForm) == win) {
                 /* the click: a carrier of the table 0x75f2a0 (id at -0x10, the flag at +0)? */
                 flag = 0;
                 for (p = (int *)((unsigned)&ai_Unk75f280 + 0x20); (int)p <= ((unsigned)&ai_Unk75f280 + 0x51f) && p[-4] != 0xffff; p += 0xa) {
@@ -3730,7 +3730,7 @@ int ai_ExtractResourceWindow(int param_1)
             rec2 = gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x2a);
             if (rec2 == 0)
                 return 0;
-            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_Unkf8aac4) == win) {
+            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedForm) == win) {
                 flag = 0;
                 for (p = (int *)((unsigned)&ai_Unk75f280 + 0x20); (int)p <= ((unsigned)&ai_Unk75f280 + 0x51f) && p[-4] != 0xffff; p += 0xa) {
                     if (*p != 0) {
@@ -3860,7 +3860,7 @@ int ai_ProductionGoodsWindow(int param_1)
             rec2 = gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x2a);
             if (rec2 == 0)
                 return 0;
-            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_Unkf8aac4) == win) {
+            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedForm) == win) {
                 b = 0;
                 for (p = (int *)((unsigned)&ai_Unk75f280 + 0x20); (int)p <= ((unsigned)&ai_Unk75f280 + 0x51f) && p[-4] != 0xffff; p += 0xa) {
                     if (*p != 0) {

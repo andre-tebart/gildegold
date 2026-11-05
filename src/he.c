@@ -87,7 +87,7 @@ extern char * ai_Blds;
 extern const int ai_RandomStrides[16];
 extern int gm_PlayerRecords[688];
 extern unsigned char ai_OwnPlayer;
-extern int d2_Unkf8aac4;
+extern int d2_ClickedForm;
 extern unsigned short ai_PlayerId;
 extern unsigned char ai_GameState;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -173,7 +173,7 @@ extern G17STAT cm_SendStates[];
 extern unsigned short gm_KindObjCount;
 extern unsigned gm_KindObjs[732];
 extern int d2_ClickedId;
-extern int d2_Unkf8aac4;
+extern int d2_ClickedForm;
 extern GAPDATA full_data_627e98[];
 extern GAPDATA full_data_627ea8[];
 extern char ai_MissionMode;
@@ -207,7 +207,7 @@ extern unsigned char ai_OwnPlayer;
 extern unsigned short ai_PlayerId;
 extern char ai_Unk625820[115][0x20];
 extern int d2_ClickedId;
-extern int d2_Unkf8aac4;
+extern int d2_ClickedForm;
 extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_628ecc[];
 extern const int sv_PhaseMinutes[24];
@@ -332,7 +332,8 @@ typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJ
     char pad00[0xac];
     int who[6];                         /* 0xac, the character ids of the wedding offer (he_RunWeddingOffer, the party's members):
                                            the suitor, the partner, then four guests, the last -1 for none (reasoned
-                                           from the news: 0x1bc0 to the partner names the suitor, 0x1bbf the other way) */
+                                           from the news: 0x1bc0 to the partner names the suitor, 0x1bbf the other way);
+                                           the master exam event 0x2f keeps its three characters here too (he_RunMasterExam) */
     char kind;                          /* 0xc4, the offer kind compared between the pending offers */
     AITIME clock;                       /* 0xc5, the offer's clock: now + 0x18 units, its hour 0xa and minute 0 */
     char pad_d3;
@@ -3087,7 +3088,7 @@ void he_Unk547430(int ev)
             he_FreeEvent((int *)ev);
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8))
+        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8))
             return;
         h = U_I((unsigned)&d2_ClickedId);
         if (h == -1)
@@ -3498,7 +3499,7 @@ void he_Unk5485b0(int ev)
             return;
         }
         h = *(int *)(*(int *)(ev + 0x74) + 8);
-        if (U_I((unsigned)&d2_Unkf8aac4) == h && U_I((unsigned)&d2_ClickedId) != -1) {
+        if (U_I((unsigned)&d2_ClickedForm) == h && U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_ClickedId) == 0) {
                 v = gm_GetWorth(*(unsigned short *)(ev + 8));
                 cm_SendMoveGoods(*(int *)(U_I((unsigned)&ai_PlayerChar) + 4), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_OwnPlayer), v);
@@ -3564,7 +3565,7 @@ void he_Unk548790(int ev)
             *(int *)(ev + 0x70) = 0;
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1) {
+        if (U_I((unsigned)&d2_ClickedForm) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1) {
             h = U_I((unsigned)&d2_ClickedId);
             if (h == 0) {
                 memset(msg, 0, sizeof(msg));
@@ -4572,7 +4573,7 @@ void he_Unk54ae60(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) || U_I((unsigned)&d2_ClickedId) == -1)
+    if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) || U_I((unsigned)&d2_ClickedId) == -1)
         return;
     h = U_I((unsigned)&d2_ClickedId);
     if (h == 0) {
@@ -5261,7 +5262,7 @@ void he_Unk54cc50(int ev)
             *(int *)(ev + 0x70) = 0;
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
+        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             he_ReleaseSlot(ev);
@@ -5476,7 +5477,7 @@ void he_Unk54d7d0(int ev)
             return;
         }
         h = U_I((unsigned)&d2_ClickedId);
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0 && h == -1)
+        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0 && h == -1)
             return;
         if (h == 0) {
             he_ReleaseSlot(ev);
@@ -6830,84 +6831,86 @@ int io_PrintText(char *fmt, ...);
 int snd_PlayVoice(int id, int bank, char *text, int var);
 float gm_Mix(int a, int b, int c);
 
-/* 0x5432f0, a Ghidra miss (disassembled): the master exam ("Meisterpruefung") event of the three figures +0xac / +0xb0 / +0xb4 (p, q, r): state 0 opens the window "Berufe\Messagebox_Meisterpruefung" (0x53d6f0, 0x5ec) and the news 0x1763; state 1 waits for the due time or the answer (0x6f8a668: 0 = yes, 1 = no, the click must be on the window), state 2 settles it with the news 0x1764 / 0x1765 and the relation changes (-0x14 / -0xf) (ROUGH) */
-void he_Unk5432f0(int ev)
+/* 0x5432f0, a Ghidra miss (disassembled): the run handler of the master exam event ("Meisterpruefung") of the three
+   characters who[0] (the master), who[1] (the one told) and who[2] (the candidate); gone ones end it, and a candidate
+   who is no player skips to stage 2. Stage 0 opens the window "Berufe\Messagebox_Meisterpruefung" (news 0x5ec) with
+   the text 0x1763 and the voice "_NACHRICHTEN_HS_20", due in a day. Stage 1 waits for the answer in that window
+   (d2_ClickedId 0: passed, 1: failed) or for the due time (then stage 2). Stage 2 decides by chance
+   (gm_Mix(who[1], who[0], 4) + a random 0 .. 1 below 1: failed). Passed: who[1] hears 0x1764 and the master's
+   relation to the candidate drops by 20; failed: 0x1765 and who[1] and the candidate drop by 15 each way */
+void he_RunMasterExam(int ev)
 {
-    int p, q, r, st;
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFER *o = (HEOFFER *)ev;
+    AICHAR *p, *q, *r;
     float f;
     char buf[0x100];
-    int h;
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    q = gm_FindChar(*(int *)(ev + 0xb0));
-    r = gm_FindChar(*(int *)(ev + 0xb4));
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || p == 0 || q == 0 || r == 0) {
+    p = (AICHAR *)gm_FindChar(o->who[0]);
+    q = (AICHAR *)gm_FindChar(o->who[1]);
+    r = (AICHAR *)gm_FindChar(o->who[2]);
+    if (e->stage == -2 || p == 0 || q == 0 || r == 0) {
         he_FreeEvent((int *)ev);
-        if (*(int *)(ev + 0x74) != 0)
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         return;
     }
-    if (st == -1 || (*(char *)(r + 2) != 6 && *(char *)(r + 2) != 7))
-        *(int *)(ev + 0x70) = 2;
-    st = *(int *)(ev + 0x70);
-    if (st == 0) {
-        he_OpenEventSlot(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
-        if (*(int *)(ev + 0x74) == 0) {
+    if (e->stage == -1 || (r->kind != 6 && r->kind != 7))
+        e->stage = 2;
+    switch (e->stage) {
+    case 0:
+        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-        io_PrintText(0x1763, *(unsigned short *)q, *(unsigned short *)p);
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText(0x1763, q->id, p->id);
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
         snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_20", 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        e->stage++;
         return;
-    }
-    if (st == 1) {
-        if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
             he_ReleaseSlot(ev);
-            *(int *)(ev + 0x70) = 2;
+            e->stage = 2;
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8))
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
             return;
-        h = U_I((unsigned)&d2_ClickedId);
-        if (h == -1)
-            return;
-        if (h == 0) {
-            txt_Format(buf, 0x1764, *(unsigned short *)r, *(unsigned short *)p);
-            he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
-            cm_SendRelations(*(int *)(p + 4), *(int *)(r + 4), -20, 1);
+        if (d2_ClickedId == 0) {
+            txt_Format(buf, 0x1764, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(p->netId, r->netId, -20, 1);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (h == 1) {
-            txt_Format(buf, 0x1765, *(unsigned short *)r, *(unsigned short *)p);
-            he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
-            cm_SendRelations(*(int *)(q + 4), *(int *)(r + 4), -15, 1);
-            cm_SendRelations(*(int *)(r + 4), *(int *)(q + 4), -15, 1);
+        if (d2_ClickedId == 1) {
+            txt_Format(buf, 0x1765, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(q->netId, r->netId, -15, 1);
+            cm_SendRelations(r->netId, q->netId, -15, 1);
         }
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
-    }
-    if (st == 2) {
-        f = gm_Mix(q, p, 4);
-        if (!(util_RandomF() + f < *(float *)(unsigned)&ai_FloatOne)) {
-            txt_Format(buf, 0x1764, *(unsigned short *)r, *(unsigned short *)p);
-            he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
-            cm_SendRelations(*(int *)(p + 4), *(int *)(r + 4), -20, 1);
+    case 2:
+        f = gm_Mix((int)q, (int)p, 4);
+        if (util_RandomF() + f >= 1.0f) {
+            txt_Format(buf, 0x1764, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(p->netId, r->netId, -20, 1);
         } else {
-            txt_Format(buf, 0x1765, *(unsigned short *)r, *(unsigned short *)p);
-            he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5fa, (char *)0);
-            cm_SendRelations(*(int *)(q + 4), *(int *)(r + 4), -15, 1);
-            cm_SendRelations(*(int *)(r + 4), *(int *)(q + 4), -15, 1);
+            txt_Format(buf, 0x1765, r->id, p->id);
+            he_ShowNews(q->netId, q->netId, buf, 0, 0x5fa, 0);
+            cm_SendRelations(q->netId, r->netId, -15, 1);
+            cm_SendRelations(r->netId, q->netId, -15, 1);
         }
         he_FreeEvent((int *)ev);
+        return;
     }
 }
 /* 0x5436a0, a Ghidra miss (disassembled): starts the group event: state 0, clock +0x52 in 0x18 units (state word 0x14); with +0xc0 == 1 every member figure (+0xac .. +0xb8) gets the message 0x36 carrying the event clock and id (flag 9 for the players, else 1), then posts the event (ROUGH) */
@@ -7243,7 +7246,7 @@ void he_Unk543ac0(int ev)
             *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8))
+        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8))
             return;
         neg1 = -1;
         h = U_I((unsigned)&d2_ClickedId);
@@ -8779,7 +8782,7 @@ void he_Unk552090(int ev)
             *(int *)(ev + 0x70) = 0;
             return;
         }
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8))
+        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8))
             return;
         h = U_I((unsigned)&d2_ClickedId);
         if (h == -1)
@@ -9211,7 +9214,7 @@ void he_Unk552ca0(int ev)
             return;
         }
         cl = *(char *)(unsigned)&he_SlotConfirmed;
-        if (U_I((unsigned)&d2_Unkf8aac4) != *(int *)(*(int *)(ev + 0x74) + 8) && cl == 0)
+        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) && cl == 0)
             return;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             he_ReleaseSlot(ev);
@@ -9246,7 +9249,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2e, (void *)he_AllocQuarrel, (void *)he_Unk543180) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2f, (void *)he_RunDueNow, (void *)he_Unk5432f0) != 0)
+    if (he_SetEventHandlers(0x2f, (void *)he_RunDueNow, (void *)he_RunMasterExam) != 0)
         return 1;
     if (he_SetEventHandlers(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
@@ -14402,7 +14405,7 @@ void he_Unk56a710(int ev)
         *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
         return;
     case 1:
-        if (U_I((unsigned)&d2_Unkf8aac4) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
+        if (U_I((unsigned)&d2_ClickedForm) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
@@ -16717,7 +16720,7 @@ void he_Unk570cc0(int ev)
         HM_I(ev, 0x70) = 0;
         return;
     }
-    if (*(int *)(unsigned)&d2_Unkf8aac4 != HM_I(HM_I(ev, 0x74), 8))
+    if (*(int *)(unsigned)&d2_ClickedForm != HM_I(HM_I(ev, 0x74), 8))
         return;
     state = *(int *)(unsigned)&d2_ClickedId;
     if (state == -1)
@@ -17455,7 +17458,7 @@ void he_Unk572a50(int ev)
             HM_I(ev, 0x70) = 0;
             return;
         }
-        if (*(int *)(unsigned)&d2_Unkf8aac4 == HM_I(HM_I(ev, 0x74), 8) && *(int *)(unsigned)&d2_ClickedId != -1) {
+        if (*(int *)(unsigned)&d2_ClickedForm == HM_I(HM_I(ev, 0x74), 8) && *(int *)(unsigned)&d2_ClickedId != -1) {
             if (*(int *)(unsigned)&d2_ClickedId == 0) {
                 he_Unk5728d0(ev);
                 he_ReleaseSlot(ev);

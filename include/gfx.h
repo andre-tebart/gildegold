@@ -89,7 +89,7 @@ extern D2HIT d2_HitRects[];        /* 0xf8a680 */
 extern int d2_Unkf8aa80;            /* 0xf8aa80 */
 extern int d2_HitCount;            /* 0xf8aa84 */
 extern int d2_Unkf8aa9c;            /* 0xf8aa9c */
-extern int d2_Unkf8aac4;            /* 0xf8aac4 */
+extern int d2_ClickedForm;            /* 0xf8aac4 */
 extern char d2_CaptionCopy[];         /* 0xf8aae0 */
 extern int d2_HitClicked;            /* 0x5febd0 */
 extern int d2_HitUnderPointer;            /* 0x5febd4 */

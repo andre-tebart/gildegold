@@ -806,9 +806,9 @@ void d2_MouseUpdate(void)
             di_GuiClick = 1;
             c = (D2CTRLX *)o->buf;
             if (c == 0) {
-                d2_Unkf8aac4 = -1;
+                d2_ClickedForm = -1;
             } else if (c->shown != 0 && c->loaded == 0) {
-                d2_Unkf8aac4 = c->id;
+                d2_ClickedForm = c->id;
             }
             sb_PlaySampleI(d2_Unk6ed990,
                           o->checkable != 0 ? (o->checked ^= 1, d2_Objs[d2_PointerObj].highlighted = d2_Objs[d2_PointerObj].checked,
@@ -1699,7 +1699,7 @@ int d2_HitCount = 0;  /* 0xf8aa84 */
 D2SLOT d2_ItemListSurf256 = {0};  /* 0xf8aa90 */
 int d2_Unkf8aa9c = 0;  /* 0xf8aa9c */
 D2SLOT d2_ItemListSurf128[3] = {0};  /* 0xf8aaa0 */
-int d2_Unkf8aac4 = 0;  /* 0xf8aac4 */
+int d2_ClickedForm = 0;  /* 0xf8aac4 */
 int d2_RightHeldObj = 0;  /* 0xf8aac8 */
 int d2_Unkf8aacc = 0;  /* 0xf8aacc */
 int d2_TextCursorX = 0;  /* 0xf8aad4 */
