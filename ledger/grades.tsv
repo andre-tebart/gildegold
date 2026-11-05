@@ -3622,19 +3622,19 @@ exe	0x0054b170	he_StartProtection	he	byte	readable
 exe	0x0054b1e0	he_RunProtection	he	draft	readable	deep	
 exe	0x0054b9b0	he_StartAudit	he	byte	readable		
 exe	0x0054ba20	he_RunAudit	he	byte	readable		
-exe	0x0054be20	he_StartGathering	he	byte	draft		
+exe	0x0054be20	he_StartGathering	he	byte	readable		
 exe	0x0054bec0	he_RunGathering	he	draft	readable	deep	
-exe	0x0054c4c0	he_Unk54c4c0	he	byte	draft		
-exe	0x0054c510	he_IsAtWork	he	byte	draft		
+exe	0x0054c4c0	he_AllocSim	he	byte	readable		
+exe	0x0054c510	he_IsAtWork	he	byte	readable		
 exe	0x0054c570	he_RunAccidentSim	he	byte	readable		
-exe	0x0054c870	he_StartAuctionEvent	he	byte	draft		
+exe	0x0054c870	he_StartAuctionEvent	he	byte	readable		
 exe	0x0054c8e0	he_RunAuctionEvent	he	draft	readable	deep	
-exe	0x0054cc20	he_StartTitleCeremony	he	byte	draft		
+exe	0x0054cc20	he_StartTitleCeremony	he	byte	readable		
 exe	0x0054cc50	he_RunTitleCeremony	he	draft	readable	deep	
-exe	0x0054d190	he_StartInnSim	he	byte	draft		
-exe	0x0054d1e0	he_FindGuestInn	he	shape	draft		
+exe	0x0054d190	he_StartInnSim	he	byte	readable		
+exe	0x0054d1e0	he_FindGuestInn	he	shape	readable		
 exe	0x0054d260	he_RunInnSim	he	shape	readable		
-exe	0x0054d790	he_StartSkillUp	he	byte	draft		
+exe	0x0054d790	he_StartSkillUp	he	byte	readable		
 exe	0x0054d7d0	he_RunSkillUp	he	byte	readable		
 exe	0x0054da20	he_StartBard	he	byte	draft		
 exe	0x0054da80	he_RunBard	he	byte	readable		
