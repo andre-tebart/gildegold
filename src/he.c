@@ -402,6 +402,13 @@ typedef struct HETRAINING {             /* the training event 0x60's words over 
     unsigned char range;                /* 0xad, the random amount taken off it (util_Random), 2 * (2 + skill / 42 + 1) */
     unsigned char skill;                /* 0xae, the skill trained (AICHAR.skills index) */
 } HETRAINING;
+typedef struct HESKILLMSG {             /* the AI message 0x6a he_RunTraining posts when a player's skill reaches a new
+                                           level (AIMSG has no names at +0x58 / +0x5c for it) */
+    char pad00[0x58];
+    unsigned char skill;                /* 0x58, the skill (AICHAR.skills index) */
+    char pad59[3];
+    int level;                          /* 0x5c, its new level: the value / 42 */
+} HESKILLMSG;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x64 */
     char pad00[0x64];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
@@ -3503,7 +3510,7 @@ void he_Unk548110(int ev)
 int gm_GetWorth(unsigned short id);
 void gm_ChangeRelationToJobs(unsigned short a, int b);
 void cm_SendAddSkill(int a, int b, int c);
-void ai_Unk4c5870(int a);
+void cm_SendSkillsChanged(int a);
 void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 void ai_PlagueNews(void);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
@@ -4285,46 +4292,67 @@ void he_StartTraining(int ev)
         gm_AddTime(&e->end, 5, 0, 0);
     e->start = ai_Time;
 }
-/* 0x549aa0, the run handler of the training result event (+0xac = base, +0xad = random range, +0xae = the ability): state 0 raises the ability (0x4c6020) of the player by base - random, with a news 0x16f2 .. when the value cap 252 is hit; a player of kind 6 whose value rises past the old one gets a message record (type 0x6a, 0x4c4b70), then 0x4c5870 and free (ROUGH) */
+/* 0x549aa0, the run handler of the training event 0x60: stage -2 frees it; at stage 0 the skill rises by base less
+   a random part of range, at most to the cap 252 (cm_SendAddSkill). For a player character (kind 6) a new level
+   (the value / 42) posts the AI message 0x6a (flags 9) with the skill and its level, else the news 0x16f2 with
+   the skill's name 0x16f3 + skill and the sound "tal_0<skill>"; then the skills' message (cm_SendSkillsChanged)
+   and the event is freed
+   @deep read fully against the original: every statement, callee, constant (252.0f, 1/42), string
+   ('tal_0%i', '%s%s'), the AIMSG 0x6a fields (type, to, fromId -1, time, flags 9, skill +0x58, level
+   +0x5c) and the switch on stage (-2 frees, 0 runs) match; same size (575 vs 575, 165 ins each). Left: the
+   first skill read's address form and one store's place: the original +0x61 'mov al, byte ptr [ecx + edx*4
+   + ai_Chars+0x80]' (c->skills[skill] folded with ai_Chars) and stores c ([ebp-0xc]) after it, ours
+   computes c first, 'mov [ebp-0xc], ebx; mov al, [ebx + ecx + 0x80]'; and +0x65 [eax + ebx + 0x80] vs [ebx
+   + eax + 0x80] (operand order). Tried: the first read as ai_CharsT[e->chr].skills[skill] before / after c
+   (VC6 then CSEs the second read into the absolute form too: M8, 22 ins worse), c assigned at the case's
+   start (31 ins worse), if-chains instead of the switch (the free tail moves). A CSE / addressing choice:
+   deep work */
 
-void he_Unk549aa0(int ev)
+void he_RunTraining(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HETRAINING *t = (HETRAINING *)ev;
     char text[0x800];
-    char name[0x20];
-    char msg[0xf8];
-    int st, rec, v, ab;
+    char sound[0x20];
+    AIMSG msg;
+    AICHAR *c;
+    int rise, skill, cur, level;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -2) {
+    switch (e->stage) {
+    case -2:
         he_FreeEvent((int *)ev);
         return;
-    }
-    if (st != 0)
-        return;
-    rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    v = *(unsigned char *)(ev + 0xac) - (unsigned short)util_Random(*(unsigned char *)(ev + 0xad));
-    ab = *(unsigned char *)(ev + 0xae);
-    if ((float)(*(unsigned char *)(rec + 0x80 + ab) + v) > 252.0f)
-        v = (int)(252.0f - (float)*(unsigned char *)(rec + 0x80 + ab));
-    cm_SendAddSkill(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), ab, v);
-    if (*(char *)(rec + 2) == 6) {
-        if ((int)(252.0f - (float)(*(unsigned char *)(rec + 0x80 + ab) + v)) < 0) {
-            memset(msg, 0, sizeof(msg));
-            msg[0] = 0x6a;
-            *(int *)(msg + 4) = *(int *)(rec + 4);
-            *(int *)(msg + 8) = -1;
-            *(AITIME *)(msg + 0x1c) = ai_Time;
-            msg[0x24] = 9;
-            msg[0x2a] = (char)ab;
-            cm_SendLongMessage(msg);
-        } else {
-            sprintf(name, "tal_0_%i", ab);
-            txt_Format(text, (unsigned)"%s%s", 0x16f2, ab + 0x16f3);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5fd, name);
+    case 0:
+        rise = t->base - (unsigned short)util_Random(t->range);
+        skill = t->skill;
+        c = &ai_CharsT[e->chr];
+        cur = c->skills[skill];
+        if ((float)(cur + rise) > 252.0f)
+            rise = (int)(252.0f - (float)cur);
+        cm_SendAddSkill(c->netId, skill, rise);
+        if (c->kind == 6) {
+            skill = t->skill;
+            cur = c->skills[skill];
+            level = (int)((cur + rise) * (1.0f / 42.0f));
+            if (level > (int)(cur * (1.0f / 42.0f))) {
+                MEM_ZERO(&msg, sizeof(msg));
+                msg.type = 0x6a;
+                msg.to = c->netId;
+                msg.fromId = -1;
+                msg.time = ai_Time;
+                msg.flags = 9;
+                ((HESKILLMSG *)&msg)->skill = t->skill;
+                ((HESKILLMSG *)&msg)->level = level;
+                cm_SendLongMessage((char *)&msg);
+            } else {
+                sprintf(sound, "tal_0%i", skill);
+                txt_Format(text, "%s%s", 0x16f2, t->skill + 0x16f3);
+                he_ShowNews(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5fd, sound);
+            }
         }
+        cm_SendSkillsChanged(c->netId);
+        he_FreeEvent((int *)ev);
     }
-    ai_Unk4c5870(*(int *)(rec + 4));
-    he_FreeEvent((int *)ev);
 }
 /* 0x549ce0, the init of the festival event: a random building (0x889f74 table, 0xa9 bytes each) of kind 7 is looked for (up to 0x100 tries), +0xb0 = its index, +0xb4 = a random entry of the table 0x5ed140, a message record (type 0x78) goes to every figure of kind 6 / 7, four 0x4c59f0 tasks are started (+0xbc .. +0xc8), +0xd0 = the building, the event is posted (state 0) and 0x5a91c0 is called; none found: it is posted as failed (ROUGH) */
 
@@ -9613,7 +9641,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5f, (void *)he_StartNextTrialStep, (void *)he_RunTrialSteps) != 0)
         return 1;
-    if (he_SetEventHandlers(0x60, (void *)he_StartTraining, (void *)he_Unk549aa0) != 0)
+    if (he_SetEventHandlers(0x60, (void *)he_StartTraining, (void *)he_RunTraining) != 0)
         return 1;
     if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_Unk54a020) != 0)
         return 1;

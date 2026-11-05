@@ -23506,7 +23506,7 @@ int ai_Unk5d0e60(int param_1, int param_2, int param_3)
         }
     }
     if (*(char *)(param_3 + 2) == 6) {
-        ai_Unk4c5870(*(int *)(param_3 + 4));
+        cm_SendSkillsChanged(*(int *)(param_3 + 4));
         txt_Format(text, (char *)0xfe8,
                       *(unsigned short *)(*(int *)param_3) * 2 + 0xd71, found + 0x16b7);
         ai_UseObjPanel(text);

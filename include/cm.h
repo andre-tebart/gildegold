@@ -250,7 +250,7 @@ void cm_SendGoodsRecord(void *p, unsigned char k);                              
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                                     /* 0x4c5710 */
 void cm_SendMessage41(void *p);                                                      /* 0x4c5800 */
 void ai_Unk4c5840(int a);                                                        /* 0x4c5840 */
-void ai_Unk4c5870(int a);                                                        /* 0x4c5870 */
+void cm_SendSkillsChanged(int a);                                                        /* 0x4c5870 */
 int cm_SendApplication(char *p);                                                       /* 0x4c58a0 */
 int cm_SendOfficeRecord(char *p);                                                      /* 0x4c58e0 */
 int cm_SendDecisionValue(char *p);                                                       /* 0x4c5930 */

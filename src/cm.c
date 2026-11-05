@@ -1856,9 +1856,10 @@ void ai_Unk4c5840(int a)
     G17_I(m, 0) = a;
     cm_QueueSend(&m);
 }
-/* 0x4c5870, message 0x43 */
+/* 0x4c5870, queues the message 0x43 with a character's netId (sent after its skills were raised: he_RunTraining,
+   the trial step picks of unk_58bbd0; reasoned, the receiver not read) */
 
-void ai_Unk4c5870(int a)
+void cm_SendSkillsChanged(int a)
 {
     G17MSG m;
 
