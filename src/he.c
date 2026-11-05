@@ -413,6 +413,14 @@ typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's un
     char pad00[0xb8];
     int daysLeft;                       /* 0xb8, the runs left: counted down once per run, below 0 the event ends */
 } HEEV24;
+typedef struct HEEV27 {                 /* the payment event 0x27's words over AIJOB's union (he_AllocEvent27 /
+                                           he_RunEvent27); the building is AIJOB.bldId */
+    char pad00[0xb0];
+    unsigned char player;               /* 0xb0, the paying player's slot (ai_PlayerSlots: its name in the news, its
+                                           money good paid) */
+    char padb1[3];
+    int amount;                         /* 0xb4, the amount paid */
+} HEEV27;
 typedef struct HEEXAMPASS {             /* the passed master exam event 0x26's words over AIJOB's union (he_Unk55ce00 /
                                            he_RunMasterExamPassed); the character is AIJOB.ownerCh */
     char pad00[0xb0];
@@ -15389,22 +15397,32 @@ void he_AllocEvent27(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x55d390, the run handler of a payment event (ROUGH): states -2 / -1 free; the building +0xac (none: free), the news 0x190b (+0xb4, +0xb0) to the player (0x53dda0 .., 0x5ff) and the payment 0x4c4880 (+0xb4, .., +0xb0, ..); then the record is freed */
-
-void he_Unk55d390(int ev)
+/* 0x55d390, the run handler of the event type 0x27 (a payment from a player into a building): stages -2 / -1 free the
+   record, a later stage leaves it; at stage 0 the building AIJOB.bldId (none: freed) gets the amount in the paying
+   player's money good (cm_SendExSellObject, the good GMPLAYERSLOT.moneyGood of the player slot HEEV27.player), the
+   event character the news 0x190b (the player's name, the amount); then the record is freed */
+void he_RunEvent27(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b;
-    char text[0x200];
+    AIJOB *e = (AIJOB *)ev;
+    HEEV27 *p = (HEEV27 *)ev;
+    AIBLD *b;
+    char text[0x400];
 
-    if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac))) == 0) {
+    switch (e->stage) {
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
-        return;
+        break;
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0) {
+            txt_Format(text, 0x190b, ai_PlayerSlotsT[p->player].name, p->amount);
+            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5ff, (char *)0);
+            cm_SendExSellObject(b->id, -1, ai_PlayerSlotsT[p->player].moneyGood, p->amount, ai_OwnPlayer, 0);
+        }
+        he_FreeEvent((int *)ev);
+        break;
     }
-    txt_Format(text, 0x190b, *(int *)(ev + 0xb4), *(unsigned char *)(ev + 0xb0));
-    he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ff, 0);
-    cm_SendExSellObject(*(int *)(ev + 0xb4), -1, *(unsigned char *)(ev + 0xb0), 0, 0, 0);
-    he_FreeEvent((int *)ev);
 }
 /* 0x55d490, the allocation handler of the harvest event (ROUGH): the due clock is now (+1), state 0; the building +0xac (0x501190) and the field object +0xb8 (0x4bc670) and the worker +0xb0 (0x505df0; a free worker without job / not of the job 0x28: the group 0x524260 (building, 0xfd contact via 0x4ffe90, ..)) are set up, the job handle +0xc0 = 0x4c5050 (building, 1), +0xb4 = -1 and the word +0xbc = the minute word; a missing worker frees the record */
 
@@ -17522,7 +17540,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_RunMasterExamPassed) != 0)
         return 1;
-    if (he_SetEventHandlers(39, (void *)he_AllocEvent27, (void *)he_Unk55d390) != 0)
+    if (he_SetEventHandlers(39, (void *)he_AllocEvent27, (void *)he_RunEvent27) != 0)
         return 1;
     if (he_SetEventHandlers(40, (void *)he_AllocHarvest, (void *)he_RunHarvest) != 0)
         return 1;
