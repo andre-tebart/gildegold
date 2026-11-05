@@ -5589,10 +5589,10 @@ int ai_ExecuteSabotage(AIPER *p, AIARG *s1, AIARG *s2)
     cm_BeginGroup("sabotage");
     cm_SendLongMessage(&msg);
     cm_EndGroup("sabotage");
-    ai_Unkf84c60[0] = ai_Unkf84c40[0] * s1->fvalue;
-    ai_Unkf84c60[2] = ai_Unkf84c40[2] * s1->fvalue;
-    ai_Unkf84c60[4] = ai_Unkf84c40[4] * s1->fvalue;
-    ai_Unkf84c60[6] = ai_Unkf84c40[6] * s1->fvalue;
+    ai_Actions[0x17].w3[0].w = ai_Actions[0x17].w1[0].w * s1->fvalue;
+    ai_Actions[0x17].w3[1].w = ai_Actions[0x17].w1[1].w * s1->fvalue;
+    ai_Actions[0x17].w3[2].w = ai_Actions[0x17].w1[2].w * s1->fvalue;
+    ai_Actions[0x17].w3[3].w = ai_Actions[0x17].w1[3].w * s1->fvalue;
     return 0x17;
 }
 /* 0x499b80, evaluate: decision record 0x15, the default rating without it */
