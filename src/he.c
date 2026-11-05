@@ -7705,228 +7705,247 @@ int gm_BuildingSkill();
 
 #define HE_REC(id) ((unsigned)&ai_Chars + (id) * 0x21c)
 
-/* 0x5461c0, a Ghidra miss (disassembled; 2646 B): the run handler of the raid ("Razzia") event: the target +0xac (a figure), the start +0xb0, the raiders are the figures of the slots +0x8c .. +0xa8; state 0 = the raiders go to the target (0x4c52e0 "Razzia"), 1 = they go to the start, 2 = wait until they are idle (+0x128 of the job record), then 3 = the outcome is rolled: a random number (0..0x4a) plus 100 * a chance (the 0x4ffe90 record 0xca of the start: 1.0 + byte +0x37 / 100, or 5.0 when 0x6f2448 is set) against 125 * (1 + 0.01 * 0x5092e0 (t, 5, 1)): a failed raid posts a message record of 0x114 bytes (type 3, the guards and the raiders as lists, 0x4c4fa0; state 4), a successful one reports the news 0x114b / 0x1c54 / 0x1c55 / 0x1c56 with the result of 0x4d3d10 (state 1); 4 = wait for the posted record (+0xb4), 5 = wait for 0x4e50a0 of its result (+0xb8); a free (state -1) sends the raiders to the start (ROUGH) */
-void he_Unk5461c0(int ev)
+/* 0x5461c0, a Ghidra miss (disassembled): the run handler of the raid event 0x44 ("Razzia"; the raiders are ids[],
+   the buildings raidTarget / raidStart). It waits for the event's cm send slot (exSlot); stage -2 (left) runs
+   stage 1 once and frees the event. Stage 0 sends the raiders to the target ("Razzia"; the others are dropped) -> 2,
+   while the target has an owner, else the event ends (-1, as when a building is not found); stage 2 waits until no
+   raider's scene character has actions queued -> 3; stage 3 rolls random(0x4b) + 100 * the start building's spy
+   report on the target (its object 0xca: (100 + reportKnow) / 100, 5 with gm_AllowAll) against 125 * (1 + 0.01 *
+   gm_BuildingSkill(target, 5, 1)): above it a fight party of kind 3 (G28REC.raid: the target's living
+   people against the raiders, half an hour on) is posted -> 4, but with no defender or no raider the target
+   is looted (cm_LootStock, the news 0x1c54 / 0x1c55 to the players among owner and raider) -> 1; not above it
+   the raid fails (the news 0x114b with the start building's fight role, 0x1c56 to a player owner) -> -1;
+   stage 4 waits for the party's slot and keeps its id -> 5, stage 5 until the party is over -> 1; stage 1
+   (only with opts 2) sends the living raiders back to the start building's object 0x146 -> -1; stage -1
+   sends them to its main room and frees the event. The opts tests of the stages 0 and 2 are
+   @original `(opts == 0) & 2`, never true.
+   @deep Read whole against the original and fixed: stage -1 last in the switch (table equal), text[0x800]
+   (frame 0x924 equal), the party lists initialised -1 (G28REC.raid), the defenders scan as an index loop
+   over ai_Chars (signed jl, health && bld == the target), the start building queried into its own temp
+   before gm_Query 0xca, the spy-report search as for/break + if, the failure branch's kind tests re-read
+   ai_Chars[b->owner]; 826 vs 825 instructions. Left: scheduling and allocation only: the entry (ours mov
+   edi,1 before the 1.0f store, the original stores 1.0f first and keeps 1 in ebp: edi->ebp throughout),
+   the -1 of raid100 in ebp (ours) vs eax (+0x546704), the party.time copy loads in another register order
+   (+0x546775), the cm_LootStock / he_MessageBoxQuickjump / he_ShowNews argument address computations
+   interleaved with the pushes in another order (+0x546813..+0x54691c: the same lea chains,
+   ai_Chars[b->owner] pushed at once in the original); the prover stops at the switch jump (references: M8
+   at +0x5af: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 1
+   more), explained: the two ref: M8 lines (+0x5b5 / +0x5ba) are the party.time copy of ai_Time loaded in
+   another register order (ours eax=[+4], edx=[+0], ecx=[+8]; the original ecx=[+4], eax=[+0], edx=[+8]):
+   the alignment pairs different loads, the same four words are copied to party.time) */
+void he_RunRaid(int ev)
 {
-    char buf[0x100];
-    char msg[0x114];
-    int t, ta, r, i, g, p, o, ebx, edi, flag = 0, st, rec, mrec, n, busy;
-    int rr;
-    float prob = 1.0f, mult;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b, *home;
+    AICHAR *c, *raider;
+    AIOBJ *o;
+    G28REC party;
+    char text[0x800];
+    int i, n, k, loot, role;
+    int leaving = 0, idle = 1;
+    float chance = 1.0f, defence;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -2) {
-        if ((*(unsigned char *)(ev + 0x78) & 2) == 0) {
+    if (e->stage == -2) {
+        if ((e->opts & 2) == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        flag = 1;
-        *(int *)(ev + 0x70) = 1;
+        leaving = 1;
+        e->stage = 1;
     }
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    switch (*(int *)(ev + 0x70)) {
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        if ((e->opts == 0) & 2)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
+        if (b == 0 || b->owner == 0xffff) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        for (i = 0; i < 8; i++) {
+            if (e->ids[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0) {
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+                cm_SendChrStop(e->ids[i]);
+                cm_SendChrGotoBuilding(e->ids[i], b->id, -1, 0, 0, "Razzia");
+            } else {
+                e->ids[i] = -1;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(2, ev);
+        return;
+    case 1:
+        if ((e->opts & 2) == 0)
+            return;
+        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+        if (home == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0x146);
+        for (i = 0; i < 8; i++) {
+            if (e->ids[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0 && c->health > 0) {
+                cm_SendChrStop(e->ids[i]);
+                cm_SendChrGotoBuilding(e->ids[i], home->id, o->objId, 0, 0, "Razzia");
+                sv_MoveToGroup((unsigned char *)home, 0, c->id, (char *)ev);
+            } else {
+                e->ids[i] = -1;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        if (leaving) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
+    case 2:
+        if ((e->opts == 0) & 2)
+            return;
+        for (i = 0; i < 8; i++) {
+            if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0 && c->scene->actions != 0) {
+                idle = 0;
+                break;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        if (idle)
+            e->exSlot = cm_SendExSetHE(3, ev);
+        else
+            e->exSlot = cm_SendExSetHE(2, ev);
+        return;
+    case 3:
+        if ((e->opts & 2) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
+        c = &ai_CharsT[b->owner];
+        raider = &ai_CharsT[e->chr];
+        defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
+        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+        o = (AIOBJ *)gm_Query((void *)home->objList, 1, 0, 0xca);
+        for (; o != 0; o = (AIOBJ *)gm_QueryNext())
+            if (o->reportBld == b->id)
+                break;
+        if (o != 0)
+            chance = (float)((o->reportKnow + 100.0) * 0.01);
+        if (gm_AllowAll != 0)
+            chance = 5.0f;
+        if ((float)(unsigned short)util_Random(0x4b) + chance * 100.0f > defence * 125.0f) {
+            memset(&party, 0, sizeof(party));
+            party.kind = 3;
+            party.flags = 0xa2;
+            party.thing = b->id;
+            party.host = ai_CharInts[ai_PlayerId][0];
+            party.used = 2;
+            party.variant = 2;
+            party.members[0] = raider->netId;
+            party.members[1] = c->netId;
+            for (i = 0; i < 16; i++) {
+                party.raid.raiders[i] = -1;
+                party.raid.defenders[i] = -1;
+            }
+            n = 0;
+            for (i = 0; i < 768 && n < 16 && n < 6; i++) {
+                if (ai_CharsT[i].health != 0 && ai_CharsT[i].bld == b) {
+                    party.raid.defenders[n] = ai_CharsT[i].netId;
+                    n++;
+                }
+            }
+            party.raid.raid100[0] = -1;
+            party.raid.raid100[1] = -1;
+            party.raid.raid100[2] = -1;
+            party.raid.raidHome = ((AIBLD *)gm_BuildQuery(1, 1, e->raidStart))->id;
+            k = 0;
+            for (i = 0; i < 8 && k < 6; i++) {
+                if (e->ids[i] != -1) {
+                    party.raid.raiders[k] = e->ids[i];
+                    k++;
+                }
+            }
+            if (k != 0 && n != 0) {
+                party.time = ai_Time;
+                gm_AddTime(&party.time, 0, 0x1e, 0);
+                e->raidSlot = cm_SendNewParty(&party);
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 0, 1);
+                e->stage = 4;
+                return;
+            }
+        } else {
+            role = cm_FightRole(gm_BuildQuery(1, 1, e->raidStart)) + 0x1125;
+            txt_Format(text, 0x114b, role, b->owner, b, role);
+            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
+            if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+                txt_Format(text, 0x1c56, b);
+                he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+            }
+            e->stage = -1;
+            return;
+        }
+        home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->raidTarget);
+        loot = cm_LootStock(b, home, &ai_CharsT[e->chr], &ai_CharsT[b->owner]);
+        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+            txt_Format(text, 0x1c54, b, loot);
+            he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+        }
+        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+            txt_Format(text, 0x1c55, b->owner, b, loot);
+            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5f0, (char *)0);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->stage = 1;
+        return;
+    case 4:
+        if (cm_GetSlotState(e->raidSlot) == 0)
+            return;
+        e->raidParty = ((G28REC *)cm_GetSlotValue(e->raidSlot))->id;    /* the slot's value: the party record made */
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->stage = 5;
+        return;
+    case 5:
+        if (cm_PartyById(e->raidParty) != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->stage = 1;
+        return;
     case -1:
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-            o = gm_GetGebaeudeHauptraum(t);
+        if (e->opts & 2) {
+            home = (AIBLD *)gm_BuildQuery(1, 1, e->raidStart);
+            o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)home);
             for (i = 0; i < 8; i++) {
-                g = *(int *)(ev + 0x8c + i * 4);
-                if (g != -1 && (p = gm_FindChar(g)) != 0) {
-                    cm_SendChrStop(g);
-                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), *(int *)(o + 2), 0, 0, "Razzia");
-                    sv_MoveToGroup(t, 0, *(unsigned short *)p, 0);
+                if (e->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(e->ids[i])) != 0) {
+                    cm_SendChrStop(e->ids[i]);
+                    cm_SendChrGotoBuilding(e->ids[i], home->id, o->objId, 0, 0, "Razzia");
+                    sv_MoveToGroup((unsigned char *)home, 0, c->id, 0);
                 }
             }
         }
         he_FreeEvent((int *)ev);
         return;
-    case 0:
-        if ((*(unsigned char *)(ev + 0x78) == 0) & 2)
-            return;
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        if (t != 0 && *(unsigned short *)(t + 0x27) != 0xffff) {
-            for (i = 0; i < 8; i++) {
-                g = *(int *)(ev + 0x8c + i * 4);
-                if (g != -1) {
-                    p = gm_FindChar(g);
-                    if (p != 0) {
-                        sv_MoveToGroup(t, 0, *(unsigned short *)p, ev);
-                        cm_SendChrStop(g);
-                        cm_SendChrGotoBuilding(g, *(int *)(t + 1), -1, 0, 0, "Razzia");
-                    } else {
-                        *(int *)(ev + 0x8c + i * 4) = -1;
-                    }
-                }
-            }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
-            return;
-        }
-        goto gone;
-    case 1:
-        if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
-            return;
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-        if (t == 0)
-            goto gone;
-        o = gm_Query(*(int *)(t + 0x5d), 1, 0, 0x146);
-        for (i = 0; i < 8; i++) {
-            g = *(int *)(ev + 0x8c + i * 4);
-            if (g != -1) {
-                p = gm_FindChar(g);
-                if (p != 0 && *(unsigned char *)(p + 8) > 0) {
-                    cm_SendChrStop(g);
-                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), *(int *)(o + 2), 0, 0, "Razzia");
-                    sv_MoveToGroup(t, 0, *(unsigned short *)p, ev);
-                } else {
-                    *(int *)(ev + 0x8c + i * 4) = -1;
-                }
-            }
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        if (flag) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
-    case 2:
-        if ((*(unsigned char *)(ev + 0x78) == 0) & 2)
-            return;
-        busy = 1;
-        for (i = 0; i < 8; i++) {
-            g = *(int *)(ev + 0x8c + i * 4);
-            if (g != -1 && (p = gm_FindChar(g)) != 0 && *(int *)(*(int *)(p + 0x184) + 0x128) != 0) {
-                busy = 0;
-                break;
-            }
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        if (busy)
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
-        else
-            *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
-        return;
-    case 3:
-        if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
-            return;
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        rec = HE_REC(*(unsigned short *)(t + 0x27));
-        mrec = HE_REC(*(unsigned short *)(ev + 8));
-        r = gm_BuildingSkill(t, 5, 1);
-        mult = (float)((double)r * 0.01 + 1.0);
-        o = gm_Query(*(int *)(gm_BuildQuery(1, 1, *(int *)(ev + 0xb0)) + 0x5d), 1, 0, 0xca);
-        if (o != 0) {
-            while (*(int *)(o + 0x2a) != *(int *)(t + 1)) {
-                o = gm_QueryNext();
-                if (o == 0)
-                    break;
-            }
-            if (o != 0)
-                prob = (float)(((double)*(unsigned char *)(o + 0x37) + 100.0) * 0.01);
-        }
-        if (U_I((unsigned)&gm_AllowAll) != 0)
-            prob = 5.0f;
-        rr = (unsigned short)util_Random(0x4b);
-        if ((float)rr + prob * 100.0f > mult * 125.0f) {
-            memset(msg, 0, sizeof(msg));
-            msg[8] = 3;
-            msg[0x26] = (char)0xa2;
-            *(int *)(msg + 0x14) = *(int *)(t + 1);
-            *(int *)(msg + 0xc) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-            msg[0x30] = 2;
-            msg[0x7c] = 2;
-            *(int *)(msg + 0x34) = *(int *)(mrec + 4);
-            *(int *)(msg + 0x38) = *(int *)(rec + 4);
-            for (i = 0; i < 16; i++) {
-                *(int *)(msg + 0xc0 + i * 4) = *(int *)(rec + 4);
-                *(int *)(msg + 0x80 + i * 4) = *(int *)(rec + 4);
-            }
-            ebx = 0;
-            for (p = (unsigned)&ai_Chars; p < (unsigned)((unsigned)ai_Chars + 0x65400) && ebx < 16 && ebx < 6; p += 0x21c) {
-                if (*(char *)(p + 8) != 0 && *(int *)(p + 0x16c) == 1) {
-                    *(int *)(msg + 0x80 + ebx * 4) = *(int *)(p + 4);
-                    ebx++;
-                }
-            }
-            *(int *)(msg + 0x100) = -1;
-            *(int *)(msg + 0x104) = -1;
-            *(int *)(msg + 0x108) = -1;
-            *(int *)(msg + 0x10c) = *(int *)(gm_BuildQuery(1, 1, *(int *)(ev + 0xb0)) + 1);
-            edi = 0;
-            for (i = 0; i < 8 && edi < 6; i++) {
-                g = *(int *)(ev + 0x8c + i * 4);
-                if (g != -1) {
-                    *(int *)(msg + 0xc0 + edi * 4) = g;
-                    edi++;
-                }
-            }
-            if (edi != 0 && ebx != 0) {
-                *(AITIME *)(msg + 0x18) = ai_Time;
-                gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-                *(int *)(ev + 0xb4) = ((int (*)(void *))cm_SendNewParty)(msg);
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0, 0, 1);
-                *(int *)(ev + 0x70) = 4;
-                return;
-            }
-        } else {
-            n = cm_FightRole(gm_BuildQuery(1, 1, *(int *)(ev + 0xb0))) + 0x1125;
-            txt_Format(buf, 0x114b, n, *(unsigned short *)(t + 0x27), t, n);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, buf, 0, 0x5f0, (char *)0);
-            if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
-                txt_Format(buf, 0x1c56, t);
-                he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(t + 0x27) * 0x21c), -1, buf, 0, 0x5f0, *(int *)(t + 1), -1, 0, (char *)0);
-            }
-            *(int *)(ev + 0x70) = -1;
-            return;
-        }
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-        ta = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        rec = HE_REC(*(unsigned short *)(ta + 0x27));
-        r = cm_LootStock(ta, t, HE_REC(*(unsigned short *)(ev + 8)), rec);
-        if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
-            txt_Format(buf, 0x1c54, ta, r);
-            he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ta + 0x27) * 0x21c), -1, buf, 0, 0x5f0, *(int *)(ta + 1), -1, 0, (char *)0);
-        }
-        if (*(char *)(HE_REC(*(unsigned short *)(ev + 8)) + 2) == 6 || *(char *)(HE_REC(*(unsigned short *)(ev + 8)) + 2) == 7) {
-            txt_Format(buf, 0x1c55, *(unsigned short *)(ta + 0x27), ta, r);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, buf, 0, 0x5f0, (char *)0);
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        *(int *)(ev + 0x70) = 1;
-        return;
-    case 4:
-        if (cm_GetSlotState(*(int *)(ev + 0xb4)) == 0)
-            return;
-        *(int *)(ev + 0xb8) = *(int *)cm_GetSlotValue(*(int *)(ev + 0xb4));
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x70) = 5;
-        return;
-    case 5:
-        if (cm_PartyById(*(int *)(ev + 0xb8)) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            return;
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        *(int *)(ev + 0x70) = 1;
-        return;
-    default:
-        return;
     }
-gone:
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
 /* 0x546c40, a Ghidra miss (disassembled): the outcome of a fight between the figures +0xac (a) and +0xb0 (b): the clock is set, the state 2; unless a or b is gone or marked (+0x1c8 flags 0x100 / 0x200) the event ends. With +0xb4 set (a won) the next clock is in 0x18 units and b hears the news 0x1e18; else (a lost: code -2) in 0x60 units, the news 0x1d5b, the relation change 0x4f2e30 (0x16 ..) and 0x34, up to 3 of the 0x4f4080 records are given to a (0x4c4f10), a of kind 6 gets 0x4b44e0 (0xb); both lose the flags and 0x4c5f60 closes the fight with the code (-4 won, -2 lost) (ROUGH) */
 
@@ -9378,7 +9397,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_RunPatrol) != 0)
         return 1;
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_Unk5461c0) != 0)
+    if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_RunRaid) != 0)
         return 1;
     if (he_SetEventHandlers(0x45, (void *)he_Unk546c40, (void *)he_Unk546ef0) != 0)
         return 1;

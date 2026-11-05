@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at c37dc1a8: include/ai_types.h gains AIJOB's raid view (raidTarget .. raidParty at 0xac, the raid event 0x44's words he_RunRaid reads typed) and cm_types.h G28REC's raid lists: truer types for he.c in the shared headers. ai_Unk483a60's text is unchanged; removing only the new anonymous AIJOB member flips it back to byte, so its byte match depends on VC6's declaration set (allocation), not on its source: no evidence (dcp headers probe ai does not move it, unused typedefs being another kind of declaration) [waits for: the full declaration set of ai.c's headers (the original's ai.h / ai_types.h)]
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
+exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at c37dc1a8: the same header change (AIJOB raid view in ai_types.h, G28REC raid lists in cm_types.h), either one alone flips it: its text is unchanged and its remaining hunks are the documented allocation of the clear loop and the x/y slot order (@deep); the shape grade read from a declaration-set-dependent allocation is no evidence of its source [waits for: the full declaration set of ord.c's headers (gv.h > ai_types.h / cm_types.h) and match-deep's allocation work]
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		

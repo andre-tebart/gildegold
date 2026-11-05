@@ -193,6 +193,13 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             int patrolStep;             /* 0xd8, the index into patrolWay of the next way point, 0 at the start */
             unsigned char patrolRound;  /* 0xdc, the rounds walked, 0 at the start */
         };
+        struct {                        /* 0xac, of the raid event 0x44 ("Razzia"; alloc handler 0x546100, run handler
+                                           0x5461c0; the raiders are ids[]) */
+            int raidTarget;             /* 0xac, the id of the building raided */
+            int raidStart;              /* 0xb0, the id of the building the raiders start from and go back to */
+            int raidSlot;               /* 0xb4, the cm send slot of the raid's fight party (cm_SendNewParty) */
+            int raidParty;              /* 0xb8, the id of that party (cm_GetSlotValue of the slot; cm_PartyById) */
+        };
         struct {                        /* 0xac, of the tribute event 0x35 (alloc handler 0x544070, run handler 0x544330;
                                            the collector's netId is idbc) */
             AITIME tributeEnd;          /* 0xac, the end of the collection: a day after its start */
@@ -284,7 +291,8 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                 };
             };
             char pad28[2];
-            int unk2a;                          /* 0x2a */
+            int reportBld;                      /* 0x2a, of a spy report (gm_Query kind 0xca in a building): the id of the
+                                                   building it reports on (ai.c 0x4817a0, he.c's raid 0x5461c0) */
         };
         struct {
             char pad1c29[0xd];
@@ -300,7 +308,9 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     };
     char pad2e[8];
     unsigned char unk36;                /* 0x36 */
-    unsigned char unk37;                /* 0x37 */
+    unsigned char reportKnow;           /* 0x37, of a spy report: how much it knows, in percent (ai.c spies again below a
+                                           random 50 .. 99; the round settlement lowers it by twice the building's rank and
+                                           drops the report at 5 or less, main.c; the raid adds it to its chance) */
     char pad38[3];
     void *sceneObj;                     /* 0x3b, the scene character (ch.h CHARACTER) that shows a cart */
     struct AIOBJ *next;                 /* 0x3f, the next object of its list (an inventory, a store) */

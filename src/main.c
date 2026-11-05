@@ -4307,17 +4307,17 @@ void main_SettleRound(unsigned short pl)
                     o = (AIOBJ *)gm_Query((void *)c->objList, 1, 0, 0xca);
                     while (o != 0) {
                         cnt++;
-                        if (o->unk37 <= 5)
+                        if (o->reportKnow <= 5)
                             cm_SendMoveObject(c->id, -1, o->objId);
                         else {
-                            unsigned char *t = (unsigned char *)gm_FindBuildingById(o->unk2a);
+                            unsigned char *t = (unsigned char *)gm_FindBuildingById(o->reportBld);
 
                             if (t != 0) {
-                                char age = o->unk37 - (char)gm_BuildingRank(t) * 2;
+                                char age = o->reportKnow - (char)gm_BuildingRank(t) * 2;
 
                                 age = age < 0 ? 0 : age;
                                 cm_BeginFieldBlock((char *)o, o->objId);
-                                cm_AddFieldDelta(1, 1, (char *)&o->unk37 - cm_FieldObject, &age);
+                                cm_AddFieldDelta(1, 1, (char *)&o->reportKnow - cm_FieldObject, &age);
                                 cm_SendFieldDeltas();
                             } else
                                 ai_Unk4c47b0(o->objId);

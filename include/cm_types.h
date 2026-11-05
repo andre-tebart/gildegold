@@ -552,8 +552,16 @@ typedef struct G28REC {
             int building;               /* 0x7c, the id of the building auctioned (gm_BuildQuery 1, 1) */
             int price;                  /* 0x80, the start price */
         } auction;
+        struct {                        /* 0x7c, of a raid fight (kind 3, posted by he.c's raid event, 0x5461c0) */
+            char padraid[4];
+            int defenders[16];          /* 0x80, the netIds of up to six living characters whose building
+                                           (AICHAR.bld) is the one raided, -1: none */
+            int raiders[16];            /* 0xc0, the netIds of up to six raiders, -1: none */
+            int raid100[3];             /* 0x100, -1 (no reader known) */
+            int raidHome;               /* 0x10c, the id of the raiders' start building */
+        } raid;
     };
-    char pad84[0x114 - 0x84];
+    char pad110[0x114 - 0x110];
 } G28REC;
 typedef char cm_AssertG28REC[sizeof(G28REC) == 0x114 ? 1 : -1];
 

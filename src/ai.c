@@ -1589,7 +1589,7 @@ send3:
     for (; k < 8; k++)                                                                                      \
         msg.ids[k] = -1;
 
-/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it @deep Read whole against the original and fixed: weight split into (8-rank)*w*0.5 then rand*w*0.01 (rank call inline), best/bestw chosen with if(!best)/else-if, the unk37 test signed (no unsigned cast), the spy/attack busy checks goto two shared sprintf exits, the id count clamped into its own variable (cmp 8/jl), the attack send under ids[0] != -1 so the return 1 is shared. Instruction multiset now equal but for register names (ch ebx, eax/ecx/edx rotations in the FindEvent loops) and one sprintf tail VC6 does not cross-jump. Left is block layout only: VC6 places our spy send (sprintf 'spioniert bei' + fill + SendLongMessage) after the attack code (ours jmp +0x606 from the third spy loop) where the original falls into it at +0x3c7, and our return 0 of the kind check sits at the function end instead of inline at +0x2d8 (je at +0x2d0: ours to +0x2de, the original's to +0x2e5); the if/goto/loop-break variants of the query loop all compile to the same layout. */
+/* 0x4817a0, ai_CalcAngriff: spy on a building, then attack it @deep Read whole against the original and fixed: weight split into (8-rank)*w*0.5 then rand*w*0.01 (rank call inline), best/bestw chosen with if(!best)/else-if, the reportKnow test signed (no unsigned cast), the spy/attack busy checks goto two shared sprintf exits, the id count clamped into its own variable (cmp 8/jl), the attack send under ids[0] != -1 so the return 1 is shared. Instruction multiset now equal but for register names (ch ebx, eax/ecx/edx rotations in the FindEvent loops) and one sprintf tail VC6 does not cross-jump. Left is block layout only: VC6 places our spy send (sprintf 'spioniert bei' + fill + SendLongMessage) after the attack code (ours jmp +0x606 from the third spy loop) where the original falls into it at +0x3c7, and our return 0 of the kind check sits at the function end instead of inline at +0x2d8 (je at +0x2d0: ours to +0x2de, the original's to +0x2e5); the if/goto/loop-break variants of the query loop all compile to the same layout. */
 int ai_CalcAngriff(AICHAR *ch, int n)
 {
     AIOBJ *o;
@@ -1651,11 +1651,11 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                   && ai_BTypesT[best->type].kind != 0x10))
         return 0;
     for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
-        if (o->unk2a == best->id)
+        if (o->reportBld == best->id)
             break;
     }
-    /* no report on the building, or its knowledge (unk37) below a random 50..99: spy (again) */
-    if (!o || util_RandomU(0x32) + 0x32 > o->unk37) {
+    /* no report on the building, or its knowledge (reportKnow) below a random 50..99: spy (again) */
+    if (!o || util_RandomU(0x32) + 0x32 > o->reportKnow) {
         for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
             if (job->unkac == best->id)
                 goto spying;
@@ -1719,7 +1719,7 @@ spying:
     sprintf(buf, "ai_CalcAngriff(): Meister %s hat schon eine Spionage bei '%s' laufen", ch->name, best->name);
     return 1;
 }
-/* 0x481ef0 @deep Read whole against the original and fixed: both best-building picks as if(!best)/else-if, the entfuehren filter kind <= 7 (cmp 7/ja), the einbrechen test unk37 >= 0x5f (jae) || (float)unk37 >= rand(20) + unk36*2.0f (unk37 converted first, the fadd st,st), the id counts clamped into their own variable (cmp 8/jl, three sites), the busy checks of the burgle and the spy part as gotos to one sprintf exit each, placed after their send as in the original (0x4827be, 0x48297e). The instruction multiset is now equal up to register / slot names, symbol aliases (ai_Chars+4 vs ai_CharInts) and reloads. Left: register allocation (ch in ebp, the original ebx; ours reloads ch / obj from the frame: 13 extra mov reg,[esp+N], loads 10 into a register for the BuySlots/BuyCapacity pushes where the original pushes 0xa), a frame 4 bytes smaller (0x524 vs 0x528, one slot fewer, not changed by keeping the rank in r), and block layout: the r==1 (entfuehren) block, which the original places after the CalcAngriff call (+0xac0..), sits inline after the r==1 test in ours (jnp at +0x349: ours to +0xee7, the original's to +0xeb7; jne at +0x32a: ours to +0x7b2, the original's to +0x3bc). (size: 1195 vs 1181 instructions, explained: ours 1195 vs 1181: the 13 extra mov reg,[esp+N] reloads of ch / obj / n that the original keeps in ebx / ebp (asmdiff +0x482016 mov edi,[esp+0x538], +0x482023 mov esi,[esp+0x24]) plus mov ebx,0xa for the pushed 10s) */
+/* 0x481ef0 @deep Read whole against the original and fixed: both best-building picks as if(!best)/else-if, the entfuehren filter kind <= 7 (cmp 7/ja), the einbrechen test reportKnow >= 0x5f (jae) || (float)reportKnow >= rand(20) + unk36*2.0f (reportKnow converted first, the fadd st,st), the id counts clamped into their own variable (cmp 8/jl, three sites), the busy checks of the burgle and the spy part as gotos to one sprintf exit each, placed after their send as in the original (0x4827be, 0x48297e). The instruction multiset is now equal up to register / slot names, symbol aliases (ai_Chars+4 vs ai_CharInts) and reloads. Left: register allocation (ch in ebp, the original ebx; ours reloads ch / obj from the frame: 13 extra mov reg,[esp+N], loads 10 into a register for the BuySlots/BuyCapacity pushes where the original pushes 0xa), a frame 4 bytes smaller (0x524 vs 0x528, one slot fewer, not changed by keeping the rank in r), and block layout: the r==1 (entfuehren) block, which the original places after the CalcAngriff call (+0xac0..), sits inline after the r==1 test in ours (jnp at +0x349: ours to +0xee7, the original's to +0xeb7; jne at +0x32a: ours to +0x7b2, the original's to +0x3bc). (size: 1195 vs 1181 instructions, explained: ours 1195 vs 1181: the 13 extra mov reg,[esp+N] reloads of ch / obj / n that the original keeps in ebx / ebp (asmdiff +0x482016 mov edi,[esp+0x538], +0x482023 mov esi,[esp+0x24]) plus mov ebx,0xa for the pushed 10s) */
 
 void ai_CalcMeisterDiebe(AICHAR *ch)
 {
@@ -1917,8 +1917,8 @@ burgle:
         if (!best)
             goto pick;
         for (o = gm_Query(ch->bld->objList, 1, 0, 0xca); o; o = gm_QueryNext()) {
-            if (o->unk2a == best->id) {
-                if (o->unk37 >= 0x5f || (float)o->unk37 >= util_RandomU(20) + o->unk36 * 2.0f) {
+            if (o->reportBld == best->id) {
+                if (o->reportKnow >= 0x5f || (float)o->reportKnow >= util_RandomU(20) + o->unk36 * 2.0f) {
                     for (job = he_FindEvent(2, 0, 0x40, 3, ch->bld->id); job; job = he_NextEvent())
                         if (job->unkac == best->id)
                             goto unfinished;
