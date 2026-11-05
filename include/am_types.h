@@ -33,7 +33,7 @@ typedef struct AIACT {                  /* 0x94 bytes, an AI action (table at 0x
     void *decide;                       /* 0x28 */
     void *exec;                         /* 0x2c */
     AIACTW w1[4];                       /* 0x30 */
-    char pad50[0x20];
+    AIACTW w3[4];                       /* 0x50, a copy of w1 (the short-term needs; ai_Actions[0x48] uses w3[0]) */
     AIACTW w2[4];                       /* 0x70 */
     unsigned int flags;                 /* 0x90 */
 } AIACT;

@@ -932,11 +932,11 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
             u.handled = 0;
             if (ai_UseGood(p, &u) == 1) {
                 if (u.effect == 1) {
-                    G5_ACTS[0x48].w3[0].w = G5_ACTS[0x48].w1[0].w * g[3];
+                    ai_Actions[0x48].w3[0].w = ai_Actions[0x48].w1[0].w * g[3];
                     return 0x1c;
                 }
                 if (u.effect == -1)
-                    G5_ACTS[0x48].w3[0].w = G5_ACTS[0x48].w1[0].w * g[3] * -0.5f;
+                    ai_Actions[0x48].w3[0].w = ai_Actions[0x48].w1[0].w * g[3] * -0.5f;
                 return 0x1c;
             }
         }
