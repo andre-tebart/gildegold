@@ -26,6 +26,7 @@
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 #include "cm_types.h"
 extern unsigned char txt_Keys;  /* @original ai_DecideBuildBusiness (0x498c70, byte) tests flags1c8 & 0x1000000 as &txt_Keys + 0x181c0 of this byte view: the char[0x4800][0x50] spelling, a view macro or the literal flip its add operands at +0x4cc (shape) */
+extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) the original loads in ai_DecideLawSeverity */
 
 #define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
 
@@ -1431,9 +1432,9 @@ int ai_RegisterGraveActions(int a)
     act.flags = 1;
     return am_RegisterMethod(&act, a) != 0;
 }
-/* 0x490e00, decision 0 */
+/* 0x490e00, the callback of law 0 (RECHTSPRECHUNG_HAERTE, the severity of jurisprudence): the office holder raises or lowers it from its title group, skill 4, moods 9..11 and its guilt */
 
-int ai_Unk490e00(AIPER *p, int a, int *out)
+int ai_DecideLawSeverity(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
@@ -1442,7 +1443,7 @@ int ai_Unk490e00(AIPER *p, int a, int *out)
     t = gm_TitleGroup(p->jobId);
     f = gm_GetSkill(p, 4);
     n = ord_GetRatingByte(4);
-    x = (f - (n + 1.0f) / 252.0f) / 42.0f;
+    x = (f - (n + ai_FloatOne) / 252.0f) / 42.0f;
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
@@ -1455,7 +1456,7 @@ int ai_Unk490e00(AIPER *p, int a, int *out)
         x += 4.0f;
     x = r / x;
     gv_GetTableRecord(0, &d);
-    if (x > 1.0f) {
+    if (x > ai_FloatOne) {
         if (w > u && d.cur < 2) {
             *out = util_RandomU(2) + d.cur + 1;
             return 1;
