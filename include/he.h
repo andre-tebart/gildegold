@@ -13,7 +13,7 @@ typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model show
 } HEGFXINFO;
 
 void he_AllocNone(unsigned char *ev);
-void he_Unk53d470(unsigned char *ev);
+void he_RunNone(unsigned char *ev);
 int he_InitEvents(void);
 void he_FreeEvents(void);
 int he_ReleaseEvents(void);
