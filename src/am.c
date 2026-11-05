@@ -1279,11 +1279,11 @@ int ai_DecideGraveyardOwner(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 }
 /* 0x490830, the execute callback of "Graveyard Owner" */
 
-int ai_Unk490830(AGCH *p, AGARG *s1, AGARG *s2)
+int ai_ExecGraveyardOwner(AGCH *p, AGARG *s1, AGARG *s2)
 {
     AGARG *a = s1;
 
-    gm_FindById((int)&s1, 0, 0, a->unk0c);
+    gm_FindById((int)&s1, 0, 0, a->bldId);
     if (s1 != 0) {
         switch (a->kind) {
         case 0:
@@ -1347,7 +1347,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
                 if ((int)(m * 0.22f) <= v)
                     return 0;
                 o1->kind = 5;
-                o1->unk0c = bld->id;
+                o1->bldId = bld->id;
                 o1->unk04 = *r2;
                 o1->unk08 = v;
                 o2->unk04 = *r;
@@ -1374,7 +1374,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     if ((int)(m * 0.22f) < v)
         return 0;
     o1->kind = 4;
-    o1->unk0c = bld->id;
+    o1->bldId = bld->id;
     o1->unk04 = *r2;
     o1->unk08 = v;
     return 0x3e;
@@ -1385,7 +1385,7 @@ int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2)
 {
     AGARG *a = s1;
 
-    gm_FindById((int)&s1, 0, 0, a->unk0c);
+    gm_FindById((int)&s1, 0, 0, a->bldId);
     if (s1 != 0) {
         if (a->kind == 4) {
             gv_OrderReserveGrave(p, s1, a->unk04, 10, a->unk08);
@@ -1409,7 +1409,7 @@ int ai_RegisterGraveActions(int a)
     strcpy(act.name, "Graveyard Owner");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideGraveyardOwner;
-    act.exec = ai_Unk490830;
+    act.exec = ai_ExecGraveyardOwner;
     act.flags = 0x1c3;
     if (!am_RegisterMethod(&act, a))
         return 0;

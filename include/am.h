@@ -377,7 +377,7 @@ typedef struct AGARG {                  /* what a decide callback fills for the 
     int unk00;                          /* 0x00 */
     int unk04;                          /* 0x04 */
     int unk08;                          /* 0x08 */
-    int unk0c;                          /* 0x0c */
+    int bldId;                          /* 0x0c, the building's id, found again with gm_FindById (ai_ExecGraveyardOwner, ai_Unk490b90) */
     int kind;                           /* 0x10 */
 } AGARG;
 
@@ -415,7 +415,7 @@ extern AGCH ai_DuelOpponent;               /* 0x6f0478 */
 
 
 
-int ai_Unk490830(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490830 */
+int ai_ExecGraveyardOwner(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490830 */
 int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2);  /* 0x4908d0 */
 int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490b90 */
 unsigned int ai_MakeDuelOpponent(unsigned int k);                      /* 0x492fd0 */
