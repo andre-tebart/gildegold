@@ -74,9 +74,12 @@ typedef struct AIBTYPE {                /* 0x24d bytes, ai_BTypes[] */
             unsigned char objValue[0x40];   /* 0x1e3, per object its effect value */
         };
     };
-    unsigned char jobBytes;               /* 0x223, the first of the six job ids of the kind (the bytes 0x223 .. 0x228,
+    union {
+        unsigned char jobBytes;           /* 0x223, the first of the six job ids of the kind (the bytes 0x223 .. 0x228,
                                             0-terminated: f3gm.c gm_PermissionBits scans them for a job) */
-    char pad224[0xb];
+        unsigned char jobs[6];            /* 0x223, the six job ids (he_RunHire gives the hired character jobs[i]) */
+    };
+    char pad229[6];
     unsigned char title;                /* 0x22f, the title rank of the type's first job (f3gm_types.h GMBTYPE.title:
                                            f3gm.c's worker lists take the characters whose AICHAR.title is this) */
     union {
