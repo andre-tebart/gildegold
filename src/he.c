@@ -443,6 +443,16 @@ typedef struct HEGANG {                 /* the pickpocket gang event 0x61's word
     int leader;                         /* 0xd4, the netId of the gang's leader */
     unsigned char members;              /* 0xd8, the members the gang has (ids[] not -1) */
 } HEGANG;
+typedef struct HEPROTECTION {           /* the protection money event 0x62's words over AIJOB's union (its run handler
+                                           0x54b1e0; the question event 0x63 he_RunProtectionAsk answers it); the
+                                           collector is AIJOB.chr */
+    char pad00[0xac];
+    int collector;                      /* 0xac, the collector figure's netId */
+    int victim;                         /* 0xb0, the victim building's id (its owner pays) */
+    int amount;                         /* 0xb4, the protection money */
+    int answer;                         /* 0xb8, -1 open, 0 refused, 1 paid, 2 asked a player (the event 0x63) */
+    int home;                           /* 0xbc, the collector's building, which counts the money, -1: none */
+} HEPROTECTION;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
@@ -4892,69 +4902,86 @@ void he_Unk54ae20(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 2, 0);
 }
-/* 0x54ae60, a Ghidra miss (disassembled): the protection money question ("Berufe\Messagebox_SCHUTZGELD", the running event +0xac (0x53e400 kind 1) of the pickpocket gang 0x54a7b0 and its target figure +0xb0 of 0x501190): state 0 opens the window and the news 0x1a8c (the amount +0xb4 and the player, in the order of 0x5190a0), state 1 waits for the due time or the answer (0xf8a668: 0 = pays: the gang event goes on in the state 3 with +0xb8 = 1, the target figure gets the flag 0x100 (0x4c4a60 0x5a), the amount goes from the player to the gang leader (0x4c4830) and to the building +0x4d; 1 = refuses: +0xb8 = 0); a gone event or figure ends it (ROUGH) */
+/* 0x54ae60, a Ghidra miss: the run handler of the event 0x63, the protection money question to a player victim
+   ("Berufe\Messagebox_SCHUTZGELD"): it answers the protection money event 0x62 whose id it holds (HEPROTECTION).
+   A gone event or victim building frees it. Stage 0 opens the window with the news 0x1a8c (the collector, the
+   amount and the building, their order by the language) and gives the answer three hours; stage 1 frees it when
+   that is over, else waits for a button: 0 pays (the event 0x62 goes on in stage 3 with the answer 1, the
+   building gets the flag 0x100 at +0x5a, its owner pays the collector, the collector's home building counts the
+   money), 1 refuses (the answer 0); the answer's time is now (offline: 6:00 of today) */
 
-void he_Unk54ae60(int ev)
+void he_RunProtectionAsk(int ev)
 {
-    int ebx = 0, esi, h, st, o;
+    AIJOB *e = (AIJOB *)ev;
+    AIJOB *p;
+    HEPROTECTION *q;
+    AIBLD *b = 0, *home;
+    AITIME now;
 
-    esi = (int)he_FindEvent(1, 1, *(int *)(ev + 0xac));
-    if (esi != 0)
-        ebx = gm_BuildQuery(1, 1, *(int *)(esi + 0xb0));
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1 || esi == 0 || ebx == 0) {
-        if (*(int *)(ev + 0x74) != 0)
+    p = (AIJOB *)he_FindEvent(1, 1, e->u.id);
+    q = (HEPROTECTION *)p;
+    if (p != 0)
+        b = (AIBLD *)gm_BuildQuery(1, 1, q->victim);
+    if (e->stage == -2 || e->stage == -1 || p == 0 || b == 0) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
-    if (*(int *)(ev + 0x70) == 0) {
+    switch (e->stage) {
+    case 0:
         he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_SCHUTZGELD", 0x5f3);
-        if (*(int *)(ev + 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-        h = ls_GetLanguage();
-        if (h == 0)
-            io_PrintText(0x1a8c, *(unsigned short *)(esi + 8), *(int *)(esi + 0xb4), ebx);
-        else if (h == 1)
-            io_PrintText(0x1a8c, *(unsigned short *)(esi + 8), ebx, *(int *)(esi + 0xb4));
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 3, 0, 0);
+        d2_SetForm(e->slot->win, 0);
+        switch (ls_GetLanguage()) {
+        case 0:
+            io_PrintText(0x1a8c, p->chr, q->amount, b);
+            break;
+        case 1:
+            io_PrintText(0x1a8c, p->chr, b, q->amount);
+            break;
+        }
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 3, 0, 0);
         snd_QueueVoice(-7, 0, "_NACHRICHTEN_HS_34", 0, 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        e->stage++;
         return;
-    }
-    if (*(int *)(ev + 0x70) != 1)
-        return;
-    if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
+            return;
+        now = ai_Time;
+        if (net_Conn.s == -1) {
+            now.hour = 6;
+            now.min = 0;
+        }
+        if (d2_ClickedId == 0) {
+            e->stage = 3;
+            q->answer = 1;
+            p->end = now;
+            cm_SendExSetHE(3, p);
+            cm_SendSetField(b->id, 0x5a, 2, 0x100, 0);
+            cm_SendMoveGoodsUnchecked(ai_CharsT[p->chr].netId, ai_CharsT[b->owner].netId, 0, q->amount);
+            if (q->home != -1) {
+                home = (AIBLD *)gm_BuildQuery(1, 1, q->home);
+                home->roundSums[0] += q->amount;
+            }
+        } else if (d2_ClickedId == 1) {
+            e->stage = 3;
+            q->answer = 0;
+            p->end = now;
+            cm_SendExSetHE(3, p);
+        }
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
-        return;
     }
-    if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) || U_I((unsigned)&d2_ClickedId) == -1)
-        return;
-    h = U_I((unsigned)&d2_ClickedId);
-    if (h == 0) {
-        *(int *)(ev + 0x70) = 3;
-        *(int *)(esi + 0xb8) = 1;
-        *(AITIME *)(esi + 0x52) = ai_Time;
-        cm_SendExSetHE(3, esi);
-        cm_SendSetField(*(int *)(ebx + 1), 0x5a, 2, 0x100, 0);
-        cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + *(unsigned short *)(esi + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebx + 0x27) * 0x21c), 0, *(int *)(esi + 0xb4));
-        if (*(int *)(esi + 0xbc) != -1) {
-            o = gm_BuildQuery(1, 1, *(int *)(esi + 0xbc));
-            *(int *)(o + 0x4d) = *(int *)(o + 0x4d) + *(int *)(esi + 0xb4);
-        }
-    } else if (h == 1) {
-        *(int *)(ev + 0x70) = 3;
-        *(int *)(esi + 0xb8) = 0;
-        *(AITIME *)(esi + 0x52) = ai_Time;
-        cm_SendExSetHE(3, esi);
-    }
-    he_ReleaseSlot(ev);
-    he_FreeEvent((int *)ev);
 }
 
 int gm_EquipmentValue(unsigned char *b, int level);
@@ -9764,7 +9791,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x61, (void *)he_StartGang, (void *)he_RunGang) != 0)
         return 1;
     sv_RegisterActivity(0x61, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_Unk54ae60) != 0)
+    if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_RunProtectionAsk) != 0)
         return 1;
     if (he_SetEventHandlers(0x62, (void *)he_Unk54b170, (void *)he_Unk54b1e0) != 0)
         return 1;
