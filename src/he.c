@@ -354,6 +354,17 @@ typedef struct HEGESELLE {              /* the "RndGeselle" (a random journeyman
     int slot;                           /* 0xbc, the cm slot of the journeyman's creation (cm_SendMessage3d); its value
                                            is the new character */
 } HEGESELLE;
+typedef struct HEFEEMSG {               /* the AI message 0x56 he_RunMasterExamPay posts (AIMSG has no names at +0x58 /
+                                           +0x5c for it; a member added to AIMSG can flip other units' matches) */
+    char pad00[0x58];
+    unsigned char what;                 /* 0x58, 4 (reasoned: the kind of payment, its reader is not read yet) */
+    char pad59[3];
+    int amount;                         /* 0x5c, the amount paid */
+} HEFEEMSG;
+typedef struct HEEXAMPAY {              /* the master exam payment event's word over AIJOB's union (he_RunMasterExamPay) */
+    char pad00[0xb0];
+    int fee;                            /* 0xb0, the fee the message box names (5% of the character's worth), paid on yes */
+} HEEXAMPAY;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -3649,67 +3660,72 @@ void he_Unk548750(int ev)
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 3, 0, 0);
 }
-/* 0x548790, a Ghidra miss: the run handler of the pay event (state 0: the window "Berufe\Messagebox_Meisterpruefung" and the news 0x10b4 with the amount 0x50a640 * 0.05 (+0xb0); state 1: the answer yes (0xf8a668 = 0) pays 0x4c4830 and posts a message record of type 0x56, no only ends it) (ROUGH) */
+/* 0x548790, a Ghidra miss: the run handler of the master exam payment event 0x55: stage -1 / -2 releases its slot
+   and frees it; once started, stage 0 keeps the fee (5% of the character's worth), opens the message box
+   "Berufe\Messagebox_Meisterpruefung" with the news 0x10b4 and goes to stage 1 (no box: frees the event); stage 1
+   ends the event past its end time, else waits for the answer: yes (0) moves the fee between the player's character
+   and the event's character (cm_SendMoveGoodsUnchecked) and posts the AI message 0x56 (flags 0x11) with it to the
+   character, no (1) only ends it */
 
-void he_Unk548790(int ev)
+void he_RunMasterExamPay(int ev)
 {
-    char msg[0xf8];
-    int st, amt, h;
+    AIJOB *e = (AIJOB *)ev;
+    AIMSG m;
+    int fee;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
-        if (*(int *)(ev + 0x74) != 0)
+    if (e->stage == -1 || e->stage == -2) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (gm_CompareTime((unsigned)&ai_Time, ev + 0x44) == -1)
+    if (gm_CompareTime(&ai_Time, &e->start) == -1)
         return;
-    if (*(int *)(ev + 0x70) == 0) {
-        amt = (int)((float)gm_GetWorth(*(unsigned short *)(ev + 8)) * 0.05f);
-        *(int *)(ev + 0xb0) = amt;
-        if (*(int *)(ev + 0x74) == 0)
-            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        if (*(int *)(ev + 0x74) != 0) {
-            d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-            io_PrintText((unsigned)"$C");
-            io_PrintText(0x10b4, *(unsigned short *)(ev + 8), amt);
-            *(int *)(ev + 0x70) = 1;
+    switch (e->stage) {
+    case 0:
+        fee = (int)(gm_GetWorth(e->chr) * 0.05f);
+        ((HEEXAMPAY *)e)->fee = fee;
+        if (e->slot == 0)
+            he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        if (e->slot == 0) {
+            he_FreeEvent((int *)ev);
             return;
         }
-        he_FreeEvent((int *)ev);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("$C");
+        io_PrintText(0x10b4, e->chr, fee);
+        e->stage = 1;
         return;
-    }
-    if (*(int *)(ev + 0x70) == 1) {
-        if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (*(int *)(ev + 0x74) == 0) {
-            *(int *)(ev + 0x70) = 0;
+        if (e->slot == 0) {
+            e->stage = 0;
             return;
         }
-        if (U_I((unsigned)&d2_ClickedForm) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1) {
-            h = U_I((unsigned)&d2_ClickedId);
-            if (h == 0) {
-                memset(msg, 0, sizeof(msg));
-                amt = *(int *)(ev + 0xb0);
-                cm_SendMoveGoodsUnchecked(*(int *)(U_I((unsigned)&ai_PlayerChar) + 4), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, amt);
-                msg[0] = 0x56;
-                *(int *)(msg + 0xc) = -1;
-                *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
-                msg[0x4a] = 0x11;
-                msg[0x6c] = 4;
-                *(int *)(msg + 0x70) = amt;
-                cm_SendLongMessage(msg);
+        if (d2_ClickedForm == e->slot->win && d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                memset(&m, 0, sizeof(m));
+                fee = ((HEEXAMPAY *)e)->fee;
+                cm_SendMoveGoodsUnchecked(he_PlayerCh->netId, ai_CharInts[e->chr][0], ai_OwnPlayer, fee);
+                m.type = 0x56;
+                m.fromId = -1;
+                m.to = ai_CharInts[e->chr][0];
+                m.flags = 0x11;
+                ((HEFEEMSG *)&m)->what = 4;
+                ((HEFEEMSG *)&m)->amount = fee;
+                cm_SendLongMessage((char *)&m);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
-            if (h == 1) {
+            if (d2_ClickedId == 1) {
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
+                return;
             }
         }
     }
@@ -9502,7 +9518,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_RunMasterExamFee) != 0)
         return 1;
-    if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_Unk548790) != 0)
+    if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_RunMasterExamPay) != 0)
         return 1;
     if (he_SetEventHandlers(0x56, (void *)he_Unk5482c0, (void *)he_Unk5489b0) != 0)
         return 1;
