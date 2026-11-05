@@ -10532,21 +10532,27 @@ void he_RunSkillBonus(int ev)
     e->end = ai_Time;
     e->exSlot = cm_SendExSetHE(-1, ev);
 }
-/* 0x552880, the allocation handler of an event with a day timer (ROUGH): unless flag 4 the due clock is now (posted 0x18 later when the minute word was already >= 0x11), the minute word is set to 0x11, +0xac = 0, +0xb0 = 0x1b, +0xb4 = +0xb8 = -1 and the event posted (0x4c4c60 (0, ev), handle in +0x84) */
+/* 0x552880, the start handler of the applicants event 0x86 (its run handler he_RunApplicants): unless its option 4
+   says it is not started yet, the due clock is now at 17:00, moved a day on when it was already past 17:00; the
+   office is unset, the highest kind looked at is 0x1b, both applicant handles are -1 and the event is posted at
+   once (its cm slot kept in exSlot) */
 
-void he_Unk552880(int ev)
+void he_StartApplicants(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        if (*(unsigned short *)(ev + 0x56) >= 0x11)
-            gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(unsigned short *)(ev + 0x56) = 0x11;
-        *(int *)(ev + 0x58) = 0;
-        *(int *)(ev + 0xac) = 0;
-        *(int *)(ev + 0xb0) = 0x1b;
-        *(int *)(ev + 0xb4) = -1;
-        *(int *)(ev + 0xb8) = -1;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+    HEAPPLICANTS *a = (HEAPPLICANTS *)ev;
+
+    if ((e->opts & 4) == 0) {
+        e->end = ai_Time;
+        if (e->end.hour >= 0x11)
+            gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 0x11;
+        e->end.min = 0;
+        a->office = 0;
+        a->maxKind = 0x1b;
+        a->applicant[0] = -1;
+        a->applicant[1] = -1;
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10555,7 +10561,7 @@ int amt_InitApplicant(char *c, int k);
 int amt_GetOpenOffice(int k);
 int amt_CreateApplicant(int k);
 
-/* 0x552920, the run handler of the applicants event 0x86 (its alloc handler he_Unk552880): stage -1 / -2 free it,
+/* 0x552920, the run handler of the applicants event 0x86 (its alloc handler he_StartApplicants): stage -1 / -2 free it,
    flag 4 of opts or a pending post (exSlot) holds it. Stage 0 asks for the highest office kind up to maxKind that is
    open for one more applicant (amt_GetOpenOffice) and creates two applicants for it (amt_CreateApplicant; the second
    only two times in three); no kind (or maxKind 0): it starts over a day later at 17 o'clock with maxKind 0x1b.
@@ -10969,7 +10975,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x82, (void *)he_StartSkillBonus, (void *)he_RunSkillBonus) != 0)
         return 1;
-    if (he_SetEventHandlers(0x86, (void *)he_Unk552880, (void *)he_RunApplicants) != 0)
+    if (he_SetEventHandlers(0x86, (void *)he_StartApplicants, (void *)he_RunApplicants) != 0)
         return 1;
     if (he_SetEventHandlers(0x87, (void *)he_Unk552b90, (void *)he_Unk552bc0) != 0)
         return 1;
