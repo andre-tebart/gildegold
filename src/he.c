@@ -19493,47 +19493,43 @@ void he_Unk567620(int ev)
 
 float gm_TitlePeriodServed(int n, int *out);
 
-/* 0x567660, a Ghidra miss: the run handler that warns a player once (ROUGH): state 0 with the flag word of the player (0x770d48 + id * 0x21c) negative (already warned) waits 4 units; else when his value 0x504510 (id, &out)
-   is below 1.0 waits 20 units, else sends the message ('%', the player, +0x36 = 9, +0x60 = 2) 0x4c4b70, sets the sign bit of the flag word and waits 4 units; -1 / -2 free */
-void he_Unk567660(int ev)
+/* 0x567660, the run handler of the title-period event 0x7c (alloc handler 0x567620): stages -1 / -2 free the record;
+   stage 0: a character already told (flags1c8 bit 31) is asked again in 4 hours; one whose title period is not
+   served yet (gm_TitlePeriodServed below 1.0) in 20 minutes; else he gets the message 0x25 (flags 9, arg[0] his
+   netId, arg[2] 2: cm_SendLongMessage), the bit 31 is set and the next run is 4 hours ahead */
+void he_RunTitleDue(AIJOB *ev)
 {
-    int st, id;
-    unsigned char m[0xf8];
-    double v;
-    int out[2];
+    AIMSG m;
+    AITIME due;
 
-    st = *(int *)(ev + 0x70);
-    if (st < -2)
+    switch (ev->stage) {
+    case 0:
+        if ((ai_CharsT[ev->chr].flags1c8 & 0x80000000) != 0) {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 4, 0, 0);
+            return;
+        }
+        if (gm_TitlePeriodServed(ev->chr, (int *)&due) >= 1.0) {
+            memset(&m, 0, sizeof(m));
+            m.type = 0x25;
+            m.fromId = -1;
+            m.flags = 9;
+            m.arg[2] = 2;
+            m.arg[0] = m.to = ai_CharsT[ev->chr].netId;
+            cm_SendLongMessage((char *)&m);
+            ai_CharsT[ev->chr].flags1c8 |= 0x80000000;
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 4, 0, 0);
+        } else {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 0x14, 0);
+        }
         return;
-    if (st < 0) {
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st != 0)
-        return;
-    id = *(unsigned short *)(ev + 8);
-    if (*(int *)(((unsigned)&ai_Selected + 0x40) + id * 0x21c) < 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 4, 0, 0);
-        return;
-    }
-    v = gm_TitlePeriodServed(id, out);
-    if (v < 1.0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0x14, 0);
-        return;
-    }
-    memset(m, 0, sizeof(m));
-    m[4] = 0x25;
-    *(int *)(m + 0xc) = -1;
-    m[0x36] = 9;
-    *(int *)(m + 0x60) = 2;
-    *(int *)(m + 8) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
-    *(int *)(m + 0x5c) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
-    cm_SendLongMessage(m);
-    *(unsigned *)(((unsigned)&ai_Selected + 0x40) + id * 0x21c) |= 0x80000000;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 4, 0, 0);
 }
 /* 0x567810, "he_OpenHelpEvents": reads the tutorial hint script "<name>\project\game\tutorial\<param>.ini" (0x627e08 with 0x624690: "%s\tutorial\%s.ini") into the table 0x6fa260 (128 entries of four ints: due day, due
    time, due clock tail, text id): per line (lines containing "//" are comments) the ':' separated fields are the text label (0x42e770; an unknown label: the message "he_OpenHelpEvents(): invalid textlabel:%s"), and the three
@@ -20010,7 +20006,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(117, (void *)he_AllocDueInOne, (void *)he_RunRobbery) != 0)
         return 1;
     sv_RegisterActivity(117, 0, 0, 1282, -1);
-    if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_Unk567660) != 0)
+    if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_RunTitleDue) != 0)
         return 1;
     if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_RunHint) != 0)
         return 1;
