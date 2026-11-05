@@ -15025,31 +15025,51 @@ void ai_Unk5aa1f0(int param_1, int *param_2, int param_3)
 void d2_RemoveObj(); int gm_BuildingCarts(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
 void d2_SetObjFont(); void d2_SetCaption(); void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 
-/* 0x5aa4b0, frees the controls of a Domizil record (106 B): +0x1c and +0x10, then the six pairs at +0x40
-   (+0xa .. +0xf and +0x10 .. +0x15), each set to -1 */
-void ai_Unk5aa4b0(int param_1)
+#pragma pack(push, 1)
+typedef struct G9DOMIZILROW {           /* a row of the Domizil personnel book: 0x5aa0d0 creates its controls,
+                                           0x5aa1f0 / 0x5aa520 fill them, ai_DomizilFreeRow frees them */
+    int x;                              /* 0x00, the row's position (0x5aa0d0's arguments) */
+    int y;                              /* 0x04 */
+    int ch;                             /* 0x08, the character record it shows */
+    int pic;                            /* 0x0c, the picture control (d2_WinOpenPic, 0x5aa0d0) */
+    int slider;                         /* 0x10, the value slider (d2_WinOpenSlider, 0x5aa1f0) */
+    int text;                           /* 0x14, the text control (0x5aa1f0 / 0x5aa520) */
+    int name;                           /* 0x18, the name control (0x5aa0d0) */
+    int icon;                           /* 0x1c, the character's icon control (d2_WinOpenPic, 0x5aa1f0) */
+    unsigned char state;                /* 0x20, 0 / 1 / 2 (0x5aa520) */
+    char pad21[3];                      /* 0x21 .. 0x23 */
+    char pad24[4];                      /* 0x24, cleared by 0x5aa0d0 */
+    int ctrl28[6];                      /* 0x28 .. 0x3f, the six entries' controls (their roles are not recovered:
+                                           the book window creates them, its body is not written yet) */
+    int ctrl40[6];                      /* 0x40 .. 0x57, the second control of each entry */
+    int view;                           /* 0x58, the view (d2_CurrentView, 0x5aa0d0) */
+} G9DOMIZILROW;
+#pragma pack(pop)
+
+/* 0x5aa4b0, frees the controls of a Domizil row (106 B): the character's icon (+0x1c) and the slider (+0x10), then
+   both six-control entry arrays (+0x28 .. +0x57), each set to -1; the book window's free path calls it */
+
+void ai_DomizilFreeRow(G9DOMIZILROW *row)
 {
-    int *p;
     int i;
 
-    if (*(int *)(param_1 + 0x1c) != -1) {
-        d2_RemoveObj(*(int *)(param_1 + 0x1c));
-        *(int *)(param_1 + 0x1c) = -1;
+    if (row->icon != -1) {
+        d2_RemoveObj(row->icon);
+        row->icon = -1;
     }
-    if (*(int *)(param_1 + 0x10) != -1) {
-        d2_RemoveObj(*(int *)(param_1 + 0x10));
-        *(int *)(param_1 + 0x10) = -1;
+    if (row->slider != -1) {
+        d2_RemoveObj(row->slider);
+        row->slider = -1;
     }
-    for (p = (int *)(param_1 + 0x40), i = 6; i != 0; i--) {
-        if (p[-6] != -1) {
-            d2_RemoveObj(p[-6]);
-            p[-6] = -1;
+    for (i = 0; i < 6; i++) {
+        if (row->ctrl28[i] != -1) {
+            d2_RemoveObj(row->ctrl28[i]);
+            row->ctrl28[i] = -1;
         }
-        if (*p != -1) {
-            d2_RemoveObj(*p);
-            *p = -1;
+        if (row->ctrl40[i] != -1) {
+            d2_RemoveObj(row->ctrl40[i]);
+            row->ctrl40[i] = -1;
         }
-        p++;
     }
 }
 /* 0x5aa520, the selected character of a Domizil record (449 B): the carrier 0x53e400 (2, 0, param_3, 3, the +1
@@ -15082,7 +15102,7 @@ void ai_Unk5aa520(int param_1, int param_2, int param_3, int param_4)
         *(unsigned char *)(param_2 + 0x20) = 1;
         return;
     }
-    ai_Unk5aa4b0(param_2);
+    ai_DomizilFreeRow(param_2);
     strcpy(text, (char *)U_I((unsigned)&txt_NoCharacter));
     *(unsigned char *)(param_2 + 0x20) = 0;
     d2_SetObjText(*(int *)(param_2 + 0x14), text);
