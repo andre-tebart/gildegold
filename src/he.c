@@ -5471,16 +5471,22 @@ void he_RunProtectionAsk(int ev)
 int gm_EquipmentValue(unsigned char *b, int level);
 int gm_BuildingLevel();
 
-/* 0x54b170, a Ghidra miss: the init of the protection money event: +0xb8 = -1, and (bit 4 of +0x78 clear) due now, state 1, posted 2 units ahead */
+/* 0x54b170, the alloc handler of the protection-money event 0x62 (he_RunProtection): its slot is -1 and, when its
+   opts bit 2 is clear, its answer is -1 (open), its due clock two minutes on, stage 1, and it is posted
+   (cm_SendExSetHE 1, the slot kept) */
+
 void he_StartProtection(int ev)
 {
-    *(int *)(ev + 0x84) = -1;
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(int *)(ev + 0xb8) = -1;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x70) = 1;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+    AIJOB *e = (AIJOB *)ev;
+    HEPROTECTION *p = (HEPROTECTION *)ev;
+
+    e->exSlot = -1;
+    if ((e->opts & 4) == 0) {
+        p->answer = -1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->stage = 1;
+        e->exSlot = cm_SendExSetHE(1, ev);
     }
 }
 /* 0x54b1e0, a Ghidra miss: the run handler of the protection money event 0x62 ("Schutzgeld", HEPROTECTION: the
