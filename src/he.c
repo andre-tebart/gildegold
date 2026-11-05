@@ -9510,7 +9510,16 @@ int cm_SendChrGotoBuilding();
    0x20 inns (gm_BuildQuery 1, 5, 0x16) the one he_PickNearBuilding picks (only looked up by gm_FindBuildingById, the
    walk keeps its building), else the next of the 0x100 buildings in steps of
    the slot's step whose kind is in HE_WALK_BUILDINGS; the character is sent there (cm_SendChrGotoBuilding
-   "Sim Politicians", its flag 0 for the kinds 0x16 / 7 / 0xf, else 1) */
+   "Sim Politicians", its flag 0 for the kinds 0x16 / 7 / 0xf, else 1)
+   @deep read whole against the original and reconstructed (hold sets/clears bit 0x1000 in the right
+   argument, sv_IsAtDoor(c, building), the char holdHour test, weather computed before util_Random, the
+   walk loop reusing budget as the step and held as the countdown, idx = 0 for the inn path, unsigned char
+   kind). Left, allocation: the frame slots of budget and b are swapped (ours b [esp+0x10] / budget
+   [esp+0x14], the original budget 0x10 / b 0x14; every declaration order tried, no change); in the walk
+   loop ours keeps ai_BTypes in ebp and b in edi, the original reloads ai_BTypes each pass (mov eax,
+   [ai_BTypes]; add eax, ecx; lea eax, [eax+edx*4] dead) with b in ebp and lo in edi; the stage byte
+   widened via mov edi, ecx / and edi, 0xff vs ours xor ecx / mov cl; budget / 2 + 1 kept in edi vs stored
+   and reloaded. 337 vs 341 instructions. */
 void he_StepWalk(HEWALKSLOT *s)
 {
     AIBLD *b = 0;
