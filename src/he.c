@@ -997,20 +997,24 @@ typedef struct HEPRODUCTIONMSG {        /* the production event's words over AIJ
     int slot1;                          /* 0xe8, -1 at the allocation */
     int slot2;                          /* 0xec, -1 at the allocation, the cm send slot of the message */
 } HEPRODUCTIONMSG;
-typedef struct HEPRODUCTION {           /* the production event's words over AIJOB's union (he_AllocProduktion 0x5690c0) */
+typedef struct HEPRODUCTION {           /* the production event's words over AIJOB's union (he_AllocProduktion 0x5690c0,
+                                           he_RunProduktion) */
     char pad00[0xac];
     unsigned short good;                /* 0xac, the good produced (an ai_Goods index) */
     char padg[2];
     char padb0[4];
-    float amount;                       /* 0xb4, the work time of the good (its record's 0x22) */
-    float amount2;                      /* 0xb8, the same */
+    float amount;                       /* 0xb4, the work left on the current unit: starts at the good's work time
+                                           (GMGOOD.workTime), worn down by the work minutes, one unit made per work time */
+    float amount2;                      /* 0xb8, the same, set when a unit starts */
     int bld;                            /* 0xbc, the producing building's id */
-    char padc0[4];
-    int state;                          /* 0xc4, -1 at the allocation */
-    int started;                        /* 0xc8, 0 at the allocation */
+    int store;                          /* 0xc0, the id of the object the goods are made in (kind 0x2a / 0x116: its list
+                                           holds the inputs, cm_SendMakeGoods' target) */
+    int slot;                           /* 0xc4, the cm send slot of the last make / order message (cm_GetSlotState), -1: none */
+    int lacking;                        /* 0xc8, 1 once a shortage was reported (its news box event 0x11 is freed when the work resumes) */
     float rate;                         /* 0xcc, (the owner's mean liking - 0.5) * 0.25 */
-    char padd0[4];
-    float done;                         /* 0xd4, 1.0 at the allocation */
+    unsigned char counter;              /* 0xd0, the work minutes since the workers were last rated (every 60) */
+    char padd1[3];
+    float staff;                        /* 0xd4, the workers' mean factor (health, skill, place), 1.0 at the allocation */
 } HEPRODUCTION;
 typedef struct HETIPEVENT {             /* the tips event 0x84's words over AIJOB's union (its alloc handler 0x567b80,
                                            run handler 0x567c00) */
@@ -20225,22 +20229,22 @@ void he_AllocProduktion(AIJOB *ev)
     p->amount = v;
     p->amount2 = v;
     gm_AddTime(&ev->end, 0, 0, 1);
-    p->state = -1;
-    p->started = 0;
+    p->slot = -1;
+    p->lacking = 0;
     for (rec = (int)ai_Chars; rec < (int)ai_Chars + 0x65400; rec += 0x21c) {
         if (((AICHAR *)rec)->job == ev)
             sv_MoveToGroup(b, 0, ((AICHAR *)rec)->id, ev);
     }
     p->rate = (gm_MeanLiking(ev->chr, 8, ev->ids) - 0.5) * 0.25;
-    p->done = 1.0f;
+    p->staff = 1.0f;
 }
 
 float ahm_PlaceFactor();
-void ai_Unk4c5840(int a);
-void ai_Unk4c48e0(int a, short b, int c);
+void cm_SendUpdateSmoke(int a);
+void cm_SendMakeGoods(int a, short b, int c);
 void sv_CountGroupMembers(char *g);
-int ai_Unk5740f0();
-int ai_Unk5ba700();
+int he_HasEvent9f();
+int ai_BuildingHasItem();
 int cm_SendRelations(int a, int b, int c, int d);
 int gm_FreeCapacity();
 int gm_ListAmount();
@@ -20249,321 +20253,325 @@ int gm_WorkMinutesBetween();
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 int ai_InventoryHas(void *ch, int id);
 
-/* unlinked, the table of the raw material shortage news (0x628a5c .. 0x628bdc) by the type id of the building (0x569d17 / 0x5694d8) */
-static __inline char *he_ProdShortage(int type)
-{
-    switch (type) {
-    case 7: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_01";
-    case 8: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_03";
-    case 0xb: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_05";
-    case 0xc: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_07";
-    case 0xd: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_09";
-    case 0xe: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_11";
-    case 0x12: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_13";
-    case 0x14: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_15";
-    case 0x15: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_17";
-    case 0x16: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_19";
-    case 0x20:
-    case 0x1f:
-    case 0x1d: return "_NACHRICHTEN_ROHSTOFFMANGEL_HS_20";
-    }
-    return 0;
-}
+#define cm_SendMakeGoodsH ((int (*)(int, int, int))cm_SendMakeGoods)  /* 0x4c48e0: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunProduktion keeps it (HEPRODUCTION.slot) and passes the good as an int (zero-extended) */
 
-/* 0x569210, "he_RunProduktion()", the run handler of the production event record ev (+0xbc the building, +0xc0 the
-   building of the goods, +0xac the good, +0x14 / +0x18 the pending orders, +0x70 the state -2 .. 2 by the jump table
-   0x56a0e4, +0xb4 / +0xb8 the amount left, +0xcc / +0xd4 the factors, +0xd0 the rounds, +0x52 / +0x60 the clocks, +0xc4 the
-   handle of the transport, +0xc8 the missing-goods flag): state 0 -> 1; state 1 with orders: the goods are fetched from the
-   goods building (0x4ffe90 / 0x50ab80 / 0x50aaf0), the amount is used up by the rounds (the rate is the 0x5092e0 value, the
-   level of the owner (+0x81), the workers +0x8c (8 ids, their 0x4fc8e0 skill) ..); a missing good gives the news
-   0x1bb2 .. 0x1bb4 (_NACHRICHTEN_ROHSTOFFMANGEL_HS_xx by the type) to the owner (0x53dee0); state 2 without orders frees the
-   record (hands the characters on with 0x524260). ROUGH, from the disassembly: the control flow is kept by labels */
-void he_Unk569210(int ev)
+/* 0x569210, the run handler of the production event (he_AllocProduktion; "he_RunProduktion()"): without a character
+   it frees itself (the debug text names the building). Stage 1 goes to 2 when no workers are left (the words +0x14 /
+   +0x18). A make message sent (slot) is waited for; once it failed (state 2) and a worker is on the event, the master
+   is not away (flags1b4 bit 1) and no shortage was reported yet, the owner of kind 6 / 7 gets the news why: the
+   store holds the good and has no room for it (0x1bb3, "_NACHRICHTEN_HS_04"), no room at all (0x1bb4, "_HS_05") or
+   the inputs were missing (0x1bb2, the shortage news of the building type, cm_SendStates kind 8); the smoke stops.
+   Without a pending message the work runs: the factor is 1 + 0.01 * the building's skill, plus the master's skill
+   sk81 / 1008 for an owner of kind 6 / 7, halved with flag 0x20 and the item 0x178; every 60 minutes the owner sends
+   his relations to the workers ids[], their mean factor (health, skill for the titles 0x1b / 0x1c, the place factor,
+   x 1.25 with the item 0x2ba; x 0.9 with an event 0x9f) and the liking rate are taken anew. While the due clock is
+   past and the store (kind 0x2a / 0x116) has the inputs (GMGOOD.in / need) and room, the work minutes times
+   (1.3 * +0x14 + +0x18) times the rate wear the amount down; every work time used up makes one unit
+   (cm_SendMakeGoods); without units and the good no longer in the store, the good is ordered (cm_SendExSellObject).
+   A shortage reports as above (once), stops the smoke and waits 5 minutes. Stage 2 goes back to 1 while workers are
+   left, else the workers leave the building's group, the smoke stops and the event is freed; -1 / -2 free it
+   @deep rebuilt from the whole original (frame 0x724: name[MAX_PATH] at 0x20, text[0x600] at 0x124; the
+   case order 1/0/2/-1; txt_Format(text, id, bld, good*2+0x9a8); the shortage news chains; the make / order
+   slots; while amount <= 0.0f; the minutes product with the call converted in place). 1147 vs 1151
+   instructions. Left is allocation: VC6 keeps &ev->clock60 (the CSE, or the clock variable) in ebx where
+   the original keeps it in the stack slot 0x8 (mov [esp+0x24], eax at +0x79e) and caches the constant 0 in
+   ebx instead (xor ebx, ebx at +0x8cc / +0x96b; cmp ax, bx / push ebx / cmp [ebp+0xc8], ebx / mov
+   [esp+0x28], ebx for the qword high half): every code hunk from +0x792 to +0xd95 is that (push ebx vs
+   push 0, mov ecx, ebx vs mov edx, [esp+0x18]), and the slots hunks follow from it (factor f at 0x8 vs
+   0xc). The tail hunk: case 1's no-worker path shares case 0's stage++ inline in the original (+0x87) and
+   as a tail block in ours (+0xda0), the cause of the one switch entry that differs; goto / fall-through
+   spellings gave the same layout (size: 8 of the instruction difference are shared / inline tails) */
+void he_RunProduktion(AIJOB *ev)
 {
-    char text[0x400];
-    char name[0x24];
-    char crlf[2];
-    int b, b2, g, t, w, o, chk, ck, tp, found, rec, news, i, n, h, owner;
-    float f, rate, fv, sum, v;
-    int bo[2];
+    HEPRODUCTION *p = (HEPRODUCTION *)ev;
+    AIBLD *bld;
+    AIOBJ *store;
+    float f;
+    float fv;
+    float sum;
+    AIBTYPE *bt;
+    char name[MAX_PATH];
+    char text[0x600];
+    AICHAR *rec;
+    AICHAR *worker;
+    AICHAR *master;
+    AIOBJ *mainObj;
+    AIOBJ *o;
+    AIJOB *box;
+    GMGOOD *g;
+    int news;
+    int n;
+    int i;
+    int units;
 
     name[0] = 0;
-    if (*(unsigned short *)(ev + 8) == 0xffff) {
-        b = gm_FindBuildingById(*(int *)(ev + 0xbc));
-        if (b == 0)
-            goto done_free;
-        txt_Format(text, "he_RunProduktion(): geb:%G", b);
+    if (ev->chr == 0xffff) {
+        bld = (AIBLD *)gm_FindBuildingById(p->bld);
+        if (bld != 0)
+            txt_Format(text, "he_RunProduktion(): geb:%G", bld);
         he_FreeEvent((int *)ev);
         return;
     }
-    switch (*(int *)(ev + 0x70)) {
-    case -2:
-    case -1:
-        goto state_free;
-    case 0:
-        *(int *)(ev + 0x70) = 1;
-        return;
+    switch (ev->stage) {
     case 1:
-        if (*(int *)(ev + 0x14) > 0 || *(int *)(ev + 0x18) > 0)
+        if (ev->words14[0] > 0 || ev->words14[1] > 0)
             goto work;
-        *(int *)(ev + 0x70) = 2;
+        /* no workers left: on to stage 2 */
+    case 0:
+        ev->stage++;
+        return;
+work:
+        if (p->slot != -1) {
+            if (cm_GetSlotState(p->slot) == 0)
+                return;
+            gm_FindById((int *)&bld, 0, 0, p->bld);
+            if (bld == 0) {
+                ev->stage = -1;
+                return;
+            }
+            bt = &ai_BTypesT[bld->type];
+            if (cm_GetSlotState(p->slot) == 2) {
+                worker = 0;
+                name[0] = 0;
+                master = (AICHAR *)gm_FindCharacterByMaster(bld);
+                for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
+                    if (rec->job == ev)
+                        worker = rec;
+                }
+                if (worker != 0 && (master == 0 || (master->flags1b4 & 1) == 0) && p->lacking == 0) {
+                    gm_FindById(0, (int *)&store, 0, p->store);
+                    mainObj = (AIOBJ *)gm_BuildingMainObject((unsigned char *)bld);
+                    if (gm_Query((void *)store->list, 1, 0, p->good) != 0 && gm_FreeCapacity(store, p->good, 1) == 0) {
+                        txt_Format(text, 0x1bb3, bld, p->good * 2 + 0x9a8);
+                        strcpy(name, "_NACHRICHTEN_HS_04");
+                    } else if (gm_FreeCapacity(store, p->good, 1) == 0) {
+                        txt_Format(text, 0x1bb4, bld, p->good * 2 + 0x9a8);
+                        strcpy(name, "_NACHRICHTEN_HS_05");
+                    } else {
+                        if (cm_SendStates[p->slot].kind != 8)
+                            goto wait;
+                        txt_Format(text, 0x1bb2, bld, p->good * 2 + 0x9a8);
+                        if (bt->kind == 7)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_01");
+                        else if (bt->kind == 8)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_03");
+                        else if (bt->kind == 0xb)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_05");
+                        else if (bt->kind == 0xc)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_07");
+                        else if (bt->kind == 0xd)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_09");
+                        else if (bt->kind == 0xe)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_11");
+                        else if (bt->kind == 0x12)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_13");
+                        else if (bt->kind == 0x14)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_15");
+                        else if (bt->kind == 0x15)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_17");
+                        else if (bt->kind == 0x16)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_19");
+                        else if (bt->kind == 0x1e)
+                            strcpy(name, "_NACHRICHTEN_DOMIZIL_02");
+                        else if (bt->kind == 0x20 || bt->kind == 0x1f || bt->kind == 0x1d)
+                            strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_20");
+                    }
+                    if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
+                        news = 0x5f1;
+                        master = (AICHAR *)gm_FindCharacterByMaster(bld);
+                        if (master != 0 && (master->flags1b4 & 1))
+                            news = 0x60d;
+                        if (name[0] != 0)
+                            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, ev->id, text, 0, news, bld->id,
+                                                   mainObj->objId, 0, name);
+                        else
+                            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, ev->id, text, 0, news, bld->id,
+                                                   mainObj->objId, 0, 0);
+                    }
+                    if (bld != 0 && bld->smokeEffect != -1)
+                        cm_SendUpdateSmoke(bld->id);
+                    p->lacking = 1;
+                }
+wait:
+                p->slot = -1;
+                gm_AddTime(&ev->end, 0, 5, 0);
+                return;
+            }
+        }
+        gm_FindById((int *)&bld, 0, 0, p->bld);
+        if (bld == 0) {
+            ev->stage = -1;
+            return;
+        }
+        if (bld->smokeEffect == -1)
+            cm_SendUpdateSmoke(bld->id);
+        bt = &ai_BTypesT[bld->type];
+        f = gm_BuildingSkill(bld, 1, 1) * 0.01 + 1.0;
+        master = (AICHAR *)gm_FindCharacterByMaster(bld);
+        if (master == 0)
+            master = &ai_CharsT[bld->owner];
+        f += master->kind == 6 || master->kind == 7 ? (float)(master->sk81 * 0.000992063492063492) : 0.0f;
+        if ((bld->flags5a & 0x20) && ai_BuildingHasItem(bld, 0x178))
+            f = f * 0.5;
+        if (p->counter >= 60) {
+            n = 0;
+            sum = 0;
+            for (i = 0; i < 8; i++) {
+                if (ev->ids[i] == -1)
+                    continue;
+                if (bld->workRate != 2)
+                    cm_SendRelations(ai_CharsT[bld->owner].netId, ev->ids[i], 2 - bld->workRate, 0);
+                worker = (AICHAR *)gm_FindChar(ev->ids[i]);
+                if (worker != 0) {
+                    fv = gm_HealthRatio((short *)worker);
+                    if (worker->title == 0x1b || worker->title == 0x1c) {
+                        fv = (gm_GetSkill((char *)worker, 1) + 0.5) * fv;
+                        if (worker->flags1b4 & 1)
+                            fv = 0.01f;
+                    }
+                    if (worker->flags1cc & 4)
+                        fv = ahm_PlaceFactor(worker, p->good) * fv;
+                    sum += ai_InventoryHas(&ai_CharsT[bld->owner], 0x2ba) ? fv * 1.25f : fv;
+                }
+                n++;
+            }
+            if (n != 0) {
+                p->staff = sum / n;
+                if (he_HasEvent9f((char *)&ai_CharsT[bld->owner]))
+                    p->staff = p->staff * 0.9f;
+            }
+            sv_CountGroupMembers((char *)ev);
+            p->rate = (gm_MeanLiking(bld->owner, 8, ev->ids) - 0.5) * 0.25;
+            p->counter = 0;
+        }
+        n = gm_WorkMinutesBetween(&ev->clock60, &ai_Time, 0);
+        if (n > 0)
+            p->counter += n;
+        f = ((bld->flags5aw & 0x1000 ? f + 0.1f : f) + p->rate + (bld->workRate - 2) * 0.1) * p->staff;
+        if (gm_FindById(0, (int *)&store, 0, p->store) == 0 || (store->type != 0x2a && store->type != 0x116)) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (gm_Query((void *)store->list, 1, 0, p->good) != 0 && gm_FreeCapacity(store, p->good, 1) == 0) {
+            txt_Format(text, 0x1bb3, bld, p->good * 2 + 0x9a8);
+            strcpy(name, "_NACHRICHTEN_HS_04");
+        } else if (gm_FreeCapacity(store, p->good, 1) == 0) {
+            txt_Format(text, 0x1bb4, bld, p->good * 2 + 0x9a8);
+            strcpy(name, "_NACHRICHTEN_HS_05");
+        } else {
+            g = GM_GOOD(p->good);
+            for (i = 0; i < 4; i++) {
+                if (g->in[i] != 0) {
+                    o = (AIOBJ *)gm_Query((void *)store->list, 1, 0, g->in[i]);
+                    if (o == 0 || gm_ListAmount(store, o) < g->need[i])
+                        goto lacking;
+                }
+            }
+            if (p->lacking != 0) {
+                box = (AIJOB *)he_FindEvent(2, 0, 0x11, 3, ev->id);
+                if (box != 0)
+                    he_FreeEvent((int *)box);
+                p->lacking = 0;
+                if (ev->gfx != 0) {
+                    he_FreeGfxInfo((int *)ev->gfx);
+                    ev->gfx = 0;
+                }
+                ev->clock60 = ev->end;
+            }
+            while (gm_CompareTime(&ev->end, &ai_Time) < 0) {
+                g = GM_GOOD(p->good);
+                p->amount = p->amount - gm_WorkMinutesBetween(&ev->clock60, &ev->end, 0)
+                                        * (ev->words14[0] * 1.3f + ev->words14[1]) * f;
+                units = 0;
+                while (p->amount <= 0.0f) {
+                    p->amount = g->workTime + p->amount;
+                    p->amount2 = p->amount;
+                    units++;
+                }
+                if (units != 0)
+                    p->slot = cm_SendMakeGoodsH(p->store, p->good, units);
+                else if (p->slot == -1 && gm_Query((void *)store->list, 1, 0, p->good) == 0)
+                    p->slot = cm_SendExSellObjectH(store->objId, -1, p->good, 0, ai_OwnPlayer, 0);
+                ev->clock60 = ev->end;
+                gm_AddTime(&ev->end, 0, 1, 0);
+            }
+            return;
+lacking:
+            txt_Format(text, 0x1bb2, bld, p->good * 2 + 0x9a8);
+            if (bt->kind == 7)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_01");
+            else if (bt->kind == 8)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_03");
+            else if (bt->kind == 0xb)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_05");
+            else if (bt->kind == 0xc)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_07");
+            else if (bt->kind == 0xd)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_09");
+            else if (bt->kind == 0xe)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_11");
+            else if (bt->kind == 0x12)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_13");
+            else if (bt->kind == 0x14)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_15");
+            else if (bt->kind == 0x15)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_17");
+            else if (bt->kind == 0x16)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_19");
+            else if (bt->kind == 0x20 || bt->kind == 0x1f || bt->kind == 0x1d)
+                strcpy(name, "_NACHRICHTEN_ROHSTOFFMANGEL_HS_20");
+        }
+        mainObj = (AIOBJ *)gm_BuildingMainObject((unsigned char *)bld);
+        if (p->lacking == 0 && (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7)) {
+            news = 0x5f1;
+            master = (AICHAR *)gm_FindCharacterByMaster(bld);
+            if (master != 0 && (master->flags1b4 & 1))
+                news = 0x60d;
+            if (mainObj != 0)
+                he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, ev->id, text, 0, news, bld->id, mainObj->objId, 0,
+                                       name);
+            else
+                he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, ev->id, text, 0, news, bld->id, -1, 0, name);
+        }
+        if (bld != 0 && p->lacking == 0 && bld->smokeEffect != -1)
+            cm_SendUpdateSmoke(bld->id);
+        p->lacking = 1;
+        p->slot = -1;
+        gm_AddTime(&ev->end, 0, 5, 0);
+        ev->clock60 = ev->end;
         return;
     case 2:
-        goto state2;
+        if (ev->words14[0] > 0 || ev->words14[1] > 0) {
+            ev->stage = 1;
+            return;
+        }
+        gm_FindById((int *)&bld, 0, 0, p->bld);
+        if (bld == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
+            if (rec->job == ev)
+                sv_MoveToGroup((unsigned char *)bld, 0, rec->id, 0);
+        }
+        if (bld != 0)
+            cm_SendUpdateSmoke(bld->id);
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
+        gm_FindById((int *)&bld, 0, 0, p->bld);
+        if (bld != 0)
+            cm_SendUpdateSmoke(bld->id);
+        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
+            if (rec->job == ev)
+                sv_MoveToGroup(0, 0, rec->id, 0);
+        }
+        he_FreeEvent((int *)ev);
+        return;
     default:
         return;
     }
-work:
-    w = *(int *)(ev + 0xc4);
-    if (w == -1)
-        goto fetch;
-    if (cm_GetSlotState(w) == 0)
-        return;
-    gm_FindById(bo, 0, 0, *(int *)(ev + 0xbc));
-    b = bo[0];
-    if (b == 0) {
-        *(int *)(ev + 0x70) = -1;
-        return;
-    }
-    tp = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
-    if (cm_GetSlotState(*(int *)(ev + 0xc4)) != 2)
-        goto fetch;
-    chk = gm_FindCharacterByMaster(b);
-    found = 0;
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(int *)(rec + 0x17c) == ev)
-            found = rec;
-    }
-    if (found == 0)
-        goto arrived;
-    if (chk != 0 && (*(unsigned char *)(chk + 0x1b4) & 1))
-        goto arrived;
-    if (*(int *)(ev + 0xc8) != 0)
-        goto arrived;
-    gm_FindById(0, bo, 0, *(int *)(ev + 0xc0));
-    b2 = bo[0];
-    t = gm_BuildingMainObject(b2);
-    g = gm_Query(*(int *)(b2 + 0x14), 1, 0, *(unsigned short *)(ev + 0xac));
-    if (g != 0 && gm_FreeCapacity(b2, *(unsigned short *)(ev + 0xac), 1) == 0) {
-        txt_Format(text, 0x1bb3, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
-        strcpy(name, "_NACHRICHTEN_HS_04");
-        goto news;
-    }
-    if (gm_FreeCapacity(b2, *(unsigned short *)(ev + 0xac), 1) == 0) {
-        txt_Format(text, 0x1bb4, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
-        strcpy(name, "_NACHRICHTEN_HS_05");
-        goto news;
-    }
-    if (*(char *)(((unsigned)&cm_SendStates + 0x1) + *(int *)(ev + 0xc4) * 10) != 8)
-        goto arrived;
-    txt_Format(text, 0x1bb2, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
-    if (*(char *)tp == 0x1e)
-        strcpy(name, "_NACHRICHTEN_DOMIZIL_02");
-    else if (he_ProdShortage(*(unsigned char *)tp) != 0)
-        strcpy(name, he_ProdShortage(*(unsigned char *)tp));
-news:
-    owner = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-    if (*(char *)(owner + 2) == 6 || *(char *)(owner + 2) == 7) {
-        news = 0x5f1;
-        chk = gm_FindCharacterByMaster(b);
-        if (chk != 0 && (*(unsigned char *)(chk + 0x1b4) & 1))
-            news = 0x60d;
-        if (name[0] != 0)
-            he_MessageBoxQuickjump(*(int *)(owner + 4), *(int *)(ev + 4), text, 0, news, *(int *)(b + 1), *(int *)(t + 2), 0, name);
-        else
-            he_MessageBoxQuickjump(*(int *)(owner + 4), *(int *)(ev + 4), text, 0, news, *(int *)(b + 1), *(int *)(t + 2), 0, 0);
-    }
-    if (b != 0 && *(int *)(b + 0x95) != -1)
-        ai_Unk4c5840(*(int *)(b + 1));
-    *(int *)(ev + 0xc8) = 1;
-arrived:
-    *(int *)(ev + 0xc4) = -1;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
-    return;
-fetch:
-    gm_FindById(bo, 0, 0, *(int *)(ev + 0xbc));
-    b = bo[0];
-    if (b == 0) {
-        *(int *)(ev + 0x70) = -1;
-        return;
-    }
-    if (*(int *)(b + 0x95) == -1)
-        ai_Unk4c5840(*(int *)(b + 1));
-    tp = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
-    n = gm_BuildingSkill(b, 1, 1);
-    f = (float)n * 0.01 + 1.0;
-    chk = gm_FindCharacterByMaster(b);
-    owner = chk != 0 ? chk : (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-    if (*(char *)(owner + 2) == 6 || *(char *)(owner + 2) == 7)
-        f = (float)*(unsigned char *)(owner + 0x81) * 0.000992063492063492 + f;
-    else
-        f = 0.0f + f;
-    if ((*(unsigned char *)(b + 0x5a) & 0x20) && ai_Unk5ba700(b, 0x178))
-        f = f * 0.5;
-    if (*(unsigned char *)(ev + 0xd0) >= 0x3c) {
-        n = 0;
-        sum = 0.0f;
-        for (i = 0; i < 8; i++) {
-            w = *(int *)(ev + 0x8c + i * 4);
-            if (w == -1)
-                continue;
-            if (*(int *)(b + 0x41) != 2)
-                cm_SendRelations(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(b + 0x27) * 0x21c), w, 2 - *(int *)(b + 0x41), 0);
-            o = gm_FindChar(w);
-            if (o == 0)
-                continue;
-            fv = gm_HealthRatio(o);
-            if (*(unsigned char *)(o + 0x165) == 0x1b || *(unsigned char *)(o + 0x165) == 0x1c) {
-                fv = (gm_GetSkill(o, 1) + 0.5) * fv;
-                if (*(unsigned char *)(o + 0x1b4) & 1)
-                    fv = 0.01f;
-            }
-            if (*(unsigned char *)(o + 0x1cc) & 4)
-                fv = ahm_PlaceFactor(o, *(unsigned short *)(ev + 0xac)) * fv;
-            if (ai_InventoryHas((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, 0x2ba))
-                fv = fv * 1.25f;
-            sum = fv + sum;
-            n++;
-        }
-        if (n != 0) {
-            *(float *)(ev + 0xd4) = sum / n;
-            if (ai_Unk5740f0((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c))
-                *(float *)(ev + 0xd4) = *(float *)(ev + 0xd4) * 0.9f;
-        }
-        sv_CountGroupMembers(ev);
-        *(float *)(ev + 0xcc) = (gm_MeanLiking(*(unsigned short *)(b + 0x27), 8, ev + 0x8c) - 0.5) * 0.25;
-        *(unsigned char *)(ev + 0xd0) = 0;
-    }
-    ck = ev + 0x60;
-    n = gm_WorkMinutesBetween(ck, (unsigned)&ai_Time, 0);
-    if (n > 0)
-        *(unsigned char *)(ev + 0xd0) += n;
-    v = f;
-    if (*(unsigned char *)(b + 0x5b) & 0x10)
-        v = v + 0.1f;
-    rate = (v + (float)(*(int *)(b + 0x41) - 2) * 0.1 + *(float *)(ev + 0xcc)) * *(float *)(ev + 0xd4);
-    gm_FindById(0, bo, 0, *(int *)(ev + 0xc0));
-    b2 = bo[0];
-    if (b2 == 0)
-        goto done_free;
-    if (*(unsigned short *)b2 != 0x2a && *(unsigned short *)b2 != 0x116)
-        goto done_free;
-    g = gm_Query(*(int *)(b2 + 0x14), 1, 0, *(unsigned short *)(ev + 0xac));
-    if (g != 0 && gm_FreeCapacity(b2, *(unsigned short *)(ev + 0xac), 1) == 0) {
-        txt_Format(text, 0x1bb3, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
-        strcpy(name, "_NACHRICHTEN_HS_04");
-        t = 0;
-        goto lacking;
-    }
-    if (gm_FreeCapacity(b2, *(unsigned short *)(ev + 0xac), 1) == 0) {
-        txt_Format(text, 0x1bb4, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
-        strcpy(name, "_NACHRICHTEN_HS_05");
-        t = 0;
-        goto lacking;
-    }
-    {
-        char *rec91 = (char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41;
-        unsigned short *gp = (unsigned short *)(rec91 + 0x2e);
-        t = 0;
-        for (i = 0; i < 4; i++, gp++) {
-            if (*gp == 0)
-                continue;
-            o = gm_Query(*(int *)(b2 + 0x14), 1, 0, *gp);
-            if (o == 0 || gm_ListAmount(b2, o) < *(unsigned short *)((char *)gp - 8)) {
-                txt_Format(text, 0x1bb2, *(unsigned short *)(ev + 0xac) * 2 + 0x9a8, b);
-                tp = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
-                if (he_ProdShortage(*(unsigned char *)tp) != 0)
-                    strcpy(name, he_ProdShortage(*(unsigned char *)tp));
-                goto lacking;
-            }
-        }
-        if (*(int *)(ev + 0xc8) != 0) {
-            h = (int)he_FindEvent(2, 0, 0x11, 3, *(int *)(ev + 4));
-            if (h != 0)
-                he_FreeEvent((int *)h);
-            h = *(int *)(ev + 0x88);
-            *(int *)(ev + 0xc8) = 0;
-            if (h != 0) {
-                he_FreeGfxInfo((int *)h);
-                *(int *)(ev + 0x88) = 0;
-            }
-            *(AITIME *)ck = *(AITIME *)(ev + 0x52);
-        }
-        for (;;) {
-            if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
-                return;
-            n = gm_WorkMinutesBetween(ck, ev + 0x52, 0);
-            *(float *)(ev + 0xb4) = *(float *)(ev + 0xb4) - (float)n * ((float)*(int *)(ev + 0x14) * 1.3f + *(int *)(ev + 0x18)) * rate;
-            i = 0;
-            while (!(*(float *)(ev + 0xb4) > 0.0f)) {
-                *(float *)(ev + 0xb4) = (float)*(unsigned int *)(rec91 + 0x22) + *(float *)(ev + 0xb4);
-                *(float *)(ev + 0xb8) = *(float *)(ev + 0xb4);
-                i++;
-            }
-            if (i != 0) {
-                *(int *)(ev + 0xc4) = ((int (*)(int, short, int))ai_Unk4c48e0)(*(int *)(ev + 0xc0), *(unsigned short *)(ev + 0xac), i);
-            } else if (*(int *)(ev + 0xc4) == -1) {
-                if (gm_Query(*(int *)(b2 + 0x14), 1, 0, *(unsigned short *)(ev + 0xac)) == 0)
-                    *(int *)(ev + 0xc4) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(b2 + 2), -1, *(unsigned short *)(ev + 0xac), 0, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            }
-            *(AITIME *)ck = *(AITIME *)(ev + 0x52);
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
-                return;
-        }
-    }
-lacking:
-    t = gm_BuildingMainObject(b);
-    if (*(int *)(ev + 0xc8) == 0) {
-        owner = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-        if (*(char *)(owner + 2) == 6 || *(char *)(owner + 2) == 7) {
-            news = 0x5f1;
-            chk = gm_FindCharacterByMaster(b);
-            if (chk != 0 && (*(unsigned char *)(chk + 0x1b4) & 1))
-                news = 0x60d;
-            if (t != 0)
-                he_MessageBoxQuickjump(*(int *)(owner + 4), *(int *)(ev + 4), text, 0, news, *(int *)(b + 1), *(int *)(t + 2), 0, name);
-            else
-                he_MessageBoxQuickjump(*(int *)(owner + 4), *(int *)(ev + 4), text, 0, news, *(int *)(b + 1), -1, 0, name);
-        }
-    }
-    if (b != 0 && *(int *)(ev + 0xc8) == 0 && *(int *)(b + 0x95) != -1)
-        ai_Unk4c5840(*(int *)(b + 1));
-    *(int *)(ev + 0xc8) = 1;
-    *(int *)(ev + 0xc4) = -1;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x52);
-    return;
-state2:
-    if (*(int *)(ev + 0x14) > 0 || *(int *)(ev + 0x18) > 0) {
-        *(int *)(ev + 0x70) = 1;
-        return;
-    }
-    gm_FindById(bo, 0, 0, *(int *)(ev + 0xbc));
-    b = bo[0];
-    if (b == 0) {
-        *(int *)(ev + 0x70) = -1;
-        return;
-    }
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(int *)(rec + 0x17c) == ev)
-            sv_MoveToGroup(b, *(unsigned short *)rec, 0, 0);
-    }
-    if (b == 0)
-        goto done_free;
-    ai_Unk4c5840(*(int *)(b + 1));
-    he_FreeEvent((int *)ev);
-    return;
-state_free:
-    gm_FindById(bo, 0, 0, *(int *)(ev + 0xbc));
-    if (bo[0] != 0)
-        ai_Unk4c5840(*(int *)(bo[0] + 1));
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(int *)(rec + 0x17c) == ev)
-            sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
-    }
-done_free:
-    he_FreeEvent((int *)ev);
 }
 /* 0x56a100, the alloc of an event record: both clocks (+0x52 / +0x60) = the start clock (+0x44), due a random 0 .. 59 units of the kind 4 later */
 
@@ -21466,7 +21474,7 @@ int he_RegisterEventTypes03(void)
     if (he_SetEventHandlers(3, (void *)he_AllocIncomeEvent, (void *)he_RunIncomeEvent) != 0)
         return 1;
     sv_RegisterActivity(3, "Abbau", 1, 0x501, 0xac);
-    if (he_SetEventHandlers(4, (void *)he_AllocProduktion, (void *)he_Unk569210) != 0)
+    if (he_SetEventHandlers(4, (void *)he_AllocProduktion, (void *)he_RunProduktion) != 0)
         return 1;
     sv_RegisterActivity(4, "Produktion", 1, 0x4ff, 0xac);
     if (he_SetEventHandlers(5, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
@@ -24592,7 +24600,7 @@ void he_Unk5740d0(int ev)
 }
 /* 0x5740f0, 1 when an event of the type 0x9f of the player word of `a` exists (0x53e400 (2, 0, 0x9f, 2, word)) */
 
-int ai_Unk5740f0(char *a)
+int he_HasEvent9f(char *a)
 {
     return he_FindEvent(2, 0, 0x9f, 2, *(unsigned short *)a) != 0;
 }

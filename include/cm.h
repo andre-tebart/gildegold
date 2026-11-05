@@ -205,7 +205,7 @@ void ai_Unk4c47b0(short a);                                                     
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880 */
-void ai_Unk4c48e0(int a, short b, int c);                                        /* 0x4c48e0 */
+void cm_SendMakeGoods(int a, short b, int c);                                        /* 0x4c48e0 */
 void cm_SendCartRoute(int a, int b, int c);                                          /* 0x4c4920 */
 void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960 */
 void cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
@@ -249,7 +249,7 @@ void cm_SendCharModel(int a, const char *s);                                    
 void cm_SendGoodsRecord(void *p, unsigned char k);                                     /* 0x4c56d0 */
 void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                                     /* 0x4c5710 */
 void cm_SendMessage41(void *p);                                                      /* 0x4c5800 */
-void ai_Unk4c5840(int a);                                                        /* 0x4c5840 */
+void cm_SendUpdateSmoke(int a);                                                        /* 0x4c5840 */
 void cm_SendSkillsChanged(int a);                                                        /* 0x4c5870 */
 int cm_SendApplication(char *p);                                                       /* 0x4c58a0 */
 int cm_SendOfficeRecord(char *p);                                                      /* 0x4c58e0 */

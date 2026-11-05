@@ -1243,7 +1243,7 @@ void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f)
 }
 /* 0x4c48e0, message 0x12 */
 
-void ai_Unk4c48e0(int a, short b, int c)
+void cm_SendMakeGoods(int a, short b, int c)
 {
     G17MSG m;
 
@@ -1851,7 +1851,7 @@ void cm_SendMessage41(void *p)
 }
 /* 0x4c5840, message 0x42 */
 
-void ai_Unk4c5840(int a)
+void cm_SendUpdateSmoke(int a)
 {
     G17MSG m;
 
