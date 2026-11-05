@@ -235,7 +235,7 @@ void cm_RequestChrMove(int a, int b, int c, const char *s);                     
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                           /* 0x4c51b0, "cm_RequestChrMoveToUniverse" */
 void cm_SendChrStop(int a);                                                        /* 0x4c5230 */
 void ai_Unk4c5260(int a, int b);                                                 /* 0x4c5260 */
-void ai_Unk4c52a0(int a, int b, int c);                                          /* 0x4c52a0 */
+int cm_SendPlaceOnStage(int a, int b, int c);                                           /* 0x4c52a0 */
 int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2);  /* 0x4c52e0 */
 void cm_SendChrAnim(int a, const char *s, unsigned char c);                        /* 0x4c5410 */
 void cm_SendChrUseGates(int a, int b, int c);                                          /* 0x4c5460 */

@@ -283,9 +283,18 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 typedef struct HEWALKSLOT {
     int chr;                            /* 0x0, the walking character's netId (gm_FindChar), -1 free */
     int target;                         /* 0x4, the building it walks to (gm_FindById's building) */
-    unsigned char flags[4];             /* 0x8, state bytes (+0x9: 1 counted, 4 on its way: he_Unk551b70) */
-    int pad;                            /* 0xc */
+    unsigned char stage;                /* 0x8, the walk's stage counter */
+    unsigned char state;                /* 0x9, flags: 1 counted, 4 done, 0x10 played, 0x20 a character with +0x1f0, 0x40 held */
+    unsigned char step;                 /* 0xa, the step through ai_Blds (a random ai_RandomStrides entry) */
+    unsigned char bldIndex;             /* 0xb, the ai_Blds index of the building */
+    unsigned char holdHour;             /* 0xc, the hour the character was held at, 0xff none */
+    unsigned char pad[3];
 } HEWALKSLOT;
+#define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
+#define HE_WALK_PARTNERS2 0x402c20
+#define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_Unk551780 tests the same mask) */
+
+int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50 (am.h, not included yet) */
 
 void d3io_NoopCallback(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
 int he_RegisterEventTypes22(void);
@@ -9388,74 +9397,72 @@ int he_StepWalkSlot(HEWALKSLOT *s)
             }
             s->chr = -1;
             s->target = -1;
-            s->flags[0] = 0;
-            s->flags[1] = 0;
-            s->flags[2] = 0;
-            s->flags[3] = 0;
+            s->stage = 0;
+            s->state = 0;
+            s->step = 0;
+            s->bldIndex = 0;
             cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x40000000);
             return 0;
         }
     }
     s->chr = -1;
     s->target = -1;
-    s->flags[0] = 0;
-    s->flags[1] = 0;
-    s->flags[2] = 0;
-    s->flags[3] = 0;
+    s->stage = 0;
+    s->state = 0;
+    s->step = 0;
+    s->bldIndex = 0;
     return 0;
 }
 
-/* 0x551440, fills one free 16-byte slot of the 0x5512c0 event with a person and a target (ROUGH, from the disassembly): -1 when the slots are used up (n + the two flags 0x76061c / 0x760618 (+4) >= 10), the slot is in use (byte +9) or it is before the hour 0xb; the chance (n - m) / (n + 1) against 0x5eceec picks the order of the two try values 0x20a0 / 0x402c20 for the person's search 0x4a5b50 (player 0x6f25b8, up to 100.0), a target is the person's own target (+0x170) or comes from 0x4a63f0; a random roll 0x42ec20 against 0.1 may end it (-1); else the target's building number (0x4fea50, 0xa9 bytes each) goes in +0xb, the person is sent there (message 0x1c8) and the slot gets person, target, 1 / 9 (0x29 for a character with +0x1f0), a random byte of 0x5ed140 and 0xff (0x4c52a0 (person, target, -1) starts it) */
-int he_Unk551440(unsigned char *slot, int n, int m)
+/* 0x551440, fills a free slot of the walk event 0x5512c0 with a character on a walk through town: none (-1) when
+   the n walkers plus the weather (snow 1, rain 4) reach 10, the slot is in use or it is before 11 o'clock; a
+   partner for the player's character is looked for (ai_FindPartnersRandomWalk, the two kind masks 0x20a0 /
+   0x402c20, the second first when (n - m) / (n + 1) is below 0.66); its building is its own (bld2)
+   or one picked for the player (ai_PickActionBuilding); a random roll below n / 10 gives none; else the character
+   gets the bit 0x40000000 of field 0x1c8, the slot its id, the building, stage 1, state 9 (0x29 with +0x1f0), a
+   random step and the building's index, and it is placed on the stage there: the result is the message's handle */
+int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
 {
-    int pair[2];
-    int out = -1;
-    float x;
-    int ch, tgt, o = 0, bld, r;
-    int lim = n + (U_I((unsigned)&d3t_Snow) != 0) + (U_I((unsigned)&d3t_Rain) != 0 ? 4 : 0);
+    int kinds[2];
+    int tgt = -1;
+    unsigned short id;
+    AICHAR *ch;
+    int bld, idx;
 
-    pair[0] = 0x20a0;
-    pair[1] = 0x402c20;
-    if (lim >= 10 || slot[9] != 0 || *(unsigned short *)(unsigned)&ai_Time.hour < 0xb)
+    kinds[0] = HE_WALK_PARTNERS1;
+    kinds[1] = HE_WALK_PARTNERS2;
+    if (n + (d3t_Snow != 0) + (d3t_Rain != 0 ? 2 : 0) * 2 >= 10 || slot->state != 0 || ai_Time.hour < 0xb)
         return -1;
-    x = (float)(n - m) / (float)(n + 1);
-    if (x >= (0.660000026f)) {
-        pair[0] = 0x402c20;
-        pair[1] = 0x20a0;
+    if ((float)(n - m) / (float)(n + 1) < 0.66f) {
+        kinds[0] = HE_WALK_PARTNERS2;
+        kinds[1] = HE_WALK_PARTNERS1;
     }
-    ch = (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c;
-    if (ai_FindPartnersRandomWalk(ch, 1, pair, 0, 100.0f, &out) == 0 && ai_FindPartnersRandomWalk(ch, 1, pair + 1, 0, 100.0f, &out) == 0)
+    if (ai_FindPartnersRandomWalk((struct AIPER *)&ai_CharsT[ai_PlayerId], 1, &kinds[0], 0.0f, 100.0f, &id) == 0
+        && ai_FindPartnersRandomWalk((struct AIPER *)&ai_CharsT[ai_PlayerId], 1, &kinds[1], 0.0f, 100.0f, &id) == 0)
         return -1;
-    ch = (unsigned)&ai_Chars + (unsigned short)out * 0x21c;
-    r = *(int *)(ch + 0x170);
-    if (r != 0) {
-        tgt = *(int *)(r + 1);
-    } else {
-        if (AI_4A63F0_7(ch, 0, 0xa7f4c3a0, 1, 0, 100.0f, &tgt) == 0)
-            return -1;
-    }
-    if ((float)util_RandomF() < 0.1f * 0.0f)
+    ch = &ai_CharsT[id];
+    if (ch->bld2 != 0)
+        tgt = ch->bld2->id;
+    else if (ai_PickActionBuilding((struct AIPER *)&ai_CharsT[ai_PlayerId], 0, HE_WALK_BUILDINGS, 0.0f, 100.0f, &tgt) == 0)
         return -1;
-    gm_FindById(&o, 0, 0, tgt);
-    if (o == 0)
+    if (!(util_RandomF() > n * 0.1f))
         return -1;
-    bld = (o - U_I((unsigned)&ai_Blds)) / 0xa9;
-    cm_SendSetField(*(int *)(ch + 4), 0x1c8, 4, 0, 0x40000000);
-    *(int *)slot = *(int *)(ch + 4);
-    *(int *)(slot + 4) = o;
-    slot[8] = 1;
-    slot[9] = 9;
-    if (*(int *)(ch + 0x1f0) != 0)
-        slot[9] = 0x29;
-    slot[10] = *(unsigned char *)((unsigned)&ai_RandomStrides + (unsigned short)util_Random(0x10) * 4);
-    slot[11] = (unsigned char)bld;
-    slot[12] = 0xff;
-    ai_Unk4c52a0(*(int *)(ch + 4), tgt, -1);
-    return 0;
+    gm_FindById(&bld, 0, 0, tgt);
+    if (bld == 0)
+        return -1;
+    idx = (bld - (int)ai_Blds) / 0xa9;
+    cm_SendSetField(ch->netId, 0x1c8, 4, 0x40000000, 0);
+    slot->chr = ch->netId;
+    slot->target = tgt;
+    slot->stage = 1;
+    slot->state = 9;
+    if (ch->v1f0 != 0)
+        slot->state = 0x29;
+    slot->step = (unsigned char)ai_RandomStrides[(unsigned short)util_Random(0x10)];
+    slot->bldIndex = (unsigned char)idx;
+    slot->holdHour = 0xff;
+    return cm_SendPlaceOnStage(ch->netId, tgt, -1);
 }
-
-void cm_SendChrAnim(int a, const char *s, unsigned char c);
-
 /* 0x5516a0, queues a random animation on a person (+4 the figure; random 0x42ec00(4) & 0xffff, jump table 0x551764): 0 = 0x626fd0, 1 = 0x626fbc then 0x626fd0, 2 = 0x626a4c then 0x626fd0, 3 = 0x6268c8, 0x626fbc, 0x626fd0 (all with 0x4c5410 (id, name, 1)) */
 void he_Unk5516a0(int p)
 {
@@ -9651,7 +9658,7 @@ void he_Unk551b70(int ev)
     }
     s = (unsigned char *)(ev + 0xac);
     for (i = 0; i < 10; i++) {
-        r = he_Unk551440(s, n, 0);
+        r = he_FillWalkSlot((HEWALKSLOT *)s, n, 0);
         *(int *)(ev + 0x84) = r;
         if (r != -1) {
             *(AITIME *)(ev + 0x52) = ai_Time;

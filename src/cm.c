@@ -1612,9 +1612,10 @@ void ai_Unk4c5260(int a, int b)
     G17_I(m, 4) = b;
     cm_QueueSend(&m);
 }
-/* 0x4c52a0, message 0x34 */
+/* 0x4c52a0, sends message 0x34: its handler (0x4c9d80) places character a on the stage at building b (object c,
+   gm_PlaceOnStage); returns the queue handle (cm_QueueSend) */
 
-void ai_Unk4c52a0(int a, int b, int c)
+int cm_SendPlaceOnStage(int a, int b, int c)
 {
     G17MSG m;
 
@@ -1622,7 +1623,7 @@ void ai_Unk4c52a0(int a, int b, int c)
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1)
    @deep read against 0x4c52e0..0x4c5400: the branch polarities fixed (s2/s/gm_IsHomeType tested != 0 as

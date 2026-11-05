@@ -2364,3 +2364,5 @@
 2026-11-05T14:09:34 0x00550ee0 func he_Unk550ee0 -> he_RunRanking by:main why:the run handler of the ranking event: gm_RankPlayers, sends the head packet and a line per player (udp_Send)
 2026-11-05T14:13:00 0x00551340 func he_Unk551340 -> he_StepWalkSlot by:main why:steps one slot of the walk event: 2 while the character is still on its way to the building's door (sv_IsAtDoor), else frees the slot
 2026-11-05T14:13:23 0x004c5ec0 data ai_Unk4c5ec0 -> cm_SendChrDelete by:main why:sends message 0x57, whose handler 0x4cc920 deletes the character's scene character (+0x184)
+2026-11-05T14:16:38 0x00551440 func he_Unk551440 -> he_FillWalkSlot by:main why:fills a free walk slot (character, building, stage 1) and returns the handle of message 0x34; 0x4c52a0 sends message 0x34 whose handler 0x4c9d80 calls gm_PlaceOnStage
+2026-11-05T14:16:38 0x004c52a0 data ai_Unk4c52a0 -> cm_SendPlaceOnStage by:main why:fills a free walk slot (character, building, stage 1) and returns the handle of message 0x34; 0x4c52a0 sends message 0x34 whose handler 0x4c9d80 calls gm_PlaceOnStage
