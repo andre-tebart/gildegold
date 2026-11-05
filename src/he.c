@@ -10174,7 +10174,7 @@ void he_PlayGestures(AICHAR *c)
 unsigned char *gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 char *gm_FindBuildingById(int id);
-int he_PickNearBuilding();
+int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId);
 void cm_SendCharHalt(int a);
 int cm_SendChrGotoBuilding();
 
@@ -16198,29 +16198,45 @@ int gm_CharCurrency(char *c, char p);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
-/* 0x55ee40, a Ghidra start: the chance of a figure to be seen at its place (ROUGH): for a figure with the flag 1 of +0x5a and objects (+0x61 / the target's +0x170 +0x61) the 3D distance of the two objects scales a factor against 0x5eb780 (1.0), 0x5edbb8 and the building value (0x5092e0 (.., 9, 1)); a nearby contact (0x4ffe90 (.., 1, 0, 0x120)) with an object returns 1, else 0 */
-int he_PickNearBuilding(int p)
+/* 0x55ee40, picks one of the `n` buildings `blds` for the character `c` (the inns of he_StepWalk's walk):
+   each one without the flag 1 of flags5a, with a 3D object and the character's own building (bld2) placed, scores
+   1 - its distance to that building / the largest such distance (at least 0.01) plus 0.0125 times its skill 9
+   (gm_BuildingSkill); the best one (the first when none beats -1) gives *bldId its id and *objId its object 0x120's
+   id; 1 when that building has a 3D object */
+int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId)
 {
-    int o1, o2, c;
+    float maxDist = 0.01f;
+    float best = -1.0f;
+    float score[0x20];
     float dx, dy, dz, d;
+    D3OBJECT *a, *h;
+    AIOBJ *o;
+    int i, pick = 0;
 
-    if (p == 0 || (*(unsigned char *)(p + 0x5a) & 1) == 0)
-        return 0;
-    o1 = *(int *)(p + 0x61);
-    if (o1 == 0 || *(int *)(p + 0x170) == 0)
-        return 0;
-    o2 = *(int *)(*(int *)(p + 0x170) + 0x61);
-    if (o2 == 0)
-        return 0;
-    dx = *(float *)(o1 + 0x4c) - *(float *)(o2 + 0x4c);
-    dy = *(float *)(o1 + 0x50) - *(float *)(o2 + 0x50);
-    dz = *(float *)(o1 + 0x54) - *(float *)(o2 + 0x54);
-    d = (float)sqrt(dx * dx + dy * dy + dz * dz);
-    gm_BuildingSkill(p, 9, 1);
-    if (d > 1.0f)
-        return 0;
-    c = gm_Query(*(int *)(p + 0x5d), 1, 0, 0x120);
-    return c != 0 && *(int *)(c + 0x61) != 0;
+    for (i = 0; i < n; i++) {
+        if ((blds[i]->flags5a & 1) == 0 && blds[i]->object != 0 && c->bld2 != 0 && c->bld2->object != 0) {
+            a = (D3OBJECT *)blds[i]->object;
+            h = (D3OBJECT *)c->bld2->object;
+            dx = a->pos.x - h->pos.x;
+            dy = a->pos.y - h->pos.y;
+            dz = a->pos.z - h->pos.z;
+            d = (float)sqrt(dx * dx + dy * dy + dz * dz);
+            score[i] = d;
+            if (d > maxDist)
+                maxDist = d;
+        }
+    }
+    for (i = 0; i < n; i++) {
+        score[i] = (float)(gm_BuildingSkill((unsigned char *)blds[i], 9, 1) * 0.0125 + (ai_FloatOne - score[i] / maxDist));
+        if (best < score[i]) {
+            best = score[i];
+            pick = i;
+        }
+    }
+    o = (AIOBJ *)gm_Query((void *)blds[pick]->objList, 1, 0, 0x120);
+    *bldId = blds[pick]->id;
+    *objId = o->objId;
+    return blds[pick]->object != 0;
 }
 /* 0x55efc0, the run handler of the daily routine of a figure ("Go to work" / "Go to wirtshaus" / "Go home" debug texts, "dummy_EINGANG" entrance dummies; ROUGH skeleton, 2656 bytes): by the season / time of day (gm_ClockSeason) the figure +0xac either walks to its workplace (0x55ea60 contact, 0x4c5b90 / 0x4c52e0 / 0x4c51b0 / 0x4c5150, the entrance 0x458a20 positions), to the tavern or home (gm_IsHomeType), and the routine event is posted again (0x4fe1e0 clocks); 0x55eba0 selects the scene of a watched figure */
 
@@ -16238,7 +16254,7 @@ void he_Unk55efc0(int ev)
     cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
     he_FindFigurePlace((AICHAR *)p, &b, &c, 0);
-    he_PickNearBuilding(p);
+    he_PickNearBuilding((AICHAR *)p, 1, (AIBLD **)&p, &b, &c);
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
 }
