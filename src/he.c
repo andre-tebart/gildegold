@@ -225,6 +225,7 @@ extern int d2_ClickedForm;
 extern char ai_MissionMode;
 extern int ai_MissionPartner;
 #include "mission_types.h"
+#include "ahm_types.h"                /* AHMSLOT */
 extern G13MIS ai_Missions[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];

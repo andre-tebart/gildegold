@@ -5,10 +5,7 @@ struct VFSFILE;
 
 #include "ai_types.h"                /* AITIME */
 
-typedef struct AHMSLOT {                /* 8 bytes, a place of the record at +0x65 of the object (6 from +0xc): a good and its value */
-    int id;
-    float v;
-} AHMSLOT;
+#include "ahm_types.h"               /* AHMSLOT */
 typedef struct AHMREC {                 /* 0x3c bytes, the record the alchemist object keeps at +0x65 ("ahm_AllocAhmInfo") */
     int id;                             /* +0x0, the alchemist character id (0x4eaa50) */
     float value;                        /* +0x4, 0 .. 1, added to by an order (0x4ecdb0) */
