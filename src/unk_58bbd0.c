@@ -21537,16 +21537,16 @@ int ai_CounterEspionage(int param_1, int *m)  /* m: the handler's second argumen
 
 int amt_SendOfficeSwap();
 
-/* 0x5cb1e0, the counter-espionage message wrapper (64 B): 0x4e6ba0 (param_1, param_2, param_3) sends the
-   request; -1 returns 0, other types return 1; type 6 waits 0x4c3ae0 / 0x52fe00 and returns whether the
-   last status is not 2. */
-int ai_Unk5cb1e0(int param_1, int param_2, int param_3)
+/* 0x5cb1e0, the counter-espionage office swap (64 B): amt_SendOfficeSwap (0x4e6ba0) sends the requester's
+   request for the two characters; -1 returns 0, another requester returns 1; a player (kind 6) waits on the
+   message slot 0x4c3ae0 with the pump 0x52fe00 and returns whether the answer's status is not 2. */
+int ai_CounterEspionageOfficeSwap(char *requester, char *b, char *c)
 {
     int h;
 
-    h = amt_SendOfficeSwap(param_1, param_2, param_3);
+    h = amt_SendOfficeSwap(requester, b, c);
     if (h != -1) {
-        if (*(char *)(param_1 + 2) == 6) {
+        if (((AICHARREC *)requester)->kind == 6) {
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
             return cm_GetSlotState(h) != 2;
@@ -21625,7 +21625,7 @@ int ai_CounterEspionageWindow(int *param_1, int param_2)  /* @original: the call
             return 0x20;
         if (n > 0)
             return 0x20;
-        return ai_Unk5cb1e0(param_2, second, first) ? 0x10 : 0x20;
+        return ai_CounterEspionageOfficeSwap(param_2, second, first) ? 0x10 : 0x20;
     }
     if (n > 0) {
         txt_Format(text, (char *)(unsigned)"$Z%s", 0x1dcb);
@@ -21644,7 +21644,7 @@ int ai_CounterEspionageWindow(int *param_1, int param_2)  /* @original: the call
         if (*(int *)(unsigned)&d2_ClickedId != -1) {
             if (*(int *)(unsigned)&d2_PointerObj == btn1) {
                 if (sv_CheckMoney(param_2, 6) != 0) {
-                    r = ai_Unk5cb1e0(param_2, second, first);
+                    r = ai_CounterEspionageOfficeSwap(param_2, second, first);
                     if (r != 0)
                         txt_Format(text, (char *)0x1dca);
                     else
