@@ -3272,77 +3272,86 @@ void he_AllocInsult(int ev)
     gm_AddTime(&e->end, 0, 2, 0);
     e->exSlot = cm_SendExSetHE(-1, ev);
 }
-/* 0x547ba0, a Ghidra miss (disassembled): the run handler of the quarrel flag event (the figures +0xac a / +0xb0 b, flag 0x400 of +0x1c8): state 2 posts a message record of 0x114 bytes (type 4, +0x18 in 0x1e units, 0x4c4fa0) for a and b, the states 1 / -1 / -2 clear the flags again and end the event (ROUGH) */
-
-void he_Unk547ba0(int ev)
+/* 0x547ba0, a Ghidra miss (disassembled): the run handler of the insult event 0x47 (he_AllocInsult), once its cm
+   slot is answered: stage 2 (the insulted challenged) posts a fight party of kind 4 between partner1 (a) and
+   partner2 (b) half an hour from now (G28REC, held by the player's character, flags 0xa2); stages 2 and 1 (a
+   player's challenge sent, he_RunDuelChallenge goes on) take the quarrel flag 0x400 (flags1c8) from both and end
+   the event in two minutes; stage -1 / -2 (left) does the same when it was started and frees the event; all only
+   once started (opts 2)
+   @deep Read whole against the original and fixed: typed over AIJOB / AICHAR / G28REC (the fight party of
+   kind 4: members a / b, host the player's character, thing -1, used 2, flags 0xa2, variant 0, time now +
+   0x1e minutes), exSlot cleared once before the switch, the cases 2 / 1 / -2,-1 with 0 the default (jump
+   table equal, 5 entries); 798 vs 798 bytes, the rest of the function equal. Left: scheduling of the party
+   block only (+0x547c3b..+0x547ca5, 46 lines): the original copies time.hour right after members[0],
+   pushes the gm_AddTime arguments (0x1e, 0, &party.time) before the kind / flags / thing / used stores and
+   copies year / min / sec last; ours (party.time = ai_Time placed after members[1]; placed after
+   members[0] it is worse, 41 ins and an alignment M8) stores kind .. used first and pushes later: the same
+   stores and loads in another order; the prover stops at the switch jump */
+void he_RunInsult(int ev)
 {
-    char msg[0x114];
-    int a, b;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    G28REC party;
 
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    switch (*(int *)(ev + 0x70)) {
+    e->exSlot = -1;
+    switch (e->stage) {
     case 2:
-        *(int *)(ev + 0x84) = -1;
-        if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
+        if ((e->opts & 2) == 0)
             return;
-        a = gm_FindChar(*(int *)(ev + 0xac));
-        b = gm_FindChar(*(int *)(ev + 0xb0));
+        a = (AICHAR *)gm_FindChar(e->partner1);
+        b = (AICHAR *)gm_FindChar(e->partner2);
         if (a != 0) {
             if (b != 0) {
-                memset(msg, 0, sizeof(msg));
-                *(int *)(msg + 0x34) = *(int *)(a + 4);
-                *(AITIME *)(msg + 0x18) = ai_Time;
-                msg[8] = 4;
-                msg[0x26] = (char)0xa2;
-                *(int *)(msg + 0x14) = -1;
-                msg[0x30] = 2;
-                *(int *)(msg + 0xc) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-                *(int *)(msg + 0x38) = *(int *)(b + 4);
-                msg[0x7c] = 0;
-                gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-                cm_SendNewParty(msg);
+                memset(&party, 0, sizeof(party));
+                party.members[0] = a->netId;
+                party.kind = 4;
+                party.flags = 0xa2;
+                party.thing = -1;
+                party.used = 2;
+                party.host = ai_CharInts[ai_PlayerId][0];
+                party.members[1] = b->netId;
+                party.time = ai_Time;
+                party.variant = 0;
+                gm_AddTime(&party.time, 0, 0x1e, 0);
+                cm_SendNewParty(&party);
             }
-            cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x400);
+            cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x400);
         }
         if (b != 0)
-            cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x400);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+            cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x400);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 1:
-        *(int *)(ev + 0x84) = -1;
-        if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
+        if ((e->opts & 2) == 0)
             return;
-        a = gm_FindChar(*(int *)(ev + 0xac));
-        b = gm_FindChar(*(int *)(ev + 0xb0));
+        a = (AICHAR *)gm_FindChar(e->partner1);
+        b = (AICHAR *)gm_FindChar(e->partner2);
         if (a != 0)
-            cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x400);
+            cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x400);
         if (b != 0)
-            cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x400);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+            cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x400);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case -2:
     case -1:
-        *(int *)(ev + 0x84) = -1;
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            a = gm_FindChar(*(int *)(ev + 0xac));
-            b = gm_FindChar(*(int *)(ev + 0xb0));
+        if (e->opts & 2) {
+            a = (AICHAR *)gm_FindChar(e->partner1);
+            b = (AICHAR *)gm_FindChar(e->partner2);
             if (a != 0)
-                cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x400);
+                cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x400);
             if (b != 0)
-                cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x400);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+                cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x400);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
         }
         he_FreeEvent((int *)ev);
-        return;
-    default:
-        *(int *)(ev + 0x84) = -1;
         return;
     }
 }
@@ -9446,7 +9455,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_RunDuelChallenge) != 0)
         return 1;
-    if (he_SetEventHandlers(0x47, (void *)he_AllocInsult, (void *)he_Unk547ba0) != 0)
+    if (he_SetEventHandlers(0x47, (void *)he_AllocInsult, (void *)he_RunInsult) != 0)
         return 1;
     if (he_SetEventHandlers(0x4a, (void *)he_Unk547ee0, (void *)he_Unk547f90) != 0)
         return 1;
