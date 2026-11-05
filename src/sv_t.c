@@ -1719,9 +1719,7 @@ void ai_HookChapter3Step2(int end)
             chr = &ai_CharsT[i];
             if (!chr)
                 return;
-            /* x / y are never written: the original pushes three arguments to the one-argument 0x55ea60, as he.c
-               0x565940 does */
-            if (!he_FigureContact((int)chr, &x, &y))    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
+            if (!he_FigureContact(chr, &x, &y))
                 return;
             cm_RequestChrMoveToUniverse(chr->netId, x, y, "dummy_EINGANG");
             cm_RequestChrMove(chr->netId, x, y, (char *)(unsigned)&ch_EmptyName);

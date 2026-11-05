@@ -16068,33 +16068,50 @@ void he_AllocRoutine(AIJOB *ev)
     ev->start = ai_Time;
     gm_SetTime(&ev->end, 6, 0xf, 0);
 }
-/* 0x55ea60, the id of the contact (the person to talk to at the place) of the figure `p`, or -1 (ROUGH): -1 for no figure, the kinds 0xd / 0xe, no current building (+0x16c) or object (+0x184) and for a busy job code (+0x180: 0x3f, 0x40, 0x48, 0x3c, 0x49, 0x44, 0x62, 0x61, 0x65, 0x64, 0x14, 0x75, 0x1a, 0x18, 0xa1); a building that 0x502520 knows takes the owner contact (0x4ffe90 (building object +0x5d, 1, 0, 0xfd) or the type 0x37 for the job codes 3 / 8 / 9) and gives its +2 id when the target of the figure (+0x184 +0x2c / +0x30) is not it (0x501b50 as the fallback) */
-
-int he_FigureContact(int p)
+/* 0x55ea60, where the character `p` works: 1 with *bldId its current building's id and *contact the object to go
+   to there (-1: none), 0 when it is not at work now: no character, the kinds 0xd / 0xe, no building or model, a busy
+   job kind (0x3f, 0x40, 0x48, 0x3c, 0x49, 0x44, 0x62, 0x61, 0x65, 0x64, 0x14, 0x75, 0x1a, 0x18, 0xa1) or held
+   (AICHAR.heldRounds). In a home (gm_IsHomeType) the contact is the object 0x37 (the job kinds 3 / 8 / 9) or 0xfd of
+   the building's objects, none when it is of the type 0xfd; 0 when the model's script group is that object.
+   Elsewhere 0 when the model was sent to this building already, else the contact is the building's main object */
+int he_FigureContact(AICHAR *p, int *bldId, int *contact)
 {
-    int code, b, o;
+    int id = -1;
+    AIOBJ *o;
+    unsigned char kind;
 
-    if (p == 0 || *(unsigned char *)(p + 2) == 0xd || *(unsigned char *)(p + 2) == 0xe)
-        return -1;
-    b = *(int *)(p + 0x16c);
-    if (b == 0 || *(int *)(p + 0x184) == 0)
-        return -1;
-    code = *(unsigned char *)(p + 0x180);
-    if (code == 0x3f || code == 0x40 || code == 0x48 || code == 0x3c || code == 0x49 || code == 0x44 || code == 0x62 || code == 0x61 || code == 0x65 || code == 0x64 || code == 0x14 || code == 0x75 || code == 0x1a || code == 0x18 || code == 0xa1)
-        return -1;
-    if (*(unsigned char *)(p + 0x1b1) != 0)
-        return -1;
-    if (gm_IsHomeType(b) != 0) {
-        if (code == 3 || code == 8 || code == 9)
-            o = gm_Query(*(int *)(b + 0x5d), 1, 0, 0xfd);
+    if (p == 0 || p->kind == 0xd || p->kind == 0xe || p->bld == 0 || p->model == 0)
+        return 0;
+    kind = p->jobKind;
+    if (kind == 0x3f || kind == 0x40 || kind == 0x48 || kind == 0x3c || kind == 0x49 || kind == 0x44 || kind == 0x62
+        || kind == 0x61 || kind == 0x65 || kind == 0x64 || kind == 0x14 || kind == 0x75 || kind == 0x1a || kind == 0x18
+        || kind == 0xa1)
+        return 0;
+    if (p->heldRounds != 0)
+        return 0;
+    if (gm_IsHomeType(p->bld) == 0) {
+        if (p->model->bldId == p->bld->id)
+            return 0;
+        o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)p->bld);
+        if (o == 0)
+            return 0;
+    } else {
+        if (p->jobKind == 3 || p->jobKind == 8 || p->jobKind == 9)
+            o = (AIOBJ *)gm_Query((void *)p->bld->objList, 1, 0, 0x37);
         else
-            o = gm_Query(*(int *)(b + 0x5d), 1, 0, 0x37);
-        if (o != 0 && *(unsigned short *)o != 0xfd && *(int *)(*(int *)(p + 0x184) + 0x2c) != *(int *)(*(int *)(p + 0x184) + 0x30))
-            return *(int *)(o + 2);
-        return -1;
+            o = (AIOBJ *)gm_Query((void *)p->bld->objList, 1, 0, 0xfd);
+        if (o == 0)
+            goto done;
+        if (o->objId == p->model->scriptGroup)
+            return 0;
+        if (o->type == 0xfd)
+            goto done;
     }
-    o = gm_BuildingMainObject(b);
-    return o != 0 ? *(int *)(o + 2) : -1;
+    id = o->objId;
+done:                               /* no contact object: -1 */
+    *bldId = p->bld->id;
+    *contact = id;
+    return 1;
 }
 /* 0x55eba0, selects the scene of the figure `p` when it should be seen (ROUGH): nothing for no figure, the kinds 0xd / 0xe or a busy job code (as 0x55ea60: 4, 0x10, 0x13, 0x1d, 0x1e and the same list), the owner contact of its building (+0x16c; 0x4ffe90 types 0x2c / 0x109) or its target (+0x170) is looked up (0x4fdcb0, 0x4fe980) and the scene shown (0x511e60, or 0x511dc0 for the free-standing case) */
 
@@ -16166,14 +16183,14 @@ int he_PickNearBuilding(int p)
 
 void he_Unk55efc0(int ev)
 {
-    int p, c;
+    int p, b, c;
 
     p = gm_FindChar(*(int *)(ev + 0xac));
     if (p == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    c = he_FigureContact(p);
+    he_FigureContact((AICHAR *)p, &b, &c);
     cm_SendCharHalt(*(int *)(p + 4));
     cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
@@ -16808,9 +16825,7 @@ void he_RunNewWorker(AIJOB *ev)
                     cm_SendMoveGoods(own->netId, -1, ai_OwnPlayer, w->share);
                 }
                 cm_SendOwnership(o->id, r->netId, r->netId);
-                /* the original caller pushes 3 arguments (0x565ab5 push ecx, 0x565ab6 push edx, 0x565ab7 push edi) to the
-                   1-argument 0x55ea60, which reads only [esp+8] (0x55ea61); the extra pushes are the original bytes */
-                if (he_FigureContact((int)r, &v[0], &v[1]) != 0)    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
+                if (he_FigureContact(r, &v[0], &v[1]) != 0)
                     cm_SendChrGotoBuilding(r->netId, v[0], v[1], 0, 0, he_InitBetrieb);
             }
         }
@@ -22614,11 +22629,11 @@ void he_AllocMeeting4(int ev)
         if (bld == 0)
             continue;
         if (bld->id == e->from)
-            goto found;
+            goto done;
     }
     he_FreeEvent((int *)ev);
     return;
-found:
+done:                               /* no contact object: -1 */
     e->start = ai_Time;
     e->end = ai_Time;
     gm_Shuffled(4, out);
