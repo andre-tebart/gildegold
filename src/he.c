@@ -17971,28 +17971,197 @@ void he_AllocDueInOne(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
-/* 0x5639c0, the run handler "Angriff" (the attack of a gang on a building; ROUGH skeleton, 2336 bytes): the attackers (group 0x524260, 0x4c5230, 0x4c52e0 "Angriff") walk to the building (0x524770), the victims of the query list (gm_Query / gm_QueryNext, util_Random) are picked, the fight is started (0x4c4fa0, 0x4d3d10) and the news 0x5176d0 / 0x53dee0 shown; the record is freed at the end */
-
-void he_Unk5639c0(int ev)
+/* 0x5639c0, the run handler of the attack event 0x49 ("Angriff"; alloc handler he_AllocDueInOne): a gang (ids[]) from
+   the building raidStart attacks the building raidTarget, with the raid event's words (AIJOB.raid*, as he_RunRaid).
+   Stage 0 sends the gang to the target (no target or start building: freed), 10 minutes; stage 1 waits (10 minutes)
+   while a member's scene character has actions queued, then stage 2 in a second. Stage 2 (no target: ends) rolls
+   random(0x4b) + 100 * the start building's spy report on the target (object 0xca: (reportKnow + 100) / 100, else 1;
+   10 with gm_AllowAll) against 125 * (1 + 0.01 * the target's skill 5): above it a fight party of kind 3 (variant 2:
+   up to six living people of the target against up to six of the gang, in 30 minutes) is posted (stage 3), but with
+   no defender or no attacker the target is looted (cm_LootStock, the start building's roundSums[0] counts it, the
+   message boxes 0x1c54 to the owner and 0x1c55 to the event's character; stage 5); either way the spy report moves
+   out of the start building. Not above it the attack fails (0x114b with the start building's fight role to the
+   event's character, 0x1c56 to a player owner; stage 5). Stage 3 waits for the party's slot and keeps its id (stage
+   4), stage 4 waits (5 minutes) until the party is over (stage 5 in a second); stages 5 / -2 / -1 send the gang to
+   the start building's main room and free the record
+   @deep Reconstructed whole from the skeleton against 0x5639c0..0x5642d4 (713 vs 710 instructions, switch
+   tables equal), as the twin of he_RunRaid (the raid* words of AIJOB): stage 0 the gang to the target
+   ('Angriff', no null check of the figure as the original), stage 1 the actions wait (10 minutes), stage 2
+   the roll random(0x4b) + 100 * the spy report's (reportKnow + 100) / 100 (10 with gm_AllowAll) against
+   125 * (1 + 0.01 * skill 5), the G28REC kind 3 party (variant 2, defenders scan i < 768 && n < 6, raiders
+   i < 8 && k < 6, raid100 -1, raidHome), the loot branch (cm_LootStock, roundSums[0], 0x1c54 / 0x1c55),
+   the report move (cm_SendMoveObject), the failure (cm_FightRole + 0x1125, 0x114b, 0x1c56), stages 3 / 4 /
+   5 / -2 / -1. Left: scheduling and allocation: the gm_BuildingSkill temp and the stack cleanup around
+   gm_Query 0xca (+0x242, ours cleans up after each call, the original once with add esp, 0x28), the party
+   field stores in another order (+0x324), -1 kept in ebp (ours) vs edx / immediate (+0x3b0, +0x3f4), the
+   cm_LootStock / he_MessageBoxQuickjump argument lea chains interleaved with the pushes in another order
+   (+0x4b9 .. +0x5ee) (references: M8 at +0x41b: ours refers to ai_Time+0x4 (0x770ae4), the original's
+   field to 0x770ae0 (ai_Time) (and 1 more), explained: the two M8 lines are the party.time = ai_Time
+   struct copy (+0x41b): the same four words copied to party.time, loaded into other registers in another
+   order (as he_RunRaid's); the open M10 is the shared 100.0f (ai_FloatHundred, lc.c's view, its owner
+   open), as in he_RunRaid) */
+void he_RunAttack(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, p;
+    AIBLD *b, *home;
+    AICHAR *c, *owner, *me;
+    AIOBJ *o = 0;
+    G28REC party;
+    char text[0x800];
+    int i, n, k, loot, role;
+    float chance = 1.0f, defence;
 
-    if (st < 0) {
-        he_FreeEvent((int *)ev);
+    switch (ev->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, ev->raidTarget);
+        home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
+        if (b == 0 || home == 0)
+            break;
+        for (i = 0; i < 8; i++) {
+            if (ev->ids[i] != -1) {
+                c = (AICHAR *)gm_FindChar(ev->ids[i]);
+                cm_SendChrStop(ev->ids[i]);
+                cm_SendChrGotoBuilding(ev->ids[i], b->id, -1, 0, 0, "Angriff");
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 10, 0);
+        ev->stage = 1;
+        return;
+    case 1:
+        for (i = 0; i < 8; i++) {
+            if (ev->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[i]))->scene != 0 && c->scene->actions != 0) {
+                ev->end = ai_Time;
+                gm_AddTime(&ev->end, 0, 10, 0);
+                return;
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0, 1);
+        ev->stage = 2;
+        return;
+    case 2:
+        b = (AIBLD *)gm_BuildQuery(1, 1, ev->raidTarget);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        me = &ai_CharsT[ev->chr];
+        defence = (float)(gm_BuildingSkill(b, 5, 1) * 0.01 + 1.0);
+        o = (AIOBJ *)gm_Query((void *)((AIBLD *)gm_BuildQuery(1, 1, ev->raidStart))->objList, 1, 0, 0xca);
+        for (; o != 0; o = (AIOBJ *)gm_QueryNext())
+            if (o->reportBld == b->id)
+                break;
+        if (o != 0)
+            chance = (float)((o->reportKnow + 100.0) * 0.01);
+        if (gm_AllowAll != 0)
+            chance = 10.0f;
+        if ((float)(unsigned short)util_Random(0x4b) + chance * 100.0f > defence * 125.0f) {
+            memset(&party, 0, sizeof(party));
+            party.kind = 3;
+            party.flags = 0xa2;
+            party.thing = b->id;
+            party.host = ai_CharInts[ai_PlayerId][0];
+            party.used = 2;
+            party.variant = 2;
+            party.members[0] = me->netId;
+            party.members[1] = owner->netId;
+            for (i = 0; i < 16; i++) {
+                party.raid.raiders[i] = -1;
+                party.raid.defenders[i] = -1;
+            }
+            n = 0;
+            for (i = 0; i < 768 && n < 6; i++) {
+                if (ai_CharsT[i].health != 0 && ai_CharsT[i].bld == b) {
+                    party.raid.defenders[n] = ai_CharsT[i].netId;
+                    n++;
+                }
+            }
+            party.raid.raid100[0] = -1;
+            party.raid.raid100[1] = -1;
+            party.raid.raid100[2] = -1;
+            party.raid.raidHome = ((AIBLD *)gm_BuildQuery(1, 1, ev->raidStart))->id;
+            k = 0;
+            for (i = 0; i < 8 && k < 6; i++) {
+                if (ev->ids[i] != -1) {
+                    party.raid.raiders[k] = ev->ids[i];
+                    k++;
+                }
+            }
+            if (k != 0 && n != 0) {
+                party.time = ai_Time;
+                gm_AddTime(&party.time, 0, 0x1e, 0);
+                ev->raidSlot = cm_SendNewParty(&party);
+                ev->end = ai_Time;
+                gm_AddTime(&ev->end, 0, 0, 1);
+                ev->stage = 3;
+            } else {
+                home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
+                b = (AIBLD *)gm_BuildQuery(1, 1, ev->raidTarget);
+                loot = cm_LootStock(b, home, &ai_CharsT[ev->chr], &ai_CharsT[b->owner]);
+                if (home != 0)
+                    home->roundSums[0] += loot;
+                txt_Format(text, 0x1c54, b, loot);
+                he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+                txt_Format(text, 0x1c55, b->owner, b, loot);
+                he_MessageBoxQuickjump(ai_CharInts[ev->chr][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+                ev->end = ai_Time;
+                gm_AddTime(&ev->end, 0, 0, 1);
+                ev->stage = 5;
+            }
+            if (o != 0 && (home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart)) != 0)
+                cm_SendMoveObject(home->id, -1, o->objId);
+            return;
+        }
+        home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
+        b = (AIBLD *)gm_BuildQuery(1, 1, ev->raidTarget);
+        role = cm_FightRole(home) + 0x1125;
+        txt_Format(text, 0x114b, role, b->owner, b, role);
+        he_MessageBoxQuickjump(ai_CharInts[ev->chr][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+            txt_Format(text, 0x1c56, b);
+            he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f0, b->id, -1, 0, (char *)0);
+        }
+        ev->stage = 5;
+        return;
+    case 3:
+        if (cm_GetSlotState(ev->raidSlot) == 0)
+            return;
+        ev->raidParty = ((G28REC *)cm_GetSlotValue(ev->raidSlot))->id;
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 1, 0);
+        ev->stage = 4;
+        return;
+    case 4:
+        if (cm_PartyById(ev->raidParty) != 0) {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 5, 0);
+            return;
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0, 1);
+        ev->stage = 5;
+        return;
+    case 5:
+    case -2:
+    case -1:
+        home = (AIBLD *)gm_BuildQuery(1, 1, ev->raidStart);
+        if (home != 0)
+            o = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)home);
+        for (i = 0; i < 8; i++) {
+            if (ev->ids[i] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[i])) != 0) {
+                cm_SendChrStop(c->netId);
+                if (home != 0)
+                    cm_SendChrGotoBuilding(c->netId, home->id, o->objId, 0, 0, "Angriff");
+                sv_MoveToGroup(0, 0, c->id, 0);
+            }
+        }
+        break;
+    default:
         return;
     }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (b == 0 || p == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    cm_SendChrStop(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Angriff");
-    sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
+    he_FreeEvent((int *)ev);
 }
 /* 0x5642e0, picks the target of a fire (ROUGH): the first building of the list (0x501190 (1, 1, ..), checks 0x502520 / 0x5024f0, kind 3 buildings are skipped) near the scene object of the reference building (0x458a20 positions, 0x453e80 against the range), at random (0x42ec00) with up to 0x10 tries; returns the building or 0 */
 
@@ -19358,7 +19527,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(72, (void *)he_AllocAmbush, (void *)he_RunAmbush) != 0)
         return 1;
     sv_RegisterActivity(72, 0, 0, 1282, -1);
-    if (he_SetEventHandlers(73, (void *)he_AllocDueInOne, (void *)he_Unk5639c0) != 0)
+    if (he_SetEventHandlers(73, (void *)he_AllocDueInOne, (void *)he_RunAttack) != 0)
         return 1;
     sv_RegisterActivity(73, 0, 0, 1290, -1);
     if (he_SetEventHandlers(78, (void *)he_Unk5642e0, (void *)he_Unk5644e0) != 0)
