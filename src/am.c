@@ -7125,26 +7125,26 @@ int ai_DecideBuyIndulgence(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
 {
-    unsigned char *b;
+    AIBLDX *b;
     AIOBJ *o;
     int n, d;
 
     if (s1->kind != 4)
         return 0;
-    b = (unsigned char *)gm_BuildQuery(1, 1, s1->ref);
-    if (b == 0 || *(unsigned short *)(b + 0x27) == 0xffff)
+    b = AI_501190_3(1, 1, s1->ref);
+    if (b == 0 || b->owner == 0xffff)
         return 0;
-    o = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0xf2);
+    o = gm_Query(b->objList, 2, 6, 0, 0xf2);
     if (s2->kind == 0x12) {
         n = s1->arg2;
         d = (int)(n / log10(n));
         cm_BeginFieldBlock((AIPER *)p, p->netId);
         cm_AddFieldValues(4, 1, 0x1ac, &s1->arg2);
         cm_SendFieldDeltas();
-        G8_4C4830(-1, p->netId, ai_OwnPlayer, s1->arg2);
-        G8_4C4830(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, -1, ai_OwnPlayer, d);
+        cm_SendMoveGoodsUnchecked(-1, p->netId, ai_OwnPlayer, s1->arg2);
+        cm_SendMoveGoodsUnchecked(ai_CharsT[b->owner].netId, -1, ai_OwnPlayer, d);
         gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
-        ai_ShowIndulgenceNews(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b, d, s1->arg2);
+        ai_ShowIndulgenceNews(p, (char *)&ai_CharsT[b->owner], (int)b, d, s1->arg2);
         G5_ACTS[0x26].w3[0].w = G5_ACTS[0x26].w1[0].w * s1->fvalue;
         G5_ACTS[0x26].w3[1].w = G5_ACTS[0x26].w1[1].w * s1->fvalue;
         G5_ACTS[0x26].w3[2].w = G5_ACTS[0x26].w1[2].w * s1->fvalue;
@@ -7153,8 +7153,8 @@ int ai_ExecuteBuyIndulgence(G5CH *p, AIARG *s1, AIARG *s2)
     if (s2->kind == 0xf && o != 0) {
         gv_RetireCrimesOf(p->netId, (int)s1->fvalue);
         gm_SendMoneyDelta(p->netId, -s1->arg2);
-        gm_SendMoneyDelta(ai_CharsT[*(unsigned short *)(b + 0x27)].netId, 1);
-        ai_ShowPaymentNews(p, &ai_CharsT[*(unsigned short *)(b + 0x27)], b);
+        gm_SendMoneyDelta(ai_CharsT[b->owner].netId, 1);
+        ai_ShowPaymentNews(p, (char *)&ai_CharsT[b->owner], (int)b);
         return 0x26;
     }
     return 0;
