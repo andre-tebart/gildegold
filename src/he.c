@@ -9052,41 +9052,47 @@ int cm_PlaySpecialTrack();
 int cm_EndSpecialTrack();
 void ai_PlagueMessageAll(void);
 
-/* 0x5509f0, a Ghidra miss (disassembled): the allocation handler of the "Sensenmann" event: due now, walks the 0x100 buildings (+0xb8 the start, +0xbc the step, the mask 0x807c4110 as in the plague event 0x54a020) for the next one that is in use, notes it in +0xb4 (its first id word), creates the object (0x550070) and posts the event 0xf later; frees the record when nothing is found / the object fails (ROUGH) */
-void he_Unk5509f0(int ev)
+/* 0x5509f0, the allocation handler of the reaper event ("Sensenmann"): due now; from reaperNext it walks the 0x100
+   buildings by reaperStep (mod 0x100) for the next one in use whose kind is in the 64-bit mask 0x1807c4110 (as the
+   plague event, he_RunPlague), notes where the next walk starts, and flies the reaper to it (reaperTo, read even when
+   none was found) by creating its object; nothing found or no object: the record is freed. Posted again 15 minutes
+   later */
+void he_StartReaper(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char text[0x200];
-    int n = 0x100;
-    int idx = *(int *)(ev + 0xb8);
-    int esi;
+    AIBLD *o;
+    AIBTYPE *bt;
+    unsigned int lo, hi;
+    int n, k;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    e->end = ai_Time;
+    n = 0x100;
+    k = e->reaperNext;
     do {
-        unsigned lo = 0, hi = 0;
-        int e, k;
-
-        esi = U_I((unsigned)&ai_Blds) + idx * 0xa9;
-        e = U_I((unsigned)&ai_BTypes) + *(unsigned char *)esi * 0x24d;
-        k = *(unsigned char *)e;
-        if (k > 0x1f)
-            hi = 1u << (k - 0x20);
+        o = &ai_BldsT[k];
+        hi = 0;
+        bt = &ai_BTypesT[o->type];
+        lo = 0;
+        if ((unsigned char)bt->kind > 0x1f)
+            hi = 1 << ((unsigned char)bt->kind - 0x20);
         else
-            lo = 1u << k;
-        if (*(unsigned short *)(esi + 0x27) != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
+            lo = 1 << (unsigned char)bt->kind;
+        if (o->owner != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
             break;
-        idx = (idx + *(int *)(ev + 0xbc)) & 0xff;
-        esi = 0;
+        o = 0;
         n--;
+        k = (k + e->reaperStep) % 0x100;
     } while (n != 0);
-    *(int *)(ev + 0xb8) = (*(int *)(ev + 0xbc) + idx) & 0xff;
-    if (esi == 0)
+    e->reaperNext = (e->reaperStep + k) % 0x100;
+    if (o == 0)
         he_FreeEvent((int *)ev);
     else
-        txt_Format(text, "EvtSensenmann: next target = %G", esi);
-    *(int *)(ev + 0xb4) = *(int *)(esi + 1);
+        txt_Format(text, "EvtSensenmann: next target = %G", o);
+    e->reaperTo = o->id;
     if (he_CreateReaper(ev) == 0)
         he_FreeEvent((int *)ev);
-    gm_AddTime(ev + 0x52, 0, 0xf, 0);
+    gm_AddTime(&e->end, 0, 0xf, 0);
 }
 /* 0x550b60 (a Ghidra function with 0x5509f0 .. glued before it), the run handler of the "Sensenmann" event: states -2 / -1 free the object (0x447190), the sound (0x4e3640, flag 0x6f2634) and the record; state 0 flies the object (0x550370: 1 = on, 2 = arrived: the next target building by +0xc0 steps, 0x550850), state 2 restarts the flight (0x5506c0) (ROUGH) */
 
@@ -10299,7 +10305,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_RunSendHomeEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x78, (void *)he_Unk5509f0, (void *)he_Unk550b60) != 0)
+    if (he_SetEventHandlers(0x78, (void *)he_StartReaper, (void *)he_Unk550b60) != 0)
         return 1;
     if (he_SetEventHandlers(0x79, (void *)he_Unk550ea0, (void *)he_Unk550ee0) != 0)
         return 1;
