@@ -38,6 +38,14 @@ typedef struct HEEVSLOT {               /* 12 bytes, a slot of the event bar (he
     int win;                            /* 0x08, the event window (0x53dcb0 enables / raises it) */
 } HEEVSLOT;
 extern HEEVSLOT he_EventSlots[16];      /* 0x6faa80 */
+typedef struct HEHINT {                 /* 16 bytes, an entry of the tutorial hint table he_Hints */
+    int year;                           /* 0x00, the due day */
+    unsigned short hour;                /* 0x04, the due hour */
+    char pad06[2];
+    int min;                            /* 0x08, the due minute */
+    int text;                           /* 0x0c, the hint's text id (txt_FindKey, d2_Strings) */
+} HEHINT;
+extern HEHINT he_Hints[128];            /* 0x6fa260, the tutorial hints he_OpenHelpEvents fills and he_RunHint walks */
 extern HEEVSLOT *he_ActiveSlot;         /* 0x6f262c, the slot of the active event window (0x53dcb0, 0x53daf0), 0 = none */
 extern unsigned char he_SlotConfirmed;  /* 0x6f2630, set by a right click / Enter on the active window of the
                                            ceremony kinds 0x11 / 0x26 / 0x69 (0x52d940); their run handlers

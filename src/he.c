@@ -179,15 +179,7 @@ extern float gm_DayEndHours[];
 extern GAPDATA full_data_6279f0[];
 extern GAPDATA full_data_627a10[];
 extern GAPDATA full_data_627d74[];
-extern GAPDATA full_data_6fa260[];
-extern GAPDATA full_data_6fa264[];
-extern GAPDATA full_data_6fa268[];
 extern OPTIONBYTES ai_GamePanel;
-
-extern GAPDATA full_data_6fa260[];
-extern GAPDATA full_data_6fa264[];
-extern GAPDATA full_data_6fa268[];
-extern GAPDATA full_data_6fa26c[];
 extern GAPDATA full_data_6fa1e0[];
 extern OPTIONBYTES ai_GamePanel;
 extern unsigned short ai_PlayerId;
@@ -883,6 +875,11 @@ typedef struct HESIM {                  /* the words of the simulation events 0x
                                            started (the next run picks one and a random cursor) */
     int done;                           /* 0xb4, the characters visited this round */
 } HESIM;
+typedef struct HEHINTEVENT {            /* the tutorial hint event 0x83's words over AIJOB's union (its alloc handler
+                                           0x5679b0, run handler 0x567a80) */
+    char pad00[0xac];
+    int entry;                          /* 0xac, the index into he_Hints the run handler is at */
+} HEHINTEVENT;
 typedef struct HENEWWORKER {            /* the new-worker event 0x6e's words over AIJOB's union (its alloc handler 0x565850,
                                            run handler 0x565940) */
     char pad00[0xac];
@@ -16621,14 +16618,14 @@ void he_Unk567810(char *param)
     char c;
 
     sprintf(path, "%s\\tutorial\\%s.ini", "\\project\\game\\", param);
-    for (e = (int *)(unsigned)&full_data_6fa260, i = 0; i < 0x200; i++)
+    for (e = (int *)he_Hints, i = 0; i < 0x200; i++)
         e[i] = 0;
     f = fopen(path, "rt");
     if (f == 0) {
         MessageBoxA(0, "he_OpenHelpEvents(): Could not open help-definition!", "Error", 0x30);
         return;
     }
-    e = (int *)(unsigned)&full_data_6fa260;
+    e = (int *)he_Hints;
     for (;;) {
         memset(line, 0, sizeof(line));
         fgets(line, 0x100, f);
@@ -16683,37 +16680,47 @@ void he_Unk5679b0(int ev)
     else if (k == 0xb)
         he_Unk567810("help_events_dieb");
     *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x52) = U_I((unsigned)&full_data_6fa260);
-    *(short *)(ev + 0x56) = *(short *)(unsigned)&full_data_6fa264;
-    *(int *)(ev + 0x58) = U_I((unsigned)&full_data_6fa268);
+    *(int *)(ev + 0x52) = he_Hints[0].year;
+    *(short *)(ev + 0x56) = he_Hints[0].hour;
+    *(int *)(ev + 0x58) = he_Hints[0].min;
 }
-/* 0x567a80, the run handler of the tutorial hints (ROUGH): state 0 shows the hint of the entry +0xac of the table 0x6fa260 (the text 0x143a1c0 [id] through 0x53dda0 to the local player, when hints 0x6f3669 are on), steps
-   to the next entry and sets the next run to its due clock; an empty entry ends (state 1); -1 / -2 free */
+/* 0x567a80, the run handler of the tutorial hint event 0x83: state 0 shows the he_Hints entry of the event's index (its text id through he_ShowNews to the local player, when the hint option ai_GamePanel.byte[1] is on), steps to the next entry and sets the next run to that entry's due clock; an empty entry ends (state 1); stages -1 / -2 free the record
+   @deep read the whole function against the original and rebuilt the statements: the hint entry
+   (he_Hints[h->entry].text) shown through he_ShowNews when ai_GamePanel.byte[1] is on, the step to the
+   next entry and its due clock, the empty entry ending at stage 1, the free of the stages -1 / -2. Only
+   allocation is left: ours keeps i (the next entry) in eax and pushes edi only in the clock path, the
+   original keeps i in edi (mov edi,[esi+0xac]; inc edi; mov eax,edi; mov [esi+0xac],edi) and so pushes edi
+   at the top (+0x5) and pops it in the shared epilogue; 68 vs 71 instructions. Tried: the early-return
+   form, the nested if/else and the if (st >= 0) { ... return; } he_FreeEvent form (the last puts the free
+   block at the end and leaves only the edi hunk), int and unsigned i, the declaration orders; no change. */
 
-void he_Unk567a80(int ev)
+void he_RunHint(AIJOB *ev)
 {
+    HEHINTEVENT *h = (HEHINTEVENT *)ev;
     int st, v, i;
 
-    st = *(int *)(ev + 0x70);
-    if (-3 < st) {
-        if (st < 0) {
-            he_FreeEvent((int *)ev);
-        } else if (st == 0) {
-            v = *(int *)((unsigned)&full_data_6fa26c + *(int *)(ev + 0xac) * 16);
-            if (v != 0 && v != -1 && *(char *)((unsigned)&ai_GamePanel + 0x1) != 0)
-                he_ShowNews(*(int *)((unsigned)&ai_CharInts + U_I((unsigned)&ai_PlayerId) * 0x21c), -1, *(int *)((unsigned)&d2_Strings + v * 4), 0x40, 0x5f9, 0);
-            i = *(int *)(ev + 0xac) + 1;
-            *(int *)(ev + 0xac) = i;
-            if (*(int *)((unsigned)&full_data_6fa26c + i * 16) == 0) {
-                *(int *)(ev + 0x70) = 1;
-                return;
-            }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x52) = *(int *)((unsigned)&full_data_6fa260 + i * 16);
-            *(short *)(ev + 0x56) = *(short *)((unsigned)&full_data_6fa264 + i * 16);
-            *(int *)(ev + 0x58) = *(int *)((unsigned)&full_data_6fa268 + i * 16);
+    st = ev->stage;
+    if (st < -2)
+        return;
+    if (st >= 0) {
+        if (st != 0)
+            return;
+        v = he_Hints[h->entry].text;
+        if (v != 0 && v != -1 && ai_GamePanel.byte[1] != 0)
+            he_ShowNews(ai_CharsT[ai_PlayerId].netId, -1, d2_Strings[v], 0x40, 0x5f9, 0);
+        i = h->entry + 1;
+        h->entry = i;
+        if (he_Hints[i].text == 0) {
+            ev->stage = 1;
+            return;
         }
+        ev->end = ai_Time;
+        ev->end.year = he_Hints[i].year;
+        ev->end.hour = he_Hints[i].hour;
+        ev->end.min = he_Hints[i].min;
+        return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x567b80, the allocation handler of the tips (type 0x84; a Ghidra miss): the first run is today, 4 days later when a tutorial event 0x83 exists; +0x56 = 8, +0x58 = 0; 0x505ca0 (0x1a, 0x6fa1e0) fills the tip order table */
 
@@ -17060,7 +17067,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(117, 0, 0, 1282, -1);
     if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_Unk567660) != 0)
         return 1;
-    if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_Unk567a80) != 0)
+    if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_RunHint) != 0)
         return 1;
     if (he_SetEventHandlers(132, (void *)he_Unk567b80, (void *)he_Unk567c00) != 0)
         return 1;
