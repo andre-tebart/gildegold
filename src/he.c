@@ -4421,12 +4421,15 @@ void he_RunBuildingDecay(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x548ef0, a Ghidra miss: the start handler: the due clock +0x52 = now, posted 0x60 units ahead */
+/* 0x548ef0, the alloc handler of the repost event 0x5a (he_RunRepostEvent): the due clock is the game time 0x60
+   hours (four days) ahead */
 
-void he_Unk548ef0(int ev)
+void he_AllocRepostEvent(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x60, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x60, 0, 0);
 }
 /* 0x548f30, the run handler of the HE event type 0x5a, a one-shot event without the pending-slot check of
    0x548230: a freed state (-2) ends it, a negative one frees it, and in state 0 with opts bit 2 it is posted
@@ -10745,7 +10748,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x58, (void *)he_AllocRandomHalf, (void *)he_RunBuildingDecay) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5a, (void *)he_Unk548ef0, (void *)he_RunRepostEvent) != 0)
+    if (he_SetEventHandlers(0x5a, (void *)he_AllocRepostEvent, (void *)he_RunRepostEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x5b, (void *)he_Unk549040, (void *)he_Unk548fa0) != 0)
         return 1;
