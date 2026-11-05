@@ -2288,3 +2288,5 @@
 2026-11-05T11:14:20 0x00544070 data he_Unk544070 -> he_AllocTribute by:main why:alloc handler (first) of the event kind 0x35 the tribute news ai_ShowTribute* belong to
 2026-11-05T11:15:18 0x00544330 func he_Unk544330 -> he_RunTribute by:main why:run handler (second) of the tribute event kind 0x35 (he_AllocTribute's)
 2026-11-05T11:18:08 0x00544550 data he_Unk544550 -> he_DrawPairPicks by:main why:draws the three picks pairPick / pairPrice of the pair event 0x41 from a shuffled table of 12
+2026-11-05T11:19:19 0x00544630 func he_Unk544630 -> he_AllocCourtship by:main why:alloc handler (first) of the event 0x41: two partners of different sex, clears their relatives[0] (the partner link the run handler sets to each other), rounds and picks
+2026-11-05T11:19:33 0x005c6620 func ai_Unk5c6620 -> ai_CourtshipRounds by:main why:the rating of two characters (their worths, relation, age) the courtship event 0x41 keeps as its round count pairRounds (he_AllocCourtship, the news 0x1cf4 tells the rounds left)

@@ -19458,7 +19458,7 @@ unsigned int ai_MarriageTest(int idA, int idB)
    it; the result is the __ftol of the score (the <= 2 / < 15 ladder). ROUGH: the float order of the sum
    and the two __ftol exits from Ghidra */
 
-int ai_Unk5c6620(int param_1, int param_2)
+int ai_CourtshipRounds(int param_1, int param_2)
 {
     char *a;
     char *b;
@@ -19539,7 +19539,7 @@ int ai_Unk5c6910(short *param_1)
     int i;
     char msg[0xf8];
 
-    v = ai_Unk5c6620(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I((char *)param_1 + 4));
+    v = ai_CourtshipRounds(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I((char *)param_1 + 4));
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d40c);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
@@ -19614,7 +19614,7 @@ int ai_Unk5c6aa0(short *param_1)
         row[0] = gm_FindChar(ids[i]);
         row[0xc] = 1;
         ai_AmountRowStatus(row);
-        row[0xb] = ai_Unk5c6620(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I(row[0] + 4));
+        row[0xb] = ai_CourtshipRounds(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I(row[0] + 4));
         txt_Format(text, (char *)0x1ce4, row[0xb]);
         ai_AmountRow(row[4], row[5], U_I((unsigned)&d2_LastWindow), 0x56, row, 1);
         ai_CentredText(text, row[4] + 0x20, row[5] + 0x2b, 0xca, 0x56);

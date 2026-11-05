@@ -2637,7 +2637,7 @@ float gm_Mix2(float u, float v);          /* 0x504e80, f3gm.h */
 int gm_CharLevel(unsigned short id, int again);
 int gm_GetWorth(unsigned short id);
 void gm_Shuffle(unsigned n, int *out);
-int ai_Unk5c6620();
+int ai_CourtshipRounds();
 
 /* 0x544330, the run handler of the tribute event 0x35: ends it at stage -1 / -2; runs once started (opts bit 4
    clear) and once its last post is settled (exSlot -1 or cm_GetSlotState nonzero). Without its collector (idbc) it
@@ -2708,60 +2708,61 @@ void he_DrawPairPicks(int ev, AICHAR *a, AICHAR *b)
         e->pairPrice[i] = (int)((float)((unsigned char)tab[i] + 1) * (float)(wa + wb) * 0.0015625f);
     }
 }
-/* 0x544630, starts the duel event: the two figures (+0xac / +0xb0) must be of different parties (+9), else it is retried; clears the "own" links (+0x5c), re-uses a running duel record 0x41 of the same figure, else sets the clock, draws the slots (0x544550) and posts the event (ROUGH) */
-
-void he_Unk544630(int ev)
+/* 0x544630, the alloc handler of the courtship event 0x41, run when posted (opts bit 2): the partners partner1 and
+   partner2 must exist and be of different sex, else it is re-posted two minutes later. Their relatives[0] links are
+   cleared (sent as field deltas); while another courtship names partner1 as its partner2 it is re-posted two minutes
+   later as well. Else its first round is due tomorrow at 8:00, the rounds start at 0 of 0x5c6620(partner1,
+   partner2), the picks are drawn (he_DrawPairPicks) and it is posted with key 0 */
+void he_AllocCourtship(int ev)
 {
-    int a, b, r;
-    int m1;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    AIJOB *r;
+    int none;
 
-    *(int *)(ev + 0x70) = 0;
-    if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-        a = gm_FindChar(*(int *)(ev + 0xac));
-        b = gm_FindChar(*(int *)(ev + 0xb0));
-        if (a != 0 && b != 0 && *(char *)(a + 9) != *(char *)(b + 9)) {
-            if (*(int *)(a + 0x5c) != -1) {
-                m1 = -1;
-                cm_BeginFieldBlock(a, *(int *)(a + 4));
-                cm_AddFieldDelta(4, 1, 0x5c, &m1);
-                cm_SendFieldDeltas();
-            }
-            if (*(int *)(b + 0x5c) != -1) {
-                m1 = -1;
-                cm_BeginFieldBlock(b, *(int *)(b + 4));
-                cm_AddFieldDelta(4, 1, 0x5c, &m1);
-                cm_SendFieldDeltas();
-            }
-            r = (int)he_FindEvent(1, 0, 0x41);
-            while (1) {
-                if (r == 0) {
-                    *(AITIME *)(ev + 0x52) = ai_Time;
-                    gm_AddTime(ev + 0x52, 0x18, 0, 0);
-                    *(int *)(ev + 0x58) = 0;
-                    *(int *)(ev + 0x70) = 0;
-                    *(char *)(ev + 0xb8) = 0;
-                    *(short *)(ev + 0x56) = 8;
-                    *(char *)(ev + 0xb9) = (char)ai_Unk5c6620(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
-                    *(char *)(ev + 0xba) = 0;
-                    he_DrawPairPicks(ev, (AICHAR *)a, (AICHAR *)b);
-                    *(char *)(ev + 0xbb) = 0;
-                    *(int *)(ev + 0x84) = -1;
-                    cm_SendExSetHE(0, ev);
-                    return;
-                }
-                if (*(int *)(r + 0xb0) == *(int *)(a + 4))
-                    break;
-                r = (int)he_NextEvent();
-            }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->stage = 0;
+    if ((e->opts & 2) == 0)
+        return;
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
+    if (a == 0 || b == 0 || a->sex == b->sex) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
+    }
+    if (a->relatives[0] != -1) {
+        none = -1;
+        cm_BeginFieldBlock((char *)a, a->netId);
+        cm_AddFieldDelta(4, 1, 0x5c, &none);    /* a->relatives[0] = -1 */
+        cm_SendFieldDeltas();
+    }
+    if (b->relatives[0] != -1) {
+        none = -1;
+        cm_BeginFieldBlock((char *)b, b->netId);
+        cm_AddFieldDelta(4, 1, 0x5c, &none);    /* b->relatives[0] = -1 */
+        cm_SendFieldDeltas();
+    }
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x41); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if (r->partner2 == a->netId) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
     }
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->end.min = 0;
+    e->stage = 0;
+    e->pairRound = 0;
+    e->end.hour = 8;
+    e->pairRounds = (unsigned char)ai_CourtshipRounds(e->partner1, e->partner2);
+    e->pairDrawn = 0;
+    he_DrawPairPicks(ev, a, b);
+    e->pairDone = 0;
+    e->exSlot = -1;
+    cm_SendExSetHE(0, ev);
 }
 
 unsigned int ai_MarriageTest(int param_1, int param_2);
@@ -2865,7 +2866,7 @@ void he_Unk544840(int ev)
                 *(AITIME *)(ev + 0x52) = ai_Time;
             } else {
                 if (r == 1) {
-                    *(char *)(ev + 0xb9) = (char)ai_Unk5c6620(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
+                    *(char *)(ev + 0xb9) = (char)ai_CourtshipRounds(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
                     *(char *)(ev + 0xb8) = *(char *)(ev + 0xb8) + 1;
                 }
                 if (*(char *)(ev + 0xb8) >= *(char *)(ev + 0xb9)) {
@@ -9318,7 +9319,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x35, (void *)he_AllocTribute, (void *)he_RunTribute) != 0)
         return 1;
-    if (he_SetEventHandlers(0x41, (void *)he_Unk544630, (void *)he_Unk544840) != 0)
+    if (he_SetEventHandlers(0x41, (void *)he_AllocCourtship, (void *)he_Unk544840) != 0)
         return 1;
     if (he_SetEventHandlers(0x42, (void *)he_Unk5455e0, (void *)he_Unk545640) != 0)
         return 1;

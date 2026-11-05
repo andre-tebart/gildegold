@@ -115,7 +115,7 @@ void he_AllocStammtisch(int r);
 
 void he_RunTribute(int ev);
 void he_DrawPairPicks(int ev, struct AICHAR *a, struct AICHAR *b);
-void he_Unk544630(int ev);
+void he_AllocCourtship(int ev);
 void he_Unk5471e0(int ev, unsigned short *p2, unsigned short *p3);
 
 void he_RunFeast(int ev);
