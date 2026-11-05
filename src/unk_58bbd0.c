@@ -6116,7 +6116,7 @@ void ai_Unk597e70(int param_1, int win)
         ((int (*)())io_PrintText)();
 }
 
-int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k); short * gm_PlayerRecord(char *c); int ai_Unk493200();
+int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k); short * gm_PlayerRecord(char *c); int ai_DuelStart();
 int ai_Unk4937a0(); void ai_DuelNextPhase(struct AGDUEL *d); int ai_DuelOpponentAction(); int ai_Unk493390();
 
 /* 0x598170, the tavern dice game window (2566 B, ROUGH SKELETON from the Ghidra pseudocode): the player's
@@ -6208,7 +6208,7 @@ void ai_Unk598170(int param_1)
                 i = 1;
                 if (U_I((unsigned)&d2_PointerObj) == b)
                     i = 2;
-                ai_Unk493200((void *)((unsigned)&ai_Chars + player * 0x21c), state, i);
+                ai_DuelStart((void *)((unsigned)&ai_Chars + player * 0x21c), state, i);
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
             money = sv_RunFrame(ai_Unk598170, 0x777c7);

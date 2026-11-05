@@ -2426,9 +2426,11 @@ unsigned int ai_MakeDuelOpponent(unsigned int k)
     ai_DuelOpponent.kind = 10;
     return ret | k;
 }
-/* 0x493200, starts a duel between p and a fresh opponent of kind k (1, 2 or 4) */
+/* 0x493200, starts a duel between p and a fresh opponent of kind k (1, 2 or 4): the opponent
+   (ai_MakeDuelOpponent), the stake and its raise from p's worth (gm_PlayerFactor), the starting side
+   from the player record's first bias, phase 1; 0 for another character kind or a bad k */
 
-int ai_Unk493200(AGCH *p, AGDUEL *d, int k)
+int ai_DuelStart(AGCH *p, AGDUEL *d, int k)
 {
     AGFIN *fin;
     unsigned int stats;
@@ -2439,7 +2441,7 @@ int ai_Unk493200(AGCH *p, AGDUEL *d, int k)
     fin = (AGFIN *)gm_PlayerRecord((AICHAR *)p);
     if (p == 0 || p->kind != 6 || d == 0 || (k != 1 && k != 2 && k != 4))
         return 0;
-    d->unk00 = 0;
+    d->stake = 0;
     stats = ai_MakeDuelOpponent(k);
     d->total = 0;
     m = gm_ConvertMoney(gm_GetWorth(p->id), ai_OwnPlayer);
@@ -2447,25 +2449,25 @@ int ai_Unk493200(AGCH *p, AGDUEL *d, int k)
     if (10000.0 > x)
         x = 10000.0;
     r = gm_PlayerFactor((int)((x / (log10(x) + 1.0) * 0.10000000149011612) * (k * 0.25f)), ai_OwnPlayer);
-    d->unk00 = r;
-    d->unk04 = (int)(r * 0.1f);
+    d->stake = r;
+    d->raiseAmount = (int)(r * 0.1f);
     d->kind1 = 0;
-    d->unk2c = 0;
+    d->reserved2c = 0;
     d->kind2 = 0;
-    d->unk50 = 0;
-    if (fin->unk58 < util_RandomF()) {
+    d->reserved50 = 0;
+    if (fin->firstBias < util_RandomF()) {
         d->side1 = p;
         d->stats1 = 0xffff;
         d->side2 = &ai_DuelOpponent;
         d->stats2 = stats;
-        fin->unk58 = util_RandomF() * 0.11f + fin->unk58 + 0.2f;
+        fin->firstBias = util_RandomF() * 0.11f + fin->firstBias + 0.2f;
     } else {
     d->side2 = p;
     d->stats2 = 0xffff;
     d->side1 = &ai_DuelOpponent;
     d->stats1 = stats;
-    old = fin->unk58;
-    fin->unk58 = (old - 0.2f) - util_RandomF() * 0.11f;
+    old = fin->firstBias;
+    fin->firstBias = (old - 0.2f) - util_RandomF() * 0.11f;
     }
     d->phase = 1;
     return 1;
@@ -2673,22 +2675,22 @@ int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
     switch (k) {
     case 1:
         if (c->kind == 6)
-            cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->unk00);
-        d->total += d->unk00;
+            cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->stake);
+        d->total += d->stake;
         ai_DuelThrow(d, c, 1);
         ai_Unk4933d0(d, c, k);
         return 1;
     case 2:
         if (c->kind == 6)
-            cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->unk04);
-        d->total += d->unk04;
+            cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->raiseAmount);
+        d->total += d->raiseAmount;
         ai_DuelThrow(d, c, 0);
         ai_Unk4933d0(d, c, k);
         return 1;
     case 3:
         if (c->kind == 6)
-            cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->unk04);
-        d->total += d->unk04;
+            cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->raiseAmount);
+        d->total += d->raiseAmount;
         ai_Unk4933d0(d, c, k);
         return 1;
     case 4:

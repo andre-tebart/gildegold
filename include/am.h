@@ -383,31 +383,31 @@ typedef struct AGARG {                  /* what a decide callback fills for the 
     int kind;                           /* 0x10 */
 } AGARG;
 
-typedef struct AGDUEL {                 /* a dice duel between two characters (0x493200) */
-    int unk00;                          /* 0x00 */
-    int unk04;                          /* 0x04 */
+typedef struct AGDUEL {                 /* a dice duel between two characters (ai_DuelStart, 0x493200) */
+    int stake;                          /* 0x00, the first throw's stake: gm_PlayerFactor of the player's worth (gm_GetWorth / gm_ConvertMoney, halved per k), paid to the player on a throw of kind 1 and shown as the result (ai_Unk598170 state[0]) */
+    int raiseAmount;                    /* 0x04, a tenth of the stake, paid on the throws of kind 2 / 3 */
     int phase;                          /* 0x08 */
     AGCH *side1;                        /* 0x0c */
     unsigned char n1;                   /* 0x10 */
     char pad11[3];
     unsigned int stats1;                /* 0x14, an AI opponent's classes (ai_MakeDuelOpponent: second << 8 | first), 0xffff for a player's side */
     unsigned char t1[0x10];             /* 0x18 */
-    int kind1;                          /* 0x28 */
-    int unk2c;                          /* 0x2c */
+    int kind1;                          /* 0x28, the action the side chose: 1 throw, 2 another die, 3 stop, 4 answer */
+    int reserved2c;                     /* 0x2c, only ever zeroed by ai_DuelStart; no reader in the exe */
     AGCH *side2;                        /* 0x30 */
     unsigned char n2;                   /* 0x34 */
     char pad35[3];
     unsigned int stats2;                /* 0x38, as stats1 for side2 */
     unsigned char t2[0x10];             /* 0x3c */
-    int kind2;                          /* 0x4c */
-    int unk50;                          /* 0x50 */
-    int total;                          /* 0x54 */
+    int kind2;                          /* 0x4c, as kind1 */
+    int reserved50;                     /* 0x50, as reserved2c */
+    int total;                          /* 0x54, the stakes paid so far; the winner is paid it (ai_Unk598170) */
 } AGDUEL;
 #pragma pack(pop)
 
 typedef struct AGFIN {                  /* what 0x506430 finds for a character */
     char pad00[0x58];
-    float unk58;                        /* 0x58 */
+    float firstBias;                    /* 0x58, the bias for who starts the next duel (ai_DuelStart): below the random draw the player starts and it rises by 0.2 + 0..0.11, else the opponent starts and it falls by the same */
 } AGFIN;
 
 typedef char ai_AssertAGCH[sizeof(AGCH) == 0x21c ? 1 : -1];
@@ -421,7 +421,7 @@ int ai_ExecGraveyardOwner(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x49
 int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2);  /* 0x4908d0 */
 int ai_ExecHandleGrave(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490b90 */
 unsigned int ai_MakeDuelOpponent(unsigned int k);                      /* 0x492fd0 */
-int ai_Unk493200(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
+int ai_DuelStart(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
 int ai_Unk493390(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
 int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
