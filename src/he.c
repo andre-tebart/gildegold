@@ -56,7 +56,6 @@ struct D3SM;
 #define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
 #define ai_Unk5a9240K ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_DomizilMessageK ((int (*)())ai_DomizilMessage)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
-#define gv_HeldCrimeIdsOfP ((int (*)(int, int *, unsigned short))gv_HeldCrimeIdsOf)  /* 0x4f4080 (gv.c, gv.h's prototype): for the call of he_AllocFight while gv.h is not included here (its gm_AddTime calls are in the way) */
 
 
 extern int ai_TransportWindow();
@@ -7675,7 +7674,7 @@ void he_RunPatrol(int ev)
 }
 
 int gv_Accuse();
-int gv_HeldCrimeIdsOf();
+int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t);
 void gm_Shuffled(unsigned char n, int *out);
 void cm_SendDropEvidence(int a, int b, int c);
 int ai_CountMissionEvent();
@@ -8002,7 +8001,7 @@ void he_AllocFight(int ev)
             place = home->id;
         gv_Accuse(0x16, 1, a->netId, b->netId, place);
         cm_SendRelations(a->netId, b->netId, 0x34, 1);
-        n = gv_HeldCrimeIdsOfP(b->netId, crimes, a->id);
+        n = gv_HeldCrimeIdsOf(b->netId, crimes, a->id);
         gm_Shuffled(n < 0x10 ? n : 0x10, pick);
         for (i = 0; i < 3 && n != 0; i++, n--)
             cm_SendDropEvidence(crimes[pick[i]], a->netId, 0);

@@ -20530,7 +20530,7 @@ int ai_Unk5c8ef0(unsigned short *param_1, void *unused)
     return 0x11;
 }
 
-int gv_HeldCrimeIdsOf();
+int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t);
 
 /* 0x5c9290, the blackmail privilege handler "privillegien_erpressung2" 0x62d4c4 (695 B, ROUGH): two
    records param_1 (the AIMSG: +0 the id, +2 the type, +4 the handle, +0x1c8 the flags) and param_2 (the
