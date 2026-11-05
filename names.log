@@ -2433,3 +2433,4 @@
 2026-11-05T16:39:35 0x00547170 data he_Unk547170 -> he_AllocDuelChallenge by:main why:the alloc handler of the duel challenge event 0x46, registered beside he_RunDuelChallenge (he_SetEventHandlers 0x46, src/he.c)
 2026-11-05T16:41:37 0x00547ee0 func he_Unk547ee0 -> he_AllocGeselle by:main why:the alloc handler of the RndGeselle event 0x4a, registered beside he_RunGeselle (he_SetEventHandlers 0x4a, src/he.c)
 2026-11-05T16:44:00 0x00548110 data he_Unk548110 -> he_AllocInsultNews by:main why:the alloc / start handler of event type 0x4b, registered (0x553060) with the run handler he_RunInsultNews; it starts the insult news event (news 0x1d64, _NACHRICHTEN_HS_20)
+2026-11-05T16:44:52 0x005482c0 data he_Unk5482c0 -> he_AllocNextDay by:main why:the shared init of event types 0x51 (run handler he_Unk548300) and 0x56 (he_RunPayment, HEPAYMENT): it sets AIJOB.end to the clock 0x18 hours (one day) ahead

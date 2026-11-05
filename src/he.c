@@ -4014,12 +4014,15 @@ void he_RunInsultNews(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x5482c0, a Ghidra miss: the start handler: the due clock +0x52 = now, posted 0x18 units ahead */
+/* 0x5482c0, the shared alloc / start handler of the event types 0x51 and 0x56 (the payment event, he_RunPayment):
+   the end clock is the game time one day (0x18 hours) ahead */
 
-void he_Unk5482c0(int ev)
+void he_AllocNextDay(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
 }
 /* 0x548300, a Ghidra miss: counts +0xac (a byte) down in the state 0, frees the event at 0 or when it is freed (-2) */
 
@@ -10690,7 +10693,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x4b, (void *)he_AllocInsultNews, (void *)he_RunInsultNews) != 0)
         return 1;
-    if (he_SetEventHandlers(0x51, (void *)he_Unk5482c0, (void *)he_Unk548300) != 0)
+    if (he_SetEventHandlers(0x51, (void *)he_AllocNextDay, (void *)he_Unk548300) != 0)
         return 1;
     if (he_SetEventHandlers(0x52, (void *)he_Unk548330, (void *)he_Unk548380) != 0)
         return 1;
@@ -10700,7 +10703,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_RunMasterExamPay) != 0)
         return 1;
-    if (he_SetEventHandlers(0x56, (void *)he_Unk5482c0, (void *)he_RunPayment) != 0)
+    if (he_SetEventHandlers(0x56, (void *)he_AllocNextDay, (void *)he_RunPayment) != 0)
         return 1;
     if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_RunStoreSale) != 0)
         return 1;
