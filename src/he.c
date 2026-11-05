@@ -523,17 +523,13 @@ void he_ReleaseSlot(int ev)
 
 void he_CreateEventBar(void)
 {
-    int *p;
+    int i;
 
     he_BarView = d2_OpenForm(0, 0, "Panel\\Event_Leiste");
     d2_SetForm(he_BarView, 0);
-    d2_MoveObj((((U_I((unsigned)&d2_LastWindow) * 0xf1) & 0xffff0000) | (unsigned short)(*(short *)(unsigned)&d2_ScreenW - 0x7d)), *(short *)(unsigned)&d2_ScreenH - 0x21,
-                 U_I(((unsigned)&ai_Unkf8f13c + 0x250) + U_I((unsigned)&d2_LastWindow) * 0x3c4));
-    p = (int *)(unsigned)&full_data_6faa84;
-    do {
-        *p = -1;
-        p += 3;
-    } while ((int)p < (int)((unsigned)&full_data_6faa84 + 0xc0));
+    d2_MoveObj(d2_ScreenW - 0x7d, d2_ScreenH - 0x21, d2_Wins[d2_LastWindow].parent);
+    for (i = 0; i < 16; i++)
+        he_EventSlots[i].obj = -1;
     d2_SetViewEnabled(he_BarView, 0);
 }
 /* 0x53d9b0, closes every used slot and the event bar panel */
