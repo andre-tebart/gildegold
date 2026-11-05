@@ -2408,3 +2408,4 @@
 2026-11-05T15:33:15 0x00557190 func he_Unk557190 -> he_RunMessageBox by:main why:the run handler of the event 17 (he_SetEventHandlers(17, ..)): opens the 'misc\EventMessagebox*' windows and carries out their quick jump
 2026-11-05T15:35:44 0x004e5210 func ai_Unk4e5210 -> cm_RemovePartyMember by:main why:0x4e5210 removes the character from the party id (its member id becomes -1) and from the running party's member slots (its comment, cm.c)
 2026-11-05T15:37:04 0x005578a0 func he_Unk5578a0 -> he_RunSlotOrder by:main why:the run handler of the event 18 (he_SetEventHandlers(18, ..)), the slot order message 0x12 ai_BuySlots posts: adds the AIJOB +0xb0 / +0xb4 slots to AIOBJ.lvl1c / lvl1d below AIBTYPE.min0 / min1
+2026-11-05T15:39:18 0x00557b70 func he_Unk557b70 -> he_RunStoreExtension by:main why:its debug text he_RunLagerErweitern():Wrong LagerID (0x627490): the run handler of event 19 that extends a store (Lager) object's capacity AIOBJ.count

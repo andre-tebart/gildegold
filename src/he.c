@@ -448,6 +448,12 @@ typedef struct HESLOTORDER {            /* the slot order event 18's words over 
     int add1c;                          /* 0xb0, the first-kind slots still to add (AIOBJ.lvl1c) */
     int add1d;                          /* 0xb4, the second-kind slots still to add (AIOBJ.lvl1d) */
 } HESLOTORDER;
+typedef struct HESTOREEXT {             /* the store extension event 19's words over AIJOB's union (he_Unk557b30 /
+                                           he_RunStoreExtension) */
+    char pad00[0xac];
+    int obj;                            /* 0xac, the objId of the store object (gm_FindById) */
+    int rounds;                         /* 0xb0, the extension rounds still to run, one capacity unit each */
+} HESTOREEXT;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12456,38 +12462,65 @@ void he_Unk557b30(int ev)
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 2, 0, 0);
 }
-/* 0x557b70, the run handler "he_RunLagerErweitern" (the warehouse extension, ROUGH skeleton): state 0 .. 3 (jump table 0x557d58): waits for the due time (0x4fe210), moves the person +0xac (0x4fea50; 0x4c3ba0 / 0x4c3d00 / 0x4c49a0 raise a field), tells the owner (the news 0x1bbb, 0x53dee0 with 0x501b50's contact and the 0x50a810 owner flag) and frees; the default is the debug text "he_RunLagerErweitern():Wrong LagerID..." (0x4222b0) and the free */
-
-void he_Unk557b70(int ev)
+/* 0x557b70, the run handler of the store extension event 19 (HESTOREEXT; allocated by he_Unk557b30, its debug
+   name "he_RunLagerErweitern"). Stage 0 goes on to 1. Stage 1, once due: the store object (gm_FindById; gone: the
+   text "Wrong LagerID" and the event is freed) gets one more unit of capacity (AIOBJ.count + 1, a field delta of
+   4 bytes); while rounds are left the next one is due in 15 minutes, after the last the news 0x1bbb (the event's
+   building, AIJOB.from) goes to the event's character with the quick jump to the building's main object (icon
+   0x606, 0x60b for a master's character with flags1b4 bit 0) and the event is freed. Stages -2 / -1 free the
+   event */
+void he_RunStoreExtension(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int o = 0, b, q, own;
+    AIJOB *e = (AIJOB *)ev;
+    HESTOREEXT *x = (HESTOREEXT *)ev;
+    AIOBJ *o, *q;
+    AIBLD *b;
+    AICHAR *m;
+    int one, tid;
     char text[0x400];
 
-    if (st < 0 || st > 3) {
-        err_Message("he_RunLagerErweitern():Wrong LagerID...");
-        he_FreeEvent((int *)ev);
+    switch (e->stage) {
+    case 0:
+        e->stage++;
         return;
-    }
-    if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
+    case 1:
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+            return;
+        one = 1;
+        gm_FindById(0, &o, 0, x->obj);
+        if (o != 0) {
+            cm_BeginFieldBlock((char *)o, o->objId);
+            cm_AddFieldValues(4, 1, (char *)&o->count - cm_FieldObject, &one);
+            cm_SendFieldDeltas();
+            if (--x->rounds <= 0) {
+                tid = 0x606;
+                b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+                if (b == 0)
+                    break;
+                m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+                if (m != 0 && (m->flags1b4 & 1) != 0)
+                    tid = 0x60b;
+                q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
+                txt_Format(text, 0x1bbb, b);
+                if (q != 0)
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
+                else
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
+                break;
+            } else {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 0xf, 0);
+            }
+        } else {
+            err_Message("he_RunLagerErweitern():Wrong LagerID...");
+            he_FreeEvent((int *)ev);
+        }
         return;
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-    if (o == 0) {
-        he_FreeEvent((int *)ev);
+    case -2:
+    case -1:
+        break;
+    default:
         return;
-    }
-    cm_BeginFieldBlock(o, *(int *)(o + 2));
-    cm_AddFieldValues(1, 1, st, text);
-    cm_SendFieldDeltas();
-    b = gm_BuildQuery(1, 0, *(int *)(ev + 0x10));
-    if (b != 0) {
-        own = gm_FindCharacterByMaster(b);
-        q = gm_BuildingMainObject(b);
-        txt_Format(text, 0x1bbb, b);
-        if (q != 0)
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, (own != 0 && (*(unsigned char *)(own + 0x1b4) & 1) != 0) ? 0x60b : 0x5f6, *(int *)(b + 1), *(int *)(q + 2), 0, 0);
-        else
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, 0x5f6, -1, 0, 0, 0);
     }
     he_FreeEvent((int *)ev);
 }
@@ -15437,7 +15470,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_RunSlotOrder) != 0)
         return 1;
-    if (he_SetEventHandlers(19, (void *)he_Unk557b30, (void *)he_Unk557b70) != 0)
+    if (he_SetEventHandlers(19, (void *)he_Unk557b30, (void *)he_RunStoreExtension) != 0)
         return 1;
     if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_Unk557e20) != 0)
         return 1;
