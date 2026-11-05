@@ -3743,7 +3743,8 @@ void ai_RollCharFlags(void)
         }
     }
 }
-/* 0x495fa0 */
+/* 0x495fa0, decide of the dummy action "DummyRechtschaffenheit" (6): with no sub-action running (a == 0)
+   and b == 0 it offers its own action id 6, else 0 */
 
 int ai_DecideDummyRighteousness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
