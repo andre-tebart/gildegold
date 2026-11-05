@@ -1520,22 +1520,22 @@ exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable
 exe	0x0048f600	ai_DecideUseAlchemyItems	am	draft	readable	deep	
 exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	readable		
 exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	readable		
-exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	draft		
+exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	readable		
 exe	0x0048ff50	ai_DecideGraveyardOwner0	am	shape	readable		
 exe	0x004900c0	ai_ExecGraveyardOwner0	am	byte	readable		
 exe	0x00490170	ai_DecideGraveyardOwner1	am	byte	readable		
-exe	0x004902b0	ai_Unk4902b0	am	byte	draft		
+exe	0x004902b0	ai_ExecGraveyardOwner1	am	byte	readable		
 exe	0x00490350	ai_DecideGraveyardOwner2	am	draft	readable	deep	
 exe	0x004904c0	ai_ExecGraveyardOwner2	am	byte	readable		
 exe	0x00490570	ai_DecideGraveyardOwner3	am	byte	readable		
-exe	0x00490600	ai_Unk490600	am	byte	draft		
+exe	0x00490600	ai_ExecGraveyardOwner3	am	byte	readable		
 exe	0x00490690	ai_DecideGraveyardOwner	am	byte	readable		
-exe	0x00490830	ai_Unk490830	am	byte	draft		
-exe	0x004908d0	ai_Unk4908d0	am	byte	draft		
-exe	0x00490b90	ai_Unk490b90	am	byte	draft		
-exe	0x00490c10	ai_RegisterGraveActions	am	byte	draft		
-exe	0x00490e00	ai_Unk490e00	am	byte	draft		
-exe	0x00490fc0	ai_Unk490fc0	am	byte	draft		
+exe	0x00490830	ai_ExecGraveyardOwner	am	byte	readable		
+exe	0x004908d0	ai_DecideHandleGrave	am	byte	readable		
+exe	0x00490b90	ai_ExecHandleGrave	am	byte	readable		
+exe	0x00490c10	ai_RegisterGraveActions	am	byte	readable		
+exe	0x00490e00	ai_DecideLawSeverity	am	byte	readable		
+exe	0x00490fc0	ai_DecideLaw1	am	byte	readable		
 exe	0x00491200	ai_Unk491200	am	byte	draft		
 exe	0x004912e0	ai_Unk4912e0	am	byte	draft		
 exe	0x00491430	ai_Unk491430	am	byte	draft		
