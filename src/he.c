@@ -18908,6 +18908,13 @@ void he_Unk565b60(int ev)
     }
     he_FreeEvent((int *)ev);
 }
+typedef struct HEKILL {                 /* the kill-player event 0x72's words over AIJOB's union (its alloc handler 0x565d10,
+                                           run handler he_RunKillPlayer) */
+    char pad00[0xac];
+    int chr;                            /* 0xac, the netId of the character to die (gm_FindChar) */
+    int party;                          /* 0xb0, the id of its funeral party (cm_PartyById), -1: none */
+    int slot;                           /* 0xb4, the cm send slot of the party (cm_SendNewParty), -1: none */
+} HEKILL;
 /* 0x565d10, the allocation handler "he_AllocKillPlayer" (ROUGH): the player 0x505df0 (+0xac) must exist (else the error message and free); when another event of the type 0x72 already kills him this one is freed, else
    +0xb4 / +0xb0 / +0x84 = -1 and the run clock is the start clock (+0x44) */
 
@@ -18932,157 +18939,153 @@ void he_Unk565d10(int ev)
     *(int *)(ev + 0xb0) = -1;
     *(int *)(ev + 0x84) = -1;
 }
-/* 0x565db0, the run handler of the kill-player event (ROUGH, 1472 bytes with the jump table 0x5662a8; the Ghidra function 0x565d10 stops before it: a Ghidra miss; the code at 0x566030 is a case of it, not a
-   function): -1 / -2 free; while the player (0x505df0 (+0xac)) has +0x20c set (and the state is not 6) the next run is 5 units ahead; state 0: removes the figure object (+0x184: 0x429e90 (0x4284a0 (+0x28))), the lock
-   0x524260 (0, 0, id, 0), with the flag +0x78 & 2 the news 0x42f4 for the opponent figure (+0x16c: 0x53dee0, 9 parameters), +0x16c = 0; state 1 waits until the figure is gone; state 2 lays the figure down (0x405610,
-   0x40b2f0 (fig, 0x36, 1), the animation "bewegung/zu_boden_sinken") and waits 0x1e units (frees at once with +0x78 & 4); state 3: figure kinds 6 / 7 build the message 0x114 bytes (type 8, the clock, +0x36 = 0xa0,
-   the player +4) for 0x4c4fa0 (+0xb4) and go to state 6, the others wait 2 and go to 4; state 4: 0x493ea0 finds the successor h (none: state 5), 0x506890 (p, h), kinds 5 / 6 / 7 whose +0xd level exceeds h's raise
-   h (0x4c3ba0 / 0x4c3c00 (1, 1, 0xd, &level) / 0x4c49a0), 0x4c4e00 (+4, 0x5075c0 (p)), free; state 5: 0x506890 (p, 0x6f1bf8), 0x4c4e00, free; state 6 polls 0x4c3ae0 (+0xb4) (0: wait, 2: back to state 4, else +0xb0
-   = *0x4c3b10 and state 7); state 7 waits for 0x4e50a0 (+0xb0) and the dead flag +8, frees or goes to state 4 */
-
-void he_Unk565db0(int ev)
+/* 0x565db0, the run handler of the kill-player event 0x72 (HEKILL; alloc handler he_Unk565d10): stages -1 / -2 and
+   a character gone free the record; while the character is in a scene party (partyId, not in stage 6) the next run
+   is 5 minutes ahead. Stage 0: no scene character: a posted event (opts 2) goes to stage 3, else freed; its script is
+   stopped, the character leaves its group (sv_MoveToGroup), a posted event tells the owner of its building
+   (characters of kind 6 / 7) the news 0x42f4, bld = 0. Stage 1 waits for the script to end. Stage 2 lays the scene
+   character down (0x36 "bewegung/zu_boden_sinken"), the next run 30 minutes ahead (opts 4: freed at once). Stage 3:
+   characters of kind 6 / 7 get a funeral party (G28REC kind 8, flags 0xa0, in 30 minutes, the character its host and
+   member: cm_SendNewParty, slot) and stage 6, the others stage 4 in 2 minutes. Stage 4: the successor
+   (ai_FindSuccessor; none: stage 5) inherits (gm_InheritEstate) and, for kinds 5 / 6 / 7, a lower b00d is raised
+   to the dead one's; the character is killed (cm_SendKillCharacter), the record freed. Stage 5: the player's
+   character inherits. Stage 6 polls the party's slot (2: stage 4, else party = its value, stage 7 in two hours).
+   Stage 7: a living character frees the record; a party gone: stage 4, else two hours more */
+void he_RunKillPlayer(AIJOB *ev)
 {
-    int p, f, o, h, q, a, st, idx;
-    unsigned char m[0x114];
-    char text[0x200];
-    char kind;
+    HEKILL *x = (HEKILL *)ev;
+    AICHAR *p, *h;
+    AIBLD *q;
+    CHACTION *a;
+    G28REC m;
+    char text[0x400];
+    int r;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1) {
+    if (ev->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    p = gm_FindChar(*(int *)(ev + 0xac));
+    p = (AICHAR *)gm_FindChar(x->chr);
     if (p == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(p + 0x20c) != -1 && st != 6) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
+    if (p->partyId != -1 && ev->stage != 6) {
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 5, 0);
         return;
     }
-    switch (st) {
+    switch (ev->stage) {
     case 0:
-        f = *(int *)(p + 0x184);
-        if (f == 0) {
-            if ((*(unsigned char *)(ev + 0x78) & 2) == 0) {
+        if (p->scene == 0) {
+            if ((ev->opts & 2) == 0) {
                 he_FreeEvent((int *)ev);
                 return;
             }
-            *(int *)(ev + 0x70) = 3;
+            ev->stage = 3;
             return;
         }
-        o = *(int *)(f + 0x28);
-        if (o != -1)
-            evt_Stop(evt_FindById(o));
-        sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0 && (q = *(int *)(p + 0x16c)) != 0) {
-            idx = *(unsigned short *)(q + 0x27);
-            kind = *(char *)(((unsigned)&ai_Chars + 0x2) + idx * 0x21c);
-            if (kind == 6 || kind == 7) {
-                txt_Format(text, 0x42f4, *(unsigned short *)p, q);
-                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + idx * 0x21c), *(int *)(q + 1), text, 0, 0x60a, *(int *)(q + 1), -1, (unsigned)&ch_EmptyName, (unsigned)&ch_EmptyName);
-            }
+        if (p->scene->scriptId != -1)
+            evt_Stop(evt_FindById(p->scene->scriptId));
+        sv_MoveToGroup(0, 0, p->id, 0);
+        if ((ev->opts & 2) != 0 && (q = p->bld) != 0
+            && (ai_CharsT[q->owner].kind == 6 || ai_CharsT[q->owner].kind == 7)) {
+            txt_Format(text, 0x42f4, p->id, q);
+            he_MessageBoxQuickjump(ai_CharsT[p->bld->owner].netId, p->bld->id, text, 0, 0x60a, p->bld->id, -1,
+                                   ch_EmptyName, ch_EmptyName);
         }
-        *(int *)(p + 0x16c) = 0;
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        p->bld = 0;
+        ev->stage++;
         return;
     case 1:
-        f = *(int *)(p + 0x184);
-        if (f != 0 && *(int *)(f + 0x28) != -1)
+        if (p->scene != 0 && p->scene->scriptId != -1)
             return;
-        *(int *)(ev + 0x70) = st + 1;
+        ev->stage++;
         return;
     case 2:
-        f = *(int *)(p + 0x184);
-        if (f != 0) {
-            ch_StopActions(f);
-            a = ch_AddAction(*(int *)(p + 0x184), 0x36, 1);
+        if (p->scene != 0) {
+            ch_StopActions(p->scene);
+            a = ch_AddAction(p->scene, 0x36, 1);
             if (a != 0)
-                strcpy((char *)(a + 0xf0), "bewegung/zu_boden_sinken");
+                strcpy(a->u.name, "bewegung/zu_boden_sinken");
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
-        if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0x1e, 0);
+        ev->stage++;
+        if ((ev->opts & 4) != 0)
             he_FreeEvent((int *)ev);
         return;
     case 3:
-        if (*(char *)(p + 2) != 6 && *(char *)(p + 2) != 7) {
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x70) = 4;
+        if (p->kind != 6 && p->kind != 7) {
+            gm_AddTime(&ev->end, 0, 2, 0);
+            ev->stage = 4;
             return;
         }
-        memset(m, 0, sizeof(m));
-        m[0x18] = 8;
-        m[0x36] = 0xa0;
-        *(AITIME *)(m + 0x1c) = ai_Time;
-        gm_AddTime(m + 0x1c, 0, 0x1e, 0);
-        h = *(int *)(p + 4);
-        *(int *)(m + 0x2c) = h;
-        *(int *)(m + 0x28) = -1;
-        m[0x44] = 1;
-        *(int *)(m + 0x48) = h;
-        *(int *)(ev + 0xb4) = ((int (*)(void *))cm_SendNewParty)(m + 0x10);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x70) = 6;
+        memset(&m, 0, sizeof(m));
+        m.kind = 8;
+        m.flags = 0xa0;
+        m.time = ai_Time;
+        gm_AddTime(&m.time, 0, 0x1e, 0);
+        m.host = p->netId;
+        m.thing = -1;
+        m.used = 1;
+        m.members[0] = m.host;
+        x->slot = cm_SendNewParty(&m);
+        gm_AddTime(&ev->end, 0, 1, 0);
+        ev->stage = 6;
         return;
     case 4:
-        h = ai_FindSuccessor(p);
+        h = (AICHAR *)ai_FindSuccessor(p);
         if (h == 0) {
-            *(int *)(ev + 0x70) = 5;
+            ev->stage = 5;
             return;
         }
         gm_InheritEstate(p, h);
-        kind = *(char *)(p + 2);
-        if ((kind == 6 || kind == 7 || kind == 5) && *(unsigned char *)(p + 0xd) > *(unsigned char *)(h + 0xd)) {
-            cm_BeginFieldBlock(h, *(int *)(h + 4));
-            cm_AddFieldDelta(1, 1, 0xd, p + 0xd);
+        if ((p->kind == 6 || p->kind == 7 || p->kind == 5) && p->b00d > h->b00d) {
+            cm_BeginFieldBlock((char *)h, h->netId);
+            cm_AddFieldDelta(1, 1, 0xd, &p->b00d);
             cm_SendFieldDeltas();
         }
-        cm_SendKillCharacter(*(int *)(p + 4), gm_MayRemoveChar(p));
+        cm_SendKillCharacter(p->netId, gm_MayRemoveChar(p));
         he_FreeEvent((int *)ev);
         return;
     case 5:
-        gm_InheritEstate(p, U_I((unsigned)&ai_PlayerChar));
-        cm_SendKillCharacter(*(int *)(p + 4), gm_MayRemoveChar(p));
+        gm_InheritEstate(p, ai_PlayerChar);
+        cm_SendKillCharacter(p->netId, gm_MayRemoveChar(p));
         he_FreeEvent((int *)ev);
         return;
     case 6:
-        a = cm_GetSlotState(*(int *)(ev + 0xb4));
-        if (a == 0)
+        r = cm_GetSlotState(x->slot);
+        if (r == 0)
             return;
-        if (a == 2) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x70) = 4;
+        if (r == 2) {
+            ev->end = ai_Time;
+            ev->stage = 4;
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0xb0) = *(int *)cm_GetSlotValue(*(int *)(ev + 0xb4));
-        gm_AddTime(ev + 0x52, 2, 0, 0);
-        *(int *)(ev + 0x70) = 7;
+        ev->end = ai_Time;
+        x->party = ((G28REC *)cm_GetSlotValue(x->slot))->id;   /* the slot's value: the new party */
+        gm_AddTime(&ev->end, 2, 0, 0);
+        ev->stage = 7;
         return;
     case 7:
-        if (*(unsigned char *)(p + 8) != 0) {
+        if (p->health > 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        if (cm_PartyById(*(int *)(ev + 0xb0)) == 0) {
-            *(int *)(ev + 0xb4) = -1;
-            *(int *)(ev + 0xb0) = -1;
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x70) = 4;
+        if (cm_PartyById(x->party) == 0) {
+            x->slot = -1;
+            x->party = -1;
+            ev->end = ai_Time;
+            ev->stage = 4;
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 2, 0, 0);
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 2, 0, 0);
         return;
     case -2:
+    case -1:
         he_FreeEvent((int *)ev);
-        return;
-    default:
         return;
     }
 }
@@ -19892,7 +19895,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(113, (void *)he_Unk565b00, (void *)he_Unk565b60) != 0)
         return 1;
-    if (he_SetEventHandlers(114, (void *)he_Unk565d10, (void *)he_Unk565db0) != 0)
+    if (he_SetEventHandlers(114, (void *)he_Unk565d10, (void *)he_RunKillPlayer) != 0)
         return 1;
     if (he_SetEventHandlers(115, (void *)he_Unk5662d0, (void *)he_Unk566370) != 0)
         return 1;

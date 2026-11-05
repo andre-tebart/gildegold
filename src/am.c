@@ -2918,7 +2918,7 @@ release:
     cm_SendFieldDeltas();
     return 1;
 }
-/* 0x493ea0, the successor of p for the kill-player event (he_Unk565db0): an alive adult (above 11) child of
+/* 0x493ea0, the successor of p for the kill-player event (he_RunKillPlayer): an alive adult (above 11) child of
    p's children (relatives[3..7]) picked at random, else p's spouse for a kind other than 5 (a living, adult
    kind 1..9 without the flag 0x40000); 0 when none, and for a kind 5 p with children but no candidate the
    spouse's and the children's links to p are cleared in the field messages */
