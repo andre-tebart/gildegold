@@ -418,6 +418,11 @@ typedef struct HEDISMISS {              /* the dismissal event 0x31's word over 
     char pad00[0xac];
     int worker;                         /* 0xac, the netId of the worker dismissed (gm_FindChar) */
 } HEDISMISS;
+typedef struct HEEV38 {                 /* the event 0x38's word over AIJOB's union (he_Unk55e5c0 / he_RunEvent38); the
+                                           building is AIJOB.from */
+    char pad00[0xac];
+    int amount;                         /* 0xac, divided by gm_PlayerFactor (1000) and times 20: the relation change */
+} HEEV38;
 typedef struct HEEV27 {                 /* the payment event 0x27's words over AIJOB's union (he_AllocEvent27 /
                                            he_RunEvent27); the building is AIJOB.bldId */
     char pad00[0xb0];
@@ -15938,29 +15943,42 @@ void he_Unk55e5c0(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 4, 0, 0);
 }
-/* 0x55e600, the run handler of a relation event (ROUGH): states -2 / -1 free; the building +0x10 (none: free) and the figure +0xac; every character of the town in the same building gets the relation change 0x4c4b00 (id, +0xac, 0x3e8-scaled by 0x5085f0 (1000)) and the player figures (kind 6 / 7) the news 0x19ab (0x53dee0, 0x5ec); then the record is freed */
-
-void he_Unk55e600(int ev)
+/* 0x55e600, the run handler of the event 0x38 (its alloc handler he_Unk55e5c0 makes it due in 4 hours): stages -2 / -1
+   free the record, a later stage leaves it. At stage 0 the building AIJOB.from (none: freed) is looked up and the
+   event character's relation to every character working there (AICHAR.bld) changes by 20 times HEEV38.amount /
+   gm_PlayerFactor (1000, the own player); an event character of the kind 6 / 7 (a player) gets the message box
+   0x19ab (the building; 0x5ec, quick jump to it); the record is freed */
+void he_RunEvent38(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, c;
+    AIJOB *e = (AIJOB *)ev;
+    HEEV38 *x = (HEEV38 *)ev;
+    AIBLD *b;
+    int i, d;
     char text[0x100];
 
-    if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10))) == 0) {
+    switch (e->stage) {
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
-        return;
-    }
-    ((void (*)(int))gm_PlayerFactor)(0x3e8);
-    for (c = (unsigned)&ai_CharInts; c < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x16a); c += 0x21c) {
-        if (*(unsigned short *)(c - 0x4) != 0xffff && *(int *)(c + 0x168) == b) {
-            cm_SendRelations(*(int *)c, *(int *)(ev + 0xac), 0, 0);
-            if (*(unsigned char *)(c - 2) == 6 || *(unsigned char *)(c - 2) == 7) {
-                txt_Format(text, 0x19ab, b);
-                he_MessageBoxQuickjump(*(int *)c, -1, text, 0, 0x5ec, -1, 0, 0, 0);
-            }
+        break;
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0) {
+            he_FreeEvent((int *)ev);
+            return;
         }
+        d = x->amount / gm_PlayerFactor(1000, ai_OwnPlayer) * 20;
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].bld == b)
+                cm_SendRelations(ai_CharInts[e->chr][0], ai_CharsT[i].netId, d, 0);
+        }
+        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+            txt_Format(text, 0x19ab, b);
+            he_MessageBoxQuickjump(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ec, b->id, -1, 0, (char *)0);
+        }
+        he_FreeEvent((int *)ev);
+        break;
     }
-    he_FreeEvent((int *)ev);
 }
 /* 0x55e730, the run handler of the exam repeat event ("Berufe\Messagebox_Meisterpruefung"; ROUGH skeleton, 815 bytes): opens the window for the player (0x53d6f0, d2_SetForm), shows the offer (0x515960, the news 0x53dda0 via 0x5176d0), the answer pays / refuses (0x4c5fa0, 0x50b290, 0x4c4b00 relation) and closes (0x53d800, free) */
 
@@ -17771,7 +17789,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_RunWorkerTheft) != 0)
         return 1;
-    if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_Unk55e600) != 0)
+    if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_RunEvent38) != 0)
         return 1;
     if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_Unk55e730) != 0)
         return 1;
