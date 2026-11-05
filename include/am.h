@@ -630,7 +630,7 @@ int ai_WealthRating(AIC4 *a, AIC4 *b);                             /* 0x4947a0 *
 int ai_WealthRatingHalf(AIC4 *a, AIC4 *b);                             /* 0x494830 */
 AIREC10 *ai_FindInstrumentRecord(int key);                                 /* 0x4948c0 */
 void ai_RollStudyOffers(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
-int ai_Unk494a30(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
+int ai_MasterExamPassed(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
 int ai_Unk494ac0(AIGRP *g, int send);                           /* 0x494ac0 */
 int ai_Unk494d40(AIC4 *a, AIC4 *b, int n);                      /* 0x494d40 */
 int ai_Unk494d90(AIC4 *a, AIC4 *b, int *out);                   /* 0x494d90 */

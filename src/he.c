@@ -7082,7 +7082,7 @@ void he_Unk5437c0(int ev)
     }
 }
 
-int ai_Unk494a30();
+int ai_MasterExamPassed();
 /* 0x543ac0, a Ghidra miss (disassembled): the master exam event of a building (the examiner of +0xbc: 0 = the building +0x10 with its guild master slot list +0x1c, 1 = the figure +0xc0 with the list +0xac of the event); the examinee is the figure (word +8). State 0 opens "Berufe\Messagebox_Meisterpruefung" (0x53d6f0) and the news 0x1770 / 0x1771; states 1 / 2 wait for the due time or the answer (0xf8a668: 0 = yes, 1 = no) and tell the examinee 0x1785 / 0x1786 (state 2 is the exit of a figure that is no master any more) (ROUGH) */
 void he_Unk543ac0(int ev)
 {
@@ -7151,7 +7151,7 @@ void he_Unk543ac0(int ev)
             return;
         break;
     case 2:
-        h = ai_Unk494a30(cr, me);
+        h = ai_MasterExamPassed(cr, me);
         h = (h == 1) ? 0 : 1;
         neg1 = -1;
         break;

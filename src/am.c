@@ -78,7 +78,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_ExecHandleGrave passes its AGCH record and s1 as they are */
-#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_Unk494a30 / ai_Unk494ac0 / ai_Unk494d40) */
+#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_Unk494ac0 / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
@@ -3287,9 +3287,11 @@ void ai_RollStudyOffers(AIC4 *ch, int *out)
         out[i * 3] = (int)(k * f[i]);
     }
 }
-/* 0x494a30, whether a character is not worth a second look at another (rank and distance against a roll) */
+/* 0x494a30, whether the examinee b passes the guild master a's master exam (the event he_Unk543ac0): no when
+   the master's partner is the examinee, else 1 when the examinee's liking plus 2.5 per level he is above the
+   master reaches a random * 75 */
 
-int ai_Unk494a30(AIC4 *a, AIC4 *b)
+int ai_MasterExamPassed(AIC4 *a, AIC4 *b)
 {
     float t, s;
     int x, y;
@@ -3300,7 +3302,7 @@ int ai_Unk494a30(AIC4 *a, AIC4 *b)
     y = gm_CharLevelS(b->id, 0);
     t = (float)(y - x) * 2.5f;
     s = gm_Liking(a->id, b->id, 1) + t;
-    if (s < util_RandomF() * 75.0f)
+    if (s < util_RandomF() * cm_Float75)
         return 0;
     return 1;
 }
