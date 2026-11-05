@@ -884,6 +884,14 @@ typedef struct HESIM {                  /* the words of the simulation events 0x
                                            started (the next run picks one and a random cursor) */
     int done;                           /* 0xb4, the characters visited this round */
 } HESIM;
+typedef struct HEROUTINE {              /* the daily routine event 0x3a's words over AIJOB's union (he_PostEvent3a posts
+                                           it at the start of the day; its run handler 0x55efc0 walks ai_Chars) */
+    char pad00[0xac];
+    int chrIdx;                         /* 0xac, the ai_Chars index the walk is at (the run handler stores its loop index
+                                           here and clears it for the next stage), 0 at the allocation */
+    int step;                           /* 0xb0, 3 at the allocation (reasoned: the unit's note calls it the routine step;
+                                           the run handler 0x55efc0 reads it nowhere yet) */
+} HEROUTINE;
 typedef struct HEAUCTION {              /* the auction event 0x67's words over AIJOB's union (he_StartAuctionEvent /
                                            he_RunAuctionEvent) */
     char pad00[0xac];
@@ -15231,15 +15239,17 @@ void he_Unk55e730(int ev)
 
 int init_ObjectSceneUniverse();
 
-/* 0x55e9d0, a Ghidra miss: the allocation handler of the daily routine event 0x3a: +0xb0 = 3, +0xac = 0 (the routine step), the clocks +0x52 / +0x44 are now, the minute word is set to 6:15 (0x4fe1e0 (+0x52, 6, 0xf, 0)) */
-void he_Unk55e9d0(int ev)
+/* 0x55e9d0, the allocation handler of the daily routine event 0x3a (he_PostEvent3a posts it at the start of the day): its words +0xb0 = 3 and +0xac = 0, the start and end clocks are now, the end clock set to 6:15 (gm_SetTime) */
+void he_AllocRoutine(AIJOB *ev)
 {
+    HEROUTINE *r = (HEROUTINE *)ev;
+
+    r->step = 3;
+    r->chrIdx = 0;
     gm_ClockSeason((unsigned)&ai_Time);
-    *(int *)(ev + 0xb0) = 3;
-    *(int *)(ev + 0xac) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    gm_SetTime(ev + 0x52, 6, 0xf, 0);
+    ev->end = ai_Time;
+    ev->start = ai_Time;
+    gm_SetTime(&ev->end, 6, 0xf, 0);
 }
 /* 0x55ea60, the id of the contact (the person to talk to at the place) of the figure `p`, or -1 (ROUGH): -1 for no figure, the kinds 0xd / 0xe, no current building (+0x16c) or object (+0x184) and for a busy job code (+0x180: 0x3f, 0x40, 0x48, 0x3c, 0x49, 0x44, 0x62, 0x61, 0x65, 0x64, 0x14, 0x75, 0x1a, 0x18, 0xa1); a building that 0x502520 knows takes the owner contact (0x4ffe90 (building object +0x5d, 1, 0, 0xfd) or the type 0x37 for the job codes 3 / 8 / 9) and gives its +2 id when the target of the figure (+0x184 +0x2c / +0x30) is not it (0x501b50 as the fallback) */
 
@@ -16990,7 +17000,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_Unk55e730) != 0)
         return 1;
-    if (he_SetEventHandlers(58, (void *)he_Unk55e9d0, (void *)he_Unk55efc0) != 0)
+    if (he_SetEventHandlers(58, (void *)he_AllocRoutine, (void *)he_Unk55efc0) != 0)
         return 1;
     if (he_SetEventHandlers(59, (void *)he_Unk55fa20, (void *)he_Unk55fa90) != 0)
         return 1;
