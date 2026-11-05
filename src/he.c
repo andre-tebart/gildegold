@@ -1023,6 +1023,12 @@ typedef struct HESEARCH {               /* the search event 8's words over AIJOB
     int bld;                            /* 0xb0, the id of the building the workers belong to */
     int store;                          /* 0xb4, the id of the object the found goods go to */
 } HESEARCH;
+typedef struct HESEARCH9 {              /* the search event 9's words over AIJOB's union (he_AllocSearch9 / he_RunSearch9) */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the id of the building the workers belong to */
+    int source;                         /* 0xb0, the id of the object searched (its list holds the kind 0x17 goods) */
+    int store;                          /* 0xb4, the id of the object the found goods go to */
+} HESEARCH9;
 typedef struct HETIPEVENT {             /* the tips event 0x84's words over AIJOB's union (its alloc handler 0x567b80,
                                            run handler 0x567c00) */
     char pad00[0xac];
@@ -20642,7 +20648,7 @@ void he_RunSearchEvent(AIJOB *ev)
 }
 /* 0x56a360, the alloc of the same event: both clocks (+0x52 / +0x60) = the start clock (+0x44), due 7 units of the kind 7 and a random 30 .. 59 later */
 
-void he_Unk56a360(int r)
+void he_AllocSearch9(int r)
 {
     *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
     *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
@@ -20652,78 +20658,90 @@ void he_Unk56a360(int r)
 unsigned short *gm_QueryNext(void);
 int gm_BuildKindObjects(char *b);
 
-/* 0x56a3d0, the run handler of the sibling event of 0x56a170 (state 0 -> 1; state 1 with orders: when due, the first good object of the kind 0x17 with +0xe == 1 is looked up
-   in the goods building +0xb0 (0x4ffe90 / 0x4ffcc0), ordered (0x4c4880), and every good of the table 0x889400 (0x76fdc4 entries) whose 4 ingredients (+0x2e) are all in stock
-   (+0xe >= 2) is ordered 3 times; then the order of the amount as in 0x56a170, the news 0x1bb8 / "_NACHRICHTEN_HS_08"; the record is freed) (ROUGH) */
-void he_Unk56a3d0(int ev)
+/* 0x56a3d0, the run handler of the search event 9 (the second "Suchen" activity, he_AllocSearch9): stage 0 goes to 1;
+   stage 1 frees the event when no workers are left (the words +0x14 / +0x18), else waits for the due clock; then,
+   with its building (else stage -1), the first good of the kind 0x17 with a count of 1 in the source object's list
+   (gm_Query key 4) is found: one more of it goes to the source, three of every good the building can make
+   (gm_BuildKindObjects, not of the kind 0x17) whose other inputs the source holds at least twice, and
+   (random(batch * 30) + batch * 30) times the workers of it to the event's store; the owner gets the news 0x1bb8
+   ("_NACHRICHTEN_HS_08"). The workers join the building's group and the event is freed; -1 / -2 send the
+   workers off and free it */
+void he_RunSearch9(AIJOB *ev)
 {
+    HESEARCH9 *s = (HESEARCH9 *)ev;
+    AIBLD *bld;
+    AIOBJ *src;
+    int i;
     char text[0x200];
-    int b, g, rec, amount, i, j, ok, id, o, bo[2], bo2[2];
-    char *r91;
-    unsigned short x;
+    AIOBJ *found;
+    AIOBJ *o;
+    GMGOOD *g;
+    AICHAR *rec;
+    int j;
+    int ok;
+    int amount;
 
-    switch (*(int *)(ev + 0x70)) {
-    case -2:
-    case -1:
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-            if (*(int *)(rec + 0x17c) == ev)
-                sv_MoveToGroup(0, *(unsigned short *)rec, 0, 0);
-        }
-        he_FreeEvent((int *)ev);
-        return;
+    switch (ev->stage) {
     case 0:
-        *(int *)(ev + 0x70) = 1;
+        ev->stage++;
         return;
     case 1:
-        if (*(int *)(ev + 0x14) == 0 && *(int *)(ev + 0x18) == 0) {
-            he_FreeEvent((int *)ev);
+        if (ev->words14[0] == 0 && ev->words14[1] == 0)
+            break;
+        if (gm_CompareTime(&ev->end, &ai_Time) >= 0)
+            return;
+        gm_FindById((int *)&bld, 0, 0, s->bld);
+        if (bld == 0) {
+            ev->stage = -1;
             return;
         }
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
-            return;
-        gm_FindById(bo, 0, 0, *(int *)(ev + 0xac));
-        b = bo[0];
-        if (b == 0) {
-            *(int *)(ev + 0x70) = -1;
-            return;
+        gm_FindById(0, (int *)&src, 0, s->source);
+        for (found = (AIOBJ *)gm_Query((void *)src->list, 1, 4, 0x17); found != 0;
+             found = (AIOBJ *)gm_QueryNext()) {
+            if (found->count == 1)
+                break;
         }
-        gm_FindById(0, bo2, 0, *(int *)(ev + 0xb0));
-        g = gm_Query(*(int *)(bo2[0] + 0x14), 1, 4, 0x17);
-        while (g != 0 && *(int *)(g + 0xe) != 1)
-            g = gm_QueryNext();
-        if (g != 0) {
-            cm_SendExSellObject(*(int *)(b + 2), -1, *(unsigned short *)g, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            gm_BuildKindObjects(bo2[0]);
-            for (i = 0; i < *(unsigned short *)(unsigned)&gm_KindObjCount; i++) {
-                id = *(int *)((unsigned)&gm_KindObjs + i * 4);
-                r91 = (char *)U_I((unsigned)&ai_Goods) + id * 0x41;
-                if (*r91 == 0x17)
+        if (found != 0) {
+            cm_SendExSellObject(src->objId, -1, found->id, 1, ai_OwnPlayer, 0);
+            gm_BuildKindObjects((char *)bld);
+            for (i = 0; i < gm_KindObjCount; i++) {
+                g = GM_GOOD(gm_KindObjs[i]);
+                if (g->type == 0x17)
                     continue;
                 ok = 1;
-                for (j = 0; j < 4 && ok; j++) {
-                    if (*(unsigned short *)(r91 + 0x2e + j * 2) != 0 && *(unsigned short *)(r91 + 0x2e + j * 2) != *(unsigned short *)g) {
-                        o = gm_Query(*(int *)(bo2[0] + 0x14), 1, 0, *(unsigned short *)(r91 + 0x2e + j * 2));
-                        if (o == 0 || *(int *)(o + 0xe) < 2)
+                for (j = 0; ok && j < 4; j++) {
+                    if (g->in[j] != 0 && g->in[j] != found->id) {
+                        o = (AIOBJ *)gm_Query((void *)src->list, 1, 0, g->in[j]);
+                        if (o == 0 || o->count < 2)
                             ok = 0;
                     }
                 }
                 if (ok)
-                    cm_SendExSellObject(*(int *)(b + 2), -1, id, 3, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+                    cm_SendExSellObject(src->objId, -1, gm_KindObjs[i], 3, ai_OwnPlayer, 0);
             }
-            r91 = (char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)g * 0x41;
-            x = *(unsigned short *)(r91 + 0x36) * 0x1e;
-            amount = ((unsigned short)util_Random(x) + *(unsigned short *)(r91 + 0x36) * 0x1e) * (*(int *)(ev + 0x14) + *(int *)(ev + 0x18));
-            cm_SendExSellObject(*(int *)(ev + 0xb4), -1, *(unsigned short *)g, amount, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            txt_Format(text, 0x1bb8, *(unsigned short *)g * 2 + 0x9a8, b, amount);
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(b + 0x27) * 0x21c), -1, text, 0, 0x5f1, *(int *)(b + 1), -1, 0, "_NACHRICHTEN_HS_08");
+            g = GM_GOOD(found->id);
+            amount = (util_RandomU(g->batch * 30) + g->batch * 30) * (ev->words14[0] + ev->words14[1]);
+            cm_SendExSellObject(s->store, -1, found->id, amount, ai_OwnPlayer, 0);
+            txt_Format(text, 0x1bb8, found->id * 2 + 0x9a8, bld, amount);
+            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5f1, bld->id, -1, 0, "_NACHRICHTEN_HS_08");
         }
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-            if (*(int *)(rec + 0x17c) == ev)
-                sv_MoveToGroup(bo[0], *(unsigned short *)rec, 0, 0);
+        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
+            if (rec->job == ev)
+                sv_MoveToGroup((unsigned char *)bld, 0, rec->id, 0);
         }
         he_FreeEvent((int *)ev);
         return;
+    case -2:
+    case -1:
+        for (rec = ai_CharsT; (int)rec < (int)&ai_CharsT[768]; rec++) {
+            if (rec->job == ev)
+                sv_MoveToGroup(0, 0, rec->id, 0);
+        }
+        break;
+    default:
+        return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x56a710, the run handler of the debug event "HE_NEUE_VORKOMMEN_SUCHEN_MSG" (a bug text with the name of the good +0xac): state 0 opens the message panel
    "Misc\EventMessagebox" (0x53d6f0, slot at +0x74), shows the text and goes to state 1; state 1 waits until the panel (the window of the slot +8) is closed */
@@ -21491,7 +21509,7 @@ int he_RegisterEventTypes03(void)
     if (he_SetEventHandlers(8, (void *)he_AllocSearchEvent, (void *)he_RunSearchEvent) != 0)
         return 1;
     sv_RegisterActivity(8, "Suchen", 1, 0x500, 0xac);
-    if (he_SetEventHandlers(9, (void *)he_Unk56a360, (void *)he_Unk56a3d0) != 0)
+    if (he_SetEventHandlers(9, (void *)he_AllocSearch9, (void *)he_RunSearch9) != 0)
         return 1;
     sv_RegisterActivity(9, "Suchen", 1, 0x500, -1);
     if (he_SetEventHandlers(10, (void *)d3io_NoopCallback, (void *)he_Unk56a710) != 0)
