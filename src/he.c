@@ -318,6 +318,13 @@ typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a bui
     char pad00[0x28];
     int year;                           /* 0x28, the year the job was started (0x54ef70 copies ai_Time's year into it) */
 } HEJOBTABLE;
+typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words over AIJOB's union (AIJOB has no name at
+                                           +0xb0: a field there flips d3_CloneObject's bytes, the unit's lead comment) */
+    char pad00[0xb0];
+    AITIME meeting;                     /* 0xb0, when the meeting is held: the hour set to a random 0x13 .. 0x16 */
+    char padbe[2];
+    int state;                          /* 0xc0, 1 after the start, counted down by the run handler 0x542100 */
+} HESTAMMTISCH;
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
 void he_AllocNone(unsigned char *ev)
@@ -2504,22 +2511,26 @@ void he_RunDueNow(int ev)
 {
     ((AIJOB *)ev)->end = ai_Time;
 }
-/* 0x541a80, starts the event record `r` (when bit 4 of +0x78 is clear): due now + 1, a second clock (+0xb0) due in 0x18 units, a random 0x13 .. 0x16 at +0xb4, state 1 at +0xc0, posts it (0x4c4c60) and keeps the result at +0x84 */
+/* 0x541a80, the alloc handler of the inn meeting event 0x2a (when opts bit 4 is clear): due now + 1, the meeting
+   clock (+0xb0) now + 0x18 units with its minutes cleared and a random hour 0x13 .. 0x16, state 1, posts it and
+   keeps the cm slot (+0x84) */
 
-void he_Unk541a80(int r)
+void he_AllocStammtisch(int r)
 {
+    AIJOB *e = (AIJOB *)r;
+    HESTAMMTISCH *m = (HESTAMMTISCH *)r;
     short s;
 
-    if ((*(unsigned char *)(r + 0x78) & 4) == 0) {
-        *(AITIME *)(r + 0x52) = ai_Time;
-        gm_AddTime(r + 0x52, 1, 0, 0);
-        *(AITIME *)(r + 0xb0) = ai_Time;
-        gm_AddTime(r + 0xb0, 0x18, 0, 0);
-        *(int *)(r + 0xb6) = 0;
+    if ((e->opts & 4) == 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
+        m->meeting = ai_Time;
+        gm_AddTime(&m->meeting, 0x18, 0, 0);
+        m->meeting.min = 0;
         s = util_Random(4);
-        *(short *)(r + 0xb4) = s + 0x13;
-        *(int *)(r + 0xc0) = 1;
-        *(int *)(r + 0x84) = cm_SendExSetHE(0, r);
+        m->meeting.hour = s + 0x13;
+        m->state = 1;
+        e->exSlot = cm_SendExSetHE(0, r);
     }
 }
 
@@ -9143,7 +9154,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x29, (void *)he_RunDueNow, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2a, (void *)he_Unk541a80, (void *)he_Unk542100) != 0)
+    if (he_SetEventHandlers(0x2a, (void *)he_AllocStammtisch, (void *)he_Unk542100) != 0)
         return 1;
     if (he_SetEventHandlers(0x2b, (void *)he_Unk542490, (void *)he_Unk542590) != 0)
         return 1;

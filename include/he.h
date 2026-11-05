@@ -108,7 +108,7 @@ void he_SetEventChar(int r, int pl);
 void he_CharacterBehavior(struct AIJOB *ev, float *pos);
 void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6);
 void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6);
-void he_Unk541a80(int r);
+void he_AllocStammtisch(int r);
 
 void he_Unk544330(int ev);
 void he_Unk544550(int ev, unsigned short *p2, unsigned short *p3);
