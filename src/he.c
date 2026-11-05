@@ -8518,12 +8518,15 @@ void he_AllocRandomMessage(int ev)
 
 int ai_RunMessage();
 
-/* 0x545640, runs the message kept at +0xac (unless the state is -2) and frees the event record */
-void he_Unk545640(int ev)
+/* 0x545640, the run handler of the random-message event 0x42: runs the message it wraps (a G14MSG at 0xac) unless
+   the event is cancelled (stage -2), then frees the event record */
+void he_RunRandomMessage(int ev)
 {
-    if (*(int *)(ev + 0x70) != -2)
-        ai_RunMessage(ev + 0xac);
-    he_FreeEvent((int *)ev);
+    AIJOB *e = (AIJOB *)ev;
+
+    if (e->stage != -2)
+        ai_RunMessage(&e->u.id);
+    he_FreeEvent((int *)e);
 }
 
 void gm_Shuffled(unsigned char n, int *out);
@@ -10654,7 +10657,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x41, (void *)he_AllocCourtship, (void *)he_RunCourtship) != 0)
         return 1;
-    if (he_SetEventHandlers(0x42, (void *)he_AllocRandomMessage, (void *)he_Unk545640) != 0)
+    if (he_SetEventHandlers(0x42, (void *)he_AllocRandomMessage, (void *)he_RunRandomMessage) != 0)
         return 1;
     if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_RunPatrol) != 0)
         return 1;

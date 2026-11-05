@@ -121,7 +121,7 @@ void he_DuelAccepted(int ev, unsigned short *p2, unsigned short *p3);
 
 void he_RunFeast(int ev);
 
-void he_Unk545640(int ev);
+void he_RunRandomMessage(int ev);
 
 void he_AllocPatrol(int ev);
 
