@@ -8012,65 +8012,67 @@ void he_AllocFight(int ev)
     cm_SendSetField(b->netId, 0x1c8, 4, 0x200, 0);
     cm_SendMoneyDelta(a->netId, code);
 }
-/* 0x546ef0, a Ghidra miss (disassembled): the end of the fight event (see 0x546c40): in the state 2 both figures lose the flags 0x100 / 0x200 (+0x1c8) and are told the result by +0xb4 (1 / 2 = the news 0x1e19 / 0x1e20 for b, else the relation -0x68 and the news 0x1d5d / 0x1d5c); a free (the state -1 / -2) only clears the flags (ROUGH) */
-
-void he_Unk546ef0(int ev)
+/* 0x546ef0, a Ghidra miss (disassembled): the run handler of the fight event 0x45 (he_AllocFight): at stage 2
+   (started, opts 2) both fighters lose their flag (flags1c8 0x100 / 0x200); with both found the outcome id3 tells:
+   1 / 2 a player partner2 (b) hears the news 0x1e19 / 0x1e20, else a's relation to b drops by 0x68 and b hears
+   0x1d5d, a player a's news 0x1d5c goes to b as well; the event ends in two minutes. Stage -1 / -2 (left) clears
+   the flags (when started) and frees the event */
+void he_RunFight(int ev)
 {
-    char text[0xf0];
-    int a, b, st, r;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    char text[0x100];
 
-    st = *(int *)(ev + 0x70);
-    if (st < -2)
+    switch (e->stage) {
+    case 2:
+        if ((e->opts & 2) == 0)
+            return;
+        a = (AICHAR *)gm_FindChar(e->partner1);
+        if (a != 0)
+            cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x100);
+        b = (AICHAR *)gm_FindChar(e->partner2);
+        if (b != 0)
+            cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x200);
+        if (a != 0 && b != 0) {
+            if (e->id3 == 1) {
+                if (b->kind == 6 || b->kind == 7) {
+                    txt_Format(text, 0x1e19, a->id);
+                    he_ShowNews(b->netId, -1, text, 0, 0x5fb, (char *)0);
+                }
+            } else if (e->id3 == 2) {
+                if (b->kind == 6 || b->kind == 7) {
+                    txt_Format(text, 0x1e20, a->id);
+                    he_ShowNews(b->netId, -1, text, 0, 0x5fb, (char *)0);
+                }
+            } else {
+                cm_SendRelations(a->netId, b->netId, -0x68, 1);
+                if (b->kind == 6 || b->kind == 7) {
+                    txt_Format(text, 0x1d5d, a->id);
+                    he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, (char *)0);
+                }
+                if (a->kind == 6 || a->kind == 7) {
+                    txt_Format(text, 0x1d5c, b->id);
+                    he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, (char *)0);
+                }
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
-    if (st < 0) {
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            a = gm_FindChar(*(int *)(ev + 0xac));
+    case -1:
+    case -2:
+        if (e->opts & 2) {
+            a = (AICHAR *)gm_FindChar(e->partner1);
             if (a != 0)
-                cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x100);
-            b = gm_FindChar(*(int *)(ev + 0xb0));
+                cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x100);
+            b = (AICHAR *)gm_FindChar(e->partner2);
             if (b != 0)
-                cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x200);
-            he_FreeEvent((int *)ev);
+                cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x200);
         }
+        he_FreeEvent((int *)ev);
         return;
     }
-    if (st != 2)
-        return;
-    if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
-        return;
-    a = gm_FindChar(*(int *)(ev + 0xac));
-    if (a != 0)
-        cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x100);
-    b = gm_FindChar(*(int *)(ev + 0xb0));
-    if (b != 0)
-        cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x200);
-    if (a != 0 && b != 0) {
-        r = *(int *)(ev + 0xb4);
-        if (r == 1) {
-            if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-                txt_Format(text, 0x1e19, *(unsigned short *)a);
-                he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, (char *)0);
-            }
-        } else if (r == 2) {
-            if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-                txt_Format(text, 0x1e20, *(unsigned short *)a);
-                he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, (char *)0);
-            }
-        } else {
-            cm_SendRelations(*(int *)(a + 4), *(int *)(b + 4), -0x68, 1);
-            if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-                txt_Format(text, 0x1d5d, *(unsigned short *)a);
-                he_ShowNews(*(int *)(b + 4), *(int *)(b + 4), text, 0, 0x5fb, (char *)0);
-            }
-            if (*(char *)(a + 2) == 6 || *(char *)(a + 2) == 7) {
-                txt_Format(text, 0x1d5c, *(unsigned short *)b);
-                he_ShowNews(*(int *)(b + 4), *(int *)(b + 4), text, 0, 0x5fb, (char *)0);
-            }
-        }
-    }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 2, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
 }
 /* 0x547170, sets the start (+0x44) and the due clock (+0x52) of the event record to now and posts it 2 units later (4fe140) */
 
@@ -9402,7 +9404,7 @@ int he_RegisterEventTypes22(void)
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_RunRaid) != 0)
         return 1;
-    if (he_SetEventHandlers(0x45, (void *)he_AllocFight, (void *)he_Unk546ef0) != 0)
+    if (he_SetEventHandlers(0x45, (void *)he_AllocFight, (void *)he_RunFight) != 0)
         return 1;
     if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_Unk547430) != 0)
         return 1;
