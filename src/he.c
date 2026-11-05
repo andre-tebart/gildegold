@@ -2688,25 +2688,24 @@ void he_RunTribute(int ev)
     gm_AddTime(&e->end, 0, 1, 0);
     e->exSlot = cm_SendExSetHE(-1, ev);
 }
-/* 0x544550, draws 3 of 12 shuffled slots for a duel between the figures p2 and p3: slot bytes at +0xbc .. +0xbe and three words (slot + 1) * (the worth of p2 + the worth of p3, each at least 32000) / 640 at +0xc0 (ROUGH) */
-
-void he_Unk544550(int ev, unsigned short *p2, unsigned short *p3)
+/* 0x544550, draws the three picks of the pair event 0x41 for the partners a and b (its handlers 0x544630 /
+   0x544840): twelve values from half a's level (gm_CharLevel) on, shuffled; the first three go to pairPick with the
+   prices (pick + 1) * (a's worth + b's worth, each at least 32000) / 640 in pairPrice */
+void he_DrawPairPicks(int ev, AICHAR *a, AICHAR *b)
 {
+    AIJOB *e = (AIJOB *)ev;
     int tab[12];
-    int base, i, w2, w3;
-    int *pw;
+    int base, i, wa, wb;
 
-    base = gm_CharLevel(*p2, 0);
-    w2 = gm_GetWorth(*p2) > 32000 ? gm_GetWorth(*p2) : 32000;
-    w3 = gm_GetWorth(*p3) > 32000 ? gm_GetWorth(*p3) : 32000;
-    for (i = 0; i < 0xc; i++)
-        tab[i] = i + base / 2;
-    gm_Shuffle(0xc, tab);
-    pw = (int *)(ev + 0xc0);
+    base = gm_CharLevel(a->id, 0) / 2;
+    wa = gm_GetWorth(a->id) > 32000 ? gm_GetWorth(a->id) : 32000;
+    wb = gm_GetWorth(b->id) > 32000 ? gm_GetWorth(b->id) : 32000;
+    for (i = 0; i < 12; i++)
+        tab[i] = i + base;
+    gm_Shuffle(12, tab);
     for (i = 0; i < 3; i++) {
-        *(char *)(ev + 0xbc + i) = (char)tab[i];
-        *pw = (int)((float)((unsigned char)tab[i] + 1) * (float)(w2 + w3) * 0.0015625f);
-        pw++;
+        e->pairPick[i] = (unsigned char)tab[i];
+        e->pairPrice[i] = (int)((float)((unsigned char)tab[i] + 1) * (float)(wa + wb) * 0.0015625f);
     }
 }
 /* 0x544630, starts the duel event: the two figures (+0xac / +0xb0) must be of different parties (+9), else it is retried; clears the "own" links (+0x5c), re-uses a running duel record 0x41 of the same figure, else sets the clock, draws the slots (0x544550) and posts the event (ROUGH) */
@@ -2744,7 +2743,7 @@ void he_Unk544630(int ev)
                     *(short *)(ev + 0x56) = 8;
                     *(char *)(ev + 0xb9) = (char)ai_Unk5c6620(*(int *)(ev + 0xac), *(int *)(ev + 0xb0));
                     *(char *)(ev + 0xba) = 0;
-                    he_Unk544550(ev, (unsigned short *)a, (unsigned short *)b);
+                    he_DrawPairPicks(ev, (AICHAR *)a, (AICHAR *)b);
                     *(char *)(ev + 0xbb) = 0;
                     *(int *)(ev + 0x84) = -1;
                     cm_SendExSetHE(0, ev);
@@ -2888,7 +2887,7 @@ void he_Unk544840(int ev)
                 gm_AddTime(ev + 0x52, 0x18, 0, 0);
                 *(short *)(ev + 0x56) = 8;
                 *(char *)(ev + 0xba) = 1;
-                he_Unk544550(ev, (unsigned short *)a, (unsigned short *)b);
+                he_DrawPairPicks(ev, (AICHAR *)a, (AICHAR *)b);
                 *(int *)(ev + 0x84) = -1;
                 cm_SendExSetHE(0, ev);
                 return;

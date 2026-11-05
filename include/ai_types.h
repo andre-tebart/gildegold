@@ -167,6 +167,14 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                            examines), 1 the feast event examFeast (its host examines) */
             int examFeast;              /* 0xc0, the id of that feast event (kind 0x37, he_FindEvent) */
         };
+        struct {                        /* 0xac, of the pair event 0x41 (partner1 / partner2; he.c 0x544550 draws these) */
+            char padpair[0x10];
+            unsigned char pairPick[3];  /* 0xbc, three of twelve shuffled values from half the first partner's
+                                           level (gm_CharLevel) on */
+            char padpairbf;
+            int pairPrice[3];           /* 0xc0, per pick (pick + 1) * the partners' worths (gm_GetWorth, each at
+                                           least 32000) / 640 */
+        };
         struct {                        /* 0xac, of the tribute event 0x35 (alloc handler 0x544070, run handler 0x544330;
                                            the collector's netId is idbc) */
             AITIME tributeEnd;          /* 0xac, the end of the collection: a day after its start */
