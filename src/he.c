@@ -316,6 +316,12 @@ typedef struct HECONVERT {              /* the conversion event 0x81's words ove
     int rounds;                         /* 0xb0, the rounds (days) left */
     int from;                           /* 0xb4, the AICHAR.b00c kind turned (0 / 1) into the other */
 } HECONVERT;
+typedef struct HEAPPLICANTS {           /* the applicants event 0x86's words over AIJOB's union (he_RunApplicants) */
+    char pad00[0xac];
+    int office;                         /* 0xac, the office kind applied for (amt_GetOpenOffice), 0 none */
+    int maxKind;                        /* 0xb0, the highest office kind looked at (0x1b at a restart) */
+    int applicant[2];                   /* 0xb4, the handles of the two created characters (amt_CreateApplicant), -1 none */
+} HEAPPLICANTS;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -10079,86 +10085,103 @@ void he_Unk552880(int ev)
 }
 
 int cm_GetSlotValue(int h);
-int amt_InitApplicant();
-int amt_GetOpenOffice();
-int amt_CreateApplicant();
+int amt_InitApplicant(char *c, int k);
+int amt_GetOpenOffice(int k);
+int amt_CreateApplicant(int k);
 
-/* 0x552920, the run handler of the two-person event (ROUGH): states -1 / -2 free the record, flag 4 or a pending handle (+0x84) does nothing. State 0: with +0xb0 set 0x4e78a0 picks a person +0xac (none: the record is reset like 0x552880 with the minute word 0x11 and 0x4c4c60 (0, ev)), 0x4e7aa0 picks the two partners +0xb4 and (one time in 4 less) +0xb8 and the event is posted 1 later; state 1 checks both (0x4c3ae0: 1 = arrived: 0x4e7b60 (the person of the handle 0x4c3b10, +0xac), 2 = gone) and posts 5 later when both are done */
-void he_Unk552920(int ev)
+/* 0x552920, the run handler of the applicants event 0x86 (its alloc handler he_Unk552880): stage -1 / -2 free it,
+   flag 4 of opts or a pending post (exSlot) holds it. Stage 0 asks for the highest office kind up to maxKind that is
+   open for one more applicant (amt_GetOpenOffice) and creates two applicants for it (amt_CreateApplicant; the second
+   only two times in three); no kind (or maxKind 0): it starts over a day later at 17 o'clock with maxKind 0x1b.
+   Stage 1 waits for both created characters (cm_GetSlotState 1: initialised as applicants, amt_InitApplicant; 2: gone)
+   and when both are done posts the event 5 minutes later; else, as after stage 0, the event is posted again now
+   (cm_SendExSetHE 1) */
+void he_RunApplicants(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int n, r;
+    AIJOB *e = (AIJOB *)ev;
+    HEAPPLICANTS *ap = (HEAPPLICANTS *)ev;
+    int done, r;
+    char *c;
 
-    if (st == -1 || st == -2) {
+    if (e->stage == -1 || e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    if (st == 0) {
-        if (*(int *)(ev + 0xb0) == 0) {
-            goto reset;
-        }
-        *(int *)(ev + 0xac) = amt_GetOpenOffice(*(int *)(ev + 0xb0));
-        if (*(int *)(ev + 0xac) == 0) {
-reset:
-            gm_AddTime(ev + 0x52, 0x18, 0, 0);
-            *(unsigned short *)(ev + 0x56) = 0x11;
-            *(int *)(ev + 0x58) = 0;
-            *(int *)(ev + 0xac) = 0;
-            *(int *)(ev + 0xb0) = 0x1b;
-            *(int *)(ev + 0xb4) = -1;
-            *(int *)(ev + 0xb8) = -1;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        if (ap->maxKind == 0) {
+            gm_AddTime(&e->end, 0x18, 0, 0);
+            e->end.hour = 0x11;
+            e->end.min = 0;
+            ap->office = 0;
+            ap->maxKind = 0x1b;
+            ap->applicant[0] = -1;
+            ap->applicant[1] = -1;
+            e->exSlot = cm_SendExSetHE(0, ev);
             return;
         }
-        *(int *)(ev + 0xb4) = amt_CreateApplicant(*(int *)(ev + 0xac));
-        if ((unsigned short)util_Random(3) != 0)
-            *(int *)(ev + 0xb8) = amt_CreateApplicant(*(int *)(ev + 0xac));
-        else
-            *(int *)(ev + 0xb8) = -1;
-    } else if (st == 1) {
-        n = 0;
-        if (*(int *)(ev + 0xb4) == -1) {
-            n = 1;
-        } else {
-            r = cm_GetSlotState(*(int *)(ev + 0xb4));
-            if (r == 1) {
-                n = 1;
-                amt_InitApplicant(cm_GetSlotValue(*(int *)(ev + 0xb4)), *(int *)(ev + 0xac));
-                *(int *)(ev + 0xb4) = -1;
-            } else if (r == 2) {
-                *(int *)(ev + 0xb4) = -1;
-                n = 1;
-            }
-        }
-        if (*(int *)(ev + 0xb8) == -1) {
-            n++;
-        } else {
-            r = cm_GetSlotState(*(int *)(ev + 0xb8));
-            if (r == 1) {
-                n++;
-                amt_InitApplicant(cm_GetSlotValue(*(int *)(ev + 0xb8)), *(int *)(ev + 0xac));
-                *(int *)(ev + 0xb8) = -1;
-            } else if (r == 2) {
-                *(int *)(ev + 0xb8) = -1;
-                n++;
-            }
-        }
-        if (n == 2) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+        ap->office = amt_GetOpenOffice(ap->maxKind);
+        if (ap->office == 0) {
+            gm_AddTime(&e->end, 0x18, 0, 0);
+            e->end.hour = 0x11;
+            e->end.min = 0;
+            ap->office = 0;
+            ap->maxKind = 0x1b;
+            ap->applicant[0] = -1;
+            ap->applicant[1] = -1;
+            e->exSlot = cm_SendExSetHE(0, ev);
             return;
         }
-    } else {
+        ap->applicant[0] = amt_CreateApplicant(ap->office);
+        ap->applicant[1] = (unsigned short)util_Random(3) != 0 ? amt_CreateApplicant(ap->office) : -1;
+        break;
+    case 1:
+        done = 0;
+        if (ap->applicant[0] == -1) {
+            done = 1;
+        } else {
+            r = cm_GetSlotState(ap->applicant[0]);
+            if (r == 1) {
+                done = r;
+                c = (char *)cm_GetSlotValue(ap->applicant[0]);
+                amt_InitApplicant(c, ap->office);
+                ap->applicant[0] = -1;
+            } else if (r == 2) {
+                ap->applicant[0] = -1;
+                done = 1;
+            }
+        }
+        if (ap->applicant[1] == -1) {
+            done++;
+        } else {
+            r = cm_GetSlotState(ap->applicant[1]);
+            if (r == 1) {
+                done++;
+                c = (char *)cm_GetSlotValue(ap->applicant[1]);
+                amt_InitApplicant(c, ap->office);
+                ap->applicant[1] = -1;
+            } else if (r == 2) {
+                ap->applicant[1] = -1;
+                done++;
+            }
+        }
+        if (done == 2) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->exSlot = cm_SendExSetHE(0, ev);
+            return;
+        }
+        break;
+    default:
         return;
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+    e->end = ai_Time;
+    e->exSlot = cm_SendExSetHE(1, ev);
 }
 
 int ai_TutorialSetHost();
@@ -10454,7 +10477,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x82, (void *)he_Unk5527c0, (void *)he_Unk552820) != 0)
         return 1;
-    if (he_SetEventHandlers(0x86, (void *)he_Unk552880, (void *)he_Unk552920) != 0)
+    if (he_SetEventHandlers(0x86, (void *)he_Unk552880, (void *)he_RunApplicants) != 0)
         return 1;
     if (he_SetEventHandlers(0x87, (void *)he_Unk552b90, (void *)he_Unk552bc0) != 0)
         return 1;

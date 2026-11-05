@@ -2373,3 +2373,4 @@
 2026-11-05T14:28:27 0x00552090 func he_Unk552090 -> he_RunExamQuestion by:main why:the run handler of event 0x7e: the message box Berufe\Messagebox_Meisterpruefung (the master exam question), the first answer marks the exam event accepted
 2026-11-05T14:30:21 0x00552270 func he_Unk552270 -> he_RunExamOffer by:main why:the run handler of event 0x7f: posts the master exam question 0x7e (he_RunExamQuestion), and when accepted the character pays health and the player is paid
 2026-11-05T14:34:21 0x005525a0 func he_Unk5525a0 -> he_RunConversion by:main why:the run handler of event 0x81: turns characters whose AICHAR +0xc kind is +0xb4 into 1 - it, n a round (field delta 0xc)
+2026-11-05T14:36:12 0x00552920 func he_Unk552920 -> he_RunApplicants by:main why:the run handler of event 0x86: creates two applicant characters for an open office (amt_GetOpenOffice / amt_CreateApplicant) and initialises them (amt_InitApplicant)
