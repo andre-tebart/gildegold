@@ -3756,16 +3756,16 @@ exe	0x0055e3a0	he_Unk55e3a0	he	byte	draft
 exe	0x0055e3d0	he_RunWorkerTheft	he	draft	readable	deep	
 exe	0x0055e5c0	he_Unk55e5c0	he	byte	draft		
 exe	0x0055e600	he_RunEvent38	he	byte	readable		
-exe	0x0055e730	he_Unk55e730	he	draft	draft		
+exe	0x0055e730	he_RunEvent39	he	byte	readable		
 exe	0x0055e9d0	he_AllocRoutine	he	byte	readable		
-exe	0x0055ea60	he_FigureContact	he	draft	draft		
-exe	0x0055eba0	he_FindFigurePlace	he	draft	draft		
-exe	0x0055ee40	he_PickNearBuilding	he	draft	draft		
-exe	0x0055efc0	he_Unk55efc0	he	draft	draft		
+exe	0x0055ea60	he_FigureContact	he	byte	readable		
+exe	0x0055eba0	he_FindFigurePlace	he	byte	readable		
+exe	0x0055ee40	he_PickNearBuilding	he	byte	readable		
+exe	0x0055efc0	he_RunRoutine	he	draft	readable	deep	
 exe	0x0055fa20	he_AllocMarket	he	byte	readable		
-exe	0x0055fa90	he_Unk55fa90	he	draft	draft		
-exe	0x00560820	he_Unk560820	he	draft	draft		
-exe	0x00560900	he_Unk560900	he	draft	draft		
+exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep	
+exe	0x00560820	he_AllocEvent3c	he	byte	readable		
+exe	0x00560900	he_RunKidnap	he	draft	readable	deep	
 exe	0x00561130	he_Unk561130	he	byte	draft		
 exe	0x00561190	he_Unk561190	he	draft	draft		
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
