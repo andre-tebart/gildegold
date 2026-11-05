@@ -582,21 +582,6 @@ typedef struct AIC4 {                   /* 0x21c bytes, ai_Chars[] with the fiel
     char pad214[8];
 } AIC4;
 
-typedef struct AIGRP {                  /* a group: a leader and up to four members (0x494ac0) */
-    AIC4 *leader;                       /* 0x00 */
-    struct {
-        AIC4 *ch;                       /* 0x04 */
-        int d;                          /* 0x08 */
-    } mem[4];
-    unsigned int essen;                 /* 0x24, the feast menu pick 0 .. 5: ai_FeastWindow prints text 0x1782
-                                           (_MN_FEST_ESSEN) from it, 0 = the best menu */
-    unsigned int musik;                 /* 0x28, the feast musician pick 0 .. 5: text 0x1783 (_MN_FEST_MUSIKER),
-                                           0 = the best entertainment */
-    int cost;                           /* 0x2c, the feast's cost: ai_EvalFest computes it, the player's window
-                                           shows it (_MN_FEST_FEEDBACK+4, %T) */
-    unsigned char n;                    /* 0x30, member count, 1..4 */
-    char pad31[3];
-} AIGRP;
 #pragma pack(pop)
 
 typedef struct AIREC10 {                /* 16 bytes, a record of the torture-instrument table at 0x5ecfd8 (7 records, ai_TortureInstruments) */

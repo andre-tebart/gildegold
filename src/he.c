@@ -7104,85 +7104,81 @@ void he_RunWeddingOffer(int r)
 int gm_FindById();
 int ai_EvalFest();
 
-/* 0x5437c0, the run handler of the event "party / cart announcement": after it was posted (state +0x70 = 0) it collects the up to 4 member figures (the building record 0x17 at +0x1c .. or the event's +0xac .. list), asks 0x494ac0 whether the group may start and, if not, tells the player the news 0x1787 followed by one line 0x1788 per member (0x178f + 3 * x + random 3); state 1 only re-posts (ROUGH) */
-void he_Unk5437c0(int ev)
+/* 0x5437c0, the run handler of the feast event: the host is the event's character, the guests and the menu /
+   musician picks come from the feast table object (gm_Query kind 0x17) of the building e->from, or from the event's
+   own words when it names no building; a building without a feast table only re-posts the event. Stage 0 has the
+   feast evaluated (ai_EvalFest, sending its effects) and, when that returns 0 for a player host (kind 6 / 7), tells
+   the host the news 0x5fd: the text 0x1787 with the cost, then one line 0x1788 per guest (0x178f + 3 * the guest's
+   verdict + a random 0 .. 2); it re-posts the event, as stage 1 does. The original clears only the group's first
+   4 bytes, and without a building it tests the guests of a null table (*(int *)0x1c ..) before it looks up the
+   event's own guests: both kept
+   @deep reconstructed and read in full against the original (feast event: AIGRP filled from the feast
+   table object kind 0x17 or the event's festGuests, MEM_ZERO inline clear of 4 bytes, switch on stage);
+   same instruction count 261/261, 14 differing. Left: +0x100 the table branch stores essen ([ebp-0x1c])
+   before loading festMusik (mov cl,[esi+0x2d]) where the original loads both first (order); +0x1df the
+   txt_Format(line, 0x1788, id, ...) argument setup: ours mov ecx,[ebp+ebx*8-0x3c]; xor edx,edx; mov
+   dx,[ecx]; lea eax,line vs the original xor ecx,ecx; mov eax,[ebp+ebx*8-0x3c]; lea edx,line; mov cx,[eax]
+   (registers eax/ecx/edx permuted, same pushes); tried the arguments' term order (no change) */
+void he_RunFeast(int ev)
 {
-    int bld = 0;
-    int rec = 0;
-    int i, k, cnt;
-    int *pm;
-    int *pe;
-    unsigned short us;
-    unsigned u;
-    int grp[15];
-    int mem[8];
-    char big[2048];
-    char line[256];
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *bld = 0;
+    AIOBJ *table = 0;
+    AICHAR *c;
+    int k, n;
+    AIGRP g;
+    char text[0x800];
+    char line[0x100];
 
-    if (*(int *)(ev + 0x70) == -2 || *(int *)(ev + 0x70) == -1) {
+    if (e->stage == -2 || e->stage == -1) {
         he_FreeEvent((int *)ev);
-    } else if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        gm_FindById(&bld, 0, 0, *(int *)(ev + 0x10));
-        if (bld != 0 && (rec = gm_Query(*(int *)(bld + 0x5d), 1, 0, 0x17)) == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            cm_SendExSetHE(-1, ev);
-            return;
-        }
-        if (*(int *)(ev + 0x70) == 0) {
-            memset(grp, 0, sizeof(grp));
-            grp[13] = 4;
-            grp[14] = (int)grp;
-            cnt = 0;
-            grp[0] = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-            if (rec == 0) {
-                grp[7] = *(unsigned char *)(ev + 0xbd);
-                grp[8] = *(unsigned char *)(ev + 0xbc);
-                pm = (int *)0x1c;
-                pe = (int *)(ev + 0xac);
-                do {
-                    if (*pm != -1 && (i = gm_FindChar(*pe)) != 0) {
-                        grp[1 + cnt * 2] = i;
-                        cnt++;
-                    }
-                    pm++;
-                    pe++;
-                } while ((int)pm < 0x2c);
-            } else {
-                grp[7] = *(unsigned char *)(rec + 0x2c);
-                grp[8] = *(unsigned char *)(rec + 0x2d);
-                pm = (int *)(rec + 0x1c);
-                for (k = 4; k != 0; k--, pm++) {
-                    if (*pm != -1 && (i = gm_FindChar(*pm)) != 0) {
-                        grp[1 + cnt * 2] = i;
-                        cnt++;
-                    }
-                }
+        return;
+    }
+    if (e->opts & 4)
+        return;
+    gm_FindById(&bld, 0, 0, e->from);
+    if (bld != 0 && (table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17)) == 0) {
+        e->end = ai_Time;
+        cm_SendExSetHE(-1, ev);
+        return;
+    }
+    switch (e->stage) {
+    case 0:
+        MEM_ZERO(&g, 4);
+        n = 0;
+        g.leader = (struct AIC4 *)&ai_CharsT[e->chr];
+        if (table != 0) {
+            g.essen = table->festEssen;
+            g.musik = table->festMusik;
+            for (k = 0; k < 4; k++) {
+                if (table->festGuests[k] != -1 && (c = (AICHAR *)gm_FindChar(table->festGuests[k])) != 0)
+                    g.mem[n++].ch = (struct AIC4 *)c;
             }
-            *(unsigned char *)(grp + 12) = (unsigned char)cnt;
-            i = ai_EvalFest(grp, 1);
-            if (i == 0 && (*(char *)(grp[0] + 2) == 6 || *(char *)(grp[0] + 2) == 7)) {
-                txt_Format(big, 0x1787, grp[11]);
-                i = 0;
-                if ((char)grp[12] != 0) {
-                    do {
-                        us = util_Random(3);
-                        txt_Format(line, 0x1788, *(unsigned short *)grp[1 + i * 2], us + 0x178f + grp[2 + i * 2] * 3);
-                        strcat(big, line);
-                        i++;
-                        u = grp[12] & 0xff;
-                    } while (i < (int)u);
-                }
-                he_ShowNews(*(int *)(grp[0] + 4), -1, big, 0x20, 0x5fd, (char *)(unsigned)&ch_EmptyName);
+        } else {
+            g.essen = e->festEssen;
+            g.musik = e->festMusik;
+            for (k = 0; k < 4; k++) {
+                if (table->festGuests[k] != -1 && (c = (AICHAR *)gm_FindChar(e->festGuests[k])) != 0)
+                    g.mem[n++].ch = (struct AIC4 *)c;
             }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            cm_SendExSetHE(-1, ev);
-            return;
         }
-        if (*(int *)(ev + 0x70) == 1) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            cm_SendExSetHE(-1, ev);
-            return;
+        g.n = (unsigned char)n;
+        if (ai_EvalFest(&g, 1) == 0
+            && (((AICHAR *)g.leader)->kind == 6 || ((AICHAR *)g.leader)->kind == 7)) {
+            txt_Format(text, 0x1787, g.cost);
+            for (k = 0; k < g.n; k++) {
+                txt_Format(line, 0x1788, ((AICHAR *)g.mem[k].ch)->id, util_RandomU(3) + 0x178f + g.mem[k].d * 3);
+                strcat(text, line);
+            }
+            he_ShowNews(((AICHAR *)g.leader)->netId, -1, text, 0x20, 0x5fd, ch_EmptyName);
         }
+        e->end = ai_Time;
+        cm_SendExSetHE(-1, ev);
+        return;
+    case 1:
+        e->end = ai_Time;
+        cm_SendExSetHE(-1, ev);
+        return;
     }
 }
 
@@ -9254,7 +9250,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x37, (void *)he_Unk5436a0, (void *)he_Unk5437c0) != 0)
+    if (he_SetEventHandlers(0x37, (void *)he_Unk5436a0, (void *)he_RunFeast) != 0)
         return 1;
     if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_Unk543ac0) != 0)
         return 1;

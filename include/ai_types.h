@@ -154,6 +154,12 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             float incomeRate;           /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
             unsigned char incomeCounter; /* 0xc8, 0 at the start */
         };
+        struct {                        /* 0xac, of the feast event (its run handler 0x5437c0), read when its
+                                           building has no feast table object (AIOBJ.festGuests) */
+            int festGuests[4];          /* 0xac, the guests' character ids */
+            unsigned char festEssen;    /* 0xbc, the menu pick (AIGRP.essen) */
+            unsigned char festMusik;    /* 0xbd, the musician pick (AIGRP.musik) */
+        };
     };
     unsigned char stormDue;             /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
                                            damages the buildings once, then clears it */
@@ -242,6 +248,11 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
         };
         int seats[4];                   /* 0x1c..0x2b, of a table (kind 0x12d in a building): the ids of the characters at its
                                            four seats, -1 free (message 0x54 'join' / 'leav' / 'cler', cm_SendTableRequest) */
+        struct {                        /* of a feast table object (gm_Query kind 0x17 in a building, he.c 0x5437c0) */
+            int festGuests[4];          /* 0x1c..0x2b, the guests' character ids, -1: none */
+            unsigned char festEssen;    /* 0x2c, the menu pick (AIGRP.essen) */
+            unsigned char festMusik;    /* 0x2d, the musician pick (AIGRP.musik) */
+        };
     };
     char pad2e[8];
     unsigned char unk36;                /* 0x36 */

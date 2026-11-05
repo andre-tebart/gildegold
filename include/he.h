@@ -118,7 +118,7 @@ void he_Unk544550(int ev, unsigned short *p2, unsigned short *p3);
 void he_Unk544630(int ev);
 void he_Unk5471e0(int ev, unsigned short *p2, unsigned short *p3);
 
-void he_Unk5437c0(int ev);
+void he_RunFeast(int ev);
 
 void he_Unk545640(int ev);
 
