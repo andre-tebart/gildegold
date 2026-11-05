@@ -4937,25 +4937,29 @@ void cm_SendKillCharacter(int a, int b);
 void ai_PlagueMessage(int param_1);
 float gm_CatchPlague();
 float util_RandomF2();
-/* 0x549f70, a Ghidra miss: the start of the plague event ("Pest"): unless a running event of the type 0x59 exists the clock is copied from the start (+0x44), the state 5 is set and the event is posted (0x4c4c60 (5, ev)); else it is posted as failed */
-void he_Unk549f70(int ev)
-{
-    int e;
+/* 0x549f70, the alloc handler of the plague event 0x59 ("Pest", he_RunPlague): opts bit 2 leaves it alone; another
+   running 0x59 event (skipping itself) ends it at the clock now, posted as failed (cm_SendExSetHE -1, its slot
+   kept); else it starts at stage 5 with the due clock at its start clock, its slot -1, and is posted (5) */
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+void he_StartPlague(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    AIJOB *found;
+
+    if ((e->opts & 4) != 0)
         return;
-    e = (int)he_FindEvent(1, 0, 0x59);
-    while (e != 0) {
-        if (e != ev) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    found = (AIJOB *)he_FindEvent(1, 0, 0x59);
+    while (found != 0) {
+        if (found != e) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        e = (int)he_NextEvent();
+        found = (AIJOB *)he_NextEvent();
     }
-    *(int *)(ev + 0x70) = 5;
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(int *)(ev + 0x84) = -1;
+    e->stage = 5;
+    e->end = e->start;
+    e->exSlot = -1;
     cm_SendExSetHE(5, ev);
 }
 /* 0x54a020, a Ghidra miss (disassembled; 1720 B): the run handler of the plague event 0x59 ("Pest"): stage -1 / -2
@@ -10787,7 +10791,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x60, (void *)he_StartTraining, (void *)he_RunTraining) != 0)
         return 1;
-    if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_RunPlague) != 0)
+    if (he_SetEventHandlers(0x59, (void *)he_StartPlague, (void *)he_RunPlague) != 0)
         return 1;
     if (he_SetEventHandlers(0x61, (void *)he_StartGang, (void *)he_RunGang) != 0)
         return 1;
