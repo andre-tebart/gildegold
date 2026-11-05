@@ -454,6 +454,18 @@ typedef struct HELOVER {                /* the lover event 0x6f's words over AIJ
     int rounds;                         /* 0xb4, the days paid, 0 at the start */
     int pay;                            /* 0xb8, what the keeper pays a day, 2 at the start */
 } HELOVER;
+typedef struct HEDARKCORNER {           /* the "Dunkle Ecke" robbery event 0x74's words over AIJOB's union (its init
+                                           he_StartDarkCorner, run handler 0x54f160) */
+    char pad00[0xac];
+    int carrier;                        /* 0xac, the cm slot of the carrier figure, then its id; -1: none */
+    int victim;                         /* 0xb0, the id of the victim building */
+    int amount;                         /* 0xb4, the amount */
+    int target;                         /* 0xb8, the next target building, -1 at the start */
+    int steps;                          /* 0xbc, the robbery steps left, 5 + random(4) at the start */
+    int loot;                           /* 0xc0, the loot level 0 .. 3, 0 at the start */
+    int cursor;                         /* 0xc4, the walk over the 0x100 buildings: the index it is at, random */
+    int step;                           /* 0xc8, the walk's step, a random ai_RandomStrides entry */
+} HEDARKCORNER;
 #define HE_LOVER_FLAG 0x800000          /* AICHAR.flags1c8: has a keeper (he_StartLover sets it, he_RunLover clears it) */
 typedef struct HEPLAGUE {               /* the plague event 0x59's words over AIJOB's union (he_BeginPlague, its run handler 0x54a020) */
     char pad00[0xac];
@@ -6669,51 +6681,49 @@ void he_RunDiseaseSim(int ev)
         e->end.year++;
     }
 }
-/* 0x54ef70, a Ghidra miss (disassembled): the init of the "Dunkle Ecke" (dark corner, the robbery) event: +0xac = -1, +0xc4 = a random building index, +0xc8 = a random step of the table 0x5ed140, +0xc0 = 0, +0xb8 = -1, +0xbc = 5 + random(4); the clocks (+0x52 / +0x44) are now and posted 1 unit ahead; when a running event of the type 0x74 (0x53e400) of another player has the same victim +0xb0 the event ends; else the victim (0x4fea50) must have a record of the building (0x4ffe90 2 / 6 / 0x12c): its job table gets the time (+0x28 + 0x4c3c00) and a carrier (0x4c59f0 (0xe, .., 0x12, .. "DunkleEcke")) is created (+0xac) (ROUGH) */
+/* 0x54ef70, the init of the "Dunkle Ecke" (dark corner) robbery event 0x74: no carrier, a random walk over the
+   buildings, 5 + random(4) steps, due a minute from now; it ends at once when another player's robbery runs at the
+   same victim, or the victim building or its job table (object 0x12c) is gone; else the job table gets the year,
+   and the carrier figure (cm_SendSpawnCharacter 0xe "DunkleEcke") is spawned at the victim */
 
-void he_Unk54ef70(int ev)
+void he_StartDarkCorner(int ev)
 {
-    int e, o = 0, b, h;
-    AITIME tm;
+    AIJOB *e = (AIJOB *)ev;
+    HEDARKCORNER *d = (HEDARKCORNER *)ev;
+    AIJOB *o;
+    AIBLD *bld;
+    AIOBJ *jt;
+    int year;
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    *(int *)(ev + 0xac) = -1;
-    *(int *)(ev + 0xc4) = (unsigned short)util_Random(0x100);
-    *(int *)(ev + 0xc8) = U_I((unsigned)&ai_RandomStrides + (unsigned short)util_Random(0x10) * 4);
-    *(int *)(ev + 0xc0) = 0;
-    *(int *)(ev + 0xb8) = -1;
-    *(int *)(ev + 0xbc) = (unsigned short)util_Random(4) + 5;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    e = (int)he_FindEvent(1, 0, 0x74);
-    while (e != 0) {
-        if (*(int *)(e + 4) == *(int *)(ev + 4) || *(int *)(e + 0xb0) != *(int *)(ev + 0xb0))
-            e = (int)he_NextEvent();
-        else {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    d->carrier = -1;
+    d->cursor = (unsigned short)util_Random(0x100);
+    d->step = ai_RandomStrides[(unsigned short)util_Random(0x10)];
+    d->loot = 0;
+    d->target = -1;
+    d->steps = (unsigned short)util_Random(4) + 5;
+    e->end = ai_Time;
+    e->start = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    for (o = (AIJOB *)he_FindEvent(1, 0, 0x74); o != 0; o = (AIJOB *)he_NextEvent()) {
+        if (o->id != e->id && ((HEDARKCORNER *)o)->victim == d->victim) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xb0));
-    if (o == 0) {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    gm_FindById(&bld, 0, 0, d->victim);
+    if (bld == 0 || (jt = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12c)) == 0) {
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    b = gm_Query(*(int *)(o + 0x5d), 2, 6, 0x12c);
-    if (b == 0) {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
-    }
-    tm = ai_Time;
-    cm_BeginFieldBlock(b, *(int *)(b + 2));
-    cm_AddFieldDelta(4, 1, (b - U_I((unsigned)&cm_FieldObject)) + 0x28, &tm);
+    year = ai_Time.year;
+    cm_BeginFieldBlock((char *)jt, jt->objId);
+    cm_AddFieldDelta(4, 1, (char *)jt - cm_FieldObject + 0x28, &year);  /* HEJOBTABLE.year */
     cm_SendFieldDeltas();
     cm_BeginGroup("Dunkle Ecke");
-    h = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xe, *(int *)(o + 1), -1, 0, 0, 0, "DunkleEcke");
-    *(int *)(ev + 0xac) = h;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    d->carrier = cm_SendSpawnCharacterR(0xe, bld->id, -1, 0, 0, 0, "DunkleEcke");
+    e->exSlot = cm_SendExSetHE(0, ev);
     cm_EndGroup("Dunkle Ecke");
 }
 /* 0x54f160, a Ghidra miss (disassembled; 2500 B): the run handler of the "Dunkle Ecke" robbery event (+0xac the carrier (handle, then figure id), +0xb0 the victim building, +0xb8 the next target, +0xc4 / +0xc8 the walk over the 0x100 buildings, +0xc0 the loot level 0 .. 3, +0xbc the steps left, +0xb4 the amount): state 0 waits for the carrier, state 1 picks the next target building (kinds in the mask 0xa7fcc3a6, not the victim's own; "Dunkle Ecke: next target = %G") and sends the carrier there, state 2 waits until it arrives (0x524770), then counts the robbery steps (+0xbc, +0xc0 rises by the chance 0x504ec0 against 0.5 * random) and sends the carrier on to the victim, state 3 at the victim: the loot level is clamped to 0 .. 3 and the thief takes up to three items from 0x91f700 (0x2d bytes each, 0x200 ring, +0x25 = 1, other owner, not due: given with 0x4c4ed0 and written into the job table of the building record), the news 0x18a9 / 0x18aa (0x5ec); state 4 repeats the check of the loot; a free of the event (flag 2) sends the carrier home (0x4c4e00) (ROUGH) */
@@ -10174,7 +10184,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_RunDiseaseSim) != 0)
         return 1;
-    if (he_SetEventHandlers(0x74, (void *)he_Unk54ef70, (void *)he_Unk54f160) != 0)
+    if (he_SetEventHandlers(0x74, (void *)he_StartDarkCorner, (void *)he_Unk54f160) != 0)
         return 1;
     if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_Unk54fce0) != 0)
         return 1;
