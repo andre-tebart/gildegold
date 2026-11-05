@@ -25,7 +25,7 @@
 #undef d2_DrawShapeMode2
 #undef d2_StartAnim
 #include "shp.h"
-#include "unk_47c5e0.h"
+#include "shp_bank.h"
 #ifdef REA_FRAME_DUMP
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
 #endif

@@ -1,5 +1,5 @@
 /* shp_asm.c -- 0x47d600.., the shape drawing loops for 8 bit shapes, written in inline assembly; it ends with
-   the darkening blit 0x47d960; AI code follows from 0x47d9e0. Uses unk_47c5e0.h. Names are ours. Kept apart from
+   the darkening blit 0x47d960; AI code follows from 0x47d9e0. Uses shp_bank.h. Names are ours. Kept apart from
    shp.c by subject only: the 0xcc before 0x47d600 is the linker's fill after d2_ShpBlit16ClipXY's unpadded section
    (its pragma), not an object end.
    unit of rea 8cef7d5b (src/game/unk_47d600.c); boundaries in decl/text.dcl */
@@ -12,7 +12,7 @@
 #include "d3.h"
 #include "d2.h"
 #include "shp.h"
-#include "unk_47c5e0.h"
+#include "shp_bank.h"
 
 /* 0x47d600, blits the runs of an 8 bit shape into an 8 bit surface (bits, row pitch d2_SurfPitch) at x, y:
  * y is clipped to d2_ClipTop / d2_ClipBottom (x is the caller's clip); leaves the shape size in d2_ShpW /

@@ -1,8 +1,8 @@
-/* unk_47c5e0.h -- what d2.h / unk_47ab30.h lack for 0x47c5e0..0x47d960 (in unk_47ab30.c and shp_asm.c since round 20; the shape part
+/* shp_bank.h -- what d2.h / unk_47ab30.h lack for 0x47c5e0..0x47d960 (in unk_47ab30.c and shp_asm.c since round 20; the shape part
    continued: adding a shape to a bank, drawing shapes of a bank, animated shapes, the shape drawing loops written
    in inline assembly). Names are ours. */
-#ifndef UNK_47C5E0_H
-#define UNK_47C5E0_H
+#ifndef SHP_BANK_H
+#define SHP_BANK_H
 
 #include "d2.h"
 #include "shp.h"

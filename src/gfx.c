@@ -20,7 +20,7 @@
 #include "txt.h"
 #include "dd_vesa.h"
 #include "gfx.h"
-#include "unk_47c5e0.h"
+#include "shp_bank.h"
 #ifdef REA_FRAME_DUMP
 #include "rea_dump.h"           /* debug build: REA_DUMP_TRACE */
 #endif
