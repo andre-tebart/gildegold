@@ -1581,9 +1581,9 @@ int ai_DecideLaw3(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491430, decision 4 */
+/* 0x491430, the callback of law record 4 (AIDEC.fn, office 0x16 no 1, a boolean law): the normalized skill 3 against the rating, always x 1.1, raises the law (cur 0 -> 1) when it is below ai_FloatOne and mood 11 outweighs mood 9, and lowers it (cur 1 -> 0) when it is above and mood 10 outweighs mood 9 */
 
-int ai_Unk491430(AIPER *p, int a, int *out)
+int ai_DecideLaw4(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
@@ -1598,7 +1598,7 @@ int ai_Unk491430(AIPER *p, int a, int *out)
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
     x *= 1.1f;
     gv_GetTableRecord(4, &d);
-    if (x < 1.0f && d.cur == 0) {
+    if (x < ai_FloatOne && d.cur == 0) {
         if (w > u) {
             *out = 1;
             return 1;
