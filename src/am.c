@@ -3797,7 +3797,8 @@ int ai_DecideDummyHealth(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     return b == 0;
 }
-/* 0x496050 */
+/* 0x496050, decide of the dummy action "DummyBeruf" (2): with no sub-action running (a == 0)
+   and b == 0 it offers its own action id 2, else 0 */
 
 int ai_DecideDummyJob(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
