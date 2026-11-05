@@ -18233,9 +18233,12 @@ typedef struct HEBURN {                 /* the burning event 0x4f's words over A
     int duration;                       /* 0xb0, the burning time (the message's arg[1]), scaled by the alloc handler */
     unsigned char state;                /* 0xb4, the run handler's state, 0 at the start */
     char padb5[3];
-    int objs[16];                       /* 0xb8, the fire objects / sounds the run handler places (a guess from its
-                                           dummies loop), -1: none */
+    int helpers[16];                    /* 0xb8, the netIds of the characters the run handler sends to fetch water
+                                           (cm_SendChrGotoBuilding "Brand"), -1: none */
     int fire;                           /* 0xf8, the id of the fire event 0x4e whose message 0x4f started it (AIMSG.srcEvent) */
+    unsigned voiceAt;                   /* 0xfc, the tb_Calls tick of the last "Brand_Zerstoert" voice */
+    char pad100[4];
+    unsigned char news;                 /* 0x104, nonzero: the owner gets the message box (the message's extraFlag) */
 } HEBURN;
 
 /* 0x5644e0, the run handler of the fire event 0x4e (HEFIRE; alloc handler he_AllocFire): stage 0 plays the voice
@@ -18341,7 +18344,7 @@ void he_RunFire(AIJOB *ev)
         return;
     }
 }
-/* 0x564860, the allocation handler of the burning event 0x4f (HEBURN): objs[] = -1, the due clock and the second
+/* 0x564860, the allocation handler of the burning event 0x4f (HEBURN): helpers[] = -1, the due clock and the second
    clock are now, state 0; no building bld: the record is freed; else the burning time is scaled by the distance
    (d3_PointToWorld positions) to the nearest building of kind 3 (gm_NearestBuilding) times 0.001, at most 1.5
    (none: 1.0) */
@@ -18353,7 +18356,7 @@ void he_AllocBurn(AIJOB *ev)
     float dx, dy, dz;
     double f;
 
-    memset(x->objs, -1, sizeof x->objs);
+    memset(x->helpers, -1, sizeof x->helpers);
     ev->end = ai_Time;
     ev->clock60 = ai_Time;
     x->state = 0;
@@ -18378,29 +18381,221 @@ void he_AllocBurn(AIJOB *ev)
     ev->exSlot = -1;
     x->duration = (int)(x->duration * f);
 }
-/* 0x5649b0, the run handler of the fire ("Brand_l" / "Stichflamme_s" sounds, "Brand_Betroffen", "dummy_FAHNE", the script "specialEvents\hausbrand.esc", "brand_he_%i_%i"; ROUGH skeleton, 2655 bytes): the fire objects are placed at the dummies of the burning building (d3_FindObject, d3_Unk458a20, util_Random), the sounds attached and played (sb_GetSample, d3snd_Attach / d3snd_Play / d3snd_PlayAt), the script loaded and run (evt_Load, evt_RunScriptArgs), the news to the owner (0x53dee0) and the burning handled by the state until it goes out */
-
-void he_Unk5649b0(int ev)
+/* 0x5649b0, the run handler of the burning event 0x4f (HEBURN; alloc handler he_AllocBurn): a posted event (opts 2)
+   waits for its cm slot. Stage 0, every 4 minutes while state < 3 (the building gone: on to stage 1; its flag
+   0x5a bit 0: stage -1): on the building's scene object the fire grows by one step: state 0 plays "Stichflamme_s"
+   at it and, for the player's building, the voice "Brand_Betroffen" and (news) the message box 0x42d6; state 1
+   attaches the loop "Brand_l"; the step's dummy ("dummy_FAHNE", "dummy_RAUCH_0", "dummy_BRAND", else the first)
+   gives the place (+-32 in x / z, 20 down) where the script "specialEvents\hausbrand.esc" is run as
+   "brand_he_<id>_<state>"; at state 1 a posted event sends the healthy characters of job kind 0 / 4 sent to the
+   building (at most 16, helpers[]) to the nearest building of kind 3 to scoop water ("arbeit/schoepfen"). Stage 1,
+   every 4 minutes: the building loses the worked minutes since the second clock / 3 in state (the burning time
+   less that times the rain factor); the player hears "Brand_Zerstoert" (level 25 / 10 / 0 voices, at most every
+   0x20d ticks); below state 3 back to stage 0; the helpers at the door ("dummy_TUER", 80 away) go back into the
+   building, the others to the water; burnt down or gone: the event ends (cm_SendExSetHE). Stages -2 / -1: the
+   helpers are sent back into the building, the three scripts stopped, the building's sound freed, the record freed
+   @deep Reconstructed whole from the skeleton against 0x5649b0..0x5652ab (switch tables equal, 671 vs 677
+   instructions): stage 0 (sounds, message box 0x42d6, the dummies names[3][64] / p {-243,-90,190}, the
+   hausbrand.esc script, the helpers loop over ai_CharsT), stage 1 (worked minutes * 1/6 twice, the rain
+   factor r = rain * 0.002; r * 0.7 + 1, the Brand_Zerstoert voices with the unsigned tick compare, the
+   helpers to the door / the water), stages -2 / -1 (helpers back, scripts stopped, d3snd_Free). Left: one
+   code hunk at +0x7b3 (0x565163, 22 lines): the two cm_SendChrGotoBuilding calls after d3_VecEqual; the
+   original pushes the whole argument list per branch and pushes eax (the VecEqual result, 0) as the fourth
+   argument in the == 0 branch, joining at the call; ours selects the building id into eax and jumps into
+   one shared push sequence (VC6 cross-jumping). Tried: != 0 order with nested if, continue form, the
+   result kept in a variable passed as the argument (worse: regs everywhere), NULL in one call; the rest
+   are regs / slots / order (the case -1 name buffer at frame 0x18 in the original, ours 0xe0). */
+void he_RunBurn(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b;
-    char name[0x40];
+    HEBURN *x = (HEBURN *)ev;
+    AIBLD *b, *n;
+    AICHAR *c;
+    D3OBJECT *o;
+    EVTSCRIPT *sc;
+    struct SBSAMPLE *smp;
+    struct D3SOUND *snd;
+    int *h;
+    int i, k, dmg, left, scene;
+    float f, f6;
+    double r;
 
-    if (st < 0) {
+    if ((ev->opts & 2) != 0 && ev->exSlot != -1) {
+        if (cm_GetSlotState(ev->exSlot) == 0)
+            return;
+        ev->exSlot = -1;
+    }
+    switch (ev->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->bld);
+        if (b != 0 && (b->flags5a & 1) != 0) {
+            ev->stage = -1;
+            return;
+        }
+        if (b != 0 && x->state < 3) {
+            D3VECTOR4 p = { -243.0f, -90.0f, 190.0f };
+            char names[3][64] = { "dummy_FAHNE", "dummy_RAUCH_0", "dummy_BRAND" };
+            char text[0x400];
+
+            scene = d3_CurrentScene;
+            if (b->object != 0) {
+                d3if_SelectScene(0, 1);
+                if (x->state == 1) {
+                    smp = sb_GetSample(0, "Brand_l");
+                    if (smp != 0) {
+                        snd = d3snd_Attach((struct SNDHANDLE *)smp, (D3OBJECT *)b->object, 0x6b, 2200.0f);
+                        if (snd != 0)
+                            d3snd_Play(snd, 0, 0, 0);
+                    }
+                } else if (x->state == 0) {
+                    smp = sb_GetSample(0, "Stichflamme_s");
+                    if (smp != 0)
+                        d3snd_PlayAt((struct SNDHANDLE *)smp, (D3OBJECT *)b->object, 0x6b, 2200.0f);
+                    if (b->owner == ai_PlayerId) {
+                        snd_QueueVoice(-8, 0, "Brand_Betroffen", 0, 100);
+                        if (x->news != 0) {
+                            txt_Format(text, 0x42d6, b);
+                            he_MessageBoxQuickjump(ai_CharsT[ai_PlayerId].netId, -1, text, 0, 0x5ed, b->id, -1, 0,
+                                                   ch_EmptyName);
+                        }
+                    }
+                }
+                o = d3_FindObject((int)b->object, 0x100, 0, names[x->state]);
+                if (o != 0)
+                    d3_PointToWorld(o, &o->pos, (D3VECTOR *)&p);
+                else
+                    o = d3_FindObject((int)b->object, 0x100, 0, "dummy_FAHNE");
+                if (o != 0) {
+                    d3_PointToWorld(o, &o->pos, (D3VECTOR *)&p);
+                    p.x = p.x + (unsigned short)util_Random(0x40) - 32.0f;
+                    p.z = p.z + (unsigned short)util_Random(0x40) - 32.0f;
+                    p.y -= 20.0;
+                    sc = evt_Load("specialEvents\\hausbrand.esc");
+                    if (sc != 0) {
+                        sprintf(sc->name, "brand_he_%i_%i", ev->id, x->state);
+                        evt_RunScriptArgs(sc, 3, (int)p.x, (int)p.y, (int)p.z);
+                        sc->group = 0;
+                    }
+                }
+            } else if ((ev->opts & 2) != 0) {
+                ev->exSlot = cm_SendExSetHE(-1, ev);
+                return;
+            }
+            ev->end = ai_Time;
+            ev->clock60 = ai_Time;
+            gm_AddTime(&ev->end, 0, 4, 0);
+            d3if_SelectScene(scene, 1);
+        } else {
+            ev->stage++;
+        }
+        if (b == 0)
+            ev->end = ai_Time;
+        if ((ev->opts & 2) != 0 && x->state == 1) {
+            k = 0;
+            n = (AIBLD *)gm_NearestBuilding((unsigned char *)b, 3);
+            if (n != 0) {
+                h = x->helpers;
+                for (i = 0; i < 768; i++) {
+                    c = &ai_CharsT[i];
+                    if (c->health != 0 && c->model != 0 && c->model->bldId == b->id
+                        && (c->jobKind == 0 || c->jobKind == 4) && k < 16) {
+                        *h = c->netId;
+                        cm_SendCharClear(*h, 0, 0);
+                        cm_SendChrStop(*h);
+                        cm_SendChrGotoBuilding(*h, n->id, -1, 0, 1, "Brand");
+                        cm_SendChrAnim(*h, "arbeit/schoepfen", (unsigned short)util_Random(2) + 1);
+                        k++;
+                        h++;
+                    }
+                }
+            }
+        }
+        if (x->state < 3)
+            x->state++;
+        return;
+    case 1:
+        if ((ev->opts & 2) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->bld);
+        if (x->duration > 0 && b != 0) {
+            D3VECTOR4 p;
+
+            f = 1.0f;
+            f6 = gm_FixedWorkMinutesBetween(&ev->clock60, &ai_Time) * 0.16666667f;
+            dmg = (int)(f6 + f6);
+            if (d3t_Rain != 0) {
+                r = *d3t_Rain * 0.002;
+                f = (float)(r * 0.7 + 1.0);
+            }
+            x->duration = (int)(x->duration - dmg * f);
+            gm_ChangeBuildingState((unsigned char *)b, -dmg);
+            if (b->owner == ai_PlayerId && tb_Calls > x->voiceAt + 0x20d) {
+                left = b->level - dmg;
+                if (left <= 0) {
+                    snd_QueueVoice(-8, 0, "Brand_Zerstoert", 2, 100);
+                    x->voiceAt = tb_Calls;
+                } else if (left <= 10) {
+                    snd_QueueVoice(-8, 0, "Brand_Zerstoert", 1, 100);
+                    x->voiceAt = tb_Calls;
+                } else if (left <= 25) {
+                    snd_QueueVoice(-8, 0, "Brand_Zerstoert", 0, 100);
+                    x->voiceAt = tb_Calls;
+                }
+            }
+            ev->end = ai_Time;
+            ev->clock60 = ai_Time;
+            gm_AddTime(&ev->end, 0, 4, 0);
+            if (x->state < 3)
+                ev->stage = 0;
+            b = 0;
+            n = 0;
+            for (k = 0; k < 16; k++) {
+                if (x->helpers[k] == -1)
+                    continue;
+                if (b == 0) {
+                    b = (AIBLD *)gm_BuildQuery(1, 1, x->bld);
+                    n = (AIBLD *)gm_NearestBuilding((unsigned char *)b, 3);
+                }
+                c = (AICHAR *)gm_FindChar(x->helpers[k]);
+                if (c != 0 && c->scene != 0 && c->scene->group == -1 && CH_ACTIONS(c->scene) == 0) {
+                    o = d3_FindObject((int)b->object, 0x100, 0, "dummy_TUER");
+                    if (o != 0) {
+                        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&p);
+                        if (d3_VecEqual(&c->scene->obj->pos, (D3VECTOR *)&p, 80.0f) == 0)
+                            cm_SendChrGotoBuilding(x->helpers[k], b->id, -1, 0, 1, "Brand");
+                        else if (n != 0)
+                            cm_SendChrGotoBuilding(x->helpers[k], n->id, -1, 0, 1, "Brand");
+                    }
+                }
+            }
+        }
+        if (x->duration <= 0 || b == 0)
+            ev->exSlot = cm_SendExSetHE(-1, ev);
+        return;
+    case -2:
+    case -1: {
+        char name[64];
+
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->bld);
+        if ((ev->opts & 2) != 0 && b != 0) {
+            for (k = 0; k < 16; k++) {
+                if (x->helpers[k] != -1) {
+                    cm_SendChrStop(x->helpers[k]);
+                    cm_SendChrGotoBuilding(x->helpers[k], b->id, -1, 0, 0, "Brand");
+                }
+            }
+        }
+        for (k = 0; k < 3; k++) {
+            sprintf(name, "brand_he_%i_%i", ev->id, k);
+            sc = evt_FindByName(name);
+            if (sc != 0)
+                evt_Stop(sc);
+        }
+        if (b != 0 && b->object != 0 && ((D3OBJECT *)b->object)->sound != 0)
+            d3snd_Free(((D3OBJECT *)b->object)->sound);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
-        return;
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
     }
-    sprintf(name, "brand_he_%i_%i", *(int *)(ev + 0xac), st);
-    snd_QueueVoice(-7, 0, "Brand_l", 0, 0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
 }
 /* 0x5652b0, the allocation handler of the storm (WIRBELSTURM) event 0x50: the buildings of kind 6 (gm_BuildQuery (1, 6) / gm_BuildNext) that are no home / type 10 and have a scene object are collected (at most 0x100); stormBlds[1..15] = -1, stormBlds[0] is the target: the event's own building id, else a random pick of the list; the nearby ones within radius +0xf0 (d3_VecEqual on their scene positions) become stormBlds[1..15]; the two words +0x100 / +0x104 = 0; the due clock is now */
 
@@ -19689,7 +19884,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(73, 0, 0, 1290, -1);
     if (he_SetEventHandlers(78, (void *)he_AllocFire, (void *)he_RunFire) != 0)
         return 1;
-    if (he_SetEventHandlers(79, (void *)he_AllocBurn, (void *)he_Unk5649b0) != 0)
+    if (he_SetEventHandlers(79, (void *)he_AllocBurn, (void *)he_RunBurn) != 0)
         return 1;
     if (he_SetEventHandlers(80, (void *)he_AllocStorm, (void *)he_RunStormEvent) != 0)
         return 1;
