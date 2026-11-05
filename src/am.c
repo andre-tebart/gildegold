@@ -1522,30 +1522,30 @@ int ai_DecideLaw1(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491200, decision 2 */
+/* 0x491200, the callback of law record 2 (AIDEC.fn, office 0x1a the bishop no 1, a three-state law: 0 faith 0, 1 faith 1, 2 tolerance): the bishop proposes its own faith when the state religion is the other one and it is loyal (loyalty >= 0.4), tolerance when it is not (below 0.4), and its own faith again from tolerance when it is loyal (above 0.8); otherwise it leaves the law */
 
-int ai_Unk491200(AIPER *p, int a, int *out)
+int ai_DecideStateReligion(AIPER *p, int a, int *out)
 {
     AIDEC d;
 
     gv_GetTableRecord(2, &d);
-    if (p->unk00c == 0 && d.cur == 1) {
-        if (p->unk1d0 < 0.4f)
+    if (p->faith == 0 && d.cur == 1) {
+        if (p->loyalty < 0.4f)
             *out = 2;
         else
             *out = 0;
         return 1;
     }
-    if (p->unk00c == 1 && d.cur == 0) {
-        if (p->unk1d0 < 0.4f) {
+    if (p->faith == 1 && d.cur == 0) {
+        if (p->loyalty < 0.4f) {
             *out = 2;
             return 1;
         }
         *out = 1;
         return 1;
     }
-    if (d.cur == 2 && p->unk1d0 > 0.8f) {
-        *out = p->unk00c != 0;
+    if (d.cur == 2 && p->loyalty > 0.8f) {
+        *out = p->faith != 0;
         return 1;
     }
     return 0;

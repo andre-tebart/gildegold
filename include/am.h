@@ -29,7 +29,8 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     int netId;                         /* 0x004 */
     char pad008[0x2];
     unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
-    unsigned char unk00c;               /* 0x00c */
+    unsigned char faith;                /* 0x00c, 0 / 1, the character's faith class (ai.h AICHAR.b00c;
+                                           gm_ShiftLoyalty flips it, ai_DecideStateReligion reads it) */
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0xe];
     float unk01c;                       /* 0x01c */
@@ -52,7 +53,8 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     char pad198[0x30];
     unsigned int flags1c8;              /* 0x1c8 */
     unsigned int flags1cc;              /* 0x1cc */
-    float unk1d0;                       /* 0x1d0 */
+    float loyalty;                      /* 0x1d0, 0 .. 1, the character's loyalty (gm_ShiftLoyalty sends it as field
+                                           0x1d0, gm_HandOutMoney moves it; ai_DecideStateReligion reads it) */
     char pad1d4[0x14];
     unsigned int flags1e8;              /* 0x1e8 */
     char pad1ec[0x30];
@@ -108,7 +110,7 @@ typedef char ai_AssertAIACT[sizeof(AIACT) == 0x94 ? 1 : -1];
 int ai_RegisterGraveActions(int a);                                        /* 0x490c10 */
 int ai_DecideLawSeverity(AIPER *p, int a, int *out);                    /* 0x490e00, decision 0 */
 int ai_DecideLaw1(AIPER *p, int a, int *out);                    /* 0x490fc0, decision 1 */
-int ai_Unk491200(AIPER *p, int a, int *out);                    /* 0x491200, decision 2 */
+int ai_DecideStateReligion(AIPER *p, int a, int *out);                    /* 0x491200, decision 2 */
 int ai_Unk4912e0(AIPER *p, int a, int *out);                    /* 0x4912e0, decision 3 */
 int ai_Unk491430(AIPER *p, int a, int *out);                    /* 0x491430, decision 4 */
 int ai_Unk491560(AIPER *p, int a, int *out);                    /* 0x491560, decision 5 */
