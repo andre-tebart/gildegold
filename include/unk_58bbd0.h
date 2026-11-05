@@ -105,7 +105,8 @@ typedef struct G8INVCHAR {
 typedef struct G8INVOBJ {
     unsigned short id;                  /* +0x00, the object's type id (AIOBJ.id) */
     char pad02[0x1f];
-    int unk21;                          /* +0x21, set when the object counts (AIOBJ's pad20 area) */
+    int active;                         /* +0x21, nonzero when the object counts as held (reasoned guess: the
+                                           reader ai_InventoryHas tests it; no writer of the field is drafted) */
 } G8INVOBJ;
 #pragma pack(pop)
 

@@ -16308,7 +16308,7 @@ int ai_InventoryHas(void *ch, int id)
     G8INVOBJ *o;
 
     o = (G8INVOBJ *)gm_Query((void *)((G8INVCHAR *)ch)->inventory, 1, 0, id);
-    if (o != 0 && ai_FindUsableGood(o->id) != 0 && o->unk21 != 0)
+    if (o != 0 && ai_FindUsableGood(o->id) != 0 && o->active != 0)
         return 1;
     return 0;
 }
