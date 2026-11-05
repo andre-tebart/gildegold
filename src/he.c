@@ -1037,6 +1037,18 @@ typedef struct HESEARCH9 {              /* the search event 9's words over AIJOB
     int source;                         /* 0xb0, the id of the object searched (its list holds the kind 0x17 goods) */
     int store;                          /* 0xb4, the id of the object the found goods go to */
 } HESEARCH9;
+typedef struct HECONSTRUCTION {         /* the building construction event 0xd's words over AIJOB's union (he_ShowConstruction) */
+    char pad00[0xb8];
+    int bld;                            /* 0xb8, the id of the building under construction */
+    char padbc[8];
+    int stages;                         /* 0xc4, the last construction stage */
+    int stage;                          /* 0xc8, the stage reached, -1: not started */
+} HECONSTRUCTION;
+typedef struct HECHILDLIST {            /* the children of a scene object, collected by he_CollectChild */
+    D3OBJECT *root;                     /* 0x000, the object walked */
+    D3OBJECT *items[0x40];              /* 0x004 */
+    int count;                          /* 0x104 */
+} HECHILDLIST;
 typedef struct HETIPEVENT {             /* the tips event 0x84's words over AIJOB's union (its alloc handler 0x567b80,
                                            run handler 0x567c00) */
     char pad00[0xac];
@@ -21219,7 +21231,7 @@ void he_PlaceGebaeudeObject(struct D3OBJECT *o, HEBUILD *ev)
 }
 /* 0x56b750, scene callback: appends the object o to the list (0x40 entries, the count at +0x104); true while there is room */
 
-char he_Unk56b750(int o, int *list)
+char he_CollectChild(int o, int *list)
 {
     list[list[0x41] + 1] = o;
     list[0x41]++;
@@ -21228,82 +21240,87 @@ char he_Unk56b750(int o, int *list)
 
 char d3if_ShowTree(struct D3OBJECT *obj, char show);
 
-/* 0x56b780, shows the construction state of the building scene object "he_%i" (+4 the id) for the building event ev: with +0xc8 = -1 every child (listed by 0x438d40 with the callback 0x56b750) becomes the type 5 and
-   is switched off (0x447300), below the count +0xc4 each child is switched on / off by the numbers in its name ("..._n1_n2": one number = the stage from which it shows, two = the range), above it the
-   building (+0xb8, its object +0x61) is shown and the scene object is deleted (0x447190); the scene is restored at the end (ROUGH) */
+/* 0x56b780, shows the construction stage of the building event ev on its scene object "he_<id>" (in the default
+   scene, the current one restored at the end): not started (stage -1) every child (he_CollectChild) becomes a kind 5
+   object out of the quad tree and the tree is hidden; below the last stage each child is shown or hidden by the
+   numbers its name ends in ("..._n": from stage n on, "..._n1_n2": for the stages n2 .. n1); past the last stage
+   the building's own object shows and the construction object is deleted */
 void he_ShowConstruction(int ev)
 {
+    HECONSTRUCTION *c = (HECONSTRUCTION *)ev;
+    int i;
+    int scene;
+    char digits[0x10];
+    int nums[8];
+    HECHILDLIST list;
+    char part[0x80];
     char name[0x100];
-    char nm[0x100];
-    char dig[4];
-    int list[0x42];
-    int scene, obj, w, i, k, n, o;
-    int nums[2];
+    D3OBJECT *obj;
+    D3OBJECT *o;
+    AIBLD *bld;
     char *p;
+    int n;
 
-    scene = U_I((unsigned)&d3_CurrentScene);
+    scene = d3_CurrentScene;
     d3if_SelectScene(0, 1);
-    sprintf(name, "he_%i", *(int *)(ev + 4));
+    sprintf(name, "he_%i", ((AIJOB *)ev)->id);
     obj = d3_FindObject(0, 0x1c0, 0, name);
-    w = *(int *)(ev + 0xc8);
-    if (w == -1 && obj != 0) {
-        list[0x41] = 0;
-        list[0] = obj;
-        d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_Unk56b750, list);
-        for (i = 0; i < list[0x41]; i++) {
-            o = list[i + 1];
-            if (*(int *)(o + 0x220) != 5 || (*(unsigned char *)(o + 0x213) & 4)) {
-                *(int *)(o + 0x220) = 5;
-                o = list[i + 1];
-                if ((*(unsigned char *)(o + 0x213) & 4) && U_I((unsigned)&d3_QuadTree) != 0)
-                    d3q_RemoveObject((D3OBJECT *)o, (D3QNODE *)U_I((unsigned)&d3_QuadTree));
-                *(unsigned char *)(list[i + 1] + 0x213) &= ~4;
+    if (c->stage == -1 && obj != 0) {
+        list.count = 0;
+        list.root = obj;
+        d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (D3OBJECTCB)he_CollectChild, &list);
+        for (i = 0; i < list.count; i++) {
+            o = list.items[i];
+            if (o->kind != 5 || (o->flags & 4)) {
+                o->kind = 5;
+                if ((list.items[i]->flags & 4) && d3_QuadTree != 0)
+                    d3q_RemoveObject(list.items[i], (D3QNODE *)d3_QuadTree);
+                list.items[i]->flags &= ~4;
             }
         }
         d3if_ShowTree(obj, 0);
-    } else if (w < *(int *)(ev + 0xc4)) {
-        if (obj != 0) {
-            list[0x41] = 0;
-            list[0] = obj;
-            d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_Unk56b750, list);
-            for (i = 0; i < list[0x41]; i++) {
-                o = list[i + 1];
-                if (*(int *)(o + 0x220) != 5 || (*(unsigned char *)(o + 0x213) & 4)) {
-                    if ((*(unsigned char *)(o + 0x213) & 4) && U_I((unsigned)&d3_QuadTree) != 0)
-                        d3q_RemoveObject((D3OBJECT *)o, (D3QNODE *)U_I((unsigned)&d3_QuadTree));
-                    *(int *)(list[i + 1] + 0x220) = 5;
-                    *(unsigned char *)(list[i + 1] + 0x213) &= ~4;
-                }
-                *(int *)(list[i + 1] + 0x224) = 0;
-                strcpy(nm, (char *)list[i + 1]);
-                n = 0;
-                for (p = strchr(nm, '_'); p != 0 && n < 2; p = strchr(nm, '_')) {
-                    strncpy(dig, p + 1, 2);
-                    dig[2] = 0;
-                    if (isdigit(dig[0])) {
-                        nums[n] = atoi(dig);
-                        n++;
-                    }
-                    *p = 0;
-                }
-                if (n == 1)
-                    d3if_ShowTree(list[i + 1], w >= nums[0] ? 1 : 0);
-                else if (n == 2) {
-                    if (w <= nums[0] && w >= nums[1])
-                        d3if_ShowTree(list[i + 1], 1);
-                    else
-                        d3if_ShowTree(list[i + 1], 0);
-                }
+    } else if (c->stage < c->stages && obj != 0) {
+        list.count = 0;
+        list.root = obj;
+        d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (D3OBJECTCB)he_CollectChild, &list);
+        for (i = 0; i < list.count; i++) {
+            o = list.items[i];
+            if (o->kind != 5 || (o->flags & 4)) {
+                if ((o->flags & 4) && d3_QuadTree != 0)
+                    d3q_RemoveObject(o, (D3QNODE *)d3_QuadTree);
+                list.items[i]->kind = 5;
+                list.items[i]->flags &= ~4;
+            }
+            n = 0;
+            list.items[i]->mask = 0;
+            strcpy(part, list.items[i]->name);
+            for (p = strrchr(part, '_'); p != 0 && n < 2; p = strrchr(part, '_')) {
+                strncpy(digits, p + 1, 2);
+                digits[2] = 0;
+                if (isdigit(digits[0]))
+                    nums[n++] = atoi(digits);
+                *p = 0;
+            }
+            if (n == 1) {
+                if (c->stage >= nums[0])
+                    d3if_ShowTree(list.items[i], 1);
+                else
+                    d3if_ShowTree(list.items[i], 0);
+            } else if (n == 2) {
+                if (c->stage <= nums[0] && c->stage >= nums[1])
+                    d3if_ShowTree(list.items[i], 1);
+                else
+                    d3if_ShowTree(list.items[i], 0);
             }
         }
-    } else if (w > *(int *)(ev + 0xc4)) {
-        o = gm_FindBuildingById(*(int *)(ev + 0xb8));
-        if (o != 0 && *(int *)(o + 0x61) != 0)
-            d3if_ShowTree(*(int *)(o + 0x61), 1);
+    } else if (c->stage > c->stages) {
+        bld = (AIBLD *)gm_FindBuildingById(c->bld);
+        if (bld != 0 && bld->object != 0)
+            d3if_ShowTree((D3OBJECT *)bld->object, 1);
         if (obj != 0) {
-            if (U_I((unsigned)&d3_QuadTree) != 0)
-                d3q_RemoveObject((D3OBJECT *)obj, (D3QNODE *)U_I((unsigned)&d3_QuadTree));
-            d3if_Delete((struct D3OBJECT *)obj);
+            if (d3_QuadTree != 0)
+                d3q_RemoveObject(obj, (D3QNODE *)d3_QuadTree);
+            d3if_Delete(obj);
         }
     }
     d3if_SelectScene(scene, 1);
@@ -21327,7 +21344,7 @@ int he_Unk56bac0(int ev)
     obj = d3_FindObject(0, 0x1c0, 0, name);
     list[0] = obj;
     list[0x41] = 0;
-    d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_Unk56b750, list);
+    d3_ForEachObject(d3_DefaultScene, obj, 0x2c0, (unsigned)&he_CollectChild, list);
     if (list[0x41] > 1) {
         for (idx = 1; idx < list[0x41]; idx++) {
             o = list[idx + 1];
