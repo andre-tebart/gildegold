@@ -344,7 +344,7 @@ void ai_MasterUpdate(AICHAR *c)
                     }
                     if (gm_BuildingClass(b->type) != 6 && !found) {
                         v = b->type;
-                        cm_SendMessage3d(b, 1, ai_BTypesT[v].unk230, ai_BTypesT[v].jobBytes);
+                        cm_SendMessage3d(b, 1, ai_BTypesT[v].title2, ai_BTypesT[v].jobBytes);
                         sprintf(buf, "%li:%02li - %s stellt Meister f\xfc" "r '%s' ein", ai_Time.hour,
                                 ai_Time.min, c->name, b->name);
                     }

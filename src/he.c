@@ -18760,40 +18760,37 @@ void he_Unk565620(int ev)
         return;
     }
 }
-/* 0x565850, the run handler that gives a building (+0xb4: the object 0x502020) a new worker (ROUGH): kind 2 buildings get a random hire 0x4c4650 (2, -1, -1, random(5, ..) + 0x16), the others the work 0x4c55d0 with the last non-empty slot of the record (+0x223 .. +0x228) and +0x230; the result is stored at +0xac */
-
-void he_Unk565850(int ev)
+/* 0x565850, the allocation handler of the new-worker event 0x6e (HENEWWORKER): no building bld: the record is freed;
+   a building of type kind 2 creates a character (cm_SendCreateCharacter kind 2, 0x16 + random(5), the title of
+   group random(12) + 1 rank 1), the others ask for a worker of the type's last job (the last nonzero of jobs[],
+   cm_SendMessage3d with the type's rank title2); slot is the message's send slot; the due clock is now */
+void he_AllocNewWorker(AIJOB *ev)
 {
-    unsigned char *p;
-    char *rec;
-    int r, i, n, v, u;
-    char c;
+    HENEWWORKER *w = (HENEWWORKER *)ev;
+    AIBLD *b;
+    AIBTYPE *t;
+    int i, title;
+    int job = 0;
 
-    c = 0;
-    p = (unsigned char *)gm_FindBuildingById(*(int *)(ev + 0xb4));
-    if (p == 0) {
+    b = (AIBLD *)gm_FindBuildingById(w->bld);
+    if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    rec = (char *)(U_I((unsigned)&ai_BTypes) + *p * 0x24d);
-    if (*rec == 2) {
-        u = (unsigned short)((int (*)(int, int))util_Random)(0xc, 1);
-        v = gm_TitleNumber(u + 1);
-        n = ((int (*)(int, int, int, int, int))util_Random)(5, -1, v, 0, 2);
-        r = ((int (*)(int, int, int, int))cm_SendCreateCharacter)(2, -1, -1, n + 0x16);
-    } else {
-        i = 5;
-        do {
-            if (rec[i + 0x223] != 0) {
-                c = rec[i + 0x223];
+    t = &ai_BTypesT[b->type];
+    if (t->kind != 2) {
+        for (i = 5; i >= 0; i--) {
+            if (t->jobs[i] != 0) {
+                job = t->jobs[i];
                 break;
             }
-            i--;
-        } while (-1 < i);
-        r = cm_SendMessage3d(p, 1, rec[0x230], c);
+        }
+        w->slot = cm_SendMessage3d((char *)b, 1, t->title2, job);
+    } else {
+        title = gm_TitleNumber(util_RandomU(12) + 1, 1);
+        w->slot = cm_SendCreateCharacter(2, -1, -1, util_Random(5) + 0x16, -1, title, 0, 2);
     }
-    *(int *)(ev + 0xac) = r;
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    ev->end = ai_Time;
 }
 /* 0x565940, the run handler of the new-worker event 0x6e: when the hire message's slot (0xac) is done, its value (the new worker) and the building (0xb4) are taken; the building's master (0x25, a character index) gets the ownership message 0x38 and the worker the reward (0x4c47e0 with gm_PlayerFactor (0xbb8, ai_OwnPlayer)); with a share (0xbc) the master (kinds 6 / 7 get the news 0x17e6) also gets it and the worker is sent to its place ("InitBetrieb"); the record is always freed, stages -1 / -2 free it */
 
@@ -19891,7 +19888,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
         return 1;
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
-    if (he_SetEventHandlers(110, (void *)he_Unk565850, (void *)he_RunNewWorker) != 0)
+    if (he_SetEventHandlers(110, (void *)he_AllocNewWorker, (void *)he_RunNewWorker) != 0)
         return 1;
     if (he_SetEventHandlers(113, (void *)he_Unk565b00, (void *)he_Unk565b60) != 0)
         return 1;

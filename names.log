@@ -2540,3 +2540,4 @@
 2026-11-05T22:30:11 0x005644e0 func he_Unk5644e0 -> he_RunFire by:main why:registered as the run handler of event 78 (0x4e), the fire ('Brand_Beginn' / 'Brand_Ende', explosion messages 0x4f to the buildings)
 2026-11-05T22:33:00 0x00564860 func he_Unk564860 -> he_AllocBurn by:main why:the alloc handler of event 0x4f (he_SetEventHandlers(79, ..)), the burning event the fire's message 0x4f starts (HEBURN)
 2026-11-05T22:38:56 0x005649b0 func he_Unk5649b0 -> he_RunBurn by:main why:the run handler of event 0x4f (he_SetEventHandlers 79 with he_AllocBurn): the burning building, brand_he_ scripts, Brand_Zerstoert
+2026-11-05T22:42:39 0x00565850 func he_Unk565850 -> he_AllocNewWorker by:main why:the alloc handler of event 0x6e (he_SetEventHandlers 110 with he_RunNewWorker): fills HENEWWORKER.slot with the hire message's send slot
