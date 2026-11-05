@@ -175,6 +175,15 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             float incomeRate;           /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
             unsigned char incomeCounter; /* 0xc8, 0 at the start */
         };
+        struct {                        /* 0xac, of the harvest event (its alloc handler 0x55d490, run handler 0x55d5c0) */
+            int harvestBld;             /* 0xac, the id of the building whose vegetation map (AIBLD.plants) holds the plant */
+            int harvestWorker;          /* 0xb0, the worker's netId (gm_FindChar), the spot "sp_%i" of its cutscene */
+            int harvestScript;          /* 0xb4, the id of the running cutscene script, -1: none */
+            int harvestPlant;           /* 0xb8, the plant's id (veg_FindPlantId; unkb8) */
+            char padharvbc[4];
+            int harvestSlot;            /* 0xc0, the cm send slot of the plant message (cm_SetPlant (.., 1) of the alloc
+                                           handler); the run handler waits on it (cm_GetSlotState), -1: dropped */
+        };
         struct {                        /* 0xac, of the feast event (its run handler 0x5437c0), read when its
                                            building has no feast table object (AIOBJ.festGuests) */
             int festGuests[4];          /* 0xac, the guests' character ids */

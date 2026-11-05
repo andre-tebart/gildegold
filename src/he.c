@@ -635,6 +635,7 @@ int gm_CompareTime();
 #include "d3_tools.h"
 #include "d3_snd.h"
 #include "sblib.h"
+#include "vfs.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -14836,7 +14837,7 @@ void he_Unk55ce60(int ev)
 }
 
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);
-void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f);
+int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned char fall, int fallId);
 void cm_SendCharClear(int a, int b, int c);
 void cm_SendFieldValues(void);
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v);
@@ -14881,7 +14882,7 @@ void he_Unk55d390(int ev)
 }
 /* 0x55d490, the allocation handler of the harvest event (ROUGH): the due clock is now (+1), state 0; the building +0xac (0x501190) and the field object +0xb8 (0x4bc670) and the worker +0xb0 (0x505df0; a free worker without job / not of the job 0x28: the group 0x524260 (building, 0xfd contact via 0x4ffe90, ..)) are set up, the job handle +0xc0 = 0x4c5050 (building, 1), +0xb4 = -1 and the word +0xbc = the minute word; a missing worker frees the record */
 
-void he_Unk55d490(int ev)
+void he_AllocHarvest(int ev)
 {
     int b, p, o;
 
@@ -14905,45 +14906,142 @@ void he_Unk55d490(int ev)
     *(int *)(ev + 0xb4) = -1;
     *(unsigned short *)(ev + 0xbc) = *(unsigned short *)(ev + 0xbc);
 }
-/* 0x55d5c0, the run handler of the harvest event ("Ernten_start_%s" / "Ernten_end_%s" cutscene scripts "x:\engine\gfx\scripts\" "%slocations/%s/%s_%s.esc", "sp_%i" spots; ROUGH skeleton, 1440 bytes): the field object (0x4bc670 / 0x4bc5a0), the worker handle (0x4c3ae0), the scene (0x511e60) and the script (0x42f8f0 path, evt_LoadScript, evt_RunScriptArgs) are started and stopped (evt_FindById, evt_Stop) around the work; the end orders (0x4c4880), sends a message record (0x4c4b70), releases the group (0x524260) and frees the record */
+/* 0x55d5c0, the run handler of the harvest event, by its stage (the jump table 0x55dbc0 after the code): the building
+   harvestBld, its plant harvestPlant and the worker harvestWorker; a missing plant or one another event holds (fallId)
+   lets the worker leave the building's group (0x524260) and frees the record. Stage 0 waits for the plant message slot,
+   then in the building's scene plays the cutscene "Ernten_start_<tree>" ("%slocations/<type>/<script>_<type>.esc" at
+   the spot "sp_<worker>", the worker's scene character runs it), else drops the slot; due in a second. Stage 1: due in
+   the plant's state x the goods' work time / 4 minutes. Stage 2 stops the script and plays "Ernten_end_<tree>"; due in
+   ten minutes. Stage 3 clears the plant (cm_SetPlant), sells the yield 1 << (state - 1) of the goods into the store
+   object 0x2a (0x4c4880), posts the next harvest order (message 0x28, ai_SendJobOrders' kind) for the first plant of
+   the same tree at the same or a later state within the tree's reach, lets the worker go and frees the record.
+   Stages -2 / -1 put the plant back under the event's id and free the record. The case -2 / -1 body and the shared
+   tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8. */
 
-void he_Unk55d5c0(int ev)
+void he_RunHarvest(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, p;
-    char path[0x100];
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    G15PLANT *pl, *plants, *ripe;
+    G15TREE *t;
+    AIBTYPE *bt;
+    EVTSCRIPT *sc;
+    AIOBJ *store;
+    GMGOOD *g;
+    struct CHARACTER *ch;
+    struct VFSDIR *dir;
+    AIMSG m;
+    int i;
+    char spot[0x18];
+    char path[0x88];
+    char name[0x68];
 
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0 || st < 0) {
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->harvestBld);
+    if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0) {
-        sv_MoveToGroup(0, 0, 0, ev);
+    plants = (G15PLANT *)b->plants;
+    pl = veg_FindPlantId(plants, e->harvestPlant);
+    c = (AICHAR *)gm_FindChar(e->harvestWorker);
+    if (pl == 0 || c == 0 || (pl->fallId != -1 && pl->fallId != e->id)) {
+        if (c != 0)
+            sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
         he_FreeEvent((int *)ev);
         return;
     }
-    init_BuildingSceneUniverse(b);
-    sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, "", "Ernten_start_%s", "");
-    ((void (*)(int, int))cm_SetPlant)(*(int *)(ev + 0xac), 0);
-    sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    he_FreeEvent((int *)ev);
+    ch = c->scene;
+    t = veg_FindType(pl->type);
+    switch (e->stage) {
+    case 0:
+        if (cm_GetSlotState(e->harvestSlot) == 0)
+            return;
+        if (d3_CurrentScene == init_BuildingSceneUniverse((unsigned char *)b)) {
+            bt = &ai_BTypesT[b->type];
+            sprintf(name, "Ernten_start_%s", t->name);
+            sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, bt->name, name, bt->name);
+            if (vfs_FindFile(path, vfs_Root, &dir) != 0 && (sc = evt_LoadScript(path)) != 0) {
+                sprintf(spot, "sp_%i", e->harvestWorker);
+                evt_RunScriptArgs(sc, 3, spot, pl->obj, pl->state / t->states);
+                sc->character = ch;
+                ch->scriptId = sc->id;
+                e->harvestScript = sc->id;
+            }
+        }
+        else
+            e->harvestSlot = -1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->stage++;
+        return;
+    case 1:
+        e->harvestSlot = -1;
+        g = GM_GOOD(pl->type);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, (int)(pl->state * g->workTime * 0.25), 0);
+        e->stage++;
+        return;
+    case 2:
+        if (e->harvestScript != -1)
+            evt_Stop(evt_FindById(e->harvestScript));
+        if (d3_CurrentScene == init_BuildingSceneUniverse((unsigned char *)b)) {
+            bt = &ai_BTypesT[b->type];
+            sprintf(name, "Ernten_end_%s", t->name);
+            sprintf(path, "%slocations/%s/%s_%s.esc", evt_Path, bt->name, name, bt->name);
+            if (vfs_FindFile(path, vfs_Root, &dir) != 0 && (sc = evt_LoadScript(path)) != 0) {
+                sprintf(spot, "sp_%i", e->harvestWorker);
+                evt_RunScriptArgs(sc, 3, spot, pl->obj, pl->state / t->states);
+                sc->character = ch;
+                ch->scriptId = sc->id;
+                e->harvestScript = sc->id;
+            }
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
+        e->stage++;
+        return;
+    case 3:
+        cm_SetPlant(e->harvestBld, pl->x, pl->z, 0, 0, -1);
+        store = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x2a, 6);
+        if (store != 0)
+            cm_SendExSellObject(store->objId, -1, pl->type, 1 << (pl->state - 1), ai_OwnPlayer, 0);
+        ripe = 0;
+        for (i = 0; i < 0x40; i++) {
+            if (plants[i].state != -1 && plants[i].id != e->harvestPlant && plants[i].state >= pl->state
+                && pl->type == plants[i].type
+                && pl->x < t->size + plants[i].x + 2 && pl->x > plants[i].x - t->size - 2
+                && pl->z < t->size + plants[i].z + 2 && pl->z > plants[i].z - t->size - 2) {
+                ripe = &plants[i];
+                break;
+            }
+        }
+        if (ripe != 0) {
+            i = ripe->id;
+            memset(&m, 0, sizeof(m));
+            m.time = ai_Time;
+            m.type = 0x28;
+            m.unk14 = 0;
+            m.arg[3] = i;
+            m.to = ai_CharInts[e->chr][0];
+            m.nIds = 1;
+            m.flags = 1;
+            m.fromId = b->id;
+            m.arg[0] = b->id;
+            m.arg[1] = e->harvestWorker;
+            cm_SendLongMessage((char *)&m);
+        }
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
+        cm_SetPlant(e->harvestBld, pl->x, pl->z, pl->type, 0, e->id);
+        he_FreeEvent((int *)ev);
+        return;
+    }
 }
-/* 0x55db60, a run handler: ends the job of the building +0xac (0x4c5050 (.., 0)) and frees the record; a missing figure releases the group (0x524260) first */
-
-void he_Unk55db60(int ev)
-{
-    int p;
-
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p != 0)
-        ((void (*)(int, int))cm_SetPlant)(*(int *)(ev + 0xac), 0);
-    else
-        sv_MoveToGroup(0, 0, 0, ev);
-    he_FreeEvent((int *)ev);
-}
-/* 0x55dbe0, the run handler "Entlassen" (the dismissal of a worker, jump table 0x55dbc0; ROUGH): states -2 / -1 free; the figure +0xac (0x505df0), its job record +0x16c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0 mark it, 0x50c520 the wage check against -0x1e), the relation 0x4c4b00, the job end 0x4c5970 / 0x4c5b90, the contact 0x4fdcb0 and the walk away (0x4c52e0 (.., "Entlassen" 0x627860)); the record is freed, state -1 on a failed check */
+/* 0x55dbe0, the run handler "Entlassen" (the dismissal of a worker; ROUGH): states -2 / -1 free; the figure +0xac (0x505df0), its job record +0x16c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0 mark it, 0x50c520 the wage check against -0x1e), the relation 0x4c4b00, the job end 0x4c5970 / 0x4c5b90, the contact 0x4fdcb0 and the walk away (0x4c52e0 (.., "Entlassen" 0x627860)); the record is freed, state -1 on a failed check */
 
 void he_Unk55dbe0(int ev)
 {
@@ -16877,7 +16975,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(39, (void *)he_AllocEvent27, (void *)he_Unk55d390) != 0)
         return 1;
-    if (he_SetEventHandlers(40, (void *)he_Unk55d490, (void *)he_Unk55d5c0) != 0)
+    if (he_SetEventHandlers(40, (void *)he_AllocHarvest, (void *)he_RunHarvest) != 0)
         return 1;
     sv_RegisterActivity(40, 0, 1, 1279, 188);
     if (he_SetEventHandlers(49, (void *)he_Unk563980, (void *)he_Unk55dbe0) != 0)

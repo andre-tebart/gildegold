@@ -1522,20 +1522,21 @@ void cm_SendMoveObject(int a, int b, int c)
     G17_I(m, 8) = c;
     cm_QueueSend(&m);
 }
-/* 0x4c5050, message 0x2c */
+/* 0x4c5050, message 0x2c: sets the plant of the type at the cell (x, z) of the building's vegetation map (fall: its fall model,
+   under the id fallId; a later message without fall and that id puts it back); returns the send slot */
 
-void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f)
+int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned char fall, int fallId)
 {
     G17MSG m;
 
     m.type = 0x2c;
-    G17_I(m, 4) = a;
-    m.data[8] = b;
-    m.data[9] = c;
-    G17_S(m, 0xa) = d;
-    m.data[0xc] = e;
-    G17_I(m, 0xd) = f;
-    cm_QueueSend(&m);
+    G17_I(m, 4) = bldId;
+    m.data[8] = x;
+    m.data[9] = z;
+    G17_S(m, 0xa) = type;
+    m.data[0xc] = fall;
+    G17_I(m, 0xd) = fallId;
+    return cm_QueueSend(&m);
 }
 /* 0x4c50b0, message 0x2d: creates an object of kind 0x1b5 in the building owner, its +0x1c set to value;
    returns the send slot */

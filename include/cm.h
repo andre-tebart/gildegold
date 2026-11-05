@@ -228,7 +228,7 @@ int cm_RequestSendCutInfo(int id, int b);                                       
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 int cm_SendLeaveParty(int a, int b);                                                  /* 0x4c4fd0, its send slot (cm_GetSlotState) */
 void cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
-void cm_SetPlant(int a, unsigned char b, unsigned char c, short d, unsigned char e, int f); /* 0x4c5050 */
+int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned char fall, int fallId); /* 0x4c5050, the send slot */
 int cm_SendObject1b5(int owner, G17B7 value);                                        /* 0x4c50b0 */
 void cm_SendChrWalkTo(int a, int b, int c, int d);                                   /* 0x4c5100 */
 void cm_RequestChrMove(int a, int b, int c, const char *s);                           /* 0x4c5150 */
