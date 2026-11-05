@@ -1609,22 +1609,22 @@ exe	0x00496030	ai_DecideDummyHealth	am	byte	readable
 exe	0x00496050	ai_DecideDummyJob	am	byte	readable		
 exe	0x00496070	ai_ExecuteDummyJob	am	byte	readable		
 exe	0x00496080	ai_DecideDummyPleasure	am	byte	readable		
-exe	0x004960a0	ai_ExecuteDummyPleasure	am	byte	draft		
+exe	0x004960a0	ai_ExecuteDummyPleasure	am	byte	readable		
 exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep	
-exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	draft		
+exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	readable		
 exe	0x00496610	ai_DecideTrainJobSkill	am	draft	readable	deep	
-exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	draft		
+exe	0x00496ab0	ai_ExecuteTrainJobSkill	am	byte	readable		
 exe	0x00496b10	ai_EvalLeastLikedOfEvent	am	draft	draft	deep	
 exe	0x00496e40	ai_DecideBribe	am	byte	readable		
 exe	0x004972d0	ai_ExecuteBribe	am	byte	readable		
-exe	0x004973f0	ai_EvalApplyForOffice	am	byte	draft		
+exe	0x004973f0	ai_EvalApplyForOffice	am	byte	readable		
 exe	0x00497490	ai_DecideApplyForOffice	am	shape	readable		
 exe	0x00497630	ai_ExecuteApplyForOffice	am	byte	readable		
 exe	0x00497660	ai_DecideProduceGood	am	draft	draft	deep	
 exe	0x004979d0	ai_ExecuteProduceGood	am	draft	readable	deep	
-exe	0x00497af0	ai_DecideBuyRoom	am	byte	draft		
+exe	0x00497af0	ai_DecideBuyRoom	am	byte	readable		
 exe	0x00497c80	ai_ExecuteBuyRoom	am	byte	readable		
-exe	0x00497cf0	ai_DecideRepairBuilding	am	byte	draft		
+exe	0x00497cf0	ai_DecideRepairBuilding	am	byte	readable		
 exe	0x00497ee0	ai_ExecuteRepairBuilding	am	byte	readable		
 exe	0x00497fa0	ai_DecideBuyBuilding	am	draft	draft	deep	
 exe	0x00498470	ai_ExecuteBuyBuilding	am	shape	readable	deep	
@@ -1632,16 +1632,16 @@ exe	0x004984d0	ai_DecideBuildResidence	am	draft	readable	deep
 exe	0x00498a80	ai_ExecuteBuildResidence	am	shape	readable		
 exe	0x00498b80	ai_DecideUpgradeResidence	am	byte	readable		
 exe	0x00498c70	ai_DecideBuildBusiness	am	byte	draft		
-exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	draft		
+exe	0x00499290	ai_ExecuteBuildBusiness	am	byte	readable		
 exe	0x00499400	ai_DecideUpgradeBusiness	am	draft	readable	deep	
 exe	0x00499520	ai_DecideVisitMedicus	am	byte	readable		
 exe	0x00499580	ai_ExecuteVisitMedicus	am	byte	readable		
 exe	0x004995d0	ai_EvalSabotage	am	byte	readable		
 exe	0x00499660	ai_DecideSabotage	am	byte	draft		
-exe	0x00499a90	ai_ExecuteSabotage	am	byte	draft		
+exe	0x00499a90	ai_ExecuteSabotage	am	byte	readable		
 exe	0x00499b80	ai_EvalBeatUp	am	byte	readable		
 exe	0x00499c10	ai_DecideBeatUp	am	shape	readable		
-exe	0x00499f20	ai_ExecuteBeatUp	am	byte	draft		
+exe	0x00499f20	ai_ExecuteBeatUp	am	byte	readable		
 exe	0x0049a020	ai_DecideCitizenship	am	byte	readable		
 exe	0x0049a0a0	ai_ExecuteCitizenship	am	draft	readable	deep	
 exe	0x0049a290	ai_DecideSaveAps	am	byte	readable		
