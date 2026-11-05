@@ -9216,70 +9216,108 @@ void gm_RankPlayers();
 int gm_ConvertMoney(int a, unsigned char k);
 void udp_Send(char *buf, int len);
 
-/* 0x550ee0, the run handler of the ranking event (a Ghidra miss; ROUGH, the packet field offsets are read from the disassembly but not checked): state 1 re-posts the event (0x18) and resets the clock word to 7; state 0 asks the ranking (0x506180: up to 8 records of 0x24 bytes, the id first), sends a head packet (type words 1 / 3 / 0xcf: the five text lines 0x16b7 .. 0x16bb of 0x18 bytes, the own name of the player 0x6f1bc5 (+0x20 of the 0x7e3f40 record), the literals 0x626fa0 / 0x626fb0, the count) and one packet per ranked player (words 1 / 2 / 0xb9: id, the 0x5085b0 value, the name 0x20 bytes at +0x30, the texts 0x130 / 0x114 / 0x253 + the job bytes, a flag for the kind 6 / 7 characters) by 0x401e70, then posts the event 1 later and goes to state 1 once the minute word reaches 0x15 */
-void he_Unk550ee0(int ev)
-{
-    int cnt = 8;
-    unsigned char recs[0x120];
-    unsigned char head[0x100];
-    unsigned char pk[0x100];
-    char tmp[0x40];
-    int i, st = *(int *)(ev + 0x70), id, ch, v;
-    unsigned char *r;
-    char *p;
+#pragma pack(push, 1)
+typedef struct HERANKHEAD {             /* 0xcf bytes, the head packet of the ranking he_RunRanking sends (udp_Send) */
+    unsigned short one;                 /* 0x00, 1 */
+    unsigned short kind;                /* 0x02, 3: the head */
+    unsigned short size;                /* 0x04, 0xcf, the bytes sent */
+    char titles[5][0x18];               /* 0x06, the five column titles (texts 0x16b7 .. 0x16bb) */
+    char player[0x20];                  /* 0x7e, the own player's name */
+    char worthTitle[0x18];              /* 0x9e, "Vermögen" */
+    char pointsTitle[0x18];             /* 0xb6, "Gewinnpunkte" */
+    unsigned char count;                /* 0xce, the players that follow */
+} HERANKHEAD;
 
-    if (st == 1) {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(unsigned short *)(ev + 0x56) = 7;
-        *(int *)(ev + 0x58) = 0;
-        *(int *)(ev + 0x70) = 0;
+typedef struct HERANKLINE {             /* 0xb9 bytes, one ranked player's packet (after HERANKHEAD) */
+    unsigned short one;                 /* 0x00, 1 */
+    unsigned short kind;                /* 0x02, 2: a line */
+    unsigned short size;                /* 0x04, 0xb9, the bytes sent */
+    unsigned int netId;                 /* 0x06, the character's netId */
+    int worth;                          /* 0x0a, GMRANK.worth in the own player's money (gm_ConvertMoney) */
+    int points;                         /* 0x0e, GMRANK.points */
+    unsigned char count;                /* 0x12, the players ranked */
+    unsigned char player;               /* 0x13, 1 for a player's character (kind 6 / 7), else 2 */
+    unsigned char skills[5];            /* 0x14, AICHAR.skills */
+    char name[0x18];                    /* 0x19, the name */
+    char job[0x20];                     /* 0x31, the profession (text 0x130, + 0x5f for a woman, + jobId) */
+    char rank[0x20];                    /* 0x51, the rank (text 0x114, + 0xa for a woman, + b00d) */
+    char office[0x24];                  /* 0x71, the office (text 0x253, + 0x28 for a woman, + officeKind) */
+    char office2[0x24];                 /* 0x95, the second office (the same texts, + secondOffice) */
+} HERANKLINE;
+#pragma pack(pop)
+
+/* 0x550ee0, the run handler of the ranking event: in the stage 0, every hour of the day, it ranks the players
+   (gm_RankPlayers) and sends the ranking over the network (udp_Send): a head packet with the column titles and the own
+   player's name, then a line per ranked player; at 21 o'clock it goes to stage 1, which waits a day (0x18 hours) and
+   starts again at 7:00 */
+void he_RunRanking(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    int cnt = 8;
+    GMRANK recs[8];
+    HERANKHEAD head;
+    HERANKLINE line;
+    char tmp[0x100];
+    AICHAR *c;
+    int i;
+
+    switch (e->stage) {
+    case 1:
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        e->end.min = 0;
+        e->stage = 0;
         return;
+    case 0:
+        gm_RankPlayers(&cnt, recs);
+        head.one = 1;
+        head.kind = 3;
+        head.size = 0xcf;
+        for (i = 0; i < 5; i++) {
+            txt_Format(tmp, "%s", 0x16b7 + i);
+            strncpy(head.titles[i], tmp, 0x18);
+            head.titles[i][0x17] = 0;
+        }
+        strcpy(head.player, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20]);
+        strcpy(head.worthTitle, "Verm\xf6gen");
+        strcpy(head.pointsTitle, "Gewinnpunkte");
+        head.count = (unsigned char)cnt;
+        udp_Send((char *)&head, head.size);
+        for (i = 0; i < cnt; i++) {
+            line.one = 1;
+            line.kind = 2;
+            line.size = 0xb9;
+            c = &ai_CharsT[recs[i].id];
+            line.netId = c->netId;
+            line.worth = gm_ConvertMoney(recs[i].worth, ai_OwnPlayer);
+            line.points = recs[i].points;
+            line.count = (unsigned char)cnt;
+            if (c->kind == 6 || c->kind == 7)
+                line.player = 1;
+            else
+                line.player = 2;
+            memcpy(line.skills, c->skills, 5);
+            strncpy(line.name, c->name, 0x18);
+            line.name[0x17] = 0;
+            txt_Format(tmp, "%s", (c->sex != 0 ? 0x18f : 0x130) + c->jobId);
+            strncpy(line.job, tmp, 0x20);
+            line.job[0x1f] = 0;
+            txt_Format(tmp, "%s", (c->sex != 0 ? 0x11e : 0x114) + c->b00d);
+            strncpy(line.rank, tmp, 0x20);
+            line.job[0x1f] = 0;         /* sic: the original ends job again, not rank */
+            txt_Format(tmp, "%s", (c->sex != 0 ? 0x27b : 0x253) + c->officeKind);
+            strncpy(line.office, tmp, 0x24);
+            line.office[0x23] = 0;
+            txt_Format(tmp, "%s", (c->sex != 0 ? 0x27b : 0x253) + c->secondOffice);
+            strncpy(line.office2, tmp, 0x24);
+            line.office2[0x23] = 0;
+            udp_Send((char *)&line, line.size);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
+        if (e->end.hour >= 0x15)
+            e->stage++;
     }
-    if (st != 0)
-        return;
-    gm_RankPlayers(&cnt, recs);
-    *(unsigned short *)(head + 0) = 1;
-    *(unsigned short *)(head + 2) = 3;
-    *(unsigned short *)(head + 4) = 0xcf;
-    for (i = 0; i < 5; i++) {
-        txt_Format(tmp, "%s", 0x16b7 + i);
-        strncpy((char *)head + 6 + i * 0x18, tmp, 0x18);
-        head[0x1d + i * 0x18] = 0;
-    }
-    strcpy((char *)head + 0x7e, (char *)((unsigned)&ai_PlayerSlots + 0x20) + (unsigned)*(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4);
-    memcpy(head + 0x9e, "Verm\366gen", 9);
-    memcpy(head + 0xb6, "Gewinnpunkte", 0x11);
-    head[0xce] = (unsigned char)cnt;
-    udp_Send(head, *(unsigned short *)(head + 4));
-    for (i = 0; i < cnt; i++) {
-        r = recs + i * 0x24;
-        id = *(unsigned short *)r;
-        ch = (unsigned)&ai_Chars + id * 0x21c;
-        *(unsigned short *)(pk + 0) = 1;
-        *(unsigned short *)(pk + 2) = 2;
-        *(unsigned short *)(pk + 4) = 0xb9;
-        *(int *)(pk + 0xa) = *(int *)(ch + 4);
-        v = gm_ConvertMoney(*(int *)(r + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer);
-        *(int *)(pk + 0x12) = v;
-        *(int *)(pk + 0xe) = *(int *)(r + 0x20);
-        pk[0x13] = (*(unsigned char *)(ch + 2) == 6 || *(unsigned char *)(ch + 2) == 7) ? 1 : 2;
-        *(int *)(pk + 0x1c) = *(int *)(ch + 0x80);
-        strncpy((char *)pk + 0x21, (char *)(ch + 0x30), 0x18);
-        p = tmp;
-        txt_Format(p, "%s", 0x130 + (*(char *)(ch + 9) != 0 ? 0x5f : 0) + *(unsigned char *)(ch + 0x164));
-        strncpy((char *)pk + 0x39, p, 0x20);
-        txt_Format(p, "%s", 0x114 + (*(char *)(ch + 9) != 0 ? 0xa : 0) + *(unsigned char *)(ch + 0xd));
-        strncpy((char *)pk + 0x59, p, 0x20);
-        txt_Format(p, "%s", 0x253 + (*(char *)(ch + 9) != 0 ? 0x28 : 0) + *(unsigned char *)(ch + 0x166));
-        strncpy((char *)pk + 0x79, p, 0x24);
-        txt_Format(p, "%s", 0x253 + (*(char *)(ch + 9) != 0 ? 0x28 : 0) + *(unsigned char *)(ch + 0x169));
-        strncpy((char *)pk + 0x9d, p, 0x24);
-        udp_Send(pk, *(unsigned short *)(pk + 4));
-    }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    if (*(unsigned short *)(ev + 0x56) >= 0x15)
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
 }
 /* 0x5512c0, the allocation handler of the ranking-like event (ROUGH): state 0; unless flag 4 of +0x78 is set it clears the ten 16-byte slots from +0xac (two ids = -1, four bytes 0), sets the due clock to now with the minute word 0xb and posts the event (0x4c4c60 (0, ev), handle in +0x84) */
 
@@ -10311,7 +10349,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x78, (void *)he_StartReaper, (void *)he_RunReaper) != 0)
         return 1;
-    if (he_SetEventHandlers(0x79, (void *)he_Unk550ea0, (void *)he_Unk550ee0) != 0)
+    if (he_SetEventHandlers(0x79, (void *)he_Unk550ea0, (void *)he_RunRanking) != 0)
         return 1;
     if (he_SetEventHandlers(0x7a, (void *)he_Unk5512c0, (void *)he_Unk551b70) != 0)
         return 1;
