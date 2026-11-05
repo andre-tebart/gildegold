@@ -6372,138 +6372,130 @@ int he_Unk550070(int ev)
 
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
-/* 0x541b40, the script message handler of the inn meeting ("stammtisch", see 0x53f430): `cmd` is a four letter code ("join" 0x6a6f696e, "cler" 0x636c6572 = clear, "exec" 0x65786563, "leav" 0x6c656176, "new " 0x6e657720), a2 the inn record, a3 its staff record (4 members at +0x1c), a4 the figure id. Collects the member players (0x505df0), tells them (0x53dee0, the news 0x1893 .. 0x189d) and settles the money / relations of an executed meeting (ROUGH) */
-void he_StammtischCommand(unsigned cmd, int a2, int a3, int a4)
+/* 0x541b40, the inn meeting ("Stammtisch", see 0x53f430) hears of a table request (cm_ExTableRequest) or of its
+   own run (he_Unk542100): `cmd` is a four letter code, inn the inn building, table its table object (kind 0x12d,
+   the four seats), figId the character who joins / leaves. It tells the seated players and the inn's owner (boss)
+   the news 0x1893 .. 0x189d: 'join' (with a full table now), 'leav' (the last one gone; a table that was full tells
+   every other player too), 'cler' (cleared), 'new ' (a new meeting, to every player but the owner), and 'exec'
+   (the meeting is held: every member pays the owner the price of the goods 0x179 + 0x17a, and all the members and
+   the owner rise in each other's relations) */
+void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
 {
-    int n = 0;
-    int i, j, k, pm;
-    int mem[4];
-    unsigned short *fig;
-    int *pp;
-    int idx;
-    int amt, total, v;
-    char big[1024];
-    char s1[256];
-    char s2[256];
-    char c;
+    AICHAR *boss;
+    int n;
+    int total;
+    AICHAR *mem[4];
+    char big[0x400];
+    char s2[0x100];
+    char s1[0x100];
+    AICHAR *fig, *pm, *c;
+    int *seat;
+    int i, j, k, amt;
 
-    idx = *(unsigned short *)(a2 + 0x27) * 0x21c;
-    pp = (int *)(a3 + 0x1c);
-    for (i = 4; i != 0; i--, pp++) {
-        pm = gm_FindChar(*pp);
-        if (pm != 0) {
-            mem[n] = pm;
-            n++;
-        }
+    n = 0;
+    boss = &ai_CharsT[inn->owner];
+    seat = table->seats;
+    for (i = 4; i != 0; i--, seat++) {
+        pm = (AICHAR *)gm_FindChar(*seat);
+        if (pm != 0)
+            mem[n++] = pm;
     }
-    if (cmd < 0x6a6f696f) {
-        if (cmd == 0x6a6f696e) {
-            fig = (unsigned short *)gm_FindChar(a4);
-            if (fig != 0) {
-                txt_Format(big, 0x189b, a2, *fig);
-                for (j = 0; j < n; j++) {
-                    c = *(char *)(mem[j] + 2);
-                    if (c == 6 || c == 7)
-                        he_MessageBoxQuickjump(*(int *)(mem[j] + 4), -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-                }
-                if (*(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 7) {
-                    if (n == 3) {
-                        txt_Format(s1, 0x1894, a2, *fig);
-                        txt_Format(s2, 0x1896);
-                        txt_Format(big, "%s%s", s1, s2);
-                    } else {
-                        txt_Format(big, 0x1894, a2, *fig);
-                    }
-                    he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + idx), -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-                    return;
-                }
-            }
-        } else if (cmd == 0x636c6572) {
-            txt_Format(big, 0x189d, a2);
-            if (n > 0) {
-                for (j = 0; j < n; j++) {
-                    c = *(char *)(mem[j] + 2);
-                    if (c == 6 || c == 7)
-                        he_MessageBoxQuickjump(*(int *)(mem[j] + 4), -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-                }
-                return;
-            }
-        } else if (cmd == 0x65786563) {
-            amt = (int)(gm_GoodsPrice(0x17a, U_I((unsigned)&ai_OwnPlayer)) + gm_GoodsPrice(0x179, U_I((unsigned)&ai_OwnPlayer)));
-            total = 0;
-            txt_Format(big, 0x189a, a2, amt);
-            if (n > 0) {
-                total = amt * n;
-                for (j = 0; j < n; j++) {
-                    pm = mem[j];
-                    cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + idx), *(int *)(pm + 4), U_I((unsigned)&ai_OwnPlayer), amt);
-                    if (*(char *)(pm + 2) == 6 || *(char *)(pm + 2) == 7)
-                        he_MessageBoxQuickjump(*(int *)(pm + 4), -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-                    cm_SendRelations(U_I((unsigned)&ai_CharInts + idx), *(int *)(pm + 4), 3, 1);
-                    cm_SendRelations(*(int *)(pm + 4), U_I((unsigned)&ai_CharInts + idx), 3, 1);
-                }
-            }
-            if (*(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 7) {
-                txt_Format(big, 0x1893, a2, total);
-                he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + idx), -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-            }
-            if (n > 0) {
-                for (i = 0; i < n; i++) {
-                    for (j = 0; j < n; j++) {
-                        if (i != j) {
-                            cm_SendRelations(*(int *)(mem[i] + 4), *(int *)(mem[j] + 4), 3, 1);
-                            cm_SendRelations(*(int *)(mem[j] + 4), *(int *)(mem[i] + 4), 3, 1);
-                        }
-                    }
-                }
-                return;
-            }
+    switch (cmd) {
+    case 'exec':
+        amt = (int)(gm_GoodsPrice(0x17a, ai_OwnPlayer) + gm_GoodsPrice(0x179, ai_OwnPlayer));
+        total = 0;
+        txt_Format(big, 0x189a, inn, amt);
+        for (j = 0; j < n; j++) {
+            pm = mem[j];
+            cm_SendMoveGoodsUnchecked(boss->netId, pm->netId, ai_OwnPlayer, amt);
+            total += amt;
+            if (pm->kind == 6 || pm->kind == 7)
+                he_MessageBoxQuickjump(pm->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+            cm_SendRelations(boss->netId, pm->netId, 3, 1);
+            cm_SendRelations(pm->netId, boss->netId, 3, 1);
         }
-    } else if (cmd == 0x6c656176) {
-        fig = (unsigned short *)gm_FindChar(a4);
-        if (fig != 0) {
-            txt_Format(big, 0x189c, a2, *fig);
+        if (boss->kind == 6 || boss->kind == 7) {
+            txt_Format(big, 0x1893, inn, total);
+            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        for (i = 0; i < n; i++) {
             for (j = 0; j < n; j++) {
-                c = *(char *)(mem[j] + 2);
-                if ((c == 6 || c == 7) && (v = *(int *)(mem[j] + 4)) != *(int *)(fig + 2))
-                    he_MessageBoxQuickjump(v, -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-            }
-            if (*(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 7) {
-                if (n == 1) {
-                    txt_Format(s1, 0x1895, a2, *fig);
-                    txt_Format(s2, 0x1897);
-                    txt_Format(big, "%s%s", s1, s2);
-                } else {
-                    txt_Format(big, 0x1895, a2, *fig);
+                if (i != j) {
+                    cm_SendRelations(mem[i]->netId, mem[j]->netId, 3, 1);
+                    cm_SendRelations(mem[j]->netId, mem[i]->netId, 3, 1);
                 }
-                he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + idx), -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-            }
-            if (n == 4) {
-                txt_Format(big, 0x1899, a2);
-                pp = (int *)(unsigned)&ai_CharInts;
-                do {
-                    if ((*((char *)pp - 2) == 6 || *((char *)pp - 2) == 7) && (v = *pp) != U_I((unsigned)&ai_CharInts + idx)) {
-                        for (k = 0; k < 4; k++) {
-                            if (v == *(int *)(mem[k] + 4)) {
-                                if (k < 4)
-                                    he_MessageBoxQuickjump(v, -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-                                break;
-                            }
-                        }
-                    }
-                    pp += 0x87;
-                } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
             }
         }
-    } else if (cmd == 0x6e657720) {
-        txt_Format(big, 0x1898, a2);
-        pp = (int *)(unsigned)&ai_CharInts;
-        do {
-            if ((*((char *)pp - 2) == 6 || *((char *)pp - 2) == 7) && *pp != U_I((unsigned)&ai_CharInts + idx))
-                he_MessageBoxQuickjump(*pp, -1, big, 0, 0x5ec, *(int *)(a2 + 1), -1, 0, (char *)(unsigned)&ch_EmptyName);
-            pp += 0x87;
-        } while ((int)pp < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2));
-        return;
+        break;
+    case 'cler':
+        txt_Format(big, 0x189d, inn);
+        for (j = 0; j < n; j++) {
+            if (mem[j]->kind == 6 || mem[j]->kind == 7)
+                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        break;
+    case 'join':
+        fig = (AICHAR *)gm_FindChar(figId);
+        if (fig == 0)
+            break;
+        txt_Format(big, 0x189b, inn, fig->id);
+        for (j = 0; j < n; j++) {
+            if (mem[j]->kind == 6 || mem[j]->kind == 7)
+                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        if (boss->kind == 6 || boss->kind == 7) {
+            if (++n == 4) {
+                txt_Format(s1, 0x1894, inn, fig->id);
+                txt_Format(s2, 0x1896);
+                txt_Format(big, "%s%s", s1, s2);
+            } else {
+                txt_Format(big, 0x1894, inn, fig->id);
+            }
+            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        break;
+    case 'leav':
+        fig = (AICHAR *)gm_FindChar(figId);
+        if (fig == 0)
+            break;
+        txt_Format(big, 0x189c, inn, fig->id);
+        for (j = 0; j < n; j++) {
+            if ((mem[j]->kind == 6 || mem[j]->kind == 7) && mem[j]->netId != fig->netId)
+                he_MessageBoxQuickjump(mem[j]->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        if (boss->kind == 6 || boss->kind == 7) {
+            if (n - 1 == 0) {
+                txt_Format(s1, 0x1895, inn, fig->id);
+                txt_Format(s2, 0x1897);
+                txt_Format(big, "%s%s", s1, s2);
+            } else {
+                txt_Format(big, 0x1895, inn, fig->id);
+            }
+            he_MessageBoxQuickjump(boss->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        if (n == 4) {
+            txt_Format(big, 0x1899, inn);
+            for (i = 0; i < 768; i++) {
+                c = &ai_CharsT[i];
+                if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId) {
+                    for (k = 0; k < 4; k++) {
+                        if (c->netId == mem[k]->netId)
+                            break;
+                    }
+                    if (k < 4)
+                        he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+                }
+            }
+        }
+        break;
+    case 'new ':
+        txt_Format(big, 0x1898, inn);
+        for (i = 0; i < 768; i++) {
+            c = &ai_CharsT[i];
+            if ((c->kind == 6 || c->kind == 7) && c->netId != boss->netId)
+                he_MessageBoxQuickjump(c->netId, -1, big, 0, 0x5ec, inn->id, -1, 0, ch_EmptyName);
+        }
+        break;
     }
 }
 
@@ -6543,7 +6535,7 @@ void he_Unk542100(int ev)
         o = (unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c;
     if (o != 0 && o != U_I((unsigned)&ai_PlayerChar) && *(char *)(o + 8) != 0 && *(char *)(o + 2) != 0xf) {
         if (*(int *)(ev + 0xc0) == 1) {
-            he_StammtischCommand(0x6e657720, bld, r, -1);
+            he_StammtischCommand(0x6e657720, (AIBLD *)bld, (AIOBJ *)r, -1);
             *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
             *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
@@ -6555,7 +6547,7 @@ void he_Unk542100(int ev)
                 cm_SendExSetHE(0, ev);
                 return;
             }
-            he_StammtischCommand(0x65786563, bld, r, -1);
+            he_StammtischCommand(0x65786563, (AIBLD *)bld, (AIOBJ *)r, -1);
             *(AITIME *)(ev + 0x52) = ai_Time;
             gm_AddTime(ev + 0x52, 1, 0, 0);
             *(AITIME *)(ev + 0xb0) = ai_Time;

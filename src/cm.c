@@ -5729,7 +5729,7 @@ int cm_ExTableRequest(G17MSG *m, G17STAT *s)
             return 1;
         if (s != 0) {
             s->state = 1;
-            he_StammtischCommand(m->table.op, (int)b, (int)q, m->table.charId);
+            he_StammtischCommand(m->table.op, b, q, m->table.charId);
         }
         q->seats[j] = m->table.charId;
         return 0;
@@ -5749,7 +5749,7 @@ int cm_ExTableRequest(G17MSG *m, G17STAT *s)
             return 1;
         if (s != 0) {
             s->state = 1;
-            he_StammtischCommand(m->table.op, (int)b, (int)q, m->table.charId);
+            he_StammtischCommand(m->table.op, b, q, m->table.charId);
         }
         q->seats[j] = -1;
         return 0;
@@ -5768,7 +5768,7 @@ int cm_ExTableRequest(G17MSG *m, G17STAT *s)
             return 1;
         if (s != 0) {
             s->state = 1;
-            he_StammtischCommand(m->table.op, (int)b, (int)q, m->table.charId);
+            he_StammtischCommand(m->table.op, b, q, m->table.charId);
         }
         for (j = 0; j < 4; j++) {
             if (q->seats[j] == m->table.charId)

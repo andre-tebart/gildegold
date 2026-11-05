@@ -5,6 +5,8 @@
 struct D3OBJECT;
 struct AIJOB;
 struct AICHAR;
+struct AIBLD;
+struct AIOBJ;
 
 typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model shown over an object for an event (he_CreateGfxInfo) */
     int eventId;                        /* 0x0, the event's AIJOB.id */
@@ -127,7 +129,7 @@ void he_Unk544070(int ev);
 void he_SpawnFounders(void);
 extern const float he_FounderOdds[5];  /* 0x5eebc4 */
 
-void he_StammtischCommand(unsigned cmd, int a2, int a3, int a4);
+void he_StammtischCommand(unsigned cmd, struct AIBLD *inn, struct AIOBJ *table, int figId); /* 0x541b40, the inn meeting hears of a table request: join / leav / cler / exec / new */
 
 void he_Unk542490(int ev);
 
