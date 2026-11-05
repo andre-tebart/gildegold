@@ -5376,11 +5376,15 @@ void he_RunGang(int ev)
 int ls_GetLanguage();
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 
-/* 0x54ae20, a Ghidra miss: the start handler: the due clock +0x52 = now, posted 2 units ahead */
-void he_Unk54ae20(int ev)
+/* 0x54ae20, the alloc handler of the protection-ask event 0x63 (he_RunProtectionAsk): the due clock +0x52 is the
+   clock now, two minutes on */
+
+void he_AllocProtectionAsk(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 2, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 2, 0);
 }
 /* 0x54ae60, a Ghidra miss: the run handler of the event 0x63, the protection money question to a player victim
    ("Berufe\Messagebox_SCHUTZGELD"): it answers the protection money event 0x62 whose id it holds (HEPROTECTION).
@@ -10796,7 +10800,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x61, (void *)he_StartGang, (void *)he_RunGang) != 0)
         return 1;
     sv_RegisterActivity(0x61, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_RunProtectionAsk) != 0)
+    if (he_SetEventHandlers(0x63, (void *)he_AllocProtectionAsk, (void *)he_RunProtectionAsk) != 0)
         return 1;
     if (he_SetEventHandlers(0x62, (void *)he_StartProtection, (void *)he_RunProtection) != 0)
         return 1;
