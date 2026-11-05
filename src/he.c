@@ -298,7 +298,7 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
-/* one of the ten 16-byte slots of the walk event 0x5512c0 at AIJOB +0xac (he_Unk5512c0 clears them) */
+/* one of the ten 16-byte slots of the walk event 0x7a at AIJOB +0xac (he_StartWalk clears them) */
 typedef struct HEWALKSLOT {
     int chr;                            /* 0x0, the walking character's netId (gm_FindChar), -1 free */
     int target;                         /* 0x4, the building it walks to (gm_FindById's building) */
@@ -310,6 +310,11 @@ typedef struct HEWALKSLOT {
                                            for 0xff never holds) */
     unsigned char pad[3];
 } HEWALKSLOT;
+typedef struct HEWALKS {                /* the walk event 0x7a's ten slots over AIJOB's union (its alloc handler
+                                           he_StartWalk clears them, its run handler steps them) */
+    char pad00[0xac];
+    HEWALKSLOT slots[10];               /* 0xac, the walking characters */
+} HEWALKS;
 typedef struct HEEXAMBOX {              /* the master exam question 0x7e's words over AIJOB's union (from HEEXAMMSG) */
     char pad00[0xac];
     int chr;                            /* 0xac, the netId of the character asked */
@@ -9790,29 +9795,30 @@ void he_RunRanking(int ev)
             e->stage++;
     }
 }
-/* 0x5512c0, the allocation handler of the ranking-like event (ROUGH): state 0; unless flag 4 of +0x78 is set it clears the ten 16-byte slots from +0xac (two ids = -1, four bytes 0), sets the due clock to now with the minute word 0xb and posts the event (0x4c4c60 (0, ev), handle in +0x84) */
+/* 0x5512c0, the alloc handler of the walk event 0x7a (its run handler he_Unk551b70): stage 0; unless opts still says
+   the event is not started yet (bit 4) it frees the ten walk slots (+0xac: character and target -1, stage / state /
+   step / building index 0), sets the due clock today at 11:00 and posts the event (handle in exSlot) */
 
-void he_Unk5512c0(int ev)
+void he_StartWalk(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEWALKS *w = (HEWALKS *)ev;
     int i;
-    unsigned char *s;
 
-    *(int *)(ev + 0x70) = 0;
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        s = (unsigned char *)(ev + 0xac);
+    e->stage = 0;
+    if ((e->opts & 4) == 0) {
         for (i = 0; i < 10; i++) {
-            *(int *)s = -1;
-            *(int *)(s + 4) = -1;
-            s[8] = 0;
-            s[9] = 0;
-            s[10] = 0;
-            s[11] = 0;
-            s += 0x10;
+            w->slots[i].chr = -1;
+            w->slots[i].target = -1;
+            w->slots[i].stage = 0;
+            w->slots[i].state = 0;
+            w->slots[i].step = 0;
+            w->slots[i].bldIndex = 0;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(unsigned short *)(ev + 0x56) = 0xb;
-        *(int *)(ev + 0x58) = 0;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+        e->end = ai_Time;
+        e->end.hour = 0xb;
+        e->end.min = 0;
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10906,7 +10912,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x79, (void *)he_StartRanking, (void *)he_RunRanking) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7a, (void *)he_Unk5512c0, (void *)he_Unk551b70) != 0)
+    if (he_SetEventHandlers(0x7a, (void *)he_StartWalk, (void *)he_Unk551b70) != 0)
         return 1;
     if (he_SetEventHandlers(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
