@@ -19,22 +19,7 @@ struct AITIME;
 #pragma pack(push, 1)
 #include "ai_bld.h"                  /* AIBLD */
 
-typedef struct AIGOOD {                 /* 0x41 bytes, ai_Goods[] */
-    char type;                          /* 0x00 */
-    union {
-        char name[0x25];                /* 0x01 */
-        struct {
-            char padname[0x21];
-            unsigned int workTime;      /* 0x22, reasoned: the production time of one unit (the item tooltip shows it, in a building divided by the staff factor; ai_CalcEntryCost divides the margin by it) */
-        };
-    };
-    unsigned short need[4];             /* 0x26 */
-    unsigned short in[4];               /* 0x2e, the goods it is made of */
-    unsigned short batch;               /* 0x36, the amount one production run makes (the store needs room for
-                                           it and the market that much plus the stock; he.c 0x5690c0 hands it out) */
-    char pad38[8];
-    unsigned char b40;                  /* 0x40, nonzero: shown in the item tooltip instead of the price (text 0x21, ai_OpenItemTooltip) */
-} AIGOOD;
+/* AIGOOD: ai_types.h */
 
 /* AIBTYPE: ai_bld.h */
 #pragma pack(pop)
