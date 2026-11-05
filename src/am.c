@@ -1115,9 +1115,9 @@ done:
     o2->ref2 = x;
     return 1;
 }
-/* 0x4902b0, execute of method 0x90 */
+/* 0x4902b0, way 1 of the "Graveyard Owner" execute: sends message 0x90 (flags 2) from the building to the character with the way's AIARG (ref2, ref, arg) */
 
-int ai_Unk4902b0(AIPX *p, AIBLD *b, int unused, AIARG *o)
+int ai_ExecGraveyardOwner1(AIPX *p, AIBLD *b, int unused, AIARG *o)
 {
     AIMSG msg;
 
@@ -1289,7 +1289,7 @@ int ai_Unk490830(AGCH *p, AGARG *s1, AGARG *s2)
         case 0:
             return ai_ExecGraveyardOwner0((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         case 1:
-            return ai_Unk4902b0((AIPX *)p, (AIBLD *)s1, (int)a, s2);
+            return ai_ExecGraveyardOwner1((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         case 2:
             return ai_ExecGraveyardOwner2((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         case 3:
