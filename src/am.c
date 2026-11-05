@@ -4658,7 +4658,7 @@ int ai_DecideBuyRoom(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     c = (AIPER *)&ai_CharsT[bld->owner];
     v = gm_CharCurrency(c, ai_OwnPlayer);
-    if (o1->fvalue > 0.0f && o1->fvalue < 1.0f)
+    if (o1->fvalue > ai_FloatZero && o1->fvalue < ai_FloatOne)
         v = (int)(v * o1->fvalue);
     if (v < (int)gm_GoodsPrice(o1->ref, ai_OwnPlayer))
         return 0;
@@ -4667,11 +4667,11 @@ int ai_DecideBuyRoom(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
     for (o = gm_Query(bld->objList, 1, 4, 2); o; o = gm_QueryNext())
         if (o->id != 0xfd)
             n++;
-    if (n >= t->unk21)
+    if (n >= t->maxObjects)
         return 0;
     for (j = he_FindEvent(2, 0, 0x1f, 3, bld->id); j; j = he_NextEvent())
         n++;
-    return n >= t->unk21 ? 0 : 14;
+    return n >= t->maxObjects ? 0 : 14;
 }
 /* 0x497c80, execute of 0x497af0 */
 

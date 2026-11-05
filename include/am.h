@@ -236,7 +236,8 @@ int gm_GetWorth(unsigned short id);                                            /
 typedef struct AIBTX {                  /* 0x24d bytes, an AIBTYPE (ai.h) as these callbacks read it */
     unsigned char kind;                 /* 0x000 */
     char pad001[0x20];
-    unsigned char unk21;                /* 0x021, a limit */
+    unsigned char maxObjects;           /* 0x021, the most objects the building type holds: ai_DecideBuyRoom
+                                           counts the object list and the running 0x1f orders against it */
     unsigned char n;                    /* 0x022, entries in k */
     unsigned short k[64];               /* 0x023, goods (low 15 bits) */
     struct {
