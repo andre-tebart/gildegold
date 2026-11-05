@@ -332,9 +332,11 @@ int gm_CompareTime();
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
                                            +0x28 is an AIOBJ view of its own only here (adding a member to AIOBJ flips 8 matches) */
-    char pad00[0x28];
-    int year;                           /* 0x28, the year the job was started (0x54ef70 copies ai_Time's year into it) */
+    char pad00[0x1c];
+    int proofs[3];                      /* 0x1c, the crime ids (CRIME.id) the last robbery took from it, -1: none (he_RunDarkCorner) */
+    int year;                           /* 0x28, the year the job was started (he_StartDarkCorner copies ai_Time's year into it) */
 } HEJOBTABLE;
+#define ai_CrimesT (*(CRIME (*)[0x200])&ai_Crimes)  /* 0x91f700, ai_Crimes (char[]) as the 0x200 CRIME records it holds */
 typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words over AIJOB's union (AIJOB has no name at
                                            +0xb0: a field there flips d3_CloneObject's bytes, the unit's lead comment) */
     char pad00[0xac];
@@ -6726,185 +6728,238 @@ void he_StartDarkCorner(int ev)
     e->exSlot = cm_SendExSetHE(0, ev);
     cm_EndGroup("Dunkle Ecke");
 }
-/* 0x54f160, a Ghidra miss (disassembled; 2500 B): the run handler of the "Dunkle Ecke" robbery event (+0xac the carrier (handle, then figure id), +0xb0 the victim building, +0xb8 the next target, +0xc4 / +0xc8 the walk over the 0x100 buildings, +0xc0 the loot level 0 .. 3, +0xbc the steps left, +0xb4 the amount): state 0 waits for the carrier, state 1 picks the next target building (kinds in the mask 0xa7fcc3a6, not the victim's own; "Dunkle Ecke: next target = %G") and sends the carrier there, state 2 waits until it arrives (0x524770), then counts the robbery steps (+0xbc, +0xc0 rises by the chance 0x504ec0 against 0.5 * random) and sends the carrier on to the victim, state 3 at the victim: the loot level is clamped to 0 .. 3 and the thief takes up to three items from 0x91f700 (0x2d bytes each, 0x200 ring, +0x25 = 1, other owner, not due: given with 0x4c4ed0 and written into the job table of the building record), the news 0x18a9 / 0x18aa (0x5ec); state 4 repeats the check of the loot; a free of the event (flag 2) sends the carrier home (0x4c4e00) (ROUGH) */
+/* 0x54f160, the run handler of the "Dunkle Ecke" robbery event 0x74 (HEDARKCORNER): stage 0 waits for the carrier
+   figure (its id once spawned, else a day later stage 4); stage 1 walks the buildings to the next target of a kind
+   in the mask 0x1a7fcc3a6 other than the victim ("Dunkle Ecke: next target = %G") and sends the carrier there;
+   stage 2 waits until it is at the door, counts the steps down and raises the loot level by the chance of the
+   target owner's skill 2, then sends the carrier on (stage 1) or, its steps done, to the victim (stage 3); stage 3
+   at the victim (stage 4 at once) takes up to loot (0 .. 3; stage 4 draws it against the victim owner's skill 2)
+   open crimes of others from ai_Crimes as proofs (cm_SendProofExecuted), writes them into the victim's job table
+   and tells its owner (the news 0x18a9 / 0x18aa); freed with the flag 2 it removes the carrier
+   @deep Reconstructed whole against the original (the five cases of the jump table equal; every call, push
+   order and gm_AddTime argument read from the pushes; case 1's 64-bit kind mask 0xa7fcc3a6 / bit 32 with
+   the target != the victim (the draft had ==), case 2's loot chance util_RandomF() * 0.5f < skill, case
+   4's three draws at 0.66f, the MAX(MIN(loot, 3), 0) clamp, the proof walk over ai_Crimes (CRIME: state 1,
+   another culprit, not after the event's start) with loot[0..2] = -1, the job table's proofs[] (HEJOBTABLE
+   +0x1c) and year, case 3's two full message calls against case 4's if / else of txt_Format). Left:
+   allocation and VC6 cross-jumping. Case 1's walk: the original keeps hi in ebx and computes the AIBTYPE
+   pointer (lea eax, [ebx + eax*4]) before the kind byte compare, n in [esp+0x14]; ours keeps hi in ebx but
+   lo / n in other homes ([esp+0x18]); the original shares the Send(-1) tails of case 1 / 2 (0x54f311,
+   0x54f319) and the AddTime of case 2's not-at-door path, ours keeps inline copies (tail hunks at +0x2ee,
+   +0x49d) and shares case 3/4's end at +0x9a5 instead; the message calls schedule add esp later in the
+   original; the loot index from util_Random is moved as mov bx, ax in the original (ours mov ebx, eax: the
+   same zero extension). Tried: kind as an unsigned char local (the byte compare jbe now matches), the
+   crimes read by index instead of a CRIME pointer (matches the original's [edi + ai_Crimes + off]
+   addressing), the three -1 stores in order, case 4's ternary (neg / sbb: wrong, reverted to if / else).
+   (size: 6 of the instruction difference are shared / inline tails) (references: M8 at +0x989: ours refers
+   to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time), explained: the one M8 is the
+   ai_Time copy of case 4 aligned against a shifted tail (ours loads ai_Time+4 where the alignment pairs
+   the original's ai_Time); every call and store is present on both sides) */
 
-void he_Unk54f160(int ev)
+void he_RunDarkCorner(int ev)
 {
     char text[0x400];
-    int st, o = 0, v, i, n, idx, found, b, h, a, kind, loot[3], cnt, k, w, t;
-    float f;
+    AIJOB *e = (AIJOB *)ev;
+    HEDARKCORNER *d = (HEDARKCORNER *)ev;
+    AIBLD *bld;
+    AICHAR *c;
+    AIOBJ *jt;
+    unsigned lo, hi;
+    unsigned char kind;
+    int n, idx, i, k, w;
+    int loot[3];
+    float skill;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            a = gm_FindChar(*(int *)(ev + 0xac));
-            if (a != 0) {
-                cm_SendChrStop(*(int *)(a + 4));
-                cm_SendKillCharacter(*(int *)(a + 4), 1);
+    if (e->stage == -1 || e->stage == -2) {
+        if ((e->opts & 2) != 0) {
+            c = (AICHAR *)gm_FindChar(d->carrier);
+            if (c != 0) {
+                cm_SendChrStop(c->netId);
+                cm_SendKillCharacter(c->netId, 1);
             }
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    switch (*(int *)(ev + 0x70)) {
+    switch (e->stage) {
     case 0:
-        if (cm_GetSlotState(*(int *)(ev + 0xac)) == 1) {
-            *(int *)(ev + 0xac) = *(int *)(cm_GetSlotValue(*(int *)(ev + 0xac)) + 4);
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        if (cm_GetSlotState(d->carrier) == 1) {
+            d->carrier = ((AICHAR *)cm_GetSlotValue(d->carrier))->netId;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 1:
+        idx = d->cursor;
         n = 0x100;
-        idx = *(int *)(ev + 0xc4);
-        found = 0;
         do {
-            unsigned lo = 0, hi = 0;
-            int e2, k2;
-
-            found = U_I((unsigned)&ai_Blds) + idx * 0xa9;
-            e2 = U_I((unsigned)&ai_BTypes) + *(unsigned char *)found * 0x24d;
-            k2 = *(unsigned char *)e2;
-            if (k2 > 0x1f)
-                hi = 1u << (k2 - 0x20);
+            bld = &ai_BldsT[idx];
+            lo = 0;
+            hi = 0;
+            kind = ai_BTypesT[bld->type].kind;
+            if (kind > 0x1f)
+                hi = 1 << (kind - 0x20);
             else
-                lo = 1u << k2;
-            if (((lo & 0xa7fcc3a6) != 0 || (hi & 1) != 0) && *(int *)(found + 1) == *(int *)(ev + 0xb0))
-                ;
-            else
-                goto next_t;
-            break;
-        next_t:
-            idx = (idx + *(int *)(ev + 0xc8)) & 0xff;
-            found = 0;
+                lo = 1 << kind;
+            if (((lo & 0xa7fcc3a6) != 0 || (hi & 1) != 0) && bld->id != d->victim)
+                break;
+            idx = (idx + d->step) % 0x100;
+            bld = 0;
             n--;
         } while (n != 0);
-        *(int *)(ev + 0xc4) = (idx + *(int *)(ev + 0xc8)) & 0xff;
-        if (found == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        d->cursor = (d->step + idx) % 0x100;
+        if (bld == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        sprintf(text, "Dunkle Ecke: next target = %G", found);
-        a = gm_FindChar(*(int *)(ev + 0xac));
-        if (a != 0) {
-            cm_SendChrStop(*(int *)(a + 4));
-            cm_SendChrGotoBuilding(*(int *)(a + 4), *(int *)(found + 1), -1, 0, 1, "Dunkle Ecke");
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            *(int *)(ev + 0xb8) = *(int *)(found + 1);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        txt_Format(text, (int)"Dunkle Ecke: next target = %G", bld);
+        c = (AICHAR *)gm_FindChar(d->carrier);
+        if (c == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        cm_SendChrStop(c->netId);
+        cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Dunkle Ecke");
+        gm_AddTime(&e->end, 0, 5, 0);
+        d->target = bld->id;
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xb8));
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        if (o == 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        gm_FindById(&bld, 0, 0, d->target);
+        gm_AddTime(&e->end, 0, 5, 0);
+        if (bld == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        a = gm_FindChar(*(int *)(ev + 0xac));
-        if (a == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        c = (AICHAR *)gm_FindChar(d->carrier);
+        if (c == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        if (sv_IsAtDoor(a, o) == 0) {
-            *(int *)(ev + 0x70) = 2;
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        if (sv_IsAtDoor(c, bld) == 0) {
+            e->stage = 2;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
-        *(int *)(ev + 0xbc) = *(int *)(ev + 0xbc) - 1;
-        f = gm_GetSkill((unsigned)&ai_Chars + *(unsigned short *)(o + 0x27) * 0x21c, 2);
-        if (*(int *)(ev + 0xc0) < 1)
-            *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) + 1;
+        d->steps--;
+        skill = gm_GetSkill((char *)&ai_CharsT[bld->owner], 2);
+        if (d->loot < 1)
+            d->loot++;
         else
-            *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) + (util_RandomF() * 0.5f < f ? 1 : 0);
-        if (*(int *)(ev + 0xc0) > 2)
-            *(int *)(ev + 0xbc) = 0;
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xb0));
-        if (o != 0 && *(unsigned short *)(o + 0x27) != 0xffff) {
-            if (*(int *)(ev + 0xbc) <= 0) {
-                cm_SendChrStop(*(int *)(a + 4));
-                cm_SendChrGotoBuilding(*(int *)(a + 4), *(int *)(o + 1), *(int *)(ev + 0xb4), 0, 0, "Dunkle Ecke");
-                *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
-                return;
-            }
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+            d->loot += util_RandomF() * 0.5f < skill ? 1 : 0;
+        if (d->loot > 2)
+            d->steps = 0;
+        gm_FindById(&bld, 0, 0, d->victim);
+        if (bld == 0 || bld->owner == 0xffff)
+            break;
+        if (d->steps <= 0) {
+            cm_SendChrStop(c->netId);
+            cm_SendChrGotoBuilding(c->netId, bld->id, d->amount, 0, 0, "Dunkle Ecke");
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 3:
-    case 4:
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xb0));
-        if (o == 0 || *(unsigned short *)(o + 0x27) == 0xffff) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        gm_AddTime(&e->end, 0, 5, 0);
+        gm_FindById(&bld, 0, 0, d->victim);
+        if (bld == 0 || bld->owner == 0xffff)
+            break;
+        c = (AICHAR *)gm_FindChar(d->carrier);
+        if (c != 0 && sv_IsAtDoor(c, bld) == 0) {
+            e->stage = 3;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        if (*(int *)(ev + 0x70) == 3) {
-            a = gm_FindChar(*(int *)(ev + 0xac));
-            if (a != 0 && sv_IsAtDoor(a, o) == 0) {
-                *(int *)(ev + 0x70) = 3;
-                gm_AddTime(ev + 0x52, 0, 5, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
-                return;
-            }
-            *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) >= 3 ? 3 : (*(int *)(ev + 0xc0) > 0 ? *(int *)(ev + 0xc0) : 0);
-        } else {
-            *(int *)(ev + 0xc0) = 0;
-            for (k = 3; k > 0; k--) {
-                f = gm_GetSkill((unsigned)&ai_Chars + *(unsigned short *)(o + 0x27) * 0x21c, 2);
-                if (util_RandomF() * 0.002f < f)
-                    *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) + 1;
-            }
-        }
-        cnt = *(int *)(ev + 0xc0);
-        if (cnt != 0) {
+        d->loot = MAX(MIN(d->loot, 3), 0);
+        if (d->loot != 0) {
+            loot[0] = -1;
+            loot[1] = -1;
+            loot[2] = -1;
             idx = (unsigned short)util_Random(0x200);
-            w = U_I((unsigned)&ai_CharWalkSteps + (unsigned short)util_Random(8) * 4);
+            w = ai_CharWalkSteps[(unsigned short)util_Random(8)];
             n = 0;
-            for (i = 0x200; i > 0 && n < cnt; i--) {
-                int e3 = (unsigned)&ai_Crimes + idx * 0x2d;
-
-                if (*(int *)e3 != -1 && *(int *)(e3 + 0x25) == 1 && *(int *)(e3 + 0x16) != U_I((unsigned)&ai_CharInts + *(unsigned short *)(o + 0x27) * 0x21c)
-                    && gm_CompareTime(ev + 0x44, e3 + 4) != 1)
-                    loot[n++] = *(int *)e3;
-                idx = (idx + w) & 0x1ff;
+            for (i = 0x200; i != 0 && n < d->loot; i--) {
+                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_CharsT[bld->owner].netId
+                    && gm_CompareTime(&e->start, &ai_CrimesT[idx].time) != 1)
+                    loot[n++] = ai_CrimesT[idx].id;
+                idx = (idx + w) % 0x200;
             }
-            *(int *)(ev + 0xc0) = n;
-            for (i = 0; i < n; i++)
-                cm_SendProofExecuted(loot[i], U_I((unsigned)&ai_CharInts + *(unsigned short *)(o + 0x27) * 0x21c));
-            b = gm_Query(*(int *)(o + 0x5d), 2, 6, 0x12c);
-            if (b != 0) {
-                cm_BeginFieldBlock(b, *(int *)(b + 2));
-                for (i = 0; i < 3; i++)
-                    cm_AddFieldDelta(4, 1, i * 4 + 0x1c - U_I((unsigned)&cm_FieldObject) + b, &loot[i]);
+            d->loot = n;
+            for (k = 0; k < n; k++)
+                cm_SendProofExecuted(loot[k], ai_CharsT[bld->owner].netId);
+            jt = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12c);
+            if (jt != 0) {
+                cm_BeginFieldBlock((char *)jt, jt->objId);
+                for (k = 0; k < 3; k++)
+                    cm_AddFieldDelta(4, 1, k * 4 + 0x1c - (int)cm_FieldObject + (int)jt, &loot[k]);  /* HEJOBTABLE.proofs[k] */
                 cm_SendFieldDeltas();
             }
         }
-        if (*(int *)(ev + 0xc0) != 0)
+        if (d->loot != 0) {
+            txt_Format(text, 0x18a9);
+            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+        } else {
+            txt_Format(text, 0x18aa);
+            he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+        }
+        break;
+    case 4:
+        gm_FindById(&bld, 0, 0, d->victim);
+        if (bld == 0 || bld->owner == 0xffff)
+            break;
+        d->loot = 0;
+        for (k = 3; k != 0; k--) {
+            skill = gm_GetSkill((char *)&ai_CharsT[bld->owner], 2);
+            d->loot += util_RandomF() * 0.66f < skill ? 1 : 0;
+        }
+        if (d->loot != 0) {
+            loot[0] = -1;
+            loot[1] = -1;
+            loot[2] = -1;
+            idx = (unsigned short)util_Random(0x200);
+            w = ai_CharWalkSteps[(unsigned short)util_Random(8)];
+            n = 0;
+            for (i = 0x200; i != 0 && n < d->loot; i--) {
+                if (ai_CrimesT[idx].id != -1 && ai_CrimesT[idx].state == 1 && ai_CrimesT[idx].culprit != ai_CharsT[bld->owner].netId
+                    && gm_CompareTime(&e->start, &ai_CrimesT[idx].time) != 1)
+                    loot[n++] = ai_CrimesT[idx].id;
+                idx = (idx + w) % 0x200;
+            }
+            d->loot = n;
+            for (k = 0; k < n; k++)
+                cm_SendProofExecuted(loot[k], ai_CharsT[bld->owner].netId);
+            jt = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12c);
+            if (jt != 0) {
+                cm_BeginFieldBlock((char *)jt, jt->objId);
+                for (k = 0; k < 3; k++)
+                    cm_AddFieldDelta(4, 1, k * 4 + 0x1c - (int)cm_FieldObject + (int)jt, &loot[k]);  /* HEJOBTABLE.proofs[k] */
+                cm_SendFieldDeltas();
+            }
+        }
+        if (d->loot != 0)
             txt_Format(text, 0x18a9);
         else
             txt_Format(text, 0x18aa);
-        he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(o + 0x27) * 0x21c), -1, text, 0, 0x5ec, *(int *)(o + 1), *(int *)(ev + 0xb4), 0, "");
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
+        he_MessageBoxQuickjump(ai_CharsT[bld->owner].netId, -1, text, 0, 0x5ec, bld->id, d->amount, 0, ch_EmptyName);
+        e->end = ai_Time;
+        break;
     default:
         return;
     }
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 
 int ai_FindUsableGood(int param_1);
@@ -10184,7 +10239,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_RunDiseaseSim) != 0)
         return 1;
-    if (he_SetEventHandlers(0x74, (void *)he_StartDarkCorner, (void *)he_Unk54f160) != 0)
+    if (he_SetEventHandlers(0x74, (void *)he_StartDarkCorner, (void *)he_RunDarkCorner) != 0)
         return 1;
     if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_Unk54fce0) != 0)
         return 1;
