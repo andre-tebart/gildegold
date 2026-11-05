@@ -344,6 +344,16 @@ typedef union HEOBJ1B5VALUE {           /* the 7 byte value cm_SendObject1b5 cop
         int v1e;                        /* +0x1e */
     } f;
 } HEOBJ1B5VALUE;
+typedef struct HETAVERNOBJ {            /* the tavern's object 0x1b5 (he_AllocTavern creates it) as the tavern run handler
+                                           reads it: an AIOBJ, its kind's words at +0x1c over AIOBJ's union */
+    char pad00[2];
+    int objId;                          /* 0x02, AIOBJ.objId */
+    char pad06[0x16];
+    char c1c;                           /* 0x1c, -1 when no helper (the meaning is not read yet) */
+    char c1d;                           /* 0x1d, -1 when no helper */
+    int helperId;                       /* 0x1e, the character hired as the tavern's helper, -1: none */
+    char hired;                         /* 0x22, nonzero while a helper is hired */
+} HETAVERNOBJ;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -6628,94 +6638,112 @@ int ai_ChooseObjectTarget();
 int gm_HandOutMoney();
 void ai_ShowTavernHelperNews(char *param_1, char *param_2, int param_3);
 
-/* 0x542590, a Ghidra miss (disassembled): the run handler of the tavern event (state +0x70: 0 = pick the next step by the owner / the 0x1b5 record of the building (+0x10), 1 = wait 1 .. 2 units, 2 = the tavern record's helper figure (+0x1e) is sent off with the news 0x19a7 and paid); the next due time is always 0x18 units (state word 7) or 1 unit away (ROUGH) */
-void he_Unk542590(int ev)
+/* 0x542590, a Ghidra miss (disassembled): the run handler of the tavern event 0x2b of the building `from` (no owner:
+   again in a day at 7:00). Stage 0: an AI owner may hire a helper (ai_ChooseObjectTarget on the tavern's object
+   0x1b5), a player's helper is hired when the object says so (hired): then stage 1 in an hour, else again in a day.
+   Stage 1 waits 1 .. 2 hours. Stage 2: the hired helper is done: its news (ai_ShowTavernHelperNews), the object is
+   reset (no helper), and when the tavern pays out (gm_HandOutMoney) its owner gets the takings (the news 0x19a7 for a
+   player) and the building's field 0x69 the amount; again in a day at 7:00
+   @deep Read whole against the original and rebuilt typed (AIJOB, AIBLD, the tavern object view
+   HETAVERNOBJ, int out[3] whose out[2] gm_HandOutMoney reads as the partner = the helper). Every call,
+   store and branch matches; what is left is VC6's tail merging and scheduling: (1) code hunk at +0x2b8,
+   stage 0's AI branch: ours 'je X; push 0; push 0; lea ecx,[esi+0x52]; push 1; push ecx; jmp' (the hour
+   block inline, the 0x18 block shared), the original 'push 0; push 0; jne X; lea edx,[esi+0x52]; push
+   0x18; push edx; jmp' (the 0x18 block inline, the hour block shared with the player branch); tried the AI
+   / player branch order both ways and the inverted AI condition: those merge more tails (dist 46 / 52).
+   (2) tail at +0x32d: the original jumps from the player's 0x18 block into the shared Send(0) call. (3)
+   order at +0x102: the original loads t->helperId before the three field-value stores (no, none, noId) and
+   out[2] = 0; the prover stops there (a call argument read after other local stores). (size: 6 of the
+   instruction difference are shared / inline tails) */
+void he_RunTavern(int r)
 {
-    int bld = 0;
-    int r, f, idx, st;
-    int out[2];
+    AIJOB *e = (AIJOB *)r;
+    AIBLD *bld = 0;
+    HETAVERNOBJ *t;
+    AICHAR *helper;
+    int out[3];
+    unsigned char no, none;
+    int noId;
     char buf[0x100];
-    unsigned char z = 0;
-    unsigned char ff = 0xff;
-    int m1 = -1;
-    int v69 = 0;
 
-    if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_FreeEvent((int *)ev);
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)r);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    gm_FindById(&bld, 0, 0, *(int *)(ev + 0x10));
+    e->exSlot = -1;
+    gm_FindById(&bld, 0, 0, e->from);
     if (bld == 0) {
-        cm_SendExSetHE(-1, ev);
+        cm_SendExSetHE(-1, r);
         return;
     }
-    if (*(unsigned short *)(bld + 0x27) == 0xffff) {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 7;
-        cm_SendExSetHE(0, ev);
+    if (bld->owner == 0xffff) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        cm_SendExSetHE(0, r);
         return;
     }
-    r = gm_Query(*(int *)(bld + 0x5d), 1, 0, 0x1b5);
-    st = *(int *)(ev + 0x70);
-    if (st == 0) {
-        idx = *(unsigned short *)(bld + 0x27) * 0x21c;
-        if (*(char *)(((unsigned)&ai_Chars + 0x2) + idx) != 6 && *(char *)(((unsigned)&ai_Chars + 0x2) + idx) != 7) {
-            if (r != 0 && ai_ChooseObjectTarget((unsigned)&ai_Chars + idx, r) != 0) {
-                gm_AddTime(ev + 0x52, 1, 0, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+    t = (HETAVERNOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
+    switch (e->stage) {
+    case 0:
+        if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
+            if (t != 0 && t->hired != 0) {
+                gm_AddTime(&e->end, 1, 0, 0);
+                e->exSlot = cm_SendExSetHE(1, r);
                 return;
             }
-            gm_AddTime(ev + 0x52, 0x18, 0, 0);
-            *(short *)(ev + 0x56) = 7;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+            gm_AddTime(&e->end, 0x18, 0, 0);
+            e->end.hour = 7;
+            e->exSlot = cm_SendExSetHE(0, r);
             return;
         }
-        if (r != 0 && *(char *)(r + 0x22) != 0) {
-            gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        if (t != 0 && ai_ChooseObjectTarget(&ai_CharsT[bld->owner], t) != 0) {
+            gm_AddTime(&e->end, 1, 0, 0);
+            e->exSlot = cm_SendExSetHE(1, r);
             return;
         }
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 7;
-        cm_SendExSetHE(0, ev);
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        e->exSlot = cm_SendExSetHE(0, r);
         return;
-    }
-    if (st == 1) {
-        gm_AddTime(ev + 0x52, (util_Random(2) & 0xffff) + 1, 0, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+    case 1:
+        gm_AddTime(&e->end, util_RandomU(2) + 1, 0, 0);
+        e->exSlot = cm_SendExSetHE(2, r);
         return;
-    }
-    if (st == 2) {
-        if (r != 0 && *(char *)(r + 0x22) != 0) {
-            f = gm_FindChar(*(int *)(r + 0x1e));
-            if (f != 0)
-                ai_ShowTavernHelperNews((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c, f, bld);
-            cm_BeginFieldBlock(r, *(int *)(r + 2));
-            cm_AddFieldDelta(1, 1, 0x22, &z);
-            cm_AddFieldDelta(1, 1, 0x1c, &ff);
-            cm_AddFieldDelta(1, 1, 0x1d, &z);
-            cm_AddFieldDelta(4, 1, 0x1e, &m1);
+    case 2:
+        if (t != 0 && t->hired != 0) {
+            no = 0;
+            none = 0xff;
+            noId = -1;
+            out[2] = 0;
+            helper = (AICHAR *)gm_FindChar(t->helperId);
+            if (helper != 0) {
+                out[2] = (int)helper;
+                ai_ShowTavernHelperNews((char *)&ai_CharsT[bld->owner], (char *)helper, (int)bld);
+            }
+            cm_BeginFieldBlock((char *)t, t->objId);
+            cm_AddFieldDelta(1, 1, 0x22, &no);
+            cm_AddFieldDelta(1, 1, 0x1c, &none);
+            cm_AddFieldDelta(1, 1, 0x1d, &none);
+            cm_AddFieldDelta(4, 1, 0x1e, &noId);
             cm_SendFieldDeltas();
             if (gm_HandOutMoney(bld, out) != 0) {
-                idx = *(unsigned short *)(bld + 0x27) * 0x21c;
-                if (*(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + idx) == 7) {
+                if (ai_CharsT[bld->owner].kind == 6 || ai_CharsT[bld->owner].kind == 7) {
                     txt_Format(buf, 0x19a7, out[0], out[1]);
-                    he_ShowNews(U_I((unsigned)&ai_CharInts + idx), -1, buf, 0, 0x5ff, (char *)(unsigned)&ch_EmptyName);
+                    he_ShowNews(ai_CharsT[bld->owner].netId, -1, buf, 0, 0x5ff, ch_EmptyName);
                 }
-                cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(bld + 0x27) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, out[1]);
-                cm_BeginFieldBlock(f, *(int *)(f + 1));
-                cm_AddFieldDelta(4, 1, 0x69, &v69);
+                cm_SendMoveGoods(ai_CharsT[bld->owner].netId, -1, ai_OwnPlayer, out[1]);
+                cm_BeginFieldBlock((char *)bld, bld->id);
+                cm_AddFieldDelta(4, 1, 0x69, &out[1]);
                 cm_SendFieldDeltas();
             }
         }
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 7;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 7;
+        e->exSlot = cm_SendExSetHE(0, r);
     }
 }
 /* 0x543020, the alloc handler of the quarrel event 0x2e between the figures partner1 (+0xac) and partner2 (+0xb0):
@@ -9199,7 +9227,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2a, (void *)he_AllocStammtisch, (void *)he_RunStammtisch) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2b, (void *)he_AllocTavern, (void *)he_Unk542590) != 0)
+    if (he_SetEventHandlers(0x2b, (void *)he_AllocTavern, (void *)he_RunTavern) != 0)
         return 1;
     if (he_SetEventHandlers(0x2c, (void *)he_AllocOffer, (void *)he_Unk542b60) != 0)
         return 1;

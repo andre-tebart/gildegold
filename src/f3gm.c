@@ -802,7 +802,7 @@ none:
    (max(its worth / the richest worth * 160, 0) + 160) * that chance; its loyalty moves by +0.05 (same b00c) or -0.05
    while inside 0.05 .. 0.95, and with a partner in out[2] the relation is sent too. out[0] = the number of characters
    paid, out[1] = the sum (the caller takes it from the owner). Returns 1, or 0 when b has no owner.
-   out[2] is read past the caller's two ints (he_Unk542590 declares int out[2]), as the original does. */
+   out[2] is the partner: the tavern run handler he_RunTavern passes its hired helper there (0 for none). */
 
 int gm_HandOutMoney(ORDBLD *b, int *out)
 {

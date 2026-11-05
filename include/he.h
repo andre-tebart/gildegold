@@ -133,7 +133,7 @@ void he_StammtischCommand(unsigned cmd, struct AIBLD *inn, struct AIOBJ *table, 
 
 void he_AllocTavern(int ev);
 
-void he_Unk542590(int ev);
+void he_RunTavern(int ev);
 
 void he_AllocQuarrel(int ev);
 void he_Unk543180(int ev);
