@@ -9670,14 +9670,17 @@ void he_RunReaper(int ev)
         }
     }
 }
-/* 0x550ea0, sets state 0 and the due clock of an event record to now with the minute word 7 (a clock field, ROUGH) */
+/* 0x550ea0, the init of the ranking event 0x79 (its run handler he_RunRanking): stage 0 and the due clock today at
+   7:00 (hour 7, minute 0) */
 
-void he_Unk550ea0(int ev)
+void he_StartRanking(int ev)
 {
-    *(int *)(ev + 0x70) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(unsigned short *)(ev + 0x56) = 7;
-    *(int *)(ev + 0x58) = 0;
+    AIJOB *e = (AIJOB *)ev;
+
+    e->stage = 0;
+    e->end = ai_Time;
+    e->end.hour = 7;
+    e->end.min = 0;
 }
 
 void gm_RankPlayers();
@@ -10901,7 +10904,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x78, (void *)he_StartReaper, (void *)he_RunReaper) != 0)
         return 1;
-    if (he_SetEventHandlers(0x79, (void *)he_Unk550ea0, (void *)he_RunRanking) != 0)
+    if (he_SetEventHandlers(0x79, (void *)he_StartRanking, (void *)he_RunRanking) != 0)
         return 1;
     if (he_SetEventHandlers(0x7a, (void *)he_Unk5512c0, (void *)he_Unk551b70) != 0)
         return 1;
