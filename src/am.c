@@ -3812,7 +3812,8 @@ int ai_ExecuteDummyJob(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 2;
 }
-/* 0x496080 */
+/* 0x496080, decide of the dummy action "DummyVergnuegen" (3): with no sub-action running (a == 0)
+   and b == 0 it offers its own action id 3, else 0 */
 
 int ai_DecideDummyPleasure(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
