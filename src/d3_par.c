@@ -24,8 +24,8 @@
 #include "data_views.h"
 #include "d3_tools.h"
 #include "ts_texture.h"
-#include "unk_458810.h"
-#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (unk_458810.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
+#include "d3_pose.h"
+#define d3_WorldMatrixD ((void (*)(D3OBJECT *, D3OBJECT *, int, void *))d3_WorldMatrix)  /* 0x458da0 (d3_pose.h: XOBJ *, XOBJ *, char, D3MATRIX *): this unit's D3OBJECT view of the object */
 
 /* 0x455630, empties the default scene's particle list (the head d3_ParHead becomes the end marker d3_ParEnd,
    the tail d3_ParTail the head node d3if_ParList) and sets the two quad UV tables */

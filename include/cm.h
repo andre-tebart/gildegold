@@ -366,7 +366,7 @@ extern int cm_NoticeCount;  /* 0x6f0cd4 */
 extern int ai_GameFlags;  /* 0x6f23f8 */
 extern int cm_RequestedSaveSlot;  /* 0x6f25c8 */
 extern char cm_RequestedSaveName[];  /* 0x6f25d0 */
-extern unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
+extern unsigned int ai_MissionSeed;  /* 0x75e120, the random seed of the missions (as mission.h) */
 extern int ai_TimeCopy[4];  /* 0x75e130, the clock copy (14 bytes) */
 extern int cm_SaveAcks[][2];  /* 0x76fa20 */
 extern int ai_Evidence[0x800][2];  /* 0x91b6e0, pairs (character netId, crime id): the character holds evidence of the crime (0x4f3640) */

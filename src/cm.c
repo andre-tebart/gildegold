@@ -11,12 +11,12 @@
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION.
    Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h d2.h f3gm.h gfx.h hmt.h hst.h rt.h
-   unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the definition (read the
+   poker.h mission.h menu.h; held by calls whose argument count differs from the definition (read the
    original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
    gv_PassSentence takes five arguments here (gv_PassSentenceK).
    Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
    without parameters; cm_QueueVoice has callers with four arguments, and declaration changes in cm.h / cm_types.h flip
-   the register tie-breaks of ai_TutorialInitChapter2 / 3 (unk_575860, debt). Types only cm.c uses (CMNOTE,
+   the register tie-breaks of ai_TutorialInitChapter2 / 3 (sv_t, debt). Types only cm.c uses (CMNOTE,
    CMCUTTYPEMSG) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
@@ -47,9 +47,9 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 #include "di_input.h"
 #include "evt.h"
 #include "data_views.h"
-#include "unk_5d33b0_types.h"
+#include "menu_types.h"
 extern OPTIONBYTES ai_GfxFloor;
-extern OPTIONBYTES ai_GfxFog;  /* 0x6f35cc, unk_5d33b0.c: the fog option byte */
+extern OPTIONBYTES ai_GfxFog;  /* 0x6f35cc, menu.c: the fog option byte */
 extern char cm_CutInfos[16][0x35c];
 #define GAPDATA __declspec(align(1)) unsigned char
 
@@ -94,9 +94,9 @@ extern GAPDATA full_data_92bcb8[];
 #include "sblib.h"
 #include "tb.h"
 #include "tr.h"
-#include "unk_458810.h"
-#include "unk_575860.h"
-#include "unk_58bbd0.h"
+#include "d3_pose.h"
+#include "sv_t.h"
+#include "lc.h"
 #include "shp.h"
 #include "f3gm_types.h"
 #include "he.h"
@@ -154,10 +154,10 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
 #define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
 #define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
-#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (unk_4a7140.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
+#define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (poker.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
-                                       as ints; unk_5d33b0.c GYPSYROW) */
+                                       as ints; menu.c GYPSYROW) */
     AICHAR *rec;                    /* 0x00, the character the row shows */
     int ctl;                        /* 0x04, the row's control object (d2_Objs index, ai_AmountRow) */
     int pad08[3];
@@ -1858,7 +1858,7 @@ void ai_Unk4c5840(int a)
     cm_QueueSend(&m);
 }
 /* 0x4c5870, queues the message 0x43 with a character's netId (sent after its skills were raised: he_RunTraining,
-   the trial step picks of unk_58bbd0; reasoned, the receiver not read) */
+   the trial step picks of lc; reasoned, the receiver not read) */
 
 void cm_SendSkillsChanged(int a)
 {
@@ -16978,7 +16978,7 @@ int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
 /* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
-unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as unk_4b39f0.h) */
+unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as mission.h) */
 int ai_TimeCopy[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
 char * sv_SelectedObject = 0;  /* 0x75ec60 */
 char cm_ChatLog[2048] = {0};  /* 0x75fba0 */

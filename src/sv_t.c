@@ -1,4 +1,4 @@
-/* unk_575860.c -- the tutorial module ("FT*" record names, tutorial\* forms, TUTORIAL_* texts), 0x575860..0x589f10:
+/* sv_t.c -- the tutorial module ("FT*" record names, tutorial\* forms, TUTORIAL_* texts), 0x575860..0x589f10:
    the tutorial state machine (state record ai_Tutorial = the pointer 0x5eec60, states 1 .. 0xc, the jump table
    0x575fe8; ai_TutorialStart builds the run chain ai_TutorialRuns and initializes it, the tick 0x575860 runs it),
    the chapter run-record builders (ai_TutorialChapterInit) with their step tables (TUTSTEP) and position-marker
@@ -14,7 +14,7 @@
    nop fill end at 0x575860; the unit's one .data block starts at 0x62918c (ai_TutorialChapterOn, then the "FT"
    state names) and its literals climb in function order to 0x62aa58; the network lobby (0x589f10) is a unit of
    its own. The original file name is unknown (no leaked tag). Names are ours.
-   Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in unk_575860.h and the tutorial code up
+   Open: type debt - TUTSTATE / TUTRUN / TUTSTEP / TUTMARK are typed in sv_t.h and the tutorial code up
    to ai_TutorialWindow and the chapter transition callbacks use them; most later functions still reach the
    state record through the S / U_I byte-offset macros; the message (AIMSG, ai.h) is typed from
    ai_CabinetSpyWindow on, earlier senders and the contact-list records still use byte offsets; the cannon
@@ -26,8 +26,8 @@
    uses as an immediate) / the floats 0x5eec9c .. 0x5eeca8 and the tables from 0x5eecf0 are not declared yet (the
    grave size tables 0x5eecb0 .. 0x5eecef are).
    Open: data: ai_DragWindow (0x62a8cc) lies in this unit's .data block between its literals and next to
-   ai_DragObj / ai_DragViewWin, but sv.c defines it (sv.h declares it; sv.c and unk_58bbd0.c use it): owner
-   unk_575860 or sv.
+   ai_DragObj / ai_DragViewWin, but sv.c defines it (sv.h declares it; sv.c and lc.c use it): owner
+   sv_t or sv.
    Open: GVGRAVE.v2c / v30 / nameId: gv.c stores small numbers there, ai_GraveDeadName reads v2c as the office
    (1 .. 9, gv.c's prevOffice / random) and ai_GraveDeadDescription v30 / nameId as text ids; which texts the
    bases 0x114 / 0x130 / 0x11e / 0x18f (and the office ones 0x253 / 0x27b) name is unknown.
@@ -37,7 +37,7 @@
    and the marker update load it in the original's order only through the unit's view d3_Time); its
    owner and the other units declare it plain int.
    Open: head: include/d2.h not included (the d2_* calls lack prototypes, M7): it supersedes the local
-   d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts unk_575860
+   d2_CreateWinText declaration and its trial drops 6 shape functions to draft (dcp headers conflicts sv_t
    d2.h --trial).
    Open: the alchemist windows ai_AlchemistWindow / ai_AlchemistResearchWindow are @deep (allocation); their buttons call
    ai_AlchemistFundWindow / ai_AlchemistRescheduleWindow with (obj, record), the record parameter unread.
@@ -46,7 +46,7 @@
    still take int *w (the callers cast), the graveyard contacts before ai_GraveHauntContact take char *rec.
    Open: data: ai_TurnTable (0x6f5f60, 0x4000 bytes) is cleared once at engine open and no other code refers to
    it: what it holds, and so its true name and element type, is unknown (the name is ai_ClearTurnTable's).
-   Open: not included yet (dcp headers conflicts unk_575860 HEADER): d2.h gfx.h sv.h; held by own declarations that
+   Open: not included yet (dcp headers conflicts sv_t HEADER): d2.h gfx.h sv.h; held by own declarations that
    differ from the owner's: d2_CreateWinText; calls whose argument count differs from the definition (read the
    original's pushes): d2_GetObjValue, sv_DrawBalanceBar (d2_PlaceMainWindow goes through d2_PlaceMainWindowF).
    unit of rea 8cef7d5b (src/game/unk_575860.c); boundaries in decl/text.dcl */
@@ -59,7 +59,7 @@ extern D2RADIO d2_Radios[];
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unk_575860.h"
+#include "sv_t.h"
 #include "txt.h"
 #include "di_input.h"
 #include "evt.h"
@@ -712,8 +712,8 @@ SHOTRESULT ai_ShotTable[3] = { 0 };  /* 0x6f9f60, the cannon scene's shot result
 #include "sblib.h"
 #include "tb.h"
 #include "tr.h"
-#include "unk_4b39f0.h"
-#include "unk_58bbd0.h"
+#include "mission.h"
+#include "lc.h"
 #include "vfs.h"
 #include "ch.h"
 #include "cm.h"
@@ -734,9 +734,9 @@ const struct D3VECTOR ai_WimpelPos = { -70.0f, -50.0f, 120.0f };  /* 0x5eec80, t
 const float ai_CannonSwitchMs = 90.0f;     /* 0x5eec94, the length of each half of the barrel switch (ms, ai_CannonSwitchAnim) */
 const float ai_CannonSwitchDist = 100.0f;  /* 0x5eec98, how far the cannon sinks back while the barrel switches */
 const float ai_CannonZoomRange = 1450.0f;  /* 0x5eecac, the distance the zoom moves the camera out (scaled by the pitch and the speed) */
-#include "unk_458810.h"
+#include "d3_pose.h"
 #include "dd_vesa.h"
-#include "unk_5d33b0.h"
+#include "menu.h"
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x575860, the tutorial's tick: nothing (-4) without the tutorial, its run record or its event slot; puts the
@@ -7144,7 +7144,7 @@ void ai_CabinetContact(AIBLD *rec, AIOBJ *room)
 }
 /* the four grave sizes of the graveyard windows (ai_GraveSizeButtons, ai_GraveSizeButtonsAt; ai_GraveMoveConfirm names the grave by
    its size; the sizes 1 .. 3 are open while GVYARD.open[i] is set); only this unit reads them, they stay out of
-   unk_575860.h: declared above ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
+   sv_t.h: declared above ai_TutorialInitChapter2 they flip its register tie-break (byte -> shape) */
 const int ai_GravePics[4] = { 0x2d5, 0x2d8, 0x2dc, 0x2e0 };      /* 0x5eecb0, the buttons' pictures */
 const int ai_GravePicsAlt[4] = { 0x7da, 0x7db, 0x7dc, 0x7dd };   /* 0x5eecc0, the pictures ai_GraveList uses by the button */
 const int ai_GraveNames[4] = { 0xd94, 0xd9a, 0xda2, 0xdaa };     /* 0x5eecd0, the texts of the sizes' names */
@@ -10320,7 +10320,7 @@ int ai_AmountRowStatus(); int ai_DrawAmountRow(); short * gm_FindChar(int id); i
 int ai_OpenCharTooltip(char *ch)
 {
     int view;
-    int row[14];                        /* an amount row (unk_5d33b0.c GYPSYROW): row[0] the character */
+    int row[14];                        /* an amount row (menu.c GYPSYROW): row[0] the character */
     char line[0x100];
     AICHAR *c;
     AICHAR *p;
@@ -10430,7 +10430,7 @@ int ai_OpenCharTooltip(char *ch)
 void ai_CharInfoWindow(char *ch)
 {
     int view;
-    int row[14];                        /* an amount row (unk_5d33b0.c GYPSYROW): row[0] the character */
+    int row[14];                        /* an amount row (menu.c GYPSYROW): row[0] the character */
     char line[0x100];
     AICHAR *c;
     AICHAR *p;

@@ -1,6 +1,6 @@
 /* anm.c -- animals: module tag "anm:animals" (mem_Alloc tag), the animal names "DOG", "CAT", "BIRD", "COW", "SHEEP",
-   "CHICK", "PIG", "HORSE" (.data 0x602688, right after unk_4b6480.c's table), "katze_KATZE", "hund_HUND", ..
-   Start: 0x4bb810 (first user of the tag); 0x4bb720 / 0x4bb7d0 before it post random messages (unk_4b6480.c).
+   "CHICK", "PIG", "HORSE" (.data 0x602688, right after rmsg.c's table), "katze_KATZE", "hund_HUND", ..
+   Start: 0x4bb810 (first user of the tag); 0x4bb720 / 0x4bb7d0 before it post random messages (rmsg.c).
    End: the place helpers after anm_UpdateSheep (0x4bc2e0..) share "dummy_TUER" with the road code, so they are rd.c's.
    Names are ours.
    Open: the animal object is read through raw offsets although anm.c sees ch.h and d3.h now (the CHARACTER /
@@ -17,8 +17,8 @@
 #include "d3_interface.h"
 #include "d3_sm.h"
 #include "d3_vec.h"
-#include "unk_458810.h"
-#include "unk_5d33b0.h"
+#include "d3_pose.h"
+#include "menu.h"
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 
 /* 0x4bb810, allocates the animal list ("anm:animals") and resets the animal count and the first record */

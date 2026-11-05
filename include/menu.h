@@ -1,10 +1,10 @@
-/* unk_5d33b0.h -- the screen / front-end module (unnamed), see src/game/unk_5d33b0.c */
-#ifndef UNK_5D33B0_H
-#define UNK_5D33B0_H
+/* menu.h -- the screen / front-end module (unnamed), see src/game/unk_5d33b0.c */
+#ifndef MENU_H
+#define MENU_H
 #include "d3.h"                       /* the D3 records and typedefs this header names */
 struct D3SM;
 
-#include "unk_5d33b0_types.h"        /* OPTIONBYTES */
+#include "menu_types.h"        /* OPTIONBYTES */
 
 typedef struct FILEREC {            /* 0x210 bytes, a file of ai_ListFiles's list */
     int ctrl;                       /* 0x00, the caller's slot header: ai_FilePickWindow keeps the file's text control here */
@@ -127,7 +127,7 @@ typedef struct POKERWHO {               /* a seat's character record, the two na
     char vname[16];                     /* +0x30, the first name */
     char nname[16];                     /* +0x40, the family name */
 } POKERWHO;
-typedef struct POKERSEAT {              /* 0x34 bytes, unk_4a7140.h's G10SEAT; seat 0 is the player, 1 and 2 the two opponents */
+typedef struct POKERSEAT {              /* 0x34 bytes, poker.h's G10SEAT; seat 0 is the player, 1 and 2 the two opponents */
     POKERWHO *who;                      /* +0x00 */
     int model;                          /* +0x04 */
     int card[5];                        /* +0x08, indices into the deck, -1 = none (what ai_PokerSeatPanel shows) */
@@ -136,7 +136,7 @@ typedef struct POKERSEAT {              /* 0x34 bytes, unk_4a7140.h's G10SEAT; s
     int foldPhase;                      /* +0x28, the phase the seat folded in (ai_PokerNpcFold), -1 = still in */
     int unk2c, unk30;                   /* +0x2c */
 } POKERSEAT;
-typedef struct POKERGAME {              /* 0xc0 bytes at 0x6f3500, unk_4a7140.h's G10GAME (ai_PokerStart fills it, ai_PokerStep steps it) */
+typedef struct POKERGAME {              /* 0xc0 bytes at 0x6f3500, poker.h's G10GAME (ai_PokerStart fills it, ai_PokerStep steps it) */
     int phase;                          /* +0x00, 1 .. 11: the step ai_PokerGame shows */
     POKERSEAT seat[3];                  /* +0x04 */
     int pot;                            /* +0xa0, G10GAME.unka0: the number printed with the text 0x4252 in every phase (reasoned: the pot) */
@@ -157,9 +157,9 @@ void ai_PokerSeatPanel(int seat, int mode, int *cards);  /* 0x5dadf0, builds the
 void ai_PokerWindow2(void);            /* 0x5db110, the second poker window "Locations\zigeuner\poker2" */
 struct AIPER;
 struct G10GAME;
-int ai_PokerStart(struct AIPER *p, struct G10GAME *g);  /* 0x4a7140, unk_4a7140.c: starts a poker game of the player's character into g (ai_PokerState), 0 when it cannot */
-unsigned short ai_PokerStep(void);          /* 0x4a74e0, unk_4a7140.c: one step of the game, returns the button mask to show (0x10 / 0x21 / 9 / 0x29 / 0x1c) or 0 */
-void ai_PokerExchange(int k);           /* 0x4a8630, unk_4a7140.c: the player exchanges card k */
+int ai_PokerStart(struct AIPER *p, struct G10GAME *g);  /* 0x4a7140, poker.c: starts a poker game of the player's character into g (ai_PokerState), 0 when it cannot */
+unsigned short ai_PokerStep(void);          /* 0x4a74e0, poker.c: one step of the game, returns the button mask to show (0x10 / 0x21 / 9 / 0x29 / 0x1c) or 0 */
+void ai_PokerExchange(int k);           /* 0x4a8630, poker.c: the player exchanges card k */
 int gm_PlayerFactor(int a, unsigned char k);   /* 0x5085f0, f3gm.c: a * the factor of the player slot k */
 int gm_GetWorth(unsigned short id);            /* 0x50a640, f3gm.c: the worth of the character id */
 short *gm_PlayerRecord(char *c);               /* 0x506430, f3gm.c: the player record of a character (kinds 5 / 6 / 7), 0 else */
@@ -185,13 +185,13 @@ extern int sv_ScreenDirty;          /* 0x6f2358, sv.c: nonzero = rebuild the scr
 void sv_DestroyScreen(void);        /* 0x5223c0, sv.c: destroys the screen's widgets and views */
 int sv_PanelImage(void);            /* 0x522040, sv.c: the panel image number of the player's group */
 void sv_BuildScreenLayout(int s);   /* 0x521e70, sv.c: builds the main screen layout for the panel image s */
-/* The gypsy windows' callees (the special-amount list of unk_58bbd0.c, the money / relation messages). */
+/* The gypsy windows' callees (the special-amount list of lc.c, the money / relation messages). */
 int cm_SendRelations(int a, int b, int c, int d);   /* 0x4c4b00, cm.c: message 0x1b, the relation of a to b changes by c */
 float gm_Mix(int a, int b, int c);                   /* 0x504e20, f3gm.c: the mix of two relation values */
 int sv_MessageBoxGreen(int a, int b, unsigned flags); /* 0x521410, sv.c: the green message box with the title text a and the text b */
 struct AIBLD;
 struct AIPER;
-int gm_BathObjectCount(char *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as unk_4a7140.h) */
+int gm_BathObjectCount(char *b);             /* 0x50cf60, f3gm.c: 1 + the kitchen / bath objects of the building (as poker.h) */
 void gm_SendMoneyDelta(int a, int b);                /* 0x50cc50, f3gm.c: forwards to cm_SendMoneyDelta */
 int amt_GetKindLevel(int k);                         /* 0x4e7c40, amt.c: the level of the office kind k */
 extern int snd_SystemBank;        /* 0x6f2400, main.c: the handle of the system sample bank (system.sbf) */
@@ -203,7 +203,7 @@ void d2_SetList(int id, int n, ...);                       /* 0x46bca0, d2.h: se
 void d2_SetSliderFlags(int id, int flags);                 /* 0x46bdd0, d2.h: sets the slider's flags */
 void d2_SetObjValue();                                     /* 0x475cb0, d2.h (K&R: d2.c takes a 5th parameter, the call sites push 2, 4 or 5) */
 #define d2_SetObjValue5 ((void (*)(int, int, int, int, int))d2_SetObjValue) /* the 5-argument call of the gypsy windows */
-typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu (unk_58bbd0.c) */
+typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu (lc.c) */
     int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a .. (the gypsy windows: 1) */
     int mode;                           /* +0x04, 0x400 */
     unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
@@ -256,11 +256,11 @@ struct AITIME;
 struct AITIME;
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);   /* 0x4fe140, f3gm.c: adds hours / minutes / seconds to the clock */
 int gm_MinutesBetween(struct AITIME *a, struct AITIME *b);          /* 0x4fe280, f3gm.c: the minutes from clock a to clock b */
-char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c: the pending curse event of the building (as unk_4a7140.h) */
-int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as unk_4a7140.h) */
+char *ai_FindCurseEvent(char *a);                              /* 0x5741d0, he.c: the pending curse event of the building (as poker.h) */
+int gm_CurseObjectCount(char *b);                            /* 0x50cfd0, f3gm.c: 2 + the objects 0x274 / 0x27e / 0x28e / 0x291 of the building (as poker.h) */
 int gm_CurseTargetCount(char *b);                                   /* 0x50d0b0, f3gm.c: counts from the objects 0x284 / 0x289 of the building */
-extern const int ai_CardBack;  /* 0x5ed1bc, unk_4a7140.c: the picture offset of the card back (another unit's constant: the original loads it from memory) */
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c: the filter of the gypsy windows (flags, kind of ai_PickActionBuilding), read from memory as two dwords */
+extern const int ai_CardBack;  /* 0x5ed1bc, poker.c: the picture offset of the card back (another unit's constant: the original loads it from memory) */
+extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c: the filter of the gypsy windows (flags, kind of ai_PickActionBuilding), read from memory as two dwords */
 static const float ai_InchPerMeter = 39.37008f;  /* 0x5eedf4, .rdata: world units (inches) per meter */
 static const float ai_Gravity = 9.81f;            /* 0x5eedfc, .rdata: m/s^2 */
 extern const struct D3VECTOR d3_ZAxis;  /* 0x5ebb74, (0, 0, 1), d3_vec.c */

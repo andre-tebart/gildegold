@@ -1,7 +1,7 @@
-/* unk_58bbd0.h -- the production / trade windows (unnamed): the table init and the "Handel\Handel_PRODUKTION"
+/* lc.h -- the production / trade windows (unnamed): the table init and the "Handel\Handel_PRODUKTION"
    screen, see src/game/unk_58bbd0.c */
-#ifndef UNK_58BBD0_H
-#define UNK_58BBD0_H
+#ifndef LC_H
+#define LC_H
 
 struct AIBLD;
 struct D3SCENE;
@@ -51,7 +51,7 @@ int ai_TrainingWindow(int building);                    /* 0x5bba00, the "specia
 int ai_EquipWindow(int building);                       /* 0x5bb350, the equip window of the AUSRUESTEN / weapon-stand plates */
 int ai_BuildingWindow(int building);                     /* 0x5b84f0, the window the building panel's action button opens (reasoned) */
 int ai_ManagedBuildingWindow(int building);              /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 (reasoned) */
-int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, unk_5d33b0.h) */
+int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, menu.h) */
 int ai_PersonnelBook(int building, char *text);         /* 0x5aab80, the personnel book */
 void ai_MasterLetterWindow(unsigned char *building);    /* 0x5c3200, the master letter window */
 int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and frees the production setting of the building id (ai_ProdSetting), -1 when it has none */

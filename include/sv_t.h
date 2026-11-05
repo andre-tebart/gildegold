@@ -1,7 +1,7 @@
-/* unk_575860.h -- the unit after he.c (unnamed): the tutorial module and its state machine,
-   see the lead comment of src/unk_575860.c */
-#ifndef UNK_575860_H
-#define UNK_575860_H
+/* sv_t.h -- the unit after he.c (unnamed): the tutorial module and its state machine,
+   see the lead comment of src/sv_t.c */
+#ifndef SV_T_H
+#define SV_T_H
 
 struct HEEVSLOT;
 struct SBSAMPLE;

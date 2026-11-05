@@ -31,7 +31,7 @@ struct D3SURF;
 #include "d3_tools.h"
 #include "d3_vec.h"
 #include "mem.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 #define d3t_CamMoveI (*(int *)&d3t_CamMove)  /* 0x6310e8, d3t_CamMove (d3_tools.c: D3ANIM *) as the int this unit tests and clears */
 
 #define OCMD_DEG 0.017453292f       /* degrees to radians */

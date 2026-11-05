@@ -8,7 +8,7 @@
    costs gm_Unk4fa4b0 a byte).
    Open: gm_GetWorth is int in every header now; the older callers still go through the K&R cast I50A640.
    Open: gm_IsBankrupt calls ai_LiquidateAssets (0x5b92e0: netId, character, amount, message) without a prototype;
-   its definition in unk_58bbd0.c is still a one-parameter skeleton.
+   its definition in lc.c is still a one-parameter skeleton.
    Open: ai.h is not includable here, so the character / building / object records are read through gv.h's views
    ORDCHAR / ORDBLD / ORDOBJ, the job record through GMJOB (AIJOB, next to AITIME), the long message through
    f3gm_types.h's GMMSG (AIMSG), the crime records through GM_CRIMES (cm_types.h CRIME over cm.c's char
@@ -27,7 +27,7 @@
    Open: the head tables (gm_BoyHead .. gm_SpyHeads, gm_OwnNameHeads) are GMHEAD records but still defined as
    unsigned arrays; their readers cast them.
    Open: not included yet (dcp headers conflicts f3gm HEADER): ai.h anm.h cm.h d2.h d3_interface.h d3_tools.h
-   gfx.h hmt.h hst.h rt.h unk_458810.h unk_4b39f0.h; held by own declarations that differ from the owner's:
+   gfx.h hmt.h hst.h rt.h d3_pose.h mission.h; held by own declarations that differ from the owner's:
    d2_Objs, gm_MinutesBetween, gm_ClockSeason, gm_CompareTime; calls whose argument count differs from the
    definition (read the original's pushes): gm_Liking.
    Open: data: gm_KindObjCount (0x76fdc4) is defined '= 0' as D5 asks, but gm_BuildKindObjects is byte-identical
@@ -35,7 +35,7 @@
    Open: gm_AssignBuilding is defined with unsigned short master / unsigned own, but its callers' pushes (f3init's
    init caller, gm_TakeOverCharacter) zero-extend one word for both: int parameters; this unit calls it through the
    cast gm_AssignBuildingI until the definition and headers are settled.
-   Open: gm_TitlePeriodServed writes an AITIME through its int *out (he.c, main.c, unk_58bbd0.c declare it so in
+   Open: gm_TitlePeriodServed writes an AITIME through its int *out (he.c, main.c, lc.c declare it so in
    their own prototypes); the typed parameter waits for those units to include f3gm.h.
    Open: data: gm_TechTreeTime (0x76fdc8) takes d3_Time when gm_TechTreeWindow opens the tree, but no drafted
    reader uses it: its purpose (the tree's age, a refresh stamp) is unsettled.
@@ -163,8 +163,8 @@ int gm_IsUnderAge(unsigned short id);         /* 0x4fd7e0 */
 #include "sv.h"
 #include "tr.h"
 #include "txt.h"
-#include "unk_575860.h"
-#include "unk_58bbd0.h"
+#include "sv_t.h"
+#include "lc.h"
 #include "d3_engine.h"
 #include "ch.h"
 #include "cm_types.h"

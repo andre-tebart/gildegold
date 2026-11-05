@@ -5,9 +5,9 @@
    begin (their table 0x611768 follows gv's strings). The last functions of the file (0x4f2750 .. 0x4f1de0) are
    out of address order. Names are ours.
    The effect slots are GVEFFECT records read through the gv_EffectsT view: a building's cannon salvos, three parts
-   each that are SHOTREC cannon balls (unk_5d33b0.h) fired with gv_FireShots (message 0x67, GVSHOTMSG), started by
+   each that are SHOTREC cannon balls (menu.h) fired with gv_FireShots (message 0x67, GVSHOTMSG), started by
    gv_StartShot, moved by gv_UpdateEffects and exploded by gv_ExplodeShot; the save game writes gv_LastTime, the cannon
-   scene state gv_Cannon (cannon scene of unk_575860) and the slots field by field.
+   scene state gv_Cannon (cannon scene of sv_t) and the slots field by field.
    A graveyard building (kind 0x1d) holds a GVYARD (AIBLD.yard): four grave sizes, each a list of GVENTRY entries opened by
    GVYARD.open, counted per type level by gv_ListEntries / gv_EntryCount / gv_GraveCount and walked by gv_FindEntry; each
    entry points at its GVGRAVE records (a dead person). Graveyard orders are GVORDER records (message 0x60, sent by the
@@ -37,7 +37,7 @@
    Open: head: cm.h redeclares gv functions (gv_GrowGraveyard as struct GVYARD *); cm.c cannot include gv.h yet (two
    calls conflict: gv_CrimeText, gv_PassSentence).
    Open: GVEFFPART duplicates SHOTREC and UNKHITS-style copies remain (am.h G9KIND / G9CANNON view gv's records); gv.h
-   does not include unk_5d33b0.h, so the parts are cast to SHOTREC.
+   does not include menu.h, so the parts are cast to SHOTREC.
    unit of rea 8cef7d5b (src/game/gv.c); boundaries in decl/text.dcl */
 #include "txt_views.h"
 #include <windows.h>
@@ -85,13 +85,13 @@ extern GAPDATA full_data_91f6e4[];
 #include "sblib.h"
 #include "sv.h"
 #include "tr.h"
-#include "unk_4b39f0.h"
-#include "unk_58bbd0.h"
+#include "mission.h"
+#include "lc.h"
 #include "vfs.h"
 #include "d3_interface.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 #include "d3_engine.h"
-#include "unk_5d33b0.h"
+#include "menu.h"
 #include "net.h"
 extern int gm_PlayerRecords[688];
 

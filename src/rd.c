@@ -22,8 +22,8 @@
 #include "f3init.h"
 #include "path.h"
 #include "tr.h"
-#include "unk_458810.h"
-#include "unk_58bbd0.h"
+#include "d3_pose.h"
+#include "lc.h"
 #include "ch.h"
 #define util_RandomS ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (as ai.h: unsigned short (int)): this unit's callers were compiled against the 16-bit parameter (as ahm.c's) */
 

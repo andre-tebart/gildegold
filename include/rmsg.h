@@ -1,7 +1,7 @@
-/* Declarations of unk_4b6480.c (0x4b6480..0x4bb720): 69 message callbacks (text 0x12e7 + type), table 0x602570,
+/* Declarations of rmsg.c (0x4b6480..0x4bb720): 69 message callbacks (text 0x12e7 + type), table 0x602570,
    dispatcher 0x4bb6c0. Names are ours. */
-#ifndef UNK_4B6480_H
-#define UNK_4B6480_H
+#ifndef RMSG_H
+#define RMSG_H
 
 #include "am.h"
 

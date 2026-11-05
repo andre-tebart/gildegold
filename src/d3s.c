@@ -1,7 +1,7 @@
 /* d3s.c -- original file name unknown: object shadows ("d3s:" allocation tags, texture "Schatten").
    0x459d80..0x45ce60: the integer edge set-up and span functions and a software triangle rasterizer for
    shadow textures, the shadow texture cache, the shadow system set-up / shutdown, the terrain shadow mesh, and
-   the object shadows. The start at 0x459d80 follows the mesh code of unk_4591a0.c (d3_GetBoxVerts ends at
+   the object shadows. The start at 0x459d80 follows the mesh code of d3_vtx.c (d3_GetBoxVerts ends at
    0x459d80); the end is proven by d3_sky.c, whose first D3DCHECK is at line 38 of that file.
    Functions are kept in their original order. Names are ours.
    Open: d3s.h's D3STERR / D3STBLOCK / D3SMESH are local views of D3TERRAIN / D3SMBLOCK (d3_sm.h) and D3MESH
@@ -25,7 +25,7 @@
 #include "dd_vesa.h"
 #include "mem.h"
 #include "ts_texture.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 extern unsigned char d3_MipSkip;
 
 struct TSTEXTURE; struct TSTEXTURE *tex_Create(char *name, int size, char hicol, D3TEXFLAGS flags, unsigned char f0, unsigned char f6a,

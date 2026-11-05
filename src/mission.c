@@ -1,4 +1,4 @@
-/* unk_4b39f0.c -- missions ("_AUFTRAEGE_VERGABE_HS_%.2d", "special\mission"): the running missions
+/* mission.c -- missions ("_AUFTRAEGE_VERGABE_HS_%.2d", "special\mission"): the running missions
    ai_Missions, the mission types ai_MissionTypes (.data right after hst.c's literals), an own random generator.
    Unit start and name are guesses (open boundary); it ends with ai_SaveMissions / ai_LoadMissions.
    G13TYPE.threshold (0x18) is named from its users: the minutes a timed condition holds (ai_TimedCondition) or the
@@ -7,13 +7,13 @@
    ai_CountMissionEvent and the completion flag of he.c 0x56ce40). AIFIN.missionMoney (ai.h) holds the five saved
    money statistics of the player record the money conditions read (no writer in the build).
    Open: the mission conditions read AICHAR / AIBLD bytes through the G13_B / gm_BuildQueryT views (type debt).
-   Open: not included yet (dcp headers conflicts unk_4b39f0 HEADER): d2.h; held by own declarations that differ
+   Open: not included yet (dcp headers conflicts mission HEADER): d2.h; held by own declarations that differ
    from the owner's: d2_Radios.
    unit of rea 8cef7d5b (src/game/unk_4b39f0.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unk_4b39f0.h"
+#include "mission.h"
 #include "di_input.h"
 #include "net.h"
 #include "d2_types.h"                 /* D2OBJ, d2_Objs' record */

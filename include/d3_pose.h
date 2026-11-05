@@ -1,7 +1,7 @@
 struct XOBJ;
-/* unk_458810.h -- object pose helpers (0x458810..0x4591a0), see unk_458810.c. Names are ours. */
-#ifndef UNK_458810_H
-#define UNK_458810_H
+/* d3_pose.h -- object pose helpers (0x458810..0x4591a0), see d3_pose.c. Names are ours. */
+#ifndef D3_POSE_H
+#define D3_POSE_H
 #include "d3.h"                       /* the D3 records and typedefs this header names */
 struct D3ANIMCTL;
 

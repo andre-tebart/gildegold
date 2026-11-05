@@ -29,10 +29,10 @@ extern int gm_PlayerRecords[688];
 #include "d3_engine.h"
 #include "data_views.h"
 #include "d2.h"
-#include "unk_58bbd0.h"
+#include "lc.h"
 #include "ecmd.h"
 #include "ts_texture.h"
-#include "unk_5d33b0.h"
+#include "menu.h"
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
 #include "ai.h"
 #include "gfx.h"
@@ -53,7 +53,7 @@ extern int gm_PlayerRecords[688];
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern int main_Inactive;       /* 0x6f2584, 1 while the app is deactivated */
-extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
+extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (menu.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
 extern struct SCREENMODE { int w, h; } ai_ScreenModes[];
@@ -264,7 +264,7 @@ extern int main_Movie;               /* 0x6f241c, the playing movie's id */
 extern int di_Disabled;
 extern GAPDATA full_data_6f2574[];
 extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
-extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (unk_5d33b0.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
+extern unsigned char ai_GfxResolution;  /* 0x6f2f94 (menu.c: OPTIONBYTES): @original main_OpenScreen reads it as a byte object (0x531d43 mov al, byte ptr [0x6f2f94]); through the 4-byte union VC6 loads the dword and masks it (and eax, 0xff: 264 instead of 226 differing instructions) */
 extern char ai_OptionsFile[288];
 extern int ai_ScreenModeH;
 extern int ai_ScreenModeW;
@@ -305,11 +305,11 @@ void main_SettleRound(unsigned short pl);
 void main_PlayOutro(void);
 
 extern unsigned int d3anim_CacheMax;   /* 0x5f927c, d3_anim.h */
-void ai_ClearTurnTable(void);           /* 0x587de0, unk_575860.c: not in unk_575860.h (adding it there moves unk_575860's drafts ai_TutorialInitChapter3 / ai_TutorialInitChapter5) */
+void ai_ClearTurnTable(void);           /* 0x587de0, sv_t.c: not in sv_t.h (adding it there moves sv_t's drafts ai_TutorialInitChapter3 / ai_TutorialInitChapter5) */
 int main_PreloadSound(char *f);         /* 0x537c70 */
 #define d2_MoveObjS ((void (*)(short, short, int))d2_MoveObj)  /* 0x46cda0 as its definition reads it (d2.c f_46cda0.c: short x, short y): this unit's callers push the short sums untruncated (0x532212 `sub dx, [..]; sub edx, 0x30; push edx`); d2.h keeps int for d2_CreatePicObj (@original) */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
-#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as unk_5d33b0.h) */
+#define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as menu.h) */
 int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
    "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0: +5 the name, +9 the object name, +0x34 the player limit; diff[i] = limit - players (0x62489c)),
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
@@ -339,16 +339,16 @@ void main_FreeSoundBanks(void);         /* 0x537db0 */
 #include "d3_vec.h"
 #include "f3snd.h"
 #include "sblib.h"
-#include "unk_458810.h"
-#include "unk_575860.h"
-#include "unk_589f10.h"
+#include "d3_pose.h"
+#include "sv_t.h"
+#include "lobby.h"
 #include "am.h"
 #include "ch.h"
 #include "chc.h"
 #include "hmt.h"
 #include "hst.h"
-#include "unk_4b39f0.h"
-#include "unk_4b6480.h"
+#include "mission.h"
+#include "rmsg.h"
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -2464,7 +2464,7 @@ int main_CharacterIntro(int unused);
    "patrizier_MANN2" (0x75e628 = index + 0x639), -1 = back) and the scripted start menu pages "Startmenu/B_Persoenliches.esc" / "Startmenu/A_Stadtwahl.esc" (0x4e2bf0 / 0x4e2c70, 0x760638 = 0x12d6); returns
    non-zero when the character was created, sets the mode flag ai_GameFlags |= 8 then (else clears it). The quick start copies the
    talents of the job's record: gm_GetJobTalents returns a 6-byte record by value in the original (hidden pointer, eax), the call here
-   passes the buffer by hand @deep read against the original and rebuilt (259 -> 112 ins, size 1018 vs 1015): the language branch inverted (ls_GetLanguage() != 0 = three buttons) and its io_PrintText with the original's six arguments (0x1ac0, 0x1ac2, 0x1ac4, 0x1ac2, 0x1ac4, 1), if / do .. while (sv_RunFrame), the plain-click path continues without d2_SetViewEnabled(f, 1), ai_Unk58b880 is tested (the draft assigned it to ret), the shared lok / lback2 tails, main_MessageBox, txt_Ptrs[0x1af9]. Left: (1) frame 0x24 vs 0x1c: gm_Unk503ee0 returns its 6-byte record by value in the original (hidden pointer; the caller copies the record to a temp: mov dx,[eax+4] / mov word [esp+0x34],dx, then 5 bytes into init_PlayerProfile.talents); typing it needs gm_Unk503ee0's definition (f3gm), am.h and unk_575860's prototype changed; (2) allocation: the original keeps again in ebx and ret in ebp, hist in a slot, ours ret in a slot and hist in ebx; the epilogue's ai_GameFlags |= 8 as load / or al / store */
+   passes the buffer by hand @deep read against the original and rebuilt (259 -> 112 ins, size 1018 vs 1015): the language branch inverted (ls_GetLanguage() != 0 = three buttons) and its io_PrintText with the original's six arguments (0x1ac0, 0x1ac2, 0x1ac4, 0x1ac2, 0x1ac4, 1), if / do .. while (sv_RunFrame), the plain-click path continues without d2_SetViewEnabled(f, 1), ai_Unk58b880 is tested (the draft assigned it to ret), the shared lok / lback2 tails, main_MessageBox, txt_Ptrs[0x1af9]. Left: (1) frame 0x24 vs 0x1c: gm_Unk503ee0 returns its 6-byte record by value in the original (hidden pointer; the caller copies the record to a temp: mov dx,[eax+4] / mov word [esp+0x34],dx, then 5 bytes into init_PlayerProfile.talents); typing it needs gm_Unk503ee0's definition (f3gm), am.h and sv_t's prototype changed; (2) allocation: the original keeps again in ebx and ret in ebp, hist in a slot, ours ret in a slot and hist in ebx; the epilogue's ai_GameFlags |= 8 as load / or al / store */
 int main_ChooseHistory(void)
 {
     int again, back, ret, f, b0, b1, b2, grp, hist, h, r;
@@ -5727,7 +5727,7 @@ GAPDATA full_data_62d1fc[8] = { 0x25, 0x31, 0x4e, 0x37, 0x00, 0x00, 0x00, 0x00 }
 GAPDATA full_data_62d204[16] = { 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x61, 0x6d, 0x74, 0x32, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d204 */
 GAPDATA full_data_62d214[16] = { 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x61, 0x6d, 0x74, 0x33, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d214 */
 GAPDATA full_data_62d224[16] = { 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x61, 0x6d, 0x74, 0x31, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d224 */
-GAPDATA full_data_62d254[48] = { 0x24, 0x32, 0x41, 0x24, 0x5a, 0x25, 0x31, 0x4e, 0x32, 0x00, 0x00, 0x00, 0x24, 0x41, 0x24, 0x5a, 0x25, 0x31, 0x4e, 0x32, 0x00, 0x00, 0x00, 0x00, 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x74, 0x61, 0x67, 0x65, 0x73, 0x6f, 0x72, 0x64, 0x6e, 0x75, 0x6e, 0x67, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d254, the strings "$2A$Z%1N2", "$A$Z%1N2" and "special\tagesordnung" (no user yet; the amount info box strings 0x62d234 / 0x62d244 are ai_AmountInfoFmt / ai_AmountInfoForm in unk_58bbd0.c) */
+GAPDATA full_data_62d254[48] = { 0x24, 0x32, 0x41, 0x24, 0x5a, 0x25, 0x31, 0x4e, 0x32, 0x00, 0x00, 0x00, 0x24, 0x41, 0x24, 0x5a, 0x25, 0x31, 0x4e, 0x32, 0x00, 0x00, 0x00, 0x00, 0x73, 0x70, 0x65, 0x63, 0x69, 0x61, 0x6c, 0x5c, 0x74, 0x61, 0x67, 0x65, 0x73, 0x6f, 0x72, 0x64, 0x6e, 0x75, 0x6e, 0x67, 0x00, 0x00, 0x00, 0x00 };  /* 0x62d254, the strings "$2A$Z%1N2", "$A$Z%1N2" and "special\tagesordnung" (no user yet; the amount info box strings 0x62d234 / 0x62d244 are ai_AmountInfoFmt / ai_AmountInfoForm in lc.c) */
 GAPDATA full_data_62d284[16] = { 0x25, 0x69, 0x74, 0x24, 0x31, 0x3e, 0x25, 0x73, 0x24, 0x4e, 0x24, 0x30, 0x3e, 0x00, 0x00, 0x00 };  /* 0x62d284 */
 GAPDATA full_data_62d294[16] = { 0x42, 0x75, 0x63, 0x68, 0x5c, 0x47, 0x65, 0x73, 0x65, 0x74, 0x7a, 0x62, 0x75, 0x63, 0x68, 0x00 };  /* 0x62d294 */
 GAPDATA full_data_62d2a4[24] = { 0x47, 0x65, 0x73, 0x65, 0x74, 0x7a, 0x65, 0x5c, 0x47, 0x65, 0x73, 0x65, 0x74, 0x7a, 0x62, 0x75, 0x63, 0x68, 0x5f, 0x49, 0x6e, 0x66, 0x6f, 0x00 };  /* 0x62d2a4 */

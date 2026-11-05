@@ -1,7 +1,7 @@
-/* Declarations of unk_4a7140.c (0x4a7140.., the card poker game against two NPCs: the .data block "Naechste
+/* Declarations of poker.c (0x4a7140.., the card poker game against two NPCs: the .data block "Naechste
    Karte", "Paar" .. "Royal Flush", the NPC models "arbeiterin_frau" .. "buerger_MANN"). Names are ours. */
-#ifndef UNK_4A7140_H
-#define UNK_4A7140_H
+#ifndef POKER_H
+#define POKER_H
 
 struct AMTREC;
 #include "am.h"

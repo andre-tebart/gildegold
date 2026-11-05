@@ -1,4 +1,4 @@
-/* unk_58bbd0 -- the production / trade windows and the location, privilege and statistics windows of the game
+/* lc -- the production / trade windows and the location, privilege and statistics windows of the game
    screen (0x58bbd0 .. 0x5d33b0, about 480 functions); name unknown, subject and boundary evidence below. The
    contact listeners and the map picks of the kontor / thieves' guild / church / guild-hall scenes read their
    plate texts through the txt_views.h slots (ai_ContactText*) or their txt_Ptrs text id and the building record
@@ -10,15 +10,15 @@
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
    object record views (G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW), the
    Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
-   the gv record (AIWINDOWROW, AIPOSVIEW) are local views here (unk_5d33b0.h / sv.h / ai_char.h / ai_types.h /
+   the gv record (AIWINDOWROW, AIPOSVIEW) are local views here (menu.h / sv.h / ai_char.h / ai_types.h /
    am_types.h / ai.h hold the owners' types); they settle when those headers can be included. The "hp_" production
    settings are typed the same way: G8SETTING / G8SLOT / G8SETTAIL and G8BLD (a building's good id, gv.h's ORDBLD).
    Open: data: the production settings head 0x6f26c0 (ai_Settings) and the shared float 0x5ebb40 (ai_FloatHundred,
    he.c reads it too) still sit in the full_data / full_rdata gap blocks of main.c.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
-   picks stay without a prototype (M7); and not included yet (dcp headers conflicts unk_58bbd0 HEADER): ahm.h
+   picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h
-   unk_4b39f0.h unk_5d33b0.h vfs.h; held by own declarations that differ from the owner's: ai_Time,
+   mission.h menu.h vfs.h; held by own declarations that differ from the owner's: ai_Time,
    d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE, d3sm_Pick; calls whose argument count differs from
    the definition (read the original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText,
    d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine,
@@ -27,7 +27,7 @@
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define unk_Unk5136b0K ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
-/* unk_58bbd0.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
+/* lc.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
    goods columns 0x58c680 ..), then the building purchase / construction screens (0x58f510 .. 0x593960: the
@@ -64,7 +64,7 @@ struct D3SM;
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "unk_58bbd0.h"
+#include "lc.h"
 #include "di_input.h"
 #include "evt.h"
 #include "d3.h"
@@ -73,7 +73,7 @@ struct D3SM;
 
 extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
+extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 extern GAPDATA full_data_6f5a84[];
 extern GAPDATA full_data_6f40e0[];
 extern char * ai_BTypes;
@@ -435,7 +435,7 @@ extern unsigned short * sv_PanelShown;
 extern int sv_PopRequest;
 extern char * ai_BTypes;
 extern char * ai_FallbackBuilding;
-#include "unk_5d33b0_types.h"
+#include "menu_types.h"
 extern OPTIONBYTES ai_GfxFloor;
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
@@ -1155,11 +1155,11 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #include "sblib.h"
 #include "tb.h"
 #include "tr.h"
-#include "unk_458810.h"
-#include "unk_575860.h"
+#include "d3_pose.h"
+#include "sv_t.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (unk_5d33b0.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
+#define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
    0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
    slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
@@ -2426,7 +2426,7 @@ int ai_BuildingName(int id, char *out)
 
 struct D3OBJECT;
 struct D3VECTOR;
-void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out); /* 0x458a20 (unk_458810.c) */
+void d3_PointToWorld(struct D3OBJECT *obj_, struct D3VECTOR *in, struct D3VECTOR *out); /* 0x458a20 (d3_pose.c) */
 unsigned char *gm_BuildQuery(int n, ...);                  /* 0x501190 (f3gm.c) */
 unsigned char *gm_BuildNext(void);                         /* 0x501030 (f3gm.c) */
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); /* 0x453e80 (d3_vec.c) */
@@ -2713,8 +2713,8 @@ int lc_GetGebaeudeBauplatz(AIBUILDSITE *out, AIBLD *b)
 int d3t_DropObject(); 
 
 struct XOBJ;
-void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);  /* 0x458c10 (unk_458810.c) */
-void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (unk_458810.c) */
+void d3_LocalToWorld(struct XOBJ *obj, float *in, float *out);  /* 0x458c10 (d3_pose.c) */
+void d3_DirToWorld(struct XOBJ *obj, float *in, float *out);    /* 0x458810 (d3_pose.c) */
 float d3_VecAngle(struct D3VECTOR *a, struct D3VECTOR *b);      /* 0x4539f0 (d3_vec.c) */
 extern const struct D3VECTOR d3_ZAxis;                          /* 0x5ebb74, (0, 0, 1) */
 
@@ -5670,7 +5670,7 @@ void ai_Unk596ff0(void)
     sv_CameraFollow();
 }
 typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu
-                                           (unk_5d33b0.h, same layout) */
+                                           (menu.h, same layout) */
     int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a */
     int mode;                           /* +0x04, 0x400 */
     unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */

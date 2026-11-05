@@ -22,13 +22,13 @@
 #include "ls.h"
 #include "mem.h"
 #include "sv.h"
-#include "unk_58bbd0.h"
+#include "lc.h"
 #include "vfs.h"
 #include "ch.h"
 #include "d2.h"
 #include "d3_sm.h"
 #include "gfx.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
 int ai_Unk62c26c = 1;  /* 0x62c26c */

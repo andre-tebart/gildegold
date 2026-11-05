@@ -35,8 +35,8 @@ struct D3OBJECT;
 #include "f3gm.h"
 #include "mem.h"
 #include "ts_texture.h"
-#include "unk_458810.h"
-#include "unk_4591a0.h"
+#include "d3_pose.h"
+#include "d3_vtx.h"
 #include "ch.h"
 
 /* the pose a camera / zoom target stores in D3OBJECT 0x5c and 0x90 (serialized for object types 2/3;

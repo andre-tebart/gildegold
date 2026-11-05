@@ -43,9 +43,9 @@
    0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
    filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner
    he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
-   Open: types: SVFRAME / the frame stack view is declared in sv.c, unk_58bbd0.c and here (it belongs in sv_types.h).
+   Open: types: SVFRAME / the frame stack view is declared in sv.c, lc.c and here (it belongs in sv_types.h).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
-   f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
+   f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h mission.h rmsg.h menu.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
    count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
    gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor; cm.h's void senders whose
@@ -85,9 +85,9 @@ struct D3SM;
 extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
-extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, unk_5d33b0.c */
+extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
 extern int ai_GameFlags;
-#include "unk_5d33b0_types.h"
+#include "menu_types.h"
 extern OPTIONBYTES ai_GameSwitches;
 extern char ai_Chars[768][0x21c];
 extern unsigned short * ai_PlayerChar;
@@ -204,7 +204,7 @@ extern GAPDATA full_data_627e98[];
 extern GAPDATA full_data_627ea8[];
 extern char ai_MissionMode;
 extern int ai_MissionPartner;
-#include "unk_4b39f0_types.h"
+#include "mission_types.h"
 extern G13MIS ai_Missions[];
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -463,9 +463,9 @@ int gm_CompareTime();
 #include "tb.h"
 #include "tr.h"
 #include "udp.h"
-#include "unk_458810.h"
-#include "unk_575860.h"
-#include "unk_58bbd0.h"
+#include "d3_pose.h"
+#include "sv_t.h"
+#include "lc.h"
 #include "ai_bld.h"
 #include "f3gm_carry.h"
 #include "ai_char.h"
@@ -2582,7 +2582,7 @@ int cm_SendExSetHE(); /* @original: the callers here push the key as an int and 
    7's cur, the amount sum * (x * 0.5), the equipment fallback through an int). Q-only handover, Q2:
    AIBLD.unk65 / unk69 only. Read: their users in every unit (ai.c steers unk65 towards AIPOS.unk18 and
    sends it as field 0x65; gv.c / f3gm.c read +0x65 as a record pointer; the inn code reads +0x65 / +0x69 /
-   +0x6b as guest counters; main.c zeroes unk69 for kind 7 every round; unk_4b39f0 reads +0x69 as an
+   +0x6b as guest counters; main.c zeroes unk69 for kind 7 every round; mission reads +0x69 as an
    AITIME) and the 0x67 run handler he_RunAuctionEvent (arg[1] is the ranking's minimum wealth): the 0x65 .. 0x6c
    area is a per-kind union, no source names the two ints for the kinds 0x1e / 0x1f / 0x20; a rename or a
    union in the shared ai_bld.h is a shared-header decision (ai.c notes a union there flipped a byte
@@ -11410,7 +11410,7 @@ void he_SetCartSpeed(int ev, int p)
 
 int gm_FindObjectInst(int id);
 void cm_SendCartRoute(int a, int b, int c);
-typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv.c sv_RunFrame: "MASTER()"; as sv.c / unk_58bbd0.c declare it) */
+typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv.c sv_RunFrame: "MASTER()"; as sv.c / lc.c declare it) */
     int cb;                             /* 0x00, the frame callback registered at this depth */
     char pad04[4];
 } SVFRAME;
@@ -16082,7 +16082,7 @@ done:
 
 int ai_BuildingName();
 int ai_FindBauplaetze();
-int ai_FindNearestObject(float *ref, int *list);  /* 0x58fe10 (unk_58bbd0.c) */
+int ai_FindNearestObject(float *ref, int *list);  /* 0x58fe10 (lc.c) */
 
 /* 0x56b570, "he_AllocGebaeudeBauen", the alloc of an event of the type 0xd (when another one of the type is still below the state 5 the record is freed): clocks (+0x52 / +0x60) = the start clock, due now + 1, +0xc4 / +0xc8 = 0;
    the data of the object +0xb0 is looked up (0x58f640 / 0x58f7a0 in the scene 0, 0x4478e0 selects it) and every entry is checked (0x58fe10 against +0xd4); without entries or with a miss the record is freed,

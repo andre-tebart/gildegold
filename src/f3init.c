@@ -5,7 +5,7 @@
    Open: head: include/sv.h, sv_PanelShown unsettled (this unit declares it as INIT_OBJ * for its objId, sv.h as
    unsigned short *), so sv_PlaceCamera / sv_UpdateSkyPhase stay without a prototype (M7) in init_AfterTownLoad.
    Open: not included yet (dcp headers conflicts f3init HEADER): ai.h amt.h cm.h d2.h f3snd.h gfx.h hmt.h hst.h
-   unk_4b39f0.h unk_4b6480.h; held by own declarations that differ from the owner's: cm_SendExSellObject,
+   mission.h rmsg.h; held by own declarations that differ from the owner's: cm_SendExSellObject,
    amt_GetKind, amt_GetOffice, d2_ClearSurface, amt_GetFirstOffice, gm_AssignBuilding.
    unit of rea 8cef7d5b (src/game/f3init.c); boundaries in decl/text.dcl */
 struct VFSENTRY;
@@ -181,7 +181,7 @@ typedef struct INIT_CHAR {
     char pad003[0x1];               /* 0x003 */
     unsigned int netId;             /* 0x004, the record's network id (the field block id) */
     unsigned char health;           /* 0x008, ai.h AICHAR.health (100 at creation, > 0 = alive) */
-    unsigned char female;           /* 0x009, 0 male / 1 female (unk_4a7140.h's female, he.c's title texts by +9) */
+    unsigned char female;           /* 0x009, 0 male / 1 female (poker.h's female, he.c's title texts by +9) */
     unsigned short age;             /* 0x00a, the age in years (am.c: "grown up (0x0a + 4 >= 0x20)") */
     char pad00c[0x20];              /* 0x00c .. 0x02b */
     int group;                      /* 0x02c, the id of the building the character belongs to (-1 = none, sv.c 0x52b2a0) */
@@ -326,7 +326,7 @@ void gm_AgeCharacter(char *c, unsigned short age);    /* 0x4fc6f0, f3gm.c: ages 
 int ai_WorksForMaster(struct AICHAR *c);                 /* 0x47dd70, ai.c */
 void hmt_Begin(void);                           /* 0x4ad0a0, hmt.c */
 extern int sv_PanelFlag;                /* 0x75e8c0 */
-void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, unk_58bbd0.c: the angle of the object plot to out */
+void ai_ObjectAngle(void *out, int plot);                 /* 0x58fd90, lc.c: the angle of the object plot to out */
 void cm_SendOwnership(int a, int b, int c);               /* 0x4c54a0, cm.c: message 0x38, the building a changes its person from b to c */
 void cm_SendBoss(int a, int b);                            /* 0x4c5540, cm.c: message 0x39, the building a gets the character b as its boss */
 int cm_RequestCreateGeb(int owner, int kind, D3VECTOR4 *pos, int *rot);  /* 0x4c5ae0, cm.c: message 0x4c, a building of kind k at pos */
@@ -365,8 +365,8 @@ void cm_SendOwnership(int a, int b, int c);                     /* 0x4c54a0 */
 int sv_PumpMessages();                     /* 0x52fb80 */
 void sv_NetworkSyncWait(unsigned fl);           /* 0x52fc10, sv.c */
 struct G13MIS;
-struct G13MIS *ai_NewRandomMission(int owner, int kind, int x);  /* 0x4b3c10, unk_4b39f0.h */
-void ai_ShowMissions(int owner);                /* 0x4b5310, unk_4b39f0.c */
+struct G13MIS *ai_NewRandomMission(int owner, int kind, int x);  /* 0x4b3c10, mission.h */
+void ai_ShowMissions(int owner);                /* 0x4b5310, mission.c */
 void cm_SetSpeedLevel(unsigned int v);          /* 0x4c3ef0, cm.h */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2);  /* 0x4c46d0, cm.h */  /* @original: the callers store the returned slot, cm.c defines void */
 void main_GiveStartBuildings(int p);                     /* 0x534040, main.c range: gm_BuildQuery(1, 0, 6) makes the "Home-Sweet" house and hands it to character c (0x502b60) */
@@ -393,7 +393,7 @@ void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);   /* 0
 void sv_RunFramesUntilStopped(int id);                     /* 0x52bb70 */
 extern int __mb_cur_max;                /* 0x62e3a0, the CRT locale state */
 extern unsigned short *_pctype;         /* 0x62e194, the CRT ctype table */
-#include "unk_5d33b0_types.h"
+#include "menu_types.h"
 #include "ch.h"
 #include "f3gm.h"
 extern OPTIONBYTES ai_GfxFloor;        /* 0x6f35c8 */
@@ -428,9 +428,9 @@ int ai_SceneChars[32] = {0};  /* 0x7603a0 .. INIT_WINDOWS_END: the characters of
 #include "tb.h"
 #include "tr.h"
 #include "ts_texture.h"
-#include "unk_458810.h"
-#include "unk_58bbd0.h"
-#include "unk_5d33b0.h"
+#include "d3_pose.h"
+#include "lc.h"
+#include "menu.h"
 #include "vfs.h"
 signed char init_BuildingUniverse[0x22] = {0};  /* 0x76fa60, the universe of each building class's scene */
 unsigned short * ai_SceneObject = 0;  /* 0x76fa84 */

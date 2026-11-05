@@ -4,7 +4,7 @@
    animated shapes, two 16 bit drawing loops in inline assembly. Its own TU: its .data starts at 0x5fed74
    (colour keys, 640 / 480 / 800) after the GFX.C strings. The 0xcc after 0x47d210 is the linker's fill after
    that function's unpadded section (see its pragma), not an object end. Names are ours.
-   Open: the end boundary to unk_47d600.c rests on the subject only.
+   Open: the end boundary to shp_asm.c rests on the subject only.
    unit of rea 8cef7d5b (src/game/shp.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>

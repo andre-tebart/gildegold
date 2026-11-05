@@ -20,7 +20,7 @@
 #include "err.h"
 #include "mem.h"
 #include "ts_texture.h"
-#include "unk_4591a0.h"
+#include "d3_vtx.h"
 #include "vfs.h"
 #define d3anim_NextFrameIo ((int (*)(D3IOANIMFLAGS, int, int, int, int))d3anim_NextFrame)  /* 0x4324e0 (d3_anim.h: D3ANIMFLAGS f): @original this unit passes its field-wise D3IOANIMFLAGS (12 bytes), as the original TU did */
 

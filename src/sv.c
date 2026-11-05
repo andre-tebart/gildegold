@@ -52,7 +52,7 @@ extern D2VIEW d2_Views[];
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 extern void *d2_ScreenSurf;  /* 0x6ed924 */
 
-#include "unk_5d33b0_types.h"
+#include "menu_types.h"
 #include "ai_types.h"
 extern OPTIONBYTES ai_OptionPanelHelp;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -326,10 +326,10 @@ int d2_RemoveWindow();                     /* 0x472ce0 */
 #include "tr.h"
 #include "ts_texture.h"
 #include "txt.h"
-#include "unk_458810.h"
-#include "unk_4b39f0.h"
-#include "unk_575860.h"
-#include "unk_58bbd0.h"
+#include "d3_pose.h"
+#include "mission.h"
+#include "sv_t.h"
+#include "lc.h"
 #include "vfs.h"
 #include "shp.h"
 #include "f3gm.h"
@@ -362,7 +362,7 @@ void sv_UnregisterTick(void)
     tb_CloseFunction(sv_UpdateFramesPerTick);
 }
 #include "ch.h"
-#include "unk_5d33b0.h"
+#include "menu.h"
 /* 0x520f20, resets the screen clip and the scene state 0x631090 and the window metrics 0x5f3238 / 0x5f323c (screen height - 8, width) */
 void sv_ResetScreenClip(void)
 {
@@ -7635,7 +7635,7 @@ float sv_FramesPerTick = 30.0f;  /* 0x62378c */
 int sv_TickFrames = 30;  /* 0x623790, the frames drawn since the last timer tick (counted by the frame loop) */
 char sv_GroundplanColours[] = "\377\376\005\005%\377\377/\021\005\377\030\3746\343\377\231\005\005\377\366z\005\005\266W\377<\005P\031H\005\013\304^\305\005g\357\234\231\005\010r";  /* 0x623794, the table of */
 int sv_StatusTime = -1;  /* 0x6237c4, when the status line was set (d3_Time) */
-unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, d3_Time when sv_RunLocationScripts last fired event 6 of the default scene (every 500 ms; the scene changes of unk_58bbd0.c reset it to 0) */
+unsigned sv_SceneEventTime = 0xffffffff;  /* 0x6237c8, d3_Time when sv_RunLocationScripts last fired event 6 of the default scene (every 500 ms; the scene changes of lc.c reset it to 0) */
 int sv_PanelRebuild = 1;  /* 0x6237cc */
 /* 0x6237d0, the camera limits: three settings of (height, angle), first the near view pair and then (+3 pairs)
    the far one. ai_ApplyGfxOptions (0x5d5c40) copies the pair of the camera_limits option (ai_GfxFloor.byte[1])

@@ -25,7 +25,7 @@
 #include "mem.h"
 #include "sblib.h"
 #include "sv.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 
 /* 0x40ba10, CreateCharacter(name, x, y, z): creates the character at that position and gives it the
    group of the running script (it is shown only while that group is the current room); returns it, or 0

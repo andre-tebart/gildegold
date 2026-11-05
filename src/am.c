@@ -4,7 +4,7 @@
    callbacks, the decision callbacks of the AI decision table 0x611258 (29 records of 0x24 bytes, callback at
    +0x20), the partner / building finders and the AI cannon shot. Starts with its first global ai_PlayerCountYear
    (-1 at 0x5ffd1c) right after the AI unit's strings; its one .data string block (in function order) ends with
-   "%sgebaeude/*%s_%c.ogr" 0x600478, the next block is unk_4a7140.c's. Names are ours.
+   "%sgebaeude/*%s_%c.ogr" 0x600478, the next block is poker.c's. Names are ours.
    Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER), message views of ai.h's
    AIMSG (AIXMSG / G8MSG) and duplicate callee prototypes / cast macros; they need unifying with ai.h's types.
    Open: AIJOBX (am.h) duplicates ai.h's AIJOB; the building offer's price (+0xb0) is a member of AIJOBX only,
@@ -32,8 +32,8 @@ extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) the origin
 #define AI_REPAIR_KINDS 0x7c43b4  /* the building kinds ai_DecideRepairBuilding repairs (one bit per AIBTYPE.kind) */
 
 #include "hst.h"
-#include "unk_4a7140.h"
-#include "unk_4b39f0.h"
+#include "poker.h"
+#include "mission.h"
 int ai_PlayerCountYear = -1;                  /* 0x5ffd1c */
 G6CURSOR ai_NearRingCursorState = { ai_NearRing, 1 };  /* 0x60034c, the next entry of ai_NearRing and the stride */
 int ai_NumPlayerChars = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
@@ -62,7 +62,7 @@ int ai_EvalStack[73] = {0};  /* 0xf86900, the action ids on the evaluation stack
 #include "main.h"
 #include "sv.h"
 #include "tr.h"
-#include "unk_58bbd0.h"
+#include "lc.h"
 #include "f3gm.h"
 #include "ahm.h"
 #include "amt.h"
@@ -70,8 +70,8 @@ int ai_EvalStack[73] = {0};  /* 0xf86900, the action ids on the evaluation stack
 #include "cm.h"
 #include "d3_interface.h"
 #include "d3_tools.h"
-#include "unk_458810.h"
-#include "unk_5d33b0.h"
+#include "d3_pose.h"
+#include "menu.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define d3t_GetObjectBoundsV ((void (*)(void *, void *, void *))d3t_GetObjectBounds)  /* 0x413150 (d3_tools.c: D3VECTOR *, D3VECTOR *, D3OBJECT *): this unit's untyped view */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
@@ -11108,7 +11108,7 @@ unsigned int ai_PickPartnerChainLevel(AIPER *p, unsigned int a, unsigned int fl,
    reads it): the original compares both bounds against that float, which it never sets (lo and hi only switch the
    test on); its id into *out (-1 for none), returns 1 when found
    @deep read in full against the original: lo/hi are float parameters (prototypes changed from int c,
-   float f in am.h, he.c, unk_575860.c, unk_58bbd0.c; callers pass 0 either way), double window constants,
+   float f in am.h, he.c, sv_t.c, lc.c; callers pass 0 either way), double window constants,
    the filter record q[0x14] (frame 0x58 = win, step, q) whose float +0x44 the original compares both
    liking bounds against, the unsigned hi mask word, the found/break exit, int j. 118/118 instructions.
    Left: allocation only: ours packs win into the dead parameter slot of a ('- mov dword ptr [esp + 0x6c],

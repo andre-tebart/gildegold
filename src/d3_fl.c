@@ -4,7 +4,7 @@
    leaked d3_engine.c and d3_interface.c; d3_engine.c's .data ends before 0x5fb970, which holds d3fl_Blend =
    0x43eab0, followed by this file's strings up to "D:\develop\Units\d3\d3_interface.c". Functions are kept in
    their original order. Names are ours.
-   Open: d3fl_* are still declared outside d3_fl.h (d3.h, d3_engine.h, cm.h, f3init.c, ls.c, unk_58bbd0.c).
+   Open: d3fl_* are still declared outside d3_fl.h (d3.h, d3_engine.h, cm.h, f3init.c, ls.c, lc.c).
    unit of rea 8cef7d5b (src/game/d3_fl.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,13 +25,13 @@
 #include "f3gm.h"
 #include "mem.h"
 #include "ts_texture.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 #include "vfs.h"
 #include "ch.h"
 #include "cm.h"
 #define tex_GetFrameF ((D3FLTEX *(*)(int, unsigned char))tex_GetFrame)  /* 0x460b00 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
 #define tex_FindF ((D3FLTEX *(*)(char *))tex_Find)  /* 0x45f980 (TSTEXTURE *): this unit's D3FLTEX view of the texture */
-#define d3_DirToWorldD ((void (*)(D3OBJECT *, D3VECTOR *, D3VECTOR *))d3_DirToWorld)  /* 0x458810 (unk_458810.h: XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
+#define d3_DirToWorldD ((void (*)(D3OBJECT *, D3VECTOR *, D3VECTOR *))d3_DirToWorld)  /* 0x458810 (d3_pose.h: XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 extern const char d3_ScrollPool[];
 
 /* 0xfe79fc / 0xfe7a00 / 0xfe7a04 are d3d_UsedTexFormat.pf2 (+0x2c) + 0x10 / 0x14 / 0x18. */

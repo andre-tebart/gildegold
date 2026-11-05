@@ -57,7 +57,7 @@ reason = "manual testing (rea's play): 16-bit back buffer in a window, frame dum
   glob = ["d3_d3d", "shp", "gfx", "d2"]
   cflags = ["/DREA_FRAME_DUMP"]
   [[variant.unit]]
-  glob = ["main", "unk_575860"]
+  glob = ["main", "sv_t"]
   cflags = ["/DREA_START"]
 
 [[setup]]

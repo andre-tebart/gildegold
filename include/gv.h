@@ -86,7 +86,7 @@ typedef struct GVRAISE {                /* 0x19 bytes, a raising of a dead perso
     int kind;                           /* 0x15, 0x1b or 0x1c (the handler refuses others) */
 } GVRAISE;
 #pragma pack(pop)
-typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (unk_575860 0x57e270 ..), saved with the effects */
+typedef struct GVCANNON {               /* 0x20 bytes, the state of the cannon scene (sv_t 0x57e270 ..), saved with the effects */
     int bld;                            /* 0x00, the record id (rec + 1) the scene was last set up for, -1 after the reset */
     int spare;                          /* 0x04, no reader besides the save game */
     float camTarget[3];                 /* 0x08, the aim angles (pitch, yaw, roll) the scene keeps between visits: the camera's rotation (+0x84 .. +0x8c) at the first, the scene's rot after */
@@ -374,7 +374,7 @@ typedef struct GVEFFPART {              /* 0x68 bytes, one of an effect slot's t
     float v3[4];                        /* 0x30, not saved */
     float v4[4];                        /* 0x40 */
     int a, b, c;                        /* 0x50 */
-    int state;                          /* 0x5c, the part is a SHOTREC (unk_5d33b0.h): this is its state, 0 idle, 1 in flight, 2 landed, 3 left the map (gv_UpdateEffects) */
+    int state;                          /* 0x5c, the part is a SHOTREC (menu.h): this is its state, 0 idle, 1 in flight, 2 landed, 3 left the map (gv_UpdateEffects) */
     int time;                           /* 0x60, not saved: the reader sets it to d3_Time */
     int steps;                          /* 0x64, the flight steps made (SHOTREC.steps) */
 } GVEFFPART;
@@ -548,7 +548,7 @@ int gv_RankCulprits(int *ids, int *cnt, unsigned short t);/* 0x4f3c50 */
 int gv_RankCulpritsAll(int *ids, int *open, int *total, unsigned short t);  /* 0x4f3dd0 */
 
 extern const int gv_RankWorth[];             /* 0x5ee0f8, experience thresholds per level */
-extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / unk_4b39f0.c) */
+extern unsigned char ai_NumPlayers;     /* 0x62489c, the number of players (as ai.h / cm.h / mission.c) */
 int gm_GetWorth(unsigned short id);    /* 0x50a640 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 0x4c4a60 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */

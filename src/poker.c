@@ -1,4 +1,4 @@
-/* unk_4a7140.c -- the card poker game of the tavern against two NPCs (0x4a7140..): the game record 0xf83654,
+/* poker.c -- the card poker game of the tavern against two NPCs (0x4a7140..): the game record 0xf83654,
    the deck 0xf83660 and the two opponents 0xf837e0. The am unit ends before it (its last .data string is
    "%sgebaeude/*%s_%c.ogr" 0x600478; this unit's block starts with the hand names 0x600490). Names are ours.
    Then the leisure actions (0x4a8760..0x4aa430), the "aip_Exec*" private AI actions and actions 0x44..0x47
@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "unk_4a7140.h"
+#include "poker.h"
 #define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
@@ -41,7 +41,7 @@
 #include "gv.h"
 #include "he.h"
 #include "tr.h"
-#include "unk_58bbd0.h"
+#include "lc.h"
 
 
 /* 0x4a7140, starts a game of character p in g: the stake from p's money, the deck, two random opponents */

@@ -1,4 +1,4 @@
-/* unk_5d33b0.c -- the screen / front-end module (0x5d33b0 .. 0x5dd3e0; no leaked name): the file selector,
+/* menu.c -- the screen / front-end module (0x5d33b0 .. 0x5dd3e0; no leaked name): the file selector,
    the save / load windows, the options reader / writer and screens, the options menu, credits, pause and
    message filter, the gypsy / tailor contact windows, the poker windows, the wind and the cannon ball.
    Start (plausible): its first literal "%s_%s" 0x62d7d8 follows the previous unit's last literal "special_uni"
@@ -11,7 +11,7 @@
    Open: ai_SaveOptionWindow / ai_SaveNameWindow / ai_LoadGameWindow / ai_JoinGameWindow still cast
    d2_GetViewWin to six arguments; as in ai_FilePickWindow the original likely nests d2_GetViewWin (win, 1)
    in the 8-argument sv_CreateScrollButtons call (their @deep "cleanup split" notes).
-   Open: not included yet (dcp headers conflicts unk_5d33b0 HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
+   Open: not included yet (dcp headers conflicts menu HEADER): ch.h cm.h d2.h d3_int_io.h gfx.h; held by
    own declarations that differ from the owner's: d2_StartFade, d2_ReleaseFade, d2_WinOpenPic, d2_ScreenSurf,
    d2_Inputs, d2_LockSurface, d2_UnlockSurface, ch_List, d3io_Lod.
    unit of rea 8cef7d5b (src/game/unk_5d33b0.c); boundaries in decl/text.dcl */
@@ -30,13 +30,13 @@ extern int gm_PlayerRecords[688];
 #include "d3_vec.h"
 #include "surf.h"
 /* the unit's first .rdata constant (before the header's, in address order): the filter of the gypsy windows, the
-   flags and kind he and unk_58bbd0 pass to ai_PickActionBuilding too */
+   flags and kind he and lc pass to ai_PickActionBuilding too */
 const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatile: VC6 would fold it into immediates here; the original reads it from memory) */
-#include "unk_5d33b0.h"
+#include "menu.h"
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the file selector ai_FilePickWindow pushes 2 arguments (the input, the name) */
 #define d2_PlaceMainWindowF ((void (*)(int, int))d2_PlaceMainWindow)  /* 0x475850 (d2.c: int view): @original the callers pass the placement flags too, which the original's tail jump leaves on the stack for d2_PlaceWindowScaled */
-#include "unk_575860.h"
-#include "unk_58bbd0.h"
+#include "sv_t.h"
+#include "lc.h"
 #include "data_views.h"
 #include "d2_types.h"                 /* D2OBJ, D2WIN, D2PIC: the records of d2_Objs, d2_LastWindowPtr, d2_Pics */
 #include "ls.h"                      /* ls_SavePath */
@@ -58,8 +58,8 @@ const volatile unsigned __int64 gypsyFilter = 0x1a7fdfbb6;  /* 0x5eed68 (volatil
 #include "sblib.h"
 #include "sv.h"
 #include "tr.h"
-#include "unk_4a7140.h"
-#include "unk_4b39f0.h"
+#include "poker.h"
+#include "mission.h"
 #include "d3_engine.h"
 #include "d3_fl.h"
 #include "dd_vesa.h"
@@ -507,7 +507,7 @@ int ai_LeaveGame = 0;  /* 0x6f25a0, set with ai_GameOver when the menu leaves th
 OPTIONBYTES ai_GfxResolution = {0};  /* 0x6f2f94: byte 0 cur_res */
 /* ai_ContactTextProductionTailor: view of txt_Ptrs (build/mk_txt_views.py) */
 EFFECTSTATE ai_EffectState = {0};  /* 0x6f3300 .. 0x6f34f0, the wind state ai_InitWind builds */
-POKERGAME ai_PokerState = {0};  /* 0x6f3500 .. 0x6f35c0, the poker game state (unk_4a7140.c steps it) */
+POKERGAME ai_PokerState = {0};  /* 0x6f3500 .. 0x6f35c0, the poker game state (poker.c steps it) */
 OPTIONBYTES ai_GfxSet = {0};  /* 0x6f35c0: byte 0 gfx_set */
 /* the option globals the writer 0x5d4c70 (and the reader 0x5d5640) use: each dword holds four option
    bytes, the INI keys name the bytes (see the key order in 0x5d4c70); the four "Gfx" detail bytes are
@@ -1086,7 +1086,7 @@ void d3_ReloadMeshes(unsigned int mask, int type, void (*progress)(int a, int i,
 void d3_ApplyGraphicsOptions(int a, unsigned char b, unsigned char c, unsigned char mode, int e); /* 0x43c4e0 */
 void ch_SetLowPoly(unsigned char mode);         /* 0x402af0, ch.c */
 void d3fl_SetMips(char a);                      /* 0x43f930, d3_fl.c */
-void ai_CheckBuildSites(void);                  /* 0x58fb60, unk_58bbd0.c */
+void ai_CheckBuildSites(void);                  /* 0x58fb60, lc.c */
 void d3_SetRLights(unsigned char on);           /* 0x43e180, d3_engine.c */
 struct D3FLMAP;
 void init_SetDetailLevel(struct D3FLMAP *s, char f);       /* 0x513590, f3init.c */
@@ -1588,18 +1588,18 @@ void ai_SaveNetworkGame(char *saveName, char *name)
 
 /* the callees of the front-end stretch (their units' headers are not included here, so their
    prototypes are repeated as the definitions spell them; the building pointers are this TU's ints) */
-int ai_StorageWindow(int building, int list); /* 0x5b26b0, unk_58bbd0.c */
-int ai_ProductionWindow(unsigned char *building); /* 0x58bd60, unk_58bbd0.c: "Handel\Handel_PRODUKTION" */
-int ai_OpenTransport(int rec);             /* 0x5af1a0, unk_58bbd0.c */
-int ai_PersonnelBook(int building, char *text); /* 0x5aab80, unk_58bbd0.c: "ob_PERSONALBUCH" */
-void ai_TradeSearchWindow(unsigned char *cfg, int arg); /* 0x595480, unk_58bbd0.c: "HANDEL\HANDEL_SUCHEN" */
-void ai_MasterLetterWindow(unsigned char *building); /* 0x5c3200, unk_58bbd0.c: "ob_MEISTERBRIEF" */
-void ai_MarketContact(struct AIBLD *rec);  /* 0x58f510, unk_58bbd0.c */
+int ai_StorageWindow(int building, int list); /* 0x5b26b0, lc.c */
+int ai_ProductionWindow(unsigned char *building); /* 0x58bd60, lc.c: "Handel\Handel_PRODUKTION" */
+int ai_OpenTransport(int rec);             /* 0x5af1a0, lc.c */
+int ai_PersonnelBook(int building, char *text); /* 0x5aab80, lc.c: "ob_PERSONALBUCH" */
+void ai_TradeSearchWindow(unsigned char *cfg, int arg); /* 0x595480, lc.c: "HANDEL\HANDEL_SUCHEN" */
+void ai_MasterLetterWindow(unsigned char *building); /* 0x5c3200, lc.c: "ob_MEISTERBRIEF" */
+void ai_MarketContact(struct AIBLD *rec);  /* 0x58f510, lc.c */
 int sv_CheckMoney(char *o, int n);         /* 0x520f90, sv.c: 1 when the object's money (+0x194)
                                               covers n, else a message box with the text 0x74 */
 int sv_MessageBox(int text, unsigned flags); /* 0x521150, sv.c: the modal message box */
 void sv_CameraFollow(void);                /* 0x52d7a0, sv.c: the per-frame camera follow */
-int ai_AmountMenu(int record, int text, int text2, int callback); /* 0x5c1130, unk_58bbd0.c: the
+int ai_AmountMenu(int record, int text, int text2, int callback); /* 0x5c1130, lc.c: the
                                               "special_amt1" amount menu, returns the chosen value */
 int d2_CreateWindow(); int d2_RemoveWindow(); int io_PrintText(char *fmt, ...);
 int d2_GetObjValue();
@@ -3839,7 +3839,7 @@ int ai_GetDefaultEffect(void)
 /* 0x5dbc20, the default effect scale (13 B): the scale field of the default effect record
    (ai_DefaultEffect.scale 0x62de6c) through the 0 .. 60 -> 0 .. 1 clamp 0x5dd090
    (ai_NormalizeEffectScale); the result is the entry's scale (passed to the 0 .. 100 slider as
-   100 * value, unk_575860.c). The callers pass an ignored argument through a K&R declaration.
+   100 * value, sv_t.c). The callers pass an ignored argument through a K&R declaration.
    @original the original TU called 0x5dd090 through an int K&R declaration: it pushes the float's
    bit pattern as an int (mov eax,ds:0x62de6c; push eax) and does not pop the float result, so the
    function returns the callee's st(0) (float) and the result is used as such by its callers. */

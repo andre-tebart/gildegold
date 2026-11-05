@@ -1,4 +1,4 @@
-/* unk_47d600.c -- 0x47d600.., the shape drawing loops for 8 bit shapes, written in inline assembly; it ends with
+/* shp_asm.c -- 0x47d600.., the shape drawing loops for 8 bit shapes, written in inline assembly; it ends with
    the darkening blit 0x47d960; AI code follows from 0x47d9e0. Uses unk_47c5e0.h. Names are ours. Kept apart from
    shp.c by subject only: the 0xcc before 0x47d600 is the linker's fill after d2_ShpBlit16ClipXY's unpadded section
    (its pragma), not an object end.

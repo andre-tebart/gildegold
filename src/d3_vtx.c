@@ -1,7 +1,7 @@
-/* unk_4591a0.c -- 0x458e70..0x459d80, original file name unknown. Names are ours.
+/* d3_vtx.c -- 0x458e70..0x459d80, original file name unknown. Names are ours.
    Mesh vertex animation: key-frame blend weights, vertex and normal transforms into camera space,
    env-map coordinates, bounding box corners.
-   Open: the file name, and whether it is one TU with unk_458810.c (the join compiles unchanged).
+   Open: the file name, and whether it is one TU with d3_pose.c (the join compiles unchanged).
    unit of rea 8cef7d5b (src/game/unk_4591a0.c); boundaries in decl/text.dcl */
 #include <math.h>
 #include <windows.h>
@@ -9,17 +9,17 @@
 #include "d3.h"
 #include "d3_anim.h"
 #include "d3_light.h"
-#include "unk_4591a0.h"
+#include "d3_vtx.h"
 
-/* d3_EnvMapCoords (was unk_458810.c: only 0x459300 calls it) works on the pose views of unk_458810.h; its
+/* d3_EnvMapCoords (was d3_pose.c: only 0x459300 calls it) works on the pose views of d3_pose.h; its
    prototypes there are for the other file. */
-#include "unk_458810.h"
+#include "d3_pose.h"
 #include "d3_engine.h"
 #include "d3_vec.h"
 
 #define XENTRY(slot) ((slot)[0] * 0xc0 + *(int *)((slot)[0x1a] + 0x15c))
 
-/* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture @deep behaviour: the only code hunk is an instruction order/stack-slot artifact (the original loads [esp+0x7c] before the call's add esp,0x4 where ours loads [esp+0x78] after it - the same local, same value); readability: Q2 d3_WorldMatrix (callee in unk_458810.c, fills the object's world matrix) and state (object flag byte, bit 0x80 = no camera), Q4 the XENTRY macro and the three *(unsigned char **)(entry + 0xb8) reads of the animation entry */
+/* 0x458e70, environment map coordinates of the vertices of a part that has a reflecting texture @deep behaviour: the only code hunk is an instruction order/stack-slot artifact (the original loads [esp+0x7c] before the call's add esp,0x4 where ours loads [esp+0x78] after it - the same local, same value); readability: Q2 d3_WorldMatrix (callee in d3_pose.c, fills the object's world matrix) and state (object flag byte, bit 0x80 = no camera), Q4 the XENTRY macro and the three *(unsigned char **)(entry + 0xb8) reads of the animation entry */
 void d3_EnvMapCoords(XOBJ *obj, XPART *part)
 {
     D3MATRIX m;

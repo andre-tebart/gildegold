@@ -1,7 +1,7 @@
-/* The mission record of unk_4b39f0's table ai_Missions, for the units that declare the table without the
-   rest of unk_4b39f0.h: types only. unk_4b39f0.h includes it. */
-#ifndef UNK_4B39F0_TYPES_H
-#define UNK_4B39F0_TYPES_H
+/* The mission record of mission's table ai_Missions, for the units that declare the table without the
+   rest of mission.h: types only. mission.h includes it. */
+#ifndef MISSION_TYPES_H
+#define MISSION_TYPES_H
 
 #include "ai_types.h"                /* AITIME */
 

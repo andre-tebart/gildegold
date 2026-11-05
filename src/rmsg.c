@@ -1,13 +1,13 @@
-/* unk_4b6480.c -- the AI's message callbacks (G14MSG, m->type 0 .. 0x44): each one writes text 0x12e7 + type for a
+/* rmsg.c -- the AI's message callbacks (G14MSG, m->type 0 .. 0x44): each one writes text 0x12e7 + type for a
    character and sends it (0x53dda0), named ai_Msg<effect> (a TypeNN suffix where siblings differ only by the slot).
    Run through the table ai_MsgCallbacks by ai_RunMessage (from the 8th day on). Its .data (the table) follows
-   unk_4b39f0.c's literals; unit start and name are guesses (no module tag; could be the missions' tail). Names are
+   mission.c's literals; unit start and name are guesses (no module tag; could be the missions' tail). Names are
    ours. Ends before 0x4bb810, anm.c's first user of "anm:animals".
    Open: 0x4bb720 (posts random message types as AIMSG 0x42) / ai_NextRandom (LCG, seed ai_RandomSeed) may be anm.c's.
    unit of rea 8cef7d5b (src/game/unk_4b6480.c); boundaries in decl/text.dcl */
 #include <string.h>
 #include <windows.h>
-#include "unk_4b6480.h"
+#include "rmsg.h"
 #include "ahm.h"
 #include "amt.h"
 #include "anm.h"
@@ -19,7 +19,7 @@
 #include "main.h"
 #include "sv.h"
 #include "tr.h"
-#include "unk_58bbd0.h"
+#include "lc.h"
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original this unit's callers read the 16-bit result (byte-matched ch_RandomNear 0x405160, ai_CalcMeisterBank 0x4836a0, cm_FightLoop 0x4d88c0 move it as a word / movzx) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (f3gm.c: char *) as the AIGOOD records it points to */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */

@@ -19,9 +19,9 @@
 #include "d3_mir.h"
 #include "data_views.h"
 #include "ts_texture.h"
-#include "unk_458810.h"
+#include "d3_pose.h"
 #define d3_TriNormalM ((void (*)(D3VECTOR *, D3PVERT *, D3PVERT *, D3VECTOR4 *))d3_TriNormal)  /* 0x454700 (d3_vec.h: D3VECTOR4 * x4): this unit passes the origin and its polygon vertices */
-#define d3_DirToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_DirToRef)  /* 0x458950 (unk_458810.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
+#define d3_DirToRefD ((void (*)(D3OBJECT *, D3OBJECT *, D3VECTOR *, D3VECTOR4 *))d3_DirToRef)  /* 0x458950 (d3_pose.h: XOBJ *, XOBJ *, float *, float *): this unit's D3OBJECT / vector view */
 
 #define D3M_SURF(o) ((D3MIRSURF *)(o)->info)
 #define D3M_PTS(mesh) ((mesh)->mirrorPoints)                     /* "d3_mir:MirroredPoints" */

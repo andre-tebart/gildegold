@@ -94,7 +94,7 @@ extern G16SEASON snd_Gusts[];           /* 0x602ba8, by season */
 extern float snd_VoiceVolume;           /* 0x602b08, voice volume (1.0, scaled by 127) */
 extern float snd_MusicVolume;           /* 0x602d68, music volume 0..1: 0 = no music (0x4c23f0, 0x4c2000) */
 extern unsigned int ai_Unk60b0d8;       /* 0x60b0d8, start of the music pause */
-extern unsigned char ai_GameState;      /* 0x6f25ac, the game state (as cm.h / unk_5d33b0.h) */
+extern unsigned char ai_GameState;      /* 0x6f25ac, the game state (as cm.h / menu.h) */
 extern int snd_MusicEnabled;            /* 0x6f2578, the "msx" setting of game.INI [Sound]: music enabled */
 extern int snd_SfxEnabled;              /* 0x6f257c, the "sfx" setting of game.INI [Sound]: effects and voices on */
 extern int ai_Unk6f0cb4;                /* 0x6f0cb4, the season of the music */

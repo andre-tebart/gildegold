@@ -1,4 +1,4 @@
-/* unk_589f10.c -- the network lobby (0x589f10 .. 0x58bbd0): the "menu\netlobby" screen lobby_Screen, its
+/* lobby.c -- the network lobby (0x589f10 .. 0x58bbd0): the "menu\netlobby" screen lobby_Screen, its
    form parts (lobby_Add* / lobby_Show*), the player / city and profession pickers (Menu\CHOOSEPLAYER,
    Menu\CHOOSEPROFESSION) and this player's lobby record lobby_Player (CMLOBBYPLAYER, cm_types.h) with the
    "Network" profile of ai_OptionsFile; the lobby messages go through cm.c's cm_Lobby* API.
@@ -20,7 +20,7 @@
 #include "sv.h"
 #include "f3gm.h"
 #include "io_text.h"
-#include "unk_589f10.h"
+#include "lobby.h"
 #include "di_input.h"
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
@@ -55,8 +55,8 @@ extern GAPDATA full_data_6f2684[];
 #include "gfx.h"
 #include "d3_io_a.h"
 #include "main.h"
-#include "unk_4b39f0.h"
-#include "unk_5d33b0.h"
+#include "mission.h"
+#include "menu.h"
 #include "ch.h"
 extern int sv_PopRequest;
 extern INIT_PLAYER init_PlayerProfile;

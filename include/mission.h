@@ -1,10 +1,10 @@
-/* Declarations of unk_4b39f0.c (0x4b39f0..): missions ("Auftraege"). Names are ours. */
-#ifndef UNK_4B39F0_H
-#define UNK_4B39F0_H
+/* Declarations of mission.c (0x4b39f0..): missions ("Auftraege"). Names are ours. */
+#ifndef MISSION_H
+#define MISSION_H
 
 #include "am.h"
 
-#include "unk_4b39f0_types.h"        /* G13MIS */
+#include "mission_types.h"        /* G13MIS */
 typedef struct G13TYPE {                /* 0x1c bytes, ai_MissionTypes[48], the mission types */
     int type;                           /* 0x00 */
     int kind;                           /* 0x04, 0..5 */

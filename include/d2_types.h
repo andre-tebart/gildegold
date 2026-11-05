@@ -271,7 +271,7 @@ typedef struct D2OBJ {              /* 0x2ec bytes, d2_Objs has 0x2ff: pictures,
     short pad2e2;
     int scale;                      /* 0x2e4 */
     void *user;                     /* 0x2e8, unused by d2: a dialog keeps its own record of the object here
-                                       (unk_4b39f0's mission type, unk_5d33b0's gypsy row) */
+                                       (mission's mission type, menu's gypsy row) */
 } D2OBJ;
 
 #pragma pack(push, 1)
