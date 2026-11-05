@@ -291,6 +291,14 @@ typedef struct HEWALKSLOT {
                                            for 0xff never holds) */
     unsigned char pad[3];
 } HEWALKSLOT;
+typedef struct HEEXAMBOX {              /* the master exam question 0x7e's word over AIJOB's union, and the one it sets in
+                                           the exam event it asks for */
+    char pad00[0xb0];
+    union {
+        int examId;                     /* 0xb0, of the question: the id of the character's exam event */
+        int accepted;                   /* 0xb0, of that exam event: 1 when the player said yes (he_RunExamQuestion) */
+    };
+} HEEXAMBOX;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -9802,58 +9810,56 @@ void he_Unk552040(int ev)
     gm_AddTime(ev + 0x52, 2, 0, 0);
     *(int *)(ev + 0x70) = 0;
 }
-/* 0x552090, the run handler of the master exam style event "Berufe\Messagebox_Meisterpruefung" (ROUGH, same shape as 0x547430): states -1 / -2 free the record (and its window), state 0 opens the window, shows the page 0x602568 and the news 0x10b9 (player name, figure +8), state 1 waits for the due time (then it closes) or the answer (0xf8a668: 0 = the figure's record 0x53e400 (2, 2, id, 1, +0xb0) gets +0xb0 = 1, 1 = nothing) and closes */
-
-void he_Unk552090(int ev)
+/* 0x552090, the run handler of the master exam question 0x7e (its alloc handler he_Unk552040): the stages -1 / -2
+   free it (and its slot); stage 0 opens the slot "Berufe\Messagebox_Meisterpruefung" (none: the event is freed),
+   centres it and prints the question 0x10b9 (the own player's name, the character), then waits in stage 1: past
+   the due time, or on the second answer, it ends; the first answer marks the character's exam event (examId, found
+   with he_FindEvent) accepted. No slot in stage 1 opens it again */
+void he_RunExamQuestion(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int h;
-    char *r;
+    AIJOB *e = (AIJOB *)ev;
 
-    if (st == -1 || st == -2) {
-        if (*(int *)(ev + 0x74) != 0)
+    if (e->stage == -1 || e->stage == -2) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        if (*(int *)(ev + 0x74) == 0)
-            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
-        if (*(int *)(ev + 0x74) != 0) {
-            d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
-            d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-            io_PrintText("$C");
-            io_PrintText(0x10b9, (char *)((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4, *(unsigned short *)(ev + 8));
-            *(int *)(ev + 0x70) = 1;
-        } else {
+    switch (e->stage) {
+    case 0:
+        if (e->slot == 0)
+            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        if (e->slot == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("$C");
+        io_PrintText(0x10b9, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20, e->chr);
+        e->stage = 1;
+        return;
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (e->slot == 0) {
+            e->stage = 0;
+            return;
+        }
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
+            return;
+        if (d2_ClickedId == 0) {
+            ((HEEXAMBOX *)he_FindEvent(2, 2, e->chr, 1, ((HEEXAMBOX *)e)->examId))->accepted = 1;
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+        } else if (d2_ClickedId == 1) {
+            he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
         return;
-    }
-    if (st == 1) {
-        if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_ReleaseSlot(ev);
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        if (*(int *)(ev + 0x74) == 0) {
-            *(int *)(ev + 0x70) = 0;
-            return;
-        }
-        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8))
-            return;
-        h = U_I((unsigned)&d2_ClickedId);
-        if (h == -1)
-            return;
-        if (h == 0) {
-            r = he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 1, *(int *)(ev + 0xb0));
-            *(int *)(r + 0xb0) = 1;
-            he_ReleaseSlot(ev);
-            he_FreeEvent((int *)ev);
-        } else if (h == 1) {
-            he_ReleaseSlot(ev);
-            he_FreeEvent((int *)ev);
-        }
     }
 }
 
@@ -10416,7 +10422,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7d, (void *)he_InitSixGroupEvent, (void *)he_RunSixGroupEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7e, (void *)he_Unk552040, (void *)he_Unk552090) != 0)
+    if (he_SetEventHandlers(0x7e, (void *)he_Unk552040, (void *)he_RunExamQuestion) != 0)
         return 1;
     if (he_SetEventHandlers(0x7f, (void *)he_Unk552200, (void *)he_Unk552270) != 0)
         return 1;
