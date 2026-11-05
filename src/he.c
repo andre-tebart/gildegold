@@ -378,7 +378,7 @@ typedef struct HEDETECT {               /* he_DetectAttack's question and answer
     AIJOB *ev;                          /* 0x8, the attack event */
     AIJOB *found;                       /* 0xc, the watch event that saw it, 0 at the start */
 } HEDETECT;
-typedef struct HESALE {                 /* the sale event 2's words over AIJOB's union (he_Unk553e10 / he_RunSale); the
+typedef struct HESALE {                 /* the sale event 2's words over AIJOB's union (he_AllocSale / he_RunSale); the
                                            building is AIJOB.from */
     char pad00[0xac];
     unsigned short good;                /* 0xac, the good sold (ai_Goods index; its production time sets the due clock) */
@@ -11208,17 +11208,21 @@ int he_NoEvent35Pair(unsigned short *a, int b, int *count)
         *count = n;
     return 1;
 }
-/* 0x553e10, sets the due clock of the event record to now and posts it: with the flag 0x6f2448 one unit later, else after the delay (+0x22) of its table record (0x91aaf0, 0x41 bytes each, index +0xac) */
+/* 0x553e10, the alloc handler of the sale event 2: the due clock (AIJOB.end) is now, one second later with
+   gm_AllowAll set, else after the production time (GMGOOD.workTime) of the good sold (HESALE.good) */
 
-void he_Unk553e10(int ev)
+void he_AllocSale(int ev)
 {
-    char *rec = (char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41;
+    AIJOB *e = (AIJOB *)ev;
+    HESALE *s = (HESALE *)ev;
+    GMGOOD *good;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (U_I((unsigned)&gm_AllowAll) != 0)
-        gm_AddTime(ev + 0x52, 0, 0, 1);
+    good = GM_GOOD(s->good);
+    e->end = ai_Time;
+    if (gm_AllowAll != 0)
+        gm_AddTime(&e->end, 0, 0, 1);
     else
-        gm_AddTime(ev + 0x52, 0, *(int *)(rec + 0x22), 0);
+        gm_AddTime(&e->end, 0, good->workTime, 0);
 }
 
 int cm_GetSlotState();
@@ -11232,7 +11236,7 @@ int cm_SendLongMessage(char *msg);
 int cm_SendExSysMessage(unsigned char id, void *msg);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
-/* 0x553e90, the run handler of the sale event 2 (HESALE; its init he_Unk553e10 sets it due after the good's
+/* 0x553e90, the run handler of the sale event 2 (HESALE; its init he_AllocSale sets it due after the good's
    production time): stage 0 goes to 1; stage 1, once due, sells the object obj of the building AIJOB.from
    (cm_SendExSellObjectH: the good, one piece, to the own player) and keeps the send slot (stage 2); a gone
    building frees the event. Stage 2 waits for the slot and its object: a grave (0x1f9 / 0x1fd / 0x201) opens a
@@ -16817,7 +16821,7 @@ void he_RunPatrolEvent(int ev)
 /* 0x568310, registers the event types 0x02 .. 0xa6 (second part, after 0x553060): he_SetEventHandlers (type, alloc, run) for each (a non-zero result = out of table space: return 1), the type texts 0x52b350 (type, name, 0, menu id, icon) for the types with an entry in the event list, and the tip table 0x505ca0 (0x1a, 0x6fa1e0); returns 0 */
 int he_RegisterEventTypes02(void)
 {
-    if (he_SetEventHandlers(2, (void *)he_Unk553e10, (void *)he_RunSale) != 0)
+    if (he_SetEventHandlers(2, (void *)he_AllocSale, (void *)he_RunSale) != 0)
         return 1;
     if (he_SetEventHandlers(6, (void *)he_Unk554820, (void *)he_RunCustomers) != 0)
         return 1;
