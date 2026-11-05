@@ -87,6 +87,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 #define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_DecideBuildBusiness tests it */
 #define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 /* 0x48e070, the class 0x1e building of the character p (a master, kind 3 excepted) in *out: 2 it has
    one, 1 it is a master without one (kind 5, or kind 2 / 4 with rank above 6), 0 neither. It also recounts
    the characters of the player kinds 5 / 6 / 7 (ai_NumPlayerChars) once per ai_Time.year. */
@@ -3259,9 +3260,11 @@ AIREC10 *ai_FindInstrumentRecord(int key)
             return &ai_TortureInstruments[i];
     return 0;
 }
-/* 0x4948f0, rolls the three (value, option, option) triples of a character */
+/* 0x4948f0, rolls the three study offers (price, two subject indexes) of a character for the university: the price
+   is its worth * 0.025 split by the map distance from player slot 0's place to slots 1 .. 3, whose offer it is;
+   the first subject is fixed (4, 3, 2) and the second one of three (0 / 3 / 1, 1 / 2 / 0, 0 / 4 / 1) */
 
-void ai_Unk4948f0(AIC4 *ch, int *out)
+void ai_RollStudyOffers(AIC4 *ch, int *out)
 {
     int t[3][4] = {{4, 0, 3, 1}, {3, 1, 2, 0}, {2, 0, 4, 1}};
     float f[3];
@@ -3272,7 +3275,8 @@ void ai_Unk4948f0(AIC4 *ch, int *out)
     k = (int)(v * 0.025f);
     m = 0.0f;
     for (i = 0; i < 3; i++) {
-        f[i] = gm_MapDistance(ai_Unk7e3f80, ai_Unk7e3f84, ai_Unk7e4274[i].a, ai_Unk7e4274[i].b);
+        f[i] = gm_MapDistance(ai_PlayerSlotsT[0].mapX, ai_PlayerSlotsT[0].mapY, ai_PlayerSlotsT[i + 1].mapX,
+                              ai_PlayerSlotsT[i + 1].mapY);
         if (f[i] > m)
             m = f[i];
         out[i * 3 + 1] = t[i][0];

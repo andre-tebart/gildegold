@@ -629,7 +629,7 @@ int ai_DecideSentence(AIC4 *ch, AIPLAN *q);                          /* 0x4946c0
 int ai_WealthRating(AIC4 *a, AIC4 *b);                             /* 0x4947a0 */
 int ai_WealthRatingHalf(AIC4 *a, AIC4 *b);                             /* 0x494830 */
 AIREC10 *ai_FindInstrumentRecord(int key);                                 /* 0x4948c0 */
-void ai_Unk4948f0(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
+void ai_RollStudyOffers(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
 int ai_Unk494a30(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
 int ai_Unk494ac0(AIGRP *g, int send);                           /* 0x494ac0 */
 int ai_Unk494d40(AIC4 *a, AIC4 *b, int n);                      /* 0x494d40 */
@@ -937,8 +937,8 @@ int ai_ExecuteUpgradeGuild(G5CH *p, AIARG *s1, AIARG *s2);                      
 int ai_EvalApprenticeship(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, AIARG *o2); /* 0x4a1000 */
 int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a1170 */
 int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1360 */
-void ai_Unk4948f0(struct AIC4 *ch, int *out);                                         /* 0x4948f0, unk_494020.h: AIC4 * */
-#define G8_4948F0(p, r) ai_Unk4948f0((p), (int *)(r))
+void ai_RollStudyOffers(struct AIC4 *ch, int *out);                                         /* 0x4948f0, unk_494020.h: AIC4 * */
+#define G8_4948F0(p, r) ai_RollStudyOffers((p), (int *)(r))
 int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a13e0 */
 int ai_ExecuteStudy(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
 int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */

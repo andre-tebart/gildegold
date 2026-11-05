@@ -22736,7 +22736,7 @@ int ai_Unk5cf4f0(int param_1, unsigned short *param_2)
     int ret;
 
     (void)param_1;
-    ai_Unk4948f0((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, ident);
+    ai_RollStudyOffers((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, ident);
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d6bc);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
