@@ -345,7 +345,11 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             unsigned char festMusik;    /* 0x2d, the musician pick (AIGRP.musik) */
         };
     };
-    char pad31[5];
+    unsigned char patrolLevel;          /* 0x31, of a guard cart: picks the steps it waits at its route's start, 12, 8, 4, 2, 0
+                                           for 0 .. 4 (he_PatrolStep; reasoned: a level) */
+    unsigned char patrolWait;           /* 0x32, of a guard cart: the steps waited so far at its route's start (he_PatrolStep) */
+    unsigned char patrolOn;             /* 0x33, of a guard cart: nonzero for the carts the patrol event 0xa6 steps (he_RunPatrolEvent) */
+    char pad34[2];
     unsigned char unk36;                /* 0x36 */
     unsigned char reportKnow;           /* 0x37, of a spy report: how much it knows, in percent (ai.c spies again below a
                                            random 50 .. 99; the round settlement lowers it by twice the building's rank and
@@ -448,7 +452,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             unsigned char textFlags;            /* 0x9c, of a note with a text (cm_SendPartyNote): 0xc, 0xe with the party's building,
                                                    | 0x10 when a second text follows the first */
             unsigned char unk9d;                /* 0x9d */
-            char pad9e[2];
+            unsigned char flag9e;               /* 0x9e, 1 in the guard cart's message 0xf (he_PatrolStep); the meaning is not known */
+            char pad9f;
             int unka0;                          /* 0xa0 */
             int srcEvent;                       /* 0xa4, of the explosion message 0x4f from a fire (he_RunFire): the fire
                                                    event's id (the burning event 0x4f keeps it at +0xf8) */

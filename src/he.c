@@ -19789,83 +19789,87 @@ void he_Unk567f00(int ev)
     *(short *)(ev + 0x56) = 6;
     *(int *)(ev + 0x58) = 0;
 }
-/* 0x567f50, the per-character step of a patrol / escort event (ROUGH; ev, the character record c, its +0x24 the current wait counter): when the character is idle (+0x24 == 0) with probability by the stat +0x12 the
-   news 0x10 is sent (the message type 0x10 with the clock, 0x4fe140 (&clock, 0, 0, 10), the stat 0x5087f0 / 0x4c47e0), else the next waypoint (0x4bda80 (+0x29, +0x2d), the object 0x502020) is walked to: the pause
-   table {12, 8, 4, 2, 0} by +0x31 counts +0x32 up (0x524810, 0x5024f0, 0x4bdaa0 wraps the index at the route length), 0x4c3ba0 / 0x4c3d90 set the route index (+0x2d) and the result 0x4c49e0 goes to +0x84;
-   a blocked step with the neighbour 0x50a0f0 sends the message type 0xf */
+unsigned short *gm_ObjectBuildingOwner(unsigned short *o);  /* 0x50a050, f3gm.h (not included here: the unit's Open: head) */
+int gm_ObjectBuilding(int o);                               /* 0x50a0f0, f3gm.h */
+float gm_ItemPrice(int item, unsigned char n);              /* 0x5087f0, f3gm.h */
+#define cm_SendFieldValuesSlot ((int (*)(void))cm_SendFieldValues)  /* 0x4c49e0: @original the caller keeps its result, the cm slot of the send (cm.h declares it void) */
 
-void he_PatrolStep(int ev, unsigned short *c)
+/* 0x567f50, one step of a guard cart c on the patrol event 0xa6 ev (he_RunPatrolEvent), unless the cart runs a job:
+   below a fill of 40 + random(32) percent the cart is refilled (the message 0x10 to its owner, gm_ObjectBuildingOwner,
+   for 100 - fill, due in 10 seconds; the owner pays 100 - fill times 0.008 of the cart's price, cm_SendMoveGoods);
+   else at the building of its route's current point: at the route's start it first waits the steps its level allows
+   (12, 8, 4, 2, 0); once at that building's door (and the building is no town market, or the cart belongs to the
+   patrol building) it moves on to the next point of the route (wrapping to 0; the field send's cm slot goes to
+   ev->exSlot), else, in a building, it sends the message 0xf (the cart, the building it is in, the point's building) */
+void he_PatrolStep(AIJOB *ev, AIOBJ *c)
 {
-    int o, w, iv, n, k, t;
-    int pause[7];
-    unsigned char m[0xf8];
+    AICHAR *owner;
+    RTPOINT *p;
+    AIBLD *at;
+    int bld;
+    int n;                              /* the goods to refill, then the next route point */
+    int count;
+    int waits[5];
+    float price;
+    AIMSG m;
 
-    if (*(int *)(c + 0x12) != 0)
+    if (c->job24 != 0)
         return;
-    o = gm_ObjectBuildingOwner(c);
-    if (*(unsigned char *)(c + 9) < (unsigned)((unsigned short)util_Random(0x20) + 0x28)) {
-        memset(m, 0, sizeof(m));
-        *(int *)(m + 8) = *(int *)(o + 4);
-        *(int *)(m + 0x2c) = U_I((unsigned)&ai_Time.hour);
-        *(int *)(m + 0x28) = U_I((unsigned)&ai_Time);
-        m[4] = 0x10;
-        m[0x36] = 1;
-        *(int *)(m + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-        *(short *)(m + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        *(int *)(m + 0xc) = *(int *)(m + 8);
-        gm_AddTime(m + 0x28, 0, 0, 10);
-        *(int *)(m + 0x58) = *(int *)(c + 1);
-        *(int *)(m + 0x5c) = 100 - *(unsigned char *)(c + 9);
-        *(int *)(m + 0x64) = 5;
-        *(int *)(m + 0x84) = 0;
-        gm_ItemPrice(*c, 100);
-        t = 100 - *(unsigned char *)(c + 9);
-        cm_SendMoveGoods(-1, *(int *)(o + 4), U_I((unsigned)&ai_OwnPlayer), t);
-        cm_SendLongMessage(m);
+    owner = (AICHAR *)gm_ObjectBuildingOwner((unsigned short *)c);
+    if (c->fill < (unsigned short)util_Random(0x20) + 0x28) {
+        memset(&m, 0, sizeof(m));
+        m.fromId = m.to = owner->netId;
+        m.type = 0x10;
+        m.flags = 1;
+        m.time = ai_Time;
+        gm_AddTime(&m.time, 0, 0, 10);
+        m.car = c->objId;
+        m.dst[0] = 5;
+        m.u.s.cost = 0;
+        m.n = 100 - c->fill;
+        price = gm_ItemPrice(c->id, 100) * 0.008f;
+        n = 100 - c->fill;
+        cm_SendMoveGoods(-1, owner->netId, ai_OwnPlayer, (int)(n * price));
+        cm_SendLongMessage(&m);
         return;
     }
-    w = rt_PointAt(*(int *)((char *)c + 0x29), *(int *)((char *)c + 0x2d));
-    if (w != 0 && (o = gm_FindBuildingById(*(int *)(w + 4))) != 0) {
-        if (*(int *)((char *)c + 0x2d) == 0) {
-            pause[1] = 0xc;
-            pause[2] = 8;
-            pause[3] = 4;
-            pause[4] = 2;
-            pause[5] = 0;
-            k = pause[*(unsigned char *)((char *)c + 0x31) + 1];
-            *(unsigned char *)(c + 0x19) = *(unsigned char *)(c + 0x19) + 1;
-            if (*(unsigned char *)(c + 0x19) < k)
-                return;
-            *(unsigned char *)(c + 0x19) = 0;
-        }
-        if (sv_IsCartAtDoor(c, w) != 0 && (gm_IsType10(w) == 0 || *(int *)(c + 3) == he_PatrolBuilding->id)) {
-            iv = rt_PointCount(*(int *)((char *)c + 0x29));
-            n = *(int *)((char *)c + 0x2d) + 1;
-            if (iv <= n)
-                n = 0;
-            cm_BeginFieldBlock(c, *(int *)(c + 1));
-            cm_AddFieldValue(4, 1, (int)c + (0x2d - U_I((unsigned)&cm_FieldObject)), &n);
-            *(int *)(ev + 0x84) = ((int (*)())cm_SendFieldValues)();
+    p = rt_PointAt(c->route, c->routeIdx);
+    if (p == 0 || (at = (AIBLD *)gm_FindBuildingById(p->buildingId)) == 0)
+        return;
+    if (c->routeIdx == 0) {
+        waits[0] = 12;
+        waits[1] = 8;
+        waits[2] = 4;
+        waits[3] = 2;
+        waits[4] = 0;
+        if (++c->patrolWait < waits[c->patrolLevel])
             return;
-        }
-        k = gm_ObjectBuilding(c);
-        if (k != 0) {
-            memset(m, 0, sizeof(m));
-            *(int *)(m + 8) = *(int *)(o + 4);
-            *(int *)(m + 0x28) = U_I((unsigned)&ai_Time);
-            *(int *)(m + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-            *(int *)(m + 0x58) = *(int *)(c + 1);
-            *(int *)(m + 0x2c) = U_I((unsigned)&ai_Time.hour);
-            m[4] = 0xf;
-            *(int *)(m + 0xc) = -1;
-            m[0x36] = 2;
-            *(short *)(m + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-            *(int *)(m + 0x5c) = *(int *)(k + 1);
-            *(int *)(m + 0x60) = *(int *)(w + 1);
-            m[0x9e] = 1;
-            cm_SendLongMessage(m);
-        }
+        c->patrolWait = 0;
     }
+    if (sv_IsCartAtDoor(c, at) != 0 && (gm_IsType10((unsigned char *)at) == 0 || c->ownerId == he_PatrolBuilding->id)) {
+        count = rt_PointCount(c->route);
+        n = c->routeIdx + 1;
+        if (n >= count)
+            n = 0;
+        cm_BeginFieldBlock((char *)c, c->objId);
+        cm_AddFieldValue(4, 1, (char *)&c->routeIdx - cm_FieldObject, &n);
+        ev->exSlot = cm_SendFieldValuesSlot();
+        return;
+    }
+    bld = gm_ObjectBuilding((int)c);
+    if (bld == 0)
+        return;
+    memset(&m, 0, sizeof(m));
+    m.type = 0xf;
+    m.fromId = -1;
+    m.to = owner->netId;
+    m.flags = 2;
+    m.time = ai_Time;
+    m.car = c->objId;
+    m.n = ((AIBLD *)bld)->id;
+    m.ch = at->id;
+    m.flag9e = 1;
+    cm_SendLongMessage(&m);
 }
 /* 0x568220, the run handler of the guard patrol event 0xa6 (only while the game state byte ai_GameState is set; waits for
    the sound handle exSlot): state 0 looks up the patrol building (kind 0x44) and calls he_PatrolStep for every guard group
@@ -19891,8 +19895,8 @@ void he_RunPatrolEvent(int ev)
             return;
         he_PatrolBuilding = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
         for (g = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); g != 0; g = (AIOBJ *)gm_QueryNext()) {
-            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->flags13 & 0x20) == 0 && g->pad31[2] != 0)
-                he_PatrolStep(ev, (unsigned short *)g);
+            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->flags13 & 0x20) == 0 && g->patrolOn != 0)
+                he_PatrolStep(e, g);
         }
         e->end = ai_Time;
         gm_AddTime(&e->end, 0, 0xf, 0);
