@@ -9928,25 +9928,26 @@ int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
     slot->holdHour = 0xff;
     return cm_SendPlaceOnStage(ch->netId, tgt, -1);
 }
-/* 0x5516a0, queues a random animation on a person (+4 the figure; random 0x42ec00(4) & 0xffff, jump table 0x551764): 0 = 0x626fd0, 1 = 0x626fbc then 0x626fd0, 2 = 0x626a4c then 0x626fd0, 3 = 0x6268c8, 0x626fbc, 0x626fd0 (all with 0x4c5410 (id, name, 1)) */
-void he_PlayGestures(int p)
+/* 0x5516a0, plays a random gesture animation (cm_SendChrAnim) on the character c: one of four draws, each queuing one
+   to three animations ("gestik/haende_reiben" ends every one) */
+void he_PlayGestures(AICHAR *c)
 {
     switch ((unsigned short)util_Random(4)) {
     case 0:
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(c->netId, "gestik/haende_reiben", 1);
         break;
     case 1:
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/herranwinken", 1);
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(c->netId, "gestik/herranwinken", 1);
+        cm_SendChrAnim(c->netId, "gestik/haende_reiben", 1);
         break;
     case 2:
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/kinn_kratzen", 1);
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(c->netId, "gestik/kinn_kratzen", 1);
+        cm_SendChrAnim(c->netId, "gestik/haende_reiben", 1);
         break;
     case 3:
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/durch_haar_fahr", 1);
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/herranwinken", 1);
-        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(c->netId, "gestik/durch_haar_fahr", 1);
+        cm_SendChrAnim(c->netId, "gestik/herranwinken", 1);
+        cm_SendChrAnim(c->netId, "gestik/haende_reiben", 1);
         break;
     }
 }
@@ -10035,7 +10036,7 @@ void he_StepWalk(HEWALKSLOT *s)
         budget = budget / 2 + 1;
         if ((stage + 2) % budget == 0 && held == 0) {
             s->stage = (unsigned char)(stage + 1);
-            he_PlayGestures((int)c);
+            he_PlayGestures(c);
             s->state |= 0x10;
             return;
         }
