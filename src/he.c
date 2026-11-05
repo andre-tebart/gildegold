@@ -508,7 +508,8 @@ typedef struct HESPYING {               /* the spying event 24's words over AIJO
     AITIME until;                       /* 0xc8, the end: 3 days (4 when order 0x26 answers 2) + HESPYING.days from now */
     char padd6[2];
     int spy;                            /* 0xd8, the cm slot of the spy's creation, then its netId; -1: none */
-    char paddc[0xc];
+    char paddc[8];
+    int fee;                            /* 0xe4, the money the event's character pays for the spy */
     int days;                           /* 0xe8, the days of spying asked for */
 } HESPYING;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
@@ -13460,33 +13461,165 @@ void he_AllocSpying(int ev)
     }
     cm_EndGroup("Spionage");
 }
-/* 0x55a030, the run handler of the espionage event ("Spionage: next target = %G" debug text, 5 states by the jump table 0x55a5d0; ROUGH skeleton): the spy's job handles (0x4c3ae0 / 0x4c3b10), the player record, the next target (0x524770 walk checks, 0x524260 group release, 0x4c52e0 / 0x4c5230 "Spionage" send, 0x4c4c60 posts, 0x4c4e00 stops) and the end frees the record */
-
-void he_Unk55a030(int ev)
+/* 0x55a030, the run handler of the spying event 24 (HESPYING; allocated by he_AllocSpying). Not yet started (opts
+   4) or while a request is pending: nothing. Stage 0: the spawned spy is paid for by the event's character (its
+   player record's spyPaid, a money move to the own player), joins the group and the event starts (stage 1); no spy:
+   due at the end (stage 4). 1: the walk over the 0x100 buildings finds the next of the kinds 0x1a7fcc3a6 that is
+   not the target ("Spionage: next target = %G"), the spy is sent there (stage 2; none or no spy: ended). 2: once at
+   its door, before the end the next round (stage 1), at the end the spy goes to the target (stage 3). 3: there,
+   the event's character gets the news 0x1734 (the victim) and the event ends. 4: ended. Stages -2 / -1: a started
+   event's spy is stopped and killed, the event freed
+   @deep reconstructed from the 207-byte stub against 0x55a030..0x55a5e4 with he_RunDarkCorner (0x54f160)
+   as its twin: the cancel path (opts 2: stop / kill the spy), the slot waits, all five stages (the switch
+   tables equal), the walk over the 0x100 buildings with the 64-bit kind mask 0x1a7fcc3a6 and the signed %
+   0x100 steps, the debug text, the door waits, the end test gm_CompareTime(&until, &ai_Time) == -1, the
+   news 0x1734; every call and argument read. Left is allocation and tails, the twin's own deep reason: in
+   the walk ours keeps lo in a stack slot (frame 0x40c vs 0x408; - mov [esp+0x18],ebx) where the original
+   keeps lo in ebp and hi in ebx with the AIBTYPE base in ebx (+ mov ebx,[ai_BTypes] / xor ebp,ebp / add
+   ebx,ecx), and schedules the n-- / cursor step otherwise (+0x55a24d); tails: the original jumps to the
+   shared gm_AddTime(..,0,1,0) + cm_SendExSetHE(-1) block (jmp 0x55a29f from +0x55a340 / +0x55a3b3 /
+   +0x55a580) that ours keeps inline, and keeps case 2's first -1 return inline where ours shares it.
+   Tried: the twin's declarations (unsigned lo / hi, unsigned char kind, n in memory) */
+void he_RunSpying(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p, h;
+    char text[0x400];
+    AIJOB *e = (AIJOB *)ev;
+    HESPYING *s = (HESPYING *)ev;
+    AIBLD *bld = 0;
+    AICHAR *c;
+    HEFINVIEW *fin;
+    unsigned lo, hi;
+    unsigned char kind;
+    int n, idx;
 
-    if (st < -2 || st > 2) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0 || st < 0) {
-        if (p != 0) {
-            cm_SendChrStop(*(int *)(p + 4));
-            ((void (*)(int))cm_SendKillCharacter)(*(int *)(p + 4));
+    if (e->stage == -1 || e->stage == -2) {
+        if ((e->opts & 2) != 0 && s->spy != -1) {
+            c = (AICHAR *)gm_FindChar(s->spy);
+            if (c != 0) {
+                cm_SendChrStop(c->netId);
+                cm_SendKillCharacter(c->netId, 1);
+            }
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    h = *(int *)(ev + 0xc4);
-    if (h != -1 && cm_GetSlotState(h) == 0)
+    if ((e->opts & 4) != 0)
         return;
-    cm_SendChrStop(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Spionage");
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    switch (e->stage) {
+    case 0:
+        if (s->spy != -1 && cm_GetSlotState(s->spy) == 0)
+            return;
+        c = (AICHAR *)cm_GetSlotValue(s->spy);
+        if (c != 0) {
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_CharsT[e->chr]);
+            if (fin != 0)
+                fin->spyPaid += s->fee;
+            s->spy = c->netId;
+            cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, s->fee);
+            sv_MoveToGroup(0, 0, c->id, (char *)ev);
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(1, ev);
+            return;
+        }
+        s->spy = -1;
+        e->end = s->until;
+        e->exSlot = cm_SendExSetHE(4, ev);
+        return;
+    case 1:
+        idx = s->cursor;
+        n = 0x100;
+        do {
+            bld = &ai_BldsT[idx];
+            lo = 0;
+            hi = 0;
+            kind = ai_BTypesT[bld->type].kind;
+            if (kind > 0x1f)
+                hi = 1 << (kind - 0x20);
+            else
+                lo = 1 << kind;
+            if (((lo & 0xa7fcc3a6) != 0 || (hi & 1) != 0) && bld->id != s->target)
+                break;
+            idx = (idx + s->step) % 0x100;
+            bld = 0;
+            n--;
+        } while (n != 0);
+        s->cursor = (s->step + idx) % 0x100;
+        if (bld == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        txt_Format(text, (int)"Spionage: next target = %G", bld);
+        c = (AICHAR *)gm_FindChar(s->spy);
+        if (c == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        cm_SendChrStop(c->netId);
+        cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
+        gm_AddTime(&e->end, 0, 5, 0);
+        s->at = bld->id;
+        e->exSlot = cm_SendExSetHE(2, ev);
+        return;
+    case 2:
+        gm_FindById(&bld, 0, 0, s->at);
+        gm_AddTime(&e->end, 0, 5, 0);
+        if (bld == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        c = (AICHAR *)gm_FindChar(s->spy);
+        if (c == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        if (sv_IsAtDoor(c, bld) == 0) {
+            e->stage = 2;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->exSlot = cm_SendExSetHE(2, ev);
+            return;
+        }
+        gm_FindById(&bld, 0, 0, s->target);
+        if (bld == 0 || bld->owner == 0xffff)
+            break;
+        if (gm_CompareTime(&s->until, &ai_Time) == -1) {
+            cm_SendChrStop(c->netId);
+            cm_SendChrGotoBuilding(c->netId, bld->id, -1, 0, 1, "Spionage");
+            e->exSlot = cm_SendExSetHE(3, ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHE(1, ev);
+        return;
+    case 3:
+        gm_AddTime(&e->end, 0, 5, 0);
+        gm_FindById(&bld, 0, 0, s->target);
+        if (bld == 0 || bld->owner == 0xffff)
+            break;
+        c = (AICHAR *)gm_FindChar(s->spy);
+        if (c != 0 && sv_IsAtDoor(c, bld) == 0) {
+            e->stage = 3;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->exSlot = cm_SendExSetHE(3, ev);
+            return;
+        }
+        c = (AICHAR *)gm_FindChar(s->victim);
+        if (c != 0) {
+            txt_Format(text, 0x1734, c->id);
+            he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5fa, 0);
+        }
+        break;
+    case 4:
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
+    default:
+        return;
+    }
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 
 int ai_BrawlWin();
@@ -16098,7 +16231,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_RunSabotage) != 0)
         return 1;
-    if (he_SetEventHandlers(24, (void *)he_AllocSpying, (void *)he_Unk55a030) != 0)
+    if (he_SetEventHandlers(24, (void *)he_AllocSpying, (void *)he_RunSpying) != 0)
         return 1;
     if (he_SetEventHandlers(26, (void *)he_Unk55a5f0, (void *)he_Unk55a730) != 0)
         return 1;
