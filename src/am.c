@@ -1779,9 +1779,9 @@ int ai_DecideChurchTaxRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491b20, decision 12 */
+/* 0x491b20, the callback of law record 12 (AIDEC.fn, office 0x0c, a rate 5 .. 0xb): the record's rate is the percent of a character's trade sum (v1a0 + v1a4) that gm_IncomeKind4 (f3gm.c 0x4fa2a0) takes; from the 4th year the rate is pushed down to min + 0 .. 2 when it is above a third of the range for the title group 8, and up to max - 0 .. 2 when it is below two thirds of the range for the other groups */
 
-int ai_Unk491b20(AIPER *p, int a, int *out)
+int ai_DecideTradeTaxRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     int t, k;
