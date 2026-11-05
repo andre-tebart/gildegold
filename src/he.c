@@ -4304,11 +4304,14 @@ void he_RunPayment(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x548b70, the init of a timed event: the clock +0x52 = the start (+0x44); a random half (0x42ec00 (2) != 0) frees it at once */
+/* 0x548b70, the alloc handler shared by the store sale event 0x57 (he_RunStoreSale) and the building decay event
+   0x58 (he_RunBuildingDecay): the due clock is the start clock, and on half of the calls it frees the event at once */
 
-void he_Unk548b70(int ev)
+void he_AllocRandomHalf(int ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = e->start;
     if ((short)util_Random(2) != 0)
         he_FreeEvent((int *)ev);
 }
@@ -10738,9 +10741,9 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x56, (void *)he_AllocNextDay, (void *)he_RunPayment) != 0)
         return 1;
-    if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_RunStoreSale) != 0)
+    if (he_SetEventHandlers(0x57, (void *)he_AllocRandomHalf, (void *)he_RunStoreSale) != 0)
         return 1;
-    if (he_SetEventHandlers(0x58, (void *)he_Unk548b70, (void *)he_RunBuildingDecay) != 0)
+    if (he_SetEventHandlers(0x58, (void *)he_AllocRandomHalf, (void *)he_RunBuildingDecay) != 0)
         return 1;
     if (he_SetEventHandlers(0x5a, (void *)he_Unk548ef0, (void *)he_RunRepostEvent) != 0)
         return 1;
