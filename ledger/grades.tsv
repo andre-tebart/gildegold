@@ -1647,21 +1647,21 @@ exe	0x0049a0a0	ai_ExecuteCitizenship	am	draft	readable	deep
 exe	0x0049a290	ai_DecideSaveAps	am	byte	readable		
 exe	0x0049a380	ai_ExecuteSaveAps	am	byte	readable		
 exe	0x0049a390	ai_DecideUseMilitaryObject	am	shape	readable		
-exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	shape	draft		
+exe	0x0049a5b0	ai_ExecuteUseMilitaryObject	am	shape	readable		
 exe	0x0049a690	ai_DecideUseReputationObject	am	shape	readable		
-exe	0x0049aa80	ai_ExecuteUseReputationObject	am	shape	draft		
+exe	0x0049aa80	ai_ExecuteUseReputationObject	am	shape	readable		
 exe	0x0049ab60	ai_DecideUseApsObject	am	shape	readable		
-exe	0x0049ad80	ai_ExecuteUseApsObject	am	shape	draft		
+exe	0x0049ad80	ai_ExecuteUseApsObject	am	shape	readable		
 exe	0x0049ae50	ai_DecideUseEducationObject	am	shape	readable		
-exe	0x0049b050	ai_ExecuteUseEducationObject	am	shape	draft		
+exe	0x0049b050	ai_ExecuteUseEducationObject	am	shape	readable		
 exe	0x0049b120	ai_DecideUseHealthObject	am	shape	readable		
-exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	shape	draft		
+exe	0x0049b2b0	ai_ExecuteUseHealthObject	am	shape	readable		
 exe	0x0049b380	ai_DecideUseDynastyObject	am	draft	readable	deep	
 exe	0x0049b6f0	ai_ExecuteUseDynastyObject	am	shape	readable		
 exe	0x0049b7c0	ai_DecideUseMeanObject	am	draft	readable	deep	
-exe	0x0049bc50	ai_ExecuteUseMeanObject	am	shape	draft		
+exe	0x0049bc50	ai_ExecuteUseMeanObject	am	shape	readable		
 exe	0x0049bd90	ai_DecideUseSafetyObject	am	draft	readable	deep	
-exe	0x0049c000	ai_ExecuteUseSafetyObject	am	shape	draft		
+exe	0x0049c000	ai_ExecuteUseSafetyObject	am	shape	readable		
 exe	0x0049c0d0	ai_EvalUsePerfume	am	byte	readable		
 exe	0x0049c170	ai_DecideUsePerfume	am	byte	readable		
 exe	0x0049c190	ai_ExecuteUsePerfume	am	shape	readable		
@@ -1669,11 +1669,11 @@ exe	0x0049c320	ai_EvalUseTrank	am	byte	readable
 exe	0x0049c3c0	ai_DecideUseTrank	am	byte	readable		
 exe	0x0049c3e0	ai_ExecuteUseTrank	am	shape	readable		
 exe	0x0049c570	ai_DecideSpy	am	byte	readable		
-exe	0x0049c700	ai_ExecuteSpy	am	byte	draft		
-exe	0x0049c790	ai_DecideBuyMarketObject	am	byte	draft		
+exe	0x0049c700	ai_ExecuteSpy	am	byte	readable		
+exe	0x0049c790	ai_DecideBuyMarketObject	am	byte	readable		
 exe	0x0049c880	ai_ExecuteBuyMarketObject	am	byte	readable		
 exe	0x0049c8e0	ai_DecideBuyIndulgence	am	shape	readable		
-exe	0x0049cb60	ai_ExecuteBuyIndulgence	am	shape	draft		
+exe	0x0049cb60	ai_ExecuteBuyIndulgence	am	shape	readable		
 exe	0x0049cd30	ai_DecideUseOffice	am	byte	readable		
 exe	0x0049cdb0	ai_ExecuteUseOffice	am	byte	readable		
 exe	0x0049cdd0	ai_EvalThreaten	am	byte	readable		
