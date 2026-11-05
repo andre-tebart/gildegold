@@ -3720,8 +3720,10 @@ int ai_ExecuteAction(int i)
 
 /* ---- 0x495ee0..0x497490 ---- */
 
-/* 0x495ee0, sends each kind-3 character random flags (field 0x1e8) */
-void ai_Unk495ee0(void)
+/* 0x495ee0, rolls the daily flags of every kind-3 character: bit 1 of flags1e8 (0x1e8) is always set,
+   bits 2, 4, 8 and 0x10 are drawn at random, and the word is sent to the players (cm_BeginFieldBlock /
+   cm_AddFieldDelta); bits 2, 4 and 8 gate that character's leisure actions (am.c 0x4960b0, 0x4965b0) */
+void ai_RollCharFlags(void)
 {
     AIPER *c;
     unsigned int f;

@@ -196,7 +196,7 @@ typedef char ai_AssertAIXMSG[sizeof(AIXMSG) == 0xf8 ? 1 : -1];
 extern AIACT ai_Actions[];            /* 0xf83ec0, the registered actions */
 #define AI_PARTNER ((AIPER *)ai_Partner)  /* ai.h declares it AICHAR * */
 
-void ai_Unk495ee0(void);                                                        /* 0x495ee0 */
+void ai_RollCharFlags(void);                                                        /* 0x495ee0 */
 int ai_DecideDummyRighteousness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x495fa0 */
 int ai_ExecuteDummyRighteousness(AIPER *p, AIARG *s1, AIARG *s2);                               /* 0x495fc0 */
 int ai_DecideDummySafety(int a, AIPER *p, int b, AIARG *o1, AIARG *o2);                 /* 0x495fd0 */

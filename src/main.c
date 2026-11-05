@@ -4197,7 +4197,7 @@ void main_BeginPlayerRound(void)
         gv_CheckRankUps();
         sv_PumpNet();
         Sleep(100);
-        ai_Unk495ee0();
+        ai_RollCharFlags();
         sv_PumpNet();
         Sleep(100);
         ord_UpdateStatistics();
