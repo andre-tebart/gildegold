@@ -29,6 +29,14 @@ reason.archives = "no MSVCRT import, single-threaded CRT: LIBC.LIB places 157 me
 roots = ["src"]
 include = ["include"]
 
+[queue]
+# The easy tier's bounds: a readability-only item of an original at most easy_read_max_bytes, or a code draft
+# of an original at most easy_max_bytes whose instruction distance is at most easy_max_dist. Everything else is
+# hard. All three are 100% above the built-in defaults (256 / 24 / 1024).
+easy_max_bytes = 512
+easy_max_dist = 48
+easy_read_max_bytes = 2048
+
 [analyzer]
 # The third-party analyzer `dcp setup` runs for a draft of every function (src/decompanion/analyzers/): "ghidra"
 # (headless; root, java_home, timeout = seconds per function), "rea" (file = saved batch_decompile results),
