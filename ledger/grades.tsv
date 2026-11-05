@@ -2255,7 +2255,7 @@ exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	draft
 exe	0x004c5fa0	cm_SendMessage5b	cm	byte	draft		
 exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	draft		
 exe	0x004c6020	cm_SendAddSkill	cm	byte	draft		
-exe	0x004c6060	ai_Unk4c6060	cm	byte	draft		
+exe	0x004c6060	cm_SendSpyReport	cm	byte	draft		
 exe	0x004c60b0	cm_SendGraveOrder	cm	byte	readable		
 exe	0x004c60f0	cm_SendGraveMove	cm	byte	readable		
 exe	0x004c6130	cm_SendRaiseDead	cm	byte	readable		
@@ -2592,7 +2592,7 @@ exe	0x004e4b50	cm_CutsceneReady	cm	byte	readable
 exe	0x004e4cc0	cm_UpdateParties	cm	byte	readable		
 exe	0x004e4f40	ai_Unk4e4f40	cm	byte	draft		
 exe	0x004e4f80	ai_RunPendingParties	cm	byte	draft		
-exe	0x004e5050	ai_Unk4e5050	cm	byte	draft		
+exe	0x004e5050	cm_FindPartyOfKind	cm	byte	readable		
 exe	0x004e50a0	cm_PartyById	cm	byte	readable		
 exe	0x004e50e0	cm_CutInfoById	cm	byte	draft		
 exe	0x004e5120	ai_Unk4e5120	cm	byte	draft		
@@ -3771,14 +3771,14 @@ exe	0x00561190	he_RunRansom	he	shape	readable
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	shape	readable		
 exe	0x005619a0	he_AllocBurglary	he	byte	draft		
-exe	0x00561a20	he_RunBurglary	he	draft	readable		
-exe	0x005628e0	he_Unk5628e0	he	draft	draft		
-exe	0x00563070	he_Unk563070	he	shape	draft		
-exe	0x005630f0	he_Unk5630f0	he	draft	draft		
-exe	0x00563980	he_Unk563980	he	byte	draft		
-exe	0x005639c0	he_Unk5639c0	he	draft	draft		
-exe	0x005642e0	he_Unk5642e0	he	draft	draft		
-exe	0x005644e0	he_Unk5644e0	he	draft	draft		
+exe	0x00561a20	he_RunBurglary	he	draft	readable	deep	
+exe	0x005628e0	he_RunBuildingSpying	he	draft	readable	deep	
+exe	0x00563070	he_AllocAmbush	he	shape	draft		
+exe	0x005630f0	he_RunAmbush	he	draft	readable	deep	
+exe	0x00563980	he_AllocDueInOne	he	byte	draft		
+exe	0x005639c0	he_RunAttack	he	draft	readable	deep	
+exe	0x005642e0	he_AllocFire	he	byte	readable		
+exe	0x005644e0	he_RunFire	he	draft	readable	deep	
 exe	0x00564860	he_Unk564860	he	draft	draft		
 exe	0x005649b0	he_Unk5649b0	he	draft	draft		
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
