@@ -439,6 +439,13 @@ typedef struct HEMSGBOX {               /* the message box event 17's words over
     int voice;                          /* 0xec, the spoken text's sample (snd_QueueVoice), 0: none */
     unsigned char flags;                /* 0xf0, 1 big, 2 quick jump, 4 cutscene, 8 activate, 0x10 speak, 0x20 history, 0x40 help */
 } HEMSGBOX;
+typedef struct HESLOTORDER {            /* the slot order event 18's words over AIJOB's union (he_Unk557b30 / he_RunSlotOrder; AIJOB's
+                                           slotOrder1c / slotOrder1d) */
+    char pad00[0xac];
+    int obj;                            /* 0xac, the objId of the workshop object (gm_FindById) */
+    int add1c;                          /* 0xb0, the first-kind slots still to add (AIOBJ.lvl1c) */
+    int add1d;                          /* 0xb4, the second-kind slots still to add (AIOBJ.lvl1d) */
+} HESLOTORDER;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12357,80 +12364,88 @@ void he_RunMessageBox(int ev)
 
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);
 
-/* 0x5578a0, the run handler of the training event (ROUGH skeleton): state 0 -> 1 (inc), state 1 waits for the due time, takes the person +0xac (0x4fea50) and its building (0x501190) and the two skill limits from the kind record (+0x240 / +0x241, +0x242 for the person type 0x116), counts +0xb0 (first) then +0xb4 (second) down while the person's skill byte (+0x1c / +0x1d) is below the limit, raising it by the message 0x4c3ba0 / 0x4c3d00 / 0x4c49a0; when both counters are 0 the person's owner gets the news 0x1bba (0x5f6 / 0x60b, with the 0x501b50 contact) and the record is freed; states -2 / -1 free */
-void he_Unk5578a0(int ev)
+/* 0x5578a0, the run handler of the slot order event 18 (HESLOTORDER, the type 0x12 message ai_BuySlots posts;
+   allocated by he_Unk557b30). Stage 0 goes on to 1. Stage 1, once due: with the workshop object (gm_FindById) and
+   the event's building (AIJOB.from; either gone: the event is freed), one slot a round is added: of the first
+   kind (lvl1c) while add1c lasts, then of the second (lvl1d) while add1d lasts, each only below the building
+   type's limit (AIBTYPE.min0 / min1; an object of type 0x116 has max116 for both), as a field delta of 1. Both
+   counts done: the news 0x1bba (the building) goes to the event's character with the quick jump to the
+   building's main object (icon 0x5f6, 0x60b for a master's character with flags1b4 bit 0) and the event is freed;
+   else the next round is due in 15 minutes. Stages -2 / -1 free the event */
+void he_RunSlotOrder(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int o = 0, b, kind, lim0, lim1, c, q, own, tid;
+    AIJOB *e = (AIJOB *)ev;
+    HESLOTORDER *s = (HESLOTORDER *)ev;
+    AIOBJ *o, *q;
+    AIBLD *b;
+    AIBTYPE *bt;
+    AICHAR *m;
+    int one, lim0, lim1, tid;
     char text[0x400];
 
-    if (st < -2 || st > 1)
-        return;
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        *(int *)(ev + 0x70) = st + 1;
+        e->stage++;
         return;
     case 1:
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-        if (o == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
-        if (*(unsigned short *)o == 0x116) {
-            lim0 = *(unsigned char *)(kind + 0x242);
-            lim1 = lim0;
+        gm_FindById(0, &o, 0, s->obj);
+        if (o == 0)
+            break;
+        one = 1;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0)
+            break;
+        bt = &ai_BTypesT[b->type];
+        if (o->type != 0x116) {
+            lim0 = bt->min0;
+            lim1 = bt->min1;
         } else {
-            lim0 = *(unsigned char *)(kind + 0x240);
-            lim1 = *(unsigned char *)(kind + 0x241);
+            lim0 = bt->max116;
+            lim1 = lim0;
         }
-        if (*(int *)(ev + 0xb0) > 0) {
-            *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
-            if (*(unsigned char *)(o + 0x1c) < lim0) {
-                cm_BeginFieldBlock(o, *(int *)(o + 2));
-                cm_AddFieldValues(1, 1, o - U_I((unsigned)&cm_FieldObject) + 0x1c, text);
+        if (s->add1c > 0) {
+            s->add1c--;
+            if (o->lvl1c < lim0) {
+                cm_BeginFieldBlock((char *)o, o->objId);
+                cm_AddFieldValues(1, 1, (char *)&o->lvl1c - cm_FieldObject, &one);
                 cm_SendFieldDeltas();
             }
-        } else if (*(int *)(ev + 0xb4) > 0) {
-            *(int *)(ev + 0xb4) = *(int *)(ev + 0xb4) - 1;
-            if (*(unsigned char *)(o + 0x1d) < lim1) {
-                cm_BeginFieldBlock(o, *(int *)(o + 2));
-                cm_AddFieldValues(1, 1, o - U_I((unsigned)&cm_FieldObject) + 0x1d, text);
+        } else if (s->add1d > 0) {
+            s->add1d--;
+            if (o->lvl1d < lim1) {
+                cm_BeginFieldBlock((char *)o, o->objId);
+                cm_AddFieldValues(1, 1, (char *)&o->lvl1d - cm_FieldObject, &one);
                 cm_SendFieldDeltas();
             }
         }
-        if (*(int *)(ev + 0xb4) == 0 && *(int *)(ev + 0xb0) == 0) {
+        if (s->add1d == 0 && s->add1c == 0) {
             tid = 0x5f6;
-            b = gm_BuildQuery(1, 0, *(int *)(ev + 0x10));
-            if (b == 0) {
-                he_FreeEvent((int *)ev);
-                return;
-            }
-            own = gm_FindCharacterByMaster(b);
-            if (own != 0 && (*(unsigned char *)(own + 0x1b4) & 1) != 0)
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+            if (b == 0)
+                break;
+            m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+            if (m != 0 && (m->flags1b4 & 1) != 0)
                 tid = 0x60b;
-            q = gm_BuildingMainObject(b);
+            q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
             txt_Format(text, 0x1bba, b);
             if (q != 0)
-                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, tid, *(int *)(b + 1), *(int *)(q + 2), 0, 0);
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, q->objId, 0, 0);
             else
-                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(b + 1), text, 0, tid, -1, 0, 0, 0);
-            he_FreeEvent((int *)ev);
-            return;
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, tid, b->id, -1, 0, 0);
+            break;
         }
-        gm_AddTime(ev + 0x52, 0, 0, 1);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0xf, 0);
         return;
+    case -2:
+    case -1:
+        break;
     default:
-        he_FreeEvent((int *)ev);
         return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x557b30, the allocation handler of the 0x557b70 event: due clock = start clock, posted 2 units later */
 
@@ -15418,7 +15433,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_RunMessageBox) != 0)
         return 1;
-    if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_Unk5578a0) != 0)
+    if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_RunSlotOrder) != 0)
         return 1;
     if (he_SetEventHandlers(19, (void *)he_Unk557b30, (void *)he_Unk557b70) != 0)
         return 1;
