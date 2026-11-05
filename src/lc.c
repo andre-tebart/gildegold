@@ -14558,7 +14558,7 @@ void ai_TellGravesPaid(int plRec, int bld, int paid, int sum)
 /* 0x5a97e0, a graveyard message with three values in two orders (159 B): as 0x5a96e0 with the text 0x414f
    (the table 0x5eecd0 + param_4 * 4), the +4 id (0x5fc) */
 
-void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6)
+void ai_ShowGraveOrderExtended(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6)
 {
     unsigned short v;
     int a;

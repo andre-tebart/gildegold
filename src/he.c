@@ -1057,6 +1057,17 @@ typedef struct HEMEETNAME {             /* the scene object event 0x91 loads: it
     int tag;                            /* 0x00, 0x66675073 */
     int bld;                            /* 0x04, the id of the building the meeting is held in */
 } HEMEETNAME;
+typedef struct HEGRAVELEASE {           /* the grave lease offer event 0x92's words over AIJOB's union (the message
+                                           0x92 lease gv_GraveyardTurn posts; its run handler 0x572a50 and the answer
+                                           0x5728d0) */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the graveyard building's id */
+    int size;                           /* 0xb0, the grave size */
+    unsigned char entry;                /* 0xb4, the entry of that size */
+    char padb5[3];
+    int price;                          /* 0xb8, the lease price (gv_LeasePrice) */
+    unsigned short years;               /* 0xbc, the years the lease is extended by (10) */
+} HEGRAVELEASE;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -20922,33 +20933,38 @@ void he_Unk572860(int ev)
     HM_I(ev, 0x70) = 0;
 }
 
-void ai_Unk5a97e0(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
+void ai_ShowGraveOrderExtended(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
 void ai_ShowGraveOrderCancelled(int param_1, unsigned short *param_2, int param_3, int param_4);                 /* 0x5a9880 */
 int gv_OrderExtendGrave(int *g, char *o, int v, int b, short s, int x);                 /* 0x4f0700 */
 int gv_OrderSetGraveHolder();                 /* 0x4f0900 */
-void he_Unk5728d0(int ev);          /* 0x5728d0 */
+void he_AnswerGraveLease(int ev);          /* 0x5728d0 */
 void he_ExamCancelled(int ev);          /* 0x5729c0 */
 
-/* 0x5728d0, the exam result: the building 0x501190 (1, 1, +0xac) of the kind 0x1d (0x7e3f30) and the character +0xc: 0x4f0700 (character, building, +0xb0, +0xb4, +0xbc, +0xb8); when the character is not the building's owner record and its kind is 6 / 7: 0x5a97e0 (the owner record, character, building, +0xb0, +0xb8, (int)(+0xb8 * 0x5ee034[+0xb0])) */
-void he_Unk5728d0(int ev)
+/* 0x5728d0, the answer of the grave lease offer event 0x92 (the run handler 0x572a50 calls it with the event): when
+   the building (+0xac) is a graveyard (ai_BTypes kind 0x1d), it extends the lease of the character (+0xc) on it
+   (gv_OrderExtendGrave: size +0xb0, entry +0xb4, years +0xbc, price +0xb8); when that character is not the building's
+   owner and its kind is 6 / 7, the owner is told (ai_ShowGraveOrderExtended with the size's sale share of the price) */
+void he_AnswerGraveLease(int ev)
 {
-    char *bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0xac));
-    char *per, *own;
+    AIJOB *e = (AIJOB *)ev;
+    HEGRAVELEASE *l = (HEGRAVELEASE *)ev;
+    AIBLD *bld;
+    AICHAR *per;
     int n;
 
-    if (bld == 0 || *(char *)((unsigned)&ai_BTypes + *(unsigned char *)bld * 0x24d) != 0x1d)
+    bld = (AIBLD *)gm_BuildQuery(1, 1, l->bld);
+    if (bld == 0 || ((AIBTYPE *)ai_BTypes)[bld->type].kind != 0x1d)
         return;
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
+    per = (AICHAR *)gm_FindChar(e->netId);
     if (per == 0)
         return;
-    gv_OrderExtendGrave(per, bld, HM_I(ev, 0xb0), HM_B(ev, 0xb4), *(unsigned short *)(ev + 0xbc), HM_I(ev, 0xb8));
-    own = (char *)((unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c);
-    if (per == own)
+    gv_OrderExtendGrave((int *)per, (char *)bld, l->size, l->entry, l->years, l->price);
+    if (per == &ai_CharsT[bld->owner])
         return;
-    if (HM_B(own, 2) != 6 && HM_B(own, 2) != 7)
+    if (ai_CharsT[bld->owner].kind != 6 && ai_CharsT[bld->owner].kind != 7)
         return;
-    n = (int)((float)HM_I(ev, 0xb8) * *(float *)((unsigned)&gv_SaleShares + HM_I(ev, 0xb0) * 4));
-    ai_Unk5a97e0(own, per, bld, HM_I(ev, 0xb0), HM_I(ev, 0xb8), n);
+    n = (int)((float)l->price * gv_SaleShares[l->size]);
+    ai_ShowGraveOrderExtended((int)&ai_CharsT[bld->owner], (unsigned short *)per, (int)bld, l->size, l->price, n);
 }
 /* 0x5729c0, the master exam cancelled (the answer "no" of the exam window, its due time over): when the
    answer's building (0x501190 (1, 1, bldId)) is of the kind 0x1d (a graveyard), the grave order is freed
@@ -21006,7 +21022,7 @@ void he_Unk572a50(int ev)
         }
         if (*(int *)(unsigned)&d2_ClickedForm == HM_I(HM_I(ev, 0x74), 8) && *(int *)(unsigned)&d2_ClickedId != -1) {
             if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                he_Unk5728d0(ev);
+                he_AnswerGraveLease(ev);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
