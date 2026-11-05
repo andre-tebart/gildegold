@@ -6045,16 +6045,18 @@ void he_RunAccidentSim(int ev)
         e->end.year++;
     }
 }
-/* 0x54c870, a Ghidra miss: the init of the ranking event: the due clock now, +0x56 = 9, +0x58 = 0, posted 0x18 units ahead (state 0) */
-
+/* 0x54c870, the allocation handler of the auction event 0x67: unless the event is paused (opts 4) its due clock is
+   now plus a day at 9:00, and it is posted at once (cm_SendExSetHE 0, state 0, the slot in exSlot) */
 void he_StartAuctionEvent(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 9;
-        *(int *)(ev + 0x58) = 0;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+
+    if ((e->opts & 4) == 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 9;
+        e->end.min = 0;
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54c8e0, a Ghidra miss: the run handler of the auction event 0x67 (HEAUCTION: the building +0xac, the start
