@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at c37dc1a8: include/ai_types.h gains AIJOB's raid view (raidTarget .. raidParty at 0xac, the raid event 0x44's words he_RunRaid reads typed) and cm_types.h G28REC's raid lists: truer types for he.c in the shared headers. ai_Unk483a60's text is unchanged; removing only the new anonymous AIJOB member flips it back to byte, so its byte match depends on VC6's declaration set (allocation), not on its source: no evidence (dcp headers probe ai does not move it, unused typedefs being another kind of declaration) [waits for: the full declaration set of ai.c's headers (the original's ai.h / ai_types.h)]
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -2184,7 +2184,7 @@ exe	0x004c47b0	ai_Unk4c47b0	cm	byte	draft
 exe	0x004c47e0	cm_SendMoveGoods	cm	byte	draft		
 exe	0x004c4830	cm_SendMoveGoodsUnchecked	cm	byte	draft		
 exe	0x004c4880	cm_SendExSellObject	cm	byte	draft		
-exe	0x004c48e0	ai_Unk4c48e0	cm	byte	draft		
+exe	0x004c48e0	cm_SendMakeGoods	cm	byte	draft		
 exe	0x004c4920	cm_SendCartRoute	cm	byte	draft		
 exe	0x004c4960	cm_SendRemoveGoods	cm	byte	draft		
 exe	0x004c49a0	cm_SendFieldDeltas	cm	byte	readable		
@@ -2228,7 +2228,7 @@ exe	0x004c5690	cm_SendCharModel	cm	byte	draft
 exe	0x004c56d0	cm_SendGoodsRecord	cm	byte	readable		
 exe	0x004c5710	cm_SendGoodsDelta	cm	byte	readable		
 exe	0x004c5800	cm_SendMessage41	cm	byte	readable		
-exe	0x004c5840	ai_Unk4c5840	cm	byte	draft		
+exe	0x004c5840	cm_SendUpdateSmoke	cm	byte	draft		
 exe	0x004c5870	cm_SendSkillsChanged	cm	byte	draft		
 exe	0x004c58a0	cm_SendApplication	cm	byte	draft		
 exe	0x004c58e0	cm_SendOfficeRecord	cm	byte	draft		
@@ -3802,29 +3802,29 @@ exe	0x00567a80	he_RunHint	he	draft	readable	deep
 exe	0x00567b80	he_Unk567b80	he	byte	draft		
 exe	0x00567c00	he_RunTip	he	draft	readable	deep	
 exe	0x00567d20	he_Unk567d20	he	byte	draft		
-exe	0x00567d60	he_Unk567d60	he	draft	draft		
+exe	0x00567d60	he_RunTutorialBuildingTour	he	draft	readable	deep	
 exe	0x00567f00	he_Unk567f00	he	byte	draft		
-exe	0x00567f50	he_PatrolStep	he	draft	draft		
+exe	0x00567f50	he_PatrolStep	he	shape	readable		
 exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
 exe	0x00568310	he_RegisterEventTypes02	he	byte	draft		
 exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
 exe	0x00568ae0	he_AllocIncomeEvent	he	byte	readable		
-exe	0x00568be0	he_Unk568be0	he	draft	draft		
+exe	0x00568be0	he_RunIncomeEvent	he	shape	readable		
 exe	0x005690c0	he_AllocProduktion	he	byte	readable		
-exe	0x00569210	he_Unk569210	he	draft	draft		
-exe	0x0056a100	he_Unk56a100	he	byte	draft		
-exe	0x0056a170	he_Unk56a170	he	draft	draft		
-exe	0x0056a360	he_Unk56a360	he	byte	draft		
-exe	0x0056a3d0	he_Unk56a3d0	he	draft	draft		
+exe	0x00569210	he_RunProduktion	he	draft	readable	deep	
+exe	0x0056a100	he_AllocSearchEvent	he	byte	draft		
+exe	0x0056a170	he_RunSearchEvent	he	byte	readable		
+exe	0x0056a360	he_AllocSearch9	he	byte	draft		
+exe	0x0056a3d0	he_RunSearch9	he	byte	readable		
 exe	0x0056a710	he_Unk56a710	he	byte	draft		
 exe	0x0056a7b0	he_AllocTrade	he	draft	readable	deep	
-exe	0x0056a960	he_Unk56a960	he	draft	draft		
+exe	0x0056a960	he_RunTrade	he	draft	readable	deep	
 exe	0x0056b380	he_Unk56b380	he	byte	draft		
 exe	0x0056b3f0	he_RunResearch	he	draft	readable	deep	
 exe	0x0056b570	he_AllocGebaeudeBauen	he	byte	readable		
 exe	0x0056b700	he_PlaceGebaeudeObject	he	byte	readable		
-exe	0x0056b750	he_Unk56b750	he	byte	draft		
-exe	0x0056b780	he_ShowConstruction	he	draft	draft		
+exe	0x0056b750	he_CollectChild	he	byte	readable		
+exe	0x0056b780	he_ShowConstruction	he	byte	readable		
 exe	0x0056bac0	he_Unk56bac0	he	draft	draft		
 exe	0x0056bc50	he_Unk56bc50	he	draft	draft		
 exe	0x0056be30	he_Unk56be30	he	draft	draft		
@@ -3910,7 +3910,7 @@ exe	0x00573f20	he_Unk573f20	he	byte	draft
 exe	0x00573fb0	he_Unk573fb0	he	shape	draft		
 exe	0x00574060	he_Unk574060	he	byte	draft		
 exe	0x005740d0	he_Unk5740d0	he	byte	draft		
-exe	0x005740f0	ai_Unk5740f0	he	byte	draft		
+exe	0x005740f0	he_HasEvent9f	he	byte	draft		
 exe	0x00574120	he_AllocTrialScene	he	byte	draft		
 exe	0x005741d0	ai_FindCurseEvent	he	byte	draft		
 exe	0x005741f0	he_TrialPayment	he	draft	draft		
@@ -4384,7 +4384,7 @@ exe	0x005ae240	ai_Unk5ae240	lc	draft	draft
 exe	0x005ae570	ai_Unk5ae570	lc	draft	draft		
 exe	0x005ae6b0	ai_Unk5ae6b0	lc	draft	draft		
 exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
-exe	0x005ae8e0	ai_Unk5ae8e0	lc	draft	draft		
+exe	0x005ae8e0	ai_CartAtBuilding	lc	draft	draft		
 exe	0x005ae9a0	ai_Unk5ae9a0	lc	draft	draft		
 exe	0x005af010	ai_Unk5af010	lc	draft	draft		
 exe	0x005af1a0	ai_OpenTransport	lc	byte	readable		
@@ -4431,7 +4431,7 @@ exe	0x005ba600	ai_CloseChildWindow	lc	byte	readable
 exe	0x005ba620	ai_FindUsableGood	lc	byte	readable		
 exe	0x005ba660	ai_FindUsableGoodIndex	lc	byte	readable		
 exe	0x005ba6b0	ai_InventoryHas	lc	byte	readable		
-exe	0x005ba700	ai_Unk5ba700	lc	draft	draft		
+exe	0x005ba700	ai_BuildingHasItem	lc	draft	draft		
 exe	0x005ba750	ai_Unk5ba750	lc	draft	draft		
 exe	0x005ba980	ai_Unk5ba980	lc	draft	draft		
 exe	0x005bac10	ai_InventoryPanel	lc	draft	draft		

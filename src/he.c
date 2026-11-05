@@ -63,8 +63,10 @@
    HEBURN) handlers read their records typed, and so do the handlers up to 0x567990: the burning 0x4f (HEBURN), the
    new worker 0x6e (HENEWWORKER), the kill-player run handler 0x72 (HEKILL, its funeral party G28REC), the night
    watchman 0x73 (HENIGHTWATCH), the robbery 0x75 (HEROBBERY, the burglary's twin), the title period 0x7c (AIMSG)
-   and he_OpenHelpEvents (HEHINT).
-   Open: types: the other handlers past 0x567990 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
+   and he_OpenHelpEvents (HEHINT); so do the tutorial building tour 0x85, the guard patrol step (AIOBJ's patrol*
+   bytes), the running income 3, the production (HEPRODUCTION), the searches 8 / 9 (HESEARCH / HESEARCH9), the trade
+   0xb (HETRADE) and he_ShowConstruction (HECONSTRUCTION, its child list HECHILDLIST).
+   Open: types: the other handlers past 0x56b780 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
    event and message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
