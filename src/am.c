@@ -7867,12 +7867,12 @@ int ai_DecideMayorTownHall(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 int ai_ExecuteMayorTownHall(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
-    unsigned char *c;
+    AIOBJ *c;
 
-    c = (unsigned char *)gm_PlayerSeat(1);
+    c = (AIOBJ *)gm_PlayerSeat(1);
     if (c == 0)
         return 0;
-    if (((unsigned char *)p)[0x166] != 0xf)
+    if (p->officeKind != 0xf)
         return 0;
     if (s2->kind != 4 && s1->arg2 != 0)
         return 0;
@@ -7884,7 +7884,7 @@ int ai_ExecuteMayorTownHall(G5CH *p, AIARG *s1, AIARG *s2)
     m.time = ai_Time;
     m.arg = s2->ref;
     cm_BeginGroup("upgr_rathaus");
-    cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
+    cm_SendMoveGoods(-1, c->objId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
     cm_EndGroup("upgr_rathaus");
     return 0x31;
