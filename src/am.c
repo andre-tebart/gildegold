@@ -3806,7 +3806,7 @@ int ai_DecideDummyJob(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     return b ? 0 : 2;
 }
-/* 0x496070 */
+/* 0x496070, execute of the dummy action "DummyBeruf" (2): returns the action id 2, no other effect */
 
 int ai_ExecuteDummyJob(AIPER *p, AIARG *s1, AIARG *s2)
 {
