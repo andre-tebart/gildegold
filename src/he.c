@@ -10524,76 +10524,81 @@ int he_RegisterEventTypes22(void)
 
 void cm_SendHandOverCrimes(int a, int b, int c, int d);
 
-/* 0x5538b0, ends every running event record that involves the person `p` (+4 the id; nothing for a free slot): the records of the types 0x41, 0x6f, 0x45 (the two partners +0xac / +0xb0, the other one is looked up (0x505df0) before the record is ended by 0x541200), 0x2c (the partners +0xac / +0xb4 / +0xc0 get the message 0x4c5580 (+0xac, +0xb0, +4, 0)), 0x47 (+0xac or +0xb0), 0x5e and 0x5f (+0xac); only records with a bit of 3 in +0x78 are touched (ROUGH) */
+/* 0x5538b0, ends every started event (opts & 3) the character p (its AICHAR record, by its netId; nothing for a
+   free slot) takes part in: the pair events 0x41, 0x6f and 0x45 (either partner; the other one is looked up with
+   gm_FindChar first), the offer events 0x2c (as the suitor or a guest (who[0], who[2], who[5]) the offer's
+   crimes are handed over first, cm_SendHandOverCrimes (who[0], who[1], the event's id, 0); as the partner who[1]
+   only ended), the events 0x47 (either partner), the trials 0x5e and the trial steps 0x5f (as the teacher) */
 void he_EndPersonEvents(unsigned short *p)
 {
-    char *e;
-    int id, a, b;
+    AICHAR *c = (AICHAR *)p;
+    AIJOB *e;
+    int a, b;
 
-    if (p == 0 || *p == 0xffff)
+    if (c == 0 || c->id == 0xffff)
         return;
-    id = *(int *)((char *)p + 4);
-    for (e = he_FindEvent(1, 0, 0x41); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) == 0)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x41); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) == 0)
             continue;
-        a = *(int *)(e + 0xac);
-        if (a == id)
-            gm_FindChar(*(int *)(e + 0xb0));
-        else if (*(int *)(e + 0xb0) == id)
-            gm_FindChar(a);
-        else
-            continue;
-        he_EndEventNow((int)e);
+        if (e->partner1 == c->netId) {
+            gm_FindChar(e->partner2);
+            he_EndEventNow((int)e);
+        } else if (e->partner2 == c->netId) {
+            gm_FindChar(e->partner1);
+            he_EndEventNow((int)e);
+        }
     }
-    for (e = he_FindEvent(1, 0, 0x6f); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) == 0)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x6f); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) == 0)
             continue;
-        a = *(int *)(e + 0xac);
-        if (a == id)
-            b = *(int *)(e + 0xb0);
-        else if (*(int *)(e + 0xb0) == id)
+        a = e->partner1;
+        if (a == c->netId)
+            b = e->partner2;
+        else if (e->partner2 == c->netId)
             b = a;
         else
             continue;
         gm_FindChar(b);
         he_EndEventNow((int)e);
     }
-    for (e = he_FindEvent(1, 0, 0x45); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) == 0)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x45); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) == 0)
             continue;
-        a = *(int *)(e + 0xac);
-        b = *(int *)(e + 0xb0);
-        if (a == id)
+        a = e->partner1;
+        b = e->partner2;
+        if (a == c->netId)
             gm_FindChar(b);
-        else if (b == id)
+        else if (b == c->netId)
             gm_FindChar(a);
         else
             continue;
         he_EndEventNow((int)e);
     }
-    for (e = he_FindEvent(1, 0, 0x2c); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) == 0)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x2c); e != 0; e = (AIJOB *)he_NextEvent()) {
+        HEOFFER *o = (HEOFFER *)e;
+
+        if ((e->opts & 3) == 0)
             continue;
-        a = *(int *)(e + 0xac);
-        if (a == id || *(int *)(e + 0xb4) == id || *(int *)(e + 0xc0) == id) {
-            cm_SendHandOverCrimes(a, *(int *)(e + 0xb0), *(int *)(e + 4), 0);
+        a = o->who[0];
+        if (a == c->netId || o->who[2] == c->netId || o->who[5] == c->netId) {
+            cm_SendHandOverCrimes(a, o->who[1], e->id, 0);
             he_EndEventNow((int)e);
-        } else if (*(int *)(e + 0xb0) == id) {
+        } else if (o->who[1] == c->netId) {
             he_EndEventNow((int)e);
         }
     }
-    for (e = he_FindEvent(1, 0, 0x47); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) == 0)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x47); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) == 0)
             continue;
-        if (*(int *)(e + 0xac) == id || *(int *)(e + 0xb0) == id)
+        if (e->partner1 == c->netId || e->partner2 == c->netId)
             he_EndEventNow((int)e);
     }
-    for (e = he_FindEvent(1, 0, 0x5e); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) != 0 && *(int *)(e + 0xac) == id)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x5e); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) != 0 && ((HETRIAL *)e)->teacher == c->netId)
             he_EndEventNow((int)e);
     }
-    for (e = he_FindEvent(1, 0, 0x5f); e != 0; e = he_NextEvent()) {
-        if ((*(unsigned char *)(e + 0x78) & 3) != 0 && *(int *)(e + 0xac) == id)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x5f); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) != 0 && ((HETRIALSTEP *)e)->teacher == c->netId)
             he_EndEventNow((int)e);
     }
 }
