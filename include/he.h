@@ -4,6 +4,7 @@
 
 struct D3OBJECT;
 struct AIJOB;
+struct AICHAR;
 
 typedef struct HEGFXINFO {              /* 16 bytes, a gfx info: a 3D model shown over an object for an event (he_CreateGfxInfo) */
     int eventId;                        /* 0x0, the event's AIJOB.id */
@@ -106,7 +107,7 @@ void he_SetEventChar(int r, int pl);
 
 
 void he_CharacterBehavior(struct AIJOB *ev, float *pos);
-void he_CharAccident(int p1, unsigned short *p2, int p3, int p4, float p5, int p6);
+void he_CharAccident(struct AIJOB *ev, struct AICHAR *c, struct AICHAR *boss, struct AIBLD *bld, float value, int quiet); /* 0x5414a0, a character's accident: carried away ("Unfall") or dead, with the boss's news */
 void he_Unk5417d0(int p1, unsigned short *p2, int p3, int p4, int p5, float p6);
 void he_AllocStammtisch(int r);
 
