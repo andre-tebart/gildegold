@@ -1087,6 +1087,15 @@ typedef struct HEHAUNTING {             /* the graveyard owner's haunting event 
     int paid;                           /* 0xb8, the money paid for it (the slider's amount) */
     int walkSlot;                       /* 0xbc, the cm slot of the haunter's walk, -1: none */
 } HEHAUNTING;
+typedef struct HEDECAY {                /* the graveyard owner's "breath of decay" event 0x89's words over AIJOB's union (the
+                                           message's arg[0 .. 3]: am.c ai_ExecGraveyardOwner2, sv_t.c; he_AllocDecay / he_RunDecay) */
+    char pad00[0xac];
+    int home;                           /* 0xac, the id of the victim's building the agent goes to */
+    int victim;                         /* 0xb0, the netId of the character it is against */
+    int agent;                          /* 0xb4, the netId of the character who goes (the one selected) */
+    int paid;                           /* 0xb8, the price (sv_t.c: 4) */
+    int aged;                           /* 0xbc, 1 when the victim aged, 0 when it failed */
+} HEDECAY;
 typedef struct HESECRETROOM {           /* the secret room event 0x99's words over AIJOB's union (am.c ai_ExecSecretRoom0 .. 3
                                            post it; he_AllocSecretRoom / he_RunSecretRoom) */
     char pad00[0xac];
@@ -1688,7 +1697,7 @@ void he_MessageBoxQuickjump(int pid, int from, char *text, char tflags, int news
 #include <stdarg.h>
 #include <math.h>
 void he_Unk55e3a0(int ev);
-void he_SetLifeByAge(int rec, unsigned short num);
+void he_SetLifeByAge(int rec, int num);
 
 void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b);
 struct D3OBJECT;
@@ -23162,8 +23171,8 @@ int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
 
 void he_AllocHaunting(int ev);          /* 0x56fc50 */
 void he_RunHaunting(int ev);          /* 0x56fda0 */
-void he_Unk570130(int ev);          /* 0x570130 */
-void he_Unk5702e0(int ev);          /* 0x5702e0 */
+void he_AllocDecay(int ev);          /* 0x570130 */
+void he_RunDecay(int ev);          /* 0x5702e0 */
 void he_Unk570ef0(int ev);          /* 0x570ef0 */
 void he_Unk571000(int ev);          /* 0x571000 */
 void he_Unk571550(int ev);          /* 0x571550 */
@@ -23189,7 +23198,7 @@ void he_Unk572a50(int ev);          /* 0x572a50 */
 int he_RegisterEventTypes88(void)
 {
     if (he_SetEventHandlers(0x88, (void *)he_AllocHaunting, (void *)he_RunHaunting) == 0) {
-        if (he_SetEventHandlers(0x89, (void *)he_Unk570130, (void *)he_Unk5702e0) == 0) {
+        if (he_SetEventHandlers(0x89, (void *)he_AllocDecay, (void *)he_RunDecay) == 0) {
             if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                     if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_Unk5707a0) == 0) {
@@ -23226,14 +23235,14 @@ int he_RegisterEventTypes88(void)
 }
 /* 0x56fbc0, the progress value of a building record (rec + 0x18 .. the value +0x1c, the steps +0x14, the start +0x20): num not above +0x20 -> 0x4c4ac0 (rec + 4, 0x1c, rec + 0x18 - rec + 0x1c); else (num - +0x20) steps of v = v - step + step / v from v = num - +0x20, then 0x4c4ac0 (rec + 4, 0x1c, v - rec + 0x1c) */
 
-void he_SetLifeByAge(int rec, unsigned short num)
+void he_SetLifeByAge(int rec, int num)
 {
     float f, v, fnum;
     int n;
 
     if (rec == 0)
         return;
-    fnum = (float)num;
+    fnum = (float)(unsigned short)num;
     if (fnum <= *(float *)(rec + 0x20)) {
         ((int (*)(int, int, float))cm_SendFloatDelta)(*(int *)(rec + 4), 0x1c, *(float *)(rec + 0x18) - *(float *)(rec + 0x1c));
         return;
@@ -23376,7 +23385,7 @@ void he_RunHaunting(int ev)
 }
 /* 0x570130, the alloc of the event 0x89 (a work at +0xb0 by the character +0xb4): paused -> nothing; with a running event 0x89 of the same player and building the text 0x40a2, state -1 and free; else the character +0xb4 missing -> free; the due clock now + 1 hour, 0x50cc50 (pid, -(+0xb8)), state 0 and 0x4f2e30 (0x1b, 1, pid, +4 of the character, the id +1 of +0x170 or -1) */
 
-void he_Unk570130(int ev)
+void he_AllocDecay(int ev)
 {
     char text[0x400];
     char *per;
@@ -23423,108 +23432,133 @@ void ai_TellGraveWorkFailure(int param_1);                 /* 0x5a99e0 */
 void ai_GraveyardMessage(int param_1, unsigned short *param_2, unsigned short *param_3, int param_4);                 /* 0x5a9a30 */
 void ai_GraveyardMessagePlain(int param_1, unsigned short *param_2, unsigned short *param_3);                 /* 0x5a9af0 */
 
-/* 0x5702e0, the run of the event 0x89 (the state machine of the work at the building +0xac by the character +0xb4, the second character +0xb0): -1 / -2 release the character and free; states 0 .. 4 as in the code (0x524260, 0x4c52e0 with the text 0x628ea4, the progress 0x4fe140, 0x504e20 / 0x5a9990 / 0x5a99e0, 0x5a9a30 / 0x5a9af0); ROUGH */
-void he_Unk5702e0(int ev)
+/* 0x5702e0, the run handler of the graveyard owner's "breath of decay" event 0x89 (alloc he_AllocDecay; am.c's
+   ai_ExecGraveyardOwner2 / sv_t.c post it): the stages -1 / -2 take the agent out of the event's group and free
+   the event, a lost agent frees it too. Stage 0 puts the agent in the group, stage 1 sends it to the victim's
+   building ("HAUCH DES VERFALLS"), stage 2 waits 4 minutes while it walks, then (due in an hour) rolls
+   gm_Mix (agent, victim, 2) + random above 1: the victim ages by the building's level / 50 + 0 .. 2 + its type's
+   level * 2 years (he_SetLifeByAge, ai_TellGraveWorkSuccess; aged = 1), else ai_TellGraveWorkFailure (aged = 0);
+   stage 3 sends the agent back to its building, stage 4 waits until it is there and reports to the event's
+   character (aged: ai_GraveyardMessage, its last argument 0 when random + 1 - the agent's skill 1 is above 1;
+   else ai_GraveyardMessagePlain); then the event ends (stage -1)
+   @deep read the whole function against the original: typed as AIJOB + HEDECAY (event 0x89, am.c
+   ai_ExecGraveyardOwner2 / sv_t.c), the walk text literal, the default stage leaves the event alone, the
+   message's last argument as the original's told flag (!(random + 1 - skill > 1.0) -> 1), the age sum
+   level / 50 + (random + type level * 2) with he_SetLifeByAge taking an int (its callee narrows it: and
+   eax, 0xffff at 0x56fbcd; the caller keeps the and at +0x1bf). Left: the original's stage 1 pushes the
+   walk text and 1 and jumps into stage 3's cm_SendChrGotoBuilding call tail (+0x91: push X; push 1; jmp),
+   ours keeps its own copy with the arguments loaded before the pushes (+0x8a, +0x261 scheduling), and
+   stage 4's per address computed after the agent id push (+0x321): scheduling / cross-jumping only
+   (references: M8 at +0x2d2: ours refers to ai_Time+0x4 (0x770ae4), the original's field to 0x770ae8
+   (ai_Time+0x8), explained: the M8 at +0x2d2 is the alignment of stage 4's 14-byte ai_Time copy (e->end =
+   ai_Time, the same four loads and stores of ai_Time+0/4/8/c in both, other registers and order): our load
+   of ai_Time+4 lines up with the original's load of ai_Time+8) (size: 355 vs 340 instructions, explained:
+   ours 355 vs 340: the stage-1 copy of the cm_SendChrGotoBuilding tail (the 6 argument pushes, the call,
+   stage++ and the epilogue, 15 instructions) that the original cross-jumps into stage 3's) */
+void he_RunDecay(int ev)
 {
-    char *per = (char *)gm_FindChar(HM_I(ev, 0xb4));
-    int state = HM_I(ev, 0x70);
-    int r, b2;
-    float f;
-    unsigned char *job;
+    AIJOB *e = (AIJOB *)ev;
+    HEDECAY *d = (HEDECAY *)ev;
+    AICHAR *agent, *victim, *per;
+    AIBLD *bld;
+    AIBTYPE *bt;
+    float chance;
+    int told;
 
-    if (state == -1 || state == -2) {
-        if (per != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)per, 0);
+    agent = (AICHAR *)gm_FindChar(d->agent);
+    if (e->stage == -1 || e->stage == -2) {
+        if (agent != 0)
+            sv_MoveToGroup(0, 0, agent->id, 0);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (per == 0) {
+    if (agent == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    switch (state) {
+    switch (e->stage) {
     case 0:
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
-        HM_I(ev, 0x84) = -1;
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        sv_MoveToGroup(0, 0, agent->id, (char *)ev);
+        e->exSlot = -1;
+        e->stage++;
         return;
     case 1:
-        r = gm_BuildQuery(1, 1, HM_I(ev, 0xac));
-        if (r != 0) {
-            cm_SendChrGotoBuilding(HM_I(ev, 0xb4), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628ea4);
-            HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        bld = (AIBLD *)gm_BuildQuery(1, 1, d->home);
+        if (bld == 0) {
+            e->stage = -1;
             return;
         }
-        HM_I(ev, 0x70) = -1;
+        cm_SendChrGotoBuilding(d->agent, bld->id, -1, 0, 1, "HAUCH DES VERFALLS");
+        e->stage++;
         return;
     case 2:
-        gm_BuildQuery(1, 1, HM_I(ev, 0xac));
-        r = gm_FindChar(HM_I(ev, 0xb4));
-        if (r == 0) {
-            HM_I(ev, 0x70) = -1;
+        gm_BuildQuery(1, 1, d->home);
+        agent = (AICHAR *)gm_FindChar(d->agent);
+        if (agent == 0) {
+            e->stage = -1;
             return;
         }
-        if (HM_I(HM_I(r, 0x184), 0x128) == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 1, 0, 0);
-            b2 = gm_FindChar(HM_I(ev, 0xb0));
-            r = gm_FindChar(HM_I(ev, 0xb4));
-            f = gm_Mix(r, b2, 2);
-            if (b2 != 0) {
-                if (1.0 < util_RandomF() + f) {
-                    job = *(unsigned char **)(r + 0x16c);
-                    HM_I(ev, 0xbc) = 1;
-                    he_SetLifeByAge(b2, (char)job[0x5c] / 0x32 + (util_Random(3) & 0xffff) + *(unsigned char *)((unsigned)&ai_BTypes + *job * 0x24d + 0x247) * 2);
-                    ai_TellGraveWorkSuccess(b2);
-                    HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
-                    return;
-                }
-                ai_TellGraveWorkFailure(b2);
-                HM_I(ev, 0xbc) = 0;
-            }
-            HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        if (agent->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 4, 0);
-        return;
-    case 3:
-        r = gm_FindChar(HM_I(ev, 0xb4));
-        if (r != 0 && (r = HM_I(r, 0x16c)) != 0) {
-            cm_SendChrGotoBuilding(HM_I(ev, 0xb4), *(int *)(r + 1), -1, 0, 0, (char *)(unsigned)&full_data_628ea4);
-            HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
-            return;
-        }
-        HM_I(ev, 0x70) = -1;
-        return;
-    case 4:
-        r = gm_FindChar(HM_I(ev, 0xb4));
-        if (r != 0 && HM_I(r, 0x16c) != 0) {
-            if (HM_I(HM_I(r, 0x184), 0x128) != 0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0, 4, 0);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
+        victim = (AICHAR *)gm_FindChar(d->victim);
+        agent = (AICHAR *)gm_FindChar(d->agent);
+        chance = gm_Mix((int)agent, (int)victim, 2);
+        if (victim != 0) {
+            if (util_RandomF() + chance > 1.0) {
+                bld = agent->bld;
+                bt = &ai_BTypesT[bld->type];
+                d->aged = 1;
+                he_SetLifeByAge((int)victim, (util_Random(3) & 0xffff) + bt->cap247 * 2 + bld->level / 50);
+                ai_TellGraveWorkSuccess((int)victim);
+                e->stage++;
                 return;
             }
-            gm_BuildQuery(1, 1, HM_I(ev, 0xac));
-            b2 = gm_FindChar(HM_I(ev, 0xb0));
-            r = gm_FindChar(HM_I(ev, 0xb4));
-            if (b2 != 0 && r != 0) {
-                if (HM_I(ev, 0xbc) != 0) {
-                    f = gm_GetSkill(r, 1);
-                    if (1.0 < util_RandomF() + (1.0 - f))
-                        ai_GraveyardMessage((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, r, b2, 0);
-                    else
-                        ai_GraveyardMessage((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, r, b2, 1);
-                } else
-                    ai_GraveyardMessagePlain((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, r, b2);
-            }
-            HM_I(ev, 0x70) = -1;
+            ai_TellGraveWorkFailure((int)victim);
+            d->aged = 0;
+        }
+        e->stage++;
+        return;
+    case 3:
+        agent = (AICHAR *)gm_FindChar(d->agent);
+        if (agent == 0 || (bld = agent->bld) == 0) {
+            e->stage = -1;
             return;
         }
-        HM_I(ev, 0x70) = -1;
+        cm_SendChrGotoBuilding(d->agent, bld->id, -1, 0, 0, "HAUCH DES VERFALLS");
+        e->stage++;
         return;
-    default:
-        HM_I(ev, 0x70) = -1;
+    case 4:
+        agent = (AICHAR *)gm_FindChar(d->agent);
+        if (agent == 0 || agent->bld == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (agent->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
+            return;
+        }
+        gm_BuildQuery(1, 1, d->home);
+        victim = (AICHAR *)gm_FindChar(d->victim);
+        per = &ai_CharsT[e->chr];
+        agent = (AICHAR *)gm_FindChar(d->agent);
+        if (victim != 0 && per != 0 && agent != 0) {
+            if (d->aged != 0) {
+                chance = ai_FloatOne - gm_GetSkill((char *)agent, 1);
+                if (!(util_RandomF() + chance > 1.0))
+                    told = 1;
+                else
+                    told = 0;
+                ai_GraveyardMessage((int)per, (unsigned short *)agent, (unsigned short *)victim, told);
+            } else
+                ai_GraveyardMessagePlain((int)per, (unsigned short *)agent, (unsigned short *)victim);
+        }
+        e->stage = -1;
         return;
     }
 }

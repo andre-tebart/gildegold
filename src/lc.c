@@ -14659,7 +14659,7 @@ send:
 }
 /* 0x5a9990, tells a character of the graveyard work's outcome (69 B): the text 0x40a8 with one of the three
    sub-texts 0x40a9 .. 0x40ab (util_Random(3)) into ai_NewsText, shown to its netId (1, event 0x5fb, the sound
-   ai_NewsKeyFriedhof12); he_Unk5702e0 sends it after he_SetLifeByAge set the second character's value */
+   ai_NewsKeyFriedhof12); he_RunDecay sends it after he_SetLifeByAge set the second character's value */
 
 void ai_TellGraveWorkSuccess(int chRec)
 {
@@ -14673,7 +14673,7 @@ void ai_TellGraveWorkSuccess(int chRec)
 }
 /* 0x5a99e0, tells a character that the graveyard work failed (69 B): the text 0x40ac with one of the three
    sub-texts 0x40a9 .. 0x40ab (util_Random(3)) into ai_NewsText, shown to its netId (1, event 0x5fb, the sound
-   ai_NewsKeyFriedhof13); he_Unk5702e0 sends it in the work's other branch (no value set, its +0xbc = 0) */
+   ai_NewsKeyFriedhof13); he_RunDecay sends it in the work's other branch (no value set, its +0xbc = 0) */
 
 void ai_TellGraveWorkFailure(int chRec)
 {
@@ -14712,7 +14712,7 @@ void ai_GraveyardMessage(G8CHARREC *to, G8CHARREC *worker, G8CHARREC *other, int
 }
 /* 0x5a9af0, the graveyard news of the worker / other characters to `to`, without a detail sentence (83 B):
    the text 0x40af (0x40a3, the worker's id, its building +0x16c, the other's id) into ai_NewsText, shown to
-   to's netId (0, event 0x5fa, the sound ai_NewsKeyFriedhof00); he_Unk5702e0 sends it for a work without a
+   to's netId (0, event 0x5fa, the sound ai_NewsKeyFriedhof00); he_RunDecay sends it for a work without a
    result (+0xbc = 0), in place of the detailed ai_GraveyardMessage */
 
 void ai_GraveyardMessagePlain(int toRec, unsigned short *workerRec, unsigned short *otherRec)
