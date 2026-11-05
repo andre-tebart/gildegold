@@ -3546,19 +3546,19 @@ exe	0x00541170	he_PostEventA6	he	byte	readable
 exe	0x00541200	he_EndEventNow	he	byte	readable		
 exe	0x00541250	he_SetEventChar	he	byte	readable		
 exe	0x00541280	he_CharacterBehavior	he	byte	readable		
-exe	0x005414a0	he_Unk5414a0	he	draft	draft		
-exe	0x005417d0	he_Unk5417d0	he	draft	draft		
+exe	0x005414a0	he_CharAccident	he	shape	readable		
+exe	0x005417d0	he_CharIllness	he	shape	readable		
 exe	0x00541a50	he_RunDueNow	he	byte	readable		
 exe	0x00541a80	he_AllocStammtisch	he	byte	readable		
-exe	0x00541b40	he_StammtischCommand	he	draft	draft		
-exe	0x00542100	he_Unk542100	he	draft	draft		
-exe	0x00542490	he_Unk542490	he	draft	draft		
-exe	0x00542590	he_Unk542590	he	draft	draft		
+exe	0x00541b40	he_StammtischCommand	he	shape	readable		
+exe	0x00542100	he_RunStammtisch	he	shape	readable		
+exe	0x00542490	he_AllocTavern	he	byte	readable		
+exe	0x00542590	he_RunTavern	he	draft	readable	deep	
 exe	0x00542960	he_AllocOffer	he	byte	readable		
-exe	0x00542b60	he_Unk542b60	he	draft	draft		
+exe	0x00542b60	he_RunWeddingOffer	he	byte	readable		
 exe	0x00543020	he_AllocQuarrel	he	byte	readable		
 exe	0x00543180	he_Unk543180	he	byte	draft		
-exe	0x005432f0	he_Unk5432f0	he	draft	draft		
+exe	0x005432f0	he_RunMasterExam	he	shape	readable		
 exe	0x005436a0	he_Unk5436a0	he	byte	draft		
 exe	0x005437c0	he_Unk5437c0	he	draft	draft		
 exe	0x00543ac0	he_Unk543ac0	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
