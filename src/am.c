@@ -8375,10 +8375,10 @@ int ai_ExecuteTakeCredit(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind != 4 || s2->kind != 0x14)
         return 0;
-    G8_4FEA50((int *)&a, 0, 0, s1->ref);
+    gm_FindById((int *)&a, 0, 0, s1->ref);
     if (a == 0)
         return 0;
-    G8_4FEA50((int *)&b, 0, 0, s1->arg);
+    gm_FindById((int *)&b, 0, 0, s1->arg);
     memset(&m, 0, sizeof(m));
     m.type = 0x23;
     m.to = ai_CharsT[a->owner].netId;
@@ -8387,9 +8387,9 @@ int ai_ExecuteTakeCredit(G5CH *p, AIARG *s1, AIARG *s2)
     m.flags = 0x12;
     m.arg = a->id;
     m.from = p->netId;
-    m.unk60 = s2->ref;
-    m.unk64 = s2->arg;
-    m.unk6c = s2->arg2;
+    m.credit.amount = s2->ref;
+    m.credit.term = s2->arg;
+    m.credit.interest = s2->arg2;
     v = s2->ref;
     cm_BeginGroup("AI Kredit");
     cm_SendMoveGoods(p->netId, a->id, ai_OwnPlayer, s2->ref);
@@ -9413,7 +9413,7 @@ int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
         m.type = 0x5e;
         m.fromId = -1;
         *(unsigned char *)&m.from = (unsigned char)s2->ref;
-        m.unk60 = s2->arg2;
+        m.word[0] = s2->arg2;
         cm_SendLongMessage((AIMSG *)&m);
         return 0x3a;
     }

@@ -789,10 +789,15 @@ typedef struct G8MSG {                  /* 0xf8 bytes, an AIMSG (ai.h) as these 
     char pad37[0x21];
     int arg;                            /* 0x58, the message kind's first word (AIMSG.arg[0]: a building id or a character's netId) */
     unsigned int from;                  /* 0x5c */
-    int unk60;                          /* 0x60 */
-    int unk64;                          /* 0x64 */
-    char pad68[4];
-    int unk6c;                          /* 0x6c */
+    union {                             /* 0x60..0x6f, the kind's words (AIMSG.arg[2..5]) */
+        int word[4];                    /* a callback's own two / three values, in the order it writes them */
+        struct {                        /* the AI credit message 0x23 (a bank's offer, filled by ai_ExecuteTakeCredit) */
+            int amount;                 /* 0x60, the sum lent (ORDCREDIT.amount) */
+            int term;                   /* 0x64, the term in rounds, 2 .. 7 (ORDCREDIT.term) */
+            int pad68;
+            int interest;               /* 0x6c, the rate (ORDCREDIT.interest) */
+        } credit;
+    };
     char pad70[0x88];
 } G8MSG;
 #pragma pack(pop)
