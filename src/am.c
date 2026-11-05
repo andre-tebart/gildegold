@@ -2201,9 +2201,9 @@ int ai_DecideLaw26(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x492b80, decision 8: a graveyard (building types 0x4b..0x4d) */
+/* 0x492b80, the callback of law record 8 (AIDEC.fn, office 0x1b no 1, a boolean law): no reader of its cur is in the exe outside the table; it needs a graveyard (the building types 0x4b..0x4d) and then decides for a player character (kind 5) by whether it owns one (own with cur 1 -> 0, otherwise with cur 0 -> 1), else by the normalized skill 2 against its rating (x1.2 for kind 3, else x0.8) against 1: mood 11 over mood 9 raises the law, mood 10 over mood 9 lowers it */
 
-int ai_Unk492b80(AIPER *p, int a, int *out)
+int ai_DecideLaw8(AIPER *p, int a, int *out)
 {
     AIDEC d;
     AIBLD *b;
