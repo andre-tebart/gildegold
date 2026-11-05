@@ -329,6 +329,14 @@ typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words ov
     char padbe[2];
     int state;                          /* 0xc0, 1 after the start, counted down by the run handler 0x542100 */
 } HESTAMMTISCH;
+typedef struct HEDUEL {                 /* the duel challenge's words over AIJOB's union (he_RunDuelChallenge): the challenge
+                                           event 0x46 names the duel event, the duel event keeps two values for its news */
+    char pad00[0xac];
+    int duelId;                         /* 0xac, of the challenge 0x46: the id of the duel event (he_FindEvent(1, 1, id)) */
+    char padb0[4];
+    unsigned short newsArg1;            /* 0xb4, of the duel event: the first value of the challenge's news 0x1d6b */
+    unsigned short newsArg2;            /* 0xb6, of the duel event: the third value of that news (both not read further) */
+} HEDUEL;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -3018,7 +3026,7 @@ void he_RunCourtship(int ev)
 }
 /* 0x5471e0, the duel intro: lets both duellists (p2 / p3, 0x4c4a60 flag 0x400) hear the news 0x1d83 / 0x1d82 (messages 0x5fa / 0x5fb, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00" for the first) and posts the event (state 2) */
 
-void he_Unk5471e0(int ev, unsigned short *p2, unsigned short *p3)
+void he_DuelAccepted(int ev, unsigned short *p2, unsigned short *p3)
 {
     char buf[1024];
 
@@ -3080,75 +3088,80 @@ void he_DuelDeclined(int ev, AICHAR *p, AICHAR *q)
     ((AIJOB *)ev)->end = ai_Time;
     cm_SendExSetHE(-1, ev);
 }
-/* 0x547430, a Ghidra miss (disassembled): the run handler of the duel announcement ("Special\Beleidigung" window, the event +0xac is the duel (0x53e400 kind 1): its two figures +0xb0 / +0xac): state 0 opens the window with the sound "NeueMessage_s_01" (0x426fa0, when 0x6f25ac is not 2), shows the news 0x1d6c / 0x1d6b and a click target (0x5be1d0 / 0x5be720), state 1 waits for the due time (then 0x5472d0 settles it for the first) or the answer (0xf8a668: 0 = 0x5471e0, 1 = 0x5472d0); a gone figure ends both events (ROUGH) */
-
-void he_Unk547430(int ev)
+/* 0x547430, a Ghidra miss (disassembled): the run handler of the duel challenge event 0x46 (its alloc handler
+   0x547170): duelId names the duel event, its partner1 the challenger p, partner2 the challenged q. With the
+   stage -1 / -2 or the duel, p or q gone both events end (the slot released, the duel posted -1). Stage 0 opens
+   the event slot "Special\Beleidigung" (no slot: the event is freed), plays "NeueMessage_s_01" (unless the game
+   state is 2), prints the news 0x1d6c, p's special-amount row (ai_AmountRowStatus / ai_DrawAmountRow, its control
+   clickable) and the news 0x1d6b; the answer is due in two hours. Stage 1: past that time, or with the second
+   choice, q declines (he_DuelDeclined); the first choice accepts (he_DuelAccepted); then the slot is released and
+   the event freed */
+void he_RunDuelChallenge(int ev)
 {
-    int ebp = 0, ebx = 0, edi, st, h, r, id;
-    int out[2];
-    int arg;
+    AIJOB *e = (AIJOB *)ev;
+    AIJOB *duel;
+    AICHAR *q = 0, *p = 0;
+    int row[14];                        /* a special-amount row, cm.c's CMAMOUNTROW: [0] the character, [1] its control */
 
-    edi = (int)he_FindEvent(1, 1, *(int *)(ev + 0xac));
-    if (edi != 0) {
-        ebp = gm_FindChar(*(int *)(edi + 0xb0));
-        ebx = gm_FindChar(*(int *)(edi + 0xac));
+    duel = (AIJOB *)he_FindEvent(1, 1, ((HEDUEL *)e)->duelId);
+    if (duel != 0) {
+        q = (AICHAR *)gm_FindChar(duel->partner2);
+        p = (AICHAR *)gm_FindChar(duel->partner1);
     }
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2 || edi == 0 || ebp == 0 || ebx == 0) {
-        if (*(int *)(ev + 0x74) != 0)
+    if (e->stage == -1 || e->stage == -2 || duel == 0 || q == 0 || p == 0) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
-        if (edi != 0) {
-            *(AITIME *)(edi + 0x52) = ai_Time;
-            cm_SendExSetHE(-1, edi);
+        if (duel != 0) {
+            duel->end = ai_Time;
+            cm_SendExSetHE(-1, (int)duel);
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
+    switch (e->stage) {
+    case 0:
         he_OpenEventSlot(ev, 0, 0, (int)"Special\\Beleidigung", 0x5ec);
-        if (*(int *)(ev + 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        if (*(unsigned char *)(unsigned)&ai_GameState != 2)
-            sb_PlaySample(U_I((unsigned)&snd_SystemBank), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
+        if (ai_GameState != 2)
+            sb_PlaySample(snd_SystemBank, "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
+        d2_SetForm(e->slot->win, 1);
         io_PrintText(0x1d6c);
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);
-        arg = ebx;
-        if (ai_AmountRowStatus(&arg) != 0) {
-            ai_DrawAmountRow(*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) / 2 - 0x28, 0, U_I((unsigned)&d2_LastWindow), out);
-            id = out[1];
-            *(int *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x4c) = 1;
-            *(int *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1c0) = 3;
-            *(int *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x2e8) = out[0];
+        d2_SetForm(e->slot->win, 2);
+        row[0] = (int)p;
+        if (ai_AmountRowStatus(row) != 0) {
+            ai_DrawAmountRow(d2_LastWindowPtr->w / 2 - 0x28, 0, d2_LastWindow, row);
+            d2_Objs[row[1]].interactive = 1;
+            d2_Objs[row[1]].style = 3;
+            d2_Objs[row[1]].user = (void *)row[0];
         }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 3);
-        io_PrintText(0x1d6b, *(unsigned short *)(edi + 0xb4), *(unsigned short *)ebx, *(unsigned short *)(edi + 0xb6), *(unsigned short *)ebx);
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 2, 0, 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        d2_SetForm(e->slot->win, 3);
+        io_PrintText(0x1d6b, ((HEDUEL *)duel)->newsArg1, p->id, ((HEDUEL *)duel)->newsArg2, p->id);
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 2, 0, 0);
+        e->stage++;
         return;
-    }
-    if (st == 1) {
-        if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_DuelDeclined(edi, (AICHAR *)ebx, (AICHAR *)ebp);
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            he_DuelDeclined((int)duel, p, q);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8))
+        if (d2_ClickedForm != e->slot->win)
             return;
-        h = U_I((unsigned)&d2_ClickedId);
-        if (h == -1)
+        if (d2_ClickedId == -1)
             return;
-        if (h == 0)
-            he_Unk5471e0(edi, (unsigned short *)ebx, (unsigned short *)ebp);
-        else if (h == 1)
-            he_DuelDeclined(edi, (AICHAR *)ebx, (AICHAR *)ebp);
+        if (d2_ClickedId == 0)
+            he_DuelAccepted((int)duel, (unsigned short *)p, (unsigned short *)q);
+        else if (d2_ClickedId == 1)
+            he_DuelDeclined((int)duel, p, q);
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
+        return;
     }
 }
 /* 0x547750, a Ghidra miss (disassembled): the run handler of the insult event (the figures +0xac a and +0xb0 b, flag 0x400 of +0x1c8 = in a quarrel): sets the clock to 0x18 units with +0x56 = 6, +0x58 = 0x1e; with the relation 0x4f2e30 (4 ..) it is decided: when b is of kind 6 / 7 a message record of 0x f8 bytes (type 0x46, 0x4fe310) is posted and the event goes on (state 1), else a chance (0x504e20 + 0x42ec20 against 1.0) lets a pay (the news 0x1d81 / 0x1d83, the ability 0x4ea550, the relation -0x14, the same as 0x5472d0) or sets the flags and goes to the state 2 (ROUGH) */
@@ -9411,7 +9424,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x45, (void *)he_AllocFight, (void *)he_RunFight) != 0)
         return 1;
-    if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_Unk547430) != 0)
+    if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_RunDuelChallenge) != 0)
         return 1;
     if (he_SetEventHandlers(0x47, (void *)he_Unk547750, (void *)he_Unk547ba0) != 0)
         return 1;
