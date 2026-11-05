@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at a0ab3b22: AIJOB grew its real fields (id 0x04, netId 0x0c, from 0x10, words14, text 0x7c, textSize, exSlot 0x84, ids[8] 0x8c, the size 0x14c) for he_CreateEvent, which fills them; ai_Unk483a60 reads only job->unkac. Any two independent member splits of AIJOB (e.g. pad01 -> id plus pad79 -> text/textSize/exSlot, layout unchanged) swap two of its stack slots ([esp+0x10] / [esp+0x18]); each alone keeps the byte match: a VC6 declaration-set tie-break, no evidence of the original's source [waits for: the AIJOB / event record layout settling (he.c's event handlers typed on it)]
+exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at 322b60fd: the fighter slot record unified: cm_types.h's CMFIGHTSLOT gets the escape dummy name in a union (the duplicate CMFIGHTACT of cm.c dropped) and cm.h's cm_FighterAct / cm_PlantEscapeFlag take CMFIGHTSLOT (closer: one record, typed). The change flips whether this function keeps an address constant in edx (mov edx, X / mov eax, edx: 4 instructions, regs only): a VC6 declaration-set tie-break of the headers ord.c includes, no evidence of the original's source [waits for: ord.c's head (its includes of cm.h / cm_types.h); re-grade when its declarations settle]
+exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		
@@ -3560,16 +3560,16 @@ exe	0x00543020	he_AllocQuarrel	he	byte	readable
 exe	0x00543180	he_Unk543180	he	byte	draft		
 exe	0x005432f0	he_RunMasterExam	he	shape	readable		
 exe	0x005436a0	he_Unk5436a0	he	byte	draft		
-exe	0x005437c0	he_Unk5437c0	he	draft	draft		
-exe	0x00543ac0	he_Unk543ac0	he	draft	draft		
-exe	0x00544070	he_Unk544070	he	draft	draft		
-exe	0x00544330	he_Unk544330	he	draft	draft		
-exe	0x00544550	he_Unk544550	he	draft	draft		
-exe	0x00544630	he_Unk544630	he	draft	draft		
-exe	0x00544840	he_Unk544840	he	draft	draft		
+exe	0x005437c0	he_RunFeast	he	draft	readable	deep	
+exe	0x00543ac0	he_RunFeastExam	he	draft	readable	deep	
+exe	0x00544070	he_AllocTribute	he	byte	readable		
+exe	0x00544330	he_RunTribute	he	shape	readable		
+exe	0x00544550	he_DrawPairPicks	he	byte	readable		
+exe	0x00544630	he_AllocCourtship	he	shape	readable		
+exe	0x00544840	he_RunCourtship	he	draft	readable	deep	
 exe	0x005455e0	he_Unk5455e0	he	byte	draft		
 exe	0x00545640	he_Unk545640	he	byte	draft		
-exe	0x00545670	he_Unk545670	he	draft	draft		
+exe	0x00545670	he_AllocPatrol	he	byte	readable		
 exe	0x00545840	he_Unk545840	he	draft	draft		
 exe	0x00546100	he_Unk546100	he	byte	draft		
 exe	0x005461c0	he_Unk5461c0	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
@@ -4511,7 +4511,7 @@ exe	0x005c5310	ai_Unk5c5310	unk_58bbd0	draft	draft
 exe	0x005c6050	ai_Unk5c6050	unk_58bbd0	draft	draft		
 exe	0x005c64c0	ai_FindCandidateIds	unk_58bbd0	shape	readable		
 exe	0x005c6530	ai_MarriageTest	unk_58bbd0	byte	readable		
-exe	0x005c6620	ai_Unk5c6620	unk_58bbd0	draft	draft		
+exe	0x005c6620	ai_CourtshipRounds	unk_58bbd0	draft	draft		
 exe	0x005c6910	ai_Unk5c6910	unk_58bbd0	draft	draft		
 exe	0x005c6aa0	ai_Unk5c6aa0	unk_58bbd0	draft	draft		
 exe	0x005c6d00	ai_OfficeApplication	unk_58bbd0	draft	draft		

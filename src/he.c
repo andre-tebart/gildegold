@@ -10,7 +10,9 @@
    carts AIOBJ (ai_types.h), the carried-goods records GMCARRYREC (f3gm_carry.h), the goods prototypes GMGOOD
    (f3gm_types.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the event create / free / search, the
    gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
-   Open: types: the handlers past 0x53f370 still read the event and message records through raw offsets
+   The handlers up to 0x545670 (the feast 0x37 / feast exam 0x36, tribute 0x35, courtship 0x41 and patrol 0x43
+   events) read AIJOB typed, their kind words named in AIJOB's union (fest*, exam*, tribute*, pair*, patrol*).
+   Open: types: the handlers past 0x545670 still read the event and message records through raw offsets
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
    master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's
