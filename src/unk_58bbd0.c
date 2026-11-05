@@ -1071,7 +1071,12 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad00e[0xe];
     float f01c;                    /* 0x01c, the life value (ai_char.h AICHAR.f01c: 1000.0 at creation, aged
                                       by gm_AgeCharacter, the character dies when it is used up) */
-    char pad020[0x146];
+    char pad020[0xc];
+    unsigned int ailments;         /* 0x02c, the ailment counters (am.h G5CH.ailments; ai_char.h AICHAR.v02c):
+                                      the fields at bits 0, 4, 8, 12, 14, 17, 20, 23, 25 (4, 4, 4, 2, 3, 3, 3, 2, 4
+                                      bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
+                                      field pairs of gm_CatchMinorDisease / gm_CatchUpperDisease */
+    char pad030[0x136];
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
     char pad167[2];
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
@@ -23181,38 +23186,38 @@ int ai_Unk5d0530(int param_1, int param_2)
     }
     return 1;
 }
-/* 0x5d06e0, a message callback (156 B): param_1 the record (+0x2c the flag dword, +4 the handle).
-   When the flag is set, 0x4c4a60 (the handle, 0x2c, 4, 0, the first matching class) with the classes in
-   test order 0xf -> 7, 0xf0 -> 0x30, 0xf00 -> 0x300, 0x3000 -> 0x1000, 0x1c000 -> 0xc000, 0xe0000 ->
-   0x20000, 0x700000 -> 0x100000, 0x1800000 -> 0x800000, 0x1e000000 -> 0x6000000. Returns 1. */
+/* 0x5d06e0, the use callback of the Domizil good 0x17e (the +0x14 pointer of the table entry 0x62c784;
+   the "Unversehrtheit" good ai_DecideUseHealthObject wants while a character has an ailment): clears the
+   low bits of the first set ailment field of ch->ailments (the mask of its field: 7, 0x30, 0x300, 0x1000,
+   0xc000, 0x20000, 0x100000, 0x800000, 0x6000000) with cm_SendSetField; returns 1. */
 
-int ai_Unk5d06e0(int param_1)
+int ai_UseGoodCureAilment(AICHARREC *ch)
 {
-    int f;
-    int flag;
+    unsigned int f;
+    int mask;
 
-    f = *(int *)(param_1 + 0x2c);
+    f = ch->ailments;
     if (f != 0) {
-        flag = 0;
+        mask = 0;
         if (f & 0xf)
-            flag = 7;
+            mask = 7;
         else if (f & 0xf0)
-            flag = 0x30;
+            mask = 0x30;
         else if (f & 0xf00)
-            flag = 0x300;
+            mask = 0x300;
         else if (f & 0x3000)
-            flag = 0x1000;
+            mask = 0x1000;
         else if (f & 0x1c000)
-            flag = 0xc000;
+            mask = 0xc000;
         else if (f & 0xe0000)
-            flag = 0x20000;
-        else if (f & ((unsigned)&he_Events + 0x54c0))
-            flag = 0x100000;
+            mask = 0x20000;
+        else if (f & (7 << 20))
+            mask = 0x100000;
         else if (f & 0x1800000)
-            flag = ((unsigned)&ai_Relations + 0x1aca0);
+            mask = 8 << 20;
         else if (f & 0x1e000000)
-            flag = 0x6000000;
-        cm_SendSetField(*(int *)(param_1 + 4), 0x2c, 4, 0, flag);
+            mask = 0x6000000;
+        cm_SendSetField(ch->netId, 0x2c, 4, 0, mask);
     }
     return 1;
 }
