@@ -18222,25 +18222,26 @@ void ai_Unk5c2490(int param_1, int *param_2, int *param_3, int *param_4, unsigne
     }
     *param_8 = -1;
 }
-/* 0x5c26a0, the master letter window "berufe\meisterbrief_1" 0x62d2bc (176 B): 0x52ea30 (screen), the
-   caption 0x515960 (0x1949 / 0x194e), the pump 0x5309a0 (this, 0x677c7) and 0x4758f0 (win) */
+/* 0x5c26a0, the master letter notice window "berufe\_meisterbrief_1" (176 B): the form on the screen
+   (0x52ea30), the master letter caption 0x1949 and the text 0x194e, the pump 0x5309a0 (this, 0x677c7) and
+   0x4758f0 (win) */
 
-void ai_Unk5c26a0(void)
+void ai_MasterLetterNoticeWindow(void)
 {
     int win;
 
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d2bc);
+    win = d2_OpenForm(0, 0, "berufe\\_meisterbrief_1");
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
     io_PrintText(0x1949);
     io_PrintText(0x194e);
     do {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    } while (sv_RunFrame(ai_Unk5c26a0, 0x677c7) != 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_MasterLetterNoticeWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
 /* 0x5c2730, the second master letter window "berufe\meisterbrief_1" 0x62d2bc (124 B): the 0x5c26a0 body
@@ -18635,7 +18636,7 @@ void ai_MasterLetterWindow(unsigned char *param_1)
         sv_CameraFollow();
         return;
     case 0x50:
-        ai_Unk5c26a0();
+        ai_MasterLetterNoticeWindow();
         break;
     }
     sv_CameraFollow();

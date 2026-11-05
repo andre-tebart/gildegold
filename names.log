@@ -2174,3 +2174,4 @@
 2026-11-05T08:09:34 0x006f26ac data ai_Unk6f26ac -> rt_MapSurface by:main why:the map picture surface 0x6f26ac: ai_Unk5b2090 loads the player's map image into it, the cart route editor copies and blits it, ai_FreePicture frees it (rt.c defines it, rt.h declares it)
 2026-11-05T08:10:32 0x005c0970 func ai_Unk5c0970 -> ai_SpecialAmountWindow by:main why:the tabbed special-amount list window special_amt3 (the eight tab records 0x62d14c) that ai_SpecialAmountList opens with the gypsy filter config
 2026-11-05T08:11:22 0x005c2410 func ai_Unk5c2410 -> ai_LawBookInfoWindow by:main why:the info box of the law book, Gesetze\\Gesetzbuch_Info, opened from ai_OpenLawBook
+2026-11-05T08:12:30 0x005c26a0 func ai_Unk5c26a0 -> ai_MasterLetterNoticeWindow by:main why:the master letter form berufe\\_meisterbrief_1 opened in mode 0x50 of ai_MasterLetterWindow (a carrier event whose target +0xac is 0); shows the texts 0x1949 and 0x194e
