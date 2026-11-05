@@ -6670,14 +6670,19 @@ int ord_GetKindRecord(int i, int *out);
 void cm_SendBoss(int a, int b);
 float gm_AddHealth(unsigned short id, int d);
 
-/* 0x54de60, a Ghidra miss: the init of the brawl event: the due clock now, +0xac = +0xb0 = 0, posted (state 0) */
+/* 0x54de60, a Ghidra miss: the init of the population event 0x6d (its run handler he_RunPopulation): the due clock
+   is the clock now, the round's count and the newcomer chance are cleared and the event is posted in state 0; it
+   does nothing while opts still says the event is not started yet (bit 4) */
 void he_StartPopulation(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0xac) = 0;
-        *(int *)(ev + 0xb0) = 0;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+    HEPOPULATION *p = (HEPOPULATION *)ev;
+
+    if ((e->opts & 4) == 0) {
+        e->end = ai_Time;
+        p->count = 0;
+        p->chance = 0.0f;
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54dec0, the run handler of the population event: stage 1 rates the town (ord_GetStatistics: the free room
