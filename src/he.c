@@ -682,6 +682,11 @@ typedef struct HEPAYMENT {              /* the payment event 0x56's words over A
     char padad[3];
     unsigned int amount;                /* 0xb0, the base amount: twice it or half of it is paid */
 } HEPAYMENT;
+typedef struct HECOUNTDOWN {            /* the countdown event 0x51's word over AIJOB's union (its init he_AllocNextDay, run
+                                           handler he_RunCountdown): counted down once per run, 0 frees the event */
+    char pad00[0xac];
+    unsigned char runs;                 /* 0xac, the runs left (the message's first word) */
+} HECOUNTDOWN;
 typedef struct HEOFFSPRING {            /* the offspring event's word over AIJOB's union (its run handler he_RunOffspring) */
     char pad00[0xac];
     float chance;                       /* 0xac, stage 0: the chance built up run by run; stage 1: the runs waited (to 3) */
@@ -4024,17 +4029,19 @@ void he_AllocNextDay(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0x18, 0, 0);
 }
-/* 0x548300, a Ghidra miss: counts +0xac (a byte) down in the state 0, frees the event at 0 or when it is freed (-2) */
+/* 0x548300, the run handler of the countdown event 0x51 (he_AllocNextDay): while the stage is 0 it counts the
+   event's byte +0xac down and returns; at 0 (or in the state -2) it frees the event */
 
-void he_Unk548300(int ev)
+void he_RunCountdown(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    HECOUNTDOWN *c = (HECOUNTDOWN *)ev;
 
-    if (st != -2) {
-        if (st != 0)
+    if (e->stage != -2) {
+        if (e->stage != 0)
             return;
-        if (*(unsigned char *)(ev + 0xac) != 0) {
-            *(unsigned char *)(ev + 0xac) = *(unsigned char *)(ev + 0xac) - 1;
+        if (c->runs > 0) {
+            c->runs--;
             return;
         }
     }
@@ -10693,7 +10700,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x4b, (void *)he_AllocInsultNews, (void *)he_RunInsultNews) != 0)
         return 1;
-    if (he_SetEventHandlers(0x51, (void *)he_AllocNextDay, (void *)he_Unk548300) != 0)
+    if (he_SetEventHandlers(0x51, (void *)he_AllocNextDay, (void *)he_RunCountdown) != 0)
         return 1;
     if (he_SetEventHandlers(0x52, (void *)he_Unk548330, (void *)he_Unk548380) != 0)
         return 1;
