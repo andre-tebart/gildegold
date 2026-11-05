@@ -2418,3 +2418,4 @@
 2026-11-05T16:10:16 0x0055a030 func he_Unk55a030 -> he_RunSpying by:main why:event 24's run handler (he_SetEventHandlers(24, he_AllocSpying, ...)): the spy walks to the next target building (Spionage: next target = %G, 0x627528), to the victim's building at the end and the news 0x1734 tells the event's character
 2026-11-05T16:14:23 0x0055a5f0 func he_Unk55a5f0 -> he_AllocBrawl by:main why:registered as the alloc handler of event 26 (he_SetEventHandlers); spawns the thug 'PRUEGEL' and picks the building of the brawl
 2026-11-05T16:19:05 0x0055a730 func he_Unk55a730 -> he_RunBrawl by:main why:registered as the run handler of event 26 with he_AllocBrawl; the thug's walk 'Pruegel', the brawl (ai_BrawlWin) and its news
+2026-11-05T16:21:49 0x0055af70 func he_Unk55af70 -> he_AllocTheft by:main why:registered as the alloc handler of event 27 whose run handler 0x55b140 is the random theft; marks the building, tells the other players (0x17f4, _NACHRICHTEN_HS_43)

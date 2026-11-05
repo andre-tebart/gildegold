@@ -531,6 +531,14 @@ typedef struct HEBRAWL {                /* the brawl event 26's words over AIJOB
     int watch;                          /* 0xd4, the id of the watch event that caught the thug (HEDETECT.found, HEWATCH) */
     int fee;                            /* 0xd8, the money the event's character pays for it */
 } HEBRAWL;
+typedef struct HETHEFT {                /* the theft event 27's words over AIJOB's union (he_AllocTheft / he_Unk55b140) */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the id of the building robbed */
+    int loot;                           /* 0xb0, the value taken (the news 0x17f4 prints it; reasoned: the run handler's
+                                           chance of a second round is it over the building's equipment value) */
+    char padb4[4];
+    int rounds;                         /* 0xb8, 0 at the start (the run handler acts from 2 on) */
+} HETHEFT;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -600,6 +608,7 @@ int gm_CompareTime();
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, int, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void; f an int: he_AllocBrawl pushes 0x154 whole */
+#define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30 with the list alone: @original he_AllocTheft pushes only the list (add esp, 4), as lc.c / sv.c call it */
 #define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
@@ -13920,31 +13929,50 @@ void he_RunBrawl(AIJOB *e)
         return;
     }
 }
-/* 0x55af70, the allocation handler of a news event (ROUGH): due now + random 0x42ec00(3) units, the first building (0x501190 (1, 1, ..)) of the kinds 0xb / 0xc / 0xd gives the message 0x4c4a60 (.., 0x5a, 2, 2) to its figure, the owner gets the news "_NACHRICHTEN_HS_43" (0x53dee0) and 0x509e30 / 0x4c47e0 set a flag; the record is freed */
-
-void he_Unk55af70(int ev)
+/* 0x55af70, the allocation handler of the theft event 27 (HETHEFT; run handler he_Unk55b140): due in 4 + random 3
+   hours; without the building robbed, or one of the kinds 0xb / 0xc / 0xd, the event is freed. Else the building's
+   field 0x5a is set to 2 (cm_SendSetField) and the round counter cleared; for an event shown when due (opts 2) at
+   a building with a master, not of the type 0x27, every other player gets the news 0x17f4 ("_NACHRICHTEN_HS_43",
+   the master, the building and the loot); a building of the kind 5 whose master is no player hands its object
+   list's money to the master (cm_SendMoveGoods). No cm request is pending (exSlot -1) */
+void he_AllocTheft(AIJOB *e)
 {
-    int b, kind, p;
-    char text[0x100];
+    HETHEFT *t = (HETHEFT *)e;
+    AICHAR *master = 0;
+    AIBLD *b;
+    AIBTYPE *bt;
+    int i, n;
+    char text[0x800];
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(3), 0);
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
+    e->end = ai_Time;
+    gm_AddTime(&e->end, (unsigned short)util_Random(3) + 4, 0, 0);
+    b = (AIBLD *)gm_BuildQuery(1, 1, t->bld);
     if (b == 0) {
-        he_FreeEvent((int *)ev);
+        he_FreeEvent((int *)e);
         return;
     }
-    kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d);
-    if (kind == 0xd || kind == 0xc || kind == 0xb) {
-        p = gm_FindChar(*(int *)(b + 1));
-        if (p != 0)
-            cm_SendSetField(*(int *)(p + 4), 0x5a, 2, 2, 0);
+    bt = &ai_BTypesT[b->type];
+    if (bt->kind == 0xd || bt->kind == 0xc || bt->kind == 0xb) {
+        he_FreeEvent((int *)e);
+        return;
     }
-    txt_Format(text, 0x1bba, b);
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_43", 0);
-    if (((int (*)(void *))gm_SumListAmounts)(b) != 0)
-        ((void (*)(int))cm_SendMoveGoods)(b);
-    he_FreeEvent((int *)ev);
+    cm_SendSetField(b->id, 0x5a, 2, 2, 0);
+    t->rounds = 0;
+    if (b->masterId != 0xffff) {
+        master = &ai_CharsT[b->masterId];
+        if (master != 0 && (e->opts & 2) != 0 && b->type != 0x27) {
+            for (i = 0; i < 768; i++) {
+                if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && ai_CharsT[i].netId != master->netId) {
+                    txt_Format(text, 0x17f4, master->id, b, t->loot);
+                    he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x5ec, b->id, -1, ch_EmptyName, "_NACHRICHTEN_HS_43");
+                }
+            }
+        }
+    }
+    if (bt->kind == 5 && master != 0 && master->kind != 6 && master->kind != 7
+        && (n = gm_SumListAmountsL((void *)b->objList)) != 0)
+        cm_SendMoveGoods(master->netId, b->id, ai_OwnPlayer, n);
+    e->exSlot = -1;
 }
 /* 0x55b140, the run handler of the random theft message event (ROUGH): a flagged (2) record with a pending handle +0x84 waits (0x4c3ae0); states -2 .. -1 and above 0 free the record; state 0 with +0xb8 >= 2 looks at the building +0xac (not of the kinds 0xb / 0xc / 0xd; the type 0x27 needs a player owner of kind 6 / 7 at +0x27), rolls a chance from the building's value (0x509b10 (building, +0x5c), the factor 0x5ebb44 and +0xb0) against 0x42ec00(100) and sends a message record (type 0x6e, +0x4a = 1) through 0x4c4b70, then posts the event (0x4c4c60 (0, ev)) with the chance for a second round (0x4c4a60) */
 
@@ -16463,7 +16491,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(26, (void *)he_AllocBrawl, (void *)he_RunBrawl) != 0)
         return 1;
-    if (he_SetEventHandlers(27, (void *)he_Unk55af70, (void *)he_Unk55b140) != 0)
+    if (he_SetEventHandlers(27, (void *)he_AllocTheft, (void *)he_Unk55b140) != 0)
         return 1;
     if (he_SetEventHandlers(28, (void *)he_Unk55b3e0, (void *)he_Unk55b530) != 0)
         return 1;
