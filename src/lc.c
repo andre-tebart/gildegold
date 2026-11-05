@@ -5835,31 +5835,29 @@ void ai_TavernRulesWindow(void)
     }
     d2_CloseView(win);
 }
-/* 0x597780, draws three dice (134 B): 0x472d20 (the screen, 1), the caption 0x515960 ("_C_Z_%s", param_1);
-   the three dice cells at x = 0x1c + i * 0x3a (0 every 8) and y = 0x1d (0x46 after 8), each 0x4731d0 with the
-   random picture 0x75b + (0x42ec00 (6, the screen) & 0xffff) */
+/* 0x597780, draws three dice (134 B): the window's objects are removed (d2_RemoveWindowObjects), the caption is
+   printed (io_PrintText "$C$Z%s"), then the three dice cells at x = 0x1c + i * 0x3a (0 every 8) and y = 0x1d
+   (0x46 after 8), each a d2_WinOpenPic with the random picture 0x75b + (util_Random(6) & 0xffff) */
 
-void ai_Unk597780(int param_1)
+void ai_DrawDice(char *caption)
 {
-    unsigned int i;
-    unsigned int r;
+    int i;
     int x;
     int y;
 
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-    io_PrintText("_C_Z_%s", param_1);
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    io_PrintText("$C$Z%s", caption);
     i = 0;
     x = 0x1c;
     y = 0x1d;
     do {
-        r = ((int (*)(int, int))util_Random)(6, U_I((unsigned)&d2_LastWindow));
-        d2_WinOpenPic(x, y, (r & 0xffff) + 0x75b, U_I((unsigned)&d2_LastWindow));
+        d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
         i++;
         if (i % 8 == 0)
             x = 0;
         else
             x += 0x3a;
-        y = ((i < 8) - 1U & 0x29) + 0x1d;
+        y = i > 7 ? 0x46 : 0x1d;
     } while (i < 3);
 }
 /* 0x597810, draws the dice of a dice record (271 B): as 0x597780; the record (*param_2 + 2 == 6: the painted
@@ -5969,7 +5967,7 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
                     return;
                 if (t0 + step < U_I((unsigned)&d3_Time)) {
                     d2_SetForm(win, frame);
-                    ai_Unk597780(text);
+                    ai_DrawDice(text);
                     step = step + step / 2;
                     t0 = U_I((unsigned)&d3_Time);
                 }
