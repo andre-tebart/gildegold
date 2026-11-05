@@ -6190,7 +6190,7 @@ void he_Unk54dec0(int ev)
 {
     int st, i, n, rec, id, found, h;
     float f;
-    int tm[8];
+    int tm[10];                         /* ord_GetStatistics copies 0x28 bytes */
 
     st = *(int *)(ev + 0x70);
     if (st == -1 || st == -2) {
