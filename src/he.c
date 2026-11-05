@@ -5642,16 +5642,20 @@ void he_RunProtection(int ev)
         return;
     }
 }
-/* 0x54b9b0, a Ghidra miss: the end handler of the audit event: the due clock now, posted 2 units ahead, and the victim figure (+0xb0) gets the flag 0x800 (0x4c4a60 0x5a) */
+/* 0x54b9b0, the alloc handler of the audit event 0x64 (he_RunAudit): the due clock is the clock now, two minutes
+   on; the audited building (HEAUDIT.bld), when it is still there, gets its field 0x5a (size 2) set to 0x800
+   (cm_SendSetField) */
 
 void he_StartAudit(int ev)
 {
-    int s = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
+    AIJOB *e = (AIJOB *)ev;
+    HEAUDIT *a = (HEAUDIT *)ev;
+    AIBLD *b = (AIBLD *)gm_BuildQuery(1, 1, a->bld);
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 2, 0);
-    if (s != 0)
-        cm_SendSetField(*(int *)(s + 1), 0x5a, 2, 0x800, 0);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 2, 0);
+    if (b != 0)
+        cm_SendSetField(b->id, 0x5a, 2, 0x800, 0);
 }
 /* 0x54ba20, a Ghidra miss: the run handler of the audit event 0x64 ("BetriebsPr\xfc" "fung", HEAUDIT: the
    inspector +0xac checks the building +0xb0 for the character AIJOB.chr). A freed event, a gone inspector or
