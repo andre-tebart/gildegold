@@ -334,6 +334,19 @@ typedef struct HEOFFICEAWARD {          /* the imperial office award event 0xa5'
     int ch;                             /* 0xbc, the netId of the character who gets the office (gm_FindChar) */
     int office;                         /* 0xc0, the office kind 0x23 .. 0x25 (the voice and news by it) */
 } HEOFFICEAWARD;
+typedef struct HEWATCH {                /* the watch event 0x43's words over AIJOB's union (he_DetectAttack): its four
+                                           characters and the attack it was set on */
+    char pad00[0xc4];
+    int guard[4];                       /* 0xc4, the netIds of its characters, -1 none */
+    int attackId;                       /* 0xd4, the id of the attack event it is bound to, -1 free (the attack's
+                                           run handler 0x566830 looks for it by that) */
+} HEWATCH;
+typedef struct HEDETECT {               /* he_DetectAttack's question and answer (he_Unk566830 builds it on its stack) */
+    struct AIBLD *bld;                  /* 0x0, the building attacked */
+    float range;                        /* 0x4, how near a watch character has to stand to see it (5000.0f) */
+    AIJOB *ev;                          /* 0x8, the attack event */
+    AIJOB *found;                       /* 0xc, the watch event that saw it, 0 at the start */
+} HEDETECT;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -8337,7 +8350,7 @@ void he_AllocPatrol(int ev)
 int gm_MinutesBetween();
 int gm_PlayerFactor(int a, unsigned char k);
 void cm_SendChrStop(int a);
-void cm_SendChrAnim(int a, const char *s, unsigned char c);
+void cm_SendChrAnim(int a, const char *s, int c);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 unsigned char *gm_BuildQuery(int n, ...);
 char *gm_Query(void *list, int n, ...);
@@ -10603,65 +10616,73 @@ void he_EndPersonEvents(unsigned short *p)
     }
 }
 
-void cm_SendChrAnim(int a, const char *s, unsigned char c);
+void cm_SendChrAnim(int a, const char *s, int c);
 int cm_SendChrGotoBuilding();
 void cm_SendChrStop(int a);
 
-/* 0x553ae0 (ROUGH): `q` (+0 an object with a scene record at +0x61, +4 the range, +8 the other person) looks for a running record of type 0x43 (no +0xd4 target yet, another +0xc, with one of its four persons +0xc4 .. closer than the range, 3D distance of the scene positions); stores it in q+0xc, sends the four persons (message 0x4c5230, "gestik/herranwinken" for the person itself, 0x4c52e0 "Detected", "gestik/abfaellig" 1 .. 2), sets the target +0xd4 (the other person's id), the due clock now + 8 and the record's message 0x400; 1 = found */
-int he_Unk553ae0(int *q)
+/* 0x553ae0, the detection check of an attack on a building (he_Unk566830 asks it with the range 5000.0f): looks
+   for a free watch event 0x43 (no attack bound to it yet, of another character than the attacker's event) one of
+   whose four characters stands closer to the building than the range (the 3D distance of its body to the
+   building's object). Found: the event goes to d->found, its characters are stopped, the one that saw it beckons
+   ("gestik/herranwinken"), all are sent to the building ("Detected") with a scornful gesture
+   ("gestik/abfaellig" 1 .. 2), the event is bound to the attack (attackId), due 8 minutes from now and posted
+   again (cm_SendExSetHE 0x400); 1. Nothing found (or no building object): 0 */
+int he_DetectAttack(HEDETECT *d)
 {
-    char *e;
-    int best = 0, found = 0, i, h, pp;
-    float *a, *b;
+    AIJOB *e, *best;
+    HEWATCH *w;
+    AICHAR *seen, *c;
+    int i;
     float dx, dy, dz, dist;
+    D3OBJECT *a, *b;
 
-    if (q[0] == 0 || *(int *)(q[0] + 0x61) == 0)
+    best = 0;
+    seen = 0;
+    if (d->bld == 0 || d->bld->object == 0)
         return 0;
-    e = he_FindEvent(1, 0, 0x43);
-    for (; e != 0; e = he_NextEvent()) {
-        if (best == 0) {
-            if (*(int *)(e + 0xd4) == -1 && *(int *)(e + 0xc) != *(int *)(q[2] + 0xc)) {
-                for (i = 0; i < 4; i++) {
-                    h = *(int *)(e + 0xc4 + i * 4);
-                    if (h == -1)
-                        continue;
-                    pp = gm_FindChar(h);
-                    found = pp;
-                    if (pp == 0)
-                        continue;
-                    a = (float *)*(int *)(q[0] + 0x61);
-                    b = (float *)*(int *)(*(int *)(*(int *)(pp + 0x184) + 0x34));
-                    dx = a[0x4c / 4] - b[0x4c / 4];
-                    dy = a[0x50 / 4] - b[0x50 / 4];
-                    dz = a[0x54 / 4] - b[0x54 / 4];
-                    dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
-                    if (dist < *(float *)&q[1]) {
-                        best = (int)e;
-                        break;
-                    }
-                }
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x43); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if (best != 0)
+            break;
+        w = (HEWATCH *)e;
+        if (w->attackId != -1 || e->netId == d->ev->netId)
+            continue;
+        for (i = 0; i < 4; i++) {
+            if (w->guard[i] == -1)
+                continue;
+            seen = (AICHAR *)gm_FindChar(w->guard[i]);
+            if (seen == 0)
+                continue;
+            a = (D3OBJECT *)d->bld->object;
+            b = seen->model->body;
+            dx = a->pos.x - b->pos.x;
+            dy = a->pos.y - b->pos.y;
+            dz = a->pos.z - b->pos.z;
+            dist = (float)sqrt(dz * dz + dy * dy + dx * dx);
+            if (dist < d->range) {
+                best = e;
+                break;
             }
         }
     }
     if (best == 0)
         return 0;
-    q[3] = best;
+    d->found = best;
+    w = (HEWATCH *)best;
     for (i = 0; i < 4; i++) {
-        h = *(int *)(best + 0xc4 + i * 4);
-        if (h == -1)
+        if (w->guard[i] == -1)
             continue;
-        pp = gm_FindChar(h);
-        if (pp == 0)
+        c = (AICHAR *)gm_FindChar(w->guard[i]);
+        if (c == 0)
             continue;
-        cm_SendChrStop(h);
-        if (*(int *)(pp + 4) == h)
-            cm_SendChrAnim(h, "gestik/herranwinken", 2);
-        cm_SendChrGotoBuilding(h, *(int *)(q[0] + 1), -1, 0, 1, "Detected");
-        cm_SendChrAnim(h, "gestik/abfaellig", (unsigned short)util_Random(2) + 1);
+        cm_SendChrStop(w->guard[i]);
+        if (seen->netId == w->guard[i])
+            cm_SendChrAnim(w->guard[i], "gestik/herranwinken", 2);
+        cm_SendChrGotoBuilding(w->guard[i], d->bld->id, -1, 0, 1, "Detected");
+        cm_SendChrAnim(w->guard[i], "gestik/abfaellig", (unsigned short)util_Random(2) + 1);
     }
-    *(int *)(best + 0xd4) = *(int *)(q[2] + 4);
-    *(AITIME *)(best + 0x52) = ai_Time;
-    gm_AddTime(best + 0x52, 0, 8, 0);
+    w->attackId = d->ev->id;
+    best->end = ai_Time;
+    gm_AddTime(&best->end, 0, 8, 0);
     cm_SendExSetHE(0x400, best);
     return 1;
 }
@@ -14191,7 +14212,7 @@ void he_Unk566830(int ev)
 {
     int st, b, p, i, id, lead, e, r, idx, owner;
     int *slot;
-    int rec[4];
+    HEDETECT rec;
     char names[3][0x40];
     char text[0x200];
 
@@ -14259,14 +14280,14 @@ void he_Unk566830(int ev)
         b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
         if (b != 0) {
             idx = *(unsigned short *)(b + 0x27);
-            rec[0] = b;
-            rec[1] = 0x451c4000;
-            rec[2] = ev;
-            rec[3] = 0;
-            if (he_Unk553ae0(rec) != 0) {
+            rec.bld = (AIBLD *)b;
+            rec.range = 5000.0f;
+            rec.ev = (AIJOB *)ev;
+            rec.found = 0;
+            if (he_DetectAttack(&rec) != 0) {
                 *(int *)(ev + 0xb4) = gv_Accuse(0x17, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)((unsigned)&ai_Chars + idx * 0x21c + 4), *(int *)(b + 1));
-                *(int *)(ev + 0xb8) = *(int *)(rec[3] + 4);
-                *(int *)(ev + 0xbc) = *(int *)(rec[3] + 0xb0);
+                *(int *)(ev + 0xb8) = rec.found->id;
+                *(int *)(ev + 0xbc) = rec.found->unkb0;
                 *(int *)(ev + 0x70) = 3;
                 *(AITIME *)(ev + 0x52) = ai_Time;
                 return;
@@ -19587,7 +19608,7 @@ void *gm_GetGebaeudeHauptraum(unsigned char *b); /* 0x501ce0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); /* 0x524260, the group register */
 void cm_SendChrStop(int a); /* 0x4c5230 */
 int cm_SendChrGotoBuilding();                 /* 0x4c52e0 */
-void cm_SendChrAnim(int a, const char *s, unsigned char c); /* 0x4c5410 */
+void cm_SendChrAnim(int a, const char *s, int c); /* 0x4c5410 */
 int sv_IsAtDoor();                 /* 0x524770 */
 void ai_Unk575030();                /* 0x575030 */
 

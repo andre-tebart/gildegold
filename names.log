@@ -2376,3 +2376,4 @@
 2026-11-05T14:36:12 0x00552920 func he_Unk552920 -> he_RunApplicants by:main why:the run handler of event 0x86: creates two applicant characters for an open office (amt_GetOpenOffice / amt_CreateApplicant) and initialises them (amt_InitApplicant)
 2026-11-05T14:38:48 0x00552ca0 func he_Unk552ca0 -> he_RunOfficeAward by:main why:registered as the run / alloc handlers of event 0xa5 (he_SetEventHandlers); the run handler plays the _VERLEIHUNG_REICHSAMT_ (imperial office award) voices
 2026-11-05T14:38:48 0x00552c30 data he_Unk552c30 -> he_StartOfficeAward by:main why:registered as the run / alloc handlers of event 0xa5 (he_SetEventHandlers); the run handler plays the _VERLEIHUNG_REICHSAMT_ (imperial office award) voices
+2026-11-05T14:43:11 0x00553ae0 func he_Unk553ae0 -> he_DetectAttack by:main why:the attack run handler 0x566830 asks it whether a watch event 0x43 near the building sees the attackers (sends them there: 'Detected')
