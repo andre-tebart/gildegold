@@ -329,7 +329,10 @@ typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words ov
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
-    char pad00[0xc4];
+    char pad00[0xac];
+    int who[6];                         /* 0xac, the character ids of the wedding offer (he_RunWeddingOffer, the party's members):
+                                           the suitor, the partner, then four guests, the last -1 for none (reasoned
+                                           from the news: 0x1bc0 to the partner names the suitor, 0x1bbf the other way) */
     char kind;                          /* 0xc4, the offer kind compared between the pending offers */
     AITIME clock;                       /* 0xc5, the offer's clock: now + 0x18 units, its hour 0xa and minute 0 */
     char pad_d3;
@@ -7001,88 +7004,96 @@ void he_AllocOffer(int ev)
 
 int cm_SendNewParty(void *p);
 
-/* 0x542b60, a Ghidra miss (disassembled): the run handler of the offer event (see 0x542960): state 0 waits for the offer (+0xd4) to be answered (0x4c3ae0, result 1 = accepted, 2 = refused): accepted tells every member (news 0x1bc0 / 0x1bbf / 0x1bc1 / 0x1bc2, messages 0x5f5, "_NACHRICHTEN_HS_16 / 15 / 11 / 12") and re-posts the event in state 1, which sends the 0x4c4fa0 message 0xa2 (kind 5 / 6 by +0xc0) with all the members and the clocks, state 2 (refused) tells the sender (news 0x1bbe) and counts the retry (+0x58 += 2). The message layout and the sprintf arguments are only approximated (ROUGH) */
-void he_Unk542b60(int ev)
+/* 0x542b60, a Ghidra miss (disassembled): the run handler of the wedding offer event (see 0x542960; HEOFFER). Stage 0
+   waits for the answer to the offer (cm_GetSlotState of the offer handle: 1 accepted, 2 refused). Accepted: the end
+   clock becomes the offer's clock, the partner and the suitor get the news 0x1bc0 / 0x1bbf ("_NACHRICHTEN_HS_16" /
+   "_NACHRICHTEN_HS_15"), the guests who[3] / who[4] the news 0x1bc1 (HS_11) and who[2] / who[5] the news 0x1bc2
+   (HS_12) when they are players, and the event goes on to stage 1. Refused: the suitor hears 0x1bbe and the event is
+   posted again two minutes on. Stage 1 sends the wedding party (G28REC, kind 2, flags 0xa2, its 5 or 6 members, 45
+   minutes from now, hosted by the player) and posts the event again */
+void he_RunWeddingOffer(int r)
 {
-    int q, p, a3, a4, a5, a6;
-    int ok, st;
-    int m[0x45];
+    AIJOB *e = (AIJOB *)r;
+    HEOFFER *o = (HEOFFER *)r;
+    AICHAR *partner, *suitor, *g2, *g3, *g4, *g5;
+    char ok;
+    G28REC m;
     char buf[0x200];
 
-    if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_FreeEvent((int *)ev);
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)r);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    st = *(int *)(ev + 0x70);
-    *(int *)(ev + 0x84) = -1;
-    if (st == 0) {
-        ok = (char)cm_GetSlotState(*(int *)(ev + 0xd4));
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        ok = cm_GetSlotState(o->offer);
         if (ok == 0)
             return;
-        q = gm_FindChar(*(int *)(ev + 0xb0));
-        p = gm_FindChar(*(int *)(ev + 0xac));
-        a3 = gm_FindChar(*(int *)(ev + 0xb4));
-        a4 = gm_FindChar(*(int *)(ev + 0xb8));
-        a5 = gm_FindChar(*(int *)(ev + 0xbc));
-        a6 = gm_FindChar(*(int *)(ev + 0xc0));
-        if ((char)ok == 1) {
-            *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0xc5);
-            if (*(char *)(q + 2) == 6 || *(char *)(q + 2) == 7) {
-                txt_Format(buf, 0x1bc0, *(unsigned short *)p, ev + 0x52, *(unsigned short *)(ev + 0x56), *(unsigned short *)a3, *(unsigned short *)a4, *(unsigned short *)a5);
-                he_ShowNews(*(int *)(q + 4), *(int *)(q + 4), buf, 0, 0x5f5, "_NACHRICHTEN_HS_16");
+        partner = (AICHAR *)gm_FindChar(o->who[1]);
+        suitor = (AICHAR *)gm_FindChar(o->who[0]);
+        g2 = (AICHAR *)gm_FindChar(o->who[2]);
+        g3 = (AICHAR *)gm_FindChar(o->who[3]);
+        g4 = (AICHAR *)gm_FindChar(o->who[4]);
+        g5 = (AICHAR *)gm_FindChar(o->who[5]);
+        if (ok == 1) {
+            e->end = o->clock;
+            if (partner->kind == 6 || partner->kind == 7) {
+                txt_Format(buf, 0x1bc0, suitor->id, &e->end, e->end.hour, g2->id, g3->id, g4->id);
+                he_ShowNews(partner->netId, partner->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_16");
             }
-            if (*(char *)(p + 2) == 6 || *(char *)(q + 2) == 7) {
-                txt_Format(buf, 0x1bbf, *(unsigned short *)q, ev + 0x52, *(unsigned short *)(ev + 0x56), *(unsigned short *)a3, *(unsigned short *)a4, *(unsigned short *)a5);
-                he_ShowNews(*(int *)(p + 4), *(int *)(p + 4), buf, 1, 0x5f5, "_NACHRICHTEN_HS_15");
+            if (suitor->kind == 6 || partner->kind == 7) {
+                txt_Format(buf, 0x1bbf, partner->id, &e->end, e->end.hour, g2->id, g3->id, g4->id);
+                he_ShowNews(suitor->netId, suitor->netId, buf, 1, 0x5f5, "_NACHRICHTEN_HS_15");
             }
-            txt_Format(buf, 0x1bc1, *(unsigned short *)p, *(unsigned short *)q, ev + 0x52, *(unsigned short *)(ev + 0x56));
-            if (*(char *)(a3 + 2) == 6 || *(char *)(a3 + 2) == 7)
-                he_ShowNews(*(int *)(a3 + 4), *(int *)(a3 + 4), buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
-            if (*(char *)(a4 + 2) == 6 || *(char *)(a4 + 2) == 7)
-                he_ShowNews(*(int *)(a4 + 4), *(int *)(a4 + 4), buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
-            txt_Format(buf, 0x1bc2, *(unsigned short *)p, *(unsigned short *)q, ev + 0x52, *(unsigned short *)(ev + 0x56));
-            if (*(char *)(a5 + 2) == 6 || *(char *)(a5 + 2) == 7)
-                he_ShowNews(*(int *)(a5 + 4), *(int *)(a5 + 4), buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
-            if (a6 != 0 && (*(char *)(a6 + 2) == 6 || *(char *)(a6 + 2) == 7))
-                he_ShowNews(*(int *)(a6 + 4), *(int *)(a6 + 4), buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
-            cm_SendExSetHE(1, ev);
+            txt_Format(buf, 0x1bc1, suitor->id, partner->id, &e->end, e->end.hour);
+            if (g3->kind == 6 || g3->kind == 7)
+                he_ShowNews(g3->netId, g3->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
+            if (g4->kind == 6 || g4->kind == 7)
+                he_ShowNews(g4->netId, g4->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_11");
+            txt_Format(buf, 0x1bc2, suitor->id, partner->id, &e->end, e->end.hour);
+            if (g2->kind == 6 || g2->kind == 7)
+                he_ShowNews(g2->netId, g2->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
+            if (g5 != 0 && (g5->kind == 6 || g5->kind == 7))
+                he_ShowNews(g5->netId, g5->netId, buf, 0, 0x5f5, "_NACHRICHTEN_HS_12");
+            cm_SendExSetHE(1, r);
             return;
         }
-        if ((char)ok == 2) {
-            if (*(char *)(p + 2) == 6 || *(char *)(q + 2) == 7) {
-                txt_Format(buf, 0x1bbe, *(unsigned short *)q);
-                he_ShowNews(*(int *)(p + 4), *(int *)(p + 4), buf, 0, 0x5f5, (char *)0);
+        if (ok == 2) {
+            if (suitor->kind == 6 || partner->kind == 7) {
+                txt_Format(buf, 0x1bbe, partner->id);
+                he_ShowNews(suitor->netId, suitor->netId, buf, 0, 0x5f5, 0);
             }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x58) += 2;
-            cm_SendExSetHE(-1, ev);
+            e->end = ai_Time;
+            e->end.min += 2;
+            cm_SendExSetHE(-1, r);
         }
         return;
-    }
-    if (st == 1) {
-        memset(m, 0, sizeof(m));
-        *(unsigned char *)((char *)m + 0x74) = *(unsigned char *)(ev + 0xc4);
-        m[0x1f] = *(int *)(ev + 4);
-        m[0x0d] = *(int *)(ev + 0xac);
-        m[0x0e] = *(int *)(ev + 0xb0);
-        m[0x0f] = *(int *)(ev + 0xb4);
-        m[0x10] = *(int *)(ev + 0xb8);
-        m[0x11] = *(int *)(ev + 0xbc);
-        m[0x12] = *(int *)(ev + 0xc0);
-        *(unsigned char *)((char *)m + 0x30) = (*(int *)(ev + 0xc0) != -1) + 5;
-        *(unsigned char *)((char *)m + 0x14) = 2;
-        *(unsigned char *)((char *)m + 0x32) = 0xa2;
-        m[0x0a] = -1;
-        m[0x0e - 4] = U_I((unsigned)&ai_CharInts + (unsigned short)U_I((unsigned)&ai_PlayerId) * 0x21c);
-        *(AITIME *)((char *)m + 0x24) = ai_Time;
-        gm_AddTime((char *)m + 0x24, 0, 0x2d, 0);
-        cm_SendNewParty(m);
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    case 1:
+        memset(&m, 0, sizeof(m));
+        m.offerKind = o->kind;
+        m.eventId = e->id;
+        m.members[0] = o->who[0];
+        m.members[1] = o->who[1];
+        m.members[2] = o->who[2];
+        m.members[3] = o->who[3];
+        m.members[4] = o->who[4];
+        m.members[5] = o->who[5];
+        m.used = (o->who[5] != -1) + 5;
+        m.kind = 2;
+        m.flags = 0xa2;
+        m.thing = -1;
+        m.host = ai_CharsT[ai_PlayerId].netId;
+        m.time = ai_Time;
+        gm_AddTime(&m.time, 0, 0x2d, 0);
+        cm_SendNewParty(&m);
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, r);
+        return;
     }
 }
 
@@ -9229,7 +9240,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2b, (void *)he_AllocTavern, (void *)he_RunTavern) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2c, (void *)he_AllocOffer, (void *)he_Unk542b60) != 0)
+    if (he_SetEventHandlers(0x2c, (void *)he_AllocOffer, (void *)he_RunWeddingOffer) != 0)
         return 1;
     if (he_SetEventHandlers(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
