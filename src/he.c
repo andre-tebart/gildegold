@@ -48,7 +48,7 @@
    mark HEBARDSCRIPT, the job table's proofs / year HEJOBTABLE), HEINN (the inn
    simulation's list), HEFINVIEW (AIFIN's +0x14 .. +0x64; ai.h is not
    included), the tutorial / tip / routine / storm / new-worker / production / trade words in HEHINTEVENT,
-   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HEPRODUCTIONMSG and HETRADEMSG, the research /
+   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HETRADE and HETRADEMSG, the research /
    building / training / plunder / meeting words in HERESEARCH (event 0xc), HEBUILD (0xd), HEAHMRESEARCH (0x96 / 0x97),
    HEPLUNDER (0x8a) and HEMEETING (0x90), HEMEETSCENE / HEMEETNAME (the meeting scene object 0x91), HEGRAVELEASE (the grave
     lease answer 0x92), HETRIALCASE (the trial 0xa0) and HEMEET4 (the four-figure meeting 0xa1), and over AIOBJ
@@ -988,15 +988,23 @@ typedef struct HETRADEMSG {             /* the trade message 0xf's words over AI
     char pad00[0xa0];
     int jobId;                          /* 0xa0, the id of the event that posted it */
 } HETRADEMSG;
-typedef struct HEPRODUCTIONMSG {        /* the production event's words over AIJOB's union (its alloc handler 0x56a7b0) */
+typedef struct HETRADE {                /* the trade event 0xb's words over AIJOB's union (he_AllocTrade / he_RunTrade) */
     char pad00[0xac];
-    int good;                           /* 0xac, the good produced */
-    int bld;                            /* 0xb0, the building the good comes from */
-    int chr;                            /* 0xb4, the producing character */
-    char padb8[0x30];
-    int slot1;                          /* 0xe8, -1 at the allocation */
-    int slot2;                          /* 0xec, -1 at the allocation, the cm send slot of the message */
-} HEPRODUCTIONMSG;
+    int cart;                           /* 0xac, the objId of the trading cart (gm_FindObjectInst; its 0x1dd object holds
+                                           the cargo and the slot count) */
+    int bld;                            /* 0xb0, the id of the building it trades at, then the next one it goes to */
+    int chr;                            /* 0xb4, the trading character (its budget pays the buys) */
+    int sellBld[3];                     /* 0xb8, per sell slot the building that buys its goods, -1: done */
+    int buyBld[3];                      /* 0xc4, per buy slot the building to buy at, -1: done */
+    unsigned short sell[3];             /* 0xd0, per sell slot the good, 0: none */
+    unsigned short buy[3];              /* 0xd6, per buy slot the good, 0: none */
+    int buyAmount[3];                   /* 0xdc, per buy slot the amount wanted */
+    int moveSlot;                       /* 0xe8, the cm send slot of the last goods move (cm_SendExSellObject), -1: none */
+    int msgSlot;                        /* 0xec, the cm send slot of the move-on message 0xf, -1: none */
+    unsigned char tries;                /* 0xf0, AIJOB.modes: the half-hour retries left for a buy that found nothing
+                                           (4 from the alloc handler when the character exists) */
+    char deferred;                      /* 0xf1, AIJOB.flags: nonzero defers the move-on message (and the cart check) */
+} HETRADE;
 typedef struct HEPRODUCTION {           /* the production event's words over AIJOB's union (he_AllocProduktion 0x5690c0,
                                            he_RunProduktion) */
     char pad00[0xac];
@@ -20786,20 +20794,20 @@ int gm_FindObjectInst(int id);
    field assignments in the source order and the HETRADEMSG view for 0xa0; the store set is identical. */
 void he_AllocTrade(AIJOB *ev)
 {
-    HEPRODUCTIONMSG *p = (HEPRODUCTIONMSG *)ev;
+    HETRADE *p = (HETRADE *)ev;
     AIMSG msg;
     AIJOB *e2;
 
     for (e2 = (AIJOB *)he_FindEvent(2, 0, 0xb, 3, ev->from); e2 != 0; e2 = (AIJOB *)he_NextEvent()) {
-        if (p->good == ((HEPRODUCTIONMSG *)e2)->good && e2->id != ev->id) {
+        if (p->cart == ((HETRADE *)e2)->cart && e2->id != ev->id) {
             he_FreeEvent((int *)ev);
             return;
         }
     }
     ev->end = ev->start;
     ev->clock60 = ev->start;
-    p->slot1 = -1;
-    p->slot2 = -1;
+    p->moveSlot = -1;
+    p->msgSlot = -1;
     gm_AddTime(&ev->end, 0, 1, 0);
     memset(&msg, 0, sizeof(msg));
     msg.time = ev->start;
@@ -20809,13 +20817,13 @@ void he_AllocTrade(AIJOB *ev)
     msg.flags = 2;
     msg.arg[2] = p->bld;
     msg.arg[1] = ev->from;
-    msg.arg[0] = p->good;
+    msg.arg[0] = p->cart;
     ((HETRADEMSG *)&msg)->jobId = ev->id;
-    if (gm_FindObjectInst(p->good) != 0) {
+    if (gm_FindObjectInst(p->cart) != 0) {
         if (ev->flags != 0)
             gm_AddTime(&ev->end, 1, 0x1e, 0);
         else
-            p->slot2 = cm_SendLongMessage((char *)&msg);
+            p->msgSlot = cm_SendLongMessage((char *)&msg);
     } else
         he_FreeEvent((int *)ev);
     ev->modes = 0;
@@ -20823,197 +20831,248 @@ void he_AllocTrade(AIJOB *ev)
         ev->modes = 4;
 }
 
-int ai_Unk5ae8e0();
+int ai_CartAtBuilding();
 int gm_FindMarketObject(int id);
 float gm_GoodsPrice(unsigned id, unsigned char p);
 int gm_ListStock();
 int gm_CharCurrency(char *c, char p);
 
-/* 0x56a960, the run handler of the trade event (ROUGH, a skeleton from the disassembly; the two slot loops are simplified): +0xb0 / +0xb4 / +0xac the buildings and the good looked up (0x4fea50 A / C / B),
-   +0xd0 (3 good ids, short) and +0xd6 (3 short) with the owners +0xb8 / +0xc4 are the sell / buy slots, +0xe8 / +0xec the transport / message handles, +0xf0 / +0xf1 flags; state -2 resets the
-   state and runs 0x541250 for the first player; while a handle is still running the record is due again in 1 unit; a record of the same good that is already running (0x53e400 (2, 0, 0xf, 2, owner)) frees this
-   one; the amounts are ordered by 0x4c4880 from the goods buildings (0x4ffe90 ...) and the rest is posted as a message (0x4c4b70) */
-void he_Unk56a960(int ev)
+/* 0x56a960, the run handler of the trade event 0xb (he_AllocTrade): a cart (t->cart) of the character t->chr trades
+   at the building t->bld. Stage -2 restarts it for the player's character. While its move or message send is still
+   open it waits a minute. Without the cart or the building it is freed; a transport event 0xf of the character
+   for the same cart makes it wait 5 minutes (going to this building) or frees it. A cart not at the building
+   (ai_CartAtBuilding, unless deferred) frees it. With nothing to sell or buy in its slots (at most the cart
+   object's slot count, 3) the cargo of the cart object (0x1dd) goes into the building's store (kind 0x2a, else
+   0x116). Else the sell slots for this building sell their goods: what the store has room for at 0.9 of the
+   price (booked to the character's money +0x1b8), the rest at 0.8 to nobody; or the buy slots buy up to their
+   amount of what the store (the market object of a market building) holds beyond its reserve, at 1.1 of the
+   price (a market) or the building's price factor, as far as the money of the character and its master reach
+   ("Meister %s (%s) kauft ..."); a buy that found nothing is tried again every half hour up to t->tries times
+   (before 20:00). Then the cart moves on to the building of the first slot left, else home (ev->from): the
+   message 0xf, unless that is this building (5 minutes) or the trade is deferred (1 1/2 hours)
+   @deep rebuilt from the whole original over HETRADE (the trade event's words named: cart, bld, chr, the
+   sell / buy slots, buyAmount, the two send slots, tries / deferred) and AIBLD.priceFactor (0x49): the
+   waits on the two send slots, the transport check, ai_CartAtBuilding, the cargo object 0x1dd and its slot
+   count, the store move of the cargo, the sell loop (0.9 / 0.8 prices, the budget), the buy loop (min() of
+   the amount wanted and the stock beyond the reserve, evaluated twice as the original does; the money of
+   the character and its master; the debug sprintf), the half-hour retries, the next building and the
+   move-on message. 857 vs 851 instructions. Left is allocation and block placement: the zero constant is
+   ebp in the original and edi in ours (cmp esi, ebp / jle vs cmp esi, edi), the loop pointers and the
+   shared stack slots differ (frame 0x1b0 vs 0x1a8: the original shares left / the sell slot pointer at 0x4
+   and n / the price at 0x8), and the original keeps the transport-match block (+0x9e8: cmp goal, bld; jne
+   free; then the wait tail) at the end where ours places it after the ai_CartAtBuilding free (+0x16b); the
+   goto / break spellings gave the same layout (references: M8 at +0x2ff: ours refers to gm_AddTime
+   (0x4fe140), the original's field to 0x53e1f0 (he_FreeEvent), explained: the M8 at +0x2ff (gm_AddTime vs
+   he_FreeEvent) is that block placement: the alignment pairs our wait call with the original's free call
+   of the nothing path (if moveSlot == -1 free, else wait); both calls exist on both sides) */
+void he_RunTrade(AIJOB *ev)
 {
-    int A, B, C, bo[2], g, g2, s, i, k, n, m, flags, amount, left, hit, e2, per;
-    unsigned short *sl;
-    char msg[0xf8];
-    char buf[0x100];
+    HETRADE *t = (HETRADE *)ev;
+    AIBLD *bld;
+    int left;
+    int n;
+    AIOBJ *store;
+    AIOBJ *cart;
+    AICHAR *chr;
+    int price;
+    AIOBJ *cargo;
+    int slots;
+    AIBLD *home;
+    int flags;
+    AIMSG m;
+    char buf[0x80];
+    AIJOB *e;
+    AIOBJ *g;
+    int *slotBld;
+    unsigned short *slotGood;
+    int i;
+    int found;
+    int have;
+    int put;
 
-    A = B = C = 0;
-    flags = 0;
+    n = 0;
     left = 0;
-    if (*(int *)(ev + 0x70) == -2) {
-        *(int *)(ev + 0x70) = 0;
-        he_SetEventChar(ev, *(unsigned short *)U_I((unsigned)&ai_PlayerChar));
+    flags = 0;
+    cart = 0;
+    bld = 0;
+    chr = 0;
+    if (ev->stage == -2) {
+        ev->stage = 0;
+        he_SetEventChar(ev, he_PlayerCh->id);
     }
-    if (*(int *)(ev + 0xe8) != -1) {
-        if (cm_GetSlotState(*(int *)(ev + 0xe8)) == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
+    if (t->moveSlot != -1) {
+        if (cm_GetSlotState(t->moveSlot) == 0) {
+            gm_AddTime(&ev->end, 0, 1, 0);
             return;
         }
-        *(int *)(ev + 0xe8) = -1;
+        t->moveSlot = -1;
     }
-    if (*(int *)(ev + 0xec) != -1) {
-        if (cm_GetSlotState(*(int *)(ev + 0xec)) == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
+    if (t->msgSlot != -1) {
+        if (cm_GetSlotState(t->msgSlot) == 0) {
+            gm_AddTime(&ev->end, 0, 1, 0);
             return;
         }
-        *(int *)(ev + 0xec) = -1;
+        t->msgSlot = -1;
     }
-    gm_FindById(0, bo, 0, *(int *)(ev + 0xac));
-    B = bo[0];
-    gm_FindById(bo, 0, 0, *(int *)(ev + 0xb0));
-    A = bo[0];
-    gm_FindById(0, 0, bo, *(int *)(ev + 0xb4));
-    C = bo[0];
-    if (B == 0 || A == 0)
-        goto done_free;
-    for (e2 = (int)he_FindEvent(2, 0, 0xf, 2, *(unsigned short *)(ev + 8)); e2 != 0; e2 = he_NextEvent()) {
-        if (*(int *)(e2 + 0xac) == *(int *)(ev + 0xac)) {
-            if (*(int *)(e2 + 0xb4) == *(int *)(ev + 0xb0))
-                goto rearm;
-            goto done_free;
-        }
+    gm_FindById(0, (int *)&cart, 0, t->cart);
+    gm_FindById((int *)&bld, 0, 0, t->bld);
+    gm_FindById(0, 0, (int *)&chr, t->chr);
+    if (cart == 0 || bld == 0)
+        goto done;
+    for (e = (AIJOB *)he_FindEvent(2, 0, 0xf, 2, ev->chr); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if (((HETRANSPORT *)e)->cart == t->cart)
+            goto moving;
     }
-    if (*(char *)(ev + 0xf1) == 0 && ai_Unk5ae8e0(A, B) == 0) {
-        ai_Unk5ae8e0(A, B);
+    if (t->deferred == 0 && ai_CartAtBuilding(bld, cart) == 0) {
+        ai_CartAtBuilding(bld, cart);
         he_FreeEvent((int *)ev);
         return;
     }
-    g = gm_Query(*(int *)(B + 0x14), 1, 0, 0x1dd);
-    s = *(unsigned char *)(g + 0x1c) < 3 ? *(unsigned char *)(g + 0x1c) : 3;
-    hit = 0;
-    for (i = 0; i < s && !hit; i++)
-        if (*(unsigned short *)(ev + 0xd0 + i * 2) != 0 || *(unsigned short *)(ev + 0xd6 + i * 2) != 0)
-            hit = 1;
-    if (!hit) {
-        /* nothing to trade: the transport is ordered from the first store of the kind 0x2a / 0x116 (0x4c4880) */
-        k = gm_Query(*(int *)(A + 0x5d), 2, 6, 0x2a);
-        if (k == 0)
-            k = gm_Query(*(int *)(A + 0x5d), 2, 6, 0x116);
-        for (g2 = k != 0 ? gm_Query(*(int *)(g + 0x14), 1, 5, 0) : 0; g2 != 0; g2 = gm_QueryNext())
-            *(int *)(ev + 0xe8) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(k + 2), *(int *)(g + 2), *(unsigned short *)g2, *(int *)(g2 + 0xe), *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        if (*(int *)(ev + 0xe8) == -1)
-            goto done_free;
-        goto rearm;
+    cargo = (AIOBJ *)gm_Query((void *)cart->list, 1, 0, 0x1dd);
+    slots = cargo->lvl1c < 3 ? cargo->lvl1c : 3;
+    found = 0;
+    for (i = 0; found == 0 && i < slots; i++) {
+        if (t->sell[i] != 0 || t->buy[i] != 0)
+            found = 1;
     }
-    for (sl = (unsigned short *)(ev + 0xd0), i = 0; i < s; i++, sl++) {
-        if (*sl != 0 && *(int *)(ev + 0xb8 + i * 4) == *(int *)(A + 1)) {
-            g2 = gm_Query(*(int *)(g + 0x14), 1, 0, *sl);
-            if (g2 != 0) {
-                k = *(char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)A * 0x24d) == 0xa ? gm_FindMarketObject(*sl) : gm_Query(*(int *)(A + 0x5d), 2, 6, 0x2a);
-                if (k == 0)
-                    k = gm_Query(*(int *)(A + 0x5d), 2, 6, 0x116);
-                if (k != 0) {
-                    n = gm_ListAmount(B, g2);
-                    m = gm_FreeCapacity(k, *(unsigned short *)g2, n);
-                    amount = (int)(gm_GoodsPrice(*(unsigned short *)g2, *(unsigned char *)(unsigned)&ai_OwnPlayer) * 0.01);
-                    if (n < m)
-                        m = n;
-                    cm_SendExSellObject(*(int *)(k + 2), *(unsigned short *)g2, m, amount, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                    if (C != 0)
-                        *(int *)(C + 0x1b8) += amount * m;
-                    if (n - m != 0) {
-                        amount = (int)(gm_GoodsPrice(*(unsigned short *)g2, *(unsigned char *)(unsigned)&ai_OwnPlayer) * 0.01);
-                        *(int *)(ev + 0xe8) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(B + 2), -1, *(unsigned short *)g2, n - m, *(unsigned char *)(unsigned)&ai_OwnPlayer, amount);
+    if (found == 0) {
+        if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) != 0) {
+            for (g = (AIOBJ *)gm_Query((void *)cargo->list, 1, 5); g != 0; g = (AIOBJ *)gm_QueryNext())
+                t->moveSlot = cm_SendExSellObjectH(store->objId, cargo->objId, g->id, g->count, ai_OwnPlayer, 0);
+        } else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116)) != 0) {
+            for (g = (AIOBJ *)gm_Query((void *)cargo->list, 1, 5); g != 0; g = (AIOBJ *)gm_QueryNext())
+                t->moveSlot = cm_SendExSellObjectH(store->objId, cargo->objId, g->id, g->count, ai_OwnPlayer, 0);
+        }
+        if (t->moveSlot == -1)
+            goto done;
+        goto wait;
+    }
+    found = 0;
+    for (i = 0; found == 0 && i < slots; i++) {
+        if (t->sell[i] != 0)
+            found = 1;
+    }
+    if (found != 0) {
+        for (i = 0, slotBld = t->sellBld, slotGood = t->sell; i < slots; i++, slotBld++, slotGood++) {
+            if (*slotGood != 0 && *slotBld == bld->id) {
+                g = (AIOBJ *)gm_Query((void *)cargo->list, 1, 0, *slotGood);
+                if (g != 0) {
+                    if (ai_BTypesT[bld->type].kind == 0xa)
+                        store = (AIOBJ *)gm_FindMarketObject(*slotGood);
+                    else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) == 0)
+                        store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116);
+                    if (store != 0) {
+                        have = gm_ListAmount(cargo, g);
+                        put = gm_FreeCapacity(store, g->id, have);
+                        price = (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * 0.9);
+                        if (have < put)
+                            put = have;
+                        cm_SendExSellObject(store->objId, cargo->objId, g->id, put, ai_OwnPlayer, price);
+                        if (chr != 0)
+                            chr->budget += price * put;
+                        if ((have -= put) != 0)
+                            t->moveSlot = cm_SendExSellObjectH(-1, cargo->objId, g->id, have, ai_OwnPlayer,
+                                                               (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * 0.8));
                     }
                 }
+                *slotGood = 0;
+                *slotBld = -1;
             }
-            *sl = 0;
-            *(int *)(ev + 0xb8 + i * 4) = -1;
         }
-    }
-    if (C != 0 && *(int *)(C + 0x16c) != 0)
-        left = gm_CharCurrency((unsigned)&ai_Chars + *(unsigned short *)(*(int *)(C + 0x16c) + 0x27) * 0x21c, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    if (left > *(int *)(C + 0x1b8))
-        left = *(int *)(C + 0x1b8);
-    for (sl = (unsigned short *)(ev + 0xd6), i = 0; i < s; i++, sl++) {
-        if (*sl != 0 && *(int *)(ev + 0xc4 + i * 4) == *(int *)(A + 1)) {
-            k = *(char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)A * 0x24d) == 0xa ? gm_FindMarketObject(*sl) : gm_Query(*(int *)(A + 0x5d), 2, 6, 0x2a);
-            if (k == 0)
-                k = gm_Query(*(int *)(A + 0x5d), 2, 6, 0x116);
-            n = 0;
-            if (k != 0) {
-                g2 = gm_Query(*(int *)(k + 0x14), 0, 1, *sl);
-                if (g2 != 0) {
-                    if (*(char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)A * 0x24d) == 0xa)
-                        amount = (int)(gm_GoodsPrice(*(unsigned short *)g2, *(unsigned char *)(unsigned)&ai_OwnPlayer) * 0.01);
+    } else {
+        if (chr != 0 && chr->bld != 0) {
+            left = gm_CharCurrency((char *)&ai_CharsT[chr->bld->owner], ai_OwnPlayer);
+            if (left >= chr->budget)
+                left = chr->budget;
+        }
+        for (i = 0, slotBld = t->buyBld, slotGood = t->buy; i < slots; i++, slotBld++, slotGood++) {
+            if (*slotGood != 0 && *slotBld == bld->id) {
+                if (ai_BTypesT[bld->type].kind == 0xa)
+                    store = (AIOBJ *)gm_FindMarketObject(*slotGood);
+                else if ((store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a)) == 0)
+                    store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116);
+                if (store != 0) {
+                    g = (AIOBJ *)gm_Query((void *)store->list, 1, 0, *slotGood);
+                    if (g == 0)
+                        continue;
+                    if (ai_BTypesT[bld->type].kind == 0xa)
+                        price = (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * 1.1);
                     else
-                        amount = (int)(gm_GoodsPrice(*(unsigned short *)g2, *(unsigned char *)(unsigned)&ai_OwnPlayer) * *(float *)(A + 0x49));
-                    per = amount;
-                    n = gm_ListStock(k, *(unsigned short *)g2) * *(int *)(g2 + 0x1c) >> 2;
-                    n = gm_ListAmount(k, g2) - n;
-                    if (left / per < n)
-                        n = left / per;
-                    if (n < 0)
-                        n = 0;
+                        price = (int)(gm_GoodsPrice(g->id, ai_OwnPlayer) * bld->priceFactor);
+                    n = min(t->buyAmount[i], gm_ListAmount(store, g) - ((unsigned)gm_ListStock(store, g->id) * g->reserve >> 2));
+                    n = min(n, left / price);
+                    n = n < 0 ? 0 : n;
                     if (n != 0)
-                        *(int *)(ev + 0xe8) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(B + 2), *(unsigned short *)g2, n, per, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                    if (C != 0 && *(int *)(C + 0x16c) != 0)
-                        sprintf(buf, "%s %s %li %li %s", (char *)(C + 0x30), (char *)(*(int *)(C + 0x16c) + 5), n * per, n, (char *)((char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)g2 * 0x41 + 1));
-                    left -= n * per;
-                    if (C != 0)
-                        *(int *)(C + 0x1b8) -= n * per;
+                        t->moveSlot = cm_SendExSellObjectH(cargo->objId, store->objId, g->id, n, ai_OwnPlayer, price);
+                    if (chr != 0 && chr->bld != 0)
+                        sprintf(buf, "Meister %s (%s) kauft f\xfcr %li Credits (hat %li) %li Einheiten %s", chr->name,
+                                chr->bld->name, price * n, left, n, GM_GOOD(g->id)->name);
+                    left -= price * n;
+                    if (chr != 0)
+                        chr->budget -= price * n;
+                }
+                if (n == 0 && t->tries != 0) {
+                    flags |= 1;
+                } else {
+                    *slotGood = 0;
+                    *slotBld = -1;
                 }
             }
-            if (n == 0 && *(unsigned char *)(ev + 0xf0) != 0)
-                flags |= 1;
-            else {
-                *sl = 0;
-                *(int *)(ev + 0xc4 + i * 4) = -1;
-            }
         }
     }
-    if (*(unsigned char *)(ev + 0xf0) != 0 && flags != 0) {
-        if (*(unsigned short *)(unsigned)&ai_Time.hour < 0x14) {
-            gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-            *(unsigned char *)(ev + 0xf0) -= 1;
+    if (t->tries != 0 && flags != 0) {
+        if (ai_Time.hour < 20) {
+            gm_AddTime(&ev->end, 0, 30, 0);
+            t->tries--;
         } else {
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            *(unsigned char *)(ev + 0xf0) = 0;
+            gm_AddTime(&ev->end, 0, 5, 0);
+            t->tries = 0;
         }
         return;
     }
-    *(int *)(ev + 0xb0) = -1;
-    for (i = 0; i < s && *(int *)(ev + 0xb0) == -1; i++)
-        if (*(unsigned short *)(ev + 0xd0 + i * 2) != 0)
-            *(int *)(ev + 0xb0) = *(int *)(ev + 0xb8 + i * 4);
-    for (i = 0; i < s && *(int *)(ev + 0xb0) == -1; i++)
-        if (*(unsigned short *)(ev + 0xd6 + i * 2) != 0)
-            *(int *)(ev + 0xb0) = *(int *)(ev + 0xc4 + i * 4);
-    if (*(int *)(ev + 0xb0) == -1) {
-        gm_FindById(bo, 0, 0, *(int *)(ev + 0x10));
-        *(int *)(ev + 0xb0) = *(int *)(bo[0] + 1);
+    t->bld = -1;
+    for (i = 0; t->bld == -1 && i < slots; i++) {
+        if (t->sell[i] != 0)
+            t->bld = t->sellBld[i];
     }
-    if (*(char *)(ev + 0xf1) != 0) {
-        gm_AddTime(ev + 0x52, 1, 0x1e, 0);
+    if (t->bld == -1) {
+        for (i = 0; t->bld == -1 && i < slots; i++) {
+            if (t->buy[i] != 0)
+                t->bld = t->buyBld[i];
+        }
+        if (t->bld == -1) {
+            gm_FindById((int *)&home, 0, 0, ev->from);
+            t->bld = home->id;
+        }
+    }
+    if (t->deferred != 0) {
+        gm_AddTime(&ev->end, 1, 30, 0);
         return;
     }
-    memset(msg, 0, sizeof(msg));
-    msg[4] = 0xf;
-    *(int *)(msg + 0xc) = -1;
-    *(int *)(msg + 8) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
-    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-    *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-    msg[0x36] = 2;
-    *(int *)(msg + 0x58) = *(int *)(B + 2);
-    *(int *)(msg + 0x5c) = *(int *)(A + 1);
-    *(int *)(msg + 0x60) = *(int *)(ev + 0xb0);
-    *(int *)(msg + 0xa0) = *(int *)(ev + 4);
-    if (*(int *)(A + 1) == *(int *)(ev + 0xb0)) {
-        gm_AddTime(ev + 0x52, 0, 5, 0);
+    memset(&m, 0, sizeof(m));
+    m.type = 0xf;
+    m.fromId = -1;
+    m.flags = 2;
+    m.to = ai_CharsT[ev->chr].netId;
+    m.time = ai_Time;
+    m.car = cart->objId;
+    m.n = bld->id;
+    m.ch = t->bld;
+    ((HETRADEMSG *)&m)->jobId = ev->id;
+    if (bld->id == t->bld) {
+        gm_AddTime(&ev->end, 0, 5, 0);
         return;
     }
-    *(int *)(ev + 0xec) = cm_SendLongMessage(msg);
-    gm_AddTime(ev + 0x52, 0, 0xa, 0);
+    t->msgSlot = cm_SendLongMessage((char *)&m);
+    gm_AddTime(&ev->end, 0, 10, 0);
     return;
-rearm:
-    gm_AddTime(ev + 0x52, 0, 5, 0);
+moving:                                 /* a transport of the cart runs: wait for it when it comes here */
+    if (((HETRANSPORT *)e)->goal != t->bld)
+        goto done;
+wait:
+    gm_AddTime(&ev->end, 0, 5, 0);
     return;
-done_free:
+done:
     he_FreeEvent((int *)ev);
 }
 /* 0x56b380, the alloc of an event record: both clocks (+0x52 / +0x60) = the start clock (+0x44), due now + 1, +0xbc / +0xc0 / +0xc4 = 0 */
@@ -21514,7 +21573,7 @@ int he_RegisterEventTypes03(void)
     sv_RegisterActivity(9, "Suchen", 1, 0x500, -1);
     if (he_SetEventHandlers(10, (void *)d3io_NoopCallback, (void *)he_Unk56a710) != 0)
         return 1;
-    if (he_SetEventHandlers(0xb, (void *)he_AllocTrade, (void *)he_Unk56a960) != 0)
+    if (he_SetEventHandlers(0xb, (void *)he_AllocTrade, (void *)he_RunTrade) != 0)
         return 1;
     if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_RunResearch) != 0)
         return 1;

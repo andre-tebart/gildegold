@@ -15528,7 +15528,7 @@ void ai_TransportOrderDue(AIOBJ *cart)
    (out: character, building, object): a character answers whether it is param_1's original record, a
    building follows its own +6, a third object ends it */
 
-int ai_Unk5ae8e0(int param_1, int param_2)
+int ai_CartAtBuilding(int param_1, int param_2)
 {
     float v[4];
     int rec;

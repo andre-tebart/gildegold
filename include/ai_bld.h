@@ -23,7 +23,9 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
     int budget;                         /* 0x39, the money the building may spend this round: main_EndRound spreads its owner's goods value (x 75) over the buildings by AIBTYPE.level (2 / 4 / 8 shares, capped) and copies it to the AICHAR.budget of the local jobs; ai.c buys up to it */
     int wageRate;                       /* 0x3d, the percent of the job wages its workers get (main_SettleRound pays wage * rate / 100; below 100 lowers their opinion of the owner, above raises it) */
     int workRate;                       /* 0x41, a percent setting whose distance from 100 moves the workers' opinion the other way (main_SettleRound; reasoned guess: the working hours) */
-    char pad45[8];
+    char pad45[4];
+    float priceFactor;                  /* 0x49, the factor on the goods price a trade cart pays when it buys here (he_RunTrade; a
+                                           market (AIBTYPE.kind 0xa) asks 1.1 instead) */
     int roundSums[3];                   /* 0x4d, cleared at every round settlement (main_SettleRound); reasoned guess: per-round sums */
     char pad59;
     union {
