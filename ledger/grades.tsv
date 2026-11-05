@@ -1500,26 +1500,26 @@ exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	draft	deep
 exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	draft	deep	
 exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	draft	deep	
 exe	0x0048e070	ai_FindMasterBuilding	am	byte	readable		
-exe	0x0048e120	ai_Unk48e120	am	draft	draft	deep	
+exe	0x0048e120	ai_DecideBuildDomizil	am	draft	readable	deep	
 exe	0x0048e370	ai_ExecBuildDomizil	am	draft	readable	deep	
 exe	0x0048e470	ai_DecideSecretRoom	am	byte	readable		
-exe	0x0048e620	ai_DecideSecretRoom0	am	byte	draft		
-exe	0x0048e730	ai_DecideSecretRoom1	am	byte	draft		
-exe	0x0048e830	ai_DecideSecretRoom2	am	byte	draft		
+exe	0x0048e620	ai_DecideSecretRoom0	am	byte	readable		
+exe	0x0048e730	ai_DecideSecretRoom1	am	byte	readable		
+exe	0x0048e830	ai_DecideSecretRoom2	am	byte	readable		
 exe	0x0048e9f0	ai_DecideSecretRoom3	am	byte	readable		
-exe	0x0048eab0	ai_Unk48eab0	am	byte	draft		
+exe	0x0048eab0	ai_ExecSecretRoom	am	byte	readable		
 exe	0x0048eb50	ai_ExecSecretRoom0	am	draft	readable	deep	
 exe	0x0048ec90	ai_ExecSecretRoom1	am	draft	readable	deep	
 exe	0x0048edc0	ai_ExecSecretRoom2	am	draft	readable	deep	
 exe	0x0048ef10	ai_ExecSecretRoom3	am	draft	readable	deep	
-exe	0x0048f010	ai_Unk48f010	am	byte	draft		
-exe	0x0048f1e0	ai_Unk48f1e0	am	byte	draft		
+exe	0x0048f010	ai_DecideCannonTower	am	byte	readable		
+exe	0x0048f1e0	ai_ExecCannonTower	am	byte	readable		
 exe	0x0048f250	ai_FindOwnBuilding	am	byte	readable		
 exe	0x0048f2b0	ai_DecideBuildSculpture	am	draft	readable	deep	
 exe	0x0048f500	ai_ExecBuildSculpture	am	byte	readable		
 exe	0x0048f600	ai_DecideUseAlchemyItems	am	draft	readable	deep	
-exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	draft		
-exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	draft		
+exe	0x0048f990	ai_ExecUseAlchemyItems	am	byte	readable		
+exe	0x0048fb70	ai_RegisterBuildingActions	am	byte	readable		
 exe	0x0048feb0	ai_PickRandomBuildingChar	am	byte	draft		
 exe	0x0048ff50	ai_DecideGraveyardOwner0	am	shape	readable		
 exe	0x004900c0	ai_ExecGraveyardOwner0	am	byte	readable		
