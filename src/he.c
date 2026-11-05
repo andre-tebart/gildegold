@@ -312,11 +312,12 @@ int gm_CompareTime();
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
-void he_Unk53d430(unsigned char *ev)
+void he_AllocNone(unsigned char *ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char buf[256];
 
-    sprintf(buf, "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s", *ev, (char *)(((unsigned)&ai_CharSex + 0x27) + *(unsigned short *)(ev + 8) * 0x21c));
+    sprintf(buf, "he_AllocNone(): Invalid HE-Type : %i, von Spieler %s", *ev, ai_CharsT[e->chr].name);
 }
 /* 0x53d470, the run handler of an event of an unknown type (debug text only) */
 
@@ -330,7 +331,7 @@ void he_Unk53d470(unsigned char *ev)
 
 int he_InitEvents(void)
 {
-    if (he_Unk53d600(0, (void *)he_Unk53d430, (void *)he_Unk53d470) != 0)
+    if (he_Unk53d600(0, (void *)he_AllocNone, (void *)he_Unk53d470) != 0)
         return 1;
     if (he_Unk53d600(1, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
