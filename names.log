@@ -2357,3 +2357,4 @@
 2026-11-05T13:53:37 0x00550070 func he_Unk550070 -> he_CreateReaper by:main why:creates the Sensenmann (reaper) object of the reaper event (d3_CreateObject 'Sensenmann', '*sensenmann.baf')
 2026-11-05T13:59:29 0x00550370 func he_Unk550370 -> he_MoveReaper by:main why:he_MoveReaper: one step of the Sensenmann object's flight to reaperTo (d3_SetObjectPos, returns 2 within 45); cm_GetSpeedLevel: returns cm_SpeedLevel
 2026-11-05T13:59:29 0x004c3f80 data ai_Unk4c3f80 -> cm_GetSpeedLevel by:main why:he_MoveReaper: one step of the Sensenmann object's flight to reaperTo (d3_SetObjectPos, returns 2 within 45); cm_GetSpeedLevel: returns cm_SpeedLevel
+2026-11-05T14:01:42 0x005506c0 func he_Unk5506c0 -> he_AimReaper by:main why:turns the Sensenmann object towards reaperTo (d3_VecAngle2 into its rotation) and caches its angles and the target
