@@ -42,7 +42,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
     unsigned char jobId;               /* 0x164 */
     char pad165[0x1];
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none (ai.h AICHAR) */
-    unsigned char unk167;               /* 0x167 */
+    unsigned char prevOffice;           /* 0x167, the office kind held before the current one (ai.h AICHAR) */
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
     char pad169[0x7];
     AIBLD *bld2;                        /* 0x170 */

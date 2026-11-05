@@ -4406,7 +4406,8 @@ int ai_ExecuteBribe(AIPER *p, AIARG *s1, AIARG *s2)
     }
     return 9;
 }
-/* 0x4973f0, evaluate: the default rating, ten times for a character with 0x167 set and 0x166 clear */
+/* 0x4973f0, evaluate: the default rating, ten times for a character that held an office
+   (prevOffice) and holds none now (officeKind 0) */
 
 int ai_EvalApplyForOffice(float *a, float *b, int i, AIPER *p, int f, AIARG *o1, AIARG *o2)
 {
@@ -4419,7 +4420,7 @@ int ai_EvalApplyForOffice(float *a, float *b, int i, AIPER *p, int f, AIARG *o1,
     }
     *a = 0.0f;
     *b = 0.0f;
-    if (p->unk167 && !p->officeKind)
+    if (p->prevOffice && !p->officeKind)
         k = 10.0f;
     else
         k = 1.0f;
