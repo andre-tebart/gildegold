@@ -6338,33 +6338,38 @@ void he_StartInnSim(int ev)
 int ai_CanAct();
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 
-/* 0x54d1e0, a Ghidra miss: looks the figure of a record up in a table of 16 entries of 12 bytes (first word: a building of 0x501190): finds the entry whose building id (+1) is the figure's job id (+0x184 + 0x2c) and that has an owner (word +0x27 != 0xffff); stores its index in *out and returns 1, else 0 */
-int he_FindGuestInn(int rec, int *tab, int *out)
-{
-    int i;
-    int *e;
-
-    if (*(unsigned short *)rec == 0xffff || *(unsigned char *)(rec + 8) == 0 || *(unsigned char *)(rec + 2) != 0)
-        return 0;
-    if (*(int *)(rec + 0x184) == 0 || ai_CanAct(rec) == 0)
-        return 0;
-    e = tab;
-    for (i = 0; i < 16; i++) {
-        if (*e == 0)
-            return 0;
-        if (*(int *)(*e + 1) == *(int *)(*(int *)(rec + 0x184) + 0x2c) && *(unsigned short *)(*e + 0x27) != 0xffff) {
-            *out = i;
-            return 1;
-        }
-        e += 3;
-    }
-    return 0;
-}
 typedef struct HEINN {                  /* he_RunInnSim's list of the inns (he_FindGuestInn walks it, 12 bytes each) */
     AIBLD *inn;                         /* 0x0, the inn (a building of kind 0x16), 0: the end of the list */
     AIOBJ *drink1;                      /* 0x4, its bar's good 0x179, 0: none */
     AIOBJ *drink2;                      /* 0x8, its bar's good 0x17a, 0: none */
 } HEINN;
+
+/* 0x54d1e0, looks a character up in the inn simulation's list: finds the inn whose building id is the building of the
+   character's model record and whose building has an owner; stores its index in *out and returns 1, else 0 */
+int he_FindGuestInn(int rec, HEINN *tab, int *out)
+{
+    AICHAR *c = (AICHAR *)rec;
+    AIBLD *b;
+    HEINN *e;
+    int i;
+
+    if (c->id == 0xffff || c->health == 0 || c->kind != 0)
+        return 0;
+    if (c->model == 0 || ai_CanAct(rec) == 0)
+        return 0;
+    e = tab;
+    for (i = 0; i < 16; i++) {
+        if (e->inn == 0)
+            return 0;
+        b = e->inn;
+        if (b->id == c->model->bldId && b->owner != 0xffff) {
+            *out = i;
+            return 1;
+        }
+        e++;
+    }
+    return 0;
+}
 
 /* he_RunInnSim's guest count: the inn's field +0x69 counts `guests` more */
 #define HE_INN_GUEST(r) {                                                                       \
@@ -6423,7 +6428,7 @@ void he_RunInnSim(int ev)
         return;
     end = s->cursor + 0x180;
     for (i = s->cursor; i < end; i++) {
-        if (he_FindGuestInn((int)&ai_CharsT[i], (int *)inns, &idx) == 0)
+        if (he_FindGuestInn((int)&ai_CharsT[i], inns, &idx) == 0)
             continue;
         price1 = (int)(gm_GoodsPrice(0x179, ai_OwnPlayer) * 1.5);
         price2 = (int)(gm_GoodsPrice(0x17a, ai_OwnPlayer) * 1.5);
