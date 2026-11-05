@@ -2477,3 +2477,4 @@
 2026-11-05T19:01:32 0x005690c0 func he_Unk5690c0 -> he_AllocProduktion by:main why:the allocation handler of the production event (its own debug text he_AllocProduktion(): geb:%G): it sets the good's work time, the clocks and the owner's rate
 2026-11-05T19:04:36 0x0056a7b0 func he_Unk56a7b0 -> he_AllocTrade by:main why:the alloc handler of the trade event 0xb (its run handler 0x56a960 is the trade event): it posts the move-goods message and sets the handles
 2026-11-05T19:09:33 0x0056b3f0 func he_Unk56b3f0 -> he_RunResearch by:main why:the run handler of the research event 0xc (f3gm.c GMJOB.research: the good it researches; it orders it and hooks the object made)
+2026-11-05T19:34:19 0x0056b570 func he_Unk56b570 -> he_AllocGebaeudeBauen by:main why:the alloc of the building event 0xd, named by the error text it formats

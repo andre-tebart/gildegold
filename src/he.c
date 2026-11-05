@@ -425,6 +425,14 @@ typedef struct HERESEARCH {             /* the research event 0xc's words over A
     int rounds;                         /* 0xc4, the rounds since the order (one per minute) */
     int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObjectH) */
 } HERESEARCH;
+typedef struct HEBUILD {                /* the building event 0xd's words over AIJOB's union (he_AllocGebaeudeBauen and
+                                           its run handler 0x56be30): the building type it builds and the position it
+                                           searches the plot around */
+    char pad00[0xb0];
+    int bldType;                        /* 0xb0, the building kind id (ai_BuildingName's id) */
+    char padb4[0x20];
+    float pos[3];                       /* 0xd4, the position ai_FindNearestObject measures the plots from */
+} HEBUILD;
 typedef struct HETRANSPORT {            /* the transport event 15's words over AIJOB's union (he_AllocTransport / he_RunTransport):
                                            a cart driven from one building to another */
     char pad00[0xac];
@@ -18156,45 +18164,49 @@ int ai_BuildingName();
 int ai_FindBauplaetze();
 int ai_FindNearestObject(float *ref, int *list);  /* 0x58fe10 (lc.c) */
 
-/* 0x56b570, "he_AllocGebaeudeBauen", the alloc of an event of the type 0xd (when another one of the type is still below the state 5 the record is freed): clocks (+0x52 / +0x60) = the start clock, due now + 1, +0xc4 / +0xc8 = 0;
-   the data of the object +0xb0 is looked up (0x58f640 / 0x58f7a0 in the scene 0, 0x4478e0 selects it) and every entry is checked (0x58fe10 against +0xd4); without entries or with a miss the record is freed,
-   else the error text is formatted and +0x84 = -1 (ROUGH) */
-void he_Unk56b570(int ev)
+/* 0x56b570, "he_AllocGebaeudeBauen", the alloc of an event of the type 0xd (when another one of the type is still
+   below the stage 5 the record is freed): both clocks (end / clock60) = the start clock, due now + 1, workTotal /
+   argc8 = 0; the name of the building type (bldType) is looked up (ai_BuildingName into buf) and its plots are
+   searched in the scene 0 (ai_FindBauplaetze into tab), each checked against the position pos (ai_FindNearestObject);
+   without plots or with a miss the record is freed, else the error text is formatted into buf and exSlot = -1 */
+void he_AllocGebaeudeBauen(int ev)
 {
-    char buf[0x10];
+    AIJOB *e = (AIJOB *)ev;
+    HEBUILD *b = (HEBUILD *)ev;
+    char buf[0x80];
     char tab[0x400];
     int e2, n, i, scene;
-    int a[2];
 
     for (e2 = (int)he_FindEvent(1, 0, 0xd); e2 != 0; e2 = he_NextEvent()) {
-        if (e2 != ev && *(int *)(e2 + 0x70) < 5)
+        if (e2 != ev && ((AIJOB *)e2)->stage < 5)
             goto done;
     }
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    *(int *)(ev + 0xc4) = 0;
-    *(int *)(ev + 0xc8) = 0;
-    if (ai_BuildingName(*(int *)(ev + 0xb0), a) == 0)
+    e->end = e->start;
+    e->clock60 = e->start;
+    gm_AddTime(&e->end, 0, 1, 0);
+    e->workTotal = 0;
+    e->argc8 = 0;
+    if (ai_BuildingName(b->bldType, buf) == 0)
         goto done;
-    scene = U_I((unsigned)&d3_CurrentScene);
+    scene = d3_CurrentScene;
     memset(tab, 0, sizeof(tab));
     d3if_SelectScene(0, 1);
-    n = ai_FindBauplaetze(a, tab + 8);
+    n = ai_FindBauplaetze(buf, tab);
     if (n == 0) {
         d3if_SelectScene(scene, 1);
-        goto done;
+        he_FreeEvent((int *)ev);
+        return;
     }
     for (i = 0; i < n; i++) {
-        if (ai_FindNearestObject(ev + 0xd4, tab) == 0) {
+        if (ai_FindNearestObject(b->pos, tab) == 0) {
             he_FreeEvent((int *)ev);
             d3if_SelectScene(scene, 1);
             return;
         }
     }
-    txt_Format(buf, "he_AllocGebaeudeBauen: %1N1", *(unsigned short *)(ev + 8));
+    txt_Format(buf, "he_AllocGebaeudeBauen: %1N1", e->chr);
     d3if_SelectScene(scene, 1);
-    *(int *)(ev + 0x84) = -1;
+    e->exSlot = -1;
     return;
 done:
     he_FreeEvent((int *)ev);
@@ -18571,7 +18583,7 @@ int he_RegisterEventTypes03(void)
         return 1;
     if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_RunResearch) != 0)
         return 1;
-    if (he_SetEventHandlers(0xd, (void *)he_Unk56b570, (void *)he_Unk56be30) != 0)
+    if (he_SetEventHandlers(0xd, (void *)he_AllocGebaeudeBauen, (void *)he_Unk56be30) != 0)
         return 1;
     if (he_SetEventHandlers(0xe, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
