@@ -44,10 +44,12 @@
    mark HEBARDSCRIPT, the job table's proofs / year HEJOBTABLE), HEINN (the inn
    simulation's list), HEFINVIEW (AIFIN's +0x18 / +0x64; ai.h is not
    included), the tutorial / tip / routine / storm / new-worker / production / trade words in HEHINTEVENT,
-   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HEPRODUCTIONMSG and HETRADEMSG, and over AIOBJ
+   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HEPRODUCTIONMSG and HETRADEMSG, the research /
+   building / training / plunder / meeting words in HERESEARCH (event 0xc), HEBUILD (0xd), HEAHMRESEARCH (0x96 / 0x97),
+   HEPLUNDER (0x8a) and HEMEETING (0x90), and over AIOBJ
    HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5); the hint table he_Hints (0x6fa260, HEHINT), the tip
    order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20)
-   is named. AIJOB's fields between
+   and the domicile news key he_NewsDomizil11 (0x628e40) are named. AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
