@@ -15365,13 +15365,14 @@ void he_Unk55efc0(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
 }
-/* 0x55fa20, the allocation handler of the market event: the due clock is now (+0x52, 0x4fe1e0 sets the minute word 5) and the event posted (0x4fe140 (.., 0, 0, 1)) */
+/* 0x55fa20, the allocation handler of the market event 0x3b: the due clock is now, set to 5:00 (gm_SetTime); its copy at +0x60 is that 5:00 clock and the due clock moves one hour later (gm_AddTime (.., 1, 0, 0)) */
 
-void he_Unk55fa20(int ev)
+void he_AllocMarket(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_SetTime(ev + 0x52, 5, 0, 0);
-    gm_AddTime(ev + 0x52, 1, 0, 0);
+    ev->end = ai_Time;
+    gm_SetTime(&ev->end, 5, 0, 0);
+    ev->clock60 = ev->end;
+    gm_AddTime(&ev->end, 1, 0, 0);
 }
 /* 0x55fa90, the run handler "he_RunMarktSupervisor" of the market (3472 bytes, ROUGH skeleton; the debug text "he_RunMarktSupervisor(): Could not find markt-lager:%s"): the market object (gm_FindMarketObject) and the stores (gm_Query, 0x50aaf0 / 0x4ffa10) of the town are looked at; from random rolls (util_Random / util_RandomF) the supervisor buys and sells goods (0x4c4880 payments, 0x5de518 _ftol amounts), a figure goes shopping (0x4c5710) and the clock event is posted again; a missing store prints the debug text and frees the record */
 
@@ -17002,7 +17003,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(58, (void *)he_AllocRoutine, (void *)he_Unk55efc0) != 0)
         return 1;
-    if (he_SetEventHandlers(59, (void *)he_Unk55fa20, (void *)he_Unk55fa90) != 0)
+    if (he_SetEventHandlers(59, (void *)he_AllocMarket, (void *)he_Unk55fa90) != 0)
         return 1;
     if (he_SetEventHandlers(60, (void *)he_Unk560820, (void *)he_Unk560900) != 0)
         return 1;
