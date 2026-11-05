@@ -291,14 +291,25 @@ typedef struct HEWALKSLOT {
                                            for 0xff never holds) */
     unsigned char pad[3];
 } HEWALKSLOT;
-typedef struct HEEXAMBOX {              /* the master exam question 0x7e's word over AIJOB's union, and the one it sets in
-                                           the exam event it asks for */
-    char pad00[0xb0];
-    union {
-        int examId;                     /* 0xb0, of the question: the id of the character's exam event */
-        int accepted;                   /* 0xb0, of that exam event: 1 when the player said yes (he_RunExamQuestion) */
-    };
+typedef struct HEEXAMBOX {              /* the master exam question 0x7e's words over AIJOB's union (from HEEXAMMSG) */
+    char pad00[0xac];
+    int chr;                            /* 0xac, the netId of the character asked */
+    int examId;                         /* 0xb0, the id of the exam offer event 0x7f that asks (HEEXAMOFFER) */
 } HEEXAMBOX;
+typedef struct HEEXAMOFFER {            /* the exam offer event 0x7f's words over AIJOB's union (he_RunExamOffer) */
+    char pad00[0xac];
+    int chr;                            /* 0xac, the netId of the character it is for */
+    int accepted;                       /* 0xb0, 0 at the start (he_Unk552200), 1 when the player said yes (he_RunExamQuestion) */
+} HEEXAMOFFER;
+typedef union HEEXAMMSG {               /* the message 0x7e he_RunExamOffer posts (AIMSG has no names at +0x58 .. for it) */
+    AIMSG msg;
+    struct {
+        char pad00[0x58];
+        int chr;                        /* 0x58, the netId of the character asked */
+        int examId;                     /* 0x5c, the offer event's id */
+        AITIME due;                     /* 0x60, the answer is due: now + 2 hours */
+    } q;
+} HEEXAMMSG;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -9852,7 +9863,7 @@ void he_RunExamQuestion(int ev)
         if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
             return;
         if (d2_ClickedId == 0) {
-            ((HEEXAMBOX *)he_FindEvent(2, 2, e->chr, 1, ((HEEXAMBOX *)e)->examId))->accepted = 1;
+            ((HEEXAMOFFER *)he_FindEvent(2, 2, e->chr, 1, ((HEEXAMBOX *)e)->examId))->accepted = 1;
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         } else if (d2_ClickedId == 1) {
@@ -9882,62 +9893,59 @@ void he_Unk552200(int ev)
     *(int *)(ev + 0xb0) = 0;
     *(int *)(ev + 0x58) = r * 15;
 }
-/* 0x552270, the run handler of the two-stage event of 0x552200 (ROUGH): state 0 posts a message record of 0xf8 bytes (type 0x7e, the figure +0xac, the clocks) through 0x4fe140 and 0x4c4b70 and the event 8 later (state 1); state 1: with +0xb0 set the figure +8 pays (0x504ec0 (.., 3) clamped to 0.1 scales the amount, 0x50a640 / 0x4fc820 give the base, 0x4fca40 (id, -amount) and 0x4c4830 (+0xac, -1, player, amount)) and the player characters read the news 0x10ba, without it the news 0x10bb; then the record is freed */
-
-void he_Unk552270(int ev)
+/* 0x552270, the run handler of the exam offer event 0x7f (its alloc handler he_Unk552200): stage 0 asks the
+   character (+0xac) the master exam question, the message 0x7e that becomes he_RunExamQuestion's event (the
+   character, this event's id, due in two hours, flags 9), and waits 8 hours (stage 1); then, accepted (he_RunExamQuestion
+   set accepted), the character loses (1 - skill 3) / 2 of its health (the skill at least 0.1), the own player is
+   paid 6% of its worth times the skill (cm_SendMoveGoodsUnchecked) and the character is told 0x10ba, else 0x10bb;
+   then, as any other stage, the event is freed */
+void he_RunExamOffer(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    char text[0x100];
-    unsigned char m[0xf8];
-    int ch, x, v, pay;
-    float f, t;
+    AIJOB *e = (AIJOB *)ev;
+    float skill;
+    int worth, pay;
+    HEEXAMMSG m;
+    char text[0x800];
+    AICHAR *c;
 
-    if (st < 0 || st > 1) {
+    if (e->stage < 0 || e->stage > 1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        memset(m, 0, sizeof(m));
-        *(int *)(m + 0x10) = *(int *)(ev + 0xac);
-        *(int *)(m + 0x60) = *(int *)(ev + 0xac);
-        m[0x18] = 0x7e;
-        *(int *)(m + 0x20) = -1;
-        *(int *)(m + 0x30) = *(int *)(unsigned)&ai_Time;
-        *(int *)(m + 0x68) = *(int *)(unsigned)&ai_Time;
-        *(int *)(m + 0x40) = *(int *)(unsigned)&ai_Time.hour;
-        *(int *)(m + 0x44) = *(int *)((unsigned)&ai_Time + 0x8);
-        *(unsigned short *)(m + 0x48) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-        m[0x4a] = 9;
-        *(int *)(m + 0x70) = *(int *)(ev + 4);
-        *(int *)(m + 0x78) = *(int *)(unsigned)&ai_Time.hour;
-        *(int *)(m + 0x7c) = *(int *)((unsigned)&ai_Time + 0x8);
-        *(unsigned short *)(m + 0x80) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-        gm_AddTime(m + 0x6c, 2, 0, 0);
-        cm_SendLongMessage(m + 0x14);
-        *(int *)(ev + 0x70) = 1;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 8, 0, 0);
-        return;
+    if (e->stage == 0) {
+        memset(&m, 0, sizeof(m));
+        m.msg.time = ai_Time;
+        m.msg.to = ((HEEXAMOFFER *)e)->chr;
+        m.q.chr = ((HEEXAMOFFER *)e)->chr;
+        m.msg.type = 0x7e;
+        m.msg.fromId = -1;
+        m.msg.flags = 9;
+        m.q.examId = e->id;
+        m.q.due = ai_Time;
+        gm_AddTime(&m.q.due, 2, 0, 0);
+        cm_SendLongMessage((char *)&m);
+        e->stage = 1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 8, 0, 0);
+    } else if (e->stage == 1) {
+        if (((HEEXAMOFFER *)e)->accepted != 0) {
+            c = &ai_CharsT[e->chr];
+            if (gm_GetSkill((char *)c, 3) > 0.1f)
+                skill = gm_GetSkill((char *)c, 3);
+            else
+                skill = 0.1f;
+            worth = gm_GetWorth(c->id);
+            gm_AddHealth(c->id, -(int)((int)gm_CharacterHealth(c) * ((ai_FloatOne - skill) * 0.5f)));
+            pay = (int)(worth * skill * 0.06f);
+            cm_SendMoveGoodsUnchecked(((HEEXAMOFFER *)e)->chr, -1, ai_OwnPlayer, pay);
+            txt_Format(text, 0x10ba, pay);
+            he_ShowNews(((HEEXAMOFFER *)e)->chr, -1, text, 0x20, 0x5fd, ch_EmptyName);
+        } else {
+            txt_Format(text, 0x10bb);
+            he_ShowNews(((HEEXAMOFFER *)e)->chr, -1, text, 0x20, 0x5fd, ch_EmptyName);
+        }
+        he_FreeEvent((int *)ev);
     }
-    if (*(int *)(ev + 0xb0) != 0) {
-        ch = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-        if (gm_GetSkill(ch, 3) > 0.1f)
-            f = gm_GetSkill(ch, 3);
-        else
-            f = 0.1f;
-        x = gm_GetWorth(*(unsigned short *)ch);
-        v = (int)gm_CharacterHealth(ch);
-        t = (float)v * (*(float *)(unsigned)&ai_FloatOne - f) * 0.5f;
-        gm_AddHealth(*(unsigned short *)ch, -(int)t);
-        pay = (int)((float)x * f * (0.0599999987f));
-        cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xac), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, pay);
-        txt_Format(text, 0x10ba, pay);
-        he_ShowNews(*(int *)(ev + 0xac), -1, text, 0x20, 0x5fd, (unsigned)&ch_EmptyName);
-    } else {
-        txt_Format(text, 0x10bb);
-        he_ShowNews(*(int *)(ev + 0xac), -1, text, 0x20, 0x5fd, (unsigned)&ch_EmptyName);
-    }
-    he_FreeEvent((int *)ev);
 }
 /* 0x5524e0, the allocation handler of an event without the flag 4 of +0x78: the due clock (+0x52) is a copy of the start clock (+0x44) and the event is posted (0x4c4c60 (0, ev), handle in +0x84) */
 
@@ -10424,7 +10432,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7e, (void *)he_Unk552040, (void *)he_RunExamQuestion) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7f, (void *)he_Unk552200, (void *)he_Unk552270) != 0)
+    if (he_SetEventHandlers(0x7f, (void *)he_Unk552200, (void *)he_RunExamOffer) != 0)
         return 1;
     if (he_SetEventHandlers(0x80, (void *)he_Unk5524e0, (void *)he_Unk552520) != 0)
         return 1;
