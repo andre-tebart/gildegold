@@ -5353,7 +5353,7 @@ void ai_RhetoricContact(int bld, int room)
 
 int ai_FeastWindow(); int ai_DenounceWindow(); void sv_FitForm(int f); void sv_ButtonRow(int f, int y, int *out, int n, ...);
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_Unk5ae870), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
+int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
 /* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_Unk59e420; the feast window
    it opens is "locations\wohnsitz\fest"): it releases the name plates and pumps the frame (sv_RunFrame, this, mask
@@ -15473,22 +15473,23 @@ int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
         ai_CampaignStep(0x24, param_4, 0, 0);
     return v;
 }
-/* 0x5ae870, the transport order of one entry (100 B): walks the carriers (0x53e400 (1, 0, 0xf)); the carrier
-   whose +0xac matches the word +2 of param_1 gets the clock (+0x52 .. +0x5e) and is marked 0x4c4c60 (-1, the
-   carrier) */
+/* 0x5ae870, makes the transport order of a cart due now (100 B): walks the events of the kind 0xf (he_FindEvent
+   (1, 0, 0xf)); the one whose +0xac is the cart's object id (+2) gets the game clock as its end time (+0x52 ..
+   0x5e) and is posted (cm_SendExSetHE (-1, it)); the transport window calls it for each cart of the picked
+   building before it sends the new order (ai_Unk5ae6b0) */
 
-void ai_Unk5ae870(int param_1)
+void ai_TransportOrderDue(AIOBJ *cart)
 {
-    int carrier;
+    AIJOB *ev;
 
-    carrier = he_FindEvent(1, 0, 0xf);
-    while (carrier != 0) {
-        if (*(int *)(carrier + 0xac) == *(int *)(param_1 + 2)) {
-            *(AITIME *)(carrier + 0x52) = ai_Time;
-            cm_SendExSetHE(-1, carrier);
+    ev = (AIJOB *)he_FindEvent(1, 0, 0xf);
+    while (ev != 0) {
+        if (ev->u.id == cart->objId) {
+            ev->end = ai_Time;
+            cm_SendExSetHE(-1, ev);
             return;
         }
-        carrier = he_NextEvent();
+        ev = (AIJOB *)he_NextEvent();
     }
 }
 /* 0x5ae8e0, whether a transport order belongs to its owner (192 B): the ship / record +0x3b, the owner's
