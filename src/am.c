@@ -2,7 +2,7 @@
    the action table loader, am_RegisterMethod, the registration of actions 0x01..0x3b (0x4a16f0) and their
    decide (int, character, flag, out1, out2 -> action kind or 0), execute (character, arg1, arg2) and evaluate
    callbacks, the decision callbacks of the AI decision table 0x611258 (29 records of 0x24 bytes, callback at
-   +0x20), the partner / building finders and the AI cannon shot. Starts with its first global ai_Unk5ffd1c
+   +0x20), the partner / building finders and the AI cannon shot. Starts with its first global ai_PlayerCountYear
    (-1 at 0x5ffd1c) right after the AI unit's strings; its one .data string block (in function order) ends with
    "%sgebaeude/*%s_%c.ogr" 0x600478, the next block is unk_4a7140.c's. Names are ours.
    Open: am.h keeps the joined parts' character views (AIPX / AGCH / AIC4 / G5CH / AIPER), message views of ai.h's
@@ -30,9 +30,9 @@ extern unsigned char txt_Keys;  /* @original ai_DecideBuildBusiness (0x498c70, b
 #include "hst.h"
 #include "unk_4a7140.h"
 #include "unk_4b39f0.h"
-int ai_Unk5ffd1c = -1;                  /* 0x5ffd1c */
+int ai_PlayerCountYear = -1;                  /* 0x5ffd1c */
 G6CURSOR ai_NearRingCursorState = { ai_NearRing, 1 };  /* 0x60034c, the next entry of ai_NearRing and the stride */
-int ai_Unk6f0470 = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
+int ai_NumPlayerChars = 0;  /* 0x6f0470, number of characters of kind 5, 6, 7 */
 AGCH ai_DuelOpponent = {0};  /* 0x6f0478 */
 G9SHOT ai_CannonShot = {0};  /* 0x6f0698 */
 int ai_NearRingCount = 0;  /* 0x6f070c, the number of entries */
@@ -86,21 +86,23 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define AI_CHAIN_SPY 0xf00500  /* the partner-chain flags of action 0x25 (spying, 0x49c570), as AI_CHAIN_BEATUP */
 #define AI_CHF_BUILT 0x1000000  /* flags1c8 bit an execute callback sets after it built a building (ai_ExecBuildBuilding); ai_DecideBuildBusiness tests it */
 #define AI_CHF_STAMMTISCH 0x2000000  /* flags1c8 bit ai_ExecuteStammtisch sets after a regulars' table decision; ai_DecideStammtisch skips a character that has it */
-/* 0x48e070, the building of a master (kind != 3) in *out; 2: has one, 1: has a good one, 0: none */
+/* 0x48e070, the class 0x1e building of the character p (a master, kind 3 excepted) in *out: 2 it has
+   one, 1 it is a master without one (kind 5, or kind 2 / 4 with rank above 6), 0 neither. It also recounts
+   the characters of the player kinds 5 / 6 / 7 (ai_NumPlayerChars) once per ai_Time.year. */
 
-int ai_Unk48e070(AIPX *p, int *out)
+int ai_FindMasterBuilding(AIPX *p, int *out)
 {
-    int i, n, bld;
+    int i, bld;
 
-    if (ai_Unk5ffd1c < ai_Time.year) {
-        ai_Unk6f0470 = 0;
+    if (ai_PlayerCountYear < ai_Time.year) {
+        ai_NumPlayerChars = 0;
         for (i = 0; i < 768; i++) {
             AIPX *c = &((AIPX *)ai_CharsT)[i];
 
             if (c->kind == 6 || c->kind == 7 || c->kind == 5)
-                ai_Unk6f0470++;
+                ai_NumPlayerChars++;
         }
-        ai_Unk5ffd1c = ai_Time.year;
+        ai_PlayerCountYear = ai_Time.year;
     }
     if (p->kind != 3) {
         bld = (int)gm_BuildQuery(2, 5, 0x1e, 4, p->id);
@@ -131,7 +133,7 @@ int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     AIBLD *bld;
     int cost, lim, m, need, t;
 
-    if (ai_Unk48e070(p, (int *)&bld) && !b && (a == 0x40 || a == 0) && !he_FindEvent(2, 0, 0xd, 2, p->id)) {
+    if (ai_FindMasterBuilding(p, (int *)&bld) && !b && (a == 0x40 || a == 0) && !he_FindEvent(2, 0, 0xd, 2, p->id)) {
         if (bld) {
             t = bld->type;
             if ((unsigned char)ai_BTypesT[t].level >= 3)

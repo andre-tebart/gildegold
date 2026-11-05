@@ -494,8 +494,8 @@ typedef char ai_AssertAIPX[sizeof(AIPX) == 0x21c ? 1 : -1];
 typedef AIARG AIARGX;                   /* 0x48e070..0x48f250 spell it so */
 
 
-extern int ai_Unk5ffd1c;                /* 0x5ffd1c, the game day the count below was made on (-1 at start) */
-extern int ai_Unk6f0470;                /* 0x6f0470, number of characters of kind 5, 6, 7 */
+extern int ai_PlayerCountYear;                /* 0x5ffd1c, the game day the count below was made on (-1 at start) */
+extern int ai_NumPlayerChars;                /* 0x6f0470, number of characters of kind 5, 6, 7 */
 
 int ai_AimCannon(struct AIPER *p, struct AIBLD *b, struct AIBLD *t);                        /* 0x4a67a0 */
 int ai_FireCannon(struct AIPER *p, struct AIBLD *b);                                    /* 0x4a6ae0 */
@@ -504,7 +504,7 @@ int amt_GetKindLevel(int v);                                                 /* 
 void gm_SendMoneyDelta(int a, int b);                                        /* 0x50cc50 */
 
 /* this unit, in address order */
-int ai_Unk48e070(AIPX *p, int *out);                                     /* 0x48e070 */
+int ai_FindMasterBuilding(AIPX *p, int *out);                                     /* 0x48e070 */
 int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e120 */
 int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e370 */
 int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e470 */
