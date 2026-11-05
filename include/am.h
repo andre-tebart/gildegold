@@ -647,12 +647,14 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char kind;                 /* 0x002, (AIPER.kind) */
     char pad003;
     unsigned int netId;                /* 0x004 */
-    char pad008;
+    unsigned char health;               /* 0x008, > 0 = alive (ai.h AICHAR.health) */
     unsigned char sex;                  /* 0x009, 0 male / 1 female */
     unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     char pad00c;
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
-    char pad00e[0x1e];
+    char pad00e[0x12];
+    float f020;                         /* 0x020, the age it is grown up at (ai.h AICHAR.f020: a child is w00a < f020) */
+    char pad024[8];
     unsigned int ailments;              /* 0x02c, bit fields of counters (4,4,4,2,3,3,3,2,4 bits, the dump 0x4e5980) the
                                            daily update 0x4fbe90 runs down; reasoned: the character's ailments, as
                                            "UseObject (Unversehrtheit)" wants the good 0x17e while one is set */
@@ -666,7 +668,8 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
     char pad133;
     AIARG arg1;                         /* 0x134 */
     AIARG arg2;                         /* 0x14c */
-    char pad164[2];
+    unsigned char jobId;                /* 0x164, the job's id byte, 0 = none (ai.h AICHAR.jobId; gm_TitlesLeft / gm_TitleGroup read it as the title key) */
+    unsigned char title;                /* 0x165, the title rank (ai.h AICHAR.title) */
     unsigned char officeKind;           /* 0x166, the kind of the office held, 0 = none */
     unsigned char prevOffice;           /* 0x167, the office kind held before the current one (ai.h AICHAR) */
     unsigned char appliedOffice;        /* 0x168, the office kind applied for, 0 = none (ai.h AICHAR) */
