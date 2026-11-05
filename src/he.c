@@ -11190,15 +11190,17 @@ int he_NoEvent4bPair(int a, int b)
     }
     return 1;
 }
-/* 0x553db0, 1 unless a record of type 0x35 of the player *a (kind 2, 2) has +0xbc = the id (+4) of b (then 0); *count (when given) receives the number of records visited */
+/* 0x553db0, 1 unless a tribute event 0x35 of the character *a is running whose collector is b (AIJOB.idbc is
+   the collector's netId), then 0; *count (when given) receives the number of records visited */
 
 int he_NoEvent35Pair(unsigned short *a, int b, int *count)
 {
-    char *e;
+    AICHAR *c = (AICHAR *)b;
+    AIJOB *e;
     int n = 0;
 
-    for (e = he_FindEvent(2, 2, *a, 0, 0x35); e != 0; e = he_NextEvent()) {
-        if (*(int *)(b + 4) == *(int *)(e + 0xbc))
+    for (e = (AIJOB *)he_FindEvent(2, 2, *a, 0, 0x35); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if (c->netId == e->idbc)
             return 0;
         n++;
     }
