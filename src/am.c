@@ -7024,21 +7024,21 @@ int ai_ExecuteSpy(G5CH *p, AIARG *s1)
 
 int ai_DecideBuyMarketObject(int a, G5CH *p, int f, AIARG *s1, AIARG *o)
 {
-    unsigned char *bld;
+    AIOBJ *bld;
     AIOBJ *obj;
     int money;
 
     if (f == 2 && s1->kind == 2) {
-        bld = (unsigned char *)gm_FindMarketObject(s1->ref);
+        bld = (AIOBJ *)gm_FindMarketObject(s1->ref);
         if (bld != 0) {
-            obj = gm_Query(*(int *)(bld + 0x14), 1, 0, s1->ref);
-            if (obj != 0 && gm_ListAmount(bld, obj) >= 1) {
+            obj = gm_Query(bld->list, 1, 0, s1->ref);
+            if (obj != 0 && gm_ListAmount((short *)bld, (char *)obj) >= 1) {
                 money = gm_CharCurrency((AIPER *)p, ai_OwnPlayer);
-                if (s1->fvalue > 0.0f && s1->fvalue < 1.0f)
+                if (s1->fvalue > ai_FloatZero && s1->fvalue < ai_FloatOne)
                     money = (int)(money * s1->fvalue);
                 if (money >= (int)gm_GoodsPrice(s1->ref, ai_OwnPlayer)) {
                     o->kind = 1;
-                    o->ref = *(int *)(bld + 2);
+                    o->ref = bld->objId;
                     o->arg = 1;
                     return 0xc;
                 }
