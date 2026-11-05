@@ -46,7 +46,8 @@
    itself, so the boundary rests on the subject and the call coupling.
    The rest of the unit, in address order: the church rooms, the dungeon and the thieves' guild (burglary,
    espionage, pickpocket, kidnapping), the city watch, the town map window and its production settings
-   ("hp_" list 0x6f26c0), the plague / gypsy / graveyard / Domizil messages, the Domizil table 0x62c420 and its
+   ("hp_" list 0x6f26c0), the plague / gypsy / graveyard / Domizil messages (their sound keys are the unit's
+   ai_NewsKey* strings 0x62c2ac .. 0x62c400), the Domizil table 0x62c420 and its
    windows, the personnel / transport / storage windows, the player stats and special-amount panels, the law
    book and master letter, the statistics and privilege panels, the privilege / espionage / interrogation
    handlers and the trial / action callbacks reached only through the 0x62c420 records (+0x14). The literals

@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
@@ -4353,20 +4353,20 @@ exe	0x005a9430	ai_ShowEvidenceVoidNews	unk_58bbd0	byte	readable
 exe	0x005a9470	ai_GypsyDeliveryText	unk_58bbd0	draft	draft		
 exe	0x005a9690	ai_TellGraveNeglect	unk_58bbd0	byte	readable		
 exe	0x005a96e0	ai_NotifySale	unk_58bbd0	draft	draft		
-exe	0x005a9780	ai_TellGravesPaid	unk_58bbd0	byte	draft		
+exe	0x005a9780	ai_TellGravesPaid	unk_58bbd0	byte	readable		
 exe	0x005a97e0	ai_Unk5a97e0	unk_58bbd0	draft	draft		
 exe	0x005a9880	ai_ShowGraveOrderCancelled	unk_58bbd0	draft	draft		
 exe	0x005a9910	ai_Unk5a9910	unk_58bbd0	draft	draft		
-exe	0x005a9990	ai_Unk5a9990	unk_58bbd0	byte	draft		
-exe	0x005a99e0	ai_Unk5a99e0	unk_58bbd0	byte	draft		
+exe	0x005a9990	ai_TellGraveWorkSuccess	unk_58bbd0	byte	readable		
+exe	0x005a99e0	ai_TellGraveWorkFailure	unk_58bbd0	byte	readable		
 exe	0x005a9a30	ai_GraveyardMessage	unk_58bbd0	draft	readable	deep	
-exe	0x005a9af0	ai_Unk5a9af0	unk_58bbd0	byte	draft		
-exe	0x005a9b50	ai_Unk5a9b50	unk_58bbd0	byte	draft		
-exe	0x005a9bc0	ai_Unk5a9bc0	unk_58bbd0	byte	draft		
+exe	0x005a9af0	ai_GraveyardMessagePlain	unk_58bbd0	byte	readable		
+exe	0x005a9b50	ai_DomizilMessageResearch	unk_58bbd0	byte	readable		
+exe	0x005a9bc0	ai_DomizilMessageResearchKind	unk_58bbd0	byte	readable		
 exe	0x005a9c30	ai_DomizilMessage	unk_58bbd0	byte	readable		
 exe	0x005a9ca0	ai_DomizilMessage04	unk_58bbd0	byte	readable		
-exe	0x005a9d00	ai_Unk5a9d00	unk_58bbd0	byte	draft		
-exe	0x005a9d60	ai_Unk5a9d60	unk_58bbd0	byte	draft		
+exe	0x005a9d00	ai_DomizilMessageAge	unk_58bbd0	byte	readable		
+exe	0x005a9d60	ai_DomizilMessageTask	unk_58bbd0	byte	readable		
 exe	0x005a9dd0	ai_Unk5a9dd0	unk_58bbd0	byte	draft		
 exe	0x005a9e40	ai_DomizilMessage12	unk_58bbd0	byte	draft		
 exe	0x005a9e90	ai_Unk5a9e90	unk_58bbd0	draft	draft		
