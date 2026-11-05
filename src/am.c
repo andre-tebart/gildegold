@@ -2260,9 +2260,9 @@ int ai_DecideLaw8(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x492d50, decision 27 */
+/* 0x492d50, the callback of law record 27 (AIDEC.fn, office 0x1a no 2, a boolean law): the graveyard's work (he_Unk570130) and raise-dead (gv_OrderRaiseDead) accuse against it (gv_Accuse(0x1b, ...)); the normalized skill 2 against its rating (x1.4 for the title group 0xd, else x0.9) against 1 raises the law (cur 0 -> 1) when mood 11 outweighs mood 9, and lowers it (cur 1 -> 0) when mood 10 outweighs mood 9 */
 
-int ai_Unk492d50(AIPER *p, int a, int *out)
+int ai_DecideLaw27(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
