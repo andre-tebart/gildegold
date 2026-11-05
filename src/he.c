@@ -2717,7 +2717,7 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_BeginFieldBlock(char *o, int id);
 void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
+int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
 /* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the message 0x67 about one of the
    player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at random):
@@ -3930,28 +3930,32 @@ void he_RunGeselle(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x548110, a Ghidra miss (disassembled): the start of the insult news event: the clock +0x18 units ahead, the news 0x1d64 (for b of kind 6 / 7, "_NACHRICHTEN_HS_20") and the event is posted (state 0); a gone figure ends it with the clock copied (ROUGH) */
+/* 0x548110, the alloc / start handler of the insult news event 0x4b (its run handler he_RunInsultNews): an event
+   not started yet (opts 4 clear) gets the end clock 0x18 units ahead; once it is due (opts 2) both partners are
+   looked up, a gone one ends it with the clock copied (posted -1), and for a player partner (kind 6 / 7) the news
+   0x1d64 about partner1 goes to partner2's netId; the event is then posted (state 0) */
 
-void he_Unk548110(int ev)
+void he_AllocInsultNews(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char text[0x400];
-    int a, b;
+    AICHAR *a, *b;
 
-    *(int *)(ev + 0x84) = -1;
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            b = gm_FindChar(*(int *)(ev + 0xb0));
-            a = gm_FindChar(*(int *)(ev + 0xac));
+    e->exSlot = -1;
+    if ((e->opts & 4) == 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        if ((e->opts & 2) != 0) {
+            b = (AICHAR *)gm_FindChar(e->partner2);
+            a = (AICHAR *)gm_FindChar(e->partner1);
             if (a == 0 || b == 0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
+                e->end = ai_Time;
                 cm_SendExSetHE(-1, ev);
                 return;
             }
-            if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-                txt_Format(text, 0x1d64, *(unsigned short *)a, ev + 0x52, *(unsigned short *)a);
-                he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+            if (b->kind == 6 || b->kind == 7) {
+                txt_Format(text, 0x1d64, a->id, &e->end, a->id);
+                he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
             }
         }
         cm_SendExSetHE(0, ev);
@@ -10684,7 +10688,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x4a, (void *)he_AllocGeselle, (void *)he_RunGeselle) != 0)
         return 1;
-    if (he_SetEventHandlers(0x4b, (void *)he_Unk548110, (void *)he_RunInsultNews) != 0)
+    if (he_SetEventHandlers(0x4b, (void *)he_AllocInsultNews, (void *)he_RunInsultNews) != 0)
         return 1;
     if (he_SetEventHandlers(0x51, (void *)he_Unk5482c0, (void *)he_Unk548300) != 0)
         return 1;
