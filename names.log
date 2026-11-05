@@ -2395,3 +2395,4 @@
 2026-11-05T15:06:04 - unit unk_575860 -> sv_t by:main why:by=tag: its mem_Alloc tag "f3_sv_t:d" (ai_SaveScreenshot), next to the f3_sv: tags of sv.c; tutorial / campaign, alchemist, cannon, graveyard, bookmarks
 2026-11-05T15:06:20 - unit unk_58bbd0 -> lc by:main why:by=tag: the lc_ prefix of its error strings ("lc_GetGebaeudeBauplatz():", "lc_PlayerInJail():"); lc_GetGebaeudeBauplatz is defined here
 2026-11-05T15:06:36 - unit unk_5d33b0 -> menu by:main why:by=guess: the front-end screens: options, load / save / join game, credits, pause, message filter (then location windows, wind and cannon shots)
+2026-11-05T15:11:46 0x00555690 func he_Unk555690 -> he_TransportToHome by:main why:leg of mode 1 of he_Unk556600 (HETRANSPORT.mode 1: only the goal a home); sibling of he_TransportFromHome (mode 2)

@@ -11496,58 +11496,86 @@ void he_TransportFromHome(int ev)
 
 int sv_IsCartAtDoor();
 
-/* 0x555690, the run handler of the return leg of the transport event (a Ghidra miss; ROUGH, same record as 0x555350): the first round stops the transporter (0x4c5230), puts it on the road (0x4c5260 (id, 1) unless the target is a 0x5024f0 building), sends it home ("Trans", 0x4c52e0 (id, b1 id, -1, 0, 0, ..)) and starts the guide 0x4c4920; later rounds check the arrival (0x524810 (transporter, b1)), restart the guide and format the arrival news (0x1c39 + 0x1c3b / 0x1c3d / 0x1c3f / 0x1c43 / 0x1c44 by the kinds 0x47 / 0x1d .. 0x20 of the two buildings and the player's name 0x7e3f40) which a player character gets through 0x53dee0 (text 0x609, the strings 0x627318 / 0x627304) unless the world map shows the building (0x6f229c / 0x6f230c); the event is then posted again with the handle 3 */
-void he_Unk555690(int ev)
+/* 0x555690, the leg of the transport event 15 (HETRANSPORT) of mode 1 (only the goal a home), called by its run
+   handler 0x556600 each round: the cart (gm_FindObjectInst; none: nothing) gets its speed (he_SetCartSpeed). The
+   first round stops it, puts it on the road (cm_SendCartState 1) unless the start is of the type 10, sends it to the
+   goal ("Trans") and, again unless the start is of the type 10, gives it the route from the 0x44 building to the
+   start (cm_SendCartRouteH). Later rounds, once the cart is at the goal's door (sv_IsCartAtDoor), give it the route
+   on from the goal to the 0x44 building and write the arrival news: 0x1c3b (with 0x1c39 and the goal's player slot)
+   for a kind 0x47 goal, 0x1c3d (the start's player slot, the goal's owner and the goal) for a kind 0x47 start, else
+   0x1c3f (the goal's owner and the goal) or, for goals of the kinds 0x1d / 0x1f, 0x1c43 (type 10) / 0x1c44 with
+   the icon 0x608; the goal types 0x1e / 0x1f / 0x20 add the quick jump "_NACHRICHTEN_HS_58" / "_57" / "_56". The
+   news goes to the event's character unless the transport window shows the goal, the cart is escorted (flags20
+   bit 0) or the transport is quiet; the event is posted again (cm_SendExSetHE 3) and the scene selected again */
+void he_TransportToHome(int ev)
 {
-    int sc = U_I((unsigned)&d3_CurrentScene);
-    int a44, a45, b0, b1, tr, e;
-    int skip;
+    AIJOB *e = (AIJOB *)ev;
+    HETRANSPORT *t = (HETRANSPORT *)ev;
+    AIBLD *guards, *from, *to;
+    AIBTYPE *bt;
+    AIOBJ *tr;
+    int sc, icon;
+    char quick[0x104];
     char text[0x400];
 
-    a44 = gm_BuildQuery(1, 0, 0x44);
-    a45 = gm_BuildQuery(1, 0, 0x45);
-    b0 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    b1 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4));
-    tr = gm_FindObjectInst(*(int *)(ev + 0xac));
-    (void)a45;
-    if (tr != 0) {
-        he_SetCartSpeed(ev, tr);
-        if (*(unsigned char *)(ev + 0xd0) == 0) {
-            cm_SendChrStop(*(int *)(tr + 2));
-            if (gm_IsType10(b0) == 0)
-                cm_SendCartState(*(int *)(tr + 2), 1);
-            cm_SendChrGotoBuilding(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
-            if (gm_IsType10(b0) == 0)
-                *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
-            *(unsigned char *)(ev + 0xd0) = 1;
-        } else if (sv_IsCartAtDoor(tr, b1) != 0) {
-            *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(tr + 2));
-            if (*(unsigned char *)b1 == 0x47) {
-                txt_Format(text, 0x1c3b, 1, 0x1c39, (char *)(unsigned)&ai_PlayerSlots + *(int *)(b1 + 0x65) * 0x2f4);
-                skip = U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow && U_I((unsigned)&ai_FallbackBuilding) == b1;
-                if (!skip)
-                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, "_NACHRICHTEN_HS_59", 0);
-            } else if (*(unsigned char *)b0 == 0x47) {
-                txt_Format(text, 0x1c3d, 1, 0x1c39);
-                skip = U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow && U_I((unsigned)&ai_FallbackBuilding) == b1;
-                if (!skip)
-                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, "_NACHRICHTEN_HS_60", 0);
-            } else {
-                e = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b1 * 0x24d);
-                if (e == 0x1d || e == 0x1f) {
-                    if (gm_IsType10(b1) != 0)
-                        txt_Format(text, 0x1c43);
-                    else
-                        txt_Format(text, 0x1c44, b1);
-                } else {
-                    txt_Format(text, 0x1c3f, 1, 0x1c39);
-                }
-                skip = U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow && U_I((unsigned)&ai_FallbackBuilding) == b1;
-                if (!skip)
-                    he_MessageBoxQuickjump(0, -1, text, 0, 0x609, 0, 0, 0, 0);
+    guards = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    gm_BuildQuery(1, 0, 0x45);
+    from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
+    to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+    sc = d3_CurrentScene;
+    tr = (AIOBJ *)gm_FindObjectInst(t->cart);
+    if (tr == 0)
+        return;
+    he_SetCartSpeed(ev, (int)tr);
+    if (t->started == 0) {
+        cm_SendChrStop(tr->objId);
+        if (gm_IsType10((unsigned char *)from) == 0)
+            cm_SendCartState(tr->objId, 1);
+        cm_SendChrGotoBuilding(tr->objId, to->id, -1, 0, 0, "Trans");
+        if (gm_IsType10((unsigned char *)from) == 0)
+            t->route = cm_SendCartRouteH(guards->id, from->id, tr->objId);
+        t->started = 1;
+    } else if (sv_IsCartAtDoor((char *)tr, (unsigned char *)to) != 0) {
+        t->route = cm_SendCartRouteH(to->id, guards->id, tr->objId);
+        if (to->type == 0x47) {
+            txt_Format(text, 0x1c3b, 1, 0x1c39, ai_PlayerSlots[to->playerSlot]);
+            if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
+                && (tr->flags20 & 1) == 0 && t->quiet == 0)
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_59");
+        } else if (from->type == 0x47) {
+            txt_Format(text, 0x1c3d, 1, 0x1c39, ai_PlayerSlots[from->playerSlot], to->owner, to);
+            if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
+                && (tr->flags20 & 1) == 0 && t->quiet == 0)
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x609, to->id, -1, 0, "_NACHRICHTEN_HS_60");
+        } else {
+            bt = &ai_BTypesT[to->type];
+            icon = 0x609;
+            if (to->type == 0x1e)
+                strcpy(quick, "_NACHRICHTEN_HS_58");
+            else if (to->type == 0x1f)
+                strcpy(quick, "_NACHRICHTEN_HS_57");
+            else if (to->type == 0x20)
+                strcpy(quick, "_NACHRICHTEN_HS_56");
+            else
+                quick[0] = 0;
+            if (bt->kind != 0x1d && bt->kind != 0x1f)
+                txt_Format(text, 0x1c3f, 1, 0x1c39, to->owner, to);
+            else {
+                icon = 0x608;
+                if (gm_IsType10((unsigned char *)to) != 0)
+                    txt_Format(text, 0x1c43);
+                else
+                    txt_Format(text, 0x1c44, to);
             }
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+            if ((sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow || ai_FallbackBuilding != (char *)to)
+                && (tr->flags20 & 1) == 0 && t->quiet == 0) {
+                if (quick[0] != 0)
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, quick);
+                else
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, icon, to->id, -1, 0, 0);
+            }
         }
+        e->exSlot = cm_SendExSetHE(3, ev);
     }
     d3if_SelectScene(sc, 1);
 }
@@ -11721,7 +11749,7 @@ void he_Unk556600(int ev)
         if (mode == 2)
             he_TransportFromHome(ev);
         else if (mode == 1)
-            he_Unk555690(ev);
+            he_TransportToHome(ev);
         else if (mode == 3)
             he_Unk555b60(ev);
         else if (mode == 4)
