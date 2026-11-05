@@ -440,8 +440,10 @@ typedef struct HEGANG {                 /* the pickpocket gang event 0x61's word
     int leader;                         /* 0xd4, the netId of the gang's leader */
     unsigned char members;              /* 0xd8, the members the gang has (ids[] not -1) */
 } HEGANG;
-typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x64 */
-    char pad00[0x64];
+typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
+    char pad00[0x18];
+    int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
+    char pad1c[0x48];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
                                            counts it; reasoned, its reader is not read yet) */
 } HEFINVIEW;
@@ -4718,135 +4720,163 @@ void he_StartGang(int ev)
 int gm_GetGoodsValue();
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
-/* 0x54a7b0, a Ghidra miss (disassembled; 1648 B): the run handler of the raid of a gang ("Taschendieb": the six figures +0x8c .. are the gang, +0xd2 the one handled next, +0xd4 its leader, +0xac .. the buildings they are sent to, +0x10 the home building, +0xc4 the start clock, +0xd8 the number of steals left): state 0 sends the figure that is idle (+0x128 of its job record 0) to a random building of the kinds 5 / 7 / 0x16 / 0xf / 0xa (0x501190, 0x4c52e0 with 0x626b6c) after a theft from a random figure of 0x300 (a roll of 0x7e against the strength difference: the news 0x19f3, else the loot 0x4c4830 and the news 0x19f2); state 1 (also entered when the leader is gone or after 0x1e0 time units) collects the gang (0x4c52e0), pays the sum rolled from their abilities (0x5085f0 * (1 + 0.xx * 0x5092e0)) to the leader, adds it to the building (+0x4d), and shows the news 0x19f4  (ROUGH) */
-void he_Unk54a7b0(int ev)
-{
-    char text[0x100];
-    int goals[4];
-    int r_, dt, ebp, esi = 0, edi, s, idx = 0, rec, st, i, p, sum = 0, o, amt, found = 0, v, k;
+/* 0x54a7b0, a Ghidra miss (disassembled; 1646 B): the run handler of the pickpocket gang event 0x61 ("Taschendieb";
+   the gang is ids[0..5], its home building e->from, whose owner is the leader when it has one). Freed (stage -2),
+   without a leader or 0x1e0 minutes after the start it goes to stage 1, else it takes the next member found (none:
+   back to the first, wait) and is due in six minutes. Stage 1 calls the gang home: each member's take (3 .. 6
+   rolls of its skill 2's level) adds up, the leader gets it (gm_PlayerFactor, + 1% per skill point of the home
+   building), the building's round sum and the leader's player record count it, and a leader of kind 6 without a
+   master with the flag 1 gets the news 0x19f4; then the event is freed. Stage 0 lets an idle member steal at its
+   target: of up to 32 random characters (alive, kind below 10, not of title 1 / 2, not the leader) the first
+   whose goods are worth the take; it notices the thief when its skill 2 beats the thief's by more than a roll of
+   0x7e (the news 0x19f3), else it loses the take (the news 0x19f2); then the member walks to a random building of
+   a random other kind (10 / 5 / 7 / 0x16 / 0xf, kind 10 when there is none) */
 
-    dt = gm_MinutesBetween(ev + 0xc4, (unsigned)&ai_Time);
-    ebp = gm_FindChar(*(int *)(ev + 0xd4));
-    s = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (s != 0 && *(unsigned short *)(s + 0x27) != 0xffff)
-        ebp = (unsigned)&ai_Chars + *(unsigned short *)(s + 0x27) * 0x21c;
-    if (*(int *)(ev + 0x70) == -2 || ebp == 0) {
-        *(int *)(ev + 0x70) = 1;
+void he_RunGang(int ev)
+{
+    AIJOB *e = (AIJOB *)ev;
+    HEGANG *g = (HEGANG *)ev;
+    AICHAR *member, *leader, *c, *victim;
+    AIBLD *s, *b, *o;
+    AIBTYPE *bt;
+    AIOBJ *room;
+    HEFINVIEW *fin;
+    int *id;
+    int dt, idx, i, k, n, r, lvl, loot, sum, v, amt, tries, kind, diff;
+    int pick[5];                        /* the building kinds to pick from, then the buildings of the kind */
+    char text[0x400];
+
+    dt = gm_MinutesBetween(&g->start, &ai_Time);
+    member = 0;
+    idx = 0;
+    leader = (AICHAR *)gm_FindChar(g->leader);
+    s = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+    if (s != 0 && s->owner != 0xffff)
+        leader = &ai_CharsT[s->owner];
+    if (e->stage == -2 || leader == 0) {
+        e->stage = 1;
     } else {
-        esi = 0;
+        member = 0;
         for (;;) {
-            if (*(unsigned char *)(ev + 0xd2) < 6) {
-                idx = *(unsigned char *)(ev + 0xd2);
-                esi = gm_FindChar(*(int *)(ev + 0x8c + idx * 4));
-                *(unsigned char *)(ev + 0xd2) = *(unsigned char *)(ev + 0xd2) + 1;
-                if (esi == 0)
+            if (g->next < 6) {
+                member = (AICHAR *)gm_FindChar(e->ids[g->next]);
+                idx = g->next;
+                g->next++;
+                if (member == 0)
                     continue;
-            } else if (esi == 0) {
-                *(unsigned char *)(ev + 0xd2) = 0;
+            } else if (member == 0) {
+                g->next = 0;
                 return;
             }
             break;
         }
-        *(int *)(ev + 0x70) = dt > 0x1e0;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 6, 0);
-        *(unsigned char *)(ev + 0xd2) = *(unsigned char *)(ev + 0xd2) % 6;
+        e->stage = dt > 0x1e0;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 6, 0);
+        g->next = g->next % 6;
     }
-    st = *(int *)(ev + 0x70);
-    if (st == 1) {
-        s = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (s != 0 && ebp != 0) {
-            o = gm_GetGebaeudeHauptraum(s);
-            for (i = 0; i < 6; i++) {
-                p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-                if (p != 0) {
-                    int val = (int)((float)*(unsigned char *)(p + 0x82) * 0.023809524f + 1.0f);
-
-                    k = (unsigned short)util_Random(4) + 3;
-                    for (; k > 0; k--)
-                        sum += (unsigned short)util_Random((val + 1) * val) + val * 2;
-                    cm_SendChrStop(*(int *)(p + 4));
-                    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(s + 1), *(int *)(o + 2), 0, 0, "Taschendieb");
-                    sv_MoveToGroup(0, *(unsigned short *)p, 0, 0);
+    switch (e->stage) {
+    case 0:
+        if (member == 0 || member->scene->actions != 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, g->targets[idx]);
+        n = 0;
+        pick[0] = 10;
+        pick[1] = 5;
+        pick[2] = 7;
+        pick[3] = 0x16;
+        pick[4] = 0xf;
+        kind = pick[(unsigned short)util_Random(5)];
+        if (b != 0) {
+            lvl = (int)(member->skills[2] * (1.0f / 42.0f) + ai_FloatOne);
+            loot = ((unsigned short)util_Random((lvl + 1) * lvl) + lvl * 2) * 2;
+            v = gm_PlayerFactor(loot, ai_OwnPlayer);
+            if (g->members != 0) {
+                victim = 0;
+                tries = 0x20;
+                do {
+                    r = (unsigned short)util_Random(0x300);
+                    tries--;
+                    if (ai_CharsT[r].id != 0xffff && ai_CharsT[r].health > 0 && ai_CharsT[r].kind < 10 && ai_CharsT[r].title != 2
+                        && ai_CharsT[r].title != 1 && ai_CharsT[r].netId != leader->netId) {
+                        victim = &ai_CharsT[r];
+                        if (gm_GetGoodsValue(victim) < v)
+                            victim = 0;
+                    }
+                } while (victim == 0 && tries != 0);
+                g->members--;
+                if (victim != 0) {
+                    diff = victim->skills[2] - member->skills[2];
+                    if (diff > (unsigned short)util_Random(0x7e)) {
+                        if (victim->kind == 6 || victim->kind == 7) {
+                            txt_Format(text, 0x19f3);
+                            he_ShowNews(victim->netId, victim->netId, text, 0, 0x5f0, (char *)0);
+                        }
+                    } else {
+                        cm_SendMoveGoodsUnchecked(-1, victim->netId, ai_OwnPlayer, v);
+                        if (victim->kind == 6 || victim->kind == 7) {
+                            txt_Format(text, 0x19f2, v);
+                            he_ShowNews(victim->netId, victim->netId, text, 0, 0x5f0, "_NACHRICHTEN_HS_19");
+                        }
+                    }
                 }
             }
-            v = gm_PlayerFactor(sum, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-            amt = (int)(((float)gm_BuildingSkill(s, 1, 1) * 0.5f + 1.0f) * (float)v);
-            cm_SendMoveGoodsUnchecked(*(int *)(ebp + 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, amt);
-            *(int *)(s + 0x4d) = *(int *)(s + 0x4d) + amt;
-            if (*(char *)(ebp + 2) == 6) {
-                r_ = gm_PlayerRecord(ebp);
-                if (r_ != 0)
-                    *(int *)(r_ + 0x18) = *(int *)(r_ + 0x18) + amt;
-                r_ = gm_FindCharacterByMaster(s);
-                if (r_ == 0 || (*(unsigned char *)(r_ + 0x1b4) & 1) == 0) {
+            bt = &ai_BTypesT[b->type];
+            do
+                kind = pick[(unsigned short)util_Random(5)];
+            while ((unsigned char)bt->kind == kind);
+        }
+        o = (AIBLD *)gm_BuildQuery(1, 5, kind);
+        if (o == 0)
+            o = (AIBLD *)gm_BuildQuery(1, 5, 10);
+        else {
+            do {
+                if (n >= 4)
+                    break;
+                pick[n++] = (int)o;
+            } while ((o = (AIBLD *)gm_BuildNext()) != 0);
+            o = (AIBLD *)pick[(unsigned short)util_Random(n)];
+        }
+        sv_MoveToGroup((unsigned char *)o, 0, member->id, (char *)ev);
+        cm_SendChrStop(member->netId);
+        cm_SendChrGotoBuilding(member->netId, o->id, -1, 0, 1, "Taschendieb");
+        g->targets[idx] = o->id;
+        return;
+    case 1:
+        s = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        sum = 0;
+        if (s != 0 && leader != 0) {
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)s);
+            id = e->ids;
+            for (i = 6; i != 0; i--) {
+                c = (AICHAR *)gm_FindChar(*id);
+                if (c != 0) {
+                    lvl = (int)(c->skills[2] * (1.0f / 42.0f) + ai_FloatOne);
+                    for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
+                        sum += ((unsigned short)util_Random((lvl + 1) * lvl) + lvl * 2) * 2;
+                    cm_SendChrStop(c->netId);
+                    cm_SendChrGotoBuilding(c->netId, s->id, room->objId, 0, 0, "Taschendieb");
+                    sv_MoveToGroup(0, 0, c->id, 0);
+                }
+                id++;
+            }
+            v = gm_PlayerFactor(sum, ai_OwnPlayer);
+            amt = (int)((gm_BuildingSkill(s, 1, 1) * 0.01f + ai_FloatOne) * v);
+            cm_SendMoveGoodsUnchecked(leader->netId, -1, ai_OwnPlayer, amt);
+            s->roundSums[0] += amt;
+            if (leader->kind == 6) {
+                fin = (HEFINVIEW *)gm_PlayerRecord((char *)leader);
+                if (fin != 0)
+                    fin->gangTakings += amt;
+                c = (AICHAR *)gm_FindCharacterByMaster(s);
+                if (c == 0 || (c->flags1b4 & 1) == 0) {
                     txt_Format(text, 0x19f4, amt);
-                    he_ShowNews(*(int *)(ebp + 4), *(int *)(ebp + 4), text, 0, 0x5f0, "");
+                    he_ShowNews(leader->netId, leader->netId, text, 0, 0x5f0, ch_EmptyName);
                 }
             }
         }
         he_FreeEvent((int *)ev);
         return;
-    }
-    if (st != 0)
-        return;
-    if (esi != 0 && *(int *)(*(int *)(esi + 0x184) + 0x128) == 0) {
-        int goalkind[5];
-        int tries, victim = 0, n = 0;
-
-        goalkind[0] = 10;
-        goalkind[1] = 5;
-        goalkind[2] = 7;
-        goalkind[3] = 0x16;
-        goalkind[4] = 0xf;
-        edi = gm_BuildQuery(1, 1, *(int *)(ev + 0xac + idx * 4));
-        o = goalkind[(unsigned short)util_Random(5)];
-        if (edi != 0) {
-            int sv = (int)((float)*(unsigned char *)(esi + 0x82) * 0.023809524f + 1.0f);
-            int cap;
-
-            cap = ((unsigned short)util_Random((sv + 1) * sv) + sv * 2) * 2;
-            v = gm_PlayerFactor(cap, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-            if (*(unsigned char *)(ev + 0xd8) != 0) {
-                for (tries = 0x20; tries > 0 && victim == 0; tries--) {
-                    rec = (unsigned)&ai_Chars + (unsigned short)util_Random(0x300) * 0x21c;
-                    if (*(unsigned short *)rec != 0xffff && *(unsigned char *)(rec + 8) > 0 && *(unsigned char *)(rec + 2) < 10
-                        && *(char *)(rec + 0x165) != 2 && *(char *)(rec + 0x165) != 1 && *(int *)(rec + 4) != *(int *)(s + 4)
-                        && gm_GetGoodsValue(rec) >= v)
-                        victim = rec;
-                }
-                *(unsigned char *)(ev + 0xd8) = *(unsigned char *)(ev + 0xd8) - 1;
-                if (victim != 0) {
-                    if (*(unsigned char *)(victim + 0x82) - *(unsigned char *)(s + 0x82) > (unsigned short)util_Random(0x7e)) {
-                        if (*(char *)(victim + 2) == 6 || *(char *)(victim + 2) == 7) {
-                            txt_Format(text, 0x19f3);
-                            he_ShowNews(*(int *)(victim + 4), *(int *)(victim + 4), text, 0, 0x5f0, (char *)0);
-                        }
-                    } else {
-                        cm_SendMoveGoodsUnchecked(-1, *(int *)(victim + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
-                        if (*(char *)(victim + 2) == 6 || *(char *)(victim + 2) == 7) {
-                            txt_Format(text, 0x19f2, v);
-                            he_ShowNews(*(int *)(victim + 4), *(int *)(victim + 4), text, 0, 0x5f0, "_NACHRICHTEN_HS_19");
-                        }
-                    }
-                }
-            }
-        }
-        edi = gm_BuildQuery(1, 5, o);
-        if (edi == 0)
-            edi = gm_BuildQuery(1, 5, 10);
-        else {
-            while (n < 4) {
-                goals[n++] = edi;
-                if ((edi = gm_BuildNext()) == 0)
-                    break;
-            }
-            edi = goals[(unsigned short)util_Random(n)];
-        }
-        sv_MoveToGroup(edi, 0, *(unsigned short *)esi, ev);
-        cm_SendChrStop(*(int *)(esi + 4));
-        cm_SendChrGotoBuilding(*(int *)(esi + 4), *(int *)(edi + 1), -1, 0, 1, "Taschendieb");
-        *(int *)(ev + 0xac + idx * 4) = *(int *)(edi + 1);
     }
 }
 
@@ -9728,7 +9758,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_RunPlague) != 0)
         return 1;
-    if (he_SetEventHandlers(0x61, (void *)he_StartGang, (void *)he_Unk54a7b0) != 0)
+    if (he_SetEventHandlers(0x61, (void *)he_StartGang, (void *)he_RunGang) != 0)
         return 1;
     sv_RegisterActivity(0x61, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_Unk54ae60) != 0)
