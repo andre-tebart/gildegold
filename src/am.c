@@ -1471,9 +1471,9 @@ int ai_DecideLawSeverity(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x490fc0, decision 1 */
+/* 0x490fc0, the callback of law record 1 (AIDEC.fn, office 0x18 no 2, a boolean law): raises it when the office holder's skill, age and guilt say so, or the office 0x11 holder dislikes the character, and lowers it when that holder likes it */
 
-int ai_Unk490fc0(AIPER *p, int a, int *out)
+int ai_DecideLaw1(AIPER *p, int a, int *out)
 {
     AIDEC d;
     unsigned short *o;
@@ -1483,7 +1483,7 @@ int ai_Unk490fc0(AIPER *p, int a, int *out)
     t = gm_TitleGroup(p->jobId);
     f = gm_GetSkill(p, 4);
     n = ord_GetRatingByte(4);
-    x = (f - (n + 1.0f) / 252.0f) / 42.0f;
+    x = (f - (n + ai_FloatOne) / 252.0f) / 42.0f;
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
@@ -1497,7 +1497,7 @@ int ai_Unk490fc0(AIPER *p, int a, int *out)
     n = 40 - p->age;
     x = r / (n * 0.1f + x);
     gv_GetTableRecord(1, &d);
-    if (x > 1.0f && d.cur == 0) {
+    if (x > ai_FloatOne && d.cur == 0) {
         if (x > 1.4f || w > u) {
             *out = 1;
             return 1;
