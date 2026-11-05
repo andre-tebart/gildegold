@@ -1843,9 +1843,9 @@ int ai_DecideBankRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491d80, decision 15 */
+/* 0x491d80, the callback of law record 15 (AIDEC.fn, office 0x19 no 1, a 0 .. 4 law): the record's cur indexes amt_Pay (1.1, 1.05, 1.0, 0.95, 0.9), the factor of an office's salary that amt_GetOwnedOfficePay (amt.c 0x4ea990) and gm_CharacterWages (f3gm.c) read; from the 4th year the target factor is 4 when the town's stock (the first building's 0x115 object) is below 3 x the office pay, 0 when it is above 12 x, and 3 / 2 / 1 between (3x / 6x / 8x); the factor moves one step towards it, and only when it is at least 2 away */
 
-int ai_Unk491d80(AIPER *p, int a, int *out)
+int ai_DecideOfficePayRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     AIBLD *b;
@@ -1858,7 +1858,7 @@ int ai_Unk491d80(AIPER *p, int a, int *out)
     ord_BuildingCapacityRatio();
     b = gm_FirstBuilding(1);
     o = gm_Query(b->objList, 2, 6, 0, 0x115);
-    m = gm_SumListAmounts(o->unk14, ai_OwnPlayer);
+    m = gm_SumListAmounts(o->list, ai_OwnPlayer);
     k = amt_GetOwnedOfficePay();
     if (m < k * 3)
         n = 4;
