@@ -14807,16 +14807,18 @@ void ai_DomizilMessageTask(G8CHARREC *to, G8CHARREC *c, AIBLD *bld, G8OBJ *obj)
     he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, obj->objId, 0,
                  "_NACHRICHTEN_DOMIZIL_04");
 }
-/* 0x5a9dd0, a Domizil message (98 B): the text 0x407f with the +0x30 / +0x40 fields of param_2 and the kind text
-   2 * param_4 + 0x9a8; 0x53dee0 with the +1 field of param_3 and the key 0x62c3e8 */
+/* 0x5a9dd0, the Domizil message of a place's lowered value (98 B): for a kind 6 / 7 character the text 0x407f
+   with the character's name and family (+0x30 / +0x40) and the place's goods name text 0x9a8 + 2 * id into
+   ai_NewsText, then the quick-jump message 0x5ec to its netId with the building's id (+1) and the sound
+   "_NACHRICHTEN_DOMIZIL_04"; he_Unk56e070's pick 4 sends it after ahm_SendSetPlaceValue lowered the place's value */
 
-void ai_Unk5a9dd0(int param_1, int param_2, int param_3, int param_4)
+void ai_DomizilMessagePlace(G8CHARREC *to, G8CHARREC *c, AIBLD *bld, int placeId)
 {
-    if (*(unsigned char *)(param_1 + 2) != 6 && *(unsigned char *)(param_1 + 2) != 7)
+    if (to->kind != 6 && to->kind != 7)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x407f, param_2 + 0x30, param_2 + 0x40, param_4 * 2 + 0x9a8);
-    he_MessageBoxQuickjump(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(param_3 + 1), -1, 0,
-                 (char *)(unsigned)&full_data_62c3e8);
+    txt_Format(ai_NewsText, 0x407f, c->name, c->family, placeId * 2 + 0x9a8);
+    he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
+                 "_NACHRICHTEN_DOMIZIL_04");
 }
 /* 0x5a9e40, a Domizil message without the kind test (76 B): formats the text 0x4070 with the building b and the
    text 0x4071 + n, then posts it (0x53dee0) to the character ch (+4, its netId) with b's id (+1) and the key
