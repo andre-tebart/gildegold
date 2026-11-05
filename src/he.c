@@ -415,7 +415,7 @@ typedef struct HETRANSPORT {            /* the transport event 15's words over A
     char padf3;
     int order;                          /* 0xf4, the id of the event that ordered the transport, 0 / -1 none */
 } HETRANSPORT;
-typedef struct HECARTREPAIR {           /* the event 16's words over AIJOB's union (he_AllocCartRepair / he_Unk556ed0); reasoned: a
+typedef struct HECARTREPAIR {           /* the event 16's words over AIJOB's union (he_AllocCartRepair / he_RunCartRepair); reasoned: a
                                            cart repair */
     char pad00[0xac];
     int cart;                           /* 0xac, the cart's objId (gm_FindById) */
@@ -424,6 +424,8 @@ typedef struct HECARTREPAIR {           /* the event 16's words over AIJOB's uni
     int per;                            /* 0xb8, the minutes per point */
     char padbc[4];
     AITIME done;                        /* 0xc0, the start + per * points minutes */
+    char padce[0xa];
+    int notify;                         /* 0xd8, nonzero: the news 0x1c49 when done (he_RunCartRepair) */
 } HECARTREPAIR;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
@@ -12057,48 +12059,62 @@ void he_AllocCartRepair(int ev)
         n = 100;
     r->target = n;
 }
-/* 0x556ed0, the run handler of the delivery event (a Ghidra function with a jump table 0x557150 for 4 states; ROUGH): state 0 waits for the duration clock (0x4fe280 against +0xc0), asks the buildings of the person (0x4ffe90, none: free), state 1 / 2 hands the goods over and tells the owner (0x50ca50, the news 0x1c49 and 0x6273bc text, 0x53dee0 with 0x5ec, the person gets 0x4c4a60 / 0x4c3ba0 / 0x4c3c00 / 0x4c49a0 and the record is freed), the last state frees the person's flag 0x13 / 0x20 and the record */
-
-void he_Unk556ed0(int ev)
+/* 0x556ed0, the run handler of the event 16 (HECARTREPAIR; allocated by he_AllocCartRepair), by AIJOB.stage:
+   0: the cart (gm_Query 2; gone: the event is freed) below its target gets the minutes since the last round /
+      `per` points (gm_ChangeObjektZustand) and the next round is due in 2 * per minutes; at the target the next
+      stage. The clock60 is set to now.
+   1: done: with `notify` the news 0x1c49 (the cart's good) goes to the event's character with the quick jump
+      "_NACHRICHTEN_HS_55" to the main object of the building (AIJOB.from); the cart's bit 0x20 is cleared, its byte
+      +0x12 set to the target (a field delta) and the event freed.
+   -2 / -1: cancelled: the cart's bit 0x20 is cleared and the event freed */
+void he_RunCartRepair(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int o = 0, b, q;
-    char text[0x100];
+    AIJOB *e = (AIJOB *)ev;
+    HECARTREPAIR *r = (HECARTREPAIR *)ev;
+    AIOBJ *o = 0, *q;
+    int mins;
+    char v;
+    char text[0x80];
 
-    if (st < 0 || st > 3)
-        return;
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        if (gm_MinutesBetween((unsigned)&ai_Time, ev + 0xc0) < 0)
-            return;
-        b = gm_Query(0, 1, 0, *(int *)(ev + 0xac));
-        if (b == 0) {
+        mins = gm_MinutesBetween(&e->clock60, &ai_Time);
+        o = (AIOBJ *)gm_Query(0, 2, 7, 1, r->cart);
+        if (o == 0) {
+            o = (AIOBJ *)gm_Query(0, 2, 7, 1, r->cart);
             he_FreeEvent((int *)ev);
             return;
         }
-        *(int *)(ev + 0x70) = 1;
+        if (o->fill < r->target) {
+            gm_ChangeObjektZustand(r->cart, mins / r->per);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, r->per * 2, 0);
+        } else
+            e->stage++;
+        e->clock60 = ai_Time;
         return;
     case 1:
-    case 2:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-        if (o == 0) {
-            he_FreeEvent((int *)ev);
-            return;
+        gm_FindById(0, &o, 0, r->cart);
+        if (r->notify != 0) {
+            txt_Format(text, 0x1c49, o->id * 2 + 0x9a8);
+            q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)gm_FindBuildingById(e->from));
+            if (q != 0)
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, e->from, q->objId, 0, "_NACHRICHTEN_HS_55");
+            else
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, e->from, -1, 0, "_NACHRICHTEN_HS_55");
         }
-        txt_Format(text, 0x1c49);
-        gm_FindBuildingById(*(int *)(o + 0x1c));
-        q = gm_BuildingMainObject(o);
-        if (q != 0)
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(o + 1), *(int *)(q + 2), "_NACHRICHTEN_HS_55", 0);
-        else
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, 0);
-        cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0, 0x20);
+        cm_SendSetField(o->objId, 0x13, 1, 0, 0x20);
+        v = (char)r->target;
+        cm_BeginFieldBlock((char *)o, o->objId);
+        cm_AddFieldDelta(1, 1, 0x12, &v);
+        cm_SendFieldDeltas();
         he_FreeEvent((int *)ev);
         return;
-    case 3:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
+    case -2:
+    case -1:
+        gm_FindById(0, &o, 0, r->cart);
         if (o != 0)
-            cm_SendSetField(*(int *)(o + 2), 0x13, 1, 0, 0x20);
+            cm_SendSetField(o->objId, 0x13, 1, 0, 0x20);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -15273,7 +15289,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(15, (void *)he_AllocTransport, (void *)he_RunTransport) != 0)
         return 1;
-    if (he_SetEventHandlers(16, (void *)he_AllocCartRepair, (void *)he_Unk556ed0) != 0)
+    if (he_SetEventHandlers(16, (void *)he_AllocCartRepair, (void *)he_RunCartRepair) != 0)
         return 1;
     if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_Unk557190) != 0)
         return 1;
