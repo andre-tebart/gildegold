@@ -252,6 +252,8 @@ int gm_PlayerFactor(int a, unsigned char k);
 void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec);
 
 #define U_I(a) (*(int *)(a))
+typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_SetEventHandlers) */
+#define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
 
@@ -392,8 +394,8 @@ int he_ReleaseEvents(void)
 int he_SetEventHandlers(int type, void *alloc, void *run)
 {
     if (type >= 0 && type < 0xa7) {
-        U_I(((unsigned)&he_QuickList + 0x400) + type * 4) = (int)alloc;
-        U_I((unsigned)&he_RunHandlers + type * 4) = (int)run;
+        he_AllocHandlers[type] = (HEALLOC)alloc;
+        he_RunHandlers[type] = (void (*)(unsigned char *))run;
         return 0;
     }
     return 1;
@@ -770,8 +772,6 @@ void err_Message(char *text);
 #define HE_CLK(m) do { HM_I(m, 0x28) = U_I((unsigned)&ai_Time); HM_I(m, 0x2c) = U_I((unsigned)&ai_Time.hour); HM_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); HM_B(m, 0x36) = 2; } while (0)
 
 #define he_Jobs (*(AIJOB (*)[0x400])&he_Events)  /* 0x6fab40 */
-typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_SetEventHandlers) */
-#define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
 /* 0x53e040, creates the event record of the message `m`: its type needs both an alloc and a run handler (< 0xa7) and its
    receiver `to` (unless -1) must be a character; takes the first free of the 0x400 records he_Events (raising
