@@ -2048,9 +2048,9 @@ int ai_DecideBeatUpGuiltWeights(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x492540, decision 22 */
+/* 0x492540, the callback of law record 22 (AIDEC.fn, office 0x14 no 1, a boolean law): ai_EvalBlackmail (0x49d600, the eval callback of action 0x2c "Erpressen") takes its cur != 0 to evaluate that action with the character's guilt (ai_EvalGuiltWeights) instead of the mood weights; the normalized skill 4 against its rating (x1.1 for the title groups 0xb / 0xc, else x0.9) against 1 raises the law when mood 11 outweighs mood 9, and lowers it when mood 10 outweighs mood 9 */
 
-int ai_Unk492540(AIPER *p, int a, int *out)
+int ai_DecideBlackmailGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
