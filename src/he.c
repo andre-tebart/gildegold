@@ -462,6 +462,17 @@ typedef struct HEAUDIT {                /* the audit event 0x64's words over AIJ
     int home;                           /* 0xb4, the building the inspector goes back to */
     int homeRoom;                       /* 0xb8, the room object there */
 } HEAUDIT;
+typedef struct HEGATHERING {            /* the patrol gathering event 0x65's words over AIJOB's union (he_StartGathering /
+                                           he_RunGathering; its figures are AIJOB.ids[0..5]) */
+    char pad00[0xac];
+    char place[0x20];                   /* 0xac, the name of the scene object the figures gather at; an event 0x48 of
+                                           another character at the same place is its opponent */
+    int home;                           /* 0xcc, the building the figures go back to (the fight party's raidHome) */
+    int homeRoom;                       /* 0xd0, the room object there */
+    int party;                          /* 0xd4, the id of the fight party (cm_GetSlotValue), -1 at the start */
+    int partySlot;                      /* 0xd8, the cm send slot of the fight party (cm_SendNewParty) */
+    unsigned char dc;                   /* 0xdc, 0 at the start (no reader known) */
+} HEGATHERING;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
@@ -5252,7 +5263,7 @@ void he_RunAudit(int ev)
 /* 0x54be20, a Ghidra miss: the init of the patrol-meeting event: +0xd4 = -1, +0xdc = 0, the start (+0x44) and the due clock (+0x52) = now, posted at once (0x4fe140 (.., 0, 1, 0), state 0) */
 
 
-void he_Unk54be20(int ev)
+void he_StartGathering(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(int *)(ev + 0xd4) = -1;
@@ -5263,153 +5274,177 @@ void he_Unk54be20(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
-/* 0x54bec0, a Ghidra miss (disassembled; 1496 B): the run handler of the watch meeting ("Patrol": the six figures +0x8c .. walk to the place +0xac .. (0x4c52e0), +0xcc / +0xd0 the next place, +0xd4 the 0x4c3b10 result, +0xd8 the pending job): state 0 sends them, 1 waits until they are idle, 2 waits 0x18 units and then tries to pair the event with a running one of the type 0x48 of another player (0x53e400 (1, 0, 0x48), same +0xac text, other player): the pair gets a message record of 0x114 bytes (type 3, the two groups as lists, 0x4c4fa0 -> +0xd8) and state 3; else it is posted for the state 2 again (a position is sent to 0x541280); 3 waits for the job, 4 / 5 wait for 0x4e50a0 and send the figures to the next place (ROUGH) */
-
-void he_Unk54bec0(int ev)
+/* 0x54bec0, a Ghidra miss: the run handler of the patrol gathering event 0x65 ("Patrol", HEGATHERING: the figures
+   ids[0..5] gather at the scene object named place). Freed (stage -2) it frees a not yet started event, else it
+   sends the figures home once (stage 5) and then frees it; stage -1 frees it. Each step is due from now. Stage 0
+   sends the figures there (stage 1 in five minutes); stage 1 waits (four minutes) while one is busy, then starts
+   the gathering (stage 2 in ten minutes); stage 2 gives up a day after the start (stage 5), else looks for an
+   event 0x48 at the same place of another character: on a coin toss the two meet in a fight party (G28REC kind 3,
+   in 30 minutes: the opponent's figures defend, ours raid, stage 3), else the figures idle about the place
+   (he_CharacterBehavior) for ten minutes more. Stage 3 waits for the party's slot (stage 4 with its id, stage 5
+   without), stage 4 waits until the party is over, stage 5 sends the figures home and ends the event
+   @deep Read all of it against the original and rewrote it typed (AIJOB / HEGATHERING / G28REC kind 3 /
+   AICHAR / D3OBJECT): fixed the party record (members[0] is e's character, [1] the opponent's, thing -1,
+   variant 4, the raid lists and raidHome), the opponent search (an event 0x48 at the same place of another
+   character), the stage 4 test order (4 when cm_PartyById finds the party), the frame (giveUp and pos at
+   function scope: 0x138 = 0x138), the switch table equal. 478 vs 484 instructions. Left: the register
+   allocation of stage 2's opponent: the original keeps the found event p in a stack slot ([esp+0x10],
+   shared with the free flag) besides ebp, loads p->chr into dx and e->chr into bp for the compare and
+   reuses both for the party members (and ebp,0xffff / and edx,0xffff), reloading p from the slot for the
+   defenders loop; ours keeps p in ebp and reloads p->chr. With p spilled, VC6 lays the party block right
+   after the loop and the not-found block (ten minutes more, he_CharacterBehavior) behind it (the loop exit
+   jumps forward: test eax,eax; mov [esp+0x10],eax; je), ours lays the not-found block after the loop: the
+   43-line hunk at +0x298 and the shifted 33 lines at +0x487 are those blocks, the same code. Tried: a
+   while loop with the condition, the free flag and p as one variable, the compare operands swapped, 3
+   orders of the party's time / raid stores (references: M8 at +0x3f7: ours refers to ai_Time (0x770ae0),
+   the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two ref: lines are the
+   ai_Time copy into party.time, the same four loads on both sides with eax/ecx/edx renamed and interleaved
+   with raidHome / raid100 stores; no other object is referenced) */
+void he_RunGathering(int ev)
 {
-    char msg[0x114];
-    int ebp = 0, i, p, st, o, e, h, r, found = 0;
-    int ebx = -1;
-    int tmpclock[4];
-    int eax;
+    AIJOB *e = (AIJOB *)ev;
+    HEGATHERING *g = (HEGATHERING *)ev;
+    AIJOB *p;
+    AICHAR *c;
+    D3OBJECT *o;
+    int *id;
+    int i, k, n, freeIt;
+    int *r;
+    G28REC party;
+    AITIME giveUp;
+    D3VECTOR4 pos;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -2) {
-        if ((*(unsigned char *)(ev + 0x78) & 4) != 0) {
+    freeIt = 0;
+    if (e->stage == -2) {
+        if ((e->opts & 4) != 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        *(int *)(ev + 0x70) = 5;
-        found = 1;
+        e->stage = 5;
+        freeIt = 1;
     }
-    if (*(int *)(ev + 0x70) == -1) {
+    if (e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    switch (*(int *)(ev + 0x70)) {
+    e->end = ai_Time;
+    switch (e->stage) {
     case 0:
-        for (i = 0; i < 6; i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0 && *(int *)(p + 0x184) != 0) {
-                sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                cm_SendChrStop(*(int *)(p + 4));
-                cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, ev + 0xac, 1, "Patrol");
+        for (id = e->ids, k = 6; k != 0; k--, id++) {
+            c = (AICHAR *)gm_FindChar(*id);
+            if (c != 0 && c->scene != 0) {
+                sv_MoveToGroup(0, 0, c->id, (char *)ev);
+                cm_SendChrStop(c->netId);
+                cm_SendChrGotoBuilding(c->netId, -1, -1, g->place, 1, "Patrol");
             }
         }
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        gm_AddTime(&e->end, 0, 5, 0);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 1:
         for (i = 0; i < 6; i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0 && *(int *)(p + 0x184) != 0 && *(int *)(*(int *)(p + 0x184) + 0x128) != 0) {
-                gm_AddTime(ev + 0x52, 0, 4, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0 && c->scene != 0 && c->scene->actions != 0) {
+                gm_AddTime(&e->end, 0, 4, 0);
+                e->exSlot = cm_SendExSetHE(1, ev);
                 return;
             }
         }
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 10, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        e->start = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        *(AITIME *)(tmpclock) = *(AITIME *)(ev + 0x44);
-        gm_AddTime((int)tmpclock, 0x18, 0, 0);
-        if (gm_CompareTime((unsigned)&ai_Time, (int)tmpclock) > 0) {
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(5, ev);
+        giveUp = e->start;
+        gm_AddTime(&giveUp, 0x18, 0, 0);
+        if (gm_CompareTime(&ai_Time, &giveUp) > 0) {
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(5, ev);
             return;
         }
-        e = (int)he_FindEvent(1, 0, 0x48);
-        while (e != 0) {
-            if (strcmp((char *)(ev + 0xac), (char *)(e + 0xac)) == 0 && *(unsigned short *)(ev + 8) == *(unsigned short *)(e + 8)) {
-                e = (int)he_NextEvent();
-                continue;
-            }
-            break;
-        }
-        if (e != 0 && (short)util_Random(2) != 0 && *(unsigned short *)(e + 8) != *(unsigned short *)(ev + 8)) {
-            int n1 = 0, n2 = 0;
-
-            memset(msg, 0, sizeof(msg));
-            msg[8] = 3;
-            msg[0x26] = (char)0xa2;
-            *(int *)(msg + 0x14) = ebx;
-            msg[0x30] = 2;
-            msg[0x7c] = 4;
-            *(int *)(msg + 0xc) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-            *(int *)(msg + 0x34) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(e + 8) * 0x21c);
-            *(int *)(msg + 0x38) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
+        p = (AIJOB *)he_FindEvent(1, 0, 0x48);
+        while (p != 0 && (strcmp(g->place, ((HEGATHERING *)p)->place) != 0 || e->chr == p->chr))
+            p = (AIJOB *)he_NextEvent();
+        if (p != 0 && (short)util_Random(2) != 0 && e->chr != p->chr) {
+            memset(&party, 0, sizeof(party));
+            party.kind = 3;
+            party.flags = 0xa2;
+            party.thing = -1;
+            party.used = 2;
+            party.variant = 4;
+            party.host = ai_CharInts[ai_PlayerId][0];
+            party.members[0] = ai_CharInts[e->chr][0];
+            party.members[1] = ai_CharInts[p->chr][0];
             for (i = 0; i < 16; i++) {
-                *(int *)(msg + 0xc0 + i * 4) = ebx;
-                *(int *)(msg + 0x80 + i * 4) = ebx;
+                party.raid.raiders[i] = -1;
+                party.raid.defenders[i] = -1;
             }
-            for (i = 0; i < 8 && n1 < 6; i++)
-                if (*(int *)(e + 0x8c + i * 4) != ebx)
-                    *(int *)(msg + 0x80 + n1++ * 4) = *(int *)(e + 0x8c + i * 4);
-            for (i = 0; i < 6 && n2 < 6; i++)
-                if (*(int *)(ev + 0x8c + i * 4) != ebx)
-                    *(int *)(msg + 0xc0 + n2++ * 4) = *(int *)(ev + 0x8c + i * 4);
-            *(int *)(msg + 0x100) = ebx;
-            *(int *)(msg + 0x104) = ebx;
-            *(int *)(msg + 0x108) = ebx;
-            *(int *)(msg + 0x10c) = *(int *)(ev + 0xcc);
-            *(AITIME *)(msg + 0x18) = ai_Time;
-            gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-            *(int *)(ev + 0xd8) = ((int (*)(void *))cm_SendNewParty)(msg);
-            gm_AddTime(ev + 0x52, 0, 10, 0);
-            *(int *)(ev + 0x70) = 3;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+            for (n = 0, i = 0; i < 8 && n < 6; i++) {
+                if (p->ids[i] != -1)
+                    party.raid.defenders[n++] = p->ids[i];
+            }
+            for (n = 0, i = 0; i < 6 && n < 6; i++) {
+                if (e->ids[i] != -1)
+                    party.raid.raiders[n++] = e->ids[i];
+            }
+            party.raid.raid100[0] = -1;
+            party.raid.raid100[1] = -1;
+            party.raid.raid100[2] = -1;
+            party.raid.raidHome = g->home;
+            party.time = ai_Time;
+            gm_AddTime(&party.time, 0, 0x1e, 0);
+            g->partySlot = cm_SendNewParty(&party);
+            e->stage = 3;
+            gm_AddTime(&e->end, 0, 10, 0);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        gm_AddTime(ev + 0x52, 0, 10, 0);
-        if (U_I((unsigned)&d3_CurrentScene) == 0 && (o = d3_FindObject(0, 0x140, 0, ev + 0xac)) != 0) {
-            float pos[3];
-
-            d3_PointToWorld(o, o + 0x4c, pos);
-            he_CharacterBehavior((AIJOB *)ev, pos);
+        gm_AddTime(&e->end, 0, 10, 0);
+        if (d3_CurrentScene == 0 && (o = d3_FindObject(0, 0x140, 0, g->place)) != 0) {
+            d3_PointToWorld(o, &o->pos, (D3VECTOR *)&pos);
+            he_CharacterBehavior(e, (float *)&pos);
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 3:
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        if (cm_GetSlotState(*(int *)(ev + 0xd8)) == 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+        gm_AddTime(&e->end, 0, 1, 0);
+        if (cm_GetSlotState(g->partySlot) == 0) {
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        r = cm_GetSlotValue(*(int *)(ev + 0xd8));
+        r = (int *)cm_GetSlotValue(g->partySlot);
         if (r == 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(5, ev);
+            e->exSlot = cm_SendExSetHE(5, ev);
             return;
         }
-        *(int *)(ev + 0xd4) = *(int *)r;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
+        g->party = *r;
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 4:
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        h = cm_PartyById(*(int *)(ev + 0xd4));
-        *(int *)(ev + 0x84) = cm_SendExSetHE(h == 0 ? 5 : 4, ev);
+        gm_AddTime(&e->end, 0, 5, 0);
+        if (cm_PartyById(g->party) != 0) {
+            e->exSlot = cm_SendExSetHE(4, ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHE(5, ev);
         return;
     case 5:
-        for (i = 0; i < 6; i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0 && *(int *)(p + 0x184) != 0) {
-                sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
-                cm_SendChrStop(*(int *)(p + 4));
-                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0xcc), *(int *)(ev + 0xd0), 0, 0, "Patrol");
+        for (id = e->ids, k = 6; k != 0; k--, id++) {
+            c = (AICHAR *)gm_FindChar(*id);
+            if (c != 0 && c->scene != 0) {
+                sv_MoveToGroup(0, 0, c->id, 0);
+                cm_SendChrStop(c->netId);
+                cm_SendChrGotoBuilding(c->netId, g->home, g->homeRoom, 0, 0, "Patrol");
             }
         }
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        if (found) {
+        gm_AddTime(&e->end, 0, 2, 0);
+        if (freeIt) {
             he_FreeEvent((int *)ev);
             return;
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
-    default:
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -9841,7 +9876,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x64, (void *)he_StartAudit, (void *)he_RunAudit) != 0)
         return 1;
     sv_RegisterActivity(0x64, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x65, (void *)he_Unk54be20, (void *)he_Unk54bec0) != 0)
+    if (he_SetEventHandlers(0x65, (void *)he_StartGathering, (void *)he_RunGathering) != 0)
         return 1;
     sv_RegisterActivity(0x65, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x66, (void *)he_Unk54c4c0, (void *)he_Unk54c570) != 0)
