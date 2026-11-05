@@ -384,6 +384,11 @@ typedef struct HESALE {                 /* the sale event 2's words over AIJOB's
     int notify;                         /* 0xb8, nonzero: a master's kind 1 character with flags1b4 bit 0 makes the news
                                            0x60b (reasoned: who sets it is not read yet) */
 } HESALE;
+typedef struct HEEV1F {                 /* the building event 0x1f's words over AIJOB's union (he_AllocEvent1f /
+                                           he_RunEvent1f); the building is AIJOB.bldId */
+    char pad00[0xb0];
+    unsigned short good;                /* 0xb0, the good it makes (cm_SendExSellObject's goods, the news text 0x9a8 + 2 * good) */
+} HEEV1F;
 typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunSale sends: an hour from now as AITIME, of
                                            which the building and the object overwrite the first 8 bytes (the
                                            original's order) */
@@ -14655,43 +14660,65 @@ void he_AllocEvent1f(int ev)
     if ((b->flags5a & 0x80) == 0)
         cm_SendSetField(b->id, 0x5a, 2, 0x80, 0);
 }
-/* 0x55bad0, the run handler of a building event (4 states by the jump table 0x55bd10; ROUGH): state 0 orders (0x4c4880 (+0xac building, -1, +0xb0, 1, 0, 0)) and marks the building (0x5a / 2 / 0x80), state 1 takes the owner figure (0x4ffe90), tells the player the news 0x1c2b (text 0x9a8 + +0xb0 * 2, "_NACHRICHTEN_HS_53", 0x606 / 0x60b by the 0x50a810 flag), the last state sends the goods (0x4c4db0 (4, ..)) and frees */
+/* 0x55bad0, the run handler of the building event 0x1f (HEEV1F; its init he_AllocEvent1f sets the building's 0x5a
+   mark 0x80). Stage 0: the building (when found) makes one piece of the good for the own player
+   (cm_SendExSellObject) and its mark 0x80 is cleared; stage 1: the event character gets the news 0x1c2b about the
+   good's object in the building ("_NACHRICHTEN_HS_53"; 0x60b when the building is no kind 6 and its master is a
+   kind 1 character with flags1b4 bit 0, else 0x606), a home type sends the sys message 4 (HESOLDMSG: the building,
+   its object of key 4 = 2), and the event is freed. Stages -2 / -1 clear the mark and free the event */
 
-void he_Unk55bad0(int ev)
+void he_RunEvent1f(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, o, tid = 0x606;
+    AIJOB *e = (AIJOB *)ev;
+    HEEV1F *g = (HEEV1F *)ev;
+    AIBLD *b;
+    AIOBJ *o, *q;
+    AICHAR *m;
+    AIBTYPE *bt;
+    int news;
     char text[0x400];
+    HESOLDMSG msg;
 
-    if (st < 0 || st > 3) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (st) {
+    news = 0x606;
+    switch (e->stage) {
     case 0:
-        cm_SendExSellObject(*(int *)(b + 1), -1, *(unsigned short *)(ev + 0xb0), 1, 0, 0);
-        cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x80, 0);
-        *(int *)(ev + 0x70) = st + 1;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0) {
+            cm_SendExSellObject(b->id, -1, g->good, 1, ai_OwnPlayer, 0);
+            cm_SendSetField(b->id, 0x5a, 2, 0, 0x80);
+        }
+        e->stage++;
         return;
     case 1:
-        o = gm_Query(*(int *)(b + 0x5d), 2, 6, 1, *(unsigned short *)(ev + 0xb0));
-        if (o != 0) {
-            int w = gm_FindCharacterByMaster(b);
-
-            txt_Format(text, 0x1c2b, b, *(unsigned short *)(ev + 0xb0) + 0x9a8);
-            if (w != 0 && *(unsigned char *)(w + 2) == 1 && (*(unsigned char *)(w + 0x1b4) & 1) != 0)
-                tid = 0x60b;
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(o + 2), text, 0, tid, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_53", 0);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0) {
+            o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, g->good);
+            if (o != 0) {
+                bt = &ai_BTypesT[b->type];
+                txt_Format(text, 0x1c2b, b, g->good * 2 + 0x9a8);
+                if (bt->kind != 6) {
+                    m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+                    if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0)
+                        news = 0x60b;
+                }
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, news, b->id, o->objId, 0, "_NACHRICHTEN_HS_53");
+            }
+            if (gm_IsHomeType((unsigned char *)b)) {
+                q = (AIOBJ *)gm_Query((void *)b->objList, 1, 4, 2);
+                msg.due = ai_Time;
+                gm_AddTime(&msg.due, 0, 0, 1);
+                msg.sold.bld = b->id;
+                msg.sold.objId = q->objId;
+                cm_SendExSysMessage(4, &msg);
+            }
         }
-        *(int *)(ev + 0x70) = st + 1;
+        he_FreeEvent((int *)ev);
         return;
-    default:
-        cm_SendExSysMessage(4, ev + 0xb0);
+    case -2:
+    case -1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0)
+            cm_SendSetField(b->id, 0x5a, 2, 0, 0x80);
         he_FreeEvent((int *)ev);
         return;
     }
@@ -17131,7 +17158,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(33, (void *)he_Unk55bf50, (void *)he_Unk55bfd0) != 0)
         return 1;
-    if (he_SetEventHandlers(31, (void *)he_AllocEvent1f, (void *)he_Unk55bad0) != 0)
+    if (he_SetEventHandlers(31, (void *)he_AllocEvent1f, (void *)he_RunEvent1f) != 0)
         return 1;
     if (he_SetEventHandlers(35, (void *)he_Unk55c540, (void *)he_Unk55c700) != 0)
         return 1;
