@@ -1333,7 +1333,7 @@ int ai_CommandPrison(G12ARG *args, int k, char *fmt)
 }
 
 int gm_FindObjectProto(char *s);                                                       /* 0x4fe900 */
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);           /* 0x4c4880 */
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);           /* 0x4c4880 */
 
 /* 0x4b0950, the AMTSTRAEGER_INVENTAR_PLUS text command (callback 0x601b50[12], name 0x601070[12]) "-xxxNAME":
    0x4c4880 from every titled character (byte 0x166 or 0x169) with the value of 0x4fe900(fmt + 4) */

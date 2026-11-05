@@ -3329,7 +3329,7 @@ char gm_QueryScanAll = 0;  /* 0x6f1be8 */
 char gm_QueryChildren = 0;  /* 0x6f1be9 */
 char gm_QueryStopFirst = 0;  /* 0x6f1bea, first-step flag, scan all, descend into children, stop at the first */
 /* 0x500190 */
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);                     /* 0x4c4880 */
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);                     /* 0x4c4880 */
 void cm_SendGoodsRecord(void *p, unsigned char k);                     /* 0x4c56d0 */
 void cm_BeginSendGroup(void);                     /* 0x4c3b30 */
 void cm_EndSendGroup(void);                     /* 0x4c3b40 */

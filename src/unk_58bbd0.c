@@ -7384,7 +7384,7 @@ void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); vo
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
 void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
 /* 0x59b030, a credit payment of the money lender (304 B): the person 0x505df0 (param_2 + 0xb0), the text
    0x18d5 (param_2 + 0xb4); when 0x521040 (the person, param_2 + 0xb4, the player byte) and the confirmation

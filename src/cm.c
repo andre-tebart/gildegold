@@ -1228,7 +1228,7 @@ void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d)
 }
 /* 0x4c4880, message 0x11 */
 
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f)
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f)
 {
     G17MSG m;
 

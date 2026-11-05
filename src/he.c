@@ -3478,7 +3478,7 @@ int gm_BuildingClass();
 unsigned char * gm_BuildNext(void);
 int gm_ListAmount();
 unsigned short *gm_QueryNext(void);
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 void gm_ChangeBuildingState(unsigned char *b, int d);
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
@@ -3778,61 +3778,66 @@ void he_Unk548b70(int ev)
     if ((short)util_Random(2) != 0)
         he_FreeEvent((int *)ev);
 }
-/* 0x548bb0, a Ghidra miss: the run handler of the tip event for the player (word +8): in the state 0 the player's figures (0x501190 kind 4, up to 0x10 with the kind byte 1 or 9 of the building record 0x24d bytes from 0x7e3f30) are collected, one is picked at random and for each of its 0x4ffe90 records (kind 2/6, 0x2a or 0x116) the pay 0x4c4880 (the amount 0.xx * 0x50aaf0 ..) is sent with the text "%s .." (0x5ff710); a player of kind 6 hears the news 0x10b7 with the total (ROUGH) */
+/* 0x548bb0, a Ghidra miss: the run handler of event 0x57: stage -2 frees it; at stage 0 it collects up to 16 of
+   the character's buildings (owner query, gm_BuildQuery key 4) of class 1 or of type kind 9, picks one at random
+   and sells a quarter (at least 1) of every good in its store object (0x2a, else 0x116) for the own player
+   (cm_SendExSellObject, logged as "cm_RequestSellObjekt(..)" into a buffer nobody reads), adding up their prices;
+   a character of kind 6 with a total gets the news 0x10b7 (the building, the total) in a quick-jump box; then frees
+   the event */
 
-void he_Unk548bb0(int ev)
+void he_RunStoreSale(int ev)
 {
-    char text[0x400];
-    char text2[0x400];
-    int sel[16];
-    int n = 0, e, ebp, edi, esi, v, total = 0;
+    AIJOB *e = (AIJOB *)ev;
+    char text[0x418];
+    char log[0x400];
+    AIBLD *sel[16];
+    int n = 0, total = 0, amount;
+    AIBLD *b;
+    AIBTYPE *t;
+    AIOBJ *store;
+    unsigned short *good;
 
-    if (*(int *)(ev + 0x70) == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0x70) != 0)
+    if (e->stage != 0)
         return;
-    esi = gm_BuildQuery(1, 4, *(unsigned short *)(ev + 8));
-    if (esi == 0) {
+    b = (AIBLD *)gm_BuildQuery(1, 4, e->chr);
+    if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    while (n < 16) {
-        e = U_I((unsigned)&ai_BTypes) + *(unsigned char *)esi + *(unsigned char *)esi * 0x24c;
-        if (gm_BuildingClass(*(unsigned char *)esi) == 1 || *(char *)e == 9) {
-            sel[n] = esi;
-            n++;
-        }
-        esi = gm_BuildNext();
-        if (esi == 0)
+    do {
+        if (n >= 16)
             break;
-    }
+        t = &ai_BTypesT[b->type];
+        if (gm_BuildingClass(b->type) == 1 || t->kind == 9)
+            sel[n++] = b;
+    } while ((b = (AIBLD *)gm_BuildNext()) != 0);
     if (n == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    ebp = sel[(unsigned short)util_Random(n)];
-    if (ebp != 0) {
-        edi = gm_Query(*(int *)(ebp + 0x5d), 2, 6, 0x2a);
-        if (edi == 0)
-            edi = gm_Query(*(int *)(ebp + 0x5d), 2, 6, 0x116);
-        if (edi != 0) {
-            esi = gm_Query(*(int *)(edi + 0x14), 1, 5);
-            while (esi != 0) {
-                v = (int)((float)gm_ListAmount(edi, esi) * 0.05f);
-                if (v < 1)
-                    v = 1;
-                sprintf(text2, (char *)(unsigned)"cm_RequestSellObjekt(%i, %i, %i, %i, %i, %i)", -1, *(int *)(edi + 2), *(unsigned short *)esi, v, U_I((unsigned)&ai_OwnPlayer), 0);
-                cm_SendExSellObject(-1, *(int *)(edi + 2), *(unsigned short *)esi, v, U_I((unsigned)&ai_OwnPlayer), 0);
-                total = (int)(gm_GoodsPrice(*(unsigned short *)esi, *(unsigned char *)(unsigned)&ai_OwnPlayer) * (float)v + (float)total);
-                esi = gm_QueryNext();
+    b = sel[(unsigned short)util_Random(n)];
+    if (b != 0) {
+        store = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+        if (store == 0)
+            store = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x116);
+        if (store != 0) {
+            for (good = (unsigned short *)gm_Query((void *)store->list, 1, 5); good != 0; good = gm_QueryNext()) {
+                amount = (int)(gm_ListAmount(store, good) * 0.25f);
+                if (amount < 1)
+                    amount = 1;
+                sprintf(log, "cm_RequestSellObjekt(%i, %i, %i, %i, %i, %i)", -1, store->objId, *good, amount, ai_OwnPlayer, 0);
+                cm_SendExSellObject(-1, store->objId, *good, amount, ai_OwnPlayer, 0);
+                total = (int)(gm_GoodsPrice(*good, ai_OwnPlayer) * amount + total);
             }
         }
     }
-    if (*(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) == 6 && total != 0) {
-        txt_Format(text, 0x10b7, ebp, total);
-        he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ec, *(int *)(ebp + 1), -1, 0, (char *)0);
+    if (ai_CharsT[e->chr].kind == 6 && total != 0) {
+        txt_Format(text, 0x10b7, b, total);
+        he_MessageBoxQuickjump(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ec, b->id, -1, 0, (char *)0);
     }
     he_FreeEvent((int *)ev);
 }
@@ -5440,7 +5445,7 @@ void he_Unk54d190(int ev)
 }
 
 int ai_CanAct();
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 
 /* 0x54d1e0, a Ghidra miss: looks the figure of a record up in a table of 16 entries of 12 bytes (first word: a building of 0x501190): finds the entry whose building id (+1) is the figure's job id (+0x184 + 0x2c) and that has an owner (word +0x27 != 0xffff); stores its index in *out and returns 1, else 0 */
 int he_Unk54d1e0(int rec, int *tab, int *out)
@@ -9530,7 +9535,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x56, (void *)he_Unk5482c0, (void *)he_RunPayment) != 0)
         return 1;
-    if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_Unk548bb0) != 0)
+    if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_RunStoreSale) != 0)
         return 1;
     if (he_SetEventHandlers(0x58, (void *)he_Unk548b70, (void *)he_Unk548de0) != 0)
         return 1;
@@ -9824,7 +9829,7 @@ int cm_GetSlotState();
 int cm_GetSlotValue(int h);
 unsigned char *gm_BuildQuery(int n, ...);
 char *gm_Query(void *list, int n, ...);
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 int gv_OrderOpenSize();
 int cm_SendLongMessage(char *msg);
 int cm_SendExSysMessage(unsigned char id, void *msg);
@@ -14162,7 +14167,7 @@ int gm_FreeCapacity();
 int gm_ListAmount();
 int gm_BuildingMainObject(unsigned char *b);
 int gm_WorkMinutesBetween();
-void cm_SendExSellObject(int a, int b, short c, int d, unsigned char e, int f);
+void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 int ai_InventoryHas(void *ch, int id);
 
 /* unlinked, the table of the raw material shortage news (0x628a5c .. 0x628bdc) by the type id of the building (0x569d17 / 0x5694d8) */
