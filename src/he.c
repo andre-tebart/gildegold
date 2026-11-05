@@ -395,8 +395,8 @@ typedef struct HEBUYBLD {               /* the building purchase event 0x21's wo
     int price;                          /* 0xb0, the price offered (paid with cm_SendMoveGoodsUnchecked) */
     int buyer;                          /* 0xb4, the buyer's netId (gm_FindChar) */
 } HEBUYBLD;
-typedef struct HELOAN {                 /* the loan event 0x23's words over AIJOB's union (he_AllocKredit / he_Unk55c700
-                                           "he_RunKredit"); the building is AIJOB.bldId */
+typedef struct HELOAN {                 /* the loan event 0x23's words over AIJOB's union (he_AllocKredit / he_RunKredit);
+                                           the building is AIJOB.bldId */
     char pad00[0xb0];
     int partner;                        /* 0xb0, the netId of the other party (gm_FindChar; the loan's money moves
                                            between it and the event character, cm_SendMoveGoodsUnchecked) */
@@ -14949,7 +14949,7 @@ void he_RunBuyBuilding(int ev)
         return;
     }
 }
-/* 0x55c540, the allocation handler of the loan event 0x23 (HELOAN; run handler he_Unk55c700 "he_RunKredit"): the
+/* 0x55c540, the allocation handler of the loan event 0x23 (HELOAN; run handler he_RunKredit): the
    due clock is now, the payback date is days days from now at 8:00, daysLeft = days. A posted event (opts 2) whose
    building has a player owner (kind 6 / 7) gives the owner the news 0x18d7 (the partner, the building, amount,
    interest, days, the building's money: its object of the player's moneyGood) and reports the owner for the law
@@ -14987,28 +14987,103 @@ void he_AllocKredit(int ev)
         gv_Accuse(0xe, l->interest, owner->netId, l->partner, b->id);
     }
 }
-/* 0x55c700, the run handler "he_RunKredit" (the loan event, 4 states; the debug text "he_RunKredit(): Could not find GebaeudeId '%i'" when the building +0xac is missing; ROUGH skeleton): the player figure gets the offer news (0x5ec / "_NACHRICHTEN_HS_69", the amount 0x5b92e0, the interest from 0x509e60 through _ftol / 0x5de652 (sprintf)) and 0x4c4830 books the payment; the end frees the record */
+/* 0x55c700, the run handler of the loan event 0x23 (HELOAN), daily while the send slot exSlot is free. Stage 0: a
+   posted event (opts 2) charges the interest (interest % of amount): without the partner the building's owner gets
+   the news 0x18e7 and the event goes to the cm (cm_SendExSetHE); a partner short of goods value pays by
+   ai_LiquidateAssets (the news 0x18e8, shown to the partner when the owner is a player), else by
+   cm_SendMoveGoodsUnchecked; either way the building's roundSums[2] grows by it. A missing building prints the
+   debug text "he_RunKredit(): Could not find GebaeudeId '%i'" and frees the event. Once daysLeft runs out the
+   partner pays the amount back (ai_LiquidateAssets; the news 0x18e9, or 0x18ea with "_NACHRICHTEN_HS_69" when
+   short), a player owner gets the news 0x18d8, and the event is freed. Stages -2 / -1 tell the owner 0x18e7 when
+   the partner is gone and free the event */
 
-void he_Unk55c700(int ev)
+void he_RunKredit(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, amt;
-    char text[0x200];
+    AIJOB *e = (AIJOB *)ev;
+    HELOAN *l = (HELOAN *)ev;
+    AIBLD *b;
+    AICHAR *owner, *partner;
+    float due;
+    int value, n, paid;
+    char dbg[0x80];
+    char text[0x400];
+    char text2[0x800];                  /* reasoned: the original's frame 0xc8c holds 0x400 more than the three buffers use */
 
-    if (st < 0 || st > 3 || (st != 0 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0 && *(int *)(ev + 0x84) != -1)) {
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
+        return;
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        if (e->opts & 2) {
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+            if (b != 0) {
+                partner = (AICHAR *)gm_FindChar(l->partner);
+                owner = &ai_CharsT[b->owner];
+                if (partner == 0) {
+                    txt_Format(text, 0x18e7, l->amount);
+                    he_ShowNews(owner->netId, -1, text, 0, 0x5ff, 0);
+                    e->exSlot = cm_SendExSetHE(-1, ev);
+                    return;
+                }
+                due = l->amount * (l->interest * 0.01);
+                value = gm_GetGoodsValue(partner);
+                if (value < due) {
+                    n = (int)due;
+                    txt_Format(text2, 0x18e8, n);
+                    paid = ai_LiquidateAssets(b->id, partner, n, text2);
+                    b->roundSums[2] += paid;
+                    if (owner->kind == 6 || owner->kind == 7)
+                        he_ShowNews(l->partner, -1, text2, 0, 0x5ff, 0);
+                } else {
+                    cm_SendMoveGoodsUnchecked(b->id, l->partner, ai_OwnPlayer, (int)due);
+                    b->roundSums[2] += due;
+                }
+            } else {
+                sprintf(dbg, "he_RunKredit(): Could not find GebaeudeId '%i'", e->bldId);
+                he_FreeEvent((int *)ev);
+                return;
+            }
+        }
+        if (--l->daysLeft >= 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b == 0)
+            break;
+        owner = &ai_CharsT[b->owner];
+        partner = (AICHAR *)gm_FindChar(l->partner);
+        if ((e->opts & 2) == 0)
+            break;
+        value = gm_GetGoodsValue(partner);
+        if (value < l->amount)
+            txt_Format(text, 0x18ea, l->amount);
+        else
+            txt_Format(text, 0x18e9, l->amount);
+        ai_LiquidateAssets(b->id, partner, l->amount, text);
+        if (value < l->amount)
+            he_ShowNews(l->partner, -1, text, 0, 0x5ff, "_NACHRICHTEN_HS_69");
+        else
+            he_ShowNews(l->partner, -1, text, 0, 0x5ff, ch_EmptyName);
+        if (owner->kind == 6 || owner->kind == 7) {
+            txt_Format(text2, 0x18d8, partner->id, b, l->amount);
+            he_ShowNews(owner->netId, -1, text2, 0, 0x5ff, 0);
+        }
         he_FreeEvent((int *)ev);
         return;
-    }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b == 0) {
-        sprintf(text, "he_RunKredit(): Could not find GebaeudeId '%i'", *(int *)(ev + 0xac));
-        he_FreeEvent((int *)ev);
+    case -2:
+    case -1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0) {
+            partner = (AICHAR *)gm_FindChar(l->partner);
+            owner = &ai_CharsT[b->owner];
+            if (partner == 0) {
+                txt_Format(text2, 0x18e7, l->amount);
+                he_ShowNews(owner->netId, -1, text2, 0, 0x5ff, 0);
+            }
+        }
+        break;
+    default:
         return;
     }
-    amt = (int)gm_GetGoodsValue(*(unsigned short *)(b + 0x27));
-    txt_Format(text, 0x17f0, b, amt);
-    he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
-    cm_SendMoveGoodsUnchecked(*(int *)(ev + 0xb0), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, amt);
     he_FreeEvent((int *)ev);
 }
 /* 0x55cb00, the run handler of a message event (ROUGH): states -2 / -1 and the missing figure +0xb0 free the record; a figure of kind 6 / 7 gets a message record (0x4c4b70) and the news 0x4c59b0; then the record is freed */
@@ -17277,7 +17352,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(31, (void *)he_AllocEvent1f, (void *)he_RunEvent1f) != 0)
         return 1;
-    if (he_SetEventHandlers(35, (void *)he_AllocKredit, (void *)he_Unk55c700) != 0)
+    if (he_SetEventHandlers(35, (void *)he_AllocKredit, (void *)he_RunKredit) != 0)
         return 1;
     if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_Unk55cb00) != 0)
         return 1;
