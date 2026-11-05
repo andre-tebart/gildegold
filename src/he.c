@@ -15821,24 +15821,53 @@ void he_Unk55e180(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x55e1d0, the run handler "Entlassen" of the dismissal with news (ROUGH skeleton, 464 bytes): the figure +0xac (0x505df0), 0x50c520, the job end 0x4c5970 / 0x4c5b90, the marks 0x4c3ba0 / 0x4c3d90 / 0x4c49e0, the walk away (0x4fdcb0 contact, 0x4c52e0 "Entlassen"), the relation 0x4c4b00 and the news "_NACHRICHTEN_HS_01" (0x53dee0, with the building main object) to the owner; the record is freed */
-
-void he_Unk55e1d0(int ev)
+/* 0x55e1d0, the run handler of the event 0x33 (its alloc handler he_Unk55e180), a worker who quits: stages -2 / -1 free
+   the record, a later stage leaves it. At stage 0 the character AIJOB.ownerCh must still work in a building (AICHAR.bld)
+   whose owner it likes -26 or less (gm_Opinion), else the record is freed. It is cleared and halted, loses its building
+   (AICHAR.bld sent as 0) and is sent home (gm_CharacterHome: to its home object, else into the building; the walk tag
+   "Entlassen"); the owner's liking of it drops by 5 and the owner gets the message box 0x1bac (the character, the
+   building; 0x5f2, quick jump to the building's main object, "_NACHRICHTEN_HS_01"); the record is freed */
+void he_RunWorkerQuits(int ev)
 {
-    int p;
-    char text[0x100];
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    AIOBJ *o;
+    int v = 0;
+    int homeBld, homeObj;
+    char text[0x400];
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p == 0) {
+    switch (e->stage) {
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
-        return;
+        break;
+    case 0:
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        if (c == 0 || c->bld == 0 || gm_Opinion(c->bld->owner, c->id) > -26) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        cm_SendCharClear(c->netId, 0, 0);
+        cm_SendCharHalt(c->netId);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldValue(4, 1, (char *)&c->bld - cm_FieldObject, &v);
+        cm_SendFieldValues();
+        if (gm_CharacterHome((char *)c, &homeBld, &homeObj) != 0) {
+            if (homeObj != -1)
+                cm_SendChrGotoBuilding(c->netId, homeBld, homeObj, 0, 0, "Entlassen");
+            else
+                cm_SendChrGotoBuilding(c->netId, homeBld, -1, 0, 1, "Entlassen");
+        }
+        v = -5;
+        cm_SendRelations(ai_CharInts[c->bld->owner][0], c->netId, v, 1);
+        o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)c->bld);
+        txt_Format(text, 0x1bac, c->id, c->bld);
+        b = c->bld;
+        he_MessageBoxQuickjump(ai_CharInts[b->owner][0], -1, text, 0, 0x5f2, b->id, o->objId, 0, "_NACHRICHTEN_HS_01");
+        he_FreeEvent((int *)ev);
+        break;
     }
-    ((void (*)(int, int))cm_SendCharClear)(0, 0);
-    cm_SendCharHalt(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "Entlassen");
-    txt_Format(text, 0x1bba, p);
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(p + 4), -1, "_NACHRICHTEN_HS_01", 0);
-    he_FreeEvent((int *)ev);
 }
 /* 0x55e3a0, the allocation handler: the due clock is the start clock (+0x44) */
 
@@ -17697,7 +17726,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_RunPromotion) != 0)
         return 1;
-    if (he_SetEventHandlers(51, (void *)he_Unk55e180, (void *)he_Unk55e1d0) != 0)
+    if (he_SetEventHandlers(51, (void *)he_Unk55e180, (void *)he_RunWorkerQuits) != 0)
         return 1;
     if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_Unk55e3d0) != 0)
         return 1;
