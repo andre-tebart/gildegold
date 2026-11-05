@@ -67,8 +67,9 @@
    bytes), the running income 3, the production (HEPRODUCTION), the searches 8 / 9 (HESEARCH / HESEARCH9), the trade
    0xb (HETRADE), the construction event 0xd (HECONSTRUCTION, its child list HECHILDLIST, the models
    he_BuildingModels), the mission check 0x4c (HEMISSIONCHECK) and the alchemist events 0x95 .. 0x98 (HERECIPESEARCH,
-   HEAHMRESEARCH, HEAHMDAY; the alchemist records through ahm_types.h).
-   Open: types: the other handlers past 0x56e070 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
+   HEAHMRESEARCH, HEAHMDAY; the alchemist records through ahm_types.h), the secret room run 0x99 and its deeds
+   (HESECRETROOM, with HESPYING), the haunting 0x88 (HEHAUNTING) and the breath of decay 0x89 (HEDECAY).
+   Open: types: the other handlers past 0x570300 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
    event and message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
