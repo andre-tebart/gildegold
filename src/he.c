@@ -4524,12 +4524,16 @@ void he_RunPilloryPunishment(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x549110, a Ghidra miss: the init: state 0, +0xac = 0 */
+/* 0x549110, the alloc handler of the offspring event 0x5d (he_RunOffspring): the event starts at stage 0 with no
+   chance built up */
 
-void he_Unk549110(int ev)
+void he_AllocOffspring(int ev)
 {
-    *(int *)(ev + 0x70) = 0;
-    *(int *)(ev + 0xac) = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFSPRING *s = (HEOFFSPRING *)ev;
+
+    e->stage = 0;
+    s->chance = 0;
 }
 /* 0x549120, a Ghidra miss (disassembled): the run handler of the offspring event 0x5d: frees it when the character or
    its partner (relatives[0]) is dead or at stage -2. Stage 0 counts the living children (relatives[3..7]); with all
@@ -10775,7 +10779,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5c, (void *)he_AllocPunishment, (void *)he_RunPilloryPunishment) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_RunOffspring) != 0)
+    if (he_SetEventHandlers(0x5d, (void *)he_AllocOffspring, (void *)he_RunOffspring) != 0)
         return 1;
     if (he_SetEventHandlers(0x5e, (void *)he_StartTrialEvent, (void *)he_RunTrialEvent) != 0)
         return 1;
