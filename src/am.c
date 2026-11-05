@@ -1642,9 +1642,9 @@ int ai_DecideBuildingCost(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491650, decision 7 */
+/* 0x491650, the callback of law record 7 (AIDEC.fn, office 0x0b no 1, a 1..4 law, the ranking event's minimum wealth): (the growth of need 3 - 2) x 5, at most 4, at least 1; he_PostEvent67 scales the event 0x67 threshold by (5 - cur) x 0.1 + 0.7 */
 
-int ai_Unk491650(AIPER *p, int a, int *out)
+int ai_DecideLaw7(AIPER *p, int a, int *out)
 {
     AIDEC d;
     int n;
