@@ -415,6 +415,15 @@ typedef struct HESKILLMSG {             /* the AI message 0x6a he_RunTraining po
     char pad59[3];
     int level;                          /* 0x5c, its new level: the value / 42 */
 } HESKILLMSG;
+typedef struct HESKILLUP {              /* the skill level-up event 0x6a's words over AIJOB's union: HESKILLMSG's words as the
+                                           event takes them over (+0x58 -> +0xac; its init he_StartSkillUp, run handler
+                                           he_RunSkillUp) */
+    char pad00[0xac];
+    unsigned char skill;                /* 0xac, the skill (AICHAR.skills index) */
+    char padad[3];
+    int level;                          /* 0xb0, its new level: below 6 the news 0x16e6 + level, else the skill's master news */
+    int variant;                        /* 0xb4, one of six texts per skill (random(6), its init) */
+} HESKILLUP;
 typedef struct HEPLAGUE {               /* the plague event 0x59's words over AIJOB's union (he_BeginPlague, its run handler 0x54a020) */
     char pad00[0xac];
     int left;                           /* 0xac, counted down by the run handler at every infected target */
@@ -5993,73 +6002,77 @@ struct G11REC *hmt_GetRecord(unsigned short k);
 void d2_CentreViewWindows(int view);
 
 /* 0x54d790, a Ghidra miss: the init of the level-up event: the due clock = the start clock (+0x44), +0xb4 = random(6) */
-void he_Unk54d790(int ev)
+void he_StartSkillUp(int ev)
 {
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0xb4) = (unsigned short)util_Random(6);
 }
-/* 0x54d7d0, a Ghidra miss (disassembled; 582 B): the run handler of the level-up message of the own player ("SPECIAL\TALENT_STUFE": the news 0x16c8, 0x16c9 + 2 * +0xb4 + the talent +0xac, the fanfare 0x4c27d0, "_TALENT_MAIN" / "_TALENT_STUFE" (+0xb0 - 1) / "_TALENT_MAX" by the level +0xb0 (0x16e6 + level, 0x16ec + talent), 0x16f1); state 1 waits for the answer and frees the event (ROUGH) */
+/* 0x54d7d0, the run handler of the skill level-up event 0x6a of the own player ("SPECIAL\TALENT_STUFE"): shows the
+   news 0x16c8, one of six texts of the skill (0x16c9 + skill * 6 + variant) with the fanfare and its voice
+   ("_TALENT_MAIN"), the level's news and voice ("_TALENT_STUFE") or below level 6 the skill's master news
+   ("_TALENT_MAX"), then 0x16f1; stage 1 waits for the click and frees the event */
 
-void he_Unk54d7d0(int ev)
+void he_RunSkillUp(int ev)
 {
-    int rec, st, h;
+    AIJOB *e = (AIJOB *)ev;
+    HESKILLUP *s = (HESKILLUP *)ev;
+    AICHAR *own;
 
-    rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    if (*(unsigned short *)(unsigned)&ai_PlayerId != *(unsigned short *)(ev + 8) || *(unsigned char *)(unsigned)&ai_GameState == 0)
+    own = &ai_CharsT[e->chr];
+    if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
-    if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) == 1)
+    if (gm_CompareTime(&e->end, &ai_Time) == 1)
         return;
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1 || *(unsigned short *)rec == 0xffff) {
-        if (*(int *)(ev + 0x74) != 0)
+    if (e->stage == -2 || e->stage == -1 || own->id == 0xffff) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        if (*(int *)(ev + 0x74) == 0)
+    switch (e->stage) {
+    case 0:
+        if (e->slot == 0)
             he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TALENT_STUFE", 0x5ec);
-        if (*(int *)(ev + 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 1);
         io_PrintText(0x16c8);
-        io_PrintText(*(int *)(ev + 0xb4) + *(unsigned char *)(ev + 0xac) * 2 + 0x16c9);
+        io_PrintText(s->variant + s->skill * 6 + 0x16c9);
         snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftKurz", 0, 100);
-        snd_QueueVoice(-8, 0, "_TALENT_MAIN", *(int *)(ev + 0xb4) + *(unsigned char *)(ev + 0xac) * 2, 0xfa);
-        if (*(int *)(ev + 0xb0) < 6) {
-            io_PrintText(*(int *)(ev + 0xb0) + 0x16e6);
-            snd_QueueVoice(-8, 0, "_TALENT_STUFE", *(int *)(ev + 0xb0) - 1, 100);
+        snd_QueueVoice(-8, 0, "_TALENT_MAIN", s->variant + s->skill * 6, 0xfa);
+        if (s->level < 6) {
+            io_PrintText(s->level + 0x16e6);
+            snd_QueueVoice(-8, 0, "_TALENT_STUFE", s->level - 1, 100);
         } else {
-            io_PrintText(*(unsigned char *)(ev + 0xac) + 0x16ec);
-            snd_QueueVoice(-8, 0, "_TALENT_MAX", *(unsigned char *)(ev + 0xac), 100);
+            io_PrintText(s->skill + 0x16ec);
+            snd_QueueVoice(-8, 0, "_TALENT_MAX", s->skill, 100);
         }
-        snd_QueueVoice(-7, 0, "", -1, 0);
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);
+        snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
+        d2_SetForm(e->slot->win, 2);
         io_PrintText(0x16f1);
-        *(int *)(ev + 0x70) = 1;
+        e->stage = 1;
         return;
-    }
-    if (st == 1) {
-        if (*(int *)(ev + 0x74) == 0) {
-            *(int *)(ev + 0x70) = 0;
+    case 1:
+        if (e->slot == 0) {
+            e->stage = 0;
             return;
         }
-        h = U_I((unsigned)&d2_ClickedId);
-        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0 && h == -1)
+        if (d2_ClickedForm != e->slot->win && he_SlotConfirmed == 0 && d2_ClickedId == -1)
             return;
-        if (h == 0) {
+        if (d2_ClickedId == 0) {
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (*(unsigned char *)(unsigned)&he_SlotConfirmed == 0 || U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
+        if (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot)
             return;
-        *(unsigned char *)(unsigned)&he_SlotConfirmed = 0;
+        he_SlotConfirmed = 0;
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
+        return;
     }
 }
 /* 0x54da20, a Ghidra miss: the init of the talent event: +0xac = the number of the talent (0x4ac140), +0xb4 = -1, the due clock now, posted (state 0) */
@@ -9994,7 +10007,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x69, (void *)he_StartTitleCeremony, (void *)he_RunTitleCeremony) != 0)
         return 1;
-    if (he_SetEventHandlers(0x6a, (void *)he_Unk54d790, (void *)he_Unk54d7d0) != 0)
+    if (he_SetEventHandlers(0x6a, (void *)he_StartSkillUp, (void *)he_RunSkillUp) != 0)
         return 1;
     if (he_SetEventHandlers(0x6b, (void *)he_Unk54da20, (void *)he_Unk54da80) != 0)
         return 1;
