@@ -341,7 +341,7 @@ int ord_RandomObjectId(char *c);                                                
 unsigned short *gm_ObjectOwnerChar(unsigned short *o);                                                  /* 0x509ff0 */
 
 /* ---- 0x48e070..0x490b90 (was unk_48e070.h) ---- */
-/* unk_490830.h (the AGCH / AGARG views of 0x490830..0x490b90); it calls ai_ExecGraveyardOwner0 .. ai_Unk490600 and cm_SendMoveGoodsUnchecked through the prototypes below (AIPX / AIBLD, the definitions') */
+/* unk_490830.h (the AGCH / AGARG views of 0x490830..0x490b90); it calls ai_ExecGraveyardOwner0 .. ai_ExecGraveyardOwner3 and cm_SendMoveGoodsUnchecked through the prototypes below (AIPX / AIBLD, the definitions') */
 /* ---- was unk_490830.h ---- */
 #pragma pack(push, 1)
 typedef struct AGCH {                   /* a character, 0x21c bytes */
@@ -541,7 +541,7 @@ int ai_ExecGraveyardOwner1(AIPX *p, AIBLD *b, int unused, AIARG *o);            
 int ai_DecideGraveyardOwner2(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490350 */
 int ai_ExecGraveyardOwner2(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x4904c0 */
 int ai_DecideGraveyardOwner3(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2);                      /* 0x490570 */
-int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x490600 */
+int ai_ExecGraveyardOwner3(AIPX *p, AIBLD *b, int unused, AIARG *o);                      /* 0x490600 */
 int ai_DecideGraveyardOwner(int a, AIPX *p, int b, AIARG *o1, AIARG *o2);                  /* 0x490690 */
 
 /* callees outside this file */

@@ -1219,9 +1219,9 @@ int ai_DecideGraveyardOwner3(AIPX *p, AIBLD *b, AIARG *o1, AIARG *o2)
     o2->ref = c->netId;
     return util_RandomU(3) == 0;
 }
-/* 0x490600, execute of method 0x8a */
+/* 0x490600, way 3 of the "Graveyard Owner" execute: sends message 0x8a (flag 1) from the building to the character with the way's AIARG (ref) */
 
-int ai_Unk490600(AIPX *p, AIBLD *b, int unused, AIARG *o)
+int ai_ExecGraveyardOwner3(AIPX *p, AIBLD *b, int unused, AIARG *o)
 {
     AIMSG msg;
 
@@ -1293,7 +1293,7 @@ int ai_Unk490830(AGCH *p, AGARG *s1, AGARG *s2)
         case 2:
             return ai_ExecGraveyardOwner2((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         case 3:
-            return ai_Unk490600((AIPX *)p, (AIBLD *)s1, (int)a, s2);
+            return ai_ExecGraveyardOwner3((AIPX *)p, (AIBLD *)s1, (int)a, s2);
         }
     }
     return 0;
