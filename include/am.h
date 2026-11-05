@@ -269,6 +269,8 @@ typedef struct AIBLDX {                 /* 0xa9 bytes, an AIBLD (ai.h) as these 
 typedef struct AIFINX {                 /* what gm_PlayerRecord finds for a character (ai.h AIFIN) */
     char pad00[0x44];
     int renovationSpent;                /* 0x44 */
+    char pad48[0x2c];
+    unsigned char jobByGroup[0x11];     /* 0x74, one job id per title group (ai.h AIFIN +0x74, gm_TitleGroup): 0 = none (gm_SetJob fills it; ai_DecideApprenticeship takes a free group) */
 } AIFINX;
 
 typedef struct AIGOODX {                /* 0x41 bytes, an AIGOOD (ai.h) as these callbacks read it */

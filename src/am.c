@@ -9339,14 +9339,14 @@ int ai_EvalApprenticeship(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, 
     *b = w * *b;
     return 1;
 }
-/* 0x4a1170, decide callback 0x3a: the oldest grown-up unmarried child (as in 0x4a1000) gets a building class
+/* 0x4a1170, decide callback 0x3a: the oldest grown-up child without a job (as in 0x4a1000) gets a building class
    (o2 kind 0x17): a random one the dynasty has none of (0x506430 + 0x74, kind 5), the family's (0x504ad0) or
    a random 1..15; the character pays 1.5 % of 0x50a640 and needs six times that */
 
 int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 {
     G5CH *c, *best;
-    unsigned char *fin;
+    AIFINX *fin;
     unsigned char k;
     int m, price, q, r, n;
 
@@ -9354,22 +9354,22 @@ int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (a != 0)
         return 0;
-    if (((unsigned char *)p)[2] != 5) {
-        c = (G5CH *)gm_FindChar(*(int *)((unsigned char *)p + 0x5c));
+    if (p->kind != 5) {
+        c = (G5CH *)gm_FindChar(p->relatives[0]);
         if (c != 0) {
-            k = ((unsigned char *)c)[2];
+            k = c->kind;
             if (k == 5 || k == 6 || k == 7)
                 return 0;
-            if (((unsigned char *)c)[9] == 0 && ai_WorksForMaster((AICHAR *)c) != 0)
+            if (c->sex == 0 && ai_WorksForMaster((AICHAR *)c) != 0)
                 return 0;
         }
     }
     best = 0;
     for (m = 0; m < 5; m++) {
-        c = (G5CH *)gm_FindChar(((int *)((unsigned char *)p + 0x68))[m]);
-        if (c != 0 && ((unsigned char *)c)[8] > 0
-            && (float)(c->age + 4) >= *(float *)((unsigned char *)c + 0x20)
-            && ((unsigned char *)c)[0x164] == 0 && he_FindEvent(2, 2, c->id, 0, 0x5e) == 0
+        c = (G5CH *)gm_FindChar(p->relatives[m + 3]);
+        if (c != 0 && c->health > 0
+            && (float)(c->age + 4) >= c->f020
+            && c->jobId == 0 && he_FindEvent(2, 2, c->id, 0, 0x5e) == 0
             && (best == 0 || c->age > best->age))
             best = c;
     }
@@ -9379,18 +9379,18 @@ int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (gm_CharCurrency((AIPER *)p, ai_OwnPlayer) < price * 6)
         return 0;
     q = util_RandomU(0xf) + 1;
-    if (((unsigned char *)p)[2] == 5) {
-        fin = (unsigned char *)gm_PlayerRecord((AICHAR *)p);
+    if (p->kind == 5) {
+        fin = (AIFINX *)gm_PlayerRecord((AICHAR *)p);
         r = util_RandomU(0x10);
         for (n = 0x10; n != 0; n--) {
-            if (r != 0 && fin[r + 0x74] == 0) {
+            if (r != 0 && fin->jobByGroup[r] == 0) {
                 q = r;
                 break;
             }
             r = (r + 1) % 0x10;
         }
-    } else if (((unsigned char *)p)[0x164] != 0) {
-        q = gm_TitleGroup(((unsigned char *)p)[0x164]);
+    } else if (p->jobId != 0) {
+        q = gm_TitleGroup(p->jobId);
     }
     o1->kind = 7;
     o1->ref = best->netId;
