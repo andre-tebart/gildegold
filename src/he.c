@@ -315,6 +315,7 @@ int gm_CompareTime();
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
+#define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -3547,40 +3548,46 @@ void he_Unk5483a0(int ev)
     *(short *)(ev + 0x56) = *(short *)(ev + 0x56) + (short)util_Random(4) + 2;
     *(int *)(ev + 0x70) = 0;
 }
-/* 0x5483f0 (the Ghidra function 0x548410 starts here with a free in the state -2), the event "a figure in the party of the player is hit": the news 0x10c2 (the player name 0x7e3f60 + 0x1fc * party, 0x10c4 + random(3)) and for every character (0x770b80 table, kind 5 / 6 / 7 with a level above 1) the 0x4a63f0 search, the amount 0x50a640 * 0.. * (random(4) + 2) (0x4c4830) and the news 0x10c3 (ROUGH) */
+/* 0x5483f0 (the Ghidra function 0x548410 starts after the free in the state -2), the run handler of event 0x53:
+   formats the news 0x10c2 (the own player slot's name text at +0x20, one of the texts 0x10c4 .. 0x10c6); every
+   living character (health >= 2) of kind 5 / 6 / 7 looks for a building of the kinds 7 / 22
+   (ai_PickActionBuilding); kinds 6 / 7 get the news; with a building found it is paid 1% of its worth times
+   2 .. 5 by the own player (cm_SendMoveGoodsUnchecked) and kinds 6 / 7 get the news 0x10c3 (the building, the
+   amount); then frees the event */
 
-void he_Unk5483f0(int ev)
+void he_RunCharPayouts(int ev)
 {
-    char text[0x200];
-    int rec, o = 0, a, v, lv;
+    AIJOB *e = (AIJOB *)ev;
+    char news[0x800];
+    char line[0x200];
+    AICHAR *c;
+    unsigned kinds;
+    int bld, i, at, amount;
 
-    if (*(int *)(ev + 0x70) == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    txt_Format(text, 0x10c2, ((unsigned)&ai_PlayerSlots + 0x20) + U_I((unsigned)&ai_OwnPlayer) * 0x1fc, (unsigned short)util_Random(3) + 0x10c4);
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(unsigned short *)rec != 0xffff && *(unsigned char *)(rec + 8) >= 2
-            && (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7 || *(char *)(rec + 2) == 5)) {
-            float lim;
-            int n;
-            int fb;
-            n = AI_4A63F0_7(rec, 4, 0x400080, 0, 0, (int)0x42c80000, &fb);
-            if (n != 0)
-                gm_FindById(&o, 0, 0, fb);
-            if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7)
-                he_ShowNews(*(int *)(rec + 2 + 2), -1, text, 0x20, 0x601, (char *)0);
-            if (o != 0) {
-                v = gm_GetWorth(*(unsigned short *)rec);
-                lv = (int)((float)v * 1.0f);
-                lv *= (unsigned short)util_Random(4) + 2;
-                cm_SendMoveGoodsUnchecked(*(int *)(rec + 4), -1, U_I((unsigned)&ai_OwnPlayer), lv);
-                if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
-                    txt_Format(text, 0x10c3, o, lv);
-                    he_ShowNews(*(int *)(rec + 4), -1, text, 0, 0x5ff, (char *)0);
+    txt_Format(news, 0x10c2, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], (unsigned short)util_Random(3) + 0x10c4);
+    kinds = (1 << 22) | (1 << 7);       /* ai_PassesBuildingFilter's kind mask: the building kinds 22 and 7 */
+    bld = 0;
+    for (i = 0; i < 0x300; i++) {
+        c = &ai_CharsT[i];
+        if (c->id != 0xffff && c->health >= 2 && (c->kind == 6 || c->kind == 7 || c->kind == 5)) {
+            if (ai_PickActionBuilding((struct AIPER *)c, 4, kinds, 0.0f, 100.0f, &at) != 0)
+                gm_FindById(&bld, 0, 0, at);
+            if (c->kind == 6 || c->kind == 7)
+                he_ShowNews(c->netId, -1, news, 0x20, 0x601, (char *)0);
+            if (bld != 0) {
+                amount = (int)(gm_GetWorth(c->id) * 0.01f) * ((unsigned short)util_Random(4) + 2);
+                cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, amount);
+                if (c->kind == 6 || c->kind == 7) {
+                    txt_Format(line, 0x10c3, bld, amount);
+                    he_ShowNews(c->netId, -1, line, 0, 0x5ff, (char *)0);
                 }
             }
         }
+        bld = 0;
     }
     he_FreeEvent((int *)ev);
 }
@@ -9488,7 +9495,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x52, (void *)he_Unk548330, (void *)he_Unk548380) != 0)
         return 1;
-    if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_Unk5483f0) != 0)
+    if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_RunCharPayouts) != 0)
         return 1;
     if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_Unk5485b0) != 0)
         return 1;
