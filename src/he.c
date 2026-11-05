@@ -3591,47 +3591,50 @@ void he_RunCharPayouts(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x5485b0, the run handler of the pay event for a master exam of the player (state 0 opens the window "Berufe\Messagebox_Meisterpruefung", the news 0x10b1; state 1 = the answer yes: pays 0x4c47e0 (the amount 0x50a640 of the player) and 0x50ca10 (8), no: 0x50ca10 (-6)) (ROUGH) */
+/* 0x5485b0, the run handler of the master exam fee event 0x54: stage -1 / -2 releases its slot and frees it; once
+   started, stage 0 opens the message box "Berufe\Messagebox_Meisterpruefung" with the news 0x10b1 (the character,
+   the fee: 3% of its worth) and goes to stage 1; stage 1 waits for the answer: yes (0) moves the fee between the
+   player's character and the event's character (cm_SendMoveGoods) and changes the character's relation to jobs by
+   +8, no (1) by -6; both release the slot and free the event */
 
-void he_Unk5485b0(int ev)
+void he_RunMasterExamFee(int ev)
 {
-    int h, v;
+    AIJOB *e = (AIJOB *)ev;
+    int fee;
 
-    if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        if (*(int *)(ev + 0x74) != 0)
+    if (e->stage == -1 || e->stage == -2) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (gm_CompareTime((unsigned)&ai_Time, ev + 0x44) == -1)
+    if (gm_CompareTime(&ai_Time, &e->start) == -1)
         return;
-    if (*(int *)(ev + 0x70) == 0) {
-        v = (int)gm_GetWorth(*(unsigned short *)(ev + 8));
-        if (*(int *)(ev + 0x74) == 0)
-            he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-        io_PrintText((unsigned)"$C");
-        io_PrintText(0x10b1, *(unsigned short *)(ev + 8), v);
-        *(int *)(ev + 0x70) = 1;
+    switch (e->stage) {
+    case 0:
+        fee = (int)(gm_GetWorth(e->chr) * 0.03f);
+        if (e->slot == 0)
+            he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("$C");
+        io_PrintText(0x10b1, e->chr, fee);
+        e->stage = 1;
         return;
-    }
-    if (*(int *)(ev + 0x70) == 1) {
-        if (*(int *)(ev + 0x74) == 0) {
-            *(int *)(ev + 0x70) = 0;
+    case 1:
+        if (e->slot == 0) {
+            e->stage = 0;
             return;
         }
-        h = *(int *)(*(int *)(ev + 0x74) + 8);
-        if (U_I((unsigned)&d2_ClickedForm) == h && U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_ClickedId) == 0) {
-                v = gm_GetWorth(*(unsigned short *)(ev + 8));
-                cm_SendMoveGoods(*(int *)(U_I((unsigned)&ai_PlayerChar) + 4), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_OwnPlayer), v);
-                gm_ChangeRelationToJobs(*(unsigned short *)(ev + 8), 8);
+        if (d2_ClickedForm == e->slot->win && d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                cm_SendMoveGoods(he_PlayerCh->netId, ai_CharInts[e->chr][0], ai_OwnPlayer, (int)(gm_GetWorth(e->chr) * 0.03f));
+                gm_ChangeRelationToJobs(e->chr, 8);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
             }
-            if (U_I((unsigned)&d2_ClickedId) == 1) {
-                gm_ChangeRelationToJobs(*(unsigned short *)(ev + 8), -6);
+            if (d2_ClickedId == 1) {
+                gm_ChangeRelationToJobs(e->chr, -6);
                 he_ReleaseSlot(ev);
                 he_FreeEvent((int *)ev);
                 return;
@@ -9497,7 +9500,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_RunCharPayouts) != 0)
         return 1;
-    if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_Unk5485b0) != 0)
+    if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_RunMasterExamFee) != 0)
         return 1;
     if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_Unk548790) != 0)
         return 1;
