@@ -2020,9 +2020,9 @@ int ai_DecideLaw20(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x492410, decision 21 */
+/* 0x492410, the callback of law record 21 (AIDEC.fn, office 0x11 no 1, a boolean law): ai_EvalBeatUp (0x499b80, the eval callback of action 0x18 "Verpruegeln"; ai_DecideBeatUp also reads cur as the fight's value cur * 2 + 1) takes its cur != 0 to evaluate that action with the character's guilt (ai_EvalGuiltWeights) instead of the mood weights; the normalized skill 3 against its rating (always x1.1) against 1 raises the law when mood 11 outweighs mood 9, and lowers it when mood 10 outweighs mood 9 */
 
-int ai_Unk492410(AIPER *p, int a, int *out)
+int ai_DecideBeatUpGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
