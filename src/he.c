@@ -2157,7 +2157,7 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_BeginFieldBlock(char *o, int id);
 void cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_Unk543020 / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
+int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_Unk548110 / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
 /* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the message 0x67 about one of the
    player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at random):
@@ -6702,41 +6702,47 @@ void he_Unk542590(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
-/* 0x543020, a Ghidra miss (disassembled): the outcome of a quarrel between the figures +0xac / +0xb0 (a, b): re-posts in 0x30 units, takes 0x14 relation points of b towards a (0x4c4b00), tells a (news 0x175a) and sends the message 0x4f2e30 (0x13, 1, ..) with the staff record (+0x170) of b or a (ROUGH) */
+/* 0x543020, the alloc handler of the quarrel event 0x2e between the figures partner1 (+0xac) and partner2 (+0xb0):
+   re-posts the event in 0x30 units, takes 0x14 relation points of partner2 towards partner1, tells partner1 (news
+   0x175a) and reports the crime (gv_Accuse 0x13, 1, partner2, partner1) with the home building (AICHAR.bld2) id of
+   partner2, else of partner1 */
 
-void he_Unk543020(int ev)
+void he_AllocQuarrel(int ev)
 {
-    int a, b, t, id;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    AIBLD *t;
+    int id;
     char buf[0x200];
     unsigned char fl;
 
-    a = gm_FindChar(*(int *)(ev + 0xac));
-    b = gm_FindChar(*(int *)(ev + 0xb0));
-    fl = *(unsigned char *)(ev + 0x78);
-    *(int *)(ev + 0x84) = -1;
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
+    fl = e->opts;
+    e->exSlot = -1;
     if ((fl & 2) != 0) {
         if (a == 0 || b == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
+            e->end = ai_Time;
             cm_SendExSetHE(-1, ev);
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x30, 0, 0);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x30, 0, 0);
         cm_SendExSetHE(0, ev);
-        cm_SendRelations(*(int *)(b + 4), *(int *)(a + 4), -20, 1);
-        if (*(char *)(a + 2) == 6 || *(char *)(a + 2) == 7) {
-            txt_Format(buf, 0x175a, *(unsigned short *)b, *(unsigned short *)b);
-            he_ShowNews(*(int *)(a + 4), -1, buf, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
+        cm_SendRelations(b->netId, a->netId, -20, 1);
+        if (a->kind == 6 || a->kind == 7) {
+            txt_Format(buf, 0x175a, b->id, b->id);
+            he_ShowNews(a->netId, -1, buf, 0, 0x5fb, (char *)(unsigned)&ch_EmptyName);
         }
-        t = *(int *)(b + 0x170);
+        t = b->bld2;
         id = -1;
         if (t != 0) {
-            id = *(int *)(t + 1);
+            id = t->id;
         } else {
-            t = *(int *)(a + 0x170);
+            t = a->bld2;
             if (t != 0)
-                id = *(int *)(t + 1);
+                id = t->id;
         }
-        gv_Accuse(0x13, 1, *(int *)(ev + 0xb0), *(int *)(ev + 0xac), id);
+        gv_Accuse(0x13, 1, e->partner2, e->partner1, id);
     }
 }
 /* 0x543180, a Ghidra miss (disassembled): the follow-up of the quarrel: tells b (news 0x175d, message 0x5fa) when flag 2 is set, then re-posts in 1 unit (state 0 only) */
@@ -9183,7 +9189,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2e, (void *)he_Unk543020, (void *)he_Unk543180) != 0)
+    if (he_SetEventHandlers(0x2e, (void *)he_AllocQuarrel, (void *)he_Unk543180) != 0)
         return 1;
     if (he_SetEventHandlers(0x2f, (void *)he_RunDueNow, (void *)he_Unk5432f0) != 0)
         return 1;

@@ -132,7 +132,7 @@ void he_Unk542490(int ev);
 
 void he_Unk542590(int ev);
 
-void he_Unk543020(int ev);
+void he_AllocQuarrel(int ev);
 void he_Unk543180(int ev);
 
 void he_Unk5432f0(int ev);
