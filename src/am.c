@@ -600,7 +600,7 @@ int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
 /* 0x48f010, decide kind 0x42: a master without a second level object wants one, or a building to pair
    with his own */
 
-int ai_Unk48f010(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
+int ai_DecideCannonTower(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 {
     AIARGX s1, s2;
     AIBLD *bld, *b2;
@@ -971,7 +971,7 @@ int ai_RegisterBuildingActions(int a)
     act.id = 0x42;
     strcpy(act.name, "UseCannonTower");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk48f010;
+    act.decide = ai_DecideCannonTower;
     act.exec = ai_Unk48f1e0;
     act.flags = 0x1c1;
     if (!am_RegisterMethod(&act, a))
