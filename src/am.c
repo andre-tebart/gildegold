@@ -217,10 +217,12 @@ int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2)
     }
     return ai_ExecBuildBuilding(p, s1, s2) ? 0x40 : 0;
 }
-/* 0x48e470, decide kind 0x41: a master without a workshop level object wants one built, otherwise one of the
-   four ways to pay (0x48e620 .. 0x48e9f0) */
+/* 0x48e470, the decide of the AI method "UseSecretRoom" (0x41): a character of kind 3 takes no part; a
+   master (its class 0x1e building found by p->id) without the cabinet object 0x266 wants one built
+   (ai_ChooseSubAction, 0.22 of the weight), else one of the four payment ways ai_DecideSecretRoom0 .. 3
+   (chosen by util_RandomU(4)) pays; 0 when none applies. */
 
-int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
+int ai_DecideSecretRoom(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 {
     AIARGX s1, s2;
     AIBLD *bld;
@@ -254,16 +256,16 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
         return 0;
     switch (util_RandomU(4)) {
     case 0:
-        r = ai_Unk48e620(p, &s1, &s2);
+        r = ai_DecideSecretRoom0(p, &s1, &s2);
         break;
     case 1:
-        r = ai_Unk48e730(p, &s1, &s2);
+        r = ai_DecideSecretRoom1(p, &s1, &s2);
         break;
     case 2:
-        r = ai_Unk48e830(p, &s1, &s2);
+        r = ai_DecideSecretRoom2(p, &s1, &s2);
         break;
     case 3:
-        r = ai_Unk48e9f0(p, &s1, &s2);
+        r = ai_DecideSecretRoom3(p, &s1, &s2);
         break;
     default:
         return 0;
@@ -277,7 +279,7 @@ int ai_Unk48e470(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 }
 /* 0x48e620, decide helper: a character to pay for the upgrade, level 0 */
 
-int ai_Unk48e620(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_DecideSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     unsigned short cid;
     int flags, lim, cost, m;
@@ -306,7 +308,7 @@ int ai_Unk48e620(AIPX *p, AIARGX *s1, AIARGX *s2)
 }
 /* 0x48e730, decide helper: pay in three steps, level 1 */
 
-int ai_Unk48e730(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_DecideSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     unsigned short cid;
     int flags, t, sel, a[3];
@@ -336,7 +338,7 @@ int ai_Unk48e730(AIPX *p, AIARGX *s1, AIARGX *s2)
 }
 /* 0x48e830, decide helper: pay in three steps, level 2 */
 
-int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_DecideSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     unsigned short cid;
     int flags, sel, sel2, sum, a[6];
@@ -383,7 +385,7 @@ int ai_Unk48e830(AIPX *p, AIARGX *s1, AIARGX *s2)
 }
 /* 0x48e9f0, decide helper: level 3, the master pays from his own purse */
 
-int ai_Unk48e9f0(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_DecideSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     int s, m, lim, sel, a[3];
 
@@ -960,7 +962,7 @@ int ai_RegisterBuildingActions(int a)
     act.id = 0x41;
     strcpy(act.name, "UseSecretRoom");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk48e470;
+    act.decide = ai_DecideSecretRoom;
     act.exec = ai_Unk48eab0;
     act.flags = 0x1c3;
     if (!am_RegisterMethod(&act, a))
