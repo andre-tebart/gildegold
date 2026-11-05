@@ -1300,7 +1300,7 @@ int ai_ExecGraveyardOwner(AGCH *p, AGARG *s1, AGARG *s2)
 }
 /* 0x4908d0, the decide callback of "Handle Grave" */
 
-int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
+int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
 {
     AIBLD *bld;
     AGCH *q;
@@ -1309,14 +1309,14 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     int n, i, k, v, m, t2;
 
     r = 0;
-    if (b != 0 || a != 0 || p->unk050 == 0x7fff)
+    if (b != 0 || a != 0 || p->w050 == 0x7fff)
         return 0;
     if (ai_Time.hour % 6 != p->netId % 6)
         return 0;
     if (ai_Time.year % 3 != p->netId % 3)
         return 0;
     if (p->kind != 5) {
-        q = AG_CH(p->unk05c);
+        q = AG_CH(p->spouse);
         if (q != 0) {
             if (q->kind == 5)
                 return 0;
@@ -1327,7 +1327,7 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
     memset(list, 0, sizeof(list));
     bld = ai_BldsT;
     n = 0;
-    for (i = 0; i < 256; i++, bld = (AIBLD *)((char *)bld + 0xa9)) {
+    for (i = 0; i < 256; i++, bld++) {
         if (bld->type != 0 && (bld->flags5a & 1) == 0 && ai_BTypesT[bld->type].kind == 0x1d) {
             if (n < 8)
                 list[n++] = bld;
@@ -1348,10 +1348,10 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
                     return 0;
                 o1->kind = 5;
                 o1->bldId = bld->id;
-                o1->unk04 = *r2;
-                o1->unk08 = v;
-                o2->unk04 = *r;
-                o2->kind = AG_4EF6B0(bld->unk65, r);
+                o1->entry = *r2;
+                o1->price = v;
+                o2->entry = *r;
+                o2->kind = gv_EntryIndex((char *)bld->yard, r);
                 return 0x3e;
             }
         }
@@ -1375,8 +1375,8 @@ int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2)
         return 0;
     o1->kind = 4;
     o1->bldId = bld->id;
-    o1->unk04 = *r2;
-    o1->unk08 = v;
+    o1->entry = *r2;
+    o1->price = v;
     return 0x3e;
 }
 /* 0x490b90, the execute callback of "Handle Grave" */
@@ -1388,11 +1388,11 @@ int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2)
     gm_FindById((int)&s1, 0, 0, a->bldId);
     if (s1 != 0) {
         if (a->kind == 4) {
-            gv_OrderReserveGrave(p, s1, a->unk04, 10, a->unk08);
+            gv_OrderReserveGrave(p, s1, a->entry, 10, a->price);
             return 0x3e;
         }
         if (a->kind == 5) {
-            gv_OrderMoveGraveI(p, a->unk04, s1, s2->unk04, s2->kind, a->unk08);
+            gv_OrderMoveGraveI(p, a->entry, s1, s2->entry, s2->kind, a->price);
             return 0x3e;
         }
     }
@@ -1417,7 +1417,7 @@ int ai_RegisterGraveActions(int a)
     act.id = 0x3e;
     strcpy(act.name, "Handle Grave");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk4908d0;
+    act.decide = ai_DecideHandleGrave;
     act.exec = ai_Unk490b90;
     act.flags = 1;
     if (!am_RegisterMethod(&act, a))
@@ -2942,7 +2942,7 @@ AGCH *ai_Unk493ea0(AGCH *p)
         if (n != 0) {
             int neg;
 
-            q = AG_CH(p->unk05c);
+            q = AG_CH(p->spouse);
             neg = -1;
             if (q != 0) {
                 cm_BeginFieldBlock(q, q->netId);
@@ -2965,7 +2965,7 @@ AGCH *ai_Unk493ea0(AGCH *p)
             }
         }
     } else {
-        q = AG_CH(p->unk05c);
+        q = AG_CH(p->spouse);
         if (q != 0 && q->unk008 > 0 && q->kind > 1 && q->kind < 10 && (q->flags1c8 & 0x40000) == 0)
             return q;
         if (found != 0 && found->kind > 1 && found->kind < 10)

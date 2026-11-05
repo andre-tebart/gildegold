@@ -354,9 +354,9 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     char pad00c[0x24];
     char name[0x20];                    /* 0x030 */
-    unsigned short unk050;              /* 0x050 */
+    unsigned short w050;                /* 0x050, the grave slot word (AICHAR.w050, gv_BuryCharacter compares it); 0x7fff = no grave */
     char pad052[0xa];
-    int unk05c;                         /* 0x05c */
+    int spouse;                         /* 0x05c, the netId of relatives[0], the spouse (ai_char.h AICHAR.relatives) */
     int unk060;                         /* 0x060 */
     int unk064;                         /* 0x064 */
     int list[5];                        /* 0x068 */
@@ -375,8 +375,8 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
 
 typedef struct AGARG {                  /* what a decide callback fills for the execute callback */
     int unk00;                          /* 0x00 */
-    int unk04;                          /* 0x04 */
-    int unk08;                          /* 0x08 */
+    int entry;                          /* 0x04, a grave entry number (gv_FindEntry's result) */
+    int price;                          /* 0x08, the move / lease price the decision checked */
     int bldId;                          /* 0x0c, the building's id, found again with gm_FindById (ai_ExecGraveyardOwner, ai_Unk490b90) */
     int kind;                           /* 0x10 */
 } AGARG;
@@ -416,7 +416,7 @@ extern AGCH ai_DuelOpponent;               /* 0x6f0478 */
 
 
 int ai_ExecGraveyardOwner(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490830 */
-int ai_Unk4908d0(int a, AGCH *p, int b, AGARG *o1, AGARG *o2);  /* 0x4908d0 */
+int ai_DecideHandleGrave(int a, AGCH *p, int b, AGARG *o1, AGARG *o2);  /* 0x4908d0 */
 int ai_Unk490b90(AGCH *p, AGARG *s1, AGARG *s2);                /* 0x490b90 */
 unsigned int ai_MakeDuelOpponent(unsigned int k);                      /* 0x492fd0 */
 int ai_Unk493200(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
@@ -438,7 +438,6 @@ int amt_GetKind(int k, struct AMTKIND *out);                             /* 0x4e
 int amt_GetColumnOffices(int col, int max, struct AMTREC *out);             /* 0x4e6fc0 */
 /* ai.h declares these with other types */
 #define AG_CH(id) ((AGCH *)gm_FindChar(id))
-#define AG_4EF6B0(a, p) ((int (*)(int, int *))gv_EntryIndex)(a, p)
 
 #pragma pack(push, 1)
 typedef struct AIPX {                   /* a character, 0x21c bytes (ai_Chars[768]) */
