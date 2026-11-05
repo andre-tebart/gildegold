@@ -635,7 +635,7 @@ AIREC10 *ai_FindInstrumentRecord(int key);                                 /* 0x
 void ai_RollStudyOffers(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
 int ai_MasterExamPassed(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
 int ai_EvalFest(AIGRP *g, int send);                           /* 0x494ac0 */
-int ai_Unk494d40(AIC4 *a, AIC4 *b, int n);                      /* 0x494d40 */
+int ai_RelationGain(AIC4 *payer, AIC4 *target, int n);                      /* 0x494d40 */
 int ai_Unk494d90(AIC4 *a, AIC4 *b, int *out);                   /* 0x494d90 */
 
 /* ---- 0x494e70..0x4984d0 (was unk_494e70.h) ---- */

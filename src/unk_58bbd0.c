@@ -21163,7 +21163,7 @@ int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers 
     } while (1);
 }
 
-int amt_GetKind(); int amt_FindOffice(); int amt_SendOfficeCandidates(); int ai_Unk494d40();
+int amt_GetKind(); int amt_FindOffice(); int amt_SendOfficeCandidates(); int ai_RelationGain();
 
 /* 0x5ca560, the embezzlement privilege handler (764 B): param_1 is the message record (the AIMSG by word
    offsets: +0 the id, +2 the type 6, +4 the handle), param_2 the request record (dword +0: 3 (the message)
@@ -21380,7 +21380,7 @@ int ai_Unk5caab0(int param_1)
             if (*(int *)(unsigned)&d2_ClickedId == 0) {
                 v = d2_GetObjValue(btn);
                 if (sv_CheckMoney(chr, v) != 0) {
-                    r = ai_Unk494d40(chr, (void *)param_1, v);
+                    r = ai_RelationGain(chr, (void *)param_1, v);
                     cm_SendMoneyDelta(U_I((char *)chr + 4), -v);
                     cm_SendRelations(*(int *)(param_1 + 4), U_I((char *)chr + 4), r, 1);
                     txt_Format(text, (char *)0x1db5, *(unsigned short *)param_1,
@@ -21435,7 +21435,7 @@ char ai_EmbezzlementContract(int param_1, int param_2)  /* @original: the caller
     chr = gm_FindChar(*(int *)(param_2 + 0x214));
     if (chr == 0)
         return 0x60;
-    v = ai_Unk494d40(param_1, (void *)chr, n);
+    v = ai_RelationGain(param_1, (void *)chr, n);
     cm_SendMoneyDelta(*(int *)(param_1 + 4), -n);
     cm_SendRelations(*(int *)(param_1 + 4), *(int *)(chr + 4), v, 1);
     return 0x10;

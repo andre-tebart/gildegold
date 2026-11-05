@@ -78,7 +78,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_ExecHandleGrave passes its AGCH record and s1 as they are */
-#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_EvalFest / ai_Unk494d40) */
+#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_EvalFest / ai_RelationGain) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
@@ -3363,15 +3363,17 @@ int ai_EvalFest(AIGRP *g, int send)
         cm_SendMoveGoods(-1, g->leader->netId, ai_OwnPlayer, g->cost);
     return 0;
 }
-/* 0x494d40, a rating from the rank difference of two characters and a count */
+/* 0x494d40, the favor (Gunst) a payment of n buys the payer a with the target b: (a's level - b's
+   level + 10) * n, the relation change cm_SendRelations carries (the bewitch window's "Gunst",
+   ai_EmbezzlementContract) */
 
-int ai_Unk494d40(AIC4 *a, AIC4 *b, int n)
+int ai_RelationGain(AIC4 *payer, AIC4 *target, int n)
 {
-    int x, y;
+    int payerLevel, targetLevel;
 
-    x = gm_CharLevelS(a->id, 0);
-    y = gm_CharLevelS(b->id, 0);
-    return (int)((float)((x - y + 10) * n * 3) * 0.33333334f);
+    payerLevel = gm_CharLevelS(payer->id, 0);
+    targetLevel = gm_CharLevelS(target->id, 0);
+    return (int)((float)((payerLevel - targetLevel + 10) * n * 3) * 0.33333334f);
 }
 /* 0x494d90, whether a character takes a risk: closeness plus a roll plus a bonus from two flags
    (0xd: -0.25, 0xa: +0.1), the flag that applied goes to *out */
