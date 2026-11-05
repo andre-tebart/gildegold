@@ -90,7 +90,7 @@ void he_PostEvent2b(void);
 void he_PostPlayerEvents86a2(void);
 void he_PostWorkshopEvents98(void);
 void he_InnStaffLeave(void);
-void he_Unk53f500(void);
+void he_ClearInnDarkCorner(void);
 void he_TopUpCharMoney(void);
 
 void he_PostEvent67(void);

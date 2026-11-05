@@ -313,6 +313,11 @@ int gm_CompareTime();
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
+typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a building's object list as he.c reads it: AIOBJ's
+                                           +0x28 is an AIOBJ view of its own only here (adding a member to AIOBJ flips 8 matches) */
+    char pad00[0x28];
+    int year;                           /* 0x28, the year the job was started (0x54ef70 copies ai_Time's year into it) */
+} HEJOBTABLE;
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
 void he_AllocNone(unsigned char *ev)
@@ -1576,18 +1581,21 @@ void he_InnStaffLeave(void)
         f = (AIBLD *)gm_BuildNext();
     }
 }
-/* 0x53f500, for every inn (kind 5 / 0x16) whose record 0x12c is older than a day sends the script message "rclc" ("clear dunkle ecke") */
+/* 0x53f500, for every inn building (type 0x16) whose job table (object 0x12c) was started more than one year ago sends
+   the script message "cler" to clear its dark corner ("clear dunkle ecke") */
 
-void he_Unk53f500(void)
+void he_ClearInnDarkCorner(void)
 {
-    int f, r;
+    AIBLD *f;
+    AIOBJ *r;
     int arg[4];
 
-    f = gm_BuildQuery(1, 5, 0x16);
+    f = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
     while (f != 0) {
-        r = gm_Query(*(int *)(f + 0x5d), 1, 0, 0x120);
-        if (r != 0 && (r = gm_Query(*(int *)(r + 0x14), 1, 0, 300)) != 0 && U_I((unsigned)&ai_Time) - *(int *)(r + 0x28) > 1) {
-            arg[2] = *(int *)(f + 1);
+        r = (AIOBJ *)gm_Query((void *)f->objList, 1, 0, 0x120);
+        if (r != 0 && (r = (AIOBJ *)gm_Query((void *)r->list, 1, 0, 300)) != 0
+                && ai_Time.year - ((HEJOBTABLE *)r)->year > 1) {
+            arg[2] = f->id;
             arg[0] = 0x636c6572;
             arg[1] = -1;
             arg[3] = -1;
@@ -1595,7 +1603,7 @@ void he_Unk53f500(void)
             cm_SendScriptMessage(arg);
             cm_EndGroup("clear dunkle ecke");
         }
-        f = gm_BuildNext();
+        f = (AIBLD *)gm_BuildNext();
     }
 }
 /* 0x53f5b0, tops up the money of the characters of kind 5 and 4 (kind 2 when the year % 4 is its net id & 3) to the
@@ -2229,7 +2237,7 @@ void he_Unk540fe0(void)
     he_PostEvent2b();
     he_PostPlayerEvents86a2();
     he_PostEvent67();
-    he_Unk53f500();
+    he_ClearInnDarkCorner();
     he_InnStaffLeave();
     he_InnReport();
     he_PostWorkshopEvents98();
