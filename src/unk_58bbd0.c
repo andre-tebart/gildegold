@@ -1099,7 +1099,9 @@ typedef struct AIBLD {             /* the building record fields this unit reads
 #pragma pack(push, 1)
 typedef struct AIBTYPE {           /* the building-type record fields this unit reads (ai_bld.h AIBTYPE); the size
                                       matters: ai_BTypes is walked by the record */
-    char pad000[0x247];
+    unsigned char buildingClass;   /* 0x00, the building class the goods groups test (4, 0x13, 0x10 in
+                                      ai_GoodFitsBuilding; the record's kind byte of ai_Unk5aa1f0) */
+    char pad001[0x246];
     unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
     char pad248[5];
 } AIBTYPE;                         /* 0x24d bytes, ai_BTypes[] */
@@ -16395,20 +16397,21 @@ int ai_Unk5bae50(int param_1, int param_2)
     (void)param_2;
     return 0;
 }
-/* 0x5bb2d0, whether an order kind fits the building kind (112 B): the record +0x16c of param_1 (0 when absent);
-   the kind record 0x7e3f30 + kind * 0x24d must be 4 for the kinds 0x172 / 0x174, 0x13 for 0x158 / 0x160 and
-   0x10 for 0x16e / 0x176; 1 otherwise */
+/* 0x5bb2d0, whether a good fits the building class of a character (112 B): the character's building (+0x16c,
+   0 when absent) gives its kind byte into the building-type records 0x7e3f30; their class byte must be 4 for the
+   goods 0x172 / 0x174, 0x13 for 0x158 / 0x160 and 0x10 for 0x16e / 0x176; 1 otherwise */
 
-int ai_GoodFitsBuilding(int param_1, int param_2)
+int ai_GoodFitsBuilding(void *ch, int good)
 {
-    char *kind;
-    int rec;
+    G8CHARREC *chrec;
+    AIBTYPE *type;
+    AIBLD *bld;
 
-    if (param_1 != 0 && (rec = *(int *)(param_1 + 0x16c)) != 0) {
-        kind = (char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)rec * 0x24d);
-        if (((param_2 == 0x172 || param_2 == 0x174) && *kind != 4) ||
-            ((param_2 == 0x158 || param_2 == 0x160) && *kind != 0x13) ||
-            ((param_2 == 0x16e || param_2 == 0x176) && *kind != 0x10))
+    if (ch != 0 && (bld = (chrec = (G8CHARREC *)ch)->bld) != 0) {
+        type = (AIBTYPE *)(ai_BTypes + bld->kind * 0x24d);
+        if (((good == 0x172 || good == 0x174) && type->buildingClass != 4) ||
+            ((good == 0x158 || good == 0x160) && type->buildingClass != 0x13) ||
+            ((good == 0x16e || good == 0x176) && type->buildingClass != 0x10))
             return 0;
         return 1;
     }
