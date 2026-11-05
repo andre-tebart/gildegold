@@ -2493,9 +2493,9 @@ int ai_DuelAcceptAction(AGDUEL *d, AGCH *c, int k)
     }
     return 1;
 }
-/* 0x4933d0, as 0x493390, and sets the kind of side c */
+/* 0x4933d0, accepts the action k for side c as ai_DuelAcceptAction does and sets it as the side's kind (kind1 / kind2) */
 
-int ai_Unk4933d0(AGDUEL *d, AGCH *c, int k)
+int ai_DuelSetAction(AGDUEL *d, AGCH *c, int k)
 {
     int *q;
     int i;
@@ -2678,23 +2678,23 @@ int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
             cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->stake);
         d->total += d->stake;
         ai_DuelThrow(d, c, 1);
-        ai_Unk4933d0(d, c, k);
+        ai_DuelSetAction(d, c, k);
         return 1;
     case 2:
         if (c->kind == 6)
             cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->raiseAmount);
         d->total += d->raiseAmount;
         ai_DuelThrow(d, c, 0);
-        ai_Unk4933d0(d, c, k);
+        ai_DuelSetAction(d, c, k);
         return 1;
     case 3:
         if (c->kind == 6)
             cm_SendMoveGoodsUnchecked(-1, c->netId, 0, d->raiseAmount);
         d->total += d->raiseAmount;
-        ai_Unk4933d0(d, c, k);
+        ai_DuelSetAction(d, c, k);
         return 1;
     case 4:
-        ai_Unk4933d0(d, c, k);
+        ai_DuelSetAction(d, c, k);
         return 1;
     default:
         return 0;
