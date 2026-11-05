@@ -15875,20 +15875,61 @@ void he_Unk55e3a0(int ev)
 {
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
 }
-/* 0x55e3d0, the run handler of a news event (ROUGH skeleton, 496 bytes): a figure (0x505df0) is looked up, a random building of the query list (gm_Query / gm_QueryNext, 0x42ec00) is picked, the amount 0x5089c0 / _ftol is booked (0x4c4880) and the news "_NACHRICHTEN_HS_09" shown to the owner (0x53dee0); the record is freed */
-
-void he_Unk55e3d0(int ev)
+/* 0x55e3d0, the run handler of the event 0x34 (its alloc handler he_Unk55e3a0), a worker who steals: stages -2 / -1 free
+   the record, a later stage leaves it. At stage 0 the character AIJOB.ownerCh must work in a building (AICHAR.bld)
+   whose owner it likes -26 or less (gm_Opinion), else the record is freed. One good of the building's store (the
+   object 0x2a, else 0x116; up to 0x20 goods of its list) is picked at random and taken out of the store
+   (cm_SendExSellObject to nobody, one piece); the event character gets the message box 0x1bb9 (the building, the
+   good's name 0x9a8 + 2 * good, its price; 0x5f2, quick jump to the building's main object, "_NACHRICHTEN_HS_09");
+   the record is freed (reasoned: a theft, from the dislike and the good leaving the store unpaid)
+   @deep read whole against 0x55e3d0..0x55e5b6 and reconstructed (the dislike check <= -26, the store 0x2a
+   / 0x116, the 0x20 goods table memset + gm_Query list fill, the util_Random pick, gm_GoodsPrice / _ftol,
+   cm_SendExSellObject (-1, store, good, 1), txt_Format 0x1bb9, the message box 0x5f2 _NACHRICHTEN_HS_09);
+   155 vs 155 instructions, 7 bytes differ. Left is allocation only: the goods count n lives in edi in ours
+   (+0xce xor edi,edi / mov [esp+edi*4+0x18] / inc edi / test / push edi), in esi in the original, which
+   then reloads ev (mov esi,[esp+0x49c] at +0x1b9) on the n == 0 / g == 0 exits - the two 'branch' hunks
+   are those je's targeting the reload instead of push esi. Tried: n declared apart, the parameter typed
+   AIJOB *, a while-loop fill (worse, reverted) */
+void he_RunWorkerTheft(int ev)
 {
-    int p;
-    char text[0x100];
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    AIOBJ *store, *o, *g;
+    AIOBJ *goods[0x20];
+    int n, price;
+    char text[0x400];
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p != 0) {
-        cm_SendExSellObject(*(int *)(ev + 0xac), -1, 0, 0, 0, 0);
-        txt_Format(text, 0x1bba, p);
-        he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(p + 4), -1, "_NACHRICHTEN_HS_09", 0);
+    switch (e->stage) {
+    case -2:
+    case -1:
+        he_FreeEvent((int *)ev);
+        break;
+    case 0:
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        if (c == 0 || (b = c->bld) == 0 || gm_Opinion(b->owner, c->id) > -26) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        store = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+        if (store == 0)
+            store = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x116);
+        o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
+        if (store != 0) {
+            memset(goods, 0, sizeof(goods));
+            n = 0;
+            for (g = (AIOBJ *)gm_Query((void *)store->list, 1, 5); g != 0; g = (AIOBJ *)gm_QueryNext())
+                goods[n++] = g;
+            if (n != 0 && (g = goods[(unsigned short)util_Random(n)]) != 0) {
+                price = (int)gm_GoodsPrice(g->id, ai_OwnPlayer);
+                cm_SendExSellObject(-1, store->objId, g->id, 1, ai_OwnPlayer, 0);
+                txt_Format(text, 0x1bb9, c->bld, 0x9a8 + 2 * g->id, price);
+                he_MessageBoxQuickjump(ai_CharInts[e->chr][0], -1, text, 0, 0x5f2, b->id, o->objId, 0, "_NACHRICHTEN_HS_09");
+            }
+        }
+        he_FreeEvent((int *)ev);
+        break;
     }
-    he_FreeEvent((int *)ev);
 }
 /* 0x55e5c0, the allocation handler: due clock now + 4 hours (0x4fe140 (clock, 0, 0, 4)) */
 
@@ -17728,7 +17769,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(51, (void *)he_Unk55e180, (void *)he_RunWorkerQuits) != 0)
         return 1;
-    if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_Unk55e3d0) != 0)
+    if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_RunWorkerTheft) != 0)
         return 1;
     if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_Unk55e600) != 0)
         return 1;
