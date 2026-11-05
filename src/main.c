@@ -4106,7 +4106,7 @@ void main_BeginPlayerRound(void)
             cur = i;
     }
     ai_PlayerId = (unsigned short)cur;
-    he_Unk53ee40();
+    he_RunEveryFrameEvents();
     if ((ai_GameFlags & 4) == 0 && (unsigned short)util_Random(10) > 6 && main_CheckCD() != 1) {
         do {
             d2_CutsceneActive = 0;

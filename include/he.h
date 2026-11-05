@@ -65,7 +65,7 @@ void he_RecheckEventPerson(unsigned char *r);
 void he_RecheckPersonEvents(unsigned short *pl);
 void he_RunEvents(void);
 void he_RunQuickList(void);
-void he_Unk53ee40(void);
+void he_RunEveryFrameEvents(void);
 void he_AgeCarryRecs(void);
 
 void he_CountDownApEvents(void);

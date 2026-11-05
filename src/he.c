@@ -1345,25 +1345,25 @@ void he_RunQuickList(void)
         } while (i <= he_QuickTop);
     }
 }
-/* 0x53ee40, runs the run handler of the records with bit 0x10 at +0x78 */
+/* 0x53ee40, runs the run handler of the records with the option 0x10 (runs every frame) */
 
-void he_Unk53ee40(void)
+void he_RunEveryFrameEvents(void)
 {
-    unsigned char *pb;
+    AIJOB *pb;
     int i = 0;
 
-    if (U_I((unsigned)&he_EventTop) >= 0) {
-        pb = (unsigned char *)(unsigned)&he_Events;
+    if (he_EventTop >= 0) {
+        pb = he_Jobs;
         do {
-            if ((int)pb >= (int)((unsigned)&he_Events + 0x53000))
+            if ((int)pb >= (int)(he_Jobs + 0x400))
                 return;
-            if (*pb != 0 && (pb[0x78] & 0x10) != 0 && *pb < 0xa7) {
-                he_RecheckEventPerson(pb);
-                ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
+            if (pb->kind != 0 && (pb->opts & 0x10) != 0 && (unsigned char)pb->kind < 0xa7) {
+                he_RecheckEventPerson((unsigned char *)pb);
+                he_RunHandlers[(unsigned char)pb->kind](pb);
             }
             i++;
-            pb += 0x14c;
-        } while (i <= U_I((unsigned)&he_EventTop));
+            pb++;
+        } while (i <= he_EventTop);
     }
 }
 /* 0x53eea0, counts the time to live of the 0x100 carried-goods records (gm_CarryRecs) down, freeing (ref 0) each one
