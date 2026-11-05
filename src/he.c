@@ -222,7 +222,6 @@ extern GAPDATA full_data_628dec[];
 extern GAPDATA full_data_628df8[];
 extern GAPDATA full_data_628e10[];
 extern GAPDATA full_data_628e28[];
-extern GAPDATA full_data_628e40[];
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_628e58[];
 extern GAPDATA full_data_628e70[];
@@ -19096,7 +19095,7 @@ void he_Unk56e070(char *c, int ev, unsigned char *b, int task)
 void he_Unk56e460();
 void he_Unk56e5b0();
 void he_AllocEvent9a();
-void he_Unk56f0b0();
+void he_RunDomizilEvent();
 void he_Unk56f050();
 
 /* 0x56e400, registers the event types 0x99 .. 0x9b (called by 0x53d4b0): the pairs (0x56e460, 0x56e5b0), (0x56efc0, 0x56f040) and (0x56f050, 0x56f0b0); 0 = ok, 1 = a registration failed */
@@ -19104,7 +19103,7 @@ int he_RegisterEventTypes99(void)
 {
     if (he_SetEventHandlers(0x99, (void *)he_Unk56e460, (void *)he_Unk56e5b0) == 0) {
         if (he_SetEventHandlers(0x9a, (void *)he_AllocEvent9a, (void *)ai_Unk56f040) == 0) {
-            if (he_SetEventHandlers(0x9b, (void *)he_Unk56f050, (void *)he_Unk56f0b0) == 0)
+            if (he_SetEventHandlers(0x9b, (void *)he_Unk56f050, (void *)he_RunDomizilEvent) == 0)
                 return 0;
         }
     }
@@ -19393,25 +19392,28 @@ void he_Unk56f050(int ev)
     gm_AddTime(ev + 0x52, 0x30, 0, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
-/* 0x56f0b0, the run of the event 0x9b: any state but 0 frees; the state 0 sends the text 0x4035 (0x628e40) when the record of +0xac exists, the text 0x4036 when the record of +0xb0 exists, then frees */
-
-void he_Unk56f0b0(int ev)
+/* 0x56f0b0, the run of the domicile event 0x9b: any stage but 0 frees; stage 0 sends the text 0x4035 with the news
+   0x5fb (its second text he_NewsDomizil11) to the character partner1 when it exists, and the text 0x4036 with the
+   news 0x5fa to the character partner2 when it exists (the first character's id as its argument), then frees */
+void he_RunDomizilEvent(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char text[0x100];
-    int r;
+    AICHAR *c, *c2;
 
-    if (HM_I(ev, 0x70) != 0) {
+    if (e->stage != 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    r = gm_FindChar(HM_I(ev, 0xac));
-    if (r != 0) {
+    c = (AICHAR *)gm_FindChar(e->partner1);
+    c2 = (AICHAR *)gm_FindChar(e->partner2);
+    if (c != 0) {
         txt_Format(text, 0x4035);
-        he_ShowNews(HM_I(ev, 0xac), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e40);
+        he_ShowNews(e->partner1, -1, text, 1, 0x5fb, he_NewsDomizil11);
     }
-    if (gm_FindChar(HM_I(ev, 0xb0)) != 0) {
-        txt_Format(text, 0x4036, *(unsigned short *)r);
-        he_ShowNews(HM_I(ev, 0xb0), -1, text, 1, 0x5fa, 0);
+    if (c2 != 0) {
+        txt_Format(text, 0x4036, c->id);
+        he_ShowNews(e->partner2, -1, text, 1, 0x5fa, 0);
     }
     he_FreeEvent((int *)ev);
 }

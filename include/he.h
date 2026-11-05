@@ -139,6 +139,7 @@ void he_AllocTribute(int ev);
 void he_SpawnFounders(void);
 extern const float he_FounderOdds[5];  /* 0x5eebc4 */
 extern char he_InitBetrieb[12];         /* 0x627b20, the scene name the new-worker event's run handler 0x565940 plays */
+extern char he_NewsDomizil11[24];       /* 0x628e40, the second text (the sound key) of the news 0x5fb the domicile event 0x9b's run sends */
 
 void he_StammtischCommand(unsigned cmd, struct AIBLD *inn, struct AIOBJ *table, int figId); /* 0x541b40, the inn meeting hears of a table request: join / leav / cler / exec / new */
 
