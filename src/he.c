@@ -285,6 +285,7 @@ typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (regist
 #define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
 #define AI_4A63F0_7(p, a, fl, b, c, f, o) ((int (*)(void *, int, unsigned int, int, int, float, int *))ai_PickActionBuilding)(p, a, fl, b, c, f, o)
+#define ai_PickActionBuildingI ((int (*)(struct AIPER *, int, __int64, int, float, int *))ai_PickActionBuilding)  /* 0x4a63f0 with lo an int: @original he_AllocBrawl passes its (null) home building there, the register as it is (push edi; a float parameter would convert it) */
 
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
@@ -514,6 +515,17 @@ typedef struct HESPYING {               /* the spying event 24's words over AIJO
     int fee;                            /* 0xe4, the money the event's character pays for the spy */
     int days;                           /* 0xe8, the days of spying asked for */
 } HESPYING;
+typedef struct HEBRAWL {                /* the brawl event 26's words over AIJOB's union (he_AllocBrawl / he_Unk55a730);
+                                           AIJOB.from is the building the thug is hired at */
+    char pad00[0xb4];
+    int victim;                         /* 0xb4, the netId of the character beaten up (gm_FindChar; the run handler's
+                                           money moves and accusation name it) */
+    char padb8[0x10];
+    int thug;                           /* 0xc8, the netId of the thug (the run handler takes it from the spawn slot), -1: none */
+    int slot;                           /* 0xcc, the cm slot of the pending request (the spawn, the walk) */
+    int meet;                           /* 0xd0, the id of the building the thug goes to: the victim's home, else one of
+                                           its buildings, else one of the gypsyFilter kinds near it */
+} HEBRAWL;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -582,7 +594,7 @@ int gm_CompareTime();
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
-#define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, unsigned char, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void */
+#define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, int, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void; f an int: he_AllocBrawl pushes 0x154 whole */
 #define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
@@ -13629,37 +13641,52 @@ int gm_EquipmentValue(unsigned char *b, int level);
 int gm_SumListAmounts(void *list, unsigned char p);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 
-/* 0x55a5f0, the allocation handler of the brawl event "PRUEGEL" (ROUGH): due now; with no building (+0x10 = -1) the first of the kind 0x16 (else 0xf) is taken, the message 0x4c59f0 (0x11, +0x10, -1, 0, 2, 0x154, "PRUEGEL") is created (+0xc8 = -1, handle +0xcc), and the target building +0xd0 is the opponent's own (+0x170) or its first of the type (0x501190 (1, 4, id)), else a free spot near it (0x4a63f0 (player, .., 100.0)) */
-void he_Unk55a5f0(int ev)
+/* 0x55a5f0, the allocation handler of the brawl event 26 (HEBRAWL, "PRUEGEL"; run handler he_Unk55a730): due now;
+   without a hiring building (AIJOB.from -1) the first building of the kind 0x16, else 0xf, is taken; the thug is
+   spawned there (cm_SendSpawnCharacterR, "PRUEGEL"; its slot kept, no thug yet), and the building it goes to is
+   the victim's home, else the victim's first building, else one of the gypsyFilter kinds the event's character
+   picks (ai_PickActionBuilding, up to 100.0); none at all: the original reads the id through a null building
+   @deep read whole against 0x55a5f0..0x55a72c and typed (HEBRAWL over AIJOB): 102/107 instructions equal,
+   the only hunk is the original's second copy of the 'meet = home->id' tail for the home != 0 path
+   (+0x55a720: + mov ecx,[edi+1] / pop edi / mov [esi+0xd0],ecx / pop esi / ret; ours jumps to the one tail
+   at +0x710 with eax). Settled: home as if/else assignment (the bld2 test then the owner query, as the
+   original's test ecx / mov edi,ecx / jmp), the home pointer passed as ai_PickActionBuilding's lo (push
+   edi, unfolded: ai_PickActionBuildingI), at an int (no _ftol), gypsyFilterValue (the high word first),
+   cm_SendSpawnCharacterR with f an int (push 0x154). Tried: if (home) {..; return;} first, if/else if,
+   nested if/else: VC6 then folds home == 0 (push 0, mov [1]) - 30..54 instructions; && and
+   nested-if-with-return keep the 5. The proof stops only on eax at the return of this void function */
+void he_AllocBrawl(AIJOB *e)
 {
-    int p, b, own, spot;
-    float v;
+    HEBRAWL *br = (HEBRAWL *)e;
+    AICHAR *victim;
+    AIBLD *b, *home;
+    int at;
 
-    p = gm_FindChar(*(int *)(ev + 0xb4));
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (*(int *)(ev + 0x10) == -1) {
-        b = gm_BuildQuery(1, 5, 0x16);
+    gm_FindChar(br->victim);
+    e->end = ai_Time;
+    if (e->from == -1) {
+        b = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
         if (b == 0)
-            b = gm_BuildQuery(1, 5, 0xf);
+            b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
         if (b != 0)
-            *(int *)(ev + 0x10) = *(int *)(b + 1);
+            e->from = b->id;
     }
-    *(int *)(ev + 0xc8) = -1;
-    *(int *)(ev + 0xcc) = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0x11, *(int *)(ev + 0x10), -1, 0, 2, 0x154, "PRUEGEL");
-    p = gm_FindChar(*(int *)(ev + 0xb4));
-    own = *(int *)(p + 0x170);
-    if (own == 0)
-        own = gm_BuildQuery(1, 4, *(unsigned short *)p);
-    if (own != 0) {
-        *(int *)(ev + 0xd0) = *(int *)(own + 1);
-        return;
-    }
-    spot = 0;
-    if (AI_4A63F0_7((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 6, *(int *)((unsigned)&gypsyFilter), *(int *)((unsigned)&gypsyFilter + 4), spot, 100.0f, &v) != 0)
-        *(int *)(ev + 0xd0) = *(int *)(gm_BuildQuery(1, 1, (int)v) + 1);
+    br->thug = -1;
+    br->slot = cm_SendSpawnCharacterR(0x11, e->from, -1, 0, 2, 0x154, "PRUEGEL");
+    victim = (AICHAR *)gm_FindChar(br->victim);
+    if (victim->bld2 != 0)
+        home = victim->bld2;
     else
-        *(int *)(ev + 0xd0) = *(int *)(own + 1);
+        home = (AIBLD *)gm_BuildQuery(1, 4, victim->id);
+    if (home == 0) {
+        if (ai_PickActionBuildingI((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilterValue, (int)home, 100.0f, &at) != 0) {
+            br->meet = ((AIBLD *)gm_BuildQuery(1, 1, at))->id;
+            return;
+        }
+    }
+    br->meet = home->id;
 }
+
 /* 0x55a730, the run handler of the brawl event "PRUEGEL" (2112 bytes; ROUGH skeleton like 0x558f10): the two brawlers (+0xac / +0xb0 and the job handles 0x4c3ae0 / 0x4c3b10) walk to the building (0x4c52e0, the detection 0x553ae0, 0x4f2e30 relation, the guards 0x53e400, 0x4c4ed0), the fight is decided by the skills (0x494d90, 0x5ba6b0, 0x50cc50 twice) and "_NACHRICHTEN_HS_17" tells the winner / loser (0x53dda0 / 0x53dee0), the end releases the group (0x524260) and frees the record */
 
 void he_Unk55a730(int ev)
@@ -16235,7 +16262,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(24, (void *)he_AllocSpying, (void *)he_RunSpying) != 0)
         return 1;
-    if (he_SetEventHandlers(26, (void *)he_Unk55a5f0, (void *)he_Unk55a730) != 0)
+    if (he_SetEventHandlers(26, (void *)he_AllocBrawl, (void *)he_Unk55a730) != 0)
         return 1;
     if (he_SetEventHandlers(27, (void *)he_Unk55af70, (void *)he_Unk55b140) != 0)
         return 1;
