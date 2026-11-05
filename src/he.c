@@ -5930,17 +5930,21 @@ void he_RunGathering(int ev)
         return;
     }
 }
-/* 0x54c4c0, a Ghidra miss: the init of the event: the due clock now with +0x56 = 0xa, +0x58 / +0x5c / +0xac / +0xb0 / +0xb4 = 0 */
-
-void he_Unk54c4c0(int ev)
+/* 0x54c4c0, the allocation handler of the simulation events 0x66 (the accident simulation) and 0x70 (the disease
+   simulation): the due clock is now at hour 0xa with its minute and second cleared, and HESIM's cursor, step and
+   done are cleared (the run starts at the first character) */
+void he_AllocSim(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(short *)(ev + 0x56) = 0xa;
-    *(int *)(ev + 0x58) = 0;
-    *(int *)(ev + 0x5c) = 0;
-    *(int *)(ev + 0xac) = 0;
-    *(int *)(ev + 0xb0) = 0;
-    *(int *)(ev + 0xb4) = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HESIM *s = (HESIM *)ev;
+
+    e->end = ai_Time;
+    e->end.hour = 0xa;
+    e->end.min = 0;
+    e->end.sec = 0;
+    s->cursor = 0;
+    s->step = 0;
+    s->done = 0;
 }
 
 int ai_IsLocalWorker();
@@ -10829,7 +10833,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x65, (void *)he_StartGathering, (void *)he_RunGathering) != 0)
         return 1;
     sv_RegisterActivity(0x65, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x66, (void *)he_Unk54c4c0, (void *)he_RunAccidentSim) != 0)
+    if (he_SetEventHandlers(0x66, (void *)he_AllocSim, (void *)he_RunAccidentSim) != 0)
         return 1;
     if (he_SetEventHandlers(0x67, (void *)he_StartAuctionEvent, (void *)he_RunAuctionEvent) != 0)
         return 1;
@@ -10845,7 +10849,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x6f, (void *)he_StartLover, (void *)he_RunLover) != 0)
         return 1;
-    if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_RunDiseaseSim) != 0)
+    if (he_SetEventHandlers(0x70, (void *)he_AllocSim, (void *)he_RunDiseaseSim) != 0)
         return 1;
     if (he_SetEventHandlers(0x74, (void *)he_StartDarkCorner, (void *)he_RunDarkCorner) != 0)
         return 1;
