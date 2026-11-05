@@ -142,10 +142,10 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             int tourCounters[12];       /* 0xb0 .. 0xdc, the twelve ware counters it hands over one by one;
                                            ai_UpdateStaff counts the nonzero ones as staff already busy */
         };
-        struct { int padhome; AITIME homeUntil; };  /* 0xb0, of the send-home event 0x77 the time it ends: its init
-                                                   0x54fe80 sets now + the duration of the goods 0x178 */
-        struct { int padgrp; int groups[6]; };  /* 0xb0, of a six-group event 0x7d its six figure groups (its alloc
-                                                   handler 0x551d00: gm_Shuffled, each + 1) */
+        struct { int padgrp; union { int groups[6]; AITIME homeUntil; }; };  /* 0xb0, of a six-group event 0x7d its six figure groups (its alloc
+                                                   handler 0x551d00: gm_Shuffled, each + 1); homeUntil over them: of
+                                                   the send-home event 0x77 the time it ends (its init 0x54fe80: now
+                                                   + the duration of the goods 0x178) */
         struct {                        /* 0xac, of a running income event 3 (its alloc handler 0x568ae0) */
             unsigned short incomeGood;  /* 0xac, the goods (an ai_Goods index) */
             char padinc[2];
