@@ -14,11 +14,13 @@
    raid 0x44, fight 0x45, duel challenge 0x46 and insult 0x47 events) read AIJOB typed, their kind words named in
    AIJOB's union (fest*, exam*, tribute*, pair*, patrol*, raid*; partner1 / partner2) and the fight parties they
    post as G28REC (cm_types.h, its raid lists).
-   Open: types: the handlers past 0x547ba0 still read the event and message records through raw offsets
+   The handlers 0x547f90 .. 0x549120 (events 0x4a, 0x53 .. 0x58, 0x5d) read AIJOB / AICHAR / AIBLD / G28REC typed too.
+   Open: types: the other handlers past 0x547ba0 still read the event and message records through raw offsets
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
    master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), HEDUEL (the duel challenge's +0xac and the duel's
-   +0xb4 / +0xb6), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5). AIJOB's fields between
+   +0xb4 / +0xb6), HEGESELLE / HEEXAMPAY / HEPAYMENT / HEOFFSPRING (the events 0x4a / 0x55 / 0x56 / 0x5d), HEFEEMSG
+   (AIMSG's words of the AI message 0x56), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5). AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / G28REC can flip other units'
    matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it).
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
