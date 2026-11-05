@@ -340,6 +340,11 @@ typedef struct HECONVERT {              /* the conversion event 0x81's words ove
     int rounds;                         /* 0xb0, the rounds (days) left */
     int from;                           /* 0xb4, the AICHAR.b00c kind turned (0 / 1) into the other */
 } HECONVERT;
+typedef struct HEDELAY {                /* the delay event 0x80's words over AIJOB's union (he_StartDue starts it,
+                                           he_RunDelay counts the days down) */
+    char pad00[0xac];
+    int days;                           /* 0xac, the days still to wait, one counted off per day, 0 frees the event */
+} HEDELAY;
 typedef struct HEAPPLICANTS {           /* the applicants event 0x86's words over AIJOB's union (he_RunApplicants) */
     char pad00[0xac];
     int office;                         /* 0xac, the office kind applied for (amt_GetOpenOffice), 0 none */
@@ -10416,19 +10421,24 @@ void cm_BeginFieldBlock(char *o, int id);
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
 void cm_SendFieldDeltas(void);
 
-/* 0x552520, the run handler of a counting event: a negative state or a counter +0xac <= 0 frees the record; flag 4 does nothing; else the counter is decremented and the event posted 0x18 later (handle in +0x84) */
-void he_Unk552520(int ev)
+/* 0x552520, the run handler of the delay event 0x80 (its start handler he_StartDue): a negative stage or no day
+   left (HEDELAY.days) frees the record; a record with the option 4 does nothing; else a day is counted off and the
+   event is posted a day later (its cm slot kept in exSlot) */
+void he_RunDelay(int ev)
 {
-    if (*(int *)(ev + 0x70) < 0 || *(int *)(ev + 0xac) <= 0) {
+    AIJOB *e = (AIJOB *)ev;
+    HEDELAY *d = (HEDELAY *)ev;
+
+    if (e->stage < 0 || d->days <= 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    *(int *)(ev + 0xac) = *(int *)(ev + 0xac) - 1;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    d->days = d->days - 1;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x5525a0, the run handler of the conversion event 0x81 (its alloc handler he_StartDue): while it has rounds and
    characters left, each round (a day apart) turns up to n = min(left, ceil(left + rounds)) characters whose b00c
@@ -10940,7 +10950,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7f, (void *)he_StartExamOffer, (void *)he_RunExamOffer) != 0)
         return 1;
-    if (he_SetEventHandlers(0x80, (void *)he_StartDue, (void *)he_Unk552520) != 0)
+    if (he_SetEventHandlers(0x80, (void *)he_StartDue, (void *)he_RunDelay) != 0)
         return 1;
     if (he_SetEventHandlers(0x81, (void *)he_StartDue, (void *)he_RunConversion) != 0)
         return 1;
