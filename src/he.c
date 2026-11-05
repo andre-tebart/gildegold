@@ -473,7 +473,7 @@ typedef struct HEHUNT {                 /* the animal hunt event 21's words over
     char padb0[4];
     int room;                           /* 0xb4, the object (room) of each hunter's building (AICHAR.bld) it goes to */
 } HEHUNT;
-typedef struct HESTUDY {                /* the study event 22's words over AIJOB's union (he_AllocStudy / he_Unk558a40;
+typedef struct HESTUDY {                /* the study event 22's words over AIJOB's union (he_AllocStudy / he_RunStudy;
                                            reasoned: a stay at a building that raises one skill of the character) */
     char pad00[0xac];
     unsigned char skill;                /* 0xac, the skill raised: the character's byte 0x80 + skill, up to 252 */
@@ -12901,28 +12901,86 @@ void he_AllocStudy(int ev)
     if (s->until.hour < 6)
         s->until.hour = s->until.hour - e->end.hour + 0x1d;
 }
-/* 0x558a40, the run handler of the study event 22 (ROUGH skeleton): waits for the due time, rolls the success from the saboteur's skill (0x509400 x2, 0x5092e0 and the _ftol rolls) against the building, then marks the building / person (0x4c3ba0 / 0x4c3d00 / 0x4c49a0) and tells the owner (0x501ce0, the news "_NACHRICHTEN_HS_81" 0x53dee0); the group is released (0x524260) and the record freed */
-
-void he_Unk558a40(int ev)
+/* 0x558a40, the run handler of the study event 22 (HESTUDY; allocated by he_AllocStudy). Stage 0, every 30
+   minutes: without the character or once its skill (AICHAR.skills[HESTUDY.skill]) is 252 the next stage; without
+   the event's building (AIJOB.from) the event is freed. Else the working minutes since the clock60
+   (gm_WorkMinutesBetween; up to the latest end, which also ends the stage) give the gain
+   minutes / 30 * 8 * (1 + the building's skill 0xc / 100), divided by 1 + the skill / 252 and capped at 252, sent as
+   a field delta of the skill byte. Stage 1: unless the building's master has flags1b4 bit 0, the news 0x1bc8 (the
+   character, the building) goes to the event's character with the quick jump to the building's room (object 0x60
+   of a type kind 4, 0x145 of kind 0x13, else gm_GetGebaeudeHauptraum; none: no news) and "_NACHRICHTEN_HS_81";
+   the character leaves the group and the event is freed. Stages -2 / -1 free the event */
+void he_RunStudy(int ev)
 {
-    int p, b, q;
+    AIJOB *e = (AIJOB *)ev;
+    HESTUDY *s = (HESTUDY *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    AIOBJ *q;
+    AICHAR *m;
+    AIBTYPE *bt;
+    float mins;
+    unsigned char gain;
+    unsigned char *skill;
     char text[0x200];
 
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0) {
+    switch (e->stage) {
+    case 0:
+        c = (AICHAR *)gm_FindChar(s->chr);
+        if (c != 0 && c->skills[s->skill] < 252.0f) {
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+            if (b == 0)
+                break;
+            if (gm_CompareTime(&ai_Time, &s->until) < 0)
+                mins = (float)gm_WorkMinutesBetween(&e->clock60, &ai_Time, b);
+            else {
+                mins = (float)gm_WorkMinutesBetween(&e->clock60, &s->until, b);
+                e->stage = 1;
+            }
+            gain = (unsigned char)((float)(mins / 30.0) * 8.0 * (gm_BuildingSkill((unsigned char *)b, 0xc, 1) * 0.01 + 1.0));
+            skill = &c->skills[s->skill];
+            gain = (unsigned char)(gain / (*skill / 252.0f + 1.0));
+            if (gain + *skill > 252.0f)
+                gain = (unsigned char)(252.0f - *skill);
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldValues(1, 1, (char *)&c->skills[s->skill] - cm_FieldObject, &gain);
+            cm_SendFieldDeltas();
+            e->end = ai_Time;
+            e->clock60 = ai_Time;
+            gm_AddTime(&e->end, 0, 0x1e, 0);
+            return;
+        }
+        e->stage = 1;
+        return;
+    case 1:
+        c = (AICHAR *)gm_FindChar(s->chr);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0 || c == 0)
+            break;
+        m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+        if (m == 0 || (m->flags1b4 & 1) == 0) {
+            q = 0;
+            bt = &ai_BTypesT[b->type];
+            if (bt->kind == 4)
+                q = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x60);
+            else if (bt->kind == 0x13)
+                q = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x145);
+            if (q == 0)
+                q = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)b);
+            if (q != 0) {
+                txt_Format(text, 0x1bc8, c->id, b);
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, e->from, text, 0, 0x5f2, b->id, q->objId, ch_EmptyName, "_NACHRICHTEN_HS_81");
+            }
+        }
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
         he_FreeEvent((int *)ev);
         return;
-    }
-    if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
+    case -2:
+    case -1:
+        break;
+    default:
         return;
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (b != 0) {
-        q = gm_FindCharacterByMaster(b);
-        txt_Format(text, 0x1bba, b);
-        gm_GetGebaeudeHauptraum(b);
-        he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), q != 0 ? *(int *)(q + 2) : -1, "_NACHRICHTEN_HS_81", 0);
     }
-    sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
     he_FreeEvent((int *)ev);
 }
 /* 0x558de0, the allocation handler: due clock = the clock at +0xb4 */
@@ -15682,7 +15740,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_RunAnimalHunt) != 0)
         return 1;
     sv_RegisterActivity(21, "Getier", 1, 1280, 174);
-    if (he_SetEventHandlers(22, (void *)he_AllocStudy, (void *)he_Unk558a40) != 0)
+    if (he_SetEventHandlers(22, (void *)he_AllocStudy, (void *)he_RunStudy) != 0)
         return 1;
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
     if (he_SetEventHandlers(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
