@@ -46,7 +46,7 @@
    HESIM / HEAUCTION / HETITLE (the events 0x62 / 0x64 / 0x65 / 0x66, 0x68, 0x70 / 0x67 / 0x69), HESKILLUP /
    HEBARD / HEPOPULATION / HELOVER / HEDARKCORNER (the events 0x6a / 0x6b / 0x6d / 0x6f / 0x74; the bard's script
    mark HEBARDSCRIPT, the job table's proofs / year HEJOBTABLE), HEINN (the inn
-   simulation's list), HEFINVIEW (AIFIN's +0x18 / +0x64; ai.h is not
+   simulation's list), HEFINVIEW (AIFIN's +0x14 .. +0x64; ai.h is not
    included), the tutorial / tip / routine / storm / new-worker / production / trade words in HEHINTEVENT,
    HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HEPRODUCTIONMSG and HETRADEMSG, the research /
    building / training / plunder / meeting words in HERESEARCH (event 0xc), HEBUILD (0xd), HEAHMRESEARCH (0x96 / 0x97),
@@ -58,7 +58,10 @@
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
-   Open: types: the other handlers past 0x561130 still read the event and message records through raw offsets
+   The ransom 0x3d / 0x3e (HEEV3D / HEEV3E), burglary 0x3f (HEBURGLARY), building spying 0x40 (HEBLDSPY, its report
+   HESPYREPORT), ambush 0x48 (HEAMBUSH), attack 0x49 (AIJOB's raid* words) and fire 0x4e (HEFIRE; the burning event's
+   HEBURN) handlers read their records typed.
+   Open: types: the other handlers past 0x5648e0 still read the event and message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
    cm.h not included; their calls stay M7)
