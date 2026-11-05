@@ -16261,10 +16261,10 @@ int ai_Unk5ba290(void)
     /* ROUGH SKELETON: the list 0x6f2f60 and the window body */
     return 0;
 }
-/* 0x5ba600, the teardown of the window 0x62c418 (32 B, ROUGH): 0x476c70, then 0x472ce0 (0x62c418) and its
-   reset */
+/* 0x5ba600, closes the panel's child window (32 B): clears the pointer items (d2_ClearPointerItems), removes the
+   window ai_ChildWindowId and sets it to -1; the transport window and ai_InventoryPanel call it at their exit */
 
-void ai_Unk5ba600(void)
+void ai_CloseChildWindow(void)
 {
     d2_ClearPointerItems();
     d2_RemoveWindow(ai_ChildWindowId);
