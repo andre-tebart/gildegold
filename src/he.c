@@ -6469,11 +6469,15 @@ unsigned short hmt_RandomTextOffset(unsigned short k);
 struct G11REC *hmt_GetRecord(unsigned short k);
 void d2_CentreViewWindows(int view);
 
-/* 0x54d790, a Ghidra miss: the init of the level-up event: the due clock = the start clock (+0x44), +0xb4 = random(6) */
+/* 0x54d790, the allocation handler of the skill level-up event 0x6a: the due clock copies the start clock and the
+   variant is a random 0 .. 5 (one of six texts per skill) */
 void he_StartSkillUp(int ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(int *)(ev + 0xb4) = (unsigned short)util_Random(6);
+    AIJOB *e = (AIJOB *)ev;
+    HESKILLUP *s = (HESKILLUP *)ev;
+
+    e->end = e->start;
+    s->variant = (unsigned short)util_Random(6);
 }
 /* 0x54d7d0, the run handler of the skill level-up event 0x6a of the own player ("SPECIAL\TALENT_STUFE"): shows the
    news 0x16c8, one of six texts of the skill (0x16c9 + skill * 6 + variant) with the fanfare and its voice
