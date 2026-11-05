@@ -558,7 +558,7 @@ typedef struct G28REC {
             int defenders[16];          /* 0x80, the netIds of up to six living characters whose building
                                            (AICHAR.bld) is the one raided, -1: none */
             int raiders[16];            /* 0xc0, the netIds of up to six raiders, -1: none */
-            int raid100[3];             /* 0x100, -1 (no reader known) */
+            int raid100[3];             /* 0x100, the objIds of the carts an ambush raids (he_RunAmbush), -1: none */
             int raidHome;               /* 0x10c, the id of the raiders' start building */
         } raid;
     };

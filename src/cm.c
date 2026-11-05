@@ -8356,7 +8356,7 @@ int ai_Unk4d0cd0(int *a)
     return -1;
 }
 
-/* the record ai_ArmGateGuards fills: a local of the town gate event's run handler (he_Unk5630f0 passes its
+/* the record ai_ArmGateGuards fills: a local of the town gate event's run handler (he_RunAmbush passes its
    address); only these two fields are read here, the rest of its layout is not known */
 typedef struct CMGUARDREC {
     char pad000[0x80];
@@ -16352,7 +16352,7 @@ char ai_RunPendingParties(int pl)
 }
 /* 0x4e5050, the used party of the kind a with the thing b: its record, 0 without */
 
-int ai_Unk4e5050(int a, int b)
+int cm_FindPartyOfKind(int a, int b)
 {
     int i;
 

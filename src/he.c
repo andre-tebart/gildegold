@@ -526,7 +526,7 @@ typedef struct HETRANSPORT {            /* the transport event 15's words over A
     char pade4[4];
     int slotE8;                         /* 0xe8, -1 at the start (its run handler's slot) */
     int route;                          /* 0xec, the send slot of the cart's route (cm_SendCartRouteH), -1 at the start */
-    char padf0;
+    unsigned char ambushed;             /* 0xf0, 1 once an ambush (he_RunAmbush) picked the transport, 0 at the start */
     unsigned char weatherStage;         /* 0xf1, 2: the cart slowed once more (he_SetCartSpeed) */
     unsigned char quiet;                /* 0xf2, nonzero: no arrival news */
     char padf3;
@@ -17729,35 +17729,240 @@ void he_RunBuildingSpying(AIJOB *ev)
 }
 /* 0x563070, a Ghidra miss: the allocation handler of the event 0x48: the clocks +0x52 and +0xcc are now, the run at +0xcc 0x30 units ahead and at +0x52 one unit ahead */
 
-void he_Unk563070(int ev)
+void he_AllocAmbush(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     *(AITIME *)(ev + 0xcc) = ai_Time;
     gm_AddTime(ev + 0xcc, 0, 0x30, 0);
     gm_AddTime(ev + 0x52, 0, 0, 1);
 }
-/* 0x5630f0, the run handler of the town gate event ("STADT"; ROUGH skeleton, 2192 bytes): the job handle (0x4c3ae0), the group (0x524260 (.., id, ev), 0x4c52e0), the scene (d3if_SelectScene, d3_FindObject / d3_Unk458a20 positions, d3_VecEqual against the gate position, 0x541280 / 0x50aa00 / 0x4e5050 helpers) and the random walk (util_Random) are driven by the state; the clock is posted by 0x4c4c60 and 0x4fe140 */
+typedef struct HEAMBUSH {               /* the ambush event 0x48's words over AIJOB's union (he_AllocAmbush / he_RunAmbush): the
+                                           gang (AIJOB.ids) lies in wait at a scene object for passing transports */
+    char pad00[0xac];
+    char place[0x20];                   /* 0xac, the name of the scene object the gang waits at (a name with "STADT":
+                                           the fight's variant flag 8) */
+    AITIME until;                       /* 0xcc, the time it gives up (the alloc handler: 48 minutes ahead) */
+    char padda[2];
+    int partySlot;                      /* 0xdc, the cm send slot of the fight party (cm_SendNewParty) */
+    int party;                          /* 0xe0, the id of that party (cm_GetSlotValue; cm_PartyById) */
+    unsigned int skill;                 /* 0xe4, the gang's mean skills[2] */
+} HEAMBUSH;
 
-void he_Unk5630f0(int ev)
+/* 0x5630f0, the run handler of the ambush event 0x48 ("\334berfall", HEAMBUSH; alloc handler he_AllocAmbush): waits for
+   its cm slot (AIJOB.exSlot) first. Stage 0 sends the gang to the place (with option 2: sv_MoveToGroup into the
+   event, their mean skills[2]; no member: the event ends) and waits 30 minutes. Stage 1 (option 2) checks that every
+   member stands within 25000 of the place (scene object, d3_PointToWorld), lets them idle (he_CharacterBehavior)
+   and, when they all do, picks up to three transports (event 15) of other characters (all of one owner) not taken
+   yet whose cart stands within 1500 of the place or whose goods' value suits the gang's level (skill / 42: 0 ..
+   5 from 100 .. 500 up to above 700); with a chance of 80 of 100 (30 while an event 0x51 runs, none with
+   gm_AllowAll) and no fight 3 running (cm_FindPartyOfKind), the gang raids them: a fight party (G28REC kind 3, flags
+   0xa2, variant 1 | 8 at a "STADT" place) of the gang's building owner against the transports' owner, the carts'
+   objects in raid100, the carts' escorts armed (ai_ArmGateGuards; one cart of escort 2: kinds 2 and 1), the gang
+   as raiders, in 15 minutes (stage 2). Else it waits 10 .. 14 minutes more until the event's time is up (then the
+   cm ends it). Stage 2 waits for the party's slot (no party: cm slot 1), stage 3 waits (5 minutes) while the party
+   runs, then ends in an hour. Stages -2 / -1 send the gang (option 2) home and free the record
+   @deep Reconstructed whole from the skeleton against 0x5630f0..0x56397c (654 vs 660 instructions, switch
+   tables equal): the exSlot wait, stage 0 the gang to the place ('\334berfall', mean skills[2], no member:
+   cm slot -1), stage 1 the 25000 place check (d3_FindObject 0x100 / d3_PointToWorld / d3_VecEqual),
+   he_CharacterBehavior, the event 0x51 / 15 searches, the transport pick (1500 near, the level = skill *
+   0.023809524f value bands, HETRANSPORT.ambushed, owner, the carts' objects gm_Query(0, 2, 7, 1, cart)),
+   the chance 30 / 80 / gm_AllowAll, cm_FindPartyOfKind(3, -1), the G28REC kind 3 party (flags 0xa2,
+   variant 1 | 8 for 'STADT', raid100 = the carts' objIds, ai_ArmGateGuards by escort, raidHome, raiders =
+   ids, +15 minutes), the 10 + rand 5 wait / end at until, stages 2 / 3 / -2 / -1. Tried: the n == 0 block
+   as the else (matched its out-of-line place), the escort passed for the n == 1 case (push eax as the
+   original). Left: ai_ArmGateGuards has no prototype in he.c (cm.h is not includable, unit Open: head), so
+   ours sign-extends the char escort (movsx) where the original pushes eax (+0x62b, code); the value band
+   ladder: the original threads a failed band of level >= 1 straight to the near test (jge / jmp, 4 x 3
+   lines at +0x430 ..), ours falls into the next level test; allocation: the guild building b in ebx vs our
+   slot (+0x546), o in a slot vs our ebx so the original tests o != 0 again before strstr (+0x585), n in a
+   slot vs our edi (references: M8 at +0x5a1: ours refers to ai_Time+0x4 (0x770ae4), the original's field
+   to 0x770ae0 (ai_Time) (and 1 more), explained: the two M8 lines are AITIME struct copies (party.time =
+   ai_Time at +0x5a1, ev->end = ai_Time at +0x644): both sides copy the same four words of ai_Time to the
+   same places, loaded into other registers in another order; no other object, string or constant differs) */
+void he_RunAmbush(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p;
+    HEAMBUSH *x = (HEAMBUSH *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    AIJOB *t, *busy;
+    AIOBJ *cart;
+    AIOBJ *cartObj[3];
+    AIJOB *carts[3];
+    D3OBJECT *o;
+    D3VECTOR4 pos;
+    int *p;
+    int k, n, all, nearby, scene, owner, chance, value, level;
 
-    if (st < 0) {
-        he_FreeEvent((int *)ev);
+    if (ev->exSlot != -1 && cm_GetSlotState(ev->exSlot) == 0)
+        return;
+    ev->exSlot = -1;
+    switch (ev->stage) {
+    case 0:
+        if (ev->opts & 2) {
+            n = 0;
+            x->skill = 0;
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                    sv_MoveToGroup(0, 0, c->id, (char *)ev);
+                    cm_SendChrGotoBuilding(ev->ids[k], -1, -1, x->place, 1, "\334berfall");
+                    x->skill += c->skills[2];
+                    n++;
+                }
+            }
+            if (n != 0)
+                x->skill /= n;
+            else {
+                ev->exSlot = cm_SendExSetHE(-1, ev);
+                x->skill = 0;
+                return;
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 0x1e, 0);
+        ev->stage++;
+        return;
+    case 1:
+        if (ev->opts & 2) {
+            all = 1;
+            cartObj[0] = 0;
+            cartObj[1] = 0;
+            cartObj[2] = 0;
+            n = 0;
+            owner = -1;
+            scene = d3_CurrentScene;
+            d3if_SelectScene(0, 1);
+            o = d3_FindObject(0, 0x100, 0, x->place);
+            if (o != 0)
+                d3_PointToWorld(o, &o->pos, (D3VECTOR *)&pos);
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0
+                    && d3_VecEqual(&c->model->body->pos, (D3VECTOR *)&pos, 25000.0f) == 0) {
+                    all = 0;
+                    break;
+                }
+            }
+            he_CharacterBehavior(ev, (float *)&pos);
+            busy = (AIJOB *)he_FindEvent(1, 0, 0x51);
+            t = (AIJOB *)he_FindEvent(1, 0, 0xf);
+            if (all != 0) {
+                for (; o != 0 && t != 0 && n < 3; t = (AIJOB *)he_NextEvent()) {
+                    unsigned goods[0x2e];
+
+                    if (((HETRANSPORT *)t)->ambushed != 0 || t->chr == ev->chr || (owner != -1 && owner != ai_CharInts[t->chr][0]))
+                        continue;
+                    nearby = 0;
+                    cart = (AIOBJ *)gm_FindObjectInst(((HETRANSPORT *)t)->cart);
+                    if (cart == 0)
+                        continue;
+                    if (d3_VecEqual(&((AITASK *)cart->sceneObj)->body->pos, (D3VECTOR *)&pos, 1500.0f) != 0)
+                        nearby = 1;
+                    gm_StallGoodsList((char *)cart, goods);
+                    value = goods[0x2c];
+                    if (value <= 0)
+                        continue;
+                    level = (int)(x->skill * 0.023809524f);
+                    if ((level == 0 && value > 100 && value < 500) || (level == 1 && value > 200 && value < 750)
+                        || (level == 2 && value > 300 && value < 1000) || (level == 3 && value > 500 && value < 1500)
+                        || (level == 4 && value > 600 && value < 1750) || (level == 5 && value > 700) || nearby != 0) {
+                        carts[n] = t;
+                        ((HETRANSPORT *)t)->ambushed = 1;
+                        owner = ai_CharInts[t->chr][0];
+                        cartObj[n] = (AIOBJ *)gm_Query(0, 2, 7, 1, ((HETRANSPORT *)t)->cart);
+                        n++;
+                    }
+                }
+            }
+            chance = busy != 0 ? 30 : 80;
+            if (gm_AllowAll)
+                chance = 0;
+            d3if_SelectScene(scene, 1);
+            if (o != 0 && cm_FindPartyOfKind(3, -1) == 0 && (unsigned short)util_Random(100) > chance) {
+                G28REC party;
+
+                b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
+                if (b == 0)
+                    break;
+                memset(&party, 0, sizeof(party));
+                party.kind = 3;
+                party.flags = 0xa2;
+                party.thing = -1;
+                party.used = 2;
+                party.host = ai_CharInts[ai_PlayerId][0];
+                party.variant = 1;
+                party.members[1] = owner;
+                party.members[0] = ai_CharInts[b->owner][0];
+                if (o != 0 && strstr(o->name, "STADT") != 0)
+                    party.variant |= 8;
+                for (k = 0; k < 16; k++) {
+                    party.raid.raiders[k] = -1;
+                    party.raid.defenders[k] = -1;
+                }
+                for (k = 0; k < 3; k++)
+                    party.raid.raid100[k] = cartObj[k] != 0 ? cartObj[k]->objId : -1;
+                for (k = 0; k < n; k++) {
+                    if (cartObj[k]->escort == 2 && n == 1) {
+                        ai_ArmGateGuards(&party, cartObj[k]->escort);
+                        ai_ArmGateGuards(&party, 1);
+                    } else
+                        ai_ArmGateGuards(&party, cartObj[k]->escort);
+                }
+                party.raid.raidHome = b->id;
+                memcpy(party.raid.raiders, ev->ids, sizeof(ev->ids));
+                party.time = ai_Time;
+                gm_AddTime(&party.time, 0, 0xf, 0);
+                x->partySlot = cm_SendNewParty(&party);
+                ev->end = ai_Time;
+                ev->stage = 2;
+                return;
+            }
+        }
+        if (gm_CompareTime(&ai_Time, &x->until) < 0) {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, (unsigned short)util_Random(5) + 10, 0);
+            return;
+        }
+        ev->exSlot = cm_SendExSetHE(-1, ev);
+        return;
+    case 2:
+        if (cm_GetSlotState(x->partySlot) == 0)
+            return;
+        p = (int *)cm_GetSlotValue(x->partySlot);
+        if (p == 0) {
+            ev->exSlot = cm_SendExSetHE(1, ev);
+            return;
+        }
+        x->party = *p;
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 1, 0);
+        ev->stage = 3;
+        return;
+    case 3:
+        if (cm_PartyById(x->party) != 0) {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 5, 0);
+            return;
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 1, 0, 0);
+        ev->stage = -1;
+        return;
+    case -2:
+    case -1:
+        if (ev->opts & 2) {
+            b = (AIBLD *)gm_BuildQuery(1, 1, ev->from);
+            for (k = 0; k < 8; k++) {
+                if (ev->ids[k] != -1 && (c = (AICHAR *)gm_FindChar(ev->ids[k])) != 0) {
+                    if (b != 0)
+                        cm_SendChrGotoBuilding(c->netId, b->id, -1, 0, 0, "\334berfall");
+                    sv_MoveToGroup(0, 0, c->id, 0);
+                }
+            }
+        }
+        break;
+    default:
         return;
     }
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
-        return;
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "STADT");
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+    he_FreeEvent((int *)ev);
 }
 /* 0x563980, the allocation handler: due clock now + 1 */
 
@@ -19150,7 +19355,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(64, (void *)he_AllocDueInOne, (void *)he_RunBuildingSpying) != 0)
         return 1;
     sv_RegisterActivity(64, 0, 0, 1283, -1);
-    if (he_SetEventHandlers(72, (void *)he_Unk563070, (void *)he_Unk5630f0) != 0)
+    if (he_SetEventHandlers(72, (void *)he_AllocAmbush, (void *)he_RunAmbush) != 0)
         return 1;
     sv_RegisterActivity(72, 0, 0, 1282, -1);
     if (he_SetEventHandlers(73, (void *)he_AllocDueInOne, (void *)he_Unk5639c0) != 0)

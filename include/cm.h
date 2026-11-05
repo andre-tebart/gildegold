@@ -1115,7 +1115,7 @@ extern int cm_KindCheck[];  /* 0x92c510, the answer callbacks of the kind table 
 int ai_Unk4e4f40();  /* 0x4e4f40 */
 char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the player pl */
 void ai_DebugDumpPerson(char *c);  /* 0x4e5bf0, the debug dump of a person */
-int ai_Unk4e5050();  /* 0x4e5050 */
+int cm_FindPartyOfKind();  /* 0x4e5050 */
 int ai_Unk4e5120();  /* 0x4e5120 */
 void cm_InitScenes(void);  /* 0x4e5770, clears the party records and registers the 12 scene kinds */
 
