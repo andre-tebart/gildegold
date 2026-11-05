@@ -2528,3 +2528,7 @@
 2026-11-05T21:59:31 0x005614c0 func he_Unk5614c0 -> he_RunRansomDemand by:main why:registered for event 62 (0x3e), the ransom message he_RunRansom sends the victim; window Diebesgilde_Loesegeld_Msg, pay / refuse
 2026-11-05T22:06:34 0x00561a20 func he_Unk561a20 -> he_RunBurglary by:main why:registered for event 63 (0x3f), the run handler's walk is 'Einbruch' (burglary): the gang breaks into the target building
 2026-11-05T22:06:34 0x005619a0 func he_Unk5619a0 -> he_AllocBurglary by:main why:registered for event 63 (0x3f), the run handler's walk is 'Einbruch' (burglary): the gang breaks into the target building
+2026-11-05T22:14:11 0x005628e0 func he_Unk5628e0 -> he_RunBuildingSpying by:main why:registered for event 64 (0x40), walk 'GebSpionage': spies watch a building and send a spy report (message 0x5e)
+2026-11-05T22:14:11 0x00563980 func he_Unk563980 -> he_AllocBuildingSpying by:main why:registered for event 64 (0x40), walk 'GebSpionage': spies watch a building and send a spy report (message 0x5e)
+2026-11-05T22:14:26 0x00563980 data he_AllocBuildingSpying -> he_AllocDueInOne by:main why:the shared alloc handler of the events 0x31, 0x40, 0x49 and 0x75: the due clock is now + 1
+2026-11-05T22:14:51 0x004c6060 data ai_Unk4c6060 -> cm_SendSpyReport by:main why:message 0x5e: the building's id and the 0x1c bytes of a spy report (he_RunBuildingSpying's HESPYREPORT, AIOBJ 0xca's words 0x1c..0x37)

@@ -2193,7 +2193,7 @@ void cm_SendAddSkill(int a, int b, int c)
 }
 /* 0x4c6060, message 0x5e: o's id (+1) and 0x1c bytes of p */
 
-void ai_Unk4c6060(char *o, void *p)
+void cm_SendSpyReport(char *o, void *p)
 {
     G17MSG m;
 

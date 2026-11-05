@@ -276,7 +276,7 @@ void cm_SendMoneyDelta(int a, int b);                                           
 void cm_SendMessage5b(int a, int b, int c);                                          /* 0x4c5fa0 */
 void cm_SendTradeMessage(char *p);                                                      /* 0x4c5fe0 */
 void cm_SendAddSkill(int a, int b, int c);                                          /* 0x4c6020 */
-void ai_Unk4c6060(char *o, void *p);                                             /* 0x4c6060 */
+void cm_SendSpyReport(char *o, void *p);                                             /* 0x4c6060 */
 void cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */
 int cm_SendGraveMove(void *p);                                                       /* 0x4c60f0 */
 void cm_SendRaiseDead(void *p);                                                      /* 0x4c6130 */

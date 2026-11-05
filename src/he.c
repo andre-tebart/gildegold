@@ -416,7 +416,7 @@ typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's un
     char pad00[0xb8];
     int daysLeft;                       /* 0xb8, the runs left: counted down once per run, below 0 the event ends */
 } HEEV24;
-typedef struct HEDISMISS {              /* the dismissal event 0x31's word over AIJOB's union (he_Unk563980 /
+typedef struct HEDISMISS {              /* the dismissal event 0x31's word over AIJOB's union (he_AllocDueInOne /
                                            he_RunDismissal) */
     char pad00[0xac];
     int worker;                         /* 0xac, the netId of the worker dismissed (gm_FindChar) */
@@ -17519,32 +17519,213 @@ void he_RunBurglary(AIJOB *ev)
         return;
     }
 }
-/* 0x5628e0, the run handler "GebSpionage" (spying on a building; ROUGH skeleton, 2064 bytes): like the espionage walk 0x55a030 the spies (group 0x524260 (building, .., id, ev), 0x4c5230, 0x4c52e0 "GebSpionage") walk to the building (0x524770), look around (gm_SkillPoints, 0x5090b0, _ftol rolls), the owner is told (the news "_NACHRICHTEN_HS_78", 0x501ce0 shows the building) and the group released; the record is freed at the end */
+typedef struct HEBLDSPY {               /* the building spying event 0x40's words over AIJOB's union (he_AllocDueInOne /
+                                           he_RunBuildingSpying); the spies are AIJOB.ids */
+    char pad00[0xac];
+    int target;                         /* 0xac, the id of the building spied on */
+    int home;                           /* 0xb0, the id of the spies' building (its owner is told), where the report goes */
+} HEBLDSPY;
+#pragma pack(push, 1)
+typedef struct HESPYREPORT {            /* 0x1c bytes, the words 0x1c .. 0x37 of a spy report (AIOBJ kind 0xca) that message
+                                           0x5e (cm_SendSpyReport) sends for a building */
+    AITIME when;                        /* 0x00 (0x1c), the time of the report */
+    int bld;                            /* 0x0e (0x2a, AIOBJ.reportBld), the building it reports on */
+    int worth;                          /* 0x12 (0x2e), a tenth of the owner's worth (at most 1.6 million) */
+    int goods;                          /* 0x16 (0x32), the price of the goods of the building's stall */
+    unsigned char skill;                /* 0x1a (0x36), the building's skill 7 */
+    unsigned char know;                 /* 0x1b (0x37, AIOBJ.reportKnow), how much it knows, 2 .. 100 percent */
+} HESPYREPORT;
+#pragma pack(pop)
 
-void he_Unk5628e0(int ev)
+/* 0x5628e0, the run handler of the building spying event 0x40 ("GebSpionage", HEBLDSPY; alloc handler
+   he_AllocDueInOne): stage 0 sends the spies (sv_MoveToGroup into the event) to the target building (none:
+   cancelled), 10 minutes; stage 1 waits (5 minutes more) until every spy with a model stands at the door with its
+   actions done, then sets the spying time: the target's rank * 120 * 252 / the spies' mean skill 2 points (at least 1),
+   by their number, at most 2880 minutes (no spy: freed). Stage 2 brings them back to their building and writes the
+   report (message 0x5e, HESPYREPORT): a tenth of the owner's worth (at most 1.6 million), the price of the target's
+   stall goods, its skill 7 and the knowledge: n * the mean skill 2 points (at least 42) / 4 by the target's rank,
+   + a random -2 .. 1, within 2 .. 100; a player master (kind 6 / 7) without a character of the building with the
+   flag 1 (+0x1b4) gets the message box 0x19f8 ("_NACHRICHTEN_HS_78", a quick jump to the main object). The record is
+   freed. Stages -2 / -1 send the spies back and free it
+   @deep Reconstructed whole from the skeleton against 0x5628e0..0x56306c (615 vs 605 instructions, switch
+   tables equal): stage 0 the spies to the target ('GebSpionage', 10 minutes), stage 1 the door / actions
+   check (5 minutes), the mean skill 2 points (at least 1.0), the spying time rank * 120 * (252 / mean) / n
+   clamped to 2880 (start / end clocks), stage 2 back home, the mean (at least 42), the report HESPYREPORT
+   (a tenth of the owner's worth capped at 1.6 million, the stall goods' price, skill 7, the knowledge n *
+   mean / 4 by rank + rand 4 - 2 within 2 .. 100) sent by cm_SendSpyReport, the message box 0x19f8
+   '_NACHRICHTEN_HS_78' for a player master without a flag-1 character; -2 / -1 back home. Every call,
+   argument and constant read. Tried: the clamp as its own statement t = 2880.0f < t ? 2880.0f : t (matched
+   the compare), gm_BuildingRank inline and as a local, the factor orders (120.0 * rank, 252 / mean first):
+   ours still multiplies by 120.0 after (252 / (int)mean) (+0x25e, fpu order); goods += amt * gm_GoodsPrice
+   (the call order). Left: allocation: the original keeps 0 in ebx (cmp reg, ebx; push ebx) and all / the
+   loop counter in slots, ours in registers (+0x13f .. +0x1a0 code hunks), master in ebx vs ours in a slot
+   (+0x661 .. +0x6b5, the message box pushes), the rec.when copy registers (+0x5ca), and one more free /
+   return tail copy of ours (returns 12/11, +0x75f) (references: M8 at +0x5ca: ours refers to ai_Time
+   (0x770ae0), the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more), explained: the two M8 lines
+   are the struct copy rec.when = ai_Time (HESPYREPORT): both sides copy the same four words of ai_Time
+   into the same slots, the original loads them into edx / eax / ecx, ours into eax / ecx / edx, so the
+   aligned loads name the words crossed; no other ref or literal differs) */
+void he_RunBuildingSpying(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, p;
-    char text[0x200];
+    HEBLDSPY *x = (HEBLDSPY *)ev;
+    AIBLD *b, *g;
+    AICHAR *c, *owner, *master, *spy = 0, *p;
+    AIOBJ *room = 0, *stall, *it;
+    HESPYREPORT rec;
+    char text[0x400];
+    int k, n, sum, all, worth, goods, know, amt;
+    double mean;
+    float t, v;
 
-    if (st < 0) {
-        he_FreeEvent((int *)ev);
+    switch (ev->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (k = 0; k < 8; k++) {
+            c = (AICHAR *)gm_FindChar(ev->ids[k]);
+            if (c != 0) {
+                cm_SendChrStop(c->netId);
+                cm_SendChrGotoBuilding(c->netId, b->id, -1, 0, 1, "GebSpionage");
+                sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+            }
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 10, 0);
+        ev->stage = 1;
+        return;
+    case 1:
+        all = 1;
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        for (k = 0; k < 8; k++) {
+            c = (AICHAR *)gm_FindChar(ev->ids[k]);
+            if (c != 0 && c->model != 0 && sv_IsAtDoor(c, b) == 0 && c->scene->actions != 0)
+                all = 0;
+        }
+        if (all != 0) {
+            n = 0;
+            sum = 0;
+            for (k = 0; k < 8; k++) {
+                c = (AICHAR *)gm_FindChar(ev->ids[k]);
+                if (c != 0) {
+                    sum += gm_SkillPoints(c, 2);
+                    n++;
+                }
+            }
+            if (n == 0)
+                break;
+            sum /= n;
+            mean = 1.0 > sum ? 1.0 : sum;
+            b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+            if (b == 0) {
+                ev->stage = -1;
+                return;
+            }
+            t = (float)(gm_BuildingRank((unsigned char *)b) * 120.0 * (252.0f / (int)mean) / n);
+            t = 2880.0f < t ? 2880.0f : t;
+            ev->start = ai_Time;
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, (int)t, 0);
+            ev->stage = 2;
+            return;
+        }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 0, 5, 0);
+        return;
+    case 2:
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
+        if (g == 0) {
+            ev->stage = -1;
+            return;
+        }
+        master = (AICHAR *)gm_FindChar(ai_CharInts[g->owner][0]);
+        room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+        n = 0;
+        sum = 0;
+        for (k = 0; k < 8; k++) {
+            c = (AICHAR *)gm_FindChar(ev->ids[k]);
+            if (c != 0) {
+                sum += gm_SkillPoints(c, 2);
+                spy = c;
+                cm_SendChrStop(ev->ids[k]);
+                cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "GebSpionage");
+                sv_MoveToGroup((unsigned char *)g, 0, c->id, 0);
+                n++;
+            }
+        }
+        if (n == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        sum /= n;
+        sum = (int)(42.0f > sum ? 42.0f : sum);
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->target);
+        if (b == 0) {
+            ev->stage = -1;
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+        worth = gm_GetWorth(owner->id);
+        if (worth >= 1600000)
+            worth = 1600000;
+        rec.worth = (int)(worth * 0.1);
+        goods = 0;
+        if (stall != 0) {
+            for (it = (AIOBJ *)gm_Query((void *)stall->list, 1, 5); it != 0; it = (AIOBJ *)gm_QueryNext()) {
+                amt = gm_ListAmount(stall, it);
+                goods += amt * gm_GoodsPrice(it->id, ai_OwnPlayer);
+            }
+        }
+        v = (float)n * sum * 0.25f;
+        know = (int)(v / gm_BuildingRank((unsigned char *)b));
+        know += (unsigned short)util_Random(4) - 2;
+        if (know > 100)
+            know = 100;
+        else if (know < 2)
+            know = 2;
+        rec.when = ai_Time;
+        rec.bld = b->id;
+        rec.goods = goods;
+        rec.skill = gm_BuildingSkill(b, 7, 1);
+        rec.know = know;
+        cm_SendSpyReport((char *)g, &rec);
+        if (master->kind == 6 || master->kind == 7) {
+            p = (AICHAR *)gm_FindCharacterByMaster((int)g);
+            if (spy != 0 && (p == 0 || (p->flags1b4 & 1) == 0)) {
+                txt_Format(text, 0x19f8, spy->id, owner->id, b);
+                he_MessageBoxQuickjump(master->netId, master->netId, text, 1, 0x5f0, x->home,
+                                       ((AIOBJ *)gm_BuildingMainObject((unsigned char *)g))->objId, 0, "_NACHRICHTEN_HS_78");
+                he_FreeEvent((int *)ev);
+                return;
+            }
+        }
+        break;
+    case -2:
+    case -1:
+        g = (AIBLD *)gm_BuildQuery(1, 1, x->home);
+        if (g != 0)
+            room = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)g);
+        for (k = 0; k < 8; k++) {
+            c = (AICHAR *)gm_FindChar(ev->ids[k]);
+            if (c != 0) {
+                cm_SendChrStop(ev->ids[k]);
+                if (g != 0)
+                    cm_SendChrGotoBuilding(ev->ids[k], g->id, room->objId, 0, 0, "GebSpionage");
+                sv_MoveToGroup(0, 0, c->id, 0);
+            }
+        }
+        break;
+    default:
         return;
     }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (b == 0 || p == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    cm_SendChrStop(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "GebSpionage");
-    sv_MoveToGroup(b, 0, *(unsigned short *)p, ev);
-    gm_GetGebaeudeHauptraum(b);
-    txt_Format(text, 0x1bba, b);
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_78", 0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
+    he_FreeEvent((int *)ev);
 }
 /* 0x563070, a Ghidra miss: the allocation handler of the event 0x48: the clocks +0x52 and +0xcc are now, the run at +0xcc 0x30 units ahead and at +0x52 one unit ahead */
 
@@ -17580,7 +17761,7 @@ void he_Unk5630f0(int ev)
 }
 /* 0x563980, the allocation handler: due clock now + 1 */
 
-void he_Unk563980(int ev)
+void he_AllocDueInOne(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0, 1);
@@ -18940,7 +19121,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(40, (void *)he_AllocHarvest, (void *)he_RunHarvest) != 0)
         return 1;
     sv_RegisterActivity(40, 0, 1, 1279, 188);
-    if (he_SetEventHandlers(49, (void *)he_Unk563980, (void *)he_RunDismissal) != 0)
+    if (he_SetEventHandlers(49, (void *)he_AllocDueInOne, (void *)he_RunDismissal) != 0)
         return 1;
     if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_RunPromotion) != 0)
         return 1;
@@ -18966,13 +19147,13 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(63, (void *)he_AllocBurglary, (void *)he_RunBurglary) != 0)
         return 1;
     sv_RegisterActivity(63, 0, 0, 1290, -1);
-    if (he_SetEventHandlers(64, (void *)he_Unk563980, (void *)he_Unk5628e0) != 0)
+    if (he_SetEventHandlers(64, (void *)he_AllocDueInOne, (void *)he_RunBuildingSpying) != 0)
         return 1;
     sv_RegisterActivity(64, 0, 0, 1283, -1);
     if (he_SetEventHandlers(72, (void *)he_Unk563070, (void *)he_Unk5630f0) != 0)
         return 1;
     sv_RegisterActivity(72, 0, 0, 1282, -1);
-    if (he_SetEventHandlers(73, (void *)he_Unk563980, (void *)he_Unk5639c0) != 0)
+    if (he_SetEventHandlers(73, (void *)he_AllocDueInOne, (void *)he_Unk5639c0) != 0)
         return 1;
     sv_RegisterActivity(73, 0, 0, 1290, -1);
     if (he_SetEventHandlers(78, (void *)he_Unk5642e0, (void *)he_Unk5644e0) != 0)
@@ -18992,7 +19173,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(115, (void *)he_Unk5662d0, (void *)he_Unk566370) != 0)
         return 1;
-    if (he_SetEventHandlers(117, (void *)he_Unk563980, (void *)he_Unk566830) != 0)
+    if (he_SetEventHandlers(117, (void *)he_AllocDueInOne, (void *)he_Unk566830) != 0)
         return 1;
     sv_RegisterActivity(117, 0, 0, 1282, -1);
     if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_Unk567660) != 0)
