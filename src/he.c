@@ -454,6 +454,14 @@ typedef struct HEPROTECTION {           /* the protection money event 0x62's wor
     int home;                           /* 0xbc, the collector's building, which counts the money, -1: none */
     int homeRoom;                       /* 0xc0, the room object there the collector goes back to */
 } HEPROTECTION;
+typedef struct HEAUDIT {                /* the audit event 0x64's words over AIJOB's union (he_StartAudit / he_RunAudit);
+                                           the one who ordered it is AIJOB.chr */
+    char pad00[0xac];
+    int inspector;                      /* 0xac, the inspector figure's netId */
+    int bld;                            /* 0xb0, the audited building's id */
+    int home;                           /* 0xb4, the building the inspector goes back to */
+    int homeRoom;                       /* 0xb8, the room object there */
+} HEAUDIT;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
@@ -5155,7 +5163,7 @@ void he_RunProtection(int ev)
 }
 /* 0x54b9b0, a Ghidra miss: the end handler of the audit event: the due clock now, posted 2 units ahead, and the victim figure (+0xb0) gets the flag 0x800 (0x4c4a60 0x5a) */
 
-void he_Unk54b9b0(int ev)
+void he_StartAudit(int ev)
 {
     int s = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
 
@@ -5164,72 +5172,81 @@ void he_Unk54b9b0(int ev)
     if (s != 0)
         cm_SendSetField(*(int *)(s + 1), 0x5a, 2, 0x800, 0);
 }
-/* 0x54ba20, a Ghidra miss (disassembled; 1000 B): the run handler of the audit event ("BetriebsPr\xfc" "fung": the inspector +0xac, the building owner +0xb0): state 0 sends the inspector there (0x4c52e0, +0xb4 / +0xb8), 1 waits until it is idle and rolls (0x508d70, 0x1d records of kind 7 / 4 ..): without a fine the news 0x1a76 / 0x1a78 ("_NACHRICHTEN_HS_88" / "_86") and the state 2, else the fine 0x509b10 * the roll * 0.07 (0x4c4830, the news 0x1a75 / 0x1a77); state 2 frees the event (ROUGH) */
-
-void he_Unk54ba20(int ev)
+/* 0x54ba20, a Ghidra miss: the run handler of the audit event 0x64 ("BetriebsPr\xfc" "fung", HEAUDIT: the
+   inspector +0xac checks the building +0xb0 for the character AIJOB.chr). A freed event, a gone inspector or
+   building or a building without an owner frees it. Stage 0 sends the inspector to the building (stage 1 in ten
+   minutes); stage 1 waits (four minutes) while the inspector is busy, then judges: the shortfall is
+   (100 - the building's level) * 0.01; when it is at most 0.2 and no cart (gm_Query kind 0x1d) of the building
+   is filled below 80%, nobody is fined (the news 0x1a76 to the character, 0x1a78 to the owner); else the owner
+   pays the character equipment value * shortfall * 0.07 (the news 0x1a75 / 0x1a77 to players). Stage 2 sends the
+   inspector home and frees the event */
+void he_RunAudit(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEAUDIT *a = (HEAUDIT *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    AIOBJ *o;
+    int found, fine;
+    float shortfall;
     char text[0x400];
-    int esi, ebx, st, v, amt, found = 0, o;
-    float f, g;
 
-    esi = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    ebx = gm_FindChar(*(int *)(ev + 0xac));
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || ebx == 0 || esi == 0 || *(unsigned short *)(esi + 0x27) == 0xffff) {
+    b = (AIBLD *)gm_BuildQuery(1, 1, a->bld);
+    c = (AICHAR *)gm_FindChar(a->inspector);
+    if (e->stage == -2 || c == 0 || b == 0 || b->owner == 0xffff) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        sv_MoveToGroup(esi, *(unsigned short *)ebx, 0, ev);
-        cm_SendChrStop(*(int *)(ebx + 4));
-        cm_SendChrGotoBuilding(*(int *)(ebx + 4), *(int *)(esi + 1), -1, 0, 1, "BetriebsPr\xfc" "fung");
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 10, 0);
-        *(int *)(ev + 0x70) = 1;
+    switch (e->stage) {
+    case 0:
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+        cm_SendChrStop(c->netId);
+        cm_SendChrGotoBuilding(c->netId, b->id, -1, 0, 1, "BetriebsPr\xfc" "fung");
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
+        e->stage = 1;
         return;
-    }
-    if (st == 1) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 4, 0);
-        if (*(int *)(*(int *)(ebx + 0x184) + 0x128) != 0) {
-            *(int *)(ev + 0x70) = 1;
+    case 1:
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
+        if (c->scene->actions != 0) {
+            e->stage = 1;
             return;
         }
-        f = (100.0f - (float)gm_BuildingLevel(esi)) * 0.5f;
-        o = gm_Query(*(int *)(esi + 1) /* the building's records of kind 7 */, 2, 7, 4, 0, (int)f);
-        while (o != 0) {
-            if (*(int *)(o + 0x1c) == *(int *)(esi + 1) && *(unsigned char *)(o + 0x12) < 0x50) {
+        shortfall = (100.0f - gm_BuildingLevel((char *)b)) * 0.01f;
+        found = 0;
+        for (o = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); o != 0; o = (AIOBJ *)gm_QueryNext()) {
+            if (o->bldId == b->id && o->fill < 0x50) {
                 found = 1;
                 break;
             }
-            o = gm_QueryNext();
         }
-        if ((double)f > 0.2 && found == 0) {
-            txt_Format(text, 0x1a76, *(unsigned short *)(esi + 0x27), esi);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, found, 0x5f0, "_NACHRICHTEN_HS_88");
-            txt_Format(text, 0x1a78, *(unsigned short *)(ev + 8), esi);
-            he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(esi + 0x27) * 0x21c), -1, text, found, 0x5f0, *(int *)(esi + 1), -1, 0, "_NACHRICHTEN_HS_86");
-            *(int *)(ev + 0x70) = 2;
+        if (!(shortfall > 0.2) && found == 0) {
+            txt_Format(text, 0x1a76, b->owner, b);
+            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, found, 0x5f0, "_NACHRICHTEN_HS_88");
+            txt_Format(text, 0x1a78, e->chr, b);
+            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, ai_CharsT[b->owner].netId, text, found, 0x5f0, b->id, -1, found, "_NACHRICHTEN_HS_86");
+            e->stage = 2;
             return;
         }
-        v = (int)((float)gm_EquipmentValue(esi, 100) * f * 0.07f);
-        cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + *(unsigned short *)(esi + 0x27) * 0x21c), 0, U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), v);
-        if (*(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) == 7) {
-            txt_Format(text, 0x1a75, v, *(unsigned short *)(esi + 0x27), esi);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5f0, "_NACHRICHTEN_HS_87");
+        fine = (int)(gm_EquipmentValue((unsigned char *)b, 100) * shortfall * 0.07f);
+        cm_SendMoveGoodsUnchecked(ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, 0, fine);
+        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+            txt_Format(text, 0x1a75, fine, b->owner, b);
+            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f0, "_NACHRICHTEN_HS_87");
         }
-        if (*(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(esi + 0x27) * 0x21c) == 6 || *(char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(esi + 0x27) * 0x21c) == 7) {
-            txt_Format(text, 0x1a77, *(unsigned short *)(ev + 8), esi, v);
-            he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(esi + 0x27) * 0x21c), -1, text, 0, 0x5f0, *(int *)(esi + 1), -1, 0, "_NACHRICHTEN_HS_86");
+        if (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7) {
+            txt_Format(text, 0x1a77, e->chr, b, fine);
+            he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, ai_CharsT[b->owner].netId, text, 0, 0x5f0, b->id, -1, 0, "_NACHRICHTEN_HS_86");
         }
-        *(int *)(ev + 0x70) = 2;
+        e->stage = 2;
         return;
-    }
-    if (st == 2) {
-        sv_MoveToGroup(esi, 0, *(unsigned short *)ebx, ev);
-        cm_SendChrStop(*(int *)(ebx + 4));
-        cm_SendChrGotoBuilding(*(int *)(ebx + 4), *(int *)(ev + 0xb4), *(int *)(ev + 0xb8), 0, 0, "BetriebsPr\xfc" "fung");
+    case 2:
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+        cm_SendChrStop(c->netId);
+        cm_SendChrGotoBuilding(c->netId, a->home, a->homeRoom, 0, 0, "BetriebsPr\xfc" "fung");
         he_FreeEvent((int *)ev);
+        return;
     }
 }
 /* 0x54be20, a Ghidra miss: the init of the patrol-meeting event: +0xd4 = -1, +0xdc = 0, the start (+0x44) and the due clock (+0x52) = now, posted at once (0x4fe140 (.., 0, 1, 0), state 0) */
@@ -9821,7 +9838,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x62, (void *)he_StartProtection, (void *)he_RunProtection) != 0)
         return 1;
     sv_RegisterActivity(0x62, 0x0, 0x0, 0x50e, -1);
-    if (he_SetEventHandlers(0x64, (void *)he_Unk54b9b0, (void *)he_Unk54ba20) != 0)
+    if (he_SetEventHandlers(0x64, (void *)he_StartAudit, (void *)he_RunAudit) != 0)
         return 1;
     sv_RegisterActivity(0x64, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x65, (void *)he_Unk54be20, (void *)he_Unk54bec0) != 0)
