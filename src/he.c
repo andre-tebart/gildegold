@@ -14,7 +14,9 @@
    raid 0x44, fight 0x45, duel challenge 0x46 and insult 0x47 events) read AIJOB typed, their kind words named in
    AIJOB's union (fest*, exam*, tribute*, pair*, patrol*, raid*; partner1 / partner2) and the fight parties they
    post as G28REC (cm_types.h, its raid lists).
-   The handlers 0x547f90 .. 0x54a7b0 (events 0x4a, 0x53 .. 0x61) read AIJOB / AICHAR / AIBLD / G28REC typed too.
+   The handlers 0x547f90 .. 0x54a7b0 (events 0x4a, 0x53 .. 0x61) read AIJOB / AICHAR / AIBLD / G28REC typed too,
+   and so do the send-home event 0x77 (AIJOB.homeUntil), the reaper event 0x54ff20 .. 0x550e9a (AIJOB's reaper*
+   words, the D3OBJECT reaper) and the ranking event 0x550ee0 (its packets HERANKHEAD / HERANKLINE).
    Open: types: the other handlers past 0x547ba0 still read the event and message records through raw offsets
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
@@ -32,9 +34,9 @@
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
-   0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714
-   (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner he or main (typed in place in
-   main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
+   0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
+   filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner
+   he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument

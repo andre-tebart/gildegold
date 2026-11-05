@@ -2162,7 +2162,7 @@ exe	0x004c3eb0	ai_AddNeedDelta	cm	byte	readable
 exe	0x004c3ef0	cm_SetSpeedLevel	cm	byte	readable		
 exe	0x004c3f20	cm_RaiseSpeedLevel	cm	byte	readable		
 exe	0x004c3f50	cm_LowerSpeedLevel	cm	byte	readable		
-exe	0x004c3f80	ai_Unk4c3f80	cm	byte	draft		
+exe	0x004c3f80	cm_GetSpeedLevel	cm	byte	readable		
 exe	0x004c3f90	cm_SendPlayerId	cm	byte	readable		
 exe	0x004c3fd0	cm_ReceiveMessages	cm	byte	draft		
 exe	0x004c4030	cm_WaitMessage	cm	byte	readable		
@@ -2233,13 +2233,13 @@ exe	0x004c5870	cm_SendSkillsChanged	cm	byte	draft
 exe	0x004c58a0	cm_SendApplication	cm	byte	draft		
 exe	0x004c58e0	cm_SendOfficeRecord	cm	byte	draft		
 exe	0x004c5930	cm_SendDecisionValue	cm	byte	draft		
-exe	0x004c5970	ai_Unk4c5970	cm	byte	draft		
+exe	0x004c5970	cm_SendCharClear	cm	byte	draft		
 exe	0x004c59b0	cm_SendSetJob	cm	byte	draft		
 exe	0x004c59f0	cm_SendSpawnCharacter	cm	shape	draft		
 exe	0x004c5a70	ai_Unk4c5a70	cm	byte	draft		
 exe	0x004c5aa0	cm_SendChat	cm	byte	readable		
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
-exe	0x004c5b90	ai_Unk4c5b90	cm	byte	draft		
+exe	0x004c5b90	cm_SendCharHalt	cm	byte	draft		
 exe	0x004c5bc0	cm_SendObjCell	cm	byte	draft		
 exe	0x004c5c40	cm_SendCutEntry	cm	shape	draft		
 exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	shape	draft		
@@ -3651,15 +3651,15 @@ exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable
 exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable		
 exe	0x0054fce0	he_RunEffectEvent	he	shape	readable		
 exe	0x0054fe80	he_Unk54fe80	he	byte	draft		
-exe	0x0054ff20	he_Unk54ff20	he	draft	draft		
-exe	0x00550070	he_Unk550070	he	draft	draft		
-exe	0x00550370	he_Unk550370	he	draft	draft		
-exe	0x005506c0	he_Unk5506c0	he	draft	draft		
-exe	0x00550850	he_Unk550850	he	draft	draft		
-exe	0x005509f0	he_Unk5509f0	he	draft	draft		
-exe	0x00550b60	he_Unk550b60	he	draft	draft		
+exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
+exe	0x00550070	he_CreateReaper	he	draft	readable	deep	
+exe	0x00550370	he_MoveReaper	he	draft	readable	deep	
+exe	0x005506c0	he_AimReaper	he	shape	readable		
+exe	0x00550850	he_TurnReaper	he	byte	readable		
+exe	0x005509f0	he_StartReaper	he	byte	readable		
+exe	0x00550b60	he_RunReaper	he	byte	readable		
 exe	0x00550ea0	he_Unk550ea0	he	byte	draft		
-exe	0x00550ee0	he_Unk550ee0	he	draft	draft		
+exe	0x00550ee0	he_RunRanking	he	byte	readable		
 exe	0x005512c0	he_Unk5512c0	he	shape	draft		
 exe	0x00551340	he_Unk551340	he	draft	draft		
 exe	0x00551440	he_Unk551440	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
