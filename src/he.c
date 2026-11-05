@@ -537,13 +537,11 @@ void he_CreateEventBar(void)
 
 void he_CloseEventSlots(void)
 {
-    int *p = (int *)(unsigned)&he_EventSlots;
+    HEEVSLOT *s;
 
-    do {
-        if (p[1] != -1)
-            he_ReleaseSlot(*p);
-        p += 3;
-    } while ((int)p < (int)((unsigned)&full_data_6faa84 + 0xbc));
+    for (s = he_EventSlots; (int)s < (int)(he_EventSlots + 16); s++)
+        if (s->obj != -1)
+            he_ReleaseSlot((int)s->ev);
     d2_CloseView(he_BarView);
 }
 /* 0x53d9f0, shows / hides the event bar for the player slot `pl` (0xffff = hide): a bar already shown first hides its
