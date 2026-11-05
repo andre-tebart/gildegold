@@ -551,6 +551,7 @@ typedef struct G28REC {
         struct {                        /* 0x7c, of an auction (kind 10, cm_RunAuction) */
             int building;               /* 0x7c, the id of the building auctioned (gm_BuildQuery 1, 1) */
             int price;                  /* 0x80, the start price */
+            int zero84;                 /* 0x84, only seen written 0 by he.c's auction event (he_RunAuctionEvent), no reader known */
         } auction;
         struct {                        /* 0x7c, of a raid fight (kind 3, posted by he.c's raid event, 0x5461c0) */
             char padraid[4];

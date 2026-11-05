@@ -481,6 +481,12 @@ typedef struct HESIM {                  /* the words of the simulation events 0x
                                            started (the next run picks one and a random cursor) */
     int done;                           /* 0xb4, the characters visited this round */
 } HESIM;
+typedef struct HEAUCTION {              /* the auction event 0x67's words over AIJOB's union (he_StartAuctionEvent /
+                                           he_RunAuctionEvent) */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the id of the building auctioned */
+    int price;                          /* 0xb0, the start price; a bidder must be worth at least as much */
+} HEAUCTION;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
@@ -2354,7 +2360,7 @@ int cm_SendExSetHE(); /* @original: the callers here push the key as an int and 
    AIBLD.unk65 / unk69 only. Read: their users in every unit (ai.c steers unk65 towards AIPOS.unk18 and
    sends it as field 0x65; gv.c / f3gm.c read +0x65 as a record pointer; the inn code reads +0x65 / +0x69 /
    +0x6b as guest counters; main.c zeroes unk69 for kind 7 every round; unk_4b39f0 reads +0x69 as an
-   AITIME) and the 0x67 run handler he_Unk54c8e0 (arg[1] is the ranking's minimum wealth): the 0x65 .. 0x6c
+   AITIME) and the 0x67 run handler he_RunAuctionEvent (arg[1] is the ranking's minimum wealth): the 0x65 .. 0x6c
    area is a per-kind union, no source names the two ints for the kinds 0x1e / 0x1f / 0x20; a rename or a
    union in the shared ai_bld.h is a shared-header decision (ai.c notes a union there flipped a byte
    match). */
@@ -5568,7 +5574,7 @@ void he_RunAccidentSim(int ev)
 }
 /* 0x54c870, a Ghidra miss: the init of the ranking event: the due clock now, +0x56 = 9, +0x58 = 0, posted 0x18 units ahead (state 0) */
 
-void he_Unk54c870(int ev)
+void he_StartAuctionEvent(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(AITIME *)(ev + 0x52) = ai_Time;
@@ -5578,93 +5584,114 @@ void he_Unk54c870(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
-/* 0x54c8e0, a Ghidra miss (disassembled; 640 B): the run handler of the ranking event (+0xac = a text id of 0x501190 kind 1, +0xb0 = the minimum 0x509e60 value): state 0 collects the best 8 player figures (kind 6 / 7, alive, no flag at +0x1af, value >= +0xb0) and the best 8 of the kinds 3 / 4 / 5 by 0x509e60 (the sorted lists +0x14 / +0x34 / +0x88) and posts a message record of 0x114 bytes (type 0xa, 0x22, the number of entries) with them; state 1 (the announcement) shows the news 0x11be to every player figure with a rank (0x53dda0, 0x601) and goes to state 1 again 1 unit later (+0x56 = 0xd, +0x58 = 0x1e) (ROUGH) */
-
-void he_Unk54c8e0(int ev)
+/* 0x54c8e0, a Ghidra miss: the run handler of the auction event 0x67 (HEAUCTION: the building +0xac, the start
+   price +0xb0). Stage -1 frees it; a not yet started event waits. Stage 0 announces the auction (the news 0x11be
+   with the building and the price, 0x601, to every living player character; no building: the event ends) and
+   is due the next day at 13:30 (stage 1). Stage 1 invites as bidders up to 8 living player characters (kind 6 /
+   7, not held, worth at least the price), then the 8 worthiest such characters of the kinds 3 .. 5, and posts the
+   auction party (G28REC kind 10, cm_RunAuction) for 30 minutes from now when there is one; the event ends
+   @deep Read all of it against the original and rewrote it typed (AIJOB / HEAUCTION / AICHAR / G28REC): it
+   is the auction event 0x67, not a ranking: fixed the party (kind 10, flags 0x22, thing -1, used n, the
+   bidders in members[] directly, auction.building / price, the 0 at +0x84 as auction.zero84), the index
+   loops over ai_CharsT (signed jl), the insertion with the original's jumps (an empty slot goes straight
+   to the insert, a better value shifts first, an exhausted search continues: goto insert / goto shift),
+   stage 0's next day 13:30. 246 vs 248 instructions, the control flow the same. Left, allocation and
+   scheduling: the original keeps the bidder count n in ebx with a stack home ([esp+0x10], frame 0x358 vs
+   ours 0x354) and uses ebx in the shift (mov ebx,[esp+0x10] after it), ours uses ebp and reloads ev from
+   the argument (mov ebp,[esp+0x368]); and the party stores at +0x1a3..+0x210 in another order (the
+   original: price, time.hour, kind, flags, thing, used, host, building, time.year, zero84, time+8,
+   time+0xc; tried 5 source orders, the best kept) (references: M8 at +0x1e6: ours refers to ai_Time
+   (0x770ae0), the original's field to 0xac (and 1 more), explained: the ref: lines are the ai_Time copy
+   into party.time and the e+0xac load, paired across the reordered party stores: the same loads and stores
+   on both sides in another order, no other object) */
+void he_RunAuctionEvent(int ev)
 {
-    char text[0x100];
-    char msg[0x114];
+    AIJOB *e = (AIJOB *)ev;
+    HEAUCTION *a = (HEAUCTION *)ev;
+    AIBLD *b;
+    int n, i, j, k, v;
     int best[8];
     int val[8];
-    int top[16];
-    int n = 0, rec, v, i, j, t;
+    G28REC party;
+    char text[0x200];
 
-    if (*(int *)(ev + 0x70) == -1) {
+    if (e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x70) == 0) {
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        if (t == 0) {
+    switch (e->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, a->bld);
+        if (b == 0) {
             cm_SendExSetHE(-1, ev);
             return;
         }
-        txt_Format(text, 0x11be, t, *(int *)(ev + 0xb0));
-        for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-            if ((*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) && *(unsigned char *)(rec + 8) > 0)
-                he_ShowNews(*(int *)(rec + 4), *(int *)(rec + 4), text, 0, 0x601, (char *)0);
+        txt_Format(text, 0x11be, b, a->price);
+        for (k = 0; k < 0x300; k++) {
+            if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].health > 0)
+                he_ShowNews(ai_CharsT[k].netId, ai_CharsT[k].netId, text, 0, 0x601, (char *)0);
         }
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-        *(short *)(ev + 0x56) = 0xd;
-        *(int *)(ev + 0x58) = 0x1e;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        e->end.year++;
+        e->end.hour = 0xd;
+        e->end.min = 0x1e;
+        e->exSlot = cm_SendExSetHE(1, ev);
+        return;
+    case 1:
+        memset(best, -1, sizeof(best));
+        memset(val, 0, sizeof(val));
+        n = 0;
+        memset(&party, 0, sizeof(party));
+        for (k = 0; k < 0x300 && n < 8; k++) {
+            if ((ai_CharsT[k].kind == 6 || ai_CharsT[k].kind == 7) && ai_CharsT[k].health > 0 && ai_CharsT[k].heldRounds == 0
+                && gm_GetGoodsValue(&ai_CharsT[k]) >= a->price)
+                party.members[n++] = ai_CharsT[k].netId;
+        }
+        for (k = 0; k < 0x300; k++) {
+            if (ai_CharsT[k].health > 0 && ai_CharsT[k].heldRounds == 0 && (ai_CharsT[k].kind == 5 || ai_CharsT[k].kind == 3 || ai_CharsT[k].kind == 4)) {
+                v = gm_GetGoodsValue(&ai_CharsT[k]);
+                if (v < a->price)
+                    continue;
+                for (i = 0; i < 8; i++) {
+                    if (best[i] == -1)
+                        goto insert;
+                    if (v > val[i])
+                        goto shift;
+                }
+                continue;
+            shift:
+                for (j = 7; j > i; j--) {
+                    best[j] = best[j - 1];
+                    val[j] = val[j - 1];
+                }
+            insert:
+                val[i] = v;
+                best[i] = ai_CharsT[k].netId;
+            }
+        }
+        for (i = 0; i < 8 && n < 8; i++) {
+            if (best[i] != -1)
+                party.members[n++] = best[i];
+        }
+        if (n != 0) {
+            party.auction.price = a->price;
+            party.kind = 0xa;
+            party.flags = 0x22;
+            party.thing = -1;
+            party.used = n;
+            party.host = ai_CharInts[ai_PlayerId][0];
+            party.auction.building = a->bld;
+            party.auction.zero84 = 0;
+            party.time = ai_Time;
+            gm_AddTime(&party.time, 0, 0x1e, 0);
+            cm_SendNewParty(&party);
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if (*(int *)(ev + 0x70) != 1)
-        return;
-    for (i = 0; i < 8; i++) {
-        best[i] = -1;
-        val[i] = 0;
-    }
-    memset(msg, 0, sizeof(msg));
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400) && n < 8; rec += 0x21c) {
-        if ((*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) && *(unsigned char *)(rec + 8) > 0 && *(char *)(rec + 0x1b1) == 0
-            && gm_GetGoodsValue(rec) >= *(int *)(ev + 0xb0)) {
-            top[n] = *(int *)(rec + 4);
-            n++;
-        }
-    }
-    for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-        if (*(unsigned char *)(rec + 8) > 0 && *(char *)(rec + 0x1b1) == 0
-            && (*(char *)(rec + 2) == 5 || *(char *)(rec + 2) == 3 || *(char *)(rec + 2) == 4)) {
-            v = gm_GetGoodsValue(rec);
-            if (v < *(int *)(ev + 0xb0))
-                continue;
-            for (i = 0; i < 8; i++) {
-                if (best[i] == -1 || v > val[i])
-                    break;
-            }
-            if (i >= 8)
-                continue;
-            for (j = 7; j > i; j--) {
-                best[j] = best[j - 1];
-                val[j] = val[j - 1];
-            }
-            val[i] = v;
-            best[i] = *(int *)(rec + 4);
-        }
-    }
-    for (i = 0; i < 8; i++) {
-        if (best[i] != -1 && n < 8)
-            top[n++] = best[i];
-    }
-    if (n != 0) {
-        msg[8] = 0xa;
-        msg[0x22 + 4] = 0;
-        *(int *)(msg + 0x1c) = -1;
-        *(int *)(msg + 0xc) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-        *(int *)(msg + 0x80) = *(int *)(ev + 0xac);
-        *(int *)(msg + 0xb0) = n;
-        *(int *)(msg + 0x70) = *(int *)(ev + 0xb0);
-        *(AITIME *)(msg + 0x14) = ai_Time;
-        gm_AddTime(msg + 0x14, 0, 0x1e, 0);
-        cm_SendNewParty(msg);
-    }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
-    cm_SendExSetHE(-1, ev);
 }
 /* 0x54cc20, a Ghidra miss: the init: the due clock = the start clock (+0x44), state 0, +0xb4 = 0 */
 
@@ -9905,7 +9932,7 @@ int he_RegisterEventTypes22(void)
     sv_RegisterActivity(0x65, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x66, (void *)he_Unk54c4c0, (void *)he_RunAccidentSim) != 0)
         return 1;
-    if (he_SetEventHandlers(0x67, (void *)he_Unk54c870, (void *)he_Unk54c8e0) != 0)
+    if (he_SetEventHandlers(0x67, (void *)he_StartAuctionEvent, (void *)he_RunAuctionEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x68, (void *)he_Unk54d190, (void *)he_Unk54d260) != 0)
         return 1;
