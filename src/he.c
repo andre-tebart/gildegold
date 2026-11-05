@@ -18163,24 +18163,65 @@ void he_RunAttack(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x5642e0, picks the target of a fire (ROUGH): the first building of the list (0x501190 (1, 1, ..), checks 0x502520 / 0x5024f0, kind 3 buildings are skipped) near the scene object of the reference building (0x458a20 positions, 0x453e80 against the range), at random (0x42ec00) with up to 0x10 tries; returns the building or 0 */
+typedef struct HEFIRE {                 /* the fire event 0x4e's words over AIJOB's union (he_AllocFire / the run handler
+                                           0x5644e0), laid out as the storm event's (AIJOB.stormBlds, HESTORM) */
+    char pad00[0xac];
+    int blds[16];                       /* 0xac, [0] the burning building's id (the message's, else a random pick),
+                                           [1 ..] the buildings within radius of it, -1: none */
+    int center;                         /* 0xec, the id of the building of blds[0] */
+    int radius;                         /* 0xf0, the distance a neighbour building must be within (the message's value) */
+} HEFIRE;
 
-int he_Unk5642e0(int ref)
+/* 0x5642e0, the allocation handler of the fire event 0x4e (HEFIRE), as the storm's he_AllocStorm: the buildings of
+   kind 6 (gm_BuildQuery (1, 6) / gm_BuildNext) that are no home / type 10, have a scene object and are not of a
+   building type of kind 3 are collected (at most 0x100); blds[1..15] = -1, blds[0] is the target: the event's own
+   building, else a random pick of the list; the ones whose scene position (d3_PointToWorld) lies within radius of
+   the target's become blds[1..15]; center is the target's id. The due clock is now; after the hour 20 it is moved to
+   the next year field at 8 .. 17 o'clock, but the clock is then set to now again and only an hour below 7 is moved
+   to 8 .. 17 */
+void he_AllocFire(AIJOB *ev)
 {
-    int b, n;
+    HEFIRE *x = (HEFIRE *)ev;
+    AIBLD *list[0x100];
+    AIBLD *b, *c;
+    AIBTYPE *t;
+    D3OBJECT *o;
+    D3VECTOR4 p1, p2;
+    unsigned short n = 0, k = 1;
+    int i;
 
-    for (n = 0; n < 0x10; n++) {
-        b = gm_BuildQuery(1, 1, (unsigned short)util_Random(0x100));
-        if (b == 0)
-            continue;
-        if (gm_IsHomeType(b) != 0 || gm_IsType10(b) != 0)
-            continue;
-        if (*(unsigned char *)b == 3)
-            continue;
-        if (b != ref)
-            return b;
+    for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        t = &ai_BTypesT[b->type];
+        if (gm_IsHomeType((unsigned char *)b) == 0 && gm_IsType10((unsigned char *)b) == 0 && b->object != 0
+            && t->kind != 3)
+            list[n++] = b;
     }
-    return 0;
+    for (i = 1; i < 0x10; i++)
+        x->blds[i] = -1;
+    if (x->blds[0] == -1) {
+        c = list[(unsigned short)util_Random(n)];
+        x->blds[0] = c->id;
+    } else {
+        c = (AIBLD *)gm_BuildQuery(1, 1, x->blds[0]);
+    }
+    for (i = 0; i < n && k < 0x10; i++) {
+        b = list[i];
+        o = (D3OBJECT *)b->object;
+        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&p1);
+        o = (D3OBJECT *)c->object;
+        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&p2);
+        if (b != c && d3_VecEqual((D3VECTOR *)&p1, (D3VECTOR *)&p2, (float)x->radius) != 0)
+            x->blds[k++] = b->id;
+    }
+    x->center = c->id;
+    ev->end = ai_Time;
+    if (ev->end.hour > 20) {
+        ev->end.hour = util_Random(10) + 8;
+        ev->end.year++;
+    }
+    ev->end = ai_Time;
+    if (ev->end.hour < 7)
+        ev->end.hour = util_Random(10) + 8;
 }
 /* 0x5644e0, the allocation handler of the fire event (sounds "Brand_Beginn" / "Brand_Ende" 0x4c27d0; ROUGH): the burning building and a second one (0x458a20 positions), a message record (0x4c4b70), the other fires of the type list (0x53e400 / 0x53e300) are checked and the due clock is now + 0x14 or 7 units by the minute word (0x42ec00 rolls) */
 
@@ -19530,7 +19571,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(73, (void *)he_AllocDueInOne, (void *)he_RunAttack) != 0)
         return 1;
     sv_RegisterActivity(73, 0, 0, 1290, -1);
-    if (he_SetEventHandlers(78, (void *)he_Unk5642e0, (void *)he_Unk5644e0) != 0)
+    if (he_SetEventHandlers(78, (void *)he_AllocFire, (void *)he_Unk5644e0) != 0)
         return 1;
     if (he_SetEventHandlers(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
         return 1;

@@ -2536,3 +2536,4 @@
 2026-11-05T22:21:01 0x00563070 func he_Unk563070 -> he_AllocAmbush by:main why:registered for event 72 (0x48), the gang waits at a place ('\334berfall', ambush) for transports (event 15) and raids them in a fight party
 2026-11-05T22:21:31 0x004e5050 data ai_Unk4e5050 -> cm_FindPartyOfKind by:main why:returns the used party (cm_Parties) of the kind a with the thing b, 0 without
 2026-11-05T22:24:22 0x005639c0 func he_Unk5639c0 -> he_RunAttack by:main why:registered for event 73 (0x49), walk 'Angriff': a gang attacks a building (fight party kind 3 or cm_LootStock), the raid event's words
+2026-11-05T22:28:36 0x005642e0 func he_Unk5642e0 -> he_AllocFire by:main why:registered as the alloc handler of event 78 (0x4e), the fire: picks the burning building and its neighbours as he_AllocStorm
