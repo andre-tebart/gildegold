@@ -430,7 +430,9 @@ typedef struct HEBUILD {                /* the building event 0xd's words over A
                                            searches the plot around */
     char pad00[0xb0];
     int bldType;                        /* 0xb0, the building kind id (ai_BuildingName's id) */
-    char padb4[0x20];
+    char padb4[0x1c];
+    unsigned char count;                /* 0xd0, the placements left (the object callback counts it down; reasoned) */
+    char padd1[3];
     float pos[3];                       /* 0xd4, the position ai_FindNearestObject measures the plots from */
 } HEBUILD;
 typedef struct HETRANSPORT {            /* the transport event 15's words over AIJOB's union (he_AllocTransport / he_RunTransport):
@@ -18211,17 +18213,18 @@ void he_AllocGebaeudeBauen(int ev)
 done:
     he_FreeEvent((int *)ev);
 }
-/* 0x56b700, an object callback of the event (o: +0x4c the position, +0x84 .. +0x8c a target): places the object at the target lifted by 1.47 (0x411860 (o, pos, target, 0x46, 0x20)) and counts +0xd0 down */
-
-void he_Unk56b700(int o)
+/* 0x56b700, the object callback of the building event 0xd (o: its pos +0x4c and rotation +0x84): places the object
+   at its position with its rotation lifted by 1.47 (d3t_PlaceObjectV, the kind 0x46) and counts the event's
+   placements (+0xd0) down */
+void he_PlaceGebaeudeObject(struct D3OBJECT *o, HEBUILD *ev)
 {
-    float t[3];
+    D3VECTOR t;
 
-    t[0] = *(float *)(o + 0x84) + 1.47;
-    t[1] = *(float *)(o + 0x88);
-    t[2] = *(float *)(o + 0x8c);
-    d3t_PlaceObjectV(o, o + 0x4c, t, 0x46, 0x20);
-    *(unsigned char *)(o + 0xd0) -= 1;
+    t.x = o->rotation.x + 1.47;
+    t.y = o->rotation.y;
+    t.z = o->rotation.z;
+    d3t_PlaceObjectV(o, &o->pos, &t, 0x46, 0x20);
+    ev->count -= 1;
 }
 /* 0x56b750, scene callback: appends the object o to the list (0x40 entries, the count at +0x104); true while there is room */
 
