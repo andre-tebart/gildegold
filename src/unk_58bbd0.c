@@ -22879,12 +22879,12 @@ int ai_UseGood(int param_1, int *param_2)
     }
     return ret;
 }
-/* 0x5cfb60, a window callback (24 B): the record param_1 (+4 the handle) is closed with 0x50cc50
-   (the handle, 2); returns 1. */
+/* 0x5cfb60, the use callback of the Domizil good 0x173 (the +0x14 pointer of the table entry 0x62c6c0):
+   pays the character ch 2 money with gm_SendMoneyDelta (message 0x5a, the netId at +4); returns 1. */
 
-int ai_Unk5cfb60(int param_1)
+int ai_UseGoodAddMoney(AICHARREC *ch)
 {
-    gm_SendMoneyDelta(*(int *)(param_1 + 4), 2);
+    gm_SendMoneyDelta(ch->netId, 2);
     return 1;
 }
 /* 0x5cfb80, a message callback (128 B): param_1 the record (+2 the type, +4 the handle, +0x1c a
