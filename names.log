@@ -2372,3 +2372,4 @@
 2026-11-05T14:25:29 0x00551d70 func he_Unk551d70 -> he_RunSixGroupEvent by:main why:the run handler of the six-group event 0x7d (registered with he_InitSixGroupEvent): stages 0..5 walk the officials of groups[stage]
 2026-11-05T14:28:27 0x00552090 func he_Unk552090 -> he_RunExamQuestion by:main why:the run handler of event 0x7e: the message box Berufe\Messagebox_Meisterpruefung (the master exam question), the first answer marks the exam event accepted
 2026-11-05T14:30:21 0x00552270 func he_Unk552270 -> he_RunExamOffer by:main why:the run handler of event 0x7f: posts the master exam question 0x7e (he_RunExamQuestion), and when accepted the character pays health and the player is paid
+2026-11-05T14:34:21 0x005525a0 func he_Unk5525a0 -> he_RunConversion by:main why:the run handler of event 0x81: turns characters whose AICHAR +0xc kind is +0xb4 into 1 - it, n a round (field delta 0xc)

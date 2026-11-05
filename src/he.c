@@ -310,6 +310,12 @@ typedef union HEEXAMMSG {               /* the message 0x7e he_RunExamOffer post
         AITIME due;                     /* 0x60, the answer is due: now + 2 hours */
     } q;
 } HEEXAMMSG;
+typedef struct HECONVERT {              /* the conversion event 0x81's words over AIJOB's union (he_RunConversion) */
+    char pad00[0xac];
+    int left;                           /* 0xac, the characters still to turn */
+    int rounds;                         /* 0xb0, the rounds (days) left */
+    int from;                           /* 0xb4, the AICHAR.b00c kind turned (0 / 1) into the other */
+} HECONVERT;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -9975,51 +9981,51 @@ void he_Unk552520(int ev)
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
-/* 0x5525a0, the run handler of the migration event (ROUGH): +0xac people (at most sqrt(+0xac + +0xb0)) of the 0x300 characters (the ring from a random start; id != 0xffff, kind <= 4, byte +0xc = +0xb4) are sent away (0x4c3ba0, 0x4c3c00 (1, 1, 0xc, ..), 0x4c49a0); +0xb0 / +0xac are reduced and the event posted 0x18 later, or 5 later with the handle -1 when not enough were found */
-
-void he_Unk5525a0(int ev)
+/* 0x5525a0, the run handler of the conversion event 0x81 (its alloc handler he_Unk5524e0): while it has rounds and
+   characters left, each round (a day apart) turns up to n = min(left, ceil(left + rounds)) characters whose b00c
+   (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
+   the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
+   later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it */
+void he_RunConversion(int ev)
 {
-    int cnt = 0, n, a, b, ring, left, ch;
-    double s;
-    int x[4];
+    AIJOB *e = (AIJOB *)ev;
+    HECONVERT *cv = (HECONVERT *)ev;
+    int cnt = 0;
+    int to = 1 - cv->from;
+    int n, ring, left;
+    AICHAR *c;
 
-    if (*(int *)(ev + 0x70) < 0 || *(int *)(ev + 0xb0) <= 0 || *(int *)(ev + 0xac) <= 0) {
+    if (e->stage < 0 || cv->rounds <= 0 || cv->left <= 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    a = *(int *)(ev + 0xac);
-    b = *(int *)(ev + 0xb0);
-    s = sqrt((double)(a + b));
-    if (s > (double)a)
-        n = (int)(double)*(int *)(ev + 0xac);
-    else
-        n = (int)sqrt((double)(*(int *)(ev + 0xb0) + *(int *)(ev + 0xac)));
-    ring = (unsigned short)util_Random(0x300);
+    n = (int)((double)cv->left < ceil((double)(cv->left + cv->rounds)) ? (double)cv->left : ceil((double)(cv->rounds + cv->left)));
+    ring = util_RandomU(0x300);
     for (left = 0x300; left != 0; left--) {
         if (cnt >= n)
             break;
-        ch = (unsigned)&ai_Chars + ring * 0x21c;
-        if (*(unsigned short *)ch != 0xffff && *(unsigned char *)(ch + 2) <= 4 && *(unsigned char *)(ch + 0xc) == *(int *)(ev + 0xb4)) {
-            cm_BeginFieldBlock(ch, *(int *)(ch + 4));
-            cm_AddFieldDelta(1, 1, 0xc, x);
+        c = &ai_CharsT[ring];
+        if (c->id != 0xffff && c->kind <= 4 && c->b00c == cv->from) {
+            cm_BeginFieldBlock((char *)c, c->netId);
+            cm_AddFieldDelta(1, 1, 0xc, &to);
             cm_SendFieldDeltas();
             cnt++;
         }
         ring = (ring + 1) % 0x300;
     }
     if (cnt < n) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
-    *(int *)(ev + 0xac) = *(int *)(ev + 0xac) - n;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    cv->rounds--;
+    cv->left -= n;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 /* 0x5527c0, the allocation handler: unless flag 4 of +0x78 is set the event is posted +0xb8 units later (due clock now, 0x4c4c60 (0, ev), handle in +0x84) */
 
@@ -10436,7 +10442,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x80, (void *)he_Unk5524e0, (void *)he_Unk552520) != 0)
         return 1;
-    if (he_SetEventHandlers(0x81, (void *)he_Unk5524e0, (void *)he_Unk5525a0) != 0)
+    if (he_SetEventHandlers(0x81, (void *)he_Unk5524e0, (void *)he_RunConversion) != 0)
         return 1;
     if (he_SetEventHandlers(0x82, (void *)he_Unk5527c0, (void *)he_Unk552820) != 0)
         return 1;
