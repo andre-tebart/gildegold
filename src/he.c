@@ -364,7 +364,7 @@ void he_FreeEvents(void)
     char *p;
     int i = 0;
 
-    if (U_I((unsigned)&he_EventTop) >= 0) {
+    if (he_EventTop >= 0) {
         p = (char *)(unsigned)&he_Events;
         do {
             if ((int)p >= (int)((unsigned)&he_Events + 0x53000))
@@ -373,7 +373,7 @@ void he_FreeEvents(void)
                 he_FreeEvent(p);
             i++;
             p += 0x14c;
-        } while (i <= U_I((unsigned)&he_EventTop));
+        } while (i <= he_EventTop);
     }
 }
 /* 0x53d5d0, frees the records, then asks 0x52a040 three times */
