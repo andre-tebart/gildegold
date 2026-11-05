@@ -3788,7 +3788,8 @@ int ai_ExecuteDummyProcreation(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 8;
 }
-/* 0x496030 */
+/* 0x496030, decide of the dummy action "DummyUnversehrtheit" (1): with no sub-action running (a == 0)
+   and b == 0 it offers its own action id 1, else 0 */
 
 int ai_DecideDummyHealth(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
