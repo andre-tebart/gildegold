@@ -14820,15 +14820,21 @@ void ai_DomizilMessagePlace(G8CHARREC *to, G8CHARREC *c, AIBLD *bld, int placeId
     he_MessageBoxQuickjump(to->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
                  "_NACHRICHTEN_DOMIZIL_04");
 }
-/* 0x5a9e40, a Domizil message without the kind test (76 B): formats the text 0x4070 with the building b and the
-   text 0x4071 + n, then posts it (0x53dee0) to the character ch (+4, its netId) with b's id (+1) and the key
-   "_NACHRICHTEN_DOMIZIL_12" 0x62c400 */
+/* 0x5a9e40, the Domizil message 12 (76 B): the text 0x4070 with the building and the text 0x4071 + level into
+   ai_NewsText, then the quick-jump message 0x5ec to the character's netId (+4) with the building's id (+1) and
+   the sound "_NACHRICHTEN_DOMIZIL_12"; no kind 6 / 7 test like the other Domizil messages (gv_EffectNotifyOwner
+   sends it only for a kind 6 character, level 0 / 1 / 2 by the effect's mode and value) */
 
-void ai_DomizilMessage12(char *ch, char *b, int n)
+void ai_DomizilMessage12(char *chRec, char *bldRec, int level)
 {
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x4070, b, n + 0x4071);
-    he_MessageBoxQuickjump(*(int *)(ch + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5ec, *(int *)(b + 1), -1, 0,
-                 (char *)(unsigned)&full_data_62c400);
+    G8CHARREC *ch;
+    AIBLD *bld;
+
+    ch = (G8CHARREC *)chRec;
+    bld = (AIBLD *)bldRec;
+    txt_Format(ai_NewsText, 0x4070, bld, level + 0x4071);
+    he_MessageBoxQuickjump(ch->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
+                 "_NACHRICHTEN_DOMIZIL_12");
 }
 /* 0x5a9e90, a free entry of the Domizil table (215 B): 0x42ec00 (the count 0x62cb58) picks an index into the 0x42
    entries of 0x1c bytes at 0x62c420; each try returns the entry's +0 id when it is not in the param_1 words of
