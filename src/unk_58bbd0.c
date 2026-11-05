@@ -14338,7 +14338,7 @@ void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec)
 /* 0x5a91c0, the plague news to every player character (91 B): a random 0 .. 2 picks the news text 0x20c7 + r and
    the sound key "_KATASTROPHE_PEST_HS_0%i" (r + 0), formatted with r into the 256-byte buffer; every kind 6 / 7
    character gets the text and the sound with the event 0x600 to its netId. Called by the plague event's init
-   (he_Unk549ce0, "HE_EVT_PEST") after its message */
+   (he_BeginPlague, "HE_EVT_PEST") after its message */
 
 void ai_PlagueNews(void)
 {

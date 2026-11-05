@@ -1924,7 +1924,7 @@ void cm_SendSetJob(int id, int job)
 }
 /* 0x4c59f0, message 0x49 with a text */
 
-void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s)
+void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s)
 {
     G17MSG m;
 

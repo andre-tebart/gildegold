@@ -316,6 +316,7 @@ int gm_CompareTime();
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
+#define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, unsigned char, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
@@ -409,6 +410,26 @@ typedef struct HESKILLMSG {             /* the AI message 0x6a he_RunTraining po
     char pad59[3];
     int level;                          /* 0x5c, its new level: the value / 42 */
 } HESKILLMSG;
+typedef struct HEPLAGUE {               /* the plague event 0x59's words over AIJOB's union (he_BeginPlague, its run handler 0x54a020) */
+    char pad00[0xac];
+    int left;                           /* 0xac, counted down by the run handler at every infected target */
+    int walk;                           /* 0xb0, the walk over the 0x100 buildings: the index it is at, random at the start */
+    int step;                           /* 0xb4, the walk's step, a random ai_RandomStrides entry */
+    char padb8[4];
+    int carriers[4];                    /* 0xbc, the four carriers: the cm slots of their creation, then their ids */
+    char padcc[4];
+    int target;                         /* 0xd0, the id of the target building, the start building at first */
+} HEPLAGUE;
+typedef struct HEPLAGUEMSG {            /* the AI message 0x78 he_BeginPlague posts to every player character (AIMSG
+                                           has no names at +0x58 .. +0x6c for it) */
+    char pad00[0x58];
+    int bld;                            /* 0x58, the start building's id */
+    int target;                         /* 0x5c, the target building's id: the start building */
+    int next;                           /* 0x60, -1 */
+    int walk;                           /* 0x64, the event's walk index */
+    int step;                           /* 0x68, the event's walk step */
+    int left;                           /* 0x6c, the event's countdown */
+} HEPLAGUEMSG;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x64 */
     char pad00[0x64];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
@@ -3511,7 +3532,7 @@ int gm_GetWorth(unsigned short id);
 void gm_ChangeRelationToJobs(unsigned short a, int b);
 void cm_SendAddSkill(int a, int b, int c);
 void cm_SendSkillsChanged(int a);
-void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
+void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 void ai_PlagueNews(void);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
@@ -4354,51 +4375,60 @@ void he_RunTraining(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x549ce0, the init of the festival event: a random building (0x889f74 table, 0xa9 bytes each) of kind 7 is looked for (up to 0x100 tries), +0xb0 = its index, +0xb4 = a random entry of the table 0x5ed140, a message record (type 0x78) goes to every figure of kind 6 / 7, four 0x4c59f0 tasks are started (+0xbc .. +0xc8), +0xd0 = the building, the event is posted (state 0) and 0x5a91c0 is called; none found: it is posted as failed (ROUGH) */
+/* 0x549ce0, begins the plague event 0x59 (its run handler 0x54a020 calls it at stage 5): from a random one of the
+   0x100 buildings on, the first whose type is of kind 7 starts it: a random walk index and step, the AI message
+   0x78 (flags 9) about it to every player character (kind 6 / 7), four carriers ("PEST", kind 0xe, job 0x12)
+   created at it, it is the first target; due a minute from now, posted at stage 0, and the plague news
+   (ai_PlagueNews). Without such a building the event is posted as failed */
 
-void he_Unk549ce0(int ev)
+void he_BeginPlague(int ev)
 {
-    char msg[0xf8];
-    int n = 0x100, idx, b, rec, t;
+    AIJOB *e = (AIJOB *)ev;
+    HEPLAGUE *p = (HEPLAGUE *)ev;
+    AIMSG msg;
+    HEPLAGUEMSG *m = (HEPLAGUEMSG *)&msg;
+    AIBLD *b;
+    int n = 0x100;
+    int i;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    idx = (unsigned short)util_Random(0x100);
+    e->end = ai_Time;
+    i = (unsigned short)util_Random(0x100);
     do {
-        b = U_I((unsigned)&ai_Blds) + idx * 0xa9;
-        if (*(char *)(*(unsigned char *)b * 0x24d + U_I((unsigned)&ai_BTypes)) == 7) {
-            *(int *)(ev + 0xb0) = (unsigned short)util_Random(0x100);
-            *(int *)(ev + 0xb4) = U_I((unsigned)&ai_RandomStrides + (unsigned short)util_Random(0x10) * 4);
-            memset(msg, 0, sizeof(msg));
-            *(int *)(msg + 0x58) = *(int *)(b + 1);
-            *(int *)(msg + 0x5c) = *(int *)(b + 1);
-            *(int *)(msg + 0x60) = *(int *)(ev + 0xb0);
-            *(int *)(msg + 0x64) = *(int *)(ev + 0xb4);
-            *(int *)(msg + 0x68) = *(int *)(ev + 0xac);
-            *(int *)(msg + 0x5c + 4) = -1;
-            *(int *)(msg + 0xc) = -1;
-            msg[4] = 0x78;
-            msg[0x36 - 0x28] = 9;
-            *(AITIME *)(msg + 0x28) = ai_Time;
-            for (rec = (unsigned)&ai_Chars; rec < (unsigned)((unsigned)ai_Chars + 0x65400); rec += 0x21c) {
-                if (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7) {
-                    *(int *)(msg + 8) = *(int *)(rec + 4);
-                    cm_SendLongMessage(msg);
+        b = &ai_BldsT[i];
+        if (ai_BTypesT[b->type].kind == 7) {
+            p->walk = (unsigned short)util_Random(0x100);
+            p->step = ai_RandomStrides[(unsigned short)util_Random(0x10)];
+            D3_ZERO(&msg, sizeof(msg));
+            m->bld = b->id;
+            m->target = b->id;
+            m->next = -1;
+            m->walk = p->walk;
+            m->step = p->step;
+            m->left = p->left;
+            msg.fromId = -1;
+            msg.type = 0x78;
+            msg.flags = 9;
+            msg.time = ai_Time;
+            for (i = 0; i < 768; i++) {
+                if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) {
+                    msg.to = ai_CharsT[i].netId;
+                    cm_SendLongMessage((char *)&msg);
                 }
             }
-            *(int *)(ev + 0xbc) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xe, *(int *)(b + 1), -1, 0x12, 0, 0, "RndGeselle");
-            *(int *)(ev + 0xc0) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xe, *(int *)(b + 1), -1, 0x12, 0, 0, "RndGeselle");
-            *(int *)(ev + 0xc4) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xe, *(int *)(b + 1), -1, 0x12, 0, 0, "RndGeselle");
-            *(int *)(ev + 0xc8) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xe, *(int *)(b + 1), -1, 0x12, 0, 0, "RndGeselle");
-            *(int *)(ev + 0xd0) = *(int *)(b + 1);
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+            p->carriers[0] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[1] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[2] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->carriers[3] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
+            p->target = b->id;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(0, ev);
             ai_PlagueNews();
             return;
         }
         n--;
-        idx = (idx + 1) & 0xff;
+        i = (i + 1) % 0x100;
     } while (n != 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 
 int sv_IsAtDoor();
@@ -4406,7 +4436,6 @@ void cm_SendKillCharacter(int a, int b);
 void ai_PlagueMessage(int param_1);
 float gm_CatchPlague();
 float util_RandomF2();
-
 /* 0x549f70, a Ghidra miss: the start of the plague event ("Pest"): unless a running event of the type 0x59 exists the clock is copied from the start (+0x44), the state 5 is set and the event is posted (0x4c4c60 (5, ev)); else it is posted as failed */
 void he_Unk549f70(int ev)
 {
@@ -4456,7 +4485,7 @@ void he_Unk54a020(int ev)
     if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
         return;
     if (*(int *)(ev + 0x70) == 5)
-        he_Unk549ce0(ev);
+        he_BeginPlague(ev);
     switch (*(int *)(ev + 0x70)) {
     case 0:
         for (i = 0; i < 4; i++) {
@@ -6214,7 +6243,7 @@ void he_Unk54ef70(int ev)
     cm_AddFieldDelta(4, 1, (b - U_I((unsigned)&cm_FieldObject)) + 0x28, &tm);
     cm_SendFieldDeltas();
     cm_BeginGroup("Dunkle Ecke");
-    h = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xe, *(int *)(o + 1), -1, 0, 0, 0, "DunkleEcke");
+    h = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xe, *(int *)(o + 1), -1, 0, 0, 0, "DunkleEcke");
     *(int *)(ev + 0xac) = h;
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     cm_EndGroup("Dunkle Ecke");
@@ -11142,7 +11171,7 @@ void he_Unk558550(int ev)
     }
 }
 
-void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
+void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 int gm_WorkMinutesBetween();
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
@@ -11235,7 +11264,7 @@ void he_Unk558e70(int ev)
             *(int *)(ev + 0x10) = *(int *)(b + 1);
     }
     *(int *)(ev + 0xc4) = -1;
-    *(int *)(ev + 0xc8) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SABOTAGE");
+    *(int *)(ev + 0xc8) = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SABOTAGE");
 }
 
 int gv_Accuse();
@@ -11316,7 +11345,7 @@ void he_Unk559d20(int ev)
         return;
     }
     if (ord_DispatchOrder(0x26, (char *)ev, &o) == 2 || ((int (*)(void *))cm_BeginGroup)("Spionage") == 0) {
-        ai_Unk4c59f0(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SPIONAGE");
+        cm_SendSpawnCharacter(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SPIONAGE");
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     } else {
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
@@ -11373,7 +11402,7 @@ void he_Unk55a5f0(int ev)
             *(int *)(ev + 0x10) = *(int *)(b + 1);
     }
     *(int *)(ev + 0xc8) = -1;
-    *(int *)(ev + 0xcc) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0x11, *(int *)(ev + 0x10), -1, 0, 2, 0x154, "PRUEGEL");
+    *(int *)(ev + 0xcc) = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0x11, *(int *)(ev + 0x10), -1, 0, 2, 0x154, "PRUEGEL");
     p = gm_FindChar(*(int *)(ev + 0xb4));
     own = *(int *)(p + 0x170);
     if (own == 0)
@@ -15967,7 +15996,7 @@ int he_RegisterEventTypes99(void)
 }
 
 
-void ai_Unk4c59f0(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
+void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 
 /* 0x56e460, the alloc of the event 0x99 (not while paused, flags +0x78 & 4): when another event of the type 0x99 of the same player (+8) already runs, this one only announces the text 0x3ff7 (0x5176d0 / 0x53dda0), schedules with the handle -1 (0x4c4c60 ( -1, ev) into +0x84) and frees; else the start clock +0x44 and the due clock +0x52 = now, due 1, +0xcc = the notification 0x4c59f0 (0xd, ev's +0xb0, -1, 0x2d, 0, 0, the text 0x628dc8) and the handler scheduled (0x4c4c60 (0, ev)) into +0x84 */
 void he_Unk56e460(int ev)
@@ -15984,7 +16013,7 @@ void he_Unk56e460(int ev)
     *(AITIME *)(ev + 0x44) = ai_Time;
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
-    *(int *)(ev + 0xcc) = ((int (*)(int, int, int, int, int, int, const char *))ai_Unk4c59f0)(0xd, *(int *)(ev + 0xb0), -1, 0x2d, 0, 0, (char *)(unsigned)&full_data_628dc8);
+    *(int *)(ev + 0xcc) = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0xd, *(int *)(ev + 0xb0), -1, 0x2d, 0, 0, (char *)(unsigned)&full_data_628dc8);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     return;
 taken:
