@@ -1627,9 +1627,9 @@ int ai_DecideUpkeepRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4915f0, decision 6 */
+/* 0x4915f0, the callback of law record 6 (AIDEC.fn, office 0x0a no 1, a 0..4 law, the building cost factor gm_BuildingKindCost reads): (the growth of need 3 - 2) x 5, at most 4; every step below 4 makes a new building 10% more expensive */
 
-int ai_Unk4915f0(AIPER *p, int a, int *out)
+int ai_DecideBuildingCost(AIPER *p, int a, int *out)
 {
     AIDEC d;
     int n;
