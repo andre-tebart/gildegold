@@ -3030,9 +3030,11 @@ int ai_DecideTortureInstrument(void)
 {
     return util_RandomU(7);
 }
-/* 0x4941e0 */
+/* 0x4941e0, the torturer's mercy in the trial (request kind 3 of the trial's ask-AI callback ai_Unk4de340):
+   the torturer (c28) gives in (1) when he likes the accused (c18) by more than 20 over the accuser (c14), goes on
+   (0) when he likes the accuser by more than 20 more, and tosses a coin between; with no torturer 1 */
 
-int ai_Unk4941e0(AIPLAN *q)
+int ai_DecideTortureMercy(AIPLAN *q)
 {
     AIC4 *a, *b, *c;
     float x, y;

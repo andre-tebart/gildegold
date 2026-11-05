@@ -620,7 +620,7 @@ int ord_DispatchOrder(int id, char *c, int *m);           /* 0x4f81c0 */
 int ai_PlanWorth(AIPLAN *q);                                    /* 0x494020 */
 int ai_DecideTorture(void);                                         /* 0x4941b0 */
 int ai_DecideTortureInstrument(void);                                         /* 0x4941d0 */
-int ai_Unk4941e0(AIPLAN *q);                                    /* 0x4941e0 */
+int ai_DecideTortureMercy(AIPLAN *q);                                    /* 0x4941e0 */
 int ai_PlanLevel(AIPLAN *q);                                    /* 0x4942a0 */
 int ai_PlanRollTries(AIPLAN *q);                                    /* 0x494300 */
 int ai_Unk494410(AIC4 *ch, AIPLAN *q);                          /* 0x494410 */

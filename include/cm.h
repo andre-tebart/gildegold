@@ -1015,7 +1015,7 @@ void cm_RunDeath(G28REC *m);  /* 0x4e1250 */
 int ai_PlanWorth();  /* 0x494020 */
 int ai_DecideTorture();  /* 0x4941b0 */
 int ai_DecideTortureInstrument();  /* 0x4941d0 */
-int ai_Unk4941e0();  /* 0x4941e0 */
+int ai_DecideTortureMercy();  /* 0x4941e0 */
 int ai_Unk494410();  /* 0x494410 */
 int ai_Unk4946c0();  /* 0x4946c0 */
 int gm_GetWorth(unsigned short id);  /* 0x50a640 */

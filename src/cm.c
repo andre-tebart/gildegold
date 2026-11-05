@@ -13427,7 +13427,7 @@ void ai_Unk4de340(char *r, int *m)
     case 3:
         if (*(int *)(r + 0x10) != m[10])
             return;
-        res = ai_Unk4941e0(m);
+        res = ai_DecideTortureMercy(m);
         *(int *)(r + 0x94) = res;
         if (res == 1)
             cm_SendRelations(*(int *)(r + 0x10), m[6], 0x23, res);
