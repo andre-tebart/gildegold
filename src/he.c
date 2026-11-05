@@ -22993,46 +22993,54 @@ int he_NoEvent9bFor(int a)
     }
     return 1;
 }
-/* 0x56f3f0, the domicile message of the construction run (a = the building id, b = the record: the word at 0 is one person, the dword at +4 the other): when 0x56f3b0 (b) is free and 0x501190 (1, 1, a) finds, the player word at building +0x27 selects the character record; the checks (0x504ec0 (rec, 2) - 0x504ec0 (b, 2) * 0.5f) + 0x42ec20 () * 0.5f >= 0.8 and the same over the field 3 >= 0.7: both -> the texts 0x4031 / 0x4033 and a message 0x9b (0x4c4b70), else the texts 0x4032 / 0x4034 */
-
-int he_SecretRoomDomizil(int a, unsigned short *b)
+/* 0x56f3f0, the domicile deed of the secret room event (way 4, he_RunSecretRoom): when no domicile event 0x9b runs
+   against the victim yet (he_NoEvent9bFor) and the secret room's building bldId exists, its owner tries against the
+   victim: skill 2 (owner - victim * 0.5 + random * 0.5 at least 0.8) and then skill 3 (at least 0.7); success tells
+   both (texts 0x4031 / 0x4033) and posts the domicile event 0x9b (from the building, the victim and the owner) and
+   returns 1; a failure tells both (texts 0x4032 / 0x4034); 0 when nothing was posted */
+int he_SecretRoomDomizil(int bldId, AICHAR *victim)
 {
     char text[0x400];
-    char msg[0xf8];
-    int bld, p;
-    float f1, f2, f3;
+    AIMSG msg;
+    AIBLD *bld;
+    AICHAR *owner;
+    float mine, theirs;
 
-    if (he_NoEvent9bFor((int)b) != 0) {
-        bld = gm_BuildQuery(1, 1, a);
+    if (he_NoEvent9bFor((int)victim) != 0) {
+        bld = (AIBLD *)gm_BuildQuery(1, 1, bldId);
         if (bld != 0) {
-            p = *(unsigned short *)(bld + 0x27);
-            f1 = gm_GetSkill((unsigned)&ai_Chars + p * 0x21c, 2);
-            f2 = gm_GetSkill(b, 2);
-            f3 = util_RandomF();
-            if (f1 - f2 * 0.5f + f3 * 0.5 >= 0.8) {
-                f1 = gm_GetSkill((unsigned)&ai_Chars + p * 0x21c, 3);
-                f2 = gm_GetSkill(b, 3);
-                f3 = util_RandomF();
-                if (f1 - f2 * 0.5f + f3 * 0.5 >= 0.7) {
-                    txt_Format(text, 0x4031, *b);
-                    he_ShowNews(*(int *)((unsigned)&ai_CharInts + p * 0x21c), -1, text, 1, 0x5fa, (char *)(unsigned)&full_data_628e28);
+            owner = &ai_CharsT[bld->owner];
+            mine = gm_GetSkill((char *)owner, 2);
+            theirs = gm_GetSkill((char *)victim, 2);
+            if (mine - theirs * 0.5f + util_RandomF() * 0.5 < 0.8) {
+                txt_Format(text, 0x4032, victim->id, victim->id);
+                he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_07");
+                txt_Format(text, 0x4034);
+                he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
+            } else {
+                mine = gm_GetSkill((char *)owner, 3);
+                theirs = gm_GetSkill((char *)victim, 3);
+                if (mine - theirs * 0.5f + util_RandomF() * 0.5 < 0.7) {
+                    txt_Format(text, 0x4032, victim->id, victim->id);
+                    he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_07");
+                    txt_Format(text, 0x4034);
+                    he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
+                } else {
+                    txt_Format(text, 0x4031, victim->id);
+                    he_ShowNews(owner->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_06");
                     txt_Format(text, 0x4033);
-                    he_ShowNews(*(int *)(b + 2), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e10);
-                    memset(msg, 0, 0xf8);
-                    msg[4] = 0x9b;
-                    HM_I(msg, 0xc) = a;
-                    msg[0x36] = 2;
-                    HM_I(msg, 8) = *(int *)((unsigned)&ai_CharInts + p * 0x21c);
-                    HM_I(msg, 0x58) = *(int *)(b + 2);
-                    HM_I(msg, 0x5c) = *(int *)((unsigned)&ai_CharInts + p * 0x21c);
-                    cm_SendLongMessage(msg);
+                    he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x9b;
+                    msg.to = owner->netId;
+                    msg.fromId = bldId;
+                    msg.arg[0] = victim->netId;     /* the event's partner1 */
+                    msg.arg[1] = owner->netId;      /* its partner2 */
+                    msg.flags = 2;
+                    cm_SendLongMessage((char *)&msg);
                     return 1;
                 }
             }
-            txt_Format(text, 0x4032, *b, *b);
-            he_ShowNews(*(int *)((unsigned)&ai_CharInts + p * 0x21c), -1, text, 1, 0x5fa, (char *)(unsigned)&full_data_628df8);
-            txt_Format(text, 0x4034);
-            he_ShowNews(*(int *)(b + 2), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e10);
         }
     }
     return 0;
