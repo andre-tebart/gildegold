@@ -733,6 +733,7 @@ extern GAPDATA full_data_62c3e8[];
 extern GAPDATA full_data_62c400[];
 extern GAPDATA ai_DomizilTable[];
 extern int ai_DomizilCount;
+#define ai_DomizilEntries ((G9DOMIZIL *)ai_DomizilTable)  /* 0x62c420, the 0x42 entries of the Domizil table */
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -16273,13 +16274,13 @@ void ai_CloseChildWindow(void)
 /* 0x5ba620, the Domizil table lookup (64 B): walks the 0x1c-byte entries of 0x62c420 while the id at +0 is not
    0; returns the entry of the id, 0 when absent */
 
-int ai_FindUsableGood(int param_1)
+int ai_FindUsableGood(int id)
 {
     int i;
 
-    for (i = 0; U_I((unsigned)&ai_DomizilTable + i * 0x1c) != 0; i++)
-        if (U_I((unsigned)&ai_DomizilTable + i * 0x1c) == param_1)
-            return (unsigned)&ai_DomizilTable + i * 0x1c;
+    for (i = 0; ai_DomizilEntries[i].id != 0; i++)
+        if (ai_DomizilEntries[i].id == id)
+            return (int)&ai_DomizilEntries[i];
     return 0;
 }
 /* 0x5ba660, the Domizil table lookup with the index out (80 B): like 0x5ba620, and the index of the entry is
