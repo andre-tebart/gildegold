@@ -33,7 +33,7 @@ typedef struct AIPER {                  /* a character, 0x21c bytes (ai_Chars[76
                                            gm_ShiftLoyalty flips it, ai_DecideStateReligion reads it) */
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0xe];
-    float unk01c;                       /* 0x01c */
+    float f01c;                         /* 0x01c, the life value (ai.h AICHAR.f01c) */
     char pad020[0x60];
     unsigned char skills[8];            /* 0x080, the five skill bytes (0..252; ord.c ORDCHAR stats, ord_RatingBytes their maxima) */
     float mood[14][3];                  /* 0x088, (a, b, value) */
@@ -120,7 +120,7 @@ int ai_DecideIncomeTaxRate(AIPER *p, int a, int *out);                    /* 0x4
 int ai_DecideGuildTaxRate(AIPER *p, int a, int *out);                    /* 0x491860, decision 10 */
 int ai_DecideChurchTaxRate(AIPER *p, int a, int *out);                    /* 0x491a40, decision 11 */
 int ai_DecideTradeTaxRate(AIPER *p, int a, int *out);                    /* 0x491b20, decision 12 */
-int ai_Unk491bf0(AIPER *p, int a, int *out);                    /* 0x491bf0, decision 13 */
+int ai_DecideInheritanceTaxRate(AIPER *p, int a, int *out);                    /* 0x491bf0, decision 13 */
 int ai_Unk491cb0(AIPER *p, int a, int *out);                    /* 0x491cb0, decision 14 */
 int ai_Unk491d80(AIPER *p, int a, int *out);                    /* 0x491d80, decision 15 */
 int ai_Unk491e80(AIPER *p, int a, int *out);                    /* 0x491e80, decision 16 */

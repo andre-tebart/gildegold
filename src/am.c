@@ -1802,15 +1802,15 @@ int ai_DecideTradeTaxRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491bf0, decision 13 */
+/* 0x491bf0, the callback of law record 13 (AIDEC.fn, office 0x0e no 2, a rate 0xa .. 0x19): the record's rate is the percent of an inheritance (ORDCHAR.v1a8, the worth of a taken-over character, gm_TakeOverCharacter) that gm_IncomeKind3 (f3gm.c 0x4fa160) takes; it scales the range above the minimum by the worth mood (3 - mood 3) and the deciding character's life (f01c / 700), clamped 0 .. 1, and moves only when it is more than 3 away from the current value */
 
-int ai_Unk491bf0(AIPER *p, int a, int *out)
+int ai_DecideInheritanceTaxRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float x;
     int k, n;
 
-    x = max(min((3.0f - p->mood[3][0]) * (p->unk01c / 700.0f), 1.0f), 0.0f);
+    x = max(min((3.0f - p->mood[3][0]) * (p->f01c / 700.0f), 1.0f), 0.0f);
     gv_GetTableRecord(13, &d);
     k = d.max - d.min;
     n = (int)(k * x + d.min);
