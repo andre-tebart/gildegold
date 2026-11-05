@@ -137,7 +137,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         };
         struct {                        /* 0xac, of the reaper event ("Sensenmann"; alloc handler 0x5509f0, run handler 0x550b60:
                                            its object flies from building to building) */
-            int padreaper;
+            int reaperHome;             /* 0xac, the id of the building it flies back to when reaperLeft has run out (the
+                                           run handler 0x550b60) */
             int reaperFrom;             /* 0xb0, the id of the building the reaper starts from */
             int reaperTo;               /* 0xb4, the id of the building it flies to */
             int reaperNext;             /* 0xb8, the ai_Blds index the search for the next target starts at */

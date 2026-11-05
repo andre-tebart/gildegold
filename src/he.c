@@ -326,6 +326,7 @@ int gm_CompareTime();
 #define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, unsigned char, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void */
 #define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
+#define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
 #define ai_TimeHourW (*(unsigned *)((char *)&ai_Time + 4))  /* 0x770ae4, ai_Time's hour with the low word of the minute int packed over it (0x565410 masks it to 0xffff) */
 #define gm_NearestBuildingK ((int (*)())gm_NearestBuilding)  /* 0x50xxxx: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
@@ -9093,24 +9094,31 @@ void he_StartReaper(int ev)
         he_FreeEvent((int *)ev);
     gm_AddTime(&e->end, 0, 0xf, 0);
 }
-/* 0x550b60 (a Ghidra function with 0x5509f0 .. glued before it), the run handler of the "Sensenmann" event: states -2 / -1 free the object (0x447190), the sound (0x4e3640, flag 0x6f2634) and the record; state 0 flies the object (0x550370: 1 = on, 2 = arrived: the next target building by +0xc0 steps, 0x550850), state 2 restarts the flight (0x5506c0) (ROUGH) */
-
-void he_Unk550b60(int ev)
+/* 0x550b60, the run handler of the reaper event ("Sensenmann"): freed (-1 / -2) it deletes the reaper object, stops
+   its track and frees the record; it (re)creates the object when there is none (failing: freed) and starts the track
+   "cd2\DerSeuchenzug.mp3" once (he_ReaperMusic). Stage 0 flies (he_MoveReaper, again in 2 minutes); arrived, the
+   target becomes reaperFrom and while reaperLeft > 0 the next building of the kind mask is the new target (none:
+   -1), at 0 the reaper turns back to reaperHome; turned (he_TurnReaper) it goes to stage 2 in 15 minutes, else -1.
+   Stage 2 aims it (he_AimReaper) and flies on (0), or ends with the plague message to all (-1) */
+void he_RunReaper(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char text[0x200];
-    int st = *(int *)(ev + 0x70);
-    int r, c0, n, idx, esi;
+    AIBLD *o;
+    AIBTYPE *bt;
+    unsigned int lo, hi;
+    int n, k, r;
 
-    if (st == -2 || st == -1) {
-        if (*(int *)(ev + 0xc8) != 0)
-            d3if_Delete((struct D3OBJECT *)*(int *)(ev + 0xc8));
+    if (e->stage == -2 || e->stage == -1) {
+        if (e->reaper != 0)
+            d3if_Delete(e->reaper);
         if (he_ReaperMusic != 0)
             cm_EndSpecialTrack();
         he_ReaperMusic = 0;
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0xc8) == 0 && he_CreateReaper(ev) == 0) {
+    if (e->reaper == 0 && he_CreateReaper(ev) == 0) {
         he_FreeEvent((int *)ev);
         if (he_ReaperMusic != 0)
             cm_EndSpecialTrack();
@@ -9118,82 +9126,79 @@ void he_Unk550b60(int ev)
         return;
     }
     if (he_ReaperMusic == 0) {
-        cm_PlaySpecialTrack((void *)(unsigned)"cd2\\DerSeuchenzug.mp3");
-        if (U_I((unsigned)&snd_TrackHandles) != 0)
+        cm_PlaySpecialTrack("cd2\\DerSeuchenzug.mp3");
+        if (snd_CurrentTrack != 0)
             he_ReaperMusic = 1;
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (st == 0) {
+    e->end = ai_Time;
+    switch (e->stage) {
+    case 0:
         r = he_MoveReaper(ev);
         if (r == 1) {
-            *(int *)(ev + 0x70) = 0;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
+            e->stage = 0;
+            gm_AddTime(&e->end, 0, 2, 0);
             return;
         }
         if (r == 2) {
-            *(int *)(ev + 0xb0) = *(int *)(ev + 0xb4);
-            c0 = *(int *)(ev + 0xc0);
-            if (c0 > 0) {
-                n = 0x100;
-                idx = *(int *)(ev + 0xb8);
-                do {
-                    unsigned lo = 0, hi = 0;
-                    int e, k;
-
-                    esi = U_I((unsigned)&ai_Blds) + idx * 0xa9;
-                    e = U_I((unsigned)&ai_BTypes) + *(unsigned char *)esi * 0x24d;
-                    k = *(unsigned char *)e;
-                    if (k > 0x1f)
-                        hi = 1u << (k - 0x20);
-                    else
-                        lo = 1u << k;
-                    if (*(unsigned short *)(esi + 0x27) != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
-                        break;
-                    idx = (idx + *(int *)(ev + 0xbc)) & 0xff;
-                    esi = 0;
-                    n--;
-                } while (n != 0);
-                *(int *)(ev + 0xb8) = (*(int *)(ev + 0xbc) + idx) & 0xff;
-                if (esi == 0) {
-                    *(int *)(ev + 0x70) = -1;
-                    return;
+            e->reaperFrom = e->reaperTo;
+            if (e->reaperLeft <= 0) {
+                if (e->reaperLeft == 0) {
+                    e->reaperTo = e->reaperHome;
+                    if (he_TurnReaper(ev) != 0) {
+                        gm_AddTime(&e->end, 0, 0xf, 0);
+                        e->reaperLeft--;
+                        e->stage = 2;
+                        return;
+                    }
+                    gm_AddTime(&e->end, 0, 2, 0);
                 }
-                txt_Format(text, "EvtSensenmann: next target = %G", esi);
-                *(int *)(ev + 0xb4) = *(int *)(esi + 1);
-                *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
-                if (he_TurnReaper(ev) != 0) {
-                    gm_AddTime(ev + 0x52, 0, 0xf, 0);
-                    *(int *)(ev + 0x70) = 2;
-                } else {
-                    gm_AddTime(ev + 0x52, 0, 2, 0);
-                    *(int *)(ev + 0x70) = -1;
-                }
+                e->stage = -1;
                 return;
             }
-            if (c0 == 0) {
-                *(int *)(ev + 0xb4) = *(int *)(ev + 0xac);
-                if (he_TurnReaper(ev) != 0) {
-                    gm_AddTime(ev + 0x52, 0, 0xf, 0);
-                    *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
-                    *(int *)(ev + 0x70) = 2;
-                    return;
-                }
-                gm_AddTime(ev + 0x52, 0, 2, 0);
+            n = 0x100;
+            k = e->reaperNext;
+            do {
+                o = &ai_BldsT[k];
+                lo = 0;
+                bt = &ai_BTypesT[o->type];
+                hi = 0;
+                if ((unsigned char)bt->kind > 0x1f)
+                    hi = 1 << ((unsigned char)bt->kind - 0x20);
+                else
+                    lo = 1 << (unsigned char)bt->kind;
+                if (o->owner != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
+                    break;
+                o = 0;
+                n--;
+                k = (k + e->reaperStep) % 0x100;
+            } while (n != 0);
+            e->reaperNext = (e->reaperStep + k) % 0x100;
+            if (o == 0) {
+                e->stage = -1;
+                return;
             }
-            *(int *)(ev + 0x70) = -1;
+            txt_Format(text, "EvtSensenmann: next target = %G", o);
+            e->reaperTo = o->id;
+            e->reaperLeft--;
+            if (he_TurnReaper(ev) != 0) {
+                gm_AddTime(&e->end, 0, 0xf, 0);
+                e->stage = 2;
+            } else {
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->stage = -1;
+            }
             return;
         }
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x70) = -1;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->stage = -1;
         return;
-    }
-    if (st == 2) {
-        gm_AddTime(ev + 0x52, 0, 2, 0);
+    case 2:
+        gm_AddTime(&e->end, 0, 2, 0);
         if (he_AimReaper(ev) != 0) {
-            *(int *)(ev + 0x70) = 0;
+            e->stage = 0;
         } else {
             ai_PlagueMessageAll();
-            *(int *)(ev + 0x70) = -1;
+            e->stage = -1;
         }
     }
 }
@@ -10304,7 +10309,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_RunSendHomeEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x78, (void *)he_StartReaper, (void *)he_Unk550b60) != 0)
+    if (he_SetEventHandlers(0x78, (void *)he_StartReaper, (void *)he_RunReaper) != 0)
         return 1;
     if (he_SetEventHandlers(0x79, (void *)he_Unk550ea0, (void *)he_Unk550ee0) != 0)
         return 1;
