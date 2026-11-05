@@ -884,6 +884,14 @@ typedef struct HESIM {                  /* the words of the simulation events 0x
                                            started (the next run picks one and a random cursor) */
     int done;                           /* 0xb4, the characters visited this round */
 } HESIM;
+typedef struct HESTORM {                /* the storm event 0x50's words after AIJOB.stormBlds (its alloc handler 0x5652b0) */
+    char pad00[0xf0];
+    int radius;                         /* 0xf0, the distance a follower building must be within (the message's value,
+                                           1000: G12EVENTMSG.value of the WIRBELSTURM command) */
+    char padf4[0xc];
+    int w100;                           /* 0x100, 0 at the allocation (no reader known) */
+    int w104;                           /* 0x104, 0 at the allocation (no reader known) */
+} HESTORM;
 typedef struct HEROUTINE {              /* the daily routine event 0x3a's words over AIJOB's union (he_PostEvent3a posts
                                            it at the start of the day; its run handler 0x55efc0 walks ai_Chars) */
     char pad00[0xac];
@@ -15757,38 +15765,37 @@ void he_Unk5649b0(int ev)
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
-/* 0x5652b0, a Ghidra miss: the allocation handler of the event 0x50 (ROUGH): the characters of kind 6 (0x501190 (1, 6) / 0x501030) without 0x502520 / 0x5024f0 and with a +0x61 object are collected (at most 16 are kept as targets); +0xb0 .. +0xeb = -1; the chosen
-   character +0xac (random pick when -1) gets the nearby ones within +0xf0 (0x453e80 on their +0x61 positions + 0x4c) as followers at +0xac + n * 4; +0x100 / +0x104 = 0; the run clock is now */
+/* 0x5652b0, the allocation handler of the storm (WIRBELSTURM) event 0x50: the buildings of kind 6 (gm_BuildQuery (1, 6) / gm_BuildNext) that are no home / type 10 and have a scene object are collected (at most 0x100); stormBlds[1..15] = -1, stormBlds[0] is the target: the event's own building id, else a random pick of the list; the nearby ones within radius +0xf0 (d3_VecEqual on their scene positions) become stormBlds[1..15]; the two words +0x100 / +0x104 = 0; the due clock is now */
 
-void he_Unk5652b0(int ev)
+void he_AllocStorm(AIJOB *ev)
 {
-    int list[0x100];
-    int n, i, o, c, k;
+    AIBLD *list[0x100];
+    AIBLD *b, *c;
+    int n, i;
+    unsigned short k;
 
     n = 0;
-    list[0] = 1;
-    for (o = gm_BuildQuery(1, 6); o != 0; o = gm_BuildNext()) {
-        if (gm_IsHomeType(o) == 0 && gm_IsType10(o) == 0 && *(int *)(o + 0x61) != 0)
-            list[n++ & 0xffff] = o;
+    k = 1;
+    for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        if (gm_IsHomeType((unsigned char *)b) == 0 && gm_IsType10((unsigned char *)b) == 0 && b->object != 0)
+            list[n++ & 0xffff] = b;
     }
-    for (i = 0; i < 0xf; i++)
-        *(int *)(ev + 0xb0 + i * 4) = -1;
-    if (*(int *)(ev + 0xac) == -1) {
+    for (i = 1; i < 0x10; i++)
+        ev->stormBlds[i] = -1;
+    if (ev->stormBlds[0] == -1) {
         c = list[(unsigned short)util_Random(n)];
-        *(int *)(ev + 0xac) = *(int *)(c + 1);
+        ev->stormBlds[0] = c->id;
     } else {
-        c = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+        c = (AIBLD *)gm_BuildQuery(1, 1, ev->stormBlds[0]);
     }
-    k = 0;
-    n &= 0xffff;
-    for (i = 0; i < n && (unsigned short)k < 0x10; i++) {
-        o = list[i];
-        if (o != c && d3_VecEqual(*(int *)(o + 0x61) + 0x4c, *(int *)(c + 0x61) + 0x4c, (float)*(int *)(ev + 0xf0)) != 0)
-            *(int *)(ev + 0xac + (unsigned short)k++ * 4) = *(int *)(o + 1);
+    for (i = 0; i < (n & 0xffff) && k < 0x10; i++) {
+        b = list[i];
+        if (b != c && d3_VecEqual(&((D3OBJECT *)b->object)->pos, &((D3OBJECT *)c->object)->pos, (float)((HESTORM *)ev)->radius) != 0)
+            ev->stormBlds[k++] = b->id;
     }
-    *(int *)(ev + 0x100) = 0;
-    *(int *)(ev + 0x104) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    ((HESTORM *)ev)->w100 = 0;
+    ((HESTORM *)ev)->w104 = 0;
+    ev->end = ai_Time;
 }
 /* 0x565410, the run handler of the storm event (type 0x50, its alloc handler 0x5652b0): state 0 writes the storm forecast into
    sv_Weather for the three hours after now (clouds 1000, storm 3) and runs again two hours ahead; state 1 damages the stock of
@@ -17028,7 +17035,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
         return 1;
-    if (he_SetEventHandlers(80, (void *)he_Unk5652b0, (void *)he_RunStormEvent) != 0)
+    if (he_SetEventHandlers(80, (void *)he_AllocStorm, (void *)he_RunStormEvent) != 0)
         return 1;
     if (he_SetEventHandlers(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
         return 1;
