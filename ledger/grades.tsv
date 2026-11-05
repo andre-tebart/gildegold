@@ -2214,7 +2214,7 @@ exe	0x004c5150	cm_RequestChrMove	cm	byte	draft
 exe	0x004c51b0	cm_RequestChrMoveToUniverse	cm	byte	draft		
 exe	0x004c5230	cm_SendChrStop	cm	byte	draft		
 exe	0x004c5260	ai_Unk4c5260	cm	byte	draft		
-exe	0x004c52a0	ai_Unk4c52a0	cm	byte	draft		
+exe	0x004c52a0	cm_SendPlaceOnStage	cm	byte	draft		
 exe	0x004c52e0	cm_SendChrGotoBuilding	cm	draft	readable	deep	
 exe	0x004c5410	cm_SendChrAnim	cm	byte	draft		
 exe	0x004c5460	cm_SendChrUseGates	cm	byte	draft		
@@ -2248,7 +2248,7 @@ exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
 exe	0x004c5dc0	cm_SendFightCommand	cm	draft	readable	deep	
 exe	0x004c5e80	cm_SendMessage56	cm	byte	readable		
-exe	0x004c5ec0	ai_Unk4c5ec0	cm	byte	draft		
+exe	0x004c5ec0	cm_SendChrDelete	cm	byte	draft		
 exe	0x004c5ef0	cm_SendCancelParty	cm	byte	draft		
 exe	0x004c5f20	cm_SendCutsceneReady	cm	byte	readable		
 exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	draft		
@@ -3661,24 +3661,24 @@ exe	0x00550b60	he_RunReaper	he	byte	readable
 exe	0x00550ea0	he_Unk550ea0	he	byte	draft		
 exe	0x00550ee0	he_RunRanking	he	byte	readable		
 exe	0x005512c0	he_Unk5512c0	he	shape	draft		
-exe	0x00551340	he_Unk551340	he	draft	draft		
-exe	0x00551440	he_Unk551440	he	draft	draft		
-exe	0x005516a0	he_Unk5516a0	he	byte	draft		
-exe	0x00551780	he_Unk551780	he	draft	draft		
+exe	0x00551340	he_StepWalkSlot	he	shape	readable		
+exe	0x00551440	he_FillWalkSlot	he	draft	readable	deep	
+exe	0x005516a0	he_PlayGestures	he	byte	draft		
+exe	0x00551780	he_StepWalk	he	draft	readable	deep	
 exe	0x00551b70	he_Unk551b70	he	shape	draft		
 exe	0x00551d00	he_InitSixGroupEvent	he	byte	readable		
-exe	0x00551d70	he_Unk551d70	he	draft	draft		
+exe	0x00551d70	he_RunSixGroupEvent	he	draft	readable	deep	
 exe	0x00552040	he_Unk552040	he	byte	draft		
-exe	0x00552090	he_Unk552090	he	draft	draft		
+exe	0x00552090	he_RunExamQuestion	he	byte	readable		
 exe	0x00552200	he_Unk552200	he	byte	draft		
-exe	0x00552270	he_Unk552270	he	draft	draft		
+exe	0x00552270	he_RunExamOffer	he	shape	readable		
 exe	0x005524e0	he_Unk5524e0	he	byte	draft		
 exe	0x00552520	he_Unk552520	he	byte	draft		
-exe	0x005525a0	he_Unk5525a0	he	draft	draft		
+exe	0x005525a0	he_RunConversion	he	draft	readable	deep	
 exe	0x005527c0	he_Unk5527c0	he	byte	draft		
 exe	0x00552820	he_Unk552820	he	byte	draft		
 exe	0x00552880	he_Unk552880	he	byte	draft		
-exe	0x00552920	he_Unk552920	he	draft	draft		
+exe	0x00552920	he_RunApplicants	he	byte	readable		
 exe	0x00552b90	he_Unk552b90	he	byte	draft		
 exe	0x00552bc0	he_Unk552bc0	he	byte	draft		
 exe	0x00552c30	he_Unk552c30	he	byte	draft		
@@ -3761,7 +3761,7 @@ exe	0x0055e730	he_Unk55e730	he	draft	draft
 exe	0x0055e9d0	he_Unk55e9d0	he	draft	draft		
 exe	0x0055ea60	he_FigureContact	he	draft	draft		
 exe	0x0055eba0	he_FindFigurePlace	he	draft	draft		
-exe	0x0055ee40	he_Unk55ee40	he	draft	draft		
+exe	0x0055ee40	he_PickNearBuilding	he	draft	draft		
 exe	0x0055efc0	he_Unk55efc0	he	draft	draft		
 exe	0x0055fa20	he_Unk55fa20	he	draft	draft		
 exe	0x0055fa90	he_Unk55fa90	he	draft	draft		

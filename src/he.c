@@ -16,7 +16,10 @@
    post as G28REC (cm_types.h, its raid lists).
    The handlers 0x547f90 .. 0x54a7b0 (events 0x4a, 0x53 .. 0x61) read AIJOB / AICHAR / AIBLD / G28REC typed too,
    and so do the send-home event 0x77 (AIJOB.homeUntil), the reaper event 0x54ff20 .. 0x550e9a (AIJOB's reaper*
-   words, the D3OBJECT reaper) and the ranking event 0x550ee0 (its packets HERANKHEAD / HERANKLINE).
+   words, the D3OBJECT reaper) and the ranking event 0x550ee0 (its packets HERANKHEAD / HERANKLINE); so do the
+   walk event 0x551340 .. 0x551b70 (its ten slots HEWALKSLOT), the six-group event 0x7d (AIJOB.groups / grpMode,
+   AMTREC / AMTKIND from amt_types.h), the master exam question / offer 0x7e / 0x7f (HEEXAMBOX, HEEXAMOFFER, the
+   message HEEXAMMSG over AIMSG), the conversion event 0x81 (HECONVERT) and the applicants event 0x86 (HEAPPLICANTS).
    Open: types: the other handlers past 0x547ba0 still read the event and message records through raw offsets
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
@@ -41,7 +44,8 @@
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
    count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
-   gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor.
+   gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor. Until am.h is included
+   the head keeps am.h's ai_FindPartnersRandomWalk prototype (he_FillWalkSlot passes floats to it).
    unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;
 struct D3HMAP;
