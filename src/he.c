@@ -454,6 +454,16 @@ typedef struct HESTOREEXT {             /* the store extension event 19's words 
     int obj;                            /* 0xac, the objId of the store object (gm_FindById) */
     int rounds;                         /* 0xb0, the extension rounds still to run, one capacity unit each */
 } HESTOREEXT;
+typedef struct HEHERBS {                /* the herb gathering event 20's words over AIJOB's union (he_Unk557d70 /
+                                           he_RunHerbGathering); the gatherers' netIds are AIJOB.ids[] */
+    char pad00[0xac];
+    unsigned char n;                    /* 0xac, the gatherers in AIJOB.ids[] */
+    char padad;
+    unsigned short good;                /* 0xae, the good gathered (gm_FreeCapacity; its name is the text 0x9a8 + 2 * good), 0: none */
+    int room;                           /* 0xb0, the object (room) of the event's building the gatherers come back to
+                                           (cm_SendChrGotoBuilding's objId, the news' quick jump) */
+    int field;                          /* 0xb4, the id of the nearest building of type 0xb they gather at */
+} HEHERBS;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12550,59 +12560,202 @@ int gm_ClockSeason();
 int gm_FreeCapacity();
 int sv_IsAtDoor();
 
-/* 0x557e20, the run handler of the herb gathering trip ("Kr\344uter" animation; ROUGH skeleton, 7 states by the jump table 0x5584a8; a season check 0x4fe350 against the float tables 0x617830 / 0x617840): the +0xac group persons (ids from +0x8c) are sent to the building +0x10 / the field positions (0x501190, 0x458a20, the 3D distance test against the range), gather ("Kr\344uter" 0x4c52e0, 0x4c5230), arrive (0x524770) and are given the harvest (the amount from 0x5092e0 and two random rolls 0x42ec00, 0x50ab80 / 0x50a810 for the owner), paid out by 0x4c4880 (.., -1) and the news 0x17fd / 0x1802 .. 0x1804 is shown to the owner (0x53dee0); the end frees the record and the persons (0x524260) */
-void he_Unk557e20(int ev)
+/* 0x557e20, the run handler of the herb gathering event 20 (HEHERBS; allocated by he_Unk557d70, which gathers the
+   group). Outside the day hours of the season (gm_DayStartHours .. gm_DayEndHours) it waits 5 minutes, except when
+   cancelled; without the event's character it is freed. Stage 1: the nearest building of type 0xb to the event's
+   building (AIJOB.from, by the 3D distance of their objects; none: cancelled) becomes the field and the gatherers
+   are sent there ("Kr\344uter"). Stage 2: once all are at its door, the next stage in 10 minutes. Stage 3: they are
+   sent back to the room; none left: freed. Stage 4: once all are home they leave the group and the harvest
+   ((9 + random 6) per gatherer, times 1 + the building's skill 0x1e (type kind ' ') or 0xb / 90, halved in season 3
+   without the building's flag 0x2000) goes into the building's store object 0x2a (gm_FreeCapacity, sold to the
+   own player by cm_SendExSellObject); the news 0x1802 + 0x1803 (or 0x1804 for nothing) goes to the character of
+   kind 6 / 7 unless its master has flags1b4 bit 0. Stages -2 / -1 send the gatherers back and free the event
+   @deep reconstructed from 0x557e20..0x5584c4 (all 7 stages, the jump table equal; the day-hours wait, the
+   nearest type-0xb field by 3D distance, the door waits, the harvest with gm_BuildingSkill 0x1e/0xb *
+   (1/90) + 1, the winter halving, gm_FreeCapacity, the news 0x1802+0x1803 / 0x1804 via strcat, every call
+   and argument read against the original); case-scoped locals reproduce the original's shared [esp+0x10]
+   slot. Left is register allocation of constants: ours caches 0 in edi from the entry (xor edi,edi / xor
+   ebp,ebp; cmp ebp,edi where the original has test ebp,ebp; push edi for push 0) and -1 in esi (or esi,-1;
+   mov [ebx+0x70],esi where the original has mov [ebx+0x70],0xffffffff), the original only -1 in edi from
+   the netId test (mov eax,[ebx+0xc] / or edi,-1 / cmp eax,edi); tails: the original cross-jumps the
+   gm_AddTime(..,0,5,0) / (..,0,10,0) waits of stages 2 / 3 / 4 into the block at +0x91 / +0x95 that ours
+   keeps inline; in stage 4 ours merges the fmul qword [esp+0x24] of both skill branches into the shared
+   _ftol tail, the original keeps one per branch. Tried: a single goto wait label (worse layout, reverted),
+   nested / flat stage-1 failure blocks (the flat if (nearest == 0) form matches) (size: 22 of the
+   instruction difference are shared / inline tails) */
+void he_RunHerbGathering(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, i, p, n = 0, o;
-    char text[0x400];
-    float pos[3], pos2[3];
+    AIJOB *e = (AIJOB *)ev;
+    HEHERBS *h = (HEHERBS *)ev;
+    AIBLD *nearest;
+    int season;
+    char text[0x400], line[0x200];
 
-    if (gm_ClockSeason((unsigned)&ai_Time) < 0 || st < -2 || st > 4) {
-        he_FreeEvent((int *)ev);
+    season = gm_ClockSeason(&ai_Time);
+    nearest = 0;
+    if ((gm_DayEndHours[season] <= (float)ai_Time.hour || (float)ai_Time.hour < gm_DayStartHours[season]) && e->stage != -1 && e->stage != -2) {
+        gm_AddTime(&e->end, 0, 5, 0);
         return;
     }
-    switch (st) {
-    case -2:
-    case -1:
-        for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0)
-                sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-        }
-        he_FreeEvent((int *)ev);
-        return;
-    case 0:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (b == 0)
+    if (e->chr != 0xffff && e->netId != -1) {
+        switch (e->stage) {
+        case 1: {
+            float best, d, dx, dy, dz;
+            D3VECTOR4 pos, at;
+            D3OBJECT *obj;
+            AIBLD *b, *f;
+            int i;
+
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+            if (b != 0) {
+                best = 1e8f;
+                obj = (D3OBJECT *)b->object;
+                d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&at);
+                for (f = (AIBLD *)gm_BuildQuery(1, 5, 0xb); f != 0; f = (AIBLD *)gm_BuildNext()) {
+                    obj = (D3OBJECT *)f->object;
+                    d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)&pos);
+                    dx = pos.x - at.x;
+                    dy = pos.y - at.y;
+                    dz = pos.z - at.z;
+                    d = (float)sqrt(dx * dx + dy * dy + dz * dz);
+                    if (d < best) {
+                        best = d;
+                        nearest = f;
+                    }
+                }
+            }
+            if (nearest == 0) {
+                e->stage = -1;
+                return;
+            }
+            h->field = nearest->id;
+            for (i = 0; i < h->n; i++) {
+                if (gm_FindChar(e->ids[i]) != 0) {
+                    cm_SendChrStop(e->ids[i]);
+                    cm_SendChrGotoBuilding(e->ids[i], nearest->id, -1, 0, 0, "Kr\344uter");
+                }
+            }
+            e->stage++;
             return;
-        o = *(int *)(b + 0x61);
-        d3_PointToWorld(o, o + 0x4c, pos);
-        for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0) {
-                cm_SendChrStop(*(int *)(p + 4));
-                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "Kr\344uter");
-                n++;
-            }
         }
-        *(int *)(ev + 0x70) = 1;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        return;
-    default:
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0 && sv_IsAtDoor(p, 0) != 0) {
-                n++;
-                txt_Format(text, 0x17fd, p);
-                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, -1, 0, 0, 0);
+        case 2: {
+            AIBLD *f;
+            AICHAR *c;
+            int i;
+
+            f = (AIBLD *)gm_BuildQuery(1, 1, h->field);
+            if (f == 0) {
+                e->stage = -1;
+                return;
             }
+            for (i = 0; i < h->n; i++) {
+                c = (AICHAR *)gm_FindChar(e->ids[i]);
+                if (c != 0 && sv_IsAtDoor(c, f) == 0) {
+                    e->stage = 2;
+                    gm_AddTime(&e->end, 0, 5, 0);
+                    return;
+                }
+            }
+            e->stage = 3;
+            gm_AddTime(&e->end, 0, 10, 0);
+            return;
         }
-        (void)pos2;
-        he_FreeEvent((int *)ev);
-        return;
+        case 3: {
+            AIBLD *b;
+            int i, any;
+
+            any = 0;
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+            if (b == 0) {
+                e->stage = -1;
+                return;
+            }
+            for (i = 0; i < h->n; i++) {
+                if (gm_FindChar(e->ids[i]) != 0) {
+                    any |= 1;
+                    cm_SendChrStop(e->ids[i]);
+                    cm_SendChrGotoBuilding(e->ids[i], b->id, h->room, 0, 0, "Kr\344uter");
+                }
+            }
+            if (any == 0)
+                break;
+            e->stage = 4;
+            gm_AddTime(&e->end, 0, 5, 0);
+            return;
+        }
+        case 4: {
+            AIBLD *b;
+            AIOBJ *o;
+            AICHAR *c, *m;
+            double rate;
+            int i, amount, got;
+
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+            if (b == 0)
+                break;
+            for (i = 0; i < h->n; i++) {
+                c = (AICHAR *)gm_FindChar(e->ids[i]);
+                if (c != 0 && sv_IsAtDoor(c, b) == 0) {
+                    e->stage = 4;
+                    gm_AddTime(&e->end, 0, 5, 0);
+                    return;
+                }
+            }
+            for (i = 0; i < h->n; i++) {
+                c = (AICHAR *)gm_FindChar(e->ids[i]);
+                if (c != 0)
+                    sv_MoveToGroup(0, 0, c->id, 0);
+            }
+            o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+            if (o == 0)
+                break;
+            season = gm_ClockSeason(&ai_Time);
+            if (ai_BTypesT[b->type].kind == ' ') {
+                rate = gm_BuildingSkill((unsigned char *)b, 0x1e, 1) * (1.0 / 90) + 1.0;
+                amount = (int)(((unsigned short)util_Random(6) + 9) * h->n * rate);
+            } else {
+                rate = gm_BuildingSkill((unsigned char *)b, 0xb, 1) * (1.0 / 90) + 1.0;
+                amount = (int)(((unsigned short)util_Random(6) + 9) * h->n * rate);
+            }
+            if (season == 3 && (b->flags5aw & 0x2000) == 0)
+                amount = (int)(amount * 0.5);
+            got = gm_FreeCapacity((short *)o, h->good, amount);
+            if (h->good == 0)
+                break;
+            m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+            if (got != 0) {
+                cm_SendExSellObject(o->objId, -1, h->good, got, ai_OwnPlayer, 0);
+                txt_Format(text, 0x1802, 0x17fd, b);
+                txt_Format(line, 0x1803, got, h->good * 2 + 0x9a8);
+                strcat(text, line);
+            } else
+                txt_Format(text, 0x1804, 0x17fd, b);
+            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0)) {
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, h->room, 0, 0);
+            }
+            break;
+        }
+        case -2:
+        case -1: {
+            AIBLD *b;
+            int i;
+
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+            if (b != 0) {
+                for (i = 0; i < h->n; i++) {
+                    if (gm_FindChar(e->ids[i]) != 0) {
+                        cm_SendChrStop(e->ids[i]);
+                        cm_SendChrGotoBuilding(e->ids[i], b->id, h->room, 0, 0, "Kr\344uter");
+                    }
+                }
+            }
+            break;
+        }
+        default:
+            return;
+        }
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x5584d0, the allocation handler of the group events: the +0xac persons (ids from +0x8c) that exist are sent (0x524260 (0, 0, type, ev)), the due clock is the start clock (+0x44) and the event posted 1 later (state kept) */
 
@@ -15472,7 +15625,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(19, (void *)he_Unk557b30, (void *)he_RunStoreExtension) != 0)
         return 1;
-    if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_Unk557e20) != 0)
+    if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_RunHerbGathering) != 0)
         return 1;
     sv_RegisterActivity(20, 0, 1, 1280, 174);
     if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_Unk558550) != 0)
