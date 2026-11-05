@@ -46,8 +46,6 @@
 #define ai_Unkf84c60             (*(float (*)[8])((char *)&ai_Actions + 0xda0))  /* 0xf84c60 */
 #define ai_Unkf84cd4             (*(float (*)[8])((char *)&ai_Actions + 0xe14))  /* 0xf84cd4 */
 #define ai_Unkf84cf4             (*(float (*)[8])((char *)&ai_Actions + 0xe34))  /* 0xf84cf4 */
-#define ai_Unkf86894             (*(float *)((char *)&ai_Actions + 0x29d4))  /* 0xf86894 */
-#define ai_Unkf868b4             (*(float *)((char *)&ai_Actions + 0x29f4))  /* 0xf868b4 */
 
 /* cm_SendStates */
 #define ls_RefTargets            (*(int (*)[17574])((char *)&cm_SendStates + 0x6))  /* 0xf31166 */

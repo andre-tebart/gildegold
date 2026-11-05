@@ -49,8 +49,6 @@ AIACT ai_Actions[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them
 /* ai_Unkf84c60: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84cd4: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84cf4: view of ai_Actions (tools/data_views.py) */
-/* ai_Unkf86894: view of ai_Actions (+0x29d4, in the last action record) */
-/* ai_Unkf868b4: view of ai_Actions (+0x29f4, in the last action record) */
 int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 
 #include "ls.h"
@@ -891,13 +889,15 @@ int ai_DecideUseAlchemyItems(int a, AIPX *p, int b, AIARG *o1, AIARG *o2)
 fail:
     return 0;
 }
-/* 0x48f990, execute of action 0x48 */
+/* 0x48f990, execute of "UseAlchemistryItems" (0x48): sells the item, or uses it on s2->ref; when it took
+   effect, the action's short-term weight w3[0] becomes w1[0] times the good's effect weight (g[3], the
+   Domizil record's +0xc), minus half when it backfired; 0x48 when sold, 0x1c (the mood change) when used, else 0 */
 
 int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
 {
     AIBLD *bl;
     AIOBJ *o, *q;
-    AIGDX *g;
+    float *g;
     AIUSE u;
 
     if (s1->kind == 2) {
@@ -911,8 +911,8 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
             if (bl) {
                 o = gm_Query(bl->objList, 2, 6, 0, 0x2a);
                 if (o) {
-                    q = gm_Query(o->unk14, 2, 6, 0, s1->ref);
-                    if (q && q->unk0e > 1) {
+                    q = gm_Query(o->list, 2, 6, 0, s1->ref);
+                    if (q && q->count > 1) {
                         cm_SendExSellObjectI(p->netId, o->objId, s1->ref, 1, ai_OwnPlayer, 0);
                         return 0x48;
                     }
@@ -923,7 +923,7 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
         o = gm_Query(p->inventory, 1, 1, s1->ref);
         if (!o)
             return 0;
-        g = ai_FindUsableGood(o->id);
+        g = (float *)ai_FindUsableGoodP(o->id);
         if (g) {
             u.obj = o;
             u.target = s2->ref;
@@ -932,11 +932,11 @@ int ai_ExecUseAlchemyItems(AIPX *p, AIARG *s1, AIARG *s2)
             u.handled = 0;
             if (ai_UseGood(p, &u) == 1) {
                 if (u.effect == 1) {
-                    ai_Unkf868b4 = ai_Unkf86894 * g->unk0c;
+                    G5_ACTS[0x48].w3[0].w = G5_ACTS[0x48].w1[0].w * g[3];
                     return 0x1c;
                 }
                 if (u.effect == -1)
-                    ai_Unkf868b4 = ai_Unkf86894 * g->unk0c * -0.5f;
+                    G5_ACTS[0x48].w3[0].w = G5_ACTS[0x48].w1[0].w * g[3] * -0.5f;
                 return 0x1c;
             }
         }
