@@ -1040,7 +1040,8 @@ typedef struct HESEARCH9 {              /* the search event 9's words over AIJOB
 typedef struct HECONSTRUCTION {         /* the building construction event 0xd's words over AIJOB's union (he_ShowConstruction) */
     char pad00[0xb8];
     int bld;                            /* 0xb8, the id of the building under construction */
-    char padbc[8];
+    int script;                         /* 0xbc, the id of the event script playing (evt_FindById), -1: none */
+    char padc0[4];
     int stages;                         /* 0xc4, the last construction stage */
     int stage;                          /* 0xc8, the stage reached, -1: not started */
 } HECONSTRUCTION;
@@ -21365,37 +21366,36 @@ int he_ConstructionStage(int ev)
     return best;
 }
 
-struct D3OBJECT * d3_LoadGroup();
-int d3t_DropObject();
-
-/* 0x56bc50, creates the two scene objects of the building event ev (arg5): the model of the building type *type (a table of 0x50-byte records at 0x627e98: four codes, then the model name at +0x10, the last record ends it), named "he_<id>" (+4), and the group "model" (arg4, the scaffolding); both are placed at pos (arg2) and rot (arg1), the second is dropped on the ground (0x412a70) and hooked to the building (0x50d380 (o, type, 2)); returns the second object (0 = a load failed) */
-int he_Unk56bc50(void *rot, float *pos, unsigned char *type, char *model, int ev)
+/* 0x56bc50, creates the two scene objects of the building event ev in the default scene (the current one restored
+   at the end): the construction model of the building type *type (he_BuildingModels; a type not listed gets the
+   model of the closing record), named "he_<id>", and the building's own group model, hidden, dropped on the ground
+   (not below pos) and hooked to the building (init_HookObject); both are placed at pos and rot, the construction
+   shows its first stage (he_ShowConstruction, not started); returns the building's object, 0 when a load failed */
+D3OBJECT *he_CreateConstruction(D3VECTOR *rot, D3VECTOR *pos, unsigned char *type, char *model, int ev)
 {
+    int scene;
     char name[0x100];
-    int scene, obj, obj2, n, k, found;
-    int *rec;
+    D3OBJECT *obj;
+    int n, k, found;
 
-    scene = U_I((unsigned)&d3_CurrentScene);
-    found = 0;
     n = 0;
-    rec = (int *)he_BuildingModels;
-    if (rec[0] != 0) {
-        while (!found) {
+    found = 0;
+    if (he_BuildingModels[0].types[0] != 0) {
+        for (; he_BuildingModels[n].types[0] != 0; n++) {
+            if (found)
+                break;
             for (k = 0; k < 4; k++) {
-                if (*type == rec[k]) {
-                    strcpy(name, (char *)rec + 0x10);
+                if (*type == he_BuildingModels[n].types[k]) {
+                    strcpy(name, he_BuildingModels[n].model);
                     found = 1;
                     break;
                 }
             }
-            rec = (int *)((char *)rec + 0x50);
-            n++;
-            if (rec[0] == 0)
-                break;
         }
     }
     if (!found)
         strcpy(name, he_BuildingModels[n].model);
+    scene = d3_CurrentScene;
     d3if_SelectScene(0, 1);
     obj = d3_LoadGroup(name, 0, 0);
     if (obj == 0) {
@@ -21404,30 +21404,30 @@ int he_Unk56bc50(void *rot, float *pos, unsigned char *type, char *model, int ev
     }
     d3_SetObjectPos(obj, pos);
     d3_SetObjectRot(obj, rot);
-    *(unsigned char *)(obj + 0x211) = *(unsigned char *)(obj + 0x211) & 0xfb | 2;
-    sprintf((char *)obj, "he_%i", *(int *)(ev + 4));
-    obj2 = d3_LoadGroup(model, 0, 0);
-    if (obj2 == 0) {
+    obj->objectFlags = obj->objectFlags & ~4 | 2;
+    sprintf(obj->name, "he_%i", ((AIJOB *)ev)->id);
+    obj = d3_LoadGroup(model, 0, 0);
+    if (obj == 0) {
         d3if_SelectScene(scene, 1);
         return 0;
     }
-    d3_SetObjectPos(obj2, pos);
-    d3_SetObjectRot(obj2, rot);
-    init_StripTorches(obj2);
-    d3t_DropObject(obj2, 1, 0);
-    if (*(float *)(obj2 + 0x50) < pos[1]) {
-        *(float *)(obj2 + 0x4c) = pos[0];
-        *(float *)(obj2 + 0x50) = pos[1];
-        *(float *)(obj2 + 0x54) = pos[2];
+    d3_SetObjectPos(obj, pos);
+    d3_SetObjectRot(obj, rot);
+    init_StripTorches(obj);
+    d3t_DropObject(obj, 1, 0);
+    if (obj->pos.y < pos->y) {
+        obj->pos.x = pos->x;
+        obj->pos.y = pos->y;
+        obj->pos.z = pos->z;
     }
-    d3if_ShowTree(obj2, 0);
-    d3_RelightObjects(obj2);
-    *(int *)(ev + 0xc8) = -1;
-    *(int *)(ev + 0xbc) = -1;
+    d3if_ShowTree(obj, 0);
+    d3_RelightObjects(obj);
+    ((HECONSTRUCTION *)ev)->stage = -1;
+    ((HECONSTRUCTION *)ev)->script = -1;
     he_ShowConstruction(ev);
-    init_HookObject(obj2, type, 2);
+    init_HookObject((char *)obj, (unsigned short *)type, 2);
     d3if_SelectScene(scene, 1);
-    return obj2;
+    return obj;
 }
 
 int gm_CompareTime();

@@ -2561,3 +2561,4 @@
 2026-11-05T23:28:09 0x0056a960 func he_Unk56a960 -> he_RunTrade by:main why:the run handler of the trade event 0xb (he_SetEventHandlers(0xb, he_AllocTrade, ...)): sells / buys the cart's slots at the building and moves the cart on
 2026-11-05T23:31:23 0x0056b750 data he_Unk56b750 -> he_CollectChild by:main why:the d3_ForEachObject callback of he_ShowConstruction / 0x56bac0: appends the object to the list (0x40 entries, the count at +0x104), true while there is room
 2026-11-05T23:34:50 0x0056bac0 data he_Unk56bac0 -> he_ConstructionStage by:main why:returns the highest _nn suffix of the children of he_<id>, the construction stage as he_ShowConstruction parses it
+2026-11-05T23:37:25 0x0056bc50 data he_Unk56bc50 -> he_CreateConstruction by:main why:loads the construction model (he_BuildingModels) as he_<id> and the building's group at pos/rot, shows stage -1
