@@ -1637,7 +1637,7 @@ exe	0x00499400	ai_DecideUpgradeBusiness	am	draft	readable	deep
 exe	0x00499520	ai_DecideVisitMedicus	am	byte	readable		
 exe	0x00499580	ai_ExecuteVisitMedicus	am	byte	readable		
 exe	0x004995d0	ai_EvalSabotage	am	byte	readable		
-exe	0x00499660	ai_DecideSabotage	am	byte	draft		
+exe	0x00499660	ai_DecideSabotage	am	byte	readable		
 exe	0x00499a90	ai_ExecuteSabotage	am	byte	readable		
 exe	0x00499b80	ai_EvalBeatUp	am	byte	readable		
 exe	0x00499c10	ai_DecideBeatUp	am	shape	readable		
@@ -3679,18 +3679,18 @@ exe	0x005527c0	he_StartSkillBonus	he	byte	readable
 exe	0x00552820	he_RunSkillBonus	he	byte	readable		
 exe	0x00552880	he_StartApplicants	he	byte	readable		
 exe	0x00552920	he_RunApplicants	he	byte	readable		
-exe	0x00552b90	he_Unk552b90	he	byte	draft		
-exe	0x00552bc0	he_Unk552bc0	he	byte	draft		
-exe	0x00552c30	he_StartOfficeAward	he	byte	draft		
+exe	0x00552b90	he_AllocTutorialIntro	he	byte	readable		
+exe	0x00552bc0	he_RunTutorialIntro	he	byte	readable		
+exe	0x00552c30	he_StartOfficeAward	he	byte	readable		
 exe	0x00552ca0	he_RunOfficeAward	he	draft	readable	deep	
 exe	0x00553060	he_RegisterEventTypes22	he	byte	draft		
 exe	0x005538b0	he_EndPersonEvents	he	shape	readable		
 exe	0x00553ae0	he_DetectAttack	he	byte	readable		
-exe	0x00553cc0	he_Unk553cc0	he	byte	draft		
-exe	0x00553d10	he_NoEvent2ePair	he	byte	draft		
-exe	0x00553d60	he_NoEvent4bPair	he	byte	draft		
-exe	0x00553db0	he_NoEvent35Pair	he	shape	draft		
-exe	0x00553e10	he_Unk553e10	he	byte	draft		
+exe	0x00553cc0	he_NoProtectionEvent	he	byte	readable		
+exe	0x00553d10	he_NoEvent2ePair	he	byte	readable		
+exe	0x00553d60	he_NoEvent4bPair	he	byte	readable		
+exe	0x00553db0	he_NoEvent35Pair	he	shape	readable		
+exe	0x00553e10	he_AllocSale	he	byte	readable		
 exe	0x00553e90	he_RunSale	he	byte	readable		
 exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
 exe	0x00554820	he_Unk554820	he	byte	draft		

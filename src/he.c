@@ -31,10 +31,8 @@
    0x62, its ask 0x63 and the audit 0x64 handlers (0x54ae20 .. 0x54b9b0) read AIJOB and their words typed too
    (HEPROTECTION, HEAUDIT). The head includes
    rt.h (d2_SetObjValue2 / rt_UnloadAtPointC keep this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
-   Open: types: the other handlers past 0x55ba00 still read the event and message records through raw offsets
-   Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
-   cm.h not included; their calls stay M7)
-   (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
+   The event and message words are read typed (HM_I / U_I), except the kind-specific words over AIJOB's union the
+   local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
    master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), HEDUEL (the duel challenge's +0xac and the duel's
    +0xb4 / +0xb6), HEGESELLE / HEEXAMPAY / HEPAYMENT / HEPUNISHMENT / HEOFFSPRING / HETRIAL / HETRIALSTEP / HETRAINING /
@@ -49,6 +47,9 @@
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
+   Open: types: the other handlers past 0x55ba00 still read the event and message records through raw offsets
+   Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
+   cm.h not included; their calls stay M7)
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
