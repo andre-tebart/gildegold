@@ -364,7 +364,7 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                                            writes the building owner's netId) */
     int fromId;                         /* 0x0c, the sending building's id */
     int nIds;                           /* 0x10, how many of ids[] are set (msg.ids[msg.nIds]++) */
-    int unk14;                          /* 0x14, only ever written 0 (hst.c: -1), no reader names it */
+    int reserved14;                     /* 0x14, only ever written 0 (hst.c: -1), no reader names it (f3init.c's view names it so) */
     char pad18[0x10];
     AITIME time;                        /* 0x28 */
     unsigned char flags;                /* 0x36, the message flags (1 / 2 / 9; he.md's message record) */

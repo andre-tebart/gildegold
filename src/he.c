@@ -15482,7 +15482,20 @@ void he_AllocHarvest(int ev)
    object 0x2a (0x4c4880), posts the next harvest order (message 0x28, ai_SendJobOrders' kind) for the first plant of
    the same tree at the same or a later state within the tree's reach, lets the worker go and frees the record.
    Stages -2 / -1 put the plant back under the event's id and free the record. The case -2 / -1 body and the shared
-   tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8. */
+   tails lie after the last case (0x55db60 ..), the jump table after them: one function, 0x55d5c0 .. 0x55dbd8.
+   @deep read whole against 0x55d5c0..0x55dbd8 (6 stages, jump table equal, every call / string / constant
+   / field reconciled). Fixed this pass: the buffers are name[0x80] / path[0x80] (the original's offsets:
+   name 0x1e0..0x260, path 0x160..0x1e0) and spot[0x40] (frame 0x21c -> 0x254 vs 0x250), the message reads
+   b->id once (m.arg[0] = m.fromId = b->id), AIMSG.unk14 -> reserved14. Left: (1) the shared AddTime tail
+   of stages 0 / 2 (+0x1bd / +0x3be): the original keeps the body in stage 2 and stage 0's three paths push
+   1 / 0 and jmp down into it, ours keeps it in stage 0 and stage 2 jumps up (VC6 cross-jumping direction,
+   the same statements); (2) the message block +0x4c4: the original copies ai_Time through edi after the
+   rep stosd and loads ripe->id after lea edi, ours through eax / ecx earlier, scheduling only; (3) frame
+   0x254 vs 0x250 and the packed slots (plants / dir / spot / c share slots differently: VC6 stack
+   packing); (4) eax/ecx swaps in the 64-record scan (references: M8 at +0x505: ours refers to ai_Time+0xc
+   (0x770aec), the original's field to 0x770ae4 (ai_TimeHourW), explained: the M8 at +0x505 is the time
+   copy's scheduling: both sides copy all four words of ai_Time (0x770ae0 .. 0x770aec) into m.time, in
+   another order, so the aligned line pairs different words of the same object) */
 
 void he_RunHarvest(int ev)
 {
@@ -15499,9 +15512,9 @@ void he_RunHarvest(int ev)
     struct VFSDIR *dir;
     AIMSG m;
     int i;
-    char spot[0x18];
-    char path[0x88];
-    char name[0x68];
+    char spot[0x40];
+    char path[0x80];
+    char name[0x80];
 
     b = (AIBLD *)gm_BuildQuery(1, 1, e->harvestBld);
     if (b == 0) {
@@ -15587,13 +15600,12 @@ void he_RunHarvest(int ev)
             memset(&m, 0, sizeof(m));
             m.time = ai_Time;
             m.type = 0x28;
-            m.unk14 = 0;
+            m.reserved14 = 0;
             m.arg[3] = i;
             m.to = ai_CharInts[e->chr][0];
             m.nIds = 1;
             m.flags = 1;
-            m.fromId = b->id;
-            m.arg[0] = b->id;
+            m.arg[0] = m.fromId = b->id;
             m.arg[1] = e->harvestWorker;
             cm_SendLongMessage((char *)&m);
         }

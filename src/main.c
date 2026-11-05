@@ -3461,7 +3461,7 @@ void main_EndRound(void)
         MAIN_NOTE(msg, 0x4c);
         msg.fromId = msg.to;
         msg.nIds = 0;
-        msg.unk14 = 0;
+        msg.reserved14 = 0;
         cm_SendLongMessage((char *)&msg);
     }
     if ((ai_GameFlags & 8) != 0) {

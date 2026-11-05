@@ -1092,7 +1092,7 @@ void ai_EvaluateProductionCategory2(AICHAR *ch)
                 msg.to = ai_CharsT[ch->bld->owner].netId;
                 msg.fromId = ch->bld->id;
                 msg.nIds = 0;
-                msg.unk14 = 0;
+                msg.reserved14 = 0;
                 msg.time = ai_Time;
                 msg.flags = 1;
                 msg.arg[0] = ch->bld->id;
@@ -4227,7 +4227,7 @@ void ai_SendJobOrders(AIINFO *info)
                     msg.fromId = info->ch->bld->id;
                     msg.time = ai_Time;
                     msg.nIds = 1;
-                    msg.unk14 = 0;
+                    msg.reserved14 = 0;
                     msg.flags = 1;
                     msg.arg[3] = k;
                     msg.arg[0] = info->ch->bld->id;
@@ -4250,7 +4250,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.fromId = info->ch->bld->id;
         msg.time = ai_Time;
         msg.nIds = 0;
-        msg.unk14 = 0;
+        msg.reserved14 = 0;
         msg.flags = 1;
         *((unsigned short *)&msg.arg[0] + 1) = *(unsigned short *)info->e;
         o = (AIOBJ *)gm_BuildingMainObject(info->ch->bld);
@@ -4291,7 +4291,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.fromId = info->ch->bld->id;
         msg.nIds = 0;
         msg.time = ai_Time;
-        msg.unk14 = 0;
+        msg.reserved14 = 0;
         msg.flags = 1;
         *((unsigned short *)&msg.arg[0] + 1) = *(unsigned short *)info->e;
         if (!o) {
@@ -4339,7 +4339,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.fromId = info->ch->bld->id;
         msg.time = ai_Time;
         msg.nIds = 0;
-        msg.unk14 = 0;
+        msg.reserved14 = 0;
         msg.flags = 1;
         msg.itemId = info->e->item;
         if (base < total) {
@@ -4401,7 +4401,7 @@ void ai_SendJobOrders(AIINFO *info)
         msg.fromId = info->ch->bld->id;
         type = info->type;
         msg.nIds = 0;
-        msg.unk14 = 0;
+        msg.reserved14 = 0;
         msg.flags = 1;
         if (type == 4) {
             msg.arg[1] = -1;
