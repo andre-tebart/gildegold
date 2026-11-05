@@ -3048,31 +3048,36 @@ int gm_CompareTime();
 int d2_SetForm(int view, int n);
 int io_PrintText(char *fmt, ...);
 
-/* 0x5472d0, a Ghidra miss (disassembled): the outcome of a duel (see 0x544840) lost by q: p (kind 6 / 7) hears the news 0x1d81 (0x1d68 + 1 when q is not of party 0) and both lose the flag 0x400 of +0x1c8; q gets the ability 0x4ea550 (its 0x4e6030 record or a random 1 .. 3, the amount -9 - 0x504ec0 (p, 4) * 8.0 - random(8)), the relation p -> q falls by 0x14, the event ev ends (ROUGH) */
-void he_Unk5472d0(int ev, int p, int q)
+/* 0x5472d0, a Ghidra miss (disassembled): the challenge of the insult event ("Special\Beleidigung") is declined
+   (the second choice, or no choice in time) by q, challenged by p (the characters partner1 / partner2 of the
+   event ev it runs for): a player p hears the news 0x1d81 (0x1d68 + 1 for a q of sex 1) and both lose the flag
+   0x400 (flags1c8); q's district (the district of its office, else a random 1 .. 3) loses
+   9 + 8 * p's skill 4 + random(8) of its opinion of q (amt_ChangeDistrictOpinion, district 0 without an office),
+   p's relation to q drops by 0x14, and ev ends now */
+void he_DuelDeclined(int ev, AICHAR *p, AICHAR *q)
 {
     char text[0x400];
-    int a1[6];
-    int a2[8];
-    int bx = 0, amt;
+    int office[6];
+    int seat[6];
+    int district = 0, amt;
 
-    if (*(char *)(p + 2) == 6 || *(char *)(p + 2) == 7) {
-        txt_Format(text, 0x1d81, *(unsigned short *)q, *(unsigned short *)q, (*(char *)(q + 9) != 0) + 0x1d68);
-        he_ShowNews(*(int *)(p + 4), *(int *)(p + 4), text, 0, 0x5fb, (char *)0);
-        cm_SendSetField(*(int *)(p + 4), 0x1c8, 4, 0, 0x400);
-        cm_SendSetField(*(int *)(q + 4), 0x1c8, 4, 0, 0x400);
+    if (p->kind == 6 || p->kind == 7) {
+        txt_Format(text, 0x1d81, q->id, q->id, (q->sex != 0) + 0x1d68);
+        he_ShowNews(p->netId, p->netId, text, 0, 0x5fb, (char *)0);
+        cm_SendSetField(p->netId, 0x1c8, 4, 0, 0x400);
+        cm_SendSetField(q->netId, 0x1c8, 4, 0, 0x400);
     }
-    if (*(char *)(q + 0x166) != 0) {
-        if (amt_FindOffice(q, a1, a2) != 0)
-            bx = a1[1];
+    if (q->officeKind != 0) {
+        if (amt_FindOffice(q, office, seat) != 0)
+            district = office[1];
         else
-            bx = (unsigned short)util_Random(3) + 1;
+            district = util_RandomU(3) + 1;
     }
     amt = -9 - (int)(gm_GetSkill(p, 4) * 8.0f);
     amt -= (unsigned short)util_Random(8);
-    amt_ChangeDistrictOpinion(q, bx, amt);
-    cm_SendRelations(*(int *)(p + 4), *(int *)(q + 4), -0x14, 1);
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    amt_ChangeDistrictOpinion(q, district, amt);
+    cm_SendRelations(p->netId, q->netId, -0x14, 1);
+    ((AIJOB *)ev)->end = ai_Time;
     cm_SendExSetHE(-1, ev);
 }
 /* 0x547430, a Ghidra miss (disassembled): the run handler of the duel announcement ("Special\Beleidigung" window, the event +0xac is the duel (0x53e400 kind 1): its two figures +0xb0 / +0xac): state 0 opens the window with the sound "NeueMessage_s_01" (0x426fa0, when 0x6f25ac is not 2), shows the news 0x1d6c / 0x1d6b and a click target (0x5be1d0 / 0x5be720), state 1 waits for the due time (then 0x5472d0 settles it for the first) or the answer (0xf8a668: 0 = 0x5471e0, 1 = 0x5472d0); a gone figure ends both events (ROUGH) */
@@ -3128,7 +3133,7 @@ void he_Unk547430(int ev)
     }
     if (st == 1) {
         if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
-            he_Unk5472d0(edi, ebx, ebp);
+            he_DuelDeclined(edi, (AICHAR *)ebx, (AICHAR *)ebp);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
@@ -3141,7 +3146,7 @@ void he_Unk547430(int ev)
         if (h == 0)
             he_Unk5471e0(edi, (unsigned short *)ebx, (unsigned short *)ebp);
         else if (h == 1)
-            he_Unk5472d0(edi, ebx, ebp);
+            he_DuelDeclined(edi, (AICHAR *)ebx, (AICHAR *)ebp);
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
