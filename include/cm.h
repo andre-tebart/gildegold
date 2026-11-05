@@ -223,7 +223,7 @@ void cm_SendKillCharacter(int a, int b);                                        
 int cm_SendCrime(void *p);                                                       /* 0x4c4e40 */
 int cm_SendRetireCrime(int a, int b);                                                  /* 0x4c4e90 */
 void cm_SendProofExecuted(int a, int b);                                                 /* 0x4c4ed0 */
-void ai_Unk4c4f10(int a, int b, int c);                                          /* 0x4c4f10 */
+void cm_SendDropEvidence(int a, int b, int c);                                          /* 0x4c4f10 */
 int cm_RequestSendCutInfo(int id, int b);                                                 /* 0x4c4f50, "cm_RequestSendCutInfo": its send slot (cm_GetSlotState) */
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 int cm_SendLeaveParty(int a, int b);                                                  /* 0x4c4fd0, its send slot (cm_GetSlotState) */

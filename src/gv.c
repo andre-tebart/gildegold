@@ -3381,10 +3381,10 @@ int gv_HeldCrimesOf(int culprit, int *out, unsigned short t)
     }
     return n;
 }
-/* 0x4f4080, as gv_HeldCrimesOf, but the crimes' ids (CRIME.id) are stored; t is a character index in its low word
-   (unsigned here: he.c and unk_58bbd0.c declare the function without a prototype) */
+/* 0x4f4080, as gv_HeldCrimesOf, but the crimes' ids (CRIME.id) are stored; t is the ai_Chars index of the character
+   holding the evidence (he.c's fight outcome 0x546c40 pushes it as a word without zero-extending: a 16-bit parameter) */
 
-int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned t)
+int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned short t)
 {
     int n, i, k;
     ORDCHAR *ch;
@@ -3392,7 +3392,7 @@ int gv_HeldCrimeIdsOf(int culprit, int *out, unsigned t)
     n = 0;
     if (gm_FindChar(culprit) == 0)
         return 0;
-    ch = &ORD_CHARS[(unsigned short)t];
+    ch = &ORD_CHARS[t];
     if (ch == 0)
         return 0;
     memset(out, 0xff, 0x20 * sizeof(int));

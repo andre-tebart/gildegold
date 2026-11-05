@@ -56,6 +56,7 @@ struct D3SM;
 #define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
 #define ai_Unk5a9240K ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_DomizilMessageK ((int (*)())ai_DomizilMessage)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define gv_HeldCrimeIdsOfP ((int (*)(int, int *, unsigned short))gv_HeldCrimeIdsOf)  /* 0x4f4080 (gv.c, gv.h's prototype): for the call of he_AllocFight while gv.h is not included here (its gm_AddTime calls are in the way) */
 
 
 extern int ai_TransportWindow();
@@ -7676,7 +7677,7 @@ void he_RunPatrol(int ev)
 int gv_Accuse();
 int gv_HeldCrimeIdsOf();
 void gm_Shuffled(unsigned char n, int *out);
-void ai_Unk4c4f10(int a, int b, int c);
+void cm_SendDropEvidence(int a, int b, int c);
 int ai_CountMissionEvent();
 void cm_SendMoneyDelta(int a, int b);
 
@@ -7947,67 +7948,70 @@ void he_RunRaid(int ev)
         return;
     }
 }
-/* 0x546c40, a Ghidra miss (disassembled): the outcome of a fight between the figures +0xac (a) and +0xb0 (b): the clock is set, the state 2; unless a or b is gone or marked (+0x1c8 flags 0x100 / 0x200) the event ends. With +0xb4 set (a won) the next clock is in 0x18 units and b hears the news 0x1e18; else (a lost: code -2) in 0x60 units, the news 0x1d5b, the relation change 0x4f2e30 (0x16 ..) and 0x34, up to 3 of the 0x4f4080 records are given to a (0x4c4f10), a of kind 6 gets 0x4b44e0 (0xb); both lose the flags and 0x4c5f60 closes the fight with the code (-4 won, -2 lost) (ROUGH) */
-
-void he_Unk546c40(int ev)
+/* 0x546c40, a Ghidra miss (disassembled): the alloc handler of the fight event 0x45 between partner1 (a) and
+   partner2 (b), its run handler 0x546ef0 the end: the event is due from now, stage 2. Unless it is started (opts 2)
+   nothing more; with a or b gone, a already fighting (flags1c8 0x100) or b already fought (0x200) it ends in two
+   minutes. With +0xb4 set (id3) it runs a day and a player b hears the news 0x1e18 (code -4); else it runs four
+   days, a player b hears 0x1d5b, a is accused of the crime 0x16 against b (at a's home, else b's: gv_Accuse), a's
+   relation to b gets 0x34, up to three crimes of b whose evidence a holds are dropped (gv_HeldCrimeIdsOf in a
+   random order, cm_SendDropEvidence), a player a counts the mission event 0xb, code -2. Both get their flag and
+   cm_SendMoneyDelta(a, code) */
+void he_AllocFight(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
     char text[0x100];
-    int sel[16];
-    int arr[32];
-    int a, b, code, x, n, i, r;
+    int pick[16];
+    int crimes[32];
+    int code, place, n, i;
+    AIBLD *home;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x70) = 2;
-    if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
+    e->end = ai_Time;
+    e->stage = 2;
+    if ((e->opts & 2) == 0)
         return;
-    a = gm_FindChar(*(int *)(ev + 0xac));
-    b = gm_FindChar(*(int *)(ev + 0xb0));
-    if (a == 0 || (*(unsigned *)(a + 0x1c8) & 0x100) != 0 || b == 0 || (*(unsigned *)(b + 0x1c8) & 0x200) != 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
+    if (a == 0 || (a->flags1c8 & 0x100) != 0 || b == 0 || (b->flags1c8 & 0x200) != 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if (*(int *)(ev + 0xb4) != 0) {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(int *)(ev + 0x58) = 0;
-        if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-            txt_Format(text, 0x1e18, *(unsigned short *)a);
-            he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_04");
+    if (e->id3 != 0) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.min = 0;
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(text, 0x1e18, a->id);
+            he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_04");
         }
         code = -4;
     } else {
-        gm_AddTime(ev + 0x52, 0x60, 0, 0);
-        *(int *)(ev + 0x58) = 0;
+        gm_AddTime(&e->end, 0x60, 0, 0);
+        e->end.min = 0;
         code = -2;
-        if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-            txt_Format(text, 0x1d5b, *(unsigned short *)a, *(unsigned short *)a);
-            he_ShowNews(*(int *)(b + 4), -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_21");
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(text, 0x1d5b, a->id, a->id);
+            he_ShowNews(b->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_21");
         }
-        x = -1;
-        r = *(int *)(a + 0x170);
-        if (r == 0)
-            r = *(int *)(b + 0x170);
-        if (r != 0)
-            x = *(int *)(r + 1);
-        gv_Accuse(0x16, 1, *(int *)(a + 4), *(int *)(b + 4), x);
-        cm_SendRelations(*(int *)(a + 4), *(int *)(b + 4), 0x34, 1);
-        n = gv_HeldCrimeIdsOf(*(int *)(b + 4), arr, *(unsigned short *)a);
-        gm_Shuffled(n < 0x10 ? n : 0x10, sel);
-        i = 0;
-        while (n != 0) {
-            ai_Unk4c4f10(arr[sel[i]], *(int *)(a + 4), 0);
-            i++;
-            n--;
-            if (i >= 3)
-                break;
-        }
-        if (*(char *)(a + 2) == 6)
+        place = -1;
+        home = a->bld2;
+        if (home == 0)
+            home = b->bld2;
+        if (home != 0)
+            place = home->id;
+        gv_Accuse(0x16, 1, a->netId, b->netId, place);
+        cm_SendRelations(a->netId, b->netId, 0x34, 1);
+        n = gv_HeldCrimeIdsOfP(b->netId, crimes, a->id);
+        gm_Shuffled(n < 0x10 ? n : 0x10, pick);
+        for (i = 0; i < 3 && n != 0; i++, n--)
+            cm_SendDropEvidence(crimes[pick[i]], a->netId, 0);
+        if (a->kind == 6)
             ai_CountMissionEvent(a, 0xb);
     }
-    cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0x100, 0);
-    cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0x200, 0);
-    cm_SendMoneyDelta(*(int *)(a + 4), code);
+    cm_SendSetField(a->netId, 0x1c8, 4, 0x100, 0);
+    cm_SendSetField(b->netId, 0x1c8, 4, 0x200, 0);
+    cm_SendMoneyDelta(a->netId, code);
 }
 /* 0x546ef0, a Ghidra miss (disassembled): the end of the fight event (see 0x546c40): in the state 2 both figures lose the flags 0x100 / 0x200 (+0x1c8) and are told the result by +0xb4 (1 / 2 = the news 0x1e19 / 0x1e20 for b, else the relation -0x68 and the news 0x1d5d / 0x1d5c); a free (the state -1 / -2) only clears the flags (ROUGH) */
 
@@ -9399,7 +9403,7 @@ int he_RegisterEventTypes22(void)
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_RunRaid) != 0)
         return 1;
-    if (he_SetEventHandlers(0x45, (void *)he_Unk546c40, (void *)he_Unk546ef0) != 0)
+    if (he_SetEventHandlers(0x45, (void *)he_AllocFight, (void *)he_Unk546ef0) != 0)
         return 1;
     if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_Unk547430) != 0)
         return 1;

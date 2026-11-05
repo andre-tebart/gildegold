@@ -1466,7 +1466,7 @@ void cm_SendProofExecuted(int a, int b)
 }
 /* 0x4c4f10, message 0x25 */
 
-void ai_Unk4c4f10(int a, int b, int c)
+void cm_SendDropEvidence(int a, int b, int c)
 {
     G17MSG m;
 
