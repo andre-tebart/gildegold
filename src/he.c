@@ -682,6 +682,13 @@ typedef struct HEPAYMENT {              /* the payment event 0x56's words over A
     char padad[3];
     unsigned int amount;                /* 0xb0, the base amount: twice it or half of it is paid */
 } HEPAYMENT;
+typedef struct HEREPEATPAY {            /* the repeating-payment event 0x5b's words over AIJOB's union (its alloc handler
+                                           0x549040, run handler he_RunRepeatPayment): the amount paid to its character
+                                           from the bank (-1) every 0x18 hours, once per payment left */
+    char pad00[0xac];
+    int amount;                         /* 0xac, the amount of each payment (the message's first argument) */
+    int days;                           /* 0xb0, the payments left (the message's second argument), counted down */
+} HEREPEATPAY;
 typedef struct HECOUNTDOWN {            /* the countdown event 0x51's word over AIJOB's union (its init he_AllocNextDay, run
                                            handler he_RunCountdown): counted down once per run, 0 frees the event */
     char pad00[0xac];
@@ -4454,21 +4461,26 @@ void he_RunRepostEvent(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x548fa0, a repeating payment: every 0x18 units the player of the event (word +8) gets +0xac (0x4c47e0, from the bank -1) for +0xb0 days */
+/* 0x548fa0, the run handler of the repeating-payment event 0x5b: a stage of -2 or below ends it, a negative one
+   frees it, and at stage 0 it pays the event's character (ai_CharInts[e->chr][0]) the amount +0xac from the bank
+   (-1, cm_SendMoveGoods under the own player) and counts one payment down; with payments left it is posted again
+   0x18 hours on, else it is freed */
 
-void he_Unk548fa0(int ev)
+void he_RunRepeatPayment(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    HEREPEATPAY *p = (HEREPEATPAY *)ev;
+    int st = e->stage;
 
     if (st >= -2) {
         if (st >= 0) {
             if (st != 0)
                 return;
-            cm_SendMoveGoods(-1, U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xac));
-            *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
-            if (*(int *)(ev + 0xb0) != 0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0x18, 0, 0);
+            cm_SendMoveGoods(-1, ai_CharInts[e->chr][0], ai_OwnPlayer, p->amount);
+            p->days = p->days - 1;
+            if (p->days != 0) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0x18, 0, 0);
                 return;
             }
         }
@@ -10750,7 +10762,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5a, (void *)he_AllocRepostEvent, (void *)he_RunRepostEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5b, (void *)he_Unk549040, (void *)he_Unk548fa0) != 0)
+    if (he_SetEventHandlers(0x5b, (void *)he_Unk549040, (void *)he_RunRepeatPayment) != 0)
         return 1;
     if (he_SetEventHandlers(0x5c, (void *)he_Unk549040, (void *)he_Unk549080) != 0)
         return 1;
