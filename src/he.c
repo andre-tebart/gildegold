@@ -9724,7 +9724,16 @@ int cm_SendRelations(int a, int b, int c, int d);
    to 6): of the variant 1 an official of level 9 / 6 sends an office message two times in three; every official who
    is not of kind 3 loses 3 x level + random(3 x level) of opinion with each character whose building he owns, and a
    player character among them who lost any is told (0x10bd / 0x10bf); then the next stage an hour later. Other
-   stages free the event */
+   stages free the event
+   @deep read whole against the original and fixed the meaning (amt_GetColumnOffices(col, 6, out),
+   cm_SendRelations' 4th argument 1 and the amount -random(3 x level) - 3 x level through the 16-bit
+   util_RandomU, index loops over ai_CharsT with the signed jl, the variant texts as if / else). Same size
+   (715 bytes, 225 instructions each). Left, allocation only: from +0xf5 the loop's registers are permuted
+   (ours eax/ecx/edx where the original has edx/ecx/eax: mov ecx,[ebx-4] | mov eax,[ebx-4]; mov al,[ebx] |
+   mov dl,[ebx]; mov ax,[eax+0x27] | mov dx,[eax+0x27]; mov dx,ax | mov cx,ax), the office count stored
+   before push ebx (mov [esp+0xc],eax) where the original stores it after (mov [esp+0x10],eax), and the
+   cm_SendRelations argument pushes scheduled around the netId load. The prover stops on the 8-bit
+   amt_SendOfficeMessage argument (Ins8Lo of another register). */
 void he_RunSixGroupEvent(AIJOB *ev)
 {
     AMTKIND kind;
