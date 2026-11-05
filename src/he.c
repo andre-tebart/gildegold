@@ -46,7 +46,8 @@
    included), the tutorial / tip / routine / storm / new-worker / production / trade words in HEHINTEVENT,
    HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HEPRODUCTIONMSG and HETRADEMSG, the research /
    building / training / plunder / meeting words in HERESEARCH (event 0xc), HEBUILD (0xd), HEAHMRESEARCH (0x96 / 0x97),
-   HEPLUNDER (0x8a) and HEMEETING (0x90), and over AIOBJ
+   HEPLUNDER (0x8a) and HEMEETING (0x90), HEMEETSCENE / HEMEETNAME (the meeting scene object 0x91), HEGRAVELEASE (the grave
+    lease answer 0x92), HETRIALCASE (the trial 0xa0) and HEMEET4 (the four-figure meeting 0xa1), and over AIOBJ
    HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5); the hint table he_Hints (0x6fa260, HEHINT), the tip
    order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20)
    and the domicile news key he_NewsDomizil11 (0x628e40) are named. AIJOB's fields between
