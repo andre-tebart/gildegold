@@ -3634,22 +3634,22 @@ exe	0x0054cc50	he_RunTitleCeremony	he	draft	readable	deep
 exe	0x0054d190	he_StartInnSim	he	byte	draft		
 exe	0x0054d1e0	he_FindGuestInn	he	shape	draft		
 exe	0x0054d260	he_RunInnSim	he	shape	readable		
-exe	0x0054d790	he_Unk54d790	he	byte	draft		
-exe	0x0054d7d0	he_Unk54d7d0	he	draft	draft		
-exe	0x0054da20	he_Unk54da20	he	byte	draft		
-exe	0x0054da80	he_Unk54da80	he	draft	draft		
-exe	0x0054de60	he_Unk54de60	he	byte	draft		
-exe	0x0054dec0	he_Unk54dec0	he	draft	draft		
-exe	0x0054e770	he_Unk54e770	he	byte	draft		
-exe	0x0054e890	he_Unk54e890	he	draft	draft		
-exe	0x0054eb80	he_Unk54eb80	he	byte	draft		
-exe	0x0054ebd0	he_Unk54ebd0	he	draft	draft		
-exe	0x0054ef70	he_Unk54ef70	he	draft	draft		
-exe	0x0054f160	he_Unk54f160	he	draft	draft		
+exe	0x0054d790	he_StartSkillUp	he	byte	draft		
+exe	0x0054d7d0	he_RunSkillUp	he	byte	readable		
+exe	0x0054da20	he_StartBard	he	byte	draft		
+exe	0x0054da80	he_RunBard	he	byte	readable		
+exe	0x0054de60	he_StartPopulation	he	byte	draft		
+exe	0x0054dec0	he_RunPopulation	he	draft	readable	deep	
+exe	0x0054e770	he_StartLover	he	byte	draft		
+exe	0x0054e890	he_RunLover	he	byte	readable		
+exe	0x0054eb80	he_IsSimCandidate	he	byte	draft		
+exe	0x0054ebd0	he_RunDiseaseSim	he	byte	readable		
+exe	0x0054ef70	he_StartDarkCorner	he	shape	readable		
+exe	0x0054f160	he_RunDarkCorner	he	draft	readable	deep	
 exe	0x0054fb50	he_StartEffectEvent	he	byte	readable		
 exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable		
 exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable		
-exe	0x0054fce0	he_Unk54fce0	he	draft	draft		
+exe	0x0054fce0	he_RunEffectEvent	he	shape	readable		
 exe	0x0054fe80	he_Unk54fe80	he	byte	draft		
 exe	0x0054ff20	he_Unk54ff20	he	draft	draft		
 exe	0x00550070	he_Unk550070	he	draft	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
