@@ -649,9 +649,9 @@ int ai_DecideCannonTower(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
     o2->ref = b2->id;
     return 0x42;
 }
-/* 0x48f1e0, execute of 0x48f010 */
+/* 0x48f1e0, execute of "UseCannonTower" (0x42): fires the shot from the building of s1->ref at the one of s2->ref */
 
-int ai_Unk48f1e0(AIPX *p, AIARGX *s1, AIARGX *s2)
+int ai_ExecCannonTower(AIPX *p, AIARGX *s1, AIARGX *s2)
 {
     AIBLD *x, *y;
 
@@ -972,7 +972,7 @@ int ai_RegisterBuildingActions(int a)
     strcpy(act.name, "UseCannonTower");
     act.eval = ai_EvalMoodWeights;
     act.decide = ai_DecideCannonTower;
-    act.exec = ai_Unk48f1e0;
+    act.exec = ai_ExecCannonTower;
     act.flags = 0x1c1;
     if (!am_RegisterMethod(&act, a))
         return 0;

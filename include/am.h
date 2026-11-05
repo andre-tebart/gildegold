@@ -518,7 +518,7 @@ int ai_ExecSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2);                       /
 int ai_ExecSecretRoom2(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48edc0 */
 int ai_ExecSecretRoom3(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48ef10 */
 int ai_DecideCannonTower(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48f010 */
-int ai_Unk48f1e0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48f1e0 */
+int ai_ExecCannonTower(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48f1e0 */
 
 extern unsigned short ai_PlayerId;     /* 0x6f25b8 */
 #ifndef DATA_VIEWS_H
