@@ -60,8 +60,12 @@
    is a tie-break for it).
    The ransom 0x3d / 0x3e (HEEV3D / HEEV3E), burglary 0x3f (HEBURGLARY), building spying 0x40 (HEBLDSPY, its report
    HESPYREPORT), ambush 0x48 (HEAMBUSH), attack 0x49 (AIJOB's raid* words) and fire 0x4e (HEFIRE; the burning event's
-   HEBURN) handlers read their records typed.
-   Open: types: the other handlers past 0x5648e0 still read the event and message records through raw offsets
+   HEBURN) handlers read their records typed, and so do the handlers up to 0x567990: the burning 0x4f (HEBURN), the
+   new worker 0x6e (HENEWWORKER), the kill-player run handler 0x72 (HEKILL, its funeral party G28REC), the night
+   watchman 0x73 (HENIGHTWATCH), the robbery 0x75 (HEROBBERY, the burglary's twin), the title period 0x7c (AIMSG)
+   and he_OpenHelpEvents (HEHINT).
+   Open: types: the other handlers past 0x567990 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
+   event and message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
    cm.h not included; their calls stay M7)

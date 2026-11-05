@@ -1452,7 +1452,7 @@ exe	0x0047dd30	ai_WorkLoad	ai	byte	readable
 exe	0x0047dd70	ai_WorksForMaster	ai	byte	readable		
 exe	0x0047dd90	ai_IsLocalMaster	ai	byte	readable		
 exe	0x0047ddf0	ai_FindPartner	ai	draft	draft	deep	
-exe	0x0047e360	ai_MasterUpdate	ai	draft	draft	deep	
+exe	0x0047e360	ai_MasterUpdate	ai	draft	readable	deep	
 exe	0x0047e560	ai_UpdateCharacters	ai	byte	readable		
 exe	0x0047e7f0	ai_CanAct	ai	byte	readable		
 exe	0x0047e840	ai_IsLocalWorker	ai	byte	readable		
@@ -3779,24 +3779,24 @@ exe	0x00563980	he_AllocDueInOne	he	byte	draft
 exe	0x005639c0	he_RunAttack	he	draft	readable	deep	
 exe	0x005642e0	he_AllocFire	he	byte	readable		
 exe	0x005644e0	he_RunFire	he	draft	readable	deep	
-exe	0x00564860	he_Unk564860	he	draft	draft		
-exe	0x005649b0	he_Unk5649b0	he	draft	draft		
+exe	0x00564860	he_AllocBurn	he	shape	readable		
+exe	0x005649b0	he_RunBurn	he	draft	readable	deep	
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
 exe	0x00565410	he_RunStormEvent	he	shape	readable		
 exe	0x00565500	he_Unk565500	he	byte	draft		
 exe	0x00565620	he_Unk565620	he	shape	draft		
-exe	0x00565850	he_Unk565850	he	draft	draft		
+exe	0x00565850	he_AllocNewWorker	he	byte	readable		
 exe	0x00565940	he_RunNewWorker	he	byte	readable		
 exe	0x00565b00	he_Unk565b00	he	byte	draft		
 exe	0x00565b60	he_Unk565b60	he	byte	draft		
 exe	0x00565d10	he_Unk565d10	he	byte	draft		
-exe	0x00565db0	he_Unk565db0	he	draft	draft		
+exe	0x00565db0	he_RunKillPlayer	he	shape	readable		
 exe	0x005662d0	he_Unk5662d0	he	byte	draft		
-exe	0x00566370	he_Unk566370	he	draft	draft		
-exe	0x00566830	he_Unk566830	he	draft	draft		
+exe	0x00566370	he_RunNightWatch	he	shape	readable		
+exe	0x00566830	he_RunRobbery	he	draft	readable	deep	
 exe	0x00567620	he_Unk567620	he	byte	draft		
-exe	0x00567660	he_Unk567660	he	draft	draft		
-exe	0x00567810	he_Unk567810	he	draft	draft		
+exe	0x00567660	he_RunTitleDue	he	byte	readable		
+exe	0x00567810	he_OpenHelpEvents	he	byte	readable		
 exe	0x005679b0	he_Unk5679b0	he	byte	draft		
 exe	0x00567a80	he_RunHint	he	draft	readable	deep	
 exe	0x00567b80	he_Unk567b80	he	byte	draft		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
