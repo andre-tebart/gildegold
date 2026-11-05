@@ -3375,30 +3375,31 @@ int ai_RelationGain(AIC4 *payer, AIC4 *target, int n)
     targetLevel = gm_CharLevelS(target->id, 0);
     return (int)((float)((payerLevel - targetLevel + 10) * n * 3) * 0.33333334f);
 }
-/* 0x494d90, whether a character takes a risk: closeness plus a roll plus a bonus from two flags
-   (0xd: -0.25, 0xa: +0.1), the flag that applied goes to *out */
+/* 0x494d90, whether the attacker a wins the brawl against b: the mixed skill of the two (gm_Mix 3) plus
+   a random roll, less 0.25 while b's order 0xd holds or plus 0.1 for b's order 0xa (the order that
+   applied goes to *out, 0x3b for none); 1 when the score passes 1.0 */
 
-int ai_Unk494d90(AIC4 *a, AIC4 *b, int *out)
+int ai_BrawlWin(AIC4 *attacker, AIC4 *defender, int *out)
 {
-    float sum, f;
-    int k;
-    int q[0x88];
+    float sum, modifier;
+    int appliedOrder;
+    int msg[0x88];
 
-    sum = gm_Mix(a, b, 3) + util_RandomF();
-    f = 0.0f;
-    k = 0x3b;
-    memset(q, 0, sizeof(q));
-    q[0] = 1;
-    if (ord_DispatchOrder(0xd, b, q) & 2) {
-        f = -0.25f;
-        k = 0xd;
-    } else if (ord_DispatchOrder(10, b, q) & 2) {
-        f = 0.1f;
-        k = 10;
+    sum = gm_Mix(attacker, defender, 3) + util_RandomF();
+    modifier = 0.0f;
+    appliedOrder = 0x3b;
+    memset(msg, 0, sizeof(msg));
+    msg[0] = 1;
+    if (ord_DispatchOrder(0xd, defender, msg) & 2) {
+        modifier = -0.25f;
+        appliedOrder = 0xd;
+    } else if (ord_DispatchOrder(10, defender, msg) & 2) {
+        modifier = 0.1f;
+        appliedOrder = 10;
     }
     if (out)
-        *out = k;
-    if (sum + f > 1.0f)
+        *out = appliedOrder;
+    if (sum + modifier > ai_FloatOne)
         return 1;
     return 0;
 }

@@ -10914,7 +10914,7 @@ void he_Unk55a030(int ev)
     *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
 }
 
-int ai_Unk494d90();
+int ai_BrawlWin();
 int gm_EquipmentValue(unsigned char *b, int level);
 int gm_SumListAmounts(void *list, unsigned char p);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
