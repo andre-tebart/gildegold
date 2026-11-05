@@ -16284,17 +16284,17 @@ int ai_FindUsableGood(int id)
     return 0;
 }
 /* 0x5ba660, the Domizil table lookup with the index out (80 B): like 0x5ba620, and the index of the entry is
-   stored at *param_2 when that is not 0 */
+   stored at *index when that is not 0 */
 
-int ai_Unk5ba660(int param_1, int *param_2)
+int ai_FindUsableGoodIndex(int id, int *index)
 {
     int i;
 
-    for (i = 0; U_I((unsigned)&ai_DomizilTable + i * 0x1c) != 0; i++)
-        if (U_I((unsigned)&ai_DomizilTable + i * 0x1c) == param_1) {
-            if (param_2 != 0)
-                *param_2 = i;
-            return (unsigned)&ai_DomizilTable + i * 0x1c;
+    for (i = 0; ai_DomizilEntries[i].id != 0; i++)
+        if (ai_DomizilEntries[i].id == id) {
+            if (index != 0)
+                *index = i;
+            return (int)&ai_DomizilEntries[i];
         }
     return 0;
 }
@@ -22875,7 +22875,7 @@ int ai_UseGood(int param_1, int *param_2)
         gv_Accuse(*(int *)(rec + 8), 1, *(int *)(param_1 + 4), -1, target);
     }
     if (*(char *)(param_1 + 2) == 6 && param_2[4] == 0) {
-        h = ai_Unk5ba660(*param_2, &out);
+        h = ai_FindUsableGoodIndex(*param_2, &out);
         if (param_2[3] == 1)
             txt_Format(buf, (char *)0xfe8, *(unsigned short *)(h + 0x18) + 1);
         ai_UseObjPanel(buf);
