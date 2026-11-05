@@ -6906,32 +6906,39 @@ int ai_InventoryHas(void *ch, int id);
 int gm_CatchDisease();
 float gm_CharacterHealth();
 
-/* 0x54e770, a Ghidra miss (disassembled): the allocation of the "Geliebte" (lover) event: the aggressor +0xac (ebx), the victim +0xb0 (edi): the clock now, posted at once; a gone victim or one with the flag 0x800000 (+0x1c8) ends it, else the flag is set (0x4c4a60), the relation of the aggressor falls by 0x32 (0x4c4b00) and the event goes to the state 2 (+0xb4 = 0, +0xb8 = 2, +0xbc = -1) (ROUGH) */
+/* 0x54e770, the allocation handler of the "Geliebte" (lover) event 0x6f (its run handler he_RunLover): looks up its
+   keeper +0xac and its lover +0xb0 (both even while the event is not started yet), then, unless opts still says so
+   (bit 4), the due clock is the clock now + a day and the event is posted at once. A gone lover or one already kept
+   (AICHAR flag 0x800000) ends it (posted -1); else the lover is marked kept (cm_SendSetField 0x1c8 bit 0x800000), the
+   keeper's relation to it falls by 0x32, the rounds / the daily pay / the spare id are set (0 / 2 / -1) and the event
+   is posted with the key 2 */
 void he_StartLover(int ev)
 {
-    int edi = gm_FindChar(*(int *)(ev + 0xb0));
-    int ebx = gm_FindChar(*(int *)(ev + 0xac));
+    AIJOB *e = (AIJOB *)ev;
+    HELOVER *l = (HELOVER *)ev;
+    AICHAR *lover = (AICHAR *)gm_FindChar(l->lover);
+    AICHAR *keeper = (AICHAR *)gm_FindChar(l->keeper);
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    if (edi == 0) {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    if (lover == 0) {
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if ((*(unsigned *)(edi + 0x1c8) & HE_LOVER_FLAG) != 0) {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    if ((lover->flags1c8 & HE_LOVER_FLAG) != 0) {
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
     cm_BeginGroup("Alloc_Geliebte");
-    cm_SendSetField(*(int *)(edi + 4), 0x1c8, 4, HE_LOVER_FLAG, 0);
-    cm_SendRelations(*(int *)(ebx + 4), *(int *)(edi + 4), 0x32, 1);
+    cm_SendSetField(lover->netId, 0x1c8, 4, HE_LOVER_FLAG, 0);
+    cm_SendRelations(keeper->netId, lover->netId, 0x32, 1);
     cm_EndGroup("Alloc_Geliebte AI");
-    *(int *)(ev + 0xb4) = 0;
-    *(int *)(ev + 0xb8) = 2;
-    *(int *)(ev + 0xbc) = -1;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+    l->rounds = 0;
+    l->pay = 2;
+    e->idbc = -1;
+    e->exSlot = cm_SendExSetHE(2, ev);
 }
 /* 0x54e890, the run handler of the lover event ("Geliebte"): stage 2 waits for the posting (cm_GetSlotState: 1 goes
    on, 2 ends it); while the keeper lives, every day the keeper pays the lover (an AP event of -pay with the news
