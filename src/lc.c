@@ -3036,37 +3036,37 @@ void ai_Unk591ad0(void);
 void ai_HandleMapKey(void)
 {
     int msg[0x14];
-    char *p;
+    AIBLD *p;
     int r;
     int u;
 
-    if (U_I((unsigned)&kb_Last) == '2' ||
-        (U_I(((unsigned)&dm_L + 0x18)) != 0 &&
-         (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelBuildingIcon) || U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelCompass)))) {
+    if (kb_Last == '2' ||
+        (dm_L.lclick != 0 &&
+         (d2_PointerObj == sv_PanelBuildingIcon || d2_PointerObj == sv_PanelCompass))) {
         memset(msg, 0, 0x50);
         msg[4] = 0;
         msg[2] = 0;
         msg[0x13] = 0x71f;
-        p = (char *)ai_MapPick(1, msg, 0, 0, 0);
+        p = (AIBLD *)ai_MapPick(1, msg, 0, 0, 0);
         if (p != 0 && sv_OtherSelected == 0) {
-            if (U_I((unsigned)&ai_FallbackBuilding) != 0) {
-                r = gm_IsHomeType(p);
-                if (r != 0 && *p == 'G') {
+            if (ai_FallbackBuilding != 0) {
+                r = gm_IsHomeType((unsigned char *)p);
+                if (r != 0 && p->kind == 'G') {
                     sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
                 }
                 sv_SelectPanelObjectK(p, -1, (void *)(unsigned)&ch_EmptyName);
                 return;
             }
-            r = gm_IsHomeType(p);
-            if (r == 0 || *p != 'G') {
-                if (U_I((unsigned)&ai_FallbackBuilding) == 0 && U_I((unsigned)&ai_PlayerBuilding) == 0) {
-                    sv_FlyCameraToObject(p);
+            r = gm_IsHomeType((unsigned char *)p);
+            if (r == 0 || p->kind != 'G') {
+                if (ai_FallbackBuilding == 0 && ai_PlayerBuilding == 0) {
+                    sv_FlyCameraToObject((int)p);
                     return;
                 }
-                sv_SelectPanelObjectK(p, *(unsigned short *)(p + 0x29), (void *)(unsigned)&ch_EmptyName);
+                sv_SelectPanelObjectK(p, p->mainRoom, (void *)(unsigned)&ch_EmptyName);
             } else {
-                u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), p, 0, 0);
+                u = gm_PermissionBits(ai_PlayerId, (unsigned char *)p, 0, 0);
                 if (u & 1) {
                     sv_SelectPanelObjectK(p, 0xfd, (void *)(unsigned)&ch_EmptyName);
                     return;
