@@ -1045,6 +1045,18 @@ typedef struct HEMEETING {              /* the meeting event 0x90's words over A
     int kind;                           /* 0xb4, the kind of the meeting (0x572310's c), capped at 2 */
     int rounds;                         /* 0xb8, the rounds held (the run handler holds up to 4) */
 } HEMEETING;
+typedef struct HEMEETSCENE {            /* the meeting scene object event 0x91's words over AIJOB's union (its alloc
+                                           handler he_AllocMeetingScene and run handler 0x5726b0) */
+    char pad00[0xac];
+    int partner;                        /* 0xac, the id of the partner event 0x90 the scene is shown for */
+    int obj;                            /* 0xb0, the handle of the scene object the event keeps, -1: none */
+    int kind;                           /* 0xb4, the meeting kind: 2 / 1 / other loads the big / middle / small script */
+} HEMEETSCENE;
+typedef struct HEMEETNAME {             /* the scene object event 0x91 loads: its name's first two words are the marker
+                                           0x66675073 and the building id (the run handler 0x5726b0) */
+    int tag;                            /* 0x00, 0x66675073 */
+    int bld;                            /* 0x04, the id of the building the meeting is held in */
+} HEMEETNAME;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -19675,8 +19687,8 @@ void he_Unk571ac0(int ev);          /* 0x571ac0 */
 void he_Unk571c30(int ev);          /* 0x571c30 */
 void he_AllocMeeting(int ev);          /* 0x571f60 */
 void he_Unk5725b0(int ev);          /* 0x5725b0 */
-void he_Unk5726a0(int ev);          /* 0x5726a0 */
-void he_Unk5726b0(int ev);          /* 0x5726b0 */
+void he_AllocMeetingScene(int ev);          /* 0x5726a0 */
+void he_RunMeetingScene(int ev);          /* 0x5726b0 */
 void he_Unk572b90(int ev);          /* 0x572b90 */
 void he_Unk572bf0(int ev);          /* 0x572bf0 */
 void he_Unk572fd0(int ev);          /* 0x572fd0 */
@@ -19695,7 +19707,7 @@ int he_RegisterEventTypes88(void)
                                 if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
                                     if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
-                                            if (he_SetEventHandlers(0x91, (void *)he_Unk5726a0, (void *)he_Unk5726b0) == 0) {
+                                            if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
                                                         if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_Unk572a50) == 0) {
@@ -20832,52 +20844,68 @@ void he_Unk5725b0(int ev)
 }
 /* 0x5726a0, the alloc of the event 0x91: state 0 */
 
-void he_Unk5726a0(int ev)
+void he_AllocMeetingScene(int ev)
 {
     HM_I(ev, 0x70) = 0;
 }
-/* 0x5726b0, the run of the event 0x91 (the meeting scene object): the partner event 0x53e400 (1, 1, +0xac) must be active and the building 0x501190 (1, 1, +0x10) must have a scene object +0x61; the old object +0xb0 (0x4284a0, tag 0x66675073 and +4 == +0x10) stays; else the text 0x628fac / 0x628f74 / 0x628f3c by +0xb4 (2 / 1 / other), a new object 0x4287b0 (tag 0x66675073, +4 = +0x10), 0x4478e0, 0x458a20 (the position, +0x5ed098 on the z), 0x429ab0 (3, the position), 0x4478e0, +0x104 = 0, +0xb0 = the handle +0x100. Without the partner or the building: the old object 0x429e90 and the event freed. ROUGH */
-
-
-void he_Unk5726b0(int ev)
+/* 0x5726b0, the run of the event 0x91 (the meeting scene object): while the partner event 0x90 (he_FindEvent) is
+   active and the building (gm_BuildQuery, the event's from) has a scene object, it keeps the scene object the event
+   holds (evt_FindById, its tag 0x66675073 and the building id) or loads the big / middle / small NEBEL_DES_GRAUENS
+   script by the kind (evt_Load), marks it, selects the scene (d3if_SelectScene), raises the building's position 500
+   (d3_PointToWorld) and runs the script with it (evt_RunScriptArgs), then keeps the script's id; without them it
+   stops the old object (evt_Stop) and frees the event (he_FreeEvent) */
+void he_RunMeetingScene(int ev)
 {
-    char *bld, *other, *obj;
-    float p[3];
+    AIJOB *e = (AIJOB *)ev;
+    HEMEETSCENE *m = (HEMEETSCENE *)ev;
+    AIJOB *other;
+    AIBLD *bld;
+    D3OBJECT *o;
+    EVTSCRIPT *obj;
+    D3VECTOR4 p;                        /* the engine's padded vector (the original's frame is 0x10) */
+    int scene;
 
-    other = he_FindEvent(1, 1, HM_I(ev, 0xac));
-    bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0x10));
-    if (bld != 0 && HM_I(bld, 0x61) != 0 && other != 0 &&
-        HM_I(other, 0x70) != -2 && HM_I(other, 0x70) != -1) {
-        if (HM_I(ev, 0xb0) != -1) {
-            obj = (char *)evt_FindById(HM_I(ev, 0xb0));
-            if (obj != 0 && *(int *)obj == 0x66675073 && HM_I(obj, 4) == HM_I(ev, 0x10))
-                return;
-            HM_I(ev, 0xb0) = -1;
+    other = (AIJOB *)he_FindEvent(1, 1, m->partner);
+    bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+    if (bld != 0 && bld->object != 0 && other != 0 &&
+        other->stage != -2 && other->stage != -1) {
+        if (m->obj != -1) {
+            obj = evt_FindById(m->obj);
+            if (obj != 0) {
+                if (((HEMEETNAME *)obj)->tag == 0x66675073 &&
+                    ((HEMEETNAME *)obj)->bld == e->from)
+                    return;
+                m->obj = -1;
+            }
         }
-        if (HM_I(ev, 0xb4) == 2)
-            obj = (char *)evt_Load((char *)(unsigned)&full_data_628fac);
-        else if (HM_I(ev, 0xb4) == 1)
-            obj = (char *)evt_Load((char *)(unsigned)&full_data_628f74);
+        if (m->kind == 2)
+            obj = evt_Load(he_MeetingSceneBig);
+        else if (m->kind == 1)
+            obj = evt_Load(he_MeetingSceneMiddle);
         else
-            obj = (char *)evt_Load((char *)(unsigned)&full_data_628f3c);
+            obj = evt_Load(he_MeetingSceneSmall);
         if (obj == 0)
             return;
-        *(int *)obj = 0x66675073;
-        HM_I(obj, 4) = HM_I(ev, 0x10);
+        ((HEMEETNAME *)obj)->tag = 0x66675073;
+        ((HEMEETNAME *)obj)->bld = e->from;
+        scene = d3_CurrentScene;
         d3if_SelectScene(0, 1);
-        d3_PointToWorld(HM_I(bld, 0x61), HM_I(bld, 0x61) + 0x4c, p);
-        p[2] += 500.0f;
-        evt_RunScriptArgs((EVTSCRIPT *)obj, 3, (int)p[0], (int)p[1], (int)p[2]);
-        d3if_SelectScene(*(int *)(unsigned)&d3_CurrentScene, 1);
-        HM_I(obj, 0x104) = 0;
-        HM_I(ev, 0xb0) = HM_I(obj, 0x100);
+        o = (D3OBJECT *)bld->object;
+        d3_PointToWorld(o, &o->pos, (D3VECTOR *)&p);
+        p.y += 500.0f;
+        evt_RunScriptArgs(obj, 3, (int)p.x, (int)p.y, (int)p.z);
+        obj->group = 0;
+        d3if_SelectScene(scene, 1);
+        m->obj = obj->id;
         return;
     }
-    obj = (char *)evt_FindById(HM_I(ev, 0xb0));
-    if (obj != 0 && *(int *)obj == 0x66675073 && HM_I(obj, 4) == HM_I(ev, 0x10)) {
+    obj = evt_FindById(m->obj);
+    if (obj != 0 && ((HEMEETNAME *)obj)->tag == 0x66675073 &&
+        ((HEMEETNAME *)obj)->bld == e->from) {
+        scene = d3_CurrentScene;
         d3if_SelectScene(0, 1);
-        evt_Stop((EVTSCRIPT *)obj);
-        d3if_SelectScene(*(int *)(unsigned)&d3_CurrentScene, 1);
+        evt_Stop(obj);
+        d3if_SelectScene(scene, 1);
     }
     he_FreeEvent((int *)ev);
 }
