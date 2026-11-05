@@ -94,7 +94,6 @@ extern unsigned short * ai_PlayerChar;
 extern char * ai_BTypes;
 extern char * ai_Blds;
 extern int ai_Difficulty;
-extern unsigned char ai_OwnPlayer;
 extern const int sv_PhaseMinutes[24];
 extern char * cm_FieldObject;
 extern const int ai_CharWalkSteps[16];
@@ -155,7 +154,6 @@ extern GAPDATA full_rdata_5ebb44[];
 extern double ai_Unk5eb990;
 extern GAPDATA full_rdata_5ee020[];
 extern unsigned char ai_OwnPlayer;
-extern int d2_ClickedId;
 extern unsigned short * ai_PlayerChar;
 #include "sv_types.h"
 extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
@@ -186,7 +184,6 @@ extern char ai_Chars[768][0x21c];
 extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
 extern int cm_TutorialActive;
-extern char ch_EmptyName[1];
 extern unsigned char ai_OwnPlayer;
 extern char * cm_FieldObject;
 extern char * ai_Goods;
@@ -370,6 +367,7 @@ typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunS
         int bld;                        /* 0x0, the building's id */
         int objId;                      /* 0x4, the sold object's id (AIOBJ.objId) */
     } sold;
+    char data[0x7c];                    /* the 0x7c bytes cm_SendExSysMessage copies into its message */
 } HESOLDMSG;
 typedef struct HECUSTOMERS {            /* the customers event 6's words over AIJOB's union (he_Unk554820 / he_RunCustomers);
                                            the building is AIJOB.from */
@@ -391,7 +389,7 @@ typedef struct HEHIRE {                 /* the hire event 7's words over AIJOB's
     int slot;                           /* 0xb8, the spawn's send slot */
     int person;                         /* 0xbc, the netId of the hired character */
 } HEHIRE;
-typedef struct HETRANSPORT {            /* the transport event 15's words over AIJOB's union (he_AllocTransport / he_Unk556600):
+typedef struct HETRANSPORT {            /* the transport event 15's words over AIJOB's union (he_AllocTransport / he_RunTransport):
                                            a cart driven from one building to another */
     char pad00[0xac];
     int cart;                           /* 0xac, the cart's objId (gm_FindById) */
@@ -475,6 +473,10 @@ int gm_CompareTime();
 #include "am_types.h"
 #include "net.h"
 #include "amt_types.h"
+#include "rt_types.h"
+#include "rt.h"
+#define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
+#define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
@@ -1066,7 +1068,7 @@ void he_ActivateSlot(int *sl)
     if (he_BarShown != -1) {
         if (he_ActiveSlot != 0) {
             if (he_ActiveSlot->obj != -1)
-                d2_SetObjValue(he_ActiveSlot->obj, 0);
+                d2_SetObjValue2(he_ActiveSlot->obj, 0);
             d2_SetViewEnabled(he_ActiveSlot->win, 0);
             if (HE_PAUSES(he_ActiveSlot->ev))
                 tb_Paused = 0;
@@ -1074,7 +1076,7 @@ void he_ActivateSlot(int *sl)
         }
         if (s != 0 && s->win != -1) {
             if (s->obj != -1)
-                d2_SetObjValue(s->obj, 1);
+                d2_SetObjValue2(s->obj, 1);
             d2_SetViewEnabled(s->win, 1);
             d2_RaiseViewWindows(s->win);
             if (HE_PAUSES(s->ev))
@@ -11414,6 +11416,7 @@ typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 
     int cb;                             /* 0x00, the frame callback registered at this depth */
     char pad04[4];
 } SVFRAME;
+#define d3t_SnowP (*(int **)&d3t_Snow)  /* 0x76061c, d3t_Snow (sv.c: int) as the pointer it holds: the snow system (d3t_CreateSnow), its first int read as the snow's strength */
 #define sv_FramesT (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the frame stack, indexed by sv_FrameDepth */
 #define cm_SendCartRouteH ((int (*)(int, int, int))cm_SendCartRoute)  /* 0x4c4920: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original the transport legs keep it (HETRANSPORT.route) */
 void cm_SendCartState(int a, int b);
@@ -11714,7 +11717,7 @@ void he_TransportStadtStadt(int ev)
 }
 
 int init_BuildingSceneUniverse();
-void ai_Unk4c5a70(int a);
+void cm_SendFreeObject(int a);
 void cm_BeginFieldBlock(char *o, int id);
 
 /* 0x556080, the leg of the transport event 15 (HETRANSPORT) of mode 4 (both buildings homes), called by its run
@@ -11809,47 +11812,84 @@ void he_TransportHomeHome(int ev)
     }
     d3if_SelectScene(sc, 1);
 }
-/* 0x556600, the run handler "he_RunTransport" of the transport events (ROUGH, a skeleton: the jump table 0x556d94 has 8 states): a flagged (2) record with a pending handle +0x84 waits for it (0x4c3ae0); the buildings +0xb0 / +0xb4 (0x501190 x4), the cart +0xac (0x4fe980) are looked up (missing cart: the event is freed, buildings: nothing). State 0 posts the record 3 later with the handle 4, state 1 waits for the due time and the two handles, then runs the leg by the mode +0xc8 (1: 0x555690, 2: 0x555350, 3: 0x555b60, 4: 0x556080; else the debug text "he_RunTransport: invalid type!" 0x4222b0), a random chance (0x42ec00) lets the cart play the cart noise "Karrenrumpeln_r" (0x4c5a70 / 0x53dda0 with the news 0x1c2f / .., 0x4c5a70), the later states hand over goods (0x4c4db0, sb_PlaySample 0x426fa0 "Karrenrumpeln_r", 0x509 .. 0x4bfa40 / 0x4bfc60 / 0x4bda80 / 0x59e170 / 0x541250 / 0x50ca50 / 0x472ce0) and end the transport (state -1 / 2: the cart's flag 0x40 / 0x20 cleared, +0x24 = 0, free). The jump-table cases are only outlined by the helpers 0x556b50, 0x556be0 .. above them */
-
-void he_Unk556600(int ev)
+/* 0x556600, "he_RunTransport" (its debug text), the run handler of the transport event 15 (HETRANSPORT; registered
+   with he_AllocTransport). A posted record (opts 2) waits for its cm slot. Without the 0x44 / 0x45 buildings, the
+   start or the goal the stage becomes -1; without the cart the event is freed. By AIJOB.stage:
+   -2: the event goes to the player's character (he_SetEventChar) and on to the stage 1 (the cart at the 0x44
+       building or the start) or -1 (at the goal).
+   -1: the end: the cart (gm_Query 2) is damaged (-2, three times in four) and the event's window closed (a posted
+       record), its bit 0x40 and its job cleared, the event freed.
+    0: due one second later, posted with the next stage.
+    1: once due and the cart's route sent (a failed route: stage -1), the leg of the mode (he_TransportFromHome /
+       ToHome / StadtStadt / HomeHome) runs, the rounds count up and the next round is due in 5 minutes. In the 5th
+       round a random 0 .. 29 above the cart's fill rattles it (news 0x1c46 with the good, cm_SendFreeObject) and ends
+       the transport; from then on, once, the weather (snow -15, rain -10) and the skill of the cart's building
+       (+100) give the chance that the cart arrives undamaged: else it is damaged (-10, the news 0x1c45 to a player
+       owner of an unescorted cart) and slowed (weatherStage 2), else weatherStage 1.
+    2: once the route is sent: the sys message 4 for the goal one second later, the cart noise "Karrenrumpeln_r"
+       when the player looks at the goal, posted with the stage 3.
+    3: a quiet transport goes on to the stage 4, else to -1.
+    4: the cart unloads at its point for the player slot of a kind 0x47 goal (else the own player), stage 5.
+    5: at the building of the cart's route point that takes the load (ai_IsBuildingOpen) the cart hands it over
+       (rt_LoadAtPoint) and the transport ends (-1); no such point: -1; else it waits 15 minutes
+   @deep Read all 8 stages (jump table equal) against the original and rebuilt them; frame, calls, stores,
+   switch tables all equal (ours=603 original=603 ins). What is left: (1) case -2's third branch (t->at ==
+   from->id): VC6 cross-jumps it to the shared 'push esi; push 1; call cm_SendExSetHE' tail at +0x6cc, ours
+   keeps 'push esi; push 1' and jumps to the call (asmdiff +0x70e: '- push esi / - push 1 / jmp X'); the
+   if/else-if order guards/to/from is the original's, a merged condition made it worse (68 ins). (2) fpu 16
+   at +0x393: the compare util_RandomU(0x69) > o->fill * (chance * 0.01) computes the same product, the
+   original with fxch / fmulp st(2) stack order. (3) slots 48: [esp+0x10]-shared locals (from / &o / pl)
+   laid out otherwise. No call, store or reference differs. */
+void he_RunTransport(int ev)
 {
-    int b0, b1, a44, a45, cart, mode, st;
-    int h;
+    AIJOB *e = (AIJOB *)ev;
+    HETRANSPORT *t = (HETRANSPORT *)ev;
+    AIBLD *guards, *market, *from, *to, *b;
+    AIOBJ *tr, *o, *c;
+    RTPOINT *p;
+    HESOLDMSG m;
+    int mode;
+    char pl;
+    float chance;
+    char text[0x400];
 
-    if ((*(unsigned char *)(ev + 0x78) & 2) != 0 && *(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
-        return;
-    a44 = gm_BuildQuery(1, 0, 0x44);
-    a45 = gm_BuildQuery(1, 0, 0x45);
-    b0 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    b1 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4));
-    cart = gm_FindObjectInst(*(int *)(ev + 0xac));
-    if (a44 == 0 || a45 == 0 || b0 == 0 || b1 == 0)
-        return;
-    if (cart == 0) {
+    if ((e->opts & 2) != 0 && e->exSlot != -1) {
+        if (cm_GetSlotState(e->exSlot) == 0)
+            return;
+        e->exSlot = -1;
+    }
+    guards = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    market = (AIBLD *)gm_BuildQuery(1, 0, 0x45);
+    from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
+    to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+    if (guards == 0 || from == 0 || to == 0 || market == 0)
+        e->stage = -1;
+    tr = (AIOBJ *)gm_FindObjectInst(t->cart);
+    if (tr == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    st = *(int *)(ev + 0x70);
-    if (st > 7)
-        return;
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 3, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
+        if ((e->opts & 2) == 0)
+            return;
+        t->slotE8 = -1;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->exSlot = cm_SendExSetHE(e->stage + 1, ev);
         return;
     case 1:
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) != 0)
+        if ((e->opts & 2) == 0)
             return;
-        h = *(int *)(ev + 0xec);
-        if (h != -1 && cm_GetSlotState(h) == 0)
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
-        h = *(int *)(ev + 0xe8);
-        if (h != -1 && cm_GetSlotState(h) == 2) {
-            he_FreeEvent((int *)ev);
+        if (t->route != -1 && cm_GetSlotState(t->route) == 0)
+            return;
+        if (t->route != -1 && cm_GetSlotState(t->route) == 2) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        mode = *(int *)(ev + 0xc8);
+        t->route = -1;
+        mode = t->mode;
         if (mode == 2)
             he_TransportFromHome(ev);
         else if (mode == 1)
@@ -11860,8 +11900,116 @@ void he_Unk556600(int ev)
             he_TransportHomeHome(ev);
         else
             err_Message("he_RunTransport: invalid type!");
+        t->rounds++;
+        e->clock60 = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        if (t->rounds == 5) {
+            gm_FindById(0, &o, 0, t->cart);
+            if (util_RandomU(0x1e) > o->fill) {
+                txt_Format(text, 0x1c46, o->id * 2 + 0x9a8);
+                he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, 0);
+                cm_SendFreeObject(o->objId);
+                e->exSlot = cm_SendExSetHE(-1, ev);
+                return;
+            }
+        }
+        if (t->weatherStage != 0 || t->rounds < 5)
+            return;
+        chance = 0;
+        gm_FindById(0, &o, 0, t->cart);
+        b = (AIBLD *)gm_FindBuildingById(o->bldId);
+        if (b != 0)
+            chance = gm_BuildingSkill(b, 2, 1) + 100.0f;
+        if (d3t_SnowP != 0 && *d3t_SnowP > 100)
+            chance -= 15.0f;
+        else if (d3t_Rain != 0 && *d3t_Rain > 200)
+            chance -= 10.0f;
+        if (util_RandomU(0x69) > o->fill * (chance * 0.01)) {
+            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (o->flags20 & 1) == 0) {
+                txt_Format(text, 0x1c45);
+                he_ShowNews(ai_CharsT[e->chr].netId, -1, text, 0, 0x608, 0);
+            }
+            gm_ChangeObjektZustand(o->objId, -10);
+            t->weatherStage = 2;
+            return;
+        }
+        t->weatherStage = 1;
         return;
-    default:
+    case 2:
+        if (!e->opts & 2)                       /* the original's test: `!` before `&`, never true */
+            return;
+        if (t->route != -1 && cm_GetSlotState(t->route) == 0)
+            return;
+        t->route = -1;
+        gm_BuildQuery(1, 1, t->goal);
+        m.due = ai_Time;
+        gm_AddTime(&m.due, 0, 0, 1);
+        b = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+        m.sold.bld = b->id;
+        cm_SendExSysMessage(4, &m);
+        if (ai_PlayerBuilding == (char *)b || ai_FallbackBuilding == (char *)b)
+            sb_PlaySample((struct SBBANK *)snd_TransportBank, "Karrenrumpeln_r", 1, 0x3f, 0x7f, 0, 0);
+        e->exSlot = cm_SendExSetHE(3, ev);
+        return;
+    case 3:
+        if ((e->opts & 2) == 0)
+            return;
+        if (t->quiet != 0)
+            e->exSlot = cm_SendExSetHE(4, ev);
+        else
+            e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
+    case 4:
+        if ((e->opts & 2) == 0)
+            return;
+        pl = ai_OwnPlayer;
+        b = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+        if (b->type == 0x47)
+            pl = (char)b->playerSlot;
+        rt_UnloadAtPointC((char *)tr, pl);
+        e->exSlot = cm_SendExSetHE(5, ev);
+        return;
+    case 5:
+        if ((e->opts & 2) == 0)
+            return;
+        p = rt_PointAt(tr->route, tr->routeIdx);
+        if (p == 0 || (b = (AIBLD *)gm_FindBuildingById(p->buildingId)) == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        if (ai_IsBuildingOpen((unsigned char *)b, 0, 0) != 0) {
+            pl = ai_OwnPlayer;
+            if (b->type == 0x47)
+                pl = (char)b->playerSlot;
+            rt_LoadAtPoint((char *)tr, pl);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0xf, 0);
+        return;
+    case -2:
+        he_SetEventChar(ev, *ai_PlayerChar);
+        if (t->at == guards->id)
+            e->exSlot = cm_SendExSetHE(1, ev);
+        else if (t->at == to->id)
+            e->exSlot = cm_SendExSetHE(-1, ev);
+        else if (t->at == from->id)
+            e->exSlot = cm_SendExSetHE(1, ev);
+        return;
+    case -1:
+        c = (AIOBJ *)gm_Query(0, 2, 7, 1, t->cart);
+        if ((e->opts & 2) != 0 && c != 0) {
+            if (util_RandomU(100) > 75)
+                gm_ChangeObjektZustand(c->objId, -2);
+            if (t->slotE8 != -1)
+                d2_RemoveWindow(t->slotE8);
+        }
+        if (c != 0) {
+            c->job24 = 0;
+            c->flags13 &= ~0x40;
+        }
         he_FreeEvent((int *)ev);
         return;
     }
@@ -15088,7 +15236,7 @@ void he_RunPatrolEvent(int ev)
             return;
         he_PatrolBuilding = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
         for (g = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); g != 0; g = (AIOBJ *)gm_QueryNext()) {
-            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->flags13 & 0x20) == 0 && g->pad2e[5] != 0)
+            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->flags13 & 0x20) == 0 && g->pad31[2] != 0)
                 he_PatrolStep(ev, (unsigned short *)g);
         }
         e->end = ai_Time;
@@ -15106,7 +15254,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(7, (void *)he_Unk554820, (void *)he_RunHire) != 0)
         return 1;
-    if (he_SetEventHandlers(15, (void *)he_AllocTransport, (void *)he_Unk556600) != 0)
+    if (he_SetEventHandlers(15, (void *)he_AllocTransport, (void *)he_RunTransport) != 0)
         return 1;
     if (he_SetEventHandlers(16, (void *)he_Unk556dc0, (void *)he_Unk556ed0) != 0)
         return 1;

@@ -8727,7 +8727,7 @@ void ai_SwitchRoom(int index, unsigned short room)
    * 0x24d; returns 1 when the table is empty, the kind unknown or the clock hour 0x770ae4 inside the range,
    and puts the range into param_2 / param_3 (when not null) */
 
-int ai_Unk59e170(unsigned char *param_1, unsigned int *param_2, unsigned int *param_3)
+int ai_IsBuildingOpen(unsigned char *param_1, unsigned int *param_2, unsigned int *param_3)
 {
     int i;
     unsigned int kind;
@@ -8788,7 +8788,7 @@ int ai_Unk59e210(unsigned char *param_1)
         return 1;
     if ((f & 1) == 0)
         return 0;
-    if (ai_Unk59e170(param_1, &from, &to) != 0)
+    if (ai_IsBuildingOpen(param_1, &from, &to) != 0)
         return 1;
     strcpy(buf, (char *)U_I((unsigned)&full_data_1442314));
     if ((int)(U_I((unsigned)&ai_Time.hour) & 0xffff) < (int)from) {

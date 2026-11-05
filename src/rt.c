@@ -1063,7 +1063,7 @@ void rt_UnloadAtPoint(char *c, int pl)
    stock (market: 0x1dc) into the cart, paid by player pl (a message when pl cannot afford it)
    @deep behaviour: the price factors are fixed (1.1f / *(float*)(b+0x49)); what remains is the local frame: the original zeroes each RTINV local as rep stos 0x2d dwords (0xb4) plus a separate dword store at +0x15c/+0x24 where we zero 0x2e dwords, and the stores/registers differ (67 code hunks, slots 16, order 8). The RTINV zeroing seam suggests the original's local is not the plain RTINV view (rt.h type debt). Q2/Q4 stay open */
 
-void rt_Unk4bfc60(char *c, char pl)
+void rt_LoadAtPoint(char *c, char pl)
 {
     RTPOINT *q;
     short *o;

@@ -322,6 +322,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
         struct {
             char pad1c29[0xd];
             struct RTPOINT *route;              /* 0x29, of a cart: its route, a list of rt.c's RTPOINT (rt_CopyPoints; message 0x68 sets it) */
+            int routeIdx;                       /* 0x2d, of a cart: the index of its current point in that route (rt_PointAt; he_RunTransport, rt.c) */
         };
         int seats[4];                   /* 0x1c..0x2b, of a table (kind 0x12d in a building): the ids of the characters at its
                                            four seats, -1 free (message 0x54 'join' / 'leav' / 'cler', cm_SendTableRequest) */
@@ -331,7 +332,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
             unsigned char festMusik;    /* 0x2d, the musician pick (AIGRP.musik) */
         };
     };
-    char pad2e[8];
+    char pad31[5];
     unsigned char unk36;                /* 0x36 */
     unsigned char reportKnow;           /* 0x37, of a spy report: how much it knows, in percent (ai.c spies again below a
                                            random 50 .. 99; the round settlement lowers it by twice the building's rank and
