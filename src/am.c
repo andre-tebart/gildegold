@@ -3989,7 +3989,7 @@ int ai_ExecuteTrainSkill(AIPER *p, AIARG *s1, AIARG *s2)
     m.type = 0x60;
     m.to = p->netId;
     m.fromId = -1;
-    m.unk5a = (unsigned char)s1->ref;
+    m.skill = (unsigned char)s1->ref;
     cm_SendLongMessage((AIMSG *)&m);
     return 4;
 }
@@ -4177,7 +4177,7 @@ int ai_ExecuteTrainJobSkill(AIPER *p, AIARG *s1, AIARG *s2)
     m.fromId = p->netId;
     m.flags = 1;
     m.type = 0x60;
-    m.unk5a = (unsigned char)s1->ref;
+    m.skill = (unsigned char)s1->ref;
     cm_SendLongMessage((AIMSG *)&m);
     return 5;
 }

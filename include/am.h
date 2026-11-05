@@ -186,7 +186,8 @@ typedef struct AIXMSG {                 /* 0xf8 bytes, an AIMSG (ai.h) as these 
     char pad10[0x26];
     unsigned char flags;                /* 0x36, an AIMSG's message flags */
     char pad37[0x23];
-    unsigned char unk5a;                /* 0x5a */
+    unsigned char skill;                /* 0x5a, the ability / job skill the training event 0x60 raises
+                                           (he.c 0x549970 reads it at the event's +0xae) */
     char pad5b[0x9d];
 } AIXMSG;
 #pragma pack(pop)
