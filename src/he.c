@@ -3550,19 +3550,20 @@ void he_RunCourtship(int ev)
 }
 /* 0x5471e0, the duel intro: lets both duellists (p2 / p3, 0x4c4a60 flag 0x400) hear the news 0x1d83 / 0x1d82 (messages 0x5fa / 0x5fb, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00" for the first) and posts the event (state 2) */
 
-void he_DuelAccepted(int ev, unsigned short *p2, unsigned short *p3)
+void he_DuelAccepted(int ev, AICHAR *p2, AICHAR *p3)
 {
+    AIJOB *e = (AIJOB *)ev;
     char buf[1024];
 
-    cm_SendSetField(*(int *)(p2 + 2), 0x1c8, 4, 0x400, 0);
-    cm_SendSetField(*(int *)(p3 + 2), 0x1c8, 4, 0x400, 0);
-    if (*(char *)(p2 + 1) == 6 || *(char *)(p2 + 1) == 7) {
-        txt_Format(buf, 0x1d83, *p3, ev + 0x52, *p3);
-        he_ShowNews(*(int *)(p2 + 2), *(int *)(p2 + 2), buf, 0, 0x5fa, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
+    cm_SendSetField(p2->netId, 0x1c8, 4, 0x400, 0);
+    cm_SendSetField(p3->netId, 0x1c8, 4, 0x400, 0);
+    if (p2->kind == 6 || p2->kind == 7) {
+        txt_Format(buf, 0x1d83, p3->id, &e->end, p3->id);
+        he_ShowNews(p2->netId, p2->netId, buf, 0, 0x5fa, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
     }
-    if (*(char *)(p3 + 1) == 6 || *(char *)(p3 + 1) == 7) {
-        txt_Format(buf, 0x1d82, *p2, ev + 0x52, *p2);
-        he_ShowNews(*(int *)(p3 + 2), -1, buf, 0, 0x5fb, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
+    if (p3->kind == 6 || p3->kind == 7) {
+        txt_Format(buf, 0x1d82, p2->id, &e->end, p2->id);
+        he_ShowNews(p3->netId, -1, buf, 0, 0x5fb, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
     }
     cm_SendExSetHE(2, ev);
 }
@@ -3680,7 +3681,7 @@ void he_RunDuelChallenge(int ev)
         if (d2_ClickedId == -1)
             return;
         if (d2_ClickedId == 0)
-            he_DuelAccepted((int)duel, (unsigned short *)p, (unsigned short *)q);
+            he_DuelAccepted((int)duel, p, q);
         else if (d2_ClickedId == 1)
             he_DuelDeclined((int)duel, p, q);
         he_ReleaseSlot(ev);
