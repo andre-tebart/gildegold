@@ -9795,7 +9795,7 @@ void he_RunRanking(int ev)
             e->stage++;
     }
 }
-/* 0x5512c0, the alloc handler of the walk event 0x7a (its run handler he_Unk551b70): stage 0; unless opts still says
+/* 0x5512c0, the alloc handler of the walk event 0x7a (its run handler he_RunWalk): stage 0; unless opts still says
    the event is not started yet (bit 4) it frees the ten walk slots (+0xac: character and target -1, stage / state /
    step / building index 0), sets the due clock today at 11:00 and posts the event (handle in exSlot) */
 
@@ -10095,59 +10095,66 @@ next:
     else
         cm_SendChrGotoBuilding(s->chr, s->target, -1, 0, 1, "Sim Politicians");
 }
-/* 0x551b70, the run handler of the walk event 0x5512c0 (ROUGH): states -1 / -2 free the record; a record with flag 4 or a pending handle (+0x84, 0x4c3ae0 checks it) does nothing; else the due clock is set to now and posted 5 later, and after the minute word 0x11 the ten slots (+0xac, 16 bytes) are stepped by 0x551340 (counting the ones still walking = 2; when none walks, the minute word is reset and the day counter +0x52 incremented), before it the slots are stepped by 0x551340 (done: flag 4) or 0x551780 and the ones with flag 1 counted, then up to ten tries to fill a slot (0x551440) post the event again 1 later */
-void he_Unk551b70(int ev)
+/* 0x551b70, the run handler of the walk event 0x7a (its alloc handler he_StartWalk): the state -1 / -2 frees the
+   record, and a record with the option 4 or a pending cm slot (exSlot, cm_GetSlotState) does nothing; else the due
+   clock is set to now and posted 5 minutes later, and after 17:00 the ten slots are stepped by he_StepWalkSlot (a
+   slot still walking counts; when none walks, the due clock moves to midnight of the next day), before that each
+   slot is stepped by he_StepWalkSlot (state 4, done) or he_StepWalk and the ones with state 1 counted; then up to
+   ten tries to fill a free slot (he_FillWalkSlot) post the event again 1 minute later */
+void he_RunWalk(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    HEWALKS *w = (HEWALKS *)ev;
+    int st = e->stage;
     int n = 0, i, r;
-    unsigned char *s;
+    HEWALKSLOT *s;
 
     if (st == -1 || st == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
-    *(int *)(ev + 0x84) = -1;
-    if (*(unsigned short *)(ev + 0x56) >= 0x11) {
-        s = (unsigned char *)(ev + 0xac);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 5, 0);
+    e->exSlot = -1;
+    if (e->end.hour >= 0x11) {
+        s = w->slots;
         for (i = 10; i != 0; i--) {
-            if (he_StepWalkSlot((HEWALKSLOT *)s) == 2)
+            if (he_StepWalkSlot(s) == 2)
                 n++;
-            s += 0x10;
+            s++;
         }
         if (n == 0) {
-            *(unsigned short *)(ev + 0x56) = (unsigned short)n;
-            *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
+            e->end.hour = (unsigned short)n;    /* n is 0 here */
+            e->end.year = e->end.year + 1;
         }
         cm_SendExSetHE(0, ev);
         return;
     }
-    s = (unsigned char *)(ev + 0xac);
+    s = w->slots;
     for (i = 10; i != 0; i--) {
-        if ((s[9] & 4) != 0)
-            he_StepWalkSlot((HEWALKSLOT *)s);
+        if ((s->state & 4) != 0)
+            he_StepWalkSlot(s);
         else
-            he_StepWalk((HEWALKSLOT *)s);
-        if ((s[9] & 1) != 0)
+            he_StepWalk(s);
+        if ((s->state & 1) != 0)
             n++;
-        s += 0x10;
+        s++;
     }
-    s = (unsigned char *)(ev + 0xac);
+    s = w->slots;
     for (i = 0; i < 10; i++) {
-        r = he_FillWalkSlot((HEWALKSLOT *)s, n, 0);
-        *(int *)(ev + 0x84) = r;
+        r = he_FillWalkSlot(s, n, 0);
+        e->exSlot = r;
         if (r != -1) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 1, 0);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
             cm_SendExSetHE(0, ev);
             return;
         }
-        s += 0x10;
+        s++;
     }
     cm_SendExSetHE(0, ev);
 }
@@ -10913,7 +10920,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x79, (void *)he_StartRanking, (void *)he_RunRanking) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7a, (void *)he_StartWalk, (void *)he_Unk551b70) != 0)
+    if (he_SetEventHandlers(0x7a, (void *)he_StartWalk, (void *)he_RunWalk) != 0)
         return 1;
     if (he_SetEventHandlers(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
