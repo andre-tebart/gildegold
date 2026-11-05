@@ -1255,7 +1255,7 @@ void ai_Unk4c48e0(int a, short b, int c)
 }
 /* 0x4c4920, message 0x13 */
 
-void ai_Unk4c4920(int a, int b, int c)
+void cm_SendCartRoute(int a, int b, int c)
 {
     G17MSG m;
 
@@ -1603,7 +1603,7 @@ void cm_SendChrStop(int a)
 }
 /* 0x4c5260, message 0x33 */
 
-void ai_Unk4c5260(int a, int b)
+void cm_SendCartState(int a, int b)
 {
     G17MSG m;
 

@@ -206,7 +206,7 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                     
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880 */
 void ai_Unk4c48e0(int a, short b, int c);                                        /* 0x4c48e0 */
-void ai_Unk4c4920(int a, int b, int c);                                          /* 0x4c4920 */
+void cm_SendCartRoute(int a, int b, int c);                                          /* 0x4c4920 */
 void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960 */
 void cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
 void cm_SendFieldValues(void);                                                         /* 0x4c49e0 */
@@ -234,7 +234,7 @@ void cm_SendChrWalkTo(int a, int b, int c, int d);                              
 void cm_RequestChrMove(int a, int b, int c, const char *s);                           /* 0x4c5150 */
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);                           /* 0x4c51b0, "cm_RequestChrMoveToUniverse" */
 void cm_SendChrStop(int a);                                                        /* 0x4c5230 */
-void ai_Unk4c5260(int a, int b);                                                 /* 0x4c5260 */
+void cm_SendCartState(int a, int b);                                                 /* 0x4c5260 */
 int cm_SendPlaceOnStage(int a, int b, int c);                                           /* 0x4c52a0 */
 int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2);  /* 0x4c52e0 */
 void cm_SendChrAnim(int a, const char *s, int c);                        /* 0x4c5410 */

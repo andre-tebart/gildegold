@@ -399,13 +399,17 @@ typedef struct HETRANSPORT {            /* the transport event 15's words over A
     int at;                             /* 0xc4, the id of the building the cart is at (the start) */
     int mode;                           /* 0xc8, by gm_IsHomeType of start / goal: 3 neither, 2 the start, 1 the goal, 4 both */
     int escorts;                        /* 0xcc, the escort kind 0 .. 2 (the goods' value / 16000 + random 0 .. 1) */
-    unsigned char stepd0;               /* 0xd0, 0 at the start (its run handler's) */
+    unsigned char started;              /* 0xd0, 1 once the leg's first round sent the cart off, 0 at the start */
     char padd1[3];
-    int vd4;                            /* 0xd4, 0 at the start (its run handler's) */
-    char padd8[0x10];
+    int rounds;                         /* 0xd4, the rounds the cart has been under way (a leg ends after 6 at the latest) */
+    D3VECTOR lastPos;                   /* 0xd8, the cart body's position at the last round (arrived: it did not move) */
+    char pade4[4];
     int slotE8;                         /* 0xe8, -1 at the start (its run handler's slot) */
-    int slotEC;                         /* 0xec, -1 at the start (its run handler's slot) */
-    char padf0[4];
+    int route;                          /* 0xec, the send slot of the cart's route (cm_SendCartRouteH), -1 at the start */
+    char padf0;
+    unsigned char weatherStage;         /* 0xf1, 2: the cart slowed once more (he_SetCartSpeed) */
+    unsigned char quiet;                /* 0xf2, nonzero: no arrival news */
+    char padf3;
     int order;                          /* 0xf4, the id of the event that ordered the transport, 0 / -1 none */
 } HETRANSPORT;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
@@ -11241,9 +11245,9 @@ void he_AllocTransport(int ev)
     home1 = 0;
     home2 = 0;
     t->slotE8 = -1;
-    t->vd4 = 0;
+    t->rounds = 0;
     e->end = e->start;
-    t->stepd0 = 0;
+    t->started = 0;
     e->clock60 = e->start;
     from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
     if (from == 0)
@@ -11307,7 +11311,7 @@ void he_AllocTransport(int ev)
     }
     t->travel = to->travel30 + from->travel30;
     t->at = from->id;
-    t->stepd0 = 0;
+    t->started = 0;
     gm_AddTime(&e->end, 0, 0, 1);
     if (o != 0) {
         drv = (AIBLD *)gm_FindBuildingById(o->bldId);
@@ -11345,7 +11349,7 @@ void he_AllocTransport(int ev)
                 o->escort = 0;
         }
         e->exSlot = -1;
-        t->slotEC = -1;
+        t->route = -1;
         return;
     }
 fail:
@@ -11385,7 +11389,7 @@ int he_RandomTransporter(char *obj)
 }
 /* 0x5552c0, sets the speed factor (+0x1a0 of the record at +0x3b of `p`) from the event's value +0xc0: * the first constant when 0x76061c points to a value above 100, else * the second when 0x760618 points above 200, else unchanged; a second stage (+0xf1 == 2) multiplies it once more */
 
-void he_Unk5552c0(int ev, int p)
+void he_SetCartSpeed(int ev, int p)
 {
     int rec = *(int *)(p + 0x3b);
 
@@ -11400,76 +11404,86 @@ void he_Unk5552c0(int ev, int p)
 }
 
 int gm_FindObjectInst(int id);
-void ai_Unk4c4920(int a, int b, int c);
-void ai_Unk4c5260(int a, int b);
+void cm_SendCartRoute(int a, int b, int c);
+typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack sv_Frames (sv.c sv_RunFrame: "MASTER()"; as sv.c / unk_58bbd0.c declare it) */
+    int cb;                             /* 0x00, the frame callback registered at this depth */
+    char pad04[4];
+} SVFRAME;
+#define sv_FramesT (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the frame stack, indexed by sv_FrameDepth */
+#define cm_SendCartRouteH ((int (*)(int, int, int))cm_SendCartRoute)  /* 0x4c4920: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original the transport legs keep it (HETRANSPORT.route) */
+void cm_SendCartState(int a, int b);
 int gm_IsType10(unsigned char *b);
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 
-/* 0x555350, the run handler of a transport event (a Ghidra miss; ROUGH): +0xb0 the source building, +0xb4 the target building, +0xac the transport id (0x4fe980 gives the transporter object in the scene 0x633444), +0xd0 started flag, +0xd4 a tick counter, +0xd8 .. the last position, +0xec the guide handle, +0xf2 silent flag. First round: the transporter is sent (0x4c5230, 0x4c52e0 "Trans", the guide 0x4c4920, +0xd0 = 1); later rounds check whether it arrived (the position change 0x453e80 against 100.0, or more than 6 rounds): then the guide is dropped (0x4c5260), the transporter gets the message 0x13 / 0x40, the news (0x1c43 / 0x1c44 / 0x1c39 / 0x1c41, by the building kind 0x1d / 0x1f and the 0x5024f0 flag) is formatted and shown to a player (0x53dee0 .., the text 0x608) unless the world map is in a mode (0x6f229c, 0x6f2310 ranges) and the event is posted again with the handle 3 (0x4c4c60 (3, ev), +0x84) */
-void he_Unk555350(int ev)
+/* 0x555350, the leg of the transport event 15 (HETRANSPORT) of mode 2 (only the start a home), called by its run
+   handler 0x556600 each round: the cart (gm_FindObjectInst; none: nothing) gets its speed (he_SetCartSpeed). The
+   first round stops it and sends it to the goal ("Trans") with the route from the 0x44 building to the start
+   (cm_SendCartRouteH). Later rounds, once the cart's character is idle in the main scene and has not moved since
+   the last round (d3_VecEqual within 100.0) or after more than 6 rounds: a goal that is not of the type 10 gets the
+   route on to the 0x45 building and the cart's state 0 (cm_SendCartState), the cart's bit 0x40 is cleared
+   (cm_SendSetField), the arrival news 0x1c43 (goal of the type 10), 0x1c41 (with 0x1c39, the start, the goal's
+   owner and the goal; goals of other kinds than 0x1d / 0x1f) or 0x1c44 goes to a player owner (kind 6 / 7) unless
+   the transport window shows the goal (or a market stall 0x92 .. 0x97 / 0x2db of a type 10 goal), the cart is
+   escorted (flags20 bit 0) or the transport is quiet, with the quick jump to the goal's main object; the event is
+   posted again (cm_SendExSetHE 3). The current scene is selected again at the end */
+void he_TransportFromHome(int ev)
 {
-    int sc = U_I((unsigned)&d3_CurrentScene);
-    int b0, b1, tr, kind, e, f;
-    int a44, a45;
-    int o, q;
+    AIJOB *e = (AIJOB *)ev;
+    HETRANSPORT *t = (HETRANSPORT *)ev;
+    AIBLD *guards, *from, *to;
+    AIBTYPE *bt;
+    AIOBJ *tr, *o;
+    CHARACTER *ch;
+    int sc;
     char text[0x400];
-    int kd;
 
-    a44 = gm_BuildQuery(1, 0, 0x44);
-    a45 = gm_BuildQuery(1, 0, 0x45);
-    b0 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    kd = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b0 * 0x24d;
-    b1 = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4));
-    tr = gm_FindObjectInst(*(int *)(ev + 0xac));
-    (void)a44;
-    (void)a45;
-    if (tr != 0) {
-        he_Unk5552c0(ev, tr);
-        if (*(unsigned char *)(ev + 0xd0) == 0) {
-            cm_SendChrStop(*(int *)(tr + 2));
-            cm_SendChrGotoBuilding(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 1, "Trans");
-            *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
-            *(unsigned char *)(ev + 0xd0) = 1;
-        } else if (*(int *)(tr + 0x3b) != 0 && *(int *)(*(int *)(tr + 0x3b) + 0x128) == 0) {
-            o = *(int *)(tr + 0x3b);
-            if ((*(int *)(o + 0x88) == (unsigned)&d3_Scenes && d3_VecEqual(*(int *)(o + 0x34) + 0x4c, ev + 0xd8, 100.0f) != 0) || *(int *)(ev + 0xd4) > 6) {
-                if (gm_IsType10(b1) == 0) {
-                    *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(b1 + 1), *(int *)(a45 + 1), *(int *)(tr + 2));
-                    ai_Unk4c5260(*(int *)(tr + 2), 0);
-                }
-                cm_SendSetField(*(int *)(tr + 2), 0x13, 1, 0, 0x40);
-                kind = *(unsigned char *)kd;
-                if (gm_IsType10(b1) != 0)
-                    txt_Format(text, 0x1c43);
-                else if (kind != 0x1d && kind != 0x1f)
-                    txt_Format(text, 0x1c41, 0x1c39, b0, *(unsigned short *)(b1 + 0x27), b1);
-                else if (gm_IsType10(b1) != 0)
+    guards = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+    gm_BuildQuery(1, 0, 0x45);
+    from = (AIBLD *)gm_BuildQuery(1, 1, t->start);
+    bt = &ai_BTypesT[from->type];
+    to = (AIBLD *)gm_BuildQuery(1, 1, t->goal);
+    sc = d3_CurrentScene;
+    tr = (AIOBJ *)gm_FindObjectInst(t->cart);
+    if (tr == 0)
+        return;
+    he_SetCartSpeed(ev, (int)tr);
+    if (t->started == 0) {
+        cm_SendChrStop(tr->objId);
+        cm_SendChrGotoBuilding(tr->objId, to->id, -1, 0, 1, "Trans");
+        t->route = cm_SendCartRouteH(guards->id, from->id, tr->objId);
+        t->started = 1;
+    } else {
+        ch = (CHARACTER *)tr->sceneObj;
+        if (ch != 0 && ch->actions == 0
+            && ((ch->scene == &d3_Scenes[0] && d3_VecEqual(&ch->obj->pos, &t->lastPos, 100.0f) != 0) || t->rounds > 6)) {
+            if (gm_IsType10((unsigned char *)to) == 0) {
+                t->route = cm_SendCartRouteH(to->id, guards->id, tr->objId);
+                cm_SendCartState(tr->objId, 0);
+            }
+            cm_SendSetField(tr->objId, 0x13, 1, 0, 0x40);
+            if (gm_IsType10((unsigned char *)to) != 0)
+                txt_Format(text, 0x1c43);
+            else {
+                if (bt->kind != 0x1d && bt->kind != 0x1f)
+                    txt_Format(text, 0x1c41, 1, 0x1c39, from, to->owner, to);
+                else if (gm_IsType10((unsigned char *)to) != 0)
                     txt_Format(text, 0x1c43);
                 else
-                    txt_Format(text, 0x1c44, b1);
-                e = *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c);
-                if (e == 6 || e == 7) {
-                    f = 0;
-                    if (U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow) {
-                        if (U_I((unsigned)&ai_PlayerBuilding) == b1)
-                            f = 1;
-                        else if (gm_IsType10(b1) != 0 && U_I((unsigned)&sv_PanelShown) != 0) {
-                            int w = *(unsigned short *)U_I((unsigned)&sv_PanelShown);
-
-                            if ((w >= 0x92 && w <= 0x97) || w == 0x2db)
-                                f = 1;
-                        }
-                    }
-                    if (f == 0 && (*(unsigned char *)(tr + 0x20) & 1) == 0 && *(unsigned char *)(ev + 0xf2) == 0) {
-                        q = gm_BuildingMainObject(b1);
-                        if (q != 0)
-                            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(tr + 2), text, 0, 0x608, *(int *)(b1 + 1), *(int *)(q + 2), 0, 0);
-                        else
-                            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), *(int *)(tr + 2), text, 0, 0x608, *(int *)(b1 + 1), -1, 0, 0);
-                    }
-                }
-                *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+                    txt_Format(text, 0x1c44, to);
             }
+            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7)
+                && (sv_FramesT[sv_FrameDepth].cb != (int)ai_TransportWindow
+                    || (ai_PlayerBuilding != (char *)to
+                        && (gm_IsType10((unsigned char *)to) == 0 || sv_PanelShown == 0
+                            || ((*sv_PanelShown < 0x92 || *sv_PanelShown > 0x97) && *sv_PanelShown != 0x2db))))
+                && (tr->flags20 & 1) == 0 && t->quiet == 0) {
+                o = (AIOBJ *)gm_BuildingMainObject((unsigned char *)to);
+                if (o != 0)
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, o->objId, 0, 0);
+                else
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, tr->objId, text, 0, 0x608, to->id, -1, 0, 0);
+            }
+            e->exSlot = cm_SendExSetHE(3, ev);
         }
     }
     d3if_SelectScene(sc, 1);
@@ -11492,17 +11506,17 @@ void he_Unk555690(int ev)
     tr = gm_FindObjectInst(*(int *)(ev + 0xac));
     (void)a45;
     if (tr != 0) {
-        he_Unk5552c0(ev, tr);
+        he_SetCartSpeed(ev, tr);
         if (*(unsigned char *)(ev + 0xd0) == 0) {
             cm_SendChrStop(*(int *)(tr + 2));
             if (gm_IsType10(b0) == 0)
-                ai_Unk4c5260(*(int *)(tr + 2), 1);
+                cm_SendCartState(*(int *)(tr + 2), 1);
             cm_SendChrGotoBuilding(*(int *)(tr + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
             if (gm_IsType10(b0) == 0)
-                *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
+                *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(tr + 2));
             *(unsigned char *)(ev + 0xd0) = 1;
         } else if (sv_IsCartAtDoor(tr, b1) != 0) {
-            *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(tr + 2));
+            *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(tr + 2));
             if (*(unsigned char *)b1 == 0x47) {
                 txt_Format(text, 0x1c3b, 1, 0x1c39, (char *)(unsigned)&ai_PlayerSlots + *(int *)(b1 + 0x65) * 0x2f4);
                 skip = U_I(((unsigned)&ai_Unk75f280 + 0x500) + U_I((unsigned)&sv_FrameDepth) * 8) == (unsigned)&ai_TransportWindow && U_I((unsigned)&ai_FallbackBuilding) == b1;
@@ -11561,14 +11575,14 @@ void he_Unk555b60(int ev)
         if (cart == 0)
             cart = gm_FindObjectInst(*(int *)(ev + 0xac));
         if (cart != 0) {
-            he_Unk5552c0(ev, cart);
+            he_SetCartSpeed(ev, cart);
             ch_GetHMap(*(int *)(cart + 0x3b));
             d3_GetHeightAt(U_I((unsigned)&ai_Unkfd7c50), pos, 0, 0, 0);
             if (gm_IsType10(b0) == 0) {
-                ai_Unk4c5260(*(int *)(cart + 2), 0);
+                cm_SendCartState(*(int *)(cart + 2), 0);
                 ((void (*)(int, int))cm_SendChrWalkTo)(*(int *)(cart + 2), pos);
                 if (gm_IsType10(b0) == 0)
-                    *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
+                    *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
             }
             *(unsigned char *)(ev + 0xd0) = 1;
         }
@@ -11585,11 +11599,11 @@ void he_Unk555b60(int ev)
         gm_Query(0, 2, 7, 1, *(int *)(ev + 0xac));
         return;
     }
-    he_Unk5552c0(ev, cart);
+    he_SetCartSpeed(ev, cart);
     if (*(unsigned char *)(cart + 9) == 0x2d || (d3_VecEqual(*(int *)(*(int *)(cart + 0x3b) + 0x34) + 0x4c, ev + 0xd8, 100.0f) != 0) || *(int *)(ev + 0xd4) > 6) {
         cm_SendSetField(*(int *)(cart + 2), 0x13, 1, 0, 0x40);
         if (gm_IsType10(b1) == 0)
-            *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(b1 + 1), *(int *)(a45 + 1), *(int *)(cart + 2));
+            *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(b1 + 1), *(int *)(a45 + 1), *(int *)(cart + 2));
         if (gm_IsType10(b1) != 0)
             txt_Format(text, 0x1c43);
         else
@@ -11627,17 +11641,17 @@ void he_Unk556080(int ev)
         d3if_SelectScene(sc, 1);
         return;
     }
-    he_Unk5552c0(ev, cart);
+    he_SetCartSpeed(ev, cart);
     if (*(unsigned char *)(ev + 0xd0) == 0) {
         cm_SendChrStop(*(int *)(cart + 2));
         cm_SendChrGotoBuilding(*(int *)(cart + 2), *(int *)(b1 + 1), -1, 0, 0, "Trans");
-        *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(cart + 2));
+        *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b0 + 1), *(int *)(cart + 2));
         *(unsigned char *)(ev + 0xd0) = 1;
         d3if_SelectScene(sc, 1);
         return;
     }
     if (sv_IsCartAtDoor(cart, b0) != 0) {
-        *(int *)(ev + 0xec) = ((int (*)(int, int, int))ai_Unk4c4920)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
+        *(int *)(ev + 0xec) = ((int (*)(int, int, int))cm_SendCartRoute)(*(int *)(a44 + 1), *(int *)(b1 + 1), *(int *)(cart + 2));
         cm_RequestChrMoveToUniverse(*(int *)(cart + 2), *(int *)(b1 + 1), -1, (char *)0);
         init_BuildingSceneUniverse(b1);
         d3if_SelectScene(0, 1);
@@ -11700,7 +11714,7 @@ void he_Unk556600(int ev)
         }
         mode = *(int *)(ev + 0xc8);
         if (mode == 2)
-            he_Unk555350(ev);
+            he_TransportFromHome(ev);
         else if (mode == 1)
             he_Unk555690(ev);
         else if (mode == 3)
