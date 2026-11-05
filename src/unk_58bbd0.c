@@ -814,7 +814,6 @@ extern char ai_Crimes[];
 extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
 extern char * ai_PickedObject;
-extern GAPDATA full_data_62c418[];
 extern GAPDATA ai_DomizilTable[];
 extern GAPDATA ai_EquipRows[];
 extern char * cm_FieldObject;
@@ -16250,7 +16249,7 @@ int ai_GelageWindow(int building)
 
 int ai_Unk5ba1c0(void)
 {
-    if (U_I((unsigned)&full_data_62c418) != -1)
+    if (ai_ChildWindowId != -1)
         return 0;
     /* ROUGH SKELETON: the cleanup path */
     return 0;
@@ -16268,8 +16267,8 @@ int ai_Unk5ba290(void)
 void ai_Unk5ba600(void)
 {
     d2_ClearPointerItems();
-    d2_RemoveWindow(U_I((unsigned)&full_data_62c418));
-    U_I((unsigned)&full_data_62c418) = -1;
+    d2_RemoveWindow(ai_ChildWindowId);
+    ai_ChildWindowId = -1;
 }
 /* 0x5ba620, the Domizil table lookup (64 B): walks the 0x1c-byte entries of 0x62c420 while the id at +0 is not
    0; returns the entry of the id, 0 when absent */
@@ -16340,7 +16339,7 @@ int ai_Unk5ba980(void)
 
 int ai_InventoryPanel(void)
 {
-    if (U_I((unsigned)&full_data_62c418) != -1)
+    if (ai_ChildWindowId != -1)
         return 0;
     /* ROUGH SKELETON: the 0x1000 allocation path */
     return 0;
@@ -23801,6 +23800,7 @@ char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
 char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa) */
+int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_Unk5ba1c0 creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
