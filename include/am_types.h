@@ -62,7 +62,7 @@ typedef struct AIPLAN {                 /* 0x50 bytes, a plan record the callbac
     int rating2c;                       /* 0x2c, of the trial: ai_WealthRating (the accuser, the accused) */
     int rating30;                       /* 0x30, of the trial: ai_WealthRatingHalf (the accuser, the accused) */
     int rating34;                       /* 0x34, reasoned guess: a third rating beside 0x2c / 0x30 (the trial clears it) */
-    int instrument;                     /* 0x38, key into the table at 0x5ecfd8 (ai_PlanRollTries); of the trial the torture instrument 0 .. 6 */
+    int instrument;                     /* 0x38, key into the torture-instrument table ai_TortureInstruments (ai_PlanRollTries); of the trial the torture instrument 0 .. 6 */
     int tries;                          /* 0x3c, the number of rolls (ai_PlanLevel) */
     int answer;                         /* 0x40, of the trial the accused's answer under torture; 0 changes the roll (ai_PlanRollTries) */
     int tortured;                       /* 0x44, of the trial: 1 when the accuser chose the torture */

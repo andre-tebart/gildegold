@@ -592,11 +592,11 @@ typedef struct AIGRP {                  /* a group: a leader and up to four memb
 } AIGRP;
 #pragma pack(pop)
 
-typedef struct AIREC10 {                /* 16 bytes, the table at 0x5ecfd8 (7 records) */
-    int key;                            /* 0x0 */
+typedef struct AIREC10 {                /* 16 bytes, a record of the torture-instrument table at 0x5ecfd8 (7 records, ai_TortureInstruments) */
+    int key;                            /* 0x0, the instrument index 0 .. 6 (AIPLAN.instrument) */
     int unk04;                          /* 0x4 */
-    float unk08;                        /* 0x8 */
-    float unk0c;                        /* 0xc */
+    float base;                         /* 0x8, the base amount of a try (ai_PlanRollTries) */
+    float spread;                       /* 0xc, the random spread added to base (cm_RandomFloat) */
 } AIREC10;
 
 typedef struct AIREC2F4 {               /* 0x2f4 bytes, the table at 0x7e4274 (3 records) */
@@ -605,7 +605,7 @@ typedef struct AIREC2F4 {               /* 0x2f4 bytes, the table at 0x7e4274 (3
     char pad008[0x2ec];
 } AIREC2F4;
 
-extern const AIREC10 ai_Unk5ecfd8[7];         /* 0x5ecfd8 */
+extern const AIREC10 ai_TortureInstruments[7];         /* 0x5ecfd8 */
 
 #define AI_C4(id) ((AIC4 *)gm_FindChar(id))
 
@@ -628,7 +628,7 @@ int ai_PlanRank(AIPLAN *q);                                    /* 0x4945c0 */
 int ai_Unk4946c0(AIC4 *ch, AIPLAN *q);                          /* 0x4946c0 */
 int ai_WealthRating(AIC4 *a, AIC4 *b);                             /* 0x4947a0 */
 int ai_WealthRatingHalf(AIC4 *a, AIC4 *b);                             /* 0x494830 */
-AIREC10 *ai_Unk4948c0(int key);                                 /* 0x4948c0 */
+AIREC10 *ai_FindInstrumentRecord(int key);                                 /* 0x4948c0 */
 void ai_Unk4948f0(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
 int ai_Unk494a30(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
 int ai_Unk494ac0(AIGRP *g, int send);                           /* 0x494ac0 */

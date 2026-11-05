@@ -2338,7 +2338,7 @@ static const float ag_Chance[5][6] = {
     {0.1456f, 0.311f, 0.4888f, 0.6442f, 0.8222f, 1.0f},
     {0.1234f, 0.2998f, 0.4666f, 0.622f, 0.8111f, 1.0f}
 };
-const AIREC10 ai_Unk5ecfd8[7] = { { 0, 10, 20.0f, 40.0f }, { 1, 13, 40.0f, 60.0f }, { 2, 16, 60.0f, 80.0f }, { 3, 19, 80.0f, 100.0f }, { 4, 23, 100.0f, 120.0f }, { 5, 27, 120.0f, 140.0f }, { 6, 32, 140.0f, 160.0f } };  /* 0x5ecfd8 */
+const AIREC10 ai_TortureInstruments[7] = { { 0, 10, 20.0f, 40.0f }, { 1, 13, 40.0f, 60.0f }, { 2, 16, 60.0f, 80.0f }, { 3, 19, 80.0f, 100.0f }, { 4, 23, 100.0f, 120.0f }, { 5, 27, 120.0f, 140.0f }, { 6, 32, 140.0f, 160.0f } };  /* 0x5ecfd8 */
 const int ai_CharWalkSteps[16] = { 1, 5, 7, 11, 13, 17, 19, 23, 745, 749, 751, 755, 757, 761, 763, 767 };  /* 0x5ed100, random steps */
 const int ai_RandomStrides[16] = { 1, 3, 5, 7, 11, 13, 17, 19, 237, 239, 243, 245, 249, 251, 253, 255 };  /* 0x5ed140, random steps */
 const int ai_RingStrides[11] = { 1, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };  /* 0x5ed180, the strides of the near ring cursor */
@@ -3058,7 +3058,9 @@ int ai_PlanLevel(AIPLAN *q)
 {
     return (int)min(max(q->score * 0.25f, 2.0f), 6.0f);
 }
-/* 0x494300, rolls the plan's tries: sets unk48 on success, unk4c to the negated sum */
+/* 0x494300, rolls the plan's tries on the record of q->instrument: each try's amount v = base + spread * a random
+   (halved when q->answer is set) adds up; a total reaching q->amount (a quarter of the time reduced by 25%) or a try
+   above 0.33 of it (shrinking 20% a try) succeeds; q->penalty is the negated total */
 
 int ai_PlanRollTries(AIPLAN *q)
 {
@@ -3067,7 +3069,7 @@ int ai_PlanRollTries(AIPLAN *q)
     int i;
 
     q->success = 0;
-    t = ai_Unk4948c0(q->instrument);
+    t = ai_FindInstrumentRecord(q->instrument);
     f = q->amount;
     lim = f * 0.33f;
     i = 0;
@@ -3076,7 +3078,7 @@ int ai_PlanRollTries(AIPLAN *q)
         scale = 0.5f;
         if (q->answer == 0)
             scale = 1.0f;
-        v = cm_RandomFloat() * t->unk0c * scale + t->unk08;
+        v = cm_RandomFloat() * t->spread * scale + t->base;
         sum = acc + v;
         if (sum >= f) {
             acc = v + acc;
@@ -3240,15 +3242,15 @@ int ai_WealthRatingHalf(AIC4 *a, AIC4 *b)
         d = 10000.0;
     return (int)((d / (log10(d) + 1.0) * 0.05f) * 32.0);
 }
-/* 0x4948c0, the record of the table at 0x5ecfd8 with this key */
+/* 0x4948c0, the record of the torture-instrument table ai_TortureInstruments with this key */
 
-AIREC10 *ai_Unk4948c0(int key)
+AIREC10 *ai_FindInstrumentRecord(int key)
 {
     int i;
 
     for (i = 0; i < 7; i++)
-        if (ai_Unk5ecfd8[i].key == key)
-            return &ai_Unk5ecfd8[i];
+        if (ai_TortureInstruments[i].key == key)
+            return &ai_TortureInstruments[i];
     return 0;
 }
 /* 0x4948f0, rolls the three (value, option, option) triples of a character */
