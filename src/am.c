@@ -29,6 +29,7 @@ extern unsigned char txt_Keys;  /* @original ai_DecideBuildBusiness (0x498c70, b
 extern const float ai_FloatOne;  /* 0x5eb780, the shared 1.0f (bio.c) the original loads in ai_DecideLawSeverity */
 
 #define gm_TitleJobI ((int (*)(int, int))gm_TitleJob)  /* 0x5044b0 (f3gm.h: unsigned char), @original: the byte-matched callers (ai_DecideDarkCorner, ai_DecideBuildBusiness) read the result without the unsigned char mask (no `and eax,0xff` after the call) */
+#define AI_REPAIR_KINDS 0x7c43b4  /* the building kinds ai_DecideRepairBuilding repairs (one bit per AIBTYPE.kind) */
 
 #include "hst.h"
 #include "unk_4a7140.h"
@@ -4701,7 +4702,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         bl = AI_BLDX;
         for (i = 0; i < 0x100; i++, bl++) {
             if (bl->type && bl->masterId == p->id && !(bl->flags5a & 0x45)
-                && ((1 << ai_BTypesT[bl->type].kind) & ((unsigned)&ai_Unk770d8c + 0x53628)) && bl->level < d) {
+                && ((1 << ai_BTypesT[bl->type].kind) & AI_REPAIR_KINDS) && bl->level < d) {
                 d = bl->level;
                 best = bl;
             }
@@ -4711,7 +4712,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         lim = gm_CharCurrency(p, ai_OwnPlayer) * 0.95f;
         v = d < 0x32 ? 50 : 30;
         f = ai_RepairCost(best, v);
-        if (f == 0.0f || f > lim)
+        if (f == ai_FloatZero || f > lim)
             return 0;
         o1->kind = 4;
         o1->ref = best->id;
@@ -4731,7 +4732,7 @@ int ai_DecideRepairBuilding(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                 if (bl->flags5a & 5)
                     return 0;
                 f = ai_RepairCost(bl, o1->arg2);
-                if (f == 0.0f || f > o2->arg)
+                if (f == ai_FloatZero || f > o2->arg)
                     return 0;
                 o1->fvalue = f;
                 return 15;
