@@ -7158,68 +7158,84 @@ void he_RunSendHomeEvent(int ev)
 int d3t_PlayAnim();
 float d3_VecAngle2();
 
-/* 0x550070, a Ghidra miss (disassembled): creates the "Sensenmann" (grim reaper) object between the scene records of the objects +0xb0 and +0xb4 (0x4fea50, both need +0x61 with the object +0x1cc / +0x10 of the lamp): the start (+0xe0 / +0xd0 cached when +0xc4 is set) and the vector to the end are built from their positions (0x458a20 + the lamp height +0x1d4 + 0x5eebf8) and the length 0x453b40, the object is created (0x446e10 (0, .., the vectors, "Sensenmann")), cached (+0xc4 = 1, +0xc8 = it, +0xd0 .. +0xe8 the positions, +0xec = 0x6333cc), its flags set (+0x211 &= ~2, +0x212 |= 0xc, +0x213 &= ~4) and 0x411960 called; 1 = created, 0 = failed (ROUGH) */
-int he_Unk550070(int ev)
+/* 0x550070, creates the reaper object ("Sensenmann", in scene 0) of the reaper event: both buildings reaperFrom and
+   reaperTo must have a 3D object with a mesh driver; the first time it stands above reaperFrom's object (its height
+   + 80) turned (y angle) towards the same point above reaperTo's, later at the cached reaperPos / reaperRot; the
+   object's position and angles are cached (reaperPlaced = 1), its flags set and "*sensenmann.baf" played, the clock
+   reaperClock started. 1 = created, 0 = a building or the object missing
+   @deep Read whole against the original and rewritten typed: AIJOB reaper fields
+   (reaperFrom/To/Placed/reaper/Pos/Rot at 0xb0..0xe8, reaperClock over stormDue at 0xec), the D3VECTOR4
+   locals (the 16-byte slots pos 0x14, target 0x24, rot 0x34, dir 0x44), the one found-building slot reused
+   for both lookups with from / to taken after their test chains, rot zeroed before its y angle
+   (d3_VecAngle2(d3_ZAxis, dir)), the member-wise caches, d3t_PlayAnim(obj, name, 1). Instruction count 201
+   = 201, every other line equal. Left (diffclass: the code hunks are moved instructions): the original
+   hoists the push 1 shared by d3t_PlayAnim and the failure tail's d3if_SelectScene above the je at +0x22b
+   (the original's je goes to push ebp at +0x2eb), and pushes the '*sensenmann.baf' string before mov byte
+   ptr [eax+0x211], cl; ours pushes 1 after the and cl, 0xfd and the string after mov eax,[esi+0xc8]:
+   scheduling. The prover stops on the d3t_PlayAnim string literal address only. */
+int he_CreateReaper(int ev)
 {
-    int sc = U_I((unsigned)&d3_CurrentScene);
-    int o1 = 0, o2 = 0, a, b;
-    float p1[3], p2[3], v[3], q[3], len;
-    int obj;
+    AIJOB *e = (AIJOB *)ev;
+    int scene = d3_CurrentScene;
+    AIBLD *bld, *from, *to;
+    D3VECTOR4 pos, target, rot, dir;      /* padded to 16 bytes, as the engine keeps them */
+    D3OBJECT *obj;
 
     d3if_SelectScene(0, 1);
-    gm_FindById(&o1, 0, 0, *(int *)(ev + 0xb0));
-    if (o1 != 0 && *(int *)(o1 + 0x61) != 0 && *(int *)(*(int *)(o1 + 0x61) + 0x1cc) != 0 && *(int *)(*(int *)(*(int *)(o1 + 0x61) + 0x1cc) + 0x10) != 0) {
-        gm_FindById(&o2, 0, 0, *(int *)(ev + 0xb4));
-        if (o2 != 0 && *(int *)(o2 + 0x61) != 0 && *(int *)(*(int *)(o2 + 0x61) + 0x1cc) != 0 && *(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) != 0) {
-            if (*(int *)(ev + 0xc4) == 0) {
-                d3_PointToWorld(*(int *)(o1 + 0x61), *(int *)(o1 + 0x61) + 0x4c, p1);
-                p1[1] = p1[1] + *(float *)(*(int *)(*(int *)(*(int *)(o1 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
-                d3_PointToWorld(*(int *)(o2 + 0x61), *(int *)(o2 + 0x61) + 0x4c, p2);
-                p2[1] = p2[1] + *(float *)(*(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
-                v[0] = p2[0] - p1[0];
-                v[1] = p2[1] - p1[1];
-                v[2] = p2[2] - p1[2];
-                q[0] = 0.0f;
-                len = d3_VecAngle2(v, 0);
-                q[1] = len;
-                q[2] = 0.0f;
+    gm_FindById((int *)&bld, 0, 0, e->reaperFrom);
+    if (bld != 0 && bld->object != 0 && ((D3OBJECT *)bld->object)->info != 0 && ((D3OBJECT *)bld->object)->info->mesh != 0) {
+        from = bld;
+        gm_FindById((int *)&bld, 0, 0, e->reaperTo);
+        if (bld != 0 && bld->object != 0 && ((D3OBJECT *)bld->object)->info != 0 && ((D3OBJECT *)bld->object)->info->mesh != 0) {
+            to = bld;
+            if (e->reaperPlaced == 0) {
+                d3_PointToWorld(((D3OBJECT *)from->object), &((D3OBJECT *)from->object)->pos, (D3VECTOR *)&pos);
+                pos.y = pos.y + ((D3OBJECT *)from->object)->info->mesh->radius + 80.0f;
+                d3_PointToWorld(((D3OBJECT *)to->object), &((D3OBJECT *)to->object)->pos, (D3VECTOR *)&target);
+                target.y = target.y + ((D3OBJECT *)to->object)->info->mesh->radius + 80.0f;
+                rot.x = 0.0f;
+                rot.y = 0.0f;
+                rot.z = 0.0f;
+                dir.x = target.x - pos.x;
+                dir.y = target.y - pos.y;
+                dir.z = target.z - pos.z;
+                rot.y = d3_VecAngle2(&d3_ZAxis, (D3VECTOR *)&dir);
             } else {
-                p2[0] = *(float *)(ev + 0xe0);
-                p2[1] = *(float *)(ev + 0xe4);
-                p2[2] = *(float *)(ev + 0xe8);
-                p1[0] = *(float *)(ev + 0xd0);
-                p1[1] = *(float *)(ev + 0xd4);
-                p1[2] = *(float *)(ev + 0xd8);
-                d3_PointToWorld(*(int *)(o2 + 0x61), *(int *)(o2 + 0x61) + 0x4c, q);
-                q[1] = q[1] + *(float *)(*(int *)(*(int *)(*(int *)(o2 + 0x61) + 0x1cc) + 0x10) + 0x1d4) + 80.0f;
-                v[0] = q[0] - p1[0];
-                v[1] = q[1] - p1[1];
-                v[2] = q[2] - p1[2];
+                rot.x = e->reaperRot.x;
+                rot.y = e->reaperRot.y;
+                rot.z = e->reaperRot.z;
+                pos.x = e->reaperPos.x;
+                pos.y = e->reaperPos.y;
+                pos.z = e->reaperPos.z;
+                d3_PointToWorld(((D3OBJECT *)to->object), &((D3OBJECT *)to->object)->pos, (D3VECTOR *)&target);
+                target.y = target.y + ((D3OBJECT *)to->object)->info->mesh->radius + 80.0f;
+                dir.x = target.x - pos.x;
+                dir.y = target.y - pos.y;
+                dir.z = target.z - pos.z;
             }
-            obj = d3_CreateObject(0, p1, v, "Sensenmann");
-            *(int *)(ev + 0xc8) = obj;
+            obj = d3_CreateObject(0, (D3VECTOR *)&pos, (D3VECTOR *)&rot, "Sensenmann");
+            e->reaper = obj;
             if (obj != 0) {
-                *(int *)(ev + 0xc4) = 1;
-                *(int *)(ev + 0xe0) = *(int *)(obj + 0x84);
-                *(int *)(ev + 0xe4) = *(int *)(obj + 0x88);
-                *(int *)(ev + 0xe8) = *(int *)(obj + 0x8c);
-                *(int *)(ev + 0xd0) = *(int *)(obj + 0x4c);
-                *(int *)(ev + 0xd4) = *(int *)(obj + 0x50);
-                *(int *)(ev + 0xd8) = *(int *)(obj + 0x54);
-                *(unsigned char *)(obj + 0x211) = *(unsigned char *)(obj + 0x211) & 0xfd;
-                *(unsigned char *)(*(int *)(ev + 0xc8) + 0x212) = *(unsigned char *)(*(int *)(ev + 0xc8) + 0x212) | 0xc;
-                *(unsigned char *)(*(int *)(ev + 0xc8) + 0x213) = *(unsigned char *)(*(int *)(ev + 0xc8) + 0x213) & 0xfb;
-                d3t_PlayAnim(*(int *)(ev + 0xc8), "*sensenmann.baf");
-                *(int *)(ev + 0xec) = U_I((unsigned)&d3_Time);
-                d3if_SelectScene(sc, 1);
+                e->reaperPlaced = 1;
+                e->reaperRot.x = obj->rotation.x;
+                e->reaperRot.y = obj->rotation.y;
+                e->reaperRot.z = obj->rotation.z;
+                e->reaperPos.x = obj->pos.x;
+                e->reaperPos.y = obj->pos.y;
+                e->reaperPos.z = obj->pos.z;
+                obj->objectFlags &= ~2;
+                e->reaper->stateFlags |= 0xc;
+                e->reaper->flags &= ~4;
+                d3t_PlayAnim(e->reaper, "*sensenmann.baf", 1);
+                e->reaperClock = d3_Time;
+                d3if_SelectScene(scene, 1);
                 return 1;
             }
         }
     }
-    d3if_SelectScene(sc, 1);
+    d3if_SelectScene(scene, 1);
     return 0;
 }
-
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
 /* 0x541b40, the inn meeting ("Stammtisch", see 0x53f430) hears of a table request (cm_ExTableRequest) or of its
@@ -9050,7 +9066,7 @@ void he_Unk5509f0(int ev)
     else
         txt_Format(text, "EvtSensenmann: next target = %G", esi);
     *(int *)(ev + 0xb4) = *(int *)(esi + 1);
-    if (he_Unk550070(ev) == 0)
+    if (he_CreateReaper(ev) == 0)
         he_FreeEvent((int *)ev);
     gm_AddTime(ev + 0x52, 0, 0xf, 0);
 }
@@ -9071,7 +9087,7 @@ void he_Unk550b60(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0xc8) == 0 && he_Unk550070(ev) == 0) {
+    if (*(int *)(ev + 0xc8) == 0 && he_CreateReaper(ev) == 0) {
         he_FreeEvent((int *)ev);
         if (U_I((unsigned)&full_data_6f2634) != 0)
             cm_EndSpecialTrack();

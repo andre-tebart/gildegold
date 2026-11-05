@@ -2,6 +2,7 @@
    and the offer row (f3gm.c's gm_Offers), the goods list AIRECIPE f3gm.c fills: types only. ai.h includes it. */
 #ifndef AI_TYPES_H
 #define AI_TYPES_H
+#include "d3_types.h"                /* D3VECTOR */
 #pragma pack(push, 2)
 typedef struct AITIME {                 /* 14 bytes: the game clock ai_Time, the AI's last-run time ai_Update.last,
                                            the times of the events and messages (f3gm.c's clock functions) */
@@ -134,6 +135,21 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             };
             char pade8[4];
         };
+        struct {                        /* 0xac, of the reaper event ("Sensenmann"; alloc handler 0x5509f0, run handler 0x550b60:
+                                           its object flies from building to building) */
+            int padreaper;
+            int reaperFrom;             /* 0xb0, the id of the building the reaper starts from */
+            int reaperTo;               /* 0xb4, the id of the building it flies to */
+            int reaperNext;             /* 0xb8, the ai_Blds index the search for the next target starts at */
+            int reaperStep;             /* 0xbc, the step of that search (mod 0x100) */
+            int reaperLeft;             /* 0xc0, the targets left to visit (reasoned: the run handler goes on while it is > 0) */
+            int reaperPlaced;           /* 0xc4, 1 once the object was created: reaperPos / reaperRot hold where */
+            struct D3OBJECT *reaper;    /* 0xc8, the reaper object, 0: none */
+            char padreapercc[4];
+            D3VECTOR reaperPos;         /* 0xd0, the object's position (D3OBJECT.pos) */
+            char padreaperdc[4];
+            D3VECTOR reaperRot;         /* 0xe0, its rotation angles (D3OBJECT.rotation) */
+        };
         int stormBlds[16];              /* 0xac, of a storm event 0x50 the ids of the 16 buildings its alloc handler 0x5652b0
                                            collected, -1: none */
         struct {                        /* 0xac, of the kind 6 sales-tour event (its run handler 0x554320, the
@@ -214,9 +230,11 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                            character's to the relation change */
         };
     };
-    unsigned char stormDue;             /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
+    union {
+        unsigned char stormDue;         /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
                                            damages the buildings once, then clears it */
-    char paded[3];
+        int reaperClock;                /* 0xec, of the reaper event: d3_Time when its object was placed / last moved */
+    };
     unsigned char modes;                /* 0xf0, of a kind 0x11 bit 0x40: the game pauses while its event window is active (he_PickActiveEvent) */
     char flags;                         /* 0xf1, a flags byte (nonzero defers the trade message posting; the bits are unknown) */
     char padf2[0x5a];                   /* up to 0x14c: the rest of the message's words from +0x58 (0xac..0x14c) */
