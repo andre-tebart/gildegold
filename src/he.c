@@ -473,6 +473,15 @@ typedef struct HEHUNT {                 /* the animal hunt event 21's words over
     char padb0[4];
     int room;                           /* 0xb4, the object (room) of each hunter's building (AICHAR.bld) it goes to */
 } HEHUNT;
+typedef struct HESTUDY {                /* the study event 22's words over AIJOB's union (he_AllocStudy / he_Unk558a40;
+                                           reasoned: a stay at a building that raises one skill of the character) */
+    char pad00[0xac];
+    unsigned char skill;                /* 0xac, the skill raised: the character's byte 0x80 + skill, up to 252 */
+    char padad[3];
+    int chr;                            /* 0xb0, the netId of the character (gm_FindChar) */
+    int room;                           /* 0xb4, the objId of its room in the building (an object of type 1), -1: none */
+    AITIME until;                       /* 0xb8, the latest end: 6 units after the first due clock */
+} HESTUDY;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12854,34 +12863,45 @@ void he_RunAnimalHunt(int ev)
         return;
     }
 }
-/* 0x5588c0, the allocation handler of the sabotage event (ROUGH): the saboteur +0xb0 (0x505df0; gone or with a job of the kind 0x16 at +0x17c: free) and the building +0x10 are looked up (+0xb4 optionally the target figure 0x4ffe90 (.., 2, 6, 1, id)); the start / due clocks are now, the saboteur is stored for the group (0x524260 (building, target, id, ev)), +0x60 = now, posted 0x1e later, +0xb8 = the due clock + 6 units, and the word +0xbc is set to 0x1d + (+0xbc - the minute word) when it is below 6 */
-void he_Unk5588c0(int ev)
+/* 0x5588c0, the allocation handler of the study event 22 (HESTUDY): without the character (or while it is on a job
+   of kind 0x16) or the event's building (AIJOB.from) the event is freed; else the start and due clocks are now, the
+   character joins the event's group at the building in its room (the object of type 1 with the objId HESTUDY.room,
+   if given; sv_MoveToGroup), the clock60 is now, the event is due in 30 minutes and ends at the latest 6 units
+   after that; a latest end past midnight (its hour below 6) gets the hour - the due hour + 29 */
+void he_AllocStudy(int ev)
 {
-    int p, b, tgt = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HESTUDY *s = (HESTUDY *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    AIOBJ *room = 0;
 
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0 || (*(int *)(p + 0x17c) != 0 && *(unsigned char *)*(int *)(p + 0x17c) == 0x16)) {
+    c = (AICHAR *)gm_FindChar(s->chr);
+    if (c == 0 || (c->job != 0 && c->job->kind == 0x16)) {
         he_FreeEvent((int *)ev);
         return;
     }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
     if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(int *)(ev + 0xb4) != -1)
-        tgt = gm_Query(*(int *)(b + 0x5d), 2, 6, 1, *(int *)(ev + 0xb4));
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    sv_MoveToGroup(b, tgt, *(unsigned short *)p, ev);
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    *(AITIME *)(ev + 0xb8) = *(AITIME *)(ev + 0x52);
-    gm_AddTime(ev + 0xb8, 6, 0, 0);
-    if (*(unsigned short *)(ev + 0xbc) < 6)
-        *(unsigned short *)(ev + 0xbc) = (unsigned short)(*(unsigned short *)(ev + 0xbc) - *(unsigned short *)(ev + 0x56) + 0x1d);
+    if (s->room != -1)
+        room = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 1, s->room);
+    e->end = ai_Time;
+    e->start = ai_Time;
+    if (room != 0)
+        sv_MoveToGroup((unsigned char *)b, (short *)room, c->id, (char *)ev);
+    else
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+    e->clock60 = ai_Time;
+    gm_AddTime(&e->end, 0, 0x1e, 0);
+    s->until = e->end;
+    gm_AddTime(&s->until, 6, 0, 0);
+    if (s->until.hour < 6)
+        s->until.hour = s->until.hour - e->end.hour + 0x1d;
 }
-/* 0x558a40, the run handler of the sabotage event (ROUGH skeleton): waits for the due time, rolls the success from the saboteur's skill (0x509400 x2, 0x5092e0 and the _ftol rolls) against the building, then marks the building / person (0x4c3ba0 / 0x4c3d00 / 0x4c49a0) and tells the owner (0x501ce0, the news "_NACHRICHTEN_HS_81" 0x53dee0); the group is released (0x524260) and the record freed */
+/* 0x558a40, the run handler of the study event 22 (ROUGH skeleton): waits for the due time, rolls the success from the saboteur's skill (0x509400 x2, 0x5092e0 and the _ftol rolls) against the building, then marks the building / person (0x4c3ba0 / 0x4c3d00 / 0x4c49a0) and tells the owner (0x501ce0, the news "_NACHRICHTEN_HS_81" 0x53dee0); the group is released (0x524260) and the record freed */
 
 void he_Unk558a40(int ev)
 {
@@ -15662,7 +15682,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_RunAnimalHunt) != 0)
         return 1;
     sv_RegisterActivity(21, "Getier", 1, 1280, 174);
-    if (he_SetEventHandlers(22, (void *)he_Unk5588c0, (void *)he_Unk558a40) != 0)
+    if (he_SetEventHandlers(22, (void *)he_AllocStudy, (void *)he_Unk558a40) != 0)
         return 1;
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
     if (he_SetEventHandlers(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
