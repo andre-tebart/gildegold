@@ -2916,9 +2916,12 @@ release:
     cm_SendFieldDeltas();
     return 1;
 }
-/* 0x493ea0, picks a character for p (its watchers, listed at 0x68) */
+/* 0x493ea0, the successor of p for the kill-player event (he_Unk565db0): an alive adult (above 11) child of
+   p's children (relatives[3..7]) picked at random, else p's spouse for a kind other than 5 (a living, adult
+   kind 1..9 without the flag 0x40000); 0 when none, and for a kind 5 p with children but no candidate the
+   spouse's and the children's links to p are cleared in the field messages */
 
-AGCH *ai_Unk493ea0(AGCH *p)
+AGCH *ai_FindSuccessor(AGCH *p)
 {
     AGCH *list[5];
     AGCH *q, *s, *found;
@@ -2928,12 +2931,12 @@ AGCH *ai_Unk493ea0(AGCH *p)
     found = 0;
     m = 0;
     n = 0;
-    lp = p->list;
+    lp = p->children;
     for (i = 0; i < 5; i++, lp++) {
         q = AG_CH(*lp);
         if (q != 0) {
             n++;
-            if (q->unk008 > 0 && q->age > 11)
+            if (q->health > 0 && q->age > 11)
                 list[m++] = q;
         }
     }
@@ -2953,11 +2956,11 @@ AGCH *ai_Unk493ea0(AGCH *p)
                 cm_SendFieldDeltas();
             }
             for (i = 0; i < 5; i++) {
-                s = AG_CH(p->list[i]);
+                s = AG_CH(p->children[i]);
                 if (s != 0) {
-                    if (s->unk060 == p->netId)
+                    if (s->parent1 == p->netId)
                         k = 1;
-                    else if (s->unk064 != p->netId)
+                    else if (s->parent2 != p->netId)
                         continue;
                     else
                         k = 2;
@@ -2969,7 +2972,7 @@ AGCH *ai_Unk493ea0(AGCH *p)
         }
     } else {
         q = AG_CH(p->spouse);
-        if (q != 0 && q->unk008 > 0 && q->kind > 1 && q->kind < 10 && (q->flags1c8 & 0x40000) == 0)
+        if (q != 0 && q->health > 0 && q->kind > 1 && q->kind < 10 && (q->flags1c8 & 0x40000) == 0)
             return q;
         if (found != 0 && found->kind > 1 && found->kind < 10)
             return found;

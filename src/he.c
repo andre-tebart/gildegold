@@ -12760,7 +12760,7 @@ void he_Unk565db0(int ev)
         *(int *)(ev + 0x70) = 6;
         return;
     case 4:
-        h = ai_Unk493ea0(p);
+        h = ai_FindSuccessor(p);
         if (h == 0) {
             *(int *)(ev + 0x70) = 5;
             return;

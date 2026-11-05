@@ -351,7 +351,7 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     unsigned char kind;                 /* 0x002 */
     char pad003;
     unsigned int netId;                /* 0x004, the id */
-    unsigned char unk008;               /* 0x008 */
+    unsigned char health;               /* 0x008, > 0 alive (AICHAR.health); ai_FindSuccessor keeps the living */
     unsigned char sex;                  /* 0x009, 0 male / 1 female (0x492fd0 picks the first-name list by it) */
     unsigned short age;                 /* 0x00a, the age in years (children above 11, below 40; 0x4fc7a0 projects the age at death from it) */
     char pad00c[0x24];
@@ -359,9 +359,9 @@ typedef struct AGCH {                   /* a character, 0x21c bytes */
     unsigned short w050;                /* 0x050, the grave slot word (AICHAR.w050, gv_BuryCharacter compares it); 0x7fff = no grave */
     char pad052[0xa];
     int spouse;                         /* 0x05c, the netId of relatives[0], the spouse (ai_char.h AICHAR.relatives) */
-    int unk060;                         /* 0x060 */
-    int unk064;                         /* 0x064 */
-    int list[5];                        /* 0x068 */
+    int parent1;                        /* 0x060, relatives[1], a parent's netId (gm_PopulationStep; ai_FindSuccessor compares it with p's netId) */
+    int parent2;                        /* 0x064, relatives[2], the other parent's netId */
+    int children[5];                    /* 0x068, relatives[3..7], the children's netIds */
     char pad07c[4];
     unsigned char stat[8];              /* 0x080 */
     char pad088[0xa8];
@@ -429,7 +429,7 @@ int ai_DuelAct(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
 int ai_DuelOpponentAction(AGDUEL *d, AGCH *c);                           /* 0x493890 */
 void ai_DuelNextPhase(AGDUEL *d);                                   /* 0x493a40 */
 int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
-AGCH *ai_Unk493ea0(AGCH *p);                                    /* 0x493ea0 */
+AGCH *ai_FindSuccessor(AGCH *p);                                    /* 0x493ea0 */
 
 int gm_CharCurrency(char *c, char p);                     /* 0x509ee0 */
 int gm_GetWorth(unsigned short id);                            /* 0x50a640 */
