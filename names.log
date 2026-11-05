@@ -2514,3 +2514,4 @@
 2026-11-05T20:52:59 0x0055ce60 func he_Unk55ce60 -> he_RunMasterExamPassed by:main why:the run handler of the event 0x26 (he_SetEventHandlers(38, ..)): the event box Berufe\\Meisterpruefung_BESTANDEN (the master exam passed), cm_SendSetJob to the next job
 2026-11-05T20:55:04 0x0055d390 func he_Unk55d390 -> he_RunEvent27 by:main why:the run handler registered with he_AllocEvent27 for the event type 0x27 (he_SetEventHandlers(39, ..))
 2026-11-05T21:03:17 0x0055dbe0 func he_Unk55dbe0 -> he_RunDismissal by:main why:run handler of the event 0x31 (he_SetEventHandlers(49, ..)): the worker loses its building and is sent home with the walk tag Entlassen (dismissed)
+2026-11-05T21:06:02 0x0055de30 func he_Unk55de30 -> he_RunPromotion by:main why:run handler of the promotion event 0x32 (he_AllocEvent32; gm_DropRank, the cutscene Effekte/befoerdern.esc)

@@ -15699,22 +15699,114 @@ void he_AllocEvent32(int ev)
     if ((j->opts & 2) != 0)
         cm_SendSetField(p->netId, 0x1cc, 4, HE_PROMOTION_BIT, 0);
 }
-/* 0x55de30, the run handler of the promotion event ("Effekte/befoerdern.esc" cutscene; ROUGH skeleton, 928 bytes): the figure +0xac and its building (gm_FindBuildingById) are looked up, the old rank is dropped (gm_DropRank), the effect script is loaded and run in the scene (evt_Load, evt_RunScriptArgs, d3if_SelectScene, ch_Delete of the old hand object, ch_SetHandObject), the job handle is cleaned (0x4c3ae0, 0x4c4c60, 0x4c4a60) and the record freed */
-
-void he_Unk55de30(int ev)
+/* 0x55de30, the run handler of the promotion event 0x32 (its alloc handler he_AllocEvent32), by its stage (the jump
+   table 0x55e168 after the code); it waits for the event's send slot, needs the character AIJOB.ownerCh (missing: freed)
+   and, while the character's model stands in a building, that it is the event's building AIJOB.from. Stage 0: with the
+   option 2 the old rank is dropped (gm_DropRank, its slot to dropSlot). Stage 1 (not with the option 4): once the drop
+   is sent the event is posted (cm_SendExSetHE 2). Stage 2 stops the script the scene character runs. Stage 3, once it
+   runs none: the scene character is made anew in its scene at its place and angles (gm_CreateCharModel, keeping its
+   groups and the object in its right hand) and plays "Effekte/befoerdern.esc" there. Stages 2 / 3 without a scene
+   character and 3 / -2 / -1 end the event: with the option 2 HE_PROMOTION_BIT is cleared again, the record is freed */
+void he_RunPromotion(int ev)
 {
-    int p;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    struct CHARACTER *ch;
+    EVTSCRIPT *sc;
+    char *s, *d;
+    int group, scriptGroup;
+    float pos[4];
+    float rot[4];
 
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p == 0) {
+    c = (AICHAR *)gm_FindChar(e->ownerCh);
+    if (c == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    cm_SendExSetHE(-1, ev);
-    cm_SendSetField(*(int *)(p + 4), 0x1cc, 4, 0, ((unsigned)&txt_Keys + 0x181c0));
-    he_FreeEvent((int *)ev);
+    if (c->model != 0 && (b = (AIBLD *)gm_FindBuildingById(e->from)) != 0 && c->model->bldId != b->id)
+        return;
+    switch (e->stage) {
+    case 0:
+        if ((e->opts & 2) != 0)
+            e->dropSlot = gm_DropRank(c);
+        e->stage++;
+        return;
+    case 1:
+        if ((e->opts & 4) != 0)
+            return;
+        if (e->dropSlot != -1 && cm_GetSlotState(e->dropSlot) == 0)
+            return;
+        e->dropSlot = -1;
+        e->exSlot = cm_SendExSetHE(2, ev);
+        return;
+    case 2:
+        if (c->scene == 0) {
+            if ((e->opts & 2) != 0)
+                cm_SendSetField(c->netId, 0x1cc, 4, 0, HE_PROMOTION_BIT);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (c->scene->scriptId != -1)
+            evt_Stop(evt_FindById(c->scene->scriptId));
+        e->stage++;
+        return;
+    case 3:
+        if (c->scene->scriptId != -1)
+            return;
+        if (c->scene != 0) {
+            int saved = d3_CurrentScene;
+            int scene = d3t_SceneIndex(c->scene->scene);
+            char hand[0x80] = "";
+
+            d3if_SelectScene(scene, 1);
+            ch = c->scene;
+            pos[0] = ch->obj->pos.x;
+            pos[1] = ch->obj->pos.y;
+            pos[2] = ch->obj->pos.z;
+            rot[0] = ch->obj->rotation.x;
+            rot[1] = ch->obj->rotation.y;
+            rot[2] = ch->obj->rotation.z;
+            group = ch->group;
+            scriptGroup = ch->scriptGroup;
+            s = ch->handObject;
+            d = hand;
+            while ((*d++ = *s++) != 0)
+                ;
+            ch_Delete(ch);
+            c->scene = 0;
+            c->ownName[0] = 0;
+            c->scene = (struct CHARACTER *)gm_CreateCharModel(c, scene, pos, rot, 0, 0);
+            if (c->scene != 0) {
+                c->scene->group = group;
+                c->scene->scriptGroup = scriptGroup;
+                if (hand[0] != 0)
+                    ch_SetHandObject(c->scene, 2, hand);
+                sc = evt_Load("Effekte/befoerdern.esc");
+                if (sc != 0) {
+                    evt_RunScriptArgs(sc, 5, (int)pos[0], (int)pos[1], (int)pos[2], 0x28, 0xb4);
+                    if (scriptGroup != -1)
+                        sc->group = scriptGroup;
+                    else
+                        sc->group = group;
+                    sc->ownScene = 1;
+                }
+            }
+            d3if_SelectScene(saved, 1);
+        }
+        if ((e->opts & 2) != 0)
+            cm_SendSetField(c->netId, 0x1cc, 4, 0, HE_PROMOTION_BIT);
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
+        if ((e->opts & 2) != 0)
+            cm_SendSetField(c->netId, 0x1cc, 4, 0, HE_PROMOTION_BIT);
+        he_FreeEvent((int *)ev);
+        return;
+    }
 }
 /* 0x55e180, a Ghidra miss: the allocation handler of the event 0x33: the player 0x505df0 (+0xac) must exist and his kind byte (+2) must not be 0x14 (else free), the run clock is the start clock */
 
@@ -17603,7 +17695,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(40, 0, 1, 1279, 188);
     if (he_SetEventHandlers(49, (void *)he_Unk563980, (void *)he_RunDismissal) != 0)
         return 1;
-    if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_Unk55de30) != 0)
+    if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_RunPromotion) != 0)
         return 1;
     if (he_SetEventHandlers(51, (void *)he_Unk55e180, (void *)he_Unk55e1d0) != 0)
         return 1;
