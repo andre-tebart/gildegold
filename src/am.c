@@ -1700,9 +1700,9 @@ int ai_DecideIncomeTaxRate(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491860, decision 10 */
+/* 0x491860, the callback of law record 10 (AIDEC.fn, office 0x0f the mayor no 2, a rate 6 .. 0x12, the wage tax of the title groups with a town object: gm_CharacterIncomes picks gm_IncomeKind2, record 10, over record 9 for them): from the 10th year and while a guild building (kind 0x17 .. 0x1a) exists, the rate is 22 / 44 / 66% of the range above the minimum by the building capacity ratio, one lower for the title groups 1 / 2 / 3 / 5 and a random 1 .. 3 higher when the seat's goods are below the office pay x 3; the rate moves by a random 1 .. 2 when the current value is more than 3 away */
 
-int ai_Unk491860(AIPER *p, int a, int *out)
+int ai_DecideGuildTaxRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     AIBLD *b;
@@ -1735,7 +1735,7 @@ int ai_Unk491860(AIPER *p, int a, int *out)
                 n--;
             b = gm_FirstBuilding(1);
             o = gm_Query(b->objList, 2, 6, 0, 0x115);
-            m = gm_SumListAmounts(o->unk14, ai_OwnPlayer);
+            m = gm_SumListAmounts(o->list, ai_OwnPlayer);
             if (m < amt_GetOwnedOfficePay() * 3)
                 n += util_RandomU(3) + 1;
             if (d.cur - 3 > n) {

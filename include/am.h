@@ -117,7 +117,7 @@ int ai_DecideUpkeepRate(AIPER *p, int a, int *out);                    /* 0x4915
 int ai_DecideBuildingCost(AIPER *p, int a, int *out);                    /* 0x4915f0, decision 6 */
 int ai_DecideLaw7(AIPER *p, int a, int *out);                    /* 0x491650, decision 7 */
 int ai_DecideIncomeTaxRate(AIPER *p, int a, int *out);                    /* 0x4916d0, decision 9 */
-int ai_Unk491860(AIPER *p, int a, int *out);                    /* 0x491860, decision 10 */
+int ai_DecideGuildTaxRate(AIPER *p, int a, int *out);                    /* 0x491860, decision 10 */
 int ai_Unk491a40(AIPER *p, int a, int *out);                    /* 0x491a40, decision 11 */
 int ai_Unk491b20(AIPER *p, int a, int *out);                    /* 0x491b20, decision 12 */
 int ai_Unk491bf0(AIPER *p, int a, int *out);                    /* 0x491bf0, decision 13 */
