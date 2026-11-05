@@ -180,6 +180,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             int festGuests[4];          /* 0xac, the guests' character ids */
             unsigned char festEssen;    /* 0xbc, the menu pick (AIGRP.essen) */
             unsigned char festMusik;    /* 0xbd, the musician pick (AIGRP.musik) */
+            char padfestbe[2];
+            int inviteGuests;           /* 0xc0, 1: the alloc handler 0x5436a0 sends the guests the invitation
+                                           message 0x36 (reasoned: its only read) */
         };
         struct {                        /* 0xac, of the master exam at a feast, kind 0x36 (its run handler 0x543ac0) */
             char examText[0x10];        /* 0xac, a text the news 0x1770 / 0x1771 print (reasoned: io_PrintText gets its
@@ -358,6 +361,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
     char pad37;
     int ids[8];                         /* 0x38 */
     union {                             /* 0x58..0xf7: the kinds' words */
+        AITIME inviteWhen;              /* 0x58, of the feast invitation 0x36 (he.c 0x5436a0): the time the feast
+                                           starts, the event's end clock */
         struct {
             union {
                 int arg[11];                    /* 0x58 */

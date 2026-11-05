@@ -8058,38 +8058,42 @@ void he_RunMasterExam(int ev)
         return;
     }
 }
-/* 0x5436a0, a Ghidra miss (disassembled): starts the group event: state 0, clock +0x52 in 0x18 units (state word 0x14); with +0xc0 == 1 every member figure (+0xac .. +0xb8) gets the message 0x36 carrying the event clock and id (flag 9 for the players, else 1), then posts the event (ROUGH) */
+/* 0x5436a0, the alloc handler of the feast event 0x37 (its run handler he_RunFeast): stage 0, end clock in 0x18
+   units, hour 0x14; with inviteGuests set every guest gets the invitation message 0x36 carrying the feast time and
+   event id (flag 9 for the players, else 1), then the event is posted */
 
-void he_Unk5436a0(int ev)
+void he_AllocFeast(int ev)
 {
-    char msg[0xf8];
+    AIMSG msg;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *c;
     int *pp;
-    int k, m;
+    int k;
     unsigned char fl;
 
-    fl = *(unsigned char *)(ev + 0x78);
-    *(int *)(ev + 0x70) = 0;
+    fl = e->opts;
+    e->stage = 0;
     if ((fl & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 0x14;
-        *(int *)(ev + 0x58) = 0;
-        if (*(int *)(ev + 0xc0) == 1) {
-            pp = (int *)(ev + 0xac);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 0x14;
+        e->end.min = 0;
+        if (e->inviteGuests == 1) {
+            pp = e->festGuests;
             for (k = 4; k != 0; k--, pp++) {
-                m = gm_FindChar(*pp);
-                if (m != 0) {
-                    HM_B(msg, 4) = 0x36;
-                    HM_I(msg, 8) = *(int *)(m + 4);
-                    HM_I(msg, 0xc) = -1;
-                    HM_I(msg, 0x68) = 1;
-                    *(AITIME *)(msg + 0x58) = *(AITIME *)(ev + 0x52);
-                    HM_I(msg, 0x6c) = *(int *)(ev + 4);
-                    if (*(char *)(m + 2) == 6 || *(char *)(m + 2) == 7)
-                        HM_B(msg, 0x36) = 9;
+                c = (AICHAR *)gm_FindChar(*pp);
+                if (c != 0) {
+                    msg.type = 0x36;
+                    msg.to = c->netId;
+                    msg.fromId = -1;
+                    msg.arg[4] = 1;
+                    msg.inviteWhen = e->end;
+                    msg.arg[5] = e->id;
+                    if (c->kind == 6 || c->kind == 7)
+                        msg.flags = 9;
                     else
-                        HM_B(msg, 0x36) = 1;
-                    cm_SendLongMessage(msg);
+                        msg.flags = 1;
+                    cm_SendLongMessage((char *)&msg);
                 }
             }
         }
@@ -10639,7 +10643,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x37, (void *)he_Unk5436a0, (void *)he_RunFeast) != 0)
+    if (he_SetEventHandlers(0x37, (void *)he_AllocFeast, (void *)he_RunFeast) != 0)
         return 1;
     if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_RunFeastExam) != 0)
         return 1;

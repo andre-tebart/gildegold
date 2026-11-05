@@ -141,7 +141,7 @@ void he_RunQuarrel(int ev);
 
 void he_RunMasterExam(int ev);
 
-void he_Unk5436a0(int ev);
+void he_AllocFeast(int ev);
 
 void he_AllocOffer(int ev);
 
