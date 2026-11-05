@@ -81,7 +81,7 @@ int ai_EvalStack[73] = {0};  /* 0xf86900, the action ids on the evaluation stack
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_ExecHandleGrave passes its AGCH record and s1 as they are */
 #define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_EvalFest / ai_RelationGain) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
-#define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
+#define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_PickLikedColumn passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
 #define AI_CHAIN_USEREPUTATION 0xf00500  /* the partner-chain flags of action 0x1c "UseObject (Ansehen)" (ai_DecideUseReputationObject), as AI_CHAIN_BEATUP; the bits are not named yet */
 #define AI_CHAIN_MEAN 0xf00500  /* the partner-chain flags of action 0x21 "UseObject (Gemeinheit)" (ai_DecideUseMeanObject; | 0x800 for the good 0x29a, | 0x10000 for 0x177), as AI_CHAIN_BEATUP */
@@ -8969,10 +8969,10 @@ int ai_PickDislikedColumn(G5CH *p)
    over 33), tried in an order that depends on the character's home (0x168 / 0x166 / 0x167, 0x4e6f80) and is
    shuffled within 1..3 and 4..6; 0 when none */
 
-int ai_Unk4a05e0(G5CH *p)
+int ai_PickLikedColumn(G5CH *p)
 {
     int order[6];
-    unsigned char info[0x18];
+    AMTKIND kind;
     G8SEAT seat[6];
     AICHAR *c1, *c2;
     unsigned int k;
@@ -8981,16 +8981,16 @@ int ai_Unk4a05e0(G5CH *p)
 
     for (i = 0; i < 6; i++)
         order[i] = i + 1;
-    if (((unsigned char *)p)[0x168] != 0)
-        k = ((unsigned char *)p)[0x168];
-    else if (((unsigned char *)p)[0x166] != 0)
-        k = ((unsigned char *)p)[0x166];
-    else if (((unsigned char *)p)[0x167] != 0)
-        k = ((unsigned char *)p)[0x167];
+    if (p->appliedOffice != 0)
+        k = p->appliedOffice;
+    else if (p->officeKind != 0)
+        k = p->officeKind;
+    else if (p->prevOffice != 0)
+        k = p->prevOffice;
     if (k != 0) {
-        if (amt_GetKindB((unsigned char)k, info) == 0)
+        if (amt_GetKindB((unsigned char)k, &kind) == 0)
             return 0;
-        t = (info[8] - 1) / 3;
+        t = (kind.level - 1) / 3;
         if (t == 1) {
             for (i = 0; i < 6; i++)
                 order[i] = (i + 4) % 6 + 1;
@@ -9026,8 +9026,8 @@ int ai_Unk4a05e0(G5CH *p)
                     c2 = gm_FindChar(seat[j].id);
                     if (c2 == 0)
                         continue;
-                    sum = gm_Liking(*(unsigned short *)c2, *(unsigned short *)c1, 1)
-                        + (gm_Liking(*(unsigned short *)c1, *(unsigned short *)c2, 1) + sum);
+                    sum = gm_Liking(c2->id, c1->id, 1)
+                        + (gm_Liking(c1->id, c2->id, 1) + sum);
                     cnt += 2;
                 }
             }
@@ -9065,7 +9065,7 @@ int ai_DecideGuildLevel3(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
     if (k == 0x20)
         n = ai_PickDislikedColumn(p);
     else if (k == 0x1f || k == 0x21)
-        n = ai_Unk4a05e0(p);
+        n = ai_PickLikedColumn(p);
     else
         return 0;
     if (n == 0)

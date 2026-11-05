@@ -935,7 +935,7 @@ int amt_CanUseMayorPower2(char *c);                                             
 int ai_DecideGuildRiot(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a0090 */
 int amt_ExecuteShareMessage(short *c, int *m);                                           /* 0x4e9a00 */
 int ai_ExecuteGuildRiot(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a01f0 */
-int ai_Unk4a05e0(G5CH *p);                                                      /* 0x4a05e0 */
+int ai_PickLikedColumn(G5CH *p);                                                      /* 0x4a05e0 */
 int amt_CanUseMayorPower3(char *c);                                                      /* 0x4e95a0 */
 int ai_DecideGuildLevel3(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a0890 */
 int amt_ExecuteMayorPowerMessage(char *c, int *m);                                           /* 0x4e9ce0 */
