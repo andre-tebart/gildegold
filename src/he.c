@@ -464,6 +464,15 @@ typedef struct HEHERBS {                /* the herb gathering event 20's words o
                                            (cm_SendChrGotoBuilding's objId, the news' quick jump) */
     int field;                          /* 0xb4, the id of the nearest building of type 0xb they gather at */
 } HEHERBS;
+typedef struct HEHUNT {                 /* the animal hunt event 21's words over AIJOB's union (he_Unk5584d0 /
+                                           he_RunAnimalHunt); the hunters' netIds are AIJOB.ids[] */
+    char pad00[0xac];
+    unsigned char n;                    /* 0xac, the hunters in AIJOB.ids[] */
+    char padad;
+    unsigned short good;                /* 0xae, the good caught (cm_SendExSellObject; its name is the text 0x9a8 + 2 * good) */
+    char padb0[4];
+    int room;                           /* 0xb4, the object (room) of each hunter's building (AICHAR.bld) it goes to */
+} HEHUNT;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12771,58 +12780,80 @@ void he_Unk5584d0(int ev)
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     gm_AddTime(ev + 0x52, 0, 1, 0);
 }
-/* 0x558550, the run handler of the animal hunt ("Getier", the second string 0x6274c0; ROUGH skeleton, 4 states by the jump table 0x5588a8): state 0 sends the hunters (0x505df0, 0x4c5230, 0x4c52e0 (.., "Getier" 0x6274c0)) and waits a random time (0x42ec00), state 1 waits for the due time (0x4fe210), looks for the building (0x501190, 0x4ffe90, the contact 0x501b50 / 0x50a810 owner) and pays out the catch (0x5092e0 and a random roll, 0x4c4880 (.., -1), the news 0x1805 / 0x1809 / 0x180a for the owner and the players of kind 6 / 7 (0x53dee0)); the end frees the persons (0x524260) and the record */
-
-void he_Unk558550(int ev)
+/* 0x558550, the run handler of the animal hunt event 21 (HEHUNT; allocated by he_Unk5584d0, which gathers the
+   group). Stage 0: every hunter with a building (AICHAR.bld) is sent to its room there ("Getier"); the catch is due
+   in 2 units + random 30. Stage 1, once due: with the event's building (AIJOB.from; gone: cancelled) its object
+   0xdd (else its main object) is the quick jump and its store object 0x2a (none: cancelled) gets the catch,
+   (5 + random 5) times 1 + the building's skill 0xb / 100, sold to the own player (cm_SendExSellObject); the news
+   0x1809 + 0x180a (0x1805, the building) goes to the event's character of kind 6 / 7 unless its master has flags1b4
+   bit 0. The original passes the quick jump backwards: -1 with the object, the object's objId without one (it
+   reads address 2). Then the stage is -1. Stages -2 / -1 release the hunters from the group and free the event */
+void he_RunAnimalHunt(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int i, p, b, q;
-    char text[0x200];
+    AIJOB *e = (AIJOB *)ev;
+    HEHUNT *h = (HEHUNT *)ev;
+    AIBLD *b;
+    AIOBJ *q, *o;
+    AICHAR *c, *m;
+    double rate;
+    int i, amount;
+    char text[0x100], line[0x100];
 
-    if (st < -2 || st > 1) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (st) {
-    case -2:
-    case -1:
-        for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0)
-                sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-        }
-        he_FreeEvent((int *)ev);
-        return;
+    switch (e->stage) {
     case 0:
-        for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-            p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
-            if (p != 0) {
-                cm_SendChrStop(*(int *)(p + 4));
-                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(ev + 0x10), -1, 0, 0, "Getier");
+        for (i = 0; i < h->n; i++) {
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0 && c->bld != 0) {
+                cm_SendChrStop(e->ids[i]);
+                cm_SendChrGotoBuilding(e->ids[i], c->bld->id, h->room, 0, 0, "Getier");
             }
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(10), 0);
-        *(int *)(ev + 0x70) = 1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 2, (unsigned short)util_Random(0x1e), 0);
+        e->stage++;
         return;
     case 1:
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-        if (b != 0) {
-            q = gm_BuildingMainObject(b);
-            txt_Format(text, 0x1805, b);
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), q != 0 ? *(int *)(q + 2) : -1, 0, 0);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0) {
+            e->stage = -1;
+            return;
+        }
+        q = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0xdd);
+        if (q == 0)
+            q = (AIOBJ *)gm_BuildingMainObject((unsigned char *)b);
+        o = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x2a);
+        if (o != 0) {
+            m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+            rate = gm_BuildingSkill((unsigned char *)b, 0xb, 1) * 0.01 + 1.0;
+            amount = (int)(((unsigned short)util_Random(5) + 5) * rate);
+            cm_SendExSellObject(o->objId, -1, h->good, amount, ai_OwnPlayer, 0);
+            txt_Format(text, 0x1809, 0x1805, b);
+            txt_Format(line, 0x180a, amount, h->good * 2 + 0x9a8);
+            strcat(text, line);
+            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (m == 0 || (m->flags1b4 & 1) == 0)) {
+                if (q != 0) {
+                    he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+                    e->stage = -1;
+                    return;
+                }
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, b->id, q->objId, 0, 0);
+            }
+        }
+        e->stage = -1;
+        return;
+    case -2:
+    case -1:
+        for (i = 0; i < h->n; i++) {
+            c = (AICHAR *)gm_FindChar(e->ids[i]);
+            if (c != 0)
+                sv_MoveToGroup((unsigned char *)c->bld, 0, c->id, 0);
         }
         he_FreeEvent((int *)ev);
         return;
     }
 }
-
-void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
-int gm_WorkMinutesBetween();
-void *gm_GetGebaeudeHauptraum(unsigned char *b);
-
 /* 0x5588c0, the allocation handler of the sabotage event (ROUGH): the saboteur +0xb0 (0x505df0; gone or with a job of the kind 0x16 at +0x17c: free) and the building +0x10 are looked up (+0xb4 optionally the target figure 0x4ffe90 (.., 2, 6, 1, id)); the start / due clocks are now, the saboteur is stored for the group (0x524260 (building, target, id, ev)), +0x60 = now, posted 0x1e later, +0xb8 = the due clock + 6 units, and the word +0xbc is set to 0x1d + (+0xbc - the minute word) when it is below 6 */
 void he_Unk5588c0(int ev)
 {
@@ -15628,7 +15659,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_RunHerbGathering) != 0)
         return 1;
     sv_RegisterActivity(20, 0, 1, 1280, 174);
-    if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_Unk558550) != 0)
+    if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_RunAnimalHunt) != 0)
         return 1;
     sv_RegisterActivity(21, "Getier", 1, 1280, 174);
     if (he_SetEventHandlers(22, (void *)he_Unk5588c0, (void *)he_Unk558a40) != 0)
