@@ -1600,15 +1600,15 @@ exe	0x00495a50	ai_ChooseSubAction	am	shape	readable
 exe	0x00495ce0	ai_ExecuteAction	am	shape	readable	deep	
 exe	0x00495ee0	ai_RollCharFlags	am	byte	readable		
 exe	0x00495fa0	ai_DecideDummyRighteousness	am	byte	readable		
-exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	byte	draft		
-exe	0x00495fd0	ai_DecideDummySafety	am	byte	draft		
-exe	0x00495ff0	ai_ExecuteDummySafety	am	byte	draft		
-exe	0x00496000	ai_DecideDummyProcreation	am	byte	draft		
-exe	0x00496020	ai_ExecuteDummyProcreation	am	byte	draft		
-exe	0x00496030	ai_DecideDummyHealth	am	byte	draft		
-exe	0x00496050	ai_DecideDummyJob	am	byte	draft		
-exe	0x00496070	ai_ExecuteDummyJob	am	byte	draft		
-exe	0x00496080	ai_DecideDummyPleasure	am	byte	draft		
+exe	0x00495fc0	ai_ExecuteDummyRighteousness	am	byte	readable		
+exe	0x00495fd0	ai_DecideDummySafety	am	byte	readable		
+exe	0x00495ff0	ai_ExecuteDummySafety	am	byte	readable		
+exe	0x00496000	ai_DecideDummyProcreation	am	byte	readable		
+exe	0x00496020	ai_ExecuteDummyProcreation	am	byte	readable		
+exe	0x00496030	ai_DecideDummyHealth	am	byte	readable		
+exe	0x00496050	ai_DecideDummyJob	am	byte	readable		
+exe	0x00496070	ai_ExecuteDummyJob	am	byte	readable		
+exe	0x00496080	ai_DecideDummyPleasure	am	byte	readable		
 exe	0x004960a0	ai_ExecuteDummyPleasure	am	byte	draft		
 exe	0x004960b0	ai_DecideTrainSkill	am	draft	readable	deep	
 exe	0x004965b0	ai_ExecuteTrainSkill	am	byte	draft		
