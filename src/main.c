@@ -4900,7 +4900,7 @@ void main_GameLoop(int ctl)
                     he_PostEvent3b();
                     he_PostEventA6();
                 }
-                he_Unk5410f0();
+                he_PostEvent73();
                 cm_EndSendGroup();
                 iv = cm_SendGroupState();
                 while (iv == 0) {

@@ -2271,25 +2271,23 @@ void he_PostEvent3b(void)
     m.time = ai_Time;
     cm_SendLongMessage((char *)&m);
 }
-/* 0x5410f0, posts the event 0x73 for the player of 0x6f1bf8 (replacing a posted one) */
+/* 0x5410f0, posts the event 0x73 to the player character (its netId), from -1, flag 1, at the current ai_Time;
+   replaces a running event 0x73 first */
 
-void he_Unk5410f0(void)
+void he_PostEvent73(void)
 {
-    char ev[0xf8];
+    AIMSG m;
     int r;
 
     r = (int)he_FindEvent(1, 0, 0x73);
     if (r != 0)
         he_FreeEvent((int *)r);
-    HM_B(ev, 4) = 0x73;
-    HM_I(ev, 8) = *(int *)(*(int *)(unsigned)&ai_PlayerChar + 4);
-    HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-    HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-    HM_I(ev, 0xc) = -1;
-    HM_B(ev, 0x36) = 1;
-    HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-    *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-    cm_SendLongMessage(ev);
+    m.type = 0x73;
+    m.to = he_PlayerCh->netId;
+    m.fromId = -1;
+    m.time = ai_Time;
+    m.flags = 1;
+    cm_SendLongMessage((char *)&m);
 }
 /* 0x541170, posts the message 0xa6 (now, from -1, flag 1) to the player's character, after freeing a running event 0xa6 */
 

@@ -98,7 +98,7 @@ void he_InnReport(void);
 void he_DailyEventChecks(void);
 void he_PostEvent3a(void);
 void he_PostEvent3b(void);
-void he_Unk5410f0(void);
+void he_PostEvent73(void);
 void he_PostEventA6(void);
 void he_Unk541200(int r);
 void he_Unk541250(int r, int pl);
