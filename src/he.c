@@ -389,6 +389,12 @@ typedef struct HEEV1F {                 /* the building event 0x1f's words over 
     char pad00[0xb0];
     unsigned short good;                /* 0xb0, the good it makes (cm_SendExSellObject's goods, the news text 0x9a8 + 2 * good) */
 } HEEV1F;
+typedef struct HEBUYBLD {               /* the building purchase event 0x21's words over AIJOB's union (he_AllocBuyBuilding /
+                                           he_RunBuyBuilding); the building is AIJOB.bldId */
+    char pad00[0xb0];
+    int price;                          /* 0xb0, the price offered (paid with cm_SendMoveGoodsUnchecked) */
+    int buyer;                          /* 0xb4, the buyer's netId (gm_FindChar) */
+} HEBUYBLD;
 typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunSale sends: an hour from now as AITIME, of
                                            which the building and the object overwrite the first 8 bytes (the
                                            original's order) */
@@ -14798,7 +14804,7 @@ void cm_SendSetJob(int id, int job);
 int ai_LiquidateAssets();
 
 /* 0x55bf50, a Ghidra miss: the allocation handler of the event 0x21 (ROUGH): the object 0x502020 (+0xac); the first run is random(10) + 10 units ahead; 0x4c4a60 (object + 1, 0x5a, 2, 0x200, 0) */
-void he_Unk55bf50(int ev)
+void he_AllocBuyBuilding(int ev)
 {
     int o;
 
@@ -14807,51 +14813,126 @@ void he_Unk55bf50(int ev)
     gm_AddTime(ev + 0x52, 0, (unsigned short)((int (*)(int, int))util_Random)(10, 0) + 10);
     cm_SendSetField(*(int *)(o + 1), 0x5a, 2, 0x200, 0);
 }
-/* 0x55bfd0, the run handler of the building purchase event (a Ghidra function with the jump table 0x55c52c, 4 states and the case code 0x55c370 .. 0x55c52b; ROUGH skeleton): the buyer +0xb4 (0x505df0) and the building +0xac (0x502020) are looked up; state 0 opens the offer for the player (0x17e9 / 0x17ea news, 0x53dee0, the building flag 0x4c4a60 0x5a / 2 / 0x200), a computer buyer decides at once by a price factor (0x41700000 / 0x40a00000 / 0x3f99999a / 0x41000000 / 0x3fcccccd from the relation, the owner kind 5 / 6 / 7 and 0x50c550) against the value (0x509b10 (building, +0x5c)); the answer (0xf8a668: 0 = buy, 1 = decline) pays (0x4c4830), hands the building over (0x4c54a0) and closes the window (0x53d800); the end frees the record */
+/* 0x55bfd0, the run handler of the building purchase event 0x21 (HEBUYBLD: the buyer offers price for the building).
+   Stage 0: a building whose master is a player (kind 6 / 7) opens the event box "misc\EventMessagebox_NULL" with
+   the text 0x17e8 and waits for the answer (stage 1); a computer master decides once the event is due: the
+   building's equipment value (gm_EquipmentValue) times (1.5 - liking * 0.01) times a factor (15; 5 for the
+   master's own home, 1.2 when it is of a lower type than the home; else 8 for a master of the kind 5 / 6 / 7 with at
+   most one building of the type, 1.6 otherwise) must stay below the price. Yes (stage 1: d2_ClickedId 0): the
+   buyer gets the news 0x17e9, the master the price (cm_SendMoveGoodsUnchecked) and the buyer the building
+   (cm_SendOwnership; also as the owner when the master owned it); no (1): the news 0x17ea; both clear the
+   building's 0x5a mark 0x200 and free the event (the computer's no frees it twice, the original's). Stages -2 /
+   -1 clear the mark and free the event
+   @deep read whole against the original (4 stages, jump table 0x55c52c equal) and reconstructed: player
+   offer box, computer decision with factors 15/5/1.2/8/1.6, yes/no paths incl. the original's double free.
+   Left, scheduling only: (1) the price test: the original hoists fild [edi+0xb0] between fmul 0.01f and
+   fsubr 1.5, splits fimul value into fild+fmulp and compares st0=X*V with fxch (test ah,5 / jp) where ours
+   loads the price last (and eax,0x4100 / jne); same condition X*V < price; P on the left (price > ...)
+   spills it over the call (frame 0x410) instead; (2) +0x12a the original has a dead lea eax,[edx+eax*4]
+   and pushes the kind before mov ax,[esi+0x25]; tried bt / cast variants */
 
-void he_Unk55bfd0(int ev)
+void he_RunBuyBuilding(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int buyer, b, price;
-    float f;
-    char text[0x200];
+    AIJOB *e = (AIJOB *)ev;
+    HEBUYBLD *p = (HEBUYBLD *)ev;
+    AICHAR *buyer;
+    AIBLD *b, *home;
+    AIBTYPE *bt;
+    int n, value;
+    float factor;
+    char text[0x400];
 
-    if (st < 0 || st > 3) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    buyer = gm_FindChar(*(int *)(ev + 0xb4));
-    b = gm_FindBuildingById(*(int *)(ev + 0xac));
-    if (buyer == 0 || b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        f = 1.0f;
-        price = gm_EquipmentValue(b, *(char *)(b + 0x5c));
-        (void)price;
-        gm_Liking(*(unsigned short *)(b + 0x25));
-        txt_Format(text, 0x17e9, *(unsigned short *)(b + 0x27));
-        he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(int *)(ev + 0xb0) * 0x21c), -1, text, 0, 0x5ec, -1, 0, 0, 0);
-        cm_SendSetField(*(int *)(buyer + 1), 0x5a, 2, 0x200, 0);
-        *(int *)(ev + 0x70) = 1;
+        buyer = (AICHAR *)gm_FindChar(p->buyer);
+        b = (AIBLD *)gm_FindBuildingById(e->bldId);
+        if (buyer != 0 && b != 0) {
+            if (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7) {
+                he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_NULL", 0x5ec);
+                d2_SetForm(e->slot->win, 0);
+                io_PrintText(0x17e8, buyer->id, b, p->price);
+                e->stage++;
+                return;
+            }
+            if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+                return;
+            factor = 15.0f;
+            buyer = (AICHAR *)gm_FindChar(p->buyer);
+            b = (AIBLD *)gm_FindBuildingById(e->bldId);
+            bt = &ai_BTypesT[b->type];
+            value = gm_EquipmentValue((unsigned char *)b, b->level);
+            if (bt->kind == 2) {
+                home = ai_CharsT[b->masterId].bld2;
+                if (home != 0) {
+                    if (home == b)
+                        factor = 5.0f;
+                    else if (ai_CharsT[b->masterId].bld2 != 0 && ai_CharsT[b->masterId].bld2->type < b->type)
+                        factor = 1.2f;
+                }
+            } else {
+                n = 0;
+                if (gm_BuildQuery(2, 4, ai_CharsT[b->masterId].id, 5, (unsigned char)ai_BTypesT[b->type].kind) != 0) {
+                    do
+                        n++;
+                    while (gm_BuildNext() != 0);
+                }
+                if (n <= 1 && (ai_CharsT[b->masterId].kind == 6 || ai_CharsT[b->masterId].kind == 7 || ai_CharsT[b->masterId].kind == 5))
+                    factor = 8.0f;
+                else
+                    factor = 1.6f;
+            }
+            if ((1.5 - gm_Liking(buyer->id, b->masterId, 1) * 0.01f) * factor * value < p->price) {
+                txt_Format(text, 0x17e9, b->owner, b);
+                he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+                cm_SendSetField(b->id, 0x5a, 2, 2, 0x200);
+                cm_SendMoveGoodsUnchecked(ai_CharsT[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
+                if (b->owner == b->masterId)
+                    cm_SendOwnership(b->id, buyer->netId, buyer->netId);
+                else
+                    cm_SendOwnership(b->id, buyer->netId, -1);
+                cm_SendSetField(b->id, 0x5a, 2, 0, 2);
+            } else {
+                txt_Format(text, 0x17ea, b->owner, b);
+                he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+                cm_SendSetField(b->id, 0x5a, 2, 0, 0x200);
+                he_ReleaseSlot(ev);
+                he_FreeEvent((int *)ev);
+            }
+        }
+        he_FreeEvent((int *)ev);                /* the original's: the decline above frees the record once more */
         return;
     case 1:
-        if (U_I((unsigned)&d2_ClickedId) == -1)
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
             return;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
-            cm_SendMoveGoodsUnchecked(*(int *)(buyer + 1), *(int *)((unsigned)&ai_CharInts + *(int *)(ev + 0xb0) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            ((void (*)(int))cm_SendOwnership)(*(int *)(buyer + 1));
-        } else {
-            txt_Format(text, 0x17ea, *(unsigned short *)(b + 0x27));
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(int *)(ev + 0xb0) * 0x21c), -1, text, 0, 0x5ec, -1, 0, 0, 0);
+        buyer = (AICHAR *)gm_FindChar(p->buyer);
+        b = (AIBLD *)gm_FindBuildingById(e->bldId);
+        if (d2_ClickedId == 0) {
+            txt_Format(text, 0x17e9, b->owner, b);
+            he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+            cm_SendSetField(b->id, 0x5a, 2, 2, 0x200);
+            cm_SendMoveGoodsUnchecked(ai_CharsT[b->masterId].netId, buyer->netId, ai_OwnPlayer, p->price);
+            if (b->owner == b->masterId)
+                cm_SendOwnership(b->id, buyer->netId, buyer->netId);
+            else
+                cm_SendOwnership(b->id, buyer->netId, -1);
+            cm_SendSetField(b->id, 0x5a, 2, 0, 2);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
         }
-        cm_SendSetField(*(int *)(buyer + 1), 0x5a, 2, 0x200, 0);
+        if (d2_ClickedId != 1)
+            return;
+        txt_Format(text, 0x17ea, b->owner, b);
+        he_MessageBoxQuickjump(buyer->netId, -1, text, 0, 0x5ec, b->id, -1, 0, 0);
+        cm_SendSetField(b->id, 0x5a, 2, 0, 0x200);
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
-    default:
+    case -2:
+    case -1:
+        b = (AIBLD *)gm_FindBuildingById(e->bldId);
+        if (b != 0)
+            cm_SendSetField(b->id, 0x5a, 2, 0, 0x200);
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
@@ -17173,7 +17254,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(32, (void *)he_AllocDemolish, (void *)he_RunDemolish) != 0)
         return 1;
-    if (he_SetEventHandlers(33, (void *)he_Unk55bf50, (void *)he_Unk55bfd0) != 0)
+    if (he_SetEventHandlers(33, (void *)he_AllocBuyBuilding, (void *)he_RunBuyBuilding) != 0)
         return 1;
     if (he_SetEventHandlers(31, (void *)he_AllocEvent1f, (void *)he_RunEvent1f) != 0)
         return 1;
