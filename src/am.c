@@ -3758,7 +3758,8 @@ int ai_ExecuteDummyRighteousness(AIPER *p, AIARG *s1, AIARG *s2)
 {
     return 6;
 }
-/* 0x495fd0 */
+/* 0x495fd0, decide of the dummy action "DummySicherheit" (7): with no sub-action running (a == 0)
+   and b == 0 it offers its own action id 7, else 0 */
 
 int ai_DecideDummySafety(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
 {
