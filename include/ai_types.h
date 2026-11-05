@@ -171,7 +171,9 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             int incomeAmount;           /* 0xb0, the stock amount the run handler pays out: the goods' work time */
             float incomeAmountF;        /* 0xb4, the same as a float */
             int incomeBld;              /* 0xb8, the building whose group its workers join */
-            char padinc2[8];
+            int incomeFrom;             /* 0xbc, the object whose list the next batch of the goods is taken from (its run
+                                           handler: gm_Query on its list, cm_SendExSellObject's source) */
+            int incomeTo;               /* 0xc0, the object that batch goes to (cm_SendExSellObject's target) */
             float incomeRate;           /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
             unsigned char incomeCounter; /* 0xc8, 0 at the start */
         };
