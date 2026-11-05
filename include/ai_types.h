@@ -327,6 +327,11 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                     int locked;                 /* 0x1c, nonzero: the room's contacts open ai_UnlockRoomWindow, which clears it when paid */
                     int unlockPrice;            /* 0x20, the money ai_UnlockRoomWindow asks; cleared with locked */
                 };
+                struct {                        /* of an alchemist's laboratory device (kinds 0x24b / 0x256 / 0x266 in the
+                                                   building's objList, he_LabIncident) */
+                    int broken;                 /* 0x1c, 0 while it works; the laboratory incident adds 1 (reasoned name) */
+                    int repair;                 /* 0x20, the incident adds 3 .. 6 (reasoned guess: the repair time) */
+                } lab;
             };
             char escort;                        /* 0x28, of a cart: its escort kind 0 .. 2 (he_AllocTransport picks it by the goods'
                                                    value, gm_LevelPayout prices it) */

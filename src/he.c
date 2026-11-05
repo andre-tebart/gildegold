@@ -22370,7 +22370,7 @@ void he_RunAlchemistDay(int ev)
     }
     state = ahm_ResearchState(c->bld, &id, &done, 1);
     if ((util_RandomF() + ai_FloatOne) * 0.25f > rec->value) {
-        he_LabIncident((char *)c, ev, (unsigned char *)c->bld, state);
+        he_LabIncident(c, ev, c->bld, state);
         cm_SendExSetHE(0, ev);
         return;
     }
@@ -22402,97 +22402,115 @@ void ai_DomizilMessageAge(int param_1, int param_2, int param_3);
 void ai_DomizilMessagePlace(int param_1, int param_2, int param_3, int param_4);
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);
 
-/* 0x56e070, the scene action of the research event 0x98 (ROUGH, the selection array of the original is not recovered): only for a building of the kind 0x1e (the kind record 0x7e3f30 + kind * 0x24d); bools: a task running 0x24b / 0x256 / 0x266 with its +0x1c = 0, the building's +0x5c above 10, a running effect in the +0x65 record (six 8-byte entries: int at +0xc, float at +0x10 above 0.2); a random pick of five candidates (start random(4) + 1) drives the action: 1 a random job 0x4c3ba0 / 0x4c3c00 (1, 0x1c / 0x20) / 0x4c49a0 and 0x5a9d60; 2 a task 0x4c3d00 (1, 0x5c, random) and 0x5a9ca0; 3 0x56fbc0 (c, random(3) + 1) and 0x5a9d00; 4 an effect from the +0x65 record reduced by a random 0.05 .. 0.15 (0x4ecc30 / 0x5a9dd0); the pick goes to +0xac of ev */
-void he_LabIncident(char *c, int ev, unsigned char *b, int task)
+/* 0x56e070, the laboratory incident of the alchemist's daily event 0x98 (he_RunAlchemistDay, only for a building
+   type of kind 0x1e): of four mishaps it picks the first possible one from a random start (1 .. 4, in turn):
+   1 a running task object of the building (0x24b / 0x256 / 0x266 with its state 0) is advanced (state +1,
+   +0x20 by 3 .. 6), 2 the building's level drops by 4 .. 6 / 6 .. 8 / 8 .. 10 by the type's level 3 / 2 / other
+   (only above level 10), 3 the alchemist ages by 1 .. 3 years (he_SetLifeByAge; always possible), 4 a place of
+   the alchemist record above 0.2 loses 0.05 .. 0.15 (not in research state 2); the owner gets the message of the
+   mishap; the mishap (0 none) goes to the event's +0xac (HEAHMDAY.bonus)
+   @deep reconstructed against the original (the possible[5] = {0} array of the four mishaps in its block
+   after the kind 0x1e check, countdown search loops, the type's level for the level drop, the lab device
+   fields AIOBJ.lab, the float temp of the place value); 298 vs 298 instructions, every call, store and
+   constant the same. Left: the frame 0x2c vs 0x28 - the original packs the float temp v of case 4 into the
+   dead state parameter's slot ([esp+0x48], fstp/mov/push) where ours gives it a slot of its own
+   ([esp+0x18]), which shifts possible[] by 4 and reorders its zero stores (ours possible[0] = edx stored
+   after [1..3], the original's ecx in index order, +0x0bc..+0x0c4). Tried: v at function / block scope,
+   declaration order, mishap as initializer, state reused for the 1 of case 1, a full initializer (worse). */
+void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
 {
-    int *rec;
-    int h[3];
-    int f1, f2, i, n, pick, sel;
-    float fv;
+    HEAHMDAY *d = (HEAHMDAY *)ev;
+    AIBTYPE *bt;
+    AHMREC *rec;
+    AIOBJ *task[3];
+    int mishap = 0;
+    int i, n, k, pick, one, step;
+    char drop;
+    float v;
 
-    if (*(unsigned char *)((unsigned)&ai_BTypes + *b * 0x24d) != 0x1e)
-        return;
-    sel = 0;
-    f1 = 0;
-    f2 = 10 < (char)b[0x5c];
-    rec = *(int **)(b + 0x65);
-    if (task != 1) {
-        for (i = 0; i < 6; i++) {
-            if (*(int *)((char *)rec + 0xc + i * 8) != 0 && 0.2 < *(float *)((char *)rec + 0x10 + i * 8)) {
-                f1 = 1;
-                break;
+    bt = &ai_BTypesT[b->type];
+    if (bt->kind == 0x1e) {
+        int possible[5] = {0};
+
+        possible[3] = 1;
+        if (b->level > 10)
+            possible[2] = 1;
+        rec = b->ahm;
+        if (state != 2) {
+            for (i = 0; i < 6; i++) {
+                if (rec->slots[i].id != 0 && rec->slots[i].v > 0.2f) {
+                    possible[4] = 1;
+                    break;
+                }
             }
         }
-    }
-    h[0] = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x24b);
-    if (h[0] != 0 && *(int *)(h[0] + 0x1c) == 0)
-        f2 = 1;
-    h[1] = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x256);
-    if (h[1] != 0 && *(int *)(h[1] + 0x1c) == 0)
-        f2 = 1;
-    h[2] = gm_Query(*(int *)(b + 0x5d), 2, 6, 0, 0x266);
-    if (h[2] != 0 && *(int *)(h[2] + 0x1c) == 0)
-        f2 = 1;
-    pick = (util_Random(4) & 0xffff) + 1;
-    for (i = 0; i < 5; i++) {
-        n = i + 1;
-        if (pick == 1 && f2)
-            sel = n;
-        else if (pick == 2 && f1)
-            sel = n;
-        else if (pick == 3 && 1)
-            sel = n;
-        else if (pick == 4 && f1)
-            sel = n;
-        else if (pick == 5)
-            sel = n;
-        if (sel)
+        task[0] = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x24b);
+        if (task[0] != 0 && task[0]->lab.broken == 0)
+            possible[1] = 1;
+        task[1] = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x256);
+        if (task[1] != 0 && task[1]->lab.broken == 0)
+            possible[1] = 1;
+        task[2] = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x266);
+        if (task[2] != 0 && task[2]->lab.broken == 0)
+            possible[1] = 1;
+        pick = util_RandomU(4) + 1;
+        for (n = 5; n != 0; n--) {
+            if (pick != 0 && possible[pick] != 0) {
+                mishap = pick;
+                break;
+            }
+            pick = (pick + 1) % 5;
+        }
+        switch (mishap) {
+        case 1:
+            k = util_RandomU(3);
+            for (n = 3; n != 0; n--) {
+                if (task[k] != 0 && task[k]->lab.broken == 0) {
+                    one = 1;
+                    step = util_RandomU(4) + 3;
+                    cm_BeginFieldBlock((char *)task[k], task[k]->objId);
+                    cm_AddFieldDelta(4, 1, 0x1c, &one);
+                    cm_AddFieldDelta(4, 1, 0x20, &step);
+                    cm_SendFieldDeltas();
+                    ai_DomizilMessageTask((int)&ai_CharsT[b->owner], (int)c, (int)b, (unsigned short *)task[k]);
+                    break;
+                }
+                k = (k + 1) % 3;
+            }
             break;
-        pick = pick % 5 + 1;
-    }
-    switch (sel) {
-    case 1:
-        {
-            int t = (util_Random(3) & 0xffff);
-            int v = (util_Random(4) & 0xffff) + 3;
-            cm_BeginFieldBlock(h[0], *(int *)(h[0] + 2));
-            cm_AddFieldDelta(4, 1, 0x1c, &t);
-            cm_AddFieldDelta(4, 1, 0x20, &v);
+        case 2:
+            if (bt->level == 3)
+                drop = -4 - util_Random(3);
+            else if (bt->level == 2)
+                drop = -6 - util_Random(3);
+            else
+                drop = -8 - util_Random(3);
+            cm_BeginFieldBlock((char *)b, b->id);
+            cm_AddFieldValues(1, 1, 0x5c, &drop);
             cm_SendFieldDeltas();
-            ai_DomizilMessageTask((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b, h[0]);
-        }
-        break;
-    case 2:
-        {
-            int t = (util_Random(3) & 0xffff);
-            int v = -4 - t;
-            cm_BeginFieldBlock(b, *(int *)(b + 1));
-            cm_AddFieldValues(1, 1, 0x5c, &v);
-            cm_SendFieldDeltas();
-            ai_DomizilMessage04((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b);
-        }
-        break;
-    case 3:
-        he_SetLifeByAge(c, (util_Random(3) & 0xffff) + 1);
-        ai_DomizilMessageAge((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b);
-        break;
-    case 4:
-        {
-            int k = util_Random(6) & 0xffff;
-            for (i = 0; i < 6; i++) {
-                if (*(int *)((char *)rec + 0xc + k * 8) != 0 && 0.2 < *(float *)((char *)rec + 0x10 + k * 8)) {
-                    fv = *(float *)((char *)rec + 0x10 + k * 8) - (util_RandomF() * 0.1f + 0.05f);
-                    ahm_SendSetPlaceValue(c, *(int *)((char *)rec + 0xc + k * 8), fv);
-                    ai_DomizilMessagePlace((void *)((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c), c, b,
-                                 *(int *)((char *)rec + 0xc + k * 8));
+            ai_DomizilMessage04((int)&ai_CharsT[b->owner], (int)c, (int)b);
+            break;
+        case 3:
+            he_SetLifeByAge((int)c, util_Random(3) + 1);
+            ai_DomizilMessageAge((int)&ai_CharsT[b->owner], (int)c, (int)b);
+            break;
+        case 4:
+            k = util_RandomU(6);
+            for (n = 6; n != 0; n--) {
+                if (rec->slots[k].id != 0 && rec->slots[k].v > 0.2f) {
+                    v = rec->slots[k].v - (util_RandomF() * 0.1f + 0.05f);
+                    ahm_SendSetPlaceValue((char *)c, rec->slots[k].id, v);
+                    ai_DomizilMessagePlace((int)&ai_CharsT[b->owner], (int)c, (int)b, rec->slots[k].id);
                     break;
                 }
                 k = (k + 1) % 6;
             }
+            break;
+        default:
+            return;
         }
-        break;
+        d->bonus = mishap;
     }
-    *(int *)(ev + 0xac) = sel;
 }
 
 void he_Unk56e460();
