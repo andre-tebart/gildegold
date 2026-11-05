@@ -6267,7 +6267,7 @@ int ai_ExecuteUseEducationObject(G5CH *p, AIARG *s1, AIARG *s2)
     AIOBJ *o;
     float *g;
 
-    o = gm_Query(*(int *)((char *)p + 0x178), 1, 1, s1->ref);
+    o = gm_Query(p->inventory, 1, 1, s1->ref);
     if (o != 0) {
         g = (float *)ai_FindUsableGoodP(o->id);
         if (g != 0) {
