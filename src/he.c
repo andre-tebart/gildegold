@@ -2639,51 +2639,54 @@ int gm_GetWorth(unsigned short id);
 void gm_Shuffle(unsigned n, int *out);
 int ai_Unk5c6620();
 
-/* 0x544330, the run handler of a message / reward event: when due (state not -1 / -2, bit 4 of +0x78 clear, no pending 0x4c3ae0 result) pays the message `+0x70` rewards (0x4c4b00, amount from 0x504ec0 / 0x504e80 times the multiplier 1 or 2 by 0x5ba6b0 of the receiver) to up to 0x10 players in the ring of 0x300 starting at +0xc4 with step +0xc8, then re-posts itself (ROUGH) */
-void he_Unk544330(int ev)
+/* 0x544330, the run handler of the tribute event 0x35: ends it at stage -1 / -2; runs once started (opts bit 4
+   clear) and once its last post is settled (exSlot -1 or cm_GetSlotState nonzero). Without its collector (idbc) it
+   re-posts itself a minute later. Else one round visits up to 0x10 of the characters left (from tributeNext, stepping
+   tributeStride mod 0x300): each living one (id not 0xffff, health above 0) of a kind below 10 other than the
+   collector gets the relation change 1 - 10 * gm_Mix2(tributeSkill, its skill 4) from him, doubled while the
+   event's character holds the good 0x2c5. While tributeEnd is later than now the next round is due in an hour,
+   else the event is re-posted a minute later */
+void he_RunTribute(int ev)
 {
-    int sv = ev;
-    int a, b, mul, cnt, pl, i, amt;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *coll, *owner;
+    int mul, left, next, i;
     float f;
 
-    a = gm_FindChar(*(int *)(ev + 0xbc));
-    b = gm_FindChar(*(int *)(ev + 0xc));
+    coll = (AICHAR *)gm_FindChar(e->idbc);
+    owner = (AICHAR *)gm_FindChar(e->netId);
     mul = 1;
-    if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
+    if (e->stage == -1 || e->stage == -2) {
         he_FreeEvent((int *)ev);
-    } else if ((*(unsigned char *)(ev + 0x78) & 4) == 0 && (*(int *)(ev + 0x84) == -1 || cm_GetSlotState(*(int *)(ev + 0x84)) != 0)) {
-        *(int *)(ev + 0x84) = -1;
-        if (a == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            cm_SendExSetHE(-1, ev);
-            return;
-        }
-        if (b != 0) {
-            i = ai_InventoryHas(b, 0x2c5);
-            mul = (i != 0) + 1;
-        }
-        cnt = *(int *)(ev + 0xcc);
-        pl = *(int *)(ev + 0xc4);
-        for (i = 0; cnt != 0 && i < 0x10; i++) {
-            if (U_I((unsigned)&ai_Chars + pl * 0x21c) != -1 && U_I((unsigned)&ai_CharInts + pl * 0x21c) != *(int *)(sv + 0xbc)
-                && *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + pl * 0x21c) < 10 && *(char *)(((unsigned)&ai_CharInts + 0x4) + pl * 0x21c) != 0) {
-                f = gm_GetSkill((unsigned)&ai_Chars + pl * 0x21c, 4);
-                amt = (int)(-gm_Mix2(*(float *)(sv + 0xd0), f) * 10.0f + 1.0f);
-                cm_SendRelations(*(int *)(sv + 0xbc), U_I((unsigned)&ai_CharInts + pl * 0x21c), amt * mul, 1);
-            }
-            cnt = *(int *)(sv + 0xcc) - 1;
-            *(int *)(sv + 0xcc) = cnt;
-            pl = (*(int *)(sv + 200) + pl) % 0x300;
-        }
-        *(int *)(sv + 0xc4) = pl;
-        *(AITIME *)(sv + 0x52) = ai_Time;
-        if (gm_CompareTime(sv + 0xac, (unsigned)&ai_Time) != 1) {
-            gm_AddTime(sv + 0x52, 0, 1, 0);
-            *(int *)(sv + 0x84) = cm_SendExSetHE(-1, sv);
-            return;
-        }
-        gm_AddTime(sv + 0x52, 1, 0, 0);
+        return;
     }
+    if ((e->opts & 4) || (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0))
+        return;
+    e->exSlot = -1;
+    if (coll == 0) {
+        gm_AddTime(&e->end, 0, 1, 0);
+        cm_SendExSetHE(-1, ev);
+        return;
+    }
+    if (owner != 0)
+        mul = (ai_InventoryHas(owner, 0x2c5) != 0) + 1;
+    left = e->tributeLeft;
+    next = e->tributeNext;
+    for (i = 0; left != 0 && i < 0x10; i++, left = --e->tributeLeft, next = (e->tributeStride + next) % 0x300) {
+        if (ai_CharsT[next].id != 0xffff && ai_CharsT[next].netId != e->idbc && ai_CharsT[next].kind < 10
+            && ai_CharsT[next].health > 0) {
+            f = -gm_Mix2(e->tributeSkill, gm_GetSkill((char *)&ai_CharsT[next], 4));
+            cm_SendRelations(e->idbc, ai_CharsT[next].netId, (int)(f * 10.0f + 1.0f) * mul, 1);
+        }
+    }
+    e->tributeNext = next;
+    e->end = ai_Time;
+    if (gm_CompareTime(&e->tributeEnd, &ai_Time) == 1) {
+        gm_AddTime(&e->end, 1, 0, 0);
+        return;
+    }
+    gm_AddTime(&e->end, 0, 1, 0);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x544550, draws 3 of 12 shuffled slots for a duel between the figures p2 and p3: slot bytes at +0xbc .. +0xbe and three words (slot + 1) * (the worth of p2 + the worth of p3, each at least 32000) / 640 at +0xc0 (ROUGH) */
 
@@ -9314,7 +9317,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_RunFeastExam) != 0)
         return 1;
-    if (he_SetEventHandlers(0x35, (void *)he_AllocTribute, (void *)he_Unk544330) != 0)
+    if (he_SetEventHandlers(0x35, (void *)he_AllocTribute, (void *)he_RunTribute) != 0)
         return 1;
     if (he_SetEventHandlers(0x41, (void *)he_Unk544630, (void *)he_Unk544840) != 0)
         return 1;

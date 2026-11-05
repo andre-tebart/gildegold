@@ -113,7 +113,7 @@ void he_CharAccident(struct AIJOB *ev, struct AICHAR *c, struct AICHAR *boss, st
 void he_CharIllness(struct AIJOB *ev, struct AICHAR *c, struct AICHAR *boss, struct AIBLD *bld, int disease, float value); /* 0x5417d0, a character's illness: carried away ("Unfall") or dead, with the boss's news */
 void he_AllocStammtisch(int r);
 
-void he_Unk544330(int ev);
+void he_RunTribute(int ev);
 void he_Unk544550(int ev, unsigned short *p2, unsigned short *p3);
 void he_Unk544630(int ev);
 void he_Unk5471e0(int ev, unsigned short *p2, unsigned short *p3);

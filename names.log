@@ -2286,3 +2286,4 @@
 2026-11-05T11:07:51 0x005437c0 func he_Unk5437c0 -> he_RunFeast by:main why:run handler of the feast event: fills an AIGRP for ai_EvalFest (essen / musik, the feast texts 0x1787 / 0x1788)
 2026-11-05T11:11:20 0x00543ac0 func he_Unk543ac0 -> he_RunFeastExam by:main why:run handler of the master exam at a feast (kind 0x36): window Messagebox_Meisterpruefung, finds the feast event kind 0x37 / the feast table, ai_MasterExamPassed
 2026-11-05T11:14:20 0x00544070 data he_Unk544070 -> he_AllocTribute by:main why:alloc handler (first) of the event kind 0x35 the tribute news ai_ShowTribute* belong to
+2026-11-05T11:15:18 0x00544330 func he_Unk544330 -> he_RunTribute by:main why:run handler (second) of the tribute event kind 0x35 (he_AllocTribute's)
