@@ -320,7 +320,8 @@ typedef struct HEJOBTABLE {             /* the job table (object 0x12c) of a bui
 } HEJOBTABLE;
 typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words over AIJOB's union (AIJOB has no name at
                                            +0xb0: a field there flips d3_CloneObject's bytes, the unit's lead comment) */
-    char pad00[0xb0];
+    char pad00[0xac];
+    int innId;                          /* 0xac, the inn building's id (gm_FindById) */
     AITIME meeting;                     /* 0xb0, when the meeting is held: the hour set to a random 0x13 .. 0x16 */
     char padbe[2];
     int state;                          /* 0xc0, 1 after the start, counted down by the run handler 0x542100 */
@@ -6373,7 +6374,7 @@ int he_Unk550070(int ev)
 float gm_GoodsPrice(unsigned id, unsigned char p);
 
 /* 0x541b40, the inn meeting ("Stammtisch", see 0x53f430) hears of a table request (cm_ExTableRequest) or of its
-   own run (he_Unk542100): `cmd` is a four letter code, inn the inn building, table its table object (kind 0x12d,
+   own run (he_RunStammtisch): `cmd` is a four letter code, inn the inn building, table its table object (kind 0x12d,
    the four seats), figId the character who joins / leaves. It tells the seated players and the inn's owner (boss)
    the news 0x1893 .. 0x189d: 'join' (with a full table now), 'leav' (the last one gone; a table that was full tells
    every other player too), 'cler' (cleared), 'new ' (a new meeting, to every player but the owner), and 'exec'
@@ -6502,75 +6503,84 @@ void he_StammtischCommand(unsigned cmd, AIBLD *inn, AIOBJ *table, int figId)
 int gm_MinutesBetween();
 void cm_BeginGroup(const char *s);
 
-/* 0x542100, a Ghidra miss (disassembled): the run handler of the inn meeting event ("stammtisch", scripts 0x541b40): the inn (+0xac) must have its staff record 0x12d; a visitor figure (owner player not the player of 0x6f1bf8, alive) counts: with +0xc0 == 1 the "new " meeting starts and the counter goes down; else when the meeting time (+0xb0) has passed the meeting is executed ("exec") and a new one is planned (+0xb0 + 0x18 units, random 0x13 .. 0x16 at +0xb4); with no visitor the "cler" script (clear) runs and +0xc0 is raised (ROUGH) */
-void he_Unk542100(int ev)
+/* 0x542100, the run handler of the inn meeting event 0x2a ("Stammtisch", he_AllocStammtisch; its scripts
+   he_StammtischCommand): the inn (innId) must have its table object 0x12d, else it waits 5 minutes. With an inn owner
+   who is alive, not the player and not of kind 0xf: in state 1 the meeting is announced ('new ', the state counted
+   down), else when the meeting time has come it is held ('exec') (before that it waits an hour); either way the next
+   meeting is planned a day ahead at a random hour 0x13 .. 0x16. Without such an owner the table is cleared once
+   ('cler' request, the state raised) and the meeting planned again */
+void he_RunStammtisch(int r)
 {
-    int bld = 0;
-    int r, o;
-    int cmd[4];
+    AIJOB *e = (AIJOB *)r;
+    HESTAMMTISCH *m = (HESTAMMTISCH *)r;
+    AIBLD *bld;
+    AIOBJ *table;
+    AICHAR *boss;
+    int cmd[3];
 
-    if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_FreeEvent((int *)ev);
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)r);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    gm_FindById(&bld, 0, 0, *(int *)(ev + 0xac));
+    e->exSlot = -1;
+    gm_FindById(&bld, 0, 0, m->innId);
     if (bld == 0) {
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        cm_SendExSetHE(-1, ev);
+        gm_AddTime(&e->end, 0, 5, 0);
+        cm_SendExSetHE(-1, r);
         return;
     }
-    r = gm_Query(*(int *)(bld + 0x5d), 2, 6, 0, 0x12d);
-    if (r == 0) {
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        cm_SendExSetHE(-1, ev);
+    table = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x12d);
+    if (table == 0) {
+        gm_AddTime(&e->end, 0, 5, 0);
+        cm_SendExSetHE(-1, r);
         return;
     }
-    o = 0;
-    if (*(unsigned short *)(bld + 0x27) != 0xffff)
-        o = (unsigned)&ai_Chars + *(unsigned short *)(bld + 0x27) * 0x21c;
-    if (o != 0 && o != U_I((unsigned)&ai_PlayerChar) && *(char *)(o + 8) != 0 && *(char *)(o + 2) != 0xf) {
-        if (*(int *)(ev + 0xc0) == 1) {
-            he_StammtischCommand(0x6e657720, (AIBLD *)bld, (AIOBJ *)r, -1);
-            *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) - 1;
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(AITIME *)(ev + 0xb0) = ai_Time;
-            gm_AddTime(ev + 0xb0, 0x18, 0, 0);
+    if (bld->owner != 0xffff && (boss = &ai_CharsT[bld->owner]) != 0 && boss != he_PlayerCh && boss->health != 0
+        && boss->kind != 0xf) {
+        if (m->state == 1) {
+            he_StammtischCommand('new ', bld, table, -1);
+            m->state--;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 1, 0, 0);
+            m->meeting = ai_Time;
+            gm_AddTime(&m->meeting, 0x18, 0, 0);
         } else {
-            if (gm_MinutesBetween((unsigned)&ai_Time, ev + 0xb0) > 0) {
-                gm_AddTime(ev + 0x52, 1, 0, 0);
-                cm_SendExSetHE(0, ev);
+            if (gm_MinutesBetween(&ai_Time, &m->meeting) > 0) {
+                gm_AddTime(&e->end, 1, 0, 0);
+                cm_SendExSetHE(0, r);
                 return;
             }
-            he_StammtischCommand(0x65786563, (AIBLD *)bld, (AIOBJ *)r, -1);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(AITIME *)(ev + 0xb0) = ai_Time;
-            gm_AddTime(ev + 0xb0, 0x18, 0, 0);
+            he_StammtischCommand('exec', bld, table, -1);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 1, 0, 0);
+            m->meeting = ai_Time;
+            gm_AddTime(&m->meeting, 0x18, 0, 0);
         }
-    } else {
-        if (*(int *)(ev + 0xc0) == 0) {
-            cmd[0] = 0x636c6572;
-            cmd[1] = -1;
-            cmd[2] = *(int *)(bld + 1);
-            cm_BeginGroup("stammtisch clear HE");
-            cm_SendTableRequest(cmd);
-            cm_EndGroup("stammtisch clear HE");
-            *(int *)(ev + 0xc0) = *(int *)(ev + 0xc0) + 1;
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 1, 0, 0);
-        *(AITIME *)(ev + 0xb0) = ai_Time;
-        gm_AddTime(ev + 0xb0, 0x18, 0, 0);
+        m->meeting.min = 0;
+        m->meeting.hour = util_Random(4) + 0x13;
+        cm_SendExSetHE(0, r);
+        return;
     }
-    *(int *)(ev + 0xb6) = 0;
-    *(unsigned short *)(ev + 0xb4) = (unsigned short)(util_Random(4) + 0x13);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    if (m->state == 0) {
+        cmd[0] = 'cler';
+        cmd[1] = -1;
+        cmd[2] = bld->id;
+        cm_BeginGroup("stammtisch clear HE");
+        cm_SendTableRequest(cmd);
+        cm_EndGroup("stammtisch clear HE");
+        m->state++;
+    }
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 1, 0, 0);
+    m->meeting = ai_Time;
+    gm_AddTime(&m->meeting, 0x18, 0, 0);
+    m->meeting.min = 0;
+    m->meeting.hour = util_Random(4) + 0x13;
+    cm_SendExSetHE(0, r);
 }
 
 int cm_SendObject1b5(int owner, G17B7 value);
@@ -9172,7 +9182,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x29, (void *)he_RunDueNow, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2a, (void *)he_AllocStammtisch, (void *)he_Unk542100) != 0)
+    if (he_SetEventHandlers(0x2a, (void *)he_AllocStammtisch, (void *)he_RunStammtisch) != 0)
         return 1;
     if (he_SetEventHandlers(0x2b, (void *)he_Unk542490, (void *)he_Unk542590) != 0)
         return 1;
