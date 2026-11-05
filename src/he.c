@@ -16440,25 +16440,283 @@ void he_AllocMarket(AIJOB *ev)
     ev->clock60 = ev->end;
     gm_AddTime(&ev->end, 1, 0, 0);
 }
-/* 0x55fa90, the run handler "he_RunMarktSupervisor" of the market (3472 bytes, ROUGH skeleton; the debug text "he_RunMarktSupervisor(): Could not find markt-lager:%s"): the market object (gm_FindMarketObject) and the stores (gm_Query, 0x50aaf0 / 0x4ffa10) of the town are looked at; from random rolls (util_Random / util_RandomF) the supervisor buys and sells goods (0x4c4880 payments, 0x5de518 _ftol amounts), a figure goes shopping (0x4c5710) and the clock event is posted again; a missing store prints the debug text and frees the record */
+extern GMBLOCK gm_StockBlocks[];  /* 0x7d6a60, f3gm.h */
+#define HE_SUPERVISOR_MONEY 5120000  /* the market supervisor tops the player's money up to it */
+float gm_StockPrice(int p, int n);
 
-void he_Unk55fa90(int ev)
+/* 0x55fa90, the run handler "he_RunMarktSupervisor" of the market event 0x3b (its alloc handler he_AllocMarket):
+   without a market building, or past 20:00, the record is freed; it runs once per new minute count since its last
+   run (AIJOB.clock60). Stages below -2 and above 0 do nothing; -2 / -1 give it the player's character
+   (he_SetEventChar) and stage 0. Stage 0 tops the player's money up to 5120000 and walks the goods of the stock blocks
+   (GMSTOCK, a copy each, sent back as a delta with cm_SendGoodsDelta), scaled by the minutes passed / 60 and 1 / 14:
+   the own player's market goods (kinds 0x25 / 0x17) by their market object (gm_FindMarketObject; none: the debug
+   text "Could not find markt-lager") buy (below half the stock in store) or sell (above three quarters), the mean
+   drifting with the stock; its other goods sell the whole units of the accumulated f2c (a third, at least 1, not
+   with the game flag 0x80) or buy 1 .. 3 a quarter of the time; the other players' buildings (1 .. 3, up to the first empty slot) sell from
+   their object 0x1db and buy into 0x1dc. Each mean is kept between a quarter (at least 1) and three times the
+   demand and reset by a random roll when it strays beyond 1.5 / 2.5 times or below 0.4 / 0.8 times of it; the
+   price is refreshed (gm_StockPrice) on most rolls. From 22:00 the record is freed, else it is due in an hour
+   @deep Reconstructed whole from the old stub against the original 0x55fa90..0x560813 (964 ins): the
+   market / hour / minutes guards, the stage switch (-2 / -1 he_SetEventChar, 0 runs), the money top-up
+   (5120000), the four stock passes (own player's market goods 0x25 / 0x17 buy / sell by in-store vs stock,
+   its other goods by the accumulated f2c, the other players' buildings 0x1db sell / 0x1dc buy with
+   gm_FreeCapacity, breaking at the first empty player slot), every call with its arguments, every constant
+   (1/60.0, 1/14.f, 80, 0.01, 0.5, 0.75, 0.8f, 0.6f, 0.25, 0.33, 1.0, 3.0, 0.4, 0.4f, 1.5f, 1.2f, 2.5f,
+   0.1) and the price refresh rolls; the goods pointer before the record copy, block-scoped text / second
+   copy (frame 0x1a8 equal), the min / max ternaries as double expressions, the constant-first compares.
+   Same calls with the same arguments, no ref / literal difference, 970 vs 964 instructions. Left: (1)
+   allocation in pass 2's clamp at 0x560041: ours writes n (edi) to its stack home before and after the
+   (int)(float)amount _ftol (mov [esp+0x1c], edi x2) where the original keeps n in edi only; giving pass 2
+   its own variable made it worse (slots shift, the g product reassociated to fimul); (2) the tail: the
+   original reuses the first he_FreeEvent block (+0x14) for the 22:00 exit, ours keeps it inline
+   (he_FreeEvent x3 vs x2); (3) fpu hunks where VC6 reassociates demand * 1.5f / mean into 1.5f / mean *
+   demand on our side (float context; a double constant fixes the order but widens the literal) and slot
+   shifts from (1). (size: 9 of the instruction difference are shared / inline tails) */
+void he_RunMarketSupervisor(AIJOB *ev)
 {
-    int st = *(int *)(ev + 0x70);
-    char text[0x100];
+    GMSTOCK *rec;
+    GMSTOCK s;
+    AIOBJ *o, *q, *st;
+    AIBLD *b;
+    AIGOOD *good;
+    int minutes, i, pl, inStore, amount, n, k, have;
+    float f, g, fv;
 
-    if (st < 0) {
+    if (ai_MarketBuilding == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (gm_CharCurrency(*(char **)(unsigned)&ai_PlayerChar, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0) {
-        sprintf(text, "he_RunMarktSupervisor(): Could not find markt-lager:%s", "");
+    minutes = gm_MinutesBetween(&ev->clock60, &ai_Time);
+    if (ai_Time.hour > 20) {
         he_FreeEvent((int *)ev);
         return;
     }
-    ((void (*)(int))cm_SendMoveGoods)(ev);
-    cm_SendExSellObject(*(int *)(ev + 0xac), -1, 0, 0, 0, 0);
-    gm_AddTime(ev + 0x52, 0, 5, 0);
+    if (minutes == 0)
+        return;
+    ev->clock60 = ai_Time;
+    switch (ev->stage) {
+    case 0:
+        break;
+    case -2:
+    case -1:
+        he_SetEventChar((int)ev, *ai_PlayerChar);
+        ev->stage = 0;
+        return;
+    default:
+        return;
+    }
+
+
+    if (gm_CharCurrency((char *)ai_PlayerChar, ai_OwnPlayer) < HE_SUPERVISOR_MONEY)
+        cm_SendMoveGoods(he_PlayerCh->netId, -1, ai_OwnPlayer, HE_SUPERVISOR_MONEY);
+
+    for (i = 0; i < 0x55; i++) {
+        rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
+        if (rec->item == 0)
+            continue;
+        good = (AIGOOD *)ai_Goods + rec->item;
+        s = *rec;
+        if (rec->amount == 0 || (good->type != 0x25 && good->type != 0x17))
+            continue;
+        o = (AIOBJ *)gm_FindMarketObject(s.item);
+        if (o == 0) {
+            char text[0x100];
+
+            sprintf(text, "he_RunMarktSupervisor(): Could not find markt-lager:%s", (char *)txt_ObjectNames[s.item][0]);
+            continue;
+        }
+        q = (AIOBJ *)gm_Query((void *)o->list, 2, 6, 0, s.item);
+        if (q != 0)
+            inStore = gm_ListAmount(o, q);
+        else
+            inStore = 0;
+        util_Random(10);
+        f = (float)(s.stock * (1.0f / 14) * (minutes * (1.0 / 60)));
+        f = ((unsigned short)util_Random(100) + 80.0f) * f * 0.01f;
+        if (f != ai_FloatZero && ai_FloatOne > f)
+            f = 1.0f;
+        if (inStore < s.stock * 0.5) {
+            s.daily[0] = (int)(s.daily[0] + f);
+            if (s.mean > s.demand * 0.5)
+                cm_SendExSellObject(o->objId, -1, s.item, (int)f, ai_OwnPlayer, 0);
+            s.mean += (float)(s.stock * (1.0f / 14) * (minutes * (1.0 / 60))) * 0.8f;
+        } else if (inStore > s.stock * 0.75) {
+            f = (float)(s.stock * (1.0f / 14) * (minutes * (1.0 / 60)));
+            s.mean = s.mean - f * 0.6f;
+            s.mean = (float)(s.mean > s.demand * 0.25 ? s.mean : s.demand * 0.25);
+            if (ai_FloatOne > s.mean)
+                s.mean = 1.0f;
+            if (ai_FloatOne > f)
+                f = 1.0f;
+            cm_SendExSellObject(-1, o->objId, s.item, (int)f, ai_OwnPlayer, 0);
+            s.daily[1] = (int)(s.daily[1] + f);
+        }
+        if (s.demand * 1.5f < s.mean) {
+            if (util_RandomF() > s.demand * 1.5f / s.mean)
+                s.mean = s.demand * 0.4f;
+        } else if (s.demand * 0.4f > s.mean) {
+            if (util_RandomF() > s.mean / (s.demand * 0.4f))
+                s.mean = s.demand * 1.5f;
+        }
+        if ((unsigned short)util_Random(100) > 10 || ai_Time.hour == 12)
+            s.price = gm_StockPrice(ai_OwnPlayer, i);
+        cm_SendGoodsDelta(&s, ai_OwnPlayer);
+    }
+
+    for (i = 0; i < 0x55; i++) {
+        rec = &gm_StockBlocks[ai_OwnPlayer].goods[i];
+        if (rec->item == 0)
+            continue;
+        good = (AIGOOD *)ai_Goods + rec->item;
+        if (rec->amount == 0 || good->type == 0x25 || good->type == 0x17)
+            continue;
+        s = *rec;
+        o = (AIOBJ *)gm_FindMarketObject(s.item);
+        if (o == 0)
+            continue;
+        q = (AIOBJ *)gm_Query((void *)o->list, 1, 0, s.item);
+        if (q != 0)
+            amount = gm_ListAmount(o, q);
+        else
+            amount = 0;
+        util_Random(10);
+        g = (float)(minutes * (1.0 / 60) * (s.demand * (1.0f / 14)));
+        if (g != ai_FloatZero)
+            s.f2c += g;
+        if (s.f2c >= ai_FloatOne) {
+            n = (int)s.f2c;
+            s.f2c = s.f2c - n;
+        } else {
+            n = 0;
+        }
+        k = (int)(float)amount;
+        if (amount != n)
+            n = amount;
+        if (k < n)
+            n = k;
+        amount = n;
+        if (amount != 0) {
+            s.mean = s.mean - g * 0.6f;
+            s.daily[1] += amount;
+            s.mean = (float)(s.mean > 1.0 ? s.mean : 1.0);
+            k = (int)(amount * 0.33);
+            if (k < 1)
+                k = 1;
+            if ((ai_GameFlags & 0x80) == 0)
+                cm_SendExSellObject(-1, o->objId, s.item, k, ai_OwnPlayer, 0);
+        } else {
+            s.mean += g * 0.8f;
+            if (util_RandomF() < 0.25) {
+                k = (unsigned short)util_Random(3) + 1;
+                cm_SendExSellObject(o->objId, -1, s.item, k, ai_OwnPlayer, 0);
+                s.mean += k * g * 0.6f;
+            }
+            s.mean = (float)(s.mean < s.demand * 3.0 ? s.mean : s.demand * 3.0);
+        }
+        if (s.demand * 1.5f < s.mean) {
+            if (util_RandomF() > s.demand * 1.5f / s.mean)
+                s.mean = amount > s.demand * 0.5 ? s.demand * 0.4f : s.demand * 0.8f;
+        } else if (s.demand * 0.4f > s.mean) {
+            if (util_RandomF() > s.mean / (s.demand * 0.4f))
+                s.mean = amount == 0 ? s.demand * 1.5f : s.demand * 1.2f;
+        }
+        if ((unsigned short)util_Random(100) > 10 || ai_Time.hour == 12)
+            s.price = gm_StockPrice(ai_OwnPlayer, i);
+        cm_SendGoodsDelta(&s, ai_OwnPlayer);
+    }
+
+    for (pl = 1; pl < 4; pl++) {
+        if (ai_PlayerSlotsT[pl].name[0] == 0)
+            break;
+        b = (AIBLD *)gm_FindPlayerBuilding(pl);
+        if (b == 0)
+            continue;
+        st = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x1db, 6);
+        if (st == 0)
+            continue;
+        for (i = 0; i < 0x55; i++) {
+            s = gm_StockBlocks[pl].goods[i];
+            if (s.item == 0)
+                continue;
+            q = (AIOBJ *)gm_Query((void *)st->list, 1, 0, s.item);
+            if (q == 0)
+                continue;
+            have = gm_ListAmount(st, q);
+            g = (float)(minutes * (1.0 / 60) * (s.demand * (1.0f / 14)));
+            s.f2c += g;
+            if (s.f2c >= ai_FloatOne) {
+                n = (int)s.f2c;
+                s.f2c = s.f2c - n;
+            } else {
+                n = 0;
+            }
+            if (have != 0) {
+                if (n < have)
+                    have = n;
+                if (have > 0) {
+                    if (have < 1)
+                        have = 1;
+                    cm_SendExSellObject(-1, st->objId, s.item, have, ai_OwnPlayer, 0);
+                }
+            }
+            if (have < g) {
+                s.mean += (float)((g - have) * 0.4);
+                s.mean = (float)(s.mean < s.demand * 3.0 ? s.mean : s.demand * 3.0);
+            } else {
+                s.mean = (float)(s.mean - g * 0.5);
+                s.mean = (float)(s.mean > s.demand * 0.25 ? s.mean : s.demand * 0.25);
+                if (ai_FloatOne > s.mean)
+                    s.mean = 1.0f;
+            }
+            if (s.demand * 2.5f < s.mean) {
+                if (util_RandomF() > s.demand * 2.5f / s.mean)
+                    s.mean = s.demand * 0.8f;
+            } else if (s.demand * 0.8f > s.mean) {
+                if (util_RandomF() > s.mean / (s.demand * 0.8f))
+                    s.mean = s.demand * 2.5f;
+            }
+            if ((unsigned short)util_Random(100) > 75)
+                s.price = gm_StockPrice(pl, i);
+            cm_SendGoodsDelta(&s, pl);
+        }
+        st = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x1dc, 6);
+        if (st == 0)
+            continue;
+        for (i = 0; i < 0x55; i++) {
+            GMSTOCK s2;
+
+            s2 = gm_StockBlocks[pl].goods[i];
+            if (s2.item == 0)
+                continue;
+            q = (AIOBJ *)gm_Query((void *)st->list, 1, 0, s2.item);
+            if (q == 0)
+                continue;
+            g = (float)(minutes * (1.0 / 60) * (s2.demand * (1.0f / 14)));
+            f = (unsigned short)util_Random(3) + g;
+            fv = (float)gm_FreeCapacity((short *)st, s2.item, (int)(ai_FloatOne > f ? ai_FloatOne : f));
+            have = gm_ListAmount(st, q);
+            if (have < s2.demand * 0.5) {
+                cm_SendExSellObject(st->objId, -1, s2.item, (int)fv, ai_OwnPlayer, 0);
+                s2.mean = (float)(g * 0.5 + s2.mean);
+                s2.mean = (float)(s2.mean < s2.demand * 3.0 ? s2.mean : s2.demand * 3.0);
+            } else {
+                s2.mean = (float)(s2.mean - g * 0.1);
+                s2.mean = (float)(s2.mean > s2.demand * 0.25 ? s2.mean : s2.demand * 0.25);
+                if (ai_FloatOne > s2.mean)
+                    s2.mean = 1.0f;
+            }
+            if ((unsigned short)util_Random(100) > 75)
+                s2.price = gm_StockPrice(pl, i);
+            cm_SendGoodsDelta(&s2, pl);
+        }
+    }
+    if (ai_Time.hour >= 22) {
+        he_FreeEvent((int *)ev);
+        return;
+    }
+    ev->end = ai_Time;
+    gm_AddTime(&ev->end, 1, 0, 0);
+    ev->stage = 0;
 }
 /* 0x560820, ends a duplicate: of the records of type 0x3c (0x53e400 / 0x53e300) the one with the same +0xac and +0xb4 as `ev` (not ev itself) sets the state -1 of `ev`; a building (+0xb4, 0x501190) with +0x65 = -1 or a figure +0xac (0x505df0) with the flag +0x1b1 does the same; the due clock is now and the event posted (0x4fe140 (.., 0, 0, 1)) */
 
@@ -18087,7 +18345,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(58, (void *)he_AllocRoutine, (void *)he_RunRoutine) != 0)
         return 1;
-    if (he_SetEventHandlers(59, (void *)he_AllocMarket, (void *)he_Unk55fa90) != 0)
+    if (he_SetEventHandlers(59, (void *)he_AllocMarket, (void *)he_RunMarketSupervisor) != 0)
         return 1;
     if (he_SetEventHandlers(60, (void *)he_Unk560820, (void *)he_Unk560900) != 0)
         return 1;

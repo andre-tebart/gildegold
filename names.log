@@ -2520,3 +2520,4 @@
 2026-11-05T21:11:18 0x0055e600 func he_Unk55e600 -> he_RunEvent38 by:main why:run handler of the event 0x38 (he_SetEventHandlers(56, ..)); named by its type as he_RunEvent27 / he_RunEvent24
 2026-11-05T21:14:18 0x0055e730 func he_Unk55e730 -> he_RunEvent39 by:main why:the run handler of the event 0x39 (he_SetEventHandlers(57, ..)), as he_RunEvent38
 2026-11-05T21:26:02 0x0055efc0 func he_Unk55efc0 -> he_RunRoutine by:main why:the run handler of the daily routine event 0x3a (its alloc handler he_AllocRoutine; 'Go to work' / 'Go home')
+2026-11-05T21:34:28 0x0055fa90 func he_Unk55fa90 -> he_RunMarketSupervisor by:main why:its debug text names it he_RunMarktSupervisor (the run handler of the market event 0x3b)
