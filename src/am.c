@@ -3821,7 +3821,7 @@ int ai_DecideDummyPleasure(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     return b ? 0 : 3;
 }
-/* 0x4960a0 */
+/* 0x4960a0, execute of the dummy action "DummyVergnuegen" (3): returns the action id 3, no other effect */
 
 int ai_ExecuteDummyPleasure(AIPER *p, AIARG *s1, AIARG *s2)
 {
