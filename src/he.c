@@ -10675,26 +10675,29 @@ void he_AllocTutorialIntro(AIJOB *ev)
     }
     ev->stage = 0;
 }
-/* 0x552bc0, the run handler of the end-of-game style event (only with 0x6f25ac set; ROUGH): state 0 -> 1 or 2 by 0x577740, state 1 -> 2 when 0x575860 says so, state 2 shuts down (0x577820, 0x578150), frees the record, sets the flag 0x6f259c and continues in 0x52fb50 (0x53bb20) */
+/* 0x552bc0, the run handler of the tutorial intro event 0x87 (only in a running game, ai_GameState): stage 0
+   opens the tutorial's main event (ai_TutorialOpenIntro: 0 -> stage 1, nonzero -> 2), stage 1 ticks it
+   (nonzero -> 2), stage 2 closes it and detaches its host, frees the record, sets ai_GameOver and pops back
+   to main_GameLoop */
 
-void he_Unk552bc0(int ev)
+void he_RunTutorialIntro(AIJOB *ev)
 {
-    if (*(unsigned char *)(unsigned)&ai_GameState == 0)
+    if (ai_GameState == 0)
         return;
-    switch (*(int *)(ev + 0x70)) {
+    switch (ev->stage) {
     case 0:
-        *(int *)(ev + 0x70) = (ai_TutorialOpenIntro() != 0) + 1;
+        ev->stage = (ai_TutorialOpenIntro() != 0) + 1;
         break;
     case 1:
         if (ai_TutorialTick() != 0)
-            *(int *)(ev + 0x70) = 2;
+            ev->stage = 2;
         break;
     case 2:
         ai_TutorialCloseIntro();
         ai_TutorialClearHost();
         he_FreeEvent((int *)ev);
-        U_I((unsigned)&ai_GameOver) = 1;
-        sv_PopTo((void *)(unsigned)&main_GameLoop);
+        ai_GameOver = 1;
+        sv_PopTo((int)main_GameLoop);
         break;
     }
 }
@@ -10979,7 +10982,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x86, (void *)he_StartApplicants, (void *)he_RunApplicants) != 0)
         return 1;
-    if (he_SetEventHandlers(0x87, (void *)he_AllocTutorialIntro, (void *)he_Unk552bc0) != 0)
+    if (he_SetEventHandlers(0x87, (void *)he_AllocTutorialIntro, (void *)he_RunTutorialIntro) != 0)
         return 1;
     return he_SetEventHandlers(0xa5, (void *)he_StartOfficeAward, (void *)he_RunOfficeAward) != 0;
 }
