@@ -14151,29 +14151,39 @@ void he_RunRepair(AIJOB *e)
     }
     he_FreeEvent((int *)e);
 }
-/* 0x55b720, the allocation handler of a building event: both clocks now, the building +0xac (none: free), the due delay is the table value +0x243 of its kind (else 0x1e units), +0x10 = its id; a building with the flag 0x40 in +0x5a frees the record, else the flag is set (message 0x5a / 2 / 0x40) */
-
-void he_Unk55b720(int ev)
+/* 0x55b720, the allocation handler of the building event 0x1e (run handler he_Unk55b830, which clears the mark
+   and tells the master; reasoned: the upgrade to the next building type): started and due now; without the
+   building (AIJOB.bldId) the event is freed; it lasts 30 minutes with gm_AllowAll, else a day per v243 the next
+   type has more than this one (at least a day); the building is the event's place; a building already marked
+   0x40 in its field 0x5a frees the event, else the mark is set (cm_SendSetField) */
+void he_AllocUpgrade(AIJOB *e)
 {
-    int b, kind, d;
+    AIBLD *b;
+    AIBTYPE *bt;
+    int hours;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+    e->end = ai_Time;
+    e->start = ai_Time;
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
     if (b == 0) {
-        he_FreeEvent((int *)ev);
+        he_FreeEvent((int *)e);
         return;
     }
-    kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d;
-    d = *(int *)(kind + 0x243);
-    gm_AddTime(ev + 0x52, 0, d != 0 ? d : 0x1e, 0);
-    *(int *)(ev + 0x10) = *(int *)(b + 1);
-    if ((*(unsigned short *)(b + 0x5a) & 0x40) != 0) {
-        he_FreeEvent((int *)ev);
+    if (gm_AllowAll == 0) {
+        bt = &ai_BTypesT[b->type];
+        hours = (bt[1].v243 - bt->v243) * 24;
+        if (hours <= 0)
+            hours = 24;
+        gm_AddTime(&e->end, hours, 0, 0);
+    } else
+        gm_AddTime(&e->end, 0, 30, 0);
+    e->from = b->id;
+    if ((b->flags5aw & 0x40) != 0) {
+        he_FreeEvent((int *)e);
         return;
     }
-    *(unsigned short *)(b + 0x5a) = *(unsigned short *)(b + 0x5a) | 0x40;
-    cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x40, 0);
+    b->flags5aw |= 0x40;
+    cm_SendSetField(b->id, 0x5a, 2, 0x40, 0);
 }
 /* 0x55b830, the run handler of a building event (ROUGH): states -2 / -1 free; the building +0xac is looked up, the player gets the news 0x17e7 and 0x1c32 for the owner (0x50a810), the flag 0x40 of the building is cleared (0x4c4a60 0x5a / 2 / 0x40, 0x4c54e0) and the record freed */
 
@@ -16573,7 +16583,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(28, (void *)he_AllocRepair, (void *)he_RunRepair) != 0)
         return 1;
-    if (he_SetEventHandlers(30, (void *)he_Unk55b720, (void *)he_Unk55b830) != 0)
+    if (he_SetEventHandlers(30, (void *)he_AllocUpgrade, (void *)he_Unk55b830) != 0)
         return 1;
     if (he_SetEventHandlers(32, (void *)he_Unk55bd20, (void *)he_Unk55bd80) != 0)
         return 1;
