@@ -32,7 +32,7 @@
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
-   0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714
+   0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search filter 0x625708 .. 0x625714
    (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner he or main (typed in place in
    main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
@@ -117,7 +117,6 @@ extern unsigned short * ai_PlayerChar;
 extern const float ai_FloatOne;
 extern char ai_Unk625820[115][0x20];
 extern GAPDATA full_data_60d0d4[];
-extern GAPDATA full_data_6f2634[];
 extern struct G16TRACKHANDLES snd_TrackHandles;
 extern int * d3t_Rain;
 extern int d3t_Snow;
@@ -9105,23 +9104,23 @@ void he_Unk550b60(int ev)
     if (st == -2 || st == -1) {
         if (*(int *)(ev + 0xc8) != 0)
             d3if_Delete((struct D3OBJECT *)*(int *)(ev + 0xc8));
-        if (U_I((unsigned)&full_data_6f2634) != 0)
+        if (he_ReaperMusic != 0)
             cm_EndSpecialTrack();
-        U_I((unsigned)&full_data_6f2634) = 0;
+        he_ReaperMusic = 0;
         he_FreeEvent((int *)ev);
         return;
     }
     if (*(int *)(ev + 0xc8) == 0 && he_CreateReaper(ev) == 0) {
         he_FreeEvent((int *)ev);
-        if (U_I((unsigned)&full_data_6f2634) != 0)
+        if (he_ReaperMusic != 0)
             cm_EndSpecialTrack();
-        U_I((unsigned)&full_data_6f2634) = 0;
+        he_ReaperMusic = 0;
         return;
     }
-    if (U_I((unsigned)&full_data_6f2634) == 0) {
+    if (he_ReaperMusic == 0) {
         cm_PlaySpecialTrack((void *)(unsigned)"cd2\\DerSeuchenzug.mp3");
         if (U_I((unsigned)&snd_TrackHandles) != 0)
-            U_I((unsigned)&full_data_6f2634) = 1;
+            he_ReaperMusic = 1;
     }
     *(AITIME *)(ev + 0x52) = ai_Time;
     if (st == 0) {

@@ -42,6 +42,7 @@ extern HEEVSLOT *he_ActiveSlot;         /* 0x6f262c, the slot of the active even
 extern unsigned char he_SlotConfirmed;  /* 0x6f2630, set by a right click / Enter on the active window of the
                                            ceremony kinds 0x11 / 0x26 / 0x69 (0x52d940); their run handlers
                                            proceed on it and clear it */
+extern int he_ReaperMusic;               /* 0x6f2634, 1 while the reaper event's track "cd2\DerSeuchenzug.mp3" plays (he.c 0x550b60) */
 extern struct AIBLD *he_PatrolBuilding;      /* 0x6f2638, the building kind 0x44 the guard patrol event 0xa6 runs
                                                 from (0x568220 looks it up; 0x567f50 compares a cart's building with it) */
 int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2);
