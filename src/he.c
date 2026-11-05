@@ -180,11 +180,9 @@ extern GAPDATA full_data_6279f0[];
 extern GAPDATA full_data_627a10[];
 extern GAPDATA full_data_627d74[];
 extern OPTIONBYTES ai_GamePanel;
-extern GAPDATA full_data_6fa1e0[];
 extern OPTIONBYTES ai_GamePanel;
 extern unsigned short ai_PlayerId;
 
-extern GAPDATA full_data_6fa1e0[];
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_GameState;
 extern struct AIBLD *ai_MarketBuilding;
@@ -880,6 +878,11 @@ typedef struct HEHINTEVENT {            /* the tutorial hint event 0x83's words 
     char pad00[0xac];
     int entry;                          /* 0xac, the index into he_Hints the run handler is at */
 } HEHINTEVENT;
+typedef struct HETIPEVENT {             /* the tips event 0x84's words over AIJOB's union (its alloc handler 0x567b80,
+                                           run handler 0x567c00) */
+    char pad00[0xac];
+    int entry;                          /* 0xac, the index into he_TipOrder the run handler is at */
+} HETIPEVENT;
 typedef struct HENEWWORKER {            /* the new-worker event 0x6e's words over AIJOB's union (its alloc handler 0x565850,
                                            run handler 0x565940) */
     char pad00[0xac];
@@ -16733,35 +16736,47 @@ void he_Unk567b80(int ev)
         *(int *)(ev + 0x52) = U_I((unsigned)&ai_Time);
     *(short *)(ev + 0x56) = 8;
     *(int *)(ev + 0x58) = 0;
-    gm_Shuffled(0x1a, (unsigned)&full_data_6fa1e0);
+    gm_Shuffled(0x1a, he_TipOrder);
 }
-/* 0x567c00, the run handler of the tips (ROUGH): state 0 shows the next of the 27 tip texts (0x1442430 [0x6fa1e0 [+0xac]]) while the tips 0x6f366b are on, the next run in random(4) + 8 units, else in 1 unit */
+/* 0x567c00, the run handler of the tips event 0x84: state 0 shows the next of the 27 tip texts (txt_TipTexts[he_TipOrder[entry]]) to the local player while the tips option ai_GamePanel.byte[3] is on, steps the entry and sets the next run to random(4) + 8 units; with the tips off it runs again in 1 unit; stages -1 / -2 free the record
+   @deep read the whole function against the original and rebuilt the statements: the tip text
+   txt_TipTexts[he_TipOrder[entry]] through he_ShowNews while ai_GamePanel.byte[3] is on, the step and the
+   random(4) + 8 due clock, the 1-unit rerun with the tips off, the free of the stages -1 / -2; typed the
+   data (he_TipOrder, txt_TipTexts, HETIPEVENT). Only allocation is left: ours keeps i in eax (mov
+   eax,[esi+0xac]; inc eax; cmp eax,0x1a; mov [esi+0xac],eax), the original in ecx (mov ecx,[esi+0xac]; inc
+   ecx; mov eax,ecx; mov [esi+0xac],ecx; cmp eax,0x1a), and the util_Random stack cleanup: ours 0x14 after
+   gm_AddTime, the original add esp,4 after util_Random + add esp,0x10 after gm_AddTime; 78 vs 80
+   instructions. Tried: int and unsigned i, the declaration orders, the plain util_Random(4, 0, 0) call and
+   the 3-arg cast macro; no change. */
 
-void he_Unk567c00(int ev)
+void he_RunTip(AIJOB *ev)
 {
+    HETIPEVENT *t = (HETIPEVENT *)ev;
     int st, i;
     unsigned r;
 
-    st = *(int *)(ev + 0x70);
-    if (-3 < st) {
-        if (st < 0) {
-            he_FreeEvent((int *)ev);
-        } else if (st == 0) {
-            if (*(char *)((unsigned)&ai_GamePanel + 0x3) != 0) {
-                he_ShowNews(*(int *)((unsigned)&ai_CharInts + U_I((unsigned)&ai_PlayerId) * 0x21c), -1, *(int *)((unsigned)&full_data_1442430 + *(int *)((unsigned)&full_data_6fa1e0 + *(int *)(ev + 0xac) * 4) * 4), 0, 0x5f9, 0);
-                i = *(int *)(ev + 0xac) + 1;
-                *(int *)(ev + 0xac) = i;
-                if (0x1a < i)
-                    *(int *)(ev + 0x70) = 1;
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                r = ((int (*)(int, int, int))util_Random)(4, 0, 0);
-                gm_AddTime(ev + 0x52, (r & 0xffff) + 8);
-                return;
-            }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 1, 0, 0);
+    st = ev->stage;
+    if (st < -2)
+        return;
+    if (st >= 0) {
+        if (st != 0)
+            return;
+        if (ai_GamePanel.byte[3] != 0) {
+            he_ShowNews(ai_CharsT[ai_PlayerId].netId, -1, txt_TipTexts[he_TipOrder[t->entry]], 0, 0x5f9, 0);
+            i = t->entry + 1;
+            t->entry = i;
+            if (0x1a < i)
+                ev->stage = 1;
+            ev->end = ai_Time;
+            r = ((int (*)(int, int, int))util_Random)(4, 0, 0);
+            gm_AddTime(&ev->end, (r & 0xffff) + 8);
+            return;
         }
+        ev->end = ai_Time;
+        gm_AddTime(&ev->end, 1, 0, 0);
+        return;
     }
+    he_FreeEvent((int *)ev);
 }
 /* 0x567d20, a Ghidra miss: the allocation handler of the tutorial event 0x85: the first run is now + 7 units (+0x56 = 7, +0x58 = 0) */
 
@@ -17069,13 +17084,13 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_RunHint) != 0)
         return 1;
-    if (he_SetEventHandlers(132, (void *)he_Unk567b80, (void *)he_Unk567c00) != 0)
+    if (he_SetEventHandlers(132, (void *)he_Unk567b80, (void *)he_RunTip) != 0)
         return 1;
     if (he_SetEventHandlers(133, (void *)he_Unk567d20, (void *)he_Unk567d60) != 0)
         return 1;
     if (he_SetEventHandlers(166, (void *)he_Unk567f00, (void *)he_RunPatrolEvent) != 0)
         return 1;
-    gm_Shuffled(0x1a, (unsigned)&full_data_6fa1e0);
+    gm_Shuffled(0x1a, he_TipOrder);
     return 0;
 }
 /* 0x568aa0, calls the handler 0x541200 for every event of the type 0x23 with the flags +0x78 & 3 whose +0xb0 equals the day +4 of this event */

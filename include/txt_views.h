@@ -251,7 +251,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14421b8                        (*(unsigned char (*)[348])((char *)txt_Ptrs + 0x07ff8))  /* 0x14421b8 */
 #define full_data_1442314                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x08154))  /* 0x1442314 */
 #define full_data_1442334                        (*(unsigned char (*)[256])((char *)txt_Ptrs + 0x08174))  /* 0x1442334 */
-#define full_data_1442430                        (*(unsigned char (*)[208])((char *)txt_Ptrs + 0x08270))  /* 0x1442430 */
+#define txt_TipTexts                             (*(char *(*)[52])((char *)txt_Ptrs + 0x08270))  /* 0x1442430, the 27 tip texts the tips event 0x84 shows (he.c 0x567c00; filled by txt_LoadTextFile) */
 #define txt_PilloryPunishment                    (*(char * *)((char *)txt_Ptrs + 0x08340))  /* 0x1442500, text 0x20d0 ("_MESSAGES_PRANGER+0", "Eure Prangerstrafe..."): the AP event name the pillory-punishment event 0x5c registers */
 #define full_data_1442504                        (*(unsigned char (*)[24248])((char *)txt_Ptrs + 0x08344))  /* 0x1442504 */
 #define txt_DlgTitle                             (*(char * *)((char *)txt_Ptrs + 0x0e1fc))  /* 0x14483bc */

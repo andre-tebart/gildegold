@@ -46,6 +46,7 @@ typedef struct HEHINT {                 /* 16 bytes, an entry of the tutorial hi
     int text;                           /* 0x0c, the hint's text id (txt_FindKey, d2_Strings) */
 } HEHINT;
 extern HEHINT he_Hints[128];            /* 0x6fa260, the tutorial hints he_OpenHelpEvents fills and he_RunHint walks */
+extern int he_TipOrder[0x20];           /* 0x6fa1e0, the tip order: 27 indices into txt_TipTexts (gm_Shuffled fills it) */
 extern HEEVSLOT *he_ActiveSlot;         /* 0x6f262c, the slot of the active event window (0x53dcb0, 0x53daf0), 0 = none */
 extern unsigned char he_SlotConfirmed;  /* 0x6f2630, set by a right click / Enter on the active window of the
                                            ceremony kinds 0x11 / 0x26 / 0x69 (0x52d940); their run handlers
