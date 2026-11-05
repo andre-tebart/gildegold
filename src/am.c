@@ -1937,9 +1937,9 @@ int ai_DecideGoodsGuiltWeights(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4920c0, decision 18 */
+/* 0x4920c0, the callback of law record 18 (AIDEC.fn, office 0x12 no 1, a boolean law): ai_EvalUseTrank (0x49c320, the eval callback of the goods actions 0x1c .. 0x22 of the potion action 0x23) takes its cur != 0 to evaluate those actions with the character's guilt (ai_EvalGuiltWeights) instead of the mood weights; the growth of need 10 - 2 (times 1.5 for the title groups 5 / 6, 0.9 for 7) against 0.5 turns it on when mood 9 outweighs mood 11, and off when mood 11 outweighs mood 9 */
 
-int ai_Unk4920c0(AIPER *p, int a, int *out)
+int ai_DecideTrankGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float x, u, w;

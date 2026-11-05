@@ -125,7 +125,7 @@ int ai_DecideBankRate(AIPER *p, int a, int *out);                    /* 0x491cb0
 int ai_DecideOfficePayRate(AIPER *p, int a, int *out);                    /* 0x491d80, decision 15 */
 int ai_DecideGuiltWeights(AIPER *p, int a, int *out);                    /* 0x491e80, decision 16 */
 int ai_DecideGoodsGuiltWeights(AIPER *p, int a, int *out);                    /* 0x491fb0, decision 17 */
-int ai_Unk4920c0(AIPER *p, int a, int *out);                    /* 0x4920c0, decision 18 */
+int ai_DecideTrankGuiltWeights(AIPER *p, int a, int *out);                    /* 0x4920c0, decision 18 */
 int ai_Unk4921d0(AIPER *p, int a, int *out);                    /* 0x4921d0, decision 19 */
 int ai_Unk4922e0(AIPER *p, int a, int *out);                    /* 0x4922e0, decision 20 */
 int ai_Unk492410(AIPER *p, int a, int *out);                    /* 0x492410, decision 21 */
