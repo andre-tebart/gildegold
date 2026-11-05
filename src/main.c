@@ -3,7 +3,6 @@
    network and character creation dialogs, the round loop. Its strings (0x62493c ..) follow sv.c's last one
    ("MASTER(): .." 0x624534); he.c starts at 0x53d430.
    Open: 0x534040, 0x53a520 and 0x53b2e0 are out of address order.
-   Open: head: include/he.h, he_FindFigurePlace unsettled (its he.c definition is a one-argument draft; the original takes (c, &bldId, &objId, &scene) and returns 1 / 0, and he.c drafts still call it with one argument).
    unit of rea 8cef7d5b (src/game/main.c); boundaries in decl/text.dcl */
 extern int gm_PlayerRecords[688];
 #include "txt_views.h"
