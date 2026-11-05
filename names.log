@@ -2480,3 +2480,4 @@
 2026-11-05T19:34:19 0x0056b570 func he_Unk56b570 -> he_AllocGebaeudeBauen by:main why:the alloc of the building event 0xd, named by the error text it formats
 2026-11-05T19:36:51 0x0056b700 func he_Unk56b700 -> he_PlaceGebaeudeObject by:main why:the object callback of the building event 0xd: it places the object at its target and counts the event's placements down
 2026-11-05T19:41:54 0x0056d610 func he_Unk56d610 -> he_AllocResearchRecipe by:main why:the alloc of the alchemist research event 0x96: it looks up the recipe and starts the research when the character has progress to make
+2026-11-05T19:42:36 0x0056d990 func he_Unk56d990 -> he_AllocTrainShare by:main why:the alloc of the alchemist event 0x97: it starts training one of the character's shares (ahm_ShareProgress) when there is progress to make

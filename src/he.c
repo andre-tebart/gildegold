@@ -18611,7 +18611,7 @@ void he_Unk56d2d0();
 void he_Unk56d3d0();
 void he_AllocResearchRecipe();
 void he_Unk56d730();
-void he_Unk56d990();
+void he_AllocTrainShare();
 void he_Unk56daa0();
 void he_Unk56dd20();
 void he_Unk56de10();
@@ -18621,7 +18621,7 @@ int he_RegisterEventTypes95(void)
 {
     if (he_SetEventHandlers(0x95, (void *)he_Unk56d2d0, (void *)he_Unk56d3d0) == 0) {
         if (he_SetEventHandlers(0x96, (void *)he_AllocResearchRecipe, (void *)he_Unk56d730) == 0) {
-            if (he_SetEventHandlers(0x97, (void *)he_Unk56d990, (void *)he_Unk56daa0) == 0) {
+            if (he_SetEventHandlers(0x97, (void *)he_AllocTrainShare, (void *)he_Unk56daa0) == 0) {
                 if (he_SetEventHandlers(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
                     sv_RegisterActivity(0x95, "erforschen", 1, 0x500, -1);
                     sv_RegisterActivity(0x96, "erforschen", 1, 0x500, -1);
@@ -18814,25 +18814,30 @@ float ahm_Share();
 void ai_DomizilMessageResearch(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetShare();  /* @original: he.c's call at 14930 passes 2 arguments to ahm.h's 3-parameter prototype, so this TU was compiled against the non-prototype declaration */
 
-/* 0x56d990, the alloc of the research event 0x97: like 0x56d610 but the amount is 0x4eb0b0 (character, the +0xb0 kind, &clock +0xbc), no separate record; the clock +0xc0 and the registration as there */
-void he_Unk56d990(int ev)
+/* 0x56d990, the alloc of the alchemist training event 0x97: the character (chr) and the share (id) are looked up
+   (gm_FindChar, ahm_ShareProgress into progress, its minutes into start); when that progress is above ai_FloatZero
+   the amount = the minutes it started with, both clocks (clock / end) = now, due 5, stage 0, and the character is
+   registered in its building's group (gm_Query / sv_MoveToGroup); else the event frees itself */
+void he_AllocTrainShare(int ev)
 {
-    char *c;
+    AIJOB *e = (AIJOB *)ev;
+    HEAHMRESEARCH *r = (HEAHMRESEARCH *)ev;
+    AICHAR *c;
     int v;
 
-    c = (char *)gm_FindChar(*(int *)(ev + 0xac));
+    c = (AICHAR *)gm_FindChar(r->chr);
     if (c == 0)
         goto done;
-    *(float *)(ev + 0xb4) = ahm_ShareProgress(c, *(int *)(ev + 0xb0), (void *)(ev + 0xbc));
-    if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_FloatZero)
+    r->progress = ahm_ShareProgress((char *)c, r->id, &r->start);
+    if (r->progress <= ai_FloatZero)
         goto done;
-    *(int *)(ev + 0xb8) = *(int *)(ev + 0xbc);
-    *(AITIME *)(ev + 0xc0) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
-    *(int *)(ev + 0x70) = 0;
-    v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b, *(unsigned short *)c, ev);
-    ((void (*)(int, int))sv_MoveToGroup)(*(int *)(c + 0x16c), v);
+    r->amount = r->start;
+    r->clock = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 5, 0);
+    e->stage = 0;
+    v = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b, c->id, ev);
+    ((void (*)(int, int))sv_MoveToGroup)((int)c->bld, v);
     snd_PlayFavourComment();
     return;
 done:
