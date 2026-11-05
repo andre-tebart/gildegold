@@ -17227,7 +17227,23 @@ void he_AllocBurglary(int ev)
    and 0x2af / 0x2b0, by half a chance, n * 0.1 of its amount (at least 1, n the gang's size) is sold into the store and
    counted at its price; the loot list goes to the master (0x19e6, "_NACHRICHTEN_HS_74") and the owner is told 0x19e8
    ("_NACHRICHTEN_HS_27"); a failed one tells the master 0x19e7 ("_NACHRICHTEN_HS_75") and the owner 0x19e9. The spy
-   report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it */
+   report moves out of the guild and the record is freed. Stages -2 / -1 send the gang back to the guild and free it
+   @deep Reconstructed whole against 0x561a20..0x5628dc (the false start 0x561c20 taken in): every stage of
+   the switch (0 send the gang 'Einbruch', 1 wait at the door, 2 he_DetectAttack range 5000 / gv_Accuse
+   0x17, 3 cm_GetSlotState / cm_SendProofExecuted, 4 reward gm_PlayerFactor(550 + rand 200) news 0x19ea /
+   0x19eb, field 0x65, health -100 - rand 100, back 'Entdeckt', 5 the theft roll from the 0xca spy report
+   and skill 7, gm_BuildingValues money with the skill 1 bonus, the stall goods sold into the 0x116 store,
+   the news 0x19e6 .. 0x19e9, cm_SendMoveObject; -2 / -1 back to the guild), every call with its arguments,
+   every constant and string; 1214 vs 1214 instructions, switch tables equal, no ref / literal difference.
+   Tried: the know clamp as two statements with 0.001f > know (matched), money = money < 0 ? 0 : money (the
+   setl form, matched), the reward / spy report word as one union (the original's single [esp+0x1c] slot
+   with one zero init), a patrol local for d.found. Left: allocation: the original keeps 0 in ebx, room in
+   edi and master in ebp (and [esp+0x2c]) from the prologue, ours keeps 0 in ebx/edi with room in a slot
+   (code hunk at +0x1b: the zero-init stores [esp+0x34]/[0x2c]/[0x30]/[0x1c] vs ours
+   [0x28]/[0x10]/[0x2c]/[0x20]/[0x30]); the original holds d.found in edi across gv_Accuse (+0x26b, ours
+   reloads it from d after the call); test reg,reg vs cmp reg,ebx(0) in stage 3 (+0x364, +0x3b3); frame
+   0x740 vs 0x738 (two more slots of ours); 5 branch targets: stage 3's 'stage = -1; return' tail merged
+   with stage 0's copy in ours, with stage 4's in the original */
 void he_RunBurglary(AIJOB *ev)
 {
     HEBURGLARY *x = (HEBURGLARY *)ev;
