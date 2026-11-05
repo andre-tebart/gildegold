@@ -2362,3 +2362,5 @@
 2026-11-05T14:04:35 0x005509f0 func he_Unk5509f0 -> he_StartReaper by:main why:the allocation handler of the Sensenmann event: picks the first target building and creates the reaper (he_CreateReaper)
 2026-11-05T14:06:50 0x00550b60 func he_Unk550b60 -> he_RunReaper by:main why:the run handler of the Sensenmann (reaper) event: flies, retargets and turns the reaper, its track
 2026-11-05T14:09:34 0x00550ee0 func he_Unk550ee0 -> he_RunRanking by:main why:the run handler of the ranking event: gm_RankPlayers, sends the head packet and a line per player (udp_Send)
+2026-11-05T14:13:00 0x00551340 func he_Unk551340 -> he_StepWalkSlot by:main why:steps one slot of the walk event: 2 while the character is still on its way to the building's door (sv_IsAtDoor), else frees the slot
+2026-11-05T14:13:23 0x004c5ec0 data ai_Unk4c5ec0 -> cm_SendChrDelete by:main why:sends message 0x57, whose handler 0x4cc920 deletes the character's scene character (+0x184)

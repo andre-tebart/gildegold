@@ -269,7 +269,7 @@ void cm_SendScriptMessage(void *p);                                             
 void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
 int cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
-void ai_Unk4c5ec0(int a);                                                        /* 0x4c5ec0 */
+void cm_SendChrDelete(int a);                                                        /* 0x4c5ec0 */
 void cm_SendCancelParty(int a);                                                        /* 0x4c5ef0 */
 int cm_SendCutsceneReady(void *p);                                                       /* 0x4c5f20, its send slot (cm_GetSlotState) */
 void cm_SendMoneyDelta(int a, int b);                                                 /* 0x4c5f60 */

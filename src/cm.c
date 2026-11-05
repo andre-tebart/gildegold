@@ -2113,9 +2113,9 @@ void cm_SendMessage56(void *p)
     memcpy(m.data, p, 0x28);
     cm_QueueSend(&m);
 }
-/* 0x4c5ec0, message 0x57 */
+/* 0x4c5ec0, sends message 0x57: its handler (0x4cc920) deletes the scene character (+0x184) of character a */
 
-void ai_Unk4c5ec0(int a)
+void cm_SendChrDelete(int a)
 {
     G17MSG m;
 

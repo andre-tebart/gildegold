@@ -279,6 +279,14 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
+/* one of the ten 16-byte slots of the walk event 0x5512c0 at AIJOB +0xac (he_Unk5512c0 clears them) */
+typedef struct HEWALKSLOT {
+    int chr;                            /* 0x0, the walking character's netId (gm_FindChar), -1 free */
+    int target;                         /* 0x4, the building it walks to (gm_FindById's building) */
+    unsigned char flags[4];             /* 0x8, state bytes (+0x9: 1 counted, 4 on its way: he_Unk551b70) */
+    int pad;                            /* 0xc */
+} HEWALKSLOT;
+
 void d3io_NoopCallback(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
 int he_RegisterEventTypes22(void);
 int he_RegisterEventTypes02();
@@ -9347,57 +9355,55 @@ void he_Unk5512c0(int ev)
     }
 }
 
-void ai_Unk4c5ec0(int a);
+void cm_SendChrDelete(int a);
 void cm_SendChrStop(int a);
 int sv_IsAtDoor();
 void cm_SendSetField(int a, int b, int c, int d, int e);
 
-/* 0x551340, steps one 16-byte slot (id, target id, 4 flag bytes) of the 0x5512c0 event: no id -> 0; the person (0x505df0) is looked up and its target (0x4fea50, out in the local): without a target a person that has an object (+0x184) is released (0x4c5ec0) and given the message 0x1c8 (4, 0, 0x40000000); with a target the walk is checked (0x524770) and while the person is still on its way (and the hour is before 0x16) the result is 2, else the slot is cleared (the person stops: 0x4c5230 / 0x4c5ec0, message 0x1c8) and the result 0 (ROUGH) */
-int he_Unk551340(int *s)
+/* 0x551340, steps one slot of the walk event 0x5512c0: a free slot gives 0; the character (gm_FindChar) walks to
+   its building (gm_FindById): while it is not at the door yet (sv_IsAtDoor) and the hour is before 22 the result is
+   2 (still on its way); else, or when the character or the building is gone, the slot is freed, a character with a
+   scene model is stopped (cm_SendChrStop, message 0x57) and its field 0x1c8 loses the bit 0x40000000, result 0 */
+int he_StepWalkSlot(HEWALKSLOT *s)
 {
-    int a, o = 0;
-    unsigned char *b = (unsigned char *)s;
+    AICHAR *c;
+    int bld;
 
-    if (s[0] == -1)
+    if (s->chr == -1)
         return 0;
-    a = gm_FindChar(s[0]);
-    if (a != 0) {
-        gm_FindById(&o, 0, 0, s[1]);
-        if (o != 0) {
-            if (sv_IsAtDoor(a, o) == 0 && *(unsigned short *)(unsigned)&ai_Time.hour < 0x16)
-                return 2;
-            if (*(int *)(a + 0x184) != 0) {
-                cm_SendChrStop(*(int *)(a + 4));
-                ai_Unk4c5ec0(s[0]);
+    c = (AICHAR *)gm_FindChar(s->chr);
+    if (c != 0) {
+        gm_FindById(&bld, 0, 0, s->target);
+        if (bld == 0) {
+            if (c->model != 0) {
+                cm_SendChrDelete(s->chr);
+                cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x40000000);
             }
-            s[0] = -1;
-            s[1] = -1;
-            b[8] = 0;
-            b[9] = 0;
-            b[10] = 0;
-            b[11] = 0;
-            cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000000);
+        } else {
+            if (sv_IsAtDoor((char *)c, (char *)bld) == 0 && ai_Time.hour < 0x16)
+                return 2;
+            if (c->model != 0) {
+                cm_SendChrStop(c->netId);
+                cm_SendChrDelete(s->chr);
+            }
+            s->chr = -1;
+            s->target = -1;
+            s->flags[0] = 0;
+            s->flags[1] = 0;
+            s->flags[2] = 0;
+            s->flags[3] = 0;
+            cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x40000000);
             return 0;
         }
-        if (*(int *)(a + 0x184) != 0) {
-            ai_Unk4c5ec0(s[0]);
-            cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000000);
-        }
     }
-    s[0] = -1;
-    s[1] = -1;
-    b[8] = 0;
-    b[9] = 0;
-    b[10] = 0;
-    b[11] = 0;
+    s->chr = -1;
+    s->target = -1;
+    s->flags[0] = 0;
+    s->flags[1] = 0;
+    s->flags[2] = 0;
+    s->flags[3] = 0;
     return 0;
 }
-
-int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id);
-int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);
-float util_RandomF();
-
-void ai_Unk4c52a0(int a, int b, int c);
 
 /* 0x551440, fills one free 16-byte slot of the 0x5512c0 event with a person and a target (ROUGH, from the disassembly): -1 when the slots are used up (n + the two flags 0x76061c / 0x760618 (+4) >= 10), the slot is in use (byte +9) or it is before the hour 0xb; the chance (n - m) / (n + 1) against 0x5eceec picks the order of the two try values 0x20a0 / 0x402c20 for the person's search 0x4a5b50 (player 0x6f25b8, up to 100.0), a target is the person's own target (+0x170) or comes from 0x4a63f0; a random roll 0x42ec20 against 0.1 may end it (-1); else the target's building number (0x4fea50, 0xa9 bytes each) goes in +0xb, the person is sent there (message 0x1c8) and the slot gets person, target, 1 / 9 (0x29 for a character with +0x1f0), a random byte of 0x5ed140 and 0xff (0x4c52a0 (person, target, -1) starts it) */
 int he_Unk551440(unsigned char *slot, int n, int m)
@@ -9622,7 +9628,7 @@ void he_Unk551b70(int ev)
     if (*(unsigned short *)(ev + 0x56) >= 0x11) {
         s = (unsigned char *)(ev + 0xac);
         for (i = 10; i != 0; i--) {
-            if (he_Unk551340((int *)s) == 2)
+            if (he_StepWalkSlot((HEWALKSLOT *)s) == 2)
                 n++;
             s += 0x10;
         }
@@ -9636,7 +9642,7 @@ void he_Unk551b70(int ev)
     s = (unsigned char *)(ev + 0xac);
     for (i = 10; i != 0; i--) {
         if ((s[9] & 4) != 0)
-            he_Unk551340((int *)s);
+            he_StepWalkSlot((HEWALKSLOT *)s);
         else
             he_Unk551780(s);
         if ((s[9] & 1) != 0)
