@@ -287,12 +287,13 @@ typedef struct HEWALKSLOT {
     unsigned char state;                /* 0x9, flags: 1 counted, 4 done, 0x10 played, 0x20 a character with +0x1f0, 0x40 held */
     unsigned char step;                 /* 0xa, the step through ai_Blds (a random ai_RandomStrides entry) */
     unsigned char bldIndex;             /* 0xb, the ai_Blds index of the building */
-    unsigned char holdHour;             /* 0xc, the hour the character was held at, 0xff none */
+    char holdHour;                      /* 0xc, the hour the character was held at, 0xff none (a char: he_StepWalk's test
+                                           for 0xff never holds) */
     unsigned char pad[3];
 } HEWALKSLOT;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
-#define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_Unk551780 tests the same mask) */
+#define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
 
 int ai_FindPartnersRandomWalk(struct AIPER *p, unsigned int a, int *flags, float lo, float hi, unsigned short *id); /* 0x4a5b50 (am.h, not included yet) */
 
@@ -9471,7 +9472,7 @@ int he_FillWalkSlot(HEWALKSLOT *slot, int n, int m)
     return cm_SendPlaceOnStage(ch->netId, tgt, -1);
 }
 /* 0x5516a0, queues a random animation on a person (+4 the figure; random 0x42ec00(4) & 0xffff, jump table 0x551764): 0 = 0x626fd0, 1 = 0x626fbc then 0x626fd0, 2 = 0x626a4c then 0x626fd0, 3 = 0x6268c8, 0x626fbc, 0x626fd0 (all with 0x4c5410 (id, name, 1)) */
-void he_Unk5516a0(int p)
+void he_PlayGestures(int p)
 {
     switch ((unsigned short)util_Random(4)) {
     case 0:
@@ -9496,131 +9497,137 @@ void he_Unk5516a0(int p)
 unsigned char *gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 char *gm_FindBuildingById(int id);
-int he_Unk55ee40();
+int he_PickNearBuilding();
 void cm_SendCharHalt(int a);
 int cm_SendChrGotoBuilding();
 
-/* 0x551780, steps one 16-byte slot of the 0x5512c0 event (a person on a walk through town; bytes: +8 the stage counter, +9 flags 0x40 / 0x10 / 0x04 (done), +0xa the step, +0xb the building index, +0xc the hour it started): the person (0x505df0) is gone -> the slot is cleared; with a target (0x4fea50) the walk is checked (0x524770) and a person with a work object (+0x184) is held / released by the hour (message 0x1c8 / 0x1000, 0x4c5b90); every 1 + budget / 2 stages (budget = 2 + random 0x42ec00(6) + the two flags) the person plays an animation (0x5516a0); else a new target building is looked for, with a chance above 0.5 from the 0x20 buildings of the list 0x501190 (1, 5, 0x16) through 0x55ee40, else by walking the 0x100 buildings with step +0xa for one of the kinds in the mask 0xa7f4c3a0; the found building number goes to +0xb, its id to +4, and the person is sent there (0x4c52e0 "...", the flag differs for the kinds 0x16 / 7 / 0xf) (ROUGH) */
-void he_Unk551780(unsigned char *s)
+/* 0x551780, steps a character's walk through town (a slot of the walk event 0x5512c0): a character that is gone
+   frees the slot; one whose building is gone looks for the next one at once; else it waits until it is at the
+   building's door, a character whose scene model stands in a building is held there (bit 0x1000 of field 0x1c8
+   cleared, its hour noted) until the next hour, then released (the bit set, cm_SendCharHalt); a walk with more
+   stages than 10 less the budget (2 + a random 0 .. 5 + the weather) ends (state 4); every budget / 2 + 1 stages it
+   plays an animation (he_PlayGestures) instead of walking on. The next building: above an even roll one of the up to
+   0x20 inns (gm_BuildQuery 1, 5, 0x16) the one he_PickNearBuilding picks (only looked up by gm_FindBuildingById, the
+   walk keeps its building), else the next of the 0x100 buildings in steps of
+   the slot's step whose kind is in HE_WALK_BUILDINGS; the character is sent there (cm_SendChrGotoBuilding
+   "Sim Politicians", its flag 0 for the kinds 0x16 / 7 / 0xf, else 1) */
+void he_StepWalk(HEWALKSLOT *s)
 {
-    int v10, o = 0, v18 = 0, a;
-    int arr[0x20];
-    int n, bld, kind, step, ebx, left;
-    unsigned lo, hi;
-    char c;
-    int obj;
+    AIBLD *b = 0;
+    int held;
+    int budget;
+    AIBLD *inns[0x20];
+    AICHAR *c;
+    AITASK *model;
+    int weather, stage, n, hour;
+    int idx = 0;
+    unsigned char kind;
+    unsigned int lo, hi;
 
-    a = gm_FindChar(*(int *)s);
-    if (a == 0) {
-        *(int *)s = -1;
-        *(int *)(s + 4) = -1;
-        s[8] = 0;
-        s[9] = 0;
-        s[10] = 0;
-        s[11] = 0;
-        s[12] = 0xff;
+    c = (AICHAR *)gm_FindChar(s->chr);
+    if (c == 0) {
+        s->chr = -1;
+        s->target = -1;
+        s->stage = 0;
+        s->state = 0;
+        s->step = 0;
+        s->bldIndex = 0;
+        s->holdHour = 0xff;
         return;
     }
-    gm_FindById(&o, 0, 0, *(int *)(s + 4));
-    v18 = 0;
-    if (o == 0)
-        goto cleanup;
-    v10 = (U_I((unsigned)&d3t_Snow) != 0) + (U_I((unsigned)&d3t_Rain) != 0 ? 2 : 0) + (unsigned short)util_Random(6) + 2;
-    if (sv_IsAtDoor(a, v18) == 0)
+    gm_FindById((int *)&b, 0, 0, s->target);
+    held = 0;
+    if (b == 0)
+        goto next;
+    weather = (d3t_Rain != 0 ? 2 : 0) + (d3t_Snow != 0);
+    budget = weather + (unsigned short)util_Random(6) + 2;
+    if (sv_IsAtDoor((char *)c, (char *)b) == 0)
         return;
-    obj = *(int *)(a + 0x184);
-    if (obj != 0 && *(int *)(obj + 0x2c) != -1 && *(int *)(obj + 0x30) != -1) {
-        c = (char)s[0xc];
-        s[9] |= 0x40;
-        v18 = 1;
-        if (c == 0xff) {
-            s[0xc] = (unsigned char)*(unsigned short *)(unsigned)&ai_Time.hour;
-            cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x1000);
+    model = c->model;
+    if (model != 0 && model->bldId != -1 && model->scriptGroup != -1) {
+        hour = s->holdHour;
+        s->state |= 0x40;
+        held = 1;
+        if (hour == 0xff) {
+            s->holdHour = (char)ai_Time.hour;
+            cm_SendSetField(c->netId, 0x1c8, 4, 0, 0x1000);
             return;
         }
-        if ((*(unsigned short *)(unsigned)&ai_Time.hour & 0xffff) <= c + 1)
+        if (ai_Time.hour <= hour + 1)
             return;
-        s[9] &= 0xbf;
-        cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x1000);
-        cm_SendCharHalt(*(int *)(a + 4));
-        s[0xc] = 0xff;
+        s->state &= ~0x40;
+        cm_SendSetField(c->netId, 0x1c8, 4, 0x1000, 0);
+        cm_SendCharHalt(c->netId);
+        s->holdHour = 0xff;
     }
-    n = s[8];
-    if (10 - n < v10) {
-        s[9] |= 4;
+    stage = s->stage;
+    if (10 - stage < budget) {
+        s->state |= 4;
         return;
     }
-    if ((s[9] & 0x10) == 0) {
-        step = v10 / 2 + 1;
-        if ((n + 2) % step == 0 && v18 == 0) {
-            s[8] = (unsigned char)(n + 1);
-            he_Unk5516a0(a);
-            s[9] |= 0x10;
+    if ((s->state & 0x10) == 0) {
+        budget = budget / 2 + 1;
+        if ((stage + 2) % budget == 0 && held == 0) {
+            s->stage = (unsigned char)(stage + 1);
+            he_PlayGestures((int)c);
+            s->state |= 0x10;
             return;
         }
     }
-cleanup:
-    s[9] &= 0xef;
-    cm_SendChrStop(*(int *)(a + 4));
-    if ((float)util_RandomF() > 0.5f) {
-        int e = gm_BuildQuery(1, 5, 0x16);
-        int i = 0;
+next:
+    s->state &= ~0x10;
+    cm_SendChrStop(c->netId);
+    if (util_RandomF() > 0.5f) {
+        AIBLD *e = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
 
+        n = 0;
         if (e != 0) {
-            while (i < 0x20) {
-                if (*(unsigned short *)(e + 0x27) != 0xffff && *(int *)(e + 0x61) != 0)
-                    arr[i++] = e;
-                e = gm_BuildNext();
-                if (e == 0)
+            do {
+                if (n >= 0x20)
                     break;
-            }
-            if (i != 0 && he_Unk55ee40(a, i, arr, &v10, &v18) != 0)
-                gm_FindBuildingById(v10);
+                if (e->owner != 0xffff && e->object != 0)
+                    inns[n++] = e;
+                e = (AIBLD *)gm_BuildNext();
+            } while (e != 0);
+            if (n != 0 && he_PickNearBuilding(c, n, inns, &budget, &held) != 0)
+                gm_FindBuildingById(budget);
         }
-        bld = o;
     } else {
-        step = s[10];
-        ebx = (s[11] + step) & 0xff;
-        left = 0x100;
-        bld = 0;
+        /* the budget is the step from here, held the buildings left */
+        idx = s->bldIndex;
+        budget = s->step;
+        held = 0x100;
+        idx = (idx + budget) % 0x100;
         do {
-            bld = U_I((unsigned)&ai_Blds) + ebx * 0xa9;
-            o = bld;
-            if (*(unsigned char *)bld != 0) {
-                int k = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)bld * 0x24d);
-
+            b = &ai_BldsT[idx];
+            if (b->type != 0) {
+                kind = ai_BTypesT[b->type].kind;
                 lo = 0;
                 hi = 0;
-                if (k > 0x1f)
-                    hi = 1u << (k - 0x20);
+                if (kind > 0x1f)
+                    hi = 1 << (kind - 0x20);
                 else
-                    lo = 1u << k;
-                if (*(int *)(bld + 0x61) != 0 && ((lo & 0xa7f4c3a0) != 0 || (hi & 1) != 0))
+                    lo = 1 << kind;
+                if (b->object != 0 && ((lo & (unsigned int)HE_WALK_BUILDINGS) != 0 || (hi & (unsigned int)(HE_WALK_BUILDINGS >> 32)) != 0))
                     break;
-                bld = 0;
-                o = 0;
+                b = 0;
             }
-            ebx = (ebx + step) & 0xff;
-            left--;
-        } while (left != 0);
+            idx = (idx + budget) % 0x100;
+        } while (--held != 0);
     }
-    if (bld == 0) {
-        s[9] |= 4;
+    if (b == 0) {
+        s->state |= 4;
         return;
     }
-    s[11] = (unsigned char)ebx;
-    *(int *)(s + 4) = *(int *)(bld + 1);
-    s[8]++;
-    kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)bld * 0x24d);
+    s->bldIndex = (unsigned char)idx;
+    s->target = b->id;
+    s->stage++;
+    kind = ai_BTypesT[b->type].kind;
     if (kind == 0x16 || kind == 7 || kind == 0xf)
-        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 0, "Sim Politicians");
+        cm_SendChrGotoBuilding(s->chr, s->target, -1, 0, 0, "Sim Politicians");
     else
-        cm_SendChrGotoBuilding(*(int *)s, *(int *)(s + 4), -1, 0, 1, "Sim Politicians");
+        cm_SendChrGotoBuilding(s->chr, s->target, -1, 0, 1, "Sim Politicians");
 }
-
-int cm_GetSlotState();
-void gm_Shuffled(unsigned char n, int *out);
-
 /* 0x551b70, the run handler of the walk event 0x5512c0 (ROUGH): states -1 / -2 free the record; a record with flag 4 or a pending handle (+0x84, 0x4c3ae0 checks it) does nothing; else the due clock is set to now and posted 5 later, and after the minute word 0x11 the ten slots (+0xac, 16 bytes) are stepped by 0x551340 (counting the ones still walking = 2; when none walks, the minute word is reset and the day counter +0x52 incremented), before it the slots are stepped by 0x551340 (done: flag 4) or 0x551780 and the ones with flag 1 counted, then up to ten tries to fill a slot (0x551440) post the event again 1 later */
 void he_Unk551b70(int ev)
 {
@@ -9658,7 +9665,7 @@ void he_Unk551b70(int ev)
         if ((s[9] & 4) != 0)
             he_StepWalkSlot((HEWALKSLOT *)s);
         else
-            he_Unk551780(s);
+            he_StepWalk((HEWALKSLOT *)s);
         if ((s[9] & 1) != 0)
             n++;
         s += 0x10;
@@ -13010,7 +13017,7 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 void *gm_GetGebaeudeHauptraum(unsigned char *b);
 
 /* 0x55ee40, a Ghidra start: the chance of a figure to be seen at its place (ROUGH): for a figure with the flag 1 of +0x5a and objects (+0x61 / the target's +0x170 +0x61) the 3D distance of the two objects scales a factor against 0x5eb780 (1.0), 0x5edbb8 and the building value (0x5092e0 (.., 9, 1)); a nearby contact (0x4ffe90 (.., 1, 0, 0x120)) with an object returns 1, else 0 */
-int he_Unk55ee40(int p)
+int he_PickNearBuilding(int p)
 {
     int o1, o2, c;
     float dx, dy, dz, d;
@@ -13049,7 +13056,7 @@ void he_Unk55efc0(int ev)
     cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
     cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
     he_FindFigurePlace(p);
-    he_Unk55ee40(p);
+    he_PickNearBuilding(p);
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_AddTime(ev + 0x52, 0, 0x1e, 0);
 }
