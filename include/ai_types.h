@@ -180,7 +180,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             int harvestWorker;          /* 0xb0, the worker's netId (gm_FindChar), the spot "sp_%i" of its cutscene */
             int harvestScript;          /* 0xb4, the id of the running cutscene script, -1: none */
             int harvestPlant;           /* 0xb8, the plant's id (veg_FindPlantId; unkb8) */
-            char padharvbc[4];
+            unsigned short harvestType; /* 0xbc, the plant's type (G15PLANT.type) when the alloc handler took it */
+            char padharvbe[2];
             int harvestSlot;            /* 0xc0, the cm send slot of the plant message (cm_SetPlant (.., 1) of the alloc
                                            handler); the run handler waits on it (cm_GetSlotState), -1: dropped */
         };

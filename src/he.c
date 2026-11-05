@@ -15424,31 +15424,53 @@ void he_RunEvent27(int ev)
         break;
     }
 }
-/* 0x55d490, the allocation handler of the harvest event (ROUGH): the due clock is now (+1), state 0; the building +0xac (0x501190) and the field object +0xb8 (0x4bc670) and the worker +0xb0 (0x505df0; a free worker without job / not of the job 0x28: the group 0x524260 (building, 0xfd contact via 0x4ffe90, ..)) are set up, the job handle +0xc0 = 0x4c5050 (building, 1), +0xb4 = -1 and the word +0xbc = the minute word; a missing worker frees the record */
-
+/* 0x55d490, the allocation handler of the harvest event: due in a second, stage 0; the building harvestBld, its plant
+   harvestPlant and the worker harvestWorker. A plant missing or held by another event (fallId) lets the worker leave
+   the building's group and frees the record, as does a missing worker or one already harvesting (job kind 0x28).
+   Else the worker joins the group at the building's object 0xfd, the plant is taken under the event's id
+   (cm_SetPlant, fall 1; its send slot to harvestSlot), no script runs yet and the plant's type is noted
+   @deep read whole against 0x55d490..0x55d5bb and reconstructed (the building / plant / worker checks, the
+   group move at object 0xfd, cm_SetPlant (bld, x, z, type, 1, id), harvestScript = -1, harvestType = plant
+   type; AIJOB got harvestType at 0xbc). 103 vs 103 instructions, the same calls and stores; left is
+   allocation and scheduling: the gm_FindChar argument (+0x502:
+   original mov edx,[esi+0xb0] / mov edi,eax / push edx, ours mov edi,eax / mov eax,[esi+0xb0] / push eax),
+   regs eax/ecx/edx renamings at +0x530 .. +0x599 and the +0x57b order of the harvestType load; proof stops
+   only on cm_SetPlant's byte argument whose upper bits come from another scratch register (edx vs ecx).
+   Tried: declaration order c / pl, the nested if / else form and the early-return form (both compile
+   identically) */
 void he_AllocHarvest(int ev)
 {
-    int b, p, o;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    G15PLANT *pl;
+    short *o;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
-    *(int *)(ev + 0x70) = 0;
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-    if (b != 0)
-        veg_FindPlantId(b, *(int *)(ev + 0xb8));
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0) {
-        sv_MoveToGroup(0, 0, 0, ev);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 0, 1);
+    e->stage = 0;
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->harvestBld);
+    if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (b != 0 && *(int *)(b + 0x10) != -1 && *(unsigned char *)(p + 0x180) != 0x28) {
-        o = gm_Query(0, 1, 0, 0xfd);
-        sv_MoveToGroup(b, o, *(unsigned short *)p, ev);
+    pl = veg_FindPlantId((G15PLANT *)b->plants, e->harvestPlant);
+    c = (AICHAR *)gm_FindChar(e->harvestWorker);
+    if (pl == 0 || pl->fallId != -1) {
+        if (c != 0)
+            sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+        he_FreeEvent((int *)ev);
+        return;
     }
-    *(int *)(ev + 0xc0) = ((int (*)(int, int))cm_SetPlant)(*(int *)(ev + 0xac), 1);
-    *(int *)(ev + 0xb4) = -1;
-    *(unsigned short *)(ev + 0xbc) = *(unsigned short *)(ev + 0xbc);
+    if (c == 0 || c->jobKind == 0x28) {
+        he_FreeEvent((int *)ev);
+        return;
+    }
+    o = (short *)gm_Query((void *)b->objList, 1, 0, 0xfd);
+    sv_MoveToGroup((unsigned char *)b, o, c->id, (char *)ev);
+    e->harvestSlot = cm_SetPlant(e->harvestBld, pl->x, pl->z, pl->type, 1, e->id);
+    e->harvestScript = -1;
+    e->harvestType = pl->type;
 }
 /* 0x55d5c0, the run handler of the harvest event, by its stage (the jump table 0x55dbc0 after the code): the building
    harvestBld, its plant harvestPlant and the worker harvestWorker; a missing plant or one another event holds (fallId)
