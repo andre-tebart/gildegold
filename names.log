@@ -2546,3 +2546,4 @@
 2026-11-05T22:53:01 0x00566830 func he_Unk566830 -> he_RunRobbery by:main why:the run handler of event 0x75 (he_SetEventHandlers 117): the gang sent with Raubzug, the burglary's twin (he_RunRaid is the Razzia 0x44)
 2026-11-05T22:55:30 0x00567660 func he_Unk567660 -> he_RunTitleDue by:main why:the run handler of event 0x7c (he_SetEventHandlers 124): tells the character once (flags1c8 bit 31) that his title period is served (gm_TitlePeriodServed, message 0x25)
 2026-11-05T22:57:16 0x00567810 func he_Unk567810 -> he_OpenHelpEvents by:main why:its own error texts: he_OpenHelpEvents(): Could not open help-definition! / invalid textlabel
+2026-11-05T23:00:00 0x00567d60 func he_Unk567d60 -> he_RunTutorialBuildingTour by:main why:run handler of the tutorial event 0x85 (he_SetEventHandlers(133, ...)): until 22:00 shows a random building of the character (gm_BuildQuery(1,4,chr)) or the market in the panel (sv_SelectPanelObject)
