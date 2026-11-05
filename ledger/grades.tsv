@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	byte+draft -> shape+draft at 32cdea41: include/f3gm_types.h gains GMSTOCKGROUP and the four production groups of GMSTOCK (the record gm_GoodsStock reads: a group byte, an unaligned int and a factor per 8 bytes at 0x40); d3_engine includes f3gm.h but d3_CloneObject reads no goods record, and its byte match flips on that declaration set alone (VC6 tie-break, no evidence of the original's source) [waits for: the declaration set of include/f3gm_types.h settling (the stock record's typed fields)]
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -1694,19 +1694,19 @@ exe	0x0049d750	ai_DecideUsePrivileges	am	byte	readable
 exe	0x0049d7d0	ai_ExecuteUsePrivileges	am	byte	readable		
 exe	0x0049d7f0	ai_EvalMayor	am	shape	readable		
 exe	0x0049d8d0	ai_DecideMayor	am	draft	readable	deep	
-exe	0x0049dc10	ai_ExecuteMayor	am	byte	draft		
+exe	0x0049dc10	ai_ExecuteMayor	am	byte	readable		
 exe	0x0049dd90	ai_DecideMayorUpgrade	am	byte	readable		
 exe	0x0049def0	ai_DecideMayorTownHall	am	byte	readable		
-exe	0x0049e230	ai_ExecuteMayorTownHall	am	byte	draft		
+exe	0x0049e230	ai_ExecuteMayorTownHall	am	byte	readable		
 exe	0x0049e350	ai_DecideMayorPrison	am	byte	readable		
-exe	0x0049e680	ai_ExecuteMayorPrison	am	byte	draft		
+exe	0x0049e680	ai_ExecuteMayorPrison	am	byte	readable		
 exe	0x0049e7a0	ai_DecideMasterBuilder	am	draft	readable	deep	
 exe	0x0049ea90	ai_ExecuteMasterBuilder	am	shape	readable	deep	
 exe	0x0049ec10	ai_EvalDarkCorner	am	byte	readable		
 exe	0x0049ed10	ai_DecideDarkCorner	am	byte	readable		
 exe	0x0049ee20	ai_ExecuteDarkCorner	am	byte	readable		
 exe	0x0049eec0	ai_DecideTakeCredit	am	byte	readable		
-exe	0x0049f370	ai_ExecuteTakeCredit	am	byte	draft		
+exe	0x0049f370	ai_ExecuteTakeCredit	am	byte	readable		
 exe	0x0049f4f0	ai_EvalChangeProfession	am	byte	readable		
 exe	0x0049f5c0	ai_DecideChangeProfession	am	draft	readable	deep	
 exe	0x0049f7f0	ai_ExecuteChangeProfession	am	byte	readable		
@@ -1718,14 +1718,14 @@ exe	0x004a0090	ai_DecideGuildRiot	am	byte	readable
 exe	0x004a01f0	ai_ExecuteGuildRiot	am	byte	readable		
 exe	0x004a0240	ai_PickLeastLikedRival	am	shape	readable	deep	
 exe	0x004a0410	ai_PickDislikedColumn	am	byte	readable		
-exe	0x004a05e0	ai_Unk4a05e0	am	byte	draft		
-exe	0x004a0890	ai_DecideGuildLevel3	am	byte	draft		
+exe	0x004a05e0	ai_PickLikedColumn	am	byte	readable		
+exe	0x004a0890	ai_DecideGuildLevel3	am	byte	readable		
 exe	0x004a0940	ai_ExecuteGuildLevel3	am	byte	readable		
 exe	0x004a0990	ai_EvalUpgradeGuild	am	byte	readable		
 exe	0x004a0a70	ai_DecideUpgradeGuild	am	draft	readable	deep	
-exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	byte	draft		
-exe	0x004a1000	ai_EvalApprenticeship	am	byte	draft		
-exe	0x004a1170	ai_DecideApprenticeship	am	shape	draft		
+exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	byte	readable		
+exe	0x004a1000	ai_EvalApprenticeship	am	byte	readable		
+exe	0x004a1170	ai_DecideApprenticeship	am	shape	readable		
 exe	0x004a1360	ai_ExecuteApprenticeship	am	byte	draft		
 exe	0x004a13e0	ai_DecideStudy	am	shape	draft		
 exe	0x004a1640	ai_ExecuteStudy	am	byte	readable		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
