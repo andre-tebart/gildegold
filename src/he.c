@@ -25,9 +25,12 @@
    transport event 15 with its four legs (HETRANSPORT; the cart's CHARACTER, the ordering event's HEROUTEREFS),
    the cart repair 16 (HECARTREPAIR), the message box 17 (HEMSGBOX, the party G28REC) and the slot order 18
    (HESLOTORDER), and the events 19 .. 25 that follow: the store extension (HESTOREEXT), herb gathering (HEHERBS),
-   animal hunt (HEHUNT), study (HESTUDY), spying (HESPYING) and sabotage (HESABOTAGE). The head includes rt.h
-   (d2_SetObjValue2 / rt_UnloadAtPointC keep this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
-   Open: types: the other handlers past 0x547ba0 still read the event and message records through raw offsets
+   animal hunt (HEHUNT), study (HESTUDY), spying (HESPYING) and sabotage (HESABOTAGE), and the brawl 26
+   (HEBRAWL), theft 27 (HETHEFT), repair 28 (HEREPAIR) and upgrade 0x1e events up to 0x55ba00. The head includes
+   rt.h (d2_SetObjValue2 / rt_UnloadAtPointC keep this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
+   Open: types: the other handlers past 0x55ba00 still read the event and message records through raw offsets
+   Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
+   cm.h not included; their calls stay M7)
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
    master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), HEDUEL (the duel challenge's +0xac and the duel's

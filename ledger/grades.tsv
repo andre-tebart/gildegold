@@ -2219,7 +2219,7 @@ exe	0x004c52e0	cm_SendChrGotoBuilding	cm	draft	readable	deep
 exe	0x004c5410	cm_SendChrAnim	cm	byte	draft		
 exe	0x004c5460	cm_SendChrUseGates	cm	byte	draft		
 exe	0x004c54a0	cm_SendOwnership	cm	byte	draft		
-exe	0x004c54e0	ai_Unk4c54e0	cm	byte	draft		
+exe	0x004c54e0	cm_SendUpgradeDone	cm	byte	draft		
 exe	0x004c5510	cm_SendBuildingDestroyed	cm	byte	draft		
 exe	0x004c5540	cm_SendBoss	cm	byte	draft		
 exe	0x004c5580	cm_SendHandOverCrimes	cm	byte	draft		
@@ -3723,14 +3723,14 @@ exe	0x00558e70	he_Unk558e70	he	byte	draft
 exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
 exe	0x00559d20	he_AllocSpying	he	draft	readable	deep	
 exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
-exe	0x0055a5f0	he_Unk55a5f0	he	draft	draft		
-exe	0x0055a730	he_Unk55a730	he	draft	draft		
-exe	0x0055af70	he_Unk55af70	he	draft	draft		
-exe	0x0055b140	he_Unk55b140	he	draft	draft		
-exe	0x0055b3e0	he_Unk55b3e0	he	draft	draft		
-exe	0x0055b530	he_Unk55b530	he	draft	draft		
-exe	0x0055b720	he_Unk55b720	he	draft	draft		
-exe	0x0055b830	he_Unk55b830	he	draft	draft		
+exe	0x0055a5f0	he_AllocBrawl	he	draft	readable	deep	
+exe	0x0055a730	he_RunBrawl	he	draft	readable	deep	
+exe	0x0055af70	he_AllocTheft	he	byte	readable		
+exe	0x0055b140	he_RunTheft	he	byte	readable		
+exe	0x0055b3e0	he_AllocRepair	he	draft	readable	deep	
+exe	0x0055b530	he_RunRepair	he	byte	readable		
+exe	0x0055b720	he_AllocUpgrade	he	byte	readable		
+exe	0x0055b830	he_RunUpgrade	he	byte	readable		
 exe	0x0055ba00	he_AllocEvent1f	he	byte	readable		
 exe	0x0055bad0	he_Unk55bad0	he	draft	draft		
 exe	0x0055bd20	he_Unk55bd20	he	byte	draft		
