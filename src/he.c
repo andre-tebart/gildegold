@@ -8790,18 +8790,23 @@ void cm_SendDropEvidence(int a, int b, int c);
 int ai_CountMissionEvent();
 void cm_SendMoneyDelta(int a, int b);
 
-/* 0x546100, a Ghidra miss (disassembled): the start handler of the event of a figure pair (+0xac): when the target (0x501190 kind 1) is gone the event ends, else it is posted again at once (ROUGH) */
-void he_Unk546100(int ev)
+/* 0x546100, the alloc handler of the raid event 0x44 ("Razzia", its run handler he_RunRaid): when it runs when due
+   and its target building (gm_BuildQuery kind 1) is gone, it ends the event at once; either way it posts the event
+   again in a second */
+
+void he_AllocRaid(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-        if (gm_BuildQuery(1, 1, *(int *)(ev + 0xac)) == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 0, 1);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    AIJOB *e = (AIJOB *)ev;
+
+    if ((e->opts & 2) != 0) {
+        if (gm_BuildQuery(1, 1, e->raidTarget) == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 0, 1);
+            e->exSlot = cm_SendExSetHE(-1, ev);
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0, 1);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10662,7 +10667,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_RunPatrol) != 0)
         return 1;
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_RunRaid) != 0)
+    if (he_SetEventHandlers(0x44, (void *)he_AllocRaid, (void *)he_RunRaid) != 0)
         return 1;
     if (he_SetEventHandlers(0x45, (void *)he_AllocFight, (void *)he_RunFight) != 0)
         return 1;
