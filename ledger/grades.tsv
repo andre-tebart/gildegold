@@ -1499,14 +1499,14 @@ exe	0x0048a4d0	ai_MeisterTrade	ai	draft	draft	deep
 exe	0x0048bc80	ai_MeisterTradeAllgemein	ai	draft	draft	deep	
 exe	0x0048d010	ai_MeisterTradeFernEinkauf	ai	draft	draft	deep	
 exe	0x0048d810	ai_MeisterTradeFernEinkauf2	ai	draft	draft	deep	
-exe	0x0048e070	ai_Unk48e070	am	byte	draft		
+exe	0x0048e070	ai_FindMasterBuilding	am	byte	readable		
 exe	0x0048e120	ai_Unk48e120	am	draft	draft	deep	
 exe	0x0048e370	ai_ExecBuildDomizil	am	draft	readable	deep	
-exe	0x0048e470	ai_Unk48e470	am	byte	draft		
-exe	0x0048e620	ai_Unk48e620	am	byte	draft		
-exe	0x0048e730	ai_Unk48e730	am	byte	draft		
-exe	0x0048e830	ai_Unk48e830	am	byte	draft		
-exe	0x0048e9f0	ai_Unk48e9f0	am	byte	draft		
+exe	0x0048e470	ai_DecideSecretRoom	am	byte	readable		
+exe	0x0048e620	ai_DecideSecretRoom0	am	byte	draft		
+exe	0x0048e730	ai_DecideSecretRoom1	am	byte	draft		
+exe	0x0048e830	ai_DecideSecretRoom2	am	byte	draft		
+exe	0x0048e9f0	ai_DecideSecretRoom3	am	byte	readable		
 exe	0x0048eab0	ai_Unk48eab0	am	byte	draft		
 exe	0x0048eb50	ai_ExecSecretRoom0	am	draft	readable	deep	
 exe	0x0048ec90	ai_ExecSecretRoom1	am	draft	readable	deep	
@@ -4496,7 +4496,7 @@ exe	0x005c2160	ai_OpenLawBook	unk_58bbd0	draft	draft
 exe	0x005c2410	ai_LawBookInfoWindow	unk_58bbd0	byte	readable		
 exe	0x005c2490	ai_Unk5c2490	unk_58bbd0	draft	draft		
 exe	0x005c26a0	ai_MasterLetterNoticeWindow	unk_58bbd0	byte	readable		
-exe	0x005c2730	ai_Unk5c2730	unk_58bbd0	byte	draft		
+exe	0x005c2730	ai_MasterLetterKindWindow	unk_58bbd0	byte	readable		
 exe	0x005c27b0	ai_Unk5c27b0	unk_58bbd0	draft	draft		
 exe	0x005c2a10	ai_Unk5c2a10	unk_58bbd0	draft	draft		
 exe	0x005c2b90	ai_Unk5c2b90	unk_58bbd0	draft	draft		
@@ -4538,7 +4538,7 @@ exe	0x005ca860	ai_MisappropriationWindow	unk_58bbd0	draft	draft
 exe	0x005caab0	ai_Unk5caab0	unk_58bbd0	draft	draft		
 exe	0x005cacd0	ai_EmbezzlementContract	unk_58bbd0	draft	draft		
 exe	0x005cae00	ai_CounterEspionage	unk_58bbd0	draft	draft		
-exe	0x005cb1e0	ai_Unk5cb1e0	unk_58bbd0	byte	draft		
+exe	0x005cb1e0	ai_CounterEspionageOfficeSwap	unk_58bbd0	byte	readable		
 exe	0x005cb250	ai_CounterEspionageWindow	unk_58bbd0	draft	draft		
 exe	0x005cb4f0	ai_EspionageWindow	unk_58bbd0	draft	draft		
 exe	0x005cba90	ai_EspionagePayment	unk_58bbd0	draft	draft		
@@ -4557,20 +4557,20 @@ exe	0x005ce4b0	ai_Unk5ce4b0	unk_58bbd0	draft	draft
 exe	0x005ce610	ai_InterrogationWindow	unk_58bbd0	draft	draft		
 exe	0x005ce7f0	ai_WorkerDismissalWindow	unk_58bbd0	draft	draft		
 exe	0x005ce950	ai_DismissalHandler	unk_58bbd0	draft	draft		
-exe	0x005ced50	ai_Unk5ced50	unk_58bbd0	byte	draft		
+exe	0x005ced50	ai_SendInterrogationRefusal	unk_58bbd0	byte	readable		
 exe	0x005cede0	ai_InterrogationWindow1	unk_58bbd0	draft	draft		
 exe	0x005cf020	ai_InterrogationWindow2	unk_58bbd0	draft	draft		
 exe	0x005cf260	ai_Unk5cf260	unk_58bbd0	draft	draft		
 exe	0x005cf4f0	ai_Unk5cf4f0	unk_58bbd0	draft	draft		
 exe	0x005cf820	ai_UseObjPanel	unk_58bbd0	byte	readable		
 exe	0x005cf8a0	ai_UseGood	unk_58bbd0	draft	draft		
-exe	0x005cfb60	ai_Unk5cfb60	unk_58bbd0	byte	draft		
-exe	0x005cfb80	ai_Unk5cfb80	unk_58bbd0	byte	draft		
+exe	0x005cfb60	ai_UseGoodAddMoney	unk_58bbd0	byte	readable		
+exe	0x005cfb80	ai_UseGoodHeal	unk_58bbd0	byte	readable		
 exe	0x005cfc00	ai_Unk5cfc00	unk_58bbd0	draft	draft		
 exe	0x005cff70	ai_Unk5cff70	unk_58bbd0	draft	draft		
 exe	0x005d0320	ai_Unk5d0320	unk_58bbd0	draft	draft		
 exe	0x005d0530	ai_Unk5d0530	unk_58bbd0	draft	draft		
-exe	0x005d06e0	ai_Unk5d06e0	unk_58bbd0	byte	draft		
+exe	0x005d06e0	ai_UseGoodCureAilment	unk_58bbd0	byte	readable		
 exe	0x005d0780	ai_Unk5d0780	unk_58bbd0	draft	draft		
 exe	0x005d08c0	ai_ApplyTrialStep	unk_58bbd0	draft	draft		
 exe	0x005d09d0	ai_TrialStep1	unk_58bbd0	shape	readable		
