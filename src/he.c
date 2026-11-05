@@ -487,6 +487,14 @@ typedef struct HEAUCTION {              /* the auction event 0x67's words over A
     int bld;                            /* 0xac, the id of the building auctioned */
     int price;                          /* 0xb0, the start price; a bidder must be worth at least as much */
 } HEAUCTION;
+typedef struct HETITLE {                /* the title ceremony event 0x69's words over AIJOB's union (he_StartTitleCeremony /
+                                           he_RunTitleCeremony; the player is AIJOB.chr) */
+    char pad00[0xac];
+    unsigned char title;                /* 0xac, the title given: 2 the citizenship, 7 .. 9 the highest ones */
+    char padad[3];
+    int ch;                             /* 0xb0, the netId of the character who gets it */
+    int sent;                           /* 0xb4, 1 once the title was sent as the character's field 0xd, 0 at the start */
+} HETITLE;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
@@ -5695,102 +5703,150 @@ void he_RunAuctionEvent(int ev)
 }
 /* 0x54cc20, a Ghidra miss: the init: the due clock = the start clock (+0x44), state 0, +0xb4 = 0 */
 
-void he_Unk54cc20(int ev)
+void he_StartTitleCeremony(int ev)
 {
     *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
     *(int *)(ev + 0x70) = 0;
     *(int *)(ev + 0xb4) = 0;
 }
-/* 0x54cc50, a Ghidra miss (disassembled; 1344 B): the run handler of the title ceremony ("SPECIAL\TITEL" for the own figure, "SPECIAL\TITEL_ANDERE" for another): the figure +0xb0 (esi) of the player (word +8, rec) gets the title +0xac (a byte, 2 = the citizenship "_VERLEIHUNG_BUERGERRECHT", 7 / 8 / 9 = the higher ranks): state 0 opens the window, the news (0x42a1 / 0x42a3 / 0x429f / 0x1617 / 0x1618 for the own figure, 0x42a0 / 0x42a2 / 0x42a4 / 0x161a / 0x161b for another: the male / female title texts "_TITEL_MAENNLICH" / "_TITEL_WEIBLICH" by +9) and the fanfare sounds 0x4c27d0 ("FanfarePositivHeldenhaftKurz"), the state 1 waits for the answer (0xf8a668 = 0, 0x6f2630 for the click of the other player) and frees the event (ROUGH) */
-
-void he_Unk54cc50(int ev)
+/* 0x54cc50, a Ghidra miss: the run handler of the title ceremony event 0x69 (HETITLE: the character +0xb0 gets the
+   title +0xac), run only on the game of its player (AIJOB.chr is ai_PlayerId) in a running game once it is due.
+   Freed, ended, without its player or its character it frees the event. Stage 0 opens the window
+   ("SPECIAL\TITEL" when the character is the player's own, "SPECIAL\TITEL_ANDERE" for another one): for the own
+   character it sends the title once (field 0xd) and shows the news 0x42a3 / 0x42a1 / 0x429f (titles 9 / 8 / 7),
+   0x1618 (the citizenship, 2) or 0x1617 (with the player's name, the end clock, the character and the title's
+   text by sex) with the fanfare by the title's height and the herald's voice, then the click sound; for another
+   character the news 0x42a4 / 0x42a2 / 0x42a0, 0x161b or 0x161a with the rival's voice; then the news 0x161c below
+   (stage 1). Stage 1 frees the event when the window is answered (button 0, or the event bar's confirmation of
+   its slot); without a window it starts over
+   @deep Read all of it against the original and rewrote it typed (AIJOB / HETITLE / AICHAR /
+   GMPLAYERSLOT): reconstructed the missing statements (the voices: the fanfare by the title's height Kurz
+   / Mittel / Lang, _VERLEIHUNG_TITEL / _BUERGERRECHT, _TITEL_MAENNLICH / WEIBLICH with the title, the
+   _ERHALTEN_HS_02..04 heralds, the click sound; the rival's _KONKURENT / _FB_HS_02..04 voices), fixed the
+   news arguments (&e->end, not ev; the player's name &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20]), the
+   per-sex title text as two sums (sex == 0 ? title + 0x114 : title + 0x11e). 448 = 448 instructions, the
+   same blocks in the same order. Left, allocation and scheduling only: the saved registers pushed ebx,
+   ebp, esi, edi in the original (ours ebx, ebp, edi, esi; ev in edi, the character in esi on both sides),
+   ecx / edx / eax swapped through the news and voice argument loads, and in the 0x1618 news (+0x237) the
+   original computes the sex term in eax and loads ai_OwnPlayer before the character's id (ours the id
+   first, the term in edx); tried the locals' declaration order */
+void he_RunTitleCeremony(int ev)
 {
-    int ebp, esi, st, w, t;
+    AIJOB *e = (AIJOB *)ev;
+    HETITLE *t = (HETITLE *)ev;
+    AICHAR *own, *c;
 
-    ebp = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    if (*(unsigned short *)(unsigned)&ai_PlayerId != *(unsigned short *)(ev + 8) || *(unsigned char *)(unsigned)&ai_GameState == 0)
+    own = &ai_CharsT[e->chr];
+    if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
-    if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) == 1)
+    if (gm_CompareTime(&e->end, &ai_Time) == 1)
         return;
-    esi = gm_FindChar(*(int *)(ev + 0xb0));
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1 || *(unsigned short *)ebp == 0xffff || esi == 0) {
-        if (*(int *)(ev + 0x74) != 0)
+    c = (AICHAR *)gm_FindChar(t->ch);
+    if (e->stage == -2 || e->stage == -1 || own->id == 0xffff || c == 0) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        if (*(int *)(ev + 0x74) == 0) {
-            if (esi == ebp)
+    switch (e->stage) {
+    case 0:
+        if (e->slot == 0) {
+            if (c == own)
                 he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TITEL", 0x5fd);
             else
                 he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TITEL_ANDERE", 0x5fe);
         }
-        if (*(int *)(ev + 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
-        t = *(unsigned char *)(ev + 0xac);
-        if (esi == ebp) {
-            if (*(int *)(ev + 0xb4) == 0) {
-                cm_BeginFieldBlock(esi, *(int *)(esi + 4));
-                cm_AddFieldDelta(1, 1, 0xd, ev + 0xac);
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 1);
+        if (c == own) {
+            if (t->sent == 0) {
+                cm_BeginFieldBlock((char *)c, c->netId);
+                cm_AddFieldDelta(1, 1, 0xd, &t->title);
                 cm_SendFieldDeltas();
-                *(int *)(ev + 0xb4) = 1;
+                t->sent = 1;
             }
-            if (t == 9)
-                io_PrintText(0x42a3, ev);
-            else if (t == 8)
-                io_PrintText(0x42a1, ev);
-            else if (t == 7)
-                io_PrintText(0x429f, ev);
-            else if (t == 2)
-                io_PrintText(0x1618, ((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x1fc, ev, *(unsigned short *)esi, (*(char *)(esi + 9) != 0 ? 10 : 0) + 0x116);
+            if (t->title == 9)
+                io_PrintText(0x42a3, &e->end);
+            else if (t->title == 8)
+                io_PrintText(0x42a1, &e->end);
+            else if (t->title == 7)
+                io_PrintText(0x429f, &e->end);
+            else if (t->title != 2)
+                io_PrintText(0x1617, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, (c->sex == 0 ? t->title + 0x114 : t->title + 0x11e));
             else
-                io_PrintText(0x1617, ((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x1fc, ev, *(unsigned short *)esi, t + (*(char *)(esi + 9) == 0 ? 0x114 : 0x11e));
-            snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftKurz", 0, 0);
-            snd_QueueVoice(-8, 0, "_VERLEIHUNG_BUERGERRECHT", 0, 0xfa);
+                io_PrintText(0x1618, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &e->end, c->id, (c->sex != 0 ? 10 : 0) + 0x116);
+            if (t->title == 2) {
+                snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftKurz", 0, 100);
+                snd_QueueVoice(-8, 0, "_VERLEIHUNG_BUERGERRECHT", 0, 0xfa);
+                snd_QueueVoice(-8, 0, c->sex == 0 ? "_TITEL_MAENNLICH" : "_TITEL_WEIBLICH", t->title, 100);
+                snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
+            } else {
+                if (t->title <= 3)
+                    snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftKurz", 0, 100);
+                else if (t->title < 6)
+                    snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftMittel", 0, 100);
+                else
+                    snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", 0, 100);
+                if (t->title < 7) {
+                    snd_QueueVoice(-8, 0, "_VERLEIHUNG_TITEL", 0, 0xfa);
+                    snd_QueueVoice(-8, 0, c->sex == 0 ? "_TITEL_MAENNLICH" : "_TITEL_WEIBLICH", t->title, 100);
+                } else if (t->title == 7)
+                    snd_QueueVoice(-7, 0, "_VERLEIHUNG_TITEL_ERHALTEN_HS_02", -1, 100);
+                else if (t->title == 8)
+                    snd_QueueVoice(-7, 0, "_VERLEIHUNG_TITEL_ERHALTEN_HS_03", -1, 100);
+                else if (t->title == 9)
+                    snd_QueueVoice(-7, 0, "_VERLEIHUNG_TITEL_ERHALTEN_HS_04", -1, 100);
+                snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
+            }
         } else {
-            w = *(char *)(esi + 9) != 0 ? 10 : 0;
-            if (t == 9)
-                io_PrintText(0x42a4, *(unsigned short *)esi, w + 0x11d, *(unsigned short *)esi);
-            else if (t == 8)
-                io_PrintText(0x42a2, *(unsigned short *)esi, w + 0x11c, *(unsigned short *)esi);
-            else if (t == 7)
-                io_PrintText(0x42a0, *(unsigned short *)esi, w + 0x11b, *(unsigned short *)esi);
-            else if (t == 2)
-                io_PrintText(0x161b, *(unsigned short *)esi);
+            if (t->title == 9)
+                io_PrintText(0x42a4, c->id, (c->sex != 0 ? 10 : 0) + 0x11d, c->id);
+            else if (t->title == 8)
+                io_PrintText(0x42a2, c->id, (c->sex != 0 ? 10 : 0) + 0x11c, c->id);
+            else if (t->title == 7)
+                io_PrintText(0x42a0, c->id, (c->sex != 0 ? 10 : 0) + 0x11b, c->id);
+            else if (t->title != 2)
+                io_PrintText(0x161a, c->id, c->id, (c->sex == 0 ? t->title + 0x114 : t->title + 0x11e), c->id);
             else
-                io_PrintText(0x161a, *(unsigned short *)esi, *(unsigned short *)esi, t + (*(char *)(esi + 9) == 0 ? 0x114 : 0x11e), *(unsigned short *)esi);
-            snd_QueueVoice(-8, 0, "_TITEL_MAENNLICH", 0, 100);
+                io_PrintText(0x161b, c->id);
+            if (t->title == 2)
+                snd_QueueVoice(-8, 0, "_VERLEIHUNG_BUERGERRECHT_KONKURENT", 0, 100);
+            else if (t->title < 7) {
+                snd_QueueVoice(-8, 0, "_VERLEIHUNG_TITEL_KONKURENT", 0, 100);
+                snd_QueueVoice(-8, 0, c->sex == 0 ? "_TITEL_MAENNLICH" : "_TITEL_WEIBLICH", t->title, 100);
+            } else if (t->title == 7)
+                snd_QueueVoice(-7, 0, "_VERLEIHUNG_TITEL_FB_HS_02", -1, 100);
+            else if (t->title == 8)
+                snd_QueueVoice(-7, 0, "_VERLEIHUNG_TITEL_FB_HS_03", -1, 100);
+            else if (t->title == 9)
+                snd_QueueVoice(-7, 0, "_VERLEIHUNG_TITEL_FB_HS_04", -1, 100);
         }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);
+        d2_SetForm(e->slot->win, 2);
         io_PrintText(0x161c);
-        *(int *)(ev + 0x70) = 1;
+        e->stage = 1;
         return;
-    }
-    if (st == 1) {
-        if (*(int *)(ev + 0x74) == 0) {
-            *(int *)(ev + 0x70) = 0;
+    case 1:
+        if (e->slot == 0) {
+            e->stage = 0;
             return;
         }
-        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) && *(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
+        if (d2_ClickedForm != e->slot->win && he_SlotConfirmed == 0)
             return;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
+        if (d2_ClickedId == 0) {
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (*(unsigned char *)(unsigned)&he_SlotConfirmed == 0)
+        if (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot)
             return;
-        if (U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
-            return;
-        *(unsigned char *)(unsigned)&he_SlotConfirmed = 0;
+        he_SlotConfirmed = 0;
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
+        return;
     }
 }
 /* 0x54d190, a Ghidra miss: the init of the title event: the due clock now, +0x56 = 0x16, +0x58 = 0x1e, +0x5c / +0xac / +0xb0 = 0 */
@@ -9936,7 +9992,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x68, (void *)he_Unk54d190, (void *)he_Unk54d260) != 0)
         return 1;
-    if (he_SetEventHandlers(0x69, (void *)he_Unk54cc20, (void *)he_Unk54cc50) != 0)
+    if (he_SetEventHandlers(0x69, (void *)he_StartTitleCeremony, (void *)he_RunTitleCeremony) != 0)
         return 1;
     if (he_SetEventHandlers(0x6a, (void *)he_Unk54d790, (void *)he_Unk54d7d0) != 0)
         return 1;
