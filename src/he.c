@@ -7026,11 +7026,13 @@ void he_RunLover(int ev)
 
 int he_IsSimCandidate(int rec)
 {
-    if (*(unsigned short *)rec == 0xffff)
+    AICHAR *c = (AICHAR *)rec;
+
+    if (c->id == 0xffff)
         return 0;
-    if (*(unsigned char *)(rec + 8) == 0)
+    if (c->health == 0)
         return 0;
-    if (*(unsigned char *)(rec + 2) >= 10)
+    if (c->kind >= 10)
         return 0;
     if (ai_IsLocalWorker(rec) != 0)
         return 1;
