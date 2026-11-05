@@ -438,6 +438,14 @@ typedef struct HEBARDSCRIPT {           /* the bard's script as he_RunBard marks
     unsigned int mark;                  /* 0x00 */
 } HEBARDSCRIPT;
 #define HE_BARD_MARK 0x68427244         /* 'DrBh' */
+typedef struct HEPOPULATION {           /* the population event 0x6d's words over AIJOB's union (its init he_StartPopulation,
+                                           run handler he_RunPopulation) */
+    char pad00[0xac];
+    int count;                          /* 0xac, the newcomers and the dead of this round */
+    float chance;                       /* 0xb0, the chance of the next newcomer (or death) */
+    float step;                         /* 0xb4, what each failed draw takes off chance */
+    int slot;                           /* 0xb8, the cm slot of the newcomer being created, -1: none */
+} HEPOPULATION;
 typedef struct HEPLAGUE {               /* the plague event 0x59's words over AIJOB's union (he_BeginPlague, its run handler 0x54a020) */
     char pad00[0xac];
     int left;                           /* 0xac, counted down by the run handler at every infected target */
@@ -6202,12 +6210,12 @@ void he_RunBard(int ev)
 }
 
 float ord_GetStatistics(int *o);
-int ord_GetKindRecord();
+int ord_GetKindRecord(int i, int *out);
 void cm_SendBoss(int a, int b);
 float gm_AddHealth(unsigned short id, int d);
 
 /* 0x54de60, a Ghidra miss: the init of the brawl event: the due clock now, +0xac = +0xb0 = 0, posted (state 0) */
-void he_Unk54de60(int ev)
+void he_StartPopulation(int ev)
 {
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
         *(AITIME *)(ev + 0x52) = ai_Time;
@@ -6216,126 +6224,219 @@ void he_Unk54de60(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
 }
-/* 0x54dec0, a Ghidra miss (disassembled; 1680 B): the run handler of the street event of the town (+0xb0 / +0xb4 floats = the chance and its step, +0xac the number of cases done, +0xb8 the job handle of the 0x4c4650 (0xff, .., 0xc) task): state 0 clears the counters (+0xb0 *= 0) and posts state 1; state 1 reads the time (0x4f9e00), derives the chance (+0xb0 = 1 - the fraction of the day passed, +0xb4 = the day step) and goes on to state 2 / 6 (a day over: the sign of the chances is dropped), state 2 and 7 wait (+0x58 counts, the minute word +0x56 = 0xf), state 3 / 6 (random against +0xb0): a random player figure (0x300 ring, kind 0, no boss) gets a 0x4fca40 (-2000) or a task is posted (0x4c4650), state 4 waits for the task (0x4c3ae0 / 0x4c3b10) and gives a random figure an inn visit (0x4f8890 and 0x4c5540), 0x4c4830 pays 0x33 + random(50) * 0x20 (ROUGH) */
+/* 0x54dec0, the run handler of the population event: stage 1 rates the town (ord_GetStatistics: the free room
+   (sumA - chars) / sumA, the share without a home col[3]): few homeless (< 0.1) -> stage 2, newcomers; many
+   (> 0.3) -> stage 6, deaths; else stage 7 from 15:00. Stage 2 draws against chance every hour until 20:00: a
+   newcomer is created (cm_SendCreateCharacter, stage 3: it gets a free home, (51 .. 100) * 32 money and its fields
+   2 / 0xc set); stage 6 likewise kills a homeless figure of kind 0 without a workplace (-2000 health); stage 7 gives
+   a homeless figure of kind 0 / 1 a free home every ten minutes until 22:00, then the event rests until 6:00
+   @deep Reconstructed whole against the original (all 8 cases: the switch table equal; every call, push
+   order and gm_AddTime argument read from the pushes: case 0 (0,0,5), 1 and the 2/3/6 waits (1,0,0),
+   creation (0,0,1), the kill (0,0x1e,0), case 7 (0,0xa,0); ORDSTATS out[4]/out[8] as ints, col[3] against
+   0.1 / 0.3, the 2.0f / 1.0f literals; the newcomer's cm_SendMoveGoodsUnchecked(netId, -1, own,
+   (51..100)<<5), its field deltas 2 / 0xc; the free-home loop with the unsigned short compare). Left:
+   allocation and VC6 cross-jumping. The original keeps -1 in ebp (case 3's c==0 path stores an immediate
+   0xffffffff and jumps into the slot==2 block after its store), case 3's found flag in [esp+0x10] with b
+   in ebx, case 7's found in ebp with b in [esp+0x10] (ours the reverse: found ebp / b ebx in case 3, found
+   [esp+0x10] in case 7); the original merges the cm_SendExSetHE call tails of case 1 (<=0.3), case 2 / 6
+   (hour >= 20), case 3's end and all of case 7 into the shared block 0x54e08d..0x54e0ac (the kill path
+   even into case 0's gm_AddTime call at 0x54df23) where ours keeps inline copies (tail hunks at +0x19a,
+   +0x6c, +0x819; the M8 lines at +0x3a4 / +0x7f4 / +0x835 / +0x83f are those misaligned tails and ai_Time
+   copies in another register order). Tried: the while/do forms of both loops (found && n vs n && found:
+   the found flag moved between ebp and the slot), case 7's chain as if/else with one return (worse, 692
+   ins), chance *= 0.0f vs ai_FloatZero (the literal matches). (references: M8 at +0x3a4: ours refers to
+   cm_SendExSetHE (0x4c4c60), the original's field to 0x4fe140 (gm_AddTime) (and 3 more), explained: the M8
+   refs are the misaligned tails (our cm_SendExSetHE call aligned against the original's gm_AddTime in a
+   merged block) and the ai_Time struct copies whose dwords load in another register order; every call and
+   store is present on both sides) (size: 677 vs 657 instructions, explained: ours 677 vs 657: the 20 extra
+   are the inline copies of the call / epilogue tails the original cross-jumps into 0x54e097 (case 7's two
+   cm_SendExSetHE(0) tails, 2 x 9, and case 6's kill path reusing case 0's gm_AddTime call)) */
 
-void he_Unk54dec0(int ev)
+void he_RunPopulation(int ev)
 {
-    int st, i, n, rec, id, found, h;
-    float f;
-    int tm[10];                         /* ord_GetStatistics copies 0x28 bytes */
+    AIJOB *e = (AIJOB *)ev;
+    HEPOPULATION *p = (HEPOPULATION *)ev;
+    AIBLD *b;
+    AICHAR *c;
+    int found, zero, id, n, i, j;
+    int kind[2];
+    ORDSTATS st;
+    float x;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
+    if (e->stage == -1 || e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        *(int *)(ev + 0xb4) = 0;
-        *(int *)(ev + 0xac) = 0;
-        *(float *)(ev + 0xb0) = *(float *)(ev + 0xb0) * 0.0f;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        p->chance *= 0.0f;
+        p->step = 0.0f;
+        p->count = 0;
+        gm_AddTime(&e->end, 0, 0, 5);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 1:
-        ord_GetStatistics(tm);
-        f = (float)(tm[6] - tm[3]) / (float)(*(int *)(ev + 0xac) + 2);
-        *(float *)(ev + 0xb0) = 1.0f - f;
-        *(float *)(ev + 0xb4) = f;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        ord_GetStatistics((int *)&st);
+        x = (float)(st.sumA - st.chars) / st.sumA;
+        p->chance = 1.0f - x;
+        p->step = x / (p->count + 2);
+        gm_AddTime(&e->end, 1, 0, 0);
+        if (st.col[3] < 0.1) {
+            p->chance = (2.0f - st.score) * p->chance;
+            e->exSlot = cm_SendExSetHE(2, ev);
+            return;
+        }
+        if (st.col[3] > 0.3) {
+            p->chance = (float)fabs((st.score + 1.0f) * p->chance);
+            p->step = (float)fabs(p->step);
+            e->exSlot = cm_SendExSetHE(6, ev);
+            return;
+        }
+        e->end = ai_Time;
+        e->end.hour = 0xf;
+        e->exSlot = cm_SendExSetHE(7, ev);
         return;
     case 2:
-        *(float *)(ev + 0xb0) = (2.0f - 0.0f) * *(float *)(ev + 0xb0);
-        *(float *)(ev + 0xb0) = (*(float *)(ev + 0xb0) + 1.0f) * *(float *)(ev + 0xb0);
-        *(float *)(ev + 0xb0) = (*(float *)(ev + 0xb0) < 0.0f ? -*(float *)(ev + 0xb0) : *(float *)(ev + 0xb0));
-        *(float *)(ev + 0xb4) = (*(float *)(ev + 0xb4) < 0.0f ? -*(float *)(ev + 0xb4) : *(float *)(ev + 0xb4));
-        *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
+        if (ai_Time.hour >= 0x14) {
+            e->end = ai_Time;
+            e->end.min++;
+            e->exSlot = cm_SendExSetHE(7, ev);
+            return;
+        }
+        if (util_RandomF() > p->chance) {
+            p->slot = -1;
+            p->slot = cm_SendCreateCharacter(0xff, -1, -1, util_Random(0xc) + 0xf, -1, 0, 0, 2);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 0, 1);
+            e->exSlot = cm_SendExSetHE(3, ev);
+            return;
+        }
+        p->chance -= p->step;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 3:
-        if (cm_GetSlotState(*(int *)(ev + 0xb8)) == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+        if (cm_GetSlotState(p->slot) == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 0, 1);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        if (cm_GetSlotState(*(int *)(ev + 0xb8)) == 2) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0xb8) = -1;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
+        if (cm_GetSlotState(p->slot) == 2) {
+            gm_AddTime(&e->end, 1, 0, 0);
+            p->slot = -1;
+            e->exSlot = cm_SendExSetHE(6, ev);
             return;
         }
-        h = cm_GetSlotValue(*(int *)(ev + 0xb8));
+        c = (AICHAR *)cm_GetSlotValue(p->slot);
         id = (unsigned short)util_Random(2);
-        found = 0;
-        if (h == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0xb8) = -1;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
+        zero = 0;
+        if (c == 0) {
+            gm_AddTime(&e->end, 1, 0, 0);
+            p->slot = -1;
+            e->exSlot = cm_SendExSetHE(6, ev);
             return;
         }
+        found = 0;
         n = 0x100;
         i = (unsigned short)util_Random(0x100);
-        while (found == 0 && n-- > 0) {
-            int b = U_I((unsigned)&ai_Blds) + i * 0xa9;
-
-            if (*(char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d) == 1 && ord_GetKindRecord(*(unsigned char *)b, tm) != 0 && *(unsigned char *)(b + 0x65) < *(unsigned short *)tm)
-                found = b;
-            i = (i + 1) & 0xff;
+        while (found == 0 && n != 0) {
+            b = &ai_BldsT[i];
+            if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
+                && (unsigned short)b->residents < (unsigned short)kind[0])
+                found = 1;
+            n--;
+            i = (i + 1) % 0x100;
         }
         if (found != 0)
-            cm_SendBoss(*(int *)(h + 4), *(int *)(found + 1));
-        cm_SendMoveGoodsUnchecked(-1, *(int *)(h + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer, ((unsigned short)util_Random(0x32) + 0x33) << 5);
-        cm_BeginFieldBlock(h, *(int *)(h + 4));
-        cm_AddFieldDelta(1, 1, 2, &id);
+            cm_SendBoss(c->netId, b->id);
+        cm_SendMoveGoodsUnchecked(c->netId, -1, ai_OwnPlayer, ((unsigned short)util_Random(0x32) + 0x33) << 5);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        cm_AddFieldDelta(1, 1, 2, &zero);
         cm_AddFieldDelta(1, 1, 0xc, &id);
         cm_SendFieldDeltas();
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0xac) = *(int *)(ev + 0xac) + 1;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-        return;
-    case 4:
-    case 5:
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
+        p->count++;
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 6:
-        if (util_RandomF() < *(float *)(ev + 0xb0)) {
-            n = 0x300;
-            i = (unsigned short)util_Random(0x300);
-            while (n-- > 0) {
-                rec = (unsigned)&ai_Chars + i * 0x21c;
-                if (*(unsigned short *)rec != 0xffff && *(unsigned char *)(rec + 8) != 0 && *(unsigned char *)(rec + 2) == 0 && *(int *)(rec + 0x16c) == 0) {
-                    gm_AddHealth(i, -2000);
-                    *(int *)(ev + 0xac) = *(int *)(ev + 0xac) + 1;
-                    break;
-                }
-                i = (i + 1) % 0x300;
-            }
-            *(int *)(ev + 0xb8) = -1;
-            gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        if (ai_Time.hour >= 0x14) {
+            e->end = ai_Time;
+            e->end.min++;
+            e->exSlot = cm_SendExSetHE(7, ev);
             return;
         }
-        *(float *)(ev + 0xb0) = *(float *)(ev + 0xb0) - *(float *)(ev + 0xb4);
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
+        if (util_RandomF() > p->chance) {
+            i = (unsigned short)util_Random(0x300);
+            n = 0x300;
+            do {
+                if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0 && ai_CharsT[i].kind == 0 && ai_CharsT[i].bld == 0) {
+                    gm_AddHealth(i, -2000);
+                    p->count++;
+                    break;
+                }
+                n--;
+                i = (i + 1) % 0x300;
+            } while (n != 0);
+            p->slot = -1;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 0x1e, 0);
+            e->exSlot = cm_SendExSetHE(1, ev);
+            return;
+        }
+        p->chance -= p->step;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 1, 0, 0);
+        e->exSlot = cm_SendExSetHE(6, ev);
         return;
     case 7:
-        gm_AddTime(ev + 0x52, 0, 10, 0);
-        if (*(unsigned short *)(ev + 0x56) >= 0x16) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-            *(int *)(ev + 0x58) = 0;
-            *(short *)(ev + 0x56) = 6;
-        } else if (*(unsigned short *)(ev + 0x56) < 0xf) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x58) = *(int *)(ev + 0x58) + 1;
+        found = 0;
+        i = (unsigned short)util_Random(0x300);
+        n = 0x300;
+        do {
+            if (ai_CharsT[i].id != 0xffff && ai_CharsT[i].health != 0
+                && ((ai_CharsT[i].kind == 0 && ai_CharsT[i].bld2 == 0) || (ai_CharsT[i].kind == 1 && ai_CharsT[i].bld2 == 0))) {
+                found = 1;
+                break;
+            }
+            i = (i + 1) % 0x300;
+            n--;
+        } while (n != 0);
+        if (found != 0) {
+            found = 0;
+            n = 0x100;
+            j = (unsigned short)util_Random(0x100);
+            while (found == 0 && n != 0) {
+                b = &ai_BldsT[j];
+                if (ai_BTypesT[b->type].kind == 1 && ord_GetKindRecord(b->type, kind) != 0
+                    && (unsigned short)b->residents < (unsigned short)kind[0])
+                    found = 1;
+                n--;
+                j = (j + 1) % 0x100;
+            }
+            if (found != 0)
+                cm_SendBoss(ai_CharsT[i].netId, b->id);
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
-        return;
-    default:
+        gm_AddTime(&e->end, 0, 0xa, 0);
+        if (e->end.hour >= 0x16) {
+            e->end = ai_Time;
+            e->end.year++;
+            e->end.min = 0;
+            e->end.hour = 6;
+            e->exSlot = cm_SendExSetHE(0, ev);
+            return;
+        }
+        if (e->end.hour < 0xf) {
+            e->end = ai_Time;
+            e->end.min++;
+            e->exSlot = cm_SendExSetHE(0, ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHE(7, ev);
         return;
     }
 }
@@ -10030,7 +10131,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x6b, (void *)he_StartBard, (void *)he_RunBard) != 0)
         return 1;
-    if (he_SetEventHandlers(0x6d, (void *)he_Unk54de60, (void *)he_Unk54dec0) != 0)
+    if (he_SetEventHandlers(0x6d, (void *)he_StartPopulation, (void *)he_RunPopulation) != 0)
         return 1;
     if (he_SetEventHandlers(0x6f, (void *)he_Unk54e770, (void *)he_Unk54e890) != 0)
         return 1;

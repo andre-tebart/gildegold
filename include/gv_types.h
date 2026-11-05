@@ -7,12 +7,14 @@
    event record */
 typedef struct ORDSTATS {               /* 0x28 bytes at 0x91b4c0 (ord_Statistics): the ten statistics
                                            ord_ComputeStatistics computes (out[0..9]) */
-    float col[5];                       /* 0x00, out[0] the income rating, [1] the share without the first
+    float col[4];                       /* 0x00, out[0] the income rating, [1] the share without the first
                                            object, [2] the combined rating, [3] the share without the second
-                                           object, [4] */
+                                           object */
+    int chars;                          /* 0x10, out[4], the number of characters counted (an int) */
     float rating;                       /* 0x14, out[5], the rating ai_Rating follows */
     float base;                         /* 0x18, out[6], ai_RatingBase (ord_GetStatistics) */
-    float v1c, v20;                     /* 0x1c, 0x20, out[7], out[8] */
+    int sumC, sumA;                     /* 0x1c, 0x20, out[7], out[8], the kind sums (ints; he_RunPopulation
+                                           rates (sumA - chars) / sumA) */
     float score;                        /* 0x24, out[9], the overall score */
 } ORDSTATS;
 typedef struct ORDSTATROUND {           /* one 0x14-byte round of the statistics history ord_StatisticsHistory */

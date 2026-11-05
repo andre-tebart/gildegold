@@ -101,10 +101,12 @@
 
 /* the statistics record views of 0x4f9020 (unit-private: gv.h's ORDCHAR is the shared character view) */
 typedef struct ORDSAVE {                /* the saved record of 0x4f9020 (15 words) */
-    float col[5];                       /* 0x00, ORDSTATS */
+    float col[4];                       /* 0x00, ORDSTATS */
+    int chars;                          /* 0x10 */
     float rating;                       /* 0x14 */
     float base;                         /* 0x18 */
-    float v1c, v20, score;              /* 0x1c .. 0x24 */
+    int sumC, sumA;                     /* 0x1c, 0x20 */
+    float score;                        /* 0x24 */
     float rate;                         /* 0x28, ord_RatingRate */
     AITIME clock;                       /* 0x2c, the clock stamp (ord_StatisticsClock) */
 } ORDSAVE;
@@ -2130,13 +2132,13 @@ void ord_LoadStatistics(void *p)
     ord_Statistics.col[1] = s->col[1];
     ord_Statistics.col[2] = s->col[2];
     ord_Statistics.col[3] = s->col[3];
-    ord_Statistics.col[4] = s->col[4];
+    ord_Statistics.chars = s->chars;
     rating = s->rating;
     ord_Statistics.rating = rating;
     base = s->base;
     ord_Statistics.base = base;
-    ord_Statistics.v1c = s->v1c;
-    ord_Statistics.v20 = s->v20;
+    ord_Statistics.sumC = s->sumC;
+    ord_Statistics.sumA = s->sumA;
     ord_Statistics.score = s->score;
     ord_RatingRate = s->rate;
     clk = &s->clock;
