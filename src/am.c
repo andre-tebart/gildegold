@@ -3782,7 +3782,7 @@ int ai_DecideDummyProcreation(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     return b ? 0 : 8;
 }
-/* 0x496020 */
+/* 0x496020, execute of the dummy action "DummyFortpflanzung" (8): returns the action id 8, no other effect */
 
 int ai_ExecuteDummyProcreation(AIPER *p, AIARG *s1, AIARG *s2)
 {
