@@ -136,7 +136,7 @@ int ai_DecideLaw25(AIPER *p, int a, int *out);                    /* 0x492900, d
 int ai_DecideLaw26(AIPER *p, int a, int *out);                    /* 0x492a40, decision 26 */
 int ai_DecideLaw8(AIPER *p, int a, int *out);                    /* 0x492b80, decision 8 */
 int ai_DecideLaw27(AIPER *p, int a, int *out);                    /* 0x492d50, decision 27 */
-int ai_Unk492e90(AIPER *p, int a, int *out);                    /* 0x492e90, decision 28 */
+int ai_DecideLaw28(AIPER *p, int a, int *out);                    /* 0x492e90, decision 28 */
 
 int am_RegisterMethod(AIACT *act, int a);                            /* 0x495520, registers an action */
 int ai_EvalMoodWeights(float *a, float *b, int i, AIPER *p, int f, void *x, void *y);  /* 0x4a49a0 */

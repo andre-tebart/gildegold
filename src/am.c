@@ -2291,9 +2291,9 @@ int ai_DecideLaw27(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x492e90, decision 28 */
+/* 0x492e90, the callback of law record 28 (AIDEC.fn, office 0x1b no 2, a boolean law): the event 0x9d, the disease of a figure (he_Unk5734b0), accuses against it (gv_Accuse(0x1c, ...)); the normalized skill 2 against its rating (x1.4 for the title group 0xe, else x0.9) against 1 raises the law (cur 0 -> 1) when mood 11 outweighs mood 9, and lowers it (cur 1 -> 0) when mood 10 outweighs mood 9 */
 
-int ai_Unk492e90(AIPER *p, int a, int *out)
+int ai_DecideLaw28(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
