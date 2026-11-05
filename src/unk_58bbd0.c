@@ -17240,19 +17240,16 @@ int ai_DrawAmountRow(int param_1, int param_2, int param_3, int *param_4)
    zeroed and gets +4 = 0x204, +8 = 0x5eed68, +0xc = 0x5eed6c and +0x10 = 6, then 0x5c0970 (the config, the
    second argument, 0, 0) runs the tabbed list; its result is returned */
 
-int ai_SpecialAmountList(int param_1, int param_2)
+int ai_SpecialAmountList(G8CHARREC *ch, char *text)
 {
-    int cfg[0x14];
-    int i;
+    AMOUNTCFG cfg;
 
-    (void)param_1;
-    for (i = 0; i < 0x14; i++)
-        cfg[i] = 0;
-    cfg[1] = 0x204;
-    cfg[2] = U_I(((unsigned)&gypsyFilter));
-    cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-    cfg[4] = 6;
-    return ai_Unk5c0970((int)cfg, param_2, 0, 0);
+    (void)ch;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x204;
+    cfg.filter = gypsyFilter;
+    cfg.kind = 6;
+    return ai_SpecialAmountWindow((int)&cfg, text, 0, 0);
 }
 /* 0x5bea50, the special-amount list window ("special_amt2" 0x62d204, 1648 B, ROUGH SKELETON): the caption
    pages 0x475f70 (2 / 3 / 1) with 0x515960 (the kind names 0x62a9a8 / the character name), the record
@@ -17777,7 +17774,7 @@ void ai_Unk5c08d0(short *param_1, int param_2, int *param_3)
    0xf8a668 / 0x5fe710 and the pump 0x5309a0 (this, 0x657c7); 0x4758f0 (win) at the end. The body is left
    as a comment (the Ghidra call arguments of the function pointer calls are scrambled) */
 
-int ai_Unk5c0970(int param_1, int param_2, unsigned int param_3, int param_4)
+int ai_SpecialAmountWindow(int param_1, int param_2, unsigned int param_3, int param_4)
 {
     int win;
     int r;
@@ -17793,7 +17790,7 @@ int ai_Unk5c0970(int param_1, int param_2, unsigned int param_3, int param_4)
     /* ROUGH SKELETON: the tab table fill through the function pointers 0x62d154 (page fill) and 0x62d158
        (row add), the tab controls 0x46bf10 (0xbf) with 0x46c260 (0xb9) of the screen 0x143fbe0, the page
        switch 0x5bfed0 / 0x5c08d0, the click dispatch and the callback param_4; the loop ends on the pump */
-    while (sv_RunFrame(ai_Unk5c0970, 0x657c7) != 0) {
+    while (sv_RunFrame(ai_SpecialAmountWindow, 0x657c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
     }
@@ -17880,7 +17877,7 @@ int ai_AmountMenu(int param_1, int param_2, int param_3, int param_4)
             }
             if (U_I((unsigned)&d2_PointerObj) == ctrl) {
                 d2_SetViewEnabled(win, 0);
-                r = ai_Unk5c0970(param_1, param_2, -1, param_4);
+                r = ai_SpecialAmountWindow(param_1, param_2, -1, param_4);
                 d2_SetViewEnabled(win, 1);
             }
         }
