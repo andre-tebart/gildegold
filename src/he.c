@@ -411,6 +411,12 @@ typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's un
     char pad00[0xb8];
     int daysLeft;                       /* 0xb8, the runs left: counted down once per run, below 0 the event ends */
 } HEEV24;
+typedef struct HEEXAMPASS {             /* the passed master exam event 0x26's words over AIJOB's union (he_Unk55ce00 /
+                                           he_RunMasterExamPassed); the character is AIJOB.ownerCh */
+    char pad00[0xb0];
+    unsigned char job;                  /* 0xb0, the character's job (AICHAR.jobId) when the event first ran */
+    unsigned char newJob;               /* 0xb1, the job it gets (cm_SendSetJob): job - 1; 0 until the first run sets both */
+} HEEXAMPASS;
 typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunSale sends: an hour from now as AITIME, of
                                            which the building and the object overwrite the first 8 bytes (the
                                            original's order) */
@@ -15221,40 +15227,137 @@ void he_Unk55ce00(int ev)
         *(int *)(e + 0x70) = -1;
     *(AITIME *)(ev + 0x52) = ai_Time;
 }
-/* 0x55ce60, the run handler of the "Berufe\Meisterpruefung_BESTANDEN" ceremony (the exam passed; for the player's figure only: 0x6f25b8; ROUGH skeleton, 1199 bytes): opens the window, shows the person's new title (gm_TitleGroup / gm_TitlesLeft, the texts "BERUF_BESTANDEN", "ADDON_BERUF_LISTE_MAENNLICH" / "_WEIBLICH", "ADDON_GEBAEUDE_LISTE", the sound banks "brk_%02i" 0x4c27d0 x8), waits for the click and closes (0x53d800) and frees the record */
+/* 0x55ce60, the run handler of the passed master exam, event 0x26 (HEEXAMPASS), on the player's own machine
+   (ai_PlayerId is AIJOB.chr) while a game runs and once started; the first run notes the character's job and
+   newJob = job - 1. Stage 0 opens the event box "Berufe\Meisterpruefung_BESTANDEN" (none: the event is freed),
+   prints the text 0x15c3 (the player's name, now, the new job's title text 0x130 + newJob (0x18f for a woman), the
+   group's text, the text 0x158a + group), gives the character newJob (cm_SendSetJob) and, for a kind 5 / 6 / 7
+   character, tells every other player the news 0x1c1f and clears its flags1c8 bit 31. Stage 1 queues the
+   ceremony voices: a fanfare by the titles left, "SELBST", the job list "brk_<group>" (the BERUF_LISTE bank of
+   the sex, ADDON_ for the groups above 12), the building list, "GEZEICHNET", the signature
+   "_BERUFE_VEREINIGUNG_UNTERSCHRIFT" and the click. Stage 2 waits for the box's answer (or a confirmed slot)
+   and closes and frees it. Stages -2 / -1 close and free
+   @deep read whole against the original (5 stages, jump table 0x55d2f4 equal, all strings/banks/voice
+   calls, the confirm logic) and reconstructed; 381 vs 387 ins. Left, layout/scheduling only: (1) stage 0's
+   text id (int)((left - 1) * 0.5 + (group * 3 + 0x155a)): the original stores left-1, fild, fmul 0.5,
+   fiadd [the int sum]; ours stores the sum first and does fild + faddp (same fild/fiadd choice that
+   flipped on he_PostEvent67 between two builds of the same text); operand order swapped tried, same code;
+   (2) stage 2 +0x44a: the original reaches the confirm test of the -1 path by jne ret / jmp, ours
+   duplicates the 7-instruction epilogue inline (je X + pops/ret): the same branch logic; tried the nested
+   -1 / else forms and the d2_ClickedId != 0 form of he.c 0x54d..., same code */
 
-void he_Unk55ce60(int ev)
+void he_RunMasterExamPassed(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p;
-    char name[0x40];
+    AIJOB *e = (AIJOB *)ev;
+    HEEXAMPASS *x = (HEEXAMPASS *)ev;
+    AICHAR *c, *o;
+    struct SBBANK *list, *sign, *bld, *self;
+    int i, group, left, sexText;
+    char bank[0x40];
+    char text[0x400];
 
-    if (*(unsigned short *)(unsigned)&ai_PlayerId != *(unsigned short *)(ev + 8))
+    if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
-    if (st < 0 || st > 2) {
-        if (*(int *)(ev + 0x74) != 0)
-            he_ReleaseSlot(ev);
-        he_FreeEvent((int *)ev);
+    if (gm_CompareTime(&e->start, &ai_Time) > 0)
         return;
+    if (x->newJob == 0) {
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        if (c != 0) {
+            x->job = c->jobId;
+            x->newJob = c->jobId - 1;
+        }
     }
-    if (st == 0) {
-        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Meisterpruefung_BESTANDEN", 0x5fd);
-        if (*(int *)(ev + 0x74) == 0) {
+    switch (e->stage) {
+    case 0:
+        he_OpenEventSlot(ev, 0, 0, "Berufe\\Meisterpruefung_BESTANDEN", 0x5ec);
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
-        p = gm_FindChar(*(int *)(ev + 0xac));
-        sprintf(name, "brk_%02i", p != 0 ? *(unsigned char *)(p + 0xd) : 0);
-        snd_QueueVoice(-8, 0, name, 0, 0);
-        io_PrintText("BERUF_BESTANDEN");
-        *(int *)(ev + 0x70) = 1;
+        d2_SetForm(e->slot->win, 0);
+        d2_CentreViewWindows(e->slot->win);
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        sexText = (c->sex != 0 ? 0x5f : 0) + 0x130;
+        group = gm_TitleGroup(x->job);
+        left = gm_TitlesLeft(x->job) + 1;
+        d2_SetForm(e->slot->win, 1);
+        io_PrintText(0x15c3, &ai_PlayerSlotsT[ai_OwnPlayer].name[0x20], &ai_Time, x->newJob + sexText,
+                     (int)((left - 1) * 0.5 + (group * 3 + 0x155a)), group + 0x158a);
+        cm_SendSetJob(c->netId, x->newJob);
+        if (c->kind == 6 || c->kind == 7 || c->kind == 5) {
+            txt_Format(text, 0x1c1f, c->id, x->job + sexText, x->newJob + sexText);
+            for (i = 0; i < 768; i++) {
+                o = &ai_CharsT[i];
+                if ((o->kind == 6 || o->kind == 7) && o->netId != c->netId)
+                    he_ShowNews(o->netId, -1, text, 0, 0x5fe, 0);
+            }
+            c->flags1c8 &= 0x7fffffff;
+        }
+        e->stage++;
+        return;
+    case 1:
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        group = gm_TitleGroup(x->job);
+        left = gm_TitlesLeft(x->job) + 1;
+        sprintf(bank, "brk_%02i", group);
+        self = sb_FindBank("BERUF_BESTANDEN");
+        if (group > 12) {
+            if (c->sex == 0)
+                list = sb_FindBank("ADDON_BERUF_LISTE_MAENNLICH");
+            else
+                list = sb_FindBank("ADDON_BERUF_LISTE_WEIBLICH");
+            bld = sb_FindBank("ADDON_GEBAEUDE_LISTE");
+            sign = sb_FindBank("ADDON_BERUFE_VEREINIGUNG_UNTERSCHRIFT");
+        } else {
+            if (c->sex == 0)
+                list = sb_FindBank("BERUF_LISTE_MAENNLICH");
+            else
+                list = sb_FindBank("BERUF_LISTE_WEIBLICH");
+            bld = sb_FindBank("GEBAEUDE_LISTE");
+            sign = sb_FindBank("BERUFE_VEREINIGUNG_UNTERSCHRIFT");
+        }
+        if (left < 3)
+            snd_QueueVoice(-7, 0, "FanfarePositivKurz", -1, 0);
+        else if (left < 5)
+            snd_QueueVoice(-7, 0, "FanfarePositivMittel", -1, 0);
+        else
+            snd_QueueVoice(-7, 0, "FanfarePositivLang", -1, 0);
+        snd_QueueVoice(-6, (int)self, "SELBST", 1, 0);
+        snd_QueueVoice(-8, (int)list, bank, left - 2, 0);
+        snd_QueueVoice(-6, (int)self, "SELBST", 0, 0);
+        left--;
+        snd_QueueVoice(-8, (int)bld, bank, (int)(3.0 - (left + 1.0) * 0.5), 0);
+        snd_QueueVoice(-6, (int)self, "GEZEICHNET", -1, 0);
+        snd_QueueVoice(-8, (int)sign, "_BERUFE_VEREINIGUNG_UNTERSCHRIFT", group > 12 ? group - 13 : group - 1, 0);
+        snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
+        e->stage++;
+        return;
+    case 2:
+        if (e->slot == 0) {
+            e->stage = 0;
+            return;
+        }
+        if (d2_ClickedForm != e->slot->win && (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot))
+            return;
+        if (d2_ClickedId == -1 && (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot))
+            return;
+        if (d2_ClickedId != 0) {
+            if (d2_ClickedId == 1 || he_SlotConfirmed != 0) {
+                he_ReleaseSlot(ev);
+                he_FreeEvent((int *)ev);
+                he_SlotConfirmed = 0;
+            }
+        } else {
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+        }
+        return;
+    case -2:
+    case -1:
+        he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
         return;
     }
-    if (U_I((unsigned)&d2_ClickedId) == -1)
-        return;
-    he_ReleaseSlot(ev);
-    he_FreeEvent((int *)ev);
 }
 
 struct G15PLANT * veg_FindPlantId(struct G15PLANT *p, int id);
@@ -17415,7 +17518,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_RunMasterExamNotice) != 0)
         return 1;
-    if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_Unk55ce60) != 0)
+    if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_RunMasterExamPassed) != 0)
         return 1;
     if (he_SetEventHandlers(39, (void *)he_AllocEvent27, (void *)he_Unk55d390) != 0)
         return 1;
