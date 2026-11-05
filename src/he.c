@@ -26,7 +26,9 @@
    the cart repair 16 (HECARTREPAIR), the message box 17 (HEMSGBOX, the party G28REC) and the slot order 18
    (HESLOTORDER), and the events 19 .. 25 that follow: the store extension (HESTOREEXT), herb gathering (HEHERBS),
    animal hunt (HEHUNT), study (HESTUDY), spying (HESPYING) and sabotage (HESABOTAGE), and the brawl 26
-   (HEBRAWL), theft 27 (HETHEFT), repair 28 (HEREPAIR) and upgrade 0x1e events up to 0x55ba00. The head includes
+   (HEBRAWL), theft 27 (HETHEFT), repair 28 (HEREPAIR) and upgrade 0x1e events up to 0x55ba00. The protection money
+   0x62, its ask 0x63 and the audit 0x64 handlers (0x54ae20 .. 0x54b9b0) read AIJOB and their words typed too
+   (HEPROTECTION, HEAUDIT). The head includes
    rt.h (d2_SetObjValue2 / rt_UnloadAtPointC keep this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
    Open: types: the other handlers past 0x55ba00 still read the event and message records through raw offsets
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
@@ -34,8 +36,9 @@
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
    master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), HEDUEL (the duel challenge's +0xac and the duel's
-   +0xb4 / +0xb6), HEGESELLE / HEEXAMPAY / HEPAYMENT / HEOFFSPRING / HETRIAL / HETRIALSTEP / HETRAINING / HEPLAGUE /
-   HEGANG (the events 0x4a / 0x55 / 0x56 / 0x5d / 0x5e / 0x5f / 0x60 / 0x59 / 0x61), HEFEEMSG / HESKILLMSG /
+   +0xb4 / +0xb6), HEGESELLE / HEEXAMPAY / HEPAYMENT / HEPUNISHMENT / HEOFFSPRING / HETRIAL / HETRIALSTEP / HETRAINING /
+   HEPLAGUE / HEGANG (the events 0x4a / 0x55 / 0x56 / 0x5b / 0x5c / 0x5d / 0x5e / 0x5f / 0x60 / 0x59 / 0x61; the fine
+   0x5b and the pillory 0x5c are the trial's sentences of gv_PassSentence), HEFEEMSG / HESKILLMSG /
    HEPLAGUEMSG (AIMSG's words of the AI messages 0x56 / 0x6a / 0x78), HEPROTECTION / HEAUDIT / HEGATHERING /
    HESIM / HEAUCTION / HETITLE (the events 0x62 / 0x64 / 0x65 / 0x66, 0x68, 0x70 / 0x67 / 0x69), HESKILLUP /
    HEBARD / HEPOPULATION / HELOVER / HEDARKCORNER (the events 0x6a / 0x6b / 0x6d / 0x6f / 0x74; the bard's script

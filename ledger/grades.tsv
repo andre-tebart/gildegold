@@ -3600,10 +3600,10 @@ exe	0x00548bb0	he_RunStoreSale	he	byte	readable
 exe	0x00548de0	he_RunBuildingDecay	he	byte	readable		
 exe	0x00548ef0	he_AllocRepostEvent	he	byte	readable		
 exe	0x00548f30	he_RunRepostEvent	he	byte	readable		
-exe	0x00548fa0	he_Unk548fa0	he	byte	draft		
-exe	0x00549040	he_Unk549040	he	byte	draft		
-exe	0x00549080	he_Unk549080	he	byte	draft		
-exe	0x00549110	he_Unk549110	he	byte	draft		
+exe	0x00548fa0	he_RunFinePayment	he	byte	readable		
+exe	0x00549040	he_AllocPunishment	he	byte	readable		
+exe	0x00549080	he_RunPilloryPunishment	he	byte	readable		
+exe	0x00549110	he_AllocOffspring	he	byte	readable		
 exe	0x00549120	he_RunOffspring	he	shape	readable		
 exe	0x005493a0	he_StartTrialEvent	he	byte	readable		
 exe	0x00549430	he_RunTrialEvent	he	shape	readable		
@@ -3612,15 +3612,15 @@ exe	0x00549770	he_RunTrialSteps	he	shape	readable
 exe	0x00549970	he_StartTraining	he	byte	readable		
 exe	0x00549aa0	he_RunTraining	he	draft	readable	deep	
 exe	0x00549ce0	he_BeginPlague	he	byte	readable		
-exe	0x00549f70	he_Unk549f70	he	byte	draft		
+exe	0x00549f70	he_StartPlague	he	byte	readable		
 exe	0x0054a020	he_RunPlague	he	draft	readable	deep	
 exe	0x0054a6f0	he_StartGang	he	shape	readable		
 exe	0x0054a7b0	he_RunGang	he	shape	readable		
-exe	0x0054ae20	he_Unk54ae20	he	byte	draft		
+exe	0x0054ae20	he_AllocProtectionAsk	he	byte	readable		
 exe	0x0054ae60	he_RunProtectionAsk	he	byte	readable		
-exe	0x0054b170	he_StartProtection	he	byte	draft		
+exe	0x0054b170	he_StartProtection	he	byte	readable		
 exe	0x0054b1e0	he_RunProtection	he	draft	readable	deep	
-exe	0x0054b9b0	he_StartAudit	he	byte	draft		
+exe	0x0054b9b0	he_StartAudit	he	byte	readable		
 exe	0x0054ba20	he_RunAudit	he	byte	readable		
 exe	0x0054be20	he_StartGathering	he	byte	draft		
 exe	0x0054bec0	he_RunGathering	he	draft	readable	deep	
