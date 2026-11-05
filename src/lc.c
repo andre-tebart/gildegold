@@ -1102,6 +1102,11 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     int object;                    /* 0x61, its object in the scene */
     int victimId;                  /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
 } AIBLD;
+typedef struct LCFIREEVENT {       /* the fire event 0x3d's word over AIJOB's union (its alloc 0x564860; the jail check
+                                      0x591ad0 reads the burning building here) */
+    char pad00[0xac];
+    int bld;                       /* 0xac, the building that burns, -1 / 0: none */
+} LCFIREEVENT;
 #pragma pack(pop)
 
 #pragma pack(push, 1)
@@ -3026,7 +3031,7 @@ char *_strupr(char *); void gm_CloseTechTree(void); int ai_MercenaryBook();
 void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
-void ai_Unk591ad0(void);
+void lc_PlayerInJail(void);
 
 /* 0x591170, the jail / building-question helper (323 B): in the '2' state or when the two window ids match
    (0x5fe710 against 0x623838 / 0x62383c), the record 0x5b2180 (1, the 0x50-byte message local zeroed with
@@ -3220,7 +3225,7 @@ void ai_GameFrame(void)
     while (r != 0) {
         U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
         if (*(char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
-            ai_Unk591ad0();
+            lc_PlayerInJail();
         sv_UpdateCamera();
         if (mode == 0) {
             if ((float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
@@ -3331,43 +3336,44 @@ void ai_GameFrame(void)
    (the one with +0x65); 0x4ffe90 (the record +0x5d, 1, 0, 0xba / 0x65) gives the jail record and 0x521960
    (the record, +2, the text 0x631090) reports it; the errors 0x62b1d8 / 0x62b198 go to 0x4222b0 */
 
-void ai_Unk591ad0(void)
+void lc_PlayerInJail(void)
 {
-    int b;
-    int r;
-    int it;
+    AIJOB *b;
+    AIBLD *it;
+    AIOBJ *r;
 
-    b = he_FindEvent(1, 0, 0x3d);
+    b = (AIJOB *)he_FindEvent(1, 0, 0x3d);
     while (b != 0) {
-        if (*(int *)(b + 0xac) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87))
+        if (((LCFIREEVENT *)b)->bld == ai_CharInts[ai_PlayerId][0])
             break;
-        b = he_NextEvent();
+        b = (AIJOB *)he_NextEvent();
     }
-    if (b == 0) {
-        it = gm_BuildQuery(1, 5, 6);
-        if (it != 0) {
-            r = gm_Query(*(int *)(it + 0x5d), 1, 0, 0xba);
-            if (r != 0 && U_I((unsigned)&sv_PanelShown) != r)
-                sv_SelectPanelObjectK(it, U_I(r + 2), (void *)(unsigned)&ch_EmptyName);
+    if (b != 0) {
+        it = (AIBLD *)gm_BuildQuery(1, 5, 4);
+        while (it != 0) {
+            if (it->victimId == ai_CharInts[ai_PlayerId][0])
+                break;
+            it = (AIBLD *)gm_BuildNext();
+        }
+        if (it == 0) {
+            err_Message("lc_PlayerInJail(): Could not find ob_DIEBESGILDE_GEFAENGNIS...");
             return;
         }
-        err_Message("lc_PlayerInJail(): Could not find the jail building");
+        r = (AIOBJ *)gm_Query((void *)it->objList, 1, 0, 0x65);
+        if (r == 0 || sv_PanelShown == (unsigned short *)r)
+            return;
+        sv_SelectPanelObjectK(it, r->objId, (void *)(unsigned)&ch_EmptyName);
         return;
     }
-    it = gm_BuildQuery(1, 5, 4);
-    while (it != 0) {
-        if (*(int *)(it + 0x65) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87))
-            break;
-        it = gm_BuildNext();
-    }
+    it = (AIBLD *)gm_BuildQuery(1, 5, 6);
     if (it == 0) {
-        err_Message("lc_PlayerInJail(): Could not find the character");
+        err_Message("lc_PlayerInJail(): Could not find a jail...");
         return;
     }
-    r = gm_Query(*(int *)(it + 0x5d), 1, 0, 0x65);
-    if (r == 0 || U_I((unsigned)&sv_PanelShown) == r)
+    r = (AIOBJ *)gm_Query((void *)it->objList, 1, 0, 0xba);
+    if (r == 0 || sv_PanelShown == (unsigned short *)r)
         return;
-    sv_SelectPanelObjectK(it, U_I(r + 2), (void *)(unsigned)&ch_EmptyName);
+    sv_SelectPanelObjectK(it, r->objId, (void *)(unsigned)&ch_EmptyName);
 }
 /* 0x591bf0, the tech tree window (1593 B, ROUGH SKELETON from the Ghidra pseudocode): "techtree\TechTree"
    (0x50c340), the window (0x5763c0 (0x200), the event 0x576040 (0x11), the controls 0x475b80 / 0x515960
