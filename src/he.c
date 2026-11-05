@@ -323,7 +323,7 @@ typedef struct HEEXAMBOX {              /* the master exam question 0x7e's words
 typedef struct HEEXAMOFFER {            /* the exam offer event 0x7f's words over AIJOB's union (he_RunExamOffer) */
     char pad00[0xac];
     int chr;                            /* 0xac, the netId of the character it is for */
-    int accepted;                       /* 0xb0, 0 at the start (he_Unk552200), 1 when the player said yes (he_RunExamQuestion) */
+    int accepted;                       /* 0xb0, 0 at the start (he_StartExamOffer), 1 when the player said yes (he_RunExamQuestion) */
 } HEEXAMOFFER;
 typedef union HEEXAMMSG {               /* the message 0x7e he_RunExamOffer posts (AIMSG has no names at +0x58 .. for it) */
     AIMSG msg;
@@ -10329,19 +10329,22 @@ float gm_CharacterHealth();
 float gm_AddHealth(unsigned short id, int d);
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);
 
-/* 0x552200, the allocation handler of the 0x552270 event: state 0, due now, minute word 9 + random 0x42ec00(3), +0xb0 = 0 (no answer yet), +0x58 = random 0x42ec00(4) * 15 */
-void he_Unk552200(int ev)
+/* 0x552200, the stage-0 start handler of the master exam offer event 0x7f (its run handler he_RunExamOffer): the
+   stage 0, the due clock now with the hour 9 + random(3) and the minute random(4) * 15, no answer yet */
+void he_StartExamOffer(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEEXAMOFFER *o = (HEEXAMOFFER *)ev;
     int r;
 
-    *(int *)(ev + 0x70) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(unsigned short *)(ev + 0x56) = (unsigned short)(util_Random(3) + 9);
+    e->stage = 0;
+    e->end = ai_Time;
+    e->end.hour = (unsigned short)(util_Random(3) + 9);
     r = (unsigned short)util_Random(4);
-    *(int *)(ev + 0xb0) = 0;
-    *(int *)(ev + 0x58) = r * 15;
+    o->accepted = 0;
+    e->end.min = r * 15;
 }
-/* 0x552270, the run handler of the exam offer event 0x7f (its alloc handler he_Unk552200): stage 0 asks the
+/* 0x552270, the run handler of the exam offer event 0x7f (its alloc handler he_StartExamOffer): stage 0 asks the
    character (+0xac) the master exam question, the message 0x7e that becomes he_RunExamQuestion's event (the
    character, this event's id, due in two hours, flags 9), and waits 8 hours (stage 1); then, accepted (he_RunExamQuestion
    set accepted), the character loses (1 - skill 3) / 2 of its health (the skill at least 0.1), the own player is
@@ -10931,7 +10934,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7e, (void *)he_StartExam, (void *)he_RunExamQuestion) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7f, (void *)he_Unk552200, (void *)he_RunExamOffer) != 0)
+    if (he_SetEventHandlers(0x7f, (void *)he_StartExamOffer, (void *)he_RunExamOffer) != 0)
         return 1;
     if (he_SetEventHandlers(0x80, (void *)he_Unk5524e0, (void *)he_Unk552520) != 0)
         return 1;
