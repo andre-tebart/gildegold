@@ -14056,7 +14056,7 @@ void he_RunTheft(AIJOB *e)
 }
 
 void gm_ChangeBuildingState(unsigned char *b, int d);
-void ai_Unk4c54e0(int a);
+void cm_SendUpgradeDone(int a);
 void cm_SendBuildingDestroyed(int a);
 
 /* 0x55b3e0, the allocation handler of the repair event 28 (HEREPAIR; run handler he_RunRepair): without the
@@ -14151,7 +14151,7 @@ void he_RunRepair(AIJOB *e)
     }
     he_FreeEvent((int *)e);
 }
-/* 0x55b720, the allocation handler of the building event 0x1e (run handler he_Unk55b830, which clears the mark
+/* 0x55b720, the allocation handler of the building event 0x1e (run handler he_RunUpgrade, which clears the mark
    and tells the master; reasoned: the upgrade to the next building type): started and due now; without the
    building (AIJOB.bldId) the event is freed; it lasts 30 minutes with gm_AllowAll, else a day per v243 the next
    type has more than this one (at least a day); the building is the event's place; a building already marked
@@ -14185,29 +14185,53 @@ void he_AllocUpgrade(AIJOB *e)
     b->flags5aw |= 0x40;
     cm_SendSetField(b->id, 0x5a, 2, 0x40, 0);
 }
-/* 0x55b830, the run handler of a building event (ROUGH): states -2 / -1 free; the building +0xac is looked up, the player gets the news 0x17e7 and 0x1c32 for the owner (0x50a810), the flag 0x40 of the building is cleared (0x4c4a60 0x5a / 2 / 0x40, 0x4c54e0) and the record freed */
-
-void he_Unk55b830(int ev)
+/* 0x55b830, the run handler of the building event 0x1e (allocated by he_AllocUpgrade). Stage 0: without the
+   building (AIJOB.bldId) the event is freed; a player's event character (kind 6) gets the news 0x17e7 about the
+   building ("_NACHRICHTEN_HS_51"; the news 0x60b when the building's master has flags1b4 bit 0, else 0x5f6); for
+   an event character of the kind 5 / 6 every other player gets the news 0x1c32 with the type's text 0x49c + 14 *
+   type ("_NACHRICHTEN_HS_52"); the message 0x3a (cm_SendUpgradeDone) goes out for the building, its 0x5a mark 0x40 is
+   cleared and the event freed. Stages -2 / -1 clear the mark and free the event */
+void he_RunUpgrade(AIJOB *e)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, own, ch;
-    char text[0x200];
+    AIBLD *b, *at;
+    AICHAR *m, *me;
+    int i, news;
+    char text[0x400];
 
-    if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac))) == 0) {
-        he_FreeEvent((int *)ev);
+    news = 0x5f6;
+    switch (e->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (b != 0) {
+            m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+            if (m != 0 && (m->flags1b4 & 1) != 0)
+                news = 0x60b;
+            me = &ai_CharsT[e->chr];
+            if (me->kind == 6) {
+                txt_Format(text, 0x17e7, b);
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, news, b->id, -1, 0, "_NACHRICHTEN_HS_51");
+            }
+            if (me->kind == 5 || me->kind == 6) {
+                for (i = 0; i < 768; i++) {
+                    if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && i != me->id) {
+                        txt_Format(text, 0x1c32, e->chr, e->chr, 0x49c + b->type * 14);
+                        he_MessageBoxQuickjump(ai_CharsT[i].netId, -1, text, 0, 0x607, b->id, -1, 0, "_NACHRICHTEN_HS_52");
+                    }
+                }
+            }
+            cm_SendUpgradeDone(b->id);
+            cm_SendSetField(b->id, 0x5a, 2, 0, 0x40);
+        }
+        he_FreeEvent((int *)e);
+        return;
+    case -2:
+    case -1:
+        at = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
+        if (at != 0)
+            cm_SendSetField(at->id, 0x5a, 2, 0, 0x40);
+        he_FreeEvent((int *)e);
         return;
     }
-    own = gm_FindCharacterByMaster(b);
-    ch = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    txt_Format(text, 0x17e7);
-    he_MessageBoxQuickjump(*(int *)(ch + 4), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, 0, 0);
-    if (own != 0) {
-        txt_Format(text, 0x1c32, *(unsigned short *)(ev + 8) * 2 + 0x49c);
-        he_MessageBoxQuickjump(*(int *)(ch + 4), -1, text, 0, 0x5ec, *(int *)(b + 1), *(int *)(own + 2), 0, 0);
-    }
-    ai_Unk4c54e0(b);
-    cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x40, 0);
-    he_FreeEvent((int *)ev);
 }
 /* 0x55ba00, the allocation handler of the event type 0x1f: both clocks now, then the due clock 1 second later (5 hours with
    gm_AllowAll); the building +0xac (none: the record is freed) is copied to +0x10 and gets the field 0x5a / 2 / 0x80
@@ -16583,7 +16607,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(28, (void *)he_AllocRepair, (void *)he_RunRepair) != 0)
         return 1;
-    if (he_SetEventHandlers(30, (void *)he_AllocUpgrade, (void *)he_Unk55b830) != 0)
+    if (he_SetEventHandlers(30, (void *)he_AllocUpgrade, (void *)he_RunUpgrade) != 0)
         return 1;
     if (he_SetEventHandlers(32, (void *)he_Unk55bd20, (void *)he_Unk55bd80) != 0)
         return 1;

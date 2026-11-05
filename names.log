@@ -2423,3 +2423,5 @@
 2026-11-05T16:24:12 0x0055b3e0 func he_Unk55b3e0 -> he_AllocRepair by:main why:the alloc handler of event 28 whose run handler raises the building's state (gm_ChangeBuildingState) over time; 10 minutes per repair point
 2026-11-05T16:26:39 0x0055b530 func he_Unk55b530 -> he_RunRepair by:main why:the run handler of event 28 (with he_AllocRepair): adds the minutes passed to the building's state (gm_ChangeBuildingState) until the repair points are used up
 2026-11-05T16:27:18 0x0055b720 func he_Unk55b720 -> he_AllocUpgrade by:main why:alloc handler of the building event 0x1e: marks the building 0x40 for the difference of the next type's v243 in days (reasoned: an upgrade)
+2026-11-05T16:28:00 0x0055b830 func he_Unk55b830 -> he_RunUpgrade by:main why:run handler of the building event 0x1e with he_AllocUpgrade: clears the 0x40 mark and tells the players the building's new type (0x17e7 / 0x1c32)
+2026-11-05T16:29:22 0x004c54e0 data ai_Unk4c54e0 -> cm_SendUpgradeDone by:main why:message 0x3a with a building id; its only caller he_RunUpgrade sends it when the building event 0x1e ends, with the 0x40 mark cleared (reasoned: the upgrade is done)

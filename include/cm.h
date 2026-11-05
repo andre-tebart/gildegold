@@ -240,7 +240,7 @@ int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const c
 void cm_SendChrAnim(int a, const char *s, int c);                        /* 0x4c5410 */
 void cm_SendChrUseGates(int a, int b, int c);                                          /* 0x4c5460 */
 void cm_SendOwnership(int a, int b, int c);                                          /* 0x4c54a0 */
-void ai_Unk4c54e0(int a);                                                        /* 0x4c54e0 */
+void cm_SendUpgradeDone(int a);                                                        /* 0x4c54e0 */
 void cm_SendBuildingDestroyed(int a);                                                        /* 0x4c5510 */
 void cm_SendBoss(int a, int b);                                                 /* 0x4c5540 */
 void cm_SendHandOverCrimes(int a, int b, int c, int d);                                   /* 0x4c5580 */

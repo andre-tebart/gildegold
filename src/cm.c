@@ -1710,9 +1710,10 @@ void cm_SendOwnership(int a, int b, int c)
     G17_I(m, 8) = c;
     cm_QueueSend(&m);
 }
-/* 0x4c54e0, message 0x3a */
+/* 0x4c54e0, sends the message 0x3a with a building id (he_RunUpgrade, when the building event 0x1e ends; reasoned:
+   the upgrade is done) */
 
-void ai_Unk4c54e0(int a)
+void cm_SendUpgradeDone(int a)
 {
     G17MSG m;
 
