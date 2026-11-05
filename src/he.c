@@ -222,8 +222,6 @@ extern unsigned short gm_KindObjCount;
 extern unsigned gm_KindObjs[732];
 extern int d2_ClickedId;
 extern int d2_ClickedForm;
-extern GAPDATA full_data_627e98[];
-extern GAPDATA full_data_627ea8[];
 extern char ai_MissionMode;
 extern int ai_MissionPartner;
 #include "mission_types.h"
@@ -21380,7 +21378,7 @@ int he_Unk56bc50(void *rot, float *pos, unsigned char *type, char *model, int ev
     scene = U_I((unsigned)&d3_CurrentScene);
     found = 0;
     n = 0;
-    rec = (int *)(unsigned)&full_data_627e98;
+    rec = (int *)he_BuildingModels;
     if (rec[0] != 0) {
         while (!found) {
             for (k = 0; k < 4; k++) {
@@ -21397,7 +21395,7 @@ int he_Unk56bc50(void *rot, float *pos, unsigned char *type, char *model, int ev
         }
     }
     if (!found)
-        strcpy(name, (char *)((unsigned)&full_data_627ea8 + n * 0x50));
+        strcpy(name, he_BuildingModels[n].model);
     d3if_SelectScene(0, 1);
     obj = d3_LoadGroup(name, 0, 0);
     if (obj == 0) {
