@@ -131,7 +131,7 @@ extern const float he_FounderOdds[5];  /* 0x5eebc4 */
 
 void he_StammtischCommand(unsigned cmd, struct AIBLD *inn, struct AIOBJ *table, int figId); /* 0x541b40, the inn meeting hears of a table request: join / leav / cler / exec / new */
 
-void he_Unk542490(int ev);
+void he_AllocTavern(int ev);
 
 void he_Unk542590(int ev);
 

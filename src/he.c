@@ -335,6 +335,15 @@ typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJ
     char pad_d3;
     int offer;                          /* 0xd4, the offer handle cm_SendHandOverCrimes gave (cm_GetSlotState asks it) */
 } HEOFFER;
+typedef union HEOBJ1B5VALUE {           /* the 7 byte value cm_SendObject1b5 copies to the new object's +0x1c, as
+                                           he_AllocTavern fills it (byte, byte, int; their meaning is not read yet) */
+    G17B7 block;
+    struct {
+        char c1c;                       /* +0x1c of the object */
+        char c1d;                       /* +0x1d */
+        int v1e;                        /* +0x1e */
+    } f;
+} HEOBJ1B5VALUE;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -6585,28 +6594,34 @@ void he_RunStammtisch(int r)
 
 int cm_SendObject1b5(int owner, G17B7 value);
 
-/* 0x542490, a Ghidra miss (disassembled): the event with the building (+0x10): sets the clock (+0x52 + 0x18, state word 7 at +0x56), posts it again when the building is gone; else with no record 0x1b5 in the building sends 0x4c50b0 (a 7 byte value of -1 passed by value, here only approximated) and posts the event (ROUGH) */
-void he_Unk542490(int ev)
+/* 0x542490, a Ghidra miss (disassembled): the event of the building `from`: sets its end clock to a day ahead at 7:00;
+   with the building gone it is posted again (key -1), else a building without an object of kind 0x1b5 gets one
+   (cm_SendObject1b5, its value all -1) and the event is posted (key 0) */
+void he_AllocTavern(int r)
 {
-    int bld = 0;
-    int r;
+    AIJOB *e = (AIJOB *)r;
+    AIBLD *bld = 0;
+    HEOBJ1B5VALUE v;
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 7;
-        *(int *)(ev + 0x58) = 0;
-        gm_FindById(&bld, 0, 0, *(int *)(ev + 0x10));
-        if (bld == 0) {
-            cm_SendExSetHE(-1, ev);
-            return;
-        }
-        r = gm_Query(*(int *)(bld + 0x5d), 1, 0, 0x1b5);
-        if (r == 0)
-            ((void (*)(int, int))cm_SendObject1b5)(*(int *)(bld + 1), -1);
-        *(int *)(ev + 0x84) = -1;
-        cm_SendExSetHE(0, ev);
+    if ((e->opts & 4) != 0)
+        return;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->end.hour = 7;
+    e->end.min = 0;
+    gm_FindById(&bld, 0, 0, e->from);
+    if (bld == 0) {
+        cm_SendExSetHE(-1, r);
+        return;
     }
+    if (gm_Query((void *)bld->objList, 1, 0, 0x1b5) == 0) {
+        v.f.c1c = -1;
+        v.f.c1d = -1;
+        v.f.v1e = -1;
+        cm_SendObject1b5(bld->id, v.block);
+    }
+    e->exSlot = -1;
+    cm_SendExSetHE(0, r);
 }
 
 int ai_ChooseObjectTarget();
@@ -9184,7 +9199,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2a, (void *)he_AllocStammtisch, (void *)he_RunStammtisch) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2b, (void *)he_Unk542490, (void *)he_Unk542590) != 0)
+    if (he_SetEventHandlers(0x2b, (void *)he_AllocTavern, (void *)he_Unk542590) != 0)
         return 1;
     if (he_SetEventHandlers(0x2c, (void *)he_AllocOffer, (void *)he_Unk542b60) != 0)
         return 1;
