@@ -1101,6 +1101,8 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
     int object;                    /* 0x61, its object in the scene */
     int victimId;                  /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
+    char pad69[8];
+    int plants;                    /* 0x71, the vegetation map (ai_bld.h AIBLD.plants) */
 } AIBLD;
 typedef struct LCFIREEVENT {       /* the fire event 0x3d's word over AIJOB's union (its alloc 0x564860; the jail check
                                       0x591ad0 reads the burning building here) */
@@ -4063,7 +4065,7 @@ void ai_KontorContact(AIBLD *bld)
    ZIEL / STROH -> 0x5bba00; the window 0x623898 -> 0x5b9730 */
 
 
-void ai_Unk593b00(int param_1)
+void ai_WoodKontorContact(AIBLD *bld)
 {
     int r;
     int lager;
@@ -4072,7 +4074,7 @@ void ai_Unk593b00(int param_1)
     int transport;
     int ziel;
     int stroh;
-    int ctx;
+    int plants;
 
     lager = 0;
     holz = 0;
@@ -4081,34 +4083,36 @@ void ai_Unk593b00(int param_1)
     ziel = 0;
     stroh = 0;
     sv_ReleaseNamePlates();
-    ctx = *(int *)(param_1 + 0x71);
-    r = sv_RunFrame(ai_Unk593b00, 0x67fff);
+    plants = bld->plants;
+    r = sv_RunFrame(ai_WoodKontorContact, 0x67fff);
     while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            holz = sv_RegisterNamePlate("contact_PRODUKTION_HOLZ", U_I((unsigned)&full_data_1442128), 0x13);
-            gelage = sv_RegisterNamePlate("contact_GELAGE", U_I((unsigned)&ai_ContactTextGelage), 0x16);
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
-            stroh = sv_RegisterNamePlate("ob_STROHPUPPE", U_I((unsigned)&ai_ContactTextTraining), 0xc);
+        if (ai_BuildingPerms & 0x200) {
+            lager = sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            holz = sv_RegisterNamePlate("contact_PRODUKTION_HOLZ", ai_ContactTextProductionWood, 0x13);
+            gelage = sv_RegisterNamePlate("contact_GELAGE", ai_ContactTextGelage, 0x16);
+            transport = sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
+            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", ai_ContactTextTarget, 0xc);
+            stroh = sv_RegisterNamePlate("ob_STROHPUPPE", ai_ContactTextTraining, 0xc);
         }
         ai_TradeContactChecks();
-        ai_Unk5b9db0(param_1, ctx);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
-            else if (U_I((unsigned)&ai_ClickedObject) == holz)
-                ai_ProductionGoodsWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == gelage)
-                ai_GelageWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == stroh)
-                ai_TrainingWindow(param_1);
+        ai_PickedObjectWindow(bld, plants);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == transport)
+                ai_OpenTransport(bld);
+            else if (ai_ClickedObject == lager)
+                ai_StorageWindow(bld, bld->objList);
+            else if (ai_ClickedObject == holz)
+                ai_ProductionGoodsWindow(bld);
+            else if (ai_ClickedObject == gelage)
+                ai_GelageWindow(bld);
+            else if (ai_ClickedObject == ziel)
+                ai_TrainingWindow(bld);
+            else if (ai_ClickedObject == stroh)
+                ai_TrainingWindow(bld);
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelKind1eBtn))
-            ai_Unk5b9730(param_1);
-        r = sv_RunFrame(ai_Unk593b00, 0x67fff);
+        if (d2_ClickedId != -1 && sv_PanelKind1eBtn == d2_PointerObj)
+            ai_Kind1eWindow(bld);
+        r = sv_RunFrame(ai_WoodKontorContact, 0x67fff);
     }
 }
 /* 0x593ca0, the stone-kontor contact listener (468 B): the plates released (0x52e190) and, while the building
@@ -4175,7 +4179,7 @@ void ai_StoneKontorContact(AIBLD *bld)
     }
 }
 
-int ai_Unk5b9db0(); int ai_Unk5b9730();
+int ai_PickedObjectWindow(); int ai_Kind1eWindow();
 int ai_MapPick();
 
 /* 0x593e80, the information listener (186 B): the plates released (0x52e190) and registered again every frame
@@ -9099,7 +9103,7 @@ void ai_Unk59ee40(unsigned char *param_1)
     }
     switch (*param_1) {
     case 0x1e:
-        ai_Unk593b00(U_I((unsigned)&ai_FallbackBuilding));
+        ai_WoodKontorContact(U_I((unsigned)&ai_FallbackBuilding));
         veg_HidePlants(U_I(param_1 + 0x71));
         break;
     case 0x1f:
@@ -16249,7 +16253,7 @@ int ai_LiquidateAssets(int param_1)
 /* 0x5b9730, a window over the record +0x71 (1856 B, ROUGH SKELETON): param_1 read at +0x71, a 0x2e4-byte frame;
    the body is a comment */
 
-int ai_Unk5b9730(int param_1)
+int ai_Kind1eWindow(int param_1)
 {
     /* ROUGH SKELETON: the 0x2e4-byte frame and the field +0x71 */
     (void)param_1;
@@ -16258,7 +16262,7 @@ int ai_Unk5b9730(int param_1)
 /* 0x5b9db0, a window gated by 0x6f22e8 (368 B, ROUGH SKELETON): with 0x6f22e8 == 0 it returns early, a
    0xf8-byte frame; the body is a comment */
 
-int ai_Unk5b9db0(void)
+int ai_PickedObjectWindow(void)
 {
     if (U_I((unsigned)&ai_PickedObject) == 0)
         return 0;

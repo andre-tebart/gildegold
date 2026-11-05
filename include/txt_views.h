@@ -243,7 +243,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextProductionStonecutter     (*(char * *)((char *)txt_Ptrs + 0x07f50))  /* 0x1442110, the hover text of the contact_PRODUKTION_STEINMETZ plate (ai_StonecutterContact) */
 #define ai_ContactTextProductionCarpenter       (*(char * *)((char *)txt_Ptrs + 0x07f58))  /* 0x1442118, the hover text of the contact_PRODUKTION_TISCHLER plate (ai_CarpenterContact) */
 #define ai_TextEinkaufHolz                       (*(int *)((char *)txt_Ptrs + 0x07f60))  /* 0x1442120 */
-#define full_data_1442128                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x07f68))  /* 0x1442128 */
+#define ai_ContactTextProductionWood                        (*(char * *)((char *)txt_Ptrs + 0x07f68))  /* 0x1442128, the hover text of the contact_PRODUKTION_HOLZ plate */
 #define ai_ContactTextProductionBrewing          (*(char * *)((char *)txt_Ptrs + 0x07f70))  /* 0x1442130, the hover text of the contact_PRODUKTION_BRAUEN plate (ai_BreweryContact) */
 #define full_data_1442160                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x07fa0))  /* 0x1442160 */
 #define full_data_1442180                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07fc0))  /* 0x1442180 */

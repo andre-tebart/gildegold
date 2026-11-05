@@ -6042,7 +6042,7 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* ai_ContactTextProductionSmithy: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextProductionStonecutter: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextProductionCarpenter: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_1442128: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_ContactTextProductionWood: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_ContactTextProductionBrewing: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1442160: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1442180: view of txt_Ptrs (build/mk_txt_views.py) */
