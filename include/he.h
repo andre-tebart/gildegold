@@ -61,7 +61,7 @@ void he_AddEventGfxInfo(struct AIJOB *ev);
 void he_RemoveStaleGfxInfos(void);
 void he_RemoveGfxInfos(int obj);
 void he_ShowObjectInfos(int obj, int a);
-void he_Unk53ec40(unsigned char *r);
+void he_RecheckEventPerson(unsigned char *r);
 void he_RecheckPersonEvents(unsigned short *pl);
 void he_Unk53ed70(void);
 void he_RunQuickList(void);

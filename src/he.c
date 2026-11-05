@@ -1261,32 +1261,31 @@ void he_ShowObjectInfos(int obj, int a)
         p += 4;
     } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x6ac));
 }
-/* 0x53ec40, makes the event record `r` due now (state 0x70 = -2, clock +0x52 = the game clock) when its player's figure changed / is gone, or for the types of the list (ROUGH) */
+/* 0x53ec40, makes the event `r` due now (stage -2, end = the game clock) when its character is gone (another netId
+   or kind 0xf) or dead (health 0) for the kinds of the list */
 
-void he_Unk53ec40(unsigned char *r)
+void he_RecheckEventPerson(unsigned char *r)
 {
-    unsigned short us = *(unsigned short *)(r + 8);
-    int b;
+    AIJOB *ev = (AIJOB *)r;
+    unsigned short us = ev->chr;
 
     if (us == 0xffff)
         return;
-    b = us * 0x21c;
-    if (U_I((unsigned)&ai_CharInts + us * 0x21c) == *(int *)(r + 0xc) && *(char *)(((unsigned)&ai_Chars + 0x2) + b) != 0xf) {
-        if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x4) + b) <= 0) {
-            switch (*r) {
-            case 0x16: case 0x18: case 0x19: case 0x1a: case 0x2d: case 0x2e: case 0x2f: case 0x35:
-            case 0x36: case 0x37: case 0x38: case 0x41: case 0x45: case 0x46: case 0x47: case 0x4a:
-            case 0x4b: case 0x5e: case 0x5f: case 0x60: case 0x69: case 0x6a: case 0x6f: case 0x7e:
-                goto L_reset;
-            default:
-                break;
-            }
-        }
-    } else {
-L_reset:
-        *(int *)(r + 0x70) = -2;
-        *(AITIME *)(r + 0x52) = ai_Time;
+    if (ai_CharsT[us].netId != ev->netId || ai_CharsT[us].kind == 0xf)
+        goto reset;
+    if (ai_CharsT[us].health > 0)
+        return;
+    switch ((unsigned char)ev->kind) {
+    case 0x16: case 0x18: case 0x19: case 0x1a: case 0x2d: case 0x2e: case 0x2f: case 0x35:
+    case 0x36: case 0x37: case 0x38: case 0x41: case 0x45: case 0x46: case 0x47: case 0x4a:
+    case 0x4b: case 0x5e: case 0x5f: case 0x60: case 0x69: case 0x6a: case 0x6f: case 0x7e:
+        break;
+    default:
+        return;
     }
+reset:
+    ev->stage = -2;
+    ev->end = ai_Time;
 }
 /* 0x53ed40, runs 0x53ec40 on every record of the player *pl (type 2 filter) */
 
@@ -1295,7 +1294,7 @@ void he_RecheckPersonEvents(unsigned short *pl)
     int iv = (int)he_FindEvent(1, 2, *pl);
 
     while (iv != 0) {
-        he_Unk53ec40((unsigned char *)iv);
+        he_RecheckEventPerson((unsigned char *)iv);
         iv = (int)he_NextEvent();
     }
 }
@@ -1317,7 +1316,7 @@ void he_Unk53ed70(void)
                 he_AddEventGfxInfo((AIJOB *)pb);
                 iv = gm_CompareTime((unsigned)&ai_Time, pb + 0x52);
                 if (iv > 0 && *pb < 0xa7) {
-                    he_Unk53ec40(pb);
+                    he_RecheckEventPerson(pb);
                     ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
                 }
             }
@@ -1339,7 +1338,7 @@ void he_RunQuickList(void)
                 return;
             pb = (unsigned char *)U_I((unsigned)&he_QuickList + i * 4);
             if (pb != 0 && *pb < 0xa7) {
-                he_Unk53ec40(pb);
+                he_RecheckEventPerson(pb);
                 ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
             }
             i++;
@@ -1359,7 +1358,7 @@ void he_Unk53ee40(void)
             if ((int)pb >= (int)((unsigned)&he_Events + 0x53000))
                 return;
             if (*pb != 0 && (pb[0x78] & 0x10) != 0 && *pb < 0xa7) {
-                he_Unk53ec40(pb);
+                he_RecheckEventPerson(pb);
                 ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
             }
             i++;
