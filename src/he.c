@@ -3164,93 +3164,113 @@ void he_RunDuelChallenge(int ev)
         return;
     }
 }
-/* 0x547750, a Ghidra miss (disassembled): the run handler of the insult event (the figures +0xac a and +0xb0 b, flag 0x400 of +0x1c8 = in a quarrel): sets the clock to 0x18 units with +0x56 = 6, +0x58 = 0x1e; with the relation 0x4f2e30 (4 ..) it is decided: when b is of kind 6 / 7 a message record of 0x f8 bytes (type 0x46, 0x4fe310) is posted and the event goes on (state 1), else a chance (0x504e20 + 0x42ec20 against 1.0) lets a pay (the news 0x1d81 / 0x1d83, the ability 0x4ea550, the relation -0x14, the same as 0x5472d0) or sets the flags and goes to the state 2 (ROUGH) */
-
-void he_Unk547750(int ev)
+/* 0x547750, a Ghidra miss (disassembled): the alloc handler of the insult event 0x47 (its run handler 0x547ba0),
+   partner1 (a) insults partner2 (b): it is due the next day at 6:30 (no cm slot yet). Once started (opts 2): when
+   a or b is gone and one of them is already in a quarrel (flags1c8 0x400; @original read through the pointer
+   that may be 0) it ends in two minutes. a is accused of the crime 4 against b (at a's home, else b's). A player b
+   gets the long message 0x46 (to b, the event's id in arg[0], its time six hours past zero) that starts the duel
+   challenge (he_RunDuelChallenge) -> 1, both in a quarrel. Else b answers by itself: with util_RandomF() +
+   gm_Mix(b, a, 3) of 1 or more it challenges (both in a quarrel, a player a hears the duel intro news 0x1d83)
+   -> 2; below, it declines as he_DuelDeclined does (a hears 0x1d81, b's district's opinion and b's relation to a
+   drop) and the event ends in two minutes
+   @deep Read whole against the original and fixed: typed over AIJOB / AICHAR / AIMSG (the message 0x46
+   with msg.time + 6 hours through gm_AddTime2, the original's +0x28), the second office array 6 ints and
+   the text / message buffers block-scoped (frame 0x134 equal), the chance as util_RandomF() + gm_Mix(b, a,
+   3) >= ai_FloatOne (the original's and eax,0x100 / jne), the null-pointer flag test of the gone branch
+   kept (@original). 338 vs 338 instructions; left: scheduling only in the 0x1d81 news arguments
+   (+0x547951, 16 lines): the original loads b->sex into al, setne cl, add ecx,0x1d68, then xor eax / mov
+   ax,[ebp]; ours loads sex into cl, the id first (xor eax / mov ax,[ebp]) and setne dl / add edx: the same
+   instructions in another order and registers (0x1d68 + (sex != 0) spelled either way compiles alike;
+   he_DuelDeclined's identical expression is proved equal); the prover stops at the escaped frame (+0x286) */
+void he_AllocInsult(int ev)
 {
-    char text[0x100];
-    char msg[0xf8];
-    int a1[6];
-    int a2[8];
-    int a, b, x, r, bx;
-    float f;
-    int amt;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
+    int office[6];
+    int seat[6];
+    int place, district, amt;
+    float liking;
 
-    *(int *)(ev + 0x84) = -1;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
-    *(short *)(ev + 0x56) = 6;
-    *(int *)(ev + 0x58) = 0x1e;
-    if ((*(unsigned char *)(ev + 0x78) & 2) == 0)
+    e->exSlot = -1;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->end.hour = 6;
+    e->end.min = 0x1e;
+    if ((e->opts & 2) == 0)
         return;
-    a = gm_FindChar(*(int *)(ev + 0xac));
-    b = gm_FindChar(*(int *)(ev + 0xb0));
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
     if (a == 0 || b == 0) {
-        if ((*(unsigned *)(a + 0x1c8) & 0x400) != 0 || (*(unsigned *)(b + 0x1c8) & 0x400) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        if ((a->flags1c8 & 0x400) != 0 || (b->flags1c8 & 0x400) != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
     }
-    x = -1;
-    r = *(int *)(a + 0x170);
-    if (r == 0)
-        r = *(int *)(b + 0x170);
-    if (r != 0)
-        x = *(int *)(r + 1);
-    gv_Accuse(4, 1, *(int *)(a + 4), *(int *)(b + 4), x);
-    if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-        memset(msg, 0, sizeof(msg));
-        *(int *)(msg + 8) = *(int *)(b + 4);
-        *(int *)(msg + 0xc) = *(int *)(b + 4);
-        msg[4] = 0x46;
-        msg[0x36] = 9;
-        *(int *)(msg + 0x58) = *(int *)(ev + 4);
-        gm_AddTime2(msg + 0x24, *(unsigned short *)b, 6, 0, 0);
-        cm_SendLongMessage(msg);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 6;
-        *(int *)(ev + 0x58) = 0x1e;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-        cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0x400, 0);
-        cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0x400, 0);
+    place = -1;
+    if (a->bld2 != 0)
+        place = a->bld2->id;
+    else if (b->bld2 != 0)
+        place = b->bld2->id;
+    gv_Accuse(4, 1, a->netId, b->netId, place);
+    if (b->kind == 6 || b->kind == 7) {
+        AIMSG msg;
+
+        memset(&msg, 0, sizeof(msg));
+        msg.to = b->netId;
+        msg.fromId = b->netId;
+        msg.type = 0x46;
+        msg.flags = 9;
+        msg.arg[0] = e->id;
+        gm_AddTime2(&msg.time, b->id, 6, 0, 0);     /* the second argument unused */
+        cm_SendLongMessage((char *)&msg);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 6;
+        e->end.min = 0x1e;
+        e->exSlot = cm_SendExSetHE(1, ev);
+        cm_SendSetField(a->netId, 0x1c8, 4, 0x400, 0);
+        cm_SendSetField(b->netId, 0x1c8, 4, 0x400, 0);
         return;
     }
-    f = gm_Mix(b, a, 3);
-    if (!(util_RandomF() + f < 1.0f)) {
-        cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0x400, 0);
-        cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0x400, 0);
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(short *)(ev + 0x56) = 6;
-        *(int *)(ev + 0x58) = 0x1e;
-        if (*(char *)(a + 2) == 6 || *(char *)(a + 2) == 7) {
-            txt_Format(text, 0x1d83, *(unsigned short *)b, ev + 0x52, *(unsigned short *)b);
-            he_ShowNews(*(int *)(a + 4), *(int *)(a + 4), text, 0, 0x5fa, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
+    liking = gm_Mix(b, a, 3);
+    if (util_RandomF() + liking >= ai_FloatOne) {
+        cm_SendSetField(a->netId, 0x1c8, 4, 0x400, 0);
+        cm_SendSetField(b->netId, 0x1c8, 4, 0x400, 0);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 6;
+        e->end.min = 0x1e;
+        if (a->kind == 6 || a->kind == 7) {
+            char text[0x100];
+
+            txt_Format(text, 0x1d83, b->id, &e->end, b->id);
+            he_ShowNews(a->netId, a->netId, text, 0, 0x5fa, "_DUELL_INTRO_EVENT_DUELLANTEN_HS_00");
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     }
-    bx = 0;
-    if (*(char *)(a + 2) == 6 || *(char *)(a + 2) == 7) {
-        txt_Format(text, 0x1d81, *(unsigned short *)b, *(unsigned short *)b, (*(char *)(b + 9) != 0) + 0x1d68);
-        he_ShowNews(*(int *)(a + 4), *(int *)(a + 4), text, 0, 0x5fa, (char *)0);
+    district = 0;
+    if (a->kind == 6 || a->kind == 7) {
+        char text[0x100];
+
+        txt_Format(text, 0x1d81, b->id, b->id, (b->sex != 0) + 0x1d68);
+        he_ShowNews(a->netId, a->netId, text, 0, 0x5fa, (char *)0);
     }
-    if (*(char *)(b + 0x166) != 0) {
-        if (amt_FindOffice(b, a1, a2) != 0)
-            bx = a1[1];
+    if (b->officeKind != 0) {
+        if (amt_FindOffice(b, office, seat) != 0)
+            district = office[1];
         else
-            bx = (unsigned short)util_Random(3) + 1;
+            district = (unsigned short)util_Random(3) + 1;
     }
     amt = -9 - (int)(gm_GetSkill(a, 4) * 8.0f);
     amt -= (unsigned short)util_Random(8);
-    amt_ChangeDistrictOpinion(b, bx, amt);
-    cm_SendRelations(*(int *)(b + 4), *(int *)(a + 4), -0x14, 1);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 2, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    amt_ChangeDistrictOpinion(b, district, amt);
+    cm_SendRelations(b->netId, a->netId, -0x14, 1);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 2, 0);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x547ba0, a Ghidra miss (disassembled): the run handler of the quarrel flag event (the figures +0xac a / +0xb0 b, flag 0x400 of +0x1c8): state 2 posts a message record of 0x114 bytes (type 4, +0x18 in 0x1e units, 0x4c4fa0) for a and b, the states 1 / -1 / -2 clear the flags again and end the event (ROUGH) */
 
@@ -9426,7 +9446,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_RunDuelChallenge) != 0)
         return 1;
-    if (he_SetEventHandlers(0x47, (void *)he_Unk547750, (void *)he_Unk547ba0) != 0)
+    if (he_SetEventHandlers(0x47, (void *)he_AllocInsult, (void *)he_Unk547ba0) != 0)
         return 1;
     if (he_SetEventHandlers(0x4a, (void *)he_Unk547ee0, (void *)he_Unk547f90) != 0)
         return 1;
