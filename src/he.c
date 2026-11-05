@@ -9985,7 +9985,15 @@ void he_Unk552520(int ev)
    characters left, each round (a day apart) turns up to n = min(left, ceil(left + rounds)) characters whose b00c
    (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
    the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
-   later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it */
+   later. A negative stage, no rounds or no characters left free the event, flag 4 of opts holds it
+   @deep read whole against the original and fixed the meaning (ceil not sqrt, n = min(left, ceil(left +
+   rounds)) as one double expression, the field value 1 - from computed first, util_RandomU start, typed
+   HECONVERT words). Left, allocation only: the original keeps cnt in a frame slot (inc dword ptr
+   [esp+0x10], cmp [esp+0x10], ebx) and left in ebp (dec ebp; test ebp, ebp), ours keeps cnt in ebx and
+   left in the dead parameter slot (dec dword ptr [esp+0x20]); hence frame 0xc vs 0x10, 526 vs 538 bytes,
+   the permuted registers (n ebx | ebp, ring esi | edi, ev edi | esi) and the original's push ebp (left, 0
+   after the loop) for gm_AddTime's zeros where ours pushes 0. A do / while form of the loop tried, no
+   change. The prover stops there (it reads left as 0x2ff on its path). */
 void he_RunConversion(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
