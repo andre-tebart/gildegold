@@ -387,6 +387,19 @@ typedef struct HETRIAL {                /* the trial event 0x5e's words over AIJ
     char padb1[3];
     int cost;                           /* 0xb4, the cost of a round (he_AddApEvent's cost, negated) */
 } HETRIAL;
+typedef struct HETRIALSTEP {            /* the next trial step event 0x5f's words over AIJOB's union (its alloc handler
+                                           he_StartNextTrialStep, run handler he_RunTrialSteps; steps is AIJOB's) */
+    char pad00[0xac];
+    int teacher;                        /* 0xac, the netId of the teaching character (gm_FindChar) */
+    char padb0[4];
+    int cost;                           /* 0xb4, the cost of a step (he_AddApEvent's cost, negated) */
+    unsigned char skill[2];             /* 0xb8, the two skills each step raises (ai_ApplyTrialStep's index 0 .. 4) */
+} HETRIALSTEP;
+typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x64 */
+    char pad00[0x64];
+    int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
+                                           counts it; reasoned, its reader is not read yet) */
+} HEFINVIEW;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -4174,52 +4187,61 @@ void he_StartNextTrialStep(int ev)
     e->stage = 0;
     e->steps = 0;
 }
-/* 0x549770, a Ghidra miss (disassembled): the run handler of the next trial step for the player (word +8): state 0 shows the news 0x1a9f to the figure +0xac and raises the 0x506430 counter (+0x64); state 1 spends the 0x5d08c0 of +0xb8 / +0xb9, shows 0x1a9e, counts +0xba (5 rounds end it) and pays the cost -+0xb4 (0x53eec0) (ROUGH) */
+/* 0x549770, a Ghidra miss (disassembled): the run handler of the next trial step event 0x5f (the character e->chr
+   taught by the teacher, a character found by its netId): stage -2 / -1 frees it; nothing while it is not started
+   or its last post is not settled. Stage 0 is a step: both skills (ai_ApplyTrialStep) raised, the news 0x1a9e, a
+   day on, the step's cost to the teacher's AP events; the fifth step moves it to stage 1. Stage 1 tells the
+   teacher (the news 0x1a9f), counts the course in the teacher's player record and ends the event now; without
+   the teacher it ends now */
 
-void he_Unk549770(int ev)
+void he_RunTrialSteps(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HETRIALSTEP *t = (HETRIALSTEP *)ev;
     char text[0x100];
-    int st, rec, o, r, cnt;
+    AICHAR *c, *teacher;
+    HEFINVIEW *fin;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1) {
+    if (e->stage == -2 || e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if (e->opts & 4)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    o = gm_FindChar(*(int *)(ev + 0xac));
-    if (st == 0) {
-        if (o != 0) {
-            txt_Format(text, 0x1a9f, *(unsigned short *)rec);
-            he_ShowNews(*(int *)(o + 4), *(int *)(o + 4), text, 0, 0x5f4, (char *)0);
-            r = gm_PlayerRecord(o);
-            if (r != 0)
-                *(int *)(r + 0x64) = *(int *)(r + 0x64) + 1;
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        c = &ai_CharsT[e->chr];
+        teacher = (AICHAR *)gm_FindChar(t->teacher);
+        if (teacher == 0) {
+            e->end = ai_Time;
+            cm_SendExSetHE(-1, ev);
+            return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
+        ai_ApplyTrialStep(c, t->skill[0]);
+        ai_ApplyTrialStep(c, t->skill[1]);
+        txt_Format(text, 0x1a9e, c->id);
+        e->steps++;
+        e->stage = e->steps >= 5;
+        e->end.hour += 0x18;
+        he_AddApEvent(teacher->id, text, 0, -t->cost);
+        return;
+    case 1:
+        c = &ai_CharsT[e->chr];
+        teacher = (AICHAR *)gm_FindChar(t->teacher);
+        if (teacher != 0) {
+            txt_Format(text, 0x1a9f, c->id);
+            he_ShowNews(teacher->netId, teacher->netId, text, 0, 0x5f4, (char *)0);
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)teacher);
+            if (fin != 0)
+                fin->taught++;
+        }
+        e->end = ai_Time;
         cm_SendExSetHE(-1, ev);
         return;
     }
-    if (st != 1)
-        return;
-    if (o == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        cm_SendExSetHE(-1, ev);
-        return;
-    }
-    ai_ApplyTrialStep(rec, *(unsigned char *)(ev + 0xb8));
-    ai_ApplyTrialStep(rec, *(unsigned char *)(ev + 0xb9));
-    txt_Format(text, 0x1a9e, *(unsigned short *)rec);
-    *(unsigned char *)(ev + 0xba) = *(unsigned char *)(ev + 0xba) + 1;
-    cnt = *(unsigned char *)(ev + 0xba);
-    *(unsigned short *)(ev + 0x56) = *(unsigned short *)(ev + 0x56) + 0x18;
-    *(int *)(ev + 0x70) = cnt < 5;
-    he_AddApEvent(*(unsigned short *)o, text, 0, -*(int *)(ev + 0xb4));
 }
 /* 0x549970, a Ghidra miss (disassembled): the init of the training event: the ability +0xae of the player must be at least 0x5eceb4 (else the event is freed), a running event of the type 0x60 of the player is not doubled (0x53e400 (2, 2, player, 0, 0x60)); +0xac = 0x15, +0xad = 2 * (2 + the ability * 0.0xx + 1), state 0, the clock now, posted 5 (or 1 when 0x6f2448) units ahead, +0x44 = now */
 
@@ -9582,7 +9604,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5e, (void *)he_StartTrialEvent, (void *)he_RunTrialEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5f, (void *)he_StartNextTrialStep, (void *)he_Unk549770) != 0)
+    if (he_SetEventHandlers(0x5f, (void *)he_StartNextTrialStep, (void *)he_RunTrialSteps) != 0)
         return 1;
     if (he_SetEventHandlers(0x60, (void *)he_Unk549970, (void *)he_Unk549aa0) != 0)
         return 1;
