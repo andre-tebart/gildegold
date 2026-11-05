@@ -9266,22 +9266,22 @@ credit:
 int ai_ExecuteUpgradeGuild(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
-    unsigned char *o;
+    AIOBJ *o;
     AIBLD *b;
 
     if (s1->kind == 1 && s2->kind == 0x12 && s2->arg > 0) {
-        G8_4FEA50(0, (int)&o, 0, s1->ref);
+        gm_FindById(0, (int *)&o, 0, s1->ref);
         if (o == 0)
             return 0;
-        cm_SendMoveGoods(*(int *)(o + 2), p->netId, ai_OwnPlayer, s2->arg);
+        cm_SendMoveGoods(o->objId, p->netId, ai_OwnPlayer, s2->arg);
         return 0x39;
     }
     if (s1->kind != 4 || s2->kind != 1)
         return 0;
-    G8_4FEA50((int *)&b, 0, 0, s1->ref2);
+    gm_FindById((int *)&b, 0, 0, s1->ref2);
     if (b == 0)
         return 0;
-    G8_4FEA50(0, (int)&o, 0, s2->ref);
+    gm_FindById(0, (int *)&o, 0, s2->ref);
     if (o == 0)
         return 0;
     memset(&m, 0, sizeof(m));
@@ -9292,7 +9292,7 @@ int ai_ExecuteUpgradeGuild(G5CH *p, AIARG *s1, AIARG *s2)
     m.time = ai_Time;
     m.arg = s1->ref2;
     cm_BeginGroup("upgr_ai_zunfthaus");
-    cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
+    cm_SendMoveGoods(-1, o->objId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
     cm_EndGroup("upgr_ai_zunfthaus");
     return 0x39;
