@@ -340,11 +340,12 @@ int gm_CompareTime();
 #include "ch.h"
 #include "am_types.h"
 #include "net.h"
+#include "amt_types.h"
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define ai_BldsT (*(AIBLD **)&ai_Blds)  /* 0x889f74, ai_Blds (f3gm.c: char *) as the AIBLD records it points to */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define cm_SendSpawnCharacterR ((int (*)(unsigned char, int, int, unsigned char, unsigned char, unsigned char, const char *))cm_SendSpawnCharacter)  /* 0x4c59f0: @original he_BeginPlague keeps what it returns (eax after the call: the cm slot of the new character), cm.c's definition is void */
-#define util_RandomU ((unsigned short (*)(int))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
+#define util_RandomU ((unsigned short (*)(unsigned short))util_Random)  /* 0x42ec00 (tr.c: int util_Random(unsigned short)): @original he_SpawnFounders reads the 16-bit result (mov cx, ax / and 0xffff) */
 #define ai_PlayerSlotsT (*(GMPLAYERSLOT (*)[4])&ai_PlayerSlots)  /* 0x7e3f40, ai_PlayerSlots (cm.h: char[][0x2f4]) as the four player slots */
 #define snd_CurrentTrack (*(char **)&snd_TrackHandles)  /* 0x6f0b6c, snd_TrackHandles.current (f3snd.h G16TRACKHANDLES, not included here): the music track playing */
 #define he_PlayerCh (*(AICHAR **)&ai_PlayerChar)  /* 0x6f1bf8, ai_PlayerChar (ai.c: unsigned short *) as the AICHAR it points to */
@@ -9717,61 +9718,72 @@ int amt_GetKind(int k, struct AMTKIND *out);
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e);
 int cm_SendRelations(int a, int b, int c, int d);
 
-/* 0x551d70 (the Ghidra start; ROUGH), the run handler of the event 0x551d00 (six figure groups at +0xb0, state 0xc = the announcement): state 0xc tells every player character (kind 6 / 7: 0x53dda0 (id, -1, text 0x10bc / 0x10be by +0xac, 0x20, 0x600, 0x631090)) and goes to state 0; states 0 .. 5 take the group +0xb0 + state * 4: for every member (0x4e6fc0, 0x18-byte records) that has a person (0x505df0) and a job (0x4e6f80) a random roll may raise its mood (0x4e6680), unless the person has kind 3 every other character in the same building (+0x168 / +0x27) gets a random opinion change (0x4c4b00), and a player character gets the message 0x10bd / 0x10bf (0x5fd); the state is then incremented and the event posted 1 later; other states free the record */
-void he_Unk551d70(int ev)
+/* 0x551d70, the run handler of the six-group event 0x7d (he_InitSixGroupEvent): at stage 0xc it tells every player
+   character (kind 6 / 7) the news (text 0x10bc, of the variant 1 0x10be, with the own player's name) and starts
+   stage 0 an hour later; the stages 0 .. 5 take the officials of the column groups[stage] (amt_GetColumnOffices, up
+   to 6): of the variant 1 an official of level 9 / 6 sends an office message two times in three; every official who
+   is not of kind 3 loses 3 x level + random(3 x level) of opinion with each character whose building he owns, and a
+   player character among them who lost any is told (0x10bd / 0x10bf); then the next stage an hour later. Other
+   stages free the event */
+void he_RunSixGroupEvent(AIJOB *ev)
 {
-    char text[0x200];
-    int st = *(int *)(ev + 0x70);
-    unsigned char arr[0x18 * 6];
-    int n, i, k, c, p, hit;
-    int job[8];
+    AMTKIND kind;
+    AMTREC offices[6];
+    char text[0x800];
+    AMTREC *o;
+    AICHAR *p, *c;
+    int n, i, hit;
 
-    if (st == 0xc) {
-        txt_Format(text, *(int *)(ev + 0xac) == 0 ? 0x10bc : 0x10be, (char *)((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4);
-        for (c = (unsigned)&ai_Chars; c < (unsigned)((unsigned)ai_Chars + 0x65400); c += 0x21c) {
-            if (*(unsigned char *)(c + 2) == 6 || *(unsigned char *)(c + 2) == 7)
-                he_ShowNews(*(int *)(c + 4), -1, text, 0x20, 0x600, (unsigned)&ch_EmptyName);
+    if (ev->stage == 0xc) {
+        if (ev->grpMode == 0)
+            txt_Format(text, 0x10bc, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20);
+        else
+            txt_Format(text, 0x10be, ai_PlayerSlotsT[ai_OwnPlayer].name + 0x20);
+        for (i = 0; i < 768; i++) {
+            if (ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7)
+                he_ShowNews(ai_CharsT[i].netId, -1, text, 0x20, 0x600, ch_EmptyName);
         }
-        *(int *)(ev + 0x70) = 0;
-        gm_AddTime(ev + 0x52, 1, 0, 0);
+        ev->stage = 0;
+        gm_AddTime(&ev->end, 1, 0, 0);
         return;
     }
-    if (st < 0 || st >= 6) {
+    if (ev->stage < 0 || ev->stage >= 6) {
         he_FreeEvent((int *)ev);
         return;
     }
-    n = ((int (*)(int, int, struct AMTREC *, int))amt_GetColumnOffices)(*(int *)(ev + 0xb0 + st * 4), arr, 6, 0);
+    n = amt_GetColumnOffices(ev->groups[ev->stage], 6, offices);
     if (n > 0) {
-        for (i = 0; i < n; i++) {
-            unsigned char *m = arr + i * 0x18;
-
-            p = gm_FindChar(*(int *)(m + 0));
-            if (p == 0)
-                continue;
-            if (amt_GetKind(m[4], job) == 0)
-                continue;
-            if (*(int *)(ev + 0xac) == 1 && ((unsigned char)job[2] == 9 || (unsigned char)job[2] == 6)) {
-                if ((unsigned short)util_Random(3) != 0)
-                    amt_SendOfficeMessage(m[0], 0, 0, 4, 0xff);
-            }
-            if (*(unsigned char *)(p + 2) == 3)
-                continue;
-            hit = 0;
-            for (c = (unsigned)&ai_CharInts; c < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); c += 0x21c) {
-                if (*(int *)(c + 0x168) != 0 && *(int *)c != *(int *)(p + 4) && *(unsigned short *)(*(int *)(c + 0x168) + 0x27) == *(unsigned short *)p) {
-                    hit++;
-                    k = (unsigned short)util_Random(1);
-                    ((void (*)(int, int, int))cm_SendRelations)(*(int *)(p + 4), *(int *)c, -k - job[2] * 3);
+        o = offices;
+        do {
+            p = (AICHAR *)gm_FindChar(o->owner);
+            if (p != 0 && amt_GetKind(o->kind, &kind) != 0) {
+                if (ev->grpMode == 1 && (kind.level == 9 || kind.level == 6) && (unsigned short)util_Random(3) != 0)
+                    amt_SendOfficeMessage(o->idx, 0, 0, 4, 0xff);
+                if (p->kind != 3) {
+                    hit = 0;
+                    for (i = 0; i < 768; i++) {
+                        c = &ai_CharsT[i];
+                        if (c->bld != 0 && c->netId != p->netId && c->bld->owner == p->id) {
+                            hit++;
+                            cm_SendRelations(p->netId, c->netId, -util_RandomU(kind.level * 3) - kind.level * 3, 1);
+                        }
+                    }
+                    if (hit != 0 && (p->kind == 6 || p->kind == 7)) {
+                        if (ev->grpMode == 0) {
+                            txt_Format(text, 0x10bd, p->id);
+                            he_ShowNews(p->netId, -1, text, 1, 0x5fd, ch_EmptyName);
+                        } else {
+                            txt_Format(text, 0x10bf, p->id);
+                            he_ShowNews(p->netId, -1, text, 1, 0x5fd, ch_EmptyName);
+                        }
+                    }
                 }
             }
-            if (hit != 0 && (*(unsigned char *)(p + 2) == 6 || *(unsigned char *)(p + 2) == 7)) {
-                txt_Format(text, *(int *)(ev + 0xac) == 0 ? 0x10bd : 0x10bf, *(unsigned short *)p);
-                he_ShowNews(*(int *)(p + 4), -1, text, 1, 0x5fd, (unsigned)&ch_EmptyName);
-            }
-        }
+            o++;
+        } while (--n != 0);
     }
-    *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
-    gm_AddTime(ev + 0x52, 1, 0, 0);
+    ev->stage++;
+    gm_AddTime(&ev->end, 1, 0, 0);
 }
 /* 0x552040, re-posts an event 2 later and resets its state to 0 */
 
@@ -10393,7 +10405,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7d, (void *)he_InitSixGroupEvent, (void *)he_Unk551d70) != 0)
+    if (he_SetEventHandlers(0x7d, (void *)he_InitSixGroupEvent, (void *)he_RunSixGroupEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x7e, (void *)he_Unk552040, (void *)he_Unk552090) != 0)
         return 1;

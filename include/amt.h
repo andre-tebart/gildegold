@@ -45,17 +45,8 @@ struct AIPER;
     __asm rep stosb                                                 \
 }
 
-#include "amt_types.h"               /* AMTREC */
+#include "amt_types.h"               /* AMTREC, AMTKIND */
 extern AMTREC amt_Table[42];            /* 0x925120 */
-typedef struct AMTKIND {                /* 0x18 bytes, a kind of office (the table 0x60ed58, 30 records) */
-    int id;                             /* 0x00, the kind */
-    int col;                            /* 0x04, the column of the rate table */
-    unsigned char level;                /* 0x08 */
-    char pad09[3];
-    int salary;                         /* 0x0c */
-    int two;                            /* 0x10, the office takes two persons */
-    int pad14;
-} AMTKIND;
 extern AMTKIND amt_Kinds[40];           /* 0x60ed58 */
 extern const float amt_Pay[];                 /* 0x5edfbc */
 extern float amt_Rates[];               /* 0x60ec90, 7 floats per row */
