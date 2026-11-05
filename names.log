@@ -2192,3 +2192,4 @@
 2026-11-05T08:29:36 0x0048eab0 data ai_Unk48eab0 -> ai_ExecSecretRoom by:main why:act.exec of action 0x41 UseSecretRoom (ai_RegisterBuildingActions 0x48fb70); dispatches to ai_ExecSecretRoom0..3 by s1->arg2
 2026-11-05T08:30:04 0x0048f010 data ai_Unk48f010 -> ai_DecideCannonTower by:main why:act.decide of action 0x42 UseCannonTower (ai_RegisterBuildingActions 0x48fb70): wants the 0x256 second level object, or requests the tower's effect, or picks a building to aim at
 2026-11-05T08:30:18 0x0048f1e0 data ai_Unk48f1e0 -> ai_ExecCannonTower by:main why:act.exec of action 0x42 UseCannonTower (ai_RegisterBuildingActions 0x48fb70): fires ai_FireCannon from the building of s1->ref at the one of s2->ref
+2026-11-05T08:33:35 0x0048e120 func ai_Unk48e120 -> ai_DecideBuildDomizil by:main why:act.decide of action 0x40 Build Domizil (ai_RegisterBuildingActions 0x48fb70); he_FindEvent 0x0d guards it, it upgrades the master's building or wants one built

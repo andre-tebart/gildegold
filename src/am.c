@@ -115,7 +115,7 @@ int ai_FindMasterBuilding(AIPX *p, int *out)
     }
     return 0;
 }
-/* 0x48e120, decide kind 0x40: the master's building needs an upgrade he can nearly pay
+/* 0x48e120, decide of "Build Domizil" (0x40): the master's building needs an upgrade he can nearly pay
    @deep read in full against the original 0x48e120..0x48e368: every statement, callee, constant (0.3f,
    0.95f, 0.25f) and field matches (93 + 47 + 20 equal instructions). Left: the original cross-jumps the
    two 'borrow' tails: the else branch (gm_BuildingKindCost cost) computes need in ecx (mov ecx, edi / sub ecx,
@@ -125,7 +125,7 @@ int ai_FindMasterBuilding(AIPX *p, int *out)
    kind before arg (no change), a shared goto label for kind + call (100 ins differ), for arg + kind + call
    (62 ins differ, both tails fully merged): reverted. Block layout / tail merging, not meaning. */
 
-int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
+int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2)
 {
     AIARGX s1, s2;
     AIBLD *bld;
@@ -953,7 +953,7 @@ int ai_RegisterBuildingActions(int a)
     act.id = 0x40;
     strcpy(act.name, "Build Domizil");
     act.eval = ai_EvalMoodWeights;
-    act.decide = ai_Unk48e120;
+    act.decide = ai_DecideBuildDomizil;
     act.exec = ai_ExecBuildDomizil;
     act.flags = 0x1c3;
     if (!am_RegisterMethod(&act, a))

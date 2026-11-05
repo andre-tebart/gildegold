@@ -505,7 +505,7 @@ void gm_SendMoneyDelta(int a, int b);                                        /* 
 
 /* this unit, in address order */
 int ai_FindMasterBuilding(AIPX *p, int *out);                                     /* 0x48e070 */
-int ai_Unk48e120(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e120 */
+int ai_DecideBuildDomizil(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e120 */
 int ai_ExecBuildDomizil(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e370 */
 int ai_DecideSecretRoom(int a, AIPX *p, int b, AIARGX *o1, AIARGX *o2);         /* 0x48e470 */
 int ai_DecideSecretRoom0(AIPX *p, AIARGX *s1, AIARGX *s2);                       /* 0x48e620 */
