@@ -3497,11 +3497,11 @@ exe	0x0053d630	he_FreeOldestSlot	he	byte	readable
 exe	0x0053d6f0	he_OpenEventSlot	he	byte	readable		
 exe	0x0053d800	he_ReleaseSlot	he	byte	readable		
 exe	0x0053d930	he_CreateEventBar	he	byte	readable		
-exe	0x0053d9b0	he_CloseEventSlots	he	byte	draft		
+exe	0x0053d9b0	he_CloseEventSlots	he	byte	readable		
 exe	0x0053d9f0	he_ShowEventBar	he	byte	readable		
 exe	0x0053dad0	he_SetBarEnabled	he	byte	readable		
 exe	0x0053daf0	he_PickActiveEvent	he	shape	readable		
-exe	0x0053dcb0	he_ActivateSlot	he	byte	draft		
+exe	0x0053dcb0	he_ActivateSlot	he	byte	readable		
 exe	0x0053dda0	he_ShowNews	he	draft	readable	deep	
 exe	0x0053dee0	he_MessageBoxQuickjump	he	byte	readable		
 exe	0x0053e040	he_CreateEvent	he	draft	readable	deep	
@@ -3511,16 +3511,16 @@ exe	0x0053e400	he_FindEvent	he	byte	readable
 exe	0x0053e4e0	he_SpreadGfxInfos	he	shape	readable		
 exe	0x0053e5f0	he_CreateGfxObject	he	byte	readable		
 exe	0x0053e780	he_CreateGfxInfo	he	draft	readable	deep	
-exe	0x0053e840	he_Unk53e840	he	shape	draft		
+exe	0x0053e840	he_FreeGfxInfo	he	shape	readable		
 exe	0x0053e8b0	he_AddEventGfxInfo	he	byte	readable		
-exe	0x0053eba0	he_Unk53eba0	he	byte	draft		
-exe	0x0053ebe0	he_RemoveGfxInfos	he	byte	draft		
+exe	0x0053eba0	he_RemoveStaleGfxInfos	he	byte	readable		
+exe	0x0053ebe0	he_RemoveGfxInfos	he	byte	readable		
 exe	0x0053ec10	he_ShowObjectInfos	he	byte	readable		
-exe	0x0053ec40	he_Unk53ec40	he	byte	draft		
-exe	0x0053ed40	he_RecheckPersonEvents	he	byte	draft		
-exe	0x0053ed70	he_Unk53ed70	he	byte	draft		
-exe	0x0053edf0	he_RunQuickList	he	shape	draft		
-exe	0x0053ee40	he_Unk53ee40	he	byte	draft		
+exe	0x0053ec40	he_RecheckEventPerson	he	byte	readable		
+exe	0x0053ed40	he_RecheckPersonEvents	he	byte	readable		
+exe	0x0053ed70	he_RunEvents	he	byte	readable		
+exe	0x0053edf0	he_RunQuickList	he	byte	readable		
+exe	0x0053ee40	he_RunEveryFrameEvents	he	byte	readable		
 exe	0x0053eea0	he_AgeCarryRecs	he	byte	readable		
 exe	0x0053eec0	he_AddApEvent	he	byte	readable		
 exe	0x0053ef50	he_CountDownApEvents	he	byte	readable		
