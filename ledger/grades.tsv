@@ -2108,7 +2108,7 @@ exe	0x004bf410	rt_RemoveMark	rt	byte	readable
 exe	0x004bf440	rt_HighlightRoute	rt	draft	draft	deep	
 exe	0x004bf5b0	rt_EditCartRoute	rt	draft	draft	deep	
 exe	0x004bfa40	rt_UnloadAtPoint	rt	byte	draft	deep	
-exe	0x004bfc60	rt_Unk4bfc60	rt	draft	draft	deep	
+exe	0x004bfc60	rt_LoadAtPoint	rt	draft	draft	deep	
 exe	0x004bff40	rt_SaveRoutes	rt	draft	draft	deep	
 exe	0x004c0040	rt_LoadRoutes	rt	draft	draft	deep	
 exe	0x004c01b0	snd_ClearQueue	f3snd	byte	readable		
@@ -2236,7 +2236,7 @@ exe	0x004c5930	cm_SendDecisionValue	cm	byte	draft
 exe	0x004c5970	cm_SendCharClear	cm	byte	draft		
 exe	0x004c59b0	cm_SendSetJob	cm	byte	draft		
 exe	0x004c59f0	cm_SendSpawnCharacter	cm	shape	draft		
-exe	0x004c5a70	ai_Unk4c5a70	cm	byte	draft		
+exe	0x004c5a70	cm_SendFreeObject	cm	byte	draft		
 exe	0x004c5aa0	cm_SendChat	cm	byte	readable		
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
 exe	0x004c5b90	cm_SendCharHalt	cm	byte	draft		
@@ -2345,7 +2345,7 @@ exe	0x004cb910	ai_Unk4cb910	cm	shape	draft
 exe	0x004cb940	ai_Unk4cb940	cm	byte	draft		
 exe	0x004cb9b0	ai_Unk4cb9b0	cm	byte	draft		
 exe	0x004cba10	cm_ExSpawnCharacter	cm	byte	readable		
-exe	0x004cbb90	ai_Unk4cbb90	cm	byte	draft		
+exe	0x004cbb90	cm_ExFreeObject	cm	byte	draft		
 exe	0x004cbbd0	cm_ExChat	cm	byte	readable		
 exe	0x004cbca0	cm_ExCreateGeb	cm	shape	readable		
 exe	0x004cbff0	ai_Unk4cbff0	cm	byte	draft		
@@ -2599,7 +2599,7 @@ exe	0x004e5120	ai_Unk4e5120	cm	byte	draft
 exe	0x004e5150	ai_Unk4e5150	cm	byte	draft		
 exe	0x004e5180	cm_ClearParty	cm	byte	readable		
 exe	0x004e51b0	ai_Unk4e51b0	cm	shape	draft		
-exe	0x004e5210	ai_Unk4e5210	cm	shape	draft		
+exe	0x004e5210	cm_RemovePartyMember	cm	shape	draft		
 exe	0x004e52a0	cut_RandSeed	cm	byte	draft		
 exe	0x004e52c0	cut_GetRandSeed	cm	byte	draft		
 exe	0x004e52f0	cm_Random	cm	byte	draft		
@@ -3691,7 +3691,7 @@ exe	0x00553d10	he_NoEvent2ePair	he	byte	draft
 exe	0x00553d60	he_NoEvent4bPair	he	byte	draft		
 exe	0x00553db0	he_NoEvent35Pair	he	shape	draft		
 exe	0x00553e10	he_Unk553e10	he	byte	draft		
-exe	0x00553e90	he_RunSale	he	shape	readable		
+exe	0x00553e90	he_RunSale	he	byte	readable		
 exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
 exe	0x00554820	he_Unk554820	he	byte	draft		
 exe	0x00554860	he_RunHire	he	draft	readable	deep	
@@ -3700,15 +3700,15 @@ exe	0x005551c0	he_CollectTransporter	he	byte	readable
 exe	0x00555210	he_RandomTransporter	he	byte	draft		
 exe	0x005552c0	he_SetCartSpeed	he	byte	draft		
 exe	0x00555350	he_TransportFromHome	he	byte	readable		
-exe	0x00555690	he_Unk555690	he	draft	draft		
-exe	0x00555b60	he_Unk555b60	he	draft	draft		
-exe	0x00556080	he_Unk556080	he	draft	draft		
-exe	0x00556600	he_Unk556600	he	draft	draft		
-exe	0x00556dc0	he_Unk556dc0	he	draft	draft		
-exe	0x00556ed0	he_Unk556ed0	he	draft	draft		
+exe	0x00555690	he_TransportToHome	he	byte	readable		
+exe	0x00555b60	he_TransportStadtStadt	he	shape	readable		
+exe	0x00556080	he_TransportHomeHome	he	byte	readable		
+exe	0x00556600	he_RunTransport	he	draft	readable	deep	
+exe	0x00556dc0	he_AllocCartRepair	he	shape	readable		
+exe	0x00556ed0	he_RunCartRepair	he	byte	readable		
 exe	0x00557160	he_Unk557160	he	byte	draft		
-exe	0x00557190	he_Unk557190	he	draft	draft		
-exe	0x005578a0	he_Unk5578a0	he	draft	draft		
+exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
+exe	0x005578a0	he_RunSlotOrder	he	shape	readable		
 exe	0x00557b30	he_Unk557b30	he	byte	draft		
 exe	0x00557b70	he_Unk557b70	he	draft	draft		
 exe	0x00557d70	he_Unk557d70	he	byte	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4240,7 +4240,7 @@ exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	draft	draft
 exe	0x0059df10	ai_FortuneOverview	lc	byte	readable		
 exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable		
 exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
-exe	0x0059e170	ai_Unk59e170	lc	draft	draft		
+exe	0x0059e170	ai_IsBuildingOpen	lc	draft	draft		
 exe	0x0059e210	ai_Unk59e210	lc	draft	draft		
 exe	0x0059e420	ai_Unk59e420	lc	draft	draft		
 exe	0x0059ee40	ai_Unk59ee40	lc	draft	draft		
