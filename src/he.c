@@ -694,6 +694,12 @@ typedef struct HECOMMENT {              /* the history comment event 0x52's word
     int entry;                          /* 0xac, the index into the history list (AIMSG.car) */
     int next;                           /* 0xb0, the next index (entry + 1) */
 } HECOMMENT;
+typedef struct HEFESTPAYOUT {           /* the festival payouts event 0x53's word over AIJOB's union (the FEST text command
+                                           posts message 0x53; its init he_AllocCharPayouts, run handler he_RunCharPayouts) */
+    char pad00[0xb0];
+    int bld;                            /* 0xb0, -1 at the init (reasoned: no building; the run handler picks one per
+                                           character and keeps no event-level word, so nothing reads it back) */
+} HEFESTPAYOUT;
 typedef struct HEOFFSPRING {            /* the offspring event's word over AIJOB's union (its run handler he_RunOffspring) */
     char pad00[0xac];
     float chance;                       /* 0xac, stage 0: the chance built up run by run; stage 1: the runs waited (to 3) */
@@ -4077,14 +4083,18 @@ void he_RunComment(int ev)
     if (e->stage == -2 || e->stage == 0)
         he_FreeEvent((int *)ev);
 }
-/* 0x5483a0, the init of a timed event: +0xb0 = -1, the clock +0x52 = the start (+0x44) + random(4) + 2 in the minute word (+0x56), state 0 */
+/* 0x5483a0, the alloc handler of the character payouts event 0x53 (he_RunCharPayouts): the word +0xb0 is -1, the
+   end clock is the start clock with 2 .. 5 hours added, the stage is 0 */
 
-void he_Unk5483a0(int ev)
+void he_AllocCharPayouts(int ev)
 {
-    *(int *)(ev + 0xb0) = -1;
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(short *)(ev + 0x56) = *(short *)(ev + 0x56) + (short)util_Random(4) + 2;
-    *(int *)(ev + 0x70) = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HEFESTPAYOUT *f = (HEFESTPAYOUT *)ev;
+
+    f->bld = -1;
+    e->end = e->start;
+    e->end.hour += (short)util_Random(4) + 2;
+    e->stage = 0;
 }
 /* 0x5483f0 (the Ghidra function 0x548410 starts after the free in the state -2), the run handler of event 0x53:
    formats the news 0x10c2 (the own player slot's name text at +0x20, one of the texts 0x10c4 .. 0x10c6); every
@@ -10717,7 +10727,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x52, (void *)he_AllocComment, (void *)he_RunComment) != 0)
         return 1;
-    if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_RunCharPayouts) != 0)
+    if (he_SetEventHandlers(0x53, (void *)he_AllocCharPayouts, (void *)he_RunCharPayouts) != 0)
         return 1;
     if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_RunMasterExamFee) != 0)
         return 1;
