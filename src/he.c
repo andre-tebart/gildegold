@@ -17,7 +17,8 @@
    The handlers 0x547f90 .. 0x54a7b0 (events 0x4a, 0x53 .. 0x61) read AIJOB / AICHAR / AIBLD / G28REC typed too,
    and so do the send-home event 0x77 (AIJOB.homeUntil), the reaper event 0x54ff20 .. 0x550e9a (AIJOB's reaper*
    words, the D3OBJECT reaper) and the ranking event 0x550ee0 (its packets HERANKHEAD / HERANKLINE); so do the
-   walk event 0x551340 .. 0x551b70 (its ten slots HEWALKSLOT), the six-group event 0x7d (AIJOB.groups / grpMode,
+   walk event 0x551340 .. 0x552920 (its ten slots HEWALKSLOT; the delay 0x80, skill-bonus 0x82 and applicants 0x86
+   handlers in HEDELAY / HESKILLBONUS / HEAPPLICANTS), the six-group event 0x7d (AIJOB.groups / grpMode,
    AMTREC / AMTKIND from amt_types.h), the master exam question / offer 0x7e / 0x7f (HEEXAMBOX, HEEXAMOFFER, the
    message HEEXAMMSG over AIMSG), the conversion event 0x81 (HECONVERT), the applicants event 0x86 (HEAPPLICANTS),
    the office award 0xa5 (HEOFFICEAWARD), the watch event 0x43 with the attack's question (HEWATCH / HEDETECT), the
