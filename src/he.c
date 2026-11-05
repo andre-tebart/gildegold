@@ -9189,13 +9189,16 @@ void he_RunFight(int ev)
         return;
     }
 }
-/* 0x547170, sets the start (+0x44) and the due clock (+0x52) of the event record to now and posts it 2 units later (4fe140) */
+/* 0x547170, the alloc handler of the duel challenge event 0x46 (its run handler he_RunDuelChallenge): the start and
+   the due clock are now, the event runs two units later */
 
-void he_Unk547170(int ev)
+void he_AllocDuelChallenge(int ev)
 {
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 2, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->start = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 2, 0, 0);
 }
 
 unsigned int cm_GetSpeedLevel(void);
@@ -10671,7 +10674,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x45, (void *)he_AllocFight, (void *)he_RunFight) != 0)
         return 1;
-    if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_RunDuelChallenge) != 0)
+    if (he_SetEventHandlers(0x46, (void *)he_AllocDuelChallenge, (void *)he_RunDuelChallenge) != 0)
         return 1;
     if (he_SetEventHandlers(0x47, (void *)he_AllocInsult, (void *)he_RunInsult) != 0)
         return 1;

@@ -2430,3 +2430,4 @@
 2026-11-05T16:37:46 0x005455e0 data he_Unk5455e0 -> he_AllocRandomMessage by:main why:the alloc handler of the random-message event 0x42 (ai_PostRandomMessages posts the AIMSG type 0x42 it wraps, rmsg.c 0x4bb720)
 2026-11-05T16:38:33 0x00545640 data he_Unk545640 -> he_RunRandomMessage by:main why:the run handler of the random-message event 0x42: runs the AIMSG type 0x42 it wraps (ai_RunMessage at +0xac) and frees the event
 2026-11-05T16:39:08 0x00546100 data he_Unk546100 -> he_AllocRaid by:main why:the alloc handler of the raid event 0x44 (Razzia), registered beside he_RunRaid (he_SetEventHandlers 0x44, src/he.c)
+2026-11-05T16:39:35 0x00547170 data he_Unk547170 -> he_AllocDuelChallenge by:main why:the alloc handler of the duel challenge event 0x46, registered beside he_RunDuelChallenge (he_SetEventHandlers 0x46, src/he.c)
