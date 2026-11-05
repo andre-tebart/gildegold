@@ -326,6 +326,14 @@ typedef struct HEAPPLICANTS {           /* the applicants event 0x86's words ove
     int maxKind;                        /* 0xb0, the highest office kind looked at (0x1b at a restart) */
     int applicant[2];                   /* 0xb4, the handles of the two created characters (amt_CreateApplicant), -1 none */
 } HEAPPLICANTS;
+typedef struct HEOFFICEAWARD {          /* the imperial office award event 0xa5's words over AIJOB's union (he_StartOfficeAward /
+                                           he_RunOfficeAward) */
+    char pad00[0xac];
+    AITIME when;                        /* 0xac, the clock of the award (now, he_StartOfficeAward), shown in the news */
+    char padba[2];
+    int ch;                             /* 0xbc, the netId of the character who gets the office (gm_FindChar) */
+    int office;                         /* 0xc0, the office kind 0x23 .. 0x25 (the voice and news by it) */
+} HEOFFICEAWARD;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -10230,113 +10238,139 @@ void he_Unk552bc0(int ev)
 }
 /* 0x552c30, the allocation handler of an event: state 0, due clock (+0x52) and the clock +0xac set to now */
 
-void he_Unk552c30(int ev)
+void he_StartOfficeAward(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     *(AITIME *)(ev + 0xac) = ai_Time;
     *(int *)(ev + 0x70) = 0;
 }
-/* 0x552ca0, the run handler of the award ceremony of an imperial office ("_VERLEIHUNG_REICHSAMT_.." texts; the figure +8 is the player's, +0xbc the awarded person, +0xc0 the office 0x23 .. 0x25, +0xac the clock of the award; ROUGH): nothing unless the figure is the player's (0x6f25b8) and the game runs; state 0 opens the window "SPECIAL\TITEL" (the player is awarded) or "SPECIAL\TITEL_ANDERE", plays the fanfare "FanfarePositivHeldenhaftLang" and the spoken address / office texts (0x4c27d0 (-7, 0, name, 0, 100) with the text names by sex (person +9) and rank (person +0xd: 9 = _02, 8 = _01, else _00)), prints the news (0x515960) and the click sound; state 1 waits for the answer (0xf8a668 == 0 or the confirm 0x6f2630) and closes; a gone figure / person frees the record */
-
-void he_Unk552ca0(int ev)
+/* 0x552ca0, the run handler of the imperial office award event 0xa5 (HEOFFICEAWARD: the character +0xbc gets the
+   office +0xc0, 0x23 .. 0x25), run only on the game of its player (AIJOB.chr is ai_PlayerId) in a running game once
+   it is due. Freed, ended, without its player or its character it frees the event. Stage 0 opens the window
+   ("SPECIAL\TITEL" when the character is the player's own, "SPECIAL\TITEL_ANDERE" for another one); for the own
+   character it plays the fanfare, the herald's address by the character's title (9 / 8 / other: _02 / _01 / _00)
+   and sex, the office's voice (the voice buffer keeps the address for another office kind) and the click sound and
+   shows the news 0x42ab / 0x42af / 0x42ad (offices 0x25 / 0x24 / 0x23) with the address text 0x42a5 .. 0x42aa,
+   the award's clock and the office's text by sex; for another character the news 0x42ac / 0x42b0 / 0x42ae with
+   the character; then the news 0x161c below (stage 1). Stage 1 frees the event when the window is answered
+   (button 0, or the event bar's confirmation of its slot); without a window it starts over
+   @deep Read all of it against the original and rewrote it typed (AIJOB / HEOFFICEAWARD / AICHAR /
+   HEEVSLOT, as he_RunTitleCeremony): the voices are strcpy'd (inlined rep movsd) into a 0x200 local
+   buffer, which the office voice reuses (an unknown office replays the address). 298 = 298 instructions,
+   the same blocks; left: regs (ebp/ebx swapped for ev and the character), the saved-register push order
+   (slots), and one 4-line hunk at +0x1f2: after the address strcpy's shared rep movsd the original tests
+   the sex still in al (cmp al, 1 / movsb), ours reloads it (movsb / cmp byte ptr [ebx + 9], 1): VC6's CSE
+   across the intrinsic copy. Tried strcpy(voice, sex == 1 ? W : M) (no longer inlined: worse) */
+void he_RunOfficeAward(int ev)
 {
-    int id = *(unsigned short *)(ev + 8);
-    int ch = (unsigned)&ai_Chars + id * 0x21c;
-    int p, st, own, base, tid, w, off;
-    char *s1;
-    char *s2;
-    char cl;
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFICEAWARD *a = (HEOFFICEAWARD *)ev;
+    AICHAR *own, *c;
+    int addrNews, officeNews;
+    char voice[0x200];
 
-    if (*(unsigned short *)(unsigned)&ai_PlayerId != id || *(unsigned char *)(unsigned)&ai_GameState == 0)
+    own = &ai_CharsT[e->chr];
+    if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
-    if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) == 1)
+    if (gm_CompareTime(&e->end, &ai_Time) == 1)
         return;
-    p = gm_FindChar(*(int *)(ev + 0xbc));
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1 || *(unsigned short *)ch == 0xffff || p == 0) {
-        if (*(int *)(ev + 0x74) != 0)
+    c = (AICHAR *)gm_FindChar(a->ch);
+    if (e->stage == -2 || e->stage == -1 || own->id == 0xffff || c == 0) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
-        if (*(int *)(ev + 0x74) == 0) {
-            if (p == ch)
-                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\TITEL", 0x5fd);
+    switch (e->stage) {
+    case 0:
+        if (e->slot == 0) {
+            if (c == own)
+                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TITEL", 0x5fd);
             else
-                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\TITEL_ANDERE", 0x5fe);
+                he_OpenEventSlot(ev, 0, 0, (int)"SPECIAL\\TITEL_ANDERE", 0x5fe);
         }
-        if (*(int *)(ev + 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
-        w = *(unsigned char *)(p + 9) == 1;
-        off = *(unsigned char *)(p + 9) == 0 ? 0x253 : *(int *)(ev + 0xc0) + 0x27b;
-        if (p == ch) {
-            int rank = *(unsigned char *)(p + 0xd);
-
-            if (rank == 9) {
-                base = 0x42a9;
-                s1 = w ? "_VERLEIHUNG_REICHSAMT_ANREDE_HS_W_02" : "_VERLEIHUNG_REICHSAMT_ANREDE_HS_M_02";
-            } else if (rank == 8) {
-                base = 0x42a7;
-                s1 = w ? "_VERLEIHUNG_REICHSAMT_ANREDE_HS_W_01" : "_VERLEIHUNG_REICHSAMT_ANREDE_HS_M_01";
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 1);
+        if (c == own) {
+            officeNews = 0;
+            if (c->b00d == 9) {
+                addrNews = 0x42a9;
+                if (c->sex == 1)
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_ANREDE_HS_W_02");
+                else
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_ANREDE_HS_M_02");
+            } else if (c->b00d == 8) {
+                addrNews = 0x42a7;
+                if (c->sex == 1)
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_ANREDE_HS_W_01");
+                else
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_ANREDE_HS_M_01");
             } else {
-                base = 0x42a5;
-                s1 = w ? "_VERLEIHUNG_REICHSAMT_ANREDE_HS_W_00" : "_VERLEIHUNG_REICHSAMT_ANREDE_HS_M_00";
+                addrNews = 0x42a5;
+                if (c->sex == 1)
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_ANREDE_HS_W_00");
+                else
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_ANREDE_HS_M_00");
             }
-            tid = 0;
-            if (w)
-                base++;
-            snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", 0, 0x64);
-            snd_QueueVoice(-7, 0, s1, 0, 0x64);
-            s2 = 0;
-            if (*(int *)(ev + 0xc0) == 0x25) {
-                tid = 0x42ab;
-                s2 = w ? "_VERLEIHUNG_REICHSAMT_WEIBLICH_HS_00" : "_VERLEIHUNG_REICHSAMT_MAENNLICH_HS_00";
-            } else if (*(int *)(ev + 0xc0) == 0x24) {
-                tid = 0x42af;
-                s2 = w ? "_VERLEIHUNG_REICHSAMT_WEIBLICH_HS_02" : "_VERLEIHUNG_REICHSAMT_MAENNLICH_HS_02";
-            } else if (*(int *)(ev + 0xc0) == 0x23) {
-                tid = 0x42ad;
-                s2 = w ? "_VERLEIHUNG_REICHSAMT_WEIBLICH_HS_01" : "_VERLEIHUNG_REICHSAMT_MAENNLICH_HS_01";
+            if (c->sex == 1)
+                addrNews++;
+            snd_QueueVoice(-7, 0, "FanfarePositivHeldenhaftLang", 0, 100);
+            snd_QueueVoice(-7, 0, voice, 0, 100);
+            if (a->office == 0x25) {
+                officeNews = 0x42ab;
+                if (c->sex == 1)
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_WEIBLICH_HS_00");
+                else
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_MAENNLICH_HS_00");
+            } else if (a->office == 0x24) {
+                officeNews = 0x42af;
+                if (c->sex == 1)
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_WEIBLICH_HS_02");
+                else
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_MAENNLICH_HS_02");
+            } else if (a->office == 0x23) {
+                officeNews = 0x42ad;
+                if (c->sex == 1)
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_WEIBLICH_HS_01");
+                else
+                    strcpy(voice, "_VERLEIHUNG_REICHSAMT_MAENNLICH_HS_01");
             }
-            snd_QueueVoice(-7, 0, s2, 0, 0x64);
+            snd_QueueVoice(-7, 0, voice, 0, 100);
             snd_QueueVoice(-7, 0, "MausclickLinks_s_01", -1, 0);
-            io_PrintText(tid, base, ev + 0xac, off);
+            io_PrintText(officeNews, addrNews, &a->when, c->sex == 0 ? 0x253 : a->office + 0x27b);
         } else {
-            tid = 0;
-            if (*(int *)(ev + 0xc0) == 0x25)
-                tid = 0x42ac;
-            else if (*(int *)(ev + 0xc0) == 0x24)
-                tid = 0x42b0;
-            else if (*(int *)(ev + 0xc0) == 0x23)
-                tid = 0x42ae;
-            io_PrintText(tid, *(unsigned short *)p, off);
+            officeNews = 0;
+            if (a->office == 0x25)
+                officeNews = 0x42ac;
+            else if (a->office == 0x24)
+                officeNews = 0x42b0;
+            else if (a->office == 0x23)
+                officeNews = 0x42ae;
+            io_PrintText(officeNews, c->id, c->sex == 0 ? 0x253 : a->office + 0x27b);
         }
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 2);
+        d2_SetForm(e->slot->win, 2);
         io_PrintText(0x161c);
-        *(int *)(ev + 0x70) = 1;
+        e->stage = 1;
         return;
-    }
-    if (st == 1) {
-        if (*(int *)(ev + 0x74) == 0) {
-            *(int *)(ev + 0x70) = 0;
+    case 1:
+        if (e->slot == 0) {
+            e->stage = 0;
             return;
         }
-        cl = *(char *)(unsigned)&he_SlotConfirmed;
-        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8) && cl == 0)
+        if (d2_ClickedForm != e->slot->win && he_SlotConfirmed == 0)
             return;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
+        if (d2_ClickedId == 0) {
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (cl == 0 || U_I((unsigned)&he_ActiveSlot) != *(int *)(ev + 0x74))
+        if (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot)
             return;
-        *(char *)(unsigned)&he_SlotConfirmed = 0;
+        he_SlotConfirmed = 0;
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
     }
@@ -10485,7 +10519,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x87, (void *)he_Unk552b90, (void *)he_Unk552bc0) != 0)
         return 1;
-    return he_SetEventHandlers(0xa5, (void *)he_Unk552c30, (void *)he_Unk552ca0) != 0;
+    return he_SetEventHandlers(0xa5, (void *)he_StartOfficeAward, (void *)he_RunOfficeAward) != 0;
 }
 
 void cm_SendHandOverCrimes(int a, int b, int c, int d);
