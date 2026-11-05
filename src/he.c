@@ -16946,7 +16946,7 @@ void he_RunKidnap(AIJOB *ev)
 }
 /* 0x561130, the allocation handler: the due clock and the clock +0xb4 are now (copy of the game clock twice) */
 
-void he_Unk561130(int ev)
+void he_AllocRansom(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     *(AITIME *)(ev + 0xb4) = ai_Time;
@@ -16955,31 +16955,92 @@ void he_Unk561130(int ev)
 unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind);
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 
-/* 0x561190, the run handler of the ransom event (a thief gang, "L\366segeld" 0x627978; ROUGH skeleton, 736 bytes): states -2 / -1 free; the victim figure +0xac (0x505df0) and the building (0x501190, +0x65 the owner link) are looked up, the news 0x19da (0x5fb) / 0x19c2 (0x5f0) tells the victim and the owner (0x53dda0, 0x53eec0 (-2)), the victim walks to the hideout (0x4c52e0 "L\366segeld", 0x55eba0 scene, 0x4c3ba0 / 0x4c3c00 / 0x4c49a0 mark it, the job byte +0x1b1 1 .. 4 selects the text) and the record is freed */
-void he_Unk561190(int ev)
-{
-    int st = *(int *)(ev + 0x70);
-    int p, b, x, y;
-    char text[0x200];
+typedef struct HEEV3D {                 /* the ransom event 0x3d's words over AIJOB's union (he_AllocRansom / he_RunRansom;
+                                           he_RunKidnap's ransom message 0x3d posts it: victim, guild) */
+    char pad00[0xac];
+    int victim;                         /* 0xac, the netId of the kidnapped character (gm_FindChar) */
+    int guild;                          /* 0xb0, the id of the thieves' guild that holds it (gm_BuildQuery(1, 1, id)) */
+    AITIME since;                       /* 0xb4, the time of the kidnap (he_AllocRansom: now), shown by the news 0x19c2 */
+} HEEV3D;
 
-    if (st == -2 || st == -1) {
+/* 0x561190, the run handler of the ransom event 0x3d (HEEV3D, its alloc handler he_AllocRansom): stage 0 (no guild or
+   victim: cancelled) makes the victim the guild's hostage when it holds none. A victim no longer held
+   (AICHAR.heldRounds 0) is told 0x19da, walks back to where its figure stands ("Lösegeld") and the guild's hostage
+   field is sent -1; the record is freed. A victim still held is told 0x19c2 (the kidnap time), the guild owner gets the
+   AP event of text 0x3fd8 (-2), and when the guild has a character whose master it is with the flag 1 (+0x1b4), the
+   victim gets the ransom message 0x3e: its worth (at most 1604000) times 2 / 4 / 6 / 10 % by its held rounds
+   1 / 2 / 3 / 4 or more. The news and the message only for an event with option 2. Stages -2 / -1 release the
+   victim (heldRounds 0) and free the record */
+void he_RunRansom(AIJOB *ev)
+{
+    HEEV3D *x = (HEEV3D *)ev;
+    AICHAR *victim, *owner, *payer;
+    AIBLD *b;
+    AIMSG m;
+    char text[0x200];
+    int none, bld, obj, worth;
+    float share, ransom;
+
+    switch (ev->stage) {
+    case 0:
+        victim = (AICHAR *)gm_FindChar(x->victim);
+        b = (AIBLD *)gm_BuildQuery(1, 1, x->guild);
+        if (b == 0 || victim == 0) {
+            ev->stage = -1;
+            return;
+        }
+        owner = &ai_CharsT[b->owner];
+        if (b->hostage == -1)
+            b->hostage = victim->netId;
+        if (victim->heldRounds <= 0) {
+            none = -1;
+            if (ev->opts & 2) {
+                txt_Format(text, 0x19da);
+                he_ShowNews(victim->netId, victim->netId, text, 0, 0x5fb, 0);
+                if (victim->model != 0 && he_FindFigurePlace(victim, &bld, &obj, 0) != 0)
+                    cm_SendChrGotoBuilding(victim->netId, bld, obj, 0, 0, "L\366segeld");
+                cm_BeginFieldBlock((char *)b, b->id);
+                cm_AddFieldDelta(4, 1, (char *)b - cm_FieldObject + 0x65, &none);
+                cm_SendFieldDeltas();
+            }
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        payer = (AICHAR *)gm_FindCharacterByMaster((int)b);
+        if (!(ev->opts & 2))
+            return;
+        he_AddApEvent(owner->id, txt_Ptrs[0x3fd8], -2, 0);
+        txt_Format(text, 0x19c2, &x->since);
+        he_ShowNews(victim->netId, victim->netId, text, 0, 0x5f0, 0);
+        if (payer == 0 || !(payer->flags1b4 & 1))
+            return;
+        if (victim->heldRounds >= 4)
+            share = 0.1f;
+        else if (victim->heldRounds == 3)
+            share = 0.06f;
+        else if (victim->heldRounds == 2)
+            share = 0.04f;
+        else if (victim->heldRounds == 1)
+            share = 0.02f;
+        worth = gm_GetWorth(victim->id);
+        ransom = (1604000.0f < (float)worth ? 1604000.0f : (float)worth) * share;
+        m.type = 0x3e;
+        m.to = victim->netId;
+        m.fromId = b->id;
+        m.flags = 9;
+        m.arg[0] = m.to;
+        m.arg[2] = (int)ransom;
+        m.arg[1] = ai_CharInts[ev->chr][0];
+        cm_SendLongMessage((char *)&m);
+        return;
+    case -2:
+    case -1:
+        victim = (AICHAR *)gm_FindChar(x->victim);
+        if (victim != 0)
+            victim->heldRounds = 0;
         he_FreeEvent((int *)ev);
         return;
     }
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (p == 0 || b == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    txt_Format(text, 0x19da, b);
-    he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fb, 0);
-    he_FindFigurePlace((AICHAR *)*(int *)(p + 0x184), &x, &y, 0);
-    cm_SendChrGotoBuilding(*(int *)(p + 4), -1, -1, 0, 0, "L\366segeld");
-    cm_BeginFieldBlock(p, *(int *)(p + 4));
-    cm_AddFieldDelta(1, 1, 0, text);
-    cm_SendFieldDeltas();
-    he_FreeEvent((int *)ev);
 }
 /* 0x561470, the allocation handler the events 0x39 and 0x3e share: the due clock is now + 1 hour + a random
    0 .. 0x1d minutes less 0x14 */
@@ -18529,7 +18590,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(60, (void *)he_AllocEvent3c, (void *)he_RunKidnap) != 0)
         return 1;
     sv_RegisterActivity(60, 0, 0, 1284, -1);
-    if (he_SetEventHandlers(61, (void *)he_Unk561130, (void *)he_Unk561190) != 0)
+    if (he_SetEventHandlers(61, (void *)he_AllocRansom, (void *)he_RunRansom) != 0)
         return 1;
     if (he_SetEventHandlers(62, (void *)he_AllocEvent39_3e, (void *)he_Unk5614c0) != 0)
         return 1;
