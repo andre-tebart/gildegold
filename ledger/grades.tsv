@@ -1463,7 +1463,7 @@ exe	0x0047ec20	ai_PlanSlots	ai	byte	readable
 exe	0x0047ed60	ai_SendRemoveEmptyGoods	ai	byte	readable		
 exe	0x0047edb0	ai_EvaluateProduction	ai	draft	readable	deep	
 exe	0x0047f700	ai_EvaluateProductionFlags	ai	draft	readable	deep	
-exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	draft	deep	
+exe	0x004801f0	ai_EvaluateProductionCategory2	ai	draft	readable	deep	
 exe	0x00480e70	ai_CalcMeisterWache	ai	draft	draft	deep	
 exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep	
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
@@ -3474,7 +3474,7 @@ exe	0x00537db0	main_FreeSoundBanks	main	byte	readable
 exe	0x00537de0	main_StartGame	main	byte	readable		
 exe	0x00537f40	main_EndGame	main	byte	readable		
 exe	0x00538140	main_RundenBeginn	main	byte	readable		
-exe	0x005384e0	main_EndRound	main	draft	draft	deep	
+exe	0x005384e0	main_EndRound	main	draft	readable	deep	
 exe	0x00539620	main_ReplaceFigure	main	shape	draft	deep	
 exe	0x00539870	main_RoundReport	main	draft	draft	deep	
 exe	0x0053a250	main_UpdateFigure	main	draft	draft	deep	
@@ -3744,18 +3744,18 @@ exe	0x0055cc10	he_RunMasterExamNotice	he	byte	readable
 exe	0x0055ce00	he_Unk55ce00	he	byte	draft		
 exe	0x0055ce60	he_RunMasterExamPassed	he	draft	readable	deep	
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
-exe	0x0055d390	he_Unk55d390	he	draft	draft		
-exe	0x0055d490	he_AllocHarvest	he	draft	draft		
-exe	0x0055d5c0	he_RunHarvest	he	draft	draft		
-exe	0x0055dbe0	he_Unk55dbe0	he	draft	draft		
+exe	0x0055d390	he_RunEvent27	he	byte	readable		
+exe	0x0055d490	he_AllocHarvest	he	draft	readable	deep	
+exe	0x0055d5c0	he_RunHarvest	he	draft	readable	deep	
+exe	0x0055dbe0	he_RunDismissal	he	byte	readable		
 exe	0x0055dd70	he_AllocEvent32	he	shape	readable		
-exe	0x0055de30	he_Unk55de30	he	draft	draft		
+exe	0x0055de30	he_RunPromotion	he	byte	readable		
 exe	0x0055e180	he_Unk55e180	he	byte	draft		
-exe	0x0055e1d0	he_Unk55e1d0	he	draft	draft		
+exe	0x0055e1d0	he_RunWorkerQuits	he	byte	readable		
 exe	0x0055e3a0	he_Unk55e3a0	he	byte	draft		
-exe	0x0055e3d0	he_Unk55e3d0	he	draft	draft		
+exe	0x0055e3d0	he_RunWorkerTheft	he	draft	readable	deep	
 exe	0x0055e5c0	he_Unk55e5c0	he	byte	draft		
-exe	0x0055e600	he_Unk55e600	he	draft	draft		
+exe	0x0055e600	he_RunEvent38	he	byte	readable		
 exe	0x0055e730	he_Unk55e730	he	draft	draft		
 exe	0x0055e9d0	he_AllocRoutine	he	byte	readable		
 exe	0x0055ea60	he_FigureContact	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
