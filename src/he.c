@@ -347,6 +347,25 @@ typedef struct HEDETECT {               /* he_DetectAttack's question and answer
     AIJOB *ev;                          /* 0x8, the attack event */
     AIJOB *found;                       /* 0xc, the watch event that saw it, 0 at the start */
 } HEDETECT;
+typedef struct HESALE {                 /* the sale event 2's words over AIJOB's union (he_Unk553e10 / he_RunSale); the
+                                           building is AIJOB.from */
+    char pad00[0xac];
+    unsigned short good;                /* 0xac, the good sold (ai_Goods index; its production time sets the due clock) */
+    char padae[2];
+    int obj;                            /* 0xb0, the object sold (its objId: gm_Query key 1 in the building's list) */
+    int slot;                           /* 0xb4, the send slot of the sale (cm_SendExSellObjectH), asked in stage 2 */
+    int notify;                         /* 0xb8, nonzero: a master's kind 1 character with flags1b4 bit 0 makes the news
+                                           0x60b (reasoned: who sets it is not read yet) */
+} HESALE;
+typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunSale sends: an hour from now as AITIME, of
+                                           which the building and the object overwrite the first 8 bytes (the
+                                           original's order) */
+    AITIME due;
+    struct {
+        int bld;                        /* 0x0, the building's id */
+        int objId;                      /* 0x4, the sold object's id (AIOBJ.objId) */
+    } sold;
+} HESOLDMSG;
 #define HE_WALK_PARTNERS1 0x20a0        /* the two partner masks of he_FillWalkSlot's ai_FindPartnersRandomWalk (bits not read yet) */
 #define HE_WALK_PARTNERS2 0x402c20
 #define HE_WALK_BUILDINGS 0x1a7f4c3a0i64 /* the building kinds of a walk (bit k: ai_BTypes kind k; he_StepWalk tests the same mask) */
@@ -10758,98 +10777,119 @@ int cm_GetSlotValue(int h);
 unsigned char *gm_BuildQuery(int n, ...);
 char *gm_Query(void *list, int n, ...);
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
+#define cm_SendExSellObjectH ((int (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880: it returns the slot handle of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original he_RunSale keeps it (as f3gm.c's cm_SendExSellObjectH) */
 int gv_OrderOpenSize();
 int cm_SendLongMessage(char *msg);
 int cm_SendExSysMessage(unsigned char id, void *msg);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 
-/* 0x553e90, the run handler of a building event (a Ghidra function with a frame; ROUGH): state 0 -> 1; state 1 waits for the due time, takes the building of the kind +0x10 (0x501190 (1, 1, +0x10); none: the record is freed), asks its owner record (0x4ffe90) and starts the order 0x4c4880 (+0xb0, -1, +0xac, 1, player, 0), whose handle goes to +0xb4, state 2; state 2 waits for the order (0x4c3ae0 / 0x4c3b10 give the person), then by the type of the person (0x1f9 / 0x1fd / 0x201: 0x4f0a90 (the owner character, building, 1 / 2 / 3), 0x12d: a message record type 0x2a through 0x4c4b70) tells the owner (a player character gets the news 0x606 / 0x60b with "ob_%s" of the table name 0x91aaf0, texts 0x1c2b / 0x1c2d and "_NACHRICHTEN_HS_53" / "_54") and the town (0x4c4db0 (4, ..)), marks the person (+0x13 |= 0xa0) and frees the record */
-void he_Unk553e90(int ev)
+/* 0x553e90, the run handler of the sale event 2 (HESALE; its init he_Unk553e10 sets it due after the good's
+   production time): stage 0 goes to 1; stage 1, once due, sells the object obj of the building AIJOB.from
+   (cm_SendExSellObjectH: the good, one piece, to the own player) and keeps the send slot (stage 2); a gone
+   building frees the event. Stage 2 waits for the slot and its object: a grave (0x1f9 / 0x1fd / 0x201) opens a
+   grave order of the size 1 / 2 / 3 for the building's owner (gv_OrderOpenSize), a 0x12d sends the message 0x2a
+   to the player character; an owner of the kind 6 (a player character) gets the news 0x606 (0x60b when the
+   building's master is a kind 1 character with flags1b4 bit 0 and notify is set): the text 0x1c2b with the
+   quick jump to "ob_<NAME>" of the good while the object is still in the building (not a 0xfd), else 0x1c2d;
+   the object gets the bits 0xa0. Then the sys message 4 (the building, the object's id) and the event is freed */
+void he_RunSale(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int h, p, b, t, q, own;
+    AIJOB *e = (AIJOB *)ev;
+    HESALE *s = (HESALE *)ev;
+    AIOBJ *p, *q;
+    AIBLD *b;
     unsigned short ty;
-    unsigned char msg[0xf8];
-    char text[0x400];
-    char name[0x80];
-    char buf2[0x80];
-    int c[4];
-    char *rec;
+    GMGOOD *g;
     int tid;
 
-    if (st == 0) {
-        *(int *)(ev + 0x70) = 1;
+    switch (e->stage) {
+    case 0:
+        e->stage = 1;
         return;
-    }
-    if (st == 1) {
-        if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) >= 0)
+    case 1:
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
             return;
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
         if (b == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        gm_Query(*(int *)(b + 0x5d), 1, 1, *(int *)(ev + 0xb0));
-        *(int *)(ev + 0xb4) = ((int (*)(int, int, short, int, unsigned char, int))cm_SendExSellObject)(*(int *)(ev + 0xb0), -1, *(unsigned short *)(ev + 0xac), 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        gm_Query((void *)b->objList, 1, 1, s->obj);
+        s->slot = cm_SendExSellObjectH(s->obj, -1, s->good, 1, ai_OwnPlayer, 0);
+        e->stage = e->stage + 1;
         return;
-    }
-    if (st != 2)
-        return;
-    if (cm_GetSlotState(*(int *)(ev + 0xb4)) == 0)
-        return;
-    p = cm_GetSlotValue(*(int *)(ev + 0xb4));
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (b == 0 || p == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    ty = *(unsigned short *)p;
-    if (ty == 0x1f9)
-        gv_OrderOpenSize((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 1);
-    else if (ty == 0x1fd)
-        gv_OrderOpenSize((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 2);
-    else if (ty == 0x201)
-        gv_OrderOpenSize((unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c, b, 3);
-    else if (ty == 0x12d) {
-        memset(msg, 0, sizeof(msg));
-        msg[4] = 0x2a;
-        *(int *)(msg + 0xc) = *(int *)(b + 1);
-        *(int *)(msg + 0x58) = *(int *)(b + 1);
-        *(int *)(msg + 8) = *(int *)(U_I((unsigned)&ai_PlayerChar) + 4);
-        msg[0x36] = 2;
-        cm_SendLongMessage(msg);
-    }
-    own = (unsigned)&ai_Chars + *(unsigned short *)(b + 0x27) * 0x21c;
-    if (*(unsigned char *)(own + 2) == 6) {
-        q = gm_Query(*(int *)(b + 0x5d), 1, 1, *(int *)(ev + 0xb0));
-        rec = (char *)U_I((unsigned)&ai_Goods) + *(unsigned short *)(ev + 0xac) * 0x41;
-        tid = 0x606;
-        if (*(unsigned char *)(*(unsigned char *)b * 0x24d + U_I((unsigned)&ai_BTypes)) != 6) {
-            int o = gm_FindCharacterByMaster(b);
+    case 2:
+        if (cm_GetSlotState(s->slot) == 0)
+            return;
+        p = (AIOBJ *)cm_GetSlotValue(s->slot);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (b == 0 || p == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        ty = p->type;
+        if (ty == 0x1f9)
+            gv_OrderOpenSize(&ai_CharsT[b->owner], b, 1);
+        else if (ty == 0x1fd)
+            gv_OrderOpenSize(&ai_CharsT[b->owner], b, 2);
+        else if (ty == 0x201)
+            gv_OrderOpenSize(&ai_CharsT[b->owner], b, 3);
+        else if (ty == 0x12d) {
+            AIMSG msg;
 
-            if (o != 0 && *(unsigned char *)(o + 2) == 1 && (*(unsigned char *)(o + 0x1b4) & 1) != 0 && *(int *)(ev + 0xb8) != 0)
-                tid = 0x60b;
+            D3_ZERO(&msg, sizeof(msg));
+            msg.type = 0x2a;
+            msg.to = he_PlayerCh->netId;
+            msg.fromId = b->id;
+            msg.arg[0] = b->id;
+            msg.flags = 2;
+            cm_SendLongMessage((char *)&msg);
         }
-        if (q != 0 && *(unsigned short *)q != 0xfd) {
-            strcpy(name, rec + 1);
-            _strupr(name);
-            sprintf(buf2, "ob_%s", name);
-            txt_Format(text, 0x1c2b, b, *(unsigned short *)(ev + 0xac) + 0x9a8);
-            ((void (*)(int, int, char *, char, int, int, int, char *, char *, int))he_MessageBoxQuickjump)(*(int *)(own + 4), *(int *)(ev + 0x10), text, 0, tid, *(int *)(b + 1), *(int *)(ev + 0xb0), buf2, "_NACHRICHTEN_HS_53", 0);
-        } else {
-            txt_Format(text, 0x1c2d, b, *(unsigned short *)(ev + 0xac) + 0x9a8);
-            he_MessageBoxQuickjump(*(int *)(own + 4), *(int *)(ev + 0x10), text, 0, tid, *(int *)(b + 1), -1, 0, "_NACHRICHTEN_HS_54");
+        if (ai_CharsT[b->owner].kind == 6) {
+            char text[0x400];
+            char jump[0x80];
+            char name[0x80];
+
+            q = (AIOBJ *)gm_Query((void *)b->objList, 1, 1, s->obj);
+            g = GM_GOOD(s->good);
+            if (q != 0 && q->type != 0xfd) {
+                tid = 0x606;
+                if (ai_BTypesT[b->type].kind != 6) {
+                    AICHAR *m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+
+                    if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0 && s->notify != 0)
+                        tid = 0x60b;
+                }
+                strcpy(name, g->name);
+                _strupr(name);
+                sprintf(jump, "ob_%s", name);
+                txt_Format(text, 0x1c2b, b, s->good * 2 + 0x9a8);
+                he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, tid, b->id, s->obj, jump, "_NACHRICHTEN_HS_53");
+            } else {
+                tid = 0x606;
+                if (ai_BTypesT[b->type].kind != 6) {
+                    AICHAR *m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+
+                    if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0 && s->notify != 0)
+                        tid = 0x60b;
+                }
+                txt_Format(text, 0x1c2d, b, s->good * 2 + 0x9a8);
+                he_MessageBoxQuickjump(ai_CharsT[b->owner].netId, e->from, text, 0, tid, b->id, -1, 0, "_NACHRICHTEN_HS_54");
+            }
+            p->flags13 |= 0xa0;
         }
-        *(unsigned char *)(p + 0x13) |= 0xa0;
+        {
+            HESOLDMSG m;
+
+            q = (AIOBJ *)gm_Query((void *)b->objList, 1, 1, s->obj);
+            m.due = ai_Time;
+            gm_AddTime(&m.due, 0, 0, 1);
+            m.sold.bld = b->id;
+            m.sold.objId = q->objId;
+            cm_SendExSysMessage(4, &m);
+        }
+        he_FreeEvent((int *)ev);
     }
-    q = gm_Query(*(int *)(b + 0x5d), 1, 1, *(int *)(ev + 0xb0));
-    *(AITIME *)c = ai_Time;
-    gm_AddTime(c, 0, 0, 1);
-    c[0] = *(int *)(b + 1);
-    c[1] = *(int *)(q + 2);
-    cm_SendExSysMessage(4, c);
-    he_FreeEvent((int *)ev);
 }
 
 float gm_JobCost();
@@ -14758,7 +14798,7 @@ void he_RunPatrolEvent(int ev)
             return;
         he_PatrolBuilding = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
         for (g = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); g != 0; g = (AIOBJ *)gm_QueryNext()) {
-            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->pad13 & 0x20) == 0 && g->pad2e[5] != 0)
+            if (g->route != 0 && (g->flags20 & 1) == 0 && (g->flags13 & 0x20) == 0 && g->pad2e[5] != 0)
                 he_PatrolStep(ev, (unsigned short *)g);
         }
         e->end = ai_Time;
@@ -14770,7 +14810,7 @@ void he_RunPatrolEvent(int ev)
 /* 0x568310, registers the event types 0x02 .. 0xa6 (second part, after 0x553060): he_SetEventHandlers (type, alloc, run) for each (a non-zero result = out of table space: return 1), the type texts 0x52b350 (type, name, 0, menu id, icon) for the types with an entry in the event list, and the tip table 0x505ca0 (0x1a, 0x6fa1e0); returns 0 */
 int he_RegisterEventTypes02(void)
 {
-    if (he_SetEventHandlers(2, (void *)he_Unk553e10, (void *)he_Unk553e90) != 0)
+    if (he_SetEventHandlers(2, (void *)he_Unk553e10, (void *)he_RunSale) != 0)
         return 1;
     if (he_SetEventHandlers(6, (void *)he_Unk554820, (void *)he_Unk554320) != 0)
         return 1;

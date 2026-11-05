@@ -275,7 +275,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
         int count;                      /* 0x0e */
     };
     unsigned char fill;                 /* 0x12, how full the cart is in percent (msg.n = 100 - fill; below 0x21 a cart is free for a load, ai_MeisterTrade / ai_UnloadCarts) */
-    char pad13;
+    char flags13;                       /* 0x13, flags: 0x20 (the guard patrol 0xa6 skips such a cart), 0xa0 set on a sold object (he_RunSale) */
     union {
         int unk14;                      /* 0x14, the object list it holds */
         int list;                       /* 0x14 */
