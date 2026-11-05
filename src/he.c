@@ -10701,13 +10701,17 @@ void he_RunTutorialIntro(AIJOB *ev)
         break;
     }
 }
-/* 0x552c30, the allocation handler of an event: state 0, due clock (+0x52) and the clock +0xac set to now */
+/* 0x552c30, the alloc handler of the imperial office award event 0xa5 (HEOFFICEAWARD): the due clock AIJOB.end
+   and the award's clock (0xac) are now, stage 0 */
 
 void he_StartOfficeAward(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0xac) = ai_Time;
-    *(int *)(ev + 0x70) = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFICEAWARD *a = (HEOFFICEAWARD *)ev;
+
+    e->end = ai_Time;
+    a->when = ai_Time;
+    e->stage = 0;
 }
 /* 0x552ca0, the run handler of the imperial office award event 0xa5 (HEOFFICEAWARD: the character +0xbc gets the
    office +0xc0, 0x23 .. 0x25), run only on the game of its player (AIJOB.chr is ai_PlayerId) in a running game once
