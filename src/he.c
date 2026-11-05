@@ -365,6 +365,12 @@ typedef struct HEEXAMPAY {              /* the master exam payment event's word 
     char pad00[0xb0];
     int fee;                            /* 0xb0, the fee the message box names (5% of the character's worth), paid on yes */
 } HEEXAMPAY;
+typedef struct HEPAYMENT {              /* the payment event 0x56's words over AIJOB's union (its init 0x5482c0, run handler he_RunPayment) */
+    char pad00[0xac];
+    unsigned char wait;                 /* 0xac, the runs left before it pays, counted down */
+    char padad[3];
+    unsigned int amount;                /* 0xb0, the base amount: twice it or half of it is paid */
+} HEPAYMENT;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -3730,35 +3736,37 @@ void he_RunMasterExamPay(int ev)
         }
     }
 }
-/* 0x5489b0, a Ghidra miss: the run handler of the monthly payment event (+0xac a counter in bytes, +0xb0 the amount): at 0 a random 0x100 against 0.5 * the byte at +0x80 of the player record + 64 decides between the news 0x10b5 (2 * the amount is paid, 0x4c47e0) and 0x10b6 (0.5 * the amount) (ROUGH) */
+/* 0x5489b0, a Ghidra miss: the run handler of the payment event 0x56: stage -2 frees it; at stage 0 it counts
+   wait down, then rolls random(0x100) against the character's first skill / 2 + 64: below it the character gets
+   twice the amount (the news 0x10b5), else half of it (the news 0x10b6), both by cm_SendMoveGoods from the own
+   player; then frees the event */
 
-void he_Unk5489b0(int ev)
+void he_RunPayment(int ev)
 {
-    char text[0x400];
-    int st, r;
-    double x;
+    AIJOB *e = (AIJOB *)ev;
+    HEPAYMENT *p = (HEPAYMENT *)ev;
+    char text[0x418];
+    int r;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st != 0)
+    if (e->stage != 0)
         return;
-    if (*(unsigned char *)(ev + 0xac) > 0) {
-        *(unsigned char *)(ev + 0xac) = *(unsigned char *)(ev + 0xac) - 1;
+    if (p->wait > 0) {
+        p->wait--;
         return;
     }
     r = (unsigned short)util_Random(0x100);
-    x = (double)*(unsigned char *)(((unsigned)&ai_CharSex + 0x77) + *(unsigned short *)(ev + 8) * 0x21c) * 0.5 + 64.0;
-    if (x > (double)r) {
-        txt_Format(text, 0x10b5, *(int *)(ev + 0xb0) * 2);
-        he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ff, (char *)0);
-        cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, *(int *)(ev + 0xb0) * 2);
+    if (r < ai_CharsT[e->chr].skills[0] * 0.5 + 64.0) {
+        txt_Format(text, 0x10b5, p->amount * 2);
+        he_ShowNews(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ff, (char *)0);
+        cm_SendMoveGoods(ai_CharInts[e->chr][0], -1, ai_OwnPlayer, p->amount * 2);
     } else {
-        txt_Format(text, 0x10b6, (int)((double)*(int *)(ev + 0xb0) * 0.5));
-        he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5ff, (char *)0);
-        cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((double)*(int *)(ev + 0xb0) * 0.5));
+        txt_Format(text, 0x10b6, (int)(p->amount * 0.5f));
+        he_ShowNews(ai_CharInts[e->chr][0], ai_CharInts[e->chr][0], text, 0, 0x5ff, (char *)0);
+        cm_SendMoveGoods(ai_CharInts[e->chr][0], -1, ai_OwnPlayer, (int)(p->amount * 0.5f));
     }
     he_FreeEvent((int *)ev);
 }
@@ -9520,7 +9528,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_RunMasterExamPay) != 0)
         return 1;
-    if (he_SetEventHandlers(0x56, (void *)he_Unk5482c0, (void *)he_Unk5489b0) != 0)
+    if (he_SetEventHandlers(0x56, (void *)he_Unk5482c0, (void *)he_RunPayment) != 0)
         return 1;
     if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_Unk548bb0) != 0)
         return 1;
