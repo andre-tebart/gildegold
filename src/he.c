@@ -6547,15 +6547,21 @@ void he_RunSkillUp(int ev)
         return;
     }
 }
-/* 0x54da20, a Ghidra miss: the init of the talent event: +0xac = the number of the talent (0x4ac140), +0xb4 = -1, the due clock now, posted (state 0) */
+/* 0x54da20, a Ghidra miss: the init of the bard event 0x6b (its run handler he_RunBard): unless the event is not
+   started yet (opts bit 2), +0xac = the number of the hmt records (the song's subject is drawn from them), +0xb4 =
+   -1 (no script yet), the due clock is the clock now and the event is posted in state 0; it does nothing while
+   opts still says the event is not started yet (bit 4) */
 
 void he_StartBard(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(unsigned short *)(ev + 0xac) = (unsigned short)hmt_RecordCount();
-        *(int *)(ev + 0xb4) = -1;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+    HEBARD *b = (HEBARD *)ev;
+
+    if ((e->opts & 4) == 0) {
+        b->rec = (unsigned short)hmt_RecordCount();
+        b->script = -1;
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x54da80, the run handler of the bard event: stage 0 draws the song's subject (an hmt record and its text) and
