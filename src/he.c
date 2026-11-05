@@ -452,6 +452,7 @@ typedef struct HEPROTECTION {           /* the protection money event 0x62's wor
     int amount;                         /* 0xb4, the protection money */
     int answer;                         /* 0xb8, -1 open, 0 refused, 1 paid, 2 asked a player (the event 0x63) */
     int home;                           /* 0xbc, the collector's building, which counts the money, -1: none */
+    int homeRoom;                       /* 0xc0, the room object there the collector goes back to */
 } HEPROTECTION;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
@@ -4988,7 +4989,7 @@ int gm_EquipmentValue(unsigned char *b, int level);
 int gm_BuildingLevel();
 
 /* 0x54b170, a Ghidra miss: the init of the protection money event: +0xb8 = -1, and (bit 4 of +0x78 clear) due now, state 1, posted 2 units ahead */
-void he_Unk54b170(int ev)
+void he_StartProtection(int ev)
 {
     *(int *)(ev + 0x84) = -1;
     if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
@@ -4999,132 +5000,156 @@ void he_Unk54b170(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
     }
 }
-/* 0x54b1e0, a Ghidra miss (disassembled; 1976 B): the run handler of the protection money event ("Schutzgeld": the collector +0xac (a figure), the victim +0xb0 (a building owner of 0x501190), +0xb4 the amount, +0xb8 the answer (-1 open, 0 refused, 1 paid, 2 the victim is a player: a message record type 0x63 was posted), +0xbc the building, +0xc0 ..): state 1 sends the collector to the victim ("Schutzgeld", 0x4c52e0), state 2 waits until it is idle, then sizes the amount (0x509b10 * 0.065), sets the due clock 2 .. 0x12 units ahead and decides (a player victim gets the message record, else a roll against 0.001 * the fame at +0x770c94 gives +0xb8 = random(2), 1 for flag 1 of +0x5b), state 3 reports the result (pay: the flag 0x100 (0x4c4a60 0x5a) at the victim, the amount to the collector 0x4c4830 and the building +0x4d, the news 0x1a8d / 0x1a8e / 0x1a8f / 0x1a90 with "_NACHRICHTEN_HS_84" / "_85"), then the collector goes home ("Schutzgeld") and the event ends (ROUGH) */
+/* 0x54b1e0, a Ghidra miss: the run handler of the protection money event 0x62 ("Schutzgeld", HEPROTECTION: the
+   collector +0xac, the victim building +0xb0, the amount, the answer, the collector's home building and room).
+   Freed (stage -1 / -2) it clears the building's flag 0x100 at +0x5a (a posted event only) and frees the event;
+   it waits while not started or while its cm slot is busy; without the collector, the building or its owner it
+   ends in two minutes. Stage 1 sends the collector to the building, stage 2 (once the collector is idle) sizes
+   the amount (6.5% of the building's equipment value) and asks: a player owner gets the question event 0x63
+   (he_RunProtectionAsk) and three minutes, else the answer is 2 for a building already paying (the flag 0x100),
+   1 (pays) for an owner whose sel is 0xb or when a roll stays below 0.001 * its mood[11][2], else a coin toss.
+   Stage 3 reports: paid, the building gets the flag 0x100, the owner pays the collector, the home building
+   counts it, the news 0x1a8d, stage 4 in 48 hours; refused (0x1a8e) or else (0x1a8f), stage 4 in five minutes.
+   Stage 4 shows the news 0x1a90 to both when paid and sends the collector home
+   @deep Read all of it against the original and rewrote it typed (AIJOB / HEPROTECTION / AIMSG / AIBLD /
+   AICHAR): fixed the meaning errors - stage 3 goes to stage 4 with cm_SendExSetHE(4) (the original's ebx =
+   4, not 1), the AIMSG fields (to +8, fromId +0xc, time, flags +0x36, arg[0]; no store at +0x34), the
+   owner's sel / mood[11][2] at stride 0x21c (was 0x14), the roll's direction (!(mood * 0.001f >
+   util_RandomF()): test ah,5 / jnp), the refused / other branches as two full copies, text[0x200] (frame
+   0x2fc equal). 580 = 580 instructions, the frame and switch table equal. Left, scheduling and allocation
+   only: the owner record addressed as a byte offset kept in edx (lea edx,[eax+eax*8]; shl edx,2; mov
+   al,[edx+ai_Chars+2], reused for [edx+ai_CharInts] after the memset) where ours forms the pointer (lea
+   edx,[eax*4+ai_Chars]); the AIMSG stores and the ai_Time copies in another order / with ecx<->edx swapped
+   (tried 8 field orders, the best kept); the cm_SendSetField / amount load order in the paid branch and
+   the 0x1a8d txt_Format argument loads. The M8 at +0x20a is the aligner pairing ours' mov edx,[ai_Time+8]
+   with the original's mov edx,[ai_TimeHourW] inside the same 14-byte ai_Time copy, both copying in the
+   same order (registers swapped) (references: M8 at +0x20a: ours refers to ai_Time+0x8 (0x770ae8), the
+   original's field to 0x770ae4 (ai_TimeHourW), explained: the ref: line is the ai_Time struct copy into
+   e->end, the same four loads in the same order on both sides with ecx/edx/eax renamed; the aligner pairs
+   different loads, no other object is referenced) */
 
-void he_Unk54b1e0(int ev)
+void he_RunProtection(int ev)
 {
-    char text[0x100];
-    char msg[0xf8];
-    int ebp, edi, st, r, o, amt;
+    AIJOB *e = (AIJOB *)ev;
+    HEPROTECTION *q = (HEPROTECTION *)ev;
+    AIBLD *b, *home;
+    AICHAR *c, *owner;
+    AIMSG msg;
+    char text[0x200];
 
-    ebp = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-    edi = gm_FindChar(*(int *)(ev + 0xac));
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
-        if (ebp != 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0)
-            cm_SendSetField(*(int *)(ebp + 1), 0x5a, 2, 0, 0x100);
+    b = (AIBLD *)gm_BuildQuery(1, 1, q->victim);
+    c = (AICHAR *)gm_FindChar(q->collector);
+    if (e->stage == -1 || e->stage == -2) {
+        if (b != 0 && (e->opts & 2) != 0)
+            cm_SendSetField(b->id, 0x5a, 2, 0, 0x100);
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    if (edi == 0 || ebp == 0 || *(unsigned short *)(ebp + 0x27) == 0xffff) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x70) = -1;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->exSlot = -1;
+    if (c == 0 || b == 0 || b->owner == 0xffff) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->stage = -1;
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    switch (*(int *)(ev + 0x70)) {
+    switch (e->stage) {
     case 1:
-        sv_MoveToGroup(ebp, 0, *(unsigned short *)edi, ev);
-        cm_SendChrStop(*(int *)(edi + 4));
-        cm_SendChrGotoBuilding(*(int *)(edi + 4), *(int *)(ebp + 1), -1, 0, 1, "Schutzgeld");
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 10, 0);
-        *(int *)(ev + 0x70) = 2;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, (char *)ev);
+        cm_SendChrStop(c->netId);
+        cm_SendChrGotoBuilding(c->netId, b->id, -1, 0, 1, "Schutzgeld");
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 10, 0);
+        e->stage = 2;
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        if (*(int *)(*(int *)(edi + 0x184) + 0x128) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 4, 0);
-            *(int *)(ev + 0x70) = 2;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        if (c->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
+            e->stage = 2;
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
-        amt = gm_EquipmentValue(ebp, 100);
-        *(int *)(ev + 0xb4) = (int)((float)amt * 0.065f);
-        r = (unsigned)&ai_Chars + *(unsigned short *)(ebp + 0x27) * 0x21c;
-        if (*(char *)(r + 2) == 6 || *(char *)(r + 2) == 7) {
-            memset(msg, 0, sizeof(msg));
-            *(int *)(msg + 0x1c) = *(int *)(ebp + 1);
-            *(int *)(msg + 0x18) = U_I(r + 4);
-            msg[4] = 0x63;
-            msg[0x3a] = 9;
-            *(int *)(msg + 0x34) = *(int *)(ev + 4);
-            *(int *)(msg + 0x58) = *(int *)(ev + 4);
-            *(AITIME *)(msg + 0x28) = ai_Time;
-            cm_SendLongMessage(msg);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 3, 0);
-            *(int *)(ev + 0x70) = 3;
-            *(int *)(ev + 0xb8) = 2;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+        q->amount = (int)((float)gm_EquipmentValue((unsigned char *)b, 100) * 0.065f);
+        owner = &ai_CharsT[b->owner];
+        if (owner->kind == 6 || owner->kind == 7) {
+            memset(&msg, 0, sizeof(msg));
+            msg.fromId = b->id;
+            msg.to = owner->netId;
+            msg.time = ai_Time;
+            msg.type = 0x63;
+            msg.flags = 9;
+            msg.arg[0] = e->id;
+            cm_SendLongMessage((char *)&msg);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 3, 0);
+            e->stage = 3;
+            q->answer = 2;
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, (unsigned short)util_Random(0x10) + 2, 0);
-        *(int *)(ev + 0x70) = 3;
-        if ((*(unsigned char *)(ebp + 0x5b) & 1) != 0) {
-            *(int *)(ev + 0xb8) = 2;
-        } else if (*(unsigned char *)(((unsigned)&ai_CharSex + 0x127) + *(unsigned short *)(ebp + 0x27) * 0x14) != 0xb
-                   && util_RandomF() < *(float *)(((unsigned)&ai_CharSex + 0x10b) + *(unsigned short *)(ebp + 0x27) * 0x14) * 0.001f) {
-            *(int *)(ev + 0xb8) = (unsigned short)util_Random(2);
-        } else {
-            *(int *)(ev + 0xb8) = 1;
-        }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, (unsigned short)util_Random(0x10) + 2, 0);
+        e->stage = 3;
+        if ((b->flags5aw & 0x100) != 0)
+            q->answer = 2;
+        else if (ai_CharsT[b->owner].sel != 0xb && !(ai_CharsT[b->owner].mood[11][2] * 0.001f > util_RandomF()))
+            q->answer = (unsigned short)util_Random(2);
+        else
+            q->answer = 1;
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 3:
-        r = *(int *)(ev + 0xb8);
-        if (r == 1) {
-            cm_SendSetField(*(int *)(ebp + 1), 0x5a, 2, 0x100, 0);
-            cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebp + 0x27) * 0x21c), 0, *(int *)(ev + 0xb4));
-            if (*(int *)(ev + 0xbc) != -1) {
-                o = gm_BuildQuery(1, 1, *(int *)(ev + 0xbc));
-                *(int *)(o + 0x4d) = *(int *)(o + 0x4d) + *(int *)(ev + 0xb4);
+        if (q->answer == 1) {
+            cm_SendSetField(b->id, 0x5a, 2, 0x100, 0);
+            cm_SendMoveGoodsUnchecked(ai_CharsT[e->chr].netId, ai_CharsT[b->owner].netId, 0, q->amount);
+            if (q->home != -1) {
+                home = (AIBLD *)gm_BuildQuery(1, 1, q->home);
+                home->roundSums[0] += q->amount;
             }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(AITIME *)(ev + 0x44) = ai_Time;
-            gm_AddTime(ev + 0x52, 0x30, 0, 0);
-            *(int *)(ev + 0x70) = 1;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-            txt_Format(text, 0x1a8d, *(unsigned short *)(ebp + 0x27), ebp, *(int *)(ev + 0xb4));
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5f3, "_NACHRICHTEN_HS_84");
+            e->end = ai_Time;
+            e->start = ai_Time;
+            gm_AddTime(&e->end, 0x30, 0, 0);
+            e->stage = 4;
+            e->exSlot = cm_SendExSetHE(4, ev);
+            txt_Format(text, 0x1a8d, b->owner, b, q->amount);
+            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_84");
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        if (r == 0) {
-            *(int *)(ev + 0x70) = 1;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-            txt_Format(text, 0x1a8e, *(unsigned short *)(ebp + 0x27), ebp);
-        } else {
-            *(int *)(ev + 0x70) = 1;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-            txt_Format(text, 0x1a8f, *(unsigned short *)(ebp + 0x27), ebp);
+        if (q->answer == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->stage = 4;
+            e->exSlot = cm_SendExSetHE(4, ev);
+            txt_Format(text, 0x1a8e, b->owner, b);
+            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
+            return;
         }
-        he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        e->stage = 4;
+        e->exSlot = cm_SendExSetHE(4, ev);
+        txt_Format(text, 0x1a8f, b->owner, b);
+        he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, "_NACHRICHTEN_HS_85");
         return;
     case 4:
-        if (*(int *)(ev + 0xb8) == 1) {
-            txt_Format(text, 0x1a90, ebp);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), text, 0, 0x5f3, (char *)0);
-            he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebp + 0x27) * 0x21c), U_I((unsigned)&ai_CharInts + *(unsigned short *)(ebp + 0x27) * 0x21c), text, 0, 0x5f3, (char *)0);
+        if (q->answer == 1) {
+            txt_Format(text, 0x1a90, b);
+            he_ShowNews(ai_CharsT[e->chr].netId, ai_CharsT[e->chr].netId, text, 0, 0x5f3, (char *)0);
+            he_ShowNews(ai_CharsT[b->owner].netId, ai_CharsT[b->owner].netId, text, 0, 0x5f3, (char *)0);
         }
-        sv_MoveToGroup(ebp, 0, *(unsigned short *)edi, 0);
-        cm_SendChrStop(*(int *)(edi + 4));
-        cm_SendChrGotoBuilding(*(int *)(edi + 4), *(int *)(ev + 0xbc), *(int *)(ev + 0xc0), 0, 0, "Schutzgeld");
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x70) = -1;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
-    default:
+        sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+        cm_SendChrStop(c->netId);
+        cm_SendChrGotoBuilding(c->netId, q->home, q->homeRoom, 0, 0, "Schutzgeld");
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->stage = -1;
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -9793,7 +9818,7 @@ int he_RegisterEventTypes22(void)
     sv_RegisterActivity(0x61, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_RunProtectionAsk) != 0)
         return 1;
-    if (he_SetEventHandlers(0x62, (void *)he_Unk54b170, (void *)he_Unk54b1e0) != 0)
+    if (he_SetEventHandlers(0x62, (void *)he_StartProtection, (void *)he_RunProtection) != 0)
         return 1;
     sv_RegisterActivity(0x62, 0x0, 0x0, 0x50e, -1);
     if (he_SetEventHandlers(0x64, (void *)he_Unk54b9b0, (void *)he_Unk54ba20) != 0)
