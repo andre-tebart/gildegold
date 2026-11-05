@@ -5851,7 +5851,7 @@ void he_RunTitleCeremony(int ev)
 }
 /* 0x54d190, a Ghidra miss: the init of the title event: the due clock now, +0x56 = 0x16, +0x58 = 0x1e, +0x5c / +0xac / +0xb0 = 0 */
 
-void he_Unk54d190(int ev)
+void he_StartInnSim(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     *(short *)(ev + 0x56) = 0x16;
@@ -5865,7 +5865,7 @@ int ai_CanAct();
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);
 
 /* 0x54d1e0, a Ghidra miss: looks the figure of a record up in a table of 16 entries of 12 bytes (first word: a building of 0x501190): finds the entry whose building id (+1) is the figure's job id (+0x184 + 0x2c) and that has an owner (word +0x27 != 0xffff); stores its index in *out and returns 1, else 0 */
-int he_Unk54d1e0(int rec, int *tab, int *out)
+int he_FindGuestInn(int rec, int *tab, int *out)
 {
     int i;
     int *e;
@@ -5886,104 +5886,102 @@ int he_Unk54d1e0(int rec, int *tab, int *out)
     }
     return 0;
 }
-/* 0x54d260, a Ghidra miss (disassembled; 1328 B): the run handler of the inn simulation ("SIM_WIRTSHAUS"): collects the 16 inns (0x501190 kind 5 / 0x16) with their two goods (0x4ffe90 records 0x179 / 0x17a), then in 0x180 steps per run over the figures of the ring (+0xac ..) it lets a figure sitting in an inn (0x54d1e0) buy a good: the 0x5089c0 prices * 1.5 are compared with the 0x509e60 wealth (the roll 0.65), the figure pays the inn (0x4c4830) and the inn's owner gets the amount, with the diary (0x4c3ba0 / 0x4c3d00 +0x65 / +0x6b / +0x69 slots of the good) written for both; at the end of the ring the counters reset (ROUGH) */
+typedef struct HEINN {                  /* he_RunInnSim's list of the inns (he_FindGuestInn walks it, 12 bytes each) */
+    AIBLD *inn;                         /* 0x0, the inn (a building of kind 0x16), 0: the end of the list */
+    AIOBJ *drink1;                      /* 0x4, its bar's good 0x179, 0: none */
+    AIOBJ *drink2;                      /* 0x8, its bar's good 0x17a, 0: none */
+} HEINN;
 
-void he_Unk54d260(int ev)
+/* he_RunInnSim's guest count: the inn's field +0x69 counts `guests` more */
+#define HE_INN_GUEST(r) {                                                                       \
+    cm_BeginFieldBlock((char *)(r).inn, (r).inn->id);                                           \
+    cm_AddFieldValues(2, 1, (char *)(r).inn - cm_FieldObject + 0x69, &guests);                  \
+    cm_SendFieldDeltas();                                                                       \
+}
+/* he_RunInnSim's sale of a drink to the guest ai_CharsT[i] (cm_SendExSellObject: one of the good): 0.65 of the
+   price from the guest, the price to the inn's owner, the takings (+0x65) and the guests (+0x6b) of the inn, then the guest count */
+#define HE_INN_SALE(r, drink, good, price) {                                                    \
+    cm_BeginGroup("SIM_WIRTSHAUS");                                                             \
+    cm_SendExSellObject(-1, (r).drink->ownerId, good, 1, ai_OwnPlayer, 0);                     \
+    cm_SendMoveGoodsUnchecked(-1, ai_CharsT[i].netId, ai_OwnPlayer, (int)((float)price * 0.65f)); \
+    cm_SendMoveGoodsUnchecked(ai_CharsT[(r).inn->owner].netId, -1, ai_OwnPlayer, price);        \
+    cm_BeginFieldBlock((char *)(r).inn, (r).inn->id);                                           \
+    cm_AddFieldValues(4, 1, (char *)(r).inn - cm_FieldObject + 0x65, &price);                   \
+    cm_AddFieldValues(2, 1, (char *)(r).inn - cm_FieldObject + 0x6b, &guests);                  \
+    cm_SendFieldDeltas();                                                                       \
+    cm_EndGroup("SIM_WIRTSHAUS");                                                               \
+    HE_INN_GUEST(r);                                                                            \
+}
+/* 0x54d260, a Ghidra miss: the run handler of the inn simulation, event 0x68 ("SIM_WIRTSHAUS"; HESIM's cursor).
+   Freed (stage -2) it frees the event. It lists up to 16 inns (buildings of kind 0x16) with their bar object (kind
+   0x2a, 6) and its two drinks (the goods 0x179 / 0x17a, 0: none); each run (stage 0) visits the next 0x180
+   characters: one sitting in an inn (he_FindGuestInn) whose wealth (gm_GetGoodsValue) is above 0.65 * the dearer
+   drink (the prices 1.5 * gm_GoodsPrice) buys either drink at random when the inn has both, else the first one it
+   can afford, else the second: the inn sells one (cm_SendExSellObject), the guest pays 0.65 of the price, the
+   inn's owner gets the price, and the inn's fields +0x65 (the takings) / +0x6b (3 .. 6 guests) count it; a guest
+   counts at +0x69 too, so does one who could afford the first drink of an inn without the second. After the last
+   character the round is over (due the next day at 22:30), else due in 15 minutes */
+void he_RunInnSim(int ev)
 {
-    int tab[48];
-    int i, n, cur, end, idx = 0, fig, p1, p2, wealth, price1, price2, lim, ent, cnt;
-    int *e;
-    int amt1, amt2;
-    int cnt3;
+    AIJOB *e = (AIJOB *)ev;
+    HESIM *s = (HESIM *)ev;
+    HEINN inns[16];
+    int i, n, end, idx, wealth, price1, price2, lim, guests;
 
-    if (*(int *)(ev + 0x70) == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    memset(tab, 0, sizeof(tab));
-    e = tab;
-    tab[0] = gm_BuildQuery(1, 5, 0x16);
+    D3_ZERO(inns, sizeof(inns));
     n = 0;
-    while (tab[n * 3] != 0 && n < 16) {
-        int b = tab[n * 3];
-        int o = gm_Query(*(int *)(b + 0x5d), 2, 0, 0x2a, 6);
+    inns[0].inn = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
+    while (inns[n].inn != 0 && n < 16) {
+        AIOBJ *bar = (AIOBJ *)gm_Query((void *)inns[n].inn->objList, 2, 0, 0x2a, 6);
 
-        if (o != 0) {
-            tab[n * 3 + 1] = gm_Query(*(int *)(o + 0x14), 1, 0, 0x179);
-            tab[n * 3 + 2] = gm_Query(*(int *)(o + 0x14), 1, 0, 0x17a);
+        if (bar != 0) {
+            inns[n].drink1 = (AIOBJ *)gm_Query((void *)bar->list, 1, 0, 0x179);
+            inns[n].drink2 = (AIOBJ *)gm_Query((void *)bar->list, 1, 0, 0x17a);
         }
         n++;
-        tab[n * 3] = gm_BuildNext();
+        inns[n].inn = (AIBLD *)gm_BuildNext();
     }
-    if (*(int *)(ev + 0x70) != 0)
+    if (e->stage != 0)
         return;
-    cur = *(int *)(ev + 0xac);
-    end = cur + 0x180;
-    cnt = 0x180;
-    if (cur < end) {
-        for (fig = (unsigned)&ai_CharInts + cur * 0x21c; cnt > 0; fig += 0x21c, cnt--) {
-            if (he_Unk54d1e0(fig - 4, tab, &idx) == 0)
-                continue;
-            price1 = (int)((double)gm_GoodsPrice(0x179, *(unsigned char *)(unsigned)&ai_OwnPlayer) * 1.5);
-            price2 = (int)((double)gm_GoodsPrice(0x17a, *(unsigned char *)(unsigned)&ai_OwnPlayer) * 1.5);
-            cnt3 = (unsigned short)util_Random(4) + 3;
-            wealth = gm_GetGoodsValue(fig - 4);
-            lim = price1 > price2 ? price1 : price2;
-            p1 = tab[idx * 3 + 1];
-            p2 = tab[idx * 3 + 2];
-            if ((float)wealth < (float)lim * 0.65f || p1 == 0 || p2 == 0) {
-                if (wealth > price1 && p1 != 0) {
-                    cm_BeginGroup("SIM_WIRTSHAUS");
-                    cm_SendExSellObject(-1, *(int *)(p1 + 6), 1, 0x179, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                    cm_SendMoveGoodsUnchecked(-1, *(int *)fig, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((float)price1 * 0.65f));
-                    cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + *(unsigned short *)(tab[idx * 3] + 0x27) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, price1);
-                    cm_BeginFieldBlock(tab[idx * 3], *(int *)(tab[idx * 3] + 1));
-                    cm_AddFieldValues(4, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x65, &price1);
-                    cm_AddFieldValues(2, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x6b, &cnt3);
-                    cm_SendFieldDeltas();
-                    cm_EndGroup("SIM_WIRTSHAUS");
-                    cm_BeginFieldBlock(tab[idx * 3], *(int *)(tab[idx * 3] + 1));
-                    cm_AddFieldValues(2, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x69, &cnt3);
-                    cm_SendFieldDeltas();
-                } else if (wealth > lim && p2 != 0) {
-                    cm_BeginGroup("SIM_WIRTSHAUS");
-                    cm_SendExSellObject(-1, *(int *)(p2 + 6), 1, 0x17a, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                    cm_SendMoveGoodsUnchecked(-1, *(int *)fig, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((float)price2 * 0.65f));
-                    cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + *(unsigned short *)(tab[idx * 3] + 0x27) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, price2);
-                    cm_BeginFieldBlock(tab[idx * 3], *(int *)(tab[idx * 3] + 1));
-                    cm_AddFieldValues(4, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x65, &price2);
-                    cm_AddFieldValues(2, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x6b, &cnt3);
-                    cm_SendFieldDeltas();
-                    cm_EndGroup("SIM_WIRTSHAUS");
-                    cm_BeginFieldBlock(tab[idx * 3], *(int *)(tab[idx * 3] + 1));
-                    cm_AddFieldValues(2, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x69, &cnt3);
-                    cm_SendFieldDeltas();
-                }
-            } else if (util_Random(2) != 0) {
-                cm_BeginGroup("SIM_WIRTSHAUS");
-                cm_SendExSellObject(-1, *(int *)(p1 + 6), 1, 0x179, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                cm_SendMoveGoodsUnchecked(-1, *(int *)fig, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((float)price1 * 0.65f));
-                cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + *(unsigned short *)(tab[idx * 3] + 0x27) * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, price1);
-                cm_BeginFieldBlock(tab[idx * 3], *(int *)(tab[idx * 3] + 1));
-                cm_AddFieldValues(4, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x65, &price1);
-                cm_AddFieldValues(2, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x6b, &cnt3);
-                cm_SendFieldDeltas();
-                cm_EndGroup("SIM_WIRTSHAUS");
-                cm_BeginFieldBlock(tab[idx * 3], *(int *)(tab[idx * 3] + 1));
-                cm_AddFieldValues(2, 1, *(unsigned short *)tab[idx * 3] - *(unsigned short *)(unsigned)&cm_FieldObject + 0x69, &cnt3);
-                cm_SendFieldDeltas();
+    end = s->cursor + 0x180;
+    for (i = s->cursor; i < end; i++) {
+        if (he_FindGuestInn((int)&ai_CharsT[i], (int *)inns, &idx) == 0)
+            continue;
+        price1 = (int)(gm_GoodsPrice(0x179, ai_OwnPlayer) * 1.5);
+        price2 = (int)(gm_GoodsPrice(0x17a, ai_OwnPlayer) * 1.5);
+        guests = util_Random(4) + 3;
+        wealth = gm_GetGoodsValue(&ai_CharsT[i]);
+        lim = price1 > price2 ? price1 : price2;
+        if ((float)wealth > (float)lim * 0.65f && inns[idx].drink1 != 0 && inns[idx].drink2 != 0) {
+            if (util_RandomU(2) != 0) {
+                HE_INN_SALE(inns[idx], drink1, 0x179, price1);
+            } else {
+                HE_INN_SALE(inns[idx], drink2, 0x17a, price2);
+            }
+        } else if (wealth > price1 && inns[idx].drink1 != 0) {
+            HE_INN_SALE(inns[idx], drink1, 0x179, price1);
+        } else if (wealth > price2) {
+            if (inns[idx].drink2 != 0) {
+                HE_INN_SALE(inns[idx], drink2, 0x17a, price2);
+            } else if (wealth > price1) {
+                HE_INN_GUEST(inns[idx]);
             }
         }
     }
+    s->cursor = end;
     if (end >= 0x300) {
-        *(int *)(ev + 0xac) = 0;
-        *(int *)(ev + 0xb0) = 0;
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-        *(short *)(ev + 0x56) = 0x16;
-        *(int *)(ev + 0x58) = 0x1e;
+        s->cursor = 0;
+        s->step = 0;
+        e->end.year++;
+        e->end.hour = 0x16;
+        e->end.min = 0x1e;
         return;
     }
-    gm_AddTime(ev + 0x52, 0, 0xf, 0);
+    gm_AddTime(&e->end, 0, 0xf, 0);
 }
 
 unsigned short hmt_RecordCount(void);
@@ -9990,7 +9988,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x67, (void *)he_StartAuctionEvent, (void *)he_RunAuctionEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x68, (void *)he_Unk54d190, (void *)he_Unk54d260) != 0)
+    if (he_SetEventHandlers(0x68, (void *)he_StartInnSim, (void *)he_RunInnSim) != 0)
         return 1;
     if (he_SetEventHandlers(0x69, (void *)he_StartTitleCeremony, (void *)he_RunTitleCeremony) != 0)
         return 1;
