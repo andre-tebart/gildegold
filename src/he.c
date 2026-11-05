@@ -65,8 +65,10 @@
    watchman 0x73 (HENIGHTWATCH), the robbery 0x75 (HEROBBERY, the burglary's twin), the title period 0x7c (AIMSG)
    and he_OpenHelpEvents (HEHINT); so do the tutorial building tour 0x85, the guard patrol step (AIOBJ's patrol*
    bytes), the running income 3, the production (HEPRODUCTION), the searches 8 / 9 (HESEARCH / HESEARCH9), the trade
-   0xb (HETRADE) and he_ShowConstruction (HECONSTRUCTION, its child list HECHILDLIST).
-   Open: types: the other handlers past 0x56b780 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
+   0xb (HETRADE), the construction event 0xd (HECONSTRUCTION, its child list HECHILDLIST, the models
+   he_BuildingModels), the mission check 0x4c (HEMISSIONCHECK) and the alchemist events 0x95 .. 0x98 (HERECIPESEARCH,
+   HEAHMRESEARCH, HEAHMDAY; the alchemist records through ahm_types.h).
+   Open: types: the other handlers past 0x56e070 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620) still read the
    event and message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
