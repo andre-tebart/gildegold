@@ -1965,9 +1965,9 @@ int ai_DecideTrankGuiltWeights(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4921d0, decision 19 */
+/* 0x4921d0, the callback of law record 19 (AIDEC.fn, office 0x13 no 1, a boolean law): ai_EvalThreaten (0x49cdd0, the eval callback of action 0x27 "Drohen") takes its cur != 0 to evaluate that action with the character's guilt (ai_EvalGuiltWeights) instead of the mood weights; the normalized skill 4 against its rating (always x0.8) against 1 turns it on when mood 9 outweighs mood 11, and off when mood 11 outweighs mood 9 */
 
-int ai_Unk4921d0(AIPER *p, int a, int *out)
+int ai_DecideThreatenGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, w;
