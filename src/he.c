@@ -682,13 +682,14 @@ typedef struct HEPAYMENT {              /* the payment event 0x56's words over A
     char padad[3];
     unsigned int amount;                /* 0xb0, the base amount: twice it or half of it is paid */
 } HEPAYMENT;
-typedef struct HEREPEATPAY {            /* the repeating-payment event 0x5b's words over AIJOB's union (its alloc handler
-                                           0x549040, run handler he_RunRepeatPayment): the amount paid to its character
-                                           from the bank (-1) every 0x18 hours, once per payment left */
+typedef struct HEPUNISHMENT {            /* the trial-punishment events 0x5b (fine, he_RunFinePayment) and 0x5c (pillory,
+                                           he_RunPilloryPunishment)'s words over AIJOB's union (their shared alloc handler
+                                           he_AllocPunishment): the amount of each payment and the payments left */
     char pad00[0xac];
-    int amount;                         /* 0xac, the amount of each payment (the message's first argument) */
+    int amount;                         /* 0xac, the amount of each payment (the message's first argument): taken from the
+                                           character by the fine, the negated income of the pillory's AP event */
     int days;                           /* 0xb0, the payments left (the message's second argument), counted down */
-} HEREPEATPAY;
+} HEPUNISHMENT;
 typedef struct HECOUNTDOWN {            /* the countdown event 0x51's word over AIJOB's union (its init he_AllocNextDay, run
                                            handler he_RunCountdown): counted down once per run, 0 frees the event */
     char pad00[0xac];
@@ -4461,15 +4462,15 @@ void he_RunRepostEvent(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x548fa0, the run handler of the repeating-payment event 0x5b: a stage of -2 or below ends it, a negative one
-   frees it, and at stage 0 it pays the event's character (ai_CharInts[e->chr][0]) the amount +0xac from the bank
-   (-1, cm_SendMoveGoods under the own player) and counts one payment down; with payments left it is posted again
-   0x18 hours on, else it is freed */
+/* 0x548fa0, the run handler of the fine event 0x5b (the trial's sentence 1, gv_PassSentence: 3% of the character's
+   worth): a stage of -2 or below ends it, a negative one frees it, and at stage 0 it takes the amount +0xac from the
+   event's character (cm_SendMoveGoods with -1 as the destination, under the own player) and counts one payment
+   down; with payments left it is posted again 0x18 hours on, else it is freed */
 
-void he_RunRepeatPayment(int ev)
+void he_RunFinePayment(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    HEREPEATPAY *p = (HEREPEATPAY *)ev;
+    HEPUNISHMENT *p = (HEPUNISHMENT *)ev;
     int st = e->stage;
 
     if (st >= -2) {
@@ -4487,31 +4488,36 @@ void he_RunRepeatPayment(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x549040, the alloc handler of the repeating-payment events 0x5b and 0x5c (he_RunRepeatPayment, 0x549080): the
-   due clock +0x52 is the clock now, five minutes on */
+/* 0x549040, the alloc handler of the trial-punishment events 0x5b and 0x5c (he_RunFinePayment,
+   he_RunPilloryPunishment): the due clock +0x52 is the clock now, five minutes on */
 
-void he_AllocRepeatPayment(int ev)
+void he_AllocPunishment(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
 
     e->end = ai_Time;
     gm_AddTime(&e->end, 0, 5, 0);
 }
-/* 0x549080, like 0x548fa0 but the amount -+0xac goes to the player through 0x53eec0 */
+/* 0x549080, the run handler of the pillory-punishment event 0x5c (the trial's sentences 0 and 2, gv_PassSentence):
+   a stage of -2 or below ends it, a negative one frees it, and at stage 0 it registers an AP event of the event's
+   character (e->chr) named txt_PilloryPunishment, the negated amount +0xac as its income, counts one payment down
+   and, with payments left, posts the event again 0x18 hours on, else frees it */
 
-void he_Unk549080(int ev)
+void he_RunPilloryPunishment(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    HEPUNISHMENT *p = (HEPUNISHMENT *)ev;
+    int st = e->stage;
 
     if (st >= -2) {
         if (st >= 0) {
             if (st != 0)
                 return;
-            he_AddApEvent(*(unsigned short *)(ev + 8), U_I((unsigned)&full_data_1442500), -*(int *)(ev + 0xac), 0);
-            *(int *)(ev + 0xb0) = *(int *)(ev + 0xb0) - 1;
-            if (*(int *)(ev + 0xb0) != 0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0x18, 0, 0);
+            he_AddApEvent(e->chr, txt_PilloryPunishment, -p->amount, 0);
+            p->days = p->days - 1;
+            if (p->days != 0) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0x18, 0, 0);
                 return;
             }
         }
@@ -10765,9 +10771,9 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5a, (void *)he_AllocRepostEvent, (void *)he_RunRepostEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5b, (void *)he_AllocRepeatPayment, (void *)he_RunRepeatPayment) != 0)
+    if (he_SetEventHandlers(0x5b, (void *)he_AllocPunishment, (void *)he_RunFinePayment) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5c, (void *)he_AllocRepeatPayment, (void *)he_Unk549080) != 0)
+    if (he_SetEventHandlers(0x5c, (void *)he_AllocPunishment, (void *)he_RunPilloryPunishment) != 0)
         return 1;
     if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_RunOffspring) != 0)
         return 1;
