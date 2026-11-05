@@ -53,7 +53,7 @@ int rt_Unk6f074c = 0;  /* 0x6f074c, the saved screen of */
 int rt_MarkCount = 0;  /* 0x6f0750, the marks used */
 int rt_PickedBuilding = 0;  /* 0x6f0754, the building shown */
 RTPOINT * rt_EditRoute = 0;  /* 0x6f0758, the route being edited */
-char * ai_Unk6f26ac = 0;  /* 0x6f26ac, the screen surface */
+char * rt_MapSurface = 0;  /* 0x6f26ac, the screen surface */
 /* ai_Unk7e422c: view of ai_PlayerSlots (tools/data_views.py) */
 RTMARK rt_Marks[8] = {0};  /* 0xf812a0 */
 
@@ -908,7 +908,7 @@ void rt_EditCartRoute(char *c)
     strcpy((char *)&m[0x17], txt_PanelBtnCart);
     ai_Unk5a78a0(m);
     ai_Unk5a6cb0(m);
-    rt_Unk6f074c = d2_CopySurface(ai_Unk6f26ac);
+    rt_Unk6f074c = d2_CopySurface(rt_MapSurface);
     rt_MarkCount = 0;
     for (i = 0; i < 8; i++) {
         rt_Marks[i].obj = -1;
@@ -986,7 +986,7 @@ void rt_EditCartRoute(char *c)
     }
     ai_CloseMapWindow(m);
     if (rt_Unk6f074c != 0) {
-        d2_BlitPart(0, 0, *(int *)(ai_Unk6f26ac + 4), *(int *)(ai_Unk6f26ac + 8), rt_Unk6f074c, 0, 0, ai_Unk6f26ac);
+        d2_BlitPart(0, 0, *(int *)(rt_MapSurface + 4), *(int *)(rt_MapSurface + 8), rt_Unk6f074c, 0, 0, rt_MapSurface);
         d2_FreeSurface(rt_Unk6f074c);
         rt_Unk6f074c = 0;
     }

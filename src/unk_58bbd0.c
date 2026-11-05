@@ -682,7 +682,7 @@ extern GAPDATA full_data_6f26b0[];
 extern GAPDATA full_data_6f4ee4[];
 extern GAPDATA full_rdata_5eed8c[];
 extern GAPDATA full_rdata_5eed90[];
-extern char * ai_Unk6f26ac;
+extern char * rt_MapSurface;
 extern struct D2SURF *d2_BackgroundTile;
 extern GAPDATA full_data_62c274[];
 extern short d2_MouseX;
@@ -801,7 +801,7 @@ extern GAPDATA full_data_6f5a60[];
 extern GAPDATA full_data_6f52e0[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
-extern char * ai_Unk6f26ac;
+extern char * rt_MapSurface;
 extern char d2_GfxDir[256];
 extern GAPDATA full_data_62c270[];
 extern GAPDATA full_data_62cce8[];
@@ -13285,7 +13285,7 @@ void ai_Unk5a78a0(int *m_)
     int id;
 
     *(int *)(p + 0x27a8) = *(int *)((unsigned)&d2_BackgroundTile);
-    *(int *)((unsigned)&d2_BackgroundTile) = *(int *)((unsigned)&ai_Unk6f26ac);
+    *(int *)((unsigned)&d2_BackgroundTile) = *(int *)((unsigned)&rt_MapSurface);
     view = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62c274);
     m_[0] = view;
     d2_PlaceMainWindow(view, 3);
@@ -15776,15 +15776,15 @@ void ai_Unk5b2090(void)
         rec[1] = w;
         rec[2] = h;
         id = d2_MakeSurface(rec, 0xb);
-        U_I((unsigned)&ai_Unk6f26ac) = id;
+        U_I((unsigned)&rt_MapSurface) = id;
         d2_LockSurface(id);
-        d2_ConvertRgbTo16(0, 0, w, h, *(int *)(bmp + 0x1c), 0, 0, U_I((unsigned)&ai_Unk6f26ac));
+        d2_ConvertRgbTo16(0, 0, w, h, *(int *)(bmp + 0x1c), 0, 0, U_I((unsigned)&rt_MapSurface));
         U_I((unsigned)&ai_MapSize) = w;
         U_I((unsigned)&full_data_6f4ee4) = h;
         U_I((unsigned)&full_data_62c270) = 0x40f00000;
         if (w < 0x780)
             U_I((unsigned)&full_data_62c270) = 0x40aa8f5c;
-        d2_UnlockSurface(U_I((unsigned)&ai_Unk6f26ac));
+        d2_UnlockSurface(U_I((unsigned)&rt_MapSurface));
         d2_FreeSurface(bmp);
     }
 }
@@ -16450,9 +16450,9 @@ int ai_TrainingWindow(int param_1)
 
 void ai_FreePicture(void)
 {
-    if (U_I((unsigned)&ai_Unk6f26ac) != 0)
-        d2_FreeSurface(U_I((unsigned)&ai_Unk6f26ac));
-    U_I((unsigned)&ai_Unk6f26ac) = 0;
+    if (rt_MapSurface != 0)
+        d2_FreeSurface(rt_MapSurface);
+    rt_MapSurface = 0;
 }
 /* 0x5bc110, a window "0x62d0b0" (784 B, ROUGH SKELETON): an 0xac-byte frame; the body is a comment */
 
