@@ -3636,13 +3636,13 @@ exe	0x0054d1e0	he_FindGuestInn	he	shape	readable
 exe	0x0054d260	he_RunInnSim	he	shape	readable		
 exe	0x0054d790	he_StartSkillUp	he	byte	readable		
 exe	0x0054d7d0	he_RunSkillUp	he	byte	readable		
-exe	0x0054da20	he_StartBard	he	byte	draft		
+exe	0x0054da20	he_StartBard	he	byte	readable		
 exe	0x0054da80	he_RunBard	he	byte	readable		
-exe	0x0054de60	he_StartPopulation	he	byte	draft		
+exe	0x0054de60	he_StartPopulation	he	byte	readable		
 exe	0x0054dec0	he_RunPopulation	he	draft	readable	deep	
-exe	0x0054e770	he_StartLover	he	byte	draft		
+exe	0x0054e770	he_StartLover	he	byte	readable		
 exe	0x0054e890	he_RunLover	he	byte	readable		
-exe	0x0054eb80	he_IsSimCandidate	he	byte	draft		
+exe	0x0054eb80	he_IsSimCandidate	he	byte	readable		
 exe	0x0054ebd0	he_RunDiseaseSim	he	byte	readable		
 exe	0x0054ef70	he_StartDarkCorner	he	shape	readable		
 exe	0x0054f160	he_RunDarkCorner	he	draft	readable	deep	
@@ -3650,7 +3650,7 @@ exe	0x0054fb50	he_StartEffectEvent	he	byte	readable
 exe	0x0054fc00	he_CreateSmokeEffect	he	byte	readable		
 exe	0x0054fc70	he_CreatePointsEffect	he	byte	readable		
 exe	0x0054fce0	he_RunEffectEvent	he	shape	readable		
-exe	0x0054fe80	he_Unk54fe80	he	byte	draft		
+exe	0x0054fe80	he_StartSendHomeEvent	he	byte	readable		
 exe	0x0054ff20	he_RunSendHomeEvent	he	draft	readable	deep	
 exe	0x00550070	he_CreateReaper	he	draft	readable	deep	
 exe	0x00550370	he_MoveReaper	he	draft	readable	deep	
@@ -3658,12 +3658,12 @@ exe	0x005506c0	he_AimReaper	he	shape	readable
 exe	0x00550850	he_TurnReaper	he	byte	readable		
 exe	0x005509f0	he_StartReaper	he	byte	readable		
 exe	0x00550b60	he_RunReaper	he	byte	readable		
-exe	0x00550ea0	he_Unk550ea0	he	byte	draft		
+exe	0x00550ea0	he_StartRanking	he	byte	readable		
 exe	0x00550ee0	he_RunRanking	he	byte	readable		
-exe	0x005512c0	he_Unk5512c0	he	shape	draft		
+exe	0x005512c0	he_StartWalk	he	byte	readable		
 exe	0x00551340	he_StepWalkSlot	he	shape	readable		
 exe	0x00551440	he_FillWalkSlot	he	draft	readable	deep	
-exe	0x005516a0	he_PlayGestures	he	byte	draft		
+exe	0x005516a0	he_PlayGestures	he	byte	readable		
 exe	0x00551780	he_StepWalk	he	draft	readable	deep	
 exe	0x00551b70	he_Unk551b70	he	shape	draft		
 exe	0x00551d00	he_InitSixGroupEvent	he	byte	readable		
