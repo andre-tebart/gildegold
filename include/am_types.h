@@ -43,7 +43,7 @@ typedef struct AIPLAN {                 /* 0x50 bytes, a plan record the callbac
                                            (cm.c 0x4db700) hands one to its scene party as the request */
     int mode;                           /* 0x00, of the trial: what the members are asked (2 .. 5) */
     float score;                        /* 0x04, the plan's score (rated 3..18 by 0x494020, ranked by 0x4945c0) */
-    int plea;                           /* 0x08, of the trial: 1 when the accused pleaded guilty (ai_Unk494410 skips the roll then) */
+    int plea;                           /* 0x08, of the trial: 1 when the accused pleaded guilty (ai_DecideAcquittal skips the roll then) */
     float amount;                       /* 0x0c, the scale of the tries' sum (ai_PlanRollTries); of the trial 1000, then the accused's plea amount */
     unsigned char b10;                  /* 0x10 */
     unsigned char crimes;               /* 0x11, of the trial: the number of its crimes */

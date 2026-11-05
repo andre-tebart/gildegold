@@ -3098,9 +3098,12 @@ int ai_PlanRollTries(AIPLAN *q)
     q->penalty = -acc;
     return q->success;
 }
-/* 0x494410, decides whether a plan between two characters loses against a third */
+/* 0x494410, the vote of a trial judge or assessor (request kind 4 of the trial's ask-AI callback ai_Unk4de340):
+   1 for the accused when his liking of and mix with the voter (c18) outweigh the accuser's (c14) plus the plan's
+   score^2 * 0.0025, 0 otherwise; the accused's item 0x22e tips it and a torture raises his side, while a confession
+   (success) or a guilty plea gives no vote for him */
 
-int ai_Unk494410(AIC4 *ch, AIPLAN *q)
+int ai_DecideAcquittal(AIC4 *ch, AIPLAN *q)
 {
     AIC4 *a, *b;
     float x, y, c, d;

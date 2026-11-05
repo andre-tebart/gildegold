@@ -13442,7 +13442,7 @@ void ai_Unk4de340(char *r, int *m)
         if (id != m[7] && id != m[8] && id != m[9])
             return;
         c = gm_FindChar(*(int *)(cm_CutChar + 4));
-        *(int *)(r + 0x94) = ai_Unk494410(c, m);
+        *(int *)(r + 0x94) = ai_DecideAcquittal(c, m);
         return;
     case 5:
         if (*(int *)(r + 0x10) != m[7])
