@@ -1020,6 +1020,16 @@ typedef struct HETAVERNOBJ {            /* the tavern's object 0x1b5 (he_AllocTa
     int helperId;                       /* 0x1e, the character hired as the tavern's helper, -1: none */
     char hired;                         /* 0x22, nonzero while a helper is hired */
 } HETAVERNOBJ;
+typedef struct HEAHMRESEARCH {          /* the alchemist research event 0x96's words over AIJOB's union (he_AllocResearchRecipe
+                                           and its run handler 0x56d730); ahm.h's AHMRESEARCH names the same words from ahm.c */
+    char pad00[0xac];
+    int chr;                            /* 0xac, the id of the character researching (gm_FindChar) */
+    int id;                             /* 0xb0, the recipe / share researched (ahm_FindRecipe) */
+    float progress;                     /* 0xb4, the progress of this round (ahm_ResearchProgress; the run handler adds it to the share) */
+    int amount;                         /* 0xb8, the amount left (the run handler counts it down by the elapsed minutes) */
+    int start;                          /* 0xbc, the amount the research started with (the minutes the progress is measured in) */
+    AITIME clock;                       /* 0xc0, the clock the elapsed minutes are measured from (ai_Time) */
+} HEAHMRESEARCH;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -18599,7 +18609,7 @@ int he_RegisterEventTypes03(void)
 
 void he_Unk56d2d0();
 void he_Unk56d3d0();
-void he_Unk56d610();
+void he_AllocResearchRecipe();
 void he_Unk56d730();
 void he_Unk56d990();
 void he_Unk56daa0();
@@ -18610,7 +18620,7 @@ void he_Unk56de10();
 int he_RegisterEventTypes95(void)
 {
     if (he_SetEventHandlers(0x95, (void *)he_Unk56d2d0, (void *)he_Unk56d3d0) == 0) {
-        if (he_SetEventHandlers(0x96, (void *)he_Unk56d610, (void *)he_Unk56d730) == 0) {
+        if (he_SetEventHandlers(0x96, (void *)he_AllocResearchRecipe, (void *)he_Unk56d730) == 0) {
             if (he_SetEventHandlers(0x97, (void *)he_Unk56d990, (void *)he_Unk56daa0) == 0) {
                 if (he_SetEventHandlers(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
                     sv_RegisterActivity(0x95, "erforschen", 1, 0x500, -1);
@@ -18712,28 +18722,35 @@ void he_Unk56d3d0(int ev)
 union AHMGRID * ahm_FindRecipe();
 float ahm_ResearchProgress();
 
-/* 0x56d610, the alloc of the research event 0x96: the character +0xac, its research record 0x4eae60 (the +0xb0 kind) and the amount 0x4eafd0 (character, record, &clock +0xbc) into +0xb4; above the constant 0x5eb788: +0xb8 = the clock +0xbc, the clocks +0x52 / +0xc0 = now, due 5, state 0, the building registered (0x4ffe90 / 0x524260); else the event frees itself */
-void he_Unk56d610(int ev)
+/* 0x56d610, the alloc of the alchemist research event 0x96: the character (chr), the recipe (id) and the minutes the
+   research takes (start) are looked up (gm_FindChar, ahm_FindRecipe, ahm_ResearchProgress into progress); when that
+   progress is above ai_FloatZero the amount = the minutes it started with, both clocks (clock / end) = now, due 5,
+   stage 0, and the character is registered in its building's group (gm_Query / sv_MoveToGroup); else the event
+   frees itself */
+void he_AllocResearchRecipe(int ev)
 {
-    char *c, *p;
+    AIJOB *e = (AIJOB *)ev;
+    HEAHMRESEARCH *r = (HEAHMRESEARCH *)ev;
+    AICHAR *c;
+    char *p;
     int v;
 
-    c = (char *)gm_FindChar(*(int *)(ev + 0xac));
+    c = (AICHAR *)gm_FindChar(r->chr);
     if (c == 0)
         goto done;
-    p = (char *)ahm_FindRecipe(*(int *)(ev + 0xb0));
+    p = (char *)ahm_FindRecipe(r->id);
     if (p == 0)
         goto done;
-    *(float *)(ev + 0xb4) = ahm_ResearchProgress(c, p, (void *)(ev + 0xbc));
-    if (*(float *)(ev + 0xb4) > *(float *)(unsigned)&ai_FloatZero)
+    r->progress = ahm_ResearchProgress((char *)c, p, &r->start);
+    if (r->progress <= ai_FloatZero)
         goto done;
-    *(int *)(ev + 0xb8) = *(int *)(ev + 0xbc);
-    *(AITIME *)(ev + 0xc0) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
-    *(int *)(ev + 0x70) = 0;
-    v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b, *(unsigned short *)c, ev);
-    ((void (*)(int, int))sv_MoveToGroup)(*(int *)(c + 0x16c), v);
+    r->amount = r->start;
+    r->clock = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 5, 0);
+    e->stage = 0;
+    v = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b, c->id, ev);
+    ((void (*)(int, int))sv_MoveToGroup)((int)c->bld, v);
     snd_PlayFavourComment();
     return;
 done:
