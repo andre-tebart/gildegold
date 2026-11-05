@@ -4190,7 +4190,7 @@ void main_BeginPlayerRound(void)
         amt_CheckOffices();
         sv_PumpNet();
         Sleep(100);
-        he_Unk540fe0();
+        he_DailyEventChecks();
         ((void (*)(void))d3io_NoopCallback)();  /* called with no argument (no push at the call) */
         sv_PumpNet();
         Sleep(100);

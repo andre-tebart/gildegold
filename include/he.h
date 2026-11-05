@@ -95,7 +95,7 @@ void he_TopUpCharMoney(void);
 
 void he_PostEvent67(void);
 void he_InnReport(void);
-void he_Unk540fe0(void);
+void he_DailyEventChecks(void);
 void he_PostEvent3a(void);
 void he_PostEvent3b(void);
 void he_Unk5410f0(void);

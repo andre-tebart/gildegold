@@ -2232,7 +2232,7 @@ void he_InnReport(void)
 }
 /* 0x540fe0, the daily event checks */
 
-void he_Unk540fe0(void)
+void he_DailyEventChecks(void)
 {
     he_PostEvent2b();
     he_PostPlayerEvents86a2();
