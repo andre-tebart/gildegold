@@ -712,8 +712,8 @@ typedef char ai_AssertG5ACT[sizeof(G5ACT) == 0x94 ? 1 : -1];
 #define G5_CHARS ((G5CH *)ai_Chars)
 #define G5_ACTS ((G5ACT *)ai_Actions)
 
-extern int ai_Unkf83ea4;                /* 0xf83ea4, the depth of the evaluation stack */
-extern int ai_Unkf86900[];              /* 0xf86900, the actions being evaluated */
+extern int ai_EvalDepth;                /* 0xf83ea4, the depth of the evaluation stack */
+extern int ai_EvalStack[];              /* 0xf86900, the action ids on the evaluation stack */
 extern char ai_ActionIniPath[];             /* 0xf83da0, the ini file of the actions */
 extern int ai_WriteActionTable;               /* 0x6f2464, set: write the action table */
 

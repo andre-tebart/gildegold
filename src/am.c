@@ -46,13 +46,13 @@ char ai_DataPath[608] = {0};  /* 0x75dca0, the data path */
 /* ai_Unk7e4274: view of ai_PlayerSlots (tools/data_views.py) */
 G6RING ai_NearRing[32] = {0};  /* 0xf83c20 */
 char ai_ActionIniPath[260] = {0};  /* 0xf83da0, the ini file of the actions */
-int ai_Unkf83ea4 = 0;  /* 0xf83ea4, the depth of the evaluation stack */
+int ai_EvalDepth = 0;  /* 0xf83ea4, the depth of the evaluation stack */
 AIACT ai_Actions[0x49] = {0};  /* 0xf83ec0, the registered actions (0x49 of them: the init clears 0x49 * 0x94 bytes) */
 /* ai_Unkf84c40: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84c60: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84cd4: view of ai_Actions (tools/data_views.py) */
 /* ai_Unkf84cf4: view of ai_Actions (tools/data_views.py) */
-int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
+int ai_EvalStack[73] = {0};  /* 0xf86900, the action ids on the evaluation stack (73 deep) */
 
 #include "ls.h"
 #include "gv.h"
@@ -3573,14 +3573,14 @@ int am_RegisterMethod(AIACT *a, int ini)
 
 void ai_PushAction(int k)
 {
-    ai_Unkf86900[ai_Unkf83ea4] = k;
-    ai_Unkf83ea4++;
+    ai_EvalStack[ai_EvalDepth] = k;
+    ai_EvalDepth++;
 }
 /* 0x495790, pops the evaluation stack */
 
 void ai_PopAction(void)
 {
-    ai_Unkf83ea4--;
+    ai_EvalDepth--;
 }
 /* 0x4957a0, whether an action is on the evaluation stack */
 
@@ -3588,8 +3588,8 @@ int ai_ActionOnStack(int k)
 {
     int i;
 
-    for (i = 0; i < ai_Unkf83ea4; i++) {
-        if (ai_Unkf86900[i] == k)
+    for (i = 0; i < ai_EvalDepth; i++) {
+        if (ai_EvalStack[i] == k)
             return 1;
     }
     return 0;
