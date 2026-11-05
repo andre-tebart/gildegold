@@ -14753,7 +14753,7 @@ void ai_DomizilMessageResearch(int toRec, int cRec, int objRec, int kind)
                  "_NACHRICHTEN_DOMIZIL_03");
 }
 /* 0x5a9bc0, the Domizil message of a researched kind (110 B): as ai_DomizilMessageResearch with the text 0x4075
-   and the kind text 0x9a8 + 2 * kind in place of the study name; he_Unk56e070 sends it when the research event
+   and the kind text 0x9a8 + 2 * kind in place of the study name; he_LabIncident sends it when the research event
    0x98 sets the kind's place value */
 
 void ai_DomizilMessageResearchKind(int toRec, int cRec, int objRec, int kind)
@@ -14793,7 +14793,7 @@ void ai_DomizilMessage(G8CHARREC *to, G8CHARREC *c, G8OBJ *obj, int level)
 /* 0x5a9ca0, the Domizil news _NACHRICHTEN_DOMIZIL_04 of the building bld to the character to (98 B): for a
    kind 6 / 7 character, the text 0x407a with the first and family names of c and bld as its third argument
    (the original pushes the record pointer), then the quick-jump message 0x5ec with the building's id
-   (he_Unk56e070 case 2 sends it after the building's level +0x5c fell) */
+   (he_LabIncident case 2 sends it after the building's level +0x5c fell) */
 
 void ai_DomizilMessage04(G8CHARREC *to, G8CHARREC *c, AIBLD *bld)
 {
@@ -14805,7 +14805,7 @@ void ai_DomizilMessage04(G8CHARREC *to, G8CHARREC *c, AIBLD *bld)
 }
 /* 0x5a9d00, the Domizil message of the age research (94 B): for a kind 6 / 7 character the text 0x407b with the
    character's name and family (+0x30 / +0x40) into ai_NewsText, then the quick-jump message 0x5ec to its netId
-   with its building's id (+1) and the sound "_NACHRICHTEN_DOMIZIL_04"; he_Unk56e070 sends it for the pick that
+   with its building's id (+1) and the sound "_NACHRICHTEN_DOMIZIL_04"; he_LabIncident sends it for the pick that
    sets the character's life by age (he_SetLifeByAge) */
 
 void ai_DomizilMessageAge(int toRec, int cRec, int bldRec)
@@ -14840,7 +14840,7 @@ void ai_DomizilMessageTask(G8CHARREC *to, G8CHARREC *c, AIBLD *bld, G8OBJ *obj)
 /* 0x5a9dd0, the Domizil message of a place's lowered value (98 B): for a kind 6 / 7 character the text 0x407f
    with the character's name and family (+0x30 / +0x40) and the place's goods name text 0x9a8 + 2 * id into
    ai_NewsText, then the quick-jump message 0x5ec to its netId with the building's id (+1) and the sound
-   "_NACHRICHTEN_DOMIZIL_04"; he_Unk56e070's pick 4 sends it after ahm_SendSetPlaceValue lowered the place's value */
+   "_NACHRICHTEN_DOMIZIL_04"; he_LabIncident's pick 4 sends it after ahm_SendSetPlaceValue lowered the place's value */
 
 void ai_DomizilMessagePlace(G8CHARREC *to, G8CHARREC *c, AIBLD *bld, int placeId)
 {

@@ -1070,6 +1070,12 @@ typedef struct HERECIPESEARCH {         /* the research event 0x95's words over 
     int total;                          /* 0xb8, the research minutes at the start */
     AITIME worked;                      /* 0xbc, the clock the minutes worked are counted from */
 } HERECIPESEARCH;
+typedef struct HEAHMDAY {               /* the alchemist's daily laboratory event 0x98's words over AIJOB's union (he_AllocAlchemistDay /
+                                           he_RunAlchemistDay) */
+    char pad00[0xac];
+    int bonus;                          /* 0xac, nonzero: the next run adds a bonus to the alchemist record's value
+                                           instead of the roll (0 at the start; its setter is not read yet) */
+} HEAHMDAY;
 typedef struct HECHILDLIST {            /* the children of a scene object, collected by he_CollectChild */
     D3OBJECT *root;                     /* 0x000, the object walked */
     D3OBJECT *items[0x40];              /* 0x004 */
@@ -21972,8 +21978,8 @@ void he_AllocResearchRecipe();
 void he_RunResearchRecipe();
 void he_AllocTrainShare();
 void he_RunTrainShare();
-void he_Unk56dd20();
-void he_Unk56de10();
+void he_AllocAlchemistDay();
+void he_RunAlchemistDay();
 
 /* 0x56d220, registers the research event types 0x95 .. 0x98 (called by 0x53d4b0) and the texts of 0x95 / 0x96; 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypes95(void)
@@ -21981,7 +21987,7 @@ int he_RegisterEventTypes95(void)
     if (he_SetEventHandlers(0x95, (void *)he_AllocRecipeResearch, (void *)he_RunRecipeResearch) == 0) {
         if (he_SetEventHandlers(0x96, (void *)he_AllocResearchRecipe, (void *)he_RunResearchRecipe) == 0) {
             if (he_SetEventHandlers(0x97, (void *)he_AllocTrainShare, (void *)he_RunTrainShare) == 0) {
-                if (he_SetEventHandlers(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
+                if (he_SetEventHandlers(0x98, (void *)he_AllocAlchemistDay, (void *)he_RunAlchemistDay) == 0) {
                     sv_RegisterActivity(0x95, "erforschen", 1, 0x500, -1);
                     sv_RegisterActivity(0x96, "erforschen", 1, 0x500, -1);
                     return 0;
@@ -22277,7 +22283,7 @@ void he_RunTrainShare(int ev)
 }
 /* 0x56dd20, the alloc of the research event 0x98 (not while paused, flags +0x78 & 4): the clock +0x52 = now, the hour set to a random 9 .. 16 (or 13 on the next day from 20 on), +0xac = 0, +0xb0 / +0xb4 = -1, and the handler scheduled (0x4c4c60) into +0x84 */
 
-void he_Unk56dd20(int ev)
+void he_AllocAlchemistDay(int ev)
 {
     int h;
 
@@ -22317,64 +22323,71 @@ int he_RoomBusy(AIBLD *b, unsigned short kind)
 int ahm_ResearchState();
 int ahm_SendAddValue(char *c, float v);
 float util_RandomF();
-void he_Unk56e070();
+void he_LabIncident();
 
-/* 0x56de10, the run handler of the research event 0x98 (the random event of a character +0xc; ROUGH): -1 / -2 free, paused (+0x78 & 4) returns, a missing character / research record reschedules with 0x4c4c60 (-1, ev); the clock +0x52 = now + 1 day, the hour = the day's window (0x617830 / 0x617840 by (day + 1) % 4) plus a random part, the minute = random(4) * 15; with a pending 0x4ecd50 value (+0xac) it is applied and the handler rescheduled; else the task 0x4eb180 (building's +0x16c, 1) decides: <= the building's +0x65 +4 gives a random offset by the task kind (1 .. 4, negated; else positive), above it the scene action 0x56e070 (character, ev, building, task) runs; then 0x4ecd50 (character, offset) and 0x4c4c60 (0, ev) */
-void he_Unk56de10(int ev)
+/* 0x56de10, the run handler of the alchemist's daily laboratory event 0x98 (alloc he_AllocAlchemistDay; the character
+   AIJOB.netId): stages -1 / -2 free it, a paused event (opts & 4) waits; without the character or its alchemist record
+   the event is ended through cm_SendExSetHE (-1); it is due again next year at a random hour of the next season's
+   day hours and a random quarter hour; a pending bonus adds 0.25 .. 0.5 to the record's value; else a roll of
+   0.25 .. 0.5 above the record's value runs the laboratory scene he_LabIncident with the research state
+   (ahm_ResearchState), otherwise the value changes by the state: 1 -0.1 .. -0.2, 2 -0.1 .. -0.25, 3 / 4 -0.1 .. -0.3,
+   none +0.05 .. +0.2 (ahm_SendAddValue); then the event goes on (cm_SendExSetHE 0) */
+void he_RunAlchemistDay(int ev)
 {
-    char *c;
-    int day, st, h, v;
-    float f;
-    int a, b;
+    AIJOB *e = (AIJOB *)ev;
+    HEAHMDAY *d = (HEAHMDAY *)ev;
+    AICHAR *c;
+    AHMREC *rec;
+    float done;
+    int id;
+    float delta;
+    int season, state;
 
-    day = gm_ClockSeason((void *)(unsigned)&ai_Time);
-    h = (day + 1) % 4;
-    c = (char *)gm_FindChar(*(int *)(ev + 0xc));
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
+    season = (gm_ClockSeason(&ai_Time) + 1) % 4;
+    c = (AICHAR *)gm_FindChar(e->netId);
+    if (e->stage == -1 || e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    if (c == 0 || ahm_HasRecord(c) == 0 || *(int *)(ev + 0x70) == -2 || *(int *)(ev + 0x70) == -1) {
+    if (c == 0 || ahm_HasRecord((char *)c) == 0 || e->stage == -2 || e->stage == -1) {
         cm_SendExSetHE(-1, ev);
         return;
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x52) += 1;
-    *(unsigned short *)(ev + 0x56) = util_Random((int)(*(float *)((unsigned)&gm_DayEndHours + h * 4) - *(float *)((unsigned)&gm_DayStartHours + h * 4))) +
-                                     (int)*(float *)((unsigned)&gm_DayStartHours + h * 4);
-    *(int *)(ev + 0x58) = util_Random(4) * 15;
-    if (*(int *)(ev + 0xac) != 0) {
-        f = (util_RandomF() + *(float *)(unsigned)&ai_FloatOne) * 0.25f;
-        ahm_SendAddValue(c, f);
-        *(int *)(ev + 0xac) = 0;
+    rec = c->bld->ahm;
+    e->end = ai_Time;
+    e->end.year++;
+    e->end.hour = util_RandomU((int)(gm_DayEndHours[season] - gm_DayStartHours[season])) + (int)gm_DayStartHours[season];
+    e->end.min = util_RandomU(4) * 15;
+    if (d->bonus != 0) {
+        ahm_SendAddValue((char *)c, (util_RandomF() + ai_FloatOne) * 0.25f);
+        d->bonus = 0;
         cm_SendExSetHE(0, ev);
         return;
     }
-    v = ahm_ResearchState(*(int *)(c + 0x16c), &b, &a, 1);
-    f = (util_RandomF() + *(float *)(unsigned)&ai_FloatOne) * 0.25f;
-    if (f <= *(float *)(*(int *)(*(int *)(c + 0x16c) + 0x65) + 4)) {
-        switch (v) {
-        case 1:
-            f = -(util_RandomF() + *(float *)(unsigned)&ai_FloatOne) * (0.100000001f);
-            break;
-        case 2:
-            f = -(util_RandomF() * (0.150000006f) + (0.100000001f));
-            break;
-        case 3:
-        case 4:
-            f = -(util_RandomF() * 0.2f + (0.100000001f));
-            break;
-        default:
-            f = util_RandomF() * (0.150000006f) + (0.0500000007f);
-            break;
-        }
-        ahm_SendAddValue(c, f);
-    } else {
-        he_Unk56e070(c, ev, *(void **)(c + 0x16c), v);
+    state = ahm_ResearchState(c->bld, &id, &done, 1);
+    if ((util_RandomF() + ai_FloatOne) * 0.25f > rec->value) {
+        he_LabIncident((char *)c, ev, (unsigned char *)c->bld, state);
+        cm_SendExSetHE(0, ev);
+        return;
     }
+    switch (state) {
+    case 1:
+        delta = -((util_RandomF() + ai_FloatOne) * 0.1f);
+        break;
+    case 2:
+        delta = -(util_RandomF() * 0.15f + 0.1f);
+        break;
+    case 3:
+    case 4:
+        delta = -(util_RandomF() * 0.2f + 0.1f);
+        break;
+    default:
+        delta = util_RandomF() * 0.15f + 0.05f;
+        break;
+    }
+    ahm_SendAddValue((char *)c, delta);
     cm_SendExSetHE(0, ev);
 }
 
@@ -22388,7 +22401,7 @@ void ai_DomizilMessagePlace(int param_1, int param_2, int param_3, int param_4);
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);
 
 /* 0x56e070, the scene action of the research event 0x98 (ROUGH, the selection array of the original is not recovered): only for a building of the kind 0x1e (the kind record 0x7e3f30 + kind * 0x24d); bools: a task running 0x24b / 0x256 / 0x266 with its +0x1c = 0, the building's +0x5c above 10, a running effect in the +0x65 record (six 8-byte entries: int at +0xc, float at +0x10 above 0.2); a random pick of five candidates (start random(4) + 1) drives the action: 1 a random job 0x4c3ba0 / 0x4c3c00 (1, 0x1c / 0x20) / 0x4c49a0 and 0x5a9d60; 2 a task 0x4c3d00 (1, 0x5c, random) and 0x5a9ca0; 3 0x56fbc0 (c, random(3) + 1) and 0x5a9d00; 4 an effect from the +0x65 record reduced by a random 0.05 .. 0.15 (0x4ecc30 / 0x5a9dd0); the pick goes to +0xac of ev */
-void he_Unk56e070(char *c, int ev, unsigned char *b, int task)
+void he_LabIncident(char *c, int ev, unsigned char *b, int task)
 {
     int *rec;
     int h[3];
