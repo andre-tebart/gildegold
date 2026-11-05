@@ -237,7 +237,7 @@ void cm_SendChrStop(int a);                                                     
 void ai_Unk4c5260(int a, int b);                                                 /* 0x4c5260 */
 void ai_Unk4c52a0(int a, int b, int c);                                          /* 0x4c52a0 */
 int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const char *s2);  /* 0x4c52e0 */
-void ai_Unk4c5410(int a, const char *s, unsigned char c);                        /* 0x4c5410 */
+void cm_SendChrAnim(int a, const char *s, unsigned char c);                        /* 0x4c5410 */
 void cm_SendChrUseGates(int a, int b, int c);                                          /* 0x4c5460 */
 void cm_SendOwnership(int a, int b, int c);                                          /* 0x4c54a0 */
 void ai_Unk4c54e0(int a);                                                        /* 0x4c54e0 */

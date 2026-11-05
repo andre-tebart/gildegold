@@ -1675,7 +1675,7 @@ int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const c
 }
 /* 0x4c5410, message 0x37 with a name */
 
-void ai_Unk4c5410(int a, const char *s, unsigned char c)
+void cm_SendChrAnim(int a, const char *s, unsigned char c)
 {
     G17MSG m;
 

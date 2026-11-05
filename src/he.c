@@ -7476,187 +7476,199 @@ void he_AllocPatrol(int ev)
 int gm_MinutesBetween();
 int gm_PlayerFactor(int a, unsigned char k);
 void cm_SendChrStop(int a);
-void ai_Unk4c5410(int a, const char *s, unsigned char c);
+void cm_SendChrAnim(int a, const char *s, unsigned char c);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 unsigned char *gm_BuildQuery(int n, ...);
 char *gm_Query(void *list, int n, ...);
 
-/* 0x545840, a Ghidra miss (disassembled; 2224 B): the run handler of the patrol / raid event (see 0x545670, "STREIFE_INIT"; the figures +0xc4 .. +0xd0 are its guards, +0xac the target, +0xb0 the start, +0xb4 .. +0xc0 the way, +0xd8 the way index, +0xdc the round): state 0 = go to the target (0x4c52e0 with "Streife" / "Razzia"; "GOTO_TARGET: %i"), 1 = go to the start (the guards get their pay from the guard ranks: a sum of random rolls, the news 0x1a6a and the money 0x4c47e0; "GOTO_START: %i"), 2 = wait until the guards are idle (+0x128 of their job record), 3 = walk the way point (+0xb4 + 4 * +0xd8: a gesture "gestik/kopf_kratzen" / "gestik/durch_haar_fahr" / "gestik/kinn_kratzen" and the next way point; "GOTO_NEXT: %i"), 0x400 = the same wait as 2, entered when +0xd4 is set; when no guard is left the event ends (ROUGH) */
-void he_Unk545840(int ev)
+/* 0x545840, a Ghidra miss (disassembled): the run handler of the patrol event 0x43 (he_AllocPatrol); each stage
+   posts the next one with cm_SendExSetHE, due after gm_AddTime (hours, minutes, seconds). While none of the four
+   patrolGuards is found the event is put off a minute and ends (-1). Stage -2 runs stage 1 once and frees the event;
+   a set patrolWait enters stage 0x400. Stage 0 sends the guards with a scene character to the target building
+   ("Streife"; "GOTO_TARGET: %i", not shown; the others are dropped) -> 2; stage 2 / 0x400 wait while a guard's
+   scene character has actions queued (0x400 looks every 4 minutes and clears patrolWait) -> 3; stage 3 sends them
+   to the next way point (patrolStep) with a random gesture ("gestik/..." once or twice; "GOTO_NEXT: %i") -> 2, past
+   the last one counts patrolRound and starts at the target again -> 0, and 8 hours (0x1e0 minutes) after the start
+   turns home -> 1; stage 1 sends them to the start building's object 0x146 and pays the event's character for
+   each guard 3 .. 6 rolls of random(v * (v + 1)) + 2v, v = sk82 / 42 + 1 (gm_PlayerFactor of the sum: the news
+   0x1a6a and cm_SendMoveGoods; "GOTO_START: %i") -> -1, the end; a building not found ends it as well */
+void he_RunPatrol(int ev)
 {
-    char buf[0x78];
-    char names[3][0x20] = { "gestik/kopf_kratzen", "gestik/durch_haar_fahr", "gestik/kinn_kratzen" };
-    char text[0x100];
-    int i, gone = 0, st, flag = 0, t = 0, obj = 0, g, p, n = 0, sum = 0, val, k, v;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
+    AIOBJ *o;
+    AICHAR *c;
+    char line[0x40];
+    char text[0x200];
+    int i, k, v, pay;
+    int gone = 0, leaving = 0, paid, sum;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1) {
+    if (e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0) {
-        if (st == -2)
+    if (e->opts & 4) {
+        if (e->stage == -2)
             he_FreeEvent((int *)ev);
         return;
     }
     for (i = 0; i < 4; i++) {
-        if (gm_FindChar(*(int *)(ev + 0xc4 + i * 4)) != 0)
+        if (gm_FindChar(e->patrolGuards[i]) != 0)
             break;
         gone++;
     }
     if (gone == 4) {
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if (*(int *)(ev + 0x70) == -2) {
-        flag = 1;
-        *(int *)(ev + 0x70) = 1;
+    if (e->stage == -2) {
+        leaving = 1;
+        e->stage = 1;
     }
-    if (*(int *)(ev + 0xd4) != -1)
-        *(int *)(ev + 0x70) = 0x400;
-    switch (*(int *)(ev + 0x70)) {
+    if (e->patrolWait != -1)
+        e->stage = 0x400;
+    switch (e->stage) {
     case 0:
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        if (t == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolTarget);
+        if (b == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 4; i++) {
-            g = *(int *)(ev + 0xc4 + i * 4);
-            if (g != -1) {
-                p = gm_FindChar(g);
-                if (p != 0 && *(int *)(p + 0x184) != 0) {
-                    sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                    cm_SendChrStop(g);
-                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), -1, 0, 1, "Streife");
-                } else {
-                    *(int *)(ev + 0xc4 + i * 4) = -1;
-                }
+            if (e->patrolGuards[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
+            if (c != 0 && c->scene != 0) {
+                sv_MoveToGroup(0, 0, c->id, ev);
+                cm_SendChrStop(e->patrolGuards[i]);
+                cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, -1, 0, 1, "Streife");
+            } else {
+                e->patrolGuards[i] = -1;
             }
         }
-        sprintf(buf, "GOTO_TARGET: %i", *(int *)(t + 1));
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        sprintf(line, "GOTO_TARGET: %i", b->id);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 1:
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-        if (t == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolStart);
+        if (b == 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        obj = gm_Query(*(int *)(t + 0x5d), 1, 0, 0x146);
+        o = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, 0x146);
+        paid = 0;
+        sum = 0;
         for (i = 0; i < 4; i++) {
-            g = *(int *)(ev + 0xc4 + i * 4);
-            if (g != -1) {
-                p = gm_FindChar(g);
-                if (p != 0 && *(int *)(p + 0x184) != 0) {
-                    val = (int)((float)*(unsigned char *)(p + 0x82) * 0.023809524f + 1.0f);
-                    k = (unsigned short)util_Random(4) + 3;
-                    for (; k > 0; k--)
-                        sum += (unsigned short)util_Random((val + 1) * val) + val * 2;
-                    n++;
-                    cm_SendChrStop(g);
-                    cm_SendChrGotoBuilding(g, *(int *)(t + 1), *(int *)(obj + 2), 0, 0, "Streife");
-                    sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                } else {
-                    *(int *)(ev + 0xc4 + i * 4) = -1;
-                }
+            if (e->patrolGuards[i] == -1)
+                continue;
+            c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
+            if (c != 0 && c->scene != 0) {
+                v = (int)((float)c->sk82 * 0.023809524f + ai_FloatOne);
+                for (k = (unsigned short)util_Random(4) + 3; k > 0; k--)
+                    sum += (unsigned short)util_Random((v + 1) * v) + v * 2;
+                paid++;
+                cm_SendChrStop(e->patrolGuards[i]);
+                cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, o->objId, 0, 0, "Streife");
+                sv_MoveToGroup(0, 0, c->id, ev);
+            } else {
+                e->patrolGuards[i] = -1;
             }
         }
-        if (flag) {
+        if (leaving) {
             he_FreeEvent((int *)ev);
             return;
         }
-        if (n != 0) {
-            v = gm_PlayerFactor(sum, U_I((unsigned)&ai_OwnPlayer) & 0xff);
-            txt_Format(text, 0x1a6a, v);
-            he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(t + 1), -1, 0, (char *)0);
-            cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
+        if (paid != 0) {
+            pay = gm_PlayerFactor(sum, ai_OwnPlayer);
+            txt_Format(text, 0x1a6a, pay);
+            he_MessageBoxQuickjump(ai_CharInts[e->chr][0], -1, text, 0, 0x5ec, b->id, -1, 0, (char *)0);
+            cm_SendMoveGoods(ai_CharInts[e->chr][0], -1, ai_OwnPlayer, pay);
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        sprintf(buf, "GOTO_START: %i", *(int *)(t + 1));
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        sprintf(line, "GOTO_START: %i", b->id);
         return;
     case 2:
         for (i = 0; i < 4; i++) {
-            g = *(int *)(ev + 0xc4 + i * 4);
-            if (g != -1 && (p = gm_FindChar(g)) != 0 && *(int *)(p + 0x184) != 0 && *(int *)(*(int *)(p + 0x184) + 0x128) != 0)
+            if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
+                && c->scene->actions != 0)
                 return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(3, ev);
         return;
     case 0x400:
         for (i = 0; i < 4; i++) {
-            g = *(int *)(ev + 0xc4 + i * 4);
-            if (g != -1 && (p = gm_FindChar(g)) != 0 && *(int *)(p + 0x184) != 0 && *(int *)(*(int *)(p + 0x184) + 0x128) != 0)
-                goto busy;
-        }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0xd4) = -1;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
-        return;
-    busy:
-        gm_AddTime(ev + 0x52, 0, 4, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0x400, ev);
-        return;
-    case 3:
-        if (*(int *)(ev + 0xd8) <= 3 && *(int *)(ev + 0xb4 + *(int *)(ev + 0xd8) * 4) != -1) {
-            if (gm_MinutesBetween(ev + 0x44, (unsigned)&ai_Time) > 0x1e0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0, 2, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+            if (e->patrolGuards[i] != -1 && (c = (AICHAR *)gm_FindChar(e->patrolGuards[i])) != 0 && c->scene != 0
+                && c->scene->actions != 0) {
+                gm_AddTime(&e->end, 0, 4, 0);
+                e->exSlot = cm_SendExSetHE(0x400, ev);
                 return;
             }
-            t = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4 + *(int *)(ev + 0xd8) * 4));
-            *(int *)(ev + 0xd8) = *(int *)(ev + 0xd8) + 1;
-            if (t == 0) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                gm_AddTime(ev + 0x52, 0, 2, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        }
+        e->end = ai_Time;
+        e->patrolWait = -1;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(3, ev);
+        return;
+    case 3:
+        if (e->patrolStep <= 3 && e->patrolWay[e->patrolStep] != -1) {
+            if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHE(1, ev);
+                return;
+            }
+            b = (AIBLD *)gm_BuildQuery(1, 1, e->patrolWay[e->patrolStep]);
+            e->patrolStep++;
+            if (b == 0) {
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 2, 0);
+                e->exSlot = cm_SendExSetHE(1, ev);
                 return;
             }
             for (i = 0; i < 4; i++) {
-                g = *(int *)(ev + 0xc4 + i * 4);
-                if (g != -1) {
-                    p = gm_FindChar(g);
-                    if (p != 0 && *(int *)(p + 0x184) != 0) {
-                        sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-                        cm_SendChrStop(g);
-                        cm_SendChrGotoBuilding(g, *(int *)(t + 1), -1, 0, 1, "Streife");
-                        k = (unsigned short)util_Random(2) + 1;
-                        ai_Unk4c5410(g, names[(unsigned short)util_Random(3)], k);
-                    } else {
-                        *(int *)(ev + 0xc4 + i * 4) = -1;
-                    }
+                if (e->patrolGuards[i] == -1)
+                    continue;
+                c = (AICHAR *)gm_FindChar(e->patrolGuards[i]);
+                if (c != 0 && c->scene != 0) {
+                    char gestures[3][0x20] = { "gestik/kopf_kratzen", "gestik/durch_haar_fahr", "gestik/kinn_kratzen" };
+
+                    sv_MoveToGroup(0, 0, c->id, ev);
+                    cm_SendChrStop(e->patrolGuards[i]);
+                    cm_SendChrGotoBuilding(e->patrolGuards[i], b->id, -1, 0, 1, "Streife");
+                    k = (unsigned short)util_Random(2) + 1;
+                    cm_SendChrAnim(e->patrolGuards[i], gestures[(unsigned short)util_Random(3)], k);
+                } else {
+                    e->patrolGuards[i] = -1;
                 }
             }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
-            sprintf(buf, "GOTO_NEXT: %i", *(int *)(t + 1));
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(2, ev);
+            sprintf(line, "GOTO_NEXT: %i", b->id);
             return;
         }
-        if (gm_MinutesBetween(ev + 0x44, (unsigned)&ai_Time) > 0x1e0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        if (gm_MinutesBetween(&e->start, &ai_Time) > 0x1e0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(1, ev);
             return;
         }
-        *(int *)(ev + 0xd8) = 0;
-        *(char *)(ev + 0xdc) = *(char *)(ev + 0xdc) + 1;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
-        return;
-    default:
+        e->patrolStep = 0;
+        e->patrolRound++;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(0, ev);
         return;
     }
 }
@@ -8547,27 +8559,27 @@ int he_Unk551440(unsigned char *slot, int n, int m)
     return 0;
 }
 
-void ai_Unk4c5410(int a, const char *s, unsigned char c);
+void cm_SendChrAnim(int a, const char *s, unsigned char c);
 
 /* 0x5516a0, queues a random animation on a person (+4 the figure; random 0x42ec00(4) & 0xffff, jump table 0x551764): 0 = 0x626fd0, 1 = 0x626fbc then 0x626fd0, 2 = 0x626a4c then 0x626fd0, 3 = 0x6268c8, 0x626fbc, 0x626fd0 (all with 0x4c5410 (id, name, 1)) */
 void he_Unk5516a0(int p)
 {
     switch ((unsigned short)util_Random(4)) {
     case 0:
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     case 1:
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/herranwinken", 1);
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/herranwinken", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     case 2:
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/kinn_kratzen", 1);
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/kinn_kratzen", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     case 3:
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/durch_haar_fahr", 1);
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/herranwinken", 1);
-        ai_Unk4c5410(*(int *)(p + 4), "gestik/haende_reiben", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/durch_haar_fahr", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/herranwinken", 1);
+        cm_SendChrAnim(*(int *)(p + 4), "gestik/haende_reiben", 1);
         break;
     }
 }
@@ -9363,7 +9375,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x42, (void *)he_Unk5455e0, (void *)he_Unk545640) != 0)
         return 1;
-    if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_Unk545840) != 0)
+    if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_RunPatrol) != 0)
         return 1;
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_Unk5461c0) != 0)
@@ -9551,7 +9563,7 @@ void he_EndPersonEvents(unsigned short *p)
     }
 }
 
-void ai_Unk4c5410(int a, const char *s, unsigned char c);
+void cm_SendChrAnim(int a, const char *s, unsigned char c);
 int cm_SendChrGotoBuilding();
 void cm_SendChrStop(int a);
 
@@ -9603,9 +9615,9 @@ int he_Unk553ae0(int *q)
             continue;
         cm_SendChrStop(h);
         if (*(int *)(pp + 4) == h)
-            ai_Unk4c5410(h, "gestik/herranwinken", 2);
+            cm_SendChrAnim(h, "gestik/herranwinken", 2);
         cm_SendChrGotoBuilding(h, *(int *)(q[0] + 1), -1, 0, 1, "Detected");
-        ai_Unk4c5410(h, "gestik/abfaellig", (unsigned short)util_Random(2) + 1);
+        cm_SendChrAnim(h, "gestik/abfaellig", (unsigned short)util_Random(2) + 1);
     }
     *(int *)(best + 0xd4) = *(int *)(q[2] + 4);
     *(AITIME *)(best + 0x52) = ai_Time;
@@ -13229,7 +13241,7 @@ void he_Unk566830(int ev)
             sv_MoveToGroup(b, *(unsigned short *)p, 0, ev);
             cm_SendChrStop(*slot);
             cm_SendChrGotoBuilding(*slot, *(int *)(b + 1), -1, 0, 0, (unsigned)&full_data_627d74);
-            ((void (*)(int, const char *))ai_Unk4c5410)(*slot, names[(unsigned short)((int (*)(int, int))util_Random)(3, 1)]);
+            ((void (*)(int, const char *))cm_SendChrAnim)(*slot, names[(unsigned short)((int (*)(int, int))util_Random)(3, 1)]);
         }
         *(int *)(ev + 0x70) = 5;
         *(AITIME *)(ev + 0x52) = ai_Time;
@@ -18535,7 +18547,7 @@ void *gm_GetGebaeudeHauptraum(unsigned char *b); /* 0x501ce0 */
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g); /* 0x524260, the group register */
 void cm_SendChrStop(int a); /* 0x4c5230 */
 int cm_SendChrGotoBuilding();                 /* 0x4c52e0 */
-void ai_Unk4c5410(int a, const char *s, unsigned char c); /* 0x4c5410 */
+void cm_SendChrAnim(int a, const char *s, unsigned char c); /* 0x4c5410 */
 int sv_IsAtDoor();                 /* 0x524770 */
 void ai_Unk575030();                /* 0x575030 */
 
