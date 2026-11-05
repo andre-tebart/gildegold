@@ -1076,8 +1076,24 @@ typedef struct HEAHMDAY {               /* the alchemist's daily laboratory even
                                            he_RunAlchemistDay) */
     char pad00[0xac];
     int bonus;                          /* 0xac, nonzero: the next run adds a bonus to the alchemist record's value
-                                           instead of the roll (0 at the start; its setter is not read yet) */
+                                           instead of the roll (0 at the start; he_LabIncident sets it to the mishap it ran) */
 } HEAHMDAY;
+typedef struct HESECRETROOM {           /* the secret room event 0x99's words over AIJOB's union (am.c ai_ExecSecretRoom0 .. 3
+                                           post it; he_AllocSecretRoom / he_RunSecretRoom) */
+    char pad00[0xac];
+    int target;                         /* 0xac, the id of the building the agent goes to (of the way 3: the spied
+                                           building of the spy hunted, or one ai_PickActionBuilding picks) */
+    int home;                           /* 0xb0, the id of the secret room's building: the agent is spawned there and
+                                           goes back to it */
+    int victim;                         /* 0xb4, the netId of the character the deed is against */
+    int agent;                          /* 0xb8, the netId of the agent ("ASSASSIN", spawned by he_AllocSecretRoom) */
+    int way;                            /* 0xbc, 1 an attack, 2 an accusation, 3 a spy hunt ("Spy Killer"), 4 the domicile
+                                           event (am.c's ways 1, 2, 3, 0) */
+    int strength;                       /* 0xc0, of an attack the strength (he_SecretRoomAttack; the news 0x4007 + it) */
+    int spyEvent;                       /* 0xc4, of a spy hunt the id of the spying event followed, -1: none */
+    int hunting;                        /* 0xc8, of a spy hunt 1 while it follows a spy, 0 while it searches */
+    int walkSlot;                       /* 0xcc, the cm slot of the agent's spawn, then of its walk; -1: none */
+} HESECRETROOM;
 typedef struct HECHILDLIST {            /* the children of a scene object, collected by he_CollectChild */
     D3OBJECT *root;                     /* 0x000, the object walked */
     D3OBJECT *items[0x40];              /* 0x004 */
@@ -22513,8 +22529,8 @@ void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
     }
 }
 
-void he_Unk56e460();
-void he_Unk56e5b0();
+void he_AllocSecretRoom();
+void he_RunSecretRoom();
 void he_AllocEvent9a();
 void he_RunDomizilEvent();
 void he_Unk56f050();
@@ -22522,7 +22538,7 @@ void he_Unk56f050();
 /* 0x56e400, registers the event types 0x99 .. 0x9b (called by 0x53d4b0): the pairs (0x56e460, 0x56e5b0), (0x56efc0, 0x56f040) and (0x56f050, 0x56f0b0); 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypes99(void)
 {
-    if (he_SetEventHandlers(0x99, (void *)he_Unk56e460, (void *)he_Unk56e5b0) == 0) {
+    if (he_SetEventHandlers(0x99, (void *)he_AllocSecretRoom, (void *)he_RunSecretRoom) == 0) {
         if (he_SetEventHandlers(0x9a, (void *)he_AllocEvent9a, (void *)ai_Unk56f040) == 0) {
             if (he_SetEventHandlers(0x9b, (void *)he_Unk56f050, (void *)he_RunDomizilEvent) == 0)
                 return 0;
@@ -22535,7 +22551,7 @@ int he_RegisterEventTypes99(void)
 void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsigned char e, unsigned char f, const char *s);
 
 /* 0x56e460, the alloc of the event 0x99 (not while paused, flags +0x78 & 4): when another event of the type 0x99 of the same player (+8) already runs, this one only announces the text 0x3ff7 (0x5176d0 / 0x53dda0), schedules with the handle -1 (0x4c4c60 ( -1, ev) into +0x84) and frees; else the start clock +0x44 and the due clock +0x52 = now, due 1, +0xcc = the notification 0x4c59f0 (0xd, ev's +0xb0, -1, 0x2d, 0, 0, the text 0x628dc8) and the handler scheduled (0x4c4c60 (0, ev)) into +0x84 */
-void he_Unk56e460(int ev)
+void he_AllocSecretRoom(int ev)
 {
     char text[0x400];
     int r;
@@ -22563,222 +22579,262 @@ int gm_MinutesBetween();                 /* 0x4fe280 */
 void cm_SendKillCharacter(int a, int b); /* 0x4c4e00 */
 void cm_SendChrStop(int a); /* 0x4c5230 */
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
-int he_Unk56f1b0();                 /* 0x56f1b0 */
+int he_SecretRoomAccuse();                 /* 0x56f1b0 */
 int he_Unk56f260();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
-int he_Unk56f2e0();                 /* 0x56f2e0 */
+int he_SecretRoomAttack();                 /* 0x56f2e0 */
 int he_NoEvent9bFor();                 /* 0x56f3b0 */
-int he_Unk56f3f0();                 /* 0x56f3f0 */
-int he_Unk56f3f0();                 /* 0x56f3f0 */
-int he_Unk56f600();                 /* 0x56f600 */
-int he_Unk56f740();                 /* 0x56f740 */
+int he_SecretRoomDomizil();                 /* 0x56f3f0 */
+int he_SecretRoomDomizil();                 /* 0x56f3f0 */
+int he_FindNearestSpying();                 /* 0x56f600 */
+int he_SecretRoomCatchSpy();                 /* 0x56f740 */
 int gm_FindById();                 /* 0x4fea50 */
 void cm_SendChrStop(int a); /* 0x4c5230 */
 void ai_Unk56f040(int *r);          /* 0x56f040 */
 
-/* 0x56e5b0, the run of the event 0x99 (the construction run): the states -1 / -2 free the event (with the text 0x628dd4 to the player when the state is -1); paused or with the handle +0x84 still active it does nothing. State 0 waits for the notification +0xcc (0x4c3ae0 / 0x4c3b10: the building kind into +0xb8); kind 3 schedules state 6, else the text 0x628dc8 (0x4c52e0) and state 1. States 1 / 3 look up the building of +0xb8 (0x505df0, done = [0x184]+0x128); while it is not done they wait (0 / 4 minutes); when it is, the checks 0x56f2e0 / 0x56f1b0 / 0x56f3f0 pick the texts 0x4004 .. 0x401a (0x5176d0 / 0x53dda0) and state 4. State 4 the text 0x628dc8 and state 5. State 5 waits until the building is done, then waits the rest of the run time (0x21c / 0xb40 / 0x5a0 seconds by the kind +0xbc, at least 5) and frees. State 6 the domicile search 0x56f600 (state 7; else the action 0x4a63f0 and state 6), state 7 the search 0x56f740 (state 6 / 7) */
-void he_Unk56e5b0(int ev)
+/* 0x56e5b0, the run handler of the secret room event 0x99 (alloc he_AllocSecretRoom): the stages -1 / -2 remove the
+   agent (opts & 2) and, at -1, tell the event's character (text 0x3ff9, the news "_NACHRICHTEN_DOMIZIL_08") and free
+   the event; a paused event or one whose cm slot is still busy waits. Stage 0 takes the spawned agent from its cm
+   slot: the spy hunt (way 3) goes on with stage 6, else the agent walks to the target building (stage 1). Stage 1
+   waits 4 minutes while the agent walks, then an hour at the target (stage 3); stage 3 does the deed by the way
+   (1 he_SecretRoomAttack, 2 he_SecretRoomAccuse, 3 the spy hunt again, 4 he_SecretRoomDomizil) with its news, and
+   stage 4 sends the agent home (stage 5); stage 5 waits until it is there, removes it and ends the event after the
+   rest of the way's time (way 2 0x21c minutes, way 4 0xb40, else 0x5a0; at least 5). The spy hunt: stage 6 follows
+   the nearest spy (he_FindNearestSpying: stage 7) or walks to a picked building (stage 6 again in 15 minutes),
+   stage 7 tries to catch it (he_SecretRoomCatchSpy); after 0x5a0 minutes it goes home (stage 4). A lost agent ends
+   the event.
+   @deep reconstructed against the whole original (756 vs 756 instructions, switch tables equal): typed as
+   AIJOB + HESECRETROOM (the secret room event 0x99 of am.c's ai_ExecSecretRoom0..3), the string literals,
+   stage 0 not storing the walk's cm_SendExSetHE(1), stage 1 ending without falling into stage 3, the way-2
+   news per branch, the stage-5 time table (way 2 0x21c, way 4 0xb40, else 0x5a0), stage 7's AddTime(0, 6,
+   0) and its three-way result, the ai_PickActionBuilding mask as the lo/hi union, returns as the
+   original's 11 rets. Left: scheduling only: one 14-byte ai_Time copy of stage 6's lost-agent path
+   (+0x6f0: ours lea eax,[esi+0x52] before the ai_Time load and stores through eax, the original loads
+   first and stores the first dword through [esi+0x52]) and two order hunks (+0x211, +0x624). */
+void he_RunSecretRoom(int ev)
 {
     char text[0x100];
-    char *per;
-    int r, e, k;
+    AIJOB *e = (AIJOB *)ev;
+    HESECRETROOM *s = (HESECRETROOM *)ev;
+    AICHAR *per, *agent, *victim;
+    AIBLD *bld;
+    AIJOB *spy;
+    int minutes, rest, caught;
+    union { struct { unsigned int lo, hi; } s; __int64 q; } kinds;
 
-    if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2) {
-        if (*(unsigned char *)(ev + 0x78) & 2) {
-            if (gm_FindChar(HM_I(ev, 0xb8)) != 0)
-                cm_SendKillCharacter(HM_I(ev, 0xb8), 1);
-            if (HM_I(ev, 0x70) == -1)
-                he_ShowNews(U_I((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, (char *)U_I((unsigned)&full_data_144a1a4), 1, 0x5fa,
-                             (char *)(unsigned)&full_data_628dd4);
+    if (e->stage == -1 || e->stage == -2) {
+        if (e->opts & 2) {
+            if (gm_FindChar(s->agent) != 0)
+                cm_SendKillCharacter(s->agent, 1);
+            if (e->stage == -1)
+                he_ShowNews(ai_CharsT[e->chr].netId, -1, txt_Ptrs[0x3ff9], 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_08");
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    if (HM_I(ev, 0x84) != -1 && cm_GetSlotState(HM_I(ev, 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    HM_I(ev, 0x84) = -1;
-    per = (char *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
-    switch (HM_I(ev, 0x70)) {
+    e->exSlot = -1;
+    per = &ai_CharsT[e->chr];
+    switch (e->stage) {
     case 0:
-        if (cm_GetSlotState(HM_I(ev, 0xcc)) == 1 && (r = cm_GetSlotValue(HM_I(ev, 0xcc))) != 0) {
-            HM_I(ev, 0xb8) = HM_I(r, 4);
-            if (HM_I(ev, 0xbc) == 3) {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
-            } else if ((e = gm_BuildQuery(1, 1, HM_I(ev, 0xac))) != 0) {
-                *(int *)(ev + 0xcc) = cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(e, 1), -1, 0, 1, (char *)(unsigned)&full_data_628dc8);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-            } else {
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        if (cm_GetSlotState(s->walkSlot) == 1 && (agent = (AICHAR *)cm_GetSlotValue(s->walkSlot)) != 0) {
+            s->agent = agent->netId;
+            if (s->way == 3) {
+                e->end = ai_Time;
+                e->exSlot = cm_SendExSetHE(6, ev);
+                return;
             }
-        } else
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+            if ((bld = (AIBLD *)gm_BuildQuery(1, 1, s->target)) == 0) {
+                e->end = ai_Time;
+                e->exSlot = cm_SendExSetHE(-1, ev);
+                return;
+            }
+            s->walkSlot = cm_SendChrGotoBuilding(agent->netId, bld->id, -1, 0, 1, "ASSASSIN");
+            cm_SendExSetHE(1, ev);
+            return;
+        }
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 1:
-        HM_I(ev, 0xcc) = -1;
-        r = gm_FindChar(HM_I(ev, 0xb8));
-        if (r != 0 && HM_I(HM_I(r, 0x184), 0x128) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 4, 0);
+        s->walkSlot = -1;
+        agent = (AICHAR *)gm_FindChar(s->agent);
+        if (agent == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        if (r == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        if (agent->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
             return;
         }
-        if (gm_BuildQuery(1, 1, HM_I(ev, 0xac)) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+        if (gm_BuildQuery(1, 1, s->target) != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 1, 0, 0);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        /* falls through to case 3 */
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        return;
     case 3:
-        r = gm_FindChar(HM_I(ev, 0xb8));
-        if (r == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        agent = (AICHAR *)gm_FindChar(s->agent);
+        if (agent == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        k = gm_FindChar(HM_I(ev, 0xb4));
-        e = gm_BuildQuery(1, 1, HM_I(ev, 0xb0));
-        if (per != 0 && k != 0 && e != 0) {
-            switch (HM_I(ev, 0xbc) - 1) {
-            case 0:
-                if (he_Unk56f2e0(per, k, HM_I(ev, 0xc0)) != 0) {
-                    txt_Format(text, 0x4004, *(unsigned short *)k);
-                    he_ShowNews(HM_I(per, 4), -1, text, 1, 0x5fa, (char *)(unsigned)&full_data_628e28);
-                    txt_Format(text, 0x4006, HM_I(ev, 0xc0) + 0x4007);
-                    he_ShowNews(HM_I(k, 4), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e10);
+        victim = (AICHAR *)gm_FindChar(s->victim);
+        bld = (AIBLD *)gm_BuildQuery(1, 1, s->home);
+        if (per != 0 && victim != 0 && bld != 0) {
+            switch (s->way) {
+            case 1:
+                if (he_SecretRoomAttack(per, victim, s->strength) != 0) {
+                    txt_Format(text, 0x4004, victim->id);
+                    he_ShowNews(per->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_06");
+                    txt_Format(text, 0x4006, s->strength + 0x4007);
+                    he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
                 } else {
-                    txt_Format(text, 0x4005, *(unsigned short *)k);
-                    he_ShowNews(HM_I(per, 4), -1, text, 1, 0x5fa, (char *)(unsigned)&full_data_628df8);
+                    txt_Format(text, 0x4005, victim->id);
+                    he_ShowNews(per->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_DOMIZIL_07");
                     txt_Format(text, 0x400a);
-                    he_ShowNews(HM_I(k, 4), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e10);
+                    he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_09");
                 }
                 break;
-            case 1:
-                if (he_Unk56f1b0(per, k, HM_I(ev, 0xc0)) != 0)
-                    txt_Format(text, 0x4019, 0x400c, *(unsigned short *)k, *(unsigned short *)k);
-                else
-                    txt_Format(text, 0x401a, 0x400c, *(unsigned short *)k, *(unsigned short *)k);
-                he_ShowNews(HM_I(per, 4), -1, text, 1, 0x5fa, 0);
-                break;
             case 2:
-                *(AITIME *)(ev + 0x52) = ai_Time;
-                HM_I(ev, 0xc4) = -1;
-                HM_I(ev, 0xc8) = 0;
-                *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
+                if (he_SecretRoomAccuse(per, victim, s->strength) != 0) {
+                    txt_Format(text, 0x4019, 0x400c, victim->id, victim->id);
+                    he_ShowNews(per->netId, -1, text, 1, 0x5fa, 0);
+                } else {
+                    txt_Format(text, 0x401a, 0x400c, victim->id, victim->id);
+                    he_ShowNews(per->netId, -1, text, 1, 0x5fa, 0);
+                }
                 break;
             case 3:
-                he_Unk56f3f0(HM_I(e, 1), k);
+                e->end = ai_Time;
+                s->spyEvent = -1;
+                s->hunting = 0;
+                e->exSlot = cm_SendExSetHE(6, ev);
+                break;
+            case 4:
+                he_SecretRoomDomizil(bld->id, victim);
                 break;
             }
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 4:
-        r = gm_FindChar(HM_I(ev, 0xb8));
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        if (r == 0)
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        else {
-            *(int *)(ev + 0xcc) = cm_SendChrGotoBuilding(HM_I(ev, 0xb0), HM_I(ev, 0xb8), -1, 0, 0, (char *)(unsigned)&full_data_628dc8);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(5, ev);
+        agent = (AICHAR *)gm_FindChar(s->agent);
+        e->end = ai_Time;
+        if (agent == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
         }
+        s->walkSlot = cm_SendChrGotoBuilding(s->agent, s->home, -1, 0, 0, "ASSASSIN");
+        e->exSlot = cm_SendExSetHE(5, ev);
         return;
     case 5:
-        r = gm_FindChar(HM_I(ev, 0xb8));
-        if (r == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        agent = (AICHAR *)gm_FindChar(s->agent);
+        if (agent == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        if (HM_I(HM_I(r, 0x184), 0x128) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 4, 0);
+        if (agent->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
             return;
         }
-        e = gm_MinutesBetween(ev + 0x44, &ai_Time);
-        switch (HM_I(ev, 0xbc) - 1) {
+        minutes = gm_MinutesBetween(&e->start, &ai_Time);
+        switch (s->way) {
         case 1:
-            k = 0x21c;
+            rest = 0x5a0;
             break;
         case 2:
-            k = 0xb40;
+            rest = 0x21c;
+            break;
+        case 3:
+            rest = 0x5a0;
+            break;
+        case 4:
+            rest = 0xb40;
             break;
         default:
-            k = 0x5a0;
+            rest = 0x5a0;
             break;
         }
-        k -= e;
-        if (k <= 5)
-            k = 5;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, k / 60, k % 60, 0);
-        cm_SendKillCharacter(HM_I(ev, 0xb8), 1);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        minutes = rest - minutes;
+        if (minutes <= 5)
+            minutes = 5;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, minutes / 60, minutes % 60, 0);
+        cm_SendKillCharacter(s->agent, 1);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 6:
-        e = gm_MinutesBetween(ev + 0x44, &ai_Time);
-        if (e > 0x5a0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
+        if (gm_MinutesBetween(&e->start, &ai_Time) > 0x5a0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(4, ev);
             return;
         }
-        r = gm_FindChar(HM_I(ev, 0xb8));
-        if (r == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        agent = (AICHAR *)gm_FindChar(s->agent);
+        if (agent == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        if ((k = he_Unk56f600(per, r, HM_I(ev, 0xc4))) != 0) {
-            HM_I(ev, 0xac) = HM_I(k, 0xb4);
-            HM_I(ev, 0xc4) = HM_I(k, 4);
-            HM_I(ev, 0xc8) = 1;
-            cm_SendChrStop(HM_I(r, 4));
-            cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 5, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
+        if ((spy = (AIJOB *)he_FindNearestSpying(per, agent, s->spyEvent)) != 0) {
+            s->target = ((HESPYING *)spy)->at;
+            s->spyEvent = spy->id;
+            s->hunting = 1;
+            cm_SendChrStop(agent->netId);
+            cm_SendChrGotoBuilding(agent->netId, s->target, -1, 0, 1, "Spy Killer");
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            e->exSlot = cm_SendExSetHE(7, ev);
         } else {
-            AI_4A63F0_7(per, 0, 0xa7f4c7a0, 1, 0, 100.0f, (int *)(ev + 0xac));
-            HM_I(ev, 0xc4) = -1;
-            HM_I(ev, 0xc8) = 0;
-            cm_SendChrStop(HM_I(r, 4));
-            cm_SendChrGotoBuilding(HM_I(r, 4), HM_I(ev, 0xac), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 0xf, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
+            kinds.s.lo = 0xa7f4c7a0;
+            kinds.s.hi = 1;
+            ai_PickActionBuilding((struct AIPER *)per, 0, kinds.q, 0.0f, 100.0f, &s->target);
+            s->spyEvent = -1;
+            s->hunting = 0;
+            cm_SendChrStop(agent->netId);
+            cm_SendChrGotoBuilding(agent->netId, s->target, -1, 0, 1, "Spy Killer");
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 0xf, 0);
+            e->exSlot = cm_SendExSetHE(6, ev);
         }
         return;
     case 7:
-        e = gm_MinutesBetween(ev + 0x44, &ai_Time);
-        r = gm_FindChar(HM_I(ev, 0xb8));
-        if (r == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        minutes = gm_MinutesBetween(&e->start, &ai_Time);
+        agent = (AICHAR *)gm_FindChar(s->agent);
+        if (agent == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        if (e > 0x5a0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(4, ev);
+        if (minutes > 0x5a0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(4, ev);
             return;
         }
-        if (he_Unk56f740(r, ev, he_FindEvent(2, 0, 0x18, 1, HM_I(ev, 0xc4))) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(6, ev);
-        } else {
-            gm_AddTime(ev + 0x52, 0, 0, 0);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(7, ev);
+        caught = he_SecretRoomCatchSpy(agent, ev, he_FindEvent(2, 0, 0x18, 1, s->spyEvent));
+        if (caught == 0) {
+            gm_AddTime(&e->end, 0, 6, 0);
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(7, ev);
+            return;
         }
-        return;
-    case 2:
+        if (caught == 1) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(6, ev);
+            return;
+        }
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(6, ev);
         return;
     }
 }
@@ -22852,7 +22908,7 @@ int he_EventOnBuilding(int owner)
 }
 /* 0x56f1b0, a meeting message when the slot he_Unk56f260 (c + 3) is free and (0x504ec0 (a, 4) - 0x504ec0 (b, 4) * 0.5f) + 0x42ec20 () >= 1.0: 0x4f2e30 (slot, 1, b + 4, a + 4, the id +1 of the record at b + 0x170 / +0x16c, else -1); 0 when not sent */
 
-int he_Unk56f1b0(int a, int b, int c)
+int he_SecretRoomAccuse(int a, int b, int c)
 {
     float fa, fb;
     int slot = he_Unk56f260(c);
@@ -22899,7 +22955,7 @@ int he_Unk56f260(int c)
 }
 /* 0x56f2e0, a message when the person a and the record b (its word at 0 is the target) can meet: b not 0 and (0x504ec0 (a, 2) - 0x504ec0 (b, 2) * 0.5f) + 0x42ec20 () >= 1.0; then 0x4fca40 (*b, (-1 - c) * 5) */
 
-int he_Unk56f2e0(int a, unsigned short *b, int c)
+int he_SecretRoomAttack(int a, unsigned short *b, int c)
 {
     float fa, fb;
 
@@ -22939,7 +22995,7 @@ int he_NoEvent9bFor(int a)
 }
 /* 0x56f3f0, the domicile message of the construction run (a = the building id, b = the record: the word at 0 is one person, the dword at +4 the other): when 0x56f3b0 (b) is free and 0x501190 (1, 1, a) finds, the player word at building +0x27 selects the character record; the checks (0x504ec0 (rec, 2) - 0x504ec0 (b, 2) * 0.5f) + 0x42ec20 () * 0.5f >= 0.8 and the same over the field 3 >= 0.7: both -> the texts 0x4031 / 0x4033 and a message 0x9b (0x4c4b70), else the texts 0x4032 / 0x4034 */
 
-int he_Unk56f3f0(int a, unsigned short *b)
+int he_SecretRoomDomizil(int a, unsigned short *b)
 {
     char text[0x400];
     char msg[0xf8];
@@ -22983,7 +23039,7 @@ int he_Unk56f3f0(int a, unsigned short *b)
 }
 /* 0x56f600, the running event 0x18 (of the person a: its +4) not owned by c (its +4) whose building (0x4fea50 of +0xb4) is nearest to the place +0x4c .. of the workplace (+0x184 -> +0x34) of b; 0 when none */
 
-int he_Unk56f600(int a, int b, int c)
+int he_FindNearestSpying(int a, int b, int c)
 {
     float best = 1.0e7f;
     float x, y, z, dx, dy, dz, d;
@@ -23020,7 +23076,7 @@ int he_Unk56f600(int a, int b, int c)
 }
 /* 0x56f740, the domicile action of the construction run (a = the character, b = the event, c = the event 0x18 found for b + 0xc4): only the type 0x18 and fewer than 0x14 tries; b + 0xc4 + 1; when the workplace of 0x505df0 (c + 0xd8) is at least 1850 from the one of a, b + 0xac = c + 0xb4 (0x4c5230 / 0x4c52e0) and 0; else the sums 0x504ec0 (the record of the player c + 8, 2) + (c + 0xe8 + 1) * 0.5f against 0x504ec0 (0x505df0 (c + 0xc4), 2) + (b + 0xc0 + 1) * 0.5f: the first smaller -> the texts 0x4028 / 0x4029, the state -1 (0x4c4c60) and 1; -1 when nothing */
 
-int he_Unk56f740(int a, int b, char *c)
+int he_SecretRoomCatchSpy(int a, int b, char *c)
 {
     char text[0x400];
     int per, bld1, bld2, other;
