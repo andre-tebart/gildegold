@@ -420,6 +420,12 @@ typedef struct HEDISMISS {              /* the dismissal event 0x31's word over 
     char pad00[0xac];
     int worker;                         /* 0xac, the netId of the worker dismissed (gm_FindChar) */
 } HEDISMISS;
+typedef struct HEEV3C {                 /* the kidnap event 0x3c's words over AIJOB's union (he_AllocEvent3c / 0x560900) */
+    char pad00[0xac];
+    int chr;                            /* 0xac, the netId of the character (gm_FindChar) */
+    char padb0[4];
+    int bldId;                          /* 0xb4, the thieves' guild's id (gm_BuildQuery(1, 1, id)) */
+} HEEV3C;
 typedef struct HEEV39 {                 /* the event 0x39's words over AIJOB's union (he_AllocEvent39_3e / he_RunEvent39) */
     char pad00[0xac];
     int held;                           /* 0xac, the netId of the held character (AICHAR.heldRounds) the payment frees */
@@ -16718,25 +16724,29 @@ void he_RunMarketSupervisor(AIJOB *ev)
     gm_AddTime(&ev->end, 1, 0, 0);
     ev->stage = 0;
 }
-/* 0x560820, ends a duplicate: of the records of type 0x3c (0x53e400 / 0x53e300) the one with the same +0xac and +0xb4 as `ev` (not ev itself) sets the state -1 of `ev`; a building (+0xb4, 0x501190) with +0x65 = -1 or a figure +0xac (0x505df0) with the flag +0x1b1 does the same; the due clock is now and the event posted (0x4fe140 (.., 0, 0, 1)) */
-
-void he_Unk560820(int ev)
+/* 0x560820, the alloc handler of the kidnap event 0x3c (HEEV3C; ai_CalcMeisterDiebe posts it for a thieves' guild,
+   its run handler 0x560900): the record is cancelled (stage -1) when another event 0x3c (he_FindEvent / he_NextEvent)
+   has the same building or the same character, when the guild (gm_BuildQuery) already holds a hostage (AIBLD.hostage
+   not -1), or when the character is held (AICHAR.heldRounds); it is due in a second */
+void he_AllocEvent3c(AIJOB *ev)
 {
-    char *e;
-    int b, p;
+    HEEV3C *x = (HEEV3C *)ev;
+    HEEV3C *e;
+    AIBLD *b;
+    AICHAR *c;
 
-    for (e = he_FindEvent(1, 0, 0x3c); e != 0; e = he_NextEvent()) {
-        if ((int)e != ev && *(int *)(e + 0xb4) == *(int *)(ev + 0xb4) && *(int *)(e + 0xac) == *(int *)(ev + 0xac))
-            *(int *)(ev + 0x70) = -1;
+    for (e = (HEEV3C *)he_FindEvent(1, 0, 0x3c); e != 0; e = (HEEV3C *)he_NextEvent()) {
+        if (e != x && (e->bldId == x->bldId || e->chr == x->chr))
+            break;
     }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xb4));
-    if (b != 0 && *(int *)(b + 0x65) == -1)
-        *(int *)(ev + 0x70) = -1;
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p != 0 && *(unsigned char *)(p + 0x1b1) != 0)
-        *(int *)(ev + 0x70) = -1;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
+    b = (AIBLD *)gm_BuildQuery(1, 1, x->bldId);
+    if (e != 0 || (b != 0 && b->hostage != -1))
+        ev->stage = -1;
+    c = (AICHAR *)gm_FindChar(x->chr);
+    if (c != 0 && c->heldRounds != 0)
+        ev->stage = -1;
+    ev->end = ai_Time;
+    gm_AddTime(&ev->end, 0, 0, 1);
 }
 /* 0x560900, the run handler of the prison visit / arrest event (dummy "dummy_EINGANG_ZELLE", the news "_NACHRICHTEN_HS_71" / "_26" / "_72" / "_73"; ROUGH skeleton, 2096 bytes): the guard and the prisoner (+0xac, group 0x524260, 0x4c5230 / 0x4c52e0 send them, 0x524770 arrival), the cell entrance and the sentence by a roll (util_RandomF, gm_BuildingSkill, 0x5ba6b0 skill), the news to the player (0x53dee0 / 0x53dda0) and the release; the end frees the record */
 
@@ -18347,7 +18357,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(59, (void *)he_AllocMarket, (void *)he_RunMarketSupervisor) != 0)
         return 1;
-    if (he_SetEventHandlers(60, (void *)he_Unk560820, (void *)he_Unk560900) != 0)
+    if (he_SetEventHandlers(60, (void *)he_AllocEvent3c, (void *)he_Unk560900) != 0)
         return 1;
     sv_RegisterActivity(60, 0, 0, 1284, -1);
     if (he_SetEventHandlers(61, (void *)he_Unk561130, (void *)he_Unk561190) != 0)

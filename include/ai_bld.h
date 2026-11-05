@@ -43,6 +43,9 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                 unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
                                                    capacity of its ord kind record (cm_ExSetHome) */
                 struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
+                int hostage;                    /* 0x65, of a thieves' guild: -1 while it holds no kidnapped character (reasoned:
+                                                   ai_CalcMeisterDiebe posts the kidnap event 0x3c only then, he_AllocEvent3c
+                                                   cancels one otherwise) */
             };
             int unk69;                          /* 0x69, cleared for the kind 7 buildings at every round start (main.c 0x53b2e0) */
             char pad6d[4];
