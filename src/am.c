@@ -2666,9 +2666,9 @@ void ai_DuelThrow(AGDUEL *d, AGCH *c, int k)
     t[*n] = (unsigned char)w;
     (*n)++;
 }
-/* 0x4937a0, side c acts on the duel with k (1 and 2 roll dice, 3 and 4 only change the kind) */
+/* 0x4937a0, side c acts on the duel with k: 1 pays the stake and throws three dice, 2 pays the raise and adds a die, 3 pays the raise only, 4 only records the kind; 0 when the duel rejects the action */
 
-int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
+int ai_DuelAct(AGDUEL *d, AGCH *c, int k)
 {
     if (ai_DuelAcceptAction(d, c, k) == 0)
         return 0;
@@ -2700,7 +2700,7 @@ int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k)
         return 0;
     }
 }
-/* 0x493890, the next action of the AI duel opponent c (kind 10) for ai_Unk4937a0: state 0 throws (1); states 1 / 2 take one more die (2) while the points short of 17 are 6 or more, else stop (3) or another die by a chance from the shortfall and its class; state 3 answers 3 or 4 by its sum against the other side's dice; 0 for any other side or state */
+/* 0x493890, the next action of the AI duel opponent c (kind 10) for ai_DuelAct: state 0 throws (1); states 1 / 2 take one more die (2) while the points short of 17 are 6 or more, else stop (3) or another die by a chance from the shortfall and its class; state 3 answers 3 or 4 by its sum against the other side's dice; 0 for any other side or state */
 
 int ai_DuelOpponentAction(AGDUEL *d, AGCH *c)
 {

@@ -425,7 +425,7 @@ int ai_DuelStart(AGCH *p, AGDUEL *d, int k);                    /* 0x493200 */
 int ai_DuelAcceptAction(AGDUEL *d, AGCH *c, int k);                    /* 0x493390 */
 int ai_DuelSetAction(AGDUEL *d, AGCH *c, int k);                    /* 0x4933d0 */
 void ai_DuelThrow(AGDUEL *d, AGCH *c, int k);                   /* 0x493420 */
-int ai_Unk4937a0(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
+int ai_DuelAct(AGDUEL *d, AGCH *c, int k);                    /* 0x4937a0 */
 int ai_DuelOpponentAction(AGDUEL *d, AGCH *c);                           /* 0x493890 */
 void ai_DuelNextPhase(AGDUEL *d);                                   /* 0x493a40 */
 int ai_ChooseObjectTarget(AGCH *p, AIOBJ *o);                            /* 0x493be0 */
