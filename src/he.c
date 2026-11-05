@@ -88,6 +88,7 @@ extern int ai_TransportWindow();
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern void (*he_RunHandlers[5544])(unsigned char *);
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
+#define gypsyFilterValue (*(unsigned __int64 *)&gypsyFilter)  /* 0x5eed68, gypsyFilter read as a plain value (he_AllocSpying passes it by value, the high word loaded first) */
 extern int ai_GameFlags;
 #include "menu_types.h"
 extern OPTIONBYTES ai_GameSwitches;
@@ -494,6 +495,22 @@ typedef struct HESABOTAGE {             /* the sabotage event 25's words over AI
     int watch;                          /* 0xcc, the id of the watch event that caught the saboteur (HEDETECT.found, HEWATCH) */
     int fee;                            /* 0xd0, the money the event's character pays for it */
 } HESABOTAGE;
+typedef struct HESPYING {               /* the spying event 24's words over AIJOB's union (he_AllocSpying / 0x55a030) */
+    char pad00[0xac];
+    int target;                         /* 0xac, the id of the building spied on (gm_FindById; none: ai_PickActionBuilding
+                                           picks one of the gypsyFilter kinds) */
+    char padb0[4];
+    int at;                             /* 0xb4, the id of the building the walk is at, -1 at the start */
+    int b8;                             /* 0xb8, 0 at the start (reasoned: a counter of the run handler) */
+    int cursor;                         /* 0xbc, the walk over the 0x100 buildings: the index it is at, random */
+    int step;                           /* 0xc0, the walk's step, a random ai_RandomStrides entry */
+    int victim;                         /* 0xc4, the netId of the character spied on */
+    AITIME until;                       /* 0xc8, the end: 3 days (4 when order 0x26 answers 2) + HESPYING.days from now */
+    char padd6[2];
+    int spy;                            /* 0xd8, the cm slot of the spy's creation, then its netId; -1: none */
+    char paddc[0xc];
+    int days;                           /* 0xe8, the days of spying asked for */
+} HESPYING;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -13364,37 +13381,82 @@ void he_RunSabotage(int ev)
         return;
     }
 }
-/* 0x559d20, the allocation handler of the espionage event "Spionage" (ROUGH): the spy +0xac / +0xb0 is checked (0x505df0, flag 4 of +0x78), the target building is rolled (random 0x100, 0x42ec00 twice), the records of the type 0x35-like list (0x53e400 / 0x53e300) are searched for another spy on the same target (+0xd8, +8), the target person is looked up (0x4fea50, 0x4a63f0 (.., 100.0)) and the event posted (0x4c4c60); a spy of kind 6 / 7 gets the message record (0x4c4540 "Spionage", the message 0x4c59f0 "SPIONAGE" (0x62751c) and 0x4c4580), the handle goes to +0x84 */
-
-void he_Unk559d20(int ev)
+/* 0x559d20, the allocation handler of the spying event 24 (HESPYING; run handler 0x55a030). Not yet started (opts
+   4): nothing. Without the character spied on, or when another spying event of the same character on it exists,
+   the event is ended (cm_SendExSetHE -1). The walk over the buildings starts at random with a random stride, the
+   event is due in a minute; the spying events with a spy are counted. Without the target building one of the
+   gypsyFilter kinds is picked (ai_PickActionBuilding, up to 100.0; none: ended). The end is 3 days + HESPYING.days
+   from now (4 when order 0x26 of the event's character answers 2). Inside the cm group "Spionage": for a player's
+   event, a victim of kind 6 / 7 or fewer than 8 spies a spy is spawned at the target ("SPIONAGE") and the event
+   started (cm_SendExSetHE 0), else it is due at the end (cm_SendExSetHE 4)
+   @deep read whole against 0x559d20..0x55a02c and rewritten typed (HESPYING): the duplicate-spy loop over
+   the events 0x18 (e->chr == o->chr operand order as the original), ai_PickActionBuilding with gypsyFilter
+   by value (the view gypsyFilterValue: the original loads the high word first, which the volatile datum
+   does not), the order 0x26 buffer, the 24-hour multiples, the spawn inside the cm group Spionage; tgt
+   uninitialised as in the original (the prover's frame+0 store gone). Left is allocation only: the slots
+   of spawn / spies / victim are permuted (ours 0x1c / 0x14 / 0x18, the original 0x14 / 0x18 / 0x1c: - mov
+   [esp+0x1c],ebp + mov [esp+0x18],ebp, - inc [esp+0x14] + inc [esp+0x18]) and ours moves spawn into ebp
+   for its last test (- mov ebp,1 / jmp / mov ebp,[esp+0x1c] / test ebp,ebp; + mov [esp+0x14],1 / mov
+   eax,[esp+0x18] / test eax,eax). Tried: five declaration orders (17 .. 20 instructions, the best kept) */
+void he_AllocSpying(int ev)
 {
-    int p, o = 0, e, n;
+    AIJOB *e = (AIJOB *)ev;
+    HESPYING *s = (HESPYING *)ev;
+    AIBLD *tgt;
+    int spies = 0, spawn = 0;
+    AICHAR *victim, *me;
+    AIJOB *o;
+    int ord[0x88];
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0) {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
-    }
-    n = (unsigned short)util_Random(0x100);
-    (void)n;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
-    for (e = (int)he_FindEvent(1, 0, 0x4e); e != 0; e = (int)he_NextEvent()) {
-        if (*(unsigned short *)(e + 8) == *(unsigned short *)(ev + 8) && *(int *)(e + 0xd8) == *(int *)(ev + 0xd8))
-            break;
-    }
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xac));
-    if (o == 0) {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    s->spy = -1;
+    victim = (AICHAR *)gm_FindChar(s->victim);
+    if (victim == 0) {
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if (ord_DispatchOrder(0x26, (char *)ev, &o) == 2 || ((int (*)(void *))cm_BeginGroup)("Spionage") == 0) {
-        cm_SendSpawnCharacter(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SPIONAGE");
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    s->cursor = (unsigned short)util_Random(0x100);
+    s->step = ai_RandomStrides[(unsigned short)util_Random(0x10)];
+    s->b8 = 0;
+    s->at = -1;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    for (o = (AIJOB *)he_FindEvent(1, 0, 0x18); o != 0; o = (AIJOB *)he_NextEvent()) {
+        if (e->chr == o->chr && o->id != e->id && ((HESPYING *)o)->victim == s->victim) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        if (((HESPYING *)o)->spy != -1)
+            spies++;
+    }
+    gm_FindById(&tgt, 0, 0, s->target);
+    if (tgt == 0) {
+        ai_PickActionBuilding((struct AIPER *)&ai_CharsT[e->chr], 6, gypsyFilterValue, 0.0f, 100.0f, &s->target);
+        gm_FindById(&tgt, 0, 0, s->target);
+        if (tgt == 0) {
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+    }
+    memset(ord, 0, sizeof(ord));
+    ord[0] = 1;
+    me = &ai_CharsT[e->chr];
+    e->end = ai_Time;
+    s->until = ai_Time;
+    if (ord_DispatchOrder(0x26, (char *)me, ord) == 2)
+        gm_AddTime(&s->until, (s->days + 4) * 24, 0, 0);
+    else
+        gm_AddTime(&s->until, (s->days + 3) * 24, 0, 0);
+    if (me->kind == 6 || victim->kind == 6 || victim->kind == 7 || spies < 8)
+        spawn = 1;
+    cm_BeginGroup("Spionage");
+    if (spawn != 0) {
+        s->spy = cm_SendSpawnCharacterR(0x11, tgt->id, -1, 0, 0, 0, "SPIONAGE");
+        e->exSlot = cm_SendExSetHE(0, ev);
     } else {
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        e->end = s->until;
+        e->exSlot = cm_SendExSetHE(4, ev);
     }
     cm_EndGroup("Spionage");
 }
@@ -16036,7 +16098,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_RunSabotage) != 0)
         return 1;
-    if (he_SetEventHandlers(24, (void *)he_Unk559d20, (void *)he_Unk55a030) != 0)
+    if (he_SetEventHandlers(24, (void *)he_AllocSpying, (void *)he_Unk55a030) != 0)
         return 1;
     if (he_SetEventHandlers(26, (void *)he_Unk55a5f0, (void *)he_Unk55a730) != 0)
         return 1;
