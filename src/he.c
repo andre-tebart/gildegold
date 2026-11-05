@@ -878,6 +878,19 @@ typedef struct HEHINTEVENT {            /* the tutorial hint event 0x83's words 
     char pad00[0xac];
     int entry;                          /* 0xac, the index into he_Hints the run handler is at */
 } HEHINTEVENT;
+typedef struct HETRADEMSG {             /* the trade message 0xf's words over AIMSG (he_AllocTrade) */
+    char pad00[0xa0];
+    int jobId;                          /* 0xa0, the id of the event that posted it */
+} HETRADEMSG;
+typedef struct HEPRODUCTIONMSG {        /* the production event's words over AIJOB's union (its alloc handler 0x56a7b0) */
+    char pad00[0xac];
+    int good;                           /* 0xac, the good produced */
+    int bld;                            /* 0xb0, the building the good comes from */
+    int chr;                            /* 0xb4, the producing character */
+    char padb8[0x30];
+    int slot1;                          /* 0xe8, -1 at the allocation */
+    int slot2;                          /* 0xec, -1 at the allocation, the cm send slot of the message */
+} HEPRODUCTIONMSG;
 typedef struct HEPRODUCTION {           /* the production event's words over AIJOB's union (he_AllocProduktion 0x5690c0) */
     char pad00[0xac];
     unsigned short good;                /* 0xac, the good produced (an ai_Goods index) */
@@ -17802,45 +17815,53 @@ void he_Unk56a710(int ev)
 
 int gm_FindObjectInst(int id);
 
-/* 0x56a7b0, the alloc of an event of the type 0xb: when another record of the type (+0x10) already works for the same good (+0xac) of another player (+4) the new one is freed,
-   else both clocks (+0x52 / +0x60) = the start clock, due now + 1, the handles +0xe8 / +0xec = -1, and a message record (0xf8 bytes: kind 0xf, the player's 0x770b84 entry, the clock, the good,
-   the buyer +0x10, the goods building +0xb0) is posted (0x4c4b70) unless +0xf1 is set (then due 1 + 0x1e later); +0xf0 = 4 when the character +0xb4 exists (ROUGH) */
-void he_Unk56a7b0(int ev)
+/* 0x56a7b0, the allocation handler of the trade event 0xb: when another event of the same kind already works for the same good (0xac) of another sender (0x10) this record is freed; else both clocks (0x52 / 0x60) are the start clock (0x44), due 1 unit later, the handles 0xe8 / 0xec = -1, and a move-goods message 0xf (AIMSG: type 0xf, to the character chr, fromId -1, the clock, the good (arg[0]), the buyer (from, arg[1]), the building (0xb0, arg[2]), the event id (0xa0)) is posted unless the flag 0xf1 is set (then due 1 + 0x1e later); modes 0xf0 = 4 when the character (0xb4) exists
+   @deep read the whole function against the original and rebuilt it on AIJOB / AIMSG: the same-kind /
+   same-good check over he_FindEvent, the two clocks, the handles -1, the move-goods message 0xf (type, to
+   = the character's netId, fromId -1, the clock, arg[0] the good, arg[1] the buyer, arg[2] the building,
+   0xa0 the event id), the flag 0xf1 branch, modes 4. Only scheduling / allocation is left: the msg setup
+   is one scheduling region - the original hoists ev->start.year into edx above the memset (mov edx,[ebx]
+   before rep stosd) and interleaves the clock stores (year 0x28, secword 0x34, min 0x30, hourword 0x2c)
+   with type / fromId / to / flags / arg[], ours stores the four clock fields together after the memset;
+   plus the eax / ecx register swaps in the arg stores. 130 vs 129 instructions. Tried: the typed AIMSG
+   field assignments in the source order and the HETRADEMSG view for 0xa0; the store set is identical. */
+void he_AllocTrade(AIJOB *ev)
 {
-    char msg[0xf8];
-    int e2;
+    HEPRODUCTIONMSG *p = (HEPRODUCTIONMSG *)ev;
+    AIMSG msg;
+    AIJOB *e2;
 
-    for (e2 = (int)he_FindEvent(2, 0, 0xb, 3, *(int *)(ev + 0x10)); e2 != 0; e2 = he_NextEvent()) {
-        if (*(int *)(e2 + 0xac) == *(int *)(ev + 0xac) && *(int *)(e2 + 4) != *(int *)(ev + 4)) {
+    for (e2 = (AIJOB *)he_FindEvent(2, 0, 0xb, 3, ev->from); e2 != 0; e2 = (AIJOB *)he_NextEvent()) {
+        if (p->good == ((HEPRODUCTIONMSG *)e2)->good && e2->id != ev->id) {
             he_FreeEvent((int *)ev);
             return;
         }
     }
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
-    *(int *)(ev + 0xe8) = -1;
-    *(int *)(ev + 0xec) = -1;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    memset(msg, 0, sizeof(msg));
-    *(AITIME *)(msg + 0x28) = *(AITIME *)(ev + 0x44);
-    msg[4] = 0xf;
-    *(int *)(msg + 0xc) = -1;
-    *(int *)(msg + 8) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
-    msg[0x36] = 2;
-    *(int *)(msg + 0x60) = *(int *)(ev + 0xb0);
-    *(int *)(msg + 0x5c) = *(int *)(ev + 0x10);
-    *(int *)(msg + 0x58) = *(int *)(ev + 0xac);
-    *(int *)(msg + 0xa0) = *(int *)(ev + 4);
-    if (gm_FindObjectInst(*(int *)(ev + 0xac)) != 0) {
-        if (*(char *)(ev + 0xf1) != 0)
-            gm_AddTime(ev + 0x52, 1, 0x1e, 0);
+    ev->end = ev->start;
+    ev->clock60 = ev->start;
+    p->slot1 = -1;
+    p->slot2 = -1;
+    gm_AddTime(&ev->end, 0, 1, 0);
+    memset(&msg, 0, sizeof(msg));
+    msg.time = ev->start;
+    msg.type = 0xf;
+    msg.fromId = -1;
+    msg.to = ai_CharsT[ev->chr].netId;
+    msg.flags = 2;
+    msg.arg[2] = p->bld;
+    msg.arg[1] = ev->from;
+    msg.arg[0] = p->good;
+    ((HETRADEMSG *)&msg)->jobId = ev->id;
+    if (gm_FindObjectInst(p->good) != 0) {
+        if (ev->flags != 0)
+            gm_AddTime(&ev->end, 1, 0x1e, 0);
         else
-            *(int *)(ev + 0xec) = cm_SendLongMessage(msg);
+            p->slot2 = cm_SendLongMessage((char *)&msg);
     } else
         he_FreeEvent((int *)ev);
-    *(unsigned char *)(ev + 0xf0) = 0;
-    if (gm_FindChar(*(int *)(ev + 0xb4)) != 0)
-        *(unsigned char *)(ev + 0xf0) = 4;
+    ev->modes = 0;
+    if (gm_FindChar(p->chr) != 0)
+        ev->modes = 4;
 }
 
 int ai_Unk5ae8e0();
@@ -18511,7 +18532,7 @@ int he_RegisterEventTypes03(void)
     sv_RegisterActivity(9, "Suchen", 1, 0x500, -1);
     if (he_SetEventHandlers(10, (void *)d3io_NoopCallback, (void *)he_Unk56a710) != 0)
         return 1;
-    if (he_SetEventHandlers(0xb, (void *)he_Unk56a7b0, (void *)he_Unk56a960) != 0)
+    if (he_SetEventHandlers(0xb, (void *)he_AllocTrade, (void *)he_Unk56a960) != 0)
         return 1;
     if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_Unk56b3f0) != 0)
         return 1;
