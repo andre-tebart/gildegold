@@ -10258,15 +10258,18 @@ void he_RunSixGroupEvent(AIJOB *ev)
     ev->stage++;
     gm_AddTime(&ev->end, 1, 0, 0);
 }
-/* 0x552040, re-posts an event 2 later and resets its state to 0 */
+/* 0x552040, the stage-0 start handler of the exam events 0x7e (the master exam question, its run handler
+   he_RunExamQuestion) and 0x36 (the feast exam, he_RunFeastExam): the due clock is now + 2 hours and the stage 0 */
 
-void he_Unk552040(int ev)
+void he_StartExam(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 2, 0, 0);
-    *(int *)(ev + 0x70) = 0;
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 2, 0, 0);
+    e->stage = 0;
 }
-/* 0x552090, the run handler of the master exam question 0x7e (its alloc handler he_Unk552040): the stages -1 / -2
+/* 0x552090, the run handler of the master exam question 0x7e (its alloc handler he_StartExam): the stages -1 / -2
    free it (and its slot); stage 0 opens the slot "Berufe\Messagebox_Meisterpruefung" (none: the event is freed),
    centres it and prints the question 0x10b9 (the own player's name, the character), then waits in stage 1: past
    the due time, or on the second answer, it ends; the first answer marks the character's exam event (examId, found
@@ -10823,7 +10826,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x37, (void *)he_AllocFeast, (void *)he_RunFeast) != 0)
         return 1;
-    if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_RunFeastExam) != 0)
+    if (he_SetEventHandlers(0x36, (void *)he_StartExam, (void *)he_RunFeastExam) != 0)
         return 1;
     if (he_SetEventHandlers(0x35, (void *)he_AllocTribute, (void *)he_RunTribute) != 0)
         return 1;
@@ -10926,7 +10929,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7d, (void *)he_InitSixGroupEvent, (void *)he_RunSixGroupEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7e, (void *)he_Unk552040, (void *)he_RunExamQuestion) != 0)
+    if (he_SetEventHandlers(0x7e, (void *)he_StartExam, (void *)he_RunExamQuestion) != 0)
         return 1;
     if (he_SetEventHandlers(0x7f, (void *)he_Unk552200, (void *)he_RunExamOffer) != 0)
         return 1;

@@ -2455,3 +2455,4 @@
 2026-11-05T17:17:00 0x00550ea0 data he_Unk550ea0 -> he_StartRanking by:main why:he_SetEventHandlers(0x79, he_Unk550ea0, he_RunRanking) registers it as the init of the ranking event; its clock is the 7:00 the run handler resumes at
 2026-11-05T17:19:43 0x005512c0 func he_Unk5512c0 -> he_StartWalk by:main why:he_SetEventHandlers(0x7a, he_Unk5512c0, he_Unk551b70) registers it as the walk event's alloc handler (its ten HEWALKSLOT slots at +0xac)
 2026-11-05T17:23:52 0x00551b70 func he_Unk551b70 -> he_RunWalk by:main why:the run handler of the walk event 0x7a, registered with he_StartWalk (its alloc handler); it steps and fills the ten HEWALKSLOTs
+2026-11-05T17:26:36 0x00552040 data he_Unk552040 -> he_StartExam by:main why:the stage-0 start handler of the exam events 0x7e (he_RunExamQuestion) and 0x36 (he_RunFeastExam): due clock now + 2 hours
