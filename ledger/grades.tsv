@@ -3617,23 +3617,23 @@ exe	0x0054a020	he_RunPlague	he	draft	readable	deep
 exe	0x0054a6f0	he_StartGang	he	shape	readable		
 exe	0x0054a7b0	he_RunGang	he	shape	readable		
 exe	0x0054ae20	he_Unk54ae20	he	byte	draft		
-exe	0x0054ae60	he_Unk54ae60	he	draft	draft		
-exe	0x0054b170	he_Unk54b170	he	byte	draft		
-exe	0x0054b1e0	he_Unk54b1e0	he	draft	draft		
-exe	0x0054b9b0	he_Unk54b9b0	he	byte	draft		
-exe	0x0054ba20	he_Unk54ba20	he	draft	draft		
-exe	0x0054be20	he_Unk54be20	he	byte	draft		
-exe	0x0054bec0	he_Unk54bec0	he	draft	draft		
+exe	0x0054ae60	he_RunProtectionAsk	he	byte	readable		
+exe	0x0054b170	he_StartProtection	he	byte	draft		
+exe	0x0054b1e0	he_RunProtection	he	draft	readable	deep	
+exe	0x0054b9b0	he_StartAudit	he	byte	draft		
+exe	0x0054ba20	he_RunAudit	he	byte	readable		
+exe	0x0054be20	he_StartGathering	he	byte	draft		
+exe	0x0054bec0	he_RunGathering	he	draft	readable	deep	
 exe	0x0054c4c0	he_Unk54c4c0	he	byte	draft		
-exe	0x0054c510	he_Unk54c510	he	byte	draft		
-exe	0x0054c570	he_Unk54c570	he	draft	draft		
-exe	0x0054c870	he_Unk54c870	he	byte	draft		
-exe	0x0054c8e0	he_Unk54c8e0	he	draft	draft		
-exe	0x0054cc20	he_Unk54cc20	he	byte	draft		
-exe	0x0054cc50	he_Unk54cc50	he	draft	draft		
-exe	0x0054d190	he_Unk54d190	he	byte	draft		
-exe	0x0054d1e0	he_Unk54d1e0	he	shape	draft		
-exe	0x0054d260	he_Unk54d260	he	draft	draft		
+exe	0x0054c510	he_IsAtWork	he	byte	draft		
+exe	0x0054c570	he_RunAccidentSim	he	byte	readable		
+exe	0x0054c870	he_StartAuctionEvent	he	byte	draft		
+exe	0x0054c8e0	he_RunAuctionEvent	he	draft	readable	deep	
+exe	0x0054cc20	he_StartTitleCeremony	he	byte	draft		
+exe	0x0054cc50	he_RunTitleCeremony	he	draft	readable	deep	
+exe	0x0054d190	he_StartInnSim	he	byte	draft		
+exe	0x0054d1e0	he_FindGuestInn	he	shape	draft		
+exe	0x0054d260	he_RunInnSim	he	shape	readable		
 exe	0x0054d790	he_Unk54d790	he	byte	draft		
 exe	0x0054d7d0	he_Unk54d7d0	he	draft	draft		
 exe	0x0054da20	he_Unk54da20	he	byte	draft		
@@ -4005,8 +4005,8 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		

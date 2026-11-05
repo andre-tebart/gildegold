@@ -21,7 +21,9 @@
    master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), HEDUEL (the duel challenge's +0xac and the duel's
    +0xb4 / +0xb6), HEGESELLE / HEEXAMPAY / HEPAYMENT / HEOFFSPRING / HETRIAL / HETRIALSTEP / HETRAINING / HEPLAGUE /
    HEGANG (the events 0x4a / 0x55 / 0x56 / 0x5d / 0x5e / 0x5f / 0x60 / 0x59 / 0x61), HEFEEMSG / HESKILLMSG /
-   HEPLAGUEMSG (AIMSG's words of the AI messages 0x56 / 0x6a / 0x78), HEFINVIEW (AIFIN's +0x18 / +0x64; ai.h is not
+   HEPLAGUEMSG (AIMSG's words of the AI messages 0x56 / 0x6a / 0x78), HEPROTECTION / HEAUDIT / HEGATHERING /
+   HESIM / HEAUCTION / HETITLE (the events 0x62 / 0x64 / 0x65 / 0x66, 0x68, 0x70 / 0x67 / 0x69), HEINN (the inn
+   simulation's list), HEFINVIEW (AIFIN's +0x18 / +0x64; ai.h is not
    included), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5). AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / G28REC can flip other units'
    matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it).
