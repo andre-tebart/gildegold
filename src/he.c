@@ -1544,22 +1544,26 @@ void he_PostWorkshopEvents98(void)
         }
     }
 }
-/* 0x53f430, for every figure of kind 5 / 0x16 (inn) checks the four staff slots of its record; a slot whose figure is gone or dead gets the script message "veal" ("stammtisch supervisor") */
+/* 0x53f430, for every inn building (type 0x16) sends the table request "leav" to the four seats of its table (the
+   object 0x12d) whose figure is gone, dead (health 0) or a corpse (kind 0xf) ("stammtisch supervisor") */
 
-void he_Unk53f430(void)
+void he_InnStaffLeave(void)
 {
-    int f, r, k, o;
+    AIBLD *f;
+    AIOBJ *r;
+    AICHAR *o;
+    int k;
     int *p;
     int arg[3];
 
-    f = gm_BuildQuery(1, 5, 0x16);
+    f = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
     while (f != 0) {
-        r = gm_Query(*(int *)(f + 0x5d), 1, 0, 0x120);
-        if (r != 0 && (r = gm_Query(*(int *)(r + 0x14), 1, 0, 0x12d)) != 0) {
-            p = (int *)(r + 0x1c);
+        r = (AIOBJ *)gm_Query((void *)f->objList, 1, 0, 0x120);
+        if (r != 0 && (r = (AIOBJ *)gm_Query((void *)r->list, 1, 0, 0x12d)) != 0) {
+            p = r->seats;
             for (k = 4; k != 0; k--) {
-                if (*p != -1 && ((o = gm_FindChar(*p)) == 0 || *(char *)(o + 8) == 0 || *(char *)(o + 2) == 0xf)) {
-                    arg[2] = *(int *)(f + 1);
+                if (*p != -1 && ((o = (AICHAR *)gm_FindChar(*p)) == 0 || o->health == 0 || o->kind == 0xf)) {
+                    arg[2] = f->id;
                     arg[1] = *p;
                     arg[0] = 0x6c656176;
                     cm_BeginGroup("stammtisch supervisor");
@@ -1569,7 +1573,7 @@ void he_Unk53f430(void)
                 p++;
             }
         }
-        f = gm_BuildNext();
+        f = (AIBLD *)gm_BuildNext();
     }
 }
 /* 0x53f500, for every inn (kind 5 / 0x16) whose record 0x12c is older than a day sends the script message "rclc" ("clear dunkle ecke") */
@@ -2226,7 +2230,7 @@ void he_Unk540fe0(void)
     he_PostPlayerEvents86a2();
     he_PostEvent67();
     he_Unk53f500();
-    he_Unk53f430();
+    he_InnStaffLeave();
     he_InnReport();
     he_PostWorkshopEvents98();
 }
