@@ -3710,19 +3710,19 @@ exe	0x00557160	he_Unk557160	he	byte	draft
 exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
 exe	0x005578a0	he_RunSlotOrder	he	shape	readable		
 exe	0x00557b30	he_Unk557b30	he	byte	draft		
-exe	0x00557b70	he_Unk557b70	he	draft	draft		
+exe	0x00557b70	he_RunStoreExtension	he	shape	readable		
 exe	0x00557d70	he_Unk557d70	he	byte	draft		
-exe	0x00557e20	he_Unk557e20	he	draft	draft		
+exe	0x00557e20	he_RunHerbGathering	he	draft	readable	deep	
 exe	0x005584d0	he_Unk5584d0	he	byte	draft		
-exe	0x00558550	he_Unk558550	he	draft	draft		
-exe	0x005588c0	he_Unk5588c0	he	draft	draft		
-exe	0x00558a40	he_Unk558a40	he	draft	draft		
+exe	0x00558550	he_RunAnimalHunt	he	byte	readable		
+exe	0x005588c0	he_AllocStudy	he	byte	readable		
+exe	0x00558a40	he_RunStudy	he	shape	readable		
 exe	0x00558de0	he_Unk558de0	he	byte	draft		
 exe	0x00558e10	he_RunEvent17	he	byte	readable		
 exe	0x00558e70	he_Unk558e70	he	byte	draft		
-exe	0x00558f10	he_Unk558f10	he	draft	draft		
-exe	0x00559d20	he_Unk559d20	he	draft	draft		
-exe	0x0055a030	he_Unk55a030	he	draft	draft		
+exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
+exe	0x00559d20	he_AllocSpying	he	draft	readable	deep	
+exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
 exe	0x0055a5f0	he_Unk55a5f0	he	draft	draft		
 exe	0x0055a730	he_Unk55a730	he	draft	draft		
 exe	0x0055af70	he_Unk55af70	he	draft	draft		
