@@ -1332,17 +1332,17 @@ void he_RunQuickList(void)
     unsigned char *pb;
     int i = 0;
 
-    if (U_I((unsigned)&he_QuickTop) >= 0) {
+    if (he_QuickTop >= 0) {
         do {
-            if (i > 0xff)
+            if (i >= 0x100)
                 return;
-            pb = (unsigned char *)U_I((unsigned)&he_QuickList + i * 4);
+            pb = (unsigned char *)he_QuickList[i];
             if (pb != 0 && *pb < 0xa7) {
                 he_RecheckEventPerson(pb);
-                ((void (*)(unsigned char *))U_I((unsigned)&he_RunHandlers + *pb * 4))(pb);
+                he_RunHandlers[*pb](pb);
             }
             i++;
-        } while (i <= U_I((unsigned)&he_QuickTop));
+        } while (i <= he_QuickTop);
     }
 }
 /* 0x53ee40, runs the run handler of the records with bit 0x10 at +0x78 */
