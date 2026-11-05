@@ -65,6 +65,11 @@ typedef struct AICHAR {                 /* 0x21c bytes, ai_Chars[768] */
                                            them when one dies, ai_DecideUseDynastyObject walks [3..7]); relatives[0] is never
                                            picked as a partner (ai_DecideOfficePartner) */
         };
+        struct {
+            char padname7c[0x4c];
+            float f07c;                 /* 0x07c, set to 1.1 for the partner of sex 1 when a courtship ends in the
+                                           party (he.c 0x544840, a float delta of 1.1 - it) */
+        };
     };
     float mood[14][3];                  /* 0x088, 13 triples (a, b, value), the current one at 0x124 */
     unsigned char sel;                  /* 0x130 */

@@ -2290,3 +2290,4 @@
 2026-11-05T11:18:08 0x00544550 data he_Unk544550 -> he_DrawPairPicks by:main why:draws the three picks pairPick / pairPrice of the pair event 0x41 from a shuffled table of 12
 2026-11-05T11:19:19 0x00544630 func he_Unk544630 -> he_AllocCourtship by:main why:alloc handler (first) of the event 0x41: two partners of different sex, clears their relatives[0] (the partner link the run handler sets to each other), rounds and picks
 2026-11-05T11:19:33 0x005c6620 func ai_Unk5c6620 -> ai_CourtshipRounds by:main why:the rating of two characters (their worths, relation, age) the courtship event 0x41 keeps as its round count pairRounds (he_AllocCourtship, the news 0x1cf4 tells the rounds left)
+2026-11-05T11:22:56 0x00544840 func he_Unk544840 -> he_RunCourtship by:main why:run handler (second) of the courtship event 0x41: cm_BeginGroup("werbung"), ai_MarriageTest, the rounds pairRound / pairRounds, the wedding party

@@ -170,8 +170,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         struct {                        /* 0xac, of the courtship event 0x41 (partner1 / partner2, of different sex; its
                                            alloc handler 0x544630, run handler 0x544840, the picks drawn by 0x544550) */
             char padpair[0xc];
-            unsigned char pairRound;    /* 0xb8, the rounds held, 0 at the start (the run handler counts it up) */
-            unsigned char pairRounds;   /* 0xb9, the rounds it takes (0x5c6620 of the two partners; the news 0x1cf4
+            char pairRound;             /* 0xb8, the rounds held, 0 at the start (the run handler counts it up) */
+            char pairRounds;            /* 0xb9, the rounds it takes (0x5c6620 of the two partners; the news 0x1cf4
                                            tells pairRounds - pairRound) */
             unsigned char pairDrawn;    /* 0xba, 1 once a round drew new picks (the run handler), 0 at the start */
             unsigned char pairDone;     /* 0xbb, 1 once the partners are each other's relatives[0] and the party
