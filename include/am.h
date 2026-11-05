@@ -625,7 +625,7 @@ int ai_PlanLevel(AIPLAN *q);                                    /* 0x4942a0 */
 int ai_PlanRollTries(AIPLAN *q);                                    /* 0x494300 */
 int ai_DecideAcquittal(AIC4 *ch, AIPLAN *q);                          /* 0x494410 */
 int ai_PlanRank(AIPLAN *q);                                    /* 0x4945c0 */
-int ai_Unk4946c0(AIC4 *ch, AIPLAN *q);                          /* 0x4946c0 */
+int ai_DecideSentence(AIC4 *ch, AIPLAN *q);                          /* 0x4946c0 */
 int ai_WealthRating(AIC4 *a, AIC4 *b);                             /* 0x4947a0 */
 int ai_WealthRatingHalf(AIC4 *a, AIC4 *b);                             /* 0x494830 */
 AIREC10 *ai_FindInstrumentRecord(int key);                                 /* 0x4948c0 */

@@ -13448,7 +13448,7 @@ void ai_Unk4de340(char *r, int *m)
         if (*(int *)(r + 0x10) != m[7])
             return;
         c = gm_FindChar(m[7]);
-        *(int *)(r + 0x94) = ai_Unk4946c0(c, m);
+        *(int *)(r + 0x94) = ai_DecideSentence(c, m);
         return;
     }
 }

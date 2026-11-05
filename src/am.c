@@ -3187,18 +3187,21 @@ int ai_PlanRank(AIPLAN *q)
         r--;
     return r;
 }
-/* 0x4946c0, the rank of 0x4945c0 raised by how close the character is (0..9) */
+/* 0x4946c0, the sentence a trial judge picks (request kind 5 of the trial's ask-AI callback ai_Unk4de340): the
+   plan's rank raised by 0 / 1 / 2 by the judge's liking of the accused against thresholds scaled by record 0's
+   current law value (k = 0.7 + (5 - cur) * 0.1), 5 -> 4 for a judge without an office, 7 -> 6 under rank 2,
+   clamped to 0 .. 9 */
 
-int ai_Unk4946c0(AIC4 *ch, AIPLAN *q)
+int ai_DecideSentence(AIC4 *ch, AIPLAN *q)
 {
     int n;
     float k, d;
-    AIPOS pos;
+    AIDEC dec;
     AIC4 *c;
 
     n = ai_PlanRank(q);
-    gv_GetTableRecord(0, &pos);
-    k = (5.0f - (float)pos.unk18) * 0.1f + 0.7f;
+    gv_GetTableRecord(0, (int *)&dec);
+    k = (5.0f - (float)dec.cur) * 0.1f + 0.7f;
     c = AI_C4(q->c18);
     d = gm_Liking(c->id, ch->id, 1);
     if (!(d > k * 66.666f)) {
