@@ -173,7 +173,6 @@ extern unsigned short * ai_PlayerChar;
 extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
 extern GAPDATA full_data_627b0c[];
 extern char gm_TagGebaeudePROT[24];
-extern GAPDATA full_data_627b20[];
 extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
 extern float gm_DayEndHours[];
@@ -884,6 +883,15 @@ typedef struct HESIM {                  /* the words of the simulation events 0x
                                            started (the next run picks one and a random cursor) */
     int done;                           /* 0xb4, the characters visited this round */
 } HESIM;
+typedef struct HENEWWORKER {            /* the new-worker event 0x6e's words over AIJOB's union (its alloc handler 0x565850,
+                                           run handler 0x565940) */
+    char pad00[0xac];
+    int slot;                           /* 0xac, the cm send slot of the hire message (cm_GetSlotState / cm_GetSlotValue) */
+    char padb0[4];
+    int bld;                            /* 0xb4, the id of the building that gets the worker (gm_FindBuildingById) */
+    char padb8[4];
+    int share;                          /* 0xbc, the share of the reward paid to the building's owner, 0: none */
+} HENEWWORKER;
 typedef struct HESTORM {                /* the storm event 0x50's words after AIJOB.stormBlds (its alloc handler 0x5652b0) */
     char pad00[0xf0];
     int radius;                         /* 0xf0, the distance a follower building must be within (the message's value,
@@ -15963,48 +15971,47 @@ void he_Unk565850(int ev)
     *(int *)(ev + 0xac) = r;
     *(AITIME *)(ev + 0x52) = ai_Time;
 }
-/* 0x565940, a Ghidra miss: the run handler of the event 0x6e (ROUGH): when the sound handle +0xac is done (0x4c3ae0) the result 0x4c3b10 and the object +0xb4 (0x502020) decide: 0x4c54a0 (obj + 1, the owner (+0x25) player record 0x770b84 or the result), the reward
-   0x4c47e0 (result +4, -1, 0x6f1bc5, 0x5085f0 (0xbb8, 0x6f1bc5)); with a value +0xbc the owner (kinds 6 / 7: the news 0x17e6) gets the share 0x4c47e0 and 0x55ea60 yields a target for 0x4c52e0 (id, target, 0, 0, 0x627b20); always freed; -1 / -2 free */
+/* 0x565940, the run handler of the new-worker event 0x6e: when the hire message's slot (0xac) is done, its value (the new worker) and the building (0xb4) are taken; the building's master (0x25, a character index) gets the ownership message 0x38 and the worker the reward (0x4c47e0 with gm_PlayerFactor (0xbb8, ai_OwnPlayer)); with a share (0xbc) the master (kinds 6 / 7 get the news 0x17e6) also gets it and the worker is sent to its place ("InitBetrieb"); the record is always freed, stages -1 / -2 free it */
 
-void he_Unk565940(int ev)
+void he_RunNewWorker(AIJOB *ev)
 {
-    int st, r, o, own;
-    int v[2];
+    HENEWWORKER *w = (HENEWWORKER *)ev;
+    AICHAR *r, *own;
+    AIBLD *o;
+    int st, v[2];
     char text[0x400];
 
-    st = *(int *)(ev + 0x70);
+    st = ev->stage;
     if (st < -2)
         return;
-    if (st < 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (st != 0)
-        return;
-    if (cm_GetSlotState(*(int *)(ev + 0xac)) == 0)
-        return;
-    r = cm_GetSlotValue(*(int *)(ev + 0xac));
-    o = gm_FindBuildingById(*(int *)(ev + 0xb4));
-    if (r != 0 && o != 0) {
-        if (*(unsigned short *)(o + 0x25) != 0xffff)
-            cm_SendOwnership(*(int *)(o + 1), *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(o + 0x25) * 0x21c), *(int *)(r + 4));
-        else
-            cm_SendOwnership(*(int *)(o + 1), *(int *)(r + 4), *(int *)(r + 4));
-        cm_SendMoveGoods(*(int *)(r + 4), -1, U_I((unsigned)&ai_OwnPlayer), gm_PlayerFactor(0xbb8, *(unsigned char *)(unsigned)&ai_OwnPlayer));
-        if (*(int *)(ev + 0xbc) != 0) {
-            own = (unsigned)&ai_Chars + *(unsigned short *)(o + 0x25) * 0x21c;
-            if (own != 0) {
-                if (*(char *)(own + 2) == 6 || *(char *)(own + 2) == 7) {
-                    txt_Format(text, 0x17e6, o, *(unsigned short *)r);
-                    he_MessageBoxQuickjump(*(int *)(own + 4), -1, text, 0, 0x5ec, *(int *)(o + 1), -1, 0, (unsigned)"_NACHRICHTEN_HS_30");
+    if (st >= 0) {
+        if (st != 0)
+            return;
+        if (cm_GetSlotState(w->slot) == 0)
+            return;
+        r = (AICHAR *)cm_GetSlotValue(w->slot);
+        o = (AIBLD *)gm_FindBuildingById(w->bld);
+        if (r != 0 && o != 0) {
+            if (o->masterId != 0xffff)
+                cm_SendOwnership(o->id, ai_CharsT[o->masterId].netId, r->netId);
+            else
+                cm_SendOwnership(o->id, r->netId, r->netId);
+            cm_SendMoveGoods(r->netId, -1, ai_OwnPlayer, gm_PlayerFactor(0xbb8, ai_OwnPlayer));
+            if (w->share != 0) {
+                own = &ai_CharsT[o->masterId];
+                if (own != 0) {
+                    if (own->kind == 6 || own->kind == 7) {
+                        txt_Format(text, 0x17e6, o, r->id, w->share);
+                        he_MessageBoxQuickjump(own->netId, -1, text, 0, 0x5ec, o->id, -1, 0, "_NACHRICHTEN_HS_30");
+                    }
+                    cm_SendMoveGoods(own->netId, -1, ai_OwnPlayer, w->share);
                 }
-                cm_SendMoveGoods(*(int *)(own + 4), -1, U_I((unsigned)&ai_OwnPlayer), *(int *)(ev + 0xbc));
+                cm_SendOwnership(o->id, r->netId, r->netId);
+                /* the original caller pushes 3 arguments (0x565ab5 push ecx, 0x565ab6 push edx, 0x565ab7 push edi) to the
+                   1-argument 0x55ea60, which reads only [esp+8] (0x55ea61); the extra pushes are the original bytes */
+                if (he_FigureContact((int)r, &v[0], &v[1]) != 0)    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
+                    cm_SendChrGotoBuilding(r->netId, v[0], v[1], 0, 0, he_InitBetrieb);
             }
-            cm_SendOwnership(*(int *)(o + 1), *(int *)(r + 4), *(int *)(r + 4));
-            /* the original caller pushes 3 arguments (0x565ab5 push ecx, 0x565ab6 push edx, 0x565ab7 push edi) to the
-               1-argument 0x55ea60, which reads only [esp+8] (0x55ea61); the extra pushes are the original bytes */
-            if (he_FigureContact(r, &v[0], &v[1]) != 0)    /* @original: 3 args to the 1-arg 0x55ea60 (see above) */
-                cm_SendChrGotoBuilding(*(int *)(r + 4), v[0], v[1], 0, 0, (unsigned)&full_data_627b20);
         }
     }
     he_FreeEvent((int *)ev);
@@ -17040,7 +17047,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
         return 1;
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
-    if (he_SetEventHandlers(110, (void *)he_Unk565850, (void *)he_Unk565940) != 0)
+    if (he_SetEventHandlers(110, (void *)he_Unk565850, (void *)he_RunNewWorker) != 0)
         return 1;
     if (he_SetEventHandlers(113, (void *)he_Unk565b00, (void *)he_Unk565b60) != 0)
         return 1;
