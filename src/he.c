@@ -4487,12 +4487,15 @@ void he_RunRepeatPayment(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x549040, a Ghidra miss: the due clock +0x52 = now, posted 5 units ahead */
+/* 0x549040, the alloc handler of the repeating-payment events 0x5b and 0x5c (he_RunRepeatPayment, 0x549080): the
+   due clock +0x52 is the clock now, five minutes on */
 
-void he_Unk549040(int ev)
+void he_AllocRepeatPayment(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 5, 0);
 }
 /* 0x549080, like 0x548fa0 but the amount -+0xac goes to the player through 0x53eec0 */
 
@@ -10762,9 +10765,9 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5a, (void *)he_AllocRepostEvent, (void *)he_RunRepostEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5b, (void *)he_Unk549040, (void *)he_RunRepeatPayment) != 0)
+    if (he_SetEventHandlers(0x5b, (void *)he_AllocRepeatPayment, (void *)he_RunRepeatPayment) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5c, (void *)he_Unk549040, (void *)he_Unk549080) != 0)
+    if (he_SetEventHandlers(0x5c, (void *)he_AllocRepeatPayment, (void *)he_Unk549080) != 0)
         return 1;
     if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_RunOffspring) != 0)
         return 1;
