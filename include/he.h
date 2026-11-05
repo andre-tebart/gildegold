@@ -18,7 +18,7 @@ int he_InitEvents(void);
 void he_FreeEvents(void);
 int he_ReleaseEvents(void);
 int he_FigureContact(int p);                 /* 0x55ea60, the contact id of the figure p, or -1 */
-int he_Unk53d600(int type, void *alloc, void *run);
+int he_SetEventHandlers(int type, void *alloc, void *run);
 int he_FreeOldestSlot(void);
 int he_OpenEventSlot(int ev, int x, int y, char *form, int pic);
 void he_ReleaseSlot(int ev);

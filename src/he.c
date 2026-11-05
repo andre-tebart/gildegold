@@ -260,14 +260,14 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
 void d3io_NoopCallback(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_BeginFieldBlock(char *o, int id); float gm_Mix(int a, int b, int c);
-int he_Unk553060(void);
-int he_Unk568310();
-int ai_Unk56d050();
-int he_Unk56f980();
-int ai_Unk56d220();
-int ai_Unk56e400();
-int ai_Unk5733c0();
-int ai_Unk573260();
+int he_RegisterEventTypes22(void);
+int he_RegisterEventTypes02();
+int he_RegisterEventTypes03();
+int he_RegisterEventTypes88();
+int he_RegisterEventTypes95();
+int he_RegisterEventTypes99();
+int he_RegisterEventTypes9d();
+int he_RegisterEventTypeA2();
 
 int gm_CompareTime();
 
@@ -332,25 +332,25 @@ void he_RunNone(unsigned char *ev)
 
 int he_InitEvents(void)
 {
-    if (he_Unk53d600(0, (void *)he_AllocNone, (void *)he_RunNone) != 0)
+    if (he_SetEventHandlers(0, (void *)he_AllocNone, (void *)he_RunNone) != 0)
         return 1;
-    if (he_Unk53d600(1, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(1, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_Unk553060() != 0)
+    if (he_RegisterEventTypes22() != 0)
         return 1;
-    if (he_Unk568310() != 0)
+    if (he_RegisterEventTypes02() != 0)
         return 1;
-    if (ai_Unk56d050() != 0)
+    if (he_RegisterEventTypes03() != 0)
         return 1;
-    if (he_Unk56f980() != 0)
+    if (he_RegisterEventTypes88() != 0)
         return 1;
-    if (ai_Unk56d220() != 0)
+    if (he_RegisterEventTypes95() != 0)
         return 1;
-    if (ai_Unk56e400() != 0)
+    if (he_RegisterEventTypes99() != 0)
         return 1;
-    if (ai_Unk5733c0() != 0)
+    if (he_RegisterEventTypes9d() != 0)
         return 1;
-    if (ai_Unk573260() != 0)
+    if (he_RegisterEventTypeA2() != 0)
         return 1;
     memset((void *)((unsigned)&he_QuickList + 0x6a0), 0, 0x2900 * 4);
     memset((void *)((unsigned)&he_RunHandlers + 0x6a0), 0, 0x1400 * 4);
@@ -389,7 +389,7 @@ int he_ReleaseEvents(void)
 }
 /* 0x53d600, sets the alloc / run handlers of the event type `type` (0 .. 0xa6; 1 = type out of range) */
 
-int he_Unk53d600(int type, void *alloc, void *run)
+int he_SetEventHandlers(int type, void *alloc, void *run)
 {
     if (type >= 0 && type < 0xa7) {
         U_I(((unsigned)&he_QuickList + 0x400) + type * 4) = (int)alloc;
@@ -770,7 +770,7 @@ void err_Message(char *text);
 #define HE_CLK(m) do { HM_I(m, 0x28) = U_I((unsigned)&ai_Time); HM_I(m, 0x2c) = U_I((unsigned)&ai_Time.hour); HM_I(m, 0x30) = U_I(((unsigned)&ai_Time + 0x8)); *(short *)((m) + 0x34) = *(short *)((unsigned)&ai_Time + 0xc); HM_B(m, 0x36) = 2; } while (0)
 
 #define he_Jobs (*(AIJOB (*)[0x400])&he_Events)  /* 0x6fab40 */
-typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_Unk53d600) */
+typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (registered with its run handler by he_SetEventHandlers) */
 #define he_AllocHandlers (*(HEALLOC (*)[0xa7])((char *)&he_QuickList + 0x400))  /* 0x74df40 */
 
 /* 0x53e040, creates the event record of the message `m`: its type needs both an alloc and a run handler (< 0xa7) and its
@@ -9131,147 +9131,147 @@ void he_Unk552ca0(int ev)
 void ai_Unk56f040();
 int sv_RegisterActivity();
 
-/* 0x553060, registers the alloc / run handler pairs of the event types 0x22 .. 0xa5 (he_Unk53d600; the pair of a type is (alloc, run); 1 = a registration failed; 0x52b350 (type, 0, 0, 0x507 / 0x50e, -1) registers the message type of a few of them). The handlers above 0x553060 are the ones of this file; 0x56f040 is a forwarder to the free (0x53e1f0); the rest lives in the stretch 0x553880 .. 0x575700 (drafts to come) */
-int he_Unk553060(void)
+/* 0x553060, registers the alloc / run handler pairs of the event types 0x22 .. 0xa5 (he_SetEventHandlers; the pair of a type is (alloc, run); 1 = a registration failed; 0x52b350 (type, 0, 0, 0x507 / 0x50e, -1) registers the message type of a few of them). The handlers above 0x553060 are the ones of this file; 0x56f040 is a forwarder to the free (0x53e1f0); the rest lives in the stretch 0x553880 .. 0x575700 (drafts to come) */
+int he_RegisterEventTypes22(void)
 {
-    if (he_Unk53d600(0x22, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(0x22, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_Unk53d600(0x29, (void *)he_Unk541a50, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x29, (void *)he_Unk541a50, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_Unk53d600(0x2a, (void *)he_Unk541a80, (void *)he_Unk542100) != 0)
+    if (he_SetEventHandlers(0x2a, (void *)he_Unk541a80, (void *)he_Unk542100) != 0)
         return 1;
-    if (he_Unk53d600(0x2b, (void *)he_Unk542490, (void *)he_Unk542590) != 0)
+    if (he_SetEventHandlers(0x2b, (void *)he_Unk542490, (void *)he_Unk542590) != 0)
         return 1;
-    if (he_Unk53d600(0x2c, (void *)he_Unk542960, (void *)he_Unk542b60) != 0)
+    if (he_SetEventHandlers(0x2c, (void *)he_Unk542960, (void *)he_Unk542b60) != 0)
         return 1;
-    if (he_Unk53d600(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_Unk53d600(0x2e, (void *)he_Unk543020, (void *)he_Unk543180) != 0)
+    if (he_SetEventHandlers(0x2e, (void *)he_Unk543020, (void *)he_Unk543180) != 0)
         return 1;
-    if (he_Unk53d600(0x2f, (void *)he_Unk541a50, (void *)he_Unk5432f0) != 0)
+    if (he_SetEventHandlers(0x2f, (void *)he_Unk541a50, (void *)he_Unk5432f0) != 0)
         return 1;
-    if (he_Unk53d600(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_Unk53d600(0x37, (void *)he_Unk5436a0, (void *)he_Unk5437c0) != 0)
+    if (he_SetEventHandlers(0x37, (void *)he_Unk5436a0, (void *)he_Unk5437c0) != 0)
         return 1;
-    if (he_Unk53d600(0x36, (void *)he_Unk552040, (void *)he_Unk543ac0) != 0)
+    if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_Unk543ac0) != 0)
         return 1;
-    if (he_Unk53d600(0x35, (void *)he_Unk544070, (void *)he_Unk544330) != 0)
+    if (he_SetEventHandlers(0x35, (void *)he_Unk544070, (void *)he_Unk544330) != 0)
         return 1;
-    if (he_Unk53d600(0x41, (void *)he_Unk544630, (void *)he_Unk544840) != 0)
+    if (he_SetEventHandlers(0x41, (void *)he_Unk544630, (void *)he_Unk544840) != 0)
         return 1;
-    if (he_Unk53d600(0x42, (void *)he_Unk5455e0, (void *)he_Unk545640) != 0)
+    if (he_SetEventHandlers(0x42, (void *)he_Unk5455e0, (void *)he_Unk545640) != 0)
         return 1;
-    if (he_Unk53d600(0x43, (void *)he_Unk545670, (void *)he_Unk545840) != 0)
+    if (he_SetEventHandlers(0x43, (void *)he_Unk545670, (void *)he_Unk545840) != 0)
         return 1;
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
-    if (he_Unk53d600(0x44, (void *)he_Unk546100, (void *)he_Unk5461c0) != 0)
+    if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_Unk5461c0) != 0)
         return 1;
-    if (he_Unk53d600(0x45, (void *)he_Unk546c40, (void *)he_Unk546ef0) != 0)
+    if (he_SetEventHandlers(0x45, (void *)he_Unk546c40, (void *)he_Unk546ef0) != 0)
         return 1;
-    if (he_Unk53d600(0x46, (void *)he_Unk547170, (void *)he_Unk547430) != 0)
+    if (he_SetEventHandlers(0x46, (void *)he_Unk547170, (void *)he_Unk547430) != 0)
         return 1;
-    if (he_Unk53d600(0x47, (void *)he_Unk547750, (void *)he_Unk547ba0) != 0)
+    if (he_SetEventHandlers(0x47, (void *)he_Unk547750, (void *)he_Unk547ba0) != 0)
         return 1;
-    if (he_Unk53d600(0x4a, (void *)he_Unk547ee0, (void *)he_Unk547f90) != 0)
+    if (he_SetEventHandlers(0x4a, (void *)he_Unk547ee0, (void *)he_Unk547f90) != 0)
         return 1;
-    if (he_Unk53d600(0x4b, (void *)he_Unk548110, (void *)he_RunInsultNews) != 0)
+    if (he_SetEventHandlers(0x4b, (void *)he_Unk548110, (void *)he_RunInsultNews) != 0)
         return 1;
-    if (he_Unk53d600(0x51, (void *)he_Unk5482c0, (void *)he_Unk548300) != 0)
+    if (he_SetEventHandlers(0x51, (void *)he_Unk5482c0, (void *)he_Unk548300) != 0)
         return 1;
-    if (he_Unk53d600(0x52, (void *)he_Unk548330, (void *)he_Unk548380) != 0)
+    if (he_SetEventHandlers(0x52, (void *)he_Unk548330, (void *)he_Unk548380) != 0)
         return 1;
-    if (he_Unk53d600(0x53, (void *)he_Unk5483a0, (void *)he_Unk5483f0) != 0)
+    if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_Unk5483f0) != 0)
         return 1;
-    if (he_Unk53d600(0x54, (void *)he_Unk55e3a0, (void *)he_Unk5485b0) != 0)
+    if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_Unk5485b0) != 0)
         return 1;
-    if (he_Unk53d600(0x55, (void *)he_Unk548750, (void *)he_Unk548790) != 0)
+    if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_Unk548790) != 0)
         return 1;
-    if (he_Unk53d600(0x56, (void *)he_Unk5482c0, (void *)he_Unk5489b0) != 0)
+    if (he_SetEventHandlers(0x56, (void *)he_Unk5482c0, (void *)he_Unk5489b0) != 0)
         return 1;
-    if (he_Unk53d600(0x57, (void *)he_Unk548b70, (void *)he_Unk548bb0) != 0)
+    if (he_SetEventHandlers(0x57, (void *)he_Unk548b70, (void *)he_Unk548bb0) != 0)
         return 1;
-    if (he_Unk53d600(0x58, (void *)he_Unk548b70, (void *)he_Unk548de0) != 0)
+    if (he_SetEventHandlers(0x58, (void *)he_Unk548b70, (void *)he_Unk548de0) != 0)
         return 1;
-    if (he_Unk53d600(0x5a, (void *)he_Unk548ef0, (void *)he_RunRepostEvent) != 0)
+    if (he_SetEventHandlers(0x5a, (void *)he_Unk548ef0, (void *)he_RunRepostEvent) != 0)
         return 1;
-    if (he_Unk53d600(0x5b, (void *)he_Unk549040, (void *)he_Unk548fa0) != 0)
+    if (he_SetEventHandlers(0x5b, (void *)he_Unk549040, (void *)he_Unk548fa0) != 0)
         return 1;
-    if (he_Unk53d600(0x5c, (void *)he_Unk549040, (void *)he_Unk549080) != 0)
+    if (he_SetEventHandlers(0x5c, (void *)he_Unk549040, (void *)he_Unk549080) != 0)
         return 1;
-    if (he_Unk53d600(0x5d, (void *)he_Unk549110, (void *)he_Unk549120) != 0)
+    if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_Unk549120) != 0)
         return 1;
-    if (he_Unk53d600(0x5e, (void *)he_StartTrialEvent, (void *)he_Unk549430) != 0)
+    if (he_SetEventHandlers(0x5e, (void *)he_StartTrialEvent, (void *)he_Unk549430) != 0)
         return 1;
-    if (he_Unk53d600(0x5f, (void *)he_StartNextTrialStep, (void *)he_Unk549770) != 0)
+    if (he_SetEventHandlers(0x5f, (void *)he_StartNextTrialStep, (void *)he_Unk549770) != 0)
         return 1;
-    if (he_Unk53d600(0x60, (void *)he_Unk549970, (void *)he_Unk549aa0) != 0)
+    if (he_SetEventHandlers(0x60, (void *)he_Unk549970, (void *)he_Unk549aa0) != 0)
         return 1;
-    if (he_Unk53d600(0x59, (void *)he_Unk549f70, (void *)he_Unk54a020) != 0)
+    if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_Unk54a020) != 0)
         return 1;
-    if (he_Unk53d600(0x61, (void *)he_Unk54a6f0, (void *)he_Unk54a7b0) != 0)
+    if (he_SetEventHandlers(0x61, (void *)he_Unk54a6f0, (void *)he_Unk54a7b0) != 0)
         return 1;
     sv_RegisterActivity(0x61, 0x0, 0x0, 0x507, -1);
-    if (he_Unk53d600(0x63, (void *)he_Unk54ae20, (void *)he_Unk54ae60) != 0)
+    if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_Unk54ae60) != 0)
         return 1;
-    if (he_Unk53d600(0x62, (void *)he_Unk54b170, (void *)he_Unk54b1e0) != 0)
+    if (he_SetEventHandlers(0x62, (void *)he_Unk54b170, (void *)he_Unk54b1e0) != 0)
         return 1;
     sv_RegisterActivity(0x62, 0x0, 0x0, 0x50e, -1);
-    if (he_Unk53d600(0x64, (void *)he_Unk54b9b0, (void *)he_Unk54ba20) != 0)
+    if (he_SetEventHandlers(0x64, (void *)he_Unk54b9b0, (void *)he_Unk54ba20) != 0)
         return 1;
     sv_RegisterActivity(0x64, 0x0, 0x0, 0x507, -1);
-    if (he_Unk53d600(0x65, (void *)he_Unk54be20, (void *)he_Unk54bec0) != 0)
+    if (he_SetEventHandlers(0x65, (void *)he_Unk54be20, (void *)he_Unk54bec0) != 0)
         return 1;
     sv_RegisterActivity(0x65, 0x0, 0x0, 0x507, -1);
-    if (he_Unk53d600(0x66, (void *)he_Unk54c4c0, (void *)he_Unk54c570) != 0)
+    if (he_SetEventHandlers(0x66, (void *)he_Unk54c4c0, (void *)he_Unk54c570) != 0)
         return 1;
-    if (he_Unk53d600(0x67, (void *)he_Unk54c870, (void *)he_Unk54c8e0) != 0)
+    if (he_SetEventHandlers(0x67, (void *)he_Unk54c870, (void *)he_Unk54c8e0) != 0)
         return 1;
-    if (he_Unk53d600(0x68, (void *)he_Unk54d190, (void *)he_Unk54d260) != 0)
+    if (he_SetEventHandlers(0x68, (void *)he_Unk54d190, (void *)he_Unk54d260) != 0)
         return 1;
-    if (he_Unk53d600(0x69, (void *)he_Unk54cc20, (void *)he_Unk54cc50) != 0)
+    if (he_SetEventHandlers(0x69, (void *)he_Unk54cc20, (void *)he_Unk54cc50) != 0)
         return 1;
-    if (he_Unk53d600(0x6a, (void *)he_Unk54d790, (void *)he_Unk54d7d0) != 0)
+    if (he_SetEventHandlers(0x6a, (void *)he_Unk54d790, (void *)he_Unk54d7d0) != 0)
         return 1;
-    if (he_Unk53d600(0x6b, (void *)he_Unk54da20, (void *)he_Unk54da80) != 0)
+    if (he_SetEventHandlers(0x6b, (void *)he_Unk54da20, (void *)he_Unk54da80) != 0)
         return 1;
-    if (he_Unk53d600(0x6d, (void *)he_Unk54de60, (void *)he_Unk54dec0) != 0)
+    if (he_SetEventHandlers(0x6d, (void *)he_Unk54de60, (void *)he_Unk54dec0) != 0)
         return 1;
-    if (he_Unk53d600(0x6f, (void *)he_Unk54e770, (void *)he_Unk54e890) != 0)
+    if (he_SetEventHandlers(0x6f, (void *)he_Unk54e770, (void *)he_Unk54e890) != 0)
         return 1;
-    if (he_Unk53d600(0x70, (void *)he_Unk54c4c0, (void *)he_Unk54ebd0) != 0)
+    if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_Unk54ebd0) != 0)
         return 1;
-    if (he_Unk53d600(0x74, (void *)he_Unk54ef70, (void *)he_Unk54f160) != 0)
+    if (he_SetEventHandlers(0x74, (void *)he_Unk54ef70, (void *)he_Unk54f160) != 0)
         return 1;
-    if (he_Unk53d600(0x76, (void *)he_StartEffectEvent, (void *)he_Unk54fce0) != 0)
+    if (he_SetEventHandlers(0x76, (void *)he_StartEffectEvent, (void *)he_Unk54fce0) != 0)
         return 1;
-    if (he_Unk53d600(0x77, (void *)he_Unk54fe80, (void *)he_Unk54ff20) != 0)
+    if (he_SetEventHandlers(0x77, (void *)he_Unk54fe80, (void *)he_Unk54ff20) != 0)
         return 1;
-    if (he_Unk53d600(0x78, (void *)he_Unk5509f0, (void *)he_Unk550b60) != 0)
+    if (he_SetEventHandlers(0x78, (void *)he_Unk5509f0, (void *)he_Unk550b60) != 0)
         return 1;
-    if (he_Unk53d600(0x79, (void *)he_Unk550ea0, (void *)he_Unk550ee0) != 0)
+    if (he_SetEventHandlers(0x79, (void *)he_Unk550ea0, (void *)he_Unk550ee0) != 0)
         return 1;
-    if (he_Unk53d600(0x7a, (void *)he_Unk5512c0, (void *)he_Unk551b70) != 0)
+    if (he_SetEventHandlers(0x7a, (void *)he_Unk5512c0, (void *)he_Unk551b70) != 0)
         return 1;
-    if (he_Unk53d600(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_Unk53d600(0x7d, (void *)he_InitSixGroupEvent, (void *)he_Unk551d70) != 0)
+    if (he_SetEventHandlers(0x7d, (void *)he_InitSixGroupEvent, (void *)he_Unk551d70) != 0)
         return 1;
-    if (he_Unk53d600(0x7e, (void *)he_Unk552040, (void *)he_Unk552090) != 0)
+    if (he_SetEventHandlers(0x7e, (void *)he_Unk552040, (void *)he_Unk552090) != 0)
         return 1;
-    if (he_Unk53d600(0x7f, (void *)he_Unk552200, (void *)he_Unk552270) != 0)
+    if (he_SetEventHandlers(0x7f, (void *)he_Unk552200, (void *)he_Unk552270) != 0)
         return 1;
-    if (he_Unk53d600(0x80, (void *)he_Unk5524e0, (void *)he_Unk552520) != 0)
+    if (he_SetEventHandlers(0x80, (void *)he_Unk5524e0, (void *)he_Unk552520) != 0)
         return 1;
-    if (he_Unk53d600(0x81, (void *)he_Unk5524e0, (void *)he_Unk5525a0) != 0)
+    if (he_SetEventHandlers(0x81, (void *)he_Unk5524e0, (void *)he_Unk5525a0) != 0)
         return 1;
-    if (he_Unk53d600(0x82, (void *)he_Unk5527c0, (void *)he_Unk552820) != 0)
+    if (he_SetEventHandlers(0x82, (void *)he_Unk5527c0, (void *)he_Unk552820) != 0)
         return 1;
-    if (he_Unk53d600(0x86, (void *)he_Unk552880, (void *)he_Unk552920) != 0)
+    if (he_SetEventHandlers(0x86, (void *)he_Unk552880, (void *)he_Unk552920) != 0)
         return 1;
-    if (he_Unk53d600(0x87, (void *)he_Unk552b90, (void *)he_Unk552bc0) != 0)
+    if (he_SetEventHandlers(0x87, (void *)he_Unk552b90, (void *)he_Unk552bc0) != 0)
         return 1;
-    return he_Unk53d600(0xa5, (void *)he_Unk552c30, (void *)he_Unk552ca0) != 0;
+    return he_SetEventHandlers(0xa5, (void *)he_Unk552c30, (void *)he_Unk552ca0) != 0;
 }
 
 void cm_SendHandOverCrimes(int a, int b, int c, int d);
@@ -13493,131 +13493,131 @@ void he_RunPatrolEvent(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x568310, registers the event types 0x02 .. 0xa6 (second part, after 0x553060): he_Unk53d600 (type, alloc, run) for each (a non-zero result = out of table space: return 1), the type texts 0x52b350 (type, name, 0, menu id, icon) for the types with an entry in the event list, and the tip table 0x505ca0 (0x1a, 0x6fa1e0); returns 0 */
-int he_Unk568310(void)
+/* 0x568310, registers the event types 0x02 .. 0xa6 (second part, after 0x553060): he_SetEventHandlers (type, alloc, run) for each (a non-zero result = out of table space: return 1), the type texts 0x52b350 (type, name, 0, menu id, icon) for the types with an entry in the event list, and the tip table 0x505ca0 (0x1a, 0x6fa1e0); returns 0 */
+int he_RegisterEventTypes02(void)
 {
-    if (he_Unk53d600(2, (void *)he_Unk553e10, (void *)he_Unk553e90) != 0)
+    if (he_SetEventHandlers(2, (void *)he_Unk553e10, (void *)he_Unk553e90) != 0)
         return 1;
-    if (he_Unk53d600(6, (void *)he_Unk554820, (void *)he_Unk554320) != 0)
+    if (he_SetEventHandlers(6, (void *)he_Unk554820, (void *)he_Unk554320) != 0)
         return 1;
-    if (he_Unk53d600(7, (void *)he_Unk554820, (void *)he_Unk554860) != 0)
+    if (he_SetEventHandlers(7, (void *)he_Unk554820, (void *)he_Unk554860) != 0)
         return 1;
-    if (he_Unk53d600(15, (void *)he_Unk554cb0, (void *)he_Unk556600) != 0)
+    if (he_SetEventHandlers(15, (void *)he_Unk554cb0, (void *)he_Unk556600) != 0)
         return 1;
-    if (he_Unk53d600(16, (void *)he_Unk556dc0, (void *)he_Unk556ed0) != 0)
+    if (he_SetEventHandlers(16, (void *)he_Unk556dc0, (void *)he_Unk556ed0) != 0)
         return 1;
-    if (he_Unk53d600(17, (void *)he_Unk557160, (void *)he_Unk557190) != 0)
+    if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_Unk557190) != 0)
         return 1;
-    if (he_Unk53d600(18, (void *)he_Unk557b30, (void *)he_Unk5578a0) != 0)
+    if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_Unk5578a0) != 0)
         return 1;
-    if (he_Unk53d600(19, (void *)he_Unk557b30, (void *)he_Unk557b70) != 0)
+    if (he_SetEventHandlers(19, (void *)he_Unk557b30, (void *)he_Unk557b70) != 0)
         return 1;
-    if (he_Unk53d600(20, (void *)he_Unk557d70, (void *)he_Unk557e20) != 0)
+    if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_Unk557e20) != 0)
         return 1;
     sv_RegisterActivity(20, 0, 1, 1280, 174);
-    if (he_Unk53d600(21, (void *)he_Unk5584d0, (void *)he_Unk558550) != 0)
+    if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_Unk558550) != 0)
         return 1;
     sv_RegisterActivity(21, "Getier", 1, 1280, 174);
-    if (he_Unk53d600(22, (void *)he_Unk5588c0, (void *)he_Unk558a40) != 0)
+    if (he_SetEventHandlers(22, (void *)he_Unk5588c0, (void *)he_Unk558a40) != 0)
         return 1;
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
-    if (he_Unk53d600(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
+    if (he_SetEventHandlers(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
         return 1;
-    if (he_Unk53d600(25, (void *)he_Unk558e70, (void *)he_Unk558f10) != 0)
+    if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_Unk558f10) != 0)
         return 1;
-    if (he_Unk53d600(24, (void *)he_Unk559d20, (void *)he_Unk55a030) != 0)
+    if (he_SetEventHandlers(24, (void *)he_Unk559d20, (void *)he_Unk55a030) != 0)
         return 1;
-    if (he_Unk53d600(26, (void *)he_Unk55a5f0, (void *)he_Unk55a730) != 0)
+    if (he_SetEventHandlers(26, (void *)he_Unk55a5f0, (void *)he_Unk55a730) != 0)
         return 1;
-    if (he_Unk53d600(27, (void *)he_Unk55af70, (void *)he_Unk55b140) != 0)
+    if (he_SetEventHandlers(27, (void *)he_Unk55af70, (void *)he_Unk55b140) != 0)
         return 1;
-    if (he_Unk53d600(28, (void *)he_Unk55b3e0, (void *)he_Unk55b530) != 0)
+    if (he_SetEventHandlers(28, (void *)he_Unk55b3e0, (void *)he_Unk55b530) != 0)
         return 1;
-    if (he_Unk53d600(30, (void *)he_Unk55b720, (void *)he_Unk55b830) != 0)
+    if (he_SetEventHandlers(30, (void *)he_Unk55b720, (void *)he_Unk55b830) != 0)
         return 1;
-    if (he_Unk53d600(32, (void *)he_Unk55bd20, (void *)he_Unk55bd80) != 0)
+    if (he_SetEventHandlers(32, (void *)he_Unk55bd20, (void *)he_Unk55bd80) != 0)
         return 1;
-    if (he_Unk53d600(33, (void *)he_Unk55bf50, (void *)he_Unk55bfd0) != 0)
+    if (he_SetEventHandlers(33, (void *)he_Unk55bf50, (void *)he_Unk55bfd0) != 0)
         return 1;
-    if (he_Unk53d600(31, (void *)he_AllocEvent1f, (void *)he_Unk55bad0) != 0)
+    if (he_SetEventHandlers(31, (void *)he_AllocEvent1f, (void *)he_Unk55bad0) != 0)
         return 1;
-    if (he_Unk53d600(35, (void *)he_Unk55c540, (void *)he_Unk55c700) != 0)
+    if (he_SetEventHandlers(35, (void *)he_Unk55c540, (void *)he_Unk55c700) != 0)
         return 1;
-    if (he_Unk53d600(36, (void *)he_Unk55e3a0, (void *)he_Unk55cb00) != 0)
+    if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_Unk55cb00) != 0)
         return 1;
-    if (he_Unk53d600(37, (void *)he_Unk541a50, (void *)he_Unk55cc10) != 0)
+    if (he_SetEventHandlers(37, (void *)he_Unk541a50, (void *)he_Unk55cc10) != 0)
         return 1;
-    if (he_Unk53d600(38, (void *)he_Unk55ce00, (void *)he_Unk55ce60) != 0)
+    if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_Unk55ce60) != 0)
         return 1;
-    if (he_Unk53d600(39, (void *)he_AllocEvent27, (void *)he_Unk55d390) != 0)
+    if (he_SetEventHandlers(39, (void *)he_AllocEvent27, (void *)he_Unk55d390) != 0)
         return 1;
-    if (he_Unk53d600(40, (void *)he_Unk55d490, (void *)he_Unk55d5c0) != 0)
+    if (he_SetEventHandlers(40, (void *)he_Unk55d490, (void *)he_Unk55d5c0) != 0)
         return 1;
     sv_RegisterActivity(40, 0, 1, 1279, 188);
-    if (he_Unk53d600(49, (void *)he_Unk563980, (void *)he_Unk55dbe0) != 0)
+    if (he_SetEventHandlers(49, (void *)he_Unk563980, (void *)he_Unk55dbe0) != 0)
         return 1;
-    if (he_Unk53d600(50, (void *)he_AllocEvent32, (void *)he_Unk55de30) != 0)
+    if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_Unk55de30) != 0)
         return 1;
-    if (he_Unk53d600(51, (void *)he_Unk55e180, (void *)he_Unk55e1d0) != 0)
+    if (he_SetEventHandlers(51, (void *)he_Unk55e180, (void *)he_Unk55e1d0) != 0)
         return 1;
-    if (he_Unk53d600(52, (void *)he_Unk55e3a0, (void *)he_Unk55e3d0) != 0)
+    if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_Unk55e3d0) != 0)
         return 1;
-    if (he_Unk53d600(56, (void *)he_Unk55e5c0, (void *)he_Unk55e600) != 0)
+    if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_Unk55e600) != 0)
         return 1;
-    if (he_Unk53d600(57, (void *)he_AllocEvent39_3e, (void *)he_Unk55e730) != 0)
+    if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_Unk55e730) != 0)
         return 1;
-    if (he_Unk53d600(58, (void *)he_Unk55e9d0, (void *)he_Unk55efc0) != 0)
+    if (he_SetEventHandlers(58, (void *)he_Unk55e9d0, (void *)he_Unk55efc0) != 0)
         return 1;
-    if (he_Unk53d600(59, (void *)he_Unk55fa20, (void *)he_Unk55fa90) != 0)
+    if (he_SetEventHandlers(59, (void *)he_Unk55fa20, (void *)he_Unk55fa90) != 0)
         return 1;
-    if (he_Unk53d600(60, (void *)he_Unk560820, (void *)he_Unk560900) != 0)
+    if (he_SetEventHandlers(60, (void *)he_Unk560820, (void *)he_Unk560900) != 0)
         return 1;
     sv_RegisterActivity(60, 0, 0, 1284, -1);
-    if (he_Unk53d600(61, (void *)he_Unk561130, (void *)he_Unk561190) != 0)
+    if (he_SetEventHandlers(61, (void *)he_Unk561130, (void *)he_Unk561190) != 0)
         return 1;
-    if (he_Unk53d600(62, (void *)he_AllocEvent39_3e, (void *)he_Unk5614c0) != 0)
+    if (he_SetEventHandlers(62, (void *)he_AllocEvent39_3e, (void *)he_Unk5614c0) != 0)
         return 1;
-    if (he_Unk53d600(63, (void *)he_Unk5619a0, (void *)he_Unk561a20) != 0)
+    if (he_SetEventHandlers(63, (void *)he_Unk5619a0, (void *)he_Unk561a20) != 0)
         return 1;
     sv_RegisterActivity(63, 0, 0, 1290, -1);
-    if (he_Unk53d600(64, (void *)he_Unk563980, (void *)he_Unk5628e0) != 0)
+    if (he_SetEventHandlers(64, (void *)he_Unk563980, (void *)he_Unk5628e0) != 0)
         return 1;
     sv_RegisterActivity(64, 0, 0, 1283, -1);
-    if (he_Unk53d600(72, (void *)he_Unk563070, (void *)he_Unk5630f0) != 0)
+    if (he_SetEventHandlers(72, (void *)he_Unk563070, (void *)he_Unk5630f0) != 0)
         return 1;
     sv_RegisterActivity(72, 0, 0, 1282, -1);
-    if (he_Unk53d600(73, (void *)he_Unk563980, (void *)he_Unk5639c0) != 0)
+    if (he_SetEventHandlers(73, (void *)he_Unk563980, (void *)he_Unk5639c0) != 0)
         return 1;
     sv_RegisterActivity(73, 0, 0, 1290, -1);
-    if (he_Unk53d600(78, (void *)he_Unk5642e0, (void *)he_Unk5644e0) != 0)
+    if (he_SetEventHandlers(78, (void *)he_Unk5642e0, (void *)he_Unk5644e0) != 0)
         return 1;
-    if (he_Unk53d600(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
+    if (he_SetEventHandlers(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
         return 1;
-    if (he_Unk53d600(80, (void *)he_Unk5652b0, (void *)he_RunStormEvent) != 0)
+    if (he_SetEventHandlers(80, (void *)he_Unk5652b0, (void *)he_RunStormEvent) != 0)
         return 1;
-    if (he_Unk53d600(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
+    if (he_SetEventHandlers(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
         return 1;
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
-    if (he_Unk53d600(110, (void *)he_Unk565850, (void *)he_Unk565940) != 0)
+    if (he_SetEventHandlers(110, (void *)he_Unk565850, (void *)he_Unk565940) != 0)
         return 1;
-    if (he_Unk53d600(113, (void *)he_Unk565b00, (void *)he_Unk565b60) != 0)
+    if (he_SetEventHandlers(113, (void *)he_Unk565b00, (void *)he_Unk565b60) != 0)
         return 1;
-    if (he_Unk53d600(114, (void *)he_Unk565d10, (void *)he_Unk565db0) != 0)
+    if (he_SetEventHandlers(114, (void *)he_Unk565d10, (void *)he_Unk565db0) != 0)
         return 1;
-    if (he_Unk53d600(115, (void *)he_Unk5662d0, (void *)he_Unk566370) != 0)
+    if (he_SetEventHandlers(115, (void *)he_Unk5662d0, (void *)he_Unk566370) != 0)
         return 1;
-    if (he_Unk53d600(117, (void *)he_Unk563980, (void *)he_Unk566830) != 0)
+    if (he_SetEventHandlers(117, (void *)he_Unk563980, (void *)he_Unk566830) != 0)
         return 1;
     sv_RegisterActivity(117, 0, 0, 1282, -1);
-    if (he_Unk53d600(124, (void *)he_Unk567620, (void *)he_Unk567660) != 0)
+    if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_Unk567660) != 0)
         return 1;
-    if (he_Unk53d600(131, (void *)he_Unk5679b0, (void *)he_Unk567a80) != 0)
+    if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_Unk567a80) != 0)
         return 1;
-    if (he_Unk53d600(132, (void *)he_Unk567b80, (void *)he_Unk567c00) != 0)
+    if (he_SetEventHandlers(132, (void *)he_Unk567b80, (void *)he_Unk567c00) != 0)
         return 1;
-    if (he_Unk53d600(133, (void *)he_Unk567d20, (void *)he_Unk567d60) != 0)
+    if (he_SetEventHandlers(133, (void *)he_Unk567d20, (void *)he_Unk567d60) != 0)
         return 1;
-    if (he_Unk53d600(166, (void *)he_Unk567f00, (void *)he_RunPatrolEvent) != 0)
+    if (he_SetEventHandlers(166, (void *)he_Unk567f00, (void *)he_RunPatrolEvent) != 0)
         return 1;
     gm_Shuffled(0x1a, (unsigned)&full_data_6fa1e0);
     return 0;
@@ -15005,35 +15005,35 @@ void he_Unk56ce40(int ev)
 }
 /* 0x56d050, registers the event types of the construction / production group (called by 0x53d4b0): the alloc / run pairs of 3, 4, 5, 8, 9, 0xa, 0xb, 0xc, 0xd, 0xe, 0x4c, 0x4d and the type texts of 3, 4, 8, 9; 0 = ok, 1 = a registration failed */
 
-int ai_Unk56d050(void)
+int he_RegisterEventTypes03(void)
 {
-    if (he_Unk53d600(3, (void *)he_AllocIncomeEvent, (void *)he_Unk568be0) != 0)
+    if (he_SetEventHandlers(3, (void *)he_AllocIncomeEvent, (void *)he_Unk568be0) != 0)
         return 1;
     sv_RegisterActivity(3, "Abbau", 1, 0x501, 0xac);
-    if (he_Unk53d600(4, (void *)he_Unk5690c0, (void *)he_Unk569210) != 0)
+    if (he_SetEventHandlers(4, (void *)he_Unk5690c0, (void *)he_Unk569210) != 0)
         return 1;
     sv_RegisterActivity(4, "Produktion", 1, 0x4ff, 0xac);
-    if (he_Unk53d600(5, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(5, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_Unk53d600(8, (void *)he_Unk56a100, (void *)he_Unk56a170) != 0)
+    if (he_SetEventHandlers(8, (void *)he_Unk56a100, (void *)he_Unk56a170) != 0)
         return 1;
     sv_RegisterActivity(8, "Suchen", 1, 0x500, 0xac);
-    if (he_Unk53d600(9, (void *)he_Unk56a360, (void *)he_Unk56a3d0) != 0)
+    if (he_SetEventHandlers(9, (void *)he_Unk56a360, (void *)he_Unk56a3d0) != 0)
         return 1;
     sv_RegisterActivity(9, "Suchen", 1, 0x500, -1);
-    if (he_Unk53d600(10, (void *)d3io_NoopCallback, (void *)he_Unk56a710) != 0)
+    if (he_SetEventHandlers(10, (void *)d3io_NoopCallback, (void *)he_Unk56a710) != 0)
         return 1;
-    if (he_Unk53d600(0xb, (void *)he_Unk56a7b0, (void *)he_Unk56a960) != 0)
+    if (he_SetEventHandlers(0xb, (void *)he_Unk56a7b0, (void *)he_Unk56a960) != 0)
         return 1;
-    if (he_Unk53d600(0xc, (void *)he_Unk56b380, (void *)he_Unk56b3f0) != 0)
+    if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_Unk56b3f0) != 0)
         return 1;
-    if (he_Unk53d600(0xd, (void *)he_Unk56b570, (void *)he_Unk56be30) != 0)
+    if (he_SetEventHandlers(0xd, (void *)he_Unk56b570, (void *)he_Unk56be30) != 0)
         return 1;
-    if (he_Unk53d600(0xe, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(0xe, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_Unk53d600(0x4c, (void *)he_Unk56cdd0, (void *)he_Unk56ce40) != 0)
+    if (he_SetEventHandlers(0x4c, (void *)he_Unk56cdd0, (void *)he_Unk56ce40) != 0)
         return 1;
-    if (he_Unk53d600(0x4d, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(0x4d, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
         return 1;
     return 0;
 }
@@ -15048,12 +15048,12 @@ void he_Unk56dd20();
 void he_Unk56de10();
 
 /* 0x56d220, registers the research event types 0x95 .. 0x98 (called by 0x53d4b0) and the texts of 0x95 / 0x96; 0 = ok, 1 = a registration failed */
-int ai_Unk56d220(void)
+int he_RegisterEventTypes95(void)
 {
-    if (he_Unk53d600(0x95, (void *)he_Unk56d2d0, (void *)he_Unk56d3d0) == 0) {
-        if (he_Unk53d600(0x96, (void *)he_Unk56d610, (void *)he_Unk56d730) == 0) {
-            if (he_Unk53d600(0x97, (void *)he_Unk56d990, (void *)he_Unk56daa0) == 0) {
-                if (he_Unk53d600(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
+    if (he_SetEventHandlers(0x95, (void *)he_Unk56d2d0, (void *)he_Unk56d3d0) == 0) {
+        if (he_SetEventHandlers(0x96, (void *)he_Unk56d610, (void *)he_Unk56d730) == 0) {
+            if (he_SetEventHandlers(0x97, (void *)he_Unk56d990, (void *)he_Unk56daa0) == 0) {
+                if (he_SetEventHandlers(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
                     sv_RegisterActivity(0x95, "erforschen", 1, 0x500, -1);
                     sv_RegisterActivity(0x96, "erforschen", 1, 0x500, -1);
                     return 0;
@@ -15519,11 +15519,11 @@ void he_Unk56f0b0();
 void he_Unk56f050();
 
 /* 0x56e400, registers the event types 0x99 .. 0x9b (called by 0x53d4b0): the pairs (0x56e460, 0x56e5b0), (0x56efc0, 0x56f040) and (0x56f050, 0x56f0b0); 0 = ok, 1 = a registration failed */
-int ai_Unk56e400(void)
+int he_RegisterEventTypes99(void)
 {
-    if (he_Unk53d600(0x99, (void *)he_Unk56e460, (void *)he_Unk56e5b0) == 0) {
-        if (he_Unk53d600(0x9a, (void *)he_AllocEvent9a, (void *)ai_Unk56f040) == 0) {
-            if (he_Unk53d600(0x9b, (void *)he_Unk56f050, (void *)he_Unk56f0b0) == 0)
+    if (he_SetEventHandlers(0x99, (void *)he_Unk56e460, (void *)he_Unk56e5b0) == 0) {
+        if (he_SetEventHandlers(0x9a, (void *)he_AllocEvent9a, (void *)ai_Unk56f040) == 0) {
+            if (he_SetEventHandlers(0x9b, (void *)he_Unk56f050, (void *)he_Unk56f0b0) == 0)
                 return 0;
         }
     }
@@ -16084,22 +16084,22 @@ void he_Unk572fd0(int ev);          /* 0x572fd0 */
 void he_Unk572a50(int ev);          /* 0x572a50 */
 
 /* 0x56f980, registers the event types 0x88 .. 0x94 (called by 0x53d4b0): (0x88, 0x56fc50, 0x56fda0), (0x89, 0x570130, 0x5702e0), (0x8c, 0x570ef0, 0x571000), (0x8d, 0x571550, 0x571640), (0x8a, 0x5706e0, 0x5707a0), (0x8b, 0x572860, 0x570cc0), (0x8d again), (0x8e, 0x571990, 0x5719e0), (0x8f, 0x571ac0, 0x571c30), (0x90, 0x571f60, 0x5725b0), (0x91, 0x5726a0, 0x5726b0), (0x93, 0x572b90, 0x572bf0), (0x94, 0x55e3a0, 0x572fd0), (0x92, 0x572860, 0x572a50), then the texts of 0x52b350; 0 = ok, 1 = a registration failed */
-int he_Unk56f980(void)
+int he_RegisterEventTypes88(void)
 {
-    if (he_Unk53d600(0x88, (void *)he_Unk56fc50, (void *)he_Unk56fda0) == 0) {
-        if (he_Unk53d600(0x89, (void *)he_Unk570130, (void *)he_Unk5702e0) == 0) {
-            if (he_Unk53d600(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
-                if (he_Unk53d600(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
-                    if (he_Unk53d600(0x8a, (void *)he_Unk5706e0, (void *)he_Unk5707a0) == 0) {
-                        if (he_Unk53d600(0x8b, (void *)he_Unk572860, (void *)he_Unk570cc0) == 0) {
-                            if (he_Unk53d600(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
-                                if (he_Unk53d600(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
-                                    if (he_Unk53d600(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
-                                        if (he_Unk53d600(0x90, (void *)he_Unk571f60, (void *)he_Unk5725b0) == 0) {
-                                            if (he_Unk53d600(0x91, (void *)he_Unk5726a0, (void *)he_Unk5726b0) == 0) {
-                                                if (he_Unk53d600(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
-                                                    if (he_Unk53d600(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
-                                                        if (he_Unk53d600(0x92, (void *)he_Unk572860, (void *)he_Unk572a50) == 0) {
+    if (he_SetEventHandlers(0x88, (void *)he_Unk56fc50, (void *)he_Unk56fda0) == 0) {
+        if (he_SetEventHandlers(0x89, (void *)he_Unk570130, (void *)he_Unk5702e0) == 0) {
+            if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
+                if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
+                    if (he_SetEventHandlers(0x8a, (void *)he_Unk5706e0, (void *)he_Unk5707a0) == 0) {
+                        if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_Unk570cc0) == 0) {
+                            if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
+                                if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
+                                    if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
+                                        if (he_SetEventHandlers(0x90, (void *)he_Unk571f60, (void *)he_Unk5725b0) == 0) {
+                                            if (he_SetEventHandlers(0x91, (void *)he_Unk5726a0, (void *)he_Unk5726b0) == 0) {
+                                                if (he_SetEventHandlers(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
+                                                    if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
+                                                        if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_Unk572a50) == 0) {
                                                             sv_RegisterActivity(0x8d, (char *)(unsigned)&full_data_628e8c, 1, 0x513, -1);
                                                             sv_RegisterActivity(0x8c, (char *)(unsigned)&full_data_628e7c, 1, 0x500, 0xac);
                                                             sv_RegisterActivity(0x8f, (char *)(unsigned)&full_data_628e70, 0, 0x512, -1);
@@ -17603,9 +17603,9 @@ void he_Unk573280(int ev);          /* 0x573280 */
 void he_Unk5732d0(int ev);          /* 0x5732d0 */
 
 /* 0x573260, registers the event type 0xa2 (called by 0x53d4b0): the pair (0x573280, 0x5732d0); 0 = ok, 1 = a registration failed */
-int ai_Unk573260(void)
+int he_RegisterEventTypeA2(void)
 {
-    return he_Unk53d600(0xa2, (void *)he_Unk573280, (void *)he_Unk5732d0) != 0;
+    return he_SetEventHandlers(0xa2, (void *)he_Unk573280, (void *)he_Unk5732d0) != 0;
 }
 /* 0x573280, the alloc of the event 0xa2 (the daily Hanseatic League politics): nothing while paused (+0x78 & 4) or while the
    hour (ai_Time.b) is 0xa or less; else the due clock +0x52 = now + 24 hours (0x4fe140), its hour +0x56 = 0xa, the minute
@@ -17687,15 +17687,15 @@ void he_Unk575320(int ev);          /* 0x575320 */
 void he_Unk5753a0(int ev);          /* 0x5753a0 */
 
 /* 0x5733c0, registers the event types 0x9d .. 0xa1, 0xa3 and 0xa4 (called by 0x53d4b0): the pairs (0x5734b0, 0x573580), (0x573f20, 0x573fb0), (0x574060, 0x5740d0), (0x574120, 0x5743c0), (0x574550, 0x5748d0), (0x575150, 0x5751e0) and (0x575320, 0x5753a0), then the type text 0x50f of 0xa1 (0x52b350); 0 = ok, 1 = a registration failed */
-int ai_Unk5733c0(void)
+int he_RegisterEventTypes9d(void)
 {
-    if (he_Unk53d600(0x9d, (void *)he_Unk5734b0, (void *)he_Unk573580) == 0) {
-        if (he_Unk53d600(0x9e, (void *)he_Unk573f20, (void *)he_Unk573fb0) == 0) {
-            if (he_Unk53d600(0x9f, (void *)he_Unk574060, (void *)he_Unk5740d0) == 0) {
-                if (he_Unk53d600(0xa0, (void *)he_Unk574120, (void *)he_Unk5743c0) == 0) {
-                    if (he_Unk53d600(0xa1, (void *)he_Unk574550, (void *)he_Unk5748d0) == 0) {
-                        if (he_Unk53d600(0xa3, (void *)he_Unk575150, (void *)he_Unk5751e0) == 0) {
-                            if (he_Unk53d600(0xa4, (void *)he_Unk575320, (void *)he_Unk5753a0) == 0) {
+    if (he_SetEventHandlers(0x9d, (void *)he_Unk5734b0, (void *)he_Unk573580) == 0) {
+        if (he_SetEventHandlers(0x9e, (void *)he_Unk573f20, (void *)he_Unk573fb0) == 0) {
+            if (he_SetEventHandlers(0x9f, (void *)he_Unk574060, (void *)he_Unk5740d0) == 0) {
+                if (he_SetEventHandlers(0xa0, (void *)he_Unk574120, (void *)he_Unk5743c0) == 0) {
+                    if (he_SetEventHandlers(0xa1, (void *)he_Unk574550, (void *)he_Unk5748d0) == 0) {
+                        if (he_SetEventHandlers(0xa3, (void *)he_Unk575150, (void *)he_Unk5751e0) == 0) {
+                            if (he_SetEventHandlers(0xa4, (void *)he_Unk575320, (void *)he_Unk5753a0) == 0) {
                                 sv_RegisterActivity(0xa1, 0, 0, 0x50f, -1);
                                 return 0;
                             }
