@@ -1909,9 +1909,9 @@ int ai_DecideGuiltWeights(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491fb0, decision 17 */
+/* 0x491fb0, the callback of law record 17 (AIDEC.fn, office 0x19 no 2, a boolean law): ai_EvalUsePerfume (0x49c0d0, the eval callback of the goods actions 0x1c .. 0x22) takes its cur != 0 to evaluate those actions with the character's guilt (ai_EvalGuiltWeights) instead of the mood weights; the growth of need 10 - 2 (times 1.5 for the title groups 5 / 6, 0.9 for 7) against 0.5 turns it on when mood 9 outweighs mood 11, and off when mood 11 outweighs mood 9 */
 
-int ai_Unk491fb0(AIPER *p, int a, int *out)
+int ai_DecideGoodsGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float x, u, w;
