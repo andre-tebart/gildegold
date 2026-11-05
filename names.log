@@ -2459,3 +2459,4 @@
 2026-11-05T17:27:09 0x00552200 data he_Unk552200 -> he_StartExamOffer by:main why:the stage-0 start handler of the master exam offer event 0x7f (its run handler he_RunExamOffer): due now, the offer hour 9 + random(3), the minute random(4) * 15, no answer yet
 2026-11-05T17:27:42 0x005524e0 data he_Unk5524e0 -> he_StartDue by:main why:the stage-0 start handler shared by the events 0x80 and 0x81 (the conversion): the due clock is a copy of the start clock and the event is posted at once
 2026-11-05T17:29:09 0x00552520 data he_Unk552520 -> he_RunDelay by:main why:the run handler of the delay event 0x80 (he_StartDue starts it): it counts the days left at +0xac down one per day and frees the record at 0
+2026-11-05T17:30:18 0x005527c0 data he_Unk5527c0 -> he_StartSkillBonus by:main why:the stage-0 start handler of the skill-bonus event 0x82 (f3gm.c gm_GetSkill finds its kind; its run handler 0x552820): due now + its duration in hours at +0xb8

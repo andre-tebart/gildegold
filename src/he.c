@@ -345,6 +345,11 @@ typedef struct HEDELAY {                /* the delay event 0x80's words over AIJ
     char pad00[0xac];
     int days;                           /* 0xac, the days still to wait, one counted off per day, 0 frees the event */
 } HEDELAY;
+typedef struct HESKILLBONUS {           /* the skill-bonus event 0x82's words over AIJOB's union (he_StartSkillBonus
+                                           starts it, 0x552820 runs it): GMSKILLEV (f3gm_types.h) and the duration */
+    char pad00[0xb8];
+    int hours;                          /* 0xb8, the hours the bonus lasts (its due clock) */
+} HESKILLBONUS;
 typedef struct HEAPPLICANTS {           /* the applicants event 0x86's words over AIJOB's union (he_RunApplicants) */
     char pad00[0xac];
     int office;                         /* 0xac, the office kind applied for (amt_GetOpenOffice), 0 none */
@@ -10494,14 +10499,19 @@ void he_RunConversion(int ev)
     gm_AddTime(&e->end, 0x18, 0, 0);
     e->exSlot = cm_SendExSetHE(0, ev);
 }
-/* 0x5527c0, the allocation handler: unless flag 4 of +0x78 is set the event is posted +0xb8 units later (due clock now, 0x4c4c60 (0, ev), handle in +0x84) */
+/* 0x5527c0, the stage-0 start handler of the skill-bonus event 0x82 (its run handler 0x552820; GMSKILLEV in
+   f3gm_types.h holds the bonus words): unless its option 4 says it is not started yet, the due clock is now + the
+   bonus's duration (HESKILLBONUS.hours) and the event is posted at once (its cm slot kept in exSlot) */
 
-void he_Unk5527c0(int ev)
+void he_StartSkillBonus(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, *(int *)(ev + 0xb8), 0, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+    HESKILLBONUS *b = (HESKILLBONUS *)ev;
+
+    if ((e->opts & 4) == 0) {
+        e->end = ai_Time;
+        gm_AddTime(&e->end, b->hours, 0, 0);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 /* 0x552820, the run handler of a one-shot event: states -1 / -2 free the record; else unless flag 4 the event is posted with the handle -1 (0x4c4c60 (-1, ev), due clock now, handle in +0x84) */
@@ -10954,7 +10964,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x81, (void *)he_StartDue, (void *)he_RunConversion) != 0)
         return 1;
-    if (he_SetEventHandlers(0x82, (void *)he_Unk5527c0, (void *)he_Unk552820) != 0)
+    if (he_SetEventHandlers(0x82, (void *)he_StartSkillBonus, (void *)he_Unk552820) != 0)
         return 1;
     if (he_SetEventHandlers(0x86, (void *)he_Unk552880, (void *)he_RunApplicants) != 0)
         return 1;
