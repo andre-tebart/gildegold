@@ -182,6 +182,17 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             int pairPrice[3];           /* 0xc0, per pick (pick + 1) * the partners' worths (gm_GetWorth, each at
                                            least 32000) / 640 */
         };
+        struct {                        /* 0xac, of the patrol event 0x43 ("STREIFE_INIT"; alloc handler 0x545670, run
+                                           handler 0x545840) */
+            int patrolTarget;           /* 0xac, the id of the target building */
+            int patrolStart;            /* 0xb0, the id of the building it starts from */
+            int patrolWay[4];           /* 0xb4, up to four buildings of kind 6 within 950 of the target, in a random
+                                           order, -1: none */
+            int patrolGuards[4];        /* 0xc4, its guards (the run handler) */
+            int patrolWait;             /* 0xd4, -1 at the start; the run handler waits while it is set */
+            int patrolStep;             /* 0xd8, the index into patrolWay of the next way point, 0 at the start */
+            unsigned char patrolRound;  /* 0xdc, the rounds walked, 0 at the start */
+        };
         struct {                        /* 0xac, of the tribute event 0x35 (alloc handler 0x544070, run handler 0x544330;
                                            the collector's netId is idbc) */
             AITIME tributeEnd;          /* 0xac, the end of the collection: a day after its start */

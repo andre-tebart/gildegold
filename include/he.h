@@ -122,7 +122,7 @@ void he_RunFeast(int ev);
 
 void he_Unk545640(int ev);
 
-void he_Unk545670(int ev);
+void he_AllocPatrol(int ev);
 
 void he_AllocTribute(int ev);
 

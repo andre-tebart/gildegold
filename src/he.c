@@ -7419,57 +7419,56 @@ void he_Unk545640(int ev)
 
 void gm_Shuffled(unsigned char n, int *out);
 
-/* 0x545670, a Ghidra miss (disassembled): the patrol ("STREIFE_INIT: Target: %i, Way: %i, %i, %i, %i, Start: %i") event init: the record clock (+0x44) is set, the up to 8 figures of kind 6 (not the target / start / kind 0x47, with a record at +0x61) within 950.0 of the target (+0xac) are collected, 0x505ca0 picks up to 4 of them as the way (+0xb4 .. +0xc0), the event is posted (+0xd4 = -1, +0xd8 = 0, +0xdc = 0) (ROUGH) */
-void he_Unk545670(int ev)
+/* 0x545670, a Ghidra miss (disassembled): the alloc handler of the patrol event 0x43, once it is started (opts bit
+   4 clear): the start clock is now; of the buildings of kind 6 (gm_BuildQuery 1, 6) up to 8 with a scene object,
+   other than the target and the start and not of type 0x47, within 950 of the target's object are collected, and
+   up to four of them in a random order (gm_Shuffled) become its way (patrolWay, else -1); prints the
+   "STREIFE_INIT" line (not shown), its first step is due in a second, and it is posted with key 0 */
+void he_AllocPatrol(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *target, *b;
+    D3OBJECT *p, *q;
     int cand[8];
-    int sel[8];
+    int pick[8];
     char buf[0x100];
     int n = 0;
-    int t, f, k, r, o;
-    float dx, dy, dz;
-    double dist;
+    int k;
+    float dx, dy, dz, dist;
 
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        memset(cand, -1, sizeof(cand));
-        t = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        f = gm_BuildQuery(1, 6);
-        while (f != 0) {
-            if (n >= 8)
-                break;
-            r = *(int *)(f + 0x61);
-            if (r != 0 && *(int *)(f + 1) != *(int *)(t + 1) && *(int *)(f + 1) != *(int *)(ev + 0xb0) && *(char *)f != 0x47) {
-                o = *(int *)(t + 0x61);
-                dx = *(float *)(r + 0x4c) - *(float *)(o + 0x4c);
-                dy = *(float *)(r + 0x50) - *(float *)(o + 0x50);
-                dz = *(float *)(r + 0x54) - *(float *)(o + 0x54);
-                dist = sqrt(dx * dx + dy * dy + dz * dz);
-                if (dist <= 950.0f) {
-                    cand[n] = *(int *)(f + 1);
-                    n++;
-                }
-            }
-            f = gm_BuildNext();
+    if (e->opts & 4)
+        return;
+    e->start = ai_Time;
+    memset(cand, -1, sizeof(cand));
+    target = (AIBLD *)gm_BuildQuery(1, 1, e->patrolTarget);
+    for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+        if (n >= 8)
+            break;
+        p = (D3OBJECT *)b->object;
+        if (p != 0 && b->id != target->id && b->id != e->patrolStart && b->type != 0x47) {
+            q = (D3OBJECT *)target->object;
+            dx = p->pos.x - q->pos.x;
+            dy = p->pos.y - q->pos.y;
+            dz = p->pos.z - q->pos.z;
+            dist = (float)sqrt(dx * dx + dy * dy + dz * dz);
+            if (dist <= 950.0f)
+                cand[n++] = b->id;
         }
-        if (n != 0) {
-            *(int *)(ev + 0xb4) = -1;
-            *(int *)(ev + 0xb8) = -1;
-            *(int *)(ev + 0xbc) = -1;
-            *(int *)(ev + 0xc0) = -1;
-            gm_Shuffled(n, sel);
-            for (k = 0; k < n && k < 4; k++)
-                *(int *)(ev + 0xb4 + k * 4) = cand[sel[k]];
-        }
-        sprintf(buf, "STREIFE_INIT: Target: %i, Way: %i, %i, %i, %i, Start: %i", *(int *)(ev + 0xac), *(int *)(ev + 0xb4), *(int *)(ev + 0xb8),
-                *(int *)(ev + 0xbc), *(int *)(ev + 0xc0), *(int *)(ev + 0xb0));
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0, 1);
-        *(int *)(ev + 0xd8) = 0;
-        *(char *)(ev + 0xdc) = 0;
-        *(int *)(ev + 0xd4) = -1;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
     }
+    if (n != 0) {
+        memset(e->patrolWay, -1, sizeof(e->patrolWay));
+        gm_Shuffled((unsigned char)n, pick);
+        for (k = 0; k < n && k < 4; k++)
+            e->patrolWay[k] = cand[pick[k]];
+    }
+    sprintf(buf, "STREIFE_INIT: Target: %i, Way: %i, %i, %i, %i, Start: %i", e->patrolTarget, e->patrolWay[0],
+            e->patrolWay[1], e->patrolWay[2], e->patrolWay[3], e->patrolStart);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 0, 1);
+    e->patrolStep = 0;
+    e->patrolRound = 0;
+    e->patrolWait = -1;
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 int gm_MinutesBetween();
@@ -9362,7 +9361,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x42, (void *)he_Unk5455e0, (void *)he_Unk545640) != 0)
         return 1;
-    if (he_SetEventHandlers(0x43, (void *)he_Unk545670, (void *)he_Unk545840) != 0)
+    if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_Unk545840) != 0)
         return 1;
     sv_RegisterActivity(0x43, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x44, (void *)he_Unk546100, (void *)he_Unk5461c0) != 0)
