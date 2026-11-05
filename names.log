@@ -2510,3 +2510,4 @@
 2026-11-05T20:44:04 0x0055c540 data he_Unk55c540 -> he_AllocKredit by:main why:the alloc handler of the loan event 0x23 (he_SetEventHandlers(35, it, the run handler with the debug text he_RunKredit))
 2026-11-05T20:46:03 0x0055c700 data he_Unk55c700 -> he_RunKredit by:main why:its debug text "he_RunKredit(): Could not find GebaeudeId '%i'"; the run handler of the loan event 0x23
 2026-11-05T20:47:54 0x0055cb00 data he_Unk55cb00 -> he_RunEvent24 by:main why:the run handler of the event type 0x24: he_SetEventHandlers(36, he_Unk55e3a0, it)
+2026-11-05T20:49:44 0x0055cc10 data he_Unk55cc10 -> he_RunMasterExamNotice by:main why:the run handler of the event 0x25 (he_SetEventHandlers(37, ..)): the event box Berufe\\Messagebox_Meisterpruefung (the master exam) with the training voice of the character's title group

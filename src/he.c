@@ -15133,43 +15133,77 @@ int gm_TitlesLeft();
 int gm_TitleGroup();
 struct SBBANK * sb_FindBank();
 
-/* 0x55cc10, the run handler of the master exam announcement ("Berufe\Messagebox_Meisterpruefung", 4 states by the jump table 0x55cdec; ROUGH): returns while the due time is not reached (0x4fe210); state 0 opens the window (0x53d6f0 (ev, 0, 0, name, 0x5fd), none: free), state 1 looks up the person +0xac (0x505df0), its title group (0x504ce0, 0x504ad0 = titles left; the sound names "BERUF_TRAINING_SPIELER_MAENNLICH" / "_WEIBLICH" with the ADDON variants by the sex and by 0xc titles, 0x426290 lookups) and speaks it (0x4c27d0 (-8, .., name, ..), the news 0x159a through 0x515960), state 2 / 3 close the window (0x4ffe90 contact, 0x521960, 0x53d800) and free the record */
-void he_Unk55cc10(int ev)
+/* 0x55cc10, the run handler of the master exam announcement, event 0x25 (its init he_RunDueNow), once due. Stage 0
+   opens the event box "Berufe\Messagebox_Meisterpruefung" (picture 0x5fd; none: the event is freed); for the
+   character AIJOB.ownerCh it speaks the training voice of its title group (gm_TitleGroup of its jobId: the
+   "BERUF_TRAINING_SPIELER_MAENNLICH" / "_WEIBLICH" variant group - 1, from the ADDON_ bank for the groups above
+   12) and prints the text 0x159a (the character, the text 0x1556 + titles left + 1, the group's text from 0x159b,
+   0x15ab for a woman); stage 1. Stage 1 waits for the answer: yes (d2_ClickedId 0) selects the object of the
+   kind 0x13 of the character's home bld2 in the panel (sv_SelectPanelObject), yes and no (1) close the box and
+   free the event. Stages -2 / -1 close and free */
+void he_RunMasterExamNotice(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p, n;
-    char *snd;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *c;
+    AIOBJ *o;
+    struct SBBANK *bank;
+    int left, group, text;
 
-    if (gm_CompareTime(ev + 0x52, (unsigned)&ai_Time) == 0)
+    if (gm_CompareTime(&ai_Time, &e->end) < 0)
         return;
-    if (st < 0 || st > 3) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (st) {
+    switch (e->stage) {
     case 0:
-        he_OpenEventSlot(ev, 0, 0, (int)"Berufe\\Messagebox_Meisterpruefung", 0x5fd);
-        if (*(int *)(ev + 0x74) == 0)
+        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5fd);
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
+            return;
+        }
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        if (c != 0) {
+            left = gm_TitlesLeft(c->jobId) + 1;
+            text = (c->sex != 0 ? 0x10 : 0) + 0x159b;
+            group = gm_TitleGroup(c->jobId);
+            if (c->sex == 0) {
+                if (group <= 12) {
+                    bank = sb_FindBank("BERUF_TRAINING_SPIELER_MAENNLICH");
+                    snd_QueueVoice(-8, (int)bank, "BERUF_TRAINING_SPIELER_MAENNLICH", group - 1, 0);
+                } else {
+                    bank = sb_FindBank("ADDON_BERUF_TRAINING_SPIELER_MAENNLICH");
+                    snd_QueueVoice(-8, (int)bank, "BERUF_TRAINING_SPIELER_MAENNLICH", group - 13, 0);
+                }
+            } else {
+                if (group <= 12) {
+                    bank = sb_FindBank("BERUF_TRAINING_SPIELER_WEIBLICH");
+                    snd_QueueVoice(-8, (int)bank, "BERUF_TRAINING_SPIELER_WEIBLICH", group - 1, 0);
+                } else {
+                    bank = sb_FindBank("ADDON_BERUF_TRAINING_SPIELER_WEIBLICH");
+                    snd_QueueVoice(-8, (int)bank, "BERUF_TRAINING_SPIELER_WEIBLICH", group - 13, 0);
+                }
+            }
+            io_PrintText(0x159a, c->id, left + 0x1556, group + text, 4);
+        }
+        e->stage++;
         return;
     case 1:
-        p = gm_FindChar(*(int *)(ev + 0xac));
-        if (p == 0)
+        if (d2_ClickedForm != e->slot->win || d2_ClickedId == -1)
             return;
-        n = gm_TitlesLeft(p);
-        if (gm_TitleGroup(p, n) != 0) {
-            if (n == 0xc)
-                snd = "BERUF_TRAINING_SPIELER_MAENNLICH";
-            else
-                snd = "ADDON_BERUF_TRAINING_SPIELER_MAENNLICH";
-        } else {
-            snd = *(unsigned char *)(p + 9) == 1 ? "BERUF_TRAINING_SPIELER_WEIBLICH" : "ADDON_BERUF_TRAINING_SPIELER_WEIBLICH";
+        if (d2_ClickedId == 0) {
+            c = (AICHAR *)gm_FindChar(e->ownerCh);
+            if (c->bld2 != 0) {
+                o = (AIOBJ *)gm_Query((void *)c->bld2->objList, 2, 0, 0x13, 6);
+                sv_SelectPanelObject((unsigned char *)c->bld2, o->objId, ch_EmptyName);
+            }
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
         }
-        sb_FindBank(snd);
-        snd_QueueVoice(-8, 0, snd, 0, 0);
-        io_PrintText(0x159a);
+        if (d2_ClickedId == 1) {
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+        }
         return;
-    default:
+    case -2:
+    case -1:
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
@@ -17379,7 +17413,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_RunEvent24) != 0)
         return 1;
-    if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_Unk55cc10) != 0)
+    if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_RunMasterExamNotice) != 0)
         return 1;
     if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_Unk55ce60) != 0)
         return 1;
