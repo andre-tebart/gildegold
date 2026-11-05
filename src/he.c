@@ -1229,15 +1229,13 @@ void he_AddEventGfxInfo(AIJOB *ev)
 }
 /* 0x53eba0, removes the gfx infos whose parent changed or when the 3D option is off */
 
-void he_Unk53eba0(void)
+void he_RemoveStaleGfxInfos(void)
 {
-    int *p = (int *)((unsigned)&he_RunHandlers + 0x2a0);
+    HEGFXINFO *p;
 
-    do {
-        if (p[1] != 0 && (*(int *)(p[1] + 4) != *p || *(char *)((unsigned)&ai_GameSwitches + 0x3) == 0))
-            he_FreeGfxInfo(p);
-        p += 4;
-    } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x6a0));
+    for (p = he_GfxInfos; (int)p < (int)(he_GfxInfos + 0x40); p++)
+        if (p->ev != 0 && (((AIJOB *)p->ev)->id != p->eventId || ai_GameSwitches.byte[3] == 0))
+            he_FreeGfxInfo((int *)p);
 }
 /* 0x53ebe0, removes the gfx infos of the object `obj` */
 
@@ -1308,7 +1306,7 @@ void he_Unk53ed70(void)
     int iv, i;
     unsigned char *pb;
 
-    he_Unk53eba0();
+    he_RemoveStaleGfxInfos();
     i = 0;
     if (U_I((unsigned)&he_EventTop) >= 0) {
         pb = (unsigned char *)(unsigned)&he_Events;

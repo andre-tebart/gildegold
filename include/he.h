@@ -58,7 +58,7 @@ struct D3OBJECT *he_CreateGfxObject(HEGFXINFO *e, char *name, struct D3OBJECT *o
 void he_CreateGfxInfo(struct AIJOB *ev, char *name, struct D3OBJECT *parent);
 void he_FreeGfxInfo(int *e);
 void he_AddEventGfxInfo(struct AIJOB *ev);
-void he_Unk53eba0(void);
+void he_RemoveStaleGfxInfos(void);
 void he_RemoveGfxInfos(int obj);
 void he_ShowObjectInfos(int obj, int a);
 void he_Unk53ec40(unsigned char *r);
