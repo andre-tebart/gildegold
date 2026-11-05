@@ -45,6 +45,8 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
                 unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
                                                    capacity of its ord kind record (cm_ExSetHome) */
                 struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
+                struct AHMREC *ahm;             /* 0x65, of the alchemist's building: its alchemist record (ahm_types.h,
+                                                   ahm.c's ahm_AllocAhmInfo) */
                 int hostage;                    /* 0x65, of a thieves' guild: -1 while it holds no kidnapped character (reasoned:
                                                    ai_CalcMeisterDiebe posts the kidnap event 0x3c only then, he_AllocEvent3c
                                                    cancels one otherwise) */

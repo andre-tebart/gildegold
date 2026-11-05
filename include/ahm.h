@@ -6,12 +6,6 @@ struct VFSFILE;
 #include "ai_types.h"                /* AITIME */
 
 #include "ahm_types.h"               /* AHMSLOT */
-typedef struct AHMREC {                 /* 0x3c bytes, the record the alchemist object keeps at +0x65 ("ahm_AllocAhmInfo") */
-    int id;                             /* +0x0, the alchemist character id (0x4eaa50) */
-    float value;                        /* +0x4, 0 .. 1, added to by an order (0x4ecdb0) */
-    unsigned char share[4];             /* +0x8, 0 .. 252, the four shares / 252 (0x4eab20) */
-    AHMSLOT slots[6];                   /* +0xc, the places */
-} AHMREC;
 #pragma pack(push, 1)
 typedef struct AHMOBJ {                 /* the building object as ahm.c reads it (AIBLD, ai.h): the kind, the records and the object list */
     unsigned char kind;                 /* +0x0, index into ai_BTypes */
