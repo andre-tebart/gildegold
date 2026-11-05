@@ -1007,9 +1007,9 @@ AIPX *ai_PickRandomBuildingChar(AIBLD *b)
     for (i = 0; i < 768; i++) {
         if (n >= 8)
             break;
-        if (AIC[i].id != 0xffff && AIC[i].kind == 0x14 && AIC[i].bld == b && AIC[i].unk008 > 0 &&
-            AIC[i].unk180 != -0x78 && AIC[i].unk180 != -0x70 && AIC[i].unk180 != -0x77 &&
-            AIC[i].unk180 != -0x76)
+        if (AIC[i].id != 0xffff && AIC[i].kind == 0x14 && AIC[i].bld == b && AIC[i].health > 0 &&
+            AIC[i].jobKind != -0x78 && AIC[i].jobKind != -0x70 && AIC[i].jobKind != -0x77 &&
+            AIC[i].jobKind != -0x76)
             list[n++] = i;
     }
     if (n < 2)

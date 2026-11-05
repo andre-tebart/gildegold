@@ -446,7 +446,7 @@ typedef struct AIPX {                   /* a character, 0x21c bytes (ai_Chars[76
     unsigned char kind;                 /* 0x002 */
     char pad003;
     int netId;                         /* 0x004 */
-    unsigned char unk008;               /* 0x008 */
+    unsigned char health;               /* 0x008, > 0 = alive (ai_char.h AICHAR.health) */
     char pad009[4];
     unsigned char rank;                  /* 0x00d, the rank (ai.h AICHAR.b00d: gv_CheckRankUp sends it as the new rank) */
     char pad00e[0x15e];
@@ -455,7 +455,8 @@ typedef struct AIPX {                   /* a character, 0x21c bytes (ai_Chars[76
     char pad174[4];
     int inventory;                      /* 0x178 */
     char pad17c[4];
-    signed char unk180;                 /* 0x180, the current action */
+    signed char jobKind;                /* 0x180, the kind of the job (ai_char.h AICHAR.jobKind); the grave jobs 0x88,
+                                           0x8a, 0x90 are negative as signed chars here */
     char pad181[0x13];
     int money;                         /* 0x194 */
     char pad198[0x34];
