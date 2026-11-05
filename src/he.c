@@ -1133,24 +1133,25 @@ void he_CreateGfxInfo(AIJOB *ev, char *name, D3OBJECT *parent)
 }
 /* 0x53e840, removes the gfx info `e` (frees its object, re-spreads the others on the same parent) */
 
-void he_Unk53e840(int *e)
+void he_FreeGfxInfo(int *e)
 {
-    int sv = U_I((unsigned)&d3_CurrentScene);
-    int par = e[2];
+    HEGFXINFO *g = (HEGFXINFO *)e;
+    int sv = d3_CurrentScene;
+    D3OBJECT *par = g->parent;
 
-    if (e[3] != 0) {
-        e[2] = 0;
+    if (g->obj != 0) {
+        g->parent = 0;
         d3if_SelectScene(0, 1);
         if (par != 0) {
-            if (d3_FindObject(0, 0x1c0, par, 0) != 0)
+            if (d3_FindObject(0, 0x1c0, (int)par, 0) != 0)
                 he_SpreadGfxInfos(par);
         }
-        d3if_Delete((struct D3OBJECT *)e[3]);
-        e[3] = 0;
+        d3if_Delete(g->obj);
+        g->obj = 0;
         d3if_SelectScene(sv, 1);
     }
-    e[1] = 0;
-    e[0] = -1;
+    g->ev = 0;
+    g->eventId = -1;
 }
 /* 0x53e8b0, adds the gfx info of the event `ev` by its kind when it has none (3D option only): 0x1b a coin, 0x1c / 0x1e
    a gold (saw) hammer, 0x1f / 2 a plus hammer, 0x40 binoculars (the player's), 0x1a blows over the event's building;
@@ -1234,7 +1235,7 @@ void he_Unk53eba0(void)
 
     do {
         if (p[1] != 0 && (*(int *)(p[1] + 4) != *p || *(char *)((unsigned)&ai_GameSwitches + 0x3) == 0))
-            he_Unk53e840(p);
+            he_FreeGfxInfo(p);
         p += 4;
     } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x6a0));
 }
@@ -1246,7 +1247,7 @@ void he_RemoveGfxInfos(int obj)
 
     do {
         if (p[2] == obj)
-            he_Unk53e840(p);
+            he_FreeGfxInfo(p);
         p += 4;
     } while ((int)p < (int)((unsigned)&he_RunHandlers + 0x6a0));
 }
@@ -5514,7 +5515,7 @@ void he_Unk54da80(int ev)
         }
         *(int *)(ev + 0x70) = 2;
         if (*(int *)(ev + 0x88) != 0 && (U_I(((unsigned)&ai_Selected + 0x40) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c) & 0x20000) != 0) {
-            he_Unk53e840(*(int *)(ev + 0x88));
+            he_FreeGfxInfo(*(int *)(ev + 0x88));
             *(int *)(ev + 0x88) = 0;
         }
         return;
@@ -5530,7 +5531,7 @@ void he_Unk54da80(int ev)
         *(short *)(ev + 0x56) = 6;
         *(int *)(ev + 0x58) = 0;
         if (*(int *)(ev + 0x88) != 0) {
-            he_Unk53e840(*(int *)(ev + 0x88));
+            he_FreeGfxInfo(*(int *)(ev + 0x88));
             *(int *)(ev + 0x88) = 0;
         }
         if ((*(unsigned char *)(ev + 0x78) & 2) != 0)
@@ -14052,7 +14053,7 @@ fetch:
             h = *(int *)(ev + 0x88);
             *(int *)(ev + 0xc8) = 0;
             if (h != 0) {
-                he_Unk53e840((int *)h);
+                he_FreeGfxInfo((int *)h);
                 *(int *)(ev + 0x88) = 0;
             }
             *(AITIME *)ck = *(AITIME *)(ev + 0x52);
