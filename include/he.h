@@ -101,7 +101,7 @@ void he_PostEvent3b(void);
 void he_PostEvent73(void);
 void he_PostEventA6(void);
 void he_EndEventNow(int r);
-void he_Unk541250(int r, int pl);
+void he_SetEventChar(int r, int pl);
 
 
 

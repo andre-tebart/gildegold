@@ -2315,16 +2315,18 @@ void he_EndEventNow(int r)
     if ((((AIJOB *)r)->opts & 2) != 0)
         cm_SendExSetHE(-1, r);
 }
-/* 0x541250, sets the player (word +8) and its id (+0xc) of the record */
+/* 0x541250, sets the character slot (AIJOB.chr, +0x8) of the event record and its netId (+0xc), -1 for 0xffff */
 
-void he_Unk541250(int r, int pl)
+void he_SetEventChar(int r, int pl)
 {
-    *(short *)(r + 8) = (short)pl;
+    AIJOB *e = (AIJOB *)r;
+
+    e->chr = (unsigned short)pl;
     if (pl != 0xffff) {
-        *(int *)(r + 0xc) = U_I((unsigned)&ai_CharInts + pl * 0x21c);
+        e->netId = ai_CharInts[pl][0];
         return;
     }
-    *(int *)(r + 0xc) = -1;
+    e->netId = -1;
 }
 
 float gm_CharacterBaseHealth();
@@ -14379,7 +14381,7 @@ void he_Unk56a960(int ev)
     left = 0;
     if (*(int *)(ev + 0x70) == -2) {
         *(int *)(ev + 0x70) = 0;
-        he_Unk541250(ev, *(unsigned short *)U_I((unsigned)&ai_PlayerChar));
+        he_SetEventChar(ev, *(unsigned short *)U_I((unsigned)&ai_PlayerChar));
     }
     if (*(int *)(ev + 0xe8) != -1) {
         if (cm_GetSlotState(*(int *)(ev + 0xe8)) == 0) {
