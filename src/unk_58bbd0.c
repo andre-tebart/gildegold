@@ -18042,7 +18042,7 @@ int ai_AgendaOfficeList(int param_1)
 }
 
 struct SVBOOK *sv_OpenBook(char *model, char *at, char n, ...); void sv_UpdateBook(struct SVBOOK *bk); void sv_CloseBook(struct SVBOOK *bk); int gv_TableRecordText();
-void ai_Unk5c2410();
+void ai_LawBookInfoWindow();
 
 /* 0x5c2160, the law book listener (657 B): the pages 0x111 (Strafrecht), 0x112 (Steuern) and 0x113
    (Verfassung) open the window 0x52f360 (the object names 0x62bde4 / 0x62be00 / 0x62bdc8, the book window
@@ -18129,7 +18129,7 @@ int ai_OpenLawBook(int param_1)
                         text = 0;
                         break;
                     }
-                    ai_Unk5c2410(base + i * 5, text);
+                    ai_LawBookInfoWindow(base + i * 5, text);
                     break;
                 }
             }
@@ -18144,24 +18144,24 @@ int ai_OpenLawBook(int param_1)
         }
     }
 }
-/* 0x5c2410, the law book info box "Gesetze\Gesetzbuch_Info" 0x62d2a4 (176 B): the caption 0x515960
-   (param_1 + 1, param_1, param_2) and the text 0x515960 (param_1 + 2), the pump 0x5309a0 (this, 0x677c7)
-   and 0x4758f0 (win) */
+/* 0x5c2410, the law book info box "Gesetze\Gesetzbuch_Info" (176 B): the caption text id + 1 (with the id and
+   the law text as arguments) and the body text id + 2 through 0x515960, the pump 0x5309a0 (this, 0x677c7) and
+   0x4758f0 (win) */
 
-void ai_Unk5c2410(int param_1, int param_2)
+void ai_LawBookInfoWindow(int textId, int lawText)
 {
     int win;
 
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d2a4);
+    win = d2_OpenForm(0, 0, "Gesetze\\Gesetzbuch_Info");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(param_1 + 1, param_1, param_2);
+    io_PrintText(textId + 1, textId, lawText);
     d2_SetForm(win, 2);
-    io_PrintText(param_1 + 2);
+    io_PrintText(textId + 2);
     do {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    } while (sv_RunFrame(ai_Unk5c2410, 0x677c7) != 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_LawBookInfoWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
 /* 0x5c2490, the law entry controls (464 B): the checkbox 0x515960 (0x194f, 0, param_6, (flags & 1) + 0x1951)
