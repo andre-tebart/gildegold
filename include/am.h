@@ -584,9 +584,12 @@ typedef struct AIGRP {                  /* a group: a leader and up to four memb
         AIC4 *ch;                       /* 0x04 */
         int d;                          /* 0x08 */
     } mem[4];
-    unsigned int unk24;                 /* 0x24, 0..5 */
-    unsigned int unk28;                 /* 0x28, 0..5 */
-    int unk2c;                          /* 0x2c, result */
+    unsigned int essen;                 /* 0x24, the feast menu pick 0 .. 5: ai_FeastWindow prints text 0x1782
+                                           (_MN_FEST_ESSEN) from it, 0 = the best menu */
+    unsigned int musik;                 /* 0x28, the feast musician pick 0 .. 5: text 0x1783 (_MN_FEST_MUSIKER),
+                                           0 = the best entertainment */
+    int cost;                           /* 0x2c, the feast's cost: ai_EvalFest computes it, the player's window
+                                           shows it (_MN_FEST_FEEDBACK+4, %T) */
     unsigned char n;                    /* 0x30, member count, 1..4 */
     char pad31[3];
 } AIGRP;
@@ -631,7 +634,7 @@ int ai_WealthRatingHalf(AIC4 *a, AIC4 *b);                             /* 0x4948
 AIREC10 *ai_FindInstrumentRecord(int key);                                 /* 0x4948c0 */
 void ai_RollStudyOffers(struct AIC4 *ch, int *out);                          /* 0x4948f0 */
 int ai_MasterExamPassed(AIC4 *a, AIC4 *b);                             /* 0x494a30 */
-int ai_Unk494ac0(AIGRP *g, int send);                           /* 0x494ac0 */
+int ai_EvalFest(AIGRP *g, int send);                           /* 0x494ac0 */
 int ai_Unk494d40(AIC4 *a, AIC4 *b, int n);                      /* 0x494d40 */
 int ai_Unk494d90(AIC4 *a, AIC4 *b, int *out);                   /* 0x494d90 */
 

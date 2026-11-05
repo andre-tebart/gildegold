@@ -6998,7 +6998,7 @@ void he_Unk542b60(int ev)
 }
 
 int gm_FindById();
-int ai_Unk494ac0();
+int ai_EvalFest();
 
 /* 0x5437c0, the run handler of the event "party / cart announcement": after it was posted (state +0x70 = 0) it collects the up to 4 member figures (the building record 0x17 at +0x1c .. or the event's +0xac .. list), asks 0x494ac0 whether the group may start and, if not, tells the player the news 0x1787 followed by one line 0x1788 per member (0x178f + 3 * x + random 3); state 1 only re-posts (ROUGH) */
 void he_Unk5437c0(int ev)
@@ -7055,7 +7055,7 @@ void he_Unk5437c0(int ev)
                 }
             }
             *(unsigned char *)(grp + 12) = (unsigned char)cnt;
-            i = ai_Unk494ac0(grp, 1);
+            i = ai_EvalFest(grp, 1);
             if (i == 0 && (*(char *)(grp[0] + 2) == 6 || *(char *)(grp[0] + 2) == 7)) {
                 txt_Format(big, 0x1787, grp[11]);
                 i = 0;

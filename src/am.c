@@ -78,7 +78,7 @@ int ai_Unkf86900[73] = {0};  /* 0xf86900, the actions being evaluated */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (ahm.c: char *) as the AIBTYPE records it points to */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
 #define gv_OrderMoveGraveI ((void (*)(AGCH *, int, void *, int, int, int))gv_OrderMoveGrave)  /* 0x4f0e80 (gv.c: int *c, char *o): @original the byte-matched ai_ExecHandleGrave passes its AGCH record and s1 as they are */
-#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_Unk494ac0 / ai_Unk494d40) */
+#define gm_CharLevelS ((int (*)(unsigned short, int))gm_CharLevel)  /* 0x505e60 (f3gm.c: unsigned short id, so the cast is now the prototype itself): @original this unit pushes the id as 16 bits (byte-matched ai_MasterExamPassed / ai_EvalFest / ai_Unk494d40) */
 #define cm_SendExSellObjectI ((void (*)(int, int, int, int, unsigned char, int))cm_SendExSellObject)  /* 0x4c4880 (cm.h: short c): @original this unit pushes the third argument as an int (byte-matched ai_MeisterBewaffnen / ai_ExecuteBuyRoom / ai_ExecuteBuyMarketObject) */
 #define amt_GetKindB ((int (*)(unsigned char, void *))amt_GetKind)  /* 0x4e6f80 (amt.h: int k): @original ai_Unk4a05e0 passes (unsigned char)k without widening */
 #define AI_CHAIN_BEATUP 0xf00500  /* the partner-chain flags (ai_PickPartnerChain) of action 0x18 "Verpruegeln" (ai_DecideBeatUp); the bits are not named yet */
@@ -3306,28 +3306,31 @@ int ai_MasterExamPassed(AIC4 *a, AIC4 *b)
         return 0;
     return 1;
 }
-/* 0x494ac0, rates a group of a leader and up to four members: the relation d (-2..2) of each member
-   to the leader sends a message with a random strength (when send is set), the group's own value goes
-   to unk2c. Returns 0, or -1 .. -6 for a bad group */
+/* 0x494ac0, evaluates a feast: a host and up to four guests. Each guest's relation d (-2 .. 2) to the
+   host is the host's level less a third and a quarter plus (5 - the menu pick) + (5 - the musician
+   pick), less the guest's level, clamped to -2 .. 2; when send is set the relation change goes out
+   (cm_SendRelations, a random strength by d). The feast's cost (menu and musicians 0 .. 5: the texts
+   _MN_FEST_ESSEN / _MN_FEST_MUSIKER, the feedback's %T) goes to g->cost. Returns 0, or -1 .. -6 for a
+   bad group */
 
-int ai_Unk494ac0(AIGRP *g, int send)
+int ai_EvalFest(AIGRP *g, int send)
 {
-    int i, lv, base, d, v, w, p, r;
+    int i, lv, base, d, v, w, menuPenalty, musicPenalty;
 
     if (!g)
         return -1;
     if (!g->leader)
         return -2;
-    if (g->unk24 > 5)
+    if (g->essen > 5)
         return -3;
-    if (g->unk28 > 5)
+    if (g->musik > 5)
         return -4;
     if (g->n == 0 || g->n > 4)
         return -5;
-    r = 5 - g->unk28;
-    p = 5 - g->unk24;
+    musicPenalty = 5 - g->musik;
+    menuPenalty = 5 - g->essen;
     lv = gm_CharLevelS(g->leader->id, 0);
-    base = lv - lv / 3 - lv / 4 + p + r;
+    base = lv - lv / 3 - lv / 4 + menuPenalty + musicPenalty;
     for (i = 0; i < g->n; i++) {
         if (!g->mem[i].ch)
             return -6;
@@ -3355,9 +3358,9 @@ int ai_Unk494ac0(AIGRP *g, int send)
             cm_SendRelations(g->leader->netId, g->mem[i].ch->netId, v, 1);
     }
     w = gm_GetWorth(g->leader->id);
-    g->unk2c = (int)((float)(10 - g->unk28 - g->unk24) * w * g->n * 0.001f);
+    g->cost = (int)((float)(10 - g->musik - g->essen) * w * g->n * 0.001f);
     if (send)
-        cm_SendMoveGoods(-1, g->leader->netId, ai_OwnPlayer, g->unk2c);
+        cm_SendMoveGoods(-1, g->leader->netId, ai_OwnPlayer, g->cost);
     return 0;
 }
 /* 0x494d40, a rating from the rank difference of two characters and a count */
