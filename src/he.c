@@ -7936,37 +7936,39 @@ void he_AllocQuarrel(int ev)
         gv_Accuse(0x13, 1, e->partner2, e->partner1, id);
     }
 }
-/* 0x543180, a Ghidra miss (disassembled): the follow-up of the quarrel: tells b (news 0x175d, message 0x5fa) when flag 2 is set, then re-posts in 1 unit (state 0 only) */
+/* 0x543180, the run handler of the quarrel event 0x2e: tells partner2 (news 0x175d, message 0x5fa) when its option 2
+   is set, then re-posts the event in one unit (stage 0 only); a missing partner ends it at the current time */
 
-void he_Unk543180(int ev)
+void he_RunQuarrel(int ev)
 {
-    int a, b;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *a, *b;
     char buf[0x100];
 
-    if (*(int *)(ev + 0x70) == -1 || *(int *)(ev + 0x70) == -2) {
-        he_FreeEvent((int *)ev);
+    if (e->stage == -1 || e->stage == -2) {
+        he_FreeEvent((int *)e);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    a = gm_FindChar(*(int *)(ev + 0xac));
-    b = gm_FindChar(*(int *)(ev + 0xb0));
+    e->exSlot = -1;
+    a = (AICHAR *)gm_FindChar(e->partner1);
+    b = (AICHAR *)gm_FindChar(e->partner2);
     if (b == 0 || a == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if (*(int *)(ev + 0x70) == 0) {
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            txt_Format(buf, 0x175d, *(unsigned short *)a);
-            he_ShowNews(*(int *)(b + 4), -1, buf, 0, 0x5fa, (char *)0);
+    if (e->stage == 0) {
+        if ((e->opts & 2) != 0) {
+            txt_Format(buf, 0x175d, a->id);
+            he_ShowNews(b->netId, -1, buf, 0, 0x5fa, (char *)0);
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
     }
 }
 
@@ -10631,7 +10633,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2e, (void *)he_AllocQuarrel, (void *)he_Unk543180) != 0)
+    if (he_SetEventHandlers(0x2e, (void *)he_AllocQuarrel, (void *)he_RunQuarrel) != 0)
         return 1;
     if (he_SetEventHandlers(0x2f, (void *)he_RunDueNow, (void *)he_RunMasterExam) != 0)
         return 1;

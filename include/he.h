@@ -137,7 +137,7 @@ void he_AllocTavern(int ev);
 void he_RunTavern(int ev);
 
 void he_AllocQuarrel(int ev);
-void he_Unk543180(int ev);
+void he_RunQuarrel(int ev);
 
 void he_RunMasterExam(int ev);
 
