@@ -430,6 +430,16 @@ typedef struct HEPLAGUEMSG {            /* the AI message 0x78 he_BeginPlague po
     int step;                           /* 0x68, the event's walk step */
     int left;                           /* 0x6c, the event's countdown */
 } HEPLAGUEMSG;
+typedef struct HEGANG {                 /* the pickpocket gang event 0x61's words over AIJOB's union (its alloc handler
+                                           he_StartGang, run handler 0x54a7b0; the gang is AIJOB.ids[0..5]) */
+    char pad00[0xac];
+    int targets[6];                     /* 0xac, the buildings the members are sent to, -1 at the start */
+    AITIME start;                       /* 0xc4, the start (AIJOB.start61): after 0x1e0 minutes the gang is collected */
+    unsigned char next;                 /* 0xd2, the member the run handler handles next */
+    char padd3;
+    int leader;                         /* 0xd4, the netId of the gang's leader */
+    unsigned char members;              /* 0xd8, the members the gang has (ids[] not -1) */
+} HEGANG;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x64 */
     char pad00[0x64];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
@@ -4677,28 +4687,32 @@ void he_RunPlague(int ev)
         return;
     }
 }
-/* 0x54a6f0, a Ghidra miss: the init of the plague event: counts the figures of the six slots (+0x8c .. , count in the byte +0xd8; none: the event is freed), clears +0xac .. (6 dwords) to -1, +0xd2 = 0, the clock +0xc4 = now, due now and posted 2 units ahead */
+/* 0x54a6f0, a Ghidra miss: the alloc handler of the pickpocket gang event 0x61: counts the members (the ids[]
+   not -1); without any it frees the event, else no targets yet, the first member next, started now and due two
+   minutes from now */
 
-void he_Unk54a6f0(int ev)
+void he_StartGang(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEGANG *g = (HEGANG *)ev;
+    int *id;
     int i;
-    int *p;
 
-    *(unsigned char *)(ev + 0xd8) = 0;
-    p = (int *)(ev + 0x8c);
-    for (i = 0; i < 6; i++) {
-        if (p[i] != -1)
-            *(unsigned char *)(ev + 0xd8) = *(unsigned char *)(ev + 0xd8) + 1;
+    g->members = 0;
+    id = e->ids;
+    for (i = 6; i != 0; i--) {
+        if (*id++ != -1)
+            g->members++;
     }
-    if (*(unsigned char *)(ev + 0xd8) == 0) {
+    if (g->members == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    memset((void *)(ev + 0xac), -1, 6 * 4);
-    *(unsigned char *)(ev + 0xd2) = 0;
-    *(AITIME *)(ev + 0xc4) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 2, 0);
+    memset(g->targets, -1, sizeof(g->targets));
+    g->next = 0;
+    g->start = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 2, 0);
 }
 
 int gm_GetGoodsValue();
@@ -9714,7 +9728,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_RunPlague) != 0)
         return 1;
-    if (he_SetEventHandlers(0x61, (void *)he_Unk54a6f0, (void *)he_Unk54a7b0) != 0)
+    if (he_SetEventHandlers(0x61, (void *)he_StartGang, (void *)he_Unk54a7b0) != 0)
         return 1;
     sv_RegisterActivity(0x61, 0x0, 0x0, 0x507, -1);
     if (he_SetEventHandlers(0x63, (void *)he_Unk54ae20, (void *)he_Unk54ae60) != 0)
