@@ -406,6 +406,11 @@ typedef struct HELOAN {                 /* the loan event 0x23's words over AIJO
     int interest;                       /* 0xc0, the interest (the value gv_Accuse checks against the law 0xe) */
     AITIME due;                         /* 0xc4, the payback date, at 8:00 */
 } HELOAN;
+typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's union (he_Unk55e3a0 / he_RunEvent24); the
+                                           character is AIJOB.ownerCh */
+    char pad00[0xb8];
+    int daysLeft;                       /* 0xb8, the runs left: counted down once per run, below 0 the event ends */
+} HEEV24;
 typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunSale sends: an hour from now as AITIME, of
                                            which the building and the object overwrite the first 8 bytes (the
                                            original's order) */
@@ -15086,24 +15091,42 @@ void he_RunKredit(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x55cb00, the run handler of a message event (ROUGH): states -2 / -1 and the missing figure +0xb0 free the record; a figure of kind 6 / 7 gets a message record (0x4c4b70) and the news 0x4c59b0; then the record is freed */
+/* 0x55cb00, the run handler of the event 0x24 (HEEV24): stage 0 counts daysLeft down; once it is below 0 and the
+   character AIJOB.ownerCh is found, a player character (kind 6 / 7) gets the long message 0x26 (to and arg[0] the
+   character, from -1, now, flags 9), the character's job becomes jobId - 1 (cm_SendSetJob) and the event is freed.
+   Stages -2 / -1 free the event */
 
-void he_Unk55cb00(int ev)
+void he_RunEvent24(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int p;
-    unsigned char m[0xf8];
+    AIJOB *e = (AIJOB *)ev;
+    HEEV24 *w = (HEEV24 *)ev;
+    AICHAR *c;
+    AIMSG msg;
 
-    if (st <= -2 || (p = gm_FindChar(*(int *)(ev + 0xb0))) == 0) {
+    switch (e->stage) {
+    case 0:
+        w->daysLeft--;
+        c = (AICHAR *)gm_FindChar(e->ownerCh);
+        if (w->daysLeft < 0 && c != 0) {
+            if (c->kind == 6 || c->kind == 7) {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x26;
+                msg.to = e->ownerCh;
+                msg.fromId = -1;
+                msg.flags = 9;
+                msg.time = ai_Time;
+                msg.arg[0] = e->ownerCh;
+                cm_SendLongMessage((char *)&msg);
+            }
+            cm_SendSetJob(c->netId, c->jobId - 1);
+            he_FreeEvent((int *)ev);
+        }
+        return;
+    case -2:
+    case -1:
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(unsigned char *)(p + 2) == 6 || *(unsigned char *)(p + 2) == 7) {
-        memset(m, 0, sizeof(m));
-        cm_SendLongMessage(m);
-        ((void (*)(int))cm_SendSetJob)(*(int *)(ev + 0x10));
-    }
-    he_FreeEvent((int *)ev);
 }
 
 int gm_TitlesLeft();
@@ -17354,7 +17377,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(35, (void *)he_AllocKredit, (void *)he_RunKredit) != 0)
         return 1;
-    if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_Unk55cb00) != 0)
+    if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_RunEvent24) != 0)
         return 1;
     if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_Unk55cc10) != 0)
         return 1;

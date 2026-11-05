@@ -2509,3 +2509,4 @@
 2026-11-05T20:41:20 0x0055bf50 func he_Unk55bf50 -> he_AllocBuyBuilding by:main why:the run / alloc handlers of the event 0x21 (he_SetEventHandlers(33, ..)): the buyer (+0xb4) offers the price (+0xb0) for the building; on yes cm_SendMoveGoodsUnchecked pays the master and cm_SendOwnership hands the building over
 2026-11-05T20:44:04 0x0055c540 data he_Unk55c540 -> he_AllocKredit by:main why:the alloc handler of the loan event 0x23 (he_SetEventHandlers(35, it, the run handler with the debug text he_RunKredit))
 2026-11-05T20:46:03 0x0055c700 data he_Unk55c700 -> he_RunKredit by:main why:its debug text "he_RunKredit(): Could not find GebaeudeId '%i'"; the run handler of the loan event 0x23
+2026-11-05T20:47:54 0x0055cb00 data he_Unk55cb00 -> he_RunEvent24 by:main why:the run handler of the event type 0x24: he_SetEventHandlers(36, he_Unk55e3a0, it)
