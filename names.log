@@ -2519,3 +2519,4 @@
 2026-11-05T21:08:57 0x0055e3d0 func he_Unk55e3d0 -> he_RunWorkerTheft by:main why:run handler of the event 0x34: a worker who likes its building's owner -26 or less takes one random good out of the building's store unpaid; the news _NACHRICHTEN_HS_09 (reasoned: a theft)
 2026-11-05T21:11:18 0x0055e600 func he_Unk55e600 -> he_RunEvent38 by:main why:run handler of the event 0x38 (he_SetEventHandlers(56, ..)); named by its type as he_RunEvent27 / he_RunEvent24
 2026-11-05T21:14:18 0x0055e730 func he_Unk55e730 -> he_RunEvent39 by:main why:the run handler of the event 0x39 (he_SetEventHandlers(57, ..)), as he_RunEvent38
+2026-11-05T21:26:02 0x0055efc0 func he_Unk55efc0 -> he_RunRoutine by:main why:the run handler of the daily routine event 0x3a (its alloc handler he_AllocRoutine; 'Go to work' / 'Go home')

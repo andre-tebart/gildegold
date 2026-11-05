@@ -1020,12 +1020,12 @@ typedef struct HESTORM {                /* the storm event 0x50's words after AI
     int w104;                           /* 0x104, 0 at the allocation (no reader known) */
 } HESTORM;
 typedef struct HEROUTINE {              /* the daily routine event 0x3a's words over AIJOB's union (he_PostEvent3a posts
-                                           it at the start of the day; its run handler 0x55efc0 walks ai_Chars) */
+                                           it at the start of the day; its run handler he_RunRoutine walks ai_Chars) */
     char pad00[0xac];
-    int chrIdx;                         /* 0xac, the ai_Chars index the walk is at (the run handler stores its loop index
-                                           here and clears it for the next stage), 0 at the allocation */
+    int chrIdx;                         /* 0xac, the ai_Chars index of the last character sent (he_RunRoutine stores its loop
+                                           index here and clears it for the next stage), 0 at the allocation */
     int step;                           /* 0xb0, 3 at the allocation (reasoned: the unit's note calls it the routine step;
-                                           the run handler 0x55efc0 reads it nowhere yet) */
+                                           he_RunRoutine never reads it) */
 } HEROUTINE;
 typedef struct HEAUCTION {              /* the auction event 0x67's words over AIJOB's union (he_StartAuctionEvent /
                                            he_RunAuctionEvent) */
@@ -16238,25 +16238,198 @@ int he_PickNearBuilding(AICHAR *c, int n, AIBLD **blds, int *bldId, int *objId)
     *objId = o->objId;
     return blds[pick]->object != 0;
 }
-/* 0x55efc0, the run handler of the daily routine of a figure ("Go to work" / "Go to wirtshaus" / "Go home" debug texts, "dummy_EINGANG" entrance dummies; ROUGH skeleton, 2656 bytes): by the season / time of day (gm_ClockSeason) the figure +0xac either walks to its workplace (0x55ea60 contact, 0x4c5b90 / 0x4c52e0 / 0x4c51b0 / 0x4c5150, the entrance 0x458a20 positions), to the tavern or home (gm_IsHomeType), and the routine event is posted again (0x4fe1e0 clocks); 0x55eba0 selects the scene of a watched figure */
-
-void he_Unk55efc0(int ev)
+/* 0x55efc0, the run handler of the daily routine event 0x3a (HEROUTINE, its alloc handler he_AllocRoutine): stages
+   -2 / -1 free the record. Every character with a job or a title, a building and a model counts.
+   Stage 0, the morning: the first character not yet sent (flags1c8 bit 0x1000) whose workplace (he_FigureContact)
+   is not where it was sent last is sent to work: into a home or a building without a 3D object it moves at once
+   ("dummy_EINGANG"), else, unless its building's owner is a player (kind 6 / 7) or 0x20 characters are in the scene,
+   it walks there ("Go to work") once the hour is one before the day start (gm_DayStartHours) or it is 7000 or less
+   away; a sent one makes the event due in 5 minutes. From the day start every remaining one moves at once; then the
+   event is due at the day end (gm_DayEndHours) in stage 1.
+   Stage 1, the evening (the day it started only, not with the game flag 0x80): of up to 0x20 inns with an owner and
+   a 3D object, the characters not at their place (he_FindFigurePlace; buildings of the kinds 4, 0x10, 0x13 do not
+   count) and not yet sent home (bit 0x800) leave: those of the players' buildings all, then the first other one;
+   a rich one (goods worth over 3200) goes to an inn half the time (he_PickNearBuilding, "Go to wirtshaus"), else
+   home ("Go home"; up to 0x40 of the players'); with any sent, the event is due in 5 minutes. Two hours past the day
+   end every remaining one with an own building moves at once (to the inn, its place or the door "dummy_TUER") and
+   the record is freed
+   @deep Reconstructed whole from the ROUGH stub against the original 0x55efc0..0x55fa18 (790 ins): the
+   stage switch (-2/-1 free, 0 morning, 1 evening), all five ai_Chars passes (stage 0: send to work with
+   the 7000 distance / day-start-minus-one test, then everyone at once from the day start; stage 1: inns
+   list, players' buildings' workers, the first other one, then two hours past the day end everyone at
+   once), every call with its arguments, strings and constants (7000.0f, ai_FloatOne, 2.0f, 0xc80, 0x40,
+   0x800 / 0x1000 flags), the loop bases (index loops; passes 2 and 5 index ai_CharsT[i] directly, matching
+   the original's +0x164 base and jl end), the kind test through AIBTYPE * and the hour >= day-start block.
+   Same calls in the same order, tables equal, 791 vs 790 instructions. Left is allocation: the original
+   keeps count in a stack slot ([esp+0x18], cached in edi for the stage-0 loop test, reloaded at 0x55f20b
+   and incremented through memory at 0x55f1ae / 0x55f5bd) with i in ebp and ev in ebx, ours keeps count in
+   ebp, i in ebx and ev in edi; every slot (+0x10 / +0x14 / +0x1c bld / contact / place / obj, the two
+   D3VECTORs 0x24 / 0x34 vs ours 0x28 / 0x38) and reg hunk follows from that, as do the code hunks of
+   spills / reloads (0x55efca, 0x55f190..0x55f208, 0x55f557, 0x55f5c5). The ref M8 at +0x3a4 is the ev->end
+   = ai_Time copy before gm_SetTime scheduled in another order (ours loads ai_Time+8 where the original
+   loads +4 at that line). Tried: c pointer vs direct ai_CharsT[i] per loop, pointer loops (wrong: jb end
+   compare), bt / k / ai_BTypesT + type spellings of the kind test. (references: M8 at +0x3a4: ours refers
+   to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4 (ai_TimeHourW), explained: the only ref is
+   the four-part AITIME copy ev->end = ai_Time (0x55f345..0x55f36f) interleaved with the gm_SetTime pushes
+   in another order: both sides copy the same 14 bytes) */
+void he_RunRoutine(AIJOB *ev)
 {
-    int p, b, c;
+    HEROUTINE *r = (HEROUTINE *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    AIBLD *inns[0x20];
+    AIBTYPE *bt;
+    D3VECTOR from, to;
+    float dx, dy, dz;
+    int count = 0;
+    int season, i, n;
+    int bld, contact;
+    int place, obj;
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p == 0) {
+    season = gm_ClockSeason(&ai_Time);
+    switch (ev->stage) {
+    case -2:
+    case -1:
+        he_FreeEvent((int *)ev);
+        return;
+    case 0:
+        for (i = 0; i < 768 && count < 1; i++) {
+            c = &ai_CharsT[i];
+            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0 && (c->flags1c8 & 0x1000) == 0
+                && he_FigureContact(c, &bld, &contact) != 0 && bld != c->model->bldId) {
+                if (gm_IsHomeType(c->bld) == 0 && c->bld->object != 0) {
+                    if (ai_CharsT[c->bld->owner].kind != 6 && ai_CharsT[c->bld->owner].kind != 7 && ch_Count(0, 0) < 0x20) {
+                        b = (AIBLD *)gm_FindBuildingById(c->model->bldId);
+                        if ((b == 0 || b->object == 0
+                             || (d3_PointToWorld((D3OBJECT *)c->bld->object, &((D3OBJECT *)c->bld->object)->pos, &from),
+                                 d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, &to),
+                                 dx = from.x - to.x, dy = from.y - to.y, dz = from.z - to.z,
+                                 (float)sqrt(dx * dx + dy * dy + dz * dz) < 7000.0f))
+                            && (float)ai_Time.hour < gm_DayStartHours[season] - ai_FloatOne) {
+                            cm_SendCharHalt(c->netId);
+                            cm_SendChrGotoBuilding(c->netId, bld, contact, 0, 0, "Go to work");
+                            c->flags1c8 |= 0x1000;
+                            count++;
+                        }
+                    }
+                } else {
+                    cm_SendCharHalt(c->netId);
+                    cm_RequestChrMoveToUniverse(c->netId, bld, contact, "dummy_EINGANG");
+                    cm_RequestChrMove(c->netId, bld, contact, ch_EmptyName);
+                    c->flags1c8 |= 0x1000;
+                }
+                r->chrIdx = i;
+            }
+        }
+        if (count != 0) {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 5, 0);
+        }
+        if ((float)ai_Time.hour >= gm_DayStartHours[season]) {
+            for (i = 0; i < 768; i++) {
+                if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].model != 0
+                    && (ai_CharsT[i].flags1c8 & 0x1000) == 0 && he_FigureContact(&ai_CharsT[i], &contact, &bld) != 0
+                    && contact != ai_CharsT[i].model->bldId) {
+                    cm_SendCharHalt(ai_CharsT[i].netId);
+                    cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, contact, bld, "dummy_EINGANG");
+                    cm_RequestChrMove(ai_CharsT[i].netId, contact, bld, ch_EmptyName);
+                    ai_CharsT[i].flags1c8 |= 0x1000;
+                }
+            }
+            ev->end = ai_Time;
+            gm_SetTime(&ev->end, (unsigned char)gm_DayEndHours[season], 0, 0);
+            ev->stage = 1;
+            r->chrIdx = 0;
+        }
+        return;
+    case 1:
+        if ((ai_GameFlags & 0x80) != 0 || ai_Time.year != ev->start.year) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        n = 0;
+        for (b = (AIBLD *)gm_BuildQuery(1, 5, 0x16); b != 0; b = (AIBLD *)gm_BuildNext()) {
+            if (n >= 0x20)
+                break;
+            if (b->owner != 0xffff && b->object != 0)
+                inns[n++] = b;
+        }
+        for (i = 0; i < 768; i++) {
+            c = &ai_CharsT[i];
+            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0
+                && (bt = &ai_BTypesT[c->bld->type], bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13)
+                && he_FindFigurePlace(c, &place, &obj, 0) != 0
+                && (place != c->model->bldId || obj != c->model->scriptGroup)
+                && (c->flags1c8 & 0x800) == 0
+                && (ai_CharsT[c->bld->owner].kind == 6 || ai_CharsT[c->bld->owner].kind == 7)) {
+                cm_SendCharHalt(c->netId);
+                if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
+                    if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
+                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go to wirtshaus");
+                } else if (obj == -1) {
+                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Go home");
+                } else if (count < 0x40) {
+                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go home");
+                }
+                c->flags1c8 |= 0x800;
+                cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0x1000);
+                r->chrIdx = i;
+                count++;
+            }
+        }
+        for (i = 0; i < 768 && count < 1; i++) {
+            c = &ai_CharsT[i];
+            if ((c->title != 0 || c->jobId != 0) && c->bld != 0 && c->model != 0
+                && (bt = &ai_BTypesT[c->bld->type], bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13)
+                && he_FindFigurePlace(c, &place, &obj, 0) != 0
+                && (place != c->model->bldId || obj != c->model->scriptGroup)
+                && (c->flags1c8 & 0x800) == 0) {
+                cm_SendCharHalt(c->netId);
+                if (n != 0 && gm_GetGoodsValue((char *)c) > 0xc80 && (short)util_Random(2) != 0) {
+                    if (he_PickNearBuilding(c, n, inns, &place, &obj) != 0)
+                        cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go to wirtshaus");
+                } else if (obj == -1) {
+                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Go home");
+                } else {
+                    cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Go home");
+                }
+                c->flags1c8 |= 0x800;
+                cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0x1000);
+                count++;
+                r->chrIdx = i;
+            }
+        }
+        if (count != 0) {
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 5, 0);
+        }
+        if ((float)ai_Time.hour <= gm_DayEndHours[season] + 2.0f)
+            return;
+        for (i = 0; i < 768; i++) {
+            if ((ai_CharsT[i].title != 0 || ai_CharsT[i].jobId != 0) && ai_CharsT[i].bld != 0 && ai_CharsT[i].bld2 != 0 && ai_CharsT[i].model != 0
+                && (bt = &ai_BTypesT[ai_CharsT[i].bld->type], bt->kind != 4 && bt->kind != 0x10 && bt->kind != 0x13)
+                && he_FindFigurePlace(&ai_CharsT[i], &bld, &contact, 0) != 0
+                && (bld != ai_CharsT[i].model->bldId || contact != ai_CharsT[i].model->scriptGroup)
+                && (ai_CharsT[i].flags1c8 & 0x800) == 0) {
+                cm_SendCharHalt(ai_CharsT[i].netId);
+                if (n != 0 && gm_GetGoodsValue((char *)&ai_CharsT[i]) > 0xc80 && (short)util_Random(2) != 0) {
+                    if (he_PickNearBuilding(&ai_CharsT[i], n, inns, &bld, &contact) != 0) {
+                        cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
+                        cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                    }
+                } else if (contact != -1) {
+                    cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, contact, "dummy_EINGANG");
+                    cm_RequestChrMove(ai_CharsT[i].netId, bld, contact, ch_EmptyName);
+                } else {
+                    cm_RequestChrMoveToUniverse(ai_CharsT[i].netId, bld, -1, "dummy_TUER");
+                }
+                ai_CharsT[i].flags1c8 |= 0x800;
+                cm_SendSetField(ai_CharsT[i].netId, 0x1c8, 4, 0x800, 0x1000);
+            }
+        }
         he_FreeEvent((int *)ev);
         return;
     }
-    he_FigureContact((AICHAR *)p, &b, &c);
-    cm_SendCharHalt(*(int *)(p + 4));
-    cm_SendChrGotoBuilding(*(int *)(p + 4), c, -1, 0, 0, "Go to work");
-    cm_RequestChrMoveToUniverse(*(int *)(p + 4), -1, c, "dummy_EINGANG");
-    he_FindFigurePlace((AICHAR *)p, &b, &c, 0);
-    he_PickNearBuilding((AICHAR *)p, 1, (AIBLD **)&p, &b, &c);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0x1e, 0);
 }
 /* 0x55fa20, the allocation handler of the market event 0x3b: the due clock is now, set to 5:00 (gm_SetTime); its copy at +0x60 is that 5:00 clock and the due clock moves one hour later (gm_AddTime (.., 1, 0, 0)) */
 
@@ -17912,7 +18085,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_RunEvent39) != 0)
         return 1;
-    if (he_SetEventHandlers(58, (void *)he_AllocRoutine, (void *)he_Unk55efc0) != 0)
+    if (he_SetEventHandlers(58, (void *)he_AllocRoutine, (void *)he_RunRoutine) != 0)
         return 1;
     if (he_SetEventHandlers(59, (void *)he_AllocMarket, (void *)he_Unk55fa90) != 0)
         return 1;
