@@ -325,6 +325,16 @@ typedef struct HESTAMMTISCH {           /* the inn meeting event 0x2a's words ov
     char padbe[2];
     int state;                          /* 0xc0, 1 after the start, counted down by the run handler 0x542100 */
 } HESTAMMTISCH;
+#pragma pack(push, 1)
+typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
+                                           odd offsets): the kind, the offer clock and the offer handle */
+    char pad00[0xc4];
+    char kind;                          /* 0xc4, the offer kind compared between the pending offers */
+    AITIME clock;                       /* 0xc5, the offer's clock: now + 0x18 units, its hour 0xa and minute 0 */
+    char pad_d3;
+    int offer;                          /* 0xd4, the offer handle cm_SendHandOverCrimes gave (cm_GetSlotState asks it) */
+} HEOFFER;
+#pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
 void he_AllocNone(unsigned char *ev)
@@ -6888,43 +6898,54 @@ void he_Unk5436a0(int ev)
 
 void cm_SendHandOverCrimes(int a, int b, int c, int d);
 
-/* 0x542960, a Ghidra miss (disassembled): starts an offer event between the figures +0xac (p) and +0xb0 (q): sets the offer's own clock (+0xc5, packed, +0x18 units, state word 0xa at +0xc9) and, when flag 2 is set, looks through the other pending 0x2c events of the same kind (+0xc4): one with the same p only gets "0x1bbe" (message 0x5f5) and this event is re-posted at once, an earlier one of another p moves our clock to its time; at the end the offer is created (0x4c5580, kept at +0xd4) and posted (ROUGH) */
-void he_Unk542960(int ev)
+/* 0x542960, the alloc handler of the offer event 0x2c between the figures partner1 (+0xac) and partner2 (+0xb0):
+   sets the event's end clock to ai_Time and the offer clock (+0xc5) to now + 0x18 units, hour 0xa, minute 0; when
+   opts bit 2 is set it walks the other pending 0x2c offers of the same kind: an offer of the same figure only
+   shows the news 0x1bbe and re-posts this event at once, an older one of another figure moves our clock to its
+   time; at the end the offer is created (cm_SendHandOverCrimes, +0xd4) and the event posted */
+void he_AllocOffer(int ev)
 {
-    int q, p, r;
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFER *o = (HEOFFER *)ev;
+    AIJOB *o2;
+    HEOFFER *f2;
+    AICHAR *q, *p;
+    int r;
     unsigned char fl;
     char buf[0x100];
 
-    q = gm_FindChar(*(int *)(ev + 0xb0));
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    *(AITIME *)(ev + 0xc5) = ai_Time;
-    gm_AddTime(ev + 0xc5, 0x18, 0, 0);
-    *(short *)(ev + 0xc9) = 0xa;
-    *(int *)(ev + 0xcb) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    fl = *(unsigned char *)(ev + 0x78);
+    q = (AICHAR *)gm_FindChar(e->partner2);
+    p = (AICHAR *)gm_FindChar(e->partner1);
+    o->clock = ai_Time;
+    gm_AddTime(&o->clock, 0x18, 0, 0);
+    o->clock.hour = 0xa;
+    o->clock.min = 0;
+    e->end = ai_Time;
+    fl = e->opts;
     if ((fl & 2) != 0) {
         r = (int)he_FindEvent(1, 0, 0x2c);
         while (r != 0) {
-            if (*(int *)(r + 4) != *(int *)(ev + 4) && *(char *)(r + 0xc4) == *(char *)(ev + 0xc4)) {
-                if (*(int *)(r + 0xac) == *(int *)(ev + 0xac)) {
-                    txt_Format(buf, 0x1bbe, *(unsigned short *)p, *(unsigned short *)q);
-                    he_ShowNews(*(int *)(p + 4), *(int *)(p + 4), buf, 0, 0x5f5, (char *)0);
-                    *(AITIME *)(ev + 0x52) = ai_Time;
-                    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+            o2 = (AIJOB *)r;
+            f2 = (HEOFFER *)r;
+            if (o2->id != e->id && f2->kind == o->kind) {
+                if (o2->partner1 == e->partner1) {
+                    txt_Format(buf, 0x1bbe, p->id, q->id);
+                    he_ShowNews(p->netId, p->netId, buf, 0, 0x5f5, (char *)0);
+                    e->end = ai_Time;
+                    e->exSlot = cm_SendExSetHE(-1, ev);
                     return;
                 }
-                if (*(int *)(ev + 0xc5) <= *(int *)(r + 0xc5)) {
-                    *(AITIME *)(ev + 0xc5) = *(AITIME *)(r + 0xc5);
-                    gm_AddTime(ev + 0xc5, 0x18, 0, 0);
-                    *(short *)(ev + 0xc9) = 0xa;
-                    *(int *)(ev + 0xcb) = 0;
+                if (o->clock.year <= f2->clock.year) {
+                    o->clock = f2->clock;
+                    gm_AddTime(&o->clock, 0x18, 0, 0);
+                    o->clock.hour = 0xa;
+                    o->clock.min = 0;
                 }
             }
             r = (int)he_NextEvent();
         }
-        *(int *)(ev + 0xd4) = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(*(int *)(ev + 0xac), *(int *)(ev + 0xb0), *(int *)(ev + 4), 1);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+        o->offer = ((int (*)(int, int, int, int))cm_SendHandOverCrimes)(e->partner1, e->partner2, e->id, 1);
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -9158,7 +9179,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2b, (void *)he_Unk542490, (void *)he_Unk542590) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2c, (void *)he_Unk542960, (void *)he_Unk542b60) != 0)
+    if (he_SetEventHandlers(0x2c, (void *)he_AllocOffer, (void *)he_Unk542b60) != 0)
         return 1;
     if (he_SetEventHandlers(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
         return 1;

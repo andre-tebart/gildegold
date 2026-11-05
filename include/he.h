@@ -139,7 +139,7 @@ void he_Unk5432f0(int ev);
 
 void he_Unk5436a0(int ev);
 
-void he_Unk542960(int ev);
+void he_AllocOffer(int ev);
 
 void he_Unk542b60(int ev);
 
