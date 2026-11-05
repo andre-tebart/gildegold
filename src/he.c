@@ -6168,13 +6168,16 @@ void he_RunAuctionEvent(int ev)
         return;
     }
 }
-/* 0x54cc20, a Ghidra miss: the init: the due clock = the start clock (+0x44), state 0, +0xb4 = 0 */
-
+/* 0x54cc20, the allocation handler of the title ceremony event 0x69: the due clock copies the start clock, the stage is
+   0 and the sent flag is cleared */
 void he_StartTitleCeremony(int ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(int *)(ev + 0x70) = 0;
-    *(int *)(ev + 0xb4) = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HETITLE *t = (HETITLE *)ev;
+
+    e->end = e->start;
+    e->stage = 0;
+    t->sent = 0;
 }
 /* 0x54cc50, a Ghidra miss: the run handler of the title ceremony event 0x69 (HETITLE: the character +0xb0 gets the
    title +0xac), run only on the game of its player (AIJOB.chr is ai_PlayerId) in a running game once it is due.
