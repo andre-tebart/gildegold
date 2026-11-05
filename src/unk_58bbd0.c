@@ -22448,30 +22448,25 @@ int ai_DismissalHandler(unsigned short *param_1, int param_2)  /* @original: the
         }
     }
 }
-/* 0x5ced50, an AIMSG type 0x45 "the interrogation was refused" message (144 B): the record is zeroed
-   (0x3e dwords, 0xf8 bytes), +4 = 0x45 the type, +8 = param_1 + 4 (the character), +0xc = -1, +0x28 ..
-   +0x34 the clock 0x770ae0 .., +0x36 = 2, +0x58 = param_1 + 4 (again), +0x5c = param_2 + 4 (the
-   partner), +0x60 = param_3; sent by 0x4c4b70 (its handle is the return value). */
+/* 0x5ced50, sends the AIMSG type 0x45 "the interrogation was refused" (144 B): to the interrogator ch
+   (its netId at +4, as 'to' and arg[0]), about the interrogated target (its netId as arg[1]) and the
+   interrogation window variant 1 / 2 (arg[2]); the clock, flags 2; cm_SendLongMessage (0x4c4b70) returns
+   its handle. */
 
-int ai_Unk5ced50(int param_1, int param_2, int param_3)
+int ai_SendInterrogationRefusal(char *ch, char *target, int variant)
 {
-    int rec[0x3e];
-    int i;
+    AIMSG msg;
 
-    for (i = 0; i < 0x3e; i++)
-        rec[i] = 0;
-    *(char *)((char *)rec + 4) = 0x45;
-    rec[2] = *(int *)(param_1 + 4);
-    rec[3] = -1;
-    rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_Time.hour);
-    rec[12] = U_I(((unsigned)&ai_Time + 0x8));
-    *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-    *(char *)((char *)rec + 0x36) = 2;
-    rec[0x16] = *(int *)(param_1 + 4);
-    rec[0x17] = *(int *)(param_2 + 4);
-    rec[0x18] = param_3;
-    return cm_SendLongMessage(rec);
+    memset(&msg, 0, sizeof msg);
+    msg.type = 0x45;
+    msg.to = ((AICHARREC *)ch)->netId;
+    msg.fromId = -1;
+    msg.time = ai_Time;
+    msg.flags = 2;
+    msg.arg[0] = ((AICHARREC *)ch)->netId;
+    msg.arg[1] = ((AICHARREC *)target)->netId;
+    msg.arg[2] = variant;
+    return cm_SendLongMessage((char *)&msg);
 }
 /* 0x5cede0, the interrogation window variant 1 (320 B): param_1 the message record (+2 the type, +0x1c8
    the flags 0x100, +0x194 the count, +4 the handle), param_2 the request (+0x214 the target id). Other
@@ -22504,7 +22499,7 @@ int ai_InterrogationWindow1(int param_1, int param_2)  /* @original: the callers
             return 0x60;
         if (*(char *)(i + 0x166) == 0)
             return 0x60;
-        ai_Unk5ced50(param_1, i, 1);
+        ai_SendInterrogationRefusal(param_1, i, 1);
         return 0x10;
     }
     for (i = 0; i < 20; i++)
@@ -22533,7 +22528,7 @@ int ai_InterrogationWindow1(int param_1, int param_2)  /* @original: the callers
             if (U_I((unsigned)&d2_PointerObj) == click1) {
                 i = sv_CheckMoney(param_1, 4);
                 if (i != 0) {
-                    h = ai_Unk5ced50(param_1, rec, 1);
+                    h = ai_SendInterrogationRefusal(param_1, rec, 1);
                     if (h != -1)
                         while (cm_GetSlotState(h) == 0)
                             sv_PumpNet();
@@ -22578,7 +22573,7 @@ int ai_InterrogationWindow2(int param_1, int param_2)  /* @original: the callers
             return 0x60;
         if (*(char *)(i + 0x166) == 0)
             return 0x60;
-        ai_Unk5ced50(param_1, i, 2);
+        ai_SendInterrogationRefusal(param_1, i, 2);
         return 0x10;
     }
     for (i = 0; i < 20; i++)
@@ -22607,7 +22602,7 @@ int ai_InterrogationWindow2(int param_1, int param_2)  /* @original: the callers
             if (U_I((unsigned)&d2_PointerObj) == click1) {
                 i = sv_CheckMoney(param_1, 4);
                 if (i != 0) {
-                    h = ai_Unk5ced50(param_1, rec, 2);
+                    h = ai_SendInterrogationRefusal(param_1, rec, 2);
                     if (h != -1)
                         while (cm_GetSlotState(h) == 0)
                             sv_PumpNet();
