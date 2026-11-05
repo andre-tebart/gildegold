@@ -9,6 +9,8 @@
    AIMSG (AIXMSG / G8MSG) and duplicate callee prototypes / cast macros; they need unifying with ai.h's types.
    Open: AIJOBX (am.h) duplicates ai.h's AIJOB; the building offer's price (+0xb0) is a member of AIJOBX only,
    the same union member in AIJOB flips ai_Unk483a60's byte match by the declaration set.
+   Open: am_types.h's G9DOMIZIL leaves the effect weight at +0xc unnamed (the use callbacks read it as g[3]);
+   naming the field flips ai_TutorialInitChapter2 (byte -> shape) and ai_TutorialInitChapter3 (shape -> draft).
    Open: not included yet (dcp headers conflicts am HEADER): txt.h; held by own declarations that differ from
    the owner's: txt_Keys.
    unit of rea 8cef7d5b (src/game/am.c); boundaries in decl/text.dcl */
