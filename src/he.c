@@ -18226,9 +18226,15 @@ void he_AllocFire(AIJOB *ev)
     if (ev->end.hour < 7)
         ev->end.hour = util_Random(10) + 8;
 }
-typedef struct HEBURN {                 /* the burning event 0x4f's words over AIJOB's union (its run handler 0x5649b0), as far
-                                           as the fire event reads them */
-    char pad00[0xf8];
+typedef struct HEBURN {                 /* the burning event 0x4f's words over AIJOB's union (its alloc handler he_AllocBurn,
+                                           its run handler 0x5649b0) */
+    char pad00[0xac];
+    int bld;                            /* 0xac, the id of the burning building (the message's arg[0]) */
+    int duration;                       /* 0xb0, the burning time (the message's arg[1]), scaled by the alloc handler */
+    unsigned char state;                /* 0xb4, the run handler's state, 0 at the start */
+    char padb5[3];
+    int objs[16];                       /* 0xb8, the fire objects / sounds the run handler places (a guess from its
+                                           dummies loop), -1: none */
     int fire;                           /* 0xf8, the id of the fire event 0x4e whose message 0x4f started it (AIMSG.srcEvent) */
 } HEBURN;
 
@@ -18335,23 +18341,42 @@ void he_RunFire(AIJOB *ev)
         return;
     }
 }
-/* 0x564860, the allocation handler of the fire event (ROUGH): the clocks +0x52 / +0x60 are now, +0xb4 = 0, the building +0xac (none: free), the nearest building (0x501e40, 0x458a20 positions) gives the distance scaled by +0xb0 (_ftol) as the burning time +0xb0 and +0x84 = -1 */
-
-void he_Unk564860(int ev)
+/* 0x564860, the allocation handler of the burning event 0x4f (HEBURN): objs[] = -1, the due clock and the second
+   clock are now, state 0; no building bld: the record is freed; else the burning time is scaled by the distance
+   (d3_PointToWorld positions) to the nearest building of kind 3 (gm_NearestBuilding) times 0.001, at most 1.5
+   (none: 1.0) */
+void he_AllocBurn(AIJOB *ev)
 {
-    int b;
+    HEBURN *x = (HEBURN *)ev;
+    AIBLD *b, *n;
+    D3VECTOR4 p1, p2;
+    float dx, dy, dz;
+    double f;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    *(unsigned char *)(ev + 0xb4) = 0;
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+    memset(x->objs, -1, sizeof x->objs);
+    ev->end = ai_Time;
+    ev->clock60 = ai_Time;
+    x->state = 0;
+    b = (AIBLD *)gm_BuildQuery(1, 1, x->bld);
     if (b == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    gm_NearestBuildingK(b);
-    *(int *)(ev + 0x84) = -1;
-    *(int *)(ev + 0xb0) = (int)((float)*(int *)(ev + 0xb0) * 1.0f);
+    n = (AIBLD *)gm_NearestBuilding((unsigned char *)b, 3);
+    if (n != 0) {
+        d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)&p1);
+        d3_PointToWorld((D3OBJECT *)n->object, &((D3OBJECT *)n->object)->pos, (D3VECTOR *)&p2);
+        dx = p1.x - p2.x;
+        dy = p1.y - p2.y;
+        dz = p1.z - p2.z;
+        f = sqrt(dx * dx + dy * dy + dz * dz) * 0.001;
+    } else {
+        f = ai_FloatOne;
+    }
+    if (f > 1.5)
+        f = 1.5;
+    ev->exSlot = -1;
+    x->duration = (int)(x->duration * f);
 }
 /* 0x5649b0, the run handler of the fire ("Brand_l" / "Stichflamme_s" sounds, "Brand_Betroffen", "dummy_FAHNE", the script "specialEvents\hausbrand.esc", "brand_he_%i_%i"; ROUGH skeleton, 2655 bytes): the fire objects are placed at the dummies of the burning building (d3_FindObject, d3_Unk458a20, util_Random), the sounds attached and played (sb_GetSample, d3snd_Attach / d3snd_Play / d3snd_PlayAt), the script loaded and run (evt_Load, evt_RunScriptArgs), the news to the owner (0x53dee0) and the burning handled by the state until it goes out */
 
@@ -19664,7 +19689,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(73, 0, 0, 1290, -1);
     if (he_SetEventHandlers(78, (void *)he_AllocFire, (void *)he_RunFire) != 0)
         return 1;
-    if (he_SetEventHandlers(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
+    if (he_SetEventHandlers(79, (void *)he_AllocBurn, (void *)he_Unk5649b0) != 0)
         return 1;
     if (he_SetEventHandlers(80, (void *)he_AllocStorm, (void *)he_RunStormEvent) != 0)
         return 1;
