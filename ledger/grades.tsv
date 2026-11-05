@@ -3557,9 +3557,9 @@ exe	0x00542590	he_RunTavern	he	draft	readable	deep
 exe	0x00542960	he_AllocOffer	he	byte	readable		
 exe	0x00542b60	he_RunWeddingOffer	he	byte	readable		
 exe	0x00543020	he_AllocQuarrel	he	byte	readable		
-exe	0x00543180	he_Unk543180	he	byte	draft		
+exe	0x00543180	he_RunQuarrel	he	byte	readable		
 exe	0x005432f0	he_RunMasterExam	he	shape	readable		
-exe	0x005436a0	he_Unk5436a0	he	byte	draft		
+exe	0x005436a0	he_AllocFeast	he	byte	readable		
 exe	0x005437c0	he_RunFeast	he	draft	readable	deep	
 exe	0x00543ac0	he_RunFeastExam	he	draft	readable	deep	
 exe	0x00544070	he_AllocTribute	he	byte	readable		
@@ -3567,21 +3567,21 @@ exe	0x00544330	he_RunTribute	he	shape	readable
 exe	0x00544550	he_DrawPairPicks	he	byte	readable		
 exe	0x00544630	he_AllocCourtship	he	shape	readable		
 exe	0x00544840	he_RunCourtship	he	draft	readable	deep	
-exe	0x005455e0	he_Unk5455e0	he	byte	draft		
-exe	0x00545640	he_Unk545640	he	byte	draft		
+exe	0x005455e0	he_AllocRandomMessage	he	byte	readable		
+exe	0x00545640	he_RunRandomMessage	he	byte	readable		
 exe	0x00545670	he_AllocPatrol	he	byte	readable		
 exe	0x00545840	he_RunPatrol	he	byte	readable		
-exe	0x00546100	he_Unk546100	he	byte	draft		
+exe	0x00546100	he_AllocRaid	he	byte	readable		
 exe	0x005461c0	he_RunRaid	he	draft	readable	deep	
 exe	0x00546c40	he_AllocFight	he	shape	readable		
 exe	0x00546ef0	he_RunFight	he	byte	readable		
-exe	0x00547170	he_Unk547170	he	byte	draft		
-exe	0x005471e0	he_DuelAccepted	he	byte	draft		
+exe	0x00547170	he_AllocDuelChallenge	he	byte	readable		
+exe	0x005471e0	he_DuelAccepted	he	byte	readable		
 exe	0x005472d0	he_DuelDeclined	he	shape	readable		
 exe	0x00547430	he_RunDuelChallenge	he	byte	readable		
 exe	0x00547750	he_AllocInsult	he	draft	readable	deep	
 exe	0x00547ba0	he_RunInsult	he	draft	readable	deep	
-exe	0x00547ee0	he_Unk547ee0	he	shape	draft		
+exe	0x00547ee0	he_AllocGeselle	he	shape	readable		
 exe	0x00547f90	he_RunGeselle	he	shape	readable		
 exe	0x00548110	he_Unk548110	he	byte	draft		
 exe	0x00548230	he_RunInsultNews	he	byte	readable		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		

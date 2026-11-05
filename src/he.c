@@ -42,8 +42,9 @@
    mark HEBARDSCRIPT, the job table's proofs / year HEJOBTABLE), HEINN (the inn
    simulation's list), HEFINVIEW (AIFIN's +0x18 / +0x64; ai.h is not
    included), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5). AIJOB's fields between
-   0x14 and 0xac are named only as the message's words; a member added to AIJOB / G28REC can flip other units'
-   matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it).
+   0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
+   units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
+   is a tie-break for it).
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
