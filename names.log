@@ -2427,3 +2427,4 @@
 2026-11-05T16:29:22 0x004c54e0 data ai_Unk4c54e0 -> cm_SendUpgradeDone by:main why:message 0x3a with a building id; its only caller he_RunUpgrade sends it when the building event 0x1e ends, with the 0x40 mark cleared (reasoned: the upgrade is done)
 2026-11-05T16:31:00 0x00543180 data he_Unk543180 -> he_RunQuarrel by:main why:the run handler of the quarrel event 0x2e, registered beside he_AllocQuarrel (he_SetEventHandlers 0x2e, src/he.c)
 2026-11-05T16:35:56 0x005436a0 data he_Unk5436a0 -> he_AllocFeast by:main why:the alloc handler of the feast event 0x37, registered beside he_RunFeast (he_SetEventHandlers 0x37, src/he.c)
+2026-11-05T16:37:46 0x005455e0 data he_Unk5455e0 -> he_AllocRandomMessage by:main why:the alloc handler of the random-message event 0x42 (ai_PostRandomMessages posts the AIMSG type 0x42 it wraps, rmsg.c 0x4bb720)

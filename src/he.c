@@ -8503,14 +8503,17 @@ fail:
 done:
     he_FreeEvent((int *)ev);
 }
-/* 0x5455e0, a Ghidra miss (disassembled): sets the due clock (+0x52) to now with a random hour (+0x56 = 10 + random(10)) and minute (+0x58 = random(0x3b)), +0x5c = 0 */
+/* 0x5455e0, the alloc handler of the random-message event 0x42 (ai_PostRandomMessages wraps a random message in
+   it): the due clock is now at a random hour 10 .. 19, minute 0 .. 0x3a and second 0 */
 
-void he_Unk5455e0(int ev)
+void he_AllocRandomMessage(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(short *)(ev + 0x56) = (short)(util_Random(10) + 10);
-    *(int *)(ev + 0x58) = (unsigned short)util_Random(0x3b);
-    *(int *)(ev + 0x5c) = 0;
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    e->end.hour = (short)(util_Random(10) + 10);
+    e->end.min = (unsigned short)util_Random(0x3b);
+    e->end.sec = 0;
 }
 
 int ai_RunMessage();
@@ -10651,7 +10654,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x41, (void *)he_AllocCourtship, (void *)he_RunCourtship) != 0)
         return 1;
-    if (he_SetEventHandlers(0x42, (void *)he_Unk5455e0, (void *)he_Unk545640) != 0)
+    if (he_SetEventHandlers(0x42, (void *)he_AllocRandomMessage, (void *)he_Unk545640) != 0)
         return 1;
     if (he_SetEventHandlers(0x43, (void *)he_AllocPatrol, (void *)he_RunPatrol) != 0)
         return 1;
