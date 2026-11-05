@@ -23094,48 +23094,61 @@ AIJOB *he_FindNearestSpying(AICHAR *per, AICHAR *agent, int skip)
     }
     return found;
 }
-/* 0x56f740, the domicile action of the construction run (a = the character, b = the event, c = the event 0x18 found for b + 0xc4): only the type 0x18 and fewer than 0x14 tries; b + 0xc4 + 1; when the workplace of 0x505df0 (c + 0xd8) is at least 1850 from the one of a, b + 0xac = c + 0xb4 (0x4c5230 / 0x4c52e0) and 0; else the sums 0x504ec0 (the record of the player c + 8, 2) + (c + 0xe8 + 1) * 0.5f against 0x504ec0 (0x505df0 (c + 0xc4), 2) + (b + 0xc0 + 1) * 0.5f: the first smaller -> the texts 0x4028 / 0x4029, the state -1 (0x4c4c60) and 1; -1 when nothing */
-
-int he_SecretRoomCatchSpy(int a, int b, char *c)
+/* 0x56f740, the spy hunt's catch (he_RunSecretRoom stage 7; agent = the secret room's agent, ev = its event, spy =
+   the spying event 24 it follows): -1 without a spying event, after 0x14 tries (the event's spyEvent word, counted
+   up here) or without the spy's scene character; while the spy is at least 1850 from the agent, the agent walks
+   on to the spied building (when it changed, "Spy Killer") and 0; near, the spy is caught when the spy's
+   employer's skill 2 + (days + 1) * 0.5 is below the victim's skill 2 + (strength + 1) * 0.5: the spying event
+   ends, both are told (texts 0x4028 / 0x4029, the news "_NACHRICHTEN_DOMIZIL_10") and 1; else -1 */
+int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
 {
     char text[0x400];
-    int per, bld1, bld2, other;
-    unsigned short pl;
-    float dx, dy, dz;
+    HESECRETROOM *s = (HESECRETROOM *)ev;
+    HESPYING *sp = (HESPYING *)spy;
+    AICHAR *spyChr, *employer, *victim;
+    D3VECTOR d, there;
+    float dist, spyBonus, guard, skill;
 
-    if (c == 0 || *c != 0x18)
+    if (spy == 0 || spy->kind != 0x18)
         return -1;
-    if (*(unsigned int *)(b + 0xc4) >= 0x14)
+    if ((unsigned int)s->spyEvent >= 0x14)
         return -1;
-    (*(unsigned int *)(b + 0xc4))++;
-    per = gm_FindChar(HM_I(c, 0xd8));
-    if (per == 0 || HM_I(per, 0x184) == 0)
+    s->spyEvent++;
+    spyChr = (AICHAR *)gm_FindChar(sp->spy);
+    if (spyChr == 0 || spyChr->scene == 0)
         return -1;
-    bld1 = HM_I(HM_I(a, 0x184), 0x34);
-    bld2 = HM_I(HM_I(per, 0x184), 0x34);
-    dx = *(float *)(bld1 + 0x4c) - *(float *)(bld2 + 0x4c);
-    dy = *(float *)(bld1 + 0x50) - *(float *)(bld2 + 0x50);
-    dz = *(float *)(bld1 + 0x54) - *(float *)(bld2 + 0x54);
-    if (sqrt(dx * dx + dy * dy + dz * dz) >= 1850.0f) {
-        if (HM_I(c, 0xb4) != HM_I(b, 0xac)) {
-            HM_I(b, 0xac) = HM_I(c, 0xb4);
-            cm_SendChrStop(HM_I(a, 4));
-            cm_SendChrGotoBuilding(HM_I(a, 4), HM_I(c, 0xb4), -1, 0, 1, (char *)(unsigned)&full_data_628dec);
+    d.x = agent->scene->obj->pos.x;
+    d.y = agent->scene->obj->pos.y;
+    d.z = agent->scene->obj->pos.z;
+    there.x = spyChr->scene->obj->pos.x;
+    there.y = spyChr->scene->obj->pos.y;
+    there.z = spyChr->scene->obj->pos.z;
+    d.x -= there.x;
+    d.y -= there.y;
+    d.z -= there.z;
+    dist = sqrt(d.z * d.z + d.y * d.y + d.x * d.x);
+    if (dist < 1850.0f) {
+        employer = &ai_CharsT[spy->chr];
+        victim = (AICHAR *)gm_FindChar(sp->victim);
+        spyBonus = (sp->days + 1) * 0.5f;
+        guard = (s->strength + 1) * 0.5f;
+        skill = gm_GetSkill((char *)employer, 2);
+        if (gm_GetSkill((char *)victim, 2) + guard > skill + spyBonus) {
+            spy->exSlot = cm_SendExSetHE(-1, spy);
+            txt_Format(text, 0x4028, victim->id);
+            he_ShowNews(employer->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_10");
+            txt_Format(text, 0x4029, employer->id);
+            he_ShowNews(victim->netId, -1, text, 1, 0x5fb, "_NACHRICHTEN_DOMIZIL_10");
+            return 1;
         }
-        return 0;
+        return -1;
     }
-    pl = *(unsigned short *)(c + 8);
-    other = gm_FindChar(HM_I(c, 0xc4));
-    if (gm_GetSkill((unsigned)&ai_Chars + pl * 0x21c, 2) + (HM_I(c, 0xe8) + 1) * 0.5f <
-        gm_GetSkill(other, 2) + (HM_I(b, 0xc0) + 1) * 0.5f) {
-        HM_I(c, 0x84) = cm_SendExSetHE(-1, c);
-        txt_Format(text, 0x4028, *(unsigned short *)other);
-        he_ShowNews(*(int *)((unsigned)&ai_CharInts + pl * 0x21c), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e58);
-        txt_Format(text, 0x4029, *(unsigned short *)((unsigned)&ai_Chars + pl * 0x21c));
-        he_ShowNews(HM_I(other, 4), -1, text, 1, 0x5fb, (char *)(unsigned)&full_data_628e58);
-        return 1;
+    if (sp->at != s->target) {
+        s->target = sp->at;
+        cm_SendChrStop(agent->netId);
+        cm_SendChrGotoBuilding(agent->netId, sp->at, -1, 0, 1, "Spy Killer");
     }
-    return -1;
+    return 0;
 }
 
 void he_Unk56fc50(int ev);          /* 0x56fc50 */
