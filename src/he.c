@@ -7183,114 +7183,173 @@ void he_RunFeast(int ev)
 }
 
 int ai_MasterExamPassed();
-/* 0x543ac0, a Ghidra miss (disassembled): the master exam event of a building (the examiner of +0xbc: 0 = the building +0x10 with its guild master slot list +0x1c, 1 = the figure +0xc0 with the list +0xac of the event); the examinee is the figure (word +8). State 0 opens "Berufe\Messagebox_Meisterpruefung" (0x53d6f0) and the news 0x1770 / 0x1771; states 1 / 2 wait for the due time or the answer (0xf8a668: 0 = yes, 1 = no) and tell the examinee 0x1785 / 0x1786 (state 2 is the exit of a figure that is no master any more) (ROUGH) */
-void he_Unk543ac0(int ev)
+/* 0x543ac0, a Ghidra miss (disassembled): the run handler of the master exam at a feast (kind 0x36). The examiner is
+   the owner of the building e->from, the guests read from its feast table object (gm_Query kind 0x17), or (examAt 1)
+   the host of the feast event examFeast (kind 0x37) with that event's guests; the candidate is the event's character,
+   and one who is no player (kind 6 / 7) skips to stage 2. Stage 0 opens the window
+   "Berufe\Messagebox_Meisterpruefung" (news 0x5ec) with the text 0x1770 / 0x1771 and the voice "_NACHRICHTEN_HS_28",
+   due in a day. Stage 1 waits for the answer in that window (d2_ClickedId 0: passed, 1: failed) or for the due time
+   (then stage 2); stage 2 decides by ai_MasterExamPassed. Passed: the examiner hears 0x1785; failed: the candidate
+   leaves the feast's guests (the table's field, or the feast event re-posted) and the examiner hears 0x1786; either
+   only while the candidate is a guest. The text 0x1771 reads the owner of a null building: kept as the original
+   @deep reconstructed and read in full against the original (all 4 search loops, the field delta / feast
+   re-post on failure, the 0x1785 / 0x1786 news, the stage 0 window and texts, the 0x200 buffer). The
+   calls, stores and branches match per path; what differs is tail merging: the original reloads ev from
+   its argument slot (mov edx/esi, [esp+0x220]) before the closing he_FreeEvent / he_ReleaseSlot of the
+   stage 1 / 2 paths, so their tails are identical and cross-jumped (stage 1 not-found exits jmp +0x479,
+   the news calls share +0x471 / +0x295), where ours keeps ev in esi on the passed paths and duplicates
+   each return block (returns 13/9, txt_Format x4 vs x3, he_ShowNews x4 vs x2). Hunks: code at +0xf8 (mov
+   ecx,eax: master kept in a register), +0x172/+0x19b/+0x386/+0x3b5 (duplicated return blocks), +0x1ba (the
+   0x1785 news not cross-jumped into the 0x1786 one), +0x404 (the stage 1 news tail), +0x53e/+0x578 (the
+   ai_Time copies into start / end: regs + order) (size: 539 vs 485 instructions, explained: 54
+   instructions: four duplicated return blocks (push ev; call he_FreeEvent [; he_ReleaseSlot]; four pops;
+   add esp; ret, ~8-10 each) and two news sequences (txt_Format + he_ShowNews, ~16 each) that the original
+   cross-jumps because it reloads ev from the argument slot on those paths: allocation, not statements) */
+void he_RunFeastExam(int ev)
 {
-    int bld = 0;
-    int e = 0;
-    int o = 0;
-    int cr, me, i, h, st;
-    int neg1;
-    char buf[0x1f0];
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *bld = 0;
+    AIOBJ *table = 0;
+    AIJOB *feast = 0;
+    AICHAR *master, *cand;
+    int i, none;
+    char buf[0x200];
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2)
+    if (e->stage == -1 || e->stage == -2)
         goto fail;
-    if (*(int *)(ev + 0xbc) == 0) {
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0x10));
-        if (o == 0)
-            goto fail;
-        bld = gm_Query(*(int *)(o + 0x5d), 1, 0, 0x17);
+    if (e->examAt == 0) {
+        gm_FindById(&bld, 0, 0, e->from);
         if (bld == 0)
             goto fail;
-        if (*(unsigned short *)(o + 0x27) == 0xffff)
+        table = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x17);
+        if (table == 0 || bld->owner == 0xffff)
             goto fail;
-        cr = (unsigned)&ai_Chars + *(unsigned short *)(o + 0x27) * 0x21c;
-        if (cr == 0)
+        master = &ai_CharsT[bld->owner];
+        if (master == 0)
             goto fail;
-    } else if (*(int *)(ev + 0xbc) == 1) {
-        e = (int)he_FindEvent(2, 1, *(int *)(ev + 0xc0), 0, 0x37);
-        if (e == 0)
+    } else if (e->examAt == 1) {
+        feast = (AIJOB *)he_FindEvent(2, 1, e->examFeast, 0, 0x37);
+        if (feast == 0)
             goto fail;
-        cr = (unsigned)&ai_Chars + *(unsigned short *)(e + 8) * 0x21c;
-        if (cr == 0)
+        master = &ai_CharsT[feast->chr];
+        if (master == 0)
             goto fail;
     } else {
         goto done;
     }
-    me = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    if (*(char *)(me + 2) != 6 && *(char *)(me + 2) != 7)
-        *(int *)(ev + 0x70) = 2;
-    switch (*(int *)(ev + 0x70)) {
+    cand = &ai_CharsT[e->chr];
+    if (cand->kind != 6 && cand->kind != 7)
+        e->stage = 2;
+    switch (e->stage) {
     case 0:
-        he_OpenEventSlot(ev, 0, 0, (char *)"Berufe\Messagebox_Meisterpruefung", 0x5ec);
-        if (*(int *)(ev + 0x74) == 0)
+        he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
+        if (e->slot == 0)
             goto done;
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-        if (*(int *)(ev + 0xbc) == 0)
-            io_PrintText(0x1770, *(unsigned short *)(o + 0x27), *(unsigned short *)me, ev + 0xac, o, *(unsigned short *)cr, *(unsigned short *)me);
+        d2_SetForm(e->slot->win, 0);
+        if (e->examAt == 0)
+            io_PrintText(0x1770, bld->owner, cand->id, e->examText, bld, master->id, cand->id);
         else
-            io_PrintText(0x1771, *(unsigned short *)(o + 0x27), *(unsigned short *)me, ev + 0xac, *(unsigned short *)cr, *(unsigned short *)me);
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
+            io_PrintText(0x1771, bld->owner, cand->id, e->examText, master->id, cand->id);
+        e->start = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0x18, 0, 0);
         snd_PlayVoice(-7, 0, "_NACHRICHTEN_HS_28", 0);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        e->stage++;
         return;
     case 1:
-        if (gm_CompareTime((unsigned)&ai_Time, ev + 0x52) > 0) {
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
             he_ReleaseSlot(ev);
-            *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+            e->stage++;
             return;
         }
-        if (U_I((unsigned)&d2_ClickedForm) != *(int *)(*(int *)(ev + 0x74) + 8))
+        if (d2_ClickedForm != e->slot->win)
             return;
-        neg1 = -1;
-        h = U_I((unsigned)&d2_ClickedId);
-        if (h == -1)
+        none = -1;
+        if (d2_ClickedId == -1)
             return;
-        break;
-    case 2:
-        h = ai_MasterExamPassed(cr, me);
-        h = (h == 1) ? 0 : 1;
-        neg1 = -1;
-        break;
-    default:
+        if (d2_ClickedId == 0) {
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId)
+                        break;
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId)
+                        break;
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1785, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        } else if (d2_ClickedId == 1) {
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId) {
+                        cm_BeginFieldBlock((char *)table, table->objId);
+                        cm_AddFieldDelta(4, 1, 0x1c + i * 4, &none);    /* table->festGuests[i] = -1 */
+                        cm_SendFieldDeltas();
+                        break;
+                    }
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId) {
+                        feast->festGuests[i] = -1;
+                        cm_SendExSetHE(0, ev);
+                        break;
+                    }
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1786, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        }
+        he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
         return;
-    }
-    /* h: 0 = the examinee passed (0x1785), 1 = failed (0x1786) */
-    i = 0;
-    if (*(int *)(ev + 0xbc) == 0) {
-        while (i < 4 && *(int *)(bld + 0x1c + i * 4) != *(int *)(me + 4))
-            i++;
-        if (i >= 4)
-            goto fail;
-        if (h != 0) {
-            cm_BeginFieldBlock(bld, *(int *)(bld + 2));
-            cm_AddFieldDelta(4, 1, i * 4 + 0x1c, &neg1);
-            cm_SendFieldDeltas();
+    case 2:
+        if (ai_MasterExamPassed(master, cand) == 1) {
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId)
+                        break;
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId)
+                        break;
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1785, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
+        } else {
+            none = -1;
+            if (e->examAt == 0) {
+                for (i = 0; i < 4; i++)
+                    if (table->festGuests[i] == cand->netId) {
+                        cm_BeginFieldBlock((char *)table, table->objId);
+                        cm_AddFieldDelta(4, 1, 0x1c + i * 4, &none);    /* table->festGuests[i] = -1 */
+                        cm_SendFieldDeltas();
+                        break;
+                    }
+            } else {
+                for (i = 0; i < 4; i++)
+                    if (feast->festGuests[i] == cand->netId) {
+                        feast->festGuests[i] = -1;
+                        cm_SendExSetHE(0, ev);
+                        break;
+                    }
+            }
+            if (i < 4) {
+                txt_Format(buf, 0x1786, cand->id);
+                he_ShowNews(master->netId, -1, buf, 0, 0x5ec, 0);
+            }
         }
-    } else {
-        while (i < 4 && *(int *)(ev + 0xac + i * 4) != *(int *)(me + 4))
-            i++;
-        if (i >= 4)
-            goto fail;
-        if (h != 0) {
-            *(int *)(ev + 0xac + i * 4) = -1;
-            cm_SendExSetHE(0, ev);
-        }
-    }
-    txt_Format(buf, h == 0 ? 0x1785 : 0x1786, *(unsigned short *)me);
-    he_ShowNews(*(int *)(cr + 4), -1, buf, 0, 0x5ec, (char *)0);
-    if (st == 2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    he_ReleaseSlot(ev);
-    he_FreeEvent((int *)ev);
     return;
 fail:
-    if (*(int *)(ev + 0x74) != 0)
+    if (e->slot != 0)
         he_ReleaseSlot(ev);
 done:
     he_FreeEvent((int *)ev);
@@ -9252,7 +9311,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x37, (void *)he_Unk5436a0, (void *)he_RunFeast) != 0)
         return 1;
-    if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_Unk543ac0) != 0)
+    if (he_SetEventHandlers(0x36, (void *)he_Unk552040, (void *)he_RunFeastExam) != 0)
         return 1;
     if (he_SetEventHandlers(0x35, (void *)he_Unk544070, (void *)he_Unk544330) != 0)
         return 1;

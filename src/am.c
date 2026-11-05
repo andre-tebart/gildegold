@@ -3288,7 +3288,7 @@ void ai_RollStudyOffers(AIC4 *ch, int *out)
         out[i * 3] = (int)(k * f[i]);
     }
 }
-/* 0x494a30, whether the examinee b passes the guild master a's master exam (the event he_Unk543ac0): no when
+/* 0x494a30, whether the examinee b passes the guild master a's master exam (the event he_RunFeastExam): no when
    the master's partner is the examinee, else 1 when the examinee's liking plus 2.5 per level he is above the
    master reaches a random * 75 */
 

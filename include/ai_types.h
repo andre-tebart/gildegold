@@ -160,6 +160,13 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             unsigned char festEssen;    /* 0xbc, the menu pick (AIGRP.essen) */
             unsigned char festMusik;    /* 0xbd, the musician pick (AIGRP.musik) */
         };
+        struct {                        /* 0xac, of the master exam at a feast, kind 0x36 (its run handler 0x543ac0) */
+            char examText[0x10];        /* 0xac, a text the news 0x1770 / 0x1771 print (reasoned: io_PrintText gets its
+                                           address among the characters' ids) */
+            int examAt;                 /* 0xbc, where: 0 the feast table object of the building e->from (its owner
+                                           examines), 1 the feast event examFeast (its host examines) */
+            int examFeast;              /* 0xc0, the id of that feast event (kind 0x37, he_FindEvent) */
+        };
     };
     unsigned char stormDue;             /* 0xec, of a storm event 0x50: set by its alloc handler 0x5652b0, the run handler
                                            damages the buildings once, then clears it */
