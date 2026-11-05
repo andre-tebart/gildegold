@@ -251,9 +251,9 @@ extern char * cm_FieldObject;
 extern GAPDATA full_rdata_5eb8a8[];
 extern char * ai_Blds;
 extern unsigned short * ai_PlayerChar;
-extern GAPDATA full_data_628f3c[];
-extern GAPDATA full_data_628f74[];
-extern GAPDATA full_data_628fac[];
+extern char he_MeetingSceneSmall[56];           /* 0x628f3c, the meeting scene script of the kind 0 / other */
+extern char he_MeetingSceneMiddle[56];          /* 0x628f74, the meeting scene script of the kind 1 */
+extern char he_MeetingSceneBig[56];             /* 0x628fac, the meeting scene script of the kind 2 */
 extern const float gv_SaleShares[];
 extern GAPDATA full_data_628fe4[];
 extern float ai_Unk5eb94c;
