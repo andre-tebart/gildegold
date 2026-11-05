@@ -19,7 +19,10 @@
    words, the D3OBJECT reaper) and the ranking event 0x550ee0 (its packets HERANKHEAD / HERANKLINE); so do the
    walk event 0x551340 .. 0x551b70 (its ten slots HEWALKSLOT), the six-group event 0x7d (AIJOB.groups / grpMode,
    AMTREC / AMTKIND from amt_types.h), the master exam question / offer 0x7e / 0x7f (HEEXAMBOX, HEEXAMOFFER, the
-   message HEEXAMMSG over AIMSG), the conversion event 0x81 (HECONVERT) and the applicants event 0x86 (HEAPPLICANTS).
+   message HEEXAMMSG over AIMSG), the conversion event 0x81 (HECONVERT), the applicants event 0x86 (HEAPPLICANTS),
+   the office award 0xa5 (HEOFFICEAWARD), the watch event 0x43 with the attack's question (HEWATCH / HEDETECT), the
+   sale 2 (HESALE), the customers / hire events 6 / 7 (HECUSTOMERS / HEHIRE) and the transport event 15
+   (HETRANSPORT; the cart's CHARACTER, the ordering event's HEROUTEREFS).
    Open: types: the other handlers past 0x547ba0 still read the event and message records through raw offsets
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
@@ -40,11 +43,13 @@
    0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
    filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner
    he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
+   Open: types: SVFRAME / the frame stack view is declared in sv.c, unk_58bbd0.c and here (it belongs in sv_types.h).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h unk_4b39f0.h unk_4b6480.h unk_5d33b0.h; held by own
    declarations that differ from the owner's: ai_Time, cm_SendExSetHE, ahm_SendSetShare; calls whose argument
    count differs from the definition (read the original's pushes): gm_AddTime, gm_Liking, gm_TitleNumber,
-   gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor. Until am.h is included
+   gm_TitleGroup, d2_SetObjValue, d3t_PlayAnim, ahm_SendSetShare, sb_Stop, sv_IsAtDoor; cm.h's void senders whose
+   send slot the handlers keep (cm_SendExSellObject, cm_SendCartRoute: the @original cast macros ..H). Until am.h is included
    the head keeps am.h's ai_FindPartnersRandomWalk prototype (he_FillWalkSlot passes floats to it).
    unit of rea 8cef7d5b (src/game/he.c); boundaries in decl/text.dcl */
 struct AHMSLOT;

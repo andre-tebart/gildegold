@@ -2185,7 +2185,7 @@ exe	0x004c47e0	cm_SendMoveGoods	cm	byte	draft
 exe	0x004c4830	cm_SendMoveGoodsUnchecked	cm	byte	draft		
 exe	0x004c4880	cm_SendExSellObject	cm	byte	draft		
 exe	0x004c48e0	ai_Unk4c48e0	cm	byte	draft		
-exe	0x004c4920	ai_Unk4c4920	cm	byte	draft		
+exe	0x004c4920	cm_SendCartRoute	cm	byte	draft		
 exe	0x004c4960	cm_SendRemoveGoods	cm	byte	draft		
 exe	0x004c49a0	cm_SendFieldDeltas	cm	byte	readable		
 exe	0x004c49e0	cm_SendFieldValues	cm	byte	readable		
@@ -2213,7 +2213,7 @@ exe	0x004c5100	cm_SendChrWalkTo	cm	byte	draft
 exe	0x004c5150	cm_RequestChrMove	cm	byte	draft		
 exe	0x004c51b0	cm_RequestChrMoveToUniverse	cm	byte	draft		
 exe	0x004c5230	cm_SendChrStop	cm	byte	draft		
-exe	0x004c5260	ai_Unk4c5260	cm	byte	draft		
+exe	0x004c5260	cm_SendCartState	cm	byte	draft		
 exe	0x004c52a0	cm_SendPlaceOnStage	cm	byte	draft		
 exe	0x004c52e0	cm_SendChrGotoBuilding	cm	draft	readable	deep	
 exe	0x004c5410	cm_SendChrAnim	cm	byte	draft		
@@ -3681,25 +3681,25 @@ exe	0x00552880	he_Unk552880	he	byte	draft
 exe	0x00552920	he_RunApplicants	he	byte	readable		
 exe	0x00552b90	he_Unk552b90	he	byte	draft		
 exe	0x00552bc0	he_Unk552bc0	he	byte	draft		
-exe	0x00552c30	he_Unk552c30	he	byte	draft		
-exe	0x00552ca0	he_Unk552ca0	he	draft	draft		
+exe	0x00552c30	he_StartOfficeAward	he	byte	draft		
+exe	0x00552ca0	he_RunOfficeAward	he	draft	readable	deep	
 exe	0x00553060	he_RegisterEventTypes22	he	byte	draft		
-exe	0x005538b0	he_EndPersonEvents	he	draft	draft		
-exe	0x00553ae0	he_Unk553ae0	he	draft	draft		
+exe	0x005538b0	he_EndPersonEvents	he	shape	readable		
+exe	0x00553ae0	he_DetectAttack	he	byte	readable		
 exe	0x00553cc0	he_Unk553cc0	he	byte	draft		
 exe	0x00553d10	he_NoEvent2ePair	he	byte	draft		
 exe	0x00553d60	he_NoEvent4bPair	he	byte	draft		
 exe	0x00553db0	he_NoEvent35Pair	he	shape	draft		
 exe	0x00553e10	he_Unk553e10	he	byte	draft		
-exe	0x00553e90	he_Unk553e90	he	draft	draft		
-exe	0x00554320	he_Unk554320	he	draft	draft		
+exe	0x00553e90	he_RunSale	he	shape	readable		
+exe	0x00554320	he_RunCustomers	he	draft	readable	deep	
 exe	0x00554820	he_Unk554820	he	byte	draft		
-exe	0x00554860	he_Unk554860	he	draft	draft		
-exe	0x00554cb0	he_Unk554cb0	he	draft	draft		
+exe	0x00554860	he_RunHire	he	draft	readable	deep	
+exe	0x00554cb0	he_AllocTransport	he	shape	readable		
 exe	0x005551c0	he_CollectTransporter	he	byte	readable		
 exe	0x00555210	he_RandomTransporter	he	byte	draft		
-exe	0x005552c0	he_Unk5552c0	he	byte	draft		
-exe	0x00555350	he_Unk555350	he	draft	draft		
+exe	0x005552c0	he_SetCartSpeed	he	byte	draft		
+exe	0x00555350	he_TransportFromHome	he	byte	readable		
 exe	0x00555690	he_Unk555690	he	draft	draft		
 exe	0x00555b60	he_Unk555b60	he	draft	draft		
 exe	0x00556080	he_Unk556080	he	draft	draft		
@@ -4005,7 +4005,7 @@ exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
