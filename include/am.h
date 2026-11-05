@@ -131,7 +131,7 @@ int ai_DecideLaw20(AIPER *p, int a, int *out);                    /* 0x4922e0, d
 int ai_DecideBeatUpGuiltWeights(AIPER *p, int a, int *out);                    /* 0x492410, decision 21 */
 int ai_DecideBlackmailGuiltWeights(AIPER *p, int a, int *out);                    /* 0x492540, decision 22 */
 int ai_DecideLaw23(AIPER *p, int a, int *out);                    /* 0x492680, decision 23 */
-int ai_Unk4927c0(AIPER *p, int a, int *out);                    /* 0x4927c0, decision 24 */
+int ai_DecideSabotageGuiltWeights(AIPER *p, int a, int *out);                    /* 0x4927c0, decision 24 */
 int ai_Unk492900(AIPER *p, int a, int *out);                    /* 0x492900, decision 25 */
 int ai_Unk492a40(AIPER *p, int a, int *out);                    /* 0x492a40, decision 26 */
 int ai_Unk492b80(AIPER *p, int a, int *out);                    /* 0x492b80, decision 8 */

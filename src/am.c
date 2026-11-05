@@ -2110,9 +2110,9 @@ int ai_DecideLaw23(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4927c0, decision 24 */
+/* 0x4927c0, the callback of law record 24 (AIDEC.fn, office 0x16 no 2, a boolean law): ai_EvalSabotage (0x4995d0, the eval callback of action 0x17, sabotage; ai_DecideSabotage also reads cur for its 1-in-4 skip) takes its cur != 0 to evaluate that action with the character's guilt (ai_EvalGuiltWeights) instead of the mood weights; the normalized skill 2 against its rating (x1.1 for the title groups 0xb / 0xc, else x1) against 1 raises the law when mood 11 outweighs mood 9, and lowers it when mood 10 outweighs mood 9 */
 
-int ai_Unk4927c0(AIPER *p, int a, int *out)
+int ai_DecideSabotageGuiltWeights(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
