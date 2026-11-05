@@ -1073,6 +1073,18 @@ typedef struct HETRIALCASE {            /* the trial event 0xa0's words over AIJ
     char pad00[0xac];
     int level;                          /* 0xac, the trial's level (below 4 / 7 raises the payment base) */
 } HETRIALCASE;
+typedef struct HEMEET4 {                /* the meeting event 0xa1's words over AIJOB's union (its alloc he_AllocMeeting4, run
+                                           0x5748d0 and the room query he_FindMeetingRoom); the four figures are AIJOB.ids */
+    char pad00[0xac];
+    int income;                         /* 0xac, the income of the meeting (ai_Unk575030 adds to it) */
+    int room;                           /* 0xb0, > 0: the room is looked up (he_FindMeetingRoom) */
+    int stop;                           /* 0xb4, cm_SendChrStop's argument */
+    char padb8[4];
+    int meetStart;                      /* 0xbc, the index into classes the room query starts at */
+    unsigned short classes[4];          /* 0xc0, the building classes the room query hands to gm_BuildQuery */
+    unsigned short objs[4];             /* 0xc8, the meeting object ids (ai_Unk575030 fills the first free one) */
+    int bld;                            /* 0xd0, -1 at the allocation */
+} HEMEET4;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -21347,7 +21359,7 @@ void he_Unk574060(int ev);          /* 0x574060 */
 void he_Unk5740d0(int ev);          /* 0x5740d0 */
 void he_AllocTrialScene(int ev);          /* 0x574120 */
 void he_RunTrialScene(int ev);          /* 0x5743c0 */
-void he_Unk574550(int ev);          /* 0x574550 */
+void he_AllocMeeting4(int ev);          /* 0x574550 */
 void he_Unk5748d0(int ev);          /* 0x5748d0 */
 void he_Unk575150(int ev);          /* 0x575150 */
 void he_Unk5751e0(int ev);          /* 0x5751e0 */
@@ -21361,7 +21373,7 @@ int he_RegisterEventTypes9d(void)
         if (he_SetEventHandlers(0x9e, (void *)he_Unk573f20, (void *)he_Unk573fb0) == 0) {
             if (he_SetEventHandlers(0x9f, (void *)he_Unk574060, (void *)he_Unk5740d0) == 0) {
                 if (he_SetEventHandlers(0xa0, (void *)he_AllocTrialScene, (void *)he_RunTrialScene) == 0) {
-                    if (he_SetEventHandlers(0xa1, (void *)he_Unk574550, (void *)he_Unk5748d0) == 0) {
+                    if (he_SetEventHandlers(0xa1, (void *)he_AllocMeeting4, (void *)he_Unk5748d0) == 0) {
                         if (he_SetEventHandlers(0xa3, (void *)he_Unk575150, (void *)he_Unk5751e0) == 0) {
                             if (he_SetEventHandlers(0xa4, (void *)he_Unk575320, (void *)he_Unk5753a0) == 0) {
                                 sv_RegisterActivity(0xa1, 0, 0, 0x50f, -1);
@@ -21899,49 +21911,50 @@ void he_RunTrialScene(int ev)
    (0x505ca0 (4, out)) go to +0xc0 / +0xc2 and +0xc4 / +0xc6, the words +0xc8 .. +0xce = 0, +0xac = 0, +0xb0 / +0xb4 = 0xf0,
    +0xbc = 0, +0xd0 = -1 and state 0; else the event is freed */
 
-void he_Unk574550(int ev)
+void he_AllocMeeting4(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEMEET4 *m = (HEMEET4 *)ev;
     unsigned short w[4];
-    int out[2];
-    char *per;
-    int i, bld;
+    int out[4];
+    AICHAR *per;
+    AIBLD *bld;
+    int i;
 
     w[0] = 7;
     w[1] = 0x16;
     w[2] = 0xf;
     w[3] = 0xa;
-    bld = 0;
     for (i = 0; i < 4; i++) {
-        per = (char *)gm_FindChar(HM_I(ev, 0x8c + i * 4));
+        per = (AICHAR *)gm_FindChar(e->ids[i]);
         if (per == 0)
             continue;
-        bld = HM_I(per, 0x16c);
+        bld = per->bld;
         if (bld == 0)
             continue;
-        if (HM_I(bld, 1) == HM_I(ev, 0x10))
-            break;
+        if (bld->id == e->from)
+            goto found;
     }
-    if (i == 4) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    he_FreeEvent((int *)ev);
+    return;
+found:
+    e->start = ai_Time;
+    e->end = ai_Time;
     gm_Shuffled(4, out);
-    *(unsigned short *)(ev + 0xce) = 0;
-    *(unsigned short *)(ev + 0xc0) = w[out[0]];
-    *(unsigned short *)(ev + 0xc2) = w[out[1]];
-    *(unsigned short *)(ev + 0xcc) = 0;
-    *(unsigned short *)(ev + 0xc4) = w[out[0]];
-    *(unsigned short *)(ev + 0xc6) = w[out[1]];
-    *(unsigned short *)(ev + 0xca) = 0;
-    *(unsigned short *)(ev + 0xc8) = 0;
-    HM_I(ev, 0xac) = 0;
-    HM_I(ev, 0xb0) = 0xf0;
-    HM_I(ev, 0xb4) = 0xf0;
-    HM_I(ev, 0xbc) = 0;
-    HM_I(ev, 0xd0) = -1;
-    HM_I(ev, 0x70) = 0;
+    m->objs[3] = 0;
+    m->classes[0] = w[out[0]];
+    m->classes[1] = w[out[1]];
+    m->objs[2] = 0;
+    m->classes[2] = w[out[2]];
+    m->classes[3] = w[out[3]];
+    m->objs[1] = 0;
+    m->objs[0] = 0;
+    m->income = 0;
+    m->room = 0xf0;
+    m->stop = 0xf0;
+    m->meetStart = 0;
+    m->bld = -1;
+    e->stage = 0;
 }
 /* 0x5746b0, the scene of the event 0xa1 (the meeting, ROUGH): the figure +0xc (0x505df0) and the building +0x10 (0x4fea50); the
    non-zero words +0xc8 .. +0xce are looked up (0x4a5760 (per, n, words, out)); each found record pays the figure through
