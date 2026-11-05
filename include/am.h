@@ -111,7 +111,7 @@ int ai_RegisterGraveActions(int a);                                        /* 0x
 int ai_DecideLawSeverity(AIPER *p, int a, int *out);                    /* 0x490e00, decision 0 */
 int ai_DecideLaw1(AIPER *p, int a, int *out);                    /* 0x490fc0, decision 1 */
 int ai_DecideStateReligion(AIPER *p, int a, int *out);                    /* 0x491200, decision 2 */
-int ai_Unk4912e0(AIPER *p, int a, int *out);                    /* 0x4912e0, decision 3 */
+int ai_DecideLaw3(AIPER *p, int a, int *out);                    /* 0x4912e0, decision 3 */
 int ai_Unk491430(AIPER *p, int a, int *out);                    /* 0x491430, decision 4 */
 int ai_Unk491560(AIPER *p, int a, int *out);                    /* 0x491560, decision 5 */
 int ai_Unk4915f0(AIPER *p, int a, int *out);                    /* 0x4915f0, decision 6 */

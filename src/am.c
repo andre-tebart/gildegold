@@ -1550,9 +1550,9 @@ int ai_DecideStateReligion(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4912e0, decision 3 */
+/* 0x4912e0, the callback of law record 3 (AIDEC.fn, office 0x12 no 1, a boolean law): the normalized skill 4 against the rating (x, 1.1 for the title group 7, 0.9 for 0xb / 0xc) raises the law (cur 0 -> 1) when it is below ai_FloatOne and mood 11 outweighs mood 9, and lowers it (cur 1 -> 0) when it is above and mood 10 outweighs mood 9; the tribute event accuses against it (gv_Accuse(3, 1, ...)) */
 
-int ai_Unk4912e0(AIPER *p, int a, int *out)
+int ai_DecideLaw3(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
@@ -1561,7 +1561,7 @@ int ai_Unk4912e0(AIPER *p, int a, int *out)
     t = gm_TitleGroup(p->jobId);
     f = gm_GetSkill(p, 4);
     n = ord_GetRatingByte(4);
-    x = (f - (n + 1.0f) / 252.0f) / 42.0f;
+    x = (f - (n + ai_FloatOne) / 252.0f) / 42.0f;
     u = (p->mood[9][0] - 2.0) * p->mood[9][2];
     v = (p->mood[10][0] - 2.0) * p->mood[10][2];
     w = (p->mood[11][0] - 2.0) * p->mood[11][2];
@@ -1570,7 +1570,7 @@ int ai_Unk4912e0(AIPER *p, int a, int *out)
     else if (t == 0xb || t == 0xc)
         x *= 0.9f;
     gv_GetTableRecord(3, &d);
-    if (x < 1.0f && d.cur == 0) {
+    if (x < ai_FloatOne && d.cur == 0) {
         if (w > u) {
             *out = 1;
             return 1;
