@@ -3880,20 +3880,22 @@ void he_RunInsult(int ev)
         return;
     }
 }
-/* 0x547ee0, a Ghidra miss (disassembled): the init of the "RndGeselle" event: the figure +0xb0 (0x4fea50) must exist (else the event is freed), +0xbc = 0x4c55d0 (figure, 0, the byte at +0x22f of its building kind record (0x24d bytes each from 0x7e3f30), 0), the clock is 6 units ahead (ROUGH) */
+/* 0x547ee0, the alloc handler of the "RndGeselle" (a random journeyman) event 0x4a (its run handler he_RunGeselle):
+   the building g->bldId must exist (else the event is freed); g->slot is cm_SendMessage3d's slot for the journeyman
+   of the building's kind record byte at +0x22f (0x24d bytes per kind, ai_BTypes); the clock is six units ahead */
 
-void he_Unk547ee0(int ev)
+void he_AllocGeselle(int ev)
 {
-    int o = 0;
-    int c;
+    AIJOB *e = (AIJOB *)ev;
+    HEGESELLE *g = (HEGESELLE *)ev;
+    AIBLD *b = 0;
 
-    gm_FindById(&o, 0, 0, *(int *)(ev + 0xb0));
-    if (o == 0)
+    gm_FindById((int *)&b, 0, 0, g->bldId);
+    if (b == 0)
         he_FreeEvent((int *)ev);
-    c = *(unsigned char *)o;
-    *(int *)(ev + 0xbc) = cm_SendMessage3d(o, 0, *(unsigned char *)(U_I((unsigned)&ai_BTypes) + c * 0x24d + 0x22f), 0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 6, 0);
+    g->slot = cm_SendMessage3d((char *)b, 0, ((unsigned char *)ai_BTypes)[b->type * 0x24d + 0x22f], 0);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 6, 0);
 }
 /* 0x547f90, a Ghidra miss (disassembled): the run handler of the "RndGeselle" event 0x4a (a random journeyman):
    pushes the end four units ahead, frees the event at stage -2 or when its building is gone; at stage 0, once the
@@ -10679,7 +10681,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x47, (void *)he_AllocInsult, (void *)he_RunInsult) != 0)
         return 1;
-    if (he_SetEventHandlers(0x4a, (void *)he_Unk547ee0, (void *)he_RunGeselle) != 0)
+    if (he_SetEventHandlers(0x4a, (void *)he_AllocGeselle, (void *)he_RunGeselle) != 0)
         return 1;
     if (he_SetEventHandlers(0x4b, (void *)he_Unk548110, (void *)he_RunInsultNews) != 0)
         return 1;
