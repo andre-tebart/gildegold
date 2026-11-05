@@ -10514,20 +10514,23 @@ void he_StartSkillBonus(int ev)
         e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
-/* 0x552820, the run handler of a one-shot event: states -1 / -2 free the record; else unless flag 4 the event is posted with the handle -1 (0x4c4c60 (-1, ev), due clock now, handle in +0x84) */
+/* 0x552820, the run handler of the skill-bonus event 0x82 (its start handler he_StartSkillBonus): the states -1 / -2
+   free the record; else, unless its option 4 says it is not started yet, the bonus is over: the due clock is set to
+   now and the event is ended with the cm slot handle -1 (the next call frees it) */
 
-void he_Unk552820(int ev)
+void he_RunSkillBonus(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    int st = e->stage;
 
     if (st == -1 || st == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    e->end = ai_Time;
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x552880, the allocation handler of an event with a day timer (ROUGH): unless flag 4 the due clock is now (posted 0x18 later when the minute word was already >= 0x11), the minute word is set to 0x11, +0xac = 0, +0xb0 = 0x1b, +0xb4 = +0xb8 = -1 and the event posted (0x4c4c60 (0, ev), handle in +0x84) */
 
@@ -10964,7 +10967,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x81, (void *)he_StartDue, (void *)he_RunConversion) != 0)
         return 1;
-    if (he_SetEventHandlers(0x82, (void *)he_StartSkillBonus, (void *)he_Unk552820) != 0)
+    if (he_SetEventHandlers(0x82, (void *)he_StartSkillBonus, (void *)he_RunSkillBonus) != 0)
         return 1;
     if (he_SetEventHandlers(0x86, (void *)he_Unk552880, (void *)he_RunApplicants) != 0)
         return 1;

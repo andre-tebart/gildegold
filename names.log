@@ -2460,3 +2460,4 @@
 2026-11-05T17:27:42 0x005524e0 data he_Unk5524e0 -> he_StartDue by:main why:the stage-0 start handler shared by the events 0x80 and 0x81 (the conversion): the due clock is a copy of the start clock and the event is posted at once
 2026-11-05T17:29:09 0x00552520 data he_Unk552520 -> he_RunDelay by:main why:the run handler of the delay event 0x80 (he_StartDue starts it): it counts the days left at +0xac down one per day and frees the record at 0
 2026-11-05T17:30:18 0x005527c0 data he_Unk5527c0 -> he_StartSkillBonus by:main why:the stage-0 start handler of the skill-bonus event 0x82 (f3gm.c gm_GetSkill finds its kind; its run handler 0x552820): due now + its duration in hours at +0xb8
+2026-11-05T17:32:31 0x00552820 data he_Unk552820 -> he_RunSkillBonus by:main why:the run handler of the skill-bonus event 0x82 (its start handler he_StartSkillBonus): at the due time it ends the event with the cm slot -1, and the next call frees the record
