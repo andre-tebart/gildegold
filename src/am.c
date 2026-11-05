@@ -5349,7 +5349,7 @@ int ai_ExecuteBuildBusiness(AIPER *p, AIARG *s1, AIARG *s2)
         j = (AIJOBX *)he_FindEvent(1, 1, s2->ref);
         if (!j)
             return 0;
-        gm_SellBuilding(s1->ref, p->netId, j->unkb0, j, 1);
+        gm_SellBuilding(s1->ref, p->netId, j->price, j, 1);
         return 0x13;
     }
     if (s2->kind == 4) {
