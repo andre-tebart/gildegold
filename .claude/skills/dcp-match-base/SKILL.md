@@ -197,8 +197,10 @@ work, however long.
   `error=` record with exit 1 and nothing written: read it, never assume the rename happened. A view
   (`ai_Unk7603a0B`) keeps its name when its datum is renamed (the note lists it): rename it on its own.
   Locals and parameters: edit the function.
-- Q3 address literals and Q4 raw access (`*(T *)(p + 0x1c)`, macros built on such casts): a typed field, a
-  struct, the symbol (see the hard rule on addresses). A datum the unit reads as another type is a view macro
+- Q3 address literals and Q4 raw access (`*(T *)(p + 0x1c)`, macros built on such casts, and the same access in
+  two steps: an offset pointer `T *x = (T *)((char *)e + 0xc2)`, `(T *)(ev + 4)`, `(char *)obj + 8`): a typed
+  field, a struct, the symbol (see the hard rule on addresses). Moving the offset into a local is no fix; add
+  the field to the struct (a union member at its offset when the record is kind-specific). A datum the unit reads as another type is a view macro
   with the address comment on its line: `#define NAME (*(T *)&datum)  /* 0xADDR */`, or
   `(*(T *)((char *)&datum + OFF))` for a part of it (`(*(T *)(array + N))` too when `array` is declared as an
   array in the macro's file: its name is its address, N counts elements). `(*(T *)datum)` / `(*(T *)(ptr + N))`
@@ -281,9 +283,14 @@ The goal is a code base that is, as a whole, closer to the original's source, no
 matches. A change can cost a function its byte or shape grade (M1 reports the fall). Accepting it is your
 call, made on this criterion: the fall is acceptable when the change brings the code base as a whole closer to
 the original (truer types, fewer views, casts and duplicated records, headers the units can include) **and**
-the match it costs is no evidence of the original's source. The typical case is a VC6 declaration-set
-tie-break: the match flips on declaration changes unrelated to the function (an empty include, an extra
-typedef, a prototype nothing calls), so it never said anything about what the original wrote. A fall from a
+the match it costs is no evidence of the original's source. A VC6 declaration-set tie-break is not yours to
+accept: the match flips on declaration changes unrelated to the function (an empty include, an extra typedef,
+a prototype nothing calls). `dcp build` probes the unit of such a fall (`dcp headers probe UNIT` does it by
+hand: unused typedefs before the unit's text, recorded in `ledger/tiebreak.tsv`; commit it). A function
+whose bytes move under the probe and whose own text did not change is no fall: M1 prints one `tie-break: N
+functions moved (HEADER)` line, needs no debt, and promote takes it. Keep the truer type; do not dodge it
+with a worse spelling and do not revert it. Its best grade under the probes is its proven grade (the queues'),
+and `G.tiebreak` on the unit says its declaration set is not yet the original's. A fall from a
 wrong change is not acceptable (a signature, a type or a spelling the original's bytes contradict): fix the
 change, or keep the original's spelling (2.3). When you are not sure which it is, find out (`dcp asmdiff`,
 `dcp diffclass`, try the change without its unrelated parts) before deciding.
