@@ -3732,17 +3732,17 @@ exe	0x0055b530	he_RunRepair	he	byte	readable
 exe	0x0055b720	he_AllocUpgrade	he	byte	readable		
 exe	0x0055b830	he_RunUpgrade	he	byte	readable		
 exe	0x0055ba00	he_AllocEvent1f	he	byte	readable		
-exe	0x0055bad0	he_Unk55bad0	he	draft	draft		
-exe	0x0055bd20	he_Unk55bd20	he	byte	draft		
-exe	0x0055bd80	he_Unk55bd80	he	draft	draft		
-exe	0x0055bf50	he_Unk55bf50	he	shape	draft		
-exe	0x0055bfd0	he_Unk55bfd0	he	draft	draft		
-exe	0x0055c540	he_Unk55c540	he	draft	draft		
-exe	0x0055c700	he_Unk55c700	he	draft	draft		
-exe	0x0055cb00	he_Unk55cb00	he	draft	draft		
-exe	0x0055cc10	he_Unk55cc10	he	draft	draft		
+exe	0x0055bad0	he_RunEvent1f	he	byte	readable		
+exe	0x0055bd20	he_AllocDemolish	he	byte	draft		
+exe	0x0055bd80	he_RunDemolish	he	byte	readable		
+exe	0x0055bf50	he_AllocBuyBuilding	he	shape	draft		
+exe	0x0055bfd0	he_RunBuyBuilding	he	draft	readable	deep	
+exe	0x0055c540	he_AllocKredit	he	byte	readable		
+exe	0x0055c700	he_RunKredit	he	byte	readable		
+exe	0x0055cb00	he_RunEvent24	he	byte	readable		
+exe	0x0055cc10	he_RunMasterExamNotice	he	byte	readable		
 exe	0x0055ce00	he_Unk55ce00	he	byte	draft		
-exe	0x0055ce60	he_Unk55ce60	he	draft	draft		
+exe	0x0055ce60	he_RunMasterExamPassed	he	draft	readable	deep	
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_Unk55d390	he	draft	draft		
 exe	0x0055d490	he_AllocHarvest	he	draft	draft		

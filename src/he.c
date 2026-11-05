@@ -27,7 +27,9 @@
    the cart repair 16 (HECARTREPAIR), the message box 17 (HEMSGBOX, the party G28REC) and the slot order 18
    (HESLOTORDER), and the events 19 .. 25 that follow: the store extension (HESTOREEXT), herb gathering (HEHERBS),
    animal hunt (HEHUNT), study (HESTUDY), spying (HESPYING) and sabotage (HESABOTAGE), and the brawl 26
-   (HEBRAWL), theft 27 (HETHEFT), repair 28 (HEREPAIR) and upgrade 0x1e events up to 0x55ba00. The protection money
+   (HEBRAWL), theft 27 (HETHEFT), repair 28 (HEREPAIR) and upgrade 0x1e events, and the events 0x1f .. 0x26 up to
+   0x55d390: 0x1f (HEEV1F), the demolition 0x20, the building purchase 0x21 (HEBUYBLD), the loan 0x23 (HELOAN), 0x24
+   (HEEV24) and the master exam notice / pass 0x25 / 0x26 (HEEXAMPASS). The protection money
    0x62, its ask 0x63 and the audit 0x64 handlers (0x54ae20 .. 0x54b9b0) read AIJOB and their words typed too
    (HEPROTECTION, HEAUDIT). The head includes
    rt.h (d2_SetObjValue2 / rt_UnloadAtPointC keep this unit's call spellings) and d3_tools.h / d3_snd.h / sblib.h.
@@ -54,7 +56,7 @@
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
-   Open: types: the other handlers past 0x55ba00 still read the event and message records through raw offsets
+   Open: types: the other handlers past 0x55d390 still read the event and message records through raw offsets
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
    cm.h not included; their calls stay M7)
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
