@@ -2421,3 +2421,4 @@
 2026-11-05T16:21:49 0x0055af70 func he_Unk55af70 -> he_AllocTheft by:main why:registered as the alloc handler of event 27 whose run handler 0x55b140 is the random theft; marks the building, tells the other players (0x17f4, _NACHRICHTEN_HS_43)
 2026-11-05T16:23:06 0x0055b140 func he_Unk55b140 -> he_RunTheft by:main why:the run handler of event 27 (registered with he_AllocTheft): rolls the theft message 0x6e against the building's equipment value
 2026-11-05T16:24:12 0x0055b3e0 func he_Unk55b3e0 -> he_AllocRepair by:main why:the alloc handler of event 28 whose run handler raises the building's state (gm_ChangeBuildingState) over time; 10 minutes per repair point
+2026-11-05T16:26:39 0x0055b530 func he_Unk55b530 -> he_RunRepair by:main why:the run handler of event 28 (with he_AllocRepair): adds the minutes passed to the building's state (gm_ChangeBuildingState) until the repair points are used up

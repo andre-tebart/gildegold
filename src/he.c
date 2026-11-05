@@ -539,7 +539,7 @@ typedef struct HETHEFT {                /* the theft event 27's words over AIJOB
     char padb4[4];
     int rounds;                         /* 0xb8, 0 at the start (the run handler acts from 2 on) */
 } HETHEFT;
-typedef struct HEREPAIR {               /* the repair event 28's words over AIJOB's union (he_AllocRepair / he_Unk55b530):
+typedef struct HEREPAIR {               /* the repair event 28's words over AIJOB's union (he_AllocRepair / he_RunRepair):
                                            the run handler raises the building's state (gm_ChangeBuildingState) by the
                                            minutes passed since AIJOB.clock60 */
     char pad00[0xac];
@@ -14059,7 +14059,7 @@ void gm_ChangeBuildingState(unsigned char *b, int d);
 void ai_Unk4c54e0(int a);
 void cm_SendBuildingDestroyed(int a);
 
-/* 0x55b3e0, the allocation handler of the repair event 28 (HEREPAIR; run handler he_Unk55b530): without the
+/* 0x55b3e0, the allocation handler of the repair event 28 (HEREPAIR; run handler he_RunRepair): without the
    building the event is freed; else it is the event's place, the building's field 0x5a gets the mark 4
    (cm_SendSetField), the clocks start now, the event is due in 10 minutes, and the planned end is 10 minutes per
    point from then, times 0.4 / 0.6 / 0.8 for an event character of the rank 9 and up / 8 / 7
@@ -14102,27 +14102,54 @@ void he_AllocRepair(AIJOB *e)
         f = 1.0f;
     gm_AddTime(&r->until, 0, (int)(f * r->points * 10.0), 0);
 }
-/* 0x55b530, the run handler of a building event (ROUGH): states -2 / -1 free; the building +0xac is looked up (none: free), the minutes since the clock +0x60 (0x4fe280) scale a value (+0xb0 .. 0x50cad0), the news 0x17cb ("_NACHRICHTEN_HS_68") goes to the owner (0x53dee0) and the event is posted 0xa later */
-
-void he_Unk55b530(int ev)
+/* 0x55b530, the run handler of the repair event 28 (HEREPAIR; allocated by he_AllocRepair). Stage 0: without the
+   building the event is freed; else the minutes since AIJOB.clock60, one point per 10 (rounded), are taken off the
+   points left and added to the building's state (gm_ChangeBuildingState). Points left: the clocks restart and it is
+   due in 10 minutes. Done: the event's character (a player) gets the news 0x17cb with the building type's name
+   (the text 0x48e + 14 * type; "_NACHRICHTEN_HS_68"; the news 0x60b when the building's master is a kind 1
+   character with flags1b4 bit 0, else 0x5f6) and the stage is -1. Stages -2 / -1 clear the building's 0x5a mark
+   4 and free the event */
+void he_RunRepair(AIJOB *e)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, m;
+    HEREPAIR *r = (HEREPAIR *)e;
+    AIBLD *b;
+    AICHAR *m;
+    int n, news;
     char text[0x100];
 
-    if (st < 0 || (b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac))) == 0) {
-        he_FreeEvent((int *)ev);
+    switch (e->stage) {
+    case 0:
+        b = (AIBLD *)gm_BuildQuery(1, 1, r->bld);
+        if (b == 0)
+            break;
+        n = (int)(gm_MinutesBetween(&e->clock60, &ai_Time) * 0.1 + 0.5);
+        r->points -= n;
+        gm_ChangeBuildingState((unsigned char *)b, n);
+        if (r->points > 0) {
+            e->clock60 = ai_Time;
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 10, 0);
+            return;
+        }
+        news = 0x5f6;
+        m = (AICHAR *)gm_FindCharacterByMaster((int)b);
+        if (m != 0 && m->kind == 1 && (m->flags1b4 & 1) != 0)
+            news = 0x60b;
+        txt_Format(text, 0x17cb, 0x48e + b->type * 14);
+        if (e->chr != 0xffff && (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7))
+            he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, news, b->id, -1, 0, "_NACHRICHTEN_HS_68");
+        e->stage = -1;
+        return;
+    case -2:
+    case -1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, r->bld);
+        if (b != 0)
+            cm_SendSetField(b->id, 0x5a, 2, 0, 4);
+        break;
+    default:
         return;
     }
-    m = gm_MinutesBetween((unsigned)&ai_Time, ev + 0x60);
-    *(int *)(ev + 0xb0) = (int)(m * 0.5 + 0.25) + *(int *)(ev + 0xb0);
-    gm_ChangeBuildingState(b, *(int *)(ev + 0xb0));
-    if (*(int *)(ev + 0xb0) != 0) {
-        txt_Format(text, 0x17cb, b);
-        he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, *(int *)(b + 1), -1, "_NACHRICHTEN_HS_68", 0);
-    }
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0xa, 0);
+    he_FreeEvent((int *)e);
 }
 /* 0x55b720, the allocation handler of a building event: both clocks now, the building +0xac (none: free), the due delay is the table value +0x243 of its kind (else 0x1e units), +0x10 = its id; a building with the flag 0x40 in +0x5a frees the record, else the flag is set (message 0x5a / 2 / 0x40) */
 
@@ -16544,7 +16571,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(27, (void *)he_AllocTheft, (void *)he_RunTheft) != 0)
         return 1;
-    if (he_SetEventHandlers(28, (void *)he_AllocRepair, (void *)he_Unk55b530) != 0)
+    if (he_SetEventHandlers(28, (void *)he_AllocRepair, (void *)he_RunRepair) != 0)
         return 1;
     if (he_SetEventHandlers(30, (void *)he_Unk55b720, (void *)he_Unk55b830) != 0)
         return 1;
