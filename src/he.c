@@ -687,6 +687,13 @@ typedef struct HECOUNTDOWN {            /* the countdown event 0x51's word over 
     char pad00[0xac];
     unsigned char runs;                 /* 0xac, the runs left (the message's first word) */
 } HECOUNTDOWN;
+typedef struct HECOMMENT {              /* the history comment event 0x52's words over AIJOB's union (the KOMMENTARE text
+                                           command ai_CommandComments posts message 0x52; its init he_AllocComment, run
+                                           handler 0x548380) */
+    char pad00[0xac];
+    int entry;                          /* 0xac, the index into the history list (AIMSG.car) */
+    int next;                           /* 0xb0, the next index (entry + 1) */
+} HECOMMENT;
 typedef struct HEOFFSPRING {            /* the offspring event's word over AIJOB's union (its run handler he_RunOffspring) */
     char pad00[0xac];
     float chance;                       /* 0xac, stage 0: the chance built up run by run; stage 1: the runs waited (to 3) */
@@ -4047,13 +4054,18 @@ void he_RunCountdown(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x548330, a Ghidra miss: +0xb0 = +0xac + 1, the due clock now, posted 0x18 units ahead */
+/* 0x548330, the alloc handler of the history comment event 0x52 (the KOMMENTARE text command, ai_CommandComments,
+   posts the message): the end clock is one day (0x18 hours) ahead and the entry index the message carries is kept
+   with its successor (entry + 1) */
 
-void he_Unk548330(int ev)
+void he_AllocComment(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0xb0) = *(int *)(ev + 0xac) + 1;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+    HECOMMENT *c = (HECOMMENT *)ev;
+
+    e->end = ai_Time;
+    c->next = c->entry + 1;
+    gm_AddTime(&e->end, 0x18, 0, 0);
 }
 /* 0x548380, a Ghidra miss: frees the event in the state 0 or -2 */
 
@@ -10702,7 +10714,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x51, (void *)he_AllocNextDay, (void *)he_RunCountdown) != 0)
         return 1;
-    if (he_SetEventHandlers(0x52, (void *)he_Unk548330, (void *)he_Unk548380) != 0)
+    if (he_SetEventHandlers(0x52, (void *)he_AllocComment, (void *)he_Unk548380) != 0)
         return 1;
     if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_RunCharPayouts) != 0)
         return 1;
