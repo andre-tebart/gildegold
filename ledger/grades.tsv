@@ -3745,9 +3745,8 @@ exe	0x0055ce00	he_Unk55ce00	he	byte	draft
 exe	0x0055ce60	he_Unk55ce60	he	draft	draft		
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_Unk55d390	he	draft	draft		
-exe	0x0055d490	he_Unk55d490	he	draft	draft		
-exe	0x0055d5c0	he_Unk55d5c0	he	draft	draft		
-exe	0x0055db60	he_Unk55db60	he	draft	draft		
+exe	0x0055d490	he_AllocHarvest	he	draft	draft		
+exe	0x0055d5c0	he_RunHarvest	he	draft	draft		
 exe	0x0055dbe0	he_Unk55dbe0	he	draft	draft		
 exe	0x0055dd70	he_AllocEvent32	he	shape	readable		
 exe	0x0055de30	he_Unk55de30	he	draft	draft		
@@ -4006,7 +4005,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
