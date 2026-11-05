@@ -1039,20 +1039,20 @@ exe	0x00458650	d3q_Mark	d3_quad	byte	readable
 exe	0x004586d0	d3q_Remove	d3_quad	byte	readable		
 exe	0x00458780	d3q_RemoveObject	d3_quad	byte	readable		
 exe	0x004587b0	d3q_Rebuild	d3_quad	byte	readable		
-exe	0x00458810	d3_DirToWorld	unk_458810	byte	readable		
-exe	0x00458910	d3_WorldAngles	unk_458810	byte	readable		
-exe	0x00458950	d3_DirToRef	unk_458810	byte	readable		
-exe	0x00458a20	d3_PointToWorld	unk_458810	byte	readable		
-exe	0x00458b20	d3_PointToRef	unk_458810	byte	readable		
-exe	0x00458c10	d3_LocalToWorld	unk_458810	byte	readable		
-exe	0x00458ce0	d3_MatToWorld	unk_458810	byte	readable		
-exe	0x00458da0	d3_WorldMatrix	unk_458810	byte	readable		
-exe	0x00458e70	d3_EnvMapCoords	unk_4591a0	shape	draft	deep	
-exe	0x004591a0	d3_AnimBlendWeights	unk_4591a0	byte	draft	deep	
-exe	0x00459300	d3_TransformVerts	unk_4591a0	draft	draft	deep	
-exe	0x004598d0	d3_TransformNormals	unk_4591a0	byte	readable		
-exe	0x00459980	d3_FrameNormals	unk_4591a0	byte	readable		
-exe	0x00459ab0	d3_GetBoxVerts	unk_4591a0	shape	readable		
+exe	0x00458810	d3_DirToWorld	d3_pose	byte	readable		
+exe	0x00458910	d3_WorldAngles	d3_pose	byte	readable		
+exe	0x00458950	d3_DirToRef	d3_pose	byte	readable		
+exe	0x00458a20	d3_PointToWorld	d3_pose	byte	readable		
+exe	0x00458b20	d3_PointToRef	d3_pose	byte	readable		
+exe	0x00458c10	d3_LocalToWorld	d3_pose	byte	readable		
+exe	0x00458ce0	d3_MatToWorld	d3_pose	byte	readable		
+exe	0x00458da0	d3_WorldMatrix	d3_pose	byte	readable		
+exe	0x00458e70	d3_EnvMapCoords	d3_vtx	shape	draft	deep	
+exe	0x004591a0	d3_AnimBlendWeights	d3_vtx	byte	draft	deep	
+exe	0x00459300	d3_TransformVerts	d3_vtx	draft	draft	deep	
+exe	0x004598d0	d3_TransformNormals	d3_vtx	byte	readable		
+exe	0x00459980	d3_FrameNormals	d3_vtx	byte	readable		
+exe	0x00459ab0	d3_GetBoxVerts	d3_vtx	shape	readable		
 exe	0x00459d80	d3s_RightEdge	d3s	byte	readable		
 exe	0x00459e50	d3s_LeftEdgeColor	d3s	byte	readable		
 exe	0x00459f90	d3s_MarkSpan	d3s	byte	readable		
@@ -1441,9 +1441,9 @@ exe	0x0047ce60	d2_FillRect	shp	byte	readable
 exe	0x0047ced0	d2_SetBlitParams	shp	byte	readable		
 exe	0x0047cf00	d2_ShpBlit16ClipY	shp	byte	readable		
 exe	0x0047d210	d2_ShpBlit16ClipXY	shp	byte	readable		
-exe	0x0047d600	d2_ShpBlit8	unk_47d600	byte	readable		
-exe	0x0047d710	d2_ShpBlit8To16	unk_47d600	byte	readable		
-exe	0x0047d960	d2_ShpDarken16	unk_47d600	byte	readable		
+exe	0x0047d600	d2_ShpBlit8	shp_asm	byte	readable		
+exe	0x0047d710	d2_ShpBlit8To16	shp_asm	byte	readable		
+exe	0x0047d960	d2_ShpDarken16	shp_asm	byte	readable		
 exe	0x0047d9e0	ai_Init	ai	byte	readable		
 exe	0x0047da80	ai_UpdateNeeds	ai	byte	readable		
 exe	0x0047dab0	ai_GrowNeeds	ai	byte	readable		
@@ -1754,75 +1754,75 @@ exe	0x004a6570	ai_PickActionBuildings	am	draft	readable	deep
 exe	0x004a66f0	ai_BuildingAimPoints	am	byte	readable		
 exe	0x004a67a0	ai_AimCannon	am	draft	readable	deep	shape+readable -> draft+readable at 7a3ed50: dcp's reference check (decompanion ef0c0b3) pairs reordered loads / stores of equal text crosswise and reads them as other targets; the effects are the same, the prover cannot show it yet [waits for: decompanion normalized-alignment / prover-coverage]
 exe	0x004a6ae0	ai_FireCannon	am	draft	readable	deep	
-exe	0x004a7140	ai_PokerStart	unk_4a7140	byte	readable		
-exe	0x004a7430	ai_PokerDealRound	unk_4a7140	byte	readable		
-exe	0x004a74e0	ai_PokerStep	unk_4a7140	byte	readable		
-exe	0x004a7650	ai_PokerFindPair	unk_4a7140	byte	readable		
-exe	0x004a76d0	ai_PokerHighCard	unk_4a7140	draft	readable	deep	
-exe	0x004a7760	ai_PokerDrawCard	unk_4a7140	byte	readable		
-exe	0x004a77e0	ai_PokerNpcExchange	unk_4a7140	shape	readable		
-exe	0x004a79d0	ai_PokerSwapCard	unk_4a7140	byte	readable		
-exe	0x004a7a20	ai_PokerPayStakes	unk_4a7140	byte	readable		
-exe	0x004a7ac0	ai_PokerPickStrategies	unk_4a7140	draft	readable	deep	
-exe	0x004a7c20	ai_PokerNpcFold	unk_4a7140	shape	readable		
-exe	0x004a7e70	ai_PokerOpenCounts	unk_4a7140	draft	readable	deep	
-exe	0x004a7f50	ai_PokerRateHand	unk_4a7140	shape	readable		
-exe	0x004a8190	ai_PokerShowdown	unk_4a7140	draft	readable	deep	
-exe	0x004a8520	ai_PokerDealThree	unk_4a7140	byte	readable		
-exe	0x004a8590	ai_PokerDealFourth	unk_4a7140	byte	readable		
-exe	0x004a85e0	ai_PokerDealFifth	unk_4a7140	byte	readable		
-exe	0x004a8630	ai_PokerExchange	unk_4a7140	byte	readable		
-exe	0x004a8650	ai_PokerAnte	unk_4a7140	byte	readable		
-exe	0x004a8690	ai_PokerEndRound	unk_4a7140	byte	readable		
-exe	0x004a86f0	ai_PokerNpcSetStake	unk_4a7140	shape	readable		
-exe	0x004a8760	ai_DecideOfficePartner	unk_4a7140	shape	readable		
-exe	0x004a8a50	ai_DecideTableValue	unk_4a7140	byte	readable		
-exe	0x004a8ad0	ai_DecidePartnerOtherSex	unk_4a7140	byte	readable		
-exe	0x004a8bf0	ai_EvalOneInFour	unk_4a7140	byte	readable		
-exe	0x004a8c10	ai_AlwaysTrue	unk_4a7140	byte	readable		
-exe	0x004a8c20	ai_EvalOwnTimeSlot	unk_4a7140	byte	readable		
-exe	0x004a8c80	ai_DecideTwoNearChars	unk_4a7140	byte	readable		
-exe	0x004a8d20	ai_DecideNearChar	unk_4a7140	byte	readable		
-exe	0x004a8db0	ai_DecideBuildingResident	unk_4a7140	draft	readable	deep	
-exe	0x004a8ee0	ai_EvalTitleGroup7	unk_4a7140	byte	readable		
-exe	0x004a8f20	ai_DecideUnfriendlyPair	unk_4a7140	byte	readable		
-exe	0x004a9030	ai_EvalGraveCount	unk_4a7140	byte	readable		
-exe	0x004a9080	ai_DecideAcquaintance	unk_4a7140	byte	readable		
-exe	0x004a9150	ai_EvalOwnYearTurn	unk_4a7140	byte	readable		
-exe	0x004a91a0	ai_DecideSuitor	unk_4a7140	shape	readable		
-exe	0x004a9280	ai_DecideCloseAcquaintance	unk_4a7140	byte	readable		
-exe	0x004a9350	ai_DecideOfficeAcquaintance	unk_4a7140	byte	readable		
-exe	0x004a9420	ai_DecideAcceptedChar	unk_4a7140	byte	readable		
-exe	0x004a94e0	ai_DecideUnflaggedChar	unk_4a7140	byte	readable		
-exe	0x004a95d0	ai_DecideFarChar	unk_4a7140	byte	readable		
-exe	0x004a9660	ai_DecideCloseChar	unk_4a7140	byte	readable		
-exe	0x004a9700	ai_DecideColumn4Officer	unk_4a7140	byte	readable		
-exe	0x004a9880	ai_DecideColumn5Officer	unk_4a7140	byte	readable		
-exe	0x004a9a00	ai_DecideLeisureAction	unk_4a7140	draft	readable	deep	
-exe	0x004a9fa0	ai_CheckLeisureAction	unk_4a7140	byte	readable		
-exe	0x004aa120	ai_DecideVisitAction	unk_4a7140	draft	readable	deep	
-exe	0x004aa430	ai_CheckVisitAction	unk_4a7140	draft	readable	deep	
-exe	0x004aa580	ai_PickPamphletTarget	unk_4a7140	byte	readable		
-exe	0x004aa6a0	ai_DecideLittleKnownChar	unk_4a7140	byte	readable		
-exe	0x004aa800	ai_DecideCharPair	unk_4a7140	byte	readable		
-exe	0x004aa940	aip_ExecPamphlet	unk_4a7140	byte	readable		
-exe	0x004aaa10	aip_ExecDrohen	unk_4a7140	byte	readable		
-exe	0x004aaae0	aip_ExecAnschwaerzen	unk_4a7140	byte	readable		
-exe	0x004aab90	ai_TrustedOfTwo	unk_4a7140	draft	readable	deep	
-exe	0x004aad30	ai_TrustedOfFour	unk_4a7140	shape	readable	deep	
-exe	0x004aaef0	ai_FindDarkCornerTarget	unk_4a7140	byte	readable		
-exe	0x004aafb0	ai_ExecMessage74	unk_4a7140	byte	readable		
-exe	0x004ab080	ai_DecideBuyDunkleEcke	unk_4a7140	byte	readable		
-exe	0x004ab2c0	ai_ExecBuyDunkleEcke	unk_4a7140	byte	readable		
-exe	0x004ab3e0	ai_DecideBlutrache	unk_4a7140	shape	readable	deep	
-exe	0x004ab6b0	ai_ExecBlutrache	unk_4a7140	byte	readable		
-exe	0x004ab7f0	ai_DecideVerfluchen	unk_4a7140	byte	readable		
-exe	0x004ab9f0	ai_ExecVerfluchen	unk_4a7140	byte	readable		
-exe	0x004abac0	ai_DecideTheater	unk_4a7140	byte	readable		
-exe	0x004abc60	ai_ExecTheater	unk_4a7140	byte	readable		
-exe	0x004abd00	ai_DecideEhrerbietung	unk_4a7140	shape	readable		
-exe	0x004abe60	ai_ExecEhrerbietung	unk_4a7140	byte	readable		
-exe	0x004abed0	ai_RegisterSocialActions	unk_4a7140	byte	readable		
+exe	0x004a7140	ai_PokerStart	poker	byte	readable		
+exe	0x004a7430	ai_PokerDealRound	poker	byte	readable		
+exe	0x004a74e0	ai_PokerStep	poker	byte	readable		
+exe	0x004a7650	ai_PokerFindPair	poker	byte	readable		
+exe	0x004a76d0	ai_PokerHighCard	poker	draft	readable	deep	
+exe	0x004a7760	ai_PokerDrawCard	poker	byte	readable		
+exe	0x004a77e0	ai_PokerNpcExchange	poker	shape	readable		
+exe	0x004a79d0	ai_PokerSwapCard	poker	byte	readable		
+exe	0x004a7a20	ai_PokerPayStakes	poker	byte	readable		
+exe	0x004a7ac0	ai_PokerPickStrategies	poker	draft	readable	deep	
+exe	0x004a7c20	ai_PokerNpcFold	poker	shape	readable		
+exe	0x004a7e70	ai_PokerOpenCounts	poker	draft	readable	deep	
+exe	0x004a7f50	ai_PokerRateHand	poker	shape	readable		
+exe	0x004a8190	ai_PokerShowdown	poker	draft	readable	deep	
+exe	0x004a8520	ai_PokerDealThree	poker	byte	readable		
+exe	0x004a8590	ai_PokerDealFourth	poker	byte	readable		
+exe	0x004a85e0	ai_PokerDealFifth	poker	byte	readable		
+exe	0x004a8630	ai_PokerExchange	poker	byte	readable		
+exe	0x004a8650	ai_PokerAnte	poker	byte	readable		
+exe	0x004a8690	ai_PokerEndRound	poker	byte	readable		
+exe	0x004a86f0	ai_PokerNpcSetStake	poker	shape	readable		
+exe	0x004a8760	ai_DecideOfficePartner	poker	shape	readable		
+exe	0x004a8a50	ai_DecideTableValue	poker	byte	readable		
+exe	0x004a8ad0	ai_DecidePartnerOtherSex	poker	byte	readable		
+exe	0x004a8bf0	ai_EvalOneInFour	poker	byte	readable		
+exe	0x004a8c10	ai_AlwaysTrue	poker	byte	readable		
+exe	0x004a8c20	ai_EvalOwnTimeSlot	poker	byte	readable		
+exe	0x004a8c80	ai_DecideTwoNearChars	poker	byte	readable		
+exe	0x004a8d20	ai_DecideNearChar	poker	byte	readable		
+exe	0x004a8db0	ai_DecideBuildingResident	poker	draft	readable	deep	
+exe	0x004a8ee0	ai_EvalTitleGroup7	poker	byte	readable		
+exe	0x004a8f20	ai_DecideUnfriendlyPair	poker	byte	readable		
+exe	0x004a9030	ai_EvalGraveCount	poker	byte	readable		
+exe	0x004a9080	ai_DecideAcquaintance	poker	byte	readable		
+exe	0x004a9150	ai_EvalOwnYearTurn	poker	byte	readable		
+exe	0x004a91a0	ai_DecideSuitor	poker	shape	readable		
+exe	0x004a9280	ai_DecideCloseAcquaintance	poker	byte	readable		
+exe	0x004a9350	ai_DecideOfficeAcquaintance	poker	byte	readable		
+exe	0x004a9420	ai_DecideAcceptedChar	poker	byte	readable		
+exe	0x004a94e0	ai_DecideUnflaggedChar	poker	byte	readable		
+exe	0x004a95d0	ai_DecideFarChar	poker	byte	readable		
+exe	0x004a9660	ai_DecideCloseChar	poker	byte	readable		
+exe	0x004a9700	ai_DecideColumn4Officer	poker	byte	readable		
+exe	0x004a9880	ai_DecideColumn5Officer	poker	byte	readable		
+exe	0x004a9a00	ai_DecideLeisureAction	poker	draft	readable	deep	
+exe	0x004a9fa0	ai_CheckLeisureAction	poker	byte	readable		
+exe	0x004aa120	ai_DecideVisitAction	poker	draft	readable	deep	
+exe	0x004aa430	ai_CheckVisitAction	poker	draft	readable	deep	
+exe	0x004aa580	ai_PickPamphletTarget	poker	byte	readable		
+exe	0x004aa6a0	ai_DecideLittleKnownChar	poker	byte	readable		
+exe	0x004aa800	ai_DecideCharPair	poker	byte	readable		
+exe	0x004aa940	aip_ExecPamphlet	poker	byte	readable		
+exe	0x004aaa10	aip_ExecDrohen	poker	byte	readable		
+exe	0x004aaae0	aip_ExecAnschwaerzen	poker	byte	readable		
+exe	0x004aab90	ai_TrustedOfTwo	poker	draft	readable	deep	
+exe	0x004aad30	ai_TrustedOfFour	poker	shape	readable	deep	
+exe	0x004aaef0	ai_FindDarkCornerTarget	poker	byte	readable		
+exe	0x004aafb0	ai_ExecMessage74	poker	byte	readable		
+exe	0x004ab080	ai_DecideBuyDunkleEcke	poker	byte	readable		
+exe	0x004ab2c0	ai_ExecBuyDunkleEcke	poker	byte	readable		
+exe	0x004ab3e0	ai_DecideBlutrache	poker	shape	readable	deep	
+exe	0x004ab6b0	ai_ExecBlutrache	poker	byte	readable		
+exe	0x004ab7f0	ai_DecideVerfluchen	poker	byte	readable		
+exe	0x004ab9f0	ai_ExecVerfluchen	poker	byte	readable		
+exe	0x004abac0	ai_DecideTheater	poker	byte	readable		
+exe	0x004abc60	ai_ExecTheater	poker	byte	readable		
+exe	0x004abd00	ai_DecideEhrerbietung	poker	shape	readable		
+exe	0x004abe60	ai_ExecEhrerbietung	poker	byte	readable		
+exe	0x004abed0	ai_RegisterSocialActions	poker	byte	readable		
 exe	0x004ac140	hmt_RecordCount	hmt	byte	readable		
 exe	0x004ac150	hmt_RandomRecord	hmt	byte	readable		
 exe	0x004ac170	hmt_RandomTextOffset	hmt	draft	readable	deep	
@@ -1920,131 +1920,131 @@ exe	0x004b3350	hst_LastYearDialog	hst	byte	readable
 exe	0x004b35e0	hst_NextEventCmd	hst	shape	readable		
 exe	0x004b36d0	hst_LastYearCmdDialog	hst	byte	readable		
 exe	0x004b3960	hst_YearlyHistory	hst	byte	readable		
-exe	0x004b39f0	ai_ClearMissions	unk_4b39f0	byte	readable		
-exe	0x004b3a10	ai_MissionRandom	unk_4b39f0	byte	readable		
-exe	0x004b3a50	ai_FindOwnerMission	unk_4b39f0	byte	readable		
-exe	0x004b3a90	ai_RestartMission	unk_4b39f0	byte	readable		
-exe	0x004b3ae0	ai_GetMissionType	unk_4b39f0	byte	readable		
-exe	0x004b3b10	ai_HasMission	unk_4b39f0	byte	readable		
-exe	0x004b3b40	ai_CountMissionTypes	unk_4b39f0	byte	readable		
-exe	0x004b3b70	ai_FindMissionType	unk_4b39f0	shape	readable	deep	
-exe	0x004b3bd0	ai_SetFirstMission	unk_4b39f0	byte	readable		
-exe	0x004b3c10	ai_NewRandomMission	unk_4b39f0	byte	readable		
-exe	0x004b3c40	ai_RandomMissionType	unk_4b39f0	byte	readable		
-exe	0x004b3ca0	ai_NewMission	unk_4b39f0	byte	readable		
-exe	0x004b3d50	ai_MissionOfferDialog	unk_4b39f0	byte	readable		
-exe	0x004b3e70	ai_ChooseMissionType	unk_4b39f0	byte	readable		
-exe	0x004b4040	ai_ChooseMission	unk_4b39f0	shape	readable	deep	
-exe	0x004b4280	ai_ChooseMissionFrom	unk_4b39f0	byte	readable		
-exe	0x004b44e0	ai_CountMissionEvent	unk_4b39f0	byte	readable		
-exe	0x004b4550	ai_CondMissionMoney3	unk_4b39f0	byte	draft	hard	
-exe	0x004b4590	ai_CondTitlesLeft	unk_4b39f0	byte	readable		
-exe	0x004b45c0	ai_CondRankTimed	unk_4b39f0	byte	readable		
-exe	0x004b45f0	ai_CondWorth	unk_4b39f0	byte	readable		
-exe	0x004b4630	ai_CondMoney	unk_4b39f0	byte	readable		
-exe	0x004b4670	ai_CondSkills	unk_4b39f0	byte	readable		
-exe	0x004b46c0	ai_CondOfficeTimed	unk_4b39f0	byte	readable		
-exe	0x004b46f0	ai_CondOldBuilding	unk_4b39f0	byte	readable		
-exe	0x004b4760	ai_HasThreeStockedBuildings	unk_4b39f0	draft	readable	deep	
-exe	0x004b4830	ai_CondMissionMoney02	unk_4b39f0	byte	readable		
-exe	0x004b4870	ai_CondMissionMoney1	unk_4b39f0	byte	readable		
-exe	0x004b48b0	ai_CondMissionMoney4	unk_4b39f0	byte	readable		
-exe	0x004b48f0	ai_CondCharShare	unk_4b39f0	byte	readable		
-exe	0x004b4960	ai_CondCharHoldsKinds	unk_4b39f0	byte	readable		
-exe	0x004b4a00	ai_CondCharHoldsThreeOfEach	unk_4b39f0	byte	readable		
-exe	0x004b4aa0	ai_CondRankTimedThreeBuildings	unk_4b39f0	byte	readable		
-exe	0x004b4af0	ai_PlayerHeldBuildings	unk_4b39f0	byte	readable		
-exe	0x004b4c50	ai_CondPlayerHeldKindsTimed	unk_4b39f0	byte	readable		
-exe	0x004b4d50	ai_CondPlayerShare	unk_4b39f0	byte	readable		
-exe	0x004b4d90	ai_CondDecisionSumZero	unk_4b39f0	byte	readable		
-exe	0x004b4dc0	ai_CondRatingBaseTimed	unk_4b39f0	byte	readable		
-exe	0x004b4e30	ai_CondTownDecline	unk_4b39f0	byte	readable		
-exe	0x004b4eb0	ai_CondPlayerHoldsNoBuilding	unk_4b39f0	byte	readable		
-exe	0x004b4f00	ai_IsMissionFulfilled	unk_4b39f0	byte	readable		
-exe	0x004b5160	ai_TimedCondition	unk_4b39f0	byte	readable		
-exe	0x004b51f0	ai_CharBuildingShare	unk_4b39f0	byte	readable		
-exe	0x004b5270	ai_PlayerShare	unk_4b39f0	byte	readable		
-exe	0x004b5310	ai_ShowMissions	unk_4b39f0	byte	readable		
-exe	0x004b5360	ai_MissionInfoDialog	unk_4b39f0	byte	readable		
-exe	0x004b5460	ai_MissionSuccessDialog	unk_4b39f0	shape	readable	deep	
-exe	0x004b58b0	ai_MissionEndDialog	unk_4b39f0	shape	readable	deep	
-exe	0x004b5950	ai_QuitGame	unk_4b39f0	byte	readable		
-exe	0x004b5970	ai_MissionCompleteDialog	unk_4b39f0	draft	readable	deep	
-exe	0x004b5c20	ai_MissionNextDialog	unk_4b39f0	byte	readable		
-exe	0x004b5ef0	ai_MissionCompleteByMode	unk_4b39f0	byte	readable		
-exe	0x004b5f10	ai_MissionResultDialog	unk_4b39f0	draft	readable	deep	
-exe	0x004b6040	ai_MissionPartnerDialog	unk_4b39f0	shape	readable		
-exe	0x004b60f0	ai_MissionResultByMode	unk_4b39f0	byte	readable		
-exe	0x004b6110	ai_MissionCompleteSingle	unk_4b39f0	shape	readable		
-exe	0x004b62a0	ai_MissionCompleteSequence	unk_4b39f0	byte	readable		
-exe	0x004b62e0	ai_SaveMissions	unk_4b39f0	byte	readable		
-exe	0x004b63b0	ai_LoadMissions	unk_4b39f0	byte	readable		
-exe	0x004b6480	ai_MsgRewardPct1to3	unk_4b6480	byte	readable		
-exe	0x004b6570	ai_MsgRewardPct2to4	unk_4b6480	byte	readable		
-exe	0x004b6660	ai_MsgOfficeApplicantPayment	unk_4b6480	byte	readable		
-exe	0x004b6830	ai_MsgPayPct1to3	unk_4b6480	byte	readable		
-exe	0x004b6920	ai_MsgPayPct1to4	unk_4b6480	byte	readable		
-exe	0x004b6a20	ai_MsgRewardPct2to5	unk_4b6480	byte	readable		
-exe	0x004b6b10	ai_MsgRewardPct1to3Type68	unk_4b6480	byte	readable		
-exe	0x004b6bf0	ai_MsgPayForBuilding	unk_4b6480	byte	readable		
-exe	0x004b6d30	ai_MsgPayPct2to4	unk_4b6480	byte	readable		
-exe	0x004b6e10	ai_MsgPayPct125	unk_4b6480	byte	readable		
-exe	0x004b6ef0	ai_MsgPayPctOver120	unk_4b6480	byte	readable		
-exe	0x004b6fd0	ai_MsgPayPct1to3Type0c	unk_4b6480	byte	readable		
-exe	0x004b70f0	ai_MsgNoOp	unk_4b6480	byte	readable		
-exe	0x004b7100	ai_MsgPayPct2to4Type0d	unk_4b6480	byte	readable		
-exe	0x004b7200	ai_MsgPayPct1to2Type0e	unk_4b6480	byte	readable		
-exe	0x004b7310	ai_MsgPayPct1to4Type0f	unk_4b6480	byte	readable		
-exe	0x004b7430	ai_MsgPayPct1to4OfficeType10	unk_4b6480	byte	readable		
-exe	0x004b7550	ai_MsgPayPct1to3BuildingType11	unk_4b6480	byte	readable		
-exe	0x004b76b0	ai_MsgPayPct1to2Type1213	unk_4b6480	byte	readable		
-exe	0x004b77b0	ai_MsgPayPct1to3Count2to16Type14	unk_4b6480	byte	readable		
-exe	0x004b78c0	ai_MsgPartnerRelation4to10Type15	unk_4b6480	byte	readable		
-exe	0x004b79c0	ai_MsgPartnerRelation6to14Type16	unk_4b6480	byte	readable		
-exe	0x004b7ac0	ai_MsgPartnerRelation6to18Type17	unk_4b6480	byte	readable		
-exe	0x004b7bc0	ai_MsgBuildingOwnerRelationsType18	unk_4b6480	byte	readable		
-exe	0x004b7d80	ai_MsgOfficeGroupRelationsType19	unk_4b6480	byte	readable		
-exe	0x004b7f40	ai_MsgPartnerRelationMinus6to14Type1a	unk_4b6480	byte	readable		
-exe	0x004b8060	ai_MsgPartnerRelationMinus10to38Type1b	unk_4b6480	byte	readable		
-exe	0x004b81a0	ai_MsgPartnerRelationMinus4to18Type1c	unk_4b6480	byte	readable		
-exe	0x004b82c0	ai_MsgWorkerHealthLossType1d	unk_4b6480	byte	readable		
-exe	0x004b84b0	ai_Unk4b84b0	unk_4b6480	draft	draft	deep	
-exe	0x004b86c0	ai_MsgWorkerOwnHealthLossType1f	unk_4b6480	byte	readable		
-exe	0x004b8870	ai_MsgLoseMoney2to4Type20	unk_4b6480	byte	readable		
-exe	0x004b8950	ai_MsgGainMoney3to5Type21	unk_4b6480	byte	readable		
-exe	0x004b8a10	ai_MsgCartFillDropType22	unk_4b6480	byte	readable		
-exe	0x004b8c80	ai_MsgJobTime	unk_4b6480	shape	readable		
-exe	0x004b8f70	ai_MsgJobEndPlayerType24	unk_4b6480	byte	readable		
-exe	0x004b9180	ai_MsgJobEndPayType25	unk_4b6480	byte	readable		
-exe	0x004b9420	ai_MsgJobBothEndsType26	unk_4b6480	byte	readable		
-exe	0x004b9630	ai_MsgJobBothEndsType27	unk_4b6480	byte	readable		
-exe	0x004b9810	ai_MsgUnusedSlot	unk_4b6480	byte	readable		
-exe	0x004b9820	ai_MsgJobEndDateType29	unk_4b6480	byte	readable		
-exe	0x004b9ab0	ai_MsgJobEndValueType2a	unk_4b6480	byte	readable		
-exe	0x004b9cd0	ai_MsgWorkerStop	unk_4b6480	draft	readable	deep	
-exe	0x004b9f30	ai_MsgWorkerTitleType2c	unk_4b6480	byte	readable		
-exe	0x004ba0c0	ai_Unk4ba0c0	unk_4b6480	shape	draft	deep	
-exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	unk_4b6480	byte	readable		
-exe	0x004ba470	ai_MsgWorkerLoseSkillType30	unk_4b6480	byte	readable		
-exe	0x004ba630	ai_Unk4ba630	unk_4b6480	draft	draft	deep	
-exe	0x004ba840	ai_SellBuildingGoodsShare	unk_4b6480	byte	readable		
-exe	0x004ba970	ai_MsgTakeBuildingGoodsPct13to25Type32	unk_4b6480	byte	readable		
-exe	0x004baa80	ai_MsgTakeBuildingGoodsPct5to19Type33	unk_4b6480	byte	readable		
-exe	0x004baba0	ai_MsgTakeBuildingGoodsPct5to24Type34	unk_4b6480	byte	readable		
-exe	0x004bacc0	ai_MsgLoseGood	unk_4b6480	byte	readable		
-exe	0x004bae20	ai_MsgRewardPct1to3Skill82Type39	unk_4b6480	byte	readable		
-exe	0x004baf30	ai_MsgAddSkill8to24Type3a	unk_4b6480	byte	readable		
-exe	0x004bb030	ai_MsgLoseSkill6to17Type3b	unk_4b6480	byte	readable		
-exe	0x004bb150	ai_MsgPayPct1to4Type3c	unk_4b6480	byte	readable		
-exe	0x004bb250	ai_Unk4bb250	unk_4b6480	byte	draft	deep	
-exe	0x004bb330	ai_MsgPayMinorDisease	unk_4b6480	byte	readable		
-exe	0x004bb430	ai_MsgCatchUpperDisease	unk_4b6480	byte	readable		
-exe	0x004bb4f0	ai_MsgCureMinorDisease	unk_4b6480	byte	readable		
-exe	0x004bb590	ai_MsgCureUpperDisease	unk_4b6480	byte	readable		
-exe	0x004bb630	ai_MsgNewsOnly	unk_4b6480	byte	readable		
-exe	0x004bb6c0	ai_RunMessage	unk_4b6480	byte	readable		
-exe	0x004bb720	ai_PostRandomMessages	unk_4b6480	byte	readable		
-exe	0x004bb7d0	ai_NextRandom	unk_4b6480	byte	readable		
+exe	0x004b39f0	ai_ClearMissions	mission	byte	readable		
+exe	0x004b3a10	ai_MissionRandom	mission	byte	readable		
+exe	0x004b3a50	ai_FindOwnerMission	mission	byte	readable		
+exe	0x004b3a90	ai_RestartMission	mission	byte	readable		
+exe	0x004b3ae0	ai_GetMissionType	mission	byte	readable		
+exe	0x004b3b10	ai_HasMission	mission	byte	readable		
+exe	0x004b3b40	ai_CountMissionTypes	mission	byte	readable		
+exe	0x004b3b70	ai_FindMissionType	mission	shape	readable	deep	
+exe	0x004b3bd0	ai_SetFirstMission	mission	byte	readable		
+exe	0x004b3c10	ai_NewRandomMission	mission	byte	readable		
+exe	0x004b3c40	ai_RandomMissionType	mission	byte	readable		
+exe	0x004b3ca0	ai_NewMission	mission	byte	readable		
+exe	0x004b3d50	ai_MissionOfferDialog	mission	byte	readable		
+exe	0x004b3e70	ai_ChooseMissionType	mission	byte	readable		
+exe	0x004b4040	ai_ChooseMission	mission	shape	readable	deep	
+exe	0x004b4280	ai_ChooseMissionFrom	mission	byte	readable		
+exe	0x004b44e0	ai_CountMissionEvent	mission	byte	readable		
+exe	0x004b4550	ai_CondMissionMoney3	mission	byte	draft	hard	
+exe	0x004b4590	ai_CondTitlesLeft	mission	byte	readable		
+exe	0x004b45c0	ai_CondRankTimed	mission	byte	readable		
+exe	0x004b45f0	ai_CondWorth	mission	byte	readable		
+exe	0x004b4630	ai_CondMoney	mission	byte	readable		
+exe	0x004b4670	ai_CondSkills	mission	byte	readable		
+exe	0x004b46c0	ai_CondOfficeTimed	mission	byte	readable		
+exe	0x004b46f0	ai_CondOldBuilding	mission	byte	readable		
+exe	0x004b4760	ai_HasThreeStockedBuildings	mission	draft	readable	deep	
+exe	0x004b4830	ai_CondMissionMoney02	mission	byte	readable		
+exe	0x004b4870	ai_CondMissionMoney1	mission	byte	readable		
+exe	0x004b48b0	ai_CondMissionMoney4	mission	byte	readable		
+exe	0x004b48f0	ai_CondCharShare	mission	byte	readable		
+exe	0x004b4960	ai_CondCharHoldsKinds	mission	byte	readable		
+exe	0x004b4a00	ai_CondCharHoldsThreeOfEach	mission	byte	readable		
+exe	0x004b4aa0	ai_CondRankTimedThreeBuildings	mission	byte	readable		
+exe	0x004b4af0	ai_PlayerHeldBuildings	mission	byte	readable		
+exe	0x004b4c50	ai_CondPlayerHeldKindsTimed	mission	byte	readable		
+exe	0x004b4d50	ai_CondPlayerShare	mission	byte	readable		
+exe	0x004b4d90	ai_CondDecisionSumZero	mission	byte	readable		
+exe	0x004b4dc0	ai_CondRatingBaseTimed	mission	byte	readable		
+exe	0x004b4e30	ai_CondTownDecline	mission	byte	readable		
+exe	0x004b4eb0	ai_CondPlayerHoldsNoBuilding	mission	byte	readable		
+exe	0x004b4f00	ai_IsMissionFulfilled	mission	byte	readable		
+exe	0x004b5160	ai_TimedCondition	mission	byte	readable		
+exe	0x004b51f0	ai_CharBuildingShare	mission	byte	readable		
+exe	0x004b5270	ai_PlayerShare	mission	byte	readable		
+exe	0x004b5310	ai_ShowMissions	mission	byte	readable		
+exe	0x004b5360	ai_MissionInfoDialog	mission	byte	readable		
+exe	0x004b5460	ai_MissionSuccessDialog	mission	shape	readable	deep	
+exe	0x004b58b0	ai_MissionEndDialog	mission	shape	readable	deep	
+exe	0x004b5950	ai_QuitGame	mission	byte	readable		
+exe	0x004b5970	ai_MissionCompleteDialog	mission	draft	readable	deep	
+exe	0x004b5c20	ai_MissionNextDialog	mission	byte	readable		
+exe	0x004b5ef0	ai_MissionCompleteByMode	mission	byte	readable		
+exe	0x004b5f10	ai_MissionResultDialog	mission	draft	readable	deep	
+exe	0x004b6040	ai_MissionPartnerDialog	mission	shape	readable		
+exe	0x004b60f0	ai_MissionResultByMode	mission	byte	readable		
+exe	0x004b6110	ai_MissionCompleteSingle	mission	shape	readable		
+exe	0x004b62a0	ai_MissionCompleteSequence	mission	byte	readable		
+exe	0x004b62e0	ai_SaveMissions	mission	byte	readable		
+exe	0x004b63b0	ai_LoadMissions	mission	byte	readable		
+exe	0x004b6480	ai_MsgRewardPct1to3	rmsg	byte	readable		
+exe	0x004b6570	ai_MsgRewardPct2to4	rmsg	byte	readable		
+exe	0x004b6660	ai_MsgOfficeApplicantPayment	rmsg	byte	readable		
+exe	0x004b6830	ai_MsgPayPct1to3	rmsg	byte	readable		
+exe	0x004b6920	ai_MsgPayPct1to4	rmsg	byte	readable		
+exe	0x004b6a20	ai_MsgRewardPct2to5	rmsg	byte	readable		
+exe	0x004b6b10	ai_MsgRewardPct1to3Type68	rmsg	byte	readable		
+exe	0x004b6bf0	ai_MsgPayForBuilding	rmsg	byte	readable		
+exe	0x004b6d30	ai_MsgPayPct2to4	rmsg	byte	readable		
+exe	0x004b6e10	ai_MsgPayPct125	rmsg	byte	readable		
+exe	0x004b6ef0	ai_MsgPayPctOver120	rmsg	byte	readable		
+exe	0x004b6fd0	ai_MsgPayPct1to3Type0c	rmsg	byte	readable		
+exe	0x004b70f0	ai_MsgNoOp	rmsg	byte	readable		
+exe	0x004b7100	ai_MsgPayPct2to4Type0d	rmsg	byte	readable		
+exe	0x004b7200	ai_MsgPayPct1to2Type0e	rmsg	byte	readable		
+exe	0x004b7310	ai_MsgPayPct1to4Type0f	rmsg	byte	readable		
+exe	0x004b7430	ai_MsgPayPct1to4OfficeType10	rmsg	byte	readable		
+exe	0x004b7550	ai_MsgPayPct1to3BuildingType11	rmsg	byte	readable		
+exe	0x004b76b0	ai_MsgPayPct1to2Type1213	rmsg	byte	readable		
+exe	0x004b77b0	ai_MsgPayPct1to3Count2to16Type14	rmsg	byte	readable		
+exe	0x004b78c0	ai_MsgPartnerRelation4to10Type15	rmsg	byte	readable		
+exe	0x004b79c0	ai_MsgPartnerRelation6to14Type16	rmsg	byte	readable		
+exe	0x004b7ac0	ai_MsgPartnerRelation6to18Type17	rmsg	byte	readable		
+exe	0x004b7bc0	ai_MsgBuildingOwnerRelationsType18	rmsg	byte	readable		
+exe	0x004b7d80	ai_MsgOfficeGroupRelationsType19	rmsg	byte	readable		
+exe	0x004b7f40	ai_MsgPartnerRelationMinus6to14Type1a	rmsg	byte	readable		
+exe	0x004b8060	ai_MsgPartnerRelationMinus10to38Type1b	rmsg	byte	readable		
+exe	0x004b81a0	ai_MsgPartnerRelationMinus4to18Type1c	rmsg	byte	readable		
+exe	0x004b82c0	ai_MsgWorkerHealthLossType1d	rmsg	byte	readable		
+exe	0x004b84b0	ai_Unk4b84b0	rmsg	draft	draft	deep	
+exe	0x004b86c0	ai_MsgWorkerOwnHealthLossType1f	rmsg	byte	readable		
+exe	0x004b8870	ai_MsgLoseMoney2to4Type20	rmsg	byte	readable		
+exe	0x004b8950	ai_MsgGainMoney3to5Type21	rmsg	byte	readable		
+exe	0x004b8a10	ai_MsgCartFillDropType22	rmsg	byte	readable		
+exe	0x004b8c80	ai_MsgJobTime	rmsg	shape	readable		
+exe	0x004b8f70	ai_MsgJobEndPlayerType24	rmsg	byte	readable		
+exe	0x004b9180	ai_MsgJobEndPayType25	rmsg	byte	readable		
+exe	0x004b9420	ai_MsgJobBothEndsType26	rmsg	byte	readable		
+exe	0x004b9630	ai_MsgJobBothEndsType27	rmsg	byte	readable		
+exe	0x004b9810	ai_MsgUnusedSlot	rmsg	byte	readable		
+exe	0x004b9820	ai_MsgJobEndDateType29	rmsg	byte	readable		
+exe	0x004b9ab0	ai_MsgJobEndValueType2a	rmsg	byte	readable		
+exe	0x004b9cd0	ai_MsgWorkerStop	rmsg	draft	readable	deep	
+exe	0x004b9f30	ai_MsgWorkerTitleType2c	rmsg	byte	readable		
+exe	0x004ba0c0	ai_Unk4ba0c0	rmsg	shape	draft	deep	
+exe	0x004ba2d0	ai_MsgWorkerAddSkillType2f	rmsg	byte	readable		
+exe	0x004ba470	ai_MsgWorkerLoseSkillType30	rmsg	byte	readable		
+exe	0x004ba630	ai_Unk4ba630	rmsg	draft	draft	deep	
+exe	0x004ba840	ai_SellBuildingGoodsShare	rmsg	byte	readable		
+exe	0x004ba970	ai_MsgTakeBuildingGoodsPct13to25Type32	rmsg	byte	readable		
+exe	0x004baa80	ai_MsgTakeBuildingGoodsPct5to19Type33	rmsg	byte	readable		
+exe	0x004baba0	ai_MsgTakeBuildingGoodsPct5to24Type34	rmsg	byte	readable		
+exe	0x004bacc0	ai_MsgLoseGood	rmsg	byte	readable		
+exe	0x004bae20	ai_MsgRewardPct1to3Skill82Type39	rmsg	byte	readable		
+exe	0x004baf30	ai_MsgAddSkill8to24Type3a	rmsg	byte	readable		
+exe	0x004bb030	ai_MsgLoseSkill6to17Type3b	rmsg	byte	readable		
+exe	0x004bb150	ai_MsgPayPct1to4Type3c	rmsg	byte	readable		
+exe	0x004bb250	ai_Unk4bb250	rmsg	byte	draft	deep	
+exe	0x004bb330	ai_MsgPayMinorDisease	rmsg	byte	readable		
+exe	0x004bb430	ai_MsgCatchUpperDisease	rmsg	byte	readable		
+exe	0x004bb4f0	ai_MsgCureMinorDisease	rmsg	byte	readable		
+exe	0x004bb590	ai_MsgCureUpperDisease	rmsg	byte	readable		
+exe	0x004bb630	ai_MsgNewsOnly	rmsg	byte	readable		
+exe	0x004bb6c0	ai_RunMessage	rmsg	byte	readable		
+exe	0x004bb720	ai_PostRandomMessages	rmsg	byte	readable		
+exe	0x004bb7d0	ai_NextRandom	rmsg	byte	readable		
 exe	0x004bb810	anm_Alloc	anm	byte	readable		
 exe	0x004bb840	anm_Free	anm	byte	readable		
 exe	0x004bb860	anm_Update	anm	byte	draft	deep	
@@ -3933,737 +3933,737 @@ exe	0x005755c0	he_Unk5755c0	he	byte	draft
 exe	0x00575600	he_SaveMessageFilter	he	byte	draft		
 exe	0x00575640	he_IsMessageKindFiltered	he	draft	draft		
 exe	0x00575710	he_SetMessageKindFiltered	he	byte	draft		
-exe	0x00575860	ai_TutorialTick	unk_575860	byte	readable		
-exe	0x00576020	unk_ClearEndGameGate	unk_575860	byte	readable		
-exe	0x00576030	unk_SetEndGameGate	unk_575860	byte	readable		
-exe	0x00576040	ai_CampaignStep	unk_575860	draft	readable	deep	
-exe	0x00576340	ai_ScriptQuery	unk_575860	byte	readable		
-exe	0x005763c0	ai_RunAllows	unk_575860	byte	readable		
-exe	0x00576410	ai_RunAllowsContact	unk_575860	byte	readable		
-exe	0x00576460	ai_RunAllowsWindow	unk_575860	byte	readable		
-exe	0x00576490	ai_TutorialQueryDefault	unk_575860	byte	readable		
-exe	0x005764b0	ai_QueryDefault	unk_575860	byte	readable		
-exe	0x00576500	ai_QueryBuilding0f	unk_575860	byte	readable		
-exe	0x00576590	ai_QueryChapter2Step3	unk_575860	byte	readable		
-exe	0x005765e0	ai_QueryChapter2Step4	unk_575860	byte	readable		
-exe	0x00576600	ai_QueryChapter2Step5	unk_575860	byte	readable		
-exe	0x00576640	ai_QueryChapter2Step6	unk_575860	byte	readable		
-exe	0x00576680	ai_QueryChapter2Step7	unk_575860	byte	readable		
-exe	0x005766d0	ai_StepChapter1Step5	unk_575860	byte	readable		
-exe	0x005767d0	ai_StepChapter1Step10	unk_575860	byte	readable		
-exe	0x00576830	ai_StepChapter2Step1	unk_575860	byte	readable		
-exe	0x005768a0	ai_HookChapter2Step2	unk_575860	byte	readable		
-exe	0x005768d0	ai_StepChapter2Step2	unk_575860	byte	readable		
-exe	0x00576920	ai_StepChapter2Step3	unk_575860	byte	readable		
-exe	0x00576970	ai_StepChapter2Step4	unk_575860	byte	readable		
-exe	0x005769c0	ai_StepChapter2Step5	unk_575860	byte	readable		
-exe	0x00576a80	ai_HookChapter2Step5	unk_575860	byte	readable		
-exe	0x00576ab0	ai_StepChapter2Step6	unk_575860	byte	readable		
-exe	0x00576b50	ai_StepChapter2Step7	unk_575860	byte	readable		
-exe	0x00576ba0	ai_StepChapter4Step2	unk_575860	byte	readable		
-exe	0x00576cd0	ai_QueryChapter4Step2	unk_575860	byte	readable		
-exe	0x00576d40	ai_StepChapter4Step4	unk_575860	byte	readable		
-exe	0x00576e70	ai_QueryChapter4Step4	unk_575860	byte	readable		
-exe	0x00576ee0	ai_StepChapter4Step5	unk_575860	byte	readable		
-exe	0x00577020	ai_QueryChapter4Step5	unk_575860	byte	readable		
-exe	0x005770a0	ai_HookChapter4Step	unk_575860	byte	readable		
-exe	0x005770e0	ai_QueryChapter3Step2	unk_575860	byte	readable		
-exe	0x00577110	ai_HookChapter3Step2	unk_575860	byte	readable		
-exe	0x005771b0	ai_QueryChapter3Step6	unk_575860	byte	readable		
-exe	0x00577230	ai_HookChapter5Step2	unk_575860	byte	readable		
-exe	0x00577290	ai_QueryChapter5Step2	unk_575860	byte	readable		
-exe	0x005772d0	ai_MarkerChapter5Step2	unk_575860	byte	readable		
-exe	0x00577320	ai_MarkerChapter3Step6	unk_575860	byte	readable		
-exe	0x00577330	ai_QueryChapter3Step8	unk_575860	byte	readable		
-exe	0x005773f0	ai_MarkerChapter3Step8	unk_575860	byte	readable		
-exe	0x00577450	ai_QueryChapter3Step10	unk_575860	byte	readable		
-exe	0x00577490	ai_StepShownChapter3Step4	unk_575860	byte	readable		
-exe	0x005774d0	ai_HookChapter3Intro	unk_575860	byte	readable		
-exe	0x00577540	ai_HookChapter5Intro	unk_575860	byte	readable		
-exe	0x005775c0	ai_HookChapter5Step4	unk_575860	byte	readable		
-exe	0x00577610	ai_HookChapter5Step5	unk_575860	byte	readable		
-exe	0x00577690	ai_HookChapter5Step6	unk_575860	shape	readable		
-exe	0x00577740	ai_TutorialOpenIntro	unk_575860	byte	readable		
-exe	0x00577820	ai_TutorialCloseIntro	unk_575860	byte	readable		
-exe	0x00577850	ai_TutorialClearRunWindow	unk_575860	byte	readable		
-exe	0x005778b0	ai_TutorialShowRunText	unk_575860	byte	readable		
-exe	0x00577a00	ai_TutorialIntroAnswered	unk_575860	shape	readable	deep	
-exe	0x00577a90	ai_TutorialShowText	unk_575860	byte	readable		
-exe	0x00577b60	ai_TutorialHideText	unk_575860	byte	readable		
-exe	0x00577b90	ai_TutorialShowText2	unk_575860	byte	readable		
-exe	0x00577c60	ai_TutorialHideText2	unk_575860	byte	readable		
-exe	0x00577cd0	ai_TutorialOpenProgress	unk_575860	byte	readable		
-exe	0x00577d60	ai_TutorialCloseProgress	unk_575860	byte	readable		
-exe	0x00577d90	ai_TutorialProgressSlider	unk_575860	shape	readable	deep	
-exe	0x00577e50	ai_TutorialStepForm	unk_575860	draft	readable	deep	
-exe	0x005780e0	ai_TutorialStepClicked	unk_575860	byte	readable		
-exe	0x00578120	ai_TutorialSetHost	unk_575860	byte	readable		
-exe	0x00578150	ai_TutorialClearHost	unk_575860	byte	readable		
-exe	0x00578170	ai_TutorialOff	unk_575860	byte	readable		
-exe	0x00578180	ai_TutorialStart	unk_575860	byte	readable		
-exe	0x00578370	ai_TutorialStop	unk_575860	byte	readable		
-exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable		
-exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
-exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
-exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
-exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
-exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
-exe	0x0057b810	ai_TutorialBezier	unk_575860	shape	readable		
-exe	0x0057b8a0	ai_TutorialMarkerUpdate	unk_575860	shape	readable		
-exe	0x0057bc30	ai_SetupTutorialPlayer	unk_575860	shape	readable		
-exe	0x0057bce0	ai_TutorialWindow	unk_575860	shape	readable	deep	
-exe	0x0057bf00	ai_AlchemistCandidates	unk_575860	draft	readable	deep	
-exe	0x0057c560	ai_AlchemistHire	unk_575860	byte	readable		
-exe	0x0057c690	ai_AlchemistResearchWindow	unk_575860	draft	readable	deep	
-exe	0x0057cde0	ai_AlchemistSendRecipeResearch	unk_575860	draft	readable	deep	
-exe	0x0057ced0	ai_AlchemistSendResearchStart	unk_575860	draft	readable	deep	
-exe	0x0057cf90	ai_AlchemistWindow	unk_575860	draft	readable	deep	
-exe	0x0057dc50	ai_AlchemistTrainShareWindow	unk_575860	draft	readable	deep	
-exe	0x0057de60	ai_AlchemistFundWindow	unk_575860	shape	readable	deep	
-exe	0x0057e0e0	ai_AlchemistRescheduleWindow	unk_575860	byte	readable		
-exe	0x0057e230	ai_ShotTableStore	unk_575860	byte	readable		
-exe	0x0057e270	ai_CannonScene	unk_575860	draft	readable	deep	
-exe	0x0057ec40	ai_CannonAim	unk_575860	draft	readable	deep	
-exe	0x0057f0e0	ai_CannonCamera	unk_575860	draft	readable	deep	
-exe	0x0057f5d0	ai_CannonAxes	unk_575860	byte	readable		
-exe	0x0057f620	ai_CannonFireCheck	unk_575860	byte	readable		
-exe	0x0057f690	ai_CannonShotResults	unk_575860	byte	readable		
-exe	0x0057f890	ai_CannonPanel	unk_575860	byte	readable		
-exe	0x0057fdb0	ai_CannonPitchRatio	unk_575860	byte	readable		
-exe	0x0057fdd0	ai_CannonSwitchAnim	unk_575860	draft	readable	deep	
-exe	0x00580160	ai_CannonExplosion	unk_575860	draft	readable	deep	
-exe	0x00580a50	ai_ShotTableReset	unk_575860	byte	readable		
-exe	0x00580a90	ai_CannonBuildPanel	unk_575860	draft	readable	deep	
-exe	0x00580fe0	ai_CanSpyOn	unk_575860	byte	readable		
-exe	0x00581020	ai_CabinetSpyWindow	unk_575860	shape	readable		
-exe	0x00581400	ai_CabinetSpyOnCharacter	unk_575860	shape	readable		
-exe	0x00581950	ai_CabinetSpyByMoney	unk_575860	shape	readable		
-exe	0x00581db0	ai_CabinetIntrigueWindow	unk_575860	draft	readable	deep	
-exe	0x005821d0	ai_AlchemistLabContact	unk_575860	byte	readable		
-exe	0x005823b0	ai_UnlockRoomWindow	unk_575860	byte	readable		
-exe	0x00582560	ai_CannonContact	unk_575860	byte	readable		
-exe	0x00582600	ai_CabinetContact	unk_575860	byte	readable		
-exe	0x00582730	ai_GraveSizeButtons	unk_575860	byte	readable		
-exe	0x005828c0	ai_GraveList	unk_575860	byte	readable		
-exe	0x00582b40	ai_GraveDetail	unk_575860	draft	readable	deep	
-exe	0x005830f0	ai_GraveDeadName	unk_575860	byte	readable		
-exe	0x00583150	ai_GraveDeadDescription	unk_575860	byte	readable		
-exe	0x00583240	ai_GraveWindow	unk_575860	draft	readable	deep	
-exe	0x00583700	ai_RentGraveDetail	unk_575860	draft	readable	deep	
-exe	0x00583b70	ai_GraveDetailOpen	unk_575860	byte	readable		
-exe	0x00583c50	ai_GraveSizeButtonsAt	unk_575860	byte	readable		
-exe	0x00583de0	ai_GraveFreeConfirm	unk_575860	byte	readable		
-exe	0x00583ef0	ai_GraveSizeEnable	unk_575860	byte	readable		
-exe	0x00584010	ai_GraveMoveConfirm	unk_575860	byte	readable		
-exe	0x00584260	ai_GraveMoveWindow	unk_575860	byte	readable		
-exe	0x00584410	ai_GraveDetailButtons	unk_575860	byte	readable		
-exe	0x00584520	ai_GraveRentConfirm	unk_575860	byte	readable		
-exe	0x005847a0	ai_RentGraveSelect	unk_575860	byte	readable		
-exe	0x00584900	ai_GraveCare	unk_575860	byte	readable		
-exe	0x00584b70	ai_GraveRaiseHelper	unk_575860	byte	readable		
-exe	0x00584d70	ai_GypsyHelperWindow	unk_575860	draft	draft	deep	
-exe	0x00585380	ai_GraveFogWindow	unk_575860	shape	readable	deep	
-exe	0x00585750	ai_SeanceWindow	unk_575860	byte	readable		
-exe	0x005859c0	ai_SeanceRitual	unk_575860	shape	readable	deep	
-exe	0x00585c40	ai_SeanceRollFormulas	unk_575860	byte	readable		
-exe	0x00585cb0	ai_SeanceGhost	unk_575860	byte	readable		
-exe	0x00585f30	ai_SeanceSacrifice	unk_575860	byte	readable		
-exe	0x00586200	ai_SeanceGift	unk_575860	byte	readable		
-exe	0x00586560	ai_SeancePick	unk_575860	byte	readable		
-exe	0x00586610	ai_GraveSeance	unk_575860	byte	readable		
-exe	0x005867c0	ai_GraveyardSchlag	unk_575860	byte	readable		
-exe	0x00586840	ai_GraveyardContact	unk_575860	byte	readable		
-exe	0x00586ab0	ai_GraveHauntContact	unk_575860	shape	readable		
-exe	0x00586e40	ai_GraveAgeContact	unk_575860	shape	readable		
-exe	0x005871c0	ai_GravePlanContact	unk_575860	byte	readable		
-exe	0x005871e0	ai_GraveRentContact	unk_575860	byte	readable		
-exe	0x00587300	ai_GraveCareContact	unk_575860	byte	readable		
-exe	0x00587340	ai_GraveHelperContact	unk_575860	byte	readable		
-exe	0x00587370	ai_GraveInsuranceContact	unk_575860	byte	readable		
-exe	0x00587560	ai_GraveyardTradeContact	unk_575860	byte	readable		
-exe	0x005876a0	ai_GraveyardSeanceContact	unk_575860	byte	readable		
-exe	0x00587700	ai_UpgradeWorkerSend	unk_575860	byte	readable		
-exe	0x00587810	ai_UpgradeWorkerWindow	unk_575860	byte	readable		
-exe	0x00587ad0	ai_GraveyardFogContact	unk_575860	byte	readable		
-exe	0x00587b70	ai_PermissionBits1d	unk_575860	shape	readable		
-exe	0x00587c40	ai_EndCharExtra	unk_575860	byte	readable		
-exe	0x00587c90	ai_GraveyardChatter	unk_575860	byte	readable		
-exe	0x00587de0	ai_ClearTurnTable	unk_575860	byte	readable		
-exe	0x00587e00	ai_HandleItemDrag	unk_575860	draft	readable	deep	
-exe	0x00588160	ai_OpenBuildingTooltip	unk_575860	byte	readable		
-exe	0x00588310	ai_OpenItemTooltip	unk_575860	draft	readable	deep	
-exe	0x00588950	ai_OpenUpgradeTooltip	unk_575860	shape	readable		
-exe	0x00588bb0	ai_OpenHelpTooltip	unk_575860	byte	readable		
-exe	0x00588c60	ai_OpenCharTooltip	unk_575860	byte	readable		
-exe	0x005890c0	ai_CharInfoWindow	unk_575860	byte	readable		
-exe	0x00589400	ai_ClearBookmark	unk_575860	byte	readable		
-exe	0x00589410	ai_InitBookmarks	unk_575860	byte	readable		
-exe	0x00589450	ai_ValidateBookmarks	unk_575860	byte	readable		
-exe	0x005894d0	ai_SelectBookmark	unk_575860	byte	readable		
-exe	0x00589570	ai_SetBookmark	unk_575860	draft	readable	deep	
-exe	0x00589670	ai_BookmarkWindow	unk_575860	shape	readable		
-exe	0x00589aa0	ai_SaveBookmarks	unk_575860	byte	readable		
-exe	0x00589b30	ai_LoadBookmarks	unk_575860	byte	readable		
-exe	0x00589bc0	ai_SaveScreenshot	unk_575860	byte	readable		
-exe	0x00589c90	ai_SlotKeys	unk_575860	byte	readable		
-exe	0x00589cf0	ai_SpeedKeys	unk_575860	byte	readable		
-exe	0x00589e00	ai_BookmarkSetBuilding	unk_575860	byte	readable		
-exe	0x00589e50	ai_BookmarksPreset	unk_575860	byte	readable		
-exe	0x00589f10	lobby_Screen	unk_589f10	draft	readable	deep	
-exe	0x0058a940	lobby_AddButtons	unk_589f10	byte	draft	deep	
-exe	0x0058a9d0	lobby_AddChatScroll	unk_589f10	byte	draft	deep	
-exe	0x0058aa30	lobby_ShowCity	unk_589f10	draft	readable	deep	
-exe	0x0058aba0	lobby_ShowMyPlayer	unk_589f10	draft	draft	deep	
-exe	0x0058ad20	lobby_FetchPlayers	unk_589f10	shape	draft	deep	
-exe	0x0058ada0	lobby_ShowPlayers	unk_589f10	draft	draft	deep	
-exe	0x0058af50	lobby_ChoosePlayer	unk_589f10	draft	readable	deep	
-exe	0x0058b880	lobby_ChooseProfession	unk_589f10	draft	draft	deep	
-exe	0x0058ba70	lobby_ShowChat	unk_589f10	draft	draft	deep	
-exe	0x0058bbd0	ai_Unk58bbd0	unk_58bbd0	draft	draft	deep	
-exe	0x0058bd60	ai_ProductionWindow	unk_58bbd0	draft	draft		
-exe	0x0058c680	ai_Unk58c680	unk_58bbd0	draft	draft		
-exe	0x0058cc10	ai_Unk58cc10	unk_58bbd0	draft	draft		
-exe	0x0058d720	ai_Unk58d720	unk_58bbd0	draft	draft		
-exe	0x0058dd00	ai_Unk58dd00	unk_58bbd0	draft	draft		
-exe	0x0058e130	ai_Unk58e130	unk_58bbd0	draft	draft	deep	
-exe	0x0058e440	ai_Unk58e440	unk_58bbd0	draft	draft	deep	
-exe	0x0058e6a0	ai_Unk58e6a0	unk_58bbd0	draft	draft		
-exe	0x0058ee30	ai_Unk58ee30	unk_58bbd0	draft	draft	deep	
-exe	0x0058f290	ai_Unk58f290	unk_58bbd0	draft	draft		
-exe	0x0058f510	ai_MarketContact	unk_58bbd0	byte	readable		
-exe	0x0058f620	ai_PumpFrames	unk_58bbd0	byte	readable		
-exe	0x0058f640	ai_BuildingName	unk_58bbd0	shape	readable	deep	
-exe	0x0058f6a0	ai_BauplatzFilter	unk_58bbd0	draft	readable	deep	
-exe	0x0058f7a0	ai_FindBauplaetze	unk_58bbd0	draft	draft	deep	
-exe	0x0058f920	ai_VgFilter	unk_58bbd0	byte	readable		
-exe	0x0058f980	ai_ShowVgObjects	unk_58bbd0	byte	readable		
-exe	0x0058fa20	ai_CheckBuildable	unk_58bbd0	byte	readable		
-exe	0x0058fb60	ai_CheckBuildSites	unk_58bbd0	byte	readable		
-exe	0x0058fba0	ai_FindBauplatz	unk_58bbd0	byte	readable		
-exe	0x0058fc40	lc_GetGebaeudeBauplatz	unk_58bbd0	draft	readable	deep	
-exe	0x0058fd40	ai_ObjectPosition	unk_58bbd0	byte	readable		
-exe	0x0058fd90	ai_ObjectAngle	unk_58bbd0	byte	readable		
-exe	0x0058fe10	ai_FindNearestObject	unk_58bbd0	shape	readable		
-exe	0x0058feb0	ai_DropObjectAt	unk_58bbd0	byte	readable		
-exe	0x0058ff00	ai_Unk58ff00	unk_58bbd0	draft	draft		
-exe	0x005909a0	ai_Unk5909a0	unk_58bbd0	draft	draft		
-exe	0x00591170	ai_HandleMapKey	unk_58bbd0	draft	draft		
-exe	0x005912c0	ai_TradeContactChecks	unk_58bbd0	draft	draft		
-exe	0x00591480	ai_CampaignKey1	unk_58bbd0	draft	readable	deep	
-exe	0x00591520	ai_GameFrame	unk_58bbd0	draft	draft		
-exe	0x00591ad0	ai_Unk591ad0	unk_58bbd0	draft	draft		
-exe	0x00591bf0	ai_TechTreeWindow	unk_58bbd0	draft	draft		
-exe	0x00592230	ai_UpgradeContact	unk_58bbd0	byte	readable		
-exe	0x00592290	ai_BookContact	unk_58bbd0	byte	readable		
-exe	0x00592320	ai_MercenaryBookContact	unk_58bbd0	byte	readable		
-exe	0x005923c0	ai_SearchResourceWindow	unk_58bbd0	draft	draft		
-exe	0x00592b90	ai_ExtractResourceWindow	unk_58bbd0	draft	draft		
-exe	0x00593150	ai_ProductionGoodsWindow	unk_58bbd0	draft	draft		
-exe	0x005938c0	ai_MiningContact	unk_58bbd0	byte	readable		
-exe	0x00593960	ai_KontorContact	unk_58bbd0	shape	readable		
-exe	0x00593b00	ai_Unk593b00	unk_58bbd0	draft	draft		
-exe	0x00593ca0	ai_StoneKontorContact	unk_58bbd0	shape	readable		
-exe	0x00593e80	ai_InformationContact	unk_58bbd0	byte	readable		
-exe	0x00593f40	ai_BreakInCallback	unk_58bbd0	draft	draft		
-exe	0x00594180	ai_BreakInWindow	unk_58bbd0	byte	readable		
-exe	0x005941c0	ai_PickpocketWindow	unk_58bbd0	draft	draft		
-exe	0x00594470	ai_OpenPickpocket	unk_58bbd0	byte	readable		
-exe	0x005944e0	ai_BribeCallback	unk_58bbd0	draft	draft		
-exe	0x00594790	ai_OpenBribe	unk_58bbd0	byte	readable		
-exe	0x00594810	ai_BriberyWindow	unk_58bbd0	draft	draft		
-exe	0x00594b10	ai_OpenSpying	unk_58bbd0	byte	readable		
-exe	0x00594bb0	ai_RaidWindow	unk_58bbd0	draft	draft		
-exe	0x00594db0	ai_OpenRaid	unk_58bbd0	byte	readable		
-exe	0x00594e50	ai_CriminalContact	unk_58bbd0	shape	readable		
-exe	0x005950e0	ai_FarTradeContact	unk_58bbd0	byte	readable		
-exe	0x00595170	ai_SmithyContact	unk_58bbd0	shape	readable		
-exe	0x00595330	ai_CarpenterContact	unk_58bbd0	shape	readable		
-exe	0x00595480	ai_TradeSearchWindow	unk_58bbd0	draft	draft		
-exe	0x00595a00	ai_AquariumSearchWindow	unk_58bbd0	draft	draft		
-exe	0x00595ed0	ai_PerfumeryContact	unk_58bbd0	shape	readable		
-exe	0x00596060	ai_IdleContact	unk_58bbd0	byte	readable		
-exe	0x00596080	ai_AquariumContact	unk_58bbd0	byte	readable		
-exe	0x00596120	ai_MixingContact	unk_58bbd0	shape	readable		
-exe	0x005962b0	ai_StonecutterContact	unk_58bbd0	shape	readable		
-exe	0x00596400	ai_Unk596400	unk_58bbd0	draft	draft		
-exe	0x005965f0	ai_RhetoricContact	unk_58bbd0	byte	readable		
-exe	0x005966f0	ai_FeastContact	unk_58bbd0	byte	readable		
-exe	0x005967c0	ai_Unk5967c0	unk_58bbd0	draft	draft		
-exe	0x00596ba0	ai_MistressWindow	unk_58bbd0	draft	draft		
-exe	0x00596f90	ai_MistressContact	unk_58bbd0	byte	readable		
-exe	0x00596ff0	ai_Unk596ff0	unk_58bbd0	draft	draft		
-exe	0x00597380	ai_EspionageAmountMenu	unk_58bbd0	byte	readable		
-exe	0x005973f0	ai_Unk5973f0	unk_58bbd0	draft	draft		
-exe	0x00597500	ai_Unk597500	unk_58bbd0	draft	draft		
-exe	0x005976a0	ai_TavernRulesWindow	unk_58bbd0	byte	readable		
-exe	0x00597780	ai_Unk597780	unk_58bbd0	draft	draft		
-exe	0x00597810	ai_Unk597810	unk_58bbd0	draft	draft		
-exe	0x00597920	ai_Unk597920	unk_58bbd0	draft	draft		
-exe	0x00597a10	ai_Unk597a10	unk_58bbd0	draft	draft		
-exe	0x00597e70	ai_Unk597e70	unk_58bbd0	draft	draft		
-exe	0x00598170	ai_Unk598170	unk_58bbd0	draft	draft		
-exe	0x00598b80	ai_StammtischWindow	unk_58bbd0	draft	draft		
-exe	0x00598dc0	ai_StammtischJoinWindow	unk_58bbd0	draft	draft		
-exe	0x00599240	ai_OpenStammtisch	unk_58bbd0	byte	readable		
-exe	0x005992c0	ai_DarkCornerMenu	unk_58bbd0	draft	draft		
-exe	0x005996b0	ai_DarkCornerBuy	unk_58bbd0	draft	draft		
-exe	0x00599aa0	ai_DarkCornerTable	unk_58bbd0	byte	readable		
-exe	0x00599af0	ai_Unk599af0	unk_58bbd0	draft	draft		
-exe	0x00599cb0	ai_BreweryContact	unk_58bbd0	shape	readable		
-exe	0x00599e00	ai_Unk599e00	unk_58bbd0	draft	draft		
-exe	0x00599ef0	ai_Unk599ef0	unk_58bbd0	draft	draft		
-exe	0x0059a2c0	ai_Unk59a2c0	unk_58bbd0	draft	draft		
-exe	0x0059a3c0	ai_Unk59a3c0	unk_58bbd0	draft	draft		
-exe	0x0059a560	ai_Unk59a560	unk_58bbd0	draft	draft		
-exe	0x0059a710	ai_MarketStandWindow	unk_58bbd0	byte	readable		
-exe	0x0059a800	ai_Unk59a800	unk_58bbd0	draft	draft		
-exe	0x0059aae0	ai_WineCellarWindow	unk_58bbd0	draft	draft		
-exe	0x0059ad00	ai_WineCellarContact	unk_58bbd0	byte	readable		
-exe	0x0059ad60	ai_Unk59ad60	unk_58bbd0	draft	draft		
-exe	0x0059b030	ai_Unk59b030	unk_58bbd0	draft	draft		
-exe	0x0059b160	ai_CreditListWindow	unk_58bbd0	draft	draft		
-exe	0x0059b630	ai_Unk59b630	unk_58bbd0	draft	draft		
-exe	0x0059b880	ai_Unk59b880	unk_58bbd0	draft	draft		
-exe	0x0059bad0	ai_CreditGiverWindow	unk_58bbd0	draft	draft		
-exe	0x0059be90	ai_Unk59be90	unk_58bbd0	draft	draft		
-exe	0x0059c120	ai_Unk59c120	unk_58bbd0	draft	draft		
-exe	0x0059c450	ai_Unk59c450	unk_58bbd0	draft	draft		
-exe	0x0059c6b0	ai_ClickedExchangeRecord	unk_58bbd0	byte	readable		
-exe	0x0059c6e0	ai_UsedRecordCount	unk_58bbd0	byte	readable		
-exe	0x0059c700	ai_ExchangeWindow	unk_58bbd0	draft	draft		
-exe	0x0059d2d0	ai_Unk59d2d0	unk_58bbd0	draft	draft		
-exe	0x0059d410	ai_Unk59d410	unk_58bbd0	draft	draft		
-exe	0x0059d5e0	ai_MoneyExchangeWindow	unk_58bbd0	draft	draft		
-exe	0x0059dc00	ai_MoneyLenderInfoWindow	unk_58bbd0	draft	draft		
-exe	0x0059df10	ai_FortuneOverview	unk_58bbd0	byte	readable		
-exe	0x0059df80	ai_MoneyLenderContact	unk_58bbd0	byte	readable		
-exe	0x0059e0a0	ai_SwitchRoom	unk_58bbd0	shape	readable		
-exe	0x0059e170	ai_Unk59e170	unk_58bbd0	draft	draft		
-exe	0x0059e210	ai_Unk59e210	unk_58bbd0	draft	draft		
-exe	0x0059e420	ai_Unk59e420	unk_58bbd0	draft	draft		
-exe	0x0059ee40	ai_Unk59ee40	unk_58bbd0	draft	draft		
-exe	0x0059f410	ai_Unk59f410	unk_58bbd0	draft	draft		
-exe	0x0059f9a0	ai_BuyBuildingWindow	unk_58bbd0	draft	draft		
-exe	0x0059fbf0	ai_GuildCashWindow	unk_58bbd0	byte	readable		
-exe	0x0059fca0	ai_TownCashContact	unk_58bbd0	byte	readable		
-exe	0x0059fd30	ai_TownHallContact	unk_58bbd0	byte	readable		
-exe	0x0059fe40	ai_CitizenRightWindow	unk_58bbd0	draft	draft		
-exe	0x005a0220	ai_Unk5a0220	unk_58bbd0	draft	draft		
-exe	0x005a0590	ai_OfficeApplicationWindow	unk_58bbd0	draft	draft		
-exe	0x005a07d0	ai_LawBookContact	unk_58bbd0	byte	readable		
-exe	0x005a0950	ai_GuildCashPayWindow	unk_58bbd0	draft	draft		
-exe	0x005a0ca0	ai_Unk5a0ca0	unk_58bbd0	draft	draft		
-exe	0x005a0f10	ai_OfficeApplyEntry	unk_58bbd0	draft	draft		
-exe	0x005a1000	ai_GuildLevel1Window	unk_58bbd0	draft	draft		
-exe	0x005a13f0	ai_GuildLevel3RequestCB	unk_58bbd0	shape	readable		
-exe	0x005a1530	ai_GuildLevel2RequestCB	unk_58bbd0	shape	readable		
-exe	0x005a1670	ai_GuildLevel3PowerCB	unk_58bbd0	shape	readable		
-exe	0x005a17b0	ai_GuildLevel3Entry	unk_58bbd0	draft	draft		
-exe	0x005a18d0	ai_GuildLevel2Listener	unk_58bbd0	byte	readable		
-exe	0x005a1960	ai_GuildLevel3Listener	unk_58bbd0	byte	readable		
-exe	0x005a1a60	ai_GuildLevel1Listener	unk_58bbd0	byte	readable		
-exe	0x005a1af0	ai_DonationWindow	unk_58bbd0	draft	draft		
-exe	0x005a1f70	ai_IndulgenceWindow	unk_58bbd0	draft	draft		
-exe	0x005a23a0	ai_BaptismWindow	unk_58bbd0	draft	draft		
-exe	0x005a28f0	ai_Top5Window	unk_58bbd0	draft	draft		
-exe	0x005a2b60	ai_ConfessionWindow	unk_58bbd0	draft	draft		
-exe	0x005a2de0	ai_ConfessionListener	unk_58bbd0	byte	readable		
-exe	0x005a2e60	ai_SermonWindow	unk_58bbd0	draft	draft		
-exe	0x005a36c0	ai_ProductionWriteContact	unk_58bbd0	shape	readable		
-exe	0x005a3810	ai_ChurchListener	unk_58bbd0	shape	readable		
-exe	0x005a39b0	ai_ChurchContact	unk_58bbd0	byte	readable		
-exe	0x005a3a40	ai_DungeonPlanWindow	unk_58bbd0	shape	readable		
-exe	0x005a3b20	ai_DungeonContact	unk_58bbd0	byte	readable		
-exe	0x005a3b90	ai_Unk5a3b90	unk_58bbd0	draft	draft		
-exe	0x005a3df0	ai_Unk5a3df0	unk_58bbd0	draft	draft		
-exe	0x005a3ef0	ai_DungeonEmptyListener	unk_58bbd0	byte	readable		
-exe	0x005a3f10	ai_BurglaryWindow	unk_58bbd0	draft	draft		
-exe	0x005a4130	ai_BurglaryStart	unk_58bbd0	shape	readable		
-exe	0x005a41d0	ai_Unk5a41d0	unk_58bbd0	draft	draft		
-exe	0x005a44e0	ai_EspionageStart	unk_58bbd0	draft	draft		
-exe	0x005a45c0	ai_SpyRingWindow	unk_58bbd0	draft	draft		
-exe	0x005a48d0	ai_AttackWindow	unk_58bbd0	draft	draft		
-exe	0x005a4b30	ai_AttackStart	unk_58bbd0	byte	readable		
-exe	0x005a4b90	ai_PickpocketVictimWindow	unk_58bbd0	draft	draft		
-exe	0x005a4d40	ai_ThievesGuildListener	unk_58bbd0	shape	readable		
-exe	0x005a4f50	ai_ThievesGuildEmptyListener	unk_58bbd0	byte	readable		
-exe	0x005a4f70	ai_StorageContact	unk_58bbd0	shape	readable		
-exe	0x005a5080	ai_TrainingContact	unk_58bbd0	byte	readable		
-exe	0x005a5120	ai_Unk5a5120	unk_58bbd0	draft	draft		
-exe	0x005a53e0	ai_KidnapStart	unk_58bbd0	draft	draft		
-exe	0x005a5530	ai_RansomWindow	unk_58bbd0	draft	draft		
-exe	0x005a5910	ai_KidnapAttempt	unk_58bbd0	draft	draft		
-exe	0x005a5bc0	ai_KidnapContact	unk_58bbd0	byte	readable		
-exe	0x005a5d70	ai_CityWatchWindow	unk_58bbd0	draft	draft		
-exe	0x005a5f60	ai_PatrolStart	unk_58bbd0	byte	readable		
-exe	0x005a5fd0	ai_CityWatchCrewWindow	unk_58bbd0	draft	draft		
-exe	0x005a61f0	ai_RaidStart	unk_58bbd0	byte	readable		
-exe	0x005a6270	ai_WatchSearchWindow	unk_58bbd0	draft	draft		
-exe	0x005a6480	ai_WatchPlanStart	unk_58bbd0	byte	readable		
-exe	0x005a64d0	ai_ArrestWindow	unk_58bbd0	draft	draft		
-exe	0x005a6720	ai_ArrestStart	unk_58bbd0	byte	readable		
-exe	0x005a67a0	ai_CityWatchListener	unk_58bbd0	shape	readable		
-exe	0x005a6920	ai_GuildHallListener	unk_58bbd0	shape	readable		
-exe	0x005a6a90	ai_Unk5a6a90	unk_58bbd0	draft	draft		
-exe	0x005a6b50	ai_FormatCityName	unk_58bbd0	byte	readable		
-exe	0x005a6b70	ai_Unk5a6b70	unk_58bbd0	draft	draft		
-exe	0x005a6c40	ai_PlaceMapControls	unk_58bbd0	byte	readable		
-exe	0x005a6cb0	ai_Unk5a6cb0	unk_58bbd0	draft	draft		
-exe	0x005a78a0	ai_Unk5a78a0	unk_58bbd0	draft	draft		
-exe	0x005a79e0	ai_Unk5a79e0	unk_58bbd0	draft	draft		
-exe	0x005a7bc0	ai_Unk5a7bc0	unk_58bbd0	draft	draft		
-exe	0x005a7cd0	ai_Unk5a7cd0	unk_58bbd0	draft	draft		
-exe	0x005a82f0	ai_CloseMapWindow	unk_58bbd0	byte	readable		
-exe	0x005a8340	ai_SettingRandom	unk_58bbd0	byte	readable		
-exe	0x005a8390	ai_FreeSettingChain	unk_58bbd0	byte	readable		
-exe	0x005a83b0	ai_FillSettingWeights	unk_58bbd0	draft	draft		
-exe	0x005a84b0	ai_FindSetting	unk_58bbd0	byte	readable		
-exe	0x005a84d0	ai_FindItemGroup	unk_58bbd0	byte	readable		
-exe	0x005a8540	ai_FindSettingSlots	unk_58bbd0	byte	readable		
-exe	0x005a8560	ai_ProdSetting	unk_58bbd0	draft	draft		
-exe	0x005a86c0	ai_FreeProdSetting	unk_58bbd0	byte	readable		
-exe	0x005a8710	ai_Unk5a8710	unk_58bbd0	draft	draft		
-exe	0x005a8850	ai_RefreshProdSetting	unk_58bbd0	byte	readable		
-exe	0x005a8870	ai_DrawSettingGood	unk_58bbd0	shape	readable		
-exe	0x005a88e0	ai_SettingFactor	unk_58bbd0	byte	readable		
-exe	0x005a8900	ai_SetSettingFactor	unk_58bbd0	byte	readable		
-exe	0x005a8920	ai_FreeSettings	unk_58bbd0	byte	readable		
-exe	0x005a8940	ai_SaveSettings	unk_58bbd0	draft	draft		
-exe	0x005a8a20	ai_Unk5a8a20	unk_58bbd0	draft	draft		
-exe	0x005a8b80	ai_ShowIndulgenceNews	unk_58bbd0	byte	readable		
-exe	0x005a8c00	ai_ShowPaymentNews	unk_58bbd0	byte	readable		
-exe	0x005a8c50	ai_ShowPurchaseNews	unk_58bbd0	byte	readable		
-exe	0x005a8cb0	ai_ShowOfficeNews	unk_58bbd0	byte	readable		
-exe	0x005a8d00	ai_ShowTributeDelayedNews	unk_58bbd0	byte	readable		
-exe	0x005a8d40	ai_ShowTributeCollectNews	unk_58bbd0	byte	readable		
-exe	0x005a8d80	ai_ShowTributeClaimNews	unk_58bbd0	byte	readable		
-exe	0x005a8e10	ai_ShowTavernHelperNews	unk_58bbd0	byte	readable		
-exe	0x005a8ee0	ai_ShowPartingNews	unk_58bbd0	shape	readable		
-exe	0x005a8f90	ai_ShowFeudNews	unk_58bbd0	shape	readable		
-exe	0x005a9050	ai_ShowPartnerNews	unk_58bbd0	shape	readable		
-exe	0x005a9110	ai_ShowCharacterNews	unk_58bbd0	byte	readable		
-exe	0x005a9170	ai_NotifyPlayerOfChar	unk_58bbd0	byte	readable		
-exe	0x005a91c0	ai_PlagueNews	unk_58bbd0	shape	readable		
-exe	0x005a9240	ai_PlagueMessage	unk_58bbd0	draft	readable	deep	
-exe	0x005a92b0	ai_PlagueMessageAll	unk_58bbd0	shape	readable		
-exe	0x005a9330	ai_SendSwapText	unk_58bbd0	byte	readable		
-exe	0x005a9430	ai_ShowEvidenceVoidNews	unk_58bbd0	byte	readable		
-exe	0x005a9470	ai_GypsyDeliveryText	unk_58bbd0	draft	draft		
-exe	0x005a9690	ai_TellGraveNeglect	unk_58bbd0	byte	readable		
-exe	0x005a96e0	ai_NotifySale	unk_58bbd0	draft	draft		
-exe	0x005a9780	ai_TellGravesPaid	unk_58bbd0	byte	readable		
-exe	0x005a97e0	ai_Unk5a97e0	unk_58bbd0	draft	draft		
-exe	0x005a9880	ai_ShowGraveOrderCancelled	unk_58bbd0	draft	draft		
-exe	0x005a9910	ai_Unk5a9910	unk_58bbd0	draft	draft		
-exe	0x005a9990	ai_TellGraveWorkSuccess	unk_58bbd0	byte	readable		
-exe	0x005a99e0	ai_TellGraveWorkFailure	unk_58bbd0	byte	readable		
-exe	0x005a9a30	ai_GraveyardMessage	unk_58bbd0	draft	readable	deep	
-exe	0x005a9af0	ai_GraveyardMessagePlain	unk_58bbd0	byte	readable		
-exe	0x005a9b50	ai_DomizilMessageResearch	unk_58bbd0	byte	readable		
-exe	0x005a9bc0	ai_DomizilMessageResearchKind	unk_58bbd0	byte	readable		
-exe	0x005a9c30	ai_DomizilMessage	unk_58bbd0	byte	readable		
-exe	0x005a9ca0	ai_DomizilMessage04	unk_58bbd0	byte	readable		
-exe	0x005a9d00	ai_DomizilMessageAge	unk_58bbd0	byte	readable		
-exe	0x005a9d60	ai_DomizilMessageTask	unk_58bbd0	byte	readable		
-exe	0x005a9dd0	ai_DomizilMessagePlace	unk_58bbd0	byte	readable		
-exe	0x005a9e40	ai_DomizilMessage12	unk_58bbd0	byte	readable		
-exe	0x005a9e90	ai_Unk5a9e90	unk_58bbd0	draft	draft		
-exe	0x005a9f10	ai_DomizilGoodInRange	unk_58bbd0	shape	readable		
-exe	0x005a9f80	ai_Unk5a9f80	unk_58bbd0	draft	draft		
-exe	0x005aa0d0	ai_Unk5aa0d0	unk_58bbd0	draft	draft		
-exe	0x005aa1f0	ai_Unk5aa1f0	unk_58bbd0	draft	draft		
-exe	0x005aa4b0	ai_DomizilFreeRow	unk_58bbd0	byte	readable		
-exe	0x005aa520	ai_Unk5aa520	unk_58bbd0	draft	draft		
-exe	0x005aa700	ai_Unk5aa700	unk_58bbd0	draft	draft		
-exe	0x005aa9a0	ai_Unk5aa9a0	unk_58bbd0	draft	draft		
-exe	0x005aab80	ai_PersonnelBook	unk_58bbd0	draft	draft		
-exe	0x005ac110	ai_MercenaryBook	unk_58bbd0	draft	draft		
-exe	0x005ad000	ai_Unk5ad000	unk_58bbd0	draft	draft		
-exe	0x005ad150	ai_PersonnelBookWindow	unk_58bbd0	draft	draft		
-exe	0x005ae240	ai_Unk5ae240	unk_58bbd0	draft	draft		
-exe	0x005ae570	ai_Unk5ae570	unk_58bbd0	draft	draft		
-exe	0x005ae6b0	ai_Unk5ae6b0	unk_58bbd0	draft	draft		
-exe	0x005ae870	ai_TransportOrderDue	unk_58bbd0	byte	readable		
-exe	0x005ae8e0	ai_Unk5ae8e0	unk_58bbd0	draft	draft		
-exe	0x005ae9a0	ai_Unk5ae9a0	unk_58bbd0	draft	draft		
-exe	0x005af010	ai_Unk5af010	unk_58bbd0	draft	draft		
-exe	0x005af1a0	ai_OpenTransport	unk_58bbd0	byte	readable		
-exe	0x005af1b0	ai_OpenTransportSell	unk_58bbd0	byte	readable		
-exe	0x005af1c0	ai_OpenTransportBuy	unk_58bbd0	byte	readable		
-exe	0x005af1d0	ai_TransportWindow	unk_58bbd0	draft	draft		
-exe	0x005b2090	ai_Unk5b2090	unk_58bbd0	draft	draft		
-exe	0x005b2180	ai_MapPick	unk_58bbd0	draft	draft		
-exe	0x005b2530	ai_Unk5b2530	unk_58bbd0	draft	draft		
-exe	0x005b26b0	ai_StorageWindow	unk_58bbd0	draft	draft		
-exe	0x005b3130	ai_FiveTextWindow	unk_58bbd0	draft	draft		
-exe	0x005b3630	ai_Unk5b3630	unk_58bbd0	draft	draft		
-exe	0x005b3ad0	ai_EspionageAmountCB	unk_58bbd0	draft	draft		
-exe	0x005b3f30	ai_Unk5b3f30	unk_58bbd0	draft	draft		
-exe	0x005b4340	ai_Unk5b4340	unk_58bbd0	draft	draft		
-exe	0x005b4590	ai_Unk5b4590	unk_58bbd0	draft	draft		
-exe	0x005b4820	ai_Unk5b4820	unk_58bbd0	draft	draft		
-exe	0x005b4bf0	ai_Unk5b4bf0	unk_58bbd0	draft	draft		
-exe	0x005b4c60	ai_DrohbriefAmountCB	unk_58bbd0	draft	draft		
-exe	0x005b4fb0	ai_DrohbriefWindow	unk_58bbd0	byte	readable		
-exe	0x005b5010	ai_DenounceWindow	unk_58bbd0	draft	draft		
-exe	0x005b5310	ai_Unk5b5310	unk_58bbd0	draft	draft		
-exe	0x005b5610	ai_PamphletWindow	unk_58bbd0	draft	draft		
-exe	0x005b5690	ai_Unk5b5690	unk_58bbd0	draft	draft		
-exe	0x005b5a20	ai_Unk5b5a20	unk_58bbd0	draft	draft		
-exe	0x005b5e80	ai_FeastWindow	unk_58bbd0	draft	draft		
-exe	0x005b6950	ai_Unk5b6950	unk_58bbd0	draft	draft		
-exe	0x005b6b20	ai_Unk5b6b20	unk_58bbd0	draft	draft		
-exe	0x005b6eb0	ai_Unk5b6eb0	unk_58bbd0	draft	draft		
-exe	0x005b6fe0	ai_Unk5b6fe0	unk_58bbd0	draft	draft		
-exe	0x005b7690	ai_Unk5b7690	unk_58bbd0	draft	draft		
-exe	0x005b7b80	ai_Unk5b7b80	unk_58bbd0	draft	draft		
-exe	0x005b7dd0	ai_Unk5b7dd0	unk_58bbd0	draft	draft		
-exe	0x005b82a0	ai_Unk5b82a0	unk_58bbd0	draft	draft		
-exe	0x005b84f0	ai_BuildingWindow	unk_58bbd0	draft	draft		
-exe	0x005b8fc0	ai_ManagedBuildingWindow	unk_58bbd0	draft	draft		
-exe	0x005b92e0	ai_LiquidateAssets	unk_58bbd0	draft	draft		
-exe	0x005b9730	ai_Unk5b9730	unk_58bbd0	draft	draft		
-exe	0x005b9db0	ai_Unk5b9db0	unk_58bbd0	draft	draft		
-exe	0x005b9f30	ai_GelageWindow	unk_58bbd0	draft	draft		
-exe	0x005ba1c0	ai_Unk5ba1c0	unk_58bbd0	draft	draft		
-exe	0x005ba290	ai_Unk5ba290	unk_58bbd0	draft	draft		
-exe	0x005ba600	ai_CloseChildWindow	unk_58bbd0	byte	readable		
-exe	0x005ba620	ai_FindUsableGood	unk_58bbd0	byte	readable		
-exe	0x005ba660	ai_FindUsableGoodIndex	unk_58bbd0	byte	readable		
-exe	0x005ba6b0	ai_InventoryHas	unk_58bbd0	byte	readable		
-exe	0x005ba700	ai_Unk5ba700	unk_58bbd0	draft	draft		
-exe	0x005ba750	ai_Unk5ba750	unk_58bbd0	draft	draft		
-exe	0x005ba980	ai_Unk5ba980	unk_58bbd0	draft	draft		
-exe	0x005bac10	ai_InventoryPanel	unk_58bbd0	draft	draft		
-exe	0x005bae10	ai_EquipRowsInit	unk_58bbd0	draft	readable	deep	
-exe	0x005bae50	ai_Unk5bae50	unk_58bbd0	draft	draft		
-exe	0x005bb2d0	ai_GoodFitsBuilding	unk_58bbd0	byte	readable		
-exe	0x005bb350	ai_EquipWindow	unk_58bbd0	draft	draft		
-exe	0x005bb950	ai_Unk5bb950	unk_58bbd0	draft	draft		
-exe	0x005bba00	ai_TrainingWindow	unk_58bbd0	draft	draft		
-exe	0x005bc0f0	ai_FreePicture	unk_58bbd0	byte	readable		
-exe	0x005bc110	ai_Unk5bc110	unk_58bbd0	draft	draft		
-exe	0x005bc420	ai_Unk5bc420	unk_58bbd0	draft	draft		
-exe	0x005bc6d0	ai_Unk5bc6d0	unk_58bbd0	draft	draft		
-exe	0x005bc790	ai_Unk5bc790	unk_58bbd0	draft	draft		
-exe	0x005bc9c0	ai_Unk5bc9c0	unk_58bbd0	draft	draft		
-exe	0x005bcc70	ai_PlayerStatsPanel	unk_58bbd0	draft	draft		
-exe	0x005bd060	ai_AmountLimit	unk_58bbd0	byte	readable		
-exe	0x005bd0c0	ai_CentredText	unk_58bbd0	byte	readable		
-exe	0x005bd190	ai_RightAlignedText	unk_58bbd0	byte	readable		
-exe	0x005bd1f0	ai_LeftAlignedText	unk_58bbd0	byte	readable		
-exe	0x005bd250	ai_ShowWindowRow	unk_58bbd0	byte	readable		
-exe	0x005bd330	ai_Unk5bd330	unk_58bbd0	draft	draft		
-exe	0x005bd470	ai_Unk5bd470	unk_58bbd0	draft	draft		
-exe	0x005bd5e0	ai_Unk5bd5e0	unk_58bbd0	draft	draft		
-exe	0x005bdb60	ai_Unk5bdb60	unk_58bbd0	draft	draft		
-exe	0x005be1d0	ai_AmountRowStatus	unk_58bbd0	draft	draft		
-exe	0x005be3b0	ai_AmountRow	unk_58bbd0	draft	draft		
-exe	0x005be720	ai_DrawAmountRow	unk_58bbd0	draft	draft		
-exe	0x005bea00	ai_SpecialAmountList	unk_58bbd0	shape	readable		
-exe	0x005bea50	ai_Unk5bea50	unk_58bbd0	draft	draft		
-exe	0x005bf0d0	ai_Unk5bf0d0	unk_58bbd0	draft	draft		
-exe	0x005bf300	ai_Unk5bf300	unk_58bbd0	draft	draft		
-exe	0x005bf4f0	ai_Unk5bf4f0	unk_58bbd0	draft	draft		
-exe	0x005bf6f0	ai_Unk5bf6f0	unk_58bbd0	draft	draft		
-exe	0x005bf7c0	ai_Unk5bf7c0	unk_58bbd0	draft	draft		
-exe	0x005bfa90	ai_Unk5bfa90	unk_58bbd0	draft	draft		
-exe	0x005bfc40	ai_Unk5bfc40	unk_58bbd0	draft	draft		
-exe	0x005bfd90	ai_Unk5bfd90	unk_58bbd0	draft	draft		
-exe	0x005bfed0	ai_AmountPageSwitch	unk_58bbd0	shape	readable		
-exe	0x005bff80	ai_EnableAmountRows	unk_58bbd0	byte	readable		
-exe	0x005bffb0	ai_Unk5bffb0	unk_58bbd0	draft	draft		
-exe	0x005c00b0	ai_Unk5c00b0	unk_58bbd0	draft	draft		
-exe	0x005c01c0	ai_Unk5c01c0	unk_58bbd0	draft	draft		
-exe	0x005c02d0	ai_Unk5c02d0	unk_58bbd0	draft	draft		
-exe	0x005c03e0	ai_Unk5c03e0	unk_58bbd0	draft	draft		
-exe	0x005c0550	ai_Unk5c0550	unk_58bbd0	draft	draft		
-exe	0x005c0650	ai_Unk5c0650	unk_58bbd0	draft	draft		
-exe	0x005c0790	ai_Unk5c0790	unk_58bbd0	draft	draft		
-exe	0x005c08b0	ai_ClearAmountTabs	unk_58bbd0	byte	readable		
-exe	0x005c08d0	ai_Unk5c08d0	unk_58bbd0	draft	draft		
-exe	0x005c0970	ai_SpecialAmountWindow	unk_58bbd0	draft	draft		
-exe	0x005c1130	ai_AmountMenu	unk_58bbd0	draft	draft		
-exe	0x005c1500	ai_AmountListWindow	unk_58bbd0	draft	draft		
-exe	0x005c1a80	ai_AmountInfoWindow	unk_58bbd0	byte	readable		
-exe	0x005c1b20	ai_OpenAmountKindMenu	unk_58bbd0	byte	readable		
-exe	0x005c1b40	ai_AmountKindMenu	unk_58bbd0	draft	draft		
-exe	0x005c1df0	ai_OpenAgendaMenu	unk_58bbd0	byte	readable		
-exe	0x005c1e10	ai_AgendaOfficeList	unk_58bbd0	draft	draft		
-exe	0x005c2160	ai_OpenLawBook	unk_58bbd0	draft	draft		
-exe	0x005c2410	ai_LawBookInfoWindow	unk_58bbd0	byte	readable		
-exe	0x005c2490	ai_Unk5c2490	unk_58bbd0	draft	draft		
-exe	0x005c26a0	ai_MasterLetterNoticeWindow	unk_58bbd0	byte	readable		
-exe	0x005c2730	ai_MasterLetterKindWindow	unk_58bbd0	byte	readable		
-exe	0x005c27b0	ai_Unk5c27b0	unk_58bbd0	draft	draft		
-exe	0x005c2a10	ai_Unk5c2a10	unk_58bbd0	draft	draft		
-exe	0x005c2b90	ai_Unk5c2b90	unk_58bbd0	draft	draft		
-exe	0x005c3200	ai_MasterLetterWindow	unk_58bbd0	draft	draft		
-exe	0x005c33c0	ai_PassesPartnerFilter	unk_58bbd0	draft	draft		
-exe	0x005c37a0	ai_PassesBuildingFilter	unk_58bbd0	draft	draft		
-exe	0x005c39a0	ai_Unk5c39a0	unk_58bbd0	draft	draft		
-exe	0x005c3bb0	ai_Unk5c3bb0	unk_58bbd0	draft	draft		
-exe	0x005c4100	ai_Unk5c4100	unk_58bbd0	draft	draft		
-exe	0x005c4150	ai_FamilyTreeWindow	unk_58bbd0	draft	draft		
-exe	0x005c5310	ai_Unk5c5310	unk_58bbd0	draft	draft		
-exe	0x005c6050	ai_Unk5c6050	unk_58bbd0	draft	draft		
-exe	0x005c64c0	ai_FindCandidateIds	unk_58bbd0	shape	readable		
-exe	0x005c6530	ai_MarriageTest	unk_58bbd0	byte	readable		
-exe	0x005c6620	ai_CourtshipRounds	unk_58bbd0	draft	draft		
-exe	0x005c6910	ai_Unk5c6910	unk_58bbd0	draft	draft		
-exe	0x005c6aa0	ai_Unk5c6aa0	unk_58bbd0	draft	draft		
-exe	0x005c6d00	ai_OfficeApplication	unk_58bbd0	draft	draft		
-exe	0x005c72d0	ai_Unk5c72d0	unk_58bbd0	draft	draft		
-exe	0x005c7460	ai_Unk5c7460	unk_58bbd0	draft	draft		
-exe	0x005c7560	ai_Unk5c7560	unk_58bbd0	draft	draft		
-exe	0x005c76b0	ai_Unk5c76b0	unk_58bbd0	draft	draft		
-exe	0x005c7800	ai_Unk5c7800	unk_58bbd0	draft	draft		
-exe	0x005c7970	ai_Unk5c7970	unk_58bbd0	draft	draft		
-exe	0x005c7f00	ai_CityStatsPanel	unk_58bbd0	draft	draft		
-exe	0x005c82f0	ai_PlayerComparePanel	unk_58bbd0	draft	draft		
-exe	0x005c8640	ai_PrivilegesPanel	unk_58bbd0	draft	draft		
-exe	0x005c8bc0	ai_MedicusHandler	unk_58bbd0	draft	draft		
-exe	0x005c8ef0	ai_Unk5c8ef0	unk_58bbd0	draft	draft		
-exe	0x005c9290	ai_Unk5c9290	unk_58bbd0	draft	draft		
-exe	0x005c9550	ai_BlackmailBuildingListener	unk_58bbd0	draft	draft		
-exe	0x005c9990	ai_Unk5c9990	unk_58bbd0	draft	draft		
-exe	0x005c9c50	ai_BlackmailContact	unk_58bbd0	draft	draft		
-exe	0x005c9df0	ai_Unk5c9df0	unk_58bbd0	draft	draft		
-exe	0x005c9ff0	ai_BlackmailContactVariant	unk_58bbd0	draft	draft		
-exe	0x005ca150	ai_LawPrivilegeWindow	unk_58bbd0	draft	draft		
-exe	0x005ca560	ai_EmbezzlementPrivilege	unk_58bbd0	draft	draft		
-exe	0x005ca860	ai_MisappropriationWindow	unk_58bbd0	draft	draft		
-exe	0x005caab0	ai_Unk5caab0	unk_58bbd0	draft	draft		
-exe	0x005cacd0	ai_EmbezzlementContract	unk_58bbd0	draft	draft		
-exe	0x005cae00	ai_CounterEspionage	unk_58bbd0	draft	draft		
-exe	0x005cb1e0	ai_CounterEspionageOfficeSwap	unk_58bbd0	byte	readable		
-exe	0x005cb250	ai_CounterEspionageWindow	unk_58bbd0	draft	draft		
-exe	0x005cb4f0	ai_EspionageWindow	unk_58bbd0	draft	draft		
-exe	0x005cba90	ai_EspionagePayment	unk_58bbd0	draft	draft		
-exe	0x005cbe00	ai_EspionageOrderHandler	unk_58bbd0	draft	draft		
-exe	0x005cc2b0	ai_EspionageRelation	unk_58bbd0	draft	draft		
-exe	0x005cc700	ai_EspionagePayment2	unk_58bbd0	draft	draft		
-exe	0x005cca40	ai_EspionageAmountWindow	unk_58bbd0	draft	draft		
-exe	0x005ccc10	ai_Unk5ccc10	unk_58bbd0	draft	draft		
-exe	0x005cd2e0	ai_EspionageOverviewHandler	unk_58bbd0	draft	draft		
-exe	0x005cd400	ai_EspionageResult	unk_58bbd0	draft	draft		
-exe	0x005cd8c0	ai_Unk5cd8c0	unk_58bbd0	draft	draft		
-exe	0x005cdb90	ai_Unk5cdb90	unk_58bbd0	draft	draft		
-exe	0x005cde90	ai_SpyTargetHandler	unk_58bbd0	draft	draft		
-exe	0x005ce1a0	ai_SpyTargetFlagHandler	unk_58bbd0	draft	draft		
-exe	0x005ce4b0	ai_Unk5ce4b0	unk_58bbd0	draft	draft		
-exe	0x005ce610	ai_InterrogationWindow	unk_58bbd0	draft	draft		
-exe	0x005ce7f0	ai_WorkerDismissalWindow	unk_58bbd0	draft	draft		
-exe	0x005ce950	ai_DismissalHandler	unk_58bbd0	draft	draft		
-exe	0x005ced50	ai_SendInterrogationRefusal	unk_58bbd0	byte	readable		
-exe	0x005cede0	ai_InterrogationWindow1	unk_58bbd0	draft	draft		
-exe	0x005cf020	ai_InterrogationWindow2	unk_58bbd0	draft	draft		
-exe	0x005cf260	ai_Unk5cf260	unk_58bbd0	draft	draft		
-exe	0x005cf4f0	ai_Unk5cf4f0	unk_58bbd0	draft	draft		
-exe	0x005cf820	ai_UseObjPanel	unk_58bbd0	byte	readable		
-exe	0x005cf8a0	ai_UseGood	unk_58bbd0	draft	draft		
-exe	0x005cfb60	ai_UseGoodAddMoney	unk_58bbd0	byte	readable		
-exe	0x005cfb80	ai_UseGoodHeal	unk_58bbd0	byte	readable		
-exe	0x005cfc00	ai_Unk5cfc00	unk_58bbd0	draft	draft		
-exe	0x005cff70	ai_Unk5cff70	unk_58bbd0	draft	draft		
-exe	0x005d0320	ai_Unk5d0320	unk_58bbd0	draft	draft		
-exe	0x005d0530	ai_Unk5d0530	unk_58bbd0	draft	draft		
-exe	0x005d06e0	ai_UseGoodCureAilment	unk_58bbd0	byte	readable		
-exe	0x005d0780	ai_Unk5d0780	unk_58bbd0	draft	draft		
-exe	0x005d08c0	ai_ApplyTrialStep	unk_58bbd0	draft	draft		
-exe	0x005d09d0	ai_TrialStep1	unk_58bbd0	shape	readable		
-exe	0x005d0a40	ai_TrialStep3	unk_58bbd0	shape	readable		
-exe	0x005d0ab0	ai_TrialStep4	unk_58bbd0	shape	readable		
-exe	0x005d0b20	ai_Unk5d0b20	unk_58bbd0	draft	draft		
-exe	0x005d0c70	ai_Unk5d0c70	unk_58bbd0	draft	draft		
-exe	0x005d0e60	ai_Unk5d0e60	unk_58bbd0	draft	draft		
-exe	0x005d0f20	ai_Unk5d0f20	unk_58bbd0	draft	draft		
-exe	0x005d1300	ai_Unk5d1300	unk_58bbd0	draft	draft		
-exe	0x005d13e0	ai_Unk5d13e0	unk_58bbd0	draft	draft		
-exe	0x005d1680	ai_Unk5d1680	unk_58bbd0	draft	draft		
-exe	0x005d1830	ai_Unk5d1830	unk_58bbd0	draft	draft		
-exe	0x005d18c0	ai_Unk5d18c0	unk_58bbd0	draft	draft		
-exe	0x005d1990	ai_Unk5d1990	unk_58bbd0	draft	draft		
-exe	0x005d1b30	ai_Unk5d1b30	unk_58bbd0	draft	draft		
-exe	0x005d1da0	ai_Unk5d1da0	unk_58bbd0	draft	draft		
-exe	0x005d1fb0	ai_Unk5d1fb0	unk_58bbd0	draft	draft		
-exe	0x005d22e0	ai_UsePayGood	unk_58bbd0	byte	readable		
-exe	0x005d2320	ai_Unk5d2320	unk_58bbd0	draft	draft		
-exe	0x005d2440	ai_Unk5d2440	unk_58bbd0	draft	draft		
-exe	0x005d2580	ai_Unk5d2580	unk_58bbd0	draft	draft		
-exe	0x005d2720	ai_Unk5d2720	unk_58bbd0	draft	draft		
-exe	0x005d2960	ai_Unk5d2960	unk_58bbd0	draft	draft		
-exe	0x005d2bc0	ai_Unk5d2bc0	unk_58bbd0	draft	draft		
-exe	0x005d2e80	ai_Unk5d2e80	unk_58bbd0	draft	draft		
-exe	0x005d2f20	ai_UseEventGood	unk_58bbd0	shape	readable		
-exe	0x005d2f90	ai_Unk5d2f90	unk_58bbd0	draft	draft		
-exe	0x005d3030	ai_Unk5d3030	unk_58bbd0	draft	draft		
-exe	0x005d31c0	ai_Unk5d31c0	unk_58bbd0	draft	draft		
-exe	0x005d3270	ai_Unk5d3270	unk_58bbd0	draft	draft		
-exe	0x005d33b0	ai_ListFiles	unk_5d33b0	byte	readable		
-exe	0x005d34b0	ai_FilePickWindow	unk_5d33b0	shape	readable		
-exe	0x005d3810	ai_MessageBox	unk_5d33b0	draft	draft	deep	
-exe	0x005d3a00	ai_RegisterSaveSlot	unk_5d33b0	draft	draft	deep	
-exe	0x005d3ab0	ai_FillSaveSlots	unk_5d33b0	draft	readable	deep	
-exe	0x005d4080	ai_LoadGameWindow	unk_5d33b0	shape	readable		
-exe	0x005d42b0	ai_JoinGameWindow	unk_5d33b0	shape	readable		
-exe	0x005d44c0	ai_EditText	unk_5d33b0	shape	readable		
-exe	0x005d45d0	ai_SaveOptionWindow	unk_5d33b0	draft	readable	deep	
-exe	0x005d4920	ai_SaveNameWindow	unk_5d33b0	draft	readable	deep	
-exe	0x005d4c70	ai_SaveOptions	unk_5d33b0	byte	readable		
-exe	0x005d5640	ai_LoadOptions	unk_5d33b0	draft	readable	deep	
-exe	0x005d5c40	ai_ApplyGfxOptions	unk_5d33b0	draft	draft	deep	
-exe	0x005d5e90	ai_ApplyOptions	unk_5d33b0	byte	readable		
-exe	0x005d5f10	ai_ApplyVolumes	unk_5d33b0	byte	readable		
-exe	0x005d5fd0	ai_OptionsGfxScreen	unk_5d33b0	draft	readable	deep	
-exe	0x005d6580	ai_OptionsSfxScreen	unk_5d33b0	byte	readable		
-exe	0x005d6950	ai_OptionsGameScreen	unk_5d33b0	shape	readable		
-exe	0x005d6f40	ai_MenuButton	unk_5d33b0	byte	readable		
-exe	0x005d6fa0	ai_LeaveGameScreen	unk_5d33b0	byte	readable		
-exe	0x005d7080	ai_ResumeGameScreen	unk_5d33b0	byte	readable		
-exe	0x005d7160	ai_Screenshot	unk_5d33b0	shape	readable		
-exe	0x005d7320	ai_LoadScreenImage	unk_5d33b0	byte	readable		
-exe	0x005d73e0	ai_HasQuicksavePlayer	unk_5d33b0	draft	draft	deep	
-exe	0x005d7430	ai_Quicksave	unk_5d33b0	byte	readable		
-exe	0x005d7530	ai_SaveNetworkGame	unk_5d33b0	draft	readable	deep	
-exe	0x005d7770	ai_OptionsMenu	unk_5d33b0	byte	readable		
-exe	0x005d7ba0	ai_CreditsScreen	unk_5d33b0	byte	readable		
-exe	0x005d7e90	ai_PauseGame	unk_5d33b0	byte	readable		
-exe	0x005d7f10	ai_MessageFilterScreen	unk_5d33b0	draft	readable	deep	
-exe	0x005d8080	ai_TailorChatWindow	unk_5d33b0	byte	readable		
-exe	0x005d8360	ai_TailorContact	unk_5d33b0	byte	readable		
-exe	0x005d8420	ai_ProductionContact	unk_5d33b0	shape	readable		
-exe	0x005d85e0	ai_BloodRevengeWindow	unk_5d33b0	draft	readable	deep	
-exe	0x005d8c90	ai_CurseWindow	unk_5d33b0	shape	readable		
-exe	0x005d90e0	ai_CurseTargetWindow	unk_5d33b0	draft	readable	deep	
-exe	0x005d95a0	ai_HomageWindow	unk_5d33b0	shape	readable	deep	
-exe	0x005d9890	ai_GypsyBeggingWindow	unk_5d33b0	byte	readable		
-exe	0x005d9a80	ai_GypsyContact	unk_5d33b0	byte	readable		
-exe	0x005d9b20	ai_CurseContact	unk_5d33b0	byte	readable		
-exe	0x005d9b90	ai_TheatreContact	unk_5d33b0	byte	readable		
-exe	0x005d9c30	ai_GypsyProductionContact	unk_5d33b0	byte	readable		
-exe	0x005d9de0	ai_OpenPokerWindow	unk_5d33b0	draft	readable	deep	
-exe	0x005d9f50	ai_PokerBetControl	unk_5d33b0	byte	readable		
-exe	0x005da010	ai_ClosePokerWindow	unk_5d33b0	byte	readable		
-exe	0x005da030	ai_PokerGame	unk_5d33b0	shape	readable	deep	
-exe	0x005dadf0	ai_PokerSeatPanel	unk_5d33b0	shape	readable	deep	
-exe	0x005db110	ai_PokerWindow2	unk_5d33b0	byte	readable		
-exe	0x005dbc10	ai_GetDefaultEffect	unk_5d33b0	byte	readable		
-exe	0x005dbc20	ai_GetDefaultEffectScale	unk_5d33b0	byte	readable		
-exe	0x005dbc30	ai_InitWind	unk_5d33b0	byte	readable		
-exe	0x005dbed0	ai_UpdateWind	unk_5d33b0	byte	readable		
-exe	0x005dbfc0	ai_SaveWind	unk_5d33b0	byte	readable		
-exe	0x005dc0c0	ai_LoadWind	unk_5d33b0	byte	readable		
-exe	0x005dc1a0	ai_SphereVolume	unk_5d33b0	byte	readable		
-exe	0x005dc210	ai_PositionShare	unk_5d33b0	byte	readable		
-exe	0x005dc240	ai_InitShot	unk_5d33b0	draft	readable	deep	
-exe	0x005dc3a0	ai_ScatterShot	unk_5d33b0	draft	readable	deep	
-exe	0x005dc4a0	ai_StepShot	unk_5d33b0	draft	readable	deep	
-exe	0x005dc9d0	ai_StepShotSlow	unk_5d33b0	draft	readable	deep	
-exe	0x005dcf00	ai_ShotHitsGround	unk_5d33b0	draft	readable	deep	
-exe	0x005dd090	ai_NormalizeEffectScale	unk_5d33b0	draft	readable	deep	
-exe	0x005dd100	ai_SolveCannonAim	unk_5d33b0	shape	readable		
+exe	0x00575860	ai_TutorialTick	sv_t	byte	readable		
+exe	0x00576020	unk_ClearEndGameGate	sv_t	byte	readable		
+exe	0x00576030	unk_SetEndGameGate	sv_t	byte	readable		
+exe	0x00576040	ai_CampaignStep	sv_t	draft	readable	deep	
+exe	0x00576340	ai_ScriptQuery	sv_t	byte	readable		
+exe	0x005763c0	ai_RunAllows	sv_t	byte	readable		
+exe	0x00576410	ai_RunAllowsContact	sv_t	byte	readable		
+exe	0x00576460	ai_RunAllowsWindow	sv_t	byte	readable		
+exe	0x00576490	ai_TutorialQueryDefault	sv_t	byte	readable		
+exe	0x005764b0	ai_QueryDefault	sv_t	byte	readable		
+exe	0x00576500	ai_QueryBuilding0f	sv_t	byte	readable		
+exe	0x00576590	ai_QueryChapter2Step3	sv_t	byte	readable		
+exe	0x005765e0	ai_QueryChapter2Step4	sv_t	byte	readable		
+exe	0x00576600	ai_QueryChapter2Step5	sv_t	byte	readable		
+exe	0x00576640	ai_QueryChapter2Step6	sv_t	byte	readable		
+exe	0x00576680	ai_QueryChapter2Step7	sv_t	byte	readable		
+exe	0x005766d0	ai_StepChapter1Step5	sv_t	byte	readable		
+exe	0x005767d0	ai_StepChapter1Step10	sv_t	byte	readable		
+exe	0x00576830	ai_StepChapter2Step1	sv_t	byte	readable		
+exe	0x005768a0	ai_HookChapter2Step2	sv_t	byte	readable		
+exe	0x005768d0	ai_StepChapter2Step2	sv_t	byte	readable		
+exe	0x00576920	ai_StepChapter2Step3	sv_t	byte	readable		
+exe	0x00576970	ai_StepChapter2Step4	sv_t	byte	readable		
+exe	0x005769c0	ai_StepChapter2Step5	sv_t	byte	readable		
+exe	0x00576a80	ai_HookChapter2Step5	sv_t	byte	readable		
+exe	0x00576ab0	ai_StepChapter2Step6	sv_t	byte	readable		
+exe	0x00576b50	ai_StepChapter2Step7	sv_t	byte	readable		
+exe	0x00576ba0	ai_StepChapter4Step2	sv_t	byte	readable		
+exe	0x00576cd0	ai_QueryChapter4Step2	sv_t	byte	readable		
+exe	0x00576d40	ai_StepChapter4Step4	sv_t	byte	readable		
+exe	0x00576e70	ai_QueryChapter4Step4	sv_t	byte	readable		
+exe	0x00576ee0	ai_StepChapter4Step5	sv_t	byte	readable		
+exe	0x00577020	ai_QueryChapter4Step5	sv_t	byte	readable		
+exe	0x005770a0	ai_HookChapter4Step	sv_t	byte	readable		
+exe	0x005770e0	ai_QueryChapter3Step2	sv_t	byte	readable		
+exe	0x00577110	ai_HookChapter3Step2	sv_t	byte	readable		
+exe	0x005771b0	ai_QueryChapter3Step6	sv_t	byte	readable		
+exe	0x00577230	ai_HookChapter5Step2	sv_t	byte	readable		
+exe	0x00577290	ai_QueryChapter5Step2	sv_t	byte	readable		
+exe	0x005772d0	ai_MarkerChapter5Step2	sv_t	byte	readable		
+exe	0x00577320	ai_MarkerChapter3Step6	sv_t	byte	readable		
+exe	0x00577330	ai_QueryChapter3Step8	sv_t	byte	readable		
+exe	0x005773f0	ai_MarkerChapter3Step8	sv_t	byte	readable		
+exe	0x00577450	ai_QueryChapter3Step10	sv_t	byte	readable		
+exe	0x00577490	ai_StepShownChapter3Step4	sv_t	byte	readable		
+exe	0x005774d0	ai_HookChapter3Intro	sv_t	byte	readable		
+exe	0x00577540	ai_HookChapter5Intro	sv_t	byte	readable		
+exe	0x005775c0	ai_HookChapter5Step4	sv_t	byte	readable		
+exe	0x00577610	ai_HookChapter5Step5	sv_t	byte	readable		
+exe	0x00577690	ai_HookChapter5Step6	sv_t	shape	readable		
+exe	0x00577740	ai_TutorialOpenIntro	sv_t	byte	readable		
+exe	0x00577820	ai_TutorialCloseIntro	sv_t	byte	readable		
+exe	0x00577850	ai_TutorialClearRunWindow	sv_t	byte	readable		
+exe	0x005778b0	ai_TutorialShowRunText	sv_t	byte	readable		
+exe	0x00577a00	ai_TutorialIntroAnswered	sv_t	shape	readable	deep	
+exe	0x00577a90	ai_TutorialShowText	sv_t	byte	readable		
+exe	0x00577b60	ai_TutorialHideText	sv_t	byte	readable		
+exe	0x00577b90	ai_TutorialShowText2	sv_t	byte	readable		
+exe	0x00577c60	ai_TutorialHideText2	sv_t	byte	readable		
+exe	0x00577cd0	ai_TutorialOpenProgress	sv_t	byte	readable		
+exe	0x00577d60	ai_TutorialCloseProgress	sv_t	byte	readable		
+exe	0x00577d90	ai_TutorialProgressSlider	sv_t	shape	readable	deep	
+exe	0x00577e50	ai_TutorialStepForm	sv_t	draft	readable	deep	
+exe	0x005780e0	ai_TutorialStepClicked	sv_t	byte	readable		
+exe	0x00578120	ai_TutorialSetHost	sv_t	byte	readable		
+exe	0x00578150	ai_TutorialClearHost	sv_t	byte	readable		
+exe	0x00578170	ai_TutorialOff	sv_t	byte	readable		
+exe	0x00578180	ai_TutorialStart	sv_t	byte	readable		
+exe	0x00578370	ai_TutorialStop	sv_t	byte	readable		
+exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
+exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
+exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
+exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
+exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
+exe	0x0057b810	ai_TutorialBezier	sv_t	shape	readable		
+exe	0x0057b8a0	ai_TutorialMarkerUpdate	sv_t	shape	readable		
+exe	0x0057bc30	ai_SetupTutorialPlayer	sv_t	shape	readable		
+exe	0x0057bce0	ai_TutorialWindow	sv_t	shape	readable	deep	
+exe	0x0057bf00	ai_AlchemistCandidates	sv_t	draft	readable	deep	
+exe	0x0057c560	ai_AlchemistHire	sv_t	byte	readable		
+exe	0x0057c690	ai_AlchemistResearchWindow	sv_t	draft	readable	deep	
+exe	0x0057cde0	ai_AlchemistSendRecipeResearch	sv_t	draft	readable	deep	
+exe	0x0057ced0	ai_AlchemistSendResearchStart	sv_t	draft	readable	deep	
+exe	0x0057cf90	ai_AlchemistWindow	sv_t	draft	readable	deep	
+exe	0x0057dc50	ai_AlchemistTrainShareWindow	sv_t	draft	readable	deep	
+exe	0x0057de60	ai_AlchemistFundWindow	sv_t	shape	readable	deep	
+exe	0x0057e0e0	ai_AlchemistRescheduleWindow	sv_t	byte	readable		
+exe	0x0057e230	ai_ShotTableStore	sv_t	byte	readable		
+exe	0x0057e270	ai_CannonScene	sv_t	draft	readable	deep	
+exe	0x0057ec40	ai_CannonAim	sv_t	draft	readable	deep	
+exe	0x0057f0e0	ai_CannonCamera	sv_t	draft	readable	deep	
+exe	0x0057f5d0	ai_CannonAxes	sv_t	byte	readable		
+exe	0x0057f620	ai_CannonFireCheck	sv_t	byte	readable		
+exe	0x0057f690	ai_CannonShotResults	sv_t	byte	readable		
+exe	0x0057f890	ai_CannonPanel	sv_t	byte	readable		
+exe	0x0057fdb0	ai_CannonPitchRatio	sv_t	byte	readable		
+exe	0x0057fdd0	ai_CannonSwitchAnim	sv_t	draft	readable	deep	
+exe	0x00580160	ai_CannonExplosion	sv_t	draft	readable	deep	
+exe	0x00580a50	ai_ShotTableReset	sv_t	byte	readable		
+exe	0x00580a90	ai_CannonBuildPanel	sv_t	draft	readable	deep	
+exe	0x00580fe0	ai_CanSpyOn	sv_t	byte	readable		
+exe	0x00581020	ai_CabinetSpyWindow	sv_t	shape	readable		
+exe	0x00581400	ai_CabinetSpyOnCharacter	sv_t	shape	readable		
+exe	0x00581950	ai_CabinetSpyByMoney	sv_t	shape	readable		
+exe	0x00581db0	ai_CabinetIntrigueWindow	sv_t	draft	readable	deep	
+exe	0x005821d0	ai_AlchemistLabContact	sv_t	byte	readable		
+exe	0x005823b0	ai_UnlockRoomWindow	sv_t	byte	readable		
+exe	0x00582560	ai_CannonContact	sv_t	byte	readable		
+exe	0x00582600	ai_CabinetContact	sv_t	byte	readable		
+exe	0x00582730	ai_GraveSizeButtons	sv_t	byte	readable		
+exe	0x005828c0	ai_GraveList	sv_t	byte	readable		
+exe	0x00582b40	ai_GraveDetail	sv_t	draft	readable	deep	
+exe	0x005830f0	ai_GraveDeadName	sv_t	byte	readable		
+exe	0x00583150	ai_GraveDeadDescription	sv_t	byte	readable		
+exe	0x00583240	ai_GraveWindow	sv_t	draft	readable	deep	
+exe	0x00583700	ai_RentGraveDetail	sv_t	draft	readable	deep	
+exe	0x00583b70	ai_GraveDetailOpen	sv_t	byte	readable		
+exe	0x00583c50	ai_GraveSizeButtonsAt	sv_t	byte	readable		
+exe	0x00583de0	ai_GraveFreeConfirm	sv_t	byte	readable		
+exe	0x00583ef0	ai_GraveSizeEnable	sv_t	byte	readable		
+exe	0x00584010	ai_GraveMoveConfirm	sv_t	byte	readable		
+exe	0x00584260	ai_GraveMoveWindow	sv_t	byte	readable		
+exe	0x00584410	ai_GraveDetailButtons	sv_t	byte	readable		
+exe	0x00584520	ai_GraveRentConfirm	sv_t	byte	readable		
+exe	0x005847a0	ai_RentGraveSelect	sv_t	byte	readable		
+exe	0x00584900	ai_GraveCare	sv_t	byte	readable		
+exe	0x00584b70	ai_GraveRaiseHelper	sv_t	byte	readable		
+exe	0x00584d70	ai_GypsyHelperWindow	sv_t	draft	draft	deep	
+exe	0x00585380	ai_GraveFogWindow	sv_t	shape	readable	deep	
+exe	0x00585750	ai_SeanceWindow	sv_t	byte	readable		
+exe	0x005859c0	ai_SeanceRitual	sv_t	shape	readable	deep	
+exe	0x00585c40	ai_SeanceRollFormulas	sv_t	byte	readable		
+exe	0x00585cb0	ai_SeanceGhost	sv_t	byte	readable		
+exe	0x00585f30	ai_SeanceSacrifice	sv_t	byte	readable		
+exe	0x00586200	ai_SeanceGift	sv_t	byte	readable		
+exe	0x00586560	ai_SeancePick	sv_t	byte	readable		
+exe	0x00586610	ai_GraveSeance	sv_t	byte	readable		
+exe	0x005867c0	ai_GraveyardSchlag	sv_t	byte	readable		
+exe	0x00586840	ai_GraveyardContact	sv_t	byte	readable		
+exe	0x00586ab0	ai_GraveHauntContact	sv_t	shape	readable		
+exe	0x00586e40	ai_GraveAgeContact	sv_t	shape	readable		
+exe	0x005871c0	ai_GravePlanContact	sv_t	byte	readable		
+exe	0x005871e0	ai_GraveRentContact	sv_t	byte	readable		
+exe	0x00587300	ai_GraveCareContact	sv_t	byte	readable		
+exe	0x00587340	ai_GraveHelperContact	sv_t	byte	readable		
+exe	0x00587370	ai_GraveInsuranceContact	sv_t	byte	readable		
+exe	0x00587560	ai_GraveyardTradeContact	sv_t	byte	readable		
+exe	0x005876a0	ai_GraveyardSeanceContact	sv_t	byte	readable		
+exe	0x00587700	ai_UpgradeWorkerSend	sv_t	byte	readable		
+exe	0x00587810	ai_UpgradeWorkerWindow	sv_t	byte	readable		
+exe	0x00587ad0	ai_GraveyardFogContact	sv_t	byte	readable		
+exe	0x00587b70	ai_PermissionBits1d	sv_t	shape	readable		
+exe	0x00587c40	ai_EndCharExtra	sv_t	byte	readable		
+exe	0x00587c90	ai_GraveyardChatter	sv_t	byte	readable		
+exe	0x00587de0	ai_ClearTurnTable	sv_t	byte	readable		
+exe	0x00587e00	ai_HandleItemDrag	sv_t	draft	readable	deep	
+exe	0x00588160	ai_OpenBuildingTooltip	sv_t	byte	readable		
+exe	0x00588310	ai_OpenItemTooltip	sv_t	draft	readable	deep	
+exe	0x00588950	ai_OpenUpgradeTooltip	sv_t	shape	readable		
+exe	0x00588bb0	ai_OpenHelpTooltip	sv_t	byte	readable		
+exe	0x00588c60	ai_OpenCharTooltip	sv_t	byte	readable		
+exe	0x005890c0	ai_CharInfoWindow	sv_t	byte	readable		
+exe	0x00589400	ai_ClearBookmark	sv_t	byte	readable		
+exe	0x00589410	ai_InitBookmarks	sv_t	byte	readable		
+exe	0x00589450	ai_ValidateBookmarks	sv_t	byte	readable		
+exe	0x005894d0	ai_SelectBookmark	sv_t	byte	readable		
+exe	0x00589570	ai_SetBookmark	sv_t	draft	readable	deep	
+exe	0x00589670	ai_BookmarkWindow	sv_t	shape	readable		
+exe	0x00589aa0	ai_SaveBookmarks	sv_t	byte	readable		
+exe	0x00589b30	ai_LoadBookmarks	sv_t	byte	readable		
+exe	0x00589bc0	ai_SaveScreenshot	sv_t	byte	readable		
+exe	0x00589c90	ai_SlotKeys	sv_t	byte	readable		
+exe	0x00589cf0	ai_SpeedKeys	sv_t	byte	readable		
+exe	0x00589e00	ai_BookmarkSetBuilding	sv_t	byte	readable		
+exe	0x00589e50	ai_BookmarksPreset	sv_t	byte	readable		
+exe	0x00589f10	lobby_Screen	lobby	draft	readable	deep	
+exe	0x0058a940	lobby_AddButtons	lobby	byte	draft	deep	
+exe	0x0058a9d0	lobby_AddChatScroll	lobby	byte	draft	deep	
+exe	0x0058aa30	lobby_ShowCity	lobby	draft	readable	deep	
+exe	0x0058aba0	lobby_ShowMyPlayer	lobby	draft	draft	deep	
+exe	0x0058ad20	lobby_FetchPlayers	lobby	shape	draft	deep	
+exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	draft	deep	
+exe	0x0058af50	lobby_ChoosePlayer	lobby	draft	readable	deep	
+exe	0x0058b880	lobby_ChooseProfession	lobby	draft	draft	deep	
+exe	0x0058ba70	lobby_ShowChat	lobby	draft	draft	deep	
+exe	0x0058bbd0	ai_Unk58bbd0	lc	draft	draft	deep	
+exe	0x0058bd60	ai_ProductionWindow	lc	draft	draft		
+exe	0x0058c680	ai_Unk58c680	lc	draft	draft		
+exe	0x0058cc10	ai_Unk58cc10	lc	draft	draft		
+exe	0x0058d720	ai_Unk58d720	lc	draft	draft		
+exe	0x0058dd00	ai_Unk58dd00	lc	draft	draft		
+exe	0x0058e130	ai_Unk58e130	lc	draft	draft	deep	
+exe	0x0058e440	ai_Unk58e440	lc	draft	draft	deep	
+exe	0x0058e6a0	ai_Unk58e6a0	lc	draft	draft		
+exe	0x0058ee30	ai_Unk58ee30	lc	draft	draft	deep	
+exe	0x0058f290	ai_Unk58f290	lc	draft	draft		
+exe	0x0058f510	ai_MarketContact	lc	byte	readable		
+exe	0x0058f620	ai_PumpFrames	lc	byte	readable		
+exe	0x0058f640	ai_BuildingName	lc	shape	readable	deep	
+exe	0x0058f6a0	ai_BauplatzFilter	lc	draft	readable	deep	
+exe	0x0058f7a0	ai_FindBauplaetze	lc	draft	draft	deep	
+exe	0x0058f920	ai_VgFilter	lc	byte	readable		
+exe	0x0058f980	ai_ShowVgObjects	lc	byte	readable		
+exe	0x0058fa20	ai_CheckBuildable	lc	byte	readable		
+exe	0x0058fb60	ai_CheckBuildSites	lc	byte	readable		
+exe	0x0058fba0	ai_FindBauplatz	lc	byte	readable		
+exe	0x0058fc40	lc_GetGebaeudeBauplatz	lc	draft	readable	deep	
+exe	0x0058fd40	ai_ObjectPosition	lc	byte	readable		
+exe	0x0058fd90	ai_ObjectAngle	lc	byte	readable		
+exe	0x0058fe10	ai_FindNearestObject	lc	shape	readable		
+exe	0x0058feb0	ai_DropObjectAt	lc	byte	readable		
+exe	0x0058ff00	ai_Unk58ff00	lc	draft	draft		
+exe	0x005909a0	ai_Unk5909a0	lc	draft	draft		
+exe	0x00591170	ai_HandleMapKey	lc	draft	draft		
+exe	0x005912c0	ai_TradeContactChecks	lc	draft	draft		
+exe	0x00591480	ai_CampaignKey1	lc	draft	readable	deep	
+exe	0x00591520	ai_GameFrame	lc	draft	draft		
+exe	0x00591ad0	ai_Unk591ad0	lc	draft	draft		
+exe	0x00591bf0	ai_TechTreeWindow	lc	draft	draft		
+exe	0x00592230	ai_UpgradeContact	lc	byte	readable		
+exe	0x00592290	ai_BookContact	lc	byte	readable		
+exe	0x00592320	ai_MercenaryBookContact	lc	byte	readable		
+exe	0x005923c0	ai_SearchResourceWindow	lc	draft	draft		
+exe	0x00592b90	ai_ExtractResourceWindow	lc	draft	draft		
+exe	0x00593150	ai_ProductionGoodsWindow	lc	draft	draft		
+exe	0x005938c0	ai_MiningContact	lc	byte	readable		
+exe	0x00593960	ai_KontorContact	lc	shape	readable		
+exe	0x00593b00	ai_Unk593b00	lc	draft	draft		
+exe	0x00593ca0	ai_StoneKontorContact	lc	shape	readable		
+exe	0x00593e80	ai_InformationContact	lc	byte	readable		
+exe	0x00593f40	ai_BreakInCallback	lc	draft	draft		
+exe	0x00594180	ai_BreakInWindow	lc	byte	readable		
+exe	0x005941c0	ai_PickpocketWindow	lc	draft	draft		
+exe	0x00594470	ai_OpenPickpocket	lc	byte	readable		
+exe	0x005944e0	ai_BribeCallback	lc	draft	draft		
+exe	0x00594790	ai_OpenBribe	lc	byte	readable		
+exe	0x00594810	ai_BriberyWindow	lc	draft	draft		
+exe	0x00594b10	ai_OpenSpying	lc	byte	readable		
+exe	0x00594bb0	ai_RaidWindow	lc	draft	draft		
+exe	0x00594db0	ai_OpenRaid	lc	byte	readable		
+exe	0x00594e50	ai_CriminalContact	lc	shape	readable		
+exe	0x005950e0	ai_FarTradeContact	lc	byte	readable		
+exe	0x00595170	ai_SmithyContact	lc	shape	readable		
+exe	0x00595330	ai_CarpenterContact	lc	shape	readable		
+exe	0x00595480	ai_TradeSearchWindow	lc	draft	draft		
+exe	0x00595a00	ai_AquariumSearchWindow	lc	draft	draft		
+exe	0x00595ed0	ai_PerfumeryContact	lc	shape	readable		
+exe	0x00596060	ai_IdleContact	lc	byte	readable		
+exe	0x00596080	ai_AquariumContact	lc	byte	readable		
+exe	0x00596120	ai_MixingContact	lc	shape	readable		
+exe	0x005962b0	ai_StonecutterContact	lc	shape	readable		
+exe	0x00596400	ai_Unk596400	lc	draft	draft		
+exe	0x005965f0	ai_RhetoricContact	lc	byte	readable		
+exe	0x005966f0	ai_FeastContact	lc	byte	readable		
+exe	0x005967c0	ai_Unk5967c0	lc	draft	draft		
+exe	0x00596ba0	ai_MistressWindow	lc	draft	draft		
+exe	0x00596f90	ai_MistressContact	lc	byte	readable		
+exe	0x00596ff0	ai_Unk596ff0	lc	draft	draft		
+exe	0x00597380	ai_EspionageAmountMenu	lc	byte	readable		
+exe	0x005973f0	ai_Unk5973f0	lc	draft	draft		
+exe	0x00597500	ai_Unk597500	lc	draft	draft		
+exe	0x005976a0	ai_TavernRulesWindow	lc	byte	readable		
+exe	0x00597780	ai_Unk597780	lc	draft	draft		
+exe	0x00597810	ai_Unk597810	lc	draft	draft		
+exe	0x00597920	ai_Unk597920	lc	draft	draft		
+exe	0x00597a10	ai_Unk597a10	lc	draft	draft		
+exe	0x00597e70	ai_Unk597e70	lc	draft	draft		
+exe	0x00598170	ai_Unk598170	lc	draft	draft		
+exe	0x00598b80	ai_StammtischWindow	lc	draft	draft		
+exe	0x00598dc0	ai_StammtischJoinWindow	lc	draft	draft		
+exe	0x00599240	ai_OpenStammtisch	lc	byte	readable		
+exe	0x005992c0	ai_DarkCornerMenu	lc	draft	draft		
+exe	0x005996b0	ai_DarkCornerBuy	lc	draft	draft		
+exe	0x00599aa0	ai_DarkCornerTable	lc	byte	readable		
+exe	0x00599af0	ai_Unk599af0	lc	draft	draft		
+exe	0x00599cb0	ai_BreweryContact	lc	shape	readable		
+exe	0x00599e00	ai_Unk599e00	lc	draft	draft		
+exe	0x00599ef0	ai_Unk599ef0	lc	draft	draft		
+exe	0x0059a2c0	ai_Unk59a2c0	lc	draft	draft		
+exe	0x0059a3c0	ai_Unk59a3c0	lc	draft	draft		
+exe	0x0059a560	ai_Unk59a560	lc	draft	draft		
+exe	0x0059a710	ai_MarketStandWindow	lc	byte	readable		
+exe	0x0059a800	ai_Unk59a800	lc	draft	draft		
+exe	0x0059aae0	ai_WineCellarWindow	lc	draft	draft		
+exe	0x0059ad00	ai_WineCellarContact	lc	byte	readable		
+exe	0x0059ad60	ai_Unk59ad60	lc	draft	draft		
+exe	0x0059b030	ai_Unk59b030	lc	draft	draft		
+exe	0x0059b160	ai_CreditListWindow	lc	draft	draft		
+exe	0x0059b630	ai_Unk59b630	lc	draft	draft		
+exe	0x0059b880	ai_Unk59b880	lc	draft	draft		
+exe	0x0059bad0	ai_CreditGiverWindow	lc	draft	draft		
+exe	0x0059be90	ai_Unk59be90	lc	draft	draft		
+exe	0x0059c120	ai_Unk59c120	lc	draft	draft		
+exe	0x0059c450	ai_Unk59c450	lc	draft	draft		
+exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	byte	readable		
+exe	0x0059c6e0	ai_UsedRecordCount	lc	byte	readable		
+exe	0x0059c700	ai_ExchangeWindow	lc	draft	draft		
+exe	0x0059d2d0	ai_Unk59d2d0	lc	draft	draft		
+exe	0x0059d410	ai_Unk59d410	lc	draft	draft		
+exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	draft	draft		
+exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	draft	draft		
+exe	0x0059df10	ai_FortuneOverview	lc	byte	readable		
+exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable		
+exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
+exe	0x0059e170	ai_Unk59e170	lc	draft	draft		
+exe	0x0059e210	ai_Unk59e210	lc	draft	draft		
+exe	0x0059e420	ai_Unk59e420	lc	draft	draft		
+exe	0x0059ee40	ai_Unk59ee40	lc	draft	draft		
+exe	0x0059f410	ai_Unk59f410	lc	draft	draft		
+exe	0x0059f9a0	ai_BuyBuildingWindow	lc	draft	draft		
+exe	0x0059fbf0	ai_GuildCashWindow	lc	byte	readable		
+exe	0x0059fca0	ai_TownCashContact	lc	byte	readable		
+exe	0x0059fd30	ai_TownHallContact	lc	byte	readable		
+exe	0x0059fe40	ai_CitizenRightWindow	lc	draft	draft		
+exe	0x005a0220	ai_Unk5a0220	lc	draft	draft		
+exe	0x005a0590	ai_OfficeApplicationWindow	lc	draft	draft		
+exe	0x005a07d0	ai_LawBookContact	lc	byte	readable		
+exe	0x005a0950	ai_GuildCashPayWindow	lc	draft	draft		
+exe	0x005a0ca0	ai_Unk5a0ca0	lc	draft	draft		
+exe	0x005a0f10	ai_OfficeApplyEntry	lc	draft	draft		
+exe	0x005a1000	ai_GuildLevel1Window	lc	draft	draft		
+exe	0x005a13f0	ai_GuildLevel3RequestCB	lc	shape	readable		
+exe	0x005a1530	ai_GuildLevel2RequestCB	lc	shape	readable		
+exe	0x005a1670	ai_GuildLevel3PowerCB	lc	shape	readable		
+exe	0x005a17b0	ai_GuildLevel3Entry	lc	draft	draft		
+exe	0x005a18d0	ai_GuildLevel2Listener	lc	byte	readable		
+exe	0x005a1960	ai_GuildLevel3Listener	lc	byte	readable		
+exe	0x005a1a60	ai_GuildLevel1Listener	lc	byte	readable		
+exe	0x005a1af0	ai_DonationWindow	lc	draft	draft		
+exe	0x005a1f70	ai_IndulgenceWindow	lc	draft	draft		
+exe	0x005a23a0	ai_BaptismWindow	lc	draft	draft		
+exe	0x005a28f0	ai_Top5Window	lc	draft	draft		
+exe	0x005a2b60	ai_ConfessionWindow	lc	draft	draft		
+exe	0x005a2de0	ai_ConfessionListener	lc	byte	readable		
+exe	0x005a2e60	ai_SermonWindow	lc	draft	draft		
+exe	0x005a36c0	ai_ProductionWriteContact	lc	shape	readable		
+exe	0x005a3810	ai_ChurchListener	lc	shape	readable		
+exe	0x005a39b0	ai_ChurchContact	lc	byte	readable		
+exe	0x005a3a40	ai_DungeonPlanWindow	lc	shape	readable		
+exe	0x005a3b20	ai_DungeonContact	lc	byte	readable		
+exe	0x005a3b90	ai_Unk5a3b90	lc	draft	draft		
+exe	0x005a3df0	ai_Unk5a3df0	lc	draft	draft		
+exe	0x005a3ef0	ai_DungeonEmptyListener	lc	byte	readable		
+exe	0x005a3f10	ai_BurglaryWindow	lc	draft	draft		
+exe	0x005a4130	ai_BurglaryStart	lc	shape	readable		
+exe	0x005a41d0	ai_Unk5a41d0	lc	draft	draft		
+exe	0x005a44e0	ai_EspionageStart	lc	draft	draft		
+exe	0x005a45c0	ai_SpyRingWindow	lc	draft	draft		
+exe	0x005a48d0	ai_AttackWindow	lc	draft	draft		
+exe	0x005a4b30	ai_AttackStart	lc	byte	readable		
+exe	0x005a4b90	ai_PickpocketVictimWindow	lc	draft	draft		
+exe	0x005a4d40	ai_ThievesGuildListener	lc	shape	readable		
+exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable		
+exe	0x005a4f70	ai_StorageContact	lc	shape	readable		
+exe	0x005a5080	ai_TrainingContact	lc	byte	readable		
+exe	0x005a5120	ai_Unk5a5120	lc	draft	draft		
+exe	0x005a53e0	ai_KidnapStart	lc	draft	draft		
+exe	0x005a5530	ai_RansomWindow	lc	draft	draft		
+exe	0x005a5910	ai_KidnapAttempt	lc	draft	draft		
+exe	0x005a5bc0	ai_KidnapContact	lc	byte	readable		
+exe	0x005a5d70	ai_CityWatchWindow	lc	draft	draft		
+exe	0x005a5f60	ai_PatrolStart	lc	byte	readable		
+exe	0x005a5fd0	ai_CityWatchCrewWindow	lc	draft	draft		
+exe	0x005a61f0	ai_RaidStart	lc	byte	readable		
+exe	0x005a6270	ai_WatchSearchWindow	lc	draft	draft		
+exe	0x005a6480	ai_WatchPlanStart	lc	byte	readable		
+exe	0x005a64d0	ai_ArrestWindow	lc	draft	draft		
+exe	0x005a6720	ai_ArrestStart	lc	byte	readable		
+exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable		
+exe	0x005a6920	ai_GuildHallListener	lc	shape	readable		
+exe	0x005a6a90	ai_Unk5a6a90	lc	draft	draft		
+exe	0x005a6b50	ai_FormatCityName	lc	byte	readable		
+exe	0x005a6b70	ai_Unk5a6b70	lc	draft	draft		
+exe	0x005a6c40	ai_PlaceMapControls	lc	byte	readable		
+exe	0x005a6cb0	ai_Unk5a6cb0	lc	draft	draft		
+exe	0x005a78a0	ai_Unk5a78a0	lc	draft	draft		
+exe	0x005a79e0	ai_Unk5a79e0	lc	draft	draft		
+exe	0x005a7bc0	ai_Unk5a7bc0	lc	draft	draft		
+exe	0x005a7cd0	ai_Unk5a7cd0	lc	draft	draft		
+exe	0x005a82f0	ai_CloseMapWindow	lc	byte	readable		
+exe	0x005a8340	ai_SettingRandom	lc	byte	readable		
+exe	0x005a8390	ai_FreeSettingChain	lc	byte	readable		
+exe	0x005a83b0	ai_FillSettingWeights	lc	draft	draft		
+exe	0x005a84b0	ai_FindSetting	lc	byte	readable		
+exe	0x005a84d0	ai_FindItemGroup	lc	byte	readable		
+exe	0x005a8540	ai_FindSettingSlots	lc	byte	readable		
+exe	0x005a8560	ai_ProdSetting	lc	draft	draft		
+exe	0x005a86c0	ai_FreeProdSetting	lc	byte	readable		
+exe	0x005a8710	ai_Unk5a8710	lc	draft	draft		
+exe	0x005a8850	ai_RefreshProdSetting	lc	byte	readable		
+exe	0x005a8870	ai_DrawSettingGood	lc	shape	readable		
+exe	0x005a88e0	ai_SettingFactor	lc	byte	readable		
+exe	0x005a8900	ai_SetSettingFactor	lc	byte	readable		
+exe	0x005a8920	ai_FreeSettings	lc	byte	readable		
+exe	0x005a8940	ai_SaveSettings	lc	draft	draft		
+exe	0x005a8a20	ai_Unk5a8a20	lc	draft	draft		
+exe	0x005a8b80	ai_ShowIndulgenceNews	lc	byte	readable		
+exe	0x005a8c00	ai_ShowPaymentNews	lc	byte	readable		
+exe	0x005a8c50	ai_ShowPurchaseNews	lc	byte	readable		
+exe	0x005a8cb0	ai_ShowOfficeNews	lc	byte	readable		
+exe	0x005a8d00	ai_ShowTributeDelayedNews	lc	byte	readable		
+exe	0x005a8d40	ai_ShowTributeCollectNews	lc	byte	readable		
+exe	0x005a8d80	ai_ShowTributeClaimNews	lc	byte	readable		
+exe	0x005a8e10	ai_ShowTavernHelperNews	lc	byte	readable		
+exe	0x005a8ee0	ai_ShowPartingNews	lc	shape	readable		
+exe	0x005a8f90	ai_ShowFeudNews	lc	shape	readable		
+exe	0x005a9050	ai_ShowPartnerNews	lc	shape	readable		
+exe	0x005a9110	ai_ShowCharacterNews	lc	byte	readable		
+exe	0x005a9170	ai_NotifyPlayerOfChar	lc	byte	readable		
+exe	0x005a91c0	ai_PlagueNews	lc	shape	readable		
+exe	0x005a9240	ai_PlagueMessage	lc	draft	readable	deep	
+exe	0x005a92b0	ai_PlagueMessageAll	lc	shape	readable		
+exe	0x005a9330	ai_SendSwapText	lc	byte	readable		
+exe	0x005a9430	ai_ShowEvidenceVoidNews	lc	byte	readable		
+exe	0x005a9470	ai_GypsyDeliveryText	lc	draft	draft		
+exe	0x005a9690	ai_TellGraveNeglect	lc	byte	readable		
+exe	0x005a96e0	ai_NotifySale	lc	draft	draft		
+exe	0x005a9780	ai_TellGravesPaid	lc	byte	readable		
+exe	0x005a97e0	ai_Unk5a97e0	lc	draft	draft		
+exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	draft	draft		
+exe	0x005a9910	ai_Unk5a9910	lc	draft	draft		
+exe	0x005a9990	ai_TellGraveWorkSuccess	lc	byte	readable		
+exe	0x005a99e0	ai_TellGraveWorkFailure	lc	byte	readable		
+exe	0x005a9a30	ai_GraveyardMessage	lc	draft	readable	deep	
+exe	0x005a9af0	ai_GraveyardMessagePlain	lc	byte	readable		
+exe	0x005a9b50	ai_DomizilMessageResearch	lc	byte	readable		
+exe	0x005a9bc0	ai_DomizilMessageResearchKind	lc	byte	readable		
+exe	0x005a9c30	ai_DomizilMessage	lc	byte	readable		
+exe	0x005a9ca0	ai_DomizilMessage04	lc	byte	readable		
+exe	0x005a9d00	ai_DomizilMessageAge	lc	byte	readable		
+exe	0x005a9d60	ai_DomizilMessageTask	lc	byte	readable		
+exe	0x005a9dd0	ai_DomizilMessagePlace	lc	byte	readable		
+exe	0x005a9e40	ai_DomizilMessage12	lc	byte	readable		
+exe	0x005a9e90	ai_Unk5a9e90	lc	draft	draft		
+exe	0x005a9f10	ai_DomizilGoodInRange	lc	shape	readable		
+exe	0x005a9f80	ai_Unk5a9f80	lc	draft	draft		
+exe	0x005aa0d0	ai_Unk5aa0d0	lc	draft	draft		
+exe	0x005aa1f0	ai_Unk5aa1f0	lc	draft	draft		
+exe	0x005aa4b0	ai_DomizilFreeRow	lc	byte	readable		
+exe	0x005aa520	ai_Unk5aa520	lc	draft	draft		
+exe	0x005aa700	ai_Unk5aa700	lc	draft	draft		
+exe	0x005aa9a0	ai_Unk5aa9a0	lc	draft	draft		
+exe	0x005aab80	ai_PersonnelBook	lc	draft	draft		
+exe	0x005ac110	ai_MercenaryBook	lc	draft	draft		
+exe	0x005ad000	ai_Unk5ad000	lc	draft	draft		
+exe	0x005ad150	ai_PersonnelBookWindow	lc	draft	draft		
+exe	0x005ae240	ai_Unk5ae240	lc	draft	draft		
+exe	0x005ae570	ai_Unk5ae570	lc	draft	draft		
+exe	0x005ae6b0	ai_Unk5ae6b0	lc	draft	draft		
+exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
+exe	0x005ae8e0	ai_Unk5ae8e0	lc	draft	draft		
+exe	0x005ae9a0	ai_Unk5ae9a0	lc	draft	draft		
+exe	0x005af010	ai_Unk5af010	lc	draft	draft		
+exe	0x005af1a0	ai_OpenTransport	lc	byte	readable		
+exe	0x005af1b0	ai_OpenTransportSell	lc	byte	readable		
+exe	0x005af1c0	ai_OpenTransportBuy	lc	byte	readable		
+exe	0x005af1d0	ai_TransportWindow	lc	draft	draft		
+exe	0x005b2090	ai_Unk5b2090	lc	draft	draft		
+exe	0x005b2180	ai_MapPick	lc	draft	draft		
+exe	0x005b2530	ai_Unk5b2530	lc	draft	draft		
+exe	0x005b26b0	ai_StorageWindow	lc	draft	draft		
+exe	0x005b3130	ai_FiveTextWindow	lc	draft	draft		
+exe	0x005b3630	ai_Unk5b3630	lc	draft	draft		
+exe	0x005b3ad0	ai_EspionageAmountCB	lc	draft	draft		
+exe	0x005b3f30	ai_Unk5b3f30	lc	draft	draft		
+exe	0x005b4340	ai_Unk5b4340	lc	draft	draft		
+exe	0x005b4590	ai_Unk5b4590	lc	draft	draft		
+exe	0x005b4820	ai_Unk5b4820	lc	draft	draft		
+exe	0x005b4bf0	ai_Unk5b4bf0	lc	draft	draft		
+exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	draft		
+exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable		
+exe	0x005b5010	ai_DenounceWindow	lc	draft	draft		
+exe	0x005b5310	ai_Unk5b5310	lc	draft	draft		
+exe	0x005b5610	ai_PamphletWindow	lc	draft	draft		
+exe	0x005b5690	ai_Unk5b5690	lc	draft	draft		
+exe	0x005b5a20	ai_Unk5b5a20	lc	draft	draft		
+exe	0x005b5e80	ai_FeastWindow	lc	draft	draft		
+exe	0x005b6950	ai_Unk5b6950	lc	draft	draft		
+exe	0x005b6b20	ai_Unk5b6b20	lc	draft	draft		
+exe	0x005b6eb0	ai_Unk5b6eb0	lc	draft	draft		
+exe	0x005b6fe0	ai_Unk5b6fe0	lc	draft	draft		
+exe	0x005b7690	ai_Unk5b7690	lc	draft	draft		
+exe	0x005b7b80	ai_Unk5b7b80	lc	draft	draft		
+exe	0x005b7dd0	ai_Unk5b7dd0	lc	draft	draft		
+exe	0x005b82a0	ai_Unk5b82a0	lc	draft	draft		
+exe	0x005b84f0	ai_BuildingWindow	lc	draft	draft		
+exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	draft	draft		
+exe	0x005b92e0	ai_LiquidateAssets	lc	draft	draft		
+exe	0x005b9730	ai_Unk5b9730	lc	draft	draft		
+exe	0x005b9db0	ai_Unk5b9db0	lc	draft	draft		
+exe	0x005b9f30	ai_GelageWindow	lc	draft	draft		
+exe	0x005ba1c0	ai_Unk5ba1c0	lc	draft	draft		
+exe	0x005ba290	ai_Unk5ba290	lc	draft	draft		
+exe	0x005ba600	ai_CloseChildWindow	lc	byte	readable		
+exe	0x005ba620	ai_FindUsableGood	lc	byte	readable		
+exe	0x005ba660	ai_FindUsableGoodIndex	lc	byte	readable		
+exe	0x005ba6b0	ai_InventoryHas	lc	byte	readable		
+exe	0x005ba700	ai_Unk5ba700	lc	draft	draft		
+exe	0x005ba750	ai_Unk5ba750	lc	draft	draft		
+exe	0x005ba980	ai_Unk5ba980	lc	draft	draft		
+exe	0x005bac10	ai_InventoryPanel	lc	draft	draft		
+exe	0x005bae10	ai_EquipRowsInit	lc	draft	readable	deep	
+exe	0x005bae50	ai_Unk5bae50	lc	draft	draft		
+exe	0x005bb2d0	ai_GoodFitsBuilding	lc	byte	readable		
+exe	0x005bb350	ai_EquipWindow	lc	draft	draft		
+exe	0x005bb950	ai_Unk5bb950	lc	draft	draft		
+exe	0x005bba00	ai_TrainingWindow	lc	draft	draft		
+exe	0x005bc0f0	ai_FreePicture	lc	byte	readable		
+exe	0x005bc110	ai_Unk5bc110	lc	draft	draft		
+exe	0x005bc420	ai_Unk5bc420	lc	draft	draft		
+exe	0x005bc6d0	ai_Unk5bc6d0	lc	draft	draft		
+exe	0x005bc790	ai_Unk5bc790	lc	draft	draft		
+exe	0x005bc9c0	ai_Unk5bc9c0	lc	draft	draft		
+exe	0x005bcc70	ai_PlayerStatsPanel	lc	draft	draft		
+exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
+exe	0x005bd0c0	ai_CentredText	lc	byte	readable		
+exe	0x005bd190	ai_RightAlignedText	lc	byte	readable		
+exe	0x005bd1f0	ai_LeftAlignedText	lc	byte	readable		
+exe	0x005bd250	ai_ShowWindowRow	lc	byte	readable		
+exe	0x005bd330	ai_Unk5bd330	lc	draft	draft		
+exe	0x005bd470	ai_Unk5bd470	lc	draft	draft		
+exe	0x005bd5e0	ai_Unk5bd5e0	lc	draft	draft		
+exe	0x005bdb60	ai_Unk5bdb60	lc	draft	draft		
+exe	0x005be1d0	ai_AmountRowStatus	lc	draft	draft		
+exe	0x005be3b0	ai_AmountRow	lc	draft	draft		
+exe	0x005be720	ai_DrawAmountRow	lc	draft	draft		
+exe	0x005bea00	ai_SpecialAmountList	lc	shape	readable		
+exe	0x005bea50	ai_Unk5bea50	lc	draft	draft		
+exe	0x005bf0d0	ai_Unk5bf0d0	lc	draft	draft		
+exe	0x005bf300	ai_Unk5bf300	lc	draft	draft		
+exe	0x005bf4f0	ai_Unk5bf4f0	lc	draft	draft		
+exe	0x005bf6f0	ai_Unk5bf6f0	lc	draft	draft		
+exe	0x005bf7c0	ai_Unk5bf7c0	lc	draft	draft		
+exe	0x005bfa90	ai_Unk5bfa90	lc	draft	draft		
+exe	0x005bfc40	ai_Unk5bfc40	lc	draft	draft		
+exe	0x005bfd90	ai_Unk5bfd90	lc	draft	draft		
+exe	0x005bfed0	ai_AmountPageSwitch	lc	shape	readable		
+exe	0x005bff80	ai_EnableAmountRows	lc	byte	readable		
+exe	0x005bffb0	ai_Unk5bffb0	lc	draft	draft		
+exe	0x005c00b0	ai_Unk5c00b0	lc	draft	draft		
+exe	0x005c01c0	ai_Unk5c01c0	lc	draft	draft		
+exe	0x005c02d0	ai_Unk5c02d0	lc	draft	draft		
+exe	0x005c03e0	ai_Unk5c03e0	lc	draft	draft		
+exe	0x005c0550	ai_Unk5c0550	lc	draft	draft		
+exe	0x005c0650	ai_Unk5c0650	lc	draft	draft		
+exe	0x005c0790	ai_Unk5c0790	lc	draft	draft		
+exe	0x005c08b0	ai_ClearAmountTabs	lc	byte	readable		
+exe	0x005c08d0	ai_Unk5c08d0	lc	draft	draft		
+exe	0x005c0970	ai_SpecialAmountWindow	lc	draft	draft		
+exe	0x005c1130	ai_AmountMenu	lc	draft	draft		
+exe	0x005c1500	ai_AmountListWindow	lc	draft	draft		
+exe	0x005c1a80	ai_AmountInfoWindow	lc	byte	readable		
+exe	0x005c1b20	ai_OpenAmountKindMenu	lc	byte	readable		
+exe	0x005c1b40	ai_AmountKindMenu	lc	draft	draft		
+exe	0x005c1df0	ai_OpenAgendaMenu	lc	byte	readable		
+exe	0x005c1e10	ai_AgendaOfficeList	lc	draft	draft		
+exe	0x005c2160	ai_OpenLawBook	lc	draft	draft		
+exe	0x005c2410	ai_LawBookInfoWindow	lc	byte	readable		
+exe	0x005c2490	ai_Unk5c2490	lc	draft	draft		
+exe	0x005c26a0	ai_MasterLetterNoticeWindow	lc	byte	readable		
+exe	0x005c2730	ai_MasterLetterKindWindow	lc	byte	readable		
+exe	0x005c27b0	ai_Unk5c27b0	lc	draft	draft		
+exe	0x005c2a10	ai_Unk5c2a10	lc	draft	draft		
+exe	0x005c2b90	ai_Unk5c2b90	lc	draft	draft		
+exe	0x005c3200	ai_MasterLetterWindow	lc	draft	draft		
+exe	0x005c33c0	ai_PassesPartnerFilter	lc	draft	draft		
+exe	0x005c37a0	ai_PassesBuildingFilter	lc	draft	draft		
+exe	0x005c39a0	ai_Unk5c39a0	lc	draft	draft		
+exe	0x005c3bb0	ai_Unk5c3bb0	lc	draft	draft		
+exe	0x005c4100	ai_Unk5c4100	lc	draft	draft		
+exe	0x005c4150	ai_FamilyTreeWindow	lc	draft	draft		
+exe	0x005c5310	ai_Unk5c5310	lc	draft	draft		
+exe	0x005c6050	ai_Unk5c6050	lc	draft	draft		
+exe	0x005c64c0	ai_FindCandidateIds	lc	shape	readable		
+exe	0x005c6530	ai_MarriageTest	lc	byte	readable		
+exe	0x005c6620	ai_CourtshipRounds	lc	draft	draft		
+exe	0x005c6910	ai_Unk5c6910	lc	draft	draft		
+exe	0x005c6aa0	ai_Unk5c6aa0	lc	draft	draft		
+exe	0x005c6d00	ai_OfficeApplication	lc	draft	draft		
+exe	0x005c72d0	ai_Unk5c72d0	lc	draft	draft		
+exe	0x005c7460	ai_Unk5c7460	lc	draft	draft		
+exe	0x005c7560	ai_Unk5c7560	lc	draft	draft		
+exe	0x005c76b0	ai_Unk5c76b0	lc	draft	draft		
+exe	0x005c7800	ai_Unk5c7800	lc	draft	draft		
+exe	0x005c7970	ai_Unk5c7970	lc	draft	draft		
+exe	0x005c7f00	ai_CityStatsPanel	lc	draft	draft		
+exe	0x005c82f0	ai_PlayerComparePanel	lc	draft	draft		
+exe	0x005c8640	ai_PrivilegesPanel	lc	draft	draft		
+exe	0x005c8bc0	ai_MedicusHandler	lc	draft	draft		
+exe	0x005c8ef0	ai_Unk5c8ef0	lc	draft	draft		
+exe	0x005c9290	ai_Unk5c9290	lc	draft	draft		
+exe	0x005c9550	ai_BlackmailBuildingListener	lc	draft	draft		
+exe	0x005c9990	ai_Unk5c9990	lc	draft	draft		
+exe	0x005c9c50	ai_BlackmailContact	lc	draft	draft		
+exe	0x005c9df0	ai_Unk5c9df0	lc	draft	draft		
+exe	0x005c9ff0	ai_BlackmailContactVariant	lc	draft	draft		
+exe	0x005ca150	ai_LawPrivilegeWindow	lc	draft	draft		
+exe	0x005ca560	ai_EmbezzlementPrivilege	lc	draft	draft		
+exe	0x005ca860	ai_MisappropriationWindow	lc	draft	draft		
+exe	0x005caab0	ai_Unk5caab0	lc	draft	draft		
+exe	0x005cacd0	ai_EmbezzlementContract	lc	draft	draft		
+exe	0x005cae00	ai_CounterEspionage	lc	draft	draft		
+exe	0x005cb1e0	ai_CounterEspionageOfficeSwap	lc	byte	readable		
+exe	0x005cb250	ai_CounterEspionageWindow	lc	draft	draft		
+exe	0x005cb4f0	ai_EspionageWindow	lc	draft	draft		
+exe	0x005cba90	ai_EspionagePayment	lc	draft	draft		
+exe	0x005cbe00	ai_EspionageOrderHandler	lc	draft	draft		
+exe	0x005cc2b0	ai_EspionageRelation	lc	draft	draft		
+exe	0x005cc700	ai_EspionagePayment2	lc	draft	draft		
+exe	0x005cca40	ai_EspionageAmountWindow	lc	draft	draft		
+exe	0x005ccc10	ai_Unk5ccc10	lc	draft	draft		
+exe	0x005cd2e0	ai_EspionageOverviewHandler	lc	draft	draft		
+exe	0x005cd400	ai_EspionageResult	lc	draft	draft		
+exe	0x005cd8c0	ai_Unk5cd8c0	lc	draft	draft		
+exe	0x005cdb90	ai_Unk5cdb90	lc	draft	draft		
+exe	0x005cde90	ai_SpyTargetHandler	lc	draft	draft		
+exe	0x005ce1a0	ai_SpyTargetFlagHandler	lc	draft	draft		
+exe	0x005ce4b0	ai_Unk5ce4b0	lc	draft	draft		
+exe	0x005ce610	ai_InterrogationWindow	lc	draft	draft		
+exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	draft	draft		
+exe	0x005ce950	ai_DismissalHandler	lc	draft	draft		
+exe	0x005ced50	ai_SendInterrogationRefusal	lc	byte	readable		
+exe	0x005cede0	ai_InterrogationWindow1	lc	draft	draft		
+exe	0x005cf020	ai_InterrogationWindow2	lc	draft	draft		
+exe	0x005cf260	ai_Unk5cf260	lc	draft	draft		
+exe	0x005cf4f0	ai_Unk5cf4f0	lc	draft	draft		
+exe	0x005cf820	ai_UseObjPanel	lc	byte	readable		
+exe	0x005cf8a0	ai_UseGood	lc	draft	draft		
+exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
+exe	0x005cfb80	ai_UseGoodHeal	lc	byte	readable		
+exe	0x005cfc00	ai_Unk5cfc00	lc	draft	draft		
+exe	0x005cff70	ai_Unk5cff70	lc	draft	draft		
+exe	0x005d0320	ai_Unk5d0320	lc	draft	draft		
+exe	0x005d0530	ai_Unk5d0530	lc	draft	draft		
+exe	0x005d06e0	ai_UseGoodCureAilment	lc	byte	readable		
+exe	0x005d0780	ai_Unk5d0780	lc	draft	draft		
+exe	0x005d08c0	ai_ApplyTrialStep	lc	draft	draft		
+exe	0x005d09d0	ai_TrialStep1	lc	shape	readable		
+exe	0x005d0a40	ai_TrialStep3	lc	shape	readable		
+exe	0x005d0ab0	ai_TrialStep4	lc	shape	readable		
+exe	0x005d0b20	ai_Unk5d0b20	lc	draft	draft		
+exe	0x005d0c70	ai_Unk5d0c70	lc	draft	draft		
+exe	0x005d0e60	ai_Unk5d0e60	lc	draft	draft		
+exe	0x005d0f20	ai_Unk5d0f20	lc	draft	draft		
+exe	0x005d1300	ai_Unk5d1300	lc	draft	draft		
+exe	0x005d13e0	ai_Unk5d13e0	lc	draft	draft		
+exe	0x005d1680	ai_Unk5d1680	lc	draft	draft		
+exe	0x005d1830	ai_Unk5d1830	lc	draft	draft		
+exe	0x005d18c0	ai_Unk5d18c0	lc	draft	draft		
+exe	0x005d1990	ai_Unk5d1990	lc	draft	draft		
+exe	0x005d1b30	ai_Unk5d1b30	lc	draft	draft		
+exe	0x005d1da0	ai_Unk5d1da0	lc	draft	draft		
+exe	0x005d1fb0	ai_Unk5d1fb0	lc	draft	draft		
+exe	0x005d22e0	ai_UsePayGood	lc	byte	readable		
+exe	0x005d2320	ai_Unk5d2320	lc	draft	draft		
+exe	0x005d2440	ai_Unk5d2440	lc	draft	draft		
+exe	0x005d2580	ai_Unk5d2580	lc	draft	draft		
+exe	0x005d2720	ai_Unk5d2720	lc	draft	draft		
+exe	0x005d2960	ai_Unk5d2960	lc	draft	draft		
+exe	0x005d2bc0	ai_Unk5d2bc0	lc	draft	draft		
+exe	0x005d2e80	ai_Unk5d2e80	lc	draft	draft		
+exe	0x005d2f20	ai_UseEventGood	lc	shape	readable		
+exe	0x005d2f90	ai_Unk5d2f90	lc	draft	draft		
+exe	0x005d3030	ai_Unk5d3030	lc	draft	draft		
+exe	0x005d31c0	ai_Unk5d31c0	lc	draft	draft		
+exe	0x005d3270	ai_Unk5d3270	lc	draft	draft		
+exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
+exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable		
+exe	0x005d3810	ai_MessageBox	menu	draft	draft	deep	
+exe	0x005d3a00	ai_RegisterSaveSlot	menu	draft	draft	deep	
+exe	0x005d3ab0	ai_FillSaveSlots	menu	draft	readable	deep	
+exe	0x005d4080	ai_LoadGameWindow	menu	shape	readable		
+exe	0x005d42b0	ai_JoinGameWindow	menu	shape	readable		
+exe	0x005d44c0	ai_EditText	menu	shape	readable		
+exe	0x005d45d0	ai_SaveOptionWindow	menu	draft	readable	deep	
+exe	0x005d4920	ai_SaveNameWindow	menu	draft	readable	deep	
+exe	0x005d4c70	ai_SaveOptions	menu	byte	readable		
+exe	0x005d5640	ai_LoadOptions	menu	draft	readable	deep	
+exe	0x005d5c40	ai_ApplyGfxOptions	menu	draft	draft	deep	
+exe	0x005d5e90	ai_ApplyOptions	menu	byte	readable		
+exe	0x005d5f10	ai_ApplyVolumes	menu	byte	readable		
+exe	0x005d5fd0	ai_OptionsGfxScreen	menu	draft	readable	deep	
+exe	0x005d6580	ai_OptionsSfxScreen	menu	byte	readable		
+exe	0x005d6950	ai_OptionsGameScreen	menu	shape	readable		
+exe	0x005d6f40	ai_MenuButton	menu	byte	readable		
+exe	0x005d6fa0	ai_LeaveGameScreen	menu	byte	readable		
+exe	0x005d7080	ai_ResumeGameScreen	menu	byte	readable		
+exe	0x005d7160	ai_Screenshot	menu	shape	readable		
+exe	0x005d7320	ai_LoadScreenImage	menu	byte	readable		
+exe	0x005d73e0	ai_HasQuicksavePlayer	menu	draft	draft	deep	
+exe	0x005d7430	ai_Quicksave	menu	byte	readable		
+exe	0x005d7530	ai_SaveNetworkGame	menu	draft	readable	deep	
+exe	0x005d7770	ai_OptionsMenu	menu	byte	readable		
+exe	0x005d7ba0	ai_CreditsScreen	menu	byte	readable		
+exe	0x005d7e90	ai_PauseGame	menu	byte	readable		
+exe	0x005d7f10	ai_MessageFilterScreen	menu	draft	readable	deep	
+exe	0x005d8080	ai_TailorChatWindow	menu	byte	readable		
+exe	0x005d8360	ai_TailorContact	menu	byte	readable		
+exe	0x005d8420	ai_ProductionContact	menu	shape	readable		
+exe	0x005d85e0	ai_BloodRevengeWindow	menu	draft	readable	deep	
+exe	0x005d8c90	ai_CurseWindow	menu	shape	readable		
+exe	0x005d90e0	ai_CurseTargetWindow	menu	draft	readable	deep	
+exe	0x005d95a0	ai_HomageWindow	menu	shape	readable	deep	
+exe	0x005d9890	ai_GypsyBeggingWindow	menu	byte	readable		
+exe	0x005d9a80	ai_GypsyContact	menu	byte	readable		
+exe	0x005d9b20	ai_CurseContact	menu	byte	readable		
+exe	0x005d9b90	ai_TheatreContact	menu	byte	readable		
+exe	0x005d9c30	ai_GypsyProductionContact	menu	byte	readable		
+exe	0x005d9de0	ai_OpenPokerWindow	menu	draft	readable	deep	
+exe	0x005d9f50	ai_PokerBetControl	menu	byte	readable		
+exe	0x005da010	ai_ClosePokerWindow	menu	byte	readable		
+exe	0x005da030	ai_PokerGame	menu	shape	readable	deep	
+exe	0x005dadf0	ai_PokerSeatPanel	menu	shape	readable	deep	
+exe	0x005db110	ai_PokerWindow2	menu	byte	readable		
+exe	0x005dbc10	ai_GetDefaultEffect	menu	byte	readable		
+exe	0x005dbc20	ai_GetDefaultEffectScale	menu	byte	readable		
+exe	0x005dbc30	ai_InitWind	menu	byte	readable		
+exe	0x005dbed0	ai_UpdateWind	menu	byte	readable		
+exe	0x005dbfc0	ai_SaveWind	menu	byte	readable		
+exe	0x005dc0c0	ai_LoadWind	menu	byte	readable		
+exe	0x005dc1a0	ai_SphereVolume	menu	byte	readable		
+exe	0x005dc210	ai_PositionShare	menu	byte	readable		
+exe	0x005dc240	ai_InitShot	menu	draft	readable	deep	
+exe	0x005dc3a0	ai_ScatterShot	menu	draft	readable	deep	
+exe	0x005dc4a0	ai_StepShot	menu	draft	readable	deep	
+exe	0x005dc9d0	ai_StepShotSlow	menu	draft	readable	deep	
+exe	0x005dcf00	ai_ShotHitsGround	menu	draft	readable	deep	
+exe	0x005dd090	ai_NormalizeEffectScale	menu	draft	readable	deep	
+exe	0x005dd100	ai_SolveCannonAim	menu	shape	readable		
 exe	0x005de460	MSS_auto_cleanup	mss32lib	byte	readable		
 exe	0x005de470	mss_AutoCleanupExit	mss32lib	byte	readable		
