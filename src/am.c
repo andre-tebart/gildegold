@@ -1659,9 +1659,9 @@ int ai_DecideLaw7(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x4916d0, decision 9 */
+/* 0x4916d0, the callback of law record 9 (AIDEC.fn, office 0x0f the mayor no 1, a rate 8 .. 0x12, the income tax gm_IncomeKind1 charges): from the 4th year the tax rate is 22 / 44 / 66% of the range above the minimum by the building capacity ratio, one lower unless the title group is 1 / 2 / 3 / 5 and a random 1 .. 3 higher when the seat's goods are below a quarter of the office pay; the rate moves by a random 1 .. 3 when the current value is more than 3 away */
 
-int ai_Unk4916d0(AIPER *p, int a, int *out)
+int ai_DecideIncomeTaxRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     AIBLD *b;
@@ -1684,7 +1684,7 @@ int ai_Unk4916d0(AIPER *p, int a, int *out)
             n--;
         b = gm_FirstBuilding(1);
         o = gm_Query(b->objList, 2, 6, 0, 0x115);
-        m = gm_SumListAmounts(o->unk14, ai_OwnPlayer);
+        m = gm_SumListAmounts(o->list, ai_OwnPlayer);
         if (m < (int)(amt_GetOwnedOfficePay() * 0.25f) * 3)
             n += util_RandomU(3) + 1;
         if (d.cur - 3 > n) {
