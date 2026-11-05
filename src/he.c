@@ -531,7 +531,7 @@ typedef struct HEBRAWL {                /* the brawl event 26's words over AIJOB
     int watch;                          /* 0xd4, the id of the watch event that caught the thug (HEDETECT.found, HEWATCH) */
     int fee;                            /* 0xd8, the money the event's character pays for it */
 } HEBRAWL;
-typedef struct HETHEFT {                /* the theft event 27's words over AIJOB's union (he_AllocTheft / he_Unk55b140) */
+typedef struct HETHEFT {                /* the theft event 27's words over AIJOB's union (he_AllocTheft / he_RunTheft) */
     char pad00[0xac];
     int bld;                            /* 0xac, the id of the building robbed */
     int loot;                           /* 0xb0, the value taken (the news 0x17f4 prints it; reasoned: the run handler's
@@ -13929,7 +13929,7 @@ void he_RunBrawl(AIJOB *e)
         return;
     }
 }
-/* 0x55af70, the allocation handler of the theft event 27 (HETHEFT; run handler he_Unk55b140): due in 4 + random 3
+/* 0x55af70, the allocation handler of the theft event 27 (HETHEFT; run handler he_RunTheft): due in 4 + random 3
    hours; without the building robbed, or one of the kinds 0xb / 0xc / 0xd, the event is freed. Else the building's
    field 0x5a is set to 2 (cm_SendSetField) and the round counter cleared; for an event shown when due (opts 2) at
    a building with a master, not of the type 0x27, every other player gets the news 0x17f4 ("_NACHRICHTEN_HS_43",
@@ -13974,48 +13974,76 @@ void he_AllocTheft(AIJOB *e)
         cm_SendMoveGoods(master->netId, b->id, ai_OwnPlayer, n);
     e->exSlot = -1;
 }
-/* 0x55b140, the run handler of the random theft message event (ROUGH): a flagged (2) record with a pending handle +0x84 waits (0x4c3ae0); states -2 .. -1 and above 0 free the record; state 0 with +0xb8 >= 2 looks at the building +0xac (not of the kinds 0xb / 0xc / 0xd; the type 0x27 needs a player owner of kind 6 / 7 at +0x27), rolls a chance from the building's value (0x509b10 (building, +0x5c), the factor 0x5ebb44 and +0xb0) against 0x42ec00(100) and sends a message record (type 0x6e, +0x4a = 1) through 0x4c4b70, then posts the event (0x4c4c60 (0, ev)) with the chance for a second round (0x4c4a60) */
-
-void he_Unk55b140(int ev)
+/* 0x55b140, the run handler of the theft event 27 (HETHEFT; allocated by he_AllocTheft). A shown event (opts 2)
+   waits while its cm request is pending. Stage 0, from the third round on: without the building, or one of the
+   kinds 0xb / 0xc / 0xd, the event is freed; a shown event at a building not of the type 0x27 (or of it with a
+   player for owner) rolls random 100 against 50 * loot / (the building's equipment value + 256): above it the
+   theft message 0x6e (the building, the loot) goes to the event's character, the event is posted
+   (cm_SendExSetHE -1) and the building's field 0x5a mark taken back; every round counts up and is due again in 4 +
+   random 3 hours. Stages -2 / -1 take the mark back (when the building still exists) and free the event */
+void he_RunTheft(AIJOB *e)
 {
-    int st = *(int *)(ev + 0x70);
-    int b, kind, o, r;
-    unsigned char m[0xf8];
-    float chance;
+    HETHEFT *t = (HETHEFT *)e;
+    AIBLD *b;
+    AIBTYPE *bt;
+    float value, chance;
+    int r;
+    AIMSG msg;
 
-    if ((*(unsigned char *)(ev + 0x78) & 2) != 0 && *(int *)(ev + 0x84) != -1) {
-        if (cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if ((e->opts & 2) != 0 && e->exSlot != -1) {
+        if (cm_GetSlotState(e->exSlot) == 0)
             return;
-        *(int *)(ev + 0x84) = -1;
+        e->exSlot = -1;
     }
-    if (st < -2 || st > 0 || st != 0) {
-        he_FreeEvent((int *)ev);
+    switch (e->stage) {
+    case 0:
+        if (t->rounds >= 2) {
+            b = (AIBLD *)gm_BuildQuery(1, 1, t->bld);
+            if (b == 0) {
+                he_FreeEvent((int *)e);
+                return;
+            }
+            bt = &ai_BTypesT[b->type];
+            if (bt->kind == 0xd || bt->kind == 0xc || bt->kind == 0xb) {
+                he_FreeEvent((int *)e);
+                return;
+            }
+            if ((e->opts & 2) != 0
+                && (b->type != 0x27
+                    || (b->owner != 0xffff && (ai_CharsT[b->owner].kind == 6 || ai_CharsT[b->owner].kind == 7)))) {
+                value = (float)gm_EquipmentValue((unsigned char *)b, b->level) + 256.0f;
+                chance = (float)t->loot / value;
+                r = (unsigned short)util_Random(100);
+                if ((float)r > chance * 50.0f) {
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x6e;
+                    msg.fromId = -1;
+                    msg.flags = 1;
+                    msg.to = ai_CharsT[e->chr].netId;
+                    msg.time = ai_Time;
+                    msg.arg[2] = t->bld;
+                    msg.arg[4] = t->loot;
+                    cm_SendLongMessage((char *)&msg);
+                    e->exSlot = cm_SendExSetHE(-1, e);
+                    cm_SendSetField(b->id, 0x5a, 2, 0, 2);
+                }
+            }
+        }
+        t->rounds++;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, (unsigned short)util_Random(3) + 4, 0, 0);
+        return;
+    case -2:
+    case -1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, t->bld);
+        if (b == 0) {
+            he_FreeEvent((int *)e);
+            return;
+        }
+        cm_SendSetField(b->id, 0x5a, 2, 0, 2);
+        he_FreeEvent((int *)e);
         return;
     }
-    if (*(int *)(ev + 0xb8) >= 2) {
-        b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
-        if (b == 0) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)b * 0x24d);
-        if (kind == 0xd || kind == 0xc || kind == 0xb) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        o = gm_EquipmentValue(b, *(char *)(b + 0x5c));
-        chance = (float)*(int *)(ev + 0xb0) / ((float)o + *(float *)(unsigned)&full_rdata_5ebb44);
-        r = (unsigned short)util_Random(100);
-        if ((float)r <= chance * (50.0f)) {
-            memset(m, 0, sizeof(m));
-            m[4] = 0x6e;
-            *(int *)(m + 0xc) = -1;
-            m[0x36] = 1;
-            *(int *)(m + 8) = *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c);
-            cm_SendLongMessage(m);
-        }
-    }
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
 
 void gm_ChangeBuildingState(unsigned char *b, int d);
@@ -16491,7 +16519,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(26, (void *)he_AllocBrawl, (void *)he_RunBrawl) != 0)
         return 1;
-    if (he_SetEventHandlers(27, (void *)he_AllocTheft, (void *)he_Unk55b140) != 0)
+    if (he_SetEventHandlers(27, (void *)he_AllocTheft, (void *)he_RunTheft) != 0)
         return 1;
     if (he_SetEventHandlers(28, (void *)he_Unk55b3e0, (void *)he_Unk55b530) != 0)
         return 1;
