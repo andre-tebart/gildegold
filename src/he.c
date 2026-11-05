@@ -58,7 +58,8 @@
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3
    is a tie-break for it).
-   Open: types: the other handlers past 0x55e730 still read the event and message records through raw offsets
+   Open: types: the other handlers past 0x561130 still read the event and message records through raw offsets
+   Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
    cm.h not included; their calls stay M7)
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
