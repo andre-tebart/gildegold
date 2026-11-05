@@ -377,6 +377,16 @@ typedef struct HEOFFSPRING {            /* the offspring event's word over AIJOB
     char pad00[0xac];
     float chance;                       /* 0xac, stage 0: the chance built up run by run; stage 1: the runs waited (to 3) */
 } HEOFFSPRING;
+typedef struct HETRIAL {                /* the trial event 0x5e's words over AIJOB's union (its alloc handler he_StartTrialEvent,
+                                           run handler he_RunTrialEvent; rounds is AIJOB's) */
+    char pad00[0xac];
+    int teacher;                        /* 0xac, the netId of the character the trial is held with (gm_FindChar); the
+                                           rounds' cost goes to its AP events, the news 0x1a9c to it */
+    unsigned char job;                  /* 0xb0, the job the character gets at the end (cm_SendSetJob; its title
+                                           group picks the two abilities raised, the job title text 0x130 + it) */
+    char padb1[3];
+    int cost;                           /* 0xb4, the cost of a round (he_AddApEvent's cost, negated) */
+} HETRIAL;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -4077,63 +4087,68 @@ void he_StartTrialEvent(int ev)
     e->rounds = 0;
     e->exSlot = cm_SendExSetHE(0, ev);
 }
-/* 0x549430, a Ghidra miss (disassembled): the run handler of the trial of the figure +0xac for the player (word +8): state 0 counts the rounds (+0xb8, +0x56 += 0x18 units, the news 0x1a9b, the player pays the cost -+0xb4 with 0x53eec0; the 3rd round goes to the state 1), state 1 picks two random abilities of the player (0x504ad0 / 0x504100, +0x10 random bytes each at +0x80 by 0x4c3d00), sets the party flags 0x4c59b0 (+0xb0) and tells the figure the news 0x1a9c (ROUGH) */
+/* 0x549430, a Ghidra miss (disassembled): the run handler of the trial event 0x5e (the character e->chr's trial
+   with the teacher, a character found by its netId): stage -2 / -1 frees it; nothing while it is not started or
+   its last post is not settled. Stage 0 holds a round: the news 0x1a9b, a day on, the round's cost to the
+   teacher's AP events; the third round posts the event to stage 1. Stage 1 raises the two abilities of the job's
+   title group (gm_JobSlots) by 16 .. 31 each, gives the character the job and tells the teacher (the news 0x1a9c
+   with the job title, the female forms 0x5f on); without the teacher it ends now */
 
-void he_Unk549430(int ev)
+void he_RunTrialEvent(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HETRIAL *t = (HETRIAL *)ev;
     char text[0x100];
-    int st, rec, o, v, x10 = 0, x14 = 0;
-    unsigned char b1, b2;
-    int cnt;
+    AICHAR *c, *teacher;
+    int skillA, skillB;
+    unsigned char raise;
 
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1) {
+    if (e->stage == -2 || e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if (e->opts & 4)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    *(int *)(ev + 0x84) = -1;
-    if (st == 0) {
-        rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-        o = gm_FindChar(*(int *)(ev + 0xac));
-        if (o == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
+    e->exSlot = -1;
+    switch (e->stage) {
+    case 0:
+        c = &ai_CharsT[e->chr];
+        teacher = (AICHAR *)gm_FindChar(t->teacher);
+        if (teacher == 0) {
+            e->end = ai_Time;
             cm_SendExSetHE(-1, ev);
             return;
         }
-        txt_Format(text, 0x1a9b, *(unsigned short *)rec);
-        *(unsigned char *)(ev + 0xb8) = *(unsigned char *)(ev + 0xb8) + 1;
-        *(unsigned short *)(ev + 0x56) = *(unsigned short *)(ev + 0x56) + 0x18;
-        cnt = *(unsigned char *)(ev + 0xb8);
-        cm_SendExSetHE(cnt >= 3, ev);
-        he_AddApEvent(*(unsigned short *)o, text, 0, -*(int *)(ev + 0xb4));
+        txt_Format(text, 0x1a9b, c->id);
+        e->rounds++;
+        e->end.hour += 0x18;
+        cm_SendExSetHE(e->rounds >= 3, ev);
+        he_AddApEvent(teacher->id, text, 0, -t->cost);
         return;
-    }
-    if (st != 1)
-        return;
-    rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    v = gm_TitleGroup(*(unsigned char *)(ev + 0xb0), &x10, &x14);
-    gm_JobSlots(v, &x10, &x14);
-    cm_BeginFieldBlock(rec, *(int *)(rec + 4));
-    b1 = (unsigned char)(util_Random(0x10) + 0x10);
-    cm_AddFieldValues(1, 1, x10 + 0x80, &b1);
-    b2 = (unsigned char)(util_Random(0x10) + 0x10);
-    cm_AddFieldValues(1, 1, x14 + 0x80, &b2);
-    cm_SendFieldDeltas();
-    cm_SendSetJob(*(int *)(rec + 4), *(unsigned char *)(ev + 0xb0));
-    o = gm_FindChar(*(int *)(ev + 0xac));
-    if (o == 0) {
-        *(AITIME *)(ev + 0x52) = ai_Time;
+    case 1:
+        c = &ai_CharsT[e->chr];
+        gm_JobSlots(gm_TitleGroup(t->job), &skillA, &skillB);
+        cm_BeginFieldBlock((char *)c, c->netId);
+        raise = (unsigned char)(util_Random(0x10) + 0x10);
+        cm_AddFieldValues(1, 1, skillA + 0x80, &raise);  /* 0x80: AICHAR.skills */
+        raise = (unsigned char)(util_Random(0x10) + 0x10);
+        cm_AddFieldValues(1, 1, skillB + 0x80, &raise);
+        cm_SendFieldDeltas();
+        cm_SendSetJob(c->netId, t->job);
+        teacher = (AICHAR *)gm_FindChar(t->teacher);
+        if (teacher == 0) {
+            e->end = ai_Time;
+            cm_SendExSetHE(-1, ev);
+            return;
+        }
+        txt_Format(text, 0x1a9c, c->id, (c->sex != 0 ? 0x5f : 0) + 0x130 + t->job);
+        he_ShowNews(teacher->netId, teacher->netId, text, 0, 0x5f4, (char *)0);
+        e->end = ai_Time;
         cm_SendExSetHE(-1, ev);
         return;
     }
-    txt_Format(text, 0x1a9c, *(unsigned short *)rec, ((*(char *)(rec + 9) != 0) ? 0x5f : 0) + 0x130 + *(unsigned char *)(ev + 0xb0));
-    he_ShowNews(*(int *)(o + 4), *(int *)(o + 4), text, 0, 0x5f4, (char *)0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    cm_SendExSetHE(-1, ev);
 }
 /* 0x5496f0, the alloc handler of the next trial step event (type 0x5f, the run handler 0x549770), like the
    trial's own alloc handler 0x5493a0 without the posting: it looks for another running 0x5f event of its player
@@ -9565,7 +9580,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_RunOffspring) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5e, (void *)he_StartTrialEvent, (void *)he_Unk549430) != 0)
+    if (he_SetEventHandlers(0x5e, (void *)he_StartTrialEvent, (void *)he_RunTrialEvent) != 0)
         return 1;
     if (he_SetEventHandlers(0x5f, (void *)he_StartNextTrialStep, (void *)he_Unk549770) != 0)
         return 1;
