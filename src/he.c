@@ -21971,7 +21971,7 @@ void he_RunRecipeResearch();
 void he_AllocResearchRecipe();
 void he_RunResearchRecipe();
 void he_AllocTrainShare();
-void he_Unk56daa0();
+void he_RunTrainShare();
 void he_Unk56dd20();
 void he_Unk56de10();
 
@@ -21980,7 +21980,7 @@ int he_RegisterEventTypes95(void)
 {
     if (he_SetEventHandlers(0x95, (void *)he_AllocRecipeResearch, (void *)he_RunRecipeResearch) == 0) {
         if (he_SetEventHandlers(0x96, (void *)he_AllocResearchRecipe, (void *)he_RunResearchRecipe) == 0) {
-            if (he_SetEventHandlers(0x97, (void *)he_AllocTrainShare, (void *)he_Unk56daa0) == 0) {
+            if (he_SetEventHandlers(0x97, (void *)he_AllocTrainShare, (void *)he_RunTrainShare) == 0) {
                 if (he_SetEventHandlers(0x98, (void *)he_Unk56dd20, (void *)he_Unk56de10) == 0) {
                     sv_RegisterActivity(0x95, "erforschen", 1, 0x500, -1);
                     sv_RegisterActivity(0x96, "erforschen", 1, 0x500, -1);
@@ -22187,6 +22187,9 @@ float ahm_ShareProgress();
 float ahm_Share();
 void ai_DomizilMessageResearch(int param_1, int param_2, int param_3, int param_4);
 int ahm_SendSetShare();  /* @original: he.c's call at 14930 passes 2 arguments to ahm.h's 3-parameter prototype, so this TU was compiled against the non-prototype declaration */
+/* @original the training run handler he_RunTrainShare passes the new share as a 4-byte float (push ecx / fstp [esp] at
+   0x56dba8): that call saw ahm.h's prototype, not the declaration above */
+#define ahm_SendSetShareF ((int (*)(char *, int, float))ahm_SendSetShare)
 
 /* 0x56d990, the alloc of the alchemist training event 0x97: the character (chr) and the share (id) are looked up
    (gm_FindChar, ahm_ShareProgress into progress, its minutes into start); when that progress is above ai_FloatZero
@@ -22217,50 +22220,60 @@ void he_AllocTrainShare(int ev)
 done:
     he_FreeEvent((int *)ev);
 }
-/* 0x56daa0, the run handler of the research event 0x97: the record is 0x4eab20 (the +0xb0 kind); state 1 hands the result over (0x5a9b50, 0x4ec940), releases the building group and frees; state 0 takes the elapsed time off +0xb8 and retries after 5 until it is used up; in the night +0x52 is retried after 1 / 0xf */
-
-void he_Unk56daa0(int ev)
+/* 0x56daa0, the run handler of the alchemist training event 0x97 (alloc he_AllocTrainShare): without its character,
+   the character's alchemist record or a share above ai_FloatZero (ahm_Share) the event ends (stage -2); stages -2 /
+   -1 free it; outside the day hours of the season it waits an hour, the clock restarted; stage 1 finishes: the Domizil
+   message about the training to the event's character, the share raised by the progress (ahm_SendSetShare), the
+   alchemist out of the laboratory group, the event freed; while the laboratory (room 0x24b of the character's
+   building) is busy it waits 15 minutes; stage 0 takes the minutes worked off the amount and goes on in 5 minutes, at
+   none left stage 1 */
+void he_RunTrainShare(int ev)
 {
-    char *c;
-    int d, st, h, v;
+    AIJOB *e = (AIJOB *)ev;
+    HEAHMRESEARCH *r = (HEAHMRESEARCH *)ev;
+    AICHAR *c;
+    AICHAR *to;
+    char *o;
+    float share;
+    int season;
 
-    d = gm_ClockSeason((void *)(unsigned)&ai_Time);
-    c = (char *)gm_FindChar(*(int *)(ev + 0xac));
-    if (c == 0 || ahm_HasRecord(c) == 0 || ahm_Share(c, *(int *)(ev + 0xb0)) == 0)
-        *(int *)(ev + 0x70) = -2;
-    st = *(int *)(ev + 0x70);
-    if (st == -2 || st == -1) {
+    season = gm_ClockSeason(&ai_Time);
+    share = 0;
+    c = (AICHAR *)gm_FindChar(r->chr);
+    if (c == 0 || ahm_HasRecord((char *)c) == 0 || (share = ahm_Share((char *)c, r->id)) <= ai_FloatZero)
+        e->stage = -2;
+    if (e->stage == -2 || e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(float *)((unsigned)&gm_DayEndHours + d * 4) <= (float)*(unsigned short *)(unsigned)&ai_Time.hour ||
-        (float)*(unsigned short *)(unsigned)&ai_Time.hour < *(float *)((unsigned)&gm_DayStartHours + d * 4)) {
-        gm_AddTime(ev + 0x52, 1, 0, 0);
+    if (!((float)ai_Time.hour >= gm_DayEndHours[season] || (float)ai_Time.hour < gm_DayStartHours[season])) {
+        if (e->stage == 1) {
+            o = gm_Query((void *)c->bld->objList, 2, 6, 0, 0x24b);
+            to = (AICHAR *)gm_FindChar(e->netId);
+            if (to != 0)
+                ai_DomizilMessageResearch((int)to, (int)c, (int)o, r->id);
+            ahm_SendSetShareF((char *)c, r->id, share + r->progress);
+            sv_MoveToGroup(0, 0, c->id, 0);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (he_RoomBusy(c->bld, 0x24b) != 0) {
+            r->clock = ai_Time;
+            gm_AddTime(&e->end, 0, 0xf, 0);
+            return;
+        }
+        if (e->stage == 0) {
+            r->amount -= gm_MinutesBetween(&r->clock, &ai_Time);
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
+            r->clock = ai_Time;
+            if (r->amount <= 0)
+                e->stage = 1;
+        }
         return;
     }
-    if (he_RoomBusy(*(int *)(c + 0x16c), 0x24b) != 0) {
-        gm_AddTime(ev + 0x52, 0, 0xf, 0);
-        return;
-    }
-    if (st == 1) {
-        v = gm_Query(*(int *)(*(int *)(c + 0x16c) + 0x5d), 2, 6, 0, 0x24b);
-        h = gm_FindChar(*(int *)(ev + 0xc));
-        if (h != 0)
-            ai_DomizilMessageResearch(h, c, v, *(int *)(ev + 0xb0));
-        ahm_SendSetShare(c, *(int *)(ev + 0xb0));
-        sv_MoveToGroup(0, 0, *(unsigned short *)c, 0);
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (st == 0) {
-        v = gm_MinutesBetween((void *)(ev + 0xc0), (void *)(unsigned)&ai_Time);
-        *(int *)(ev + 0xb8) -= v;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        *(AITIME *)(ev + 0xc0) = ai_Time;
-        if (*(int *)(ev + 0xb8) < 1)
-            *(int *)(ev + 0x70) = 1;
-    }
+    r->clock = ai_Time;
+    gm_AddTime(&e->end, 1, 0, 0);
 }
 /* 0x56dd20, the alloc of the research event 0x98 (not while paused, flags +0x78 & 4): the clock +0x52 = now, the hour set to a random 9 .. 16 (or 13 on the next day from 20 on), +0xac = 0, +0xb0 / +0xb4 = -1, and the handler scheduled (0x4c4c60) into +0x84 */
 

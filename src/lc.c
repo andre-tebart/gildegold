@@ -14735,7 +14735,7 @@ int gm_Opinion(int a, int b);
 /* 0x5a9b50, the Domizil message of a finished research (108 B): for a kind 6 / 7 character the text 0x4074 with
    the researcher's name and family (+0x30 / +0x40) and the name of its study (0x4172 + kind) into ai_NewsText,
    then the quick-jump message 0x5ec to its netId with its building's id (+0x16c, +1), the object's id (+2) and
-   the sound "_NACHRICHTEN_DOMIZIL_03"; he_Unk56daa0 sends it when the research event 0x97 hands the result over */
+   the sound "_NACHRICHTEN_DOMIZIL_03"; he_RunTrainShare sends it when the research event 0x97 hands the result over */
 
 void ai_DomizilMessageResearch(int toRec, int cRec, int objRec, int kind)
 {

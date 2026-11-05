@@ -2568,3 +2568,4 @@
 2026-11-05T23:52:14 0x0056d3d0 data he_Unk56d3d0 -> he_RunRecipeResearch by:main why:the run / alloc handlers of the research event 0x95 (sv activity 'erforschen'): the alchemist researches a recipe (ahm_RandomRecipe, ahm_SendAddPlace)
 2026-11-05T23:52:14 0x0056d2d0 func he_Unk56d2d0 -> he_AllocRecipeResearch by:main why:the run / alloc handlers of the research event 0x95 (sv activity 'erforschen'): the alchemist researches a recipe (ahm_RandomRecipe, ahm_SendAddPlace)
 2026-11-05T23:53:50 0x0056d730 data he_Unk56d730 -> he_RunResearchRecipe by:main why:the run handler of the alchemist research event 0x96 (alloc he_AllocResearchRecipe): counts the research minutes down, then raises the recipe place's value
+2026-11-05T23:54:50 0x0056daa0 data he_Unk56daa0 -> he_RunTrainShare by:main why:the run handler of the alchemist training event 0x97 (alloc he_AllocTrainShare): counts the minutes down, then raises the share (ahm_SendSetShare)
