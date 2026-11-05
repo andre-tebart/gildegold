@@ -395,6 +395,13 @@ typedef struct HETRIALSTEP {            /* the next trial step event 0x5f's word
     int cost;                           /* 0xb4, the cost of a step (he_AddApEvent's cost, negated) */
     unsigned char skill[2];             /* 0xb8, the two skills each step raises (ai_ApplyTrialStep's index 0 .. 4) */
 } HETRIALSTEP;
+typedef struct HETRAINING {             /* the training event 0x60's words over AIJOB's union (its alloc handler
+                                           he_StartTraining, run handler 0x549aa0) */
+    char pad00[0xac];
+    unsigned char base;                 /* 0xac, the most the skill rises: 0x15 */
+    unsigned char range;                /* 0xad, the random amount taken off it (util_Random), 2 * (2 + skill / 42 + 1) */
+    unsigned char skill;                /* 0xae, the skill trained (AICHAR.skills index) */
+} HETRAINING;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x64 */
     char pad00[0x64];
     int taught;                         /* 0x64, the trial step courses its character finished as the teacher (he_RunTrialSteps
@@ -4243,40 +4250,40 @@ void he_RunTrialSteps(int ev)
         return;
     }
 }
-/* 0x549970, a Ghidra miss (disassembled): the init of the training event: the ability +0xae of the player must be at least 0x5eceb4 (else the event is freed), a running event of the type 0x60 of the player is not doubled (0x53e400 (2, 2, player, 0, 0x60)); +0xac = 0x15, +0xad = 2 * (2 + the ability * 0.0xx + 1), state 0, the clock now, posted 5 (or 1 when 0x6f2448) units ahead, +0x44 = now */
+/* 0x549970, a Ghidra miss (disassembled): the alloc handler of the training event 0x60: frees it when the trained
+   skill of its character is at the cap 252 already, or when the character has another 0x60 event running
+   (he_FindEvent (2, 2, chr, 0, 0x60), skipping itself); else it raises the skill by 0x15 less a random part of
+   2 * (skill / 42 + 3), starts at stage 0, due 5 hours from now (a second with gm_AllowAll), started now */
 
-void he_Unk549970(int ev)
+void he_StartTraining(int ev)
 {
-    int e, a;
+    AIJOB *e = (AIJOB *)ev;
+    HETRAINING *t = (HETRAINING *)ev;
+    AIJOB *found;
 
-    a = *(unsigned char *)(((unsigned)&ai_CharSex + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
-    if (!((float)a < (252.0f))) {
+    if ((float)ai_CharsT[e->chr].skills[t->skill] >= 252.0f) {
         he_FreeEvent((int *)ev);
         return;
     }
-    e = (int)he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 0, 0x60);
-    if (e != 0) {
-        if (e != ev) {
-            he_FreeEvent((int *)ev);
-            return;
-        }
-        while ((e = (int)he_NextEvent()) != 0) {
-            if (e != ev) {
+    found = (AIJOB *)he_FindEvent(2, 2, e->chr, 0, 0x60);
+    if (found != 0) {
+        do {
+            if (found != e) {
                 he_FreeEvent((int *)ev);
                 return;
             }
-        }
+            found = (AIJOB *)he_NextEvent();
+        } while (found != 0);
     }
-    a = *(unsigned char *)(((unsigned)&ai_CharSex + 0x77) + *(unsigned short *)(ev + 8) * 0x21c + *(unsigned char *)(ev + 0xae));
-    *(unsigned char *)(ev + 0xac) = 0x15;
-    *(unsigned char *)(ev + 0xad) = (unsigned char)(((int)((float)a * 0.5f + 1.0f) + 2) * 2);
-    *(int *)(ev + 0x70) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (U_I((unsigned)&gm_AllowAll) != 0)
-        gm_AddTime(ev + 0x52, 0, 0, 1);
+    t->range = (unsigned char)((int)(ai_CharsT[e->chr].skills[t->skill] * (1.0f / 42.0f) + ai_FloatOne) + 2) * 2;
+    t->base = 0x15;
+    e->stage = 0;
+    e->end = ai_Time;
+    if (gm_AllowAll != 0)
+        gm_AddTime(&e->end, 0, 0, 1);
     else
-        gm_AddTime(ev + 0x52, 5, 0, 0);
-    *(AITIME *)(ev + 0x44) = ai_Time;
+        gm_AddTime(&e->end, 5, 0, 0);
+    e->start = ai_Time;
 }
 /* 0x549aa0, the run handler of the training result event (+0xac = base, +0xad = random range, +0xae = the ability): state 0 raises the ability (0x4c6020) of the player by base - random, with a news 0x16f2 .. when the value cap 252 is hit; a player of kind 6 whose value rises past the old one gets a message record (type 0x6a, 0x4c4b70), then 0x4c5870 and free (ROUGH) */
 
@@ -9606,7 +9613,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5f, (void *)he_StartNextTrialStep, (void *)he_RunTrialSteps) != 0)
         return 1;
-    if (he_SetEventHandlers(0x60, (void *)he_Unk549970, (void *)he_Unk549aa0) != 0)
+    if (he_SetEventHandlers(0x60, (void *)he_StartTraining, (void *)he_Unk549aa0) != 0)
         return 1;
     if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_Unk54a020) != 0)
         return 1;
