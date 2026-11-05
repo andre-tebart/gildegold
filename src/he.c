@@ -4067,13 +4067,14 @@ void he_AllocComment(int ev)
     c->next = c->entry + 1;
     gm_AddTime(&e->end, 0x18, 0, 0);
 }
-/* 0x548380, a Ghidra miss: frees the event in the state 0 or -2 */
+/* 0x548380, the run handler of the history comment event 0x52 (he_AllocComment): it frees the record in the
+   stage 0 or -2 */
 
-void he_Unk548380(int ev)
+void he_RunComment(int ev)
 {
-    int st = *(int *)(ev + 0x70);
+    AIJOB *e = (AIJOB *)ev;
 
-    if (st == -2 || st == 0)
+    if (e->stage == -2 || e->stage == 0)
         he_FreeEvent((int *)ev);
 }
 /* 0x5483a0, the init of a timed event: +0xb0 = -1, the clock +0x52 = the start (+0x44) + random(4) + 2 in the minute word (+0x56), state 0 */
@@ -10714,7 +10715,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x51, (void *)he_AllocNextDay, (void *)he_RunCountdown) != 0)
         return 1;
-    if (he_SetEventHandlers(0x52, (void *)he_AllocComment, (void *)he_Unk548380) != 0)
+    if (he_SetEventHandlers(0x52, (void *)he_AllocComment, (void *)he_RunComment) != 0)
         return 1;
     if (he_SetEventHandlers(0x53, (void *)he_Unk5483a0, (void *)he_RunCharPayouts) != 0)
         return 1;
