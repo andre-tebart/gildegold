@@ -9437,32 +9437,32 @@ int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
         return 0;
     if (a != 0)
         return 0;
-    if (((unsigned char *)p)[2] != 5) {
-        c = (G5CH *)gm_FindChar(*(int *)((unsigned char *)p + 0x5c));
+    if (p->kind != 5) {
+        c = (G5CH *)gm_FindChar(p->relatives[0]);
         if (c != 0) {
-            k = ((unsigned char *)c)[2];
+            k = c->kind;
             if (k == 5 || k == 6 || k == 7)
                 return 0;
-            if (((unsigned char *)c)[9] == 0 && ai_WorksForMaster((AICHAR *)c) != 0)
+            if (c->sex == 0 && ai_WorksForMaster((AICHAR *)c) != 0)
                 return 0;
         }
     }
     best = 0;
     for (m = 0; m < 5; m++) {
-        c = (G5CH *)gm_FindChar(((int *)((unsigned char *)p + 0x68))[m]);
-        if (c != 0 && ((unsigned char *)c)[8] > 0 && ((unsigned char *)c)[0x164] != 0
-            && !(*(int *)((unsigned char *)c + 0x1c8) & 0x10000)
+        c = (G5CH *)gm_FindChar(p->relatives[m + 3]);
+        if (c != 0 && c->health > 0 && c->jobId != 0
+            && !(c->flags1c8 & 0x10000)
             && (best == 0 || c->age > best->age))
             best = c;
     }
     if (best == 0)
         return 0;
-    G8_4948F0(p, rec);
-    x = gm_GetJobTalents(((unsigned char *)best)[0x164]);
+    ai_RollStudyOffers((AIC4 *)p, (int *)rec);
+    x = gm_GetJobTalents(best->jobId);
     for (n = 0; n < 3; n++) {
-        va = max((float)x.skills[rec[n].b], 1.0f);
-        vb = max((float)x.skills[rec[n].c], 1.0f);
-        s[n] = ((unsigned char *)best)[0x80 + rec[n].c] / vb + ((unsigned char *)best)[0x80 + rec[n].b] / va;
+        va = max((float)x.skills[rec[n].b], ai_FloatOne);
+        vb = max((float)x.skills[rec[n].c], ai_FloatOne);
+        s[n] = best->skills[rec[n].c] / vb + best->skills[rec[n].b] / va;
     }
     if (util_RandomU(2) != 0) {
         m = s[0] > s[1] ? 0 : 1;

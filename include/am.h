@@ -662,7 +662,8 @@ typedef struct G5CH {                   /* a character, 0x21c bytes (ai_Chars[76
                                            "UseObject (Unversehrtheit)" wants the good 0x17e while one is set */
     char pad030[0x2c];
     int relatives[8];                   /* 0x05c, the netIds of the character's relatives (ai.h AICHAR), -1 none */
-    char pad07c[0xc];
+    char pad07c[4];                     /* 0x07c */
+    unsigned char skills[8];            /* 0x080, the five skill bytes (AIPER.skills: 0..252) */
     float mood[14][3];                  /* 0x088, (a, b, value) */
     unsigned char sel;                  /* 0x130, the current need */
     unsigned char prev;                 /* 0x131, the previous action */
@@ -955,7 +956,6 @@ int ai_EvalApprenticeship(float *a, float *b, int i, G5CH *p, int f, AIARG *o1, 
 int ai_DecideApprenticeship(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a1170 */
 int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1360 */
 void ai_RollStudyOffers(struct AIC4 *ch, int *out);                                         /* 0x4948f0, unk_494020.h: AIC4 * */
-#define G8_4948F0(p, r) ai_RollStudyOffers((p), (int *)(r))
 int ai_DecideStudy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x4a13e0 */
 int ai_ExecuteStudy(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a1640 */
 int ai_SeanceDecide(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);    /* unlinked: LINK folds it (/OPT:ICF) into sv_ReturnZero */
