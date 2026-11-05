@@ -1029,6 +1029,12 @@ typedef struct HEAHMRESEARCH {          /* the alchemist research event 0x96's w
     int start;                          /* 0xbc, the amount the research started with (the minutes the progress is measured in) */
     AITIME clock;                       /* 0xc0, the clock the elapsed minutes are measured from (ai_Time) */
 } HEAHMRESEARCH;
+typedef struct HEPLUNDER {              /* the plunder event 0x8a's words over AIJOB's union (its alloc he_AllocPlunder and run
+                                           handler 0x5707a0): the buildings the character plunders one after the other */
+    char pad00[0xb0];
+    int at;                             /* 0xb0, the index of the building being plundered */
+    int bld[5];                         /* 0xb4, the ids of the buildings to plunder (ai_PickActionBuildings' out) */
+} HEPLUNDER;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
 
@@ -19649,7 +19655,7 @@ void he_Unk570ef0(int ev);          /* 0x570ef0 */
 void he_Unk571000(int ev);          /* 0x571000 */
 void he_Unk571550(int ev);          /* 0x571550 */
 void he_Unk571640(int ev);          /* 0x571640 */
-void he_Unk5706e0(int ev);          /* 0x5706e0 */
+void he_AllocPlunder(int ev);          /* 0x5706e0 */
 void he_Unk5707a0(int ev);          /* 0x5707a0 */
 void he_Unk572860(int ev);          /* 0x572860 */
 void he_Unk570cc0(int ev);          /* 0x570cc0 */
@@ -19673,7 +19679,7 @@ int he_RegisterEventTypes88(void)
         if (he_SetEventHandlers(0x89, (void *)he_Unk570130, (void *)he_Unk5702e0) == 0) {
             if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
-                    if (he_SetEventHandlers(0x8a, (void *)he_Unk5706e0, (void *)he_Unk5707a0) == 0) {
+                    if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_Unk5707a0) == 0) {
                         if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_Unk570cc0) == 0) {
                             if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
@@ -20004,24 +20010,39 @@ void he_Unk5702e0(int ev)
 
 int ai_PickActionBuildings(struct AIPER *p, int a, __int64 mask, float lo, float hi, unsigned char n, int *out); /* 0x4a6570 */
 
-/* 0x5706e0, the alloc of the event 0x8a: paused -> nothing; 0x4a6570 (the record of the player +8, 5, 4, 0, 0, 0, 5, ev + 0xb4) -> 0 -> free; the slot +0xb4 of the found index (when < 5) cleared, +0xb0 = 0, due clock now + 1 hour, state 0 */
-void he_Unk5706e0(int ev)
+/* 0x5706e0, the alloc of the plunder event 0x8a: paused -> nothing; the buildings the character (chr) can plunder are
+   picked (ai_PickActionBuildings, mask 4, at most 5, into bld) -> none -> free; the picked slot of the found index
+   (when below 5) is cleared, at = 0, the due clock is now + 1 hour and the event is scheduled (cm_SendExSetHE)
+   @deep only allocation / scheduling is left: ours 54 ins vs the original's 56, differing 42, hunks regs
+   32 + one code hunk at 0x5706e5 (+0x5). Read whole against 0x5706e0..0x570795: the meaning is equal - the
+   same 8 pushed dwords (p, 5, mask 4, lo 0, hi 0, n 5, out = &bld), the same he_FreeEvent, the same stores
+   (bld[r] = 0 for r < 5, at = 0, end = ai_Time, exSlot = cm_SendExSetHE's result), the same constants and
+   the same shared epilogue. What differs is the argument setup's schedule and registers: the original
+   keeps the mask's 4 in eax (mov eax,4 before the opts test, test al) and the out pointer in edx, zeroes
+   the three words with ecx and pushes the mask's low dword from eax; ours tests the immediate 4, computes
+   the out pointer in eax and pushes the words as immediates, and the gm_AddTime/cm_SendExSetHE tail uses
+   ecx/edx swapped (0x57074d). Tried: typed AIJOB/HEPLUNDER accesses (the current form, no code change),
+   the out pointer as a local and as (int *)(ev + 0xb4), and the mask as a local (worse / unchanged,
+   reverted). */
+void he_AllocPlunder(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEPLUNDER *p = (HEPLUNDER *)ev;
     int r;
 
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    r = ai_PickActionBuildings((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, 5, 4, 0, 0, 5, ev + 0xb4);
+    r = ai_PickActionBuildings((struct AIPER *)((unsigned)&ai_Chars + e->chr * 0x21c), 5, 4, 0, 0, 5, p->bld);
     if (r == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
     if (r < 5)
-        HM_I(ev, 0xb4 + r * 4) = 0;
-    HM_I(ev, 0xb0) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
+        p->bld[r] = 0;
+    p->at = 0;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
