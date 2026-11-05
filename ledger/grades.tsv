@@ -1726,8 +1726,8 @@ exe	0x004a0a70	ai_DecideUpgradeGuild	am	draft	readable	deep
 exe	0x004a0e60	ai_ExecuteUpgradeGuild	am	byte	readable		
 exe	0x004a1000	ai_EvalApprenticeship	am	byte	readable		
 exe	0x004a1170	ai_DecideApprenticeship	am	shape	readable		
-exe	0x004a1360	ai_ExecuteApprenticeship	am	byte	draft		
-exe	0x004a13e0	ai_DecideStudy	am	shape	draft		
+exe	0x004a1360	ai_ExecuteApprenticeship	am	byte	readable		
+exe	0x004a13e0	ai_DecideStudy	am	shape	readable		
 exe	0x004a1640	ai_ExecuteStudy	am	byte	readable		
 exe	0x004a16f0	ai_RegisterBaseActions	am	byte	readable		
 exe	0x004a3a90	ai_NextNearRingEntry	am	byte	readable		
@@ -3487,16 +3487,16 @@ exe	0x0053bb20	main_GameLoop	main	draft	draft	deep
 exe	0x0053c9b0	main_PlayIntroMovies	main	byte	readable		
 exe	0x0053cb40	main_PlayOutro	main	byte	readable		
 exe	0x0053ccf0	WinMain	main	draft	draft	deep	
-exe	0x0053d430	he_Unk53d430	he	byte	draft		
-exe	0x0053d470	he_Unk53d470	he	byte	draft		
-exe	0x0053d4b0	he_InitEvents	he	byte	draft		
-exe	0x0053d590	he_FreeEvents	he	byte	draft		
+exe	0x0053d430	he_AllocNone	he	byte	readable		
+exe	0x0053d470	he_RunNone	he	byte	readable		
+exe	0x0053d4b0	he_InitEvents	he	byte	readable		
+exe	0x0053d590	he_FreeEvents	he	byte	readable		
 exe	0x0053d5d0	he_ReleaseEvents	he	byte	readable		
-exe	0x0053d600	he_Unk53d600	he	byte	draft		
+exe	0x0053d600	he_SetEventHandlers	he	byte	readable		
 exe	0x0053d630	he_FreeOldestSlot	he	byte	readable		
 exe	0x0053d6f0	he_OpenEventSlot	he	byte	readable		
 exe	0x0053d800	he_ReleaseSlot	he	byte	readable		
-exe	0x0053d930	he_CreateEventBar	he	byte	draft		
+exe	0x0053d930	he_CreateEventBar	he	byte	readable		
 exe	0x0053d9b0	he_CloseEventSlots	he	byte	draft		
 exe	0x0053d9f0	he_ShowEventBar	he	byte	readable		
 exe	0x0053dad0	he_SetBarEnabled	he	byte	readable		
@@ -3683,7 +3683,7 @@ exe	0x00552b90	he_Unk552b90	he	byte	draft
 exe	0x00552bc0	he_Unk552bc0	he	byte	draft		
 exe	0x00552c30	he_Unk552c30	he	byte	draft		
 exe	0x00552ca0	he_Unk552ca0	he	draft	draft		
-exe	0x00553060	he_Unk553060	he	byte	draft		
+exe	0x00553060	he_RegisterEventTypes22	he	byte	draft		
 exe	0x005538b0	he_EndPersonEvents	he	draft	draft		
 exe	0x00553ae0	he_Unk553ae0	he	draft	draft		
 exe	0x00553cc0	he_Unk553cc0	he	byte	draft		
@@ -3808,7 +3808,7 @@ exe	0x00567d60	he_Unk567d60	he	draft	draft
 exe	0x00567f00	he_Unk567f00	he	byte	draft		
 exe	0x00567f50	he_PatrolStep	he	draft	draft		
 exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
-exe	0x00568310	he_Unk568310	he	byte	draft		
+exe	0x00568310	he_RegisterEventTypes02	he	byte	draft		
 exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
 exe	0x00568ae0	he_AllocIncomeEvent	he	byte	readable		
 exe	0x00568be0	he_Unk568be0	he	draft	draft		
@@ -3832,8 +3832,8 @@ exe	0x0056bc50	he_Unk56bc50	he	draft	draft
 exe	0x0056be30	he_Unk56be30	he	draft	draft		
 exe	0x0056cdd0	he_Unk56cdd0	he	byte	draft		
 exe	0x0056ce40	he_Unk56ce40	he	draft	draft		
-exe	0x0056d050	ai_Unk56d050	he	byte	draft		
-exe	0x0056d220	ai_Unk56d220	he	byte	draft		
+exe	0x0056d050	he_RegisterEventTypes03	he	byte	draft		
+exe	0x0056d220	he_RegisterEventTypes95	he	byte	draft		
 exe	0x0056d2d0	he_Unk56d2d0	he	shape	draft		
 exe	0x0056d3d0	he_Unk56d3d0	he	draft	draft		
 exe	0x0056d610	he_Unk56d610	he	draft	draft		
@@ -3844,7 +3844,7 @@ exe	0x0056dd20	he_Unk56dd20	he	shape	draft
 exe	0x0056ddc0	he_RoomBusy	he	byte	readable		
 exe	0x0056de10	he_Unk56de10	he	draft	draft		
 exe	0x0056e070	he_Unk56e070	he	draft	draft		
-exe	0x0056e400	ai_Unk56e400	he	byte	draft		
+exe	0x0056e400	he_RegisterEventTypes99	he	byte	draft		
 exe	0x0056e460	he_Unk56e460	he	byte	draft		
 exe	0x0056e5b0	he_Unk56e5b0	he	draft	draft		
 exe	0x0056efc0	he_AllocEvent9a	he	byte	readable		
@@ -3860,7 +3860,7 @@ exe	0x0056f3b0	he_NoEvent9bFor	he	byte	draft
 exe	0x0056f3f0	he_Unk56f3f0	he	draft	draft		
 exe	0x0056f600	he_Unk56f600	he	draft	draft		
 exe	0x0056f740	he_Unk56f740	he	draft	draft		
-exe	0x0056f980	he_Unk56f980	he	byte	draft		
+exe	0x0056f980	he_RegisterEventTypes88	he	byte	draft		
 exe	0x0056fbc0	he_SetLifeByAge	he	shape	draft		
 exe	0x0056fc50	he_Unk56fc50	he	byte	draft		
 exe	0x0056fda0	he_Unk56fda0	he	draft	draft		
@@ -3894,10 +3894,10 @@ exe	0x00572b90	he_Unk572b90	he	byte	draft
 exe	0x00572bf0	he_Unk572bf0	he	draft	draft		
 exe	0x00572fd0	he_Unk572fd0	he	draft	draft		
 exe	0x00573200	he_HasGraveWork	he	byte	draft		
-exe	0x00573260	ai_Unk573260	he	byte	draft		
+exe	0x00573260	he_RegisterEventTypeA2	he	byte	draft		
 exe	0x00573280	he_Unk573280	he	byte	draft		
 exe	0x005732d0	he_Unk5732d0	he	byte	draft		
-exe	0x005733c0	ai_Unk5733c0	he	byte	draft		
+exe	0x005733c0	he_RegisterEventTypes9d	he	byte	draft		
 exe	0x005734b0	he_Unk5734b0	he	byte	draft		
 exe	0x00573580	he_Unk573580	he	byte	draft		
 exe	0x005736d0	he_Unk5736d0	he	byte	draft		

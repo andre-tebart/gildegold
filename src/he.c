@@ -1,6 +1,7 @@
 /* he.c -- the event ("Handlung" / HE) system, tag "he_" (0x626680 ..), panel "Panel\Event_Leiste": the 16 slot
    event bar (0x6faa80), the event records (0x400 of 0x14c bytes at 0x6fab40), the alloc / run handler tables
-   (0x74df40 / 0x758600, registered by 0x553060 / 0x568310) and the handlers of the single event types.
+   (0x74df40 / 0x758600, registered by he_RegisterEventTypes22 / he_RegisterEventTypes02) and the handlers of the
+   single event types.
    0x53d430 .. 0x575860: starts right after main.c's program entry (its globals 0x625718 / 0x62571c follow
    main.c's INI strings); the tutorial / campaign block (.data 0x62918c) follows.
    (no @bytes: the block after he_Unk555b60's ret at 0x556055 is its int 3 error path, reached by the je at 0x555dd7)
