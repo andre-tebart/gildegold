@@ -10,13 +10,17 @@
    carts AIOBJ (ai_types.h), the carried-goods records GMCARRYREC (f3gm_carry.h), the goods prototypes GMGOOD
    (f3gm_types.h), the AP events HEAPEVENT (he.h, he_ApEvents). The event bar, the event create / free / search, the
    gfx info, AP event and the event posting functions up to 0x53f370 read them typed.
-   The handlers up to 0x545670 (the feast 0x37 / feast exam 0x36, tribute 0x35, courtship 0x41 and patrol 0x43
-   events) read AIJOB typed, their kind words named in AIJOB's union (fest*, exam*, tribute*, pair*, patrol*).
-   Open: types: the handlers past 0x545670 still read the event and message records through raw offsets
+   The handlers up to 0x547ba0 (the feast 0x37 / feast exam 0x36, tribute 0x35, courtship 0x41, patrol 0x43,
+   raid 0x44, fight 0x45, duel challenge 0x46 and insult 0x47 events) read AIJOB typed, their kind words named in
+   AIJOB's union (fest*, exam*, tribute*, pair*, patrol*, raid*; partner1 / partner2) and the fight parties they
+   post as G28REC (cm_types.h, its raid lists).
+   Open: types: the handlers past 0x547ba0 still read the event and message records through raw offsets
    (HM_I / U_I), except the kind-specific words over AIJOB's union the local views name: HEJOBTABLE (the job table
    0x12c at +0x28), HESTAMMTISCH (the meeting event 0x2a at +0xac .. +0xc0), HEOFFER (the offer event 0x2c and the
-   master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's
-   object 0x1b5). AIJOB's fields between 0x14 and 0xac are named only as the message's words.
+   master exam 0x2f: who[] at +0xac, +0xc4 / +0xc5 / +0xd4), HEDUEL (the duel challenge's +0xac and the duel's
+   +0xb4 / +0xb6), and over AIOBJ HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5). AIJOB's fields between
+   0x14 and 0xac are named only as the message's words; a member added to AIJOB / G28REC can flip other units'
+   matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it).
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,

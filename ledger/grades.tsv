@@ -2202,7 +2202,7 @@ exe	0x004c4e00	cm_SendKillCharacter	cm	byte	draft
 exe	0x004c4e40	cm_SendCrime	cm	byte	draft		
 exe	0x004c4e90	cm_SendRetireCrime	cm	byte	draft		
 exe	0x004c4ed0	cm_SendProofExecuted	cm	byte	draft		
-exe	0x004c4f10	ai_Unk4c4f10	cm	byte	draft		
+exe	0x004c4f10	cm_SendDropEvidence	cm	byte	draft		
 exe	0x004c4f50	cm_RequestSendCutInfo	cm	byte	draft		
 exe	0x004c4fa0	cm_SendNewParty	cm	byte	readable		
 exe	0x004c4fd0	cm_SendLeaveParty	cm	byte	draft		
@@ -2216,7 +2216,7 @@ exe	0x004c5230	cm_SendChrStop	cm	byte	draft
 exe	0x004c5260	ai_Unk4c5260	cm	byte	draft		
 exe	0x004c52a0	ai_Unk4c52a0	cm	byte	draft		
 exe	0x004c52e0	cm_SendChrGotoBuilding	cm	draft	readable	deep	
-exe	0x004c5410	ai_Unk4c5410	cm	byte	draft		
+exe	0x004c5410	cm_SendChrAnim	cm	byte	draft		
 exe	0x004c5460	cm_SendChrUseGates	cm	byte	draft		
 exe	0x004c54a0	cm_SendOwnership	cm	byte	draft		
 exe	0x004c54e0	ai_Unk4c54e0	cm	byte	draft		
@@ -3570,17 +3570,17 @@ exe	0x00544840	he_RunCourtship	he	draft	readable	deep
 exe	0x005455e0	he_Unk5455e0	he	byte	draft		
 exe	0x00545640	he_Unk545640	he	byte	draft		
 exe	0x00545670	he_AllocPatrol	he	byte	readable		
-exe	0x00545840	he_Unk545840	he	draft	draft		
+exe	0x00545840	he_RunPatrol	he	byte	readable		
 exe	0x00546100	he_Unk546100	he	byte	draft		
-exe	0x005461c0	he_Unk5461c0	he	draft	draft		
-exe	0x00546c40	he_Unk546c40	he	draft	draft		
-exe	0x00546ef0	he_Unk546ef0	he	draft	draft		
+exe	0x005461c0	he_RunRaid	he	draft	readable	deep	
+exe	0x00546c40	he_AllocFight	he	shape	readable		
+exe	0x00546ef0	he_RunFight	he	byte	readable		
 exe	0x00547170	he_Unk547170	he	byte	draft		
-exe	0x005471e0	he_Unk5471e0	he	byte	draft		
-exe	0x005472d0	he_Unk5472d0	he	draft	draft		
-exe	0x00547430	he_Unk547430	he	draft	draft		
-exe	0x00547750	he_Unk547750	he	draft	draft		
-exe	0x00547ba0	he_Unk547ba0	he	draft	draft		
+exe	0x005471e0	he_DuelAccepted	he	byte	draft		
+exe	0x005472d0	he_DuelDeclined	he	shape	readable		
+exe	0x00547430	he_RunDuelChallenge	he	byte	readable		
+exe	0x00547750	he_AllocInsult	he	draft	readable	deep	
+exe	0x00547ba0	he_RunInsult	he	draft	readable	deep	
 exe	0x00547ee0	he_Unk547ee0	he	shape	draft		
 exe	0x00547f90	he_Unk547f90	he	draft	draft		
 exe	0x00548110	he_Unk548110	he	byte	draft		
@@ -4006,7 +4006,7 @@ exe	0x00578440	ai_TutorialFreeRuns	unk_575860	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	unk_575860	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	unk_575860	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	unk_575860	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	unk_575860	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	unk_575860	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	unk_575860	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	unk_575860	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	unk_575860	byte	readable		
