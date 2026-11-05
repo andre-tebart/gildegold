@@ -14362,7 +14362,7 @@ void ai_PlagueNews(void)
    @deep read whole against 0x5a9240..0x5a92b0 and the meaning is right: the sound literal
    _KATASTROPHE_PEST_HS_0%i (the 0x62c2c0 bytes) formatted with v + 3, the text 0x20ca + v into ai_NewsText
    (0x6f26c8), the kind test at +2 on a G8CHARREC (id +0, kind +2, netId +4) and the news 0x600 to netId;
-   the callers push two arguments (he.c ai_Unk5a9240K(0, o) uses the K&R cast) and the second is unused, as
+   the callers push two arguments (he.c ai_PlagueMessageK(0, o) uses the K&R cast) and the second is unused, as
    the original. All that is left is the allocation of the random v: ours keeps the util_Random result in
    eax and emits mov esi,eax / and esi,0xffff inside the branch (and the kind byte into cl, push esi inside
    the branch), the original truncates at the definition (mov si,ax right after the call, and esi,0xffff

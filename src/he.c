@@ -60,7 +60,7 @@ struct D3SM;
 #include "data_views.h"
 #define GAPDATA __declspec(align(1)) unsigned char
 #define d3t_CreateEmitterK ((int (*)())d3t_CreateEmitter)  /* 0x415ad0 (d3_tools.c): @original he_CreateSmokeEffect / he_CreatePointsEffect call it without a prototype, the floats as dword bit patterns (draft: 19 instructions this way, 29 through the prototype) */
-#define ai_Unk5a9240K ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define ai_PlagueMessageK ((int (*)())ai_PlagueMessage)  /* 0x5a9240: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 #define ai_DomizilMessageK ((int (*)())ai_DomizilMessage)  /* 0x5a9c30: @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 
 
@@ -417,8 +417,8 @@ typedef struct HEPLAGUE {               /* the plague event 0x59's words over AI
     int step;                           /* 0xb4, the walk's step, a random ai_RandomStrides entry */
     char padb8[4];
     int carriers[4];                    /* 0xbc, the four carriers: the cm slots of their creation, then their ids */
-    char padcc[4];
-    int target;                         /* 0xd0, the id of the target building, the start building at first */
+    int target;                         /* 0xcc, the id of the building the carriers are sent to */
+    int home;                           /* 0xd0, the id of the start building, where they go back after each target */
 } HEPLAGUE;
 typedef struct HEPLAGUEMSG {            /* the AI message 0x78 he_BeginPlague posts to every player character (AIMSG
                                            has no names at +0x58 .. +0x6c for it) */
@@ -4378,7 +4378,7 @@ void he_RunTraining(int ev)
 /* 0x549ce0, begins the plague event 0x59 (its run handler 0x54a020 calls it at stage 5): from a random one of the
    0x100 buildings on, the first whose type is of kind 7 starts it: a random walk index and step, the AI message
    0x78 (flags 9) about it to every player character (kind 6 / 7), four carriers ("PEST", kind 0xe, job 0x12)
-   created at it, it is the first target; due a minute from now, posted at stage 0, and the plague news
+   created at it, it is their home; due a minute from now, posted at stage 0, and the plague news
    (ai_PlagueNews). Without such a building the event is posted as failed */
 
 void he_BeginPlague(int ev)
@@ -4419,7 +4419,7 @@ void he_BeginPlague(int ev)
             p->carriers[1] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
             p->carriers[2] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
             p->carriers[3] = cm_SendSpawnCharacterR(0xe, b->id, -1, 0x12, 0, 0, "PEST");
-            p->target = b->id;
+            p->home = b->id;
             gm_AddTime(&e->end, 0, 1, 0);
             e->exSlot = cm_SendExSetHE(0, ev);
             ai_PlagueNews();
@@ -4457,183 +4457,223 @@ void he_Unk549f70(int ev)
     *(int *)(ev + 0x84) = -1;
     cm_SendExSetHE(5, ev);
 }
-/* 0x54a020, a Ghidra miss (disassembled; 1936 B): the run handler of the plague event ("Pest", +0xbc .. +0xc8 the four carriers (job handles, then figure ids), +0xb0 / +0xb4 the walk over the 0x100 buildings (0xa9 bytes each, table 0x889f74; +0xb4 the step), +0xcc / +0xd0 the target building): state 0 turns the handles into ids, state 1 picks the next target building of a kind in the mask 0x807c4110 (debug text "EvtPest: next target = %G") and sends the carriers there (0x4c52e0 "Pest"), state 2 waits for the carriers at the target (0x524770), then infects the figures near it (0x5417d0 with the strengths 0x505440, 0x42ec70) and counts +0xac down, state 3 waits until a carrier is away from the target again; a free of the event (flag 2) lets the carriers stop (0x4c4e00) (ROUGH) */
+/* 0x54a020, a Ghidra miss (disassembled; 1720 B): the run handler of the plague event 0x59 ("Pest"): stage -1 / -2
+   stops and kills the four carriers when the event is freed with the option 2, and frees it; nothing while it is
+   not started or its last post is not settled. Stage 5 begins it (he_BeginPlague). Stage 0 turns the carriers'
+   creation slots into their ids (-1: not created). Stage 1 walks the 0x100 buildings by the step from the walk
+   index to the next owned building of a kind in the mask (kinds 4, 8, 14, 18 .. 22, 31, 32; the debug text
+   "EvtPest: next target = %G") and sends the carriers there ("Pest"); none: it ends. Stage 2 waits until every
+   carrier is at the target's door, then infects: of the target's owner's building up to 16 characters of kind 0 in
+   it, a random share of them (at least one) and with 1 in 8 a character of kind 1 in it catch the plague
+   (gm_CatchPlague), the owner with 1 in 256; any infection posts the plague message, and each value below 1000
+   makes the character ill (he_CharIllness, illness 1). While left counts down it goes on to the next target,
+   else the carriers go home. Stage 3 waits until every carrier is home, then the event ends
+   @deep read in full against the original (576 instructions): the four-stage switch (jump table equal),
+   the carriers loops, the building walk with the 64-bit kind mask 0x1807c4110 and the % 0x100 steps,
+   txt_Format of the debug text, the owner / kind-0 / kind-1 infection block (memset ids -1, value 1000.0f,
+   util_RandomF2 > 0.8f -> 1, * cnt, !(a > 1) -> 1, gm_CatchPlague, the 1/8 and 1/256 rolls,
+   ai_PlagueMessage(owner, o), he_CharIllness(e, c, owner, o, 1, v) below 1000.0f), --left <= 0 sends the
+   carriers home (1 / 10 minutes) else posts stage 1; every callee, constant and string checked. Fixed in
+   this pass: sprintf -> txt_Format, the owner argument, the 0.8 / 1000.0 literals, the home wait 1 not 2
+   minutes, stage 3's missing-carrier test, the start / target words (0xd0 / 0xcc). Left only tail / order
+   hunks (diffclass: tail 80, order 20, no code hunk): VC6's choice of which identical return tails to
+   cross-jump (see the size note), and the loop latch's scheduling at 0x54a172 (o = 0 / --n against the %
+   fixup). Deep work (size: 20 of the instruction difference are shared / inline tails) (references: M8 at
+   +0x381: ours refers to gm_AddTime (0x4fe140), the original's field to 0x4c4c60 (cm_SendExSetHE),
+   explained: the M8 at +0x381 is the tail alignment: ours ends the stage-2 wait block with 'call
+   gm_AddTime; jmp' into stage 1's identical 'push ebp; push 2; call cm_SendExSetHE' tail, the original
+   keeps that tail inline, so the aligner pairs our gm_AddTime call with the original's cm_SendExSetHE
+   call; both sides call gm_AddTime(&end, 0, 5, 0) then cm_SendExSetHE(2, ev) there) */
 
-void he_Unk54a020(int ev)
+void he_RunPlague(int ev)
 {
-    char text[0x100];
-    int st, i, n, idx, esi, o = 0, p, h, r;
-    float strength[16];
+    AIJOB *e = (AIJOB *)ev;
+    HEPLAGUE *p = (HEPLAGUE *)ev;
+    AIBLD *o;
+    AIBTYPE *bt;
+    AICHAR *c, *owner, *other;
+    int *carrier;
+    unsigned lo, hi;
+    int i, n, k, cnt, m, any, r;
+    float a, otherValue;
+    float value[16];
     int ids[16];
+    char text[0x200];
 
-    st = *(int *)(ev + 0x70);
-    if (st == -1 || st == -2) {
-        if ((*(unsigned char *)(ev + 0x78) & 2) != 0) {
-            for (i = 0; i < 4; i++) {
-                p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-                if (p != 0) {
-                    cm_SendChrStop(*(int *)(p + 4));
-                    cm_SendKillCharacter(*(int *)(p + 4), 1);
+    if (e->stage == -1 || e->stage == -2) {
+        if (e->opts & 2) {
+            carrier = p->carriers;
+            for (i = 4; i != 0; i--) {
+                c = (AICHAR *)gm_FindChar(*carrier);
+                if (c != 0) {
+                    cm_SendChrStop(c->netId);
+                    cm_SendKillCharacter(c->netId, 1);
                 }
+                carrier++;
             }
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if (e->opts & 4)
         return;
-    if (*(int *)(ev + 0x84) != -1 && cm_GetSlotState(*(int *)(ev + 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    if (*(int *)(ev + 0x70) == 5)
+    if (e->stage == 5)
         he_BeginPlague(ev);
-    switch (*(int *)(ev + 0x70)) {
+    switch (e->stage) {
     case 0:
-        for (i = 0; i < 4; i++) {
-            h = *(int *)(ev + 0xbc + i * 4);
-            if (cm_GetSlotState(h) == 1 && (r = cm_GetSlotValue(h)) != 0)
-                *(int *)(ev + 0xbc + i * 4) = *(int *)(r + 4);
+        carrier = p->carriers;
+        for (i = 4; i != 0; i--) {
+            if (cm_GetSlotState(*carrier) == 1 && (r = cm_GetSlotValue(*carrier)) != 0)
+                *carrier = ((AICHAR *)r)->netId;
             else
-                *(int *)(ev + 0xbc + i * 4) = -1;
+                *carrier = -1;
+            carrier++;
         }
-        gm_AddTime(ev + 0x52, 0, 1, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
+        gm_AddTime(&e->end, 0, 1, 0);
+        e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 1:
         n = 0x100;
-        idx = *(int *)(ev + 0xb0);
-        esi = 0;
+        k = p->walk;
         do {
-            unsigned lo = 0, hi = 0;
-            int e, k;
-
-            esi = U_I((unsigned)&ai_Blds) + idx * 0xa9;
-            e = U_I((unsigned)&ai_BTypes) + *(unsigned char *)esi * 0x24d;
-            k = *(unsigned char *)e;
-            if (k > 0x1f)
-                hi = 1u << (k - 0x20);
+            o = &ai_BldsT[k];
+            hi = 0;
+            bt = &ai_BTypesT[o->type];
+            lo = 0;
+            if ((unsigned char)bt->kind > 0x1f)
+                hi = 1 << ((unsigned char)bt->kind - 0x20);
             else
-                lo = 1u << k;
-            if (*(unsigned short *)(esi + 0x27) != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
+                lo = 1 << (unsigned char)bt->kind;
+            if (o->owner != 0xffff && ((lo & 0x807c4110) != 0 || (hi & 1) != 0))
                 break;
-            idx = (idx + *(int *)(ev + 0xb4)) & 0xff;
-            esi = 0;
             n--;
+            o = 0;
+            k = (k + p->step) % 0x100;
         } while (n != 0);
-        *(int *)(ev + 0xb0) = (*(int *)(ev + 0xb4) + idx) & 0xff;
-        if (esi == 0) {
-            gm_AddTime(ev + 0x52, 0, 1, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+        p->walk = (p->step + k) % 0x100;
+        if (o == 0) {
+            gm_AddTime(&e->end, 0, 1, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        sprintf(text, "EvtPest: next target = %G", esi);
+        txt_Format(text, "EvtPest: next target = %G", o);
         n = 0;
-        for (i = 0; i < 4; i++) {
-            p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-            if (p != 0) {
-                cm_SendChrStop(*(int *)(p + 4));
-                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(esi + 1), -1, 0, 1, "Pest");
+        carrier = p->carriers;
+        for (i = 4; i != 0; i--) {
+            c = (AICHAR *)gm_FindChar(*carrier);
+            if (c != 0) {
+                cm_SendChrStop(c->netId);
+                cm_SendChrGotoBuilding(c->netId, o->id, -1, 0, 1, "Pest");
                 n++;
             }
+            carrier++;
         }
-        gm_AddTime(ev + 0x52, 0, n <= 0 ? 0x14 : 5, 0);
-        *(int *)(ev + 0xcc) = *(int *)(esi + 1);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+        gm_AddTime(&e->end, 0, n > 0 ? 5 : 0x14, 0);
+        p->target = o->id;
+        e->exSlot = cm_SendExSetHE(2, ev);
         return;
     case 2:
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xcc));
-        gm_AddTime(ev + 0x52, 0, 5, 0);
+        gm_FindById(&o, 0, 0, p->target);
+        gm_AddTime(&e->end, 0, 5, 0);
         if (o == 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 4; i++) {
-            p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-            if (p != 0 && sv_IsAtDoor(p, o) == 0) {
-                *(int *)(ev + 0x70) = 2;
-                gm_AddTime(ev + 0x52, 0, 5, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
+            c = (AICHAR *)gm_FindChar(p->carriers[i]);
+            if (c != 0 && sv_IsAtDoor(c, o) == 0) {
+                e->stage = 2;
+                gm_AddTime(&e->end, 0, 5, 0);
+                e->exSlot = cm_SendExSetHE(2, ev);
                 return;
             }
         }
-        if (*(unsigned short *)(o + 0x27) != 0xffff) {
-            /* the figures of the target building: strength by 0x505440, one random one gets the plague (0x5417d0) */
-            int cnt = 0, first = 0, rec2, j, any = 0;
-            float big = 1000.0f;
-            for (rec2 = (unsigned)&ai_Unk770cec, j = 0; j < 16 && rec2 < ((unsigned)((unsigned)ai_Unk770cec + 0x65296) + 0x16a); rec2 += 0x21c) {
-                if (*(char *)(rec2 - 0x16a) == 0 && *(int *)rec2 == o) {
-                    strength[j] = big;
-                    ids[j] = j;
-                    j++;
-                } else if (*(char *)(rec2 - 0x16a) == 1 && *(int *)rec2 == o) {
-                    first = rec2 - 0x16c;
-                }
+        if (o->owner != 0xffff) {
+            any = 0;
+            other = 0;
+            otherValue = 1000.0f;
+            owner = &ai_CharsT[o->owner];
+            memset(ids, -1, sizeof(ids));
+            cnt = 0;
+            for (k = 0; k < 768; k++) {
+                if (cnt >= 16)
+                    break;
+                if (ai_CharsT[k].kind == 0 && ai_CharsT[k].bld == o) {
+                    value[cnt] = 1000.0f;
+                    ids[cnt] = k;
+                    cnt++;
+                } else if (ai_CharsT[k].kind == 1 && ai_CharsT[k].bld == o)
+                    other = &ai_CharsT[k];
             }
-            cnt = j;
             if (cnt != 0) {
-                float a = util_RandomF2();
-                int m;
-
-                if (a > 1.0f)
-                    a = 1.0f;
-                a *= (float)cnt;
-                m = (int)(a < 1.0f ? 1.0f : a);
-                for (j = 0; j < m; j++) {
-                    strength[j] = gm_CatchPlague((unsigned)&ai_Chars + ids[j] * 0x21c);
+                a = util_RandomF2();
+                if (a > 0.8f)
+                    a = ai_FloatOne;
+                a = a * cnt;
+                if (!(a > ai_FloatOne))
+                    a = ai_FloatOne;
+                m = (int)a;
+                for (i = 0; i < m; i++) {
+                    any = 1;
+                    value[i] = gm_CatchPlague(&ai_CharsT[ids[i]]);
+                }
+                if (other != 0 && (unsigned short)util_Random(8) == 0) {
+                    otherValue = gm_CatchPlague(other);
                     any = 1;
                 }
-                if (first != 0 && (short)util_Random(8) == 0) {
-                    strength[0] = gm_CatchPlague(first);
-                    any = 1;
-                }
-                if ((short)util_Random(0x100) == 0)
-                    gm_CatchPlague(0);
+                if ((unsigned short)util_Random(0x100) == 0)
+                    gm_CatchPlague(owner);
                 if (any)
-                    ai_Unk5a9240K(0, o);
-                for (j = 0; j < m; j++)
-                    if (strength[j] > 0.0f)
-                        he_CharIllness((AIJOB *)ev, (AICHAR *)((unsigned)&ai_Chars + ids[j] * 0x21c), 0, (AIBLD *)o, 1, strength[j]);
+                    ai_PlagueMessageK(owner, o);
+                for (i = 0; i < m; i++) {
+                    if (value[i] < 1000.0f)
+                        he_CharIllness(e, &ai_CharsT[ids[i]], owner, o, 1, value[i]);
+                }
+                if (otherValue < 1000.0f)
+                    he_CharIllness(e, other, owner, o, 1, otherValue);
             }
         }
-        if (*(int *)(ev + 0xac) > 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(1, ev);
-            return;
-        }
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xd0));
-        if (o == 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-            return;
-        }
-        n = 0;
-        for (i = 0; i < 4; i++) {
-            p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-            if (p != 0) {
-                cm_SendChrStop(*(int *)(p + 4));
-                cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(o + 1), -1, 0, 1, "Pest");
-                n++;
+        if (--p->left <= 0) {
+            gm_FindById(&o, 0, 0, p->home);
+            if (o == 0) {
+                e->exSlot = cm_SendExSetHE(-1, ev);
+                return;
             }
-        }
-        gm_AddTime(ev + 0x52, 0, n <= 0 ? 10 : 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+            n = 0;
+            carrier = p->carriers;
+            for (i = 4; i != 0; i--) {
+                c = (AICHAR *)gm_FindChar(*carrier);
+                if (c != 0) {
+                    cm_SendChrStop(c->netId);
+                    cm_SendChrGotoBuilding(c->netId, o->id, -1, 0, 1, "Pest");
+                    n++;
+                }
+                carrier++;
+            }
+            gm_AddTime(&e->end, 0, n > 0 ? 1 : 10, 0);
+            e->exSlot = cm_SendExSetHE(3, ev);
+        } else
+            e->exSlot = cm_SendExSetHE(1, ev);
         return;
     case 3:
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        gm_FindById(&o, 0, 0, *(int *)(ev + 0xd0));
+        gm_AddTime(&e->end, 0, 5, 0);
+        gm_FindById(&o, 0, 0, p->home);
         if (o == 0) {
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
         for (i = 0; i < 4; i++) {
-            p = gm_FindChar(*(int *)(ev + 0xbc + i * 4));
-            if (p == 0 || sv_IsAtDoor(p, o) == 0) {
-                *(int *)(ev + 0x70) = 3;
-                gm_AddTime(ev + 0x52, 0, 5, 0);
-                *(int *)(ev + 0x84) = cm_SendExSetHE(3, ev);
+            c = (AICHAR *)gm_FindChar(p->carriers[i]);
+            if (c != 0 && sv_IsAtDoor(c, o) == 0) {
+                e->stage = 3;
+                gm_AddTime(&e->end, 0, 5, 0);
+                e->exSlot = cm_SendExSetHE(3, ev);
                 return;
             }
         }
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-        return;
-    default:
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -9672,7 +9712,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x60, (void *)he_StartTraining, (void *)he_RunTraining) != 0)
         return 1;
-    if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_Unk54a020) != 0)
+    if (he_SetEventHandlers(0x59, (void *)he_Unk549f70, (void *)he_RunPlague) != 0)
         return 1;
     if (he_SetEventHandlers(0x61, (void *)he_Unk54a6f0, (void *)he_Unk54a7b0) != 0)
         return 1;
