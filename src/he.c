@@ -4190,12 +4190,15 @@ void he_RunMasterExamFee(int ev)
         }
     }
 }
-/* 0x548750, a Ghidra miss: the due clock = the start clock (+0x44), posted 3 units ahead */
+/* 0x548750, the alloc handler of the master exam payment event 0x55 (he_RunMasterExamPay): the due (end) clock is
+   the start clock 3 hours ahead */
 
-void he_Unk548750(int ev)
+void he_AllocMasterExamPay(int ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 3, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = e->start;
+    gm_AddTime(&e->end, 3, 0, 0);
 }
 /* 0x548790, a Ghidra miss: the run handler of the master exam payment event 0x55: stage -1 / -2 releases its slot
    and frees it; once started, stage 0 keeps the fee (5% of the character's worth), opens the message box
@@ -10731,7 +10734,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_RunMasterExamFee) != 0)
         return 1;
-    if (he_SetEventHandlers(0x55, (void *)he_Unk548750, (void *)he_RunMasterExamPay) != 0)
+    if (he_SetEventHandlers(0x55, (void *)he_AllocMasterExamPay, (void *)he_RunMasterExamPay) != 0)
         return 1;
     if (he_SetEventHandlers(0x56, (void *)he_AllocNextDay, (void *)he_RunPayment) != 0)
         return 1;
