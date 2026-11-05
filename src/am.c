@@ -2170,9 +2170,9 @@ int ai_DecideLaw25(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x492a40, decision 26 */
+/* 0x492a40, the callback of law record 26 (AIDEC.fn, office 0x14 no 2, a boolean law): no reader of its cur is in the exe outside the table; the normalized skill 2 against its rating (x1.3 for title group 0xb, else x0.9) against 1 raises the law (cur 0 -> 1) when mood 11 outweighs mood 9, and lowers it (cur 1 -> 0) when mood 10 outweighs mood 9 */
 
-int ai_Unk492a40(AIPER *p, int a, int *out)
+int ai_DecideLaw26(AIPER *p, int a, int *out)
 {
     AIDEC d;
     float f, x, u, v, w;
