@@ -7695,28 +7695,28 @@ int ai_DecideMayor(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 int ai_ExecuteMayor(G5CH *p, AIARG *s1, AIARG *s2)
 {
     G8MSG m;
-    unsigned char *c;
+    AIOBJ *c;
 
-    c = (unsigned char *)gm_PlayerSeat(1);
-    if (c == 0 || ((unsigned char *)p)[0x166] != 0xf)
+    c = (AIOBJ *)gm_PlayerSeat(1);
+    if (c == 0 || p->officeKind != 0xf)
         return 0;
     if (s2->kind == 4) {
         memset(&m, 0, sizeof(m));
         m.type = 0x1e;
         m.to = p->netId;
-        m.unk0c = s2->ref;
-        m.unk36 = 1;
+        m.fromId = s2->ref;
+        m.flags = 1;
         m.time = ai_Time;
-        *(int *)&m.unk58 = s2->ref;
+        m.arg = s2->ref;
         cm_BeginGroup("upgr_arbeiter_unterk");
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
+        cm_SendMoveGoods(-1, c->objId, ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
         cm_SendLongMessage((AIMSG *)&m);
         cm_EndGroup("upgr_arbeiter_unterk");
         return 0x2e;
     }
     cm_BeginGroup("bau_arbeiter_unterk");
     if (ai_ExecBuildBuilding((AIPER *)ai_PlayerChar, s1, s2) != 0) {
-        cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
+        cm_SendMoveGoods(-1, c->objId, ai_OwnPlayer, gm_BuildingKindValue(s1->ref));
         cm_EndGroup("bau_arbeiter_unterk");
         return 0x2e;
     }
@@ -7879,10 +7879,10 @@ int ai_ExecuteMayorTownHall(G5CH *p, AIARG *s1, AIARG *s2)
     memset(&m, 0, sizeof(m));
     m.type = 0x1e;
     m.to = p->netId;
-    m.unk0c = s2->ref;
-    m.unk36 = 1;
+    m.fromId = s2->ref;
+    m.flags = 1;
     m.time = ai_Time;
-    *(int *)&m.unk58 = s2->ref;
+    m.arg = s2->ref;
     cm_BeginGroup("upgr_rathaus");
     cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
@@ -8002,10 +8002,10 @@ int ai_ExecuteMayorPrison(G5CH *p, AIARG *s1, AIARG *s2)
     memset(&m, 0, sizeof(m));
     m.type = 0x1e;
     m.to = p->netId;
-    m.unk0c = s2->ref;
-    m.unk36 = 1;
+    m.fromId = s2->ref;
+    m.flags = 1;
     m.time = ai_Time;
-    *(int *)&m.unk58 = s2->ref;
+    m.arg = s2->ref;
     cm_BeginGroup("upgr_kerker");
     cm_SendMoveGoods(-1, *(int *)(c + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
@@ -8382,10 +8382,10 @@ int ai_ExecuteTakeCredit(G5CH *p, AIARG *s1, AIARG *s2)
     memset(&m, 0, sizeof(m));
     m.type = 0x23;
     m.to = ai_CharsT[a->owner].netId;
-    m.unk0c = a->id;
+    m.fromId = a->id;
     m.time = ai_Time;
-    m.unk36 = 0x12;
-    *(int *)&m.unk58 = a->id;
+    m.flags = 0x12;
+    m.arg = a->id;
     m.from = p->netId;
     m.unk60 = s2->ref;
     m.unk64 = s2->arg;
@@ -9286,11 +9286,11 @@ int ai_ExecuteUpgradeGuild(G5CH *p, AIARG *s1, AIARG *s2)
         return 0;
     memset(&m, 0, sizeof(m));
     m.type = 0x1e;
-    m.unk0c = s1->ref2;
+    m.fromId = s1->ref2;
     m.to = p->netId;
-    m.unk36 = 1;
+    m.flags = 1;
     m.time = ai_Time;
-    *(int *)&m.unk58 = s1->ref2;
+    m.arg = s1->ref2;
     cm_BeginGroup("upgr_ai_zunfthaus");
     cm_SendMoveGoods(-1, *(int *)(o + 2), ai_OwnPlayer, (int)(gm_BuildingKindValue(s1->ref) * 0.3f));
     cm_SendLongMessage((AIMSG *)&m);
@@ -9408,10 +9408,10 @@ int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
 
     if (s1->kind == 7 && s2->kind == 0x17) {
         m.to = s1->ref;
-        m.unk36 = 0x12;
-        *(int *)&m.unk58 = p->netId;
+        m.flags = 0x12;
+        m.arg = p->netId;
         m.type = 0x5e;
-        m.unk0c = -1;
+        m.fromId = -1;
         *(unsigned char *)&m.from = (unsigned char)s2->ref;
         m.unk60 = s2->arg2;
         cm_SendLongMessage((AIMSG *)&m);

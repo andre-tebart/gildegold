@@ -782,13 +782,12 @@ typedef struct G8MSG {                  /* 0xf8 bytes, an AIMSG (ai.h) as these 
     unsigned char type;                 /* 0x04 */
     char pad05[3];
     unsigned int to;                    /* 0x08 */
-    int unk0c;                          /* 0x0c */
+    int fromId;                         /* 0x0c, the sending building's id (AIMSG.fromId) */
     char pad10[0x18];
     AITIME time;                        /* 0x28 */
-    unsigned char unk36;                /* 0x36 */
+    unsigned char flags;                /* 0x36, the message flags (AIMSG.flags) */
     char pad37[0x21];
-    unsigned char unk58;                /* 0x58 */
-    char pad59[3];
+    int arg;                            /* 0x58, the message kind's first word (AIMSG.arg[0]: a building id or a character's netId) */
     unsigned int from;                  /* 0x5c */
     int unk60;                          /* 0x60 */
     int unk64;                          /* 0x64 */
