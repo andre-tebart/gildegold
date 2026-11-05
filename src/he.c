@@ -473,6 +473,14 @@ typedef struct HEGATHERING {            /* the patrol gathering event 0x65's wor
     int partySlot;                      /* 0xd8, the cm send slot of the fight party (cm_SendNewParty) */
     unsigned char dc;                   /* 0xdc, 0 at the start (no reader known) */
 } HEGATHERING;
+typedef struct HESIM {                  /* the words of the simulation events 0x66 (he_RunAccidentSim) and 0x70 over
+                                           AIJOB's union (their alloc handler 0x54c4c0 clears them) */
+    char pad00[0xac];
+    int cursor;                         /* 0xac, the ai_Chars index the next run starts at */
+    int step;                           /* 0xb0, the stride through ai_Chars, one of 16 numbers prime to 0x300; 0: not
+                                           started (the next run picks one and a random cursor) */
+    int done;                           /* 0xb4, the characters visited this round */
+} HESIM;
 typedef struct HEFINVIEW {              /* the player record gm_PlayerRecord finds (ai.h AIFIN, not included here) at +0x18 / +0x64 */
     char pad00[0x18];
     int gangTakings;                    /* 0x18, the money the pickpocket gangs brought its character (he_RunGang adds it) */
@@ -2574,7 +2582,7 @@ void he_CharacterBehavior(AIJOB *ev, float *pos)
         }
     }
 }
-/* 0x5414a0, the accident of the character c at its workplace bld (the accident simulation he_Unk54c570 rolls it):
+/* 0x5414a0, the accident of the character c at its workplace bld (the accident simulation he_RunAccidentSim rolls it):
    for value <= 0 it dies (its script stopped, the death message 0x71 posted, from the event ev's character or
    else the boss), and a playing boss (kind 6 / 7) gets the news 0x1bb0, or 0x414a for a kind 0x14 character,
    unless quiet; for a value below half its base health with a place to carry it to (he_FindFigurePlace) it is
@@ -5465,7 +5473,7 @@ int ai_IsLocalWorker();
 float gm_AddHealth(unsigned short id, int d);
 
 /* 0x54c510, a Ghidra miss: the test of a figure record for the accident simulation: alive (word 0 != 0xffff, +8 != 0), kind 0, with a boss (+0x16c) whose id (+1) is the one of its job record (+0x184 + 0x2c): then 0x47e840 (rec), else 0 */
-int he_Unk54c510(int rec)
+int he_IsAtWork(int rec)
 {
     int ok = 1;
 
@@ -5478,68 +5486,84 @@ int he_Unk54c510(int rec)
         return ai_IsLocalWorker(rec);
     return 0;
 }
-/* 0x54c570, a Ghidra miss (disassembled; 756 B): the run handler of the accident simulation ("RunSimUnfall: calculating at <Day = %i Time = %i.2:%i.2>"): the first run picks a start from 16 primes (+0xb0) and a random start figure (+0xac, of 0x300); state 0 walks the 0x300 figures of the ring in 12 steps per run (+0xac += +0xb0, +0xb4 counts) and for a figure that passes 0x54c510 and has a boss rolls 25 - 0.0125 * 20 * 0x5092e0 (.., 2, 1) against a random 0 .. 100: the accident 0x5414a0 (with a random damage 0x4fca40 of -50 - random(1 + 2 * ..)); when all 0x300 are done the due clock is set on and the counters reset, else it is posted 0x1e units ahead (ROUGH) */
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-void he_Unk54c570(int ev)
+/* 0x54c570, a Ghidra miss: the run handler of the work accident simulation, event 0x66 (HESIM; the text
+   "RunSimUnfall: calculating at <Day ..>" is formatted and never shown). Freed (stage -2) it frees the event.
+   A round starts with a random stride of 16 numbers prime to 0x300 and a random first character; each run (stage
+   0) visits the next 12 characters of the round: a worker at its building (he_IsAtWork) whose building has an
+   owner has an accident (he_CharAccident) when a roll of 0 .. 100 stays below 25 - 20 * the building's skill 2
+   * 0.0125: it loses 50 + random(1 + 255 * (2 - skill * 0.0125), clamped to 0 .. 2) health, and the accident
+   gets the health gm_AddHealth leaves. After all 0x300 the round is over: due the next day at 10:00, else due in
+   30 minutes, the next day at 10:00 once that is 18:00 or later */
+void he_RunAccidentSim(int ev)
 {
-    char text[0x100];
+    AIJOB *e = (AIJOB *)ev;
+    HESIM *s = (HESIM *)ev;
+    AIBLD *b;
+    int n, cur, skill;
+    float roll, lim, health;
     int primes[16];
-    int i, n, start, rec, boss, cnt, cur;
-    float r, sk, lim, pr;
+    char text[0x200];
 
-    if (*(int *)(ev + 0x70) == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    sprintf(text, "-------> RunSimUnfall: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_Time.hour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
-    if (*(int *)(ev + 0xb0) == 0) {
-        int pr0[16] = { 1, 3, 5, 7, 0xb, 0xd, 0x11, 0x13, 0x2ed, 0x2ef, 0x2f3, 0x2f5, 0x2f9, 0x2fb, 0x2fd, 0x2ff };
-
-        for (i = 0; i < 16; i++)
-            primes[i] = pr0[i];
-        *(int *)(ev + 0xb0) = primes[(unsigned short)util_Random(0x10)];
-        *(int *)(ev + 0xac) = (unsigned short)util_Random(0x300);
+    txt_Format(text, (int)"-------> RunSimUnfall: calculating at <Day = %i Time = %i.2:%i.2>", ai_Time.year, ai_Time.hour, ai_Time.min);
+    if (s->step == 0) {
+        primes[0] = 1;
+        primes[1] = 3;
+        primes[2] = 5;
+        primes[3] = 7;
+        primes[4] = 0xb;
+        primes[5] = 0xd;
+        primes[6] = 0x11;
+        primes[7] = 0x13;
+        primes[8] = 0x2ed;
+        primes[9] = 0x2ef;
+        primes[10] = 0x2f3;
+        primes[11] = 0x2f5;
+        primes[12] = 0x2f9;
+        primes[13] = 0x2fb;
+        primes[14] = 0x2fd;
+        primes[15] = 0x2ff;
+        s->step = primes[(unsigned short)util_Random(0x10)];
+        s->cursor = (unsigned short)util_Random(0x300);
     }
-    if (*(int *)(ev + 0x70) != 0)
+    if (e->stage != 0)
         return;
-    cur = *(int *)(ev + 0xac);
-    for (n = 12; n > 0; n--) {
-        rec = (unsigned)&ai_Chars + cur * 0x21c;
-        if (he_Unk54c510(rec) != 0 && *(unsigned short *)(*(int *)(rec + 0x16c) + 0x27) != 0xffff) {
-            r = util_RandomF() * 100.0f;
-            sk = (float)gm_BuildingSkill(*(int *)(rec + 0x16c), 2, 1) * 0.0125f;
-            if (!(25.0f - 20.0f * sk <= r)) {
-                lim = 2.0f - r;
-                if (lim < 0.0f)
-                    lim = 0.0f;
-                if (lim > 2.0f)
-                    lim = 2.0f;
-                pr = lim * 255.0f + 1.0f;
-                gm_AddHealth(cur, -50 - (unsigned short)util_Random((int)pr));
-                he_CharAccident((AIJOB *)ev, (AICHAR *)rec, (AICHAR *)((unsigned)&ai_Chars + *(unsigned short *)(*(int *)(rec + 0x16c) + 0x27) * 0x21c), *(AIBLD **)(rec + 0x16c), lim, 0);
+    cur = s->cursor;
+    for (n = 12; n != 0; n--) {
+        if (he_IsAtWork((int)&ai_CharsT[cur]) != 0 && ai_CharsT[cur].bld->owner != 0xffff) {
+            roll = util_RandomF() * 100.0f;
+            skill = gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld, 2, 1);
+            if (25.0f - 20.0f * (skill * 0.0125f) > roll) {
+                lim = MIN(MAX(2.0f - skill * 0.0125f, 0.0f), 2.0f);
+                health = gm_AddHealth(cur, -50 - (unsigned short)util_Random((int)(lim * 255.0f + ai_FloatOne)));
+                b = ai_CharsT[cur].bld;
+                he_CharAccident(e, &ai_CharsT[cur], &ai_CharsT[b->owner], b, health, 0);
             }
         }
-        cur = (*(int *)(ev + 0xb0) + cur) % 0x300;
-        *(int *)(ev + 0xb4) = *(int *)(ev + 0xb4) + 1;
-        if (*(int *)(ev + 0xb4) == 0)
-            break;
+        cur = (s->step + cur) % 0x300;
+        s->done++;
     }
-    *(int *)(ev + 0xac) = cur;
-    cnt = *(int *)(ev + 0xb4);
-    if (cnt >= 0x300) {
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-        *(int *)(ev + 0xac) = 0;
-        *(int *)(ev + 0xb0) = 0;
-        *(int *)(ev + 0xb4) = 0;
-        *(int *)(ev + 0x58) = 0;
-        *(short *)(ev + 0x56) = 0xa;
+    s->cursor = cur;
+    if (s->done >= 0x300) {
+        s->cursor = 0;
+        s->step = 0;
+        s->done = 0;
+        e->end.year++;
+        e->end.min = 0;
+        e->end.hour = 0xa;
         return;
     }
-    gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    if (*(unsigned short *)(ev + 0x56) >= 0x12) {
-        *(int *)(ev + 0x58) = 0;
-        *(short *)(ev + 0x56) = 0xa;
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
+    gm_AddTime(&e->end, 0, 0x1e, 0);
+    if (e->end.hour >= 0x12) {
+        e->end.min = 0;
+        e->end.hour = 0xa;
+        e->end.year++;
     }
 }
 /* 0x54c870, a Ghidra miss: the init of the ranking event: the due clock now, +0x56 = 9, +0x58 = 0, posted 0x18 units ahead (state 0) */
@@ -9879,7 +9903,7 @@ int he_RegisterEventTypes22(void)
     if (he_SetEventHandlers(0x65, (void *)he_StartGathering, (void *)he_RunGathering) != 0)
         return 1;
     sv_RegisterActivity(0x65, 0x0, 0x0, 0x507, -1);
-    if (he_SetEventHandlers(0x66, (void *)he_Unk54c4c0, (void *)he_Unk54c570) != 0)
+    if (he_SetEventHandlers(0x66, (void *)he_Unk54c4c0, (void *)he_RunAccidentSim) != 0)
         return 1;
     if (he_SetEventHandlers(0x67, (void *)he_Unk54c870, (void *)he_Unk54c8e0) != 0)
         return 1;
