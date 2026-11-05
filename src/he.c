@@ -515,9 +515,12 @@ typedef struct HESPYING {               /* the spying event 24's words over AIJO
     int fee;                            /* 0xe4, the money the event's character pays for the spy */
     int days;                           /* 0xe8, the days of spying asked for */
 } HESPYING;
-typedef struct HEBRAWL {                /* the brawl event 26's words over AIJOB's union (he_AllocBrawl / he_Unk55a730);
-                                           AIJOB.from is the building the thug is hired at */
-    char pad00[0xb4];
+typedef struct HEBRAWL {                /* the brawl event 26's words over AIJOB's union (he_AllocBrawl / he_RunBrawl);
+                                           AIJOB.from is the building the thug is hired at and goes back to */
+    char pad00[0xac];
+    int place;                          /* 0xac, a building id from the event's message: the place the accusations name
+                                           (gv_Accuse), which must still exist when the watch's proof is sent */
+    char padb0[4];
     int victim;                         /* 0xb4, the netId of the character beaten up (gm_FindChar; the run handler's
                                            money moves and accusation name it) */
     char padb8[0x10];
@@ -525,6 +528,8 @@ typedef struct HEBRAWL {                /* the brawl event 26's words over AIJOB
     int slot;                           /* 0xcc, the cm slot of the pending request (the spawn, the walk) */
     int meet;                           /* 0xd0, the id of the building the thug goes to: the victim's home, else one of
                                            its buildings, else one of the gypsyFilter kinds near it */
+    int watch;                          /* 0xd4, the id of the watch event that caught the thug (HEDETECT.found, HEWATCH) */
+    int fee;                            /* 0xd8, the money the event's character pays for it */
 } HEBRAWL;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
@@ -13641,7 +13646,7 @@ int gm_EquipmentValue(unsigned char *b, int level);
 int gm_SumListAmounts(void *list, unsigned char p);
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 
-/* 0x55a5f0, the allocation handler of the brawl event 26 (HEBRAWL, "PRUEGEL"; run handler he_Unk55a730): due now;
+/* 0x55a5f0, the allocation handler of the brawl event 26 (HEBRAWL, "PRUEGEL"; run handler he_RunBrawl): due now;
    without a hiring building (AIJOB.from -1) the first building of the kind 0x16, else 0xf, is taken; the thug is
    spawned there (cm_SendSpawnCharacterR, "PRUEGEL"; its slot kept, no thug yet), and the building it goes to is
    the victim's home, else the victim's first building, else one of the gypsyFilter kinds the event's character
@@ -13687,39 +13692,233 @@ void he_AllocBrawl(AIJOB *e)
     br->meet = home->id;
 }
 
-/* 0x55a730, the run handler of the brawl event "PRUEGEL" (2112 bytes; ROUGH skeleton like 0x558f10): the two brawlers (+0xac / +0xb0 and the job handles 0x4c3ae0 / 0x4c3b10) walk to the building (0x4c52e0, the detection 0x553ae0, 0x4f2e30 relation, the guards 0x53e400, 0x4c4ed0), the fight is decided by the skills (0x494d90, 0x5ba6b0, 0x50cc50 twice) and "_NACHRICHTEN_HS_17" tells the winner / loser (0x53dda0 / 0x53dee0), the end releases the group (0x524260) and frees the record */
-
-void he_Unk55a730(int ev)
+/* 0x55a730, the run handler of the brawl event 26 (HEBRAWL, "Pr\xfcgel"; allocated by he_AllocBrawl). Once
+   started, an event without its thug is cancelled. Stage 0: the spawn answered (none: cancelled), the thug is paid
+   for by the event's character (its player record's spyPaid, a money move to the own player) and joins the event's
+   group. 1: it walks to the meeting building (gone: stage 4). 2: once arrived (no actions left; else 4 more
+   minutes) stage 7. 7: a watch event may see it (he_DetectAttack, range 4000): the victim accuses the event's
+   character (gv_Accuse 0x15) and the stage is 8; else stage 4. 8: the accusation answered, the proof goes to the
+   watch (cm_SendProofExecuted), stage 9 in 10 minutes. 9: while the watch event still holds it 6 more minutes,
+   then the thug walks home (stage 5). 3: the thug walks home. 4, once due: the brawl. A victim with the item 0x2c0
+   costs the attacker (the news 0x1012 / 0x1010 "_NACHRICHTEN_HS_17"), one with 0x17c only tells the attacker
+   (0xff3); else ai_BrawlWin decides: a win tells both (0x173b / 0x173a) and the victim pays (2 with the item
+   0x2b4, else 1 less), a loss tells both (0x173d / 0x173c); then the accusation (gv_Accuse 0x15) and, for a
+   victim not a player, a relation loss of 25. 5: back home (else 4 more minutes) it is cancelled. Stages -2 / -1
+   kill the thug and free the event
+   @deep reconstructed from the 320-byte stub against 0x55a730..0x55af68, every case read and written
+   (HEBRAWL: place 0xac, victim 0xb4, thug 0xc8, slot 0xcc, meet 0xd0, watch 0xd4, fee 0xd8): the start's
+   cancel without thug, stages 0,1,2,7,8,9,3,4,5,-2/-1 in the original's layout order (switch tables equal,
+   case 6 absent), the brawl's item tests 0x2c0 / 0x17c / 0x2b4, news 0x1012/0x1010/0xff3/0x173a-0x173d
+   with their flags and HS_17, gv_Accuse 0x15 twice, cm_SendRelations -25; 695 vs 688 instructions,
+   refs_differ 0. Left (diffclass): tail 18 (the original shares the stage = -1 block at +0x187 with case 5
+   and the stage = 4 block at +0x2d4 with case 1 that ours keeps inline), order 12 in case 1 (- add
+   esp,0x18 before the slot store / + after the stage load, pop edi moved), code 18 + 7 in case 7: the same
+   store schedule he_RunSabotage keeps (- mov [esi+0x70],8 / mov [esi+0xd4],edx then add esi,0x52; + add
+   esi,0x52 first, mov [esi+0x1e],8 / mov [esi+0x82],edx) and the original's own stage = 4 copy at
+   +0x55aa04 that ours merged into case 1's. Tried: case 0 success first (matched, kept), the stage++
+   before slot = -1 (matched, kept), case 1 success first (worse, reverted) (size: 14 of the instruction
+   difference are shared / inline tails) */
+void he_RunBrawl(AIJOB *e)
 {
-    int st = *(int *)(ev + 0x70);
-    int p, b, h;
-    char text[0x200];
+    HEBRAWL *br = (HEBRAWL *)e;
+    AIBLD *b;
+    AICHAR *c, *me, *victim;
+    int won, out;
+    char text[0x400];
 
-    if (st < -2 || st > 6) {
-        he_FreeEvent((int *)ev);
+    if (e->stage > 0 && (br->thug == 0 || br->thug == -1))
+        e->stage = -2;
+    switch (e->stage) {
+    case 0: {
+        HEFINVIEW *fin;
+
+        if (br->slot != -1 && cm_GetSlotState(br->slot) == 0)
+            return;
+        c = (AICHAR *)cm_GetSlotValue(br->slot);
+        if (c != 0) {
+            fin = (HEFINVIEW *)gm_PlayerRecord((char *)&ai_CharsT[e->chr]);
+            if (fin != 0)
+                fin->spyPaid += br->fee;
+            br->thug = c->netId;
+            cm_SendMoveGoodsUnchecked(-1, ai_CharsT[e->chr].netId, ai_OwnPlayer, br->fee);
+            sv_MoveToGroup(0, 0, c->id, (char *)e);
+            e->stage++;
+            br->slot = -1;
+            return;
+        }
+        e->stage = -1;
+        br->slot = -1;
         return;
     }
-    p = gm_FindChar(*(int *)(ev + 0xb0));
-    if (p == 0 || st < 0) {
-        if (p != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
-        he_FreeEvent((int *)ev);
+    case 1:
+        b = (AIBLD *)gm_BuildQuery(1, 1, br->meet);
+        if (b == 0) {
+            e->stage = 4;
+            return;
+        }
+        br->slot = cm_SendChrGotoBuilding(br->thug, b->id, -1, 0, 1, "Pr\xfcgel");
+        e->stage++;
+        return;
+    case 2:
+        br->slot = -1;
+        c = (AICHAR *)gm_FindChar(br->thug);
+        if (c == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (c->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
+            e->stage = 2;
+            return;
+        }
+        e->stage = 7;
+        return;
+    case 7: {
+        HEDETECT d;
+
+        b = (AIBLD *)gm_BuildQuery(1, 1, br->meet);
+        victim = (AICHAR *)gm_FindChar(br->victim);
+        if (b != 0 && victim != 0) {
+            d.bld = b;
+            d.range = 4000.0f;
+            d.ev = e;
+            d.found = 0;
+            if (he_DetectAttack(&d) != 0) {
+                br->slot = gv_Accuse(0x15, 1, ai_CharsT[e->chr].netId, victim->netId, b->id);
+                e->stage = 8;
+                br->watch = d.found->id;
+                e->end = ai_Time;
+                return;
+            }
+        }
+        e->stage = 4;
         return;
     }
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    if (b == 0) {
-        he_FreeEvent((int *)ev);
+    case 8: {
+        HEWATCH *w;
+        CRIME *cr;
+
+        if (br->slot != -1 && cm_GetSlotState(br->slot) == 0)
+            return;
+        b = (AIBLD *)gm_BuildQuery(1, 1, br->place);
+        w = (HEWATCH *)he_FindEvent(1, 1, br->watch);
+        if (b == 0 || w == 0 || w->attackId != e->id || br->slot == -1) {
+            e->stage = -1;
+            return;
+        }
+        c = (AICHAR *)gm_FindChar(br->watch);
+        cr = (CRIME *)cm_GetSlotValue(br->slot);
+        if (cr != 0 && c != 0)
+            cm_SendProofExecuted(cr->id, c->netId);
+        e->stage = 9;
+        gm_AddTime(&e->end, 0, 10, 0);
         return;
     }
-    h = *(int *)(ev + 0xcc);
-    if (h != -1 && cm_GetSlotState(h) == 0)
+    case 9: {
+        HEWATCH *w;
+
+        w = (HEWATCH *)he_FindEvent(1, 1, br->watch);
+        if (w == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (w->attackId == e->id) {
+            gm_AddTime(&e->end, 0, 6, 0);
+            return;
+        }
+        cm_SendChrGotoBuilding(br->thug, e->from, -1, 0, 1, "Pr\xfcgel");
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
+        e->stage = 5;
         return;
-    cm_SendChrGotoBuilding(*(int *)(p + 4), *(int *)(b + 1), -1, 0, 0, "PRUEGEL");
-    txt_Format(text, 0x1bba, b);
-    he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5ec, 0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    *(int *)(ev + 0x70) = st + 1;
+    }
+    case 3:
+        cm_SendChrGotoBuilding(br->thug, e->from, -1, 0, 1, "Pr\xfcgel");
+        e->stage++;
+        return;
+    case 4:
+        if (gm_CompareTime(&e->end, &ai_Time) >= 0)
+            return;
+        me = &ai_CharsT[e->chr];
+        victim = (AICHAR *)gm_FindChar(br->victim);
+        if (victim == 0) {
+            e->stage = -1;
+            return;
+        }
+        won = ai_BrawlWin(me, victim, &out);
+        if (ai_InventoryHas(victim, 0x2c0) != 0) {
+            gm_SendMoneyDelta(me->netId, -1);
+            if (me->kind == 6 || me->kind == 7) {
+                txt_Format(text, 0x1012, victim->id, 2);
+                he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+            }
+            if (victim->kind == 6 || victim->kind == 7) {
+                txt_Format(text, 0x1010);
+                he_ShowNews(victim->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_17");
+            }
+            e->stage++;
+            return;
+        }
+        if (ai_InventoryHas(victim, 0x17c) != 0) {
+            if (me->kind == 6 || me->kind == 7) {
+                txt_Format(text, 0xff3);
+                he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+            }
+            e->stage++;
+            return;
+        }
+        if (won != 0) {
+            if (victim->kind == 6 || victim->kind == 7) {
+                txt_Format(text, 0x173b, 2);
+                he_ShowNews(victim->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_HS_17");
+            }
+            if (me->kind == 6 || me->kind == 7) {
+                txt_Format(text, 0x173a, victim->id);
+                he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+            }
+            if (ai_InventoryHas(victim, 0x2b4) != 0)
+                gm_SendMoneyDelta(br->victim, -1);
+            else
+                gm_SendMoneyDelta(br->victim, -2);
+        } else {
+            if (victim->kind == 6 || victim->kind == 7) {
+                txt_Format(text, 0x173d);
+                he_ShowNews(victim->netId, -1, text, 0, 0x5fb, 0);
+            }
+            if (me->kind == 6 || me->kind == 7) {
+                txt_Format(text, 0x173c, victim->id);
+                he_ShowNews(me->netId, -1, text, 0, 0x5fa, 0);
+            }
+        }
+        gv_Accuse(0x15, 1, ai_CharsT[e->chr].netId, br->victim, br->place);
+        if (victim->kind == 6 || victim->kind == 7) {
+            e->stage++;
+            return;
+        }
+        cm_SendRelations(me->netId, victim->netId, -0x19, 1);
+        e->stage++;
+        return;
+    case 5:
+        c = (AICHAR *)gm_FindChar(br->thug);
+        if (c == 0) {
+            e->stage = -1;
+            return;
+        }
+        if (c->scene->actions == 0) {
+            e->stage = -1;
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
+        return;
+    case -2:
+    case -1:
+        if (br->thug != -1)
+            cm_SendKillCharacter(br->thug, 1);
+        he_FreeEvent((int *)e);
+        return;
+    }
 }
 /* 0x55af70, the allocation handler of a news event (ROUGH): due now + random 0x42ec00(3) units, the first building (0x501190 (1, 1, ..)) of the kinds 0xb / 0xc / 0xd gives the message 0x4c4a60 (.., 0x5a, 2, 2) to its figure, the owner gets the news "_NACHRICHTEN_HS_43" (0x53dee0) and 0x509e30 / 0x4c47e0 set a flag; the record is freed */
 
@@ -16262,7 +16461,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(24, (void *)he_AllocSpying, (void *)he_RunSpying) != 0)
         return 1;
-    if (he_SetEventHandlers(26, (void *)he_AllocBrawl, (void *)he_Unk55a730) != 0)
+    if (he_SetEventHandlers(26, (void *)he_AllocBrawl, (void *)he_RunBrawl) != 0)
         return 1;
     if (he_SetEventHandlers(27, (void *)he_Unk55af70, (void *)he_Unk55b140) != 0)
         return 1;
