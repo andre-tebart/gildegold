@@ -1609,9 +1609,9 @@ int ai_DecideLaw4(AIPER *p, int a, int *out)
     }
     return 0;
 }
-/* 0x491560, decision 5 */
+/* 0x491560, the callback of law record 5 (AIDEC.fn, office 0x0e no 1, a 0..4 law, the upkeep rate gm_CharacterUpkeep reads): the rate is (3 - the growth of need 3) x 5, at most 4, and at most 1 for the title groups 8 / 9 */
 
-int ai_Unk491560(AIPER *p, int a, int *out)
+int ai_DecideUpkeepRate(AIPER *p, int a, int *out)
 {
     AIDEC d;
     int n, t;
