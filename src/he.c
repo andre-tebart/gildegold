@@ -2396,75 +2396,72 @@ void he_CharacterBehavior(AIJOB *ev, float *pos)
         }
     }
 }
-/* 0x5414a0, an accident of the figure p2 (in the event p4): when a (float, > 0) is below half of its health 0x4fc890 and there is a place to carry it (0x55eba0), the scene "Unfall" with the news 0x1baf, else the news 0x1bae / 0x4149 (grave) / 0x1bb0 / 0x414a by the sign of p5 and p6 (ROUGH) */
+/* 0x5414a0, the accident of the character c at its workplace bld (the accident simulation he_Unk54c570 rolls it):
+   for value <= 0 it dies (its script stopped, the death message 0x71 posted, from the event ev's character or
+   else the boss), and a playing boss (kind 6 / 7) gets the news 0x1bb0, or 0x414a for a kind 0x14 character,
+   unless quiet; for a value below half its base health with a place to carry it to (he_FindFigurePlace) it is
+   carried there ("Unfall") and the boss gets the news 0x1baf; else the boss gets 0x1bae, or 0x4149 for kind 0x14.
+   value: the float the simulation rolls (reasoned guess: what is left of the character after the accident) */
 
-void he_Unk5414a0(int p1, unsigned short *p2, int p3, int p4, float p5, int p6)
+void he_CharAccident(AIJOB *ev, AICHAR *c, AICHAR *boss, AIBLD *bld, float value, int quiet)
 {
-    char ev[0xf8];
-    char buf[2048];
-    int l900, l8fc;
-    int u1;
-    char *t;
+    AIMSG m;
+    char buf[0x800];
+    int place, obj;
 
-    if (p5 > 0.0f) {
-        if ((float)p5 < gm_CharacterBaseHealth(p2) * 0.5 && ((int (*)(int, int *, int *, int))he_FindFigurePlace)(p2, &l900, &l8fc, 0) != 0 && *(int *)(p2 + 0xc2) != 0) {
-            sv_MoveToGroup(0, 0, *p2, 0);
-            if (*(int *)(*(int *)(p2 + 0xc2) + 0x28) != -1) {
-                u1 = (int)evt_FindById(*(int *)(*(int *)(p2 + 0xc2) + 0x28));
-                evt_Stop((EVTSCRIPT *)u1);
-            }
-            cm_SendSetField(*(int *)(p2 + 2), 0x1c8, 4, 0x800, 0);
-            cm_SendChrGotoBuilding(*(int *)(p2 + 2), l900, l8fc, 0, l8fc == -1, "Unfall");
-            if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
-                return;
-            txt_Format(buf, 0x1baf, *p2, p4);
-            he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x60a, *(int *)(p4 + 1), -1, 0, "_NACHRICHTEN_HS_61");
-            return;
-        }
-        if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
-            return;
-        if (*(char *)(p2 + 1) == 0x14) {
-            txt_Format(buf, 0x4149, *p2, p4);
-            t = "_NACHRICHTEN_FRIEDHOF_04";
-            he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x60a, *(int *)(p4 + 1), -1, 0, t);
-            return;
-        }
-        txt_Format(buf, 0x1bae, *p2, p4);
-        t = "_NACHRICHTEN_HS_61";
-    } else {
-        sv_MoveToGroup(0, 0, *p2, 0);
-        if (*(int *)(p2 + 0xc2) != 0 && (u1 = *(int *)(*(int *)(p2 + 0xc2) + 0x28)) != -1) {
-            u1 = (int)evt_FindById(u1);
-            evt_Stop((EVTSCRIPT *)u1);
-        }
-        memset(ev, 0, 0xf8);
-        HM_B(ev, 4) = 0x71;
-        if (p1 == 0)
-            HM_I(ev, 8) = *(int *)(p3 + 4);
+    if (value <= 0.0f) {
+        sv_MoveToGroup(0, 0, c->id, 0);
+        if (c->model != 0 && c->model->scriptId != -1)
+            evt_Stop(evt_FindById(c->model->scriptId));
+        memset(&m, 0, sizeof(m));
+        m.type = 0x71;
+        if (ev != 0)
+            m.to = ai_CharInts[ev->chr][0];
         else
-            HM_I(ev, 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(p1 + 8) * 0x21c);
-        HM_I(ev, 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-        HM_I(ev, 0x28) = U_I((unsigned)&ai_Time);
-        HM_I(ev, 0x2c) = U_I((unsigned)&ai_Time.hour);
-        HM_I(ev, 0x58) = *(int *)(p2 + 2);
-        HM_I(ev, 0xc) = -1;
-        *(short *)(ev + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        HM_B(ev, 0x36) = 2;
-        cm_SendLongMessage(ev);
-        if (*(char *)(p3 + 2) != 6 && *(char *)(p3 + 2) != 7)
+            m.to = boss->netId;
+        m.time = ai_Time;
+        m.fromId = -1;
+        m.flags = 2;
+        m.arg[0] = c->netId;
+        cm_SendLongMessage((char *)&m);
+        if (boss->kind != 6 && boss->kind != 7)
             return;
-        if (p6 != 0)
+        if (quiet != 0)
             return;
-        if (*(char *)(p2 + 1) != 0x14) {
-            txt_Format(buf, 0x1bb0, *p2, p4);
-            t = "_NACHRICHTEN_HS_62";
-            he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x60a, *(int *)(p4 + 1), -1, 0, t);
+        if (c->kind == 0x14) {
+            txt_Format(buf, 0x414a, c->id, bld);
+            he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x60a, bld->id, -1, 0, "_NACHRICHTEN_FRIEDHOF_05");
             return;
         }
-        txt_Format(buf, 0x414a, *p2, p4);
-        t = "_NACHRICHTEN_FRIEDHOF_05";
+        txt_Format(buf, 0x1bb0, c->id, bld);
+        he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x60a, bld->id, -1, 0, "_NACHRICHTEN_HS_62");
+        return;
     }
-    he_MessageBoxQuickjump(*(int *)(p3 + 4), *(int *)(p4 + 1), buf, 0, 0x60a, *(int *)(p4 + 1), -1, 0, t);
+    if (gm_CharacterBaseHealth(c) * 0.5f > value
+        && ((int (*)(AICHAR *, int *, int *, int))he_FindFigurePlace)(c, &place, &obj, 0) != 0 && c->model != 0) {
+        sv_MoveToGroup(0, 0, c->id, 0);
+        if (c->model->scriptId != -1)
+            evt_Stop(evt_FindById(c->model->scriptId));
+        cm_SendSetField(c->netId, 0x1c8, 4, 0x800, 0);
+        if (obj == -1)
+            cm_SendChrGotoBuilding(c->netId, place, obj, 0, 1, "Unfall");
+        else
+            cm_SendChrGotoBuilding(c->netId, place, obj, 0, 0, "Unfall");
+        if (boss->kind != 6 && boss->kind != 7)
+            return;
+        txt_Format(buf, 0x1baf, c->id, bld);
+        he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x60a, bld->id, -1, 0, "_NACHRICHTEN_HS_61");
+        return;
+    }
+    if (boss->kind != 6 && boss->kind != 7)
+        return;
+    if (c->kind == 0x14) {
+        txt_Format(buf, 0x4149, c->id, bld);
+        he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x60a, bld->id, -1, 0, "_NACHRICHTEN_FRIEDHOF_04");
+        return;
+    }
+    txt_Format(buf, 0x1bae, c->id, bld);
+    he_MessageBoxQuickjump(boss->netId, bld->id, buf, 0, 0x60a, bld->id, -1, 0, "_NACHRICHTEN_HS_61");
 }
 /* 0x5417d0, the other accident report (the news 0x1630 / 0x1631 / 0x1632, +p5 + 0x1626): p6 <= 0 the 0x1632 news plus the message 0x71, else like 0x5414a0 with the scene "Unfall" (ROUGH) */
 
@@ -5029,7 +5026,7 @@ void he_Unk54c570(int ev)
                     lim = 2.0f;
                 pr = lim * 255.0f + 1.0f;
                 gm_AddHealth(cur, -50 - (unsigned short)util_Random((int)pr));
-                he_Unk5414a0(ev, (unsigned short *)rec, (unsigned)&ai_Chars + *(unsigned short *)(*(int *)(rec + 0x16c) + 0x27) * 0x21c, *(int *)(rec + 0x16c), lim, 0);
+                he_CharAccident((AIJOB *)ev, (AICHAR *)rec, (AICHAR *)((unsigned)&ai_Chars + *(unsigned short *)(*(int *)(rec + 0x16c) + 0x27) * 0x21c), *(AIBLD **)(rec + 0x16c), lim, 0);
             }
         }
         cur = (*(int *)(ev + 0xb0) + cur) % 0x300;
