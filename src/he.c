@@ -10398,13 +10398,17 @@ void he_RunExamOffer(int ev)
         he_FreeEvent((int *)ev);
     }
 }
-/* 0x5524e0, the allocation handler of an event without the flag 4 of +0x78: the due clock (+0x52) is a copy of the start clock (+0x44) and the event is posted (0x4c4c60 (0, ev), handle in +0x84) */
+/* 0x5524e0, the stage-0 start handler shared by the events 0x80 and 0x81 (the conversion): unless its option 4
+   says it is not started yet, the due clock is a copy of the start clock and the event is posted at once (its
+   cm slot kept in exSlot) */
 
-void he_Unk5524e0(int ev)
+void he_StartDue(int ev)
 {
-    if ((*(unsigned char *)(ev + 0x78) & 4) == 0) {
-        *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    AIJOB *e = (AIJOB *)ev;
+
+    if ((e->opts & 4) == 0) {
+        e->end = e->start;
+        e->exSlot = cm_SendExSetHE(0, ev);
     }
 }
 
@@ -10426,7 +10430,7 @@ void he_Unk552520(int ev)
     gm_AddTime(ev + 0x52, 0x18, 0, 0);
     *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
 }
-/* 0x5525a0, the run handler of the conversion event 0x81 (its alloc handler he_Unk5524e0): while it has rounds and
+/* 0x5525a0, the run handler of the conversion event 0x81 (its alloc handler he_StartDue): while it has rounds and
    characters left, each round (a day apart) turns up to n = min(left, ceil(left + rounds)) characters whose b00c
    (the kind the person tooltip names) is `from` to the other kind (1 - from, a field delta of AICHAR +0xc), walking
    the 0x300 characters from a random one (ids in use, kinds up to 4); found fewer than n, it tries again 5 minutes
@@ -10936,9 +10940,9 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7f, (void *)he_StartExamOffer, (void *)he_RunExamOffer) != 0)
         return 1;
-    if (he_SetEventHandlers(0x80, (void *)he_Unk5524e0, (void *)he_Unk552520) != 0)
+    if (he_SetEventHandlers(0x80, (void *)he_StartDue, (void *)he_Unk552520) != 0)
         return 1;
-    if (he_SetEventHandlers(0x81, (void *)he_Unk5524e0, (void *)he_RunConversion) != 0)
+    if (he_SetEventHandlers(0x81, (void *)he_StartDue, (void *)he_RunConversion) != 0)
         return 1;
     if (he_SetEventHandlers(0x82, (void *)he_Unk5527c0, (void *)he_Unk552820) != 0)
         return 1;
