@@ -371,6 +371,10 @@ typedef struct HEPAYMENT {              /* the payment event 0x56's words over A
     char padad[3];
     unsigned int amount;                /* 0xb0, the base amount: twice it or half of it is paid */
 } HEPAYMENT;
+typedef struct HEOFFSPRING {            /* the offspring event's word over AIJOB's union (its run handler he_RunOffspring) */
+    char pad00[0xac];
+    float chance;                       /* 0xac, stage 0: the chance built up run by run; stage 1: the runs waited (to 3) */
+} HEOFFSPRING;
 #pragma pack(push, 1)
 typedef struct HEOFFER {                /* the offer event 0x2c's words over AIJOB's union (AIJOB has no names at these
                                            odd offsets): the kind, the offer clock and the offer handle */
@@ -3970,72 +3974,82 @@ void he_Unk549110(int ev)
     *(int *)(ev + 0x70) = 0;
     *(int *)(ev + 0xac) = 0;
 }
-/* 0x549120, a Ghidra miss (disassembled): the run handler of the feud between the player figure (word +8, record +0x5c = its partner) and the five figures of its slots (+0x68 ..): state 0 rolls (0x42ec20 + (1 - f * f) against f * f * +0xac (a float), f = (5 - the figures alive) * 0.2) and either raises +0xac by f * f * 0.1 or goes to the state 1; state 1 waits for +0xac >= 3.0 (+1.0 per step), posts a message record (type 7) for a player figure of kind 6, and sends 0x4c4650 (8, ..) between the two figures (ROUGH) */
+/* 0x549120, a Ghidra miss (disassembled): the run handler of the offspring event 0x5d: frees it when the character or
+   its partner (relatives[0]) is dead or at stage -2. Stage 0 counts the living children (relatives[3..7]); with all
+   five it frees the event, else f = ((5 - n) * 0.2)^2 and a roll random + (1 - f) < f * chance moves it to stage 1
+   (one year on), otherwise chance grows by f * 0.1. Stage 1 waits three runs (a year each); then a character of kind
+   6 gets a party of kind 7 (flags 0x20) with its partner half an hour from now, and cm_SendCreateCharacter creates the
+   child (the two parents in an order by the character's sex, the home building's id or -1); back to stage 0, 1 .. 8 years on */
 
-void he_Unk549120(int ev)
+void he_RunOffspring(int ev)
 {
-    char msg[0x114];
-    int x = -1, rec, o, i, n, st, g;
-    float f, f2, thr;
+    AIJOB *e = (AIJOB *)ev;
+    HEOFFSPRING *s = (HEOFFSPRING *)ev;
+    G28REC party;
+    int home = -1;
+    AICHAR *c, *partner;
+    int *child;
+    int i, n;
+    float f, odds;
 
-    rec = (unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c;
-    o = gm_FindChar(*(int *)(rec + 0x5c));
-    st = *(int *)(ev + 0x70);
-    if (o == 0 || *(unsigned char *)(o + 8) == 0 || *(unsigned char *)(rec + 8) == 0 || st == -2) {
+    c = &ai_CharsT[e->chr];
+    partner = (AICHAR *)gm_FindChar(c->relatives[0]);
+    if (partner == 0 || partner->health == 0 || c->health == 0 || e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == 0) {
+    if (e->stage != 0) {
+        if (e->stage == 1) {
+            if (s->chance >= 3.0) {
+                if (c->kind == 6) {
+                    memset(&party, 0, sizeof(party));
+                    party.host = c->netId;
+                    party.members[0] = c->netId;
+                    party.members[1] = partner->netId;
+                    party.kind = 7;
+                    party.flags = 0x20;
+                    party.thing = -1;
+                    party.used = 2;
+                    party.time = ai_Time;
+                    gm_AddTime(&party.time, 0, 0x1e, 0);
+                    cm_SendNewParty(&party);
+                }
+                s->chance = 0;
+                if (c->bld2 != 0)
+                    home = c->bld2->id;
+                if (c->sex == 0)
+                    cm_SendCreateCharacter(8, c->netId, partner->netId, 0, home, 0, 0, 2);
+                else
+                    cm_SendCreateCharacter(8, partner->netId, c->netId, 0, home, 0, 0, 2);
+                e->stage = 0;
+                e->end.year += (unsigned short)util_Random(8) + 1;
+            } else {
+                s->chance += 1.0;
+                e->end.year++;
+            }
+        }
+    } else {
         n = 0;
-        for (i = 0; i < 5; i++) {
-            g = *(int *)(rec + 0x68 + i * 4);
-            if (g != -1 && gm_FindChar(g) != 0)
+        child = &c->relatives[3];
+        for (i = 5; i != 0; i--) {
+            if (*child != -1 && gm_FindChar(*child) != 0)
                 n++;
+            child++;
         }
         if (n == 5) {
             he_FreeEvent((int *)ev);
             return;
         }
-        f = (5.0f - (float)n) * 0.2f;
-        f2 = f * f;
-        thr = f2 * *(float *)(ev + 0xac);
-        if (util_RandomF() + (1.0f - f2) < thr) {
-            *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-            *(int *)(ev + 0x70) = 1;
-            *(int *)(ev + 0xac) = 0;
-        } else {
-            *(float *)(ev + 0xac) = (float)((double)f2 * 0.1 + (double)*(float *)(ev + 0xac));
-        }
-        return;
+        f = (5.0f - n) * 0.2f;
+        f = f * f;
+        odds = f * s->chance;
+        if (util_RandomF() + (1.0f - f) < odds) {
+            e->end.year++;
+            e->stage = 1;
+            s->chance = 0;
+        } else
+            s->chance += f * 0.1;
     }
-    if (st != 1)
-        return;
-    if ((double)*(float *)(ev + 0xac) < 3.0) {
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
-        *(float *)(ev + 0xac) = (float)((double)*(float *)(ev + 0xac) + 1.0);
-        return;
-    }
-    if (*(char *)(rec + 2) == 6) {
-        memset(msg, 0, sizeof(msg));
-        msg[8] = 7;
-        *(int *)(msg + 0xc) = *(int *)(rec + 4);
-        *(int *)(msg + 0x14) = -1;
-        *(AITIME *)(msg + 0x18) = ai_Time;
-        msg[0x26] = 0x20;
-        msg[0x30] = 2;
-        *(int *)(msg + 0x34) = *(int *)(o + 4);
-        gm_AddTime(msg + 0x18, 0, 0x1e, 0);
-        cm_SendNewParty(msg);
-    }
-    *(int *)(ev + 0xac) = 0;
-    if (*(int *)(rec + 0x170) != 0)
-        x = *(int *)(*(int *)(rec + 0x170) + 1);
-    if (*(char *)(rec + 9) == 0)
-        cm_SendCreateCharacter(8, *(int *)(rec + 4), *(int *)(o + 4), 0, x, 0, 0, 2);
-    else
-        cm_SendCreateCharacter(8, *(int *)(o + 4), *(int *)(rec + 4), 0, x, 0, 0, 2);
-    *(int *)(ev + 0x70) = 0;
-    *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + (unsigned short)util_Random(8) + 1;
 }
 /* 0x5493a0, the alloc handler of the trial event (type 0x5e, the run handler 0x549430): it looks for another
    running 0x5e event of its player (he_FindEvent (2, 0, 0x5e, 2, chr), skipping itself); none: the event starts
@@ -9547,7 +9561,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x5c, (void *)he_Unk549040, (void *)he_Unk549080) != 0)
         return 1;
-    if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_Unk549120) != 0)
+    if (he_SetEventHandlers(0x5d, (void *)he_Unk549110, (void *)he_RunOffspring) != 0)
         return 1;
     if (he_SetEventHandlers(0x5e, (void *)he_StartTrialEvent, (void *)he_Unk549430) != 0)
         return 1;
