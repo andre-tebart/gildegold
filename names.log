@@ -2537,3 +2537,4 @@
 2026-11-05T22:21:31 0x004e5050 data ai_Unk4e5050 -> cm_FindPartyOfKind by:main why:returns the used party (cm_Parties) of the kind a with the thing b, 0 without
 2026-11-05T22:24:22 0x005639c0 func he_Unk5639c0 -> he_RunAttack by:main why:registered for event 73 (0x49), walk 'Angriff': a gang attacks a building (fight party kind 3 or cm_LootStock), the raid event's words
 2026-11-05T22:28:36 0x005642e0 func he_Unk5642e0 -> he_AllocFire by:main why:registered as the alloc handler of event 78 (0x4e), the fire: picks the burning building and its neighbours as he_AllocStorm
+2026-11-05T22:30:11 0x005644e0 func he_Unk5644e0 -> he_RunFire by:main why:registered as the run handler of event 78 (0x4e), the fire ('Brand_Beginn' / 'Brand_Ende', explosion messages 0x4f to the buildings)

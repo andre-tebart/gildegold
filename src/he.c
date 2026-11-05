@@ -18223,26 +18223,114 @@ void he_AllocFire(AIJOB *ev)
     if (ev->end.hour < 7)
         ev->end.hour = util_Random(10) + 8;
 }
-/* 0x5644e0, the allocation handler of the fire event (sounds "Brand_Beginn" / "Brand_Ende" 0x4c27d0; ROUGH): the burning building and a second one (0x458a20 positions), a message record (0x4c4b70), the other fires of the type list (0x53e400 / 0x53e300) are checked and the due clock is now + 0x14 or 7 units by the minute word (0x42ec00 rolls) */
+typedef struct HEBURN {                 /* the burning event 0x4f's words over AIJOB's union (its run handler 0x5649b0), as far
+                                           as the fire event reads them */
+    char pad00[0xf8];
+    int fire;                           /* 0xf8, the id of the fire event 0x4e whose message 0x4f started it (AIMSG.srcEvent) */
+} HEBURN;
 
-void he_Unk5644e0(int ev)
+/* 0x5644e0, the run handler of the fire event 0x4e (HEFIRE; alloc handler he_AllocFire): stage 0 plays the voice
+   "Brand_Beginn"; stage 1 (when due) picks the nearest of blds[] (not -1, not center) to the center building by the
+   scene positions (d3_PointToWorld, at most 1e8 away) as the new center (none: -1); stage 2 (no center: on to 3)
+   sets the center's entry in blds[] to -1 and sends the explosion message 0x4f for it (to the event's character,
+   the building, 25, the flag 1 and this event's id), back to stage 1 in 10 minutes; stage 3 waits (10 minutes) while
+   a burning event 0x4f of this fire runs, then plays "Brand_Ende" and frees the record; stages -2 / -1 free it
+   @deep Reconstructed whole from the skeleton (it was read as an alloc handler) against
+   0x5644e0..0x56485c, switch tables equal: stage 0 'Brand_Beginn' (snd_QueueVoice(-8, 0, .., -1, 100)),
+   stage 1 the nearest of blds[] to the center by d3_PointToWorld distance (best from 1e8, nearest 0 / -1),
+   stage 2 the explosion message 0x4f (type, to, fromId, time, flags 2, arg[0] the building, arg[1] 25,
+   extraFlag 1, AIMSG.srcEvent this event) for the center's entry, back to stage 1 in 10 minutes, the
+   no-center step to stage 3 out of line as the original, stage 3 the wait on the burning events 0x4f of
+   this fire (HEBURN.fire) and 'Brand_Ende'. Tried: the center test as if (center != -1) {..} with the loop
+   for (k = 0; c != 0 && k < 16; k++) (matched the block order and the k = 0 store). Left: the original
+   keeps 0 in edi from the entry (xor edi, edi: nearest = edi, push edi for the 0 arguments, cmp eax, edi;
+   +0x11, +0x40, +0x2cf .. +0x326), ours uses immediates and test; the message field stores scheduled in
+   another order (+0x1e4, 49 lines, the same stores) (references: M8 at +0x1f9: ours refers to ai_Time
+   (0x770ae0), the original's field to 0x770ae4 (ai_TimeHourW), explained: the M8 line is the m.time =
+   ai_Time struct copy (+0x1f9): the same four words copied into the message, loaded in another register
+   order) */
+void he_RunFire(AIJOB *ev)
 {
-    char *e;
-    int b;
-    unsigned char m[0xf8];
+    HEFIRE *x = (HEFIRE *)ev;
+    AIBLD *c, *b;
+    AIJOB *e;
+    AIMSG m;
+    D3VECTOR4 p1, p2;
+    float best = 100000000.0f;
+    AIBLD *nearest = 0;
+    float dx, dy, dz, d;
+    int k;
 
-    snd_QueueVoice(-7, 0, "Brand_Beginn", 0, 0);
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0x10));
-    (void)b;
-    memset(m, 0, sizeof(m));
-    cm_SendLongMessage(m);
-    for (e = he_FindEvent(1, 0, 0x3d); e != 0; e = he_NextEvent()) {
-        if ((int)e != ev)
-            break;
+    switch (ev->stage) {
+    case 0:
+        snd_QueueVoice(-8, 0, "Brand_Beginn", -1, 100);
+        ev->stage++;
+        return;
+    case 1:
+        c = (AIBLD *)gm_BuildQuery(1, 1, x->center);
+        for (k = 0; k < 16; k++) {
+            if (c != 0 && x->blds[k] != -1 && x->blds[k] != c->id
+                && (b = (AIBLD *)gm_BuildQuery(1, 1, x->blds[k])) != 0) {
+                d3_PointToWorld((D3OBJECT *)c->object, &((D3OBJECT *)c->object)->pos, (D3VECTOR *)&p1);
+                d3_PointToWorld((D3OBJECT *)b->object, &((D3OBJECT *)b->object)->pos, (D3VECTOR *)&p2);
+                dx = p1.x - p2.x;
+                dy = p1.y - p2.y;
+                dz = p1.z - p2.z;
+                d = (float)sqrt(dx * dx + dy * dy + dz * dz);
+                if (d < best) {
+                    best = d;
+                    nearest = b;
+                }
+            }
+        }
+        if (nearest != 0)
+            x->center = nearest->id;
+        else
+            x->center = -1;
+        ev->end = ai_Time;
+        ev->stage++;
+        return;
+    case 2:
+        if (x->center != -1) {
+            c = (AIBLD *)gm_BuildQuery(1, 1, x->center);
+            for (k = 0; c != 0 && k < 16; k++) {
+                if (x->blds[k] == c->id) {
+                    x->blds[k] = -1;
+                    m.type = 0x4f;
+                    m.to = ai_CharInts[ev->chr][0];
+                    m.fromId = c->id;
+                    m.time = ai_Time;
+                    m.flags = 2;
+                    m.arg[0] = c->id;
+                    m.arg[1] = 0x19;
+                    m.extraFlag = 1;
+                    m.srcEvent = ev->id;
+                    cm_SendLongMessage((char *)&m);
+                }
+            }
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 10, 0);
+            ev->stage = 1;
+            return;
+        }
+        ev->stage++;
+        return;
+    case 3:
+        for (e = (AIJOB *)he_FindEvent(1, 0, 0x4f); e != 0; e = (AIJOB *)he_NextEvent()) {
+            if (((HEBURN *)e)->fire == ev->id) {
+                ev->end = ai_Time;
+                gm_AddTime(&ev->end, 0, 10, 0);
+                return;
+            }
+        }
+        snd_QueueVoice(-8, 0, "Brand_Ende", -1, 100);
+        he_FreeEvent((int *)ev);
+        return;
+    case -2:
+    case -1:
+        he_FreeEvent((int *)ev);
+        return;
     }
-    snd_QueueVoice(-7, 0, "Brand_Ende", 0, 0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, *(unsigned short *)(ev + 0x56) >= 0x14 ? (unsigned short)util_Random(5) : 7, 0);
 }
 /* 0x564860, the allocation handler of the fire event (ROUGH): the clocks +0x52 / +0x60 are now, +0xb4 = 0, the building +0xac (none: free), the nearest building (0x501e40, 0x458a20 positions) gives the distance scaled by +0xb0 (_ftol) as the burning time +0xb0 and +0x84 = -1 */
 
@@ -19571,7 +19659,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(73, (void *)he_AllocDueInOne, (void *)he_RunAttack) != 0)
         return 1;
     sv_RegisterActivity(73, 0, 0, 1290, -1);
-    if (he_SetEventHandlers(78, (void *)he_AllocFire, (void *)he_Unk5644e0) != 0)
+    if (he_SetEventHandlers(78, (void *)he_AllocFire, (void *)he_RunFire) != 0)
         return 1;
     if (he_SetEventHandlers(79, (void *)he_Unk564860, (void *)he_Unk5649b0) != 0)
         return 1;

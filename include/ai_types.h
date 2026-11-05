@@ -450,7 +450,9 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             unsigned char unk9d;                /* 0x9d */
             char pad9e[2];
             int unka0;                          /* 0xa0 */
-            char pada4[0xc];
+            int srcEvent;                       /* 0xa4, of the explosion message 0x4f from a fire (he_RunFire): the fire
+                                                   event's id (the burning event 0x4f keeps it at +0xf8) */
+            char pada8[8];
             unsigned char extraFlag;            /* 0xb0, 1 in the explosion message 0x4f (gv_ExplodeShot); the meaning is not known */
             char padb1[0x47];
         };
