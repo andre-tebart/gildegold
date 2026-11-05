@@ -5726,10 +5726,10 @@ int ai_ExecuteBeatUp(AIPER *p, AIARG *s1, AIARG *s2)
     msg.u.s.cost = s1->arg2;
     msg.ch = c->netId;
     msg.arg[0] = ord_RandomObjectId(c);
-    ai_Unkf84cf4[0] = ai_Unkf84cd4[0] * s1->fvalue;
-    ai_Unkf84cf4[2] = ai_Unkf84cd4[2] * s1->fvalue;
-    ai_Unkf84cf4[4] = ai_Unkf84cd4[4] * s1->fvalue;
-    ai_Unkf84cf4[6] = ai_Unkf84cd4[6] * s1->fvalue;
+    ai_Actions[0x18].w3[0].w = ai_Actions[0x18].w1[0].w * s1->fvalue;
+    ai_Actions[0x18].w3[1].w = ai_Actions[0x18].w1[1].w * s1->fvalue;
+    ai_Actions[0x18].w3[2].w = ai_Actions[0x18].w1[2].w * s1->fvalue;
+    ai_Actions[0x18].w3[3].w = ai_Actions[0x18].w1[3].w * s1->fvalue;
     cm_BeginGroup("pruegel");
     cm_SendLongMessage(&msg);
     cm_EndGroup("pruegel");
