@@ -314,7 +314,7 @@ int ai_DecideSecretRoom1(AIPX *p, AIARGX *s1, AIARGX *s2)
     int flags, t, sel, a[3];
     AIPX *c;
 
-    flags = ((unsigned)&cm_SendRing + 0x4973c0);
+    flags = (0xf << 20) | (5 << 8);  /* the partner flags 0xf00500 (bits 8, 10, 20..23) */
     if (!ai_PickPartnerChain(p, 1, &flags, 0, util_RandomU(0x20) + 25.0f, &cid))
         return 0;
     c = &((AIPX *)ai_CharsT)[cid];
