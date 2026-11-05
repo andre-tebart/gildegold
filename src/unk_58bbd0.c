@@ -15728,9 +15728,9 @@ int ai_OpenTransportSell(int building)
 }
 /* 0x5af1c0, a forwarder of 0x5af1d0 with the mode 4 (16 B) */
 
-int ai_OpenTransportBuy(int param_1)
+int ai_OpenTransportBuy(int building)
 {
-    return ai_TransportWindow(param_1, 4);
+    return ai_TransportWindow(building, 4);
 }
 /* 0x5af1d0, the transport window (11968 B, ROUGH SKELETON): the modes 1 / 2 / 4 of the forwarders 0x5af1a0 ..
    0x5af1c0; a 0x1848-byte frame (__chkstk) with the 0x2d-dword table at +0x15c cleared, then one huge window
