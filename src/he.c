@@ -11160,14 +11160,17 @@ int he_NoProtectionEvent(int p)
     }
     return 1;
 }
-/* 0x553d10, 1 unless a record of type 0x2e with +0xac = the id (+4) of b and +0xb0 = the id of a is running (then 0) */
+/* 0x553d10, 1 unless a quarrel event 0x2e is running between the characters a and b (its partner1 / partner2 are
+   their netIds), then 0 */
 
 int he_NoEvent2ePair(int a, int b)
 {
-    char *e;
+    AICHAR *ca = (AICHAR *)a;
+    AICHAR *cb = (AICHAR *)b;
+    AIJOB *e;
 
-    for (e = he_FindEvent(1, 0, 0x2e); e != 0; e = he_NextEvent()) {
-        if (*(int *)(b + 4) == *(int *)(e + 0xac) && *(int *)(e + 0xb0) == *(int *)(a + 4))
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x2e); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if (cb->netId == e->partner1 && e->partner2 == ca->netId)
             return 0;
     }
     return 1;
