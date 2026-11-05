@@ -6565,7 +6565,7 @@ void he_RunLover(int ev)
 }
 /* 0x54eb80, a Ghidra miss: the figure record test of the street simulation: alive, kind below 10, and (0x47e840 or 0x47e7f0 non zero) */
 
-int he_Unk54eb80(int rec)
+int he_IsSimCandidate(int rec)
 {
     if (*(unsigned short *)rec == 0xffff)
         return 0;
@@ -6577,74 +6577,96 @@ int he_Unk54eb80(int rec)
         return 1;
     return ai_CanAct(rec) != 0;
 }
-/* 0x54ebd0, a Ghidra miss (disassembled; 928 B): the run handler of the disease simulation ("RunSimKrankheiten: calculating at <Day = %i Time = %i.2:%i.2>"), the twin of the accident simulation 0x54c570: the first run picks the step (+0xb0, one of 16 primes) and the start figure (+0xac); state 0 walks the 0x300 figures of the ring in 12 steps per run (0x54eb80 as the test) and rolls for every figure the chance 25 - ... : the strength by its boss (kind 2: 0x5092e0 (.., 8, 1) * 0.0125 * 20, else 0.02 * 20 * ..) times 0x5ba6b0 (0x2b3) 0.75 against 100 * random, for a hit the sickness is looked up (0x505230) and passed to 0x5417d0 (the accident report) or, without a boss, the news 0x163c (0x1632 + the kind) is shown (ROUGH) */
-
-void he_Unk54ebd0(int ev)
+/* 0x54ebd0, the run handler of the disease simulation, event 0x70 (HESIM, the twin of he_RunAccidentSim; the text
+   "RunSimKrankheiten: calculating at <Day ..>" is formatted and never shown). Freed (stage -2) it frees the event.
+   A round starts with a random stride of 16 numbers prime to 0x300 and a random first character; each run (stage
+   0) visits the next 12 characters of the round: a candidate (he_IsSimCandidate) falls ill when a roll of 0 .. 100
+   stays below its risk: without a home 25 - 10 * random (three quarters of it with the item 0x2b3), less the home's
+   skill 8 * 0.0125 * 20 (0.02 for a home of kind other than 2). gm_CatchDisease draws the disease and its health;
+   a worker whose building has an owner is reported (he_CharIllness), else a player figure (kind 6 / 7) healthier
+   than that hears the news 0x163c. After all 0x300 the round is over: due the next day at 10:00, else due in 30
+   minutes, the next day at 10:00 once that is 18:00 or later */
+void he_RunDiseaseSim(int ev)
 {
-    char text[0x100];
-    int i, n, cur, rec, boss, k1, k2, r;
-    float chance, thr, res, base;
-    int pr0[16] = { 1, 3, 5, 7, 0xb, 0xd, 0x11, 0x13, 0x2ed, 0x2ef, 0x2f3, 0x2f5, 0x2f9, 0x2fb, 0x2fd, 0x2ff };
+    AIJOB *e = (AIJOB *)ev;
+    HESIM *s = (HESIM *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    int n, cur, kind;
+    float roll, immunity, risk, health;
+    int primes[16];
+    char text[0x200];
 
-    if (*(int *)(ev + 0x70) == -2) {
+    if (e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    sprintf(text, "-------> RunSimKrankheiten: calculating at <Day = %i Time = %i.2:%i.2>", *(int *)(unsigned)&ai_Time, *(unsigned short *)(unsigned)&ai_Time.hour, *(unsigned short *)((unsigned)&ai_Time + 0x6));
-    if (*(int *)(ev + 0xb0) == 0) {
-        *(int *)(ev + 0xb0) = pr0[(unsigned short)util_Random(0x10)];
-        *(int *)(ev + 0xac) = (unsigned short)util_Random(0x300);
+    txt_Format(text, (int)"-------> RunSimKrankheiten: calculating at <Day = %i Time = %i.2:%i.2>", ai_Time.year, ai_Time.hour, ai_Time.min);
+    if (s->step == 0) {
+        primes[0] = 1;
+        primes[1] = 3;
+        primes[2] = 5;
+        primes[3] = 7;
+        primes[4] = 0xb;
+        primes[5] = 0xd;
+        primes[6] = 0x11;
+        primes[7] = 0x13;
+        primes[8] = 0x2ed;
+        primes[9] = 0x2ef;
+        primes[10] = 0x2f3;
+        primes[11] = 0x2f5;
+        primes[12] = 0x2f9;
+        primes[13] = 0x2fb;
+        primes[14] = 0x2fd;
+        primes[15] = 0x2ff;
+        s->step = primes[(unsigned short)util_Random(0x10)];
+        s->cursor = (unsigned short)util_Random(0x300);
     }
-    if (*(int *)(ev + 0x70) != 0)
+    if (e->stage != 0)
         return;
-    cur = *(int *)(ev + 0xac);
-    for (n = 12; n > 0; n--) {
-        rec = (unsigned)&ai_Chars + cur * 0x21c;
-        if (he_Unk54eb80(rec) != 0) {
-            thr = util_RandomF() * 100.0f;
-            boss = *(int *)(rec + 0x170);
-            k1 = 0;
-            k2 = 0;
-            if (boss != 0) {
-                if (*(char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)boss * 0x24d) == 2)
-                    base = (float)gm_BuildingSkill(boss, 8, 1) * 0.0125f * 20.0f;
+    cur = s->cursor;
+    for (n = 12; n != 0; n--) {
+        c = &ai_CharsT[cur];
+        if (he_IsSimCandidate((int)c) != 0) {
+            roll = util_RandomF() * 100.0f;
+            risk = 0.0f;
+            immunity = 0.0f;
+            if (ai_CharsT[cur].bld2 != 0) {
+                if (ai_BTypesT[ai_CharsT[cur].bld2->type].kind == 2)
+                    immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld2, 8, 1) * 0.0125f);
                 else
-                    base = (float)gm_BuildingSkill(boss, 8, 1) * 0.02f * 20.0f;
-            } else {
-                base = (float)(25.0 - (double)util_RandomF() * 20.0 * 0.5);
-            }
-            chance = ai_InventoryHas(rec, 0x2b3) != 0 ? base * 0.75f : base;
-            if (!(thr + 0.0f > chance)) {
-                if (gm_CatchDisease(rec, &k1, &k2) != 0) {
-                    boss = *(int *)(rec + 0x16c);
-                    if (boss != 0 && *(unsigned short *)(boss + 0x27) != 0xffff && (unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c != 0) {
-                        he_CharIllness((AIJOB *)ev, (AICHAR *)((unsigned)&ai_Chars + *(unsigned short *)(boss + 0x27) * 0x21c), (AICHAR *)boss, (AIBLD *)rec, k1, (float)k2);
-                    } else if (gm_CharacterHealth(rec) <= thr && (*(char *)(rec + 2) == 6 || *(char *)(rec + 2) == 7)) {
-                        txt_Format(text, 0x163c, k1 + 0x1632);
-                        he_ShowNews(*(int *)(rec + 4), -1, text, 0, 0x5f7, "");
-                    }
+                    immunity = 20.0f * (gm_BuildingSkill((unsigned char *)ai_CharsT[cur].bld2, 8, 1) * 0.02f);
+            } else
+                risk = (float)(25.0 - util_RandomF() * 20.0f * 0.5);
+            if (ai_InventoryHas(c, 0x2b3) != 0)
+                risk *= 0.75f;
+            if (roll < risk - immunity && gm_CatchDisease(c, &kind, &health) != 0) {
+                b = ai_CharsT[cur].bld;
+                if (b != 0 && b->owner != 0xffff && &ai_CharsT[b->owner] != 0)
+                    he_CharIllness(e, c, &ai_CharsT[b->owner], b, kind, health);
+                else if (gm_CharacterHealth(c) > health && (ai_CharsT[cur].kind == 6 || ai_CharsT[cur].kind == 7)) {
+                    txt_Format(text, 0x163c, kind + 0x1632);
+                    he_ShowNews(ai_CharsT[cur].netId, -1, text, 0, 0x5f7, ch_EmptyName);
                 }
             }
         }
-        cur = (*(int *)(ev + 0xb0) + cur) % 0x300;
-        *(int *)(ev + 0xb4) = *(int *)(ev + 0xb4) + 1;
-        if (*(int *)(ev + 0xb4) == 0)
-            break;
+        cur = (s->step + cur) % 0x300;
+        s->done++;
     }
-    *(int *)(ev + 0xac) = cur;
-    if (*(int *)(ev + 0xb4) >= 0x300) {
-        *(short *)(ev + 0x56) = 0xa;
-        *(int *)(ev + 0xac) = 0;
-        *(int *)(ev + 0xb0) = 0;
-        *(int *)(ev + 0xb4) = 0;
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
+    s->cursor = cur;
+    if (s->done >= 0x300) {
+        e->end.hour = 0xa;
+        s->cursor = 0;
+        s->step = 0;
+        s->done = 0;
+        e->end.year++;
         return;
     }
-    gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    if (*(unsigned short *)(ev + 0x56) >= 0x12) {
-        *(int *)(ev + 0x58) = 0;
-        *(short *)(ev + 0x56) = 0xa;
-        *(int *)(ev + 0x52) = *(int *)(ev + 0x52) + 1;
+    gm_AddTime(&e->end, 0, 0x1e, 0);
+    if (e->end.hour >= 0x12) {
+        e->end.min = 0;
+        e->end.hour = 0xa;
+        e->end.year++;
     }
 }
 /* 0x54ef70, a Ghidra miss (disassembled): the init of the "Dunkle Ecke" (dark corner, the robbery) event: +0xac = -1, +0xc4 = a random building index, +0xc8 = a random step of the table 0x5ed140, +0xc0 = 0, +0xb8 = -1, +0xbc = 5 + random(4); the clocks (+0x52 / +0x44) are now and posted 1 unit ahead; when a running event of the type 0x74 (0x53e400) of another player has the same victim +0xb0 the event ends; else the victim (0x4fea50) must have a record of the building (0x4ffe90 2 / 6 / 0x12c): its job table gets the time (+0x28 + 0x4c3c00) and a carrier (0x4c59f0 (0xe, .., 0x12, .. "DunkleEcke")) is created (+0xac) (ROUGH) */
@@ -10150,7 +10172,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x6f, (void *)he_StartLover, (void *)he_RunLover) != 0)
         return 1;
-    if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_Unk54ebd0) != 0)
+    if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_RunDiseaseSim) != 0)
         return 1;
     if (he_SetEventHandlers(0x74, (void *)he_Unk54ef70, (void *)he_Unk54f160) != 0)
         return 1;
