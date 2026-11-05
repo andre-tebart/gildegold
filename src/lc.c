@@ -14630,7 +14630,7 @@ send:
    1: the word first, other: no text) and 0x42ec00 (3) picks the text 0x409c + the value; the +4 id of param_2
    sends it (1, 0x5fb, the key 0x62c348) */
 
-void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3)
+void ai_HauntingText(unsigned short *param_1, int param_2, unsigned int param_3)
 {
     unsigned int u;
     unsigned int v;

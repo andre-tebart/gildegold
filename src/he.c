@@ -1078,6 +1078,15 @@ typedef struct HEAHMDAY {               /* the alchemist's daily laboratory even
     int bonus;                          /* 0xac, nonzero: the next run adds a bonus to the alchemist record's value
                                            instead of the roll (0 at the start; he_LabIncident sets it to the mishap it ran) */
 } HEAHMDAY;
+typedef struct HEHAUNTING {             /* the graveyard owner's haunting event 0x88's words over AIJOB's union (the message's
+                                           arg[0 .. 3]: am.c ai_ExecGraveyardOwner0, sv_t.c; he_AllocHaunting / he_RunHaunting) */
+    char pad00[0xac];
+    int home;                           /* 0xac, the id of the victim's building the haunter goes to */
+    int victim;                         /* 0xb0, the netId of the character haunted */
+    int haunter;                        /* 0xb4, the netId of the character who haunts (the one selected), -1: none */
+    int paid;                           /* 0xb8, the money paid for it (the slider's amount) */
+    int walkSlot;                       /* 0xbc, the cm slot of the haunter's walk, -1: none */
+} HEHAUNTING;
 typedef struct HESECRETROOM {           /* the secret room event 0x99's words over AIJOB's union (am.c ai_ExecSecretRoom0 .. 3
                                            post it; he_AllocSecretRoom / he_RunSecretRoom) */
     char pad00[0xac];
@@ -23151,8 +23160,8 @@ int he_SecretRoomCatchSpy(AICHAR *agent, int ev, AIJOB *spy)
     return 0;
 }
 
-void he_Unk56fc50(int ev);          /* 0x56fc50 */
-void he_Unk56fda0(int ev);          /* 0x56fda0 */
+void he_AllocHaunting(int ev);          /* 0x56fc50 */
+void he_RunHaunting(int ev);          /* 0x56fda0 */
 void he_Unk570130(int ev);          /* 0x570130 */
 void he_Unk5702e0(int ev);          /* 0x5702e0 */
 void he_Unk570ef0(int ev);          /* 0x570ef0 */
@@ -23179,7 +23188,7 @@ void he_Unk572a50(int ev);          /* 0x572a50 */
 /* 0x56f980, registers the event types 0x88 .. 0x94 (called by 0x53d4b0): (0x88, 0x56fc50, 0x56fda0), (0x89, 0x570130, 0x5702e0), (0x8c, 0x570ef0, 0x571000), (0x8d, 0x571550, 0x571640), (0x8a, 0x5706e0, 0x5707a0), (0x8b, 0x572860, 0x570cc0), (0x8d again), (0x8e, 0x571990, 0x5719e0), (0x8f, 0x571ac0, 0x571c30), (0x90, 0x571f60, 0x5725b0), (0x91, 0x5726a0, 0x5726b0), (0x93, 0x572b90, 0x572bf0), (0x94, 0x55e3a0, 0x572fd0), (0x92, 0x572860, 0x572a50), then the texts of 0x52b350; 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypes88(void)
 {
-    if (he_SetEventHandlers(0x88, (void *)he_Unk56fc50, (void *)he_Unk56fda0) == 0) {
+    if (he_SetEventHandlers(0x88, (void *)he_AllocHaunting, (void *)he_RunHaunting) == 0) {
         if (he_SetEventHandlers(0x89, (void *)he_Unk570130, (void *)he_Unk5702e0) == 0) {
             if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
@@ -23237,7 +23246,7 @@ void he_SetLifeByAge(int rec, unsigned short num)
 }
 /* 0x56fc50, the alloc of the event 0x88 (a work at the building +0xb0 of the player +8): paused -> nothing; with a running event 0x88 of the same player and building the text 0x4096 and state -1; else the due clock now + 1 hour and state 0 (0x4c4c60), or -1 when +0xb4 is -1, and the message 0x50cc50 (pid, -(+0xb8)) */
 
-void he_Unk56fc50(int ev)
+void he_AllocHaunting(int ev)
 {
     char text[0x400];
     int r;
@@ -23264,96 +23273,104 @@ void he_Unk56fc50(int ev)
     }
 }
 
-void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
+void ai_HauntingText(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
-/* 0x56fda0, the run of the event 0x88 (a work at the building +0xb0 for the character +0xb4): -1 / -2 release the worker (0x524260) and free; paused or with the handle +0x84 still active nothing. State 0: the owner -1 (0x4c3ae0), the worker registered, the building of +0xac (0x501190) -> its +1 to 0x4c52e0 (state 2), else the state -1. State 2: +0xbc = -1; the job +0x128 of the character or the building missing -> wait 4 hours and state 2; else 0x4fe140 (+0x18) and 0x5a9910 (the record of the player +8, the worker, the due clock), state 3. State 3: the boss +0x16c -> 0x4c52e0 (state 4), else state -1. State 4: no boss -> state -1; work in progress -> wait 4 hours; else 0x524260, state 5 and the due clock += (max (+0xb8 / 2, 1) + 1). State 5: state -1 (0x4c4c60). ROUGH */
-void he_Unk56fda0(int ev)
+/* 0x56fda0, the run handler of the graveyard owner's haunting event 0x88 (alloc he_AllocHaunting; am.c's
+   ai_ExecGraveyardOwner0 / sv_t.c post it): without the haunter the event is freed; the stages -1 / -2 take the
+   haunter out of the event's group (sv_MoveToGroup) and free it; a paused event or one whose cm slot is still busy
+   waits. Stage 0 puts the haunter in the group and sends it to the victim's building ("HEIMSUCHUNG", stage 2), or
+   ends the event; stage 2 waits 4 minutes while it walks, then a day at the building, telling the event's
+   character and the victim (ai_HauntingText), stage 3; stage 3 sends it back to its own building (stage 4), stage
+   4 waits until it is there, takes it out of the group and keeps the event (stage 5) for max (paid / 2, 1) + 1
+   more years; stage 5 ends it. A haunter without a building ends the event. */
+void he_RunHaunting(int ev)
 {
-    char *per = (char *)gm_FindChar(HM_I(ev, 0xb4));
-    int state, r;
+    AIJOB *e = (AIJOB *)ev;
+    HEHAUNTING *h = (HEHAUNTING *)ev;
+    AICHAR *haunter, *victim;
+    AIBLD *bld;
+    int years;
 
-    if (per == 0) {
+    haunter = (AICHAR *)gm_FindChar(h->haunter);
+    if (haunter == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    state = HM_I(ev, 0x70);
-    if (state == -1 || state == -2) {
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
+    if (e->stage == -1 || e->stage == -2) {
+        sv_MoveToGroup(0, 0, haunter->id, (char *)ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    if (HM_I(ev, 0x84) != -1 && cm_GetSlotState(HM_I(ev, 0x84)) == 0)
+    if (e->exSlot != -1 && cm_GetSlotState(e->exSlot) == 0)
         return;
-    HM_I(ev, 0x84) = -1;
-    switch (state) {
+    e->exSlot = -1;
+    switch (e->stage) {
     case 0:
-        if (cm_GetSlotState(-1) == 0)
+        if (cm_GetSlotState(e->exSlot) == 0)
             return;
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
-        r = gm_BuildQuery(1, 1, HM_I(ev, 0xac));
-        if (r == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        sv_MoveToGroup(0, 0, haunter->id, (char *)ev);
+        bld = (AIBLD *)gm_BuildQuery(1, 1, h->home);
+        if (bld == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        HM_I(ev, 0xbc) = cm_SendChrGotoBuilding(HM_I(per, 4), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628e98);
-        HM_I(ev, 0x84) = cm_SendExSetHE(2, ev);
-        return;
-    case 1:
+        h->walkSlot = cm_SendChrGotoBuilding(haunter->netId, bld->id, -1, 0, 1, "HEIMSUCHUNG");
+        cm_SendExSetHE(2, ev);
         return;
     case 2:
-        HM_I(ev, 0xbc) = -1;
-        if (HM_I(HM_I(per, 0x184), 0x128) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 4, 0);
-            HM_I(ev, 0x84) = cm_SendExSetHE(2, ev);
+        h->walkSlot = -1;
+        if (haunter->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
+            e->exSlot = cm_SendExSetHE(2, ev);
             return;
         }
-        if (gm_BuildQuery(1, 1, HM_I(ev, 0xac)) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            r = gm_FindChar(HM_I(ev, 0xb0));
-            if (r != 0) {
-                gm_AddTime(ev + 0x52, 0x18, 0, 0);
-                ai_Unk5a9910((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, r, ev + 0x52);
+        if (gm_BuildQuery(1, 1, h->home) != 0) {
+            e->end = ai_Time;
+            victim = (AICHAR *)gm_FindChar(h->victim);
+            if (victim != 0) {
+                gm_AddTime(&e->end, 0x18, 0, 0);
+                ai_HauntingText((unsigned short *)&ai_CharsT[e->chr], (int)victim, (unsigned int)&e->end);
             }
-            HM_I(ev, 0x84) = cm_SendExSetHE(3, ev);
+            e->exSlot = cm_SendExSetHE(3, ev);
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        e->end = ai_Time;
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     case 3:
-        if (HM_I(per, 0x16c) == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        if (haunter->bld == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        HM_I(ev, 0xbc) = cm_SendChrGotoBuilding(HM_I(per, 4), *(int *)(HM_I(per, 0x16c) + 1), -1, 0, 0, (char *)(unsigned)&full_data_628e98);
-        HM_I(ev, 0x84) = cm_SendExSetHE(4, ev);
+        h->walkSlot = cm_SendChrGotoBuilding(haunter->netId, haunter->bld->id, -1, 0, 0, "HEIMSUCHUNG");
+        e->exSlot = cm_SendExSetHE(4, ev);
         return;
     case 4:
-        if (HM_I(per, 0x16c) == 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        if (haunter->bld == 0) {
+            e->end = ai_Time;
+            e->exSlot = cm_SendExSetHE(-1, ev);
             return;
         }
-        if (HM_I(HM_I(per, 0x184), 0x128) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 4, 0);
+        if (haunter->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 4, 0);
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
-        HM_I(ev, 0x84) = cm_SendExSetHE(5, ev);
-        r = HM_I(ev, 0xb8) >> 1;
-        if (r < 1)
-            r = 1;
-        HM_I(ev, 0x52) += r + 1;
+        e->end = ai_Time;
+        sv_MoveToGroup(0, 0, haunter->id, 0);
+        e->exSlot = cm_SendExSetHE(5, ev);
+        years = h->paid >> 1;
+        if (years < 1)
+            years = 1;
+        e->end.year += years + 1;
         return;
     case 5:
-        HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
 }
@@ -23762,7 +23779,7 @@ char *gm_FindBuildingById(int id); /* 0x502020 */
 int gv_ListEntry(char *r, int i, unsigned char n);                 /* 0x4ef570 */
 int gv_OrderAdjustEntry();                 /* 0x4f0c20 */
 int gm_CharCurrency(char *c, char p);                 /* 0x509ee0 */
-void ai_Unk5a9910(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
+void ai_HauntingText(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
 /* 0x570ea0, 1 when no running event 0x88 has the player +8 == b + 4 and the building +0xb0 == a + 4; 0 when one does */
 int he_NoEvent88Pair(int a, int b)
