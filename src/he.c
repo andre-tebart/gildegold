@@ -11608,7 +11608,7 @@ void he_TransportStadtStadt(int ev)
     D3SM *hmap;
     D3OBJECT *bo;
     CHACTION *walk;
-    D3VECTOR pos, back;
+    D3VECTOR4 back, pos;
     int sc, px, pz;
     float py;
     char text[0x400];
@@ -11623,9 +11623,9 @@ void he_TransportStadtStadt(int ev)
         d3if_SelectScene(0, 1);
         o = (AIOBJ *)he_RandomTransporter(to->object);
         if (o != 0)
-            d3_PointToWorld((D3OBJECT *)o, &((D3OBJECT *)o)->pos, &pos);
+            d3_PointToWorld((D3OBJECT *)o, &((D3OBJECT *)o)->pos, (D3VECTOR *)&pos);
         else
-            d3_PointToWorld((D3OBJECT *)to->object, &((D3OBJECT *)to->object)->pos, &pos);
+            d3_PointToWorld((D3OBJECT *)to->object, &((D3OBJECT *)to->object)->pos, (D3VECTOR *)&pos);
         if (gm_IsType10((unsigned char *)from) != 0)
             tr = (AIOBJ *)gm_Query((void *)guards->objList, 1, 1, t->cart);
         else
@@ -11637,7 +11637,7 @@ void he_TransportStadtStadt(int ev)
             he_SetCartSpeed(ev, (int)tr);
             hmap = (D3SM *)ch_GetHMap(ch);
             t->started = 1;
-            d3_GetHeightAt(hmap, &pos, &px, &pz, &py);
+            d3_GetHeightAt(hmap, (D3VECTOR *)&pos, &px, &pz, &py);
             t->lastPos.x = pos.x;
             t->lastPos.y = pos.y;
             t->lastPos.z = pos.z;
@@ -11645,7 +11645,7 @@ void he_TransportStadtStadt(int ev)
                 if (from->object != 0) {
                     o = (AIOBJ *)he_RandomTransporter(from->object);
                     if (o != 0)
-                        d3_PointToWorld((D3OBJECT *)o, &((D3OBJECT *)o)->pos, &back);
+                        d3_PointToWorld((D3OBJECT *)o, &((D3OBJECT *)o)->pos, (D3VECTOR *)&back);
                     else {
                         bo = (D3OBJECT *)to->object;
                         back.x = bo->pos.x;
