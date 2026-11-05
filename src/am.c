@@ -9412,7 +9412,7 @@ int ai_ExecuteApprenticeship(G5CH *p, AIARG *s1, AIARG *s2)
         m.arg = p->netId;
         m.type = 0x5e;
         m.fromId = -1;
-        *(unsigned char *)&m.from = (unsigned char)s2->ref;
+        m.bldClass = (unsigned char)s2->ref;
         m.word[0] = s2->arg2;
         cm_SendLongMessage((AIMSG *)&m);
         return 0x3a;

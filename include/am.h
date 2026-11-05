@@ -793,7 +793,10 @@ typedef struct G8MSG {                  /* 0xf8 bytes, an AIMSG (ai.h) as these 
     unsigned char flags;                /* 0x36, the message flags (AIMSG.flags) */
     char pad37[0x21];
     int arg;                            /* 0x58, the message kind's first word (AIMSG.arg[0]: a building id or a character's netId) */
-    unsigned int from;                  /* 0x5c */
+    union {
+        unsigned int from;              /* 0x5c, the second word (AIMSG.arg[1]: the sender's netId in the credit message) */
+        unsigned char bldClass;         /* 0x5c, the apprenticeship message 0x5e: the building class the child gets */
+    };
     union {                             /* 0x60..0x6f, the kind's words (AIMSG.arg[2..5]) */
         int word[4];                    /* a callback's own two / three values, in the order it writes them */
         struct {                        /* the AI credit message 0x23 (a bank's offer, filled by ai_ExecuteTakeCredit) */
