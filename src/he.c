@@ -446,6 +446,15 @@ typedef struct HEPOPULATION {           /* the population event 0x6d's words ove
     float step;                         /* 0xb4, what each failed draw takes off chance */
     int slot;                           /* 0xb8, the cm slot of the newcomer being created, -1: none */
 } HEPOPULATION;
+typedef struct HELOVER {                /* the lover event 0x6f's words over AIJOB's union ("Geliebte"; its init he_StartLover,
+                                           run handler he_RunLover) */
+    char pad00[0xac];
+    int keeper;                         /* 0xac, the netId of the character who keeps the lover (and pays) */
+    int lover;                          /* 0xb0, the netId of the lover (flagged HE_LOVER_FLAG while it lasts) */
+    int rounds;                         /* 0xb4, the days paid, 0 at the start */
+    int pay;                            /* 0xb8, what the keeper pays a day, 2 at the start */
+} HELOVER;
+#define HE_LOVER_FLAG 0x800000          /* AICHAR.flags1c8: has a keeper (he_StartLover sets it, he_RunLover clears it) */
 typedef struct HEPLAGUE {               /* the plague event 0x59's words over AIJOB's union (he_BeginPlague, its run handler 0x54a020) */
     char pad00[0xac];
     int left;                           /* 0xac, counted down by the run handler at every infected target */
@@ -6446,7 +6455,7 @@ int gm_CatchDisease();
 float gm_CharacterHealth();
 
 /* 0x54e770, a Ghidra miss (disassembled): the allocation of the "Geliebte" (lover) event: the aggressor +0xac (ebx), the victim +0xb0 (edi): the clock now, posted at once; a gone victim or one with the flag 0x800000 (+0x1c8) ends it, else the flag is set (0x4c4a60), the relation of the aggressor falls by 0x32 (0x4c4b00) and the event goes to the state 2 (+0xb4 = 0, +0xb8 = 2, +0xbc = -1) (ROUGH) */
-void he_Unk54e770(int ev)
+void he_StartLover(int ev)
 {
     int edi = gm_FindChar(*(int *)(ev + 0xb0));
     int ebx = gm_FindChar(*(int *)(ev + 0xac));
@@ -6459,12 +6468,12 @@ void he_Unk54e770(int ev)
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
     }
-    if ((*(unsigned *)(edi + 0x1c8) & ((unsigned)&ai_Relations + 0x1aca0)) != 0) {
+    if ((*(unsigned *)(edi + 0x1c8) & HE_LOVER_FLAG) != 0) {
         *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
         return;
     }
     cm_BeginGroup("Alloc_Geliebte");
-    cm_SendSetField(*(int *)(edi + 4), 0x1c8, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
+    cm_SendSetField(*(int *)(edi + 4), 0x1c8, 4, HE_LOVER_FLAG, 0);
     cm_SendRelations(*(int *)(ebx + 4), *(int *)(edi + 4), 0x32, 1);
     cm_EndGroup("Alloc_Geliebte AI");
     *(int *)(ev + 0xb4) = 0;
@@ -6472,81 +6481,87 @@ void he_Unk54e770(int ev)
     *(int *)(ev + 0xbc) = -1;
     *(int *)(ev + 0x84) = cm_SendExSetHE(2, ev);
 }
-/* 0x54e890, a Ghidra miss (disassembled; 752 B): the run handler of the beating event (see 0x54e770): the victim (edi) flag 0x800000 is cleared when it ends (state -2: the aggressor gets the relation -(8 + the rounds +0xb4) * 5); state 2 waits for the job (0x4c3ae0: 1 = done -> state 0, 2 = failed -> ends), in the later states the rounds count up (+0xb4, the victim pays the aggressor 0x53eec0 -+0xb8 with the news 0xb4 / 0xb5, due 0x18 units ahead) until the aggressor is gone or dead (ROUGH) */
+/* 0x54e890, the run handler of the lover event ("Geliebte"): stage 2 waits for the posting (cm_GetSlotState: 1 goes
+   on, 2 ends it); while the keeper lives, every day the keeper pays the lover (an AP event of -pay with the news
+   0xb4 / 0xb5 by the lover's sex) and the rounds count up; stage 1 or a dead keeper ends the affair (the lover's
+   flag 0x800000 cleared, at stage 1 the relation falls by (2 + rounds) * 5); stage -2 frees it with the relation
+   -(8 + rounds) * 5 */
 
-void he_Unk54e890(int ev)
+void he_RunLover(int ev)
 {
     char text[0x200];
-    int edi, ebx, st, h;
+    AIJOB *e = (AIJOB *)ev;
+    HELOVER *l = (HELOVER *)ev;
+    AICHAR *lover, *keeper;
+    int h;
 
-    edi = gm_FindChar(*(int *)(ev + 0xb0));
-    ebx = gm_FindChar(*(int *)(ev + 0xac));
-    st = *(int *)(ev + 0x70);
-    if (st == -1) {
+    lover = (AICHAR *)gm_FindChar(l->lover);
+    keeper = (AICHAR *)gm_FindChar(l->keeper);
+    if (e->stage == -1) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (st == -2) {
-        if ((*(unsigned char *)(ev + 0x78) & 4) != 0) {
+    if (e->stage == -2) {
+        if ((e->opts & 4) != 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        if (edi != 0) {
-            cm_SendSetField(*(int *)(edi + 4), 0x1c8, 4, 0, ((unsigned)&ai_Relations + 0x1aca0));
-            if (ebx != 0)
-                cm_SendRelations(*(int *)(ebx + 4), *(int *)(edi + 4), (-8 - *(int *)(ev + 0xb4)) * 5, 1);
+        if (lover != 0) {
+            cm_SendSetField(lover->netId, 0x1c8, 4, 0, HE_LOVER_FLAG);
+            if (keeper != 0)
+                cm_SendRelations(keeper->netId, lover->netId, (-8 - l->rounds) * 5, 1);
         }
         he_FreeEvent((int *)ev);
         return;
     }
-    if ((*(unsigned char *)(ev + 0x78) & 4) != 0)
+    if ((e->opts & 4) != 0)
         return;
-    if (edi == 0) {
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    if (lover == 0) {
+        gm_AddTime(&e->end, 0, 2, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    if (st == 2) {
-        h = cm_GetSlotState(*(int *)(ev + 0x84));
+    if (e->stage == 2) {
+        h = cm_GetSlotState(e->exSlot);
         if (h == 0)
             return;
         if (h == 1) {
-            gm_AddTime(ev + 0x52, 0, 2, 0);
+            gm_AddTime(&e->end, 0, 2, 0);
             cm_SendExSetHE(0, ev);
             return;
         }
         if (h == 2) {
-            gm_AddTime(ev + 0x52, 0, 2, 0);
+            gm_AddTime(&e->end, 0, 2, 0);
             cm_SendExSetHE(-1, ev);
-            return;
         }
-    }
-    if (ebx != 0 && *(unsigned char *)(ebx + 8) != 0) {
-        if (st == 1) {
-            cm_SendSetField(*(int *)(edi + 4), 0x1c8, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
-            cm_SendRelations(*(int *)(ebx + 4), *(int *)(edi + 4), (-2 - *(int *)(ev + 0xb4)) * 5, 1);
-            gm_AddTime(ev + 0x52, 0, 2, 0);
-            *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
-            return;
-        }
-        if (st == 3) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
-            return;
-        }
-        if (*(char *)(edi + 9) == 1)
-            txt_Format(text, 0xb4, *(unsigned short *)edi);
-        else
-            txt_Format(text, 0xb5, *(unsigned short *)edi);
-        he_AddApEvent(*(unsigned short *)(ev + 8), text, -*(int *)(ev + 0xb8), 0);
-        *(int *)(ev + 0xb4) = *(int *)(ev + 0xb4) + 1;
-        gm_AddTime(ev + 0x52, 0, 0x18, 0);
-        *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
         return;
     }
-    cm_SendSetField(*(int *)(edi + 4), 0x1c8, 4, ((unsigned)&ai_Relations + 0x1aca0), 0);
-    gm_AddTime(ev + 0x52, 0, 2, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(-1, ev);
+    if (keeper != 0 && keeper->health != 0) {
+        if (e->stage == 1) {
+            cm_SendSetField(lover->netId, 0x1c8, 4, 0, HE_LOVER_FLAG);
+            cm_SendRelations(keeper->netId, lover->netId, (-2 - l->rounds) * 5, 1);
+            gm_AddTime(&e->end, 0, 2, 0);
+            e->exSlot = cm_SendExSetHE(-1, ev);
+            return;
+        }
+        if (e->stage == 3) {
+            e->end = ai_Time;
+            cm_SendExSetHE(0, ev);
+            return;
+        }
+        if (lover->sex == 1)
+            txt_Format(text, 0xb4, lover->id);
+        else
+            txt_Format(text, 0xb5, lover->id);
+        he_AddApEvent(e->chr, text, -l->pay, 0);
+        l->rounds++;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->exSlot = cm_SendExSetHE(0, ev);
+        return;
+    }
+    cm_SendSetField(lover->netId, 0x1c8, 4, 0, HE_LOVER_FLAG);
+    gm_AddTime(&e->end, 0, 2, 0);
+    e->exSlot = cm_SendExSetHE(-1, ev);
 }
 /* 0x54eb80, a Ghidra miss: the figure record test of the street simulation: alive, kind below 10, and (0x47e840 or 0x47e7f0 non zero) */
 
@@ -10133,7 +10148,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x6d, (void *)he_StartPopulation, (void *)he_RunPopulation) != 0)
         return 1;
-    if (he_SetEventHandlers(0x6f, (void *)he_Unk54e770, (void *)he_Unk54e890) != 0)
+    if (he_SetEventHandlers(0x6f, (void *)he_StartLover, (void *)he_RunLover) != 0)
         return 1;
     if (he_SetEventHandlers(0x70, (void *)he_Unk54c4c0, (void *)he_Unk54ebd0) != 0)
         return 1;
