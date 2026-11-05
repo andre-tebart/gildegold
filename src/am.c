@@ -5548,7 +5548,7 @@ int ai_DecideSabotage(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                             return r;
                         }
                         if (he_NoEvent4bPair((AIPER *)&ai_CharsT[y->owner], p)
-                            && he_NoEvent2ePair((AIPER *)&ai_CharsT[y->owner], p) && he_Unk553cc0((AIBLD *)y)
+                            && he_NoEvent2ePair((AIPER *)&ai_CharsT[y->owner], p) && he_NoProtectionEvent((AIBLD *)y)
                             && he_NoEvent88Pair((AIPER *)&ai_CharsT[y->owner], p)) {
                             o1->kind = 4;
                             o1->ref = y->id;

@@ -4332,7 +4332,7 @@ int ai_PickpocketWindow(int param_1, int param_2, int rec)
     return 0;
 }
 
-int he_Unk553cc0();
+int he_NoProtectionEvent();
 
 /* 0x594470, opens the pickpocket map pick (99 B): the 0x50-byte config local zeroed, its flags +4 = 0x400, +8 =
    0x93810 and +0x10 = 7; the player bar opens (0x525220), the map pick runs (0x5b2180: 1, the config, the
@@ -4385,7 +4385,7 @@ int ai_BribeCallback(int param_1, int rec)
         sv_MessageBox(U_I((unsigned)&full_data_1440ba4), 0);
         return 0;
     }
-    if (he_Unk553cc0(rec) == 0) {
+    if (he_NoProtectionEvent(rec) == 0) {
         txt_Format(text, 0x1a89, *(unsigned short *)(rec + 0x27), rec);
         sv_MessageBox(text, 0);
         return 0;
@@ -4442,7 +4442,7 @@ int ai_BriberyWindow(int param_1, int rec)
 
     if (rec == 0 || *(unsigned short *)(rec + 0x27) == 0xffff)
         return 0;
-    if (he_Unk553cc0(rec) != 0) {
+    if (he_NoProtectionEvent(rec) != 0) {
         txt_Format(buf, 0x1a92, *(unsigned short *)(rec + 0x27), rec);
         sv_MessageBox(buf, param_1);
         return 0;
@@ -4519,7 +4519,7 @@ void ai_RaidWindow(int param_1, int rec)
 
     if (rec == 0 || *(unsigned short *)(rec + 0x27) == 0xffff)
         return;
-    if (he_Unk553cc0(rec) == 0) {
+    if (he_NoProtectionEvent(rec) == 0) {
         txt_Format(text, 0x1a92, *(unsigned short *)(rec + 0x27), rec);
         sv_MessageBox(text, 0);
         return;
@@ -11312,7 +11312,7 @@ void ai_DungeonEmptyListener(void)
         ;
 }
 
-int he_Unk553cc0(); int gm_BuildingRankGate(); void snd_PlayFavourComment(void); 
+int he_NoProtectionEvent(); int gm_BuildingRankGate(); void snd_PlayFavourComment(void); 
 void sv_OpenPlayerBar(int a, char k); int ai_MapPick(); void sv_ClosePlayerBar(void);
 
 /* 0x5a3f10, the burglary window "locations\diebesgilde\diebesgilde_einbruch" (542 B, ROUGH): the owner's
@@ -11340,7 +11340,7 @@ int ai_BurglaryWindow(int param_1)
     if (param_1 == 0)
         return 0;
     per = (char *)(unsigned)&ai_Chars + U_W(param_1 + 0x27) * 0x21c;
-    if (he_Unk553cc0(param_1) == 0) {
+    if (he_NoProtectionEvent(param_1) == 0) {
         txt_Format(buf, 0x1a92, U_W(param_1 + 0x27));
         sv_MessageBox(buf, 0);
         return 0;
@@ -11457,7 +11457,7 @@ int ai_Unk5a41d0(int param_1)
         return 0;
     if (U_W(param_1 + 0x27) == 0xffff)
         return 0;
-    if (he_Unk553cc0(param_1) == 0) {
+    if (he_NoProtectionEvent(param_1) == 0) {
         txt_Format(buf, 0x1a92, U_W(param_1 + 0x27), param_1);
         sv_MessageBox(buf, 0);
         return 0;

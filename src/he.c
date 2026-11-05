@@ -11142,16 +11142,20 @@ int he_DetectAttack(HEDETECT *d)
     cm_SendExSetHE(0x400, best);
     return 1;
 }
-/* 0x553cc0, 1 unless a record of type 0x62 with +0xb0 = the id (+1 of `p`) and +0xb8 == 1 is running (then 0); a null p gives 1 */
+/* 0x553cc0, 1 unless the building `p` has a protection money event 0x62 that was paid (HEPROTECTION.victim is its
+   id and answer 1): only an unprotected building is attacked or robbed; a null building gives 1 */
 
-int he_Unk553cc0(int p)
+int he_NoProtectionEvent(int p)
 {
-    char *e;
+    AIBLD *b = (AIBLD *)p;
+    AIJOB *e;
+    HEPROTECTION *pr;
 
-    if (p == 0)
+    if (b == 0)
         return 1;
-    for (e = he_FindEvent(1, 0, 0x62); e != 0; e = he_NextEvent()) {
-        if (*(int *)(e + 0xb0) == *(int *)(p + 1) && *(int *)(e + 0xb8) == 1)
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x62); e != 0; e = (AIJOB *)he_NextEvent()) {
+        pr = (HEPROTECTION *)e;
+        if (pr->victim == b->id && pr->answer == 1)
             return 0;
     }
     return 1;

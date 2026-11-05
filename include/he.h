@@ -152,7 +152,7 @@ void he_RunStammtisch(int ev);
 void he_SaveMessageFilter(void);                                       /* 0x575600 */
 
 /* declared in other units' headers before (moved to the owner) */
-int he_Unk553cc0(int p);  /* 0x553cc0 */
+int he_NoProtectionEvent(int p);  /* 0x553cc0 */
 int he_NoEvent2ePair(int a, int b);  /* 0x553d10 */
 int he_NoEvent4bPair(int a, int b);  /* 0x553d60 */
 int he_EventOnBuilding(int owner);  /* 0x56f170 */

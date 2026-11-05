@@ -1628,7 +1628,7 @@ int ai_CalcAngriff(AICHAR *ch, int n)
                 if (bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
                     && bb->owner != *ai_PlayerChar
                     && (bt->kind == 0x13 || bt->kind == 4 || bt->kind == 0x10)
-                    && he_Unk553cc0(bb)) {
+                    && he_NoProtectionEvent(bb)) {
                     if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
                         w = 0.0f;
                     else
@@ -1891,7 +1891,7 @@ burgle:
             for (t = 0; t < 256; t++, bb++) {
                 if (bb->type && bb->owner != ch->bld->owner && bb->owner != 0xffff && !(bb->flags5a & 1)
                     && bb->owner != *ai_PlayerChar && !gm_IsHomeType(bb) && ai_BTypesT[bb->type].kind != '!'
-                    && he_Unk553cc0(bb)) {
+                    && he_NoProtectionEvent(bb)) {
                     if (!bb->object || !ord_GetGridCell(bb->object + 0x4c, &i, &j))
                         w = 0.0f;
                     else
