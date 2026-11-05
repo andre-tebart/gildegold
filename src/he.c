@@ -190,6 +190,7 @@ extern GAPDATA full_data_627b0c[];
 extern char gm_TagGebaeudePROT[24];
 extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
+extern char main_GamePath[];  /* 0x624690, main.c: the game directory */
 extern float gm_DayEndHours[];
 extern GAPDATA full_data_6279f0[];
 extern GAPDATA full_data_627a10[];
@@ -19531,30 +19532,30 @@ void he_RunTitleDue(AIJOB *ev)
         return;
     }
 }
-/* 0x567810, "he_OpenHelpEvents": reads the tutorial hint script "<name>\project\game\tutorial\<param>.ini" (0x627e08 with 0x624690: "%s\tutorial\%s.ini") into the table 0x6fa260 (128 entries of four ints: due day, due
-   time, due clock tail, text id): per line (lines containing "//" are comments) the ':' separated fields are the text label (0x42e770; an unknown label: the message "he_OpenHelpEvents(): invalid textlabel:%s"), and the three
-   numbers; an unopenable file gives the message box "he_OpenHelpEvents(): Could not open help-definition!" (ROUGH) */
-
-void he_Unk567810(char *param)
+/* 0x567810, "he_OpenHelpEvents": reads the tutorial hint script "<game path>\tutorial\<name>.ini" into he_Hints
+   (cleared first): per line not containing "//" the ':' separated fields are the text label (txt_FindKey; an unknown
+   label: the message "he_OpenHelpEvents(): invalid textlabel:%s", built and not shown), the due day, hour and minute;
+   the reading stops at the end of the file or past the table's end; an unopenable file gives the message box
+   "he_OpenHelpEvents(): Could not open help-definition!" */
+void he_OpenHelpEvents(char *name)
 {
     char sep[2] = ":";
     char path[260];
-    char line[0x100], label[0x100], msg[0x400];
-    int *e;
+    char label[0x100], line[0x100], msg[0x400];
+    int n;
     FILE *f;
     char *t;
     int k, i;
-    char c;
 
-    sprintf(path, "%s\\tutorial\\%s.ini", "\\project\\game\\", param);
-    for (e = (int *)he_Hints, i = 0; i < 0x200; i++)
-        e[i] = 0;
+    sprintf(path, "%s\\tutorial\\%s.ini", main_GamePath, name);
+    for (i = 0; i < 0x200; i++)
+        ((int *)he_Hints)[i] = 0;
     f = fopen(path, "rt");
     if (f == 0) {
         MessageBoxA(0, "he_OpenHelpEvents(): Could not open help-definition!", "Error", 0x30);
         return;
     }
-    e = (int *)he_Hints;
+    n = 0;
     for (;;) {
         memset(line, 0, sizeof(line));
         fgets(line, 0x100, f);
@@ -19562,26 +19563,21 @@ void he_Unk567810(char *param)
             k = 0;
             for (t = strtok(line, sep); t != 0; t = strtok(0, sep)) {
                 if (k == 0) {
-                    i = 0;
-                    do {
-                        c = t[i];
-                        label[i] = c;
-                        i++;
-                    } while (c != 0);
-                    e[3] = txt_FindKey(label);
-                    if (e[3] == -1)
+                    strcpy(label, t);
+                    he_Hints[n].text = txt_FindKey(label);
+                    if (he_Hints[n].text == -1)
                         sprintf(msg, "he_OpenHelpEvents(): invalid textlabel:%s", label);
                 } else if (k == 1) {
-                    e[0] = atoi(t);
+                    he_Hints[n].year = atoi(t);
                 } else if (k == 2) {
-                    e[1] = atoi(t);
+                    he_Hints[n].hourW = atoi(t);
                 } else if (k == 3) {
-                    e[2] = atoi(t);
+                    he_Hints[n].min = atoi(t);
                 }
                 k++;
             }
-            e += 4;
-            if ((int)e > ((unsigned)&he_BarView))  /* the end of the help table: the object after it */
+            n++;
+            if (n > 128)
                 return;
         }
         if (feof(f)) {
@@ -19599,15 +19595,15 @@ void he_Unk5679b0(int ev)
 
     k = gm_TitleGroup(*(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
     if (k == 1 || k == 2 || k == 3)
-        he_Unk567810("help_events_hw");
+        he_OpenHelpEvents("help_events_hw");
     else if (k == 5 || k == 6)
-        he_Unk567810("help_events_alpa");
+        he_OpenHelpEvents("help_events_alpa");
     else if (k == 7)
-        he_Unk567810("help_events_kirche");
+        he_OpenHelpEvents("help_events_kirche");
     else if (k == 4)
-        he_Unk567810("help_events_wirt");
+        he_OpenHelpEvents("help_events_wirt");
     else if (k == 0xb)
-        he_Unk567810("help_events_dieb");
+        he_OpenHelpEvents("help_events_dieb");
     *(AITIME *)(ev + 0x52) = ai_Time;
     *(int *)(ev + 0x52) = he_Hints[0].year;
     *(short *)(ev + 0x56) = he_Hints[0].hour;

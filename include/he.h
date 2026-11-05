@@ -41,8 +41,10 @@ typedef struct HEEVSLOT {               /* 12 bytes, a slot of the event bar (he
 extern HEEVSLOT he_EventSlots[16];      /* 0x6faa80 */
 typedef struct HEHINT {                 /* 16 bytes, an entry of the tutorial hint table he_Hints */
     int year;                           /* 0x00, the due day */
-    unsigned short hour;                /* 0x04, the due hour */
-    char pad06[2];
+    union {
+        unsigned short hour;            /* 0x04, the due hour */
+        int hourW;                      /* 0x04, the same as he_OpenHelpEvents stores it (a dword) */
+    };
     int min;                            /* 0x08, the due minute */
     int text;                           /* 0x0c, the hint's text id (txt_FindKey, d2_Strings) */
 } HEHINT;
