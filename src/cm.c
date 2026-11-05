@@ -12,7 +12,7 @@
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION.
    Open: not included yet (dcp headers conflicts cm HEADER): am.h anm.h d2.h f3gm.h gfx.h hmt.h hst.h rt.h
    unk_4a7140.h unk_4b39f0.h unk_5d33b0.h; held by calls whose argument count differs from the definition (read the
-   original's pushes): ai_Unk4941b0, ai_Unk4941d0, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
+   original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
    gv_PassSentence takes five arguments here (gv_PassSentenceK).
    Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
    without parameters; cm_QueueVoice has callers with four arguments, and declaration changes in cm.h / cm_types.h flip
@@ -13417,12 +13417,12 @@ void ai_Unk4de340(char *r, int *m)
     case 1:
         if (*(int *)(r + 0x10) != m[5])
             return;
-        *(int *)(r + 0x94) = ai_Unk4941b0(m);
+        *(int *)(r + 0x94) = ai_DecideTorture(m);
         return;
     case 2:
         if (*(int *)(r + 0x10) != m[5])
             return;
-        *(int *)(r + 0x94) = ai_Unk4941d0(m);
+        *(int *)(r + 0x94) = ai_DecideTortureInstrument(m);
         return;
     case 3:
         if (*(int *)(r + 0x10) != m[10])
