@@ -3752,7 +3752,7 @@ int ai_DecideDummyRighteousness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         return 0;
     return b ? 0 : 6;
 }
-/* 0x495fc0 */
+/* 0x495fc0, execute of the dummy action "DummyRechtschaffenheit" (6): returns the action id 6, no other effect */
 
 int ai_ExecuteDummyRighteousness(AIPER *p, AIARG *s1, AIARG *s2)
 {
