@@ -536,7 +536,7 @@ typedef struct G28REC {
     int window;                         /* 0x2c, the form the local run prints the members' texts in (d2_SetForm) */
     unsigned char used;                 /* 0x30, the number of members[] (ai_Unk4e51b0: at most 16) */
     char pad31[3];
-    int members[16];                    /* 0x34, the members' netIds (-1 for one removed, ai_Unk4e5210) */
+    int members[16];                    /* 0x34, the members' netIds (-1 for one removed, cm_RemovePartyMember) */
     unsigned char offerKind;            /* 0x74, of a wedding party (he.c's offer event): the offer's kind (HEOFFER.kind) */
     char pad75[3];
     unsigned int seed;                  /* 0x78, the random seed the scene runs with (cut_RandSeed) */

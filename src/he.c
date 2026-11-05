@@ -427,6 +427,18 @@ typedef struct HECARTREPAIR {           /* the event 16's words over AIJOB's uni
     char padce[0xa];
     int notify;                         /* 0xd8, nonzero: the news 0x1c49 when done (he_RunCartRepair) */
 } HECARTREPAIR;
+typedef struct HEMSGBOX {               /* the message box event 17's words over AIJOB's union (he_Unk557160 / he_RunMessageBox); the
+                                           text is AIJOB.text (after its NUL the text to speak) */
+    char pad00[0xac];
+    int pic;                            /* 0xac, the picture of the window (he_OpenEventSlot) */
+    int bld;                            /* 0xb0, the quick jump's building id, -1: none */
+    int obj;                            /* 0xb4, the quick jump's object in it (sv_SelectPanelObject), -1: the building */
+    int party;                          /* 0xb8, of a cutscene box: the party it shows (cm_PartyById) */
+    char sel;                           /* 0xbc, sv_SelectPanelObject's third argument (written by it) */
+    char padbd[0x2f];
+    int voice;                          /* 0xec, the spoken text's sample (snd_QueueVoice), 0: none */
+    unsigned char flags;                /* 0xf0, 1 big, 2 quick jump, 4 cutscene, 8 activate, 0x10 speak, 0x20 history, 0x40 help */
+} HEMSGBOX;
 typedef struct HEROUTEREFS {            /* the building ids an ordering event names (HETRANSPORT.order): he_AllocTransport
                                            moves a replaced goal in them */
     char pad00[0xb0];
@@ -12130,102 +12142,215 @@ void he_Unk557160(int ev)
 }
 
 int cm_PartyById();
-int ai_Unk4e5210();
+int cm_RemovePartyMember();
 int cm_SendLeaveParty(int a, int b);
 void sb_Stop();
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 
-/* 0x557190, the run handler of the event message box (only for the player's figure while a game runs: 0x6f25b8 / 0x6f25ac; ROUGH skeleton, the flags of +0xf0: 1 = quick jump, 2 = big, 4 = cutscene, 8 = scene window, 0x10 = speech (the text +0x7c is spoken 0x4c27d0 with the shape +0xec), 0x20 = history, 0x40 = help window, else the plain box): state 0 opens the window of the flavour "misc\EventMessagebox_QJ_BIG" / "_QJ" / "_BIG" / "EventMsgbox_History" / "EventMessagebox_Cutscenes" / "EventMessagebox_Help" / "EventMessagebox" (0x53d6f0 (ev, 0, 0, name, +0xac)), shows the news 0x1ba1 / 0x1ba2 / 0x1ba3 / 0x7d and the text +0x7c (0x515960 "%s"), plays the sound "NeueMessage_s_01" (0x426fa0) unless 0x6f25ac == 2, and sets both clocks (+0x44 / +0x52) to now (the due clock +0x14 hours for a quick jump, the minute word 6); state 1 waits for the due time (0x4fe210) or the click and then carries out the quick jump (0x4e50a0 / 0x4e5210 / 0x4c4fd0 / 0x521960 on the contact +0xb0 / +0xb4) and closes the window (0x53d800, 0x410620 / 0x427290 for the help windows); states -2 / -1 free the record */
-void he_Unk557190(int ev)
+/* 0x557190, the run handler of the message box event 17 (HEMSGBOX; allocated by he_Unk557160), only for the player's
+   own character while a game runs. Stage 0 opens the event window by the flavour flags: 2 a quick jump
+   ("misc\EventMessagebox_QJ", with 1 "_QJ_BIG"; the news 0x1ba2 when the player stands at that building and its
+   object, else 0x1ba1), 1 "misc\EventMessagebox_BIG" / 0x20 "misc\EventMsgbox_History" (news 0x1ba3), 4
+   "misc\EventMessagebox_Cutscenes", 0x40 "misc\EventMessagebox_Help", else "misc\EventMessagebox" (news 0x7d); no
+   window: the event is freed. The text goes into the form 0, the sound "NeueMessage_s_01" plays (game state not 2),
+   8 activates the window, 0x10 speaks the text after the text's NUL (snd_QueueVoice); the box stays 24 hours for a
+   cutscene, else 8 (16 when that ends before 6 o'clock). Stage 1: a cutscene box follows its party (gone: -1; due
+   and running: done, unless a quick jump's party is flagged 0x10; due and not running: the player leaves it, -1);
+   other boxes end when due. A click on the window: 0 carries the quick jump out (sv_SelectPanelObject on the
+   building and object), 1 (or the slot confirmed) dismisses it and leaves a cutscene's party; both stop the voice,
+   unpause a help box and close the window. Stages -2 / -1 stop the voice, unpause and close it
+   @deep Read whole against the original: the four stages (jump table equal), the seven window flavours
+   with their news, the voice (strcpy of the text after its NUL), the 8 / 16 / 24 hour lifetimes, the party
+   handling of a cutscene box, the click handling as the original's if (ClickedId != 0) { 1 or confirmed:
+   dismiss; he_SlotConfirmed = 0 } else accept (compare order and block layout now the original's). Left:
+   allocation. The original keeps ev in ebp, the constant 0 in ebx (push ebx / cmp eax, ebx throughout), -1
+   in edi in stage 1 and 0x10 in bl / 1 in esi in the click paths; ours keeps ev in esi and uses
+   immediates. With esi taken ours cannot emit the rep-movs strcpy (+0x55741b: the original's repne scasb /
+   rep movsd / rep movsb, ours the byte-copy loop), which is most of the size difference; the two M8 lines
+   (+0x2d8 / +0x301, ai_Time vs ai_Time+4) are the same two AITIME copies (start / end = ai_Time) with
+   their loads paired to other registers. (references: M8 at +0x2d8: ours refers to ai_Time+0x4 (0x770ae4),
+   the original's field to 0x770ae0 (ai_Time) (and 1 more), explained: the ai_Time+0 / +4 / +8 references
+   are the field loads of the two whole-struct AITIME copies e->start = ai_Time and e->end = ai_Time,
+   aligned against each other in another register order; the same object is copied to the same places)
+   (size: 523 vs 542 instructions, explained: ours=523 original=542: the strcpy intrinsic's loop form (no
+   free esi/edi, ev in esi) is ~20 instructions shorter than the rep-movs form the original's ebp-based
+   allocation allows; the constant registers (ebx=0, edi=-1, bl=0x10) change no instruction count) */
+void he_RunMessageBox(int ev)
 {
-    int st = *(int *)(ev + 0x70);
-    int pl = 0, fl, b, w;
-    char speak[0x7d0];
+    AIJOB *e = (AIJOB *)ev;
+    HEMSGBOX *m = (HEMSGBOX *)ev;
+    AIBLD *bld;
+    G28REC *p;
+    char speak[0x80];
 
-    if (*(unsigned short *)(unsigned)&ai_PlayerId != *(unsigned short *)(ev + 8) || *(unsigned char *)(unsigned)&ai_GameState == 0)
+    if (ai_PlayerId != e->chr || ai_GameState == 0)
         return;
-    fl = *(unsigned char *)(ev + 0xf0);
-    switch (st) {
-    case -2:
-    case -1:
-        if ((fl & 2) != 0) {
-            if (U_I((unsigned)&ai_PlayerBuilding) != 0)
-                pl = U_I((unsigned)&ai_PlayerBuilding);
-            else if (U_I((unsigned)&ai_FallbackBuilding) != 0)
-                pl = U_I((unsigned)&ai_FallbackBuilding);
-            he_OpenEventSlot(ev, 0, 0, (int)((fl & 1) ? "misc\EventMessagebox_QJ_BIG" : "misc\EventMessagebox_QJ"), *(int *)(ev + 0xac));
-            if (*(int *)(ev + 0x74) == 0) {
+    switch (e->stage) {
+    case 0:
+        if ((m->flags & 2) != 0) {
+            bld = 0;
+            if ((m->flags & 1) != 0)
+                he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_QJ_BIG", m->pic);
+            else
+                he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_QJ", m->pic);
+            if (e->slot == 0) {
                 he_FreeEvent((int *)ev);
                 return;
             }
-            d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
-            if (pl != 0 && *(int *)(pl + 1) == *(int *)(ev + 0xb0) && *(unsigned char *)(ev + 0xbc) == 0)
+            if (ai_PlayerBuilding != 0)
+                bld = (AIBLD *)ai_PlayerBuilding;
+            else if (ai_FallbackBuilding != 0)
+                bld = (AIBLD *)ai_FallbackBuilding;
+            d2_SetForm(e->slot->win, 1);
+            if (bld != 0 && bld->id == m->bld && m->sel == 0
+                && ((sv_PanelShown != 0 && ((AIOBJ *)sv_PanelShown)->objId == m->obj) || m->obj == -1))
                 io_PrintText(0x1ba2);
             else
                 io_PrintText(0x1ba1);
-        } else if ((fl & 1) != 0) {
-            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox_BIG", *(int *)(ev + 0xac));
-            if (*(int *)(ev + 0x74) != 0) {
-                d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
+        } else if ((m->flags & 1) != 0) {
+            he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_BIG", m->pic);
+            if (e->slot != 0) {
+                d2_SetForm(e->slot->win, 1);
                 io_PrintText(0x1ba3);
             }
-        } else if ((fl & 0x20) != 0) {
-            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMsgbox_History", *(int *)(ev + 0xac));
-            if (*(int *)(ev + 0x74) != 0) {
-                d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
+        } else if ((m->flags & 0x20) != 0) {
+            he_OpenEventSlot(ev, 0, 0, "misc\\EventMsgbox_History", m->pic);
+            if (e->slot != 0) {
+                d2_SetForm(e->slot->win, 1);
                 io_PrintText(0x1ba3);
             }
-        } else if ((fl & 4) != 0) {
-            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox_Cutscenes", *(int *)(ev + 0xac));
-        } else if ((fl & 0x40) != 0) {
-            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox_Help", *(int *)(ev + 0xac));
+        } else if ((m->flags & 4) != 0) {
+            he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_Cutscenes", m->pic);
+        } else if ((m->flags & 0x40) != 0) {
+            he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox_Help", m->pic);
         } else {
-            he_OpenEventSlot(ev, 0, 0, (int)"misc\EventMessagebox", *(int *)(ev + 0xac));
-            if (*(int *)(ev + 0x74) != 0) {
-                d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 1);
+            he_OpenEventSlot(ev, 0, 0, "misc\\EventMessagebox", m->pic);
+            if (e->slot != 0) {
+                d2_SetForm(e->slot->win, 1);
                 io_PrintText(0x7d);
             }
         }
-        if (*(int *)(ev + 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(*(int *)(*(int *)(ev + 0x74) + 8));
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-        io_PrintText("%s", *(int *)(ev + 0x7c));
-        if (*(unsigned char *)(unsigned)&ai_GameState != 2)
-            sb_PlaySample(U_I((unsigned)&snd_SystemBank), "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
-        if ((fl & 8) != 0)
-            he_ActivateSlot(*(int *)(ev + 0x74));
-        if ((fl & 0x10) != 0) {
-            strcpy(speak, (char *)(*(int *)(ev + 0x7c) + strlen((char *)*(int *)(ev + 0x7c)) + 1));
-            *(int *)(ev + 0xec) = snd_QueueVoice(-7, 0, speak, 0, 0x7d0);
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("%s", e->text);
+        if (ai_GameState != 2)
+            sb_PlaySample((struct SBBANK *)snd_SystemBank, "NeueMessage_s_01", 1, 0x3f, 0x7f, 0, 0);
+        if ((m->flags & 8) != 0)
+            he_ActivateSlot((int *)e->slot);
+        if ((m->flags & 0x10) != 0) {
+            strcpy(speak, e->text + strlen(e->text) + 1);
+            m->voice = snd_QueueVoice(-7, 0, speak, 0, 0x7d0);
         }
-        *(AITIME *)(ev + 0x44) = ai_Time;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        if ((fl & 2) != 0 && *(unsigned short *)(ev + 0x56) < 6)
-            gm_AddTime(ev + 0x52, 0, 0, 1);
-        else
-            gm_AddTime(ev + 0x52, 0, 0, 1);
+        e->start = ai_Time;
+        e->end = ai_Time;
+        if ((m->flags & 4) != 0)
+            gm_AddTime(&e->end, 0x18, 0, 0);
+        else {
+            gm_AddTime(&e->end, 8, 0, 0);
+            if (e->end.hour < 6)
+                gm_AddTime(&e->end, 8, 0, 0);
+        }
+        e->stage++;
         return;
-    case 0:
     case 1:
-        b = gm_CompareTime((unsigned)&ai_Time, ev + 0x52);
-        if (b > 0 || ((fl & 2) != 0 && *(int *)(ev + 0xb0) != -1 && cm_PartyById() != 0)) {
-            if ((fl & 2) != 0 && *(int *)(ev + 0xb0) != -1) {
-                w = gm_BuildQuery(1, 1, *(int *)(ev + 0xb0));
-                if (w != 0)
-                    sv_SelectPanelObjectK(w);
-                ai_Unk4e5210();
-                ((void (*)())cm_SendLeaveParty)();
+        if ((m->flags & 4) != 0) {
+            p = (G28REC *)cm_PartyById(m->party);
+            if (p == 0)
+                e->stage = -1;
+            else if (gm_CompareTime(&ai_Time, &p->time) > 0) {
+                if ((p->flags & 0x80) != 0) {
+                    if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
+                        p->done = 1;
+                    he_ReleaseSlot(ev);
+                    he_FreeEvent((int *)ev);
+                    return;
+                }
+                if ((ai_GameFlags & 8) != 0)
+                    cm_RemovePartyMember(m->party, ai_CharsT[ai_PlayerId].netId);
+                else if ((ai_GameFlags & 4) != 0)
+                    cm_SendLeaveParty(m->party, ai_CharsT[ai_PlayerId].netId);
+                e->stage = -1;
             }
-            if ((fl & 0x40) != 0 && (U_I((unsigned)&ai_GameFlags) & 4) != 0)
-                di_ClearButtons();
-            sb_Stop(*(int *)(ev + 0xec));
+        } else if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            if ((m->flags & 0x40) != 0 && (ai_GameFlags & 4) == 0)
+                tb_Paused = 0;
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
+            return;
         }
+        if (e->slot == 0)
+            return;
+        if (d2_ClickedForm != e->slot->win && (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot))
+            return;
+        if (d2_ClickedId == -1 && (he_SlotConfirmed == 0 || he_ActiveSlot != e->slot))
+            return;
+        if (d2_ClickedId != 0) {
+            if (d2_ClickedId == 1 || he_SlotConfirmed != 0) {
+                if ((m->flags & 4) != 0 && (p = (G28REC *)cm_PartyById(m->party)) != 0) {
+                    if ((p->flags & 0x80) != 0) {
+                        if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
+                            p->done = 1;
+                    } else if ((ai_GameFlags & 8) != 0)
+                        cm_RemovePartyMember(m->party, ai_CharsT[ai_PlayerId].netId);
+                    else if ((ai_GameFlags & 4) != 0)
+                        cm_SendLeaveParty(m->party, ai_CharsT[ai_PlayerId].netId);
+                }
+                if ((m->flags & 0x10) != 0 && m->voice != 0) {
+                    sb_Stop((struct SBSAMPLE *)m->voice, 0);
+                    m->voice = 0;
+                }
+                if ((m->flags & 0x40) != 0 && (ai_GameFlags & 4) == 0)
+                    tb_Paused = 0;
+                if (dm_L.lclick != 0) {
+                    di_GuiClick = 1;
+                    di_ClearButtons();
+                }
+                he_ReleaseSlot(ev);
+                he_FreeEvent((int *)ev);
+            }
+            he_SlotConfirmed = 0;
+        } else {
+            if ((m->flags & 4) != 0) {
+                p = (G28REC *)cm_PartyById(m->party);
+                if ((m->flags & 2) == 0 || m->bld == -1 || (p->flags & 0x10) == 0)
+                    p->done = 1;
+            }
+            if ((m->flags & 2) != 0) {
+                bld = (AIBLD *)gm_BuildQuery(1, 1, m->bld);
+                if (bld == 0)
+                    return;
+                sv_SelectPanelObject((unsigned char *)bld, m->obj, &m->sel);
+            }
+            if ((m->flags & 0x10) != 0 && m->voice != 0) {
+                sb_Stop((struct SBSAMPLE *)m->voice, 0);
+                m->voice = 0;
+            }
+            if ((m->flags & 0x40) != 0 && (ai_GameFlags & 4) == 0)
+                tb_Paused = 0;
+            if (dm_L.lclick != 0) {
+                di_GuiClick = 1;
+                di_ClearButtons();
+            }
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        return;
+    case -2:
+    case -1:
+        if ((m->flags & 0x10) != 0 && m->voice != 0) {
+            sb_Stop((struct SBSAMPLE *)m->voice, 0);
+            m->voice = 0;
+        }
+        if ((m->flags & 0x40) != 0 && (ai_GameFlags & 4) == 0)
+            tb_Paused = 0;
+        he_ReleaseSlot(ev);
+        he_FreeEvent((int *)ev);
         return;
     }
 }
@@ -15291,7 +15416,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(16, (void *)he_AllocCartRepair, (void *)he_RunCartRepair) != 0)
         return 1;
-    if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_Unk557190) != 0)
+    if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_RunMessageBox) != 0)
         return 1;
     if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_Unk5578a0) != 0)
         return 1;

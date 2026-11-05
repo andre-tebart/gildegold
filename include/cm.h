@@ -336,7 +336,7 @@ int cm_PartyById();  /* 0x4e50a0 */
 extern G28REC cm_Parties[96];  /* 0x925520, the scene party records (cm.c) */
 int ai_Unk4e5150();  /* 0x4e5150 */
 int ai_Unk4e51b0();  /* 0x4e51b0 */
-int ai_Unk4e5210();  /* 0x4e5210 */
+int cm_RemovePartyMember();  /* 0x4e5210 */
 int gv_AddEvidence();  /* 0x4f3640 */
 int gv_FreeCrimeSlot();  /* 0x4f36b0 */
 int gv_EvidenceSlot();  /* 0x4f3780 */

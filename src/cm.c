@@ -4063,7 +4063,7 @@ int ai_Unk4c9400(G17MSG *m, G17STAT *s)
 {
     if (cm_PartyById(G17_I(*m, 0)) == 0)
         return 1;
-    if (ai_Unk4e5210(G17_I(*m, 0), G17_I(*m, 4)) == 0)
+    if (cm_RemovePartyMember(G17_I(*m, 0), G17_I(*m, 4)) == 0)
         return 1;
     if (s != 0)
         s->state = 1;
@@ -16449,7 +16449,7 @@ int ai_Unk4e51b0(int id, int who)
 /* 0x4e5210, removes the character who from the party id (his id becomes -1) and, when it is the running party 0x6f0d90, from its member slots (0x92caf0); 0
    when there is no such party */
 
-int ai_Unk4e5210(int id, int who)
+int cm_RemovePartyMember(int id, int who)
 {
     G28REC *r;
     int i, n;
