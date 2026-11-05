@@ -7000,23 +7000,22 @@ int ai_DecideSpy(int a, G5CH *p, int f, AIARG *o1, AIARG *o2)
 
 int ai_ExecuteSpy(G5CH *p, AIARG *s1)
 {
-    G8MSG m;
-    unsigned char *h;
+    AIMSG m;
 
     if (s1->kind != 7)
         return 0;
     m.type = 0x18;
-    m.unk36 = 2;
+    m.flags = 2;
     m.to = p->netId;
-    m.unk0c = -1;
-    if ((h = *(unsigned char **)((char *)p + 0x170)) != 0)
-        *(int *)&m.unk58 = *(int *)(h + 1);
+    m.fromId = -1;
+    if (p->bld2)
+        m.arg[0] = p->bld2->id;
     else
-        *(int *)&m.unk58 = -1;
-    *(int *)((char *)&m + 0x70) = s1->ref;
-    *(int *)((char *)&m + 0x90) = s1->arg2;
+        m.arg[0] = -1;
+    m.arg[6] = s1->ref;
+    m.amount[2] = s1->arg2;
     cm_BeginGroup("spionage");
-    cm_SendLongMessage((AIMSG *)&m);
+    cm_SendLongMessage(&m);
     cm_EndGroup("spionage");
     return 0x25;
 }
