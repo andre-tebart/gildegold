@@ -26169,8 +26169,8 @@ void he_AllocEventGood(int ev)
 }
 
 void he_GiveDomizilGood(AICHAR *per);     /* 0x575430 */
-void he_EventGoodMoney(char *per);       /* 0x575540 */
-void he_EventGoodRefund(char *per);       /* 0x575570 */
+void he_EventGoodMoney(AICHAR *per);      /* 0x575540 */
+void he_EventGoodRefund(AICHAR *per);     /* 0x575570 */
 
 /* 0x5753a0, the run of the event 0xa4: -2 / -1 free, also without the character +0xc (gm_FindChar); a random draw picks
    the good outcome above 0.8 (he_GiveDomizilGood), the money one above 0.4 (he_EventGoodMoney), else the refund
@@ -26178,11 +26178,11 @@ void he_EventGoodRefund(char *per);       /* 0x575570 */
 void he_RunEventGood(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
-    char *per;
+    AICHAR *per;
     float r;
     int state;
 
-    per = (char *)gm_FindChar(e->netId);
+    per = (AICHAR *)gm_FindChar(e->netId);
     state = e->stage;
     if (state == -1 || state == -2) {
         he_FreeEvent((int *)ev);
@@ -26194,7 +26194,7 @@ void he_RunEventGood(int ev)
     }
     r = util_RandomF();
     if (r > (0.800000012f))
-        he_GiveDomizilGood((AICHAR *)per);
+        he_GiveDomizilGood(per);
     else if (r > (0.400000006f))
         he_EventGoodMoney(per);
     else
@@ -26229,19 +26229,19 @@ void he_GiveDomizilGood(AICHAR *per)
 }
 /* 0x575540, the middle outcome of the event 0xa4: the character +4 is credited 3 + random (4) money (gm_SendMoneyDelta) */
 
-void he_EventGoodMoney(char *per)
+void he_EventGoodMoney(AICHAR *per)
 {
-    gm_SendMoneyDelta(HM_I(per, 4), (util_Random(4) & 0xffff) + 3);
+    gm_SendMoneyDelta(per->netId, (util_Random(4) & 0xffff) + 3);
 }
 /* 0x575570, the low outcome of the event 0xa4: the character +4 is credited the price of good 0x2b7 (gm_GoodsPrice)
    times (2 * random + 1) (cm_SendMoveGoodsUnchecked) */
 
-void he_EventGoodRefund(char *per)
+void he_EventGoodRefund(AICHAR *per)
 {
     float f;
 
     f = ((float (*)(int, unsigned char))gm_GoodsPrice)(0x2b7, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((util_RandomF() * 2.0f + *(float *)(unsigned)&ai_FloatOne) * f));
+    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(per->netId, -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((util_RandomF() * 2.0f + *(float *)(unsigned)&ai_FloatOne) * f));
 }
 /* 0x5755c0, copies the INI path `s` to 0x6fa0e0 and loads "Game" / "message_filter_mask" from it (GetPrivateProfileIntA) into 0x6f263c */
 
