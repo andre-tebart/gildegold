@@ -504,7 +504,7 @@ G18LOG *cm_LobbyChatFirst();  /* 0x4cd480 */
 G18LOG *cm_LobbyChatNextLine();  /* 0x4cd4c0 */
 void cm_LobbyClearChat();  /* 0x4cd500 */
 int cm_LobbyAllReady();  /* 0x4cd510 */
-void cm_LobbyStart(int a, int b);  /* 0x4cd580 */
+void cm_LobbyStart(int lobbyId, int value);  /* 0x4cd580, opens the lobby from the hello answer */
 unsigned int *cm_LobbyPlayerList();  /* 0x4cd5d0 */
 char *cm_LobbyFindPlayer(int id);  /* 0x4cd5e0 */
 CMLOBBYPLAYER *cm_LobbyMyPlayer();  /* 0x4cd5f0 */
@@ -564,15 +564,15 @@ extern int gm_AllowAll;  /* 0x6f2448 */
 extern char cm_Fighters[];  /* 0x930600 */
 extern G18LOG cm_LobbyChat[15];  /* 0x935da0 */
 extern int cm_LobbyChatNext;  /* 0x9363f4 */
-extern int ai_Unk936400;  /* 0x936400 */
+extern int cm_LobbyStateFlags;  /* 0x936400, [0] the lobby is open, [1] a lobby message came in (cm_LobbyState) */
 extern int cm_LobbyChanged;  /* 0x936404 */
 extern int cm_LobbyClosed;  /* 0x936408 */
 extern unsigned int cm_LobbyList[];  /* 0x936420, the count then the eight player states (0x24 bytes; cm_LobbyListIds
                                         is a view at +4) */
 extern CMNETGAME cm_NetGame;  /* 0x936460, the network game */
 extern char cm_LobbyRecords[];  /* 0x9364e0 */
-extern int ai_Unk9367d0;  /* 0x9367d0 */
-extern int ai_Unk9367d4;  /* 0x9367d4 */
+extern int cm_LobbyPlayerId;  /* 0x9367d0, this player's lobby id (G17HELLOMSG.lobbyId) */
+extern int cm_LobbyHelloValue;  /* 0x9367d4, the hello answer's second value (G17HELLOMSG.value) */
 
 int cm_UpdateBombs();  /* 0x4ce300 */
 struct CMGRENADE *cm_ThrowGrenade(struct D3VECTOR *p, int x, int y);  /* 0x4ce5d0 */

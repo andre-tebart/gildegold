@@ -554,7 +554,7 @@ typedef struct G17ROUTEMSG {            /* 8 bytes, the data of message 0x68 (cm
 
 typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of cm_LobbyRecords,
                                            sent whole by the lobby messages of type 0x5f (kinds 2 and 4) */
-    int id;                             /* 0x00, the player's net id (ai_Unk9367d0 for this player), 0: a free record */
+    int id;                             /* 0x00, the player's net id (cm_LobbyPlayerId for this player), 0: a free record */
     int ready;                          /* 0x04, 1: ready to start (kind 1; cm_LobbyAllReady counts them) */
     char pad08[2];                      /* 0x08, no user seen */
     unsigned char status;               /* 0x0a, 0x10 as INIT_PLAYER.status of a new profile */
@@ -592,8 +592,8 @@ typedef struct G17LOBBYMSG {            /* 0x5b bytes, the data of message 0x5f 
 
 typedef struct G17HELLOMSG {            /* 12 bytes, the data of message 3 (cm_SendHello, cm_WaitHello) */
     int magic;                          /* 0x00, 0xa03ef57c */
-    int lobbyId;                        /* 0x04, the lobby record id of this player (ai_Unk9367d0), 0 in the request */
-    int value;                          /* 0x08, the second hello value (ai_Unk9367d4) */
+    int lobbyId;                        /* 0x04, the lobby record id of this player (cm_LobbyPlayerId), 0 in the request */
+    int value;                          /* 0x08, the second hello value (cm_LobbyHelloValue) */
 } G17HELLOMSG;
 
 typedef struct G17LOADSIZEMSG {         /* 4 bytes, the data of message 8 (cm_SendLoadSize, its handler 0x4c6a90) */

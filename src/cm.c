@@ -6700,15 +6700,16 @@ int cm_LobbyAllReady()
     }
     return cnt == n;
 }
-/* 0x4cd580 */
+/* 0x4cd580, starts the lobby on the server's hello answer: clears the list and the records, marks it open and
+   takes this player's lobby id and the hello's second value */
 
-void cm_LobbyStart(int a, int b)
+void cm_LobbyStart(int lobbyId, int value)
 {
     memset(cm_LobbyList, 0, 0x24);
     memset(cm_LobbyRecords, 0, 0x2b8);
-    ai_Unk936400 = 1;
-    ai_Unk9367d0 = a;
-    ai_Unk9367d4 = b;
+    cm_LobbyStateFlags = 1;
+    cm_LobbyPlayerId = lobbyId;
+    cm_LobbyHelloValue = value;
     cm_LobbyClosed = 0;
 }
 /* 0x4cd5d0, the lobby's player list cm_LobbyList (the count, then the eight player ids) */
@@ -6723,17 +6724,17 @@ char *cm_LobbyFindPlayer(int id)
 {
     return cm_LobbyRecord(id);
 }
-/* 0x4cd5f0, this player's lobby record (the one of the id ai_Unk9367d0) */
+/* 0x4cd5f0, this player's lobby record (the one of the id cm_LobbyPlayerId) */
 
 CMLOBBYPLAYER *cm_LobbyMyPlayer()
 {
-    return (CMLOBBYPLAYER *)cm_LobbyRecord(ai_Unk9367d0);
+    return (CMLOBBYPLAYER *)cm_LobbyRecord(cm_LobbyPlayerId);
 }
 /* 0x4cd600, the lobby state: [0] the lobby is open (cm_LobbyStart), [1] a lobby message came in (cm_ExLobby) */
 
 int *cm_LobbyState()
 {
-    return &ai_Unk936400;
+    return &cm_LobbyStateFlags;
 }
 /* 0x4cd610, sends the lobby message 0x5f kind 0 (asks for the player list); returns the send slot (cm_GetSlotState) */
 
@@ -6753,7 +6754,7 @@ int cm_LobbySetReady(int v)
     G17MSG m;
 
     memset(m.data, 0, 0x80);
-    G17_I(m, 4) = ai_Unk9367d0;
+    G17_I(m, 4) = cm_LobbyPlayerId;
     m.type = 0x5f;
     G17_I(m, 0) = 1;
     G17_I(m, 8) = v;
@@ -6768,7 +6769,7 @@ int cm_LobbyLeave()
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
     G17_I(m, 0) = 3;
-    G17_I(m, 4) = ai_Unk9367d0;
+    G17_I(m, 4) = cm_LobbyPlayerId;
     return cm_QueueSend(&m);
 }
 /* 0x4cd6e0, kind 6: a chat line (0x3f characters) of this player to the player id to (0: everybody); returns the
@@ -6783,7 +6784,7 @@ int cm_LobbySendChat(int to, char *text)
     } t;
 
     memset(m.data, 0, 0x80);
-    t.a = ai_Unk9367d0;
+    t.a = cm_LobbyPlayerId;
     t.b = to;
     strncpy(t.name, text, 0x3f);
     m.type = 0x5f;
@@ -6800,7 +6801,7 @@ int cm_LobbyJoin(CMLOBBYPLAYER *p)
 
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
-    p->id = ai_Unk9367d0;
+    p->id = cm_LobbyPlayerId;
     G17_I(m, 0) = 2;
     memcpy(&m.data[4], p, 0x57);
     return cm_QueueSend(&m);
@@ -6813,7 +6814,7 @@ int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p)
 
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
-    p->id = ai_Unk9367d0;
+    p->id = cm_LobbyPlayerId;
     G17_I(m, 0) = 4;
     memcpy(&m.data[4], p, 0x57);
     return cm_QueueSend(&m);
@@ -16988,14 +16989,14 @@ extern float cm_FightCellScale;
 extern int cm_CharInfoWins[32];
 extern G18LOG cm_LobbyChat[15];
 extern int cm_LobbyChatNext;
-extern int ai_Unk936400;
+extern int cm_LobbyStateFlags;
 extern int cm_LobbyChanged;
 extern int cm_LobbyClosed;
 extern unsigned int cm_LobbyList[9];
 extern CMNETGAME cm_NetGame;
 extern char cm_LobbyRecords[752];
-extern int ai_Unk9367d0;
-extern int ai_Unk9367d4;
+extern int cm_LobbyPlayerId;
+extern int cm_LobbyHelloValue;
 extern G17MSG cm_RecvPool[0x2000];
 extern int cm_LastSyncCount;
 extern int cm_NextNetStep;
@@ -17230,14 +17231,14 @@ float cm_FightCellScale = 0;  /* 0x935d00 */
 int cm_CharInfoWins[32] = {0};  /* 0x935d20 */
 G18LOG cm_LobbyChat[15] = {0};  /* 0x935da0 */
 int cm_LobbyChatNext = 0;  /* 0x9363f4 */
-int ai_Unk936400 = 0;  /* 0x936400 */
+int cm_LobbyStateFlags = 0;  /* 0x936400, [0] the lobby is open, [1] a lobby message came in */
 int cm_LobbyChanged = 0;  /* 0x936404 */
 int cm_LobbyClosed = 0;  /* 0x936408 */
 unsigned int cm_LobbyList[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
 CMNETGAME cm_NetGame = {0};  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
 char cm_LobbyRecords[752] = {0};  /* 0x9364e0 */
-int ai_Unk9367d0 = 0;  /* 0x9367d0 */
-int ai_Unk9367d4 = 0;  /* 0x9367d4 */
+int cm_LobbyPlayerId = 0;  /* 0x9367d0, this player's lobby id */
+int cm_LobbyHelloValue = 0;  /* 0x9367d4, the hello answer's second value */
 G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
 int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 int cm_NextNetStep = 0;  /* 0xa687e4, d3_Time of the start */
