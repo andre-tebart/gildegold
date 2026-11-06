@@ -266,6 +266,18 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
 
 typedef char ai_AssertAIJOB[sizeof(AIJOB) == 0x14c ? 1 : -1];
 
+typedef struct HELOAN {                 /* the loan event 0x23's words over AIJOB's union (he.c he_AllocKredit / he_RunKredit, lc.c ai_RepayLoan);
+                                           the building is AIJOB.bldId */
+    char pad00[0xb0];
+    int partner;                        /* 0xb0, the netId of the other party (gm_FindChar; the loan's money moves
+                                           between it and the event character, cm_SendMoveGoodsUnchecked) */
+    int amount;                         /* 0xb4, the sum (reasoned: the news 0x18d7 names it before the interest) */
+    int days;                           /* 0xb8, the term in days (the payback date is days * 24 hours ahead) */
+    int daysLeft;                       /* 0xbc, days at the start */
+    int interest;                       /* 0xc0, the interest (the value gv_Accuse checks against the law 0xe) */
+    AITIME due;                         /* 0xc4, the payback date, at 8:00 */
+} HELOAN;
+
 typedef struct AIRECIPE {               /* 0xb8 bytes, a goods list: filled by gm_StallGoodsList / gm_BuildingGoodsList
                                            / gm_BuildingGoodsList17 (f3gm.c, which clear and fill it as 0x2e ints) */
     int n;                              /* 0x00, the capacity of the stall (its cap / lvl1c); ai.c walks the entries up to it */

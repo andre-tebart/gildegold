@@ -414,17 +414,6 @@ typedef struct HEBUYBLD {               /* the building purchase event 0x21's wo
     int price;                          /* 0xb0, the price offered (paid with cm_SendMoveGoodsUnchecked) */
     int buyer;                          /* 0xb4, the buyer's netId (gm_FindChar) */
 } HEBUYBLD;
-typedef struct HELOAN {                 /* the loan event 0x23's words over AIJOB's union (he_AllocKredit / he_RunKredit);
-                                           the building is AIJOB.bldId */
-    char pad00[0xb0];
-    int partner;                        /* 0xb0, the netId of the other party (gm_FindChar; the loan's money moves
-                                           between it and the event character, cm_SendMoveGoodsUnchecked) */
-    int amount;                         /* 0xb4, the sum (reasoned: the news 0x18d7 names it before the interest) */
-    int days;                           /* 0xb8, the term in days (the payback date is days * 24 hours ahead) */
-    int daysLeft;                       /* 0xbc, days at the start */
-    int interest;                       /* 0xc0, the interest (the value gv_Accuse checks against the law 0xe) */
-    AITIME due;                         /* 0xc4, the payback date, at 8:00 */
-} HELOAN;
 typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's union (he_Unk55e3a0 / he_RunEvent24); the
                                            character is AIJOB.ownerCh */
     char pad00[0xb8];

@@ -7222,7 +7222,9 @@ int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k);
 int ai_DuelAct(); void ai_DuelNextPhase(); int ai_DuelOpponentAction(); int ai_DuelAcceptAction();
 
 typedef struct LCFIN {                  /* what gm_PlayerRecord finds for a character (ai.h AIFIN; ai.h cannot be included here yet) */
-    char pad00[0x58];
+    char pad00[0x48];
+    int loansRepaid;                    /* 0x48, AIFIN.loansRepaid: the loan sums paid back at a money lender (ai_RepayLoan) */
+    char pad4c[0xc];
     float duelBias;                     /* 0x58, AIFIN.roundFactors[0]: the bias for who starts a dice duel (am.h AGFIN.firstBias) */
     float tavernChance;                 /* 0x5c, AIFIN.roundFactors[1]: the chance of being invited to the dice game; each visit
                                            takes it to * 0.66 - 0.1 (invited) or * 0.66 - 0.02 (not invited, after 11 o'clock) */
@@ -8596,38 +8598,37 @@ void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, u
 void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
-/* 0x59b030, a credit payment of the money lender (304 B): the person 0x505df0 (param_2 + 0xb0), the text
-   0x18d5 (param_2 + 0xb4); when 0x521040 (the person, param_2 + 0xb4, the player byte) and the confirmation
-   0x521150 (text, 1) succeed: the payment 0x4c47e0 (param_1 + 1, param_2 + 0xb0, the player byte,
-   param_2 + 0xb4); 0x506430 (the person) gets the amount at +0x48; when the character's kind
-   (0x770b82 + slot * 0x21c) is not 5, the message 0x18d8 (the person, param_1, the amount) goes to 0x53dee0
-   (the character 0x770b84 + slot * 0x21c, -1, text, 0, 0x5ec, param_1 + 1, -1, 0, 0); 0x53e1f0 (param_2) */
-void ai_Unk59b030(int param_1, int param_2)
+/* 0x59b030, pays back the loan loan of the bank bank (300 B): the borrower (gm_FindChar of the loan's partner) is
+   asked with the text 0x18d5 (the amount); when the bank is given, the borrower has the amount in the own player
+   slot's money and the player confirms, the amount moves between the bank and the borrower (cm_SendMoveGoods),
+   the borrower's record counts it as repaid (LCFIN.loansRepaid), the bank's owner gets the news 0x18d8 unless it
+   is of kind 5, and the loan event is freed */
+void ai_RepayLoan(AIBLD *bank, HELOAN *loan)
 {
+    char news[0x200];
     char text[0x400];
-    char msg[0x200];
-    unsigned short *per;
-    unsigned short slot;
-    int r;
+    unsigned short *borrower;
+    AICHARREC *owner;
+    LCFIN *fin;
 
-    per = (unsigned short *)gm_FindChar(U_I(param_2 + 0xb0));
-    txt_Format(text, 0x18d5, U_I(param_2 + 0xb4));
-    if (param_1 == 0)
+    borrower = (unsigned short *)gm_FindChar(loan->partner);
+    txt_Format(text, 0x18d5, loan->amount);
+    if (bank == 0)
         return;
-    if (sv_CheckGoodAmount(per, U_I(param_2 + 0xb4), U_I((unsigned)&ai_OwnPlayer)) == 0)
+    if (sv_CheckGoodAmountB((char *)borrower, loan->amount, ai_OwnPlayer) == 0)
         return;
     if (sv_MessageBox(text, 1) == 0)
         return;
-    slot = *(unsigned short *)(param_1 + 0x27);
-    cm_SendMoveGoods(U_I(param_1 + 1), U_I(param_2 + 0xb0), U_I((unsigned)&ai_OwnPlayer), U_I(param_2 + 0xb4));
-    r = gm_PlayerRecord(per);
-    if (r != 0)
-        U_I(r + 0x48) += U_I(param_2 + 0xb4);
-    if (*(unsigned char *)(((unsigned)&ai_Chars + 0x2) + slot * 0x21c) != 5) {
-        txt_Format(msg, 0x18d8, *per, param_1, U_I(param_2 + 0xb4));
-        he_MessageBoxQuickjump(U_I((unsigned)&ai_CharInts + slot * 0x87), -1, msg, 0, 0x5ec, U_I(param_1 + 1), -1, 0, 0);
+    owner = &((AICHARREC *)ai_Chars)[bank->owner];
+    cm_SendMoveGoods(bank->id, loan->partner, ai_OwnPlayer, loan->amount);
+    fin = (LCFIN *)gm_PlayerRecord((char *)borrower);
+    if (fin != 0)
+        fin->loansRepaid += loan->amount;
+    if (owner->kind != 5) {
+        txt_Format(news, 0x18d8, *borrower, bank, loan->amount);
+        he_MessageBoxQuickjump(owner->netId, -1, news, 0, 0x5ec, bank->id, -1, 0, 0);
     }
-    he_FreeEvent(param_2);
+    he_FreeEvent(loan);
 }
 /* 0x59b160, the money lender's credit list "locations\geldleihe\geldleihe_Kreditaufnehmen" (1232 B, ROUGH:
    the row records / controls of the list are condensed): the window 0x4741f0, the rectangle 0xf8f4b8 ..
@@ -8752,7 +8753,7 @@ void ai_CreditListWindow(int param_1)
                 rebuild = 1;
             } else if (U_I((unsigned)&d2_PointerObj) == ctl2 && ctl2 != -1) {
                 d2_SetViewEnabled(win, 0);
-                ai_Unk59b030(param_1, recs[U_I((unsigned)&d2_RadioSel + ctl2 * 0x23 * 4)]);
+                ai_RepayLoan((AIBLD *)param_1, (HELOAN *)recs[U_I((unsigned)&d2_RadioSel + ctl2 * 0x23 * 4)]);
                 rebuild = 1;
                 d2_SetViewEnabled(win, 1);
             }
