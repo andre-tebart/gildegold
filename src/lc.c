@@ -5076,43 +5076,90 @@ void ai_BreakInWindow(int building)
         sv_ClearSelection();
     }
 }
-/* 0x5941c0, the pickpocket window (676 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra start): the
-   window "locations\diebesgilde\taschendiebstahl" (0x4741f0 / 0x476f80 / 0x475600 / 0x475f70 (1)), the text
-   0x515960 (0x19ee, the record's +0x27, the record) and two controls 0x475b80; the click search 0x53e400 /
-   0x53e300, the messages 0x521150 / 0x4c4b70 / 0x4c2d20 / 0x5176d0, the carriers 0x524260, the pump 0x5309a0
-   (this, 0x677c7) and the exit 0x4758f0 */
+/* 0x5941c0, the thieves' guild pickpocket window ("locations\diebesgilde\taschendiebstahl"; the map pick callback
+   of ai_OpenPickpocket, with the picked building): the text 0x19ee names the building and its owner; the first
+   button sends the selected figures there: when the guild building's owner already runs a pickpocket event 0x49
+   on that building, they join its group (sv_MoveToGroup), else the pickpocket message 0x49 (the target building,
+   the guild building, up to six selected scene characters as ids, flags 1) is posted, with the text 0x1a49 when
+   nobody is selected and 0x19ef when more than six are; the second button and a right click close it. Returns 1
+   once the figures were sent, else 0 */
 
-int ai_PickpocketWindow(int param_1, int param_2, int rec)
+int ai_PickpocketWindow(char *place, AIBLD *target)
 {
-    char buf[0x504];
+    AIMSG msg;
+    char text[0x400];
+    int result;
     int win;
-    int ctl1;
-    int ctl2;
-    int id;
-    int b;
-    int i;
+    int send;
+    int cancel;
+    int base;
+    int n;
+    int *ch;
+    AIJOB *ev;
+    AIBLD *bld;
 
+    result = 0;
     win = d2_OpenForm(0, 0, "locations\\diebesgilde\\taschendiebstahl");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    id = io_PrintText(0x19ee, *(unsigned short *)(rec + 0x27), rec);
-    ctl1 = d2_GetWinObj(win, 1, id);
-    ctl2 = d2_GetWinObj(win, 1, id + 1);
-    /* ROUGH: the loop reads the click 0xf8a668 / 0x5fe710, searches the building / character (0x53e400,
-       0x53e300), posts the messages (0x521150, 0x4c4b70, 0x4c2d20, 0x5176d0) and the carrier marks
-       0x524260, then pumps 0x5309a0 (this, 0x677c7) */
-    while (sv_RunFrame(ai_PickpocketWindow, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        b = he_FindEvent(3, 0, 0x48, 2, *(unsigned short *)(rec + 0x27), 3, U_I(rec + 1));
-        while (b != 0)
-            b = he_NextEvent();
-        sv_MessageBox();
-        sv_MoveToGroup(param_1, U_I((unsigned)&sv_PanelShown), b, 0);
-    }
+    base = io_PrintText(0x19ee, target->owner, target);
+    send = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == send) {
+            bld = (AIBLD *)ai_FallbackBuilding;
+            for (ev = (AIJOB *)he_FindEvent(3, 0, 0x49, 2, bld->owner, 3, bld->id); ev != 0;
+                 ev = (AIJOB *)he_NextEvent())
+                if (ev->bldId == target->id)
+                    break;
+            if (ev == 0) {
+                bld = (AIBLD *)ai_FallbackBuilding;
+                msg.type = 0x49;
+                msg.to = ai_CharInts[bld->owner][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                msg.flags = 1;
+                msg.arg[0] = target->id;
+                msg.arg[1] = bld->id;
+                memset(msg.ids, 0xff, sizeof(msg.ids));
+                n = 0;
+                for (ch = ai_SceneChars; (int)ch < (int)&ai_SceneChars[32] && n < 6; ch++)  /* signed compares (jl) */
+                    if (*ch != 0 && ((AICHARREC *)*ch)->selected != 0)
+                        msg.ids[n++] = ((AICHARREC *)*ch)->netId;
+                if (n == 0) {
+                    sv_MessageBox(txt_Ptrs[0x1a49], 0);
+                    continue;
+                }
+                result = 1;
+                cm_SendLongMessage((char *)&msg);
+                snd_PlayFavourComment();
+                n = 0;
+                for (ch = ai_SceneChars; (int)ch < (int)&ai_SceneChars[32]; ch++)
+                    if (*ch != 0 && ((AICHARREC *)*ch)->selected != 0)
+                        n++;
+                if (n > 6) {
+                    txt_Format(text, 0x19ef, 6);
+                    sv_MessageBox(text, 0);
+                }
+                sv_PopRequest = 2;
+            } else {
+                result = 1;
+                sv_PopRequest = 2;
+                for (ch = ai_SceneChars; (int)ch < (int)&ai_SceneChars[32]; ch++)
+                    if (*ch != 0 && ((AICHARREC *)*ch)->selected != 0)
+                        sv_MoveToGroup(0, 0, ((AICHARREC *)*ch)->id, (char *)ev);
+            }
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_PickpocketWindow, 0x677c7) != 0);
     d2_CloseView(win);
-    return 0;
+    return result;
 }
 
 int he_NoProtectionEvent();
