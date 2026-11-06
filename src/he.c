@@ -24168,31 +24168,35 @@ void he_RunMasterWork(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x571550, the alloc of the event 0x8d: the character +0x8c or the building 0x502020 (+0x10) missing -> free; the group 0x4ffe90 (building +0x5d, 1, 0, 0xfd), the character registered (0x524260), +0xac = 0, +0xb8 = 0x1fe, the start clock +0xbc and the due clock +0x52 = now + 5 hours, state 0 */
-
+/* 0x571550, the alloc of the grave care job 0x8d: a missing worker (AIJOB.ids[0], gm_FindChar) or building (AIJOB.from,
+   gm_FindBuildingById 0x502020) frees the event; else the worker is registered (sv_MoveToGroup 0x524260) in the group
+   gm_Query 0x4ffe90 on the building's object list (key 0xfd), the care done is 0, 0x1fe working minutes are left, the
+   counted-up clock since and the due clock (AIJOB.end) = now, the due clock + 5 minutes, stage 0 */
 void he_AllocGraveCare(int ev)
 {
-    char *per = (char *)gm_FindChar(HM_I(ev, 0x8c));
-    char *bld;
-    int grp;
+    AIJOB *e = (AIJOB *)ev;
+    HEGRAVECARE *p = (HEGRAVECARE *)ev;
+    AICHAR *per = (AICHAR *)gm_FindChar(e->ids[0]);
+    AIBLD *bld;
+    short *grp;
 
     if (per == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    bld = (char *)gm_FindBuildingById(HM_I(ev, 0x10));
+    bld = (AIBLD *)gm_FindBuildingById(e->from);
     if (bld == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    grp = gm_Query(HM_I(bld, 0x5d), 1, 0, 0xfd);
-    sv_MoveToGroup(bld, grp, *(unsigned short *)per, ev);
-    HM_I(ev, 0xac) = 0;
-    HM_I(ev, 0xb8) = 0x1fe;
-    *(AITIME *)(ev + 0xbc) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    HM_I(ev, 0x70) = 0;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
+    grp = (short *)gm_Query((void *)bld->objList, 1, 0, 0xfd);
+    sv_MoveToGroup((unsigned char *)bld, grp, per->id, (char *)ev);
+    p->care = 0.0f;
+    p->left = 0x1fe;
+    p->since = ai_Time;
+    e->end = ai_Time;
+    e->stage = 0;
+    gm_AddTime(&e->end, 0, 5, 0);
 }
 /* 0x571640, the run handler of the grave care job 0x8d (alloc he_AllocGraveCare; ai.c's ai_GraveCare posts it with the
    grave's list size and entry): outside the working hours of the season (gm_DayStartHours .. gm_DayEndHours) a
