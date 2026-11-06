@@ -17148,17 +17148,6 @@ void he_RunKidnap(AIJOB *ev)
         return;
     }
 }
-/* 0x561130, the allocation handler: the due clock and the clock +0xb4 are now (copy of the game clock twice) */
-
-void he_AllocRansom(int ev)
-{
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0xb4) = ai_Time;
-}
-
-unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind);
-int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
-
 typedef struct HEEV3D {                 /* the ransom event 0x3d's words over AIJOB's union (he_AllocRansom / he_RunRansom;
                                            he_RunKidnap's ransom message 0x3d posts it: victim, guild) */
     char pad00[0xac];
@@ -17166,6 +17155,19 @@ typedef struct HEEV3D {                 /* the ransom event 0x3d's words over AI
     int guild;                          /* 0xb0, the id of the thieves' guild that holds it (gm_BuildQuery(1, 1, id)) */
     AITIME since;                       /* 0xb4, the time of the kidnap (he_AllocRansom: now), shown by the news 0x19c2 */
 } HEEV3D;
+
+/* 0x561130, the allocation handler of the ransom event 0x3d (he_RunRansom): the due clock and the kidnap time are now */
+
+void he_AllocRansom(AIJOB *ev)
+{
+    HEEV3D *x = (HEEV3D *)ev;
+
+    ev->end = ai_Time;
+    x->since = ai_Time;
+}
+
+unsigned char *gm_NearestBuilding(unsigned char *b, unsigned kind);
+int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps);
 
 /* 0x561190, the run handler of the ransom event 0x3d (HEEV3D, its alloc handler he_AllocRansom): stage 0 (no guild or
    victim: cancelled) makes the victim the guild's hostage when it holds none. A victim no longer held
