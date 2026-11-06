@@ -1247,6 +1247,16 @@ typedef struct HEMASTERWORK {           /* a master's production job 0x8c's word
     int left;                           /* 0xb4, the working minutes left, 0x168 at the start */
     AITIME since;                       /* 0xb8, the time the last production step counted up to */
 } HEMASTERWORK;
+typedef struct HEGRAVECARE {            /* the grave care job 0x8d's words over AIJOB's union (the message's graveWork words
+                                           from ai_GraveCare; its alloc handler 0x571550, run handler 0x571640; the worker is ids[0]) */
+    char pad00[0xac];
+    float care;                         /* 0xac, the care done so far, 0 at the start (handed to gv_OrderAdjustEntry at the end) */
+    int size;                           /* 0xb0, the grave's size: the list of the building's graveyard (gv_ListEntry's i) */
+    unsigned char entry;                /* 0xb4, the entry in that list */
+    char padb5[3];
+    int left;                           /* 0xb8, the working minutes left, 0x1fe at the start */
+    AITIME since;                       /* 0xbc, the time the last care step counted up to */
+} HEGRAVECARE;
 #define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
                                            ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
@@ -23198,8 +23208,8 @@ void he_AllocDecay(int ev);          /* 0x570130 */
 void he_RunDecay(int ev);          /* 0x5702e0 */
 void he_AllocMasterWork(int ev);          /* 0x570ef0 */
 void he_RunMasterWork(int ev);          /* 0x571000 */
-void he_Unk571550(int ev);          /* 0x571550 */
-void he_Unk571640(int ev);          /* 0x571640 */
+void he_AllocGraveCare(int ev);          /* 0x571550 */
+void he_RunGraveCare(int ev);          /* 0x571640 */
 void he_AllocPlunder(int ev);          /* 0x5706e0 */
 void he_RunPlunder(int ev);          /* 0x5707a0 */
 void he_Unk572860(int ev);          /* 0x572860 */
@@ -23223,10 +23233,10 @@ int he_RegisterEventTypes88(void)
     if (he_SetEventHandlers(0x88, (void *)he_AllocHaunting, (void *)he_RunHaunting) == 0) {
         if (he_SetEventHandlers(0x89, (void *)he_AllocDecay, (void *)he_RunDecay) == 0) {
             if (he_SetEventHandlers(0x8c, (void *)he_AllocMasterWork, (void *)he_RunMasterWork) == 0) {
-                if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
+                if (he_SetEventHandlers(0x8d, (void *)he_AllocGraveCare, (void *)he_RunGraveCare) == 0) {
                     if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_RunPlunder) == 0) {
                         if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_RunPlunderOffer) == 0) {
-                            if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
+                            if (he_SetEventHandlers(0x8d, (void *)he_AllocGraveCare, (void *)he_RunGraveCare) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
                                     if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
@@ -24024,7 +24034,7 @@ void he_RunMasterWork(int ev)
 }
 /* 0x571550, the alloc of the event 0x8d: the character +0x8c or the building 0x502020 (+0x10) missing -> free; the group 0x4ffe90 (building +0x5d, 1, 0, 0xfd), the character registered (0x524260), +0xac = 0, +0xb8 = 0x1fe, the start clock +0xbc and the due clock +0x52 = now + 5 hours, state 0 */
 
-void he_Unk571550(int ev)
+void he_AllocGraveCare(int ev)
 {
     char *per = (char *)gm_FindChar(HM_I(ev, 0x8c));
     char *bld;
@@ -24048,70 +24058,80 @@ void he_Unk571550(int ev)
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, 0, 5, 0);
 }
-/* 0x571640, the run of the event 0x8d (a work on the building +0x10 by the character +0x8c): outside the night window (the hour 0x4fe350 against the minute curves 0x617840 / 0x617830) a state -1 / -2 works; the player +8 0xffff or +0xc -1 frees. The character 0x505df0 (+0x8c) missing -> state -1, else registered (0x524260); the building 0x501190 (1, 1, +0x10) missing -> state -1; the work 0x4ef570 (building +0x65, +0xb0, +0xb4) missing -> state -1. State 0: the elapsed 0x4fe280 (+0xbc), the value (4 - x) * y * 0x5eb91c (times 0x5eb79c for the kinds 0x1b / 0x1c with +0x1b4 bit 0) added to +0xac, due now + 5 hours, +0xb8 -= elapsed, the start clock +0xbc = now, +0xb8 <= 0 -> state -1; n = (int)+0xac + HM_B (rec, 0xc), n >= 0xff -> state -1. With a state -1 / -2: n = (int)+0xac, 0x4f0c20 (the character, +0xb0, +0xb4, n), the text 0x411e / 0x4126 and the message 0x53dee0 (when the player is kind 6 / 7 and the character no +0x1b4 bit 0), the release 0x524260, the free. ROUGH */
-
-void he_Unk571640(int ev)
+/* 0x571640, the run handler of the grave care job 0x8d (alloc he_AllocGraveCare; ai.c's ai_GraveCare posts it with the
+   grave's list size and entry): outside the working hours of the season (gm_DayStartHours .. gm_DayEndHours) a
+   running job only restarts its clock and waits 5 minutes. A job without its character is freed at once. A
+   missing worker (ids[0]; else it joins the event's group), building (from) or grave entry (gv_ListEntry of
+   the building's graveyard) ends the job (stage -1). Stage 0 adds (4 - the entry's size) * the minutes since
+   `since` * 0.1 to `care` (a quarter of it for a worker with the title 0x1b / 0x1c at work), waits 5 minutes,
+   takes the minutes off `left` (at 0 the job ends) and ends it too when the entry's b0c + the care reaches
+   0xff. An ended job hands the whole care to the grave (gv_OrderAdjustEntry) and tells a player master who is
+   not at work of it (the text 0x4126 / 0x411e, the voice "_NACHRICHTEN_FRIEDHOF_02"); the worker leaves the
+   group and the event is freed. */
+void he_RunGraveCare(int ev)
 {
-    char text[0x200];
-    char name[0x200];
-    int hour, minute, n, e;
+    AIJOB *e = (AIJOB *)ev;
+    HEGRAVECARE *g = (HEGRAVECARE *)ev;
+    char text[0x400];
+    int season, hour, minutes, n;
     float x;
-    char *per, *bld, *r;
+    AICHAR *w, *master;
+    AIBLD *bld;
+    GVENTRY *entry;
 
-    hour = gm_ClockSeason(&ai_Time);
-    minute = *(unsigned short *)((char *)&ai_Time + 4);
-    if ((float)minute < *(float *)((unsigned)&gm_DayEndHours + hour * 4) || (float)minute < *(float *)((unsigned)&gm_DayStartHours + hour * 4)) {
-        if (HM_I(ev, 0x70) != -1 && HM_I(ev, 0x70) != -2) {
-            *(AITIME *)(ev + 0xbc) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 5, 0);
+    season = gm_ClockSeason(&ai_Time);
+    hour = ai_Time.hour;
+    if ((float)hour >= gm_DayEndHours[season] || (float)hour < gm_DayStartHours[season]) {
+        if (e->stage != -1 && e->stage != -2) {
+            g->since = ai_Time;
+            gm_AddTime(&e->end, 0, 5, 0);
             return;
         }
     }
-    if (*(unsigned short *)(ev + 8) == 0xffff || HM_I(ev, 0xc) == -1)
-        goto free_one;
-    per = (char *)gm_FindChar(HM_I(ev, 0x8c));
-    if (per == 0)
-        HM_I(ev, 0x70) = -1;
-    else
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
-    bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0x10));
-    if (bld == 0)
-        HM_I(ev, 0x70) = -1;
-    r = (char *)gv_ListEntry(HM_I(bld, 0x65), HM_I(ev, 0xb0), HM_B(ev, 0xb4));
-    if (r == 0)
-        HM_I(ev, 0x70) = -1;
-    if (HM_I(ev, 0x70) == 0) {
-        e = gm_MinutesBetween(ev + 0xbc, &ai_Time);
-        x = (float)(4 - HM_I(ev, 0xb0)) * (float)HM_I(ev, 0xb4) * (0.100000001f);
-        if ((HM_B(per, 0x165) == 0x1b || HM_B(per, 0x165) == 0x1c) && (HM_B(per, 0x1b4) & 1))
-            x *= 0.25f;
-        *(float *)(ev + 0xac) += x;
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        HM_I(ev, 0xb8) -= e;
-        *(AITIME *)(ev + 0xbc) = ai_Time;
-        if (HM_I(ev, 0xb8) <= 0)
-            HM_I(ev, 0x70) = -1;
-        n = (int)*(float *)(ev + 0xac) + HM_B(r, 0xc);
-        if (n >= 0xff)
-            HM_I(ev, 0x70) = -1;
-    }
-    n = HM_I(ev, 0x70);
-    if (n < -2 || n >= 0)
+    if (e->chr == 0xffff || e->netId == -1) {
+        he_FreeEvent((int *)ev);
         return;
-    n = (int)*(float *)(ev + 0xac);
-    if (per != 0 && n > 0)
-        gv_OrderAdjustEntry(per, HM_I(ev, 0xb0), HM_B(ev, 0xb4), n);
-    if (per != 0) {
-        r = (char *)gm_FindCharacterByMaster(per);
-        txt_Format(name, 0x411e, 0x4126, *(unsigned short *)per);
-        if ((HM_B(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c, 0) == 6 || HM_B(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c, 0) == 7) &&
-            (r == 0 || !(HM_B(r, 0x1b4) & 1)))
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, name, 0, -1, *(int *)(per + 1), 0x5ec, text, 0);
     }
-    if (per != 0)
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, 0);
-free_one:
+    w = (AICHAR *)gm_FindChar(e->ids[0]);
+    if (w != 0)
+        sv_MoveToGroup(0, 0, w->id, (char *)ev);
+    else
+        e->stage = -1;
+    bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+    if (bld == 0)
+        e->stage = -1;
+    entry = (GVENTRY *)gv_ListEntry((char *)bld->yard, g->size, g->entry);
+    if (entry == 0)
+        e->stage = -1;
+    if (e->stage == 0) {
+        minutes = gm_MinutesBetween(&g->since, &ai_Time);
+        x = (float)(4 - entry->size) * minutes * 0.1f;
+        if ((w->title == 0x1b || w->title == 0x1c) && (w->flags1b4 & 1))
+            x *= 0.25f;
+        g->care += x;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        g->left -= minutes;
+        g->since = ai_Time;
+        if (g->left <= 0)
+            e->stage = -1;
+        if (entry->b0c + (int)g->care >= 0xff)
+            e->stage = -1;
+    }
+    if (e->stage < -2 || e->stage >= 0)
+        return;
+    n = (int)g->care;
+    if (entry != 0 && n > 0) {
+        gv_OrderAdjustEntry(bld, g->size, g->entry, n);
+        if (w != 0) {
+            master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
+            txt_Format(text, 0x4126, 0x411e, w->id, bld);
+            if ((ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) && (master == 0 || !(master->flags1b4 & 1)))
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, bld->id, -1, 0, "_NACHRICHTEN_FRIEDHOF_02");
+        }
+    }
+    if (w != 0)
+        sv_MoveToGroup(0, 0, w->id, 0);
     he_FreeEvent((int *)ev);
 }
 /* 0x571990, the alloc of the event 0x8e: the due clock +0x52 = now + 0x48 hours, state 0 */
