@@ -23117,7 +23117,7 @@ int he_SecretRoomAccuse(AICHAR *a, AICHAR *b, int c)
 
 int he_FindMeetingSlot(int c)
 {
-    char rec[0x24];
+    AIDEC dec;
     int want = c + 3;
     int round;
     int i;
@@ -23127,8 +23127,8 @@ int he_FindMeetingSlot(int c)
     do {
         slot = (unsigned short)util_Random(0x1d);
         for (i = 0x1d; i != 0; i--) {
-            gv_GetTableRecord(slot, rec);
-            if (*(int *)(rec + 0x18) == 1 && rec[1] == 2 && *(int *)(rec + 0xc) == want)
+            gv_GetTableRecord(slot, (int *)&dec);
+            if (dec.cur == 1 && dec.valueText == 2 && dec.guilt == want)
                 return slot;
             slot = (slot + 1) % 0x1d;
         }
