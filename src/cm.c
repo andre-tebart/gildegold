@@ -5048,39 +5048,45 @@ int cm_ExGebUpgrade(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cb100, handler of type 0x3b: removes building data[0] (its jobs, character references, effect) */
+/* 0x4cb100, message 0x3b (cm_SendBuildingDestroyed): destroys the building m->destroy.bldId - frees its carts,
+   drops it from every character whose bld it is, deletes its scene object, stops its chimney smoke effect, then
+   frees the building record */
 
-int ai_Unk4cb100(G17MSG *m, G17STAT *s)
+int cm_ExBuildingDestroyed(G17MSG *m, G17STAT *s)
 {
     int save = d3_CurrentScene;
-    char *b, *o, *p;
-    int e;
+    AIBLD *b;
+    AIOBJ *o;
+    AIBLD **bld;
+    EVTSCRIPT *sc;
 
-    b = gm_BuildQuery(1, 1, G17_I(*m, 0));
+    b = (AIBLD *)gm_BuildQuery(1, 1, m->destroy.bldId);
     if (b == 0)
         return 1;
-    if (b == sv_SelectedObject)
+    if ((char *)b == sv_SelectedObject)
         sv_ResetSelection();
-    for (o = gm_Query(0, 2, 7, 4, 0x1d); o != 0; o = gm_QueryNext()) {
-        if (*(int *)(o + 0x1c) == *(int *)(b + 1))
-            gm_FreeObject(o);
+    for (o = (AIOBJ *)gm_Query(0, 2, 7, 4, 0x1d); o != 0; o = (AIOBJ *)gm_QueryNext()) {
+        if (o->bldId == b->id)
+            gm_FreeObject((int)o);
     }
-    for (p = ai_Unk770cec; (int)p < (int)(ai_Unk770cec + 0x300 * 0x21c); p += 0x21c) {
-        if (*(char **)p == b)
-            *(char **)p = 0;
+    /* the bld of every character record (the end is the field of the record after the table) */
+    for (bld = &ai_CharsT[0].bld; (int)bld < (int)&ai_CharsT[0x300].bld;
+         bld = (AIBLD **)((char *)bld + sizeof(AICHAR))) {
+        if (*bld == b)
+            *bld = 0;
     }
     d3if_SelectScene(0, 1);
     if (d3_QuadTree != 0)
-        d3q_RemoveObject((D3OBJECT *)*(int *)(b + 0x61), (D3QNODE *)d3_QuadTree);
-    d3if_Delete((struct D3OBJECT *)*(int *)(b + 0x61));
-    if (*(int *)(b + 0x95) != -1) {
-        o = (char *)evt_FindById(*(int *)(b + 0x95));
-        if (o != 0)
-            evt_Stop(o);
-        *(int *)(b + 0x95) = -1;
+        d3q_RemoveObject((D3OBJECT *)b->object, (D3QNODE *)d3_QuadTree);
+    d3if_Delete((D3OBJECT *)b->object);
+    if (b->smokeEffect != -1) {
+        sc = evt_FindById(b->smokeEffect);
+        if (sc != 0)
+            evt_Stop(sc);
+        b->smokeEffect = -1;
     }
     d3if_SelectScene(save, 1);
-    gm_FreeBuilding(b);
+    gm_FreeBuilding((char *)b);
     if (s != 0) {
         s->state = 2;
         s->kind = 0;
@@ -16993,7 +16999,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { cm_ExNothing, cm_ExGroupPassed, ai_AlwaysTrue, cm_ExNothing, cm_ExNetFlags, cm_ExNothing, cm_ExNothing, cm_ExNothing, cm_ExLoadSize, cm_ExLoadBlock, cm_ExCreateBuilding, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, cm_ExDeleteObject, cm_ExMoveGoods, cm_ExMoveGoodsUnchecked, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, cm_ExRemoveGoods, cm_ExCreateObject, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, cm_ExSetField, cm_ExFloatDelta, cm_ExRelations, cm_ExLongMessage, cm_ExSetHE, cm_ExTime, cm_ExGameOver, cm_ExSysMessage, cm_ExKillCharacter, cm_ExAddStraftat, cm_ExRetireCrime, cm_ExProofExecuted, cm_ExDropEvidence, cm_ExSendCutInfo, cm_ExNewParty, cm_ExAllocCutscene, cm_ExAddPartyMember, cm_ExLeaveParty, cm_ExRemoveOwned, cm_ExSetPlant, cm_ExCreateSermon, cm_ExChrWalkTo, cm_ExChrWalkToDummy, cm_ExChrMoveToUniverse, cm_ExChrStop, cm_ExChrSetPos, cm_ExCartState, cm_ExPlaceOnStage, cm_ExChrGotoBuilding, cm_ExChrUseGates, cm_ExChrAnim, cm_ExOwnership, cm_ExSetHome, cm_ExGebUpgrade, ai_Unk4cb100, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, cm_ExFreeObject, cm_ExChat, cm_ExCreateGeb, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, cm_ExCutEntry, cm_ExCutEntryUpdate, ai_Unk4cc330, ai_Unk4cc390, cm_ExTableRequest, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, cm_ExAddSkill, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, cm_ExAlchemistOrder, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, cm_ExSetRoute, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { cm_ExNothing, cm_ExGroupPassed, ai_AlwaysTrue, cm_ExNothing, cm_ExNetFlags, cm_ExNothing, cm_ExNothing, cm_ExNothing, cm_ExLoadSize, cm_ExLoadBlock, cm_ExCreateBuilding, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, cm_ExDeleteObject, cm_ExMoveGoods, cm_ExMoveGoodsUnchecked, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, cm_ExRemoveGoods, cm_ExCreateObject, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, cm_ExSetField, cm_ExFloatDelta, cm_ExRelations, cm_ExLongMessage, cm_ExSetHE, cm_ExTime, cm_ExGameOver, cm_ExSysMessage, cm_ExKillCharacter, cm_ExAddStraftat, cm_ExRetireCrime, cm_ExProofExecuted, cm_ExDropEvidence, cm_ExSendCutInfo, cm_ExNewParty, cm_ExAllocCutscene, cm_ExAddPartyMember, cm_ExLeaveParty, cm_ExRemoveOwned, cm_ExSetPlant, cm_ExCreateSermon, cm_ExChrWalkTo, cm_ExChrWalkToDummy, cm_ExChrMoveToUniverse, cm_ExChrStop, cm_ExChrSetPos, cm_ExCartState, cm_ExPlaceOnStage, cm_ExChrGotoBuilding, cm_ExChrUseGates, cm_ExChrAnim, cm_ExOwnership, cm_ExSetHome, cm_ExGebUpgrade, cm_ExBuildingDestroyed, ai_Unk4cb210, cm_ExHire, cm_ExCharModel, ai_Unk4cb6e0, ai_Unk4cb730, ai_Unk4cb7c0, ai_Unk4cb7f0, ai_Unk4cb850, ai_Unk4cb890, ai_Unk4cb8d0, ai_Unk4cb910, ai_Unk4cb940, ai_Unk4cb9b0, cm_ExSpawnCharacter, cm_ExFreeObject, cm_ExChat, cm_ExCreateGeb, ai_Unk4cbff0, ai_Unk4cc050, ai_Unk4cc110, cm_ExCutEntry, cm_ExCutEntryUpdate, ai_Unk4cc330, ai_Unk4cc390, cm_ExTableRequest, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, cm_ExAddSkill, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, cm_ExAlchemistOrder, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, cm_ExSetRoute, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckMoveGoods, sv_ReturnZero, cm_CheckSellObject, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckFieldDeltas, sv_ReturnZero, sv_ReturnZero, cm_CheckSetField, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckOwnership, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckApplication, cm_CheckOfficeMessage, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckDarkCorner, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckCutsceneReady, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char cm_WalkToDummyWhy[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */
