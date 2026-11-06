@@ -2199,16 +2199,16 @@ int cm_SendTradeMessage(AMTTRADE *p)
     m.trade = *p;
     return cm_QueueSend(&m);
 }
-/* 0x4c6020, message 0x5d */
+/* 0x4c6020, sends message 0x5d: the delta c of the skill index b of character a (its handler 0x4ccc20 applies it) */
 
 void cm_SendAddSkill(int a, int b, int c)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.skill.charId = a;
     m.type = 0x5d;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.skill.skill = b;
+    m.skill.delta = c;
     cm_QueueSend(&m);
 }
 /* 0x4c6060, message 0x5e: o's id (+1) and 0x1c bytes of p */
