@@ -7,6 +7,9 @@
    the request, 0x1f / 0x21 and 0x20 the amount-kind menus that send the district request {4, column}).
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood).
+   Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT and LCSEARCHWORDS are local views over
+   AIJOB / AIMSG.arg; a member added to ai_types.h's AIJOB or AIMSG unions moves ord_CountGridObjects (@deep,
+   shape) to draft, so they wait for that function's match.
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
    object record views (G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW), the
    Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
