@@ -3611,7 +3611,7 @@ int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned c
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
-char *_strupr(char *); void gm_CloseTechTree(void); int ai_MercenaryBook();
+char *_strupr(char *); void gm_CloseTechTree(void);
 void ai_MasterLetterWindow(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
@@ -4198,7 +4198,7 @@ void ai_MercenaryBookContact(char *bld)
         }
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == a)
-                ai_MercenaryBook(bld, "ob_SOELDNERBUCH");
+                ai_MercenaryBook((AIBLD *)bld, "ob_SOELDNERBUCH");
             else if (ai_ClickedObject == b)
                 ai_EquipWindow(bld);
         }
@@ -16923,18 +16923,376 @@ void ai_PersonnelBook(AIBLD *bld, char *model)
     sv_CloseBook(book);
     sv_CameraFollow();
 }
-/* 0x5ac110, the mercenary book window "ob_SOELDNERBUCH", ROUGH SKELETON (3680 B): the sibling of 0x5aab80 for the
-   contact 0x592320 (the same record, kind table, entry array r + 0x22c with 0xc entries of 0x5c bytes, up to
-   three rows (0x4731d0 / 0x473650 / 0x46a960, the screen 0xf8f128 width / height), the worker list 0x5aa700 and
-   the pump 0x5309a0 loop with the keys 0x1468410 -0x33 / -0x35, the percent box 0x5a9f80, the entry refresh
-   (0x53e400, the kind 0x13, the slider 0x50c520) and the AIMSG messages 6 / 0x13 / 0x31 / 0x32 (0x4c4b70, the
-   clock 0x770ae0, the character 0x770b84), the exit 0x52d7a0. ROUGH: the Ghidra pseudocode lost the call
-   arguments (a 0x1110-byte frame) */
+/* 0x5ac110, the mercenary book of the building bld (ob_SOELDNERBUCH, the book model model; 3819 B): the
+   personnel book's sibling for the mercenaries (the contact 0x592320): four pages ("Buch\Soeldnerbuch_1",
+   "Buch\Personalbuch_2" .. _4), the bonus button 0x1a20 on page 1, up to 12 mercenary rows on pages 2 .. 4 (two
+   columns, two rows a page, as many as AIBTYPE.k231 + k232), their pictures in one radio group; the rows'
+   controls are made and freed here (only the first six entry controls). Every frame (sv_RunFrame, this,
+   0x677c7) the book and its keys, the bonus on page 1 (ai_AskBonusAmount split over the mercenaries, the group
+   "pay_worker"), and the rows refilled from gm_ListWorkers' third list (the characters without a job): a new
+   mercenary's portrait, name and opinion slider (gm_Opinion), a row with a hire running (the request 6 of the
+   title 0x13) the text 0x1a24, an empty row "no character". A click on a row offers the hire button 0x1a22
+   (the job's cost, the text 0x220), the fire button 0x1a21 and the promotion 0x1a25; hire sends the request 6,
+   fire the message 0x31 after the question 0x1a36, promotion the message 0x32 (refused with 0x1a27 below
+   four years of service). At the end the radio group is cleared, the book closed and the camera follows
+   @deep Written whole from the original (was a stub): the four-page mercenary book, the bonus split
+   (pay_worker), the inline row creation (picture 0x5db, the two texts, the first six entry controls), the
+   per-frame refill from gm_ListWorkers' third list (jobless characters), the inline fill (portrait, name,
+   opinion slider; the hire text 0x1a24 for a running request 6 of title 0x13; 'no character' with the
+   controls freed), the clicks (hire request 6 with hireTitle 0x13, fire 0x31, promotion 0x32 or the
+   refusal 0x1a27). 1075 vs 1077 instructions, every call the same number of times. Left is allocation /
+   scheduling: in the row setup ours keeps the picture x (px) in ebx and y in a slot, the original y in ebx
+   and px in a slot ('+ add ebx, 0x44' against '- mov eax, [esp + 0x24] / add eax, 0x44'), which moves the
+   d2_Objs / rows[i].name stores (the two M8 lines at +0x368 / +0x384 are those crossed stores) and the
+   msg.time = ai_Time copy is stored in another word order (M8 at +0xc31 / +0xc3b). The prover stops at
+   gm_PlayerFactor's byte argument (ai_OwnPlayer pushed through dl with other upper bits). Tried: the
+   declaration order of y / px; the opinion's (v + 128.0) * 100.0 kept in a double (that settled the M10
+   fold of 100 / 255). (references: M8 at +0x368: ours refers to d2_LastWindow (0x6ed938), the original's
+   field to 0xf8f080 (d2_Objs, d2_ObjsC) (and 3 more), explained: the M8 refs are crossed stores of the
+   same objects (rows[i].name / d2_Objs) and the words of one struct copy (msg.time = ai_Time) in another
+   order) */
 
-int ai_MercenaryBook(int param_1, char *param_2)
+void ai_MercenaryBook(AIBLD *bld, char *model)
 {
-    /* ROUGH: not written yet - see the comment above */
-    return 0;
+    int *vp;
+    int pg;
+    int j;
+    int sel;
+    SVBOOK *book;
+    int y;
+    int fireButton;
+    int hireButton;
+    int halfW;
+    int promoteButton;
+    AIBTYPE *bt;
+    int radio;
+    int nWorkers;
+    int halfH;
+    int bonusButton;
+    AIMSG msg;
+    G9DOMIZILROW rows[12];
+    char masterText[0x60];
+    char hireText[0x80];
+    char emptyText[0x80];
+    char nameText[0x80];
+    int workers[38];
+    char masterName[0x60];
+    char ownerName[0x60];
+    char text[0x400];
+    G9DOMIZILROW oldRows[12];
+    int n;
+    int i;
+    int r;
+    int k;
+    int px;
+    int pic;
+    int t;
+    int per;
+    int rel;
+    int amount;
+    int cost;
+    int v;
+    double f;
+    AICHARREC *master;
+    AICHARREC *c;
+    AIJOB *job;
+
+    bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    nWorkers = 0;
+    hireButton = -1;
+    fireButton = -1;
+    promoteButton = -1;
+    sel = -1;
+    radio = -1;
+    book = sv_OpenBook(model, "Buch", 4, "Buch\\Soeldnerbuch_1", "Buch\\Personalbuch_2", "Buch\\Personalbuch_3",
+                       "Buch\\Personalbuch_4");
+    sv_UpdateBook(book);
+    io_CharacterName(bld->owner, 1, 2, ownerName);
+    io_CharacterName(bld->masterId, 1, 2, masterName);
+    master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
+    if (master == 0)
+        strcpy(masterText, txt_NoCharacter);
+    else
+        io_CharacterName(master->id, 1, 1, masterText);
+    d2_SetForm(book->views[0], 3);
+    io_PrintText("$7A");
+    io_PrintText("$6A");
+    bonusButton = d2_GetWinObj(book->views[0], 3, io_PrintText(0x1a20));
+    d2_SetForm(book->views[0], 3);
+    for (i = 0; i < 4; i++) {
+        d2_SetForm(book->views[i], 1);
+        io_PrintText(0x1a1d);
+        if (i == 0)
+            d2_SetForm(book->views[0], 5);
+        else
+            d2_SetForm(book->views[i], 4);
+        io_PrintText("%s %i", 0x1a37, i + 1);
+    }
+    d2_SetForm(book->views[2], 3);
+    halfW = d2_Wins[d2_LastWindow].w / 2;
+    halfH = d2_Wins[d2_LastWindow].h / 2;
+    for (i = 0; i < 12; i++) {
+        rows[i].ch = 0;
+        rows[i].pic = -1;
+    }
+    j = 0;
+    pg = 1;
+    vp = &book->views[1];
+    for (i = 0; i < 12; i++) {
+        if (i >= bt->k232 + bt->k231)
+            break;
+        r = j / 2;
+        if (r >= 2) {
+            pg++;
+            vp++;
+            r = 0;
+            j = 0;
+            if (pg > 3)
+                break;
+        }
+        d2_SetForm(*vp, 3);
+        rows[i].view = *vp;
+        rows[i].x = j % 2 * halfW + 0x10;
+        y = r * halfH + 0x11;
+        rows[i].y = y;
+        px = rows[i].x + 0x18;
+        pic = d2_WinOpenPic(px, y, 0x5db, d2_LastWindow);
+        rows[i].pic = pic;
+        if (i == 0)
+            radio = d2_CreateRadioGroup(1, pic);
+        else
+            d2_RadioAdd(radio, pic);
+        px -= 0x36;
+        t = d2_CreateWinText(px, y - 0x11, txt_NoCharacter, d2_LastWindow);
+        rows[i].text = t;
+        y += 0x44;
+        d2_Objs[pic].interactive = 1;
+        d2_Objs[t].w = 0xa0;
+        d2_Objs[t].centred = 1;
+        t = d2_CreateWinText(px, y, ch_EmptyName, d2_LastWindow);
+        rows[i].name = t;
+        rows[i].ch = 0;
+        d2_Objs[t].w = 0xa0;
+        d2_Objs[t].centred = 1;
+        j++;
+        rows[i].icon = -1;
+        rows[i].slider = -1;
+        memset(rows[i].ctrl28, 0xff, sizeof(rows[i].ctrl28));
+    }
+    n = i;
+    d2_SetPointerSprite(0, 0);
+    while (sv_RunFrame((int)ai_MercenaryBook, 0x677c7) != 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        sv_UpdateBook(book);
+        sv_BookKeys(book);
+        if (kb_Last == 0xcd)
+            sv_BookForward(book);
+        if (kb_Last == 0xcb)
+            sv_BookBack(book);
+        if (book->page == 0 && d2_ClickedId != -1 && d2_PointerObj == bonusButton && nWorkers != 0) {
+            amount = ai_AskBonusAmount();
+            if (amount != 0) {
+                per = amount / nWorkers;
+                rel = per / 3;
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
+                    for (k = 0; k < n; k++) {
+                        if (rows[k].ch != 0) {
+                            cm_BeginGroup("pay_worker");
+                            cm_SendMoveGoods(rows[k].ch->netId, -1, ai_OwnPlayer, gm_PlayerFactor(per, ai_OwnPlayer));
+                            cm_SendRelations(ai_CharInts[ai_PlayerId][0], rows[k].ch->netId, rel, 0);
+                            cm_EndGroup("pay_worker");
+                        }
+                    }
+                    cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, gm_PlayerFactor(amount, ai_OwnPlayer));
+                }
+            }
+        }
+        memcpy(oldRows, rows, sizeof(rows));
+        for (k = 0; k < n; k++)
+            rows[k].ch = 0;
+        nWorkers = gm_ListWorkers((unsigned char *)bld, workers);
+        for (i = 0; i < 12; i++) {
+            v = workers[0x19 + i];
+            if (v != 0xffff && ((AICHARREC *)ai_Chars[v])->jobId == 0) {
+                for (k = 0; k < n; k++)
+                    if (rows[k].ch == (AICHARREC *)ai_Chars[v])
+                        break;
+                if (k >= n) {
+                    for (k = 0; k < n; k++) {
+                        if (rows[k].ch == 0) {
+                            rows[k].ch = (AICHARREC *)ai_Chars[v];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for (k = 0; k < n; k++) {
+            if (rows[k].ch != oldRows[k].ch) {
+                if (rows[k].icon != -1) {
+                    d2_RemoveObj(rows[k].icon);
+                    rows[k].icon = -1;
+                }
+                if (rows[k].slider != -1) {
+                    d2_RemoveObj(rows[k].slider);
+                    rows[k].slider = -1;
+                }
+                for (i = 0; i < 6; i++) {
+                    if (rows[k].ctrl28[i] != -1) {
+                        d2_RemoveObj(rows[k].ctrl28[i]);
+                        rows[k].ctrl28[i] = -1;
+                    }
+                }
+            }
+        }
+        job = (AIJOB *)he_FindEvent(2, 0, 6, 3, bld->id);
+        for (i = 0; i < n; i++) {
+            c = rows[i].ch;
+            if (c != 0) {
+                if (rows[i].icon == -1) {
+                    d2_SetForm(rows[i].view, 3);
+                    rows[i].icon = d2_WinOpenPic((short)rows[i].x + 0x1a, (short)rows[i].y, c->picture, d2_LastWindow);
+                    io_CharacterName(c->id, 1, 1, nameText);
+                    d2_SetObjText(rows[i].text, nameText);
+                    d2_Objs[rows[i].text].centred = 1;
+                    d2_Objs[rows[i].text].w = 0xa0;
+                    rows[i].slider = d2_WinOpenSlider(rows[i].x + 0xc, rows[i].y + 0x32, 0x40, 0, 100, 0x75, 0x42, d2_LastWindow);
+                    rows[i].state = 1;
+                    d2_Objs[rows[i].slider].clickDisabled = 1;
+                }
+                if (rows[i].slider != -1) {
+                    v = gm_Opinion(ai_PlayerId, c->id);
+                    f = (v + 128.0) * 100.0;
+                    d2_SetObjValue(rows[i].slider, 0, 100, (int)(f / 255.0));
+                }
+            } else if (job != 0 && job->hireTitle == 0x13 && job->tourCounters[i] != 0) {
+                strcpy(hireText, txt_Ptrs[0x1a24]);
+                rows[i].state = 2;
+                d2_SetObjText(rows[i].text, hireText);
+                d2_Objs[rows[i].text].w = 0xa0;
+                d2_Objs[rows[i].text].h = 0x28;
+            } else {
+                if (rows[i].icon != -1) {
+                    d2_RemoveObj(rows[i].icon);
+                    rows[i].icon = -1;
+                }
+                if (rows[i].slider != -1) {
+                    d2_RemoveObj(rows[i].slider);
+                    rows[i].slider = -1;
+                }
+                for (k = 0; k < 6; k++) {
+                    if (rows[i].ctrl28[k] != -1) {
+                        d2_RemoveObj(rows[i].ctrl28[k]);
+                        rows[i].ctrl28[k] = -1;
+                    }
+                }
+                strcpy(emptyText, txt_NoCharacter);
+                rows[i].state = 0;
+                d2_SetObjText(rows[i].text, emptyText);
+                d2_Objs[rows[i].text].w = 0xa0;
+                d2_Objs[rows[i].text].h = 0x28;
+                d2_SetObjText(rows[i].name, ch_EmptyName);
+            }
+        }
+        if (fireButton != -1 && sel != -1 && rows[sel].ch == 0) {
+            sel = -1;
+            hireButton = -1;
+            fireButton = -1;
+            promoteButton = -1;
+            for (k = 0; k < 3; k++) {
+                d2_SetForm(book->views[k], 2);
+                io_PrintText("$C");
+            }
+        }
+        if (d2_ClickedId == -1)
+            continue;
+        for (i = 0; i < 12; i++) {
+            if (rows[i].pic == d2_PointerObj) {
+                for (k = 0; k < 3; k++) {
+                    d2_SetForm(book->views[k], 2);
+                    io_PrintText("$C");
+                }
+                sel = i;
+                hireButton = -1;
+                fireButton = -1;
+                promoteButton = -1;
+                if (rows[i].ch == 0) {
+                    cost = (int)gm_JobCost(ai_Chars[bld->owner], bld->kind, -1, 1);
+                    d2_SetForm(rows[i].view, 2);
+                    hireButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a22, cost, 0x220));
+                } else if (rows[i].state == 1) {
+                    d2_SetForm(rows[i].view, 2);
+                    io_PrintText("$C");
+                    fireButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a21, rows[i].ch->id));
+                    if (rows[i].ch->title == bt->title2)
+                        promoteButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a25, rows[i].ch->id));
+                }
+            }
+        }
+        if (d2_PointerObj == hireButton && sel != -1) {
+            job = (AIJOB *)he_FindEvent(2, 0, 6, 3, bld->id);
+            if (job != 0) {
+                job->tourCounters[sel] = 1;
+            } else {
+                memset(&msg, 0, sizeof(msg));
+                msg.fromId = bld->id;
+                msg.type = 6;
+                msg.flags = 1;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.time = ai_Time;
+                msg.hireRows[sel] = 1;
+                if (gm_IsHomeType(bld) != 0)
+                    msg.hireRoom = -1;
+                else
+                    msg.hireRoom = ((AIROOM *)sv_PanelShown)->objId;
+                msg.hireFlag = 0;
+                msg.hireTitle = 0x13;
+                cm_SendLongMessage((char *)&msg);
+            }
+            sel = -1;
+            for (k = 0; k < 3; k++) {
+                d2_SetForm(book->views[k], 2);
+                io_PrintText("$C");
+            }
+        } else if (d2_PointerObj == fireButton && sel != -1) {
+            if (sv_MessageBox(txt_Ptrs[0x1a36], 1) != 0) {
+                for (k = 0; k < 3; k++) {
+                    d2_SetForm(book->views[k], 2);
+                    io_PrintText("$C");
+                }
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x31;
+                msg.flags = 1;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                msg.arg[0] = rows[sel].ch->netId;
+                cm_SendLongMessage((char *)&msg);
+                sel = -1;
+            }
+        } else if (d2_PointerObj == promoteButton && sel != -1) {
+            c = rows[sel].ch;
+            if (c->v174 < 4) {
+                txt_Format(text, 0x1a27, 4);
+                sv_MessageBox(text, 0);
+            } else {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x32;
+                msg.flags = 2;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                msg.arg[0] = c->netId;
+                cm_SendLongMessage((char *)&msg);
+                sel = -1;
+            }
+        }
+    }
+    if (radio != -1)
+        d2_RadioClear(radio);
+    sv_CloseBook(book);
+    sv_CameraFollow();
 }
 /* 0x5ad000, a second "misc\Messagebox" with a percent slider (336 B): as 0x5a9f80 with the text 0x4141 and the
    buffer 0x1444a6c8 (0x521040 gates, 0x4741f0 the window, 0x509e60 the value clamped at 0x12c0 / 32 as the slider,
