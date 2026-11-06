@@ -80,6 +80,8 @@ typedef struct LCPRODCOL {              /* 0x58 bytes */
     int stock;                          /* 0x54, the amount of the goods in store */
 } LCPRODCOL;
 extern LCPRODCOL ai_ProdColumns[16];    /* 0x6f5320 */
+extern int ai_ProdSelectedInput;        /* 0x6f5a60, the input goods picked by a click on a column's input picture, 0 = none
+                                           (ai_ProductionGoodsWindow; LCPRODCOL.selected marks it) */
 extern int ai_BauplatzCount;            /* 0x6f2688 */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */

@@ -88,7 +88,6 @@ extern float gm_DayEndHours[];
 extern GAPDATA full_data_62b054[];
 extern GAPDATA full_data_62b06c[];
 extern GAPDATA full_data_62b084[];
-extern GAPDATA full_data_6f5a60[];
 extern int d2_PointerObj;
 extern char * cm_FieldObject;
 extern GAPDATA full_data_6f4f60[];
@@ -180,7 +179,6 @@ extern int d2_ClickedForm;
 extern unsigned short * sv_PanelShown;
 extern unsigned short gm_KindObjCount;
 extern unsigned gm_KindObjs[732];
-extern GAPDATA full_data_6f5a60[];
 
 
 
@@ -795,7 +793,6 @@ extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
 extern GAPDATA full_data_6f4f60[];
 extern GAPDATA full_data_6f58a0[];
-extern GAPDATA full_data_6f5a60[];
 extern GAPDATA full_data_6f52e0[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
@@ -1207,7 +1204,7 @@ void ai_InitProductionTables(void)
             p[i] = -1;
         n += 0x78;
     }
-    U_I((unsigned)&full_data_6f5a60) = 0;
+    ai_ProdSelectedInput = 0;
     for (p = (int *)(unsigned)&full_data_6f5a84, n = 0x10; n < 0x460; p += 0xe) {
         p[2] = n;
         p[-1] = 0;
@@ -1682,9 +1679,9 @@ void ai_UpdateProdColumns(int param_1, int param_2, int param_3, int param_4, in
     d2_SetForm(param_1, param_2);
     for (c = 0; c < param_3; c++) {
         *(int *)((unsigned)((char *)ai_ProdColumns + 0x2c) + c * 0x58) = -1;
-        if (U_I((unsigned)&full_data_6f5a60) != 0) {
+        if (ai_ProdSelectedInput != 0) {
             for (i = 0; i < 4; i++)
-                if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x4) + c * 0x58 + i * 4) == U_I((unsigned)&full_data_6f5a60))
+                if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x4) + c * 0x58 + i * 4) == ai_ProdSelectedInput)
                     *(int *)((unsigned)((char *)ai_ProdColumns + 0x2c) + c * 0x58) = i;
         }
     }
@@ -4064,9 +4061,9 @@ int ai_ProductionGoodsWindow(int param_1)
                     for (i = 0; i < 4; i++) {
                         if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)((char *)ai_ProdColumns + 0x4) + col * 0x58 + i * 4)) {
                             if (U_I((unsigned)((char *)ai_ProdColumns + 0x2c) + col * 0x58) == i)
-                                U_I((unsigned)&full_data_6f5a60) = 0;
+                                ai_ProdSelectedInput = 0;
                             else
-                                U_I((unsigned)&full_data_6f5a60) = U_I((unsigned)&ai_ProdColumns + col * 0x58 + i * 4);
+                                ai_ProdSelectedInput = U_I((unsigned)&ai_ProdColumns + col * 0x58 + i * 4);
                         }
                     }
                 }
@@ -23994,3 +23991,4 @@ char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit
 char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
 int * ai_BauplatzList = 0;  /* 0x6f5308 */
 LCPRODCOL ai_ProdColumns[16] = { 0 };  /* 0x6f5320, the goods columns of the production window */
+int ai_ProdSelectedInput = 0;  /* 0x6f5a60, the input goods picked in the production goods window, 0 = none */
