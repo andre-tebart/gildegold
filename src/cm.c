@@ -1626,17 +1626,17 @@ void cm_SendCartState(int cartId, int state)
     m.cart.state = state;
     cm_QueueSend(&m);
 }
-/* 0x4c52a0, sends message 0x34: its handler (0x4c9d80) places character a on the stage at building b (object c,
+/* 0x4c52a0, sends message 0x34: its handler (0x4c9d80) places character charId on the stage at building bldId (object objId,
    gm_PlaceOnStage); returns the queue handle (cm_QueueSend) */
 
-int cm_SendPlaceOnStage(int a, int b, int c)
+int cm_SendPlaceOnStage(int charId, int bldId, int objId)
 {
     G17MSG m;
 
     m.type = 0x34;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.stage.charId = charId;
+    m.stage.bldId = bldId;
+    m.stage.objId = objId;
     return cm_QueueSend(&m);
 }
 /* 0x4c52e0, message 0x35 about character id and building bld; c -1 and not f: the building's object (or -1, flag 1)
