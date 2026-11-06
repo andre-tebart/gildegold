@@ -18173,12 +18173,12 @@ void he_RunAmbush(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x563980, the allocation handler: due clock now + 1 */
+/* 0x563980, the allocation handler of the events 0x31, 0x40, 0x49 and 0x75: the due clock is the game clock plus 1 second */
 
-void he_AllocDueInOne(int ev)
+void he_AllocDueInOne(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
+    ev->end = ai_Time;
+    gm_AddTime(&ev->end, 0, 0, 1);
 }
 /* 0x5639c0, the run handler of the attack event 0x49 ("Angriff"; alloc handler he_AllocDueInOne): a gang (ids[]) from
    the building raidStart attacks the building raidTarget, with the raid event's words (AIJOB.raid*, as he_RunRaid).
