@@ -2318,16 +2318,16 @@ exe	0x004c9450	cm_ExRemoveOwned	cm	byte	readable
 exe	0x004c9520	cm_ExSetPlant	cm	byte	readable		
 exe	0x004c9740	cm_ExCreateSermon	cm	byte	readable		
 exe	0x004c97c0	cm_ExChrWalkTo	cm	byte	readable		
-exe	0x004c9830	ai_Unk4c9830	cm	shape	draft		
-exe	0x004c99b0	ai_Unk4c99b0	cm	shape	draft		
-exe	0x004c9c10	ai_Unk4c9c10	cm	byte	draft		
-exe	0x004c9c80	ai_Unk4c9c80	cm	byte	draft		
-exe	0x004c9d00	ai_Unk4c9d00	cm	byte	draft		
-exe	0x004c9d80	ai_Unk4c9d80	cm	byte	draft		
+exe	0x004c9830	cm_ExChrWalkToDummy	cm	shape	readable		
+exe	0x004c99b0	cm_ExChrMoveToUniverse	cm	shape	readable		
+exe	0x004c9c10	cm_ExChrStop	cm	byte	readable		
+exe	0x004c9c80	cm_ExChrSetPos	cm	byte	readable		
+exe	0x004c9d00	cm_ExCartState	cm	byte	readable		
+exe	0x004c9d80	cm_ExPlaceOnStage	cm	byte	readable		
 exe	0x004c9dc0	cm_ExChrGotoBuilding	cm	draft	readable	deep	
 exe	0x004ca8a0	cm_ExChrUseGates	cm	shape	readable		
-exe	0x004caa20	ai_Unk4caa20	cm	byte	draft		
-exe	0x004caaa0	ai_Unk4caaa0	cm	byte	draft		
+exe	0x004caa20	cm_ExChrAnim	cm	byte	readable		
+exe	0x004caaa0	cm_ExOwnership	cm	byte	readable		
 exe	0x004cab40	cm_ExSetHome	cm	byte	readable		
 exe	0x004cac40	cm_ExGebUpgrade	cm	shape	readable		
 exe	0x004cb100	ai_Unk4cb100	cm	byte	draft		
