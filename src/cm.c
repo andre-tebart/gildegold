@@ -6799,8 +6799,8 @@ int cm_LobbyJoin(CMLOBBYPLAYER *p)
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
     p->id = cm_LobbyPlayerId;
-    G17_I(m, 0) = 2;
-    memcpy(&m.data[4], p, 0x57);
+    m.lobby.kind = 2;
+    m.lobby.player = *p;
     return cm_QueueSend(&m);
 }
 /* 0x4cd7c0, kind 4: this player's changed record p (its id is set here); returns the send slot */
