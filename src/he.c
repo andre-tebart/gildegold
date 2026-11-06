@@ -23546,44 +23546,47 @@ void he_RunHaunting(int ev)
 
 void he_AllocDecay(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEDECAY *d = (HEDECAY *)ev;
+    AICHAR *per;
+    AIJOB *r;
     char text[0x400];
-    char *per;
-    int r, id;
+    int id, netId;
 
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    per = (char *)gm_FindChar(HM_I(ev, 0xb0));
-    for (r = (int)he_FindEvent(1, 0, 0x89); r != 0; r = (int)he_NextEvent()) {
-        if (r != ev && *(unsigned short *)(r + 8) == *(unsigned short *)(ev + 8) && HM_I(r, 0xb0) == HM_I(ev, 0xb0))
+    per = (AICHAR *)gm_FindChar(d->victim);
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x89); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if (r != e && r->chr == e->chr && ((HEDECAY *)r)->victim == d->victim)
             break;
     }
     if (r != 0) {
         if (per != 0) {
-            txt_Format(text, 0x40a2, *(unsigned short *)per);
-            he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fa, 0);
+            txt_Format(text, 0x40a2, per->id);
+            he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5fa, 0);
         }
-        HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (gm_FindChar(HM_I(ev, 0xb4)) == 0) {
+    if (gm_FindChar(d->agent) == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    HM_I(ev, 0xbc) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
-    HM_I(ev, 0x70) = 0;
-    if (per != 0 && HM_I(per, 0x170) != 0)
-        id = *(int *)(HM_I(per, 0x170) + 1);
+    d->aged = 0;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    gm_SendMoneyDelta(ai_CharInts[e->chr][0], -d->paid);
+    e->stage = 0;
+    if (per != 0 && per->bld2 != 0)
+        id = per->bld2->id;
     else
         id = -1;
     if (per != 0)
-        r = HM_I(per, 4);
+        netId = (int)per->netId;
     else
-        r = -1;
-    gv_Accuse(0x1b, 1, *(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), r, id);
+        netId = -1;
+    gv_Accuse(0x1b, 1, ai_CharInts[e->chr][0], netId, id);
 }
 
 void ai_TellGraveWorkSuccess(int param_1);                 /* 0x5a9990 */
