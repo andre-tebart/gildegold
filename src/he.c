@@ -20497,7 +20497,7 @@ float ahm_PlaceFactor();
 void cm_SendUpdateSmoke(int a);
 void cm_SendMakeGoods(int a, short b, int c);
 void sv_CountGroupMembers(char *g);
-int he_HasEvent9f();
+int he_HasEvent9f(AICHAR *a);
 int ai_BuildingHasItem();
 int cm_SendRelations(int a, int b, int c, int d);
 int gm_FreeCapacity();
@@ -20691,7 +20691,7 @@ wait:
             }
             if (n != 0) {
                 p->staff = sum / n;
-                if (he_HasEvent9f((char *)&ai_CharsT[bld->owner]))
+                if (he_HasEvent9f(&ai_CharsT[bld->owner]))
                     p->staff = p->staff * 0.9f;
             }
             sv_CountGroupMembers((char *)ev);
@@ -25647,11 +25647,11 @@ void he_RunGypsySlowdown(int ev)
     if (e->stage == -1 || e->stage == -2)
         he_FreeEvent((int *)ev);
 }
-/* 0x5740f0, 1 when an event of the type 0x9f of the player word of `a` exists (0x53e400 (2, 0, 0x9f, 2, word)) */
+/* 0x5740f0, 1 when the character `a` has an event of the type 0x9f (he_FindEvent (2, 0, 0x9f, 2, a->id)) */
 
-int he_HasEvent9f(char *a)
+int he_HasEvent9f(AICHAR *a)
 {
-    return he_FindEvent(2, 0, 0x9f, 2, *(unsigned short *)a) != 0;
+    return he_FindEvent(2, 0, 0x9f, 2, a->id) != 0;
 }
 /* 0x5741d0, the event of the type 0xa0 whose +0x10 argument is the word after `a` (0x53e400 (2, 0, 0xa0, 3, ..)), 0 when none */
 
