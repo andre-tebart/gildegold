@@ -327,7 +327,7 @@ int cm_ExMoodDeltas(G17MSG *m, G17STAT *s);                                     
 int cm_ExSetField(G17MSG *m, G17STAT *s);                                         /* 0x4c8110, handler of 0x19: clears and sets bits of one field of an object */
 int cm_ExFloatDelta(G17MSG *m, G17STAT *s);                                         /* 0x4c81d0, handler of 0x1a: adds a delta to a float field of an object */
 int cm_ExRelations(G17MSG *m, G17STAT *s);                                         /* 0x4c8240, handler of 0x1b: changes the relations between two characters */
-int ai_Unk4c85c0(G17MSG *m, G17STAT *s);                                         /* 0x4c85c0, handler of 0x1c */
+int cm_ExLongMessage(G17MSG *m, G17STAT *s);                                         /* 0x4c85c0, handler of 0x1c: creates the event of a long message and its texts */
 int ai_Unk4c87a0(G17MSG *m, G17STAT *s);                                         /* 0x4c87a0, handler of 0x1d, "cm_ExSetHE" */
 struct RTPOINT;
 int rt_PointCount(struct RTPOINT *p);                                             /* 0x4bdaa0, rt.h */

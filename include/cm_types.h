@@ -763,6 +763,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17FIELDS fields;               /* 0x10, messages 0x16 / 0x17 / 0x18 */
         G17SETFIELDMSG setField;        /* 0x10, message 0x19 */
         G17FLOATDELTAMSG floatDelta;    /* 0x10, message 0x1a */
+        int nextEventId;                /* 0x10, message 0x1c: the next event id the client adopts (ai_NextEventId); its long message is in cm_LongMsg */
         G17SETHEMSG setHE;              /* 0x10, message 0x1d */
         AITIME time;                    /* 0x10, message 0x1e */
         G17KILLMSG kill;                /* 0x10, message 0x21 */
