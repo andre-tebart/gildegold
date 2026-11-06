@@ -14839,7 +14839,7 @@ typedef struct G8SETTING {              /* a production setting record (the list
     int bldId;                          /* +0x00, the id of the building it is for (G8BLD.id; the chain's key,
                                            ai_FindSetting / ai_FindSettingSlots) */
     int seed;                           /* +0x04, the LCG state of the record's random */
-    unsigned char rotate;               /* +0x08, the rotation index ai_Unk5a8710 advances */
+    unsigned char rotate;               /* +0x08, the rotation index ai_SetSettingWeight advances */
     char pad09[3];
     G8SLOT slots[7];                    /* +0x0c, the seven good slots (ai_FindSettingSlots returns this table) */
     float factor;                       /* +0x44, the weight factor (1.0f at creation, ai_SettingFactor) */
@@ -15070,72 +15070,56 @@ int ai_FreeProdSetting(int bldId)
     mem_Free(s);
     return 0;
 }
-/* 0x5a8710, a weight added to one good of a setting (306 B): the record of 0x5a84b0 (the base record +4 of
-   param_1); the weight param_3 of the good param_2 (the record's table +0xc, the weight +0x10, the lock byte
-   +0x11) is offered the difference against the free total (100 minus the weights of the locked / used slots),
-   taken one at a time from the other unlocked slots (the rotation index +8); the chosen weight is set and the
-   rotation index advanced */
+/* 0x5a8710, sets the weight of the good good in the production setting of the building bld (306 B): the free total
+   is 100 less the weights of the locked slots; when the new weight fits it and more than one slot is unlocked,
+   the slot of the good (with another weight than the new one) takes it, and the difference is spread one point at
+   a time over the other used unlocked slots, round the seven from the setting's rotation index (each weight kept
+   within 0 .. the free total), where the rotation then stays */
 
-unsigned char *ai_Unk5a8710(int param_1, int good, unsigned char weight)
+void ai_SetSettingWeight(int bld, int good, unsigned char weight)
 {
-    char *rec;
-    unsigned char *p;
+    G8SETTING *rec;
     int total;
     int count;
-    int i;
     int slot;
-    int delta;
     int step;
-    int v;
     int rest;
-    unsigned char old;
+    int i;
 
-    rec = (char *)ai_FindSetting(*(int *)(param_1 + 1));
-    p = 0;
+    rec = (G8SETTING *)ai_FindSetting(((G8BLD *)bld)->id);
+    total = 100;
     if (good == 0)
-        return p;
+        return;
     count = 0;
     for (i = 0; i < 7; i++)
-        if (*(int *)(rec + 0xc + i * 8) != 0)
+        if (rec->slots[i].good != 0)
             count++;
-    total = 100;
     for (i = 0; i < 7; i++) {
-        if (*(int *)(rec + 0xc + i * 8) != 0 && *(unsigned char *)(rec + 0x11 + i * 8) != 0) {
-            total -= *(unsigned char *)(rec + 0x10 + i * 8);
+        if (rec->slots[i].good != 0 && rec->slots[i].lock != 0) {
+            total -= rec->slots[i].weight;
             count--;
         }
     }
-    p = (unsigned char *)rec;
-    if (weight <= total && count > 1) {
-        slot = 0;
-        p = (unsigned char *)(rec + 0x10);
-        while (*(int *)(p - 4) != good || weight == *p) {
-            slot++;
-            p += 8;
-            if (slot > 6)
-                return p;
-        }
-        old = *(unsigned char *)(rec + 0x10 + slot * 8);
-        delta = (int)old - (int)weight;
-        step = old < weight ? -1 : 1;
-        rest = delta < 0 ? -delta : delta;
-        i = *(unsigned char *)(rec + 8);
-        while (rest != 0) {
-            if (slot != i && *(int *)(rec + 0xc + i * 8) != 0 &&
-                *(unsigned char *)(rec + 0x11 + i * 8) == 0) {
-                old = *(unsigned char *)(rec + 0x10 + i * 8);
-                v = (int)old + step;
-                if (v > -1 && v < total + 1) {
+    if (weight > total || count < 2)
+        return;
+    for (slot = 0; slot < 7; slot++) {
+        if (rec->slots[slot].good == good && weight != rec->slots[slot].weight) {
+            step = rec->slots[slot].weight < weight ? -1 : 1;
+            rest = abs(rec->slots[slot].weight - weight);
+            i = rec->rotate;
+            while (rest != 0) {
+                if (slot != i && rec->slots[i].good != 0 && rec->slots[i].lock == 0 &&
+                    rec->slots[i].weight + step > -1 && rec->slots[i].weight + step < total + 1) {
+                    rec->slots[i].weight += step;
                     rest--;
-                    *(unsigned char *)(rec + 0x10 + i * 8) = (unsigned char)(old + step);
                 }
+                i = (i + 1) % 7;
             }
-            i = (i + 1) % 7;
+            rec->slots[slot].weight = weight;
+            rec->rotate = i;
+            return;
         }
-        *(unsigned char *)(rec + 0x10 + slot * 8) = weight;
-        *(unsigned char *)(rec + 8) = (unsigned char)i;
     }
-    return p;
 }
 /* 0x5a8850, the weights of a building's production setting refreshed (31 B): the setting of the building's id
    (ai_FindSetting, 0x5a84b0) has its slots refilled from the building's goods (ai_FillSettingWeights), if it exists */
@@ -19694,7 +19678,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                             if (pics[i] != -1) {
                                 U_I((unsigned)&d2_ClickedId) = -1;
                                 v = d2_GetObjValue(pics[i]);
-                                ai_Unk5a8710(param_1, *(int *)(recs + i * 8), v);
+                                ai_SetSettingWeight(param_1, *(int *)(recs + i * 8), v);
                                 for (j = 0; j < 7; j++) {
                                     if (pics[j] != -1)
                                         d2_SetObjValue(pics[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
@@ -19734,7 +19718,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                         if (U_I((unsigned)&d2_PointerObj) == pics[i]) {
                             if (pics[i] != -1) {
                                 v = d2_GetObjValue(pics[i]);
-                                ai_Unk5a8710(param_1, *(int *)(recs + i * 8), v);
+                                ai_SetSettingWeight(param_1, *(int *)(recs + i * 8), v);
                                 for (j = 0; j < 7; j++) {
                                     if (pics[j] != -1)
                                         d2_SetObjValue(pics[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
