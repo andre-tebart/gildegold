@@ -23414,28 +23414,30 @@ void he_SetLifeByAge(AICHAR *c, int num)
 
 void he_AllocHaunting(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEHAUNTING *h = (HEHAUNTING *)ev;
+    AIJOB *r;
     char text[0x400];
-    int r;
 
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    for (r = (int)he_FindEvent(1, 0, 0x88); r != 0; r = (int)he_NextEvent()) {
-        if (r != ev && *(unsigned short *)(r + 8) == *(unsigned short *)(ev + 8) && HM_I(r, 0xb0) == HM_I(ev, 0xb0))
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x88); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if (r != e && r->chr == e->chr && ((HEHAUNTING *)r)->victim == h->victim)
             break;
     }
     if (r != 0) {
-        HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
-        txt_Format(text, 0x4096, HM_I(ev, 0xb0));
-        he_ShowNews(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5fa, 0);
+        e->exSlot = cm_SendExSetHE(-1, ev);
+        txt_Format(text, 0x4096, h->victim);
+        he_ShowNews(ai_CharInts[e->chr][0], -1, text, 0, 0x5fa, 0);
         return;
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    if (HM_I(ev, 0xb4) == -1)
-        HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    if (h->haunter == -1)
+        e->exSlot = cm_SendExSetHE(-1, ev);
     else {
-        HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
-        gm_SendMoneyDelta(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -HM_I(ev, 0xb8));
+        e->exSlot = cm_SendExSetHE(0, ev);
+        gm_SendMoneyDelta(ai_CharInts[e->chr][0], -h->paid);
     }
 }
 
