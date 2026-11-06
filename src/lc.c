@@ -6998,9 +6998,17 @@ void ai_DrawDuelThrow(char *caption, LCDUELSIDE *side)
         }
     }
 }
-typedef struct LCDUEL {                 /* the head of a dice duel (am.h AGDUEL; am.h cannot be included here yet) */
+typedef struct LCDUEL {                 /* a dice duel (am.h AGDUEL, same layout; am.h cannot be included here yet) */
     int stake;                          /* 0x00, the first throw's stake (AGDUEL.stake) */
     int raiseAmount;                    /* 0x04, a tenth of the stake, paid on the throws of kind 2 / 3 (AGDUEL.raiseAmount) */
+    int phase;                          /* 0x08, 5 / 6 at the end: side1 / side2 won (AGDUEL.phase) */
+    LCDUELSIDE side1;                   /* 0x0c (AGDUEL.side1 .. t1) */
+    int kind1;                          /* 0x28, the action side1 chose, 4 answer (AGDUEL.kind1) */
+    int reserved2c;                     /* 0x2c */
+    LCDUELSIDE side2;                   /* 0x30 (AGDUEL.side2 .. t2) */
+    int kind2;                          /* 0x4c (AGDUEL.kind2) */
+    int reserved50;                     /* 0x50 */
+    int total;                          /* 0x54, the stakes paid so far (AGDUEL.total) */
 } LCDUEL;
 /* 0x597a10, shows a duel side's throw in the frame `frame` of the window win: the caption (by mode: 0x1883 the
    name, 0x1884 / 0x1885 / 0x1886 the name and the raise amount). Without `fast`, modes 1 and 2 roll for `wait`
@@ -7115,103 +7123,97 @@ void ai_DuelDiceAnimation(LCDUEL *duel, LCDUELSIDE *side, int mode, int win, int
         }
     }
 }
-/* 0x597e70, draws both dice sets of a dice window (785 B, ROUGH SKELETON from the Ghidra pseudocode): the two
-   records param_1 + 0xc / + 0x30 (the caption at +0x30, the count at +0x10 / +0x34, the painted dice at
-   +0x18 / +0x3c, the plain pictures 0x761 when +0x28 == 4), the frames 0x475f70 (2 / 3 / 4), 0x472d20 (the
-   screen, 1), the dice cells 0x4731d0 (x = 0x1c + i * 0x3a, 0 every 8, y = 0x1d / 0x46); the exit texts
-   0x515960 */
+/* 0x597e70, draws the end of a dice duel into the window win: the frames 2 and 3 cleared, then each side's
+   caption ("$C$Z%s", the character's name) and dice in rows of eight from (0x1c, 0x1d), 0x3a apart, in frame
+   3 for the player's character (kind 6: the thrown values 0x75b .. 0x760) or frame 2 for the opponent (its
+   values, or the hidden die 0x761 while side1's action is 4; the original reads kind1 for both sides); then
+   frame 4 cleared and the result: 0x1887 with the total when the player's side won (phase 5 side1, 6 side2),
+   else 0x1888 with half the total */
 
-void ai_Unk597e70(int param_1, int win)
+void ai_DrawDuelEnd(LCDUEL *duel, int win)
 {
-    unsigned int i;
+    int i;
     int x;
     int y;
-    int rec;
-    int pic;
 
     d2_SetForm(win, 2);
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
     d2_SetForm(win, 3);
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-    rec = *(int *)(param_1 + 0xc);
-    if (*(char *)(rec + 2) == 6) {
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    if (duel->side1.ch->kind == 6) {
         d2_SetForm(win, 3);
-        io_PrintText("_C_Z_%s", rec + 0x30);
-        i = 0;
+        io_PrintText("$C$Z%s", duel->side1.ch->name);
         x = 0x1c;
         y = 0x1d;
-        while ((int)i < (int)*(unsigned char *)(param_1 + 0x10)) {
-            d2_WinOpenPic(x, y, *(unsigned char *)(param_1 + 0x18 + i) + 0x75a, U_I((unsigned)&d2_LastWindow));
+        i = 0;
+        while (i < duel->side1.n) {
+            d2_WinOpenPic(x, y, duel->side1.t[i] + 0x75a, d2_LastWindow);
             i++;
             if (i % 8 == 0)
                 x = 0;
             else
                 x += 0x3a;
-            y = ((i < 8) - 1U & 0x29) + 0x1d;
+            y = i > 7 ? 0x46 : 0x1d;
         }
     } else {
         d2_SetForm(win, 2);
-        io_PrintText("_C_Z_%s", rec + 0x30);
-        i = 0;
+        io_PrintText("$C$Z%s", duel->side1.ch->name);
         x = 0x1c;
         y = 0x1d;
-        while ((int)i < (int)*(unsigned char *)(param_1 + 0x10)) {
-            if (U_I(param_1 + 0x28) == 4)
-                pic = 0x761;
+        i = 0;
+        while (i < duel->side1.n) {
+            if (duel->kind1 == 4)
+                d2_WinOpenPic(x, y, 0x761, d2_LastWindow);
             else
-                pic = *(unsigned char *)(param_1 + 0x18 + i) + 0x75a;
-            d2_WinOpenPic(x, y, pic, U_I((unsigned)&d2_LastWindow));
+                d2_WinOpenPic(x, y, duel->side1.t[i] + 0x75a, d2_LastWindow);
             i++;
             if (i % 8 == 0)
                 x = 0;
             else
                 x += 0x3a;
-            y = ((i < 8) - 1U & 0x29) + 0x1d;
+            y = i > 7 ? 0x46 : 0x1d;
         }
     }
-    rec = *(int *)(param_1 + 0x30);
-    if (*(char *)(rec + 2) == 6) {
+    if (duel->side2.ch->kind == 6) {
         d2_SetForm(win, 3);
-        io_PrintText("_C_Z_%s", rec + 0x30);
-        i = 0;
+        io_PrintText("$C$Z%s", duel->side2.ch->name);
         x = 0x1c;
         y = 0x1d;
-        while ((int)i < (int)*(unsigned char *)(param_1 + 0x34)) {
-            d2_WinOpenPic(x, y, *(unsigned char *)(param_1 + 0x3c + i) + 0x75a, U_I((unsigned)&d2_LastWindow));
+        i = 0;
+        while (i < duel->side2.n) {
+            d2_WinOpenPic(x, y, duel->side2.t[i] + 0x75a, d2_LastWindow);
             i++;
             if (i % 8 == 0)
                 x = 0;
             else
                 x += 0x3a;
-            y = ((i < 8) - 1U & 0x29) + 0x1d;
+            y = i > 7 ? 0x46 : 0x1d;
         }
     } else {
         d2_SetForm(win, 2);
-        io_PrintText("_C_Z_%s", rec + 0x30);
-        i = 0;
+        io_PrintText("$C$Z%s", duel->side2.ch->name);
         x = 0x1c;
         y = 0x1d;
-        while ((int)i < (int)*(unsigned char *)(param_1 + 0x34)) {
-            if (U_I(param_1 + 0x28) == 4)
-                pic = 0x761;
+        i = 0;
+        while (i < duel->side2.n) {
+            if (duel->kind1 == 4)
+                d2_WinOpenPic(x, y, 0x761, d2_LastWindow);
             else
-                pic = *(unsigned char *)(param_1 + 0x3c + i) + 0x75a;
-            d2_WinOpenPic(x, y, pic, U_I((unsigned)&d2_LastWindow));
+                d2_WinOpenPic(x, y, duel->side2.t[i] + 0x75a, d2_LastWindow);
             i++;
             if (i % 8 == 0)
                 x = 0;
             else
                 x += 0x3a;
-            y = ((i < 8) - 1U & 0x29) + 0x1d;
+            y = i > 7 ? 0x46 : 0x1d;
         }
     }
     d2_SetForm(win, 4);
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-    if ((U_I(param_1 + 8) == 5 && *(char *)(*(int *)(param_1 + 0xc) + 2) == 6) ||
-        (U_I(param_1 + 8) == 6 && *(char *)(*(int *)(param_1 + 0x30) + 2) == 6))
-        ((int (*)())io_PrintText)();
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    if ((duel->phase == 5 && duel->side1.ch->kind == 6) || (duel->phase == 6 && duel->side2.ch->kind == 6))
+        io_PrintText((char *)0x1887, duel->total);
     else
-        ((int (*)())io_PrintText)();
+        io_PrintText((char *)0x1888, duel->total / 2);
 }
 
 int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k); short * gm_PlayerRecord(char *c); int ai_DuelStart();
@@ -7344,7 +7346,7 @@ void ai_Unk598170(int param_1)
                 ai_DuelAct(state, sets[0], 1);
                 ai_DuelNextPhase(state);
                 ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 3, 0x14, 1);
-                ai_Unk597e70(state, win);
+                ai_DrawDuelEnd((LCDUEL *)state, win);
                 cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + player * 0x87), 0xffffffff, 0, 0);
                 while (sv_RunFrame(ai_Unk598170, 0x777c7) != 0) {
                     if (U_I(((unsigned)&dm_L + 0x20)) != 0)

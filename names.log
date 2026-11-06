@@ -2651,3 +2651,4 @@
 2026-11-06T11:40:46 0x00597810 func ai_Unk597810 -> ai_DrawDuelDice by:main why:0x597810 draws one side of a dice duel (am.h AGDUEL side: the thrown dice t[] or 0x761 hidden ones) plus a random cell, called by the dice animation 0x597a10
 2026-11-06T11:43:50 0x00597920 func ai_Unk597920 -> ai_DrawDuelThrow by:main why:0x597920 draws one side of a dice duel without the extra random cell (as ai_DrawDuelDice), the throw's final picture in the dice animation 0x597a10
 2026-11-06T11:47:42 0x00597a10 func ai_Unk597a10 -> ai_DuelDiceAnimation by:main why:0x597a10 animates a dice duel side's throw (ai_DrawDice / ai_DrawDuelDice frames, then ai_DrawDuelThrow) for the tavern dice game 0x598170, texts 0x1883..0x1886
+2026-11-06T11:51:16 0x00597e70 func ai_Unk597e70 -> ai_DrawDuelEnd by:main why:0x597e70 draws both sides' dice of the ended duel and the result text 0x1887 / 0x1888 with the total (called last by the tavern dice window 0x598170)
