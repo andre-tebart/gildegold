@@ -5182,47 +5182,81 @@ void ai_OpenPickpocket(int building)
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
-/* 0x5944e0, the bribe pick callback (685 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra start, the
-   callback of 0x594790): rec (0 = return); 0x53e400 (1, 0, 0x62) walks the buildings, the one with +0xb0 ==
-   rec + 1 gives the text 0x5176d0 (0x1a91, rec + 0x27, rec) and 0x521150; else the first character flag
-   0x770d08 (0x300 entries of 0x21c bytes); when none is set the message 0x1440ba4 goes to 0x521150; else
-   0x553cc0 (rec) decides: 0 gives the text 0x1a89 (0x5176d0 / 0x521150), else the bribe result (ROUGH) */
+/* 0x5944e0, the bribe window of the robbers' camp ("LOCATIONS\RAEUBERLAGER\STANDARD"; ai_OpenBribe's map pick callback, with the picked
+   building, 0: returns 0). A building already under a bribe event 0x62 gives the text 0x1a91, no selected character the
+   text 0x1a79, a building without a protection event (he_NoProtectionEvent 0) the text 0x1a89; else the window
+   (text 0x1a8b) asks: its first button posts the bribe message 0x62 from the player (the building, the player's
+   building, the shown room object or -1, the first selected scene character, flags 2) and clears the selection,
+   the second button and a right click close it. Returns 0 */
 
-int ai_BribeCallback(int param_1, int rec)
+int ai_BribeCallback(char *place, AIBLD *target)
 {
-    char text[0x100];
-    int b;
+    AIMSG msg;
+    char text[0x200];
+    int win;
+    int ok;
+    int cancel;
+    int base;
     int i;
+    AIJOB *ev;
 
-    if (rec == 0)
+    if (target == 0)
         return 0;
-    b = he_FindEvent(1, 0, 0x62);
-    while (b != 0) {
-        if (*(int *)(b + 0xb0) == U_I(rec + 1))
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x62); ev != 0; ev = (AIJOB *)he_NextEvent())
+        if (ev->id2 == target->id)
             break;
-        b = he_NextEvent();
-    }
-    if (b != 0) {
-        txt_Format(text, 0x1a91, *(unsigned short *)(rec + 0x27), rec);
+    if (ev != 0) {
+        txt_Format(text, 0x1a91, target->owner, target);
         sv_MessageBox(text, 0);
         return 0;
     }
-    for (i = 0; i < 0x300; i++) {
-        if (*(unsigned char *)((unsigned)&ai_Selected + i * 0x21c) != 0)
+    for (i = 0; i < 0x300; i++)
+        if (((AICHARREC *)ai_Chars)[i].selected != 0)
             break;
-    }
     if (i >= 0x300) {
-        sv_MessageBox(U_I((unsigned)&full_data_1440ba4), 0);
+        sv_MessageBox(txt_Ptrs[0x1a79], 0);
         return 0;
     }
-    if (he_NoProtectionEvent(rec) == 0) {
-        txt_Format(text, 0x1a89, *(unsigned short *)(rec + 0x27), rec);
+    if (he_NoProtectionEvent(target) == 0) {
+        txt_Format(text, 0x1a89, target->owner, target);
         sv_MessageBox(text, 0);
         return 0;
     }
-    /* ROUGH: the bribe result path (0x1a8a .. texts, the money of the character 0x91aaf0 / the record) */
-    txt_Format(text, 0x1a8a, *(unsigned short *)(rec + 0x27), rec);
-    sv_MessageBox(text, 0);
+    win = d2_OpenForm(0, 0, "LOCATIONS\\RAEUBERLAGER\\STANDARD");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    base = io_PrintText(0x1a8b, target);
+    ok = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            snd_PlayFavourComment();
+            msg.type = 0x62;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.fromId = ai_PlayerBuilding != 0 ? ((AIBLD *)ai_PlayerBuilding)->id : ((AIBLD *)ai_FallbackBuilding)->id;
+            msg.time = ai_Time;
+            msg.flags = 2;
+            msg.arg[1] = target->id;
+            msg.arg[4] = ai_PlayerBuilding != 0 ? ((AIBLD *)ai_PlayerBuilding)->id : ((AIBLD *)ai_FallbackBuilding)->id;
+            msg.arg[5] = sv_PanelShown != 0 ? ((AIROOM *)sv_PanelShown)->objId : -1;
+            for (i = 0; i < 0x20; i++)
+                if (ai_SceneChars[i] != 0 && ((AICHARREC *)ai_SceneChars[i])->selected != 0) {
+                    msg.arg[0] = ((AICHARREC *)ai_SceneChars[i])->netId;
+                    break;
+                }
+            cm_SendLongMessage((char *)&msg);
+            sv_PopRequest = 1;
+            sv_ClearSelection();
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_BribeCallback, 0x677c7) != 0);
+    d2_CloseView(win);
     return 0;
 }
 /* 0x594790, opens the bribe map pick (128 B): when the character of the building is free (sv_CheckCharacterFlag
