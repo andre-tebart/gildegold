@@ -14568,57 +14568,59 @@ int ai_OpenTownMap(LCMAPWIN *m)
     return m->view;
 }
 
-/* 0x5a79e0, the map drag scroll (473 B): while the mouse drag 0x14673a8 is held (0x6f26bc), the scroll of the
-   screen record (+0x258 / +0x248) follows the drag position 0x14683c0 / 0x14683c2 from the anchors 0x6f26a4 /
-   0x6f26a8; the previous anchors 0x6f268c .. and the bounds 0x6f2698 / 0x5f3238 / 0x6f26b4 / 0x6310b0 etc. are
-   saved on entry and restored (with 0x4113f0) on release; returns whether the scroll changed */
-
-int ai_Unk5a79e0(int rec)
+/* 0x5a79e0, drags the town map window win with the right mouse button: when the drag begins the mouse bounds
+   (di_MinX .. di_MaxY) and the window's scroll are kept and the bounds narrowed to the map (ai_MapSize x
+   ai_MapHeight less the 0x200 x 0x168 window) around the start position; while it is held the scroll follows the
+   relative mouse position dm_P; on release the bounds come back and the pointer is put back at d2_MouseX /
+   d2_MouseY. Returns 1 when the scroll changed */
+int ai_DragTownMap(D2WIN *win)
 {
-    int changed = 0;
+    float dx;
+    int changed;
     int x;
     int y;
 
-    if (*(int *)(((unsigned)&dm_L + 0x28)) == 0) {
-        if (ai_Dragging != 0) {
-            *(int *)((unsigned)&di_MaxY) = ai_DragSavedMaxY;
-            *(int *)((unsigned)&di_MinX) = ai_DragSavedMinX;
-            *(int *)((unsigned)&di_MaxX) = ai_DragSavedMaxX;
-            ai_DragStartX = 0;
-            ai_DragStartY = 0;
-            *(int *)((unsigned)&di_MinY) = ai_DragSavedMinY;
-            *(int *)((unsigned)&di_Absolute) = 1;
-            di_SetMousePos((short)*(int *)((unsigned)&d2_MouseX), (short)*(int *)((unsigned)&d2_MouseY));
-            ai_Dragging = 0;
-            return 0;
-        }
-    } else {
+    changed = 0;
+    if (dm_L.rhold != 0) {
         if (ai_Dragging == 0) {
-            ai_DragStartX = (short)*(int *)((unsigned)&dm_L);
-            *(int *)((unsigned)&di_Absolute) = 0;
-            ai_DragStartY = (short)*(int *)(((unsigned)&dm_L + 0x2));
+            di_Absolute = 0;
             ai_Dragging = 1;
-            ai_DragScrollX = *(int *)(rec + 0x258);
-            ai_DragScrollY = *(int *)(rec + 0x248);
-            ai_DragSavedMaxX = *(int *)((unsigned)&di_MaxX);
-            ai_DragSavedMaxY = *(int *)((unsigned)&di_MaxY);
-            ai_DragSavedMinX = *(int *)((unsigned)&di_MinX);
-            ai_DragSavedMinY = *(int *)((unsigned)&di_MinY);
-            *(int *)((unsigned)&di_MinX) = ai_DragStartX - ai_DragScrollX;
-            *(int *)((unsigned)&di_MaxX) = *(int *)((unsigned)&ai_MapSize) - ai_DragScrollX - 0x200 + ai_DragStartX;
-            *(int *)((unsigned)&di_MinY) = ai_DragStartY - ai_DragScrollY;
-            *(int *)((unsigned)&di_MaxY) = ai_MapHeight - ai_DragScrollY - 0x168 + ai_DragStartY;
+            ai_DragStartX = dm_L.x;
+            ai_DragStartY = dm_L.y;
+            ai_DragScrollX = win->scrollX;
+            ai_DragScrollY = win->scrollY;
+            ai_DragSavedMaxX = di_MaxX;
+            ai_DragSavedMaxY = di_MaxY;
+            ai_DragSavedMinX = di_MinX;
+            ai_DragSavedMinY = di_MinY;
+            di_MinX = ai_DragStartX - ai_DragScrollX;
+            di_MaxX = ai_MapSize - ai_DragScrollX + ai_DragStartX - 0x200;
+            di_MinY = ai_DragStartY - ai_DragScrollY;
+            di_MaxY = ai_MapHeight - ai_DragScrollY + ai_DragStartY - 0x168;
         }
-        x = (int)((short)*(int *)((unsigned)&dm_P) - ai_DragStartX);
-        y = (int)((short)*(int *)(((unsigned)&dm_P + 0x2)) - ai_DragStartY);
-        if (*(int *)(rec + 0x258) != x + ai_DragScrollX ||
-            *(int *)(rec + 0x248) != ai_DragScrollY + y)
+        dx = (float)(dm_P.x - ai_DragStartX);
+        x = (int)dx;
+        dx = (float)(dm_P.y - ai_DragStartY);
+        y = (int)dx;
+        if (win->scrollX != x + ai_DragScrollX || win->scrollY != ai_DragScrollY + y)
             changed = 1;
-        *(int *)(rec + 0x258) = x + ai_DragScrollX;
-        *(int *)(rec + 0x248) = ai_DragScrollY + y;
+        win->scrollX = x + ai_DragScrollX;
+        win->scrollY = ai_DragScrollY + y;
+    } else if (ai_Dragging != 0) {
+        di_MaxY = ai_DragSavedMaxY;
+        di_MinX = ai_DragSavedMinX;
+        di_MaxX = ai_DragSavedMaxX;
+        ai_DragStartX = 0;
+        ai_DragStartY = 0;
+        di_MinY = ai_DragSavedMinY;
+        di_Absolute = 1;
+        di_SetMousePos(d2_MouseX, d2_MouseY);
+        ai_Dragging = 0;
+        return 0;
     }
     return changed;
 }
+
 /* 0x5a7bc0, the map scroll by keys / drag (272 B): the scroll of the screen record (+0x258 / +0x248) follows the
    drag delta (0x6310b0 / 0x6310b4 against 0x1467380 / 0x1467382, never past the bounds 0x5f3238 / 0x5f323c) and
    the arrow keys 0x1468288 (up) / 0x1468290 (down) / 0x146828b (left) / 0x146828d (right) by 10, clamped to
@@ -14712,7 +14714,7 @@ void ai_Unk5a7cd0(int *m_)
     *(int *)((unsigned)&d2_LastWindowPtr) = (int)rec;
     if (*(int *)((unsigned)&ai_Unk62c26c) != 0) {
         m_[0x9e7] = 0;
-        m_[0x9e7] = ai_Unk5a79e0((int)rec);
+        m_[0x9e7] = ai_DragTownMap((D2WIN *)rec);
         m_[0x9e7] |= ai_Unk5a7bc0((int)rec);
         if (m_[0x9e7] != 0)
             m_[0x9e8] = *(int *)((unsigned)&d3_Time);
