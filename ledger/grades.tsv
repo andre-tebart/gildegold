@@ -1845,7 +1845,7 @@ exe	0x004ad1c0	hmt_Election	hmt	draft	readable	deep
 exe	0x004ad3b0	hmt_SendElectionMessage	hmt	byte	readable		
 exe	0x004ad3e0	hmt_Score	hmt	shape	draft	deep	
 exe	0x004ad510	hmt_ClearOffices	hmt	shape	readable	deep	
-exe	0x004ad580	hmt_Unk4ad580	hmt	draft	draft	deep	
+exe	0x004ad580	hmt_DecideElection	hmt	draft	readable	deep	
 exe	0x004ad7a0	hmt_Unk4ad7a0	hmt	draft	draft	deep	
 exe	0x004ada80	hmt_Load	hmt	shape	readable	deep	
 exe	0x004adb20	hmt_Save	hmt	byte	readable		
@@ -3891,13 +3891,13 @@ exe	0x00572a50	he_RunGraveLease	he	shape	readable
 exe	0x00572b90	he_AllocGraveyardWorkers	he	byte	readable		
 exe	0x00572bf0	he_RunGraveyardWorkers	he	shape	readable		
 exe	0x00572fd0	he_RunGraveyardTheft	he	byte	readable		
-exe	0x00573200	he_HasGraveWork	he	byte	draft		
-exe	0x00573260	he_RegisterEventTypeA2	he	byte	draft		
-exe	0x00573280	he_Unk573280	he	byte	draft		
-exe	0x005732d0	he_Unk5732d0	he	byte	draft		
-exe	0x005733c0	he_RegisterEventTypes9d	he	byte	draft		
-exe	0x005734b0	he_Unk5734b0	he	byte	draft		
-exe	0x00573580	he_Unk573580	he	byte	draft		
+exe	0x00573200	he_HasGraveWork	he	byte	readable		
+exe	0x00573260	he_RegisterEventTypeA2	he	byte	readable		
+exe	0x00573280	he_AllocCouncil	he	byte	readable		
+exe	0x005732d0	he_RunCouncil	he	byte	readable		
+exe	0x005733c0	he_RegisterEventTypes9d	he	byte	readable		
+exe	0x005734b0	he_AllocGypsyApproach	he	byte	readable		
+exe	0x00573580	he_RunGypsyApproach	he	byte	readable		
 exe	0x005736d0	he_GypsyApproach	he	byte	readable		
 exe	0x00573760	he_GypsyDisease	he	byte	readable		
 exe	0x00573820	he_GypsyRumour	he	byte	readable		
@@ -3906,10 +3906,10 @@ exe	0x00573ae0	he_GypsySwapSkills	he	shape	readable
 exe	0x00573c20	he_GypsyCurse	he	byte	readable		
 exe	0x00573d30	he_GypsySlowdown	he	byte	readable		
 exe	0x00573e30	he_GypsyFee	he	byte	readable		
-exe	0x00573f20	he_Unk573f20	he	byte	draft		
-exe	0x00573fb0	he_Unk573fb0	he	shape	draft		
-exe	0x00574060	he_Unk574060	he	byte	draft		
-exe	0x005740d0	he_Unk5740d0	he	byte	draft		
+exe	0x00573f20	he_AllocGypsyCurse	he	byte	readable		
+exe	0x00573fb0	he_RunGypsyCurse	he	shape	draft		
+exe	0x00574060	he_AllocGypsySlowdown	he	byte	draft		
+exe	0x005740d0	he_RunGypsySlowdown	he	byte	draft		
 exe	0x005740f0	he_HasEvent9f	he	byte	draft		
 exe	0x00574120	he_AllocTrialScene	he	byte	draft		
 exe	0x005741d0	ai_FindCurseEvent	he	byte	draft		
@@ -3920,10 +3920,10 @@ exe	0x005746b0	he_CircusShowPayout	he	byte	readable
 exe	0x005748d0	he_RunCircusShow	he	byte	readable		
 exe	0x00574fe0	he_FindMeetingRoom	he	byte	readable		
 exe	0x00575030	he_CircusShowIncome	he	byte	readable		
-exe	0x00575150	he_Unk575150	he	byte	draft		
+exe	0x00575150	he_AllocPettyLoss	he	byte	draft		
 exe	0x005751e0	he_RunPettyLoss	he	draft	readable	deep	
-exe	0x00575320	he_Unk575320	he	byte	draft		
-exe	0x005753a0	he_Unk5753a0	he	shape	draft		
+exe	0x00575320	he_AllocEventGood	he	byte	draft		
+exe	0x005753a0	he_RunEventGood	he	shape	draft		
 exe	0x00575430	he_GiveDomizilGood	he	byte	readable		
 exe	0x00575540	he_Unk575540	he	byte	draft		
 exe	0x00575570	he_Unk575570	he	byte	draft		
