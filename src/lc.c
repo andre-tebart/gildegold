@@ -14870,7 +14870,7 @@ void ai_DomizilMessage12(char *chRec, char *bldRec, int level)
    entries of 0x1c bytes at 0x62c420; each try returns the entry's +0 id when it is not in the param_1 words of
    param_2, else the index advances modulo the count; 0 when every id is taken */
 
-unsigned short ai_Unk5a9e90(int param_1, unsigned short *param_2)
+unsigned short ai_RandomDomizilGoodNotIn(int param_1, unsigned short *param_2)
 {
     int n;
     int i;
