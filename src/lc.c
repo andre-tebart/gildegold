@@ -14836,7 +14836,8 @@ typedef struct G8SLOT {                 /* one {good, weight, lock} slot of a se
     char pad06[2];
 } G8SLOT;
 typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
-    int good;                           /* +0x00, the good id (the chain's key, ai_FindSetting / ai_FindSettingSlots) */
+    int bldId;                          /* +0x00, the id of the building it is for (G8BLD.id; the chain's key,
+                                           ai_FindSetting / ai_FindSettingSlots) */
     int seed;                           /* +0x04, the LCG state of the record's random */
     unsigned char rotate;               /* +0x08, the rotation index ai_Unk5a8710 advances */
     char pad09[3];
@@ -14940,7 +14941,7 @@ int *ai_FindSetting(int id)
 
     s = ai_Settings;
     while (s != 0) {
-        if (s->good == id)
+        if (s->bldId == id)
             return (int *)s;
         s = s->next;
     }
@@ -14975,68 +14976,79 @@ unsigned vfs_fwrite();
 
 /* The production settings (the "hp_" module with the map window: the literals "hp_AddProdSetting" 0x62c284 and
    "hp_LoadProdSetting" 0x62c298 climb right after the map's "Misc\Landkarte2" 0x62c274): the linked list
-   0x6f26c0 of 0x4c-byte records {the good +0, the seed +4, the rotation index byte +8, seven {good, weight, lock}
+   0x6f26c0 of 0x4c-byte records {the building id +0, the seed +4, the rotation index byte +8, seven {good, weight, lock}
    slots at +0xc (stride 8), the factor +0x44 (1.0f), next +0x48}; 0x5a83b0 / 0x5a84d0 fill the weights. */
 
-/* 0x5a8540, the slot table of a good's setting (31 B): the chain ai_Settings (0x6f26c0) walked by the next at
-   +0x48, the record whose good at +0 is the argument: its seven slots at +0xc; else 0 */
+/* 0x5a8540, the slot table of a building's setting (31 B): the chain ai_Settings (0x6f26c0) walked by the next at
+   +0x48, the record whose building id at +0 is the argument: its seven slots at +0xc; else 0 */
 
-G8SLOT *ai_FindSettingSlots(int good)
+G8SLOT *ai_FindSettingSlots(int bldId)
 {
     G8SETTING *s;
 
     s = ai_Settings;
     while (s != 0) {
-        if (s->good == good)
+        if (s->bldId == bldId)
             return s->slots;
         s = s->next;
     }
     return 0;
 }
-/* 0x5a8560, the setting of a good, created on demand (338 B): the first record is created without a link, a
-   later one by 0x5a8540; the 0x4c bytes from 0x4223c0 ("hp_AddProdSetting") are zeroed, the good +4 of
-   param_1 at +0, 0x5de634 at +4, 1.0f at +0x44 and the weights by 0x5a83b0 */
+/* 0x5a8560, the production setting of the building bld (a G8BLD, gv.h's ORDBLD), created on demand (338 B): its
+   slots when the chain ai_Settings has one for the building's id (ai_FindSettingSlots); else, for a building with an
+   item group (ai_FindItemGroup), a zeroed record ("hp_AddProdSetting") keyed by the id with a random seed, the
+   factor 1.0 and the weights of its goods (ai_FillSettingWeights) is put at the head of the chain and its slots
+   returned; 0 without a group or memory
+   @deep Read whole against the original (130 instructions): the empty-chain branch and the lookup branch
+   (ai_FindSettingSlots by G8BLD.id), the item-group test, mem_Alloc(0x4c, "hp_AddProdSetting") with the
+   rec kept in a slot for the engine's inline-asm clear (D3_ZERO_AT, _zn at [ebp-8]), the key, rand seed,
+   factor 1.0, ai_FillSettingWeights, the head link; every statement and store is equal. Remaining (code
+   9): the original's two alloc-failure returns share one tail with 'xor eax, eax' (0x5a8646: the first
+   branch's 'je' jumps into the second branch's return) where our VC6 knows eax is the zero rec and returns
+   without the xor, each from its own epilogue (returns 6/5). Tried: return of a zero-known variable, if
+   (rec != 0) { ... } blocks (worse: 32), an int return type (the K&R callers in f3gm), none makes the
+   compiler forget eax. */
 
-void *ai_ProdSetting(int param_1)
+void *ai_ProdSetting(int bld)
 {
-    char *rec;
-    void *found;
+    G8SETTING *rec;
+    G8SLOT *slots;
 
-    if (*(int *)((unsigned)&full_data_6f26c0) == 0) {
-        if (ai_FindItemGroup((char *)param_1) == 0)
+    if (ai_Settings == 0) {
+        if (ai_FindItemGroup((char *)bld) == 0)
             return 0;
-        rec = (char *)mem_Alloc(0x4c, (char *)(unsigned)&full_data_62c284);
+        rec = (G8SETTING *)mem_Alloc(0x4c, "hp_AddProdSetting");
         if (rec == 0)
             return 0;
-        memset(rec, 0, 0x4c);
-        *(int *)rec = *(int *)(param_1 + 1);
-        *(int *)(rec + 4) = rand();
-        *(float *)(rec + 0x44) = 1.0f;
-        ai_FillSettingWeights((G8BLD *)param_1, (G8SETTING *)rec);
-        *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
-        return rec + 0xc;
+        D3_ZERO_AT(rec, sizeof(G8SETTING));
+        rec->bldId = ((G8BLD *)bld)->id;
+        rec->seed = rand();
+        rec->factor = 1.0f;
+        ai_FillSettingWeights((G8BLD *)bld, rec);
+        ai_Settings = rec;
+        return rec->slots;
     }
-    found = ai_FindSettingSlots(*(int *)(param_1 + 1));
-    if (found != 0)
-        return found;
-    if (ai_FindItemGroup((char *)param_1) == 0)
+    slots = ai_FindSettingSlots(((G8BLD *)bld)->id);
+    if (slots != 0)
+        return slots;
+    if (ai_FindItemGroup((char *)bld) == 0)
         return 0;
-    rec = (char *)mem_Alloc(0x4c, (char *)(unsigned)&full_data_62c284);
+    rec = (G8SETTING *)mem_Alloc(0x4c, "hp_AddProdSetting");
     if (rec == 0)
         return 0;
-    memset(rec, 0, 0x4c);
-    *(int *)rec = *(int *)(param_1 + 1);
-    *(int *)(rec + 4) = rand();
-    *(float *)(rec + 0x44) = 1.0f;
-    ai_FillSettingWeights((G8BLD *)param_1, (G8SETTING *)rec);
-    *(int *)(rec + 0x48) = *(int *)((unsigned)&full_data_6f26c0);
-    *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
-    return rec + 0xc;
+    D3_ZERO_AT(rec, sizeof(G8SETTING));
+    rec->bldId = ((G8BLD *)bld)->id;
+    rec->seed = rand();
+    rec->factor = 1.0f;
+    ai_FillSettingWeights((G8BLD *)bld, rec);
+    rec->next = ai_Settings;
+    ai_Settings = rec;
+    return rec->slots;
 }
-/* 0x5a86c0, the setting removed by the good (75 B): the list 0x6f26c0 is relinked and the record 0x422620
-   freed; -1 when the good is not in the list */
+/* 0x5a86c0, the setting of the building id bldId removed (75 B): the list 0x6f26c0 is relinked and the record
+   freed (mem_Free); -1 when the building has none */
 
-int ai_FreeProdSetting(int good)
+int ai_FreeProdSetting(int bldId)
 {
     G8SETTING *prev;
     G8SETTING *s;
@@ -15044,7 +15056,7 @@ int ai_FreeProdSetting(int good)
     prev = 0;
     s = ai_Settings;
     while (s != 0) {
-        if (s->good == good)
+        if (s->bldId == bldId)
             break;
         prev = s;
         s = s->next;
