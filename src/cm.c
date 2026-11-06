@@ -1276,15 +1276,15 @@ void cm_SendRemoveGoods(int a, short b)
     G17_S(m, 4) = b;
     cm_QueueSend(&m);
 }
-/* 0x4c49a0, message 0x16: the field block (deltas) */
+/* 0x4c49a0, message 0x16: the field block (deltas); returns the send slot (cm_QueueSend) */
 
-void cm_SendFieldDeltas(void)
+int cm_SendFieldDeltas(void)
 {
     G17MSG m;
 
     m.type = 0x16;
     memcpy(m.data, &cm_FieldBlock, sizeof(G17FIELDS));
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c49e0, message 0x17: the field block (values) */
 

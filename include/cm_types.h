@@ -7,7 +7,12 @@
 #include "d3_types.h"                /* D3VECTOR, D3VECTOR4 */
 
 #pragma pack(push, 1)
-typedef struct G17B7 { char b[7]; } G17B7;      /* blocks copied as one */
+typedef struct G17B7 {                  /* blocks copied as one */
+    union {
+        char b[7];
+        AISERMON sermon;                /* of the message 0x2d: the new sermon object's settings (cm_SendObject1b5) */
+    };
+} G17B7;
 
 typedef struct G17OBJMSG {              /* 0xf bytes, the data of message 0x2d (its handler 0x4c9740 creates an
                                            object of kind 0x1b5 in the building owner) */

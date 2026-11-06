@@ -296,6 +296,14 @@ typedef struct AIRECIPE {               /* 0xb8 bytes, a goods list: filled by g
 } AIRECIPE;
 
 #pragma pack(push, 1)
+typedef struct AISERMON {               /* 7 bytes, a church's sermon settings: its sermon object's +0x1c (AIOBJ.sermon),
+                                           sent whole as a G17B7 (cm_SendObject1b5, ai_SermonWindow) */
+    signed char text1;                  /* 0x00, the sermon's first text 0x1990 + it (0 .. 7), -1: none */
+    signed char text2;                  /* 0x01, its second text 0x1998 + it (0 .. 7), -1: none */
+    int priest;                         /* 0x02, the netId of the priest who preaches, -1: none */
+    unsigned char enabled;              /* 0x06, nonzero once the owner paid for the sermons (reasoned name) */
+} AISERMON;
+
 typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind ai_Objects): carts, stores, the
                                            goods in a store, a workshop's level object; what gm_Query finds */
     union {
@@ -354,6 +362,8 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                     int broken;                 /* 0x1c, 0 while it works; the laboratory incident adds 1 (reasoned name) */
                     int repair;                 /* 0x20, the incident adds 3 .. 6 (reasoned guess: the repair time) */
                 } lab;
+                AISERMON sermon;                /* 0x1c..0x22, of a church's sermon object (gm_Query kind 0x1b5 in its
+                                                   objList; cm_SendObject1b5 makes it) */
             };
             char escort;                        /* 0x28, of a cart: its escort kind 0 .. 2 (he_AllocTransport picks it by the goods'
                                                    value, gm_LevelPayout prices it) */

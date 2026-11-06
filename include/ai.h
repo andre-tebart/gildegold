@@ -325,7 +325,7 @@ void cm_BeginGroup(const char *s);                                        /* 0x4
 int cm_EndGroup(const char *s);                                        /* 0x4c4580 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                 /* 0x4c47e0 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
-void cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */
+int cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */
 int cm_SendRelations(int a, int b, int c, int d);                  /* 0x4c4b00 */
 int cm_SendLongMessage(char *msg);                                           /* 0x4c4b70 */
 char * ai_FindWeaponRecord(int id);                                              /* 0x4cd9d0 */

@@ -208,7 +208,7 @@ void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);   
 void cm_SendMakeGoods(int a, short b, int c);                                        /* 0x4c48e0 */
 void cm_SendCartRoute(int a, int b, int c);                                          /* 0x4c4920 */
 void cm_SendRemoveGoods(int a, short b);                                               /* 0x4c4960 */
-void cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
+int cm_SendFieldDeltas(void);                                                         /* 0x4c49a0 */
 void cm_SendFieldValues(void);                                                         /* 0x4c49e0 */
 void ai_SendNeedBlock(void);                                                         /* 0x4c4a20 */
 void cm_SendSetField(int a, int b, int c, int d, int e);                            /* 0x4c4a60 */

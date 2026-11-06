@@ -297,7 +297,7 @@ void gm_Shuffled(unsigned char n, int *out);
 struct AIPER; struct AMTREC; struct CHARACTER; struct CHACTION; struct EVTSCRIPT; struct G15PLANT; struct G11REC; struct AITIME;
 void cm_SendProofExecuted(int a, int b);
 void cm_SendChrStop(int a);
-void cm_SendFieldDeltas(void);
+int cm_SendFieldDeltas(void);
 int cm_SendRelations(int a, int b, int c, int d);
 
 int gm_PlayerFactor(int a, unsigned char k);
@@ -3138,7 +3138,7 @@ float util_RandomF();
 int gv_GetTableRecord(int i, int *out);
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
 void cm_BeginFieldBlock(char *o, int id);
-void cm_SendFieldDeltas(void);
+int cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
 
@@ -10803,7 +10803,7 @@ void he_StartDue(int ev)
 
 void cm_BeginFieldBlock(char *o, int id);
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
-void cm_SendFieldDeltas(void);
+int cm_SendFieldDeltas(void);
 
 /* 0x552520, the run handler of the delay event 0x80 (its start handler he_StartDue): a negative stage or no day
    left (HEDELAY.days) frees the record; a record with the option 4 does nothing; else a day is counted off and the
@@ -22473,7 +22473,7 @@ void he_RunAlchemistDay(int ev)
 
 void cm_BeginFieldBlock(char *o, int id);
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);
-void cm_SendFieldDeltas(void);
+int cm_SendFieldDeltas(void);
 void ai_DomizilMessageTask(int param_1, int param_2, int param_3, unsigned short *param_4);
 void ai_DomizilMessage04(int param_1, int param_2, int param_3);
 void ai_DomizilMessageAge(int param_1, int param_2, int param_3);

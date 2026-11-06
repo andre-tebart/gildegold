@@ -344,7 +344,7 @@ int gm_FindById();                     /* 0x4fea50 */
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3d00 */
-void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
+int cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 extern char *ai_Blds;                   /* 0x889f74, 256 records of 0xa9 bytes */
 extern unsigned short *ai_PlayerChar;    /* 0x6f1bf8, the player's character (ai.c; this header's units add byte offsets through ai_PlayerCharC) */
 extern const struct D3VECTOR d3_Origin;     /* 0x5ebba4, (0, 0, 0), d3_vec.c */
@@ -539,7 +539,7 @@ void cm_SendSetField(int a, int b, int c, int d, int e);                     /* 
 int cm_SendLongMessage(char *msg);                     /* 0x4c4b70 */
 void cm_BeginFieldBlock(char *o, int id);                     /* 0x4c3ba0 */
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                     /* 0x4c3c00 */
-void cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
+int cm_SendFieldDeltas(void);                     /* 0x4c49a0 */
 struct AITIME;  /* f3gm.h typedef (gm_AddTime); file-scope so the gm_AddTime prototype below is stable */
 void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);                     /* 0x4fe140 */
 

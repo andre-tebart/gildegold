@@ -8619,7 +8619,7 @@ int d2_RemoveWindow(); void d2_RemoveObj(); int gm_BuildingEvents(); int gm_SumS
 void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_CountPointerItems();
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
-void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
+void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
 void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
@@ -11775,7 +11775,7 @@ void ai_DonationWindow(AIBLD *bld)
 int gv_CountOwnedGraves(); int gv_CulpritGuilt(int c); int gm_GetWorth(unsigned short id); float gm_Liking();
 int ai_InventoryHas(void *ch, int id); int d2_OpenForm(); void d2_SetPointerSprite(int a, int pic); 
 int d2_SetForm(int view, int n); void sv_FitForm(int f); int io_PrintText(char *fmt, ...); int d2_GetWinObj();
-int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void);
+int sv_CheckGoodAmount(); void cm_BeginFieldBlock(char *o, int id); int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); int cm_SendFieldDeltas(void);
 int gv_RetireCrimesOf(int p, int n); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); void ai_ShowIndulgenceNews(); int cm_GetSlotState();
 void sv_PumpNet(); int gm_DonationRank(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_CameraFollow(); int _ftol();
@@ -12160,194 +12160,228 @@ int cm_SendObject1b5(int owner, G17B7 value); int cm_GetSlotValue(int h); int cm
 int cm_ReceiveMessages(); int cm_ExecCommands(); int cm_SendLongMessage(char *msg); int cm_GetSlotState();
 int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
 
-/* 0x5a2e60, the sermon window "Locations\Kirche\Predigt" (2138 B, ROUGH SKELETON): only the player's own
-   building (+0x27 == the player slot); the room 0x4ffe90 (param_1 + 0x5d, 1, 0, 0x1b5) or a request
-   0x4c50b0 / 0x4c3b10 (0x4c3680 / 0x4c3fd0 / 0x4c4190 until 0x4c3b50 answers); the church state local_1cc:
-   0 (no priest) / 1 / 2 (a priest, 0x505df0 of the record +0x1e) / 3 (closed), recomputed every 0x65 ticks
-   of 0x6333cc; the window 0x4741f0 / 0x476f80 / 0x475600 / 0x475f70 / 0x52ea30 (the screen 0x6ed938) with the
-   texts 0x19a5 / 0x19a6 (no priest), 0x19a0 / 0x19a1, 0x198e / 0x198f (the priest) and the buttons 0x475b80;
-   0x5be1d0 / 0x5be3b0 draw the priest; 0x475e40 disables a button; the clicks: the collection 0x520f90 (the
-   player, 1) with 0x4c5f60 (the id, -1) / 0x4c3ba0 / 0x4c3c00 (1, 1, 0x22) / 0x4c49a0, the request 0x5c1130
-   (the record {0, 0x400, 0xa7fdfbb6, 1, 6}, the text 0x19a2) with the random pair 0x42ec00 (8) and
-   0x4c3c00 (4, 1, 0x1e) / (1, 1, 0x1c) / (1, 1, 0x1d), and the 0xff reset of the same three fields; the pump
-   0x5309a0 (0, 0x677c7) waits for the answers; the exit 0x4758f0 / 0x52d7a0. ROUGH SKELETON: the three case
-   bodies keep the calls in order, the widget records are not typed */
-void ai_SermonWindow(int param_1)
+/* 0x5a2e60, the sermon window "Locations\Kirche\Predigt" of the player's own church bld: its sermon object (gm_Query
+   kind 0x1b5 of the objList; made by cm_SendObject1b5 with every setting -1 when missing) and its event 0x2b
+   (posted when missing, its slot awaited) give the state: 0 (sermons not paid for), 2 (a sermon with a priest,
+   gm_FindChar), 1 (none set), 3 (the building or its ownership gone: the window closes); every 100 ticks of d3_Time
+   it is read again. State 0: the text 0x19a5 (the event's end) and the buttons 0x19a6: paying 1 (sv_CheckMoney /
+   gm_SendMoneyDelta) sets AISERMON.enabled. State 1: the text 0x19a0 and the buttons 0x19a1: the first (enabled
+   while the event's stage is below 1) picks a priest (ai_AmountMenu, the gypsy filter, the text 0x19a2) and sets
+   the two random texts (util_Random 8). State 2: the text 0x198e (the end, the texts 0x1990 + text1 / 0x1998 +
+   text2, the priest) with the priest's amount row and the buttons 0x198f: the first clears the sermon. Each
+   change waits for its slot (sv_RunFrame) */
+void ai_SermonWindow(AIBLD *bld)
 {
+    char flag;
+    char text1;
+    char text2;
+    int state;
+    AIJOB *ev;
+    int cancelBtn;
+    AICHARREC *priest;
+    signed char none;
+    int noPriest;
+    int payBtn;
+    int pickBtn;
+    int clearBtn;
+    unsigned long lastTime;
+    LCAMOUNTROW row;
+    AMOUNTCFG cfg;
+    char title[0x20];
+    AIMSG msg;
+    G17B7 settings;
+    AIOBJ *sermon;
     int win;
-    int rec;
-    int obj;
-    int state = 0;
+    int changed;
     int i;
-    int h;
-    int req[20];
-    int a[4];
-    char *priest = 0;
-    char text[0x20];
-    int btn1 = -1;
-    int btn2 = -1;
-    int btn3 = -1;
-    int cancel = -1;
-    int changed = 1;
-    int half;
-    short w;
-    char r1;
-    char r2;
-    char v;
+    int slot;
 
-    if (param_1 == 0)
+    payBtn = 0;
+    pickBtn = 0;
+    cancelBtn = 0;
+    clearBtn = 0;
+    if (bld == 0 || bld->owner == 0xffff || bld->owner != ai_PlayerId)
         return;
-    if (U_W(param_1 + 0x27) == 0xffff || U_W(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId))
-        return;
-    rec = gm_Query(U_I(param_1 + 0x5d), 1, 0, 0x1b5);
-    if (rec == 0) {
-        h = ((int (*)(int, int, int))cm_SendObject1b5)(U_I(param_1 + 1), -1, 0xffff);
-        cm_GetSlotValue(h);
+    sermon = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
+    if (sermon == 0) {
+        settings.sermon.text1 = -1;
+        settings.sermon.text2 = -1;
+        settings.sermon.priest = -1;
+        sermon = (AIOBJ *)cm_GetSlotValue(cm_SendObject1b5(bld->id, settings));
         while (cm_SendGroupState() == 0) {
             cm_FlushSendQueue();
             cm_ReceiveMessages();
             cm_ExecCommands();
         }
-        rec = cm_GetSlotValue(h);
     }
-    obj = he_FindEvent(2, 0, 0x2b, 3, U_I(param_1 + 1));
-    if (obj == 0) {
-        v = 0x2b;
-        h = cm_SendLongMessage((char *)(unsigned)&ai_Time);
-        if (h != -1) {
-            while (cm_GetSlotState(h) == 0)
+    ev = (AIJOB *)he_FindEvent(2, 0, 0x2b, 3, bld->id);
+    if (ev == 0) {
+        msg.time = ai_Time;
+        msg.type = 0x2b;
+        msg.flags = 2;
+        msg.to = ((AICHARREC *)ai_PlayerChar)->netId;
+        msg.fromId = bld->id;
+        msg.tavern.mode = 0;
+        slot = cm_SendLongMessage((char *)&msg);
+        while (slot != -1 && cm_GetSlotState(slot) == 0)
                 sv_RunFrame(0, 0x677c7);
-        }
-        obj = cm_GetSlotValue(h);
+        ev = (AIJOB *)cm_GetSlotValue(slot);
     }
-    if (*(char *)(rec + 0x22) == 0) {
+    priest = 0;
+    if (sermon->sermon.enabled == 0)
         state = 0;
-    } else if (*(char *)(rec + 0x1c) != -1 && *(char *)(rec + 0x1d) != -1 &&
-               (priest = (char *)gm_FindChar(U_I(rec + 0x1e))) != 0) {
+    else if (sermon->sermon.text1 != -1 && sermon->sermon.text2 != -1 &&
+             (priest = (AICHARREC *)gm_FindChar(sermon->sermon.priest)) != 0)
         state = 2;
-    } else {
+    else
         state = 1;
-    }
     win = d2_OpenForm(0, 0, "Locations\\Kirche\\Predigt");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
+    sv_FitForm(d2_LastWindow);
+    changed = 1;
+    d2_ClickedId = -1;
+    lastTime = d3_Time;
+    do {
+        if (d3_Time - lastTime > 100 && state != 3) {
+            lastTime = d3_Time;
+            changed = 1;
+            sermon = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
+            if (sermon != 0 && bld->owner == ai_PlayerId) {
+                if (sermon->sermon.enabled == 0) {
+                    state = 0;
+                } else if (sermon->sermon.text1 != -1 && sermon->sermon.text2 != -1 &&
+                           sermon->sermon.priest != -1) {
+                    priest = (AICHARREC *)gm_FindChar(sermon->sermon.priest);
+                    if (priest != 0)
+                        state = 2;
+                    else
+                        state = 1;
+                }
+            } else {
+                state = 3;
+                changed = 0;
+            }
+        }
         if (changed && state != 3) {
-            d2_SetForm(win, 1);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            io_PrintText((char *)(unsigned)"$C");
+            payBtn = -1;
+            clearBtn = -1;
+            pickBtn = -1;
+            cancelBtn = -1;
             if (state == 0) {
-                io_PrintText(0x19a5, 1, obj + 0x52);
+                d2_SetForm(win, 1);
+                io_PrintText("$C");
+                io_PrintText(0x19a5, 1, &ev->end);
                 d2_SetForm(win, 2);
-                io_PrintText((char *)(unsigned)"$C");
+                io_PrintText("$C");
                 i = io_PrintText(0x19a6);
-                btn1 = d2_GetWinObj(win, 2, i);
-                cancel = d2_GetWinObj(win, 2, i + 1);
+                payBtn = d2_GetWinObj(win, 2, i);
+                cancelBtn = d2_GetWinObj(win, 2, i + 1);
             } else if (state == 1) {
-                io_PrintText(0x19a0, obj + 0x52);
+                d2_SetForm(win, 1);
+                d2_RemoveWindowObjects(d2_LastWindow, 1);
+                io_PrintText("$C");
+                io_PrintText(0x19a0, &ev->end);
                 d2_SetForm(win, 2);
-                io_PrintText((char *)(unsigned)"$C");
+                d2_RemoveWindowObjects(d2_LastWindow, 1);
+                io_PrintText("$C");
                 i = io_PrintText(0x19a1);
-                btn2 = d2_GetWinObj(win, 2, i);
-                cancel = d2_GetWinObj(win, 2, i + 1);
-                d2_SetObjEnabled(btn2, U_I(obj + 0x70) < 1);
+                pickBtn = d2_GetWinObj(win, 2, i);
+                cancelBtn = d2_GetWinObj(win, 2, i + 1);
+                if (ev->stage > 0)
+                    d2_SetObjEnabled(pickBtn, 0);
+                else
+                    d2_SetObjEnabled(pickBtn, 1);
             } else if (state == 2) {
-                half = (int)*(short *)(U_I((unsigned)&d2_LastWindowPtr) + 8) / 2;
-                w = *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8);
-                io_PrintText(0x198e, obj + 0x52,
-                             *(char *)(rec + 0x1c) + 0x1990,
-                             *(char *)(rec + 0x1d) + 0x1998, U_W(priest));
-                a[0] = (int)priest;
-                ai_AmountRowStatus(a);
-                ai_AmountRow(half - w / 2, 0xc3, U_I((unsigned)&d2_LastWindow), 0x54, a, 1);
+                d2_SetForm(win, 1);
+                d2_RemoveWindowObjects(d2_LastWindow, 1);
+                io_PrintText("$C");
+                io_PrintText(0x198e, &ev->end, sermon->sermon.text1 + 0x1990, sermon->sermon.text2 + 0x1998,
+                             priest->id);
+                row.x = d2_LastWindowPtr->w / 2 - d2_Pics[0x5da].w / 2;
+                row.y = 0xc3;
+                row.x30 = 1;
+                row.rec = priest;
+                ai_AmountRowStatus(&row);
+                ai_AmountRow(row.x, row.y, d2_LastWindow, 0x54, &row, 1);
                 d2_SetForm(win, 2);
-                d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-                io_PrintText((char *)(unsigned)"$C");
+                d2_RemoveWindowObjects(d2_LastWindow, 1);
+                io_PrintText("$C");
                 i = io_PrintText(0x198f);
-                btn3 = d2_GetWinObj(win, 2, i);
-                cancel = d2_GetWinObj(win, 2, i + 1);
-                d2_SetObjEnabled(btn3, U_I(obj + 0x70) < 1);
+                clearBtn = d2_GetWinObj(win, 2, i);
+                cancelBtn = d2_GetWinObj(win, 2, i + 1);
+                if (ev->stage > 0)
+                    d2_SetObjEnabled(clearBtn, 0);
+                else
+                    d2_SetObjEnabled(clearBtn, 1);
             }
             changed = 0;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || state == 3) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == btn1) {
-                if (sv_CheckMoney((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, 1) != 0) {
-                    v = 1;
-                    cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), -1);
-                    cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                    cm_AddFieldDelta(1, 1, 0x22, &v);
-                    i = ((int (*)())cm_SendFieldDeltas)();
+        if (dm_L.rup != 0 || state == 3) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == payBtn) {
+                if (sv_CheckMoney(ai_Chars[ai_PlayerId], 1) != 0) {
+                    flag = 1;
+                    gm_SendMoneyDelta(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1);
+                    cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                    cm_AddFieldDelta(1, 1, 0x22, &flag);
+                    slot = cm_SendFieldDeltas();
                     changed = 1;
                     state = 1;
-                    if (i != -1) {
-                        while (cm_GetSlotState(i) == 0)
+                    while (slot != -1 && cm_GetSlotState(slot) == 0)
                             sv_RunFrame(0, 0x677c7);
-                    }
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == btn2) {
-                for (i = 0; i < 20; i++)
-                    req[i] = 0;
-                req[1] = 0x400;
-                req[4] = 6;
-                req[2] = 0xa7fdfbb6;
-                req[3] = 1;
-                txt_Format(text, 0x19a2);
-                h = ai_AmountMenu(req, text, 0, 0);
-                rec = gm_Query(U_I(param_1 + 0x5d), 1, 0, 0x1b5);
-                if (h != 0 && U_I(h + 4) != -1 && rec != 0) {
-                    r1 = util_Random(8);
-                    r2 = util_Random(8);
-                    cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                    cm_AddFieldDelta(4, 1, 0x1e, (char *)(h + 4));
+            } else if (d2_PointerObj == pickBtn) {
+                memset(&cfg, 0, sizeof(cfg));
+                cfg.mode = 0x400;
+                cfg.kind = 6;
+                cfg.filter = gypsyFilter;
+                txt_Format(title, 0x19a2);
+                priest = (AICHARREC *)ai_AmountMenu(&cfg, title, 0, 0);
+                sermon = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0x1b5);
+                if (priest != 0 && priest->netId != -1 && sermon != 0) {
+                    text1 = util_Random(8);
+                    text2 = util_Random(8);
+                    cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                    cm_AddFieldDelta(4, 1, 0x1e, &priest->netId);
                     cm_SendFieldDeltas();
-                    cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                    cm_AddFieldDelta(1, 1, 0x1c, &r1);
+                    cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                    cm_AddFieldDelta(1, 1, 0x1c, &text1);
                     cm_SendFieldDeltas();
-                    cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                    cm_AddFieldDelta(1, 1, 0x1d, &r2);
-                    i = ((int (*)())cm_SendFieldDeltas)();
+                    cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                    cm_AddFieldDelta(1, 1, 0x1d, &text2);
+                    slot = cm_SendFieldDeltas();
                     state = 2;
                     changed = 1;
-                    if (i != -1) {
-                        while (cm_GetSlotState(i) == 0)
+                    while (slot != -1 && cm_GetSlotState(slot) == 0)
                             sv_RunFrame(0, 0x677c7);
-                    }
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == btn3) {
-                r1 = 0xff;
-                r2 = 0xff;
-                v = 0xff;
-                cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                cm_AddFieldDelta(4, 1, 0x1e, &v);
+            } else if (d2_PointerObj == clearBtn) {
+                none = -1;
+                noPriest = -1;
+                text1 = -1;
+                cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                cm_AddFieldDelta(4, 1, 0x1e, &noPriest);
                 cm_SendFieldDeltas();
-                cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                cm_AddFieldDelta(1, 1, 0x1c, &r1);
+                cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                cm_AddFieldDelta(1, 1, 0x1c, &none);
                 cm_SendFieldDeltas();
-                cm_BeginFieldBlock((char *)rec, U_I(rec + 2));
-                cm_AddFieldDelta(1, 1, 0x1d, &r2);
-                i = ((int (*)())cm_SendFieldDeltas)();
+                cm_BeginFieldBlock((char *)sermon, sermon->objId);
+                cm_AddFieldDelta(1, 1, 0x1d, &text1);
+                slot = cm_SendFieldDeltas();
                 changed = 1;
                 state = 1;
-                if (i != -1) {
-                    while (cm_GetSlotState(i) == 0)
+                while (slot != -1 && cm_GetSlotState(slot) == 0)
                         sv_RunFrame(0, 0x677c7);
-                }
-            } else if (U_I((unsigned)&d2_PointerObj) == cancel) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_PointerObj == cancelBtn) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_SermonWindow, 0x677c7) == 0) {
-            d2_CloseView(win);
-            sv_CameraFollow();
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_SermonWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 
 int ai_PersonnelBook(); int ai_StorageWindow(); int ai_ProductionWindow();
