@@ -60,6 +60,32 @@ int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and fre
 /* the placement-candidate list of the build screen (ai_BauplatzFilter / ai_FindBauplaetze) */
 extern int *ai_BauplatzList;            /* 0x6f5308 */
 
+/* the goods grids of the production window (ai_InitProductionTables sets them up, ai_UpdateProdGoodsList fills
+   them from the store, ai_LayoutProdGoodsList lays them out): a row of four slots, and a slot */
+typedef struct LCPRODROW {              /* 0x14 bytes */
+    int pad00[2];                       /* 0x00 (no reader read yet) */
+    int text;                           /* 0x08, -1 at the init (reasoned guess: the row's text, set by the layout) */
+    int slots;                          /* 0x0c, the slots of the row the building's level opens (0 .. 4) */
+    int title;                          /* 0x10, the row's title picture 0x743, -1 = not made yet */
+} LCPRODROW;
+typedef struct LCPRODSLOT {             /* 0x38 bytes */
+    int good;                           /* 0x00, the goods in the slot (an ai_Goods index), 0 = empty */
+    int obj04;                          /* 0x04, -1 at the init (no reader read yet) */
+    int x;                              /* 0x08, its place in the grid: (i % 4) * 0x40 + 0x10 */
+    int y;                              /* 0x0c, (i / 4) * 0x40 + 0x10 (the second grid + 0xd0) */
+    int check;                          /* 0x10, its check box (a d2 object of type 0x41), -1 = none */
+    int objs14[3];                      /* 0x14, -1 at the init */
+    int reserveButton;                  /* 0x20, the button a click on cycles the goods' reserve (AIOBJ.reserve 0 .. 4), -1 = none */
+    int objs24[2];                      /* 0x24, -1 at the init */
+    int reserved;                       /* 0x2c, the stock kept from buyers: the store's stock * AIOBJ.reserve / 4 */
+    int amount;                         /* 0x30, the amount in the store (gm_ListAmount) */
+    int stock;                          /* 0x34, the store's stock of the goods (gm_ListStock) */
+} LCPRODSLOT;
+extern LCPRODROW ai_ProdRows[4];        /* 0x6f4f00, the rows of the first grid */
+extern LCPRODSLOT ai_ProdGoods[16];     /* 0x6f4f60, the first grid: the goods of the types 0x17 / 0x25 */
+extern LCPRODROW ai_ProdRows2[2];       /* 0x6f52e0, the rows of the second grid */
+extern LCPRODSLOT ai_ProdGoods2[8];     /* 0x6f58a0, the second grid: the other goods */
+
 /* the goods columns of the production window "Handel\Handel_PRODUKTION" (ai_ProductionWindow; ai_InitProductionTables sets
    them up, ai_UpdateResourceColumns builds their windows) */
 typedef struct LCPRODCOL {              /* 0x58 bytes */

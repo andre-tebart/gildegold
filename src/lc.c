@@ -87,16 +87,12 @@ extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
 extern int d2_PointerObj;
 extern char * cm_FieldObject;
-extern GAPDATA full_data_6f4f60[];
-extern GAPDATA full_data_6f52e0[];
-extern GAPDATA full_data_6f58a0[];
 extern struct D2PIC *d2_Pics;
 #include "d2_types.h"
 extern int sv_ClickedContact;  /* 0x6f22fc, sv.h */
 extern int sv_ClickedItem;  /* 0x76045c, sv.h */
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
-extern GAPDATA full_data_6f4f00[];
 extern unsigned char ai_OwnPlayer;
 
 
@@ -107,10 +103,7 @@ extern D2WIN d2_Wins[];
 extern GAPDATA full_data_62b098[];
 extern int d2_PointerObj;
 extern char * cm_FieldObject;
-extern GAPDATA full_data_6f4f60[];
-extern GAPDATA full_data_6f52e0[];
 extern struct D2PIC *d2_Pics;
-extern GAPDATA full_data_6f4f00[];
 extern char * ai_BTypes;
 extern GAPDATA full_data_6f26b0[];
 extern unsigned char kb_Last;
@@ -788,9 +781,6 @@ extern GAPDATA full_data_6f2f64[];
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
-extern GAPDATA full_data_6f4f60[];
-extern GAPDATA full_data_6f58a0[];
-extern GAPDATA full_data_6f52e0[];
 extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char * rt_MapSurface;
@@ -1179,11 +1169,11 @@ void ai_InitProductionTables(void)
     int i;
     int n;
 
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
         p[-2] = -1;
         p[0] = -1;
     }
-    for (p = (int *)(unsigned)(full_data_6f52e0 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f52e0 + 0x38)); p += 5) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x38)); p += 5) {
         p[-2] = 0;
         p[0] = -1;
     }
@@ -1217,7 +1207,7 @@ void ai_InitProductionTables(void)
         p[0xc] = -1;
         n += 0x45;
     }
-    for (p = (int *)(unsigned)(full_data_6f4f60 + 0x4), n = 0; p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x384)); p += 0xe, n++) {
+    for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x4), n = 0; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x384)); p += 0xe, n++) {
         p[-1] = 0;
         p[0] = -1;
         p[1] = (n % 4) * 0x40 + 0x10;
@@ -1231,7 +1221,7 @@ void ai_InitProductionTables(void)
         p[8] = -1;
         p[0xc] = -1;
     }
-    for (p = (int *)(unsigned)(full_data_6f58a0 + 0x4), n = 0; p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1c4)); p += 0xe, n++) {
+    for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x4), n = 0; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c4)); p += 0xe, n++) {
         p[-1] = 0;
         p[0] = -1;
         p[1] = (n % 4) * 0x40 + 0x10;
@@ -1900,9 +1890,9 @@ int ai_UpdateProdGoodsList(unsigned char *param_1, int param_2)
     tbl[0x2e] = 4; tbl[0x2f] = 3; tbl[0x30] = 0; tbl[0x31] = 0; tbl[0x32] = 4; tbl[0x33] = 4;
     tbl[0x34] = 0; tbl[0x35] = 0;
     k = gm_BuildingClass(*param_1);
-    for (i = 0, p = (int *)(unsigned)(full_data_6f4f00 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x5c)); p += 5, i++)
+    for (i = 0, p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++)
         *p = tbl[i + ((unsigned char *)param_2)[0x1c] * 4 + 0x12];
-    for (i = 0, p = (int *)(unsigned)(full_data_6f52e0 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f52e0 + 0x34)); p += 5, i++)
+    for (i = 0, p = (int *)(unsigned)((char *)ai_ProdRows2 + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x34)); p += 5, i++)
         *p = tbl[i + ((unsigned char *)param_2)[0x1d] * 2];
     g = (unsigned short *)gm_Query(U_I(param_1 + 0x14), 1, 5);
     while (g != 0) {
@@ -1910,47 +1900,47 @@ int ai_UpdateProdGoodsList(unsigned char *param_1, int param_2)
         kind = *(unsigned char *)(U_I((unsigned)&ai_Goods) + id * 0x41);
         if (k == 2 ? kind == 0x17 : (kind == 0x17 || kind == '%')) {
             n = -1;
-            for (i = 0, p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x380)); p += 0xe, i++)
+            for (i = 0, p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, i++)
                 if (*p == id) { n = i; break; }
             if (n < 0) {
-                for (i = 0, p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x380)); p += 0xe, i++)
+                for (i = 0, p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, i++)
                     if (*p == 0) { n = i; break; }
                 if (n >= 0)
-                    *(int *)((unsigned)&full_data_6f4f60 + n * 0x38) = id;
+                    *(int *)((unsigned)&ai_ProdGoods + n * 0x38) = id;
             }
             if (n >= 0 && n < 0x10) {
-                *(int *)((unsigned)(full_data_6f4f60 + 0x2c) + n * 0x38) =
+                *(int *)((unsigned)((char *)ai_ProdGoods + 0x2c) + n * 0x38) =
                     (gm_ListStock(param_2, id) * *(int *)(g + 0xe)) >> 2;
-                *(int *)((unsigned)(full_data_6f4f60 + 0x30) + n * 0x38) = gm_ListAmount(param_2, g);
-                *(int *)((unsigned)(full_data_6f4f60 + 0x34) + n * 0x38) = gm_ListStock(param_2, *g);
+                *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = gm_ListAmount(param_2, g);
+                *(int *)((unsigned)((char *)ai_ProdGoods + 0x34) + n * 0x38) = gm_ListStock(param_2, *g);
             }
         } else {
             n = -1;
-            for (i = 0, p = (int *)(unsigned)&full_data_6f58a0; p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1c0)); p += 0xe, i++)
+            for (i = 0, p = (int *)(unsigned)&ai_ProdGoods2; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); p += 0xe, i++)
                 if (*p == id) { n = i; break; }
             if (n < 0) {
-                for (i = 0, p = (int *)(unsigned)&full_data_6f58a0; p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1c0)); p += 0xe, i++)
+                for (i = 0, p = (int *)(unsigned)&ai_ProdGoods2; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); p += 0xe, i++)
                     if (*p == 0) { n = i; break; }
                 if (n >= 0)
-                    *(int *)((unsigned)&full_data_6f58a0 + n * 0x38) = id;
+                    *(int *)((unsigned)&ai_ProdGoods2 + n * 0x38) = id;
             }
             if (n >= 0 && n < 8) {
-                *(int *)((unsigned)(full_data_6f58a0 + 0x2c) + n * 0x38) =
+                *(int *)((unsigned)((char *)ai_ProdGoods2 + 0x2c) + n * 0x38) =
                     (gm_ListStock(param_2, id) * *(int *)(g + 0xe)) >> 2;
-                *(int *)((unsigned)(full_data_6f58a0 + 0x30) + n * 0x38) = gm_ListAmount(param_2, g);
-                *(int *)((unsigned)(full_data_6f58a0 + 0x34) + n * 0x38) = gm_ListStock(param_2, *g);
+                *(int *)((unsigned)((char *)ai_ProdGoods2 + 0x30) + n * 0x38) = gm_ListAmount(param_2, g);
+                *(int *)((unsigned)((char *)ai_ProdGoods2 + 0x34) + n * 0x38) = gm_ListStock(param_2, *g);
             }
         }
         g = (unsigned short *)gm_QueryNext();
     }
-    for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x380)); p += 0xe)
+    for (p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe)
         if (gm_Query(U_I(param_1 + 0x14), 1, 0, *p) == 0)
             *p = 0;
-    for (p = (int *)(unsigned)&full_data_6f58a0; p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1c0)); p += 0xe)
+    for (p = (int *)(unsigned)&ai_ProdGoods2; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); p += 0xe)
         if (gm_Query(U_I(param_1 + 0x14), 1, 0, *p) == 0)
             *p = 0;
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f60 + 0x10); p <= (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x38f)); p += 0xe) {
+    for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38f)); p += 0xe) {
         n = *p;
         if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
             i = 1;
@@ -1958,7 +1948,7 @@ int ai_UpdateProdGoodsList(unsigned char *param_1, int param_2)
         }
     }
     if (i == 0) {
-        for (p = (int *)(unsigned)(full_data_6f58a0 + 0x10); p <= (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1cf)); p += 0xe) {
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1cf)); p += 0xe) {
             n = *p;
             if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
                 i = 1;
@@ -1967,7 +1957,7 @@ int ai_UpdateProdGoodsList(unsigned char *param_1, int param_2)
         }
     }
     if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0 && U_I(((unsigned)&dm_L + 0x18)) != 0 && d2_CountPointerItems() == 0) {
-        for (p = (int *)(unsigned)(full_data_6f4f60 + 0x20); p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x3a0)); p += 0xe) {
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x20); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3a0)); p += 0xe) {
             if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
                 continue;
             n = gm_Query(U_I(param_1 + 0x14), 1, 0, p[-8]);
@@ -1979,7 +1969,7 @@ int ai_UpdateProdGoodsList(unsigned char *param_1, int param_2)
             cm_SendFieldValues();
             U_I(n + 0x1c) = st;
         }
-        for (p = (int *)(unsigned)(full_data_6f58a0 + 0x20); p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1e0)); p += 0xe) {
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x20); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1e0)); p += 0xe) {
             if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
                 continue;
             n = gm_Query(U_I(param_1 + 0x14), 1, 0, p[-8]);
@@ -2016,15 +2006,15 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
     scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5)
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f52e0 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f52e0 + 0x38)); p += 5)
+    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x38)); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x5c)); p += 5, i++) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -2035,7 +2025,7 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
         }
     }
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f52e0 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f52e0 + 0x34)); p += 5, i++) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x34)); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -2046,7 +2036,7 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
         }
     }
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
         n = *p;
         if (p[-2] < 2) {
             U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
@@ -2058,10 +2048,10 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
     }
     i = 0;
     n = 0;
-    q = (int *)(unsigned)(full_data_6f4f60 + 0xc);
+    q = (int *)(unsigned)((char *)ai_ProdGoods + 0xc);
     do {
         i++;
-        p = (int *)((unsigned)(full_data_6f4f00 + 0x8) + n * 0x14);
+        p = (int *)((unsigned)((char *)ai_ProdRows + 0x8) + n * 0x14);
         if (p[0] < i) {
             i = 1;
             do {
@@ -2069,13 +2059,13 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
                 n++;
             } while (*p < 1);
         }
-        q[-1] = *(int *)((unsigned)&full_data_6f4f00 + n * 0x28) + -0x44 + i * 0x44;
-        *q = *(int *)((unsigned)(full_data_6f4f00 + 0x4) + n * 0x28);
+        q[-1] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
+        *q = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 2, param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x38c)));
+    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38c)));
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f52e0 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f52e0 + 0x34)); p += 5) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x34)); p += 5) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         p[-1] = *p;
@@ -2089,10 +2079,10 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
     }
     i = 0;
     n = 0;
-    q = (int *)(unsigned)(full_data_6f58a0 + 0xc);
+    q = (int *)(unsigned)((char *)ai_ProdGoods2 + 0xc);
     do {
         i++;
-        p = (int *)((unsigned)(full_data_6f52e0 + 0x8) + n * 0x14);
+        p = (int *)((unsigned)((char *)ai_ProdRows2 + 0x8) + n * 0x14);
         if (p[0] < i) {
             i = 1;
             do {
@@ -2100,17 +2090,17 @@ void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
                 n++;
             } while (*p < 1);
         }
-        q[-1] = *(int *)((unsigned)&full_data_6f52e0 + n * 0x28) + -0x44 + i * 0x44;
-        *q = *(int *)((unsigned)(full_data_6f52e0 + 0x4) + n * 0x28);
+        q[-1] = *(int *)((unsigned)&ai_ProdRows2 + n * 0x28) + -0x44 + i * 0x44;
+        *q = *(int *)((unsigned)((char *)ai_ProdRows2 + 0x4) + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 2, param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1cc)));
+    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1cc)));
     if (param_3 != 0) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)(full_data_6f4f60 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x390)); p += 0xe)
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x390)); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)(full_data_6f58a0 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1d0)); p += 0xe)
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1d0)); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
@@ -2142,12 +2132,12 @@ int ai_Unk58e130(int param_1, int param_2)
     int n;
 
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x5c)); p += 5, i++)
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++)
         *p = tbl[i + ((unsigned char *)param_1)[0x1c] * 4];
     g = (unsigned short *)gm_Query(U_I(param_2 + 0x14), 1, 5);
     while (1) {
         if (g == 0) {
-            for (p = (int *)(unsigned)(full_data_6f4f60 + 0x30); p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x3b0)); p += 0xe) {
+            for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x30); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3b0)); p += 0xe) {
                 q = (int *)gm_Query(U_I(param_1 + 0x14), 1, 0, p[-0xc]);
                 if (q != 0) {
                     p[0] = gm_ListAmount(param_1, q);
@@ -2155,7 +2145,7 @@ int ai_Unk58e130(int param_1, int param_2)
                 }
             }
             i = 0;
-            for (p = (int *)(unsigned)(full_data_6f4f60 + 0x10); p <= (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x38f)); p += 0xe) {
+            for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38f)); p += 0xe) {
                 n = *p;
                 if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0)
                     i = 1;
@@ -2163,18 +2153,18 @@ int ai_Unk58e130(int param_1, int param_2)
             return i;
         }
         n = 0;
-        for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x380)); p += 0xe, n++) {
+        for (p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, n++) {
             if (*p == *g) {
                 if (n < 0x10)
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x30) + n * 0x38) = 0;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = 0;
                 break;
             }
             if (*p == 0) {
                 if (n < 0x10) {
-                    *(int *)((unsigned)&full_data_6f4f60 + n * 0x38) = *g;
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x2c) + n * 0x38) = 0;
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x30) + n * 0x38) = 0;
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x34) + n * 0x38) = 0;
+                    *(int *)((unsigned)&ai_ProdGoods + n * 0x38) = *g;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x2c) + n * 0x38) = 0;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = 0;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x34) + n * 0x38) = 0;
                 }
                 break;
             }
@@ -2201,11 +2191,11 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
     scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5)
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x5c)); p += 5, i++) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -2216,7 +2206,7 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
         }
     }
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
         n = *p;
         if (p[-2] < 2) {
             U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
@@ -2228,10 +2218,10 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
     }
     i = 0;
     n = 0;
-    q = (int *)(unsigned)(full_data_6f4f60 + 0xc);
+    q = (int *)(unsigned)((char *)ai_ProdGoods + 0xc);
     do {
         i++;
-        p = (int *)((unsigned)(full_data_6f4f00 + 0x8) + n * 0x14);
+        p = (int *)((unsigned)((char *)ai_ProdRows + 0x8) + n * 0x14);
         if (p[0] < i) {
             i = 1;
             do {
@@ -2239,17 +2229,17 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
                 n++;
             } while (*p < 1);
         }
-        q[-1] = *(int *)((unsigned)&full_data_6f4f00 + n * 0x28) + -0x44 + i * 0x44;
-        *q = *(int *)((unsigned)(full_data_6f4f00 + 0x4) + n * 0x28);
+        q[-1] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
+        *q = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 3, (unsigned char *)param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x38c)));
+    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38c)));
     if (param_3 != 0) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)(full_data_6f4f60 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x390)); p += 0xe)
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x390)); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)(full_data_6f58a0 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1d0)); p += 0xe)
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1d0)); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
@@ -2408,31 +2398,31 @@ int ai_Unk58ee30(int param_1, short *param_2)
     int st;
 
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x5c)); p += 5, i++)
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++)
         *p = tbl[i + ((unsigned char *)param_2)[0x1c] * 4];
     g = (unsigned short *)gm_Query(U_I((char *)param_2 + 10), 1, 5);
     while (g != 0) {
         n = 0;
-        for (p = (int *)(unsigned)&full_data_6f4f60; p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x380)); p += 0xe, n++) {
+        for (p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, n++) {
             if (*p == *g) {
                 if (n < 0x10)
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x30) + n * 0x38) = gm_ListAmount((int)param_2, g);
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = gm_ListAmount((int)param_2, g);
                 break;
             }
             if (*p == 0) {
                 q = (int *)gm_FindGoods(U_I(param_1 + 0x65), *g);
                 if (n < 0x10 && ((*param_2 != 0x1db && *param_2 != 0x1dc) || q == 0 || q[1] != 0)) {
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x2c) + n * 0x38) = 0;
-                    *(int *)((unsigned)&full_data_6f4f60 + n * 0x38) = *g;
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x30) + n * 0x38) = 0;
-                    *(int *)((unsigned)(full_data_6f4f60 + 0x34) + n * 0x38) = 0;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x2c) + n * 0x38) = 0;
+                    *(int *)((unsigned)&ai_ProdGoods + n * 0x38) = *g;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = 0;
+                    *(int *)((unsigned)((char *)ai_ProdGoods + 0x34) + n * 0x38) = 0;
                 }
                 break;
             }
         }
         g = (unsigned short *)gm_QueryNext();
     }
-    for (q = (int *)(unsigned)(full_data_6f4f60 + 0x30); q < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x3b0)); q += 0xe) {
+    for (q = (int *)(unsigned)((char *)ai_ProdGoods + 0x30); q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3b0)); q += 0xe) {
         g = (unsigned short *)gm_Query(U_I((char *)param_2 + 10), 1, 0, q[-0xc]);
         if (g == 0) {
             q[-0xc] = 0;
@@ -2451,7 +2441,7 @@ int ai_Unk58ee30(int param_1, short *param_2)
         }
     }
     if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0 && U_I(((unsigned)&dm_L + 0x18)) != 0 && d2_CountPointerItems() == 0) {
-        for (p = (int *)(unsigned)(full_data_6f4f60 + 0x20); p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x3a0)); p += 0xe) {
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x20); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3a0)); p += 0xe) {
             if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
                 continue;
             n = gm_Query(U_I((char *)param_2 + 10), 1, 0, p[-8]);
@@ -2465,7 +2455,7 @@ int ai_Unk58ee30(int param_1, short *param_2)
         }
     }
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f60 + 0x10); p <= (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x38f)); p += 0xe) {
+    for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38f)); p += 0xe) {
         n = *p;
         if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
             i = 1;
@@ -2494,11 +2484,11 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
     scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5)
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5)
         if (*p == -1)
             *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
     i = 0;
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0xc); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x5c)); p += 5, i++) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++) {
         if (p[-1] != *p)
             d2_SetObjPic(p[1], *p + 0x741);
         n = *p;
@@ -2509,7 +2499,7 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
         }
     }
     d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)(full_data_6f4f00 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f00 + 0x60)); p += 5) {
+    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
         n = *p;
         if (p[-2] < 2) {
             U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
@@ -2527,10 +2517,10 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
         side = 3;
     i = 0;
     n = 0;
-    q = (int *)(unsigned)&full_data_6f4f60;
+    q = (int *)(unsigned)&ai_ProdGoods;
     do {
         i++;
-        p = (int *)((unsigned)(full_data_6f4f00 + 0x8) + n * 0x14);
+        p = (int *)((unsigned)((char *)ai_ProdRows + 0x8) + n * 0x14);
         if (p[0] < i) {
             i = 1;
             do {
@@ -2538,17 +2528,17 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
                 n++;
             } while (*p < 1);
         }
-        q[2] = *(int *)((unsigned)&full_data_6f4f00 + n * 0x28) + -0x44 + i * 0x44;
-        q[3] = *(int *)((unsigned)(full_data_6f4f00 + 0x4) + n * 0x28);
+        q[2] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
+        q[3] = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
         ai_Unk58e6a0(param_1, param_2, q, param_3, side, (unsigned char *)param_4);
         q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x380)));
+    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)));
     if (param_3 != 0) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)(full_data_6f4f60 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f4f60 + 0x390)); p += 0xe)
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x390)); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)(full_data_6f58a0 + 0x10); p < (int *)(unsigned)((unsigned)(full_data_6f58a0 + 0x1d0)); p += 0xe)
+        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1d0)); p += 0xe)
             if (*p != -1)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
@@ -15797,7 +15787,7 @@ int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, 
         }
     }
     cm_BeginSendGroup();
-    for (row = (int *)(unsigned)&full_data_6f58a0; (int)row < (unsigned)((unsigned)(full_data_6f58a0 + 0x1c0)); row += 0xe) {
+    for (row = (int *)(unsigned)&ai_ProdGoods2; (int)row < (unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); row += 0xe) {
         if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
             continue;
         n = d2_GetObjValue(row[4]);
@@ -15865,7 +15855,7 @@ order:
             d2_SetObjValue(row[4], 0, row[0xc], m - n);
         }
     }
-    row = (int *)(unsigned)&full_data_6f4f60;
+    row = (int *)(unsigned)&ai_ProdGoods;
     do {
         if (row[4] != -1 && d2_GetObjValue(row[4]) != 0) {
             n = d2_GetObjValue(row[4]);
@@ -15888,7 +15878,7 @@ order:
             }
         }
         row += 0xe;
-    } while ((int)row <= (unsigned)((unsigned)(full_data_6f4f60 + 0x37f)));
+    } while ((int)row <= (unsigned)((unsigned)((char *)ai_ProdGoods + 0x37f)));
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0)
         sv_PumpNet();
@@ -15914,7 +15904,7 @@ void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
         owner = *(int *)(param_1 + 0x65);
     else
         owner = *(unsigned char *)(unsigned)&ai_OwnPlayer;
-    for (row = (int *)(unsigned)&full_data_6f58a0; (int)row < (unsigned)((unsigned)(full_data_6f58a0 + 0x1c0)); row += 0xe) {
+    for (row = (int *)(unsigned)&ai_ProdGoods2; (int)row < (unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); row += 0xe) {
         if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
             continue;
         n = d2_GetObjValue(row[4]);
@@ -15927,7 +15917,7 @@ void ai_Unk5af010(unsigned char *param_1, int param_2, int param_3)
         if (param_3 == 2 || param_3 == 4)
             gm_GoodsPrice(row[0], param_1[0x65]);
     }
-    for (row = (int *)(unsigned)&full_data_6f4f60; (int)row < (unsigned)((unsigned)(full_data_6f4f60 + 0x380)); row += 0xe) {
+    for (row = (int *)(unsigned)&ai_ProdGoods; (int)row < (unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); row += 0xe) {
         if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
             continue;
         n = d2_GetObjValue(row[4]);
@@ -24030,6 +24020,10 @@ int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
+LCPRODROW ai_ProdRows[4] = { 0 };  /* 0x6f4f00 */
+LCPRODSLOT ai_ProdGoods[16] = { 0 };  /* 0x6f4f60 */
+LCPRODROW ai_ProdRows2[2] = { 0 };  /* 0x6f52e0 */
 int * ai_BauplatzList = 0;  /* 0x6f5308 */
 LCPRODCOL ai_ProdColumns[16] = { 0 };  /* 0x6f5320, the goods columns of the production window */
+LCPRODSLOT ai_ProdGoods2[8] = { 0 };  /* 0x6f58a0 */
 int ai_ProdSelectedInput = 0;  /* 0x6f5a60, the input goods picked in the production goods window, 0 = none */
