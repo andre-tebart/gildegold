@@ -300,7 +300,7 @@ int cm_CheckFieldDeltas(G17MSG *m);                                             
 int cm_CheckSetField(G17MSG *m);                                                     /* 0x4c66c0, check of 0x19 */
 int cm_CheckOwnership(G17MSG *m);                                                     /* 0x4c6750, check of 0x38 */
 int cm_CheckApplication(G17MSG *m);                                                     /* 0x4c6780, check of 0x44 */
-int ai_Unk4c67a0(G17MSG *m);                                                     /* 0x4c67a0, check of 0x45 */
+int cm_CheckOfficeMessage(G17MSG *m);                                                     /* 0x4c67a0, check of 0x45 */
 int ai_Unk4c67c0(G17MSG *m);                                                     /* 0x4c67c0, check of 0x53 */
 int cm_CheckTableRequest(G17MSG *m);                                                     /* 0x4c6870, check of 0x54 */
 int ai_Unk4c69c0(G17MSG *m);                                                     /* 0x4c69c0, check of 0x59 */
