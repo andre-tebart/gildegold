@@ -1313,12 +1313,12 @@ void cm_SendSetField(int a, int b, int c, int d, int e)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.setField.objId = a;
+    m.setField.offset = b;
+    m.setField.size = c;
     m.type = 0x19;
-    G17_I(m, 0xc) = d;
-    G17_I(m, 0x10) = e;
+    m.setField.set = d;
+    m.setField.clear = e;
     cm_QueueSend(&m);
 }
 /* 0x4c4ac0, sends message 0x1a: adds delta to the float field at the offset field of the character with the netId id */
