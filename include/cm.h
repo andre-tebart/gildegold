@@ -307,7 +307,7 @@ int cm_CheckCutsceneReady(G17MSG *m);                                           
 int cm_ExNothing(G17MSG *m, G17STAT *s);                                         /* 0x4c6a20, handler of 0, 3, 5..7 */
 int cm_ExGroupPassed(G17MSG *m, G17STAT *s);                                         /* 0x4c6a50, handler of 1 */
 int cm_ExNetFlags(G17MSG *m, G17STAT *s);                                         /* 0x4c6a60, handler of 4 */
-int ai_Unk4c6a90(G17MSG *m, G17STAT *s);                                         /* 0x4c6a90, handler of 8: starts a load buffer */
+int cm_ExLoadSize(G17MSG *m, G17STAT *s);                                         /* 0x4c6a90, handler of 8: starts a load buffer */
 int ai_Unk4c6ad0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ad0, handler of 9: appends to it */
 int ai_Unk4c6b20(G17MSG *m, G17STAT *s);                                         /* 0x4c6b20, handler of 10 */
 int cm_ExCreateCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6bf0, handler of 0xb */
