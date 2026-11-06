@@ -308,7 +308,7 @@ int cm_ExNothing(G17MSG *m, G17STAT *s);                                        
 int cm_ExGroupPassed(G17MSG *m, G17STAT *s);                                         /* 0x4c6a50, handler of 1 */
 int cm_ExNetFlags(G17MSG *m, G17STAT *s);                                         /* 0x4c6a60, handler of 4 */
 int cm_ExLoadSize(G17MSG *m, G17STAT *s);                                         /* 0x4c6a90, handler of 8: starts a load buffer */
-int ai_Unk4c6ad0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ad0, handler of 9: appends to it */
+int cm_ExLoadBlock(G17MSG *m, G17STAT *s);                                         /* 0x4c6ad0, handler of 9: appends to it */
 int ai_Unk4c6b20(G17MSG *m, G17STAT *s);                                         /* 0x4c6b20, handler of 10 */
 int cm_ExCreateCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6bf0, handler of 0xb */
 int cm_ExCreateNamedCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6cd0, handler of 0xc */
