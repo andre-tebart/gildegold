@@ -25057,7 +25057,7 @@ void he_RunTrialScene(int ev);          /* 0x5743c0 */
 void he_AllocMeeting4(int ev);          /* 0x574550 */
 void he_RunCircusShow(int ev);          /* 0x5748d0 */
 void he_Unk575150(int ev);          /* 0x575150 */
-void he_Unk5751e0(int ev);          /* 0x5751e0 */
+void he_RunPettyLoss(int ev);          /* 0x5751e0 */
 void he_Unk575320(int ev);          /* 0x575320 */
 void he_Unk5753a0(int ev);          /* 0x5753a0 */
 
@@ -25069,7 +25069,7 @@ int he_RegisterEventTypes9d(void)
             if (he_SetEventHandlers(0x9f, (void *)he_Unk574060, (void *)he_Unk5740d0) == 0) {
                 if (he_SetEventHandlers(0xa0, (void *)he_AllocTrialScene, (void *)he_RunTrialScene) == 0) {
                     if (he_SetEventHandlers(0xa1, (void *)he_AllocMeeting4, (void *)he_RunCircusShow) == 0) {
-                        if (he_SetEventHandlers(0xa3, (void *)he_Unk575150, (void *)he_Unk5751e0) == 0) {
+                        if (he_SetEventHandlers(0xa3, (void *)he_Unk575150, (void *)he_RunPettyLoss) == 0) {
                             if (he_SetEventHandlers(0xa4, (void *)he_Unk575320, (void *)he_Unk5753a0) == 0) {
                                 sv_RegisterActivity(0xa1, 0, 0, 0x50f, -1);
                                 return 0;
@@ -25944,46 +25944,45 @@ void he_Unk575150(int ev)
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, util_Random(2) & 0xffff, util_Random(0x1e) & 0xffff, 0);
 }
-/* 0x5751e0, the run of the event 0xa3: -2 / -1 free, also above the state 3 and without the figure +0xc (0x505df0); state + 1, the
-   due clock + 3 + random (3) hours (0x4fe140); from the figure's +0x194 a payment -x (x = random (2) + 1, drawn again when below
-   +0x194, 0x50cc50) and for the kinds 6 / 7 the text 0x1008 and the message 0x5fb (0x53dda0); when the state passes 3 the due
-   clock +0x52 = now */
-
-void he_Unk5751e0(int ev)
+/* 0x5751e0, the run of the event 0xa3 (alloc he_Unk575150): -1 / -2, a stage above 3 or no character netId
+   (gm_FindChar): freed. Else the stage advances and the next run is due in 3 + random(3) hours; a character with money
+   loses 1 + random(2) of it when a first such draw is below his money, else all of it (gm_SendMoneyDelta); one of the
+   kinds 6 / 7 is told (the news 0x5fb, the text 0x1008 with the amount); past the stage 3 the event is due now (and freed then).
+   "Petty loss" is a reasoned guess from that effect.
+   @deep read whole against the original and reconstructed (the amount is all the money unless a first draw
+   1+random(2) is below it, then a second draw; the stage>3 due-now inside the money block; free on
+   -1/-2/>3/no char). Only allocation is left: the original keeps per in esi and the amount in edi and
+   saves edi lazily (push edi after the money>=1 test at +0x7a, pop edi before the stage test at +0xf0);
+   ours puts per in edi, the amount in esi and saves all four in the prologue. Hunks: regs 46 (edi->esi,
+   esi->edi), code 11 = the push/pop edi placement (+0x13, +0x7a/+0x7d mov edi,eax, +0xed..+0xf1, the two
+   epilogues). Tried: money local vs re-read, x block-scoped, early return on money<1, declaration order.
+   proof: only eax at the (void) return differs. */
+void he_RunPettyLoss(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char text[0x400];
-    char *per;
-    int n, x, state;
+    AICHAR *per;
+    int x;
 
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
-    state = HM_I(ev, 0x70);
-    if (state == -1 || state == -2) {
+    per = (AICHAR *)gm_FindChar(e->netId);
+    if (e->stage == -1 || e->stage == -2 || e->stage > 3 || per == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (state > 3) {
-        he_FreeEvent((int *)ev);
+    e->stage++;
+    gm_AddTime(&e->end, (util_Random(3) & 0xffff) + 3, 0, 0);
+    if (per->money < 1)
         return;
+    x = per->money;
+    if ((util_Random(2) & 0xffff) + 1 < x)
+        x = util_RandomU(2) + 1;
+    gm_SendMoneyDelta(per->netId, -x);
+    if (per->kind == 6 || per->kind == 7) {
+        txt_Format(text, 0x1008, x);
+        he_ShowNews(per->netId, -1, text, 0, 0x5fb, 0);
     }
-    if (per == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    HM_I(ev, 0x70) = state + 1;
-    gm_AddTime(ev + 0x52, (util_Random(3) & 0xffff) + 3, 0, 0);
-    n = HM_I(per, 0x194);
-    if (n >= 1) {
-        x = (util_Random(2) & 0xffff) + 1;
-        if (x < n)
-            x = (util_Random(2) & 0xffff) + 1;
-        gm_SendMoneyDelta(HM_I(per, 4), -x);
-        if (HM_B(per, 2) == 6 || HM_B(per, 2) == 7) {
-            txt_Format(text, 0x1008, x);
-            he_ShowNews(HM_I(per, 4), -1, text, 0, 0x5fb, 0);
-        }
-    }
-    if (HM_I(ev, 0x70) > 3)
-        *(AITIME *)(ev + 0x52) = ai_Time;
+    if (e->stage > 3)
+        e->end = ai_Time;
 }
 /* 0x575320, the alloc of the event 0xa4: state 0, the clocks +0x44 / +0x52 = now, the due clock + random (0x20) hours (0x4fe140) */
 
