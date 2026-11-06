@@ -2030,12 +2030,12 @@ int cm_SendCutEntry(int a, void *p)
     G17MSG m;
 
     m.type = 0x50;
-    G17_I(m, 0) = a;
+    m.cutEntry.playerId = a;
     if (cm_CurrentFight == 0)
-        G17_I(m, 0x30) = -1;
+        m.cutEntry.fightId = -1;
     else
-        G17_I(m, 0x30) = *cm_CurrentFight;
-    memcpy(&m.data[4], p, 0x2c);
+        m.cutEntry.fightId = *cm_CurrentFight;
+    memcpy(&m.cutEntry.entry, p, sizeof(m.cutEntry.entry));
     return cm_QueueSend(&m);
 }
 /* 0x4c5ca0, message 0x51, as 0x4c5c40 */
