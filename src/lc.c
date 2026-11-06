@@ -15240,37 +15240,36 @@ void ai_FreeSettings(void)
         ai_FreeSettingChain(ai_Settings);
     ai_Settings = 0;
 }
-/* 0x5a8940, the settings saved (213 B): the count, then every record +0 / +4 / +0x44 and the seven slots
-   {good, weight} by 0x430e30 (the file param_1); 1 done, 0 on a write error */
+/* 0x5a8940, the production settings written to the save f (213 B): the chain ai_Settings (0x6f26c0) counted,
+   then each record's building id, seed and factor and its seven slots' good and weight written in chain order;
+   1 done, 0 on a write error */
 
-int ai_SaveSettings(void *param_1)
+int ai_SaveSettings(void *f)
 {
+    G8SETTING *s;
     int n;
-    int *p;
     int i;
 
     n = 0;
-    for (p = (int *)*(int *)((unsigned)&full_data_6f26c0); p != 0; p = (int *)p[0x12])
+    for (s = ai_Settings; s != 0; s = s->next)
         n++;
-    if (vfs_fwrite(&n, 4, 1, param_1) == 0)
+    if (vfs_fwrite(&n, 4, 1, f) == 0)
         return 0;
-    for (p = (int *)*(int *)((unsigned)&full_data_6f26c0); p != 0; p = (int *)p[0x12]) {
-        if (vfs_fwrite(p, 4, 1, param_1) == 0)
-            break;
-        if (vfs_fwrite((char *)p + 4, 4, 1, param_1) == 0)
-            break;
-        if (vfs_fwrite((char *)p + 0x44, 4, 1, param_1) == 0)
-            break;
+    for (s = ai_Settings; s != 0; s = s->next) {
+        if (vfs_fwrite(&s->bldId, 4, 1, f) == 0)
+            return 0;
+        if (vfs_fwrite(&s->seed, 4, 1, f) == 0)
+            return 0;
+        if (vfs_fwrite(&s->factor, 4, 1, f) == 0)
+            return 0;
         for (i = 0; i < 7; i++) {
-            if (vfs_fwrite((char *)p + 0xc + i * 8, 4, 1, param_1) == 0)
+            if (vfs_fwrite(&s->slots[i].good, 4, 1, f) == 0)
                 return 0;
-            if (vfs_fwrite((char *)p + 0x10 + i * 8, 1, 1, param_1) == 0)
+            if (vfs_fwrite(&s->slots[i].weight, 1, 1, f) == 0)
                 return 0;
         }
-        if (*(int *)((char *)p + 0x48) == 0)
-            return 1;
     }
-    return 0;
+    return 1;
 }
 /* 0x5a8a20, the production settings loaded from the save f (347 B, the reader of ls_LoadGame from 0x10047): the
    chain is freed (ai_FreeSettings), the count read, that many zeroed records ("hp_LoadProdSetting", the building
