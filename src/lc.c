@@ -6903,47 +6903,62 @@ void ai_DrawDice(char *caption)
         y = i > 7 ? 0x46 : 0x1d;
     } while (i < 3);
 }
-/* 0x597810, draws the dice of a dice record (271 B): as 0x597780; the record (*param_2 + 2 == 6: the painted
-   dice at +0xc) or the plain pictures 0x761 for the byte param_2[1] dice, then one random cell 0x75b */
+typedef struct LCDUELSIDE {             /* one side of a dice duel: am.h AGDUEL's side1 (+0x0c) or side2 (+0x30) block
+                                           (am.h cannot be included here yet) */
+    AICHARREC *ch;                      /* 0x00, the character throwing (AGDUEL.side1) */
+    unsigned char n;                    /* 0x04, the dice thrown (AGDUEL.n1) */
+    char pad05[3];
+    unsigned int stats;                 /* 0x08 (AGDUEL.stats1) */
+    unsigned char t[0x10];              /* 0x0c, the thrown values 1 .. 6 (AGDUEL.t1) */
+} LCDUELSIDE;
+/* 0x597810, draws one side of a dice duel into the last window: the window's objects are removed, the caption
+   printed ("$C$Z%s"), then the side's dice in rows of eight from (0x1c, 0x1d), 0x3a apart (the second row at
+   y 0x46): the thrown values (the pictures 0x75b .. 0x760) for the player's character (kind 6), the hidden die
+   0x761 for an opponent; then, in each branch, one more random die cell 0x75b + util_Random(6)
+   @deep Read whole against the original: the caption, both dice loops (thrown values t[i]+0x75a for the
+   player's kind 6, 0x761 otherwise), the row wrap (i % 8, y = i > 7 ? 0x46 : 0x1d) and the random cell,
+   which sits in each branch (the original's branch 1 ends 'mov ecx,[d2_LastWindow]; push ecx; jmp' into
+   branch 2's tail at 'push 6', now the same in ours). Left is allocation: the original keeps y in ebx and
+   computes the ternary straight into it ('xor ebx,ebx; cmp esi,7; setle bl; dec ebx; and ebx,0x29; add
+   ebx,0x1d'), ours computes it in a scratch register and copies ('setle al ... add eax,0x1d; cmp esi,ecx;
+   mov ebx,eax'), with x/y/side in ebp/ebx/edi rotated (push order ebx,ebp,esi,edi vs ours
+   ebp,edi,esi,ebx). Tried: one shared final call (moves the tail, worse), other local orders, (i > 7 ?
+   0x29 : 0) + 0x1d */
 
-void ai_Unk597810(int param_1, int *param_2)
+void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
 {
-    unsigned int i;
-    unsigned int r;
+    int i;
     int x;
     int y;
 
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-    io_PrintText("_C_Z_%s", param_1);
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    io_PrintText("$C$Z%s", caption);
     i = 0;
-    x = 0x1c;
     y = 0x1d;
-    if (*(char *)(*param_2 + 2) == 6) {
-        if ((char)param_2[1] != 0) {
-            do {
-                d2_WinOpenPic(x, y, *(unsigned char *)((int)param_2 + i + 0xc) + 0x75a,
-                             U_I((unsigned)&d2_LastWindow));
-                i++;
-                if (i % 8 == 0)
-                    x = 0;
-                else
-                    x += 0x3a;
-                y = ((i < 8) - 1U & 0x29) + 0x1d;
-            } while ((int)i < (int)(unsigned char)param_2[1]);
-        }
-    } else if ((char)param_2[1] != 0) {
-        do {
-            d2_WinOpenPic(x, y, 0x761, U_I((unsigned)&d2_LastWindow));
+    x = 0x1c;
+    if (side->ch->kind == 6) {
+        while (i < side->n) {
+            d2_WinOpenPic(x, y, side->t[i] + 0x75a, d2_LastWindow);
             i++;
             if (i % 8 == 0)
                 x = 0;
             else
                 x += 0x3a;
-            y = ((i < 8) - 1U & 0x29) + 0x1d;
-        } while ((int)i < (int)(unsigned char)param_2[1]);
+            y = i > 7 ? 0x46 : 0x1d;
+        }
+        d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
+    } else {
+        while (i < side->n) {
+            d2_WinOpenPic(x, y, 0x761, d2_LastWindow);
+            i++;
+            if (i % 8 == 0)
+                x = 0;
+            else
+                x += 0x3a;
+            y = i > 7 ? 0x46 : 0x1d;
+        }
+        d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
     }
-    r = ((int (*)(int, int))util_Random)(6, U_I((unsigned)&d2_LastWindow));
-    d2_WinOpenPic(x, y, (r & 0xffff) + 0x75b, U_I((unsigned)&d2_LastWindow));
 }
 /* 0x597920, draws the dice of a dice record without the extra cell (230 B): as 0x597810, but the random 0x75b
    cell only in the record branch */
@@ -7025,7 +7040,7 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
                     return;
                 if (t0 + step < U_I((unsigned)&d3_Time)) {
                     d2_SetForm(win, frame);
-                    ai_Unk597810(text, param_2);
+                    ai_DrawDuelDice(text, (LCDUELSIDE *)param_2);
                     step = step + step / 2;
                     t0 = U_I((unsigned)&d3_Time);
                 }
