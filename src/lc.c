@@ -42,7 +42,7 @@
    sv_CreateScrollButtons.
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
-#define unk_Unk5136b0K ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define init_LeaveTownSceneB ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
 /* lc.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
@@ -8298,7 +8298,7 @@ void ai_Unk59a3c0(void)
    objects, class 0x16); the clicked contact 0x6f22e4 opens 0x5af1a0 (param_1), 0x5b26b0 (param_1, param_1 +
    0x5d), 0x5c3200 (param_1) or the town map 0x59a3c0 (the table object's click flag +0x224 off / on) */
 
-void ai_Unk59a560(int param_1, int room)
+void ai_MapTableContact(int param_1, int room)
 {
     int obj;
     int transport = 0;
@@ -8320,7 +8320,7 @@ void ai_Unk59a560(int param_1, int room)
     if (obj != 0)
         d3if_ShowTree(obj, 1);
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk59a560, 0x67fff) != 0) {
+    while (sv_RunFrame(ai_MapTableContact, 0x67fff) != 0) {
         ai_MarketContact((AIBLD *)param_1);
         if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
             transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
@@ -9634,9 +9634,9 @@ void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildin
 int d3_VecEqual(struct D3VECTOR *a, struct D3VECTOR *b, float eps); void sv_RunFramesUntilStopped(int id);
 void init_LeaveTownScene(void); void snd_UnloadBuildingVoices(void); void init_AfterTownLoad(void); 
 struct SBSAMPLE * sb_PlaySample(); void ai_ThievesGuildEmptyListener(); void ai_ThievesGuildListener(); void ai_StorageContact(); void ai_TrainingContact();
-void ai_KidnapContact(); void ai_DungeonContact(); void ai_Unk5a3df0(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
+void ai_KidnapContact(); void ai_DungeonContact(); void ai_DungeonBribeListener(); void ai_DungeonEmptyListener(); void ai_ChurchListener(); void ai_ChurchContact();
 void ai_GuildLevel1Listener(); void ai_ProductionWriteContact(); void ai_LawBookContact(); void ai_GuildLevel2Listener();
-void ai_GuildLevel3Listener(); void ai_Unk5a6a90(); void ai_CityWatchListener(); void ai_GuildHallListener();
+void ai_GuildLevel3Listener(); void ai_TrainingRoomListener(); void ai_CityWatchListener(); void ai_GuildHallListener();
 void ai_AlchemistLabContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CannonContact(struct AIBLD *rec, struct AIOBJ *room); void ai_CabinetContact(struct AIBLD *rec, struct AIOBJ *room); void ai_ProductionContact(int building, int arg);
 void ai_ConfessionListener(); void ai_TownHallContact();
 void ai_TownCashContact();
@@ -10070,187 +10070,277 @@ int ai_MayEnterBuilding(AIBLD *b)
     sv_MessageBoxGreen(title, msg, 4);
     return 0;
 }
-/* 0x59e420, the enter-building driver (2592 B, ROUGH: the entry / exit bookkeeping is condensed): when
-   0x59e210 refuses, 0x75e8c0 = 0 and return; 0x520f20, 0x5309a0 (0x20007), 0x6237c8 = 0, 0x52adb0 /
-   0x52ae40; the sound "EigenesGebaeudeBetreten_s" / "FremdesGeschaeftBetreten_s" (0x426fa0); "normal_s" copied
-   to 0x5f1230; the building 0x4ffe90 (param_1 + 0x5d, 1, 0, param_1 + 0x29) and 0x4c28a0 (param_1); the pump
-   0x5309a0 (0x59e420, 0x67fff) and per frame the room 0x4ffe90: the room callback 0x76faa0 (the index word),
-   0x50d7f0 (the room), 0x4478e0 (the callback), 0x43deb0 (3), 0x438e60 (0x5fb5b0, 0, 0xe0, 0x45ce00),
-   0x512f30 / 0x513050 / 0x513400 (param_1, the building), the matrices 0x43b790 / 0x43b860 (0xfc2dec + 0x5c /
-   + 0x90), the first-room camera checks 0x453e80 (+0x114 / +0x120), the saved view 0x75fb80 ..; then
-   0x576040 (0x19, the room, 0, 0), the room handlers switch on the word (0x120..0x29e: the contact listeners
-   and windows of this unit and the following ones), 0x576040 (0x1a, the room, 0, 0), 0x6f2314 = the room,
-   0x4284a0 / 0x429e90 / 0x52bb70, 0x5136b0 (param_1), 0x6f22bc = 1; when 0x6f2308 is null 0x6f22a0 = 1 and
-   0x43db30 (3); on exit 0x52adb0 / 0x52ae40, 0x7662c0 = 0, 0x4c2c00, 0x4478e0, the globals cleared, 0x513740,
-   the saved view restored and "GebaeudeVerlassen_s" */
+/* 0x59e420, enters the building b at its room mainRoom (0: from the town): when ai_MayEnterBuilding refuses, nothing
+   happens; else the town view is saved, the entry sound played ("EigenesGebaeudeBetreten_s" at the player's own
+   building, "FremdesGeschaeftBetreten_s" at another's) and the building's voices loaded; then per frame the
+   room b->objList holds for b->mainRoom (gm_Query) is shown: a room of another universe is loaded (its scene
+   reloaded when dirty), selected and set up for the building (the camera at its saved place, at a foreign
+   building of class 1 / 8 at its view 5), the scene's event 4 fired, and the room's handler runs (the switch on
+   its kind: the contact listeners and windows of this unit); after it the scene's event 5, the waiting scripts and
+   the town scene's sounds. The loop ends when sv_RunFrame stops it: the selection is cleared, the town scene and
+   view restored and "GebaeudeVerlassen_s" played */
 
-void ai_EnterBuilding(unsigned char *param_1, int param_2)
+void ai_EnterBuilding(AIBLD *b, int mainRoom)
 {
-    int i;
-    unsigned short *room;
-    int cb;
-    int kind;
-    int v;
-    unsigned short vid;
-    int saved1, saved2, saved3, saved4, saved5, saved6;
+    int scene;
+    float pos[3];
+    float rot[3];
+    int lastEvent;
+    AIOBJ *room;
+    signed char universe;
+    int cls;
+    EVTSCRIPT *ev;
 
-    if (ai_MayEnterBuilding(param_1) == 0) {
-        U_I((unsigned)&sv_PanelFlag) = 0;
+    lastEvent = -1;
+    if (ai_MayEnterBuilding(b) == 0) {
+        sv_PanelFlag = 0;
         return;
     }
     sv_ResetScreenClip();
     sv_RunFrame(ai_EnterBuilding, 0x20007);
-    U_I((unsigned)&sv_SceneEventTime) = 0;
+    sv_SceneEventTime = 0;
     sv_ResetSelection();
     sv_ClearSelection();
-    kind = U_I((unsigned)&d3_CurrentScene);
+    scene = d3_CurrentScene;
     sv_LastRoom = 0;
-    *(short *)(param_1 + 0x29) = (short)param_2;
-    saved1 = U_I((unsigned)&sv_ViewPosX);
-    saved2 = U_I((unsigned)&sv_ViewPosY);
-    saved3 = U_I((unsigned)&sv_ViewPosZ);
-    saved4 = U_I((unsigned)&sv_ViewRotX);
-    saved5 = U_I((unsigned)&sv_ViewRotY);
-    saved6 = U_I((unsigned)&sv_ViewRotZ);
-    if (param_2 == 0)
-        U_I((unsigned)&ai_PlayerBuilding) = 0;
-    if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId))
+    b->mainRoom = (unsigned short)mainRoom;
+    pos[0] = sv_ViewPos[0];
+    pos[1] = sv_ViewPos[1];
+    pos[2] = sv_ViewPos[2];
+    rot[0] = sv_ViewRot[0];
+    rot[1] = sv_ViewRot[1];
+    rot[2] = sv_ViewRot[2];
+    if (mainRoom == 0)
+        ai_PlayerBuilding = 0;
+    if (b->owner == ai_PlayerId)
         sb_PlaySample(snd_RoomBank, "EigenesGebaeudeBetreten_s", 1, 0x3f, 0x7f, 0, 0);
     else
         sb_PlaySample(snd_RoomBank, "FremdesGeschaeftBetreten_s", 1, 0x3f, 0x7f, 0, 0);
-    strcpy((char *)(unsigned)&ch_StepSample, "normal_s");
-    gm_Query(U_I(param_1 + 0x5d), 1, 0, *(unsigned short *)(param_1 + 0x29));
-    snd_LoadBuildingVoices(param_1);
-    for (;;) {
-        U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
-        room = (unsigned short *)gm_Query(U_I(param_1 + 0x5d), 1, 0, *(unsigned short *)(param_1 + 0x29));
+    strcpy(ch_StepSample, "normal_s");
+    gm_Query((void *)b->objList, 1, 0, b->mainRoom);
+    snd_LoadBuildingVoices((unsigned char *)b);
+    do {
+        sv_FrameBase = sv_FrameDepth + 1;
+        room = (AIOBJ *)gm_Query((void *)b->objList, 1, 0, b->mainRoom);
         if (room != 0) {
-            cb = *(signed char *)((unsigned)&init_ObjectUniverse + *room);
-            if (cb != -2) {
-                if (cb == -1 || *(unsigned char *)((unsigned)&init_SceneDirty + cb * 0x3e0) != 0) {
-                    U_I((unsigned)&d2_CutsceneActive) = 1;
+            universe = init_ObjectUniverse[room->type];
+            if (universe != -2) {
+                if (universe == -1 || d3_Scenes[universe].dirty != 0) {
+                    d2_CutsceneActive = 1;
                     sv_RunFrame(0, 0x603c7);
                     sv_RunFrame(0, 0x603c7);
-                    init_LoadObjectScene(*room);
-                    U_I((unsigned)&d2_CutsceneActive) = 0;
+                    init_LoadObjectScene(room->type);
+                    d2_CutsceneActive = 0;
                 }
-                if (U_I((unsigned)&d3_CurrentScene) != 0)
+                if (d3_CurrentScene != 0)
                     d3_DeflateScene(3);
-                U_I((unsigned)&ai_PlayerBuilding) = param_1;
-                U_I((unsigned)&evt_NoGroup) = U_I(room + 1);
-                U_I((unsigned)&ch_CurrentGroup) = U_I(param_1 + 1);
-                U_I((unsigned)&ch_CurrentScriptGroup) = U_I(room + 1);
-                U_I((unsigned)&sv_PanelShown) = room;
-                *(unsigned short *)(param_1 + 0x29) = *room;
-                d3if_SelectScene(*(signed char *)((unsigned)&init_ObjectUniverse + *room), 0);
+                ai_PlayerBuilding = (char *)b;
+                sv_PanelShown = (unsigned short *)room;
+                evt_NoGroup = room->objId;
+                ch_CurrentGroup = b->id;
+                ch_CurrentScriptGroup = room->objId;
+                b->mainRoom = room->type;
+                d3if_SelectScene(init_ObjectUniverse[room->type], 0);
                 d3_InflateScene(3);
-                d3_ForEachObject2(d3_DefaultScene, 0, 0xe0, (void *)(unsigned)&d3s_ResetShadows);
-                init_SetCharacterAnimations(param_1);
-                init_ShowBuildingScene(U_I((unsigned)&ai_PlayerBuilding), *(unsigned short *)(U_I((unsigned)&ai_PlayerBuilding) + 0x29));
-                init_FinishBuildingScene(U_I((unsigned)&ai_PlayerBuilding), U_I((unsigned)&sv_PanelShown));
+                d3_ForEachObject2(d3_DefaultScene, 0, 0xe0, d3s_ResetShadows);
+                init_SetCharacterAnimations((unsigned char *)b);
+                init_ShowBuildingScene((unsigned char *)ai_PlayerBuilding, ((AIBLD *)ai_PlayerBuilding)->mainRoom);
+                init_FinishBuildingScene((unsigned char *)ai_PlayerBuilding, sv_PanelShown);
                 d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
                 d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
-                /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
-                if (*(unsigned short *)(param_1 + 0x27) != U_W((unsigned)&ai_PlayerId)) {
-                    v = gm_BuildingClass(*param_1);
-                    if ((v == 1 || v == 8) &&
-                        d3_VecEqual(&d3_Camera->views[5].pos, (float *)&d3_Origin, 0x3dcccccd) == 0 &&
-                        d3_VecEqual(&d3_Camera->views[5].dir, (float *)&d3_Origin, 0x3dcccccd) == 0) {
+                if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[4].fn != 0)
+                    d3_DefaultScene->events[4].fn(d3_DefaultScene, 4, d3_DefaultScene->events[4].name, 0);
+                lastEvent = evt_LastId;
+                if (b->owner != ai_PlayerId) {
+                    cls = gm_BuildingClass(b->kind);
+                    if ((cls == 1 || cls == 8) &&
+                        d3_VecEqual(&d3_Camera->views[5].pos, &d3_Origin, 0.1f) == 0 &&
+                        d3_VecEqual(&d3_Camera->views[5].dir, &d3_Origin, 0.1f) == 0) {
                         d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
                         d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
                     }
                 }
-                U_I((unsigned)&sv_ViewPosX) = *(int *)&d3_Camera->pos.x;
-                U_I((unsigned)&sv_ViewPosY) = *(int *)&d3_Camera->pos.y;
-                U_I((unsigned)&sv_ViewPosZ) = *(int *)&d3_Camera->pos.z;
-                U_I((unsigned)&sv_ViewRotX) = *(int *)&d3_Camera->rotation.x;
-                U_I((unsigned)&sv_ViewRotY) = *(int *)&d3_Camera->rotation.y;
-                U_I((unsigned)&sv_ViewRotZ) = *(int *)&d3_Camera->rotation.z;
-                U_I((unsigned)&sv_BorderViewX) = 0;
-                U_I((unsigned)&sv_BorderViewY) = 0;
+                sv_ViewPos[0] = d3_Camera->pos.x;
+                sv_ViewPos[1] = d3_Camera->pos.y;
+                sv_ViewPos[2] = d3_Camera->pos.z;
+                sv_ViewRot[0] = d3_Camera->rotation.x;
+                sv_ViewRot[1] = d3_Camera->rotation.y;
+                sv_ViewRot[2] = d3_Camera->rotation.z;
+                sv_BorderViewX = 0;
+                sv_BorderViewY = 0;
             }
-            ai_CampaignStep(0x19, room, 0, 0);
-            vid = *room;
-            switch (vid) {
-            case 0x13: ai_StudyContact((AIBLD *)ai_PlayerBuilding, room); break;
-            case 0x14: ai_RobberContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x15: ai_RhetoricContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x16: ai_WineCellarContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x17: ai_FeastContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x18: ai_MistressContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x1f: ai_Unk59a560(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x4d: ai_ThievesGuildEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x54: ai_ThievesGuildListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x5c: ai_StorageContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x60: ai_TrainingContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x65: ai_KidnapContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x74: ai_SmithyContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x85: ai_CarpenterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x9b: ai_StonecutterContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xa5: ai_MoneyLenderContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xb7: ai_DungeonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xba: ai_Unk5a3df0(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xbb: ai_DungeonEmptyListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xcf: ai_MixingContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xd6: ai_IdleContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xdd: ai_AquariumContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            ai_CampaignStep(0x19, (int)room, 0, 0);
+            switch (room->type) {
+            case 0x13:
+                ai_StudyContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x14:
+                ai_RobberContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x16:
+                ai_WineCellarContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x15:
+                ai_RhetoricContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x17:
+                ai_FeastContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x18:
+                ai_MistressContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x1f:
+                ai_MapTableContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x74:
+                ai_SmithyContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x85:
+                ai_CarpenterContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xcf:
+                ai_MixingContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xd6:
+                ai_IdleContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xdd:
+                ai_AquariumContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x9b:
+                ai_StonecutterContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xa5:
+                ai_MoneyLenderContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
             case 0xe5:
-            case 0xe6: ai_ChurchListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xf0: ai_ChurchContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xf2: ai_ConfessionListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0xf7: ai_ProductionWriteContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x10e: ai_TownHallContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x110: ai_LawBookContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x114: ai_TownCashContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x118: ai_PerfumeryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x120: ai_TavernContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x12e: ai_BreweryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x137: ai_GuildLevel2Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x138: ai_GuildLevel1Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x139: ai_GuildLevel3Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x145: ai_Unk5a6a90(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x146: ai_CityWatchListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x14c: ai_GuildHallListener(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x24b: ai_AlchemistLabContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x256: ai_CannonContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x266: ai_CabinetContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x29e: ai_ProductionContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            default: ai_PumpFrames(room); break;
+            case 0xe6:
+                ai_ChurchListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xf0:
+                ai_ChurchContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xb7:
+                ai_DungeonContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xba:
+                ai_DungeonBribeListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xbb:
+                ai_DungeonEmptyListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x54:
+                ai_ThievesGuildListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x4d:
+                ai_ThievesGuildEmptyListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x5c:
+                ai_StorageContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x60:
+                ai_TrainingContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x65:
+                ai_KidnapContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xf2:
+                ai_ConfessionListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x118:
+                ai_PerfumeryContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x120:
+                ai_TavernContact((AIBLD *)ai_PlayerBuilding, room);
+                break;
+            case 0x12e:
+                ai_BreweryContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x10e:
+                ai_TownHallContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x110:
+                ai_LawBookContact((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x114:
+                ai_TownCashContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x137:
+                ai_GuildLevel2Listener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0xf7:
+                ai_ProductionWriteContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x138:
+                ai_GuildLevel1Listener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x139:
+                ai_GuildLevel3Listener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x145:
+                ai_TrainingRoomListener((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x146:
+                ai_CityWatchListener((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x14c:
+                ai_GuildHallListener((AIBLD *)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x24b:
+                ai_AlchemistLabContact((AIBLD *)ai_PlayerBuilding, room);
+                break;
+            default:
+                ai_PumpFrames((int)room);
+                break;
+            case 0x29e:
+                ai_ProductionContact((int)ai_PlayerBuilding, (int)room);
+                break;
+            case 0x266:
+                ai_CabinetContact((AIBLD *)ai_PlayerBuilding, room);
+                break;
+            case 0x256:
+                ai_CannonContact((AIBLD *)ai_PlayerBuilding, room);
+                break;
             }
-            ai_CampaignStep(0x1a, room, 0, 0);
-            sv_LastRoom = (struct AIOBJ *)room;
-            /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
-            if (U_I((unsigned)&evt_LastId) != -1)
-                sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
-            unk_Unk5136b0K(param_1);
-            U_I((unsigned)&ai_FrameWait) = 1;
-            if (U_I((unsigned)&ai_PlayerBuilding) == 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            ai_CampaignStep(0x1a, (int)room, 0, 0);
+            sv_LastRoom = room;
+            if (lastEvent != -1) {
+                ev = evt_FindById(lastEvent);
+                if (ev != 0) {
+                    evt_Stop(ev);
+                    sv_RunFramesUntilStopped(ev->id);
+                }
+            }
+            if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[5].fn != 0)
+                d3_DefaultScene->events[5].fn(d3_DefaultScene, 5, d3_DefaultScene->events[5].name, 0);
+            if (evt_LastId != -1)
+                sv_RunFramesUntilStopped(evt_LastId);
+            init_LeaveTownSceneB(b);
+            ai_FrameWait = 1;
+            if (ai_PlayerBuilding == 0) {
+                sv_PopRequest = 1;
                 d3_DeflateScene(3);
             }
         }
-        if (sv_RunFrame(ai_EnterBuilding, 0x67fff) == 0) {
-            sv_ResetSelection();
-            sv_ClearSelection();
-            U_I((unsigned)&sv_SelectedChar) = 0;
-            snd_UnloadBuildingVoices();
-            d3if_SelectScene(kind, 0);
-            U_I((unsigned)&evt_NoGroup) = 0;
-            U_I((unsigned)&ch_CurrentGroup) = 0xffffffff;
-            U_I((unsigned)&ch_CurrentScriptGroup) = 0xffffffff;
-            U_I((unsigned)&ai_PlayerBuilding) = 0;
-            U_I((unsigned)&sv_PanelShown) = 0;
-            init_AfterTownLoad();
-            U_I((unsigned)&sv_ViewPosX) = saved1;
-            U_I((unsigned)&sv_ViewPosY) = saved2;
-            U_I((unsigned)&sv_ViewPosZ) = saved3;
-            U_I((unsigned)&sv_ViewRotX) = saved4;
-            U_I((unsigned)&sv_ViewRotY) = saved5;
-            U_I((unsigned)&sv_ViewRotZ) = saved6;
-            sb_PlaySample(snd_RoomBank, "GebaeudeVerlassen_s", 1, 0x3f, 0x7f, 0, 0);
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_EnterBuilding, 0x67fff) != 0);
+    sv_ResetSelection();
+    sv_ClearSelection();
+    sv_SelectedChar = 0;
+    snd_UnloadBuildingVoices();
+    d3if_SelectScene(scene, 0);
+    evt_NoGroup = 0;
+    ch_CurrentGroup = -1;
+    ch_CurrentScriptGroup = -1;
+    ai_PlayerBuilding = 0;
+    sv_PanelShown = 0;
+    init_AfterTownLoad();
+    sv_ViewPos[0] = pos[0];
+    sv_ViewPos[1] = pos[1];
+    sv_ViewPos[2] = pos[2];
+    sv_ViewRot[0] = rot[0];
+    sv_ViewRot[1] = rot[1];
+    sv_ViewRot[2] = rot[2];
+    sb_PlaySample(snd_RoomBank, "GebaeudeVerlassen_s", 1, 0x3f, 0x7f, 0, 0);
 }
 
 int init_BuildingSceneUniverse(); void init_LoadBuildingScene(int k); void d3fl_SetDetail(unsigned int n); void veg_HidePlants();
@@ -10392,7 +10482,7 @@ void ai_EnterOwnBuilding(unsigned char *param_1)
     if (U_I((unsigned)&evt_LastId) != -1)
         sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
     snd_UnloadBuildingVoices();
-    unk_Unk5136b0K(U_I((unsigned)&ai_FallbackBuilding));
+    init_LeaveTownSceneB(U_I((unsigned)&ai_FallbackBuilding));
     d3_DeflateScene(3);
     d3if_SelectScene(kind, 0);
     U_I((unsigned)&sv_SelectedChar) = 0;
@@ -12545,14 +12635,14 @@ void ai_Unk5a3b90(int param_1)
    0x67fff : 0x677ff) looks up "contact_BESTECHEN" (0x1440880, class 0x10) only with the flag set and opens the
    bribe window 0x5a3b90 for a known owner */
 
-void ai_Unk5a3df0(int param_1)
+void ai_DungeonBribeListener(int param_1)
 {
     int bribe = 0;
     int mask;
 
     sv_ReleaseNamePlates();
     mask = *(char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 ? 0x67fff : 0x677ff;
-    while (sv_RunFrame(ai_Unk5a3df0, mask) != 0) {
+    while (sv_RunFrame(ai_DungeonBribeListener, mask) != 0) {
         if (*(char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
             bribe = sv_RegisterNamePlate("contact_BESTECHEN", U_I((unsigned)&full_data_1440880), 0x10);
         if (*(char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 && U_I((unsigned)&ai_ClickedObject) != 0 &&
@@ -14117,7 +14207,7 @@ void ai_GuildHallListener(AIBLD *bld)
    (0x1442008, 0x17) and, when the mask is still set and the pending click 0x6f22e4 is one of them, 0x5bba00
    (param_1) */
 
-void ai_Unk5a6a90(int param_1)
+void ai_TrainingRoomListener(int param_1)
 {
     int ziel;
     int nacht;
@@ -14125,7 +14215,7 @@ void ai_Unk5a6a90(int param_1)
     int r;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk5a6a90, 0x67fff);
+    r = sv_RunFrame(ai_TrainingRoomListener, 0x67fff);
     while (r != 0) {
         if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
             ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
@@ -14135,7 +14225,7 @@ void ai_Unk5a6a90(int param_1)
                 (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == nacht || U_I((unsigned)&ai_ClickedObject) == regeneration))
                 ai_TrainingWindow(param_1);
         }
-        r = sv_RunFrame(ai_Unk5a6a90, 0x67fff);
+        r = sv_RunFrame(ai_TrainingRoomListener, 0x67fff);
     }
 }
 /* 0x5a6b50, the text of a city name (24 B): 0x5176d0 formats the value with "%1G" 0x61168c into buf */
