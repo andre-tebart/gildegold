@@ -1519,16 +1519,17 @@ int cm_SendLeaveParty(int partyId, int member)
     m.leaveParty.member = member;
     return cm_QueueSend(&m);
 }
-/* 0x4c5010, message 0x2b: moves the object c from the building a to b (-1: out of a); returns its send slot */
+/* 0x4c5010, message 0x2b: asks to remove the entry `entry` from the holder's object list (objId -1: the
+   holder's own list) - cm_ExRemoveOwned; returns its send slot */
 
-int cm_SendMoveObject(int a, int b, int c)
+int cm_SendMoveObject(int holder, int objId, int entry)
 {
     G17MSG m;
 
     m.type = 0x2b;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.remove.holder = holder;
+    m.remove.objId = objId;
+    m.remove.entry = entry;
     return cm_QueueSend(&m);
 }
 /* 0x4c5050, message 0x2c: sets the plant of the type at the cell (x, z) of the building's vegetation map (fall: its fall model,

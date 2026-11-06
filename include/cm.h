@@ -233,7 +233,7 @@ void cm_SendDropEvidence(int id, int netId, int value);                         
 int cm_RequestSendCutInfo(int playerId, int fightId);                                     /* 0x4c4f50, its send slot (cm_GetSlotState) */
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 int cm_SendLeaveParty(int partyId, int member);                                        /* 0x4c4fd0, its send slot (cm_GetSlotState) */
-int cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
+int cm_SendMoveObject(int holder, int objId, int entry);                               /* 0x4c5010 */
 int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned char fall, int fallId); /* 0x4c5050, the send slot */
 int cm_SendObject1b5(int owner, G17B7 value);                                        /* 0x4c50b0 */
 void cm_SendChrWalkTo(int a, int b, int c, int d);                                   /* 0x4c5100 */
