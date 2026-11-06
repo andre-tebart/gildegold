@@ -130,8 +130,10 @@ extern int ai_ProdSelectedInput;        /* 0x6f5a60, the input goods picked by a
 extern int ai_BauplatzCount;            /* 0x6f2688 */
 extern int ai_DragSavedMaxY;            /* 0x6f268c, the mouse bounds kept while the town map is dragged */
 extern int ai_DragSavedMinY;            /* 0x6f2690 */
+extern int ai_MapScrollY;               /* 0x6f2694, the town map's scroll the key / edge scroll last computed */
 extern int ai_DragSavedMaxX;            /* 0x6f2698 */
 extern int ai_DragSavedMinX;            /* 0x6f269c */
+extern int ai_MapScrollX;               /* 0x6f26a0 */
 extern int ai_DragScrollX;              /* 0x6f26a4, the map window's scroll when the drag began */
 extern int ai_DragScrollY;              /* 0x6f26a8 */
 extern int ai_DragStartX;               /* 0x6f26b4, the mouse position the drag began at */
