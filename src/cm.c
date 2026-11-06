@@ -1260,10 +1260,10 @@ void cm_SendCartRoute(int a, int b, int c)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.move.to = a;
     m.type = 0x13;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.move.from = b;
+    m.move.objId = c;
     cm_QueueSend(&m);
 }
 /* 0x4c4960, message 0x14 */
