@@ -3534,7 +3534,7 @@ void ai_ConstructionWindow(void)
 }
 
 int ai_MapPick(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
-unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void ai_Unk59f410(); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
+unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
 int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
@@ -3605,42 +3605,48 @@ void ai_HandleMapKey(void)
 
 void ai_TradeContactChecks(void)
 {
-    char c;
-    int r;
-    int p;
+    unsigned short *item;           /* the clicked object record: its first word is its goods id */
+    unsigned short *room;
+    AIBLD *b;
+    AIBTYPE *type;
+    char kind;
 
-    if (U_I((unsigned)&sv_ClickedItem) != 0 &&
-        ((c = *(char *)(U_I((unsigned)&ai_Goods) + *(unsigned short *)U_I((unsigned)&sv_ClickedItem) * 0x41), c == 6 || c == 2))) {
-        if (gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&ai_FallbackBuilding), U_I((unsigned)&sv_ClickedItem), 0) & 0x4000) {
-            r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
-            ai_Unk59f410(U_I((unsigned)&sv_ClickedItem));
-            init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);
-            init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
-            U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
+    item = (unsigned short *)sv_ClickedItem;
+    if (item != 0) {
+        kind = ((AIGOOD *)ai_Goods)[*item].type;
+        if ((kind == 6 || kind == 2) &&
+            (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, item, 0) &
+             0x4000) != 0) {
+            room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+            ai_RunObjectRoom((unsigned short *)sv_ClickedItem);
+            init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
+            init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
+            sv_FrameBase = sv_FrameDepth;
         }
     }
-    if (U_I((unsigned)&sv_PanelFlag) != 0 && U_I((unsigned)&sv_PanelRecord) != 0 && U_I((unsigned)&sv_PanelObject) == U_I((unsigned)&ai_FallbackBuilding)) {
-        r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
-        if (U_I((unsigned)&sv_PanelRecord) == r) {
-            U_I((unsigned)&sv_PanelFlag) = 0;
-            U_I((unsigned)&sv_PanelRecord) = 0;
-            U_I((unsigned)&sv_PanelObject) = 0;
+    if (sv_PanelFlag != 0 && sv_PanelRecord != 0 && sv_PanelObject == ai_FallbackBuilding) {
+        room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+        if (sv_PanelRecord != room) {
+            ai_RunObjectRoom(sv_PanelRecord);
+            init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
+            init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
         } else {
-            ai_Unk59f410(U_I((unsigned)&sv_PanelRecord));
-            init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);
-            init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
+            sv_PanelFlag = 0;
+            sv_PanelRecord = 0;
+            sv_PanelObject = 0;
         }
     }
-    if (U_I((unsigned)&sv_ClickedContact) != 0 && U_I((unsigned)&ai_SelectedCount) == 0) {
-        r = gm_Query(*(int *)(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
-        ai_Unk59f410(U_I((unsigned)&sv_ClickedContact));
-        init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), 0xfd);
-        init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), r);
+    if (sv_ClickedContact != 0 && ai_SelectedCount == 0) {
+        room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+        ai_RunObjectRoom((unsigned short *)sv_ClickedContact);
+        init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
+        init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
     }
-    p = *(unsigned char *)U_I((unsigned)&ai_FallbackBuilding);
-    if (p == 0x20 || p == 0x1f || p == 0x1e ||
-        (c = *(char *)(U_I((unsigned)&ai_BTypes) + p * 0x24d), c == 0x1f || c == 0x1d))
-        ai_MarketContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
+    b = (AIBLD *)ai_FallbackBuilding;
+    type = (AIBTYPE *)ai_BTypes + b->kind;
+    if (b->kind == 0x20 || b->kind == 0x1f || b->kind == 0x1e || type->buildingClass == 0x1f ||
+        type->buildingClass == 0x1d)
+        ai_MarketContact(b);
 }
 typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 0x75f780 (sv.c sv_RunFrame: "MASTER()") */
     int cb;                             /* 0x00, the frame callback registered at this depth */
@@ -9681,7 +9687,7 @@ void ai_Unk59ee40(unsigned char *param_1)
    0x276 0x5d9a80, 0x27f 0x5d9b90, 0x28a 0x5d9b20, default 0x58f620); the exit restores the view / device and
    switches back to the room 0xfd (0x4ffe90, 0x5f1298) */
 
-void ai_Unk59f410(unsigned short *param_1)
+void ai_RunObjectRoom(unsigned short *param_1)
 {
     unsigned short *room;
     int idx;
