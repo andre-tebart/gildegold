@@ -13150,79 +13150,70 @@ void ai_AttackStart(int building)
 
 void sv_UpdateMemberList(unsigned char *g);
 
-/* 0x5a4b90, the pickpocket victim window "locations\diebesgilde\taschendiebstahl" (421 B, ROUGH): the
-   building gate 0x520fe0 and 0x525220 (param_1, 0); the window 0x4741f0 / 0x476f80 / 0x475600 / 0x475f70 (1)
-   with the text 0x19f0 and the six-entry list (all -1); each frame 0x524990 (param_1) and the pump 0x5309a0
-   (this, 0x677c7): a left click (0xf8a668 == 0) collects up to 6 live entries (byte +0x188) of the table
-   0x7603a0 .. 0x760420 and builds the AIMSG (type 0x61 at +4, the owner's character id at +8, param_1 + 1 at
-   +0xc, the clock +0x28 .. +0x34, 1 at +0x36, the ids at +0x38 and the owner's id again at +0x80) and sends
-   0x4c4b70 / 0x4c2d20 / 0x52ae40, or shows the text 0x144094c with none; a right click only sets 0x6f22a0;
-   the exit 0x4758f0 / 0x525440 / 0x52d7a0 */
-void ai_PickpocketVictimWindow(int param_1)
+/* 0x5a4b90, the thieves' guild's pickpocket gang window (ai_ThievesGuildListener; nothing when
+   sv_CheckCharacterFlag refuses the building): the player bar of bld and the form
+   "locations\diebesgilde\taschendiebstahl" with the text 0x19f0; the member list updates every frame. The first
+   button sends the selected scene characters (up to six, collected over the clicks) as the gang message 0x61 from
+   bld (to and leader the owner's netId, flags 1), clears the selection and closes; with nobody selected the text
+   0x19e3. The second button and a right click close it; then the player bar closes and the camera follows again
+   @deep Read whole against the original: every call, argument, branch and store matches (121 / 121
+   instructions); the draft's six-entry list is msg.ids itself (memset 6 ints once, n kept across frames),
+   the message is an AIMSG. Left: the order in which VC6 schedules the four loads of the AITIME struct copy
+   msg.time = ai_Time (ours +0xe2 loads ai_Time+8 first, the original ai_Time+4; +0x105). Tried all orders
+   of the five message statements (48 variants, from early): none closer than 22 instructions. (references:
+   M8 at +0xe2: ours refers to ai_Time+0x8 (0x770ae8), the original's field to 0x770ae4 (ai_TimeHourW) (and
+   1 more), explained: the two M8 lines are the same struct copy's loads of ai_Time+0/+4/+8/+0xc taken in
+   another order; the same four stores result) */
+void ai_PickpocketGangWindow(AIBLD *bld)
 {
+    AIMSG msg;
     int win;
-    int list[6];
     int n;
-    int i;
-    int e;
-    int *tp;
-    char msg[0x88];
+    int *pp;
+    AICHARREC *ch;
 
-    if (sv_CheckCharacterFlag(param_1) != 0)
+    if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    sv_OpenPlayerBar(param_1, 0);
+    sv_OpenPlayerBar((int)bld, 0);
     win = d2_OpenForm(0, 0, "locations\\diebesgilde\\taschendiebstahl");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x19f0);
-    for (i = 0; i < 6; i++)
-        list[i] = -1;
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        sv_UpdateMemberList(param_1);
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_ClickedId) == 0) {
-                n = 0;
-                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80) && n < 6; tp++) {
-                    e = *tp;
-                    if (e != 0 && *(char *)(e + 0x188) != 0) {
-                        list[n] = U_I(e + 4);
-                        n++;
-                    }
-                }
-                if (n == 0) {
-                    sv_MessageBox((char *)U_I((unsigned)&full_data_144094c), 0);
-                } else {
-                    *(unsigned char *)(msg + 4) = 0x61;
-                    U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W(param_1 + 0x27) * 0x21c);
-                    U_I(msg + 0xc) = U_I(param_1 + 1);
-                    U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                    U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                    U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-                    *(unsigned char *)(msg + 0x36) = 1;
-                    for (i = 0; i < 6; i++)
-                        U_I(msg + 0x38 + i * 4) = list[i];
-                    U_I(msg + 0x80) = U_I(msg + 8);
-                    cm_SendLongMessage(msg);
-                    snd_PlayFavourComment();
-                    sv_ClearSelection();
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                }
-            } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+    memset(msg.ids, 0xff, 6 * sizeof(int));  /* the gang's six members (HEGANG: AIJOB.ids[0..5]) */
+    d2_ClickedId = -1;
+    n = 0;
+    do {
+        sv_UpdateMemberList((unsigned char *)bld);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_ClickedId == 0) {
+            for (pp = ai_SceneChars; (int)pp < (int)&ai_SceneChars[32] && n < 6; pp++) {  /* signed compares (jl) */
+                ch = (AICHARREC *)*pp;
+                if (ch != 0 && ch->selected != 0)
+                    msg.ids[n++] = ch->netId;
             }
-        }
-        if (sv_RunFrame(ai_PickpocketVictimWindow, 0x677c7) == 0) {
-            d2_CloseView(win);
-            sv_ClosePlayerBar();
-            sv_CameraFollow();
-            return;
-        }
-    }
+            if (n != 0) {
+                msg.type = 0x61;
+                msg.to = ai_CharInts[bld->owner][0];
+                msg.arg[10] = msg.to;  /* 0x80: the gang's leader (the event's HEGANG.leader, 0x54 further on) */
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                msg.flags = 1;
+                cm_SendLongMessage((char *)&msg);
+                snd_PlayFavourComment();
+                sv_ClearSelection();
+                sv_PopRequest = 1;
+            } else
+                sv_MessageBox(txt_Ptrs[0x19e3], 0);
+        } else if (d2_ClickedId == 1)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_PickpocketGangWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_ClosePlayerBar();
+    sv_CameraFollow();
 }
 /* 0x5a4d40, the thieves' guild listener (522 B, room 0x54 of the building driver 0x59e420): 0x52e190, the
    great sword object 0x449690 (0, 0xc0, 0) shown by 0x447300 only from the building type's level byte +0x247
@@ -13230,7 +13221,7 @@ void ai_PickpocketVictimWindow(int param_1)
    contact_ANGRIFF (only with the level byte >= 2) / contact_TASCHENDIEBSTAHL / ob_INFORMATIONSPERGAMENT plates
    through 0x52e1c0 when the mask 0x200 is set, ob_PERSONALBUCH / ob_MEISTERBRIEF when 0x400 is set, and
    dispatches the pending click 0x6f22e4 to ai_BurglaryStart / ai_EspionageStart / ai_AttackStart,
-   ai_PickpocketVictimWindow / ai_SpyReportsWindow / ai_PersonnelBook / ai_MasterLetterWindow */
+   ai_PickpocketGangWindow / ai_SpyReportsWindow / ai_PersonnelBook / ai_MasterLetterWindow */
 
 void ai_ThievesGuildListener(int building)
 {
@@ -13282,7 +13273,7 @@ void ai_ThievesGuildListener(int building)
             else if (click == angriff)
                 ai_AttackStart(building);
             else if (click == taschen)
-                ai_PickpocketVictimWindow(building);
+                ai_PickpocketGangWindow(building);
             else if (click == personal)
                 ai_PersonnelBook(building, "ob_PERSONALBUCH");
             else if (click == pergament)

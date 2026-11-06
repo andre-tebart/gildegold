@@ -223,7 +223,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextRazzia                     (*(char * *)((char *)txt_Ptrs + 0x07e40))  /* 0x1442000, the hover text of the contact_RAZZIA plate of the room 0x14c listener (ai_GuildHallListener); the wording is unknown */
 #define ai_ContactTextRegeneration                        (*(char * *)((char *)txt_Ptrs + 0x07e48))  /* 0x1442008, the hover text of the contact_REGENERATION plate (its click opens ai_TrainingWindow) */
 #define ai_ContactTextExtort                        (*(char * *)((char *)txt_Ptrs + 0x07e50))  /* 0x1442010, the hover text of the contact_SCHUTZGELD_ERPRESSEN plate (its click opens ai_OpenBribe) */
-#define ai_ContactTextPickpocket                 (*(char * *)((char *)txt_Ptrs + 0x07e58))  /* 0x1442018, the hover text of the contact_TASCHENDIEBSTAHL plate (ai_ThievesGuildListener -> ai_PickpocketVictimWindow) */
+#define ai_ContactTextPickpocket                 (*(char * *)((char *)txt_Ptrs + 0x07e58))  /* 0x1442018, the hover text of the contact_TASCHENDIEBSTAHL plate (ai_ThievesGuildListener -> ai_PickpocketGangWindow) */
 #define ai_ContactTextFarBuy                     (*(char * *)((char *)txt_Ptrs + 0x07e68))  /* 0x1442028, the hover text of the FERNEINKAUF plate (ai_FarTradeContact) */
 #define ai_ContactTextSell                       (*(char * *)((char *)txt_Ptrs + 0x07e88))  /* 0x1442048, the hover text of the VERKAUF plate (ai_FarTradeContact) */
 #define full_data_1442050                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x07e90))  /* 0x1442050 */
