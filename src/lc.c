@@ -5407,24 +5407,28 @@ void ai_OpenSpying(int building)
 
 void gm_SendMoneyDelta(int a, int b);
 
-/* 0x594bb0, the raid window of 0x594db0 (502 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra
-   start): rec (0 / +0x27 == 0xffff returns); 0x553cc0 (rec) == 0 gives the text 0x1a92 (0x5176d0 / 0x521150);
-   else the window (0x62b3b8, 0x4741f0 / 0x475600 / 0x476f80 / 0x475f70 (1)), the text 0x515960 (0x1a84, rec)
-   and the two controls 0x475b80; the click 0xf8a668 / 0x5fe710 drives the message 0x4c4b70, the money
-   0x50cc50, 0x4c2d20 and 0x521150; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
-void ai_RaidWindow(int param_1, int rec)
+/* 0x594bb0, the raid window of the robbers' camp ("locations\raeuberlager\raubzug"; the map pick callback of
+   0x594db0, with the picked building; nothing for none or an ownerless one). A building without a protection
+   event (he_NoProtectionEvent 0) gives the text 0x1a92; else the window (text 0x1a84) asks: its first button posts
+   the raid message 0x75 from the player (the target, the guild building, every selected character as an id,
+   flags 1) and takes 1 off the player's money (gm_SendMoneyDelta), or shows the text 0x1a79 when nobody is
+   selected; the second button and a right click close it. Clears the selection at the end */
+
+void ai_RaidWindow(char *place, AIBLD *target)
 {
-    char text[0x100];
-    char buf[0x400];
+    AIMSG msg;
+    char text[0x400];
     int win;
-    int ctl1;
-    int ctl2;
+    int ok;
+    int cancel;
+    int base;
+    int n;
     int i;
 
-    if (rec == 0 || *(unsigned short *)(rec + 0x27) == 0xffff)
+    if (target == 0 || target->owner == 0xffff)
         return;
-    if (he_NoProtectionEvent(rec) == 0) {
-        txt_Format(text, 0x1a92, *(unsigned short *)(rec + 0x27), rec);
+    if (he_NoProtectionEvent(target) == 0) {
+        txt_Format(text, 0x1a92, target->owner, target);
         sv_MessageBox(text, 0);
         return;
     }
@@ -5432,18 +5436,38 @@ void ai_RaidWindow(int param_1, int rec)
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    i = io_PrintText(0x1a84, rec);
-    ctl1 = d2_GetWinObj(win, 1, i);
-    ctl2 = d2_GetWinObj(win, 1, i + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    base = io_PrintText(0x1a84, target);
+    ok = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
     do {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        /* ROUGH: the click on the two controls: the message 0x4c4b70, the money 0x50cc50, 0x4c2d20 and the
-           text 0x521150 */
-        i = sv_RunFrame(ai_RaidWindow, 0x677c7);
-    } while (i != 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            n = 0;
+            msg.type = 0x75;
+            msg.flags = 1;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.arg[0] = target->id;
+            msg.arg[1] = ((AIBLD *)ai_FallbackBuilding)->id;
+            memset(msg.ids, 0xff, sizeof(msg.ids));
+            for (i = 0; i < 0x300; i++)
+                if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                    msg.ids[n++] = ai_CharInts[i][0];
+            if (n != 0) {
+                cm_SendLongMessage((char *)&msg);
+                gm_SendMoneyDelta(ai_CharInts[ai_PlayerId][0], -1);
+                snd_PlayFavourComment();
+            } else
+                sv_MessageBox(txt_Ptrs[0x1a79], 0);
+            sv_PopRequest = 1;
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_RaidWindow, 0x677c7) != 0);
     d2_CloseView(win);
+    sv_ClearSelection();
 }
 /* 0x594db0, opens the raid map pick (158 B): as ai_OpenSpying (the character flag 0x520fe0, the 0x50-byte config
    zeroed with +4 = 0x400, +0x4c = 0x727, +0x10 = 6) but +8 = 0xa07443a0, +0xc = 1, the prompt 0x1a83
