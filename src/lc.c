@@ -208,7 +208,6 @@ extern char * ai_FallbackBuilding;
 extern char * ai_PlayerBuilding;
 extern int sv_PopRequest;
 extern int d2_ClickedId;
-extern GAPDATA full_data_62b3b8[];
 
 
 
@@ -5429,7 +5428,7 @@ void ai_RaidWindow(int param_1, int rec)
         sv_MessageBox(text, 0);
         return;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62b3b8);
+    win = d2_OpenForm(0, 0, "locations\\raeuberlager\\raubzug");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
