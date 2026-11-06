@@ -15058,15 +15058,18 @@ void cm_SendOwnership(int a, int b, int c);
 void cm_SendSetJob(int id, int job);
 int ai_LiquidateAssets();
 
-/* 0x55bf50, a Ghidra miss: the allocation handler of the event 0x21 (ROUGH): the object 0x502020 (+0xac); the first run is random(10) + 10 units ahead; 0x4c4a60 (object + 1, 0x5a, 2, 0x200, 0) */
+/* 0x55bf50, the allocation handler of the building purchase event 0x21: the building (AIJOB.bldId) gets the message
+   0x5a / 2 / 0x200, the due clock is now + 10 .. 19 minutes */
+
 void he_AllocBuyBuilding(int ev)
 {
-    int o;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
 
-    o = gm_FindBuildingById(*(int *)(ev + 0xac));
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, (unsigned short)((int (*)(int, int))util_Random)(10, 0) + 10);
-    cm_SendSetField(*(int *)(o + 1), 0x5a, 2, 0x200, 0);
+    b = (AIBLD *)gm_FindBuildingById(e->bldId);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, (unsigned short)((int (*)(int, int))util_Random)(10, 0) + 10);
+    cm_SendSetField(b->id, 0x5a, 2, 0x200, 0);
 }
 /* 0x55bfd0, the run handler of the building purchase event 0x21 (HEBUYBLD: the buyer offers price for the building).
    Stage 0: a building whose master is a player (kind 6 / 7) opens the event box "misc\EventMessagebox_NULL" with
