@@ -1452,13 +1452,13 @@ int cm_SendCrime(void *p)
 }
 /* 0x4c4e90, sends message 0x23 (crime id a, force b: retire the crime record, ai_Unk4c9090); the send slot of cm_QueueSend */
 
-int cm_SendRetireCrime(int a, int b)
+int cm_SendRetireCrime(int id, int force)
 {
     G17MSG m;
 
     m.type = 0x23;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.retireCrime.id = id;
+    m.retireCrime.force = force;
     return cm_QueueSend(&m);
 }
 /* 0x4c4ed0, message 0x24 */
