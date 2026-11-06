@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4224,17 +4224,17 @@ exe	0x0059b030	ai_RepayLoan	lc	byte	readable
 exe	0x0059b160	ai_CreditListWindow	lc	byte	readable		
 exe	0x0059b630	ai_BorrowerLoansWindow	lc	byte	readable		
 exe	0x0059b880	ai_CreditReleaseWindow	lc	byte	readable		
-exe	0x0059bad0	ai_CreditGiverWindow	lc	draft	draft		
-exe	0x0059be90	ai_Unk59be90	lc	draft	draft		
-exe	0x0059c120	ai_Unk59c120	lc	draft	draft		
-exe	0x0059c450	ai_Unk59c450	lc	draft	draft		
+exe	0x0059bad0	ai_CreditGiverWindow	lc	byte	readable		
+exe	0x0059be90	ai_SortExchangeRows	lc	draft	readable	deep	
+exe	0x0059c120	ai_FillExchangeRows	lc	shape	readable		
+exe	0x0059c450	ai_ShowExchangeRows	lc	draft	readable	deep	
 exe	0x0059c6b0	ai_ClickedExchangeRecord	lc	byte	readable		
 exe	0x0059c6e0	ai_UsedRecordCount	lc	byte	readable		
-exe	0x0059c700	ai_ExchangeWindow	lc	draft	draft		
-exe	0x0059d2d0	ai_Unk59d2d0	lc	draft	draft		
-exe	0x0059d410	ai_Unk59d410	lc	draft	draft		
-exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	draft	draft		
-exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	draft	draft		
+exe	0x0059c700	ai_ExchangeWindow	lc	draft	readable	deep	
+exe	0x0059d2d0	ai_ExchangeFeesWindow	lc	draft	draft		
+exe	0x0059d410	ai_MoneyMessengerWindow	lc	byte	readable		
+exe	0x0059d5e0	ai_MoneyExchangeWindow	lc	shape	readable		
+exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	byte	readable		
 exe	0x0059df10	ai_FortuneOverview	lc	byte	readable		
 exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable		
 exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
@@ -4453,8 +4453,8 @@ exe	0x005bd0c0	ai_CentredText	lc	byte	readable
 exe	0x005bd190	ai_RightAlignedText	lc	byte	readable		
 exe	0x005bd1f0	ai_LeftAlignedText	lc	byte	readable		
 exe	0x005bd250	ai_ShowWindowRow	lc	byte	readable		
-exe	0x005bd330	ai_Unk5bd330	lc	draft	draft		
-exe	0x005bd470	ai_Unk5bd470	lc	draft	draft		
+exe	0x005bd330	ai_ShowLoanRows	lc	draft	draft		
+exe	0x005bd470	ai_ShowCarrierRows	lc	draft	draft		
 exe	0x005bd5e0	ai_Unk5bd5e0	lc	draft	draft		
 exe	0x005bdb60	ai_Unk5bdb60	lc	draft	draft		
 exe	0x005be1d0	ai_AmountRowStatus	lc	draft	draft		
