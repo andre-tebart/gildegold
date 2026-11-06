@@ -26169,19 +26169,21 @@ void he_AllocEventGood(int ev)
 }
 
 void he_GiveDomizilGood(AICHAR *per);     /* 0x575430 */
-void he_Unk575540(char *per);       /* 0x575540 */
-void he_Unk575570(char *per);       /* 0x575570 */
+void he_EventGoodMoney(char *per);       /* 0x575540 */
+void he_EventGoodRefund(char *per);       /* 0x575570 */
 
-/* 0x5753a0, the run of the event 0xa4: -2 / -1 free, also without the figure +0xc (0x505df0); a random 0x42ec20 picks: above
-   0x5eb828 0x575430 (per), above 0x5eb7b8 0x575540 (per), else 0x575570 (per); then free */
+/* 0x5753a0, the run of the event 0xa4: -2 / -1 free, also without the character +0xc (gm_FindChar); a random draw picks
+   the good outcome above 0.8 (he_GiveDomizilGood), the money one above 0.4 (he_EventGoodMoney), else the refund
+   (he_EventGoodRefund); then free */
 void he_RunEventGood(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
     char *per;
     float r;
     int state;
 
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
-    state = HM_I(ev, 0x70);
+    per = (char *)gm_FindChar(e->netId);
+    state = e->stage;
     if (state == -1 || state == -2) {
         he_FreeEvent((int *)ev);
         return;
@@ -26194,9 +26196,9 @@ void he_RunEventGood(int ev)
     if (r > (0.800000012f))
         he_GiveDomizilGood((AICHAR *)per);
     else if (r > (0.400000006f))
-        he_Unk575540(per);
+        he_EventGoodMoney(per);
     else
-        he_Unk575570(per);
+        he_EventGoodRefund(per);
     he_FreeEvent((int *)ev);
 }
 /* 0x575430, the good outcome of the event 0xa4 (he_RunEventGood): a Domizil good of the ranks 3 .. 6
@@ -26225,16 +26227,16 @@ void he_GiveDomizilGood(AICHAR *per)
         cm_SendExSellObject(per->netId, -1, want[0], 1, ai_OwnPlayer, 0);
     }
 }
-/* 0x575540, the middle outcome of the event 0xa4: per +4 is charged 3 + random (4) (0x50cc50) */
+/* 0x575540, the middle outcome of the event 0xa4: the character +4 is credited 3 + random (4) money (gm_SendMoneyDelta) */
 
-void he_Unk575540(char *per)
+void he_EventGoodMoney(char *per)
 {
     gm_SendMoneyDelta(HM_I(per, 4), (util_Random(4) & 0xffff) + 3);
 }
-/* 0x575570, the low outcome of the event 0xa4: per +4 pays (0x4c4830) the amount 0x5089c0 (0x2b7, 0x6f1bc5) times
-   (2 * random (0x42ec20) + 0x5eb780) */
+/* 0x575570, the low outcome of the event 0xa4: the character +4 is credited the price of good 0x2b7 (gm_GoodsPrice)
+   times (2 * random + 1) (cm_SendMoveGoodsUnchecked) */
 
-void he_Unk575570(char *per)
+void he_EventGoodRefund(char *per)
 {
     float f;
 
