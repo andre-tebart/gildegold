@@ -1067,7 +1067,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad058[4];
     unsigned int relatives[8];     /* 0x05c, the netIds of the character's relatives (ai_char.h AICHAR.relatives;
                                       the baptism window converts [3..7] with the player) */
-    char pad07c[0xe8];
+    char pad07c[4];
+    unsigned char skills[5];       /* 0x080, the five skill values (ai_char.h AICHAR.skills; the personnel book shows
+                                      [3] and [2] as bars) */
+    char pad085[0xdf];
     unsigned char jobId;           /* 0x164, the character's job (ai_char.h AICHAR.jobId; the construction window's group 7
                                       needs 0x34 .. 0x39) */
     unsigned char title;           /* 0x165, the title rank (ai_char.h AICHAR.title; text 0x20d / 0x230 + it) */
@@ -1078,7 +1081,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad16a[2];
     struct AIBLD *bld;             /* 0x16c, the building the character is in (ai_char.h AICHAR.bld) */
     int bld2;                      /* 0x170, the character's own building, 0 when none (ai_char.h AICHAR.bld2) */
-    char pad174[4];
+    int v174;                      /* 0x174, 0 when hired (ai_char.h AICHAR.v174); the personnel book shows it with
+                                      the texts 0x1a39 / 0x1a3a */
     int inventory;                 /* 0x178, the character's goods inventory, an object list (ai_char.h AICHAR.inventory) */
     struct AIJOB *job;             /* 0x17c, the job the character works in, 0 = none (ai_char.h AICHAR.job) */
     char pad180[4];
@@ -1166,9 +1170,12 @@ typedef struct LCSEARCHWORDS {     /* the search message 0x14's words at AIMSG +
 typedef struct AIBTYPE {           /* the building-type record fields this unit reads (ai_bld.h AIBTYPE); the size
                                       matters: ai_BTypes is walked by the record */
     unsigned char buildingClass;   /* 0x00, the building class the goods groups test (4, 0x13, 0x10 in
-                                      ai_GoodFitsBuilding; the record's kind byte of ai_Unk5aa1f0) */
+                                      ai_GoodFitsBuilding; the record's kind byte of ai_FillPersonnelRow) */
     char name[0x21];               /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (lc_GebaeudeAusrichten) */
-    char pad022[0x221];
+    char pad022[0x20d];
+    unsigned char title;           /* 0x22f, the title rank of the type's first job (ai_bld.h AIBTYPE.title) */
+    unsigned char title2;          /* 0x230, the title rank of the type's second job (ai_bld.h AIBTYPE.title2) */
+    char pad231[0x12];
     int v243;                      /* 0x243, a value the type's tooltip shows (ai_bld.h AIBTYPE.v243; the build
                                       confirmation text 0x17ef shows it too) */
     unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
@@ -16150,64 +16157,6 @@ void ai_Unk5aa0d0(int param_1, int param_2, int *param_3)
         param_3[0x10 + i] = -1;
     }
 }
-/* 0x5aa1f0, the info panel of a building (700 B): the kind record 0x7e3f30 + the byte of the record at +0x16c of
-   param_1 * 0x24d; the title text +0x18c (0x4731d0), a text of the record 0x770b80 + 0x6f25b8 * 0x21c (0x5143d0)
-   into the +5 control, the slider 0x46a960 at +4, the record param_2 (x, y, the character at +2, the window +0x16):
-   the byte +0x164 of param_1 suppresses the status text, the int +0x174 is compared with the religion / race bytes
-   +0x22f / +0x230 of the kind record (the texts 0x1a39 / 0x1a3a / 0x1a3b / 0x1a3c); with param_3 two lines
-   0x52eaa0 (the bytes +0x83 / +0x82) and the slider 0x475cb0 = the opinion 0x50c520 in percent */
-
-void ai_Unk5aa1f0(int param_1, int *param_2, int param_3)
-{
-    char text[128];
-    int kind;
-    int ch;
-    int v;
-    int id;
-
-    kind = U_I((unsigned)&ai_BTypes) + *(unsigned char *)U_I(param_1 + 0x16c) * 0x24d;
-    d2_SetForm(param_2[0x16], 3);
-    id = d2_WinOpenPic((short)U_W(param_1) + 2, (short)param_2[1], U_I(param_1 + 0x18c), U_I((unsigned)&d2_LastWindow));
-    param_2[7] = id;
-    io_CharacterName(U_W(param_1), 1, 1, text);
-    d2_SetObjText(param_2[5], text);
-    U_I((unsigned)&d2_Objs + 0x5c + param_2[5] * 0x2ec) = 1;
-    U_W((unsigned)&d2_Objs + 0x14 + param_2[5] * 0x2ec) = 0xa0;
-    id = d2_WinOpenSlider(param_2[0] - 8, param_2[1] + 0x32, 0x40, 0, 100, 0x75, 0x42, U_I((unsigned)&d2_LastWindow));
-    param_2[4] = id;
-    U_I((unsigned)&d2_Objs + 0x3c + id * 0x2ec) = 1;
-    *(unsigned char *)((char *)param_2 + 0x20) = 1;
-    U_I((unsigned)&d2_Objs + 0x2e8 + param_2[3] * 0x2ec) = param_1;
-    v = U_I(param_1 + 0x174);
-    ch = param_2[2];
-    if (*(unsigned char *)(param_1 + 0x164) == 0) {
-        if (v == 0) {
-            if (*(unsigned char *)(ch + 0x165) == *(unsigned char *)(kind + 0x230))
-                txt_Format(text, "%s", 0x1a3b);
-            else if (*(unsigned char *)(ch + 0x165) == *(unsigned char *)(kind + 0x22f))
-                txt_Format(text, "%s", 0x1a3c);
-        } else if (*(unsigned char *)(ch + 0x165) == *(unsigned char *)(kind + 0x230)) {
-            txt_Format(text, (char *)(unsigned)"%i %s", v, 0x1a39);
-        } else if (*(unsigned char *)(ch + 0x165) == *(unsigned char *)(kind + 0x22f)) {
-            txt_Format(text, (char *)(unsigned)"%i %s", v, 0x1a3a);
-        }
-        d2_SetObjText(param_2[6], text);
-        U_I((unsigned)&d2_Objs + 0x5c + param_2[6] * 0x2ec) = 1;
-        U_W((unsigned)&d2_Objs + 0x14 + param_2[6] * 0x2ec) = 0xa0;
-    }
-    if (param_3 != 0) {
-        sv_ValueBar(param_2[0], param_2[1] + 100, *(unsigned char *)(param_1 + 0x83), 0x4df);
-        sv_ValueBar(param_2[0], param_2[1] + 0x74, *(unsigned char *)(param_1 + 0x82), 0x4df);
-    }
-    if (param_2[4] != -1) {
-        v = gm_Opinion(U_W((unsigned)&ai_PlayerId), *(unsigned short *)param_2[2]);
-        d2_SetObjValue(param_2[4], 0, 100, (int)((v + 128.0) * 100.0 * (1.0 / 255.0)));
-    }
-}
-
-void d2_RemoveObj(); int gm_BuildingCarts(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
-void d2_SetObjFont(); void d2_SetCaption(); void sv_SelectPanelObject(unsigned char *o, int b, char *c);
-
 #pragma pack(push, 1)
 typedef struct G9DOMIZILROW {           /* a row of the Domizil personnel book: 0x5aa0d0 creates its controls,
                                            0x5aa1f0 / 0x5aa520 fill them, ai_DomizilFreeRow frees them */
@@ -16228,6 +16177,74 @@ typedef struct G9DOMIZILROW {           /* a row of the Domizil personnel book: 
     int view;                           /* 0x58, the view (d2_CurrentView, 0x5aa0d0) */
 } G9DOMIZILROW;
 #pragma pack(pop)
+
+/* 0x5aa1f0, fills the personnel book row row with the worker ch (700 B): the worker's portrait (+0x18c) as the
+   icon, its name in the first text control, the opinion slider; a worker without a job (jobId 0) gets the status
+   line by the owner's title against the building type's two job titles (AIBTYPE.title2 / title): with v174 the
+   texts 0x1a39 / 0x1a3a after it, else 0x1a3b / 0x1a3c; with bars the skills [3] / [2] as value bars; the slider
+   shows the player's opinion of the owner (gm_Opinion, -128 .. 127 as 0 .. 100)
+   @deep Read whole against the original (219 instructions): the type record by the worker's building kind
+   (AIBTYPE.title / title2 at 0x22f / 0x230), the portrait icon, the name text (centred, width 0xa0), the
+   opinion slider (click-disabled), the row state, the picture's user record, the status line (v174 with
+   0x1a39 / 0x1a3a by '%i %s', else 0x1a3b / 0x1a3c by '%s', only for a jobless worker, tested v first then
+   jobId as the original), the two skill bars (skills[3] / skills[2]) and the gm_Opinion slider value;
+   every other instruction is identical. Remaining (fpu 1 + M10 at +0x291): the slider value (v + 128.0) *
+   100.0 * (1.0 / 255.0) - our VC6 folds the two constants into one fmul 0.392 in every spelling tried (/
+   255.0, / 255, * (1.0 / 255), 100.0 * (..), the call inline, long double constants); the original
+   multiplies by 100.0 and then by the pooled 1/255 (0x5ee0e0, which gv_LeasePrice and
+   ai_PersonnelBookWindow share). (references: M10 at +0x291: our constant 0.39215686274509803
+   (__real@3fd9191919191919) where the original's field refers to 100.0 at 0x5eba38, explained: the M10 is
+   one constant folded: VC6 folds our 100.0 * (1.0 / 255.0) into 0.392 (100/255) where the original keeps
+   the two multiplies (fmul 100.0; fmul 1/255); the value computed is the same opinion percentage) */
+
+void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
+{
+    char text[128];
+    AIBTYPE *bt;
+    int v;
+
+    bt = &((AIBTYPE *)ai_BTypes)[ch->bld->kind];
+    d2_SetForm(row->view, 3);
+    row->icon = d2_WinOpenPic((short)row->x + 2, (short)row->y, ch->picture, d2_LastWindow);
+    io_CharacterName(ch->id, 1, 1, text);
+    d2_SetObjText(row->text, text);
+    d2_Objs[row->text].centred = 1;
+    d2_Objs[row->text].w = 0xa0;
+    row->slider = d2_WinOpenSlider(row->x - 8, row->y + 0x32, 0x40, 0, 100, 0x75, 0x42, d2_LastWindow);
+    d2_Objs[row->slider].clickDisabled = 1;
+    row->state = 1;
+    d2_Objs[row->pic].user = ch;
+    v = ch->v174;
+    if (v != 0 && ch->jobId == 0) {
+        if (((AICHARREC *)row->ch)->title == bt->title2)
+            txt_Format(text, "%i %s", v, 0x1a39);
+        else if (((AICHARREC *)row->ch)->title == bt->title)
+            txt_Format(text, "%i %s", v, 0x1a3a);
+        d2_SetObjText(row->name, text);
+        d2_Objs[row->name].centred = 1;
+        d2_Objs[row->name].w = 0xa0;
+    } else if (ch->jobId == 0) {
+        if (((AICHARREC *)row->ch)->title == bt->title2)
+            txt_Format(text, "%s", 0x1a3b);
+        else if (((AICHARREC *)row->ch)->title == bt->title)
+            txt_Format(text, "%s", 0x1a3c);
+        d2_SetObjText(row->name, text);
+        d2_Objs[row->name].centred = 1;
+        d2_Objs[row->name].w = 0xa0;
+    }
+    if (bars != 0) {
+        sv_ValueBar(row->x, row->y + 100, ch->skills[3], 0x4df);
+        sv_ValueBar(row->x, row->y + 0x74, ch->skills[2], 0x4df);
+    }
+    if (row->slider != -1) {
+        v = gm_Opinion(ai_PlayerId, ((AICHARREC *)row->ch)->id);
+        d2_SetObjValue(row->slider, 0, 100, (int)((v + 128.0) * 100.0 * (1.0 / 255.0)));
+    }
+}
+
+void d2_RemoveObj(); int gm_BuildingCarts(); int gm_HeadIconNumber(); int gm_ObjectBuilding(int y);
+void d2_SetObjFont(); void d2_SetCaption(); void sv_SelectPanelObject(unsigned char *o, int b, char *c);
+
 
 /* 0x5aa4b0, frees the controls of a Domizil row (106 B): the character's icon (+0x1c) and the slider (+0x10), then
    both six-control entry arrays (+0x28 .. +0x57), each set to -1; the book window's free path calls it */
