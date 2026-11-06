@@ -2059,15 +2059,16 @@ void cm_SendScriptMessage(void *p)
     memcpy(m.data, p, 0x14);
     cm_QueueSend(&m);
 }
-/* 0x4c5d80, message 0x54 (three ints of p) */
+/* 0x4c5d80, message 0x54 (three ints of p, a G17TABLEMSG); returns the slot cm_QueueSend gives it (ai_StammtischJoinWindow
+   waits on it with cm_GetSlotState) */
 
-void cm_SendTableRequest(int *p)
+int cm_SendTableRequest(int *p)
 {
     G17MSG m;
 
     m.type = 0x54;
     *(G17B12 *)m.data = *(G17B12 *)p;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5dc0, message 0x55: the command cmd of the fighter slot f of the current fight, with the position and rotation
    of the fighter c's body and its health; for an attack (2) also the target's current health

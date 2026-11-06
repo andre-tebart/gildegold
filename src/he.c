@@ -1771,7 +1771,7 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 char *gm_Query(void *list, int n, ...);
 void cm_BeginGroup(const char *s);
 void cm_EndGroup(const char *s);
-void cm_SendTableRequest(int *p);
+int cm_SendTableRequest(int *p);
 void cm_SendScriptMessage(void *p);
 int sprintf(char *buf, const char *fmt, ...);
 void mem_Free(void *p);

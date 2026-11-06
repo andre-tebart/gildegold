@@ -921,7 +921,7 @@ void cm_SendSetJob(int id, int job);                                      /* 0x4
 void gm_SendMoneyDelta(int a, int b);                                      /* 0x50cc50, unk_48e070.h: int id */
 int ai_ExecuteChangeProfession(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49f7f0 */
 int ai_DecideStammtisch(int a, G5CH *p, int f, AIARG *o1, AIARG *o2);                  /* 0x49f850 */
-void cm_SendTableRequest(int *p);                                                  /* 0x4c5d80 */
+int cm_SendTableRequest(int *p);                                                  /* 0x4c5d80 */
 int ai_ExecuteStammtisch(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x49fb80 */
 int amt_ExecutePriceMessage(char *c, int *m);                                           /* 0x4e9660 */
 int ai_ExecutePriceManipulation(G5CH *p, AIARG *s1, AIARG *s2);                                /* 0x4a0040 */

@@ -266,7 +266,7 @@ int cm_SendCutEntry(int a, void *p);                                            
 int cm_SendCutEntryUpdate(int a, void *p);                                               /* 0x4c5ca0 */
 void cm_SendDamage(int a, int b, int c);                                          /* 0x4c5d00 */
 void cm_SendScriptMessage(void *p);                                                      /* 0x4c5d40 */
-void cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
+int cm_SendTableRequest(int *p);                                                       /* 0x4c5d80 */
 int cm_SendFightCommand(struct AICHAR *c, int cmd, CMFIGHTSLOT *f);                             /* 0x4c5dc0 */
 void cm_SendMessage56(void *p);                                                      /* 0x4c5e80 */
 void cm_SendChrDelete(int a);                                                        /* 0x4c5ec0 */

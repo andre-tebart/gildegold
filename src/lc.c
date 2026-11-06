@@ -7548,59 +7548,55 @@ void ai_StammtischWindow(AIBLD *bld, AIOBJ *table)
     } while (sv_RunFrame((int)ai_StammtischWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-void cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
+int cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 
 
-/* 0x598dc0, the regulars' table with the join button (1152 B): as 0x598b80 (the window
-   "locations\Wirtshaus_Stammtisch", the four character slots param_2 + 0x1c, the records of 0xe ints redrawn by
-   0x5be1d0 / 0x5be3b0); the mode local: 1 = the player sits at the table (0x1890), 2 = full (0x1892), 3 = free
-   (0x189f / 0x188f + the join button), 4 = the player's own table elsewhere (0x1891); the join click 0 on the
-   button posts the "stammtisch_join_H_Plr" message (0x4c4540 / 0x4c5d80 / 0x4c4580 / 0x4c3ae0) and the text
-   0x189e / 0x189f; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
-void ai_StammtischJoinWindow(int param_1, int param_2)
+/* 0x598dc0, the regulars' table window "locations\Wirtshaus\Stammtisch" of another player's tavern, with the join
+   button: the seats are packed into the amount rows as in ai_StammtischWindow; the mode: 1 the player sits at
+   this table (0x1890 and the button), 2 the table is full (0x1892), 3 a seat is free (0x188f and the join
+   button), 4 the player sits at a table of another tavern (kind 0x37, 0x1891). A click on the join button sends
+   the 'join' request (cm_SendTableRequest in the group "stammtisch join H-Plr"), waits for its slot and shows
+   0x189e (taken) or 0x189f with the building. The frames are pumped with ai_StammtischWindow's callback */
+
+void ai_StammtischJoinWindow(AIBLD *bld, AIOBJ *table)
 {
-    int chars[0x38];
-    int win;
-    int n;
-    int i;
-    int changed;
-    int c;
-    int w;
-    int margin;
     int mode;
     int ctl;
-    int b;
-    int it;
+    int win;
+    int n;
+    int changed;
+    int *seat;
+    G17TABLEMSG msg;
+    LCAMOUNTROW rows[4];
+    int i;
+    int gap;
+    int off;
     int h;
-    int *p;
-    int *q;
-    int msg[3];
-    char text[0x200];
+    AICHARREC *c;
+    AIBLD *b;
+    AIOBJ *t;
 
-    memset(chars, 0, sizeof(chars));
-    mode = -1;
+    memset(rows, 0, sizeof(rows));
     ctl = -1;
-    win = d2_OpenForm(0, 0, "locations\\Wirtshaus_Stammtisch");
+    win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\Stammtisch");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
     do {
+        mode = 0;
         n = 0;
         changed = 0;
-        mode = 0;
-        p = chars;
-        q = (int *)(param_2 + 0x1c);
-        for (i = 0; i < 4; i++, q++) {
-            c = gm_FindChar(*q);
-            if (c != *p)
+        seat = table->seats;
+        for (i = 0; i < 4; i++, seat++) {
+            c = (AICHARREC *)gm_FindChar(*seat);
+            if (c != rows[n].rec)
                 changed = 1;
             if (c != 0) {
-                *p = c;
+                rows[n].rec = c;
                 n++;
-                p += 0xe;
-                if (*(int *)(c + 4) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87))
+                if (c->netId == ((AICHARREC *)ai_Chars)[ai_PlayerId].netId)
                     mode = 1;
             }
         }
@@ -7610,12 +7606,11 @@ void ai_StammtischJoinWindow(int param_1, int param_2)
         } else if (n < 4) {
             if (mode == 0) {
                 mode = 3;
-                for (it = gm_BuildQuery(1, 0, 0x37); it != 0; it = gm_BuildNext()) {
-                    b = gm_Query(*(int *)(it + 0x5d), 2, 6, 0, 0x12d);
-                    if (b != 0) {
+                for (b = (AIBLD *)gm_BuildQuery(1, 0, 0x37); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                    t = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x12d);
+                    if (t != 0) {
                         for (i = 0; i < 4; i++) {
-                            if (*(int *)(b + 0x1c + i * 4) ==
-                                U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87)) {
+                            if (t->seats[i] == ((AICHARREC *)ai_Chars)[ai_PlayerId].netId) {
                                 mode = 4;
                                 break;
                             }
@@ -7623,66 +7618,65 @@ void ai_StammtischJoinWindow(int param_1, int param_2)
                     }
                 }
             }
-            p = chars + n * 0xe;
-            for (i = 4 - n; i != 0; i--, p += 0xe)
-                *p = 0;
+            for (i = n; i < 4; i++)
+                rows[i].rec = 0;
         }
         if (changed) {
             d2_SetForm(win, 1);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            io_PrintText(0x188c, param_1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            io_PrintText((char *)0x188c, bld);
             if (n == 0) {
-                io_PrintText(0x188e);
+                io_PrintText((char *)0x188e);
             } else {
-                margin = *(short *)((unsigned)&he_Events + 0x119b0);
-                w = (int)d2_LastWindowPtr->w + margin * -2;
+                gap = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) / 3;
+                off = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) % 3 / 2;
                 for (i = 0; i < n; i++) {
-                    p = chars + i * 0xe;
-                    p[0xc] = 1;
-                    p[4] = ((i % 2) + 1) * (w / 3) - 10 + (w % 3) / 2 + (margin + 10) * (i % 2);
-                    p[5] = (i / 2) * 0x82 + 100;
-                    ai_AmountRowStatus(p);
-                    ai_AmountRow(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
+                    rows[i].x = (i % 2 + 1) * gap - 10 + off + (d2_Pics[0x5da].w + 10) * (i % 2);
+                    rows[i].x30 = 1;
+                    rows[i].y = i / 2 * 0x82 + 100;
+                    ai_AmountRowStatus(&rows[i]);
+                    ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
                 }
             }
             d2_SetForm(win, 2);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            io_PrintText((char *)(unsigned)"$C");
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            io_PrintText("$C");
             ctl = -1;
-            if (mode == 2) {
-                io_PrintText(0x1892);
-            } else if (mode == 4) {
-                io_PrintText(0x1891);
-            } else if (mode == 3) {
-                ctl = d2_GetWinObj(win, 2, io_PrintText(0x188f));
-            } else if (mode == 1) {
-                ctl = d2_GetWinObj(win, 2, io_PrintText(0x1890));
-            }
+            if (mode == 2)
+                io_PrintText((char *)0x1892);
+            else if (mode == 4)
+                io_PrintText((char *)0x1891);
+            else if (mode == 3)
+                ctl = d2_GetWinObj(win, 2, io_PrintText((char *)0x188f));
+            else if (mode == 1)
+                ctl = d2_GetWinObj(win, 2, io_PrintText((char *)0x1890));
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
-            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == ctl && mode == 3) {
-                memset(text, 0, 0x200);
-                if (U_I((unsigned)&d2_ClickedId) == 0) {
-                    msg[0] = 0x6a6f696e;
-                    msg[1] = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                    msg[2] = U_I(param_1 + 1);
-                    cm_BeginGroup("stammtisch_join_H_Plr");
-                    h = ((int (*)(int))cm_SendTableRequest)(msg);
-                    cm_EndGroup("stammtisch_join_H_Plr");
-                    b = cm_GetSlotState(h);
-                    while (b == 0) {
-                        sv_RunFrame(0, 0x20007);
-                        b = cm_GetSlotState(h);
-                    }
-                    txt_Format(text, b == 1 ? 0x189e : 0x189f, param_1);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1 && d2_PointerObj == ctl && mode == 3) {
+            char text[0x200] = "";
+
+            if (d2_ClickedId == 0) {
+                msg.op = 0x6a6f696e;    /* 'join' */
+                msg.charId = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                msg.bldId = bld->id;
+                cm_BeginGroup("stammtisch join H-Plr");
+                h = cm_SendTableRequest((int *)&msg);
+                cm_EndGroup("stammtisch join H-Plr");
+                i = cm_GetSlotState(h);
+                while (i == 0) {
+                    sv_RunFrame(0, 0x20007);
+                    i = cm_GetSlotState(h);
                 }
-                if (text[0] != 0)
-                    sv_MessageBox(text, 0);
+                if (i == 1)
+                    txt_Format(text, 0x189e, bld);
+                else
+                    txt_Format(text, 0x189f, bld);
             }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
+            if (text[0] != 0)
+                sv_MessageBox(text, 0);
         }
-    } while (sv_RunFrame(ai_StammtischJoinWindow, 0x677c7) != 0);
+    } while (sv_RunFrame((int)ai_StammtischWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
 
@@ -7705,7 +7699,7 @@ void ai_OpenStammtisch(AIBLD *bld, AIOBJ *room)
                 sv_CameraFollow();
                 return;
             }
-            ai_StammtischJoinWindow((int)bld, rec);
+            ai_StammtischJoinWindow(bld, (AIOBJ *)rec);
         }
     }
     sv_CameraFollow();
