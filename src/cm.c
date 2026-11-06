@@ -6,7 +6,9 @@
    and the cutscenes (cut_, 0x4d8c70..: trial, duel, execution, wedding, auction, ...; joined: the strings run
    monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
    Names are ours.
-   The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type; the scene
+   The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type; the amt and
+   gv payloads (AMTAPP, AMTMSG, GVDECMSG) are their types headers' (amt_types.h, gv_types.h), which cm_types.h includes
+   for the union. The scene
    callbacks registered by cm_InitScenes (cm_RunDuel, cm_RunExecution, cm_RunWedding, cm_RunBirth, cm_RunDeath,
    cm_RunBankruptcy, cm_RunAuction, their checks and member callbacks) read the party record G28REC; the auction's
    member callbacks (cm_AuctionAskPlayer / cm_AuctionAskAI) read its state CMAUCTION.
