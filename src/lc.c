@@ -20213,25 +20213,26 @@ void ai_ClearAmountTabs(void)
         p[0] = 0;
     }
 }
-/* 0x5c08d0, the slider percents of a record list (144 B): for every 0xe-dword record with a character and a
-   slider (+8) the relation 0x50c550 is set, 0 when one of the kinds 6 / 7 meets another one */
+/* 0x5c08d0, the liking sliders of the special-amount list (144 B): for every row (0xe dwords: the character
+   at +0, the slider at +8) whose character and slider exist the slider is set to gm_Liking(me's id, the row
+   character's id, 1), 0 when me and the row character are both of the kinds 6 / 7; me is the player's
+   character, the rows of one tab */
 
-void ai_Unk5c08d0(short *param_1, int param_2, int *param_3)
+void ai_AmountLikingRows(AICHARREC *me, unsigned count, int *rows)
 {
-    short *chr;
+    AICHARREC *chr;
 
-    if (param_1 == 0 || *param_1 == -1)
+    if (me == 0 || me->id == 0xffff)
         return;
-    for (; param_2 != 0; param_2--) {
-        chr = (short *)*param_3;
-        if (chr != 0 && *chr != -1 && param_3[2] != -1) {
-            if (((char)param_1[1] == 6 || (char)param_1[1] == 7) &&
-                ((char)chr[1] == 6 || (char)chr[1] == 7))
-                d2_SetObjValue(param_3[2], 0, 100, 0);
+    for (; count > 0; count--) {
+        chr = (AICHARREC *)*rows;
+        if (chr != 0 && chr->id != 0xffff && rows[2] != -1) {
+            if ((me->kind == 6 || me->kind == 7) && (chr->kind == 6 || chr->kind == 7))
+                d2_SetObjValue(rows[2], 0, 100, 0);
             else
-                d2_SetObjValue(param_3[2], 0, 100, (int)gm_Liking(*param_1, *chr, 1));
+                d2_SetObjValue(rows[2], 0, 100, (int)gm_Liking(me->id, chr->id, 1));
         }
-        param_3 += 0xe;
+        rows += 0xe;
     }
 }
 /* 0x5c0970, the tabbed special-amount list window ("special_amt3" 0x62d214, 1984 B, ROUGH SKELETON): the
