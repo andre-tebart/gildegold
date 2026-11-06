@@ -3,7 +3,7 @@
    contact listeners and the map picks of the kontor / thieves' guild / church / guild-hall scenes read their
    plate texts through the txt_views.h slots (ai_ContactText*) or their txt_Ptrs text id and the building record
    as AIBLD (id, owner, mainRoom, objList, object); the character record view AICHARREC names id, kind, netId,
-   f01c, ailments, b00c (the faith, reasoned), officeKind, appliedOffice, secondOffice, donated and powerFlags. The
+   f01c, ailments, faith, officeKind, appliedOffice, secondOffice, donated and powerFlags. The
    guild-hall windows are the guild master's powers (amt_CanUseMayorPower2 / 3, amt_MayorBonusStep): the price
    message (level 1), the gift message through a map pick (level 2), and by the second office the character request
    (0x1e) or the amount-kind menus (0x1f / 0x21, 0x20) that send the district request {4, column} (level 3). The money
@@ -1062,9 +1062,9 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned char health;          /* 0x008 */
     unsigned char sex;             /* 0x009, 0 / non-0 (ai_char.h AICHAR.sex; it picks the male / female name table) */
     char pad00a[0x2];
-    unsigned char b00c;            /* 0x00c, a kind the person tooltip names (ai_char.h AICHAR.b00c); the church
-                                      donation reaches the characters whose b00c is the church owner's (reasoned:
-                                      the faith) */
+    unsigned char faith;           /* 0x00c, the faith, 0 / 1 (ai_char.h AICHAR.b00c): the baptism window sets it to
+                                      1 - it (or to the church owner's) and names it by the text 0x197a + it; the
+                                      church donation reaches the characters of the owner's faith */
     unsigned char b00d;            /* 0x00d, 1 .. 2 (ai_char.h AICHAR.b00d, gv.c copies it to the grave's v30) */
     char pad00e[0xe];
     float f01c;                    /* 0x01c, the life value (ai_char.h AICHAR.f01c: 1000.0 at creation, aged
@@ -1078,7 +1078,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad050[4];
     int ref54;                     /* 0x054, a reference word the related characters share (ai_char.h AICHAR.ref54;
                                       the game frame compares it with the player's) */
-    char pad058[0x10c];
+    char pad058[4];
+    unsigned int relatives[8];     /* 0x05c, the netIds of the character's relatives (ai_char.h AICHAR.relatives;
+                                      the baptism window converts [3..7] with the player) */
+    char pad07c[0xe8];
     unsigned char jobId;           /* 0x164, the character's job (ai_char.h AICHAR.jobId; the construction window's group 7
                                       needs 0x34 .. 0x39) */
     char pad165;
@@ -11680,7 +11683,7 @@ int sv_RunFrame(int cb, unsigned mask); void d2_CloseView(int view); void sv_Cam
    whose goods value is below it gets the text 0x1987, else the text 0x1988 with an amount slider (from the least
    donation up to ai_AmountLimit of the goods value) and the give / cancel buttons (text 0x1989). Give moves the
    amount (gm_PlayerFactor) into the box when sv_CheckGoodAmount allows it, raises the owner's relation to the player
-   by amount * 255 / the worth total and every other character of the owner's faith (b00c) by a fifth of that, and
+   by amount * 255 / the worth total and every other character of the owner's faith by a fifth of that, and
    shows the texts 0x1986 / 0x198a; the window closes on give, cancel or a right click */
 
 void ai_DonationWindow(AIBLD *bld)
@@ -11752,7 +11755,7 @@ void ai_DonationWindow(AIBLD *bld)
                     for (i = 0; i < 0x300; i++) {
                         if (i != ai_PlayerId && ((AICHARREC *)ai_Chars)[i].netId != -1 &&
                             ((AICHARREC *)ai_Chars)[i].netId != ((AICHARREC *)ai_Chars)[bld->owner].netId &&
-                            ((AICHARREC *)ai_Chars)[bld->owner].b00c == ((AICHARREC *)ai_Chars)[i].b00c)
+                            ((AICHARREC *)ai_Chars)[bld->owner].faith == ((AICHARREC *)ai_Chars)[i].faith)
                             cm_SendRelations(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ((AICHARREC *)ai_Chars)[i].netId,
                                              (int)rel, 1);
                     }
@@ -11868,152 +11871,131 @@ void ai_IndulgenceWindow(AIBLD *bld, int room)
 
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); short * gm_FindChar(int id); int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);
 
-/* 0x5a23a0, the baptism window "Locations_Kirche_Taufe" (1360 B, ROUGH): the player's slot record
-   (0x770b80 + slot * 0x21c) and the fee (int)(0x50a640 (the slot) * 0.01f); param_1 the building record
-   (+0x27 the owner slot; 0xffff closes it). The player's own building: the fee * 0xf, the window 0x4741f0 /
-   0x476f80 / 0x475600 / 0x475f70 / 0x52ea30 (the screen 0x6ed938), the text 0x1976 (the record word, the fee,
-   0x197b - religion + 2 past the year 0x770ae0 >= 0x75), 0x1977 and the two buttons 0x475b80 (2); a click
-   (0x5fe710) with 0x521040 (the record, the fee, the city) confirms: 0x4c4830 (-1, the id, 0, the fee),
-   0x4c3ba0 / 0x4c3c00 (1, 1, 0xc, &1 - religion) / 0x4c49a0 for the record and its items +3 .. +7 (0x505df0),
-   the text 0x1978 and the message 0x53dda0 (every other record of the kinds 6 / 7 at +2, 0x5fe), then the text
-   0x1979 and 0x521150 (buf, 0). Another owner of another religion: the text 0x1971 (0x197a + the owner's
-   religion), 0x1972 and its buttons; the click pays 0x4c4830 (the owner id, the id, 0, the fee) and sends 0x1974
-   / 0x53dda0 (0x5ff) for the kinds 6 / 7, then 0x1973 and 0x521150. The same religion: only the text 0x1970.
-   The pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 / 0x52d7a0. ROUGH: the button slots and the frame
-   overlaps are from the disassembly, not checked */
-void ai_BaptismWindow(int param_1, int param_2)
+/* 0x5a23a0, the baptism window "Locations\Kirche\Taufe" of the church bld: the fee is a hundredth of the
+   player's worth (gm_GetWorth). In the player's own church the fee is fifteen times that: the text 0x1976 (the
+   player, the fee, the other faith's name 0x197a + 1 - faith, + 2 from the year 0x75 on) and the buttons 0x1977;
+   converting (when sv_CheckGoodAmount allows it) pays the fee, flips the faith of the player and of the
+   relatives [3..7] (gm_FindChar), shows the news 0x1978 (the player, bld, the faith's name) to every other
+   character of the kinds 6 / 7 (he_ShowNews 0x5fe) and the text 0x1979. In a church of another faith the text
+   0x1971 (the owner's faith) and the buttons 0x1972; converting pays the fee to the owner, takes the owner's
+   faith, sends the owner of the kinds 6 / 7 the news 0x1974 (0x5ff) and shows the text 0x1973. In a church of
+   the player's faith only the text 0x1970 */
+void ai_BaptismWindow(AIBLD *bld, int room)
 {
-    int slot = U_W((unsigned)&ai_PlayerId);
-    char *per = (char *)(unsigned)&ai_Chars + slot * 0x21c;
-    char *own;
+    AICHARREC *me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    AICHARREC *owner;
+    AICHARREC *c;
+    AICHARREC *rel;
     int price;
     int win;
-    int btn1;
-    int btn2;
-    int year;
-    int id;
-    int r;
+    int textId;
+    int convertBtn;
+    int cancelBtn;
+    int faith;
     int i;
-    int v;
-    unsigned short owner;
     char buf[0x200];
 
-    price = (int)(gm_GetWorth(slot) * 0.01f);
-    if (param_1 == 0)
+    price = (int)(gm_GetWorth(ai_PlayerId) * 0.01f);
+    if (bld == 0 || bld->owner == 0xffff)
         return;
-    owner = U_W(param_1 + 0x27);
-    if (owner == 0xffff)
-        return;
-    if (owner == slot) {
-        price *= 0xf;
-        win = d2_OpenForm(0, 0, "Locations_Kirche_Taufe");
+    if (bld->owner == ai_PlayerId) {
+        price *= 15;
+        win = d2_OpenForm(0, 0, "Locations\\Kirche\\Taufe");
         d2_SetPointerSprite(0, 0);
         d2_CentreViewWindows(win);
         d2_SetForm(win, 0);
-        sv_FitForm(U_I((unsigned)&d2_LastWindow));
+        sv_FitForm(d2_LastWindow);
         d2_SetForm(win, 1);
-        year = U_I((unsigned)&ai_Time) >= 0x75 ? 2 : 0;
-        io_PrintText(0x1976, U_W(per), price,
-                     0x197b - *(unsigned char *)(per + 0xc) + year);
+        io_PrintText(0x1976, me->id, price, (ai_Time.year >= 0x75 ? 0x197c : 0x197a) - me->faith + 1);
         d2_SetForm(win, 2);
-        v = io_PrintText(0x1977);
-        btn1 = d2_GetWinObj(win, 2, v);
-        btn2 = d2_GetWinObj(win, 2, v + 1);
-        U_I((unsigned)&d2_ClickedId) = -1;
-        for (;;) {
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == btn1) {
-                    if (sv_CheckGoodAmount(per, price, U_I((unsigned)&ai_OwnPlayer)) != 0) {
-                        v = 1 - *(unsigned char *)(per + 0xc);
-                        cm_SendMoveGoodsUnchecked(-1, U_I(per + 4), 0, price);
-                        cm_BeginFieldBlock(per, U_I(per + 4));
-                        cm_AddFieldDelta(1, 1, 0xc, &v);
+        textId = io_PrintText(0x1977);
+        convertBtn = d2_GetWinObj(win, 2, textId);
+        cancelBtn = d2_GetWinObj(win, 2, textId + 1);
+        d2_ClickedId = -1;
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == convertBtn) {
+                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+                        faith = 1 - me->faith;
+                        cm_SendMoveGoodsUnchecked(-1, me->netId, 0, price);
+                        cm_BeginFieldBlock((char *)me, me->netId);
+                        cm_AddFieldDelta(1, 1, 0xc, &faith);
                         cm_SendFieldDeltas();
-                        for (i = 3; i < 8; i++) {
-                            id = U_I(((unsigned)&ai_CharSex + 0x53) + slot * 0x21c + i * 4);
-                            if (id != -1 && (r = gm_FindChar(id)) != 0) {
-                                cm_BeginFieldBlock((char *)r, U_I(r + 4));
-                                cm_AddFieldDelta(1, 1, 0xc, &v);
+                        for (i = 3; i <= 7; i++) {
+                            if (((AICHARREC *)ai_Chars)[ai_PlayerId].relatives[i] != -1 &&
+                                (rel = (AICHARREC *)gm_FindChar(((AICHARREC *)ai_Chars)[ai_PlayerId].relatives[i])) != 0) {
+                                cm_BeginFieldBlock((char *)rel, rel->netId);
+                                cm_AddFieldDelta(1, 1, 0xc, &faith);
                                 cm_SendFieldDeltas();
                             }
                         }
-                        txt_Format(buf, 0x1978, U_W(per), param_1,
-                                     0x197a + v + (U_I((unsigned)&ai_Time) >= 0x75 ? 2 : 0));
-                        for (i = 0; i < 0x300; i++) {
-                            id = U_I((unsigned)&ai_CharInts + i * 0x21c);
-                            if (id != U_I(per + 4) &&
-                                (*(unsigned char *)(((unsigned)&ai_Chars + 0x2) + i * 0x21c) == 6 ||
-                                 *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + i * 0x21c) == 7))
-                                he_ShowNews(id, -1, buf, 0, 0x5fe, 0);
+                        txt_Format(buf, 0x1978, me->id, bld, (ai_Time.year >= 0x75 ? 0x197c : 0x197a) + faith);
+                        for (i = 0; i < 768; i++) {
+                            c = &((AICHARREC *)ai_Chars)[i];
+                            if (c->netId != me->netId && (c->kind == 6 || c->kind == 7))
+                                he_ShowNews(c->netId, -1, buf, 0, 0x5fe, 0);
                         }
-                        txt_Format(buf, 0x1979,
-                                     0x197a + v + (U_I((unsigned)&ai_Time) >= 0x75 ? 2 : 0));
+                        txt_Format(buf, 0x1979, (ai_Time.year >= 0x75 ? 0x197c : 0x197a) + faith);
                         sv_MessageBox(buf, 0);
-                        U_I((unsigned)&sv_PopRequest) = 1;
+                        sv_PopRequest = 1;
                     }
-                } else if (U_I((unsigned)&d2_PointerObj) == btn2) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                } else if (d2_PointerObj == cancelBtn) {
+                    sv_PopRequest = 1;
                 }
             }
-            if (sv_RunFrame(ai_BaptismWindow, 0x677c7) == 0)
-                break;
-        }
+        } while (sv_RunFrame(ai_BaptismWindow, 0x677c7) != 0);
         d2_CloseView(win);
         sv_CameraFollow();
         return;
     }
-    own = (char *)(unsigned)&ai_Chars + owner * 0x21c;
-    if (*(unsigned char *)(own + 0xc) != *(unsigned char *)(per + 0xc)) {
-        win = d2_OpenForm(0, 0, "Locations_Kirche_Taufe");
-        d2_SetPointerSprite(0, 0);
-        d2_CentreViewWindows(win);
-        d2_SetForm(win, 0);
-        sv_FitForm(U_I((unsigned)&d2_LastWindow));
-        d2_SetForm(win, 1);
-        year = U_I((unsigned)&ai_Time) >= 0x75 ? 2 : 0;
-        io_PrintText(0x1971, U_W(per), price,
-                     0x197a + *(unsigned char *)(own + 0xc) + year);
-        d2_SetForm(win, 2);
-        v = io_PrintText(0x1972);
-        btn1 = d2_GetWinObj(win, 2, v);
-        btn2 = d2_GetWinObj(win, 2, v + 1);
-        U_I((unsigned)&d2_ClickedId) = -1;
-        for (;;) {
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == btn1) {
-                    if (sv_CheckGoodAmount(per, price, U_I((unsigned)&ai_OwnPlayer)) != 0) {
-                        v = *(unsigned char *)(own + 0xc);
-                        cm_SendMoveGoodsUnchecked(U_I(own + 4), U_I(per + 4), 0, price);
-                        cm_BeginFieldBlock(per, U_I(per + 4));
-                        cm_AddFieldDelta(1, 1, 0xc, &v);
-                        cm_SendFieldDeltas();
-                        if (*(unsigned char *)(own + 2) == 6 ||
-                            *(unsigned char *)(own + 2) == 7) {
-                            txt_Format(buf, 0x1974, U_W(per), price);
-                            he_ShowNews(U_I(own + 4), -1, buf, 0, 0x5ff, 0);
-                        }
-                        txt_Format(buf, 0x1973,
-                                     0x197a + *(unsigned char *)(own + 0xc) + year);
-                        sv_MessageBox(buf, 0);
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                    }
-                } else if (U_I((unsigned)&d2_PointerObj) == btn2) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                }
-            }
-            if (sv_RunFrame(ai_BaptismWindow, 0x677c7) == 0)
-                break;
-        }
-        d2_CloseView(win);
-        sv_CameraFollow();
+    owner = &((AICHARREC *)ai_Chars)[bld->owner];
+    if (owner == 0)
+        return;
+    if (owner->faith == me->faith) {
+        txt_Format(buf, 0x1970);
+        sv_MessageBox(buf, 0);
         return;
     }
-    txt_Format(buf, 0x1970);
-    sv_MessageBox(buf, 0);
+    win = d2_OpenForm(0, 0, "Locations\\Kirche\\Taufe");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(win, 1);
+    io_PrintText(0x1971, me->id, price, (ai_Time.year >= 0x75 ? 0x197c : 0x197a) + owner->faith);
+    d2_SetForm(win, 2);
+    textId = io_PrintText(0x1972);
+    convertBtn = d2_GetWinObj(win, 2, textId);
+    cancelBtn = d2_GetWinObj(win, 2, textId + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == convertBtn) {
+                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+                    faith = owner->faith;
+                    cm_SendMoveGoodsUnchecked(owner->netId, me->netId, 0, price);
+                    cm_BeginFieldBlock((char *)me, me->netId);
+                    cm_AddFieldDelta(1, 1, 0xc, &faith);
+                    cm_SendFieldDeltas();
+                    if (owner->kind == 6 || owner->kind == 7) {
+                        txt_Format(buf, 0x1974, me->id, price);
+                        he_ShowNews(owner->netId, -1, buf, 0, 0x5ff, 0);
+                    }
+                    txt_Format(buf, 0x1973, (ai_Time.year >= 0x75 ? 0x197c : 0x197a) + owner->faith);
+                    sv_MessageBox(buf, 0);
+                    sv_PopRequest = 1;
+                }
+            } else if (d2_PointerObj == cancelBtn) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame(ai_BaptismWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 
 void gm_DonationTop5(unsigned *ids, int *sc); int ai_AmountRowStatus(); int ai_DrawAmountRow(); void ai_LeftAlignedText();
