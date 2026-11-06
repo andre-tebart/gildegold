@@ -1248,10 +1248,10 @@ void cm_SendMakeGoods(int a, short b, int c)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.make.objId = a;
     m.type = 0x12;
-    G17_S(m, 4) = b;
-    G17_I(m, 6) = c;
+    m.make.item = b;
+    m.make.runs = c;
     cm_QueueSend(&m);
 }
 /* 0x4c4920, message 0x13 */
