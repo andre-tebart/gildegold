@@ -313,7 +313,7 @@ int cm_ExCreateBuilding(G17MSG *m, G17STAT *s);                                 
 int cm_ExCreateCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6bf0, handler of 0xb */
 int cm_ExCreateNamedCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6cd0, handler of 0xc */
 int cm_ExTakeOverCharacter(G17MSG *m, G17STAT *s);                                         /* 0x4c6e10, handler of 0xd */
-int ai_Unk4c6ec0(G17MSG *m, G17STAT *s);                                         /* 0x4c6ec0, handler of 0xe */
+int cm_ExDeleteObject(G17MSG *m, G17STAT *s);                                         /* 0x4c6ec0, handler of 0xe */
 int ai_Unk4c6f60(G17MSG *m, G17STAT *s);                                         /* 0x4c6f60, handler of 0xf */
 int ai_Unk4c7010(G17MSG *m, G17STAT *s);                                         /* 0x4c7010, handler of 0x10 */
 int cm_ExSellObjekt(G17MSG *m, G17STAT *s);                                         /* 0x4c70b0, handler of 0x11, "cm_ExSellObjekt" */
