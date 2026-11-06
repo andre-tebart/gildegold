@@ -1947,14 +1947,14 @@ void cm_SendSpawnCharacter(unsigned char a, int b, int c, unsigned char d, unsig
 {
     G17MSG m;
 
-    m.data[4] = a;
-    G17_I(m, 0xb) = c;
-    G17_I(m, 7) = b;
-    m.data[0xf] = d;
-    m.data[0x11] = f;
+    m.spawn.kind = a;
+    m.spawn.objId = c;
+    m.spawn.bldId = b;
+    m.spawn.job = d;
+    m.spawn.item = f;
     m.type = 0x49;
-    m.data[0x10] = e;
-    strcpy((char *)&m.data[0x16], s);
+    m.spawn.title = e;
+    strcpy(m.spawn.text, s);
     cm_QueueSend(&m);
 }
 /* 0x4c5a70, message 0x4a */
