@@ -22762,7 +22762,7 @@ void cm_SendKillCharacter(int a, int b); /* 0x4c4e00 */
 void cm_SendChrStop(int a); /* 0x4c5230 */
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out);   /* 0x4a63f0 (am.h); the 7-dword callers go through AI_4A63F0_7 */
 int he_SecretRoomAccuse();                 /* 0x56f1b0 */
-int he_Unk56f260();                 /* 0x56f260 */
+int he_FindMeetingSlot();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
 int he_SecretRoomAttack();                 /* 0x56f2e0 */
 int he_NoEvent9bFor();                 /* 0x56f3b0 */
@@ -23089,25 +23089,25 @@ int he_EventOnBuilding(int owner)
     }
     return 0;
 }
-/* 0x56f1b0, a meeting message when the slot he_Unk56f260 (c + 3) is free and (0x504ec0 (a, 4) - 0x504ec0 (b, 4) * 0.5f) + 0x42ec20 () >= 1.0: 0x4f2e30 (slot, 1, b + 4, a + 4, the id +1 of the record at b + 0x170 / +0x16c, else -1); 0 when not sent */
+/* 0x56f1b0, a meeting message when the slot he_FindMeetingSlot (c + 3) is free and (0x504ec0 (a, 4) - 0x504ec0 (b, 4) * 0.5f) + 0x42ec20 () >= 1.0: 0x4f2e30 (slot, 1, b + 4, a + 4, the id +1 of the record at b + 0x170 / +0x16c, else -1); 0 when not sent */
 
-int he_SecretRoomAccuse(int a, int b, int c)
+int he_SecretRoomAccuse(AICHAR *a, AICHAR *b, int c)
 {
     float fa, fb;
-    int slot = he_Unk56f260(c);
+    int slot = he_FindMeetingSlot(c);
     int id;
 
     if (slot >= 0) {
-        fa = gm_GetSkill(a, 4);
-        fb = gm_GetSkill(b, 4);
-        if (fa - fb * 0.5f + util_RandomF() >= 1.0f) {
-            if (*(int *)(b + 0x170) != 0)
-                id = *(int *)(*(int *)(b + 0x170) + 1);
-            else if (*(int *)(b + 0x16c) != 0)
-                id = *(int *)(*(int *)(b + 0x16c) + 1);
+        fa = gm_GetSkill((char *)a, 4);
+        fb = gm_GetSkill((char *)b, 4);
+        if (fa - fb * 0.5f + util_RandomF() >= ai_FloatOne) {
+            if (b->bld2 != 0)
+                id = b->bld2->id;
+            else if (b->bld != 0)
+                id = b->bld->id;
             else
                 id = -1;
-            gv_Accuse(slot, 1, *(int *)(b + 4), *(int *)(a + 4), id);
+            gv_Accuse(slot, 1, b->netId, a->netId, id);
             return 1;
         }
     }
@@ -23115,7 +23115,7 @@ int he_SecretRoomAccuse(int a, int b, int c)
 }
 /* 0x56f260, the first free meeting slot of 0x1d (two rounds from a random start): the record 0x4f2720 (slot) has +0x18 == 1, +1 == 2 and +0xc == the wanted id `c` + 3 (one more each round); -1 when none */
 
-int he_Unk56f260(int c)
+int he_FindMeetingSlot(int c)
 {
     char rec[0x24];
     int want = c + 3;
