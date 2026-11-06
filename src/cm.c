@@ -1605,14 +1605,14 @@ void cm_RequestChrMoveToUniverse(int netId, int bldId, int objId, const char *na
         err_Message("cm_RequestChrMoveToUniverse(): dummyname is too long...");
     cm_QueueSend(&m);
 }
-/* 0x4c5230, sends message 0x31: its handler (0x4c9c10) stops the actions of the person "sp_<a>" */
+/* 0x4c5230, sends message 0x31: its handler (0x4c9c10) stops the actions of the person "sp_<charId>" */
 
-void cm_SendChrStop(int a)
+void cm_SendChrStop(int charId)
 {
     G17MSG m;
 
     m.type = 0x31;
-    G17_I(m, 0) = a;
+    m.stop.charId = charId;
     cm_QueueSend(&m);
 }
 /* 0x4c5260, message 0x33 */
