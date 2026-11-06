@@ -582,7 +582,7 @@ typedef struct HEHERBS {                /* the herb gathering event 20's words o
                                            (cm_SendChrGotoBuilding's objId, the news' quick jump) */
     int field;                          /* 0xb4, the id of the nearest building of type 0xb they gather at */
 } HEHERBS;
-typedef struct HEHUNT {                 /* the animal hunt event 21's words over AIJOB's union (he_Unk5584d0 /
+typedef struct HEHUNT {                 /* the animal hunt event 21's words over AIJOB's union (he_AllocAnimalHunt /
                                            he_RunAnimalHunt); the hunters' netIds are AIJOB.ids[] */
     char pad00[0xac];
     unsigned char n;                    /* 0xac, the hunters in AIJOB.ids[] */
@@ -13493,21 +13493,26 @@ void he_RunHerbGathering(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x5584d0, the allocation handler of the group events: the +0xac persons (ids from +0x8c) that exist are sent (0x524260 (0, 0, type, ev)), the due clock is the start clock (+0x44) and the event posted 1 later (state kept) */
+/* 0x5584d0, the allocation handler of the animal hunt event 21 (HEHUNT): every hunter id (AIJOB.ids, HEHUNT.n of
+   them) that exists is moved to the event's group (sv_MoveToGroup); the due clock starts as the start clock, one
+   minute later (the stage is kept) */
 
-void he_Unk5584d0(int ev)
+void he_AllocAnimalHunt(int ev)
 {
-    int i, p;
+    AIJOB *e = (AIJOB *)ev;
+    HEHUNT *h = (HEHUNT *)ev;
+    AICHAR *p;
+    int i;
 
-    for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-        p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
+    for (i = 0; i < h->n; i++) {
+        p = (AICHAR *)gm_FindChar(e->ids[i]);
         if (p != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
+            sv_MoveToGroup(0, 0, p->id, (char *)ev);
     }
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 0, 1, 0);
+    e->end = e->start;
+    gm_AddTime(&e->end, 0, 1, 0);
 }
-/* 0x558550, the run handler of the animal hunt event 21 (HEHUNT; allocated by he_Unk5584d0, which gathers the
+/* 0x558550, the run handler of the animal hunt event 21 (HEHUNT; allocated by he_AllocAnimalHunt, which gathers the
    group). Stage 0: every hunter with a building (AICHAR.bld) is sent to its room there ("Getier"); the catch is due
    in 2 units + random 30. Stage 1, once due: with the event's building (AIJOB.from; gone: cancelled) its object
    0xdd (else its main object) is the quick jump and its store object 0x2a (none: cancelled) gets the catch,
@@ -20095,7 +20100,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(20, (void *)he_AllocHerbGathering, (void *)he_RunHerbGathering) != 0)
         return 1;
     sv_RegisterActivity(20, 0, 1, 1280, 174);
-    if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_RunAnimalHunt) != 0)
+    if (he_SetEventHandlers(21, (void *)he_AllocAnimalHunt, (void *)he_RunAnimalHunt) != 0)
         return 1;
     sv_RegisterActivity(21, "Getier", 1, 1280, 174);
     if (he_SetEventHandlers(22, (void *)he_AllocStudy, (void *)he_RunStudy) != 0)
