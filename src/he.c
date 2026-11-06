@@ -24274,13 +24274,14 @@ void he_RunGraveCare(int ev)
         sv_MoveToGroup(0, 0, w->id, 0);
     he_FreeEvent((int *)ev);
 }
-/* 0x571990, the alloc of the event 0x8e: the due clock +0x52 = now + 0x48 hours, state 0 */
-
+/* 0x571990, the alloc of the death-due event 0x8e: the due clock (AIJOB.end) = now + 0x48 hours, stage 0 */
 void he_AllocDeathDue(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    HM_I(ev, 0x70) = 0;
-    gm_AddTime(ev + 0x52, 0x48, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    e->stage = 0;
+    gm_AddTime(&e->end, 0x48, 0, 0);
 }
 /* 0x5719e0, the run handler of the event 0x8e (alloc he_AllocDeathDue: due 72 hours after its start; a reasoned
    guess from what it does: the due day of a pact with death): only at the stages -2 .. 0. The event's character
