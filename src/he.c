@@ -497,7 +497,7 @@ typedef struct HERESEARCH {             /* the research event 0xc's words over A
     char padb0[4];
     int good;                           /* 0xb4, the goods prototype researched (f3gm.c GMJOB.research) */
     int objId;                          /* 0xb8, the objId of the object the order made (the reply's AIOBJ.objId) */
-    char padbc[4];
+    int wbc;                            /* 0xbc, 0 at the allocation (no reader known) */
     int limit;                          /* 0xc0, the rounds waited for that object (0x20) */
     int rounds;                         /* 0xc4, the rounds since the order (one per minute) */
     int slot;                           /* 0xc8, the send slot of the order (cm_SendExSellObjectH) */
@@ -21304,16 +21304,20 @@ wait:
 done:
     he_FreeEvent((int *)ev);
 }
-/* 0x56b380, the alloc of an event record: both clocks (+0x52 / +0x60) = the start clock (+0x44), due now + 1, +0xbc / +0xc0 / +0xc4 = 0 */
+/* 0x56b380, the allocation handler of the research event 0xc (he_RunResearch): both clocks (end and clock60) start
+   at the event's start clock, the end is one minute later, and the order's countdown words (wbc, limit, rounds)
+   are cleared */
 
-void he_Unk56b380(int ev)
+void he_AllocResearch(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    *(int *)(ev + 0xbc) = 0;
-    *(int *)(ev + 0xc0) = 0;
-    *(int *)(ev + 0xc4) = 0;
+    HERESEARCH *r = (HERESEARCH *)ev;
+
+    ev->end = ev->start;
+    ev->clock60 = ev->start;
+    gm_AddTime(&ev->end, 0, 1, 0);
+    r->wbc = 0;
+    r->limit = 0;
+    r->rounds = 0;
 }
 
 void init_HookObject(char *o, unsigned short *p, int kind);
@@ -22141,7 +22145,7 @@ int he_RegisterEventTypes03(void)
         return 1;
     if (he_SetEventHandlers(0xb, (void *)he_AllocTrade, (void *)he_RunTrade) != 0)
         return 1;
-    if (he_SetEventHandlers(0xc, (void *)he_Unk56b380, (void *)he_RunResearch) != 0)
+    if (he_SetEventHandlers(0xc, (void *)he_AllocResearch, (void *)he_RunResearch) != 0)
         return 1;
     if (he_SetEventHandlers(0xd, (void *)he_AllocGebaeudeBauen, (void *)he_RunConstruction) != 0)
         return 1;
