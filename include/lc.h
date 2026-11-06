@@ -74,10 +74,15 @@ typedef struct LCPRODSLOT {             /* 0x38 bytes */
     int obj04;                          /* 0x04, -1 at the init (no reader read yet) */
     int x;                              /* 0x08, its place in the grid: (i % 4) * 0x40 + 0x10 */
     int y;                              /* 0x0c, (i / 4) * 0x40 + 0x10 (the second grid + 0xd0) */
-    int check;                          /* 0x10, its check box (a d2 object of type 0x41), -1 = none */
-    int objs14[3];                      /* 0x14, -1 at the init */
-    int reserveButton;                  /* 0x20, the button a click on cycles the goods' reserve (AIOBJ.reserve 0 .. 4), -1 = none */
-    int objs24[2];                      /* 0x24, -1 at the init */
+    int check;                          /* 0x10, the goods' icon: an input icon with the amount to take (type 0x41) where the
+                                           slots take input, else a picture; -1 = none */
+    int label;                          /* 0x14, the side's label picture (0x747 buy / 0x746 sell), -1 = none */
+    int priceText;                      /* 0x18, the sell price text, -1 = none */
+    int buyPriceText;                   /* 0x1c, the buy price text, -1 = none */
+    int slider;                         /* 0x20, the stock bar (amount / reserved of the stock); a click on it cycles the
+                                           goods' reserve (AIOBJ.reserve 0 .. 4), -1 = none */
+    int win;                            /* 0x24, a child window (its parent object moves with the slot), -1 = none */
+    int obj28;                          /* 0x28, -1 at the init (no reader read yet) */
     int reserved;                       /* 0x2c, the stock kept from buyers: the store's stock * AIOBJ.reserve / 4 */
     int amount;                         /* 0x30, the amount in the store (gm_ListAmount) */
     int stock;                          /* 0x34, the store's stock of the goods (gm_ListStock) */

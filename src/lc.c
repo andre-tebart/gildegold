@@ -1082,13 +1082,18 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     char pad05[0x22];
     unsigned short owner;          /* 0x27, the owner's character id */
     unsigned short mainRoom;       /* 0x29, the room the building's panel opens with (ai_bld.h AIBLD.mainRoom) */
-    char pad2b[0x2e];
+    char pad2b[0x1e];
+    float priceFactor;             /* 0x49, the factor on the goods price a trade cart pays here (ai_bld.h AIBLD.priceFactor) */
+    char pad4d[0xc];
     char prodScroll;               /* 0x59, the scroll position of the production window, in rows (ai_ProductionWindow
                                       restores and saves it; ai_bld.h AIBLD.prodScroll) */
     char pad5a[3];
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
     int object;                    /* 0x61, its object in the scene */
-    int victimId;                  /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
+    union {
+        int victimId;              /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
+        int playerSlot;            /* 0x65, of a kind 0x47 building: its player slot (ai_bld.h AIBLD.playerSlot) */
+    };
     char pad69[8];
     int plants;                    /* 0x71, the vegetation map (ai_bld.h AIBLD.plants) */
 } AIBLD;
@@ -1626,7 +1631,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 
 int gm_BuildingClass(); int d2_WinOpenPicStyled(); void d2_SetObjFont(); void d2_SetCaption();
 int gm_ClockSeason(); int ls_GetLanguage(); int d2_CountPointerItems(); void cm_BeginFieldBlock(char *o, int id);
-int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldValues(void); void ai_ShowProdSlot(int param_1, int param_2, int *param_3, int param_4, unsigned char param_5, unsigned char *param_6); void d2_MoveObj(short x, short y, int obj);
+int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldValues(void); void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned char side, AIBLD *bld); void d2_MoveObj(short x, short y, int obj);
 void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_GetObjValue();
 
 /* 0x58cc10, shows the ncols goods columns (ai_ProdColumns) of the production window in the form win / its part form,
@@ -1947,7 +1952,7 @@ int ai_UpdateProdGoodsList(AIBLD *bld, AIOBJ *store)
             any = 1;
     if ((ai_BuildingPerms & 0x200) != 0 && dm_L.lclick != 0 && d2_CountPointerItems() == 0) {
         for (i = 0; i < 16; i++) {
-            if (ai_ProdGoods[i].reserveButton == -1 || ai_ProdGoods[i].reserveButton != d2_PointerObj)
+            if (ai_ProdGoods[i].slider == -1 || ai_ProdGoods[i].slider != d2_PointerObj)
                 continue;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, ai_ProdGoods[i].good);
             if (item == 0)
@@ -1959,7 +1964,7 @@ int ai_UpdateProdGoodsList(AIBLD *bld, AIOBJ *store)
             item->reserve = value;
         }
         for (i = 0; i < 8; i++) {
-            if (ai_ProdGoods2[i].reserveButton == -1 || ai_ProdGoods2[i].reserveButton != d2_PointerObj)
+            if (ai_ProdGoods2[i].slider == -1 || ai_ProdGoods2[i].slider != d2_PointerObj)
                 continue;
             item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, ai_ProdGoods2[i].good);
             if (item == 0)
@@ -2035,7 +2040,7 @@ void ai_LayoutProdGoodsList(int view, int part, int pointer, int bld)
         }
         ai_ProdGoods[k].x = ai_ProdRows[row].x + n * 0x44 - 0x44;
         ai_ProdGoods[k].y = ai_ProdRows[row].y;
-        ai_ShowProdSlot(view, part, (int *)&ai_ProdGoods[k], pointer, 2, (unsigned char *)bld);
+        ai_ShowProdSlot(view, part, &ai_ProdGoods[k], pointer, 2, (AIBLD *)bld);
     }
     d2_SetForm(view, part);
     for (i = 0; i < 2; i++) {
@@ -2060,7 +2065,7 @@ void ai_LayoutProdGoodsList(int view, int part, int pointer, int bld)
         }
         ai_ProdGoods2[k].x = ai_ProdRows2[row].x + n * 0x44 - 0x44;
         ai_ProdGoods2[k].y = ai_ProdRows2[row].y;
-        ai_ShowProdSlot(view, part, (int *)&ai_ProdGoods2[k], pointer, 2, (unsigned char *)bld);
+        ai_ShowProdSlot(view, part, &ai_ProdGoods2[k], pointer, 2, (AIBLD *)bld);
     }
     if (pointer) {
         d2_ClearPointerItems();
@@ -2198,7 +2203,7 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
         }
         q[-1] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
         *q = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
-        ai_ShowProdSlot(param_1, param_2, q - 3, param_3, 3, (unsigned char *)param_4);
+        ai_ShowProdSlot(param_1, param_2, (LCPRODSLOT *)(q - 3), param_3, 3, (AIBLD *)param_4);
         q += 0xe;
     } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38c)));
     if (param_3 != 0) {
@@ -2211,130 +2216,169 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
                 d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
     }
 }
-/* 0x58e6a0, one goods entry of the production window (1936 B, ROUGH): the row param_3 (the id +0, the x / y
-   +8 / +0xc, the state +0x20 / +0x24, the controls +0x10 .. +0x24): a zero id frees the five controls
-   (0x46e710 / 0x472ce0); else the slider 0x46a960 (+0x20) and the icon 0x469ee0 / 0x4731d0 (+0x6, the goods
-   + 0xdf), the two labels 0x4731d0 / 0x473650 (0x746 / 0x747 at +0x3a / +0x49), the amount texts 0x5089c0 /
-  0x508a80 into 0x473650 / 0x4734d0 at +0x40 / +0x49, the carrier 0x53e400 (2, 0, 4 / 3, 3) and the time ratio
-  (+0x1e4), the slider values 0x475cb0 (the available / the max), the text 0x5de652 ("%s (%li) %s" 0x62b098),
-   the control positions 0x46cda0 and the window +0x1c0 = 0x22, +0x1cc = 4, +0x1d0 = 0. ROUGH: the layout
-   offsets are transcribed from the pseudocode */
+int d2_CreateWinText();                                         /* 0x473650: @original the unit's calls at 20167 / 20180 / 20253 pass fewer arguments than d2.h's prototype (ai_ShowProdSlot calls it through d2_CreateWinTextS) */
+#define d2_CreateWinTextS ((int (*)(short, short, char *, int))d2_CreateWinText)  /* @original ai_ShowProdSlot passes 16-bit x / y (mov ax, word ptr / add ax, 0x40; push eax) */
+int d2_WinOpenSlider(int x, int y, int len, int p4, int p5, int pic, unsigned int flags, int win);  /* 0x46a960 (d2.h) */
+int d2_RemoveWindow(int win);                                   /* 0x472ce0 (d2.h) */
 
-void ai_ShowProdSlot(int param_1, int param_2, int *param_3, int param_4, unsigned char param_5, unsigned char *param_6)
+/* 0x58e6a0, shows one goods slot of the production window's grids in the part form of the view: an empty slot
+   (good 0) loses its objects; else it gets its stock bar, its icon (an input icon taking the amount when input is
+   set, its style 0xca with the permission 0x200, else 0x8a; else a plain picture), the side's label (side bit 1:
+   0x747 and the buy price at 0.9 of gm_GoodsPrice, bit 2: 0x746 and the sell price: the market (class 0xa) 1.1
+   times it, else the building's priceFactor; a building of kind 0x47 prices by its player slot), the progress
+   of the building's running job of the goods (job 4 / 3) as the icon's fill, the icon's and the bar's values
+   (the input clamped to the amount, without the permission less the reserved part), the tooltip "%s~ %li %s"
+   (name, amount, unit) and the positions of all its objects in the window
+   @deep rewritten against the original (was ROUGH, 1649 B; now 1931 vs 1936, 637 vs 638 instructions, same
+   calls, no ref differences): the empty slot's clean-up, the stock bar, the icon (input icon style 0xca /
+   0x8a or a picture), the side labels 0x747 / 0x746, the sell price (kind 0x47 by its player slot, the
+   market class 0xa * 1.1, else * priceFactor) and the buy price (* 0.9) through one gm_FormatAmount each,
+   the job progress fill (job 4 / 3), the input clamp and the bar values, the tooltip '%s~ %li %s', the
+   moves. The slot type is LCPRODSLOT (fields named), AIBLD gets priceFactor / playerSlot in this unit's
+   view, d2_CreateWinText's 16-bit call goes through d2_CreateWinTextS. All code hunks read: allocation and
+   scheduling - the d2_Objs base loaded before or after the index arithmetic (0x58ec03 '- lea
+   edx,[eax+eax*2]... mov ecx,[d2_Objs]' / '+ mov edx,[d2_Objs] ... lea eax'), the bar's stock loaded into
+   edi before d2_GetObjValue (0x58eb84 '+ mov edi, [esi+0x34]'), the argument loads of the sprintf
+   (0x58ec5f) and of the moves in another register order (0x58ed57: the aligner pairs the slider move with
+   the buy-price move). */
+void ai_ShowProdSlot(int view, int part, LCPRODSLOT *slot, int input, unsigned char side, AIBLD *bld)
 {
-    char *p;
-    char text[32];
-    int scr;
-    int n;
-    int a;
+    D2WIN *win;
+    AIJOB *job;
+    AIBTYPE *bt;
+    int style;
+    int value;
+    int max;
+    char text[0x20];
 
-    d2_SetForm(param_1, param_2);
-    scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
-    if (param_3[0] == 0) {
-        for (n = 4; n <= 9; n++)
-            if (param_3[n] != -1) {
-                if (n == 9)
-                    d2_RemoveWindow(param_3[n]);
-                else
-                    d2_RemoveObj(param_3[n]);
-                param_3[n] = -1;
+    d2_SetForm(view, part);
+    win = &d2_Wins[d2_Views[view].wins[part]];
+    if (slot->good != 0) {
+        if (slot->slider == -1)
+            slot->slider = d2_WinOpenSlider(slot->x + 6, slot->y, 0x30, 0, 0x64, 0x6a, 0x3d, d2_LastWindow);
+        if (slot->check == -1) {
+            if (input) {
+                style = 0x8a;
+                if ((ai_BuildingPerms & 0x200) != 0)
+                    style = 0xca;
+                slot->check = d2_WinOpenInputIcon(slot->x + 0xf, slot->y + 6, slot->good + 0xdf, style, d2_LastWindow);
+                d2_SetObjFont(slot->check, 0x54);
+            } else {
+                slot->check = d2_WinOpenPic(slot->x + 0xf, slot->y + 6, slot->good + 0xdf, d2_LastWindow);
+                d2_Objs[slot->check].interactive = 1;
             }
-        return;
-    }
-    if (param_3[8] == -1)
-        param_3[8] = d2_WinOpenSlider(param_3[2] + 6, param_3[3], 0x30, 0, 100, 0x6a, 0x3d, U_I((unsigned)&d2_LastWindow));
-    if (param_3[4] == -1) {
-        if (param_4 == 0) {
-            param_3[4] = d2_WinOpenPic((short)param_3[2] + 0xf, (short)param_3[3] + 6, *param_3 + 0xdf,
-                                      U_I((unsigned)&d2_LastWindow));
-            U_I(U_I((unsigned)&d2_Objs) + 0x4c + param_3[4] * 0x2ec) = 1;
+        }
+        if (slot->label == -1) {
+            if (side & 1)
+                slot->label = d2_WinOpenPic(slot->x + 0xf, slot->y + 0x3a, 0x747, d2_LastWindow);
+            else if (side & 2)
+                slot->label = d2_WinOpenPic(slot->x + 0xf, slot->y + 0x3a, 0x746, d2_LastWindow);
+        }
+        if (side & 2) {
+            bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+            gm_FormatAmount((int)(bld->kind == 0x47 ? gm_GoodsPrice(slot->good, (unsigned char)bld->playerSlot)
+                                  : bt->buildingClass == 0xa
+                                      ? gm_GoodsPrice(slot->good, ai_OwnPlayer) * 1.1
+                                      : gm_GoodsPrice(slot->good, ai_OwnPlayer) * bld->priceFactor),
+                            ai_OwnPlayer, text);
+            if (slot->priceText == -1)
+                slot->priceText = d2_CreateWinTextS(slot->x + 0x10, slot->y + 0x40, text, d2_LastWindow);
+            else
+                d2_SetObjText(slot->priceText, text);
+            d2_Objs[slot->priceText].w = 0x2d;
+            d2_Objs[slot->priceText].font = 0x54;
+            d2_Objs[slot->priceText].rightAligned = 1;
+        }
+        if (side & 1) {
+            gm_FormatAmount((int)(bld->kind == 0x47 ? gm_GoodsPrice(slot->good, (unsigned char)bld->playerSlot)
+                                                    : gm_GoodsPrice(slot->good, ai_OwnPlayer) * 0.9),
+                            ai_OwnPlayer, text);
+            if (slot->buyPriceText == -1)
+                slot->buyPriceText = d2_CreateWinTextS(slot->x + 0x10, slot->y + 0x49, text, d2_LastWindow);
+            else
+                d2_SetObjText(slot->buyPriceText, text);
+            d2_Objs[slot->buyPriceText].w = 0x2d;
+            d2_Objs[slot->buyPriceText].font = 0x54;
+            d2_Objs[slot->buyPriceText].rightAligned = 1;
+        }
+        for (job = (AIJOB *)he_FindEvent(2, 0, 4, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
+            if (job->u.w.lo == slot->good)
+                break;
+        if (job == 0)
+            for (job = (AIJOB *)he_FindEvent(2, 0, 3, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
+                if (job->u.w.lo == slot->good)
+                    break;
+        if (job == 0 || (job->words14[0] == 0 && job->words14[1] == 0)) {
+            if (slot->check != -1)
+                d2_Objs[slot->check].fillFraction = 0;
+        } else if (job->kind == 4) {
+            d2_Objs[slot->check].fillFraction = (float)(1.0 - job->prodLeft / job->prodWork);
+        } else if (job->kind == 3) {
+            d2_Objs[slot->check].fillFraction = (float)(1.0 - job->incomeAmount / job->incomeAmountF);
+        }
+        if (input) {
+            value = d2_GetObjValue(slot->check);
+            if (value > slot->amount)
+                value = slot->amount;
+            max = slot->amount;
+            if ((ai_BuildingPerms & 0x200) == 0)
+                max -= slot->reserved;
+            d2_SetObjValue(slot->check, 0, max < 0 ? 0 : max, value);
+            if (slot->amount != 0)
+                d2_Objs[slot->check].greyed = 0;
+            else
+                d2_Objs[slot->check].greyed = 1;
+            value = d2_GetObjValue(slot->check);
+            d2_SetObjValue(slot->slider, 0, slot->stock, slot->amount - (value < 0 ? 0 : value), slot->reserved);
         } else {
-            a = 0x8a;
-            if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0)
-                a = 0xca;
-            param_3[4] = d2_WinOpenInputIcon(param_3[2] + 0xf, param_3[3] + 6, *param_3 + 0xdf, a, U_I((unsigned)&d2_LastWindow));
-            d2_SetObjFont(param_3[4], 0x54);
+            if (slot->amount != 0)
+                d2_Objs[slot->check].greyed = 0;
+            else
+                d2_Objs[slot->check].greyed = 1;
+            d2_SetObjValue(slot->slider, 0, slot->stock, slot->amount, slot->reserved);
+        }
+        d2_Objs[slot->check].style = 0x22;
+        d2_Objs[slot->check].captionX = 4;
+        d2_Objs[slot->check].captionY = 0;
+        sprintf(d2_Objs[slot->check].caption, "%s~ %li %s", txt_ObjectNames[slot->good][0], slot->amount, txt_Ptrs[0x3fe8]);
+        if (slot->check >= 0)
+            d2_MoveObj(win->x + slot->x + 0xf, win->y + slot->y + 6, slot->check);
+        if (slot->label >= 0)
+            d2_MoveObj(win->x + slot->x + 0xf, win->y + slot->y + 0x3a, slot->label);
+        if (slot->priceText >= 0)
+            d2_MoveObj(win->x + slot->x + 0x12, win->y + slot->y + 0x3f, slot->priceText);
+        if (slot->buyPriceText >= 0)
+            d2_MoveObj(win->x + slot->x + 0x12, win->y + slot->y + 0x49, slot->buyPriceText);
+        if (slot->slider >= 0)
+            d2_MoveObj(win->x + slot->x + 6, win->y + slot->y, slot->slider);
+        if (slot->win >= 0)
+            d2_MoveObj(win->x + slot->x + 0xf, win->y + slot->y + 6, d2_Wins[slot->win].parent);
+    } else {
+        if (slot->check != -1) {
+            d2_RemoveObj(slot->check);
+            slot->check = -1;
+        }
+        if (slot->label != -1) {
+            d2_RemoveObj(slot->label);
+            slot->label = -1;
+        }
+        if (slot->priceText != -1) {
+            d2_RemoveObj(slot->priceText);
+            slot->priceText = -1;
+        }
+        if (slot->buyPriceText != -1) {
+            d2_RemoveObj(slot->buyPriceText);
+            slot->buyPriceText = -1;
+        }
+        if (slot->slider != -1) {
+            d2_RemoveObj(slot->slider);
+            slot->slider = -1;
+        }
+        if (slot->win != -1) {
+            d2_RemoveWindow(slot->win);
+            slot->win = -1;
         }
     }
-    if (param_3[5] == -1) {
-        if ((param_5 & 1) != 0)
-            param_3[5] = d2_WinOpenPic((short)param_3[2] + 0xf, (short)param_3[3] + 0x3a, 0x747, U_I((unsigned)&d2_LastWindow));
-        else if ((param_5 & 2) != 0)
-            param_3[5] = d2_WinOpenPic((short)param_3[2] + 0xf, (short)param_3[3] + 0x3a, 0x746, U_I((unsigned)&d2_LastWindow));
-    }
-    if ((param_5 & 2) != 0) {
-        /* the amount text of the carrier's goods (0x5089c0 / 0x508a80) */
-        gm_GoodsPrice(*param_3, param_6[0x65]);
-        ((int (*)(int))gm_FormatAmount)(U_I((unsigned)&ai_OwnPlayer));
-        if (param_3[6] == -1)
-            param_3[6] = d2_CreateWinText((short)param_3[2] + 0x10, (short)param_3[3] + 0x40, text, U_I((unsigned)&d2_LastWindow));
-        else
-            d2_SetObjText(param_3[6], text);
-        *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + param_3[6] * 0x2ec) = 0x2d;
-        *(short *)(U_I((unsigned)&d2_Objs) + 0x74 + param_3[6] * 0x2ec) = 0x54;
-        U_I(U_I((unsigned)&d2_Objs) + 0x60 + param_3[6] * 0x2ec) = 1;
-    }
-    if ((param_5 & 1) != 0) {
-        gm_GoodsPrice(*param_3, *param_6 == 0x47 ? param_6[0x65] : U_I((unsigned)&ai_OwnPlayer));
-        ((int (*)(int))gm_FormatAmount)(U_I((unsigned)&ai_OwnPlayer));
-        if (param_3[7] == -1)
-            param_3[7] = d2_CreateWinText((short)param_3[2] + 0x10, (short)param_3[3] + 0x49, text, U_I((unsigned)&d2_LastWindow));
-        else
-            d2_SetObjText(param_3[7], text);
-        *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + param_3[7] * 0x2ec) = 0x2d;
-        *(short *)(U_I((unsigned)&d2_Objs) + 0x74 + param_3[7] * 0x2ec) = 0x54;
-        U_I(U_I((unsigned)&d2_Objs) + 0x60 + param_3[7] * 0x2ec) = 1;
-    }
-    p = (char *)he_FindEvent(2, 0, 4, 3, U_I(param_6 + 1));
-    while (p != 0 && *(unsigned short *)(p + 0xac) != *param_3)
-        p = (char *)he_NextEvent();
-    if (p == 0) {
-        p = (char *)he_FindEvent(2, 0, 3, 3, U_I(param_6 + 1));
-        while (p != 0 && *(unsigned short *)(p + 0xac) != *param_3)
-            p = (char *)he_NextEvent();
-    }
-    if (p != 0 && (U_I(p + 0x14) != 0 || U_I(p + 0x18) != 0)) {
-        float r;
-
-        if (*p == 4)
-            r = *(float *)(p + 0xb4) / *(float *)(p + 0xb8);
-        else if (*p == 3)
-            r = (float)U_I(p + 0xb0) / *(float *)(p + 0xb4);
-        else
-            r = 0.0f;
-        *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + param_3[4] * 0x2ec) = 1.0f - r;
-    } else if (param_3[4] != -1) {
-        *(int *)(U_I((unsigned)&d2_Objs) + 0x1e4 + param_3[4] * 0x2ec) = 0;
-    }
-    if (param_4 == 0) {
-        U_I(U_I((unsigned)&d2_Objs) + 0x50 + param_3[4] * 0x2ec) = param_3[0xc] == 0;
-        d2_SetObjValue(param_3[8], 0, param_3[0xd], param_3[0xc], param_3[0xb]);
-    } else {
-        d2_SetObjValue(param_3[4], 0, param_3[0xc] - param_3[0xb], param_3[0xc], 0);
-        U_I(U_I((unsigned)&d2_Objs) + 0x50 + param_3[4] * 0x2ec) = param_3[0xc] == 0;
-        d2_SetObjValue(param_3[8], 0, param_3[0xd], param_3[0xc], param_3[0xb]);
-    }
-    U_I(U_I((unsigned)&d2_Objs) + 0x1c0 + param_3[4] * 0x2ec) = 0x22;
-    U_I(U_I((unsigned)&d2_Objs) + 0x1cc + param_3[4] * 0x2ec) = 4;
-    U_I(U_I((unsigned)&d2_Objs) + 0x1d0 + param_3[4] * 0x2ec) = 0;
-    sprintf((char *)(U_I((unsigned)&d2_Objs) + 0xbc + param_3[4] * 0x2ec), (char *)(unsigned)&full_data_62b098,
-                 U_I((unsigned)&txt_ObjectNames + *param_3 * 8), param_3[0xc], U_I((unsigned)&ai_Unk144a160));
-    /* ROUGH: the control positions 0x46cda0 of the icon, the two labels, the two amounts and the slider */
-    n = U_I(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4);
-    a = *(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4 + 2);
-    if (param_3[4] >= 0)
-        d2_MoveObj(n + (short)param_3[2] + 0xf, a + (short)param_3[3] + 6, param_3[4]);
-    if (param_3[5] >= 0)
-        d2_MoveObj(n + (short)param_3[2] + 0xf, a + (short)param_3[3] + 0x3a, param_3[5]);
-    if (param_3[6] >= 0)
-        d2_MoveObj(n + (short)param_3[2] + 0x12, a + (short)param_3[3] + 0x3f, param_3[6]);
-    if (param_3[7] >= 0)
-        d2_MoveObj(n + (short)param_3[2] + 0x12, a + (short)param_3[3] + 0x49, param_3[7]);
-    if (param_3[8] >= 0)
-        d2_MoveObj(n + (short)param_3[2] + 6, a + (short)param_3[3], param_3[8]);
-    if (param_3[9] >= 0)
-        d2_MoveObj(n + (short)param_3[2] + 0xf, a + (short)param_3[3] + 6,
-                     U_I(((unsigned)&ai_Unkf8f13c + 0x250) + param_3[9] * 0x3c4));
 }
 
 char * gm_FindGoods(int p, unsigned id);
@@ -2497,7 +2541,7 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
         }
         q[2] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
         q[3] = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
-        ai_ShowProdSlot(param_1, param_2, q, param_3, side, (unsigned char *)param_4);
+        ai_ShowProdSlot(param_1, param_2, (LCPRODSLOT *)q, param_3, side, (AIBLD *)param_4);
         q += 0xe;
     } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)));
     if (param_3 != 0) {
