@@ -6592,19 +6592,19 @@ char *cm_LobbyFreeRecord()
     }
     return 0;
 }
-/* 0x4cd380, the record with id, else a free one */
+/* 0x4cd380, the lobby record (CMLOBBYPLAYER) with the id, else a free one (cm_LobbyFreeRecord); 0 for id 0 */
 
 char *cm_LobbyRecord(int id)
 {
     int i;
-    char *p;
+    CMLOBBYPLAYER *p;
 
     if (id == 0)
         return 0;
     i = 0;
-    for (p = cm_LobbyRecords; (int)p < (int)(cm_LobbyRecords + 8 * 0x57); p += 0x57) {
-        if (*(int *)p == id)
-            return cm_LobbyRecords + i * 0x57;
+    for (p = cm_LobbyPlayers; (int)p < (int)(cm_LobbyPlayers + 8); p++) {
+        if (p->id == id)
+            return (char *)&cm_LobbyPlayers[i];
         i++;
     }
     return cm_LobbyFreeRecord();
