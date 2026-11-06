@@ -1,8 +1,8 @@
 /* d3_int_io.c -- scene file reader ("d3_int_io:" allocation tag, "rd_object()" in an error message): the object
    tree (0x44abb0) and the floor (0x44b920). Its own TU (see d3_obj.c). The next function,
    d3_LoadScene (0x44be60), calls both. Names are ours except rd_object.
-   Open: rd_object and d3_LoadScene read D3OBJECT fields d3.h does not name yet (0x05c / 0x090 / 0x09c / 0x19c /
-   0x1a0 / 0x200 / 0x214, the D3IO_200 macro); naming them is shared d3.h work.
+   Open: rd_object reads D3OBJECT fields d3.h does not name yet (0x05c / 0x090 / 0x09c / 0x19c / 0x1a0 / 0x200 /
+   0x214, the D3IO_200 macro); naming them is shared d3.h work.
    unit of rea 8cef7d5b (src/game/d3_int_io.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
