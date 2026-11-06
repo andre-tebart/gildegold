@@ -51,6 +51,7 @@ struct D3SKYLAYER; struct D3SKY; struct D3SKYLAYER *d3sky_CreateLayer(struct D3S
 extern OPTIONBYTES ai_GfxFloor;
 extern OPTIONBYTES ai_GfxFog;  /* 0x6f35cc, menu.c: the fog option byte */
 extern char cm_CutInfos[16][0x35c];
+extern char gm_TagTmp[4];  /* 0x60c1ec, f3gm.c: the "tmp" allocation tag (mem_Alloc; f3gm.h is not included here) */
 #define GAPDATA __declspec(align(1)) unsigned char
 
 /* full rebuild: the symbols whose original addresses the code above spells literally */
@@ -1370,9 +1371,9 @@ int cm_SendLongMessageText(char *msg, unsigned int len, void *extra)
     char *buf;
 
     m.type = 0x1c;
-    if (gm_FindChar(*(int *)(msg + 8)) == 0)
+    if (gm_FindChar(((AIMSG *)msg)->to) == 0)
         return -1;
-    buf = mem_Alloc(len + 0xf8, "tmp");
+    buf = mem_Alloc(len + 0xf8, gm_TagTmp);
     memcpy(buf, msg, 0xf8);
     memcpy(buf + 0xf8, extra, len);
     cm_SetLongMsg(len + 0xf8, buf);
