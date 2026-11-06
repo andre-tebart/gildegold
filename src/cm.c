@@ -416,9 +416,9 @@ int cm_WaitHello(void)
     m = cm_WaitMessage(3, 0x165);
     if (m == 0)
         return 1;
-    if (*(int *)&m->data[0] != 0xa03ef57c)
+    if (m->hello.magic != 0xa03ef57c)
         return 1;
-    ai_Unk4cd580(*(int *)&m->data[4], *(int *)&m->data[8]);
+    cm_LobbyStart(m->hello.lobbyId, m->hello.value);
     cm_FreeReceived(m);
     return 0;
 }
@@ -6491,7 +6491,7 @@ int cm_LobbyAllReady()
 }
 /* 0x4cd580 */
 
-void ai_Unk4cd580(int a, int b)
+void cm_LobbyStart(int a, int b)
 {
     memset(cm_LobbyList, 0, 0x24);
     memset(ai_Unk9364e0, 0, 0x2b8);
@@ -6518,7 +6518,7 @@ CMLOBBYPLAYER *cm_LobbyMyPlayer()
 {
     return (CMLOBBYPLAYER *)cm_LobbyRecord(ai_Unk9367d0);
 }
-/* 0x4cd600, the lobby state: [0] the lobby is open (ai_Unk4cd580), [1] a lobby message came in (cm_ExLobby) */
+/* 0x4cd600, the lobby state: [0] the lobby is open (cm_LobbyStart), [1] a lobby message came in (cm_ExLobby) */
 
 int *cm_LobbyState()
 {

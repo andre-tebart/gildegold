@@ -497,7 +497,7 @@ G18LOG *ai_Unk4cd480();  /* 0x4cd480 */
 G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
 void cm_LobbyClearChat();  /* 0x4cd500 */
 int cm_LobbyAllReady();  /* 0x4cd510 */
-void ai_Unk4cd580(int a, int b);  /* 0x4cd580 */
+void cm_LobbyStart(int a, int b);  /* 0x4cd580 */
 unsigned int *cm_LobbyPlayerList();  /* 0x4cd5d0 */
 char *cm_LobbyFindPlayer(int id);  /* 0x4cd5e0 */
 CMLOBBYPLAYER *cm_LobbyMyPlayer();  /* 0x4cd5f0 */
