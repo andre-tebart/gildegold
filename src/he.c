@@ -26241,8 +26241,9 @@ void he_EventGoodRefund(AICHAR *per)
 {
     float f;
 
-    f = ((float (*)(int, unsigned char))gm_GoodsPrice)(0x2b7, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(per->netId, -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, (int)((util_RandomF() * 2.0f + *(float *)(unsigned)&ai_FloatOne) * f));
+    f = gm_GoodsPrice(0x2b7, ai_OwnPlayer);
+    cm_SendMoveGoodsUnchecked(per->netId, -1, ai_OwnPlayer,
+                              (int)((util_RandomF() * 2.0f + ai_FloatOne) * f));
 }
 /* 0x5755c0, copies the INI path `s` to 0x6fa0e0 and loads "Game" / "message_filter_mask" from it (GetPrivateProfileIntA) into 0x6f263c */
 
