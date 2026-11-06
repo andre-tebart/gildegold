@@ -96,12 +96,28 @@ void amt_InitTable(void)
 /* 0x4e5e50, the rating of the character a (+0x164 / +0x166 the office rank and party bytes) as seen by b: the float tables 0x5edc90 (15 rows of 10: an int id, 9
    columns) and 0x5edef0 (5 rows, an int status key, 9 columns) by the rank (amt_KindColumn, 1 .. 6) and the status bits +0x1cc (0x400 .. 0x2000, 0x200 give the keys
    0x24 .. 0x27, 0x23); mode (>= 2: plus the absolute value of the entry, >= 3: plus 10.0); with flag the friendship value of amt_GetKind / 0x4f2720 is taken off
-   (a = b's party: added, mode 2: times 0.75) @deep Read whole against the original and fixed: the table ids are compared as ints (mov ecx,[esi] / cmp eax,ecx; the TabA search calls gm_TitleGroup per row and compares it with AMT_BITS), both table searches are for loops with the hit's body inside and a break (a miss leaves r untouched, the old code read the row after the end), a's status test is & 0x3c00 then the 0x200 key (the old 0x3e00 mask came from a merged condition). Left, unchanged by goto / break-then-test / assignment-in-condition variants: VC6 folds our akey (= 0x200 ? 0x23 : 0) into the 0x3c00 test (ours test ah,0x3e / jne, the original test ch,0x3c / jne then and/neg/sbb/and 0x23 stored to [esp+0x54], a's dead home slot), places the TabA hit block after the status chain (je at +0x4f: ours to +0x73, the original's to +0x5f), and keeps r in a frame slot of its own (frame 0x44 vs 0x40; the original keeps r in b's home slot [esp+0x58]) with the key in ecx where the original has eax. */
+   (a = b's party: added, mode 2: times 0.75)
+   @deep Read whole against the original and fixed: the table ids are compared as ints (mov ecx,[esi] / cmp
+   eax,ecx; the TabA search calls gm_TitleGroup per row and compares it with AMT_BITS), both table searches
+   are for loops with the hit's body inside and a break (a miss leaves r untouched, the old code read the
+   row after the end), a's status test is & 0x3c00 then the 0x200 key (the old 0x3e00 mask came from a
+   merged condition), and the flag block's locals are the original's: the AMTKIND at [esp+0x14] with the
+   AIDEC of record 2 right after it at [esp+0x2c] (the old 0x40-byte buffer took the AIDEC at +0x20, ran 4
+   bytes past its end over the return address and crashed; frame now 0x40 like the original). Left,
+   unchanged by goto / break-then-test / assignment-in-condition variants: VC6 folds our akey (= 0x200 ?
+   0x23 : 0) into the 0x3c00 test (ours test ah,0x3e / jne, the original test ch,0x3c / jne then
+   and/neg/sbb/and 0x23 stored to [esp+0x54], a's dead home slot), places the TabA hit block after the
+   status chain (je at +0x4f: ours to +0x73, the original's to +0x5f), keeps r at [esp+0x10] where the
+   original keeps it in b's home slot [esp+0x58], and holds mode / a in other registers (mode in edi vs
+   reloaded from [esp+0x5c], a reloaded where the original keeps it in edi). */
 
 float amt_Rating(char *a, char *b, int mode, int flag)
 {
     float r, fl;
-    char buf[0x40];
+    struct {
+        AMTKIND kind;                   /* b's kind of office (amt_GetKind) */
+        AIDEC dec;                      /* the decision record 2, copied right after it (the original's frame; it is not read) */
+    } rec;
     int k, i, key, akey, n;
     unsigned int f2;
 
@@ -146,9 +162,9 @@ float amt_Rating(char *a, char *b, int mode, int flag)
             r = r + 10.0f;
     }
     if (flag != 0) {
-        amt_GetKind((unsigned char)b[0x166], (AMTKIND *)buf);
-        gv_GetTableRecord(2, buf + 0x20);
-        fl = ((AMTKINDF *)buf)->value;
+        amt_GetKind((unsigned char)b[0x166], &rec.kind);
+        gv_GetTableRecord(2, (int *)&rec.dec);
+        fl = ((AMTKINDF *)&rec.kind)->value;
         if (mode == 2)
             fl = fl * 0.75f;
         if (a[0xc] == b[0xc])

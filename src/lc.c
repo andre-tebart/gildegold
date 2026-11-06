@@ -22677,10 +22677,11 @@ int gv_SetTableRecord(struct AICHAR *c, int i, int v);   /* 0x4f2750 */
    (min, max, current), the state 0x475980 / 0x475e40; a click (0x520f90 (2)) applies 0x4f2750 (the value -
    the current), waits 0x4c3ae0, closes 0x4c5f60 (-2) and reopens the carrier 0x4c4a60 (owner handle, 0x1c8,
    4, the flag). Other types check the bounds and apply the change, return 0 / 0x20 / 0x60 / 0x80. The pump
-   0x5309a0 and the end 0x4758f0. ROUGH: the info record by offset. */
+   0x5309a0 and the end 0x4758f0. The law info is the AIDEC record (the original's [esp+0x24]: +1 the category,
+   +4 / +8 the bounds min / max, +0x18 the current value). */
 int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
 {
-    unsigned char info[16];
+    AIDEC rec;                          /* the law's decision record (0x24 bytes; the old 16-byte buffer took the copy 20 bytes past its end) */
     int ctrls[2];
     int win;
     int owner;
@@ -22689,11 +22690,8 @@ int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers 
     int h;
     int t;
     int v;
-    int i;
     int cat;
     int cur;
-    int minv;
-    int maxv;
     int base;
     int ret;
 
@@ -22716,25 +22714,21 @@ int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers 
     if (*(char *)(param_1 + 2) != 6) {
         if (*(int *)(param_1 + 0x194) < 2)
             return 0x20;
-        if (gv_GetTableRecord(param_2[1], info) == 0)
+        if (gv_GetTableRecord(param_2[1], (int *)&rec) == 0)
             return 0x60;
-        cur = *(int *)(info + 4);
-        minv = *(int *)(info + 8);
-        maxv = *(int *)(info + 0xc);
-        if (param_2[2] == cur || maxv < param_2[2] || param_2[2] < minv)
+        if (param_2[2] == rec.cur || rec.max < param_2[2] || param_2[2] < rec.min)
             return 0x60;
-        gv_SetTableRecord(param_1, info[0], param_2[2]);
+        gv_SetTableRecord(param_1, rec.id, param_2[2]);
         cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffe);
         cm_SendSetField(*(int *)(owner + 4), 0x1c8, 4, flag, 0);
         if (*(char *)(param_1 + 2) != 6)
             return 0;
     }
-    for (i = 0; i < 16; i++)
-        info[i] = 0;
-    if (gv_GetTableRecord(param_2[1], info) == 0)
+    memset(&rec, 0, sizeof(rec));
+    if (gv_GetTableRecord(param_2[1], (int *)&rec) == 0)
         return 0;
-    cat = info[1];
-    cur = *(int *)(info + 4);
+    cat = rec.valueText;
+    cur = rec.cur;
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d518);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
@@ -22744,20 +22738,20 @@ int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers 
     apply = 1;
     switch (cat) {
     case 0:
-        t = io_PrintText(0x13d0, info[0] * 5 + 0x13fd, 0x13d3);
+        t = io_PrintText(0x13d0, rec.id * 5 + 0x13fd, 0x13d3);
         ctrls[0] = d2_GetWinObj(win, 1, t);
         ctrls[1] = d2_GetWinObj(win, 1, t + 1);
-        d2_SetObjValue(ctrls[0], minv, maxv, cur);
+        d2_SetObjValue(ctrls[0], rec.min, rec.max, cur);
         base = 0;
         break;
     case 1:
-        t = io_PrintText(0x13da, info[0] * 5 + 0x13fd, 0x13dd, cur + 0x13dd);
+        t = io_PrintText(0x13da, rec.id * 5 + 0x13fd, 0x13dd, cur + 0x13dd);
         ctrls[0] = d2_GetWinObj(win, 1, t);
         ctrls[1] = d2_GetWinObj(win, 1, t + 1);
         base = 0x13dd;
         break;
     case 2:
-        t = io_PrintText(0x13e3, info[0] * 5 + 0x13fd, info[0] * 5 + 0x13fd, 0x13e7 - cur);
+        t = io_PrintText(0x13e3, rec.id * 5 + 0x13fd, rec.id * 5 + 0x13fd, 0x13e7 - cur);
         ctrls[0] = d2_GetWinObj(win, 1, t);
         ctrls[1] = -1;
         apply = 0;
@@ -22784,12 +22778,12 @@ int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers 
                 if (sv_CheckMoney((char *)param_1, 2) != 0) {
                     if (cat == 2) {
                         v = 1;
-                        base = *(int *)(info + 4);
+                        base = rec.cur;
                     } else {
                         v = d2_GetObjValue(ctrls[0]);
                     }
                     ret = 0x80;
-                    h = ((int (*)(int, int, int))gv_SetTableRecord)(param_1, info[0], v - base);
+                    h = ((int (*)(int, int, int))gv_SetTableRecord)(param_1, rec.id, v - base);
                     if (h != -1) {
                         while (cm_GetSlotState(h) == 0)
                             sv_PumpNet();
