@@ -255,6 +255,7 @@ void ai_BuildTownMap(LCMAPWIN *m);  /* 0x5a6cb0, places the marks of the town ma
 int ai_OpenTownMap(LCMAPWIN *m);  /* 0x5a78a0, opens the town map window */
 void ai_UpdateTownMap(LCMAPWIN *m);  /* 0x5a7cd0, the town map window's per-frame update */
 void ai_CloseMapWindow(int *m_);  /* 0x5a82f0 */
+unsigned char *ai_FindItemGroup(char *good);  /* 0x5a84d0, the item group (am_types.h G7GRP) of a building's kind byte, 0 when none */
 void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3);  /* 0x5a9470 */
 int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2);  /* 0x5c9550 */
 int ai_BlackmailContact(int param_1, int param_2);  /* 0x5c9c50 */

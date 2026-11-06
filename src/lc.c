@@ -14522,7 +14522,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
 int d2_OpenForm(); void d2_PlaceMainWindow(); void d2_RaiseWindow(); int io_PrintText(char *fmt, ...);
 int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, short w, short h, unsigned int flags, int win);
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
-void ai_CharInfoWindow(); int d2_CreatePicObj(); unsigned char *ai_FindItemGroup();
+void ai_CharInfoWindow(); int d2_CreatePicObj();
 
 /* 0x5a78a0, opens the town map window "Misc\Landkarte2" for the record m: the town map bitmap becomes the background
    tile (the old one is kept in m->tile), the map child window (0x4a, 0x4c, 0x206 x 0x164) gets the tiled background,
@@ -14869,39 +14869,36 @@ void ai_FreeSettingChain(G8SETTING *rec)
         ai_FreeSettingChain(rec->next);
     mem_Free(rec);
 }
-/* 0x5a83b0, the goods weights of a record (256 B): the first ten ushort ids of 0x5a84d0 (a character) are added
-   to the seven {id, weight} slots at +0xc (stride 8, the weight 0xe), the weights then adjusted by 1 to sum 100
-   (0x100 / 0x65 per slot) */
+/* 0x5a83b0, the goods weights of the production setting rec of the building bld (256 B): each of the ten goods of
+   the building's item group (ai_FindItemGroup) that no slot holds yet takes the first free slot with the weight
+   14; then the weights of the used slots are stepped by one, slot after slot round the seven, until they sum to
+   100 (a weight stays within 0 .. 100) */
 
-void ai_FillSettingWeights(int param_1, char *tbl)
+void ai_FillSettingWeights(G8BLD *bld, G8SETTING *rec)
 {
-    unsigned short *list;
-    unsigned char *w;
-    int i;
-    int j;
-    int n;
-    int sum;
+    G7GRP *grp;
+    unsigned int sum;
     int count;
-    int slots;
-    int v;
+    int left;
     int step;
     int found;
+    int i;
+    int j;
 
-    list = (unsigned short *)ai_FindItemGroup((char *)param_1);
-    if (list == 0)
+    grp = (G7GRP *)ai_FindItemGroup((char *)bld);
+    if (grp == 0)
         return;
-    list = (unsigned short *)((char *)list + 1);
-    for (n = 0; n < 10; n++) {
-        if (list[n] != 0) {
+    for (i = 0; i < 10; i++) {
+        if (grp->items[i] != 0) {
             found = 0;
             for (j = 0; j < 7; j++)
-                if (*(unsigned int *)(tbl + 0xc + j * 8) == list[n])
+                if (grp->items[i] == rec->slots[j].good)
                     found = 1;
             if (!found) {
                 for (j = 0; j < 7; j++) {
-                    if (*(unsigned int *)(tbl + 0xc + j * 8) == 0) {
-                        *(unsigned int *)(tbl + 0xc + j * 8) = list[n];
-                        *(unsigned char *)(tbl + 0x10 + j * 8) = 0xe;
+                    if (rec->slots[j].good == 0) {
+                        rec->slots[j].good = grp->items[i];
+                        rec->slots[j].weight = 14;
                         break;
                     }
                 }
@@ -14911,31 +14908,27 @@ void ai_FillSettingWeights(int param_1, char *tbl)
     sum = 0;
     count = 0;
     for (j = 0; j < 7; j++) {
-        if (*(unsigned int *)(tbl + 0xc + j * 8) != 0) {
+        if (rec->slots[j].good != 0) {
             count++;
-            sum += *(unsigned char *)(tbl + 0x10 + j * 8);
+            sum += rec->slots[j].weight;
         }
     }
-    if (sum != 100) {
-        if (sum < 100) {
-            step = 1;
-            n = 100 - sum;
-        } else {
-            n = sum - 100;
-            step = -1;
+    if (sum == 100)
+        return;
+    if (sum > 100) {
+        left = sum - 100;
+        step = -1;
+    } else {
+        left = 100 - sum;
+        step = 1;
+    }
+    j = 0;
+    while (left != 0 && count != 0) {
+        if (rec->slots[j].good != 0 && rec->slots[j].weight + step > -1 && rec->slots[j].weight + step < 101) {
+            rec->slots[j].weight += step;
+            left--;
         }
-        j = 0;
-        while (n != 0 && count != 0) {
-            if (*(unsigned int *)(tbl + 0xc + j * 8) != 0) {
-                w = (unsigned char *)(tbl + 0x10 + j * 8);
-                v = (int)*w + step;
-                if (v > -1 && v < 100) {
-                    n--;
-                    *w = (unsigned char)(*w + step);
-                }
-            }
-            j = (j + 1) % 7;
-        }
+        j = (j + 1) % 7;
     }
 }
 /* 0x5a84b0, the production setting of an id (27 B): the chain ai_Settings (0x6f26c0) walked by the next at
@@ -15019,7 +15012,7 @@ void *ai_ProdSetting(int param_1)
         *(int *)rec = *(int *)(param_1 + 1);
         *(int *)(rec + 4) = rand();
         *(float *)(rec + 0x44) = 1.0f;
-        ai_FillSettingWeights(param_1, rec);
+        ai_FillSettingWeights((G8BLD *)param_1, (G8SETTING *)rec);
         *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
         return rec + 0xc;
     }
@@ -15035,7 +15028,7 @@ void *ai_ProdSetting(int param_1)
     *(int *)rec = *(int *)(param_1 + 1);
     *(int *)(rec + 4) = rand();
     *(float *)(rec + 0x44) = 1.0f;
-    ai_FillSettingWeights(param_1, rec);
+    ai_FillSettingWeights((G8BLD *)param_1, (G8SETTING *)rec);
     *(int *)(rec + 0x48) = *(int *)((unsigned)&full_data_6f26c0);
     *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
     return rec + 0xc;
