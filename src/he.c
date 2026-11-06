@@ -25113,19 +25113,19 @@ int he_HasGraveWork(AIBLD *bld, int size, int index)
     return 0;
 }
 
-void he_Unk573280(int ev);          /* 0x573280 */
-void he_Unk5732d0(int ev);          /* 0x5732d0 */
+void he_AllocCouncil(int ev);          /* 0x573280 */
+void he_RunCouncil(int ev);          /* 0x5732d0 */
 
 /* 0x573260, registers the event type 0xa2 (called by 0x53d4b0): the pair (0x573280, 0x5732d0); 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypeA2(void)
 {
-    return he_SetEventHandlers(0xa2, (void *)he_Unk573280, (void *)he_Unk5732d0) != 0;
+    return he_SetEventHandlers(0xa2, (void *)he_AllocCouncil, (void *)he_RunCouncil) != 0;
 }
 /* 0x573280, the alloc of the event 0xa2 (the daily Hanseatic League politics): nothing while paused (+0x78 & 4) or while the
    hour (ai_Time.b) is 0xa or less; else the due clock +0x52 = now + 24 hours (0x4fe140), its hour +0x56 = 0xa, the minute
    +0x58 and the second +0x5c = 0, state 0 */
 
-void he_Unk573280(int ev)
+void he_AllocCouncil(int ev)
 {
     if (HM_B(ev, 0x78) & 4)
         return;
@@ -25148,7 +25148,7 @@ void hmt_Unk4ad580();                 /* 0x4ad580 */
    +0x70 0 .. 4 picks the step, each schedules the next state with 0x4c4c60: 0 hmt_Update and +2 hours, 1 hmt_Begin and
    +2 hours, 2 hmt_Election and the time of day 0x16 (0x4fe1e0), 3 hmt_ClearOffices and the time of day 6:05 with the day +1,
    4 hmt_Unk4ad580 and the time of day 0xa */
-void he_Unk5732d0(int ev)
+void he_RunCouncil(int ev)
 {
     int *c;
 
