@@ -15,11 +15,13 @@
    settings are typed the same way: G8SETTING / G8SLOT / G8SETTAIL and G8BLD (a building's good id, gv.h's ORDBLD).
    The production window's tables are this unit's typed data (lc.h): the goods columns ai_ProdColumns (LCPRODCOL),
    the picked input ai_ProdSelectedInput and the goods grids ai_ProdRows / ai_ProdGoods / ai_ProdRows2 /
-   ai_ProdGoods2 (LCPRODROW / LCPRODSLOT); the member list rows are sv's SVMEMBERROW (sv_types.h, sv_MemberRows).
-   Open: the other users of those tables (ai_InitProductionTables, ai_ProductionGoodsWindow, the resource / transport
-   / storage / equip windows) still read them through byte offsets.
+   ai_ProdGoods2 and the column slots ai_ProdColumnSlots (LCPRODROW / LCPRODSLOT); the member list rows are sv's SVMEMBERROW (sv_types.h, sv_MemberRows).
+   Open: the other users of those tables (ai_InitProductionTables, the transport / storage / equip windows) still
+   read them through byte offsets.
    Open: data: the production settings head 0x6f26c0 (ai_Settings) and the shared float 0x5ebb40 (ai_FloatHundred,
    he.c reads it too) still sit in the full_data / full_rdata gap blocks of main.c.
+   Open: data: 0x5f3418 d3t_BoxCornerIdx, owner di_input or d3_tools (only ai_GameFrame writes it, -1; it lies
+   between di_input's literals and d3_tools' d3t_SunFadeStart, before four corner vectors), named in main.c's gap block.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h

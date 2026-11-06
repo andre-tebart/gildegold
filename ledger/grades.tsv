@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -4145,20 +4145,20 @@ exe	0x0058fd40	ai_ObjectPosition	lc	byte	readable
 exe	0x0058fd90	ai_ObjectAngle	lc	byte	readable		
 exe	0x0058fe10	ai_FindNearestObject	lc	shape	readable		
 exe	0x0058feb0	ai_DropObjectAt	lc	byte	readable		
-exe	0x0058ff00	ai_Unk58ff00	lc	draft	draft		
-exe	0x005909a0	ai_Unk5909a0	lc	draft	draft		
+exe	0x0058ff00	lc_GebaeudeAusrichten	lc	draft	readable	deep	
+exe	0x005909a0	ai_ConstructionWindow	lc	draft	readable	deep	
 exe	0x00591170	ai_HandleMapKey	lc	byte	readable		
-exe	0x005912c0	ai_TradeContactChecks	lc	draft	draft		
+exe	0x005912c0	ai_TradeContactChecks	lc	shape	readable		
 exe	0x00591480	ai_CampaignKey1	lc	draft	readable	deep	
-exe	0x00591520	ai_GameFrame	lc	draft	draft		
+exe	0x00591520	ai_GameFrame	lc	byte	readable		
 exe	0x00591ad0	lc_PlayerInJail	lc	byte	readable		
-exe	0x00591bf0	ai_TechTreeWindow	lc	draft	draft		
+exe	0x00591bf0	ai_TechTreeWindow	lc	draft	readable	deep	
 exe	0x00592230	ai_UpgradeContact	lc	byte	readable		
 exe	0x00592290	ai_BookContact	lc	byte	readable		
 exe	0x00592320	ai_MercenaryBookContact	lc	byte	readable		
-exe	0x005923c0	ai_SearchResourceWindow	lc	draft	draft		
-exe	0x00592b90	ai_ExtractResourceWindow	lc	draft	draft		
-exe	0x00593150	ai_ProductionGoodsWindow	lc	draft	draft		
+exe	0x005923c0	ai_SearchResourceWindow	lc	draft	readable	deep	
+exe	0x00592b90	ai_ExtractResourceWindow	lc	byte	readable		
+exe	0x00593150	ai_ProductionGoodsWindow	lc	draft	readable	deep	
 exe	0x005938c0	ai_MiningContact	lc	byte	readable		
 exe	0x00593960	ai_KontorContact	lc	shape	readable		
 exe	0x00593b00	ai_WoodKontorContact	lc	shape	readable		
@@ -4216,7 +4216,7 @@ exe	0x0059a2c0	ai_Unk59a2c0	lc	draft	draft
 exe	0x0059a3c0	ai_Unk59a3c0	lc	draft	draft		
 exe	0x0059a560	ai_Unk59a560	lc	draft	draft		
 exe	0x0059a710	ai_MarketStandWindow	lc	byte	readable		
-exe	0x0059a800	ai_Unk59a800	lc	draft	draft		
+exe	0x0059a800	ai_MarketStandListener	lc	draft	draft		
 exe	0x0059aae0	ai_WineCellarWindow	lc	draft	draft		
 exe	0x0059ad00	ai_WineCellarContact	lc	byte	readable		
 exe	0x0059ad60	ai_Unk59ad60	lc	draft	draft		
@@ -4240,9 +4240,9 @@ exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable
 exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
 exe	0x0059e170	ai_IsBuildingOpen	lc	draft	draft		
 exe	0x0059e210	ai_Unk59e210	lc	draft	draft		
-exe	0x0059e420	ai_Unk59e420	lc	draft	draft		
-exe	0x0059ee40	ai_Unk59ee40	lc	draft	draft		
-exe	0x0059f410	ai_Unk59f410	lc	draft	draft		
+exe	0x0059e420	ai_EnterBuilding	lc	draft	draft		
+exe	0x0059ee40	ai_EnterOwnBuilding	lc	draft	draft		
+exe	0x0059f410	ai_RunObjectRoom	lc	draft	draft		
 exe	0x0059f9a0	ai_BuyBuildingWindow	lc	draft	draft		
 exe	0x0059fbf0	ai_GuildCashWindow	lc	byte	readable		
 exe	0x0059fca0	ai_TownCashContact	lc	byte	readable		
@@ -4417,7 +4417,7 @@ exe	0x005b6eb0	ai_Unk5b6eb0	lc	draft	draft
 exe	0x005b6fe0	ai_Unk5b6fe0	lc	draft	draft		
 exe	0x005b7690	ai_Unk5b7690	lc	draft	draft		
 exe	0x005b7b80	ai_Unk5b7b80	lc	draft	draft		
-exe	0x005b7dd0	ai_Unk5b7dd0	lc	draft	draft		
+exe	0x005b7dd0	ai_TechEffectsWindow	lc	draft	draft		
 exe	0x005b82a0	ai_Unk5b82a0	lc	draft	draft		
 exe	0x005b84f0	ai_BuildingWindow	lc	draft	draft		
 exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	draft	draft		
@@ -4442,7 +4442,7 @@ exe	0x005bb350	ai_EquipWindow	lc	draft	draft
 exe	0x005bb950	ai_Unk5bb950	lc	draft	draft		
 exe	0x005bba00	ai_TrainingWindow	lc	draft	draft		
 exe	0x005bc0f0	ai_FreePicture	lc	byte	readable		
-exe	0x005bc110	ai_Unk5bc110	lc	draft	draft		
+exe	0x005bc110	ai_ChooseCoatOfArms	lc	draft	draft		
 exe	0x005bc420	ai_Unk5bc420	lc	draft	draft		
 exe	0x005bc6d0	ai_Unk5bc6d0	lc	draft	draft		
 exe	0x005bc790	ai_Unk5bc790	lc	draft	draft		
