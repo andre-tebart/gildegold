@@ -5949,9 +5949,9 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* ai_TextGuildPriceClose: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143fb34: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextGuildPowerPick: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_143fb70: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_143fb98: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_143fbb8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_TextGuildLevel2Pick: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_TextGuildLevel3PowerPick: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_TextGuildLevel3Pick: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextGuildPowerUsed: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143fc78: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_143fda0: view of txt_Ptrs (build/mk_txt_views.py) */

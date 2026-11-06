@@ -6267,7 +6267,8 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
     unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
     int kind;                           /* +0x10, 6 */
     int option14;                       /* +0x14 */
-    int unk18;                          /* +0x18 */
+    int lockSecond;                     /* +0x18, nonzero: ai_AmountMenu leaves its second button (picture 0x599)
+                                           without input (ai_GuildLevel3Entry sets it) */
     unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
     char pad3c[0x10];
     int option4c;                       /* +0x4c, 0x727 / 0x71f */
@@ -11554,48 +11555,39 @@ void ai_GuildLevel3PowerCB(int column)
         }
     }
 }
-/* 0x5a17b0, the guild level 2 / 3 entry (288 B): 0x4e95a0 (the player) == 1 switches on the office byte
-   0x770ce9 + slot * 0x21c: 0x1e opens the request 0x5c1130 (the record {0, 0xc00, +0x10 = 6, +0x18 = 1}, the
-   text 0x143fbb8, the callback 0x5a13f0); 0x1f / 0x21 the window 0x5c1b40 (0x5a1530, the text 0x143fb70, 0);
-   0x20 the window 0x5c1b40 (0x5a1670, the text 0x143fb98, 0); else 0x520f90 (the player, 8) or the text
-   0x143fbd8 when the player does not qualify (0x52d7a0 on every exit) */
+/* 0x5a17b0, the guild master's third power (guild hall level 3): when amt_CanUseMayorPower3 allows it (else
+   ai_TextGuildPowerUsed, or sv_CheckMoney's message for the 8 the player lacks), by the player's second office:
+   0x1e picks a character (ai_AmountMenu, mode 0xc00, kind 6, the prompt ai_TextGuildLevel3Pick) for
+   ai_GuildLevel3RequestCB; 0x1f / 0x21 pick a column (ai_AmountKindMenu) for ai_GuildLevel2RequestCB, 0x20 one for
+   ai_GuildLevel3PowerCB; the camera follows the player again after the menu */
 
 void ai_GuildLevel3Entry(void)
 {
-    int req[20];
-    char *per;
+    AMOUNTCFG cfg;
+    unsigned char office;
     int r;
-    int i;
 
-    per = (char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c;
-    r = amt_CanUseMayorPower3(per);
-    if (r == 1) {
-        if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x1e) {
-            for (i = 0; i < 20; i++)
-                req[i] = 0;
-            req[1] = 0xc00;
-            req[4] = 6;
-            req[6] = 1;
-            ai_AmountMenu(req, (char *)U_I((unsigned)&full_data_143fbb8), 0, (void *)(unsigned)&ai_GuildLevel3RequestCB);
-            sv_CameraFollow();
-            return;
-        }
-        if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x1f ||
-            *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x21) {
-            ai_AmountKindMenu((void *)(unsigned)&ai_GuildLevel2RequestCB, (char *)U_I((unsigned)&full_data_143fb70), 0);
-        } else if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0x20) {
-            ai_AmountKindMenu((void *)(unsigned)&ai_GuildLevel3PowerCB, (char *)U_I((unsigned)&full_data_143fb98), 0);
-            sv_CameraFollow();
-            return;
-        }
-        sv_CameraFollow();
+    r = amt_CanUseMayorPower3((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId]);
+    if (r != 1) {
+        if (r == -1)
+            sv_MessageBox(ai_TextGuildPowerUsed, 0);
+        else
+            sv_CheckMoney((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], 8);
         return;
     }
-    if (r == -1) {
-        sv_MessageBox((char *)U_I((unsigned)&ai_TextGuildPowerUsed), 0);
-        return;
+    office = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice;
+    if (office == 0x1e) {
+        memset(&cfg, 0, sizeof(cfg));
+        cfg.mode = 0xc00;
+        cfg.kind = 6;
+        cfg.lockSecond = 1;
+        ai_AmountMenu(&cfg, ai_TextGuildLevel3Pick, 0, ai_GuildLevel3RequestCB);
+    } else if (office == 0x1f || office == 0x21) {
+        ai_AmountKindMenu(ai_GuildLevel2RequestCB, ai_TextGuildLevel2Pick, 0);
+    } else if (office == 0x20) {
+        ai_AmountKindMenu(ai_GuildLevel3PowerCB, ai_TextGuildLevel3PowerPick, 0);
     }
-    sv_CheckMoney(per, 8);
+    sv_CameraFollow();
 }
 /* 0x5a18d0, the guild level 2 listener, the room 0x137 handler of the enter-building driver (144 B): with the
    guild office power (0x4e94e0, the player) set, the pump 0x5309a0 (0x5a18d0, 0x67fff) looks up the

@@ -209,7 +209,8 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
     unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
     int kind;                           /* +0x10, 6 */
     int option14;                       /* +0x14, 2 in the blood revenge window (meaning not derived) */
-    int unk18;                          /* +0x18 */
+    int lockSecond;                     /* +0x18, nonzero: ai_AmountMenu leaves its second button (picture 0x599)
+                                           without input (ai_GuildLevel3Entry sets it) */
     unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
     char pad3c[0x10];
     int option4c;                       /* +0x4c, 0x727 (the sabotage menu, the graveyard's fog target pick), 0x71f
