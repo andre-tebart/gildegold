@@ -298,7 +298,7 @@ int cm_CheckMoveGoods(G17MSG *m);                                               
 int cm_CheckSellObject(G17MSG *m);                                                     /* 0x4c63e0, check of 0x11 */
 int cm_CheckFieldDeltas(G17MSG *m);                                                     /* 0x4c65b0, check of 0x16 */
 int cm_CheckSetField(G17MSG *m);                                                     /* 0x4c66c0, check of 0x19 */
-int ai_Unk4c6750(G17MSG *m);                                                     /* 0x4c6750, check of 0x38 */
+int cm_CheckOwnership(G17MSG *m);                                                     /* 0x4c6750, check of 0x38 */
 int ai_Unk4c6780(G17MSG *m);                                                     /* 0x4c6780, check of 0x44 */
 int ai_Unk4c67a0(G17MSG *m);                                                     /* 0x4c67a0, check of 0x45 */
 int ai_Unk4c67c0(G17MSG *m);                                                     /* 0x4c67c0, check of 0x53 */
