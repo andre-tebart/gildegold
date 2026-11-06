@@ -8319,14 +8319,14 @@ int ai_GraveRaiseHelper(AIBLD *rec, GVPICK *pick)
 }
 
 int sv_CheckCharacterFlag(int id); char * he_FindEvent(int n, ...); char * he_NextEvent(void); void sv_OpenWindowFrame(int f, int b, int c); void d2_SetCaption();
-void ai_Unk58bbd0(void); int ai_Unk58d720(); void ai_Unk58dd00(int param_1, int param_2, int param_3, int param_4);
+void ai_InitProductionTables(void); int ai_UpdateProdGoodsList(); void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4);
 
 /* 0x584d70, the helpers window of a building (the form "HANDEL\HANDEL_SUCHEN"): rec = the building. Its type
    offers two helper kinds (0x225 / 0x226, of the type kind 0x1f 0x293 / 0x294) and a third (0x227 / 0x295) from
    the type's level 2 on; a character flag ends it at once. The window frame 0x70f / 0x741, the title txt 0x421e
-   (kind 0x1f) / 0x4128, the player bar and the production table (ai_Unk58bbd0), and one picture button per helper
+   (kind 0x1f) / 0x4128, the player bar and the production table (ai_InitProductionTables), and one picture button per helper
    kind (its picture kind + 0xdf, its name the caption) 0x50 apart. Each frame the production lines are redrawn
-   (ai_Unk58d720 with the building's gm_Query record, ai_Unk58dd00), the helpers already on the building's helper
+   (ai_UpdateProdGoodsList with the building's gm_Query record, ai_Unk58dd00), the helpers already on the building's helper
    jobs 0x8c are counted per kind and each button reads the kind's name with the count (txt 0x421f / 0x4220 for
    kind 0x1f, 0x4129 / 0x412a for the others, the name alone without one). A click on a button sends the helper
    job message 0x8c (flags 1, to the owner, the game time, the kind, the first four selected characters) and
@@ -8411,7 +8411,7 @@ void ai_GypsyHelperWindow(AIBLD *rec)
     else
         io_PrintText(0x4128);
     sv_OpenPlayerBar((int)rec, 0);
-    ai_Unk58bbd0();
+    ai_InitProductionTables();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
     x = d2_Wins[d2_LastWindow].w / 2 - 0xa8;
@@ -8427,11 +8427,11 @@ void ai_GypsyHelperWindow(AIBLD *rec)
         d2_SetObjEnabled(id, 1);
     }
     d2_SetPointerSprite(0, 0);
-    ai_Unk58d720(rec, res);
-    ai_Unk58dd00(win, 1, 0, rec);
+    ai_UpdateProdGoodsList(rec, res);
+    ai_LayoutProdGoodsList(win, 1, 0, rec);
     while (sv_RunFrame((int)ai_GypsyHelperWindow, 0x677c7)) {
-        ai_Unk58d720(rec, res);
-        ai_Unk58dd00(win, 1, 0, rec);
+        ai_UpdateProdGoodsList(rec, res);
+        ai_LayoutProdGoodsList(win, 1, 0, rec);
         counts[0] = 0;
         counts[1] = 0;
         counts[2] = 0;
@@ -9552,7 +9552,7 @@ void ai_GraveInsuranceContact(AIBLD *rec)
     sv_CameraFollow();
 }
 
-int ai_ProductionWindow(unsigned char *rec); int ai_OpenTransport(int rec); int ai_PersonnelBookWindow(int rec, char *name);
+struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); int ai_OpenTransport(int rec); int ai_PersonnelBookWindow(int rec, char *name);
 
 /* 0x587560, the graveyard trade-contact dispatcher (317 B): rec = the building record. Releases the name plates
    (sv_ReleaseNamePlates); each frame (sv_RunFrame, pump 0x67fff) the graveyard chatter (ai_GraveyardChatter); with
@@ -9585,7 +9585,7 @@ void ai_GraveyardTradeContact(char *rec)
         }
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == c0)
-                ai_ProductionWindow((unsigned char *)rec);
+                ai_ProductionWindow((struct AIBLD *)rec);
             else if (ai_ClickedObject == c1)
                 ai_OpenTransport((int)rec);
             else if (ai_ClickedObject == c2)

@@ -19,7 +19,7 @@ extern char ai_NewsKeyFriedhof12[28];   /* 0x62c364, the sound of the graveyard 
 extern char ai_NewsKeyFriedhof13[28];   /* 0x62c380, the sound of the graveyard work news (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_13" */
 extern char ai_NewsKeyFriedhof00[28];   /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa): the key "_NACHRICHTEN_FRIEDHOF_00" */
 
-void ai_Unk58bbd0(void);                /* 0x58bbd0, the production window's table init */
+void ai_InitProductionTables(void);                /* 0x58bbd0, the production window's table init */
 void ai_MarketContact(struct AIBLD *b); /* 0x58f510, the shop-counter contact of a building */
 int ai_BuildingName(int id, char *out); /* 0x58f640, the building name of a kind id */
 
@@ -60,7 +60,7 @@ int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and fre
 /* the placement-candidate list of the build screen (ai_BauplatzFilter / ai_FindBauplaetze) */
 extern int *ai_BauplatzList;            /* 0x6f5308 */
 
-/* the goods columns of the production window "Handel\Handel_PRODUKTION" (ai_ProductionWindow; ai_Unk58bbd0 sets
+/* the goods columns of the production window "Handel\Handel_PRODUKTION" (ai_ProductionWindow; ai_InitProductionTables sets
    them up, ai_Unk58c680 builds their windows) */
 typedef struct LCPRODCOL {              /* 0x58 bytes */
     int good;                           /* 0x00, the goods the column makes (an ai_Goods index) */

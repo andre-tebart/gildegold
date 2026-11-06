@@ -1589,7 +1589,7 @@ void ai_SaveNetworkGame(char *saveName, char *name)
 /* the callees of the front-end stretch (their units' headers are not included here, so their
    prototypes are repeated as the definitions spell them; the building pointers are this TU's ints) */
 int ai_StorageWindow(int building, int list); /* 0x5b26b0, lc.c */
-int ai_ProductionWindow(unsigned char *building); /* 0x58bd60, lc.c: "Handel\Handel_PRODUKTION" */
+struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); /* 0x58bd60, lc.c: "Handel\Handel_PRODUKTION" */
 int ai_OpenTransport(int rec);             /* 0x5af1a0, lc.c */
 int ai_PersonnelBook(int building, char *text); /* 0x5aab80, lc.c: "ob_PERSONALBUCH" */
 void ai_TradeSearchWindow(unsigned char *cfg, int arg); /* 0x595480, lc.c: "HANDEL\HANDEL_SUCHEN" */
@@ -2560,7 +2560,7 @@ void ai_ProductionContact(int building, int arg)
             if (click == lager) {
                 ai_StorageWindow(building, ((AIBLDVIEW *)building)->objList);
             } else if (click == schn) {
-                ai_ProductionWindow((unsigned char *)building);
+                ai_ProductionWindow((struct AIBLD *)building);
             } else if (click == trans) {
                 ai_OpenTransport(building);
             } else if (click == personal) {
@@ -3229,7 +3229,7 @@ void ai_GypsyProductionContact(int building)
                 else if (ai_ClickedObject == transport)
                     ai_OpenTransport(building);
                 else if (ai_ClickedObject == produktion)
-                    ai_ProductionWindow((unsigned char *)building);
+                    ai_ProductionWindow((struct AIBLD *)building);
                 else if (ai_ClickedObject == lager)
                     ai_StorageWindow(building, 0);
                 else if (ai_ClickedObject == meister)
