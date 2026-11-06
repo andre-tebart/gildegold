@@ -1062,7 +1062,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned int netId;            /* 0x004, the character's network id (ai_char.h AICHAR.netId) */
     unsigned char health;          /* 0x008 */
     unsigned char sex;             /* 0x009, 0 / non-0 (ai_char.h AICHAR.sex; it picks the male / female name table) */
-    char pad00a[0x2];
+    unsigned short w00a;           /* 0x00a, ai_char.h AICHAR.w00a (the family tree window lets a child above 10 be
+                                      picked) */
     unsigned char faith;           /* 0x00c, the faith, 0 / 1 (ai_char.h AICHAR.b00c): the baptism window sets it to
                                       1 - it (or to the church owner's) and names it by the text 0x197a + it; the
                                       church donation reaches the characters of the owner's faith */
@@ -1099,7 +1100,9 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad180[4];
     struct AITASKVIEW *model;      /* 0x184, the character's model record, 0 when none (ai_char.h AICHAR.model) */
     unsigned char selected;        /* 0x188, nonzero: in the player's selection (ai_char.h AICHAR.selected) */
-    char pad189[0xb];
+    char pad189[3];
+    int picture;                   /* 0x18c, the portrait picture (ai_char.h AICHAR.picture) */
+    char pad190[4];
     int money;                     /* 0x194, the character's money (ai_char.h AICHAR.money) */
     char pad198[0x14];
     int donated;                   /* 0x1ac, the money the character gave the church: ai_IndulgenceWindow adds the price
@@ -20406,97 +20409,379 @@ void *ai_Unk5c3bb0(unsigned char *param_1, int *param_2, int param_3, void (*par
 
 void d2_PlotLine();
 
-/* 0x5c4150, the family tree window "Special_Stammbaum" 0x62d300 (4542 B, ROUGH SKELETON): the gate
-   0x5763c0 (1) and the event 0x576040 (6, 0, 0, 0); the character 0x505df0 (param_1); the window
-   0x4741f0 (0, 0, 0x62d300), 0x476f80, 0x475600, page 2 with the caption param_3 (0x9f when 0),
-   0x515960 and page 1; the frame loop: the screen width / 2 from 0xf8f128 + screen * 0x3c4 and the
-   rect of 0x6ed918 + 0x1ec2c, the cleared local tables (the 8 ids, the 6 + 2 portraits, the 5
-   siblings), the parents 0x505df0 (record +0x128 / +0x12c), the partner (record +0x130), the six
-   children (+0xd0, the kind +2 < 10, the first two at 0x770d0c + id * 0x21c), the grandparents, the
-   boxes 0x4764f0 and the labels 0x5176d0 (0x62d1fc, the id) / 0x5bd0c0 (text, x, y, 0x50, 0x56); the
-   portrait ids 0x4731d0 (0x5db / 0x4fb / 0x98 / 0x96, the kind record) with the control record
-   0xf8f080 + id * 0x2ec (+0x1c0 = 3, +0x2e8 = 0x770b80 + id * 0x21c, +0x4c the visible flag from
-   param_2 & 0x10 / 0xc / 8); a click (0x5fe710) resolves 0x505df0 (0x770b84 + id * 0x21c) and runs
-   0x5c5310 (the character, param_2 & 0x10 ? 0 : the own flag) between 0x475590 (win, 0 / 1); the pump
-   0x5309a0 (this, param_4), the exit 0x4758f0 and the event 0x576040 (6, 0, 1, 0). ROUGH: the eight
-   positions of the generation blocks are comments, the calls are grouped per block */
-void ai_FamilyTreeWindow(int param_1, unsigned char param_2, int param_3, int param_4)
+typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree window */
+    unsigned short id;             /* 0x00, the character id, 0xffff: the box is empty */
+    short pad02;
+    int ctrl;                      /* 0x04, the box picture object (d2_WinOpenPic), -1: no character in it */
+    unsigned short x;              /* 0x08, the centre of the box */
+    unsigned short y;              /* 0x0a, the top of the box */
+    int pad0c;
+} LCFAMILYBOX;
+
+/* 0x5c4150, the family tree window "Special\Stammbaum": shows the character netId's parents, its partner (unless
+   one of the two has the powerFlags bit 0x40000), its siblings (the left parent's relatives[3..7] but itself, up
+   to two on each side) and its children (relatives[3..7] of a kind below 10, up to five) as portrait boxes (the
+   picture 0x5db, the portrait inside, an empty box 0x4fb) joined by lines, each box labelled with the
+   character's name ("%1N7") and the character itself marked with its ref54 picture. The caption is the text
+   caption (0x9f when 0). The flags pick which boxes can be clicked: the middle row and the children with 1 and
+   without 0xc, or with 0x10; the parents without 0xc; a child also with 2 and 8 when its w00a is above 10. A
+   click opens the player info panel of the picked character (ai_Unk5c5310: own view with 0x10 or for the
+   character itself, else the other's with 8), a click on no box redraws; the right button closes the window
+   unless flags has 8. callId is the frame pump's call id; the campaign step 6 brackets the window.
+   @deep Reconstructed in full against the original (all 1277 instructions read: the relatives walk, the
+   parent / middle-row / sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the
+   labels and the click dispatch); size now equal (4542 vs 4542, ours 1276 ins vs 1277), every call,
+   constant and reference agrees. The remaining code hunks are allocation-driven instruction selection and
+   store scheduling: +0x2b3 the original computes (half - w) + w/2 (ecx=ebx; sub ecx,edx; lea
+   eax,[ecx+ebp]) where ours computes (w/2 - w) + half (mov ecx,ebp; sub ecx,edx; lea eax,[ecx+ebx]) -
+   source variants (reordered terms, a left local) do not move it (a local adds a frame slot); the box
+   loops store node.x with add eax,ebx / mov word [ebp+8],ax where ours uses lea ecx,[ebx+eax] / mov word
+   [ebp+8],cx and stores ctrl first (+0x77c, +0x867, +0xa86, +0xb79); the line midpoints end in lea
+   ebp,[eax+ebx] vs ours mov esi,eax; ...; add esi,ebx (+0xc68, +0xd52); the loop counters and 4W/5 sit in
+   [esp+0x18]/[esp+0x10] swapped. proof stops at the sibling loop's store order (x before ctrl). */
+void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId)
 {
-    char *ch;
+    AICHARREC *ch;
+    AICHARREC *rel;
+    AICHARREC *pick;
     int win;
     int draw;
-    int i;
-    unsigned short ids[6];
-    unsigned short parents[2];
-    unsigned short children[4];
-    unsigned short grand[5];
-    int ctrl;
+    int width;
+    int half;
+    int w;
+    int h;
     int x;
-    int y;
+    int mid;
+    int lo;
+    int hi;
+    int i;
+    int k;
+    int found;
+    int partner;
+    int nSiblings;
+    int nChildren;
+    int siblingX[2];
+    LCFAMILYBOX parents[2];
+    LCFAMILYBOX row[6];             /* the siblings 0, 1, 4, 5, the character 2, its partner 3 */
+    int evenX[4];
+    int oddX[5];
+    LCFAMILYBOX children[5];
+    char rowText[256];
+    char parentText[256];
+    char childText[256];
 
     if (ai_RunAllows(1) == 0)
         return;
     ai_CampaignStep(6, 0, 0, 0);
-    ch = (char *)gm_FindChar(param_1);
+    ch = (AICHARREC *)gm_FindChar(netId);
     if (ch == 0)
         return;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d300);
+    win = d2_OpenForm(0, 0, "Special\\Stammbaum");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    if (param_3 == 0)
-        param_3 = 0x9f;
-    io_PrintText(param_3);
+    if (caption != 0)
+        io_PrintText(caption);
+    else
+        io_PrintText(0x9f);
     d2_SetForm(win, 1);
     draw = 1;
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
+    d2_ClickedId = -1;
+    width = d2_Wins[d2_LastWindow].w;
+    do {
         if (draw) {
-            for (i = 0; i < 6; i++)
-                ids[i] = 0xffff;
-            for (i = 0; i < 2; i++)
-                parents[i] = 0xffff;
-            for (i = 0; i < 4; i++)
-                children[i] = 0xffff;
-            for (i = 0; i < 5; i++)
-                grand[i] = 0xffff;
+            half = width / 2;
+            w = d2_Pics[0x5db].w;
+            h = d2_Pics[0x5db].h;
+            k = 0;
+            nChildren = 0;
+            memset(parents, 0xff, sizeof parents);
+            nSiblings = 0;
+            memset(row, 0xff, sizeof row);
+            partner = 0;
+            memset(children, 0xff, sizeof children);
             draw = 0;
-            /* ROUGH: the two parents 0x505df0 (*(int *)(ch + 0x128) / *(int *)(ch + 0x12c)), the partner
-               (0x130) and the six children of ch + 0xd0 (kind +2 < 10), then the grandparents; each
-               portrait is 0x4731d0 (the y of its row, 0x5db / the picture 0x4fb or 0x98, 0x770d0c +
-               id * 0x21c, screen) with the record 0xf8f080 + id * 0x2ec (+0x1c0 = 3, +0x2e8) */
-            d2_SetForm(win, 1);
-            d2_ClearPaintbox();
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            /* ROUGH: the generation rows: 0x4731d0 (x, 10 / 0xc / 0x96 / 0x98 / 0x122 / 0x124, the box
-               text 0x5db / 0x4fb / the picture, screen); the partner boxes; the five siblings at
-               0x4764f0 (x, y, x2, y2, 0x10, 0x10, 0x10) and the labels 0x5176d0 (0x62d1fc, the id) +
-               0x5bd0c0 (text, x, y + 3, 0x50, 0x56); the own portrait 0x4731d0 (x - 10 - width / 2,
-               y - 5, ch + 0x2a, screen) */
-            for (i = 0; i < 6; i++) {
-                if (ids[i] != 0xffff) {
-                    /* ROUGH: the visible flag of the portrait control */
-                    if ((param_2 & 1) != 0 && (param_2 & 0xc) == 0 && (param_2 & 0x10) == 0)
-                        U_I(U_I((unsigned)&d2_Objs) + 0x4c + ctrl * 0x2ec) = 1;
-                    else
-                        U_I(U_I((unsigned)&d2_Objs) + 0x4c + ctrl * 0x2ec) = 0;
-                    txt_Format((char *)0x300, (char *)(unsigned)&full_data_62d1fc, ids[i]);   /* ROUGH: the real buffer */
-                    ai_CentredText((char *)0x300, x, y + 3, 0x50, 0x56);
+            row[2].id = ch->id;
+            rel = (AICHARREC *)gm_FindChar(ch->relatives[0]);
+            if (rel != 0 && (ch->powerFlags & 0x40000) == 0 && (rel->powerFlags & 0x40000) == 0) {
+                partner = 1;
+                row[3].id = rel->id;
+            }
+            rel = (AICHARREC *)gm_FindChar(ch->relatives[2]);
+            if (rel != 0)
+                parents[1].id = rel->id;
+            rel = (AICHARREC *)gm_FindChar(ch->relatives[1]);
+            if (rel != 0) {
+                parents[0].id = rel->id;
+                for (i = 3; i < 8 && k < 6; i++) {
+                    if (rel->relatives[i] != -1 && rel->relatives[i] != ch->netId) {
+                        pick = (AICHARREC *)gm_FindChar(rel->relatives[i]);
+                        if (pick != 0) {
+                            row[k].id = pick->id;
+                            k++;
+                            nSiblings++;
+                            if (k == 2)
+                                k = 4;
+                        }
+                    }
                 }
             }
-            /* ROUGH: the same for the two parents (the flag = (param_2 & 0xc) == 0) and the five
-               siblings (the flag with the kind < 0xb test of 0x770b8a + id * 0x21c) */
+            for (i = 3; i < 8 && nChildren < 5; i++) {
+                if (ch->relatives[i] != -1) {
+                    rel = (AICHARREC *)gm_FindChar(ch->relatives[i]);
+                    if (rel != 0 && rel->kind < 10) {
+                        children[nChildren].id = rel->id;
+                        nChildren++;
+                    }
+                }
+            }
+            d2_SetForm(win, 1);
+            d2_ClearPaintbox();
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+
+            /* the parents */
+            parents[0].ctrl = d2_WinOpenPic(half - w - 0x5a, 10, 0x5db, d2_LastWindow);
+            parents[0].x = half - w + w / 2 - 0x5a;
+            parents[0].y = 10;
+            if (parents[0].id != 0xffff) {
+                d2_WinOpenPic(half - w - 0x58, 12, ((AICHARREC *)ai_Chars)[parents[0].id].picture, d2_LastWindow);
+                d2_Objs[parents[0].ctrl].style = 3;
+                d2_Objs[parents[0].ctrl].user = ai_Chars[parents[0].id];
+            } else {
+                d2_WinOpenPic(half - w - 0x58, 12, 0x4fb, d2_LastWindow);
+                parents[0].ctrl = -1;
+            }
+            parents[1].ctrl = d2_WinOpenPic(half + 0x5a, 10, 0x5db, d2_LastWindow);
+            parents[1].x = half + w / 2 + 0x5a;
+            parents[1].y = 10;
+            if (parents[1].id != 0xffff) {
+                d2_WinOpenPic(half + 0x5c, 12, ((AICHARREC *)ai_Chars)[parents[1].id].picture, d2_LastWindow);
+                d2_Objs[parents[1].ctrl].style = 3;
+                d2_Objs[parents[1].ctrl].user = ai_Chars[parents[1].id];
+            } else {
+                d2_WinOpenPic(half + 0x5c, 12, 0x4fb, d2_LastWindow);
+                parents[1].ctrl = -1;
+            }
+
+            /* the character and its partner */
+            if (partner) {
+                row[2].ctrl = d2_WinOpenPic(half - w - 0x10, 0x96, 0x5db, d2_LastWindow);
+                row[2].x = half - w + w / 2 - 0x10;
+                row[2].y = 0x96;
+                if (row[2].id != 0xffff) {
+                    d2_WinOpenPic(half - w - 0xe, 0x98, ((AICHARREC *)ai_Chars)[row[2].id].picture, d2_LastWindow);
+                    d2_Objs[row[2].ctrl].style = 3;
+                    d2_Objs[row[2].ctrl].user = ai_Chars[row[2].id];
+                } else {
+                    d2_WinOpenPic(half - w - 0xe, 0x98, 0x4fb, d2_LastWindow);
+                    row[2].ctrl = -1;
+                }
+                row[3].ctrl = d2_WinOpenPic(half + 0x10, 0x96, 0x5db, d2_LastWindow);
+                row[3].x = half + w / 2 + 0x10;
+                row[3].y = 0x96;
+                if (row[3].id != 0xffff) {
+                    d2_WinOpenPic(half + 0x12, 0x98, ((AICHARREC *)ai_Chars)[row[3].id].picture, d2_LastWindow);
+                    d2_Objs[row[3].ctrl].style = 3;
+                    d2_Objs[row[3].ctrl].user = ai_Chars[row[3].id];
+                } else {
+                    d2_WinOpenPic(half + 0x12, 0x98, 0x4fb, d2_LastWindow);
+                    row[3].ctrl = -1;
+                }
+            } else {
+                row[2].ctrl = d2_WinOpenPic(half - w / 2, 0x96, 0x5db, d2_LastWindow);
+                row[2].x = half;
+                row[2].y = 0x96;
+                if (row[2].id != 0xffff) {
+                    d2_WinOpenPic(half - w / 2 + 2, 0x98, ((AICHARREC *)ai_Chars)[row[2].id].picture, d2_LastWindow);
+                    d2_Objs[row[2].ctrl].style = 3;
+                    d2_Objs[row[2].ctrl].user = ai_Chars[row[2].id];
+                } else {
+                    d2_WinOpenPic(half - w / 2 + 2, 0x98, 0x4fb, d2_LastWindow);
+                    row[2].ctrl = -1;
+                }
+            }
+
+            /* the siblings, two on each side */
+            if (nSiblings != 0) {
+                siblingX[0] = width / 5 + 0x10;
+                siblingX[1] = width * 4 / 5 - w - 0x10;
+                for (i = 0; i < 2; i++) {
+                    if (row[i].id == 0xffff)
+                        break;
+                    row[i].ctrl = d2_WinOpenPic(siblingX[i], 0x96, 0x5db, d2_LastWindow);
+                    row[i].x = w / 2 + siblingX[i];
+                    row[i].y = 0x96;
+                    d2_WinOpenPic(siblingX[i] + 2, 0x98, ((AICHARREC *)ai_Chars)[row[i].id].picture, d2_LastWindow);
+                    d2_Objs[row[i].ctrl].style = 3;
+                    d2_Objs[row[i].ctrl].user = ai_Chars[row[i].id];
+                }
+                siblingX[0] = width / 5 - w - 0x10;
+                siblingX[1] = width * 4 / 5 + 0x10;
+                for (i = 4; i < 6; i++) {
+                    if (row[i].id == 0xffff)
+                        break;
+                    row[i].ctrl = d2_WinOpenPic(siblingX[i - 4], 0x96, 0x5db, d2_LastWindow);
+                    row[i].x = siblingX[i - 4] + w / 2;
+                    row[i].y = 0x96;
+                    d2_WinOpenPic(siblingX[i - 4] + 2, 0x98, ((AICHARREC *)ai_Chars)[row[i].id].picture, d2_LastWindow);
+                    d2_Objs[row[i].ctrl].style = 3;
+                    d2_Objs[row[i].ctrl].user = ai_Chars[row[i].id];
+                }
+            }
+
+            /* the lines from the parents down to the middle row */
+            mid = (row[2].y - h - 10) / 2 + h + 10;
+            for (i = 0; i < 2; i++)
+                d2_PlotLine(parents[i].x, parents[i].y + h + 5, parents[i].x, mid, 0x10, 0x10, 0x10);
+            lo = parents[0].x;
+            hi = parents[1].x;
+            for (i = 0; i < 6; i++) {
+                if (row[i].id != 0xffff && i != 3) {
+                    x = row[i].x;
+                    d2_PlotLine(x, row[i].y, x, mid, 0x10, 0x10, 0x10);
+                    if (x < lo)
+                        lo = x;
+                    if (x > hi)
+                        hi = x;
+                }
+            }
+            d2_PlotLine(lo, mid, lo != hi ? hi + 1 : hi, mid, 0x10, 0x10, 0x10);
+
+            /* the children: five places for an odd count, four for an even one */
+            children[0].y = 0x122;
+            if (nChildren != 0) {
+                if (nChildren & 1) {
+                    oddX[0] = half - w / 2;
+                    oddX[2] = oddX[0] + w + 0x28;
+                    oddX[1] = oddX[0] - w - 0x28;
+                    oddX[3] = oddX[1] - w - 0x28;
+                    oddX[4] = oddX[2] + w + 0x28;
+                    for (i = 0; i < 5; i++) {
+                        if (children[i].id == 0xffff)
+                            break;
+                        children[i].ctrl = d2_WinOpenPic(oddX[i], 0x122, 0x5db, d2_LastWindow);
+                        children[i].x = w / 2 + oddX[i];
+                        children[i].y = 0x122;
+                        d2_WinOpenPic(oddX[i] + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
+                        d2_Objs[children[i].ctrl].style = 3;
+                        d2_Objs[children[i].ctrl].user = ai_Chars[children[i].id];
+                    }
+                } else {
+                    evenX[1] = half + 0x14;
+                    evenX[0] = half - w - 0x14;
+                    evenX[2] = evenX[0] - w - 0x28;
+                    evenX[3] = evenX[1] + w + 0x28;
+                    for (i = 0; i < 4; i++) {
+                        if (children[i].id == 0xffff)
+                            break;
+                        children[i].ctrl = d2_WinOpenPic(evenX[i], 0x122, 0x5db, d2_LastWindow);
+                        children[i].x = w / 2 + evenX[i];
+                        children[i].y = 0x122;
+                        d2_WinOpenPic(evenX[i] + 2, 0x124, ((AICHARREC *)ai_Chars)[children[i].id].picture, d2_LastWindow);
+                        d2_Objs[children[i].ctrl].style = 3;
+                        d2_Objs[children[i].ctrl].user = ai_Chars[children[i].id];
+                    }
+                }
+            }
+
+            /* the lines from the character (and its partner) down to the children */
+            lo = row[2].x;
+            hi = row[2].x;
+            if (partner) {
+                hi = row[3].x;
+                mid = (children[0].y - row[2].y - h) / 2 + row[2].y + h;
+                for (i = 2; i < 4; i++)
+                    d2_PlotLine(row[i].x, row[i].y + h + 5, row[i].x, mid, 0x10, 0x10, 0x10);
+                d2_PlotLine(lo, mid, hi + 1, mid, 0x10, 0x10, 0x10);
+            }
+            for (i = 0; i < 5; i++) {
+                if (children[i].id != 0xffff) {
+                    x = children[i].x;
+                    d2_PlotLine(x, children[i].y, x, (children[0].y - row[2].y - h) / 2 + row[2].y + h, 0x10, 0x10, 0x10);
+                    if (x < lo)
+                        lo = x;
+                    if (x > hi)
+                        hi = x;
+                }
+            }
+            if (nChildren != 0) {
+                mid = (children[0].y - row[2].y - h) / 2 + row[2].y + h;
+                d2_PlotLine(lo, mid, hi + 1, mid, 0x10, 0x10, 0x10);
+                if (!partner)
+                    d2_PlotLine(row[2].x, row[2].y + h + 5, row[2].x, mid, 0x10, 0x10, 0x10);
+            }
+
+            /* the names, the clickable boxes and the mark of the character itself */
+            for (i = 0; i < 6; i++) {
+                if (row[i].id != 0xffff) {
+                    d2_Objs[row[i].ctrl].interactive = (flags & 1) && (flags & 0xc) == 0 || (flags & 0x10) ? 1 : 0;
+                    txt_Format(rowText, "%1N7", row[i].id);
+                    ai_CentredText(rowText, row[i].x, row[i].y + h + 3, 0x50, 0x56);
+                    if (row[i].id == ch->id)
+                        d2_WinOpenPic(row[i].x - w / 2 - 10, row[i].y - 10, ch->ref54, d2_LastWindow);
+                }
+            }
+            for (i = 0; i < 2; i++) {
+                if (parents[i].id != 0xffff) {
+                    d2_Objs[parents[i].ctrl].interactive = (flags & 4) == 0 && (flags & 8) == 0 ? 1 : 0;
+                    txt_Format(parentText, "%1N7", parents[i].id);
+                    ai_CentredText(parentText, parents[i].x, parents[i].y + h + 3, 0x50, 0x56);
+                    if (parents[i].id == ch->id)
+                        d2_WinOpenPic(parents[i].x - w / 2 - 10, parents[i].y - 10, ch->ref54, d2_LastWindow);
+                }
+            }
+            for (i = 0; i < 5; i++) {
+                if (children[i].id != 0xffff) {
+                    d2_Objs[children[i].ctrl].interactive = (flags & 1) && (flags & 0xc) == 0
+                        || (flags & 2) && (flags & 8) && ((AICHARREC *)ai_Chars)[children[i].id].w00a > 10 ? 1 : 0;
+                    txt_Format(childText, "%1N7", children[i].id);
+                    ai_CentredText(childText, children[i].x, children[i].y + h + 3, 0x50, 0x56);
+                    if (children[i].id == ch->id)
+                        d2_WinOpenPic(children[i].x - w / 2 - 10, children[i].y - 10, ch->ref54, d2_LastWindow);
+                }
+            }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 && (param_2 & 8) == 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            /* ROUGH: the click search over the portraits (0x505df0 (0x770b84 + id * 0x21c) the
-               character), then 0x475590 (win, 0), 0x5c5310 (the character, param_2 & 0x10 ? 0 : the own
-               flag) and 0x475590 (win, 1) */
+        if (dm_L.rup != 0 && (flags & 8) == 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            found = -1;
+            pick = 0;
+            for (i = 0; i < 6; i++) {
+                if (d2_PointerObj == row[i].ctrl) {
+                    found = i;
+                    pick = (AICHARREC *)gm_FindChar(((AICHARREC *)ai_Chars)[row[i].id].netId);
+                    break;
+                }
+            }
+            for (i = 0; i < 2 && found == -1; i++) {
+                if (d2_PointerObj == parents[i].ctrl) {
+                    found = i;
+                    pick = (AICHARREC *)gm_FindChar(((AICHARREC *)ai_Chars)[parents[i].id].netId);
+                    break;
+                }
+            }
+            for (i = 0; i < 5 && found == -1; i++) {
+                if (d2_PointerObj == children[i].ctrl) {
+                    pick = (AICHARREC *)gm_FindChar(((AICHARREC *)ai_Chars)[children[i].id].netId);
+                    break;
+                }
+            }
+            if (pick != 0) {
+                d2_SetViewEnabled(win, 0);
+                if (flags & 0x10)
+                    ai_Unk5c5310(pick, 0);
+                else if (flags & 8) {
+                    if (ch != pick)
+                        ai_Unk5c5310(pick, 1);
+                    else
+                        ai_Unk5c5310(pick, 0);
+                }
+                d2_SetViewEnabled(win, 1);
+            } else {
+                draw = 1;
+            }
         }
-        if (sv_RunFrame(ai_FamilyTreeWindow, param_4) == 0)
-            break;
-    }
+    } while (sv_RunFrame(ai_FamilyTreeWindow, callId) != 0);
     d2_CloseView(win);
     ai_CampaignStep(6, 0, 1, 0);
 }
@@ -20516,7 +20801,7 @@ void ai_ShowMissions(int owner); int ai_Unk5cf260(); int ai_Unk5cf4f0(); int ai_
    windows), 0x4b5310 (the office), the confirmation 0x521150 and 0x4c4770 (the own id) with
    0x6f22a0 = 2; the exit 0x4758f0. ROUGH: the page / row coordinates and the condition ladder of the
    bottom buttons are comments */
-void ai_Unk5c5310(short *param_1, int param_2)
+void ai_Unk5c5310(AICHARREC *param_1, int param_2)
 {
     int win;
     int b1;
@@ -20540,13 +20825,13 @@ void ai_Unk5c5310(short *param_1, int param_2)
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1f53, *param_1);
+    io_PrintText(0x1f53, param_1->id);
     d2_SetForm(win, 2);
     gm_BirthDate(param_1, (char *)0x444);   /* ROUGH: the local record */
     txt_Format(text, (char *)(unsigned)&full_data_62d3d4, 0, 0, 0);
     io_PrintText((char *)(unsigned)&full_data_62d3c4, text);
     if (gm_DeathDate(param_1, (char *)0x444) == 0) {
-        gm_CharAge(*param_1);
+        gm_CharAge(param_1->id);
         io_PrintText((char *)(unsigned)&full_data_62d3a0, 0x1f54, v);
     } else {
         txt_Format(text, (char *)(unsigned)&full_data_62d3b8, 0, 0, 0);
@@ -20570,12 +20855,12 @@ void ai_Unk5c5310(short *param_1, int param_2)
        / 0xe0000 / 0x700000 / 0x1800000 / 0x1e000000 -> the texts 0x161e .. 0x1626 through 0x473650) */
     if (param_2 == 0) {
         /* ROUGH: the gift button (the own character's +9 byte and +0x30 / +0x32 ids against 0x770b84,
-           0x53e400 (2, 2, *param_1, 0, 0x5e), the 0x770d48 bit 0x20, the 0x52e350 pairs and the
+           0x53e400 (2, 2, param_1->id, 0, 0x5e), the 0x770d48 bit 0x20, the 0x52e350 pairs and the
            0x1f4b / 0x1a96 / 0x1a97 / 0x1f49 texts into 0x475b80 (win, 4)) */
         b1 = d2_GetWinObj(win, 4, io_PrintText(0x1f49));
     } else {
         d2_SetForm(win, 4);
-        b5 = d2_GetWinObj(win, 4, io_PrintText(0x1f50, *param_1));
+        b5 = d2_GetWinObj(win, 4, io_PrintText(0x1f50, param_1->id));
     }
     U_I((unsigned)&d2_ClickedId) = -1;
     U_I((unsigned)&d2_PointerObj) = -1;
@@ -20587,9 +20872,9 @@ void ai_Unk5c5310(short *param_1, int param_2)
         if (U_I((unsigned)&d2_ClickedId) != -1) {
             d2_SetViewEnabled(win, 0);
             if (U_I((unsigned)&d2_PointerObj) == b5) {
-                txt_Format(text, (char *)0x1f51, *param_1, *param_1);
+                txt_Format(text, (char *)0x1f51, param_1->id, param_1->id);
                 if (sv_MessageBox(text, 1) != 0) {
-                    cm_SendTakeOverCharacter(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), *(int *)((char *)param_1 + 2));
+                    cm_SendTakeOverCharacter(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), param_1->netId);
                     U_I((unsigned)&sv_PopRequest) = 2;
                 }
             } else if (U_I((unsigned)&d2_PointerObj) == b3) {
@@ -20602,7 +20887,7 @@ void ai_Unk5c5310(short *param_1, int param_2)
                 if (ai_Unk5cf4f0((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, param_1) != 0)
                     d2_SetObjEnabled(b4, 0);
             } else if (U_I((unsigned)&d2_PointerObj) == b1) {
-                ai_ShowMissions(*(int *)((char *)param_1 + 2));
+                ai_ShowMissions(param_1->netId);
             }
             d2_SetViewEnabled(win, 1);
         }
