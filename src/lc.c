@@ -1089,7 +1089,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad167;
     unsigned char appliedOffice;   /* 0x168, the office kind applied for, 0 = none (ai_char.h AICHAR.appliedOffice) */
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
-    char pad16a[6];
+    char pad16a[2];
+    struct AIBLD *bld;             /* 0x16c, the building the character is in (ai_char.h AICHAR.bld) */
     int bld2;                      /* 0x170, the character's own building, 0 when none (ai_char.h AICHAR.bld2) */
     char pad174[4];
     int inventory;                 /* 0x178, the character's goods inventory, an object list (ai_char.h AICHAR.inventory) */
@@ -13356,99 +13357,95 @@ void ai_TrainingContact(int building)
 
 int ai_PickActionBuilding(struct AIPER *p, int a, __int64 mask, float lo, float hi, int *out); int gv_Accuse();
 
-/* 0x5a5120, the kidnapping window "locations\diebesgilde\diebesgilde_entfuehrung" (698 B): param_1 the building
-   (byte +0x1b1 a running attempt -> the text 0x19ba), the live character 0x520f90 (3, 0x770b80 + slot * 0x21c),
-   the own-building gate +0x16c / +0x27 and the action 0x4a63f0 (param_1, 0, 0x4080a0, 0, 0, 100.0f, &ctrl3)
-   only without a +0x170 record, 0x501190 (1, 1, ctrl3); the window 0x4741f0 / 0x475600 / 0x476f80 / 0x475f70
-   (1) with two controls from 0x515960 (0x19b9, the word, 3, the word) and 0x475b80; the pump 0x5309a0 (this,
-   0x677c7): a click (0xf8a668) on the first control builds the AIMSG type 0x3c (+4, the player character id at
-   +8, 1 at +0x36, -1 in the eight crew slots +0x38, the owner at +0x58, the control +1 at +0x5c, the current
-   building +1 at +0x60) from the crew flags +0x184 of the 0x300 character records 0x770b84 and sends
-   0x4c4b70 / 0x4c5f60 / 0x4f2e30 (0x1a, 1, the id, the owner, -1) / 0x4c2d20 / 0x52ae40 with 0x6f22a0 = 3, or
-   shows the text 0x144094c when no crew is free; the second control only sets 0x6f22a0 = 1; the exit 0x4758f0,
-   returns 1 when a crew was hired */
-int ai_Unk5a5120(int param_1)
+#define LC_KIDNAP_PLACES ((1 << 5) | (1 << 7) | (1 << 15) | (1 << 22))  /* 0x4080a0, the building kinds a kidnapping may take the victim to (the ai_PickActionBuilding mask) */
+/* 0x5a5120, the thieves' guild kidnapping window "locations\diebesgilde\diebesgilde_entfuehrung" for the character
+   victim: nothing for none, when the player cannot pay 3 (sv_CheckMoney), or when the victim is in a building of
+   its own; a victim already held gives the text 0x19ba. The place is the victim's own building, else one picked
+   by ai_PickActionBuilding (the building kinds 0x4080a0) through gm_BuildQuery. The text 0x19b9 and two buttons:
+   the first sends the kidnapping message 0x3c (to the player's netId, flags 1, arg[0] the victim's netId, arg[1]
+   the place, arg[2] the player's building, the selected characters as ids), pays 3, accuses the player (gv_Accuse
+   0x1a) and closes; with nobody selected the text 0x19e3. The second button and a right click close it. Returns 1
+   once the kidnapping was ordered
+   @deep Read whole against the original and reconstructed (the draft had sv_CheckMoney's arguments
+   swapped, the place building wrong, the early returns not merged): every call, argument, store and branch
+   matches (ours 209, the original 210). Left: register allocation. The original keeps the place building
+   in a stack slot (mov [esp+0x1c], eax at +0xdf, reloaded at +0x1a1) and the constant 1 in ebx (mov ebx, 1
+   at +0x9a: push ebx for every 1, done = ebx at +0x26c); ours keeps the building in ebx and 1 in edi (or
+   as push 1), which also makes its frame 4 bytes smaller (0x908 vs 0x90c). Tried: the early returns as one
+   nested condition with the held text as the then-arm (that fixed the block order). */
+int ai_KidnapWindow(AICHARREC *victim)
 {
-    int hire;
-    int ret = 0;
-    int ctrl1;
-    int ctrl2;
-    int ctrl3;
+    int done;
+    int picked;
+    AIBLD *bld;
+    int ok;
+    int cancel;
+    AIMSG msg;
+    char text[0x800];
     int win;
-    int id;
+    int base;
     int n;
     int i;
-    char msg[0xf8];
-    char buf[0x7f8];
-    char *p;
 
-    if (param_1 == 0)
-        return 0;
-    if (sv_CheckMoney(3, (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c)) == 0)
-        return 0;
-    if (U_I(param_1 + 0x16c) != 0 && U_W(U_I(param_1 + 0x16c) + 0x27) == U_W(param_1))
-        return 0;
-    if (*(char *)(param_1 + 0x1b1) != 0) {
-        txt_Format(buf, 0x19ba, U_W(param_1));
-        sv_MessageBox(buf, 0);
-        return 0;
-    }
-    if (U_I(param_1 + 0x170) == 0) {
-        if (AI_4A63F0_7(param_1, 0, 0x4080a0, 0, 0, 100.0f, &ctrl3) == 0)
-            return 0;
-        hire = gm_BuildQuery(1, 1, ctrl3);
-    }
-    win = d2_OpenForm(0, 0, "locations\diebesgilde\diebesgilde_entfuehrung");
-    d2_CentreViewWindows(win);
-    d2_SetPointerSprite(0, 0);
-    d2_SetForm(win, 1);
-    id = io_PrintText(0x19b9, U_W(param_1), 3, U_W(param_1));
-    ctrl1 = d2_GetWinObj(win, 1, id);
-    ctrl2 = d2_GetWinObj(win, 1, id + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctrl1) {
-                for (i = 0; i < 0x3e; i++)
-                    U_I(msg + i * 4) = 0;
-                *(unsigned char *)(msg + 4) = 0x3c;
-                *(unsigned char *)(msg + 0x36) = 1;
-                U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
-                U_I(msg + 0x58) = U_I(param_1 + 4);
-                U_I(msg + 0x5c) = U_I(ctrl1 + 1);
-                U_I(msg + 0x60) = U_I(U_I((unsigned)&ai_PlayerBuilding) + 1);
-                for (i = 0; i < 8; i++)
-                    U_I(msg + 0x38 + i * 4) = -1;
-                n = 0;
-                for (p = (char *)(unsigned)&ai_CharInts; p < (char *)((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2); p += 0x21c) {
-                    if (*(char *)(p + 0x184) != 0) {
-                        U_I(msg + 0x38 + n * 4) = U_I(p);
-                        n++;
-                    }
-                }
-                if (n == 0) {
-                    sv_MessageBox((char *)U_I((unsigned)&full_data_144094c), 0);
-                    U_I((unsigned)&d2_ClickedId) = -1;
-                } else {
-                    cm_SendLongMessage(msg);
-                    cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), -3);
-                    gv_Accuse(0x1a, 1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), U_I(param_1 + 4), -1);
-                    snd_PlayFavourComment();
-                    sv_ClearSelection();
-                    ret = 1;
-                    U_I((unsigned)&sv_PopRequest) = 3;
-                }
-            } else if (U_I((unsigned)&d2_PointerObj) == ctrl2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+    done = 0;
+    if (victim != 0 && sv_CheckMoney((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], 3) != 0
+        && (victim->bld == 0 || victim->bld->owner != victim->id)) {
+        if (victim->heldRounds != 0) {
+            txt_Format(text, 0x19ba, victim->id);
+            sv_MessageBox(text, 0);
+        } else {
+            bld = (AIBLD *)victim->bld2;
+            if (bld == 0) {
+                if (ai_PickActionBuilding((struct AIPER *)victim, 0, LC_KIDNAP_PLACES, 0, 100.0f, &picked) == 0)
+                    return 0;
+                bld = (AIBLD *)gm_BuildQuery(1, 1, picked);
             }
+            win = d2_OpenForm(0, 0, "locations\\diebesgilde\\diebesgilde_entfuehrung");
+            d2_CentreViewWindows(win);
+            d2_SetPointerSprite(0, 0);
+            d2_SetForm(win, 1);
+            base = io_PrintText(0x19b9, victim->id, 3, victim->id);
+            ok = d2_GetWinObj(win, 1, base);
+            cancel = d2_GetWinObj(win, 1, base + 1);
+            d2_ClickedId = -1;
+            do {
+                if (dm_L.rup != 0)
+                    sv_PopRequest = 1;
+                if (d2_ClickedId == -1)
+                    continue;
+                if (d2_PointerObj == ok) {
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x3c;
+                    msg.flags = 1;
+                    msg.to = ai_CharInts[ai_PlayerId][0];
+                    msg.arg[0] = victim->netId;
+                    msg.arg[1] = bld->id;
+                    msg.arg[2] = ((AIBLD *)ai_PlayerBuilding)->id;
+                    memset(msg.ids, 0xff, sizeof(msg.ids));
+                    n = 0;
+                    for (i = 0; i < 0x300; i++)
+                        if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                            msg.ids[n++] = ((AICHARREC *)ai_Chars)[i].netId;
+                    if (n == 0) {
+                        sv_MessageBox(txt_Ptrs[0x19e3], 0);
+                        d2_ClickedId = -1;
+                    } else {
+                        cm_SendLongMessage((char *)&msg);
+                        cm_SendMoneyDelta(ai_CharInts[ai_PlayerId][0], -3);
+                        gv_Accuse(0x1a, 1, ai_CharInts[ai_PlayerId][0], victim->netId, -1);
+                        snd_PlayFavourComment();
+                        sv_ClearSelection();
+                        done = 1;
+                        sv_PopRequest = 3;
+                    }
+                } else if (d2_PointerObj == cancel)
+                    sv_PopRequest = 1;
+            } while (sv_RunFrame(ai_KidnapWindow, 0x677c7) != 0);
+            d2_CloseView(win);
+            return done;
         }
-        if (sv_RunFrame(ai_Unk5a5120, 0x677c7) == 0)
-            break;
     }
-    d2_CloseView(win);
-    return ret;
+    return 0;
 }
 /* 0x5a53e0, the kidnapping start (0x90 frame): 0x520fe0 (param_1); the first record of the type 0x3c (0x53e400
    (1, 0, 0x3c) / 0x53e300) whose +0xb4 is the owner (param_1 + 1) shows the text 0x14408ac and out; else the
@@ -13487,7 +13484,7 @@ void ai_KidnapStart(int param_1)
             req[3] = U_I(((unsigned)&gypsyFilter + 4));
             txt_Format(buf, 0x19b8);
             sv_OpenPlayerBar(param_1, 0);
-            ai_AmountMenu(req, buf, 0, (void *)(unsigned)&ai_Unk5a5120);
+            ai_AmountMenu(req, buf, 0, (void *)(unsigned)&ai_KidnapWindow);
             sv_ClosePlayerBar();
             sv_CameraFollow();
             return;
