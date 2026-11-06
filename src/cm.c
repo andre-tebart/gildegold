@@ -1574,17 +1574,18 @@ void cm_SendChrWalkTo(int netId, int x, int z, int scene)
     m.walk.scene = scene;
     cm_QueueSend(&m);
 }
-/* 0x4c5150, message 0x2f with a name */
+/* 0x4c5150, message 0x2f: the character netId walks to the object `name` of the building bldId (objId: the
+   object instance, -1: none) and sits down - handler 0x4c9830 */
 
-void cm_RequestChrMove(int a, int b, int c, const char *s)
+void cm_RequestChrMove(int netId, int bldId, int objId, const char *name)
 {
     G17MSG m;
 
     m.type = 0x2f;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
-    strcpy((char *)&m.data[0xc], s);
+    m.place.netId = netId;
+    m.place.bldId = bldId;
+    m.place.objId = objId;
+    strcpy(m.place.name, name);
     cm_QueueSend(&m);
 }
 /* 0x4c51b0, "cm_RequestChrMoveToUniverse": message 0x30 with a dummy name (< 0x20 characters) */

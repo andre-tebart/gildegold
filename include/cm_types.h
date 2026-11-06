@@ -454,6 +454,14 @@ typedef struct G17WALKMSG {             /* 16 bytes, the data of message 0x2e (c
     int scene;                          /* 0x0c, the scene it walks in (0: the current one) */
 } G17WALKMSG;
 
+typedef struct G17CHRPLACEMSG {         /* 0x81 bytes, the data of messages 0x2f / 0x30 (cm_RequestChrMove,
+                                           cm_RequestChrMoveToUniverse; their handlers 0x4c9830 / 0x4c99b0) */
+    int netId;                          /* 0x00, the character ("sp_<netId>") */
+    int bldId;                          /* 0x04, the building it goes to (-1: none) */
+    int objId;                          /* 0x08, the object there (-1: none) */
+    char name[0x75];                    /* 0x0c, the object's name (d3_FindObject 0x160), "" for none */
+} G17CHRPLACEMSG;
+
 typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
                                            cm_ExSysMessage 0x4c89b0) */
     unsigned char kind;                 /* 0x00, 0..0x14 */
@@ -593,6 +601,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17WALKMSG walk;                /* 0x10, message 0x2e */
+        G17CHRPLACEMSG place;           /* 0x10, messages 0x2f / 0x30 */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
         G17ROUTEMSG route;              /* 0x10, messages 0x68 / 0x69 */
