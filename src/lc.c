@@ -1514,129 +1514,128 @@ int gm_BuildingGoodsList(char *b, unsigned *out, int kind); int d2_CreateChildWi
 void d2_RemoveObj(); int gm_MinutesBetween(); char * he_FindEvent(int n, ...); char * he_NextEvent(void);
 int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...);
 
-/* 0x58c680, the column builder of the production window (1421 B, ROUGH): the columns 0x6f5320 / 0x6f5350 /
-   0x6f5354 / 0x6f5358 / 0x6f536c (0x58 bytes each): for each of the param_3 columns the carrier goods 0x6f5320
-   (the record of the character 0x91aaf0 + id * 0x41 words), the window 0x472aa0 (0xcd x 0x57 at 0x10) and the
-   title 0x731d0 (0x749 / 0x74a), the four goods rows 0x473350 (0x11 + i * 0x31, 0x3a, the goods + 0xdf) with the
-   window entries (+0x4c = 1, +0x1d8 / +0x1dc = -1), the sum control 0x472aa0 (0x43, 4, 0x88, 0x32) and its
-   entry +0x54, the availability 0x5098a0 (the carrier's goods, the list local_b8 / the amounts): a matching
-   row gets the text 0x74d (enough) / 0x74e (short) / 0x74f (none) and the sum 0x750 + the worst; the carrier
-   record 0x53e400 (2, 0, 9 / 8, 3) gives the time ratio (0x4fe280) into the control +0x1e4; the screen
-   0x6f536c; the window control param_2 is re-set each column; at the end the unused columns from iVar6 are
-   cleared (0x6f5350 + i * 0x58 < 0x6f58d0). ROUGH: the goods / row indices are kept from the pseudocode; the
-   out array local_b8 (0x5098a0) and its count local_b4 are not modelled */
-void ai_Unk58c680(int param_1, int param_2, int param_3, int param_4)
+/* 0x58c680, shows the ncols goods columns (ai_ProdColumns) of the resource window in the form win / its part form:
+   builds a column on first use (its child window 0xcd x 0x57 at (x, y), the frame 0x749, the goods picture 0x74a
+   for column 0 else the goods' picture 0xdf + good, the input pictures, the amount window); marks each input by
+   the goods list of the player's building (ai_PlayerBuilding, else ai_FallbackBuilding): 0x74d enough, 0x74e short,
+   0x74f none, the column picture's icon 0x750 + the worst; shows the progress of the running job (kind 9 for
+   column 0, else the kind 8 job of the column's goods: the progress picture 0x4fd and the fill fraction of the
+   elapsed time) and the amount text (200 / 0xc9); then removes the columns from ncols up to 16. The fourth
+   argument is not read
+   @deep rewritten from the original (was a ROUGH body, 1097 B; now 1429 vs 1421, 408 vs 406 instructions,
+   same calls): the column build (child window, font 0x54, frame 0x749, goods picture, input pictures with
+   (short)(k*0x31+0x11), amount window), the input marks from the AIRECIPE goods list (0x74f none / 0x74e
+   short / 0x74d enough, icon 0x750 + worst), the job progress (kind 9 for column 0, else the kind 8 job of
+   the goods; progress picture 0x4fd, fillFraction = minutes(start, now) / minutes(start, end)), the amount
+   texts 200 / 0xc9, the removal of the columns up to 16 (the inPics loop the original unrolls through a
+   pointer). All hunks read: allocation - the original holds 0x54 in ebp for the two font stores and -1 in
+   ecx per store (ours: -1 in ebp, 0x54 immediate: 0x58c734 '+ mov ebp, 0x54' / 0x58c7a1 '- or ebp, -1'),
+   keeps k in ebx with the x recomputed (lea/shl) where ours strength-reduces, and uses ebx = amount = 0 as
+   the zero register in the job branch (0x58ca0d '- test edi, edi' / '+ cmp edi, ebx'; the prover stops at
+   he_FindEvent's 0 pushed from that register). */
+void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 {
-    int *col;
-    int *row;
-    int rec;
-    int i;
-    int n;
+    AIBLD *bld;
+    AIJOB *job;
     int c;
-    int sum;
-    int all;
-    int t0;
-    int t1;
-    unsigned short have[16];
-    int amount[20];
-    int tgt;
+    int k;
+    int j;
+    int worst;
+    int amount;
+    float total;
+    AIRECIPE list;
 
-    tgt = 0;
-    if (U_I((unsigned)&ai_PlayerBuilding) != 0)
-        tgt = U_I((unsigned)&ai_PlayerBuilding);
-    else if (U_I((unsigned)&ai_FallbackBuilding) != 0)
-        tgt = U_I((unsigned)&ai_FallbackBuilding);
-    d2_SetForm(param_1, 0);
-    d2_SetForm(param_1, param_2);
-    gm_BuildingGoodsList(tgt, (char *)have, 1);
-    for (c = 0; c < param_3; c++) {
-        col = (int *)((unsigned)&ai_ProdColumns + c * 0x58);
-        if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58) < 0) {
-            rec = d2_CreateChildWindow(*(int *)((unsigned)((char *)ai_ProdColumns + 0x24) + c * 0x58), *(int *)((unsigned)((char *)ai_ProdColumns + 0x28) + c * 0x58), 0xcd, 0x57,
-                               0x10, U_I((unsigned)&d2_LastWindow));
-            *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58) = rec;
-            U_I((unsigned)&ai_Unkf8f39c + rec * 0x1e2) = 0x54;
-            d2_WinOpenPic(0, 0, 0x749, rec);
-            if (c == 0) {
-                U_I((unsigned)((char *)ai_ProdColumns + 0x34)) = d2_WinOpenPic(0xd, 5, 0x74a, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30)));
-            } else {
-                U_I((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) =
-                    d2_WinOpenPic(0xd, 5, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) + 0xdf, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
-            }
-            n = *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58);
-            U_I(U_I((unsigned)&d2_Objs) + 0x4c + n * 0x2ec) = 1;
-            U_I(U_I((unsigned)&d2_Objs) + 0x1d8 + n * 0x2ec) = -1;
-            U_I(U_I((unsigned)&d2_Objs) + 0x1dc + n * 0x2ec) = -1;
-            row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
-            for (i = 0; i < 4; i++) {
-                if (row[-0xe + i] != 0) {
-                    rec = d2_WinOpenPicStyled(i * 0x31 + 0x11, 0x3a, row[-0xe + i] + 0xdf,
-                                       *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58), -2);
-                    row[i] = rec;
-                    U_I(U_I((unsigned)&d2_Objs) + 0x4c + rec * 0x2ec) = 1;
-                    U_I(U_I((unsigned)&d2_Objs) + 0x1d8 + rec * 0x2ec) = -1;
-                    U_I(U_I((unsigned)&d2_Objs) + 0x1dc + rec * 0x2ec) = -1;
+    bld = 0;
+    if (ai_PlayerBuilding != 0)
+        bld = (AIBLD *)ai_PlayerBuilding;
+    else if (ai_FallbackBuilding != 0)
+        bld = (AIBLD *)ai_FallbackBuilding;
+    d2_SetForm(win, 0);
+    d2_SetForm(win, part);
+    gm_BuildingGoodsList((char *)bld, (unsigned *)&list, 1);
+    for (c = 0; c < ncols; c++) {
+        if (ai_ProdColumns[c].win < 0) {
+            ai_ProdColumns[c].win = d2_CreateChildWindow(ai_ProdColumns[c].x, ai_ProdColumns[c].y, 0xcd, 0x57, 0x10, d2_LastWindow);
+            d2_Wins[ai_ProdColumns[c].win].font = 0x54;
+            d2_WinOpenPic(0, 0, 0x749, ai_ProdColumns[c].win);
+            if (c == 0)
+                ai_ProdColumns[0].pic = d2_WinOpenPic(0xd, 5, 0x74a, ai_ProdColumns[0].win);
+            else
+                ai_ProdColumns[c].pic = d2_WinOpenPic(0xd, 5, ai_ProdColumns[c].good + 0xdf, ai_ProdColumns[c].win);
+            d2_Objs[ai_ProdColumns[c].pic].interactive = 1;
+            d2_Objs[ai_ProdColumns[c].pic].iconx = -1;
+            d2_Objs[ai_ProdColumns[c].pic].icony = -1;
+            for (k = 0; k < 4; k++) {
+                if (ai_ProdColumns[c].in[k] != 0) {
+                    ai_ProdColumns[c].inPics[k] = d2_WinOpenPicStyled((short)(k * 0x31 + 0x11), 0x3a, ai_ProdColumns[c].in[k] + 0xdf, ai_ProdColumns[c].win, -2);
+                    d2_Objs[ai_ProdColumns[c].inPics[k]].interactive = 1;
+                    d2_Objs[ai_ProdColumns[c].inPics[k]].iconx = -1;
+                    d2_Objs[ai_ProdColumns[c].inPics[k]].icony = -1;
                 }
             }
-            rec = d2_CreateChildWindow(0x43, 4, 0x88, 0x32, 0x10, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
-            U_I((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58) = rec;
-            U_I((unsigned)&ai_Unkf8f39c + rec * 0x1e2) = 0x54;
+            ai_ProdColumns[c].amountWin = d2_CreateChildWindow(0x43, 4, 0x88, 0x32, 0x10, ai_ProdColumns[c].win);
+            d2_Wins[ai_ProdColumns[c].amountWin].font = 0x54;
         }
-        all = 0;
-        row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
-        for (i = 0; i < 4; i++) {
-            if (row[i] == 0)
+        worst = 0;
+        for (k = 0; k < 4; k++) {
+            if (ai_ProdColumns[c].in[k] == 0)
                 continue;
-            rec = 0; /* the goods id of the row */
-            sum = 0; /* 0x74d .. 0x74f */
-            U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + row[i] * 0x2ec) = sum;
-            if (all < 2)
-                all = 1;
-        }
-        U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = all + 0x750;
-        n = 0;
-        if (c == 0)
-            rec = he_FindEvent(2, 0, 9, 3, U_I(tgt + 1));
-        else
-            rec = he_FindEvent(2, 0, 8, 3, U_I(tgt + 1));
-        if (rec != 0 && (U_I(rec + 0x14) != 0 || U_I(rec + 0x18) != 0)) {
-            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) < 0)
-                U_I((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = d2_WinOpenPic(0xd, 5, 0x4fd, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
-            n = U_I(rec + 0x18) + U_I(rec + 0x14);
-            t0 = gm_MinutesBetween(rec + 0x44, rec + 0x52);
-            t1 = gm_MinutesBetween(rec + 0x44, (unsigned)&ai_Time);
-            *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = (float)t1 / (float)t0;
-        } else {
-            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) != -1) {
-                d2_RemoveObj(*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58));
-                U_I((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = -1;
+            for (j = 0; j < list.count; j++)
+                if (list.item[j] == ai_ProdColumns[c].in[k])
+                    break;
+            if (j >= list.count) {
+                d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74f;
+                worst = 2;
+            } else if (list.amount[j] < ((AIGOOD *)ai_Goods)[ai_ProdColumns[c].good].need[k]) {
+                d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74e;
+                if (worst <= 1)
+                    worst = 1;
+            } else {
+                d2_Objs[ai_ProdColumns[c].inPics[k]].icon = 0x74d;
             }
-            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) != -1)
-                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = 0.0f;
+        }
+        d2_Objs[ai_ProdColumns[c].pic].icon = worst + 0x750;
+        amount = 0;
+        if (c == 0) {
+            job = (AIJOB *)he_FindEvent(2, 0, 9, 3, bld->id);
+        } else {
+            for (job = (AIJOB *)he_FindEvent(2, 0, 8, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
+                if (job->u.w.lo == ai_ProdColumns[c].good)
+                    break;
+        }
+        if (job != 0 && (job->words14[0] != 0 || job->words14[1] != 0)) {
+            if (ai_ProdColumns[c].bar < 0)
+                ai_ProdColumns[c].bar = d2_WinOpenPic(0xd, 5, 0x4fd, ai_ProdColumns[c].win);
+            amount = job->words14[1] + job->words14[0];
+            total = (float)gm_MinutesBetween(&job->start, &job->end);
+            d2_Objs[ai_ProdColumns[c].pic].fillFraction = (float)gm_MinutesBetween(&job->start, &ai_Time) / total;
+        } else {
+            if (ai_ProdColumns[c].bar != -1) {
+                d2_RemoveObj(ai_ProdColumns[c].bar);
+                ai_ProdColumns[c].bar = -1;
+            }
+            if (ai_ProdColumns[c].pic != -1)
+                d2_Objs[ai_ProdColumns[c].pic].fillFraction = 0;
         }
         if (c == 0) {
-            U_I((unsigned)&d2_LastWindow) = U_I((unsigned)((char *)ai_ProdColumns + 0x4c));
-            io_PrintText(200, n, 0x51e);
+            d2_LastWindow = ai_ProdColumns[0].amountWin;
+            io_PrintText(200, amount, 0x51e);
         } else {
-            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58);
-            io_PrintText(0xc9, n, 0x51e, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 2 + 0x9a8);
+            d2_LastWindow = ai_ProdColumns[c].amountWin;
+            io_PrintText(0xc9, amount, 0x51e, ai_ProdColumns[c].good * 2 + 0x9a8);
         }
-        d2_SetForm(param_1, param_2);
+        d2_SetForm(win, part);
     }
-    if (c >= 0xf)
-        return;
-    for (n = (unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58; n < (unsigned)((unsigned)((char *)ai_ProdColumns + 0x5b0)); n += 0x58) {
-        if (*(int *)n >= 0) {
-            *(int *)(n - 4) = -1;
-            d2_RemoveObj(*(int *)n);
-            *(int *)n = -1;
-            *(int *)(n + 4) = -1;
-            *(int *)(n + 8) = -1;
-            *(int *)(n + 0xc) = -1;
-            *(int *)(n + 0x10) = -1;
-            *(int *)(n + 0x14) = -1;
-            *(int *)(n + 0x18) = -1;
-            *(int *)(n + 0x1c) = -1;
+    for (; c < 16; c++) {
+        if (ai_ProdColumns[c].win >= 0) {
+            ai_ProdColumns[c].selected = -1;
+            d2_RemoveObj(ai_ProdColumns[c].win);
+            ai_ProdColumns[c].win = -1;
+            ai_ProdColumns[c].pic = -1;
+            ai_ProdColumns[c].bar = -1;
+            for (k = 0; k < 4; k++)
+                ai_ProdColumns[c].inPics[k] = -1;
+            ai_ProdColumns[c].amountWin = -1;
         }
     }
 }
@@ -3835,7 +3834,7 @@ int ai_SearchResourceWindow(int param_1)
             }
             _itoa(cols - 1, a, 10);
             d2_SetObjText(a[2], a);
-            ai_Unk58c680(win, 2, cols, rec3);
+            ai_UpdateResourceColumns(win, 2, cols, rec3);
             ai_UpdateProdGoodsList(param_1, rec1);
             ai_LayoutProdGoodsList(win, 1, 0, param_1);
             n = sv_RunFrame(ai_ProductionWindow, 0x677c7);

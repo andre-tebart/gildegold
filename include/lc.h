@@ -61,14 +61,15 @@ int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and fre
 extern int *ai_BauplatzList;            /* 0x6f5308 */
 
 /* the goods columns of the production window "Handel\Handel_PRODUKTION" (ai_ProductionWindow; ai_InitProductionTables sets
-   them up, ai_Unk58c680 builds their windows) */
+   them up, ai_UpdateResourceColumns builds their windows) */
 typedef struct LCPRODCOL {              /* 0x58 bytes */
     int good;                           /* 0x00, the goods the column makes (an ai_Goods index) */
     int in[4];                          /* 0x04, its input goods (AIGOOD.in), 0 = none */
     int need[4];                        /* 0x14, the amount of each input one run takes (AIGOOD.need) */
     int x;                              /* 0x24, the column window's x (0x10) */
     int y;                              /* 0x28, its y (8 + column * 0x78) */
-    int unk2c;                          /* 0x2c, -1 at the init (no reader read yet) */
+    int selected;                       /* 0x2c, the selected entry of the column, -1 = none (ai_UpdateProdColumns sets it from
+                                           0x6f5a60 and compares it; reasoned guess from those uses) */
     int win;                            /* 0x30, the column's child window, -1 = not built yet */
     int pic;                            /* 0x34, the goods picture: a click on it (d2_PointerObj) picks the column */
     int bar;                            /* 0x38, the progress picture 0x4fd of the running job, -1 = none */
