@@ -1560,17 +1560,18 @@ int cm_SendObject1b5(int owner, G17B7 value)
     m.obj.owner = owner;
     return cm_QueueSend(&m);
 }
-/* 0x4c5100, sends message 0x2e: its handler (0x4c97c0) gives the person "sp_<a>" the walk action 0x2d to (b, c) in scene d */
+/* 0x4c5100, message 0x2e: the character netId ("sp_<netId>") walks to the cell (x, z) in scene (0: the
+   current one) - handler 0x4c97c0 */
 
-void cm_SendChrWalkTo(int a, int b, int c, int d)
+void cm_SendChrWalkTo(int netId, int x, int z, int scene)
 {
     G17MSG m;
 
     m.type = 0x2e;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
-    G17_I(m, 0xc) = d;
+    m.walk.netId = netId;
+    m.walk.x = x;
+    m.walk.z = z;
+    m.walk.scene = scene;
     cm_QueueSend(&m);
 }
 /* 0x4c5150, message 0x2f with a name */

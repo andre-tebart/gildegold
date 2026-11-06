@@ -446,6 +446,14 @@ typedef struct G17PLANTMSG {            /* 0x11 bytes, the data of message 0x2c 
     int fallId;                         /* 0x0d, G15PLANT.fallId: set with fall, else the fall model to undo (-1 none) */
 } G17PLANTMSG;
 
+typedef struct G17WALKMSG {             /* 16 bytes, the data of message 0x2e (cm_SendChrWalkTo, its handler
+                                           0x4c97c0) */
+    int netId;                          /* 0x00, the character ("sp_<netId>") */
+    int x;                              /* 0x04, the cell (ch_AddAction 0x2d) */
+    int z;                              /* 0x08 */
+    int scene;                          /* 0x0c, the scene it walks in (0: the current one) */
+} G17WALKMSG;
+
 typedef struct G17SYSMSG {              /* 0x81 bytes, the data of message 0x20 (the system message, 0x4c4db0; its handler
                                            cm_ExSysMessage 0x4c89b0) */
     unsigned char kind;                 /* 0x00, 0..0x14 */
@@ -584,6 +592,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17PARTYMSG leaveParty;         /* 0x10, message 0x2a */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
+        G17WALKMSG walk;                /* 0x10, message 0x2e */
         G17TABLEMSG table;              /* 0x10, message 0x54 */
         G17FIGHTMSG fight;              /* 0x10, message 0x55 */
         G17ROUTEMSG route;              /* 0x10, messages 0x68 / 0x69 */
