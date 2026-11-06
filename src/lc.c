@@ -17799,36 +17799,43 @@ void ai_BuyCartWindow(AIBLD *bld)
     d2_CloseView(win);
     d2_RadioClear(list);
 }
-/* 0x5ae570, the transport confirmation (305 B): more than 0x20 or no entries: out; the quantity is the last
-   0x5087f0 of the entries (the word of the record, the byte +9); the text 0xdc (the count, the kind text 2 * the
-   word of the first entry + 0x9a8, the quantity, or in the order of 0x5190a0) and, confirmed (0x521150, 0x101),
-   the entries are paid (0x5034b0) and the order 0x4c47e0 is sent */
+/* 0x5ae570, sells the n carts carts selected in the transport window (317 B): none or more than 0x20: nothing;
+   the price is 40 % of the sum of their item prices (gm_ItemPrice by the goods id and the fill); the question
+   0xdc names the count and, for one cart, its goods (0x9a8 + 2 * id), for more the text 0xc10, with the price
+   in the order of the language (ls_GetLanguage); confirmed (0x101), the carts are freed (gm_FreeObject) and the
+   price is paid to the player (cm_SendMoveGoods from the bank) */
 
-void ai_Unk5ae570(int param_1, int *param_2)
+void ai_SellCarts(int n, AIOBJ **carts)
 {
-    char text[1024];
-    int qty;
-    int v;
-    int id;
+    char text[0x400];
+    int sum;
+    int price;
     int i;
 
-    if (param_1 > 0x20)
+    if (n > 0x20 || n == 0)
         return;
-    if (param_1 == 0)
-        return;
-    qty = 0;
-    for (i = 0; i < param_1; i++)
-        qty = (int)gm_ItemPrice(U_W(param_2[i]), *(unsigned char *)(param_2[i] + 9));
-    v = ls_GetLanguage();
-    id = param_1 < 2 ? U_W(*param_2) * 2 + 0x9a8 : 0xc10;
-    if (v == 0)
-        txt_Format(text, 0xdc, qty, id, param_1);
-    else if (v == 1)
-        txt_Format(text, 0xdc, param_1, id, qty);
+    sum = 0;
+    for (i = 0; i < n; i++)
+        sum += gm_ItemPrice(carts[i]->id, carts[i]->fill);
+    price = (int)(sum * 0.4);
+    switch (ls_GetLanguage()) {
+    case 0:
+        if (n > 1)
+            txt_Format(text, 0xdc, price, n, 0xc10);
+        else
+            txt_Format(text, 0xdc, price, n, carts[0]->id * 2 + 0x9a8);
+        break;
+    case 1:
+        if (n > 1)
+            txt_Format(text, 0xdc, n, 0xc10, price);
+        else
+            txt_Format(text, 0xdc, n, carts[0]->id * 2 + 0x9a8, price);
+        break;
+    }
     if (sv_MessageBox(text, 0x101) != 0) {
-        for (i = 0; i < param_1; i++)
-            gm_FreeObject(param_2[i]);
-        cm_SendMoveGoods(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, qty);
+        for (i = 0; i < n; i++)
+            gm_FreeObject((int)carts[i]);
+        cm_SendMoveGoods(ai_CharInts[ai_PlayerId][0], -1, ai_OwnPlayer, price);
     }
 }
 /* 0x5ae6b0, a transport order message (415 B): every carrier of the kind 0x11 (0x53e400 (2, 3, the +2 field of
