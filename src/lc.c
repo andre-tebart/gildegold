@@ -101,6 +101,7 @@ struct D3SM;
 extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
+#define gypsyFilterWords (*(int (*)[2])&gypsyFilter)  /* 0x5eed68, the filter's two 32-bit words */
 extern GAPDATA full_data_6f40e0[];
 extern char * ai_BTypes;
 extern int d2_LastWindow;
@@ -13456,30 +13457,57 @@ int ai_KidnapWindow(AICHARREC *victim)
     }
     return 0;
 }
-/* 0x5a53e0, the kidnapping start (0x90 frame): 0x520fe0 (param_1); the first record of the type 0x3c (0x53e400
-   (1, 0, 0x3c) / 0x53e300) whose +0xb4 is the owner (param_1 + 1) shows the text 0x14408ac and out; else the
-   type 0x3d records: an own record +0xb0 with a live character 0x505df0 (+0xac) whose +0x1b1 is set shows the
-   text and out, otherwise it is marked 0x4c4c60 (-1, rec) at +0x84; with no record the request (0, 0x400,
-   0x5eed68, 0x5eed6c, 6, the eight -1 at +0x1c) and the text 0x19b8 go to 0x525220 (param_1, 0) / 0x5c1130
-   (the request, the text, 0, the callback 0x5a5120), then 0x525440 / 0x52d7a0 */
+void cm_SendMessage5b(int a, int b, int c);
 
-void ai_KidnapStart(int param_1)
+typedef struct LCKIDNAPEVENT {          /* the kidnap event 0x3c's words over AIJOB's union (he.c HEEV3C, same layout) */
+    char pad00[0xac];
+    int victim;                         /* 0xac, the netId of the victim */
+    int target;                         /* 0xb0, the id of the building the gang goes to for the victim */
+    int guild;                          /* 0xb4, the thieves' guild's id */
+} LCKIDNAPEVENT;
+typedef struct LCRANSOMEVENT {          /* the ransom event 0x3d's words over AIJOB's union (he.c HEEV3D, same layout) */
+    char pad00[0xac];
+    int victim;                         /* 0xac, the netId of the kidnapped character */
+    int guild;                          /* 0xb0, the id of the thieves' guild that holds it */
+    AITIME since;                       /* 0xb4, the time of the kidnap */
+} LCRANSOMEVENT;
+
+/* 0x5a53e0, starts the kidnapping by the building bld (0x90 frame): 0x520fe0 (bld); the first kidnap event 0x3c
+   (0x53e400 (1, 0, 0x3c) / 0x53e300) of the guild bld->id shows the message ai_TextKidnapMessage and returns;
+   else the ransom events 0x3d: one of bld (its guild) with a live character (0x505df0, its victim) whose
+   AICHAR.heldRounds is set shows the message and returns, otherwise the event's cm slot is set (0x4c4c60
+   (-1, rec)); with no event the request (0, 0x400, the two words of gypsyFilter, 6, the eight -1 at +0x1c) and
+   the text 0x19b8 go to 0x525220 (bld, 0) / 0x5c1130 (the request, the text, 0, the callback 0x5a5120), then
+   0x525440 / 0x52d7a0
+   @deep readability cleared (AIJOB/LCKIDNAPEVENT/LCRANSOMEVENT/AICHARREC fields, gypsyFilterWords,
+   ai_TextKidnapMessage); left: regs 32 and code 20, allocation and scheduling only (equal 99 ins / 333
+   bytes): the two rep stosd fills and the gypsyFilter low-word load are placed differently (ours lea
+   edx,[buf] where the original has mov edx,[gypsyFilter]; push 0x19b8; the ecx/edx/eax roles of the
+   [rec+0xb0] load and the two req stores differ). Tried: req[2]/req[3] store order, the loads moved before
+   the -1 fill (M8 gone, diff 58 bytes), (int)gypsyFilter + >>32 (a 64-bit read, frame 0x94): the natural
+   order is kept (references: M8 at +0xc9: ours refers to gypsyFilter (0x5eed68), the original's field to
+   0x5eed6c (gypsyFilter+0x4), explained: the M8 at +0xc9 is an alignment pairing: ours mov
+   eax,[gypsyFilter] against the original mov eax,[gypsyFilter+4]; both sides load the two words of
+   gypsyFilter into req[2]/req[3] and the prover shows the same store value (store4 [frame+0x8] =
+   [0x5eed68]4 on both sides), only the register of the first load differs) */
+
+void ai_KidnapStart(AIBLD *bld)
 {
     int req[20];
     char buf[0x40];
-    int rec;
-    int ch;
+    AIJOB *rec;
+    AICHARREC *ch;
     int i;
 
-    if (sv_CheckCharacterFlag(param_1) != 0)
+    if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    rec = he_FindEvent(1, 0, 0x3c);
+    rec = (AIJOB *)he_FindEvent(1, 0, 0x3c);
     while (rec != 0) {
-        if (U_I(rec + 0xb4) == U_I(param_1 + 1))
+        if (((LCKIDNAPEVENT *)rec)->guild == bld->id)
             goto found;
-        rec = he_NextEvent();
+        rec = (AIJOB *)he_NextEvent();
     }
-    rec = he_FindEvent(1, 0, 0x3d);
+    rec = (AIJOB *)he_FindEvent(1, 0, 0x3d);
     for (;;) {
         if (rec == 0) {
             for (i = 0; i < 0x14; i++)
@@ -13489,35 +13517,26 @@ void ai_KidnapStart(int param_1)
             req[0] = 0;
             req[1] = 0x400;
             req[4] = 6;
-            req[2] = U_I(((unsigned)&gypsyFilter));
-            req[3] = U_I(((unsigned)&gypsyFilter + 4));
+            req[2] = gypsyFilterWords[0];
+            req[3] = gypsyFilterWords[1];
             txt_Format(buf, 0x19b8);
-            sv_OpenPlayerBar(param_1, 0);
-            ai_AmountMenu(req, buf, 0, (void *)(unsigned)&ai_KidnapWindow);
+            sv_OpenPlayerBar((int)bld, 0);
+            ai_AmountMenu(req, buf, 0, ai_KidnapWindow);
             sv_ClosePlayerBar();
             sv_CameraFollow();
             return;
         }
-        if (U_I(rec + 0xb0) == U_I(param_1 + 1)) {
-            ch = gm_FindChar(U_I(rec + 0xac));
-            if (ch != 0 && *(unsigned char *)(ch + 0x1b1) > 0)
+        if (((LCRANSOMEVENT *)rec)->guild == bld->id) {
+            ch = (AICHARREC *)gm_FindChar(((LCRANSOMEVENT *)rec)->victim);
+            if (ch != 0 && ch->heldRounds > 0)
                 goto found;
-            U_I(rec + 0x84) = cm_SendExSetHE(-1, rec);
+            rec->exSlot = cm_SendExSetHE(-1, (int)rec);
         }
-        rec = he_NextEvent();
+        rec = (AIJOB *)he_NextEvent();
     }
 found:
-    sv_MessageBox((char *)U_I((unsigned)&full_data_14408ac), 0);
+    sv_MessageBox(ai_TextKidnapMessage, 0);
 }
-
-void cm_SendMessage5b(int a, int b, int c);
-
-typedef struct LCRANSOMEVENT {          /* the ransom event 0x3d's words over AIJOB's union (he.c HEEV3D, same layout) */
-    char pad00[0xac];
-    int victim;                         /* 0xac, the netId of the kidnapped character */
-    int guild;                          /* 0xb0, the id of the thieves' guild that holds it */
-    AITIME since;                       /* 0xb4, the time of the kidnap */
-} LCRANSOMEVENT;
 
 /* 0x5a5530, the ransom window of the thieves' guild's kidnapping room bld "locations\diebesgilde\diebesgilde_loesegeld"
    (nothing when sv_CheckCharacterFlag refuses the building): the victim bld->victimId (or the text 0x19c8 when it is

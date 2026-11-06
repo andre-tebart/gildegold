@@ -120,7 +120,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextBribe                      (*(char * *)((char *)txt_Ptrs + 0x066c0))  /* 0x1440880, text 0x19b0: the plate text of the bribe contact contact_BESTECHEN (ai_DungeonBribeListener) */
 #define full_data_1440894                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x066d4))  /* 0x1440894 */
 #define ai_ContactTextKidnap                     (*(char * *)((char *)txt_Ptrs + 0x066dc))  /* 0x144089c, the hover text of the contact_ENTFUEHREN plate (ai_KidnapContact -> ai_KidnapStart) */
-#define full_data_14408ac                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x066ec))  /* 0x14408ac */
+#define ai_TextKidnapMessage                     (*(char * *)((char *)txt_Ptrs + 0x066ec))  /* 0x14408ac, text 0x19bb: the message ai_KidnapStart shows when the building already has a kidnap event */
 #define ai_ContactTextRansom                     (*(char * *)((char *)txt_Ptrs + 0x0670c))  /* 0x14408cc, the hover text of the contact_LOESEGELD plate (ai_KidnapContact -> ai_RansomWindow) */
 #define full_data_14408e0                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x06720))  /* 0x14408e0 */
 #define full_data_14408e8                        (*(unsigned char (*)[92])((char *)txt_Ptrs + 0x06728))  /* 0x14408e8 */
