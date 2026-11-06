@@ -19826,14 +19826,16 @@ void he_OpenHelpEvents(char *name)
         }
     }
 }
-/* 0x5679b0, a Ghidra miss: the allocation handler of the tutorial event 0x83: the hint script by the profession (0x504ad0 of the kind byte 0x770ce4 of the local player: 1 / 2 / 3 "help_events_hw", 5 / 6 "help_events_alpa", 7 "help_events_kirche", 4 "help_events_wirt", 0xb "help_events_dieb") is read
-   (0x567810), the first run is the first table entry 0x6fa260 (ROUGH) */
+/* 0x5679b0, the allocation handler of the tutorial hint event 0x83 (he_RunHint): the hint script is picked by the
+   job id (+0x164) of the local player (gm_TitleGroup: 1 / 2 / 3 "help_events_hw", 5 / 6 "help_events_alpa",
+   7 "help_events_kirche", 4 "help_events_wirt", 0xb "help_events_dieb") and read by he_OpenHelpEvents; the due
+   clock is the first hint entry's */
 
-void he_Unk5679b0(int ev)
+void he_AllocHint(AIJOB *ev)
 {
     int k;
 
-    k = gm_TitleGroup(*(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c));
+    k = gm_TitleGroup((unsigned char)ai_CharInts[ai_PlayerId][0x58]);
     if (k == 1 || k == 2 || k == 3)
         he_OpenHelpEvents("help_events_hw");
     else if (k == 5 || k == 6)
@@ -19844,10 +19846,10 @@ void he_Unk5679b0(int ev)
         he_OpenHelpEvents("help_events_wirt");
     else if (k == 0xb)
         he_OpenHelpEvents("help_events_dieb");
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x52) = he_Hints[0].year;
-    *(short *)(ev + 0x56) = he_Hints[0].hour;
-    *(int *)(ev + 0x58) = he_Hints[0].min;
+    ev->end = ai_Time;
+    ev->end.year = he_Hints[0].year;
+    ev->end.hour = he_Hints[0].hour;
+    ev->end.min = he_Hints[0].min;
 }
 /* 0x567a80, the run handler of the tutorial hint event 0x83: state 0 shows the he_Hints entry of the event's index (its text id through he_ShowNews to the local player, when the hint option ai_GamePanel.byte[1] is on), steps to the next entry and sets the next run to that entry's due clock; an empty entry ends (state 1); stages -1 / -2 free the record
    @deep read the whole function against the original and rebuilt the statements: the hint entry
@@ -20258,7 +20260,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(117, 0, 0, 1282, -1);
     if (he_SetEventHandlers(124, (void *)he_AllocTitleDue, (void *)he_RunTitleDue) != 0)
         return 1;
-    if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_RunHint) != 0)
+    if (he_SetEventHandlers(131, (void *)he_AllocHint, (void *)he_RunHint) != 0)
         return 1;
     if (he_SetEventHandlers(132, (void *)he_Unk567b80, (void *)he_RunTip) != 0)
         return 1;
