@@ -158,6 +158,13 @@ typedef struct CMJOINPARTYMSG {     /* 8 bytes, the data of message 0x29 (its ha
     int partyId;                    /* 0x00, the scene party record (cm_PartyById) */
     int member;                     /* 0x04, the member's netId (cm_AddPartyMember) */
 } CMJOINPARTYMSG;
+typedef struct CMWALKPATHMSG {      /* 0x24 bytes, the data of message 0x4f (its handler cm_ExWalkPath; no sender in
+                                       the sources, the path cells of a walk) */
+    char name[0x18];                /* 0x00, the character's object name ("sp_<id>") */
+    int from;                       /* 0x18, the first cell written */
+    int to;                         /* 0x1c, the cell past the path (the action's new path length) */
+    unsigned char cells[4];         /* 0x20, up to two cells, x and z bytes each */
+} CMWALKPATHMSG;
 typedef struct CMPOSMSG {           /* 0x10 bytes read, the data of message 0x32 (its handler cm_ExChrSetPos) */
     int charId;                     /* 0x00, the character */
     D3VECTOR pos;                   /* 0x04, its new position (ch_SetPos) */
@@ -5677,27 +5684,33 @@ int cm_ExObjCell(G17MSG *m, G17STAT *s)
     ch_AddAction(p, 0x3a, m->objCell.x, m->objCell.z, sc);
     return 0;
 }
-/* 0x4cc110, handler of type 0x4f: two bytes of the table +0xf4 of the action record (type 0x3a) of person data[0] */
+/* 0x4cc110, message 0x4f (no sender in the sources; reasoned: the path cells of a walk): writes up to two cells
+   of the named character's walk action 0x3a into its path, from the cell "from" up to "to"; 1 when the name is
+   not found, 2 when the character runs no 0x3a action */
 
-int ai_Unk4cc110(G17MSG *m, G17STAT *s)
+int cm_ExWalkPath(G17MSG *m, G17STAT *s)
 {
-    char *p, *a, *q;
+    CMWALKPATHMSG *d;
+    CHARACTER *p;
+    CHACTION *a;
+    unsigned char *cell;
     int idx, i;
 
-    p = ch_FindByName((char *)&m->data[0]);
+    d = (CMWALKPATHMSG *)m->data;
+    p = ch_FindByName(d->name);
     if (p == 0)
         return 1;
-    a = *(char **)(p + 0x128);
-    if (a == 0 || a[9] != 0x3a)
+    a = p->actions;
+    if (a == 0 || a->type != 0x3a)
         return 2;
-    if (*(int *)(a + 0xf4) != 0) {
-        *(int *)(a + 0xf0) = G17_I(*m, 0x1c);
-        idx = G17_I(*m, 0x18);
-        q = (char *)&m->data[0x21];
-        for (i = 0; i < 2 && idx < *(int *)(a + 0xf0); i++) {
-            (*(char **)(a + 0xf4))[idx * 2] = q[-1];
-            (*(char **)(a + 0xf4))[idx * 2 + 1] = q[0];
-            q += 2;
+    if (a->u.walk.path != 0) {
+        a->u.walk.pathLen = d->to;
+        idx = d->from;
+        cell = d->cells;
+        for (i = 0; i < 2 && idx < a->u.walk.pathLen; i++) {
+            ((unsigned char *)a->u.walk.path)[idx * 2] = cell[0];
+            ((unsigned char *)a->u.walk.path)[idx * 2 + 1] = cell[1];
+            cell += 2;
             idx++;
         }
     }
@@ -17019,7 +17032,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { cm_ExNothing, cm_ExGroupPassed, ai_AlwaysTrue, cm_ExNothing, cm_ExNetFlags, cm_ExNothing, cm_ExNothing, cm_ExNothing, cm_ExLoadSize, cm_ExLoadBlock, cm_ExCreateBuilding, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, cm_ExDeleteObject, cm_ExMoveGoods, cm_ExMoveGoodsUnchecked, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, cm_ExRemoveGoods, cm_ExCreateObject, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, cm_ExSetField, cm_ExFloatDelta, cm_ExRelations, cm_ExLongMessage, cm_ExSetHE, cm_ExTime, cm_ExGameOver, cm_ExSysMessage, cm_ExKillCharacter, cm_ExAddStraftat, cm_ExRetireCrime, cm_ExProofExecuted, cm_ExDropEvidence, cm_ExSendCutInfo, cm_ExNewParty, cm_ExAllocCutscene, cm_ExAddPartyMember, cm_ExLeaveParty, cm_ExRemoveOwned, cm_ExSetPlant, cm_ExCreateSermon, cm_ExChrWalkTo, cm_ExChrWalkToDummy, cm_ExChrMoveToUniverse, cm_ExChrStop, cm_ExChrSetPos, cm_ExCartState, cm_ExPlaceOnStage, cm_ExChrGotoBuilding, cm_ExChrUseGates, cm_ExChrAnim, cm_ExOwnership, cm_ExSetHome, cm_ExGebUpgrade, cm_ExBuildingDestroyed, cm_ExHandOverCrimes, cm_ExHire, cm_ExCharModel, cm_ExGoodsRecord, cm_ExGoodsDelta, cm_ExLoadStatistics, cm_ExUpdateSmoke, cm_ExSkillsChanged, cm_ExApplication, cm_ExOfficeMessage, cm_ExDecisionValue, cm_ExChangePlayerHe, cm_ExSetJob, cm_ExSpawnCharacter, cm_ExFreeObject, cm_ExChat, cm_ExCreateGeb, cm_ExCharHalt, cm_ExObjCell, ai_Unk4cc110, cm_ExCutEntry, cm_ExCutEntryUpdate, ai_Unk4cc330, ai_Unk4cc390, cm_ExTableRequest, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, cm_ExAddSkill, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, cm_ExAlchemistOrder, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, cm_ExSetRoute, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { cm_ExNothing, cm_ExGroupPassed, ai_AlwaysTrue, cm_ExNothing, cm_ExNetFlags, cm_ExNothing, cm_ExNothing, cm_ExNothing, cm_ExLoadSize, cm_ExLoadBlock, cm_ExCreateBuilding, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, cm_ExDeleteObject, cm_ExMoveGoods, cm_ExMoveGoodsUnchecked, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, cm_ExRemoveGoods, cm_ExCreateObject, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, cm_ExSetField, cm_ExFloatDelta, cm_ExRelations, cm_ExLongMessage, cm_ExSetHE, cm_ExTime, cm_ExGameOver, cm_ExSysMessage, cm_ExKillCharacter, cm_ExAddStraftat, cm_ExRetireCrime, cm_ExProofExecuted, cm_ExDropEvidence, cm_ExSendCutInfo, cm_ExNewParty, cm_ExAllocCutscene, cm_ExAddPartyMember, cm_ExLeaveParty, cm_ExRemoveOwned, cm_ExSetPlant, cm_ExCreateSermon, cm_ExChrWalkTo, cm_ExChrWalkToDummy, cm_ExChrMoveToUniverse, cm_ExChrStop, cm_ExChrSetPos, cm_ExCartState, cm_ExPlaceOnStage, cm_ExChrGotoBuilding, cm_ExChrUseGates, cm_ExChrAnim, cm_ExOwnership, cm_ExSetHome, cm_ExGebUpgrade, cm_ExBuildingDestroyed, cm_ExHandOverCrimes, cm_ExHire, cm_ExCharModel, cm_ExGoodsRecord, cm_ExGoodsDelta, cm_ExLoadStatistics, cm_ExUpdateSmoke, cm_ExSkillsChanged, cm_ExApplication, cm_ExOfficeMessage, cm_ExDecisionValue, cm_ExChangePlayerHe, cm_ExSetJob, cm_ExSpawnCharacter, cm_ExFreeObject, cm_ExChat, cm_ExCreateGeb, cm_ExCharHalt, cm_ExObjCell, cm_ExWalkPath, cm_ExCutEntry, cm_ExCutEntryUpdate, ai_Unk4cc330, ai_Unk4cc390, cm_ExTableRequest, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, cm_ExAddSkill, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, cm_ExAlchemistOrder, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, cm_ExSetRoute, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckMoveGoods, sv_ReturnZero, cm_CheckSellObject, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckFieldDeltas, sv_ReturnZero, sv_ReturnZero, cm_CheckSetField, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckOwnership, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckApplication, cm_CheckOfficeMessage, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckDarkCorner, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckCutsceneReady, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char cm_WalkToDummyWhy[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

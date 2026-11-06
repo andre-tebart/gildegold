@@ -2863,3 +2863,4 @@
 2026-11-06T23:26:56 0x004cb9b0 data ai_Unk4cb9b0 -> cm_ExSetJob by:main why:message 0x48 is cm_SendSetJob (G17SETJOBMSG: the character id, the job); the handler gives the character the job (gm_SetJob) and chooses its head icon
 2026-11-06T23:28:02 0x004cbff0 data ai_Unk4cbff0 -> cm_ExCharHalt by:main why:message 0x4d is cm_SendCharHalt (G17CHARIDMSG: the character id); the handler stops the event script the character model runs
 2026-11-06T23:29:12 0x004cc050 func ai_Unk4cc050 -> cm_ExObjCell by:main why:message 0x4e is cm_SendObjCell (G17OBJCELLMSG: the character name, the cell x / z, a second object name); the handler walks the character to the cell
+2026-11-06T23:31:15 0x004cc110 func ai_Unk4cc110 -> cm_ExWalkPath by:main why:message 0x4f carries path cells for the walk action 0x3a of the named character (name, from, to, two cells); no sender in the sources, the name is a reasoned guess
