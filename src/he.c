@@ -25110,8 +25110,8 @@ void he_Unk5734b0(int ev)
     HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
 }
 
-void he_Unk5736d0(char *pl, char *per, int a);  /* 0x5736d0 */
-void he_Unk573e30(char *pl, int a);             /* 0x573e30 */
+void he_GypsyApproach(char *pl, char *per, int a);  /* 0x5736d0 */
+void he_GypsyFee(AICHAR *pl, int a);           /* 0x573e30 */
 
 /* 0x573580, the run of the event 0x9d: -2 / -1 free; nothing while paused or while the pending handle +0x84 is not done
    (0x4c3ae0); then +0x84 = -1, the due clock +0x52 = now, the figure +0xb0 (0x505df0) and the player record (0x770b80) must
@@ -25139,14 +25139,14 @@ void he_Unk573580(int ev)
     pl = (char *)((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c);
     switch (HM_I(ev, 0x70)) {
     case 0:
-        he_Unk5736d0(pl, per, HM_I(ev, 0xac));
+        he_GypsyApproach(pl, per, HM_I(ev, 0xac));
         gm_AddTime(ev + 0x52, 0x18, 0, 0);
         *(unsigned short *)(ev + 0x56) = 6;
         HM_I(ev, 0x58) = (util_Random(4) & 0xffff) * 0xf + 5;
         HM_I(ev, 0x84) = cm_SendExSetHE(1, ev);
         return;
     case 1:
-        he_Unk573e30(pl, HM_I(ev, 0xac));
+        he_GypsyFee((AICHAR *)pl, HM_I(ev, 0xac));
         HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
         return;
     }
@@ -25160,7 +25160,7 @@ void he_GypsyCurse(AICHAR *pl, AICHAR *per);     /* 0x573c20 */
 void he_GypsySlowdown(AICHAR *pl, AICHAR *per);     /* 0x573d30 */
 
 /* 0x5736d0, dispatches the approach +0xac `a` of the event 0x9d: 0 0x573760, 1 0x573820, 2 0x573970, 3 0x573ae0, 4 0x573c20, else 0x573d30 */
-void he_Unk5736d0(char *pl, char *per, int a)
+void he_GypsyApproach(char *pl, char *per, int a)
 {
     if (a == 0)
         he_GypsyDisease((AICHAR *)pl, (AICHAR *)per);
@@ -25175,7 +25175,7 @@ void he_Unk5736d0(char *pl, char *per, int a)
     else
         he_GypsySlowdown((AICHAR *)pl, (AICHAR *)per);
 }
-/* 0x573760, the approach 0 of the event 0x9d (he_Unk5736d0): the character per catches a disease (gm_CatchDisease
+/* 0x573760, the approach 0 of the event 0x9d (he_GypsyApproach): the character per catches a disease (gm_CatchDisease
    draws its kind and health; none caught: nothing), and per's player is told (the news 0x5fb, the text 0x41dd when
    per is the event's own character pl, else 0x41dc, around 0x41de with the disease's name 0x1632 + kind) with the
    voice "_NACHRICHTEN_ZIGEUNER_02" (pl) or "_NACHRICHTEN_ZIGEUNER_01" (another) */
@@ -25200,7 +25200,7 @@ void he_GypsyDisease(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573820, the approach 1 of the event 0x9d (he_Unk5736d0): the standing of the character per changes: when he
+/* 0x573820, the approach 1 of the event 0x9d (he_GypsyApproach): the standing of the character per changes: when he
    holds an office (amt_GetKind of officeKind, its column col other than 0: the district), its opinion of him falls by
    20 + random(16) (amt_ChangeDistrictOpinion); else, when he is not of the kinds 5 / 6 / 7, the opinion of a random
    district 1 + random(3) rises by 20 + random(16); else every other figure of the kinds 5 .. 7 thinks worse of him
@@ -25235,7 +25235,7 @@ void he_GypsyRumour(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, 0);
 }
-/* 0x573970, the approach 2 of the event 0x9d (he_Unk5736d0): the first worker (kind 0, a building, no jobId) of a
+/* 0x573970, the approach 2 of the event 0x9d (he_GypsyApproach): the first worker (kind 0, a building, no jobId) of a
    building per owns is made to quit: the message 0x33 (the worker who quits, its run handler 0x55e1d0) to per from
    that building, arg[0] the worker's netId. Then per's player is told (the news 0x5fb, the text 0x41dd when per is
    the event's own character pl, else 0x41dc, around 0x41e0 with the worker and the building) with the voice
@@ -25278,7 +25278,7 @@ void he_GypsyWorkerQuits(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573ae0, the approach 3 of the event 0x9d (he_Unk5736d0): of per's five skills the highest and the lowest (the
+/* 0x573ae0, the approach 3 of the event 0x9d (he_GypsyApproach): of per's five skills the highest and the lowest (the
    first of each) trade places: the lowest gains their difference, the highest loses it (cm_SendAddSkill); five
    equal skills: nothing. Then per's player is told (the news 0x5fb, the text 0x41dd when per is the event's own
    character pl, else 0x41dc, around 0x41e1 with both skills' names 0x16b7 + index) with the voice
@@ -25319,7 +25319,7 @@ void he_GypsySwapSkills(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573c20, the approach 4 of the event 0x9d (he_Unk5736d0): posts the message 0x9e to per (from -1; arg[0] the
+/* 0x573c20, the approach 4 of the event 0x9d (he_GypsyApproach): posts the message 0x9e to per (from -1; arg[0] the
    netId of the event's own character pl, -1 when that is per; arg[1] per's netId), whose event (alloc 0x573f20, run
    0x573fb0) charges per once a day for two days. Then per's player is told (the news 0x5fb, the text 0x41dd when per
    is pl, else 0x41dc, around 0x41e2) with the voice "_NACHRICHTEN_ZIGEUNER_02" (pl) or "_NACHRICHTEN_ZIGEUNER_01"
@@ -25352,7 +25352,7 @@ void he_GypsyCurse(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573d30, the default approach (5 and up) of the event 0x9d (he_Unk5736d0): posts the message 0x9f to per (from
+/* 0x573d30, the default approach (5 and up) of the event 0x9d (he_GypsyApproach): posts the message 0x9f to per (from
    -1), whose event (alloc 0x574060, run 0x5740d0) lasts 24 hours; while it exists per's workshops work at 0.9 of
    their rate (he_HasEvent9f). Then per's player is told (the news 0x5fb, the text 0x41dd when per is the event's own
    character pl, else 0x41dc, around 0x41e3) with the voice "_NACHRICHTEN_ZIGEUNER_02" (pl) or
@@ -25386,30 +25386,33 @@ void he_GypsySlowdown(AICHAR *pl, AICHAR *per)
 
 void gm_SendMoneyDelta(int a, int b);                 /* 0x50cc50 */
 
-/* 0x573e30, the second step of the event 0x9d for the figure pl and its argument a (the approach): a random count n by the
-   approach (a < 2: 2 + random (2); a == 2: 3 + random (2); a == 3: 3 + random (3); else 4 + random (4), 3 when a == 4); while
-   pl's +0x194 is below n the approach 0x5736d0 (pl, pl, a) runs; else pl +4 is charged -n (0x50cc50) and the text 0x41db /
-   the message 0x5fa (0x53dda0) with 0x629054 are sent to pl +4 */
-void he_Unk573e30(char *pl, int a)
+/* 0x573e30, the second step of the event 0x9d (state 1 of he_Unk573580): the event's own character pl pays the fee n
+   for the approach a (a < 2: 2 + random(2); a == 2: 3 + random(2); a == 3: 3 + random(3); a == 4: 3 + random(4); else
+   4 + random(4)): with the money he is charged n (gm_SendMoneyDelta) and told (the news 0x5fa, the text 0x41db with n)
+   with the voice "_NACHRICHTEN_ZIGEUNER_00"; without it the approach a strikes himself (he_GypsyApproach (pl, pl, a)).
+   "Fee" is a reasoned guess from that effect. */
+void he_GypsyFee(AICHAR *pl, int a)
 {
     char text[0x200];
     int n;
 
     if (a < 2)
-        n = (util_Random(2) & 0xffff) + 2;
+        n = util_RandomU(2) + 2;
     else if (a == 2)
-        n = (util_Random(2) & 0xffff) + 3;
+        n = util_RandomU(2) + 3;
     else if (a == 3)
-        n = (util_Random(3) & 0xffff) + 3;
+        n = util_RandomU(3) + 3;
+    else if (a == 4)
+        n = util_RandomU(4) + 3;
     else
-        n = (util_Random(4) & 0xffff) + (a == 4 ? 3 : 4);
-    if (HM_I(pl, 0x194) < n) {
-        he_Unk5736d0(pl, pl, a);
-        return;
+        n = util_RandomU(4) + 4;
+    if (pl->money >= n) {
+        gm_SendMoneyDelta(pl->netId, -n);
+        txt_Format(text, 0x41db, n);
+        he_ShowNews(pl->netId, -1, text, 1, 0x5fa, "_NACHRICHTEN_ZIGEUNER_00");
+    } else {
+        he_GypsyApproach((char *)pl, (char *)pl, a);
     }
-    gm_SendMoneyDelta(HM_I(pl, 4), -n);
-    txt_Format(text, 0x41db, n);
-    he_ShowNews(HM_I(pl, 4), -1, text, 1, 0x5fa, (char *)(unsigned)&full_data_629054);
 }
 /* 0x573f20, the alloc of the event 0x9e: state 0, the start and the due clock +0x44 / +0x52 = now, the due clock + 24 hours
    (0x4fe140), the hour +0x56 = 6 and the minute +0x58 = 5 + random (0x10) */
