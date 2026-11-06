@@ -1339,13 +1339,13 @@ int cm_SendRelations(int a, int b, int c, int d)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.rel.from = a;
+    m.rel.to = b;
     m.type = 0x1b;
-    G17_I(m, 8) = c;
-    G17_I(m, 0xc) = d;
-    *(float *)&m.data[0x10] = ai_DifficultyScale;
-    G17_I(m, 0x14) = (int)ai_DifficultyValue;
+    m.rel.delta = c;
+    m.rel.kind = d;
+    m.rel.scale = ai_DifficultyScale;
+    m.rel.level = (int)ai_DifficultyValue;
     return cm_QueueSend(&m);
 }
 /* 0x4c4b70, message 0x1c: msg (0xf8 bytes, AIMSG) as a long message; zeros at 0x38..0x57 become -1 */
