@@ -463,6 +463,13 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     int size;                   /* 0x5c, the grave's size (list) */
                     unsigned char index;        /* 0x60, its index in that list */
                 } graveWork;
+                struct {                        /* the payment message 0x27 (lc.c ai_MoneyMessengerWindow); the payment
+                                                   event keeps its words 0x54 further on (he.c HEEV27) */
+                    int bld;                    /* 0x58, the bank the money goes out from (AIBLD.id) */
+                    unsigned char player;       /* 0x5c, the slot of the player it goes to (ai_PlayerSlots) */
+                    char pad5d[3];
+                    int amount;                 /* 0x60, the amount paid out, the messenger's fee taken */
+                } payment;
                 struct {                        /* the study message 0x5f ("Studium", ai_ExecuteStudy) */
                     int ch;                     /* 0x58, the netId of the character who pays */
                     int pad5c;

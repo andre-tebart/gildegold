@@ -1452,7 +1452,7 @@ exe	0x0047dd30	ai_WorkLoad	ai	2d5f60ff5088ba96	no	byte	control=byte p1=byte p2=b
 exe	0x0047dd70	ai_WorksForMaster	ai	4b31daeae3bded33	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047dd90	ai_IsLocalMaster	ai	9420458f1ba77258	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047ddf0	ai_FindPartner	ai	9cac7a598f034e53	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x0047e360	ai_MasterUpdate	ai	70974c34108e487e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x0047e360	ai_MasterUpdate	ai	4ba03207093d6d65	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047e560	ai_UpdateCharacters	ai	e691e36610d4f04e	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047e7f0	ai_CanAct	ai	006f184c9f583026	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047e840	ai_IsLocalWorker	ai	0608bc97f314c8e0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
@@ -1463,10 +1463,10 @@ exe	0x0047ec20	ai_PlanSlots	ai	a854cc5cf1470c2b	no	byte	control=byte p1=byte p2=
 exe	0x0047ed60	ai_SendRemoveEmptyGoods	ai	b0f9db8d0c25e692	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x0047edb0	ai_EvaluateProduction	ai	a2494508b5d91f0e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x0047f700	ai_EvaluateProductionFlags	ai	582c15af18f4d9ec	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x004801f0	ai_EvaluateProductionCategory2	ai	8580320fec5e496f	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00480e70	ai_CalcMeisterWache	ai	e1ab6bc1a7430b4e	yes	draft	control=draft p1=draft p2=draft* p3=draft* p4=draft
-exe	0x004817a0	ai_CalcAngriff	ai	ef54f09e4c286d08	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
-exe	0x00481ef0	ai_CalcMeisterDiebe	ai	c1bea85003f0f3b8	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004801f0	ai_EvaluateProductionCategory2	ai	557836d9dae12699	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00480e70	ai_CalcMeisterWache	ai	e1ab6bc1a7430b4e	yes	draft	control=draft p1=draft* p2=draft* p3=draft* p4=draft*
+exe	0x004817a0	ai_CalcAngriff	ai	9fc938ae6fdda478	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x00481ef0	ai_CalcMeisterDiebe	ai	41c15cb6d45dafe6	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	3921e4b482864a4e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x004836a0	ai_CalcMeisterBank	ai	6c8e69d5968668ad	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00483a60	ai_Unk483a60	ai	91fd649c27f9f71a	no	shape	control=shape p1=shape p2=shape p3=shape p4=shape
@@ -1487,7 +1487,7 @@ exe	0x00487fb0	ai_BuyUpgrade	ai	770245fc9419b672	no	draft	control=draft p1=draft
 exe	0x004884b0	ai_BuySlots	ai	b6d31d9d52f21186	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00488740	ai_BuyCapacity	ai	3375510468877d3a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x004888c0	ai_FreeJobCharacters	ai	51f8f1b6be4da09f	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
-exe	0x004889f0	ai_SendJobOrders	ai	0842a40b168f329e	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
+exe	0x004889f0	ai_SendJobOrders	ai	fbef0e72182cf408	no	draft	control=draft p1=draft p2=draft p3=draft p4=draft
 exe	0x00489300	ai_CheckFreeThieves	ai	d0d98b1bc6a71ba0	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00489480	ai_CheckFreeStaff	ai	d164b372eb14594a	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte
 exe	0x00489660	ai_SendFreeThieves	ai	4cf80947cc5cd5f1	no	byte	control=byte p1=byte p2=byte p3=byte p4=byte

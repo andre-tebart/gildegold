@@ -9578,53 +9578,49 @@ void ai_Unk59d2d0(int param_1)
         }
     }
 }
-/* 0x59d410, the money lender's exchange money messenger window "..geldleihe_WechselGeldbote" (464 B): the
-   window, the text 0x1909 (param_3, param_2 * 2 + 0x9a8, the city 0x7e3f40 + param_4 * 0x2f4, param_4); the
-   pump 0x5309a0 (0x677c7); on select (0xf8a668 == 0) 0x508620 (param_3, param_2) against 0x508620 (1, param_2),
-   the fee 0x4c4880 (-1, param_1 + 1, param_2, the amount, the player byte, 0) and the AIMSG 0x27 (param_1 + 1,
-   the character 0x770b84 + slot * 0x21c, the city param_4 at +0x5c, the fee at +0x64); returns 1 after the
-   send, else 0 */
-
-int ai_Unk59d410(int param_1, int param_2, int param_3, unsigned char param_4)
+/* 0x59d410, the money lender's money messenger window "locations\geldleihe\geldleihe_WechselGeldbote" (462 B): the
+   text 0x1909 (the amount of the good, the name of the player slot player); on the button 0 the bank pays out the
+   value of the amount (gm_CurrencyFactor, cm_SendExSellObject from the bank) and sends the payment message 0x27 to
+   its owner: the value less the messenger's fee (3 percent, at least one coin of the good), for the slot player;
+   returns 1 when it was sent, 0 when the window was closed (a right click or the button 1) */
+int ai_MoneyMessengerWindow(AIBLD *bank, int good, int amount, unsigned char player)
 {
-    char msg[0xf8];
+    AIMSG msg;
+    float fee;
+    int value;
+    int sent;
     int win;
-    int r;
-    int fee;
-    int r2;
 
+    sent = 0;
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_WechselGeldbote");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1909, param_3, param_2 * 2 + 0x9a8, (char *)(unsigned)&ai_PlayerSlots + param_4 * 0x2f4, param_4);
-    for (;;) {
-        if (sv_RunFrame(ai_Unk59d410, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return 0;
-        }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || U_I((unsigned)&d2_ClickedId) == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
-            fee = gm_CurrencyFactor(param_3, param_2);
-            r2 = gm_CurrencyFactor(1, param_2);
-            if ((float)fee * 0.03f <= (float)r2)
-                gm_CurrencyFactor(1, param_2);
-            cm_SendExSellObject(-1, U_I(param_1 + 1), param_2, fee, U_I((unsigned)&ai_OwnPlayer), 0);
-            memset(msg, 0, 0xf8);
-            *(unsigned char *)(msg + 4) = 0x27;
-            *(int *)(msg + 0xc) = -1;
-            *(unsigned char *)(msg + 0x36) = 1;
-            *(int *)(msg + 0x5c) = U_I(param_1 + 1);
-            *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W(param_1 + 0x27) * 0x87);
-            *(unsigned char *)(msg + 0x60) = param_4;
-            *(int *)(msg + 0x64) = fee;
-            cm_SendLongMessage(msg);
-            U_I((unsigned)&sv_PopRequest) = 1;
-            return 1;
-        } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+    io_PrintText(0x1909, amount, good * 2 + 0x9a8, ((GMPLAYERSLOT *)ai_PlayerSlots)[player].name, player);
+    while (sv_RunFrame(ai_MoneyMessengerWindow, 0x677c7) != 0) {
+        if (dm_L.rup != 0 || d2_ClickedId == 1)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
+            value = gm_CurrencyFactor(amount, good);
+            fee = value * 0.03;
+            fee = __max(fee, gm_CurrencyFactor(1, good));
+            cm_SendExSellObject(-1, bank->id, good, value, ai_OwnPlayer, 0);
+            memset(&msg, 0, sizeof(msg));
+            msg.type = 0x27;
+            msg.fromId = -1;
+            msg.flags = 1;
+            msg.to = ((AICHARREC *)ai_Chars)[bank->owner].netId;
+            msg.payment.bld = bank->id;
+            msg.payment.player = player;
+            msg.payment.amount = value - fee;
+            cm_SendLongMessage((char *)&msg);
+            sent = 1;
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
         }
     }
+    d2_CloseView(win);
+    return sent;
 }
 
 int gm_SumListAmounts(void *list, unsigned char p); char * he_FindEvent(int n, ...); char * he_NextEvent(void); int ai_AmountMenu();
@@ -9741,7 +9737,7 @@ void ai_MoneyExchangeWindow(int param_1)
         idx = ai_ClickedExchangeRecord(recsB);
         if (carrier == 0 && idx != -1 && sel != -1) {
             d2_ClearPointerItems();
-            if (ai_Unk59d410(param_1, recsA[sel * 7 + 3], recsA[sel * 7 + 5], citybytes[idx * 0x1c]) != 0) {
+            if (ai_MoneyMessengerWindow(param_1, recsA[sel * 7 + 3], recsA[sel * 7 + 5], citybytes[idx * 0x1c]) != 0) {
                 d2_EndInputEdit();
                 for (i = 0; i < 16; i++)
                     if (recsA[i * 7] != -1)

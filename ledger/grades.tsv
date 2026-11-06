@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at d04121a3: ai_types.h AIMSG gains the payment message 0x27's words (payment.bld / player / amount, the words he.c's HEEV27 keeps) instead of raw offsets in lc's ai_MoneyMessengerWindow (now byte): a truer shared type. ai_Unk483a60 only flips two stack slots ([esp+0x10] / [esp+0x18]) under the changed declaration set, whatever the member's name; the ai.c lead comment already notes its slot match was lost the same way to an AIJOB change, so the match is no evidence of the original's source [waits for: match-deep on its slot allocation, or the declaration set of ai.c's includes (ai_types.h)]
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	
