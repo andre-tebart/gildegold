@@ -19325,21 +19325,25 @@ void he_RunKillPlayer(AIJOB *ev)
         return;
     }
 }
-/* 0x5662d0, the allocation handler of the night watchman (type 0x73; a Ghidra miss): the clocks +0x52 / +0x44 are now, the building / player +0xac = random(5) - 5 (as the last argument of the run: a signed pick), the first run at the morning hour 0x617830 [season] (+0x56 = ftol, +0x58 = 0) */
-
-void he_Unk5662d0(int ev)
-{
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(int *)(ev + 0xac) = (unsigned short)util_Random(5) - 5;
-    *(short *)(ev + 0x56) = (short)(int)((float *)(unsigned)&gm_DayStartHours)[gm_ClockSeason((unsigned)&ai_Time)];
-    *(int *)(ev + 0x58) = 0;
-}
 typedef struct HENIGHTWATCH {           /* the night watchman event 0x73's words over AIJOB's union (its alloc handler
-                                           0x5662d0, run handler he_RunNightWatch) */
+                                           he_AllocNightWatch, run handler he_RunNightWatch) */
     char pad00[0xac];
     int speaker;                        /* 0xac, the voice source of the announcements (snd_QueueVoice's first argument) */
 } HENIGHTWATCH;
+/* 0x5662d0, the allocation handler of the night watchman (type 0x73): the start and due clocks are now, the speaker
+   +0xac is random(5) - 5 (the voice source of the run's announcements), the first run at the morning hour
+   gm_DayStartHours[season] */
+
+void he_AllocNightWatch(AIJOB *ev)
+{
+    HENIGHTWATCH *x = (HENIGHTWATCH *)ev;
+
+    ev->end = ai_Time;
+    ev->start = ai_Time;
+    x->speaker = (unsigned short)util_Random(5) - 5;
+    ev->end.hour = (unsigned short)gm_DayStartHours[gm_ClockSeason(&ai_Time)];
+    ev->end.min = 0;
+}
 /* 0x566370, the run handler of the night watchman event 0x73 (HENIGHTWATCH): freed once the year changed since its
    start; the season (gm_ClockSeason) picks the morning hour gm_DayStartHours[] and the evening hour
    gm_DayEndHours[]. Stage 0 waits for the morning hour (hour in [h, h + 1)), then rings the bell
@@ -20246,7 +20250,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(114, (void *)he_AllocKillPlayer, (void *)he_RunKillPlayer) != 0)
         return 1;
-    if (he_SetEventHandlers(115, (void *)he_Unk5662d0, (void *)he_RunNightWatch) != 0)
+    if (he_SetEventHandlers(115, (void *)he_AllocNightWatch, (void *)he_RunNightWatch) != 0)
         return 1;
     if (he_SetEventHandlers(117, (void *)he_AllocDueInOne, (void *)he_RunRobbery) != 0)
         return 1;
