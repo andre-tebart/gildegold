@@ -400,7 +400,7 @@ void gm_SelectModelVariant(char *o);  /* 0x4fb5a0, f3gm.c: the model variant of 
 int gm_PlaceOnStage(int id, int a, int b, int *p4, int *p5);  /* 0x4fbd10 */
 int gm_FindObjectInst(int id);  /* 0x4fe980 */
 int gm_RemoveOwned(int *list, int id);  /* 0x5000c0, f3gm.h */
-extern char ai_Unk60c4a0[20];  /* 0x60c4a0 */
+extern char cm_WalkToDummyWhy[20];  /* 0x60c4a0 */
 extern int veg_NextId;  /* 0x6f0748 */
 extern char *ai_BTypes;  /* 0x7e3f30 */
 #ifndef DATA_VIEWS_H
