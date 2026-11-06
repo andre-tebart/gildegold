@@ -53,7 +53,7 @@
    building / training / plunder / meeting words in HERESEARCH (event 0xc), HEBUILD (0xd), HEAHMRESEARCH (0x96 / 0x97),
    HEPLUNDER (0x8a), HEPLUNDERDEAL (0x8b), HEMASTERWORK (0x8c), HEGRAVECARE (0x8d), HEDEATHDUE (0x8e),
    HEGRAVETRAINING (0x8f) and HEMEETING (0x90), HEMEETSCENE / HEMEETNAME (the meeting scene object 0x91), HEGRAVELEASE (the grave
-    lease answer 0x92), HEGYPSY (the gypsy approach 0x9d), HETRIALCASE (the trial 0xa0) and HEMEET4 (the circus show 0xa1), and over AIOBJ
+    lease answer 0x92), HEGYPSY (the gypsy approach 0x9d), HEGYPSYCURSE (the curse 0x9e), HETRIALCASE (the trial 0xa0) and HEMEET4 (the circus show 0xa1), and over AIOBJ
    HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5); the hint table he_Hints (0x6fa260, HEHINT), the tip
    order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20),
    the domicile news key he_NewsDomizil11 (0x628e40), the activity names he_ActivityUpgrade / he_ActivityRawMaterial /
@@ -76,8 +76,9 @@
    Open: types: the handlers past 0x570300 other than the plunder / master work / grave care / death due / grave
    training / meeting disease / meeting 0x90 / meeting scene 0x91 / plunder offer lease 0x8b and grave lease 0x92
    alloc / graveyard workers 0x93 alloc ones up to 0x572b90, the grave lease 0x92 run, the graveyard workers 0x93
-   run / theft 0x94 (HEGRAVETHEFT) and the gypsy approaches 0x573760 .. 0x573c20 still read the event and message
-   records through raw offsets
+   run / theft 0x94 (HEGRAVETHEFT), the gypsy approaches 0x573760 .. 0x573c20 and the curse 0x9e / slowdown 0x9f /
+   trial scene 0xa0 / petty loss 0xa3 / event good 0xa4 handlers (0x573f20 .. 0x5755c0) still read the event and
+   message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /
    cm.h not included; their calls stay M7)
