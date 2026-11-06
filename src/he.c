@@ -249,9 +249,6 @@ extern GAPDATA full_data_628e10[];
 extern GAPDATA full_data_628e28[];
 extern char ai_Chars[768][0x21c];
 extern GAPDATA full_data_628e58[];
-extern GAPDATA full_data_628e70[];
-extern GAPDATA full_data_628e7c[];
-extern GAPDATA full_data_628e8c[];
 extern GAPDATA full_data_628e98[];
 extern char * ai_BTypes;
 extern GAPDATA full_data_628ea4[];
@@ -23378,9 +23375,9 @@ int he_RegisterEventTypes88(void)
                                                 if (he_SetEventHandlers(0x93, (void *)he_AllocGraveyardWorkers, (void *)he_RunGraveyardWorkers) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_AllocDueIsStart, (void *)he_RunGraveyardTheft) == 0) {
                                                         if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_RunGraveLease) == 0) {
-                                                            sv_RegisterActivity(0x8d, (char *)(unsigned)&full_data_628e8c, 1, 0x513, -1);
-                                                            sv_RegisterActivity(0x8c, (char *)(unsigned)&full_data_628e7c, 1, 0x500, 0xac);
-                                                            sv_RegisterActivity(0x8f, (char *)(unsigned)&full_data_628e70, 0, 0x512, -1);
+                                                            sv_RegisterActivity(0x8d, he_ActivityGraveCare, 1, 0x513, -1);
+                                                            sv_RegisterActivity(0x8c, he_ActivityRawMaterial, 1, 0x500, 0xac);
+                                                            sv_RegisterActivity(0x8f, he_ActivityUpgrade, 0, 0x512, -1);
                                                             sv_RegisterActivity(0x8a, 0, 0, 0x514, -1);
                                                             sv_RegisterActivity(0x88, 0, 0, 0x511, -1);
                                                             return 0;

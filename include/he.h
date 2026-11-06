@@ -151,6 +151,9 @@ extern HEBLDMODEL he_BuildingModels[37]; /* 0x627e98, the construction models, t
 extern char he_VoiceHealing[20];        /* 0x627b0c, the voice "_NACHRICHTEN_HS_80" of the healing event 0x6c's news 0x1a18 */
 extern char he_InitBetrieb[12];         /* 0x627b20, the scene name the new-worker event's run handler 0x565940 plays */
 extern char he_NewsDomizil11[24];       /* 0x628e40, the second text (the sound key) of the news 0x5fb the domicile event 0x9b's run sends */
+extern char he_ActivityUpgrade[12];     /* 0x628e70, the activity name sv_RegisterActivity gives the grave training event 0x8f */
+extern char he_ActivityRawMaterial[16]; /* 0x628e7c, the activity name of the master work event 0x8c ("Rohstoff suchen") */
+extern char he_ActivityGraveCare[12];   /* 0x628e8c, the activity name of the grave care event 0x8d ("grabpflege") */
 
 void he_StammtischCommand(unsigned cmd, struct AIBLD *inn, struct AIOBJ *table, int figId); /* 0x541b40, the inn meeting hears of a table request: join / leav / cler / exec / new */
 
