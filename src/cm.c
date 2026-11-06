@@ -2510,8 +2510,8 @@ int cm_CheckSetField(G17MSG *m)
         return 1;
     return 0;
 }
-/* 0x4c6750, check of message 0x38 (ownership): 1 unless the building it hands over is being robbed (the
-   theft event's flags5a bit 2, he_AllocTheft) */
+/* 0x4c6750, check of message 0x38 (ownership): 1 (rejected) unless the building it hands over has the
+   flags5a bit 2, the mark the sale sets around cm_SendOwnership (he.c 0x55af70's theft mark too) */
 
 int cm_CheckOwnership(G17MSG *m)
 {
