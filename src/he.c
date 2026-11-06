@@ -25568,17 +25568,19 @@ void he_GypsyFee(AICHAR *pl, int a)
         he_GypsyApproach((char *)pl, (char *)pl, a);
     }
 }
-/* 0x573f20, the alloc of the event 0x9e: state 0, the start and the due clock +0x44 / +0x52 = now, the due clock + 24 hours
-   (0x4fe140), the hour +0x56 = 6 and the minute +0x58 = 5 + random (0x10) */
+/* 0x573f20, the alloc of the gypsy curse event 0x9e: stage 0, the start and the due clock AIJOB.start / AIJOB.end = now, the
+   due clock + 24 hours (0x4fe140), the hour 6 and the minute 5 + random (0x10) */
 
 void he_AllocGypsyCurse(int ev)
 {
-    HM_I(ev, 0x70) = 0;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
-    *(unsigned short *)(ev + 0x56) = 6;
-    HM_I(ev, 0x58) = (util_Random(0x10) & 0xffff) + 5;
+    AIJOB *e = (AIJOB *)ev;
+
+    e->stage = 0;
+    e->start = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
+    e->end.hour = 6;
+    e->end.min = (util_Random(0x10) & 0xffff) + 5;
 }
 /* 0x573fb0, the run of the event 0x9e: -2 / -1 free; the state + 1; the figures +0xb0 (a) and +0xac (b) (0x505df0); from a's
    +0x194 (n) a is charged -n and b n / 2 (at least 2) (0x50cc50); while the state stays below 2 the due clock +0x52 = now +
