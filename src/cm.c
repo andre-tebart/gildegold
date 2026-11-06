@@ -6902,14 +6902,15 @@ char *ai_FindWeaponRecord(int id)
     }
     return 0;
 }
-/* 0x4cda00, the first record (ai_FindWeaponRecord) of the entries of kind 5 of the list +0x178 of the character */
+/* 0x4cda00, the first weapon record (ai_FindWeaponRecord) of the kind 5 items of the character c's inventory */
 
 char *cm_CharWeaponAny(char *c)
 {
-    char *q, *r;
+    AIOBJ *q;
+    char *r;
 
-    for (q = gm_Query(*(int *)(c + 0x178), 1, 5); q != 0; q = gm_QueryNext()) {
-        r = ai_FindWeaponRecord(*(unsigned short *)q);
+    for (q = (AIOBJ *)gm_Query(((AICHAR *)c)->inventory, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+        r = ai_FindWeaponRecord(q->id);
         if (r != 0)
             return r;
     }
