@@ -14621,60 +14621,48 @@ int ai_DragTownMap(D2WIN *win)
     return changed;
 }
 
-/* 0x5a7bc0, the map scroll by keys / drag (272 B): the scroll of the screen record (+0x258 / +0x248) follows the
-   drag delta (0x6310b0 / 0x6310b4 against 0x1467380 / 0x1467382, never past the bounds 0x5f3238 / 0x5f323c) and
-   the arrow keys 0x1468288 (up) / 0x1468290 (down) / 0x146828b (left) / 0x146828d (right) by 10, clamped to
-   0 .. 0x6f4ee8 - 0x200 / 0x6f4ee4 - 0x168; returns whether the scroll changed */
-
-int ai_Unk5a7bc0(int rec)
+/* 0x5a7bc0, scrolls the town map window win by 10 pixels when the pointer (dm_L) reaches the mouse bounds (di_MinX ..
+   di_MaxY) or by the arrow keys (up, down, left, right: DIK 0xc8, 0xd0, 0xcb, 0xcd), clamped to the map (ai_MapSize x
+   ai_MapHeight less the 0x200 x 0x168 window); the new scroll is kept in ai_MapScrollX / Y. Returns 1 when it
+   changed */
+int ai_ScrollTownMap(D2WIN *win)
 {
-    int x;
     int y;
-    int changed = 0;
+    int changed;
 
-    x = *(int *)(rec + 0x258);
-    y = *(int *)(rec + 0x248);
-    if (*(int *)((unsigned)&di_MinX) < *(int *)((unsigned)&dm_L)) {
-        if (*(int *)((unsigned)&di_MaxX) <= *(int *)((unsigned)&dm_L))
-            x += 10;
-    } else {
-        x -= 10;
-    }
-    if (*(int *)((unsigned)&di_MinY) < *(int *)(((unsigned)&dm_L + 0x2))) {
-        if (*(int *)((unsigned)&di_MaxY) <= *(int *)(((unsigned)&dm_L + 0x2)))
-            y += 10;
-    } else {
+    changed = 0;
+    ai_MapScrollX = win->scrollX;
+    y = win->scrollY;
+    if (dm_L.x <= di_MinX)
+        ai_MapScrollX -= 10;
+    else if (dm_L.x >= di_MaxX)
+        ai_MapScrollX += 10;
+    if (dm_L.y <= di_MinY)
         y -= 10;
-    }
-    if (*(unsigned char *)(((unsigned)&kb_Down + 0xc8)) == 0) {
-        if (*(unsigned char *)(((unsigned)&kb_Down + 0xd0)) == 0) {
-            if (*(unsigned char *)(((unsigned)&kb_Down + 0xcb)) == 0) {
-                if (*(unsigned char *)(((unsigned)&kb_Down + 0xcd)) != 0)
-                    x += 10;
-            } else {
-                x -= 10;
-            }
-        } else {
-            y += 10;
-        }
-    } else {
+    else if (dm_L.y >= di_MaxY)
+        y += 10;
+    if (kb_Down[0xc8])
         y -= 10;
-    }
-    if (x < 0)
-        x = 0;
-    if (x > *(int *)((unsigned)&ai_MapSize) - 0x200)
-        x = *(int *)((unsigned)&ai_MapSize) - 0x200;
-    if (y < 0)
-        y = 0;
-    if (y > ai_MapHeight - 0x168)
-        y = ai_MapHeight - 0x168;
-    if (*(int *)(rec + 0x258) != x || *(int *)(rec + 0x248) != y) {
-        *(int *)(rec + 0x258) = x;
-        *(int *)(rec + 0x248) = y;
+    else if (kb_Down[0xd0])
+        y += 10;
+    else if (kb_Down[0xcb])
+        ai_MapScrollX -= 10;
+    else if (kb_Down[0xcd])
+        ai_MapScrollX += 10;
+    ai_MapScrollX = ai_MapScrollX < 0 ? 0 : ai_MapScrollX;
+    if (ai_MapSize - 0x200 < ai_MapScrollX)
+        ai_MapScrollX = ai_MapSize - 0x200;
+    ai_MapScrollY = y < 0 ? 0 : y;
+    if (ai_MapHeight - 0x168 < ai_MapScrollY)
+        ai_MapScrollY = ai_MapHeight - 0x168;
+    if (ai_MapScrollX != win->scrollX || ai_MapScrollY != win->scrollY) {
+        win->scrollX = ai_MapScrollX;
+        win->scrollY = ai_MapScrollY;
         changed = 1;
     }
     return changed;
 }
+
 /* 0x5a7cd0, the map window's per-frame draw (1556 B, ROUGH SKELETON: the two control-rectangle blocks and the
    else branch of 0x5a8131 are not decoded; the camera projection is the 0x5a6b70 shape with the scene centre
    +0 / +8 and the scale +0x10 / +0x18): the scroll changed flag +0x279c (0x5a79e0 / 0x5a7bc0, the time 0x6333cc
@@ -14715,7 +14703,7 @@ void ai_Unk5a7cd0(int *m_)
     if (*(int *)((unsigned)&ai_Unk62c26c) != 0) {
         m_[0x9e7] = 0;
         m_[0x9e7] = ai_DragTownMap((D2WIN *)rec);
-        m_[0x9e7] |= ai_Unk5a7bc0((int)rec);
+        m_[0x9e7] |= ai_ScrollTownMap((D2WIN *)rec);
         if (m_[0x9e7] != 0)
             m_[0x9e8] = *(int *)((unsigned)&d3_Time);
     }
