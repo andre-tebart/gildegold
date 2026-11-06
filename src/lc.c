@@ -5285,58 +5285,99 @@ void ai_OpenBribe(int building)
 
 unsigned short * gm_QueryNext(void); void txt_Format(char *out, int id0, ...);
 
-/* 0x594810, the bribe window "misc\Bestechung" (759 B, ROUGH SKELETON from the disassembly; an unnamed Ghidra
-   start): rec (0 or +0x27 == 0xffff returns); 0x553cc0 (rec) != 0 gives the text 0x1a92 (0x5176d0 /
-   0x521150); else the kind record 0x7e3f30 + rec[0] * 0x24d, the acting building 0x6f2308 / 0x6f230c, its
-   records 0x4ffe90 (+0x5d, 1, 0, 0xca) / 0x4ffcc0 (the +0x2a != rec + 1 collected), the window 0x4741f0 /
-   0x475600 / 0x476f80 / 0x475f70, the text 0x515960 and the controls 0x475b80, the messages 0x4c4b70 /
-   0x4c2d20 / 0x52ae40, the pump 0x5309a0 (this, 0x657c7) and the exit 0x4758f0 */
-int ai_BriberyWindow(int param_1, int rec)
-{
-    char buf[0x200];
-    int list[0x80];
-    int win;
-    int ctl1;
-    int ctl2;
-    int act;
-    int b;
-    int i;
-    int n;
-    int kind;
+/* 0x594810, the bribery window of the spying order ("misc\Bestechung"; ai_OpenSpying's map pick callback, with the
+   picked building; nothing for none or an ownerless one). A building without a protection event
+   (he_NoProtectionEvent 0) gives the text 0x1a92. The spy reports (objects 0xca) the player's building holds on
+   other buildings and the player's running spy events 0x40 on buildings no such report covers count against twice
+   the target type's level: at the limit the text 0x19fa. Else the window (text 0x19f7 with the owner) asks: its
+   first button posts the spy message 0x40 (the target, the guild building, up to eight selected characters as
+   ids, flags 1; the text 0x19e3 when nobody is selected), the second button and a right click close it */
 
-    if (rec == 0 || *(unsigned short *)(rec + 0x27) == 0xffff)
-        return 0;
-    if (he_NoProtectionEvent(rec) != 0) {
-        txt_Format(buf, 0x1a92, *(unsigned short *)(rec + 0x27), rec);
-        sv_MessageBox(buf, param_1);
-        return 0;
+void ai_BriberyWindow(char *place, AIBLD *target)
+{
+    AIMSG msg;
+    AIOBJ *reports[0x10];
+    char limitText[0x100];
+    char text[0x400];
+    int win;
+    int ok;
+    int cancel;
+    int base;
+    int n;
+    int uncovered;
+    int i;
+    AIBTYPE *type;
+    AIBLD *bld;
+    AIOBJ *o;
+    AIJOB *ev;
+    AICHARREC *ch;
+
+    uncovered = 0;
+    if (target == 0 || target->owner == 0xffff)
+        return;
+    if (he_NoProtectionEvent(target) == 0) {
+        txt_Format(text, 0x1a92, target->owner, target);
+        sv_MessageBox(text, uncovered);
+        return;
     }
-    kind = *(unsigned char *)rec;
-    act = U_I((unsigned)&ai_PlayerBuilding) != 0 ? U_I((unsigned)&ai_PlayerBuilding) : U_I((unsigned)&ai_FallbackBuilding);
+    type = &((AIBTYPE *)ai_BTypes)[target->kind];
     n = 0;
-    if (act != 0) {
-        for (b = gm_Query(*(int *)(act + 0x5d), 1, 0, 0xca); b != 0; b = gm_QueryNext()) {
-            if (*(int *)(b + 0x2a) != U_I(rec + 1)) {
-                list[n] = b;
-                n++;
-            }
-        }
+    bld = (AIBLD *)ai_PlayerBuilding;
+    if (bld == 0)
+        bld = (AIBLD *)ai_FallbackBuilding;
+    if (bld != 0)
+        for (o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xca); o != 0; o = (AIOBJ *)gm_QueryNext())
+            if (o->reportBld != target->id)
+                reports[n++] = o;
+    for (ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x40); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        for (i = 0; i < n; i++)
+            if (ev->bldId == reports[i]->reportBld)
+                break;
+        if (i >= n)
+            uncovered++;
     }
+    n += uncovered;
+    if (n >= type->level * 2) {
+        txt_Format(limitText, 0x19fa, n, ai_FallbackBuilding);
+        sv_MessageBox(limitText, 0);
+        return;
+    }
+    ch = &((AICHARREC *)ai_Chars)[target->owner];
     win = d2_OpenForm(0, 0, "misc\\Bestechung");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    i = io_PrintText(0x1a92);
-    ctl1 = d2_GetWinObj(win, 1, i);
-    ctl2 = d2_GetWinObj(win, 1, i + 1);
-    /* ROUGH: the selection over the collected records, the offer / money texts (0x4c4b70 / 0x4c2d20), the
-       confirmation 0x52ae40, the frame pump 0x5309a0 (this, 0x657c7) and the exit 0x4758f0 (win) */
-    while (sv_RunFrame(ai_BriberyWindow, 0x657c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    }
+    base = io_PrintText(0x19f7, ch->id, target);
+    ok = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            memset(msg.ids, 0xff, sizeof(msg.ids));
+            msg.type = 0x40;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.flags = 1;
+            msg.arg[0] = target->id;
+            msg.arg[1] = ((AIBLD *)ai_FallbackBuilding)->id;
+            n = 0;
+            for (i = 0; i < 0x300 && n < 8; i++)
+                if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                    msg.ids[n++] = ai_CharInts[i][0];
+            if (n != 0) {
+                cm_SendLongMessage((char *)&msg);
+                snd_PlayFavourComment();
+                sv_ClearSelection();
+            } else
+                sv_MessageBox(txt_Ptrs[0x19e3], 0);
+            sv_PopRequest = 1;
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_BriberyWindow, 0x677c7) != 0);
     d2_CloseView(win);
-    return 0;
 }
 /* 0x594b10, opens the spying map pick (150 B): when the character of the building is free (sv_CheckCharacterFlag
    0x520fe0 is 0) and the building is not 0, the 0x50-byte config is zeroed (flags +4 = 0x400, +0x4c = 0x727,
