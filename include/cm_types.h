@@ -435,6 +435,12 @@ typedef struct G17PARTYIDMSG {          /* 4 bytes, the data of message 0x58 (cm
     int partyId;                        /* 0x00, the scene party record (cm_PartyById) */
 } G17PARTYIDMSG;
 
+typedef struct G17MONEYMSG {            /* 8 bytes, the data of message 0x5a (cm_SendMoneyDelta, its handler
+                                           0x4ccaa0 adds delta to the character's +0x194, clamped 0..0x32) */
+    int charId;                         /* 0x00, the character */
+    int delta;                          /* 0x04, added to its +0x194 */
+} G17MONEYMSG;
+
 typedef struct G17REMOVEMSG {           /* 12 bytes, the data of message 0x2b (handler 0x4c9450) */
     int holder;                         /* 0x00, the id of the building, character or object holding it (gm_FindById) */
     int objId;                          /* 0x04, of a building: the id of its object whose list holds it (gm_Query key 1),
@@ -707,6 +713,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17SKILLMSG skill;              /* 0x10, message 0x5d */
         G17PARTYMSG leaveParty;         /* 0x10, message 0x2a */
         G17PARTYIDMSG cancelParty;      /* 0x10, message 0x58 */
+        G17MONEYMSG money;              /* 0x10, message 0x5a */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17WALKMSG walk;                /* 0x10, message 0x2e */

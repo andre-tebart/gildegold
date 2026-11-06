@@ -2163,15 +2163,16 @@ int cm_SendCutsceneReady(void *p)
     memcpy(m.data, p, 0x48);
     return cm_QueueSend(&m);
 }
-/* 0x4c5f60, message 0x5a */
+/* 0x4c5f60, sends message 0x5a: the money delta b of character a (its handler 0x4ccaa0 adds it to +0x194,
+   clamped 0..0x32) */
 
 void cm_SendMoneyDelta(int a, int b)
 {
     G17MSG m;
 
     m.type = 0x5a;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.money.charId = a;
+    m.money.delta = b;
     cm_QueueSend(&m);
 }
 /* 0x4c5fa0, message 0x5b */
