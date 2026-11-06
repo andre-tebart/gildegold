@@ -2059,10 +2059,10 @@ void cm_SendDamage(int a, int b, int c)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.damage.netId = a;
     m.type = 0x52;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.damage.damage = b;
+    m.damage.health = c;
     cm_QueueSend(&m);
 }
 /* 0x4c5d40, message 0x53 (0x14 bytes of p) */

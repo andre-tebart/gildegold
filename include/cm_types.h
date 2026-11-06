@@ -582,6 +582,13 @@ typedef struct G17OBJCELLMSG {          /* 0x30 bytes, the data of message 0x4e 
     char name2[0x10];                   /* 0x20, a second object to find there, "" for none */
 } G17OBJCELLMSG;
 
+typedef struct G17DAMAGEMSG {           /* 12 bytes, the data of message 0x52 (cm_SendDamage sends, its handler 0x4cc330
+                                           shows the damage and takes it from the fighter's health) */
+    int netId;                          /* 0x00, the fighter (cm_FindFighter) */
+    int damage;                         /* 0x04, taken from its health */
+    int health;                         /* 0x08, the new health (the handler keeps its low byte) */
+} G17DAMAGEMSG;
+
 typedef struct G17CARTSTATEMSG {        /* 8 bytes, the data of message 0x33 (cm_SendCartState, its handler 0x4c9d00
                                            adds the action 0x38 with state to the cart "sp_<cartId>") */
     int cartId;                         /* 0x00, the cart's object id */
@@ -661,6 +668,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17SETJOBMSG setJob;            /* 0x10, message 0x48 */
         G17OBJIDMSG freeObject;         /* 0x10, message 0x4a */
         G17OBJCELLMSG objCell;          /* 0x10, message 0x4e */
+        G17DAMAGEMSG damage;            /* 0x10, message 0x52 */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
