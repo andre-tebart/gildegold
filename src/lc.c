@@ -7482,78 +7482,70 @@ close:
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x598b80, the regulars' table window "locations\Wirtshaus_Stammtisch" (563 B): the window 0x4741f0 /
-   0x475600 / 0x475f70 (0) / 0x52ea30 / 0x476f80; per frame the four character slots param_2 + 0x1c (0x505df0)
-   are compacted into the 4 records of 0xe ints: a change redraws (0x475f70 (1), 0x472d20, 0x515960 (0x188c,
-   param_1, and 0x188e when empty)) and places each record with 0x5be1d0 / 0x5be3b0 (x = ((i % 2) + 1) *
-   (width / 3) - 10 + (width % 3) / 2 + (the margin + 10) * (i % 2), y = (i / 2) * 0x82 + 100, font 0x54);
-   0x1892 when four sit at the table; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
+/* 0x598b80, the regulars' table window "locations\Wirtshaus\Stammtisch" of the player's own tavern: per frame the
+   characters at the table's four seats (gm_FindChar) are packed into the amount rows; on a change frame 1 is
+   redrawn (0x188c with the building, 0x188e while the table is empty) with the rows in two columns
+   (ai_AmountRowStatus / ai_AmountRow, the row picture 0x5da), and frame 2 shows 0x1892 when all four sit there;
+   the right button leaves */
 
-void ai_StammtischWindow(int param_1, int param_2)
+void ai_StammtischWindow(AIBLD *bld, AIOBJ *table)
 {
-    int chars[0x38];
+    LCAMOUNTROW rows[4];
     int win;
     int n;
     int i;
     int changed;
-    int c;
-    int w;
-    int *p;
-    int *q;
-    int margin;
+    int gap;
+    int off;
+    int *seat;
+    AICHARREC *c;
 
-    memset(chars, 0, sizeof(chars));
-    win = d2_OpenForm(0, 0, "locations\\Wirtshaus_Stammtisch");
+    memset(rows, 0, sizeof(rows));
+    win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\Stammtisch");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
     do {
         n = 0;
         changed = 0;
-        p = chars;
-        q = (int *)(param_2 + 0x1c);
-        for (i = 0; i < 4; i++, q++) {
-            c = gm_FindChar(*q);
-            if (c != *p)
+        seat = table->seats;
+        for (i = 0; i < 4; i++, seat++) {
+            c = (AICHARREC *)gm_FindChar(*seat);
+            if (c != rows[n].rec)
                 changed = 1;
             if (c != 0) {
-                *p = c;
+                rows[n].rec = c;
                 n++;
-                p += 0xe;
             }
         }
-        if (n < 4) {
-            p = chars + n * 0xe;
-            for (i = 4 - n; i != 0; i--, p += 0xe)
-                *p = 0;
-        }
+        for (i = n; i < 4; i++)
+            rows[i].rec = 0;
         if (changed) {
             d2_SetForm(win, 1);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            io_PrintText(0x188c, param_1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            io_PrintText((char *)0x188c, bld);
             if (n == 0) {
-                io_PrintText(0x188e);
+                io_PrintText((char *)0x188e);
             } else {
-                margin = *(short *)((unsigned)&he_Events + 0x119b0);
-                w = (int)d2_LastWindowPtr->w + margin * -2;
+                gap = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) / 3;
+                off = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) % 3 / 2;
                 for (i = 0; i < n; i++) {
-                    p = chars + i * 0xe;
-                    p[0xc] = 1;
-                    p[4] = ((i % 2) + 1) * (w / 3) - 10 + (w % 3) / 2 + (margin + 10) * (i % 2);
-                    p[5] = (i / 2) * 0x82 + 100;
-                    ai_AmountRowStatus(p);
-                    ai_AmountRow(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
+                    rows[i].x = (i % 2 + 1) * gap - 10 + off + (d2_Pics[0x5da].w + 10) * (i % 2);
+                    rows[i].x30 = 1;
+                    rows[i].y = i / 2 * 0x82 + 100;
+                    ai_AmountRowStatus(&rows[i]);
+                    ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
                 }
             }
             d2_SetForm(win, 2);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
             if (n == 4)
-                io_PrintText(0x1892);
+                io_PrintText((char *)0x1892);
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    } while (sv_RunFrame(ai_StammtischWindow, 0x677c7) != 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_StammtischWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
 void cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
@@ -7709,7 +7701,7 @@ void ai_OpenStammtisch(AIBLD *bld, AIOBJ *room)
         b = he_FindEvent(2, 0, 0x2a, 3, bld->id);
         if (b != 0) {
             if (((AICHARREC *)ai_Chars)[ai_PlayerId].id == bld->owner) {
-                ai_StammtischWindow((int)bld, rec);
+                ai_StammtischWindow(bld, (AIOBJ *)rec);
                 sv_CameraFollow();
                 return;
             }
