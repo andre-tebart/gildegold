@@ -19147,31 +19147,35 @@ typedef struct HEKILL {                 /* the kill-player event 0x72's words ov
     int party;                          /* 0xb0, the id of its funeral party (cm_PartyById), -1: none */
     int slot;                           /* 0xb4, the cm send slot of the party (cm_SendNewParty), -1: none */
 } HEKILL;
-/* 0x565d10, the allocation handler "he_AllocKillPlayer" (ROUGH): the player 0x505df0 (+0xac) must exist (else the error message and free); when another event of the type 0x72 already kills him this one is freed, else
-   +0xb4 / +0xb0 / +0x84 = -1 and the run clock is the start clock (+0x44) */
+/* 0x565d10, the allocation handler of the kill-player event 0x72 (HEKILL, its run handler he_RunKillPlayer): the
+   character (+0xac) must exist (else the error message and free); when another event of the type 0x72 already kills
+   him this one is freed, else the party +0xb0, its slot +0xb4 and the cm slot +0x84 are -1 and the due clock is the
+   start clock */
 
-void he_Unk565d10(int ev)
+void he_AllocKillPlayer(AIJOB *ev)
 {
-    int p, o;
+    HEKILL *x = (HEKILL *)ev;
+    AICHAR *p;
+    AIJOB *o;
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
+    p = (AICHAR *)gm_FindChar(x->chr);
     if (p == 0) {
         err_Message("he_AllocKillPlayer: player not found!");
         he_FreeEvent((int *)ev);
         return;
     }
-    for (o = (int)he_FindEvent(1, 0, 0x72); o != 0; o = (int)he_NextEvent()) {
-        if (o != ev && *(int *)(o + 0xac) == *(int *)(ev + 0xac)) {
+    for (o = (AIJOB *)he_FindEvent(1, 0, 0x72); o != 0; o = (AIJOB *)he_NextEvent()) {
+        if (o != ev && ((HEKILL *)o)->chr == x->chr) {
             he_FreeEvent((int *)ev);
             return;
         }
     }
-    *(int *)(ev + 0xb4) = -1;
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(int *)(ev + 0xb0) = -1;
-    *(int *)(ev + 0x84) = -1;
+    x->slot = -1;
+    ev->end = ev->start;
+    x->party = -1;
+    ev->exSlot = -1;
 }
-/* 0x565db0, the run handler of the kill-player event 0x72 (HEKILL; alloc handler he_Unk565d10): stages -1 / -2 and
+/* 0x565db0, the run handler of the kill-player event 0x72 (HEKILL; alloc handler he_AllocKillPlayer): stages -1 / -2 and
    a character gone free the record; while the character is in a scene party (partyId, not in stage 6) the next run
    is 5 minutes ahead. Stage 0: no scene character: a posted event (opts 2) goes to stage 3, else freed; its script is
    stopped, the character leaves its group (sv_MoveToGroup), a posted event tells the owner of its building
@@ -20240,7 +20244,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(113, (void *)he_AllocDiePlayer, (void *)he_RunDiePlayer) != 0)
         return 1;
-    if (he_SetEventHandlers(114, (void *)he_Unk565d10, (void *)he_RunKillPlayer) != 0)
+    if (he_SetEventHandlers(114, (void *)he_AllocKillPlayer, (void *)he_RunKillPlayer) != 0)
         return 1;
     if (he_SetEventHandlers(115, (void *)he_Unk5662d0, (void *)he_RunNightWatch) != 0)
         return 1;
