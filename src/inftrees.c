@@ -94,7 +94,10 @@ local const uInt cpdext[30] = { /* Extra bits for distance codes */
 /* If BMAX needs to be larger than 16, then h and x[] should be uLong. */
 #define BMAX 15         /* maximum bit length of any code */
 
-/* 0x465650 */
+/* 0x465650, builds the Huffman decoding tables for the code set of the n code lengths b (at most BMAX
+   bits) and a maximum table size in *m, filling hp / hn; returns Z_OK, Z_BUF_ERROR for an incomplete set
+   (the tables are still built), Z_DATA_ERROR for an oversubscribed one and Z_MEM_ERROR when hp has no
+   room */
 local int huft_build(b, n, s, d, e, t, m, hp, hn, v)
 uIntf *b;               /* code lengths in bits (all assumed <= BMAX) */
 uInt n;                 /* number of codes (assumed <= 288) */
