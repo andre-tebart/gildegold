@@ -4,6 +4,7 @@
 #define LC_H
 
 struct AIBLD;
+struct AIOBJ;
 struct D3SCENE;
 struct D3OBJECT;
 struct D3VECTOR;
@@ -29,7 +30,7 @@ extern char ai_NewsKeyFriedhof00[28];   /* 0x62c39c, the sound of the graveyard 
 
 void ai_InitProductionTables(void);                /* 0x58bbd0, the production window's table init */
 void ai_MarketContact(struct AIBLD *b); /* 0x58f510, the shop-counter contact of a building */
-void ai_RunObjectRoom(unsigned short *room); /* 0x59f410, runs the room of an object record (its kind's handler) */
+void ai_RunObjectRoom(struct AIOBJ *room); /* 0x59f410, runs the room object of the building the player is in (its kind's handler) */
 int ai_BuildingName(int id, char *out); /* 0x58f640, the building name of a kind id */
 
 /* the "vg_" object list ai_VgFilter collects (ai_ShowVgObjects, cm's building creation) */

@@ -3664,7 +3664,7 @@ void ai_TradeContactChecks(void)
             (gm_PermissionBits(ai_PlayerId, (unsigned char *)ai_FallbackBuilding, item, 0) &
              0x4000) != 0) {
             room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
-            ai_RunObjectRoom((unsigned short *)sv_ClickedItem);
+            ai_RunObjectRoom((AIOBJ *)sv_ClickedItem);
             init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
             init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
             sv_FrameBase = sv_FrameDepth;
@@ -3673,7 +3673,7 @@ void ai_TradeContactChecks(void)
     if (sv_PanelFlag != 0 && sv_PanelRecord != 0 && sv_PanelObject == ai_FallbackBuilding) {
         room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
         if (sv_PanelRecord != room) {
-            ai_RunObjectRoom(sv_PanelRecord);
+            ai_RunObjectRoom((AIOBJ *)sv_PanelRecord);
             init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
             init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
         } else {
@@ -3684,7 +3684,7 @@ void ai_TradeContactChecks(void)
     }
     if (sv_ClickedContact != 0 && ai_SelectedCount == 0) {
         room = (unsigned short *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
-        ai_RunObjectRoom((unsigned short *)sv_ClickedContact);
+        ai_RunObjectRoom((AIOBJ *)sv_ClickedContact);
         init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, 0xfd);
         init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, room);
     }
@@ -10516,103 +10516,143 @@ void ai_EnterOwnBuilding(AIBLD *b)
     sv_ViewRot[1] = rot[1];
     sv_ViewRot[2] = rot[2];
 }
-/* 0x59f410, the room switch of the other buildings (1424 B, ROUGH): the room 0x76faa0 (the index word) and its
-   callback : the room record 0x6f2310 = param_1, 0x5f8430 / 0x5f1298 = param_1 + 1, 0x6f22a4 = 0x6f229c + 1,
-   0x52adb0 / 0x52ae40; 0x50d7f0 (the room), 0x4478e0 (the callback), 0x513050 / 0x513400, the matrices
-   0x43b790 / 0x43b860 (+0x5c / +0x90), the saved view; then the room handler switch (0x2c / 0x109 0x592290,
-   0x2d 0x59290, 0x33 0x592320, 0x37 0x5938c0, 0x107 0x593e80, 0x205 0x587560, 0x211 0x587ad0, 0x21b 0x5876a0,
-   0x276 0x5d9a80, 0x27f 0x5d9b90, 0x28a 0x5d9b20, default 0x58f620); the exit restores the view / device and
-   switches back to the room 0xfd (0x4ffe90, 0x5f1298) */
+/* 0x59f410, runs the room object room of the building the player is in (ai_FallbackBuilding, entered through
+   ai_EnterOwnBuilding): the town view and the border scroll are saved; a room with a universe of its own is loaded
+   (when new or dirty), becomes the building's mainRoom, is selected and set up (the scene's event 4, the camera at
+   its saved place); the room's handler runs with the ambient sounds off (the switch on its kind, ai_PumpFrames for
+   the others); after it the saved script is stopped, the scene's event 5 fired, the building goes back to its room
+   0xfd (gm_Query: its object of kind 6) and the view and border scroll are restored */
 
-void ai_RunObjectRoom(unsigned short *param_1)
+void ai_RunObjectRoom(AIOBJ *room)
 {
-    unsigned short *room;
-    int idx;
-    int kind;
-    int saved1, saved2, saved3, saved4, saved5, saved6;
+    int scene;
+    float pos[3];
+    float rot[3];
+    int lastEvent;
+    signed char universe;
+    int borderX;
+    int borderY;
+    EVTSCRIPT *ev;
+    AIOBJ *home;
 
-    saved1 = U_I((unsigned)&sv_ViewPosX);
-    saved2 = U_I((unsigned)&sv_ViewPosY);
-    saved3 = U_I((unsigned)&sv_ViewPosZ);
-    saved4 = U_I((unsigned)&sv_ViewRotX);
-    saved5 = U_I((unsigned)&sv_ViewRotY);
-    saved6 = U_I((unsigned)&sv_ViewRotZ);
-    kind = U_I((unsigned)&d3_CurrentScene);
-    U_I((unsigned)&sv_PanelShown) = (int)param_1;
-    U_I((unsigned)&evt_NoGroup) = U_I(param_1 + 1);
-    U_I((unsigned)&ch_CurrentScriptGroup) = U_I(param_1 + 1);
-    U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
-    U_I((unsigned)&sv_SceneEventTime) = 0;
+    lastEvent = -1;
+    scene = d3_CurrentScene;
+    sv_PanelShown = (unsigned short *)room;
+    evt_NoGroup = room->objId;
+    ch_CurrentScriptGroup = room->objId;
+    sv_FrameBase = sv_FrameDepth + 1;
+    pos[0] = sv_ViewPos[0];
+    pos[1] = sv_ViewPos[1];
+    pos[2] = sv_ViewPos[2];
+    rot[0] = sv_ViewRot[0];
+    rot[1] = sv_ViewRot[1];
+    rot[2] = sv_ViewRot[2];
+    sv_SceneEventTime = 0;
     sv_ResetSelection();
     sv_ClearSelection();
-    idx = -1;
-    room = param_1;
-    if (*(signed char *)((unsigned)&init_ObjectUniverse + *param_1) != -2) {
-        if (*(signed char *)((unsigned)&init_ObjectUniverse + *param_1) == -1 ||
-            *(unsigned char *)((unsigned)&init_SceneDirty + *(signed char *)((unsigned)&init_ObjectUniverse + *param_1) * 0x3e0) != 0) {
-            U_I((unsigned)&d2_CutsceneActive) = 1;
-            init_LoadObjectScene(*param_1);
-            U_I((unsigned)&d2_CutsceneActive) = 0;
+    universe = init_ObjectUniverse[room->type];
+    if (universe != -2) {
+        if (universe == -1 || d3_Scenes[universe].dirty != 0) {
+            d2_CutsceneActive = 1;
+            init_LoadObjectScene(room->type);
+            d2_CutsceneActive = 0;
         }
-        *(unsigned short *)(U_I((unsigned)&ai_FallbackBuilding) + 0x29) = *param_1;
-        d3if_SelectScene(*(signed char *)((unsigned)&init_ObjectUniverse + *param_1), 0);
+        ((AIBLD *)ai_FallbackBuilding)->mainRoom = room->type;
+        d3if_SelectScene(init_ObjectUniverse[room->type], 0);
         d3_InflateScene(3);
-        init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), *param_1);
-        init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), param_1);
-        /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
-        idx = U_I((unsigned)&evt_LastId);
+        init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, room->type);
+        init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, (unsigned short *)room);
+        if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[4].fn != 0)
+            d3_DefaultScene->events[4].fn(d3_DefaultScene, 4, d3_DefaultScene->events[4].name, 0);
+        lastEvent = evt_LastId;
         d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
         d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
-        U_I((unsigned)&sv_ViewPosX) = *(int *)&d3_Camera->pos.x;
-        U_I((unsigned)&sv_ViewPosY) = *(int *)&d3_Camera->pos.y;
-        U_I((unsigned)&sv_ViewPosZ) = *(int *)&d3_Camera->pos.z;
-        U_I((unsigned)&sv_ViewRotX) = *(int *)&d3_Camera->rotation.x;
-        U_I((unsigned)&sv_ViewRotY) = *(int *)&d3_Camera->rotation.y;
-        U_I((unsigned)&sv_ViewRotZ) = *(int *)&d3_Camera->rotation.z;
-        U_I((unsigned)&sv_BorderViewX) = 0;
-        U_I((unsigned)&sv_BorderViewY) = 0;
+        sv_ViewPos[0] = d3_Camera->pos.x;
+        sv_ViewPos[1] = d3_Camera->pos.y;
+        sv_ViewPos[2] = d3_Camera->pos.z;
+        sv_ViewRot[0] = d3_Camera->rotation.x;
+        sv_ViewRot[1] = d3_Camera->rotation.y;
+        sv_ViewRot[2] = d3_Camera->rotation.z;
+        borderX = sv_BorderViewX;
+        borderY = sv_BorderViewY;
+        sv_BorderViewX = 0;
+        sv_BorderViewY = 0;
     }
     snd_AmbientOn = 0;
-    switch (*param_1) {
+    switch (room->type) {
+    case 0x2d:
+        ai_BookContact(ai_FallbackBuilding);
+        break;
+    case 0x33:
+        ai_MercenaryBookContact(ai_FallbackBuilding);
+        break;
     case 0x2c:
-    case 0x109: ai_UpgradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x2d: ai_BookContact(ai_FallbackBuilding); break;
-    case 0x33: ai_MercenaryBookContact(ai_FallbackBuilding); break;
-    case 0x37: ai_MiningContact(ai_FallbackBuilding); break;
-    case 0x107: ai_InformationContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x205: ai_GraveyardTradeContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x211: ai_GraveyardFogContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x21b: ai_GraveyardSeanceContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x276: ai_GypsyContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x27f: ai_TheatreContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    case 0x28a: ai_CurseContact(U_I((unsigned)&ai_FallbackBuilding)); break;
-    default: ai_PumpFrames(param_1); break;
+        ai_UpgradeContact((int)ai_FallbackBuilding);
+        break;
+    case 0x37:
+        ai_MiningContact(ai_FallbackBuilding);
+        break;
+    case 0x107:
+        ai_InformationContact((int)ai_FallbackBuilding);
+        break;
+    case 0x109:
+        ai_UpgradeContact((int)ai_FallbackBuilding);
+        break;
+    case 0x205:
+        ai_GraveyardTradeContact(ai_FallbackBuilding);
+        break;
+    case 0x211:
+        ai_GraveyardFogContact(ai_FallbackBuilding);
+        break;
+    case 0x21b:
+        ai_GraveyardSeanceContact(ai_FallbackBuilding);
+        break;
+    case 0x276:
+        ai_GypsyContact((int)ai_FallbackBuilding);
+        break;
+    case 0x28a:
+        ai_CurseContact((int)ai_FallbackBuilding);
+        break;
+    case 0x27f:
+        ai_TheatreContact((int)ai_FallbackBuilding);
+        break;
+    default:
+        ai_PumpFrames((int)room);
+        break;
     }
     snd_AmbientOn = 1;
     sv_ResetSelection();
     sv_ClearSelection();
     sv_ReleaseNamePlates();
-    U_I((unsigned)&sv_SelectedChar) = 0;
-    /* ROUGH: the device callbacks as in 0x59ee40, then the room 0xfd restored (0x4ffe90, 0x5f1298) */
-    if (U_I((unsigned)&evt_LastId) != -1)
-        sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
+    sv_SelectedChar = 0;
+    if (lastEvent != -1) {
+        ev = evt_FindById(lastEvent);
+        if (ev != 0) {
+            evt_Stop(ev);
+            sv_RunFramesUntilStopped(ev->id);
+        }
+    }
+    if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[5].fn != 0)
+        d3_DefaultScene->events[5].fn(d3_DefaultScene, 5, d3_DefaultScene->events[5].name, 0);
+    if (evt_LastId != -1)
+        sv_RunFramesUntilStopped(evt_LastId);
     d3_DeflateScene(3);
-    d3if_SelectScene(kind, 0);
-    U_I((unsigned)&sv_PanelShown) = 0;
-    *(unsigned short *)(U_I((unsigned)&ai_FallbackBuilding) + 0x29) = 0xfd;
-    U_I((unsigned)&evt_NoGroup) = 0;
-    U_I((unsigned)&ch_CurrentGroup) = U_I(U_I((unsigned)&ai_FallbackBuilding) + 1);
-    room = (unsigned short *)gm_Query(U_I(U_I((unsigned)&ai_FallbackBuilding) + 0x5d), 2, 6, 0, 0xfd);
-    U_I((unsigned)&ch_CurrentScriptGroup) = U_I(room + 1);
-    U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
-    U_I((unsigned)&sv_BorderViewY) = (int)param_1;
-    U_I((unsigned)&sv_ViewPosX) = saved1;
-    U_I((unsigned)&sv_ViewPosY) = saved2;
-    U_I((unsigned)&sv_ViewPosZ) = saved3;
-    U_I((unsigned)&sv_BorderViewX) = idx;
-    U_I((unsigned)&sv_ViewRotX) = saved4;
-    U_I((unsigned)&sv_ViewRotY) = saved5;
-    U_I((unsigned)&sv_ViewRotZ) = saved6;
+    d3if_SelectScene(scene, 0);
+    sv_PanelShown = 0;
+    ((AIBLD *)ai_FallbackBuilding)->mainRoom = 0xfd;
+    evt_NoGroup = 0;
+    ch_CurrentGroup = ((AIBLD *)ai_FallbackBuilding)->id;
+    home = (AIOBJ *)gm_Query((void *)((AIBLD *)ai_FallbackBuilding)->objList, 2, 6, 0, 0xfd);
+    ch_CurrentScriptGroup = home->objId;
+    sv_FrameBase = sv_FrameDepth;
+    sv_BorderViewY = borderY;
+    sv_ViewPos[0] = pos[0];
+    sv_ViewPos[1] = pos[1];
+    sv_ViewPos[2] = pos[2];
+    sv_BorderViewX = borderX;
+    sv_ViewRot[0] = rot[0];
+    sv_ViewRot[1] = rot[1];
+    sv_ViewRot[2] = rot[2];
 }
 /* 0x59f9a0, the Rathaus guild hall window "locations\Rathaus\Rathaus_Geb_Info" (592 B): the window 0x4741f0,
    the text 0x17f6, the buttons 0x5e56c4 counts; on rebuild 0x501190 (1, 6) walks the citizens with the byte
