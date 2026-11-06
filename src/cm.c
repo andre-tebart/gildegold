@@ -1426,15 +1426,15 @@ int cm_SendExSysMessage(unsigned char id, void *msg)
         memcpy(&m.data[1], msg, 0x7c);
     return cm_QueueSend(&m);
 }
-/* 0x4c4e00, message 0x21 */
+/* 0x4c4e00, message 0x21: has the server kill the character netId (mode 1, or gm_MayRemoveChar's 0 to keep it) */
 
-void cm_SendKillCharacter(int a, int b)
+void cm_SendKillCharacter(int netId, int mode)
 {
     G17MSG m;
 
     m.type = 0x21;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.kill.netId = netId;
+    m.kill.mode = mode;
     cm_QueueSend(&m);
 }
 /* 0x4c4e40, sends message 0x22, a new crime: the CRIME record p (0x2d bytes) with the id ai_NextCrimeId, the state 1 and a random seed; the send's result */

@@ -270,6 +270,12 @@ typedef struct G17SETHEMSG {             /* 0x4f bytes, the data of message 0x1d
     char name[0x20];                    /* 0x2f, the kind's name (cm_EventNames) */
 } G17SETHEMSG;
 
+typedef struct G17KILLMSG {             /* 8 bytes, the data of message 0x21 (cm_SendKillCharacter, its handler
+                                           0x4c8de0) */
+    int netId;                          /* 0x00, the character to kill */
+    int mode;                           /* 0x04, gm_KillSpieler's mode: 1 kills, 0 (gm_MayRemoveChar) keeps it */
+} G17KILLMSG;
+
 typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
     int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
     AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
@@ -538,6 +544,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17FLOATDELTAMSG floatDelta;    /* 0x10, message 0x1a */
         G17SETHEMSG setHE;              /* 0x10, message 0x1d */
         AITIME time;                    /* 0x10, message 0x1e */
+        G17KILLMSG kill;                /* 0x10, message 0x21 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
