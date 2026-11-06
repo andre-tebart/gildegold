@@ -95,9 +95,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143ff58                        (*(unsigned char (*)[608])((char *)txt_Ptrs + 0x05d98))  /* 0x143ff58 */
 #define ai_ContactTextRawMaterialSearch          (*(char * *)((char *)txt_Ptrs + 0x05ff4))  /* 0x14401b4 */
 #define full_data_14401c4                        (*(unsigned char (*)[456])((char *)txt_Ptrs + 0x06004))  /* 0x14401c4 */
-#define full_data_144038c                        (*(unsigned char (*)[96])((char *)txt_Ptrs + 0x061cc))  /* 0x144038c */
-#define full_data_14403ec                        (*(unsigned char (*)[128])((char *)txt_Ptrs + 0x0622c))  /* 0x14403ec */
-#define full_data_144046c                        (*(unsigned char (*)[116])((char *)txt_Ptrs + 0x062ac))  /* 0x144046c */
+#define ai_ContactTextDiceGame                   (*(char * *)((char *)txt_Ptrs + 0x061cc))  /* 0x144038c, the hover text of the contact_WUERFELSPIEL plate (the tavern listener 0x599af0) */
+#define ai_ContactTextStammtisch                 (*(char * *)((char *)txt_Ptrs + 0x0622c))  /* 0x14403ec, the hover text of the contact_STAMMTISCH plate (0x599af0) */
+#define ai_ContactTextDarkCorner                 (*(char * *)((char *)txt_Ptrs + 0x062ac))  /* 0x144046c, the hover text of the ob_DUNKLE_ECKE plate (0x599af0) */
 #define full_data_14404e0                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x06320))  /* 0x14404e0 */
 #define full_data_14404f8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06338))  /* 0x14404f8 */
 #define full_data_14404fc                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x0633c))  /* 0x14404fc */

@@ -294,7 +294,7 @@ extern struct D2PIC *d2_Pics;
 
 
 extern GAPDATA full_data_6f2450[];
-#define ai_DebugHotkeys (*(int *)&full_data_6f2450)  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_Unk599af0) */
+#define ai_DebugHotkeys (*(int *)&full_data_6f2450)  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_TavernContact) */
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -7242,7 +7242,7 @@ typedef struct LCDUELBTN {              /* an action button of the dice game win
    the total when he won (cm_SendMoveGoodsUnchecked). It leaves as soon as the player's character is dead.
    bld, the tavern building the room listener 0x599af0 passes, is not read */
 
-void ai_TavernDiceWindow(int bld)
+void ai_TavernDiceWindow(AIBLD *bld)
 {
     AICHARREC *pc = (AICHARREC *)ai_Chars[ai_PlayerId];
     LCFIN *fin;
@@ -7980,50 +7980,47 @@ int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); in
 int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
-/* 0x599af0, the tavern contact listener "contact_WUERFELSPIEL" / "contact_STAMMTISCH" / "ob_DUNKLE_ECKE"
-   (440 B): the pump 0x5309a0 (0x599af0, 0x67fff), the contact list 0x58f510 (param_1) and the three lookups
-   0x52e1c0 (0x144038c / 0x14403ec / 0x144046c, class 0x16); the clicked contact 0x6f22e4 opens the dice game
-   0x598170 (param_1), the regulars table 0x599240 or the dark corner 0x599aa0 (param_1, param_2); with the gate
-   0x6f2450 set and the input key 0x1468410 byte 0x12 (enter), an AIMSG (0x74) goes to 0x4c4b70: type +4, the
-   character 0x770b84 + player * 0x21c at +8, -1 at +0xc, the clock 0x770ae0 .. +0x28, the byte 2 at +0x36, the
-   buttons of param_1 + 1 at +0x5c and of param_2 + 2 at +0x60; the key 0x17 calls 0x599aa0 */
-void ai_Unk599af0(int param_1, int param_2)
+/* 0x599af0, the tavern room's contact listener: it releases the name plates, then per frame (sv_RunFrame, this,
+   mask 0x67fff) runs ai_MarketContact and registers the plates contact_WUERFELSPIEL, contact_STAMMTISCH and
+   ob_DUNKLE_ECKE; a clicked plate opens the dice game (ai_TavernDiceWindow), the regulars' table
+   (ai_OpenStammtisch) or the dark corner (ai_DarkCornerTable). With ai_DebugHotkeys set, the key 0x12 sends the
+   dark-corner order 0x74 at once (as ai_DarkCornerMenu's, from no building: fromId -1) and the key 0x17 opens the
+   dark corner */
+
+void ai_TavernContact(AIBLD *bld, AIOBJ *room)
 {
-    char msg[0xf8];
-    int p1;
-    int p2;
-    int p3;
+    int dice;
+    int table;
+    int corner;
+    AIMSG msg;
 
     sv_ReleaseNamePlates();
-    while (sv_RunFrame(ai_Unk599af0, 0x67fff) != 0) {
-        ai_MarketContact((AIBLD *)param_1);
-        p1 = sv_RegisterNamePlate("contact_WUERFELSPIEL", U_I((unsigned)&full_data_144038c), 0x16);
-        p2 = sv_RegisterNamePlate("contact_STAMMTISCH", U_I((unsigned)&full_data_14403ec), 0x16);
-        p3 = sv_RegisterNamePlate("ob_DUNKLE_ECKE", U_I((unsigned)&full_data_144046c), 0x16);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == p1)
-                ai_TavernDiceWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == p2)
-                ai_OpenStammtisch(param_1, param_2);
-            else if (U_I((unsigned)&ai_ClickedObject) == p3)
-                ai_DarkCornerTable(param_1, param_2);
+    while (sv_RunFrame((int)ai_TavernContact, 0x67fff) != 0) {
+        ai_MarketContact(bld);
+        dice = sv_RegisterNamePlate("contact_WUERFELSPIEL", ai_ContactTextDiceGame, 0x16);
+        table = sv_RegisterNamePlate("contact_STAMMTISCH", ai_ContactTextStammtisch, 0x16);
+        corner = sv_RegisterNamePlate("ob_DUNKLE_ECKE", ai_ContactTextDarkCorner, 0x16);
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == dice)
+                ai_TavernDiceWindow(bld);
+            else if (ai_ClickedObject == table)
+                ai_OpenStammtisch(bld, room);
+            else if (ai_ClickedObject == corner)
+                ai_DarkCornerTable(bld, room);
         }
         if (ai_DebugHotkeys != 0) {
-            if (*(unsigned char *)(unsigned)&kb_Last == 0x12) {
-                memset(msg, 0, 0xf8);
-                *(unsigned char *)(msg + 4) = 0x74;
-                *(unsigned char *)(msg + 0x36) = 2;
-                *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                *(int *)(msg + 0xc) = -1;
-                *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                *(int *)(msg + 0x5c) = U_I(param_1 + 1);
-                *(int *)(msg + 0x60) = U_I(param_2 + 2);
-                cm_SendLongMessage(msg);
-            } else if (*(unsigned char *)(unsigned)&kb_Last == 0x17) {
-                ai_DarkCornerTable(param_1, param_2);
+            if (kb_Last == 0x12) {
+                D3_ZERO(&msg, sizeof(msg));
+                msg.type = 0x74;
+                msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                msg.fromId = -1;
+                msg.flags = 2;
+                msg.time = ai_Time;
+                msg.arg[1] = bld->id;
+                msg.arg[2] = room->objId;
+                cm_SendLongMessage((char *)&msg);
+            } else if (kb_Last == 0x17) {
+                ai_DarkCornerTable(bld, room);
             }
         }
     }
@@ -10178,7 +10175,7 @@ void ai_EnterBuilding(unsigned char *param_1, int param_2)
             case 0x110: ai_LawBookContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x114: ai_TownCashContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x118: ai_PerfumeryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x120: ai_Unk599af0(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x120: ai_TavernContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x12e: ai_BreweryContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x137: ai_GuildLevel2Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x138: ai_GuildLevel1Listener(U_I((unsigned)&ai_PlayerBuilding), room); break;
