@@ -4319,7 +4319,7 @@ void main_SettleRound(unsigned short pl)
                                 cm_AddFieldDelta(1, 1, (char *)&o->reportKnow - cm_FieldObject, &age);
                                 cm_SendFieldDeltas();
                             } else
-                                ai_Unk4c47b0(o->objId);
+                                cm_SendDeleteObject(o->objId);
                         }
                         o = (AIOBJ *)gm_QueryNext();
                     }

@@ -7591,7 +7591,7 @@ unsigned gm_TakeOverCharacter(int a, int b)
 
 int gm_EquipmentValue(unsigned char *b, int level);                     /* 0x509b10 */
 int gm_CharSumAmounts(char *c);                     /* 0x509eb0 */
-void cm_SendMoveObject(int a, int b, int c);                     /* 0x4c5010 */
+int cm_SendMoveObject(int a, int b, int c);                     /* 0x4c5010 */
 #define ORD_F1C8_ANEW 0x800000  /* flags1c8 bit 23, set for a character that starts anew (gm_ForfeitEstate) */
 extern const unsigned int ai_BuildingTypeMasks[4];  /* 0x5eed70 (ai.h, not includable here): [2..3] the 64-bit mask of the house-owner building kinds */
 void cm_SendFloatDelta(int id, int field, float delta);                     /* 0x4c4ac0 */

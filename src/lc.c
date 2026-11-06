@@ -5014,7 +5014,7 @@ int ai_PickedObjectWindow(); int ai_Kind1eWindow();
 int ai_MapPick();
 
 /* 0x593e80, the information listener (186 B): the plates released (0x52e190) and registered again every frame
-   (0x52e1c0): INFORMATION (0x143cb38, 0xc) -> the spy ring window 0x5a45c0, MEISTERBRIEF (0x143cbc8, 0xc) ->
+   (0x52e1c0): INFORMATION (0x143cb38, 0xc) -> the spy reports window 0x5a45c0, MEISTERBRIEF (0x143cbc8, 0xc) ->
    0x5c3200, PERSONALBUCH (0x143c9f0, 0xc) -> 0x5aab80 (the building, the name); the clicked plate (0x6f22e4)
    opens its window; the frame pump 0x5309a0 (this, 0x67fff) */
 void ai_InformationContact(int building)
@@ -5036,7 +5036,7 @@ void ai_InformationContact(int building)
             else if (ai_ClickedObject == personal)
                 ai_PersonnelBook(building, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == inf)
-                ai_SpyRingWindow(building);
+                ai_SpyReportsWindow((AIBLD *)building);
         }
         r = sv_RunFrame(ai_InformationContact, 0x67fff);
     }
@@ -12946,109 +12946,103 @@ void ai_EspionageStart(unsigned char *param_1)
 }
 
 unsigned char * gm_BuildQuery(int n, ...); int gm_BuildingValues(); int d2_CreateRadioGroup(int n, ...); void d2_RadioAdd(int g, int obj);
-void d2_RadioClear(int g); int d2_RadioGetSel(); void cm_SendMoveObject(int a, int b, int c); void ai_Unk4c47b0(short a);
+void d2_RadioClear(int g); int d2_RadioGetSel(); int cm_SendMoveObject(int a, int b, int c); void cm_SendDeleteObject(int id);
 int d2_GetViewWin(); void d2_CreateScrollButtons(); void d2_ClearInput(void); void sv_PumpNet();
 
-/* 0x5a45c0, the spy ring window "locations\diebesgilde\diebesgilde_spionagering" (1540 B, ROUGH SKELETON):
-   the window 0x4741f0 / 0x475600 / 0x475f70 (1) with the text 0x19fb, 0x476f80 / 0x476b70, the text 0x1ba6 and
-   the button 0x475b80 (3), the list 0x475ff0 (2, 0x767) and 0x472270 (-1, -1, the screen 0x6ed938); on a
-   rebuild the guild's rooms 0x4ffe90 (param_1 + 0x5d, 1, 0, 0xca) / 0x4ffcc0 collect up to 8 whose building
-   0x501190 (1, 1, room + 0x2a) is known, each row 0x515960 (0x19fc, the kind byte + 0x427, the owner slot, the
-   building, the room + 0x1c, 0x5091a0 (the building), the room + 0x37 / + 0x36) with the control 0x475b80 and
-   the window table 0xf8f080 (+0x2e8 the building, +0x28 / +0x2c = 1), the list 0x46c490 (1) / 0x46c560 /
-   0x46c600; a click on the button picks the list index 0x46c6a0 and pays 0x4c5010 (param_1 + 1, -1, the room
-   + 2) with 0x4c3ae0 / 0x52fe00; the pump 0x5309a0 (this, 0x677c7), the exit 0x52d7a0 / 0x4758f0. ROUGH
-   SKELETON: the list bookkeeping (0x2ec-byte window records, the 0x23-dword table 0xfa5aa8) is condensed */
-void ai_SpyRingWindow(int param_1)
+/* 0x5a45c0, the spy reports window "locations\diebesgilde\diebesgilde_informationen" of the guild building bld: the
+   text 0x19fb, the delete button 0x1ba6 and the scrolled list (d2_GetViewWin 0x767). On a rebuild the list shows up
+   to eight of bld's spy reports (objects 0xca) whose building still has an owner, each a radio row with the text
+   0x19fc (the building type's name 0x427 + kind, the owner, the building, AIOBJ.reportStamp, its two
+   gm_BuildingValues, reportKnow, reportGuard) and the building as the row's data; a report whose building is gone is
+   deleted (cm_SendDeleteObject). The button moves the selected report out of bld (cm_SendMoveObject to -1),
+   waits for its slot (sv_PumpNet) and rebuilds the list. The row counter is not reset by a rebuild */
+void ai_SpyReportsWindow(AIBLD *bld)
 {
-    int rows[8];
-    int ctl[16];
-    int win;
-    int list;
-    int h;
-    int i;
-    int n;
+    int nRows;
     int j;
-    int rebuild = 1;
-    int idx = -1;
-    int room;
-    int bld;
-    int v;
-    char *p;
-    char buf[0x200];
+    int deleteBtn;
+    int values[2];
+    AIOBJ *reports[8];
+    int rows[16];
+    int win;
+    int rebuild;
+    int radio;
+    int n;
+    int sel;
+    int slot;
+    int row;
+    AIOBJ *o;
+    AIBLD *target;
 
-    win = d2_OpenForm(0, 0, "locations\\diebesgilde\\diebesgilde_spionagering");
+    rebuild = 1;
+    nRows = 0;
+    radio = -1;
+    win = d2_OpenForm(0, 0, "locations\\diebesgilde\\diebesgilde_informationen");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x19fb);
     d2_SetPointerSprite(0, 0);
     d2_ClearInput();
     d2_SetForm(win, 3);
-    h = d2_GetWinObj(win, 3, io_PrintText(0x1ba6));
-    v = d2_GetViewWin(win, 2, 0x767);
-    d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), v);
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
+    deleteBtn = d2_GetWinObj(win, 3, io_PrintText(0x1ba6));
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, d2_GetViewWin(win, 2), 0x767);
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
         if (rebuild) {
-            for (i = 0; i < 8; i++)
-                rows[i] = 0;
-            if (idx != -1) {
-                d2_RadioClear(idx);
-                idx = -1;
+            memset(reports, 0, sizeof(reports));
+            if (radio != -1) {
+                d2_RadioClear(radio);
+                radio = -1;
             }
             d2_SetForm(win, 2);
-            io_PrintText((char *)(unsigned)"$C");
+            io_PrintText("$C");
             n = 0;
-            room = gm_Query(U_I(param_1 + 0x5d), 1, 0, 0xca);
-            while (room != 0 && n < 8) {
-                bld = gm_BuildQuery(1, 1, U_I(room + 0x2a));
-                if (bld != 0 && U_W(bld + 0x27) != 0xffff) {
-                    rows[n] = room;
-                    n++;
-                }
-                room = gm_QueryNext();
+            for (o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xca); o != 0 && n < 8;
+                 o = (AIOBJ *)gm_QueryNext()) {
+                target = (AIBLD *)gm_BuildQuery(1, 1, o->reportBld);
+                if (target != 0 && target->owner != 0xffff)
+                    reports[n++] = o;
             }
             for (j = 0; j < 8; j++) {
-                if (rows[j] != 0) {
-                    p = (char *)gm_BuildQuery(1, 1, U_I(rows[j] + 0x2a));
-                    if (p == 0) {
-                        ai_Unk4c47b0(U_I(rows[j] + 2));
-                    } else if (U_W(p + 0x27) != 0xffff) {
-                        gm_BuildingValues(p, &i);
-                        ctl[n] = d2_GetWinObj(win, 2,
-                                  io_PrintText(0x19fc, *(unsigned char *)p + 0x427,
-                                               U_W(p + 0x27), p, rows[j] + 0x1c, i,
-                                               *(unsigned char *)(rows[j] + 0x37),
-                                               *(unsigned char *)(rows[j] + 0x36)));
-                        U_I((unsigned)&d2_Objs + ctl[n] * 0x2ec + 0x2e8) = (int)p;
-                        if (idx == -1) {
-                            idx = d2_CreateRadioGroup(1);
-                            U_I((unsigned)&d2_Objs + ctl[n] * 0x2ec + 0x28) = 1;
-                            U_I((unsigned)&d2_Objs + ctl[n] * 0x2ec + 0x2c) = 1;
-                            U_I((unsigned)&d2_Objs + ctl[n] * 0x2ec + 0x2e8) = (int)p;
-                            U_I((unsigned)&d2_RadioSel + idx * 0x8c) = 0;
+                o = reports[j];
+                if (o == 0)
+                    continue;
+                target = (AIBLD *)gm_BuildQuery(1, 1, o->reportBld);
+                if (target != 0) {
+                    if (target->owner != 0xffff) {
+                        gm_BuildingValues(target, values);
+                        row = d2_GetWinObj(win, 2, io_PrintText(0x19fc, target->kind + 0x427, target->owner, target,
+                                                                &o->reportStamp, values[0], values[1], o->reportKnow,
+                                                                o->reportGuard));
+                        rows[nRows] = row;
+                        d2_Objs[row].user = target;
+                        if (radio == -1) {
+                            radio = d2_CreateRadioGroup(1, row);
+                            d2_Objs[row].checked = 1;
+                            d2_Objs[row].highlighted = 1;
+                            d2_Objs[row].user = target;
+                            d2_Radios[radio].sel = 0;
                         } else {
-                            d2_RadioAdd(idx, ctl[n]);
+                            d2_RadioAdd(radio, row);
                         }
-                        n++;
+                        nRows++;
                     }
+                } else {
+                    cm_SendDeleteObject(o->objId);
                 }
             }
             rebuild = 0;
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == h && idx != -1 &&
-            (i = d2_RadioGetSel(idx)) > -1) {
-            v = ((int (*)(int, int, int))cm_SendMoveObject)(U_I(param_1 + 1), -1, U_I(rows[i] + 2));
-            while (cm_GetSlotState(v) == 0)
+        if (d2_ClickedId != -1 && d2_PointerObj == deleteBtn && radio != -1 && (sel = d2_RadioGetSel(radio)) >= 0) {
+            slot = cm_SendMoveObject(bld->id, -1, reports[sel]->objId);
+            while (cm_GetSlotState(slot) == 0)
                 sv_PumpNet();
             rebuild = 1;
         }
-        if (sv_RunFrame(ai_SpyRingWindow, 0x677c7) == 0)
-            break;
-    }
-    if (idx != -1)
-        d2_RadioClear(idx);
+    } while (sv_RunFrame(ai_SpyReportsWindow, 0x677c7) != 0);
+    if (radio != -1)
+        d2_RadioClear(radio);
     sv_CameraFollow();
     d2_CloseView(win);
 }
@@ -13246,7 +13240,7 @@ void ai_PickpocketVictimWindow(int param_1)
    contact_ANGRIFF (only with the level byte >= 2) / contact_TASCHENDIEBSTAHL / ob_INFORMATIONSPERGAMENT plates
    through 0x52e1c0 when the mask 0x200 is set, ob_PERSONALBUCH / ob_MEISTERBRIEF when 0x400 is set, and
    dispatches the pending click 0x6f22e4 to ai_BurglaryStart / ai_EspionageStart / ai_AttackStart,
-   ai_PickpocketVictimWindow / ai_SpyRingWindow / ai_PersonnelBook / ai_MasterLetterWindow */
+   ai_PickpocketVictimWindow / ai_SpyReportsWindow / ai_PersonnelBook / ai_MasterLetterWindow */
 
 void ai_ThievesGuildListener(int building)
 {
@@ -13302,7 +13296,7 @@ void ai_ThievesGuildListener(int building)
             else if (click == personal)
                 ai_PersonnelBook(building, "ob_PERSONALBUCH");
             else if (click == pergament)
-                ai_SpyRingWindow(building);
+                ai_SpyReportsWindow((AIBLD *)building);
             else if (click == meister)
                 ai_MasterLetterWindow(building);
         }
@@ -14194,7 +14188,7 @@ void ai_ArrestStart(int building)
    store, equip and transport offers): releases the name plates, then every frame registers contact_LAGER
    (class 0xe), contact_AUSRUESTEN (0xd), contact_RAZZIA (0x16), contact_GEBAEUDE_AUSSPIONIEREN (0x17),
    ub_INFORMATIONSPERGAMENT (0xc) and contact_TRANSPORT (0x15); a click opens ai_StorageWindow (the building, the
-   shown room's objList), ai_EquipWindow, ai_RaidStart, ai_EspionageStart, ai_SpyRingWindow or ai_OpenTransport */
+   shown room's objList), ai_EquipWindow, ai_RaidStart, ai_EspionageStart, ai_SpyReportsWindow or ai_OpenTransport */
 
 void ai_GuildHallListener(AIBLD *bld)
 {
@@ -14227,7 +14221,7 @@ void ai_GuildHallListener(AIBLD *bld)
             else if (ai_ClickedObject == ausspionieren)
                 ai_EspionageStart((unsigned char *)bld);
             else if (ai_ClickedObject == pergament)
-                ai_SpyRingWindow((int)bld);
+                ai_SpyReportsWindow(bld);
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
         }

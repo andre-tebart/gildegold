@@ -1190,14 +1190,15 @@ void cm_SendTakeOverCharacter(int a, int b)
     G17_I(m, 4) = b;
     cm_QueueSend(&m);
 }
-/* 0x4c47b0, message 0xe */
+/* 0x4c47b0, message 0xe: deletes the object id (its callers pass the whole AIOBJ.objId; the message carries its low
+   16 bits) */
 
-void ai_Unk4c47b0(short a)
+void cm_SendDeleteObject(int id)
 {
     G17MSG m;
 
     m.type = 0xe;
-    G17_S(m, 0) = a;
+    G17_S(m, 0) = (short)id;
     cm_QueueSend(&m);
 }
 /* 0x4c47e0, message 0xf: moves d of the goods / money of player c from a to b (-1: none); returns its send slot (cm_GetSlotState) */
@@ -1510,9 +1511,9 @@ int cm_SendLeaveParty(int a, int b)
     G17_I(m, 4) = b;
     return cm_QueueSend(&m);
 }
-/* 0x4c5010, message 0x2b */
+/* 0x4c5010, message 0x2b: moves the object c from the building a to b (-1: out of a); returns its send slot */
 
-void cm_SendMoveObject(int a, int b, int c)
+int cm_SendMoveObject(int a, int b, int c)
 {
     G17MSG m;
 
@@ -1520,7 +1521,7 @@ void cm_SendMoveObject(int a, int b, int c)
     G17_I(m, 0) = a;
     G17_I(m, 4) = b;
     G17_I(m, 8) = c;
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c5050, message 0x2c: sets the plant of the type at the cell (x, z) of the building's vegetation map (fall: its fall model,
    under the id fallId; a later message without fall and that id puts it back); returns the send slot */

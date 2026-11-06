@@ -330,6 +330,8 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
         struct {
             union {
                 int unk1c;                      /* 0x1c, a building id / a state / a count */
+                int reportStamp;                /* 0x1c, of a spy report: the start of the record its text 0x19fc shows (the
+                                                   reports window passes its address; reasoned: when it was made) */
                 int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
                 int cnt;                        /* 0x1c */
                 unsigned int reserve;           /* 0x1c, of goods in a store: the quarters of the store's stock (gm_ListStock)
@@ -394,7 +396,9 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
     unsigned char patrolWait;           /* 0x32, of a guard cart: the steps waited so far at its route's start (he_PatrolStep) */
     unsigned char patrolOn;             /* 0x33, of a guard cart: nonzero for the carts the patrol event 0xa6 steps (he_RunPatrolEvent) */
     char pad34[2];
-    unsigned char unk36;                /* 0x36 */
+    unsigned char reportGuard;          /* 0x36, of a spy report: (reasoned) the guard level it found: the AI burgles only
+                                           when reportKnow reaches util_RandomU(20) + twice it (ai.c 0x481ef0); the reports
+                                           window shows it after reportKnow (text 0x19fc) */
     unsigned char reportKnow;           /* 0x37, of a spy report: how much it knows, in percent (ai.c spies again below a
                                            random 50 .. 99; the round settlement lowers it by twice the building's rank and
                                            drops the report at 5 or less, main.c; the raid adds it to its chance) */

@@ -201,7 +201,7 @@ int cm_SendMessage10(unsigned char n, int b, void *p, short d);                 
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h); /* 0x4c4650 */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2); /* 0x4c46d0 */
 void cm_SendTakeOverCharacter(int a, int b);                                                 /* 0x4c4770 */
-void ai_Unk4c47b0(short a);                                                      /* 0x4c47b0 */
+void cm_SendDeleteObject(int id);                                                      /* 0x4c47b0 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                         /* 0x4c47e0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d);                         /* 0x4c4830 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880 */
@@ -227,7 +227,7 @@ void cm_SendDropEvidence(int a, int b, int c);                                  
 int cm_RequestSendCutInfo(int id, int b);                                                 /* 0x4c4f50, "cm_RequestSendCutInfo": its send slot (cm_GetSlotState) */
 int cm_SendNewParty(void *p);                                                      /* 0x4c4fa0 */
 int cm_SendLeaveParty(int a, int b);                                                  /* 0x4c4fd0, its send slot (cm_GetSlotState) */
-void cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
+int cm_SendMoveObject(int a, int b, int c);                                          /* 0x4c5010 */
 int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned char fall, int fallId); /* 0x4c5050, the send slot */
 int cm_SendObject1b5(int owner, G17B7 value);                                        /* 0x4c50b0 */
 void cm_SendChrWalkTo(int a, int b, int c, int d);                                   /* 0x4c5100 */
