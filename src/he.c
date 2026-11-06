@@ -20812,13 +20812,14 @@ lacking:
         return;
     }
 }
-/* 0x56a100, the alloc of an event record: both clocks (+0x52 / +0x60) = the start clock (+0x44), due a random 0 .. 59 units of the kind 4 later */
+/* 0x56a100, the allocation handler of a search event 8 / 9: both clocks (end and clock60) start at the event's
+   start clock, and the end is a random 0 .. 59 minutes later (kind 4) */
 
-void he_AllocSearchEvent(int r)
+void he_AllocSearchEvent(AIJOB *e)
 {
-    *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
-    *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
-    gm_AddTime(r + 0x52, 4, (unsigned short)util_Random(0x3c), 0);
+    e->end = e->start;
+    e->clock60 = e->start;
+    gm_AddTime(&e->end, 4, (unsigned short)util_Random(0x3c), 0);
 }
 /* 0x56a170, the run handler of the search event 8 ("Suchen", he_AllocSearchEvent): stage 0 goes to 1; stage 1 frees
    the event when no workers are left (the words +0x14 / +0x18), else waits for the due clock; then, with its building
