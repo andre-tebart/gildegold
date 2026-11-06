@@ -1444,10 +1444,10 @@ int cm_SendCrime(void *p)
     G17MSG m;
 
     m.type = 0x22;
-    memcpy(m.data, p, 0x2d);
-    G17_I(m, 0) = ai_NextCrimeId;
-    G17_I(m, 0x25) = 1;
-    G17_I(m, 0x29) = rand();
+    memcpy(&m.crime, p, sizeof(CRIME));
+    m.crime.id = ai_NextCrimeId;
+    m.crime.state = 1;
+    m.crime.seed = rand();
     return cm_QueueSend(&m);
 }
 /* 0x4c4e90, sends message 0x23 (crime id a, force b: retire the crime record, ai_Unk4c9090); the send slot of cm_QueueSend */
