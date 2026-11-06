@@ -1060,7 +1060,10 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       the fields at bits 0, 4, 8, 12, 14, 17, 20, 23, 25 (4, 4, 4, 2, 3, 3, 3, 2, 4
                                       bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
                                       field pairs of gm_CatchMinorDisease / gm_CatchUpperDisease */
-    char pad030[0x136];
+    char pad030[0x134];
+    unsigned char jobId;           /* 0x164, the character's job (ai_char.h AICHAR.jobId; the construction window's group 7
+                                      needs 0x34 .. 0x39) */
+    char pad165;
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
     char pad167[2];
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
@@ -3333,91 +3336,200 @@ void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(ch
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 int sv_UpdateCamera(); int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
 
-/* 0x5909a0, the construction window "BAUEN_GEB_BAUEN" (1988 B, ROUGH SKELETON from the Ghidra pseudocode): the
-   window (0x5763c0 (0x40), the event 0x576040, the controls 0x4731d0 for the kinds 1 .. 9, the frames
-   (0x475f70), the size / position 0x475ff0 + 0x52e860 and the text 0x515960); the kind 3 / 7 are gated by the
-   player's bytes 0x770ce6 / 0x770ce4; the selected kind (0x62af98) switches the building list (0x501d80,
-   0x5020e0, the controls 0x473650 / 0x4760b0 / 0x4734d0) and the placement call 0x58ff00; the frame pump
-   0x5309a0 (this, 0x657c7) drives the loop; the exit frees the window (0x4758f0) and posts 0x576040 (0xe, 0, 1) */
-void ai_Unk5909a0(void)
-{
-    int ctrls[10];
-    int sel;
-    int chosen;
-    int last;
-    int slot;
-    int i;
-    int k;
-    int u;
-    int t;
-    int n;
-    int v;
-    char text[0x40];
-    char buf[0x104];
-    char name[0x80];
-    float pos[3];
-    int a[3];
-    int b[3];
+#define sv_CheckStockB ((int (*)(AIROOM *, int, int, unsigned char))sv_CheckStock)  /* @original ai_ConstructionWindow pushes the money kind as a byte (only cl loaded) */
+#define sv_CheckGoodAmountB ((int (*)(char *, int, unsigned char))sv_CheckGoodAmount)  /* @original as sv_CheckStockB */
 
-    last = -1;
-    sel = -1;
-    chosen = 0;
-    t = ai_RunAllows(0x40);
-    if (t == 0)
+/* 0x5909a0, the construction window "BAUEN\GEB_BAUEN" (1988 B): run by ai_RunAllows (0x40) between the campaign
+   steps 0xe (0, 0, 0) / (0, 1, 0); the window's padding 0x18 and its scroll buttons; the form 1 title (text 0x17eb)
+   and the group buttons 1 .. 9 of form 2 (pictures 0x6d5 ..; 2 and 5 are left out; group 3 needs the office 0xf or
+   0xa, group 7 a job 0x34 .. 0x39, else greyed; the caption is the group's text 0x95e + group); the checked button
+   is ai_BuildGroup. A click on a group button selects it; a new group rebuilds form 3 with the building kinds of
+   the group the player may build (gm_MayTakeJob 1: the picture 0x427 + kind with the kind's name and its cost,
+   3 per row; 2: an empty picture 0x4fb; the classes 0xf and 6 are left out; group 3 also sets sv_ResearchClass and
+   pays from the player's seat object). A click on a kind checks the money (the seat's stock or the character's),
+   lc_GebaeudeAusrichten places it and the build message 0xd (the kind, its cost, the site's position and angles,
+   the model) is sent; the right button closes the window
+   @deep Reconstructed in full from the original 0x5909a0..0x591164: the group buttons (2 and 5 skipped, 3
+   / 7 gated by officeKind / jobId), the kind list per group (gm_BuildingClass, gm_MayTakeJob 1 / 2, the
+   kind name and cost text), the click handling (sv_CheckStock on the seat for group 3, else
+   sv_CheckGoodAmount; the byte-pushed money kind is the @original cast), lc_GebaeudeAusrichten and the
+   build message 0xd (AIMSG.buildPos / buildRot / buildPath). ours=547 original=550. Left: register
+   allocation and scheduling only: the original keeps ebx as the zero register from the prologue on (push
+   ebx before the ai_RunAllows test; ours saves esi there), the group index in esi, the kind loop's name
+   pointer txt_Ptrs + 0x48e*4 walked in [esp+0x10] and the strcpy of the kind's name spilled through
+   [esp+0x1c] / [esp+0x17] (frame 0x2cc vs ours 0x2b4: these spills); ours holds them in ebx / edi; e.g.
+   +0xd5e: ours 'mov ecx, [ebx]; mov bl, [ecx]' vs the original 'mov ecx, [edx]; mov [esp+0x1c], ecx; ...
+   mov dl, [edx]; mov [esp+0x17], dl'. A variant round. (references: M8 at +0x68a: ours refers to
+   ai_Time+0x8 (0x770ae8), the original's field to 0x88 (and 1 more), explained: the two M8 lines are the
+   alignment pairing two loads of the build message's field copies that the schedulers order differently
+   (ours loads ai_Time+8 and ai_BuildGroup at other places in the same block; both sides copy ai_Time's 14
+   bytes into msg.time and test ai_BuildGroup == 3 once)) */
+void ai_ConstructionWindow(void)
+{
+    AIMSG msg;
+    char amount[0x70];              /* the cost text of a kind */
+    char model[0x100];              /* the model lc_GebaeudeAusrichten picked */
+    int groups[10];                 /* the group buttons */
+    AIROOM *seat;                   /* group 3: the player's seat object that pays */
+    AIBTYPE *type;
+    int prevGroup;
+    int pointed;                    /* the kind button clicked last, -1 = none */
+    int view;
+    int down;
+    int up;
+    int bar;
+    int off;
+    int ctl;
+    int text;
+    int site;
+    int kind;
+    int cost;
+    int ok;
+    int x;                          /* a kind button's place: 3 per row, 70 x 0x5a apart */
+    int y;
+    int n;
+    int i;
+
+    pointed = -1;
+    prevGroup = -1;
+    seat = 0;
+    if (ai_RunAllows(0x40) == 0)
         return;
     ai_CampaignStep(0xe, 0, 0, 0);
-    k = d2_OpenForm(0, 0, "BAUEN_GEB_BAUEN");
-    d2_CentreViewWindows(k);
-    d2_SetForm(k, 0);
-    n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x11c) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0x18;
-    v = d2_GetViewWin(k, 3, 0x5a, a, b, &a[2]);
-    sv_CreateScrollButtons(0x20c, 0x168, U_I((unsigned)&d2_LastWindow), v);
-    d2_SetForm(k, 1);
+    view = d2_OpenForm(0, 0, "BAUEN\\GEB_BAUEN");
+    d2_CentreViewWindows(view);
+    d2_SetForm(view, 0);
+    d2_Wins[d2_LastWindow].padl = 0x18;
+    d2_Wins[d2_LastWindow].padt = 0x18;
+    d2_Wins[d2_LastWindow].padr = 0x18;
+    d2_Wins[d2_LastWindow].padb = 0x18;
+    sv_CreateScrollButtons(0x20c, 0x168, d2_LastWindow, d2_GetViewWin(view, 3), 0x5a, &down, &up, &bar);
+    d2_SetForm(view, 1);
     io_PrintText(0x17eb);
-    d2_SetForm(k, 2);
-    u = 0;
+    d2_SetForm(view, 2);
+    n = 0;
+    off = 0;
     for (i = 1; i < 10; i++) {
         if (i == 2 || i == 5)
             continue;
-        v = 1;
         if (i == 3) {
-            if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0xf &&
-                *(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0xa)
-                v = 0;
+            if (((AICHARREC *)ai_Chars)[ai_PlayerId].officeKind != 0xf &&
+                ((AICHARREC *)ai_Chars)[ai_PlayerId].officeKind != 0xa)
+                off = 1;
         } else if (i == 7) {
-            if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + U_W((unsigned)&ai_PlayerId) * 0x21c) < 0x34 ||
-                0x39 < *(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + U_W((unsigned)&ai_PlayerId) * 0x21c))
-                v = 0;
+            if (((AICHARREC *)ai_Chars)[ai_PlayerId].jobId < 0x34 || ((AICHARREC *)ai_Chars)[ai_PlayerId].jobId > 0x39)
+                off = 1;
         }
-        ctrls[i] = d2_WinOpenPic((u & 1) * 0x46 + 0x30, (u / 2) * 0x5a + 0xf, i + 0x6d4,
-                                U_I((unsigned)&d2_LastWindow));
-        n = ctrls[i] * 0x2ec;
-        if (v == 0) {
-            U_I(U_I((unsigned)&d2_Objs) + n + 0x3c) = 1;
-            U_I(U_I((unsigned)&d2_Objs) + n + 0x50) = 1;
+        ctl = d2_WinOpenPic((n % 2) * 70 + 0x30, (n / 2) * 0x5a + 0xf, i + 0x6d4, d2_LastWindow);
+        groups[i] = ctl;
+        if (off == 0) {
+            d2_Objs[ctl].interactive = 1;
+            strcpy(d2_Objs[ctl].caption, txt_Ptrs[0x95e + i]);
+            d2_Objs[ctl].style = 3;
+            d2_Objs[ctl].capfont = 0x54;
+            d2_Objs[ctl].captionY = -1;
         } else {
-            U_I(U_I((unsigned)&d2_Objs) + n + 0x4c) = 1;
-            strcpy((char *)(U_I((unsigned)&d2_Objs) + n + 0xbc), (char *)U_I(((unsigned)&ai_BuildingNames + 0x1338) + i * 4));
-            U_I(U_I((unsigned)&d2_Objs) + n + 0x1c0) = 3;
-            U_I(U_I((unsigned)&d2_Objs) + n + 0x1bc) = 0x54;
-            U_I(U_I((unsigned)&d2_Objs) + n + 0x1d0) = -1;
+            d2_Objs[ctl].clickDisabled = 1;
+            d2_Objs[ctl].greyed = 1;
         }
-        u++;
+        n++;
+        off = 0;
     }
-    U_I(U_I((unsigned)&d2_Objs) + ai_BuildGroup * 0x2ec + 0x28) = 1;
-    /* ROUGH: the selection loop and the frame loop follow -- the input 0x6f8a668 (- 0x6d4) selects the kind
-       0x62af98, the building list is rebuilt (0x501d80 / 0x5020e0, 0x473650 / 0x4760b0 / 0x4734d0), the
-       placement call 0x58ff00 (the kind, the buffer), the message record (0x4c4b70) and the pump
-       0x5309a0 (this, 0x657c7); the exit: 0x4758f0 (the window), 0x576040 (0xe, 0, 1) */
-    while (sv_RunFrame(ai_Unk5909a0, 0x657c7) != 0)
-        ;
-    if (t != -1)
-        d2_CloseView(t);
-    U_I((unsigned)&sv_ResearchClass) = 0;
+    d2_Objs[groups[ai_BuildGroup]].checked = 1;
+    do {
+        if (d2_ClickedId >= 0x6d4 && d2_ClickedId < 0x6de) {
+            /* a group button */
+            ai_BuildGroup = d2_ClickedId - 0x6d4;
+            d2_Objs[groups[ai_BuildGroup]].checked = 1;
+            if (prevGroup != -1)
+                d2_Objs[groups[prevGroup]].checked = 0;
+        }
+        if (ai_BuildGroup != prevGroup) {
+            /* the kinds of the group */
+            d2_SetForm(view, 3);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            seat = 0;
+            if (ai_BuildGroup == 3) {
+                sv_ResearchClass = 1;
+                seat = (AIROOM *)gm_PlayerSeat(1);
+            } else {
+                sv_ResearchClass = 0;
+            }
+            n = 0;
+            for (kind = 0; kind < 88; kind++) {
+                if (gm_BuildingClass(kind) != ai_BuildGroup)
+                    continue;
+                type = (AIBTYPE *)ai_BTypes + kind;
+                ok = gm_MayTakeJob(kind, ai_PlayerId);
+                if (ok == 1) {
+                    if (type->buildingClass == 0xf || type->buildingClass == 6)
+                        continue;
+                    x = (n % 3) * 70;
+                    y = (n / 3) * 0x5a;
+                    ctl = d2_WinOpenPic(x + 0x30, y + 0xf, kind + 0x427, d2_LastWindow);
+                    d2_Objs[ctl].checkable = 1;
+                    strcpy(d2_Objs[ctl].caption, txt_Ptrs[0x48e + kind * 14]);
+                    d2_Objs[ctl].style = 3;
+                    d2_Objs[ctl].capfont = 0x54;
+                    gm_FormatAmount(gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind), ai_OwnPlayer, amount);
+                    text = d2_CreateWinText(x + 2, y + 0x3f, ch_EmptyName, d2_LastWindow);
+                    d2_SetObjFont(text, 0x54);
+                    d2_SetObjText(text, amount);
+                    d2_Objs[text].w = 0x8c;
+                    d2_Objs[text].centred = 1;
+                } else if (ok == 2) {
+                    ctl = d2_WinOpenPic((n % 3) * 70 + 0x30, (n / 3) * 0x5a + 0xf, 0x4fb, d2_LastWindow);
+                    d2_Objs[ctl].caption[0] = ch_EmptyName[0];
+                    d2_Objs[ctl].style = 3;
+                    d2_Objs[ctl].capfont = 0x54;
+                } else {
+                    continue;
+                }
+                n++;
+            }
+            prevGroup = ai_BuildGroup;
+        }
+        if (d2_ClickedId >= 0x427 && d2_ClickedId <= 0x47f) {
+            /* a kind button: pay, place and send the build message */
+            kind = d2_ClickedId - 0x427;
+            if (pointed != -1) {
+                d2_Objs[pointed].checked = 0;
+                d2_Objs[pointed].highlighted = 0;
+            }
+            pointed = d2_PointerObj;
+            if ((seat != 0 &&
+                 sv_CheckStockB(seat, seat->list, gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind), ai_OwnPlayer)) ||
+                (seat == 0 && sv_CheckGoodAmountB(ai_Chars[ai_PlayerId],
+                                                  gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind), ai_OwnPlayer))) {
+                d2_SetViewEnabled(view, 0);
+                site = lc_GebaeudeAusrichten(kind, model);
+                if (site != 0) {
+                    msg.time = ai_Time;
+                    msg.type = 0xd;
+                    msg.flags = 2;
+                    msg.to = msg.fromId = ai_CharInts[ai_PlayerId][0];
+                    if (ai_BuildGroup == 3)
+                        msg.arg[0] = ((AICHARREC *)ai_PlayerChar)->netId;
+                    else
+                        msg.arg[0] = msg.to;
+                    msg.arg[1] = kind;
+                    msg.arg[2] = gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind);
+                    d3_PointToWorld((D3OBJECT *)site, &((D3OBJECT *)site)->pos, (D3VECTOR *)msg.buildPos);
+                    ai_ObjectAngle(msg.buildRot, site);
+                    strncpy(msg.buildPath, model, 0x3f);
+                    cm_SendLongMessage((char *)&msg);
+                    sv_PopRequest = 1;
+                } else {
+                    d2_SetViewEnabled(view, 1);
+                }
+            }
+        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_ConstructionWindow, 0x657c7) != 0);
+    if (view != -1)
+        d2_CloseView(view);
+    sv_ResearchClass = 0;
     ai_CampaignStep(0xe, 0, 1, 0);
 }
 
@@ -3671,7 +3783,7 @@ void ai_GameFrame(void)
             U_I((unsigned)&d3t_CamMove) == 0)
             sv_FlyCameraToObject(sv_HoverBuilding);
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelBuildBtn))
-            ai_Unk5909a0();
+            ai_ConstructionWindow();
         if (U_I((unsigned)&sv_SelectedObject) != 0 &&
             (u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
             sv_HoverBuilding == U_I((unsigned)&sv_SelectedObject) &&
