@@ -600,6 +600,10 @@ typedef struct HESTUDY {                /* the study event 22's words over AIJOB
     int room;                           /* 0xb4, the objId of its room in the building (an object of type 1), -1: none */
     AITIME until;                       /* 0xb8, the latest end: 6 units after the first due clock */
 } HESTUDY;
+typedef struct HEEV17 {                 /* the event type 0x17's words over AIJOB's union (he_AllocEvent17 / he_RunEvent17) */
+    char pad00[0xb4];
+    AITIME due;                         /* 0xb4, the due clock the allocation handler copies to AIJOB.end */
+} HEEV17;
 typedef struct HESABOTAGE {             /* the sabotage event 25's words over AIJOB's union (he_Unk558e70 / he_RunSabotage);
                                            AIJOB.from is the building the saboteur is hired at and goes back to */
     char pad00[0xac];
@@ -13706,11 +13710,14 @@ void he_RunStudy(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x558de0, the allocation handler: due clock = the clock at +0xb4 */
+/* 0x558de0, the allocation handler of the event type 0x17: its due clock starts as the event's own clock (HEEV17.due) */
 
-void he_Unk558de0(int ev)
+void he_AllocEvent17(int ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0xb4);
+    AIJOB *e = (AIJOB *)ev;
+    HEEV17 *v = (HEEV17 *)ev;
+
+    e->end = v->due;
 }
 /* 0x558e10, the run handler of the event type 0x17: state 3 sets its due clock to now + 1 minute, state 9 frees the record */
 
@@ -20106,7 +20113,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(22, (void *)he_AllocStudy, (void *)he_RunStudy) != 0)
         return 1;
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
-    if (he_SetEventHandlers(23, (void *)he_Unk558de0, (void *)he_RunEvent17) != 0)
+    if (he_SetEventHandlers(23, (void *)he_AllocEvent17, (void *)he_RunEvent17) != 0)
         return 1;
     if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_RunSabotage) != 0)
         return 1;

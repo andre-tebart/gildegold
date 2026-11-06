@@ -2751,3 +2751,4 @@
 2026-11-06T18:47:07 0x00557b30 data he_Unk557b30 -> he_AllocSlotOrderStore by:main why:the alloc handler he_SetEventHandlers registers for the slot order event 18 and the store extension event 19 (src/he.c:20083, 20085)
 2026-11-06T18:48:12 0x00557d70 data he_Unk557d70 -> he_AllocHerbGathering by:main why:the alloc handler he_SetEventHandlers registers for the herb gathering event 20 (src/he.c:20090), whose run handler is he_RunHerbGathering
 2026-11-06T18:49:52 0x005584d0 data he_Unk5584d0 -> he_AllocAnimalHunt by:main why:the alloc handler he_SetEventHandlers registers for the animal hunt event 21 (src/he.c:20098), whose run handler is he_RunAnimalHunt
+2026-11-06T18:50:57 0x00558de0 data he_Unk558de0 -> he_AllocEvent17 by:main why:the alloc handler he_SetEventHandlers registers for the event type 0x17 (23, src/he.c:20109), whose run handler is he_RunEvent17
