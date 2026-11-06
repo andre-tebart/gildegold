@@ -627,6 +627,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17BLDMSG smoke;                /* 0x10, message 0x42 */
         G17CHARIDMSG skills;            /* 0x10, message 0x43 */
         AMTAPP app;                     /* 0x10, message 0x44 */
+        AMTMSG office;                  /* 0x10, message 0x45 */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */

@@ -40,6 +40,14 @@ typedef struct AMTAPP {                 /* an application: the person, the offic
     unsigned char o1, o2;               /* 0x04, the first office and the second (0xff: none) */
     unsigned char kind;                 /* 0x06, the office kind */
 } AMTAPP;
+typedef struct AMTMSG {                 /* the office message of amt_SendOfficeMessage (0x4e6680): 15 bytes, the data
+                                           of message 0x45 (cm_SendOfficeRecord) */
+    unsigned char office;               /* 0x00, the office */
+    int a;                              /* 0x01, the first character's netId or -1 */
+    unsigned char d, e;                 /* 0x05, the kind and the code */
+    int b;                              /* 0x07, the second character's netId or -1 */
+    char pad[4];                        /* 0x0b */
+} AMTMSG;
 #pragma pack(pop)
 
 #endif
