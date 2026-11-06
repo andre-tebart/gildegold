@@ -579,6 +579,11 @@ typedef struct G17OWNERMSG {            /* 12 bytes, the data of message 0x38 (c
     int ownerId;                        /* 0x08, the owner character, -1: none */
 } G17OWNERMSG;
 
+typedef struct G17DESTROYMSG {          /* 4 bytes, the data of message 0x3b (cm_SendBuildingDestroyed, its handler
+                                           0x4cb100 removes the building) */
+    int bldId;                          /* 0x00, the building */
+} G17DESTROYMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -596,6 +601,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17STAGEMSG stage;              /* 0x10, message 0x34 */
         G17ANIMMSG anim;                /* 0x10, message 0x37 */
         G17OWNERMSG owner;              /* 0x10, message 0x38 */
+        G17DESTROYMSG destroy;          /* 0x10, message 0x3b */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */

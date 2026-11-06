@@ -1736,14 +1736,14 @@ void cm_SendUpgradeDone(int bldId)
     m.upgrade.bldId = bldId;
     cm_QueueSend(&m);
 }
-/* 0x4c5510, message 0x3b */
+/* 0x4c5510, message 0x3b: the building bldId is destroyed - handler 0x4cb100 */
 
-void cm_SendBuildingDestroyed(int a)
+void cm_SendBuildingDestroyed(int bldId)
 {
     G17MSG m;
 
     m.type = 0x3b;
-    G17_I(m, 0) = a;
+    m.destroy.bldId = bldId;
     cm_QueueSend(&m);
 }
 /* 0x4c5540, message 0x39 (b first) */
