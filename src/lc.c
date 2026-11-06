@@ -1115,6 +1115,7 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     union {
         int victimId;              /* 0x65, the kidnapping room's victim character id (ai_bld.h AIBLD.unk65) */
         int playerSlot;            /* 0x65, of a kind 0x47 building: its player slot (ai_bld.h AIBLD.playerSlot) */
+        int interest;              /* 0x65, of a bank: the interest its owner sets, 5 .. 0x28 (ai_bld.h AIBLD.interest) */
     };
     char pad69[8];
     union {
@@ -8842,68 +8843,52 @@ void ai_BorrowerLoansWindow(AIBLD *bank, int borrower)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x59b880, the money lender's credit release window "..geldleihe_KreditFreigabe" (592 B): the window, the text
-   0x18e5, the limit 0x508660 (param_1 + 0x5d, the player byte), the texts 0x18e6 and the two controls 0x475b80
-   (the same text and the next text id), the range control 0x475cb0 (5, 0x28, the character +0x65), the money
-   0x509e60 (the character 0x770b80 + slot * 0x21c) and the counter 0x475cb0 (0, max (0x5085b0 (the money) +
-   0x5085b0 (the limit), 0x5085b0 (the money)), 0x5085b0 (the money)); the pump 0x5309a0 (0x677c7); sv_PendingMoney =
-   the limit minus the selected amount; on select (0xf8a668 == 0) the difference 0x4c47e0 (param_1 + 1, the
-   character, the player byte, the amount), 0x4c3ba0 (param_1, param_1 + 1), 0x4c3c00 (4, 1, 0x65, &value),
-   0x4c49a0; 0x4758f0 at the end, sv_PendingMoney = 0 */
+/* 0x59b880, the money lender's credit release window "locations\geldleihe\geldleihe_KreditFreigabe" of the bank
+   bank (587 B), for its owner: the texts 0x18e5 and 0x18e6 (the object name of the own player slot's money good),
+   whose two objects are the interest slider (5 .. 0x28, at the bank's interest) and the money slider (up to the
+   owner's money, at the money the bank's stock holds, both in the own player slot's money); while the frame pump
+   runs, sv_PendingMoney shows the stock minus the chosen sum; the button 0 moves the difference between the
+   owner and the bank (cm_SendMoveGoods), sends the new interest as the bank's field 0x65 and closes it; a right
+   click or the button 1 closes it */
 
-void ai_Unk59b880(int param_1)
+void ai_CreditReleaseWindow(AIBLD *bank)
 {
+    int value;
+    int moneyCtl;
     int win;
-    int limit;
-    int ctl1;
-    int ctl2;
-    int v;
-    int r;
-    int n;
-    int a;
-    int b;
-    char k;
+    int stock;
+    int own;
+    int interestCtl;
+    int text;
 
-    k = *(char *)(unsigned)&ai_OwnPlayer;
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_KreditFreigabe");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x18e5);
-    limit = gm_SumSlotAmounts(U_I(param_1 + 0x5d), U_I((unsigned)&ai_OwnPlayer));
+    stock = gm_SumSlotAmounts((void *)bank->objList, ai_OwnPlayer);
     d2_SetForm(win, 2);
-    r = io_PrintText(0x18e6, (unsigned int)U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4) * 2 + 0x9a8);
-    ctl1 = d2_GetWinObj(win, 2, r);
-    ctl2 = d2_GetWinObj(win, 2, r + 1);
-    d2_SetObjValue(ctl1, 5, 0x28, U_I(param_1 + 0x65));
-    v = gm_GetGoodsValue((char *)(unsigned)&ai_Chars + U_W(param_1 + 0x27) * 0x21c);
-    a = gm_ConvertMoney(v, k);
-    b = gm_ConvertMoney(limit, k);
-    d2_SetObjValue(ctl2, 0, max(a + b, a), a);
+    text = io_PrintText(0x18e6, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
+    interestCtl = d2_GetWinObj(win, 2, text);
+    moneyCtl = d2_GetWinObj(win, 2, text + 1);
+    d2_SetObjValue(interestCtl, 5, 0x28, bank->interest);
+    own = gm_GetGoodsValue(ai_Chars[bank->owner]);
+    d2_SetObjValue(moneyCtl, 0, gm_ConvertMoney(own, ai_OwnPlayer), gm_ConvertMoney(stock, ai_OwnPlayer));
     d2_SetPointerSprite(0, 0);
-    while (sv_RunFrame(ai_Unk59b880, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0 || U_I((unsigned)&d2_ClickedId) == 1)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        v = d2_GetObjValue(ctl2, U_I((unsigned)&ai_OwnPlayer));
-        n = ((int (*)(int))gm_PlayerFactor)(v);
-        sv_PendingMoney = limit - n;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
-            v = d2_GetObjValue(ctl2, U_I((unsigned)&ai_OwnPlayer));
-            n = ((int (*)(int))gm_PlayerFactor)(v);
-            if (limit < n) {
-                n = n - limit;
-                a = U_I(param_1 + 1);
-                b = U_I((unsigned)&ai_CharInts + U_W(param_1 + 0x27) * 0x87);
-            } else {
-                n = limit - n;
-                b = U_I(param_1 + 1);
-                a = U_I((unsigned)&ai_CharInts + U_W(param_1 + 0x27) * 0x87);
-            }
-            cm_SendMoveGoods(a, b, *(unsigned char *)(unsigned)&ai_OwnPlayer, n);
-            v = d2_GetObjValue(ctl1);
-            cm_BeginFieldBlock(param_1, U_I(param_1 + 1));
-            cm_AddFieldDelta(4, 1, 0x65, &v);
+    while (sv_RunFrame(ai_CreditReleaseWindow, 0x677c7) != 0) {
+        if (dm_L.rup != 0 || d2_ClickedId == 1)
+            sv_PopRequest = 1;
+        sv_PendingMoney = stock - gm_PlayerFactor(d2_GetObjValue(moneyCtl), ai_OwnPlayer);
+        if (d2_ClickedId == 0) {
+            value = gm_PlayerFactor(d2_GetObjValue(moneyCtl), ai_OwnPlayer);
+            if (stock < value)
+                cm_SendMoveGoods(bank->id, ((AICHARREC *)ai_Chars)[bank->owner].netId, ai_OwnPlayer, value - stock);
+            else
+                cm_SendMoveGoods(((AICHARREC *)ai_Chars)[bank->owner].netId, bank->id, ai_OwnPlayer, stock - value);
+            value = d2_GetObjValue(interestCtl);
+            cm_BeginFieldBlock((char *)bank, bank->id);
+            cm_AddFieldDelta(4, 1, 0x65, &value);
             cm_SendFieldDeltas();
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
     }
     d2_CloseView(win);
@@ -9021,7 +9006,7 @@ void ai_CreditGiverWindow(int param_1)
         cnt = 1;
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             if (U_I((unsigned)&d2_PointerObj) == sel[0]) {
-                ai_Unk59b880(param_1);
+                ai_CreditReleaseWindow((AIBLD *)param_1);
             } else {
                 for (i = 0; i < 16 && recs[i * 3] != -1; i++) {
                     if (U_I((unsigned)&d2_PointerObj) == recs[i * 3]) {

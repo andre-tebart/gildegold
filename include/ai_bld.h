@@ -42,6 +42,8 @@ typedef struct AIBLD {                  /* 0xa9 bytes, ai_Blds[256] */
             union {
                 int unk65;                      /* 0x65, moved by +-1 per event towards AIPOS.unk18 (ai.c 0x4836a0) */
                 int playerSlot;                 /* 0x65, of a kind 0x47 building: its ai_PlayerSlots index (sv_OpenBuildingPanel) */
+                int interest;                   /* 0x65, of a bank: the interest rate its owner sets, 5 .. 0x28 (lc.c ai_CreditReleaseWindow
+                                                   sends it as the field delta 0x65) */
                 unsigned char residents;        /* 0x65, of a home (AIBTYPE.kind 1): the characters whose bld2 it is, below the
                                                    capacity of its ord kind record (cm_ExSetHome) */
                 struct GVYARD *yard;            /* 0x65, of a kind 0x1d building: its graveyard record (gv.h, gv_AllocGraveyard) */
