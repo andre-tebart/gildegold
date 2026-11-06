@@ -324,7 +324,7 @@ int cm_ExCreateObject(G17MSG *m, G17STAT *s);                                   
 int cm_ExFieldDeltas(G17MSG *m, G17STAT *s);                                         /* 0x4c7e90, handler of 0x16 */
 int cm_ExFieldValues(G17MSG *m, G17STAT *s);                                         /* 0x4c7f70, handler of 0x17: writes the field block's values to the object */
 int cm_ExMoodDeltas(G17MSG *m, G17STAT *s);                                         /* 0x4c8050, handler of 0x18: adds deltas to a character's mood values */
-int ai_Unk4c8110(G17MSG *m, G17STAT *s);                                         /* 0x4c8110, handler of 0x19 */
+int cm_ExSetField(G17MSG *m, G17STAT *s);                                         /* 0x4c8110, handler of 0x19: clears and sets bits of one field of an object */
 int ai_Unk4c81d0(G17MSG *m, G17STAT *s);                                         /* 0x4c81d0, handler of 0x1a */
 int cm_ExRelations(G17MSG *m, G17STAT *s);                                         /* 0x4c8240, handler of 0x1b: changes the relations between two characters */
 int ai_Unk4c85c0(G17MSG *m, G17STAT *s);                                         /* 0x4c85c0, handler of 0x1c */
