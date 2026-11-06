@@ -239,6 +239,14 @@ typedef struct G17REMOVEGOODSMSG {      /* 6 bytes, the data of message 0x14 (cm
     unsigned short item;                /* 0x04, the goods prototype removed */
 } G17REMOVEGOODSMSG;
 
+typedef struct G17CREATEOBJMSG {        /* 0x29 bytes, the data of message 0x15 (its handler 0x4c7e20 creates an
+                                           object of the item in the holder and copies its 0x1f-byte kind data) */
+    int holder;                         /* 0x00, the holder id (gm_FindById: a building, an object or a character) */
+    unsigned short item;                /* 0x04, the object prototype (gm_CreateObject) */
+    unsigned char block[0x1f];          /* 0x06, the object's kind data (ORDOBJ +0x1c) */
+    int objectId;                       /* 0x25, the next object id (the server's, read when connected) */
+} G17CREATEOBJMSG;
+
 typedef struct G17FIELDS {              /* 0x7c bytes, a field block (0xa68c20, 0xa68ca0); the data of the messages
                                            0x16 (deltas, its handler 0x4c7e90), 0x17 (values) and 0x18 */
     int id;                             /* 0x00, the object (building, object or character id) */
@@ -751,6 +759,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17MAKEMSG make;                /* 0x10, message 0x12 */
         G17MOVEMSG move;                /* 0x10, message 0x13 */
         G17REMOVEGOODSMSG removeGoods;  /* 0x10, message 0x14 */
+        G17CREATEOBJMSG createObj;      /* 0x10, message 0x15 */
         G17FIELDS fields;               /* 0x10, messages 0x16 / 0x17 / 0x18 */
         G17SETFIELDMSG setField;        /* 0x10, message 0x19 */
         G17FLOATDELTAMSG floatDelta;    /* 0x10, message 0x1a */
