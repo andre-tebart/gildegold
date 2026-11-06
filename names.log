@@ -2854,3 +2854,4 @@
 2026-11-06T23:20:18 0x004cb6e0 data ai_Unk4cb6e0 -> cm_ExGoodsRecord by:main why:message 0x3f (cm_SendGoodsRecord) carries player k and a whole GMSTOCK record; this handler replaces the player's record of that item
 2026-11-06T23:20:49 0x004cb730 data ai_Unk4cb730 -> cm_ExGoodsDelta by:main why:message 0x40 (cm_SendGoodsDelta, cm_types.h G17GOODSMSG): its handler adds the player/item record's deltas to the goods record gm_FindGoods returns
 2026-11-06T23:21:22 0x004cb7c0 data ai_Unk4cb7c0 -> cm_ExLoadStatistics by:main why:message 0x41 (cm_SendMessage41, 0x3a bytes) restores the statistics record through ord_LoadStatistics (ord.c 0x4f9020)
+2026-11-06T23:21:49 0x004cb7f0 data ai_Unk4cb7f0 -> cm_ExUpdateSmoke by:main why:message 0x42 (cm_SendUpdateSmoke, cm_types.h G17BLDMSG.smoke): its handler restarts the chimney smoke (sv_UpdateChimneySmoke) of a non-home building that has a scene object
