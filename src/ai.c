@@ -489,7 +489,7 @@ void ai_ResetJob(AICHAR *c)
 }
 /* 0x47e990, runs the evaluation of a master: which function depends on the kind of its building @deep byte; readability left: Q1/Q2 the seven master-evaluation callees are undefined names - 0x47edb0 (the default "evaluates the production of a master's workshop"), 0x47f700 (the same for building kinds 0xe / 8 / 0x20), 0x4801f0 (the same for building category 2), 0x483fc0 (kind 0x1d), 0x484a60 (kind 0x1f), 0x483a60 (no role comment, kind 9), 0x4836a0 (the bank master's money balance) - the five production variants differ only by the AIENTRY flags their bodies test and the kind-to-profession table that would name them is in no source; 0x501d80 same (no source, no Ghidra export). Named on the way: 0x6f2308 -> ai_PlayerBuilding (ai.h), 0x6f230c -> ai_FallbackBuilding (the f3snd.c 2308-then-230c fallback), 0xf8a0c8 -> ai_LoggedMaster (ai.h "the master whose decisions are logged"). */
 
-void ai_Unk47e990(AICHAR *c)
+void ai_RunMasterEvaluation(AICHAR *c)
 {
     char buf[256];
     AIWATCH *w;

@@ -2821,3 +2821,9 @@
 2026-11-06T22:17:17 0x004c81d0 func ai_Unk4c81d0 -> cm_ExFloatDelta by:main why:the handler of message 0x1a (cm_SendFloatDelta): adds the message's delta to a float field of an object; the handlers are cm_Ex<message> (cm_ExFieldDeltas, cm_ExFieldValues)
 2026-11-06T22:30:07 0x004c85c0 func ai_Unk4c85c0 -> cm_ExLongMessage by:main why:the handler of message 0x1c, the long message (cm_SendLongMessage, AIMSG): it creates the event (he_CreateEvent) and its message-box text; the handlers are cm_Ex<message>
 2026-11-06T22:31:51 0x004c87a0 data ai_Unk4c87a0 -> cm_ExSetHE by:main why:the handler of message 0x1d: the original's own trace string names it cm_ExSetHE(), and its sibling handlers are cm_Ex<message>
+2026-11-06T22:34:23 0x004c88a0 data ai_Unk4c88a0 -> cm_ExTime by:main why:handler of message 0x1e (cm_SendTime, the game time): when the server's time is later, it moves the clock on and runs the world's steps
+2026-11-06T22:34:23 0x0047e990 data ai_Unk47e990 -> ai_RunMasterEvaluation by:main why:runs a master's evaluation, dispatching on the kind of its building (decl/text.dcl: the dispatcher by building kind)
+2026-11-06T22:34:23 0x005ba750 func ai_Unk5ba750 -> lc_UpdateGoodsReserves by:main why:counts down the reserve of each goods object of the player's characters (0x20 characters per call) and frees it when it runs out (message 0x1bc9 to the owner)
+2026-11-06T22:34:23 0x00624570 data ai_Unk624570 -> cm_RunCharacters by:main why:switch (1): the client updates its characters' needs and master evaluations when the time advances
+2026-11-06T22:34:23 0x00624574 data ai_Unk624574 -> cm_RunRating by:main why:switch (1): the client advances the rating base and recounts the characters every 6 minutes
+2026-11-06T22:34:23 0x00624578 data ai_Unk624578 -> cm_RunEvents by:main why:switch (1): the client runs its event handlers when the time advances

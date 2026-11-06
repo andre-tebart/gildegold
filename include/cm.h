@@ -336,7 +336,7 @@ int rt_PointCount(struct RTPOINT *p);                                           
 extern int ai_NetPlayer;  /* 0x1460af4 */
 void ai_UpdateNeeds(void);  /* 0x47da80 */
 void ai_UpdateCharacters(void);  /* 0x47e560 */
-void ai_Unk47e990(struct AICHAR *c);  /* 0x47e990 */
+void ai_RunMasterEvaluation(struct AICHAR *c);  /* 0x47e990 */
 void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_CountMissionEvent();  /* 0x4b44e0 */
 int cm_PartyById();  /* 0x4e50a0 */
@@ -355,14 +355,14 @@ void gm_CountCharacters(void);  /* 0x4fdfd0 */
 char * he_NextEvent(void);  /* 0x53e300 */
 void he_RunEvents();  /* 0x53ed70 */
 void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec);  /* 0x5a9170 */
-int ai_Unk5ba750();  /* 0x5ba750 */
+int lc_UpdateGoodsReserves();  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */
 extern const int cm_SpeedTicks[];  /* 0x5edc10 */
 extern int cm_SpeedTick;  /* 0x60bd80 */
 extern int ai_NextPartyId;  /* 0x61a658 */
-extern int ai_Unk624570;  /* 0x624570 */
-extern int ai_Unk624574;  /* 0x624574 */
-extern int ai_Unk624578;  /* 0x624578 */
+extern int cm_RunCharacters;  /* 0x624570, 1: a later server time also updates the characters (cm_ExTime) */
+extern int cm_RunRating;  /* 0x624574, 1: a later server time also advances the rating base */
+extern int cm_RunEvents;  /* 0x624578, 1: a later server time also runs the event handlers */
 extern char ai_MissionMode;  /* 0x624580 */
 extern unsigned char ai_NumPlayers;  /* 0x62489c */
 extern int ai_MissionPartner;  /* 0x6248a0, the netId of the other player in a network mission (-1 none; set by message 8, cleared by 10) */

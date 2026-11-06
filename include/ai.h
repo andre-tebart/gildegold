@@ -273,7 +273,7 @@ int ai_CanAct(AICHAR *c);                                             /* 0x47e7f
 int ai_IsLocalWorker(AICHAR *c);                                             /* 0x47e840 */
 int ai_IsLocalJob(AICHAR *c);                                             /* 0x47e8b0 */
 void ai_ResetJob(AICHAR *c);                                            /* 0x47e940 */
-void ai_Unk47e990(AICHAR *c);                                            /* 0x47e990 */
+void ai_RunMasterEvaluation(AICHAR *c);                                            /* 0x47e990 */
 void ai_PlanSlots(AICHAR *ch, AIOBJ *b);                                 /* 0x47ec20 */
 void ai_SendRemoveEmptyGoods(AIOBJ *stall);                                          /* 0x47ed60 */
 void ai_EvaluateProduction(AICHAR *ch);                                           /* 0x47edb0 */
