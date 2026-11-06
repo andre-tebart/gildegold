@@ -341,7 +341,7 @@ void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_CountMissionEvent();  /* 0x4b44e0 */
 int cm_PartyById();  /* 0x4e50a0 */
 extern G28REC cm_Parties[96];  /* 0x925520, the scene party records (cm.c) */
-int ai_Unk4e5150();  /* 0x4e5150 */
+int cm_AllocParty();  /* 0x4e5150 */
 int ai_Unk4e51b0();  /* 0x4e51b0 */
 int cm_RemovePartyMember();  /* 0x4e5210 */
 int gv_AddEvidence();  /* 0x4f3640 */
