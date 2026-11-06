@@ -25659,24 +25659,25 @@ char *ai_FindCurseEvent(char *a)
 {
     return he_FindEvent(2, 0, 0xa0, 3, *(int *)(a + 1));
 }
-/* 0x574120, the alloc of the event 0xa0: nothing while paused (+0x78 & 4); the start and the due clock +0x44 / +0x52 = now; when
-   0x6f2448 is set the due clock + 1 (0x4fe140 (.., 1, 0, 0)), else + 24 hours with the hour +0x56 = 0x13 + random (2); the
-   minute +0x58 = 0 and the handler scheduled with 0 */
+/* 0x574120, the alloc of the event 0xa0: nothing while paused (opts & 4); start and end = now; when gm_AllowAll is set
+   the end moves 1 hour ahead, else 24 hours with the hour 0x13 + random (2); the minute 0 and the handler scheduled with 0 */
 
 void he_AllocTrialScene(int ev)
 {
-    if (HM_B(ev, 0x78) & 4)
+    AIJOB *e = (AIJOB *)ev;
+
+    if (e->opts & 4)
         return;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (U_I((unsigned)&gm_AllowAll) != 0) {
-        gm_AddTime(ev + 0x52, 1, 0, 0);
+    e->start = ai_Time;
+    e->end = ai_Time;
+    if (gm_AllowAll != 0) {
+        gm_AddTime(&e->end, 1, 0, 0);
     } else {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(unsigned short *)(ev + 0x56) = util_Random(2) + 0x13;
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = util_Random(2) + 0x13;
     }
-    HM_I(ev, 0x58) = 0;
-    HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
+    e->end.min = 0;
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 int gm_TrialBuildingKind();                 /* 0x50d060 */
