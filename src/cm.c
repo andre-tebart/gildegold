@@ -1713,16 +1713,16 @@ void cm_SendChrUseGates(int charId, int bldId, int objId)
     m.gate.objId = objId;
     cm_QueueSend(&m);
 }
-/* 0x4c54a0, message 0x38 */
+/* 0x4c54a0, message 0x38: the building bldId gets the owner ownerId with the master masterId - handler 0x4caaa0 */
 
-void cm_SendOwnership(int a, int b, int c)
+void cm_SendOwnership(int bldId, int masterId, int ownerId)
 {
     G17MSG m;
 
     m.type = 0x38;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.owner.bldId = bldId;
+    m.owner.masterId = masterId;
+    m.owner.ownerId = ownerId;
     cm_QueueSend(&m);
 }
 /* 0x4c54e0, sends the message 0x3a with a building id (he_RunUpgrade, when the building event 0x1e ends; reasoned:
