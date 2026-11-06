@@ -15238,48 +15238,47 @@ int ai_SaveSettings(void *param_1)
     }
     return 0;
 }
-/* 0x5a8a20, the settings loaded (347 B): the list is freed (0x5a8920), the count read by 0x51c920, that many
-   0x4c-byte records from 0x4223c0 ("hp_LoadProdSetting") linked at +0x48, then +0 / +4 / +0x44 and the seven
-   slots read back; 1 done, 0 on a read error (the list is freed again) */
+/* 0x5a8a20, the production settings loaded from the save f (347 B, the reader of ls_LoadGame from 0x10047): the
+   chain is freed (ai_FreeSettings), the count read, that many zeroed records ("hp_LoadProdSetting", the building
+   id -1) put at the head of ai_Settings, then each record's building id, seed and factor and its seven slots'
+   good and weight read back in chain order; 1 done, 0 on a read or memory error (the chain freed again) */
 
-int ai_Unk5a8a20(void *param_1)
+int ai_LoadSettings(int f)
 {
-    char *rec;
-    char *p;
+    G8SETTING *rec;
+    G8SETTING *s;
     int n;
     int i;
 
     ai_FreeSettings();
-    if (ls_Read(&n, 4, 1, param_1) == 0)
+    if (ls_Read(&n, 4, 1, f) == 0)
         return 0;
     for (i = 0; i < n; i++) {
-        rec = (char *)mem_Alloc(0x4c, (char *)(unsigned)&full_data_62c298);
-        if (rec == 0)
-            goto fail;
-        memset(rec, 0, 0x4c);
-        *(int *)rec = -1;
-        if (*(int *)((unsigned)&full_data_6f26c0) != 0)
-            *(int *)(rec + 0x48) = *(int *)((unsigned)&full_data_6f26c0);
-        *(int *)((unsigned)&full_data_6f26c0) = (int)rec;
-    }
-    p = (char *)*(int *)((unsigned)&full_data_6f26c0);
-    if (p == 0)
-        return 1;
-    while (ls_Read(p, 4, 1, param_1) != 0 && ls_Read(p + 4, 4, 1, param_1) != 0 &&
-           ls_Read(p + 0x44, 4, 1, param_1) != 0) {
-        for (i = 0; i < 7; i++) {
-            if (ls_Read(p + 0xc + i * 8, 4, 1, param_1) == 0)
-                goto fail;
-            if (ls_Read(p + 0x10 + i * 8, 1, 1, param_1) == 0)
-                goto fail;
+        rec = (G8SETTING *)mem_Alloc(0x4c, "hp_LoadProdSetting");
+        if (rec == 0) {
+            ai_FreeSettings();
+            return 0;
         }
-        p = (char *)*(int *)(p + 0x48);
-        if (p == 0)
-            return 1;
+        D3_ZERO_AT(rec, sizeof(G8SETTING));
+        rec->bldId = -1;
+        if (ai_Settings != 0)
+            rec->next = ai_Settings;
+        ai_Settings = rec;
     }
-fail:
-    ai_FreeSettings();
-    return 0;
+    for (s = ai_Settings; s != 0; s = s->next) {
+        if (ls_Read(&s->bldId, 4, 1, f) == 0 || ls_Read(&s->seed, 4, 1, f) == 0 ||
+            ls_Read(&s->factor, 4, 1, f) == 0) {
+            ai_FreeSettings();
+            return 0;
+        }
+        for (i = 0; i < 7; i++) {
+            if (ls_Read(&s->slots[i].good, 4, 1, f) == 0 || ls_Read(&s->slots[i].weight, 1, 1, f) == 0) {
+                ai_FreeSettings();
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 /* 0x5a8b80, the news of an indulgence purchase with two values (123 B): for the owner character of the kinds
    6 / 7 the text 0x20b6 (0x20b7 when the owner's kind byte +0xc is 0, else 0x20b8 / 0x20b9 by the clock

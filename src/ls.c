@@ -1420,7 +1420,7 @@ int ls_LoadGame(int name, int kind)
         LS_LOADFAIL
     if (ls_Version >= 0x10029 && ai_LoadBookmarks(h) == 0)
         LS_LOADFAIL
-    if (ls_Version >= 0x10047 && ai_Unk5a8a20(h) == 0)
+    if (ls_Version >= 0x10047 && ai_LoadSettings(h) == 0)
         LS_LOADFAIL
     if (ls_Version >= 0x10049 && ahm_LoadWalk(h) == 0)
         LS_LOADFAIL

@@ -192,6 +192,7 @@ typedef struct G8INVOBJ {
 #pragma pack(pop)
 
 void ai_FreeSettings(void);                                        /* 0x5a8920 */
+int ai_LoadSettings(int f);  /* 0x5a8a20, reads the production settings chain back from the save f (ls_LoadGame); 0 on an error */
 void ai_FreePicture(void);                                         /* 0x5bc0f0 */
 
 /* declared in other units' headers before (moved to the owner) */
