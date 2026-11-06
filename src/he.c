@@ -24341,68 +24341,94 @@ void he_AllocMeeting(int ev)
 int gm_GetDisease();                 /* 0x5051d0 */
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                 /* 0x4c3c00 */
 
-/* 0x5720f0, the skill lottery of the record rec (the field at +0x2c): the chance f must beat 0x42ec20 (), then the kind 2 / 1 / other picks the free bit range a or b (2 / 3, 4 / 5, 6 and 7 / 8 / 9 by 0x42ec00 (2) and the taken bits 0x1800000 / 0x700000); a when b is 0, else b by 0x42ec00 (2); 0 when none. 0x5051d0 (a, buf) gives the max (buf + 8) of 0x42ec00; n = that * f; the field gets (v << shift ^ field) & mask for a; 0x4c3ba0 (rec, +4), 0x4c3c00 (4, 1, 0x2c, &field), 0x4c49a0 (); 0x4fca40 (*rec, -n) into out; a */
-int he_Unk5720f0(unsigned short *rec, float f, int kind, float *out)
+/* 0x5720f0, the meeting's disease lottery (he_Unk572310 calls it per character): with the chance `chance`
+   (util_RandomF) the character ch catches one of the diseases of the group `kind` that it does not have yet (its
+   word v02c holds the diseases 2 .. 9 as bit fields): kind 2 the diseases 2 / 3, kind 1 the diseases 4 / 5, any
+   other 6 and a coin throw of 7 / 8 (one of two free ones by a coin throw). The disease's record (gm_GetDisease)
+   gives its severity util_Random(range); a severity above 0 is written into the disease's bit field (a field
+   delta of v02c) and costs severity * the record's cost health (gm_AddHealth), the health left stored in *health
+   when given. Returns the disease kind, 0 when none was caught.
+   @deep read whole against 0x5720f0..0x57230c: every statement, constant, callee and field equals the
+   original (the and/je chance test as an if around the body, the kind 2 / 1 / other bit tests of v02c, b =
+   coin ? 7 : 8, the 0x1800000 / 0x700000 checks, the pick, gm_GetDisease into the 12-byte GMDISEASE, the
+   severity reusing b (the original's esi), cost = (int)(b * d.cost), the if/else-if chain of the eight bit
+   fields, the field delta from a separate address-taken copy, gm_AddHealth and the *health store). Left:
+   allocation only - the original keeps a / b / bits / cost in ebx / esi / edi / ebp and leaves ch in its
+   parameter slot (reloaded per kind branch: mov eax,[esp+0x24]), ours holds ch in ebp and spills a to a
+   frame slot (frame 0x14 vs 0x10: '- mov dword ptr [esp + 0x10], 0' for '+ xor ebx, ebx', '- mov eax,
+   dword ptr [esp + 0x10]; test eax, eax' for '+ test ebx, ebx'). Tried: declaration orders and
+   initialisations of a / b / bits, a nested if vs an early return, a separate severity variable (one more
+   register) - no change to the allocation */
+int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
 {
-    char buf[12];
-    unsigned int field, v, x;
-    int a = 0, b = 0, n;
+    unsigned int bits, delta;
+    GMDISEASE d;
+    int a, b, cost;     /* b: the second pick, then the severity (the original reuses it) */
     float res;
 
-    if (f <= util_RandomF())
-        return 0;
-    if (kind == 2) {
-        if ((*(unsigned int *)((char *)rec + 0x2c) & 0xf0) == 0)
-            a = 2;
-        if ((*(unsigned int *)((char *)rec + 0x2c) & 0xf00) == 0)
-            b = 3;
-    } else if (kind == 1) {
-        if ((*(unsigned int *)((char *)rec + 0x2c) & 0x3000) == 0)
-            a = 4;
-        if ((*(unsigned int *)((char *)rec + 0x2c) & 0x1c000) == 0)
-            b = 5;
-    } else {
-        if ((*(unsigned int *)((char *)rec + 0x2c) & 0xe0000) == 0)
-            a = 6;
-        b = 8 - (util_Random(2) != 0);
-        if ((*(unsigned int *)((char *)rec + 0x2c) & 0x1800000) != 0 && b == 8)
-            b = 0;
-        if ((*(unsigned int *)((char *)rec + 0x2c) & ((unsigned)&he_Events + 0x54c0)) != 0 && b == 7)
-            b = 0;
-    }
-    if (a == 0) {
+    a = 0;
+    b = 0;
+    if (!(util_RandomF() >= chance)) {
+        if (kind == 2) {
+            if ((ch->v02c & 0xf0) == 0)
+                a = 2;
+            if ((ch->v02c & 0xf00) == 0)
+                b = 3;
+        } else if (kind == 1) {
+            if ((ch->v02c & 0x3000) == 0)
+                a = 4;
+            if ((ch->v02c & 0x1c000) == 0)
+                b = 5;
+        } else {
+            if ((ch->v02c & 0xe0000) == 0)
+                a = 6;
+            b = util_RandomU(2) ? 7 : 8;
+            if ((ch->v02c & 0x1800000) != 0 && b == 8)
+                b = 0;
+            if ((ch->v02c & (7 << 0x14)) != 0 && b == 7)
+                b = 0;
+        }
+        if (a != 0) {
+            if (b != 0 && util_RandomU(2) == 0)
+                a = b;
+        } else {
+            if (b == 0)
+                return 0;
+            a = b;
+        }
+        bits = ch->v02c;
+        if (gm_GetDisease(a, &d) == 0)
+            return a;
+        b = util_RandomU(d.range);
+        cost = (int)(b * d.cost);
         if (b == 0)
-            return 0;
-        a = b;
-    } else if (b != 0 && util_Random(2) == 0)
-        a = b;
-    field = *(unsigned int *)((char *)rec + 0x2c);
-    if (gm_GetDisease(a, buf) == 0)
+            return a;
+        if (a == 2)
+            bits ^= ((b << 4) ^ bits) & 0xf0;
+        else if (a == 3)
+            bits ^= ((b << 8) ^ bits) & 0xf00;
+        else if (a == 4)
+            bits ^= ((b << 0xc) ^ bits) & 0x3000;
+        else if (a == 5)
+            bits ^= ((b << 0xe) ^ bits) & 0x1c000;
+        else if (a == 6)
+            bits ^= ((b << 0x11) ^ bits) & 0xe0000;
+        else if (a == 7)
+            bits ^= ((b << 0x14) ^ bits) & (7 << 0x14);
+        else if (a == 8)
+            bits ^= ((b << 0x17) ^ bits) & 0x1800000;
+        else if (a == 9)
+            bits ^= ((b << 0x19) ^ bits) & 0x1e000000;
+        delta = bits;
+        cm_BeginFieldBlock((char *)ch, ch->netId);
+        cm_AddFieldDelta(4, 1, 0x2c, &delta);
+        cm_SendFieldDeltas();
+        res = gm_AddHealth(ch->id, -cost);
+        if (health != 0)
+            *health = res;
         return a;
-    v = util_Random(*(int *)(buf + 8)) & 0xffff;
-    n = (int)((float)v * f);
-    if (v == 0)
-        return a;
-    switch (a) {
-    case 2: v = (v << 4 ^ field) & 0xf0; break;
-    case 3: v = (v << 8 ^ field) & 0xf00; break;
-    case 4: v = (v << 0xc ^ field) & 0x3000; break;
-    case 5: v = (v << 0xe ^ field) & 0x1c000; break;
-    case 6: v = (v << 0x11 ^ field) & 0xe0000; break;
-    case 7: v = (v << 0x14 ^ field) & ((unsigned)&he_Events + 0x54c0); break;
-    case 8: v = (v << 0x17 ^ field) & 0x1800000; break;
-    case 9: v = (v << 0x19 ^ field) & 0x1e000000; break;
-    default: goto done;
     }
-    field ^= v;
-done:
-    cm_BeginFieldBlock(rec, *(int *)((char *)rec + 4));
-    cm_AddFieldDelta(4, 1, 0x2c, &field);
-    cm_SendFieldDeltas();
-    res = ((float (*)(unsigned short, int))gm_AddHealth)(*rec, -n);
-    if (out != 0)
-        *out = res;
-    return a;
+    return 0;
 }
 /* 0x572310, the meeting search of the event 0x90 (a = the building, b = the radius kind 2 / 1 / other, c = the kind of the meeting, d = the low 2 bits of the character's +4): the building pointer +0x61 must exist; each of the 0x100 record slots of 0x889f74 (0xa9 bytes: the kind of 0x7e3f30 and the player word +0x27) whose kind bit (0x807c4116 / bit 0) is allowed, with a building and a character +0x61 within the radius (1500 / 800 / 400) of the building: each character record 0x770b80 (0x21c, id word != -1, kind +2 < 10, +4 & 3 == d) that this record owns (+0x16c = 3, +0x170 = 2, own building = 1) gets the lottery 0x5720f0 (chance (1 - dist / radius) * 0.5 + 0.25, c): mode 3 -> 0x5417d0 (0, ch, building, the record, v, f), mode 1 of a kind 6 / 7 -> the text 0x163c and the message 0x53dda0 (+0x5f7, 0x631090) */
 
@@ -24462,7 +24488,7 @@ void he_Unk572310(int a, int b, int c, unsigned int d)
                 continue;
             else
                 mode = 1;
-            v = he_Unk5720f0((unsigned short *)ch, (1.0f - dist / lim) * 0.5f + 0.25f, c, &f);
+            v = he_CatchMeetingDisease((AICHAR *)ch, (1.0f - dist / lim) * 0.5f + 0.25f, c, &f);
             if (v != 0) {
                 if (mode == 3)
                     he_CharIllness(0, (AICHAR *)ch, (AICHAR *)bldrec, (AIBLD *)rec, v, f);
