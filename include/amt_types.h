@@ -33,4 +33,13 @@ typedef struct AMTCAND {                /* 12 bytes: a kind of office, its rate 
     char pad09[3];
 } AMTCAND;
 
+#pragma pack(push, 1)
+typedef struct AMTAPP {                 /* an application: the person, the office(s) and the kind (7 bytes), the
+                                           data of message 0x44 (cm_SendApplication, amt_ApplyForOffice) */
+    int id;                             /* 0x00, the character's netId */
+    unsigned char o1, o2;               /* 0x04, the first office and the second (0xff: none) */
+    unsigned char kind;                 /* 0x06, the office kind */
+} AMTAPP;
+#pragma pack(pop)
+
 #endif

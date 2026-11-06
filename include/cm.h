@@ -257,7 +257,7 @@ void cm_SendGoodsDelta(struct GMSTOCK *p, unsigned char k);                     
 void cm_SendMessage41(void *p);                                                      /* 0x4c5800 */
 void cm_SendUpdateSmoke(int a);                                                        /* 0x4c5840 */
 void cm_SendSkillsChanged(int a);                                                        /* 0x4c5870 */
-int cm_SendApplication(char *p);                                                       /* 0x4c58a0 */
+int cm_SendApplication(AMTAPP *p);                                                     /* 0x4c58a0 */
 int cm_SendOfficeRecord(char *p);                                                      /* 0x4c58e0 */
 int cm_SendDecisionValue(char *p);                                                       /* 0x4c5930 */
 void cm_SendCharClear(int a, int b, int c);                                          /* 0x4c5970 */

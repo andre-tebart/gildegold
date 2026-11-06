@@ -1887,12 +1887,12 @@ void cm_SendSkillsChanged(int a)
 /* 0x4c58a0, message 0x44: sends the office application (the int id, the two office bytes and the kind of p, G17B7) and returns the
    send slot of 0x4c39c0 */
 
-int cm_SendApplication(char *p)
+int cm_SendApplication(AMTAPP *p)
 {
     G17MSG m;
 
     m.type = 0x44;
-    *(G17B7 *)m.data = *(G17B7 *)p;
+    m.app = *p;
     return cm_QueueSend(&m);
 }
 /* 0x4c58e0, message 0x45: sends the 15-byte office record p (amt_SendOfficeMessage's AMTMSG; the int id, the two character ids, the

@@ -111,10 +111,6 @@ extern const float amt_TabB[];                /* 0x5edef0, 5 rows of 10 */
 float amt_Rating(char *a, char *b, int mode, int flag);  /* 0x4e5e50 */
 
 #pragma pack(push, 1)
-typedef struct AMTAPP {                 /* an application: the person, the office(s) and the kind (7 bytes) */
-    int id;
-    unsigned char o1, o2, kind;
-} AMTAPP;
 typedef struct AMTMSG {                 /* the message of 0x4e6680: 11 bytes, sent as the 15-byte G17B15 (its frame in 0x4e6680 reserves 16) */
     unsigned char office;
     int a;
