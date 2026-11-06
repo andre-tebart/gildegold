@@ -6681,7 +6681,7 @@ int cm_LobbyAllReady()
     unsigned int n;
     int cnt = 0;
     int *p;
-    char *q;
+    CMLOBBYPLAYER *q;
 
     if (cm_NetGame.mode == 0x3f)
         n = cm_NetGame.hdr.players;
@@ -6691,10 +6691,10 @@ int cm_LobbyAllReady()
         return 0;
     for (p = cm_LobbyListIds; (int)p < (int)(cm_LobbyListIds + 8); p++) {
         if (*p != 0) {
-            q = cm_LobbyFindPlayer(*p);
+            q = (CMLOBBYPLAYER *)cm_LobbyFindPlayer(*p);
             if (q == 0)
                 return 0;
-            if (*(int *)(q + 4) == 1)
+            if (q->ready == 1)
                 cnt++;
         }
     }
