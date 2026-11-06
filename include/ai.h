@@ -322,7 +322,7 @@ void cm_BeginFieldBlock(char *o, int id);                             /* 0x4c3ba
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                /* 0x4c3c00, adds a field */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v);                  /* 0x4c3d00 */
 void cm_BeginGroup(const char *s);                                        /* 0x4c4540 */
-void cm_EndGroup(const char *s);                                        /* 0x4c4580 */
+int cm_EndGroup(const char *s);                                        /* 0x4c4580 */
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);                 /* 0x4c47e0 */
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f);         /* 0x4c4880, cm.c */
 void cm_SendFieldDeltas(void);                                                 /* 0x4c49a0, sends the message */

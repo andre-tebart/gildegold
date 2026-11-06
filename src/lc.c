@@ -1081,7 +1081,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
     char pad16a[6];
     int bld2;                      /* 0x170, the character's own building, 0 when none (ai_char.h AICHAR.bld2) */
-    char pad174[8];
+    char pad174[4];
+    int inventory;                 /* 0x178, the character's goods inventory, an object list (ai_char.h AICHAR.inventory) */
     struct AIJOB *job;             /* 0x17c, the job the character works in, 0 = none (ai_char.h AICHAR.job) */
     char pad180[4];
     struct AITASKVIEW *model;      /* 0x184, the character's model record, 0 when none (ai_char.h AICHAR.model) */
@@ -1118,7 +1119,10 @@ typedef struct AIBLD {             /* the building record fields this unit reads
         int playerSlot;            /* 0x65, of a kind 0x47 building: its player slot (ai_bld.h AIBLD.playerSlot) */
         int interest;              /* 0x65, of a bank: the interest its owner sets, 5 .. 0x28 (ai_bld.h AIBLD.interest) */
     };
-    char pad69[8];
+    int messengerFee;              /* 0x69, of a bank: the money messenger's fee in percent, 3 .. 0xf (the fees window
+                                      ai_Unk59d2d0 sets it as the field 0x69; reasoned: the messenger window shows it) */
+    int exchangeFee;               /* 0x6d, of a bank: the exchange fee in percent, 3 .. 0xf (the fees window sets it as
+                                      the field 0x6d; ai_ExchangeWindow takes it of the exchanged value) */
     union {
         int plants;                /* 0x71, the vegetation map (ai_bld.h AIBLD.plants) */
         ORDCREDIT credits[3];      /* 0x71, of a bank the credit offers kept for the player (gv.h ORDBLD.credits) */
@@ -3583,7 +3587,7 @@ int gm_IsType10(unsigned char *b); void ai_EnterBuilding(); void ai_EnterOwnBuil
 int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_TechEffectsWindow();
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
-int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
+int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
 char *_strupr(char *); void gm_CloseTechTree(void); int ai_MercenaryBook();
 void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
 
@@ -7554,7 +7558,7 @@ void ai_StammtischWindow(AIBLD *bld, AIOBJ *table)
     } while (sv_RunFrame((int)ai_StammtischWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-int cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
+int cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 
 
@@ -8597,7 +8601,7 @@ void gm_SortCharsByName(int n, int *ids, int flag); void d2_AddPointerItem(int i
 void d2_EndInputEdit(void); void d2_EnableObject(); void d2_ScrollWindowBy(); void d2_MoveObj(short x, short y, int obj);
 int d2_WinOpenInputIcon(int x, int y, int icon, unsigned char flags, int win); void d2_SetObjFont(); void d2_CopyCaption(char *caption);
 void d2_SetObjPic(); int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldDeltas(void); void cm_BeginFieldBlock(char *o, int id);
-void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
+void sv_SetStatusText(char *s); char *_itoa(int, char *, int); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
 void cm_SendExSellObject(int a, int b, int c, int d, unsigned char e, int f); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); int gm_GetGoodsValue(); int gm_ConvertMoney(int a, unsigned char k);
 
 /* 0x59b030, pays back the loan loan of the bank bank (300 B): the borrower (gm_FindChar of the loan's partner) is
@@ -9232,13 +9236,13 @@ void ai_ShowExchangeRows(LCEXCHROW *rows, int view, int form, int input)
    (dm_L.lclick) is down it returns the first of the 16 records (7 ints each) whose control (+0) is the clicked
    control d2_PointerObj, else -1 */
 
-int ai_ClickedExchangeRecord(int *records)
+int ai_ClickedExchangeRecord(LCEXCHROW *rows)
 {
     int i;
 
     if (dm_L.lclick != 0) {
         for (i = 0; i < 16; i++) {
-            if (records[i * 7] != -1 && d2_PointerObj == records[i * 7])
+            if (rows[i].icon != -1 && d2_PointerObj == rows[i].icon)
                 return i;
         }
     }
@@ -9246,220 +9250,288 @@ int ai_ClickedExchangeRecord(int *records)
 }
 /* 0x59c6e0, number of used records of a 7-int list (32 B): the records whose control (+0) is not -1 */
 
-int ai_UsedRecordCount(int *recs)
+int ai_UsedRecordCount(LCEXCHROW *rows)
 {
     int n;
     int i;
 
     n = 0;
     for (i = 0; i < 16; i++)
-        if (recs[i * 7] != -1)
+        if (rows[i].icon != -1)
             n++;
     return n;
 }
-/* 0x59c700, the money lender's exchange window "..geldleihe_Wechsel" (3024 B, ROUGH SKELETON: the two record
-   tables and the exchange texts are written, the money transfers are condensed): the window 0x4741f0, the five
-   controls 0x475b80 (0 .. 4), the texts 0x18f5, 0x18f6 (the record +0x69 and +0x6d, the city factor), the two
-   lists of 16 records (0x59c120 (param_1 + 0x5d / the player's goods 0x770cf8 + player * 0x21c, the list, the
-   window, 5 / 4, 1)), the selected list entry (+5 / +3 / +6) texts 0x18fa / 0x18f8 / 0x18fd, the counts
-   0x59c6e0, the buttons 0x475aa0 / 0x5e56c4, the panel 0x472760, the exchange of the two goods by 0x4c4540 /
-   0x4c4880 ("kredit") and 0x4c4580; 0x46c70 / 0x46c90 / 0x477530 refresh the lists; 0x476c70 / 0x4758f0 /
-   0x52d7a0 on exit */
-
-void ai_ExchangeWindow(int param_1)
+/* 0x59c700, the money lender's exchange window "locations\geldleihe\geldleihe_Wechsel" of the bank bank (3024 B):
+   two lists of currency rows, the bank's (its object list, form 5) and the player's (his inventory, form 4), each
+   with a scroll pair and a count text (shown from 5 rows on), the texts 0x18f5 and 0x18f6 (the two fees); every
+   frame the lists are refilled: an amount picked in a bank row (side 1, the status 0x18fa, the arrow 0x4f8) or else
+   in an own row (side 2, 0x18f8, 0x4f9) is the offer, none shows 0x18f7 (0x4f7); a click on a row of the other list
+   exchanges: the value of the offer (gm_CurrencyFactor) plus the bank's exchange fee (its percent of it, at least
+   one coin of the picked good, none for the bank's owner) against the other good, refused when that row holds too
+   little (0x18fd) or it is the same good (0x18fc); the four moves go out as one "kredit" group, then the lists are
+   refilled (0x18fe) and the picked amounts cleared; a right click clears them, or closes the window when none
+   @deep reconstructed from the whole original 0x59c700..0x59d2d0 (the draft had condensed the money
+   moves): both row lists (LCEXCHROW), the scroll pairs and count texts (<= 4 disables), the offer
+   selection with picked / sel, the fee as __max(value * rate, gm_CurrencyFactor(1, good)) (the original
+   calls it twice and tests test ah,5 / jnp), owner exempt, the four cm_SendExSellObject moves of both
+   sides with their (int) conversions, the cm_EndGroup slot wait (cm_EndGroup now returns cm_QueueSend's
+   slot), the refills and clears; fee * 0.01 order read and fixed. Left is allocation: the original keeps
+   sel / picked, the side-2 amount, the paid amount and idx * 0x1c in stack slots ([esp+0x10], [esp+0x14],
+   [esp+0x18], [esp+0x28]) and reloads bank from its argument and bankText / ownText / arrow from slots at
+   the loop head, ours keeps sel in edi, bank in ebp and a zero in ebx (pushing the callee-saved registers
+   before the init loop: '- push ebp / push ebx / xor ebx, ebx' vs '+ xor edx, edx ... push ebx' after it);
+   frame 0x4b4 vs 0x4b8 (one slot more in the original), 884 vs 893 instructions (references: M8 at +0x412:
+   ours refers to d2_CopyCaption (0x478870), the original's field to 0x59c6e0 (ai_UsedRecordCount) (and 1
+   more), explained: both M8 are alignment crossings of the same calls: at +0x412 the original lays the 'no
+   offer' else block (d2_CopyCaption 0x18f7, d2_SetObjPic 0x4f7) out of line after the two
+   ai_UsedRecordCount calls and merges the 0x4f8 / 0x4f9 d2_SetObjPic tails (calls: d2_SetObjPic ours x3,
+   the original x2), at +0x6cb the side-1 refusal txt_Format / d2_CopyCaption pair lines up one call off;
+   every call, argument and literal was read equal (the proof stops at the pooled literal of the form
+   name)) */
+void ai_ExchangeWindow(AIBLD *bank)
 {
-    int recsA[16 * 7];
-    int recsB[16 * 7];
     char text[0x100];
-    int win;
-    int ctl[5];
-    int i;
-    int n;
-    int m;
-    int side;
+    LCEXCHROW ownRows[16];
+    LCEXCHROW bankRows[16];
+    float fee;
+    float value;
+    float rate;
+    int amount;
+    int paid;
     int sel;
+    int picked;
+    int side;
     int idx;
-    int v;
-    int r;
-    int a;
-    int b;
+    int bankCount;
+    int ownCount;
+    int bankUp;
+    int bankDown;
+    int ownUp;
+    int ownDown;
+    int bankText;
+    int ownText;
+    int arrow;
+    int sold;
+    int bought;
+    int slot;
+    int win;
+    int i;
 
-    for (i = 0; i < 16 * 7; i++) {
-        recsA[i] = 0;
-        recsB[i] = 0;
-    }
+    side = 0;
     for (i = 0; i < 16; i++) {
-        recsA[i * 7] = -1;
-        recsB[i * 7] = -1;
+        bankRows[i].icon = -1;
+        bankRows[i].good = 0;
+        ownRows[i].icon = -1;
+        ownRows[i].good = 0;
     }
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_Wechsel");
     d2_CentreViewWindows(win);
-    ctl[2] = d2_GetWinObj(win, 0, 2);
-    ctl[3] = d2_GetWinObj(win, 0, 3);
-    ctl[1] = d2_GetWinObj(win, 0, 1);
-    ctl[0] = d2_GetWinObj(win, 0, 0);
-    ctl[4] = d2_GetWinObj(win, 0, 4);
+    ownUp = d2_GetWinObj(win, 0, 2);
+    ownDown = d2_GetWinObj(win, 0, 3);
+    bankUp = d2_GetWinObj(win, 0, 1);
+    bankDown = d2_GetWinObj(win, 0, 0);
+    arrow = d2_GetWinObj(win, 0, 4);
     d2_SetForm(win, 0);
-    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x73b, 0x73f);
+    sv_OpenWindowFrame(d2_LastWindow, 0x73b, 0x73f);
     d2_SetForm(win, 0);
-    /* ROUGH: the two header texts at the control rectangles (0x473650, +2 / +2) */
-    d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x10) -
-                         d2_LastWindowPtr->x) + 2,
-                 (short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x16) -
-                         d2_LastWindowPtr->y + *(short *)(U_I((unsigned)&d2_Objs) + ctl[1] * 0x2ec + 0x12)) + 2,
-                 (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
-    d2_CreateWinText((short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x10) -
-                         d2_LastWindowPtr->x) + 2,
-                 (short)(*(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x16) -
-                         d2_LastWindowPtr->y + *(short *)(U_I((unsigned)&d2_Objs) + ctl[2] * 0x2ec + 0x12)) + 2,
-                 (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
+    bankText = d2_CreateWinTextS(d2_Objs[bankUp].x - d2_LastWindowPtr->x + 2,
+                                 d2_Objs[bankUp].h - d2_LastWindowPtr->y + d2_Objs[bankUp].y + 2, ch_EmptyName,
+                                 d2_LastWindow);
+    ownText = d2_CreateWinTextS(d2_Objs[ownUp].x - d2_LastWindowPtr->x + 2,
+                                d2_Objs[ownUp].h - d2_LastWindowPtr->y + d2_Objs[ownUp].y + 2, ch_EmptyName,
+                                d2_LastWindow);
+    d2_Objs[bankText].font = 0x54;
+    d2_Objs[ownText].font = 0x54;
+    d2_Objs[arrow].textShadow = 1;
+    d2_SetForm(win, 0);
+    d2_Wins[d2_LastWindow].padl = 0xe;
+    d2_Wins[d2_LastWindow].padt = 0x18;
+    d2_Wins[d2_LastWindow].padr = 0xe;
+    d2_Wins[d2_LastWindow].padb = 0xe;
     d2_SetForm(win, 1);
-    n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x11c) + n) = 0xe;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0xe;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
+    io_PrintText(0x18f5);
     d2_SetForm(win, 2);
-    io_PrintText(0x18f6, U_I(param_1 + 0x69),
-                 (unsigned int)U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4) * 2 + 0x9a8, U_I(param_1 + 0x6d));
-    d2_CopyCaption((char *)U_I((unsigned)&full_data_144059c));
+    io_PrintText(0x18f6, bank->messengerFee, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8,
+                 bank->exchangeFee);
+    d2_CopyCaption(txt_Ptrs[0x18f7]);
     d2_SetPointerSprite(0, 0);
-    side = 0;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            if (d2_CountPointerItems() == 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else {
+    do {
+        if (dm_L.rup != 0) {
+            if (d2_CountPointerItems() != 0) {
                 d2_EndInputEdit();
                 for (i = 0; i < 16; i++) {
-                    if (recsA[i * 7] != -1)
-                        d2_SetObjValue(recsA[i * 7], 0, 0, 0);
-                    if (recsB[i * 7] != -1)
-                        d2_SetObjValue(recsB[i * 7], 0, 0, 0);
+                    if (bankRows[i].icon != -1)
+                        d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                    if (ownRows[i].icon != -1)
+                        d2_SetObjValue(ownRows[i].icon, 0, 0, 0);
                 }
+            } else {
+                sv_PopRequest = 1;
             }
         }
         d2_ClearPointerItems();
-        sel = ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
-        if (side == 2 || sel == -1) {
-            sel = ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
-            if (sel != -1) {
-                if (*(unsigned char *)(unsigned)&d2_CaptionCopy == 0 || side == 0) {
-                    txt_Format(text, 0x18f8, recsB[sel * 7 + 5], recsB[sel * 7 + 3] * 2 + 0x9a8);
-                    d2_CopyCaption(text);
-                }
-                side = 2;
-                d2_SetObjPic(ctl[4], 0x4f9);
-            } else {
-                side = 0;
-                d2_CopyCaption((char *)U_I((unsigned)&full_data_144059c));
-                sel = -1;
-                d2_SetObjPic(ctl[4], 0x4f7);
-            }
-        } else {
-            if (*(unsigned char *)(unsigned)&d2_CaptionCopy == 0 || side == 0) {
-                txt_Format(text, 0x18fa, recsA[sel * 7 + 5], recsA[sel * 7 + 3] * 2 + 0x9a8);
+        picked = -1;
+        if (side != 2)
+            picked = ai_FillExchangeRows(bank->objList, bankRows, win, 5, 1);
+        if (picked != -1) {
+            if (d2_CaptionCopy[0] == 0 || side == 0) {
+                txt_Format(text, 0x18fa, bankRows[picked].value, bankRows[picked].good * 2 + 0x9a8);
                 d2_CopyCaption(text);
             }
             side = 1;
-            d2_SetObjPic(ctl[4], 0x4f8);
-        }
-        n = ai_UsedRecordCount(recsA);
-        m = ai_UsedRecordCount(recsB);
-        if (n < 5) {
-            d2_EnableObject(ctl[1], 0);
-            d2_EnableObject(ctl[0], 0);
-            d2_EnableObject(ctl[2], 0);
+            sel = picked;
+            d2_SetObjPic(arrow, 0x4f8);
+        } else if ((picked = ai_FillExchangeRows(((AICHARREC *)ai_Chars)[ai_PlayerId].inventory, ownRows, win, 4, 1)) != -1) {
+            if (d2_CaptionCopy[0] == 0 || side == 0) {
+                txt_Format(text, 0x18f8, ownRows[picked].value, ownRows[picked].good * 2 + 0x9a8);
+                d2_CopyCaption(text);
+            }
+            side = 2;
+            sel = picked;
+            d2_SetObjPic(arrow, 0x4f9);
         } else {
-            d2_EnableObject(ctl[1], 1);
-            d2_EnableObject(ctl[0], 1);
-            d2_EnableObject(ctl[2], 1);
-            _itoa(n, text, 10);
-            d2_SetObjText(ctl[2], text);
+            side = 0;
+            d2_CopyCaption(txt_Ptrs[0x18f7]);
+            sel = -1;
+            d2_SetObjPic(arrow, 0x4f7);
         }
-        if (m < 5) {
-            d2_EnableObject(ctl[2], 0);
-            d2_EnableObject(ctl[3], 0);
-            d2_EnableObject(ctl[0], 0);
+        bankCount = ai_UsedRecordCount(bankRows);
+        ownCount = ai_UsedRecordCount(ownRows);
+        if (bankCount <= 4) {
+            d2_EnableObject(bankUp, 0);
+            d2_EnableObject(bankDown, 0);
+            d2_EnableObject(bankText, 0);
         } else {
-            d2_EnableObject(ctl[2], 1);
-            d2_EnableObject(ctl[3], 1);
-            d2_EnableObject(ctl[0], 1);
-            _itoa(m, text, 10);
-            d2_SetObjText(ctl[0], text);
+            d2_EnableObject(bankUp, 1);
+            d2_EnableObject(bankDown, 1);
+            d2_EnableObject(bankText, 1);
+            _itoa(bankCount, text, 10);
+            d2_SetObjText(bankText, text);
         }
-        if (U_I((unsigned)&d2_ClickedId) == 3 || U_I((unsigned)&d2_ClickedId) == 4) {
-            if (U_I((unsigned)&d2_PointerObj) == ctl[1]) {
+        if (ownCount <= 4) {
+            d2_EnableObject(ownUp, 0);
+            d2_EnableObject(ownDown, 0);
+            d2_EnableObject(ownText, 0);
+        } else {
+            d2_EnableObject(ownUp, 1);
+            d2_EnableObject(ownDown, 1);
+            d2_EnableObject(ownText, 1);
+            _itoa(ownCount, text, 10);
+            d2_SetObjText(ownText, text);
+        }
+        if (d2_ClickedId == 3 || d2_ClickedId == 4) {
+            if (d2_PointerObj == ownUp) {
                 d2_SetForm(win, 4);
-                d2_ScrollWindowBy(0, -0x4c, U_I((unsigned)&d2_LastWindow));
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl[3]) {
-                d2_SetForm(win, 5);
-                d2_ScrollWindowBy(0, -0x4c, U_I((unsigned)&d2_LastWindow));
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl[2]) {
+                d2_ScrollWindowBy(0, -0x4c, d2_LastWindow);
+            } else if (d2_PointerObj == ownDown) {
                 d2_SetForm(win, 4);
-                d2_ScrollWindowBy(0, 0x4c, U_I((unsigned)&d2_LastWindow));
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl[0]) {
+                d2_ScrollWindowBy(0, 0x4c, d2_LastWindow);
+            } else if (d2_PointerObj == bankUp) {
                 d2_SetForm(win, 5);
-                d2_ScrollWindowBy(0, 0x4c, U_I((unsigned)&d2_LastWindow));
+                d2_ScrollWindowBy(0, -0x4c, d2_LastWindow);
+            } else if (d2_PointerObj == bankDown) {
+                d2_SetForm(win, 5);
+                d2_ScrollWindowBy(0, 0x4c, d2_LastWindow);
             }
         }
         if (side == 1) {
-            idx = ai_ClickedExchangeRecord(recsB);
+            idx = ai_ClickedExchangeRecord(ownRows);
             if (idx != -1) {
-                a = recsB[idx * 7 + 3];
-                b = recsA[sel * 7 + 3];
-                if (a == b) {
-                    d2_CopyCaption((char *)U_I((unsigned)&full_data_14405b0));
+                sold = ownRows[idx].good;
+                bought = bankRows[sel].good;
+                if (sold == bought) {
+                    d2_CopyCaption(txt_Ptrs[0x18fc]);
                 } else {
-                    /* ROUGH: the rate checks (0x508620) and the two transfers of the goods a / b by
-                       0x4c4540 / 0x4c4880 ("kredit") / 0x4c4580, then both lists are rebuilt */
-                    cm_BeginGroup("kredit");
-                    cm_SendExSellObject(-1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), a, 0, U_I((unsigned)&ai_OwnPlayer), 0);
-                    cm_SendExSellObject(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), -1, b, 0, U_I((unsigned)&ai_OwnPlayer), 0);
-                    r = ((int (*)(void *))cm_EndGroup)("kredit");
-                    while (cm_GetSlotState(r) == 0)
-                        sv_RunFrame(0, 0x677c7);
-                    ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
-                    ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
-                    sv_SetStatusText((char *)U_I((unsigned)&full_data_14405b8));
-                    d2_EndInputEdit();
-                    for (i = 0; i < 16; i++) {
-                        if (recsA[i * 7] != -1)
-                            d2_SetObjValue(recsA[i * 7], 0, 0, 0);
-                        if (recsB[i * 7] != -1)
-                            d2_SetObjValue(recsB[i * 7], 0, 0, 0);
+                    amount = bankRows[sel].value;
+                    rate = bank->exchangeFee * 0.01;
+                    value = gm_CurrencyFactor(amount, bought);
+                    if (ai_PlayerId != bank->owner) {
+                        fee = value * rate;
+                        fee = __max(fee, gm_CurrencyFactor(1, bought));
+                    } else {
+                        fee = 0;
+                    }
+                    if (gm_CurrencyFactor(ownRows[idx].available, sold) < value) {
+                        txt_Format(text, 0x18fd, sold * 2 + 0x9a8);
+                        d2_CopyCaption(text);
+                    } else {
+                        paid = value;
+                        amount = gm_CurrencyFactor(amount, bought);
+                        cm_BeginGroup("kredit");
+                        cm_SendExSellObject(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, sold, paid, ai_OwnPlayer, 0);
+                        cm_SendExSellObject(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1, bought, amount - fee,
+                                            ai_OwnPlayer, 0);
+                        cm_SendExSellObject(-1, bank->id, bought, amount, ai_OwnPlayer, 0);
+                        cm_SendExSellObject(bank->id, -1, sold, paid + fee, ai_OwnPlayer, 0);
+                        slot = cm_EndGroup("kredit");
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_RunFrame(0, 0x677c7);
+                        ai_FillExchangeRows(((AICHARREC *)ai_Chars)[ai_PlayerId].inventory, ownRows, win, 4, 1);
+                        ai_FillExchangeRows(bank->objList, bankRows, win, 5, 1);
+                        sv_SetStatusText(txt_Ptrs[0x18fe]);
+                        d2_EndInputEdit();
+                        for (i = 0; i < 16; i++) {
+                            if (bankRows[i].icon != -1)
+                                d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                            if (ownRows[i].icon != -1)
+                                d2_SetObjValue(ownRows[i].icon, 0, 0, 0);
+                        }
                     }
                 }
             }
         } else if (side == 2) {
-            idx = ai_ClickedExchangeRecord(recsA);
+            idx = ai_ClickedExchangeRecord(bankRows);
             if (idx != -1) {
-                a = recsA[idx * 7 + 3];
-                b = recsB[sel * 7 + 3];
-                if (a == b) {
-                    sv_SetStatusText((char *)U_I((unsigned)&full_data_14405b0));
+                bought = bankRows[idx].good;
+                sold = ownRows[sel].good;
+                if (sold == bought) {
+                    sv_SetStatusText(txt_Ptrs[0x18fc]);
                 } else {
-                    /* ROUGH: the same exchange in the other direction */
-                    cm_BeginGroup("kredit");
-                    cm_SendExSellObject(-1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), a, 0, U_I((unsigned)&ai_OwnPlayer), 0);
-                    cm_SendExSellObject(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), -1, b, 0, U_I((unsigned)&ai_OwnPlayer), 0);
-                    r = ((int (*)(void *))cm_EndGroup)("kredit");
-                    while (cm_GetSlotState(r) == 0)
-                        sv_RunFrame(0, 0x677c7);
-                    ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
-                    ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
-                    sv_SetStatusText((char *)U_I((unsigned)&full_data_14405b8));
-                    d2_EndInputEdit();
+                    amount = bankRows[idx].available;
+                    if (amount >= ownRows[sel].value)
+                        amount = ownRows[sel].value;
+                    value = gm_CurrencyFactor(amount, bought);
+                    if (ai_PlayerId != bank->owner) {
+                        fee = value * (bank->exchangeFee * 0.01);
+                        fee = __max(fee, gm_CurrencyFactor(1, sold));
+                    } else {
+                        fee = 0;
+                    }
+                    if (gm_CurrencyFactor(ownRows[sel].available, sold) < value) {
+                        /* the original names the good of the own row at the clicked bank row's index */
+                        txt_Format(text, 0x18fd, ownRows[idx].good * 2 + 0x9a8);
+                        sv_SetStatusText(text);
+                    } else {
+                        gm_CurrencyFactor(amount, sold);
+                        cm_BeginGroup("kredit");
+                        paid = value;
+                        cm_SendExSellObject(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, sold, paid, ai_OwnPlayer, 0);
+                        amount = value - fee;
+                        cm_SendExSellObject(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -1, bought, amount,
+                                            ai_OwnPlayer, 0);
+                        cm_SendExSellObject(-1, bank->id, bought, amount, ai_OwnPlayer, 0);
+                        cm_SendExSellObject(bank->id, -1, sold, paid, ai_OwnPlayer, 0);
+                        slot = cm_EndGroup("kredit");
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_RunFrame(0, 0x677c7);
+                        ai_FillExchangeRows(((AICHARREC *)ai_Chars)[ai_PlayerId].inventory, ownRows, win, 4, 1);
+                        ai_FillExchangeRows(bank->objList, bankRows, win, 5, 1);
+                        sv_SetStatusText(txt_Ptrs[0x18fe]);
+                        d2_EndInputEdit();
+                        for (i = 0; i < 16; i++) {
+                            if (bankRows[i].icon != -1)
+                                d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
+                            if (ownRows[i].icon != -1)
+                                d2_SetObjValue(ownRows[i].icon, 0, 0, 0);
+                        }
+                    }
                 }
             }
         }
-        if (sv_RunFrame(ai_ExchangeWindow, 0x677c7) == 0) {
-            d2_ClearPointerItems();
-            d2_CloseView(win);
-            sv_CameraFollow();
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_ExchangeWindow, 0x677c7) != 0);
+    d2_ClearPointerItems();
+    d2_CloseView(win);
+    sv_CameraFollow();
 }
 /* 0x59d2d0, the money lender's exchange fees window "..geldleihe_WechselGebuehren" (320 B): the window, the
    text 0x1908, the two counters 0x475b80 (the text 0x1907 and the next text id) and the sliders 0x475cb0
@@ -12415,7 +12487,7 @@ void ai_DungeonContact(int building)
     }
 }
 
-int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int gm_CharMoney(); void cm_BeginGroup(const char *s); void cm_EndGroup(const char *s);
+int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int gm_CharMoney(); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s);
 
 /* 0x5a3b90, the bribe window "locations\kerker\kerker_besteche" (599 B): the record 0x4e6ec0 (0x11, {?, the
    id}) and its character 0x505df0; without one the text 0x1440894 and out; with the object 0x53e400 (2, 0, 0x39,

@@ -1113,15 +1113,15 @@ void cm_BeginGroup(const char *s)
     strncpy((char *)m.data, s, 0x80);
     cm_QueueSend(&m);
 }
-/* 0x4c4580, message 6: ends a group */
+/* 0x4c4580, message 6: ends a group; returns the queue slot of the message (cm_QueueSend; ai_ExchangeWindow waits on it) */
 
-void cm_EndGroup(const char *s)
+int cm_EndGroup(const char *s)
 {
     G17MSG m;
 
     m.type = 6;
     strncpy((char *)m.data, s, 0x80);
-    cm_QueueSend(&m);
+    return cm_QueueSend(&m);
 }
 /* 0x4c45c0, message 10: creates a building of kind n for the character b (the 0x30 bytes of p, or zeros) */
 

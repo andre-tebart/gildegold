@@ -196,7 +196,7 @@ int cm_SetLongMsg(unsigned short len, void *p);                                 
 void cm_SendLoadSize(int v);                                                        /* 0x4c44d0 */
 int cm_SendLoadBlock(void *p);                                                      /* 0x4c4500 */
 void cm_BeginGroup(const char *s);                                                /* 0x4c4540 */
-void cm_EndGroup(const char *s);                                                /* 0x4c4580 */
+int cm_EndGroup(const char *s);                                                /* 0x4c4580 */
 int cm_SendMessage10(unsigned char n, int b, void *p, short d);                      /* 0x4c45c0 */
 int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int e, unsigned char f, unsigned char g, unsigned char h); /* 0x4c4650 */
 int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned char f, unsigned char g, const char *s1, const char *s2); /* 0x4c46d0 */

@@ -1759,7 +1759,7 @@ int gm_GetGoodsValue();
 int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 char *gm_Query(void *list, int n, ...);
 void cm_BeginGroup(const char *s);
-void cm_EndGroup(const char *s);
+int cm_EndGroup(const char *s);
 int cm_SendTableRequest(int *p);
 void cm_SendScriptMessage(void *p);
 int sprintf(char *buf, const char *fmt, ...);
@@ -13728,7 +13728,7 @@ void he_Unk558e70(int ev)
 int gv_Accuse();
 void cm_SendProofExecuted(int a, int b);
 void cm_BeginGroup(const char *s);
-void cm_EndGroup(const char *s);
+int cm_EndGroup(const char *s);
 int ord_DispatchOrder(int id, char *c, int *m);
 int ai_InventoryHas(void *ch, int id);
 void gm_SendMoneyDelta(int a, int b);
