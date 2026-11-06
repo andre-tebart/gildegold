@@ -22454,57 +22454,65 @@ void sv_PumpNet(); int ai_AmountRowStatus(); int ai_AmountRow();
 void d2_EnableViewObjects(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs); 
 int sv_CheckGoodAmount(); int sv_MessageBox(); int cm_GetSlotState();
 
-/* 0x5c6910, the advertising / marriage proposal confirm (395 B): the rating 0x5c6620 (the own id
-   0x770b84 + 0x6f25b8 * 0x87, param_1 + 4); the window "privillegien_werbung2" 0x62d40c, 0x475600,
-   0x515960 (0x1ce5, *param_1, the rating); the frame loop 0x5309a0 (this, 0x657c7): a click 0 ->
-   the AIMSG 0x41 (memset 0xf8, +4 = 0x41, +8 / +0xc / +0x58 the own id, +0x28 .. +0x34 the clock,
-   +0x36 = 2, +0x5c the partner id) through 0x4c4b70, the confirmation 0x4c3ae0 in the 0x52fe00 loop,
-   the result 1 and 0x6f22a0; click 1 sets 0x6f22a0; the exit 0x4758f0, 0xf8a668 = -1 and 0x4115b0
-   (0x11) */
-int ai_CourtshipConfirm(short *param_1)
+/* 0x5c6910, the confirm dialog of the courtship (advertising) list 0x5c6aa0: the rating 0x5c6620 of the own
+   character (ai_CharInts[ai_PlayerId][0]) and the partner ch->netId; the window "privillegien\werbung2"
+   ai_CourtshipForm with the text 0x1ce5 (ch->id, the rating); the frame loop 0x5309a0 (this, 0x657c7): a click 0
+   sends the marriage proposal message 0x41 (the own netId as to / fromId / arg[0], the partner's as arg[1], the
+   clock, flags 2) through 0x4c4b70 and waits for its slot (0x4c3ae0 / 0x52fe00), the result 1; click 1 only
+   pops; the exit 0x4758f0, d2_ClickedId = -1 and di_ClearEvents(0x11)
+   @deep read the whole original 0x5c6910..0x5c6a9b and reconciled every statement: the rating call, the
+   window and text 0x1ce5, the frame loop, the AIMSG 0x41 build (the 14-byte ai_Time copy, arg[1] =
+   ch->netId, type, flags 2, to / fromId / arg[0] = ai_CharInts[ai_PlayerId][0]), the slot wait and the
+   exit. Only the scheduling of that message build is left: ours stores the ai_Time dwords in the order
+   +0x30 / +0x28 / +0x34 / +0x2c and pushes the cm_SendLongMessage argument before the stores, the original
+   stores +0x28 / +0x30 / +0x2c / +0x34 and pushes it after them (asmdiff: ours 113 ins, the original 112,
+   differing 34; diffclass: code 45, proof: the same store set in another order). Tried the time assignment
+   first, after the flags and last, the three own assignments and the chain in both directions, and the own
+   id as a local vs inline; the M8 at +0xc0 / +0xca pairs ours' ai_Time+0x4 / +0xc against the original's
+   +0x0 / +0x8, the same ai_Time copy crossed by the store order (references: M8 at +0xc0: ours refers to
+   ai_Time+0x4 (0x770ae4), the original's field to 0x770ae0 (ai_Time) (and 1 more), explained: the M8
+   references are the same ai_Time fields of one struct copy, paired crosswise by the store order, not
+   another object or a wrong field) */
+
+int ai_CourtshipConfirm(AICHARREC *ch)
 {
+    AIMSG msg;
     int win;
     int v;
-    int i;
-    char msg[0xf8];
+    int slot;
 
-    v = ai_CourtshipRounds(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I((char *)param_1 + 4));
+    v = ai_CourtshipRounds(ai_CharInts[ai_PlayerId][0], ch->netId);
     win = d2_OpenForm(0, 0, ai_CourtshipForm);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1ce5, *param_1, v);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    io_PrintText(0x1ce5, ch->id, v);
+    d2_ClickedId = -1;
     v = 0;
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_ClickedId) == 0) {
-                memset(msg, 0, 0xf8);
-                *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                *(int *)(msg + 0x5c) = U_I((char *)param_1 + 4);
-                *(unsigned char *)(msg + 4) = 0x41;
-                *(unsigned char *)(msg + 0x36) = 2;
-                *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                *(unsigned short *)(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-                *(int *)(msg + 0xc) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                *(int *)(msg + 0x58) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                i = cm_SendLongMessage(msg);
-                while (cm_GetSlotState(i) == 0)
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                memset(&msg, 0, sizeof(msg));
+                msg.time = ai_Time;
+                msg.arg[1] = ch->netId;
+                msg.type = 0x41;
+                msg.flags = 2;
+                msg.arg[0] = msg.fromId = msg.to = ai_CharInts[ai_PlayerId][0];
+                slot = cm_SendLongMessage((char *)&msg);
+                while (cm_GetSlotState(slot) == 0)
                     sv_PumpNet();
                 v = 1;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
             }
         }
         if (sv_RunFrame(ai_CourtshipConfirm, 0x657c7) == 0)
             break;
     }
     d2_CloseView(win);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    d2_ClickedId = -1;
     di_ClearEvents(0x11);
     return v;
 }
