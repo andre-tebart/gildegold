@@ -6933,18 +6933,19 @@ char *cm_CharWeapon(char *c)
     }
     return ai_FindWeaponRecord(0);
 }
-/* 0x4cdac0, the entry (not the record) of that search, 0: none */
+/* 0x4cdac0, the inventory entry (AIOBJ, not its weapon record) of the search cm_CharWeapon does, 0: none */
 
 char *cm_CharWeaponItem(char *c)
 {
-    char *q, *r;
+    AIOBJ *q;
+    AIWEAPON *r;
 
-    for (q = gm_Query(*(int *)(c + 0x178), 1, 5); q != 0; q = gm_QueryNext()) {
-        r = ai_FindWeaponRecord(*(unsigned short *)q);
+    for (q = (AIOBJ *)gm_Query(((AICHAR *)c)->inventory, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+        r = (AIWEAPON *)ai_FindWeaponRecord(q->id);
         if (r != 0) {
-            if ((*(int *)(r + 0x58) == 1 || *(int *)(r + 0x58) == 2) && *(int *)(q + 0x20) <= 0)
+            if ((r->kind == 1 || r->kind == 2) && q->usesLeft <= 0)
                 return 0;
-            return q;
+            return (char *)q;
         }
     }
     return 0;
