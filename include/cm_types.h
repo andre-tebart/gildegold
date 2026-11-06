@@ -259,16 +259,8 @@ typedef struct G17SETFIELDMSG {         /* 0x14 bytes, the data of message 0x19 
     int objId;                          /* 0x00, the object (building, object or character id) */
     int offset;                         /* 0x04, the field's offset in it */
     int size;                           /* 0x08, the field's size: 1, 2 or 4 bytes */
-    union {
-        int set;                        /* 0x0c, the bits set */
-        unsigned short setWord;         /* 0x0c, its low word (size 2) */
-        unsigned char setByte;          /* 0x0c, its low byte (size 1) */
-    };
-    union {
-        int clear;                      /* 0x10, the bits cleared */
-        unsigned short clearWord;       /* 0x10, its low word (size 2) */
-        unsigned char clearByte;        /* 0x10, its low byte (size 1) */
-    };
+    int set;                            /* 0x0c, the bits set */
+    int clear;                          /* 0x10, the bits cleared */
 } G17SETFIELDMSG;
 
 typedef struct G17FLOATDELTAMSG {       /* 12 bytes, the data of message 0x1a (cm_SendFloatDelta, its handler

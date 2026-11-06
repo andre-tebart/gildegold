@@ -3460,12 +3460,12 @@ int cm_ExSetField(G17MSG *m, G17STAT *s)
     a.c += m->setField.offset;
     switch (m->setField.size) {
     case 1:
-        *a.b &= ~m->setField.clearByte;
-        *a.b |= m->setField.setByte;
+        *a.b &= ~(unsigned char)m->setField.clear;
+        *a.b |= (unsigned char)m->setField.set;
         break;
     case 2:
-        *a.w &= ~m->setField.clearWord;
-        *a.w |= m->setField.setWord;
+        *a.w &= ~(unsigned short)m->setField.clear;
+        *a.w |= (unsigned short)m->setField.set;
         break;
     case 4:
         *a.i &= ~m->setField.clear;
