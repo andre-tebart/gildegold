@@ -2541,7 +2541,7 @@ void gm_ClockToDate(AITIME *c, unsigned char *out)
 
     d->year = (short)c->year + 0x578;
     r = c->year % 4;
-    d->one = 1;
+    d->day = 1;
     d->month = (char)r * 3 + 1;
     d->hour = (char)c->hour;
     d->min = (char)c->min;
@@ -6976,7 +6976,7 @@ void gm_BirthDate(ORDCHAR *c, GMDATE *out)
     gm_ClockToDate(&clk, (unsigned char *)&d);
     x = c->nameKey ^ d.year;
     d.month = (char)(((x >> 3) % 13 + year % 11) % 12) + 1;
-    d.one = (unsigned char)((x >> 5) % 28) + 1;
+    d.day = (unsigned char)((x >> 5) % 28) + 1;
     *out = d;
 }
 /* 0x5060d0, the day of death of the character c as a calendar record in out: 0 for a living one, else 1 with the
@@ -6997,7 +6997,7 @@ int gm_DeathDate(ORDCHAR *c, GMDATE *out)
     gm_ClockToDate(&clk, (unsigned char *)&d);
     x = c->nameKey ^ d.year;
     d.month = (char)(((x >> 3) % 7 + year % 19) % 12) + 1;
-    d.one = (unsigned char)((x >> 5) % 28) + 1;
+    d.day = (unsigned char)((x >> 5) % 28) + 1;
     *out = d;
     return 1;
 }

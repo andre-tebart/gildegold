@@ -1062,8 +1062,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     unsigned int netId;            /* 0x004, the character's network id (ai_char.h AICHAR.netId) */
     unsigned char health;          /* 0x008 */
     unsigned char sex;             /* 0x009, 0 / non-0 (ai_char.h AICHAR.sex; it picks the male / female name table) */
-    unsigned short w00a;           /* 0x00a, ai_char.h AICHAR.w00a (the family tree window lets a child above 10 be
-                                      picked) */
+    unsigned short w00a;           /* 0x00a, the age in years (ai_char.h AICHAR.w00a, gm_CharAge; the family tree
+                                      window lets a child above 10 be picked) */
     unsigned char faith;           /* 0x00c, the faith, 0 / 1 (ai_char.h AICHAR.b00c): the baptism window sets it to
                                       1 - it (or to the church owner's) and names it by the text 0x197a + it; the
                                       church donation reaches the characters of the owner's faith */
@@ -1071,7 +1071,9 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad00e[0xe];
     float f01c;                    /* 0x01c, the life value (ai_char.h AICHAR.f01c: 1000.0 at creation, aged
                                       by gm_AgeCharacter, the character dies when it is used up) */
-    char pad020[0xc];
+    float f020;                    /* 0x020, ai_char.h AICHAR.f020 (the character info panel offers a jobless child
+                                      the profession choice when it is at most the age + 4) */
+    char pad024[8];
     unsigned int ailments;         /* 0x02c, the ailment counters (am.h G5CH.ailments; ai_char.h AICHAR.v02c):
                                       the fields at bits 0, 4, 8, 12, 14, 17, 20, 23, 25 (4, 4, 4, 2, 3, 3, 3, 2, 4
                                       bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
@@ -1086,7 +1088,7 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad07c[0xe8];
     unsigned char jobId;           /* 0x164, the character's job (ai_char.h AICHAR.jobId; the construction window's group 7
                                       needs 0x34 .. 0x39) */
-    char pad165;
+    unsigned char title;           /* 0x165, the title rank (ai_char.h AICHAR.title; text 0x20d / 0x230 + it) */
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
     char pad167;
     unsigned char appliedOffice;   /* 0x168, the office kind applied for, 0 = none (ai_char.h AICHAR.appliedOffice) */
@@ -20418,15 +20420,16 @@ typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree wi
     int pad0c;
 } LCFAMILYBOX;
 
-/* 0x5c4150, the family tree window "Special\Stammbaum": shows the character netId's parents, its partner (unless
-   one of the two has the powerFlags bit 0x40000), its siblings (the left parent's relatives[3..7] but itself, up
-   to two on each side) and its children (relatives[3..7] of a kind below 10, up to five) as portrait boxes (the
+/* 0x5c4150, the family tree window "Special\Stammbaum": shows the character netId's parents (the father relatives[1] on the left,
+   the mother relatives[2] on the right), its partner (unless
+   one of the two has the powerFlags bit 0x40000), its siblings (the father's relatives[3..7] but itself, up to two on
+   each side) and its children (relatives[3..7] of a kind below 10, up to five) as portrait boxes (the
    picture 0x5db, the portrait inside, an empty box 0x4fb) joined by lines, each box labelled with the
    character's name ("%1N7") and the character itself marked with its ref54 picture. The caption is the text
    caption (0x9f when 0). The flags pick which boxes can be clicked: the middle row and the children with 1 and
-   without 0xc, or with 0x10; the parents without 0xc; a child also with 2 and 8 when its w00a is above 10. A
-   click opens the player info panel of the picked character (ai_Unk5c5310: own view with 0x10 or for the
-   character itself, else the other's with 8), a click on no box redraws; the right button closes the window
+   without 0xc, or with 0x10; the parents without 0xc; a child also with 2 and 8 when it is older than 10. A
+   click opens the info panel of the picked character (ai_CharInfoPanel: without its take-over button with 0x10
+   or for the character itself, with it under 8), a click on no box redraws; the right button closes the window
    unless flags has 8. callId is the frame pump's call id; the campaign step 6 brackets the window.
    @deep Reconstructed in full against the original (all 1277 instructions read: the relatives walk, the
    parent / middle-row / sibling / child boxes with their d2_Objs style/user, the connecting PlotLines, the
@@ -20769,12 +20772,12 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
             if (pick != 0) {
                 d2_SetViewEnabled(win, 0);
                 if (flags & 0x10)
-                    ai_Unk5c5310(pick, 0);
+                    ai_CharInfoPanel(pick, 0);
                 else if (flags & 8) {
                     if (ch != pick)
-                        ai_Unk5c5310(pick, 1);
+                        ai_CharInfoPanel(pick, 1);
                     else
-                        ai_Unk5c5310(pick, 0);
+                        ai_CharInfoPanel(pick, 0);
                 }
                 d2_SetViewEnabled(win, 1);
             } else {
@@ -20787,113 +20790,298 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
 }
 
 int gm_GetGoodsValue();
-void ai_ShowMissions(int owner); int ai_Unk5cf260(); int ai_Unk5cf4f0(); int ai_Unk5c6050();
+void ai_ShowMissions(int owner); int ai_ChooseProfessionWindow(); int ai_UniversityWindow(); int ai_GiftWindow();
 
-/* 0x5c5310, the player info panel "panel_info_spieler" 0x62d3e0 (4544 B, ROUGH SKELETON): the window
-   0x4741f0 (0, 0, 0x62d3e0), 0x476f80, 0x475600, page 1 with 0x515960 (0x1f53, *param_1) and page 2
-   with the age / birth texts (0x506000, 0x5176d0 (0x62d3d4 / 0x62d3b8), 0x5060d0, 0x505e30, the texts
-   0x1f54 .. 0x1f60 and the formats 0x62d3a0 / 0x62d388 / 0x62d36c / 0x62d354 / 0x62d33c / 0x62d330),
-   the five skills (param_1 + 0x34, 0x505df0, 0x515960 (0x62d320)) or the empty 0x62d314, page 3 with
-   the five 0x473650 rows (0x16b7 + i, 0x52eb50 (0xaf, y, param_1, i, 0x4e5)) and the flag rows (the
-   0x16 bits 0xf .. 0x1e000000, the texts 0x161e .. 0x1626); the bottom buttons (0x1f4b / 0x1f49 /
-   0x1f50 through 0x515960 / 0x475b80 (win, 4)); the frame loop 0x5309a0 (this, 0x760638): the gift
-   button state 0x509e60, the click 0x5fe710 -> 0x5c6050 (the gift), 0x5cf260 / 0x5cf4f0 (the identity
-   windows), 0x4b5310 (the office), the confirmation 0x521150 and 0x4c4770 (the own id) with
-   0x6f22a0 = 2; the exit 0x4758f0. ROUGH: the page / row coordinates and the condition ladder of the
-   bottom buttons are comments */
-void ai_Unk5c5310(AICHARREC *param_1, int param_2)
+/* 0x5c5310, the character info panel "panel\info_spieler" of the character chr (the family tree window opens it):
+   page 1 the name (text 0x1f53), page 2 the birth date ("*d.m.y"), the death date ("+d.m.y") or the age, the
+   profession or else the title, the offices (the office and the second office, "-" for none), the worth ("-" for a
+   dead one), the partner (married, engaged by a pair event 0x41, widowed, or single 0x1f5d), the faith (its name
+   changes in the year 0x75) and the children (relatives[3..7]); page 3 the five skill bars and one line per
+   ailment field. other set: the take-over button (text 0x1f50: after the confirmation 0x1f51 the player takes over
+   the character and the panel closes); else for the player's own child the gift button (unless the player's
+   powerFlags has 0x20) and with it the profession choice for a jobless child (no event 0x5e and f020 at most the
+   age + 4) or the university for one with a profession that has not studied (powerFlags 0x10000), and for the
+   player's own character the missions button when it has missions. The right button closes it.
+   @deep Reconstructed in full against the original (all 999 instructions read: the dates, profession /
+   title, offices, worth, partner / betrothal event 0x41 walk, faith, children, the skill bars and the nine
+   ailment rows, the button ladder of page 4 and the click dispatch); all calls, literals and references
+   agree, no M8/M9. Remaining: the original does not strength-reduce or constant-fold the row counter of
+   page 3 - in the skill loop it keeps row in esi (inc esi; lea eax,[esi+esi*2]; lea ecx,[eax*8+1]) and
+   computes the header / ailment rows at run time (lea ecx,[eax*8+0xa]; inc esi), where ours carries
+   row*0x18+1 as a stepped counter and folds the later rows to constants (mov esi,7 / push 0x9a / push
+   0xb2): tried ++row in the call, (row+1)*0x18+1 with a trailing row++, both keep the reduction (8
+   instructions fewer: ours 991 vs 999); the original keeps universityBtn[0] in ebp (cmp eax,ebp) where
+   ours reloads [esp+0x24]; the rest is order / regs / slots; proof stops at the escaped frame layout (gift
+   / professionBtn / universityBtn slots). */
+void ai_CharInfoPanel(AICHARREC *chr, int other)
 {
     int win;
-    int b1;
-    int b2;
-    int b3;
-    int b4;
-    int b5;
+    int y;
+    int giftBtn;
+    int professionBtn[2];
     int i;
-    int v;
-    char text[32];
-    int call_id;
+    int dead;
+    int width;
+    int takeOverBtn;
+    int universityBtn[2];
+    int missionBtn;
+    GMDATE date;
+    char text[64];
+    int callId;
+    char text1[512];
+    char text2[512];
+    AICHARREC *rel;
+    AICHARREC *betrothed;
+    char *ev;
+    int officeBase;
+    int any;
+    int row;
+    int obj;
 
-    b1 = -1;
-    b3 = -1;
-    b5 = -1;
-    b2 = -1;
-    b4 = -1;
-    v = 0;
-    call_id = U_I((unsigned)&sv_FrameMask);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d3e0);
+    dead = 0;
+    takeOverBtn = -1;
+    missionBtn = -1;
+    giftBtn = -1;
+    universityBtn[0] = -1;
+    professionBtn[0] = -1;
+    callId = sv_FrameMask;
+    win = d2_OpenForm(0, 0, "panel\\info_spieler");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1f53, param_1->id);
+    io_PrintText(0x1f53, chr->id);
+
+    /* page 2: the dates, the profession, the offices, the worth, the partner, the faith and the children */
     d2_SetForm(win, 2);
-    gm_BirthDate(param_1, (char *)0x444);   /* ROUGH: the local record */
-    txt_Format(text, (char *)(unsigned)&full_data_62d3d4, 0, 0, 0);
-    io_PrintText((char *)(unsigned)&full_data_62d3c4, text);
-    if (gm_DeathDate(param_1, (char *)0x444) == 0) {
-        gm_CharAge(param_1->id);
-        io_PrintText((char *)(unsigned)&full_data_62d3a0, 0x1f54, v);
+    gm_BirthDate(chr, &date);
+    txt_Format(text, "*%i.%i.%i", date.day, date.month, date.year);
+    io_PrintText("$3>$L%s$A$0>", text);
+    if (gm_DeathDate(chr, &date) != 0) {
+        txt_Format(text, "+%i.%i.%i", date.day, date.month, date.year);
+        io_PrintText("$3>$L%s$A$0>", text);
+        dead = 1;
     } else {
-        txt_Format(text, (char *)(unsigned)&full_data_62d3b8, 0, 0, 0);
-        io_PrintText((char *)(unsigned)&full_data_62d3c4, text);
+        io_PrintText("$5<$R%s$0<$3>$L%i$A$0>", 0x1f54, (int)gm_CharAge(chr->id));
     }
-    /* ROUGH: the status ladder (param_1 + 0xb2 / +0x165 / +0xb3 / +0x169 the texts 0x1f55 .. 0x1f58
-       and the formats 0x62d388 / 0x62d36c / 0x62d354), the profession 0x505df0 (param_1 + 0x2e) and the
-       0x53e400 (1, 0, 0x41) walk for the master (0x1f5d .. 0x1f60), the age 0x488 / 0x483 and the
-       home 0x1f5a; then page 3: the five skill rows 0x515960 (0x16b7 + i) with 0x473650 (10, y,
-       text, screen) and 0x52eb50 (0xaf, y, param_1, i, 0x4e5), and the 0x473650 rows of the flags
-       0x16 (the texts 0x161e .. 0x1626) */
+    if (chr->jobId != 0)
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f55, chr->jobId + (chr->sex ? 0x18f : 0x130));
+    else if (chr->title != 0)
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f56, chr->title + (chr->sex ? 0x230 : 0x20d));
+    officeBase = chr->sex ? 0x27b : 0x253;
+    if (chr->officeKind == 0 && chr->secondOffice == 0) {
+        txt_Format(text, "%s", "-");
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f57, text);
+    }
+    if (chr->officeKind != 0 && chr->secondOffice != 0)
+        io_PrintText("$5<$R%s$0<$3>$L%s$A%s$A$0>", 0x1f57, chr->officeKind + officeBase, chr->secondOffice + officeBase);
+    else if (chr->officeKind != 0)
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f57, chr->officeKind + officeBase);
+    else if (chr->secondOffice != 0)
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f57, chr->secondOffice + officeBase);
+    if (!dead) {
+        io_PrintText("$5<$R%s$0<$3>$L%T$A$0>", 0x1f58, gm_GetWorth(chr->id));
+    } else {
+        gm_GetWorth(chr->id);
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f58, "-");
+    }
+    rel = (AICHARREC *)gm_FindChar(chr->relatives[0]);
+    if (dead) {
+        strcpy(text, "-");
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", txt_Ptrs[0x1f59], text);
+    } else if (rel != 0 && rel->health > 0) {
+        txt_Format(text, 0x1f5f, rel->id);
+        io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f59, text);
+    } else {
+        ev = he_FindEvent(1, 0, 0x41);
+        while (ev != 0 && ((AIJOB *)ev)->partner1 != chr->netId)
+            ev = he_NextEvent();
+        if (ev != 0 && (betrothed = (AICHARREC *)gm_FindChar(((AIJOB *)ev)->partner2)) != 0) {
+            txt_Format(text, 0x1f5e, betrothed->id);
+            io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f59, text);
+        } else if (rel != 0) {
+            txt_Format(text, 0x1f60, rel->id);
+            io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f59, text);
+        } else {
+            io_PrintText("$5<$R%s$0<$3>$L%s$A$0>", 0x1f59, 0x1f5d);
+        }
+    }
+    io_PrintText("$5<$R%s $0<$3>$L%s$A$0>", 0x488, (ai_Time.year < 0x75 ? 0x486 : 0x483) + chr->faith);
+    io_PrintText("$5<$R%s$0<", 0x1f5a);
+    any = 0;
+    for (i = 3; i < 8; i++) {
+        rel = (AICHARREC *)gm_FindChar(chr->relatives[i]);
+        if (rel != 0) {
+            any = 1;
+            io_PrintText("$3>$L%1N1$A$0>", rel->id);
+        }
+    }
+    if (!any)
+        io_PrintText("$3>$L-$A$0>");
+
+    /* page 3: the skills and the ailments */
     d2_SetForm(win, 3);
+    row = 0;
+    width = d2_Wins[d2_LastWindow].w;
+    txt_Format(text, 0x1f61);
+    obj = d2_CreateWinText(0, 1, text, d2_LastWindow);
+    y = 2;
+    d2_Objs[obj].centred = 1;
+    d2_Objs[obj].w = width;
     for (i = 0; i < 5; i++) {
-        txt_Format(text, (char *)(0x16b7 + i));
-        d2_CreateWinText(10, (i + 1) * 0x18 + 1, text, U_I((unsigned)&d2_LastWindow));
-        sv_DrawBalanceBar(0xaf, 2 + i * 0x18, param_1, i, 0x4e5);
+        y += 0x18;
+        row++;
+        txt_Format(text, 0x16b7 + i);
+        d2_CreateWinText(10, row * 0x18 + 1, text, d2_LastWindow);
+        sv_DrawBalanceBar(0xaf, y, chr, i, 0x4e5);
     }
-    txt_Format(text, (char *)0x1f63);
-    d2_CreateWinText(0, (i + 2) * 0x18 + 10, text, U_I((unsigned)&d2_LastWindow));
-    /* ROUGH: the flag rows (*(unsigned int *)(param_1 + 0x16) & 0xf / 0xf0 / 0xf00 / 0x3000 / 0x1c000
-       / 0xe0000 / 0x700000 / 0x1800000 / 0x1e000000 -> the texts 0x161e .. 0x1626 through 0x473650) */
-    if (param_2 == 0) {
-        /* ROUGH: the gift button (the own character's +9 byte and +0x30 / +0x32 ids against 0x770b84,
-           0x53e400 (2, 2, param_1->id, 0, 0x5e), the 0x770d48 bit 0x20, the 0x52e350 pairs and the
-           0x1f4b / 0x1a96 / 0x1a97 / 0x1f49 texts into 0x475b80 (win, 4)) */
-        b1 = d2_GetWinObj(win, 4, io_PrintText(0x1f49));
-    } else {
+    row++;
+    txt_Format(text, 0x1f63);
+    obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+    row++;
+    d2_Objs[obj].centred = 1;
+    d2_Objs[obj].w = width;
+    if (chr->ailments != 0) {
+        if (chr->ailments & 0xf) {
+            txt_Format(text, 0x161e);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0xf0) {
+            txt_Format(text, 0x161f);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0xf00) {
+            txt_Format(text, 0x1620);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0x3000) {
+            txt_Format(text, 0x1621);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0x1c000) {
+            txt_Format(text, 0x1622);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0xe0000) {
+            txt_Format(text, 0x1623);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 7 << 20) {
+            txt_Format(text, 0x1624);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0x1800000) {
+            txt_Format(text, 0x1625);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+        if (chr->ailments & 0x1e000000) {
+            txt_Format(text, 0x1626);
+            obj = d2_CreateWinText(0, row * 0x18 + 10, text, d2_LastWindow);
+            row++;
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].w = width;
+        }
+    }
+
+    /* page 4: the buttons */
+    if (other != 0) {
         d2_SetForm(win, 4);
-        b5 = d2_GetWinObj(win, 4, io_PrintText(0x1f50, param_1->id));
-    }
-    U_I((unsigned)&d2_ClickedId) = -1;
-    U_I((unsigned)&d2_PointerObj) = -1;
-    for (;;) {
-        if (b3 != -1)
-            d2_SetObjEnabled(b3, 0 < gm_GetGoodsValue((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c));
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            d2_SetViewEnabled(win, 0);
-            if (U_I((unsigned)&d2_PointerObj) == b5) {
-                txt_Format(text, (char *)0x1f51, param_1->id, param_1->id);
-                if (sv_MessageBox(text, 1) != 0) {
-                    cm_SendTakeOverCharacter(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), param_1->netId);
-                    U_I((unsigned)&sv_PopRequest) = 2;
+        takeOverBtn = d2_GetWinObj(win, 4, io_PrintText(0x1f50, chr->id));
+    } else {
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0 && chr->relatives[1] == ((AICHARREC *)ai_Chars)[ai_PlayerId].netId
+            || ((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 1 && chr->relatives[2] == ((AICHARREC *)ai_Chars)[ai_PlayerId].netId) {
+            if (chr->jobId == 0) {
+                if (he_FindEvent(2, 2, chr->id, 0, 0x5e) == 0 && chr->f020 <= chr->w00a + 4) {
+                    if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20) == 0) {
+                        txt_Format(text1, 0x1f4b, chr->id);
+                        txt_Format(text2, 0x1a96);
+                        d2_SetForm(win, 4);
+                        sv_ButtonRow(d2_LastWindow, 0, professionBtn, 2, text1, text2);
+                        giftBtn = professionBtn[0];
+                        professionBtn[0] = professionBtn[1];
+                    }
+                } else if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20) == 0) {
+                    txt_Format(text1, 0x1f4b, chr->id);
+                    d2_SetForm(win, 4);
+                    giftBtn = d2_GetWinObj(win, 4, io_PrintText("%ia[%s]", text1));
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == b3) {
-                if (ai_Unk5c6050((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, param_1) != 0)
-                    d2_SetObjEnabled(b3, 0);
-            } else if (U_I((unsigned)&d2_PointerObj) == b2) {
-                if (ai_Unk5cf260((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, param_1) != 0)
-                    d2_SetObjEnabled(b2, 0);
-            } else if (U_I((unsigned)&d2_PointerObj) == b4) {
-                if (ai_Unk5cf4f0((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, param_1) != 0)
-                    d2_SetObjEnabled(b4, 0);
-            } else if (U_I((unsigned)&d2_PointerObj) == b1) {
-                ai_ShowMissions(param_1->netId);
+            } else if ((chr->powerFlags & 0x10000) == 0) {
+                if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20) == 0) {
+                    txt_Format(text2, 0x1f4b, chr->id);
+                    txt_Format(text1, 0x1a97);
+                    d2_SetForm(win, 4);
+                    sv_ButtonRow(d2_LastWindow, 0, universityBtn, 2, text2, text1);
+                    giftBtn = universityBtn[0];
+                    universityBtn[0] = universityBtn[1];
+                }
+            } else if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x20) == 0) {
+                txt_Format(text1, 0x1f4b, chr->id);
+                d2_SetForm(win, 4);
+                giftBtn = d2_GetWinObj(win, 4, io_PrintText("%ia[%s]", text1));
+            }
+        } else if (((AICHARREC *)ai_Chars)[ai_PlayerId].netId == chr->netId && ai_HasMission(chr->netId)) {
+            d2_SetForm(win, 4);
+            missionBtn = d2_GetWinObj(win, 4, io_PrintText(0x1f49));
+        }
+    }
+
+    d2_ClickedId = -1;
+    d2_PointerObj = -1;
+    do {
+        if (giftBtn != -1) {
+            if (gm_GetGoodsValue(ai_Chars[ai_PlayerId]) <= 0)
+                d2_SetObjEnabled(giftBtn, 0);
+            else
+                d2_SetObjEnabled(giftBtn, 1);
+        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            d2_SetViewEnabled(win, 0);
+            if (d2_PointerObj == takeOverBtn) {
+                txt_Format(text2, 0x1f51, chr->id, chr->id);
+                if (sv_MessageBox(text2, 1) != 0) {
+                    cm_SendTakeOverCharacter(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, chr->netId);
+                    sv_PopRequest = 2;
+                }
+            } else if (d2_PointerObj == giftBtn) {
+                if (ai_GiftWindow(ai_Chars[ai_PlayerId], chr) != 0)
+                    d2_SetObjEnabled(giftBtn, 0);
+            } else if (d2_PointerObj == professionBtn[0]) {
+                if (ai_ChooseProfessionWindow(ai_Chars[ai_PlayerId], chr) != 0)
+                    d2_SetObjEnabled(professionBtn[0], 0);
+            } else if (d2_PointerObj == universityBtn[0]) {
+                if (ai_UniversityWindow(ai_Chars[ai_PlayerId], chr) != 0)
+                    d2_SetObjEnabled(universityBtn[0], 0);
+            } else if (d2_PointerObj == missionBtn) {
+                ai_ShowMissions(chr->netId);
             }
             d2_SetViewEnabled(win, 1);
         }
-        if (sv_RunFrame(ai_Unk5c5310, call_id) == 0)
-            break;
-    }
+    } while (sv_RunFrame(ai_CharInfoPanel, callId) != 0);
     d2_CloseView(win);
 }
 /* 0x5c6050, the gift window "misc\geschenck" 0x62d3fc (1136 B): param_1 = the own character record,
@@ -20907,7 +21095,7 @@ void ai_Unk5c5310(AICHARREC *param_1, int param_2)
    the second button sets 0x6f22a0; returns 1 after a confirm, 0 when the amount is below 1;
    0x4758f0 (win). ROUGH: the float chain of the amount is 0x50a640 / 0x509e60 with the 0.05 factor */
 
-int ai_Unk5c6050(char *param_1, short *param_2)
+int ai_GiftWindow(char *param_1, short *param_2)
 {
     int win;
     int slider;
@@ -20981,7 +21169,7 @@ int ai_Unk5c6050(char *param_1, short *param_2)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5c6050, 0x677c7) == 0)
+        if (sv_RunFrame(ai_GiftWindow, 0x677c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -24243,7 +24431,7 @@ int ai_InterrogationWindow2(int param_1, int param_2)  /* @original: the callers
    request + 4, +0xc = -1, +0x36 = 0x12, +0x58 = param_1 + 4, +0x5c the byte 0x5043d0 (i + 1, 1),
    +0x60 the price) and returns 1; the exit 0x4758f0. */
 
-int ai_Unk5cf260(unsigned short *param_1, unsigned short *param_2)
+int ai_ChooseProfessionWindow(unsigned short *param_1, unsigned short *param_2)
 {
     int rec[0x3e];
     int win;
@@ -24275,7 +24463,7 @@ int ai_Unk5cf260(unsigned short *param_1, unsigned short *param_2)
     }
     ret = 0;
     for (;;) {
-        if (sv_RunFrame(ai_Unk5cf260, U_I((unsigned)&sv_FrameMask)) == 0) {
+        if (sv_RunFrame(ai_ChooseProfessionWindow, U_I((unsigned)&sv_FrameMask)) == 0) {
             d2_CloseView(win);
             return ret;
         }
@@ -24314,7 +24502,7 @@ int ai_Unk5cf260(unsigned short *param_1, unsigned short *param_2)
    the player's character 0x770b84 + U_W (0x6f25b8) * 0x21c, +0x60 = ident[i * 3], +0x64 / +0x65 the two
    bytes of ident[i * 3 + 1] / + 2) and the flag 0x4c4a60 (+0x1c8, 4, 0x10000); the exit 0x4758f0. */
 
-int ai_Unk5cf4f0(int param_1, unsigned short *param_2)
+int ai_UniversityWindow(int param_1, unsigned short *param_2)
 {
     int ident[9];
     int ctrl[4];
@@ -24354,7 +24542,7 @@ int ai_Unk5cf4f0(int param_1, unsigned short *param_2)
     U_I((unsigned)&d2_ClickedId) = -1;
     ret = 0;
     for (;;) {
-        if (sv_RunFrame(ai_Unk5cf4f0, U_I((unsigned)&sv_FrameMask)) == 0) {
+        if (sv_RunFrame(ai_UniversityWindow, U_I((unsigned)&sv_FrameMask)) == 0) {
             d2_CloseView(win);
             return ret;
         }

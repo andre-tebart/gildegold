@@ -198,7 +198,8 @@ typedef struct GMRANK {
 #pragma pack(push, 1)
 /* the calendar record gm_ClockToDate fills (10 bytes) */
 typedef struct GMDATE {
-    unsigned char one;                  /* 0x0, always 1 */
+    char day;                           /* 0x0, the day of the month: 1 from gm_ClockToDate, gm_BirthDate /
+                                           gm_DeathDate pick it (the character info panel prints it signed) */
     char month;                         /* 0x1, the first month of the season: season * 3 + 1 */
     short year;                         /* 0x2, day + 0x578 */
     unsigned char hour;                 /* 0x4 */
