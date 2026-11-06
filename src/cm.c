@@ -5486,13 +5486,14 @@ int cm_ExSpawnCharacter(G17MSG *m, G17STAT *s)
     }
     return 0;
 }
-/* 0x4cbb90, handler of type 0x4a */
+/* 0x4cbb90, message 0x4a (cm_SendFreeObject): frees the object gm_FindObjectInst finds; an object it does not
+   find returns 1 */
 
 int cm_ExFreeObject(G17MSG *m, G17STAT *s)
 {
     char *t;
 
-    t = gm_FindObjectInst(G17_I(*m, 0));
+    t = gm_FindObjectInst(m->freeObject.objId);
     if (t == 0)
         return 1;
     gm_FreeObject(t);
