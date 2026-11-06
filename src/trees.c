@@ -680,7 +680,8 @@ local void scan_tree (s, tree, max_code)
  * Send a literal or distance tree in compressed form, using the codes in
  * bl_tree.
  */
-/* 0x466cc0 */
+/* 0x466cc0, writes a literal or distance tree in compressed form with the codes in bl_tree: runs of a
+   length and the repeat codes (3-6, 3-10 zeros, 11-138 zeros) */
 local void send_tree (s, tree, max_code)
     deflate_state *s;
     ct_data *tree; /* the tree to be scanned */
