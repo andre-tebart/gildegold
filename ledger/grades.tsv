@@ -2234,16 +2234,16 @@ exe	0x004c58a0	cm_SendApplication	cm	byte	readable
 exe	0x004c58e0	cm_SendOfficeRecord	cm	byte	readable		
 exe	0x004c5930	cm_SendDecisionValue	cm	byte	readable		
 exe	0x004c5970	cm_SendCharClear	cm	byte	readable		
-exe	0x004c59b0	cm_SendSetJob	cm	byte	draft		
-exe	0x004c59f0	cm_SendSpawnCharacter	cm	shape	draft		
-exe	0x004c5a70	cm_SendFreeObject	cm	byte	draft		
+exe	0x004c59b0	cm_SendSetJob	cm	byte	readable		
+exe	0x004c59f0	cm_SendSpawnCharacter	cm	shape	readable		
+exe	0x004c5a70	cm_SendFreeObject	cm	byte	readable		
 exe	0x004c5aa0	cm_SendChat	cm	byte	readable		
 exe	0x004c5ae0	cm_RequestCreateGeb	cm	shape	readable		
-exe	0x004c5b90	cm_SendCharHalt	cm	byte	draft		
-exe	0x004c5bc0	cm_SendObjCell	cm	byte	draft		
-exe	0x004c5c40	cm_SendCutEntry	cm	shape	draft		
-exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	shape	draft		
-exe	0x004c5d00	cm_SendDamage	cm	byte	draft		
+exe	0x004c5b90	cm_SendCharHalt	cm	byte	readable		
+exe	0x004c5bc0	cm_SendObjCell	cm	byte	readable		
+exe	0x004c5c40	cm_SendCutEntry	cm	shape	readable		
+exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	shape	readable		
+exe	0x004c5d00	cm_SendDamage	cm	byte	readable		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable		
 exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
 exe	0x004c5dc0	cm_SendFightCommand	cm	draft	readable	deep	
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
