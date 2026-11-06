@@ -6915,15 +6915,10 @@ typedef struct LCDUELSIDE {             /* one side of a dice duel: am.h AGDUEL'
    printed ("$C$Z%s"), then the side's dice in rows of eight from (0x1c, 0x1d), 0x3a apart (the second row at
    y 0x46): the thrown values (the pictures 0x75b .. 0x760) for the player's character (kind 6), the hidden die
    0x761 for an opponent; then, in each branch, one more random die cell 0x75b + util_Random(6)
-   @deep Read whole against the original: the caption, both dice loops (thrown values t[i]+0x75a for the
-   player's kind 6, 0x761 otherwise), the row wrap (i % 8, y = i > 7 ? 0x46 : 0x1d) and the random cell,
-   which sits in each branch (the original's branch 1 ends 'mov ecx,[d2_LastWindow]; push ecx; jmp' into
-   branch 2's tail at 'push 6', now the same in ours). Left is allocation: the original keeps y in ebx and
-   computes the ternary straight into it ('xor ebx,ebx; cmp esi,7; setle bl; dec ebx; and ebx,0x29; add
-   ebx,0x1d'), ours computes it in a scratch register and copies ('setle al ... add eax,0x1d; cmp esi,ecx;
-   mov ebx,eax'), with x/y/side in ebp/ebx/edi rotated (push order ebx,ebp,esi,edi vs ours
-   ebp,edi,esi,ebx). Tried: one shared final call (moves the tail, worse), other local orders, (i > 7 ?
-   0x29 : 0) + 0x1d */
+   @deep Shape (order only): y = 0x1d is set in each branch (VC6 hoists it, as in the byte-matched
+   ai_DrawDuelThrow), the random cell sits in each branch. Left: the original schedules 'mov edx,[edi]'
+   before 'mov ebp,0x1c' (x), ours 'mov ebp,0x1c' first. Tried x in the branches too (draft), x before i,
+   both in the branches (the same order hunk) */
 
 void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
 {
@@ -6934,9 +6929,9 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
     d2_RemoveWindowObjects(d2_LastWindow, 1);
     io_PrintText("$C$Z%s", caption);
     i = 0;
-    y = 0x1d;
     x = 0x1c;
     if (side->ch->kind == 6) {
+        y = 0x1d;
         while (i < side->n) {
             d2_WinOpenPic(x, y, side->t[i] + 0x75a, d2_LastWindow);
             i++;
@@ -6948,6 +6943,7 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
         }
         d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
     } else {
+        y = 0x1d;
         while (i < side->n) {
             d2_WinOpenPic(x, y, 0x761, d2_LastWindow);
             i++;
