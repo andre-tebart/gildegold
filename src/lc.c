@@ -12,7 +12,10 @@
    list), the money messenger sends AIMSG.payment and finds the running payment event by AIJOB.bldId / payer.
    The town map window (ai_OpenTownMap, ai_BuildTownMap, its per-frame ai_UpdateTownMap with the drag / key scroll, and
    its close) keeps its record as LCMAPWIN (lc.h, the marks LCMAPMARK; ai_MapPick and rt hand it in); the family tree window draws its boxes as LCFAMILYBOX
-   and opens the character info panel ai_CharInfoPanel.
+   and opens the character info panel ai_CharInfoPanel. The staff books (ai_PersonnelBook, ai_MercenaryBook,
+   ai_HelperBook) keep their rows as G9DOMIZILROW and post the hire requests 6 / 7 as AIMSG.hireTitle / hireRows /
+   hireMaster (the running event's AIJOB.hireTitle); the building's cart list (ai_ShowBldCarts / ai_UpdateBldCarts)
+   keeps its carts in ai_BldCarts, and the transport window buys and sells carts (ai_BuyCartWindow, ai_SellCarts).
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS and LCRANSOMEVENT (he.c's

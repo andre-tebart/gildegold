@@ -4369,19 +4369,19 @@ exe	0x005a9dd0	ai_DomizilMessagePlace	lc	byte	readable
 exe	0x005a9e40	ai_DomizilMessage12	lc	byte	readable		
 exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	draft	draft		
 exe	0x005a9f10	ai_DomizilGoodInRange	lc	shape	readable		
-exe	0x005a9f80	ai_Unk5a9f80	lc	draft	draft		
-exe	0x005aa0d0	ai_Unk5aa0d0	lc	draft	draft		
-exe	0x005aa1f0	ai_FillPersonnelRow	lc	draft	readable	deep	
+exe	0x005a9f80	ai_AskBonusAmount	lc	draft	draft		
+exe	0x005aa0d0	ai_CreatePersonnelRow	lc	draft	draft		
+exe	0x005aa1f0	ai_FillPersonnelRow	lc	byte	readable		
 exe	0x005aa4b0	ai_DomizilFreeRow	lc	byte	readable		
-exe	0x005aa520	ai_Unk5aa520	lc	draft	draft		
-exe	0x005aa700	ai_Unk5aa700	lc	draft	draft		
-exe	0x005aa9a0	ai_Unk5aa9a0	lc	draft	draft		
-exe	0x005aab80	ai_PersonnelBook	lc	draft	draft		
-exe	0x005ac110	ai_MercenaryBook	lc	draft	draft		
-exe	0x005ad000	ai_Unk5ad000	lc	draft	draft		
-exe	0x005ad150	ai_PersonnelBookWindow	lc	draft	draft		
-exe	0x005ae240	ai_Unk5ae240	lc	draft	draft		
-exe	0x005ae570	ai_Unk5ae570	lc	draft	draft		
+exe	0x005aa520	ai_FillVacantPersonnelRow	lc	byte	readable		
+exe	0x005aa700	ai_ShowBldCarts	lc	draft	readable	deep	
+exe	0x005aa9a0	ai_UpdateBldCarts	lc	draft	readable	deep	
+exe	0x005aab80	ai_PersonnelBook	lc	draft	readable	deep	
+exe	0x005ac110	ai_MercenaryBook	lc	draft	readable	deep	
+exe	0x005ad000	ai_AskHelperBonus	lc	draft	draft		
+exe	0x005ad150	ai_HelperBook	lc	draft	readable	deep	
+exe	0x005ae240	ai_BuyCartWindow	lc	shape	readable		
+exe	0x005ae570	ai_SellCarts	lc	byte	readable		
 exe	0x005ae6b0	ai_Unk5ae6b0	lc	draft	draft		
 exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
 exe	0x005ae8e0	ai_CartAtBuilding	lc	draft	draft		
