@@ -267,17 +267,6 @@ typedef struct SVCHARREC {
     char pad1b2[0x16];
     unsigned int flags;                 /* +0x1c8, AICHAR.flags1c8 (0x800: not available for the member list) */
 } SVCHARREC;
-typedef struct SVMEMBERROW {            /* 0x28 bytes, a row of the member list (32 rows at 0x75f280) */
-    int check;                          /* +0x00, the selection button (the character's portrait) */
-    int frame;                          /* +0x04, the frame picture 0x5dc */
-    int icon[2];                        /* +0x08, the two state pictures (sv_CharStateIcons), -1 = none */
-    int chr;                            /* +0x10, the character index, 0xffff = a free row */
-    int text;                           /* +0x14, the name / health text */
-    int window;                         /* +0x18, the child window with the two bars, -1 = none */
-    int cleared1c;                      /* +0x1c, cleared when the row is made (its use is open) */
-    int selected;                       /* +0x20, the character's selection at the last update */
-    int pad24;
-} SVMEMBERROW;
 #pragma pack(pop)
 extern SVPLATE sv_NamePlates[0x20];
 

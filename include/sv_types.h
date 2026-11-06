@@ -1,4 +1,4 @@
-/* The weather record of sv.c (SVWEATHER, sv_Weather), the rubber band (SVBAND), the book (SVBOOK) and the speech bubble record (SVBUBBLE) for the units that declare it without the rest of sv.h:
+/* The weather record of sv.c (SVWEATHER, sv_Weather), the rubber band (SVBAND), the book (SVBOOK), the speech bubble record (SVBUBBLE) and the member list row (SVMEMBERROW) for the units that declare it without the rest of sv.h:
    types only. sv.h includes it. */
 #ifndef SV_TYPES_H
 #define SV_TYPES_H
@@ -40,5 +40,17 @@ typedef struct SVBUBBLE {               /* 0x10c bytes, a speech bubble over a c
     struct CHARACTER *ch;               /* +0x008, the character it belongs to, 0 = free */
     char name[0x100];                   /* +0x00c, its own text, "" = the d2_Strings line */
 } SVBUBBLE;
+
+typedef struct SVMEMBERROW {            /* 0x28 bytes, a row of the member list (32 rows at 0x75f280) */
+    int check;                          /* +0x00, the selection button (the character's portrait) */
+    int frame;                          /* +0x04, the frame picture 0x5dc */
+    int icon[2];                        /* +0x08, the two state pictures (sv_CharStateIcons), -1 = none */
+    int chr;                            /* +0x10, the character index, 0xffff = a free row */
+    int text;                           /* +0x14, the name / health text */
+    int window;                         /* +0x18, the child window with the two bars, -1 = none */
+    int cleared1c;                      /* +0x1c, cleared when the row is made (its use is open) */
+    int selected;                       /* +0x20, the character's selection at the last update */
+    int pad24;
+} SVMEMBERROW;
 
 #endif
