@@ -31,6 +31,8 @@
    0x6f244c and am's 0x6f2464; only this unit reads it).
    Open: data: 0x5f3418 d3t_BoxCornerIdx, owner di_input or d3_tools (only ai_GameFrame writes it, -1; it lies
    between di_input's literals and d3_tools' d3t_SunFadeStart, before four corner vectors), named in main.c's gap block.
+   Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
+   ai_EnterBuilding writes it), named in main.c's gap block.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h
