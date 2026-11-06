@@ -2811,3 +2811,4 @@
 2026-11-06T22:01:03 0x004c6a60 data ai_Unk4c6a60 -> cm_ExNetFlags by:main why:0x4c6a60 is the cm_Handlers entry of message type 4: it ORs the message's first byte into cm_NetFlags (0x6f2594, the net flags cm_CutsceneReady and 0x4c7e90 read: bit 3 the local run has the player's character, bit 4 the other) and marks s->state = 1
 2026-11-06T22:02:36 0x004c6a90 data ai_Unk4c6a90 -> cm_ExLoadSize by:main why:handler of message 8, the size cm_SendLoadSize sends: allocates cm_LoadBuf of it (cm_LoadSize) and resets cm_LoadReceived
 2026-11-06T22:03:09 0x004c6ad0 data ai_Unk4c6ad0 -> cm_ExLoadBlock by:main why:handler of message 9, the 0x80 bytes cm_SendLoadBlock sends: appends them to cm_LoadBuf at cm_LoadReceived
+2026-11-06T22:04:18 0x004c6b20 data ai_Unk4c6b20 -> cm_ExCreateBuilding by:main why:handler of message 10, the G17BUILDMSG cm_SendMessage10 sends: resolves the owner id, creates the building (gm_CreateBuilding) with its flags and 0x30-byte block
