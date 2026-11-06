@@ -85,6 +85,7 @@ extern int d2_CutsceneActive;                               /* 0x6ed9d4 */
 extern char * ai_KindBChars[8];                             /* 0x6f1c04 */
 extern unsigned char init_TextureSet;                       /* 0x6f1c24 */
 extern int d3_QuadTree;                                     /* 0x6f1c28 */
+extern int init_TerrainDivide;                              /* 0x6f1c2c, nonzero: the game frame divides the terrain once */
 extern int init_TownSoundCount;                             /* 0x6f1c34 */
 extern int ai_FrameWait;                                    /* 0x6f22bc */
 extern int main_StartHouseCheat;                            /* 0x6f2430 */

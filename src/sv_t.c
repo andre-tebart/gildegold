@@ -6958,7 +6958,7 @@ void sv_ReleaseNamePlates(void); int sv_RegisterNamePlate(); int ai_OpenTranspor
 int ai_ProductionWindow(); void ai_UnlockRoomWindow(); void ai_AlchemistResearchWindow(); void ai_AlchemistWindow();
 
 /* 0x5821d0, the contacts of the alchemist's laboratory (the room kind 0x24b of the enter-building driver
-   ai_Unk59e420): rec = the building, room = the room object. The name plates are released once, then each frame
+   ai_EnterBuilding): rec = the building, room = the room object. The name plates are released once, then each frame
    (pump 0x67fff, the right button leaves): with the building permission 0x200 the plates "contact_REZEPTBUCH"
    (txt 0x404e, 0x16) and "contact_PRODUKTION_ALCHIMIST" (txt 0x1f76, 0x13), with 0x400 "contact_CONTRACT"
    (txt 0x4038, 0xe), "contact_LAGER" (0xe), "contact_TRANSPORT" (0x15) and "contact_ALCHIMISTENVERTRAG"
@@ -7075,7 +7075,7 @@ void ai_UnlockRoomWindow(AIBLD *rec, AIOBJ *room)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x582560, the contacts of the cannon room (the room kind 0x256 of the enter-building driver ai_Unk59e420):
+/* 0x582560, the contacts of the cannon room (the room kind 0x256 of the enter-building driver ai_EnterBuilding):
    rec = the building, room = the room object. The name plates are released once, then each frame (pump 0x67fff,
    the right button leaves): with the building permission 0x400 the plate "contact_KANONE" (txt 0x405d, 0x16) is
    registered; any click in a locked room opens ai_UnlockRoomWindow, a click on the cannon the cannon scene */
@@ -7098,7 +7098,7 @@ void ai_CannonContact(AIBLD *rec, AIOBJ *room)
             ai_CannonScene((char *)rec);
     }
 }
-/* 0x582600, the contacts of the cabinet (kabinett, the room kind 0x266 of the enter-building driver ai_Unk59e420):
+/* 0x582600, the contacts of the cabinet (kabinett, the room kind 0x266 of the enter-building driver ai_EnterBuilding):
    rec = the building, room = the room object. The name plates are released once, then each frame (pump 0x67fff,
    the right button leaves): with the building permission 0x400 the plates "contact_VERGIFTEN" (txt 0x3ffa),
    "contact_SPIONE_AUSSCHALTEN" (txt 0x401b), "contact_SCHLEICHENDE_LAEHMUNG" (txt 0x402a) and

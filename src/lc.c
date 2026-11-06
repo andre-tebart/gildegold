@@ -150,8 +150,8 @@ extern int di_MaxX;
 extern int di_MaxY;
 extern int di_MinX;
 extern int di_MinY;
-extern GAPDATA full_data_5f3418[];
-extern GAPDATA full_data_6f1c2c[];
+extern int d3t_BoxCornerIdx;  /* 0x5f3418 (main.c gap block) */
+extern int init_TerrainDivide;  /* 0x6f1c2c (f3init.h) */
 extern int sv_HoverBuilding;  /* 0x6f22f4 (sv.c) */
 extern unsigned char snd_AmbientOn;     /* 0x6f0b60, 1: ambient sounds on */
 extern void sv_UpdateClock(void);
@@ -3536,10 +3536,10 @@ void ai_ConstructionWindow(void)
 int ai_MapPick(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
-int ai_Unk5bc110(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
+int ai_ChooseCoatOfArms(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
-int gm_IsType10(unsigned char *b); void ai_Unk59e420(); void ai_Unk59ee40(); void ai_Unk59a800();
+int gm_IsType10(unsigned char *b); void ai_EnterBuilding(); void ai_EnterOwnBuilding(); void ai_MarketStandListener();
 int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
@@ -3709,11 +3709,11 @@ void ai_GameFrame(void)
     int s3;
 
     n = gm_ClockSeason((void *)(unsigned)&ai_Time);
-    U_I((unsigned)&full_data_5f3418) = -1;
+    d3t_BoxCornerIdx = -1;
     init_AfterTownLoad();
-    if (U_I((unsigned)&full_data_6f1c2c) != 0) {
+    if (init_TerrainDivide != 0) {
         d3fl_MakeDivide((int)d3_Terrain);
-        U_I((unsigned)&full_data_6f1c2c) = 0;
+        init_TerrainDivide = 0;
     }
     s0 = U_I((unsigned)&di_MaxX);
     s1 = U_I((unsigned)&di_MaxY);
@@ -3728,7 +3728,7 @@ void ai_GameFrame(void)
                 *(unsigned short *)(p - 2) != U_W((unsigned)&ai_PlayerId) &&
                 (*p == 6 || *p == 7 || *p == 5) &&
                 U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87) < *(unsigned int *)(p + 2)) {
-                ai_Unk5bc110();
+                ai_ChooseCoatOfArms();
                 break;
             }
         }
@@ -3801,13 +3801,13 @@ void ai_GameFrame(void)
                 if (v == 0 &&
                     (v = ai_ScriptQuery(0x19, U_I((unsigned)&sv_SelectedObject), 0,
                                       *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29)), v == 1))
-                    ai_Unk59e420(U_I((unsigned)&sv_SelectedObject), *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29));
+                    ai_EnterBuilding(U_I((unsigned)&sv_SelectedObject), *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29));
             } else {
-                ai_Unk59ee40(U_I((unsigned)&sv_SelectedObject));
+                ai_EnterOwnBuilding(U_I((unsigned)&sv_SelectedObject));
             }
         }
         if (U_I((unsigned)&ai_MarketBuilding) != 0)
-            ai_Unk59a800(U_I((unsigned)&ai_MarketBuilding));
+            ai_MarketStandListener(U_I((unsigned)&ai_MarketBuilding));
         /* 0x591986 .. 0x591a14: the object the info panel selected resolves here, before the frame is pumped:
            without a scene record the camera is focused on it (0x527840) and the panel flag dropped; with one the
            object takes the record word (+0x29) and then, by its +0x5a bit 0 / a home type / the type 0x10, the
@@ -3826,9 +3826,9 @@ void ai_GameFrame(void)
                     if (*(int *)(p + 0x61) != 0 && gm_IsType10((unsigned char *)p) == 0)
                         sv_CameraToObject(p);
                     if (gm_IsHomeType(p) != 0)
-                        ai_Unk59ee40((unsigned char *)p);
+                        ai_EnterOwnBuilding((unsigned char *)p);
                     else if (gm_IsType10((unsigned char *)p) == 0)
-                        ai_Unk59e420((unsigned char *)p, *(unsigned short *)(p + 0x29));
+                        ai_EnterBuilding((unsigned char *)p, *(unsigned short *)(p + 0x29));
                     else {
                         sv_FlyCameraToObject(p);
                         U_I((unsigned)&sv_PanelFlag) = 0;
@@ -5908,7 +5908,7 @@ int ai_FeastWindow(); int ai_DenounceWindow(); void sv_FitForm(int f); void sv_B
 int ai_AmountRowStatus(); int ai_AmountRow(); short * gm_FindChar(int id); int sv_CheckMoney();
 int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched ai_TransportOrderDue), against cm.h's void (unsigned char, char *) view */ int cm_SendRelations(int a, int b, int c, int d); void cm_SendMoneyDelta(int a, int b); void d2_SetObjEnabled();
 
-/* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_Unk59e420; the feast window
+/* 0x5966f0, the contact listener of the residence's social room (room kind 0x17 in ai_EnterBuilding; the feast window
    it opens is "locations\wohnsitz\fest"): it releases the name plates and pumps the frame (sv_RunFrame, this, mask
    0x67fff) while the screen stays on top; every frame it registers the three plates contact_FESTGEBEN (text
    txt_Ptrs[0x1766], throw a feast), contact_KAMPF (text 0x16ae, the brawl) and contact_ANSCHWAERZEN (text 0x175e,
@@ -7674,7 +7674,7 @@ void ai_MarketStandWindow(AIBLD *bld, int kind)
    the two "SCHWARZES_BRETT" contacts and "ob_TRIBUENE" open 0x5b5690 / 0x5b5a20; a market fleck needs its
    object +0x1f8 -> +0x200 and leaves 0x59a710 (that, 0x95) */
 
-void ai_Unk59a800(int param_1)
+void ai_MarketStandListener(int param_1)
 {
     char *fleck1 = 0;
     char *fleck2 = 0;
@@ -9355,7 +9355,7 @@ out:
    0x43db30 (3); on exit 0x52adb0 / 0x52ae40, 0x7662c0 = 0, 0x4c2c00, 0x4478e0, the globals cleared, 0x513740,
    the saved view restored and "GebaeudeVerlassen_s" */
 
-void ai_Unk59e420(unsigned char *param_1, int param_2)
+void ai_EnterBuilding(unsigned char *param_1, int param_2)
 {
     int i;
     unsigned short *room;
@@ -9370,7 +9370,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
         return;
     }
     sv_ResetScreenClip();
-    sv_RunFrame(ai_Unk59e420, 0x20007);
+    sv_RunFrame(ai_EnterBuilding, 0x20007);
     U_I((unsigned)&sv_SceneEventTime) = 0;
     sv_ResetSelection();
     sv_ClearSelection();
@@ -9500,7 +9500,7 @@ void ai_Unk59e420(unsigned char *param_1, int param_2)
                 d3_DeflateScene(3);
             }
         }
-        if (sv_RunFrame(ai_Unk59e420, 0x67fff) == 0) {
+        if (sv_RunFrame(ai_EnterBuilding, 0x67fff) == 0) {
             sv_ResetSelection();
             sv_ClearSelection();
             U_I((unsigned)&sv_SelectedChar) = 0;
@@ -9536,7 +9536,7 @@ void ai_GraveyardTradeContact(char *rec);
    0x1e 0x593b00 / 0x4bcbe0 (param_1 + 0x71), 0x1f 0x593ca0, 0x20 0x593960, 0x27 0x594e50, 0x47 0x5950e0,
    0x48 .. 0x4a 0x586840, 0x4e .. 0x50 0x5d9c30, default 0x58f620; the exit clears the record, the sound and
    view state (0x4c2c00 / 0x5136b0 / 0x43db30 / 0x4478e0 / 0x513740) */
-void ai_Unk59ee40(unsigned char *param_1)
+void ai_EnterOwnBuilding(unsigned char *param_1)
 {
     unsigned short *room;
     int idx;
@@ -17005,7 +17005,7 @@ void ai_FreePicture(void)
 }
 /* 0x5bc110, a window "0x62d0b0" (784 B, ROUGH SKELETON): an 0xac-byte frame; the body is a comment */
 
-int ai_Unk5bc110(void)
+int ai_ChooseCoatOfArms(void)
 {
     /* ROUGH SKELETON: the window "0x62d0b0" and the 0xac-byte frame */
     return 0;

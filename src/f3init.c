@@ -351,6 +351,7 @@ extern char ai_PlayerSlots[4][0x2f4];      /* 0x7e3f40, the player slots */
 extern int cm_NetFlags;  /* 0x6f2594 */
 unsigned char init_TextureSet = 0;  /* 0x6f1c24 */
 int d3_QuadTree = 0;  /* 0x6f1c28 */
+int init_TerrainDivide = 0;  /* 0x6f1c2c, nonzero: ai_GameFrame divides the terrain (d3fl_MakeDivide) at the game start and clears it */
 int init_TownSoundCount = 0;  /* 0x6f1c34 */
 int ai_FrameWait = 0;  /* 0x6f22bc */
 int main_StartHouseCheat = 0;  /* 0x6f2430, no writer in the exe: nonzero gives the first kind 6 character its start house ( */
