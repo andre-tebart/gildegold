@@ -128,6 +128,15 @@ extern LCPRODCOL ai_ProdColumns[16];    /* 0x6f5320 */
 extern int ai_ProdSelectedInput;        /* 0x6f5a60, the input goods picked by a click on a column's input picture, 0 = none
                                            (ai_ProductionGoodsWindow; LCPRODCOL.selected marks it) */
 extern int ai_BauplatzCount;            /* 0x6f2688 */
+extern int ai_DragSavedMaxY;            /* 0x6f268c, the mouse bounds kept while the town map is dragged */
+extern int ai_DragSavedMinY;            /* 0x6f2690 */
+extern int ai_DragSavedMaxX;            /* 0x6f2698 */
+extern int ai_DragSavedMinX;            /* 0x6f269c */
+extern int ai_DragScrollX;              /* 0x6f26a4, the map window's scroll when the drag began */
+extern int ai_DragScrollY;              /* 0x6f26a8 */
+extern int ai_DragStartX;               /* 0x6f26b4, the mouse position the drag began at */
+extern int ai_DragStartY;               /* 0x6f26b8 */
+extern int ai_Dragging;                 /* 0x6f26bc, 1 while the town map is dragged */
 extern int *ai_PlacementSites;          /* 0x6f26b0, the candidate site list of the running building placement (the map window marks each entry) */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */

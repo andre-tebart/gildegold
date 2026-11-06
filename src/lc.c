@@ -690,15 +690,6 @@ extern int di_MaxX;
 extern int di_MaxY;
 extern int di_MinX;
 extern int di_MinY;
-extern GAPDATA full_data_6f268c[];
-extern GAPDATA full_data_6f2690[];
-extern GAPDATA full_data_6f2698[];
-extern GAPDATA full_data_6f269c[];
-extern GAPDATA full_data_6f26a4[];
-extern GAPDATA full_data_6f26a8[];
-extern GAPDATA full_data_6f26b4[];
-extern GAPDATA full_data_6f26b8[];
-extern GAPDATA full_data_6f26bc[];
 extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0, ch.h's CHARACTER *ch_List[CH_MAX] */
 extern int d2_PointerObj;
 extern int ai_DragWindow;
@@ -14589,42 +14580,42 @@ int ai_Unk5a79e0(int rec)
     int y;
 
     if (*(int *)(((unsigned)&dm_L + 0x28)) == 0) {
-        if (*(int *)((unsigned)&full_data_6f26bc) != 0) {
-            *(int *)((unsigned)&di_MaxY) = *(int *)((unsigned)&full_data_6f268c);
-            *(int *)((unsigned)&di_MinX) = *(int *)((unsigned)&full_data_6f269c);
-            *(int *)((unsigned)&di_MaxX) = *(int *)((unsigned)&full_data_6f2698);
-            *(int *)((unsigned)&full_data_6f26b4) = 0;
-            *(int *)((unsigned)&full_data_6f26b8) = 0;
-            *(int *)((unsigned)&di_MinY) = *(int *)((unsigned)&full_data_6f2690);
+        if (ai_Dragging != 0) {
+            *(int *)((unsigned)&di_MaxY) = ai_DragSavedMaxY;
+            *(int *)((unsigned)&di_MinX) = ai_DragSavedMinX;
+            *(int *)((unsigned)&di_MaxX) = ai_DragSavedMaxX;
+            ai_DragStartX = 0;
+            ai_DragStartY = 0;
+            *(int *)((unsigned)&di_MinY) = ai_DragSavedMinY;
             *(int *)((unsigned)&di_Absolute) = 1;
             di_SetMousePos((short)*(int *)((unsigned)&d2_MouseX), (short)*(int *)((unsigned)&d2_MouseY));
-            *(int *)((unsigned)&full_data_6f26bc) = 0;
+            ai_Dragging = 0;
             return 0;
         }
     } else {
-        if (*(int *)((unsigned)&full_data_6f26bc) == 0) {
-            *(int *)((unsigned)&full_data_6f26b4) = (short)*(int *)((unsigned)&dm_L);
+        if (ai_Dragging == 0) {
+            ai_DragStartX = (short)*(int *)((unsigned)&dm_L);
             *(int *)((unsigned)&di_Absolute) = 0;
-            *(int *)((unsigned)&full_data_6f26b8) = (short)*(int *)(((unsigned)&dm_L + 0x2));
-            *(int *)((unsigned)&full_data_6f26bc) = 1;
-            *(int *)((unsigned)&full_data_6f26a4) = *(int *)(rec + 0x258);
-            *(int *)((unsigned)&full_data_6f26a8) = *(int *)(rec + 0x248);
-            *(int *)((unsigned)&full_data_6f2698) = *(int *)((unsigned)&di_MaxX);
-            *(int *)((unsigned)&full_data_6f268c) = *(int *)((unsigned)&di_MaxY);
-            *(int *)((unsigned)&full_data_6f269c) = *(int *)((unsigned)&di_MinX);
-            *(int *)((unsigned)&full_data_6f2690) = *(int *)((unsigned)&di_MinY);
-            *(int *)((unsigned)&di_MinX) = *(int *)((unsigned)&full_data_6f26b4) - *(int *)((unsigned)&full_data_6f26a4);
-            *(int *)((unsigned)&di_MaxX) = *(int *)((unsigned)&ai_MapSize) - *(int *)((unsigned)&full_data_6f26a4) - 0x200 + *(int *)((unsigned)&full_data_6f26b4);
-            *(int *)((unsigned)&di_MinY) = *(int *)((unsigned)&full_data_6f26b8) - *(int *)((unsigned)&full_data_6f26a8);
-            *(int *)((unsigned)&di_MaxY) = ai_MapHeight - *(int *)((unsigned)&full_data_6f26a8) - 0x168 + *(int *)((unsigned)&full_data_6f26b8);
+            ai_DragStartY = (short)*(int *)(((unsigned)&dm_L + 0x2));
+            ai_Dragging = 1;
+            ai_DragScrollX = *(int *)(rec + 0x258);
+            ai_DragScrollY = *(int *)(rec + 0x248);
+            ai_DragSavedMaxX = *(int *)((unsigned)&di_MaxX);
+            ai_DragSavedMaxY = *(int *)((unsigned)&di_MaxY);
+            ai_DragSavedMinX = *(int *)((unsigned)&di_MinX);
+            ai_DragSavedMinY = *(int *)((unsigned)&di_MinY);
+            *(int *)((unsigned)&di_MinX) = ai_DragStartX - ai_DragScrollX;
+            *(int *)((unsigned)&di_MaxX) = *(int *)((unsigned)&ai_MapSize) - ai_DragScrollX - 0x200 + ai_DragStartX;
+            *(int *)((unsigned)&di_MinY) = ai_DragStartY - ai_DragScrollY;
+            *(int *)((unsigned)&di_MaxY) = ai_MapHeight - ai_DragScrollY - 0x168 + ai_DragStartY;
         }
-        x = (int)((short)*(int *)((unsigned)&dm_P) - *(int *)((unsigned)&full_data_6f26b4));
-        y = (int)((short)*(int *)(((unsigned)&dm_P + 0x2)) - *(int *)((unsigned)&full_data_6f26b8));
-        if (*(int *)(rec + 0x258) != x + *(int *)((unsigned)&full_data_6f26a4) ||
-            *(int *)(rec + 0x248) != *(int *)((unsigned)&full_data_6f26a8) + y)
+        x = (int)((short)*(int *)((unsigned)&dm_P) - ai_DragStartX);
+        y = (int)((short)*(int *)(((unsigned)&dm_P + 0x2)) - ai_DragStartY);
+        if (*(int *)(rec + 0x258) != x + ai_DragScrollX ||
+            *(int *)(rec + 0x248) != ai_DragScrollY + y)
             changed = 1;
-        *(int *)(rec + 0x258) = x + *(int *)((unsigned)&full_data_6f26a4);
-        *(int *)(rec + 0x248) = *(int *)((unsigned)&full_data_6f26a8) + y;
+        *(int *)(rec + 0x258) = x + ai_DragScrollX;
+        *(int *)(rec + 0x248) = ai_DragScrollY + y;
     }
     return changed;
 }
@@ -25524,7 +25515,16 @@ char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the a
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
+int ai_DragSavedMaxY = 0;  /* 0x6f268c, the mouse bounds di_MaxY / di_MinY / di_MaxX / di_MinX kept while the town map is */
+int ai_DragSavedMinY = 0;  /* 0x6f2690, dragged with the right button (ai_DragTownMap) */
+int ai_DragSavedMaxX = 0;  /* 0x6f2698 */
+int ai_DragSavedMinX = 0;  /* 0x6f269c */
+int ai_DragScrollX = 0;  /* 0x6f26a4, the map window's scroll when the drag began */
+int ai_DragScrollY = 0;  /* 0x6f26a8 */
 int *ai_PlacementSites = 0;  /* 0x6f26b0, the candidate site list of the running building placement (lc_GebaeudeAusrichten points it at its sites[]); the map window marks each entry */
+int ai_DragStartX = 0;  /* 0x6f26b4, the mouse position (dm_L) the drag began at */
+int ai_DragStartY = 0;  /* 0x6f26b8 */
+int ai_Dragging = 0;  /* 0x6f26bc, 1 while the town map is dragged */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
 LCPRODROW ai_ProdRows[4] = { 0 };  /* 0x6f4f00 */
