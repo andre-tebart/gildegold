@@ -26104,15 +26104,17 @@ void he_CircusShowIncome(int ev, int n)
         }
     }
 }
-/* 0x575150, the alloc of the event 0xa3: state 0, the start and the due clock +0x44 / +0x52 = now, the due clock plus random (2)
-   hours and random (0x1e) minutes (0x4fe140) */
+/* 0x575150, the alloc of the event 0xa3: stage 0, start and end = now, the end plus random (2) hours and random (0x1e)
+   minutes (gm_AddTime) */
 
 void he_AllocPettyLoss(int ev)
 {
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    HM_I(ev, 0x70) = 0;
-    gm_AddTime(ev + 0x52, util_Random(2) & 0xffff, util_Random(0x1e) & 0xffff, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->start = ai_Time;
+    e->end = ai_Time;
+    e->stage = 0;
+    gm_AddTime(&e->end, util_Random(2) & 0xffff, util_Random(0x1e) & 0xffff, 0);
 }
 /* 0x5751e0, the run of the event 0xa3 (alloc he_AllocPettyLoss): -1 / -2, a stage above 3 or no character netId
    (gm_FindChar): freed. Else the stage advances and the next run is due in 3 + random(3) hours; a character with money
