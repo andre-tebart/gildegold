@@ -16187,26 +16187,14 @@ typedef struct G9DOMIZILROW {           /* a row of the Domizil personnel book: 
    icon, its name in the first text control, the opinion slider; a worker without a job (jobId 0) gets the status
    line by the owner's title against the building type's two job titles (AIBTYPE.title2 / title): with v174 the
    texts 0x1a39 / 0x1a3a after it, else 0x1a3b / 0x1a3c; with bars the skills [3] / [2] as value bars; the slider
-   shows the player's opinion of the owner (gm_Opinion, -128 .. 127 as 0 .. 100)
-   @deep Read whole against the original (219 instructions): the type record by the worker's building kind
-   (AIBTYPE.title / title2 at 0x22f / 0x230), the portrait icon, the name text (centred, width 0xa0), the
-   opinion slider (click-disabled), the row state, the picture's user record, the status line (v174 with
-   0x1a39 / 0x1a3a by '%i %s', else 0x1a3b / 0x1a3c by '%s', only for a jobless worker, tested v first then
-   jobId as the original), the two skill bars (skills[3] / skills[2]) and the gm_Opinion slider value;
-   every other instruction is identical. Remaining (fpu 1 + M10 at +0x291): the slider value (v + 128.0) *
-   100.0 * (1.0 / 255.0) - our VC6 folds the two constants into one fmul 0.392 in every spelling tried (/
-   255.0, / 255, * (1.0 / 255), 100.0 * (..), the call inline, long double constants); the original
-   multiplies by 100.0 and then by the pooled 1/255 (0x5ee0e0, which gv_LeasePrice and
-   ai_PersonnelBookWindow share). (references: M10 at +0x291: our constant 0.39215686274509803
-   (__real@3fd9191919191919) where the original's field refers to 100.0 at 0x5eba38, explained: the M10 is
-   one constant folded: VC6 folds our 100.0 * (1.0 / 255.0) into 0.392 (100/255) where the original keeps
-   the two multiplies (fmul 100.0; fmul 1/255); the value computed is the same opinion percentage) */
+   shows the player's opinion of the owner (gm_Opinion, -128 .. 127 as 0 .. 100) */
 
 void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
 {
     char text[128];
     AIBTYPE *bt;
     int v;
+    double f;
 
     bt = &((AIBTYPE *)ai_BTypes)[ch->bld->kind];
     d2_SetForm(row->view, 3);
@@ -16243,7 +16231,8 @@ void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
     }
     if (row->slider != -1) {
         v = gm_Opinion(ai_PlayerId, row->ch->id);
-        d2_SetObjValue(row->slider, 0, 100, (int)((v + 128.0) * 100.0 * (1.0 / 255.0)));
+        f = (v + 128.0) * 100.0;
+        d2_SetObjValue(row->slider, 0, 100, (int)(f / 255.0));
     }
 }
 
