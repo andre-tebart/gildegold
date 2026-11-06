@@ -59,6 +59,7 @@ extern struct AIBLD *he_PatrolBuilding;      /* 0x6f2638, the building kind 0x44
                                                 from (0x568220 looks it up; 0x567f50 compares a cart's building with it) */
 extern int he_MessageFilterMask;         /* 0x6f263c, INI "Game" / "message_filter_mask": one bit per message kind 0x605 .. 0x60d
                                             (he_IsMessageKindFiltered / he_SetMessageKindFiltered) */
+extern char he_OptionsPath[256];         /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile */
 int he_ShowNews(int pid, int from, char *text, int tflags, int news, char *text2);
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2);
 

@@ -5159,7 +5159,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
     *p = 0;
     p = strrchr((char *)(unsigned)&ai_OptionsFile, 0x5c);
     strcpy(p + 1, "game.INI");
-    he_Unk5755c0((char *)(unsigned)&ai_OptionsFile);
+    he_LoadMessageFilter((char *)(unsigned)&ai_OptionsFile);
     GetPrivateProfileStringA("Network", "Server", "Server\\Server.dll", (char *)((unsigned)&ai_DataPath + 0x100), 0x104, (char *)(unsigned)&ai_OptionsFile);
     i = 0;
     do {
@@ -5873,7 +5873,8 @@ GAPDATA full_data_6f5f48[4] = { 0 };  /* 0x6f5f48 */
 GAPDATA full_data_6f5f4c[20] = { 0 };  /* 0x6f5f4c */
 GAPDATA full_data_6fa008[24] = { 0 };  /* 0x6fa008 */
 GAPDATA full_data_6fa060[128] = { 0 };  /* 0x6fa060 */
-GAPDATA full_data_6fa0e0[256] = { 0 };  /* 0x6fa0e0 */
+char he_OptionsPath[256] = { 0 };  /* 0x6fa0e0, the options INI path he_LoadMessageFilter copies from ai_OptionsFile for its
+                                      GetPrivateProfileIntA / WritePrivateProfileStringA calls (he_SaveMessageFilter) */
 int he_TipOrder[0x20] = { 0 };  /* 0x6fa1e0, he.h: the tip order (the 27 tip text slots, gm_Shuffled fills it) */
 HEHINT he_Hints[128] = { 0 };  /* 0x6fa260, he.h: the tutorial hint table (he_OpenHelpEvents fills it, he_RunHint walks it) */
 int he_BarView = 0;  /* 0x6faa60, he.h */

@@ -282,7 +282,6 @@ extern GAPDATA he_TheaterScripts[];
 extern const float ai_FloatOne;
 extern double ai_Unk5ebbe8;
 extern GAPDATA full_rdata_5ee01c[];
-extern GAPDATA full_data_6fa0e0[];
 
 void gm_Shuffled(unsigned char n, int *out);
 void amt_ChangeDistrictOpinion();
@@ -26259,7 +26258,7 @@ void he_SaveMessageFilter(void)
     char buf[0xc];
 
     sprintf(buf, "%d", he_MessageFilterMask);
-    WritePrivateProfileStringA("Game", "message_filter_mask", buf, (char *)(unsigned)&full_data_6fa0e0);
+    WritePrivateProfileStringA("Game", "message_filter_mask", buf, he_OptionsPath);
 }
 /* 0x575640, 1 when the message filter mask 0x6f263c has the bit of the message kind id (0x605 the bit 1, 0x606 2, 0x607 4, 0x608 8,
    0x609 0x10, 0x60a 0x20, 0x60b 0x40, 0x60c 0x80, 0x60d 0x100); else 0
