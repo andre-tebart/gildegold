@@ -181,8 +181,9 @@ extern unsigned short ai_PlayerId;
 
 
 
-/* 0x5ba6b0, the views of ai_InventoryHas: the character's inventory (AICHAR +0x178, ai.h) and the object
-   0x4ffe90 finds in it (AIOBJ: the type id at +0, the state flag at +0x21) */
+/* 0x5ba6b0, the views of ai_InventoryHas and ai_BuildingHasItem: the character's inventory (AICHAR +0x178,
+   ai.h) and the object 0x4ffe90 finds in it (AIOBJ: the type id at +0, the state flag at +0x21, the building
+   id at +0x25) */
 #pragma pack(push, 1)
 typedef struct G8INVCHAR {
     char pad00[0x178];
@@ -194,6 +195,8 @@ typedef struct G8INVOBJ {
     char pad02[0x1f];
     int active;                         /* +0x21, nonzero when the object counts as held (reasoned guess: the
                                            reader ai_InventoryHas tests it; no writer of the field is drafted) */
+    int bldId;                          /* +0x25, the id of the building the object stands in (reasoned guess:
+                                           ai_BuildingHasItem compares it with AIBLD.id) */
 } G8INVOBJ;
 #pragma pack(pop)
 

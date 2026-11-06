@@ -18775,12 +18775,18 @@ int ai_InventoryHas(void *ch, int id)
         return 1;
     return 0;
 }
-/* 0x5ba700, a table lookup wrapper (80 B, ROUGH): 0x4ffe90 (0, 7, 2, param_1) */
+/* 0x5ba700, whether the building bld holds an item of the type id: 0x4ffe90 (the whole instance table, scan
+   all, the prototype id) must find one, its type must have a Domizil record (0x5ba620, the 0x62c420 table), the
+   object's +0x21 must be set and its +0x25 must be the building's id. he_RunProduktion halves the production
+   factor with the item 0x178 */
 
-int ai_BuildingHasItem(int param_1)
+int ai_BuildingHasItem(AIBLD *bld, int id)
 {
-    gm_Query(0, 7, 2, param_1);
-    /* ROUGH */
+    G8INVOBJ *o;
+
+    o = (G8INVOBJ *)gm_Query(0, 2, 7, 0, id);
+    if (o != 0 && ai_FindUsableGood(o->id) != 0 && o->active != 0 && o->bldId == bld->id)
+        return 1;
     return 0;
 }
 /* 0x5ba750, a window gated by the player 0x6f25b8 == 0x300 (448 B, ROUGH SKELETON): a 0x404-byte frame; the
