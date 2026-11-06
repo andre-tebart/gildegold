@@ -1273,8 +1273,8 @@ void cm_SendRemoveGoods(int a, short b)
     G17MSG m;
 
     m.type = 0x14;
-    G17_I(m, 0) = a;
-    G17_S(m, 4) = b;
+    m.removeGoods.objId = a;
+    m.removeGoods.item = b;
     cm_QueueSend(&m);
 }
 /* 0x4c49a0, message 0x16: the field block (deltas); returns the send slot (cm_QueueSend) */
