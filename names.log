@@ -2830,3 +2830,4 @@
 2026-11-06T22:37:45 0x004c8990 data ai_Unk4c8990 -> cm_ExGameOver by:main why:handler of message 0x1f: it only leaves the running game (sv_PopTo(main_GameLoop)), the same pop as ai_QuitGame and the closed connection; reasoned: the server end-of-game message (no client sender)
 2026-11-06T22:38:48 0x004c8de0 data ai_Unk4c8de0 -> cm_ExKillCharacter by:main why:the handler of message 0x21 (cm_SendKillCharacter): it stops the character script and calls gm_KillSpieler with the message mode
 2026-11-06T22:39:28 0x004c9090 data ai_Unk4c9090 -> cm_ExRetireCrime by:main why:the handler of message 0x23 (cm_SendRetireCrime): it hands the message id and force to gv_RetireCrime and returns its result
+2026-11-06T22:41:51 0x004c90d0 data ai_Unk4c90d0 -> cm_ExProofExecuted by:main why:0x4c90d0 is the handler of message 0x24 (cm_Handlers[0x24], the message cm_SendProofExecuted 0x4c4ed0 sends): it stores the proof pair (the crime id, the character's netId) into ai_Evidence
