@@ -26246,10 +26246,10 @@ void he_EventGoodRefund(AICHAR *per)
 }
 /* 0x5755c0, copies the INI path `s` to 0x6fa0e0 and loads "Game" / "message_filter_mask" from it (GetPrivateProfileIntA) into 0x6f263c */
 
-void he_Unk5755c0(char *s)
+void he_LoadMessageFilter(char *s)
 {
-    strcpy((char *)(unsigned)&full_data_6fa0e0, s);
-    he_MessageFilterMask = GetPrivateProfileIntA("Game", "message_filter_mask", 0, (char *)(unsigned)&full_data_6fa0e0);
+    strcpy(he_OptionsPath, s);
+    he_MessageFilterMask = GetPrivateProfileIntA("Game", "message_filter_mask", 0, he_OptionsPath);
 }
 /* 0x575600, writes 0x6f263c as "Game" / "message_filter_mask" into the INI file 0x6fa0e0 (WritePrivateProfileStringA) */
 
