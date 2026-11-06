@@ -114,7 +114,6 @@ extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
-extern GAPDATA full_data_62af98[];
 extern int sv_ResearchClass;
 extern char * ai_FallbackBuilding;
 extern char * ai_PlayerBuilding;
@@ -3409,7 +3408,7 @@ void ai_Unk5909a0(void)
         }
         u++;
     }
-    U_I(U_I((unsigned)&d2_Objs) + U_I((unsigned)&full_data_62af98) * 0x2ec + 0x28) = 1;
+    U_I(U_I((unsigned)&d2_Objs) + ai_BuildGroup * 0x2ec + 0x28) = 1;
     /* ROUGH: the selection loop and the frame loop follow -- the input 0x6f8a668 (- 0x6d4) selects the kind
        0x62af98, the building list is rebuilt (0x501d80 / 0x5020e0, 0x473650 / 0x4760b0 / 0x4734d0), the
        placement call 0x58ff00 (the kind, the buffer), the message record (0x4c4b70) and the pump
@@ -24213,6 +24212,7 @@ extern int * ai_BauplatzList;
 /* ai_TextEinkaufStein: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_TextEinkaufHolz: view of txt_Ptrs (build/mk_txt_views.py) */
 AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_GEFAENGNIS", { 17, 18, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_HANDWERK", { 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28 } }, { "bk_HANDWERK", { 41, 42, 43, 47, 48, 49, 50, 51, 52, 33, 34, 35 } }, { "bk_HANDWERK", { 72, 73, 74, 81, 82, 83, 78, 79, 80, 0, 0, 0 } }, { "bk_KIRCHE_KL", { 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_KIRCHE_GR", { 22, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_RATHAUS", { 36, 37, 38, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_STADTWACHE", { 44, 45, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WIRTSHAUS_GR", { 53, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_KL", { 4, 5, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_GR", { 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_ZUNFTHAUS", { 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67 } }, { "bk_STATUEN", { 84, 85, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_DOMIZIL", { 75, 76, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x62aae8 */
+int ai_BuildGroup = 6;  /* 0x62af98, the building group the construction window shows (1 .. 9, its group buttons) */
 char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa) */
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
