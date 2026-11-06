@@ -20873,13 +20873,14 @@ void he_RunSearchEvent(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x56a360, the alloc of the same event: both clocks (+0x52 / +0x60) = the start clock (+0x44), due 7 units of the kind 7 and a random 30 .. 59 later */
+/* 0x56a360, the allocation handler of the search event 9: both clocks (end and clock60) start at the event's start
+   clock, and the end is 7 hours and a random 30 .. 59 minutes later */
 
-void he_AllocSearch9(int r)
+void he_AllocSearch9(AIJOB *e)
 {
-    *(AITIME *)(r + 0x52) = *(AITIME *)(r + 0x44);
-    *(AITIME *)(r + 0x60) = *(AITIME *)(r + 0x44);
-    gm_AddTime(r + 0x52, 7, (unsigned short)util_Random(0x1e) + 0x1e, 0);
+    e->end = e->start;
+    e->clock60 = e->start;
+    gm_AddTime(&e->end, 7, (unsigned short)util_Random(0x1e) + 0x1e, 0);
 }
 
 unsigned short *gm_QueryNext(void);
