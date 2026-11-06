@@ -18891,25 +18891,37 @@ void he_RunStormEvent(int ev)
         return;
     }
 }
-/* 0x565500, the allocation handler of the "player lost" event (ROUGH): the player record 0x505df0 (+0xac), the object 0x502020 (+0x10), the follow-up 0x4fe980 (+0xc4), 0x524260 (obj, follow, player id, ev); the value +0xb0 = 200, the clocks +0xb4 / +0x44 / +0x52 / +0x60 = now, the next run 400 units ahead */
+typedef struct HEHEAL {                 /* the healing event 0x6c's words over AIJOB's union (he_AllocHealing / he_Unk565620) */
+    char pad00[0xac];
+    int charId;                         /* 0xac, the netId of the character healed (gm_FindChar) */
+    int amount;                         /* 0xb0, the health left to heal, 200 at the allocation (the run's step takes it down) */
+    AITIME end;                         /* 0xb4, the next run (AIJOB.end6c) */
+    char padc2[2];
+    int room;                           /* 0xc4, the room object the character is sent to (gm_FindObjectInst), -1: none */
+} HEHEAL;
 
-void he_Unk565500(int ev)
+/* 0x565500, the allocation handler of the healing event 0x6c (he_Unk565620): the character AIJOB.ownerCh is sent into
+   its building (the message's from) and that room, the health left is 200, the clocks are now and the next run is
+   400 minutes ahead */
+
+void he_AllocHealing(AIJOB *ev)
 {
-    unsigned short *p;
-    int o, f;
+    HEHEAL *x = (HEHEAL *)ev;
+    AICHAR *c;
+    int b, f;
 
     f = 0;
-    p = (unsigned short *)gm_FindChar(*(int *)(ev + 0xac));
-    o = gm_FindBuildingById(*(int *)(ev + 0x10));
-    if (*(int *)(ev + 0xc4) != -1)
-        f = gm_FindObjectInst(*(int *)(ev + 0xc4));
-    sv_MoveToGroup(o, f, *p, ev);
-    *(int *)(ev + 0xb0) = 200;
-    *(AITIME *)(ev + 0xb4) = ai_Time;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    gm_AddTime(ev + 0xb4, 0, 400, 0);
+    c = (AICHAR *)gm_FindChar(x->charId);
+    b = gm_FindBuildingById(ev->from);
+    if (x->room != -1)
+        f = gm_FindObjectInst(x->room);
+    sv_MoveToGroup(b, f, c->id, ev);
+    x->amount = 200;
+    x->end = ai_Time;
+    ev->start = ai_Time;
+    ev->end = ai_Time;
+    ev->clock60 = ai_Time;
+    gm_AddTime(&x->end, 0, 400, 0);
 }
 
 /* 0x565620, a Ghidra miss: the run handler of the healing event ("Heilen", type 0x6c): state 0 heals the player 0x505df0 (+0xac) step by step: the elapsed time since +0x60 (0x4fe280) * 0.1 * 5 is the step, the stat 0x4fc8e0 times 100.0
@@ -20207,7 +20219,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(80, (void *)he_AllocStorm, (void *)he_RunStormEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(108, (void *)he_Unk565500, (void *)he_Unk565620) != 0)
+    if (he_SetEventHandlers(108, (void *)he_AllocHealing, (void *)he_Unk565620) != 0)
         return 1;
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
     if (he_SetEventHandlers(110, (void *)he_AllocNewWorker, (void *)he_RunNewWorker) != 0)
