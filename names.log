@@ -2853,3 +2853,4 @@
 2026-11-06T23:11:27 0x004cb210 data ai_Unk4cb210 -> cm_ExHandOverCrimes by:main why:message 0x3c (cm_SendHandOverCrimes, cm_types.h G17HANDOVERMSG); its handler hands the four fields to gv_HandOverCrimes
 2026-11-06T23:20:18 0x004cb6e0 data ai_Unk4cb6e0 -> cm_ExGoodsRecord by:main why:message 0x3f (cm_SendGoodsRecord) carries player k and a whole GMSTOCK record; this handler replaces the player's record of that item
 2026-11-06T23:20:49 0x004cb730 data ai_Unk4cb730 -> cm_ExGoodsDelta by:main why:message 0x40 (cm_SendGoodsDelta, cm_types.h G17GOODSMSG): its handler adds the player/item record's deltas to the goods record gm_FindGoods returns
+2026-11-06T23:21:22 0x004cb7c0 data ai_Unk4cb7c0 -> cm_ExLoadStatistics by:main why:message 0x41 (cm_SendMessage41, 0x3a bytes) restores the statistics record through ord_LoadStatistics (ord.c 0x4f9020)
