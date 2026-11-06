@@ -6394,10 +6394,9 @@ typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-am
    (cm_SendExSetHE 1) and waits for its slot. The second, enabled once a year (the event's idbc against the year of
    ai_Time), picks a character in the amount menu (mode 0x20400, the gypsy filter, kind 6; title 0x1a5a), asks
    (0x1a5b) and, the player paying 2, stamps the year, sends the event (cm_SendExSetHE 3), takes the 2 off the
-   caller's record (+4 read as its netId; the caller passes ai_PlayerBuilding) and lowers the picked character's
-   relation to her by 0x21 */
+   player's money and lowers the picked character's relation to her by 0x21 (player: the player's record) */
 
-void ai_MistressAffairWindow(int place, AICHARREC *ch, AIJOB *ev)
+void ai_MistressAffairWindow(AICHARREC *player, AICHARREC *ch, AIJOB *ev)
 {
     int win;
     int visit;
@@ -6480,7 +6479,7 @@ void ai_MistressAffairWindow(int place, AICHARREC *ch, AIJOB *ev)
                         if (sv_MessageBox(ask, 1) != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
                             ev->idbc = ai_Time.year;
                             cm_SendExSetHE(3, ev);
-                            gm_SendMoneyDelta(((AICHARREC *)place)->netId, -2);
+                            gm_SendMoneyDelta(player->netId, -2);
                             cm_SendRelations(pick->netId, ch->netId, -0x21, 1);
                             sv_PopRequest = 1;
                         }
@@ -6493,84 +6492,128 @@ void ai_MistressAffairWindow(int place, AICHARREC *ch, AIJOB *ev)
     } while (sv_RunFrame(ai_MistressAffairWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x596ba0, the mistress window "locations\wohnsitz\geliebte" (1007 B, ROUGH SKELETON from the Ghidra
-   pseudocode): the 8 slots (the ids at +0, the buildings +8, the flags +0x30), the window 0x4741f0 / 0x475f70 /
-   0x52ea30 / 0x475600 / 0x476f80, the text 0x515960 (0x1a50 / 0x1a51) and the control 0x475b80; per frame the
-   4 mistresses of the player (0x53e400 (1, 0, 0x6f), +0xac, +0x70), the texts 0x515960 (0x1a4e / 0x1a4f /
-   0x1a52), the selection 0x5c1130 (the config 0x2040a / 0xa7fdfbb6 / 1 / 6, the texts 0x1a53 / 0x1a54 /
-   0x1a55 / 0x1a56), the message record (type 0x6f, the character, the building) 0x4c4b70, and 0x5967c0 for
-   the chosen slot; the pump 0x5309a0 (this, 0x67fff) and the exit 0x4758f0 / 0x52d7a0 */
+/* 0x596ba0, the mistress window "locations\wohnsitz\geliebte" of the residence bld (the GELIEBTE plate of
+   ai_MistressContact): the button to take a mistress (text 0x1a50, 0x1a51 for a female player) and, every frame,
+   the player's up to four mistresses: the pair events 0x6f whose first partner is the player (the second partner
+   is the mistress, the event's stage 0 enables her button, text 0x1a52 with her name). The take button (enabled
+   below four) picks a character in the amount menu (mode 0x2040a, 0x20409 for a female player; the gypsy
+   filter, kind 6; the texts 0x1a53 / 0x1a54), asks (0x1a55 / 0x1a56) and posts the message 0x6f (flags 2, from
+   the building, the player and the picked character); a mistress' button opens her window
+   ai_MistressAffairWindow with this one disabled. A right click closes it; then the camera follows
+   @deep Reconstructed whole from the original (all statements, calls, the 0x6f message record, the
+   amount-menu config, the texts 0x1a50..0x1a56 and the mistress buttons read and compared; the -1 inits
+   are inline memsets, which gives the original's ebx=0). Left is allocation/scheduling only: the original
+   keeps the -1 of memset(ctl) in esi up to d2_ClickedId = esi and skips the loop-top 'or esi,-1' on the
+   first pass (jmp +0xa2), ours materializes -1 again ('mov [d2_ClickedId], 0xffffffff', 'or eax,-1; or
+   ecx,-1'); the player-record index (ai_PlayerId*0x21c) is computed before/after the ev+0xac load, the
+   cfg/msg field stores are scheduled in another order (mode/filter/kind, to/fromId/arg[0]/arg[1]) and the
+   0x1a55/0x1a56 arms swap eax/ecx. Tried: explicit -1 stores in the original's order (ebx stayed -1),
+   if/else for the sex and stage tests, field reorderings */
 
-void ai_MistressWindow(int param_1)
+void ai_MistressWindow(AIBLD *bld)
 {
     int win;
-    int ctl;
-    int b;
-    int i;
+    int take;
     int n;
-    int ids[16];
-    int cfg[0x14];
-    char text1[0x40];
-    char text2[0x40];
-    char text3[0x200];
+    int i;
+    int charIds[4];                     /* the mistresses' netIds (the events' partner2) */
+    int ctl[4];                         /* their buttons */
+    int evIds[4];                       /* their pair events */
+    int enabled[4];                     /* the event's stage is 0 */
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    AIJOB *ev;
+    AICHARREC *pick;
+    char prompt[0x40];
+    char title[0x40];
+    char text[0x200];
 
-    memset(ids, 0, sizeof(ids));
+    memset(ctl, 0xff, sizeof(ctl));
     sv_ReleaseNamePlates();
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\geliebte");
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 2);
-    ctl = d2_GetWinObj(win, 2, io_PrintText(*(unsigned char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0
-                                                ? 0x1a50 : 0x1a51));
-    U_I((unsigned)&d2_ClickedId) = -1;
-    while (sv_RunFrame(ai_MistressWindow, 0x67fff) != 0) {
-        for (i = 0; i < 16; i++)
-            ids[i] = -1;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+        take = d2_GetWinObj(win, 2, io_PrintText(0x1a50));
+    else
+        take = d2_GetWinObj(win, 2, io_PrintText(0x1a51));
+    d2_ClickedId = -1;
+    do {
+        memset(evIds, 0xff, sizeof(evIds));
+        memset(charIds, 0xff, sizeof(charIds));
         n = 0;
-        for (b = he_FindEvent(1, 0, 0x6f); b != 0 && n < 4; b = he_NextEvent()) {
-            if (*(int *)(b + 0xac) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87)) {
-                ids[n + 8] = U_I(b + 4);
-                ids[n + 0xc] = U_I(b + 0x70) == 0 ? 1 : 0;
-                ids[n] = U_I(b + 0xb0);
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x6f); ev != 0 && n < 4; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->partner1 == ai_CharInts[ai_PlayerId][0]) {
+                evIds[n] = ev->id;
+                if (ev->stage == 0)
+                    enabled[n] = 1;
+                else
+                    enabled[n] = 0;
+                charIds[n] = ev->partner2;
                 n++;
             }
         }
         d2_SetForm(win, 1);
-        io_PrintText((char *)(unsigned)"$C");
-        io_PrintText("_Z_  %s   %N", 0x1a4e);
+        io_PrintText("$C");
+        io_PrintText("$Z$[%s$]$N", 0x1a4e);
         io_PrintText(0x1a4f);
         for (i = 0; i < 4; i++) {
-            unsigned short *p = (unsigned short *)gm_FindChar(ids[i]);
-            int c;
-            if (p == 0)
+            AICHARREC *ch = (AICHARREC *)gm_FindChar(charIds[i]);
+
+            if (ch == 0)
                 break;
-            c = d2_GetWinObj(win, 1, io_PrintText(0x1a52, *p));
-            ids[i + 4] = c;   /* ROUGH: the control ids live at +0x10 in the original */
-            d2_SetObjEnabled(c, ids[i + 0xc]);
+            ctl[i] = d2_GetWinObj(win, 1, io_PrintText(0x1a52, ch->id));
+            d2_SetObjEnabled(ctl[i], enabled[i]);
         }
-        d2_SetObjEnabled(ctl, n < 4);
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == ctl) {
-                    /* ROUGH: the config 0x2040a - (the gender flag), the texts 0x1a53 / 0x1a54, 0x5c1130,
-                       the texts 0x1a55 / 0x1a56, the message record (type 0x6f, the character, the building)
-                       through 0x4c4b70 */
-                } else {
-                    for (i = 0; i < 4; i++) {
-                        if (U_I((unsigned)&d2_PointerObj) == ids[i + 4]) {
-                            ai_MistressAffairWindow(param_1, (AICHARREC *)gm_FindChar(ids[i]),
-                                         (AIJOB *)he_FindEvent(1, 1, ids[i + 8]));
-                            break;
-                        }
+        if (n >= 4)
+            d2_SetObjEnabled(take, 0);
+        else
+            d2_SetObjEnabled(take, 1);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == take) {
+                memset(&cfg, 0, sizeof(cfg));
+                cfg.kind = 6;
+                cfg.filter = gypsyFilter;
+                cfg.mode = ((AICHARREC *)ai_Chars)[ai_PlayerId].sex != 0 ? 0x20409 : 0x2040a;
+                txt_Format(title, 0x1a53);
+                txt_Format(prompt, 0x1a54);
+                pick = (AICHARREC *)ai_AmountMenu(&cfg, title, prompt, 0);
+                if (pick != 0) {
+                    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+                        txt_Format(text, 0x1a55, pick->id);
+                    else
+                        txt_Format(text, 0x1a56, pick->id);
+                    if (sv_MessageBox(text, 1) != 0) {
+                        memset(&msg, 0, sizeof(msg));
+                        msg.type = 0x6f;
+                        msg.flags = 2;
+                        msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
+                        msg.arg[0] = ai_CharInts[ai_PlayerId][0];
+                        msg.arg[1] = pick->netId;
+                        cm_SendLongMessage((char *)&msg);
+                    }
+                }
+            } else {
+                for (i = 0; i < 4; i++) {
+                    if (d2_PointerObj == ctl[i]) {
+                        AICHARREC *ch = (AICHARREC *)gm_FindChar(charIds[i]);
+
+                        ev = (AIJOB *)he_FindEvent(1, 1, evIds[i]);
+                        d2_SetViewEnabled(win, 0);
+                        ai_MistressAffairWindow((AICHARREC *)ai_Chars[ai_PlayerId], ch, ev);
+                        d2_SetViewEnabled(win, 1);
+                        break;
                     }
                 }
             }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
         }
-    }
+    } while (sv_RunFrame(ai_MistressWindow, 0x67fff) != 0);
     d2_CloseView(win);
     sv_CameraFollow();
 }
@@ -6586,7 +6629,7 @@ void ai_MistressContact(int building, int room)
     while (r != 0) {
         geliebte = sv_RegisterNamePlate("contact_GELIEBTE", ai_ContactTextMistress, 0x16);
         if (ai_ClickedObject != 0 && ai_ClickedObject == geliebte)
-            ai_MistressWindow(building);
+            ai_MistressWindow((AIBLD *)building);
         r = sv_RunFrame(ai_MistressContact, 0x67fff);
     }
 }
