@@ -249,7 +249,8 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_1442180                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x07fc0))  /* 0x1442180 */
 #define full_data_1442190                        (*(unsigned char (*)[40])((char *)txt_Ptrs + 0x07fd0))  /* 0x1442190 */
 #define full_data_14421b8                        (*(unsigned char (*)[348])((char *)txt_Ptrs + 0x07ff8))  /* 0x14421b8 */
-#define full_data_1442314                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x08154))  /* 0x1442314 */
+#define ai_TextBuildingClosed                    (*(char * *)((char *)txt_Ptrs + 0x08154))  /* 0x1442314, text 0x2055: the title of the message ai_MayEnterBuilding shows when a building is closed (its texts 0x2056 .. 0x2058 follow) */
+#define full_data_1442318                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x08158))  /* 0x1442318 */
 #define full_data_1442334                        (*(unsigned char (*)[256])((char *)txt_Ptrs + 0x08174))  /* 0x1442334 */
 #define txt_TipTexts                             (*(char *(*)[52])((char *)txt_Ptrs + 0x08270))  /* 0x1442430, the 27 tip texts the tips event 0x84 shows (he.c 0x567c00; filled by txt_LoadTextFile) */
 #define txt_PilloryPunishment                    (*(char * *)((char *)txt_Ptrs + 0x08340))  /* 0x1442500, text 0x20d0 ("_MESSAGES_PRANGER+0", "Eure Prangerstrafe..."): the AP event name the pillory-punishment event 0x5c registers */

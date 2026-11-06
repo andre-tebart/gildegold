@@ -1108,8 +1108,12 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     char pad4d[0xc];
     char prodScroll;               /* 0x59, the scroll position of the production window, in rows (ai_ProductionWindow
                                       restores and saves it; ai_bld.h AIBLD.prodScroll) */
-    unsigned char flags5a;         /* 0x5a, bit 0: the building cannot be entered from the panel (ai_bld.h AIBLD.flags5a) */
-    char pad5b[2];
+    union {
+        unsigned char flags5a;     /* 0x5a, bit 0: the building cannot be entered from the panel (ai_bld.h AIBLD.flags5a) */
+        unsigned short flags5aw;   /* 0x5a, read as a word (ai_bld.h AIBLD.flags5aw); bit 0x400: the building cannot be
+                                      entered at all (ai_MayEnterBuilding) */
+    };
+    char level;                    /* 0x5c, the building's level 0 .. 100 (ai_bld.h AIBLD.level) */
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
     int object;                    /* 0x61, its object in the scene */
     union {
@@ -10018,64 +10022,52 @@ int ai_IsBuildingOpen(AIBLD *b, unsigned int *open, unsigned int *close)
     }
     return 1;
 }
-/* 0x59e210, whether the player may enter the building param_1 (528 B): the kind byte (0x7e3f30 + *param_1 *
-   0x24d), 0x501d80 (the kind), 0x503530 (player, the building, 0, 0); no entry with the byte +0x5b & 4, yes
-   with the network flag 0x6f23f8 < 0, with the "own" byte 0x770d31 + player * 0x21c and the kinds 4 / 6, with
-   the flag 0x200 or the player's own building (param_1 + 0x27); the flag 1 needs the open hours 0x59e170,
-   else the texts 0x2056 / 0x2057 (0x2059 / 0x205a for the kinds 3 / 5) and the hours text 0x2058 (0x521410
-   (the global 0x1442314 text, the message, 4. ROUGH: the string at 0x1442314 is a pointer) */
+/* 0x59e210, whether the player may enter the building b: never while its flag 0x5b bit 2 is set; always in the
+   flag 0x80 game mode, for a held player at a building of class 4 / 6, with the permission bit 0x200 or at the
+   player's own building; otherwise the permission bit 1 and the opening hours (ai_IsBuildingOpen) must allow it.
+   A closed building shows the message ai_TextBuildingClosed: not yet open (0x2056, 0x2059 for the building
+   classes 3 / 5) or already closed (0x2057 / 0x205a), and its hours (0x2058) */
 
-int ai_Unk59e210(unsigned char *param_1)
+int ai_MayEnterBuilding(AIBLD *b)
 {
-    char kind;
-    int k;
-    unsigned int f;
-    unsigned int from;
-    unsigned int to;
-    unsigned short slot;
-    char buf[0x80];
-    char date[0x80];
+    AIBTYPE *type;
+    int cls;
+    unsigned int perm;
+    unsigned int open;
+    unsigned int close;
+    char hours[0x80];
+    char title[0x80];
     char msg[0x400];
-    int id;
 
-    kind = *(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
-    k = gm_BuildingClass(*param_1);
-    f = gm_PermissionBits(U_I((unsigned)&ai_PlayerId), param_1, 0, 0);
-    if ((param_1[0x5b] & 4) != 0)
+    type = &((AIBTYPE *)ai_BTypes)[b->kind];
+    cls = gm_BuildingClass(b->kind);
+    perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)b, 0, 0);
+    if ((b->flags5aw & 0x400) != 0)
         return 0;
-    if (*(signed char *)(unsigned)&ai_GameFlags < 0)
+    if ((ai_GameFlags & 0x80) != 0 ||
+        (((AICHARREC *)ai_Chars)[ai_PlayerId].heldRounds > 0 && (type->buildingClass == 6 || type->buildingClass == 4)) ||
+        (perm & 0x200) != 0 || b->owner == ai_PlayerId)
         return 1;
-    if (*(unsigned char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 && (kind == 6 || kind == 4))
-        return 1;
-    if ((f & 0x200) != 0)
-        return 1;
-    slot = *(unsigned short *)(param_1 + 0x27);
-    if (slot == U_W((unsigned)&ai_PlayerId))
-        return 1;
-    if ((f & 1) == 0)
+    if ((perm & 1) == 0)
         return 0;
-    if (ai_IsBuildingOpen((AIBLD *)param_1, &from, &to) != 0)
+    if (ai_IsBuildingOpen(b, &open, &close) != 0)
         return 1;
-    strcpy(buf, (char *)U_I((unsigned)&full_data_1442314));
-    if ((int)(U_I((unsigned)&ai_Time.hour) & 0xffff) < (int)from) {
-        if (k != 3 && k != 5) {
-            txt_Format(msg, 0x2056, slot, param_1);
-            goto out;
-        }
-        id = 0x2059;
+    strcpy(title, ai_TextBuildingClosed);
+    if ((int)ai_Time.hour < (int)open) {
+        if (cls == 3 || cls == 5)
+            txt_Format(msg, 0x2059, b);
+        else
+            txt_Format(msg, 0x2056, b->owner, b);
     } else {
-        if (k != 3 && k != 5) {
-            txt_Format(msg, 0x2057, slot, param_1);
-            goto out;
-        }
-        id = 0x205a;
+        if (cls == 3 || cls == 5)
+            txt_Format(msg, 0x205a, b);
+        else
+            txt_Format(msg, 0x2057, b->owner, b);
     }
-    txt_Format(msg, id, param_1);
-out:
-    txt_Format(date, 0x2058, from, to);
-    strcat(msg, date);
-    U_I((unsigned)&sv_PanelFlag) = 0;
-    sv_MessageBoxGreen(buf, msg, 4);
+    txt_Format(hours, 0x2058, open, close);
+    strcat(msg, hours);
+    sv_PanelFlag = 0;
+    sv_MessageBoxGreen(title, msg, 4);
     return 0;
 }
 /* 0x59e420, the enter-building driver (2592 B, ROUGH: the entry / exit bookkeeping is condensed): when
@@ -10102,7 +10094,7 @@ void ai_EnterBuilding(unsigned char *param_1, int param_2)
     unsigned short vid;
     int saved1, saved2, saved3, saved4, saved5, saved6;
 
-    if (ai_Unk59e210(param_1) == 0) {
+    if (ai_MayEnterBuilding(param_1) == 0) {
         U_I((unsigned)&sv_PanelFlag) = 0;
         return;
     }
@@ -10280,7 +10272,7 @@ void ai_EnterOwnBuilding(unsigned char *param_1)
     int kind;
     int saved1, saved2, saved3, saved4, saved5, saved6;
 
-    if (ai_Unk59e210(param_1) == 0) {
+    if (ai_MayEnterBuilding(param_1) == 0) {
         U_I((unsigned)&sv_PanelFlag) = 0;
         return;
     }
