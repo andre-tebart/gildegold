@@ -43,11 +43,6 @@ typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a
     GVGRAVE *graves;                    /* 0x20, the grave records, first word -1 when free ("gv_Alloc:_all_zombies") */
 } GVYARD;
 #pragma pack(push, 1)
-typedef struct GVDECMSG {               /* 9 bytes, the data of message 0x46 (cm_SendDecisionValue): an AI decision record's new value (gv_SetTableRecord, stored by the handler 0x4f27d0) */
-    int id;                             /* 0x00, the character's netId (AICHAR.netId), -1 for none */
-    unsigned char rec;                  /* 0x04, the record index (0 .. 0x1c) */
-    int value;                          /* 0x05, the new AIDEC.cur, clamped to min .. max */
-} GVDECMSG;
 typedef struct GVORDER {                /* 0x1f bytes, a graveyard order: the data of message 0x60 (cm_SendGraveOrder), executed by type in cm.c's handler 0x4cce10 */
     int type;                           /* 0x00, 0 .. 6 (0 gv_BuryCharacter, 1 a grave reserved for a living character 0x4f0490, ..) */
     int chr;                            /* 0x04, the character's netId (AICHAR.netId), -1 for none */

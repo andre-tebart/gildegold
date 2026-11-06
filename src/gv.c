@@ -4130,7 +4130,7 @@ int gv_SetTableRecord(AICHAR *c, int i, int v)
     m.id = id;
     m.rec = (unsigned char)i;
     m.value = v;
-    return cm_SendDecisionValue((char *)&m);
+    return cm_SendDecisionValue(&m);
 }
 /* 0x4f27d0, the handler of message 0x46 (gv_SetTableRecord): stores the value as the decision record's AIDEC.cur and,
    unless the character is the player's own, tells it (ai_ShowCharacterNews with gv_TableRecordText); 0 for a bad record */

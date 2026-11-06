@@ -5,7 +5,8 @@
 #define CM_TYPES_H
 #include "ai_types.h"                /* AITIME, for CRIME */
 #include "d3_types.h"                /* D3VECTOR, D3VECTOR4 */
-#include "amt_types.h"               /* AMTAPP, for message 0x44 */
+#include "amt_types.h"               /* AMTAPP, AMTMSG, for messages 0x44 / 0x45 */
+#include "gv_types.h"                /* GVDECMSG, for message 0x46 */
 
 #pragma pack(push, 1)
 typedef struct G17B7 {                  /* blocks copied as one */
@@ -628,6 +629,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17CHARIDMSG skills;            /* 0x10, message 0x43 */
         AMTAPP app;                     /* 0x10, message 0x44 */
         AMTMSG office;                  /* 0x10, message 0x45 */
+        GVDECMSG decision;              /* 0x10, message 0x46 */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */

@@ -1908,12 +1908,12 @@ int cm_SendOfficeRecord(AMTMSG *p)
 }
 /* 0x4c5930, sends message 0x46, an AI decision record's new value (the 9 bytes of p, a GVDECMSG of gv_SetTableRecord); the send's result */
 
-int cm_SendDecisionValue(char *p)
+int cm_SendDecisionValue(GVDECMSG *p)
 {
     G17MSG m;
 
     m.type = 0x46;
-    *(G17B9 *)m.data = *(G17B9 *)p;
+    m.decision = *p;
     return cm_QueueSend(&m);
 }
 /* 0x4c5970, sends message 0x47 (character a, b, c); the event handlers send (a, 0, 0) before they walk a character away (reasoned: clears what it is doing) */

@@ -71,4 +71,13 @@ typedef struct ORDCREDIT {          /* 12 bytes, a credit offer of a bank (gm_Ge
     int interest;                   /* 0x8 */
 } ORDCREDIT;
 
+#pragma pack(push, 1)
+typedef struct GVDECMSG {               /* 9 bytes, the data of message 0x46 (cm_SendDecisionValue): an AI decision
+                                           record's new value (gv_SetTableRecord, stored by the handler 0x4f27d0) */
+    int id;                             /* 0x00, the character's netId (AICHAR.netId), -1 for none */
+    unsigned char rec;                  /* 0x04, the record index (0 .. 0x1c) */
+    int value;                          /* 0x05, the new AIDEC.cur, clamped to min .. max */
+} GVDECMSG;
+#pragma pack(pop)
+
 #endif
