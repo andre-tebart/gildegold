@@ -6954,13 +6954,14 @@ char *cm_CharWeaponItem(char *c)
 
 void cm_DiscardWeapons(char *c)
 {
-    char *q;
+    AICHAR *ch = (AICHAR *)c;
+    AIOBJ *q;
     int id;
 
-    for (q = gm_Query(*(int *)(c + 0x178), 1, 5); q != 0; q = gm_QueryNext()) {
-        id = *(unsigned short *)q;
+    for (q = (AIOBJ *)gm_Query(ch->inventory, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+        id = q->id;
         if (ai_FindWeaponRecord(id) != 0)
-            cm_SendExSellObject(-1, *(int *)(c + 4), id, *(int *)(q + 0xe), ai_OwnPlayer, 0);
+            cm_SendExSellObject(-1, ch->netId, id, q->count, ai_OwnPlayer, 0);
     }
 }
 /* 0x4cdb80, after a fight, of a character c with the flag 0x20000000: with the chance c->b1c5 in 10 its weapons are
