@@ -13,8 +13,8 @@
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
    object record views (G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW), the
    Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
-   the gv record (AIWINDOWROW, AIPOSVIEW), the dice duel (LCDUEL / LCDUELSIDE, am.h AGDUEL) and the special-amount
-   row (LCAMOUNTROW, cm.c CMAMOUNTROW) are local views here (menu.h / sv.h / ai_char.h / ai_types.h /
+   the gv record (AIWINDOWROW, AIPOSVIEW), the dice duel (LCDUEL / LCDUELSIDE, am.h AGDUEL, full layout), the
+   player record (LCFIN, ai.h AIFIN) and the special-amount row (LCAMOUNTROW, cm.c CMAMOUNTROW) are local views here (menu.h / sv.h / ai_char.h / ai_types.h /
    am_types.h / am.h / ai.h hold the owners' types); they settle when those headers can be included. The "hp_" production
    settings are typed the same way: G8SETTING / G8SLOT / G8SETTAIL and G8BLD (a building's good id, gv.h's ORDBLD).
    The production window's tables are this unit's typed data (lc.h): the goods columns ai_ProdColumns (LCPRODCOL),
