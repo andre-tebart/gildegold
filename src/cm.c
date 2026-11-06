@@ -18,9 +18,11 @@
    poker.h mission.h menu.h; held by calls whose argument count differs from the definition (read the
    original's pushes): ai_DecideTorture, ai_DecideTortureInstrument, d2_SetObjValue, gm_SkillPoints (rt.h: its d2_SetObjValue);
    gv_PassSentence takes five arguments here (gv_PassSentenceK).
-   Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
-   without parameters; cm_QueueVoice has callers with four arguments, and declaration changes in cm.h / cm_types.h flip
-   the register tie-breaks of ai_TutorialInitChapter2 / 3 (sv_t, tie-break) and of ord_CountGridObjects. Types only
+   Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..) and
+   cm_PartyById / cm_ClearParty without parameters (their real prototypes drop ai_TutorialInitChapter2 byte -> shape and
+   ai_TutorialInitChapter3 shape -> draft); cm_QueueVoice has callers with four arguments, and declaration changes in
+   cm.h / cm_types.h flip the register tie-breaks of ai_TutorialInitChapter2 / 3 (sv_t, tie-break) and of
+   ord_CountGridObjects. Types only
    cm.c uses (CMNOTE, CMCUTTYPEMSG, CMFIELD, CMWALKPATHMSG) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
