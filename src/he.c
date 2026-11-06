@@ -25994,7 +25994,7 @@ void he_Unk575320(int ev)
     gm_AddTime(ev + 0x52, util_Random(0x20) & 0xffff, 0, 0);
 }
 
-void he_Unk575430(char *per);       /* 0x575430 */
+void he_GiveDomizilGood(AICHAR *per);     /* 0x575430 */
 void he_Unk575540(char *per);       /* 0x575540 */
 void he_Unk575570(char *per);       /* 0x575570 */
 
@@ -26018,39 +26018,38 @@ void he_Unk5753a0(int ev)
     }
     r = util_RandomF();
     if (r > (0.800000012f))
-        he_Unk575430(per);
+        he_GiveDomizilGood((AICHAR *)per);
     else if (r > (0.400000006f))
         he_Unk575540(per);
     else
         he_Unk575570(per);
     he_FreeEvent((int *)ev);
 }
-/* 0x575430, the good outcome of the event 0xa4 (ROUGH): a record of the kind 0x5a9f10 (3, 6) is looked up (0x4a5760 (per, 1,
-   ..)); with a record of the level +0xe 3 or more the figure's +0xac grows (0x5089c0 / 0x5de518) and the payment 0x4c4830
-   (per +4, -1, 0x6f1bc5, the amount) runs; else 0x4c4880 (per +4, -1, 1, 0x6f1bc5, 0, the word) */
-
-void he_Unk575430(char *per)
+/* 0x575430, the good outcome of the event 0xa4 (he_Unk5753a0): a Domizil good of the ranks 3 .. 6
+   (ai_DomizilGoodInRange) is looked up in the character's inventory (ai_FindWantedItems; st[0] its entries); he gets
+   one of it (cm_SendExSellObject) unless he already holds 3 of it or lacks it with 6 entries in his inventory: then
+   he is paid its price instead (gm_GoodsPrice, cm_SendMoveGoodsUnchecked). */
+void he_GiveDomizilGood(AICHAR *per)
 {
-    int w[4];
-    int out[4];
-    char *rec;
+    int st[3];                          /* ai_FindWantedItems: st[0] the inventory's entries */
+    int want[4];                        /* ai_FindWantedItems' record: [0] the good, [3] the inventory entry (AIOBJ) */
+    AIOBJ *entry;
 
-    memset(w, 0, sizeof w);
-    w[0] = ai_DomizilGoodInRange(3, 6) & 0xffff;
-    memset(out, 0, sizeof out);
-    ai_FindWantedItems(per, 1, w, out);
-    rec = (char *)out[0];
-    if (rec == 0) {
-        cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, w[0]);
-        return;
+    memset(want, 0, sizeof(want));
+    want[0] = ai_DomizilGoodInRange(3, 6) & 0xffff;
+    ai_FindWantedItems(per, 1, want, st);
+    entry = (AIOBJ *)want[3];
+    if (entry != 0) {
+        if (entry->count >= 3)
+            cm_SendMoveGoodsUnchecked(per->netId, -1, ai_OwnPlayer,
+                                      (int)gm_GoodsPrice((unsigned short)want[0], ai_OwnPlayer));
+        else
+            cm_SendExSellObject(per->netId, -1, want[0], 1, ai_OwnPlayer, 0);
+    } else if (st[0] >= 6) {
+        cm_SendMoveGoodsUnchecked(per->netId, -1, ai_OwnPlayer, (int)gm_GoodsPrice(want[0], ai_OwnPlayer));
+    } else {
+        cm_SendExSellObject(per->netId, -1, want[0], 1, ai_OwnPlayer, 0);
     }
-    if (HM_I(rec, 0xe) >= 3) {
-        gm_GoodsPrice(w[0], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-        HM_I(per, 0xac) = HM_I(per, 0xac) + _ftol();
-        cm_SendMoveGoodsUnchecked(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, HM_I(per, 0xac));
-        return;
-    }
-    cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, w[0]);
 }
 /* 0x575540, the middle outcome of the event 0xa4: per +4 is charged 3 + random (4) (0x50cc50) */
 
