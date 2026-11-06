@@ -59,6 +59,26 @@ int ai_FreeProdSetting(int id);                     /* 0x5a86c0, unlinks and fre
 
 /* the placement-candidate list of the build screen (ai_BauplatzFilter / ai_FindBauplaetze) */
 extern int *ai_BauplatzList;            /* 0x6f5308 */
+
+/* the goods columns of the production window "Handel\Handel_PRODUKTION" (ai_ProductionWindow; ai_Unk58bbd0 sets
+   them up, ai_Unk58c680 builds their windows) */
+typedef struct LCPRODCOL {              /* 0x58 bytes */
+    int good;                           /* 0x00, the goods the column makes (an ai_Goods index) */
+    int in[4];                          /* 0x04, its input goods (AIGOOD.in), 0 = none */
+    int need[4];                        /* 0x14, the amount of each input one run takes (AIGOOD.need) */
+    int x;                              /* 0x24, the column window's x (0x10) */
+    int y;                              /* 0x28, its y (8 + column * 0x78) */
+    int unk2c;                          /* 0x2c, -1 at the init (no reader read yet) */
+    int win;                            /* 0x30, the column's child window, -1 = not built yet */
+    int pic;                            /* 0x34, the goods picture: a click on it (d2_PointerObj) picks the column */
+    int bar;                            /* 0x38, the progress picture 0x4fd of the running job, -1 = none */
+    int inPics[4];                      /* 0x3c, the pictures of the four inputs */
+    int amountWin;                      /* 0x4c, the child window of the amount text */
+    int maxAmount;                      /* 0x50, what the inputs in store make: the fewest runs over the inputs
+                                           times AIGOOD.batch */
+    int stock;                          /* 0x54, the amount of the goods in store */
+} LCPRODCOL;
+extern LCPRODCOL ai_ProdColumns[16];    /* 0x6f5320 */
 extern int ai_BauplatzCount;            /* 0x6f2688 */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */

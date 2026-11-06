@@ -5890,7 +5890,6 @@ GAPDATA full_data_6f4f50[16] = { 0 };  /* 0x6f4f50 */
 GAPDATA full_data_6f4f60[0x380] = { 0 };  /* 0x6f4f60, one table (0x380 bytes): the pieces its users split it into are offsets of it */
 GAPDATA full_data_6f52e0[0x28] = { 0 };  /* 0x6f52e0, one table: 2 rows of 0x14, the shape of the table at 0x6f4f00 (0x58bbf9; ai_BauplatzList follows at 0x6f5308) */
 GAPDATA full_data_6f5310[16] = { 0 };  /* 0x6f5310 */
-GAPDATA full_data_6f5320[0x580] = { 0 };  /* 0x6f5320, one table (0x580 bytes): the pieces its users split it into are offsets of it */
 GAPDATA full_data_6f58a0[0x1c0] = { 0 };  /* 0x6f58a0, one table: 8 rows of 0x38, the rows of the table at 0x6f4f60 (0x58dcde: from +0x20, bound +0x1e0) */
 GAPDATA full_data_6f5a60[4] = { 0 };  /* 0x6f5a60 */
 GAPDATA full_data_6f5a64[32] = { 0 };  /* 0x6f5a64 */

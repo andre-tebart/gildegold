@@ -82,7 +82,6 @@ extern struct D2OBJ *d2_Objs;
 extern GAPDATA full_data_62b038[];
 extern char * ai_FallbackBuilding;
 extern char * ai_PlayerBuilding;
-extern GAPDATA full_data_6f5320[];
 extern char * ai_Goods;
 extern float gm_DayStartHours[];
 extern float gm_DayEndHours[];
@@ -178,7 +177,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 extern int d2_ClickedForm;
-extern GAPDATA full_data_6f5320[];
 extern unsigned short * sv_PanelShown;
 extern unsigned short gm_KindObjCount;
 extern unsigned gm_KindObjs[732];
@@ -1190,7 +1188,7 @@ void ai_Unk58bbd0(void)
         p[0] = -1;
     }
     n = 8;
-    for (p = (int *)(unsigned)(full_data_6f5320 + 0x14); n < 0x788; p += 0x16) {
+    for (p = (int *)(unsigned)((char *)ai_ProdColumns + 0x14); n < 0x788; p += 0x16) {
         p[-5] = 0;
         for (q = p, i = 4; i != 0; i--) {
             q[-4] = 0;
@@ -1390,40 +1388,40 @@ void ai_Unk58c680(int param_1, int param_2, int param_3, int param_4)
     d2_SetForm(param_1, param_2);
     gm_BuildingGoodsList(tgt, (char *)have, 1);
     for (c = 0; c < param_3; c++) {
-        col = (int *)((unsigned)&full_data_6f5320 + c * 0x58);
-        if (*(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58) < 0) {
-            rec = d2_CreateChildWindow(*(int *)((unsigned)(full_data_6f5320 + 0x24) + c * 0x58), *(int *)((unsigned)(full_data_6f5320 + 0x28) + c * 0x58), 0xcd, 0x57,
+        col = (int *)((unsigned)&ai_ProdColumns + c * 0x58);
+        if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58) < 0) {
+            rec = d2_CreateChildWindow(*(int *)((unsigned)((char *)ai_ProdColumns + 0x24) + c * 0x58), *(int *)((unsigned)((char *)ai_ProdColumns + 0x28) + c * 0x58), 0xcd, 0x57,
                                0x10, U_I((unsigned)&d2_LastWindow));
-            *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58) = rec;
+            *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58) = rec;
             U_I((unsigned)&ai_Unkf8f39c + rec * 0x1e2) = 0x54;
             d2_WinOpenPic(0, 0, 0x749, rec);
             if (c == 0) {
-                U_I((unsigned)(full_data_6f5320 + 0x34)) = d2_WinOpenPic(0xd, 5, 0x74a, *(int *)((unsigned)(full_data_6f5320 + 0x30)));
+                U_I((unsigned)((char *)ai_ProdColumns + 0x34)) = d2_WinOpenPic(0xd, 5, 0x74a, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30)));
             } else {
-                U_I((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) =
-                    d2_WinOpenPic(0xd, 5, *(int *)((unsigned)&full_data_6f5320 + c * 0x58) + 0xdf, *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58));
+                U_I((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) =
+                    d2_WinOpenPic(0xd, 5, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) + 0xdf, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
             }
-            n = *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58);
+            n = *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58);
             U_I(U_I((unsigned)&d2_Objs) + 0x4c + n * 0x2ec) = 1;
             U_I(U_I((unsigned)&d2_Objs) + 0x1d8 + n * 0x2ec) = -1;
             U_I(U_I((unsigned)&d2_Objs) + 0x1dc + n * 0x2ec) = -1;
-            row = (int *)((unsigned)(full_data_6f5320 + 0x3c) + c * 0x58);
+            row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
             for (i = 0; i < 4; i++) {
                 if (row[-0xe + i] != 0) {
                     rec = d2_WinOpenPicStyled(i * 0x31 + 0x11, 0x3a, row[-0xe + i] + 0xdf,
-                                       *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58), -2);
+                                       *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58), -2);
                     row[i] = rec;
                     U_I(U_I((unsigned)&d2_Objs) + 0x4c + rec * 0x2ec) = 1;
                     U_I(U_I((unsigned)&d2_Objs) + 0x1d8 + rec * 0x2ec) = -1;
                     U_I(U_I((unsigned)&d2_Objs) + 0x1dc + rec * 0x2ec) = -1;
                 }
             }
-            rec = d2_CreateChildWindow(0x43, 4, 0x88, 0x32, 0x10, *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58));
-            U_I((unsigned)(full_data_6f5320 + 0x4c) + c * 0x58) = rec;
+            rec = d2_CreateChildWindow(0x43, 4, 0x88, 0x32, 0x10, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
+            U_I((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58) = rec;
             U_I((unsigned)&ai_Unkf8f39c + rec * 0x1e2) = 0x54;
         }
         all = 0;
-        row = (int *)((unsigned)(full_data_6f5320 + 0x3c) + c * 0x58);
+        row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
         for (i = 0; i < 4; i++) {
             if (row[i] == 0)
                 continue;
@@ -1433,39 +1431,39 @@ void ai_Unk58c680(int param_1, int param_2, int param_3, int param_4)
             if (all < 2)
                 all = 1;
         }
-        U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = all + 0x750;
+        U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = all + 0x750;
         n = 0;
         if (c == 0)
             rec = he_FindEvent(2, 0, 9, 3, U_I(tgt + 1));
         else
             rec = he_FindEvent(2, 0, 8, 3, U_I(tgt + 1));
         if (rec != 0 && (U_I(rec + 0x14) != 0 || U_I(rec + 0x18) != 0)) {
-            if (*(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) < 0)
-                U_I((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) = d2_WinOpenPic(0xd, 5, 0x4fd, *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58));
+            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) < 0)
+                U_I((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = d2_WinOpenPic(0xd, 5, 0x4fd, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
             n = U_I(rec + 0x18) + U_I(rec + 0x14);
             t0 = gm_MinutesBetween(rec + 0x44, rec + 0x52);
             t1 = gm_MinutesBetween(rec + 0x44, (unsigned)&ai_Time);
-            *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = (float)t1 / (float)t0;
+            *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = (float)t1 / (float)t0;
         } else {
-            if (*(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) != -1) {
-                d2_RemoveObj(*(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58));
-                U_I((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) = -1;
+            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) != -1) {
+                d2_RemoveObj(*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58));
+                U_I((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = -1;
             }
-            if (*(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) != -1)
-                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = 0.0f;
+            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) != -1)
+                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = 0.0f;
         }
         if (c == 0) {
-            U_I((unsigned)&d2_LastWindow) = U_I((unsigned)(full_data_6f5320 + 0x4c));
+            U_I((unsigned)&d2_LastWindow) = U_I((unsigned)((char *)ai_ProdColumns + 0x4c));
             io_PrintText(200, n, 0x51e);
         } else {
-            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)(full_data_6f5320 + 0x4c) + c * 0x58);
-            io_PrintText(0xc9, n, 0x51e, *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 2 + 0x9a8);
+            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58);
+            io_PrintText(0xc9, n, 0x51e, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 2 + 0x9a8);
         }
         d2_SetForm(param_1, param_2);
     }
     if (c >= 0xf)
         return;
-    for (n = (unsigned)(full_data_6f5320 + 0x30) + c * 0x58; n < (unsigned)((unsigned)(full_data_6f5320 + 0x5b0)); n += 0x58) {
+    for (n = (unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58; n < (unsigned)((unsigned)((char *)ai_ProdColumns + 0x5b0)); n += 0x58) {
         if (*(int *)n >= 0) {
             *(int *)(n - 4) = -1;
             d2_RemoveObj(*(int *)n);
@@ -1522,35 +1520,35 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
     d2_SetForm(param_1, 0);
     d2_SetForm(param_1, param_2);
     for (c = 0; c < param_3; c++) {
-        *(int *)((unsigned)(full_data_6f5320 + 0x2c) + c * 0x58) = -1;
+        *(int *)((unsigned)((char *)ai_ProdColumns + 0x2c) + c * 0x58) = -1;
         if (U_I((unsigned)&full_data_6f5a60) != 0) {
             for (i = 0; i < 4; i++)
-                if (*(int *)((unsigned)(full_data_6f5320 + 0x4) + c * 0x58 + i * 4) == U_I((unsigned)&full_data_6f5a60))
-                    *(int *)((unsigned)(full_data_6f5320 + 0x2c) + c * 0x58) = i;
+                if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x4) + c * 0x58 + i * 4) == U_I((unsigned)&full_data_6f5a60))
+                    *(int *)((unsigned)((char *)ai_ProdColumns + 0x2c) + c * 0x58) = i;
         }
     }
     for (c = 0; c < param_3; c++) {
-        if (*(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58) < 0) {
-            rec = d2_CreateChildWindow(*(int *)((unsigned)(full_data_6f5320 + 0x24) + c * 0x58), *(int *)((unsigned)(full_data_6f5320 + 0x28) + c * 0x58), 0xcd, 0x57,
+        if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58) < 0) {
+            rec = d2_CreateChildWindow(*(int *)((unsigned)((char *)ai_ProdColumns + 0x24) + c * 0x58), *(int *)((unsigned)((char *)ai_ProdColumns + 0x28) + c * 0x58), 0xcd, 0x57,
                                0x10, U_I((unsigned)&d2_LastWindow));
-            *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58) = rec;
+            *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58) = rec;
             U_I((unsigned)&ai_Unkf8f39c + rec * 0x1e2) = 0x54;
             d2_WinOpenPic(0, 0, 0x74c, rec);
-            n = d2_WinOpenPic(0xd, 5, *(int *)((unsigned)&full_data_6f5320 + c * 0x58) + 0xdf, *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58));
-            *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) = n;
+            n = d2_WinOpenPic(0xd, 5, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) + 0xdf, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
+            *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) = n;
             U_I(U_I((unsigned)&d2_Objs) + 0x4c + n * 0x2ec) = 1;
             U_I(U_I((unsigned)&d2_Objs) + 0x1d8 + n * 0x2ec) = -1;
             U_I(U_I((unsigned)&d2_Objs) + 0x1dc + n * 0x2ec) = -1;
             i = 0x26;
-            row = (int *)((unsigned)(full_data_6f5320 + 0x3c) + c * 0x58);
+            row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
             for (n = 0; n < 4; n++, i += 2) {
                 if (row[n] != 0) {
                     rec = d2_WinOpenPicStyled(n * 0x31 + 0x11, 0x3a, row[n] + 0xdf,
-                                       *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58), -2);
+                                       *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58), -2);
                     row[n] = rec;
                     U_I(U_I((unsigned)&d2_Objs) + 0x4c + rec * 0x2ec) = 1;
                     d2_SetObjFont(rec, 0x54);
-                    _itoa(*(unsigned short *)(i + *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 0x41 + U_I((unsigned)&ai_Goods)),
+                    _itoa(*(unsigned short *)(i + *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 0x41 + U_I((unsigned)&ai_Goods)),
                                  buf, 10);
                     d2_SetCaption(rec, buf);
                     U_I(U_I((unsigned)&d2_Objs) + 0x1cc + rec * 0x2ec) = -8;
@@ -1559,12 +1557,12 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
                     U_I(U_I((unsigned)&d2_Objs) + 0x1dc + rec * 0x2ec) = -1;
                 }
             }
-            rec = d2_CreateChildWindow(0x43, 4, 0x88, 0x32, 0x10, *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58));
-            *(int *)((unsigned)(full_data_6f5320 + 0x4c) + c * 0x58) = rec;
+            rec = d2_CreateChildWindow(0x43, 4, 0x88, 0x32, 0x10, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
+            *(int *)((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58) = rec;
             U_I((unsigned)&ai_Unkf8f39c + rec * 0x1e2) = 0x54;
         }
         all = 0;
-        row = (int *)((unsigned)(full_data_6f5320 + 0x3c) + c * 0x58);
+        row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
         for (n = 0; n < 4; n++) {
             if (row[n] == 0)
                 continue;
@@ -1573,22 +1571,22 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
             U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + row[n] * 0x2ec) = 0x74f;
             all = 2;
         }
-        U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = all + 0x750;
+        U_I(U_I((unsigned)&d2_Objs) + 0x1d4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = all + 0x750;
         p = (char *)he_FindEvent(2, 0, 4, 3, U_I(owner + 1));
-        while (p != 0 && *(unsigned short *)(p + 0xac) != *(int *)((unsigned)&full_data_6f5320 + c * 0x58))
+        while (p != 0 && *(unsigned short *)(p + 0xac) != *(int *)((unsigned)&ai_ProdColumns + c * 0x58))
             p = (char *)he_NextEvent();
         if (p == 0) {
             p = (char *)he_FindEvent(2, 0, 3, 3, U_I(owner + 1));
-            while (p != 0 && *(unsigned short *)(p + 0xac) != *(int *)((unsigned)&full_data_6f5320 + c * 0x58))
+            while (p != 0 && *(unsigned short *)(p + 0xac) != *(int *)((unsigned)&ai_ProdColumns + c * 0x58))
                 p = (char *)he_NextEvent();
         }
         if (p == 0 || (U_I(p + 0x14) == 0 && U_I(p + 0x18) == 0)) {
-            if (*(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) != -1) {
-                d2_RemoveObj(*(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58));
-                *(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) = -1;
+            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) != -1) {
+                d2_RemoveObj(*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58));
+                *(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = -1;
             }
-            if (*(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) != -1)
-                U_I(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = 0;
+            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) != -1)
+                U_I(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = 0;
         } else {
             n = gm_ClockSeason((char *)(unsigned)&ai_Time);
             id = 0;
@@ -1611,51 +1609,51 @@ void ai_Unk58cc10(int param_1, int param_2, int param_3, int param_4, int param_
             } else if (*p == 3) {
                 id = 0x50c;
             }
-            n = *(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58);
+            n = *(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58);
             if (-1 < n && U_I(U_I((unsigned)&d2_Objs) + 8 + n * 0x2ec) != id) {
                 d2_RemoveObj(n);
-                *(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) = -1;
+                *(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = -1;
             }
-            if (*(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) < 0)
-                *(int *)((unsigned)(full_data_6f5320 + 0x38) + c * 0x58) = d2_WinOpenPic(0xd, 5, id, *(int *)((unsigned)(full_data_6f5320 + 0x30) + c * 0x58));
+            if (*(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) < 0)
+                *(int *)((unsigned)((char *)ai_ProdColumns + 0x38) + c * 0x58) = d2_WinOpenPic(0xd, 5, id, *(int *)((unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58));
             t0 = U_I(p + 0x18) + U_I(p + 0x14);
             if (*p == 4) {
                 ratio = 1.0f - *(float *)(p + 0xb4) / *(float *)(p + 0xb8);
-                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = ratio;
+                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = ratio;
             } else if (*p == 3) {
                 ratio = 1.0f - (float)U_I(p + 0xb0) / *(float *)(p + 0xb4);
-                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)(full_data_6f5320 + 0x34) + c * 0x58) * 0x2ec) = ratio;
+                *(float *)(U_I((unsigned)&d2_Objs) + 0x1e4 + *(int *)((unsigned)((char *)ai_ProdColumns + 0x34) + c * 0x58) * 0x2ec) = ratio;
             }
         }
-        row = (int *)((unsigned)(full_data_6f5320 + 0x3c) + c * 0x58);
+        row = (int *)((unsigned)((char *)ai_ProdColumns + 0x3c) + c * 0x58);
         for (i = 0; i < 4; i++)
             if (row[i] != 0)
                 U_I(U_I((unsigned)&d2_Objs) + 0x2c + row[i] * 0x2ec) = 0;
-        idx = *(int *)((unsigned)(full_data_6f5320 + 0x2c) + c * 0x58);
+        idx = *(int *)((unsigned)((char *)ai_ProdColumns + 0x2c) + c * 0x58);
         if (idx < 0) {
-            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)(full_data_6f5320 + 0x4c) + c * 0x58);
+            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58);
             if (param_5 == 0)
-                io_PrintText((char *)(unsigned)&full_data_62b084, t0, 0x51e, 0xb8, *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 2 + 0x9a8);
+                io_PrintText((char *)(unsigned)&full_data_62b084, t0, 0x51e, 0xb8, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 2 + 0x9a8);
             else if (param_5 == 1)
-                io_PrintText((char *)(unsigned)&full_data_62b06c, t0, 0x51e, 0xba, *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 2 + 0x9a8);
+                io_PrintText((char *)(unsigned)&full_data_62b06c, t0, 0x51e, 0xba, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 2 + 0x9a8);
             else
-                io_PrintText((char *)(unsigned)&full_data_62b054, t0, 0x51e, 0xbb, *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 2 + 0x9a8);
+                io_PrintText((char *)(unsigned)&full_data_62b054, t0, 0x51e, 0xbb, *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 2 + 0x9a8);
         } else {
             U_I(U_I((unsigned)&d2_Objs) + 0x2c + row[idx] * 0x2ec) = 1;
-            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)(full_data_6f5320 + 0x4c) + c * 0x58);
+            U_I((unsigned)&d2_LastWindow) = *(int *)((unsigned)((char *)ai_ProdColumns + 0x4c) + c * 0x58);
             /* ROUGH: the labels 0xc1 / 0xc2 (the direction of the carrier) and 0xc3 / 0xc4 (the price of the
                selected row) with their arguments; the pseudocode branches differ only in the argument order */
-            io_PrintText(0xc1, *(unsigned short *)(*(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 0x41 + 0x36 + U_I((unsigned)&ai_Goods)),
-                         *(int *)((unsigned)&full_data_6f5320 + c * 0x58) * 2 + 0x9a8);
-            if (U_I((unsigned)(full_data_6f5320 + 0x14) + c * 0x58 + idx * 0x1c) == 1)
-                io_PrintText(0xc3, 1, U_I((unsigned)(full_data_6f5320 + 0x4) + c * 0x58 + idx * 0x1c) * 2 + 0x9a8);
+            io_PrintText(0xc1, *(unsigned short *)(*(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 0x41 + 0x36 + U_I((unsigned)&ai_Goods)),
+                         *(int *)((unsigned)&ai_ProdColumns + c * 0x58) * 2 + 0x9a8);
+            if (U_I((unsigned)((char *)ai_ProdColumns + 0x14) + c * 0x58 + idx * 0x1c) == 1)
+                io_PrintText(0xc3, 1, U_I((unsigned)((char *)ai_ProdColumns + 0x4) + c * 0x58 + idx * 0x1c) * 2 + 0x9a8);
             else
-                io_PrintText(0xc4, 0, U_I((unsigned)(full_data_6f5320 + 0x4) + c * 0x58 + idx * 0x1c) * 2 + 0x9a8);
+                io_PrintText(0xc4, 0, U_I((unsigned)((char *)ai_ProdColumns + 0x4) + c * 0x58 + idx * 0x1c) * 2 + 0x9a8);
         }
         d2_SetForm(param_1, param_2);
     }
     if (c < 0xf) {
-        for (n = (unsigned)(full_data_6f5320 + 0x30) + c * 0x58; n < (unsigned)((unsigned)(full_data_6f5320 + 0x5b0)); n += 0x58) {
+        for (n = (unsigned)((char *)ai_ProdColumns + 0x30) + c * 0x58; n < (unsigned)((unsigned)((char *)ai_ProdColumns + 0x5b0)); n += 0x58) {
             if (*(int *)n >= 0) {
                 *(int *)(n - 4) = -1;
                 d2_RemoveObj(*(int *)n);
@@ -3554,7 +3552,7 @@ int ai_SearchResourceWindow(int param_1)
         d2_SetForm(win, 3);
         io_PrintText(199);
         ai_Unk58bbd0();
-        U_I((unsigned)&full_data_6f5320) = 0;
+        U_I((unsigned)&ai_ProdColumns) = 0;
         cols = 1;
         d2_SetForm(win, 0);
         n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
@@ -3588,7 +3586,7 @@ int ai_SearchResourceWindow(int param_1)
                     }
                 }
                 for (col = 0; col < cols; col++) {
-                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)(full_data_6f5320 + 0x34) + col * 0x58)) {
+                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)((char *)ai_ProdColumns + 0x34) + col * 0x58)) {
                         if (flag) {
                             if (col == 0) {
                                 snd_PlayFavourComment();
@@ -3606,7 +3604,7 @@ int ai_SearchResourceWindow(int param_1)
                                 b = he_FindEvent(2, 0, 8, 3, U_I(param_1 + 1));
                                 while (b != 0) {
                                     if (*(unsigned short *)(b + 0xac) ==
-                                        U_I((unsigned)&full_data_6f5320 + col * 0x58))
+                                        U_I((unsigned)&ai_ProdColumns + col * 0x58))
                                         goto found;
                                     b = he_NextEvent();
                                 }
@@ -3632,7 +3630,7 @@ int ai_SearchResourceWindow(int param_1)
                                 } else if (pc != 0 && *pc == 8 &&
                                            *(int *)(pc + 0x10) == U_I(param_1 + 1) &&
                                            *(unsigned short *)(pc + 0xac) ==
-                                               U_I((unsigned)&full_data_6f5320 + col * 0x58)) {
+                                               U_I((unsigned)&ai_ProdColumns + col * 0x58)) {
                                     U_I((unsigned)&ai_Selected + *p * 0x21c) = 1;
                                 }
                             }
@@ -3652,7 +3650,7 @@ int ai_SearchResourceWindow(int param_1)
                 if (*(int *)(item + 7) > 1) {
                     /* ROUGH: the new columns (0x6f5320 + cols * 0x16, the cap 0x6f58a0, the record's
                        ushort at +0, skip the already present 0x6f5378 entries) */
-                    U_I((unsigned)&full_data_6f5320 + cols * 0x58) = *item;
+                    U_I((unsigned)&ai_ProdColumns + cols * 0x58) = *item;
                     cols++;
                 }
                 item = (unsigned short *)gm_QueryNext();
@@ -3663,12 +3661,12 @@ int ai_SearchResourceWindow(int param_1)
                    +0x36; the column's +0x50 / +0x54 / +0x58 */
                 for (col = 1; col < cols; col++) {
                     n = U_I((unsigned)&ai_Goods);
-                    U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x2c) = 0x7fffffff;
+                    U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x2c) = 0x7fffffff;
                     for (i = 0; i < 4; i++) {
-                        v = *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&full_data_6f5320 + col * 0x58) * 0x41 + 8 + n);
-                        U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x10 + i * 4) = v;
-                        U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x20 + i * 4) =
-                            *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&full_data_6f5320 + col * 0x58) * 0x41 + n);
+                        v = *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&ai_ProdColumns + col * 0x58) * 0x41 + 8 + n);
+                        U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x10 + i * 4) = v;
+                        U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x20 + i * 4) =
+                            *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&ai_ProdColumns + col * 0x58) * 0x41 + n);
                     }
                     /* ROUGH: the per-good price minimum and the amount of the record */
                 }
@@ -3748,12 +3746,12 @@ int ai_ExtractResourceWindow(int param_1)
                     }
                 }
                 for (col = 0; col < cols; col++) {
-                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)(full_data_6f5320 + 0x34) + col * 0x58)) {
+                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)((char *)ai_ProdColumns + 0x34) + col * 0x58)) {
                         if (flag) {
                             snd_PlayFavourComment();
                             b = he_FindEvent(2, 0, 3, 3, U_I(param_1 + 1));
                             while (b != 0) {
-                                if (*(unsigned short *)(b + 0xac) == U_I((unsigned)&full_data_6f5320 + col * 0x58))
+                                if (*(unsigned short *)(b + 0xac) == U_I((unsigned)&ai_ProdColumns + col * 0x58))
                                     goto found;
                                 b = he_NextEvent();
                             }
@@ -3773,7 +3771,7 @@ int ai_ExtractResourceWindow(int param_1)
                                 if (pc != 0 && *pc == 3 &&
                                     *(int *)(pc + 0x10) == U_I(param_1 + 1) &&
                                     *(unsigned short *)(pc + 0xac) ==
-                                        U_I((unsigned)&full_data_6f5320 + col * 0x58))
+                                        U_I((unsigned)&ai_ProdColumns + col * 0x58))
                                     U_I((unsigned)&ai_Selected + *p * 0x21c) = 1;
                             }
                         }
@@ -3788,7 +3786,7 @@ int ai_ExtractResourceWindow(int param_1)
             item = (unsigned short *)gm_Query(*(int *)(rec1 + 0x14), 1, 4, 0x17);
             while (item != 0) {
                 if (*(int *)(item + 7) > 1) {
-                    U_I((unsigned)&full_data_6f5320 + cols * 0x58) = *item;
+                    U_I((unsigned)&ai_ProdColumns + cols * 0x58) = *item;
                     cols++;
                 }
                 item = (unsigned short *)gm_QueryNext();
@@ -3797,10 +3795,10 @@ int ai_ExtractResourceWindow(int param_1)
                 /* ROUGH: the prices / amounts per column (the goods 0x91aaf0, 0x50aaf0, the words +0xe /
                    +0x36), stored at the column +0x50 / +0x54 */
                 for (col = 0; col < cols; col++) {
-                    b = gm_Query(*(int *)(rec2 + 0x14), 1, 0, U_I((unsigned)&full_data_6f5320 + col * 0x58));
-                    U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x50) = b == 0 ? 0 : U_I(b + 0xe);
-                    b = gm_Query(*(int *)(rec2 + 0x14), 1, 0, U_I((unsigned)&full_data_6f5320 + col * 0x58));
-                    U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x54) = b == 0 ? 0 : gm_ListAmount(rec2, b);
+                    b = gm_Query(*(int *)(rec2 + 0x14), 1, 0, U_I((unsigned)&ai_ProdColumns + col * 0x58));
+                    U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x50) = b == 0 ? 0 : U_I(b + 0xe);
+                    b = gm_Query(*(int *)(rec2 + 0x14), 1, 0, U_I((unsigned)&ai_ProdColumns + col * 0x58));
+                    U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x54) = b == 0 ? 0 : gm_ListAmount(rec2, b);
                 }
             }
             _itoa(cols, a, 10);
@@ -3878,7 +3876,7 @@ int ai_ProductionGoodsWindow(int param_1)
                     }
                 }
                 for (col = 0; col < cols; col++) {
-                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)(full_data_6f5320 + 0x34) + col * 0x58)) {
+                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)((char *)ai_ProdColumns + 0x34) + col * 0x58)) {
                         if (b) {
                             /* ROUGH: find the type 4 building 0x53e400 (2, 0, 4, 3) with the column's id,
                                else post the type 4 message (0x4c2d20, the 0x3e-dword record with the kind 4,
@@ -3896,18 +3894,18 @@ int ai_ProductionGoodsWindow(int param_1)
                                     *(int *)(*(char **)(((unsigned)&ai_Unk770cec + 0x10) + id * 0x21c) + 0x10) ==
                                         U_I(param_1 + 1) &&
                                     *(unsigned short *)(*(char **)(((unsigned)&ai_Unk770cec + 0x10) + id * 0x21c) + 0xac) ==
-                                        U_I((unsigned)&full_data_6f5320 + col * 0x58))
+                                        U_I((unsigned)&ai_ProdColumns + col * 0x58))
                                     U_I((unsigned)&ai_Selected + id * 0x21c) = 1;
                             }
                         }
                     }
                     /* the four selection values of the column (0x6f534c, the chosen 0x6f5a60) */
                     for (i = 0; i < 4; i++) {
-                        if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)(full_data_6f5320 + 0x4) + col * 0x58 + i * 4)) {
-                            if (U_I((unsigned)(full_data_6f5320 + 0x2c) + col * 0x58) == i)
+                        if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)((char *)ai_ProdColumns + 0x4) + col * 0x58 + i * 4)) {
+                            if (U_I((unsigned)((char *)ai_ProdColumns + 0x2c) + col * 0x58) == i)
                                 U_I((unsigned)&full_data_6f5a60) = 0;
                             else
-                                U_I((unsigned)&full_data_6f5a60) = U_I((unsigned)&full_data_6f5320 + col * 0x58 + i * 4);
+                                U_I((unsigned)&full_data_6f5a60) = U_I((unsigned)&ai_ProdColumns + col * 0x58 + i * 4);
                         }
                     }
                 }
@@ -3937,7 +3935,7 @@ int ai_ProductionGoodsWindow(int param_1)
                         }
                     }
                     if (add) {
-                        U_I((unsigned)&full_data_6f5320 + cols * 0x58) = id;
+                        U_I((unsigned)&ai_ProdColumns + cols * 0x58) = id;
                         cols++;
                     }
                 }
@@ -3946,17 +3944,17 @@ int ai_ProductionGoodsWindow(int param_1)
                 /* ROUGH: the prices / amounts per column as in 0x5923c0 (0x91aaf0, the words +8 / +0,
                    0x50aaf0, +0x36), stored at +0x50 / +0x54 */
                 for (col = 0; col < cols; col++) {
-                    U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x50) = 0x7fffffff;
+                    U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x50) = 0x7fffffff;
                     for (i = 0; i < 4; i++) {
-                        v = *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&full_data_6f5320 + col * 0x58) * 0x41 +
+                        v = *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&ai_ProdColumns + col * 0x58) * 0x41 +
                                                 8 + U_I((unsigned)&ai_Goods));
-                        U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x14 + i * 4) = v;
-                        U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x24 + i * 4) =
-                            *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&full_data_6f5320 + col * 0x58) * 0x41 +
+                        U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x14 + i * 4) = v;
+                        U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x24 + i * 4) =
+                            *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&ai_ProdColumns + col * 0x58) * 0x41 +
                                                 U_I((unsigned)&ai_Goods));
                     }
-                    b = gm_Query(*(int *)(rec2 + 0x14), 1, 0, U_I((unsigned)&full_data_6f5320 + col * 0x58));
-                    U_I((unsigned)&full_data_6f5320 + col * 0x58 + 0x54) = b == 0 ? 0 : gm_ListAmount(rec2, b);
+                    b = gm_Query(*(int *)(rec2 + 0x14), 1, 0, U_I((unsigned)&ai_ProdColumns + col * 0x58));
+                    U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x54) = b == 0 ? 0 : gm_ListAmount(rec2, b);
                 }
             }
             _itoa(cols, a, 10);
@@ -23834,3 +23832,4 @@ int ai_BauplatzCount = 0;  /* 0x6f2688 */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
 int * ai_BauplatzList = 0;  /* 0x6f5308 */
+LCPRODCOL ai_ProdColumns[16] = { 0 };  /* 0x6f5320, the goods columns of the production window */
