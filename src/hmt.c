@@ -580,7 +580,7 @@ void hmt_ClearOffices(void)
    the office bit
    @deep B: 50 code hunks left after the one meaning fix (the original compares hmt_PendingElection unsigned: (unsigned int) < 3, jae; now equal there). The rest are the same operation spelled differently: the candidate limit n > 3 here against cmp edi,0x4/jge in the original, the best test fld best/fcomp cand here against fld cand/fcomp best there (with test ah,0x5/jp against and eax,0x4100/jne), and the AIMSG field stores in another order (same offsets once the pushed esp is accounted for: type base+4, unk08 base+8, time base+0x28, arg[5] base+0x6c). No missing statement, constant or callee left. Q1/Q2 also open (placeholder name, cm_SendLongMessage and the 0x5176d0/0x53dda0 rename block) */
 
-void hmt_Unk4ad580(void)
+void hmt_DecideElection(void)
 {
     HMTCAND cand[4];
     HMTOBJ o;

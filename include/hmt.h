@@ -64,7 +64,7 @@ void hmt_Election(void);                                                        
 void hmt_SendElectionMessage(int v);                                                       /* 0x4ad3b0 */
 float hmt_Score(AICHAR *c, void *obj, int type, int twice);                      /* 0x4ad3e0 */
 void hmt_ClearOffices(void);                                                        /* 0x4ad510 */
-void hmt_Unk4ad580(void);                                                        /* 0x4ad580 */
+void hmt_DecideElection(void);                                                        /* 0x4ad580 */
 void hmt_Unk4ad7a0(void);                                                        /* 0x4ad7a0 */
 extern const int hmt_Unk5ee114;                                                        /* 0x5ee114, 8000000 */
 void hmt_Create(int type, int unk, unsigned short v, struct AICHAR *c);                 /* 0x4adbb0 */
