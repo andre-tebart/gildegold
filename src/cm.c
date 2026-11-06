@@ -1700,16 +1700,17 @@ void cm_SendChrAnim(int charId, const char *name, int count)
     strncpy(m.anim.name, name, 0x2f);
     cm_QueueSend(&m);
 }
-/* 0x4c5460, sends message 0x36: its handler (0x4ca8a0) lets the person "sp_<a>" use the gates of building b (room object c) */
+/* 0x4c5460, sends message 0x36: its handler (0x4ca8a0) lets the person "sp_<charId>" use the gates of building bldId
+   (room object objId) */
 
-void cm_SendChrUseGates(int a, int b, int c)
+void cm_SendChrUseGates(int charId, int bldId, int objId)
 {
     G17MSG m;
 
     m.type = 0x36;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.gate.charId = charId;
+    m.gate.bldId = bldId;
+    m.gate.objId = objId;
     cm_QueueSend(&m);
 }
 /* 0x4c54a0, message 0x38 */
