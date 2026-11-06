@@ -1231,7 +1231,8 @@ int ocmd_TriggerEmitter();  /* 0x40f8a0 */
 int ocmd_SetParticlePos();  /* 0x40f8f0 */
 int ocmd_SelectAllTextureSets();  /* 0x40e5a0 */
 
-/* 0x40f960 */
+/* 0x40f960, registers the object script commands of the engine: every ocmd_ handler with its script name,
+   its return type and its argument types through evt_ImportCommand (0x42b5b0) */
 void ocmd_Register(void)
 {
     evt_ImportCommand("CreateObject", ocmd_CreateObject, 1, 4, 7, 7, 7, 6);
