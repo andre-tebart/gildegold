@@ -80,7 +80,7 @@
    Open: data: he_QuickList (0x74db40, 10921 words) and he_RunHandlers (0x758600) are declared over several objects
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
-   0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
+   0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x6f263c he_MessageFilterMask, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
    filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner
    he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
    Open: types: SVFRAME / the frame stack view is declared in sv.c, lc.c and here (it belongs in sv_types.h).
@@ -289,7 +289,6 @@ extern GAPDATA he_TheaterScripts[];
 extern const float ai_FloatOne;
 extern double ai_Unk5ebbe8;
 extern GAPDATA full_rdata_5ee01c[];
-extern GAPDATA full_data_6f263c[];
 extern GAPDATA full_data_6fa0e0[];
 
 void gm_Shuffled(unsigned char n, int *out);
@@ -26072,7 +26071,7 @@ void he_Unk575570(char *per)
 void he_Unk5755c0(char *s)
 {
     strcpy((char *)(unsigned)&full_data_6fa0e0, s);
-    U_I((unsigned)&full_data_6f263c) = GetPrivateProfileIntA("Game", "message_filter_mask", 0, (char *)(unsigned)&full_data_6fa0e0);
+    he_MessageFilterMask = GetPrivateProfileIntA("Game", "message_filter_mask", 0, (char *)(unsigned)&full_data_6fa0e0);
 }
 /* 0x575600, writes 0x6f263c as "Game" / "message_filter_mask" into the INI file 0x6fa0e0 (WritePrivateProfileStringA) */
 
@@ -26080,7 +26079,7 @@ void he_SaveMessageFilter(void)
 {
     char buf[0xc];
 
-    sprintf(buf, "%d", U_I((unsigned)&full_data_6f263c));
+    sprintf(buf, "%d", he_MessageFilterMask);
     WritePrivateProfileStringA("Game", "message_filter_mask", buf, (char *)(unsigned)&full_data_6fa0e0);
 }
 /* 0x575640, 1 when the message filter mask 0x6f263c has the bit of the message kind id (0x605 the bit 1, 0x606 2, 0x607 4, 0x608 8,
@@ -26090,23 +26089,23 @@ int he_IsMessageKindFiltered(int id)
 {
     switch (id) {
     case 0x605:
-        return (U_I((unsigned)&full_data_6f263c) & 1) != 0;
+        return (he_MessageFilterMask & 1) != 0;
     case 0x606:
-        return (U_I((unsigned)&full_data_6f263c) & 2) != 0;
+        return (he_MessageFilterMask & 2) != 0;
     case 0x607:
-        return (U_I((unsigned)&full_data_6f263c) & 4) != 0;
+        return (he_MessageFilterMask & 4) != 0;
     case 0x608:
-        return (U_I((unsigned)&full_data_6f263c) & 8) != 0;
+        return (he_MessageFilterMask & 8) != 0;
     case 0x609:
-        return (U_I((unsigned)&full_data_6f263c) & 0x10) != 0;
+        return (he_MessageFilterMask & 0x10) != 0;
     case 0x60a:
-        return (U_I((unsigned)&full_data_6f263c) & 0x20) != 0;
+        return (he_MessageFilterMask & 0x20) != 0;
     case 0x60b:
-        return (U_I((unsigned)&full_data_6f263c) & 0x40) != 0;
+        return (he_MessageFilterMask & 0x40) != 0;
     case 0x60c:
-        return (U_I((unsigned)&full_data_6f263c) & 0x80) != 0;
+        return (he_MessageFilterMask & 0x80) != 0;
     case 0x60d:
-        return (U_I((unsigned)&full_data_6f263c) & 0x100) != 0;
+        return (he_MessageFilterMask & 0x100) != 0;
     }
     return 0;
 }
@@ -26119,57 +26118,57 @@ void he_SetMessageKindFiltered(int id, int on)
     switch (id) {
     case 0x605:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 1;
+            he_MessageFilterMask |= 1;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~1;
+            he_MessageFilterMask &= ~1;
         break;
     case 0x606:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 2;
+            he_MessageFilterMask |= 2;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~2;
+            he_MessageFilterMask &= ~2;
         break;
     case 0x607:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 4;
+            he_MessageFilterMask |= 4;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~4;
+            he_MessageFilterMask &= ~4;
         break;
     case 0x608:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 8;
+            he_MessageFilterMask |= 8;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~8;
+            he_MessageFilterMask &= ~8;
         break;
     case 0x609:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 0x10;
+            he_MessageFilterMask |= 0x10;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~0x10;
+            he_MessageFilterMask &= ~0x10;
         break;
     case 0x60a:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 0x20;
+            he_MessageFilterMask |= 0x20;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~0x20;
+            he_MessageFilterMask &= ~0x20;
         break;
     case 0x60b:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 0x40;
+            he_MessageFilterMask |= 0x40;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~0x40;
+            he_MessageFilterMask &= ~0x40;
         break;
     case 0x60c:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 0x80;
+            he_MessageFilterMask |= 0x80;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~0x80;
+            he_MessageFilterMask &= ~0x80;
         break;
     case 0x60d:
         if (on)
-            U_I((unsigned)&full_data_6f263c) |= 0x100;
+            he_MessageFilterMask |= 0x100;
         else
-            U_I((unsigned)&full_data_6f263c) &= ~0x100;
+            he_MessageFilterMask &= ~0x100;
         break;
     }
 }
