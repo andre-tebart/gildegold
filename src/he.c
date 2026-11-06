@@ -19062,20 +19062,21 @@ void he_RunNewWorker(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x565b00, the allocation handler "he_AllocDiePlayer": the player 0x505df0 (+0xac) must exist (else the error message and free); his flag byte +8 is cleared, the next run is now */
+/* 0x565b00, the allocation handler of the player's death event 0x71 (its run handler he_Unk565b60): the player
+   (AICHAR, +0xac) must exist (else the error message and free); his health +8 is cleared and the next run is now */
 
-void he_Unk565b00(int ev)
+void he_AllocDiePlayer(AIJOB *ev)
 {
-    int p;
+    AICHAR *p;
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
+    p = (AICHAR *)gm_FindChar(ev->ownerCh);
     if (p == 0) {
         err_Message("he_AllocDiePlayer: player not found!");
         he_FreeEvent((int *)ev);
         return;
     }
-    *(char *)(p + 8) = 0;
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    p->health = 0;
+    ev->end = ai_Time;
 }
 /* 0x565b60, the run handler of the death of a player (ROUGH): state 0 removes the follow object of his figure (0x4284a0 / 0x429e90) and clears his lock 0x524260; state 1 waits until the figure object (+0x184, its +0x28) is gone; state 2 clears the flag +8, the lock, the figure +0x16c and lays the figure down (0x405610, 0x40b2f0 (obj, 0x36, 1): the animation name "bewegung/zu_boden_sinken" at +0xf0), next run at once; state 3 informs the owner 0x4c4e00 (+4, 1) when the flag +0x78 & 2 is set; then freed */
 
@@ -20233,7 +20234,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
     if (he_SetEventHandlers(110, (void *)he_AllocNewWorker, (void *)he_RunNewWorker) != 0)
         return 1;
-    if (he_SetEventHandlers(113, (void *)he_Unk565b00, (void *)he_Unk565b60) != 0)
+    if (he_SetEventHandlers(113, (void *)he_AllocDiePlayer, (void *)he_Unk565b60) != 0)
         return 1;
     if (he_SetEventHandlers(114, (void *)he_Unk565d10, (void *)he_RunKillPlayer) != 0)
         return 1;
