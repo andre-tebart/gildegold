@@ -19889,17 +19889,18 @@ void he_RunHint(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x567b80, the allocation handler of the tips (type 0x84; a Ghidra miss): the first run is today, 4 days later when a tutorial event 0x83 exists; +0x56 = 8, +0x58 = 0; 0x505ca0 (0x1a, 0x6fa1e0) fills the tip order table */
+/* 0x567b80, the allocation handler of the tips event 0x84 (he_RunTip): the first run is today, 4 days later when a
+   tutorial hint event 0x83 exists; at 8:00; gm_Shuffled fills the tip order table he_TipOrder */
 
-void he_Unk567b80(int ev)
+void he_AllocTip(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    ev->end = ai_Time;
     if (he_FindEvent(1, 0, 0x83) != 0)
-        *(int *)(ev + 0x52) = U_I((unsigned)&ai_Time) + 4;
+        ev->end.year = ai_Time.year + 4;
     else
-        *(int *)(ev + 0x52) = U_I((unsigned)&ai_Time);
-    *(short *)(ev + 0x56) = 8;
-    *(int *)(ev + 0x58) = 0;
+        ev->end.year = ai_Time.year;
+    ev->end.hour = 8;
+    ev->end.min = 0;
     gm_Shuffled(0x1a, he_TipOrder);
 }
 /* 0x567c00, the run handler of the tips event 0x84: state 0 shows the next of the 27 tip texts (txt_TipTexts[he_TipOrder[entry]]) to the local player while the tips option ai_GamePanel.byte[3] is on, steps the entry and sets the next run to random(4) + 8 units; with the tips off it runs again in 1 unit; stages -1 / -2 free the record
@@ -20262,7 +20263,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(131, (void *)he_AllocHint, (void *)he_RunHint) != 0)
         return 1;
-    if (he_SetEventHandlers(132, (void *)he_Unk567b80, (void *)he_RunTip) != 0)
+    if (he_SetEventHandlers(132, (void *)he_AllocTip, (void *)he_RunTip) != 0)
         return 1;
     if (he_SetEventHandlers(133, (void *)he_Unk567d20, (void *)he_RunTutorialBuildingTour) != 0)
         return 1;
