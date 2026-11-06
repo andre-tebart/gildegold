@@ -26083,29 +26083,51 @@ void he_SaveMessageFilter(void)
     WritePrivateProfileStringA("Game", "message_filter_mask", buf, (char *)(unsigned)&full_data_6fa0e0);
 }
 /* 0x575640, 1 when the message filter mask 0x6f263c has the bit of the message kind id (0x605 the bit 1, 0x606 2, 0x607 4, 0x608 8,
-   0x609 0x10, 0x60a 0x20, 0x60b 0x40, 0x60c 0x80, 0x60d 0x100); else 0 */
+   0x609 0x10, 0x60a 0x20, 0x60b 0x40, 0x60c 0x80, 0x60d 0x100); else 0
+   @deep read the whole switch against the original: 8 of 9 cases (if (mask & bit) return 1; break) and the
+   jump table are equal; case 0x60b reads the bit with movsx/and 0x40/shr 6, written
+   (unsigned)((char)he_MessageFilterMask & 0x40) >> 6. Remaining hunk at +0x72: ours 'mov al, byte ptr
+   [he_MessageFilterMask]', the original 'movsx eax, byte ptr [...]' (same value after and eax,0x40). Tried
+   15 spellings (int/unsigned/char casts, /0x40, >>6&1, shifts, a short cast): each gives mov al or mov
+   eax,dword + sar/and. A load-width choice for a variant round. */
 
 int he_IsMessageKindFiltered(int id)
 {
     switch (id) {
     case 0x605:
-        return (he_MessageFilterMask & 1) != 0;
+        if (he_MessageFilterMask & 1)
+            return 1;
+        break;
     case 0x606:
-        return (he_MessageFilterMask & 2) != 0;
+        if (he_MessageFilterMask & 2)
+            return 1;
+        break;
     case 0x607:
-        return (he_MessageFilterMask & 4) != 0;
+        if (he_MessageFilterMask & 4)
+            return 1;
+        break;
     case 0x608:
-        return (he_MessageFilterMask & 8) != 0;
+        if (he_MessageFilterMask & 8)
+            return 1;
+        break;
     case 0x609:
-        return (he_MessageFilterMask & 0x10) != 0;
+        if (he_MessageFilterMask & 0x10)
+            return 1;
+        break;
     case 0x60a:
-        return (he_MessageFilterMask & 0x20) != 0;
+        if (he_MessageFilterMask & 0x20)
+            return 1;
+        break;
     case 0x60b:
-        return (he_MessageFilterMask & 0x40) != 0;
+        return (unsigned)((char)he_MessageFilterMask & 0x40) >> 6;
     case 0x60c:
-        return (he_MessageFilterMask & 0x80) != 0;
+        if (he_MessageFilterMask & 0x80)
+            return 1;
+        break;
     case 0x60d:
-        return (he_MessageFilterMask & 0x100) != 0;
+        if (he_MessageFilterMask & 0x100)
+            return 1;
+        break;
     }
     return 0;
 }
