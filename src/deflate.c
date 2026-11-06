@@ -1130,7 +1130,10 @@ local block_state deflate_fast(s, flush)
  * evaluation for matches: a match is finally adopted only if there is
  * no better match at the next window position.
  */
-/* 0x462820 */
+/* 0x462820, compresses the input with lazy match evaluation: the longest
+   match found for the current string is kept pending, and the previous match
+   is emitted (or a literal, when the new match is longer) on the next step;
+   returns the block state reached for this flush */
 local block_state deflate_slow(s, flush)
     deflate_state *s;
     int flush;
