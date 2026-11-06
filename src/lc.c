@@ -6637,99 +6637,100 @@ void ai_MistressContact(int building, int room)
 int gm_TitlesLeft(); float gm_TitlePeriodServed(int n, int *out); int d2_WinOpenSlider();
 void d2_SetObjValue(); int gm_TitleGroup(); void gm_AddTime(struct AITIME *c, int hours, int mins, int secs);
 
-/* 0x596ff0, the master-exam window "locations\wohnsitz\meisterpruefung" (897 B, ROUGH SKELETON from the Ghidra
-   pseudocode): the exam level 0x504ce0 (the character's byte 0x770ce4) + 1; the window 0x4741f0 / 0x475600 /
-   0x475f70 (0) / 0x52ea30 / 0x520f20, the skill 0x504510 (the player, the name local); the exam building
-   0x53e400 (2, 2, the player, 0, 0x26): without it the failure / level texts 0x15bb / 0x15bc (the slider
-   0x46a960, 0x475cb0) / 0x15be, with it 0x504ad0 (the level) and the course texts 0x15bf / 0x15c0 / 0x15c1
-   (the day / hour of the exam); the frame loop: the click 0 0x5176d0 (0x74, 4) + 0x521150 (4) when the level
-   is below 4, else 0x4c5f60 (the character, -4) and the message record (type 0x26, the character, the clock,
-   0x4fe140, 0x4c4b70) and 0x6f22a0; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 / 0x52d7a0 */
-void ai_Unk596ff0(void)
+/* 0x596ff0, the master-exam window "locations\wohnsitz\meisterpruefung" (the MEISTERPRUEFUNG plate of the
+   residence): the player's next title (gm_TitlesLeft of the job + 1) and the share of the current title's period
+   served (gm_TitlePeriodServed, with the time still to serve). A pending exam event 0x26 shows the text 0x15bd
+   (the job's title name); a period not yet served shows 0x15bc with the time left and a 0..100 slider of the
+   share, or 0x15be past the sixth title; otherwise the exam offer 0x15bf (fee 4, the title name), 0x15c0 for an
+   odd title and 0x15c1. Its button 0 takes the exam: under 4 in money the text 0x74, else the player pays 4 and
+   posts the exam message 0x26 (flags 9, from -1, due in two hours) and the window closes; button 1 or a right
+   click close it; then the camera follows
+   @deep Reconstructed whole against the original (the four text branches 0x15bb..0x15c1, the slider, the
+   exam message 0x26 with its time +2h, the money check 0x74, the clicks); block layout matched (the
+   exam==0 && served>=1.0 && next<=6 chain, 0x15be / 0x15bc as separate arms), sizes 899/897. Left two
+   scheduling/regs hunks: the 0x15bd arm loads the job byte before 'and ecx,0x5f' (ours 'mov
+   dl,[esi+0x164]' ahead, the original 'mov cl,[esi+0x164]' after sbb) with the regs eax/ecx/edx rotated;
+   and the message's AITIME copy: the original loads ai_TimeHourW (mov edx,[0x770ae4]) before the rep stosd
+   and stores time.hour first, ours copies the clock after it in 0,4,8,c order. Tried: other field orders
+   (time first moves the hour load but leaves an M8), title as sex?0x18f:0x130 (matches the original's
+   neg/sbb/and/add form). The 100.0f is VC6's pooled __real constant (ai_FloatHundred) */
+void ai_MasterExamWindow(void)
 {
     int win;
-    int b;
-    int n;
-    int c;
-    unsigned int player;
-    float total;
+    int next;
+    int slider;
+    AICHARREC *ch;
+    AIJOB *exam;                        /* a pending exam event 0x26 of the player */
+    float served;
+    AITIME left;
+    AIMSG msg;
     char text[0x100];
-    char name[0x10];
-    unsigned char msg[0xf8];
 
-    player = U_W((unsigned)&ai_PlayerId);
-    n = gm_TitlesLeft(*(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + player * 0x21c)) + 1;
+    ch = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    next = gm_TitlesLeft(ch->jobId) + 1;
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\meisterpruefung");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     sv_ResetScreenClip();
-    total = gm_TitlePeriodServed(U_W((unsigned)&ai_PlayerId), name);
-    b = he_FindEvent(2, 2, U_W((unsigned)&ai_PlayerId), 0, 0x26);
-    if (b == 0) {
-        if (total < 1.0f || n > 6) {
-            d2_SetForm(win, 1);
-            io_PrintText(0x15bb);
-            d2_SetForm(win, 2);
-            if (n < 7) {
-                io_PrintText(0x15bc, U_W((unsigned)&ai_PlayerId), name);
-                c = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x3c,
-                                 d2_LastWindowPtr->w - 0x40, 0, 100, 0x83, 0x42,
-                                 U_I((unsigned)&d2_LastWindow));
-                d2_SetObjValue(c, 0, 100, (int)total);
-            } else {
-                io_PrintText(0x15be, U_W((unsigned)&ai_PlayerId));
-            }
-        } else {
-            c = *(unsigned char *)((unsigned)&ai_CharSex + player * 0x21c);
-            gm_TitleGroup(*(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + player * 0x21c));
-            d2_SetForm(win, 1);
-            io_PrintText(0x15bb);
-            d2_SetForm(win, 2);
-            io_PrintText(0x15bf, U_W((unsigned)&ai_PlayerId), 4,
-                         *(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + player * 0x21c) +
-                             (c != 0 ? 0x5f : 0) + 0x12f);
-            if (n % 2 != 0)
-                io_PrintText(0x15c0);
-            d2_SetForm(win, 3);
-            io_PrintText(0x15c1);
-        }
+    served = gm_TitlePeriodServed(ai_PlayerId, (int *)&left);
+    exam = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x26);
+    if (exam == 0 && served >= 1.0 && next <= 6) {
+        int title = ch->sex != 0 ? 0x18f : 0x130;   /* the job titles' texts: 0x130.., female 0x18f.. */
+
+        gm_TitleGroup(ch->jobId);
+        d2_SetForm(win, 1);
+        io_PrintText(0x15bb);
+        d2_SetForm(win, 2);
+        io_PrintText(0x15bf, ch->id, 4, ch->jobId - 1 + title);
+        if (next % 2 != 0)
+            io_PrintText(0x15c0);
+        d2_SetForm(win, 3);
+        io_PrintText(0x15c1);
+    } else if (exam != 0) {
+        d2_SetForm(win, 1);
+        io_PrintText(0x15bb);
+        d2_SetForm(win, 2);
+        io_PrintText(0x15bd, ch->id, ch->jobId - 1 + (ch->sex != 0 ? 0x18f : 0x130));
+    } else if (next >= 7) {
+        d2_SetForm(win, 1);
+        io_PrintText(0x15bb);
+        d2_SetForm(win, 2);
+        io_PrintText(0x15be, ch->id);
     } else {
         d2_SetForm(win, 1);
         io_PrintText(0x15bb);
         d2_SetForm(win, 2);
-        io_PrintText(0x15bd, U_W((unsigned)&ai_PlayerId),
-                     *(unsigned char *)(((unsigned)&ai_CharInts + 0x160) + player * 0x21c) +
-                         (*(unsigned char *)((unsigned)&ai_CharSex + player * 0x21c) != 0 ? 0x5f : 0) + 0x12f);
+        io_PrintText(0x15bc, ch->id, &left);
+        slider = d2_WinOpenSlider(0x1c, d2_LastWindowPtr->h - 0x3c, d2_LastWindowPtr->w - 0x40, 0, 100, 0x83, 0x42,
+                                  d2_LastWindow);
+        d2_SetObjValue(slider, 0, 100, (int)(served * 100.0f));
     }
-    while (sv_RunFrame(ai_Unk596ff0, 0x677c7) != 0) {
-        if (U_I((unsigned)&d2_ClickedId) != -1 && total >= 1.0f) {
-            if (U_I((unsigned)&d2_ClickedId) == 0) {
-                if (U_I(((unsigned)&ai_Selected + 0xc) + player * 0x21c) < 4) {
+    while (sv_RunFrame(ai_MasterExamWindow, 0x677c7) != 0) {
+        if (d2_ClickedId != -1 && served >= 1.0) {
+            if (d2_ClickedId == 0) {
+                if (ch->money < 4) {
                     txt_Format(text, 0x74, 4);
                     sv_MessageBox(text, 4);
                 } else {
-                    cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + player * 0x87), -4);
-                    memset(msg, 0, 0xf8);
-                    *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + player * 0x87);
-                    *(int *)(msg + 0xc) = -1;
-                    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                    *(unsigned char *)(msg + 4) = 0x26;
-                    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                    *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                    *(unsigned char *)(msg + 0x36) = 9;
-                    *(int *)(msg + 0x58) = *(int *)(msg + 8);
-                    gm_AddTime(msg + 0x28, 2, 0, 0);
-                    cm_SendLongMessage(msg);
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                    gm_SendMoneyDelta(ch->netId, -4);
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x26;
+                    msg.to = ch->netId;
+                    msg.fromId = -1;
+                    msg.time = ai_Time;
+                    msg.flags = 9;
+                    msg.arg[0] = ch->netId;
+                    gm_AddTime(&msg.time, 2, 0, 0);
+                    cm_SendLongMessage((char *)&msg);
+                    sv_PopRequest = 1;
                 }
-            } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
     }
     d2_CloseView(win);
     sv_CameraFollow();
@@ -6839,7 +6840,7 @@ void ai_Unk597500(int param_1, int param_2)
         } else if (U_I((unsigned)&ai_ClickedObject) == beweis) {
             ai_Unk5b4590(param_1);
         } else if (U_I((unsigned)&ai_ClickedObject) == meister) {
-            ai_Unk596ff0();
+            ai_MasterExamWindow();
         } else if (U_I((unsigned)&ai_ClickedObject) == spionage) {
             ai_EspionageAmountMenu();
         } else if (U_I((unsigned)&ai_ClickedObject) == selbstmord) {
