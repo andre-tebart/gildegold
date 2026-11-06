@@ -232,12 +232,6 @@ typedef struct ORDMSG {
 #pragma pack(push, 1)
 /* the building record ai.h's AIBLD, as ord.c reads it (gv.h and ai.h cannot be in one TU: both declare
    ai_Time / ai_Chars / ai_BTypes); the object list of gm_BuildQuery's records */
-typedef struct ORDCREDIT {          /* 12 bytes, a credit offer of a bank (gm_GetCreditOffers) */
-    int amount;                     /* 0x0, the sum lent; -1 = the slot is taken */
-    int term;                       /* 0x4, 2 .. 7 */
-    int interest;                   /* 0x8 */
-} ORDCREDIT;
-
 typedef struct ORDBLD {
     unsigned char type;             /* 0x00, index into ai_BTypes */
     int id;                         /* 0x01, ai.h AIBLD.id */

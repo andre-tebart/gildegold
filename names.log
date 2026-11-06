@@ -2662,3 +2662,4 @@
 2026-11-06T12:18:56 0x0143a3ec data full_data_143a3ec -> txt_Tribune by:main why:text slot 0x8b: ai_MarketStandListener 0x59a800 registers it as the name plate text of ob_TRIBUENE
 2026-11-06T12:19:36 0x005b5690 func ai_Unk5b5690 -> ai_NoticeBoardWindow by:main why:0x5b5690 opens the form misc\pamphlet_brett (ai_MarketStandListener: ob_SCHWARZES_BRETT); 0x5b5a20 opens special\barde (ai_MarketStandListener: ob_TRIBUENE)
 2026-11-06T12:19:36 0x005b5a20 func ai_Unk5b5a20 -> ai_BardWindow by:main why:0x5b5690 opens the form misc\pamphlet_brett (ai_MarketStandListener: ob_SCHWARZES_BRETT); 0x5b5a20 opens special\barde (ai_MarketStandListener: ob_TRIBUENE)
+2026-11-06T12:23:00 0x0059ad60 func ai_Unk59ad60 -> ai_NewCreditWindow by:main why:0x59ad60 opens locations\geldleihe\geldleihe_neuerkredit with the bank's credit offers (gm_GetCreditOffers) and sends the credit message 0x23 for the clicked one

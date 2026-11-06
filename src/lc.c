@@ -1117,8 +1117,10 @@ typedef struct AIBLD {             /* the building record fields this unit reads
         int playerSlot;            /* 0x65, of a kind 0x47 building: its player slot (ai_bld.h AIBLD.playerSlot) */
     };
     char pad69[8];
-    int plants;                    /* 0x71, the vegetation map (ai_bld.h AIBLD.plants) */
-    char pad75[0x20];
+    union {
+        int plants;                /* 0x71, the vegetation map (ai_bld.h AIBLD.plants) */
+        ORDCREDIT credits[3];      /* 0x71, of a bank the credit offers kept for the player (gv.h ORDBLD.credits) */
+    };
     int smokeEffect;               /* 0x95, the running chimney smoke effect (evt_FindById), -1 none (ai_bld.h AIBLD.smokeEffect) */
 } AIBLD;
 typedef struct LCFIREEVENT {       /* the fire event 0x3d's word over AIJOB's union (its alloc 0x564860; the jail check
@@ -8498,38 +8500,38 @@ void ai_WineCellarContact(int building, int room)
             ai_WineCellarWindow();
     }
 }
-/* 0x59ad60, the new credit window "locations\geldleihe\geldleihe_neuerkredit" (720 B): the three offers
-   0x50a250 (param_1, the player 0x770b80 + player * 0x21c, 3) with a positive first value are copied into the
-   table of 5-int records (value, kind, amount, control, index); the window 0x4741f0, the texts 0x18d0, 0x18d1
-   (short param_1 + 0x25, param_1), per offer 0x18d2 (value, amount, kind, 0x5d) into the control 0x475b80 and
-   0x18d3; the pump 0x5309a0 (0x677c7) waits for a click 0x5fe710 on an offer control and sends the AIMSG 0x23
-   (the player and param_1 + 1, the clock, +0x36 = 0x12, the payment 0x4c4830 (the player, param_1 + 1, the
-   player byte, the value), the value / kind / amount at +0x60 / +0x64 / +0x6c), waits for 0x4c3ae0, hides the
-   window (0x4754d0), shows 0x521150 (0x1440510, 4), re-shows it and clears the offer's slot
-   param_1 + 0x71 + index * 0xc; 0xf8a668 == 1 only raises 0x6f22a0 */
+typedef struct CREDITROW {          /* a row of the new credit window (ai_NewCreditWindow): an offer and its object */
+    ORDCREDIT offer;                /* 0x00, the bank's offer (gm_GetCreditOffers) */
+    int obj;                        /* 0x0c, the row's window object (d2_GetWinObj) */
+    int index;                      /* 0x10, the offer's slot in the bank's credits[] */
+} CREDITROW;
+/* 0x59ad60, the new credit window "locations\geldleihe\geldleihe_neuerkredit" of the bank bank (719 B): the credit
+   offers gm_GetCreditOffers makes the player (up to 3) with a positive amount become the window's rows (the text
+   0x18d2 of amount, interest and term, an object of the form 2 each) under the texts 0x18d0 / 0x18d1 (the bank's
+   master and the bank); a click on a row takes that credit: the AI message 0x23 to the bank's owner (the amount,
+   term and interest at arg[2] / arg[3] / arg[5]), the sum paid to the player (cm_SendMoveGoodsUnchecked), the
+   window waits for the message to go out, shows the text 0x18d4 and marks the bank's offer slot taken (-1);
+   a right click or the button 1 closes it */
 
-void ai_Unk59ad60(int param_1)
+void ai_NewCreditWindow(AIBLD *bank)
 {
-    int offers[15];
-    int found[9];
-    char msg[0xf8];
+    CREDITROW rows[3];
+    AIMSG msg;
+    ORDCREDIT offers[3];
     int win;
     int i;
     int n;
-    int r;
     int handle;
-    int *e;
 
-    for (i = 0; i < 15; i++)
-        offers[i] = 0;
-    gm_GetCreditOffers(param_1, (char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, 3, found);
+    memset(rows, 0, sizeof(rows));
+    gm_GetCreditOffers((int)bank, (unsigned short *)ai_Chars[ai_PlayerId], 3, (int *)offers);
     n = 0;
     for (i = 0; i < 3; i++) {
-        if (found[i * 3] > 0) {
-            offers[n * 5] = found[i * 3];
-            offers[n * 5 + 1] = found[i * 3 + 1];
-            offers[n * 5 + 2] = found[i * 3 + 2];
-            offers[n * 5 + 4] = i;
+        if (offers[i].amount > 0) {
+            rows[n].offer.amount = offers[i].amount;
+            rows[n].offer.term = offers[i].term;
+            rows[n].offer.interest = offers[i].interest;
+            rows[n].index = i;
             n++;
         }
     }
@@ -8538,56 +8540,49 @@ void ai_Unk59ad60(int param_1)
     d2_SetForm(win, 1);
     io_PrintText(0x18d0);
     d2_SetForm(win, 2);
-    io_PrintText(0x18d1, *(unsigned short *)(param_1 + 0x25), param_1);
+    io_PrintText(0x18d1, bank->masterId, bank);
     for (i = 0; i < 3; i++) {
-        e = offers + i * 5;
-        if (e[0] > 0)
-            e[3] = d2_GetWinObj(win, 2, io_PrintText(0x18d2, e[0], e[2], e[1], 0x5d));
+        if (rows[i].offer.amount > 0)
+            rows[i].obj = d2_GetWinObj(win, 2, io_PrintText(0x18d2, rows[i].offer.amount, rows[i].offer.interest,
+                                                            rows[i].offer.term, 0x5d));
     }
     io_PrintText(0x18d3);
     d2_SetPointerSprite(0, 0);
-    for (;;) {
-        if (sv_RunFrame(ai_Unk59ad60, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return;
-        }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
+    while (sv_RunFrame(ai_NewCreditWindow, 0x677c7) != 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
             for (i = 0; i < 3; i++) {
-                e = offers + i * 5;
-                if (e[0] != 0 && U_I((unsigned)&d2_PointerObj) == e[3]) {
-                    memset(msg, 0, 0xf8);
-                    *(unsigned char *)(msg + 4) = 0x23;
-                    *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                    *(int *)(msg + 0xc) = U_I(param_1 + 1);
-                    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                    *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                    *(unsigned char *)(msg + 0x36) = 0x12;
-                    *(int *)(msg + 0x58) = U_I(param_1 + 1);
-                    *(int *)(msg + 0x5c) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-                    *(int *)(msg + 0x60) = e[0];
-                    *(int *)(msg + 0x64) = e[1];
-                    *(int *)(msg + 0x6c) = e[2];
-                    cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I(param_1 + 1),
-                                 *(unsigned char *)(unsigned)&ai_OwnPlayer, e[0]);
-                    handle = cm_SendLongMessage(msg);
+                if (rows[i].offer.amount != 0 && d2_PointerObj == rows[i].obj) {
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x23;
+                    msg.to = ((AICHARREC *)ai_Chars)[bank->owner].netId;
+                    msg.fromId = bank->id;
+                    msg.time = ai_Time;
+                    msg.flags = 0x12;
+                    msg.arg[0] = bank->id;
+                    msg.arg[1] = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                    msg.arg[2] = rows[i].offer.amount;
+                    msg.arg[3] = rows[i].offer.term;
+                    msg.arg[5] = rows[i].offer.interest;
+                    cm_SendMoveGoodsUnchecked(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, bank->id, ai_OwnPlayer,
+                                              rows[i].offer.amount);
+                    handle = cm_SendLongMessage((char *)&msg);
                     while (cm_GetSlotState(handle) == 0)
                         sv_RunFrame(0, 0x677c7);
                     d2_EnableViewObjects(win, 0);
-                    sv_MessageBox((char *)U_I((unsigned)&full_data_1440510), 4);
+                    sv_MessageBox(txt_Ptrs[0x18d4], 4);
                     d2_EnableViewObjects(win, 1);
-                    U_I(param_1 + 0x71 + e[4] * 0xc) = -1;
-                    goto done;
+                    bank->credits[rows[i].index].amount = -1;
+                    sv_PopRequest = 1;
+                    break;
                 }
             }
-        } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-done:
-            U_I((unsigned)&sv_PopRequest) = 1;
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
         }
     }
+    d2_CloseView(win);
 }
 
 short * gm_FindChar(int id); void txt_Format(char *out, int id0, ...); int sv_CheckGoodAmount(); int sv_MessageBox();
@@ -8752,7 +8747,7 @@ void ai_CreditListWindow(int param_1)
         if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
             if (U_I((unsigned)&d2_PointerObj) == ctl && ctl != -1) {
                 d2_SetViewEnabled(win, 0);
-                ai_Unk59ad60(param_1);
+                ai_NewCreditWindow((AIBLD *)param_1);
                 d2_SetViewEnabled(win, 1);
                 rebuild = 1;
             } else if (U_I((unsigned)&d2_PointerObj) == ctl2 && ctl2 != -1) {
