@@ -17926,42 +17926,49 @@ void ai_TransportOrderDue(AIOBJ *cart)
         ev = (AIJOB *)he_NextEvent();
     }
 }
-/* 0x5ae8e0, whether a transport order belongs to its owner (192 B): the ship / record +0x3b, the owner's
-   scene object +0x61 of param_1 (d3_PointToWorld and d3_VecEqual within 1350.0 against the record's +0x34
-   object, then its +0x128 field); else the id chain from the +6 field of param_2 is resolved by 0x4fea50
-   (out: character, building, object): a character answers whether it is param_1's original record, a
-   building follows its own +6, a third object ends it */
+#pragma pack(push, 1)
+typedef struct G8SCENECHAR {            /* the scene character fields this unit reads (ch.h CHARACTER) */
+    char pad00[0x34];
+    D3OBJECT *body;                     /* 0x34, the body (CHARACTER.obj) */
+    char pad38[0xf0];
+    void *actions;                      /* 0x128, the action queue (CHARACTER.actions) */
+} G8SCENECHAR;
+#pragma pack(pop)
 
-int ai_CartAtBuilding(int param_1, int param_2)
+/* 0x5ae8e0, whether a transport cart is at its building (192 B, he_RunTrade / ai_TransportWindow): the cart's
+   scene character (AIOBJ.sceneObj) whose body stands within 1350.0 of the building's scene object (AIBLD.object)
+   and which runs no action (CHARACTER.actions 0) is there; else the cart's ownerId chain is resolved with
+   gm_FindById: a building answers whether it is bld, an object follows its ownerId, a character ends it */
+
+int ai_CartAtBuilding(AIBLD *bld, AIOBJ *cart)
 {
+    AIOBJ *c = cart;
+    AIBLD *b = bld;
+    G8SCENECHAR *rec;
+    D3OBJECT *obj;
     float v[4];
-    int rec;
-    int obj;
-    int id;
     int out;
-    int first;
+    int id;
 
-    rec = *(int *)(param_2 + 0x3b);
+    rec = (G8SCENECHAR *)c->sceneObj;
     if (rec == 0)
         return 0;
-    first = param_1;
-    obj = *(int *)(first + 0x61);
+    obj = (D3OBJECT *)b->object;
     if (obj != 0) {
-        d3_PointToWorld(obj, obj + 0x4c, v);
-        if (d3_VecEqual((struct D3VECTOR *)(*(int *)(rec + 0x34) + 0x4c), (struct D3VECTOR *)v,
-                         1350.0f) != 0) {
-            if (*(int *)(rec + 0x128) == 0)
+        d3_PointToWorld(obj, &obj->pos, (struct D3VECTOR *)v);
+        if (d3_VecEqual(&rec->body->pos, (struct D3VECTOR *)v, 1350.0f) != 0) {
+            if (rec->actions == 0)
                 return 1;
         }
     }
-    id = *(int *)(param_2 + 6);
+    id = c->ownerId;
     while (id != -1) {
-        if (gm_FindById(&param_2, &param_1, &out, id) == 0)
+        if (gm_FindById((int *)&cart, (int *)&bld, &out, id) == 0)
             return 0;
-        if (param_2 != 0)
-            return param_2 == first;
-        if (param_1 != 0)
-            id = *(int *)(param_1 + 6);
+        if (cart != 0)
+            return (int)cart == (int)b;
+        if (bld != 0)
+            id = ((AIOBJ *)bld)->ownerId;
         if (out != 0)
             return 0;
     }
