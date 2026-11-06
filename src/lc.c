@@ -14007,96 +14007,85 @@ int ai_WatchPlanWindow(int ctx, char *place)
     d2_CloseView(win);
     return 0;
 }
-/* 0x5a64d0, the city watch arrest window (578 B; a Ghidra-missed start, the callback of 0x5b2180 in 0x5a6480):
-   the record param_2 (0 returns 0), the scan of the crew byte at 0x770d08, the gate byte +0x5b & 8 -> the text
-   0x144a130; the window "LOCATIONS\STADTWACHE\STANDARD" with two controls from 0x515960 (0x1a73, the record) /
-   0x475b80; the pump 0x5309a0 (this, 0x677c7): a click on the first control sends the AIMSG type 0x64 (+8 the
-   player's character, the clock 0x770ae0 .. +0x34, 1 at +0x36, the record +1 at +0x5c, the building +1 at
-   +0x60, the 0x6f2310 +2 at +0x64, then the record +1 replaced by the first live wanted entry (0x7603a0 ..
-   0x760420, byte +0x188) +4) through 0x4c4b70 / 0x4c2d20, and above one live entry the text 0x1440b90 (4);
-   0x6f22a0 = 2; the second control sets 0x6f22a0 = 1; the exit 0x4758f0, returns 0 */
-
-int ai_ArrestWindow(int param_1, char *param_2)
+/* 0x5a64d0, the city watch arrest window, the map pick callback of ai_ArrestStart (ai_MapPick): for the picked
+   building bld (0: nothing) it needs a selected character (else the text 0x1a5e) and a building without the flag
+   0x800 (else the text 0x3fdc); the window "LOCATIONS\STADTWACHE\STANDARD" (text 0x1a73 with the building) has the
+   arrest and the cancel control. Arrest sends the message 0x64 (from the player's building, about bld, the player's
+   building and the room shown, for the first selected character of the scene) and plays the favour comment,
+   says the text 0x1a74 when more than one scene character is selected, and closes; cancel or the right button
+   close too. Returns 0. */
+int ai_ArrestWindow(int unused, AIBLD *bld)
 {
     int win;
-    int ctl1;
-    int ctl2;
-    int id;
+    int arrestBtn;
+    int cancelBtn;
+    int ctl;
     int n;
     int i;
-    int *tp;
-    int e;
-    char msg[0xf4];
+    int *p;
+    AIMSG msg;
 
-    if (param_2 == 0)
+    if (bld == 0)
         return 0;
     for (i = 0; i < 0x300; i++) {
-        if (*(char *)((unsigned)&ai_Selected + i * 0x21c) != 0)
+        if (((AICHARREC *)ai_Chars)[i].selected != 0)
             break;
     }
-    if (i == 0x300) {
-        sv_MessageBox((char *)U_I((unsigned)&full_data_1440b38), 0);
+    if (i >= 0x300) {
+        sv_MessageBox(txt_Ptrs[0x1a5e], 0);
         return 0;
     }
-    if (*(unsigned char *)(param_2 + 0x5b) & 8) {
-        sv_MessageBox((char *)U_I((unsigned)&full_data_144a130), 0);
+    if (bld->flags5aw & 0x800) {
+        sv_MessageBox(txt_Ptrs[0x3fdc], 0);
         return 0;
     }
-    win = d2_OpenForm(0, 0, "LOCATIONS\STADTWACHE\STANDARD");
+    win = d2_OpenForm(0, 0, "LOCATIONS\\STADTWACHE\\STANDARD");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    id = io_PrintText(0x1a73, param_2);
-    ctl1 = d2_GetWinObj(win, 1, id);
-    ctl2 = d2_GetWinObj(win, 1, id + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctl1) {
-                for (i = 0; i < 0x3e; i++)
-                    U_I(msg + i * 4) = 0;
-                *(unsigned char *)(msg + 4) = 0x64;
-                U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
-                U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-                *(unsigned char *)(msg + 0x36) = 1;
-                U_I(msg + 0x5c) = U_I(param_2 + 1);
-                U_I(msg + 0x60) = U_I(U_I((unsigned)&ai_PlayerBuilding) + 1);
-                U_I(msg + 0x64) = U_I(U_I((unsigned)&sv_PanelShown) + 2);
+    ctl = io_PrintText(0x1a73, bld);
+    arrestBtn = d2_GetWinObj(win, 1, ctl);
+    cancelBtn = d2_GetWinObj(win, 1, ctl + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == arrestBtn) {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x64;
+                msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.time = ai_Time;
+                msg.flags = 1;
+                msg.arg[1] = bld->id;
+                msg.arg[2] = ((AIBLD *)ai_PlayerBuilding)->id;
+                msg.arg[3] = ((AIROOM *)sv_PanelShown)->objId;
                 for (i = 0; i < 0x20; i++) {
-                    e = U_I((unsigned)&ai_SceneChars + i * 4);
-                    if (e != 0 && *(char *)(e + 0x188) != 0)
+                    if (ai_SceneChars[i] != 0 && ((AICHARREC *)ai_SceneChars[i])->selected != 0) {
+                        msg.arg[0] = ((AICHARREC *)ai_SceneChars[i])->netId;
+                        cm_SendLongMessage(&msg);
+                        snd_PlayFavourComment();
                         break;
-                }
-                if (i < 0x20) {
-                    e = U_I((unsigned)&ai_SceneChars + i * 4);
-                    U_I(msg + 0x5c) = U_I(e + 4);
-                    cm_SendLongMessage(msg);
-                    snd_PlayFavourComment();
+                    }
                 }
                 n = 0;
-                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80); tp++) {
-                    e = *tp;
-                    if (e != 0 && *(char *)(e + 0x188) != 0)
+                for (p = ai_SceneChars; (int)p < (int)&ai_SceneChars[32]; p++) {  /* a signed compare (jl) */
+                    if (*p != 0 && ((AICHARREC *)*p)->selected != 0)
                         n++;
                 }
                 if (n > 1)
-                    sv_MessageBox((char *)U_I((unsigned)&full_data_1440b90), 4);
-                U_I((unsigned)&sv_PopRequest) = 2;
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                    sv_MessageBox(txt_Ptrs[0x1a74], 4);
+                sv_PopRequest = 2;
+            } else if (d2_PointerObj == cancelBtn) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_ArrestWindow, 0x677c7) == 0)
-            break;
-    }
+    } while (sv_RunFrame(ai_ArrestWindow, 0x677c7) != 0);
     d2_CloseView(win);
     return 0;
 }
+
 /* 0x5a6720, the city watch arrest map pick, the click of the customs box ob_ZOLLKASSE (the zoll branch of
    ai_CityWatchListener's contact dispatch, 127 B): the building's character gate (sv_CheckCharacterFlag, 0 with a free
    character) and the building; the 20-int request 1, -1, 0xa0744300, 1, 6 with 0x727 at +0x4c; the player bar
