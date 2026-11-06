@@ -9552,7 +9552,7 @@ void ai_GraveInsuranceContact(AIBLD *rec)
     sv_CameraFollow();
 }
 
-struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); int ai_OpenTransport(int rec); int ai_PersonnelBookWindow(int rec, char *name);
+struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); int ai_OpenTransport(int rec);
 
 /* 0x587560, the graveyard trade-contact dispatcher (317 B): rec = the building record. Releases the name plates
    (sv_ReleaseNamePlates); each frame (sv_RunFrame, pump 0x67fff) the graveyard chatter (ai_GraveyardChatter); with
@@ -9562,7 +9562,7 @@ struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); int ai_OpenTransport(i
    ai_ContactTextMasterLetter, 0xc), the personnel book ("ob_GEHILFENBUCH", ai_ContactTextPersonnelBook, 0xc) and
    the storage ("contact_LAGER", ai_ContactTextStorage, 0xe); then the "Schlag" action (ai_GraveyardSchlag). A
    clicked plate (ai_ClickedObject) opens its window: ai_ProductionWindow, ai_OpenTransport, ai_MasterLetterWindow,
-   ai_PersonnelBookWindow (with the plate's name) or ai_StorageWindow (with the building's object list) */
+   ai_HelperBook (with the plate's name) or ai_StorageWindow (with the building's object list) */
 void ai_GraveyardTradeContact(char *rec)
 {
     int c0, c1, c2, c3, c4;
@@ -9591,7 +9591,7 @@ void ai_GraveyardTradeContact(char *rec)
             else if (ai_ClickedObject == c2)
                 ai_MasterLetterWindow((unsigned char *)rec);
             else if (ai_ClickedObject == c3)
-                ai_PersonnelBookWindow((int)rec, "ob_GEHILFENBUCH");
+                ai_HelperBook((struct AIBLD *)rec, "ob_GEHILFENBUCH");
             else if (ai_ClickedObject == c4)
                 ai_StorageWindow((int)rec, ((AIBLD *)rec)->objList);
         }
