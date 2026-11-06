@@ -8630,138 +8630,150 @@ void ai_RepayLoan(AIBLD *bank, HELOAN *loan)
     }
     he_FreeEvent(loan);
 }
-/* 0x59b160, the money lender's credit list "locations\geldleihe\geldleihe_Kreditaufnehmen" (1232 B, ROUGH:
-   the row records / controls of the list are condensed): the window 0x4741f0, the rectangle 0xf8f4b8 ..
-   (0x18), the text 0x18c9 (the city's good price 0x7e3f94 + city * 0x2f4 word * 2 + 0x9a8); 0x476f80 and the
-   pump 0x5309a0 (0x677c7); on rebuild the two 0x50a150 queries (player, 0 / player, param_1) count the offers
-   (0x50a150); below 9 the rows 0x4731d0 (0x75a) and their lists 0x472aa0 (0x10), the texts 0x18d6 / 0x18ca ..
-   0x18cd (with the "$C" page markers), the buttons 0x52e350 (screen, 0, out, 1 / 2, 0x14404fc / 0x14404f8) and
-   the selection 0x5fe710: the first button opens 0x59ad60 (param_1), the second 0x59b030 (param_1, the offer) */
+typedef struct CREDITLISTROW {      /* a row of the credit list window (ai_CreditListWindow) */
+    int child;                      /* 0x0, the row's child window (d2_CreateChildWindow), -1: none */
+    int pic;                        /* 0x4, its frame picture 0x75a (d2_WinOpenPic), -1: none; the radio group selects it */
+    HELOAN *loan;                   /* 0x8, the loan it shows (gm_CreditEvents) */
+} CREDITLISTROW;
+/* 0x59b160, the money lender's credit list "locations\geldleihe\geldleihe_Kreditaufnehmen" of the bank bank
+   (1224 B): the form with the paddings 0x18, the text 0x18c9 (the object name of the own player slot's money good);
+   while the frame pump runs, on a rebuild the player's loans (gm_CreditEvents: all of them, then this bank's)
+   become rows (a frame picture 0x75a and a child window with the text 0x18d6: amount, interest, due date) of a
+   radio group, under the text 0x18cb (9 loans or more), 0x18cc (3 or more), 0x18cd (none) or 0x18ca (the owner,
+   the bank, the count and the count of all loans), and the buttons txt 0x18ce (a new credit, below 3 loans) and
+   0x18cf (pay back, enabled while a row is selected); a new credit opens ai_NewCreditWindow, a payback
+   ai_RepayLoan of the selected row's loan, either rebuilds the list */
 
-void ai_CreditListWindow(int param_1)
+void ai_CreditListWindow(AIBLD *bank)
 {
-    int list[9 * 3];
-    int offers[0x10];
-    int recs[9];
-    int win;
-    int ctl;
-    int ctl2;
-    int out[2];
+    int radio;
     int n;
-    int i;
-    int k;
-    int money;
+    int newCtl;
+    int total;
+    int rowH;
+    int win;
+    int repayCtl;
+    int out[4];
+    CREDITLISTROW rows[9];
+    HELOAN *loans[9];
     int rebuild;
-    int v;
-    int r;
+    int full;
+    int rowW;
+    int i;
 
+    newCtl = -1;
+    repayCtl = -1;
+    n = 0;
+    rebuild = 1;
+    radio = -1;
     for (i = 0; i < 9; i++) {
-        list[i * 3] = -1;
-        list[i * 3 + 1] = -1;
-        list[i * 3 + 2] = 0;
-        recs[i] = 0;
+        rows[i].child = -1;
+        rows[i].pic = -1;
+        rows[i].loan = 0;
     }
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_kreditaufnehmen");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x11c) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0x18;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0x18;
+    d2_Wins[d2_LastWindow].padl = 0x18;
+    d2_Wins[d2_LastWindow].padt = 0x18;
+    d2_Wins[d2_LastWindow].padr = 0x18;
+    d2_Wins[d2_LastWindow].padb = 0x18;
     d2_SetForm(win, 1);
-    io_PrintText(0x18c9, (unsigned int)U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4) * 2 + 0x9a8);
+    io_PrintText(0x18c9, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood * 2 + 0x9a8);
     d2_SetPointerSprite(0, 0);
-    ctl = -1;
-    ctl2 = -1;
-    rebuild = 1;
-    n = 0;
-    for (;;) {
-        if (sv_RunFrame(ai_CreditListWindow, 0x677c7) == 0)
-            break;
+    while (sv_RunFrame(ai_CreditListWindow, 0x677c7) != 0) {
         if (rebuild) {
             for (i = 0; i < 9; i++) {
-                if (list[i * 3] != -1) {
-                    d2_RemoveWindow(list[i * 3]);
-                    d2_RemoveObj(list[i * 3 + 1]);
-                    list[i * 3] = -1;
-                    list[i * 3 + 1] = -1;
-                    list[i * 3 + 2] = 0;
+                if (rows[i].child != -1) {
+                    d2_RemoveWindow(rows[i].child);
+                    d2_RemoveObj(rows[i].pic);
+                    rows[i].child = -1;
+                    rows[i].pic = -1;
+                    rows[i].loan = 0;
                 }
             }
-            money = gm_CreditEvents(U_I((unsigned)&ai_PlayerId), 0, offers);
-            n = gm_CreditEvents(U_I((unsigned)&ai_PlayerId), param_1, offers);
+            total = gm_CreditEvents(ai_PlayerId, 0, loans);
+            n = gm_CreditEvents(ai_PlayerId, bank, loans);
             d2_SetForm(win, 4);
             io_PrintText("$C");
-            if (n < 9) {
-                if (n < 3) {
-                    if (n == 0)
-                        io_PrintText(0x18cd, *(unsigned short *)(param_1 + 0x27), param_1);
-                    else
-                        io_PrintText(0x18ca, *(unsigned short *)(param_1 + 0x27), param_1, n, money);
-                    rebuild = 0;
-                } else {
-                    io_PrintText(0x18cc);
-                    rebuild = 1;
-                }
-            } else {
+            if (n >= 9) {
                 io_PrintText(0x18cb);
-                rebuild = 1;
+                full = 1;
+            } else if (n >= 3) {
+                io_PrintText(0x18cc);
+                full = 1;
+            } else {
+                if (n == 0)
+                    io_PrintText(0x18cd, bank->owner, bank);
+                else
+                    io_PrintText(0x18ca, bank->owner, bank, n, total);
+                full = 0;
             }
             d2_SetForm(win, 3);
             io_PrintText("$C");
-            if (rebuild) {
-                sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 1, U_I((unsigned)&full_data_14404fc));
-                ctl = -1;
-                ctl2 = out[0];
+            if (!full) {
+                sv_ButtonRow(d2_LastWindow, full, out, 2, txt_Ptrs[0x18ce], txt_Ptrs[0x18cf]);
+                newCtl = out[0];
+                repayCtl = out[1];
             } else {
-                sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 2, U_I((unsigned)&full_data_14404f8));
-                ctl = out[0];
-                ctl2 = out[1];
+                sv_ButtonRow(d2_LastWindow, 0, out, 1, txt_Ptrs[0x18cf]);
+                newCtl = -1;
+                repayCtl = out[0];
             }
+            rowW = d2_Pics[0x75a].w;
+            rowH = d2_Pics[0x75a].h;
             for (i = 0; i < n; i++) {
                 d2_SetForm(win, 2);
-                v = (*(short *)((unsigned)&he_Events + 0x197b2) + 8) * i;
-                list[i * 3] = d2_WinOpenPic(
-                    (d2_LastWindowPtr->w - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v, 0x75a,
-                    U_I((unsigned)&d2_LastWindow));
-                list[i * 3 + 1] = d2_CreateChildWindow(
-                    (d2_LastWindowPtr->w - *(short *)((unsigned)&he_Events + 0x197b0)) >> 1, v,
-                    *(short *)((unsigned)&he_Events + 0x197b0), *(short *)((unsigned)&he_Events + 0x197b2), 0x10, U_I((unsigned)&d2_LastWindow));
-                recs[i] = offers[i];
-                list[i * 3 + 2] = offers[i];
-                U_I((unsigned)&ai_Unkf8f39c + list[i * 3 + 1] * 0x1e2) = 0x56;
-                *(unsigned short *)(((unsigned)&ai_Unkf8f128 + 0x8) + list[i * 3 + 1] * 0x3c4) = 0x10;
-                io_PrintText(0x18d6, U_I(offers[i] + 0xb4), U_I(offers[i] + 0xc0), offers[i] + 0xc4);
+                rows[i].pic = d2_WinOpenPic((d2_LastWindowPtr->w - rowW) >> 1, (rowH + 8) * i, 0x75a, d2_LastWindow);
+                rows[i].child = d2_CreateChildWindow((d2_LastWindowPtr->w - rowW) >> 1, (rowH + 8) * i, rowW, rowH, 0x10,
+                                                     d2_LastWindow);
+                rows[i].loan = loans[i];
+                d2_Wins[rows[i].child].font = 0x56;
+                d2_Wins[rows[i].child].ml = 0x10;
+                io_PrintText(0x18d6, loans[i]->amount, loans[i]->interest, &loans[i]->due);
             }
+            if (radio != -1) {
+                d2_RadioClear(radio);
+                radio = -1;
+            }
+            switch (n) {
+            case 1:
+                radio = d2_CreateRadioGroup(1, rows[0].pic);
+                break;
+            case 2:
+                radio = d2_CreateRadioGroup(2, rows[0].pic, rows[1].pic);
+                break;
+            case 3:
+                radio = d2_CreateRadioGroup(3, rows[0].pic, rows[1].pic, rows[2].pic);
+                break;
+            }
+            rebuild = 0;
         }
-        rebuild = 0;
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (ctl2 != -1) {
-            if (n < 1 || U_I((unsigned)&d2_RadioSel + ctl2 * 0x23 * 4) == -1)
-                k = 0;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (repayCtl != -1) {
+            if (n > 0 && d2_Radios[radio].sel != -1)
+                d2_SetObjEnabled(repayCtl, 1);
             else
-                k = 1;
-            d2_SetObjEnabled(ctl2, k);
+                d2_SetObjEnabled(repayCtl, 0);
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
-            if (U_I((unsigned)&d2_PointerObj) == ctl && ctl != -1) {
+        if (d2_ClickedId != -1 && d2_ClickedId == 0) {
+            if (d2_PointerObj == newCtl && newCtl != -1) {
                 d2_SetViewEnabled(win, 0);
-                ai_NewCreditWindow((AIBLD *)param_1);
+                ai_NewCreditWindow(bank);
                 d2_SetViewEnabled(win, 1);
                 rebuild = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl2 && ctl2 != -1) {
+            } else if (d2_PointerObj == repayCtl && repayCtl != -1) {
                 d2_SetViewEnabled(win, 0);
-                ai_RepayLoan((AIBLD *)param_1, (HELOAN *)recs[U_I((unsigned)&d2_RadioSel + ctl2 * 0x23 * 4)]);
+                ai_RepayLoan(bank, rows[d2_Radios[radio].sel].loan);
                 rebuild = 1;
                 d2_SetViewEnabled(win, 1);
             }
         }
     }
     d2_CloseView(win);
-    if (ctl2 != -1)
-        d2_RadioClear(ctl2);
+    if (radio != -1)
+        d2_RadioClear(radio);
     sv_CameraFollow();
 }
 /* 0x59b630, the money lender's credit list of a second player (592 B): the same window (0x4741f0), the
@@ -9897,7 +9909,7 @@ void ai_MoneyLenderContact(AIBLD *bld, int room)
                 } else if (ai_ClickedObject == wechsel) {
                     ai_ExchangeWindow((int)bld);
                 } else if (ai_ClickedObject == kredite) {
-                    ai_CreditListWindow((int)bld);
+                    ai_CreditListWindow((AIBLD *)bld);
                 }
             }
         }
