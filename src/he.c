@@ -14982,16 +14982,18 @@ void he_RunEvent1f(int ev)
         return;
     }
 }
-/* 0x55bd20, the allocation handler of the demolition event 0x20 (he_RunDemolish): the building +0xac (when found) gets the message 0x5a / 2 / 0x400, the due clock is now */
+/* 0x55bd20, the allocation handler of the demolition event 0x20 (he_RunDemolish): the building (AIJOB.bldId, when
+   found) gets the message 0x5a / 2 / 0x400, the due clock is now */
 
 void he_AllocDemolish(int ev)
 {
-    int b;
+    AIJOB *e = (AIJOB *)ev;
+    AIBLD *b;
 
-    b = gm_BuildQuery(1, 1, *(int *)(ev + 0xac));
+    b = (AIBLD *)gm_BuildQuery(1, 1, e->bldId);
     if (b != 0)
-        cm_SendSetField(*(int *)(b + 1), 0x5a, 2, 0x400, 0);
-    *(AITIME *)(ev + 0x52) = ai_Time;
+        cm_SendSetField(b->id, 0x5a, 2, 0x400, 0);
+    e->end = ai_Time;
 }
 /* 0x55bd80, the run handler of the demolition event 0x20 ("GebAbreissen"; its init he_AllocDemolish sets the building's
    0x5a mark 0x400). Stage 0 (the building found): every character working in the building (AICHAR.bld) is halted
