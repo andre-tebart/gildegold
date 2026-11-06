@@ -7158,7 +7158,7 @@ char *cm_FindFighter(int id)
     char *p;
 
     for (p = cm_Fighters + 4; (int)p < (int)(cm_Fighters + 4 + 32 * 0x21c); p += 0x21c) {
-        if (*(unsigned short *)(p - 4) != 0xffff && *(int *)p == id)
+        if (((AICHAR *)(p - 4))->id != 0xffff && ((AICHAR *)(p - 4))->netId == id)
             return cm_Fighters + i * 0x21c;
         i++;
     }
