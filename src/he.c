@@ -559,14 +559,14 @@ typedef struct HEMSGBOX {               /* the message box event 17's words over
     int voice;                          /* 0xec, the spoken text's sample (snd_QueueVoice), 0: none */
     unsigned char flags;                /* 0xf0, 1 big, 2 quick jump, 4 cutscene, 8 activate, 0x10 speak, 0x20 history, 0x40 help */
 } HEMSGBOX;
-typedef struct HESLOTORDER {            /* the slot order event 18's words over AIJOB's union (he_Unk557b30 / he_RunSlotOrder; AIJOB's
+typedef struct HESLOTORDER {            /* the slot order event 18's words over AIJOB's union (he_AllocSlotOrderStore / he_RunSlotOrder; AIJOB's
                                            slotOrder1c / slotOrder1d) */
     char pad00[0xac];
     int obj;                            /* 0xac, the objId of the workshop object (gm_FindById) */
     int add1c;                          /* 0xb0, the first-kind slots still to add (AIOBJ.lvl1c) */
     int add1d;                          /* 0xb4, the second-kind slots still to add (AIOBJ.lvl1d) */
 } HESLOTORDER;
-typedef struct HESTOREEXT {             /* the store extension event 19's words over AIJOB's union (he_Unk557b30 /
+typedef struct HESTOREEXT {             /* the store extension event 19's words over AIJOB's union (he_AllocSlotOrderStore /
                                            he_RunStoreExtension) */
     char pad00[0xac];
     int obj;                            /* 0xac, the objId of the store object (gm_FindById) */
@@ -13111,7 +13111,7 @@ void he_RunMessageBox(int ev)
 void sv_MoveToGroup(unsigned char *o, short *it, int c, char *g);
 
 /* 0x5578a0, the run handler of the slot order event 18 (HESLOTORDER, the type 0x12 message ai_BuySlots posts;
-   allocated by he_Unk557b30). Stage 0 goes on to 1. Stage 1, once due: with the workshop object (gm_FindById) and
+   allocated by he_AllocSlotOrderStore). Stage 0 goes on to 1. Stage 1, once due: with the workshop object (gm_FindById) and
    the event's building (AIJOB.from; either gone: the event is freed), one slot a round is added: of the first
    kind (lvl1c) while add1c lasts, then of the second (lvl1d) while add1d lasts, each only below the building
    type's limit (AIBTYPE.min0 / min1; an object of type 0x116 has max116 for both), as a field delta of 1. Both
@@ -13193,14 +13193,17 @@ void he_RunSlotOrder(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x557b30, the allocation handler of the 0x557b70 event: due clock = start clock, posted 2 units later */
+/* 0x557b30, the allocation handler shared by the slot order event 18 and the store extension event 19: the due
+   clock (AIJOB.end) starts as the start clock, two hours later */
 
-void he_Unk557b30(int ev)
+void he_AllocSlotOrderStore(int ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 2, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = e->start;
+    gm_AddTime(&e->end, 2, 0, 0);
 }
-/* 0x557b70, the run handler of the store extension event 19 (HESTOREEXT; allocated by he_Unk557b30, its debug
+/* 0x557b70, the run handler of the store extension event 19 (HESTOREEXT; allocated by he_AllocSlotOrderStore, its debug
    name "he_RunLagerErweitern"). Stage 0 goes on to 1. Stage 1, once due: the store object (gm_FindById; gone: the
    text "Wrong LagerID" and the event is freed) gets one more unit of capacity (AIOBJ.count + 1, a field delta of
    4 bytes); while rounds are left the next one is due in 15 minutes, after the last the news 0x1bbb (the event's
@@ -20080,9 +20083,9 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(17, (void *)he_AllocMessageBox, (void *)he_RunMessageBox) != 0)
         return 1;
-    if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_RunSlotOrder) != 0)
+    if (he_SetEventHandlers(18, (void *)he_AllocSlotOrderStore, (void *)he_RunSlotOrder) != 0)
         return 1;
-    if (he_SetEventHandlers(19, (void *)he_Unk557b30, (void *)he_RunStoreExtension) != 0)
+    if (he_SetEventHandlers(19, (void *)he_AllocSlotOrderStore, (void *)he_RunStoreExtension) != 0)
         return 1;
     if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_RunHerbGathering) != 0)
         return 1;
