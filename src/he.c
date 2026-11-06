@@ -547,7 +547,7 @@ typedef struct HECARTREPAIR {           /* the event 16's words over AIJOB's uni
     char padce[0xa];
     int notify;                         /* 0xd8, nonzero: the news 0x1c49 when done (he_RunCartRepair) */
 } HECARTREPAIR;
-typedef struct HEMSGBOX {               /* the message box event 17's words over AIJOB's union (he_Unk557160 / he_RunMessageBox); the
+typedef struct HEMSGBOX {               /* the message box event 17's words over AIJOB's union (he_AllocMessageBox / he_RunMessageBox); the
                                            text is AIJOB.text (after its NUL the text to speak) */
     char pad00[0xac];
     int pic;                            /* 0xac, the picture of the window (he_OpenEventSlot) */
@@ -12881,13 +12881,16 @@ void he_RunCartRepair(int ev)
         return;
     }
 }
-/* 0x557160, the allocation handler of a player event: state 0, +0xec = 0; a figure that is not a player character (kind 6) frees the record at once */
+/* 0x557160, the allocation handler of the message box event 17 (HEMSGBOX): state 0 and no voice; a character
+   that is not a player character (kind 6) frees the record at once */
 
-void he_Unk557160(int ev)
+void he_AllocMessageBox(AIJOB *ev)
 {
-    *(int *)(ev + 0x70) = 0;
-    *(int *)(ev + 0xec) = 0;
-    if (*(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c) != 6)
+    HEMSGBOX *m = (HEMSGBOX *)ev;
+
+    ev->stage = 0;
+    m->voice = 0;
+    if (ai_CharsT[ev->chr].kind != 6)
         he_FreeEvent((int *)ev);
 }
 
@@ -12898,7 +12901,7 @@ void sb_Stop();
 void sv_SelectPanelObject(unsigned char *o, int b, char *c);
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);
 
-/* 0x557190, the run handler of the message box event 17 (HEMSGBOX; allocated by he_Unk557160), only for the player's
+/* 0x557190, the run handler of the message box event 17 (HEMSGBOX; allocated by he_AllocMessageBox), only for the player's
    own character while a game runs. Stage 0 opens the event window by the flavour flags: 2 a quick jump
    ("misc\EventMessagebox_QJ", with 1 "_QJ_BIG"; the news 0x1ba2 when the player stands at that building and its
    object, else 0x1ba1), 1 "misc\EventMessagebox_BIG" / 0x20 "misc\EventMsgbox_History" (news 0x1ba3), 4
@@ -20075,7 +20078,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(16, (void *)he_AllocCartRepair, (void *)he_RunCartRepair) != 0)
         return 1;
-    if (he_SetEventHandlers(17, (void *)he_Unk557160, (void *)he_RunMessageBox) != 0)
+    if (he_SetEventHandlers(17, (void *)he_AllocMessageBox, (void *)he_RunMessageBox) != 0)
         return 1;
     if (he_SetEventHandlers(18, (void *)he_Unk557b30, (void *)he_RunSlotOrder) != 0)
         return 1;
