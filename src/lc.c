@@ -79,7 +79,6 @@ struct D3SM;
 extern void cm_SendFloatDelta(int id, int field, float delta);
 /* full rebuild: the symbols whose original addresses the code above spells literally */
 extern const volatile unsigned __int64 gypsyFilter;  /* 0x5eed68, menu.c */
-extern GAPDATA full_data_6f5a84[];
 extern GAPDATA full_data_6f40e0[];
 extern char * ai_BTypes;
 extern int d2_LastWindow;
@@ -1216,7 +1215,7 @@ void ai_InitProductionTables(void)
         n += 0x78;
     }
     ai_ProdSelectedInput = 0;
-    for (p = (int *)(unsigned)&full_data_6f5a84, n = 0x10; n < 0x460; p += 0xe) {
+    for (p = &ai_ProdColumnSlots[0].obj04, n = 0x10; n < 0x460; p += 0xe) {
         p[2] = n;
         p[-1] = 0;
         p[0] = -1;
@@ -24564,3 +24563,4 @@ int * ai_BauplatzList = 0;  /* 0x6f5308 */
 LCPRODCOL ai_ProdColumns[16] = { 0 };  /* 0x6f5320, the goods columns of the production window */
 LCPRODSLOT ai_ProdGoods2[8] = { 0 };  /* 0x6f58a0 */
 int ai_ProdSelectedInput = 0;  /* 0x6f5a60, the input goods picked in the production goods window, 0 = none */
+LCPRODSLOT ai_ProdColumnSlots[16] = { 0 };  /* 0x6f5a80, a slot per production column (ai_InitProductionTables: x 0x1a, y 0x10 + 0x45 * i); ai_ProductionGoodsWindow compares its goods with a job's */

@@ -93,6 +93,7 @@ extern LCPRODROW ai_ProdRows[4];        /* 0x6f4f00, the rows of the first grid 
 extern LCPRODSLOT ai_ProdGoods[16];     /* 0x6f4f60, the first grid: the goods of the types 0x17 / 0x25 */
 extern LCPRODROW ai_ProdRows2[2];       /* 0x6f52e0, the rows of the second grid */
 extern LCPRODSLOT ai_ProdGoods2[8];     /* 0x6f58a0, the second grid: the other goods */
+extern LCPRODSLOT ai_ProdColumnSlots[16]; /* 0x6f5a80, a slot per production column (ai_InitProductionTables lays them out) */
 
 /* the goods columns of the production window "Handel\Handel_PRODUKTION" (ai_ProductionWindow; ai_InitProductionTables sets
    them up, ai_UpdateResourceColumns builds their windows) */
