@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4312,24 +4312,24 @@ exe	0x005a6cb0	ai_BuildTownMap	lc	draft	readable	deep
 exe	0x005a78a0	ai_OpenTownMap	lc	byte	readable		
 exe	0x005a79e0	ai_DragTownMap	lc	shape	readable		
 exe	0x005a7bc0	ai_ScrollTownMap	lc	byte	readable		
-exe	0x005a7cd0	ai_Unk5a7cd0	lc	draft	draft		
+exe	0x005a7cd0	ai_UpdateTownMap	lc	draft	readable	deep	
 exe	0x005a82f0	ai_CloseMapWindow	lc	byte	readable		
 exe	0x005a8340	ai_SettingRandom	lc	byte	readable		
 exe	0x005a8390	ai_FreeSettingChain	lc	byte	readable		
-exe	0x005a83b0	ai_FillSettingWeights	lc	draft	draft		
+exe	0x005a83b0	ai_FillSettingWeights	lc	byte	readable		
 exe	0x005a84b0	ai_FindSetting	lc	byte	readable		
 exe	0x005a84d0	ai_FindItemGroup	lc	byte	readable		
 exe	0x005a8540	ai_FindSettingSlots	lc	byte	readable		
-exe	0x005a8560	ai_ProdSetting	lc	draft	draft		
+exe	0x005a8560	ai_ProdSetting	lc	draft	readable	deep	
 exe	0x005a86c0	ai_FreeProdSetting	lc	byte	readable		
-exe	0x005a8710	ai_Unk5a8710	lc	draft	draft		
+exe	0x005a8710	ai_SetSettingWeight	lc	byte	readable		
 exe	0x005a8850	ai_RefreshProdSetting	lc	byte	readable		
 exe	0x005a8870	ai_DrawSettingGood	lc	shape	readable		
 exe	0x005a88e0	ai_SettingFactor	lc	byte	readable		
 exe	0x005a8900	ai_SetSettingFactor	lc	byte	readable		
 exe	0x005a8920	ai_FreeSettings	lc	byte	readable		
 exe	0x005a8940	ai_SaveSettings	lc	draft	draft		
-exe	0x005a8a20	ai_Unk5a8a20	lc	draft	draft		
+exe	0x005a8a20	ai_LoadSettings	lc	byte	readable		
 exe	0x005a8b80	ai_ShowIndulgenceNews	lc	byte	readable		
 exe	0x005a8c00	ai_ShowPaymentNews	lc	byte	readable		
 exe	0x005a8c50	ai_ShowPurchaseNews	lc	byte	readable		
@@ -4348,11 +4348,11 @@ exe	0x005a9240	ai_PlagueMessage	lc	draft	readable	deep
 exe	0x005a92b0	ai_PlagueMessageAll	lc	shape	readable		
 exe	0x005a9330	ai_SendSwapText	lc	byte	readable		
 exe	0x005a9430	ai_ShowEvidenceVoidNews	lc	byte	readable		
-exe	0x005a9470	ai_GypsyDeliveryText	lc	draft	draft		
+exe	0x005a9470	ai_GypsyDeliveryText	lc	byte	readable		
 exe	0x005a9690	ai_TellGraveNeglect	lc	byte	readable		
-exe	0x005a96e0	ai_NotifySale	lc	draft	draft		
+exe	0x005a96e0	ai_NotifySale	lc	byte	readable		
 exe	0x005a9780	ai_TellGravesPaid	lc	byte	readable		
-exe	0x005a97e0	ai_ShowGraveOrderExtended	lc	draft	draft		
+exe	0x005a97e0	ai_ShowGraveOrderExtended	lc	byte	readable		
 exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	draft	draft		
 exe	0x005a9910	ai_HauntingText	lc	draft	draft		
 exe	0x005a9990	ai_TellGraveWorkSuccess	lc	byte	readable		
@@ -4371,7 +4371,7 @@ exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	draft	draft
 exe	0x005a9f10	ai_DomizilGoodInRange	lc	shape	readable		
 exe	0x005a9f80	ai_Unk5a9f80	lc	draft	draft		
 exe	0x005aa0d0	ai_Unk5aa0d0	lc	draft	draft		
-exe	0x005aa1f0	ai_Unk5aa1f0	lc	draft	draft		
+exe	0x005aa1f0	ai_FillPersonnelRow	lc	draft	readable	deep	
 exe	0x005aa4b0	ai_DomizilFreeRow	lc	byte	readable		
 exe	0x005aa520	ai_Unk5aa520	lc	draft	draft		
 exe	0x005aa700	ai_Unk5aa700	lc	draft	draft		
