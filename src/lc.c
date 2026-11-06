@@ -16370,52 +16370,54 @@ void ai_ShowBldCarts(SVBOOK *book, AIBLD *bld)
         }
     }
 }
-/* 0x5aa9a0, refreshes the worker list 0x5aa700 (480 B): per entry of 0x6f40a4 the text 0x1a3f (a free one,
-   0x50a0f0) or 0x1a3e (the master 0x501190 (1, 1, +0xb4)) into the control 0x6f40bc; a missing icon control
-   0x6f40b0 is created (picture 5, the object the name, 0x1440ab4 the caption); on a click (0xf8a668 == 5) the
-   clicked id 0x5fe710 is released with 0x521960 */
+/* 0x5aa9a0, refreshes the cart list ai_ShowBldCarts made for the building bld (476 B): per cart the text of its
+   destination (0x1a3e: the building of the job it runs; 0x1a3f: without a job the building it stands at, the
+   market for a 'D' building) into its text control; a destination other than bld without a button gets one
+   (picture 5, its user record the building), each button its caption 0x1a3d; on the book's page 2 a click on
+   a button (d2_ClickedId 5 on the pointer's object) selects its building in the panel
+   @deep Read whole against the original and rewritten (SVBOOK page, AIOBJ carts / job24->cartBld, the
+   typed ai_BldCart* data, the 0x1a3e / 0x1a3f texts, the button for a destination other than bld, the
+   click loop over ai_BldCartButtons): 131 vs 131 instructions, every statement lines up. Left is
+   allocation only: the original pushes esi in the prologue and keeps it for dest and then the click loop's
+   pointer, ours pushes esi after the count test ('- push esi' at +0x16), pops it before the click loop ('-
+   pop esi / mov edx, [esp + 0x208]' vs '+ mov edx, [esp + 0x20c]') and walks the buttons in edi; the rest
+   is the esi/edi swap. Tried: the click loop as pointer walk or index, the locals in the other order:
+   unchanged. */
 
-void ai_Unk5aa9a0(int param_1, char *param_2)
+void ai_UpdateBldCarts(SVBOOK *book, AIBLD *bld)
 {
     char text[512];
-    char *name;
-    int rec;
-    int ctrl;
+    AIBLD *dest;
     int i;
 
-    for (i = 0; i < U_I((unsigned)&ai_BldCartCount); i++) {
-        rec = U_I((unsigned)&ai_BldCarts + i * 4);
-        ctrl = *(int *)(rec + 0x24);
-        name = 0;
-        if (ctrl == 0) {
-            name = (char *)gm_ObjectBuilding(rec);
-            if (*name == 'D')
-                name = (char *)U_I((unsigned)&ai_MarketBuilding);
-            txt_Format(text, 0x1a3f, name);
+    for (i = 0; i < ai_BldCartCount; i++) {
+        if (ai_BldCarts[i]->job24 != 0) {
+            dest = (AIBLD *)gm_BuildQuery(1, 1, ai_BldCarts[i]->job24->cartBld);
+            if (dest != 0)
+                txt_Format(text, 0x1a3e, dest);
         } else {
-            name = (char *)gm_BuildQuery(1, 1, *(int *)(ctrl + 0xb4));
-            if (name != 0)
-                txt_Format(text, 0x1a3e, name);
+            dest = (AIBLD *)gm_ObjectBuilding((int)ai_BldCarts[i]);
+            if (dest->kind == 'D')
+                dest = ai_MarketBuilding;
+            txt_Format(text, 0x1a3f, dest);
         }
-        if (U_I((unsigned)&ai_BldCartTexts + i * 4) != -1) {
-            d2_SetObjText(U_I((unsigned)&ai_BldCartTexts + i * 4), text);
-            if (name != 0 && U_I((unsigned)&ai_BldCartButtons + i * 4) == -1) {
-                ctrl = d2_WinOpenPic(0, i * 0x78 + 0x5a, 5, U_I((unsigned)&d2_LastWindow));
-                U_I((unsigned)&ai_BldCartButtons + i * 4) = ctrl;
-                U_I((unsigned)&d2_Objs + 0x4c + ctrl * 0x2ec) = 1;
-                U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec) = (int)name;
-                d2_SetObjFont(ctrl, 0x56);
-                U_I((unsigned)&d2_Objs + 0x1c0 + ctrl * 0x2ec) = 3;
+        if (ai_BldCartTexts[i] != -1) {
+            d2_SetObjText(ai_BldCartTexts[i], text);
+            if (bld != dest && ai_BldCartButtons[i] == -1) {
+                ai_BldCartButtons[i] = d2_WinOpenPic(0, i * 0x78 + 0x5a, 5, d2_LastWindow);
+                d2_Objs[ai_BldCartButtons[i]].interactive = 1;
+                d2_Objs[ai_BldCartButtons[i]].user = dest;
+                d2_SetObjFont(ai_BldCartButtons[i], 0x56);
+                d2_Objs[ai_BldCartButtons[i]].style = 3;
             }
-            if (U_I((unsigned)&ai_BldCartButtons + i * 4) != -1)
-                d2_SetCaption(U_I((unsigned)&ai_BldCartButtons + i * 4), (char *)U_I((unsigned)&full_data_1440ab4));
+            if (ai_BldCartButtons[i] != -1)
+                d2_SetCaption(ai_BldCartButtons[i], txt_Ptrs[0x1a3d]);
         }
     }
-    if (*(unsigned char *)(param_1 + 0x270) == 2 && U_I((unsigned)&d2_ClickedId) == 5) {
+    if (book->page == 2 && d2_ClickedId == 5) {
         for (i = 0; i < 3; i++) {
-            ctrl = U_I((unsigned)&ai_BldCartButtons + i * 4);
-            if (ctrl != -1 && U_I((unsigned)&d2_PointerObj) == ctrl)
-                sv_SelectPanelObjectK(U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec), -1, (char *)(unsigned)&ch_EmptyName);
+            if (ai_BldCartButtons[i] != -1 && d2_PointerObj == ai_BldCartButtons[i])
+                sv_SelectPanelObject((unsigned char *)d2_Objs[ai_BldCartButtons[i]].user, -1, ch_EmptyName);
         }
     }
 }
