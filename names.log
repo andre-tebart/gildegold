@@ -2813,3 +2813,4 @@
 2026-11-06T22:03:09 0x004c6ad0 data ai_Unk4c6ad0 -> cm_ExLoadBlock by:main why:handler of message 9, the 0x80 bytes cm_SendLoadBlock sends: appends them to cm_LoadBuf at cm_LoadReceived
 2026-11-06T22:04:18 0x004c6b20 data ai_Unk4c6b20 -> cm_ExCreateBuilding by:main why:handler of message 10, the G17BUILDMSG cm_SendMessage10 sends: resolves the owner id, creates the building (gm_CreateBuilding) with its flags and 0x30-byte block
 2026-11-06T22:06:42 0x004c6ec0 data ai_Unk4c6ec0 -> cm_ExDeleteObject by:main why:handler of message 0xe, the G17DELETEMSG cm_SendDeleteObject sends: resolves the object id and frees the building / kills the character it names
+2026-11-06T22:07:36 0x004c6f60 data ai_Unk4c6f60 -> cm_ExMoveGoods by:main why:handler of message 0xf, the G17MOVEGOODSMSG cm_SendMoveGoods sends: takes the amount of the player's money good from the to holder and adds it to the from holder
