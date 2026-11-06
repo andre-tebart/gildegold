@@ -565,6 +565,13 @@ typedef struct G17STAGEMSG {            /* 12 bytes, the data of message 0x34 (c
     int objId;                          /* 0x08, the object (room) in it, -1: none */
 } G17STAGEMSG;
 
+typedef struct G17ANIMMSG {             /* 0x35 bytes, the data of message 0x37 (cm_SendChrAnim, its handler 0x4caa20
+                                           queues the animation name on the character "sp_<charId>" count times) */
+    int charId;                         /* 0x00, the character */
+    char name[0x30];                    /* 0x04, the animation name (0x2f characters copied) */
+    unsigned char count;                /* 0x34, ch_QueueAnim's n */
+} G17ANIMMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -580,6 +587,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17STOPMSG stop;                /* 0x10, message 0x31 */
         G17CARTSTATEMSG cart;           /* 0x10, message 0x33 */
         G17STAGEMSG stage;              /* 0x10, message 0x34 */
+        G17ANIMMSG anim;                /* 0x10, message 0x37 */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */

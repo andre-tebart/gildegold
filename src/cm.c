@@ -1688,16 +1688,16 @@ int cm_SendChrGotoBuilding(int id, int bld, int c, const char *s, int f, const c
     }
     return cm_QueueSend(&m);
 }
-/* 0x4c5410, message 0x37 with a name */
+/* 0x4c5410, message 0x37: the character charId plays the animation name count times - handler 0x4caa20 */
 
-void cm_SendChrAnim(int a, const char *s, int c)
+void cm_SendChrAnim(int charId, const char *name, int count)
 {
     G17MSG m;
 
     m.type = 0x37;
-    G17_I(m, 0) = a;
-    m.data[0x34] = c;
-    strncpy((char *)&m.data[4], s, 0x2f);
+    m.anim.charId = charId;
+    m.anim.count = count;
+    strncpy(m.anim.name, name, 0x2f);
     cm_QueueSend(&m);
 }
 /* 0x4c5460, sends message 0x36: its handler (0x4ca8a0) lets the person "sp_<a>" use the gates of building b (room object c) */
