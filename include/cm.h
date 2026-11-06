@@ -339,7 +339,7 @@ void ai_UpdateCharacters(void);  /* 0x47e560 */
 void ai_RunMasterEvaluation(struct AICHAR *c);  /* 0x47e990 */
 void ai_SetFirstMission(int owner, int type);  /* 0x4b3bd0 */
 int ai_CountMissionEvent();  /* 0x4b44e0 */
-int cm_PartyById();  /* 0x4e50a0 */
+int cm_PartyById(int id);  /* 0x4e50a0 */
 extern G28REC cm_Parties[96];  /* 0x925520, the scene party records (cm.c) */
 int cm_AllocParty();  /* 0x4e5150 */
 int cm_AddPartyMember();  /* 0x4e51b0 */
@@ -467,7 +467,7 @@ void cm_FightSlotWinner(char *r);  /* 0x4d7150 */
 int cm_Attack(CMCUTINFO *rec, struct AICHAR *c, struct AICHAR *g);  /* 0x4d7360 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
 void cm_PlantEscapeFlag(CMFIGHTSLOT *f);  /* 0x4d7190 */
-void cm_ClearParty();  /* 0x4e5180 */
+void cm_ClearParty(int id);  /* 0x4e5180 */
 void amt_ClearOfficesIfAll();  /* 0x4e6e20 */
 int ord_HandleMessageRecord();  /* 0x4f9710 */
 void ai_GameFrame(void);  /* 0x591520 */
