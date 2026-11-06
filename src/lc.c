@@ -14182,34 +14182,35 @@ void ai_FormatCityName(int value, char *buf)
 {
     txt_Format(buf, "%1G", value);
 }
-/* 0x5a6b70, a map position helper (mm): the centre (float)0xfd7c50 + 0x20 * 0.5f, the x / y of the record
-   (+8 / +0xc) around it scaled by 5.33f, the 51.0f edge correction over half the map size 0x6f4ee8 / 0x6f4ee4,
-   written to +0x10 / +0x14 as param_2 / param_3 plus half the size plus the correction */
-
-void ai_Unk5a6b70(int param_1, int param_2, int param_3)
+/* 0x5a6b70, the town map position of the map mark m: its scene cell (cellX, cellZ) taken around the centre of the
+   town scene's height map, scaled by ai_MapCellScale and pushed outwards by up to 51 pixels towards the map edges
+   (by its distance over half the map bitmap's width / height), plus the map origin originX / originY and half the
+   bitmap, into m->x / m->y */
+void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY)
 {
     float half;
     float x;
     float y;
-    float cx;
-    float cy;
+    float edgeX;
+    float edgeY;
 
-    half = (float)U_I((unsigned)&ai_Unkfd7c50 + 0x20) * 0.5f;
-    x = ((float)U_I(param_1 + 8) - half) * 5.33f;
-    y = ((float)U_I(param_1 + 0xc) - half) * 5.33f;
-    cx = (fabs(x) / ((float)U_I((unsigned)&ai_MapSize) * 0.5f)) * 51.0f;
-    if (0.0f <= x)
-        cx = cx + x;
+    half = ((D3SM *)d3_Scenes[0].hmap)->size * 0.5;
+    x = (m->cellX - half) * ai_MapCellScale;
+    y = (m->cellZ - half) * ai_MapCellScale;
+    edgeX = fabs(x) / (ai_MapSize * 0.5f);
+    edgeY = fabs(y) / (ai_MapHeight * 0.5f);
+    if (x < ai_FloatZero)
+        edgeX = x - edgeX * 51.0f;
     else
-        cx = x - cx;
-    cy = (fabs(y) / ((float)ai_MapHeight * 0.5f)) * 51.0f;
-    if (0.0f <= y)
-        cy = cy + y;
+        edgeX = edgeX * 51.0f + x;
+    if (y < ai_FloatZero)
+        edgeY = y - edgeY * 51.0f;
     else
-        cy = y - cy;
-    *(float *)(param_1 + 0x10) = (float)param_2 + (float)U_I((unsigned)&ai_MapSize) * 0.5f + cx;
-    *(float *)(param_1 + 0x14) = (float)ai_MapHeight * 0.5f + (float)param_3 + cy;
+        edgeY = edgeY * 51.0f + y;
+    m->x = originX + ai_MapSize * 0.5f + edgeX;
+    m->y = ai_MapHeight * 0.5f + originY + edgeY;
 }
+
 /* 0x5a67a0, the city watch contact listener, the room 0x146 of the building driver 0x59e420 (376 B): releases
    the name plates, then every frame registers the plates contact_PATROL, ob_WACHPLAN, ob_PERSONALBUCH,
    ob_MEISTERBRIEF and the customs box ob_ZOLLKASSE / ob_ZOLLKASSE_MIT_GEHEIMFACH (sv_RegisterNamePlate, 0x16 /
@@ -14415,7 +14416,7 @@ void ai_Unk5a6cb0(int *m_)
                 d3_GetHeightAt((int)scene, pos, &x, &y, &py);
                 e[2] = x;
                 e[3] = y;
-                ai_Unk5a6b70((int)e, cityx, cityy);
+                ai_MapCellToScreen((int)e, cityx, cityy);
             }
         }
     }
@@ -14512,7 +14513,7 @@ void ai_Unk5a6cb0(int *m_)
                 d3_GetHeightAt((int)scene, pos, &x, &y, &py);
                 item[2] = x;
                 item[3] = y;
-                ai_Unk5a6b70((int)item, cityx, cityy);
+                ai_MapCellToScreen((int)item, cityx, cityy);
                 x = (int)*(float *)(item + 4);
                 y = (int)*(float *)(item + 5);
                 ctrl = d2_WinOpenPic(x, y, 0x550, screen);
@@ -14537,7 +14538,7 @@ void ai_Unk5a6cb0(int *m_)
                 d3_GetHeightAt((int)scene, pos, &x, &y, &py);
                 item[2] = x;
                 item[3] = y;
-                ai_Unk5a6b70((int)item, cityx, cityy);
+                ai_MapCellToScreen((int)item, cityx, cityy);
                 x = (int)*(float *)(item + 4);
                 y = (int)*(float *)(item + 5);
                 ctrl = d2_WinOpenPic(x, y, 0x54f, screen);
@@ -14564,7 +14565,7 @@ void ai_Unk5a6cb0(int *m_)
     d3_GetHeightAt((int)scene, pos, &x, &y, &py);
     item[2] = x;
     item[3] = y;
-    ai_Unk5a6b70((int)item, cityx, cityy);
+    ai_MapCellToScreen((int)item, cityx, cityy);
     screen = *(int *)(p + 8);
     *(int *)((unsigned)&d2_LastWindow) = screen;
     rec = (char *)((unsigned)&d2_Wins + screen * 0x3c4);

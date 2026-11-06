@@ -211,7 +211,15 @@ void ai_DomizilMessage12(char *ch, char *b, int n);  /* 0x5a9e40, posts the Domi
 int ai_MedicusHandler(unsigned short *param_1, void *unused);  /* 0x5c8bc0, the caller (ord 0x4f50ae) pushes a second argument the handler does not read */
 int ai_Unk5c8ef0(unsigned short *param_1, void *unused);  /* 0x5c8ef0, the caller (ord 0x4f58a4) pushes a second argument the handler does not read */
 int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0 */
-void ai_Unk5a6b70(int param_1, int param_2, int param_3);  /* 0x5a6b70 */
+typedef struct LCMAPMARK {         /* 0x18 bytes, a mark of the town map (ai_Unk5a6cb0's 0x100 entries, rt's building marks) */
+    int obj;                       /* 0x00, its object / control */
+    int unk04;
+    int cellX;                     /* 0x08, its scene cell (d3_GetHeightAt) */
+    int cellZ;                     /* 0x0c */
+    float x;                       /* 0x10, its town map pixel (ai_MapCellToScreen) */
+    float y;                       /* 0x14 */
+} LCMAPMARK;
+void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY);  /* 0x5a6b70, the town map pixel of a mark's scene cell */
 void ai_Unk5a6cb0(int *m_);  /* 0x5a6cb0 */
 void ai_Unk5a78a0(int *m_);  /* 0x5a78a0 */
 void ai_Unk5a7cd0(int *m_);  /* 0x5a7cd0 */
