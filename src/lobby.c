@@ -583,7 +583,7 @@ void lobby_ShowChat(void)
     int n;
 
     id = -1;
-    p = ai_Unk4cd480();
+    p = cm_LobbyChatFirst();
     d2_SetForm(lobby_Form, 5);
     q = U_I(((unsigned)&ai_Unkf8f13c + 0x228) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
     io_PrintText((char *)(unsigned)"$C");

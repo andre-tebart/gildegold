@@ -6628,19 +6628,21 @@ void cm_LobbyAddChat(int id, int to, char *text)
     if (cm_LobbyChatCount < 15)
         cm_LobbyChatCount++;
 }
-/* 0x4cd480, the oldest line of the ring (0: none) */
+/* 0x4cd480, the first line the lobby chat window reads: sets the read index cm_LobbyChatPos to
+   cm_LobbyChatNext - cm_LobbyChatCount (to cm_LobbyChatNext + 1 when that is negative) and returns that
+   line of the ring cm_LobbyChat; 0 when the ring is empty */
 
-G18LOG *ai_Unk4cd480()
+G18LOG *cm_LobbyChatFirst()
 {
     int i;
 
     if (cm_LobbyChatCount == 0)
         return 0;
     i = cm_LobbyChatNext - cm_LobbyChatCount;
-    ai_Unk6f0cdc = i;
+    cm_LobbyChatPos = i;
     if (i < 0) {
         i = cm_LobbyChatNext + 1;
-        ai_Unk6f0cdc = i;
+        cm_LobbyChatPos = i;
     }
     return &cm_LobbyChat[i];
 }
@@ -6648,17 +6650,17 @@ G18LOG *ai_Unk4cd480()
 
 G18LOG *ai_Unk4cd4c0()
 {
-    int i = ai_Unk6f0cdc;
+    int i = cm_LobbyChatPos;
 
     if (i == cm_LobbyChatNext)
         return 0;
     i++;
-    ai_Unk6f0cdc = i;
+    cm_LobbyChatPos = i;
     if (i == cm_LobbyChatNext)
         return 0;
     if (i == 15) {
         i = 0;
-        ai_Unk6f0cdc = 0;
+        cm_LobbyChatPos = 0;
     }
     return &cm_LobbyChat[i];
 }
@@ -17118,8 +17120,8 @@ EVTSCRIPT *evt_Scripts = 0;  /* 0x6332b4, [128] */
 unsigned int d3_SceneFlags = 0;  /* 0x63349c */
 int cm_RecvCount = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
-int cm_LobbyChatCount = 0;  /* 0x6f0cd8 */
-int ai_Unk6f0cdc = 0;  /* 0x6f0cdc */
+int cm_LobbyChatCount = 0;  /* 0x6f0cd8, the lines in the ring (at most 15) */
+int cm_LobbyChatPos = 0;  /* 0x6f0cdc, the index of the line the chat window reads next (cm_LobbyChatFirst / 0x4cd4c0) */
 char * cm_HoverObject = 0;  /* 0x6f0ce0 */
 int ai_Unk6f0ce4 = 0;  /* 0x6f0ce4, fight paused */
 int cm_FightDefender = 0;  /* 0x6f0ce8 */

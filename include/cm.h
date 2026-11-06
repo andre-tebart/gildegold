@@ -500,7 +500,7 @@ int gv_StartShot();  /* 0x4eee00 */
 char *cm_LobbyFreeRecord();  /* 0x4cd350 */
 char *cm_LobbyRecord(int id);  /* 0x4cd380 */
 void cm_LobbyAddChat(int id, int to, char *text);  /* 0x4cd3c0 */
-G18LOG *ai_Unk4cd480();  /* 0x4cd480 */
+G18LOG *cm_LobbyChatFirst();  /* 0x4cd480 */
 G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
 void cm_LobbyClearChat();  /* 0x4cd500 */
 int cm_LobbyAllReady();  /* 0x4cd510 */
@@ -558,7 +558,7 @@ typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at 
 } AIWEAPON;
 extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
 extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
-extern int ai_Unk6f0cdc;  /* 0x6f0cdc */
+extern int cm_LobbyChatPos;  /* 0x6f0cdc */
 extern char *cm_FightRecord;  /* 0x6f0d04 */
 extern int gm_AllowAll;  /* 0x6f2448 */
 extern char cm_Fighters[];  /* 0x930600 */
