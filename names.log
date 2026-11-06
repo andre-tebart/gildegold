@@ -2873,3 +2873,4 @@
 2026-11-06T23:36:57 0x004d70a0 data ai_Unk4d70a0 -> cm_FightSlotPutDown by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
 2026-11-06T23:36:57 0x004d7150 data ai_Unk4d7150 -> cm_FightSlotWinner by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
 2026-11-06T23:37:41 0x004cc8e0 data ai_Unk4cc8e0 -> cm_ExMessageRecord by:main why:message 0x56 handler (cm_Handlers[0x56], cm_SendMessage56's receive side): hands the message record to ord_HandleMessageRecord ('init'/'set ' copy it, 'dsbl'/'enbl' toggle it)
+2026-11-06T23:38:07 0x004cc920 data ai_Unk4cc920 -> cm_ExChrDelete by:main why:message 0x57 handler (cm_Handlers[0x57], cm_SendChrDelete's receive side): deletes the scene character of the character m->chrDelete.charId (ch_Delete) and clears its AICHAR.scene
