@@ -23081,10 +23081,10 @@ void he_RunDomizilEvent(int ev)
 
 int he_EventOnBuilding(int owner)
 {
-    int r;
+    AIJOB *r;
 
-    for (r = (int)he_FindEvent(1, 0, 0x99); r != 0; r = (int)he_NextEvent()) {
-        if (HM_I(r, 0xb0) == owner)
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x99); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if (((HESECRETROOM *)r)->home == owner)
             return 1;
     }
     return 0;
