@@ -10,8 +10,8 @@
    lender windows read a bank's offers as AIBLD.credits (gv_types.h ORDCREDIT), its loans as HELOAN (ai_types.h) and
    its fees as AIBLD.messengerFee / exchangeFee; the exchange windows keep their currency rows as LCEXCHROW (16 per
    list), the money messenger sends AIMSG.payment and finds the running payment event by AIJOB.bldId / payer.
-   The town map window (ai_OpenTownMap, ai_BuildTownMap, its drag / key scroll and close) keeps its record as LCMAPWIN
-   (lc.h, the marks LCMAPMARK; ai_MapPick and rt hand it in); the family tree window draws its boxes as LCFAMILYBOX
+   The town map window (ai_OpenTownMap, ai_BuildTownMap, its per-frame ai_UpdateTownMap with the drag / key scroll, and
+   its close) keeps its record as LCMAPWIN (lc.h, the marks LCMAPMARK; ai_MapPick and rt hand it in); the family tree window draws its boxes as LCFAMILYBOX
    and opens the character info panel ai_CharInfoPanel.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
