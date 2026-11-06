@@ -2744,7 +2744,7 @@ int main_ChooseCity(int unused, int host)
         }
         vfs_fclose(f);
         diff[i] = (signed char)hdr[0x34] - (U_I((unsigned)&ai_NumPlayers) & 0xff);
-        h = ai_Unk59a2c0(hdr + 9);
+        h = ai_CreateCityPoint(hdr + 9);
         cityobj[i] = h;
         if (h != 0) {
             sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr + 5);
