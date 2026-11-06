@@ -414,7 +414,7 @@ typedef struct HEBUYBLD {               /* the building purchase event 0x21's wo
     int price;                          /* 0xb0, the price offered (paid with cm_SendMoveGoodsUnchecked) */
     int buyer;                          /* 0xb4, the buyer's netId (gm_FindChar) */
 } HEBUYBLD;
-typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's union (he_Unk55e3a0 / he_RunEvent24); the
+typedef struct HEEV24 {                 /* the event 0x24's word over AIJOB's union (he_AllocDueIsStart / he_RunEvent24); the
                                            character is AIJOB.ownerCh */
     char pad00[0xb8];
     int daysLeft;                       /* 0xb8, the runs left: counted down once per run, below 0 the event ends */
@@ -1744,7 +1744,7 @@ void he_MessageBoxQuickjump(int pid, int from, char *text, char tflags, int news
 
 #include <stdarg.h>
 #include <math.h>
-void he_Unk55e3a0(int ev);
+void he_AllocDueIsStart(AIJOB *ev);
 void he_SetLifeByAge(int rec, int num);
 
 void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b);
@@ -11282,7 +11282,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x53, (void *)he_AllocCharPayouts, (void *)he_RunCharPayouts) != 0)
         return 1;
-    if (he_SetEventHandlers(0x54, (void *)he_Unk55e3a0, (void *)he_RunMasterExamFee) != 0)
+    if (he_SetEventHandlers(0x54, (void *)he_AllocDueIsStart, (void *)he_RunMasterExamFee) != 0)
         return 1;
     if (he_SetEventHandlers(0x55, (void *)he_AllocMasterExamPay, (void *)he_RunMasterExamPay) != 0)
         return 1;
@@ -16093,13 +16093,13 @@ void he_RunWorkerQuits(int ev)
         break;
     }
 }
-/* 0x55e3a0, the allocation handler: the due clock is the start clock (+0x44) */
+/* 0x55e3a0, the allocation handler of the events 0x24, 0x34, 0x54 and 0x94: the due clock is the start clock */
 
-void he_Unk55e3a0(int ev)
+void he_AllocDueIsStart(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    ev->end = ev->start;
 }
-/* 0x55e3d0, the run handler of the event 0x34 (its alloc handler he_Unk55e3a0), a worker who steals: stages -2 / -1 free
+/* 0x55e3d0, the run handler of the event 0x34 (its alloc handler he_AllocDueIsStart), a worker who steals: stages -2 / -1 free
    the record, a later stage leaves it. At stage 0 the character AIJOB.ownerCh must work in a building (AICHAR.bld)
    whose owner it likes -26 or less (gm_Opinion), else the record is freed. One good of the building's store (the
    object 0x2a, else 0x116; up to 0x20 goods of its list) is picked at random and taken out of the store
@@ -20147,7 +20147,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(35, (void *)he_AllocKredit, (void *)he_RunKredit) != 0)
         return 1;
-    if (he_SetEventHandlers(36, (void *)he_Unk55e3a0, (void *)he_RunEvent24) != 0)
+    if (he_SetEventHandlers(36, (void *)he_AllocDueIsStart, (void *)he_RunEvent24) != 0)
         return 1;
     if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_RunMasterExamNotice) != 0)
         return 1;
@@ -20164,7 +20164,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(51, (void *)he_AllocWorkerQuits, (void *)he_RunWorkerQuits) != 0)
         return 1;
-    if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_RunWorkerTheft) != 0)
+    if (he_SetEventHandlers(52, (void *)he_AllocDueIsStart, (void *)he_RunWorkerTheft) != 0)
         return 1;
     if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_RunEvent38) != 0)
         return 1;
@@ -23294,7 +23294,7 @@ int he_RegisterEventTypes88(void)
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_AllocGraveyardWorkers, (void *)he_RunGraveyardWorkers) == 0) {
-                                                    if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_RunGraveyardTheft) == 0) {
+                                                    if (he_SetEventHandlers(0x94, (void *)he_AllocDueIsStart, (void *)he_RunGraveyardTheft) == 0) {
                                                         if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_RunGraveLease) == 0) {
                                                             sv_RegisterActivity(0x8d, (char *)(unsigned)&full_data_628e8c, 1, 0x513, -1);
                                                             sv_RegisterActivity(0x8c, (char *)(unsigned)&full_data_628e7c, 1, 0x500, 0xac);
