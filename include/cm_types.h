@@ -771,7 +771,8 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17PROOFMSG proof;              /* 0x10, message 0x24 */
         G17DROPEVIDENCEMSG dropEvidence; /* 0x10, message 0x25 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
-        G17GOODSMSG goods;              /* 0x10, message 0x40 */
+        G17GOODSMSG goods;              /* 0x10, message 0x40; the record of message 0x3f begins with the same player /
+                                           item head (the whole goods record follows it) */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
         G17RELMSG rel;                  /* 0x10, message 0x1b */
         G17SYSMSG sys;                  /* 0x10, message 0x20 */
