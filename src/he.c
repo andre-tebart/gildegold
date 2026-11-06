@@ -12166,20 +12166,23 @@ int he_RandomTransporter(char *obj)
         return 0;
     return list[(unsigned short)util_Random(list[0x20])];
 }
+#define d3t_SnowP (*(int **)&d3t_Snow)  /* 0x76061c, d3t_Snow (sv.c: int) as the pointer it holds: the snow system (d3t_CreateSnow), its first int read as the snow's strength */
 /* 0x5552c0, sets the speed factor (+0x1a0 of the record at +0x3b of `p`) from the event's value +0xc0: * the first constant when 0x76061c points to a value above 100, else * the second when 0x760618 points above 200, else unchanged; a second stage (+0xf1 == 2) multiplies it once more */
 
 void he_SetCartSpeed(int ev, int p)
 {
-    int rec = *(int *)(p + 0x3b);
+    HETRANSPORT *t = (HETRANSPORT *)ev;
+    AIOBJ *cart = (AIOBJ *)p;
+    CHARACTER *ch = (CHARACTER *)cart->sceneObj;
 
-    if (U_I((unsigned)&d3t_Snow) != 0 && *(int *)U_I((unsigned)&d3t_Snow) > 0x64)
-        *(float *)(rec + 0x1a0) = (float)(*(float *)(ev + 0xc0) * 0.7);
-    else if (U_I((unsigned)&d3t_Rain) != 0 && *(int *)U_I((unsigned)&d3t_Rain) > 0xc8)
-        *(float *)(rec + 0x1a0) = (float)(*(float *)(ev + 0xc0) * 0.8);
+    if (d3t_SnowP != 0 && *d3t_SnowP > 0x64)
+        ch->walkSpeed = (float)(t->speed * 0.7);
+    else if (d3t_Rain != 0 && *d3t_Rain > 0xc8)
+        ch->walkSpeed = (float)(t->speed * 0.8);
     else
-        *(int *)(rec + 0x1a0) = *(int *)(ev + 0xc0);
-    if (*(unsigned char *)(ev + 0xf1) == 2)
-        *(float *)(rec + 0x1a0) = (float)(*(float *)(rec + 0x1a0) * 0.8);
+        ch->walkSpeed = t->speed;
+    if (t->weatherStage == 2)
+        ch->walkSpeed = (float)(ch->walkSpeed * 0.8);
 }
 
 int gm_FindObjectInst(int id);
@@ -12188,7 +12191,6 @@ typedef struct SVFRAME {                /* 8 bytes, an entry of the frame stack 
     int cb;                             /* 0x00, the frame callback registered at this depth */
     char pad04[4];
 } SVFRAME;
-#define d3t_SnowP (*(int **)&d3t_Snow)  /* 0x76061c, d3t_Snow (sv.c: int) as the pointer it holds: the snow system (d3t_CreateSnow), its first int read as the snow's strength */
 #define sv_FramesT (*(SVFRAME (*)[0x80])((char *)&ai_Unk75f280 + 0x500))  /* 0x75f780, the frame stack, indexed by sv_FrameDepth */
 #define cm_SendCartRouteH ((int (*)(int, int, int))cm_SendCartRoute)  /* 0x4c4920: it returns the send slot of its message (cm_QueueSend's result stays in eax), which the void prototype drops; @original the transport legs keep it (HETRANSPORT.route) */
 void cm_SendCartState(int a, int b);
