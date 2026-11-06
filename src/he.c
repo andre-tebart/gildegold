@@ -19062,7 +19062,7 @@ void he_RunNewWorker(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x565b00, the allocation handler of the player's death event 0x71 (its run handler he_Unk565b60): the player
+/* 0x565b00, the allocation handler of the player's death event 0x71 (its run handler he_RunDiePlayer): the player
    (AICHAR, +0xac) must exist (else the error message and free); his health +8 is cleared and the next run is now */
 
 void he_AllocDiePlayer(AIJOB *ev)
@@ -19078,55 +19078,59 @@ void he_AllocDiePlayer(AIJOB *ev)
     p->health = 0;
     ev->end = ai_Time;
 }
-/* 0x565b60, the run handler of the death of a player (ROUGH): state 0 removes the follow object of his figure (0x4284a0 / 0x429e90) and clears his lock 0x524260; state 1 waits until the figure object (+0x184, its +0x28) is gone; state 2 clears the flag +8, the lock, the figure +0x16c and lays the figure down (0x405610, 0x40b2f0 (obj, 0x36, 1): the animation name "bewegung/zu_boden_sinken" at +0xf0), next run at once; state 3 informs the owner 0x4c4e00 (+4, 1) when the flag +0x78 & 2 is set; then freed */
+/* 0x565b60, the run handler of the player's death event 0x71 (its alloc handler he_AllocDiePlayer): stage 0 stops
+   his figure's follow script (0x4284a0 / 0x429e90) and moves him out of his group; stage 1 waits until that script
+   is gone; stage 2 clears his health, his building and his scene record, lays the figure down (0x405610, 0x40b2f0
+   (obj, 0x36, 1): the animation name "bewegung/zu_boden_sinken" at +0xf0) and runs again an hour later; stage 3
+   informs the owner 0x4c4e00 (netId, 1) when the event option 2 is set; then the record is freed */
 
-void he_Unk565b60(int ev)
+void he_RunDiePlayer(AIJOB *ev)
 {
-    unsigned short *p;
-    int q, o, a;
-    char *s, *d;
+    AICHAR *p, *q;
+    CHACTION *a;
+    int o;
 
-    switch (*(int *)(ev + 0x70)) {
+    switch (ev->stage) {
     case 0:
-        p = (unsigned short *)gm_FindChar(*(int *)(ev + 0xac));
+        p = (AICHAR *)gm_FindChar(ev->ownerCh);
         if (p != 0) {
-            if (*(int *)(p + 0xc2) != 0 && (o = *(int *)(*(int *)(p + 0xc2) + 0x28)) != -1)
+            if (p->scene != 0 && (o = p->scene->scriptId) != -1)
                 evt_Stop(evt_FindById(o));
-            sv_MoveToGroup(0, 0, *p, 0);
-            *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+            sv_MoveToGroup(0, 0, p->id, 0);
+            ev->stage++;
             return;
         }
         break;
     case 1:
-        q = gm_FindChar(*(int *)(ev + 0xac));
+        q = (AICHAR *)gm_FindChar(ev->ownerCh);
         if (q != 0) {
-            if (*(int *)(q + 0x184) != 0 && *(int *)(*(int *)(q + 0x184) + 0x28) != -1)
+            if (q->scene != 0 && q->scene->scriptId != -1)
                 return;
-            *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+            ev->stage++;
             return;
         }
         break;
     case 2:
-        p = (unsigned short *)gm_FindChar(*(int *)(ev + 0xac));
+        p = (AICHAR *)gm_FindChar(ev->ownerCh);
         if (p != 0) {
-            *(char *)(p + 4) = 0;
-            sv_MoveToGroup(0, 0, *p, 0);
-            *(int *)(p + 0xb6) = 0;
-            if (*(int *)(p + 0xc2) != 0) {
-                ch_StopActions(*(int *)(p + 0xc2));
-                a = ch_AddAction(*(int *)(p + 0xc2), 0x36, 1);
-                strcpy((char *)(a + 0xf0), "bewegung/zu_boden_sinken");
+            p->health = 0;
+            sv_MoveToGroup(0, 0, p->id, 0);
+            p->bld = 0;
+            if (p->scene != 0) {
+                ch_StopActions(p->scene);
+                a = ch_AddAction(p->scene, 0x36, 1);
+                strcpy(a->u.name, "bewegung/zu_boden_sinken");
             }
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 1, 0, 0);
-            *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 1, 0, 0);
+            ev->stage++;
             return;
         }
         break;
     case 3:
-        q = gm_FindChar(*(int *)(ev + 0xac));
-        if (q != 0 && (*(unsigned char *)(ev + 0x78) & 2) != 0)
-            cm_SendKillCharacter(*(int *)(q + 4), 1);
+        q = (AICHAR *)gm_FindChar(ev->ownerCh);
+        if (q != 0 && (ev->opts & 2) != 0)
+            cm_SendKillCharacter(q->netId, 1);
         break;
     case -2:
     case -1:
@@ -20234,7 +20238,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
     if (he_SetEventHandlers(110, (void *)he_AllocNewWorker, (void *)he_RunNewWorker) != 0)
         return 1;
-    if (he_SetEventHandlers(113, (void *)he_AllocDiePlayer, (void *)he_Unk565b60) != 0)
+    if (he_SetEventHandlers(113, (void *)he_AllocDiePlayer, (void *)he_RunDiePlayer) != 0)
         return 1;
     if (he_SetEventHandlers(114, (void *)he_Unk565d10, (void *)he_RunKillPlayer) != 0)
         return 1;
