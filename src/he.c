@@ -19723,17 +19723,18 @@ void he_RunRobbery(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x567620, a Ghidra miss: the allocation handler of a periodic check, the next run is 20 units ahead */
+/* 0x567620, the allocation handler of the title-period event 0x7c (he_RunTitleDue): the due clock is now plus
+   20 minutes */
 
-void he_Unk567620(int ev)
+void he_AllocTitleDue(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0x14, 0);
+    ev->end = ai_Time;
+    gm_AddTime(&ev->end, 0, 0x14, 0);
 }
 
 float gm_TitlePeriodServed(int n, int *out);
 
-/* 0x567660, the run handler of the title-period event 0x7c (alloc handler 0x567620): stages -1 / -2 free the record;
+/* 0x567660, the run handler of the title-period event 0x7c (alloc handler he_AllocTitleDue): stages -1 / -2 free the record;
    stage 0: a character already told (flags1c8 bit 31) is asked again in 4 hours; one whose title period is not
    served yet (gm_TitlePeriodServed below 1.0) in 20 minutes; else he gets the message 0x25 (flags 9, arg[0] his
    netId, arg[2] 2: cm_SendLongMessage), the bit 31 is set and the next run is 4 hours ahead */
@@ -20255,7 +20256,7 @@ int he_RegisterEventTypes02(void)
     if (he_SetEventHandlers(117, (void *)he_AllocDueInOne, (void *)he_RunRobbery) != 0)
         return 1;
     sv_RegisterActivity(117, 0, 0, 1282, -1);
-    if (he_SetEventHandlers(124, (void *)he_Unk567620, (void *)he_RunTitleDue) != 0)
+    if (he_SetEventHandlers(124, (void *)he_AllocTitleDue, (void *)he_RunTitleDue) != 0)
         return 1;
     if (he_SetEventHandlers(131, (void *)he_Unk5679b0, (void *)he_RunHint) != 0)
         return 1;
