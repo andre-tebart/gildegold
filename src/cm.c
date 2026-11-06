@@ -5960,47 +5960,48 @@ void cm_PlaceFighter(AICHAR *c, D3VECTOR *pos, D3VECTOR *rot, int v)
         c->v024 = v;
     }
 }
-/* 0x4cc7b0, handler of type 0x55: sub-commands data[4] (1..7) for the character data[0x25] when the message is
-   for our player */
+/* 0x4cc7b0, handler of message 0x55 (cm_SendFightCommand): runs the command m->fight.cmd of the fighter
+   m->fight.slot.id in the current fight (only when the message is for our fight), at the position, rotation and
+   health the message carries */
 
-int ai_Unk4cc7b0(G17MSG *m, G17STAT *s)
+int cm_ExFightCommand(G17MSG *m, G17STAT *s)
 {
-    char *c;
+    AICHAR *c;
 
-    if (cm_CurrentFight == 0 || *cm_CurrentFight != G17_I(*m, 0))
+    if (cm_CurrentFight == 0 || *cm_CurrentFight != m->fight.fight)
         return 1;
-    c = cm_FindFighter(G17_I(*m, 0x25));
-    switch (m->data[4]) {
-    case 2:
-        if (c[8] != 0) {
-            cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
+    c = (AICHAR *)cm_FindFighter(m->fight.slot.id);
+    switch (m->fight.cmd) {
+    case 2:                                         /* attack */
+        if (c->health != 0) {
+            cm_PlaceFighter(c, &m->fight.pos, &m->fight.rot, m->fight.health);
             cm_FighterAct(&m->fight.slot);
         }
         break;
-    case 6:
-        if (c[8] != 0) {
-            cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
-            ai_Unk4d6f60(&m->data[0x25]);
+    case 6:                                         /* stop */
+        if (c->health != 0) {
+            cm_PlaceFighter(c, &m->fight.pos, &m->fight.rot, m->fight.health);
+            cm_FightSlotStop((char *)&m->fight.slot);
         }
         break;
-    case 1:
-        if (c[8] != 0)
-            ai_Unk4d6f90(&m->data[0x25]);
+    case 1:                                         /* cheer */
+        if (c->health != 0)
+            cm_FightSlotCheer((char *)&m->fight.slot);
         break;
-    case 4:
-        if (c[8] != 0)
-            ai_Unk4d7000(&m->data[0x25]);
+    case 4:                                         /* pick up the object at its place */
+        if (c->health != 0)
+            cm_FightSlotPickUp((char *)&m->fight.slot);
         break;
-    case 5:
-        if (c[8] != 0)
-            ai_Unk4d70a0(&m->data[0x25]);
+    case 5:                                         /* put down the object it carries */
+        if (c->health != 0)
+            cm_FightSlotPutDown((char *)&m->fight.slot);
         break;
-    case 7:
-        ai_Unk4d7150(&m->data[0x25]);
+    case 7:                                         /* the winner so far */
+        cm_FightSlotWinner((char *)&m->fight.slot);
         break;
-    case 3:
-        if (c[8] != 0) {
-            cm_PlaceFighter((AICHAR *)c, (D3VECTOR *)&m->data[5], (D3VECTOR *)&m->data[0x15], G17_I(*m, 0x21));
+    case 3:                                         /* escape */
+        if (c->health != 0) {
+            cm_PlaceFighter(c, &m->fight.pos, &m->fight.rot, m->fight.health);
             cm_PlantEscapeFlag(&m->fight.slot);
         }
         break;
@@ -11110,7 +11111,7 @@ void cm_FighterAct(CMFIGHTSLOT *f)
 }
 /* 0x4d6f60, the fighter slot f (+0 id, +4 active) of an active character: 0x405610 on its object */
 
-void ai_Unk4d6f60(char *f)
+void cm_FightSlotStop(char *f)
 {
     char *c;
 
@@ -11122,7 +11123,7 @@ void ai_Unk4d6f60(char *f)
 }
 /* 0x4d6f90, the cheer of the winner in the slot f: event 0x4d3ac0 with the animation "gestik/jubeln" */
 
-void ai_Unk4d6f90(char *f)
+void cm_FightSlotCheer(char *f)
 {
     char *c, *ev;
 
@@ -11136,7 +11137,7 @@ void ai_Unk4d6f90(char *f)
 /* 0x4d7000, the fighter slot f picks up the object lying at its place (+0x10): the object (0x449690) is marked as owned
    by the character's side, event 0x4d3ae0 */
 
-void ai_Unk4d7000(char *f)
+void cm_FightSlotPickUp(char *f)
 {
     char *c, *side, *o, *ev;
 
@@ -11156,7 +11157,7 @@ void ai_Unk4d7000(char *f)
 }
 /* 0x4d70a0, the fighter slot f puts down the object it carries (+0x1ac) at its place */
 
-void ai_Unk4d70a0(char *f)
+void cm_FightSlotPutDown(char *f)
 {
     char *c, *o, *p, *a;
 
@@ -11177,7 +11178,7 @@ void ai_Unk4d70a0(char *f)
 }
 /* 0x4d7150, the character of the record r is the winner so far (0x6f0cf4): text 0x11b7 */
 
-void ai_Unk4d7150(char *r)
+void cm_FightSlotWinner(char *r)
 {
     char buf[0x100];
     char *c;
@@ -17038,7 +17039,7 @@ int cm_LastCharId = -1;  /* 0x60bd88, = -1 */
 int cm_LastBuildingId = -1;  /* 0x60bd8c, = -1 */
 int cm_LastObjectId = -1;  /* 0x60bd90, = -1 */
 int cm_LeftPlayerId = -1;  /* 0x60bd94, = -1 */
-int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { cm_ExNothing, cm_ExGroupPassed, ai_AlwaysTrue, cm_ExNothing, cm_ExNetFlags, cm_ExNothing, cm_ExNothing, cm_ExNothing, cm_ExLoadSize, cm_ExLoadBlock, cm_ExCreateBuilding, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, cm_ExDeleteObject, cm_ExMoveGoods, cm_ExMoveGoodsUnchecked, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, cm_ExRemoveGoods, cm_ExCreateObject, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, cm_ExSetField, cm_ExFloatDelta, cm_ExRelations, cm_ExLongMessage, cm_ExSetHE, cm_ExTime, cm_ExGameOver, cm_ExSysMessage, cm_ExKillCharacter, cm_ExAddStraftat, cm_ExRetireCrime, cm_ExProofExecuted, cm_ExDropEvidence, cm_ExSendCutInfo, cm_ExNewParty, cm_ExAllocCutscene, cm_ExAddPartyMember, cm_ExLeaveParty, cm_ExRemoveOwned, cm_ExSetPlant, cm_ExCreateSermon, cm_ExChrWalkTo, cm_ExChrWalkToDummy, cm_ExChrMoveToUniverse, cm_ExChrStop, cm_ExChrSetPos, cm_ExCartState, cm_ExPlaceOnStage, cm_ExChrGotoBuilding, cm_ExChrUseGates, cm_ExChrAnim, cm_ExOwnership, cm_ExSetHome, cm_ExGebUpgrade, cm_ExBuildingDestroyed, cm_ExHandOverCrimes, cm_ExHire, cm_ExCharModel, cm_ExGoodsRecord, cm_ExGoodsDelta, cm_ExLoadStatistics, cm_ExUpdateSmoke, cm_ExSkillsChanged, cm_ExApplication, cm_ExOfficeMessage, cm_ExDecisionValue, cm_ExChangePlayerHe, cm_ExSetJob, cm_ExSpawnCharacter, cm_ExFreeObject, cm_ExChat, cm_ExCreateGeb, cm_ExCharHalt, cm_ExObjCell, cm_ExWalkPath, cm_ExCutEntry, cm_ExCutEntryUpdate, cm_ExDamage, cm_ExDarkCorner, cm_ExTableRequest, ai_Unk4cc7b0, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, cm_ExAddSkill, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, cm_ExAlchemistOrder, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, cm_ExSetRoute, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
+int (*cm_Handlers[0x6a])(G17MSG *m, G17STAT *s) = { cm_ExNothing, cm_ExGroupPassed, ai_AlwaysTrue, cm_ExNothing, cm_ExNetFlags, cm_ExNothing, cm_ExNothing, cm_ExNothing, cm_ExLoadSize, cm_ExLoadBlock, cm_ExCreateBuilding, cm_ExCreateCharacter, cm_ExCreateNamedCharacter, cm_ExTakeOverCharacter, cm_ExDeleteObject, cm_ExMoveGoods, cm_ExMoveGoodsUnchecked, cm_ExSellObjekt, cm_ExMakeGoods, cm_ExMoveObject, cm_ExRemoveGoods, cm_ExCreateObject, cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas, cm_ExSetField, cm_ExFloatDelta, cm_ExRelations, cm_ExLongMessage, cm_ExSetHE, cm_ExTime, cm_ExGameOver, cm_ExSysMessage, cm_ExKillCharacter, cm_ExAddStraftat, cm_ExRetireCrime, cm_ExProofExecuted, cm_ExDropEvidence, cm_ExSendCutInfo, cm_ExNewParty, cm_ExAllocCutscene, cm_ExAddPartyMember, cm_ExLeaveParty, cm_ExRemoveOwned, cm_ExSetPlant, cm_ExCreateSermon, cm_ExChrWalkTo, cm_ExChrWalkToDummy, cm_ExChrMoveToUniverse, cm_ExChrStop, cm_ExChrSetPos, cm_ExCartState, cm_ExPlaceOnStage, cm_ExChrGotoBuilding, cm_ExChrUseGates, cm_ExChrAnim, cm_ExOwnership, cm_ExSetHome, cm_ExGebUpgrade, cm_ExBuildingDestroyed, cm_ExHandOverCrimes, cm_ExHire, cm_ExCharModel, cm_ExGoodsRecord, cm_ExGoodsDelta, cm_ExLoadStatistics, cm_ExUpdateSmoke, cm_ExSkillsChanged, cm_ExApplication, cm_ExOfficeMessage, cm_ExDecisionValue, cm_ExChangePlayerHe, cm_ExSetJob, cm_ExSpawnCharacter, cm_ExFreeObject, cm_ExChat, cm_ExCreateGeb, cm_ExCharHalt, cm_ExObjCell, cm_ExWalkPath, cm_ExCutEntry, cm_ExCutEntryUpdate, cm_ExDamage, cm_ExDarkCorner, cm_ExTableRequest, cm_ExFightCommand, ai_Unk4cc8e0, ai_Unk4cc920, ai_Unk4cc980, ai_Unk4cca10, ai_Unk4ccaa0, ai_Unk4ccb10, ai_Unk4ccbd0, cm_ExAddSkill, ai_Unk4ccce0, ai_Unk4cce00, ai_Unk4cce10, ai_Unk4cced0, ai_Unk4ccf10, ai_Unk4ccf90, cm_ExAlchemistOrder, ai_Unk4cd130, ai_Unk4cd180, ai_Unk4cd1e0, cm_ExSetRoute, ai_Unk4cd2f0 };  /* 0x60bd98, the handler of each message type */
 int (*cm_Checks[0x6a])(G17MSG *m) = { sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckMoveGoods, sv_ReturnZero, cm_CheckSellObject, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckFieldDeltas, sv_ReturnZero, sv_ReturnZero, cm_CheckSetField, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckOwnership, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckApplication, cm_CheckOfficeMessage, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckDarkCorner, cm_CheckTableRequest, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, cm_CheckCutsceneReady, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero, sv_ReturnZero };  /* 0x60bf40, the check of each type (groups 5..6) */
 char cm_WalkToDummyWhy[20] = "cm_ExChrWalkToDummy";  /* 0x60c4a0 */
 char cm_TextNewline[4] = { 36, 65, 0, 0 };  /* 0x60c6c0 */

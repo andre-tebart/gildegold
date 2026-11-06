@@ -459,11 +459,11 @@ void ai_ShowPurchaseNews(unsigned short *param_1, char *param_2, int param_3, in
 
 int ch_Delete();  /* 0x4028a0 */
 void cm_FighterAct(CMFIGHTSLOT *f);  /* 0x4d6ba0, the action of one fighter (message 0x55) */
-void ai_Unk4d6f60(char *f);  /* 0x4d6f60 */
-void ai_Unk4d6f90(char *f);  /* 0x4d6f90 */
-void ai_Unk4d7000(char *f);  /* 0x4d7000 */
-void ai_Unk4d70a0(char *f);  /* 0x4d70a0 */
-void ai_Unk4d7150(char *r);  /* 0x4d7150 */
+void cm_FightSlotStop(char *f);  /* 0x4d6f60 */
+void cm_FightSlotCheer(char *f);  /* 0x4d6f90 */
+void cm_FightSlotPickUp(char *f);  /* 0x4d7000 */
+void cm_FightSlotPutDown(char *f);  /* 0x4d70a0 */
+void cm_FightSlotWinner(char *r);  /* 0x4d7150 */
 int cm_Attack(CMCUTINFO *rec, struct AICHAR *c, struct AICHAR *g);  /* 0x4d7360 */
 int ai_InventoryHas(void *ch, int id);  /* 0x5ba6b0 */
 void cm_PlantEscapeFlag(CMFIGHTSLOT *f);  /* 0x4d7190 */

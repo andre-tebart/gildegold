@@ -2866,3 +2866,9 @@
 2026-11-06T23:31:15 0x004cc110 func ai_Unk4cc110 -> cm_ExWalkPath by:main why:message 0x4f carries path cells for the walk action 0x3a of the named character (name, from, to, two cells); no sender in the sources, the name is a reasoned guess
 2026-11-06T23:33:45 0x004cc330 data ai_Unk4cc330 -> cm_ExDamage by:main why:message 0x52 handler (cm_Handlers[0x52], cm_types.h G17DAMAGEMSG): the receive side of cm_SendDamage; shows the damage and subtracts it from the fighter's v024
 2026-11-06T23:35:27 0x004cc390 func ai_Unk4cc390 -> cm_ExDarkCorner by:main why:message 0x53 handler (cm_Handlers[0x53]); executes what cm_CheckDarkCorner checks: 'cler' resets the three evidence offers and the year of the tavern's kind 0x12c object, 'buy ' clears the named offer
+2026-11-06T23:36:57 0x004cc7b0 data ai_Unk4cc7b0 -> cm_ExFightCommand by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
+2026-11-06T23:36:57 0x004d6f60 data ai_Unk4d6f60 -> cm_FightSlotStop by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
+2026-11-06T23:36:57 0x004d6f90 data ai_Unk4d6f90 -> cm_FightSlotCheer by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
+2026-11-06T23:36:57 0x004d7000 data ai_Unk4d7000 -> cm_FightSlotPickUp by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
+2026-11-06T23:36:57 0x004d70a0 data ai_Unk4d70a0 -> cm_FightSlotPutDown by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
+2026-11-06T23:36:57 0x004d7150 data ai_Unk4d7150 -> cm_FightSlotWinner by:main why:message 0x55 handler (cm_SendFightCommand's receive side); its cmd arms call the four slot helpers and the winner text
