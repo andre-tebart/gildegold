@@ -139,12 +139,10 @@ extern unsigned short * ai_PlayerChar;
 extern char * ai_BTypes;
 extern char * ai_Blds;
 extern int ai_Difficulty;
-extern const int sv_PhaseMinutes[24];
 extern char * cm_FieldObject;
 extern const int ai_CharWalkSteps[16];
 extern signed char ai_Relations[768][768];
 extern char ai_Unk625820[115][0x20];
-extern unsigned char ai_GameState;
 extern char ai_PlayerSlots[4][0x2f4];
 extern int gm_PlayerRecords[688];
 extern GAPDATA full_data_602568[];
@@ -174,16 +172,10 @@ extern char ai_Unk625820[115][0x20];
 extern GAPDATA full_data_60d0d4[];
 extern struct G16TRACKHANDLES snd_TrackHandles;
 extern int * d3t_Rain;
-extern int d3t_Snow;
 extern int ai_GameOver;
 extern char * ai_Goods;
 extern GAPDATA full_data_5f1890[];
 extern int ai_PermsDirty;
-extern char * ai_PlayerBuilding;
-extern int ai_Unk75f280[576];
-extern int sv_FrameDepth;
-extern unsigned short * sv_PanelShown;
-extern char * ai_FallbackBuilding;
 
 extern char ai_Chars[768][0x21c];
 extern char * ai_FallbackBuilding;
@@ -202,7 +194,6 @@ extern GAPDATA full_rdata_5ee020[];
 extern unsigned char ai_OwnPlayer;
 extern unsigned short * ai_PlayerChar;
 #include "sv_types.h"
-extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
 extern char gm_TagGebaeudePROT[24];
 extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
@@ -730,6 +721,7 @@ int gm_CompareTime();
 #include "d3_snd.h"
 #include "sblib.h"
 #include "vfs.h"
+#include "sv.h"
 #define rt_UnloadAtPointC ((void (*)(char *, char))rt_UnloadAtPoint)  /* 0x4bfa40 (rt.c: int pl): @original he_RunTransport pushes its char player slot unextended (0x556bb9) */
 #define d2_SetObjValue2 ((void (*)(int, int))d2_SetObjValue)  /* 0x475cb0: @original he.c's two calls push only obj and the value (0x53dcd1, 0x53dd44) */
 #define ai_CharsT (*(AICHAR (*)[768])&ai_Chars)  /* 0x770b80, ai_Chars (ahm.c: char[768][0x21c]) as the AICHAR records they are */
@@ -3155,7 +3147,7 @@ int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, 
 void cm_BeginFieldBlock(char *o, int id);
 int cm_SendFieldDeltas(void);
 void txt_Format(char *out, int id0, ...);
-int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_Unk5725b0), against cm.h's void (unsigned char, char *) view */
+int cm_SendExSetHE(); /* @original: the callers here push the key as an int and read the return (byte-matched he_EndEventNow / he_AllocQuarrel / he_AllocInsultNews / he_RunMeeting), against cm.h's void (unsigned char, char *) view */
 
 /* 0x540c90, from the year 8 on, in 1 of 4 calls, when no event 0x67 runs: posts the message 0x67 about one of the
    player's buildings of the kinds 0x20 / 0x1e / 0x1f (the first of each kind, gm_BuildQuery; one of them at random):
@@ -11239,7 +11231,6 @@ void he_RunOfficeAward(int ev)
 }
 
 void he_FreeEventNow();
-int sv_RegisterActivity();
 
 /* 0x553060, registers the alloc / run handler pairs of the event types 0x22 .. 0xa5 (he_SetEventHandlers; the pair of a type is (alloc, run); 1 = a registration failed; 0x52b350 (type, 0, 0, 0x507 / 0x50e, -1) registers the message type of a few of them). The handlers above 0x553060 are the ones of this file; 0x56f040 is a forwarder to the free (0x53e1f0); the rest lives in the stretch 0x553880 .. 0x575700 (drafts to come) */
 int he_RegisterEventTypes22(void)
@@ -23343,14 +23334,14 @@ void he_AllocGraveCare(int ev);          /* 0x571550 */
 void he_RunGraveCare(int ev);          /* 0x571640 */
 void he_AllocPlunder(int ev);          /* 0x5706e0 */
 void he_RunPlunder(int ev);          /* 0x5707a0 */
-void he_Unk572860(int ev);          /* 0x572860 */
+void he_AllocPlunderOfferLease(int ev);          /* 0x572860 */
 void he_RunPlunderOffer(int ev);          /* 0x570cc0 */
 void he_AllocDeathDue(int ev);          /* 0x571990 */
 void he_RunDeathDue(int ev);          /* 0x5719e0 */
 void he_AllocGraveTraining(int ev);          /* 0x571ac0 */
 void he_RunGraveTraining(int ev);          /* 0x571c30 */
 void he_AllocMeeting(int ev);          /* 0x571f60 */
-void he_Unk5725b0(int ev);          /* 0x5725b0 */
+void he_RunMeeting(int ev);          /* 0x5725b0 */
 void he_AllocMeetingScene(int ev);          /* 0x5726a0 */
 void he_RunMeetingScene(int ev);          /* 0x5726b0 */
 void he_AllocGraveyardWorkers(int ev);          /* 0x572b90 */
@@ -23366,15 +23357,15 @@ int he_RegisterEventTypes88(void)
             if (he_SetEventHandlers(0x8c, (void *)he_AllocMasterWork, (void *)he_RunMasterWork) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_AllocGraveCare, (void *)he_RunGraveCare) == 0) {
                     if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_RunPlunder) == 0) {
-                        if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_RunPlunderOffer) == 0) {
+                        if (he_SetEventHandlers(0x8b, (void *)he_AllocPlunderOfferLease, (void *)he_RunPlunderOffer) == 0) {
                             if (he_SetEventHandlers(0x8d, (void *)he_AllocGraveCare, (void *)he_RunGraveCare) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_AllocDeathDue, (void *)he_RunDeathDue) == 0) {
                                     if (he_SetEventHandlers(0x8f, (void *)he_AllocGraveTraining, (void *)he_RunGraveTraining) == 0) {
-                                        if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
+                                        if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_RunMeeting) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_AllocGraveyardWorkers, (void *)he_RunGraveyardWorkers) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_AllocDueIsStart, (void *)he_RunGraveyardTheft) == 0) {
-                                                        if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_RunGraveLease) == 0) {
+                                                        if (he_SetEventHandlers(0x92, (void *)he_AllocPlunderOfferLease, (void *)he_RunGraveLease) == 0) {
                                                             sv_RegisterActivity(0x8d, he_ActivityGraveCare, 1, 0x513, -1);
                                                             sv_RegisterActivity(0x8c, he_ActivityRawMaterial, 1, 0x500, 0xac);
                                                             sv_RegisterActivity(0x8f, he_ActivityUpgrade, 0, 0x512, -1);
@@ -24645,7 +24636,7 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
 }
 /* 0x5725b0, the run of the event 0x90 (the meeting): the states -2 / -1 free (and continue, as in the original); paused -> nothing; the due clock +0x52 = now; the building 0x501190 (1, 1, +0xac) missing -> 0x4c4c60 (-1); state 0 with +0xb8 < 4: 0x572310 (building, +0xb0, +0xb4, +0xb8), due now + 0x1e hours, +0xb8 + 1, 0x4c4c60 (0); else state -1, 0x4fe140 (+0x52, 0x16, 0, 0) and 0x4c4c60 (-1) */
 
-void he_Unk5725b0(int ev)
+void he_RunMeeting(int ev)
 {
     char *bld;
 
@@ -24741,7 +24732,7 @@ void he_RunMeetingScene(int ev)
 }
 /* 0x572860, the alloc of the events 0x8b and 0x92: the due clock +0x52 = now; the minute word +0x56 >= 0x17 -> due + 0x18 hours and the minute word = 0xc, else due + 6 hours; state 0 */
 
-void he_Unk572860(int ev)
+void he_AllocPlunderOfferLease(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     if (*(unsigned short *)(ev + 0x56) >= 0x17) {
