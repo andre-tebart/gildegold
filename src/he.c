@@ -25151,7 +25151,7 @@ void he_Unk573580(int ev)
     }
 }
 
-void he_Unk573760(char *pl, char *per);     /* 0x573760 */
+void he_GypsyDisease(AICHAR *pl, AICHAR *per);     /* 0x573760 */
 void he_Unk573820(char *pl, char *per);     /* 0x573820 */
 void he_Unk573970(char *pl, char *per);     /* 0x573970 */
 void he_Unk573ae0(char *pl, char *per);     /* 0x573ae0 */
@@ -25162,7 +25162,7 @@ void he_Unk573d30(char *pl, char *per);     /* 0x573d30 */
 void he_Unk5736d0(char *pl, char *per, int a)
 {
     if (a == 0)
-        he_Unk573760(pl, per);
+        he_GypsyDisease((AICHAR *)pl, (AICHAR *)per);
     else if (a == 1)
         he_Unk573820(pl, per);
     else if (a == 2)
@@ -25174,29 +25174,30 @@ void he_Unk5736d0(char *pl, char *per, int a)
     else
         he_Unk573d30(pl, per);
 }
-/* 0x573760, the approach 0 of the event 0x9d: with the two words of 0x505230 (per, ..) a name (copied from 0x629038 when
-   the figure is the event's own, else 0x62901c, 0x19 bytes) and the texts 0x41de / 0x41dd (else 0x41dc) are built and
-   sent as the message 0x5fb (0x53dda0) to per +4 */
-
-void he_Unk573760(char *pl, char *per)
+/* 0x573760, the approach 0 of the event 0x9d (he_Unk5736d0): the character per catches a disease (gm_CatchDisease
+   draws its kind and health; none caught: nothing), and per's player is told (the news 0x5fb, the text 0x41dd when
+   per is the event's own character pl, else 0x41dc, around 0x41de with the disease's name 0x1632 + kind) with the
+   voice "_NACHRICHTEN_ZIGEUNER_02" (pl) or "_NACHRICHTEN_ZIGEUNER_01" (another) */
+void he_GypsyDisease(AICHAR *pl, AICHAR *per)
 {
-    char name[0x19];
-    char t1[0x400];
-    char t2[0x400];
-    int a, b;
+    int kind, health;
+    char voice[100];
+    char what[0x400];
+    char text[0x400];
+    int fmt;
 
-    if (gm_CatchDisease(per, &a, &b) == 0)
+    if (gm_CatchDisease(per, &kind, &health) == 0)
         return;
     if (per == pl) {
-        memcpy(name, (void *)(unsigned)&full_data_629038, 0x19);
-        txt_Format(t1, 0x41de, a + 0x1632);
-        txt_Format(t2, 0x41dd, t1);
+        fmt = 0x41dd;
+        strcpy(voice, "_NACHRICHTEN_ZIGEUNER_02");
     } else {
-        memcpy(name, (void *)(unsigned)&full_data_62901c, 0x19);
-        txt_Format(t1, 0x41de, a + 0x1632);
-        txt_Format(t2, 0x41dc, t1);
+        fmt = 0x41dc;
+        strcpy(voice, "_NACHRICHTEN_ZIGEUNER_01");
     }
-    he_ShowNews(HM_I(per, 4), -1, t2, 1, 0x5fb, name);
+    txt_Format(what, 0x41de, kind + 0x1632);
+    txt_Format(text, fmt, what);
+    he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
 /* 0x573820, the approach 1 of the event 0x9d: the relation of per changes (0x4ea550): to the figure of the byte +0x166
    (0x4e6f80), when there is one: by -0x14 - random (0x10); else, for a figure not of the kind 5 / 6 / 7: by 1 + random (3) and
