@@ -3750,11 +3750,11 @@ exe	0x0055d5c0	he_RunHarvest	he	draft	readable	deep
 exe	0x0055dbe0	he_RunDismissal	he	byte	readable		
 exe	0x0055dd70	he_AllocEvent32	he	shape	readable		
 exe	0x0055de30	he_RunPromotion	he	byte	readable		
-exe	0x0055e180	he_Unk55e180	he	byte	draft		
+exe	0x0055e180	he_AllocWorkerQuits	he	byte	readable		
 exe	0x0055e1d0	he_RunWorkerQuits	he	byte	readable		
-exe	0x0055e3a0	he_Unk55e3a0	he	byte	draft		
+exe	0x0055e3a0	he_AllocDueIsStart	he	byte	readable		
 exe	0x0055e3d0	he_RunWorkerTheft	he	draft	readable	deep	
-exe	0x0055e5c0	he_Unk55e5c0	he	byte	draft		
+exe	0x0055e5c0	he_AllocEvent38	he	byte	readable		
 exe	0x0055e600	he_RunEvent38	he	byte	readable		
 exe	0x0055e730	he_RunEvent39	he	byte	readable		
 exe	0x0055e9d0	he_AllocRoutine	he	byte	readable		
@@ -3766,16 +3766,16 @@ exe	0x0055fa20	he_AllocMarket	he	byte	readable
 exe	0x0055fa90	he_RunMarketSupervisor	he	draft	readable	deep	
 exe	0x00560820	he_AllocEvent3c	he	byte	readable		
 exe	0x00560900	he_RunKidnap	he	draft	readable	deep	
-exe	0x00561130	he_AllocRansom	he	byte	draft		
+exe	0x00561130	he_AllocRansom	he	byte	readable		
 exe	0x00561190	he_RunRansom	he	shape	readable		
 exe	0x00561470	he_AllocEvent39_3e	he	byte	readable		
 exe	0x005614c0	he_RunRansomDemand	he	shape	readable		
-exe	0x005619a0	he_AllocBurglary	he	byte	draft		
+exe	0x005619a0	he_AllocBurglary	he	byte	readable		
 exe	0x00561a20	he_RunBurglary	he	draft	readable	deep	
 exe	0x005628e0	he_RunBuildingSpying	he	draft	readable	deep	
-exe	0x00563070	he_AllocAmbush	he	shape	draft		
+exe	0x00563070	he_AllocAmbush	he	byte	readable		
 exe	0x005630f0	he_RunAmbush	he	draft	readable	deep	
-exe	0x00563980	he_AllocDueInOne	he	byte	draft		
+exe	0x00563980	he_AllocDueInOne	he	byte	readable		
 exe	0x005639c0	he_RunAttack	he	draft	readable	deep	
 exe	0x005642e0	he_AllocFire	he	byte	readable		
 exe	0x005644e0	he_RunFire	he	draft	readable	deep	
@@ -3783,8 +3783,8 @@ exe	0x00564860	he_AllocBurn	he	shape	readable
 exe	0x005649b0	he_RunBurn	he	draft	readable	deep	
 exe	0x005652b0	he_AllocStorm	he	byte	readable		
 exe	0x00565410	he_RunStormEvent	he	shape	readable		
-exe	0x00565500	he_Unk565500	he	byte	draft		
-exe	0x00565620	he_Unk565620	he	shape	draft		
+exe	0x00565500	he_AllocHealing	he	byte	readable		
+exe	0x00565620	he_RunHealing	he	byte	readable		
 exe	0x00565850	he_AllocNewWorker	he	byte	readable		
 exe	0x00565940	he_RunNewWorker	he	byte	readable		
 exe	0x00565b00	he_Unk565b00	he	byte	draft		

@@ -83,6 +83,8 @@
    0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x6f263c he_MessageFilterMask, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
    filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner
    he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
+   Open: data: 0x5ebb40 ai_FloatHundred (VC6's pooled 100.0f: lc.c's view, defined in main.c's rdata gap block, owner
+   lc or main).
    Open: types: SVFRAME / the frame stack view is declared in sv.c, lc.c and here (it belongs in sv_types.h).
    Open: not included yet (dcp headers conflicts he HEADER): ahm.h ai.h am.h amt.h anm.h cm.h d3_tools.h
    f3gm.h f3snd.h gv.h hmt.h hst.h rt.h sblib.h sv.h mission.h rmsg.h menu.h; held by own
