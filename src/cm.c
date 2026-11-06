@@ -1764,10 +1764,10 @@ void cm_SendHandOverCrimes(int a, int b, int c, int d)
     G17MSG m;
 
     m.type = 0x3c;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
-    G17_I(m, 0xc) = d;
+    m.handOver.owner = a;
+    m.handOver.culprit = b;
+    m.handOver.state = c;
+    m.handOver.hand = d;
     cm_QueueSend(&m);
 }
 /* 0x4c55d0, message 0x3d: hires a character of kind b for the building p (the applicant for title c / job d,
