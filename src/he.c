@@ -25152,7 +25152,7 @@ void he_Unk573580(int ev)
 }
 
 void he_GypsyDisease(AICHAR *pl, AICHAR *per);     /* 0x573760 */
-void he_Unk573820(char *pl, char *per);     /* 0x573820 */
+void he_GypsyRumour(AICHAR *pl, AICHAR *per);     /* 0x573820 */
 void he_Unk573970(char *pl, char *per);     /* 0x573970 */
 void he_Unk573ae0(char *pl, char *per);     /* 0x573ae0 */
 void he_Unk573c20(char *pl, char *per);     /* 0x573c20 */
@@ -25164,7 +25164,7 @@ void he_Unk5736d0(char *pl, char *per, int a)
     if (a == 0)
         he_GypsyDisease((AICHAR *)pl, (AICHAR *)per);
     else if (a == 1)
-        he_Unk573820(pl, per);
+        he_GypsyRumour((AICHAR *)pl, (AICHAR *)per);
     else if (a == 2)
         he_Unk573970(pl, per);
     else if (a == 3)
@@ -25199,35 +25199,40 @@ void he_GypsyDisease(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573820, the approach 1 of the event 0x9d: the relation of per changes (0x4ea550): to the figure of the byte +0x166
-   (0x4e6f80), when there is one: by -0x14 - random (0x10); else, for a figure not of the kind 5 / 6 / 7: by 1 + random (3) and
-   0x14 + random (0x10); else to every other figure of the kinds 5 .. 7 by -0x14 - random (0x10); then the texts 0x41df / 0x41dd
-   (0x41dc when per is not pl) and the message 0x5fb (0x53dda0) to per +4 */
-
-void he_Unk573820(char *pl, char *per)
+/* 0x573820, the approach 1 of the event 0x9d (he_Unk5736d0): the standing of the character per changes: when he
+   holds an office (amt_GetKind of officeKind, its column col other than 0: the district), its opinion of him falls by
+   20 + random(16) (amt_ChangeDistrictOpinion); else, when he is not of the kinds 5 / 6 / 7, the opinion of a random
+   district 1 + random(3) rises by 20 + random(16); else every other figure of the kinds 5 .. 7 thinks worse of him
+   by 20 + random(16) (cm_SendRelations). Then per's player is told (the news 0x5fb, the text 0x41dd when per is the
+   event's own character pl, else 0x41dc, around 0x41df). "Rumour" is a reasoned guess from that effect. */
+void he_GypsyRumour(AICHAR *pl, AICHAR *per)
 {
-    char t1[0x400];
-    char t2[0x400];
-    char *ch;
-    int a, x, i;
+    AMTKIND kind;
+    char what[0x400];
+    char text[0x400];
+    AICHAR *ch;
+    int i, delta, district, fmt;
 
-    if (amt_GetKind(HM_B(per, 0x166), &a) != 0 && a != 0) {
-        amt_ChangeDistrictOpinion(per, a, -0x14 - (util_Random(0x10) & 0xffff));
-    } else if (HM_B(per, 2) != 6 && HM_B(per, 2) != 7 && HM_B(per, 2) != 5) {
+    if (amt_GetKind(per->officeKind, &kind) != 0 && (district = kind.col) != 0) {
+        amt_ChangeDistrictOpinion(per, district, -0x14 - (util_Random(0x10) & 0xffff));
+    } else if (per->kind != 6 && per->kind != 7 && per->kind != 5) {
         amt_ChangeDistrictOpinion(per, 1 + (util_Random(3) & 0xffff), 0x14 + (util_Random(0x10) & 0xffff));
     } else {
-        x = -0x14 - (util_Random(0x10) & 0xffff);
-        for (i = 0; i < 0x300; i++) {
-            if (i == *(unsigned short *)per)
+        delta = -0x14 - (util_Random(0x10) & 0xffff);
+        for (i = 0, ch = ai_CharsT; (int)&ch->kind < (int)&ai_CharsT[768].kind; ch++, i++) {
+            if (i == per->id)
                 continue;
-            ch = (char *)((unsigned)&ai_Chars + i * 0x21c);
-            if (HM_B(ch, 2) == 6 || HM_B(ch, 2) == 7 || HM_B(ch, 2) == 5)
-                cm_SendRelations(HM_I(per, 4), HM_I(ch, 4), x, 1);
+            if (ch->kind == 6 || ch->kind == 7 || ch->kind == 5)
+                cm_SendRelations(per->netId, ch->netId, delta, 1);
         }
     }
-    txt_Format(t1, 0x41df);
-    txt_Format(t2, per == pl ? 0x41dd : 0x41dc, t1);
-    he_ShowNews(HM_I(per, 4), -1, t2, 1, 0x5fb, 0);
+    if (per == pl)
+        fmt = 0x41dd;
+    else
+        fmt = 0x41dc;
+    txt_Format(what, 0x41df);
+    txt_Format(text, fmt, what);
+    he_ShowNews(per->netId, -1, text, 1, 0x5fb, 0);
 }
 /* 0x573970, the approach 2 of the event 0x9d: searches the characters (0x770b80, 0x300) of the kind 0 without the byte +0x164
    whose building (+0x16c) word +0x27 is pl's word; when one is found a message 0x33 (0x4c4b70, the clock, the building +1 at
