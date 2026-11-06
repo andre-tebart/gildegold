@@ -1472,16 +1472,16 @@ void cm_SendProofExecuted(int id, int netId)
     m.proof.id = id;
     cm_QueueSend(&m);
 }
-/* 0x4c4f10, message 0x25 */
+/* 0x4c4f10, message 0x25: drops the proof pair (the crime id, the character's netId) from ai_Evidence */
 
-void cm_SendDropEvidence(int a, int b, int c)
+void cm_SendDropEvidence(int id, int netId, int value)
 {
     G17MSG m;
 
-    G17_I(m, 4) = b;
+    m.dropEvidence.netId = netId;
     m.type = 0x25;
-    G17_I(m, 0) = a;
-    G17_I(m, 8) = c;
+    m.dropEvidence.id = id;
+    m.dropEvidence.value = value;
     cm_QueueSend(&m);
 }
 /* 0x4c4f50, "cm_RequestSendCutInfo": message 0x26 */
