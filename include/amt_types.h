@@ -1,4 +1,5 @@
-/* The office record of amt's table amt_Table and the office kind record (amt_Kinds), for the units that declare the table without the rest of
+/* The office record of amt's table amt_Table, the office kind record (amt_Kinds) and the candidate entry of the
+   candidate lists (amt_GetOfficeCandidates), for the units that declare the table without the rest of
    amt.h: types only. amt.h includes it. */
 #ifndef AMT_TYPES_H
 #define AMT_TYPES_H
@@ -24,5 +25,12 @@ typedef struct AMTKIND {                /* 0x18 bytes, a kind of office (the tab
     int two;                            /* 0x10, the office takes two persons */
     int pad14;
 } AMTKIND;
+
+typedef struct AMTCAND {                /* 12 bytes: a kind of office, its rate for a character, its level */
+    int kind;
+    float rate;
+    unsigned char level;
+    char pad09[3];
+} AMTCAND;
 
 #endif

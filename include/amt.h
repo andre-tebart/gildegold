@@ -135,12 +135,6 @@ typedef struct AMTTRADE {               /* the swap message (10 bytes) */
     int v;
 } AMTTRADE;
 #pragma pack(pop)
-typedef struct AMTCAND {                /* 12 bytes: a kind of office, its rate for a character, its level */
-    int kind;
-    float rate;
-    unsigned char level;
-    char pad09[3];
-} AMTCAND;
 typedef struct AMTRANGE {               /* 0x1c bytes, the ranges of 0x4e78f0 */
     short s0, s1;
     int i2, i3, i4, i5, i6, i7;
