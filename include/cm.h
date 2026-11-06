@@ -97,6 +97,7 @@ extern volatile unsigned long d3_Time;  /* 0x6333cc */
 extern int ai_NextCrimeId;                /* 0x6f1b88 */
 extern char cm_EventNames[][0x20];       /* 0x625820, names ("HE_NULL", ..) */
 #include "ai_types.h"                /* AITIME */
+#include "ai_bld.h"                  /* AIBLD */
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 
 #pragma pack(push, 1)
@@ -282,7 +283,7 @@ void cm_SendMoneyDelta(int a, int b);                                           
 void cm_SendMessage5b(int a, int b, int c);                                          /* 0x4c5fa0 */
 int cm_SendTradeMessage(AMTTRADE *p);                                                   /* 0x4c5fe0 */
 void cm_SendAddSkill(int a, int b, int c);                                          /* 0x4c6020 */
-void cm_SendSpyReport(char *o, void *p);                                             /* 0x4c6060 */
+void cm_SendSpyReport(AIBLD *o, HESPYREPORT *p);                                     /* 0x4c6060 */
 void cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */
 int cm_SendGraveMove(void *p);                                                       /* 0x4c60f0 */
 void cm_SendRaiseDead(void *p);                                                      /* 0x4c6130 */

@@ -318,6 +318,24 @@ typedef struct G17SKILLMSG {            /* 12 bytes, the data of message 0x5d (c
     int delta;                          /* 0x08, added to the skill (the sum clamped to 0 .. 252) */
 } G17SKILLMSG;
 
+typedef struct HESPYREPORT {            /* 0x1c bytes, the words 0x1c .. 0x37 of a spy report (AIOBJ kind 0xca) that message
+                                           0x5e (cm_SendSpyReport) sends for a building (he.c's report) */
+    AITIME when;                        /* 0x00 (0x1c), the time of the report */
+    int bld;                            /* 0x0e (0x2a, AIOBJ.reportBld), the building it reports on */
+    int worth;                          /* 0x12 (0x2e), a tenth of the owner's worth (at most 1.6 million) */
+    int goods;                          /* 0x16 (0x32), the price of the goods of the building's stall */
+    unsigned char skill;                /* 0x1a (0x36), the building's skill 7 */
+    unsigned char know;                 /* 0x1b (0x37, AIOBJ.reportKnow), how much it knows, 2 .. 100 percent */
+} HESPYREPORT;
+
+typedef struct G17SPYMSG {              /* 0x24 bytes, the data of message 0x5e (cm_SendSpyReport, its handler
+                                           0x4ccce0 sets the job record 0xca of building bldId from rep) */
+    int objId;                          /* 0x00, the object id the server takes as ai_NextObjectId (the sender
+                                           leaves it) */
+    int bldId;                          /* 0x04, the building the report is about (AIBLD.id) */
+    HESPYREPORT rep;                    /* 0x08, the report */
+} G17SPYMSG;
+
 typedef struct CMCUTENTRY {             /* 0x2c bytes, a character's entry of a cutscene record (messages 0x50 / 0x51
                                            copy one whole) */
     int charId;                         /* 0x00, the character's netId, -1 when free */
@@ -720,6 +738,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17CUTMSG cut;                  /* 0x10, message 0x26 */
         G17CUTENTRYMSG cutEntry;        /* 0x10, messages 0x50 / 0x51 */
         G17SKILLMSG skill;              /* 0x10, message 0x5d */
+        G17SPYMSG spy;                  /* 0x10, message 0x5e */
         G17PARTYMSG leaveParty;         /* 0x10, message 0x2a */
         G17PARTYIDMSG cancelParty;      /* 0x10, message 0x58 */
         G17MONEYMSG money;              /* 0x10, message 0x5a */

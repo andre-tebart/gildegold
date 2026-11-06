@@ -2211,15 +2211,16 @@ void cm_SendAddSkill(int a, int b, int c)
     m.skill.delta = c;
     cm_QueueSend(&m);
 }
-/* 0x4c6060, message 0x5e: o's id (+1) and 0x1c bytes of p */
+/* 0x4c6060, sends message 0x5e: the spy report p of building o (its handler 0x4ccce0 sets the job record 0xca of
+   the building from it; o's id goes at data +4) */
 
-void cm_SendSpyReport(char *o, void *p)
+void cm_SendSpyReport(AIBLD *o, HESPYREPORT *p)
 {
     G17MSG m;
 
-    G17_I(m, 4) = *(int *)(o + 1);
+    m.spy.bldId = o->id;
     m.type = 0x5e;
-    memcpy(&m.data[8], p, 0x1c);
+    m.spy.rep = *p;
     cm_QueueSend(&m);
 }
 /* 0x4c60b0, message 0x60 (0x1f bytes of p) */

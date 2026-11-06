@@ -17748,17 +17748,6 @@ typedef struct HEBLDSPY {               /* the building spying event 0x40's word
     int target;                         /* 0xac, the id of the building spied on */
     int home;                           /* 0xb0, the id of the spies' building (its owner is told), where the report goes */
 } HEBLDSPY;
-#pragma pack(push, 1)
-typedef struct HESPYREPORT {            /* 0x1c bytes, the words 0x1c .. 0x37 of a spy report (AIOBJ kind 0xca) that message
-                                           0x5e (cm_SendSpyReport) sends for a building */
-    AITIME when;                        /* 0x00 (0x1c), the time of the report */
-    int bld;                            /* 0x0e (0x2a, AIOBJ.reportBld), the building it reports on */
-    int worth;                          /* 0x12 (0x2e), a tenth of the owner's worth (at most 1.6 million) */
-    int goods;                          /* 0x16 (0x32), the price of the goods of the building's stall */
-    unsigned char skill;                /* 0x1a (0x36), the building's skill 7 */
-    unsigned char know;                 /* 0x1b (0x37, AIOBJ.reportKnow), how much it knows, 2 .. 100 percent */
-} HESPYREPORT;
-#pragma pack(pop)
 
 /* 0x5628e0, the run handler of the building spying event 0x40 ("GebSpionage", HEBLDSPY; alloc handler
    he_AllocDueInOne): stage 0 sends the spies (sv_MoveToGroup into the event) to the target building (none:
