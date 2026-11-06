@@ -1626,7 +1626,7 @@ void ai_UpdateResourceColumns(int win, int part, int ncols, int unused)
 
 int gm_BuildingClass(); int d2_WinOpenPicStyled(); void d2_SetObjFont(); void d2_SetCaption();
 int gm_ClockSeason(); int ls_GetLanguage(); int d2_CountPointerItems(); void cm_BeginFieldBlock(char *o, int id);
-int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldValues(void); void ai_Unk58e6a0(int param_1, int param_2, int *param_3, int param_4, unsigned char param_5, unsigned char *param_6); void d2_MoveObj(short x, short y, int obj);
+int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); void cm_SendFieldValues(void); void ai_ShowProdSlot(int param_1, int param_2, int *param_3, int param_4, unsigned char param_5, unsigned char *param_6); void d2_MoveObj(short x, short y, int obj);
 void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void); int d2_GetObjValue();
 
 /* 0x58cc10, shows the ncols goods columns (ai_ProdColumns) of the production window in the form win / its part form,
@@ -1973,125 +1973,103 @@ int ai_UpdateProdGoodsList(AIBLD *bld, AIOBJ *store)
     }
     return any;
 }
-/* 0x58dd00, the column display of the production window (1058 B, ROUGH): the building record param_1 / the
-   column set param_2 (the screen 0xfb1024 + (param_2 + param_1 * 0xab) * 4, the height 0xf8f128); the title
-   controls 0x6f4f10 / 0x6f52f0 (0x4731d0 (0, 0, 0x743)) and their texts 0x469250 (id + 0x741), the positions
-   (the width - the icon width) / 2 and (the row height + 0x16) * i (the second set + 0xb6); the visibility
-   0x46cda0 (icon / text at the screen's +0xf124 / +0x126); the goods columns 0x6f4f60 / 0x6f58a0 laid out by
-   the counts (i / the entry counts) through 0x58e6a0; then the same title pass for 0x6f52ec and the second grid
-   (0x6f58ac), and with param_3 the texts of the entries 0x476c00 (0x475980 (id), the goods + 0xdf) after
-   0x476c70 */
-
-void ai_LayoutProdGoodsList(int param_1, int param_2, int param_3, int param_4)
+/* 0x58dd00, lays out the goods grids of the production window in the part form of the view: makes the rows' title
+   pictures (0x743), gives each row the picture of its open slots (0x741 + slots) when they changed, centres the row
+   in the window (rows with fewer than 2 slots are hidden; the second grid's rows 0xb6 lower), places the slots of
+   ai_ProdGoods / ai_ProdGoods2 row by row (0x44 apart) and shows each (ai_ShowProdSlot). With pointer set it puts
+   the checked goods on the mouse pointer (d2_SetPointerItem) */
+void ai_LayoutProdGoodsList(int view, int part, int pointer, int bld)
 {
-    int *p;
-    int *q;
-    int scr;
-    int h;
+    D2WIN *win;
+    int width;
     int i;
+    int k;
+    int row;
     int n;
-    int x;
 
-    scr = U_I(((unsigned)&d2_Views + 0x4) + (param_2 + param_1 * 0xab) * 4);
-    h = *(short *)((unsigned)&ai_Unkf8f128 + scr * 0x3c4);
-    d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5)
-        if (*p == -1)
-            *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
-    d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x38)); p += 5)
-        if (*p == -1)
-            *p = d2_WinOpenPic(0, 0, 0x743, U_I((unsigned)&d2_LastWindow));
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++) {
-        if (p[-1] != *p)
-            d2_SetObjPic(p[1], *p + 0x741);
-        n = *p;
-        p[-1] = n;
-        if (n > 1) {
-            p[-3] = (h - *(short *)(U_I((unsigned)&d2_Pics) + 0x261a4 + n * 0x54)) / 2;
-            p[-2] = (*(short *)(U_I((unsigned)&d2_Pics) + 0x2624e) + 0x16) * i;
+    win = &d2_Wins[d2_Views[view].wins[part]];
+    width = win->w;
+    d2_SetForm(view, part);
+    for (i = 0; i < 4; i++)
+        if (ai_ProdRows[i].title == -1)
+            ai_ProdRows[i].title = d2_WinOpenPic(0, 0, 0x743, d2_LastWindow);
+    d2_SetForm(view, part);
+    for (i = 0; i < 2; i++)
+        if (ai_ProdRows2[i].title == -1)
+            ai_ProdRows2[i].title = d2_WinOpenPic(0, 0, 0x743, d2_LastWindow);
+    for (i = 0; i < 4; i++) {
+        if (ai_ProdRows[i].shown != ai_ProdRows[i].slots)
+            d2_SetObjPic(ai_ProdRows[i].title, ai_ProdRows[i].slots + 0x741);
+        ai_ProdRows[i].shown = ai_ProdRows[i].slots;
+        if (ai_ProdRows[i].slots >= 2) {
+            ai_ProdRows[i].x = (width - d2_Pics[ai_ProdRows[i].slots + 0x741].w) >> 1;
+            ai_ProdRows[i].y = (d2_Pics[0x743].h + 0x16) * i;
         }
     }
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x34)); p += 5, i++) {
-        if (p[-1] != *p)
-            d2_SetObjPic(p[1], *p + 0x741);
-        n = *p;
-        p[-1] = n;
-        if (n > 1) {
-            p[-3] = (h - *(short *)(U_I((unsigned)&d2_Pics) + 0x261a4 + n * 0x54)) / 2;
-            p[-2] = (*(short *)(U_I((unsigned)&d2_Pics) + 0x2624e) + 0x16) * i + 0xb6;
+    for (i = 0; i < 2; i++) {
+        if (ai_ProdRows2[i].shown != ai_ProdRows2[i].slots)
+            d2_SetObjPic(ai_ProdRows2[i].title, ai_ProdRows2[i].slots + 0x741);
+        ai_ProdRows2[i].shown = ai_ProdRows2[i].slots;
+        if (ai_ProdRows2[i].slots >= 2) {
+            ai_ProdRows2[i].x = (width - d2_Pics[ai_ProdRows2[i].slots + 0x741].w) >> 1;
+            ai_ProdRows2[i].y = (d2_Pics[0x743].h + 0x16) * i + 0xb6;
         }
     }
-    d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)((char *)ai_ProdRows + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x60)); p += 5) {
-        n = *p;
-        if (p[-2] < 2) {
-            U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 1;
+    d2_SetForm(view, part);
+    for (i = 0; i < 4; i++) {
+        if (ai_ProdRows[i].shown >= 2) {
+            d2_Objs[ai_ProdRows[i].title].disabled = 0;
+            d2_MoveObj(ai_ProdRows[i].x + win->x, ai_ProdRows[i].y + win->y, ai_ProdRows[i].title);
         } else {
-            U_I(U_I((unsigned)&d2_Objs) + 0x38 + n * 0x2ec) = 0;
-            d2_MoveObj(*(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4) + (short)p[-4],
-                         *(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4 + 2) + (short)p[-3], n);
+            d2_Objs[ai_ProdRows[i].title].disabled = 1;
         }
     }
-    i = 0;
     n = 0;
-    q = (int *)(unsigned)((char *)ai_ProdGoods + 0xc);
-    do {
-        i++;
-        p = (int *)((unsigned)((char *)ai_ProdRows + 0x8) + n * 0x14);
-        if (p[0] < i) {
-            i = 1;
-            do {
-                p += 5;
-                n++;
-            } while (*p < 1);
+    row = 0;
+    for (k = 0; k < 16; k++) {
+        if (++n > ai_ProdRows[row].shown) {
+            n = 1;
+            do
+                row++;
+            while (ai_ProdRows[row].shown < 1);
         }
-        q[-1] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
-        *q = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
-        ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 2, param_4);
-        q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38c)));
-    d2_SetForm(param_1, param_2);
-    for (p = (int *)(unsigned)((char *)ai_ProdRows2 + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x34)); p += 5) {
-        if (p[-1] != *p)
-            d2_SetObjPic(p[1], *p + 0x741);
-        p[-1] = *p;
-        if (*p < 2) {
-            U_I(U_I((unsigned)&d2_Objs) + 0x38 + p[1] * 0x2ec) = 1;
+        ai_ProdGoods[k].x = ai_ProdRows[row].x + n * 0x44 - 0x44;
+        ai_ProdGoods[k].y = ai_ProdRows[row].y;
+        ai_ShowProdSlot(view, part, (int *)&ai_ProdGoods[k], pointer, 2, (unsigned char *)bld);
+    }
+    d2_SetForm(view, part);
+    for (i = 0; i < 2; i++) {
+        if (ai_ProdRows2[i].shown != ai_ProdRows2[i].slots)
+            d2_SetObjPic(ai_ProdRows2[i].title, ai_ProdRows2[i].slots + 0x741);
+        ai_ProdRows2[i].shown = ai_ProdRows2[i].slots;
+        if (ai_ProdRows2[i].shown >= 2) {
+            d2_Objs[ai_ProdRows2[i].title].disabled = 0;
+            d2_MoveObj(ai_ProdRows2[i].x + win->x, ai_ProdRows2[i].y + win->y, ai_ProdRows2[i].title);
         } else {
-            U_I(U_I((unsigned)&d2_Objs) + 0x38 + p[1] * 0x2ec) = 0;
-            d2_MoveObj((short)p[-3] + *(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4),
-                         (short)p[-2] + *(short *)(((unsigned)&d2_Wins + 0x4) + scr * 0x3c4 + 2), p[1]);
+            d2_Objs[ai_ProdRows2[i].title].disabled = 1;
         }
     }
-    i = 0;
     n = 0;
-    q = (int *)(unsigned)((char *)ai_ProdGoods2 + 0xc);
-    do {
-        i++;
-        p = (int *)((unsigned)((char *)ai_ProdRows2 + 0x8) + n * 0x14);
-        if (p[0] < i) {
-            i = 1;
-            do {
-                p += 5;
-                n++;
-            } while (*p < 1);
+    row = 0;
+    for (k = 0; k < 8; k++) {
+        if (++n > ai_ProdRows2[row].shown) {
+            n = 1;
+            do
+                row++;
+            while (ai_ProdRows2[row].shown < 1);
         }
-        q[-1] = *(int *)((unsigned)&ai_ProdRows2 + n * 0x28) + -0x44 + i * 0x44;
-        *q = *(int *)((unsigned)((char *)ai_ProdRows2 + 0x4) + n * 0x28);
-        ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 2, param_4);
-        q += 0xe;
-    } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1cc)));
-    if (param_3 != 0) {
+        ai_ProdGoods2[k].x = ai_ProdRows2[row].x + n * 0x44 - 0x44;
+        ai_ProdGoods2[k].y = ai_ProdRows2[row].y;
+        ai_ShowProdSlot(view, part, (int *)&ai_ProdGoods2[k], pointer, 2, (unsigned char *)bld);
+    }
+    if (pointer) {
         d2_ClearPointerItems();
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x390)); p += 0xe)
-            if (*p != -1)
-                d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1d0)); p += 0xe)
-            if (*p != -1)
-                d2_SetPointerItem(p[-4] + 0xdf, d2_GetObjValue(*p));
+        for (k = 0; k < 16; k++)
+            if (ai_ProdGoods[k].check != -1)
+                d2_SetPointerItem(ai_ProdGoods[k].good + 0xdf, d2_GetObjValue(ai_ProdGoods[k].check));
+        for (k = 0; k < 8; k++)
+            if (ai_ProdGoods2[k].check != -1)
+                d2_SetPointerItem(ai_ProdGoods2[k].good + 0xdf, d2_GetObjValue(ai_ProdGoods2[k].check));
     }
 }
 
@@ -2220,7 +2198,7 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
         }
         q[-1] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
         *q = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
-        ai_Unk58e6a0(param_1, param_2, q - 3, param_3, 3, (unsigned char *)param_4);
+        ai_ShowProdSlot(param_1, param_2, q - 3, param_3, 3, (unsigned char *)param_4);
         q += 0xe;
     } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38c)));
     if (param_3 != 0) {
@@ -2242,7 +2220,7 @@ void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
    the control positions 0x46cda0 and the window +0x1c0 = 0x22, +0x1cc = 4, +0x1d0 = 0. ROUGH: the layout
    offsets are transcribed from the pseudocode */
 
-void ai_Unk58e6a0(int param_1, int param_2, int *param_3, int param_4, unsigned char param_5, unsigned char *param_6)
+void ai_ShowProdSlot(int param_1, int param_2, int *param_3, int param_4, unsigned char param_5, unsigned char *param_6)
 {
     char *p;
     char text[32];
@@ -2519,7 +2497,7 @@ void ai_Unk58f290(int param_1, int param_2, int param_3, int param_4, short *par
         }
         q[2] = *(int *)((unsigned)&ai_ProdRows + n * 0x28) + -0x44 + i * 0x44;
         q[3] = *(int *)((unsigned)((char *)ai_ProdRows + 0x4) + n * 0x28);
-        ai_Unk58e6a0(param_1, param_2, q, param_3, side, (unsigned char *)param_4);
+        ai_ShowProdSlot(param_1, param_2, q, param_3, side, (unsigned char *)param_4);
         q += 0xe;
     } while (q < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)));
     if (param_3 != 0) {

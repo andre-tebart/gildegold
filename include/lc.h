@@ -63,8 +63,9 @@ extern int *ai_BauplatzList;            /* 0x6f5308 */
 /* the goods grids of the production window (ai_InitProductionTables sets them up, ai_UpdateProdGoodsList fills
    them from the store, ai_LayoutProdGoodsList lays them out): a row of four slots, and a slot */
 typedef struct LCPRODROW {              /* 0x14 bytes */
-    int pad00[2];                       /* 0x00 (no reader read yet) */
-    int text;                           /* 0x08, -1 at the init (reasoned guess: the row's text, set by the layout) */
+    int x;                              /* 0x00, the row's place in the window: centred by its open slots' picture */
+    int y;                              /* 0x04, (the picture 0x743's height + 0x16) * row (the second grid + 0xb6) */
+    int shown;                          /* 0x08, the slots the title picture shows (-1 at the init) */
     int slots;                          /* 0x0c, the slots of the row the building's level opens (0 .. 4) */
     int title;                          /* 0x10, the row's title picture 0x743, -1 = not made yet */
 } LCPRODROW;
