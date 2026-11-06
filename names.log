@@ -2861,3 +2861,4 @@
 2026-11-06T23:25:01 0x004cb910 func ai_Unk4cb910 -> cm_ExDecisionValue by:main why:message 0x46 is the AI decision record's new value (cm_SendDecisionValue, gv_OnDecisionValue, gv_SetTableRecord); the handler executes it like cm_ExApplication does message 0x44
 2026-11-06T23:26:14 0x004cb940 data ai_Unk4cb940 -> cm_ExChangePlayerHe by:main why:the err_Message literal inside it is cm_ExChangePlayerHe(): invalid sp->id; message 0x47 cm_SendCharClear moves the character out of its group
 2026-11-06T23:26:56 0x004cb9b0 data ai_Unk4cb9b0 -> cm_ExSetJob by:main why:message 0x48 is cm_SendSetJob (G17SETJOBMSG: the character id, the job); the handler gives the character the job (gm_SetJob) and chooses its head icon
+2026-11-06T23:28:02 0x004cbff0 data ai_Unk4cbff0 -> cm_ExCharHalt by:main why:message 0x4d is cm_SendCharHalt (G17CHARIDMSG: the character id); the handler stops the event script the character model runs
