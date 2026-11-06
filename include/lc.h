@@ -142,6 +142,7 @@ extern int ai_DragStartX;               /* 0x6f26b4, the mouse position the drag
 extern int ai_DragStartY;               /* 0x6f26b8 */
 extern int ai_Dragging;                 /* 0x6f26bc, 1 while the town map is dragged */
 extern int *ai_PlacementSites;          /* 0x6f26b0, the candidate site list of the running building placement (the map window marks each entry) */
+extern char ai_CourtshipForm[24];       /* 0x62d40c, the form of the courtship (advertising) confirm window "privillegien\werbung2" (ai_CourtshipConfirm) */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
 extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */

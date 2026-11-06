@@ -897,7 +897,6 @@ extern int sv_FrameMask;
 extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d3f4[];
 extern GAPDATA full_data_62d3fc[];
-extern GAPDATA full_data_62d40c[];
 extern GAPDATA full_data_62d424[];
 extern unsigned gm_OwnNameHeads[136];
 #include "gv_types.h"
@@ -22462,7 +22461,7 @@ int sv_CheckGoodAmount(); int sv_MessageBox(); int cm_GetSlotState();
    +0x36 = 2, +0x5c the partner id) through 0x4c4b70, the confirmation 0x4c3ae0 in the 0x52fe00 loop,
    the result 1 and 0x6f22a0; click 1 sets 0x6f22a0; the exit 0x4758f0, 0xf8a668 = -1 and 0x4115b0
    (0x11) */
-int ai_Unk5c6910(short *param_1)
+int ai_CourtshipConfirm(short *param_1)
 {
     int win;
     int v;
@@ -22470,7 +22469,7 @@ int ai_Unk5c6910(short *param_1)
     char msg[0xf8];
 
     v = ai_CourtshipRounds(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), U_I((char *)param_1 + 4));
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d40c);
+    win = d2_OpenForm(0, 0, ai_CourtshipForm);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x1ce5, *param_1, v);
@@ -22501,7 +22500,7 @@ int ai_Unk5c6910(short *param_1)
                 U_I((unsigned)&sv_PopRequest) = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5c6910, 0x657c7) == 0)
+        if (sv_RunFrame(ai_CourtshipConfirm, 0x657c7) == 0)
             break;
     }
     d2_CloseView(win);
@@ -22557,7 +22556,7 @@ int ai_Unk5c6aa0(short *param_1)
             for (i = 0; i < n; i++) {
                 if (rows[i * 0xe + 1] == U_I((unsigned)&d2_PointerObj)) {
                     d2_EnableViewObjects(win, 0);
-                    v = ai_Unk5c6910((short *)rows[i * 0xe]);
+                    v = ai_CourtshipConfirm((short *)rows[i * 0xe]);
                     if (v != 0) {
                         result = 0x92;
                         U_I((unsigned)&sv_PopRequest) = 1;
@@ -22625,7 +22624,7 @@ int ai_OfficeApplication(short *param_1, int param_2)
     }
     if (state == 1)
         return ai_Unk5c6aa0(param_1);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d40c);
+    win = d2_OpenForm(0, 0, ai_CourtshipForm);
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
@@ -26746,6 +26745,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
 };
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
 char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
+char ai_CourtshipForm[24] = "privillegien\\werbung2";  /* 0x62d40c, the form of the courtship (advertising) confirm window (ai_CourtshipConfirm; the list's form "privillegien\\werbung1" 0x62d424 follows) */
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
