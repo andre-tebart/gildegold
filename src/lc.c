@@ -9012,26 +9012,26 @@ void ai_CreditGiverWindow(AIBLD *bank)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-typedef struct LCEXCHROW {          /* 0x1c bytes, a row of the money lender's exchange window (16 of them; ai_Unk59c120
+typedef struct LCEXCHROW {          /* 0x1c bytes, a row of the money lender's exchange window (16 of them; ai_FillExchangeRows
                                        fills them, ai_ClickedExchangeRecord finds the clicked one) */
     int icon;                       /* 0x00, the row's input icon (d2_WinOpenInputIcon), -1: none */
     int text;                       /* 0x04, its text object (d2_CreateWinText) */
-    int good;                       /* 0x08, the good it shows (its name txt_ObjectNames, the icon good + 0xdf) */
-    int money;                      /* 0x0c, the money good of the row (the queried object's word; its name is the text
-                                       0x9a8 + 2 * it, compared with GMPLAYERSLOT.moneyGood), 0: free */
-    int value;                      /* 0x10, the icon's value (d2_GetObjValue) */
-    int amount;                     /* 0x14, the amount available (gm_CurrencyDivide) */
-    int pad18;
+    int pad08;
+    int good;                       /* 0x0c, the currency good of the row (an object of the class 9 in the list,
+                                       gm_Query(list, 1, 4, 9); its name txt_ObjectNames, its icon good + 0xdf), 0: free */
+    int pad10;
+    int value;                      /* 0x14, the icon's value, the amount picked (d2_GetObjValue) */
+    int available;                  /* 0x18, the amount the list holds in it (gm_CurrencyDivide) */
 } LCEXCHROW;
 
-/* 0x59be90, sorts the rows of the money lender's exchange window by the name of their money good and places
-   them (653 B): the rows are counted up to the last used one (money != 0 and an icon), sorted by an exchange
+/* 0x59be90, sorts the rows of the money lender's exchange window by the name of their currency good and places
+   them (653 B): the rows are counted up to the last used one (a good and an icon), sorted by an exchange
    sort on the name (the own player slot's money good as "AAAAAAAAA" first, none as "ZZZZZZZZZ" last), then each
    used row's icon and text move to the row's place in the current window (0x4c apart, the text 0x30 below)
    @deep read whole function against the original: count loop, exchange sort with inlined strcpy/strcmp
    (==1), struct swap, the placing loop with its own row counter all match; only the induction pointers of
    the sort differ: ours keeps &rows[i+1] (add esi,0x1c; lea ebx,[esi-0x1c]; mov ebp,esi; mov
-   eax,[esi-0x10]) where the original keeps &rows[i].money (add esi,0xc; lea ebp,[esi-0xc]; lea
+   eax,[esi-0x10]) where the original keeps &rows[i].good (add esi,0xc; lea ebp,[esi-0xc]; lea
    ebx,[esi+0x1c]; mov eax,[esi]) and derives &rows[j] as lea eax,[ebx-0xc] for the swap; tried memcpy swap
    (same) and a 1-based outer loop (much worse); a strength-reduction / variant round */
 void ai_SortExchangeRows(LCEXCHROW *rows)
@@ -9048,7 +9048,7 @@ void ai_SortExchangeRows(LCEXCHROW *rows)
 
     n = 0;
     for (i = 15; i >= 0; i--) {
-        if (rows[i].money != 0 && rows[i].icon != -1) {
+        if (rows[i].good != 0 && rows[i].icon != -1) {
             n = i + 1;
             break;
         }
@@ -9056,20 +9056,20 @@ void ai_SortExchangeRows(LCEXCHROW *rows)
     for (i = 0; i < n; i++) {
         for (j = i + 1; j < n; j++) {
             own = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood;
-            v = rows[i].money;
+            v = rows[i].good;
             if (v == own)
                 strcpy(nameA, "AAAAAAAAA");
             else if (v == 0)
                 strcpy(nameA, "ZZZZZZZZZ");
             else
-                strcpy(nameA, txt_Ptrs[v * 2 + 0x9a8]);
-            v = rows[j].money;
+                strcpy(nameA, (char *)txt_ObjectNames[v][0]);
+            v = rows[j].good;
             if (v == own)
                 strcpy(nameB, "AAAAAAAAA");
             else if (v == 0)
                 strcpy(nameB, "ZZZZZZZZZ");
             else
-                strcpy(nameB, txt_Ptrs[v * 2 + 0x9a8]);
+                strcpy(nameB, (char *)txt_ObjectNames[v][0]);
             if (strcmp(nameA, nameB) == 1) {
                 tmp = rows[i];
                 rows[i] = rows[j];
@@ -9086,100 +9086,93 @@ void ai_SortExchangeRows(LCEXCHROW *rows)
         }
     }
 }
-/* 0x59c120, fills one side of the money lender's exchange window (816 B): 0x4ffe90 (param_1, 1, 4, 9) walks the
-   offers; each offer's good (word at +0) not already in the 16 records (param_2 + 3) either extends an existing
-   record (the list -1 / 0 and the value) or takes the first free record (0x475f70 (param_3, param_4), the
-   button 0x469ee0 (x, row * 0x4c, the good + 0xdf, 0x82), the text 0x473650 (0x631090) and 0x4760b0); a click
-   on the control 0x5fe710 turns the other records off; the values come from 0x475980 and 0x508640 (0xe / 2)
-   and 0x5176d0 "%I %s" (0x62bb30) into 0x4734d0; returns the selected record or -1 */
-
-int ai_Unk59c120(int param_1, int *param_2, int param_3, int param_4, char param_5)
+/* 0x59c120, fills one side of the money lender's exchange window from the object list list (814 B): each currency
+   object of the list (gm_Query(list, 1, 4, 9)) whose good no row holds yet takes the first free row, with an input
+   icon (the good's icon, 0x82) and a centred text below it in the form view / form; then every row reads its
+   icon's value and the amount the list holds of its good (a row whose good is gone is removed), shows the amount
+   and the good's name ("%I %s"); with input, a picked amount goes to the pointer (d2_AddPointerItem) and turns
+   the other rows off; when a row came or went the rows are sorted (ai_SortExchangeRows); returns the row whose
+   amount was picked, else -1 */
+int ai_FillExchangeRows(int list, LCEXCHROW *rows, int view, int form, char input)
 {
     char text[0x20];
     int sel;
     int changed;
     unsigned short *good;
+    AIOBJ *obj;
     int i;
     int j;
-    int v;
-    int r;
+    int value;
+    int amount;
 
     sel = -1;
     changed = 0;
-    good = (unsigned short *)gm_Query(param_1, 1, 4, 9);
-    while (good != 0) {
+    for (good = (unsigned short *)gm_Query((void *)list, 1, 4, 9); good != 0; good = gm_QueryNext()) {
         for (i = 0; i < 16; i++) {
-            if (param_2[i * 7 + 3] == *good)
+            if (rows[i].good == *good)
                 break;
         }
-        if (i == 16) {
-            for (i = 0; i < 16; i++) {
-                if (param_2[i * 7 + 3] == 0) {
-                    param_2[i * 7 + 3] = *good;
-                    d2_SetForm(param_3, param_4);
-                    v = d2_WinOpenInputIcon((d2_LastWindowPtr->w - 0x30) >> 1, i * 0x4c, *good + 0xdf,
-                                     0x82, U_I((unsigned)&d2_LastWindow));
-                    param_2[i * 7] = v;
-                    U_I(U_I((unsigned)&d2_Objs) + 0x44 + v * 0x2ec) = 1;
-                    v = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x2e,
-                                     (char *)(unsigned)&ch_EmptyName, U_I((unsigned)&d2_LastWindow));
-                    param_2[i * 7 + 1] = v;
-                    d2_SetObjFont(param_2[i * 7], 0x54);
-                    d2_SetObjFont(param_2[i * 7 + 1], 0x54);
-                    U_I(U_I((unsigned)&d2_Objs) + 0x5c + param_2[i * 7 + 1] * 0x2ec) = 1;
-                    *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + param_2[i * 7 + 1] * 0x2ec) = 0xbe;
-                    if (param_5 != 0)
-                        U_I(U_I((unsigned)&d2_Objs) + 0x3c + param_2[i * 7] * 0x2ec) = 1;
-                    break;
-                }
+        if (i < 16)
+            continue;
+        for (i = 0; i < 16; i++) {
+            if (rows[i].good == 0) {
+                rows[i].good = *good;
+                d2_SetForm(view, form);
+                rows[i].icon = d2_WinOpenInputIcon((d2_LastWindowPtr->w - 0x30) >> 1, i * 0x4c, rows[i].good + 0xdf,
+                                                   0x82, d2_LastWindow);
+                d2_Objs[rows[i].icon].textShadow = 1;
+                rows[i].text = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x2e, ch_EmptyName,
+                                                d2_LastWindow);
+                d2_SetObjFont(rows[i].icon, 0x54);
+                d2_SetObjFont(rows[i].text, 0x54);
+                d2_Objs[rows[i].text].centred = 1;
+                d2_Objs[rows[i].text].w = 0xbe;
+                if (input != 0)
+                    d2_Objs[rows[i].icon].clickDisabled = 1;
+                break;
             }
         }
         changed = 1;
-        good = (unsigned short *)gm_QueryNext();
     }
-    if (param_5 != 0) {
+    if (input != 0) {
         for (i = 0; i < 16; i++)
-            if (param_2[i * 7] != -1)
-                d2_SetObjEnabled(param_2[i * 7], 1);
+            if (rows[i].icon != -1)
+                d2_SetObjEnabled(rows[i].icon, 1);
     }
     for (i = 0; i < 16; i++) {
-        if (param_2[i * 7] != -1) {
-            v = d2_GetObjValue(param_2[i * 7]);
-            param_2[i * 7 + 4] = v;
-            r = gm_Query(param_1, 1, 0, param_2[i * 7 + 2]);
-            if (r == 0 || gm_CurrencyDivide(U_I(r + 0xe), param_2[i * 7 + 2]) == 0) {
-                d2_RemoveObj(param_2[i * 7 + 1]);
-                param_2[i * 7 + 1] = -1;
-                d2_RemoveObj(param_2[i * 7]);
-                param_2[i * 7] = -1;
-                param_2[i * 7 + 5] = 0;
-                param_2[i * 7 + 2] = 0;
-                changed = 1;
-            } else {
-                r = gm_CurrencyDivide(U_I(r + 0xe), param_2[i * 7 + 2]);
-                d2_SetObjValue(param_2[i * 7], 0, r, v);
-                txt_Format(text, "%I %s", r, U_I((unsigned)&txt_ObjectNames + param_2[i * 7 + 2] * 8));
-                d2_SetObjText(param_2[i * 7 + 1], text);
-                *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + param_2[i * 7] * 0x2ec) = 0xbe;
-                param_2[i * 7 + 5] = r;
+        if (rows[i].icon == -1)
+            continue;
+        value = d2_GetObjValue(rows[i].icon);
+        rows[i].value = value;
+        obj = (AIOBJ *)gm_Query((void *)list, 1, 0, rows[i].good);
+        if (obj != 0 && gm_CurrencyDivide(obj->count, rows[i].good) != 0) {
+            amount = gm_CurrencyDivide(obj->count, rows[i].good);
+            d2_SetObjValue(rows[i].icon, 0, amount, value);
+            txt_Format(text, "%I %s", amount, txt_ObjectNames[rows[i].good][0]);
+            d2_SetObjText(rows[i].text, text);
+            d2_Objs[rows[i].text].w = 0xbe;
+            rows[i].available = amount;
+        } else {
+            d2_RemoveObj(rows[i].text);
+            rows[i].text = -1;
+            d2_RemoveObj(rows[i].icon);
+            rows[i].icon = -1;
+            rows[i].available = 0;
+            rows[i].good = 0;
+            changed = 1;
+        }
+        if (input != 0 && value != 0) {
+            d2_AddPointerItem(rows[i].good + 0xdf, value);
+            for (j = 0; j < 16; j++) {
+                if (rows[j].icon != -1 && i != j)
+                    d2_SetObjEnabled(rows[j].icon, 0);
             }
-            if (param_5 != 0 && v != 0) {
-                d2_AddPointerItem(param_2[i * 7 + 2] + 0xdf, v);
-                v = 0;
-                j = 0;
-                while (j < 16) {
-                    if (param_2[j * 7] != -1 && i != v)
-                        d2_SetObjEnabled(param_2[j * 7], 0);
-                    v = j + 1;
-                    j = j + 1;
-                    sel = i;
-                }
-            }
+            sel = i;
         }
     }
     if (changed) {
-        d2_SetForm(param_3, param_4);
-        ai_SortExchangeRows((LCEXCHROW *)param_2);
+        d2_SetForm(view, form);
+        ai_SortExchangeRows(rows);
     }
     return sel;
 }
@@ -9350,9 +9343,9 @@ void ai_ExchangeWindow(int param_1)
             }
         }
         d2_ClearPointerItems();
-        sel = ai_Unk59c120(U_I(param_1 + 0x5d), recsA, win, 5, 1);
+        sel = ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
         if (side == 2 || sel == -1) {
-            sel = ai_Unk59c120(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
+            sel = ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
             if (sel != -1) {
                 if (*(unsigned char *)(unsigned)&d2_CaptionCopy == 0 || side == 0) {
                     txt_Format(text, 0x18f8, recsB[sel * 7 + 5], recsB[sel * 7 + 3] * 2 + 0x9a8);
@@ -9429,8 +9422,8 @@ void ai_ExchangeWindow(int param_1)
                     r = ((int (*)(void *))cm_EndGroup)("kredit");
                     while (cm_GetSlotState(r) == 0)
                         sv_RunFrame(0, 0x677c7);
-                    ai_Unk59c120(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
-                    ai_Unk59c120(U_I(param_1 + 0x5d), recsA, win, 5, 1);
+                    ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
+                    ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
                     sv_SetStatusText((char *)U_I((unsigned)&full_data_14405b8));
                     d2_EndInputEdit();
                     for (i = 0; i < 16; i++) {
@@ -9456,8 +9449,8 @@ void ai_ExchangeWindow(int param_1)
                     r = ((int (*)(void *))cm_EndGroup)("kredit");
                     while (cm_GetSlotState(r) == 0)
                         sv_RunFrame(0, 0x677c7);
-                    ai_Unk59c120(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
-                    ai_Unk59c120(U_I(param_1 + 0x5d), recsA, win, 5, 1);
+                    ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), recsB, win, 4, 1);
+                    ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
                     sv_SetStatusText((char *)U_I((unsigned)&full_data_14405b8));
                     d2_EndInputEdit();
                 }
@@ -9675,7 +9668,7 @@ void ai_MoneyExchangeWindow(int param_1)
             U_I((unsigned)&sv_PopRequest) = 1;
         d2_ClearPointerItems();
         if (carrier == 0)
-            sel = ai_Unk59c120(U_I(param_1 + 0x5d), recsA, win, 5, 1);
+            sel = ai_FillExchangeRows(U_I(param_1 + 0x5d), recsA, win, 5, 1);
         idx = ai_ClickedExchangeRecord(recsB);
         if (carrier == 0 && idx != -1 && sel != -1) {
             d2_ClearPointerItems();
@@ -17786,7 +17779,7 @@ int ai_PlayerStatsPanel(void)
         }
         if (ctrlA != -1) {
             d2_SetForm(ctrlA, 1);
-            ai_Unk59c120(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), (int *)(unsigned)&full_data_6f3680, ctrlA, 1, 0);
+            ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), (int *)(unsigned)&full_data_6f3680, ctrlA, 1, 0);
         }
         if (ctrlB != -1 && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&full_data_6f2f80) > 0) {
             for (i = 0; i < U_I((unsigned)&full_data_6f2f80); i++) {
