@@ -1263,6 +1263,11 @@ typedef struct HEDEATHDUE {             /* the event 0x8e's words over AIJOB's u
     char pad00[0xac];
     int price;                          /* 0xac, the amount the character pays when it can (cm_SendMoveGoods) */
 } HEDEATHDUE;
+typedef struct HEGRAVETHEFT {           /* the graveyard worker's theft 0x94's words over AIJOB's union (the message's
+                                           arg[0] from he_RunGraveyardWorkers; run handler 0x572fd0) */
+    char pad00[0xac];
+    int worker;                         /* 0xac, the netId of the worker */
+} HEGRAVETHEFT;
 typedef struct HEGRAVETRAINING {        /* the training job 0x8f's words over AIJOB's union (the message's arg[0..2] from
                                            ai_SendFreeSpies; its alloc handler 0x571ac0, run handler 0x571c30) */
     char pad00[0xac];
@@ -23241,7 +23246,7 @@ void he_AllocMeetingScene(int ev);          /* 0x5726a0 */
 void he_RunMeetingScene(int ev);          /* 0x5726b0 */
 void he_AllocGraveyardWorkers(int ev);          /* 0x572b90 */
 void he_RunGraveyardWorkers(int ev);          /* 0x572bf0 */
-void he_Unk572fd0(int ev);          /* 0x572fd0 */
+void he_RunGraveyardTheft(int ev);          /* 0x572fd0 */
 void he_RunGraveLease(int ev);          /* 0x572a50 */
 
 /* 0x56f980, registers the event types 0x88 .. 0x94 (called by 0x53d4b0): (0x88, 0x56fc50, 0x56fda0), (0x89, 0x570130, 0x5702e0), (0x8c, 0x570ef0, 0x571000), (0x8d, 0x571550, 0x571640), (0x8a, 0x5706e0, 0x5707a0), (0x8b, 0x572860, 0x570cc0), (0x8d again), (0x8e, 0x571990, 0x5719e0), (0x8f, 0x571ac0, 0x571c30), (0x90, 0x571f60, 0x5725b0), (0x91, 0x5726a0, 0x5726b0), (0x93, 0x572b90, 0x572bf0), (0x94, 0x55e3a0, 0x572fd0), (0x92, 0x572860, 0x572a50), then the texts of 0x52b350; 0 = ok, 1 = a registration failed */
@@ -23259,7 +23264,7 @@ int he_RegisterEventTypes88(void)
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_AllocGraveyardWorkers, (void *)he_RunGraveyardWorkers) == 0) {
-                                                    if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
+                                                    if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_RunGraveyardTheft) == 0) {
                                                         if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_RunGraveLease) == 0) {
                                                             sv_RegisterActivity(0x8d, (char *)(unsigned)&full_data_628e8c, 1, 0x513, -1);
                                                             sv_RegisterActivity(0x8c, (char *)(unsigned)&full_data_628e7c, 1, 0x500, 0xac);
@@ -24876,21 +24881,26 @@ void he_RunGraveyardWorkers(int ev)
         return;
     }
 }
-/* 0x572fd0, the run of the event 0x94 (an employee at work): -2 / -1 free. State 0: the character +0xac (0x505df0) and its
-   building +0x16c; when the building word +0x27 and the character word compare as -0x1a or less (0x50c520): the group of
-   the building +0x5d (0x4ffe90 (.., 2, 6, 0, 0x2a), else .. 0x116) and its members (0x4ffe90 (group +0x14, 1, 5), then
-   0x4ffcc0), one picked at random (0x42ec00); then 0x5089c0 (word, 0x6f1bc5), 0x4c4880 (-1, group +2, word, 1, 0x6f1bc5, 0),
-   the text 0x414b / 0x229 (0x5176d0) for the results 0 .. 2 of 0x5190a0 and the message 0x53dee0 (0x5f2, 0x629000, the
-   building +1, the owner +2) to the player word of the event (+8); then free */
-
-void he_Unk572fd0(int ev)
+/* 0x572fd0, the run handler of the graveyard worker's theft 0x94 (he_RunGraveyardWorkers posts its message for a
+   worker without a job whose owner's opinion beat a random draw; arg[0], here HEGRAVETHEFT.worker, is his netId):
+   -2 / -1 free the event. Stage 0: a missing worker or one without a building ends it, and so does an owner's
+   opinion of him above -26. Else one object of the building's store (the object 0x2a, else 0x116 in its object
+   list) is picked at random and sold away (cm_SendExSellObject (-1, the store, its good, 1, ai_OwnPlayer, 0)), the
+   player of the event is told (the text 0x414b with 0x229, the building and the good's name 0x9a8 + 2 * good, their
+   order by the language; the voice "_NACHRICHTEN_FRIEDHOF_06", the quick jump to the building's main object), and
+   the event is freed. "Theft" is a reasoned guess from the sale to nobody and the news. */
+void he_RunGraveyardTheft(int ev)
 {
-    char *per, *owner, *ch, *grp, *e;
-    int bld, cnt;
-    char *lst[0x20];
+    AIJOB *e = (AIJOB *)ev;
+    HEGRAVETHEFT *t = (HEGRAVETHEFT *)ev;
+    AICHAR *per;
+    AIBLD *bld;
+    AIOBJ *store, *main, *obj;
+    int n;
+    AIOBJ *objs[0x20];
     char text[0x400];
 
-    switch (HM_I(ev, 0x70)) {
+    switch (e->stage) {
     case -2:
     case -1:
         he_FreeEvent((int *)ev);
@@ -24900,51 +24910,51 @@ void he_Unk572fd0(int ev)
     default:
         return;
     }
-    per = (char *)gm_FindChar(HM_I(ev, 0xac));
+    per = (AICHAR *)gm_FindChar(t->worker);
     if (per == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    bld = HM_I(per, 0x16c);
+    bld = per->bld;
     if (bld == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    if (gm_Opinion(*(unsigned short *)(bld + 0x27), *(unsigned short *)per) > -0x1a) {
+    if (gm_Opinion(bld->owner, per->id) > -0x1a) {
         he_FreeEvent((int *)ev);
         return;
     }
-    grp = (char *)gm_Query(HM_I(bld, 0x5d), 2, 6, 0, 0x2a);
-    if (grp == 0)
-        grp = (char *)gm_Query(HM_I(bld, 0x5d), 2, 6, 0, 0x116);
-    owner = (char *)gm_BuildingMainObject(bld);
-    if (grp == 0)
-        goto free;
-    cnt = 0;
-    memset(lst, 0, sizeof lst);
-    e = (char *)gm_Query(HM_I(grp, 0x14), 1, 5);
-    while (e != 0) {
-        lst[cnt++] = e;
-        e = (char *)gm_QueryNext();
+    store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    if (store == 0)
+        store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x116);
+    main = (AIOBJ *)gm_BuildingMainObject((unsigned char *)bld);
+    if (store == 0)
+        goto done;
+    n = 0;
+    memset(objs, 0, sizeof objs);
+    obj = (AIOBJ *)gm_Query((void *)store->list, 1, 5);
+    while (obj != 0) {
+        objs[n++] = obj;
+        obj = (AIOBJ *)gm_QueryNext();
     }
-    if (cnt == 0)
-        goto free;
-    ch = lst[util_Random(cnt) & 0xffff];
-    if (ch == 0)
-        goto free;
-    ((float (*)(unsigned short, unsigned char))gm_GoodsPrice)(*(unsigned short *)ch, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-    ((int (*)(int, int, unsigned short, int, unsigned char, int))cm_SendExSellObject)(-1, HM_I(grp, 2), *(unsigned short *)ch, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
+    if (n == 0)
+        goto done;
+    obj = objs[util_Random(n) & 0xffff];
+    if (obj == 0)
+        goto done;
+    gm_GoodsPrice(obj->id, ai_OwnPlayer);
+    cm_SendExSellObject(-1, store->objId, obj->id, 1, ai_OwnPlayer, 0);
     switch (ls_GetLanguage()) {
     case 0:
     case 2:
-        txt_Format(text, 0x414b, 0x229, HM_I(per, 0x16c), *(unsigned short *)ch * 2 + 0x9a8);
+        txt_Format(text, 0x414b, 0x229, per->bld, obj->id * 2 + 0x9a8);
         break;
     case 1:
-        txt_Format(text, 0x414b, 0x229, HM_I(per, 0x16c), *(unsigned short *)ch * 2 + 0x9a8);
+        txt_Format(text, 0x414b, 0x229, obj->id * 2 + 0x9a8, per->bld);
         break;
     }
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f2, HM_I(bld, 1), HM_I(owner, 2), 0, (char *)(unsigned)&full_data_629000);
-free:
+    he_MessageBoxQuickjump(ai_CharInts[e->chr][0], -1, text, 0, 0x5f2, bld->id, main->objId, 0, "_NACHRICHTEN_FRIEDHOF_06");
+done:
     he_FreeEvent((int *)ev);
 }
 /* 0x573200, 1 when a graveyard work is pending on a grave: an event of the type 0x8d (the work ai_StartBuildingWork
