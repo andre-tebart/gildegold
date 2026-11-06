@@ -23044,13 +23044,13 @@ void he_FreeEventNow(int *r)
 }
 /* 0x56f050, the alloc of the event 0x9b (not while paused, flags +0x78 & 4): due = now +0x30 hours (0x4fe140), state 0 scheduled (0x4c4c60) */
 
-void he_AllocDomizilEvent(int ev)
+void he_AllocDomizilEvent(AIJOB *e)
 {
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x30, 0, 0);
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x30, 0, 0);
+    e->exSlot = cm_SendExSetHE(0, (char *)e);
 }
 /* 0x56f0b0, the run of the domicile event 0x9b: any stage but 0 frees; stage 0 sends the text 0x4035 with the news
    0x5fb (its second text he_NewsDomizil11) to the character partner1 when it exists, and the text 0x4036 with the
