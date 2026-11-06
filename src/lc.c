@@ -26731,12 +26731,37 @@ int ai_UseEventGood(G8CHARREC *ch)
     cm_SendLongMessage((char *)&msg);
     return 1;
 }
-/* 0x5d2f90, an action callback of the record table 0x62c420 (record 39 at 0x62c864, the text id 0x298,
-   160 B): the request 0x5b2180, 0x502020 and the close 0x4c4a60 (the twin of 0x5d2e80). */
+/* 0x5d2f90, the use callback of the Domizil good 0x298 (the twin of the heating good 0x2b2, the +0x14
+   pointer of the table entry 0x62c864): a kind 6 character picks the building on the map (0x5b2180 (1,
+   cfg, ch_EmptyName, 0, 0), cfg = 0x410 flags, the 0xa0747980 filter, mode 1, kind 4), every other kind
+   takes the use's target (0x502020). Then the building's flags5aw bit 0x1000 (0.1 more staff factor in
+   gm_StaffFactor, cleared at the round settlement) is set with 0x4c4a60 (id, 0x5a, 2, 0x1000, 0). Returns
+   1 (0 without a building). */
 
-int ai_Unk5d2f90(void)
+int ai_UseGoodStaffBonus(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int cfg[20];
+    int i;
+    AIBLD *bld;
+
+    if (ch->kind == 6) {
+        for (i = 0; i < 20; i++)
+            cfg[i] = 0;
+        cfg[1] = 0x410;
+        cfg[4] = 4;
+        cfg[2] = 0xa0747980;
+        cfg[3] = 1;
+        cfg[0] = 0;
+        bld = (AIBLD *)ai_MapPick(1, cfg, ch_EmptyName, 0, 0);
+        if (bld == 0)
+            return 0;
+    } else {
+        bld = (AIBLD *)gm_FindBuildingById(use->target);
+        if (bld == 0)
+            return 0;
+    }
+    cm_SendSetField(bld->id, 0x5a, 2, 0x1000, 0);
+    return 1;
 }
 /* 0x5d3030, an action callback of the record table 0x62c420 (record 43 at 0x62c8d4, the text id 0x29c,
    the value 0x5a0, 400 B): the character (0x5c1130 menu / 0x505df0), one record builder 0x4c4b70, the
