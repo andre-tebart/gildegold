@@ -11235,7 +11235,7 @@ void he_RunOfficeAward(int ev)
     }
 }
 
-void ai_Unk56f040();
+void he_FreeEventNow();
 int sv_RegisterActivity();
 
 /* 0x553060, registers the alloc / run handler pairs of the event types 0x22 .. 0xa5 (he_SetEventHandlers; the pair of a type is (alloc, run); 1 = a registration failed; 0x52b350 (type, 0, 0, 0x507 / 0x50e, -1) registers the message type of a few of them). The handlers above 0x553060 are the ones of this file; 0x56f040 is a forwarder to the free (0x53e1f0); the rest lives in the stretch 0x553880 .. 0x575700 (drafts to come) */
@@ -11243,7 +11243,7 @@ int he_RegisterEventTypes22(void)
 {
     if (he_SetEventHandlers(0x22, (void *)d3io_NoopCallback, (void *)d3io_NoopCallback) != 0)
         return 1;
-    if (he_SetEventHandlers(0x29, (void *)he_RunDueNow, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x29, (void *)he_RunDueNow, (void *)he_FreeEventNow) != 0)
         return 1;
     if (he_SetEventHandlers(0x2a, (void *)he_AllocStammtisch, (void *)he_RunStammtisch) != 0)
         return 1;
@@ -11251,13 +11251,13 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x2c, (void *)he_AllocOffer, (void *)he_RunWeddingOffer) != 0)
         return 1;
-    if (he_SetEventHandlers(0x2d, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x2d, (void *)he_FreeEventNow, (void *)he_FreeEventNow) != 0)
         return 1;
     if (he_SetEventHandlers(0x2e, (void *)he_AllocQuarrel, (void *)he_RunQuarrel) != 0)
         return 1;
     if (he_SetEventHandlers(0x2f, (void *)he_RunDueNow, (void *)he_RunMasterExam) != 0)
         return 1;
-    if (he_SetEventHandlers(0x30, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x30, (void *)he_FreeEventNow, (void *)he_FreeEventNow) != 0)
         return 1;
     if (he_SetEventHandlers(0x37, (void *)he_AllocFeast, (void *)he_RunFeast) != 0)
         return 1;
@@ -11360,7 +11360,7 @@ int he_RegisterEventTypes22(void)
         return 1;
     if (he_SetEventHandlers(0x7a, (void *)he_StartWalk, (void *)he_RunWalk) != 0)
         return 1;
-    if (he_SetEventHandlers(0x7b, (void *)ai_Unk56f040, (void *)ai_Unk56f040) != 0)
+    if (he_SetEventHandlers(0x7b, (void *)he_FreeEventNow, (void *)he_FreeEventNow) != 0)
         return 1;
     if (he_SetEventHandlers(0x7d, (void *)he_InitSixGroupEvent, (void *)he_RunSixGroupEvent) != 0)
         return 1;
@@ -22136,7 +22136,7 @@ int he_RegisterEventTypes03(void)
     if (he_SetEventHandlers(4, (void *)he_AllocProduktion, (void *)he_RunProduktion) != 0)
         return 1;
     sv_RegisterActivity(4, "Produktion", 1, 0x4ff, 0xac);
-    if (he_SetEventHandlers(5, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(5, (void *)he_FreeEventNow, (void *)d3io_NoopCallback) != 0)
         return 1;
     if (he_SetEventHandlers(8, (void *)he_AllocSearchEvent, (void *)he_RunSearchEvent) != 0)
         return 1;
@@ -22156,7 +22156,7 @@ int he_RegisterEventTypes03(void)
         return 1;
     if (he_SetEventHandlers(0x4c, (void *)he_AllocMissionCheck, (void *)he_RunMissionCheck) != 0)
         return 1;
-    if (he_SetEventHandlers(0x4d, (void *)ai_Unk56f040, (void *)d3io_NoopCallback) != 0)
+    if (he_SetEventHandlers(0x4d, (void *)he_FreeEventNow, (void *)d3io_NoopCallback) != 0)
         return 1;
     return 0;
 }
@@ -22710,7 +22710,7 @@ void he_Unk56f050();
 int he_RegisterEventTypes99(void)
 {
     if (he_SetEventHandlers(0x99, (void *)he_AllocSecretRoom, (void *)he_RunSecretRoom) == 0) {
-        if (he_SetEventHandlers(0x9a, (void *)he_AllocEvent9a, (void *)ai_Unk56f040) == 0) {
+        if (he_SetEventHandlers(0x9a, (void *)he_AllocEvent9a, (void *)he_FreeEventNow) == 0) {
             if (he_SetEventHandlers(0x9b, (void *)he_Unk56f050, (void *)he_RunDomizilEvent) == 0)
                 return 0;
         }
@@ -22761,7 +22761,7 @@ AIJOB *he_FindNearestSpying();                 /* 0x56f600 */
 int he_SecretRoomCatchSpy();                 /* 0x56f740 */
 int gm_FindById();                 /* 0x4fea50 */
 void cm_SendChrStop(int a); /* 0x4c5230 */
-void ai_Unk56f040(int *r);          /* 0x56f040 */
+void he_FreeEventNow(int *r);          /* 0x56f040 */
 
 /* 0x56e5b0, the run handler of the secret room event 0x99 (alloc he_AllocSecretRoom): the stages -1 / -2 remove the
    agent (opts & 2) and, at -1, tell the event's character (text 0x3ff9, the news "_NACHRICHTEN_DOMIZIL_08") and free
@@ -23024,9 +23024,10 @@ void he_AllocEvent9a(int ev)
     }
     e->exSlot = cm_SendExSetHE(-1, ev);
 }
-/* 0x56f040, the free forwarder of the event 0x9a (jmp 0x53e1f0) */
+/* 0x56f040, frees the event record it is handed (he_FreeEvent): the alloc / run handler of the event types the
+   game drops at once (5, 0x2d, 0x30, 0x4d, 0x7b) and the run handler of 0x29 / 0x9a */
 
-void ai_Unk56f040(int *r)
+void he_FreeEventNow(int *r)
 {
     he_FreeEvent(r);
 }
