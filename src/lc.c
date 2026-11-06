@@ -17298,10 +17298,13 @@ void ai_MercenaryBook(AIBLD *bld, char *model)
     sv_CloseBook(book);
     sv_CameraFollow();
 }
-/* 0x5ad000, a second "misc\Messagebox" with a percent slider (336 B): as 0x5a9f80 with the text 0x4141 and the
-   buffer 0x1444a6c8 (0x521040 gates, 0x4741f0 the window, 0x509e60 the value clamped at 0x12c0 / 32 as the slider,
-   the pump 0x5309a0 (the mask 0x760638): a click 0xf8a668 == 0 confirms (0x521150, 0x475980), 1 or 0x1468410 == 1
-   cancels; 0x14673a0 sets 0x6f22a0) */
+/* 0x5ad000, asks the player for a helper's bonus amount in the "misc\Messagebox" form with a percent slider
+   (336 B, ai_HelperBook): as ai_AskBonusAmount with the text 0x4141 and the message box of txt_Ptrs[0x4142];
+   sv_CheckGoodAmount gates the box for the player (good 0x140), the window's text 0x4141, the player's goods
+   value (clamped at 0x12c0) / 32 as the slider, the frame pump sv_RunFrame (sv_FrameMask): a click 0 confirms
+   (the slider's value), 1 or a pressed key cancels; a right button release (dm_L.rup) pops it; returns the click
+   result */
+
 int ai_AskHelperBonus(void)
 {
     int mask;
@@ -17310,28 +17313,30 @@ int ai_AskHelperBonus(void)
     int ctrl;
     int v;
 
-    mask = U_I((unsigned)&sv_FrameMask);
+    mask = sv_FrameMask;
     ret = 0;
-    if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), 0x140, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
+    if (sv_CheckGoodAmount((char *)&ai_Chars[ai_PlayerId], 0x140, ai_OwnPlayer) == 0)
         return 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)"misc\\Messagebox");
-    ctrl = d2_GetWinObj(win, 0, io_PrintText(0x4141, *(unsigned char *)(unsigned)&ai_OwnPlayer));
-    v = gm_GetGoodsValue((char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c));
-    if (v > 0x12bf)
+    win = d2_OpenForm(0, 0, "misc\\Messagebox");
+    ctrl = d2_GetWinObj(win, 0, io_PrintText(0x4141, ai_OwnPlayer));
+    v = gm_GetGoodsValue((char *)&ai_Chars[ai_PlayerId]);
+    if (v >= 0x12c0)
         v = 0x12c0;
     d2_SetObjValue(ctrl, 10, v / 32, 10);
     d2_CentreViewWindows(win);
     while (sv_RunFrame(ai_AskHelperBonus, mask) != 0) {
-        if (U_I((unsigned)&d2_ClickedId) == 0) {
-            sv_MessageBox(U_I((unsigned)&full_data_144a6c8), 4);
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (d2_ClickedId != 0) {
+            if (d2_ClickedId == 1 || kb_Last == 1) {
+                sv_PopRequest = 1;
+                ret = 0;
+            }
+        } else {
+            sv_MessageBox(txt_Ptrs[0x4142], 4);
+            sv_PopRequest = 1;
             ret = d2_GetObjValue(ctrl);
-        } else if (U_I((unsigned)&d2_ClickedId) == 1 || *(unsigned char *)(unsigned)&kb_Last == 1) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-            ret = 0;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
     }
     d2_CloseView(win);
     return ret;
