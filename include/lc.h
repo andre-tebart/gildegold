@@ -244,14 +244,16 @@ typedef struct LCMAPWIN {          /* 0x27ac bytes, the town map window's record
                                       ai_CloseMapWindow removes them) */
     int siteCtrls[0x80];           /* 0x24dc, the controls of ai_PlacementSites' entries (flag 8; the original writes up to 0x100) */
     int spotCtrls[0x10];           /* 0x26dc, the controls of the ambush spots found (flag 4), packed */
-    char pad271c[0x88];
+    char pad271c[0x80];
+    int scrolled;                  /* 0x279c, nonzero: the last frame dragged or key-scrolled the map (ai_UpdateTownMap) */
+    unsigned long scrollTime;      /* 0x27a0, d3_Time of the last scroll; the mark info waits 75 ms after it */
     int nMarks;                    /* 0x27a4 */
     struct D2SURF *tile;           /* 0x27a8, the background tile the open saved (d2_BackgroundTile) */
 } LCMAPWIN;
 void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY);  /* 0x5a6b70, the town map pixel of a mark's scene cell */
 void ai_BuildTownMap(LCMAPWIN *m);  /* 0x5a6cb0, places the marks of the town map window */
 int ai_OpenTownMap(LCMAPWIN *m);  /* 0x5a78a0, opens the town map window */
-void ai_Unk5a7cd0(int *m_);  /* 0x5a7cd0 */
+void ai_UpdateTownMap(LCMAPWIN *m);  /* 0x5a7cd0, the town map window's per-frame update */
 void ai_CloseMapWindow(int *m_);  /* 0x5a82f0 */
 void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3);  /* 0x5a9470 */
 int ai_BlackmailBuildingListener(unsigned short *param_1, int param_2);  /* 0x5c9550 */

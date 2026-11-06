@@ -689,7 +689,7 @@ extern int di_MinX;
 extern int di_MinY;
 extern int d2_PointerObj;
 extern int ai_DragWindow;
-extern int ai_Unk62c26c;
+extern int ai_MapScrollEnabled;
 extern volatile unsigned long d3_Time;
 extern int d2_RightHeldObj;
 extern D2VIEW d2_Views[];
@@ -1224,6 +1224,7 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
+#define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
    0x6f52e8 (0 / -1); the eight 0x58-byte records 0x6f5334 + i * 0x58 (i = 0 .. 7, the id 0x10 + i * 0x78 and the
    slot values -1); the 0xe-entry records 0x6f5a84 + i * 0x38 (the id 0x10 + i * 0x45, +4 = 0x1a, -1 fields); the
@@ -14659,159 +14660,148 @@ int ai_ScrollTownMap(D2WIN *win)
     return changed;
 }
 
-/* 0x5a7cd0, the map window's per-frame draw (1556 B, ROUGH SKELETON: the two control-rectangle blocks and the
-   else branch of 0x5a8131 are not decoded; the camera projection is the 0x5a6b70 shape with the scene centre
-   +0 / +8 and the scale +0x10 / +0x18): the scroll changed flag +0x279c (0x5a79e0 / 0x5a7bc0, the time 0x6333cc
-   at +0x27a0), the hover 0x5fe710 over the entries (0x5890c0 on the character 0x770b80 + the index * 0x21c), then
-   the object list 0x1468ae0 .. 0x14696df: an object of the class 0xfd7ba0 with the character +0x34, its boss
-   building +0x200, the cart 0x50a050 and the character kinds 5 .. 7 (0x770b82) give the picture id (0x46cd80 at
-   the camera projection, id - 0x53, the ids +0x18dc); 0x46e710 removes the controls; the arrows 0x472760 */
+/* 0x5a7cd0, the town map window's per-frame update (1556 B): while the map has the input (ai_MapScrollEnabled) its drag
+   and key scroll (ai_DragTownMap / ai_ScrollTownMap) set m->scrolled and stamp m->scrollTime; 75 ms after the last
+   scroll, with the right button held, the mark under the pointer opens the info window of its building's owner
+   (ai_CharInfoWindow, kinds below 10). Then every character of scene 0 (ch_List) is placed on the map as
+   ai_MapCellToScreen places a mark: a body standing for a character in a building owned by a player (kind 5 .. 7),
+   or a cart (transport) whose owner (gm_ObjectBuildingOwner) is one, gets that player's crest (ref54 - 0x53) as a
+   picture control clipped to the window; a placed control follows the window's scroll; the control of a character
+   that left the scene, or whose body is of type 1 without a transport, is removed. The arrow keys scroll the
+   window by 4 pixels
+   @deep Reconstructed whole against the original (all 441 instructions read): focus-gated drag/key scroll
+   with scrolled/scrollTime, the 75 ms right-held mark info (ai_CharInfoWindow, kind < 10), the ch_List
+   walk over scene 0 with the ai_MapCellToScreen projection (half = hmap size * 0.5 double,
+   ai_MapCellScale, 51-pixel edge push, (float)(size/2) + origin), the crest picture of a character's
+   building owner (indexed ai_Chars, its own kind test) or of a cart's gm_ObjectBuildingOwner (pic = ref54
+   - 0x53 in each branch, d2_CreatePicObj with 16-bit sums), the clip rectangle and view buffer, the
+   scroll-following d2_MoveObj, the removal test and the arrow keys. Remaining: (1) code 3 at +0x8009: the
+   original re-tests the cart branch's 'ch->transport != 0' after the 'transport == 0' branch (+ je / mov
+   edx, [ecx+0x124] / test edx, edx) where our VC6 threads it away; spelling the owner re-test as the
+   expression ch->obj->owner (against the variable of the outer test) kept that one, but no spelling of the
+   transport test (CH_TRANSPORT cast, !x, swapped branches, ch_List[i] base, separate ifs, goto create,
+   flag) keeps it without other differences; (2) fpu 7 at +0x7eb6: the original pops half with fsubrp in
+   the y line where ours keeps it to an fstp st(0); (3) frame 0x2c vs 0x30: the original keeps one more
+   slot (the ch_List entry pointer at +0x1c and ch in the argument slot). */
 
-void ai_Unk5a7cd0(int *m_)
+void ai_UpdateTownMap(LCMAPWIN *m)
 {
-    char *p = (char *)m_;
-    char *scene;
-    char *rec;
-    char *obj;
-    char *chr;
-    char *owner;
-    int *e;
-    int *list;
-    int entry;
-    int found;
-    int x;
-    int y;
-    int i;
-    int ctrl;
-    int id;
-    int pos[4];
-    float fx;
-    float fy;
-    float cx;
-    float cy;
+    struct D3SM *hm;
+    D2WIN *win;
+    CHARACTER *ch;
+    AIBLD *bld;
+    AICHARREC *owner;
+    AICHARREC *rec;
+    D3VECTOR pos;
     float half;
-    unsigned short idx;
+    float x;
+    float y;
+    float edgeX;
+    float edgeY;
+    int originX;
+    int originY;
+    int px;
+    int py;
+    int pic;
+    int i;
+    unsigned char kind;
 
-    scene = (char *)*(int *)((unsigned)&ai_Unkfd7c50);
-    rec = (char *)((unsigned)&d2_Wins + m_[2] * 0x3c4);
-    *(int *)((unsigned)&d2_LastWindow) = m_[2];
-    *(int *)((unsigned)&d2_LastWindowPtr) = (int)rec;
-    if (*(int *)((unsigned)&ai_Unk62c26c) != 0) {
-        m_[0x9e7] = 0;
-        m_[0x9e7] = ai_DragTownMap((D2WIN *)rec);
-        m_[0x9e7] |= ai_ScrollTownMap((D2WIN *)rec);
-        if (m_[0x9e7] != 0)
-            m_[0x9e8] = *(int *)((unsigned)&d3_Time);
+    hm = (struct D3SM *)d3_Scenes[0].hmap;
+    originX = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townX;
+    originY = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townY;
+    d2_LastWindow = m->screen;
+    d2_LastWindowPtr = &d2_Wins[m->screen];
+    win = d2_LastWindowPtr;
+    if (ai_MapScrollEnabled != 0) {
+        m->scrolled = 0;
+        m->scrolled = ai_DragTownMap(&d2_Wins[m->screen]);
+        m->scrolled |= ai_ScrollTownMap(&d2_Wins[m->screen]);
+        if (m->scrolled != 0)
+            m->scrollTime = d3_Time;
     }
-    if (*(int *)((unsigned)&d2_RightHeldObj) != -1 && m_[0x9e8] + 0x4b < *(int *)((unsigned)&d3_Time) &&
-        *(int *)(((unsigned)&dm_L + 0x28)) != 0 && *(int *)((unsigned)&ai_DragWindow) == -1 && m_[0x9e9] > 0) {
-        i = 0;
-        e = (int *)(p + 0xe0);
-        do {
-            if (*(int *)((unsigned)&d2_PointerObj) != -1 && *(int *)((unsigned)&d2_PointerObj) == e[-1] &&
-                *(unsigned short *)(*e + 0x27) != 0xffff &&
-                *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(*e + 0x27) * 0x21c) < 10)
-                ai_CharInfoWindow((unsigned)&ai_Chars + *(unsigned short *)(*e + 0x27) * 0x21c);
-            i++;
-            e += 6;
-        } while (i < m_[0x9e9]);
+    if (d2_RightHeldObj != -1 && d3_Time > m->scrollTime + 0x4b && dm_L.rhold != 0 && ai_DragWindow == -1) {
+        for (i = 0; i < m->nMarks; i++) {
+            if (d2_PointerObj != -1 && d2_PointerObj == m->marks[i].ctrl && m->marks[i].bld->owner != 0xffff &&
+                ((AICHARREC *)ai_Chars)[m->marks[i].bld->owner].kind < 10)
+                ai_CharInfoWindow(&((AICHARREC *)ai_Chars)[m->marks[i].bld->owner]);
+        }
     }
-    *(int *)((unsigned)&d2_LastWindow) = m_[2];
-    entry = (unsigned)&ch_List;
-    e = (int *)(p + 0x18dc);
-    while (entry <= ((unsigned)&ch_List + 0xbff)) {
-        obj = (char *)*(int *)entry;
-        if (obj != 0) {
-            if (*(int *)(obj + 0x88) == (unsigned)&d3_Scenes) {
-                chr = (char *)*(int *)(obj + 0x34);
-                d3_PointToWorld((int)chr, (int)(chr + 0x4c), pos);
-                half = (float)*(int *)(scene + 0x20) * 0.5f;
-                fx = ((*(float *)pos - *(float *)(scene + 0)) / *(float *)(scene + 0x10) - half) * 5.33f;
-                fy = ((*(float *)((char *)pos + 8) - *(float *)(scene + 8)) /
-                      *(float *)(scene + 0x18) - half) * 5.33f;
-                cx = (fabs(fx) / ((float)*(int *)((unsigned)&ai_MapSize) * 0.5f)) * 51.0f;
-                if (0.0f <= fx)
-                    cx = fx + cx;
-                else
-                    cx = fx - cx;
-                cy = (fabs(fy) / ((float)ai_MapHeight * 0.5f)) * 51.0f;
-                if (0.0f <= fy)
-                    cy = fy + cy;
-                else
-                    cy = fy - cy;
-                x = (int)((float)(*(int *)((unsigned)&ai_MapSize) / 2 + *(int *)(p + 0x24)) + cx);
-                y = (int)((float)(ai_MapHeight / 2 + *(int *)(p + 0x28)) + cy);
-                found = 0;
-                id = 0;
-                if (e[0] == -1) {
-                    if ((*(int *)(chr + 0x218) != 1 || *(int *)(obj + 0x124) != 0) &&
-                        (owner = (char *)*(int *)(chr + 0x200)) != 0) {
-                        if (*(int *)(obj + 0x124) == 0) {
-                            if (*(int *)(owner + 0x16c) != 0) {
-                                idx = *(unsigned short *)(*(int *)(owner + 0x16c) + 0x27);
-                                if (idx != 0xffff) {
-                                    chr = (char *)((unsigned)&ai_Chars + idx * 0x21c);
-                                    if (chr[2] == 6 || chr[2] == 7 || chr[2] == 5) {
-                                        id = *(int *)(chr + 0x54);
-                                        found = 1;
-                                    }
-                                }
-                            }
-                        } else if (owner != 0 && (owner = (char *)gm_ObjectBuildingOwner((int)owner)) != 0 &&
-                                   (owner[2] == 6 || owner[2] == 7 || owner[2] == 5)) {
-                            id = *(int *)(owner + 0x54);
-                            found = 1;
-                        }
-                        if (found) {
-                            ctrl = d2_CreatePicObj(x + *(short *)(rec + 4), y + *(short *)(rec + 6),
-                                                id - 0x53);
-                            e[0] = ctrl;
-                            if (ctrl != -1) {
-                                *(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x1e) = *(short *)(rec + 4);
-                                *(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x20) =
-                                    *(short *)(rec + 8) + *(short *)(rec + 4);
-                                *(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x22) = *(short *)(rec + 6);
-                                *(short *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x24) =
-                                    *(short *)(rec + 0xa) + *(short *)(rec + 6);
-                                *(int *)((unsigned)&d2_Objs + ctrl * 0x2ec + 0x40) = (unsigned)&d2_Views + *m_ * 0xab * 4;
-                            }
-                        }
-                    }
-                } else if (*(int *)(chr + 0x218) != 1 || *(int *)(obj + 0x124) != 0) {
-                    /* ROUGH: the existing control is moved to the projection minus the scroll */
-                    d2_MoveObj((short)(x + *(short *)(rec + 4) - *(short *)(rec + 0x258)),
-                                 (short)(y + *(short *)(rec + 6) - *(short *)(rec + 0x248)), e[0]);
-                    *(short *)((unsigned)&d2_Objs + e[0] * 0x2ec + 0x1e) = *(short *)(rec + 4);
-                    *(short *)((unsigned)&d2_Objs + e[0] * 0x2ec + 0x20) = *(short *)(rec + 8) + *(short *)(rec + 4);
-                    *(short *)((unsigned)&d2_Objs + e[0] * 0x2ec + 0x22) = *(short *)(rec + 6);
-                    *(short *)((unsigned)&d2_Objs + e[0] * 0x2ec + 0x24) =
-                        *(short *)(rec + 0xa) + *(short *)(rec + 6);
+    d2_LastWindow = m->screen;
+    for (i = 0; i < 0x300; i++) {
+        ch = ch_List[i];
+        if (ch == 0)
+            continue;
+        if (ch->scene == &d3_Scenes[0]) {
+            d3_PointToWorld(ch->obj, &ch->obj->pos, &pos);
+            half = ((struct D3SM *)d3_Scenes[0].hmap)->size * 0.5;
+            x = ((pos.x - hm->origin.x) / hm->cell.x - half) * ai_MapCellScale;
+            y = ((pos.z - hm->origin.z) / hm->cell.z - half) * ai_MapCellScale;
+            edgeX = fabs(x) / (ai_MapSize * 0.5f);
+            edgeY = fabs(y) / (ai_MapHeight * 0.5f);
+            if (x < ai_FloatZero)
+                edgeX = x - edgeX * 51.0f;
+            else
+                edgeX = edgeX * 51.0f + x;
+            if (y < ai_FloatZero)
+                edgeY = y - edgeY * 51.0f;
+            else
+                edgeY = edgeY * 51.0f + y;
+            px = (int)((float)(ai_MapSize / 2) + originX + edgeX);
+            py = (int)((float)(ai_MapHeight / 2) + originY + edgeY);
+            if (m->controls[i] == -1) {
+                if ((ch->obj->type != 1 || ch->transport != 0) && (owner = (AICHARREC *)ch->obj->owner) != 0) {
+                    if (ch->transport == 0) {
+                        bld = owner->bld;
+                        if (bld == 0 || bld->owner == 0xffff)
+                            goto removed;
+                        kind = ((AICHARREC *)ai_Chars)[bld->owner].kind;
+                        if (kind != 6 && kind != 7 && kind != 5)
+                            goto removed;
+                        pic = ((AICHARREC *)ai_Chars)[bld->owner].ref54 - 0x53;
+                    } else if (ch->obj->owner != 0 && ch->transport != 0 &&
+                               (rec = (AICHARREC *)gm_ObjectBuildingOwner((unsigned short *)ch->obj->owner)) != 0 &&
+                               (rec->kind == 6 || rec->kind == 7 || rec->kind == 5))
+                        pic = rec->ref54 - 0x53;
+                    else
+                        goto removed;
+                    m->controls[i] = d2_CreatePicObjS(d2_LastWindowPtr->x + px, d2_LastWindowPtr->y + py, pic);
+                    if (m->controls[i] == -1)
+                        continue;
+                    d2_Objs[m->controls[i]].clipx0 = d2_LastWindowPtr->x;
+                    d2_Objs[m->controls[i]].clipx1 = d2_LastWindowPtr->w + d2_LastWindowPtr->x;
+                    d2_Objs[m->controls[i]].clipy0 = d2_LastWindowPtr->y;
+                    d2_Objs[m->controls[i]].clipy1 = d2_LastWindowPtr->h + d2_LastWindowPtr->y;
+                    d2_Objs[m->controls[i]].buf = (D2CTRL *)&d2_Views[m->view];
                 }
-            }
-            if (e[0] != -1 &&
-                ((*(int *)(*(int *)(obj + 0x34) + 0x218) == 1 || *(int *)(obj + 0x88) != (unsigned)&d3_Scenes) &&
-                 *(int *)(obj + 0x124) == 0)) {
-                d2_RemoveObj(e[0]);
-                e[0] = -1;
+            } else if (ch->obj->type != 1 || ch->transport != 0) {
+                d2_MoveObj(d2_LastWindowPtr->x - d2_LastWindowPtr->scrollx + px,
+                           d2_LastWindowPtr->y - win->scrolly + py, m->controls[i]);
+                d2_Objs[m->controls[i]].clipx0 = d2_LastWindowPtr->x;
+                d2_Objs[m->controls[i]].clipx1 = d2_LastWindowPtr->w + d2_LastWindowPtr->x;
+                d2_Objs[m->controls[i]].clipy0 = d2_LastWindowPtr->y;
+                d2_Objs[m->controls[i]].clipy1 = d2_LastWindowPtr->h + d2_LastWindowPtr->y;
             }
         }
-        entry += 4;
-        e++;
+    removed:
+        if (m->controls[i] != -1 && (ch->obj->type == 1 || ch->scene != &d3_Scenes[0]) && ch->transport == 0) {
+            d2_RemoveObj(m->controls[i]);
+            m->controls[i] = -1;
+        }
     }
-    if (*(unsigned char *)(((unsigned)&kb_Down + 0xc8)) != 0) {
-        d2_ScrollWindowBy(0, -4, *(int *)((unsigned)&d2_LastWindow));
+    if (kb_Down[0xc8] != 0) {               /* DIK_UP */
+        d2_ScrollWindowBy(0, -4, d2_LastWindow);
         return;
     }
-    if (*(unsigned char *)(((unsigned)&kb_Down + 0xd0)) != 0) {
-        d2_ScrollWindowBy(0, 4, *(int *)((unsigned)&d2_LastWindow));
+    if (kb_Down[0xd0] != 0) {               /* DIK_DOWN */
+        d2_ScrollWindowBy(0, 4, d2_LastWindow);
         return;
     }
-    if (*(unsigned char *)(((unsigned)&kb_Down + 0xcb)) != 0) {
-        d2_ScrollWindowBy(-4, 0, *(int *)((unsigned)&d2_LastWindow));
+    if (kb_Down[0xcb] != 0) {               /* DIK_LEFT */
+        d2_ScrollWindowBy(-4, 0, d2_LastWindow);
         return;
     }
-    if (*(unsigned char *)(((unsigned)&kb_Down + 0xcd)) != 0)
-        d2_ScrollWindowBy(4, 0, *(int *)((unsigned)&d2_LastWindow));
+    if (kb_Down[0xcd] != 0)                 /* DIK_RIGHT */
+        d2_ScrollWindowBy(4, 0, d2_LastWindow);
 }
 
 /* 0x5a82f0, the town map window's close (78 B): the background tile saved at +0x27a8 goes back to
@@ -17051,7 +17041,7 @@ int ai_MapPick(int param_1, int param_2, char *param_3, int param_4, int param_5
         return 0;
     while (sv_RunFrame(ai_MapPick, 0x677c7) != 0) {
         /* ROUGH: the click dispatch 0x5fe710, the flag 0x14673a0 / 0x1467398, 0x6ed9dc and 0x5a7cd0 */
-        ai_Unk5a7cd0(&map.flags);
+        ai_UpdateTownMap((LCMAPWIN *)&map);
     }
     return 1;
 }

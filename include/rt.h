@@ -50,7 +50,7 @@ extern int rt_PickedBuilding;                /* 0x6f0754, the building shown */
 
 extern int rt_Unk6f074c;                /* 0x6f074c, the saved screen of 0x4bf5b0 */
 extern char *rt_MapSurface;              /* 0x6f26ac, the screen surface */
-extern int ai_Unk62c26c;                /* 0x62c26c */
+extern int ai_MapScrollEnabled;                /* 0x62c26c */
 extern struct D2INPUT *d2_FocusedInput;      /* 0x6ed9dc (as d2.h / cm.h) */
 extern char ch_EmptyName[];             /* 0x631090 */
 extern int rt_MarkGroup;                /* 0x602a90, a d2 radio group (-1: none) */

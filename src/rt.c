@@ -31,7 +31,7 @@
 #include "d3_pose.h"
 
 int rt_MarkGroup = -1;                  /* 0x602a90 */
-int ai_Unk62c26c = 1;  /* 0x62c26c */
+int ai_MapScrollEnabled = 1;  /* 0x62c26c */
 extern RTMARK rt_Marks[8];
 /* ai_Unk143a588: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_PanelBtnCart: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -934,7 +934,7 @@ void rt_EditCartRoute(char *c)
     while (sv_RunFrame(rt_EditCartRoute, 0x657c7)) {
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
-        ai_Unk62c26c = d2_FocusedInput == 0;
+        ai_MapScrollEnabled = d2_FocusedInput == 0;
         if (d2_ClickedId != -1) {
             if (d2_PointerObj == btns[2])
                 rt_Unk4bf080(c, (char *)m);
@@ -950,7 +950,7 @@ void rt_EditCartRoute(char *c)
                 rt_PickedBuilding = 0;
             }
         }
-        ai_Unk5a7cd0(m);
+        ai_UpdateTownMap(m);
         if (dm_L.lclick != 0 && d2_PointerObj != -1) {
             for (i = 0; i < m[0x27a4 / 4]; i++) {
                 if (m[0xdc / 4 + i * 6] == d2_PointerObj) {
