@@ -178,7 +178,10 @@ typedef struct GMPLAYERSLOT {
     char pad056[0xe];
     GMPOINT tableA[10];                 /* 0x64, the yearly tables gm_UpdatePrices interpolates */
     GMPOINT tableB[10];                 /* 0xb4 */
-    char pad104[0x1f0];
+    char pad104[0x1e8];
+    int townX;                          /* 0x2ec, where the player's town lies on the town map bitmap: its scene cells
+                                           are drawn around it (lc.c ai_BuildTownMap, ai_MapCellToScreen's origin) */
+    int townY;                          /* 0x2f0 */
 } GMPLAYERSLOT;
 
 /* a player's line of the ranking gm_RankPlayers fills (0x24 bytes; the names from its log format 0x61ac40) */

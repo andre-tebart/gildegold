@@ -211,16 +211,32 @@ void ai_DomizilMessage12(char *ch, char *b, int n);  /* 0x5a9e40, posts the Domi
 int ai_MedicusHandler(unsigned short *param_1, void *unused);  /* 0x5c8bc0, the caller (ord 0x4f50ae) pushes a second argument the handler does not read */
 int ai_Unk5c8ef0(unsigned short *param_1, void *unused);  /* 0x5c8ef0, the caller (ord 0x4f58a4) pushes a second argument the handler does not read */
 int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0 */
-typedef struct LCMAPMARK {         /* 0x18 bytes, a mark of the town map (ai_Unk5a6cb0's 0x100 entries, rt's building marks) */
-    int obj;                       /* 0x00, its object / control */
-    int unk04;
-    int cellX;                     /* 0x08, its scene cell (d3_GetHeightAt) */
+typedef struct LCMAPMARK {         /* 0x18 bytes, a mark of the town map (LCMAPWIN.marks, rt's building marks) */
+    int ctrl;                      /* 0x00, its picture control, -1: not placed yet */
+    struct AIBLD *bld;             /* 0x04, the building it marks */
+    int cellX;                     /* 0x08, its scene cell (d3_GetHeightAt); once placed its pixel */
     int cellZ;                     /* 0x0c */
     float x;                       /* 0x10, its town map pixel (ai_MapCellToScreen) */
     float y;                       /* 0x14 */
 } LCMAPMARK;
+typedef struct LCMAPWIN {          /* 0x27ac bytes, the town map window's record (ai_MapPick's local, rt's route editor) */
+    int view;                      /* 0x000 */
+    unsigned int flags;            /* 0x004, 4: show the ambush spots, 8: the building placement sites */
+    int screen;                    /* 0x008, the map window */
+    int req[0x14];                 /* 0x00c, the request record: its filter greys the buildings out
+                                      (ai_PassesMapPickFilter) */
+    char name[0x68];               /* 0x05c, the title */
+    char pad0c4[0x18];
+    LCMAPMARK marks[0x100];        /* 0x0dc, the buildings, sorted by their scene row */
+    int ids18dc[0x300];            /* 0x18dc, cleared to -1 by ai_BuildTownMap */
+    int siteCtrls[0x80];           /* 0x24dc, the controls of ai_PlacementSites' entries (flag 8; the original writes up to 0x100) */
+    int spotCtrls[0x10];           /* 0x26dc, the controls of the ambush spots found (flag 4), packed */
+    char pad271c[0x88];
+    int nMarks;                    /* 0x27a4 */
+    int tile;                      /* 0x27a8, the saved background tile */
+} LCMAPWIN;
 void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY);  /* 0x5a6b70, the town map pixel of a mark's scene cell */
-void ai_Unk5a6cb0(int *m_);  /* 0x5a6cb0 */
+void ai_BuildTownMap(LCMAPWIN *m);  /* 0x5a6cb0, places the marks of the town map window */
 void ai_Unk5a78a0(int *m_);  /* 0x5a78a0 */
 void ai_Unk5a7cd0(int *m_);  /* 0x5a7cd0 */
 void ai_CloseMapWindow(int *m_);  /* 0x5a82f0 */
