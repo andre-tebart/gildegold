@@ -2143,14 +2143,14 @@ void cm_SendChrDelete(int a)
     m.chrDelete.charId = a;
     cm_QueueSend(&m);
 }
-/* 0x4c5ef0, message 0x58 */
+/* 0x4c5ef0, sends message 0x58, the cancel of party a: its handler (0x4cc980) ends the group cm_PartyById finds */
 
 void cm_SendCancelParty(int a)
 {
     G17MSG m;
 
     m.type = 0x58;
-    G17_I(m, 0) = a;
+    m.cancelParty.partyId = a;
     cm_QueueSend(&m);
 }
 /* 0x4c5f20, message 0x59 (0x48 bytes of p) */
