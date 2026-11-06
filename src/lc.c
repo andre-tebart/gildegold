@@ -26771,12 +26771,47 @@ int ai_Unk5d3030(void)
 {
     return 0;
 }
-/* 0x5d31c0, an action callback of the record table 0x62c420 (record 38 at 0x62c848, the text id 0x297,
-   the value 0x5a0, 176 B): two record builders 0x4c4b70. */
+/* 0x5d31c0, the use callback of the Domizil good 0x297 (one of am.c's education goods 0x168 / 0x16c /
+   0x297 / 0x2b7, the +0x14 pointer of the table entry 0x62c848): posts two skill-bonus messages 0x82
+   (0x4c4b70, an AIMSG) to ch->netId, one raising skills 0 and 4 by 1/6, one lowering skills 3 and 2 by
+   1/6, each lasting 24 hours. Returns 1. */
 
-int ai_Unk5d31c0(void)
+int ai_UseGoodSkillBonus(AICHARREC *ch)
 {
-    return 0;
+    union {
+        AIMSG msg;
+        struct {
+            char pad58[0x58];
+            unsigned char skill1;      /* 0x58, the first skill number 0 .. 4 */
+            unsigned char skill2;      /* 0x59, the second skill number */
+            char pad5a[2];
+            float bonus1;              /* 0x5c, the bonus added for skill1 */
+            float bonus2;              /* 0x60, the bonus added for skill2 */
+            int hours;                 /* 0x64, the hours the bonus lasts */
+        } skill;
+    } m;
+
+    m.msg.type = 0x82;
+    m.msg.to = ch->netId;
+    m.msg.fromId = -1;
+    m.msg.flags = 2;
+    m.skill.skill1 = 0;
+    m.skill.bonus1 = 1.0f / 6.0f;
+    m.skill.skill2 = 4;
+    m.skill.bonus2 = 1.0f / 6.0f;
+    m.skill.hours = 0x18;
+    cm_SendLongMessage((char *)&m.msg);
+    m.msg.type = 0x82;
+    m.msg.to = ch->netId;
+    m.msg.fromId = -1;
+    m.msg.flags = 2;
+    m.skill.skill1 = 3;
+    m.skill.bonus1 = -1.0f / 6.0f;
+    m.skill.skill2 = 2;
+    m.skill.bonus2 = -1.0f / 6.0f;
+    m.skill.hours = 0x18;
+    cm_SendLongMessage((char *)&m.msg);
+    return 1;
 }
 /* 0x5d3270, an action callback of the record table 0x62c420 (record 41 at 0x62c89c, the text id 0x29a,
    the value 0x5a0, 320 B): the character (0x5c1130 menu / 0x505df0), 0x4c4a60, the 0x5ba660 lookup,
