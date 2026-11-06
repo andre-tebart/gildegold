@@ -24659,33 +24659,38 @@ void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
         }
     }
 }
-/* 0x5725b0, the run of the event 0x90 (the meeting): the states -2 / -1 free (and continue, as in the original); paused -> nothing; the due clock +0x52 = now; the building 0x501190 (1, 1, +0xac) missing -> 0x4c4c60 (-1); state 0 with +0xb8 < 4: 0x572310 (building, +0xb0, +0xb4, +0xb8), due now + 0x1e hours, +0xb8 + 1, 0x4c4c60 (0); else state -1, 0x4fe140 (+0x52, 0x16, 0, 0) and 0x4c4c60 (-1) */
-
+/* 0x5725b0, the run handler of the meeting event 0x90: a stage -2 / -1 frees the event (and continues, as in the
+   original); paused (AIJOB.opts bit 4) -> nothing; the due clock (AIJOB.end) = now; a missing building (HEMEETING.bld,
+   gm_BuildQuery 0x501190) tells the client -1 (cm_SendExSetHE 0x4c4c60); a stage other than 0 does nothing; stage 0 with
+   fewer than 4 rounds holds one (he_SpreadMeetingDisease 0x572310 on the radius / kind / rounds, the due clock + 0x1e
+   minutes, rounds + 1, tells the client 0); else stage -1, the due clock + 0x16 hours and the client -1 */
 void he_RunMeeting(int ev)
 {
-    char *bld;
+    AIJOB *e = (AIJOB *)ev;
+    HEMEETING *p = (HEMEETING *)ev;
+    AIBLD *bld;
 
-    if (HM_I(ev, 0x70) == -2 || HM_I(ev, 0x70) == -1)
+    if (e->stage == -2 || e->stage == -1)
         he_FreeEvent((int *)ev);
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0xac));
+    e->end = ai_Time;
+    bld = (AIBLD *)gm_BuildQuery(1, 1, p->bld);
     if (bld == 0) {
         cm_SendExSetHE(-1, ev);
         return;
     }
-    if (HM_I(ev, 0x70) != 0)
+    if (e->stage != 0)
         return;
-    if (HM_I(ev, 0xb8) < 4) {
-        he_SpreadMeetingDisease((AIBLD *)bld, HM_I(ev, 0xb0), HM_I(ev, 0xb4), HM_I(ev, 0xb8));
-        gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-        HM_I(ev, 0xb8) = HM_I(ev, 0xb8) + 1;
+    if (p->rounds < 4) {
+        he_SpreadMeetingDisease(bld, p->radius, p->kind, p->rounds);
+        gm_AddTime(&e->end, 0, 0x1e, 0);
+        p->rounds = p->rounds + 1;
         cm_SendExSetHE(0, ev);
         return;
     }
-    HM_I(ev, 0x70) = -1;
-    gm_AddTime(ev + 0x52, 0x16, 0, 0);
+    e->stage = -1;
+    gm_AddTime(&e->end, 0x16, 0, 0);
     cm_SendExSetHE(-1, ev);
 }
 /* 0x5726a0, the alloc of the event 0x91: state 0 */
