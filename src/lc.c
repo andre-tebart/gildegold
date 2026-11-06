@@ -406,10 +406,6 @@ extern int sv_FrameBase;
 extern int sv_FrameDepth;
 extern int sv_PopRequest;
 extern char * ai_BTypes;
-extern GAPDATA full_data_62afa0[];
-extern GAPDATA full_data_62afa4[];
-extern GAPDATA full_data_62afa5[];
-extern GAPDATA full_data_62afa8[];
 extern int ai_GameFlags;
 
 extern int sv_PanelFlag;
@@ -10009,22 +10005,22 @@ int ai_IsBuildingOpen(unsigned char *param_1, unsigned int *param_2, unsigned in
     int i;
     unsigned int kind;
 
-    if (U_I((unsigned)&full_data_62afa0) == 0)
+    if (ai_OpeningHours[0].buildingClass == 0)
         return 1;
-    kind = U_I((unsigned)&full_data_62afa0);
+    kind = ai_OpeningHours[0].buildingClass;
     i = 0;
     do {
         if (*(unsigned char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d) == kind) {
             if (param_2 != 0)
-                *param_2 = *(unsigned char *)((unsigned)&full_data_62afa4 + i * 8);
+                *param_2 = ai_OpeningHours[i].open;
             if (param_3 != 0)
-                *param_3 = *(unsigned char *)((unsigned)&full_data_62afa5 + i * 8);
-            if (*(unsigned char *)((unsigned)&full_data_62afa4 + i * 8) <= (unsigned short)U_I((unsigned)&ai_Time.hour) &&
-                (unsigned short)U_I((unsigned)&ai_Time.hour) < *(unsigned char *)((unsigned)&full_data_62afa5 + i * 8))
+                *param_3 = ai_OpeningHours[i].close;
+            if (ai_OpeningHours[i].open <= (unsigned short)U_I((unsigned)&ai_Time.hour) &&
+                (unsigned short)U_I((unsigned)&ai_Time.hour) < ai_OpeningHours[i].close)
                 return 1;
             return 0;
         }
-        kind = U_I((unsigned)&full_data_62afa8 + i * 8);
+        kind = ai_OpeningHours[i + 1].buildingClass;
         i++;
     } while (kind != 0);
     return 1;
@@ -25079,6 +25075,7 @@ extern int * ai_BauplatzList;
 /* ai_TextEinkaufHolz: view of txt_Ptrs (build/mk_txt_views.py) */
 AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_GEFAENGNIS", { 17, 18, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_HANDWERK", { 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28 } }, { "bk_HANDWERK", { 41, 42, 43, 47, 48, 49, 50, 51, 52, 33, 34, 35 } }, { "bk_HANDWERK", { 72, 73, 74, 81, 82, 83, 78, 79, 80, 0, 0, 0 } }, { "bk_KIRCHE_KL", { 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_KIRCHE_GR", { 22, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_RATHAUS", { 36, 37, 38, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_STADTWACHE", { 44, 45, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WIRTSHAUS_GR", { 53, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_KL", { 4, 5, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_GR", { 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_ZUNFTHAUS", { 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67 } }, { "bk_STATUEN", { 84, 85, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_DOMIZIL", { 75, 76, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x62aae8 */
 int ai_BuildGroup = 6;  /* 0x62af98, the building group the construction window shows (1 .. 9, its group buttons) */
+LCOPENHOURS ai_OpeningHours[19] = { { 5, 9, 20 }, { 6, 7, 22 }, { 8, 9, 20 }, { 9, 9, 20 }, { 0xe, 9, 20 }, { 0xf, 6, 22 }, { 0x12, 9, 20 }, { 0x13, 9, 20 }, { 0x14, 9, 20 }, { 0x15, 9, 20 }, { 0x16, 12, 23 }, { 0x17, 7, 22 }, { 0x18, 7, 22 }, { 0x19, 7, 22 }, { 0x1a, 7, 22 }, { 0x20, 9, 20 }, { 0x1f, 9, 20 }, { 0x1d, 9, 20 }, { 0, 0, 0 } };  /* 0x62afa0, the opening hours per building class, ended by class 0 (ai_IsBuildingOpen) */
 char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa) */
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */

@@ -15,6 +15,13 @@ typedef struct AIBUILDNAME {
 } AIBUILDNAME;
 extern AIBUILDNAME ai_BuildNames[0xf];  /* 0x62aae8 */
 extern int ai_BuildGroup;               /* 0x62af98, the building group the construction window shows (1 .. 9) */
+/* 0x62afa0: the opening hours of a building class (AIBTYPE.buildingClass), 8 bytes a row, ended by class 0 */
+typedef struct LCOPENHOURS {
+    int buildingClass;             /* 0x0, the class the row is for */
+    unsigned char open;            /* 0x4, the hour it opens */
+    unsigned char close;           /* 0x5, the hour it closes (open while open <= hour < close) */
+} LCOPENHOURS;
+extern LCOPENHOURS ai_OpeningHours[19]; /* 0x62afa0, ai_IsBuildingOpen's table */
 extern char ai_NewsKeyHS46[20];         /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa): the key "_NACHRICHTEN_HS_46" */
 extern char ai_NewsKeyFriedhof12[28];   /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_12" */
 extern char ai_NewsKeyFriedhof13[28];   /* 0x62c380, the sound of the graveyard work news (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_13" */
