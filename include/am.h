@@ -388,7 +388,7 @@ typedef struct AGARG {                  /* what a decide callback fills for the 
 } AGARG;
 
 typedef struct AGDUEL {                 /* a dice duel between two characters (ai_DuelStart, 0x493200) */
-    int stake;                          /* 0x00, the first throw's stake: gm_PlayerFactor of the player's worth (gm_GetWorth / gm_ConvertMoney, halved per k), paid to the player on a throw of kind 1 and shown as the result (ai_Unk598170 state[0]) */
+    int stake;                          /* 0x00, the first throw's stake: gm_PlayerFactor of the player's worth (gm_GetWorth / gm_ConvertMoney, halved per k), paid to the player on a throw of kind 1 and shown as the result (ai_TavernDiceWindow state[0]) */
     int raiseAmount;                    /* 0x04, a tenth of the stake, paid on the throws of kind 2 / 3 */
     int phase;                          /* 0x08 */
     AGCH *side1;                        /* 0x0c */
@@ -405,7 +405,7 @@ typedef struct AGDUEL {                 /* a dice duel between two characters (a
     unsigned char t2[0x10];             /* 0x3c */
     int kind2;                          /* 0x4c, as kind1 */
     int reserved50;                     /* 0x50, as reserved2c */
-    int total;                          /* 0x54, the stakes paid so far; the winner is paid it (ai_Unk598170) */
+    int total;                          /* 0x54, the stakes paid so far; the winner is paid it (ai_TavernDiceWindow) */
 } AGDUEL;
 #pragma pack(pop)
 

@@ -175,7 +175,8 @@ typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a char
     int upgradeSpent;                   /* 0x40, the money the record has paid for workshop upgrades (ai_BuyUpgrade) */
     int renovationSpent;                /* 0x44, the money it has paid for renovations (ai_BuyUpgrade, am.c 0x497ee0) */
     char pad48[0x10];
-    float roundFactors[3];              /* 0x58, set to 0.5, 1, 1 at every round change (main.c 0x5384e0); their reader is not known yet */
+    float roundFactors[3];              /* 0x58, set to 0.5, 1, 1 at every round change (main.c 0x5384e0); [0] the bias for who starts a dice duel
+                                           (ai_DuelStart, am.h AGFIN.firstBias), [1] the chance of a tavern dice invitation (ai_TavernDiceWindow) */
     char pad64[8];
     int officeSentences;                /* 0x6c, the sentences 4 / 6 / 8 its character passed as the judge of a trial on an
                                            office holder (cm.c 0x4db700) */

@@ -7217,144 +7217,268 @@ void ai_DrawDuelEnd(LCDUEL *duel, int win)
 }
 
 int gm_GetWorth(unsigned short id); int gm_ConvertMoney(int a, unsigned char k); short * gm_PlayerRecord(char *c); int ai_DuelStart();
-int ai_DuelAct(); void ai_DuelNextPhase(struct AGDUEL *d); int ai_DuelOpponentAction(); int ai_DuelAcceptAction();
+int ai_DuelAct(); void ai_DuelNextPhase(); int ai_DuelOpponentAction(); int ai_DuelAcceptAction();
 
-/* 0x598170, the tavern dice game window (2566 B, ROUGH SKELETON from the Ghidra pseudocode): the player's
-   record 0x770b80 + player * 0x21c, the dice state local_378[0x15]; the money 0x50a640 / 0x5085b0, the
-   character 0x506430; the intro window "locations\wirtshaus\WSIntro" (0x62b7c8) with 0x52ea30 / 0x475f70 /
-   0x476f80, the texts 0x515960 (0x1874 .. 0x1882), the odds 0x42ec20 against the record +0x5c and the day/hour
-   0x770ae4 / the money; the buttons 0x475b80; the game window "locations\wirtshaus\WS" (0x62b7b0) with the dice
-   driver 0x597a10 and 0x4937a0 / 0x493a40 / 0x493890 / 0x493390 (the dice sets), 0x597e70 (the display),
-   0x4c4830 (the result), 0x475590 / 0x5976a0 (the rules); the selection reads 0xf8a668 / 0x5fe710; the pumps
-   0x5309a0 (this, 0x677c7 / 0x777c7); the exit 0x4758f0 / 0x52d7a0 */
-void ai_Unk598170(int param_1)
+typedef struct LCFIN {                  /* what gm_PlayerRecord finds for a character (ai.h AIFIN; ai.h cannot be included here yet) */
+    char pad00[0x58];
+    float duelBias;                     /* 0x58, AIFIN.roundFactors[0]: the bias for who starts a dice duel (am.h AGFIN.firstBias) */
+    float tavernChance;                 /* 0x5c, AIFIN.roundFactors[1]: the chance of being invited to the dice game; each visit
+                                           takes it to * 0.66 - 0.1 (invited) or * 0.66 - 0.02 (not invited, after 11 o'clock) */
+} LCFIN;
+typedef struct LCDUELBTN {              /* an action button of the dice game window */
+    int obj;                            /* 0x000, its window object, -1 while the action is not allowed (ai_DuelAcceptAction) */
+    int kind;                           /* 0x004, the action: 2 another die, 3 stop, 4 answer (AGDUEL.kind1) */
+    int unused;                         /* 0x008, set to 0, never read */
+    char text[0x100];                   /* 0x00c, its caption (0x1880 / 0x1881 with the raise amount, 0x1882) */
+} LCDUELBTN;
+/* 0x598170, the tavern dice game window: the intro window "locations\wirtshaus\WSIntro" invites the player when
+   util_RandomF() is below the character's LCFIN.tavernChance, after 11 o'clock and with a worth of at least 10000
+   (0x1876, the buttons rules 0x1877 / play 0x1878 / leave 0x1879; else 0x1875), lowering the chance each visit;
+   playing picks the stake (0x187a / 0x187b / 0x187c: 1, 2, 4, ai_DuelStart) and shows it (0x187e when the player
+   throws first, else 0x187d), then the game window "locations\wirtshaus\WS": both sides throw (ai_DuelAct,
+   ai_DuelNextPhase, shown by ai_DuelDiceAnimation, the player's side in frame 3, the opponent's in frame 2), then
+   the player picks an action button (frame 4, the ones ai_DuelAcceptAction allows) and the opponent answers
+   (ai_DuelOpponentAction) until the duel ends (phase 5 / 6); ai_DrawDuelEnd shows the end and the player gets
+   the total when he won (cm_SendMoveGoodsUnchecked). It leaves as soon as the player's character is dead.
+   bld, the tavern building the room listener 0x599af0 passes, is not read */
+
+void ai_TavernDiceWindow(int bld)
 {
-    unsigned int player;
-    int win;
-    int rec;
+    AICHARREC *pc = (AICHARREC *)ai_Chars[ai_PlayerId];
+    LCFIN *fin;
+    LCDUELSIDE *mine;
+    LCDUELSIDE *other;
     int money;
-    int day;
-    int b;
+    int win;
+    int leave;
+    int ctlRules;
+    int ctlPlay;
+    int ctlLeave;
+    int first;
+    int done;
+    int refresh;
+    int k;
     int i;
-    int ok;
-    int quit;
-    int state[0x15];
-    int ctl[3];
-    unsigned short *sets[7];
-    char text[0x100];
+    LCDUEL duel = {0};
 
-    player = U_W((unsigned)&ai_PlayerId);
-    memset(state, 0, sizeof(state));
-    rec = gm_PlayerRecord((void *)((unsigned)&ai_Chars + player * 0x21c));   /* ai_Chars = 0x770b80, 0x21c per character (0x5981a5: 540 * player + 0x770b80) */
-    money = ((int (*)(int))gm_ConvertMoney)(gm_GetWorth(U_W((unsigned)&ai_PlayerId)));
+    leave = 1;
+    ctlPlay = -1;
+    ctlLeave = -1;
+    ctlRules = -1;
+    money = gm_ConvertMoney(gm_GetWorth(ai_PlayerId), ai_OwnPlayer);
+    fin = (LCFIN *)gm_PlayerRecord((char *)pc);
     win = d2_OpenForm(0, 0, "locations\\wirtshaus\\WSIntro");
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     d2_SetPointerSprite(0, 0);
-    io_PrintText(0x1874);
-    if (*(float *)(rec + 0x5c) <= (float)util_RandomF() || (unsigned short)U_I((unsigned)&ai_Time.hour) < 0xc ||
-        money < 10000) {
+    io_PrintText((char *)0x1874);
+    if (util_RandomF() < fin->tavernChance && ai_Time.hour > 0xb && money >= 10000) {
         d2_SetForm(win, 2);
-        io_PrintText(0x1875);
-        if ((unsigned short)U_I((unsigned)&ai_Time.hour) > 0xb)
-            *(float *)(rec + 0x5c) = *(float *)(rec + 0x5c) * 0.66f - 0.02f;
+        io_PrintText((char *)0x1876);
+        d2_SetForm(win, 3);
+        ctlRules = d2_GetWinObj(win, 3, io_PrintText((char *)0x1877));
+        ctlPlay = d2_GetWinObj(win, 3, io_PrintText((char *)0x1878));
+        ctlLeave = d2_GetWinObj(win, 3, io_PrintText((char *)0x1879));
+        fin->tavernChance = fin->tavernChance * 0.66f - 0.1f;
     } else {
         d2_SetForm(win, 2);
-        io_PrintText(0x1876);
-        d2_SetForm(win, 3);
-        ctl[0] = d2_GetWinObj(win, 3, io_PrintText(0x1877));
-        ctl[1] = d2_GetWinObj(win, 3, io_PrintText(0x1878));
-        ctl[2] = d2_GetWinObj(win, 3, io_PrintText(0x1879));
-        *(float *)(rec + 0x5c) = *(float *)(rec + 0x5c) * 0.66f - 0.1f;
+        io_PrintText((char *)0x1875);
+        leave = 1;
+        if (ai_Time.hour > 0xb)
+            fin->tavernChance = fin->tavernChance * 0.66f - 0.02f;
     }
-    quit = 0;
-    U_I((unsigned)&d2_ClickedId) = -1;
-    while (sv_RunFrame(ai_Unk598170, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == ctl[2]) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    quit = 0;
-                } else if (U_I((unsigned)&d2_PointerObj) == ctl[1]) {
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    quit = 1;
-                } else if (U_I((unsigned)&d2_PointerObj) == ctl[0]) {
-                    d2_SetViewEnabled(win, 0);
-                    ai_TavernRulesWindow();
-                    d2_SetViewEnabled(win, 1);
-                }
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+            leave = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ctlLeave) {
+                sv_PopRequest = 1;
+                leave = 1;
+            } else if (d2_PointerObj == ctlPlay) {
+                sv_PopRequest = 1;
+                leave = 0;
+            } else if (d2_PointerObj == ctlRules) {
+                d2_SetViewEnabled(win, 0);
+                ai_TavernRulesWindow();
+                d2_SetViewEnabled(win, 1);
             }
+        }
+    } while (sv_RunFrame((int)ai_TavernDiceWindow, 0x677c7) != 0);
+    if (leave != 0 || ((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+        goto close;
+
+    /* the stake */
+    d2_SetForm(win, 3);
+    io_PrintText("$C");
+    ctlRules = d2_GetWinObj(win, 3, io_PrintText((char *)0x187a));
+    ctlPlay = d2_GetWinObj(win, 3, io_PrintText((char *)0x187b));
+    ctlLeave = d2_GetWinObj(win, 3, io_PrintText((char *)0x187c));
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            k = 1;
+            if (d2_PointerObj == ctlRules)
+                k = 1;
+            else if (d2_PointerObj == ctlPlay)
+                k = 2;
+            else if (d2_PointerObj == ctlLeave)
+                k = 4;
+            ai_DuelStart(pc, &duel, k);
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_TavernDiceWindow, 0x777c7) != 0);
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+        goto close;
+    d2_SetForm(win, 2);
+    io_PrintText("$C");
+    if (duel.side1.ch == pc)
+        io_PrintText((char *)0x187e, duel.stake);
+    else
+        io_PrintText((char *)0x187d, duel.stake);
+    d2_SetForm(win, 3);
+    io_PrintText("$C");
+    io_PrintText((char *)0x187f);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId == 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_TavernDiceWindow, 0x777c7) != 0);
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+        goto close;
+    d2_CloseView(win);
+
+    /* the game */
+    {
+        LCDUELBTN btn[3] = {{-1, 2, 0, {0}}, {-1, 3, 0, {0}}, {-1, 4, 0, {0}}};
+
+        refresh = 1;
+        txt_Format(btn[0].text, 0x1880, duel.raiseAmount);
+        txt_Format(btn[1].text, 0x1881, duel.raiseAmount);
+        txt_Format(btn[2].text, 0x1882);
+        if (pc == duel.side1.ch) {
+            mine = &duel.side1;
+            other = &duel.side2;
+            first = 1;
         } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
-            quit = 0;
+            other = &duel.side1;
+            mine = &duel.side2;
+            first = 0;
         }
-    }
-    if (quit == 0 && *(char *)(((unsigned)&ai_CharInts + 0x4) + player * 0x21c) != 0) {
-        /* ROUGH: the stakes 0x187a / 0x187b / 0x187c, 0x493200 (the player's record, the state, the stake
-           1 / 2 / 4), the result text 0x187d / 0x187e with the state's first word, the shell texts 0x187f, and
-           the two game panes (0x5176d0 0x1880 / 0x1881 / 0x1882, the dice sets apuStack_370 / apuStack_34c):
-           the window "locations\wirtshaus\WS", 0x597a10 (mode 1, 0x96 / 0x14), 0x4937a0 / 0x493a40 (the
-           throws), 0x493890 (the result), 0x493390 (the offers), 0x597e70 (the display), 0x4c4830 (the
-           payout of the character) and the final pump loop until 0x14673a0 */
-        d2_SetForm(win, 3);
-        io_PrintText((char *)(unsigned)"$C");
-        i = d2_GetWinObj(win, 3, io_PrintText(0x187a));
-        b = d2_GetWinObj(win, 3, io_PrintText(0x187b));
-        U_I((unsigned)&d2_ClickedId) = -1;
-        do {
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                i = 1;
-                if (U_I((unsigned)&d2_PointerObj) == b)
-                    i = 2;
-                ai_DuelStart((void *)((unsigned)&ai_Chars + player * 0x21c), state, i);
-                U_I((unsigned)&sv_PopRequest) = 1;
+        win = d2_OpenForm(0, 0, "locations\\wirtshaus\\WS");
+        d2_SetForm(win, 0);
+        sv_FitForm(d2_LastWindow);
+        d2_CentreViewWindows(win);
+        d2_SetForm(win, 1);
+        d2_SetPointerSprite(0, 0);
+        io_PrintText((char *)0x1874);
+        duel.kind1 = 0;
+        duel.kind2 = 0;
+
+        /* side1's first throw */
+        if (first)
+            ai_DuelDiceAnimation(&duel, mine, 1, win, 3, 0x96, 0);
+        else
+            ai_DuelDiceAnimation(&duel, other, 1, win, 2, 0x96, 0);
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+            goto close;
+        ai_DuelAct(&duel, duel.side1.ch, 1);
+        ai_DuelNextPhase(&duel);
+        if (first)
+            ai_DuelDiceAnimation(&duel, mine, 1, win, 3, 0x14, 1);
+        else
+            ai_DuelDiceAnimation(&duel, other, 1, win, 2, 0x14, 1);
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+            goto close;
+
+        /* side2's first throw */
+        if (first)
+            ai_DuelDiceAnimation(&duel, other, 1, win, 2, 0x96, 0);
+        else
+            ai_DuelDiceAnimation(&duel, mine, 1, win, 3, 0x96, 0);
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+            goto close;
+        ai_DuelAct(&duel, duel.side2.ch, 1);
+        ai_DuelNextPhase(&duel);
+        if (first)
+            ai_DuelDiceAnimation(&duel, other, 1, win, 2, 0x14, 1);
+        else
+            ai_DuelDiceAnimation(&duel, mine, 1, win, 3, 0x14, 1);
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+            goto close;
+
+        if (duel.phase != 5 && duel.phase != 6) {
+            if (!first) {
+                /* the opponent acts first */
+                k = ai_DuelOpponentAction(&duel, other->ch);
+                ai_DuelDiceAnimation(&duel, other, k, win, 2, 0x96, 0);
+                if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+                    goto close;
+                ai_DuelAct(&duel, other->ch, k);
+                ai_DuelNextPhase(&duel);
+                ai_DuelDiceAnimation(&duel, other, k, win, 2, 0x14, 1);
+                if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+                    goto close;
             }
-            money = sv_RunFrame(ai_Unk598170, 0x777c7);
-        } while (money != 0);
-        d2_SetForm(win, 2);
-        io_PrintText((char *)(unsigned)"$C");
-        /* ROUGH: 0x187e when the first dice set is the player's own record, 0x187d otherwise */
-        io_PrintText(0x187d, state[0]);
-        d2_SetForm(win, 3);
-        io_PrintText((char *)(unsigned)"$C");
-        io_PrintText(0x187f);
-        U_I((unsigned)&d2_ClickedId) = -1;
-        do {
-            if (U_I((unsigned)&d2_ClickedId) == 0)
-                U_I((unsigned)&sv_PopRequest) = 1;
-            money = sv_RunFrame(ai_Unk598170, 0x777c7);
-        } while (money != 0);
-        if (*(char *)(((unsigned)&ai_CharInts + 0x4) + player * 0x21c) != 0) {
-            d2_CloseView(win);
-            memset(sets, 0, sizeof(sets));
-            txt_Format(text, 0x1880, state[0]);
-            win = d2_OpenForm(0, 0, "locations\\wirtshaus\\WS");
-            d2_SetForm(win, 0);
-            sv_FitForm(U_I((unsigned)&d2_LastWindow));
-            d2_CentreViewWindows(win);
-            d2_SetForm(win, 1);
-            d2_SetPointerSprite(0, 0);
-            io_PrintText(0x1874);
-            ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 2, 0x96, 0);
-            if (*(char *)(((unsigned)&ai_CharInts + 0x4) + player * 0x21c) != 0) {
-                ai_DuelAct(state, sets[0], 1);
-                ai_DuelNextPhase(state);
-                ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 2, 0x14, 1);
-                ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 3, 0x96, 0);
-                ai_DuelAct(state, sets[0], 1);
-                ai_DuelNextPhase(state);
-                ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 3, 0x14, 1);
-                ai_DrawDuelEnd((LCDUEL *)state, win);
-                cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + player * 0x87), 0xffffffff, 0, 0);
-                while (sv_RunFrame(ai_Unk598170, 0x777c7) != 0) {
-                    if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-                        U_I((unsigned)&sv_PopRequest) = 1;
+            done = 0;
+            d2_ClickedId = -1;
+            do {
+                if (done) {
+                    sv_PopRequest = 1;
+                } else if (refresh) {
+                    refresh = 0;
+                    d2_SetForm(win, 4);
+                    d2_RemoveWindowObjects(d2_LastWindow, 1);
+                    io_PrintText("$C");
+                    for (i = 0; i < 3; i++) {
+                        if (ai_DuelAcceptAction(&duel, pc, btn[i].kind))
+                            btn[i].obj = d2_GetWinObj(win, 4, io_PrintText(btn[i].text));
+                        else
+                            btn[i].obj = -1;
+                    }
+                } else if (d2_ClickedId != -1) {
+                    for (i = 0; i < 3; i++) {
+                        if (d2_PointerObj == btn[i].obj) {
+                            /* the player's action, then the opponent's answer */
+                            refresh = 1;
+                            d2_SetForm(win, 4);
+                            io_PrintText("$C");
+                            d2_RemoveWindowObjects(d2_LastWindow, 1);
+                            ai_DuelDiceAnimation(&duel, mine, btn[i].kind, win, 3, 0x96, 0);
+                            ai_DuelAct(&duel, pc, btn[i].kind);
+                            ai_DuelNextPhase(&duel);
+                            ai_DuelDiceAnimation(&duel, mine, btn[i].kind, win, 3, 0x14, 1);
+                            if (duel.phase != 5 && duel.phase != 6) {
+                                k = ai_DuelOpponentAction(&duel, other->ch);
+                                ai_DuelDiceAnimation(&duel, other, k, win, 2, 0x96, 0);
+                                ai_DuelAct(&duel, other->ch, k);
+                                ai_DuelNextPhase(&duel);
+                                ai_DuelDiceAnimation(&duel, other, k, win, 2, 0x14, 1);
+                                if (duel.phase == 5 || duel.phase == 6)
+                                    done = 1;
+                            } else {
+                                done = 1;
+                            }
+                            break;
+                        }
+                    }
                 }
-            }
+            } while (sv_RunFrame((int)ai_TavernDiceWindow, 0x777c7) != 0);
         }
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+            goto close;
+        ai_DrawDuelEnd(&duel, win);
+        if ((duel.phase == 5 && pc == duel.side1.ch) || (duel.phase == 6 && pc == duel.side2.ch))
+            cm_SendMoveGoodsUnchecked(pc->netId, -1, 0, duel.total);
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_TavernDiceWindow, 0x777c7) != 0);
     }
+close:
     d2_CloseView(win);
     sv_CameraFollow();
 }
@@ -7869,7 +7993,7 @@ void ai_Unk599af0(int param_1, int param_2)
         p3 = sv_RegisterNamePlate("ob_DUNKLE_ECKE", U_I((unsigned)&full_data_144046c), 0x16);
         if (U_I((unsigned)&ai_ClickedObject) != 0) {
             if (U_I((unsigned)&ai_ClickedObject) == p1)
-                ai_Unk598170(param_1);
+                ai_TavernDiceWindow(param_1);
             else if (U_I((unsigned)&ai_ClickedObject) == p2)
                 ai_OpenStammtisch(param_1, param_2);
             else if (U_I((unsigned)&ai_ClickedObject) == p3)
