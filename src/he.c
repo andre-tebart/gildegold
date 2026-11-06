@@ -24008,18 +24008,23 @@ int he_NoEvent88Pair(AICHAR *a, AICHAR *b)
     }
     return 1;
 }
-/* 0x570ef0, the alloc of the event 0x8c: the building 0x501190 (1, 1, ev + 0x10), the group 0x4ffe90 (building +0x5d, 2, 0, 0xfd, 6); each of the four characters +0x8c .. registered (0x524260); none -> free; else +0xb0 = 0, the start clock +0xb8 = now, +0xb4 = 0x168, the due clock now + 5 hours, state 0 */
-
+/* 0x570ef0, the alloc of the master's production job 0x8c: the building (gm_BuildQuery 0x501190 on AIJOB.from), its
+   object list (gm_Query 0x4ffe90, key 0xfd), and each of the four workers (AIJOB.ids[0..3], gm_FindChar) registered
+   in the group (sv_MoveToGroup 0x524260); none -> the event is freed. Else the job starts: made 0, the counted-up
+   clock since = now, 0x168 working minutes left, the due clock (AIJOB.end) = now + 5 minutes, stage 0 */
 void he_AllocMasterWork(int ev)
 {
-    int bld = gm_BuildQuery(1, 1, HM_I(ev, 0x10));
-    int grp = gm_Query(HM_I(bld, 0x5d), 2, 0, 0xfd, 6);
-    int i, n = 0, r;
+    AIJOB *e = (AIJOB *)ev;
+    HEMASTERWORK *p = (HEMASTERWORK *)ev;
+    AIBLD *bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+    short *grp = (short *)gm_Query((void *)bld->objList, 2, 0, 0xfd, 6);
+    int i, n = 0;
+    AICHAR *w;
 
     for (i = 0; i < 4; i++) {
-        r = gm_FindChar(HM_I(ev, 0x8c + i * 4));
-        if (r != 0) {
-            sv_MoveToGroup(bld, grp, *(unsigned short *)r, ev);
+        w = (AICHAR *)gm_FindChar(e->ids[i]);
+        if (w != 0) {
+            sv_MoveToGroup((unsigned char *)bld, grp, w->id, (char *)ev);
             n++;
         }
     }
@@ -24027,12 +24032,12 @@ void he_AllocMasterWork(int ev)
         he_FreeEvent((int *)ev);
         return;
     }
-    HM_I(ev, 0xb0) = 0;
-    *(AITIME *)(ev + 0xb8) = ai_Time;
-    HM_I(ev, 0xb4) = 0x168;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    HM_I(ev, 0x70) = 0;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
+    p->made = 0.0f;
+    p->since = ai_Time;
+    p->left = 0x168;
+    e->end = ai_Time;
+    e->stage = 0;
+    gm_AddTime(&e->end, 0, 5, 0);
 }
 /* 0x571000, the run handler of a master's production job 0x8c (alloc he_Unk570ef0; ai.c's master step posts it
    for a graveyard 0x1d or a gypsy camp 0x1f): outside the working hours of the season (gm_DayStartHours ..
