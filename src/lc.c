@@ -7825,111 +7825,130 @@ void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
     } while (sv_RunFrame((int)ai_DarkCornerMenu, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5996b0, the dark-corner buying screen of another table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
-   as 0x5992c0 with the three offers param_2 + 0x1c (the record 0x4f4d30), the rows and the texts 0x18a3 / 0x18a5
-   / 0x18a6 (0x5be1d0 / 0x5be3b0 / 0x5bd1f0); the click on a row buys (0x521040, the "buy_dunkle_ecke"
-   message 0x4c4540 / 0x4c5d40 / 0x4c4ed0 / 0x4c4830 / 0x4c4580); without an offer the text
-   0x62b83c ("Diese Information steht nicht ...") goes to 0x521150; the pump 0x5309a0 (0x5992c0, 0x677c7); the
-   exit 0x4758f0 */
+/* 0x5996b0, the dark-corner buying screen of another player's tavern, "locations\Wirtshaus\DUNKLEECKE": the
+   corner's three evidence offers drawn as in ai_DarkCornerMenu (the amount rows, 0x18a5 / 0x18a6); a click on an
+   offer's row buys it while it is still among the corner's offers and the player can pay (sv_CheckGoodAmount):
+   in the group "buy dunkle ecke" the script message 0x53 {'buy ', the player, the building, the offer, the
+   price} (cm_SendScriptMessage), the proof message (cm_SendProofExecuted) and the price paid to the owner
+   (cm_SendMoveGoodsUnchecked). The frames are pumped with ai_DarkCornerMenu's callback
+   @deep Reconstructed whole from the original (as ai_DarkCornerMenu: the three gv_EvidencePrice offers,
+   the rows, the y-controlled draw loop; the click finds the row by its ctl[0], checks the offer is still
+   in corner->recs and sv_CheckGoodAmount, then the group 'buy dunkle ecke' with the script message {'buy
+   ', player, building, offer, price}, cm_SendProofExecuted and the payment to the owner; the 'nicht mehr
+   zum verkauf' box behind the original's sel == 3 test). Left: allocation and frame layout only: the
+   original keeps 0 in ebx through the head (push ebx, vals = ebx), ours in edi after rep stosd; ours
+   hoists the cur[i] load above the gv_EvidencePrice test ('mov ecx,[esp+esi+0x28]'), the original loads it
+   in each branch; the original keeps x in ebp and half in [esp+0x10], ours the reverse; sel in ebp
+   ('[esp+ebp*4+0x14]') vs ours edi with 'lea edx,[eax*4]'; ai_OwnPlayer via cl vs al; the slots of cur /
+   vals / price / who differ (VC6 does not lay locals by declaration order: five orders tried on
+   ai_DarkCornerMenu, no change). Tried: price kept apart from the address-taken price local (fixed the
+   esi/price spill) */
 
-void ai_DarkCornerBuy(int param_1, int param_2)
+void ai_DarkCornerBuy(AIBLD *bld, AIOBJ *corner)
 {
-    int slots[3];
-    int vals[3];
-    int items[0x2a];
-    int win;
     int changed;
-    int i;
-    int r;
-    int x;
-    int y;
-    int w;
-    int offer;
-    int buf;
-    int *p;
-    int a[3];
+    int cur[3];
+    int win;
+    int vals[3];
+    int price;
+    unsigned short who;
+    int req[5];
+    unsigned int law[3];
+    LCAMOUNTROW rows[3];
     char text[0x200];
+    int i;
+    int y;
+    int half;
+    int x;
+    int sel;
+    int id;
+    int cost;
 
-    memset(items, 0, 0xa8);
-    slots[0] = -1;
-    slots[1] = -1;
-    slots[2] = -1;
+    cur[0] = -1;
+    cur[1] = -1;
+    cur[2] = -1;
+    memset(rows, 0, sizeof(rows));
     vals[0] = 0;
     vals[1] = 0;
     vals[2] = 0;
     win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\DUNKLEECKE");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
-    memset(items, 0, 0xa8);
+    memset(rows, 0, sizeof(rows));
     changed = 1;
-    while (sv_RunFrame(ai_DarkCornerMenu, 0x677c7) != 0) {
+    do {
         for (i = 0; i < 3; i++) {
-            r = gv_EvidencePrice(*(int *)(param_2 + 0x1c + i * 4),
-                             (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
-                             &vals[i], &x, &y);
-            if (r == 0) {
-                if (slots[i] != -1) {
+            if (gv_EvidencePrice(corner->recs[i], ai_Chars[bld->owner], &price, &who, &law[i]) != 0) {
+                if (cur[i] != corner->recs[i])
                     changed = 1;
-                    items[i * 0xe] = 0;
-                    slots[i] = -1;
-                    vals[i] = 0;
-                }
-            } else {
-                if (slots[i] != *(int *)(param_2 + 0x1c + i * 4))
-                    changed = 1;
-                slots[i] = *(int *)(param_2 + 0x1c + i * 4);
-                items[i * 0xe] = (unsigned)&ai_Chars + (x & 0xffff) * 0x21c;
+                cur[i] = corner->recs[i];
+                vals[i] = price;
+                rows[i].rec = (AICHARREC *)ai_Chars[who];
+            } else if (cur[i] != -1) {
+                changed = 1;
+                rows[i].rec = 0;
+                cur[i] = -1;
+                vals[i] = 0;
             }
         }
         if (changed) {
             d2_SetForm(win, 1);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            io_PrintText(0x18a3);
-            y = 0x46;
-            w = (int)d2_LastWindowPtr->w / 2;
-            x = (w - *(short *)((unsigned)&he_Events + 0x119b0)) - 0x28;
-            for (i = 0; i < 3; i++) {
-                p = items + i * 0xe;
-                p[4] = x;
-                p[5] = y - 0x1e;
-                p[0xc] = (*p != 0);
-                ai_AmountRowStatus(p);
-                ai_AmountRow(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
-                if (slots[i] == -1)
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            io_PrintText((char *)0x18a3);
+            half = d2_LastWindowPtr->w / 2;
+            x = half - d2_Pics[0x5da].w - 0x28;
+            for (i = 0, y = 0x46; y < 0x46 + 3 * 0x69; i++, y += 0x69) {
+                rows[i].x = x;
+                rows[i].y = y - 0x1e;
+                rows[i].x30 = rows[i].rec != 0;
+                ai_AmountRowStatus(&rows[i]);
+                ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
+                if (cur[i] == -1)
                     txt_Format(text, 0x18a6);
                 else
-                    txt_Format(text, 0x18a5, vals[i] * 5 + 0x13fd, vals[i]);
-                ai_LeftAlignedText(text, w, y, 0xf0, 0x54);
-                y += 0x69;
+                    txt_Format(text, 0x18a5, law[i] * 5 + 0x13fd, vals[i]);
+                ai_LeftAlignedText(text, half, y, 0xf0, 0x54);
             }
             changed = 0;
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            offer = -1;
+        if (d2_ClickedId != -1) {
+            sel = -1;
             for (i = 0; i < 3; i++) {
-                if (U_I((unsigned)&d2_PointerObj) == items[i * 0xe + 4]) {
-                    offer = i;
+                if (d2_PointerObj == rows[i].ctl[0]) {
+                    sel = i;
                     break;
                 }
             }
-            if (offer >= 0) {
+            if (sel != -1) {
+                id = cur[sel];
                 for (i = 0; i < 3; i++) {
-                    if (*(int *)(param_2 + 0x1c + i * 4) == slots[offer]) {
-                        /* ROUGH: the buy -- 0x521040 (the character, the value, 0x6f1bc5), the
-                           "buy_dunkle_ecke" message (0x4c4540 / 0x4c5d40 / 0x4c4ed0 / 0x4c4830 /
-                           0x4c4580) with the goods, the seller and the value */
+                    if (corner->recs[i] == id) {
+                        cost = vals[sel];
+                        if (sv_CheckGoodAmount(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
+                            req[0] = 0x62757920;    /* 'buy ' */
+                            req[1] = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                            req[2] = bld->id;
+                            req[3] = id;
+                            req[4] = cost;
+                            cm_BeginGroup("buy dunkle ecke");
+                            cm_SendScriptMessage(req);
+                            cm_SendProofExecuted(id, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId);
+                            cm_SendMoveGoodsUnchecked(((AICHARREC *)ai_Chars)[bld->owner].netId,
+                                                      ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, 0, cost);
+                            cm_EndGroup("buy dunkle ecke");
+                        }
                         break;
                     }
                 }
-            } else {
-                sv_MessageBox("_Z_NDiese_Information_steht_nicht_zur_Verfuegung", 0);
+                if (sel == 3)   /* never true (sel < 3 here); the original tests sel, not i */
+                    sv_MessageBox("$Z$NDiese Information steht nicht mehr zum verkauf!", 0);
             }
-        } else if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        } else if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
         }
-    }
+    } while (sv_RunFrame((int)ai_DarkCornerMenu, 0x677c7) != 0);
     d2_CloseView(win);
 }
 /* 0x599aa0, opens the dark corner of a table (79 B): the table's record (0x4ffe90 (room->list, 1, 0, 300));
