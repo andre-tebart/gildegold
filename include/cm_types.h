@@ -253,6 +253,13 @@ typedef struct G17SETFIELDMSG {         /* 0x14 bytes, the data of message 0x19 
     int clear;                          /* 0x10, the bits cleared */
 } G17SETFIELDMSG;
 
+typedef struct G17FLOATDELTAMSG {       /* 12 bytes, the data of message 0x1a (cm_SendFloatDelta, its handler
+                                           0x4c81d0 ai_Unk4c81d0 adds delta to the field) */
+    int id;                             /* 0x00, the character's netId */
+    int field;                          /* 0x04, the float field's offset in the character record */
+    float delta;                        /* 0x08, added to it */
+} G17FLOATDELTAMSG;
+
 typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
     int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
     AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
@@ -518,6 +525,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17REMOVEGOODSMSG removeGoods;  /* 0x10, message 0x14 */
         G17FIELDS fields;               /* 0x10, messages 0x16 / 0x17 / 0x18 */
         G17SETFIELDMSG setField;        /* 0x10, message 0x19 */
+        G17FLOATDELTAMSG floatDelta;    /* 0x10, message 0x1a */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */

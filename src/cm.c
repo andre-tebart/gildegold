@@ -1327,10 +1327,10 @@ void cm_SendFloatDelta(int id, int field, float delta)
 {
     G17MSG m;
 
-    G17_I(m, 0) = id;
+    m.floatDelta.id = id;
     m.type = 0x1a;
-    G17_I(m, 4) = field;
-    *(float *)&m.data[8] = delta;
+    m.floatDelta.field = field;
+    m.floatDelta.delta = delta;
     cm_QueueSend(&m);
 }
 /* 0x4c4b00, sends message 0x1b: the relation of the character a to b changes by c (d: 0 / 1 / 2, the callers' kind of change), with the difficulty values; returns the send slot (cm_QueueSend) */
