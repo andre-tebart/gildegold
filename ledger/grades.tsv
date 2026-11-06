@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
+exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at fa53acfc: ai_types.h AIOBJ gains the dark-corner member cornerYear (+0x28 of the kind-300 corner object, read by ai_DarkCornerMenu against ai_Time.year) instead of a raw offset in lc: a truer shared type. ord_CountGridObjects reads no AIOBJ at all; its @deep shape flips on unrelated declarations in ai_types.h (the lc lead comment already notes that any union member there moves it), so the match is no evidence of the original's source [waits for: match-deep on its count-clear induction variable / allocation, or the declaration set of ord's includes (ai_types.h via gv.h)]
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		

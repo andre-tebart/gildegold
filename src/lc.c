@@ -7707,118 +7707,122 @@ void ai_OpenStammtisch(AIBLD *bld, AIOBJ *room)
 
 int gv_EvidencePrice(); void ai_LeftAlignedText(); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
-/* 0x5992c0, the dark-corner menu of the player's own table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
-   the window "locations\Wirtshaus_DUNKLEECKE" (0x4741f0 / 0x475600 / 0x475f70 (0) / 0x52ea30 / 0x476f80); the
-   three offers param_3 + 0x1c (0x4f4d30 with the character record 0x770b80 + player * 0x21c, the value local,
-   the goods and the slot), each drawn as a record of 0xe ints by 0x5be1d0 / 0x5be3b0 with the text 0x5176d0
-   (0x18a5 the goods * 5 + 0x13fd / 0x18a6 empty) and 0x5bd1f0; the buy button 0x18a7 / 0x18a8; the click builds
-   the message (type 0x74, the character, the building, the clock 0x770ae0 ..) through 0x4c4b70 and sets
-   0x6f22a0; the pump 0x5309a0 (this, 0x677c7); the exit 0x4758f0 */
-void ai_DarkCornerMenu(int param_1, int param_2, int param_3)
-{
-    int slots[3];
-    int vals[3];
-    int items[0x2a];
-    int win;
-    int changed;
-    int i;
-    int r;
-    int x;
-    int y;
-    int w;
-    int ctl;
-    int b;
-    int *p;
-    char text[0x200];
-    unsigned char msg[0xf8];
+/* 0x5992c0, the dark-corner menu of the player's own tavern, "locations\Wirtshaus\DUNKLEECKE": per frame the
+   corner's three evidence offers (corner->recs, gv_EvidencePrice with the building owner as the seller) fill the
+   amount rows with the culprits; on a change frame 1 shows 0x18a3 and per offer its row and its text (0x18a5 with
+   the law's name 0x13fd + law * 5 and the price, 0x18a6 for none), and frame 2 shows 0x18a8 while an order 0x74
+   of this building runs (he_FindEvent), else the order button 0x18a7 once corner->cornerYear is past. A click on
+   it sends the order message 0x74 (the player, the building, the clock, the room); the right button leaves
+   @deep Reconstructed whole from the original (the three gv_EvidencePrice offers with cur/vals/law, the
+   rows LCAMOUNTROW, the y-controlled draw loop to 0x181, the order-0x74 event check via AIJOB.id2,
+   AIOBJ.cornerYear vs ai_Time.year, the AIMSG 0x74 with D3_ZERO, time copy, arg[1]/arg[2]). Left: frame
+   layout and allocation only: the original lays the arrays cur -0x18 / vals -0x28 / law -0x40 and price
+   -0x2c / who -0x30 / D3_ZERO's _zn -0x34 _zp -0x1c, ours cur -0x20 / vals -0x34 / price -0x10 / who -0x14
+   / _zn -0x28 _zp -0x24 (the indexed [ebp+edi-0x18] vs [ebp+edi-0x20] lines are the 'code' hunks); the
+   original keeps 0 in ebx through the head (push ebx, vals=ebx), ours in edi after rep stosd; ours loads
+   cur[i] before the gv_EvidencePrice test ('mov ecx,[ebp+edi-0x20]'), the original in each branch; 'mov
+   [ebp-4],0' vs ours 'mov [ebp-4],esi'. Tried: five declaration orders of the locals (no change: VC6 does
+   not lay them by declaration), ctl before cur, the compare's operand order */
 
-    memset(items, 0, 0xa8);
-    slots[0] = -1;
-    slots[1] = -1;
-    slots[2] = -1;
+void ai_DarkCornerMenu(AIBLD *bld, AIOBJ *room, AIOBJ *corner)
+{
+    int changed;
+    int ctl;
+    int win;
+    int cur[3];
+    int vals[3];
+    unsigned short who;
+    int price;
+    unsigned int law[3];
+    AIMSG msg;
+    LCAMOUNTROW rows[3];
+    char text[0x200];
+    int i;
+    int y;
+    int half;
+    int x;
+    int found;
+    AIJOB *ev;
+
+    ctl = -1;
+    cur[0] = -1;
+    cur[1] = -1;
+    cur[2] = -1;
+    memset(rows, 0, sizeof(rows));
     vals[0] = 0;
     vals[1] = 0;
     vals[2] = 0;
-    win = d2_OpenForm(0, 0, "locations\\Wirtshaus_DUNKLEECKE");
+    win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\DUNKLEECKE");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetPointerSprite(0, 0);
-    memset(items, 0, 0xa8);
+    memset(rows, 0, sizeof(rows));
     changed = 1;
-    ctl = -1;
-    while (sv_RunFrame(ai_DarkCornerMenu, 0x677c7) != 0) {
+    do {
         for (i = 0; i < 3; i++) {
-            r = gv_EvidencePrice(*(int *)(param_3 + 0x1c + i * 4),
-                             (void *)((unsigned)&ai_Chars + *(unsigned short *)(param_1 + 0x27) * 0x21c),
-                             &vals[i], &x, &y);
-            if (r == 0) {
-                if (slots[i] != -1) {
+            if (gv_EvidencePrice(corner->recs[i], ai_Chars[bld->owner], &price, &who, &law[i]) != 0) {
+                if (corner->recs[i] != cur[i])
                     changed = 1;
-                    items[i * 0xe] = 0;
-                    slots[i] = -1;
-                    vals[i] = 0;
-                }
-            } else {
-                if (slots[i] != *(int *)(param_3 + 0x1c + i * 4))
-                    changed = 1;
-                slots[i] = *(int *)(param_3 + 0x1c + i * 4);
-                items[i * 0xe] = (unsigned)&ai_Chars + (x & 0xffff) * 0x21c;
+                cur[i] = corner->recs[i];
+                rows[i].rec = (AICHARREC *)ai_Chars[who];
+                vals[i] = price;
+            } else if (cur[i] != -1) {
+                changed = 1;
+                rows[i].rec = 0;
+                cur[i] = -1;
+                vals[i] = 0;
             }
         }
         if (changed) {
             d2_SetForm(win, 1);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            io_PrintText(0x18a3);
-            y = 0x46;
-            w = (int)d2_LastWindowPtr->w / 2;
-            x = (w - *(short *)((unsigned)&he_Events + 0x119b0)) - 0x28;
-            for (i = 0; i < 3; i++) {
-                p = items + i * 0xe;
-                p[4] = x;
-                p[5] = y - 0x1e;
-                p[0xc] = (*p != 0);
-                ai_AmountRowStatus(p);
-                ai_AmountRow(p[4], p[5], U_I((unsigned)&d2_LastWindow), 0x54, p, 1);
-                if (slots[i] == -1)
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            io_PrintText((char *)0x18a3);
+            half = d2_LastWindowPtr->w / 2;
+            x = half - d2_Pics[0x5da].w - 0x28;
+            for (i = 0, y = 0x46; y < 0x46 + 3 * 0x69; i++, y += 0x69) {
+                rows[i].x = x;
+                rows[i].y = y - 0x1e;
+                rows[i].x30 = rows[i].rec != 0;
+                ai_AmountRowStatus(&rows[i]);
+                ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x54, &rows[i], 1);
+                if (cur[i] == -1)
                     txt_Format(text, 0x18a6);
                 else
-                    txt_Format(text, 0x18a5, vals[i] * 5 + 0x13fd, vals[i]);
-                ai_LeftAlignedText(text, w, y, 0xf0, 0x54);
-                y += 0x69;
+                    txt_Format(text, 0x18a5, law[i] * 5 + 0x13fd, vals[i]);
+                ai_LeftAlignedText(text, half, y, 0xf0, 0x54);
             }
-            b = 0;
-            for (r = he_FindEvent(1, 0, 0x74); r != 0; r = he_NextEvent())
-                if (*(int *)(r + 0xb0) == U_I(param_1 + 1)) {
-                    b = 1;
+            found = 0;
+            changed = 0;
+            ctl = -1;
+            for (ev = (AIJOB *)he_FindEvent(1, 0, 0x74); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                if (ev->id2 == bld->id) {
+                    found = 1;
                     break;
                 }
+            }
             d2_SetForm(win, 2);
-            io_PrintText((char *)(unsigned)"$C");
-            ctl = -1;
-            if (b)
-                io_PrintText(0x18a8);
-            else if (*(int *)(param_3 + 0x28) < U_I((unsigned)&ai_Time))
-                ctl = d2_GetWinObj(win, 2, io_PrintText(0x18a7));
-            changed = 0;
+            io_PrintText("$C");
+            if (found)
+                io_PrintText((char *)0x18a8);
+            else if (corner->cornerYear < ai_Time.year)
+                ctl = d2_GetWinObj(win, 2, io_PrintText((char *)0x18a7));
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == ctl) {
-            memset(msg, 0, 0xf8);
-            *(unsigned char *)(msg + 4) = 0x74;
-            *(unsigned char *)(msg + 0x36) = 2;
-            *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87);
-            *(int *)(msg + 0xc) = U_I(param_1 + 1);
-            *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-            *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-            *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-            *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-            *(int *)(msg + 0x5c) = U_I(param_2 + 2);
-            cm_SendLongMessage(msg);
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (d2_ClickedId != -1 && d2_PointerObj == ctl) {
+            D3_ZERO(&msg, sizeof(msg));
+            msg.type = 0x74;
+            msg.flags = 2;
+            msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+            msg.fromId = bld->id;
+            msg.time = ai_Time;
+            msg.arg[1] = bld->id;
+            msg.arg[2] = room->objId;
+            cm_SendLongMessage((char *)&msg);
+            sv_PopRequest = 1;
+        } else if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
         }
-    }
+    } while (sv_RunFrame((int)ai_DarkCornerMenu, 0x677c7) != 0);
     d2_CloseView(win);
 }
 /* 0x5996b0, the dark-corner buying screen of another table (1008 B, ROUGH SKELETON from the Ghidra pseudocode):
@@ -7853,7 +7857,7 @@ void ai_DarkCornerBuy(int param_1, int param_2)
     vals[0] = 0;
     vals[1] = 0;
     vals[2] = 0;
-    win = d2_OpenForm(0, 0, "locations\\Wirtshaus_DUNKLEECKE");
+    win = d2_OpenForm(0, 0, "locations\\Wirtshaus\\DUNKLEECKE");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
     sv_FitForm(U_I((unsigned)&d2_LastWindow));

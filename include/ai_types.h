@@ -352,6 +352,11 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
         };
         int seats[4];                   /* 0x1c..0x2b, of a table (kind 0x12d in a building): the ids of the characters at its
                                            four seats, -1 free (message 0x54 'join' / 'leav' / 'cler', cm_SendTableRequest) */
+        struct {                        /* of a dark corner (kind 300 in a tavern room; its recs[] are the three evidence offers) */
+            int pad1c28[3];
+            int cornerYear;             /* 0x28, the dark-corner menu offers its order 0x74 (0x18a7) only while this is below
+                                           ai_Time.year (ai_DarkCornerMenu; reasoned: the year of the last order) */
+        };
         struct {                        /* of a feast table object (gm_Query kind 0x17 in a building, he.c 0x5437c0) */
             int festGuests[4];          /* 0x1c..0x2b, the guests' character ids, -1: none */
             unsigned char festEssen;    /* 0x2c, the menu pick (AIGRP.essen) */
