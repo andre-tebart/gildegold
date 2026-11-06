@@ -6838,7 +6838,7 @@ void ai_CabinetSpyByMoney(AIBLD *rec)
     sv_CameraFollow();
 }
 
-int he_NoEvent9bFor(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
+void txt_Format(char *out, int id0, ...); int sv_MessageBox();
 
 /* 0x581db0, the cabinet's window on a character for the building rec, message kind 4 (the name is a reasoned guess:
    the form "Locations\Domizil\kabinett" without the slider of the kabinett_spy windows): the target is picked in

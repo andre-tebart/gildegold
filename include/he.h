@@ -67,7 +67,7 @@ void he_FreeEvent(int *r);
 char *he_NextEvent(void);
 char *he_FindEvent(int n, ...);
 int he_NoEvent9aFor(int bldId, struct AICHAR *c);   /* 0x56f360, 1 when no running type 0x9a event has both the building bldId and the netId of the character c */
-int he_NoEvent9bFor(int a);                     /* 0x56f3b0, 1 when no running type 0x9b event has +0xac == a + 4 */
+int he_NoEvent9bFor(struct AICHAR *a);   /* 0x56f3b0, 1 when no running domicile event 0x9b has the netId of the character a as its partner1 */
 int he_RoomBusy(struct AIBLD *b, unsigned short kind);     /* 0x56ddc0, 1 when the room `kind` of the building b is locked */
 int he_FindMeetingRoom(int ev);                 /* 0x574fe0, the first building of the meeting event's room classes, 0 when none */
 void he_ShowConstruction(int ev);               /* 0x56b780, the construction state of the building event ev */

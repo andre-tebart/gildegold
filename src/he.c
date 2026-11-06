@@ -22766,7 +22766,7 @@ int he_SecretRoomAccuse();                 /* 0x56f1b0 */
 int he_FindMeetingSlot();                 /* 0x56f260 */
 int gv_GetTableRecord(int i, int *out);                 /* 0x4f2720 (the record of a meeting slot) */
 int he_SecretRoomAttack();                 /* 0x56f2e0 */
-int he_NoEvent9bFor();                 /* 0x56f3b0 */
+int he_NoEvent9bFor(struct AICHAR *a);                 /* 0x56f3b0 */
 int he_SecretRoomDomizil();                 /* 0x56f3f0 */
 int he_SecretRoomDomizil();                 /* 0x56f3f0 */
 AIJOB *he_FindNearestSpying();                 /* 0x56f600 */
@@ -23165,14 +23165,15 @@ int he_NoEvent9aFor(int bldId, AICHAR *c)
     }
     return 1;
 }
-/* 0x56f3b0, 1 when no running event of the type 0x9b has +0xac == the dword at a + 4; 0 when one does */
+/* 0x56f3b0, 1 when no running domicile event 0x9b runs against the character a (its partner1 is a's netId); 0 when
+   one does */
 
-int he_NoEvent9bFor(int a)
+int he_NoEvent9bFor(AICHAR *a)
 {
-    int r;
+    AIJOB *r;
 
-    for (r = (int)he_FindEvent(1, 0, 0x9b); r != 0; r = (int)he_NextEvent()) {
-        if (HM_I(r, 0xac) == *(int *)(a + 4))
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x9b); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if (r->partner1 == (int)a->netId)
             return 0;
     }
     return 1;
@@ -23190,7 +23191,7 @@ int he_SecretRoomDomizil(int bldId, AICHAR *victim)
     AICHAR *owner;
     float mine, theirs;
 
-    if (he_NoEvent9bFor((int)victim) != 0) {
+    if (he_NoEvent9bFor(victim) != 0) {
         bld = (AIBLD *)gm_BuildQuery(1, 1, bldId);
         if (bld != 0) {
             owner = &ai_CharsT[bld->owner];

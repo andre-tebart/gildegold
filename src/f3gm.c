@@ -6684,7 +6684,7 @@ float gm_GetSkill(char *c, int skill)
             s = s + 0.5f;
     }
     s = (1.0f < s ? 1.0f : s) > 0.0f ? (1.0f < s ? 1.0f : s) : 0.0f;    /* max(min(s, 1), 0), written out */
-    if (he_NoEvent9bFor(c) == 0) {
+    if (he_NoEvent9bFor((struct AICHAR *)c) == 0) {
         v = ai_InventoryHas(c, 0x2c4);
         if (v == 0)
             return s * 0.5f;
