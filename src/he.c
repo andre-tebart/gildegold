@@ -1261,6 +1261,14 @@ typedef struct HEDEATHDUE {             /* the event 0x8e's words over AIJOB's u
     char pad00[0xac];
     int price;                          /* 0xac, the amount the character pays when it can (cm_SendMoveGoods) */
 } HEDEATHDUE;
+typedef struct HEGRAVETRAINING {        /* the training job 0x8f's words over AIJOB's union (the message's arg[0..2] from
+                                           ai_SendFreeSpies; its alloc handler 0x571ac0, run handler 0x571c30) */
+    char pad00[0xac];
+    int trainee;                        /* 0xac, the netId of the character trained */
+    int skill;                          /* 0xb0, the index of the skill trained (AICHAR.skills: 1, 2 or 4) */
+    int objId;                          /* 0xb4, the id of the building's object it trains at (0x211), -1: none */
+    AITIME until;                       /* 0xb8, the time the training ends: 3 hours after the first due time */
+} HEGRAVETRAINING;
 #define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
                                            ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
@@ -23220,8 +23228,8 @@ void he_Unk572860(int ev);          /* 0x572860 */
 void he_RunPlunderOffer(int ev);          /* 0x570cc0 */
 void he_AllocDeathDue(int ev);          /* 0x571990 */
 void he_RunDeathDue(int ev);          /* 0x5719e0 */
-void he_Unk571ac0(int ev);          /* 0x571ac0 */
-void he_Unk571c30(int ev);          /* 0x571c30 */
+void he_AllocGraveTraining(int ev);          /* 0x571ac0 */
+void he_RunGraveTraining(int ev);          /* 0x571c30 */
 void he_AllocMeeting(int ev);          /* 0x571f60 */
 void he_Unk5725b0(int ev);          /* 0x5725b0 */
 void he_AllocMeetingScene(int ev);          /* 0x5726a0 */
@@ -23242,7 +23250,7 @@ int he_RegisterEventTypes88(void)
                         if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_RunPlunderOffer) == 0) {
                             if (he_SetEventHandlers(0x8d, (void *)he_AllocGraveCare, (void *)he_RunGraveCare) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_AllocDeathDue, (void *)he_RunDeathDue) == 0) {
-                                    if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
+                                    if (he_SetEventHandlers(0x8f, (void *)he_AllocGraveTraining, (void *)he_RunGraveTraining) == 0) {
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
@@ -24187,7 +24195,7 @@ void he_RunDeathDue(int ev)
 }
 /* 0x571ac0, the alloc of the event 0x8f: the character +0xac missing, already with an event 0x8f (+0x17c type 0x8f) or the building 0x501190 (1, 1, +0x10) missing -> free; +0xb4 != -1 -> the group 0x4ffe90 (building +0x5d, 2, 6, 1, +0xb4); the due clock +0x52 and the start clock +0x44 = now; the character registered (0x524260) in the group (or alone without one); the second clock +0x60 = now; due now + 0x1e hours (0x4fe140); +0xb8 = the due clock and 0x4fe140 (+0xb8, 3, 0, 0) */
 
-void he_Unk571ac0(int ev)
+void he_AllocGraveTraining(int ev)
 {
     char *per = (char *)gm_FindChar(HM_I(ev, 0xac));
     char *bld;
@@ -24216,66 +24224,76 @@ void he_Unk571ac0(int ev)
 free_ev:
     he_FreeEvent((int *)ev);
 }
-/* 0x571c30, the run of the event 0x8f: only the states -2 .. 0 (below -> nothing, -1 / -2 -> free). State 0: the character +0xac missing, the byte +0x80 [+0xb0] >= 1000.0f (0x5eceb4) or +0xb8 not due (0x4fe210) -> the release part; the building 0x501190 (1, 1, +0x10) missing -> free; the value 0x5092e0 (+0xc) and 0x509400 (+0x60, now, building) -> the byte +0x80 [+0xb0] = a share of it (the constants 0x5eec10, 0x5ee928, 0x5ece60, 0x5eb8a8); 0x4c3ba0 (character, +4), 0x4c3d00 (1, 1, the byte record, &out), 0x4c49a0, the due clock +0x52 and +0x60 = now, due now + 0x1e hours. The release part: the character 0x505df0 (+0xac) and the building 0x501190 (1, 1, +0x10) -> free when missing; the leader 0x50a810 (building) with +0x1b4 bit 0 -> release; the group 0x4ffe90 (+0x5d, 1, 1, +0xb4) or 0x501ce0 (building) -> the text 0x1bc8 (and the strings 0x631090 / 0x6274c8) to the player, the message 0x53dee0; the character released (0x524260) and the event freed. ROUGH */
-
-void he_Unk571c30(int ev)
+/* 0x571c30, the run handler of the training job 0x8f (ai_SendFreeSpies posts its message for the free characters
+   of a graveyard building: the trainee's netId, the skill index 1 / 2 / 4, the object 0x211's id; alloc
+   he_AllocGraveTraining): only at the stages -2 .. 0, -1 / -2 free the event. Stage 0, while the trainee's skill is
+   below 252 and the end time `until` is not reached: every 30 minutes the skill gains the working minutes
+   (gm_WorkMinutesBetween since clock60) / 30 * 8 * (1 + the building's skill 0xc / 100), divided by
+   (1 + skill / 252) and capped at 252 (sent as a field value of the character, cm_AddFieldValues); a missing
+   building frees the event. At the end (no trainee, the skill full or the time up) a player whose master is not
+   at work is told (the text 0x1bc8 at the object, else at the building's main room; the voice
+   "_NACHRICHTEN_HS_81"), the trainee leaves the group and the event is freed. The gain's spelling
+   (minutes * 8.0) * (1.0 / 30) is the one VC6 compiles to the original's fmul order (1/30, then 8.0). */
+void he_RunGraveTraining(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HEGRAVETRAINING *t = (HEGRAVETRAINING *)ev;
     char text[0x200];
-    float f;
-    int state = HM_I(ev, 0x70);
-    int v, n;
-    char *per, *bld, *r;
-    int grp;
+    int minutes;
+    float bskill;
+    unsigned char gain;
+    unsigned char *skill;
+    AICHAR *ch, *master;
+    AIBLD *bld;
+    AIOBJ *obj;
 
-    if (state < -2)
+    if (e->stage < -2)
         return;
-    if (state < 0)
-        goto free_ev;
-    if (state != 0)
+    if (e->stage < 0) {
+        he_FreeEvent((int *)ev);
         return;
-    per = (char *)gm_FindChar(HM_I(ev, 0xac));
-    if (per == 0)
-        goto release;
-    v = HM_B(per + HM_I(ev, 0xb0), 0x80);
-    if ((float)v >= (252.0f))
-        goto release;
-    if (gm_CompareTime(&ai_Time, ev + 0xb8) >= 0)
-        goto release;
-    bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0x10));
-    if (bld == 0)
-        goto free_ev;
-    n = gm_BuildingSkill(bld, 0xc, 1);
-    f = (float)n;
-    v = gm_WorkMinutesBetween(ev + 0x60, &ai_Time, bld);
-    HM_B(per + HM_I(ev, 0xb0), 0x80) = (unsigned char)(int)((double)v * 0.03333333333333333 * 8.0 * ((double)f * *(double *)(unsigned)&ai_Unk5ece60 + *(double *)(unsigned)&full_rdata_5eb8a8));
-    cm_BeginFieldBlock(per, *(int *)(per + 4));
-    cm_AddFieldValues(1, 1, per + (*(unsigned short *)(ev + 0xb0) - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x80, &n);
-    cm_SendFieldDeltas();
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0x60) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-    return;
-release:
-    per = (char *)gm_FindChar(HM_I(ev, 0xac));
-    bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0x10));
-    if (bld == 0 || per == 0)
-        goto free_ev;
-    r = (char *)gm_FindCharacterByMaster(bld);
-    if (r != 0 && (HM_B(r, 0x1b4) & 1))
-        goto released;
-    grp = gm_Query(HM_I(bld, 0x5d), 1, 1, HM_I(ev, 0xb4));
-    if (grp == 0) {
-        grp = gm_GetGebaeudeHauptraum(bld);
-        if (grp == 0)
-            goto released;
     }
-    txt_Format(text, 0x1bc8, *(unsigned short *)per, bld);
-    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), HM_I(ev, 0x10), text, 0, 0x5f2, *(int *)(bld + 1), *(int *)(grp + 2), (char *)(unsigned)&ch_EmptyName, "_NACHRICHTEN_HS_81");
-released:
-    sv_MoveToGroup(bld, 0, *(unsigned short *)per, 0);
-    he_FreeEvent((int *)ev);
-    return;
-free_ev:
+    if (e->stage != 0)
+        return;
+    ch = (AICHAR *)gm_FindChar(t->trainee);
+    if (ch != 0 && (float)ch->skills[t->skill] < 252.0f && gm_CompareTime(&ai_Time, &t->until) < 0) {
+        bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+        if (bld == 0) {
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        bskill = (float)gm_BuildingSkill(bld, 0xc, 1);
+        minutes = gm_WorkMinutesBetween(&e->clock60, &ai_Time, bld);
+        gain = (unsigned char)((minutes * 8.0) * (1.0 / 30) * (bskill * 0.01 + 1.0));
+        skill = &ch->skills[t->skill];
+        gain = (unsigned char)(gain / (*skill * (1.0f / 252) + 1.0));
+        if ((float)(gain + *skill) > 252.0f)
+            gain = (unsigned char)(252.0f - *skill);
+        cm_BeginFieldBlock((char *)ch, ch->netId);
+        cm_AddFieldValues(1, 1, (char *)ch->skills + (t->skill - (int)cm_FieldObject), &gain);
+        cm_SendFieldDeltas();
+        e->end = ai_Time;
+        e->clock60 = ai_Time;
+        gm_AddTime(&e->end, 0, 0x1e, 0);
+        return;
+    }
+    ch = (AICHAR *)gm_FindChar(t->trainee);
+    bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
+    if (bld == 0 || ch == 0) {
+        he_FreeEvent((int *)ev);
+        return;
+    }
+    master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
+    if (master == 0 || !(master->flags1b4 & 1)) {
+        obj = (AIOBJ *)gm_Query((void *)bld->objList, 1, 1, t->objId);
+        if (obj == 0)
+            obj = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)bld);
+        if (obj != 0) {
+            txt_Format(text, 0x1bc8, ch->id, bld);
+            he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, e->from, text, 0, 0x5f2, bld->id, obj->objId, ch_EmptyName, "_NACHRICHTEN_HS_81");
+        }
+    }
+    sv_MoveToGroup((int)bld, 0, ch->id, 0);
     he_FreeEvent((int *)ev);
 }
 /* 0x571f60, the alloc of the meeting event 0x90: stage 0, then paused -> nothing; the due clock = now; another
