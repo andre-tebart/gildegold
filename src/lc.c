@@ -6377,66 +6377,120 @@ void ai_FeastContact(AIBLD *bld, int room)
         r = sv_RunFrame(ai_FeastContact, 0x67fff);
     }
 }
-/* 0x5967c0, the mistress window "locations\wohnsitz\geliebte2" (990 B, ROUGH SKELETON from the Ghidra
-   pseudocode): param_2 the character record, param_3 the building record; 0x4741f0 / 0x475f70 (0) / 0x52ea30 /
-   0x475600 / 0x476f80 / 0x475f70 (1), the text 0x515960 ("_C_Z_ _1N3_", *param_2), the screen 0x52e350, the
-   list 0x5be1d0 / 0x5be3b0; per frame 0x505df0 (the character), 0x53e400 (1, 1, the building), the daily flag
-   (the record +0xbc against the day 0x770ae0), the texts 0x5176d0 (0x1a57 / 0x1a58), the selection control,
-   the demand (0x5c1130 with the config 0x20400 / 0xa7fdfbb6 / 1 / 6, the texts 0x1a53 / 0x1a54 / 0x1a5b) and
-   the 0x4c4c60 / 0x4c3ae0 / 0x4c5f60 / 0x4c4b00 message; the pump 0x5309a0 (this, 0x677c7) and the exit
-   0x4758f0 */
+typedef struct LCAMOUNTROW {            /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus /
+                                           ai_AmountRow; cm.c CMAMOUNTROW) */
+    AICHARREC *rec;                     /* 0x00, the character the row shows */
+    int ctl[3];                         /* 0x04, the row's controls (ai_AmountRow) */
+    int x;                              /* 0x10 */
+    int y;                              /* 0x14 */
+    int pad18[6];
+    int x30;                            /* 0x30 */
+    int pad34;
+} LCAMOUNTROW;
+/* 0x5967c0, the window of one of the player's mistresses "locations\wohnsitz\geliebte2" (from ai_MistressWindow,
+   with her character record and her pair event 0x6f): her name and her amount row, two buttons (the texts
+   txt_Ptrs[0x1a5c] / [0x1a5d]). The window closes (sv_PopRequest) once she or her event is gone or on a right click.
+   The first button asks (0x1a57, or 0x1a58 for a female player) and then sets the event's end time to now, sends it
+   (cm_SendExSetHE 1) and waits for its slot. The second, enabled once a year (the event's idbc against the year of
+   ai_Time), picks a character in the amount menu (mode 0x20400, the gypsy filter, kind 6; title 0x1a5a), asks
+   (0x1a5b) and, the player paying 2, stamps the year, sends the event (cm_SendExSetHE 3), takes the 2 off the
+   caller's record (+4 read as its netId; the caller passes ai_PlayerBuilding) and lowers the picked character's
+   relation to her by 0x21 */
 
-void ai_Unk5967c0(int param_1, unsigned short *param_2, int param_3)
+void ai_MistressAffairWindow(int place, AICHARREC *ch, AIJOB *ev)
 {
     int win;
-    int ctl;
-    int ui;
-    int bld;
-    int b;
-    int i;
-    int cfg[0x14];
-    unsigned short *list[4];
-    char text1[0x40];
-    char text2[0x200];
-    char text3[0x200];
+    int visit;
+    int affair;
+    int netId;
+    int evId;
+    int alive;
+    int slot;
+    int btn[2];
+    AMOUNTCFG cfg;
+    AICHARREC *pick;
+    char prompt[0x40];
+    char text[0x200];
+    char ask[0x200];
 
-    ui = U_I(param_2 + 2);
-    bld = U_I(param_3 + 4);
+    netId = ch->netId;
+    evId = ev->id;
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\geliebte2");
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    io_PrintText("_C_Z_ _1N3_", *param_2);
+    io_PrintText("$C$Z$[%1N3$]", ch->id);
     d2_SetForm(win, 3);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &ctl, 2, U_I((unsigned)&full_data_1440b30), U_I((unsigned)&full_data_1440b34));
+    sv_ButtonRow(d2_LastWindow, 0, btn, 2, txt_Ptrs[0x1a5c], txt_Ptrs[0x1a5d]);
+    visit = btn[0];
+    affair = btn[1];
     d2_SetForm(win, 2);
-    list[0] = param_2;
-    ai_AmountRowStatus(list);
-    ai_AmountRow(0x19, 0x19, U_I((unsigned)&d2_LastWindow), 0x54, list, 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    while (sv_RunFrame(ai_Unk5967c0, 0x677c7) != 0) {
-        i = gm_FindChar(ui);
-        if (i == 0 || (b = he_FindEvent(1, 1, bld), b == 0)) {
-            d2_SetObjEnabled(ctl, 0);
-        } else {
-            d2_SetObjEnabled(ctl, U_I((unsigned)&ai_Time) > U_I(param_3 + 0xbc) ? 1 : 0);
-        }
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0 && i != 0 && b != 0) {
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == 0 /* the screen control */) {
-                    /* ROUGH: the demand text 0x1a57 / 0x1a58, the confirmation 0x521150, the daily stamp
-                       (param_3 + 0x52 .., +0xbc), the message 0x4c4c60 (1, param_3) and 0x4c3ae0 */
-                } else if (U_I((unsigned)&d2_PointerObj) == ctl) {
-                    /* ROUGH: the config 0x20400 / 0xa7fdfbb6 / 1 / 6, the texts 0x1a53 / 0x1a54, 0x5c1130,
-                       the text 0x1a5b, the daily stamp, 0x4c4c60 (3, param_3), 0x4c5f60 and 0x4c4b00 */
+    {
+        LCAMOUNTROW row;                /* her row, centred (its stack place is shared with the texts below) */
+
+        row.x = (d2_LastWindowPtr->w - d2_Pics[0x5da].w) / 2;
+        row.y = 0x19;
+        row.rec = ch;
+        row.x30 = 0;
+        ai_AmountRowStatus((int *)&row);
+        ai_AmountRow(row.x, row.y, d2_LastWindow, 0x54, (int *)&row, 1);
+    }
+    d2_ClickedId = -1;
+    do {
+        alive = 0;
+        if (gm_FindChar(netId) != 0 && he_FindEvent(1, 1, evId) != 0)
+            alive = 1;
+        if (alive && ev->idbc < ai_Time.year)       /* once a year */
+            d2_SetObjEnabled(affair, 1);
+        else
+            d2_SetObjEnabled(affair, 0);
+        if (dm_L.rup == 0 && alive) {
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == visit) {
+                    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+                        txt_Format(text, 0x1a57, ch->id);
+                    else
+                        txt_Format(text, 0x1a58, ch->id);
+                    if (sv_MessageBox(text, 1) != 0) {
+                        ev->end = ai_Time;
+                        ev->idbc = ai_Time.year;
+                        slot = cm_SendExSetHE(1, ev);
+                        if (slot != -1)
+                            do {
+                                if (cm_GetSlotState(slot) != 0)
+                                    break;
+                                sv_RunFrame(0, 0x20007);
+                            } while (1);
+                        sv_PopRequest = 1;
+                    }
+                } else if (d2_PointerObj == affair) {
+                    char title[0x40];
+
+                    memset(&cfg, 0, sizeof(cfg));
+                    cfg.mode = 0x20400;
+                    cfg.kind = 6;
+                    cfg.filter = gypsyFilter;
+                    txt_Format(title, 0x1a53);
+                    txt_Format(prompt, 0x1a54);
+                    pick = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x1a5a], 0, 0);
+                    if (pick != 0) {
+                        txt_Format(ask, 0x1a5b, 2, ch->id, pick->id);
+                        if (sv_MessageBox(ask, 1) != 0 && sv_CheckMoney(ai_Chars[ai_PlayerId], 2) != 0) {
+                            ev->idbc = ai_Time.year;
+                            cm_SendExSetHE(3, ev);
+                            gm_SendMoneyDelta(((AICHARREC *)place)->netId, -2);
+                            cm_SendRelations(pick->netId, ch->netId, -0x21, 1);
+                            sv_PopRequest = 1;
+                        }
+                    }
                 }
             }
         } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
-    }
+    } while (sv_RunFrame(ai_MistressAffairWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
 /* 0x596ba0, the mistress window "locations\wohnsitz\geliebte" (1007 B, ROUGH SKELETON from the Ghidra
@@ -6506,8 +6560,8 @@ void ai_MistressWindow(int param_1)
                 } else {
                     for (i = 0; i < 4; i++) {
                         if (U_I((unsigned)&d2_PointerObj) == ids[i + 4]) {
-                            ai_Unk5967c0(param_1, (unsigned short *)gm_FindChar(ids[i]),
-                                         he_FindEvent(1, 1, ids[i + 8]));
+                            ai_MistressAffairWindow(param_1, (AICHARREC *)gm_FindChar(ids[i]),
+                                         (AIJOB *)he_FindEvent(1, 1, ids[i + 8]));
                             break;
                         }
                     }
