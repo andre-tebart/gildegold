@@ -13619,62 +13619,55 @@ void ai_RansomWindow(AIBLD *bld)
 
 float gm_GetSkill(char *c, int skill); int cm_SendChrGotoBuilding(); 
 
-/* 0x5a5910, the kidnapping attempt (694 B): the player's character 0x770b80 + slot * 0x21c, the owner's
-   0x770b80 + U_W(param_1 + 0x27) * 0x21c, 0x476f80; the text 0x3fea (the crew byte 0x1b1 * 2) through 0x521150
-   (0x11) and the gate 0x520f90 (the character, the byte * 2); the chance (0x504ec0 (4) + 0x504ec0 (3) +
-   0x504ec0 (2)) * 0.2f + 0.15f, 0x4c5f60 (the character, -the byte * 2); a roll 0x42ec20 below it: the
-   capture 0x4c3ba0 / 0x4c3c00 (4, 1, param_1 - 0xa68d2c + 0x65, -1) / 0x4c49a0 / 0x4c5fa0 (the character,
-   -the byte, 0), the 0x55eba0 (the character, &a, &b, 0) record sent by 0x4c52e0, the type 0x3d record with the
-   owner +0xb0 and the character +0xac released 0x4c4c60 (-1, the record) and the texts 0x3feb / 0x3fed through
-   0x53dda0; else the texts 0x3fec / 0x3fee; the exit 0x52d7a0 */
-void ai_KidnapAttempt(int param_1)
+/* 0x5a5910, the player's character's attempt to get free from the kidnapping room bld (ai_KidnapContact): asked
+   with the text 0x3fea, it costs twice the rounds the character was held (sv_CheckMoney, paid with
+   cm_SendMoneyDelta); it succeeds below the chance (the skills 4 + 3 + 2) * 0.2 + 0.15: bld's victim field is
+   set -1, the message 0x5b takes the held rounds back, the figure walks out ("Lösegeld", he_FindFigurePlace), the
+   ransom event 0x3d of bld on the character ends (cm_SendExSetHE), and the news 0x3feb / 0x3fed go to the
+   character and the room's owner; a failure gives the news 0x3fec / 0x3fee. The camera follows again after */
+void ai_HostageEscape(AIBLD *bld)
 {
-    float s;
-    int ok;
-    int a;
-    int b;
-    int rec;
-    char *ch;
-    char *own;
-    char buf1[0x400];
-    char buf2[0x400];
+    float chance;
+    int placeBld;
+    int placeObj;
+    char failText[0x400];
+    char text[0x400];
+    AICHARREC *ch;
+    AICHARREC *owner;
+    LCRANSOMEVENT *ev;
 
-    ch = (char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    own = (char *)((unsigned)&ai_Chars + U_W(param_1 + 0x27) * 0x21c);
+    ch = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    owner = &((AICHARREC *)ai_Chars)[bld->owner];
     d2_SetPointerSprite(0, 0);
-    txt_Format(buf1, 0x3fea, (unsigned char)*(ch + 0x1b1) * 2);
-    if (sv_MessageBox(buf1, 0x11) != 0 &&
-        sv_CheckMoney(ch, (unsigned char)*(ch + 0x1b1) * 2) != 0) {
-        s = gm_GetSkill(ch, 4);
-        s = gm_GetSkill(ch, 3) + s;
-        s = (gm_GetSkill(ch, 2) + s) * 0.2f + 0.15f;
-        cm_SendMoneyDelta(U_I(ch + 4), -((unsigned char)*(ch + 0x1b1)) * 2);
-        if (util_RandomF() < s) {
-            ok = -1;
-            cm_BeginFieldBlock(param_1, U_I(param_1 + 1));
-            cm_AddFieldDelta(4, 1, (param_1 - U_I((unsigned)&cm_FieldObject)) + 0x65, &ok);
+    txt_Format(failText, 0x3fea, ch->heldRounds * 2);
+    if (sv_MessageBox(failText, 0x11) != 0 && sv_CheckMoney((char *)ch, ch->heldRounds * 2) != 0) {
+        chance = gm_GetSkill((char *)ch, 4);
+        chance = gm_GetSkill((char *)ch, 3) + chance;
+        chance = (gm_GetSkill((char *)ch, 2) + chance) * 0.2f + 0.15f;
+        cm_SendMoneyDelta(ch->netId, -ch->heldRounds * 2);
+        if (util_RandomF() < chance) {
+            int none = -1;  /* the field's new value: no victim */
+
+            cm_BeginFieldBlock((char *)bld, bld->id);
+            cm_AddFieldDelta(4, 1, (unsigned short)((char *)&bld->victimId - cm_FieldObject), &none);
             cm_SendFieldDeltas();
-            cm_SendMessage5b(U_I(ch + 4), -(unsigned char)*(ch + 0x1b1), 0);
-            if (U_I(((unsigned)&ai_Unk770cec + 0x18) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0 &&
-                he_FindFigurePlace(ch, &a, &b, 0) != 0)
-                cm_SendChrGotoBuilding(U_I(ch + 4), a, b, 0, 0, (char *)U_I((unsigned)"L\366segeld"));
-            rec = he_FindEvent(1, 0, 0x3d);
-            while (rec != 0) {
-                if (U_I(rec + 0xb0) == U_I(param_1 + 1) && U_I(ch + 4) == U_I(rec + 0xac)) {
-                    U_I(rec + 0x84) = cm_SendExSetHE(-1, rec);
+            cm_SendMessage5b(ch->netId, -ch->heldRounds, 0);
+            if (ch->model != 0 && he_FindFigurePlace(ch, &placeBld, &placeObj, 0) != 0)
+                cm_SendChrGotoBuilding(ch->netId, placeBld, placeObj, 0, 0, "L\366segeld");
+            for (ev = (LCRANSOMEVENT *)he_FindEvent(1, 0, 0x3d); ev != 0; ev = (LCRANSOMEVENT *)he_NextEvent())
+                if (ev->guild == bld->id && ch->netId == ev->victim) {
+                    ((AIJOB *)ev)->exSlot = cm_SendExSetHE(-1, ev);
                     break;
                 }
-                rec = he_NextEvent();
-            }
-            txt_Format(buf2, 0x3feb);
-            he_ShowNews(U_I(ch + 4), -1, buf2, 0, 0x5f3, 0);
-            txt_Format(buf2, 0x3fed, U_W(ch));
-            he_ShowNews(U_I(own + 4), -1, buf2, 0, 0x5f3, 0);
+            txt_Format(text, 0x3feb);
+            he_ShowNews(ch->netId, -1, text, 0, 0x5f3, 0);
+            txt_Format(text, 0x3fed, ch->id);
+            he_ShowNews(owner->netId, -1, text, 0, 0x5f3, 0);
         } else {
-            txt_Format(buf1, 0x3fec);
-            he_ShowNews(U_I(ch + 4), -1, buf1, 0, 0x5f3, 0);
-            txt_Format(buf1, 0x3fee, U_W(ch));
-            he_ShowNews(U_I(own + 4), -1, buf1, 0, 0x5f3, 0);
+            txt_Format(failText, 0x3fec);
+            he_ShowNews(ch->netId, -1, failText, 0, 0x5f3, 0);
+            txt_Format(failText, 0x3fee, ch->id);
+            he_ShowNews(owner->netId, -1, failText, 0, 0x5f3, 0);
         }
     }
     sv_CameraFollow();
@@ -13688,7 +13681,7 @@ int gm_CreateCharModel(); void cm_RequestChrMoveToUniverse(int a, int b, int c, 
    room +2, the name) when the model belongs to another room; 0x52e190, the pump 0x5309a0 (this, 0x67fff)
    fetches contact_ENTFUEHREN / contact_LOESEGELD under the mask 0x200 and contact_AUSBRECHEN for an own victim
    with the held-rounds byte +0x1b1 set; the pending click 0x6f22e4 opens ai_KidnapStart / ai_RansomWindow /
-   ai_KidnapAttempt; the model 0x4028a0 (the record) and +0x184 = 0 on the exit */
+   ai_HostageEscape; the model 0x4028a0 (the record) and +0x184 = 0 on the exit */
 void ai_KidnapContact(int building, int room)
 {
     AIBLD *bld = (AIBLD *)building;
@@ -13724,7 +13717,7 @@ void ai_KidnapContact(int building, int room)
             else if (ai_ClickedObject == loesegeld)
                 ai_RansomWindow(building);
             else if (ai_ClickedObject == ausbrechen)
-                ai_KidnapAttempt(building);
+                ai_HostageEscape(building);
         }
         r = sv_RunFrame(ai_KidnapContact, 0x67fff);
     }

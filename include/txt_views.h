@@ -268,7 +268,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144a138                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ff78))  /* 0x144a138 */
 #define full_data_144a13c                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x0ff7c))  /* 0x144a13c */
 #define ai_Unk144a160                            (*(char * *)((char *)txt_Ptrs + 0x0ffa0))  /* 0x144a160 */
-#define ai_ContactTextBreakOut                   (*(char * *)((char *)txt_Ptrs + 0x0ffbc))  /* 0x144a17c, the hover text of the contact_AUSBRECHEN plate (ai_KidnapContact -> ai_KidnapAttempt) */
+#define ai_ContactTextBreakOut                   (*(char * *)((char *)txt_Ptrs + 0x0ffbc))  /* 0x144a17c, the hover text of the contact_AUSBRECHEN plate (ai_KidnapContact -> ai_HostageEscape) */
 #define full_data_144a19c                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0ffdc))  /* 0x144a19c */
 #define full_data_144a1a4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ffe4))  /* 0x144a1a4 */
 #define full_data_144a1a8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0ffe8))  /* 0x144a1a8 */
