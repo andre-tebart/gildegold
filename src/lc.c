@@ -1077,7 +1077,9 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad180[4];
     struct AITASKVIEW *model;      /* 0x184, the character's model record, 0 when none (ai_char.h AICHAR.model) */
     unsigned char selected;        /* 0x188, nonzero: in the player's selection (ai_char.h AICHAR.selected) */
-    char pad189[0x28];
+    char pad189[0xb];
+    int money;                     /* 0x194, the character's money (ai_char.h AICHAR.money) */
+    char pad198[0x19];
     unsigned char heldRounds;      /* 0x1b1, the rounds the character is held (ai_char.h AICHAR.heldRounds) */
     char pad1b2[0x16];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
@@ -1089,7 +1091,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
 typedef struct AIBLD {             /* the building record fields this unit reads (ai.h AIBLD, same layout) */
     unsigned char kind;            /* 0x00, the building kind (the index into the name tables) */
     int id;                        /* 0x01, the building's id (ai_bld.h AIBLD.id) */
-    char pad05[0x22];
+    char pad05[0x20];
+    unsigned short masterId;       /* 0x25, the character id of the building's master (ai_bld.h AIBLD.masterId) */
     unsigned short owner;          /* 0x27, the owner's character id */
     unsigned short mainRoom;       /* 0x29, the room the building's panel opens with (ai_bld.h AIBLD.mainRoom) */
     char pad2b[0x1e];
@@ -3548,7 +3551,7 @@ int ai_ChooseCoatOfArms(); void snd_StartMarketAmbience(void); int tb_SetFunctio
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_EnterBuilding(); void ai_EnterOwnBuilding(); void ai_MarketStandListener();
-int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_Unk5b7dd0();
+int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_TechEffectsWindow();
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); void cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
@@ -3895,72 +3898,178 @@ void lc_PlayerInJail(void)
         return;
     sv_SelectPanelObjectK(it, r->objId, (void *)(unsigned)&ch_EmptyName);
 }
-/* 0x591bf0, the tech tree window (1593 B, ROUGH SKELETON from the Ghidra pseudocode): "techtree\TechTree"
-   (0x50c340), the window (0x5763c0 (0x200), the event 0x576040 (0x11), the controls 0x475b80 / 0x515960
-   (0x17e2)); the tech record 0x4ffe90 (the building +0x5d, 1, 0, param_2) or (1, 4, 2), the item list
-   0x7d6a40 / 0x76fe04 (0xd dwords each), the goods 0x91aaf0 + i * 0x41, the upgrade message 0x4c4540 /
-   0x4c4580 ("upgrade"), the cost 0x5087f0 / 0x5049e0 / 0x5210a0 / 0x521040, the message record 0x4c4b70 and
-   the confirmation 0x4c3ae0; the frame pump 0x5309a0 (this, 0x657c7); the exit 0x50c4d0 and 0x576040 (0x11) */
+typedef struct LCTREENODE {        /* a node of f3gm's research tree layout gm_TreeNodes (f3gm.c RTNODE, 0x34 bytes) */
+    char pad00[0x24];
+    int obj;                       /* 0x24, the node's button object (RTNODE.l[2]), -1 = none */
+    char pad28[0xc];
+} LCTREENODE;
+extern char gm_TreeNodes[3328];    /* 0x76fde0, LCTREENODE[64] (f3gm.c) */
+extern int ai_Difficulty;          /* 0x6f23fc, the game difficulty 0 .. 4 (ai.h) */
 
-void ai_TechTreeWindow(int param_1, int param_2)
+/* 0x591bf0, the tech tree window of the building bld (1593 B): for the player's building it is run by
+   ai_RunAllows (0x200) between the campaign steps 0x11 (bld, 0 / 1, room); the research object of the room
+   (gm_Query (objList, 1, 0, room), else (1, 4, 2)) opens "techtree\TechTree" (gm_TechTreeWindow; a failure shows
+   the text d2_Strings[0x1e]) with its effects button (text 0x17e2: ai_TechEffectsWindow). A click on a tree node
+   (ids 0xdf .. 0x3bb, a node of gm_TreeNodes) researches the goods id - 0xdf when the script query 0x2b allows it:
+   not yet held (the room's list, or the building's rooms (2, 6, 0)) it costs either AIGOOD.b40 of the character's
+   money (text 0x1b / 0x74, cm_SendMoneyDelta) or the price gm_ItemPrice * (difficulty / 4 + 0.5) from the master's
+   goods or the treasury (text 0x1a / 0x1c, cm_SendMoveGoods); the research message (type 0xc for a building
+   upgrade, goods kind 6, else 2) goes out in the group "upgrade" and its slot is waited for; an object already
+   held is selected on the panel ("ob_<NAME>"); gm_UpdateTechTree redraws the tree every frame */
+void ai_TechTreeWindow(int bld, int room)
 {
-    int win;
-    int rec;
-    short *tr;
-    int i;
-    int it;
-    int n;
-    int all;
-    int msg[0x3e];
-    char name[0x80];
+    AIMSG msg;
     char text[0x100];
-    int u;
-    int amount;
+    char name[0x80];
+    char objName[0x80];
+    AIBLD *b;
+    AIROOM *rec;                    /* the research object */
+    AIROOM *treasury;
+    AIGOOD *good;
+    AICHARREC *me;
+    int *prec;
+    int win;
+    int button;
+    int found;
+    int cost;
+    int slot;
+    int ok;
+    int id;
+    int k;
+    int i;
+    float factor;
 
-    if (param_1 == U_I((unsigned)&ai_PlayerBuilding)) {
-        win = ai_RunAllows(0x200);
-        if (win == 0)
+    b = (AIBLD *)bld;
+    if (bld == (int)ai_PlayerBuilding) {
+        if (ai_RunAllows(0x200) == 0)
             return;
-        ai_CampaignStep(0x11, param_1, 0, param_2);
-    } else {
-        win = 0;
+        ai_CampaignStep(0x11, bld, 0, room);
     }
-    tr = (short *)gm_Query(*(int *)(param_1 + 0x5d), 1, 0, param_2);
-    if (tr == 0)
-        tr = (short *)gm_Query(*(int *)(param_1 + 0x5d), 1, 4, 2);
-    if (tr != 0) {
-        i = gm_TechTreeWindow("techtree\\TechTree", param_1, tr);
-        if (i < 0) {
-            sv_MessageBox(U_I(((unsigned)&d2_Strings + 0x78)), 0);
+    me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    rec = (AIROOM *)gm_Query((void *)b->objList, 1, 0, room);
+    if (rec == 0) {
+        rec = (AIROOM *)gm_Query((void *)b->objList, 1, 4, 2);
+        if (rec == 0)
             return;
-        }
-        d2_CentreViewWindows(i);
-        d2_SetForm(i, 4);
-        u = io_PrintText(0x17e2);
-        i = d2_GetWinObj(i, 4, u);
-        sv_SetResearchClass(param_1);
-        it = sv_RunFrame(ai_TechTreeWindow, 0x657c7);
-        while (it != 0) {
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-                U_I((unsigned)&sv_PopRequest) = 1;
-            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == i)
-                ai_Unk5b7dd0(param_1);
-            n = U_I((unsigned)&d2_ClickedId);
-            if (n > 0xde && n < 0x3bc && U_I((unsigned)&gm_TreeNodeCount) > 0) {
-                /* ROUGH: the item list (0x76fe04, 0xd dwords per entry) is scanned; the clicked item i = n - 0xdf;
-                   the 0x3e-dword message local is zeroed, 0x576340 (0x2b, ...) checks the click, the goods record
-                   0x91aaf0 + i * 0x41 gives the kind (6: the building upgrade with the cost 0x5087f0 / 0x5049e0 /
-                   0x5210a0 / 0x521040, the message 0x5176d0 / 0x521150 / 0x4c4540 / 0x4c4580 / 0x4c4b70 and the
-                   confirmation 0x4c3ae0; else 0x5176d0 / 0x521150 with the cost text 0x74) and 0x50b9f0
-                   (the item window) */
+    }
+    win = gm_TechTreeWindow("techtree\\TechTree", bld, rec);
+    if (win < 0) {
+        sv_MessageBox(d2_Strings[0x1e], 0);
+        return;
+    }
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 4);
+    button = d2_GetWinObj(win, 4, io_PrintText(0x17e2));
+    sv_SetResearchClass((unsigned char *)bld);
+    if (sv_RunFrame((int)ai_TechTreeWindow, 0x657c7) != 0) {
+        do {
+            if (dm_L.rup != 0)
+                sv_PopRequest = 1;
+            id = d2_ClickedId;
+            if (id != -1 && d2_PointerObj == button) {
+                ai_TechEffectsWindow(bld);
+                id = d2_ClickedId;
             }
-            it = sv_RunFrame(ai_TechTreeWindow, 0x657c7);
-        }
-        gm_CloseTechTree();
-        U_I((unsigned)&sv_ResearchClass) = 0;
-        if (param_1 == U_I((unsigned)&ai_PlayerBuilding))
-            ai_CampaignStep(0x11, param_1, 1, param_2);
+            if (id >= 0xdf && id <= 0x3bb) {
+                for (k = 0; k < gm_TreeNodeCount; k++) {
+                    if (((LCTREENODE *)gm_TreeNodes)[k].obj != -1 && d2_PointerObj == ((LCTREENODE *)gm_TreeNodes)[k].obj)
+                        break;
+                }
+                if (k < gm_TreeNodeCount) {
+                    i = id - 0xdf;
+                    memset(&msg, 0, sizeof(msg));
+                    if (ai_ScriptQuery(0x2b, bld, 0, i) == 0)
+                        continue;
+                    good = &((AIGOOD *)ai_Goods)[i];
+                    if (rec != 0)
+                        found = (int)gm_Query((void *)rec->list, 1, 0, i);
+                    else
+                        found = (int)gm_Query((void *)b->objList, 2, 6, 0, i);
+                    if (found == 0) {
+                        /* research it */
+                        msg.flags = 1;
+                        if (((AIGOOD *)ai_Goods)[i].type == 6) {
+                            msg.type = 0xc;
+                            msg.fromId = b->id;
+                            msg.arg[0] = b->id;
+                            msg.arg[2] = i;
+                            msg.to = ai_CharInts[b->masterId][0];
+                            msg.time = ai_Time;
+                            msg.arg[1] = msg.to;
+                        } else {
+                            msg.fromId = b->id;
+                            msg.type = 2;
+                            msg.time = ai_Time;
+                            msg.to = ai_CharInts[b->masterId][0];
+                            msg.itemId = (unsigned short)i;
+                            msg.arg[1] = rec->objId;
+                        }
+                        cost = good->b40;
+                        if (cost == 0) {
+                            /* paid in goods: the price by the difficulty */
+                            ok = 0;
+                            factor = (float)(ai_Difficulty * 0.25 + 0.5);
+                            cost = (int)((int)gm_ItemPrice(i, 100) * factor);
+                            if (b->owner != *ai_PlayerChar) {
+                                if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0)
+                                    ok = 1;
+                                txt_Format(text, 0x1a, cost, bld, i * 2 + 0x9a8);
+                            } else {
+                                treasury = (AIROOM *)gm_ClassTreasury(b);
+                                if (sv_CheckStockB(treasury, treasury->list, cost, ai_OwnPlayer) != 0)
+                                    ok = 1;
+                                txt_Format(text, 0x1c, cost, bld, i * 2 + 0x9a8);
+                            }
+                            if (ok == 0 || sv_MessageBox(text, 1) == 0)
+                                goto redraw;
+                            ai_CampaignStep(0x2b, bld, 0, i);
+                            cm_BeginGroup("upgrade");
+                            if (b->owner != *ai_PlayerChar) {
+                                cm_SendMoveGoods(-1, ai_CharInts[b->owner][0], ai_OwnPlayer, cost);
+                                prec = (int *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                                if (prec != 0)
+                                    prec[0x10] += cost;
+                            } else {
+                                treasury = (AIROOM *)gm_ClassTreasury(b);
+                                if (treasury != 0)
+                                    cm_SendMoveGoodsUnchecked(-1, treasury->objId, ai_OwnPlayer, cost);
+                            }
+                            slot = cm_SendLongMessage((char *)&msg);
+                            cm_EndGroup("upgrade");
+                        } else {
+                            /* paid in money */
+                            txt_Format(text, 0x1b, cost, bld, i * 2 + 0x9a8);
+                            if (sv_MessageBox(text, 1) == 0)
+                                goto redraw;
+                            if (cost > me->money) {
+                                txt_Format(text, 0x74, cost);
+                                sv_MessageBox(text, 0);
+                                goto redraw;
+                            }
+                            cm_BeginGroup("upgrade");
+                            cm_SendMoneyDelta(me->netId, -cost);
+                            slot = cm_SendLongMessage((char *)&msg);
+                            cm_EndGroup("upgrade");
+                        }
+                        while (slot != -1 && cm_GetSlotState(slot) == 0)
+                            sv_RunFrame(0, 0x657c7);
+                    } else if (rec != 0 && (!rec->id == 0xfd || ai_FallbackBuilding != 0)) {
+                        /* held already: select it on the panel */
+                        strcpy(name, good->name);
+                        _strupr(name);
+                        sprintf(objName, "ob_%s", name);
+                        sv_SelectPanelObject((unsigned char *)bld, rec->objId, objName);
+                    }
+                }
+            }
+        redraw:
+            gm_UpdateTechTree(bld, rec);
+        } while (sv_RunFrame((int)ai_TechTreeWindow, 0x657c7) != 0);
     }
+    gm_CloseTechTree();
+    sv_ResearchClass = 0;
+    if (bld == (int)ai_PlayerBuilding)
+        ai_CampaignStep(0x11, bld, 1, room);
 }
 /* 0x592230, the upgrade listener (89 B): the pump 0x5309a0 (this, 0x67fff) until 0; when the pending contact
    0x6f22e4 is "UPGRADE" the tech tree 0x591bf0 (building, 0x2c) opens */
@@ -16727,7 +16836,7 @@ int ai_Unk5b7b80(int param_1)
 }
 /* 0x5b7dd0, a window (1232 B, ROUGH SKELETON): param_1, a 0x5d8-byte frame; the body is a comment */
 
-int ai_Unk5b7dd0(int param_1)
+int ai_TechEffectsWindow(int param_1)
 {
     /* ROUGH SKELETON: the 0x5d8-byte frame */
     (void)param_1;
