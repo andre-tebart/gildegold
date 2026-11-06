@@ -63,7 +63,7 @@ extern INIT_PLAYER init_PlayerProfile;
 extern int main_ChoosePlayer(int mask, int flag);
 
 #define d2_SetObjValue2 ((void (*)(int, char *))d2_SetObjValue)  /* 0x475cb0 (d2.c: five parameters): @original the lobby screen pushes 2 arguments (input, ch_EmptyName) */
-#define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN), as main.c reads it */
+#define cm_JoinChar (*(CMJOIN *)((char *)&cm_LobbyRecords + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN), as main.c reads it */
 
 #define U_I(a) (*(int *)(a))
 #define U_B(a) (*(unsigned char *)(a))

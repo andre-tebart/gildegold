@@ -570,7 +570,7 @@ extern int cm_LobbyClosed;  /* 0x936408 */
 extern unsigned int cm_LobbyList[];  /* 0x936420, the count then the eight player states (0x24 bytes; cm_LobbyListIds
                                         is a view at +4) */
 extern CMNETGAME cm_NetGame;  /* 0x936460, the network game */
-extern char ai_Unk9364e0[];  /* 0x9364e0 */
+extern char cm_LobbyRecords[];  /* 0x9364e0 */
 extern int ai_Unk9367d0;  /* 0x9367d0 */
 extern int ai_Unk9367d4;  /* 0x9367d4 */
 

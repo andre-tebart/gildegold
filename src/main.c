@@ -61,7 +61,7 @@ extern int di_MaxX;
 extern char main_GamePath[];
 extern int main_TextureDivider;
 #include "cm_types.h"
-#define cm_JoinChar (*(CMJOIN *)((char *)&ai_Unk9364e0 + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN) */
+#define cm_JoinChar (*(CMJOIN *)((char *)&cm_LobbyRecords + 0x2c0))  /* 0x9367a0, the joined character (CMJOIN) */
 extern GAPDATA full_data_5f320c[];
 extern int main_TextReopen;
 extern int main_HmtMode;
@@ -75,7 +75,7 @@ extern const char main_DefaultHost[12];       /* 0x624b48, the default host addr
 extern char ai_OptionsFile[288];
 
 extern char ai_OptionsFile[288];
-extern char ai_Unk9364e0[752];
+extern char cm_LobbyRecords[752];
 
 
 

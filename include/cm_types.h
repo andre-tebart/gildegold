@@ -552,7 +552,7 @@ typedef struct G17ROUTEMSG {            /* 8 bytes, the data of message 0x68 (cm
     int count;                          /* 0x04, the points */
 } G17ROUTEMSG;
 
-typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of ai_Unk9364e0,
+typedef struct CMLOBBYPLAYER {          /* 0x57 bytes, a player of the network lobby: the 8 records of cm_LobbyRecords,
                                            sent whole by the lobby messages of type 0x5f (kinds 2 and 4) */
     int id;                             /* 0x00, the player's net id (ai_Unk9367d0 for this player), 0: a free record */
     int ready;                          /* 0x04, 1: ready to start (kind 1; cm_LobbyAllReady counts them) */
@@ -818,7 +818,7 @@ typedef struct CMNETGAME {              /* 0x80 bytes at 0x936460: the network g
 } CMNETGAME;
 typedef char cm_AssertCMNETGAME[sizeof(CMNETGAME) == 0x80 ? 1 : -1];
 
-typedef struct CMJOIN {                 /* 0x30 bytes at 0x9367a0 (inside ai_Unk9364e0's extent, past its 8 records
+typedef struct CMJOIN {                 /* 0x30 bytes at 0x9367a0 (inside cm_LobbyRecords's extent, past its 8 records
                                            of 0x57 bytes): the character of a joined saved game, from its LSHDR
                                            (main_JoinNetworkGame) */
     char text1[0x10];                   /* 0x00, LSHDR.charText1 */

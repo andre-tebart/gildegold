@@ -79,6 +79,7 @@ extern GAPDATA full_data_92bcb8[];
 /* the block at 0x936420 is 0x24 bytes: the count then the eight player states at +4 (one object, so the
    0x24-byte memset / memcpy in 0x4cd580 and 0x4cdxx cannot run over a neighbour that LINK placed there) */
 #define cm_LobbyListIds (*(int (*)[8])((char *)cm_LobbyList + 4))  /* 0x936424, the eight player states (a view) */
+#define cm_LobbyPlayers ((CMLOBBYPLAYER *)cm_LobbyRecords)  /* 0x9364e0, the eight lobby player records (the CMJOIN cm_JoinChar follows at +0x2c0) */
 
 #include "f3init.h"
 #include "sv.h"
@@ -6577,16 +6578,16 @@ int cm_ExClearRoute(G17MSG *m, G17STAT *s)
         s->state = 1;
     return 0;
 }
-/* 0x4cd350, a free slot of the 8 records (0x57 bytes) of ai_Unk9364e0, 0: none */
+/* 0x4cd350, a free slot of the eight CMLOBBYPLAYER records of cm_LobbyRecords (id 0), 0: none */
 
 char *cm_LobbyFreeRecord()
 {
     int i = 0;
-    char *p;
+    CMLOBBYPLAYER *p;
 
-    for (p = ai_Unk9364e0; (int)p < (int)(ai_Unk9364e0 + 8 * 0x57); p += 0x57) {
-        if (*(int *)p == 0)
-            return ai_Unk9364e0 + i * 0x57;
+    for (p = cm_LobbyPlayers; (int)p < (int)(cm_LobbyPlayers + 8); p++) {
+        if (p->id == 0)
+            return (char *)&cm_LobbyPlayers[i];
         i++;
     }
     return 0;
@@ -6601,9 +6602,9 @@ char *cm_LobbyRecord(int id)
     if (id == 0)
         return 0;
     i = 0;
-    for (p = ai_Unk9364e0; (int)p < (int)(ai_Unk9364e0 + 8 * 0x57); p += 0x57) {
+    for (p = cm_LobbyRecords; (int)p < (int)(cm_LobbyRecords + 8 * 0x57); p += 0x57) {
         if (*(int *)p == id)
-            return ai_Unk9364e0 + i * 0x57;
+            return cm_LobbyRecords + i * 0x57;
         i++;
     }
     return cm_LobbyFreeRecord();
@@ -6699,7 +6700,7 @@ int cm_LobbyAllReady()
 void cm_LobbyStart(int a, int b)
 {
     memset(cm_LobbyList, 0, 0x24);
-    memset(ai_Unk9364e0, 0, 0x2b8);
+    memset(cm_LobbyRecords, 0, 0x2b8);
     ai_Unk936400 = 1;
     ai_Unk9367d0 = a;
     ai_Unk9367d4 = b;
@@ -16987,7 +16988,7 @@ extern int cm_LobbyChanged;
 extern int cm_LobbyClosed;
 extern unsigned int cm_LobbyList[9];
 extern CMNETGAME cm_NetGame;
-extern char ai_Unk9364e0[752];
+extern char cm_LobbyRecords[752];
 extern int ai_Unk9367d0;
 extern int ai_Unk9367d4;
 extern G17MSG cm_RecvPool[0x2000];
@@ -17229,7 +17230,7 @@ int cm_LobbyChanged = 0;  /* 0x936404 */
 int cm_LobbyClosed = 0;  /* 0x936408 */
 unsigned int cm_LobbyList[9] = {0};  /* 0x936420, the count then the eight player states (0x24 bytes) */
 CMNETGAME cm_NetGame = {0};  /* 0x936460, the network game (hdr.players 0x936496, mode 0x9364dc) */
-char ai_Unk9364e0[752] = {0};  /* 0x9364e0 */
+char cm_LobbyRecords[752] = {0};  /* 0x9364e0 */
 int ai_Unk9367d0 = 0;  /* 0x9367d0 */
 int ai_Unk9367d4 = 0;  /* 0x9367d4 */
 G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */

@@ -2889,3 +2889,4 @@
 2026-11-06T23:59:53 0x004cd180 data ai_Unk4cd180 -> cm_ExEffect by:main why:handler of message 0x66: 'nCTa' reserves an effect (gv_ReserveEffect), 'nCTd' stops it (gv_StopEffect); the sender cm_SendEffectLoad builds the same G17EFFECTMSG
 2026-11-07T00:00:23 0x004cd1e0 data ai_Unk4cd1e0 -> cm_ExShots by:main why:handler of message 0x67, the cannon-ball data (GVSHOTMSG) of cm_SendShots: starts the shot in its effect slot (gv_StartShot)
 2026-11-07T00:00:54 0x004cd2f0 data ai_Unk4cd2f0 -> cm_ExClearRoute by:main why:handler of message 0x69 (cm_SendClearRoute): frees the route list of the cart m->route.objId (AIOBJ.route, rt_FreePoints)
+2026-11-07T00:02:33 0x009364e0 data ai_Unk9364e0 -> cm_LobbyRecords by:main why:the eight CMLOBBYPLAYER records of the network lobby (cm_LobbyFreeRecord / cm_LobbyRecord walk them), followed by the joined character CMJOIN at +0x2c0 (cm_JoinChar)
