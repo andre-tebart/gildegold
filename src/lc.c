@@ -15800,36 +15800,23 @@ void ai_ShowGraveOrderCancelled(int owner, unsigned short *lessee, int bld, int 
     }
     he_ShowNews(((AICHARREC *)owner)->netId, -1, ai_NewsText, 0, 0x5fc, ch_EmptyName);
 }
-/* 0x5a9910, a graveyard text (124 B): 0x5190a0 orders the word of param_1 and param_3 (0 / 2: param_3 first,
-   1: the word first, other: no text) and 0x42ec00 (3) picks the text 0x409c + the value; the +4 id of param_2
-   sends it (1, 0x5fb, the key 0x62c348) */
+/* 0x5a9910, the haunting text of a grave owner's event 0x88 to its victim (124 B, he_RunHaunting): the
+   character's id (twice) and the event's end time around a random variant of the text 0x409c .. 0x409e in
+   0x409b, the language 1 putting the end time last; shown to the victim's netId (1, 0x5fb,
+   "_NACHRICHTEN_FRIEDHOF_11") */
 
-void ai_HauntingText(unsigned short *param_1, int param_2, unsigned int param_3)
+void ai_HauntingText(unsigned short *chrId, int victim, unsigned int end)
 {
-    unsigned int u;
-    unsigned int v;
-    unsigned int r;
-    int order;
-
-    order = ls_GetLanguage();
-    if (order == 0) {
-        u = *param_1;
-        v = param_3;
-        param_3 = u;
-    } else if (order == 1) {
-        u = *param_1;
-        v = u;
-    } else if (order == 2) {
-        u = *param_1;
-        v = param_3;
-        param_3 = u;
-    } else {
-        goto send;
+    switch (ls_GetLanguage()) {
+    case 0:
+    case 2:
+        txt_Format(ai_NewsText, 0x409b, (util_Random(3) & 0xffff) + 0x409c, *chrId, end, *chrId);
+        break;
+    case 1:
+        txt_Format(ai_NewsText, 0x409b, (util_Random(3) & 0xffff) + 0x409c, *chrId, *chrId, end);
+        break;
     }
-    r = ((int (*)(int, int, int, int))util_Random)(3, u, v, param_3);
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x409b, (r & 0xffff) + 0x409c);
-send:
-    he_ShowNews(*(int *)(param_2 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c348);
+    he_ShowNews(((AICHARREC *)victim)->netId, -1, ai_NewsText, 1, 0x5fb, "_NACHRICHTEN_FRIEDHOF_11");
 }
 /* 0x5a9990, tells a character of the graveyard work's outcome (69 B): the text 0x40a8 with one of the three
    sub-texts 0x40a9 .. 0x40ab (util_Random(3)) into ai_NewsText, shown to its netId (1, event 0x5fb, the sound
