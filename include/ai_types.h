@@ -177,6 +177,12 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             float incomeRate;           /* 0xc4, (gm_MeanLiking - 0.5) * 0.25 */
             unsigned char incomeCounter; /* 0xc8, 0 at the start */
         };
+        struct {                        /* 0xac, of a production job 4 (lc.c ai_UpdateProdColumns shows its progress) */
+            unsigned short prodGood;    /* 0xac, the goods it makes (an ai_Goods index) */
+            char padprod[6];
+            float prodLeft;             /* 0xb4, the work still to do (the progress shown is 1 - prodLeft / prodWork) */
+            float prodWork;             /* 0xb8, the work of the whole run */
+        };
         struct {                        /* 0xac, of the harvest event (its alloc handler 0x55d490, run handler 0x55d5c0) */
             int harvestBld;             /* 0xac, the id of the building whose vegetation map (AIBLD.plants) holds the plant */
             int harvestWorker;          /* 0xb0, the worker's netId (gm_FindChar), the spot "sp_%i" of its cutscene */
