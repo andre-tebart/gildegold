@@ -1,7 +1,17 @@
 /* The order statistics records of gv.h (ord.c's ord_Statistics, ord_StatisticsHistory, ord_MessageRecord) and the AI
-   decision record AIDEC (gv_GetTableRecord), for the units that declare them without the rest of gv.h: types only. gv.h includes it. */
+   decision record AIDEC (gv_GetTableRecord) and a graveyard's list entry GVENTRY (gv_ListEntry, he.c's graveyard work), for the units that declare them without the rest of gv.h: types only. gv.h includes it. */
 #ifndef GV_TYPES_H
 #define GV_TYPES_H
+
+typedef struct GVENTRY {                /* 0x14 bytes, an entry of a graveyard's lists (gv_AllocGraveyard) */
+    int size;                           /* 0x00, the list (grave size) 0 .. 3 it belongs to */
+    int id;                             /* 0x04, -1 when free */
+    unsigned short w08;                 /* 0x08, 0xffff when free (0x7fff for a new dead person) */
+    unsigned short until;               /* 0x0a, ai_Time.year + 5 at the burial (a guess: the year the grave runs out) */
+    unsigned char b0c;                  /* 0x0c, 0xff for a new dead person */
+    char pad0d[3];
+    struct GVGRAVE *grave;              /* 0x10, its grave record (0x44 << size bytes) in GVYARD.graves */
+} GVENTRY;
 
 /* the order statistics (ord.c 0x4f82a0 ..): the last statistics, the history of the rounds and the message
    event record */

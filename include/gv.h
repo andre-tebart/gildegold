@@ -16,6 +16,7 @@ struct G15PLANT;
 #define GV_H
 #include "ai_types.h"
 #include "cm_types.h"                /* CRIME */
+#include "gv_types.h"                /* GVENTRY, AIDEC, ORDSTATS, ORDSTATROUND, ORDMSGREC */
 
 extern char unk_Avatars[0x20][0xf4];    /* 0x60f310 */
 extern char gv_Effects[];             /* 0x6f1008, 8 slots of 0x170 bytes */
@@ -33,15 +34,6 @@ typedef struct GVGRAVE {                /* 0x44 bytes, a dead person in a grave 
     int icon;                           /* 0x3c, 0x639 + one of the name record's four words +0x34 (0xff: none) */
     int year;                           /* 0x40, a year 1 .. 4 before the burial (ai_Time.year), a guess: the year of death */
 } GVGRAVE;
-typedef struct GVENTRY {                /* 0x14 bytes, an entry of a graveyard's lists (gv_AllocGraveyard) */
-    int size;                           /* 0x00, the list (grave size) 0 .. 3 it belongs to */
-    int id;                             /* 0x04, -1 when free */
-    unsigned short w08;                 /* 0x08, 0xffff when free (0x7fff for a new dead person) */
-    unsigned short until;               /* 0x0a, ai_Time.year + 5 at the burial (a guess: the year the grave runs out) */
-    unsigned char b0c;                  /* 0x0c, 0xff for a new dead person */
-    char pad0d[3];
-    GVGRAVE *grave;                     /* 0x10, its grave record (0x44 << size bytes) in GVYARD.graves */
-} GVENTRY;
 typedef struct GVYARD {                 /* 0x24 bytes, the graveyard record of a kind 0x1d building (AIBLD.yard; gv_AllocGraveyard) */
     int id;                             /* 0x00, the building's id */
     int kind;                           /* 0x04, 1 .. 3, the building type's level when allocated */
@@ -497,7 +489,6 @@ GVENTRY *gv_FindWornEntry(struct AIBLD *bld, unsigned char m);  /* 0x4f22a0 */
 int gv_FindHeldEntry(void *a, unsigned char **o, int *e);  /* 0x4f2540 */
 int gv_FindReservedEntry(void *a, unsigned char **o, int *e);  /* 0x4f25d0 */
 float gv_SeanceChance(char *o);           /* 0x4f2660 */
-#include "gv_types.h"                /* AIDEC, ORDSTATS, ORDSTATROUND, ORDMSGREC */
 int gv_GetTableRecord(int i, int *out);     /* 0x4f2720 */
 int gv_FindTableRecord(char *c, unsigned b, int *out);  /* 0x4f2870 */
 extern char unk_Tab611258[];            /* 0x611258, 0x1d records of 0x24 bytes */
