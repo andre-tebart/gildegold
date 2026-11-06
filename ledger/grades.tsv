@@ -257,7 +257,7 @@ exe	0x0040f800	ocmd_SetEmitterTriggerOnce	ecmd	byte	readable
 exe	0x0040f850	ocmd_SetEmitterMaxTrigger	ecmd	byte	readable		
 exe	0x0040f8a0	ocmd_TriggerEmitter	ecmd	byte	readable		
 exe	0x0040f8f0	ocmd_SetParticlePos	ecmd	byte	readable		
-exe	0x0040f960	ocmd_Register	ecmd	byte	draft		
+exe	0x0040f960	ocmd_Register	ecmd	byte	readable		
 exe	0x0040ffc0	sndc_LoadSampleBank	sndc	byte	readable		
 exe	0x0040ffe0	sndc_KillSampleBank	sndc	byte	readable		
 exe	0x00410000	sndc_PlaySampleHandle	sndc	byte	readable		
@@ -1156,7 +1156,7 @@ exe	0x004621c0	fill_window	deflate	byte	readable
 exe	0x004622f0	read_buf	deflate	byte	readable		
 exe	0x00462370	deflate_fast	deflate	byte	readable		
 exe	0x004626b0	longest_match	deflate	byte	readable		
-exe	0x00462820	deflate_slow	deflate	byte	draft		
+exe	0x00462820	deflate_slow	deflate	byte	readable		
 exe	0x00462c50	gzopen	gzio	byte	readable		
 exe	0x00462c70	gz_open	gzio	byte	readable		
 exe	0x00462eb0	check_header	gzio	byte	readable		
@@ -1184,7 +1184,7 @@ exe	0x00465010	inflateEnd	inflate	byte	readable
 exe	0x00465060	inflateInit2_	inflate	byte	readable		
 exe	0x00465170	inflate	inflate	byte	readable		
 exe	0x004655a0	inflate_trees_bits	inftrees	byte	readable		
-exe	0x00465650	huft_build	inftrees	byte	draft		
+exe	0x00465650	huft_build	inftrees	byte	readable		
 exe	0x00465b00	inflate_trees_dynamic	inftrees	byte	readable		
 exe	0x00465c90	inflate_trees_fixed	inftrees	byte	readable		
 exe	0x00465cc0	inflate_flush	infutil	byte	readable		
@@ -4576,12 +4576,12 @@ exe	0x005d0a40	ai_TrialStep3	lc	shape	readable
 exe	0x005d0ab0	ai_TrialStep4	lc	shape	readable		
 exe	0x005d0b20	ai_Unk5d0b20	lc	draft	draft		
 exe	0x005d0c70	ai_QuarrelCallback	lc	draft	readable	deep	
-exe	0x005d0e60	ai_Unk5d0e60	lc	draft	draft		
+exe	0x005d0e60	ai_UseGoodTrialStep	lc	byte	readable		
 exe	0x005d0f20	ai_Unk5d0f20	lc	draft	draft		
 exe	0x005d1300	ai_Unk5d1300	lc	draft	draft		
 exe	0x005d13e0	ai_Unk5d13e0	lc	draft	draft		
 exe	0x005d1680	ai_Unk5d1680	lc	draft	draft		
-exe	0x005d1830	ai_Unk5d1830	lc	draft	draft		
+exe	0x005d1830	ai_UseGoodTributeClaim	lc	byte	readable		
 exe	0x005d18c0	ai_Unk5d18c0	lc	draft	draft		
 exe	0x005d1990	ai_Unk5d1990	lc	draft	draft		
 exe	0x005d1b30	ai_Unk5d1b30	lc	draft	draft		
@@ -4594,11 +4594,11 @@ exe	0x005d2580	ai_Unk5d2580	lc	draft	draft
 exe	0x005d2720	ai_Unk5d2720	lc	draft	draft		
 exe	0x005d2960	ai_Unk5d2960	lc	draft	draft		
 exe	0x005d2bc0	ai_Unk5d2bc0	lc	draft	draft		
-exe	0x005d2e80	ai_Unk5d2e80	lc	draft	draft		
+exe	0x005d2e80	ai_UseGoodHeatBuilding	lc	byte	readable		
 exe	0x005d2f20	ai_UseEventGood	lc	shape	readable		
-exe	0x005d2f90	ai_Unk5d2f90	lc	draft	draft		
+exe	0x005d2f90	ai_UseGoodStaffBonus	lc	byte	readable		
 exe	0x005d3030	ai_Unk5d3030	lc	draft	draft		
-exe	0x005d31c0	ai_Unk5d31c0	lc	draft	draft		
+exe	0x005d31c0	ai_UseGoodSkillBonus	lc	byte	readable		
 exe	0x005d3270	ai_Unk5d3270	lc	draft	draft		
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
 exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable		
