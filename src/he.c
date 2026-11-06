@@ -24761,17 +24761,20 @@ void he_RunMeetingScene(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x572860, the alloc of the events 0x8b and 0x92: the due clock +0x52 = now; the minute word +0x56 >= 0x17 -> due + 0x18 hours and the minute word = 0xc, else due + 6 hours; state 0 */
-
+/* 0x572860, the alloc of the plunder offer / grave lease events 0x8b and 0x92: the due clock (AIJOB.end) = now; an
+   hour (AIJOB.end.hour) at 0x17 (23:00) or later -> the due clock + 0x18 hours with the hour set to 0xc (noon), else
+   the due clock + 6 hours; stage 0 */
 void he_AllocPlunderOfferLease(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (*(unsigned short *)(ev + 0x56) >= 0x17) {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
-        *(unsigned short *)(ev + 0x56) = 0xc;
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    if (e->end.hour >= 0x17) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
+        e->end.hour = 0xc;
     } else
-        gm_AddTime(ev + 0x52, 6, 0, 0);
-    HM_I(ev, 0x70) = 0;
+        gm_AddTime(&e->end, 6, 0, 0);
+    e->stage = 0;
 }
 
 void ai_ShowGraveOrderExtended(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);                 /* 0x5a97e0 */
