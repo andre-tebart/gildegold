@@ -26559,13 +26559,25 @@ int ai_Unk5d1680(void)
 {
     return 0;
 }
-/* 0x5d1830, an action callback of the record table 0x62c420 (record 5 at 0x62c4ac, the text id 0x15c,
-   the value 0x10e0, 144 B): the carrier walk 0x53e400 (1, 0, 0x35) / 0x53e300, 0x5a8d80 and the close
-   0x4c4c60. */
+/* 0x5d1830, the use callback of the Domizil good 0x15c (the +0x14 pointer of the table entry 0x62c4ac):
+   walks the running tribute events 0x35 (0x53e400 (1, 0, 0x35) / 0x53e300) and, for each whose collector
+   ev->idbc is ch->netId, shows the tribute claim news 0x5a8d80 (ch, the payer record ai_Chars[ev->chr]),
+   sets the event's end time to ai_Time and gives it its slot (0x4c4c60, -1). Returns 1. */
 
-int ai_Unk5d1830(void)
+int ai_UseGoodTributeClaim(AICHARREC *ch)
 {
-    return 0;
+    AIJOB *ev;
+
+    ev = (AIJOB *)he_FindEvent(1, 0, 0x35);
+    while (ev != 0) {
+        if ((int)ch->netId == ev->idbc) {
+            ai_ShowTributeClaimNews((int)ch, (int)ai_Chars[ev->chr]);
+            ev->end = ai_Time;
+            cm_SendExSetHE(-1, (char *)ev);
+        }
+        ev = (AIJOB *)he_NextEvent();
+    }
+    return 1;
 }
 /* 0x5d18c0, an action callback of the record table 0x62c420 (record 50 at 0x62c998, the text id 0x2b8,
    208 B): type 6 takes the character from the 0x5c1130 menu, other types from 0x505df0 (param_2 + 4),
