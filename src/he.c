@@ -450,7 +450,7 @@ typedef struct HEEV27 {                 /* the payment event 0x27's words over A
     char padb1[3];
     int amount;                         /* 0xb4, the amount paid */
 } HEEV27;
-typedef struct HEEXAMPASS {             /* the passed master exam event 0x26's words over AIJOB's union (he_Unk55ce00 /
+typedef struct HEEXAMPASS {             /* the passed master exam event 0x26's words over AIJOB's union (he_AllocMasterExamPass /
                                            he_RunMasterExamPassed); the character is AIJOB.ownerCh */
     char pad00[0xb0];
     unsigned char job;                  /* 0xb0, the character's job (AICHAR.jobId) when the event first ran */
@@ -15451,17 +15451,19 @@ void he_RunMasterExamNotice(int ev)
         return;
     }
 }
-/* 0x55ce00, the allocation handler of the master exam passed event: the record of type 0x25 of the same player (0x53e400 (2, 2, id, 0, 0x25)) is ended (state -1), the due clock is now */
+/* 0x55ce00, the allocation handler of the passed master exam event 0x26: the event 0x25 record of the same character
+   is ended (stage -1), the due clock is now */
 
-void he_Unk55ce00(int ev)
+void he_AllocMasterExamPass(int ev)
 {
-    char *e;
+    AIJOB *e = (AIJOB *)ev;
+    AIJOB *exam;
 
-    gm_FindChar(*(int *)(ev + 0xac));
-    e = he_FindEvent(2, 2, *(unsigned short *)(ev + 8), 0, 0x25);
-    if (e != 0)
-        *(int *)(e + 0x70) = -1;
-    *(AITIME *)(ev + 0x52) = ai_Time;
+    gm_FindChar(e->ownerCh);
+    exam = (AIJOB *)he_FindEvent(2, 2, e->chr, 0, 0x25);
+    if (exam != 0)
+        exam->stage = -1;
+    e->end = ai_Time;
 }
 /* 0x55ce60, the run handler of the passed master exam, event 0x26 (HEEXAMPASS), on the player's own machine
    (ai_PlayerId is AIJOB.chr) while a game runs and once started; the first run notes the character's job and
@@ -20148,7 +20150,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(37, (void *)he_RunDueNow, (void *)he_RunMasterExamNotice) != 0)
         return 1;
-    if (he_SetEventHandlers(38, (void *)he_Unk55ce00, (void *)he_RunMasterExamPassed) != 0)
+    if (he_SetEventHandlers(38, (void *)he_AllocMasterExamPass, (void *)he_RunMasterExamPassed) != 0)
         return 1;
     if (he_SetEventHandlers(39, (void *)he_AllocEvent27, (void *)he_RunEvent27) != 0)
         return 1;
