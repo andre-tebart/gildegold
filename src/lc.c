@@ -1024,7 +1024,8 @@ unsigned short * gm_QueryNext(void); /* 0x4ffcc0, moved above its first call */
 
 #pragma pack(push, 1)
 typedef struct AITASKVIEW {       /* the character's model record fields this unit reads (ai_char.h AITASK) */
-    char pad000[0x30];
+    char pad000[0x2c];
+    int bldId;                     /* 0x2c, the building the character was sent to (ai_char.h AITASK.bldId) */
     int scriptGroup;               /* 0x30, the group of the script that created / moved it (the room object's id) */
 } AITASKVIEW;
 
@@ -1106,7 +1107,12 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     char pad2b[9];
     unsigned char side;            /* 0x34, of a foreign city (kind 'G') the side of the town map it lies at, 0 .. 7
                                       (ai_BuildTownMap's direction table: north, then clockwise) */
-    char pad35[0x14];
+    char pad35[8];
+    int wageRate;                  /* 0x3d, the percent of the job wages its workers get, 50 .. 150 (ai_bld.h AIBLD.wageRate;
+                                      the personnel book's slider sends it as the field 0x3d) */
+    int workRate;                  /* 0x41, the working-hours setting 0 .. 4 (ai_bld.h AIBLD.workRate; the personnel
+                                      book's list, the field 0x41) */
+    char pad45[4];
     float priceFactor;             /* 0x49, the factor on the goods price a trade cart pays here (ai_bld.h AIBLD.priceFactor) */
     char pad4d[0xc];
     char prodScroll;               /* 0x59, the scroll position of the production window, in rows (ai_ProductionWindow
@@ -1164,10 +1170,16 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
     unsigned char buildingClass;   /* 0x00, the building class the goods groups test (4, 0x13, 0x10 in
                                       ai_GoodFitsBuilding; the record's kind byte of ai_FillPersonnelRow) */
     char name[0x21];               /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (lc_GebaeudeAusrichten) */
-    char pad022[0x20d];
+    char pad022[0x201];
+    unsigned char jobs[6];         /* 0x223, the six job ids of the kind (ai_bld.h AIBTYPE.jobs; text 0x130 + it names
+                                      the job) */
+    char pad229[6];
     unsigned char title;           /* 0x22f, the title rank of the type's first job (ai_bld.h AIBTYPE.title) */
     unsigned char title2;          /* 0x230, the title rank of the type's second job (ai_bld.h AIBTYPE.title2) */
-    char pad231[0x12];
+    unsigned char k231;            /* 0x231, with k232 the number of worker places of the type (ai_bld.h AIBTYPE.k231;
+                                      the personnel book makes that many rows) */
+    unsigned char k232;            /* 0x232 */
+    char pad233[0x10];
     int v243;                      /* 0x243, a value the type's tooltip shows (ai_bld.h AIBTYPE.v243; the build
                                       confirmation text 0x17ef shows it too) */
     unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
@@ -3600,7 +3612,7 @@ float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_Check
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
 char *_strupr(char *); void gm_CloseTechTree(void); int ai_MercenaryBook();
-void ai_MasterLetterWindow(); int ai_PersonnelBook(); void sv_ReleaseNamePlates(void);
+void ai_MasterLetterWindow(); void sv_ReleaseNamePlates(void);
 
 void ai_GameFrame(void);
 void lc_PlayerInJail(void);
@@ -5707,7 +5719,7 @@ void ai_SmithyContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == personal)
-                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == meister)
                 ai_MasterLetterWindow((unsigned char *)bld);
         }
@@ -5755,7 +5767,7 @@ void ai_CarpenterContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == personal)
-                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == meister)
@@ -6202,7 +6214,7 @@ void ai_MixingContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == personal)
-                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == sammeln)
@@ -6255,7 +6267,7 @@ void ai_StonecutterContact(AIBLD *bld, int room)
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == personal)
-                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == meister)
@@ -7999,7 +8011,7 @@ void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int
 int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_CreditEvents(); void d2_EnableViewObjects();
 #define gm_SumListAmountsL ((int (*)(void *))gm_SumListAmounts)  /* 0x509e30: @original ai_WineCellarWindow passes the list alone (one push, no player slot) */
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
-int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
+int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
 int ai_BardWindow(); int ai_NoticeBoardWindow(); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
@@ -8081,7 +8093,7 @@ void ai_BreweryContact(AIBLD *bld, int room)
         ai_MarketContact(bld);
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == personal)
-                ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                ai_PersonnelBook(bld, "ob_PERSONALBUCH");
             else if (ai_ClickedObject == lager)
                 ai_StorageWindow((int)bld, bld->objList);
             else if (ai_ClickedObject == meister)
@@ -12384,7 +12396,7 @@ void ai_SermonWindow(AIBLD *bld)
     sv_CameraFollow();
 }
 
-int ai_PersonnelBook(); int ai_StorageWindow(); int ai_ProductionWindow();
+int ai_StorageWindow(); int ai_ProductionWindow();
 int ai_OpenTransport(); void ai_MasterLetterWindow();
 
 /* 0x5a36c0, the production contact of the room 0xf7, the writing desk (330 B): the pump 0x5309a0 (0x5a36c0,
@@ -14231,7 +14243,7 @@ void ai_CityWatchListener(AIBLD *bld)
                 zoll = sv_RegisterNamePlate("ob_ZOLLKASSE_MIT_GEHEIMFACH", ai_ContactTextCustomsBox, 0x16);
             if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0) {
                 if (ai_ClickedObject == personal)
-                    ai_PersonnelBook((int)bld, "ob_PERSONALBUCH");
+                    ai_PersonnelBook(bld, "ob_PERSONALBUCH");
                 else if (ai_ClickedObject == patrol)
                     ai_PatrolStart((int)bld);
                 else if (ai_ClickedObject == wachplan)
@@ -16083,7 +16095,7 @@ unsigned short ai_DomizilGoodInRange(int from, int to)
    0x760638): a click 0xf8a668 == 0 confirms (0x521150 on 0x1440a94, 0x475980), 1 or 0x1468410 == 1 cancels;
    0x14673a0 still sets 0x6f22a0; returns the click result */
 
-int ai_Unk5a9f80(void)
+int ai_AskBonusAmount(void)
 {
     int mask;
     int ret;
@@ -16102,7 +16114,7 @@ int ai_Unk5a9f80(void)
         v = 0x12c0;
     d2_SetObjValue(ctrl, 10, v / 32, 10);
     d2_CentreViewWindows(win);
-    while (sv_RunFrame(ai_Unk5a9f80, mask) != 0) {
+    while (sv_RunFrame(ai_AskBonusAmount, mask) != 0) {
         if (U_I((unsigned)&d2_ClickedId) == 0) {
             sv_MessageBox(U_I((unsigned)&full_data_1440a94), 4);
             U_I((unsigned)&sv_PopRequest) = 1;
@@ -16121,7 +16133,7 @@ int ai_Unk5a9f80(void)
    0x1440ac8 and 0x631090 (0x473650 at x - 0x36, y - 0x11 / y + 0x44) at +5 / +6; the record: x at +0, y at +1,
    the screen 0x6ed958 at +0x16, the ids -1 at 0xa .. 0x15 and 0 at +2 / +9 */
 
-void ai_Unk5aa0d0(int param_1, int param_2, int *param_3)
+void ai_CreatePersonnelRow(int param_1, int param_2, int *param_3)
 {
     int id;
     int i;
@@ -16160,9 +16172,10 @@ typedef struct G9DOMIZILROW {           /* a row of the Domizil personnel book: 
     int text;                           /* 0x14, the text control (0x5aa1f0 / 0x5aa520) */
     int name;                           /* 0x18, the name control (0x5aa0d0) */
     int icon;                           /* 0x1c, the character's icon control (d2_WinOpenPic, 0x5aa1f0) */
-    unsigned char state;                /* 0x20, 0 / 1 / 2 (0x5aa520) */
+    unsigned char state;                /* 0x20, 0: vacant, 1: a character, 2: a hire running (ai_FillVacantPersonnelRow) */
     char pad21[3];                      /* 0x21 .. 0x23 */
-    char pad24[4];                      /* 0x24, cleared by 0x5aa0d0 */
+    int title;                          /* 0x24, the title rank of the character the row was filled with (ai_PersonnelBook
+                                           refills a row whose character or title changed); cleared by 0x5aa0d0 */
     int ctrl28[6];                      /* 0x28 .. 0x3f, the six entries' controls (their roles are not recovered:
                                            the book window creates them, its body is not written yet) */
     int ctrl40[6];                      /* 0x40 .. 0x57, the second control of each entry */
@@ -16421,21 +16434,494 @@ void ai_UpdateBldCarts(SVBOOK *book, AIBLD *bld)
         }
     }
 }
-/* 0x5aab80, the main window of the Domizil module, ROUGH SKELETON (5328 B): a huge frame (0x5de9c0 is the
-   stack probe); the building record arg (the byte *in_stack_00001a50 of Ghidra) with the +1 field and the +0x3d
-   index, the kind record 0x7e3f30 + kind * 0x24d (pcVar14) and the character record 0x770b80 + 0x6f25b8 * 0x21c;
-   the entry array at r + 0x22c (0xc entries of 0x5c bytes, the count +0x231 + +0x232), up to three rows
-   0x5aa0d0 of six entries; 0x5aa700 builds the worker list; the pump 0x5309a0 loop refreshes 0x5aa9a0, the
-   keys 0x1468410 -0x33 / -0x35, the selected record (0x509e60 / 0x5aa1f0 / 0x5aa520), the AIMSG messages 7, 6,
-   0x31 and 0x32 of the click dispatch (0x4c4b70, the clock 0x770ae0, the character 0x770b84) and the exit
-   0x52d7a0. ROUGH: the Ghidra pseudocode lost most call arguments (a 0x1a50-byte frame); the arguments below are
-   the ones the pseudocode shows, the nested dispatch is condensed to its calls */
+void d2_RadioSelect(int g, int sel);
+struct SVBOOK *sv_OpenBook(char *model, char *at, char n, ...); void sv_UpdateBook(struct SVBOOK *bk); void sv_CloseBook(struct SVBOOK *bk);
+/* 0x5aab80, the personnel book of the building bld (ob_PERSONALBUCH, the book model model; 5511 B): four pages
+   ("Buch\Personalbuch_1" .. _4, the thieves' guild classes 4 / 0x13 / 0x10 their own first page). Page 1 holds
+   the wage slider (AIBLD.wageRate 50 .. 150), the working-hours list (AIBLD.workRate, the texts 0x1a2e ..
+   0x1a32; not for the guild classes), the bonus button 0x1a20 and, but for the classes 5 / 9, the master's row
+   (the text 0x1a2d above it); pages 2 .. 4 hold up to 12 worker rows, two columns and two rows a page, as many as
+   the type has places (AIBTYPE.k231 + k232), all of them in one radio group. Then the cart list
+   (ai_ShowBldCarts) and the frame pump (sv_RunFrame, this, 0x677c7): every frame the carts, the book and its
+   keys (right / left turn the page); on page 1 a changed wage is sent as the field 0x3d, the balance line 0x1a2c
+   is printed and the master's row follows the building's master (gm_FindCharacterByMaster). A click on a row
+   offers its action under it: an empty row the hire button 0x1a22 (the job's cost, the job or title name), a
+   filled one the fire button 0x1a21 and, for a worker of the second title, the promotion 0x1a25. The bonus
+   (ai_AskBonusAmount's amount) is split over the workers and the master (the groups "pay_worker" / "pay_meister":
+   money and relations); a hire sends the request 6 (a worker for the row, or marks it in the running request)
+   or 7 (the master, with the text 0x1939), a fire the message 0x31 after the question 0x1a36, a promotion the
+   message 0x32 after the question 0x1a28 / 0x1a29 with the two wages (refused with 0x42c4 for a character
+   working elsewhere, 0x1a27 below four years of service). The worker rows are refilled every frame from
+   gm_ListWorkers (both title lists; a row whose character or title changed is freed first). At the end the
+   work rate (field 0x41) and the wage (0x3d) are sent, the book closed and the camera follows again
+   @deep Written whole from the original (was a stub): the four-page book, the wage slider / work list, the
+   bonus button and its pay_worker / pay_meister groups, the master row, the 12 worker rows in one radio
+   group, the per-frame refill from gm_ListWorkers with the old-row compare, the click handling (hire 6 / 7
+   with the new AIMSG hire members, fire 0x31, promote 0x32 with the two wages), the exit field deltas 0x41
+   / 0x3d. 1579 vs 1567 instructions, every call the same number of times (no calls: line), no branch
+   target differences. Left is allocation and layout: the scalar frame has one slot more than the
+   original's (masterRow at frame 0x158 vs 0x154, msg at 0x60 vs 0x5c; the original packs halfH / master /
+   the list counter in 0x2c and pg / n in 0x30), so the prover stops at the first fill ('ours fill4 [(args
+   + 0x14c)] the original fill4 [(args + 0x148)]'); the message bodies' stores are scheduled otherwise (the
+   three M8 lines are the AITIME copy msg.time = ai_Time stored in another word order, '+0xaa3 ai_Time |
+   ai_Time+0x8'), and the slots / regs hunks follow the frame. Tried: the declarations in the original's
+   address order (frame start now matches but for the one slot), a local for the owner's AICHAR (the wage
+   calls), the row column / row split (r = j / 2). (references: M8 at +0xaa3: ours refers to ai_Time
+   (0x770ae0), the original's field to 0x770ae8 (ai_Time+0x8) (and 2 more), explained: the M8 refs are the
+   words of one struct copy (msg.time = ai_Time) stored in another order, no other object) */
 
-
-int ai_PersonnelBook(int param_1, char *param_2)
+void ai_PersonnelBook(AIBLD *bld, char *model)
 {
-    /* ROUGH: not written yet - see the comment above (the Ghidra pseudocode lost the call arguments) */
-    return 0;
+    int i;
+    SVBOOK *book;
+    int sel;
+    int fireButton;
+    int promoteButton;
+    AIBTYPE *bt;
+    int hireButton;
+    AICHARREC *master;
+    int n;
+    int fireMasterButton;
+    int nWorkers;
+    int wage;
+    int radio;
+    int workList;
+    int hireMasterButton;
+    int slot;
+    int wageSlider;
+    int halfW;
+    int bonusButton;
+    AIMSG msg;
+    G9DOMIZILROW masterRow = { 0 };
+    int balance[21];
+    char masterText[0x60];
+    G9DOMIZILROW rows[12];
+    int workers[38];
+    char masterName[0x60];
+    char ownerName[0x60];
+    char text1[0x200];
+    char text2[0x400];
+    G9DOMIZILROW oldRows[12];
+    char text3[0x400];
+    char text4[1008];
+    int halfH;
+    int pg;
+    int j;
+    int r;
+    int *vp;
+    int k;
+    int a;
+    int b;
+    int per;
+    int rel;
+    int amount;
+    int cost;
+    int v;
+    AICHARREC *c;
+    char *owner;
+    AIJOB *job;
+
+    nWorkers = 0;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    fireMasterButton = -1;
+    hireMasterButton = -1;
+    hireButton = -1;
+    fireButton = -1;
+    promoteButton = -1;
+    workList = -1;
+    sel = -1;
+    radio = -1;
+    slot = -1;
+    if (bt->buildingClass != 4 && bt->buildingClass != 0x13 && bt->buildingClass != 0x10)
+        book = sv_OpenBook(model, "Buch", 4, "Buch\\Personalbuch_1", "Buch\\Personalbuch_2", "Buch\\Personalbuch_3",
+                           "Buch\\Personalbuch_4");
+    else
+        book = sv_OpenBook(model, "Buch", 4, "Buch\\Personalbuch_1_Diebesgilde", "Buch\\Personalbuch_2",
+                           "Buch\\Personalbuch_3", "Buch\\Personalbuch_4");
+    sv_UpdateBook(book);
+    ai_CampaignStep(0x21, (int)book, 0, 0);
+    io_CharacterName(bld->owner, 1, 2, ownerName);
+    io_CharacterName(bld->masterId, 1, 2, masterName);
+    master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
+    if (master == 0)
+        strcpy(masterText, txt_NoCharacter);
+    else
+        io_CharacterName(master->id, 1, 1, masterText);
+    d2_SetForm(book->views[0], 3);
+    wageSlider = d2_GetWinObj(book->views[0], 3, 2);
+    d2_SetObjValue(wageSlider, 0x32, 0x96, bld->wageRate);
+    if (bt->buildingClass != 4 && bt->buildingClass != 0x13 && bt->buildingClass != 0x10) {
+        workList = d2_GetWinObj(book->views[0], 3, 3);
+        d2_SetObjValue(workList, 0, 4, bld->workRate);
+        d2_SetList(workList, 5, txt_Ptrs[0x1a2e], txt_Ptrs[0x1a2f], txt_Ptrs[0x1a30], txt_Ptrs[0x1a31], txt_Ptrs[0x1a32]);
+    }
+    d2_SetForm(book->views[0], 3);
+    io_PrintText("$8A");
+    io_PrintText("$8A");
+    bonusButton = d2_GetWinObj(book->views[0], 3, io_PrintText(0x1a20));
+    if (bt->buildingClass != 5 && bt->buildingClass != 9) {
+        d2_SetForm(book->views[0], 3);
+        ai_CreatePersonnelRow(d2_LastWindowPtr->w / 2 - 0x18, 0x20, (int *)&masterRow);
+        v = d2_CreateWinText(masterRow.x - 0x38, masterRow.y - 0x20, txt_Ptrs[0x1a2d], d2_LastWindow);
+        d2_Objs[v].centred = 1;
+        d2_Objs[v].w = 0xa0;
+    }
+    for (i = 0; i < 4; i++) {
+        d2_SetForm(book->views[i], 1);
+        io_PrintText(0x1a1d);
+        if (i == 0)
+            d2_SetForm(book->views[0], 5);
+        else
+            d2_SetForm(book->views[i], 4);
+        io_PrintText("%s %i", 0x1a37, i + 1);
+    }
+    if (bt->buildingClass == 4 || bt->buildingClass == 0x13 || bt->buildingClass == 0x10) {
+        a = d2_GetWinObj(book->views[0], 3, 3);
+        b = d2_GetWinObj(book->views[0], 3, 1);
+        d2_RemoveObj(a);
+        d2_RemoveObj(b);
+        workList = -1;
+    }
+    d2_SetForm(book->views[2], 3);
+    halfW = d2_Wins[d2_LastWindow].w / 2;
+    halfH = d2_Wins[d2_LastWindow].h / 2;
+    for (i = 0; i < 12; i++) {
+        rows[i].ch = 0;
+        rows[i].pic = -1;
+    }
+    j = 0;
+    pg = 1;
+    vp = &book->views[1];
+    for (i = 0; i < 12; i++) {
+        if (i >= bt->k232 + bt->k231)
+            break;
+        r = j / 2;
+        if (r >= 2) {
+            j = 0;
+            r = 0;
+            pg++;
+            vp++;
+            if (pg > 3)
+                break;
+        }
+        d2_SetForm(*vp, 3);
+        rows[i].view = *vp;
+        ai_CreatePersonnelRow(j % 2 * halfW + 0x28, r * halfH + 0x11, (int *)&rows[i]);
+        if (i == 0 && radio == -1) {
+            radio = d2_CreateRadioGroup(0);
+            if (masterRow.pic != -1)
+                d2_RadioAdd(radio, masterRow.pic);
+            d2_RadioAdd(radio, rows[0].pic);
+        } else {
+            d2_RadioAdd(radio, rows[i].pic);
+        }
+        j++;
+    }
+    d2_RadioSelect(radio, -1);
+    n = i;
+    ai_ShowBldCarts(book, bld);
+    d2_SetPointerSprite(0, 0);
+    while (sv_RunFrame((int)ai_PersonnelBook, 0x677c7) != 0) {
+        if (dm_L.rup != 0 && ai_RunAllowsWindow() == 1)
+            sv_PopRequest = 1;
+        ai_UpdateBldCarts(book, bld);
+        sv_UpdateBook(book);
+        sv_BookKeys(book);
+        if (kb_Last == 0xcd)
+            sv_BookForward(book);
+        if (kb_Last == 0xcb)
+            sv_BookBack(book);
+        if (book->page == 0) {
+            if (wageSlider != -1 && (wage = d2_GetObjValue(wageSlider)) != bld->wageRate &&
+                (slot == -1 || cm_GetSlotState(slot) != 0)) {
+                cm_BeginFieldBlock((char *)bld, bld->id);
+                cm_AddFieldDelta(4, 1, 0x3d, &wage);
+                slot = cm_SendFieldDeltas();
+            }
+            d2_SetForm(book->views[0], 4);
+            gm_BuildingBalance((unsigned char *)bld, ai_PlayerId, balance);
+            io_PrintText(0x1a2c, balance[3]);
+            master = (AICHARREC *)gm_FindCharacterByMaster((int)bld);
+            if (master != 0 && master->id != ai_PlayerId && master->health != 0 && masterRow.icon == -1) {
+                masterRow.ch = master;
+                ai_FillPersonnelRow(master, &masterRow, 0);
+            } else if ((master == 0 || master->health == 0) && masterRow.icon != -1) {
+                masterRow.ch = 0;
+                ai_DomizilFreeRow(&masterRow);
+                fireButton = -1;
+            }
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == masterRow.pic && masterRow.pic != -1) {
+                    for (k = 0; k < 3; k++) {
+                        d2_SetForm(book->views[k], 2);
+                        io_PrintText("$C");
+                    }
+                    hireButton = -1;
+                    fireButton = -1;
+                    promoteButton = -1;
+                    sel = i;
+                    if (masterRow.ch == 0 && masterRow.state != 2) {
+                        cost = (int)gm_JobCost(ai_Chars[bld->owner], bld->kind, 0, -1);
+                        d2_SetForm(masterRow.view, 2);
+                        hireMasterButton = d2_GetWinObj(masterRow.view, 2, io_PrintText(0x1a22, cost, bt->jobs[0] + 0x130));
+                    } else if (masterRow.state == 1) {
+                        d2_SetForm(masterRow.view, 2);
+                        io_PrintText("$C");
+                        fireMasterButton = d2_GetWinObj(masterRow.view, 2, io_PrintText(0x1a21, masterRow.ch->id));
+                    }
+                }
+                if (d2_ClickedId != -1) {
+                    if (d2_PointerObj == bonusButton && nWorkers != 0 && (ai_GameFlags & 0x80) == 0) {
+                        amount = ai_AskBonusAmount();
+                        if (amount != 0) {
+                            per = amount / nWorkers;
+                            rel = per / 3;
+                            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], gm_PlayerFactor(amount, ai_OwnPlayer), ai_OwnPlayer) != 0) {
+                                for (k = 0; k < n; k++) {
+                                    if (rows[k].ch != 0) {
+                                        cm_BeginGroup("pay_worker");
+                                        cm_SendMoveGoods(rows[k].ch->netId, -1, ai_OwnPlayer, gm_PlayerFactor(per, ai_OwnPlayer));
+                                        cm_SendRelations(ai_CharInts[ai_PlayerId][0], rows[k].ch->netId, rel, 0);
+                                        cm_EndGroup("pay_worker");
+                                    }
+                                }
+                                if (masterRow.ch != 0) {
+                                    cm_BeginGroup("pay_meister");
+                                    cm_SendMoveGoods(masterRow.ch->netId, -1, ai_OwnPlayer, gm_PlayerFactor(per, ai_OwnPlayer));
+                                    cm_SendRelations(ai_CharInts[ai_PlayerId][0], masterRow.ch->netId, rel, 0);
+                                    cm_EndGroup("pay_meister");
+                                }
+                                cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, gm_PlayerFactor(amount, ai_OwnPlayer));
+                            }
+                        }
+                    }
+                    if (d2_ClickedId != -1) {
+                        if (d2_PointerObj == hireMasterButton && hireMasterButton != -1 && (ai_GameFlags & 0x80) == 0) {
+                            if (master == 0 || master->health == 0) {
+                                for (job = (AIJOB *)he_FindEvent(2, 0, 7, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
+                                    if (job->hireTitle == 0)
+                                        break;
+                                if (job == 0) {
+                                    memset(&msg, 0, sizeof(msg));
+                                    msg.type = 7;
+                                    msg.flags = 1;
+                                    msg.hireMaster = 1;
+                                    msg.fromId = bld->id;
+                                    msg.to = ai_CharInts[ai_PlayerId][0];
+                                    msg.time = ai_Time;
+                                    if (gm_IsHomeType(bld) != 0)
+                                        msg.hireMasterRoom = -1;
+                                    else
+                                        msg.hireMasterRoom = ((AIROOM *)sv_PanelShown)->objId;
+                                    msg.hireTitle = 0;
+                                    cm_SendLongMessage((char *)&msg);
+                                    txt_Format(text1, 0x1939, ((AIBTYPE *)ai_BTypes)[bld->kind].jobs[0] + 0x130);
+                                    sv_MessageBox(text1, 0);
+                                }
+                                for (k = 0; k < 3; k++) {
+                                    d2_SetForm(book->views[k], 2);
+                                    io_PrintText("$C");
+                                }
+                                masterRow.state = 2;
+                                hireButton = -1;
+                                fireButton = -1;
+                                promoteButton = -1;
+                                fireMasterButton = -1;
+                            }
+                        } else if (d2_PointerObj == fireMasterButton && masterRow.ch != 0 &&
+                                   sv_MessageBox(txt_Ptrs[0x1a36], 1) != 0) {
+                            for (k = 0; k < 3; k++) {
+                                d2_SetForm(book->views[k], 2);
+                                io_PrintText("$C");
+                            }
+                            memset(&msg, 0, sizeof(msg));
+                            msg.type = 0x31;
+                            msg.flags = 1;
+                            msg.to = ai_CharInts[ai_PlayerId][0];
+                            msg.fromId = bld->id;
+                            msg.time = ai_Time;
+                            msg.arg[0] = masterRow.ch->netId;
+                            cm_SendLongMessage((char *)&msg);
+                            for (k = 0; k < 3; k++) {
+                                d2_SetForm(book->views[k], 2);
+                                io_PrintText("$C");
+                            }
+                            sel = -1;
+                            hireButton = -1;
+                            fireButton = -1;
+                            promoteButton = -1;
+                            fireMasterButton = -1;
+                        }
+                    }
+                }
+            }
+        }
+        memcpy(oldRows, rows, sizeof(rows));
+        for (k = 0; k < n; k++)
+            rows[k].ch = 0;
+        nWorkers = gm_ListWorkers((unsigned char *)bld, workers);
+        for (a = 0; a < 2; a++) {
+            for (b = 0; b < 12; b++) {
+                v = workers[1 + a * 12 + b];
+                if (v != 0xffff) {
+                    for (k = 0; k < n; k++)
+                        if (rows[k].ch == (AICHARREC *)ai_Chars[v])
+                            break;
+                    if (k >= n) {
+                        for (k = 0; k < n; k++) {
+                            if (rows[k].ch == 0) {
+                                c = (AICHARREC *)ai_Chars[v];
+                                rows[k].ch = c;
+                                rows[k].title = c->title;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (k = 0; k < n; k++)
+            if (rows[k].ch != oldRows[k].ch || rows[k].title != oldRows[k].title)
+                ai_DomizilFreeRow(&rows[k]);
+        he_FindEvent(2, 0, 6, 3, bld->id);
+        for (i = 0; i < n; i++) {
+            if (rows[i].ch != 0) {
+                if (rows[i].icon == -1)
+                    ai_FillPersonnelRow(rows[i].ch, &rows[i], 0);
+            } else {
+                ai_FillVacantPersonnelRow(bld, &rows[i], 6, i);
+            }
+        }
+        ai_FillVacantPersonnelRow(bld, &masterRow, 7, 0);
+        if (fireButton != -1 && sel != -1 && rows[sel].ch == 0) {
+            sel = -1;
+            hireButton = -1;
+            fireButton = -1;
+            promoteButton = -1;
+            fireMasterButton = -1;
+            for (k = 0; k < 3; k++) {
+                d2_SetForm(book->views[k], 2);
+                io_PrintText("$C");
+            }
+        }
+        if (d2_ClickedId == -1)
+            continue;
+        for (i = 0; i < 12; i++) {
+            if (rows[i].pic == d2_PointerObj) {
+                for (k = 0; k < 3; k++) {
+                    d2_SetForm(book->views[k], 2);
+                    io_PrintText("$C");
+                }
+                hireButton = -1;
+                fireButton = -1;
+                promoteButton = -1;
+                fireMasterButton = -1;
+                sel = i;
+                if (rows[i].ch == 0) {
+                    cost = (int)gm_JobCost(ai_Chars[bld->owner], bld->kind, -1, 1);
+                    d2_SetForm(rows[i].view, 2);
+                    hireButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a22, cost, bt->title2 + 0x20d));
+                } else if (rows[i].state == 1) {
+                    d2_SetForm(rows[i].view, 2);
+                    io_PrintText("$C");
+                    fireButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a21, rows[i].ch->id));
+                    if (rows[i].ch->title == bt->title2)
+                        promoteButton = d2_GetWinObj(rows[i].view, 2, io_PrintText(0x1a25, rows[i].ch->id));
+                }
+            }
+        }
+        if (d2_PointerObj == hireButton && sel != -1) {
+            job = (AIJOB *)he_FindEvent(2, 0, 6, 3, bld->id);
+            if (job != 0) {
+                job->tourCounters[sel] = 1;
+            } else {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 6;
+                msg.flags = 1;
+                msg.fromId = bld->id;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.time = ai_Time;
+                msg.hireRows[sel] = 1;
+                if (gm_IsHomeType(bld) != 0)
+                    msg.hireRoom = -1;
+                else
+                    msg.hireRoom = ((AIROOM *)sv_PanelShown)->objId;
+                msg.hireFlag = 1;
+                msg.hireTitle = bt->title2;
+                cm_SendLongMessage((char *)&msg);
+            }
+            sel = -1;
+            for (k = 0; k < 3; k++) {
+                d2_SetForm(book->views[k], 2);
+                io_PrintText("$C");
+            }
+            ai_CampaignStep(0x22, 0, 0, 0);
+        } else if (d2_PointerObj == fireButton && sel != -1 && (ai_GameFlags & 0x80) == 0) {
+            if (sv_MessageBox(txt_Ptrs[0x1a36], 1) != 0) {
+                for (k = 0; k < 3; k++) {
+                    d2_SetForm(book->views[k], 2);
+                    io_PrintText("$C");
+                }
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x31;
+                msg.flags = 1;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                msg.arg[0] = rows[sel].ch->netId;
+                cm_SendLongMessage((char *)&msg);
+                sel = -1;
+            }
+        } else if (d2_PointerObj == promoteButton && sel != -1) {
+            c = rows[sel].ch;
+            if (c->model != 0 && c->model->bldId != bld->id) {
+                txt_Format(text3, 0x42c4, c->id);
+                sv_MessageBox(text3, 4);
+            } else if (gm_AllowAll == 0 && c->v174 < 4) {
+                txt_Format(text4, 0x1a27, 4);
+                sv_MessageBox(text4, 4);
+            } else {
+                owner = ai_Chars[bld->owner];
+                a = (int)(gm_JobWage(owner, bld->kind, -1, 1) * (bld->wageRate * 0.01));
+                b = (int)(gm_JobWage(owner, bld->kind, -1, 0) * (bld->wageRate * 0.01));
+                if (c->sex == 0)
+                    txt_Format(text2, 0x1a28, c->id, bt->title + 0x20d, a, b);
+                else
+                    txt_Format(text2, 0x1a29, c->id, bt->title + 0x230, a, b);
+                if (sv_MessageBox(text2, 0) != 0) {
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x32;
+                    msg.flags = 2;
+                    msg.fromId = bld->id;
+                    msg.to = ai_CharInts[ai_PlayerId][0];
+                    msg.time = ai_Time;
+                    msg.arg[0] = c->netId;
+                    cm_SendLongMessage((char *)&msg);
+                    for (k = 0; k < 3; k++) {
+                        d2_SetForm(book->views[k], 2);
+                        io_PrintText("$C");
+                    }
+                    sel = -1;
+                    promoteButton = -1;
+                }
+            }
+        }
+    }
+    if (radio != -1)
+        d2_RadioClear(radio);
+    cm_BeginFieldBlock((char *)bld, bld->id);
+    if (workList != -1) {
+        v = d2_GetObjValue(workList);
+        cm_AddFieldDelta(4, 1, 0x41, &v);
+    }
+    if (wageSlider != -1) {
+        v = d2_GetObjValue(wageSlider);
+        cm_AddFieldDelta(4, 1, 0x3d, &v);
+    }
+    cm_SendFieldDeltas();
+    ai_CampaignStep(0x21, 0, 1, 0);
+    sv_CloseBook(book);
+    sv_CameraFollow();
 }
 /* 0x5ac110, the mercenary book window "ob_SOELDNERBUCH", ROUGH SKELETON (3680 B): the sibling of 0x5aab80 for the
    contact 0x592320 (the same record, kind table, entry array r + 0x22c with 0xc entries of 0x5c bytes, up to
@@ -16450,8 +16936,6 @@ int ai_MercenaryBook(int param_1, char *param_2)
     /* ROUGH: not written yet - see the comment above */
     return 0;
 }
-
-void d2_RadioSelect(int g, int sel);
 /* 0x5ad000, a second "misc\Messagebox" with a percent slider (336 B): as 0x5a9f80 with the text 0x4141 and the
    buffer 0x1444a6c8 (0x521040 gates, 0x4741f0 the window, 0x509e60 the value clamped at 0x12c0 / 32 as the slider,
    the pump 0x5309a0 (the mask 0x760638): a click 0xf8a668 == 0 confirms (0x521150, 0x475980), 1 or 0x1468410 == 1
@@ -19236,7 +19720,7 @@ int ai_AgendaOfficeList(int param_1)
     return 0;
 }
 
-struct SVBOOK *sv_OpenBook(char *model, char *at, char n, ...); void sv_UpdateBook(struct SVBOOK *bk); void sv_CloseBook(struct SVBOOK *bk); int gv_TableRecordText();
+int gv_TableRecordText();
 void ai_LawBookInfoWindow();
 
 /* 0x5c2160, the law book listener (657 B): the pages 0x111 (Strafrecht), 0x112 (Steuern) and 0x113

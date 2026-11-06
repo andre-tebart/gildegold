@@ -1591,7 +1591,6 @@ void ai_SaveNetworkGame(char *saveName, char *name)
 int ai_StorageWindow(int building, int list); /* 0x5b26b0, lc.c */
 struct AIBLD; int ai_ProductionWindow(struct AIBLD *bld); /* 0x58bd60, lc.c: "Handel\Handel_PRODUKTION" */
 int ai_OpenTransport(int rec);             /* 0x5af1a0, lc.c */
-int ai_PersonnelBook(int building, char *text); /* 0x5aab80, lc.c: "ob_PERSONALBUCH" */
 void ai_TradeSearchWindow(unsigned char *cfg, int arg); /* 0x595480, lc.c: "HANDEL\HANDEL_SUCHEN" */
 void ai_MasterLetterWindow(unsigned char *building); /* 0x5c3200, lc.c: "ob_MEISTERBRIEF" */
 void ai_MarketContact(struct AIBLD *rec);  /* 0x58f510, lc.c */
@@ -2564,7 +2563,7 @@ void ai_ProductionContact(int building, int arg)
             } else if (click == trans) {
                 ai_OpenTransport(building);
             } else if (click == personal) {
-                ai_PersonnelBook(building, "ob_PERSONALBUCH");
+                ai_PersonnelBook((struct AIBLD *)building, "ob_PERSONALBUCH");
             } else if (click == meister) {
                 ai_MasterLetterWindow((unsigned char *)building);
             } else if (click == roh) {
@@ -3238,7 +3237,7 @@ void ai_GypsyProductionContact(int building)
                     ai_GypsyBeggingWindow(building);
             }
             if (ai_ClickedObject == personal)
-                ai_PersonnelBook(building, "ob_PERSONALBUCH");
+                ai_PersonnelBook((struct AIBLD *)building, "ob_PERSONALBUCH");
         }
         ai_TradeContactChecks();
         pump = sv_RunFrame(ai_GypsyProductionContact, 0x67fff);

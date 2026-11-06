@@ -158,8 +158,11 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
         int stormBlds[16];              /* 0xac, of a storm event 0x50 the ids of the 16 buildings its alloc handler 0x5652b0
                                            collected, -1: none */
         struct {                        /* 0xac, of the kind 6 sales-tour event (its run handler 0x554320, the
-                                           single-ware variant 0x554860) */
-            int padac;                  /* 0xac, the tour's ware / kind word */
+                                           single-ware variant 0x554860); the personnel book posts 6 / 7 as its
+                                           hire requests (AIMSG.hireTitle / hireRows, ai_PersonnelBook) */
+            unsigned char hireTitle;    /* 0xac, the message's hireTitle: of 7 0 (ai_PersonnelBook looks for the
+                                           running master hire by it), of 6 the title rank hired */
+            char padad[3];
             int tourCounters[12];       /* 0xb0 .. 0xdc, the twelve ware counters it hands over one by one;
                                            ai_UpdateStaff counts the nonzero ones as staff already busy */
         };
@@ -515,6 +518,23 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             char pada8[8];
             unsigned char extraFlag;            /* 0xb0, 1 in the explosion message 0x4f (gv_ExplodeShot); the meaning is not known */
             char padb1[0x47];
+        };
+        struct {                        /* the hire requests of the personnel book (ai_PersonnelBook): 6 a worker for
+                                           a row, 7 the building's master; the event keeps the words 0x54 further on
+                                           (AIJOB.hireTitle, tourCounters) */
+            unsigned char hireTitle;    /* 0x58, of 6 the title rank hired (AIBTYPE.title2), of 7 0 */
+            unsigned char hireFlag;     /* 0x59, of 6: 1 */
+            char padhire5a[2];
+            union {
+                struct {
+                    int hireRows[12];   /* 0x5c, of 6: 1 for the row the worker is hired for */
+                    int hireRoom;       /* 0x8c, of 6: the objId of the room the panel shows (sv_PanelShown), -1 at home */
+                };
+                struct {
+                    int hireMaster;     /* 0x5c, of 7: 1 */
+                    int hireMasterRoom; /* 0x60, of 7: as hireRoom */
+                };
+            };
         };
         struct {                        /* the build message 0xd (ai_ExecBuildBuilding 0x4a5320) */
             char padbuild58[0x28];
