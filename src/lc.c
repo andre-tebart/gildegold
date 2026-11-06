@@ -3,7 +3,7 @@
    contact listeners and the map picks of the kontor / thieves' guild / church / guild-hall scenes read their
    plate texts through the txt_views.h slots (ai_ContactText*) or their txt_Ptrs text id and the building record
    as AIBLD (id, owner, mainRoom, objList, object); the character record view AICHARREC names id, kind, netId,
-   f01c, ailments, faith, officeKind, appliedOffice, secondOffice, donated and powerFlags. The
+   f01c, ailments, faith, relatives, officeKind, appliedOffice, secondOffice, donated and powerFlags. The
    guild-hall windows are the guild master's powers (amt_CanUseMayorPower2 / 3, amt_MayorBonusStep): the price
    message (level 1), the gift message through a map pick (level 2), and by the second office the character request
    (0x1e) or the amount-kind menus (0x1f / 0x21, 0x20) that send the district request {4, column} (level 3). The money
