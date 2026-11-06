@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4214,7 +4214,7 @@ exe	0x00599e00	ai_DrawGoodsCell	lc	byte	readable
 exe	0x00599ef0	ai_CityInfoWindow	lc	byte	readable		
 exe	0x0059a2c0	ai_Unk59a2c0	lc	draft	draft		
 exe	0x0059a3c0	ai_Unk59a3c0	lc	draft	draft		
-exe	0x0059a560	ai_Unk59a560	lc	draft	draft		
+exe	0x0059a560	ai_MapTableContact	lc	draft	draft		
 exe	0x0059a710	ai_MarketStandWindow	lc	byte	readable		
 exe	0x0059a800	ai_MarketStandListener	lc	byte	readable		
 exe	0x0059aae0	ai_WineCellarWindow	lc	byte	readable		
@@ -4238,17 +4238,17 @@ exe	0x0059dc00	ai_MoneyLenderInfoWindow	lc	byte	readable
 exe	0x0059df10	ai_FortuneOverview	lc	byte	readable		
 exe	0x0059df80	ai_MoneyLenderContact	lc	byte	readable		
 exe	0x0059e0a0	ai_SwitchRoom	lc	shape	readable		
-exe	0x0059e170	ai_IsBuildingOpen	lc	draft	draft		
-exe	0x0059e210	ai_Unk59e210	lc	draft	draft		
-exe	0x0059e420	ai_EnterBuilding	lc	draft	draft		
-exe	0x0059ee40	ai_EnterOwnBuilding	lc	draft	draft		
-exe	0x0059f410	ai_RunObjectRoom	lc	draft	draft		
-exe	0x0059f9a0	ai_BuyBuildingWindow	lc	draft	draft		
+exe	0x0059e170	ai_IsBuildingOpen	lc	byte	readable		
+exe	0x0059e210	ai_MayEnterBuilding	lc	byte	readable		
+exe	0x0059e420	ai_EnterBuilding	lc	shape	readable		
+exe	0x0059ee40	ai_EnterOwnBuilding	lc	shape	readable		
+exe	0x0059f410	ai_RunObjectRoom	lc	shape	readable		
+exe	0x0059f9a0	ai_BuyBuildingWindow	lc	byte	readable		
 exe	0x0059fbf0	ai_GuildCashWindow	lc	byte	readable		
 exe	0x0059fca0	ai_TownCashContact	lc	byte	readable		
 exe	0x0059fd30	ai_TownHallContact	lc	byte	readable		
-exe	0x0059fe40	ai_CitizenRightWindow	lc	draft	draft		
-exe	0x005a0220	ai_Unk5a0220	lc	draft	draft		
+exe	0x0059fe40	ai_CitizenRightWindow	lc	byte	readable		
+exe	0x005a0220	ai_OfficeApplicantsWindow	lc	draft	readable	deep	
 exe	0x005a0590	ai_OfficeApplicationWindow	lc	draft	draft		
 exe	0x005a07d0	ai_LawBookContact	lc	byte	readable		
 exe	0x005a0950	ai_GuildCashPayWindow	lc	draft	draft		
@@ -4275,7 +4275,7 @@ exe	0x005a39b0	ai_ChurchContact	lc	byte	readable
 exe	0x005a3a40	ai_DungeonPlanWindow	lc	shape	readable		
 exe	0x005a3b20	ai_DungeonContact	lc	byte	readable		
 exe	0x005a3b90	ai_Unk5a3b90	lc	draft	draft		
-exe	0x005a3df0	ai_Unk5a3df0	lc	draft	draft		
+exe	0x005a3df0	ai_DungeonBribeListener	lc	draft	draft		
 exe	0x005a3ef0	ai_DungeonEmptyListener	lc	byte	readable		
 exe	0x005a3f10	ai_BurglaryWindow	lc	draft	draft		
 exe	0x005a4130	ai_BurglaryStart	lc	shape	readable		
@@ -4304,7 +4304,7 @@ exe	0x005a64d0	ai_ArrestWindow	lc	draft	draft
 exe	0x005a6720	ai_ArrestStart	lc	byte	readable		
 exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable		
 exe	0x005a6920	ai_GuildHallListener	lc	shape	readable		
-exe	0x005a6a90	ai_Unk5a6a90	lc	draft	draft		
+exe	0x005a6a90	ai_TrainingRoomListener	lc	draft	draft		
 exe	0x005a6b50	ai_FormatCityName	lc	byte	readable		
 exe	0x005a6b70	ai_Unk5a6b70	lc	draft	draft		
 exe	0x005a6c40	ai_PlaceMapControls	lc	byte	readable		
@@ -4461,7 +4461,7 @@ exe	0x005be1d0	ai_AmountRowStatus	lc	draft	draft
 exe	0x005be3b0	ai_AmountRow	lc	draft	draft		
 exe	0x005be720	ai_DrawAmountRow	lc	draft	draft		
 exe	0x005bea00	ai_SpecialAmountList	lc	shape	readable		
-exe	0x005bea50	ai_Unk5bea50	lc	draft	draft		
+exe	0x005bea50	ai_SpecialAmountListWindow	lc	draft	draft		
 exe	0x005bf0d0	ai_Unk5bf0d0	lc	draft	draft		
 exe	0x005bf300	ai_Unk5bf300	lc	draft	draft		
 exe	0x005bf4f0	ai_Unk5bf4f0	lc	draft	draft		
