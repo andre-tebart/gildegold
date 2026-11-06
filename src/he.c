@@ -25627,15 +25627,16 @@ void he_RunGypsyCurse(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x574060, the alloc of the event 0x9f: state -1, the start and the due clock +0x44 / +0x52 = now, the due clock + 24 hours
-   (0x4fe140) */
+/* 0x574060, the alloc of the event 0x9f: stage -1, start and end = now, the end clock + 24 hours (gm_AddTime) */
 
 void he_AllocGypsySlowdown(int ev)
 {
-    HM_I(ev, 0x70) = -1;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0x18, 0, 0);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->stage = -1;
+    e->start = ai_Time;
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0x18, 0, 0);
 }
 /* 0x5740d0, the run of the event 0x9f: -2 / -1 free */
 
