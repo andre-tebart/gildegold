@@ -1461,15 +1461,15 @@ int cm_SendRetireCrime(int id, int force)
     m.retireCrime.force = force;
     return cm_QueueSend(&m);
 }
-/* 0x4c4ed0, message 0x24 */
+/* 0x4c4ed0, message 0x24: the proof pair (the crime id, the character's netId) into ai_Evidence */
 
-void cm_SendProofExecuted(int a, int b)
+void cm_SendProofExecuted(int id, int netId)
 {
     G17MSG m;
 
     m.type = 0x24;
-    G17_I(m, 4) = b;
-    G17_I(m, 0) = a;
+    m.proof.netId = netId;
+    m.proof.id = id;
     cm_QueueSend(&m);
 }
 /* 0x4c4f10, message 0x25 */

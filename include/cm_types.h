@@ -282,6 +282,12 @@ typedef struct G17RETIRECRIMEMSG {      /* 8 bytes, the data of message 0x23 (cm
     int force;                          /* 0x04, gv_RetireCrime's force: 1 retires it even while it counts down */
 } G17RETIRECRIMEMSG;
 
+typedef struct G17PROOFMSG {            /* 8 bytes, the data of message 0x24 (cm_SendProofExecuted, its handler
+                                           0x4c90d0) */
+    int id;                             /* 0x00, the crime record (CRIME.id) */
+    int netId;                          /* 0x04, the character's netId the proof is paired with (ai_Evidence) */
+} G17PROOFMSG;
+
 typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
     int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
     AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
@@ -552,6 +558,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         AITIME time;                    /* 0x10, message 0x1e */
         G17KILLMSG kill;                /* 0x10, message 0x21 */
         G17RETIRECRIMEMSG retireCrime;  /* 0x10, message 0x23 */
+        G17PROOFMSG proof;              /* 0x10, message 0x24 */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
