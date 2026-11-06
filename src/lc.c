@@ -6232,7 +6232,7 @@ void ai_MixingContact(AIBLD *bld, int room)
 }
 
 int ai_AmountMenu(); int ai_FiveTextWindow(); void ai_OpenRobberBribe(); int ai_DrohbriefWindow();
-int ai_PamphletWindow();
+void ai_PamphletWindow(int bld);
 
 /* 0x5962b0, the stonecutter contact listener: it releases the name plates, pumps the frame (sv_RunFrame, this,
    mask 0x67fff) while the screen stays on top and, every frame, registers the contact plates ai_BuildingPerms
@@ -18520,25 +18520,31 @@ int ai_DenounceWindow(void)
    0x5b5310 (the functions.csv has only 0x5b5010 before 0x5b5610, so Ghidra merged this into the 0x5b5010
    record); param_1 == 0 returns 0, then a 0x518-byte frame. The body is a comment */
 
-int ai_Unk5b5310(int param_1)
+int ai_PamphletAmountCB(int param_1)
 {
     if (param_1 == 0)
         return 0;
     /* ROUGH SKELETON: the 0x518-byte frame */
     return 0;
 }
-/* 0x5b5610, a record window (121 B, ROUGH SKELETON): param_1 == 0 returns, else a 0x50-byte record (cleared) with
-   the floats 0x5eed68 / 0x5eed6c; a 0x90-byte frame. The body is a comment */
+/* 0x5b5610, the pamphlet window of the rhetoric contact 0x5965f0: the pamphlet text 0x190d (the plate text
+   0x190c) formatted into a buffer, then the amount menu 0x5c1130 with the config (mode 0x400, kind 6, the
+   filter gypsyFilter, the rest cleared) and the callback 0x5b5310; the camera follows. bld == 0 returns */
 
-int ai_PamphletWindow(int param_1)
+void ai_PamphletWindow(int bld)
 {
-    int rec[0x14];
+    AMOUNTCFG cfg;
+    char text[0x40];
 
-    if (param_1 == 0)
-        return 0;
-    memset(rec, 0, sizeof(rec));
-    /* ROUGH SKELETON: the fields 0x5eed68 / 0x5eed6c */
-    return 0;
+    if (bld == 0)
+        return;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    txt_Format(text, 0x190d);
+    ai_AmountMenu(&cfg, text, 0, (void *)ai_PamphletAmountCB);
+    sv_CameraFollow();
 }
 /* 0x5b5690, a window over the global 0x6333cc (848 B, ROUGH SKELETON): the window "0x62cdc8" (0x4741f0) and its
    controls, a 0x2c-byte frame; the body is a comment. Ghidra merged it into its 0x5b5610 record (the original

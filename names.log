@@ -2735,3 +2735,4 @@
 2026-11-06T16:49:28 0x01440a00 data full_data_1440a00 -> ai_ContactTextMapTable by:main why:the plate text of the map table ob_KARTENTISCH, read next to the other contact texts (ai_ContactTextTransport / Storage / MasterLetter) and passed to sv_RegisterNamePlate
 2026-11-06T16:55:38 0x01440880 data full_data_1440880 -> ai_ContactTextBribe by:main why:the plate text of the bribe contact contact_BESTECHEN, passed to sv_RegisterNamePlate by ai_DungeonBribeListener
 2026-11-06T17:01:20 0x014408ac data full_data_14408ac -> ai_TextKidnapMessage by:main why:the message box text ai_KidnapStart shows when the building already has a kidnap event, next to ai_ContactTextKidnap (the plate hover text)
+2026-11-06T17:38:47 0x005b5310 func ai_Unk5b5310 -> ai_PamphletAmountCB by:main why:the amount-menu callback of the pamphlet window 0x5b5610 (pushed as ai_AmountMenu's last argument); its body opens misc\perga_rolle 0x62cd48 and sends the pamphlet message
