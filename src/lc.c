@@ -55,6 +55,7 @@
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define init_LeaveTownSceneB ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
+#define sv_ReturnZeroV ((int (*)(int))sv_ReturnZero)  /* @original 0x5c4100 passes the research class as an argument (sv.h declares the function void) */
 /* lc.c -- the production / trade windows and the tavern / location / money lender / Rathaus windows
    (0x58bbd0 .. 0x5d33b0): the
    "Handel\Handel_PRODUKTION" screen of a building (0x58bd60) and its helpers (the table init 0x58bbd0, the
@@ -21241,7 +21242,7 @@ int ai_PassesPartnerFilter(unsigned short param_1, unsigned short param_2, unsig
     return 1;
 }
 
-int gm_ResearchClass(); int sv_ReturnZero(); void *ai_Unk5c3bb0();
+int gm_ResearchClass(); void *ai_Unk5c3bb0();
 
 /* 0x5c37a0, a law / profession filter test (512 B): param_2 = the filter record (+8 / +0xc the two mask
    words of the building kinds -8 .. -1, +0x10 the target cases 0 .. 7, +0x14 bit 1 with the four +0x1c
@@ -21401,16 +21402,29 @@ int ai_PassesMapPickFilter(short *param_1, char *param_2, unsigned char *param_3
     }
     return mask && target && exclude;
 }
-/* 0x5c4100, the law selection entry (80 B): param_1 the building record; 0x50b090 (*param_1, &param_1)
-   redirects it, else 0x5c3bb0 (param_1, param_2, param_3, param_4); the redirect returns 0x52a040 */
+/* 0x5c4100, the law selection entry of the map pick 0x5b2180: the picked building record; when its kind has a
+   research class (0x50b090, the class written over the parameter) it returns 0, else it opens the law selection
+   window 0x5c3bb0 (param_2 the filter, param_3 the caption text, param_4 the pick callback)
+   @deep read the whole original 0x5c4100..0x5c414b and reconciled every statement: the bld guard,
+   gm_ResearchClass(*bld, &cls) with the class in the reused argument slot, the return of
+   sv_ReturnZero(cls) when the class is set and of ai_Unk5c3bb0(bld, filter, text, cb) otherwise. The only
+   hunk left is that return form: the original returns sv_ReturnZero by a tail jmp (mov edx,[esp+8]; pop
+   esi; mov [esp+4],edx; jmp 0x52a040), ours by push edx / call / add esp,4 (asmdiff: ours 33 ins, the
+   original 31, differing 6, the same callee and argument). Tried the class local and the class written
+   over the bld parameter, a K&R and an int prototype of sv_ReturnZero, a 1-argument and a 4-argument call,
+   a function-pointer cast, a volatile cls, and the second return as a statement; cl 12.00.9044 tail-calls
+   only when the callee's argument layout equals the caller's (checked with scratch files), so the source
+   form that yields this jmp is not found */
 
-int ai_Unk5c4100(unsigned char *param_1, int param_2, int param_3, int param_4)
+int ai_LawSelectionEntry(unsigned char *bld, int *filter, int text, void (*cb)())
 {
-    if (param_1 == 0)
+    int cls;
+
+    if (bld == 0)
         return 0;
-    if (gm_ResearchClass(*param_1, &param_1) != 0)
-        return sv_ReturnZero();
-    return ai_Unk5c3bb0(param_1, (int *)param_2, param_3, (void *)param_4);
+    if (gm_ResearchClass(*bld, &cls) != 0)
+        return sv_ReturnZeroV(cls);
+    return (int)ai_Unk5c3bb0(bld, filter, text, cb);
 }
 /* 0x5c3bb0, the law selection window "Gesetze\Auswahl2" 0x62d2ec (1360 B, ROUGH): the character ids of
    param_1 (+0x25 / +0x27, then the characters of the kinds 1 / 2 whose +0xb8 owner is param_1, and of the
