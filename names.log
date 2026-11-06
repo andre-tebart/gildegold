@@ -2669,3 +2669,4 @@
 2026-11-06T12:39:33 0x0059c120 func ai_Unk59c120 -> ai_FillExchangeRows by:main why:fills the exchange window's 16 rows from an object list's currency objects (gm_Query 1,4,9), the icons, texts and amounts
 2026-11-06T12:40:54 0x0059c450 func ai_Unk59c450 -> ai_ShowExchangeRows by:main why:shows the exchange window's rows: per good an icon, the good's name and the player slot's name
 2026-11-06T12:53:01 0x0059d410 func ai_Unk59d410 -> ai_MoneyMessengerWindow by:main why:the money messenger window geldleihe_WechselGeldbote: pays an amount out of the bank to another player slot (message 0x27)
+2026-11-06T12:57:17 0x0059d2d0 func ai_Unk59d2d0 -> ai_ExchangeFeesWindow by:main why:the money lender's exchange fees window geldleihe_WechselGebuehren: sets the bank's fields 0x69 / 0x6d (the messenger and exchange fees)

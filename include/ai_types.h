@@ -83,6 +83,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                 int slotOrder1c;                /* 0xb0, of a kind 0x12 slot order event (the type 0x12 message
                                                    ai_BuySlots posts): the number of first-kind slots it adds, added
                                                    to AIOBJ.lvl1c and checked against AIBTYPE.min0 */
+                unsigned char payer;            /* 0xb0, of the payment event 0x27 the paying player's slot (AIMSG.payment.player;
+                                                   he.c HEEV27.player, lc.c ai_MoneyExchangeWindow names it) */
             };
             union {                             /* 0xb4..0xe7: the words, or the kind-specific times sv_RefreshPanel measures the progress to / from */
                 struct {
