@@ -1151,14 +1151,14 @@ int cm_SendCreateCharacter(unsigned char a, int b, int c, unsigned short d, int 
     G17MSG m;
 
     m.type = 0xb;
-    m.data[4] = a;
-    G17_I(m, 5) = b;
-    G17_I(m, 9) = c;
-    *(unsigned short *)&m.data[0xd] = d;
-    G17_I(m, 0xf) = e;
-    m.data[0x13] = f;
-    m.data[0x14] = g;
-    m.data[0x15] = h;
+    m.chr.type = a;
+    m.chr.parent1 = b;
+    m.chr.parent2 = c;
+    m.chr.age = d;
+    m.chr.bldId = e;
+    m.chr.job = f;
+    m.chr.title = g;
+    m.chr.a8 = h;
     return cm_QueueSend(&m);
 }
 /* 0x4c46d0, message 0xc (two names of 0x10 bytes) */
