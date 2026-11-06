@@ -7587,7 +7587,7 @@ void ai_StammtischWindow(AIBLD *bld, AIOBJ *table)
     } while (sv_RunFrame((int)ai_StammtischWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-int cm_SendTableRequest(int *p); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
+int cm_SendTableRequest(G17TABLEMSG *p); void cm_BeginGroup(const char *s); int cm_EndGroup(const char *s); unsigned char * gm_BuildQuery(int n, ...);
 unsigned char * gm_BuildNext(void);
 
 
@@ -7700,7 +7700,7 @@ void ai_StammtischJoinWindow(AIBLD *bld, AIOBJ *table)
                 msg.charId = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
                 msg.bldId = bld->id;
                 cm_BeginGroup("stammtisch join H-Plr");
-                h = cm_SendTableRequest((int *)&msg);
+                h = cm_SendTableRequest(&msg);
                 cm_EndGroup("stammtisch join H-Plr");
                 i = cm_GetSlotState(h);
                 while (i == 0) {

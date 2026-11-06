@@ -8645,7 +8645,7 @@ int ai_ExecuteStammtisch(G5CH *p, AIARG *s1, AIARG *s2)
         r.ch = p->netId;
         r.bld = s1->ref;
         cm_BeginGroup("stammtisch join AI-Plr");
-        cm_SendTableRequest(&r);
+        cm_SendTableRequest((G17TABLEMSG *)&r);
         cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_STAMMTISCH, 0);
         cm_EndGroup("stammtisch join AI-Plr");
         return 0x35;
@@ -8655,7 +8655,7 @@ int ai_ExecuteStammtisch(G5CH *p, AIARG *s1, AIARG *s2)
         r.ch = p->netId;
         r.bld = s1->ref;
         cm_BeginGroup("stammtisch leave AI-Plr");
-        cm_SendTableRequest(&r);
+        cm_SendTableRequest((G17TABLEMSG *)&r);
         cm_SendSetField(p->netId, 0x1c8, 4, AI_CHF_STAMMTISCH, 0);
         cm_EndGroup("stammtisch leave AI-Plr");
         return 0x35;

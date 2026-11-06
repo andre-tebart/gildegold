@@ -1783,7 +1783,7 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d);
 char *gm_Query(void *list, int n, ...);
 void cm_BeginGroup(const char *s);
 int cm_EndGroup(const char *s);
-int cm_SendTableRequest(int *p);
+int cm_SendTableRequest(G17TABLEMSG *p);
 void cm_SendScriptMessage(void *p);
 int sprintf(char *buf, const char *fmt, ...);
 void mem_Free(void *p);
@@ -2595,7 +2595,7 @@ void he_InnStaffLeave(void)
                     arg[1] = *p;
                     arg[0] = 0x6c656176;
                     cm_BeginGroup("stammtisch supervisor");
-                    cm_SendTableRequest(arg);
+                    cm_SendTableRequest((G17TABLEMSG *)arg);
                     cm_EndGroup("stammtisch supervisor");
                 }
                 p++;
@@ -8300,7 +8300,7 @@ void he_RunStammtisch(int r)
         cmd[1] = -1;
         cmd[2] = bld->id;
         cm_BeginGroup("stammtisch clear HE");
-        cm_SendTableRequest(cmd);
+        cm_SendTableRequest((G17TABLEMSG *)cmd);
         cm_EndGroup("stammtisch clear HE");
         m->state++;
     }
