@@ -1753,8 +1753,8 @@ void cm_SendBoss(int a, int b)
     G17MSG m;
 
     m.type = 0x39;
-    G17_I(m, 4) = a;
-    G17_I(m, 0) = b;
+    m.home.charId = a;
+    m.home.bldId = b;
     cm_QueueSend(&m);
 }
 /* 0x4c5580, message 0x3c */
