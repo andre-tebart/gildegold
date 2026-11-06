@@ -864,7 +864,7 @@ int cm_ReceiveMessages(void)
                 return 0;
         }
         do {
-            ai_Unk6f0cd0++;
+            cm_RecvCount++;
             if (cm_EnqueueReceived(&cm_RecvMsg) != 0)
                 return 1;
             net_Conn.rx = (NETPKT *)&cm_RecvMsg;
@@ -16910,7 +16910,7 @@ int ch_LowPoly = 0;  /* 0x631064 */
 struct D3SCENE *ch_Saved0 = 0;  /* 0x631084 */
 EVTSCRIPT *evt_Scripts = 0;  /* 0x6332b4, [128] */
 unsigned int d3_SceneFlags = 0;  /* 0x63349c */
-int ai_Unk6f0cd0 = 0;  /* 0x6f0cd0, received messages */
+int cm_RecvCount = 0;  /* 0x6f0cd0, received messages */
 int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8 */
 int ai_Unk6f0cdc = 0;  /* 0x6f0cdc */

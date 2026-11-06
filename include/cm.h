@@ -85,7 +85,7 @@ extern int cm_LastSyncCount;               /* 0xa687e0, "cm_LastSyncCount" (net.
 extern int ai_GameOver;                /* 0x6f259c */
 extern float ai_DifficultyValue;              /* 0x5fef04 */
 extern float ai_DifficultyScale;              /* 0x5fef08 */
-extern int ai_Unk6f0cd0;                /* 0x6f0cd0, received messages */
+extern int cm_RecvCount;                /* 0x6f0cd0, received messages */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8, the player */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 extern int ai_NextCrimeId;                /* 0x6f1b88 */

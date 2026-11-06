@@ -2792,3 +2792,4 @@
 2026-11-06T20:21:24 0x005755c0 func he_Unk5755c0 -> he_LoadMessageFilter by:main why:WinMain calls it with ai_OptionsFile; it loads INI Game/message_filter_mask into he_MessageFilterMask, the sibling of he_SaveMessageFilter
 2026-11-06T20:25:36 0x004cd580 func ai_Unk4cd580 -> cm_LobbyStart by:main why:called once from cm_WaitHello with the hello answer's two values: clears the lobby player list, sets the open flag ai_Unk936400 = 1, stores the player's lobby id and value, clears cm_LobbyClosed
 2026-11-06T20:26:39 0x00a68d34 data ai_Unka68d34 -> ai_NeedBlockChar by:main why:set by ai_BeginNeedBlock to the character p whose need block is being built (p->netId becomes ai_NeedBlock.id); no reader seen
+2026-11-06T20:28:17 0x006f0cd0 data ai_Unk6f0cd0 -> cm_RecvCount by:main why:incremented once per message cm_ReceiveMessages takes in (next to cm_RecvMsg / cm_RecvQueue); the only reader or writer is that loop
