@@ -5906,121 +5906,139 @@ void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x595a00, the trade search window of the kind 0x15 (1222 B, ROUGH SKELETON from the Ghidra pseudocode): as
-   0x595480 with the searched goods 0x1c1 / 0x1c2 / 0x1c3, the building 0x53e400 (2, 0, 0x15, 3), the text
-   0x515960 (0x1806), always three entries, the texts 0x5176d0 (0x1807 / 0x5f8318 / 0x1808) and the message type
-   0x15 */
+/* 0x595a00, the second search window of a building (as ai_TradeSearchWindow: "HANDEL\HANDEL_SUCHEN", frame
+   texts 0x70f / 0x741, title 0x1806): always the three goods 0x1c1 .. 0x1c3 as picture buttons, captioned with
+   the searches running (the search events 0x15 of the building, LCSEARCHEVENT: 1 the text 0x1807, more 0x1808,
+   none the good's name). A click on a good posts the search message 0x15 (LCSEARCHWORDS: the good, the room
+   object, up to six selected characters) and waits for its slot; no selected character gives the text 0x1801.
+   Nothing when the building's character is busy (sv_CheckCharacterFlag)
+   @deep Rebuilt whole from the original 0x595a00..0x595ec5 (356 vs 354 instructions, same size 1222), the
+   twin of ai_TradeSearchWindow (@deep): goods 0x1c1..0x1c3, search events / message 0x15 (LCSEARCHEVENT /
+   LCSEARCHWORDS), texts 0x1806 / 0x1807 / 0x1808 / 0x1801, the picture buttons, the slot wait and the
+   sv_CameraFollow tail call; every statement, constant, callee and reference reads equal. Left: allocation
+   only, the same as the twin: ours keeps bld in ebp and the constant 0 in edi from the prologue (-push ebp
+   / xor edi,edi; push edi and cmp eax,edi for each 0 argument and null test, e.g. -0x595a16 push edi |
+   +push 0, -0x595a6f cmp eax,edi | +test eax,eax), later 0 in ebx around the frame loop; the original
+   holds bld in edi, pushes ebx/ebp/esi only after sv_CheckCharacterFlag and pushes 0 as immediates. The
+   slot shift (goods at esp+0x20 vs +0x18) is that extra prologue push. */
 
-void ai_AquariumSearchWindow(int param_1, int param_2)
+void ai_AquariumSearchWindow(AIBLD *bld, AIROOM *room)
 {
-    unsigned int kinds[7];
-    int sums[3];
+    int goods[3];
+    int searches[3];
+    int store;
     int win;
-    int ctrls[4];
-    int b;
-    int i;
-    int n;
-    unsigned int kind;
-    unsigned short h;
+    int buttons[3];
+    AIMSG msg;
     char text[0x100];
-    unsigned char msg[0xf8];
+    int i;
+    int sel;
+    int x;
+    int good;
+    int slot;
+    int id;
+    int picked;
+    LCSEARCHEVENT *ev;
 
-    kinds[0] = 0x1c1;
-    kinds[1] = 0x1c2;
-    kinds[2] = 0x1c3;
-    kinds[6] = gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x2a);
-    if (sv_CheckCharacterFlag(param_1) != 0)
+    goods[0] = 0x1c1;
+    goods[1] = 0x1c2;
+    goods[2] = 0x1c3;
+    store = gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    sums[0] = 0;
-    sums[1] = 0;
-    sums[2] = 0;
-    for (b = he_FindEvent(2, 0, 0x15, 3, U_I(param_1 + 1)); b != 0; b = he_NextEvent()) {
-        for (i = 0; i < 3; i++) {
-            if (*(unsigned short *)(b + 0xae) == kinds[i]) {
-                sums[i] += *(unsigned char *)(b + 0xac);
+    searches[0] = 0;
+    searches[1] = 0;
+    searches[2] = 0;
+    for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x15, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
+        for (i = 0; i < 3; i++)
+            if (ev->good == goods[i]) {
+                searches[i] += ev->count;
                 break;
             }
-        }
-    }
     win = d2_OpenForm(0, 0, "HANDEL\\HANDEL_SUCHEN");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
+    sv_OpenWindowFrame(d2_LastWindow, 0x70f, 0x741);
     d2_SetForm(win, 3);
     io_PrintText(0x1806);
-    sv_OpenPlayerBar(param_1, 0);
+    sv_OpenPlayerBar(bld, 0);
     ai_InitProductionTables();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    h = *(unsigned short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4);
+    x = d2_Wins[d2_LastWindow].w / 2 - 0xa8;
     for (i = 0; i < 3; i++) {
-        int id = d2_WinOpenPic((int)h / 2 - 0x80, i * 0x50 + 0x19, kinds[i] + 0xdf, U_I((unsigned)&d2_LastWindow));
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x4c) = 1;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1c0) = 3;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1cc) = 100;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1d0) = 0x10;
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x74) = 0x54;
-        d2_SetCaption(id, U_I((unsigned)&txt_ObjectNames + kinds[i] * 8));
-        ctrls[i] = id;
+        good = goods[i];
+        id = d2_WinOpenPic(x + 0x28, i * 0x50 + 0x19, good + 0xdf, d2_LastWindow);
+        d2_Objs[id].interactive = 1;
+        d2_Objs[id].style = 3;
+        d2_Objs[id].captionX = 100;
+        d2_Objs[id].captionY = 0x10;
+        d2_Objs[id].font = 0x54;
+        d2_SetCaption(id, txt_ObjectNames[good][0]);
+        buttons[i] = id;
         d2_SetObjEnabled(id, 1);
     }
     d2_SetPointerSprite(0, 0);
-    ai_UpdateProdGoodsList(param_1, kinds[6]);
-    ai_LayoutProdGoodsList(win, 1, 0, param_1);
-    while (sv_RunFrame(ai_AquariumSearchWindow, 0x677c7) != 0) {
-        ai_UpdateProdGoodsList(param_1, kinds[6]);
-        ai_LayoutProdGoodsList(win, 1, 0, param_1);
-        sums[0] = 0;
-        sums[1] = 0;
-        sums[2] = 0;
-        for (b = he_FindEvent(2, 0, 0x15, 3, U_I(param_1 + 1)); b != 0; b = he_NextEvent()) {
-            for (i = 0; i < 3; i++) {
-                if (*(unsigned short *)(b + 0xae) == kinds[i]) {
-                    sums[i] += *(unsigned char *)(b + 0xac);
+    ai_UpdateProdGoodsList(bld, store);
+    ai_LayoutProdGoodsList(win, 1, 0, bld);
+    while (sv_RunFrame((int)ai_AquariumSearchWindow, 0x677c7) != 0) {
+        ai_UpdateProdGoodsList(bld, store);
+        ai_LayoutProdGoodsList(win, 1, 0, bld);
+        searches[0] = 0;
+        searches[1] = 0;
+        searches[2] = 0;
+        for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x15, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
+            for (i = 0; i < 3; i++)
+                if (ev->good == goods[i]) {
+                    searches[i] += ev->count;
                     break;
                 }
-            }
-        }
         d2_SetForm(win, 2);
         for (i = 0; i < 3; i++) {
-            d2_SetObjEnabled(ctrls[i], 1);
-            if (sums[i] == 1)
-                txt_Format(text, 0x1807, 1);
-            else if ((int)sums[i] < 2)
-                txt_Format(text, "%s", kinds[i] * 2 + 0x9a8);
+            d2_SetObjEnabled(buttons[i], 1);
+            if (searches[i] == 1)
+                txt_Format(text, 0x1807, searches[i], goods[i] * 2 + 0x9a8);
+            else if (searches[i] > 1)
+                txt_Format(text, 0x1808, searches[i], goods[i] * 2 + 0x9a8);
             else
-                txt_Format(text, 0x1808, sums[i]);
-            d2_SetCaption(ctrls[i], text);
+                txt_Format(text, "%s", goods[i] * 2 + 0x9a8);
+            d2_SetCaption(buttons[i], text);
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            for (i = 0; i < 3; i++) {
-                if (ctrls[i] == U_I((unsigned)&d2_PointerObj))
+        if (d2_ClickedId != -1) {
+            sel = -1;
+            for (i = 0; i < 3; i++)
+                if (buttons[i] == d2_PointerObj) {
+                    sel = i;
                     break;
-            }
-            if (i < 3) {
-                memset(msg, 0, 0xf8);
-                *(unsigned char *)(msg + 4) = 0x15;
-                *(unsigned char *)(msg + 0x36) = 1;
-                *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(param_1 + 0x27) * 0x87);
-                *(int *)(msg + 0xc) = U_I(param_1 + 1);
-                *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                *(unsigned short *)(msg + 0x5a) = kinds[i];
-                *(int *)(msg + 0x5c) = U_I(param_2 + 2);
-                /* ROUGH: the six character slots and 0x4c2d20 / 0x4c4b70 / 0x4c3ae0 / 0x4c3b10 */
-                kind = cm_SendLongMessage(msg);
-                n = cm_GetSlotState(kind);
-                while (n == 0) {
-                    sv_RunFrame(0, 0x20007);
-                    n = cm_GetSlotState(kind);
                 }
-                cm_GetSlotValue(kind);
+            if (sel != -1) {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x15;
+                msg.flags = 1;
+                msg.to = ai_CharInts[bld->owner][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                ((LCSEARCHWORDS *)msg.arg)->good = (unsigned short)goods[sel];
+                ((LCSEARCHWORDS *)msg.arg)->room = room->objId;
+                picked = 0;
+                for (i = 0; i < 0x300 && picked < 6; i++)
+                    if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                        msg.ids[picked++] = ai_CharInts[i][0];
+                for (i = picked; i < 6; i++)
+                    msg.ids[i] = -1;
+                ((LCSEARCHWORDS *)msg.arg)->count = (unsigned char)picked;
+                if (picked != 0) {
+                    snd_PlayFavourComment();
+                    sv_ClearSelection();
+                    slot = cm_SendLongMessage((char *)&msg);
+                    while (cm_GetSlotState(slot) == 0)
+                        sv_RunFrame(0, 0x20007);
+                    cm_GetSlotValue(slot);
+                } else
+                    sv_MessageBox(txt_Ptrs[0x1801], 4);
             }
-        } else if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        }
+        } else if (dm_L.rup != 0)
+            sv_PopRequest = 1;
     }
     sv_ClearSelection();
     sv_ClosePlayerBar();
