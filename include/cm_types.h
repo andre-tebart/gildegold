@@ -423,6 +423,11 @@ typedef struct G17CUTMSG {              /* 8 bytes, the data of message 0x26 ("c
     int fightId;                        /* 0x04, the fight it belongs to (*cm_CurrentFight) */
 } G17CUTMSG;
 
+typedef struct G17PARTYMSG {            /* 8 bytes, the data of message 0x2a (cm_SendLeaveParty, its handler 0x4c9400) */
+    int partyId;                        /* 0x00, the scene party record (cm_PartyById) */
+    int member;                         /* 0x04, the member's netId (cm_RemovePartyMember) */
+} G17PARTYMSG;
+
 typedef struct G17REMOVEMSG {           /* 12 bytes, the data of message 0x2b (handler 0x4c9450) */
     int holder;                         /* 0x00, the id of the building, character or object holding it (gm_FindById) */
     int objId;                          /* 0x04, of a building: the id of its object whose list holds it (gm_Query key 1),
@@ -576,6 +581,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17CUTMSG cut;                  /* 0x10, message 0x26 */
         G17CUTENTRYMSG cutEntry;        /* 0x10, messages 0x50 / 0x51 */
         G17SKILLMSG skill;              /* 0x10, message 0x5d */
+        G17PARTYMSG leaveParty;         /* 0x10, message 0x2a */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17TABLEMSG table;              /* 0x10, message 0x54 */

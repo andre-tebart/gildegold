@@ -1508,15 +1508,15 @@ int cm_SendNewParty(void *p)
     cm_SetLongMsg(0x114, p);
     return cm_QueueSend(&m);
 }
-/* 0x4c4fd0, message 0x2a */
+/* 0x4c4fd0, message 0x2a: removes the member netId from the scene party partyId (cm_RemovePartyMember) */
 
-int cm_SendLeaveParty(int a, int b)
+int cm_SendLeaveParty(int partyId, int member)
 {
     G17MSG m;
 
     m.type = 0x2a;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.leaveParty.partyId = partyId;
+    m.leaveParty.member = member;
     return cm_QueueSend(&m);
 }
 /* 0x4c5010, message 0x2b: moves the object c from the building a to b (-1: out of a); returns its send slot */
