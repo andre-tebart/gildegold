@@ -9995,34 +9995,27 @@ void ai_SwitchRoom(int index, unsigned short room)
     sv_BorderViewY = 0;
     sb_PlaySample(snd_RoomBank, "RaumWechseln_s", 1, 0x3f, 0x7f, 0, 0);
 }
-/* 0x59e170, the opening hours of a building kind (112 B): the table 0x62afa0 (kind dword, the open byte +4,
-   the close byte +5, terminated by 0) is looked up by the kind byte of the building record 0x7e3f30 + *param_1
-   * 0x24d; returns 1 when the table is empty, the kind unknown or the clock hour 0x770ae4 inside the range,
-   and puts the range into param_2 / param_3 (when not null) */
+/* 0x59e170, whether the building b is open now: its type's class (AIBTYPE.buildingClass) is looked up in
+   ai_OpeningHours; a class without a row is always open, else the game clock's hour must lie in [open, close).
+   The row's hours go to *open / *close when they are not null */
 
-int ai_IsBuildingOpen(unsigned char *param_1, unsigned int *param_2, unsigned int *param_3)
+int ai_IsBuildingOpen(AIBLD *b, unsigned int *open, unsigned int *close)
 {
+    AIBTYPE *type;
     int i;
-    unsigned int kind;
 
-    if (ai_OpeningHours[0].buildingClass == 0)
-        return 1;
-    kind = ai_OpeningHours[0].buildingClass;
-    i = 0;
-    do {
-        if (*(unsigned char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d) == kind) {
-            if (param_2 != 0)
-                *param_2 = ai_OpeningHours[i].open;
-            if (param_3 != 0)
-                *param_3 = ai_OpeningHours[i].close;
-            if (ai_OpeningHours[i].open <= (unsigned short)U_I((unsigned)&ai_Time.hour) &&
-                (unsigned short)U_I((unsigned)&ai_Time.hour) < ai_OpeningHours[i].close)
+    type = &((AIBTYPE *)ai_BTypes)[b->kind];
+    for (i = 0; ai_OpeningHours[i].buildingClass != 0; i++) {
+        if (type->buildingClass == ai_OpeningHours[i].buildingClass) {
+            if (open != 0)
+                *open = ai_OpeningHours[i].open;
+            if (close != 0)
+                *close = ai_OpeningHours[i].close;
+            if (ai_Time.hour >= ai_OpeningHours[i].open && ai_Time.hour < ai_OpeningHours[i].close)
                 return 1;
             return 0;
         }
-        kind = ai_OpeningHours[i + 1].buildingClass;
-        i++;
-    } while (kind != 0);
+    }
     return 1;
 }
 /* 0x59e210, whether the player may enter the building param_1 (528 B): the kind byte (0x7e3f30 + *param_1 *
@@ -10061,7 +10054,7 @@ int ai_Unk59e210(unsigned char *param_1)
         return 1;
     if ((f & 1) == 0)
         return 0;
-    if (ai_IsBuildingOpen(param_1, &from, &to) != 0)
+    if (ai_IsBuildingOpen((AIBLD *)param_1, &from, &to) != 0)
         return 1;
     strcpy(buf, (char *)U_I((unsigned)&full_data_1442314));
     if ((int)(U_I((unsigned)&ai_Time.hour) & 0xffff) < (int)from) {
