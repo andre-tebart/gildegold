@@ -403,8 +403,8 @@ void cm_SendHello(void)
     G17MSG m;
 
     m.type = 3;
-    *(int *)&m.data[0] = 0xa03ef57c;
-    *(int *)&m.data[4] = 0;
+    m.hello.magic = 0xa03ef57c;
+    m.hello.lobbyId = 0;
     cm_QueueSend(&m);
 }
 /* 0x4c3630, waits for the answer to 0x4c3600; 1: none */

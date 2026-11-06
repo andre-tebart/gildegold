@@ -445,6 +445,12 @@ typedef struct G17LOBBYMSG {            /* 0x5b bytes, the data of message 0x5f 
     };
 } G17LOBBYMSG;
 
+typedef struct G17HELLOMSG {            /* 12 bytes, the data of message 3 (cm_SendHello, cm_WaitHello) */
+    int magic;                          /* 0x00, 0xa03ef57c */
+    int lobbyId;                        /* 0x04, the lobby record id of this player (ai_Unk9367d0), 0 in the request */
+    int value;                          /* 0x08, the second hello value (ai_Unk9367d4) */
+} G17HELLOMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -455,6 +461,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
     unsigned int next7;                 /* 0x0c, seq of the next part of a split message (type 7), 0: none */
     union {
         unsigned char data[0x81];       /* 0x10 */
+        G17HELLOMSG hello;              /* 0x10, message 3 */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */
