@@ -21,7 +21,7 @@
 /* ai_PlayerSlots */
 #define ai_Unk7e3f80             (*(int *)((char *)&ai_PlayerSlots + 0x40))  /* 0x7e3f80 */
 #define ai_Unk7e3f84             (*(int *)((char *)&ai_PlayerSlots + 0x44))  /* 0x7e3f84 */
-#define ai_Unk7e3f94             (*(char (*)[100])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94 */
+#define ai_PlayerCity (*(unsigned short (*)[4][0x17a])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94, the city id (word +0x54) of each 0x2f4-byte player slot: ai_PlayerCity[player][0] */
 #define ai_Unk7e3ff8             (*(char (*)[80])((char *)&ai_PlayerSlots + 0xb8))  /* 0x7e3ff8 */
 #define ai_SeasonCloudChance             (*(int (*)[4])((char *)&ai_PlayerSlots + 0x108))  /* 0x7e4048 */
 #define ai_SeasonClimate             (*(int (*)[117])((char *)&ai_PlayerSlots + 0x118))  /* 0x7e4058 */

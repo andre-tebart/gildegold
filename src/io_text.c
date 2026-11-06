@@ -435,7 +435,6 @@ int txt_Count = 0;  /* 0x6333b8 */
 int d2_LayoutMode = 0;  /* 0x6ed978 */
 extern char *d2_Objs;  /* 0xf8f080, 0x2ec bytes each; @original: d2.h declares D2OBJ *; the units add byte offsets to it and do not include d2.h yet (their own char * declarations of d2_Objs / d2_LastWindowPtr supersede d2.h's) */
 #define D2_OBJS ((D2OBJ *)d2_Objs)     /* d2_Objs as d2.h types it */
-#define ai_PlayerCity (*(unsigned short (*)[4][0x17a])((char *)&ai_PlayerSlots + 0x54))  /* 0x7e3f94, the city id (word +0x54) of each 0x2f4-byte player slot: ai_PlayerCity[player][0] */
 /* ---- the text engine (0x515960 .. 0x519010) ---- */
 int txt_Loaded = {0}; /* 0xfe7c20 */
 int txt_Random[0x4800] = {0}; /* 0x114fe60, per text id its random group (9 + n of "{rn}") or its gender (0 .. 2, 0xff none) */

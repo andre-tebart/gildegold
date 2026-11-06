@@ -4371,7 +4371,7 @@ char gv_Effects[2944] = {0};  /* 0x6f1008, 8 slots of */
 float ai_RatingBase = 0;  /* 0x6f1b9c, the running rating (it moves towards ai.h's ai_Rating) */
 struct AICHAR *ai_JudgeCatholic = 0;  /* 0x6f1bfc / */
 struct AICHAR *ai_JudgeProtestant = 0;  /* 0x6f1c00 */
-/* ai_Unk7e3f94: view of ai_PlayerSlots (tools/data_views.py) */
+/* ai_PlayerCity: view of ai_PlayerSlots (tools/data_views.py) */
 float ord_RatingRate = {0}; /* 0x91aaf4, the change rate of the rating (ord.c */
 ORDSTATROUND ord_StatisticsHistory[16] = {0}; /* 0x91ab00, the statistics of the last 16 rounds */
 char ord_RatingBytes[16] = {0};  /* 0x91b460, 5 + 1 bytes */
