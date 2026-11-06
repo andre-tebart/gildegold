@@ -26376,59 +26376,60 @@ int ai_Unk5d0b20(int param_1, int param_2)
    0x2c5) and two 0x4c4b00 transfers between the two records (the handles +4, the amount, 1). When the
    first record's type is 6 / 7 the text 0x5176d0 (0xfea, the second record's word) goes through
    0x53dda0 (the first + 4, -1, 1, 0x5fb); when the second's is, the text 0x5176d0 (0xfeb, the first
-   word twice) goes through 0x53dda0 (the second + 4, -1, 1, 0x5fb). Returns 1 (0 without records). */
+   word twice) goes through 0x53dda0 (the second + 4, -1, 1, 0x5fb). Returns 1 (0 without records).
+   @deep read the whole original 0x5d0c70..0x5d0e54 and reconciled every statement: the kind-6 two amount
+   menus (AMOUNTCFG: mode 0x400, the gypsy filter, kind 6, the 16 ids 0xffff, option14 3, ids[4] the first
+   pick), the gm_FindChar pair for other kinds, the -40 / -80 (item 0x2c5) transfers both ways, the two
+   he_ShowNews texts 0xfea / 0xfeb (key 0x5fb) and the 0 / 1 returns. Only allocation and scheduling are
+   left: the 0 constant lives in esi in the original (push esi, cmp edi,esi, mov eax,esi) and as immediates
+   in ours, the cfg stores and the he_ShowNews argument pushes are in another order, and the frame is 0x550
+   in both now (asmdiff: ours 156 ins, the original 165, differing 37; diffclass: code 45, order 20, slots
+   2). Tried the ret variable and the direct returns, the AMOUNTCFG fields and the memset of cfg.ids, the
+   0x100 text buffer (fixed the frame) */
 
-int ai_Unk5d0c70(int param_1, int param_2)
+int ai_QuarrelCallback(AICHARREC *ch, int *req)
 {
-    int cfg[20];
-    char text[0x200];
+    AMOUNTCFG cfg;
+    char text[0x100];
     char text2[0x400];
-    int a;
-    int b;
+    AICHARREC *a;
+    AICHARREC *b;
     int amount;
-    int i;
-    int ret;
 
-    ret = 0;
-    if (*(char *)(param_1 + 2) == 6) {
-        for (i = 0; i < 20; i++)
-            cfg[i] = 0;
-        for (i = 7; i < 15; i++)
-            cfg[i] = -1;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
         txt_Format(text, (char *)0x9c);
-        cfg[0] = 0;
-        cfg[1] = 0x400;
-        cfg[2] = U_I(((unsigned)&gypsyFilter));
-        cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-        cfg[4] = 6;
-        a = ai_AmountMenu(cfg, text, 0, 0);
+        cfg.mode = 0x400;
+        cfg.filter = gypsyFilter;
+        cfg.kind = 6;
+        a = (AICHARREC *)ai_AmountMenu((int)&cfg, text, 0, 0);
         if (a == 0)
             return 0;
-        cfg[5] = 3;
-        *(unsigned short *)((char *)cfg + 0x24) = *(unsigned short *)a;
+        cfg.option14 = 3;
+        cfg.ids[4] = a->id;
         txt_Format(text, (char *)0x9e);
-        b = ai_AmountMenu(cfg, text, 0, 0);
+        b = (AICHARREC *)ai_AmountMenu((int)&cfg, text, 0, 0);
         if (b == 0)
             return 0;
     } else {
-        a = gm_FindChar(*(int *)(param_2 + 4));
-        b = gm_FindChar(*(int *)(param_2 + 8));
+        a = (AICHARREC *)gm_FindChar(req[1]);
+        b = (AICHARREC *)gm_FindChar(req[2]);
         if (a == 0 || b == 0)
             return 0;
     }
-    ret = 1;
-    amount = (ai_InventoryHas((void *)param_1, 0x2c5) != 0 ? 2 : 1) * -40;
-    cm_SendRelations(*(int *)(a + 4), *(int *)(b + 4), amount, 1);
-    cm_SendRelations(*(int *)(b + 4), *(int *)(a + 4), amount, 1);
-    if (*(char *)(a + 2) == 6 || *(char *)(a + 2) == 7) {
-        txt_Format(text2, (char *)0xfea, *(unsigned short *)b);
-        he_ShowNews(*(int *)(a + 4), -1, 1, text2, 0x5fb, 0);
+    amount = (ai_InventoryHas(ch, 0x2c5) != 0 ? 2 : 1) * -40;
+    cm_SendRelations(a->netId, b->netId, amount, 1);
+    cm_SendRelations(b->netId, a->netId, amount, 1);
+    if (a->kind == 6 || a->kind == 7) {
+        txt_Format(text2, (char *)0xfea, b->id);
+        he_ShowNews(a->netId, -1, 1, text2, 0x5fb, 0);
     }
-    if (*(char *)(b + 2) == 6 || *(char *)(b + 2) == 7) {
-        txt_Format(text2, (char *)0xfeb, *(unsigned short *)a, *(unsigned short *)a);
-        he_ShowNews(*(int *)(b + 4), -1, 1, text2, 0x5fb, 0);
+    if (b->kind == 6 || b->kind == 7) {
+        txt_Format(text2, (char *)0xfeb, a->id, a->id);
+        he_ShowNews(b->netId, -1, 1, text2, 0x5fb, 0);
     }
-    return ret;
+    return 1;
 }
 /* 0x5d0e60, a message callback (177 B): param_2 a record (+0x10 set to 1), param_3 the message record
    (+2 the type, +4 the handle, +0 the word, the counters +0x80 .. +0x84). 0x505ca0 (5, pick) gives a
