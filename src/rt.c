@@ -979,7 +979,7 @@ void rt_EditCartRoute(char *c)
         cm_SendSetRoute((AIOBJ *)c, rt_EditRoute);
     else {
         v = 0;
-        ai_Unk4c6320(c);
+        cm_SendClearRoute((AIOBJ *)c);
         cm_BeginFieldBlock(c, *(int *)(c + 2));
         cm_AddFieldValue(1, 1, c - cm_FieldObject + 0x33, &v);
         cm_SendFieldValues();

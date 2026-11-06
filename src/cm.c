@@ -2330,14 +2330,14 @@ void cm_SendSetRoute(AIOBJ *o, RTPOINT *pts)
     cm_SetLongMsg(m.route.count << 6, buf);
     cm_QueueSend(&m);
 }
-/* 0x4c6320, message 0x69: o's id (+2) */
+/* 0x4c6320, message 0x69: the cart o's id (its handler 0x4cd2f0 frees its route) */
 
-void ai_Unk4c6320(char *o)
+void cm_SendClearRoute(AIOBJ *o)
 {
     G17MSG m;
 
     m.type = 0x69;
-    G17_I(m, 0) = *(int *)(o + 2);
+    m.route.objId = o->objId;
     cm_QueueSend(&m);
 }
 /* 0x4c6350, check of message 0xf: 1 if the owner of id has less than the amount of item k */

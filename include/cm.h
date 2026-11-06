@@ -293,7 +293,7 @@ void cm_SendMasterChange(G28REC *p, struct AICHAR *q);                          
 int cm_SendEffectLoad(int *p);                                                       /* 0x4c6230 */
 int cm_SendShots(void *p);                                                      /* 0x4c6260 */
 void cm_SendSetRoute(AIOBJ *o, RTPOINT *pts);                                        /* 0x4c62a0, rt.c's route points */
-void ai_Unk4c6320(char *o);                                                      /* 0x4c6320 */
+void cm_SendClearRoute(AIOBJ *o);                                                    /* 0x4c6320 */
 int ai_Unk4c6350(G17MSG *m);                                                     /* 0x4c6350, check of 0xf */
 int ai_Unk4c63e0(G17MSG *m);                                                     /* 0x4c63e0, check of 0x11 */
 int ai_Unk4c65b0(G17MSG *m);                                                     /* 0x4c65b0, check of 0x16 */
