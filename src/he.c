@@ -1257,6 +1257,10 @@ typedef struct HEGRAVECARE {            /* the grave care job 0x8d's words over 
     int left;                           /* 0xb8, the working minutes left, 0x1fe at the start */
     AITIME since;                       /* 0xbc, the time the last care step counted up to */
 } HEGRAVECARE;
+typedef struct HEDEATHDUE {             /* the event 0x8e's words over AIJOB's union (its alloc handler 0x571990, run handler 0x5719e0) */
+    char pad00[0xac];
+    int price;                          /* 0xac, the amount the character pays when it can (cm_SendMoveGoods) */
+} HEDEATHDUE;
 #define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
                                            ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
@@ -23214,8 +23218,8 @@ void he_AllocPlunder(int ev);          /* 0x5706e0 */
 void he_RunPlunder(int ev);          /* 0x5707a0 */
 void he_Unk572860(int ev);          /* 0x572860 */
 void he_RunPlunderOffer(int ev);          /* 0x570cc0 */
-void he_Unk571990(int ev);          /* 0x571990 */
-void he_Unk5719e0(int ev);          /* 0x5719e0 */
+void he_AllocDeathDue(int ev);          /* 0x571990 */
+void he_RunDeathDue(int ev);          /* 0x5719e0 */
 void he_Unk571ac0(int ev);          /* 0x571ac0 */
 void he_Unk571c30(int ev);          /* 0x571c30 */
 void he_AllocMeeting(int ev);          /* 0x571f60 */
@@ -23237,7 +23241,7 @@ int he_RegisterEventTypes88(void)
                     if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_RunPlunder) == 0) {
                         if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_RunPlunderOffer) == 0) {
                             if (he_SetEventHandlers(0x8d, (void *)he_AllocGraveCare, (void *)he_RunGraveCare) == 0) {
-                                if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
+                                if (he_SetEventHandlers(0x8e, (void *)he_AllocDeathDue, (void *)he_RunDeathDue) == 0) {
                                     if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
@@ -24136,41 +24140,48 @@ void he_RunGraveCare(int ev)
 }
 /* 0x571990, the alloc of the event 0x8e: the due clock +0x52 = now + 0x48 hours, state 0 */
 
-void he_Unk571990(int ev)
+void he_AllocDeathDue(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, 0x48, 0, 0);
 }
-/* 0x5719e0, the run of the event 0x8e: only the states -2 .. 0; the character +0xc (0x505df0) missing -> free; the cost 0x509ee0 (character, the byte 0x6f1bc5) above +0xac -> 0x4c47e0 (-1, +4 of the character, the byte, +0xac) and free; else each of the five job records +0x68 .. present loses 0x4fca40 (id, -1001), or the character itself when none; free */
-
-void he_Unk5719e0(int ev)
+/* 0x5719e0, the run handler of the event 0x8e (alloc he_AllocDeathDue: due 72 hours after its start; a reasoned
+   guess from what it does: the due day of a pact with death): only at the stages -2 .. 0. The event's character
+   (netId) pays the price (`price`, cm_SendMoveGoods to nobody) when its money (gm_CharCurrency) is above it;
+   else every living relative of relatives[3..7] (the descendants ai_DecideUseDynastyObject walks) loses 1001
+   health (gm_AddHealth), or the character itself when there is none. The event is then freed (twice on the
+   unpaid path, as the original does: once in the branch, once at the end). */
+void he_RunDeathDue(int ev)
 {
-    char *per;
-    char *r;
-    int n, i, found = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HEDEATHDUE *d = (HEDEATHDUE *)ev;
+    AICHAR *ch, *r;
+    int i, found, money;
 
-    if (HM_I(ev, 0x70) < -2 || HM_I(ev, 0x70) > 0)
+    if (e->stage < -2 || e->stage > 0)
         return;
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
-    if (per != 0) {
-        n = ((int (*)(char *, char))gm_CharCurrency)(per, *(char *)(unsigned)&ai_OwnPlayer);
-        if (HM_I(ev, 0xac) < n) {
-            cm_SendMoveGoods(-1, *(int *)(per + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer, HM_I(ev, 0xac));
+    ch = (AICHAR *)gm_FindChar(e->netId);
+    if (ch != 0) {
+        money = gm_CharCurrency((char *)ch, ai_OwnPlayer);
+        if (money > d->price) {
+            cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, d->price);
             he_FreeEvent((int *)ev);
             return;
         }
+        found = 0;
         for (i = 0; i < 5; i++) {
-            if (HM_I(per, 0x68 + i * 4) != -1) {
-                r = (char *)gm_FindChar(HM_I(per, 0x68 + i * 4));
+            if (ch->relatives[3 + i] != -1) {
+                r = (AICHAR *)gm_FindChar(ch->relatives[3 + i]);
                 if (r != 0) {
-                    ((float (*)(unsigned short, int))gm_AddHealth)(*(unsigned short *)r, -1001);
+                    gm_AddHealth(r->id, -1001);
                     found = 1;
                 }
             }
         }
         if (!found)
-            ((float (*)(unsigned short, int))gm_AddHealth)(*(unsigned short *)per, -1001);
+            gm_AddHealth(ch->id, -1001);
+        he_FreeEvent((int *)ev);
     }
     he_FreeEvent((int *)ev);
 }
