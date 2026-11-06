@@ -1937,8 +1937,8 @@ void cm_SendSetJob(int id, int job)
     G17MSG m;
 
     m.type = 0x48;
-    G17_I(m, 0) = id;
-    m.data[4] = job;
+    m.setJob.charId = id;
+    m.setJob.job = (unsigned char)job;
     cm_QueueSend(&m);
 }
 /* 0x4c59f0, message 0x49 with a text */
