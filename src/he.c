@@ -22717,14 +22717,14 @@ void he_AllocSecretRoom();
 void he_RunSecretRoom();
 void he_AllocEvent9a();
 void he_RunDomizilEvent();
-void he_Unk56f050();
+void he_AllocDomizilEvent();
 
 /* 0x56e400, registers the event types 0x99 .. 0x9b (called by 0x53d4b0): the pairs (0x56e460, 0x56e5b0), (0x56efc0, 0x56f040) and (0x56f050, 0x56f0b0); 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypes99(void)
 {
     if (he_SetEventHandlers(0x99, (void *)he_AllocSecretRoom, (void *)he_RunSecretRoom) == 0) {
         if (he_SetEventHandlers(0x9a, (void *)he_AllocEvent9a, (void *)he_FreeEventNow) == 0) {
-            if (he_SetEventHandlers(0x9b, (void *)he_Unk56f050, (void *)he_RunDomizilEvent) == 0)
+            if (he_SetEventHandlers(0x9b, (void *)he_AllocDomizilEvent, (void *)he_RunDomizilEvent) == 0)
                 return 0;
         }
     }
@@ -23046,7 +23046,7 @@ void he_FreeEventNow(int *r)
 }
 /* 0x56f050, the alloc of the event 0x9b (not while paused, flags +0x78 & 4): due = now +0x30 hours (0x4fe140), state 0 scheduled (0x4c4c60) */
 
-void he_Unk56f050(int ev)
+void he_AllocDomizilEvent(int ev)
 {
     if (*(unsigned char *)(ev + 0x78) & 4)
         return;
