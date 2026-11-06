@@ -142,6 +142,10 @@ extern int ai_Dragging;                 /* 0x6f26bc, 1 while the town map is dra
 extern int *ai_PlacementSites;          /* 0x6f26b0, the candidate site list of the running building placement (the map window marks each entry) */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
+extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */
+extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
+extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
+extern int ai_BldCartTexts[3];          /* 0x6f40bc, per cart its text control, -1: none */
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
 extern int ai_ChildWindowId;            /* 0x62c418, the child window ai_Unk5ba1c0 creates and ai_CloseChildWindow removes, -1: none */
 

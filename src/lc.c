@@ -747,10 +747,6 @@ extern GAPDATA full_data_60d38c[];
 extern GAPDATA full_data_624ec4[];
 extern GAPDATA full_data_624fcc[];
 extern GAPDATA full_data_62cbb4[];
-extern GAPDATA full_data_6f40a0[];
-extern GAPDATA full_data_6f40a4[];
-extern GAPDATA full_data_6f40b0[];
-extern GAPDATA full_data_6f40bc[];
 extern struct AIBLD *ai_MarketBuilding;
 extern int d2_PointerObj;
 extern char ch_EmptyName[1];
@@ -758,10 +754,6 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern struct D2OBJ *d2_Objs;
 
-extern GAPDATA full_data_6f40a0[];
-extern GAPDATA full_data_6f40a4[];
-extern GAPDATA full_data_6f40b0[];
-extern GAPDATA full_data_6f40bc[];
 extern char ai_Chars[768][0x21c];
 extern unsigned char ai_OwnPlayer;
 extern int d2_ClickedId;
@@ -16328,25 +16320,25 @@ void ai_Unk5aa700(int param_1, char *param_2)
     int n;
     int i;
 
-    U_I((unsigned)&full_data_6f40a0) = 0;
+    U_I((unsigned)&ai_BldCartCount) = 0;
     for (i = 0; i < 3; i++) {
-        U_I((unsigned)&full_data_6f40b0 + i * 4) = -1;
-        U_I((unsigned)&full_data_6f40bc + i * 4) = -1;
+        U_I((unsigned)&ai_BldCartButtons + i * 4) = -1;
+        U_I((unsigned)&ai_BldCartTexts + i * 4) = -1;
     }
     d2_SetForm(*(int *)(param_1 + 0x234), 1);
     io_PrintText((char *)(unsigned)"$C");
     io_PrintText(0x1a1f);
     d2_SetForm(*(int *)(param_1 + 0x234), 3);
-    n = gm_BuildingCarts(param_2, (char *)(unsigned)&full_data_6f40a4);
+    n = gm_BuildingCarts(param_2, (char *)(unsigned)&ai_BldCarts);
     if (n > 3)
         n = 3;
-    U_I((unsigned)&full_data_6f40a0) = n;
+    U_I((unsigned)&ai_BldCartCount) = n;
     for (i = 0; i < n; i++) {
         pics[0] = gm_HeadIconNumber((char *)(unsigned)&full_data_624ec4);
         pics[1] = gm_HeadIconNumber((char *)(unsigned)&full_data_624fcc);
         pics[2] = gm_HeadIconNumber((char *)(unsigned)&full_data_62cbb4);
         pics[3] = gm_HeadIconNumber((char *)(unsigned)&full_data_60d38c);
-        rec = U_I((unsigned)&full_data_6f40a4 + i * 4);
+        rec = U_I((unsigned)&ai_BldCarts + i * 4);
         d2_WinOpenPic(0xe, i * 0x6e + 8, 0x5db, U_I((unsigned)&d2_LastWindow));
         d2_WinOpenPic(0x10, i * 0x6e + 10, pics[U_I(rec + 2) & 3] + 0x639, U_I((unsigned)&d2_LastWindow));
         d2_WinOpenPic(0x50, i * 0x78, U_W(rec) + 0x4b1, U_I((unsigned)&d2_LastWindow));
@@ -16363,11 +16355,11 @@ void ai_Unk5aa700(int param_1, char *param_2)
                 txt_Format(text, 0x1a3e, name);
         }
         ctrl = d2_CreateWinText(0, i * 0x78 + 0x48, text, U_I((unsigned)&d2_LastWindow));
-        U_I((unsigned)&full_data_6f40bc + i * 4) = ctrl;
+        U_I((unsigned)&ai_BldCartTexts + i * 4) = ctrl;
         d2_SetObjFont(ctrl, 0x56);
         if (name != 0) {
             ctrl = d2_WinOpenPic(0, i * 0x78 + 0x5a, 5, U_I((unsigned)&d2_LastWindow));
-            U_I((unsigned)&full_data_6f40b0 + i * 4) = ctrl;
+            U_I((unsigned)&ai_BldCartButtons + i * 4) = ctrl;
             U_I((unsigned)&d2_Objs + 0x4c + ctrl * 0x2ec) = 1;
             U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec) = (int)name;
             d2_SetObjFont(ctrl, 0x56);
@@ -16389,8 +16381,8 @@ void ai_Unk5aa9a0(int param_1, char *param_2)
     int ctrl;
     int i;
 
-    for (i = 0; i < U_I((unsigned)&full_data_6f40a0); i++) {
-        rec = U_I((unsigned)&full_data_6f40a4 + i * 4);
+    for (i = 0; i < U_I((unsigned)&ai_BldCartCount); i++) {
+        rec = U_I((unsigned)&ai_BldCarts + i * 4);
         ctrl = *(int *)(rec + 0x24);
         name = 0;
         if (ctrl == 0) {
@@ -16403,23 +16395,23 @@ void ai_Unk5aa9a0(int param_1, char *param_2)
             if (name != 0)
                 txt_Format(text, 0x1a3e, name);
         }
-        if (U_I((unsigned)&full_data_6f40bc + i * 4) != -1) {
-            d2_SetObjText(U_I((unsigned)&full_data_6f40bc + i * 4), text);
-            if (name != 0 && U_I((unsigned)&full_data_6f40b0 + i * 4) == -1) {
+        if (U_I((unsigned)&ai_BldCartTexts + i * 4) != -1) {
+            d2_SetObjText(U_I((unsigned)&ai_BldCartTexts + i * 4), text);
+            if (name != 0 && U_I((unsigned)&ai_BldCartButtons + i * 4) == -1) {
                 ctrl = d2_WinOpenPic(0, i * 0x78 + 0x5a, 5, U_I((unsigned)&d2_LastWindow));
-                U_I((unsigned)&full_data_6f40b0 + i * 4) = ctrl;
+                U_I((unsigned)&ai_BldCartButtons + i * 4) = ctrl;
                 U_I((unsigned)&d2_Objs + 0x4c + ctrl * 0x2ec) = 1;
                 U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec) = (int)name;
                 d2_SetObjFont(ctrl, 0x56);
                 U_I((unsigned)&d2_Objs + 0x1c0 + ctrl * 0x2ec) = 3;
             }
-            if (U_I((unsigned)&full_data_6f40b0 + i * 4) != -1)
-                d2_SetCaption(U_I((unsigned)&full_data_6f40b0 + i * 4), (char *)U_I((unsigned)&full_data_1440ab4));
+            if (U_I((unsigned)&ai_BldCartButtons + i * 4) != -1)
+                d2_SetCaption(U_I((unsigned)&ai_BldCartButtons + i * 4), (char *)U_I((unsigned)&full_data_1440ab4));
         }
     }
     if (*(unsigned char *)(param_1 + 0x270) == 2 && U_I((unsigned)&d2_ClickedId) == 5) {
         for (i = 0; i < 3; i++) {
-            ctrl = U_I((unsigned)&full_data_6f40b0 + i * 4);
+            ctrl = U_I((unsigned)&ai_BldCartButtons + i * 4);
             if (ctrl != -1 && U_I((unsigned)&d2_PointerObj) == ctrl)
                 sv_SelectPanelObjectK(U_I((unsigned)&d2_Objs + 0x2e8 + ctrl * 0x2ec), -1, (char *)(unsigned)&ch_EmptyName);
         }
@@ -25480,6 +25472,10 @@ int ai_DragStartY = 0;  /* 0x6f26b8 */
 int ai_Dragging = 0;  /* 0x6f26bc, 1 while the town map is dragged */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
+int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
+struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
+int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */
+int ai_BldCartTexts[3] = { 0 };  /* 0x6f40bc, per cart its text control, -1: none */
 LCPRODROW ai_ProdRows[4] = { 0 };  /* 0x6f4f00 */
 LCPRODSLOT ai_ProdGoods[16] = { 0 };  /* 0x6f4f60 */
 LCPRODROW ai_ProdRows2[2] = { 0 };  /* 0x6f52e0 */
