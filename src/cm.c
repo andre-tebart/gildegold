@@ -6754,10 +6754,10 @@ int cm_LobbySetReady(int v)
     G17MSG m;
 
     memset(m.data, 0, 0x80);
-    G17_I(m, 4) = cm_LobbyPlayerId;
+    m.lobby.state.id = cm_LobbyPlayerId;
     m.type = 0x5f;
-    G17_I(m, 0) = 1;
-    G17_I(m, 8) = v;
+    m.lobby.kind = 1;
+    m.lobby.state.value = v;
     return cm_QueueSend(&m);
 }
 /* 0x4cd6a0, kind 3: this player leaves the lobby; returns the send slot */
