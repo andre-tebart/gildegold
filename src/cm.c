@@ -1881,7 +1881,7 @@ void cm_SendSkillsChanged(int a)
     G17MSG m;
 
     m.type = 0x43;
-    G17_I(m, 0) = a;
+    m.skills.charId = a;
     cm_QueueSend(&m);
 }
 /* 0x4c58a0, message 0x44: sends the office application (the int id, the two office bytes and the kind of p, G17B7) and returns the
