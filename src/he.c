@@ -25155,7 +25155,7 @@ void he_GypsyDisease(AICHAR *pl, AICHAR *per);     /* 0x573760 */
 void he_GypsyRumour(AICHAR *pl, AICHAR *per);     /* 0x573820 */
 void he_GypsyWorkerQuits(AICHAR *pl, AICHAR *per);     /* 0x573970 */
 void he_GypsySwapSkills(AICHAR *pl, AICHAR *per);     /* 0x573ae0 */
-void he_Unk573c20(char *pl, char *per);     /* 0x573c20 */
+void he_GypsyCurse(AICHAR *pl, AICHAR *per);     /* 0x573c20 */
 void he_Unk573d30(char *pl, char *per);     /* 0x573d30 */
 
 /* 0x5736d0, dispatches the approach +0xac `a` of the event 0x9d: 0 0x573760, 1 0x573820, 2 0x573970, 3 0x573ae0, 4 0x573c20, else 0x573d30 */
@@ -25170,7 +25170,7 @@ void he_Unk5736d0(char *pl, char *per, int a)
     else if (a == 3)
         he_GypsySwapSkills((AICHAR *)pl, (AICHAR *)per);
     else if (a == 4)
-        he_Unk573c20(pl, per);
+        he_GypsyCurse((AICHAR *)pl, (AICHAR *)per);
     else
         he_Unk573d30(pl, per);
 }
@@ -25318,33 +25318,38 @@ void he_GypsySwapSkills(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573c20, the approach 4 of the event 0x9d: posts a message 0x9e (0x4c4b70) from per +4 with the clock, -1 at +0xc, +0x58 =
-   pl +4 (-1 when pl is per) and +0x60 = per +4; then the name (0x629038 / 0x62901c) and the texts 0x41e2 / 0x41dd (else
-   0x41dc) and the message 0x5fb (0x53dda0) to per +4 */
-
-void he_Unk573c20(char *pl, char *per)
+/* 0x573c20, the approach 4 of the event 0x9d (he_Unk5736d0): posts the message 0x9e to per (from -1; arg[0] the
+   netId of the event's own character pl, -1 when that is per; arg[1] per's netId), whose event (alloc 0x573f20, run
+   0x573fb0) charges per once a day for two days. Then per's player is told (the news 0x5fb, the text 0x41dd when per
+   is pl, else 0x41dc, around 0x41e2) with the voice "_NACHRICHTEN_ZIGEUNER_02" (pl) or "_NACHRICHTEN_ZIGEUNER_01"
+   (another). "Curse" is a reasoned guess from that effect. */
+void he_GypsyCurse(AICHAR *pl, AICHAR *per)
 {
-    char msg[0xf8];
-    char name[0x19];
-    char t1[0x400];
-    char t2[0x400];
+    AIMSG msg;
+    char voice[100];
+    char what[0x400];
+    char text[0x400];
+    int fmt;
 
-    memset(msg, 0, 0xf8);
-    HM_B(msg, 4) = 0x9e;
-    HM_I(msg, 8) = HM_I(per, 4);
-    HM_I(msg, 0xc) = -1;
-    *(AITIME *)(msg + 0x28) = ai_Time;
-    HM_B(msg, 0x36) = 1;
-    HM_I(msg, 0x58) = pl == per ? -1 : HM_I(pl, 4);
-    HM_I(msg, 0x60) = HM_I(per, 4);
-    cm_SendLongMessage(msg);
-    if (pl == per)
-        memcpy(name, (void *)(unsigned)&full_data_629038, 0x19);
-    else
-        memcpy(name, (void *)(unsigned)&full_data_62901c, 0x19);
-    txt_Format(t1, 0x41e2);
-    txt_Format(t2, pl == per ? 0x41dd : 0x41dc, t1);
-    he_ShowNews(HM_I(per, 4), -1, t2, 1, 0x5fb, name);
+    memset(&msg, 0, sizeof(msg));
+    msg.type = 0x9e;
+    msg.to = per->netId;
+    msg.fromId = -1;
+    msg.time = ai_Time;
+    msg.flags = 1;
+    msg.arg[0] = pl == per ? -1 : pl->netId;
+    msg.arg[1] = per->netId;
+    cm_SendLongMessage((char *)&msg);
+    if (per == pl) {
+        fmt = 0x41dd;
+        strcpy(voice, "_NACHRICHTEN_ZIGEUNER_02");
+    } else {
+        fmt = 0x41dc;
+        strcpy(voice, "_NACHRICHTEN_ZIGEUNER_01");
+    }
+    txt_Format(what, 0x41e2);
+    txt_Format(text, fmt, what);
+    he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
 /* 0x573d30, the default approach of the event 0x9d: posts a message 0x9f (0x4c4b70) from per +4 with the clock, -1 at +0xc;
    then the name (0x629038 / 0x62901c) and the texts 0x41e3 / 0x41dd (else 0x41dc) and the message 0x5fb (0x53dda0) to per +4 */
