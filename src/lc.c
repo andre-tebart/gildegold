@@ -1112,7 +1112,10 @@ typedef struct AIBTYPE {           /* the building-type record fields this unit 
                                       matters: ai_BTypes is walked by the record */
     unsigned char buildingClass;   /* 0x00, the building class the goods groups test (4, 0x13, 0x10 in
                                       ai_GoodFitsBuilding; the record's kind byte of ai_Unk5aa1f0) */
-    char pad001[0x246];
+    char name[0x21];               /* 0x001, the type's name: its models "gb_<NAME>[_A..].ogr" (lc_GebaeudeAusrichten) */
+    char pad022[0x221];
+    int v243;                      /* 0x243, a value the type's tooltip shows (ai_bld.h AIBTYPE.v243; the build
+                                      confirmation text 0x17ef shows it too) */
     unsigned char level;           /* 0x247, the type's level 1 .. 3, read as unsigned (ai_bld.h AIBTYPE.cap247) */
     char pad248[5];
 } AIBTYPE;                         /* 0x24d bytes, ai_BTypes[] */
@@ -3001,113 +3004,327 @@ struct D3OBJECT * d3_LoadGroup(); void d3t_InflateObjectTree(D3OBJECT *obj); int
 struct D3OBJECT;
 char d3if_Delete(struct D3OBJECT *obj);  /* 0x447190, d3_interface.h */
 int gm_BuildingKindCost(int c, int kind); void txt_Format(char *out, int id0, ...); int sv_UpdateCamera();
-int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
+char d3sm_GetVertex();  /* 0x45f100: this caller tests the char result (al) */
+char d3sm_Pick();  /* 0x45f2b0, d3_sm.h: the cell under a screen point, 0 = none */
+void sv_SetStatusText(char *s);  /* 0x52e330, sv.h */
+extern char ai_DataPath[];  /* 0x75dca0, the data path (am.h) */
+extern float cm_Pi;  /* 0x5eb7dc (cm.h) */
 
-#define B_REC(k) (U_I((unsigned)&ai_BTypes) + (k) * 0x24d)
-
-/* 0x58ff00, the placement of a building of the kind param_1 (2709 B, ROUGH SKELETON from the Ghidra pseudocode:
-   the frame is 0x4110 bytes, the 128 name slots are 0x60 bytes each): the kind record 0x7e3f30 + kind * 0x24d;
-   a kind 2 building first needs the player's character (0x501190 query, 0x521150); then the 128 candidate names
-   are generated (the kind name upcased, 0x5ea986; the strided name table; 0x42fca0 filters them) into names[];
-   one of them is picked by util_Random (masked 0xffff; for the kind '!' by the flag 0x770b89) or by 0x58f640;
-   the collected candidate objects (0x58f7a0 into 0x6f26b0) are loaded one by one (0x44c3f0, position 0x43b790,
-   the alpha 0x43d430, the colour 0x413640), the nearest to the camera 0xfc2dec picked, and the interactive loop
-   (0x5309a0 pump, 0x527e90, the move 0x58feb0 / 0x58fd90 / 0x58fe10, the message 0x4c4b70) runs until the
-   player confirms; returns the chosen index or 0 */
-int ai_Unk58ff00(int kind, char *out)
+/* 0x58ff00, lets the player place a building of the kind kind (2709 B; the name of its own error strings): a
+   kind of class 2 the player already owns (build query 2, 4, the player, 5, 2) asks first (text 0x17f2 with the
+   kind's name text 14 * kind + 0x48e); the models "<data>gebaeude/*GB_<NAME>.ogr" and "..._A .. _Z..." that the vfs
+   holds go to names[]; the "bk_" sites of the building name (ai_FindBauplaetze) become ai_PlacementSites and get a
+   banner each (sp_BAU_WIMPEL, coloured 0xc0a080, animated); the banner nearest to the camera starts the loop:
+   a random model of names[] follows the mouse over the height map (d3sm_Pick) or the map window's pick
+   (kb_Last '2', the building icon or the compass), snaps to the nearest site (ai_FindNearestObject, turned by
+   ai_ObjectAngle; green 0x40c040 on a site, red 0xc04040 off it), and a left release on a site asks the
+   confirmation (text 0x17ef: the cost, the name, AIBTYPE.v243); returns the chosen site object and copies the
+   picked model name names[idx] to out (out = "" and 0 when none was chosen)
+   @deep Reconstructed in full from the original 0x58ff00..0x590995 (the name loop, the banner loop, the
+   interactive placement loop, the confirm and the cleanup), every call, store and string read against it;
+   refs_differ=0, ours 786 vs 787 instructions, frame equal. Left: 14 code lines of allocation/scheduling
+   only: +0x311 the original copies the banner to eax before storing sel and cur (mov eax, esi; mov [sel],
+   eax; mov [cur], eax) where ours stores esi twice (tried sel = cur = obj, cur = sel, D3OBJECT * sel, sel
+   = flags[i]: no change); +0x7ba fld v.y; fadd cm_Pi in the original vs fld cm_Pi; fadd v.y in ours (v.y
+   += cm_Pi, v.y = v.y + cm_Pi and cm_Pi + v.y all give ours); +0x97f the original pushes the known-zero
+   esi for sv_MessageBox(txt_Ptrs[0x17f0], 0) where ours pushes 0 (the original keeps esi as the zero
+   register through the banner loop). The rest is slots / order / regs. A variant round. */
+int lc_GebaeudeAusrichten(int kind, char *out)
 {
-    int list1[0x100];
-    int list2[0x100];
-    char names[128][0x60];
-    char chosen[0x60];
-    char text[0x60];
-    int i;
-    int n;
-    int obj;
-    int sel;
-    int best;
-    int it;
-    float bd;
+    char names[128][0x60];          /* the model files of the kind found in the vfs */
+    char text[0x400];               /* the confirmation text */
+    char found[0x100];              /* vfs_GetPath's output */
+    int flags[0x100];               /* the banner per site */
+    int sites[0x100];               /* the "bk_" site objects (ai_FindBauplaetze) */
+    char flagPath[0x100];
+    char path[0x100];
+    D3MATRIX mat;
+    char bname[0x40];
+    char buf[0x100];                /* "gb_<NAME>", then the error message */
+    D3VECTOR4 bmin;                 /* the model's bounds (unused) */
+    D3VECTOR4 bmax;
+    D3VECTOR ang;
+    D3VECTOR v;
+    D3VECTOR rot;
+    D3VECTOR4 pos;                  /* the engine's padded vector */
+    D3TEXFLAGS tf;
+    struct D3HMAP *hmap;
+    D3OBJECT *model;
+    D3OBJECT *obj;
+    AIBTYPE *type;
+    unsigned char *b;
+    float letter;
+    float shown;
+    float best;
     float d;
-    float pos[3];
-    int a[3];
-    int b[3];
+    float dx;
+    float dy;
+    float dz;
+    int result;
+    int color;
+    int n;
+    int reload;
+    int sel;                        /* the banner nearest to the camera */
+    int cur;
+    int hit;
+    int firstPick;
+    int idx;
+    int count;
+    int picked;
+    int ok;
+    int px;
+    int pz;
+    int i;
 
-    sel = 0;
-    obj = 0;
+    hmap = d3_DefaultScene->hmap;
+    model = 0;
+    result = 0;
+    color = 0;
     n = 0;
-    best = 0;
-    bd = 1e+09f;
-    if (*(char *)B_REC(kind) == 2) {
-        /* the player's character of the kind: the first of the build query whose byte 0 is the kind */
-        for (it = ((void *(*)())gm_BuildQuery)(); it != 0; it = gm_BuildNext()) {
-            /* ROUGH: the query arguments are lost in the pseudocode */
-            break;
-        }
-        /* 0x5176d0 / 0x521150: the character must exist, else 0 */
-    }
-    memset(list1, 0, 0x400);
-    memset(list2, 0, 0x400);
-    /* the base name: the kind record + 1 upcased */
-    strcpy(text, (char *)(B_REC(kind) + 1));
-    _strupr(text);
-    for (d = 0.0f; d < 128.0f; d += 1.0f) {
-        if (d == 0.0f)
-            sprintf(chosen, "%s", text);
-        else
-            sprintf(chosen, "%s%i", text, (int)d);
-        if (vfs_GetPath(chosen) == 0) {
-            if (d != 0.0f)
+    reload = 1;
+    sel = 0;
+    cur = 0;
+    best = 1e+09f;
+    firstPick = 1;
+    if (((AIBTYPE *)ai_BTypes)[kind].buildingClass == 2) {
+        for (b = gm_BuildQuery(2, 4, ai_PlayerId, 5, 2); b != 0; b = gm_BuildNext()) {
+            if (*b == kind) {
+                char ask[0x400];    /* the question whether to build another one */
+
+                txt_Format(ask, 0x17f2, kind * 14 + 0x48e);
+                if (sv_MessageBox(ask, 1) == 0)
+                    return 0;
                 break;
-        } else {
-            strcpy(names[n], chosen);
-            n++;
-        }
-    }
-    if (n == 0) {
-        /* 0x5de652 / 0x4222b0: "not a multiple ..." path */
-        sprintf(out, "%s", text);
-        err_Message(text);
-        return 0;
-    }
-    best = ((int (*)())util_Random)() & 0xffff;
-    if (*(char *)B_REC(kind) == '!')
-        best = (*(unsigned char *)((unsigned)&ai_CharSex + (U_W((unsigned)&ai_PlayerId) * 0x21c)) != 1);
-    if (ai_BuildingName(kind, chosen) != 0) {
-        n = ai_FindBauplaetze(names[best], list2);
-        ai_PlacementSites = list2;
-        for (i = 0; i < n; i++) {
-            if (list2[i] != 0) {
-                d3_PointToWorld(list2[i], list2[i] + 0x4c, pos);
-                sprintf(chosen, "%s", text);
-                obj = d3_LoadGroup(chosen);
-                list1[i] = obj;
-                d3t_InflateObjectTree(obj);
-                d3_SetObjectPos(obj, list2[i]);
-                *(unsigned char *)(obj + 0x211) &= 0xfd;
-                ((void (*)(void *, void *, int))d3_SetObjectAlpha)(obj, 0, 0);
-                d3t_SetTreeColor(obj);
-                if ((((pos[0] - d3_Camera->pos.x) * (pos[0] - d3_Camera->pos.x)) +
-                     ((pos[1] - d3_Camera->pos.y) * (pos[1] - d3_Camera->pos.y)) +
-                     ((pos[2] - d3_Camera->pos.z) * (pos[2] - d3_Camera->pos.z))) < bd) {
-                    /* ROUGH: the distance of the original is a sqrt of the three axes */
-                    sel = obj;
-                    bd = 0.0f;
-                    best = obj;
-                }
-                d3t_PlayAnim(obj);
             }
         }
-        if (best != 0) {
-            di_ClearEvents(2);   /* the call at 0x59035d pushes 2 */
-            *(char *)(unsigned)&kb_Last = '2';
-            /* ROUGH: the interactive loop -- the chosen object is moved with 0x58fd90 / 0x58feb0 to the site
-               (0x58fe10 nearest, the construction record 0x6f22a0 = 1), the frame pump 0x5309a0
-               (ai_Unk5909a0, 0x657c7) and the confirm key 0x527e90 / 0x527640 run until the exit */
-        }
-        sv_MessageBox();
     }
-    return sel;
+    memset(sites, 0, sizeof(sites));
+    memset(flags, 0, sizeof(flags));
+    strcpy(buf, "gb_");
+    strcat(buf, ((AIBTYPE *)ai_BTypes)[kind].name);
+    _strupr(buf + 2);
+    for (letter = 0.0f; letter < 128.0f; letter += 1.0f) {
+        if (letter != 0.0f)
+            sprintf(path, "%sgebaeude/*%s_%c.ogr", ai_DataPath, buf, (char)(letter + 'A' - 1.0f));
+        else
+            sprintf(path, "%sgebaeude/*%s.ogr", ai_DataPath, buf);
+        if (vfs_GetPath(path, vfs_Root, vfs_Root, found) != 0) {
+            strcpy(names[n++], path);
+        } else if (letter != 0.0f)
+            break;
+    }
+    if (n == 0) {
+        sprintf(buf, "lc_GebaeudeAusrichten(): Could not find any 3D-Object-Group fitting this building...", path);
+        err_Message(buf);
+        return 0;
+    }
+    idx = util_Random(n) & 0xffff;
+    if (((AIBTYPE *)ai_BTypes)[kind].buildingClass == '!')
+        idx = ((AICHARREC *)ai_Chars)[ai_PlayerId].sex != 1;
+    if (ai_BuildingName(kind, bname) == 0)
+        return 0;
+    count = ai_FindBauplaetze(bname, sites);
+    rot.x = 0;
+    rot.y = 0;
+    rot.z = 0;
+    ai_PlacementSites = sites;
+    if (count > 0) {
+        i = 0;
+        do {
+            if (sites[i] != 0) {
+                d3_PointToWorld((D3OBJECT *)sites[i], &((D3OBJECT *)sites[i])->pos, (D3VECTOR *)&pos);
+                sprintf(flagPath, "%s*sp_BAU_WIMPEL.ogr", ai_DataPath);
+                obj = d3_LoadGroup(flagPath, 0, 0);
+                flags[i] = (int)obj;
+                d3t_InflateObjectTree(obj);
+                d3_SetObjectPos(obj, (D3VECTOR *)&pos);
+                obj->objectFlags &= ~2;
+                tf.all = 0;
+                tf.b[2] = 1;
+                tf.b[0] = 0x80;
+                d3_SetObjectAlpha(obj, obj->info, tf);
+                d3t_SetTreeColor(obj, 0xc0, 0xa0, 0x80);
+                dx = pos.x - d3_Camera->pos.x;
+                dy = pos.y - d3_Camera->pos.y;
+                dz = pos.z - d3_Camera->pos.z;
+                d = (float)sqrt(dz * dz + dy * dy + dx * dx);
+                if (d < best) {
+                    best = d;
+                    sel = cur = (int)obj;
+                }
+                d3t_PlayAnim(obj, "sonstiges\\sp_WIMPEL.baf", 1);
+            }
+            i++;
+        } while (i < count);
+        if (sel != 0) {
+            d3_LightInvalidate(1);
+            di_ClearEvents(2);
+            kb_Last = '2';
+            do {
+                if (reload) {
+                    /* a new model of names[] at the old one's place */
+                    shown = 0.0f;
+                    if (model != 0) {
+                        pos.x = model->pos.x;
+                        pos.y = model->pos.y;
+                        pos.z = model->pos.z;
+                        rot.x = model->rotation.x;
+                        rot.y = model->rotation.y;
+                        rot.z = model->rotation.z;
+                        d3if_Delete(model);
+                    }
+                    strcpy(path, names[util_Random(n) & 0xffff]);
+                    model = d3_LoadGroup(path, 0, 0);
+                    if (model == 0) {
+                        sprintf(buf, "lc_GebaeudeAusrichten(): Could not load 3D-Object-Group '%s'...", path);
+                        err_Message(buf);
+                        i = 0;
+                        do {
+                            if (flags[i] != 0)
+                                d3if_Delete((D3OBJECT *)flags[i]);
+                            i++;
+                        } while (i < count);
+                        return 0;
+                    }
+                    model->objectFlags &= ~2;
+                    d3_SetObjectPos(model, (D3VECTOR *)&pos);
+                    d3t_DropObject(model, 1, 0);
+                    cur = ai_FindNearestObject((float *)&pos, sites);
+                    if (cur != 0) {
+                        ai_ObjectAngle(&rot, cur);
+                        d3_SetObjectRot(model, &rot);
+                        d3t_DropObject(model, 1, 0);
+                        sv_SetStatusText(" ");
+                        if (color != 1) {
+                            d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
+                            color = 1;
+                        }
+                    } else {
+                        sv_SetStatusText(txt_Ptrs[0x17f1]);
+                        if (color != 2) {
+                            d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
+                            color = 2;
+                        }
+                    }
+                    model->rotation.x = 0;
+                    model->rotation.y = 0;
+                    model->rotation.z = 0;
+                    model->pos.x = 0;
+                    model->pos.y = 0;
+                    model->pos.z = 0;
+                    d3t_GetObjectBounds(&bmin, &bmax, model);
+                    model->pos.x = pos.x;
+                    model->pos.y = pos.y;
+                    model->pos.z = pos.z;
+                    model->rotation = rot;
+                    reload = 0;
+                }
+                if (kb_Last == '2' ||
+                    (dm_L.lclick != 0 && (d2_PointerObj == sv_PanelBuildingIcon || d2_PointerObj == sv_PanelCompass))) {
+                    /* the map window picks the place */
+                    picked = ai_MapPick(8, 0, txt_Ptrs[0x17ec], 0, 0);
+                    if (picked != 0) {
+                        sv_FlyCameraToModel(picked);
+                        d3_PointToWorld((D3OBJECT *)picked, &((D3OBJECT *)picked)->pos, (D3VECTOR *)&pos);
+                        ai_DropObjectAt(model, (D3VECTOR *)&pos);
+                    } else if (firstPick) {
+                        sv_PopRequest = 1;
+                    }
+                    firstPick = 0;
+                }
+                hit = ai_FindNearestObject((float *)&model->pos, sites);
+                if (hit != 0) {
+                    if (hit != cur) {
+                        cur = hit;
+                        d3_PointToWorld((D3OBJECT *)hit, &((D3OBJECT *)hit)->pos, (D3VECTOR *)&pos);
+                        d3_SetObjectPos(model, (D3VECTOR *)&pos);
+                        ai_ObjectAngle(&ang, hit);
+                        d3_SetObjectRot(model, &ang);
+                    }
+                    sv_SetStatusText(" ");
+                    ok = 1;
+                    if (color != 1) {
+                        d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
+                        color = 1;
+                    }
+                } else {
+                    cur = 0;
+                    sv_SetStatusText(txt_Ptrs[0x17f1]);
+                    ok = 0;
+                    if (color != 2) {
+                        d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
+                        color = 2;
+                    }
+                }
+                if (dm_L.rup != 0)
+                    sv_PopRequest = 1;
+                if (model != 0 && shown < 90.0f) {
+                    /* the model half transparent, once per model */
+                    model->stateFlags &= ~2;
+                    tf.all = 0;
+                    tf.b[2] = 1;
+                    tf.b[0] = 0xdd;
+                    d3_SetObjectAlpha(model, model->info, tf);
+                    model->stateFlags |= 2;
+                    if (ok) {
+                        if (color != 1) {
+                            d3t_SetTreeColor(model, 0x40, 0xc0, 0x40);
+                            color = 1;
+                        }
+                    } else {
+                        if (color != 2) {
+                            d3t_SetTreeColor(model, 0xc0, 0x40, 0x40);
+                            color = 2;
+                        }
+                    }
+                    shown = 90.0f;
+                }
+                if (sv_UpdateCamera() == 0) {
+                    /* the model follows the mouse over the height map */
+                    if (d3sm_Pick(hmap, dm_L.x, dm_L.y, &px, &pz) && d3sm_GetVertex(hmap, px, pz, (D3VECTOR *)&pos)) {
+                        d3_SetObjectPos(model, (D3VECTOR *)&pos);
+                        d3t_DropObject(model, 1, 0);
+                    }
+                    d3_RelightObject(model);
+                    v.x = model->rotation.x;
+                    v.y = model->rotation.y;
+                    v.z = model->rotation.z;
+                    v.y += cm_Pi;
+                    d3_MatFromAngles((D3VECTOR4 *)&v, &mat);
+                }
+                if (dm_L.lup != 0 && ok) {
+                    type = (AIBTYPE *)ai_BTypes + kind;
+                    i = gm_BuildingKindCost((int)ai_Chars[ai_PlayerId], kind);
+                    txt_Format(text, 0x17ef, i, kind * 14 + 0x48e, type->v243);
+                    if (sv_MessageBox(text, 1) != 0) {
+                        sv_PopRequest = 1;
+                        result = cur;
+                    } else {
+                        sv_PopRequest = 1;
+                        result = 0;
+                    }
+                }
+            } while (sv_RunFrame((int)lc_GebaeudeAusrichten, 0x657c7) != 0);
+            if (result == 0) {
+                d3if_Delete(model);
+                out[0] = ch_EmptyName[0];
+                model = 0;
+            } else {
+                strcpy(out, names[idx]);
+            }
+            i = 0;
+            do {
+                if (flags[i] != 0)
+                    d3if_Delete((D3OBJECT *)flags[i]);
+                i++;
+            } while (i < count);
+            if (model != 0)
+                d3if_Delete(model);
+            return result;
+        }
+    }
+    sv_MessageBox(txt_Ptrs[0x17f0], 0);
+    return 0;
 }
 
 int ai_RunAllows(); int d2_OpenForm();
@@ -3115,7 +3332,6 @@ int d2_SetForm(int view, int n); int d2_GetViewWin(); int sv_CreateScrollButtons
 int d2_WinOpenPic(short x, short y, int pic, int win); int d2_CreateWinText(); void d2_SetObjFont(); void d2_SetObjText();  /* @original: the calls at 18534 (2), 18620 (3) and 6884 (3) pass fewer arguments than d2.h's 4-parameter prototype */
 void d2_SetViewEnabled(); void d2_CloseView(int view); int cm_SendLongMessage(char *msg);
 int sv_CheckGoodAmount(); int sv_CheckStock(); void txt_Format(char *out, int id0, ...); int sv_MessageBox();
-int d3sm_GetVertex();  /* @original: the original callers read an int result (gv.h declares it int) */
 int sv_UpdateCamera(); int gm_CharCurrency(char *c, char p); int gm_BuildingClass(); int gm_MayTakeJob(int k, int c);
 
 /* 0x5909a0, the construction window "BAUEN_GEB_BAUEN" (1988 B, ROUGH SKELETON from the Ghidra pseudocode): the
