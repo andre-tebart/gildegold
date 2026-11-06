@@ -1064,7 +1064,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       the fields at bits 0, 4, 8, 12, 14, 17, 20, 23, 25 (4, 4, 4, 2, 3, 3, 3, 2, 4
                                       bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
                                       field pairs of gm_CatchMinorDisease / gm_CatchUpperDisease */
-    char pad030[0x24];
+    char name[0x20];               /* 0x030, the character's name (ai_char.h AICHAR.name) */
+    char pad050[4];
     int ref54;                     /* 0x054, a reference word the related characters share (ai_char.h AICHAR.ref54;
                                       the game frame compares it with the player's) */
     char pad058[0x10c];
@@ -6994,14 +6995,28 @@ void ai_DrawDuelThrow(char *caption, LCDUELSIDE *side)
         }
     }
 }
-/* 0x597a10, the dice animation driver (1085 B, ROUGH SKELETON from the Ghidra pseudocode): param_1 the game
-   record, param_2 the dice record, param_3 the mode 1 .. 4, param_4 the window, param_5 the frame, param_6 the
-   wait in ms, param_7 the fast flag; the texts 0x5176d0 (0x1883 / 0x1884 / 0x1885 / 0x1886, *param_2 + 0x30,
-   the record's +4); the pump 0x5309a0 (0, 0x777c7) while the clock 0x6333cc has not advanced by param_6 and the
-   player's byte 0x770b88 is set; the dice drawn by 0x597780 / 0x597810 (growing steps of the frame) or
-   0x597920 */
+typedef struct LCDUEL {                 /* the head of a dice duel (am.h AGDUEL; am.h cannot be included here yet) */
+    int stake;                          /* 0x00, the first throw's stake (AGDUEL.stake) */
+    int raiseAmount;                    /* 0x04, a tenth of the stake, paid on the throws of kind 2 / 3 (AGDUEL.raiseAmount) */
+} LCDUEL;
+/* 0x597a10, shows a duel side's throw in the frame `frame` of the window win: the caption (by mode: 0x1883 the
+   name, 0x1884 / 0x1885 / 0x1886 the name and the raise amount). Without `fast`, modes 1 and 2 roll for `wait`
+   ms, redrawing the rolling dice (ai_DrawDice, ai_DrawDuelDice) at growing steps (2 ms, then half again each
+   time), and modes 3 and 4 draw the throw (ai_DrawDuelThrow) and wait `wait` ms; with `fast` every mode draws
+   the throw and waits. The frames are pumped with sv_RunFrame(0, 0x777c7); it returns as soon as the player's
+   character is dead (health 0)
+   @deep Reconstructed whole from the original: both switches on mode (the slow one: modes 1/2 roll with
+   ai_DrawDice / ai_DrawDuelDice at growing steps step += step/2, modes 3/4 draw ai_DrawDuelThrow and wait;
+   the fast one formats 0x1883..0x1886 and shares the throw-and-wait tail), the player's health check
+   (return), the texts with the name +0x30 and the duel's raiseAmount, the second (dead) volatile d3_Time
+   read of the throw paths. Left: allocation/scheduling: the original hoists the mode load above the fast
+   test ('test eax,eax; mov eax,[esp+0x110]' and 'dec eax' in the second switch), ours loads it in each arm
+   ('mov edx,[esp+0x120]; lea eax,[edx-1]'), which shifts the second switch's case bodies (tables differ
+   only by those offsets); the health byte goes through al/edx in the original, cl/eax in ours; 'end =
+   d3_Time + wait' loads the clock before/after the add. Tried: the fast arm as an else (no early return),
+   the same hunks */
 
-void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int wait, int fast)
+void ai_DuelDiceAnimation(LCDUEL *duel, LCDUELSIDE *side, int mode, int win, int frame, int wait, int fast)
 {
     char text[0x100];
     int step;
@@ -7010,73 +7025,92 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
 
     step = 2;
     if (fast == 0) {
-        if (mode == 1) {
-            txt_Format(text, 0x1883, *param_2 + 0x30);
-            end = U_I((unsigned)&d3_Time) + wait;
-            t0 = U_I((unsigned)&d3_Time);
-            while (t0 < end) {
+        switch (mode) {
+        case 1:
+            txt_Format(text, 0x1883, side->ch->name);
+            end = d3_Time + wait;
+            t0 = d3_Time;
+            while (end > d3_Time) {
                 sv_RunFrame(0, 0x777c7);
-                if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
+                if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
-                if (t0 + step < U_I((unsigned)&d3_Time)) {
+                if (t0 + step < d3_Time) {
                     d2_SetForm(win, frame);
                     ai_DrawDice(text);
-                    step = step + step / 2;
-                    t0 = U_I((unsigned)&d3_Time);
+                    t0 = d3_Time;
+                    step += step / 2;
                 }
             }
-        } else if (mode == 2) {
-            txt_Format(text, 0x1884, *param_2 + 0x30, U_I(param_1 + 4));
-            end = U_I((unsigned)&d3_Time) + wait;
-            t0 = U_I((unsigned)&d3_Time);
-            while (t0 < end) {
+            break;
+        case 2:
+            txt_Format(text, 0x1884, side->ch->name, duel->raiseAmount);
+            end = d3_Time + wait;
+            t0 = d3_Time;
+            while (end > d3_Time) {
                 sv_RunFrame(0, 0x777c7);
-                if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
+                if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
-                if (t0 + step < U_I((unsigned)&d3_Time)) {
+                if (t0 + step < d3_Time) {
                     d2_SetForm(win, frame);
-                    ai_DrawDuelDice(text, (LCDUELSIDE *)param_2);
-                    step = step + step / 2;
-                    t0 = U_I((unsigned)&d3_Time);
+                    ai_DrawDuelDice(text, side);
+                    t0 = d3_Time;
+                    step += step / 2;
                 }
             }
-        } else if (mode == 3) {
-            txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
-            t0 = U_I((unsigned)&d3_Time);
+            break;
+        case 3:
+            txt_Format(text, 0x1885, side->ch->name, duel->raiseAmount);
+            t0 = d3_Time;
+            end = d3_Time;
             d2_SetForm(win, frame);
-            ai_DrawDuelThrow(text, (LCDUELSIDE *)param_2);
-            while (t0 + wait > U_I((unsigned)&d3_Time)) {
-                if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
+            ai_DrawDuelThrow(text, side);
+            end = t0 + wait;
+            while (end > d3_Time) {
+                if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
             }
-        } else if (mode == 4) {
-            txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
-            t0 = U_I((unsigned)&d3_Time);
+            break;
+        case 4:
+            txt_Format(text, 0x1886, side->ch->name, duel->raiseAmount);
+            t0 = d3_Time;
+            end = d3_Time;
             d2_SetForm(win, frame);
-            ai_DrawDuelThrow(text, (LCDUELSIDE *)param_2);
-            while (t0 + wait > U_I((unsigned)&d3_Time)) {
-                if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
+            ai_DrawDuelThrow(text, side);
+            end = t0 + wait;
+            while (end > d3_Time) {
+                if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
                     return;
                 sv_RunFrame(0, 0x777c7);
             }
+            break;
         }
-        return;
+    } else {
+        switch (mode) {
+        case 1:
+            txt_Format(text, 0x1883, side->ch->name);
+            break;
+        case 2:
+            txt_Format(text, 0x1884, side->ch->name, duel->raiseAmount);
+            break;
+        case 3:
+            txt_Format(text, 0x1885, side->ch->name, duel->raiseAmount);
+            break;
+        case 4:
+            txt_Format(text, 0x1886, side->ch->name, duel->raiseAmount);
+            break;
+        }
+        t0 = d3_Time;
+        end = d3_Time;
+        d2_SetForm(win, frame);
+        ai_DrawDuelThrow(text, side);
+        end = t0 + wait;
+        while (end > d3_Time) {
+            if (((AICHARREC *)ai_Chars)[ai_PlayerId].health == 0)
+                return;
+            sv_RunFrame(0, 0x777c7);
+        }
     }
-    if (mode == 1)
-        txt_Format(text, 0x1883, *param_2 + 0x30);
-    else if (mode == 2)
-        txt_Format(text, 0x1884, *param_2 + 0x30, U_I(param_1 + 4));
-    else if (mode == 3)
-        txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
-    else if (mode == 4)
-        txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
-    t0 = U_I((unsigned)&d3_Time);
-    d2_SetForm(win, frame);
-    ai_DrawDuelThrow(text, (LCDUELSIDE *)param_2);
-    while (U_I((unsigned)&d3_Time) < t0 + wait &&
-           *(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
-        sv_RunFrame(0, 0x777c7);
 }
 /* 0x597e70, draws both dice sets of a dice window (785 B, ROUGH SKELETON from the Ghidra pseudocode): the two
    records param_1 + 0xc / + 0x30 (the caption at +0x30, the count at +0x10 / +0x34, the painted dice at
@@ -7298,15 +7332,15 @@ void ai_Unk598170(int param_1)
             d2_SetForm(win, 1);
             d2_SetPointerSprite(0, 0);
             io_PrintText(0x1874);
-            ai_Unk597a10(state, (int *)sets, 1, win, 2, 0x96, 0);
+            ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 2, 0x96, 0);
             if (*(char *)(((unsigned)&ai_CharInts + 0x4) + player * 0x21c) != 0) {
                 ai_DuelAct(state, sets[0], 1);
                 ai_DuelNextPhase(state);
-                ai_Unk597a10(state, (int *)sets, 1, win, 2, 0x14, 1);
-                ai_Unk597a10(state, (int *)sets, 1, win, 3, 0x96, 0);
+                ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 2, 0x14, 1);
+                ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 3, 0x96, 0);
                 ai_DuelAct(state, sets[0], 1);
                 ai_DuelNextPhase(state);
-                ai_Unk597a10(state, (int *)sets, 1, win, 3, 0x14, 1);
+                ai_DuelDiceAnimation((LCDUEL *)state, (LCDUELSIDE *)sets, 1, win, 3, 0x14, 1);
                 ai_Unk597e70(state, win);
                 cm_SendMoveGoodsUnchecked(U_I((unsigned)&ai_CharInts + player * 0x87), 0xffffffff, 0, 0);
                 while (sv_RunFrame(ai_Unk598170, 0x777c7) != 0) {
