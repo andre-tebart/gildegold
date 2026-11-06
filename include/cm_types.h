@@ -196,6 +196,15 @@ typedef struct G17DELETEMSG {           /* 2 bytes, the data of message 0xe (cm_
     unsigned short objectId;            /* 0x00 */
 } G17DELETEMSG;
 
+typedef struct G17MOVEGOODSMSG {        /* 0x11 bytes, the data of message 0xf (cm_SendMoveGoods, its handler 0x4c6f60
+                                           moves goods / money from one id to another) */
+    int from;                           /* 0x00, -1: none */
+    int to;                             /* 0x04, -1: none */
+    int objectId;                       /* 0x08, the next object id (the server's, read when connected) */
+    unsigned char player;               /* 0x0c, the player whose good / money moves */
+    int amount;                         /* 0x0d */
+} G17MOVEGOODSMSG;
+
 typedef struct G17SELLMSG {             /* 0x17 bytes, the data of message 0x11 (cm_SendExSellObject, its handler 0x4c70b0
                                            "cm_ExSellObjekt") */
     int buyer;                          /* 0x00, the id (building, object or character) the goods go to, -1: none */
@@ -487,6 +496,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
         G17DELETEMSG del;               /* 0x10, message 0xe */
+        G17MOVEGOODSMSG moveGoods;      /* 0x10, message 0xf */
         G17SELLMSG sell;                /* 0x10, message 0x11 */
         G17MAKEMSG make;                /* 0x10, message 0x12 */
         G17MOVEMSG move;                /* 0x10, message 0x13 */

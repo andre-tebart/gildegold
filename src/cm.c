@@ -1207,11 +1207,11 @@ int cm_SendMoveGoods(int a, int b, unsigned char c, int d)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.moveGoods.from = a;
+    m.moveGoods.to = b;
     m.type = 0xf;
-    m.data[0xc] = c;
-    G17_I(m, 0xd) = d;
+    m.moveGoods.player = c;
+    m.moveGoods.amount = d;
     return cm_QueueSend(&m);
 }
 /* 0x4c4830, message 0x10 */
