@@ -2273,15 +2273,16 @@ void cm_SendCommand(void *p)
     memcpy(m.data, p, 0x18);
     cm_QueueSend(&m);
 }
-/* 0x4c61f0, message 0x65 */
+/* 0x4c61f0, sends message 0x65: the master of party p becomes the character q (its netId; its handler 0x4cd130
+   sets the party record's host) */
 
-void ai_Unk4c61f0(int *p, char *q)
+void cm_SendMasterChange(G28REC *p, AICHAR *q)
 {
     G17MSG m;
 
     m.type = 0x65;
-    G17_I(m, 0) = *p;
-    G17_I(m, 4) = *(int *)(q + 4);
+    m.master.partyId = p->id;
+    m.master.masterId = q->netId;
     cm_QueueSend(&m);
 }
 /* 0x4c6230, message 0x66 'nCTa' (reserve an effect, the id at p[1]); returns what cm_QueueSend returns */
@@ -16216,7 +16217,7 @@ int cm_CheckMaster(char *m)
         }
         if (c != 0 && *(int *)(c + 4) != *(int *)(m + 0xc)) {
             sprintf(buf, "cut_CheckMaster(): new master for id %i => %i", *(int *)m, *(int *)(c + 4));
-            h = ((int (*)())ai_Unk4c61f0)(m, c);
+            h = ((int (*)())cm_SendMasterChange)(m, c);
             while (cm_GetSlotState(h) == 0)
                 sv_PumpNet();
             return 0;
