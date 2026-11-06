@@ -16027,29 +16027,44 @@ void ai_DomizilMessage12(char *chRec, char *bldRec, int level)
     he_MessageBoxQuickjump(ch->netId, -1, ai_NewsText, 1, 0x5ec, bld->id, -1, 0,
                  "_NACHRICHTEN_DOMIZIL_12");
 }
-/* 0x5a9e90, a free entry of the Domizil table (215 B): 0x42ec00 (the count 0x62cb58) picks an index into the 0x42
-   entries of 0x1c bytes at 0x62c420; each try returns the entry's +0 id when it is not in the param_1 words of
-   param_2, else the index advances modulo the count; 0 when every id is taken */
+/* 0x5a9e90, a free entry of the Domizil table (127 B, he_CircusShowIncome): util_Random (ai_DomizilCount,
+   0x62cb58) picks an index into the 0x42 entries of 0x1c bytes at 0x62c420; each try returns the entry's id
+   when it is not among the nObjs words of objs, else the index advances modulo the count; 0 when every id is
+   taken
+   @deep whole function read and rewritten to the original's structure (the loop guard, the entry->id
+   compare and the modulo advance match instruction for instruction); the one remaining hunk is a redundant
+   test on the found path: ours has 'cmp ecx,esi / jge' at +0x5f (the 'if (k < nObjs)' after the break)
+   where the original goes from the loop's 'je' straight to 'mov ecx,[esp+0x10]'; tried for+break with 'if
+   (k >= nObjs)' (same cmp at the break target), with 'if (k == nObjs)' (return block moved to the end, 21
+   differing), 'while (k < nObjs && objs[k] != entry->id)' (same cmp), 'goto advance' (VC6 rotates the
+   loop, 44 ins), 'for (;;) { if (k >= nObjs) return; ... }' (rotated, 44 ins), 'if (nObjs < 1) ... while
+   (objs[k] != entry->id) { if (++k >= nObjs) return; }' (unrolled, 56 ins); needs a source-variant round
+   to find the form whose break target has no test; no call or store differs, the prover stops only on the
+   branch condition */
 
-unsigned short ai_RandomDomizilGoodNotIn(int param_1, unsigned short *param_2)
+unsigned short ai_RandomDomizilGoodNotIn(int nObjs, unsigned short *objs)
 {
     int n;
     int i;
     int k;
+    G9DOMIZIL *entry;
 
-    i = util_Random(U_I((unsigned)&ai_DomizilCount)) & 0xffff;
-    n = U_I((unsigned)&ai_DomizilCount);
+    i = util_Random((unsigned short)ai_DomizilCount) & 0xffff;
+    n = ai_DomizilCount;
     if (n == 0)
         return 0;
     while (n != 0) {
-        for (k = 0; k < param_1; k++) {
-            if (param_2[k] == U_I((unsigned)&ai_DomizilTable + i * 0x1c))
+        entry = &ai_DomizilEntries[i];
+        for (k = 0; k < nObjs; k++) {
+            if (objs[k] == entry->id)
                 break;
         }
-        if (k >= param_1)
-            return U_W((unsigned)&ai_DomizilTable + i * 0x1c);
-        i = (i + 1) % U_I((unsigned)&ai_DomizilCount);
-        n--;
+        if (k < nObjs) {
+            i = (i + 1) % ai_DomizilCount;
+            n--;
+            continue;
+        }
+        return entry->id;
     }
     return 0;
 }
