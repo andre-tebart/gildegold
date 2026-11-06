@@ -6768,8 +6768,8 @@ int cm_LobbyLeave()
 
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
-    G17_I(m, 0) = 3;
-    G17_I(m, 4) = cm_LobbyPlayerId;
+    m.lobby.kind = 3;
+    m.lobby.state.id = cm_LobbyPlayerId;
     return cm_QueueSend(&m);
 }
 /* 0x4cd6e0, kind 6: a chat line (0x3f characters) of this player to the player id to (0: everybody); returns the
