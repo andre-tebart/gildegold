@@ -4152,173 +4152,225 @@ void ai_MercenaryBookContact(char *bld)
 
 void sv_CameraFollow();
 
-/* 0x5923c0, the resource-search window (the SUCHEN_ERZ / SUCHEN_STEIN plate opens it): the production window of a building (1998 B, ROUGH SKELETON from the Ghidra pseudocode): the screen
-   "Handel\Handel_PRODUKTION" 0x62b038 opens (0x520fe0, 0x4741f0 / 0x475600, 0x525220, the frames 0x475f70
-   (3 / 0 / 2), the text 0x515960 (199), the table init 0x58bbd0, 0x6f5320 = 0, the skin 0xf8f4b8.. = 0xe, the
-   controls 0x52e6d0 / 0x475ff0 / 0x52e860 with the word 0x54 at +0x74, 0x476f80 (0, 0)); the loop reads the
-   three records 0x4ffe90 (0xff, 0x2a, 0xfe), the click 0xf8a668 / 0xf8aac4 opens the building (0x53e400
-   (2, 0, 9, 3) / (2, 0, 8, 3), the message record 0x4c4b70, the carriers 0x75f290 / 0x75f2a0, 0x524260,
-   0x770d08), the goods columns (0x6f5320 / 0x6f5354, 0x58 bytes each) and the item availability (0x4ffe90
-   (+, 1, 4, 0x17) / 0x4ffcc0, the prices 0x50aaf0 and the amounts 0x91aaf0); the texts 0x5e56c4 / 0x4734d0,
-   the columns 0x58c680 / 0x58d720 / 0x58dd00; the pump 0x5309a0 (0x58bd60, 0x677c7); the exit 0x4758f0 /
-   0x525440 */
-int ai_SearchResourceWindow(int param_1)
+/* 0x5923c0, the resource-search window of the building bld (the SUCHEN_ERZ / SUCHEN_STEIN plate opens it, 1998 B):
+   the production screen "Handel\Handel_PRODUKTION" with the title text 0xc7 and the frame 0x70b; column 0 is the
+   search itself, the further columns the goods of the room 0xff (gm_Query (1, 4, 0x17), new kinds only, at most
+   16). Every frame it finds the rooms 0xff (the goods), 0x2a (the store) and 0xfe (the resource room; it ends
+   when one is gone) and handles a click on a column picture: with members of the player's list marked it moves
+   them into the building's search job (kind 9, column 0) or the job 8 of the column's goods, sending the job's
+   message (type 9 / 8) first when there is none (and waiting for its slot); with none marked it selects the
+   workers of that job (column 0 clears them). A right click clears the marks or pops the window. Each column
+   gets its inputs, the amount the store's inputs make and its stock; the count text shows the goods columns;
+   the frame callback is ai_ProductionWindow's
+   @deep Reconstructed in full from the original 0x5923c0..0x592b8d (was a skeleton) on the model of
+   ai_ProductionWindow: the three rooms (0xff / 0x2a / 0xfe), the member-row any-loop, the column click (no
+   marks: select / clear the workers of job 9 / 8; marks: the job 9 / 8 found or created by the message
+   type 9 / 8 with its slot wait, sv_MoveToGroup, the stage), the right click, the goods columns from 1 on
+   (gm_Query 1, 4, 0x17, new kinds, < 16), the inputs / amount / stock per column, the count text and the
+   three update calls with ai_ProductionWindow as the frame callback. ours=609 original=603. Left:
+   allocation only: the original keeps bld in ebx (reloaded from edi at the loop end, 0x592b6c 'mov ebx,
+   edi') and ncols in ebx inside the column collection where ours keeps bld in ebp and ncols in [esp+0x10]
+   (0x592992: ours 'mov ecx, [esp+0x10]; inc ecx; ... mov [esp+0x10], ecx' vs the original 'inc ebx'), and
+   compares d2_ClickedForm with win in esi (0x59254d). A variant round. (references: M8 at +0x37a: ours
+   refers to cm_GetSlotValue (0x4c3b10), the original's field to 0x4c2d20 (snd_PlayFavourComment),
+   explained: the M8 line pairs our cm_GetSlotValue call of the column-0 branch with the original's
+   snd_PlayFavourComment of the column-n branch: the original merged the two branches' identical tails 'job
+   = cm_GetSlotValue(slot); if (job == 0) continue;' into one copy (0x592841) where ours keeps a copy in
+   the column-0 branch (it compares with the zero register edi, the other with test, so VC6 does not
+   cross-jump them); both sides call each function on the same paths) */
+int ai_SearchResourceWindow(AIBLD *bld)
 {
+    AIMSG msg;
+    char count[4];
+    AIOBJ *room;
+    AIOBJ *store;
+    AIOBJ *res;
+    AIOBJ *item;
+    AIJOB *job;
+    LCPRODCOL *col;
     int win;
-    int cols;
-    int col;
+    int ncols;
+    int any;
+    int fresh;
+    int slot;
+    int down;
+    int up;
+    int bar;
+    int c;
+    int k;
     int i;
-    int n;
-    int v;
-    int rec1;
-    int rec2;
-    int rec3;
-    int b;
-    int *p;
-    unsigned short *item;
-    char *pc;
-    int flag;
-    int msg[0x3e];
-    int a[3];
-    int ctl;
-    char text[10];
 
-    if (sv_CheckCharacterFlag(param_1) == 0) {
-        win = d2_OpenForm(0, 0, "Handel\\Handel_PRODUKTION");
-        d2_CentreViewWindows(win);
-        sv_OpenPlayerBar(param_1, 0);
-        d2_SetForm(win, 3);
-        io_PrintText(199);
-        ai_InitProductionTables();
-        U_I((unsigned)&ai_ProdColumns) = 0;
-        cols = 1;
-        d2_SetForm(win, 0);
-        n = U_I((unsigned)&d2_LastWindow) * 0x3c4;
-        U_I(((unsigned)&ai_Unkf8f39c + 0x11c) + n) = 0xe;
-        U_I(((unsigned)&ai_Unkf8f39c + 0x120) + n) = 0xe;
-        U_I(((unsigned)&ai_Unkf8f39c + 0x124) + n) = 0xe;
-        U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
-        sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x742);
-        v = d2_GetViewWin(win, 2, 0x78, a, &a[1], &a[2]);
-        sv_CreateScrollButtons(0x270, 0x15e, U_I((unsigned)&d2_LastWindow), v);
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x74 + a[2] * 0x2ec) = 0x54;
-        d2_SetPointerSprite(0, 0);
-        do {
-            d2_SetForm(win, 2);
-            rec1 = gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0xff);
-            if (rec1 == 0)
-                return 0;
-            rec2 = gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x2a);
-            if (rec2 == 0)
-                return 0;
-            rec3 = gm_Query(*(int *)(param_1 + 0x5d), 1, 0, 0xfe);
-            if (rec3 == 0)
-                return 0;
-            if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedForm) == win) {
-                /* the click: a carrier of the table 0x75f2a0 (id at -0x10, the flag at +0)? */
-                flag = 0;
-                for (p = (int *)((unsigned)&ai_Unk75f280 + 0x20); (int)p <= ((unsigned)&ai_Unk75f280 + 0x51f) && p[-4] != 0xffff; p += 0xa) {
-                    if (*p != 0) {
-                        flag = 1;
-                        break;
-                    }
-                }
-                for (col = 0; col < cols; col++) {
-                    if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)((char *)ai_ProdColumns + 0x34) + col * 0x58)) {
-                        if (flag) {
-                            if (col == 0) {
-                                snd_PlayFavourComment();
-                                b = he_FindEvent(2, 0, 9, 3, U_I(param_1 + 1));
-                                if (b == 0) {
-                                    /* the "9" message: 0x3e-dword record, 0x4c4b70, the confirmation
-                                       0x4c3ae0 / 0x5309a0 (0, 0x20007) */
-                                    goto next;
-                                }
-                                /* ROUGH: the record fields (local_f4 = 9, the clock 0x770ae0.., the
-                                   character 0x770b84, the building, the two texts rec1 / rec3) and the
-                                   0x4c4b70 / 0x4c3ae0 loop */
-                            } else {
-                                snd_PlayFavourComment();
-                                b = he_FindEvent(2, 0, 8, 3, U_I(param_1 + 1));
-                                while (b != 0) {
-                                    if (*(unsigned short *)(b + 0xac) ==
-                                        U_I((unsigned)&ai_ProdColumns + col * 0x58))
-                                        goto found;
-                                    b = he_NextEvent();
-                                }
-                                /* ROUGH: the "8" message record with the column's building */
-                                goto next;
-                            }
-                        found:
-                            for (p = (int *)((unsigned)&ai_Unk75f280 + 0x10); *p != 0xffff && (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 0xa) {
-                                if (p[4] != 0) {
-                                    sv_MoveToGroup(param_1, U_I((unsigned)&sv_PanelShown), *p, b);
-                                    U_I((unsigned)&ai_Selected + *p * 0x21c) = 0;
-                                }
-                            }
-                            if (U_I(b + 0x70) == 0)
-                                U_I(b + 0x70) = 1;
-                        } else {
-                            for (p = (int *)((unsigned)&ai_Unk75f280 + 0x10); *p != 0xffff && (int)p < ((unsigned)&ai_Unk75f280 + 0x510); p += 0xa) {
-                                pc = (char *)U_I(((unsigned)&ai_Unk770cec + 0x10) + *p * 0x21c);
-                                if (col == 0) {
-                                    if (pc != 0 && *pc == 9 &&
-                                        *(int *)(pc + 0x10) == U_I(param_1 + 1))
-                                        U_I((unsigned)&ai_Selected + *p * 0x21c) = 0;
-                                } else if (pc != 0 && *pc == 8 &&
-                                           *(int *)(pc + 0x10) == U_I(param_1 + 1) &&
-                                           *(unsigned short *)(pc + 0xac) ==
-                                               U_I((unsigned)&ai_ProdColumns + col * 0x58)) {
-                                    U_I((unsigned)&ai_Selected + *p * 0x21c) = 1;
-                                }
-                            }
+    if (sv_CheckCharacterFlag(bld) != 0)
+        return 0;
+    win = d2_OpenForm(0, 0, "Handel\\Handel_PRODUKTION");
+    d2_CentreViewWindows(win);
+    sv_OpenPlayerBar((int)bld, 0);
+    d2_SetForm(win, 3);
+    io_PrintText(0xc7);
+    ai_InitProductionTables();
+    ai_ProdColumns[0].good = 0;
+    ncols = 1;
+    d2_SetForm(win, 0);
+    d2_Wins[d2_LastWindow].padl = 0xe;
+    d2_Wins[d2_LastWindow].padt = 0xe;
+    d2_Wins[d2_LastWindow].padr = 0xe;
+    d2_Wins[d2_LastWindow].padb = 0xe;
+    sv_OpenWindowFrame(d2_LastWindow, 0x70b, 0x742);
+    sv_CreateScrollButtons(0x270, 0x15e, d2_LastWindow, d2_GetViewWin(win, 2), 0x78, &down, &up, &bar);
+    d2_Objs[bar].font = 0x54;
+    d2_SetPointerSprite(0, 0);
+    do {
+        d2_SetForm(win, 2);
+        room = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0xff);
+        if (room == 0)
+            return 0;
+        store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+        if (store == 0)
+            return 0;
+        res = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xfe);
+        if (res == 0)
+            return 0;
+        if (d2_ClickedId != -1 && d2_ClickedForm == win) {
+            any = 0;
+            for (i = 0; !any && i < 0x20 && sv_MemberRows[i].chr != 0xffff; i++)
+                if (sv_MemberRows[i].selected != 0)
+                    any = 1;
+            for (c = 0; c < ncols; c++) {
+                if (d2_PointerObj != ai_ProdColumns[c].pic)
+                    continue;
+                if (!any) {
+                    /* nobody marked: select the workers of the column's job (column 0: clear the searchers) */
+                    for (i = 0; i < 0x20; i++) {
+                        if (sv_MemberRows[i].chr == 0xffff)
+                            break;
+                        job = ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].job;
+                        if (c == 0) {
+                            if (job != 0 && job->kind == 9 && job->from == bld->id)
+                                ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 0;
+                        } else if (job != 0 && job->kind == 8 && job->from == bld->id &&
+                                   job->u.w.lo == ai_ProdColumns[c].good) {
+                            ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 1;
                         }
                     }
-                next:
-                    ;
+                    continue;
                 }
+                snd_PlayFavourComment();
+                if (c == 0) {
+                    job = (AIJOB *)he_FindEvent(2, 0, 9, 3, bld->id);
+                    if (job == 0) {
+                        memset(&msg, 0, sizeof(msg));
+                        msg.type = 9;
+                        msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
+                        msg.nIds = 0;
+                        msg.reserved14 = 0;
+                        msg.time = ai_Time;
+                        msg.flags = 1;
+                        msg.arg[0] = bld->id;
+                        msg.arg[1] = room->objId;
+                        msg.arg[2] = res->objId;
+                        slot = cm_SendLongMessage((char *)&msg);
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_RunFrame(0, 0x20007);
+                        job = (AIJOB *)cm_GetSlotValue(slot);
+                        if (job == 0)
+                            continue;
+                    }
+                } else {
+                    for (job = (AIJOB *)he_FindEvent(2, 0, 8, 3, bld->id); job != 0; job = (AIJOB *)he_NextEvent())
+                        if (job->u.w.lo == ai_ProdColumns[c].good)
+                            break;
+                    if (job == 0) {
+                        memset(&msg, 0, sizeof(msg));
+                        msg.type = 8;
+                        msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
+                        msg.nIds = 0;
+                        msg.reserved14 = 0;
+                        msg.time = ai_Time;
+                        msg.flags = 1;
+                        msg.itemId = (unsigned short)ai_ProdColumns[c].good;
+                        msg.arg[1] = bld->id;
+                        msg.arg[2] = res->objId;
+                        slot = cm_SendLongMessage((char *)&msg);
+                        while (cm_GetSlotState(slot) == 0)
+                            sv_RunFrame(0, 0x20007);
+                        job = (AIJOB *)cm_GetSlotValue(slot);
+                        if (job == 0)
+                            continue;
+                    }
+                }
+                for (i = 0; i < 0x20; i++) {
+                    if (sv_MemberRows[i].chr == 0xffff)
+                        break;
+                    if (sv_MemberRows[i].selected != 0) {
+                        sv_MoveToGroup((unsigned char *)bld, (short *)sv_PanelShown, sv_MemberRows[i].chr, (char *)job);
+                        ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 0;
+                    }
+                }
+                if (job->stage == 0)
+                    job->stage = 1;
             }
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-                /* ROUGH: the carrier check again; when no carrier is lit, 0x6f22a0 = 1 and 0x52d7a0 */
+        }
+        if (dm_L.rup != 0) {
+            any = 0;
+            for (i = 0; !any && i < 0x20 && sv_MemberRows[i].chr != 0xffff; i++)
+                if (sv_MemberRows[i].selected != 0)
+                    any = 1;
+            if (any) {
+                for (i = 0; i < 0x20; i++) {
+                    if (sv_MemberRows[i].chr == 0xffff)
+                        break;
+                    ((AICHARREC *)ai_Chars)[sv_MemberRows[i].chr].selected = 0;
+                }
+            } else {
+                sv_PopRequest = 1;
                 sv_CameraFollow();
             }
-            /* the building's goods offer: the record +0x14, the kinds 0x17 walk the table 0x6f5320 */
-            item = (unsigned short *)gm_Query(*(int *)(rec1 + 0x14), 1, 4, 0x17);
-            while (item != 0) {
-                if (*(int *)(item + 7) > 1) {
-                    /* ROUGH: the new columns (0x6f5320 + cols * 0x16, the cap 0x6f58a0, the record's
-                       ushort at +0, skip the already present 0x6f5378 entries) */
-                    U_I((unsigned)&ai_ProdColumns + cols * 0x58) = *item;
-                    cols++;
+        }
+        /* the goods columns after the search column: each kind of goods in the room once */
+        item = (AIOBJ *)gm_Query((void *)room->list, 1, 4, 0x17);
+        if (item != 0) {
+            do {
+                if (item->count > 1) {
+                    fresh = 1;
+                    for (k = 1; fresh && k < ncols; k++)
+                        if (ai_ProdColumns[k].good == item->id)
+                            fresh = 0;
+                    if (fresh && ncols < 16)
+                        ai_ProdColumns[ncols++].good = item->id;
                 }
-                item = (unsigned short *)gm_QueryNext();
+                item = (AIOBJ *)gm_QueryNext();
+            } while (item != 0);
+        }
+        for (c = 1, col = &ai_ProdColumns[1]; c < ncols; c++, col++) {
+            col->maxAmount = 0x7fffffff;
+            for (k = 0; k < 4; k++) {
+                col->in[k] = ((AIGOOD *)ai_Goods)[col->good].in[k];
+                col->need[k] = ((AIGOOD *)ai_Goods)[col->good].need[k];
+                if (col->in[k] == 0)
+                    continue;
+                item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->in[k]);
+                if (item == 0)
+                    col->maxAmount = 0;
+                else
+                    col->maxAmount = min(col->maxAmount, gm_ListAmount(store, item) / ((AIGOOD *)ai_Goods)[col->good].need[k]);
             }
-            if (cols > 1) {
-                /* ROUGH: the price / amount columns: for every column after the first the goods record
-                   0x91aaf0 + id * 0x41 gives the words at +8 / +0, the price 0x50aaf0 and the amount
-                   +0x36; the column's +0x50 / +0x54 / +0x58 */
-                for (col = 1; col < cols; col++) {
-                    n = U_I((unsigned)&ai_Goods);
-                    U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x2c) = 0x7fffffff;
-                    for (i = 0; i < 4; i++) {
-                        v = *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&ai_ProdColumns + col * 0x58) * 0x41 + 8 + n);
-                        U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x10 + i * 4) = v;
-                        U_I((unsigned)&ai_ProdColumns + col * 0x58 + 0x20 + i * 4) =
-                            *(unsigned short *)(0x26 + i * 2 + U_I((unsigned)&ai_ProdColumns + col * 0x58) * 0x41 + n);
-                    }
-                    /* ROUGH: the per-good price minimum and the amount of the record */
-                }
-            }
-            _itoa(cols - 1, a, 10);
-            d2_SetObjText(a[2], a);
-            ai_UpdateResourceColumns(win, 2, cols, rec3);
-            ai_UpdateProdGoodsList(param_1, rec1);
-            ai_LayoutProdGoodsList(win, 1, 0, param_1);
-            n = sv_RunFrame(ai_ProductionWindow, 0x677c7);
-        } while (n != 0);
-        d2_CloseView(win);
-        sv_ClosePlayerBar();
-    }
+            col->maxAmount = ((AIGOOD *)ai_Goods)[col->good].batch * col->maxAmount;
+            item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, col->good);
+            if (item != 0)
+                col->stock = gm_ListAmount(store, item);
+            else
+                col->stock = 0;
+        }
+        _itoa(ncols - 1, count, 10);
+        d2_SetObjText(bar, count);
+        ai_UpdateResourceColumns(win, 2, ncols, (int)res);
+        ai_UpdateProdGoodsList(bld, store);
+        ai_LayoutProdGoodsList(win, 1, 0, (int)bld);
+    } while (sv_RunFrame((int)ai_ProductionWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_ClosePlayerBar();
     return 0;
 }
 /* 0x592b90, the resource-extraction window (the ABBAUEN / ABBAU plate opens it): the second production window (1457 B, ROUGH SKELETON from the Ghidra pseudocode): the same screen
@@ -4608,7 +4660,7 @@ int ai_ProductionGoodsWindow(int param_1)
     return 0;
 }
 
-int ai_SearchResourceWindow(int param_1);
+int ai_SearchResourceWindow(AIBLD *bld);
 int ai_ExtractResourceWindow(int param_1);
 
 /* 0x5938c0, the mining contact of the building bld (152 B): releases the name plates, then per frame of the
@@ -4804,7 +4856,7 @@ void ai_StoneKontorContact(AIBLD *bld)
             else if (ai_ClickedObject == abbau)
                 ai_ExtractResourceWindow((int)bld);
             else if (ai_ClickedObject == stein)
-                ai_SearchResourceWindow((int)bld);
+                ai_SearchResourceWindow(bld);
             else if (ai_ClickedObject == transport)
                 ai_OpenTransport((int)bld);
             else if (ai_ClickedObject == produktion)
