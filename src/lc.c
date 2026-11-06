@@ -109,6 +109,7 @@ extern int sv_ClickedItem;  /* 0x76045c, sv.h */
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern unsigned char ai_OwnPlayer;
+extern unsigned char ai_NumPlayers;  /* 0x62489c, the number of players (ai.h) */
 
 
 extern int d2_LastWindow;
@@ -10814,31 +10815,32 @@ void ai_TownHallContact(void)
         }
     }
 }
-/* 0x59fe40, the citizens' right window "Locations\Rathaus\Buergerrecht" (992 B, ROUGH: the message loop is
-   condensed): the player's money 0x509e60 (0x770b80 + player * 0x21c) and the room 0x4ffe90 (param_1 + 0x5d,
-   2, 6, 0, 0x115); below 16000 the text 0x1a00 goes to 0x521150 and 0x52d7a0 returns; else the window, the text
-   0x19fe (the city, 16000); on confirm 0x521040 (the player, 16000, the player byte): the payment 0x4c4830
-   (room + 2, the character, 0, 16000), 0x4c4a60 (the character, 0x1c8, 4, 0, 0x4000), the citizens' right
-   message 0x69 to every other kind 6 / 7 character of the town, the text 0x19ff via 0x521150 and the event
-   0x576040 (0x2e, 0, 0 / 1); the pump 0x5309a0 (0x59fe40, 0x677c7) */
+/* 0x59fe40, the town hall's citizens' right window "Locations\Rathaus\Buergerrecht" for the building b: a player
+   worth less than 16000 (gm_GetGoodsValue) only gets the text 0x1a00; else the offer 0x19fe (the player, 16000,
+   the town's name) is shown. On the confirm button, when the player's money covers 16000, the rank message 0x69
+   (rank 2, due in 5 minutes, in the tutorial in 1 .. 3 hours) goes to the player and to every other player's
+   character (kind 6 / 7, at most ai_NumPlayers of them), the 16000 go to the town hall's cash object (kind
+   0x115), the power bit 0x4000 is set and the text 0x19ff shown; the campaign hears 0x2e before and after */
 
-void ai_CitizenRightWindow(int param_1)
+void ai_CitizenRightWindow(AIBLD *b)
 {
-    char msg[0x200];
-    char text[0x100];
-    char date[0x100];
-    char buf[0x100];
-    int money;
-    int room;
+    AICHARREC *me;
+    int worth;
+    AIOBJ *cash;
     int win;
-    int rec;
-    int n;
+    int bought;
     int i;
-    int done;
+    int k;
+    AICHARREC *c;
+    AITIME due;
 
-    money = gm_GetGoodsValue((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    room = gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0x115);
-    if (money < 16000) {
+    me = &((AICHARREC *)ai_Chars)[ai_PlayerId];
+    worth = gm_GetGoodsValue((char *)me);
+    cash = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0x115);
+    bought = 0;
+    if (worth < 16000) {
+        char text[0x100];
+
         txt_Format(text, 0x1a00);
         sv_MessageBox(text, 0);
         sv_CameraFollow();
@@ -10848,32 +10850,61 @@ void ai_CitizenRightWindow(int param_1)
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x19fe, *(unsigned short *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), 16000,
-                 (char *)((unsigned)&ai_PlayerSlots + 0x20) + U_I((unsigned)&ai_OwnPlayer) * 0x2f4);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    done = 0;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_ClickedId) == 0 &&
-                sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, 16000, U_I((unsigned)&ai_OwnPlayer)) != 0) {
-                /* ROUGH: the citizenship message 0x69 to the other kind 6 / 7 characters */
-                cm_SendMoveGoodsUnchecked(U_I(room + 2), U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), 0, 16000);
-                cm_SendSetField(U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87), 0x1c8, 4, 0, 0x4000);
-                txt_Format(date, 0x19ff);
+    io_PrintText(0x19fe, me->id, 16000, &ai_PlayerSlots[ai_OwnPlayer][0x20]);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0 && sv_CheckGoodAmountB((char *)me, 16000, ai_OwnPlayer) != 0) {
+                AIMSG msg;
+                char text[0x200];
+
+                i = 0;
+                D3_ZERO(&msg, sizeof(msg));
+                msg.type = 0x69;
+                msg.to = me->netId;
+                msg.fromId = -1;
+                msg.flags = 9;
+                msg.time = ai_Time;
+                if (ai_TutorialOff() == 0)
+                    gm_AddTime(&msg.time, 0, 5, 0);
+                else
+                    gm_AddTime(&msg.time, (unsigned short)util_Random(3) + 1, 0, 0);
+                due = msg.time;
+                msg.rankUp.rank = 2;
+                msg.rankUp.ch = me->netId;
+                cm_SendLongMessage((char *)&msg);
+                for (k = 0; k < 768; k++) {
+                    if (i >= ai_NumPlayers)
+                        break;
+                    c = &((AICHARREC *)ai_Chars)[k];
+                    if ((c->kind == 6 || c->kind == 7) && c != me) {
+                        D3_ZERO(&msg, sizeof(msg));
+                        msg.to = c->netId;
+                        msg.type = 0x69;
+                        msg.fromId = -1;
+                        msg.flags = 9;
+                        msg.time = due;
+                        msg.rankUp.rank = 2;
+                        msg.rankUp.ch = me->netId;
+                        cm_SendLongMessage((char *)&msg);
+                        i++;
+                    }
+                }
+                cm_SendMoveGoodsUnchecked(cash->objId, me->netId, 0, 16000);
+                cm_SendSetField(me->netId, 0x1c8, 4, 0, 0x4000);
+                txt_Format(text, 0x19ff);
                 ai_CampaignStep(0x2e, 0, 0, 0);
-                done = 1;
-                sv_MessageBox(date, 0);
+                bought = 1;
+                sv_MessageBox(text, 0);
             }
-            U_I((unsigned)&sv_PopRequest) = 1;
+            sv_PopRequest = 1;
         }
-        if (sv_RunFrame(ai_CitizenRightWindow, 0x677c7) == 0)
-            break;
-    }
+    } while (sv_RunFrame(ai_CitizenRightWindow, 0x677c7) != 0);
     d2_CloseView(win);
     sv_CameraFollow();
-    if (done)
+    if (bought != 0)
         ai_CampaignStep(0x2e, 0, 1, 0);
 }
 
