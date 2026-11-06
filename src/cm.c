@@ -1089,7 +1089,7 @@ void cm_SendLoadSize(int v)
     G17MSG m;
 
     m.type = 8;
-    G17_I(m, 0) = v;
+    m.load.size = v;
     cm_QueueSend(&m);
 }
 /* 0x4c4500, message 9: sends one 0x80-byte block of the load buffer (the handler of type 9 appends it);

@@ -451,6 +451,10 @@ typedef struct G17HELLOMSG {            /* 12 bytes, the data of message 3 (cm_S
     int value;                          /* 0x08, the second hello value (ai_Unk9367d4) */
 } G17HELLOMSG;
 
+typedef struct G17LOADSIZEMSG {         /* 4 bytes, the data of message 8 (cm_SendLoadSize, its handler 0x4c6a90) */
+    int size;                           /* 0x00, the size of the load buffer mem_Alloc gets (cm_LoadSize) */
+} G17LOADSIZEMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -462,6 +466,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
     union {
         unsigned char data[0x81];       /* 0x10 */
         G17HELLOMSG hello;              /* 0x10, message 3 */
+        G17LOADSIZEMSG load;            /* 0x10, message 8 */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */
