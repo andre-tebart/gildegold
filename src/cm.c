@@ -6743,7 +6743,7 @@ int cm_LobbyRequestList()
     G17MSG m;
 
     memset(m.data, 0, 0x80);
-    G17_I(m, 0) = 0;
+    m.lobby.kind = 0;
     m.type = 0x5f;
     return cm_QueueSend(&m);
 }
