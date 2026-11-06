@@ -117,7 +117,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14407d4                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x06614))  /* 0x14407d4 */
 #define full_data_14407f4                        (*(unsigned char (*)[124])((char *)txt_Ptrs + 0x06634))  /* 0x14407f4 */
 #define ai_ContactTextDungeonPlan                (*(char * *)((char *)txt_Ptrs + 0x066b0))  /* 0x1440870 */
-#define full_data_1440880                        (*(unsigned char (*)[20])((char *)txt_Ptrs + 0x066c0))  /* 0x1440880 */
+#define ai_ContactTextBribe                      (*(char * *)((char *)txt_Ptrs + 0x066c0))  /* 0x1440880, text 0x19b0: the plate text of the bribe contact contact_BESTECHEN (ai_DungeonBribeListener) */
 #define full_data_1440894                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x066d4))  /* 0x1440894 */
 #define ai_ContactTextKidnap                     (*(char * *)((char *)txt_Ptrs + 0x066dc))  /* 0x144089c, the hover text of the contact_ENTFUEHREN plate (ai_KidnapContact -> ai_KidnapStart) */
 #define full_data_14408ac                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x066ec))  /* 0x14408ac */
