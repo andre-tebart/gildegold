@@ -2180,7 +2180,7 @@ exe	0x004c45c0	cm_SendMessage10	cm	byte	readable
 exe	0x004c4650	cm_SendCreateCharacter	cm	byte	draft		
 exe	0x004c46d0	cm_SendMessage0c	cm	byte	draft		
 exe	0x004c4770	cm_SendTakeOverCharacter	cm	byte	draft		
-exe	0x004c47b0	ai_Unk4c47b0	cm	byte	draft		
+exe	0x004c47b0	cm_SendDeleteObject	cm	byte	draft		
 exe	0x004c47e0	cm_SendMoveGoods	cm	byte	draft		
 exe	0x004c4830	cm_SendMoveGoodsUnchecked	cm	byte	draft		
 exe	0x004c4880	cm_SendExSellObject	cm	byte	draft		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	byte	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4264,24 +4264,24 @@ exe	0x005a1960	ai_GuildLevel3Listener	lc	byte	readable
 exe	0x005a1a60	ai_GuildLevel1Listener	lc	byte	readable		
 exe	0x005a1af0	ai_DonationWindow	lc	shape	readable		
 exe	0x005a1f70	ai_IndulgenceWindow	lc	shape	readable		
-exe	0x005a23a0	ai_BaptismWindow	lc	draft	draft		
-exe	0x005a28f0	ai_Top5Window	lc	draft	draft		
-exe	0x005a2b60	ai_ConfessionWindow	lc	draft	draft		
+exe	0x005a23a0	ai_BaptismWindow	lc	byte	readable		
+exe	0x005a28f0	ai_Top5Window	lc	shape	readable		
+exe	0x005a2b60	ai_ConfessionWindow	lc	byte	readable		
 exe	0x005a2de0	ai_ConfessionListener	lc	byte	readable		
-exe	0x005a2e60	ai_SermonWindow	lc	draft	draft		
+exe	0x005a2e60	ai_SermonWindow	lc	draft	readable	deep	
 exe	0x005a36c0	ai_ProductionWriteContact	lc	shape	readable		
 exe	0x005a3810	ai_ChurchListener	lc	shape	readable		
 exe	0x005a39b0	ai_ChurchContact	lc	byte	readable		
 exe	0x005a3a40	ai_DungeonPlanWindow	lc	shape	readable		
 exe	0x005a3b20	ai_DungeonContact	lc	byte	readable		
-exe	0x005a3b90	ai_Unk5a3b90	lc	draft	draft		
+exe	0x005a3b90	ai_DungeonBribeWindow	lc	draft	readable	deep	
 exe	0x005a3df0	ai_DungeonBribeListener	lc	draft	draft		
 exe	0x005a3ef0	ai_DungeonEmptyListener	lc	byte	readable		
-exe	0x005a3f10	ai_BurglaryWindow	lc	draft	draft		
+exe	0x005a3f10	ai_BurglaryWindow	lc	byte	readable		
 exe	0x005a4130	ai_BurglaryStart	lc	shape	readable		
-exe	0x005a41d0	ai_Unk5a41d0	lc	draft	draft		
+exe	0x005a41d0	ai_GuildSpyWindow	lc	draft	readable	deep	
 exe	0x005a44e0	ai_EspionageStart	lc	draft	draft		
-exe	0x005a45c0	ai_SpyRingWindow	lc	draft	draft		
+exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable		
 exe	0x005a48d0	ai_AttackWindow	lc	draft	draft		
 exe	0x005a4b30	ai_AttackStart	lc	byte	readable		
 exe	0x005a4b90	ai_PickpocketVictimWindow	lc	draft	draft		
