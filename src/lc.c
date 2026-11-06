@@ -11237,14 +11237,15 @@ void ai_GuildCashPayWindow(AIBLD *bld)
 
 int amt_ExecuteShareMessage(short *c, int *m);
 
-/* 0x5a0ca0, the ai_MapPick callback of ai_OfficeApplyEntry: the guild hall's application window
+/* 0x5a0ca0, the ai_MapPick callback of ai_GuildGiftEntry: the guild master's gift window
    "LOCATIONS\ZUNFTHAUS\LEVEL2" for the picked building bld. The fee is a hundredth of the player's worth, at
    least 160 (the windows.h max macro: gm_GetWorth is called twice); 0 when the player cannot pay it. The texts
    0x165f and 0x1660 (the player's office name by sex: 0x253 / 0x27b + secondOffice; the fee, the building's owner)
-   with the apply and cancel buttons; apply sends the request {2, bld->id, the fee} (amt_ExecuteShareMessage) when
-   the player can still pay, and closes the window with sv_PopRequest 2 (else the click falls to the cancel test). Returns 1 after the window */
+   with the give and cancel buttons; give executes the gift message {2, bld->id, the fee} (amt_ExecuteShareMessage)
+   when the player can still pay, and closes the window with sv_PopRequest 2 (else the click falls to the cancel
+   test). Returns 1 after the window */
 
-int ai_OfficeApplyCallback(char *place, AIBLD *bld)
+int ai_GuildGiftCallback(char *place, AIBLD *bld)
 {
     int cancelBtn;
     int req[5];
@@ -11252,7 +11253,7 @@ int ai_OfficeApplyCallback(char *place, AIBLD *bld)
     int win;
     int text;
     int id;
-    int applyBtn;
+    int giveBtn;
 
     fee = (int)max(gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id) * 0.01f, 160.0f);
     if (sv_CheckGoodAmountB((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], fee, ai_OwnPlayer) == 0)
@@ -11270,14 +11271,14 @@ int ai_OfficeApplyCallback(char *place, AIBLD *bld)
     else
         id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x27b;
     text = io_PrintText(0x1660, id, 5, fee, bld->owner, bld);
-    applyBtn = d2_GetWinObj(win, 2, text);
+    giveBtn = d2_GetWinObj(win, 2, text);
     cancelBtn = d2_GetWinObj(win, 2, text + 1);
     d2_ClickedId = -1;
     do {
         if (dm_L.rup != 0)
             sv_PopRequest = 1;
         if (d2_ClickedId != -1) {
-            if (d2_PointerObj == applyBtn &&
+            if (d2_PointerObj == giveBtn &&
                 sv_CheckGoodAmountB((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], fee, ai_OwnPlayer) != 0) {
                 req[0] = 2;
                 req[1] = bld->id;
@@ -11288,38 +11289,35 @@ int ai_OfficeApplyCallback(char *place, AIBLD *bld)
                 sv_PopRequest = 1;
             }
         }
-    } while (sv_RunFrame(ai_OfficeApplyCallback, 0x677c7) != 0);
+    } while (sv_RunFrame(ai_GuildGiftCallback, 0x677c7) != 0);
     d2_CloseView(win);
     return 1;
 }
-/* 0x5a0f10, the office application entry (240 B): 0x4e94e0 (the player) == 1 opens the request 0x5b2180
-   (1, the 0x50-byte record: +0 = 1, +4 = -1, +0x10 = 6, +0xc = 0x7d4190, +0x4 = 1, +0x18 = 0x727, the text
-   0x143fb3c, the callback 0x5a0ca0); == -1 shows the text 0x143fbd8 (0x521150); else 0x520f90 (the player, 5) */
+/* 0x5a0f10, the guild master's gift power (guild hall level 2): when amt_CanUseMayorPower2 allows the player its second step,
+   the map pick (flags 1, mode -1, the building class filter 0x1007d4190, kind 6, option 0x727, the prompt
+   ai_TextGuildPowerPick) with ai_GuildGiftCallback; ai_TextGuildPowerUsed when the power is used already, else
+   sv_CheckMoney's message for the 5 the player lacks */
 
-void ai_OfficeApplyEntry(int param_1)
+void ai_GuildGiftEntry(int building)
 {
-    int req[20];
+    AMOUNTCFG pick;
     int r;
-    int i;
 
-    r = amt_CanUseMayorPower2((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    if (r == 1) {
-        for (i = 0; i < 20; i++)
-            req[i] = 0;
-        req[0] = 1;
-        req[1] = -1;
-        req[2] = ((unsigned)&ai_Unk770d8c + 0x63404);
-        req[3] = 1;
-        req[4] = 6;
-        req[19] = 0x727;
-        ai_MapPick(1, req, (void *)U_I((unsigned)&full_data_143fb3c), (void *)(unsigned)&ai_OfficeApplyCallback, 0);
+    r = amt_CanUseMayorPower2((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId]);
+    if (r != 1) {
+        if (r == -1)
+            sv_MessageBox(ai_TextGuildPowerUsed, 0);
+        else
+            sv_CheckMoney((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], 5);
         return;
     }
-    if (r != -1) {
-        sv_CheckMoney((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, 5);
-        return;
-    }
-    sv_MessageBox((char *)U_I((unsigned)&full_data_143fbd8), 0);
+    D3_ZERO(&pick, sizeof(pick));
+    pick.flags = 1;
+    pick.mode = -1;
+    pick.kind = 6;
+    pick.filter = 0x1007d4190;
+    pick.option4c = 0x727;
+    ai_MapPick(1, &pick, ai_TextGuildPowerPick, ai_GuildGiftCallback, 0);
 }
 
 int amt_MayorBonusStep(); int amt_CanUseMayorPower3(); int amt_ExecutePriceMessage(char *c, int *m); int ai_AmountKindMenu();
@@ -11354,7 +11352,7 @@ void ai_GuildLevel1Window(int param_1)
             sv_CheckMoney(per, 3);
             return;
         }
-        sv_MessageBox((char *)U_I((unsigned)&full_data_143fbd8), 0);
+        sv_MessageBox((char *)U_I((unsigned)&ai_TextGuildPowerUsed), 0);
         return;
     }
     win = d2_OpenForm(0, 0, "LOCATIONS\\ZUNFTHAUS\\LEVEL1");
@@ -11600,7 +11598,7 @@ void ai_GuildLevel3Entry(void)
         return;
     }
     if (r == -1) {
-        sv_MessageBox((char *)U_I((unsigned)&full_data_143fbd8), 0);
+        sv_MessageBox((char *)U_I((unsigned)&ai_TextGuildPowerUsed), 0);
         return;
     }
     sv_CheckMoney(per, 8);
@@ -11619,7 +11617,7 @@ void ai_GuildLevel2Listener(int building)
         if (amt_CanUseMayorPower2((char *)ai_Chars + ai_PlayerId * 0x21c) != 0)
             c = sv_RegisterNamePlate("contact_ZUNFTLEVEL2", txt_Ptrs[0x165d], 0x16);
         if (ai_ClickedObject != 0 && ai_ClickedObject == c)
-            ai_OfficeApplyEntry(building);
+            ai_GuildGiftEntry(building);
     }
 }
 /* 0x5a1960, the guild level 3 listener, the room 0x139 handler of the enter-building driver (256 B): the text

@@ -79,11 +79,11 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143fad8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x05918))  /* 0x143fad8 */
 #define full_data_143fadc                        (*(unsigned char (*)[88])((char *)txt_Ptrs + 0x0591c))  /* 0x143fadc */
 #define full_data_143fb34                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x05974))  /* 0x143fb34 */
-#define full_data_143fb3c                        (*(unsigned char (*)[52])((char *)txt_Ptrs + 0x0597c))  /* 0x143fb3c */
+#define ai_TextGuildPowerPick                    (*(char * *)((char *)txt_Ptrs + 0x0597c))  /* 0x143fb3c, text 0x165f: the map-pick prompt of ai_GuildGiftEntry and the head of its callback's window */
 #define full_data_143fb70                        (*(unsigned char (*)[40])((char *)txt_Ptrs + 0x059b0))  /* 0x143fb70 */
 #define full_data_143fb98                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x059d8))  /* 0x143fb98 */
 #define full_data_143fbb8                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x059f8))  /* 0x143fbb8 */
-#define full_data_143fbd8                        (*(unsigned char (*)[160])((char *)txt_Ptrs + 0x05a18))  /* 0x143fbd8 */
+#define ai_TextGuildPowerUsed                    (*(char * *)((char *)txt_Ptrs + 0x05a18))  /* 0x143fbd8, text 0x1686: the town hall's guild power is used already (amt_CanUseMayorPower2 returns -1) */
 #define full_data_143fc78                        (*(unsigned char (*)[296])((char *)txt_Ptrs + 0x05ab8))  /* 0x143fc78 */
 #define full_data_143fda0                        (*(unsigned char (*)[24])((char *)txt_Ptrs + 0x05be0))  /* 0x143fda0 */
 #define full_data_143fdb8                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x05bf8))  /* 0x143fdb8 */
