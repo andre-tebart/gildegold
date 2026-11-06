@@ -20274,15 +20274,17 @@ int he_RegisterEventTypes02(void)
     gm_Shuffled(0x1a, he_TipOrder);
     return 0;
 }
-/* 0x568aa0, calls the handler 0x541200 for every event of the type 0x23 with the flags +0x78 & 3 whose +0xb0 equals the day +4 of this event */
+/* 0x568aa0, ends every started loan event 0x23 (he_EndEventNow) whose partner (HELOAN.partner, the other party's
+   netId) is the character c: gm_ReleaseCharacter calls it before the character is released */
 
-void he_EndKind23Events(int ev)
+void he_EndKind23Events(int rec)
 {
-    int o;
+    AICHAR *c = (AICHAR *)rec;
+    AIJOB *e;
 
-    for (o = (int)he_FindEvent(1, 0, 0x23); o != 0; o = (int)he_NextEvent()) {
-        if ((*(unsigned char *)(o + 0x78) & 3) != 0 && *(int *)(o + 0xb0) == *(int *)(ev + 4))
-            he_EndEventNow(o);
+    for (e = (AIJOB *)he_FindEvent(1, 0, 0x23); e != 0; e = (AIJOB *)he_NextEvent()) {
+        if ((e->opts & 3) != 0 && ((HELOAN *)e)->partner == c->netId)
+            he_EndEventNow((int)e);
     }
 }
 
