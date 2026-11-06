@@ -17397,20 +17397,22 @@ typedef struct HEBURGLARY {             /* the burglary event 0x3f's words over 
     int guardBld;                       /* 0xbc, that patrol's start building (patrolStart), which counts the reward */
 } HEBURGLARY;
 
-/* 0x5619a0, a Ghidra miss: the allocation handler of the event 0x3f: an older event of the type with the same +0xac makes this one -1 (free on its first run); the first run is now + 1 */
+/* 0x5619a0, the allocation handler of the burglary event 0x3f (he_RunBurglary): an older burglary event against the
+   same building makes this one stage -1 (freed on its first run); its due clock is the game clock plus 1 second */
 
-void he_AllocBurglary(int ev)
+void he_AllocBurglary(AIJOB *ev)
 {
-    int o;
+    HEBURGLARY *x = (HEBURGLARY *)ev;
+    AIJOB *o;
 
-    for (o = (int)he_FindEvent(1, 0, 0x3f); o != 0; o = (int)he_NextEvent()) {
-        if (o != ev && *(int *)(o + 0xac) == *(int *)(ev + 0xac)) {
-            *(int *)(ev + 0x70) = -1;
+    for (o = (AIJOB *)he_FindEvent(1, 0, 0x3f); o != 0; o = (AIJOB *)he_NextEvent()) {
+        if (o != ev && ((HEBURGLARY *)o)->target == x->target) {
+            ev->stage = -1;
             break;
         }
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 0, 1);
+    ev->end = ai_Time;
+    gm_AddTime(&ev->end, 0, 0, 1);
 }
 /* 0x561a20, the run handler of the burglary event 0x3f ("Einbruch", HEBURGLARY; its alloc handler he_AllocBurglary): the
    gang is the up to 8 characters of AIJOB.ids (-1: none); the function runs to 0x5628dc with its jump table 0x5628bc.
