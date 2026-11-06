@@ -12142,22 +12142,25 @@ char he_CollectTransporter(char *name, int *ctx)
     }
     return ctx[0x20] < 0x20;
 }
-/* 0x555210 (ROUGH), collects the transporter dummies of the object `obj` (0x438d40 (scene 0x5fb5b0, obj, 0x100, 0x5551c0, list), the object's +0x1f0 is cleared during the walk unless flag 1 of +0x210 is set) and returns a random one of them (0x42ec00 (n) with the list's count n), 0 when n = 0; one parameter (every caller pushes one) */
+/* 0x555210, collects the transporter dummies of the object obj (d3_ForEachObject (scene 0x5fb5b0, obj, 0x100,
+   0x5551c0, list); the object's sibling list is cleared during the walk unless its state bit 1 is set) and
+   returns a random one of them, 0 when the list is empty */
 
 int he_RandomTransporter(char *obj)
 {
     int list[0x21];
-    int save;
+    D3OBJECT *o = (D3OBJECT *)obj;
+    D3OBJECT *save;
 
     memset(list, 0, sizeof(list));
     list[0x20] = 0;
-    if (obj != 0 && (*(unsigned char *)(obj + 0x210) & 1) == 0) {
-        save = *(int *)(obj + 0x1f0);
-        *(int *)(obj + 0x1f0) = 0;
-        d3_ForEachObject(d3_DefaultScene, obj, 0x100, (void *)he_CollectTransporter, list);
-        *(int *)(obj + 0x1f0) = save;
+    if (o != 0 && (o->state & 1) == 0) {
+        save = o->next;
+        o->next = 0;
+        d3_ForEachObject(d3_DefaultScene, o, 0x100, (void *)he_CollectTransporter, list);
+        o->next = save;
     } else {
-        d3_ForEachObject(d3_DefaultScene, obj, 0x100, (void *)he_CollectTransporter, list);
+        d3_ForEachObject(d3_DefaultScene, o, 0x100, (void *)he_CollectTransporter, list);
     }
     if (list[0x20] == 0)
         return 0;
