@@ -4121,13 +4121,13 @@ exe	0x0058b880	lobby_ChooseProfession	lobby	draft	draft	deep
 exe	0x0058ba70	lobby_ShowChat	lobby	draft	draft	deep	
 exe	0x0058bbd0	ai_InitProductionTables	lc	draft	draft	deep	
 exe	0x0058bd60	ai_ProductionWindow	lc	draft	readable	deep	
-exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	draft	deep	
-exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	draft	deep	
-exe	0x0058d720	ai_UpdateProdGoodsList	lc	draft	draft	deep	
+exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	readable	deep	
+exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	readable	deep	
+exe	0x0058d720	ai_UpdateProdGoodsList	lc	draft	readable	deep	
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
 exe	0x0058e130	ai_Unk58e130	lc	draft	draft	deep	
 exe	0x0058e440	ai_Unk58e440	lc	draft	draft	deep	
-exe	0x0058e6a0	ai_ShowProdSlot	lc	draft	draft	deep	
+exe	0x0058e6a0	ai_ShowProdSlot	lc	draft	readable	deep	
 exe	0x0058ee30	ai_Unk58ee30	lc	draft	draft	deep	
 exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable		
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
