@@ -1728,12 +1728,12 @@ void cm_SendOwnership(int bldId, int masterId, int ownerId)
 /* 0x4c54e0, sends the message 0x3a with a building id (he_RunUpgrade, when the building event 0x1e ends; reasoned:
    the upgrade is done) */
 
-void cm_SendUpgradeDone(int a)
+void cm_SendUpgradeDone(int bldId)
 {
     G17MSG m;
 
     m.type = 0x3a;
-    G17_I(m, 0) = a;
+    m.upgrade.bldId = bldId;
     cm_QueueSend(&m);
 }
 /* 0x4c5510, message 0x3b */
