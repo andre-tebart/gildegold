@@ -446,7 +446,7 @@ void lobby_FetchPlayers(void)
     r = -1;
     for (i = 4; i < 0x24; i += 4)
         if (U_I((char *)lobby_List + i) != 0)
-            r = ((int (*)(int))ai_Unk4cd820)(U_I((char *)lobby_List + i));
+            r = ((int (*)(int))cm_LobbyRequestPlayer)(U_I((char *)lobby_List + i));
     if (r != -1)
         while (cm_GetSlotState(r) == 0)
             sv_PumpNet();

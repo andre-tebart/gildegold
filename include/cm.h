@@ -515,7 +515,7 @@ int cm_LobbyLeave();  /* 0x4cd6a0 */
 int cm_LobbySendChat(int to, char *text);  /* 0x4cd6e0 */
 int cm_LobbyJoin(CMLOBBYPLAYER *p);  /* 0x4cd760 */
 int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p);  /* 0x4cd7c0 */
-void ai_Unk4cd820(int v);  /* 0x4cd820 */
+int cm_LobbyRequestPlayer(int id);  /* 0x4cd820 */
 int cm_ExLobby(G17MSG *m, G17STAT *s);  /* 0x4cd870 */
 char *ai_FindWeaponRecord(int id);  /* 0x4cd9d0 */
 char *cm_CharWeaponAny(char *c);  /* 0x4cda00 */

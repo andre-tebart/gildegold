@@ -6816,17 +6816,18 @@ int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p)
     m.lobby.player = *p;
     return cm_QueueSend(&m);
 }
-/* 0x4cd820, kind 5 */
+/* 0x4cd820, kind 5: asks for the lobby record of the player id (lobby_FetchPlayers sends one per listed
+   player and waits on the send slot it returns) */
 
-void ai_Unk4cd820(int v)
+int cm_LobbyRequestPlayer(int id)
 {
     G17MSG m;
 
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
-    G17_I(m, 0) = 5;
-    G17_I(m, 4) = v;
-    cm_QueueSend(&m);
+    m.lobby.kind = 5;
+    m.lobby.player.id = id;
+    return cm_QueueSend(&m);
 }
 /* 0x4cd870, the handler of type 0x5f (also 0x4cce00), the network lobby by m->lobby.kind (0..6): the player list,
    a player's ready flag or record, a player leaving, a chat line; sets cm_LobbyChanged */
