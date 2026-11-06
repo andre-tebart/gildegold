@@ -12605,7 +12605,13 @@ int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int gm_CharMoney(); 
    twice, the jailer) with the amount slider (0x96 .. the player's money in the city's coin, gm_ConvertMoney, step
    0xfa) and the bribe button: the bribe message 0x39 to the jailer (arg: the player's netId, the jailer's netId,
    the amount back in base money, gm_PlayerFactor) goes in the group "kerkermeister_bestechen" with the payment
-   (cm_SendMoveGoods) */
+   (cm_SendMoveGoods)
+   @deep Read whole against the original and reconstructed; every call, argument and message field matches
+   (ours 178, the original 177). Left, at +0x16a..+0x1a8: the original loads jailer->netId once (mov ecx,
+   [esi+4]) before the msg.type byte store and reuses it for msg.to and msg.arg[1]; ours reloads it after
+   the stores (msg.arg[1] = msg.to gives the single load but not the order; a to / arg[1] first order is
+   worse) and schedules the d2_GetObjValue pushes and the cm_SendMoveGoods argument loads in another order
+   (scheduling only). The prover stops there: the same value loaded at another time across the byte store. */
 void ai_DungeonBribeWindow(AIBLD *bld)
 {
     AMTREC office;
