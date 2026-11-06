@@ -1238,6 +1238,15 @@ typedef struct HEPLUNDERDEAL {          /* the plunder offer 0x8b's words over A
                                            netId (the plunder event's character), [1] the agent's, [2] the victim's,
                                            [3] the price */
 } HEPLUNDERDEAL;
+typedef struct HEMASTERWORK {           /* a master's production job 0x8c's words over AIJOB's union (its alloc handler
+                                           0x570ef0 and run handler 0x571000; the workers are ids[0..3], the building from) */
+    char pad00[0xac];
+    unsigned short good;                /* 0xac, the goods produced (an ai_Goods index; its name is the text 0x9a8 + 2 * good) */
+    char padae[2];
+    float made;                         /* 0xb0, the units made so far, 0 at the start */
+    int left;                           /* 0xb4, the working minutes left, 0x168 at the start */
+    AITIME since;                       /* 0xb8, the time the last production step counted up to */
+} HEMASTERWORK;
 #define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
                                            ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
@@ -23187,8 +23196,8 @@ void he_AllocHaunting(int ev);          /* 0x56fc50 */
 void he_RunHaunting(int ev);          /* 0x56fda0 */
 void he_AllocDecay(int ev);          /* 0x570130 */
 void he_RunDecay(int ev);          /* 0x5702e0 */
-void he_Unk570ef0(int ev);          /* 0x570ef0 */
-void he_Unk571000(int ev);          /* 0x571000 */
+void he_AllocMasterWork(int ev);          /* 0x570ef0 */
+void he_RunMasterWork(int ev);          /* 0x571000 */
 void he_Unk571550(int ev);          /* 0x571550 */
 void he_Unk571640(int ev);          /* 0x571640 */
 void he_AllocPlunder(int ev);          /* 0x5706e0 */
@@ -23213,7 +23222,7 @@ int he_RegisterEventTypes88(void)
 {
     if (he_SetEventHandlers(0x88, (void *)he_AllocHaunting, (void *)he_RunHaunting) == 0) {
         if (he_SetEventHandlers(0x89, (void *)he_AllocDecay, (void *)he_RunDecay) == 0) {
-            if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
+            if (he_SetEventHandlers(0x8c, (void *)he_AllocMasterWork, (void *)he_RunMasterWork) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                     if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_RunPlunder) == 0) {
                         if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_RunPlunderOffer) == 0) {
@@ -23860,7 +23869,7 @@ int he_NoEvent88Pair(int a, int b)
 }
 /* 0x570ef0, the alloc of the event 0x8c: the building 0x501190 (1, 1, ev + 0x10), the group 0x4ffe90 (building +0x5d, 2, 0, 0xfd, 6); each of the four characters +0x8c .. registered (0x524260); none -> free; else +0xb0 = 0, the start clock +0xb8 = now, +0xb4 = 0x168, the due clock now + 5 hours, state 0 */
 
-void he_Unk570ef0(int ev)
+void he_AllocMasterWork(int ev)
 {
     int bld = gm_BuildQuery(1, 1, HM_I(ev, 0x10));
     int grp = gm_Query(HM_I(bld, 0x5d), 2, 0, 0xfd, 6);
@@ -23884,94 +23893,132 @@ void he_Unk570ef0(int ev)
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, 0, 5, 0);
 }
-/* 0x571000, the run of the event 0x8c (a work on the building +0x10 by up to four characters +0x8c ..): outside the night window (the hour 0x4fe350 against the minute curves 0x617840 / 0x617830) a state -1 / -2 works; the player +8 0xffff or +0xc -1 releases all and frees. The four characters counted (cnt; alive without the kinds 0x1b / 0x1c with +0x1b4 bit 0), none -> state -1; the building 0x501190 (1, 1, +0x10) and the work group 0x4ffe90 (+0x5d, 2, 0, 0x2a, 6), missing -> state -1. State 0: the elapsed 0x4fe280 (+0xb8) and the value 0x5092e0 (group, 0x12 / 0x1e, 1) * 0x5eb7f0 (minus 0.5 for kind 3 without the +0x5b bit 0x20), (that + 1.0f) * elapsed * 0x5eec50 added alive times to +0xb0; +0xb4 -= alive; the start clock +0xb8 = now; due now + 5 hours; +0xb4 < 0 -> state -1. With a state -1 / -2: n = (int)+0xb0 (at least 1), -1 when 0x5241b0 (ev) <= 0 (the -1 state only); with a group: 0x50a810, 0x50ab80, 0x4c4880 and the texts 0x421e / 0x4222 / 0x4128 / 0x412c, 0x4223 / 0x4224 / 0x412d / 0x412e and 0x628f04 / 0x628ee8, the message 0x53dee0. Finally the four released (0x524260) and freed. ROUGH: the text building around the 0x53dee0 calls is a skeleton */
-
-void he_Unk571000(int ev)
+/* 0x571000, the run handler of a master's production job 0x8c (alloc he_Unk570ef0; ai.c's master step posts it
+   for a graveyard 0x1d or a gypsy camp 0x1f): outside the working hours of the season (gm_DayStartHours ..
+   gm_DayEndHours) a running job only waits 5 minutes. A job without its character ends at once. The four
+   workers (ids[]) are counted, the ones with the worker titles 0x1b / 0x1c at work (flags1b4 bit 0) count as
+   idle; none, no building (from) or no store in it (gm_Query kind 0x2a) end the job (stage -1). Stage 0 adds
+   per busy worker (skill + 1) * the minutes since `since` / 60 to `made` (the skill: gm_BuildingSkill 0x12 at
+   a graveyard, else 0x1e, less 0.5 in winter without the heating bit 0x2000), takes the minutes off `left` (at
+   0 the job ends) and waits 5 minutes. An ended job stores the whole units made (at least 1; none when it
+   was cancelled with its group empty) in the store (gm_FreeCapacity, cm_SendExSellObject) and tells a player
+   master who is not at work of it (he_MessageBoxQuickjump: the texts 0x4222 / 0x4223 / 0x4224 at a gypsy camp,
+   0x412c / 0x412d / 0x412e else; a full store 0x4225 / 0x412f; the voices "_NACHRICHTEN_ZIGEUNER_03" /
+   "_NACHRICHTEN_FRIEDHOF_01"); then the workers leave the group and the event is freed. The 1.0f is a literal
+   (pooled with bio.c's ai_FloatOne at 0x5eb780): spelled as ai_FloatOne VC6 loads it first and keeps the rate on
+   the FPU stack (fld / fadd st, st(1)), which the original's fadd [0x5eb780] does not. */
+void he_RunMasterWork(int ev)
 {
-    char text[0x200];
-    char name[0x200];
-    int hour, minute, i, n, cnt = 0, alive = 0, e;
-    float x;
-    char *per, *bld, *grp, *r;
+    AIJOB *e = (AIJOB *)ev;
+    HEMASTERWORK *p = (HEMASTERWORK *)ev;
+    char voice[0x98];
+    char what[0x200];
+    char text[0x400];
+    int season, hour, i, n, cnt, busy, minutes;
+    float rate, step;
+    AICHAR *w, *master;
+    AIBTYPE *bt;
+    AIBLD *bld;
+    AIOBJ *store;
 
-    hour = gm_ClockSeason(&ai_Time);
-    minute = *(unsigned short *)((char *)&ai_Time + 4);
-    if ((float)minute < *(float *)((unsigned)&gm_DayEndHours + hour * 4) || (float)minute < *(float *)((unsigned)&gm_DayStartHours + hour * 4)) {
-        if (HM_I(ev, 0x70) != -1 && HM_I(ev, 0x70) != -2) {
-            gm_AddTime(ev + 0x52, 0, 5, 0);
+    season = gm_ClockSeason(&ai_Time);
+    hour = ai_Time.hour;
+    store = 0;
+    cnt = 0;
+    busy = 0;
+    bt = 0;
+    if ((float)hour >= gm_DayEndHours[season] || (float)hour < gm_DayStartHours[season]) {
+        if (e->stage != -1 && e->stage != -2) {
+            gm_AddTime(&e->end, 0, 5, 0);
             return;
         }
     }
-    if (*(unsigned short *)(ev + 8) == 0xffff || HM_I(ev, 0xc) == -1)
-        goto free_all;
+    if (e->chr == 0xffff || e->netId == -1) {
+        he_FreeEvent((int *)ev);
+        return;
+    }
     for (i = 0; i < 4; i++) {
-        r = (char *)gm_FindChar(HM_I(ev, 0x8c + i * 4));
-        if (r != 0) {
+        w = (AICHAR *)gm_FindChar(e->ids[i]);
+        if (w != 0) {
             cnt++;
-            alive++;
-            if ((HM_B(r, 0x165) == 0x1b || HM_B(r, 0x165) == 0x1c) && (HM_B(r, 0x1b4) & 1))
-                alive--;
+            busy++;
+            if ((w->title == 0x1b || w->title == 0x1c) && (w->flags1b4 & 1))
+                busy--;
         }
     }
     if (cnt == 0)
-        HM_I(ev, 0x70) = -1;
-    bld = (char *)gm_BuildQuery(1, 1, HM_I(ev, 0x10));
-    grp = 0;
+        e->stage = -1;
+    bld = (AIBLD *)gm_BuildQuery(1, 1, e->from);
     if (bld != 0) {
-        grp = (char *)gm_Query(HM_I(bld, 0x5d), 2, 0, 0x2a, 6);
-        if (grp == 0)
-            HM_I(ev, 0x70) = -1;
+        bt = &ai_BTypesT[bld->type];
+        store = (AIOBJ *)gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+        if (store == 0)
+            e->stage = -1;
     } else
-        HM_I(ev, 0x70) = -1;
-    if (HM_I(ev, 0x70) == 0) {
-        e = gm_MinutesBetween(ev + 0xb8, &ai_Time);
-        if (HM_B(bld, 0) == 0x1d)
-            x = (float)gm_BuildingSkill(grp, 0x12, 1) * (0.00999999978f);
-        else {
-            x = (float)gm_BuildingSkill(grp, 0x1e, 1) * (0.00999999978f);
-            if (e == 3 && !(HM_B(grp, 0x5b) & 0x20))
-                x -= 0.5f;
+        e->stage = -1;
+    if (e->stage == 0) {
+        minutes = gm_MinutesBetween(&p->since, &ai_Time);
+        if (bt->kind == 0x1d) {
+            rate = gm_BuildingSkill(bld, 0x12, 1) * 0.01f;
+        } else {
+            rate = gm_BuildingSkill(bld, 0x1e, 1) * 0.01f;
+            if (season == 3 && !(bld->flags5aw & 0x2000))
+                rate -= 0.5f;
         }
-        x = (x + 1.0f) * e * 0.01667f;
-        for (i = alive; i > 0; i--)
-            *(float *)(ev + 0xb0) += x;
-        HM_I(ev, 0xb4) -= alive;
-        *(AITIME *)(ev + 0xb8) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 5, 0);
-        if (HM_I(ev, 0xb4) < 0)
-            HM_I(ev, 0x70) = -1;
+        step = (rate + 1.0f) * minutes * 0.01667f;
+        for (i = busy; i > 0; i--)
+            p->made += step;
+        p->left -= minutes;
+        p->since = ai_Time;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 5, 0);
+        if (p->left < 0)
+            e->stage = -1;
     }
-    n = HM_I(ev, 0x70);
-    if (n != -1 && n != -2)
+    if (e->stage != -2 && e->stage != -1)
         return;
-    n = (int)*(float *)(ev + 0xb0);
+    n = (int)p->made;
     if (n <= 1)
         n = 1;
-    if (HM_I(ev, 0x70) == -1 && sv_UsedGroupSlots(ev) <= 0)
+    if (e->stage == -1 && sv_UsedGroupSlots(ev) <= 0)
         n = -1;
-    if (cnt != 0 && grp != 0 && n > 0) {
-        per = (char *)gm_FindCharacterByMaster(grp);
-        r = (char *)gm_FreeCapacity(grp, *(unsigned short *)(ev + 0xac), n);
-        if (r != 0) {
-            cm_SendExSellObject(*(int *)(grp + 2), -1, *(unsigned short *)(ev + 0xac), r, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-            if (per[0] == 0x1f) {
-                txt_Format(text, 0x421e, 0x4222, 0x22c);
-                txt_Format(name, 0x4223, 0x4224, r, HM_I(ev, 0xac) * 2 + 0x9a8);
+    if (bld != 0 && store != 0 && n > 0) {
+        master = (AICHAR *)gm_FindCharacterByMaster((int)bld);
+        n = gm_FreeCapacity(store, p->good, n);
+        if (n != 0) {
+            cm_SendExSellObject(store->objId, -1, p->good, n, ai_OwnPlayer, 0);
+            if (bt->kind == 0x1f) {
+                txt_Format(text, 0x4222, 0x421e, 0x22c, bld);
+                strcpy(voice, "_NACHRICHTEN_ZIGEUNER_03");
+                if (n == 1)
+                    txt_Format(what, 0x4223, p->good * 2 + 0x9a8);
+                else
+                    txt_Format(what, 0x4224, n, p->good * 2 + 0x9a8);
             } else {
-                txt_Format(text, 0x4128, 0x412c, 0x228);
-                txt_Format(name, 0x412d, 0x412e, r, HM_I(ev, 0xac) * 2 + 0x9a8);
+                txt_Format(text, 0x412c, 0x4128, 0x228, bld);
+                strcpy(voice, "_NACHRICHTEN_FRIEDHOF_01");
+                if (n == 1)
+                    txt_Format(what, 0x412d, p->good * 2 + 0x9a8);
+                else
+                    txt_Format(what, 0x412e, n, p->good * 2 + 0x9a8);
             }
-            if (HM_B(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c, 0) == 6 || HM_B(((unsigned)&ai_Chars + 0x2) + *(unsigned short *)(ev + 8) * 0x21c, 0) == 7) {
-                if (per == 0 || !(HM_B(per, 0x1b4) & 1))
-                    he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, -1, HM_I(ev, 0xac), 0x5ec, name, 0);
-            }
+            strcat(text, what);
+        } else if (bt->kind == 0x1f) {
+            txt_Format(text, 0x4225, 0x421e, 0x22c, bld);
+            strcpy(voice, "_NACHRICHTEN_ZIGEUNER_03");
+        } else {
+            txt_Format(text, 0x412f, 0x4128, 0x228, bld);
+            strcpy(voice, "_NACHRICHTEN_FRIEDHOF_01");
+        }
+        if (ai_CharsT[e->chr].kind == 6 || ai_CharsT[e->chr].kind == 7) {
+            if (master == 0 || !(master->flags1b4 & 1))
+                he_MessageBoxQuickjump(ai_CharsT[e->chr].netId, -1, text, 0, 0x5ec, bld->id, -1, 0, voice);
         }
     }
-free_all:
     for (i = 0; i < 4; i++) {
-        r = (char *)gm_FindChar(HM_I(ev, 0x8c + i * 4));
-        if (r != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)r, 0);
+        w = (AICHAR *)gm_FindChar(e->ids[i]);
+        if (w != 0)
+            sv_MoveToGroup(0, 0, w->id, 0);
     }
     he_FreeEvent((int *)ev);
 }
