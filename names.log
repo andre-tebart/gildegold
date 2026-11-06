@@ -2767,3 +2767,4 @@
 2026-11-06T19:13:46 0x005679b0 data he_Unk5679b0 -> he_AllocHint by:main why:the allocation handler of the tutorial hint event 0x83, registered next to he_RunHint by he_SetEventHandlers(131)
 2026-11-06T19:14:17 0x00567b80 data he_Unk567b80 -> he_AllocTip by:main why:the allocation handler of the tips event 0x84, registered next to he_RunTip by he_SetEventHandlers(132)
 2026-11-06T19:14:45 0x00567d20 data he_Unk567d20 -> he_AllocTutorialBuildingTour by:main why:the allocation handler of the tutorial building tour event 0x85, registered next to he_RunTutorialBuildingTour by he_SetEventHandlers(133)
+2026-11-06T19:16:28 0x00567f00 data he_Unk567f00 -> he_AllocPatrolEvent by:main why:0x567f00 is the allocation handler registered for the guard patrol event 0xa6 at 0x568310 (he_SetEventHandlers(166, .., he_RunPatrolEvent)); it sets the first run (end) to 6:00 and exSlot -1

@@ -20020,14 +20020,15 @@ void he_RunTutorialBuildingTour(AIJOB *ev)
         return;
     }
 }
-/* 0x567f00, a Ghidra miss: the allocation handler of the event 0xa6: the first run is now + 6 units, +0x84 = -1 */
+/* 0x567f00, the allocation handler of the guard patrol event 0xa6 (he_RunPatrolEvent): its first run is today
+   at 6:00 (end = ai_Time, then hour 6 and min 0) and its sound slot exSlot -1 */
 
-void he_Unk567f00(int ev)
+void he_AllocPatrolEvent(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x84) = -1;
-    *(short *)(ev + 0x56) = 6;
-    *(int *)(ev + 0x58) = 0;
+    ev->end = ai_Time;
+    ev->exSlot = -1;
+    ev->end.hour = 6;
+    ev->end.min = 0;
 }
 unsigned short *gm_ObjectBuildingOwner(unsigned short *o);  /* 0x50a050, f3gm.h (not included here: the unit's Open: head) */
 int gm_ObjectBuilding(int o);                               /* 0x50a0f0, f3gm.h */
@@ -20268,7 +20269,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(133, (void *)he_AllocTutorialBuildingTour, (void *)he_RunTutorialBuildingTour) != 0)
         return 1;
-    if (he_SetEventHandlers(166, (void *)he_Unk567f00, (void *)he_RunPatrolEvent) != 0)
+    if (he_SetEventHandlers(166, (void *)he_AllocPatrolEvent, (void *)he_RunPatrolEvent) != 0)
         return 1;
     gm_Shuffled(0x1a, he_TipOrder);
     return 0;
