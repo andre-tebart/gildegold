@@ -75,9 +75,9 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143f190                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x04fd0))  /* 0x143f190 */
 #define full_data_143f194                        (*(unsigned char (*)[2352])((char *)txt_Ptrs + 0x04fd4))  /* 0x143f194 */
 #define full_data_143fac4                        (*(unsigned char (*)[16])((char *)txt_Ptrs + 0x05904))  /* 0x143fac4 */
-#define full_data_143fad4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x05914))  /* 0x143fad4 */
-#define full_data_143fad8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x05918))  /* 0x143fad8 */
-#define full_data_143fadc                        (*(unsigned char (*)[88])((char *)txt_Ptrs + 0x0591c))  /* 0x143fadc */
+#define ai_TextGuildPriceRaise                   (*(char * *)((char *)txt_Ptrs + 0x05914))  /* 0x143fad4, text 0x1645: the raise button of ai_GuildLevel1Window */
+#define ai_TextGuildPriceLower                   (*(char * *)((char *)txt_Ptrs + 0x05918))  /* 0x143fad8, text 0x1646: the lower button of ai_GuildLevel1Window */
+#define ai_TextGuildPriceClose                   (*(char * *)((char *)txt_Ptrs + 0x0591c))  /* 0x143fadc, text 0x1647: the close button of ai_GuildLevel1Window */
 #define full_data_143fb34                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x05974))  /* 0x143fb34 */
 #define ai_TextGuildPowerPick                    (*(char * *)((char *)txt_Ptrs + 0x0597c))  /* 0x143fb3c, text 0x165f: the map-pick prompt of ai_GuildGiftEntry and the head of its callback's window */
 #define full_data_143fb70                        (*(unsigned char (*)[40])((char *)txt_Ptrs + 0x059b0))  /* 0x143fb70 */
