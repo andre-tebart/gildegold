@@ -1310,6 +1310,12 @@ typedef struct HEGRAVELEASE {           /* the grave lease offer event 0x92's wo
     int price;                          /* 0xb8, the lease price (gv_LeasePrice) */
     unsigned short years;               /* 0xbc, the years the lease is extended by (10) */
 } HEGRAVELEASE;
+typedef struct HEGYPSY {                /* the gypsy event 0x9d's words over AIJOB's union (its alloc he_AllocGypsyApproach,
+                                           run he_RunGypsyApproach; he_GypsyApproach dispatches the approach) */
+    char pad00[0xac];
+    int approach;                       /* 0xac, the approach he_GypsyApproach dispatches (0 disease .. 5+ slowdown) */
+    int figure;                         /* 0xb0, the netId of the gypsy character (gm_FindChar) */
+} HEGYPSY;
 typedef struct HETRIALCASE {            /* the trial event 0xa0's words over AIJOB's union (its alloc he_AllocTrialScene,
                                            run he_RunTrialScene and the trial he_TrialPayment) */
     char pad00[0xac];
@@ -25226,32 +25232,33 @@ int he_RegisterEventTypes9d(void)
     }
     return 1;
 }
-/* 0x5734b0, the alloc of the event 0x9d: state 0; nothing while paused (+0x78 & 4); both clocks +0x44 / +0x52 = now; the
-   figure +0xb0 (0x505df0): without one the event is scheduled with -1; else the message 0x4f2e30 (0x1c, 1, the player id
-   +0xc, figure +4, *(figure + 0x170) ? the word after it : -1) and the handler scheduled with 0 */
+/* 0x5734b0, the alloc of the gypsy event 0x9d: stage 0; nothing while paused (AIJOB.opts & 4); both clocks AIJOB.start /
+   AIJOB.end = now; the gypsy figure HEGYPSY.figure (gm_FindChar): without one the event is scheduled with -1; else gv_Accuse
+   (0x1c, 1, the player's netId AIJOB.netId, the figure's netId, the id of the figure's building AIBLD.bld2 ? its id : -1) and
+   the handler scheduled with 0 */
 
 void he_AllocGypsyApproach(int ev)
 {
-    char *per;
+    AIJOB *e = (AIJOB *)ev;
+    HEGYPSY *g = (HEGYPSY *)ev;
+    AICHAR *per;
+    AIBLD *b;
     int x;
 
-    HM_I(ev, 0x70) = 0;
-    if (HM_B(ev, 0x78) & 4)
+    e->stage = 0;
+    if (e->opts & 4)
         return;
-    *(AITIME *)(ev + 0x44) = ai_Time;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    per = (char *)gm_FindChar(HM_I(ev, 0xb0));
+    e->start = ai_Time;
+    e->end = ai_Time;
+    per = (AICHAR *)gm_FindChar(g->figure);
     if (per == 0) {
-        HM_I(ev, 0x84) = cm_SendExSetHE(-1, ev);
+        e->exSlot = cm_SendExSetHE(-1, ev);
         return;
     }
-    x = HM_I(per, 0x170);
-    if (x != 0)
-        x = HM_I(x, 1);
-    else
-        x = -1;
-    gv_Accuse(0x1c, 1, HM_I(ev, 0xc), HM_I(per, 4), x);
-    HM_I(ev, 0x84) = cm_SendExSetHE(0, ev);
+    b = per->bld2;
+    x = b != 0 ? b->id : -1;
+    gv_Accuse(0x1c, 1, e->netId, per->netId, x);
+    e->exSlot = cm_SendExSetHE(0, ev);
 }
 
 void he_GypsyApproach(char *pl, char *per, int a);  /* 0x5736d0 */
