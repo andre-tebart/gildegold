@@ -15781,36 +15781,24 @@ void ai_ShowGraveOrderExtended(int owner, unsigned short *lessee, int bld, int s
     }
     he_ShowNews(((AICHARREC *)owner)->netId, -1, ai_NewsText, 0, 0x5fc, ch_EmptyName);
 }
-/* 0x5a9880, a graveyard message with three values in two orders (139 B): as 0x5a97e0 with the text 0x4150 */
+/* 0x5a9880, the news of a grave order cancelled, to the graveyard's owner (139 B, he_AnswerGraveLease): as
+   ai_ShowGraveOrderExtended with the text 0x4150: the character's id, the graveyard bld and the grave size's
+   name (ai_GraveNames), the language 1 swapping the building and the size name */
 
-void ai_ShowGraveOrderCancelled(int param_1, unsigned short *param_2, int param_3, int param_4)
+void ai_ShowGraveOrderCancelled(int owner, unsigned short *lessee, int bld, int size)
 {
-    unsigned short v;
-    int a;
-    int b;
-    int r;
-
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7)
+    if (((AICHARREC *)owner)->kind != 6 && ((AICHARREC *)owner)->kind != 7)
         return;
-    r = ls_GetLanguage();
-    if (r == 0) {
-        v = *param_2;
-        a = param_3;
-        b = *(int *)(((unsigned)&sv_PhaseMinutes + 0x218) + param_4 * 4);
-    } else if (r == 1) {
-        v = *param_2;
-        a = *(int *)(((unsigned)&sv_PhaseMinutes + 0x218) + param_4 * 4);
-        b = param_3;
-    } else if (r == 2) {
-        v = *param_2;
-        a = param_3;
-        b = *(int *)(((unsigned)&sv_PhaseMinutes + 0x218) + param_4 * 4);
-    } else {
-        goto send;
+    switch (ls_GetLanguage()) {
+    case 0:
+    case 2:
+        txt_Format(ai_NewsText, 0x4150, *lessee, bld, ai_GraveNames[size]);
+        break;
+    case 1:
+        txt_Format(ai_NewsText, 0x4150, *lessee, ai_GraveNames[size], bld);
+        break;
     }
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x4150, v, a, b);
-send:
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&ch_EmptyName);
+    he_ShowNews(((AICHARREC *)owner)->netId, -1, ai_NewsText, 0, 0x5fc, ch_EmptyName);
 }
 /* 0x5a9910, a graveyard text (124 B): 0x5190a0 orders the word of param_1 and param_3 (0 / 2: param_3 first,
    1: the word first, other: no text) and 0x42ec00 (3) picks the text 0x409c + the value; the +4 id of param_2
