@@ -9012,61 +9012,77 @@ void ai_CreditGiverWindow(AIBLD *bank)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-/* 0x59be90, sorts and shows the 7-int records of a credit list (656 B, ROUGH): the valid records are counted
-   from the tail (record +0x186: field 3 = 0 or field 0 = -1), sorted by their name (the record's city word at
-   +0xc, the name table 0x143c860; the word equal to the player's city 0x7e3f94 + player * 0x2f4 gives
-   "AAAAAAAAA" 0x62bb24, 0 gives "ZZZZZZZZZ" 0x62bb18) with a bubble sort (strcmp > 0 swaps the 7 ints), then
-   each record's two controls (+0 and +4) are drawn by 0x46cda0 at x = the control's +0x10 / y = 0x6ed980 + 6 +
-   i * 0x4c (and + 0x30) */
+typedef struct LCEXCHROW {          /* 0x1c bytes, a row of the money lender's exchange window (16 of them; ai_Unk59c120
+                                       fills them, ai_ClickedExchangeRecord finds the clicked one) */
+    int icon;                       /* 0x00, the row's input icon (d2_WinOpenInputIcon), -1: none */
+    int text;                       /* 0x04, its text object (d2_CreateWinText) */
+    int good;                       /* 0x08, the good it shows (its name txt_ObjectNames, the icon good + 0xdf) */
+    int money;                      /* 0x0c, the money good of the row (the queried object's word; its name is the text
+                                       0x9a8 + 2 * it, compared with GMPLAYERSLOT.moneyGood), 0: free */
+    int value;                      /* 0x10, the icon's value (d2_GetObjValue) */
+    int amount;                     /* 0x14, the amount available (gm_CurrencyDivide) */
+    int pad18;
+} LCEXCHROW;
 
-void ai_Unk59be90(int *param_1)
+/* 0x59be90, sorts the rows of the money lender's exchange window by the name of their money good and places
+   them (653 B): the rows are counted up to the last used one (money != 0 and an icon), sorted by an exchange
+   sort on the name (the own player slot's money good as "AAAAAAAAA" first, none as "ZZZZZZZZZ" last), then each
+   used row's icon and text move to the row's place in the current window (0x4c apart, the text 0x30 below)
+   @deep read whole function against the original: count loop, exchange sort with inlined strcpy/strcmp
+   (==1), struct swap, the placing loop with its own row counter all match; only the induction pointers of
+   the sort differ: ours keeps &rows[i+1] (add esi,0x1c; lea ebx,[esi-0x1c]; mov ebp,esi; mov
+   eax,[esi-0x10]) where the original keeps &rows[i].money (add esi,0xc; lea ebp,[esi-0xc]; lea
+   ebx,[esi+0x1c]; mov eax,[esi]) and derives &rows[j] as lea eax,[ebx-0xc] for the swap; tried memcpy swap
+   (same) and a 1-based outer loop (much worse); a strength-reduction / variant round */
+void ai_SortExchangeRows(LCEXCHROW *rows)
 {
-    char nameA[0x80];
     char nameB[0x80];
-    int tmp[7];
-    int recs;
+    char nameA[0x80];
+    LCEXCHROW tmp;
+    int n;
     int i;
     int j;
-    int n;
+    int row;
+    int own;
     int v;
-    int ctl;
 
     n = 0;
-    for (i = 0, recs = 0; i < 16; i++) {
-        if (param_1[i * 7 + 3] != 0 && param_1[i * 7] != -1)
-            recs = i + 1;
+    for (i = 15; i >= 0; i--) {
+        if (rows[i].money != 0 && rows[i].icon != -1) {
+            n = i + 1;
+            break;
+        }
     }
-    n = recs;
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n - 1 - i; j++) {
-            v = param_1[j * 7 + 3];
-            if (v == U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4))
+    for (i = 0; i < n; i++) {
+        for (j = i + 1; j < n; j++) {
+            own = ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].moneyGood;
+            v = rows[i].money;
+            if (v == own)
                 strcpy(nameA, "AAAAAAAAA");
             else if (v == 0)
                 strcpy(nameA, "ZZZZZZZZZ");
             else
-                strcpy(nameA, ((char **)(unsigned)&txt_ObjectNames)[v]);
-            v = param_1[(j + 1) * 7 + 3];
-            if (v == U_W((unsigned)&ai_Unk7e3f94 + U_I((unsigned)&ai_OwnPlayer) * 0x2f4))
+                strcpy(nameA, txt_Ptrs[v * 2 + 0x9a8]);
+            v = rows[j].money;
+            if (v == own)
                 strcpy(nameB, "AAAAAAAAA");
             else if (v == 0)
                 strcpy(nameB, "ZZZZZZZZZ");
             else
-                strcpy(nameB, ((char **)(unsigned)&txt_ObjectNames)[v]);
-            if (strcmp(nameA, nameB) > 0) {
-                memcpy(tmp, param_1 + j * 7, 0x1c);
-                memcpy(param_1 + j * 7, param_1 + (j + 1) * 7, 0x1c);
-                memcpy(param_1 + (j + 1) * 7, tmp, 0x1c);
+                strcpy(nameB, txt_Ptrs[v * 2 + 0x9a8]);
+            if (strcmp(nameA, nameB) == 1) {
+                tmp = rows[i];
+                rows[i] = rows[j];
+                rows[j] = tmp;
             }
         }
+    }
+    row = 0;
     for (i = 0; i < n; i++) {
-        ctl = param_1[i * 7];
-        if (ctl != -1) {
-            d2_MoveObj(*(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x10 + ctl * 0x2ec),
-                         d2_LastWindowPtr->y + (short)i * 0x4c, ctl);
-            ctl = param_1[i * 7 + 1];
-            d2_MoveObj(*(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x10 + ctl * 0x2ec),
-                         d2_LastWindowPtr->y + (short)i * 0x4c + 0x30, ctl);
+        if (rows[i].icon != -1) {
+            d2_MoveObj(d2_Objs[rows[i].icon].x, d2_LastWindowPtr->y + row * 0x4c, rows[i].icon);
+            d2_MoveObj(d2_Objs[rows[i].text].x, d2_LastWindowPtr->y + row * 0x4c + 0x30, rows[i].text);
+            row++;
         }
     }
 }
@@ -9163,7 +9179,7 @@ int ai_Unk59c120(int param_1, int *param_2, int param_3, int param_4, char param
     }
     if (changed) {
         d2_SetForm(param_3, param_4);
-        ai_Unk59be90(param_2);
+        ai_SortExchangeRows((LCEXCHROW *)param_2);
     }
     return sel;
 }
