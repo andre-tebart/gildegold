@@ -627,6 +627,16 @@ typedef struct G17DAMAGEMSG {           /* 12 bytes, the data of message 0x52 (c
     int health;                         /* 0x08, the new health (the handler keeps its low byte) */
 } G17DAMAGEMSG;
 
+typedef struct G17SCRIPTMSG {           /* 0x14 bytes, the data of message 0x53 (cm_SendScriptMessage): a script
+                                           command, lc.c's dark corner sends {'buy ', the player, the building, the
+                                           offer, the price} and he.c's meeting {'cler', 0, the building, ...} */
+    int op;                             /* 0x00, the four-character command, 'cler' / 'buy ' (MSB first) */
+    int netId;                          /* 0x04, the character the command names (gm_FindChar) */
+    int bldId;                          /* 0x08, the building */
+    int offer;                          /* 0x0c, the offer (a crime id, the dark corner's AIOBJ.recs) the command takes */
+    int price;                          /* 0x10, the price (ai_ShowPurchaseNews) */
+} G17SCRIPTMSG;
+
 typedef struct G17CARTSTATEMSG {        /* 8 bytes, the data of message 0x33 (cm_SendCartState, its handler 0x4c9d00
                                            adds the action 0x38 with state to the cart "sp_<cartId>") */
     int cartId;                         /* 0x00, the cart's object id */
@@ -723,6 +733,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17OBJIDMSG freeObject;         /* 0x10, message 0x4a */
         G17OBJCELLMSG objCell;          /* 0x10, message 0x4e */
         G17DAMAGEMSG damage;            /* 0x10, message 0x52 */
+        G17SCRIPTMSG script;            /* 0x10, message 0x53 */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
