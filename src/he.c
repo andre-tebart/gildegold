@@ -25154,7 +25154,7 @@ void he_Unk573580(int ev)
 void he_GypsyDisease(AICHAR *pl, AICHAR *per);     /* 0x573760 */
 void he_GypsyRumour(AICHAR *pl, AICHAR *per);     /* 0x573820 */
 void he_GypsyWorkerQuits(AICHAR *pl, AICHAR *per);     /* 0x573970 */
-void he_Unk573ae0(char *pl, char *per);     /* 0x573ae0 */
+void he_GypsySwapSkills(AICHAR *pl, AICHAR *per);     /* 0x573ae0 */
 void he_Unk573c20(char *pl, char *per);     /* 0x573c20 */
 void he_Unk573d30(char *pl, char *per);     /* 0x573d30 */
 
@@ -25168,7 +25168,7 @@ void he_Unk5736d0(char *pl, char *per, int a)
     else if (a == 2)
         he_GypsyWorkerQuits((AICHAR *)pl, (AICHAR *)per);
     else if (a == 3)
-        he_Unk573ae0(pl, per);
+        he_GypsySwapSkills((AICHAR *)pl, (AICHAR *)per);
     else if (a == 4)
         he_Unk573c20(pl, per);
     else
@@ -25277,40 +25277,46 @@ void he_GypsyWorkerQuits(AICHAR *pl, AICHAR *per)
     txt_Format(text, fmt, what);
     he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
-/* 0x573ae0, the approach 3 of the event 0x9d: over the five values per +0x80 .. +0x84 the highest and the lowest are sought;
-   with two different ones their differences are sent (0x4c6020 (per +4, index, difference), highest - lowest and lowest -
-   highest), the name and the texts 0x41e1 (the indices + 0x16b7) / 0x41dd (else 0x41dc) are built and the message 0x5fb
-   (0x53dda0) sent to per +4 */
-
-void he_Unk573ae0(char *pl, char *per)
+/* 0x573ae0, the approach 3 of the event 0x9d (he_Unk5736d0): of per's five skills the highest and the lowest (the
+   first of each) trade places: the lowest gains their difference, the highest loses it (cm_SendAddSkill); five
+   equal skills: nothing. Then per's player is told (the news 0x5fb, the text 0x41dd when per is the event's own
+   character pl, else 0x41dc, around 0x41e1 with both skills' names 0x16b7 + index) with the voice
+   "_NACHRICHTEN_ZIGEUNER_02" (pl) or "_NACHRICHTEN_ZIGEUNER_01" (another). */
+void he_GypsySwapSkills(AICHAR *pl, AICHAR *per)
 {
-    char name[0x19];
-    char t1[0x400];
-    char t2[0x400];
-    int hi = -1, lo = 0xff, hi_i = -1, lo_i = -1, i, v;
+    char voice[100];
+    char what[0x400];
+    char text[0x400];
+    int hi, lo, hiIdx, loIdx, i, fmt;
 
+    hi = -1;
+    hiIdx = -1;
+    lo = 0xff;
+    loIdx = -1;
     for (i = 0; i < 5; i++) {
-        v = HM_B(per, 0x80 + i);
-        if (v > hi) {
-            hi = v;
-            hi_i = i;
+        if (per->skills[i] > hi) {
+            hi = per->skills[i];
+            hiIdx = i;
         }
-        if (v < lo) {
-            lo = v;
-            lo_i = i;
+        if (per->skills[i] < lo) {
+            lo = per->skills[i];
+            loIdx = i;
         }
     }
-    if (lo_i == hi_i || lo_i < 0 || hi_i < 0)
+    if (loIdx == hiIdx || loIdx <= -1 || hiIdx <= -1)
         return;
-    cm_SendAddSkill(HM_I(per, 4), lo_i, hi - lo);
-    cm_SendAddSkill(HM_I(per, 4), hi_i, lo - hi);
-    if (pl == per)
-        memcpy(name, (void *)(unsigned)&full_data_629038, 0x19);
-    else
-        memcpy(name, (void *)(unsigned)&full_data_62901c, 0x19);
-    txt_Format(t1, 0x41e1, lo_i + 0x16b7, hi_i + 0x16b7);
-    txt_Format(t2, pl == per ? 0x41dd : 0x41dc, t1);
-    he_ShowNews(HM_I(per, 4), -1, t2, 1, 0x5fb, name);
+    cm_SendAddSkill(per->netId, loIdx, hi - lo);
+    cm_SendAddSkill(per->netId, hiIdx, lo - hi);
+    if (per == pl) {
+        fmt = 0x41dd;
+        strcpy(voice, "_NACHRICHTEN_ZIGEUNER_02");
+    } else {
+        fmt = 0x41dc;
+        strcpy(voice, "_NACHRICHTEN_ZIGEUNER_01");
+    }
+    txt_Format(what, 0x41e1, loIdx + 0x16b7, hiIdx + 0x16b7);
+    txt_Format(text, fmt, what);
+    he_ShowNews(per->netId, -1, text, 1, 0x5fb, voice);
 }
 /* 0x573c20, the approach 4 of the event 0x9d: posts a message 0x9e (0x4c4b70) from per +4 with the clock, -1 at +0xc, +0x58 =
    pl +4 (-1 when pl is per) and +0x60 = per +4; then the name (0x629038 / 0x62901c) and the texts 0x41e2 / 0x41dd (else
