@@ -2766,3 +2766,4 @@
 2026-11-06T19:12:27 0x00567620 data he_Unk567620 -> he_AllocTitleDue by:main why:the allocation handler of the title-period event 0x7c, registered next to he_RunTitleDue by he_SetEventHandlers(124)
 2026-11-06T19:13:46 0x005679b0 data he_Unk5679b0 -> he_AllocHint by:main why:the allocation handler of the tutorial hint event 0x83, registered next to he_RunHint by he_SetEventHandlers(131)
 2026-11-06T19:14:17 0x00567b80 data he_Unk567b80 -> he_AllocTip by:main why:the allocation handler of the tips event 0x84, registered next to he_RunTip by he_SetEventHandlers(132)
+2026-11-06T19:14:45 0x00567d20 data he_Unk567d20 -> he_AllocTutorialBuildingTour by:main why:the allocation handler of the tutorial building tour event 0x85, registered next to he_RunTutorialBuildingTour by he_SetEventHandlers(133)

@@ -19943,13 +19943,14 @@ void he_RunTip(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x567d20, a Ghidra miss: the allocation handler of the tutorial event 0x85: the first run is now + 7 units (+0x56 = 7, +0x58 = 0) */
+/* 0x567d20, the allocation handler of the tutorial building tour event 0x85 (he_RunTutorialBuildingTour): the due
+   clock is today at 7:00 */
 
-void he_Unk567d20(int ev)
+void he_AllocTutorialBuildingTour(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(short *)(ev + 0x56) = 7;
-    *(int *)(ev + 0x58) = 0;
+    ev->end = ai_Time;
+    ev->end.hour = 7;
+    ev->end.min = 0;
 }
 /* 0x567d60, the run handler of the tutorial event 0x85 (only while cm_TutorialActive, else stage -1 frees it):
    stage 0 (in a running game, ai_GameState) sets the character's kind byte to 5; stage 1 before 22:00 collects
@@ -20265,7 +20266,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(132, (void *)he_AllocTip, (void *)he_RunTip) != 0)
         return 1;
-    if (he_SetEventHandlers(133, (void *)he_Unk567d20, (void *)he_RunTutorialBuildingTour) != 0)
+    if (he_SetEventHandlers(133, (void *)he_AllocTutorialBuildingTour, (void *)he_RunTutorialBuildingTour) != 0)
         return 1;
     if (he_SetEventHandlers(166, (void *)he_Unk567f00, (void *)he_RunPatrolEvent) != 0)
         return 1;
