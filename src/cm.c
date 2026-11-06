@@ -1807,9 +1807,9 @@ void cm_SendCharModel(int a, const char *s)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.model.charId = a;
     m.type = 0x3e;
-    strcpy((char *)&m.data[4], s);
+    strcpy(m.model.name, s);
     cm_QueueSend(&m);
 }
 /* 0x4c56d0, message 0x3f: k and 0x80 bytes of p */
