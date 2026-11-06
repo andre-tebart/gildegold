@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4300,18 +4300,18 @@ exe	0x005a5fd0	ai_CityWatchCrewWindow	lc	byte	readable
 exe	0x005a61f0	ai_RaidStart	lc	byte	readable		
 exe	0x005a6270	ai_WatchPlanWindow	lc	byte	readable		
 exe	0x005a6480	ai_WatchPlanStart	lc	byte	readable		
-exe	0x005a64d0	ai_ArrestWindow	lc	draft	draft		
+exe	0x005a64d0	ai_ArrestWindow	lc	byte	readable		
 exe	0x005a6720	ai_ArrestStart	lc	byte	readable		
 exe	0x005a67a0	ai_CityWatchListener	lc	shape	readable		
 exe	0x005a6920	ai_GuildHallListener	lc	shape	readable		
 exe	0x005a6a90	ai_TrainingRoomListener	lc	draft	draft		
 exe	0x005a6b50	ai_FormatCityName	lc	byte	readable		
-exe	0x005a6b70	ai_Unk5a6b70	lc	draft	draft		
+exe	0x005a6b70	ai_MapCellToScreen	lc	shape	readable		
 exe	0x005a6c40	ai_PlaceMapControls	lc	byte	readable		
-exe	0x005a6cb0	ai_Unk5a6cb0	lc	draft	draft		
-exe	0x005a78a0	ai_Unk5a78a0	lc	draft	draft		
-exe	0x005a79e0	ai_Unk5a79e0	lc	draft	draft		
-exe	0x005a7bc0	ai_Unk5a7bc0	lc	draft	draft		
+exe	0x005a6cb0	ai_BuildTownMap	lc	draft	readable	deep	
+exe	0x005a78a0	ai_OpenTownMap	lc	byte	readable		
+exe	0x005a79e0	ai_DragTownMap	lc	shape	readable		
+exe	0x005a7bc0	ai_ScrollTownMap	lc	byte	readable		
 exe	0x005a7cd0	ai_Unk5a7cd0	lc	draft	draft		
 exe	0x005a82f0	ai_CloseMapWindow	lc	byte	readable		
 exe	0x005a8340	ai_SettingRandom	lc	byte	readable		
@@ -4501,12 +4501,12 @@ exe	0x005c2b90	ai_Unk5c2b90	lc	draft	draft
 exe	0x005c3200	ai_MasterLetterWindow	lc	draft	draft		
 exe	0x005c33c0	ai_PassesPartnerFilter	lc	draft	draft		
 exe	0x005c37a0	ai_PassesBuildingFilter	lc	draft	draft		
-exe	0x005c39a0	ai_Unk5c39a0	lc	draft	draft		
+exe	0x005c39a0	ai_PassesMapPickFilter	lc	draft	draft		
 exe	0x005c3bb0	ai_Unk5c3bb0	lc	draft	draft		
 exe	0x005c4100	ai_Unk5c4100	lc	draft	draft		
-exe	0x005c4150	ai_FamilyTreeWindow	lc	draft	draft		
-exe	0x005c5310	ai_Unk5c5310	lc	draft	draft		
-exe	0x005c6050	ai_Unk5c6050	lc	draft	draft		
+exe	0x005c4150	ai_FamilyTreeWindow	lc	draft	readable	deep	
+exe	0x005c5310	ai_CharInfoPanel	lc	draft	readable	deep	
+exe	0x005c6050	ai_GiftWindow	lc	draft	draft		
 exe	0x005c64c0	ai_FindCandidateIds	lc	shape	readable		
 exe	0x005c6530	ai_MarriageTest	lc	byte	readable		
 exe	0x005c6620	ai_CourtshipRounds	lc	draft	draft		
@@ -4558,8 +4558,8 @@ exe	0x005ce950	ai_DismissalHandler	lc	draft	draft
 exe	0x005ced50	ai_SendInterrogationRefusal	lc	byte	readable		
 exe	0x005cede0	ai_InterrogationWindow1	lc	draft	draft		
 exe	0x005cf020	ai_InterrogationWindow2	lc	draft	draft		
-exe	0x005cf260	ai_Unk5cf260	lc	draft	draft		
-exe	0x005cf4f0	ai_Unk5cf4f0	lc	draft	draft		
+exe	0x005cf260	ai_ChooseProfessionWindow	lc	draft	draft		
+exe	0x005cf4f0	ai_UniversityWindow	lc	draft	draft		
 exe	0x005cf820	ai_UseObjPanel	lc	byte	readable		
 exe	0x005cf8a0	ai_UseGood	lc	draft	draft		
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
