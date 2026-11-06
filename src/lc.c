@@ -13793,81 +13793,68 @@ void ai_WatchPlanStart(int building)
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
-/* 0x5a5d70, the city watch window "LOCATIONS\STADTWACHE\STANDARD" (493 B; a Ghidra-missed start, the callback
-   of 0x5b2180 in 0x5a5f60): param_2 the record (+1 the owner); without param_2 return 0; the scan of the crew
-   byte +0x184 at 0x770d08 over the 0x300 records, none -> the text 0x1440b38 and 0; the window 0x4741f0 /
-   0x475600 / 0x476f80 / 0x475f70 (1) with two controls from 0x515960 (0x1a69) / 0x475b80; the pump 0x5309a0
-   (this, 0x677c7): a click on the first control sends the AIMSG type 0x43 (+8 the player's character, 2 at
-   +0x36, the owner +1 at +0x58, the current building +1 at +0x60, the up to four crew ids +0x70 .. +0x7c) and
-   0x4c2d20 / 0x52ae40 with 0x6f22a0 = 2, or only 0x52ae40 with no crew; the second control sets 0x6f22a0 = 1;
-   the exit 0x4758f0 / 0x52d7a0, returns 1 */
-
-int ai_CityWatchWindow(int param_1, int param_2)
+/* 0x5a5d70, the city watch window "LOCATIONS\STADTWACHE\STANDARD" (the map pick's callback in 0x5a5f60: its context,
+   not read here, and the picked building target; 0 for none): with no character selected the text 0x1a5e and 0.
+   The text 0x1a69 and two buttons: the first sends the group job message 0x43 (to the player's netId, flags 2,
+   arg[0] the target, arg[1] the player's building, the netIds of up to four selected characters as the group's
+   members at 0x70, -1 for the rest; nothing with none), clears the selection and closes; the second and a right
+   click close it. The camera follows again after; returns 1 */
+int ai_CityWatchWindow(int ctx, AIBLD *target)
 {
-    int list[4];
+    int ok;
+    AIMSG msg;
     int win;
-    int ctl1;
-    int ctl2;
-    int id;
+    int cancel;
+    int base;
     int n;
     int i;
-    char *p;
-    char msg[0x108];
 
-    if (param_2 == 0)
+    if (target == 0)
         return 0;
-    for (i = 0; i < 0x300; i++) {
-        if (*(char *)((unsigned)&ai_Selected + i * 0x21c) != 0)
+    for (i = 0; i < 0x300; i++)
+        if (((AICHARREC *)ai_Chars)[i].selected != 0)
             break;
-    }
-    if (i == 0x300) {
-        sv_MessageBox((char *)U_I((unsigned)&full_data_1440b38), 0);
+    if (i >= 0x300) {
+        sv_MessageBox(txt_Ptrs[0x1a5e], 0);
         return 0;
     }
-    win = d2_OpenForm(0, 0, "LOCATIONS\STADTWACHE\STANDARD");
+    win = d2_OpenForm(0, 0, "LOCATIONS\\STADTWACHE\\STANDARD");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    id = io_PrintText(0x1a69);
-    ctl1 = d2_GetWinObj(win, 1, id);
-    ctl2 = d2_GetWinObj(win, 1, id + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctl1) {
-                for (i = 0; i < 4; i++)
-                    list[i] = -1;
-                n = 0;
-                for (p = (char *)(unsigned)&ai_CharInts; p < (char *)((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2) && n < 4; p += 0x21c) {
-                    if (*(char *)(p + 0x184) != 0) {
-                        list[n] = U_I(p);
-                        n++;
-                    }
-                }
-                if (n != 0) {
-                    *(unsigned char *)(msg + 4) = 0x43;
-                    *(unsigned char *)(msg + 0x36) = 2;
-                    U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
-                    U_I(msg + 0x58) = U_I(param_2 + 1);
-                    U_I(msg + 0x60) = U_I(U_I((unsigned)&ai_PlayerBuilding) + 1);
-                    for (i = n; i < 4; i++)
-                        list[i] = -1;
-                    for (i = 0; i < 4; i++)
-                        U_I(msg + 0x70 + i * 4) = list[i];
-                    cm_SendLongMessage(msg);
-                    snd_PlayFavourComment();
-                }
-                sv_ClearSelection();
-                U_I((unsigned)&sv_PopRequest) = 2;
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+    base = io_PrintText(0x1a69);
+    ok = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            /* arg[6..9], 0x70: the group's members (the group job event's AIJOB.members, 0x54 further on) */
+            n = 0;
+            for (i = 0; i < 4; i++)
+                msg.arg[6 + i] = -1;
+            for (i = 0; i < 0x300 && n < 4; i++)
+                if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                    msg.arg[6 + n++] = ((AICHARREC *)ai_Chars)[i].netId;
+            if (n != 0) {
+                msg.type = 0x43;
+                msg.flags = 2;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.arg[0] = target->id;
+                msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+                for (i = n; i < 4; i++)
+                    msg.arg[6 + i] = -1;
+                cm_SendLongMessage((char *)&msg);
+                snd_PlayFavourComment();
             }
-        }
-        if (sv_RunFrame(ai_CityWatchWindow, 0x677c7) == 0)
-            break;
-    }
+            sv_ClearSelection();
+            sv_PopRequest = 2;
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_CityWatchWindow, 0x677c7) != 0);
     d2_CloseView(win);
     sv_CameraFollow();
     return 1;
