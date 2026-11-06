@@ -23242,7 +23242,7 @@ void he_RunMeetingScene(int ev);          /* 0x5726b0 */
 void he_Unk572b90(int ev);          /* 0x572b90 */
 void he_Unk572bf0(int ev);          /* 0x572bf0 */
 void he_Unk572fd0(int ev);          /* 0x572fd0 */
-void he_Unk572a50(int ev);          /* 0x572a50 */
+void he_RunGraveLease(int ev);          /* 0x572a50 */
 
 /* 0x56f980, registers the event types 0x88 .. 0x94 (called by 0x53d4b0): (0x88, 0x56fc50, 0x56fda0), (0x89, 0x570130, 0x5702e0), (0x8c, 0x570ef0, 0x571000), (0x8d, 0x571550, 0x571640), (0x8a, 0x5706e0, 0x5707a0), (0x8b, 0x572860, 0x570cc0), (0x8d again), (0x8e, 0x571990, 0x5719e0), (0x8f, 0x571ac0, 0x571c30), (0x90, 0x571f60, 0x5725b0), (0x91, 0x5726a0, 0x5726b0), (0x93, 0x572b90, 0x572bf0), (0x94, 0x55e3a0, 0x572fd0), (0x92, 0x572860, 0x572a50), then the texts of 0x52b350; 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypes88(void)
@@ -23260,7 +23260,7 @@ int he_RegisterEventTypes88(void)
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
                                                 if (he_SetEventHandlers(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
-                                                        if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_Unk572a50) == 0) {
+                                                        if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_RunGraveLease) == 0) {
                                                             sv_RegisterActivity(0x8d, (char *)(unsigned)&full_data_628e8c, 1, 0x513, -1);
                                                             sv_RegisterActivity(0x8c, (char *)(unsigned)&full_data_628e7c, 1, 0x500, 0xac);
                                                             sv_RegisterActivity(0x8f, (char *)(unsigned)&full_data_628e70, 0, 0x512, -1);
@@ -24689,56 +24689,67 @@ void he_ExamCancelled(int ev)
     if (per != 0)
         ai_ShowGraveOrderCancelled((int *)&ai_CharsT[bld->owner], (unsigned short *)per, (int)bld, e->graveSize);
 }
-/* 0x572a50, the run of the event 0x92: state -2 releases the window +0x74 and frees; state 0 opens the window 0x53d6f0 (0x6269c0, 0x5ec), 0x475600 / 0x475f70, the texts 0x602568 and 0x411c, 0x4c27d0 (-7, 0, 0x628fe4, -1, 0) and state 1; state 1: due (0x4fe210) -> 0x5729c0, 0x53d800 and free; the window missing -> state 0; the actor 0xf8aac4 == window +8 and 0xf8a668: 0 -> 0x5728d0, 1 -> 0x5729c0, then 0x53d800 and free */
-
-void he_Unk572a50(int ev)
+/* 0x572a50, the run handler of the grave lease offer 0x92 (gv_GraveyardTurn posts it to the player whose grave lease
+   runs out; its words over AIJOB's union are HEGRAVELEASE): stage -2 releases the event bar slot and frees the
+   event. Stage 0 opens the offer window ("Berufe\Messagebox_Meisterpruefung") with the text 0x411c (the price) and
+   the voice "_NACHRICHTEN_FRIEDHOF_07", stage 1; a window that could not be opened frees the event. Stage 1: past
+   the due time the lease ends (he_ExamCancelled frees the grave); without the window back to stage 0; a click on
+   its button 0 extends the lease (he_AnswerGraveLease), on button 1 refuses it; either ends the event. */
+void he_RunGraveLease(int ev)
 {
-    int state = HM_I(ev, 0x70);
+    AIJOB *e = (AIJOB *)ev;
+    HEGRAVELEASE *l = (HEGRAVELEASE *)ev;
+    int id;
 
-    if (state == -2) {
-        if (HM_I(ev, 0x74) != 0)
+    if (e->stage == -2) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (state == 0) {
-        if (HM_I(ev, 0x74) == 0)
+    switch (e->stage) {
+    case 0:
+        if (e->slot == 0)
             he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        if (HM_I(ev, 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(HM_I(HM_I(ev, 0x74), 8));
-        d2_SetForm(HM_I(HM_I(ev, 0x74), 8), 0);
-        io_PrintText((unsigned)"$C");
-        io_PrintText(0x411c, HM_I(ev, 0xb8));
-        snd_QueueVoice(-7, 0, (char *)(unsigned)&full_data_628fe4, -1, 0);
-        HM_I(ev, 0x70) = 1;
-    } else if (state == 1) {
-        if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("$C");
+        io_PrintText((char *)0x411c, l->price);
+        snd_QueueVoice(-7, 0, "_NACHRICHTEN_FRIEDHOF_07", -1, 0);
+        e->stage = 1;
+        return;
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
             he_ExamCancelled(ev);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
         }
-        if (HM_I(ev, 0x74) == 0) {
-            HM_I(ev, 0x70) = 0;
+        if (e->slot == 0) {
+            e->stage = 0;
             return;
         }
-        if (*(int *)(unsigned)&d2_ClickedForm == HM_I(HM_I(ev, 0x74), 8) && *(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                he_AnswerGraveLease(ev);
-                he_ReleaseSlot(ev);
-                he_FreeEvent((int *)ev);
-                return;
-            }
-            if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                he_ExamCancelled(ev);
-                he_ReleaseSlot(ev);
-                he_FreeEvent((int *)ev);
-                return;
-            }
+        if (d2_ClickedForm != e->slot->win)
+            return;
+        id = d2_ClickedId;
+        if (id == -1)
+            return;
+        if (id == 0) {
+            he_AnswerGraveLease(ev);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
         }
+        if (id == 1) {
+            he_ExamCancelled(ev);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+        }
+        return;
     }
 }
 
