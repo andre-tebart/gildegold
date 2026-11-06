@@ -299,7 +299,7 @@ int cm_CheckSellObject(G17MSG *m);                                              
 int cm_CheckFieldDeltas(G17MSG *m);                                                     /* 0x4c65b0, check of 0x16 */
 int cm_CheckSetField(G17MSG *m);                                                     /* 0x4c66c0, check of 0x19 */
 int cm_CheckOwnership(G17MSG *m);                                                     /* 0x4c6750, check of 0x38 */
-int ai_Unk4c6780(G17MSG *m);                                                     /* 0x4c6780, check of 0x44 */
+int cm_CheckApplication(G17MSG *m);                                                     /* 0x4c6780, check of 0x44 */
 int ai_Unk4c67a0(G17MSG *m);                                                     /* 0x4c67a0, check of 0x45 */
 int ai_Unk4c67c0(G17MSG *m);                                                     /* 0x4c67c0, check of 0x53 */
 int cm_CheckTableRequest(G17MSG *m);                                                     /* 0x4c6870, check of 0x54 */
