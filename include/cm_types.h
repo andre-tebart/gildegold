@@ -537,6 +537,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17SETFIELDMSG setField;        /* 0x10, message 0x19 */
         G17FLOATDELTAMSG floatDelta;    /* 0x10, message 0x1a */
         G17SETHEMSG setHE;              /* 0x10, message 0x1d */
+        AITIME time;                    /* 0x10, message 0x1e */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */

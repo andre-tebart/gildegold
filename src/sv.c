@@ -7342,7 +7342,7 @@ l64:
             he_PickActiveEvent();
         he_RunQuickList();
         if (net_Conn.s == (unsigned)-1 && (unsigned)d3_Time > (unsigned)cm_NextNetStep && ai_GameState != 0)
-            cm_SendTime((unsigned)&ai_TimeCopy);
+            cm_SendTime((AITIME *)&ai_TimeCopy);
         if ((mask & 0x10000) == 0 && ai_GameState != 0 && sv_PanelFlag == 0 && cm_UpdateParties() != 0 && sv_Advancing != 0)
             sv_PopRequest = 1;
     }

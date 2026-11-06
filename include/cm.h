@@ -223,7 +223,7 @@ int cm_SendRelations(int a, int b, int c, int d);                               
 int cm_SendLongMessage(char *msg);                                                    /* 0x4c4b70, AIMSG (am.h, 0xf8 bytes) */
 int cm_SendLongMessageText(char *msg, unsigned int len, void *extra);                      /* 0x4c4bc0 */
 void cm_SendExSetHE(unsigned char k, char *p);                                     /* 0x4c4c60 */
-int cm_SendTime(char *t);                                                       /* 0x4c4d40 */
+int cm_SendTime(AITIME *t);                                                       /* 0x4c4d40 */
 int cm_SendExSysMessage(unsigned char id, void *msg);                               /* 0x4c4db0 */
 void cm_SendKillCharacter(int a, int b);                                                 /* 0x4c4e00 */
 int cm_SendCrime(void *p);                                                       /* 0x4c4e40 */

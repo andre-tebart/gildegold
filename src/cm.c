@@ -1404,14 +1404,14 @@ void cm_SendExSetHE(unsigned char k, char *p)
 }
 /* 0x4c4d40, message 0x1e with the time t; -1: t is not valid (0x4fe210) */
 
-int cm_SendTime(char *t)
+int cm_SendTime(AITIME *t)
 {
     G17MSG m;
 
     if (gm_CompareTime(t, &ai_Time) == 0)
         return -1;
-    *(AITIME *)m.data = *(AITIME *)t;
     m.type = 0x1e;
+    m.time = *t;
     return cm_QueueSend(&m);
 }
 /* 0x4c4db0, sends message 0x20 (the extended system message, handled by cm_ExSysMessage): sub type id and 0x7c bytes of msg */
