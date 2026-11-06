@@ -1039,6 +1039,11 @@ typedef struct HESEARCH9 {              /* the search event 9's words over AIJOB
     int source;                         /* 0xb0, the id of the object searched (its list holds the kind 0x17 goods) */
     int store;                          /* 0xb4, the id of the object the found goods go to */
 } HESEARCH9;
+typedef struct HEVORKOMMEN {            /* the new-occurrence debug event 0xa's word over AIJOB's union (its run handler
+                                           he_RunNewOccurrenceMsg) */
+    char pad00[0xac];
+    int good;                           /* 0xac, the goods index the bug text names (0x9a8 + 2 * good) */
+} HEVORKOMMEN;
 typedef struct HECONSTRUCTION {         /* the building construction event 0xd's words over AIJOB's union (its run handler
                                            he_RunConstruction, he_ShowConstruction) */
     char pad00[0xac];
@@ -20971,28 +20976,32 @@ void he_RunSearch9(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x56a710, the run handler of the debug event "HE_NEUE_VORKOMMEN_SUCHEN_MSG" (a bug text with the name of the good +0xac): state 0 opens the message panel
-   "Misc\EventMessagebox" (0x53d6f0, slot at +0x74), shows the text and goes to state 1; state 1 waits until the panel (the window of the slot +8) is closed */
+/* 0x56a710, the run handler of the new-occurrence debug event 0xa ("HE_NEUE_VORKOMMEN_SUCHEN_MSG"): stage 0 opens
+   the message panel "Misc\EventMessagebox" (he_OpenEventSlot, its slot at +0x74), shows the bug text with the name of
+   the good and goes to stage 1; stage 1 frees the event once that panel's window was clicked on (d2_ClickedForm, the
+   id 0); -1 / -2 release the slot and free it */
 
-void he_Unk56a710(int ev)
+void he_RunNewOccurrenceMsg(int ev)
 {
-    int id;
+    AIJOB *e = (AIJOB *)ev;
+    HEVORKOMMEN *v = (HEVORKOMMEN *)ev;
+    int good;
 
-    switch (*(int *)(ev + 0x70)) {
+    switch (e->stage) {
     case -2:
     case -1:
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     case 0:
-        id = *(int *)(ev + 0xac);
-        he_OpenEventSlot(ev, 0, 0, (int)"Misc\\EventMessagebox", 0x5f2);
-        d2_SetForm(*(int *)(*(int *)(ev + 0x74) + 8), 0);
-        io_PrintText("HE_NEUE_VORKOMMEN_SUCHEN_MSG: Ich bin ein Bug !!! %s gefunden!!", id * 2 + 0x9a8);
-        *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+        good = v->good;
+        he_OpenEventSlot(ev, 0, 0, "Misc\\EventMessagebox", 0x5f2);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("HE_NEUE_VORKOMMEN_SUCHEN_MSG: Ich bin ein Bug !!! %s gefunden!!", good * 2 + 0x9a8);
+        e->stage++;
         return;
     case 1:
-        if (U_I((unsigned)&d2_ClickedForm) == *(int *)(*(int *)(ev + 0x74) + 8) && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_ClickedId) == 0) {
+        if (d2_ClickedForm == e->slot->win && d2_ClickedId != -1 && d2_ClickedId == 0) {
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
@@ -22128,7 +22137,7 @@ int he_RegisterEventTypes03(void)
     if (he_SetEventHandlers(9, (void *)he_AllocSearch9, (void *)he_RunSearch9) != 0)
         return 1;
     sv_RegisterActivity(9, "Suchen", 1, 0x500, -1);
-    if (he_SetEventHandlers(10, (void *)d3io_NoopCallback, (void *)he_Unk56a710) != 0)
+    if (he_SetEventHandlers(10, (void *)d3io_NoopCallback, (void *)he_RunNewOccurrenceMsg) != 0)
         return 1;
     if (he_SetEventHandlers(0xb, (void *)he_AllocTrade, (void *)he_RunTrade) != 0)
         return 1;
