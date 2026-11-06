@@ -2245,17 +2245,17 @@ exe	0x004c5c40	cm_SendCutEntry	cm	shape	readable
 exe	0x004c5ca0	cm_SendCutEntryUpdate	cm	shape	readable		
 exe	0x004c5d00	cm_SendDamage	cm	byte	readable		
 exe	0x004c5d40	cm_SendScriptMessage	cm	byte	readable		
-exe	0x004c5d80	cm_SendTableRequest	cm	byte	draft		
+exe	0x004c5d80	cm_SendTableRequest	cm	byte	readable		
 exe	0x004c5dc0	cm_SendFightCommand	cm	draft	readable	deep	
 exe	0x004c5e80	cm_SendMessage56	cm	byte	readable		
-exe	0x004c5ec0	cm_SendChrDelete	cm	byte	draft		
-exe	0x004c5ef0	cm_SendCancelParty	cm	byte	draft		
+exe	0x004c5ec0	cm_SendChrDelete	cm	byte	readable		
+exe	0x004c5ef0	cm_SendCancelParty	cm	byte	readable		
 exe	0x004c5f20	cm_SendCutsceneReady	cm	byte	readable		
-exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	draft		
-exe	0x004c5fa0	cm_SendMessage5b	cm	byte	draft		
-exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	draft		
-exe	0x004c6020	cm_SendAddSkill	cm	byte	draft		
-exe	0x004c6060	cm_SendSpyReport	cm	byte	draft		
+exe	0x004c5f60	cm_SendMoneyDelta	cm	byte	readable		
+exe	0x004c5fa0	cm_SendMessage5b	cm	byte	readable		
+exe	0x004c5fe0	cm_SendTradeMessage	cm	byte	readable		
+exe	0x004c6020	cm_SendAddSkill	cm	byte	readable		
+exe	0x004c6060	cm_SendSpyReport	cm	byte	readable		
 exe	0x004c60b0	cm_SendGraveOrder	cm	byte	readable		
 exe	0x004c60f0	cm_SendGraveMove	cm	byte	readable		
 exe	0x004c6130	cm_SendRaiseDead	cm	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
