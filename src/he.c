@@ -1748,7 +1748,7 @@ void he_MessageBoxQuickjump(int pid, int from, char *text, char tflags, int news
 #include <stdarg.h>
 #include <math.h>
 void he_AllocDueIsStart(AIJOB *ev);
-void he_SetLifeByAge(int rec, int num);
+void he_SetLifeByAge(AICHAR *c, int num);
 
 void d3t_SetColor(D3OBJECT *obj, unsigned char r, unsigned char g, unsigned char b);
 struct D3OBJECT;
@@ -22678,7 +22678,7 @@ void he_LabIncident(AICHAR *c, int ev, AIBLD *b, int state)
             ai_DomizilMessage04((int)&ai_CharsT[b->owner], (int)c, (int)b);
             break;
         case 3:
-            he_SetLifeByAge((int)c, util_Random(3) + 1);
+            he_SetLifeByAge(c, util_Random(3) + 1);
             ai_DomizilMessageAge((int)&ai_CharsT[b->owner], (int)c, (int)b);
             break;
         case 4:
@@ -23388,25 +23388,27 @@ int he_RegisterEventTypes88(void)
     }
     return 1;
 }
-/* 0x56fbc0, the progress value of a building record (rec + 0x18 .. the value +0x1c, the steps +0x14, the start +0x20): num not above +0x20 -> 0x4c4ac0 (rec + 4, 0x1c, rec + 0x18 - rec + 0x1c); else (num - +0x20) steps of v = v - step + step / v from v = num - +0x20, then 0x4c4ac0 (rec + 4, 0x1c, v - rec + 0x1c) */
+/* 0x56fbc0, ages the character c's life value f01c by num years: fnum not above f020 -> sends the delta
+   f018 - f01c; else (fnum - f020) steps of v = v - f014 + f014 / v from v = fnum - f020, then the delta
+   v - f01c (cm_SendFloatDelta, field 0x1c) */
 
-void he_SetLifeByAge(int rec, int num)
+void he_SetLifeByAge(AICHAR *c, int num)
 {
     float f, v, fnum;
     int n;
 
-    if (rec == 0)
+    if (c == 0)
         return;
     fnum = (float)(unsigned short)num;
-    if (fnum <= *(float *)(rec + 0x20)) {
-        ((int (*)(int, int, float))cm_SendFloatDelta)(*(int *)(rec + 4), 0x1c, *(float *)(rec + 0x18) - *(float *)(rec + 0x1c));
+    if (fnum <= c->f020) {
+        ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, c->f018 - c->f01c);
         return;
     }
-    f = *(float *)(rec + 0x14);
-    v = fnum - *(float *)(rec + 0x20);
+    f = c->f014;
+    v = fnum - c->f020;
     for (n = (int)v; n > 0; n--)
         v = v - f + f / v;
-    ((int (*)(int, int, float))cm_SendFloatDelta)(*(int *)(rec + 4), 0x1c, v - *(float *)(rec + 0x1c));
+    ((int (*)(int, int, float))cm_SendFloatDelta)(c->netId, 0x1c, v - c->f01c);
 }
 /* 0x56fc50, the alloc of the event 0x88 (a work at the building +0xb0 of the player +8): paused -> nothing; with a running event 0x88 of the same player and building the text 0x4096 and state -1; else the due clock now + 1 hour and state 0 (0x4c4c60), or -1 when +0xb4 is -1, and the message 0x50cc50 (pid, -(+0xb8)) */
 
@@ -23668,7 +23670,7 @@ void he_RunDecay(int ev)
                 bld = agent->bld;
                 bt = &ai_BTypesT[bld->type];
                 d->aged = 1;
-                he_SetLifeByAge((int)victim, (util_Random(3) & 0xffff) + bt->cap247 * 2 + bld->level / 50);
+                he_SetLifeByAge(victim, (util_Random(3) & 0xffff) + bt->cap247 * 2 + bld->level / 50);
                 ai_TellGraveWorkSuccess((int)victim);
                 e->stage++;
                 return;
