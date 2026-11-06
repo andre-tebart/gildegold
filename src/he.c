@@ -466,7 +466,7 @@ typedef union HESOLDMSG {               /* the data of the sys message 4 he_RunS
     } sold;
     char data[0x7c];                    /* the 0x7c bytes cm_SendExSysMessage copies into its message */
 } HESOLDMSG;
-typedef struct HECUSTOMERS {            /* the customers event 6's words over AIJOB's union (he_Unk554820 / he_RunCustomers);
+typedef struct HECUSTOMERS {            /* the customers event 6's words over AIJOB's union (he_AllocCustomersHire / he_RunCustomers);
                                            the building is AIJOB.from */
     char pad00[0xac];
     unsigned char kind;                 /* 0xac, the kind of the customers spawned (cm_SendMessage3d) */
@@ -476,7 +476,7 @@ typedef struct HECUSTOMERS {            /* the customers event 6's words over AI
     int slot;                           /* 0xe4, the spawn's send slot, -1 none */
     int person;                         /* 0xe8, the netId of the spawned customer */
 } HECUSTOMERS;
-typedef struct HEHIRE {                 /* the hire event 7's words over AIJOB's union (he_Unk554820 / he_RunHire); the building
+typedef struct HEHIRE {                 /* the hire event 7's words over AIJOB's union (he_AllocCustomersHire / he_RunHire); the building
                                            is AIJOB.from */
     char pad00[0xac];
     unsigned char job;                  /* 0xac, the index of the job in the building type's jobs[] */
@@ -11730,7 +11730,7 @@ int gm_BuildingMainObject(unsigned char *b);
 void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s);
 short *gm_PlayerRecord(char *c);
 
-/* 0x554320, the run handler of the customers event 6 (HECUSTOMERS; its alloc handler he_Unk554820): stages -2 / -1
+/* 0x554320, the run handler of the customers event 6 (HECUSTOMERS; its alloc handler he_AllocCustomersHire): stages -2 / -1
    free it, stage 0 goes to 1. Stage 1, once due: the building AIJOB.from (gone: freed); when the job cost of its
    kind (gm_JobCost for the owner) is above the owner's goods value (gm_GetGoodsValue) the owner gets the news
    0x1a40 and the event is freed; else the first kind with customers left (count[] > 0) has a customer of the kind
@@ -11860,14 +11860,15 @@ void he_RunCustomers(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x554820, the allocation handler of the 0x554860 event: the due clock is the start clock (+0x44) and the event posted 0xf later */
+/* 0x554820, the allocation handler of the customers / hire events (6 / 7): the due clock is the start clock,
+   posted 0xf minutes later */
 
-void he_Unk554820(int ev)
+void he_AllocCustomersHire(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    gm_AddTime(ev + 0x52, 0, 0xf, 0);
+    ev->end = ev->start;
+    gm_AddTime(&ev->end, 0, 0xf, 0);
 }
-/* 0x554860, the run handler of the hire event 7 (HEHIRE; its alloc handler he_Unk554820), he_RunCustomers' frame
+/* 0x554860, the run handler of the hire event 7 (HEHIRE; its alloc handler he_AllocCustomersHire), he_RunCustomers' frame
    with one count: stages -2 / -1 free it, stage 0 goes to 1. Stage 1, once due: the building AIJOB.from (gone:
    freed); when the job's cost (gm_JobCost for the owner) is above the owner's goods value the owner gets the news
    0x1a41 and the event is freed; else, with hires left, a character with the building type's job jobs[job] is
@@ -20061,9 +20062,9 @@ int he_RegisterEventTypes02(void)
 {
     if (he_SetEventHandlers(2, (void *)he_AllocSale, (void *)he_RunSale) != 0)
         return 1;
-    if (he_SetEventHandlers(6, (void *)he_Unk554820, (void *)he_RunCustomers) != 0)
+    if (he_SetEventHandlers(6, (void *)he_AllocCustomersHire, (void *)he_RunCustomers) != 0)
         return 1;
-    if (he_SetEventHandlers(7, (void *)he_Unk554820, (void *)he_RunHire) != 0)
+    if (he_SetEventHandlers(7, (void *)he_AllocCustomersHire, (void *)he_RunHire) != 0)
         return 1;
     if (he_SetEventHandlers(15, (void *)he_AllocTransport, (void *)he_RunTransport) != 0)
         return 1;
