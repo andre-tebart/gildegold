@@ -319,7 +319,7 @@ int cm_ExMoveGoodsUnchecked(G17MSG *m, G17STAT *s);                             
 int cm_ExSellObjekt(G17MSG *m, G17STAT *s);                                         /* 0x4c70b0, handler of 0x11, "cm_ExSellObjekt" */
 int cm_ExMakeGoods(G17MSG *m, G17STAT *s);                                         /* 0x4c78c0, handler of 0x12 */
 int cm_ExMoveObject(G17MSG *m, G17STAT *s);                                         /* 0x4c7c30, handler of 0x13 */
-int ai_Unk4c7d80(G17MSG *m, G17STAT *s);                                         /* 0x4c7d80, handler of 0x14 */
+int cm_ExRemoveGoods(G17MSG *m, G17STAT *s);                                         /* 0x4c7d80, handler of 0x14 */
 int ai_Unk4c7e20(G17MSG *m, G17STAT *s);                                         /* 0x4c7e20, handler of 0x15 */
 int cm_ExFieldDeltas(G17MSG *m, G17STAT *s);                                         /* 0x4c7e90, handler of 0x16 */
 int cm_ExFieldValues(G17MSG *m, G17STAT *s);                                         /* 0x4c7f70, handler of 0x17: writes the field block's values to the object */

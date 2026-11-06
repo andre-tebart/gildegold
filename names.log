@@ -2815,3 +2815,4 @@
 2026-11-06T22:06:42 0x004c6ec0 data ai_Unk4c6ec0 -> cm_ExDeleteObject by:main why:handler of message 0xe, the G17DELETEMSG cm_SendDeleteObject sends: resolves the object id and frees the building / kills the character it names
 2026-11-06T22:07:36 0x004c6f60 data ai_Unk4c6f60 -> cm_ExMoveGoods by:main why:handler of message 0xf, the G17MOVEGOODSMSG cm_SendMoveGoods sends: takes the amount of the player's money good from the to holder and adds it to the from holder
 2026-11-06T22:08:32 0x004c7010 data ai_Unk4c7010 -> cm_ExMoveGoodsUnchecked by:main why:handler of message 0x10, the G17MOVEGOODSMSG cm_SendMoveGoodsUnchecked sends: as cm_ExMoveGoods (message 0xf) with gm_AddNegative / gm_AddObjekt, no failure check
+2026-11-06T22:10:00 0x004c7d80 data ai_Unk4c7d80 -> cm_ExRemoveGoods by:main why:handler of message 0x14, the G17REMOVEGOODSMSG cm_SendRemoveGoods sends: removes the item from the workshop object's list when it holds exactly one
