@@ -4188,18 +4188,18 @@ exe	0x005962b0	ai_StonecutterContact	lc	shape	readable
 exe	0x00596400	ai_RobberContact	lc	byte	readable		
 exe	0x005965f0	ai_RhetoricContact	lc	byte	readable		
 exe	0x005966f0	ai_FeastContact	lc	byte	readable		
-exe	0x005967c0	ai_Unk5967c0	lc	draft	draft		
-exe	0x00596ba0	ai_MistressWindow	lc	draft	draft		
+exe	0x005967c0	ai_MistressAffairWindow	lc	shape	readable		
+exe	0x00596ba0	ai_MistressWindow	lc	draft	readable	deep	
 exe	0x00596f90	ai_MistressContact	lc	byte	readable		
-exe	0x00596ff0	ai_Unk596ff0	lc	draft	draft		
+exe	0x00596ff0	ai_MasterExamWindow	lc	draft	readable	deep	
 exe	0x00597380	ai_EspionageAmountMenu	lc	byte	readable		
-exe	0x005973f0	ai_Unk5973f0	lc	draft	draft		
-exe	0x00597500	ai_Unk597500	lc	draft	draft		
+exe	0x005973f0	ai_SuicideWindow	lc	shape	readable		
+exe	0x00597500	ai_StudyContact	lc	byte	readable		
 exe	0x005976a0	ai_TavernRulesWindow	lc	byte	readable		
 exe	0x00597780	ai_DrawDice	lc	byte	readable		
-exe	0x00597810	ai_Unk597810	lc	draft	draft		
-exe	0x00597920	ai_Unk597920	lc	draft	draft		
-exe	0x00597a10	ai_Unk597a10	lc	draft	draft		
+exe	0x00597810	ai_DrawDuelDice	lc	shape	readable	deep	
+exe	0x00597920	ai_DrawDuelThrow	lc	byte	readable		
+exe	0x00597a10	ai_DuelDiceAnimation	lc	draft	readable	deep	
 exe	0x00597e70	ai_Unk597e70	lc	draft	draft		
 exe	0x00598170	ai_Unk598170	lc	draft	draft		
 exe	0x00598b80	ai_StammtischWindow	lc	draft	draft		
@@ -4400,7 +4400,7 @@ exe	0x005b3630	ai_SabotageCallback	lc	draft	draft
 exe	0x005b3ad0	ai_EspionageAmountCB	lc	draft	draft		
 exe	0x005b3f30	ai_BeatingCallback	lc	draft	draft		
 exe	0x005b4340	ai_Unk5b4340	lc	draft	draft		
-exe	0x005b4590	ai_Unk5b4590	lc	draft	draft		
+exe	0x005b4590	ai_EvidenceBookWindow	lc	draft	draft		
 exe	0x005b4820	ai_Unk5b4820	lc	draft	draft		
 exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	draft		
 exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	draft		
