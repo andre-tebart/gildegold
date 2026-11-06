@@ -132,9 +132,10 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14409c8                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06808))  /* 0x14409c8 */
 #define full_data_14409cc                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x0680c))  /* 0x14409cc */
 #define full_data_14409d8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06818))  /* 0x14409d8 */
-#define full_data_14409e0                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06820))  /* 0x14409e0 */
-#define full_data_14409e4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06824))  /* 0x14409e4 */
-#define full_data_14409e8                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x06828))  /* 0x14409e8 */
+#define ai_TextOfficeApply                       (*(char * *)((char *)txt_Ptrs + 0x06820))  /* 0x14409e0, text 0x1a08: the apply button of ai_OfficeApplicantsWindow */
+#define ai_TextOfficeColumn                      (*(char * *)((char *)txt_Ptrs + 0x06824))  /* 0x14409e4, text 0x1a09: the button of ai_OfficeApplicantsWindow that opens the office's column in the special-amount list */
+#define ai_TextOfficeInfo                        (*(char * *)((char *)txt_Ptrs + 0x06828))  /* 0x14409e8, text 0x1a0a: the button of ai_OfficeApplicantsWindow that opens the office's info (ai_AmountInfoWindow) */
+#define full_data_14409ec                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0682c))  /* 0x14409ec */
 #define full_data_14409f4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x06834))  /* 0x14409f4 */
 #define full_data_14409f8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06838))  /* 0x14409f8 */
 #define full_data_1440a00                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x06840))  /* 0x1440a00 */

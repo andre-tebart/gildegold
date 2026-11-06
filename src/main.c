@@ -5997,9 +5997,10 @@ GAPDATA full_data_930370[16] = { 0 };  /* 0x930370 */
 /* full_data_14409c8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14409cc: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14409d8: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_14409e0: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_14409e4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* full_data_14409e8: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_TextOfficeApply: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_TextOfficeColumn: view of txt_Ptrs (build/mk_txt_views.py) */
+/* ai_TextOfficeInfo: view of txt_Ptrs (build/mk_txt_views.py) */
+/* full_data_14409ec: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14409f4: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_14409f8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* full_data_1440a00: view of txt_Ptrs (build/mk_txt_views.py) */

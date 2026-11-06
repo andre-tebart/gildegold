@@ -1076,7 +1076,8 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       needs 0x34 .. 0x39) */
     char pad165;
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
-    char pad167[2];
+    char pad167;
+    unsigned char appliedOffice;   /* 0x168, the office kind applied for, 0 = none (ai_char.h AICHAR.appliedOffice) */
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
     char pad16a[6];
     int bld2;                      /* 0x170, the character's own building, 0 when none (ai_char.h AICHAR.bld2) */
@@ -10910,120 +10911,127 @@ void ai_CitizenRightWindow(AIBLD *b)
 }
 
 int amt_GetFirstOffice(unsigned int k, struct AMTREC *out); int amt_ApplyForOffice(); int amt_KindColumn(); void sv_PumpNet();
-int ai_Unk5bea50(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
+int ai_SpecialAmountListWindow(); void ai_AmountInfoWindow(); int amt_GetOfficeCandidatesFull(); int amt_GetOfficeCandidates();
 int ai_AmountRowStatus(); int ai_AmountRow(); int ai_OpenLawBook(); int ai_AmountLimit();
 int amt_CanUseMayorPower2(); int sv_CheckMoney(); int ai_MapPick(); void d2_SetObjEnabled();
 int sv_ReturnZero(void);
 
-/* 0x5a0220, the office application window of a room "locations\rathaus\amtsbewerbung2" (870 B, ROUGH: the
-   applicant positions are condensed): 0x4e6ec0 (param_2, the applicants); the up to 4 characters
-   0x770b80 + i * 0x21c whose byte +0x168 == param_2 become the positions 0x5be1d0 / 0x5be3b0; the window
-   0x4741f0, the text 0x1a07 (param_2 + 0x253), the three buttons 0x52e350 (0x14409e0 / e4 / e8), the text
-   0x1a0b / 0x1a0c; the buttons open the application 0x4e6180 (param_1, param_2) and wait 0x4c3ae0 /
-   0x52fe00, the office 0x4e6f10 / 0x5bea50 (0x52a040) or 0x5c1a80 (param_2, 0); the event 0x576040 (0x2f,
-   param_2) on success; returns 1 when the application went through */
-int ai_Unk5a0220(int param_1, unsigned int param_2)
+/* 0x5a0220, the applicants of the office kind office "locations\rathaus\amtsbewerbung2" for the character me
+   (from ai_OfficeApplicationWindow): while the office is open (amt_GetFirstOffice) the up to 4 characters that
+   applied for it (AICHAR.appliedOffice) are its amount rows (ai_AmountRowStatus / ai_AmountRow, two to a line);
+   the list is rebuilt when their number changes. The apply button (enabled with fewer than 4 applicants and no
+   application of me's own) applies (amt_ApplyForOffice, waiting for its slot); the other two open the office's
+   column in the special-amount list and the office's info. Returns 1 when the application went through (the
+   campaign hears 0x2f)
+   @deep Read the whole original 0x5a0220..0x5a0586 and reconstructed it: the applicant scan over ai_Chars
+   (index loop, AICHAR.appliedOffice), the LCAMOUNTROW layout (x / x30 / y / rec in the original's store
+   order), the slot wait (while slot != -1 && cm_GetSlotState == 0), amt_KindColumn into a temporary before
+   ai_SpecialAmountListWindow, the ternary enable; button texts named (ai_TextOfficeApply/Column/Info).
+   What is left is one register-role difference: the original keeps the apply button id in ebp (reloaded
+   from its slot [esp+0x14] after the rebuild: 'mov ebp, dword ptr [esp + 0x18]; push ebp' at +0x24d, 'cmp
+   eax, ebp' at +0x286) and the shown count in memory ([esp+0x24]); ours keeps shown in ebp ('cmp ebp, ebx'
+   at +0x8a, 'mov ebp, dword ptr [esp + 0x30]' after d2_SetObjEnabled) and apply in memory, which shifts
+   the slots of ok / column / colWidth (0x18 <-> 0x20, 0x24 <-> 0x28) and turns the enable's 'push 1 / push
+   0' into 'mov eax, 1 / xor eax, eax; push eax'. Tried: declaration orders of apply / shown / win, the
+   field store orders, the loop forms. Instruction count 271 vs 269. Allocation (VC6's region split of the
+   outer loop), a variant round. */
+
+int ai_OfficeApplicantsWindow(AICHARREC *me, unsigned int office)
 {
-    int chars[4];
-    int buf[24];
-    int items[0x38];
-    int win = -1;
-    int n;
+    int shown;
+    int win;
     int ok;
-    int i;
-    int v;
+    int info;
+    int column;
+    int apply;
+    int colWidth;
     int outs[3];
-    int ctl1 = -1;
-    int ctl2 = -1;
-    int ctl3 = -1;
-    int handle;
-    short s;
-    int w;
-    int r;
-    unsigned int k;
-    int *p;
+    AICHARREC *chars[4];
+    AMTREC rec;
+    LCAMOUNTROW rows[4];
+    int n;
+    int k;
+    int i;
+    int half;
+    int slot;
 
     ok = 0;
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (amt_GetFirstOffice(param_2, buf) == 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+    win = -1;
+    apply = -1;
+    column = -1;
+    info = -1;
+    shown = -1;
+    d2_ClickedId = -1;
+    do {
+        if (amt_GetFirstOffice(office, &rec) == 0) {
+            sv_PopRequest = 1;
         } else {
             n = 0;
-            for (p = (int *)(unsigned)&ai_Chars; p < (int *)(unsigned)((unsigned)ai_Chars + 0x65400) && n < 4; p += 0x10e) {
-                if (*p != -1 && *(unsigned char *)(p + 0xb4) == param_2) {
-                    chars[n] = (int)p;
-                    n++;
-                }
+            for (k = 0; k < 768; k++) {
+                if (n >= 4)
+                    break;
+                if (((AICHARREC *)ai_Chars)[k].id != 0xffff && ((AICHARREC *)ai_Chars)[k].appliedOffice == office)
+                    chars[n++] = &((AICHARREC *)ai_Chars)[k];
             }
-            if (i != n) {
+            if (shown != n) {
+                shown = n;
                 if (win == -1) {
                     win = d2_OpenForm(0, 0, "locations\\rathaus\\amtsbewerbung2");
                     d2_CentreViewWindows(win);
                     d2_SetPointerSprite(0, 0);
                     d2_SetForm(win, 1);
-                    io_PrintText(0x1a07, param_2 + 0x253);
+                    io_PrintText(0x1a07, office + 0x253);
                     d2_SetForm(win, 3);
-                    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, outs, 3, U_I((unsigned)&full_data_14409e0), U_I((unsigned)&full_data_14409e4),
-                                 U_I((unsigned)&full_data_14409e8));
-                    ctl1 = outs[0];
-                    ctl2 = outs[1];
-                    ctl3 = outs[2];
+                    sv_ButtonRow(d2_LastWindow, 0, outs, 3, ai_TextOfficeApply, ai_TextOfficeColumn, ai_TextOfficeInfo);
+                    apply = outs[0];
+                    column = outs[1];
+                    info = outs[2];
                 }
                 d2_SetForm(win, 2);
-                d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
+                d2_RemoveWindowObjects(d2_LastWindow, 1);
                 io_PrintText(0x1a0b);
-                if (n < 1) {
+                if (n <= 0) {
                     io_PrintText(0x1a0c);
                 } else {
-                    k = 0;
-                    w = d2_LastWindowPtr->w + *(short *)((unsigned)&he_Events + 0x119b0) * -2;
+                    colWidth = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) / 3;
+                    half = (d2_LastWindowPtr->w - d2_Pics[0x5da].w * 2) % 3 / 2;
                     for (i = 0; i < n; i++) {
-                        s = *(short *)((unsigned)&he_Events + 0x119b0);
-                        items[i * 0xe + 0xc] = 0;
-                        items[i * 0xe + 4] = ((k & 1) + 1) * (w / 3) - 10 + (w % 3) / 2 + (s + 10) * (k & 1);
-                        items[i * 0xe] = chars[k];
-                        items[i * 0xe + 5] = (k / 2) * 0x82 + 0x28;
-                        ai_AmountRowStatus(items + i * 0xe);
-                        ai_AmountRow(items[i * 0xe + 4], items[i * 0xe + 5], U_I((unsigned)&d2_LastWindow), 0x56,
-                                     items + i * 0xe, 1);
-                        k++;
+                        rows[i].x = (i % 2 + 1) * colWidth + half + (d2_Pics[0x5da].w + 10) * (i % 2) - 10;
+                        rows[i].x30 = 0;
+                        rows[i].y = i / 2 * 0x82 + 0x28;
+                        rows[i].rec = chars[i];
+                        ai_AmountRowStatus(&rows[i]);
+                        ai_AmountRow(rows[i].x, rows[i].y, d2_LastWindow, 0x56, &rows[i], 1);
                     }
                 }
-                d2_SetObjEnabled(ctl1, (n < 4 && *(char *)(param_1 + 0x168) == 0) ? 1 : 0);
-                i = n;
+                d2_SetObjEnabled(apply, (n < 4 && me->appliedOffice == 0) ? 1 : 0);
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                if (U_I((unsigned)&d2_PointerObj) == i) {
-                    handle = amt_ApplyForOffice(param_1, param_2);
-                    if (handle != -1)
-                        while (cm_GetSlotState(handle) == 0)
-                            sv_PumpNet();
-                    if (cm_GetSlotState(handle) == 1)
-                        ok = 1;
-                    ai_CampaignStep(0x2f, 0, 0, param_2);
-                } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
-                    r = amt_KindColumn(param_2);
-                    ai_Unk5bea50(r, 0, 0, 0, (void *)(unsigned)&sv_ReturnZero);
-                } else if (U_I((unsigned)&d2_PointerObj) == ctl3) {
-                    ai_AmountInfoWindow(param_2, 0);
-                }
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == apply) {
+                slot = amt_ApplyForOffice(me, office);
+                while (slot != -1 && cm_GetSlotState(slot) == 0)
+                    sv_PumpNet();
+                if (cm_GetSlotState(slot) == 1)
+                    ok = 1;
+                ai_CampaignStep(0x2f, 0, 0, office);
+            } else if (d2_PointerObj == column) {
+                k = amt_KindColumn(office);
+                ai_SpecialAmountListWindow(k, 0, 0, 0, (int)sv_ReturnZero);
+            } else if (d2_PointerObj == info) {
+                ai_AmountInfoWindow(office, 0);
             }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
         }
-        if (sv_RunFrame(ai_Unk5a0220, 0x677c7) == 0) {
-            if (win != -1)
-                d2_CloseView(win);
-            if (ok != 0) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-                ai_CampaignStep(0x2f, 0, 1, param_2);
-            }
-            return ok;
-        }
+    } while (sv_RunFrame(ai_OfficeApplicantsWindow, 0x677c7) != 0);
+    if (win != -1)
+        d2_CloseView(win);
+    if (ok != 0) {
+        sv_PopRequest = 1;
+        ai_CampaignStep(0x2f, 0, 1, office);
     }
+    return ok;
 }
 /* 0x5a0590, the office application list "locations\rathaus\amtsbewerbung" (576 B): below 2 (the player's
    byte 0x770b8d) the text 0x14409cc goes to 0x521150; with the player's office byte 0x770ce8 set the
@@ -11050,7 +11058,7 @@ void ai_OfficeApplicationWindow(void)
         return;
     }
     if (*(unsigned char *)(((unsigned)&ai_CharInts + 0x164) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0) {
-        ai_Unk5a0220((int)per, *(unsigned char *)(((unsigned)&ai_CharInts + 0x164) + U_W((unsigned)&ai_PlayerId) * 0x21c));
+        ai_OfficeApplicantsWindow((int)per, *(unsigned char *)(((unsigned)&ai_CharInts + 0x164) + U_W((unsigned)&ai_PlayerId) * 0x21c));
         sv_CameraFollow();
         return;
     }
@@ -11089,7 +11097,7 @@ void ai_OfficeApplicationWindow(void)
         if (U_I((unsigned)&d2_ClickedId) != -1 && count > 0) {
             for (i = 0; i < count; i++) {
                 if (ctls[i] == U_I((unsigned)&d2_PointerObj)) {
-                    if (i >= 0 && i < count && ai_Unk5a0220((int)per, list[i * 3]) == 1) {
+                    if (i >= 0 && i < count && ai_OfficeApplicantsWindow((int)per, list[i * 3]) == 1) {
                         sv_MessageBox((char *)U_I((unsigned)&full_data_14409f4), 0);
                         U_I((unsigned)&sv_PopRequest) = 1;
                     }
@@ -18705,7 +18713,7 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
    0x5bdb60 (the others), the click dispatch 0x1467398 / 0xf8a668 / 0x5fe710 with the callback param_5 and
    the pump 0x5309a0 (this, 0x657c7); 0x4758f0 (win) at the end. The body is left as a comment */
 
-int ai_Unk5bea50(int param_1, int param_2, int param_3, int param_4, int param_5)
+int ai_SpecialAmountListWindow(int param_1, int param_2, int param_3, int param_4, int param_5)
 {
     int win;
     int r;
@@ -18715,7 +18723,7 @@ int ai_Unk5bea50(int param_1, int param_2, int param_3, int param_4, int param_5
     d2_CentreViewWindows(win);
     /* ROUGH SKELETON: the captions, the record fill and the row builders listed above; the loop ends on
        the pump and the click / the callback decides r */
-    while (sv_RunFrame(ai_Unk5bea50, 0x657c7) != 0) {
+    while (sv_RunFrame(ai_SpecialAmountListWindow, 0x657c7) != 0) {
         if (U_I(((unsigned)&dm_L + 0x20)) != 0)
             U_I((unsigned)&sv_PopRequest) = 1;
     }
@@ -19317,7 +19325,7 @@ int ai_AmountMenu(int param_1, int param_2, int param_3, int param_4)
             for (i = 0; i < 9; i++) {
                 if (btn[i] == U_I((unsigned)&d2_PointerObj)) {
                     d2_SetViewEnabled(win, 0);
-                    r = ai_Unk5bea50(order[i], param_1, param_2, 0, param_4);
+                    r = ai_SpecialAmountListWindow(order[i], param_1, param_2, 0, param_4);
                     d2_SetViewEnabled(win, 1);
                     goto done;
                 }
@@ -22660,7 +22668,7 @@ int ai_EmbezzlementPrivilege(unsigned short *param_1, int *param_2)  /* @origina
     cfg[5] = 3;
     txt_Format(text1, (char *)0x1d98);
     txt_Format(text2, (char *)0x1d99);
-    chr = ai_Unk5bea50(*(int *)(kinfo + 8), (int)cfg, (int)text1, (int)text2, 0);
+    chr = ai_SpecialAmountListWindow(*(int *)(kinfo + 8), (int)cfg, (int)text1, (int)text2, 0);
     if (chr != 0) {
         if (amt_FindOffice((void *)chr, buf, chrrec) == 0)
             return 0x60;
@@ -23959,7 +23967,7 @@ int ai_InterrogationWindow1(int param_1, int param_2)  /* @original: the callers
     cfg[2] = 0xa7fdfbb6;
     cfg[3] = 1;
     cfg[4] = 6;
-    rec = ai_Unk5bea50(4, cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x518)), (char *)(unsigned)&ch_EmptyName, 0);
+    rec = ai_SpecialAmountListWindow(4, cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x518)), (char *)(unsigned)&ch_EmptyName, 0);
     if (rec == 0)
         return 2;
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d5c4);
@@ -24033,7 +24041,7 @@ int ai_InterrogationWindow2(int param_1, int param_2)  /* @original: the callers
     cfg[2] = 0xa7fdfbb6;
     cfg[3] = 1;
     cfg[4] = 6;
-    rec = ai_Unk5bea50(5, cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x534)), (char *)(unsigned)&ch_EmptyName, 0);
+    rec = ai_SpecialAmountListWindow(5, cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x534)), (char *)(unsigned)&ch_EmptyName, 0);
     if (rec == 0)
         return 2;
     win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d5c4);
