@@ -2888,3 +2888,4 @@
 2026-11-06T23:57:38 0x004cd130 data ai_Unk4cd130 -> cm_ExMasterChange by:main why:message 0x65 is the party master change (G17MASTERMSG in cm_types.h: the data of message 0x65 cm_SendMasterChange, its handler 0x4cd130 sets the party's host to the character)
 2026-11-06T23:59:53 0x004cd180 data ai_Unk4cd180 -> cm_ExEffect by:main why:handler of message 0x66: 'nCTa' reserves an effect (gv_ReserveEffect), 'nCTd' stops it (gv_StopEffect); the sender cm_SendEffectLoad builds the same G17EFFECTMSG
 2026-11-07T00:00:23 0x004cd1e0 data ai_Unk4cd1e0 -> cm_ExShots by:main why:handler of message 0x67, the cannon-ball data (GVSHOTMSG) of cm_SendShots: starts the shot in its effect slot (gv_StartShot)
+2026-11-07T00:00:54 0x004cd2f0 data ai_Unk4cd2f0 -> cm_ExClearRoute by:main why:handler of message 0x69 (cm_SendClearRoute): frees the route list of the cart m->route.objId (AIOBJ.route, rt_FreePoints)
