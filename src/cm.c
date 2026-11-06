@@ -7113,12 +7113,14 @@ int *cm_FightCutEntry(char *c)
 
 int cm_CellUsable(int x, int y)
 {
-    char *g = (char *)d3_DefaultScene->hmap;
-    int w = *(int *)(g + 0x20);
+    D3SM *g = (D3SM *)d3_DefaultScene->hmap;
+    int w = g->size;
+    int type;
 
     if (x > w || x < 0 || y < 0 || y > w || x >= w || y >= w)
         return 0;
-    if (*(int *)(*(char **)(g + 0x24) + (w * y + x) * 0x1c) == 0 || *(int *)(*(char **)(g + 0x24) + (w * y + x) * 0x1c) == 0xd)
+    type = g->entries[w * y + x].type;
+    if (type == 0 || type == 0xd)
         return 0;
     return 1;
 }
