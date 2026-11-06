@@ -1093,7 +1093,7 @@ void d3fl_SetDetail();  /* 0x43f8a0 */
 void d3fl_SetShift(struct D3FLMAP *map, unsigned char shift, char light);  /* 0x446dc0, d3_fl.c */
 void d3if_Prerender(char map);  /* 0x447860 */
 #ifndef DATA_VIEWS_H
-extern char ai_Unk6f35ca;  /* 0x6f35ca */
+extern char ai_GfxFloorLod;  /* 0x6f35ca */
 #endif
 
 extern int cm_PartyTurn;  /* 0x6f0d78 */

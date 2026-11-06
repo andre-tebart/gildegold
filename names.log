@@ -2676,3 +2676,4 @@
 2026-11-06T13:11:09 0x0059a560 func ai_Unk59a560 -> ai_MapTableContact by:main why:room 0x1f of ai_EnterBuilding: shows the ob_KARTENTISCH map table (the town map on its click) with the transport, storage and master-letter plates
 2026-11-06T13:11:09 0x005a3df0 func ai_Unk5a3df0 -> ai_DungeonBribeListener by:main why:room 0xba of ai_EnterBuilding (beside the dungeon rooms 0xb7 / 0xbb): while the player is held (AICHAR.heldRounds) the contact_BESTECHEN plate opens the bribe window
 2026-11-06T13:11:09 0x005a6a90 func ai_Unk5a6a90 -> ai_TrainingRoomListener by:main why:room 0x145 of ai_EnterBuilding: the ob_ZIELSCHEIBE / contact_NACHT / contact_REGENERATION plates open ai_TrainingWindow
+2026-11-06T13:13:37 0x006f35ca data ai_Unk6f35ca -> ai_GfxFloorLod by:main why:byte 2 of ai_GfxFloor, the floor_lod option (menu.c); the building scenes set the terrain's D3FLMAP.lod from it

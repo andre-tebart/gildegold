@@ -10348,155 +10348,173 @@ void ai_GraveyardContact(char *rec); void ai_GypsyProductionContact(int building
 void ai_GraveyardSeanceContact(char *rec); void ai_GypsyContact(int building); void ai_TheatreContact(int building); void ai_CurseContact(int buildingArg);
 void ai_GraveyardTradeContact(char *rec);
 
-/* 0x59ee40, the enter-building driver for the player's own / kind 0x1c buildings (1398 B, ROUGH: the view and
-   device bookkeeping is condensed): 0x59e210 refuses -> 0x75e8c0 = 0; the room record 0x511e60 (param_1) is
-   marked (0xfd7c58 + idx * 0xf8); 0x4c28a0 (param_1); the room 0x4ffe90 (param_1 + 0x5d, 2, 6, 0, 0xfd), else
-   (2, 6, 4, 2); the camera matrices 0x43b790 / 0x43b860; the kind switch opens the window of the building:
-   0x1e 0x593b00 / 0x4bcbe0 (param_1 + 0x71), 0x1f 0x593ca0, 0x20 0x593960, 0x27 0x594e50, 0x47 0x5950e0,
-   0x48 .. 0x4a 0x586840, 0x4e .. 0x50 0x5d9c30, default 0x58f620; the exit clears the record, the sound and
-   view state (0x4c2c00 / 0x5136b0 / 0x43db30 / 0x4478e0 / 0x513740) */
-void ai_EnterOwnBuilding(unsigned char *param_1)
+/* 0x59ee40, enters a building that has a universe of its own (the kontors, the criminal's and far trader's houses,
+   the graveyards, the gypsy camps): when ai_MayEnterBuilding refuses, nothing happens; else the town view is saved,
+   the building's universe (init_BuildingSceneUniverse) takes the town's sky and, unless there is none (0), is
+   loaded when new or dirty, selected and set up: the room is the building's object of kind 6 (gm_Query 0xfd, else
+   kind 2), the terrain's level of detail follows the floor option, the scene's event 4 is fired and the camera put
+   at its saved place (the player's own building and the class 0x1c) or at its view 5. The building's handler runs
+   (the switch on its kind, ai_PumpFrames for the others); after it the universe gives the sky back, the waiting
+   scripts are stopped, the scene's event 5 fired, the town scene and view restored */
+void ai_EnterOwnBuilding(AIBLD *b)
 {
-    unsigned short *room;
-    int idx;
-    int kind;
-    int saved1, saved2, saved3, saved4, saved5, saved6;
+    int lastEvent;
+    float pos[3];
+    float rot[3];
+    int scene;
+    int universe;
+    AIOBJ *room;
+    int cls;
+    AIBTYPE *type;
+    EVTSCRIPT *ev;
 
-    if (ai_MayEnterBuilding(param_1) == 0) {
-        U_I((unsigned)&sv_PanelFlag) = 0;
+    lastEvent = -1;
+    if (ai_MayEnterBuilding(b) == 0) {
+        sv_PanelFlag = 0;
         return;
     }
-    U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth) + 1;
-    U_I((unsigned)&sv_SceneEventTime) = 0;
+    scene = d3_CurrentScene;
+    sv_FrameBase = sv_FrameDepth + 1;
+    sv_SceneEventTime = 0;
     sv_ResetSelection();
     sv_ClearSelection();
-    saved1 = U_I((unsigned)&sv_ViewPosX);
-    saved2 = U_I((unsigned)&sv_ViewPosY);
-    saved3 = U_I((unsigned)&sv_ViewPosZ);
-    saved4 = U_I((unsigned)&sv_ViewRotX);
-    saved5 = U_I((unsigned)&sv_ViewRotY);
-    saved6 = U_I((unsigned)&sv_ViewRotZ);
-    kind = U_I((unsigned)&d3_CurrentScene);
-    strcpy((char *)(unsigned)&ch_StepSample, "normal_s");
-    idx = init_BuildingSceneUniverse(param_1);
-    U_I(((unsigned)&ai_Unkfd7c50 + 0x8) + idx * 0xf8) = ((unsigned)&ai_Unkfd7c50 + 0x8);
-    if (idx != 0) {
-        snd_LoadBuildingVoices(param_1);
-        if (idx == -1 || *(unsigned char *)((unsigned)&init_SceneDirty + idx * 0x3e0) != 0) {
-            U_I((unsigned)&d2_CutsceneActive) = 1;
+    pos[0] = sv_ViewPos[0];
+    pos[1] = sv_ViewPos[1];
+    pos[2] = sv_ViewPos[2];
+    rot[0] = sv_ViewRot[0];
+    rot[1] = sv_ViewRot[1];
+    rot[2] = sv_ViewRot[2];
+    strcpy(ch_StepSample, "normal_s");
+    universe = init_BuildingSceneUniverse((unsigned char *)b);
+    D3IF_SCENE(universe).sky = D3IF_SCENE(0).sky;
+    if (universe != 0) {
+        snd_LoadBuildingVoices((unsigned char *)b);
+        if (universe == -1 || d3_Scenes[universe].dirty != 0) {
+            d2_CutsceneActive = 1;
             sv_RunFrame(0, 0x603c7);
             sv_RunFrame(0, 0x603c7);
-            init_LoadBuildingScene(*param_1);
-            U_I((unsigned)&d2_CutsceneActive) = 0;
+            init_LoadBuildingScene(b->kind);
+            d2_CutsceneActive = 0;
         }
-        U_I((unsigned)&ai_FallbackBuilding) = (int)param_1;
-        U_I((unsigned)&evt_NoGroup) = U_I(param_1 + 1);
-        U_I((unsigned)&ch_CurrentGroup) = U_I(param_1 + 1);
-        room = (unsigned short *)gm_Query(U_I(param_1 + 0x5d), 2, 6, 0, 0xfd);
+        ai_FallbackBuilding = (char *)b;
+        evt_NoGroup = b->id;
+        ch_CurrentGroup = b->id;
+        room = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 0, 0xfd);
         if (room == 0)
-            room = (unsigned short *)gm_Query(U_I(param_1 + 0x5d), 2, 6, 4, 2);
-        U_I((unsigned)&ch_CurrentScriptGroup) = U_I(room + 1);
-        d3if_SelectScene(idx, 0);
+            room = (AIOBJ *)gm_Query((void *)b->objList, 2, 6, 4, 2);
+        ch_CurrentScriptGroup = room->objId;
+        d3if_SelectScene(universe, 0);
         d3_InflateScene(3);
-        if ((int)d3_Terrain != 0) {
-            if (*(unsigned char *)((unsigned)&ai_GfxFloor + 2) == 2)
-                *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xe7) | 4;
-            else
-                *(unsigned char *)((int)d3_Terrain + 0x1c70) = (*(unsigned char *)((int)d3_Terrain + 0x1c70) & 0xeb) | 8;
-            d3fl_SetDetail(0x40);
-        }
-        init_ShowBuildingScene(U_I((unsigned)&ai_FallbackBuilding), *room);
-        init_FinishBuildingScene(U_I((unsigned)&ai_FallbackBuilding), room);
-        /* ROUGH: the device callback (0x5fb5b0 + 0x3c8 -> +0x210) */
-        if (*(unsigned short *)(param_1 + 0x27) == U_W((unsigned)&ai_PlayerId)) {
-            d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
-            d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
-        } else {
-            kind = gm_BuildingClass(*param_1);
-            if (kind == 2) {
-                if (d3_VecEqual(&d3_Camera->views[5].pos, (float *)&d3_Origin, 0x3dcccccd) == 0 &&
-                    d3_VecEqual(&d3_Camera->views[5].dir, (float *)&d3_Origin, 0x3dcccccd) == 0) {
-                    d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
-                    d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
-                }
-            } else if (*(char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d) == 0x1c) {
-                d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
-                d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
+        if (d3_Terrain != 0) {
+            if (ai_GfxFloorLod == 2) {
+                ((D3FLMAP *)d3_Terrain)->lod = 1;
+                d3fl_SetDetail(0x40);
             } else {
-                if (d3_VecEqual(&d3_Camera->views[5].pos, (float *)&d3_Origin, 0x3dcccccd) == 0 &&
-                    d3_VecEqual(&d3_Camera->views[5].dir, (float *)&d3_Origin, 0x3dcccccd) == 0) {
-                    d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
-                    d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
-                }
+                ((D3FLMAP *)d3_Terrain)->lod = 2;
+                d3fl_SetDetail(0x40);
             }
         }
-        U_I((unsigned)&sv_ViewPosX) = *(int *)&d3_Camera->pos.x;
-        U_I((unsigned)&sv_ViewPosY) = *(int *)&d3_Camera->pos.y;
-        U_I((unsigned)&sv_ViewPosZ) = *(int *)&d3_Camera->pos.z;
-        U_I((unsigned)&sv_ViewRotX) = *(int *)&d3_Camera->rotation.x;
-        U_I((unsigned)&sv_ViewRotY) = *(int *)&d3_Camera->rotation.y;
-        U_I((unsigned)&sv_ViewRotZ) = *(int *)&d3_Camera->rotation.z;
-        U_I((unsigned)&sv_BorderViewX) = 0;
-        U_I((unsigned)&sv_BorderViewY) = 0;
+        init_ShowBuildingScene((unsigned char *)ai_FallbackBuilding, room->type);
+        init_FinishBuildingScene((unsigned char *)ai_FallbackBuilding, (unsigned short *)room);
+        if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[4].fn != 0)
+            d3_DefaultScene->events[4].fn(d3_DefaultScene, 4, d3_DefaultScene->events[4].name, 0);
+        lastEvent = evt_LastId;
+        if (b->owner != ai_PlayerId) {
+            cls = gm_BuildingClass(b->kind);
+            type = &((AIBTYPE *)ai_BTypes)[b->kind];
+            if (cls == 2) {
+                if (d3_VecEqual(&d3_Camera->views[5].pos, &d3_Origin, 0.1f) == 0 &&
+                    d3_VecEqual(&d3_Camera->views[5].dir, &d3_Origin, 0.1f) == 0) {
+                    d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
+                    d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
+                }
+            } else if (type->buildingClass == 0x1c) {
+                d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+                d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
+            } else if (d3_VecEqual(&d3_Camera->views[5].pos, &d3_Origin, 0.1f) == 0 &&
+                       d3_VecEqual(&d3_Camera->views[5].dir, &d3_Origin, 0.1f) == 0) {
+                d3_SetObjectPos(d3_Camera, &d3_Camera->views[5].pos);
+                d3_SetObjectRot(d3_Camera, &d3_Camera->views[5].dir);
+            }
+        } else {
+            d3_SetObjectPos(d3_Camera, &d3_Camera->savedPos);
+            d3_SetObjectRot(d3_Camera, &d3_Camera->savedRot);
+        }
+        sv_ViewPos[0] = d3_Camera->pos.x;
+        sv_ViewPos[1] = d3_Camera->pos.y;
+        sv_ViewPos[2] = d3_Camera->pos.z;
+        sv_ViewRot[0] = d3_Camera->rotation.x;
+        sv_ViewRot[1] = d3_Camera->rotation.y;
+        sv_ViewRot[2] = d3_Camera->rotation.z;
+        sv_BorderViewX = 0;
+        sv_BorderViewY = 0;
     }
-    switch (*param_1) {
+    switch (b->kind) {
+    case 0x20:
+        ai_KontorContact((AIBLD *)ai_FallbackBuilding);
+        break;
     case 0x1e:
-        ai_WoodKontorContact(U_I((unsigned)&ai_FallbackBuilding));
-        veg_HidePlants(U_I(param_1 + 0x71));
+        ai_WoodKontorContact((AIBLD *)ai_FallbackBuilding);
+        veg_HidePlants(b->plants);
         break;
     case 0x1f:
-        ai_StoneKontorContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
-        break;
-    case 0x20:
-        ai_KontorContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
+        ai_StoneKontorContact((AIBLD *)ai_FallbackBuilding);
         break;
     case 0x27:
-        ai_CriminalContact((AIBLD *)U_I((unsigned)&ai_FallbackBuilding));
+        ai_CriminalContact((AIBLD *)ai_FallbackBuilding);
         break;
     case 0x47:
-        ai_FarTradeContact(U_I((unsigned)&ai_FallbackBuilding));
+        ai_FarTradeContact((int)ai_FallbackBuilding);
         break;
     case 0x48:
     case 0x49:
     case 0x4a:
-        ai_GraveyardContact(U_I((unsigned)&ai_FallbackBuilding));
+        ai_GraveyardContact(ai_FallbackBuilding);
         break;
     case 0x4e:
     case 0x4f:
     case 0x50:
-        ai_GypsyProductionContact(U_I((unsigned)&ai_FallbackBuilding));
+        ai_GypsyProductionContact((int)ai_FallbackBuilding);
         break;
     default:
         ai_PumpFrames(0);
         break;
     }
-    if (idx != -1) {
-        U_I(((unsigned)&ai_Unkfd7c50 + 0x8) + idx * 0xf8) = 0;
-        U_I((unsigned)&d3_Sky) = 0;
+    if (universe != -1) {
+        D3IF_SCENE(universe).sky = 0;
+        d3_Sky = 0;
     }
     sv_ResetSelection();
     sv_ClearSelection();
-    U_I((unsigned)&sv_BorderViewX) = 0;
-    U_I((unsigned)&sv_BorderViewY) = 0;
-    /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
-    if (U_I((unsigned)&evt_LastId) != -1)
-        sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));
+    sv_BorderViewX = 0;
+    sv_BorderViewY = 0;
+    if (lastEvent != -1) {
+        ev = evt_FindById(lastEvent);
+        if (ev != 0) {
+            evt_Stop(ev);
+            sv_RunFramesUntilStopped(ev->id);
+        }
+    }
+    if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[5].fn != 0)
+        d3_DefaultScene->events[5].fn(d3_DefaultScene, 5, d3_DefaultScene->events[5].name, 0);
+    if (evt_LastId != -1)
+        sv_RunFramesUntilStopped(evt_LastId);
     snd_UnloadBuildingVoices();
-    init_LeaveTownSceneB(U_I((unsigned)&ai_FallbackBuilding));
+    init_LeaveTownSceneB(ai_FallbackBuilding);
     d3_DeflateScene(3);
-    d3if_SelectScene(kind, 0);
-    U_I((unsigned)&sv_SelectedChar) = 0;
-    U_I((unsigned)&ai_FallbackBuilding) = 0;
-    U_I((unsigned)&evt_NoGroup) = 0;
-    U_I((unsigned)&ch_CurrentGroup) = 0xffffffff;
-    U_I((unsigned)&ch_CurrentScriptGroup) = 0xffffffff;
+    d3if_SelectScene(scene, 0);
+    sv_SelectedChar = 0;
+    ai_FallbackBuilding = 0;
+    evt_NoGroup = 0;
+    ch_CurrentGroup = -1;
+    ch_CurrentScriptGroup = -1;
     init_AfterTownLoad();
-    U_I((unsigned)&sv_ViewPosX) = saved1;
-    U_I((unsigned)&sv_ViewPosY) = saved2;
-    U_I((unsigned)&sv_ViewPosZ) = saved3;
-    U_I((unsigned)&sv_ViewRotX) = saved4;
-    U_I((unsigned)&sv_ViewRotY) = saved5;
-    U_I((unsigned)&sv_ViewRotZ) = saved6;
+    sv_ViewPos[0] = pos[0];
+    sv_ViewPos[1] = pos[1];
+    sv_ViewPos[2] = pos[2];
+    sv_ViewRot[0] = rot[0];
+    sv_ViewRot[1] = rot[1];
+    sv_ViewRot[2] = rot[2];
 }
 /* 0x59f410, the room switch of the other buildings (1424 B, ROUGH): the room 0x76faa0 (the index word) and its
    callback : the room record 0x6f2310 = param_1, 0x5f8430 / 0x5f1298 = param_1 + 1, 0x6f22a4 = 0x6f229c + 1,

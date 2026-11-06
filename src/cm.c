@@ -15337,7 +15337,7 @@ void cm_LoadEventScene(char *name)
     d3if_SelectScene(0, 1);
     d3if_SelectScene(idx, 0);
     if (d3_Terrain != 0) {
-        if (ai_Unk6f35ca == 0) {
+        if (ai_GfxFloorLod == 0) {
             *(unsigned char *)((char *)d3_Terrain + 0x1c70) = (*(unsigned char *)((char *)d3_Terrain + 0x1c70) & 0xeb) | 0x8;
             sh = 2;
         } else {
@@ -16980,7 +16980,7 @@ int cm_FightFixedLight = 0;  /* 0x6f244c */
 int cm_NetFlags = 0;  /* 0x6f2594, flags */
 int cm_RequestedSaveSlot = 0;  /* 0x6f25c8 */
 char cm_RequestedSaveName[72] = {0};  /* 0x6f25d0 */
-/* ai_Unk6f35ca: view of ai_GfxFloor (tools/data_views.py) */
+/* ai_GfxFloorLod: view of ai_GfxFloor (tools/data_views.py) */
 unsigned int ai_MissionSeed = 0;  /* 0x75e120, the random seed of the missions (as mission.h) */
 int ai_TimeCopy[4] = {0};  /* 0x75e130, the clock copy 0x75e130..0x75e13e (14 bytes, written whole by cm.c / sv.c): [0] the year; ai_Unk75e134 / 75e138 / 75e13c are views */
 char * sv_SelectedObject = 0;  /* 0x75ec60 */

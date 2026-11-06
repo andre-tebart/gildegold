@@ -70,7 +70,7 @@
 #define d3_Unkfb9928             (*(unsigned char *)((char *)&d3_Mirror + 0x28))  /* 0xfb9928 */
 
 /* ai_GfxFloor */
-#define ai_Unk6f35ca             (*(char *)((char *)&ai_GfxFloor + 0x2))  /* 0x6f35ca */
+#define ai_GfxFloorLod             (*(char *)((char *)&ai_GfxFloor + 0x2))  /* 0x6f35ca */
 
 /* cm_SaveAcks */
 #define ai_Unk76fa24             (*(char (*)[60])((char *)&cm_SaveAcks + 0x4))  /* 0x76fa24 */
