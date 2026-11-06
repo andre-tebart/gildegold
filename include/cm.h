@@ -52,9 +52,15 @@ typedef struct G18LOG { char text[0x40]; char name[0x24]; int to; int id; } G18L
 
 typedef char ai_AssertG17MSG[sizeof(G17MSG) == 0x99 ? 1 : -1];
 
+typedef struct CMSPLITBUF {             /* the long message cm_SplitMsg (cm_SetLongMsg fills it, cm_QueueSplit sends
+                                           it as parts of type 7): the whole length, then its bytes */
+    unsigned short len;                 /* 0x00, cm_SplitMsgLen - 2 */
+    unsigned char data[0x3fe];          /* 0x02 */
+} CMSPLITBUF;
+
 extern G17MSG cm_RecvPool[0x2000];     /* 0x9367e0, the free receive records */
 extern int cm_NextNetStep;                /* 0xa687e4, d3_Time of the start */
-extern unsigned char cm_SplitMsg[];    /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
+extern CMSPLITBUF cm_SplitMsg;         /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
 extern G17MSG *cm_RecvFree;            /* 0xa68c00, the free list */
 extern unsigned int cm_GroupEndSeq;       /* 0xa68c04 */
 extern int cm_FieldBlockLen;                /* 0xa68c08, bytes used in cm_FieldBlock.buf */

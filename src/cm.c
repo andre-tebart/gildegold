@@ -474,7 +474,7 @@ int cm_QueueSplit(void)
         m = &cm_SendRing[i];
         m->type = 7;
         m->size = cm_MessageSize(m);
-        memcpy(m->data, cm_SplitMsg + off, 0x80);
+        memcpy(m->data, (unsigned char *)&cm_SplitMsg + off, 0x80);
         m->sender = 0;
         m->idx = i;
         m->seq = cm_LastSeq;
@@ -1076,8 +1076,8 @@ int cm_SetLongMsg(unsigned short len, void *p)
         return 0;
     if (len > 0x3fe)
         return 0;
-    *(unsigned short *)cm_SplitMsg = len;
-    memcpy(cm_SplitMsg + 2, p, len);
+    cm_SplitMsg.len = len;
+    memcpy(cm_SplitMsg.data, p, len);
     cm_SplitMsgLen = len + 2;
     return 1;
 }
@@ -16788,7 +16788,7 @@ extern int ai_Unk9367d4;
 extern G17MSG cm_RecvPool[0x2000];
 extern int cm_LastSyncCount;
 extern int cm_NextNetStep;
-extern unsigned char cm_SplitMsg[1024];
+extern CMSPLITBUF cm_SplitMsg;
 extern G17MSG * cm_RecvFree;
 extern unsigned int cm_GroupEndSeq;
 extern int cm_FieldBlockLen;
@@ -17030,7 +17030,7 @@ int ai_Unk9367d4 = 0;  /* 0x9367d4 */
 G17MSG cm_RecvPool[0x2000] = {0};  /* 0x9367e0, the free receive records */
 int cm_LastSyncCount = 0;  /* 0xa687e0, "cm_LastSyncCount" (net.h) */
 int cm_NextNetStep = 0;  /* 0xa687e4, d3_Time of the start */
-unsigned char cm_SplitMsg[1024] = {0};  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
+CMSPLITBUF cm_SplitMsg = {0};  /* 0xa68800, a long message to split (cm_SplitMsgLen bytes) */
 G17MSG * cm_RecvFree = 0;  /* 0xa68c00, the free list */
 unsigned int cm_GroupEndSeq = 0;  /* 0xa68c04 */
 int cm_FieldBlockLen = 0;  /* 0xa68c08, bytes used in cm_FieldBlock.buf */
