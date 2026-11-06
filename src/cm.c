@@ -1540,12 +1540,12 @@ int cm_SetPlant(int bldId, unsigned char x, unsigned char z, int type, unsigned 
     G17MSG m;
 
     m.type = 0x2c;
-    G17_I(m, 4) = bldId;
-    m.data[8] = x;
-    m.data[9] = z;
-    G17_S(m, 0xa) = type;
-    m.data[0xc] = fall;
-    G17_I(m, 0xd) = fallId;
+    m.plant.bldId = bldId;
+    m.plant.x = x;
+    m.plant.z = z;
+    m.plant.type = type;
+    m.plant.fall = fall;
+    m.plant.fallId = fallId;
     return cm_QueueSend(&m);
 }
 /* 0x4c50b0, message 0x2d: creates an object of kind 0x1b5 in the building owner, its +0x1c set to value;
