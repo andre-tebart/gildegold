@@ -308,7 +308,7 @@ typedef struct AIOBJ {                  /* 0x43 bytes, an object (table behind a
                 int unk1c;                      /* 0x1c, a building id / a state / a count */
                 int bldId;                      /* 0x1c, of a cart (gm_Query kind 0x1d): the id of its building (main_EndRound looks it up with gm_BuildQuery(1, 1, id)) */
                 int cnt;                        /* 0x1c */
-                int reserve;                    /* 0x1c, of goods in a store: the quarters of the store's stock (gm_ListStock)
+                unsigned int reserve;           /* 0x1c, of goods in a store: the quarters of the store's stock (gm_ListStock)
                                                    kept from buyers other than its owner (cm.c 0x4c70b0); 4 when created
                                                    there for a character of kind 6 / 7 */
                 struct {

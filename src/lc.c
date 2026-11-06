@@ -1858,131 +1858,120 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
         }
     }
 }
-/* 0x58d720, the goods list of the production window (1491 B, ROUGH): the direction bytes +0x1c / +0x1d of the
-   building record param_2 select a 54-dword kind table (local_d8) for the two lists 0x6f4f0c / 0x6f52ec; the
-   goods of the character 0x4ffe90 (+0x14, 1, 5) / 0x4ffcc0 fill the 0x10-entry list 0x6f4f60 (the kind byte of
-   the goods record 0x91aaf0 + id * 0x41: 0x17 / '%' for the one side) and the 8-entry list 0x6f58a0 (the other
-   kinds), each entry +0x2c = 0x50ab50 (the amount) * the count (puVar4 + 0xe) / 4, +0x30 = 0x50aaf0, +0x34 =
-   0x50ab50; the ids without a record are cleared; the text check 0x475980 of the control +0x18 == 0x41; the
-   click 0x5fe710 on the entries 0x6f4f80 / 0x6f58c0 cycles its state +0x1c 0 .. 4 through 0x4c3ba0 / 0x4c3d90
-   (4, 1, the field) / 0x4c49e0. Returns 1 when any entry has a text. ROUGH: the kind table local_d8 is
-   initialised from the pseudocode values, the entry helpers (0x50ab50 / 0x50aaf0 / 0x50ab50) are kept */
-
-int ai_UpdateProdGoodsList(unsigned char *param_1, int param_2)
+/* 0x58d720, fills the goods grids of the production window from the store of the building bld: the rows open by
+   the store's levels (AIOBJ.lvl1c: the four rows of ai_ProdRows, lvl1d: the two of ai_ProdRows2); each goods of the
+   store (gm_Query 1, 5) gets its slot or the first free one, in ai_ProdGoods (the types 0x17 / 0x25; a building of
+   class 2 only 0x17) or ai_ProdGoods2, with its reserved part, amount and stock; slots whose goods left the store
+   are cleared. A left click (with the permission 0x200, nothing on the pointer) on a slot's reserve button cycles
+   the goods' reserve 0 .. 4 and sends it (cm field message). Returns 1 when a slot's check box is set
+   @deep rewritten against the original (was ROUGH): the two level tables as local initialised arrays
+   (rows[9][4] by AIOBJ.lvl1c, rows2[9][2] by lvl1d), the grid fill (existing slot, else the first free
+   one, reserved = (unsigned)(stock * reserve) >> 2, amount, stock; the class test in the original's && /
+   || form, the free-slot search first), the clean-up of the gone goods, the check-box scan, the reserve
+   cycling click (reserve >= 4 ? 0 : reserve + 1, the cm field message); AIOBJ.reserve is unsigned (the
+   original's jb / shr). Same size and instruction count (443), 22 differing instructions, all in the
+   initialiser stores of the two local tables: the original stores five of the implicit zeros of rows[]
+   after the push for gm_BuildingClass through ebx ('+ mov [esp+0x64], ebx' ... at 0x58d807) where ours
+   stores them before it through eax / ecx (0x58d72c '- mov [esp+0x60], eax', 0x58d741 '- xor ecx, ecx'):
+   store scheduling only (the prover stops at the first such store, frame+0x50 vs +0x54); writing the zeros
+   out or declaring rows2 first makes it worse (103 / 92). */
+int ai_UpdateProdGoodsList(AIBLD *bld, AIOBJ *store)
 {
-    int tbl[54];
-    int *p;
-    unsigned short *g;
+    int rows[9][4] = { { 2 }, { 2 }, { 2 }, { 3 }, { 4 }, { 3, 2 }, { 4, 2 }, { 4, 3 }, { 4, 4 } };
+    int rows2[9][2] = { { 0, 2 }, { 0, 2 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 2, 3 }, { 2, 4 }, { 3, 4 }, { 4, 4 } };
+    AIOBJ *item;
+    int any;
     int i;
-    int n;
-    int k;
-    int st;
-    unsigned short id;
-    unsigned char kind;
+    unsigned int value;     /* the building class, later the new reserve sent (one frame slot in the original) */
 
-    tbl[0] = 0; tbl[1] = 2; tbl[2] = 0; tbl[3] = 2; tbl[4] = 0; tbl[5] = 2; tbl[6] = 0; tbl[7] = 3;
-    tbl[8] = 0; tbl[9] = 4; tbl[10] = 2; tbl[11] = 3; tbl[12] = 2; tbl[13] = 4; tbl[14] = 3;
-    tbl[15] = 4; tbl[16] = 4; tbl[17] = 4; tbl[0x12] = 2; tbl[0x13] = 0; tbl[0x14] = 0; tbl[0x15] = 0;
-    tbl[0x16] = 2; tbl[0x17] = 0; tbl[0x18] = 0; tbl[0x19] = 0; tbl[0x1a] = 2; tbl[0x1b] = 0;
-    tbl[0x1c] = 0; tbl[0x1d] = 0; tbl[0x1e] = 3; tbl[0x1f] = 0; tbl[0x20] = 0; tbl[0x21] = 0;
-    tbl[0x22] = 4; tbl[0x23] = 0; tbl[0x24] = 0; tbl[0x25] = 0; tbl[0x26] = 3; tbl[0x27] = 2;
-    tbl[0x28] = 0; tbl[0x29] = 0; tbl[0x2a] = 4; tbl[0x2b] = 2; tbl[0x2c] = 0; tbl[0x2d] = 0;
-    tbl[0x2e] = 4; tbl[0x2f] = 3; tbl[0x30] = 0; tbl[0x31] = 0; tbl[0x32] = 4; tbl[0x33] = 4;
-    tbl[0x34] = 0; tbl[0x35] = 0;
-    k = gm_BuildingClass(*param_1);
-    for (i = 0, p = (int *)(unsigned)((char *)ai_ProdRows + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows + 0x5c)); p += 5, i++)
-        *p = tbl[i + ((unsigned char *)param_2)[0x1c] * 4 + 0x12];
-    for (i = 0, p = (int *)(unsigned)((char *)ai_ProdRows2 + 0xc); p < (int *)(unsigned)((unsigned)((char *)ai_ProdRows2 + 0x34)); p += 5, i++)
-        *p = tbl[i + ((unsigned char *)param_2)[0x1d] * 2];
-    g = (unsigned short *)gm_Query(U_I(param_1 + 0x14), 1, 5);
-    while (g != 0) {
-        id = *g;
-        kind = *(unsigned char *)(U_I((unsigned)&ai_Goods) + id * 0x41);
-        if (k == 2 ? kind == 0x17 : (kind == 0x17 || kind == '%')) {
-            n = -1;
-            for (i = 0, p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, i++)
-                if (*p == id) { n = i; break; }
-            if (n < 0) {
-                for (i = 0, p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe, i++)
-                    if (*p == 0) { n = i; break; }
-                if (n >= 0)
-                    *(int *)((unsigned)&ai_ProdGoods + n * 0x38) = id;
-            }
-            if (n >= 0 && n < 0x10) {
-                *(int *)((unsigned)((char *)ai_ProdGoods + 0x2c) + n * 0x38) =
-                    (gm_ListStock(param_2, id) * *(int *)(g + 0xe)) >> 2;
-                *(int *)((unsigned)((char *)ai_ProdGoods + 0x30) + n * 0x38) = gm_ListAmount(param_2, g);
-                *(int *)((unsigned)((char *)ai_ProdGoods + 0x34) + n * 0x38) = gm_ListStock(param_2, *g);
+    value = gm_BuildingClass(bld->kind);
+    for (i = 0; i < 4; i++)
+        ai_ProdRows[i].slots = rows[store->lvl1c][i];
+    for (i = 0; i < 2; i++)
+        ai_ProdRows2[i].slots = rows2[store->lvl1d][i];
+    for (item = (AIOBJ *)gm_Query((void *)store->list, 1, 5); item != 0; item = (AIOBJ *)gm_QueryNext()) {
+        if (value == 2 && ((AIGOOD *)ai_Goods)[item->id].type == 0x17 ||
+            value != 2 && (((AIGOOD *)ai_Goods)[item->id].type == 0x17 || ((AIGOOD *)ai_Goods)[item->id].type == 0x25)) {
+            for (i = 0; i < 16; i++)
+                if (ai_ProdGoods[i].good == item->id)
+                    break;
+            if (i >= 16) {
+                for (i = 0; i < 16; i++)
+                    if (ai_ProdGoods[i].good == 0)
+                        break;
+                if (i < 16) {
+                    ai_ProdGoods[i].good = item->id;
+                    ai_ProdGoods[i].reserved = (unsigned)(gm_ListStock(store, item->id) * item->reserve) >> 2;
+                    ai_ProdGoods[i].amount = gm_ListAmount(store, item);
+                    ai_ProdGoods[i].stock = gm_ListStock(store, item->id);
+                }
+            } else {
+                ai_ProdGoods[i].reserved = (unsigned)(gm_ListStock(store, item->id) * item->reserve) >> 2;
+                ai_ProdGoods[i].amount = gm_ListAmount(store, item);
+                ai_ProdGoods[i].stock = gm_ListStock(store, item->id);
             }
         } else {
-            n = -1;
-            for (i = 0, p = (int *)(unsigned)&ai_ProdGoods2; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); p += 0xe, i++)
-                if (*p == id) { n = i; break; }
-            if (n < 0) {
-                for (i = 0, p = (int *)(unsigned)&ai_ProdGoods2; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); p += 0xe, i++)
-                    if (*p == 0) { n = i; break; }
-                if (n >= 0)
-                    *(int *)((unsigned)&ai_ProdGoods2 + n * 0x38) = id;
-            }
-            if (n >= 0 && n < 8) {
-                *(int *)((unsigned)((char *)ai_ProdGoods2 + 0x2c) + n * 0x38) =
-                    (gm_ListStock(param_2, id) * *(int *)(g + 0xe)) >> 2;
-                *(int *)((unsigned)((char *)ai_ProdGoods2 + 0x30) + n * 0x38) = gm_ListAmount(param_2, g);
-                *(int *)((unsigned)((char *)ai_ProdGoods2 + 0x34) + n * 0x38) = gm_ListStock(param_2, *g);
-            }
-        }
-        g = (unsigned short *)gm_QueryNext();
-    }
-    for (p = (int *)(unsigned)&ai_ProdGoods; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x380)); p += 0xe)
-        if (gm_Query(U_I(param_1 + 0x14), 1, 0, *p) == 0)
-            *p = 0;
-    for (p = (int *)(unsigned)&ai_ProdGoods2; p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); p += 0xe)
-        if (gm_Query(U_I(param_1 + 0x14), 1, 0, *p) == 0)
-            *p = 0;
-    i = 0;
-    for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x38f)); p += 0xe) {
-        n = *p;
-        if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
-            i = 1;
-            break;
-        }
-    }
-    if (i == 0) {
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x10); p <= (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1cf)); p += 0xe) {
-            n = *p;
-            if (n != -1 && U_I(U_I((unsigned)&d2_Objs) + 0x18 + n * 0x2ec) == 0x41 && d2_GetObjValue(n) != 0) {
-                i = 1;
-                break;
+            for (i = 0; i < 8; i++)
+                if (ai_ProdGoods2[i].good == item->id)
+                    break;
+            if (i >= 8) {
+                for (i = 0; i < 8; i++)
+                    if (ai_ProdGoods2[i].good == 0)
+                        break;
+                if (i < 8) {
+                    ai_ProdGoods2[i].good = item->id;
+                    ai_ProdGoods2[i].reserved = (unsigned)(gm_ListStock(store, item->id) * item->reserve) >> 2;
+                    ai_ProdGoods2[i].amount = gm_ListAmount(store, item);
+                    ai_ProdGoods2[i].stock = gm_ListStock(store, item->id);
+                }
+            } else {
+                ai_ProdGoods2[i].reserved = (unsigned)(gm_ListStock(store, item->id) * item->reserve) >> 2;
+                ai_ProdGoods2[i].amount = gm_ListAmount(store, item);
+                ai_ProdGoods2[i].stock = gm_ListStock(store, item->id);
             }
         }
     }
-    if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0 && U_I(((unsigned)&dm_L + 0x18)) != 0 && d2_CountPointerItems() == 0) {
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods + 0x20); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods + 0x3a0)); p += 0xe) {
-            if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
+    for (i = 0; i < 16; i++)
+        if (gm_Query((void *)store->list, 1, 0, ai_ProdGoods[i].good) == 0)
+            ai_ProdGoods[i].good = 0;
+    for (i = 0; i < 8; i++)
+        if (gm_Query((void *)store->list, 1, 0, ai_ProdGoods2[i].good) == 0)
+            ai_ProdGoods2[i].good = 0;
+    any = 0;
+    for (i = 0; !any && i < 16; i++)
+        if (ai_ProdGoods[i].check != -1 && d2_Objs[ai_ProdGoods[i].check].type == 0x41 && d2_GetObjValue(ai_ProdGoods[i].check) != 0)
+            any = 1;
+    for (i = 0; !any && i < 8; i++)
+        if (ai_ProdGoods2[i].check != -1 && d2_Objs[ai_ProdGoods2[i].check].type == 0x41 &&
+            d2_GetObjValue(ai_ProdGoods2[i].check) != 0)
+            any = 1;
+    if ((ai_BuildingPerms & 0x200) != 0 && dm_L.lclick != 0 && d2_CountPointerItems() == 0) {
+        for (i = 0; i < 16; i++) {
+            if (ai_ProdGoods[i].reserveButton == -1 || ai_ProdGoods[i].reserveButton != d2_PointerObj)
                 continue;
-            n = gm_Query(U_I(param_1 + 0x14), 1, 0, p[-8]);
-            if (n == 0)
+            item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, ai_ProdGoods[i].good);
+            if (item == 0)
                 break;
-            st = U_I(n + 0x1c) < 4 ? U_I(n + 0x1c) + 1 : 0;
-            cm_BeginFieldBlock(n, U_I(n + 2));
-            cm_AddFieldValue(4, 1, (n - U_I((unsigned)&cm_FieldObject)) + 0x1c, &st);
+            value = item->reserve >= 4 ? 0 : item->reserve + 1;
+            cm_BeginFieldBlock((char *)item, item->objId);
+            cm_AddFieldValue(4, 1, (unsigned short)((char *)&item->reserve - cm_FieldObject), &value);
             cm_SendFieldValues();
-            U_I(n + 0x1c) = st;
+            item->reserve = value;
         }
-        for (p = (int *)(unsigned)((char *)ai_ProdGoods2 + 0x20); p < (int *)(unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1e0)); p += 0xe) {
-            if (*p == -1 || *p != U_I((unsigned)&d2_PointerObj))
+        for (i = 0; i < 8; i++) {
+            if (ai_ProdGoods2[i].reserveButton == -1 || ai_ProdGoods2[i].reserveButton != d2_PointerObj)
                 continue;
-            n = gm_Query(U_I(param_1 + 0x14), 1, 0, p[-8]);
-            if (n == 0)
-                return i;
-            st = U_I(n + 0x1c) < 4 ? U_I(n + 0x1c) + 1 : 0;
-            cm_BeginFieldBlock(n, U_I(n + 2));
-            cm_AddFieldValue(4, 1, (n - U_I((unsigned)&cm_FieldObject)) + 0x1c, &st);
+            item = (AIOBJ *)gm_Query((void *)store->list, 1, 0, ai_ProdGoods2[i].good);
+            if (item == 0)
+                break;
+            value = item->reserve >= 4 ? 0 : item->reserve + 1;
+            cm_BeginFieldBlock((char *)item, item->objId);
+            cm_AddFieldValue(4, 1, (unsigned short)((char *)&item->reserve - cm_FieldObject), &value);
             cm_SendFieldValues();
-            U_I(n + 0x1c) = st;
+            item->reserve = value;
         }
     }
-    return i;
+    return any;
 }
 /* 0x58dd00, the column display of the production window (1058 B, ROUGH): the building record param_1 / the
    column set param_2 (the screen 0xfb1024 + (param_2 + param_1 * 0xab) * 4, the height 0xf8f128); the title
