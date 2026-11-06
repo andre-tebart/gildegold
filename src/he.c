@@ -26,7 +26,7 @@
    transport event 15 with its four legs (HETRANSPORT; the cart's CHARACTER, the ordering event's HEROUTEREFS),
    the cart repair 16 (HECARTREPAIR), the message box 17 (HEMSGBOX, the party G28REC) and the slot order 18
    (HESLOTORDER), and the events 19 .. 25 that follow: the store extension (HESTOREEXT), herb gathering (HEHERBS),
-   animal hunt (HEHUNT), study (HESTUDY), spying (HESPYING) and sabotage (HESABOTAGE), and the brawl 26
+   animal hunt (HEHUNT), study (HESTUDY), the event 0x17 (HEEV17), spying (HESPYING) and sabotage (HESABOTAGE), and the brawl 26
    (HEBRAWL), theft 27 (HETHEFT), repair 28 (HEREPAIR) and upgrade 0x1e events, and the events 0x1f .. 0x26 up to
    0x55e730: 0x1f (HEEV1F), the demolition 0x20, the building purchase 0x21 (HEBUYBLD), the loan 0x23 (HELOAN), 0x24
    (HEEV24), the master exam notice / pass 0x25 / 0x26 (HEEXAMPASS), the payment 0x27 (HEEV27), the harvest 0x28 (AIJOB's

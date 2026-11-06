@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3709,17 +3709,17 @@ exe	0x00556ed0	he_RunCartRepair	he	byte	readable
 exe	0x00557160	he_AllocMessageBox	he	byte	readable		
 exe	0x00557190	he_RunMessageBox	he	draft	readable	deep	
 exe	0x005578a0	he_RunSlotOrder	he	shape	readable		
-exe	0x00557b30	he_Unk557b30	he	byte	draft		
+exe	0x00557b30	he_AllocSlotOrderStore	he	byte	readable		
 exe	0x00557b70	he_RunStoreExtension	he	shape	readable		
-exe	0x00557d70	he_Unk557d70	he	byte	draft		
+exe	0x00557d70	he_AllocHerbGathering	he	byte	readable		
 exe	0x00557e20	he_RunHerbGathering	he	draft	readable	deep	
-exe	0x005584d0	he_Unk5584d0	he	byte	draft		
+exe	0x005584d0	he_AllocAnimalHunt	he	byte	readable		
 exe	0x00558550	he_RunAnimalHunt	he	byte	readable		
 exe	0x005588c0	he_AllocStudy	he	byte	readable		
 exe	0x00558a40	he_RunStudy	he	shape	readable		
-exe	0x00558de0	he_Unk558de0	he	byte	draft		
+exe	0x00558de0	he_AllocEvent17	he	byte	readable		
 exe	0x00558e10	he_RunEvent17	he	byte	readable		
-exe	0x00558e70	he_Unk558e70	he	byte	draft		
+exe	0x00558e70	he_AllocSabotage	he	byte	readable		
 exe	0x00558f10	he_RunSabotage	he	draft	readable	deep	
 exe	0x00559d20	he_AllocSpying	he	draft	readable	deep	
 exe	0x0055a030	he_RunSpying	he	draft	readable	deep	
@@ -3733,15 +3733,15 @@ exe	0x0055b720	he_AllocUpgrade	he	byte	readable
 exe	0x0055b830	he_RunUpgrade	he	byte	readable		
 exe	0x0055ba00	he_AllocEvent1f	he	byte	readable		
 exe	0x0055bad0	he_RunEvent1f	he	byte	readable		
-exe	0x0055bd20	he_AllocDemolish	he	byte	draft		
+exe	0x0055bd20	he_AllocDemolish	he	byte	readable		
 exe	0x0055bd80	he_RunDemolish	he	byte	readable		
-exe	0x0055bf50	he_AllocBuyBuilding	he	shape	draft		
+exe	0x0055bf50	he_AllocBuyBuilding	he	shape	readable		
 exe	0x0055bfd0	he_RunBuyBuilding	he	draft	readable	deep	
 exe	0x0055c540	he_AllocKredit	he	byte	readable		
 exe	0x0055c700	he_RunKredit	he	byte	readable		
 exe	0x0055cb00	he_RunEvent24	he	byte	readable		
 exe	0x0055cc10	he_RunMasterExamNotice	he	byte	readable		
-exe	0x0055ce00	he_Unk55ce00	he	byte	draft		
+exe	0x0055ce00	he_AllocMasterExamPass	he	byte	readable		
 exe	0x0055ce60	he_RunMasterExamPassed	he	draft	readable	deep	
 exe	0x0055d310	he_AllocEvent27	he	byte	readable		
 exe	0x0055d390	he_RunEvent27	he	byte	readable		
