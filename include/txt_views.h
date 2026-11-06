@@ -138,7 +138,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_14409ec                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0682c))  /* 0x14409ec */
 #define ai_TextOfficeApplied                     (*(char * *)((char *)txt_Ptrs + 0x06834))  /* 0x14409f4, text 0x1a0d: ai_OfficeApplicationWindow's message after a successful application */
 #define full_data_14409f8                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x06838))  /* 0x14409f8 */
-#define full_data_1440a00                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x06840))  /* 0x1440a00 */
+#define ai_ContactTextMapTable                   (*(char * *)((char *)txt_Ptrs + 0x06840))  /* 0x1440a00, text 0x1a10: the plate text of the map table ob_KARTENTISCH (ai_MapTableContact) */
 #define full_data_1440a24                        (*(unsigned char (*)[44])((char *)txt_Ptrs + 0x06864))  /* 0x1440a24 */
 #define full_data_1440a50                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x06890))  /* 0x1440a50 */
 #define full_data_1440a94                        (*(unsigned char (*)[32])((char *)txt_Ptrs + 0x068d4))  /* 0x1440a94 */

@@ -8316,19 +8316,20 @@ void ai_MapTableScreen(void)
     sv_CameraFollow();
 }
 /* 0x59a560, the fair / market hall contact listener (432 B): the two table objects "ob_KARTENTISCH_germ" and
-   "ob_KARTENTISCH" (0x449690, 0xc0) are hidden (0x447300, 0), then the one that 0x5190a0 resolves (the object
-   of the current scene, else the first of the two) is shown; the pump 0x5309a0 (0x59a560, 0x67fff), the contact
-   list 0x58f510 (param_1); with the flags 0x6f231c & 0x200 the five lookups (transport 0x15, lager 0xe, the two
-   objects, class 0x16); the clicked contact 0x6f22e4 opens 0x5af1a0 (param_1), 0x5b26b0 (param_1, param_1 +
-   0x5d), 0x5c3200 (param_1) or the town map 0x59a3c0 (the table object's click flag +0x224 off / on) */
+   "ob_KARTENTISCH" (0x449690, 0xc0) are hidden (0x447300, 0), then the German table is shown when the language
+   is 0 (0x5190a0) and it exists, else the plain one; the pump 0x5309a0 (0x59a560, 0x67fff), the contact list
+   0x58f510 (bld); with ai_BuildingPerms & 0x200 the four plates (transport 0x15, storage 0xe, the master
+   letter and the map table, class 0x16); the clicked contact (ai_ClickedObject) opens the transport 0x5af1a0
+   (bld), the storage 0x5b26b0 (bld, bld->objList), the master letter 0x5c3200 (bld) or the city map screen
+   0x59a3c0 (the table object's mask off / on) */
 
-void ai_MapTableContact(int param_1, int room)
+void ai_MapTableContact(AIBLD *bld, int room)
 {
-    int obj;
-    int transport = 0;
-    int lager = 0;
-    int meister = 0;
-    int kartentisch = 0;
+    D3OBJECT *obj;
+    D3OBJECT *transport = 0;
+    D3OBJECT *lager = 0;
+    D3OBJECT *meister = 0;
+    D3OBJECT *kartentisch = 0;
 
     obj = d3_FindObject(0, 0xc0, 0, "ob_KARTENTISCH_germ");
     if (obj != 0)
@@ -8336,33 +8337,34 @@ void ai_MapTableContact(int param_1, int room)
     obj = d3_FindObject(0, 0xc0, 0, "ob_KARTENTISCH");
     if (obj != 0)
         d3if_ShowTree(obj, 0);
-    obj = ls_GetLanguage();
-    if (obj == 0)
+    if (ls_GetLanguage() == 0) {
         obj = d3_FindObject(0, 0xc0, 0, "ob_KARTENTISCH_germ");
-    if (obj == 0)
+        if (obj == 0)
+            obj = d3_FindObject(0, 0xc0, 0, "ob_KARTENTISCH");
+    } else
         obj = d3_FindObject(0, 0xc0, 0, "ob_KARTENTISCH");
     if (obj != 0)
         d3if_ShowTree(obj, 1);
     sv_ReleaseNamePlates();
     while (sv_RunFrame(ai_MapTableContact, 0x67fff) != 0) {
-        ai_MarketContact((AIBLD *)param_1);
-        if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) != 0) {
-            transport = sv_RegisterNamePlate("contact_TRANSPORT", U_I((unsigned)&ai_ContactTextTransport), 0x15);
-            lager = sv_RegisterNamePlate("contact_LAGER", U_I((unsigned)&ai_ContactTextStorage), 0xe);
-            meister = sv_RegisterNamePlate("ob_MEISTERBRIEF", U_I((unsigned)&ai_ContactTextMasterLetter), 0x16);
-            kartentisch = sv_RegisterNamePlate("ob_KARTENTISCH", U_I((unsigned)&full_data_1440a00), 0x16);
+        ai_MarketContact(bld);
+        if ((ai_BuildingPerms & 0x200) != 0) {
+            transport = (D3OBJECT *)sv_RegisterNamePlate("contact_TRANSPORT", ai_ContactTextTransport, 0x15);
+            lager = (D3OBJECT *)sv_RegisterNamePlate("contact_LAGER", ai_ContactTextStorage, 0xe);
+            meister = (D3OBJECT *)sv_RegisterNamePlate("ob_MEISTERBRIEF", ai_ContactTextMasterLetter, 0x16);
+            kartentisch = (D3OBJECT *)sv_RegisterNamePlate("ob_KARTENTISCH", ai_ContactTextMapTable, 0x16);
         }
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == transport)
-                ai_OpenTransport(param_1);
-            if (U_I((unsigned)&ai_ClickedObject) == lager)
-                ai_StorageWindow(param_1, U_I(param_1 + 0x5d));
-            else if (U_I((unsigned)&ai_ClickedObject) == meister)
-                ai_MasterLetterWindow(param_1);
-            else if (U_I((unsigned)&ai_ClickedObject) == kartentisch) {
-                U_I(kartentisch + 0x224) = 0;
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == (int)transport)
+                ai_OpenTransport((int)bld);
+            if (ai_ClickedObject == (int)lager)
+                ai_StorageWindow((int)bld, bld->objList);
+            else if (ai_ClickedObject == (int)meister)
+                ai_MasterLetterWindow((int)bld);
+            else if (ai_ClickedObject == (int)kartentisch) {
+                kartentisch->mask = 0;
                 ai_MapTableScreen();
-                U_I(kartentisch + 0x224) = 1;
+                kartentisch->mask = 1;
             }
         }
     }
