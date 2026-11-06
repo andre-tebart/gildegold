@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
@@ -4200,17 +4200,17 @@ exe	0x00597780	ai_DrawDice	lc	byte	readable
 exe	0x00597810	ai_DrawDuelDice	lc	shape	readable	deep	
 exe	0x00597920	ai_DrawDuelThrow	lc	byte	readable		
 exe	0x00597a10	ai_DuelDiceAnimation	lc	draft	readable	deep	
-exe	0x00597e70	ai_Unk597e70	lc	draft	draft		
-exe	0x00598170	ai_Unk598170	lc	draft	draft		
-exe	0x00598b80	ai_StammtischWindow	lc	draft	draft		
-exe	0x00598dc0	ai_StammtischJoinWindow	lc	draft	draft		
+exe	0x00597e70	ai_DrawDuelEnd	lc	byte	readable		
+exe	0x00598170	ai_TavernDiceWindow	lc	byte	readable		
+exe	0x00598b80	ai_StammtischWindow	lc	byte	readable		
+exe	0x00598dc0	ai_StammtischJoinWindow	lc	byte	readable		
 exe	0x00599240	ai_OpenStammtisch	lc	byte	readable		
-exe	0x005992c0	ai_DarkCornerMenu	lc	draft	draft		
-exe	0x005996b0	ai_DarkCornerBuy	lc	draft	draft		
+exe	0x005992c0	ai_DarkCornerMenu	lc	draft	readable	deep	
+exe	0x005996b0	ai_DarkCornerBuy	lc	draft	readable	deep	
 exe	0x00599aa0	ai_DarkCornerTable	lc	byte	readable		
-exe	0x00599af0	ai_Unk599af0	lc	draft	draft		
+exe	0x00599af0	ai_TavernContact	lc	byte	readable		
 exe	0x00599cb0	ai_BreweryContact	lc	shape	readable		
-exe	0x00599e00	ai_Unk599e00	lc	draft	draft		
+exe	0x00599e00	ai_DrawGoodsCell	lc	byte	readable		
 exe	0x00599ef0	ai_Unk599ef0	lc	draft	draft		
 exe	0x0059a2c0	ai_Unk59a2c0	lc	draft	draft		
 exe	0x0059a3c0	ai_Unk59a3c0	lc	draft	draft		
