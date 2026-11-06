@@ -15695,39 +15695,24 @@ void ai_TellGraveNeglect(unsigned short *plRec, int bld)
         he_ShowNews(pl->netId, -1, ai_NewsText, 0, 0x5fc, ch_EmptyName);
     }
 }
-/* 0x5a96e0, a message with three values in two orders (123 B): for a character of the kind 6 / 7 (+2) the
-   text 0x414e with the word of param_2, param_3 and the text table 0x5eecd0 + param_4 * 4 - the order follows
-   0x5190a0 (0: param_3 then the table, 1: the table then param_3, 2: as 0; other none), sent with the +4 id
-   (0x5fc, the key 0x62c32c) */
+/* 0x5a96e0, the news of a grave sale to the graveyard's owner (159 B): for an owner of the kinds 6 / 7, the text
+   0x414e with the buyer's id, the graveyard bld, the grave size's name (ai_GraveNames), the price and the owner's
+   share (the language 1 swaps the building and the size name), shown to the owner ("_NACHRICHTEN_FRIEDHOF_08") */
 
-void ai_NotifySale(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6)
+void ai_NotifySale(int owner, unsigned short *buyer, int bld, int size, int price, int share)
 {
-    unsigned short v;
-    int a;
-    int b;
-    int r;
-
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7)
+    if (((AICHARREC *)owner)->kind != 6 && ((AICHARREC *)owner)->kind != 7)
         return;
-    r = ls_GetLanguage();
-    if (r == 0) {
-        v = *param_2;
-        a = param_3;
-        b = *(int *)(((unsigned)&sv_PhaseMinutes + 0x218) + param_4 * 4);
-    } else if (r == 1) {
-        v = *param_2;
-        a = *(int *)(((unsigned)&sv_PhaseMinutes + 0x218) + param_4 * 4);
-        b = param_3;
-    } else if (r == 2) {
-        v = *param_2;
-        a = param_3;
-        b = *(int *)(((unsigned)&sv_PhaseMinutes + 0x218) + param_4 * 4);
-    } else {
-        goto send;
+    switch (ls_GetLanguage()) {
+    case 0:
+    case 2:
+        txt_Format(ai_NewsText, 0x414e, *buyer, bld, ai_GraveNames[size], price, share);
+        break;
+    case 1:
+        txt_Format(ai_NewsText, 0x414e, *buyer, ai_GraveNames[size], bld, price, share);
+        break;
     }
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x414e, v, a, b, param_5, param_6);
-send:
-    he_ShowNews(*(int *)(param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 0, 0x5fc, (char *)(unsigned)&full_data_62c32c);
+    he_ShowNews(((AICHARREC *)owner)->netId, -1, ai_NewsText, 0, 0x5fc, "_NACHRICHTEN_FRIEDHOF_08");
 }
 /* 0x5a9780, tells a player character that its graves were leased (94 B): for a kind 6 / 7 character the text
    0x4151 with the building, the number of paid leases, the singular / plural text (0x4152 for exactly one paid

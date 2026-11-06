@@ -218,7 +218,7 @@ int ai_SpyTargetHandler(int param_1, int *param_2);  /* 0x5cde90 */
 void ai_ShowCharacterNews(unsigned short *cRec, char *text);  /* 0x5a9110 */
 void ai_ShowEvidenceVoidNews(unsigned short *toldRec, unsigned short *culpritRec);  /* 0x5a9430 */
 void ai_TellGraveNeglect(unsigned short *plRec, int bld);  /* 0x5a9690 */
-void ai_NotifySale(int param_1, unsigned short *param_2, int param_3, int param_4, int param_5, int param_6);  /* 0x5a96e0 */
+void ai_NotifySale(int owner, unsigned short *buyer, int bld, int size, int price, int share);  /* 0x5a96e0, the grave sale news to the graveyard's owner */
 void ai_TellGravesPaid(int plRec, int bld, int paid, int sum);  /* 0x5a9780 */
 void ai_DomizilMessage12(char *ch, char *b, int n);  /* 0x5a9e40, posts the Domizil message 12 (text 0x4071 + n) about the building b to the character ch */
 int ai_MedicusHandler(unsigned short *param_1, void *unused);  /* 0x5c8bc0, the caller (ord 0x4f50ae) pushes a second argument the handler does not read */
