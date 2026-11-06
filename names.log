@@ -2657,3 +2657,4 @@
 2026-11-06T12:09:19 0x014403ec data full_data_14403ec -> ai_ContactTextStammtisch by:main why:the hover texts of the tavern plates contact_WUERFELSPIEL / contact_STAMMTISCH / ob_DUNKLE_ECKE (0x599af0 registers them with sv_RegisterNamePlate)
 2026-11-06T12:09:19 0x0144046c data full_data_144046c -> ai_ContactTextDarkCorner by:main why:the hover texts of the tavern plates contact_WUERFELSPIEL / contact_STAMMTISCH / ob_DUNKLE_ECKE (0x599af0 registers them with sv_RegisterNamePlate)
 2026-11-06T12:10:27 0x00599af0 func ai_Unk599af0 -> ai_TavernContact by:main why:the tavern room's contact listener (room kind 0x120): the plates contact_WUERFELSPIEL / contact_STAMMTISCH / ob_DUNKLE_ECKE
+2026-11-06T12:11:34 0x00599e00 func ai_Unk599e00 -> ai_DrawGoodsCell by:main why:draws a goods cell: the frame 0x525, the goods picture 0xdf + id, the price plate 0x746 with gm_GoodsPrice's amount

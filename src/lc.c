@@ -8070,27 +8070,29 @@ void ai_BreweryContact(AIBLD *bld, int room)
         }
     }
 }
-/* 0x599e00, one goods row of the city info window (240 B): the three labels 0x4731d0 (x, y, 0x525, screen),
-   (x + 2, y + 2, param_4 + 0xdf, screen) and (x + 3, y + 0x35, 0x746, screen); the second control is marked
-   owned (0xf8f080 + 0x4c); the price 0x5089c0 (param_4, param_5) formatted by 0x508a80 (amount, param_5,
-   text) and 0x473650 (x + 7, y + 0x3a, text, screen) puts the value label (width 0x24, height 0x54, flag at
-   +0x60); returns the first control id */
+/* 0x599e00, draws one goods cell at (x, y) of the window win: the cell frame 0x525, the goods' picture 0xdf + goods
+   (made interactive), the price plate 0x746 and on it the goods' price for the player slot (gm_GoodsPrice,
+   gm_FormatAmount) as a right-aligned text of width 0x24 in the font 0x54 (in the last window); returns the
+   goods picture's object */
 
-int ai_Unk599e00(int param_1, int param_2, int param_3, int param_4, int param_5)
+int ai_DrawGoodsCell(int x, int y, int win, int goods, int slot)
 {
     char text[0x40];
-    int id;
+    int pic;
+    int obj;
+    float price;
 
-    d2_WinOpenPic(param_1, param_2, 0x525, param_3);
-    id = d2_WinOpenPic(param_1 + 2, param_2 + 2, param_4 + 0xdf, param_3);
-    d2_WinOpenPic(param_1 + 3, param_2 + 0x35, 0x746, param_3);
-    U_I(U_I((unsigned)&d2_Objs) + 0x4c + id * 0x2ec) = 1;
-    gm_FormatAmount((int)gm_GoodsPrice(param_4, param_5), param_5, text);
-    id = d2_CreateWinText(param_1 + 7, param_2 + 0x3a, text, U_I((unsigned)&d2_LastWindow));
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) = 0x24;
-    *(short *)(U_I((unsigned)&d2_Objs) + 0x74 + id * 0x2ec) = 0x54;
-    U_I(U_I((unsigned)&d2_Objs) + 0x60 + id * 0x2ec) = 1;
-    return id;
+    d2_WinOpenPic(x, y, 0x525, win);
+    pic = d2_WinOpenPic(x + 2, y + 2, goods + 0xdf, win);
+    d2_WinOpenPic(x + 3, y + 0x35, 0x746, win);
+    d2_Objs[pic].interactive = 1;
+    price = gm_GoodsPrice(goods, slot);
+    gm_FormatAmount((int)price, slot, text);
+    obj = d2_CreateWinText(x + 7, y + 0x3a, text, d2_LastWindow);
+    d2_Objs[obj].w = 0x24;
+    d2_Objs[obj].font = 0x54;
+    d2_Objs[obj].rightAligned = 1;
+    return pic;
 }
 /* 0x599ef0, the "Handel\Handel_Stadtinfo" city window of a market stand (976 B): for a record whose first byte
    is 'G' it shows the object "dummy_Kartentisch_RECHTS_UNTEN" (0x100, flag 0x623814) and "ob_KARTENTISCH"
@@ -8164,7 +8166,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
                 r = gm_FindGoods(U_I(param_1 + 0x65), *(unsigned short *)v);
                 if (r != 0 && U_I(r + 4) != 0) {
                     n4 = n % 4;
-                    ai_Unk599e00(n4 * 0x3c + 0xe, (n / 4) * 0x50 + 0x1e, U_I((unsigned)&d2_LastWindow),
+                    ai_DrawGoodsCell(n4 * 0x3c + 0xe, (n / 4) * 0x50 + 0x1e, U_I((unsigned)&d2_LastWindow),
                                  *(unsigned short *)v, U_I(param_1 + 0x65));
                     n++;
                 }
@@ -8176,7 +8178,7 @@ void ai_Unk599ef0(char *param_1, int param_2)
                 r = gm_FindGoods(U_I(param_1 + 0x65), *(unsigned short *)v);
                 if (r != 0 && U_I(r + 4) != 0) {
                     n4 = n % 4;
-                    ai_Unk599e00(n4 * 0x3c + 0xe, (n / 4) * 0x50 + 0x1e, U_I((unsigned)&d2_LastWindow),
+                    ai_DrawGoodsCell(n4 * 0x3c + 0xe, (n / 4) * 0x50 + 0x1e, U_I((unsigned)&d2_LastWindow),
                                  *(unsigned short *)v, U_I(param_1 + 0x65));
                     n++;
                 }
