@@ -10654,94 +10654,83 @@ void ai_RunObjectRoom(AIOBJ *room)
     sv_ViewRot[1] = rot[1];
     sv_ViewRot[2] = rot[2];
 }
-/* 0x59f9a0, the Rathaus guild hall window "locations\Rathaus\Rathaus_Geb_Info" (592 B): the window 0x4741f0,
-   the text 0x17f6, the buttons 0x5e56c4 counts; on rebuild 0x501190 (1, 6) walks the citizens with the byte
-   +0x5a & 2, each with a carrier 0x53e400 (1, 0, 0x1b) gets the text 0x17f5 (*param_1 + 0x427, the slot,
-   the record) and a control 0x475b80; the clicked control 0x5fe710 of another player's record 0x521040 (the
-   player, the carrier + 0xb0, the player byte) and 0x521960 (the record, -1, text 0x631090); the pump
-   0x5309a0 (0x59f9a0, 0x677c7) and 0x4758f0 */
+typedef struct LCSALEROW {          /* a row of ai_BuyBuildingWindow's list: a building offered for sale */
+    int control;                    /* 0x0, the row's text control (d2_GetWinObj) */
+    AIJOB *sale;                    /* 0x4, the building's sale event (kind 0x1b) */
+    AIBLD *bld;                     /* 0x8, the building */
+    int flags;                      /* 0xc, its flags5aw when the row was built (a change rebuilds the list) */
+} LCSALEROW;
+
+/* 0x59f9a0, the town hall's list of the buildings for sale "locations\Rathaus\Rathaus_Geb_Info": every building of
+   the query (1, 6) with the flag 2 of flags5a and a running sale event 0x1b gets a row (text 0x17f5: the
+   type's name 0x427 + kind, the owner, the building, the price); the list is rebuilt when a row's flags change.
+   A click on another player's building that the player can pay (sv_CheckGoodAmount) selects it on the panel;
+   the right button leaves */
 
 void ai_BuyBuildingWindow(void)
 {
-    int list[512];
+    int rebuild;
+    LCSALEROW rows[128];
     int win;
+    int scroll;
     int n;
     int i;
-    int ctl;
-    int rec;
-    int carrier;
-    unsigned short flag;
-    int *e;
+    AIBLD *b;
+    AIJOB *sale;
 
+    rebuild = 1;
+    n = 0;
     win = d2_OpenForm(0, 0, "locations\\Rathaus\\Rathaus_Geb_Info");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    i = U_I((unsigned)&d2_LastWindow);
+    scroll = d2_LastWindow;
     d2_SetForm(win, 0);
-    d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), i, 0x767);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, scroll, 0x767);
     d2_SetPointerSprite(0, 0);
-    U_I(((unsigned)&ai_Unkf8f13c + 0x248) + i * 0x3c4) = 0x5a;
-    n = 0;
-    for (;;) {
-        if (n == 0) {
+    d2_Wins[scroll].visible = 0x5a;
+    do {
+        if (rebuild != 0) {
             d2_SetForm(win, 1);
             io_PrintText(0x17f6);
             d2_SetForm(win, 2);
             io_PrintText("$C");
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
             n = 0;
-            rec = gm_BuildQuery(1, 6);
-            e = list;
-            while (rec != 0) {
-                if ((*(unsigned char *)(rec + 0x5a) & 2) != 0) {
-                    carrier = he_FindEvent(1, 0, 0x1b);
-                    while (carrier != 0) {
-                        if (U_I(carrier + 0xac) == U_I(rec + 1)) {
-                            e[1] = carrier;
-                            e[2] = rec;
-                            e[3] = *(unsigned short *)(rec + 0x5a);
-                            e[0] = d2_GetWinObj(win, 2, io_PrintText(0x17f5, *(unsigned char *)rec + 0x427,
-                                                                        *(unsigned short *)(rec + 0x27), rec,
-                                                                        U_I(carrier + 0xb0)));
-                            n++;
-                            e += 4;
-                            break;
-                        }
-                        carrier = he_NextEvent();
-                    }
-                }
-                rec = gm_BuildNext();
+            for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                if ((b->flags5a & 2) == 0)
+                    continue;
+                for (sale = (AIJOB *)he_FindEvent(1, 0, 0x1b); sale != 0; sale = (AIJOB *)he_NextEvent())
+                    if (sale->bldId == b->id)
+                        break;
+                if (sale == 0)
+                    continue;
+                rows[n].sale = sale;
+                rows[n].control = d2_GetWinObj(win, 2, io_PrintText(0x17f5, b->kind + 0x427, b->owner, b, sale->salePrice));
+                rows[n].bld = b;
+                rows[n].flags = b->flags5aw;
+                n++;
             }
+            rebuild = 0;
         }
-        i = 0;
-        while (i < n) {
-            if (U_I(list[i * 4 + 3]) != *(unsigned short *)(U_I(list[i * 4 + 2]) + 0x5a)) {
-                n = 0;
+        for (i = 0; i < n; i++) {
+            if (rows[i].flags != rows[i].bld->flags5aw) {
+                rebuild = 1;
                 break;
             }
-            i++;
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
             sv_CameraFollow();
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1 && n > 0) {
+        if (d2_ClickedId != -1) {
             for (i = 0; i < n; i++) {
-                ctl = list[i * 4];
-                rec = list[i * 4 + 2];
-                carrier = list[i * 4 + 1];
-                if (U_I((unsigned)&d2_PointerObj) == ctl && *(unsigned short *)(rec + 0x27) != U_W((unsigned)&ai_PlayerId)) {
-                    if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, U_I(carrier + 0xb0),
-                                     U_I((unsigned)&ai_OwnPlayer)) != 0)
-                        sv_SelectPanelObjectK(rec, -1, (char *)(unsigned)&ch_EmptyName);
-                }
+                if (d2_PointerObj == rows[i].control && rows[i].bld->owner != ai_PlayerId &&
+                    sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], rows[i].sale->salePrice, ai_OwnPlayer) != 0)
+                    sv_SelectPanelObjectK(rows[i].bld, -1, ch_EmptyName);
             }
         }
-        if (sv_RunFrame(ai_BuyBuildingWindow, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return;
-        }
-    }
+    } while (sv_RunFrame(ai_BuyBuildingWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x59fbf0, the guild cash window "locations\zunfthaus\gildenkasse" (165 B): the room 0x4ffe90 (bld->objList,
    2, 6, 0, 0x115), its money 0x509e30 (room->list, the player byte); the window, the text 0x1a0f (the money);

@@ -70,6 +70,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
             };
             union {
                 int unkb0;                      /* 0xb0 */
+                int salePrice;                  /* 0xb0, of a building sale event 0x1b the asking price (ai_BuyBuildingWindow
+                                                   shows it, the buyer's money must cover it) */
                 int graveSize;                  /* 0xb0, of the graveyard order events 0x92 / 0x93 (the master exam at
                                                    a graveyard): the size of the grave the order names, an index into
                                                    ai_GraveNames (he.c 0x5729c0 passes it as the order's size) */
