@@ -1615,15 +1615,15 @@ void cm_SendChrStop(int charId)
     m.stop.charId = charId;
     cm_QueueSend(&m);
 }
-/* 0x4c5260, message 0x33 */
+/* 0x4c5260, message 0x33: the cart (object id) stopped (state 0) or on the road (state 1) - handler 0x4c9d00 */
 
-void cm_SendCartState(int a, int b)
+void cm_SendCartState(int cartId, int state)
 {
     G17MSG m;
 
     m.type = 0x33;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.cart.cartId = cartId;
+    m.cart.state = state;
     cm_QueueSend(&m);
 }
 /* 0x4c52a0, sends message 0x34: its handler (0x4c9d80) places character a on the stage at building b (object c,

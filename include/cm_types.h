@@ -552,6 +552,12 @@ typedef struct G17STOPMSG {             /* 4 bytes, the data of message 0x31 (cm
     int charId;                         /* 0x00, the character */
 } G17STOPMSG;
 
+typedef struct G17CARTSTATEMSG {        /* 8 bytes, the data of message 0x33 (cm_SendCartState, its handler 0x4c9d00
+                                           adds the action 0x38 with state to the cart "sp_<cartId>") */
+    int cartId;                         /* 0x00, the cart's object id */
+    int state;                          /* 0x04, 0 stopped, 1 on the road */
+} G17CARTSTATEMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -565,6 +571,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HELLOMSG hello;              /* 0x10, message 3 */
         G17LOADSIZEMSG load;            /* 0x10, message 8 */
         G17STOPMSG stop;                /* 0x10, message 0x31 */
+        G17CARTSTATEMSG cart;           /* 0x10, message 0x33 */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */
