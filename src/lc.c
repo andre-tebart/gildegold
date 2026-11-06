@@ -242,8 +242,8 @@ extern int sv_PopRequest;
 
 
 
-extern int ai_Unk5b3630();
-extern int ai_Unk5b3f30();
+extern int ai_SabotageCallback();
+extern int ai_BeatingCallback();
 extern int gm_AllowAll;
 
 
@@ -792,9 +792,9 @@ extern GAPDATA full_data_62cce8[];
 extern GAPDATA full_data_6f4ee4[];
 extern char ch_EmptyName[1];
 extern GAPDATA full_data_62ccfc[];
-extern int ai_Unk5b3630();
+extern int ai_SabotageCallback();
 extern int ai_EspionageAmountCB();
-extern int ai_Unk5b3f30();
+extern int ai_BeatingCallback();
 extern char ai_Crimes[];
 extern GAPDATA full_data_62cd7c[];
 extern GAPDATA full_data_62cda8[];
@@ -6187,7 +6187,7 @@ void ai_MixingContact(AIBLD *bld, int room)
     }
 }
 
-int ai_AmountMenu(); int ai_FiveTextWindow(); int ai_Unk5b4bf0(); int ai_DrohbriefWindow();
+int ai_AmountMenu(); int ai_FiveTextWindow(); int ai_OpenRobberBribe(); int ai_DrohbriefWindow();
 int ai_PamphletWindow();
 
 /* 0x5962b0, the stonecutter contact listener: it releases the name plates, pumps the frame (sv_RunFrame, this,
@@ -6237,58 +6237,66 @@ void ai_StonecutterContact(AIBLD *bld, int room)
         r = sv_RunFrame(ai_StonecutterContact, 0x67fff);
     }
 }
-/* 0x596400, the sabotage / blackmail contact listener (482 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff);
-   SABOTAGE (0x143fdb8, 0x17): the config (1, -1, 0xe07c43b4, 3, 6, +0x4c = 0x727) and the text 0x5176d0
-   (0x16ff) go to 0x5b2180 (1, the config, the text, the callback 0x5b3630, 0); VERPRUEGELN (0x143fdd8, 0xd):
-   the config (0x400, 0xa7fdfbb6, 1, 6, +0x4c = 0x727) and the text 0x1707 go to 0x5c1130 (the config, the text,
-   0, the callback 0x5b3f30) and 0x52d7a0; BEI_NACHT_UND_NEBEL (0x1442160, 0xc) -> 0x5b3130 (param_1, param_2,
-   2); BESTECHUNG (0x143feec, 0x10) -> 0x5b4bf0 (param_1) */
+typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu
+                                           (menu.h, same layout) */
+    int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a */
+    int mode;                           /* +0x04, 0x400 */
+    unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
+    int kind;                           /* +0x10, 6 */
+    int option14;                       /* +0x14 */
+    int unk18;                          /* +0x18 */
+    unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
+    char pad3c[0x10];
+    int option4c;                       /* +0x4c, 0x727 / 0x71f */
+} AMOUNTCFG;
+/* 0x596400, the contact listener of the robbers' room (room kind 0x14, ai_EnterBuilding): every frame the plates
+   SABOTAGE (text 0x16fe), VERPRUEGELN (0x1706), BEI_NACHT_UND_NEBEL (0x1fe8) and BESTECHUNG (0x174b); a clicked
+   plate runs its order: the sabotage map pick (ai_MapPick with the config flags 1, mode -1, filter 0x3e07c43b4,
+   kind 6, and the prompt 0x16ff; callback ai_SabotageCallback), the beating amount menu (ai_AmountMenu with mode 0x400,
+   kind 6, the gypsy filter, the prompt 0x1707; callback ai_BeatingCallback), the night-and-fog window
+   (ai_FiveTextWindow variant 2) or the bribe (ai_OpenRobberBribe) */
 
-void ai_Unk596400(int param_1, int param_2)
+void ai_RobberContact(int bld, int room)
 {
-    int r;
     int sabotage;
-    int pruegel;
-    int nebel;
-    int bestechung;
-    int cfg[0x14];
-    char text[0x80];
+    int beating;
+    int nightFog;
+    int bribe;
+    AMOUNTCFG pick;
+    AMOUNTCFG beat;
+    char beatText[0x40];
+    char pickText[0x80];
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk596400, 0x67fff);
-    while (r != 0) {
-        sabotage = sv_RegisterNamePlate("contact_SABOTAGE", U_I((unsigned)&full_data_143fdb8), 0x17);
-        pruegel = sv_RegisterNamePlate("contact_VERPRUEGELN", U_I((unsigned)&full_data_143fdd8), 0xd);
-        nebel = sv_RegisterNamePlate("contact_BEI_NACHT_UND_NEBEL", U_I((unsigned)&full_data_1442160), 0xc);
-        bestechung = sv_RegisterNamePlate("contact_BESTECHUNG", U_I((unsigned)&full_data_143feec), 0x10);
-        if (U_I((unsigned)&ai_ClickedObject) != 0) {
-            if (U_I((unsigned)&ai_ClickedObject) == sabotage) {
-                memset(cfg, 0, 0x50);
-                cfg[0] = 1;
-                cfg[1] = -1;
-                cfg[4] = 6;
-                cfg[2] = 0xe07c43b4;
-                cfg[3] = 3;
-                cfg[0x13] = 0x727;
-                txt_Format(text, 0x16ff);
-                ai_MapPick(1, cfg, text, (void *)(unsigned)&ai_Unk5b3630, 0);
-            } else if (U_I((unsigned)&ai_ClickedObject) == pruegel) {
-                memset(cfg, 0, 0x50);
-                cfg[1] = 0x400;
-                cfg[4] = 6;
-                cfg[2] = 0xa7fdfbb6;
-                cfg[3] = 1;
-                cfg[0x13] = 0x727;
-                txt_Format(text, 0x1707);
-                ai_AmountMenu(cfg, text, 0, (void *)(unsigned)&ai_Unk5b3f30);
-                sv_CameraFollow();
-            } else if (U_I((unsigned)&ai_ClickedObject) == nebel) {
-                ai_FiveTextWindow(param_1, param_2, 2);
-            } else if (U_I((unsigned)&ai_ClickedObject) == bestechung) {
-                ai_Unk5b4bf0(param_1);
-            }
-        }
-        r = sv_RunFrame(ai_Unk596400, 0x67fff);
+    while (sv_RunFrame((int)ai_RobberContact, 0x67fff) != 0) {
+        sabotage = sv_RegisterNamePlate("contact_SABOTAGE", txt_Ptrs[0x16fe], 0x17);
+        beating = sv_RegisterNamePlate("contact_VERPRUEGELN", txt_Ptrs[0x1706], 0xd);
+        nightFog = sv_RegisterNamePlate("contact_BEI_NACHT_UND_NEBEL", txt_Ptrs[0x1fe8], 0xc);
+        bribe = sv_RegisterNamePlate("contact_BESTECHUNG", txt_Ptrs[0x174b], 0x10);
+        if (ai_ClickedObject == 0)
+            continue;
+        if (ai_ClickedObject == sabotage) {
+            D3_ZERO(&pick, sizeof(pick));
+            pick.flags = 1;
+            pick.mode = -1;
+            pick.kind = 6;
+            pick.filter = 0x3e07c43b4;
+            pick.option4c = 0x727;
+            txt_Format(pickText, 0x16ff);
+            ai_MapPick(1, &pick, pickText, ai_SabotageCallback, 0);
+        } else if (ai_ClickedObject == beating) {
+            memset(&beat, 0, sizeof(beat));
+            beat.mode = 0x400;
+            beat.kind = 6;
+            beat.filter = gypsyFilter;
+            beat.option4c = 0x727;
+            txt_Format(beatText, 0x1707);
+            ai_AmountMenu(&beat, beatText, 0, ai_BeatingCallback);
+            sv_CameraFollow();
+        } else if (ai_ClickedObject == nightFog)
+            ai_FiveTextWindow(bld, room, 2);
+        else if (ai_ClickedObject == bribe)
+            ai_OpenRobberBribe(bld);
     }
 }
 /* 0x5965f0, the rhetoric contact listener (300 B): releases the name plates, then pumps the frame (0x5309a0,
@@ -6626,18 +6634,6 @@ void ai_Unk596ff0(void)
     d2_CloseView(win);
     sv_CameraFollow();
 }
-typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu
-                                           (menu.h, same layout) */
-    int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a */
-    int mode;                           /* +0x04, 0x400 */
-    unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
-    int kind;                           /* +0x10, 6 */
-    int option14;                       /* +0x14 */
-    int unk18;                          /* +0x18 */
-    unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
-    char pad3c[0x10];
-    int option4c;                       /* +0x4c, 0x727 / 0x71f */
-} AMOUNTCFG;
 
 /* 0x597380, the espionage contact's amount menu (107 B): the config (mode 0x400, kind 6, the filter
    gypsyFilter 0x5eed68, the rest cleared) and the text 0x16f9 go to 0x5c1130 (the config, the text, 0, the
@@ -9870,7 +9866,7 @@ void ai_EnterBuilding(unsigned char *param_1, int param_2)
             vid = *room;
             switch (vid) {
             case 0x13: ai_Unk597500(U_I((unsigned)&ai_PlayerBuilding), room); break;
-            case 0x14: ai_Unk596400(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x14: ai_RobberContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x15: ai_RhetoricContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x16: ai_WineCellarContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x17: ai_FeastContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -16912,7 +16908,7 @@ int ai_FiveTextWindow(void)
    0x5b3630; a 0x7c4-byte frame, param_1 tested first; it ends with the ret at 0x5b3acf. The body is left as a
    comment */
 
-int ai_Unk5b3630(int param_1)
+int ai_SabotageCallback(int param_1)
 {
     /* ROUGH SKELETON: the window section of the 0x7c4 frame */
     return 0;
@@ -16931,7 +16927,7 @@ int ai_EspionageAmountCB(void)
    to 0x5b3f30; a 0x744-byte frame with the 0x88-dword block at +0x130 cleared, the player 0x6f25b8 read first;
    the body is left as a comment */
 
-int ai_Unk5b3f30(void)
+int ai_BeatingCallback(void)
 {
     /* ROUGH SKELETON: the window section of the 0x744 frame */
     return 0;
@@ -16983,7 +16979,7 @@ int ai_Unk5b4590(void)
 /* 0x5b4bf0, a text / record window (105 B, ROUGH SKELETON): a 0x50-byte record at the frame base (cleared by
    hand), the field 0x40400, the float 0x5eed6c and the text 0x174f; a 0x150-byte frame. The body is a comment */
 
-int ai_Unk5b4bf0(void)
+int ai_OpenRobberBribe(void)
 {
     int rec[0x14];
 
