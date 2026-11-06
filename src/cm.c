@@ -2014,13 +2014,13 @@ int cm_SendObjCell(const char *s, int a, int b, const char *s2)
     G17MSG m;
 
     m.type = 0x4e;
-    strcpy((char *)m.data, s);
-    G17_I(m, 0x18) = a;
-    G17_I(m, 0x1c) = b;
+    strcpy(m.objCell.name, s);
+    m.objCell.x = a;
+    m.objCell.z = b;
     if (s2 != 0)
-        strcpy((char *)&m.data[0x20], s2);
+        strcpy(m.objCell.name2, s2);
     else
-        m.data[0x20] = 0;
+        m.objCell.name2[0] = 0;
     return cm_QueueSend(&m);
 }
 /* 0x4c5c40, message 0x50 (0x2c bytes of p, the id *cm_CurrentFight) */
