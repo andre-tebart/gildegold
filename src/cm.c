@@ -23,6 +23,10 @@
    CMCUTTYPEMSG, CMFIELD) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
+   Open: head: f3gm.h has no prototype of gm_ShowBuildingObjects (cm_ExSkillsChanged calls it undeclared, the f3gm.h
+   include above is blocked); message 0x3f has no record type in cm_types.h (a struct typedef there flips
+   ord_CountGridObjects shape -> draft, a declaration-set tie-break the probe does not reproduce), so 0x3f / 0x40
+   read the player / item head of the goods record through G17GOODSMSG.goods.
    The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
    layout, defined in this file; cm_FightRecordT views cm_FightRecord as it).
    Open: types: CMFIGHTSLOT and CMCUTENTRY (cm_types.h) are one 0x2c-byte record in two views (a cutscene entry is sent
