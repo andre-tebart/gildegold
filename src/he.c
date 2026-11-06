@@ -23995,13 +23995,14 @@ int gv_OrderAdjustEntry();                 /* 0x4f0c20 */
 int gm_CharCurrency(char *c, char p);                 /* 0x509ee0 */
 void ai_HauntingText(unsigned short *param_1, int param_2, unsigned int param_3);                 /* 0x5a9910 */
 
-/* 0x570ea0, 1 when no running event 0x88 has the player +8 == b + 4 and the building +0xb0 == a + 4; 0 when one does */
-int he_NoEvent88Pair(int a, int b)
+/* 0x570ea0, 1 when no running haunting event 0x88 has b's netId as its character (+8) and a's netId as its victim
+   (+0xb0); 0 when one does */
+int he_NoEvent88Pair(AICHAR *a, AICHAR *b)
 {
-    int r;
+    AIJOB *r;
 
-    for (r = (int)he_FindEvent(1, 0, 0x88); r != 0; r = (int)he_NextEvent()) {
-        if (*(unsigned int *)(b + 4) == *(unsigned short *)(r + 8) && HM_I(r, 0xb0) == HM_I(a, 4))
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x88); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if ((unsigned int)b->netId == r->chr && ((HEHAUNTING *)r)->victim == a->netId)
             return 0;
     }
     return 1;

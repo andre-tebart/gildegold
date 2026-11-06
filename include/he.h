@@ -181,7 +181,7 @@ int he_NoProtectionEvent(int p);  /* 0x553cc0 */
 int he_NoEvent2ePair(int a, int b);  /* 0x553d10 */
 int he_NoEvent4bPair(int a, int b);  /* 0x553d60 */
 int he_EventOnBuilding(int owner);  /* 0x56f170 */
-int he_NoEvent88Pair(int a, int b);  /* 0x570ea0 */
+int he_NoEvent88Pair(struct AICHAR *a, struct AICHAR *b);  /* 0x570ea0, 1 when no running haunting event 0x88 has b's netId as its character and a's netId as its victim */
 int he_IsMessageKindFiltered(int id);  /* 0x575640 */
 int he_RandomTransporter(char *obj);  /* 0x555210 */
 char *ai_FindCurseEvent(char *a);  /* 0x5741d0 */

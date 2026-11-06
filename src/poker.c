@@ -1887,7 +1887,7 @@ int ai_PickPamphletTarget(AIPER *p, int c, AIARG *m)
         return 0;
     if (he_NoEvent35Pair(p, &((AIPER *)ai_CharsT)[id], &k) == 0)
         return 0;
-    if (he_NoEvent88Pair(&((AIPER *)ai_CharsT)[id], p) == 0)
+    if (he_NoEvent88Pair(&ai_CharsT[id], (AICHAR *)p) == 0)
         return 0;
     if (k > 3)
         return 0;
