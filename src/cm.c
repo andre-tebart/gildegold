@@ -6,8 +6,9 @@
    and the cutscenes (cut_, 0x4d8c70..: trial, duel, execution, wedding, auction, ...; joined: the strings run
    monotonic 0x60cb58..0x60ec88 and the ints 0x60d360.. serve both halves). Ends at 0x4e5bf0 (amt.c follows).
    Names are ours.
-   The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type (message
-   0x1c is the exception: its data is a bare nextEventId, the long message itself is in cm_LongMsg); the amt and
+   The message handlers read their data through the G17MSG union (cm_types.h), one struct per message type (the
+   party, position and path messages keep their structs in this file's head; message 0x1c is the exception: its
+   data is a bare nextEventId, the long message itself is in cm_LongMsg); the amt and
    gv payloads (AMTAPP, AMTMSG, GVDECMSG) are their types headers' (amt_types.h, gv_types.h), which cm_types.h includes
    for the union. The scene
    callbacks registered by cm_InitScenes (cm_RunDuel, cm_RunExecution, cm_RunWedding, cm_RunBirth, cm_RunDeath,
@@ -19,8 +20,8 @@
    gv_PassSentence takes five arguments here (gv_PassSentenceK).
    Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
    without parameters; cm_QueueVoice has callers with four arguments, and declaration changes in cm.h / cm_types.h flip
-   the register tie-breaks of ai_TutorialInitChapter2 / 3 (sv_t, tie-break). Types only cm.c uses (CMNOTE,
-   CMCUTTYPEMSG, CMFIELD) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
+   the register tie-breaks of ai_TutorialInitChapter2 / 3 (sv_t, tie-break) and of ord_CountGridObjects. Types only
+   cm.c uses (CMNOTE, CMCUTTYPEMSG, CMFIELD, CMWALKPATHMSG) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
    Open: head: f3gm.h has no prototype of gm_ShowBuildingObjects (cm_ExSkillsChanged calls it undeclared, the f3gm.h
