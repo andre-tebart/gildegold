@@ -15632,51 +15632,54 @@ void ai_ShowEvidenceVoidNews(unsigned short *toldRec, unsigned short *culpritRec
     txt_Format(ai_NewsText, 0x1747, culprit->id);
     he_ShowNews(told->netId, -1, ai_NewsText, 0, 0x5fa, ch_EmptyName);
 }
-/* 0x5a9470, the gypsy delivery text (536 B, ROUGH: the string copies are written as strcpy / strcat): with
-   one to three characters param_3 (the 0x41bf header, the kinds 6 / 7 of the first param_2 records get the
-   key 0x62c310), the text 0x144a8a8 is copied into 0x6f26c8 and the names (0x41bb, the 0x41bc part once only
-   for two or more, the last text 0x144a8b8 / 0x144a8b4) are appended; sent by param_1 + 4 (1, 0x5fb, the key
-   0x62c2f4) */
+/* 0x5a9470, the gypsys' delivery news (536 B): for one to three target characters to[0 .. n - 1], the news 0x41bf
+   naming the sender from is shown to each target of the kinds 6 / 7 ("_NACHRICHTEN_ZIGEUNER_06"); then the
+   sender's report is built in ai_NewsText from the text 0x41ba, the targets' names (0x41bb each, the last of two
+   or more with 0x41bc) and the closing text (0x41be for several, 0x41bd for one), and shown to the sender
+   ("_NACHRICHTEN_ZIGEUNER_05") */
 
-void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3)
+void ai_GypsyDeliveryText(void *from, int n, void **to)
 {
-    char local[128];
+    char line[128];
     int i;
+    int last;
     int done;
 
-    if (param_2 <= 0 || param_2 >= 4)
+    if (n < 1 || n >= 4)
         return;
-    txt_Format((char *)(unsigned)&ai_NewsText, 0x41bf, *param_1);
-    for (i = 0; i < param_2; i++) {
-        if (*(char *)(param_3[i] + 2) == 6 || *(char *)(param_3[i] + 2) == 7)
-            he_ShowNews(*(int *)(param_3[i] + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c310);
+    txt_Format(ai_NewsText, 0x41bf, ((AICHARREC *)from)->id);
+    for (i = 0; i < n; i++) {
+        if (((AICHARREC *)to[i])->kind == 6 || ((AICHARREC *)to[i])->kind == 7)
+            he_ShowNews(((AICHARREC *)to[i])->netId, -1, ai_NewsText, 1, 0x5fb, "_NACHRICHTEN_ZIGEUNER_06");
     }
-    strcpy((char *)(unsigned)&ai_NewsText, (char *)*(int *)((unsigned)&full_data_144a8a8));
-    if (param_2 < 2) {
+    strcpy(ai_NewsText, txt_Ptrs[0x41ba]);
+    if (n > 1) {
+        last = n - 1;
         for (i = 0; i < 4; i++) {
-            if (i > 0)
+            if (i >= last)
                 break;
-            txt_Format(local, 0x41bb, *(unsigned short *)param_3[i]);
-            strcat((char *)(unsigned)&ai_NewsText, local);
-        }
-        strcat((char *)(unsigned)&ai_NewsText, (char *)*(int *)((unsigned)&full_data_144a8b4));
-    } else {
-        for (i = 0; i < 4; i++) {
-            if (param_2 - 1 <= i)
-                break;
-            txt_Format(local, 0x41bb, *(unsigned short *)param_3[i]);
-            strcat((char *)(unsigned)&ai_NewsText, local);
+            txt_Format(line, 0x41bb, ((AICHARREC *)to[i])->id);
+            strcat(ai_NewsText, line);
         }
         done = 0;
-        while (i < 4 && !done) {
-            txt_Format(local, 0x41bc, *(unsigned short *)param_3[i]);
-            strcat((char *)(unsigned)&ai_NewsText, local);
+        for (; i < 4; i++) {
+            if (done)
+                break;
+            txt_Format(line, 0x41bc, ((AICHARREC *)to[i])->id);
+            strcat(ai_NewsText, line);
             done = 1;
-            i++;
         }
-        strcat((char *)(unsigned)&ai_NewsText, (char *)*(int *)((unsigned)&full_data_144a8b8));
+        strcat(ai_NewsText, txt_Ptrs[0x41be]);
+    } else {
+        for (i = 0; i < 4; i++) {
+            if (i >= 1)
+                break;
+            txt_Format(line, 0x41bb, ((AICHARREC *)to[i])->id);
+            strcat(ai_NewsText, line);
+        }
+        strcat(ai_NewsText, txt_Ptrs[0x41bd]);
     }
-    he_ShowNews(*(int *)((char *)param_1 + 4), -1, (char *)(unsigned)&ai_NewsText, 1, 0x5fb, (char *)(unsigned)&full_data_62c2f4);
+    he_ShowNews(((AICHARREC *)from)->netId, -1, ai_NewsText, 1, 0x5fb, "_NACHRICHTEN_ZIGEUNER_05");
 }
 /* 0x5a9690, tells a player character that relatives were angered by neglected graves (69 B): for a kind 6 / 7
    character the text 0x4154 with the building, shown to its netId (event 0x5fc); gv_GraveyardTurn sends it when
