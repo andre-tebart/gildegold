@@ -2649,3 +2649,4 @@
 2026-11-06T11:39:03 0x00597500 func ai_Unk597500 -> ai_StudyContact by:main why:0x597500 is the contact listener of the residence room kind 0x13 (ai_EnterBuilding): the plates VERHANDELN / HANDWERKSKUNST / BEWEISBUCH / SPIONAGE / MEISTERPRUEFUNG / SELBSTMORD
 2026-11-06T11:39:30 0x005b4590 func ai_Unk5b4590 -> ai_EvidenceBookWindow by:main why:0x5b4590 opens privillegien\Beweise_Sichten (0x62cda8), the BEWEISBUCH plate's window of ai_StudyContact
 2026-11-06T11:40:46 0x00597810 func ai_Unk597810 -> ai_DrawDuelDice by:main why:0x597810 draws one side of a dice duel (am.h AGDUEL side: the thrown dice t[] or 0x761 hidden ones) plus a random cell, called by the dice animation 0x597a10
+2026-11-06T11:43:50 0x00597920 func ai_Unk597920 -> ai_DrawDuelThrow by:main why:0x597920 draws one side of a dice duel without the extra random cell (as ai_DrawDuelDice), the throw's final picture in the dice animation 0x597a10

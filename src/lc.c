@@ -6960,43 +6960,42 @@ void ai_DrawDuelDice(char *caption, LCDUELSIDE *side)
         d2_WinOpenPic(x, y, (util_Random(6) & 0xffff) + 0x75b, d2_LastWindow);
     }
 }
-/* 0x597920, draws the dice of a dice record without the extra cell (230 B): as 0x597810, but the random 0x75b
-   cell only in the record branch */
+/* 0x597920, draws one side of a dice duel as thrown (as ai_DrawDuelDice without the random cell): the
+   window's objects removed, the caption, then the thrown values (0x75b .. 0x760) for the player's character
+   (kind 6) or the hidden die 0x761, in rows of eight */
 
-void ai_Unk597920(int param_1, int *param_2)
+void ai_DrawDuelThrow(char *caption, LCDUELSIDE *side)
 {
-    unsigned int i;
+    int i;
     int x;
     int y;
 
-    d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-    io_PrintText("_C_Z_%s", param_1);
+    d2_RemoveWindowObjects(d2_LastWindow, 1);
+    io_PrintText("$C$Z%s", caption);
     i = 0;
     x = 0x1c;
-    y = 0x1d;
-    if (*(char *)(*param_2 + 2) == 6) {
-        if ((char)param_2[1] != 0) {
-            do {
-                d2_WinOpenPic(x, y, *(unsigned char *)((int)param_2 + i + 0xc) + 0x75a,
-                             U_I((unsigned)&d2_LastWindow));
-                i++;
-                if (i % 8 == 0)
-                    x = 0;
-                else
-                    x += 0x3a;
-                y = ((i < 8) - 1U & 0x29) + 0x1d;
-            } while ((int)i < (int)(unsigned char)param_2[1]);
-        }
-    } else if ((char)param_2[1] != 0) {
-        do {
-            d2_WinOpenPic(x, y, 0x761, U_I((unsigned)&d2_LastWindow));
+    if (side->ch->kind == 6) {
+        y = 0x1d;
+        while (i < side->n) {
+            d2_WinOpenPic(x, y, side->t[i] + 0x75a, d2_LastWindow);
             i++;
             if (i % 8 == 0)
                 x = 0;
             else
                 x += 0x3a;
-            y = ((i < 8) - 1U & 0x29) + 0x1d;
-        } while ((int)i < (int)(unsigned char)param_2[1]);
+            y = i > 7 ? 0x46 : 0x1d;
+        }
+    } else {
+        y = 0x1d;
+        while (i < side->n) {
+            d2_WinOpenPic(x, y, 0x761, d2_LastWindow);
+            i++;
+            if (i % 8 == 0)
+                x = 0;
+            else
+                x += 0x3a;
+            y = i > 7 ? 0x46 : 0x1d;
+        }
     }
 }
 /* 0x597a10, the dice animation driver (1085 B, ROUGH SKELETON from the Ghidra pseudocode): param_1 the game
@@ -7049,7 +7048,7 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
             txt_Format(text, 0x1885, *param_2 + 0x30, U_I(param_1 + 4));
             t0 = U_I((unsigned)&d3_Time);
             d2_SetForm(win, frame);
-            ai_Unk597920(text, param_2);
+            ai_DrawDuelThrow(text, (LCDUELSIDE *)param_2);
             while (t0 + wait > U_I((unsigned)&d3_Time)) {
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
@@ -7059,7 +7058,7 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
             txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
             t0 = U_I((unsigned)&d3_Time);
             d2_SetForm(win, frame);
-            ai_Unk597920(text, param_2);
+            ai_DrawDuelThrow(text, (LCDUELSIDE *)param_2);
             while (t0 + wait > U_I((unsigned)&d3_Time)) {
                 if (*(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) == 0)
                     return;
@@ -7078,7 +7077,7 @@ void ai_Unk597a10(int param_1, int *param_2, int mode, int win, int frame, int w
         txt_Format(text, 0x1886, *param_2 + 0x30, U_I(param_1 + 4));
     t0 = U_I((unsigned)&d3_Time);
     d2_SetForm(win, frame);
-    ai_Unk597920(text, param_2);
+    ai_DrawDuelThrow(text, (LCDUELSIDE *)param_2);
     while (U_I((unsigned)&d3_Time) < t0 + wait &&
            *(char *)(((unsigned)&ai_CharInts + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
         sv_RunFrame(0, 0x777c7);
