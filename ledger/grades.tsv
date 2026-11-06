@@ -772,7 +772,7 @@ exe	0x0043ce10	d3_InitSurf	d3_engine	byte	readable
 exe	0x0043ce60	d3_InitObject	d3_engine	shape	draft	deep	
 exe	0x0043cfb0	d3_AddObjectDrawData	d3_engine	byte	readable		
 exe	0x0043d0e0	d3_Unlink	d3_engine	byte	readable		
-exe	0x0043d180	d3_CloneObject	d3_engine	byte	draft	deep	
+exe	0x0043d180	d3_CloneObject	d3_engine	shape	draft	deep	
 exe	0x0043d430	d3_SetObjectAlpha	d3_engine	shape	readable	deep	
 exe	0x0043d630	d3_SetAlphaCB	d3_engine	byte	readable		
 exe	0x0043d690	d3_SetAlpha	d3_engine	byte	readable		
@@ -4211,19 +4211,19 @@ exe	0x00599aa0	ai_DarkCornerTable	lc	byte	readable
 exe	0x00599af0	ai_TavernContact	lc	byte	readable		
 exe	0x00599cb0	ai_BreweryContact	lc	shape	readable		
 exe	0x00599e00	ai_DrawGoodsCell	lc	byte	readable		
-exe	0x00599ef0	ai_Unk599ef0	lc	draft	draft		
+exe	0x00599ef0	ai_CityInfoWindow	lc	byte	readable		
 exe	0x0059a2c0	ai_Unk59a2c0	lc	draft	draft		
 exe	0x0059a3c0	ai_Unk59a3c0	lc	draft	draft		
 exe	0x0059a560	ai_Unk59a560	lc	draft	draft		
 exe	0x0059a710	ai_MarketStandWindow	lc	byte	readable		
-exe	0x0059a800	ai_MarketStandListener	lc	draft	draft		
-exe	0x0059aae0	ai_WineCellarWindow	lc	draft	draft		
+exe	0x0059a800	ai_MarketStandListener	lc	byte	readable		
+exe	0x0059aae0	ai_WineCellarWindow	lc	byte	readable		
 exe	0x0059ad00	ai_WineCellarContact	lc	byte	readable		
-exe	0x0059ad60	ai_Unk59ad60	lc	draft	draft		
-exe	0x0059b030	ai_Unk59b030	lc	draft	draft		
-exe	0x0059b160	ai_CreditListWindow	lc	draft	draft		
-exe	0x0059b630	ai_Unk59b630	lc	draft	draft		
-exe	0x0059b880	ai_Unk59b880	lc	draft	draft		
+exe	0x0059ad60	ai_NewCreditWindow	lc	byte	readable		
+exe	0x0059b030	ai_RepayLoan	lc	byte	readable		
+exe	0x0059b160	ai_CreditListWindow	lc	byte	readable		
+exe	0x0059b630	ai_BorrowerLoansWindow	lc	byte	readable		
+exe	0x0059b880	ai_CreditReleaseWindow	lc	byte	readable		
 exe	0x0059bad0	ai_CreditGiverWindow	lc	draft	draft		
 exe	0x0059be90	ai_Unk59be90	lc	draft	draft		
 exe	0x0059c120	ai_Unk59c120	lc	draft	draft		
@@ -4408,8 +4408,8 @@ exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable
 exe	0x005b5010	ai_DenounceWindow	lc	draft	draft		
 exe	0x005b5310	ai_Unk5b5310	lc	draft	draft		
 exe	0x005b5610	ai_PamphletWindow	lc	draft	draft		
-exe	0x005b5690	ai_Unk5b5690	lc	draft	draft		
-exe	0x005b5a20	ai_Unk5b5a20	lc	draft	draft		
+exe	0x005b5690	ai_NoticeBoardWindow	lc	draft	draft		
+exe	0x005b5a20	ai_BardWindow	lc	draft	draft		
 exe	0x005b5e80	ai_FeastWindow	lc	draft	draft		
 exe	0x005b6950	ai_Unk5b6950	lc	draft	draft		
 exe	0x005b6b20	ai_Unk5b6b20	lc	draft	draft		

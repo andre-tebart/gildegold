@@ -4,7 +4,8 @@
    plate texts through the txt_views.h slots (ai_ContactText*) or their txt_Ptrs text id and the building record
    as AIBLD (id, owner, mainRoom, objList, object); the character record view AICHARREC names id, kind, netId,
    f01c, ailments, officeKind, secondOffice and powerFlags. The guild-hall windows split by the player's second office (0x1e
-   the request, 0x1f / 0x21 and 0x20 the amount-kind menus that send the district request {4, column}).
+   the request, 0x1f / 0x21 and 0x20 the amount-kind menus that send the district request {4, column}). The money
+   lender windows read a bank's offers as AIBLD.credits (gv_types.h ORDCREDIT) and its loans as HELOAN (ai_types.h).
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT and LCSEARCHWORDS are local views over
