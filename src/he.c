@@ -1318,17 +1318,17 @@ typedef struct HETRIALCASE {            /* the trial event 0xa0's words over AIJ
     char pad00[0xac];
     unsigned int level;                 /* 0xac, the trial's level (below 4 / 7 raises the payment's bar; compared unsigned) */
 } HETRIALCASE;
-typedef struct HEMEET4 {                /* the meeting event 0xa1's words over AIJOB's union (its alloc he_AllocMeeting4, run
-                                           0x5748d0 and the room query he_FindMeetingRoom); the four figures are AIJOB.ids */
+typedef struct HEMEET4 {                /* the circus show event 0xa1's words over AIJOB's union (its alloc he_AllocMeeting4, run
+                                           he_RunCircusShow and the room query he_FindMeetingRoom); the four figures are AIJOB.ids */
     char pad00[0xac];
-    int income;                         /* 0xac, the income of the meeting (ai_Unk575030 adds to it) */
-    int room;                           /* 0xb0, > 0: the room is looked up (he_FindMeetingRoom) */
+    int income;                         /* 0xac, the income of the meeting (he_CircusShowIncome adds to it) */
+    int room;                           /* 0xb0, the show's time left (0xf0, 0x78 less per round); > 0: the room is looked up (he_FindMeetingRoom) */
     int stop;                           /* 0xb4, cm_SendChrStop's argument */
     char padb8[4];
     int meetStart;                      /* 0xbc, the index into classes the room query starts at */
     unsigned short classes[4];          /* 0xc0, the building classes the room query hands to gm_BuildQuery */
-    unsigned short objs[4];             /* 0xc8, the meeting object ids (ai_Unk575030 fills the first free one) */
-    int bld;                            /* 0xd0, -1 at the allocation */
+    unsigned short objs[4];             /* 0xc8, the meeting object ids (he_CircusShowIncome fills the first free one) */
+    int bld;                            /* 0xd0, the id of the building the show is at (he_RunCircusShow), -1 at the allocation */
 } HEMEET4;
 #pragma pack(pop)
 /* 0x53d430, the allocation handler of an event of an unknown type (debug text only) */
@@ -25055,7 +25055,7 @@ void he_Unk5740d0(int ev);          /* 0x5740d0 */
 void he_AllocTrialScene(int ev);          /* 0x574120 */
 void he_RunTrialScene(int ev);          /* 0x5743c0 */
 void he_AllocMeeting4(int ev);          /* 0x574550 */
-void he_Unk5748d0(int ev);          /* 0x5748d0 */
+void he_RunCircusShow(int ev);          /* 0x5748d0 */
 void he_Unk575150(int ev);          /* 0x575150 */
 void he_Unk5751e0(int ev);          /* 0x5751e0 */
 void he_Unk575320(int ev);          /* 0x575320 */
@@ -25068,7 +25068,7 @@ int he_RegisterEventTypes9d(void)
         if (he_SetEventHandlers(0x9e, (void *)he_Unk573f20, (void *)he_Unk573fb0) == 0) {
             if (he_SetEventHandlers(0x9f, (void *)he_Unk574060, (void *)he_Unk5740d0) == 0) {
                 if (he_SetEventHandlers(0xa0, (void *)he_AllocTrialScene, (void *)he_RunTrialScene) == 0) {
-                    if (he_SetEventHandlers(0xa1, (void *)he_AllocMeeting4, (void *)he_Unk5748d0) == 0) {
+                    if (he_SetEventHandlers(0xa1, (void *)he_AllocMeeting4, (void *)he_RunCircusShow) == 0) {
                         if (he_SetEventHandlers(0xa3, (void *)he_Unk575150, (void *)he_Unk5751e0) == 0) {
                             if (he_SetEventHandlers(0xa4, (void *)he_Unk575320, (void *)he_Unk5753a0) == 0) {
                                 sv_RegisterActivity(0xa1, 0, 0, 0x50f, -1);
@@ -25691,7 +25691,7 @@ done:                               /* no contact object: -1 */
    (cm_SendExSellObject, one of it). He is paid the income (cm_SendMoveGoodsUnchecked) and told (the news 0x5ff, the
    text 0x41f0 with the building around 0x41f2 (objects given) or 0x41f1 (none), both with the income). The objects
    are read by the record's index from objs[] again (equal to the found ones while no zero lies between them). */
-void he_MeetingPayout(int ev)
+void he_CircusShowPayout(int ev)
 {
     AIJOB *e = (AIJOB *)ev;
     HEMEET4 *m = (HEMEET4 *)ev;
@@ -25759,64 +25759,119 @@ void cm_SendChrStop(int a); /* 0x4c5230 */
 int cm_SendChrGotoBuilding();                 /* 0x4c52e0 */
 void cm_SendChrAnim(int a, const char *s, int c); /* 0x4c5410 */
 int sv_IsAtDoor();                 /* 0x524770 */
-void ai_Unk575030();                /* 0x575030 */
+void he_CircusShowIncome();                /* 0x575030 */
 
-/* 0x5748d0, the run of the event 0xa1 (the meeting, ROUGH SKELETON): the four figures +0x8c .. (0x505df0) are collected; -2 / -1
-   free; without a figure also; state 0 looks for the meeting room (+0xb0 > 0: 0x574fe0 else the building +0x10 (0x4fea50,
-   0x501ce0)), state 1 groups them (0x524260 / 0x4c5230 / 0x4c52e0), later states the scene 0x5746b0 (0x524770), the payments
-   (0x4fe140, 0x42ec00, 0x4c5410, 0x575030) and the free (0x53e1f0) */
-void he_Unk5748d0(int ev)
+/* 0x5748d0, the run of the event 0xa1, a circus show of up to four figures (AIJOB.ids, the ones gm_FindChar finds):
+   -1 / -2 or no figure: they leave the group (sv_MoveToGroup) and the event is freed. Stage 0 picks the building:
+   with time left (room > 0) one of the show's building classes (he_FindMeetingRoom, walked to as a room), else the
+   building from, at its main room (gm_GetGebaeudeHauptraum); without a building the event ends (stage -1, due now).
+   Else bld keeps the building's id and every figure joins the group, stops and walks there ("Bettler"); stage 1 is
+   due in 10 minutes. Stage 1 (the building found again by bld, else the end as above) waits
+   5 minutes until every figure is at its door (sv_IsAtDoor); then with time left the show runs for 2 hours (stage 2):
+   each figure with a model plays 8 of the ten circus animations at random (cm_SendChrAnim, 1 or 2 times each); with
+   none left the figures leave the group, the payout runs (he_CircusShowPayout) and the event ends. Stage 2 stops the
+   figures, takes the show's income (he_CircusShowIncome), takes 120 off the time and goes back to stage 0, due now. */
+void he_RunCircusShow(int ev)
 {
-    char *pers[4];
-    char *bld;
-    int n, i, state, x;
+    AIJOB *e = (AIJOB *)ev;
+    HEMEET4 *m = (HEMEET4 *)ev;
+    AIBLD *bld;
+    AICHAR *pers[4];
+    int viaRoom, place;
+    AIOBJ *hall;
+    AICHAR *p;
+    int n, i, k;
 
     n = 0;
+    memset(pers, 0, sizeof(pers));
+    bld = 0;
     for (i = 0; i < 4; i++) {
-        int id = HM_I(ev, 0x8c + i * 4);
-        if (id != -1) {
-            char *p = (char *)gm_FindChar(id);
-            if (p != 0)
-                pers[n++] = p;
-        }
+        if (e->ids[i] != -1 && (p = (AICHAR *)gm_FindChar(e->ids[i])) != 0)
+            pers[n++] = p;
     }
-    state = HM_I(ev, 0x70);
-    if (state == -1 || state == -2 || n == 0) {
+    if (e->stage == -1 || e->stage == -2 || n == 0) {
+        for (i = 0; i < n; i++)
+            sv_MoveToGroup(0, 0, pers[i]->id, 0);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (state == 0) {
-        x = -1;
-        if (HM_I(ev, 0xb0) > 0) {
-            x = he_FindMeetingRoom(ev);
-            HM_I(ev, 0xbc) = HM_I(ev, 0xbc) + 1;
+    if (e->stage == 0) {
+        place = -1;
+        if (m->room > 0) {
+            bld = (AIBLD *)he_FindMeetingRoom(ev);
+            viaRoom = 1;
+            m->meetStart++;
         } else {
-            bld = 0;
-            gm_FindById(&bld, 0, 0, HM_I(ev, 0x10));
-            if (bld != 0 && gm_GetGebaeudeHauptraum(bld) != 0) {
-                sv_MoveToGroup(pers[0], bld, 0x1f, ev);
-                ((void (*)(int, int))cm_SendChrStop)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
-                cm_SendChrGotoBuilding(HM_I(pers[0], 4), pers[1], 0, 0, 0, (char *)(unsigned)&he_TheaterScripts);
+            gm_FindById(&bld, 0, 0, e->from);
+            viaRoom = 0;
+            if (bld != 0 && (hall = (AIOBJ *)gm_GetGebaeudeHauptraum((unsigned char *)bld)) != 0)
+                place = hall->objId;
+        }
+        if (bld == 0) {
+            e->stage = -1;
+            e->end = ai_Time;
+            return;
+        }
+        m->bld = bld->id;
+        for (i = 0; i < n; i++) {
+            p = pers[i];
+            sv_MoveToGroup(0, 0, p->id, (char *)ev);
+            cm_SendChrStop(p->netId);
+            cm_SendChrGotoBuilding(p->netId, bld->id, place, 0, viaRoom, "Bettler");
+        }
+        e->stage = 1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0xa, 0);
+        return;
+    }
+    gm_FindById(&bld, 0, 0, m->bld);
+    if (bld == 0) {
+        e->stage = -1;
+        e->end = ai_Time;
+        return;
+    }
+    if (e->stage == 1) {
+        char anims[10][0x40] = {
+            "zirkus/anfeuern", "zirkus/handstand", "zirkus/handstand2", "zirkus/lachen", "zirkus/lang_winken",
+            "zirkus/posieren", "zirkus/ruecksalto", "zirkus/ruecksalto2", "zirkus/stehend_beschwoeren",
+            "zirkus/tief_verbeugen"
+        };
+        for (i = 0; i < n; i++) {
+            if (sv_IsAtDoor(pers[i], bld) == 0) {
+                e->stage = 1;
+                e->end = ai_Time;
+                gm_AddTime(&e->end, 0, 5, 0);
+                return;
             }
         }
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        if (m->room <= 0) {
+            for (i = 0; i < n; i++)
+                sv_MoveToGroup(0, 0, pers[i]->id, 0);
+            he_CircusShowPayout(ev);
+            e->stage = -1;
+            e->end = ai_Time;
+            return;
+        }
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 2, 0, 0);
+        e->stage = 2;
+        for (i = 0; i < n; i++) {
+            p = pers[i];
+            if (p->model != 0) {
+                for (k = 8; k != 0; k--)
+                    cm_SendChrAnim(p->netId, anims[util_RandomU(0xa)], util_RandomU(2) + 1);
+            }
+        }
         return;
     }
-    /* the later states: 1 the scene, 2 the payments, 3 the close (all ROUGH) */
-    if (state == 1) {
-        sv_IsAtDoor(ev);
-        sv_MoveToGroup(0, 0, 0x1f, ev);
-        he_MeetingPayout(ev);
-        return;
+    if (e->stage == 2) {
+        for (i = 0; i < n; i++)
+            cm_SendChrStop(pers[i]->netId);
+        he_CircusShowIncome(ev, n);
+        m->room -= 0x78;
+        e->end = ai_Time;
+        e->stage = 0;
     }
-    if (state == 2) {
-        gm_AddTime(ev + 0x52, 0, 2, 0);
-        return;
-    }
-    ((void (*)(int, int))cm_SendChrStop)(HM_I(pers[0], 4), HM_I(ev, 0xb4));
-    ai_Unk575030(ev);
-    he_FreeEvent((int *)ev);
 }
 /* 0x574fe0, the meeting room of the event 0xa1: up to three of the event's words meetClasses[meetStart],
    [meetStart % 4 + 1], ... are looked up as buildings by their class (0x501190 (1, 5, word)); returns the
@@ -25848,7 +25903,7 @@ unsigned short ai_Unk5a9e90(int param_1, unsigned short *param_2);              
    amount 0x5092e0 (building, 0x1d, 1) * 0x5ee01c + 0x5eb780, times 0x504ec0 (per, 2) and a random 0x42ec20 curve (0x5eec58 /
    0x5ebbe8), raises per +0xac for each of the count; then, with the random check 0x5eb780 / 0x5eb9f0, the first free word
    +0xc8 .. of the event gets the id 0x5a9e90 (index, ev +0xc8) */
-void ai_Unk575030(int ev)
+void he_CircusShowIncome(int ev)
 {
     char *per, *bld;
     int v, n, i;
