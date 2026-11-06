@@ -1060,14 +1060,19 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       the fields at bits 0, 4, 8, 12, 14, 17, 20, 23, 25 (4, 4, 4, 2, 3, 3, 3, 2, 4
                                       bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
                                       field pairs of gm_CatchMinorDisease / gm_CatchUpperDisease */
-    char pad030[0x134];
+    char pad030[0x24];
+    int ref54;                     /* 0x054, a reference word the related characters share (ai_char.h AICHAR.ref54;
+                                      the game frame compares it with the player's) */
+    char pad058[0x10c];
     unsigned char jobId;           /* 0x164, the character's job (ai_char.h AICHAR.jobId; the construction window's group 7
                                       needs 0x34 .. 0x39) */
     char pad165;
     unsigned char officeKind;      /* 0x166, the office the character holds, 0 = none (ai_char.h AICHAR.officeKind) */
     char pad167[2];
     unsigned char secondOffice;    /* 0x169, the second office kind, the deputy one (ai_char.h AICHAR.secondOffice) */
-    char pad16a[0x12];
+    char pad16a[6];
+    int bld2;                      /* 0x170, the character's own building, 0 when none (ai_char.h AICHAR.bld2) */
+    char pad174[8];
     struct AIJOB *job;             /* 0x17c, the job the character works in, 0 = none (ai_char.h AICHAR.job) */
     char pad180[4];
     struct AITASKVIEW *model;      /* 0x184, the character's model record, 0 when none (ai_char.h AICHAR.model) */
@@ -1092,7 +1097,8 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     char pad4d[0xc];
     char prodScroll;               /* 0x59, the scroll position of the production window, in rows (ai_ProductionWindow
                                       restores and saves it; ai_bld.h AIBLD.prodScroll) */
-    char pad5a[3];
+    unsigned char flags5a;         /* 0x5a, bit 0: the building cannot be entered from the panel (ai_bld.h AIBLD.flags5a) */
+    char pad5b[2];
     int objList;                   /* 0x5d, the head of the building's object-instance list (ai.h AIBLD.objList) */
     int object;                    /* 0x61, its object in the scene */
     union {
@@ -1101,6 +1107,8 @@ typedef struct AIBLD {             /* the building record fields this unit reads
     };
     char pad69[8];
     int plants;                    /* 0x71, the vegetation map (ai_bld.h AIBLD.plants) */
+    char pad75[0x20];
+    int smokeEffect;               /* 0x95, the running chimney smoke effect (evt_FindById), -1 none (ai_bld.h AIBLD.smokeEffect) */
 } AIBLD;
 typedef struct LCFIREEVENT {       /* the fire event 0x3d's word over AIJOB's union (its alloc 0x564860; the jail check
                                       0x591ad0 reads the burning building here) */
@@ -3685,57 +3693,58 @@ void ai_CampaignKey1(void)
             d3t_PlaceObjectV(d3_Camera, &d3_Camera->pos, &v, 0x1e, 0x28);
     }
 }
-/* 0x591520, the main game frame callback (1445 B, ROUGH SKELETON from the Ghidra pseudocode): the clock index
-   0x4fe350 (0x770ae0), the globals saved / restored around the loop (0x5f3238 / 0x5f323c / 0x6310b0 /
-   0x6310b4), the network branch (0x6f23f8 & 4: 0x5bc110); the character query (0x6f23f8 & 1) + 0x527bb0; the
-   per-frame work: 0x4c30e0 / 0x42ea10, the pump 0x5309a0 (this, 0x67fff); 0x591ad0 for the flagged characters,
-   0x527640, the day-phase switch on the clock 0x770ae0 (mode 0 / 1 / 2, the character +0x95 handles 0x4284a0 /
-   0x429e90 / 0x528490), 0x591480, 0x527840, the construction window 0x5909a0, the contact checks (0x502520 /
-   0x576340 / 0x5024f0 / 0x59e420 / 0x59ee40) and the selection 0x75e8c0 / 0x75e8c4 (0x527840, 0x527bb0);
-   the exit restores the globals and returns */
-
+/* 0x591520, the main game frame loop (1445 B): the season of the clock, the terrain divided once
+   (init_TerrainDivide), the mouse limits saved and restored around the loop, the ambient sounds on; in a network
+   game (ai_GameFlags & 4) a relative of the player (the same AICHAR.ref54, kind 5 .. 7) with a higher netId makes
+   the player choose a coat of arms; in the first round of a single game (& 1) the camera goes to the player's first
+   building that is not the home. Per frame (sv_RunFrame (this, 0x67fff)): the jail check of a held player, the
+   camera, the chimney smoke of the buildings by the day hours of the season (off before gm_DayStartHours / from
+   gm_DayEndHours, on in between; mode 0 .. 3), the campaign key, the camera flight to the hovered building, the
+   construction window from the panel's build button, entering the selected building (the right click or a
+   left release with the pointer look 0xb, permission bit 1: the own / home building by the script query 0x1b,
+   another one by 0x19), the market stands and the building the info panel picked (its room word, the camera,
+   entered or only flown to); the exit clears the texts and the selection and restores the mouse */
 void ai_GameFrame(void)
 {
-    int n;
+    AICHARREC *c;
+    AIBLD *b;
+    unsigned char *it;
+    EVTSCRIPT *e;
+    unsigned int perm;
+    int season;
     int mode;
-    int it;
-    int r;
-    int v;
-    unsigned int u;
-    char *p;
-    int s0;
-    int s1;
-    int s2;
-    int s3;
+    int maxX;
+    int maxY;
+    int minX;
+    int minY;
+    int i;
 
-    n = gm_ClockSeason((void *)(unsigned)&ai_Time);
+    season = gm_ClockSeason(&ai_Time);
     d3t_BoxCornerIdx = -1;
     init_AfterTownLoad();
     if (init_TerrainDivide != 0) {
-        d3fl_MakeDivide((int)d3_Terrain);
+        d3fl_MakeDivide(d3_Terrain);
         init_TerrainDivide = 0;
     }
-    s0 = U_I((unsigned)&di_MaxX);
-    s1 = U_I((unsigned)&di_MaxY);
-    s2 = U_I((unsigned)&di_MinX);
-    s3 = U_I((unsigned)&di_MinY);
+    maxX = di_MaxX;
+    maxY = di_MaxY;
+    minX = di_MinX;
+    minY = di_MinY;
     snd_AmbientOn = 1;
-    U_I((unsigned)&ai_GameState) = 1;
-    if (U_I((unsigned)&ai_GameFlags) & 4) {
-        for (p = (char *)((unsigned)&ai_Chars + 0x2); p < (char *)(unsigned)((unsigned)ai_Chars + 0x65402); p += 0x21c) {
-            if (*(unsigned short *)(p - 2) != 0xffff &&
-                *(int *)(p + 0x52) == U_I(((unsigned)&ai_CharSex + 0x4b) + U_W((unsigned)&ai_PlayerId) * 0x87) &&
-                *(unsigned short *)(p - 2) != U_W((unsigned)&ai_PlayerId) &&
-                (*p == 6 || *p == 7 || *p == 5) &&
-                U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x87) < *(unsigned int *)(p + 2)) {
+    ai_GameState = 1;
+    if (ai_GameFlags & 4) {
+        for (i = 0; i < 768; i++) {
+            c = &((AICHARREC *)ai_Chars)[i];
+            if (c->id != 0xffff && c->ref54 == ((AICHARREC *)ai_Chars)[ai_PlayerId].ref54 && c->id != ai_PlayerId &&
+                (c->kind == 6 || c->kind == 7 || c->kind == 5) && c->netId > ((AICHARREC *)ai_Chars)[ai_PlayerId].netId) {
                 ai_ChooseCoatOfArms();
                 break;
             }
         }
     }
-    if ((U_I((unsigned)&ai_GameFlags) & 1) && main_Round == 1) {
-        for (it = gm_BuildQuery(1, 4, U_W((unsigned)&ai_PlayerId)); it != 0; it = gm_BuildNext()) {
-            if (it != U_I(((unsigned)&ai_Unk770cec + 0x4) + U_W((unsigned)&ai_PlayerId) * 0x87)) {
+    if ((ai_GameFlags & 1) && main_Round == 1) {
+        for (it = gm_BuildQuery(1, 4, ai_PlayerId); it != 0; it = gm_BuildNext()) {
+            if ((int)it != ((AICHARREC *)ai_Chars)[ai_PlayerId].bld2) {
                 sv_CameraToObject(it);
                 break;
             }
@@ -3743,115 +3752,103 @@ void ai_GameFrame(void)
     }
     snd_StartMarketAmbience();
     mode = 0;
-    tb_SetFunctionOff((void *)(unsigned)&sv_UpdateClock, 0);
-    r = sv_RunFrame(ai_GameFrame, 0x67fff);
-    while (r != 0) {
-        U_I((unsigned)&sv_FrameBase) = U_I((unsigned)&sv_FrameDepth);
-        if (*(char *)(((unsigned)&ai_Selected + 0x29) + U_W((unsigned)&ai_PlayerId) * 0x21c) != 0)
+    tb_SetFunctionOff(sv_UpdateClock, 0);
+    while (sv_RunFrame((int)ai_GameFrame, 0x67fff) != 0) {
+        sv_FrameBase = sv_FrameDepth;
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].heldRounds > 0)
             lc_PlayerInJail();
         sv_UpdateCamera();
         if (mode == 0) {
-            if ((float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
-                *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour)) {
-                for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
-                    if (*(int *)(it + 0x95) != -1) {
-                        v = (int)evt_FindById(*(int *)(it + 0x95));
-                        if (v != 0)
-                            evt_Stop((EVTSCRIPT *)v);
-                        *(int *)(it + 0x95) = -1;
+            if ((float)ai_Time.hour < gm_DayStartHours[season] || (float)ai_Time.hour >= gm_DayEndHours[season]) {
+                for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                    if (b->smokeEffect != -1) {
+                        e = evt_FindById(b->smokeEffect);
+                        if (e != 0)
+                            evt_Stop(e);
+                        b->smokeEffect = -1;
                     }
                 }
                 mode = 1;
             }
         } else if (mode == 1) {
-            if (*(float *)((unsigned)&gm_DayStartHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour) &&
-                (float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayEndHours + n * 4)) {
-                for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext())
-                    if (*(int *)(it + 0x95) == -1)
-                        sv_UpdateChimneySmoke(it);
+            if ((float)ai_Time.hour >= gm_DayStartHours[season] && (float)ai_Time.hour < gm_DayEndHours[season]) {
+                for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                    if (b->smokeEffect == -1)
+                        sv_UpdateChimneySmoke((struct AIBLD *)b);
+                }
                 mode = 2;
             }
-        } else if (mode == 2 &&
-                   ((float)U_W((unsigned)&ai_Time.hour) < *(float *)((unsigned)&gm_DayStartHours + n * 4) ||
-                    *(float *)((unsigned)&gm_DayEndHours + n * 4) <= (float)U_W((unsigned)&ai_Time.hour))) {
-            for (it = gm_BuildQuery(1, 6); it != 0; it = gm_BuildNext()) {
-                if (*(int *)(it + 0x95) != -1) {
-                    v = (int)evt_FindById(*(int *)(it + 0x95));
-                    if (v != 0)
-                        evt_Stop((EVTSCRIPT *)v);
-                    *(int *)(it + 0x95) = -1;
-                }
-            }
-            mode = 3;
-        }
-        ai_CampaignKey1();
-        if (U_I(((unsigned)&dm_L + 0x14)) != 0 && U_I(((unsigned)&dm_L + 0x24)) == 0 && sv_HoverBuilding != 0 &&
-            U_I((unsigned)&d3t_CamMove) == 0)
-            sv_FlyCameraToObject(sv_HoverBuilding);
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&sv_PanelBuildBtn))
-            ai_ConstructionWindow();
-        if (U_I((unsigned)&sv_SelectedObject) != 0 &&
-            (u = gm_PermissionBits(U_W((unsigned)&ai_PlayerId), U_I((unsigned)&sv_SelectedObject), 0, 0), U_I((unsigned)&sv_SelectedObject) != 0) &&
-            sv_HoverBuilding == U_I((unsigned)&sv_SelectedObject) &&
-            ((U_I(((unsigned)&dm_L + 0x1c)) != 0 || (U_I(((unsigned)&dm_L + 0xc)) != 0 && U_I((unsigned)&d2_PointerLook) == 0xb))) &&
-            (u & 1) != 0 && (*(unsigned char *)(U_I((unsigned)&sv_SelectedObject) + 0x5a) & 1) == 0) {
-            v = gm_IsHomeType(U_I((unsigned)&sv_SelectedObject));
-            if (v == 0 || (v = ai_ScriptQuery(0x1b, U_I((unsigned)&sv_SelectedObject), 0, 0), v != 1)) {
-                v = gm_IsType10(U_I((unsigned)&sv_SelectedObject));
-                if (v == 0 &&
-                    (v = ai_ScriptQuery(0x19, U_I((unsigned)&sv_SelectedObject), 0,
-                                      *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29)), v == 1))
-                    ai_EnterBuilding(U_I((unsigned)&sv_SelectedObject), *(unsigned short *)(U_I((unsigned)&sv_SelectedObject) + 0x29));
-            } else {
-                ai_EnterOwnBuilding(U_I((unsigned)&sv_SelectedObject));
-            }
-        }
-        if (U_I((unsigned)&ai_MarketBuilding) != 0)
-            ai_MarketStandListener(U_I((unsigned)&ai_MarketBuilding));
-        /* 0x591986 .. 0x591a14: the object the info panel selected resolves here, before the frame is pumped:
-           without a scene record the camera is focused on it (0x527840) and the panel flag dropped; with one the
-           object takes the record word (+0x29) and then, by its +0x5a bit 0 / a home type / the type 0x10, the
-           building is entered (0x59ee40 / 0x59e420) or the panel is only redrawn (0x527bb0 / 0x527840); the
-           record-less way and the +0x5a bit 0 clear sv_PanelFlag */
-        if (U_I((unsigned)&sv_PanelFlag) != 0) {
-            if (U_I((unsigned)&sv_PanelRecord) == 0) {
-                sv_FlyCameraToObject(U_I((unsigned)&sv_PanelObject));
-                U_I((unsigned)&sv_PanelFlag) = 0;
-            } else {
-                p = (char *)U_I((unsigned)&sv_PanelObject);
-                *(unsigned short *)(p + 0x29) = *(unsigned short *)U_I((unsigned)&sv_PanelRecord);
-                if ((*(unsigned char *)(p + 0x5a) & 1) != 0) {
-                    U_I((unsigned)&sv_PanelFlag) = 0;
-                } else {
-                    if (*(int *)(p + 0x61) != 0 && gm_IsType10((unsigned char *)p) == 0)
-                        sv_CameraToObject(p);
-                    if (gm_IsHomeType(p) != 0)
-                        ai_EnterOwnBuilding((unsigned char *)p);
-                    else if (gm_IsType10((unsigned char *)p) == 0)
-                        ai_EnterBuilding((unsigned char *)p, *(unsigned short *)(p + 0x29));
-                    else {
-                        sv_FlyCameraToObject(p);
-                        U_I((unsigned)&sv_PanelFlag) = 0;
+        } else if (mode == 2) {
+            if ((float)ai_Time.hour < gm_DayStartHours[season] || (float)ai_Time.hour >= gm_DayEndHours[season]) {
+                for (b = (AIBLD *)gm_BuildQuery(1, 6); b != 0; b = (AIBLD *)gm_BuildNext()) {
+                    if (b->smokeEffect != -1) {
+                        e = evt_FindById(b->smokeEffect);
+                        if (e != 0)
+                            evt_Stop(e);
+                        b->smokeEffect = -1;
                     }
                 }
+                mode = 3;
             }
         }
-        r = sv_RunFrame(ai_GameFrame, 0x67fff);
+        ai_CampaignKey1();
+        if (dm_L.lhold != 0 && dm_L.rdown == 0 && sv_HoverBuilding != 0 && d3t_CamMove == 0)
+            sv_FlyCameraToObject(sv_HoverBuilding);
+        if (d2_ClickedId != -1 && d2_PointerObj == sv_PanelBuildBtn)
+            ai_ConstructionWindow();
+        if (sv_SelectedObject != 0) {
+            perm = gm_PermissionBits(ai_PlayerId, (unsigned char *)sv_SelectedObject, 0, 0);
+            b = (AIBLD *)sv_SelectedObject;
+            if (b != 0 && sv_HoverBuilding == (int)b &&
+                (dm_L.lextra != 0 || (dm_L.lup != 0 && d2_PointerLook == 0xb)) && (perm & 1) != 0 &&
+                (b->flags5a & 1) == 0) {
+                if (gm_IsHomeType(b) != 0 && ai_ScriptQuery(0x1b, b, 0, 0) == 1)
+                    ai_EnterOwnBuilding(b);
+                else if (gm_IsType10((unsigned char *)b) == 0 && ai_ScriptQuery(0x19, b, 0, b->mainRoom) == 1)
+                    ai_EnterBuilding(b, b->mainRoom);
+            }
+        }
+        if (ai_MarketBuilding != 0)
+            ai_MarketStandListener(ai_MarketBuilding);
+        if (sv_PanelFlag != 0) {
+            /* the building the info panel picked */
+            b = (AIBLD *)sv_PanelObject;
+            if (sv_PanelRecord != 0) {
+                b->mainRoom = *sv_PanelRecord;
+                if ((b->flags5a & 1) != 0) {
+                    sv_PanelFlag = 0;
+                } else {
+                    if (b->object != 0 && gm_IsType10((unsigned char *)b) == 0)
+                        sv_CameraToObject(b);
+                    if (gm_IsHomeType(b) != 0) {
+                        ai_EnterOwnBuilding(b);
+                    } else if (gm_IsType10((unsigned char *)b) == 0) {
+                        ai_EnterBuilding(b, b->mainRoom);
+                    } else if (gm_IsType10((unsigned char *)b) != 0) {
+                        sv_FlyCameraToObject((int)b);
+                        sv_PanelFlag = 0;
+                    }
+                }
+            } else {
+                sv_FlyCameraToObject((int)b);
+                sv_PanelFlag = 0;
+            }
+        }
     }
     snd_AmbientOn = 0;
-    U_I((unsigned)&ai_GameState) = 0;
+    ai_GameState = 0;
     snd_StopMarketAmbience();
-    d2_CopyCaption((void *)(unsigned)&ch_EmptyName);
-    sv_SetStatusText((void *)(unsigned)&ch_EmptyName);
+    d2_CopyCaption(ch_EmptyName);
+    sv_SetStatusText(ch_EmptyName);
     sv_ResetSelection();
-    U_I((unsigned)&d2_PointerLook) = 0;
-    U_I((unsigned)&d2_CutsceneActive) = 0;
-    U_I((unsigned)&di_Absolute) = 1;
-    di_SetMousePos(U_I((unsigned)&d2_MouseX), U_I((unsigned)&d2_MouseY));
-    U_I((unsigned)&di_MaxX) = s0;
-    U_I((unsigned)&di_MaxY) = s1;
-    U_I((unsigned)&di_MinX) = s2;
-    U_I((unsigned)&di_MinY) = s3;
+    d2_PointerLook = 0;
+    d2_CutsceneActive = 0;
+    di_Absolute = 1;
+    di_SetMousePos(d2_MouseX, d2_MouseY);
+    di_MaxX = maxX;
+    di_MaxY = maxY;
+    di_MinX = minX;
+    di_MinY = minY;
     sv_RunFrame(0, 0x67fff);
 }
 /* 0x591ad0, finds the player's building in the jail (278 B): 0x53e400 (1, 0, 0x3d) walks the buildings; the one
