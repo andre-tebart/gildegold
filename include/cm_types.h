@@ -579,10 +579,11 @@ typedef struct G17OWNERMSG {            /* 12 bytes, the data of message 0x38 (c
     int ownerId;                        /* 0x08, the owner character, -1: none */
 } G17OWNERMSG;
 
-typedef struct G17DESTROYMSG {          /* 4 bytes, the data of message 0x3b (cm_SendBuildingDestroyed, its handler
-                                           0x4cb100 removes the building) */
+typedef struct G17BLDMSG {              /* 4 bytes, the data of the messages that carry one building id: 0x3b
+                                           (cm_SendBuildingDestroyed, its handler 0x4cb100 removes the building) and
+                                           0x42 (cm_SendUpdateSmoke, its handler 0x4cb7f0 restarts its chimney smoke) */
     int bldId;                          /* 0x00, the building */
-} G17DESTROYMSG;
+} G17BLDMSG;
 
 typedef struct G17HANDOVERMSG {         /* 0x10 bytes, the data of message 0x3c (cm_SendHandOverCrimes, its handler
                                            0x4cb210 passes them to gv_HandOverCrimes) */
@@ -609,7 +610,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17STAGEMSG stage;              /* 0x10, message 0x34 */
         G17ANIMMSG anim;                /* 0x10, message 0x37 */
         G17OWNERMSG owner;              /* 0x10, message 0x38 */
-        G17DESTROYMSG destroy;          /* 0x10, message 0x3b */
+        G17BLDMSG destroy;              /* 0x10, message 0x3b */
         G17HANDOVERMSG handOver;        /* 0x10, message 0x3c */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
@@ -620,6 +621,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HOMEMSG home;                /* 0x10, message 0x39 */
         G17UPGRADEMSG upgrade;          /* 0x10, message 0x3a */
         G17MODELMSG model;              /* 0x10, message 0x3e */
+        G17BLDMSG smoke;                /* 0x10, message 0x42 */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */

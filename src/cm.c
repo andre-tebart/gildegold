@@ -1870,7 +1870,7 @@ void cm_SendUpdateSmoke(int a)
     G17MSG m;
 
     m.type = 0x42;
-    G17_I(m, 0) = a;
+    m.smoke.bldId = a;
     cm_QueueSend(&m);
 }
 /* 0x4c5870, queues the message 0x43 with a character's netId (sent after its skills were raised: he_RunTraining,
