@@ -3915,7 +3915,17 @@ extern int ai_Difficulty;          /* 0x6f23fc, the game difficulty 0 .. 4 (ai.h
    money (text 0x1b / 0x74, cm_SendMoneyDelta) or the price gm_ItemPrice * (difficulty / 4 + 0.5) from the master's
    goods or the treasury (text 0x1a / 0x1c, cm_SendMoveGoods); the research message (type 0xc for a building
    upgrade, goods kind 6, else 2) goes out in the group "upgrade" and its slot is waited for; an object already
-   held is selected on the panel ("ob_<NAME>"); gm_UpdateTechTree redraws the tree every frame */
+   held is selected on the panel ("ob_<NAME>"); gm_UpdateTechTree redraws the tree every frame
+   @deep Reconstructed in full from the original 0x591bf0..0x592228 (was a skeleton): the research object
+   query, gm_TechTreeWindow, the effects button, the node scan over gm_TreeNodes, the script query 0x2b,
+   the research message (type 0xc / 2), the goods price path (gm_ItemPrice * (difficulty * 0.25 + 0.5), the
+   master's goods or the treasury move, the player record +0x40) and the money path (AIGOOD.b40,
+   cm_SendMoneyDelta), the slot wait and the ob_<NAME> panel selection; ours=462 original=466, no ref /
+   literal difference. Left: allocation and scheduling: the original keeps rec in ebx and good in
+   [esp+0x14] (ours: good in ebx, rec reloaded from [esp+0x10]), loads the goods kind into al before 'cmp
+   al, 6' (ours 'cmp byte ptr [edi+eax], 6'), and interleaves the AIMSG field stores (to / time / arg) in
+   another order, e.g. +0x591e0b: ours 'mov eax, [ebp+1]; mov edx, [ai_Time]; mov [esp+0x30], eax' vs the
+   original 'xor eax, eax; mov ecx, [ebp+1]; mov ax, [ebp+0x25]'. A variant round. */
 void ai_TechTreeWindow(int bld, int room)
 {
     AIMSG msg;
