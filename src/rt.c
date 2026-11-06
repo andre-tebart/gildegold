@@ -976,7 +976,7 @@ void rt_EditCartRoute(char *c)
         rt_ReadMarkValues();
     }
     if (rt_PointCount(rt_EditRoute) > 1)
-        ai_Unk4c62a0(c, rt_EditRoute);
+        cm_SendSetRoute((AIOBJ *)c, rt_EditRoute);
     else {
         v = 0;
         ai_Unk4c6320(c);

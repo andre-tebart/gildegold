@@ -2307,25 +2307,27 @@ int cm_SendShots(void *p)
     memcpy(m.data, p, 0x80);
     return cm_QueueSend(&m);
 }
-/* 0x4c62a0, message 0x68: the route points pts (0x40 bytes each, next at +0x3c) of o as the long message */
+/* 0x4c62a0, message 0x68: the route points pts (RTPOINT, next at +0x3c) of the cart o as the long message */
 
-void ai_Unk4c62a0(char *o, char *pts)
+void cm_SendSetRoute(AIOBJ *o, RTPOINT *pts)
 {
     G17MSG m;
     char buf[0x200];
-    char *d, *next;
+    char *d;
+    RTPOINT *next;
     int i;
 
-    G17_I(m, 4) = rt_PointCount(pts);
-    G17_I(m, 0) = *(int *)(o + 2);
+    i = rt_PointCount(pts);
     m.type = 0x68;
-    for (i = G17_I(m, 4), d = buf; i > 0; i--) {
-        next = *(char **)(pts + 0x3c);
-        memcpy(d, pts, 0x40);
-        d += 0x40;
+    m.route.objId = o->objId;
+    m.route.count = i;
+    for (d = buf; i > 0; i--) {
+        next = pts->next;
+        memcpy(d, pts, sizeof(RTPOINT));
+        d += sizeof(RTPOINT);
         pts = next;
     }
-    cm_SetLongMsg(G17_I(m, 4) << 6, buf);
+    cm_SetLongMsg(m.route.count << 6, buf);
     cm_QueueSend(&m);
 }
 /* 0x4c6320, message 0x69: o's id (+2) */

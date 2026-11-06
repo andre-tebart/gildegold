@@ -2795,3 +2795,4 @@
 2026-11-06T20:28:17 0x006f0cd0 data ai_Unk6f0cd0 -> cm_RecvCount by:main why:incremented once per message cm_ReceiveMessages takes in (next to cm_RecvMsg / cm_RecvQueue); the only reader or writer is that loop
 2026-11-06T20:39:45 0x00625820 data ai_Unk625820 -> cm_EventNames by:main why:the table of the event kinds' names (HE_NULL, HE_HISTORIE, ...), indexed by AIJOB.kind and sent as message 0x1d's name
 2026-11-06T21:35:33 0x004c61f0 func ai_Unk4c61f0 -> cm_SendMasterChange by:main why:0x4c61f0 sends message 0x65 (party id, character netId); its handler 0x4cd130 sets the party record's host, cm_CheckMaster calls it when a new master is found
+2026-11-06T21:39:05 0x004c62a0 func ai_Unk4c62a0 -> cm_SendSetRoute by:main why:0x4c62a0 sends message 0x68, the route points of the cart o; its handler cm_ExSetRoute (0x4cd220) sets that cart's route

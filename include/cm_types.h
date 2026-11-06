@@ -532,7 +532,7 @@ typedef struct G17TABLEMSG {            /* 12 bytes, the data of message 0x54 (c
     int bldId;                          /* 0x08, the building whose table (object kind 0x12d) it is */
 } G17TABLEMSG;
 
-typedef struct G17ROUTEMSG {            /* 8 bytes, the data of message 0x68 (ai_Unk4c62a0, its handler 0x4cd220); the route
+typedef struct G17ROUTEMSG {            /* 8 bytes, the data of message 0x68 (cm_SendSetRoute, its handler 0x4cd220); the route
                                            points (rt.h RTPOINT, 0x40 bytes each) follow as the joined long message cm_LongMsg */
     int objId;                          /* 0x00, the cart (AIOBJ.objId, gm_FindObjectInst) */
     int count;                          /* 0x04, the points */
