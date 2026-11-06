@@ -1964,7 +1964,7 @@ void cm_SendFreeObject(int a)
     G17MSG m;
 
     m.type = 0x4a;
-    G17_I(m, 0) = a;
+    m.freeObject.objId = a;
     cm_QueueSend(&m);
 }
 /* 0x4c5aa0, message 0x4b (0x80 bytes of p) */

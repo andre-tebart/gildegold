@@ -569,6 +569,11 @@ typedef struct G17SETJOBMSG {           /* 5 bytes, the data of message 0x48 (cm
     unsigned char job;                  /* 0x04, gm_SetJob's job */
 } G17SETJOBMSG;
 
+typedef struct G17OBJIDMSG {            /* 4 bytes, the data of message 0x4a (cm_SendFreeObject, its handler 0x4cbb90
+                                           frees the object gm_FindObjectInst finds) */
+    int objId;                          /* 0x00, the object's id (AIOBJ.objId) */
+} G17OBJIDMSG;
+
 typedef struct G17CARTSTATEMSG {        /* 8 bytes, the data of message 0x33 (cm_SendCartState, its handler 0x4c9d00
                                            adds the action 0x38 with state to the cart "sp_<cartId>") */
     int cartId;                         /* 0x00, the cart's object id */
@@ -645,6 +650,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         GVDECMSG decision;              /* 0x10, message 0x46 */
         G17CHARCLEARMSG clear;          /* 0x10, message 0x47 */
         G17SETJOBMSG setJob;            /* 0x10, message 0x48 */
+        G17OBJIDMSG freeObject;         /* 0x10, message 0x4a */
         G17SPAWNMSG spawn;              /* 0x10, message 0x49 */
         G17CHATMSG chat;                /* 0x10, message 0x4b */
         G17CHARMSG chr;                 /* 0x10, message 0xb */
