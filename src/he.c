@@ -1316,7 +1316,7 @@ typedef struct HEGRAVELEASE {           /* the grave lease offer event 0x92's wo
 typedef struct HETRIALCASE {            /* the trial event 0xa0's words over AIJOB's union (its alloc he_AllocTrialScene,
                                            run he_RunTrialScene and the trial he_TrialPayment) */
     char pad00[0xac];
-    int level;                          /* 0xac, the trial's level (below 4 / 7 raises the payment base) */
+    unsigned int level;                 /* 0xac, the trial's level (below 4 / 7 raises the payment's bar; compared unsigned) */
 } HETRIALCASE;
 typedef struct HEMEET4 {                /* the meeting event 0xa1's words over AIJOB's union (its alloc he_AllocMeeting4, run
                                            0x5748d0 and the room query he_FindMeetingRoom); the four figures are AIJOB.ids */
@@ -25512,65 +25512,73 @@ void he_AllocTrialScene(int ev)
 
 int gm_TrialBuildingKind();                 /* 0x50d060 */
 
-/* 0x5741f0, the trial of the event 0xa0 (ROUGH): the building +0x10 (0x4fea50) and the figure +0xc (0x505df0) must exist; by the
-   building kind (0x50d060) 3 / 2 / else the approach +0xac gives a base value (0x14 / 0xa / 0 for a below 4 / below 7) plus the
-   float constants 0x5ebad4 / 0x5eb7f4 and a bonus count (0xa / 0x14 / 0x19); a random amount (0x42ec00 (0x18 / 0x10 / 8) + 0xf /
-   0xc / 0xa, times 0x20) and the other characters of the kind below 0xa whose 0x50c550 (word, per's word, 1) reaches the base
-   are counted; text 0x41fa (0x5176d0), the message 0x5fa (0x53dda0) and the payment -amount from per +4 (0x4c4830) */
+/* 0x5741f0, the trial payment of the event 0xa0 (state 1 of he_RunTrialScene): the building from (gm_FindById) and the
+   character netId (gm_FindChar) must exist. By the building's trial kind (gm_TrialBuildingKind) and the trial's level
+   the bar (the liking a figure needs) and a bonus count are: kind 3: 40 + 20 / 10 / 0 and 10 / 20 / 25 for a level
+   below 4 / below 7 / else; kind 2: 50 + 10 / 0 and 10 / 15 for a level below 4 / else; else 70 and 10. The fee per
+   head is 32 * (15 + random(24)) / 32 * (12 + random(16)) / 32 * (10 + random(8)). Every other figure (kind below
+   10) whose liking from the character (gm_Liking) is above the bar adds a head to the bonus; the character is told
+   (the news 0x5fa, the text 0x41fa with the building, the heads and the sum) and gets heads * fee from the own player
+   (cm_SendMoveGoodsUnchecked). */
 void he_TrialPayment(int ev)
 {
+    AIJOB *e = (AIJOB *)ev;
+    HETRIALCASE *t = (HETRIALCASE *)ev;
     char text[0x200];
-    char *bld, *per, *ch;
-    int a, kind, cnt, n, i, x;
-    float base;
+    char *bld;
+    AICHAR *per, *ch;
+    int kind, add, bonus, cnt, fee, sum, i;
+    float bar;
 
-    gm_FindById(&bld, 0, 0, HM_I(ev, 0x10));
+    gm_FindById(&bld, 0, 0, e->from);
     if (bld == 0)
         return;
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
+    per = (AICHAR *)gm_FindChar(e->netId);
     if (per == 0)
         return;
-    a = HM_I(ev, 0xac);
-    kind = gm_TrialBuildingKind(bld);
     cnt = 0;
-    x = 0;
+    kind = gm_TrialBuildingKind(bld);
     if (kind == 3) {
-        if (a < 4) {
-            base = 0x14 + (40.0f);
-            x = 0xa;
-        } else if (a < 7) {
-            base = 0xa + (40.0f);
-            x = 0x14;
-        } else {
-            base = (40.0f);
-            x = 0x19;
+        add = 0;
+        bonus = 0;
+        if (t->level < 4) {
+            add = 0x14;
+            bonus = -0xf;
+        } else if (t->level < 7) {
+            add = 0xa;
+            bonus = -5;
         }
-        n = (util_Random(0x18) & 0xffff) + 0xf;
+        bar = add + 40.0f;
+        bonus += 0x19;
+        fee = util_RandomU(0x18) + 0xf;
     } else if (kind == 2) {
-        if (a < 4) {
-            base = 0xa + (50.0f);
-            x = 0xf;
-        } else {
-            base = (50.0f);
-            x = 0xf;
+        add = 0;
+        bonus = 0;
+        if (t->level < 4) {
+            add = 0xa;
+            bonus = -5;
         }
-        n = (util_Random(0x10) & 0xffff) + 0xc;
+        bar = add + 50.0f;
+        bonus += 0xf;
+        fee = util_RandomU(0x10) + 0xc;
     } else {
-        base = 70.0f;
-        n = (util_Random(8) & 0xffff) + 0xa;
+        bar = 70.0f;
+        bonus = 0xa;
+        fee = util_RandomU(8) + 0xa;
     }
-    n = n * 0x20;
+    fee <<= 5;
     for (i = 0; i < 0x300; i++) {
-        ch = (char *)((unsigned)&ai_Chars + i * 0x21c);
-        if (*(unsigned short *)ch == 0xffff || ch == per || HM_B(ch, 2) >= 0xa)
+        ch = &ai_CharsT[i];
+        if (ch->id == 0xffff || ch == per || ch->kind >= 0xa)
             continue;
-        if (((float (*)(unsigned short, unsigned short, int))gm_Liking)(*(unsigned short *)ch, *(unsigned short *)per, 1) >= base)
+        if (gm_Liking(per->id, ch->id, 1) > bar)
             cnt++;
     }
-    cnt += x;
-    txt_Format(text, 0x41fa, 0, cnt, n * cnt);
-    he_ShowNews(HM_I(per, 4), -1, text, 1, 0x5fa, 0);
-    cm_SendMoveGoodsUnchecked(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, n * cnt);
+    cnt += bonus;
+    sum = cnt * fee;
+    txt_Format(text, 0x41fa, bld, cnt, sum);
+    he_ShowNews(per->netId, -1, text, 1, 0x5fa, 0);
+    cm_SendMoveGoodsUnchecked(per->netId, -1, ai_OwnPlayer, sum);
 }
 /* 0x5743c0, the run of the trial event 0xa0: it waits on the pending handle (cm_GetSlotState) and frees on the states
    -1 / -2; state 0 finds the building (gm_FindBuildingById, its from) and its group object (gm_Query, the prototype
