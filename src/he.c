@@ -23768,7 +23768,7 @@ int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
-void he_PlunderTakePrice(int *a, int b);   /* 0x570bf0 */
+void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
 void he_PlunderFailNews(int *a, int b);   /* 0x570c70 */
 
 /* 0x5707a0, the run handler of the plunder event 0x8a ("PAKT MIT DEM TOD"; alloc he_AllocPlunder): stage -1 / -2,
@@ -23852,7 +23852,7 @@ void he_RunPlunder(int ev)
                 deal[2] = ai_CharsT[idx].netId;
                 deal[3] = price;
                 if (util_RandomU(2) != 0)
-                    he_PlunderTakePrice(deal, (int)&ai_CharsT[idx]);
+                    he_PlunderTakePrice(deal, &ai_CharsT[idx]);
                 else
                     he_PlunderFailNews(deal, (int)&ai_CharsT[idx]);
             }
@@ -23886,13 +23886,13 @@ void he_RunPlunder(int ev)
 }
 /* 0x570bf0, a plunder message: 0x4c4830 (a[0], b + 4, the byte 0x6f1bc5, a[3]), 0x4c4a60 (b + 4, 0x1cc, 4, 1, 0), the text 0x40fe to a[0] (flag 1, 0x5f4) */
 
-void he_PlunderTakePrice(int *a, int b)
+void he_PlunderTakePrice(int *a, AICHAR *c)
 {
     char text[0x400];
 
-    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a[0], *(int *)(b + 4), *(unsigned char *)(unsigned)&ai_OwnPlayer, a[3]);
-    cm_SendSetField(*(int *)(b + 4), 0x1cc, 4, 1, 0);
-    txt_Format(text, 0x40fe, *(unsigned short *)b, a[3]);
+    ((int (*)(int, int, unsigned char, int))cm_SendMoveGoodsUnchecked)(a[0], c->netId, ai_OwnPlayer, a[3]);
+    cm_SendSetField(c->netId, 0x1cc, 4, 1, 0);
+    txt_Format(text, 0x40fe, c->id, a[3]);
     he_ShowNews(a[0], -1, text, 1, 0x5f4, 0);
 }
 /* 0x570c70, the text 0x40ff (the word of b) to a[0] (flag 1, 0x5f4) */
@@ -23962,7 +23962,7 @@ void he_RunPlunderOffer(int ev)
         if (id == -1)
             return;
         if (id == 0) {
-            he_PlunderTakePrice(d->deal, (int)&ai_CharsT[ai_PlayerId]);
+            he_PlunderTakePrice(d->deal, &ai_CharsT[ai_PlayerId]);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
@@ -23982,7 +23982,7 @@ int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
-void he_PlunderTakePrice(int *a, int b);   /* 0x570bf0 */
+void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
 void he_PlunderFailNews(int *a, int b);   /* 0x570c70 */
 int he_OpenEventSlot();                 /* 0x53d6f0 */
 int gm_ClockSeason();                 /* 0x4fe350 */
