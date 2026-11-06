@@ -9804,112 +9804,107 @@ void ai_MoneyExchangeWindow(AIBLD *bank)
     sv_CameraFollow();
 }
 
-int gm_GetWorth(unsigned short id); int ai_Unk5bd470(); int ai_Unk5bd330(); void d2_ClearPaintbox(void);
+int gm_GetWorth(unsigned short id); int ai_ShowCarrierRows(); int ai_ShowLoanRows(); void d2_ClearPaintbox(void);
 
-/* 0x59dc00, the callback of the money lender info window "locations\geldleihe\geldleihe_info" (771 B, Ghidra
-   missed this start: it is only reached as the address-taken callback of 0x59df10; ROUGH: the two lists of the
-   selection are not typed): param_1 is the building record; 0x50a640 (*param_1) and 0x509e60 (param_1) give
-   the two values of the text 0x18ef; the window 0x4741f0, the rectangle 0xc / 0x14 / 0xc / 0xc, the texts
-   0x18ed, 0x18ee (*param_1), 0x18ef, the two buttons 0x475b80 (0x18f0 / 0x18f1) and the combo 0x475ff0
-   (window, 2, 0x100, &a, &b, &c) with 0x52e860 (0x206, 0x167); on a change of the selection (a == 1 / 2) the
-   list 0x5bd470 (param_1, 0, 0) / 0x5bd330 (param_1, 9, rows, win, 2) is rebuilt (the texts 0x18f2 / 0x18f3
-   when it is empty) or the clicked control selects 1 / 2; the 9 row triples 0x472ce0 / 0x46e710 are freed on
-   each rebuild and at the end; the pump 0x5309a0 (0x59dc00, 0x677c7), 0x4758f0 at the end */
-void ai_MoneyLenderInfoWindow(unsigned short *param_1)
+/* 0x59dc00, the money lender's info window "locations\geldleihe\geldleihe_info" on the character ch (771 B), the
+   callback the fortune overview (ai_FortuneOverview) hands the amount menu: the paddings 0xc / 0x14 / 0xc / 0xc,
+   the texts 0x18ed, 0x18ee (the character) and 0x18ef (his worth gm_GetWorth, his goods value gm_GetGoodsValue),
+   the two page buttons 0x18f0 / 0x18f1 and the scroll list (0x206 / 0x167); the page shown is rebuilt after every
+   change: page 1 the character's carriers (ai_ShowCarrierRows, or 0x18f2 when none), page 2 his loans as up to 9 credit
+   rows (ai_ShowLoanRows, or 0x18f3), the loan rows are freed when page 1 is built; a right click closes it, the
+   rows are freed at the end */
+void ai_MoneyLenderInfoWindow(AICHARREC *ch)
 {
-    int rows[9 * 3];
-    int a;
-    int b;
-    int c;
-    int sel;
-    int dirty;
+    CREDITLISTROW rows[9];
+    int down;
+    int up;
+    int bar;
+    int page;
+    int rebuild;
+    int carriersButton;
+    int loansButton;
+    int worth;
+    int value;
     int win;
-    int v;
-    int money;
-    int ctl1;
-    int ctl2;
     int i;
 
-    if (param_1 == 0)
+    rebuild = 1;
+    page = 1;
+    if (ch == 0)
         return;
     for (i = 0; i < 9; i++) {
-        rows[i * 3] = -1;
-        rows[i * 3 + 1] = -1;
-        rows[i * 3 + 2] = 0;
+        rows[i].child = -1;
+        rows[i].pic = -1;
+        rows[i].loan = 0;
     }
-    v = gm_GetWorth(*param_1);
-    money = gm_GetGoodsValue((char *)param_1);
+    worth = gm_GetWorth(ch->id);
+    value = gm_GetGoodsValue(ch);
     win = d2_OpenForm(0, 0, "locations\\geldleihe\\geldleihe_info");
     d2_SetForm(win, 0);
-    i = U_I((unsigned)&d2_LastWindow) * 0x3c4;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x11c) + i) = 0xc;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x120) + i) = 0x14;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x124) + i) = 0xc;
-    U_I(((unsigned)&ai_Unkf8f39c + 0x128) + i) = 0xc;
+    d2_Wins[d2_LastWindow].padl = 0xc;
+    d2_Wins[d2_LastWindow].padt = 0x14;
+    d2_Wins[d2_LastWindow].padr = 0xc;
+    d2_Wins[d2_LastWindow].padb = 0xc;
     d2_SetForm(win, 1);
     io_PrintText(0x18ed);
     d2_SetForm(win, 4);
-    io_PrintText(0x18ee, *param_1);
-    io_PrintText(0x18ef, money, v);
+    io_PrintText(0x18ee, ch->id);
+    io_PrintText(0x18ef, worth, value);
     d2_SetForm(win, 3);
-    ctl1 = d2_GetWinObj(win, 3, io_PrintText(0x18f0));
+    carriersButton = d2_GetWinObj(win, 3, io_PrintText(0x18f0));
     d2_SetForm(win, 5);
-    ctl2 = d2_GetWinObj(win, 5, io_PrintText(0x18f1));
+    loansButton = d2_GetWinObj(win, 5, io_PrintText(0x18f1));
     d2_SetForm(win, 0);
-    i = d2_GetViewWin(win, 2, 0x100, &a, &b, &c);
-    sv_CreateScrollButtons(0x206, 0x167, U_I((unsigned)&d2_LastWindow), i);
+    sv_CreateScrollButtons(0x206, 0x167, d2_LastWindow, d2_GetViewWin(win, 2), 0x100, &down, &up, &bar);
     d2_CentreViewWindows(win);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    U_I((unsigned)&d2_PointerObj) = -1;
-    sel = 0;
-    dirty = 1;
-    for (;;) {
-        if (dirty) {
-            dirty = 0;
-            if (sel == 1) {
-                for (i = 0; i < 9; i++) {
-                    if (rows[i * 3] != -1) {
-                        d2_RemoveWindow(rows[i * 3]);
-                        d2_RemoveObj(rows[i * 3 + 1]);
-                        rows[i * 3] = -1;
-                        rows[i * 3 + 1] = -1;
-                        rows[i * 3 + 2] = 0;
-                    }
+    d2_ClickedId = -1;
+    d2_PointerObj = -1;
+    do {
+        if (rebuild) {
+            rebuild = 0;
+            for (i = 0; i < 9 && page == 1; i++) {
+                if (rows[i].child != -1) {
+                    d2_RemoveWindow(rows[i].child);
+                    d2_RemoveObj(rows[i].pic);
+                    rows[i].child = -1;
+                    rows[i].pic = -1;
+                    rows[i].loan = 0;
                 }
             }
             d2_SetForm(win, 2);
             d2_ClearPaintbox();
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            if (sel == 1) {
-                if (ai_Unk5bd470(param_1, 0, 0) <= 0)
-                    io_PrintText(0x18f2, *param_1);
-            } else if (sel == 2) {
-                if (ai_Unk5bd330(param_1, 9, rows, win, 2) == 0)
-                    io_PrintText(0x18f3, *param_1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            if (page == 1) {
+                if (ai_ShowCarrierRows(ch, 0, 0) <= 0)
+                    io_PrintText(0x18f2, ch->id);
+            } else if (page == 2) {
+                if (ai_ShowLoanRows(ch, 9, rows, win, 2) == 0)
+                    io_PrintText(0x18f3, ch->id);
             }
         }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctl1) {
-                if (sel != 1) {
-                    sel = 1;
-                    dirty = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == carriersButton) {
+                if (page != 1) {
+                    page = 1;
+                    rebuild = 1;
                 }
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
-                if (sel != 2) {
-                    sel = 2;
-                    dirty = 1;
+            } else if (d2_PointerObj == loansButton) {
+                if (page != 2) {
+                    page = 2;
+                    rebuild = 1;
                 }
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_MoneyLenderInfoWindow, 0x677c7) == 0)
-            break;
-    }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_MoneyLenderInfoWindow, 0x677c7) != 0);
     for (i = 0; i < 9; i++) {
-        if (rows[i * 3] != -1) {
-            d2_RemoveWindow(rows[i * 3]);
-            d2_RemoveObj(rows[i * 3 + 1]);
+        if (rows[i].child != -1) {
+            d2_RemoveWindow(rows[i].child);
+            d2_RemoveObj(rows[i].pic);
+            rows[i].child = -1;
+            rows[i].pic = -1;
+            rows[i].loan = 0;
         }
     }
     d2_CloseView(win);
@@ -18018,7 +18013,7 @@ void ai_ShowWindowRow(AIWINDOWROW *row)
    the high word 0x10 of 0xf8f130 (both + ctrl * 0x3c4) and the owner 0x502020 of the character +0xac with
    the text 0x515960 (0x1f41, the owner, the +0xb4, the +0xc0, the +0xc4) */
 
-int ai_Unk5bd330(unsigned short *param_1, int param_2, int param_3, int param_4, int param_5)
+int ai_ShowLoanRows(unsigned short *param_1, int param_2, int param_3, int param_4, int param_5)
 {
     int ids[9];
     int n;
@@ -18057,7 +18052,7 @@ int ai_Unk5bd330(unsigned short *param_1, int param_2, int param_3, int param_4,
    0), the name 0x5176d0 (0x62d1e8) / 0x473650 and the kind text 0x5176d0 (0x60d224) / 0x473650; the window
    list entry 0xf8f080 + id * 0x2ec gets +0x4c = 1, +0x1c0 = 3 and the carrier at +0x2e8; returns the count */
 
-int ai_Unk5bd470(unsigned short *param_1, int param_2, int *param_3)
+int ai_ShowCarrierRows(unsigned short *param_1, int param_2, int *param_3)
 {
     int n;
     int i;
