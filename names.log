@@ -2827,3 +2827,4 @@
 2026-11-06T22:34:23 0x00624570 data ai_Unk624570 -> cm_RunCharacters by:main why:switch (1): the client updates its characters' needs and master evaluations when the time advances
 2026-11-06T22:34:23 0x00624574 data ai_Unk624574 -> cm_RunRating by:main why:switch (1): the client advances the rating base and recounts the characters every 6 minutes
 2026-11-06T22:34:23 0x00624578 data ai_Unk624578 -> cm_RunEvents by:main why:switch (1): the client runs its event handlers when the time advances
+2026-11-06T22:37:45 0x004c8990 data ai_Unk4c8990 -> cm_ExGameOver by:main why:handler of message 0x1f: it only leaves the running game (sv_PopTo(main_GameLoop)), the same pop as ai_QuitGame and the closed connection; reasoned: the server end-of-game message (no client sender)
