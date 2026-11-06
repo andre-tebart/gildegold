@@ -24,7 +24,8 @@
    ord_CountGridObjects and ai.c's ai_Unk483a60 (both debt) and of sv_t's tutorial builders (tie-break).
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
    object record views (G8CHARREC / G8OBJ of the news messages), the use callback's request (G8USEVIEW), the
-   Domizil entry (G9DOMIZILRANGE), the equip window's rows (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
+   Domizil entry (G9DOMIZILRANGE), the scene character (G8SCENECHAR, ch.h CHARACTER), the equip window's rows
+   (AIEQUIPROW / AIEQUIPSLOT), the window row pages and
    the gv record (AIWINDOWROW, AIPOSVIEW), the dice duel (LCDUEL / LCDUELSIDE, am.h AGDUEL, full layout), the
    player record (LCFIN, ai.h AIFIN) and the special-amount row (LCAMOUNTROW, cm.c CMAMOUNTROW) are local views here (menu.h / sv.h / ai_char.h / ai_types.h /
    am_types.h / am.h / ai.h hold the owners' types); they settle when those headers can be included. The "hp_" production
