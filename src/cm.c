@@ -6812,8 +6812,8 @@ int cm_LobbyUpdatePlayer(CMLOBBYPLAYER *p)
     memset(m.data, 0, 0x80);
     m.type = 0x5f;
     p->id = cm_LobbyPlayerId;
-    G17_I(m, 0) = 4;
-    memcpy(&m.data[4], p, 0x57);
+    m.lobby.kind = 4;
+    m.lobby.player = *p;
     return cm_QueueSend(&m);
 }
 /* 0x4cd820, kind 5 */
