@@ -2754,3 +2754,4 @@
 2026-11-06T18:50:57 0x00558de0 data he_Unk558de0 -> he_AllocEvent17 by:main why:the alloc handler he_SetEventHandlers registers for the event type 0x17 (23, src/he.c:20109), whose run handler is he_RunEvent17
 2026-11-06T18:51:44 0x00558e70 data he_Unk558e70 -> he_AllocSabotage by:main why:the alloc handler he_SetEventHandlers registers for the sabotage event 25 (src/he.c:20111), whose run handler is he_RunSabotage
 2026-11-06T18:53:53 0x0055ce00 data he_Unk55ce00 -> he_AllocMasterExamPass by:main why:the alloc handler he_SetEventHandlers registers for the passed master exam event 38 / 0x26 (src/he.c:20151), whose run handler is he_RunMasterExamPassed
+2026-11-06T18:55:31 0x0055e180 data he_Unk55e180 -> he_AllocWorkerQuits by:main why:the allocation handler of the event 51 (0x33), registered with he_RunWorkerQuits at he_SetEventHandlers(51, ...); it looks the event's ownerCh up and frees the record when the character is gone or its kind is 0x14

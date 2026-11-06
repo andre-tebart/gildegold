@@ -16031,20 +16031,21 @@ void he_RunPromotion(int ev)
         return;
     }
 }
-/* 0x55e180, a Ghidra miss: the allocation handler of the event 0x33: the player 0x505df0 (+0xac) must exist and his kind byte (+2) must not be 0x14 (else free), the run clock is the start clock */
+/* 0x55e180, the allocation handler of the event 0x33 (a worker quits, he_RunWorkerQuits): the character AIJOB.ownerCh
+   must exist and not be kind 0x14, else the record is freed; the due clock is the start clock */
 
-void he_Unk55e180(int ev)
+void he_AllocWorkerQuits(AIJOB *ev)
 {
-    int p;
+    AICHAR *c;
 
-    p = gm_FindChar(*(int *)(ev + 0xac));
-    if (p != 0 && *(char *)(p + 2) != 0x14) {
-        *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
+    c = (AICHAR *)gm_FindChar(ev->ownerCh);
+    if (c != 0 && c->kind != 0x14) {
+        ev->end = ev->start;
         return;
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x55e1d0, the run handler of the event 0x33 (its alloc handler he_Unk55e180), a worker who quits: stages -2 / -1 free
+/* 0x55e1d0, the run handler of the event 0x33 (its alloc handler he_AllocWorkerQuits), a worker who quits: stages -2 / -1 free
    the record, a later stage leaves it. At stage 0 the character AIJOB.ownerCh must still work in a building (AICHAR.bld)
    whose owner it likes -26 or less (gm_Opinion), else the record is freed. It is cleared and halted, loses its building
    (AICHAR.bld sent as 0) and is sent home (gm_CharacterHome: to its home object, else into the building; the walk tag
@@ -20161,7 +20162,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(50, (void *)he_AllocEvent32, (void *)he_RunPromotion) != 0)
         return 1;
-    if (he_SetEventHandlers(51, (void *)he_Unk55e180, (void *)he_RunWorkerQuits) != 0)
+    if (he_SetEventHandlers(51, (void *)he_AllocWorkerQuits, (void *)he_RunWorkerQuits) != 0)
         return 1;
     if (he_SetEventHandlers(52, (void *)he_Unk55e3a0, (void *)he_RunWorkerTheft) != 0)
         return 1;
