@@ -1922,10 +1922,10 @@ void cm_SendCharClear(int a, int b, int c)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.clear.charId = a;
     m.type = 0x47;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.clear.room = b;
+    m.clear.spare = c;
     cm_QueueSend(&m);
 }
 /* 0x4c59b0, sends message 0x48: its handler (0x4cb9b0) gives the character id the job (gm_SetJob) */
