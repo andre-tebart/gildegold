@@ -2659,3 +2659,6 @@
 2026-11-06T12:10:27 0x00599af0 func ai_Unk599af0 -> ai_TavernContact by:main why:the tavern room's contact listener (room kind 0x120): the plates contact_WUERFELSPIEL / contact_STAMMTISCH / ob_DUNKLE_ECKE
 2026-11-06T12:11:34 0x00599e00 func ai_Unk599e00 -> ai_DrawGoodsCell by:main why:draws a goods cell: the frame 0x525, the goods picture 0xdf + id, the price plate 0x746 with gm_GoodsPrice's amount
 2026-11-06T12:14:24 0x00599ef0 func ai_Unk599ef0 -> ai_CityInfoWindow by:main why:0x599ef0 opens Handel\Handel_Stadtinfo for the city record (kind 'G') its caller 0x59a3c0 picks by player slot: the city name, the coat of arms Wappen128_ns_Stadt_%s and the city's goods
+2026-11-06T12:18:56 0x0143a3ec data full_data_143a3ec -> txt_Tribune by:main why:text slot 0x8b: ai_MarketStandListener 0x59a800 registers it as the name plate text of ob_TRIBUENE
+2026-11-06T12:19:36 0x005b5690 func ai_Unk5b5690 -> ai_NoticeBoardWindow by:main why:0x5b5690 opens the form misc\pamphlet_brett (ai_MarketStandListener: ob_SCHWARZES_BRETT); 0x5b5a20 opens special\barde (ai_MarketStandListener: ob_TRIBUENE)
+2026-11-06T12:19:36 0x005b5a20 func ai_Unk5b5a20 -> ai_BardWindow by:main why:0x5b5690 opens the form misc\pamphlet_brett (ai_MarketStandListener: ob_SCHWARZES_BRETT); 0x5b5a20 opens special\barde (ai_MarketStandListener: ob_TRIBUENE)

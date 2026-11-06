@@ -19,7 +19,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_SpeedHostOnly                        (*(char * *)((char *)txt_Ptrs + 0x00218))  /* 0x143a3d8, the status text ai_SpeedKeys shows to a network client that presses a speed key (only the host sets the speed); its wording is unknown */
 #define full_data_143a3e4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x00224))  /* 0x143a3e4 */
 #define ai_ContactTextMercenaryBook                        (*(char * *)((char *)txt_Ptrs + 0x00228))  /* 0x143a3e8, the hover text of the mercenary book ob_SOELDNERBUCH (ai_MercenaryBookContact); the wording is unknown */
-#define full_data_143a3ec                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0022c))  /* 0x143a3ec */
+#define txt_Tribune                              (*(char * *)((char *)txt_Ptrs + 0x0022c))  /* 0x143a3ec, text 0x8b: the name plate text of the market stand ob_TRIBUENE (ai_MarketStandListener) */
 #define full_data_143a3f0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x00230))  /* 0x143a3f0 */
 #define ai_ContactTextParchment                 (*(char * *)((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4, the text the ub_INFORMATIONSPERGAMENT plate of the room 0x14c listener shows (ai_GuildHallListener); the wording is unknown */
 #define ai_Unk143a588                            (*(int (*)[7])((char *)txt_Ptrs + 0x003c8))  /* 0x143a588 */

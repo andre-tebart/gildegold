@@ -7977,7 +7977,7 @@ void sv_ClearNamePlates(void); struct D3OBJECT * d3if_Pick(float x, float y, int
 int gm_PlayerFactor(int a, unsigned char k); int gm_GetCreditOffers(); int gm_CreditEvents(); void d2_EnableViewObjects();
 void he_MessageBoxQuickjump(int a1, int a2, char *text, char fl, int a5, int a6, int a7, char *jump, char *text2); void he_FreeEvent(); void d2_RadioClear(int g); int d2_CreateRadioGroup(int n, ...);
 int ai_PersonnelBook(); int ai_StorageWindow(); void ai_MasterLetterWindow(); int ai_OpenTransport();
-int ai_Unk5b5a20(); int ai_Unk5b5690(); int ai_AmountRowStatus(); int ai_AmountRow();
+int ai_BardWindow(); int ai_NoticeBoardWindow(); int ai_AmountRowStatus(); int ai_AmountRow();
 void ai_LeftAlignedText(); void cm_BeginGroup(const char *s); void cm_SendScriptMessage(void *p); void cm_SendProofExecuted(int a, int b);
 
 /* 0x599af0, the tavern room's contact listener: it releases the name plates, then per frame (sv_RunFrame, this,
@@ -8360,81 +8360,81 @@ void ai_MarketStandWindow(AIBLD *bld, int kind)
     if (sv_PanelForm != -1)
         d2_SetViewEnabled(sv_PanelForm, 1);
 }
-/* 0x59a800, the market stand listener (736 B): nine stand contacts (0x52e1c0, class 0x10) and, in Nuernberg
-   (strcmp of the city name 0x7e3f40 + city * 0x2f4), the three "contact_MARKTFLECKEN_0x" (state 0x143c700); the
-   clicked contact 0x6f22e4 leaves the market via 0x59a710 (param_1, 0x92 Tischler / Schmiede .. 0x2db Okkult);
-   the two "SCHWARZES_BRETT" contacts and "ob_TRIBUENE" open 0x5b5690 / 0x5b5a20; a market fleck needs its
-   object +0x1f8 -> +0x200 and leaves 0x59a710 (that, 0x95) */
+#define MARKET_FLECK_NAME (0x57 * 0xe - 2)  /* the name of building kind 0x57 (ai_BuildingNames[kind * 0xe - 2] as
+                                               f3init.c reads a kind's name); the kind is computed from the slot 0x4c0, a guess */
+/* 0x59a800, the market stand listener (736 B): registers the name plates of the market's stands (the object kind
+   names 0x92 .. 0x97 and 0x2db of txt_ObjectNames), the notice board (kind 0x98) and the stand ob_TRIBUENE and, in
+   Nuernberg (the own player slot's city name), the three "contact_MARKTFLECKEN_0x" plates; a clicked stand opens
+   ai_MarketStandWindow(market, its kind), the notice board 0x5b5690, the stand 0x5b5a20, a market fleck plate the
+   window of stand 0x95 for the building its object's parent stands for */
 
-void ai_MarketStandListener(int param_1)
+void ai_MarketStandListener(AIBLD *market)
 {
     char *fleck1 = 0;
     char *fleck2 = 0;
     char *fleck3 = 0;
     char *c;
+    AIBLD *bld;
 
-    sv_RegisterNamePlate("ob_MARKTSTAND_TISCHLER_SCHMIEDE", U_I((unsigned)&full_data_143ccf0), 0x10);
-    sv_RegisterNamePlate("ob_MARKTSTAND_STEINMETZ_WIRT", U_I((unsigned)&full_data_143ccf8), 0x10);
-    sv_RegisterNamePlate("ob_MARKTSTAND_PARFUM_KRAEUTER", U_I((unsigned)&full_data_143cd00), 0x10);
-    sv_RegisterNamePlate("ob_MARKTSTAND_ROHSTOFFE", U_I((unsigned)&full_data_143cd08), 0x10);
-    sv_RegisterNamePlate("ob_MARKTSTAND_IMPORTEUR", U_I((unsigned)&full_data_143cd10), 0x10);
-    sv_RegisterNamePlate("ob_MARKTSTAND_KIRCHE", U_I((unsigned)&full_data_143cd18), 0x10);
-    sv_RegisterNamePlate("ob_MARKTSTAND_OKKULT", U_I((unsigned)&full_data_143df38), 0x10);
-    sv_RegisterNamePlate("ob_SCHWARZES_BRETT", U_I((unsigned)&full_data_143cd20), 0x10);
-    sv_RegisterNamePlate("ob_TRIBUENE", U_I((unsigned)&full_data_143a3ec), 0x10);
-    if (strcmp((char *)(unsigned)&ai_PlayerSlots + U_I((unsigned)&ai_OwnPlayer) * 0x2f4, "Nuernberg") == 0) {
-        fleck1 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_01", U_I(((unsigned)&ai_BuildingNames + 0x1300)), 0x10);
-        fleck2 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_02", U_I(((unsigned)&ai_BuildingNames + 0x1300)), 0x10);
-        fleck3 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_03", U_I(((unsigned)&ai_BuildingNames + 0x1300)), 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_TISCHLER_SCHMIEDE", (char *)txt_ObjectNames[0x92][0], 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_STEINMETZ_WIRT", (char *)txt_ObjectNames[0x93][0], 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_PARFUM_KRAEUTER", (char *)txt_ObjectNames[0x94][0], 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_ROHSTOFFE", (char *)txt_ObjectNames[0x95][0], 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_IMPORTEUR", (char *)txt_ObjectNames[0x96][0], 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_KIRCHE", (char *)txt_ObjectNames[0x97][0], 0x10);
+    sv_RegisterNamePlate("ob_MARKTSTAND_OKKULT", (char *)txt_ObjectNames[0x2db][0], 0x10);
+    sv_RegisterNamePlate("ob_SCHWARZES_BRETT", (char *)txt_ObjectNames[0x98][0], 0x10);
+    sv_RegisterNamePlate("ob_TRIBUENE", txt_Tribune, 0x10);
+    if (strcmp(ai_PlayerSlots[ai_OwnPlayer], "Nuernberg") == 0) {
+        fleck1 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_01", (char *)ai_BuildingNames[MARKET_FLECK_NAME], 0x10);
+        fleck2 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_02", (char *)ai_BuildingNames[MARKET_FLECK_NAME], 0x10);
+        fleck3 = (char *)sv_RegisterNamePlate("contact_MARKTFLECKEN_03", (char *)ai_BuildingNames[MARKET_FLECK_NAME], 0x10);
     }
-    c = (char *)U_I((unsigned)&ai_ClickedObject);
+    c = (char *)ai_ClickedObject;
     if (c == 0)
         return;
     if (strcmp(c, "ob_MARKTSTAND_TISCHLER_SCHMIEDE") == 0) {
-        ai_MarketStandWindow(param_1, 0x92);
+        ai_MarketStandWindow(market, 0x92);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_STEINMETZ_WIRT") == 0) {
-        ai_MarketStandWindow(param_1, 0x93);
+        ai_MarketStandWindow(market, 0x93);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_PARFUM_KRAEUTER") == 0) {
-        ai_MarketStandWindow(param_1, 0x94);
+        ai_MarketStandWindow(market, 0x94);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_ROHSTOFFE") == 0) {
-        ai_MarketStandWindow(param_1, 0x95);
+        ai_MarketStandWindow(market, 0x95);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_IMPORTEUR") == 0) {
-        ai_MarketStandWindow(param_1, 0x96);
+        ai_MarketStandWindow(market, 0x96);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_KIRCHE") == 0) {
-        ai_MarketStandWindow(param_1, 0x97);
+        ai_MarketStandWindow(market, 0x97);
         return;
     }
     if (strcmp(c, "ob_MARKTSTAND_OKKULT") == 0) {
-        ai_MarketStandWindow(param_1, 0x2db);
+        ai_MarketStandWindow(market, 0x2db);
         return;
     }
-    if (strcmp(c, "contact_ob_SCHWARZES_BRETT") == 0) {
-        ai_Unk5b5690();
-        return;
-    }
-    if (strcmp(c, "ob_SCHWARZES_BRETT") == 0) {
-        ai_Unk5b5690();
+    if (strcmp(c, "contact_ob_SCHWARZES_BRETT") == 0 || strcmp(c, "ob_SCHWARZES_BRETT") == 0) {
+        ai_NoticeBoardWindow();
         return;
     }
     if (strcmp(c, "ob_TRIBUENE") == 0) {
-        ai_Unk5b5a20();
+        ai_BardWindow();
         return;
     }
     if (c != fleck1 && c != fleck2 && c != fleck3)
         return;
-    if (U_I(U_I(c + 0x1f8) + 0x200) == 0)
+    bld = (AIBLD *)((D3OBJECT *)c)->parent->owner;
+    if (bld == 0)
         return;
-    ai_MarketStandWindow(U_I(U_I(c + 0x1f8) + 0x200), 0x95);
+    ai_MarketStandWindow(bld, 0x95);
 }
 /* 0x59aae0, the wine cellar of the player's house (544 B): "locations\wohnsitz\weinkeller" 0x4741f0, the
    player's own money 0x509e60 (0x770b80 + player * 0x21c) against the cellar's 0x509e30 (0x6f2310 + 0x14);
@@ -17330,7 +17330,7 @@ int ai_PamphletWindow(int param_1)
    controls, a 0x2c-byte frame; the body is a comment. Ghidra merged it into its 0x5b5610 record (the original
    span of that record runs to 0x5b5e80), so the ledger's undrafted scan does not flag it */
 
-int ai_Unk5b5690(void)
+int ai_NoticeBoardWindow(void)
 {
     /* ROUGH SKELETON: the window "0x62cdc8" and the global 0x6333cc */
     return -1;
@@ -17338,7 +17338,7 @@ int ai_Unk5b5690(void)
 /* 0x5b5a20, a carrier window (1120 B, ROUGH SKELETON): the carrier walk 0x53e400 (1, 0, 0x6b), a 0x104-byte
    frame; the body is a comment. Ghidra merged it into its 0x5b5610 record too */
 
-int ai_Unk5b5a20(void)
+int ai_BardWindow(void)
 {
     /* ROUGH SKELETON: the walk 0x53e400 (1, 0, 0x6b) and the window body */
     return 1;
