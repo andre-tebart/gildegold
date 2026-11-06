@@ -7254,7 +7254,9 @@ int ai_DuelAct(); void ai_DuelNextPhase(); int ai_DuelOpponentAction(); int ai_D
 typedef struct LCFIN {                  /* what gm_PlayerRecord finds for a character (ai.h AIFIN; ai.h cannot be included here yet) */
     char pad00[0x48];
     int loansRepaid;                    /* 0x48, AIFIN.loansRepaid: the loan sums paid back at a money lender (ai_RepayLoan) */
-    char pad4c[0xc];
+    char pad4c[4];
+    int cartSpent;                      /* 0x50, AIFIN.cartSpent: the money paid for new carts (ai_BuyCartWindow) */
+    char pad54[4];
     float duelBias;                     /* 0x58, AIFIN.roundFactors[0]: the bias for who starts a dice duel (am.h AGFIN.firstBias) */
     float tavernChance;                 /* 0x5c, AIFIN.roundFactors[1]: the chance of being invited to the dice game; each visit
                                            takes it to * 0.66 - 0.1 (invited) or * 0.66 - 0.02 (not invited, after 11 o'clock) */
@@ -17718,34 +17720,35 @@ void ai_HelperBook(AIBLD *bld, char *model)
 
 void d2_CenterObj(); void gm_FreeObject(int o); int gm_LevelPayout(int v, int kind);
 
-/* 0x5ae240, the transport purchase window "Handel\Handel_Transport_neuer_Kauf" (791 B): 0x509060 counts the
-   selected characters (more than 2: the text 0xf1 and out); the window 0x4741f0, the three controls 0xd8 of the
-   list 0x46c490 (3, ...), the page 0x52e6d0 (0x70b, 0x741); a click on the 0xdb control takes the quantity
-   0x5087f0 (0x134 + the entry, 100) and asks 0x521040 (the character, the quantity, the player): the text 0xd9 in
-   the order of 0x5190a0 and, confirmed (0x521150, 0x101), the payment 0x4c4830 / 0x506430 (+0x50) / the order
-   0x4c4880 (the +1 field of param_1, the entry + 0x134, the player); the 0x5e2 .. 0x5e4 keys pick the entry; the
-   caption 0xda of the control 0x473540 with the quantity; the pump 0x5309a0 (0x677c7) */
-void ai_Unk5ae240(int param_1)
-{
-    int ids[3];
-    char text[512];
-    char text2[1024];
-    int win;
-    int list;
-    int ctrl;
-    int qty;
-    int v;
-    int i;
-    int k;
-    int fam;
+/* 0x5ae240, the new cart purchase window "Handel\Handel_Transport_neuer_Karren" of the building bld (808 B;
+   ai_TransportWindow opens it): with three carts already (gm_BuildingCarts) only the text 0xf1 (3); else the three
+   cart kinds as a radio group (the texts 0xd8, the frame 0x70b / 0x741) and the buy button 0xdb, captioned 0xda
+   with the chosen kind's name (0xc10 + 2 * kind) and price (gm_ItemPrice of the item 0x134 + kind). Buying asks
+   0xd9 (the price and the name in the order of the language), pays the price (cm_SendMoveGoodsUnchecked), counts
+   it in the player's record (LCFIN.cartSpent) and moves the item to the building (cm_SendExSellObject), then
+   closes; the frame pump is sv_RunFrame (this, 0x677c7) */
 
-    i = 0;
-    if (gm_BuildingCarts(param_1, 0, 0) > 2) {
+void ai_BuyCartWindow(AIBLD *bld)
+{
+    int buyButton;
+    int list;
+    int ids[3];
+    char text[0x200];
+    char text2[0x400];
+    int win;
+    int price;
+    int item;
+    int kind;
+    int k;
+    LCFIN *fin;
+
+    kind = 0;
+    if (gm_BuildingCarts(bld, 0) >= 3) {
         txt_Format(text, 0xf1, 3);
         sv_MessageBox(text, 0);
         return;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62cc6c);
+    win = d2_OpenForm(0, 0, "Handel\\Handel_Transport_neuer_Karren");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
     io_PrintText(0xd8);
@@ -17753,51 +17756,48 @@ void ai_Unk5ae240(int param_1)
     ids[1] = d2_GetWinObj(win, 1, 1);
     ids[2] = d2_GetWinObj(win, 1, 2);
     d2_SetForm(win, 0);
-    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70b, 0x741);
+    sv_OpenWindowFrame(d2_LastWindow, 0x70b, 0x741);
     d2_SetForm(win, 3);
-    ctrl = d2_GetWinObj(win, 3, io_PrintText(0xdb));
+    buyButton = d2_GetWinObj(win, 3, io_PrintText(0xdb));
     list = d2_CreateRadioGroup(3, ids[0], ids[1], ids[2]);
     d2_RadioSelect(list, 0);
-    while (1) {
-        if (U_I((unsigned)&d2_ClickedId) != 0 && (U_I((unsigned)&d2_ClickedId) < 0x5e2 || U_I((unsigned)&d2_ClickedId) > 0x5e4)) {
-            if (U_I((unsigned)&d2_ClickedId) == 0 && U_I((unsigned)&d2_PointerObj) == ctrl) {
-                qty = (int)gm_ItemPrice(i + 0x134, 100);
-                if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), qty,
-                                 *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0) {
-                    v = ls_GetLanguage();
-                    if (v == 0)
-                        txt_Format(text2, 0xd9, qty, i * 2 + 0xc10);
-                    else if (v == 1)
-                        txt_Format(text2, 0xd9, i * 2 + 0xc10, qty);
-                    if (sv_MessageBox(text2, 0x101) != 0) {
-                        cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c),
-                                     *(unsigned char *)(unsigned)&ai_OwnPlayer, qty);
-                        fam = gm_PlayerRecord((char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c));
-                        if (fam != 0)
-                            *(int *)(fam + 0x50) += qty;
-                        cm_SendExSellObject(U_I(param_1 + 1), -1, i + 0x134, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                    }
+    do {
+        if (d2_ClickedId >= 0x5e2 && d2_ClickedId <= 0x5e4) {
+            for (k = 0; k < 3; k++)
+                if (d2_PointerObj == ids[k])
+                    kind = k;
+        } else if (d2_ClickedId == 0 && d2_PointerObj == buyButton) {
+            item = kind + 0x134;
+            price = (int)gm_ItemPrice(item, 100);
+            if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+                switch (ls_GetLanguage()) {
+                case 0:
+                    txt_Format(text2, 0xd9, price, kind * 2 + 0xc10);
+                    break;
+                case 1:
+                    txt_Format(text2, 0xd9, kind * 2 + 0xc10, price);
+                    break;
+                }
+                if (sv_MessageBox(text2, 0x101) != 0) {
+                    cm_SendMoveGoodsUnchecked(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, price);
+                    fin = (LCFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                    if (fin != 0)
+                        fin->cartSpent += price;
+                    cm_SendExSellObject(bld->id, -1, item, 1, ai_OwnPlayer, 0);
+                    sv_PopRequest = 1;
                 }
             }
-        } else if (U_I((unsigned)&d2_ClickedId) >= 0x5e2 && U_I((unsigned)&d2_ClickedId) <= 0x5e4) {
-            for (k = 0; k < 3; k++)
-                if (U_I((unsigned)&d2_PointerObj) == ids[k])
-                    i = k;
         }
-        if (U_I((unsigned)&d2_RadioSel + list * 0x8c) != -1) {
-            txt_Format(text, 0xda, i * 2 + 0xc10, (int)gm_ItemPrice(i + 0x134, 100));
-            d2_SetCaption(ctrl, text);
-            d2_CenterObj(ctrl);
+        if (d2_Radios[list].sel != -1) {
+            txt_Format(text, 0xda, kind * 2 + 0xc10, (int)gm_ItemPrice(kind + 0x134, 100));
+            d2_SetCaption(buyButton, text);
+            d2_CenterObj(buyButton);
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_Unk5ae240, 0x677c7) == 0) {
-            d2_CloseView(win);
-            d2_RadioClear(list);
-            return;
-        }
-    }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_BuyCartWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    d2_RadioClear(list);
 }
 /* 0x5ae570, the transport confirmation (305 B): more than 0x20 or no entries: out; the quantity is the last
    0x5087f0 of the entries (the word of the record, the byte +9); the text 0xdc (the count, the kind text 2 * the
