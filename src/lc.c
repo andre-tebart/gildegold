@@ -110,7 +110,6 @@ extern int d2_PointerObj;
 extern char * cm_FieldObject;
 extern struct D2PIC *d2_Pics;
 extern char * ai_BTypes;
-extern GAPDATA full_data_6f26b0[];
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -669,7 +668,6 @@ extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern D2WIN d2_Wins[];
-extern GAPDATA full_data_6f26b0[];
 extern GAPDATA full_data_6f4ee4[];
 extern GAPDATA full_rdata_5eed8c[];
 extern GAPDATA full_rdata_5eed90[];
@@ -3077,7 +3075,7 @@ int ai_Unk58ff00(int kind, char *out)
         best = (*(unsigned char *)((unsigned)&ai_CharSex + (U_W((unsigned)&ai_PlayerId) * 0x21c)) != 1);
     if (ai_BuildingName(kind, chosen) != 0) {
         n = ai_FindBauplaetze(names[best], list2);
-        U_I((unsigned)&full_data_6f26b0) = (int)list2;
+        ai_PlacementSites = list2;
         for (i = 0; i < n; i++) {
             if (list2[i] != 0) {
                 d3_PointToWorld(list2[i], list2[i] + 0x4c, pos);
@@ -13433,7 +13431,7 @@ void ai_Unk5a6cb0(int *m_)
         screen = *(int *)(p + 8);
         *(int *)((unsigned)&d2_LastWindow) = screen;
         for (i = 0; i < 0x400; i += 4) {
-            obj = (char *)*(int *)(*(int *)((unsigned)&full_data_6f26b0) + i);
+            obj = (char *)*(int *)((char *)ai_PlacementSites + i);
             if (obj != 0) {
                 d3_PointToWorld((int)obj, (int)(obj + 0x4c), pos);
                 d3_GetHeightAt((int)scene, pos, &x, &y, &py);
@@ -24020,6 +24018,7 @@ char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the a
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
+int *ai_PlacementSites = 0;  /* 0x6f26b0, the candidate site list of the running building placement (lc_GebaeudeAusrichten points it at its sites[]); the map window marks each entry */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
 LCPRODROW ai_ProdRows[4] = { 0 };  /* 0x6f4f00 */
