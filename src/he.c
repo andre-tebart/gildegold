@@ -24894,12 +24894,15 @@ void he_RunGraveLease(int ev)
 
 void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec); /* 0x4fe1e0 */
 
-/* 0x572b90, the alloc of the event 0x93: the due clock +0x52 = now + 6 hours (0x4fe1e0), the second clock +0x60 = the due clock */
+/* 0x572b90, the alloc of the graveyard workers event 0x93: the due clock (AIJOB.end) = now, set to 6:00 (gm_SetTime
+   0x4fe1e0); the second clock (AIJOB.clock60) = the due clock */
 void he_AllocGraveyardWorkers(int ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_SetTime(ev + 0x52, 6, 0, 0);
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x52);
+    AIJOB *e = (AIJOB *)ev;
+
+    e->end = ai_Time;
+    gm_SetTime(&e->end, 6, 0, 0);
+    e->clock60 = e->end;
 }
 
 int gm_Opinion(int a, int b); /* 0x50c520 */
