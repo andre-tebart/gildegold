@@ -95,7 +95,7 @@ extern int cm_RecvCount;                /* 0x6f0cd0, received messages */
 extern unsigned short ai_PlayerId;     /* 0x6f25b8, the player */
 extern volatile unsigned long d3_Time;  /* 0x6333cc */
 extern int ai_NextCrimeId;                /* 0x6f1b88 */
-extern char ai_Unk625820[][0x20];       /* 0x625820, names ("HE_NULL", ..) */
+extern char cm_EventNames[][0x20];       /* 0x625820, names ("HE_NULL", ..) */
 #include "ai_types.h"                /* AITIME */
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 

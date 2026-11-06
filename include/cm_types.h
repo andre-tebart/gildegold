@@ -260,6 +260,16 @@ typedef struct G17FLOATDELTAMSG {       /* 12 bytes, the data of message 0x1a (c
     float delta;                        /* 0x08, added to it */
 } G17FLOATDELTAMSG;
 
+typedef struct G17SETHEMSG {             /* 0x4f bytes, the data of message 0x1d (cm_SendExSetHE, its handler
+                                           0x4c87a0 "cm_ExSetHE") */
+    int id;                             /* 0x00, the event's id (AIJOB.id) */
+    AITIME start;                       /* 0x04, AIJOB.start */
+    AITIME end;                         /* 0x12, AIJOB.end */
+    AITIME clock60;                     /* 0x20, AIJOB.clock60 */
+    unsigned char kind;                 /* 0x2e, AIJOB.kind */
+    char name[0x20];                    /* 0x2f, the kind's name (cm_EventNames) */
+} G17SETHEMSG;
+
 typedef struct CRIME {                  /* 0x2d bytes, a crime record of ai_Crimes (message 0x22, "cm_ExAddStraftat"; saved by gv_WriteCrimes) */
     int id;                             /* 0x00, ai_NextCrimeId at the record's creation, -1 when free */
     AITIME time;                        /* 0x04, the game time of the crime (ai_Time) */
@@ -526,6 +536,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17FIELDS fields;               /* 0x10, messages 0x16 / 0x17 / 0x18 */
         G17SETFIELDMSG setField;        /* 0x10, message 0x19 */
         G17FLOATDELTAMSG floatDelta;    /* 0x10, message 0x1a */
+        G17SETHEMSG setHE;              /* 0x10, message 0x1d */
         G17HIREMSG hire;                /* 0x10, message 0x3d */
         G17GOODSMSG goods;              /* 0x10, message 0x40 */
         G17GEBMSG geb;                  /* 0x10, message 0x4c */
