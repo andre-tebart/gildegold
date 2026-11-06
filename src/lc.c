@@ -6230,7 +6230,7 @@ void ai_MixingContact(AIBLD *bld, int room)
     }
 }
 
-int ai_AmountMenu(); int ai_FiveTextWindow(); int ai_OpenRobberBribe(); int ai_DrohbriefWindow();
+int ai_AmountMenu(); int ai_FiveTextWindow(); void ai_OpenRobberBribe(); int ai_DrohbriefWindow();
 int ai_PamphletWindow();
 
 /* 0x5962b0, the stonecutter contact listener: it releases the name plates, pumps the frame (sv_RunFrame, this,
@@ -18444,17 +18444,32 @@ int ai_EvidenceBookWindow(void)
     (void)per;
     return 0;
 }
-/* 0x5b4bf0, a text / record window (105 B, ROUGH SKELETON): a 0x50-byte record at the frame base (cleared by
-   hand), the field 0x40400, the float 0x5eed6c and the text 0x174f; a 0x150-byte frame. The body is a comment */
+int ai_Unk5b4820(void);
 
-int ai_OpenRobberBribe(void)
+/* 0x5b4bf0, the bribe amount menu of the robbers' room (105 B, ai_RobberContact): the AMOUNTCFG with mode
+   0x40400, the filter 0x100000000 and kind 6, the prompt 0x174f, the menu with the callback ai_Unk5b4820; the
+   camera follows again
+   @deep whole function rewritten to the original's body (AMOUNTCFG with mode 0x40400, filter = the
+   gypsyFilter high word << 32, kind 6, the prompt 0x174f, ai_AmountMenu with ai_Unk5b4820, the
+   sv_CameraFollow tail); ours is 26 instructions like the original with 2 differing: the filter's low word
+   store is hoisted right after the memset (mov [esp+0xc],eax with eax=0) where the original stores it last
+   as mov [esp+0x14],0, so the prover sees the store order mode/kind/high/low against low/mode/kind/high;
+   tried the signed shift (adds cdq, 27 ins), the u64 multiply (calls _allmul), gypsyFilter & 0x100000000
+   (reads the low word too, 29 ins); needs a source variant that keeps VC6 from hoisting the constant 0
+   store; no other difference, the same callee and arguments */
+
+void ai_OpenRobberBribe(void)
 {
-    int rec[0x14];
+    AMOUNTCFG cfg;
+    char text[0x100];
 
-    memset(rec, 0, sizeof(rec));
-    rec[3] = 0x40400;
-    /* ROUGH SKELETON: the text 0x174f, the float 0x5eed6c and the window body */
-    return 0;
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x40400;
+    cfg.kind = 6;
+    cfg.filter = (unsigned __int64)(unsigned)gypsyFilterWords[1] << 32;
+    txt_Format(text, 0x174f);
+    ai_AmountMenu(&cfg, text, 0, ai_Unk5b4820);
+    sv_CameraFollow();
 }
 /* 0x5b4820, a Ghidra-missed start (968 B, ROUGH SKELETON): 0x5b4590 ends with the tail call `jmp 0x52d7a0` at
    0x5b480c and fifteen nops to 0x5b4820 (the ret scan cannot see a tail call; the ledger found the start from
