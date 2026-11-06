@@ -48,7 +48,8 @@
    mark HEBARDSCRIPT, the job table's proofs / year HEJOBTABLE), HEINN (the inn
    simulation's list), HEFINVIEW (AIFIN's +0x14 .. +0x64; ai.h is not
    included), the tutorial / tip / routine / storm / new-worker / production / trade words in HEHINTEVENT,
-   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HETRADE and HETRADEMSG, the research /
+   HETIPEVENT, HEROUTINE, HESTORM, HENEWWORKER, HEPRODUCTION, HETRADE and HETRADEMSG, the search 8 / 9 and
+   new-occurrence 0xa words in HESEARCH / HESEARCH9 / HEVORKOMMEN, the research /
    building / training / plunder / meeting words in HERESEARCH (event 0xc), HEBUILD (0xd), HEAHMRESEARCH (0x96 / 0x97),
    HEPLUNDER (0x8a), HEPLUNDERDEAL (0x8b), HEMASTERWORK (0x8c), HEGRAVECARE (0x8d), HEDEATHDUE (0x8e),
    HEGRAVETRAINING (0x8f) and HEMEETING (0x90), HEMEETSCENE / HEMEETNAME (the meeting scene object 0x91), HEGRAVELEASE (the grave

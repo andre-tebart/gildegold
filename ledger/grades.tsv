@@ -3683,7 +3683,7 @@ exe	0x00552b90	he_AllocTutorialIntro	he	byte	readable
 exe	0x00552bc0	he_RunTutorialIntro	he	byte	readable		
 exe	0x00552c30	he_StartOfficeAward	he	byte	readable		
 exe	0x00552ca0	he_RunOfficeAward	he	draft	readable	deep	
-exe	0x00553060	he_RegisterEventTypes22	he	byte	draft		
+exe	0x00553060	he_RegisterEventTypes22	he	byte	readable		
 exe	0x005538b0	he_EndPersonEvents	he	shape	readable		
 exe	0x00553ae0	he_DetectAttack	he	byte	readable		
 exe	0x00553cc0	he_NoProtectionEvent	he	byte	readable		
@@ -3803,23 +3803,23 @@ exe	0x00567b80	he_AllocTip	he	byte	readable
 exe	0x00567c00	he_RunTip	he	draft	readable	deep	
 exe	0x00567d20	he_AllocTutorialBuildingTour	he	byte	readable		
 exe	0x00567d60	he_RunTutorialBuildingTour	he	draft	readable	deep	
-exe	0x00567f00	he_Unk567f00	he	byte	draft		
+exe	0x00567f00	he_AllocPatrolEvent	he	byte	readable		
 exe	0x00567f50	he_PatrolStep	he	shape	readable		
 exe	0x00568220	he_RunPatrolEvent	he	byte	readable		
-exe	0x00568310	he_RegisterEventTypes02	he	byte	draft		
-exe	0x00568aa0	he_EndKind23Events	he	byte	draft		
+exe	0x00568310	he_RegisterEventTypes02	he	byte	readable		
+exe	0x00568aa0	he_EndKind23Events	he	byte	readable		
 exe	0x00568ae0	he_AllocIncomeEvent	he	byte	readable		
 exe	0x00568be0	he_RunIncomeEvent	he	shape	readable		
 exe	0x005690c0	he_AllocProduktion	he	byte	readable		
 exe	0x00569210	he_RunProduktion	he	draft	readable	deep	
-exe	0x0056a100	he_AllocSearchEvent	he	byte	draft		
+exe	0x0056a100	he_AllocSearchEvent	he	byte	readable		
 exe	0x0056a170	he_RunSearchEvent	he	byte	readable		
-exe	0x0056a360	he_AllocSearch9	he	byte	draft		
+exe	0x0056a360	he_AllocSearch9	he	byte	readable		
 exe	0x0056a3d0	he_RunSearch9	he	byte	readable		
-exe	0x0056a710	he_Unk56a710	he	byte	draft		
+exe	0x0056a710	he_RunNewOccurrenceMsg	he	byte	readable		
 exe	0x0056a7b0	he_AllocTrade	he	draft	readable	deep	
 exe	0x0056a960	he_RunTrade	he	draft	readable	deep	
-exe	0x0056b380	he_Unk56b380	he	byte	draft		
+exe	0x0056b380	he_AllocResearch	he	byte	readable		
 exe	0x0056b3f0	he_RunResearch	he	draft	readable	deep	
 exe	0x0056b570	he_AllocGebaeudeBauen	he	byte	readable		
 exe	0x0056b700	he_PlaceGebaeudeObject	he	byte	readable		
@@ -3828,11 +3828,11 @@ exe	0x0056b780	he_ShowConstruction	he	byte	readable
 exe	0x0056bac0	he_ConstructionStage	he	byte	readable		
 exe	0x0056bc50	he_CreateConstruction	he	byte	readable		
 exe	0x0056be30	he_RunConstruction	he	draft	readable	deep	
-exe	0x0056cdd0	he_AllocMissionCheck	he	byte	draft		
+exe	0x0056cdd0	he_AllocMissionCheck	he	byte	readable		
 exe	0x0056ce40	he_RunMissionCheck	he	byte	readable		
-exe	0x0056d050	he_RegisterEventTypes03	he	byte	draft		
+exe	0x0056d050	he_RegisterEventTypes03	he	byte	readable		
 exe	0x0056d220	he_RegisterEventTypes95	he	byte	readable		
-exe	0x0056d2d0	he_AllocRecipeResearch	he	shape	draft		
+exe	0x0056d2d0	he_AllocRecipeResearch	he	shape	readable		
 exe	0x0056d3d0	he_RunRecipeResearch	he	byte	readable		
 exe	0x0056d610	he_AllocResearchRecipe	he	shape	readable		
 exe	0x0056d730	he_RunResearchRecipe	he	byte	readable		
@@ -3846,7 +3846,7 @@ exe	0x0056e400	he_RegisterEventTypes99	he	byte	draft
 exe	0x0056e460	he_AllocSecretRoom	he	byte	draft		
 exe	0x0056e5b0	he_RunSecretRoom	he	draft	readable	deep	
 exe	0x0056efc0	he_AllocEvent9a	he	byte	readable		
-exe	0x0056f040	ai_Unk56f040	he	byte	draft		
+exe	0x0056f040	he_FreeEventNow	he	byte	readable		
 exe	0x0056f050	he_Unk56f050	he	byte	draft		
 exe	0x0056f0b0	he_RunDomizilEvent	he	shape	readable		
 exe	0x0056f170	he_EventOnBuilding	he	byte	draft		
