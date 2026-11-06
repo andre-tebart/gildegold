@@ -1595,7 +1595,7 @@ int ai_CommandBreakGuildSeats(int a, int b, char *fmt)
 }
 
 
-typedef struct G12REC10 {               /* 0x5c bytes, one of the ten records 0x4cd9d0 searches (ai_Unk60c7c0) */
+typedef struct G12REC10 {               /* 0x5c bytes, one of the ten records 0x4cd9d0 searches (ai_WeaponRecordData) */
     int id;                             /* 0x00, the id 0x4cd9d0 matches */
     char pad04[0x58];
 } G12REC10;

@@ -541,7 +541,7 @@ char d3sm_GetVertex(struct D3SM *h, int x, int z, struct D3VECTOR *out);        
 float gm_HealthRatio(short *c);  /* 0x4fc8e0, f3gm.h */
 float gm_GetSkill(char *c, int skill);  /* 0x504ec0 */
 int he_ShowNews(int pid, int fl, char *text, int unused, int ev, char *text2);  /* 0x53dda0 */
-typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_Unk60c7c0 (ai_FindWeaponRecord) */
+typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at ai_WeaponRecordData (ai_FindWeaponRecord) */
     int id;                             /* 0x00, the goods item */
     unsigned char accuracy;             /* 0x04, the hit chance in percent of the fighter's skill sk83 (cm_Attack) */
     unsigned char dmgMin;               /* 0x05, the least damage (the bomb adds a random part below dmgMax - dmgMin) */
@@ -556,7 +556,7 @@ typedef struct AIWEAPON {               /* 0x5c bytes, the 10 weapon records at 
     int text054;                        /* 0x54, an argument of the text 0x1188 (a stunning hit, weapon 0x16e) */
     int kind;                           /* 0x58, 1 / 2: used up with the item (cm_CharWeapon refuses an item with nothing left) */
 } AIWEAPON;
-extern char ai_Unk60c7c0[];  /* 0x60c7c0 */
+extern char ai_WeaponRecordData[];  /* 0x60c7c0 */
 extern int cm_LobbyChatCount;  /* 0x6f0cd8 */
 extern int cm_LobbyChatPos;  /* 0x6f0cdc */
 extern char *cm_FightRecord;  /* 0x6f0d04 */
