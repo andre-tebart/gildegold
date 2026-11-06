@@ -272,7 +272,7 @@ typedef struct G17SETFIELDMSG {         /* 0x14 bytes, the data of message 0x19 
 } G17SETFIELDMSG;
 
 typedef struct G17FLOATDELTAMSG {       /* 12 bytes, the data of message 0x1a (cm_SendFloatDelta, its handler
-                                           0x4c81d0 ai_Unk4c81d0 adds delta to the field) */
+                                           0x4c81d0 cm_ExFloatDelta adds delta to the field) */
     int id;                             /* 0x00, the character's netId */
     int field;                          /* 0x04, the float field's offset in the character record */
     float delta;                        /* 0x08, added to it */
