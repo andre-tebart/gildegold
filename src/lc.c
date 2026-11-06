@@ -139,7 +139,6 @@ extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int sv_PanelBuildingIcon;
 extern int sv_PanelCompass;
-extern char ch_EmptyName[1];
 extern unsigned char sv_OtherSelected;  /* 0x6f2338 (sv.c) */
 extern unsigned char kb_Last;
 extern char * ai_BTypes;
@@ -163,7 +162,6 @@ extern int d2_ClickedId;
 extern short d2_MouseX;
 extern short d2_MouseY;
 extern short d2_PointerLook;
-extern struct D3ANIM *d3t_CamMove;
 extern int di_Absolute;
 extern int di_MaxX;
 extern int di_MaxY;
@@ -295,7 +293,6 @@ extern GAPDATA full_data_6f2450[];
 extern unsigned char kb_Last;
 extern int d2_LastWindow;
 extern int sv_PopRequest;
-extern volatile unsigned long d3_Time;
 extern char ai_Chars[768][0x21c];
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -317,7 +314,6 @@ extern volatile unsigned long d3_Time;
 extern D2VIEW d2_Views[];
 extern D2WIN d2_Wins[];
 extern int sv_PopRequest;
-extern const struct D3VECTOR d3_Origin;
 extern char * ai_PickedObject;
 
 extern struct AIBLD *ai_MarketBuilding;
@@ -420,14 +416,12 @@ extern int ai_GameFlags;
 extern int sv_PanelFlag;
 extern char * ai_PlayerBuilding;
 extern const struct D3VECTOR d3_Origin;
-extern int ch_CurrentGroup;
 extern int evt_LastId;
 extern int sv_BorderViewX;
 extern int sv_BorderViewY;
 extern float sv_ViewPos[4];  /* 0x75fb80, sv.c: the stored camera position */
 extern float sv_ViewRot[4];  /* 0x75fb90, its rotation */
 extern int sv_SelectedChar;
-extern int ch_CurrentScriptGroup;
 extern char ch_StepSample[];
 extern int d2_CutsceneActive;
 extern unsigned sv_SceneEventTime;  /* 0x6237c8, sv.h */
@@ -693,7 +687,6 @@ extern int di_MaxX;
 extern int di_MaxY;
 extern int di_MinX;
 extern int di_MinY;
-extern struct CHARACTER *ch_List[0x300];  /* 0x1468ae0, ch.h's CHARACTER *ch_List[CH_MAX] */
 extern int d2_PointerObj;
 extern int ai_DragWindow;
 extern int ai_Unk62c26c;
@@ -1023,7 +1016,6 @@ void d2_SetObjFont();
 void d2_SetObjPic();
 void d2_SetObjText();
 void sv_CameraFollow();
-int util_Random(unsigned short n);
 
 int sprintf(char *buf, const char *fmt, ...); /* 0x5de652, the CRT's sprintf */
 
@@ -1228,6 +1220,7 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #include "sv_t.h"
 #include "sv_types.h"
 #include "amt_types.h"
+#include "ch.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
