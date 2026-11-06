@@ -6778,19 +6778,16 @@ int cm_LobbyLeave()
 int cm_LobbySendChat(int to, char *text)
 {
     G17MSG m;
-    struct {
-        int a, b;
-        char name[0x40];
-    } t;
+    G17LOBBYCHAT t;
 
     memset(m.data, 0, 0x80);
-    t.a = cm_LobbyPlayerId;
-    t.b = to;
-    strncpy(t.name, text, 0x3f);
+    t.from = cm_LobbyPlayerId;
+    t.to = to;
+    strncpy(t.text, text, 0x3f);
     m.type = 0x5f;
-    t.name[0x3f] = 0;
-    G17_I(m, 0) = 6;
-    memcpy(&m.data[4], &t, 0x48);
+    t.text[0x3f] = 0;
+    m.lobby.kind = 6;
+    m.lobby.chat = t;
     return cm_QueueSend(&m);
 }
 /* 0x4cd760, kind 2: this player joins with the record p (its id is set here); returns the send slot */
