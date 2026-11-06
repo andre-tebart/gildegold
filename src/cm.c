@@ -1484,17 +1484,18 @@ void cm_SendDropEvidence(int id, int netId, int value)
     m.dropEvidence.value = value;
     cm_QueueSend(&m);
 }
-/* 0x4c4f50, "cm_RequestSendCutInfo": message 0x26 */
+/* 0x4c4f50, message 0x26: asks the server for the cutscene record of player playerId in fight fightId
+   (cm_ExSendCutInfo) */
 
-int cm_RequestSendCutInfo(int id, int b)
+int cm_RequestSendCutInfo(int playerId, int fightId)
 {
     G17MSG m;
     char buf[0x100];
 
     m.type = 0x26;
-    G17_I(m, 0) = id;
-    G17_I(m, 4) = b;
-    sprintf(buf, "cm_RequestSendCutInfo(): PlayerId:%i Time:%i", id, d3_Time);
+    m.cut.playerId = playerId;
+    m.cut.fightId = fightId;
+    sprintf(buf, "cm_RequestSendCutInfo(): PlayerId:%i Time:%i", playerId, d3_Time);
     return cm_QueueSend(&m);
 }
 /* 0x4c4fa0, message 0x27: p (0x114 bytes) as the long message */
