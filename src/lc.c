@@ -13,6 +13,11 @@
    the gv record (AIWINDOWROW, AIPOSVIEW) are local views here (menu.h / sv.h / ai_char.h / ai_types.h /
    am_types.h / ai.h hold the owners' types); they settle when those headers can be included. The "hp_" production
    settings are typed the same way: G8SETTING / G8SLOT / G8SETTAIL and G8BLD (a building's good id, gv.h's ORDBLD).
+   The production window's tables are this unit's typed data (lc.h): the goods columns ai_ProdColumns (LCPRODCOL),
+   the picked input ai_ProdSelectedInput and the goods grids ai_ProdRows / ai_ProdGoods / ai_ProdRows2 /
+   ai_ProdGoods2 (LCPRODROW / LCPRODSLOT); the member list rows are sv's SVMEMBERROW (sv_types.h, sv_MemberRows).
+   Open: the other users of those tables (ai_InitProductionTables, ai_ProductionGoodsWindow, the resource / transport
+   / storage / equip windows) still read them through byte offsets.
    Open: data: the production settings head 0x6f26c0 (ai_Settings) and the shared float 0x5ebb40 (ai_FloatHundred,
    he.c reads it too) still sit in the full_data / full_rdata gap blocks of main.c.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
@@ -1511,7 +1516,7 @@ int d2_SetForm(int view, int n); int io_PrintText(char *fmt, ...);
    column 0, else the kind 8 job of the column's goods: the progress picture 0x4fd and the fill fraction of the
    elapsed time) and the amount text (200 / 0xc9); then removes the columns from ncols up to 16. The fourth
    argument is not read
-   @deep rewritten from the original (was a ROUGH body, 1097 B; now 1429 vs 1421, 408 vs 406 instructions,
+   @deep rewritten from the original (was a condensed skeleton, 1097 B; now 1429 vs 1421, 408 vs 406 instructions,
    same calls): the column build (child window, font 0x54, frame 0x749, goods picture, input pictures with
    (short)(k*0x31+0x11), amount window), the input marks from the AIRECIPE goods list (0x74f none / 0x74e
    short / 0x74d enough, icon 0x750 + worst), the job progress (kind 9 for column 0, else the kind 8 job of
@@ -1644,7 +1649,7 @@ void d2_SetPointerItem(int id, int amount); void d2_ClearPointerItems(void); int
    fill fraction and its amount); then the amount text: without a picked input the texts 0xb8 / 0xba / 0xbb by
    mode, with one it highlights it and prints the batch (0xc1 / 0xc2 in the language's word order), the amount of
    the input a run takes (0xc3 / 0xc4) and what is missing (0xc5 / 0xc6). Removes the columns from ncols up to 16
-   @deep rewritten from the original (was ROUGH, 1812 B; now 794 vs 794 instructions, 2804 vs 2827 B, same
+   @deep rewritten from the original (was a condensed draft, 1812 B; now 794 vs 794 instructions, 2804 vs 2827 B, same
    calls): the picked-input marks (ai_ProdSelectedInput -> LCPRODCOL.selected), the column build with the
    input captions (need, font 0x54, caption -8 / 6), the input marks 0x74d..0x74f with the missing amount,
    the job search (production job 4, then income job 3), the day test (hour >= start && hour < end: the
@@ -1869,7 +1874,7 @@ void ai_UpdateProdColumns(int win, int part, int ncols, int store, int mode)
    class 2 only 0x17) or ai_ProdGoods2, with its reserved part, amount and stock; slots whose goods left the store
    are cleared. A left click (with the permission 0x200, nothing on the pointer) on a slot's reserve button cycles
    the goods' reserve 0 .. 4 and sends it (cm field message). Returns 1 when a slot's check box is set
-   @deep rewritten against the original (was ROUGH): the two level tables as local initialised arrays
+   @deep rewritten against the original (was a condensed draft): the two level tables as local initialised arrays
    (rows[9][4] by AIOBJ.lvl1c, rows2[9][2] by lvl1d), the grid fill (existing slot, else the first free
    one, reserved = (unsigned)(stock * reserve) >> 2, amount, stock; the class test in the original's && /
    || form, the free-slot search first), the clean-up of the gone goods, the check-box scan, the reserve
@@ -2229,7 +2234,7 @@ int d2_RemoveWindow(int win);                                   /* 0x472ce0 (d2.
    of the building's running job of the goods (job 4 / 3) as the icon's fill, the icon's and the bar's values
    (the input clamped to the amount, without the permission less the reserved part), the tooltip "%s~ %li %s"
    (name, amount, unit) and the positions of all its objects in the window
-   @deep rewritten against the original (was ROUGH, 1649 B; now 1931 vs 1936, 637 vs 638 instructions, same
+   @deep rewritten against the original (was a condensed draft, 1649 B; now 1931 vs 1936, 637 vs 638 instructions, same
    calls, no ref differences): the empty slot's clean-up, the stock bar, the icon (input icon style 0xca /
    0x8a or a picture), the side labels 0x747 / 0x746, the sell price (kind 0x47 by its player slot, the
    market class 0xa * 1.1, else * priceFactor) and the buy price (* 0.9) through one gm_FormatAmount each,

@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at c37dc1a8: the same header change (AIJOB raid view in ai_types.h, G28REC raid lists in cm_types.h), either one alone flips it: its text is unchanged and its remaining hunks are the documented allocation of the clear loop and the x/y slot order (@deep); the shape grade read from a declaration-set-dependent allocation is no evidence of its source [waits for: the full declaration set of ord.c's headers (gv.h > ai_types.h / cm_types.h) and match-deep's allocation work]
+exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3929,8 +3929,8 @@ exe	0x00575540	he_Unk575540	he	byte	draft
 exe	0x00575570	he_Unk575570	he	byte	draft		
 exe	0x005755c0	he_Unk5755c0	he	byte	draft		
 exe	0x00575600	he_SaveMessageFilter	he	byte	draft		
-exe	0x00575640	he_IsMessageKindFiltered	he	draft	draft		
-exe	0x00575710	he_SetMessageKindFiltered	he	byte	draft		
+exe	0x00575640	he_IsMessageKindFiltered	he	draft	readable	deep	
+exe	0x00575710	he_SetMessageKindFiltered	he	byte	readable		
 exe	0x00575860	ai_TutorialTick	sv_t	byte	readable		
 exe	0x00576020	unk_ClearEndGameGate	sv_t	byte	readable		
 exe	0x00576030	unk_SetEndGameGate	sv_t	byte	readable		
@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4061,7 +4061,7 @@ exe	0x00584520	ai_GraveRentConfirm	sv_t	byte	readable
 exe	0x005847a0	ai_RentGraveSelect	sv_t	byte	readable		
 exe	0x00584900	ai_GraveCare	sv_t	byte	readable		
 exe	0x00584b70	ai_GraveRaiseHelper	sv_t	byte	readable		
-exe	0x00584d70	ai_GypsyHelperWindow	sv_t	draft	draft	deep	
+exe	0x00584d70	ai_GypsyHelperWindow	sv_t	draft	readable	deep	
 exe	0x00585380	ai_GraveFogWindow	sv_t	shape	readable	deep	
 exe	0x00585750	ai_SeanceWindow	sv_t	byte	readable		
 exe	0x005859c0	ai_SeanceRitual	sv_t	shape	readable	deep	
@@ -4119,17 +4119,17 @@ exe	0x0058ada0	lobby_ShowPlayers	lobby	draft	draft	deep
 exe	0x0058af50	lobby_ChoosePlayer	lobby	draft	readable	deep	
 exe	0x0058b880	lobby_ChooseProfession	lobby	draft	draft	deep	
 exe	0x0058ba70	lobby_ShowChat	lobby	draft	draft	deep	
-exe	0x0058bbd0	ai_Unk58bbd0	lc	draft	draft	deep	
-exe	0x0058bd60	ai_ProductionWindow	lc	draft	draft		
-exe	0x0058c680	ai_Unk58c680	lc	draft	draft		
-exe	0x0058cc10	ai_Unk58cc10	lc	draft	draft		
-exe	0x0058d720	ai_Unk58d720	lc	draft	draft		
-exe	0x0058dd00	ai_Unk58dd00	lc	draft	draft		
+exe	0x0058bbd0	ai_InitProductionTables	lc	draft	draft	deep	
+exe	0x0058bd60	ai_ProductionWindow	lc	draft	readable	deep	
+exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	draft	deep	
+exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	draft	deep	
+exe	0x0058d720	ai_UpdateProdGoodsList	lc	draft	draft	deep	
+exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
 exe	0x0058e130	ai_Unk58e130	lc	draft	draft	deep	
 exe	0x0058e440	ai_Unk58e440	lc	draft	draft	deep	
-exe	0x0058e6a0	ai_Unk58e6a0	lc	draft	draft		
+exe	0x0058e6a0	ai_ShowProdSlot	lc	draft	draft	deep	
 exe	0x0058ee30	ai_Unk58ee30	lc	draft	draft	deep	
-exe	0x0058f290	ai_Unk58f290	lc	draft	draft		
+exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable		
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
 exe	0x0058f620	ai_PumpFrames	lc	byte	readable		
 exe	0x0058f640	ai_BuildingName	lc	shape	readable	deep	
