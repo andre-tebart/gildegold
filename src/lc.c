@@ -291,6 +291,7 @@ extern struct D2PIC *d2_Pics;
 
 
 extern GAPDATA full_data_6f2450[];
+#define ai_DebugHotkeys (*(int *)&full_data_6f2450)  /* 0x6f2450, a debug switch (no writer in the exe): set, the '-' key opens the mistress window in the study (ai_StudyContact) and the enter key posts the tavern message 0x74 (ai_Unk599af0) */
 extern unsigned char kb_Last;
 
 extern int d2_LastWindow;
@@ -6654,7 +6655,7 @@ void d2_SetObjValue(); int gm_TitleGroup(); void gm_AddTime(struct AITIME *c, in
    and stores time.hour first, ours copies the clock after it in 0,4,8,c order. Tried: other field orders
    (time first moves the hour load but leaves an M8), title as sex?0x18f:0x130 (matches the original's
    neg/sbb/and/add form). The 100.0f is VC6's pooled __real constant (ai_FloatHundred) */
-void ai_MasterExamWindow(void)
+void ai_MasterExamWindow(AIBLD *bld)
 {
     int win;
     int next;
@@ -6740,7 +6741,7 @@ void ai_MasterExamWindow(void)
    gypsyFilter 0x5eed68, the rest cleared) and the text 0x16f9 go to 0x5c1130 (the config, the text, 0, the
    callback 0x5b3ad0), then the camera follows */
 
-void ai_EspionageAmountMenu(void)
+void ai_EspionageAmountMenu(AIBLD *bld)
 {
     AMOUNTCFG cfg;
     char text[0x80];
@@ -6754,14 +6755,14 @@ void ai_EspionageAmountMenu(void)
     sv_CameraFollow();
 }
 
-int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_TutorialOff(); int ai_Unk5b4590();
+int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_TutorialOff(); int ai_EvidenceBookWindow();
 
 /* 0x5973f0, the suicide window of the residence (the SELBSTMORD plate; the form "locations\wohnsitz\weinkeller",
    texts 0x42cf / 0x42d1): button 0 asks gm_HasAdultRelative of the player's record; with an adult relative (an
    heir) the player's character loses 2000 health (gm_AddHealth -0x7d0) and the window stays, else the text
    txt_Ptrs[0x42d2] (no relative) or [0x42d3] (none adult) and it closes; button 1, a right click or the escape
    key close it */
-void ai_SuicideWindow(void)
+void ai_SuicideWindow(AIBLD *bld)
 {
     int win;
     int relatives;
@@ -6790,13 +6791,15 @@ void ai_SuicideWindow(void)
     }
     d2_CloseView(win);
 }
-/* 0x597500, the master / guild contact listener (407 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with
-   0x576410 (8) VERHANDELN (0x14421b8, 0xc) -> 0x5b3130 (param_1, param_2, 0) and HANDWERKSKUNST (0x1442180,
-   0xc) -> 0x5b3130 (..., 1); with 0x578170 BEWEISBUCH (0x143feb8, 0xc) -> 0x5b4590, SPIONAGE (0x143fda0, 0x17)
-   -> 0x597380, MEISTERPRUEFUNG (0x1442190, 0xc) -> 0x596ff0, SELBSTMORD (0x144ad10, 0x24) -> 0x5973f0; when no
-   contact is pending and 0x6f2450 is set in the state '-' the mistress window 0x596ba0 (param_1) opens */
+/* 0x597500, the contact listener of the residence's study (room kind 0x13 in ai_EnterBuilding): it releases the
+   name plates and pumps the frame (sv_RunFrame, this, 0x67fff); every frame the plates contact_VERHANDELN
+   (txt_Ptrs[0x1ffe]) and contact_HANDWERKSKUNST ([0x1ff0]) when ai_RunAllowsContact(8), and contact_BEWEISBUCH
+   ([0x173e]), contact_SPIONAGE ([0x16f8]), contact_MEISTERPRUEFUNG ([0x1ff4]) and contact_SELBSTMORD ([0x42d4])
+   past the tutorial. A clicked plate opens the five-text window (mode 0 / 1), the evidence book, the master exam, the
+   espionage amount menu or the suicide window; with no plate clicked, ai_DebugHotkeys and the '-' key open the
+   mistress window */
 
-void ai_Unk597500(int param_1, int param_2)
+void ai_StudyContact(AIBLD *bld, int room)
 {
     int r;
     int verhandeln;
@@ -6807,43 +6810,42 @@ void ai_Unk597500(int param_1, int param_2)
     int selbstmord;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_Unk597500, 0x67fff);
+    r = sv_RunFrame(ai_StudyContact, 0x67fff);
     while (r != 0) {
         if (ai_RunAllowsContact(8) == 1) {
-            verhandeln = sv_RegisterNamePlate("contact_VERHANDELN", U_I((unsigned)&full_data_14421b8), 0xc);
-            handwerk = sv_RegisterNamePlate("contact_HANDWERKSKUNST", U_I((unsigned)&full_data_1442180), 0xc);
+            verhandeln = sv_RegisterNamePlate("contact_VERHANDELN", txt_Ptrs[0x1ffe], 0xc);
+            handwerk = sv_RegisterNamePlate("contact_HANDWERKSKUNST", txt_Ptrs[0x1ff0], 0xc);
         } else {
             verhandeln = 0;
             handwerk = 0;
         }
         if (ai_TutorialOff() == 1) {
-            beweis = sv_RegisterNamePlate("contact_BEWEISBUCH", U_I((unsigned)&full_data_143feb8), 0xc);
-            spionage = sv_RegisterNamePlate("contact_SPIONAGE", U_I((unsigned)&full_data_143fda0), 0x17);
-            meister = sv_RegisterNamePlate("contact_MEISTERPRUEFUNG", U_I((unsigned)&full_data_1442190), 0xc);
-            selbstmord = sv_RegisterNamePlate("contact_SELBSTMORD", U_I((unsigned)&full_data_144ad10), 0x24);
+            beweis = sv_RegisterNamePlate("contact_BEWEISBUCH", txt_Ptrs[0x173e], 0xc);
+            spionage = sv_RegisterNamePlate("contact_SPIONAGE", txt_Ptrs[0x16f8], 0x17);
+            meister = sv_RegisterNamePlate("contact_MEISTERPRUEFUNG", txt_Ptrs[0x1ff4], 0xc);
+            selbstmord = sv_RegisterNamePlate("contact_SELBSTMORD", txt_Ptrs[0x42d4], 0x24);
         } else {
             beweis = 0;
             spionage = 0;
-            meister = 0;
-            selbstmord = 0;
+            meister = 0;            /* selbstmord stays unset (the original's else path leaves its slot) */
         }
-        if (U_I((unsigned)&ai_ClickedObject) == 0) {
-            if (U_I((unsigned)&full_data_6f2450) != 0 && U_I((unsigned)&kb_Last) == '-')
-                ai_MistressWindow(param_1);
-        } else if (U_I((unsigned)&ai_ClickedObject) == verhandeln) {
-            ai_FiveTextWindow(param_1, param_2, 0);
-        } else if (U_I((unsigned)&ai_ClickedObject) == handwerk) {
-            ai_FiveTextWindow(param_1, param_2, 1);
-        } else if (U_I((unsigned)&ai_ClickedObject) == beweis) {
-            ai_Unk5b4590(param_1);
-        } else if (U_I((unsigned)&ai_ClickedObject) == meister) {
-            ai_MasterExamWindow();
-        } else if (U_I((unsigned)&ai_ClickedObject) == spionage) {
-            ai_EspionageAmountMenu();
-        } else if (U_I((unsigned)&ai_ClickedObject) == selbstmord) {
-            ai_SuicideWindow();
+        if (ai_ClickedObject != 0) {
+            if (ai_ClickedObject == verhandeln)
+                ai_FiveTextWindow(bld, room, 0);
+            else if (ai_ClickedObject == handwerk)
+                ai_FiveTextWindow(bld, room, 1);
+            else if (ai_ClickedObject == beweis)
+                ai_EvidenceBookWindow(bld);
+            else if (ai_ClickedObject == meister)
+                ai_MasterExamWindow(bld);
+            else if (ai_ClickedObject == spionage)
+                ai_EspionageAmountMenu(bld);
+            else if (ai_ClickedObject == selbstmord)
+                ai_SuicideWindow(bld);
+        } else if (ai_DebugHotkeys != 0 && kb_Last == '-') {
+            ai_MistressWindow(bld);
         }
-        r = sv_RunFrame(ai_Unk597500, 0x67fff);
+        r = sv_RunFrame(ai_StudyContact, 0x67fff);
     }
 }
 
@@ -7824,7 +7826,7 @@ void ai_Unk599af0(int param_1, int param_2)
             else if (U_I((unsigned)&ai_ClickedObject) == p3)
                 ai_DarkCornerTable(param_1, param_2);
         }
-        if (U_I((unsigned)&full_data_6f2450) != 0) {
+        if (ai_DebugHotkeys != 0) {
             if (*(unsigned char *)(unsigned)&kb_Last == 0x12) {
                 memset(msg, 0, 0xf8);
                 *(unsigned char *)(msg + 4) = 0x74;
@@ -9963,7 +9965,7 @@ void ai_EnterBuilding(unsigned char *param_1, int param_2)
             ai_CampaignStep(0x19, room, 0, 0);
             vid = *room;
             switch (vid) {
-            case 0x13: ai_Unk597500(U_I((unsigned)&ai_PlayerBuilding), room); break;
+            case 0x13: ai_StudyContact((AIBLD *)ai_PlayerBuilding, room); break;
             case 0x14: ai_RobberContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x15: ai_RhetoricContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
             case 0x16: ai_WineCellarContact(U_I((unsigned)&ai_PlayerBuilding), room); break;
@@ -17061,7 +17063,7 @@ int ai_Unk5b4340(short *param_1, int param_2)
    0x6f25b8 * 0x21c, the window "0x62cda8" (0x4741f0 / 0x475600 / 0x475f70), a 0x8c8-byte frame; the body
    (the controls, the texts and the pump loop) is left as a comment */
 
-int ai_Unk5b4590(void)
+int ai_EvidenceBookWindow(void)
 {
     char *per;
     int win;

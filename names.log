@@ -2646,3 +2646,5 @@
 2026-11-06T11:23:27 0x005967c0 func ai_Unk5967c0 -> ai_MistressAffairWindow by:main why:0x5967c0 opens locations\wohnsitz\geliebte2 for one mistress of the player's (called from ai_MistressWindow with her character and her pair event 0x6f)
 2026-11-06T11:32:05 0x00596ff0 func ai_Unk596ff0 -> ai_MasterExamWindow by:main why:0x596ff0 opens locations\wohnsitz\meisterpruefung (the MEISTERPRUEFUNG contact plate) and posts the exam message 0x26
 2026-11-06T11:37:20 0x005973f0 func ai_Unk5973f0 -> ai_SuicideWindow by:main why:0x5973f0 is the SELBSTMORD contact plate's window: with an adult relative (heir) the player's character loses 2000 health
+2026-11-06T11:39:03 0x00597500 func ai_Unk597500 -> ai_StudyContact by:main why:0x597500 is the contact listener of the residence room kind 0x13 (ai_EnterBuilding): the plates VERHANDELN / HANDWERKSKUNST / BEWEISBUCH / SPIONAGE / MEISTERPRUEFUNG / SELBSTMORD
+2026-11-06T11:39:30 0x005b4590 func ai_Unk5b4590 -> ai_EvidenceBookWindow by:main why:0x5b4590 opens privillegien\Beweise_Sichten (0x62cda8), the BEWEISBUCH plate's window of ai_StudyContact
