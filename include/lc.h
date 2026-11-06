@@ -143,6 +143,7 @@ extern int ai_DragStartY;               /* 0x6f26b8 */
 extern int ai_Dragging;                 /* 0x6f26bc, 1 while the town map is dragged */
 extern int *ai_PlacementSites;          /* 0x6f26b0, the candidate site list of the running building placement (the map window marks each entry) */
 extern char ai_CourtshipForm[24];       /* 0x62d40c, the form of the courtship (advertising) confirm window "privillegien\werbung2" (ai_CourtshipConfirm) */
+extern char ai_WorkerDismissalForm[32];  /* 0x62d5dc, the form of the worker dismissal window "privillegien\arbeiter_ausweisen" (ai_WorkerDismissalWindow) */
 extern char ai_EspionageOverviewForm[20];  /* 0x62d64c, the form of the espionage overview window "privillegien\wunder" (ai_EspionageOverviewHandler) */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
 extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
@@ -234,7 +235,7 @@ void ai_TellGravesPaid(int plRec, int bld, int paid, int sum);  /* 0x5a9780 */
 void ai_DomizilMessage12(char *ch, char *b, int n);  /* 0x5a9e40, posts the Domizil message 12 (text 0x4071 + n) about the building b to the character ch */
 int ai_MedicusHandler(unsigned short *param_1, void *unused);  /* 0x5c8bc0, the caller (ord 0x4f50ae) pushes a second argument the handler does not read */
 int ai_Unk5c8ef0(unsigned short *param_1, void *unused);  /* 0x5c8ef0, the caller (ord 0x4f58a4) pushes a second argument the handler does not read */
-int ai_WorkerDismissalWindow(int param_1, int *m);  /* 0x5ce7f0 */
+int ai_WorkerDismissalWindow(void *ch, int *m);  /* 0x5ce7f0 */
 typedef struct LCMAPMARK {         /* 0x18 bytes, a mark of the town map (LCMAPWIN.marks, rt's building marks) */
     int ctrl;                      /* 0x00, its picture control, -1: not placed yet */
     struct AIBLD *bld;             /* 0x04, the building it marks */

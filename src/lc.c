@@ -959,7 +959,6 @@ extern int d2_PointerObj;
 extern int d2_ClickedId;
 extern GAPDATA full_data_62d5c4[];
 extern int sv_PopRequest;
-extern GAPDATA full_data_62d5dc[];
 
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -25256,15 +25255,25 @@ int ai_InterrogationWindow(int param_1, int param_2)  /* @original: the callers 
         }
     }
 }
-/* 0x5ce7f0, the dismissal window "privillegien_arbeiter_ausweisen" 0x62d5dc (352 B): the types 6 / 7
-   only; the kind byte +0x166 through 0x4e6ec0 (the list out[0]); the window 0x4741f0 with the text
-   0x515960 (0x1e24, the kind 0x253 + the own byte +9 ? 0x28 : 0 and the kind byte) and the button
-   0x515960 (0x1e25) / 0x475b80; click 0 -> 0x4e6680 (out[0], 0, 0, the hour 0x770ae4 > 0xd ? -1 : 3,
-   0xff) and 0x90; click 1 closes; the pump 0x5309a0 (0x657c7) and the exit 0x4758f0. The return is
-   0x22 when nothing was clicked, 0x20 for another type, 0x40 when the kind has no list. */
+/* 0x5ce7f0, the worker dismissal window "privillegien_arbeiter_ausweisen" (352 B): the character ch, kinds
+   6 / 7 only; its office (the byte +0x166) through amt_GetFirstOffice (the list out[0]); the window
+   ai_WorkerDismissalForm with the text 0x1e24 (0x253 + (ch->sex != 0 ? 0x28 : 0) + the office) and the
+   button 0x1e25 / d2_GetWinObj; click 0 -> amt_SendOfficeMessage (out[0], 0, 0, the hour > 0xd ? -1 : 3, 0xff)
+   and 0x90; click 1 closes; the pump 0x5309a0 (0x657c7) and the exit 0x4758f0. The return is 0x22 when nothing
+   was clicked, 0x20 for another kind, 0x40 when the office has no list. The second argument m is not read
+   @deep read the whole original 0x5ce7f0..0x5ce941 and reconciled every statement: the kind guard 6 / 7,
+   the office list amt_GetFirstOffice(ch->officeKind, out), the window and caption 0x1e24 (0x253 + sex term
+   + office), the two d2_GetWinObj buttons, the click dispatch with amt_SendOfficeMessage(out[0], 0, 0,
+   hour > 0xd ? -1 : 3, 0xff) and the pump. Only codegen is left: the caption id is lea [edx+eax+0x253] in
+   ours and two adds in the original, and the message kind is computed in al (the unsigned char 4th
+   parameter of amt_SendOfficeMessage) in ours and in edx (the int) in the original (asmdiff: ours 114 ins,
+   the original 115, differing 21; diffclass: code 13, regs 8, proof: the call's kind argument differs only
+   in the upper bits the callee ignores). Tried the 0x253-first and the sex-term-first sums and the typed
+   AICHARREC fields; the rest is register rotation */
 
-int ai_WorkerDismissalWindow(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_WorkerDismissalWindow(void *chp, int *m)
 {
+    AICHARREC *ch;
     int out[6];
     int win;
     int text;
@@ -25273,32 +25282,32 @@ int ai_WorkerDismissalWindow(int param_1, int *m)  /* m: the handler's second ar
     int i;
     int ret;
 
+    ch = (AICHARREC *)chp;
     ret = 0x22;
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7)
+    if (ch->kind != 6 && ch->kind != 7)
         return 0x20;
-    i = amt_GetFirstOffice(*(unsigned char *)(param_1 + 0x166), out);
+    i = amt_GetFirstOffice(ch->officeKind, out);
     if (i == 0)
         return 0x40;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d5dc);
+    win = d2_OpenForm(0, 0, ai_WorkerDismissalForm);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1e24, (*(char *)(param_1 + 9) != 0 ? 0x28 : 0) + 0x253 +
-                          *(unsigned char *)(param_1 + 0x166));
+    io_PrintText(0x1e24, 0x253 + (ch->sex != 0 ? 0x28 : 0) + ch->officeKind);
     text = io_PrintText(0x1e25);
     click1 = d2_GetWinObj(win, 1, text);
     click2 = d2_GetWinObj(win, 1, text + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
+    d2_ClickedId = -1;
     for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        } else if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == click1) {
-                amt_SendOfficeMessage(out[0], 0, 0, (U_W((unsigned)&ai_Time.hour) > 0xd ? -1 : 3), 0xff);
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            if (d2_PointerObj == click1) {
+                amt_SendOfficeMessage(out[0], 0, 0, (ai_Time.hour > 0xd ? -1 : 3), 0xff);
                 ret = 0x90;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == click2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == click2) {
+                sv_PopRequest = 1;
             }
         }
         if (sv_RunFrame(ai_WorkerDismissalWindow, 0x657c7) == 0) {
@@ -26766,6 +26775,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
 char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
 char ai_CourtshipForm[24] = "privillegien\\werbung2";  /* 0x62d40c, the form of the courtship (advertising) confirm window (ai_CourtshipConfirm; the list's form "privillegien\\werbung1" 0x62d424 follows) */
+char ai_WorkerDismissalForm[32] = "privillegien\\arbeiter_ausweisen";  /* 0x62d5dc, the form of the worker dismissal window (ai_WorkerDismissalWindow) */
 char ai_EspionageOverviewForm[20] = "privillegien\\wunder";  /* 0x62d64c, the form of the espionage overview window (ai_EspionageOverviewHandler) */
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
