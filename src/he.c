@@ -25096,15 +25096,17 @@ done:
     he_FreeEvent((int *)ev);
 }
 /* 0x573200, 1 when a graveyard work is pending on a grave: an event of the type 0x8d (the work ai_StartBuildingWork
-   posts) of the building bld (its id, the word at +1, the event's search key) whose +0xb0 is the grave's size (list)
-   and whose byte +0xb4 is its index in that list */
-int he_HasGraveWork(char *bld, int size, int index)
+   posts) of the building bld (its id, the event's search key) whose grave care words (HEGRAVECARE.size / entry)
+   are the grave's size (list) and its index in that list */
+int he_HasGraveWork(AIBLD *bld, int size, int index)
 {
+    HEGRAVECARE *g;
     char *ev;
 
-    ev = he_FindEvent(2, 3, *(int *)(bld + 1), 0, 0x8d);
+    ev = he_FindEvent(2, 3, bld->id, 0, 0x8d);
     while (ev != 0) {
-        if (HM_I(ev, 0xb0) == size && HM_B(ev, 0xb4) == index)
+        g = (HEGRAVECARE *)ev;
+        if (g->size == size && g->entry == index)
             return 1;
         ev = he_NextEvent();
     }

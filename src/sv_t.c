@@ -7264,7 +7264,7 @@ void ai_GraveList(AIBLD *rec, int *w, int sel)
                 row->btn = d2_WinOpenPic(1, n * 0x35 + 2, ai_GravePics[w[0xc]], w[2]);
             else
                 row->btn = d2_WinOpenPic(1, n * 0x35 + 2, ai_GravePicsAlt[w[0xc]], w[2]);
-            if (he_HasGraveWork((char *)rec, e->size, row->index) != 0)
+            if (he_HasGraveWork(rec, e->size, row->index) != 0)
                 d2_WinOpenPic(0xf, n * 0x35 + 9, 0x7de, w[2]);
             d2_Objs[row->btn].interactive = 1;
             d2_Objs[row->btn].style = 3;
@@ -8186,7 +8186,7 @@ int ai_GraveCare(AIBLD *rec, GVPICK *pick)
     int h;
 
     r = 0;
-    if (he_HasGraveWork((char *)rec, pick->size, pick->index) != 0) {
+    if (he_HasGraveWork(rec, pick->size, pick->index) != 0) {
         sv_MessageBoxGreen((int)txt_Ptrs[0x411e], (int)txt_Ptrs[0x411f], 0);
         return 0;
     }
