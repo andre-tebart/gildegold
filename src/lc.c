@@ -12169,7 +12169,14 @@ int ai_AmountMenu(); void d2_SetObjEnabled(); char *_itoa(int, char *, int);
    while the event's stage is below 1) picks a priest (ai_AmountMenu, the gypsy filter, the text 0x19a2) and sets
    the two random texts (util_Random 8). State 2: the text 0x198e (the end, the texts 0x1990 + text1 / 0x1998 +
    text2, the priest) with the priest's amount row and the buttons 0x198f: the first clears the sermon. Each
-   change waits for its slot (sv_RunFrame) */
+   change waits for its slot (sv_RunFrame)
+   @deep Read whole against the original and reconstructed (614 = 614 instructions, all calls and stores in
+   order). Left: at +0x60d the original hoists the gypsyFilter high dword load (mov edx, [0x5eed6c]) above
+   the AMOUNTCFG memset (rep stosd) and pushes 0x19a2 after it; ours loads both halves after the memset and
+   pushes 0x19a2 before it (scheduling; ai_RobberContact byte-matches the same cfg.filter = gypsyFilter
+   with a hoisted low dword). Tried: filter assigned first (worse, code 26). The rest is slots / order (the
+   G17B7 init, the clear-button bytes). The prover stops at the 4-byte store of AISERMON.priest across two
+   cells of the G17B7 block (+0x60), the same on both sides. */
 void ai_SermonWindow(AIBLD *bld)
 {
     char flag;
