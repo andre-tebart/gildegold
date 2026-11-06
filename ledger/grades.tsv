@@ -2279,20 +2279,20 @@ exe	0x004c69c0	cm_CheckCutsceneReady	cm	shape	readable
 exe	0x004c6a20	cm_ExNothing	cm	byte	readable		
 exe	0x004c6a50	cm_ExGroupPassed	cm	byte	readable		
 exe	0x004c6a60	cm_ExNetFlags	cm	byte	readable		
-exe	0x004c6a90	ai_Unk4c6a90	cm	byte	draft		
-exe	0x004c6ad0	ai_Unk4c6ad0	cm	byte	draft		
-exe	0x004c6b20	ai_Unk4c6b20	cm	byte	draft		
+exe	0x004c6a90	cm_ExLoadSize	cm	byte	readable		
+exe	0x004c6ad0	cm_ExLoadBlock	cm	byte	readable		
+exe	0x004c6b20	cm_ExCreateBuilding	cm	byte	readable		
 exe	0x004c6bf0	cm_ExCreateCharacter	cm	byte	readable		
 exe	0x004c6cd0	cm_ExCreateNamedCharacter	cm	draft	readable	deep	
 exe	0x004c6e10	cm_ExTakeOverCharacter	cm	byte	readable		
-exe	0x004c6ec0	ai_Unk4c6ec0	cm	byte	draft		
-exe	0x004c6f60	ai_Unk4c6f60	cm	byte	draft		
-exe	0x004c7010	ai_Unk4c7010	cm	byte	draft		
+exe	0x004c6ec0	cm_ExDeleteObject	cm	byte	readable		
+exe	0x004c6f60	cm_ExMoveGoods	cm	byte	readable		
+exe	0x004c7010	cm_ExMoveGoodsUnchecked	cm	byte	readable		
 exe	0x004c70b0	cm_ExSellObjekt	cm	draft	readable	deep	
 exe	0x004c78c0	cm_ExMakeGoods	cm	byte	readable		
 exe	0x004c7c30	cm_ExMoveObject	cm	byte	readable		
-exe	0x004c7d80	ai_Unk4c7d80	cm	byte	draft		
-exe	0x004c7e20	ai_Unk4c7e20	cm	byte	draft		
+exe	0x004c7d80	cm_ExRemoveGoods	cm	byte	readable		
+exe	0x004c7e20	cm_ExCreateObject	cm	byte	readable		
 exe	0x004c7e90	cm_ExFieldDeltas	cm	shape	readable		
 exe	0x004c7f70	cm_ExFieldValues	cm	byte	readable		
 exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable		
@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at fa53acfc: ai_types.h AIOBJ gains the dark-corner member cornerYear (+0x28 of the kind-300 corner object, read by ai_DarkCornerMenu against ai_Time.year) instead of a raw offset in lc: a truer shared type. ord_CountGridObjects reads no AIOBJ at all; its @deep shape flips on unrelated declarations in ai_types.h (the lc lead comment already notes that any union member there moves it), so the match is no evidence of the original's source [waits for: match-deep on its count-clear induction variable / allocation, or the declaration set of ord's includes (ai_types.h via gv.h)]
+exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -4003,7 +4003,7 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
 exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
