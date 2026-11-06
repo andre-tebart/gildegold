@@ -86,8 +86,8 @@
    (the quick list, the alloc handlers 0x74df40, the cursor 0x7585e0; the gfx infos 0x7588a0): read through views.
    Open: data: 0x6faa80 he_EventSlots, 0x6faa60 he_BarView, 0x6f262c he_ActiveSlot, 0x6f2630 he_SlotConfirmed,
    0x6f2634 he_ReaperMusic, 0x6f2638 he_PatrolBuilding, 0x6f263c he_MessageFilterMask, 0x625718 he_LastSlot, 0x62571c he_BarShown, the search
-   filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, owner
-   he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
+   filter 0x625708 .. 0x625714 (he_FindKind .. he_FindFrom), 0x6f2624 he_FindFirst, 0x6f2628 he_FindUnused, 0x6fa0e0 he_OptionsPath,
+   owner he or main (typed in place in main.c's gap block; he.c and sv.c use them, they lie among main.c's data / bss).
    Open: data: 0x5ebb40 ai_FloatHundred (VC6's pooled 100.0f: lc.c's view, defined in main.c's rdata gap block, owner
    lc or main).
    Open: types: SVFRAME / the frame stack view is declared in sv.c, lc.c and here (it belongs in sv_types.h).

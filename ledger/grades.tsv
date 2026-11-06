@@ -2141,8 +2141,8 @@ exe	0x004c3140	snd_StopMarketAmbience	f3snd	byte	readable
 exe	0x004c3180	cm_MessageSize	cm	draft	readable	deep	
 exe	0x004c3480	ai_InitStates	cm	byte	readable		
 exe	0x004c3560	ai_ResetMessages	cm	byte	readable		
-exe	0x004c3600	cm_SendHello	cm	byte	draft		
-exe	0x004c3630	cm_WaitHello	cm	byte	draft		
+exe	0x004c3600	cm_SendHello	cm	byte	readable		
+exe	0x004c3630	cm_WaitHello	cm	byte	readable		
 exe	0x004c3680	cm_FlushSendQueue	cm	byte	readable		
 exe	0x004c3720	cm_QueueSplit	cm	shape	readable		
 exe	0x004c3850	cm_SplitComplete	cm	byte	readable		
@@ -2157,22 +2157,22 @@ exe	0x004c3ba0	cm_BeginFieldBlock	cm	byte	readable
 exe	0x004c3c00	cm_AddFieldDelta	cm	draft	draft	deep	
 exe	0x004c3d00	cm_AddFieldValues	cm	shape	readable		
 exe	0x004c3d90	cm_AddFieldValue	cm	shape	readable		
-exe	0x004c3e70	ai_BeginNeedBlock	cm	byte	draft		
+exe	0x004c3e70	ai_BeginNeedBlock	cm	byte	readable		
 exe	0x004c3eb0	ai_AddNeedDelta	cm	byte	readable		
 exe	0x004c3ef0	cm_SetSpeedLevel	cm	byte	readable		
 exe	0x004c3f20	cm_RaiseSpeedLevel	cm	byte	readable		
 exe	0x004c3f50	cm_LowerSpeedLevel	cm	byte	readable		
 exe	0x004c3f80	cm_GetSpeedLevel	cm	byte	readable		
 exe	0x004c3f90	cm_SendPlayerId	cm	byte	readable		
-exe	0x004c3fd0	cm_ReceiveMessages	cm	byte	draft		
+exe	0x004c3fd0	cm_ReceiveMessages	cm	byte	readable		
 exe	0x004c4030	cm_WaitMessage	cm	byte	readable		
 exe	0x004c4080	cm_EnqueueReceived	cm	draft	readable	deep	
 exe	0x004c4130	cm_FreeReceived	cm	byte	readable		
 exe	0x004c4190	cm_ExecCommands	cm	draft	readable	deep	
 exe	0x004c43c0	cm_CheckGroup	cm	byte	readable		
 exe	0x004c4450	cm_ResolveId	cm	byte	readable		
-exe	0x004c4480	cm_SetLongMsg	cm	byte	draft		
-exe	0x004c44d0	cm_SendLoadSize	cm	byte	draft		
+exe	0x004c4480	cm_SetLongMsg	cm	byte	readable		
+exe	0x004c44d0	cm_SendLoadSize	cm	byte	readable		
 exe	0x004c4500	cm_SendLoadBlock	cm	byte	readable		
 exe	0x004c4540	cm_BeginGroup	cm	byte	readable		
 exe	0x004c4580	cm_EndGroup	cm	byte	readable		
@@ -2385,7 +2385,7 @@ exe	0x004cd480	ai_Unk4cd480	cm	shape	draft
 exe	0x004cd4c0	ai_Unk4cd4c0	cm	byte	draft		
 exe	0x004cd500	cm_LobbyClearChat	cm	byte	draft		
 exe	0x004cd510	cm_LobbyAllReady	cm	shape	draft		
-exe	0x004cd580	ai_Unk4cd580	cm	byte	draft		
+exe	0x004cd580	cm_LobbyStart	cm	byte	draft		
 exe	0x004cd5d0	cm_LobbyPlayerList	cm	byte	readable		
 exe	0x004cd5e0	cm_LobbyFindPlayer	cm	byte	draft		
 exe	0x004cd5f0	cm_LobbyMyPlayer	cm	byte	draft		
@@ -3926,9 +3926,9 @@ exe	0x00575320	he_AllocEventGood	he	byte	readable
 exe	0x005753a0	he_RunEventGood	he	shape	readable		
 exe	0x00575430	he_GiveDomizilGood	he	byte	readable		
 exe	0x00575540	he_EventGoodMoney	he	byte	readable		
-exe	0x00575570	he_EventGoodRefund	he	byte	draft		
-exe	0x005755c0	he_Unk5755c0	he	byte	draft		
-exe	0x00575600	he_SaveMessageFilter	he	byte	draft		
+exe	0x00575570	he_EventGoodRefund	he	byte	readable		
+exe	0x005755c0	he_LoadMessageFilter	he	byte	readable		
+exe	0x00575600	he_SaveMessageFilter	he	byte	readable		
 exe	0x00575640	he_IsMessageKindFiltered	he	draft	readable	deep	
 exe	0x00575710	he_SetMessageKindFiltered	he	byte	readable		
 exe	0x00575860	ai_TutorialTick	sv_t	byte	readable		
