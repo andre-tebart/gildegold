@@ -2820,3 +2820,4 @@
 2026-11-06T22:15:53 0x004c8110 data ai_Unk4c8110 -> cm_ExSetField by:main why:the handler of message 0x19 (cm_SendSetField): clears then sets the bits of a field of an object; its siblings are cm_Ex<message> (cm_ExFieldDeltas, cm_ExFieldValues, cm_ExMoodDeltas)
 2026-11-06T22:17:17 0x004c81d0 func ai_Unk4c81d0 -> cm_ExFloatDelta by:main why:the handler of message 0x1a (cm_SendFloatDelta): adds the message's delta to a float field of an object; the handlers are cm_Ex<message> (cm_ExFieldDeltas, cm_ExFieldValues)
 2026-11-06T22:30:07 0x004c85c0 func ai_Unk4c85c0 -> cm_ExLongMessage by:main why:the handler of message 0x1c, the long message (cm_SendLongMessage, AIMSG): it creates the event (he_CreateEvent) and its message-box text; the handlers are cm_Ex<message>
+2026-11-06T22:31:51 0x004c87a0 data ai_Unk4c87a0 -> cm_ExSetHE by:main why:the handler of message 0x1d: the original's own trace string names it cm_ExSetHE(), and its sibling handlers are cm_Ex<message>
