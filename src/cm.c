@@ -1168,15 +1168,15 @@ int cm_SendMessage0c(int a, int b, short c, unsigned char d, int e, unsigned cha
     G17MSG m;
 
     m.type = 0xc;
-    G17_I(m, 4) = a;
-    G17_I(m, 8) = b;
-    G17_S(m, 0xc) = c;
-    m.data[0xe] = d;
-    G17_I(m, 0xf) = e;
-    m.data[0x13] = f;
-    m.data[0x14] = g;
-    strncpy((char *)&m.data[0x15], s1, 0x10);
-    strncpy((char *)&m.data[0x25], s2, 0x10);
+    m.named.parent1 = a;
+    m.named.parent2 = b;
+    m.named.age = c;
+    m.named.job = d;
+    m.named.ref54 = e;
+    m.named.a8 = f;
+    m.named.b00c = g;
+    strncpy(m.named.first, s1, 0x10);
+    strncpy(m.named.family, s2, 0x10);
     return cm_QueueSend(&m);
 }
 /* 0x4c4770, message 0xd */
