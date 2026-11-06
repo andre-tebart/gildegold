@@ -4282,23 +4282,23 @@ exe	0x005a4130	ai_BurglaryStart	lc	shape	readable
 exe	0x005a41d0	ai_GuildSpyWindow	lc	draft	readable	deep	
 exe	0x005a44e0	ai_EspionageStart	lc	draft	draft		
 exe	0x005a45c0	ai_SpyReportsWindow	lc	byte	readable		
-exe	0x005a48d0	ai_AttackWindow	lc	draft	draft		
+exe	0x005a48d0	ai_AttackWindow	lc	shape	readable		
 exe	0x005a4b30	ai_AttackStart	lc	byte	readable		
-exe	0x005a4b90	ai_PickpocketVictimWindow	lc	draft	draft		
+exe	0x005a4b90	ai_PickpocketGangWindow	lc	draft	readable	deep	
 exe	0x005a4d40	ai_ThievesGuildListener	lc	shape	readable		
 exe	0x005a4f50	ai_ThievesGuildEmptyListener	lc	byte	readable		
 exe	0x005a4f70	ai_StorageContact	lc	shape	readable		
 exe	0x005a5080	ai_TrainingContact	lc	byte	readable		
-exe	0x005a5120	ai_Unk5a5120	lc	draft	draft		
+exe	0x005a5120	ai_KidnapWindow	lc	draft	readable	deep	
 exe	0x005a53e0	ai_KidnapStart	lc	draft	draft		
-exe	0x005a5530	ai_RansomWindow	lc	draft	draft		
-exe	0x005a5910	ai_KidnapAttempt	lc	draft	draft		
+exe	0x005a5530	ai_RansomWindow	lc	byte	readable		
+exe	0x005a5910	ai_HostageEscape	lc	byte	readable		
 exe	0x005a5bc0	ai_KidnapContact	lc	byte	readable		
-exe	0x005a5d70	ai_CityWatchWindow	lc	draft	draft		
+exe	0x005a5d70	ai_CityWatchWindow	lc	byte	readable		
 exe	0x005a5f60	ai_PatrolStart	lc	byte	readable		
-exe	0x005a5fd0	ai_CityWatchCrewWindow	lc	draft	draft		
+exe	0x005a5fd0	ai_CityWatchCrewWindow	lc	byte	readable		
 exe	0x005a61f0	ai_RaidStart	lc	byte	readable		
-exe	0x005a6270	ai_WatchSearchWindow	lc	draft	draft		
+exe	0x005a6270	ai_WatchPlanWindow	lc	byte	readable		
 exe	0x005a6480	ai_WatchPlanStart	lc	byte	readable		
 exe	0x005a64d0	ai_ArrestWindow	lc	draft	draft		
 exe	0x005a6720	ai_ArrestStart	lc	byte	readable		
