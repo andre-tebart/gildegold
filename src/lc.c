@@ -619,7 +619,7 @@ extern int ai_CityWatchWindow();
 extern int ai_CityWatchCrewWindow();
 
 extern int ai_CityWatchWindow();
-extern int ai_WatchSearchWindow();
+extern int ai_WatchPlanWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int d2_ClickedId;
@@ -633,7 +633,7 @@ extern int d2_ClickedId;
 
 extern int sv_PopRequest;
 extern int ai_CityWatchCrewWindow();
-extern int ai_WatchSearchWindow();
+extern int ai_WatchPlanWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
@@ -642,7 +642,7 @@ extern int d2_ClickedId;
 
 extern unsigned short * sv_PanelShown;
 extern int sv_PopRequest;
-extern int ai_WatchSearchWindow();
+extern int ai_WatchPlanWindow();
 extern char * ai_PlayerBuilding;
 extern int d2_PointerObj;
 extern int ai_SceneChars[32];
@@ -13781,7 +13781,7 @@ void ai_RaidStart(int building)
 }
 /* 0x5a6480, the city watch plan start, the click of the ob_WACHPLAN plate (67 B): 0x520fe0 (the building);
    the player bar opens (0x525220, the building), the map pick runs (0x5b2180: 4, 0, the prompt text
-   ai_WatchPlanPickPrompt, the city watch search window ai_WatchSearchWindow as callback, 0), then the player bar
+   ai_WatchPlanPickPrompt, the city watch search window ai_WatchPlanWindow as callback, 0), then the player bar
    closes (0x525440) and the selection is cleared (0x52ae40) */
 
 void ai_WatchPlanStart(int building)
@@ -13789,7 +13789,7 @@ void ai_WatchPlanStart(int building)
     if (sv_CheckCharacterFlag(building) != 0 || building == 0)
         return;
     sv_OpenPlayerBar(building, 0);
-    ai_MapPick(4, 0, ai_WatchPlanPickPrompt, (int)ai_WatchSearchWindow, 0);
+    ai_MapPick(4, 0, ai_WatchPlanPickPrompt, (int)ai_WatchPlanWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
@@ -13932,84 +13932,72 @@ int ai_CityWatchCrewWindow(int ctx, AIBLD *target)
     d2_CloseView(win);
     return done;
 }
-/* 0x5a6270, the city watch search window (519 B; a Ghidra-missed start, the callback of 0x5b2180 in 0x5a6480):
-   the name param_2 (0 returns 0), the scan of the crew byte at 0x770d08, the window
-   "LOCATIONS\STADTWACHE\STANDARD" with two controls from 0x515960 (0x1a70) / 0x475b80; the pump 0x5309a0
-   (this, 0x677c7): a click on the first control sends the AIMSG type 0x65 (+8 the player's character, the clock
-   0x770ae0 .. +0x34, 2 at +0x36, the name copied to +0x58, -1 at +0x38, the building +1 at +0x78, the 0x6f2310
-   +2 at +0x7c and the up to six wanted ids (the live table 0x7603a0 .. 0x760420, byte +0x188) at +0x38) and
-   0x4c2d20, 0x6f22a0 = 2; the second control sets 0x6f22a0 = 1; the exit 0x4758f0, returns 0 */
-
-int ai_WatchSearchWindow(int param_1, char *param_2)
+/* 0x5a6270, the city watch plan window "LOCATIONS\STADTWACHE\STANDARD" (ai_WatchPlanStart's map pick callback, mode
+   4: its context, not read here, and the picked place's name; 0 for none): with no character selected the text
+   0x1a5e. The text 0x1a70 and two buttons: the first sends the watch message 0x65 (to the player's netId, from the
+   player's building, now, flags 2, the place's name at arg[0], arg[8] the player's building, arg[9] the object of
+   the room the panel shows, up to six selected scene characters as ids; nothing with none), then closes; the
+   second and a right click close it. Returns 0 */
+int ai_WatchPlanWindow(int ctx, char *place)
 {
-    int list[6];
+    int cancel;
+    int ok;
+    AIMSG msg;
     int win;
-    int ctl1;
-    int ctl2;
-    int id;
+    int base;
     int n;
     int i;
-    int e;
-    int *tp;
-    char msg[0xf4];
+    int *pp;
+    AICHARREC *ch;
+    AIBLD *bld;
 
-    if (param_2 == 0)
+    if (place == 0)
         return 0;
-    for (i = 0; i < 0x300; i++) {
-        if (*(char *)((unsigned)&ai_Selected + i * 0x21c) != 0)
+    for (i = 0; i < 0x300; i++)
+        if (((AICHARREC *)ai_Chars)[i].selected != 0)
             break;
-    }
-    if (i == 0x300) {
-        sv_MessageBox((char *)U_I((unsigned)&full_data_1440b38), 0);
+    if (i >= 0x300) {
+        sv_MessageBox(txt_Ptrs[0x1a5e], 0);
         return 0;
     }
-    win = d2_OpenForm(0, 0, "LOCATIONS\STADTWACHE\STANDARD");
+    win = d2_OpenForm(0, 0, "LOCATIONS\\STADTWACHE\\STANDARD");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    id = io_PrintText(0x1a70);
-    ctl1 = d2_GetWinObj(win, 1, id);
-    ctl2 = d2_GetWinObj(win, 1, id + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctl1) {
-                *(unsigned char *)(msg + 4) = 0x65;
-                U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
-                U_I(msg + 0x28) = U_I((unsigned)&ai_Time);
-                U_I(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                U_I(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-                *(unsigned char *)(msg + 0x36) = 2;
-                U_I(msg + 0x78) = U_I(U_I((unsigned)&ai_PlayerBuilding) + 1);
-                U_I(msg + 0x7c) = U_I(U_I((unsigned)&sv_PanelShown) + 2);
-                for (i = 0; param_2[i] != 0; i++)
-                    *(char *)(msg + 0x58 + i) = param_2[i];
-                *(char *)(msg + 0x58 + i) = 0;
-                for (i = 0; i < 6; i++)
-                    U_I(msg + 0x38 + i * 4) = -1;
-                n = 0;
-                for (tp = (int *)(unsigned)&ai_SceneChars; tp < (int *)(unsigned)((unsigned)ai_SceneChars + 0x80) && n < 6; tp++) {
-                    e = *tp;
-                    if (e != 0 && *(char *)(e + 0x188) != 0) {
-                        U_I(msg + 0x38 + n * 4) = U_I(e + 4);
-                        n++;
-                    }
-                }
-                if (n != 0) {
-                    cm_SendLongMessage(msg);
-                    snd_PlayFavourComment();
-                }
-                U_I((unsigned)&sv_PopRequest) = 2;
-            } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+    base = io_PrintText(0x1a70);
+    ok = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            bld = (AIBLD *)ai_PlayerBuilding;
+            msg.type = 0x65;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.fromId = bld->id;
+            msg.time = ai_Time;
+            msg.flags = 2;
+            strcpy((char *)msg.arg, place);
+            memset(msg.ids, 0xff, 6 * sizeof(int));
+            n = 0;
+            msg.arg[8] = bld->id;
+            msg.arg[9] = ((AIROOM *)sv_PanelShown)->objId;
+            for (pp = ai_SceneChars; (int)pp < (int)&ai_SceneChars[32] && n < 6; pp++) {  /* signed compares (jl) */
+                ch = (AICHARREC *)*pp;
+                if (ch != 0 && ch->selected != 0)
+                    msg.ids[n++] = ch->netId;
             }
-        }
-        if (sv_RunFrame(ai_WatchSearchWindow, 0x677c7) == 0)
-            break;
-    }
+            if (n != 0) {
+                cm_SendLongMessage((char *)&msg);
+                snd_PlayFavourComment();
+            }
+            sv_PopRequest = 2;
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_WatchPlanWindow, 0x677c7) != 0);
     d2_CloseView(win);
     return 0;
 }
