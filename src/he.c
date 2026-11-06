@@ -1316,6 +1316,14 @@ typedef struct HEGYPSY {                /* the gypsy event 0x9d's words over AIJ
     int approach;                       /* 0xac, the approach he_GypsyApproach dispatches (0 disease .. 5+ slowdown) */
     int figure;                         /* 0xb0, the netId of the gypsy character (gm_FindChar) */
 } HEGYPSY;
+typedef struct HEGYPSYCURSE {           /* the gypsy curse event 0x9e's words over AIJOB's union (the message 0x9e
+                                           he_GypsyCurse posts: arg[0] at 0xac, arg[1] at 0xb0; its alloc
+                                           he_AllocGypsyCurse, run he_RunGypsyCurse) */
+    char pad00[0xac];
+    int gypsy;                          /* 0xac, the netId of the gypsy character the curse pays, -1: the cursed
+                                           character is the gypsy himself (he_GypsyCurse sends -1 then) */
+    int cursed;                         /* 0xb0, the netId of the cursed character (he_GypsyCurse's arg[1]) */
+} HEGYPSYCURSE;
 typedef struct HETRIALCASE {            /* the trial event 0xa0's words over AIJOB's union (its alloc he_AllocTrialScene,
                                            run he_RunTrialScene and the trial he_TrialPayment) */
     char pad00[0xac];
@@ -25582,37 +25590,39 @@ void he_AllocGypsyCurse(int ev)
     e->end.hour = 6;
     e->end.min = (util_Random(0x10) & 0xffff) + 5;
 }
-/* 0x573fb0, the run of the event 0x9e: -2 / -1 free; the state + 1; the figures +0xb0 (a) and +0xac (b) (0x505df0); from a's
-   +0x194 (n) a is charged -n and b n / 2 (at least 2) (0x50cc50); while the state stays below 2 the due clock +0x52 = now +
-   24 hours (0x4fe140), else the event is freed */
+/* 0x573fb0, the run of the event 0x9e: -2 / -1 free; the stage + 1; the cursed character +0xb0 and the gypsy +0xac
+   (gm_FindChar); the cursed one's money +0x194 (n) is taken -n and the gypsy gets n / 2 (at least 2) (gm_SendMoneyDelta);
+   while the stage stays below 2 the due clock +0x52 moves 24 hours ahead (gm_AddTime), else the event is freed */
 
 void he_RunGypsyCurse(int ev)
 {
-    char *a, *b;
+    AIJOB *e = (AIJOB *)ev;
+    HEGYPSYCURSE *g = (HEGYPSYCURSE *)ev;
+    AICHAR *a, *b;
     int n, x;
 
-    if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2) {
+    if (e->stage == -1 || e->stage == -2) {
         he_FreeEvent((int *)ev);
         return;
     }
-    HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
-    a = (char *)gm_FindChar(HM_I(ev, 0xb0));
-    b = (char *)gm_FindChar(HM_I(ev, 0xac));
+    e->stage = e->stage + 1;
+    a = (AICHAR *)gm_FindChar(g->cursed);
+    b = (AICHAR *)gm_FindChar(g->gypsy);
     if (a == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    n = HM_I(a, 0x194);
+    n = a->money;
     if (n != 0) {
-        gm_SendMoneyDelta(HM_I(a, 4), -n);
+        gm_SendMoneyDelta(a->netId, -n);
         x = n / 2;
         if (x <= 2)
             x = 2;
         if (b != 0)
-            gm_SendMoneyDelta(HM_I(b, 4), x);
+            gm_SendMoneyDelta(b->netId, x);
     }
-    if (HM_I(ev, 0x70) < 2) {
-        gm_AddTime(ev + 0x52, 0x18, 0, 0);
+    if (e->stage < 2) {
+        gm_AddTime(&e->end, 0x18, 0, 0);
         return;
     }
     he_FreeEvent((int *)ev);
