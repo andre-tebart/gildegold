@@ -16162,7 +16162,7 @@ typedef struct G9DOMIZILROW {           /* a row of the Domizil personnel book: 
                                            0x5aa1f0 / 0x5aa520 fill them, ai_DomizilFreeRow frees them */
     int x;                              /* 0x00, the row's position (0x5aa0d0's arguments) */
     int y;                              /* 0x04 */
-    int ch;                             /* 0x08, the character record it shows */
+    AICHARREC *ch;                      /* 0x08, the character record it shows */
     int pic;                            /* 0x0c, the picture control (d2_WinOpenPic, 0x5aa0d0) */
     int slider;                         /* 0x10, the value slider (d2_WinOpenSlider, 0x5aa1f0) */
     int text;                           /* 0x14, the text control (0x5aa1f0 / 0x5aa520) */
@@ -16216,17 +16216,17 @@ void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
     d2_Objs[row->pic].user = ch;
     v = ch->v174;
     if (v != 0 && ch->jobId == 0) {
-        if (((AICHARREC *)row->ch)->title == bt->title2)
+        if (row->ch->title == bt->title2)
             txt_Format(text, "%i %s", v, 0x1a39);
-        else if (((AICHARREC *)row->ch)->title == bt->title)
+        else if (row->ch->title == bt->title)
             txt_Format(text, "%i %s", v, 0x1a3a);
         d2_SetObjText(row->name, text);
         d2_Objs[row->name].centred = 1;
         d2_Objs[row->name].w = 0xa0;
     } else if (ch->jobId == 0) {
-        if (((AICHARREC *)row->ch)->title == bt->title2)
+        if (row->ch->title == bt->title2)
             txt_Format(text, "%s", 0x1a3b);
-        else if (((AICHARREC *)row->ch)->title == bt->title)
+        else if (row->ch->title == bt->title)
             txt_Format(text, "%s", 0x1a3c);
         d2_SetObjText(row->name, text);
         d2_Objs[row->name].centred = 1;
@@ -16237,7 +16237,7 @@ void ai_FillPersonnelRow(AICHARREC *ch, G9DOMIZILROW *row, int bars)
         sv_ValueBar(row->x, row->y + 0x74, ch->skills[2], 0x4df);
     }
     if (row->slider != -1) {
-        v = gm_Opinion(ai_PlayerId, ((AICHARREC *)row->ch)->id);
+        v = gm_Opinion(ai_PlayerId, row->ch->id);
         d2_SetObjValue(row->slider, 0, 100, (int)((v + 128.0) * 100.0 * (1.0 / 255.0)));
     }
 }
@@ -16272,45 +16272,46 @@ void ai_DomizilFreeRow(G9DOMIZILROW *row)
         }
     }
 }
-/* 0x5aa520, the selected character of a Domizil record (449 B): the carrier 0x53e400 (2, 0, param_3, 3, the +1
-   field of param_1) with its +0xb0 + param_4 * 4 entry: the text 0x1440a50 and the state 2; else the character
-   param_2 + 8 with a byte +8: the text of its record (0x5143d0) and the state 1; else the record is freed
-   (0x5aa4b0) and the texts 0x1440ac8 / 0x631090 with the state 0 are written to the controls +0x14 / +0x18 */
+/* 0x5aa520, fills the personnel book row row of an empty or touring place (469 B): when bld's sales-tour
+   event of kind (6 / 7, he_FindEvent by AIJOB.kind and the building id) counts a ware on the row's counter
+   (AIJOB.tourCounters[slot]), the text 0x1a24 and the state 2; else a living character on the row: its name and
+   the state 1; else the row's controls are freed (ai_DomizilFreeRow), the text "no character" with the state 0,
+   the name control emptied and the picture's user record cleared */
 
-void ai_Unk5aa520(int param_1, int param_2, int param_3, int param_4)
+void ai_FillVacantPersonnelRow(AIBLD *bld, G9DOMIZILROW *row, int kind, int slot)
 {
     char text[256];
-    int rec;
-    int ch;
+    AIJOB *job;
+    AICHARREC *ch;
 
-    rec = he_FindEvent(2, 0, param_3, 3, *(int *)(param_1 + 1));
-    if (rec != 0 && *(int *)(rec + 0xb0 + param_4 * 4) != 0) {
-        strcpy(text, (char *)U_I((unsigned)&full_data_1440a50));
-        *(unsigned char *)(param_2 + 0x20) = 2;
-        d2_SetObjText(*(int *)(param_2 + 0x14), text);
-        U_W((unsigned)&d2_Objs + 0x14 + *(int *)(param_2 + 0x14) * 0x2ec) = 0xa0;
-        U_W((unsigned)&d2_Objs + 0x16 + *(int *)(param_2 + 0x14) * 0x2ec) = 0x28;
-        *(unsigned char *)(param_2 + 0x20) = 2;
+    job = (AIJOB *)he_FindEvent(2, 0, kind, 3, bld->id);
+    if (job != 0 && job->tourCounters[slot] != 0) {
+        strcpy(text, txt_Ptrs[0x1a24]);
+        row->state = 2;
+        d2_SetObjText(row->text, text);
+        d2_Objs[row->text].w = 0xa0;
+        d2_Objs[row->text].h = 0x28;
+        row->state = 2;
         return;
     }
-    ch = *(int *)(param_2 + 8);
-    if (ch != 0 && *(char *)(ch + 8) != 0) {
-        io_CharacterName(U_W(ch), 1, 1, text);
-        d2_SetObjText(*(int *)(param_2 + 0x14), text);
-        U_I((unsigned)&d2_Objs + 0x5c + *(int *)(param_2 + 0x14) * 0x2ec) = 1;
-        U_W((unsigned)&d2_Objs + 0x14 + *(int *)(param_2 + 0x14) * 0x2ec) = 0xa0;
-        *(unsigned char *)(param_2 + 0x20) = 1;
+    ch = row->ch;
+    if (ch != 0 && ch->health != 0) {
+        io_CharacterName(ch->id, 1, 1, text);
+        d2_SetObjText(row->text, text);
+        d2_Objs[row->text].centred = 1;
+        d2_Objs[row->text].w = 0xa0;
+        row->state = 1;
         return;
     }
-    ai_DomizilFreeRow(param_2);
-    strcpy(text, (char *)U_I((unsigned)&txt_NoCharacter));
-    *(unsigned char *)(param_2 + 0x20) = 0;
-    d2_SetObjText(*(int *)(param_2 + 0x14), text);
-    U_W((unsigned)&d2_Objs + 0x14 + *(int *)(param_2 + 0x14) * 0x2ec) = 0xa0;
-    U_W((unsigned)&d2_Objs + 0x16 + *(int *)(param_2 + 0x14) * 0x2ec) = 0x28;
-    d2_SetObjText(*(int *)(param_2 + 0x18), (char *)(unsigned)&ch_EmptyName);
-    *(unsigned char *)(param_2 + 0x20) = 0;
-    U_I((unsigned)&d2_Objs + 0x2e8 + *(int *)(param_2 + 0xc) * 0x2ec) = 0;
+    ai_DomizilFreeRow(row);
+    strcpy(text, txt_NoCharacter);
+    row->state = 0;
+    d2_SetObjText(row->text, text);
+    d2_Objs[row->text].w = 0xa0;
+    d2_Objs[row->text].h = 0x28;
+    d2_SetObjText(row->name, ch_EmptyName);
+    row->state = 0;
+    d2_Objs[row->pic].user = 0;
 }
 /* 0x5aa700, the worker list of a Domizil window (672 B): up to three entries of the array 0x6f40a4 (0x509060
    fills it, the count 0x6f40a0), each a picture 0x5db, a picture 0x639 + the kind of the entry, the text
