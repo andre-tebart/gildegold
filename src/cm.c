@@ -6666,7 +6666,8 @@ G18LOG *cm_LobbyChatNextLine()
     }
     return &cm_LobbyChat[i];
 }
-/* 0x4cd500 */
+/* 0x4cd500, empties the lobby chat ring: the write index cm_LobbyChatNext and the line count
+   cm_LobbyChatCount go to 0 */
 
 void cm_LobbyClearChat()
 {
