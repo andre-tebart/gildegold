@@ -25186,31 +25186,35 @@ void he_RunCouncil(int ev)
     }
 }
 
-void he_Unk5734b0(int ev);          /* 0x5734b0 */
-void he_Unk573580(int ev);          /* 0x573580 */
-void he_Unk573f20(int ev);          /* 0x573f20 */
-void he_Unk573fb0(int ev);          /* 0x573fb0 */
-void he_Unk574060(int ev);          /* 0x574060 */
-void he_Unk5740d0(int ev);          /* 0x5740d0 */
+void he_AllocGypsyApproach(int ev);          /* 0x5734b0 */
+void he_RunGypsyApproach(int ev);          /* 0x573580 */
+void he_AllocGypsyCurse(int ev);          /* 0x573f20 */
+void he_RunGypsyCurse(int ev);          /* 0x573fb0 */
+void he_AllocGypsySlowdown(int ev);          /* 0x574060 */
+void he_RunGypsySlowdown(int ev);          /* 0x5740d0 */
 void he_AllocTrialScene(int ev);          /* 0x574120 */
 void he_RunTrialScene(int ev);          /* 0x5743c0 */
 void he_AllocMeeting4(int ev);          /* 0x574550 */
 void he_RunCircusShow(int ev);          /* 0x5748d0 */
-void he_Unk575150(int ev);          /* 0x575150 */
+void he_AllocPettyLoss(int ev);          /* 0x575150 */
 void he_RunPettyLoss(int ev);          /* 0x5751e0 */
-void he_Unk575320(int ev);          /* 0x575320 */
-void he_Unk5753a0(int ev);          /* 0x5753a0 */
+void he_AllocEventGood(int ev);          /* 0x575320 */
+void he_RunEventGood(int ev);          /* 0x5753a0 */
 
-/* 0x5733c0, registers the event types 0x9d .. 0xa1, 0xa3 and 0xa4 (called by 0x53d4b0): the pairs (0x5734b0, 0x573580), (0x573f20, 0x573fb0), (0x574060, 0x5740d0), (0x574120, 0x5743c0), (0x574550, 0x5748d0), (0x575150, 0x5751e0) and (0x575320, 0x5753a0), then the type text 0x50f of 0xa1 (0x52b350); 0 = ok, 1 = a registration failed */
+/* 0x5733c0, registers the event types 0x9d .. 0xa1, 0xa3 and 0xa4 (called by 0x53d4b0): the pairs
+   (he_AllocGypsyApproach, he_RunGypsyApproach), (he_AllocGypsyCurse, he_RunGypsyCurse),
+   (he_AllocGypsySlowdown, he_RunGypsySlowdown), (he_AllocTrialScene, he_RunTrialScene),
+   (he_AllocMeeting4, he_RunCircusShow), (he_AllocPettyLoss, he_RunPettyLoss) and (he_AllocEventGood, he_RunEventGood),
+   then the type text 0x50f of 0xa1 (0x52b350); 0 = ok, 1 = a registration failed */
 int he_RegisterEventTypes9d(void)
 {
-    if (he_SetEventHandlers(0x9d, (void *)he_Unk5734b0, (void *)he_Unk573580) == 0) {
-        if (he_SetEventHandlers(0x9e, (void *)he_Unk573f20, (void *)he_Unk573fb0) == 0) {
-            if (he_SetEventHandlers(0x9f, (void *)he_Unk574060, (void *)he_Unk5740d0) == 0) {
+    if (he_SetEventHandlers(0x9d, (void *)he_AllocGypsyApproach, (void *)he_RunGypsyApproach) == 0) {
+        if (he_SetEventHandlers(0x9e, (void *)he_AllocGypsyCurse, (void *)he_RunGypsyCurse) == 0) {
+            if (he_SetEventHandlers(0x9f, (void *)he_AllocGypsySlowdown, (void *)he_RunGypsySlowdown) == 0) {
                 if (he_SetEventHandlers(0xa0, (void *)he_AllocTrialScene, (void *)he_RunTrialScene) == 0) {
                     if (he_SetEventHandlers(0xa1, (void *)he_AllocMeeting4, (void *)he_RunCircusShow) == 0) {
-                        if (he_SetEventHandlers(0xa3, (void *)he_Unk575150, (void *)he_RunPettyLoss) == 0) {
-                            if (he_SetEventHandlers(0xa4, (void *)he_Unk575320, (void *)he_Unk5753a0) == 0) {
+                        if (he_SetEventHandlers(0xa3, (void *)he_AllocPettyLoss, (void *)he_RunPettyLoss) == 0) {
+                            if (he_SetEventHandlers(0xa4, (void *)he_AllocEventGood, (void *)he_RunEventGood) == 0) {
                                 sv_RegisterActivity(0xa1, 0, 0, 0x50f, -1);
                                 return 0;
                             }
@@ -25226,7 +25230,7 @@ int he_RegisterEventTypes9d(void)
    figure +0xb0 (0x505df0): without one the event is scheduled with -1; else the message 0x4f2e30 (0x1c, 1, the player id
    +0xc, figure +4, *(figure + 0x170) ? the word after it : -1) and the handler scheduled with 0 */
 
-void he_Unk5734b0(int ev)
+void he_AllocGypsyApproach(int ev)
 {
     char *per;
     int x;
@@ -25257,7 +25261,7 @@ void he_GypsyFee(AICHAR *pl, int a);           /* 0x573e30 */
    (0x4c3ae0); then +0x84 = -1, the due clock +0x52 = now, the figure +0xb0 (0x505df0) and the player record (0x770b80) must
    exist (else scheduled with -1): state 0 calls 0x5736d0 (player, figure, ev +0xac) and retries in 24 hours with the hour 6
    and the minute 15 * random (4) + 5; state 1 calls 0x573e30 (player, ev +0xac) and schedules -1 */
-void he_Unk573580(int ev)
+void he_RunGypsyApproach(int ev)
 {
     char *per, *pl;
 
@@ -25526,7 +25530,7 @@ void he_GypsySlowdown(AICHAR *pl, AICHAR *per)
 
 void gm_SendMoneyDelta(int a, int b);                 /* 0x50cc50 */
 
-/* 0x573e30, the second step of the event 0x9d (state 1 of he_Unk573580): the event's own character pl pays the fee n
+/* 0x573e30, the second step of the event 0x9d (state 1 of he_RunGypsyApproach): the event's own character pl pays the fee n
    for the approach a (a < 2: 2 + random(2); a == 2: 3 + random(2); a == 3: 3 + random(3); a == 4: 3 + random(4); else
    4 + random(4)): with the money he is charged n (gm_SendMoneyDelta) and told (the news 0x5fa, the text 0x41db with n)
    with the voice "_NACHRICHTEN_ZIGEUNER_00"; without it the approach a strikes himself (he_GypsyApproach (pl, pl, a)).
@@ -25557,7 +25561,7 @@ void he_GypsyFee(AICHAR *pl, int a)
 /* 0x573f20, the alloc of the event 0x9e: state 0, the start and the due clock +0x44 / +0x52 = now, the due clock + 24 hours
    (0x4fe140), the hour +0x56 = 6 and the minute +0x58 = 5 + random (0x10) */
 
-void he_Unk573f20(int ev)
+void he_AllocGypsyCurse(int ev)
 {
     HM_I(ev, 0x70) = 0;
     *(AITIME *)(ev + 0x44) = ai_Time;
@@ -25570,7 +25574,7 @@ void he_Unk573f20(int ev)
    +0x194 (n) a is charged -n and b n / 2 (at least 2) (0x50cc50); while the state stays below 2 the due clock +0x52 = now +
    24 hours (0x4fe140), else the event is freed */
 
-void he_Unk573fb0(int ev)
+void he_RunGypsyCurse(int ev)
 {
     char *a, *b;
     int n, x;
@@ -25604,7 +25608,7 @@ void he_Unk573fb0(int ev)
 /* 0x574060, the alloc of the event 0x9f: state -1, the start and the due clock +0x44 / +0x52 = now, the due clock + 24 hours
    (0x4fe140) */
 
-void he_Unk574060(int ev)
+void he_AllocGypsySlowdown(int ev)
 {
     HM_I(ev, 0x70) = -1;
     *(AITIME *)(ev + 0x44) = ai_Time;
@@ -25613,7 +25617,7 @@ void he_Unk574060(int ev)
 }
 /* 0x5740d0, the run of the event 0x9f: -2 / -1 free */
 
-void he_Unk5740d0(int ev)
+void he_RunGypsySlowdown(int ev)
 {
     if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2)
         he_FreeEvent((int *)ev);
@@ -26077,14 +26081,14 @@ void he_CircusShowIncome(int ev, int n)
 /* 0x575150, the alloc of the event 0xa3: state 0, the start and the due clock +0x44 / +0x52 = now, the due clock plus random (2)
    hours and random (0x1e) minutes (0x4fe140) */
 
-void he_Unk575150(int ev)
+void he_AllocPettyLoss(int ev)
 {
     *(AITIME *)(ev + 0x44) = ai_Time;
     *(AITIME *)(ev + 0x52) = ai_Time;
     HM_I(ev, 0x70) = 0;
     gm_AddTime(ev + 0x52, util_Random(2) & 0xffff, util_Random(0x1e) & 0xffff, 0);
 }
-/* 0x5751e0, the run of the event 0xa3 (alloc he_Unk575150): -1 / -2, a stage above 3 or no character netId
+/* 0x5751e0, the run of the event 0xa3 (alloc he_AllocPettyLoss): -1 / -2, a stage above 3 or no character netId
    (gm_FindChar): freed. Else the stage advances and the next run is due in 3 + random(3) hours; a character with money
    loses 1 + random(2) of it when a first such draw is below his money, else all of it (gm_SendMoneyDelta); one of the
    kinds 6 / 7 is told (the news 0x5fb, the text 0x1008 with the amount); past the stage 3 the event is due now (and freed then).
@@ -26126,7 +26130,7 @@ void he_RunPettyLoss(int ev)
 }
 /* 0x575320, the alloc of the event 0xa4: state 0, the clocks +0x44 / +0x52 = now, the due clock + random (0x20) hours (0x4fe140) */
 
-void he_Unk575320(int ev)
+void he_AllocEventGood(int ev)
 {
     *(AITIME *)(ev + 0x44) = ai_Time;
     *(AITIME *)(ev + 0x52) = ai_Time;
@@ -26140,7 +26144,7 @@ void he_Unk575570(char *per);       /* 0x575570 */
 
 /* 0x5753a0, the run of the event 0xa4: -2 / -1 free, also without the figure +0xc (0x505df0); a random 0x42ec20 picks: above
    0x5eb828 0x575430 (per), above 0x5eb7b8 0x575540 (per), else 0x575570 (per); then free */
-void he_Unk5753a0(int ev)
+void he_RunEventGood(int ev)
 {
     char *per;
     float r;
@@ -26165,7 +26169,7 @@ void he_Unk5753a0(int ev)
         he_Unk575570(per);
     he_FreeEvent((int *)ev);
 }
-/* 0x575430, the good outcome of the event 0xa4 (he_Unk5753a0): a Domizil good of the ranks 3 .. 6
+/* 0x575430, the good outcome of the event 0xa4 (he_RunEventGood): a Domizil good of the ranks 3 .. 6
    (ai_DomizilGoodInRange) is looked up in the character's inventory (ai_FindWantedItems; st[0] its entries); he gets
    one of it (cm_SendExSellObject) unless he already holds 3 of it or lacks it with 6 entries in his inventory: then
    he is paid its price instead (gm_GoodsPrice, cm_SendMoveGoodsUnchecked). */
