@@ -1588,18 +1588,19 @@ void cm_RequestChrMove(int netId, int bldId, int objId, const char *name)
     strcpy(m.place.name, name);
     cm_QueueSend(&m);
 }
-/* 0x4c51b0, "cm_RequestChrMoveToUniverse": message 0x30 with a dummy name (< 0x20 characters) */
+/* 0x4c51b0, message 0x30: sends the character netId to the building bldId / room objId of the universe (the
+   dummy name is the scene object it walks to, < 0x20 characters) - handler 0x4c99b0 */
 
-void cm_RequestChrMoveToUniverse(int a, int b, int c, const char *s)
+void cm_RequestChrMoveToUniverse(int netId, int bldId, int objId, const char *name)
 {
     G17MSG m;
 
     m.type = 0x30;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
-    if (strlen(s) < 0x20)
-        strcpy((char *)&m.data[0xc], s);
+    m.place.netId = netId;
+    m.place.bldId = bldId;
+    m.place.objId = objId;
+    if (strlen(name) < 0x20)
+        strcpy(m.place.name, name);
     else
         err_Message("cm_RequestChrMoveToUniverse(): dummyname is too long...");
     cm_QueueSend(&m);
