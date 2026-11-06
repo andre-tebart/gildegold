@@ -1186,8 +1186,8 @@ void cm_SendTakeOverCharacter(int a, int b)
     G17MSG m;
 
     m.type = 0xd;
-    G17_I(m, 0) = a;
-    G17_I(m, 4) = b;
+    m.takeover.taker = a;
+    m.takeover.taken = b;
     cm_QueueSend(&m);
 }
 /* 0x4c47b0, message 0xe: deletes the object id (its callers pass the whole AIOBJ.objId; the message carries its low
