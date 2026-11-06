@@ -14176,31 +14176,30 @@ void ai_GuildHallListener(AIBLD *bld)
         r = sv_RunFrame(ai_GuildHallListener, 0x67fff);
     }
 }
-/* 0x5a6a90, a contact listener (172 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with the mask 0x200 the
-   targets ob_ZIELSCHEIBE (0x1440acc, 0xc), contact_NACHT (0x1440ad0, 0xc) and contact_REGENERATION
-   (0x1442008, 0x17) and, when the mask is still set and the pending click 0x6f22e4 is one of them, 0x5bba00
-   (param_1) */
+/* 0x5a6a90, the training room's contact listener (172 B): 0x52e190, the pump 0x5309a0 (this, 0x67fff); with
+   the mask 0x200 the plates ob_ZIELSCHEIBE (ai_ContactTextTarget, 0xc), contact_NACHT (ai_ContactTextTraining,
+   0xc) and contact_REGENERATION (ai_ContactTextRegeneration, 0x17), and when the mask is still set and the
+   pending click (ai_ClickedObject) is one of them, ai_TrainingWindow (the building) */
 
-void ai_TrainingRoomListener(int param_1)
+void ai_TrainingRoomListener(AIBLD *bld)
 {
-    int ziel;
-    int nacht;
-    int regeneration;
-    int r;
+    int ziel = 0;
+    int nacht = 0;
+    int regeneration = 0;
 
     sv_ReleaseNamePlates();
-    r = sv_RunFrame(ai_TrainingRoomListener, 0x67fff);
-    while (r != 0) {
-        if (U_I((unsigned)&ai_BuildingPerms) & 0x200) {
-            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", U_I((unsigned)&ai_ContactTextTarget), 0xc);
-            nacht = sv_RegisterNamePlate("contact_NACHT", U_I((unsigned)&ai_ContactTextTraining), 0xc);
-            regeneration = sv_RegisterNamePlate("contact_REGENERATION", U_I((unsigned)&ai_ContactTextRegeneration), 0x17);
-            if ((U_I((unsigned)&ai_BuildingPerms) & 0x200) && U_I((unsigned)&ai_ClickedObject) != 0 &&
-                (U_I((unsigned)&ai_ClickedObject) == ziel || U_I((unsigned)&ai_ClickedObject) == nacht || U_I((unsigned)&ai_ClickedObject) == regeneration))
-                ai_TrainingWindow(param_1);
+    if (sv_RunFrame(ai_TrainingRoomListener, 0x67fff) == 0)
+        return;
+    do {
+        if (ai_BuildingPerms & 0x200) {
+            ziel = sv_RegisterNamePlate("ob_ZIELSCHEIBE", ai_ContactTextTarget, 0xc);
+            nacht = sv_RegisterNamePlate("contact_NACHT", ai_ContactTextTraining, 0xc);
+            regeneration = sv_RegisterNamePlate("contact_REGENERATION", ai_ContactTextRegeneration, 0x17);
         }
-        r = sv_RunFrame(ai_TrainingRoomListener, 0x67fff);
-    }
+        if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0 &&
+            (ai_ClickedObject == ziel || ai_ClickedObject == nacht || ai_ClickedObject == regeneration))
+            ai_TrainingWindow((int)bld);
+    } while (sv_RunFrame(ai_TrainingRoomListener, 0x67fff) != 0);
 }
 /* 0x5a6b50, the text of a city name (24 B): 0x5176d0 formats the value with "%1G" 0x61168c into buf */
 
