@@ -17932,26 +17932,30 @@ void he_RunBuildingSpying(AIJOB *ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x563070, a Ghidra miss: the allocation handler of the event 0x48: the clocks +0x52 and +0xcc are now, the run at +0xcc 0x30 units ahead and at +0x52 one unit ahead */
-
-void he_AllocAmbush(int ev)
-{
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(AITIME *)(ev + 0xcc) = ai_Time;
-    gm_AddTime(ev + 0xcc, 0, 0x30, 0);
-    gm_AddTime(ev + 0x52, 0, 0, 1);
-}
 typedef struct HEAMBUSH {               /* the ambush event 0x48's words over AIJOB's union (he_AllocAmbush / he_RunAmbush): the
                                            gang (AIJOB.ids) lies in wait at a scene object for passing transports */
     char pad00[0xac];
     char place[0x20];                   /* 0xac, the name of the scene object the gang waits at (a name with "STADT":
                                            the fight's variant flag 8) */
-    AITIME until;                       /* 0xcc, the time it gives up (the alloc handler: 48 minutes ahead) */
+    AITIME until;                       /* 0xcc, the time it gives up (the alloc handler: 48 hours ahead) */
     char padda[2];
     int partySlot;                      /* 0xdc, the cm send slot of the fight party (cm_SendNewParty) */
     int party;                          /* 0xe0, the id of that party (cm_GetSlotValue; cm_PartyById) */
     unsigned int skill;                 /* 0xe4, the gang's mean skills[2] */
 } HEAMBUSH;
+
+/* 0x563070, the allocation handler of the ambush event 0x48 (he_RunAmbush): the due clock and the give-up time are now,
+   the give-up time 48 hours ahead and the due clock 1 second ahead */
+
+void he_AllocAmbush(AIJOB *ev)
+{
+    HEAMBUSH *x = (HEAMBUSH *)ev;
+
+    ev->end = ai_Time;
+    x->until = ai_Time;
+    gm_AddTime(&x->until, 0x30, 0, 0);
+    gm_AddTime(&ev->end, 0, 0, 1);
+}
 
 /* 0x5630f0, the run handler of the ambush event 0x48 ("\334berfall", HEAMBUSH; alloc handler he_AllocAmbush): waits for
    its cm slot (AIJOB.exSlot) first. Stage 0 sends the gang to the place (with option 2: sv_MoveToGroup into the
