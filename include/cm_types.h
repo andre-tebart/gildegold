@@ -674,6 +674,12 @@ typedef struct G17MASTERMSG {           /* 8 bytes, the data of message 0x65 (cm
     int masterId;                       /* 0x04, the netId of its new master */
 } G17MASTERMSG;
 
+typedef struct G17EFFECTMSG {           /* 8 bytes, the data of message 0x66: 'nCTa' reserves an effect, 'nCTd'
+                                           stops it (its handler 0x4cd180 calls gv_ReserveEffect / gv_StopEffect) */
+    int tag;                            /* 0x00, 'nCTa' (0x6154436e) or 'nCTd' (0x6454436e) */
+    int effectId;                       /* 0x04, the effect (gv_RequestEffectLoad sends the building's id) */
+} G17EFFECTMSG;
+
 typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head is net.h's NETPKT) */
     unsigned char type;                 /* 0x00 */
     unsigned short size;                /* 0x01, cm_MessageSize */
@@ -696,6 +702,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17BLDMSG destroy;              /* 0x10, message 0x3b */
         G17HANDOVERMSG handOver;        /* 0x10, message 0x3c */
         G17MASTERMSG master;            /* 0x10, message 0x65 */
+        G17EFFECTMSG effect;            /* 0x10, message 0x66 */
         unsigned short splitLen;        /* 0x10, in the first part of a split message (type 7 chain): the length
                                            of the whole, its bytes follow at data + 2 */
         G17BUILDMSG build;              /* 0x10, message 10 */

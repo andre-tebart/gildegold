@@ -2292,8 +2292,8 @@ int cm_SendEffectLoad(int *p)
     G17MSG m;
 
     m.type = 0x66;
-    G17_I(m, 0) = p[0];
-    G17_I(m, 4) = p[1];
+    m.effect.tag = p[0];
+    m.effect.effectId = p[1];
     return cm_QueueSend(&m);
 }
 /* 0x4c6260, sends message 0x67, the 0x80 bytes of p: cannon balls fired at a building (GVSHOTMSG, gv.c gv_SendShots; the receiver
