@@ -26686,12 +26686,34 @@ int ai_Unk5d2bc0(void)
 {
     return 0;
 }
-/* 0x5d2e80, an action callback of the record table 0x62c420 (record 44 at 0x62c8f0, the text id 0x2b2,
-   160 B): the request 0x5b2180, 0x502020 and the close 0x4c4a60. */
+/* 0x5d2e80, the use callback of the Domizil good 0x2b2 (the heating, the +0x14 pointer of the table entry
+   0x62c8f0): a kind 6 character picks the building on the map (0x5b2180 (1, cfg, txt_Ptrs[0x9b], 0, 0),
+   cfg = 0x410 flags, the 0xa0400300 filter, mode 1, kind 4), every other kind takes the use's target
+   (0x502020). Then the building's flags5aw bit 0x2000 (the heating, cleared at the round settlement) is set
+   with 0x4c4a60 (id, 0x5a, 2, 0x2000, 0). Returns 1 (0 without a building). */
 
-int ai_Unk5d2e80(void)
+int ai_UseGoodHeatBuilding(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int cfg[20];
+    int i;
+    AIBLD *bld;
+
+    if (ch->kind == 6) {
+        for (i = 0; i < 20; i++)
+            cfg[i] = 0;
+        cfg[1] = 0x410;
+        cfg[4] = 4;
+        cfg[2] = 0xa0400300;
+        cfg[3] = 1;
+        cfg[0] = 0;
+        bld = (AIBLD *)ai_MapPick(1, cfg, txt_Ptrs[0x9b], 0, 0);
+    } else {
+        bld = (AIBLD *)gm_FindBuildingById(use->target);
+    }
+    if (bld == 0)
+        return 0;
+    cm_SendSetField(bld->id, 0x5a, 2, 0x2000, 0);
+    return 1;
 }
 /* 0x5d2f20, the use callback of the Domizil record 49 (0x62c97c, the text id 0x2b7, the value 0x10e0):
    sends the message type 0xa4 (the event 0xa4, he.c 0x5753a0) to the character's netId, fromId -1, the
