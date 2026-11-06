@@ -19,7 +19,7 @@
    Open: head: cm.h declares this unit's cutscene helpers (cm_QueueVoice, cm_LoadVoiceBank, cm_StartEventArg, ..)
    without parameters; cm_QueueVoice has callers with four arguments, and declaration changes in cm.h / cm_types.h flip
    the register tie-breaks of ai_TutorialInitChapter2 / 3 (sv_t, tie-break). Types only cm.c uses (CMNOTE,
-   CMCUTTYPEMSG) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
+   CMCUTTYPEMSG, CMFIELD) stay in its head for that reason. Meanwhile cm.h's own declarations of ord_AddGridAmount,
    gm_RemoveOwned, gm_BuildingSkill, gm_HealthRatio, rt_FreePoints and rt_CopyPoints are the owner headers' prototypes
    (gv.h, f3gm.h, rt.h; RTPOINT from rt_types.h); the other calls into those headers stay M7.
    The fight scene (cm_SetupFightScene .. cm_MostThreatenedCellNear) reads its fight record as CMFIGHTREC (a partial
