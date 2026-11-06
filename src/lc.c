@@ -950,7 +950,6 @@ extern int gm_PlayerRecords[688];
 extern char ai_Unk625820[115][0x20];
 extern unsigned char ai_OwnPlayer;
 extern GAPDATA full_data_62d634[];
-extern GAPDATA full_data_62d64c[];
 extern GAPDATA full_data_62d660[];
 extern char * ai_BTypes;
 extern char ai_Crimes[];
@@ -24915,7 +24914,7 @@ int ai_EspionageAmountWindow(int param_1, int *param_2)  /* @original: the calle
    0x4c4830. Pages 1 .. 5 at 0x5ccd41. ROUGH SKELETON: the rest (the window, the rows, the payment
    chain) is left as a comment. */
 
-int ai_Unk5ccc10(int param_1, int param_2)
+int ai_EspionageOverviewWindow(int param_1, int param_2)
 {
     char text[0x100];
     int out[2];
@@ -24934,50 +24933,63 @@ int ai_Unk5ccc10(int param_1, int param_2)
        written yet) */
     return 0;
 }
-/* 0x5cd2e0, the espionage overview order handler (282 B): param_1 is the message record (the AIMSG: +2
-   the type 6 / 7, +4 the handle, +0x194 the amount). Type 7 returns 0; other types: the amount < 4
-   returns 0x20, else the close 0x4c5f60 (-4) and the overview 0x5ccc10 (the message, 0x42ec00 (6) &
-   0xffff), return 0x10. Type 6: the window 0x4741f0 / 0x476f80 / 0x475600 / 0x475f70 with the caption
-   0x515960 (0x1df6, 4); click 0 (0x520f90 (4)) closes 0x4c5f60 (-4) and runs 0x5ccc10 (0x42ec00 (6) &
-   0xffff), return 1; click 1 sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end 0x4758f0. */
+/* 0x5cd2e0, the espionage overview order handler (282 B): the character ch (its kind 6 / 7 at +2, its netId
+   at +4, its money at +0x194). A kind 7 character returns 0; another kind: money < 4 returns 0x20, else the
+   payment 0x4c5f60 (-4) and the overview window 0x5ccc10 (the character, 0x42ec00 (6) & 0xffff), return 0x10.
+   Kind 6: the window ai_EspionageOverviewForm, 0x476f80 / 0x475600 / 0x475f70 with the caption 0x515960
+   (0x1df6, 4); click 0 (0x520f90 (4)) pays 0x4c5f60 (-4) and runs 0x5ccc10 (0x42ec00 (6) & 0xffff), return 1;
+   click 1 sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end 0x4758f0. The second argument m is not
+   read
+   @deep read the whole original 0x5cd2e0..0x5cd3fa and reconciled every statement: the kind tests 6 / 7,
+   the money < 4 refusal 0x20, the payment cm_SendMoneyDelta(-4) and the overview window 0x5ccc10, the
+   kind-6 window (the form, d2_SetPointerSprite, the caption 0x1df6, the click dispatch, the money check,
+   the pump and the close). Only the shared return-0 block is left: ours returns 0 inline after the kind-7
+   test (xor eax,eax; pop esi; ret at +0x48), the original jumps to a return-0 block at the end (0x5cd3f6)
+   behind a redundant cmp al,6 / jne guard at 0x5cd328 (asmdiff: ours 100 ins, the original 102, differing
+   8; diffclass: the blocks end differently, a branch against a jump). Tried the flat if, the nested if
+   (kind != 7), the kind-7 test first and the if / else-if / else chain; the ret = 0 before the window
+   (that fixed the zero register and the argument pushes) */
 
-int ai_EspionageOverviewHandler(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_EspionageOverviewHandler(void *chp, int *m)
 {
+    AICHARREC *ch;
     int win;
     int ret;
-    int v;
 
-    if (*(char *)(param_1 + 2) != 6) {
-        if (*(char *)(param_1 + 2) == 7)
-            return 0;
-        if (*(int *)(param_1 + 0x194) < 4)
-            return 0x20;
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffc);
-        ai_Unk5ccc10(param_1, util_Random(6) & 0xffff);
-        return 0x10;
+    ch = (AICHARREC *)chp;
+
+    if (ch->kind != 6) {
+        if (ch->kind != 7) {
+            if (ch->money < 4)
+                return 0x20;
+            cm_SendMoneyDelta(ch->netId, 0xfffffffc);
+            ai_EspionageOverviewWindow((int)ch, util_Random(6) & 0xffff);
+            return 0x10;
+        }
+        return 0;
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d64c);
+    ret = 0;
+    win = d2_OpenForm(0, 0, ai_EspionageOverviewForm);
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x1df6, 4);
-    *(int *)(unsigned)&d2_ClickedId = -1;
-    ret = 0;
+    d2_ClickedId = -1;
     do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                if (sv_CheckMoney(param_1, 4) != 0) {
-                    cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffc);
-                    ai_Unk5ccc10(param_1, util_Random(6) & 0xffff);
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                if (sv_CheckMoney((char *)ch, 4) != 0) {
+                    cm_SendMoneyDelta(ch->netId, 0xfffffffc);
+                    ai_EspionageOverviewWindow((int)ch, util_Random(6) & 0xffff);
                     ret = 1;
-                    *(int *)(unsigned)&sv_PopRequest = 1;
+                    sv_PopRequest = 1;
                 }
-            } else if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                *(int *)(unsigned)&sv_PopRequest = 1;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 1;
             }
         }
-        if (*(int *)((unsigned)&dm_L + 0x20) != 0)
-            *(int *)(unsigned)&sv_PopRequest = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
         if (sv_RunFrame(ai_EspionageOverviewHandler, 0x657c7) == 0) {
             d2_CloseView(win);
             return ret;
@@ -26754,6 +26766,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
 char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
 char ai_CourtshipForm[24] = "privillegien\\werbung2";  /* 0x62d40c, the form of the courtship (advertising) confirm window (ai_CourtshipConfirm; the list's form "privillegien\\werbung1" 0x62d424 follows) */
+char ai_EspionageOverviewForm[20] = "privillegien\\wunder";  /* 0x62d64c, the form of the espionage overview window (ai_EspionageOverviewHandler) */
 int ai_ClickedObject = 0;  /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 int ai_BuildingPerms = 0;  /* 0x6f231c */
 int ai_BauplatzCount = 0;  /* 0x6f2688 */
