@@ -11237,73 +11237,60 @@ void ai_GuildCashPayWindow(AIBLD *bld)
 
 int amt_ExecuteShareMessage(short *c, int *m);
 
-/* 0x5a0ca0, the callback of the office application request "LOCATIONS\ZUNFTHAUS\LEVEL2" (619 B, Ghidra
-   missed this start: it is only reached as the address-callback of 0x5a0f10): the amount 0x50a640 (the
-   player's record 0x770b80 + slot * 0x21c) times 0x5eb7f0 capped at 0x5ed0f0 (min, the FPU compare) is the
-   fee; 0x521040 (the player, the fee, the player byte) confirms; the window 0x4741f0, the texts 0x165f and
-   0x1660 (the office id: 0x253 + the byte 0x770ce9 + slot * 0x21c, or 0x27b + it when the byte 0x770b89 is
-   set; the town param_1 + 0x27, the fee, param_1), the two buttons 0x475b80; the first button with 0x521040
-   sends the request 0x4e9a00 (the player, {2, param_1 + 1, the fee}) and 0x6f22a0 = 2; the second only
-   0x6f22a0; the pump 0x5309a0 (0x5a0ca0, 0x677c7); 0x4758f0 and 1 at the end */
-int ai_Unk5a0ca0(int param_1)
+/* 0x5a0ca0, the ai_MapPick callback of ai_OfficeApplyEntry: the guild hall's application window
+   "LOCATIONS\ZUNFTHAUS\LEVEL2" for the picked building bld. The fee is a hundredth of the player's worth, at
+   least 160 (the windows.h max macro: gm_GetWorth is called twice); 0 when the player cannot pay it. The texts
+   0x165f and 0x1660 (the player's office name by sex: 0x253 / 0x27b + secondOffice; the fee, the building's owner)
+   with the apply and cancel buttons; apply sends the request {2, bld->id, the fee} (amt_ExecuteShareMessage) when
+   the player can still pay, and closes the window with sv_PopRequest 2 (else the click falls to the cancel test). Returns 1 after the window */
+
+int ai_OfficeApplyCallback(char *place, AIBLD *bld)
 {
-    int req[8];
-    int win;
-    int ctlA;
-    int ctlB;
+    int cancelBtn;
+    int req[5];
     int fee;
+    int win;
     int text;
     int id;
-    int slot;
-    int r;
+    int applyBtn;
 
-    slot = U_W((unsigned)&ai_PlayerId);
-    fee = gm_GetWorth(*(unsigned short *)((unsigned)&ai_Chars + slot * 0x21c));
-    if ((float)fee * (0.00999999978f) > (160.0f)) {
-        fee = (int)(160.0f);
-    } else {
-        fee = (int)((float)fee * (0.00999999978f));
-    }
-    if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + slot * 0x21c, fee, *(unsigned char *)(unsigned)&ai_OwnPlayer) == 0)
+    fee = (int)max(gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id) * 0.01f, 160.0f);
+    if (sv_CheckGoodAmountB((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], fee, ai_OwnPlayer) == 0)
         return 0;
     win = d2_OpenForm(0, 0, "LOCATIONS\\ZUNFTHAUS\\LEVEL2");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 1);
     io_PrintText(0x165f);
     d2_SetForm(win, 2);
-    if (*(unsigned char *)((unsigned)&ai_CharSex + slot * 0x21c) == 0)
-        id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + slot * 0x21c) + 0x253;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+        id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x253;
     else
-        id = *(unsigned char *)(((unsigned)&ai_CharInts + 0x165) + slot * 0x21c) + 0x27b;
-    text = io_PrintText(0x1660, id, *(unsigned short *)(param_1 + 0x27), fee, 5, param_1);
-    ctlA = d2_GetWinObj(win, 2, text);
-    ctlB = d2_GetWinObj(win, 2, text + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == ctlA) {
-                if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, fee,
-                                 *(unsigned char *)(unsigned)&ai_OwnPlayer) != 0) {
-                    req[0] = 2;
-                    req[1] = U_I(param_1 + 1);
-                    req[2] = fee;
-                    amt_ExecuteShareMessage((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, req);
-                    U_I((unsigned)&sv_PopRequest) = 2;
-                }
-            } else if (U_I((unsigned)&d2_PointerObj) == ctlB) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+        id = ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice + 0x27b;
+    text = io_PrintText(0x1660, id, 5, fee, bld->owner, bld);
+    applyBtn = d2_GetWinObj(win, 2, text);
+    cancelBtn = d2_GetWinObj(win, 2, text + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == applyBtn &&
+                sv_CheckGoodAmountB((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], fee, ai_OwnPlayer) != 0) {
+                req[0] = 2;
+                req[1] = bld->id;
+                req[2] = fee;
+                amt_ExecuteShareMessage((char *)&((AICHARREC *)ai_Chars)[ai_PlayerId], req);
+                sv_PopRequest = 2;
+            } else if (d2_PointerObj == cancelBtn) {
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_Unk5a0ca0, 0x677c7) == 0) {
-            d2_CloseView(win);
-            return 1;
-        }
-    }
+    } while (sv_RunFrame(ai_OfficeApplyCallback, 0x677c7) != 0);
+    d2_CloseView(win);
+    return 1;
 }
 /* 0x5a0f10, the office application entry (240 B): 0x4e94e0 (the player) == 1 opens the request 0x5b2180
    (1, the 0x50-byte record: +0 = 1, +4 = -1, +0x10 = 6, +0xc = 0x7d4190, +0x4 = 1, +0x18 = 0x727, the text
@@ -11325,7 +11312,7 @@ void ai_OfficeApplyEntry(int param_1)
         req[3] = 1;
         req[4] = 6;
         req[19] = 0x727;
-        ai_MapPick(1, req, (void *)U_I((unsigned)&full_data_143fb3c), (void *)(unsigned)&ai_Unk5a0ca0, 0);
+        ai_MapPick(1, req, (void *)U_I((unsigned)&full_data_143fb3c), (void *)(unsigned)&ai_OfficeApplyCallback, 0);
         return;
     }
     if (r != -1) {
