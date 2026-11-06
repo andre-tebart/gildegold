@@ -92,6 +92,7 @@ extern int main_StartHouseCheat;                            /* 0x6f2430 */
 extern int ai_Unk6f2440;                                    /* 0x6f2440 */
 extern int main_MoneyCheat;                                 /* 0x6f2444 */
 extern int ai_MapSize;                                      /* 0x6f4ee8 */
+extern int ai_MapHeight;                                    /* 0x6f4ee4, the height of the town map bitmap (ai_MapSize its width) */
 extern int init_StatusForm;                                 /* 0x75df00 */
 extern INIT_PLAYER init_PlayerProfile;                      /* 0x75e5a0 */
 extern int ai_SceneChars[32];                                /* 0x7603a0 */

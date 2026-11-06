@@ -23,6 +23,7 @@ typedef struct LCOPENHOURS {
     unsigned char close;           /* 0x5, the hour it closes (open while open <= hour < close) */
 } LCOPENHOURS;
 extern LCOPENHOURS ai_OpeningHours[19]; /* 0x62afa0, ai_IsBuildingOpen's table */
+extern float ai_MapCellScale;          /* 0x62c270, the town map pixels per scene cell (7.5 / 5.33) */
 extern char ai_NewsKeyHS46[20];         /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa): the key "_NACHRICHTEN_HS_46" */
 extern char ai_NewsKeyFriedhof12[28];   /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_12" */
 extern char ai_NewsKeyFriedhof13[28];   /* 0x62c380, the sound of the graveyard work news (event 0x5fb): the key "_NACHRICHTEN_FRIEDHOF_13" */

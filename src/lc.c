@@ -663,7 +663,6 @@ extern unsigned short * sv_PanelShown;
 
 
 
-extern GAPDATA full_data_6f4ee4[];
 
 
 
@@ -679,7 +678,6 @@ extern int d2_LastWindow;
 extern struct D2WIN *d2_LastWindowPtr;
 extern struct D2OBJ *d2_Objs;
 extern D2WIN d2_Wins[];
-extern GAPDATA full_data_6f4ee4[];
 extern GAPDATA full_rdata_5eed8c[];
 extern GAPDATA full_rdata_5eed90[];
 extern char * rt_MapSurface;
@@ -799,9 +797,7 @@ extern int ai_MapSize;
 extern char ai_PlayerSlots[4][0x2f4];
 extern char * rt_MapSurface;
 extern char d2_GfxDir[256];
-extern GAPDATA full_data_62c270[];
 extern GAPDATA full_data_62cce8[];
-extern GAPDATA full_data_6f4ee4[];
 extern char ch_EmptyName[1];
 extern GAPDATA full_data_62ccfc[];
 extern int ai_SabotageCallback();
@@ -14206,13 +14202,13 @@ void ai_Unk5a6b70(int param_1, int param_2, int param_3)
         cx = cx + x;
     else
         cx = x - cx;
-    cy = (fabs(y) / ((float)U_I((unsigned)&full_data_6f4ee4) * 0.5f)) * 51.0f;
+    cy = (fabs(y) / ((float)ai_MapHeight * 0.5f)) * 51.0f;
     if (0.0f <= y)
         cy = cy + y;
     else
         cy = y - cy;
     *(float *)(param_1 + 0x10) = (float)param_2 + (float)U_I((unsigned)&ai_MapSize) * 0.5f + cx;
-    *(float *)(param_1 + 0x14) = (float)U_I((unsigned)&full_data_6f4ee4) * 0.5f + (float)param_3 + cy;
+    *(float *)(param_1 + 0x14) = (float)ai_MapHeight * 0.5f + (float)param_3 + cy;
 }
 /* 0x5a67a0, the city watch contact listener, the room 0x146 of the building driver 0x59e420 (376 B): releases
    the name plates, then every frame registers the plates contact_PATROL, ob_WACHPLAN, ob_PERSONALBUCH,
@@ -14580,8 +14576,8 @@ void ai_Unk5a6cb0(int *m_)
         x = *(int *)((unsigned)&ai_MapSize) - 0x200;
     if (y < 0)
         y = 0;
-    if (y > *(int *)((unsigned)&full_data_6f4ee4) - 0x168)
-        y = *(int *)((unsigned)&full_data_6f4ee4) - 0x168;
+    if (y > ai_MapHeight - 0x168)
+        y = ai_MapHeight - 0x168;
     *(int *)(rec + 0x258) = x;
     *(int *)(rec + 0x248) = y;
     d2_ScrollWindow(*(int *)rec);
@@ -14678,7 +14674,7 @@ int ai_Unk5a79e0(int rec)
             *(int *)((unsigned)&di_MinX) = *(int *)((unsigned)&full_data_6f26b4) - *(int *)((unsigned)&full_data_6f26a4);
             *(int *)((unsigned)&di_MaxX) = *(int *)((unsigned)&ai_MapSize) - *(int *)((unsigned)&full_data_6f26a4) - 0x200 + *(int *)((unsigned)&full_data_6f26b4);
             *(int *)((unsigned)&di_MinY) = *(int *)((unsigned)&full_data_6f26b8) - *(int *)((unsigned)&full_data_6f26a8);
-            *(int *)((unsigned)&di_MaxY) = *(int *)((unsigned)&full_data_6f4ee4) - *(int *)((unsigned)&full_data_6f26a8) - 0x168 + *(int *)((unsigned)&full_data_6f26b8);
+            *(int *)((unsigned)&di_MaxY) = ai_MapHeight - *(int *)((unsigned)&full_data_6f26a8) - 0x168 + *(int *)((unsigned)&full_data_6f26b8);
         }
         x = (int)((short)*(int *)((unsigned)&dm_P) - *(int *)((unsigned)&full_data_6f26b4));
         y = (int)((short)*(int *)(((unsigned)&dm_P + 0x2)) - *(int *)((unsigned)&full_data_6f26b8));
@@ -14735,8 +14731,8 @@ int ai_Unk5a7bc0(int rec)
         x = *(int *)((unsigned)&ai_MapSize) - 0x200;
     if (y < 0)
         y = 0;
-    if (y > *(int *)((unsigned)&full_data_6f4ee4) - 0x168)
-        y = *(int *)((unsigned)&full_data_6f4ee4) - 0x168;
+    if (y > ai_MapHeight - 0x168)
+        y = ai_MapHeight - 0x168;
     if (*(int *)(rec + 0x258) != x || *(int *)(rec + 0x248) != y) {
         *(int *)(rec + 0x258) = x;
         *(int *)(rec + 0x248) = y;
@@ -14819,13 +14815,13 @@ void ai_Unk5a7cd0(int *m_)
                     cx = fx + cx;
                 else
                     cx = fx - cx;
-                cy = (fabs(fy) / ((float)*(int *)((unsigned)&full_data_6f4ee4) * 0.5f)) * 51.0f;
+                cy = (fabs(fy) / ((float)ai_MapHeight * 0.5f)) * 51.0f;
                 if (0.0f <= fy)
                     cy = fy + cy;
                 else
                     cy = fy - cy;
                 x = (int)((float)(*(int *)((unsigned)&ai_MapSize) / 2 + *(int *)(p + 0x24)) + cx);
-                y = (int)((float)(*(int *)((unsigned)&full_data_6f4ee4) / 2 + *(int *)(p + 0x28)) + cy);
+                y = (int)((float)(ai_MapHeight / 2 + *(int *)(p + 0x28)) + cy);
                 found = 0;
                 id = 0;
                 if (e[0] == -1) {
@@ -17100,10 +17096,10 @@ void ai_Unk5b2090(void)
         d2_LockSurface(id);
         d2_ConvertRgbTo16(0, 0, w, h, *(int *)(bmp + 0x1c), 0, 0, U_I((unsigned)&rt_MapSurface));
         U_I((unsigned)&ai_MapSize) = w;
-        U_I((unsigned)&full_data_6f4ee4) = h;
-        U_I((unsigned)&full_data_62c270) = 0x40f00000;
+        ai_MapHeight = h;
+        ai_MapCellScale = 7.5f;
         if (w < 0x780)
-            U_I((unsigned)&full_data_62c270) = 0x40aa8f5c;
+            ai_MapCellScale = 5.33f;
         d2_UnlockSurface(U_I((unsigned)&rt_MapSurface));
         d2_FreeSurface(bmp);
     }
@@ -25571,6 +25567,7 @@ extern int * ai_BauplatzList;
 AIBUILDNAME ai_BuildNames[0xf] = { { "bk_BRUNNEN", { 8, 9, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_GEFAENGNIS", { 17, 18, 19, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_HANDWERK", { 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28 } }, { "bk_HANDWERK", { 41, 42, 43, 47, 48, 49, 50, 51, 52, 33, 34, 35 } }, { "bk_HANDWERK", { 72, 73, 74, 81, 82, 83, 78, 79, 80, 0, 0, 0 } }, { "bk_KIRCHE_KL", { 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_KIRCHE_GR", { 22, 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_RATHAUS", { 36, 37, 38, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_STADTWACHE", { 44, 45, 46, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WIRTSHAUS_GR", { 53, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_KL", { 4, 5, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_WOHNSITZ_GR", { 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_ZUNFTHAUS", { 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67 } }, { "bk_STATUEN", { 84, 85, 86, 0, 0, 0, 0, 0, 0, 0, 0, 0 } }, { "bk_DOMIZIL", { 75, 76, 77, 0, 0, 0, 0, 0, 0, 0, 0, 0 } } };  /* 0x62aae8 */
 int ai_BuildGroup = 6;  /* 0x62af98, the building group the construction window shows (1 .. 9, its group buttons) */
 LCOPENHOURS ai_OpeningHours[19] = { { 5, 9, 20 }, { 6, 7, 22 }, { 8, 9, 20 }, { 9, 9, 20 }, { 0xe, 9, 20 }, { 0xf, 6, 22 }, { 0x12, 9, 20 }, { 0x13, 9, 20 }, { 0x14, 9, 20 }, { 0x15, 9, 20 }, { 0x16, 12, 23 }, { 0x17, 7, 22 }, { 0x18, 7, 22 }, { 0x19, 7, 22 }, { 0x1a, 7, 22 }, { 0x20, 9, 20 }, { 0x1f, 9, 20 }, { 0x1d, 9, 20 }, { 0, 0, 0 } };  /* 0x62afa0, the opening hours per building class, ended by class 0 (ai_IsBuildingOpen) */
+float ai_MapCellScale = 5.33f;  /* 0x62c270, the town map pixels per scene cell: 7.5 for a map bitmap 0x780 wide or wider, else 5.33 (the map loader 0x5b2090 sets it) */
 char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of ai_NotifyPlayerOfChar's news (event 0x5fa) */
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
