@@ -3870,25 +3870,25 @@ exe	0x00570bf0	he_PlunderTakePrice	he	byte	readable
 exe	0x00570c70	he_PlunderFailNews	he	byte	readable		
 exe	0x00570cc0	he_RunPlunderOffer	he	shape	readable		
 exe	0x00570ea0	he_NoEvent88Pair	he	byte	readable		
-exe	0x00570ef0	he_AllocMasterWork	he	shape	draft		
+exe	0x00570ef0	he_AllocMasterWork	he	shape	readable		
 exe	0x00571000	he_RunMasterWork	he	shape	readable		
-exe	0x00571550	he_AllocGraveCare	he	shape	draft		
+exe	0x00571550	he_AllocGraveCare	he	shape	readable		
 exe	0x00571640	he_RunGraveCare	he	byte	readable		
-exe	0x00571990	he_AllocDeathDue	he	byte	draft		
+exe	0x00571990	he_AllocDeathDue	he	byte	readable		
 exe	0x005719e0	he_RunDeathDue	he	shape	readable		
-exe	0x00571ac0	he_AllocGraveTraining	he	shape	draft		
+exe	0x00571ac0	he_AllocGraveTraining	he	shape	readable		
 exe	0x00571c30	he_RunGraveTraining	he	shape	readable		
 exe	0x00571f60	he_AllocMeeting	he	shape	readable		
 exe	0x005720f0	he_CatchMeetingDisease	he	draft	readable	deep	
 exe	0x00572310	he_SpreadMeetingDisease	he	draft	readable	deep	
-exe	0x005725b0	he_RunMeeting	he	byte	draft		
-exe	0x005726a0	he_AllocMeetingScene	he	byte	draft		
+exe	0x005725b0	he_RunMeeting	he	byte	readable		
+exe	0x005726a0	he_AllocMeetingScene	he	byte	readable		
 exe	0x005726b0	he_RunMeetingScene	he	byte	readable		
-exe	0x00572860	he_AllocPlunderOfferLease	he	byte	draft		
+exe	0x00572860	he_AllocPlunderOfferLease	he	byte	readable		
 exe	0x005728d0	he_AnswerGraveLease	he	byte	readable		
 exe	0x005729c0	he_ExamCancelled	he	byte	readable		
 exe	0x00572a50	he_RunGraveLease	he	shape	readable		
-exe	0x00572b90	he_AllocGraveyardWorkers	he	byte	draft		
+exe	0x00572b90	he_AllocGraveyardWorkers	he	byte	readable		
 exe	0x00572bf0	he_RunGraveyardWorkers	he	shape	readable		
 exe	0x00572fd0	he_RunGraveyardTheft	he	byte	readable		
 exe	0x00573200	he_HasGraveWork	he	byte	draft		
