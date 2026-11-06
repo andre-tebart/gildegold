@@ -1223,10 +1223,16 @@ typedef struct HEAHMRESEARCH {          /* the alchemist research event 0x96's w
 } HEAHMRESEARCH;
 typedef struct HEPLUNDER {              /* the plunder event 0x8a's words over AIJOB's union (its alloc he_AllocPlunder and run
                                            handler 0x5707a0): the buildings the character plunders one after the other */
-    char pad00[0xb0];
+    char pad00[0xac];
+    int agent;                          /* 0xac, the netId of the character who walks the round (the run handler finds it
+                                           with gm_FindChar, sends it to the buildings and names it in the message 0x8b) */
     int at;                             /* 0xb0, the index of the building being plundered */
     int bld[5];                         /* 0xb4, the ids of the buildings to plunder (ai_PickActionBuildings' out) */
+    unsigned short victims[5];          /* 0xc8, the character picked at each building (ai_PickPartnerRandomWalk's
+                                           exclusion list: the run handler passes it with n = 4) */
 } HEPLUNDER;
+#define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
+                                           ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
                                            run handler 0x5725b0) */
     char pad00[0xac];
@@ -23179,7 +23185,7 @@ void he_Unk571000(int ev);          /* 0x571000 */
 void he_Unk571550(int ev);          /* 0x571550 */
 void he_Unk571640(int ev);          /* 0x571640 */
 void he_AllocPlunder(int ev);          /* 0x5706e0 */
-void he_Unk5707a0(int ev);          /* 0x5707a0 */
+void he_RunPlunder(int ev);          /* 0x5707a0 */
 void he_Unk572860(int ev);          /* 0x572860 */
 void he_Unk570cc0(int ev);          /* 0x570cc0 */
 void he_Unk571990(int ev);          /* 0x571990 */
@@ -23202,7 +23208,7 @@ int he_RegisterEventTypes88(void)
         if (he_SetEventHandlers(0x89, (void *)he_AllocDecay, (void *)he_RunDecay) == 0) {
             if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
-                    if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_Unk5707a0) == 0) {
+                    if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_RunPlunder) == 0) {
                         if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_Unk570cc0) == 0) {
                             if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
@@ -23607,116 +23613,125 @@ int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
-void he_Unk570bf0(int *a, int b);   /* 0x570bf0 */
-void he_Unk570c70(int *a, int b);   /* 0x570c70 */
+void he_PlunderTakePrice(int *a, int b);   /* 0x570bf0 */
+void he_PlunderFailNews(int *a, int b);   /* 0x570c70 */
 
-/* 0x5707a0, the run of the event 0x8a (the plunder of the buildings +0xb4 .. by the character +0xac): -1 / -2 or a character without the byte +8 -> 0x524260 and free; states 0 .. 4: 0 registers the character (0x524260) and state -1; 1 starts the work 0x4c52e0 (text 0x628eb8) on the building +0xb4 (+0xb0 index); 2 looks the character up, waits 0xa hours while its job +0x128 runs, else finds the nearest target 0x4a5d30 (100.0f), compares 0x4f24a0 / 0x50a640 / 0x5085b0, sends the message 0x8b (0x4c4b70) or calls 0x570bf0 / 0x570c70 by 0x42ec00 (2), stores the word into +0xc8 [+0xb0], steps +0xb0 and state; 3 the boss of the character -> 0x4c52e0; 4 waits 4 hours while its job runs; ROUGH */
-void he_Unk5707a0(int ev)
+/* 0x5707a0, the run handler of the plunder event 0x8a ("PAKT MIT DEM TOD"; alloc he_AllocPlunder): stage -1 / -2,
+   a missing agent (the netId +0xac) or one without health take the agent out of the event's group
+   (sv_MoveToGroup) and free the event. Stage 0 puts the agent in the group; stage 1 sends it to the building
+   bld[at] (stage 2), none ends the event; stage 2 waits 10 minutes while the agent is busy, else picks a
+   victim near the event's character (ai_PickPartnerRandomWalk, liking up to 100, not one of victims[]), notes
+   it in victims[at] and, when the victim's worth (gm_GetWorth / gm_ConvertMoney) is above its protection price
+   (gv_ProtectionPrice) and its flags1cc bit 0 is clear, asks a player victim (kind 6 / 7) with the message 0x8b,
+   else takes the price (he_PlunderTakePrice) or tells of the failure (he_PlunderFailNews) by a coin throw; then the next
+   building (stage 1 again) up to 5, else stage 3; stage 3 sends the agent home (stage 4), stage 4 waits 4
+   minutes while it is busy there; a missing agent or home ends the event. */
+void he_RunPlunder(int ev)
 {
-    char msg[0x70];
-    char *per = (char *)gm_FindChar(HM_I(ev, 0xac));
-    int state = HM_I(ev, 0x70);
-    int r, id, n, best;
-    unsigned short idx, v;
-    int rec;
+    unsigned short idx;
+    int deal[4];
+    AIMSG msg;
+    AIJOB *e = (AIJOB *)ev;
+    HEPLUNDER *p = (HEPLUNDER *)ev;
+    AICHAR *agent;
+    AIBLD *bld;
+    int price, worth;
 
-    if (state == -1 || state == -2) {
-        if (per != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)per, 0);
+    agent = (AICHAR *)gm_FindChar(p->agent);
+    if (e->stage == -1 || e->stage == -2 || agent == 0 || agent->health == 0) {
+        if (agent != 0)
+            sv_MoveToGroup(0, 0, agent->id, 0);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (per == 0 || per[8] == 0) {
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    switch (state) {
+    switch (e->stage) {
     case 0:
-        sv_MoveToGroup(0, 0, *(unsigned short *)per, ev);
-        HM_I(ev, 0x84) = -1;
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        sv_MoveToGroup(0, 0, agent->id, (char *)ev);
+        e->exSlot = -1;
+        e->stage++;
         return;
     case 1:
-        r = gm_BuildQuery(1, 1, HM_I(ev, 0xb4 + HM_I(ev, 0xb0) * 4));
-        if (r == 0) {
-            HM_I(ev, 0x70) = -1;
+        bld = (AIBLD *)gm_BuildQuery(1, 1, p->bld[p->at]);
+        if (bld == 0) {
+            e->stage = -1;
             return;
         }
-        cm_SendChrGotoBuilding(HM_I(ev, 0xac), *(int *)(r + 1), -1, 0, 1, (char *)(unsigned)&full_data_628eb8);
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        cm_SendChrGotoBuilding(p->agent, bld->id, -1, 0, 1, "PAKT MIT DEM TOD");
+        e->stage++;
         return;
     case 2:
-        r = gm_FindChar(HM_I(ev, 0xac));
-        if (r == 0) {
-            HM_I(ev, 0x70) = -1;
+        agent = (AICHAR *)gm_FindChar(p->agent);
+        if (agent == 0) {
+            e->stage = -1;
             return;
         }
-        if (HM_I(HM_I(r, 0x184), 0x128) != 0) {
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 0xa, 0);
+        if (agent->scene->actions != 0) {
+            e->end = ai_Time;
+            gm_AddTime(&e->end, 0, 10, 0);
             return;
         }
-        if (ai_PickPartnerRandomWalk((unsigned)&ai_Chars + *(unsigned short *)(ev + 8) * 0x21c, ((unsigned)&he_Events + 0x58c8), 4, ev + 0xc8, 0, 100.0f, (int *)&idx) == 0) {
-            HM_I(ev, 0x70) = -1;
+        if (ai_PickPartnerRandomWalk((struct AIPER *)&ai_CharsT[e->chr], PLUNDER_PARTNER_FLAGS, 4, p->victims, 0, 100.0f, &idx) == 0) {
+            e->stage = -1;
             return;
         }
-        id = idx;
-        best = gv_ProtectionPrice((unsigned)&ai_Chars + id * 0x21c);
-        n = ((int (*)(int))gm_ConvertMoney)(gm_GetWorth(id));
-        *(unsigned short *)(ev + 0xc8 + HM_I(ev, 0xb0) * 2) = idx;
-        if (n > best) {
-            if (HM_B((unsigned)&ai_Chars + id * 0x21c, 2) == 6 || HM_B((unsigned)&ai_Chars + id * 0x21c, 2) == 7) {
-                HM_B(msg, 4) = 0x8b;
-                HM_I(msg, 8) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
-                HM_I(msg, 0xc) = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
-                *(AITIME *)(msg + 0x28) = ai_Time;
-                HM_B(msg, 0x3a) = 9;
-                HM_I(msg, 0x5c) = HM_I(ev, 0xc);
-                HM_I(msg, 0x60) = HM_I(ev, 0xac);
-                HM_I(msg, 0x68) = best;
-                cm_SendLongMessage(msg);
+        price = gv_ProtectionPrice((unsigned short *)&ai_CharsT[idx]);
+        worth = gm_ConvertMoney(gm_GetWorth(idx), ai_OwnPlayer);
+        p->victims[p->at] = idx;
+        if (worth > price && !(ai_CharsT[idx].flags1cc & 1)) {
+            if (ai_CharsT[idx].kind == 6 || ai_CharsT[idx].kind == 7) {
+                msg.type = 0x8b;
+                msg.to = ai_CharsT[idx].netId;
+                msg.fromId = ai_CharsT[idx].netId;
+                msg.nIds = 0;
+                msg.reserved14 = 0;
+                msg.time = ai_Time;
+                msg.flags = 9;
+                msg.arg[0] = e->netId;
+                msg.arg[1] = p->agent;
+                msg.arg[2] = ai_CharsT[idx].netId;
+                msg.arg[3] = price;
+                cm_SendLongMessage((char *)&msg);
             } else {
-                rec = HM_I(ev, 0xc);
-                msg[0] = HM_I(ev, 0xc);
-                msg[4] = HM_I(ev, 0xac);
-                msg[8] = *(int *)((unsigned)&ai_CharInts + id * 0x21c);
-                msg[0xc] = best;
-                if (util_Random(2) != 0)
-                    he_Unk570bf0((int *)msg, (unsigned)&ai_Chars + id * 0x21c);
+                deal[0] = e->netId;
+                deal[1] = p->agent;
+                deal[2] = ai_CharsT[idx].netId;
+                deal[3] = price;
+                if (util_RandomU(2) != 0)
+                    he_PlunderTakePrice(deal, (int)&ai_CharsT[idx]);
                 else
-                    he_Unk570c70((int *)msg, (unsigned)&ai_Chars + id * 0x21c);
+                    he_PlunderFailNews(deal, (int)&ai_CharsT[idx]);
             }
         }
-        HM_I(ev, 0xb0) = HM_I(ev, 0xb0) + 1;
-        if (HM_I(ev, 0xb0) < 5 && HM_I(ev, 0xb4 + HM_I(ev, 0xb0) * 4) != 0) {
-            HM_I(ev, 0x70) = HM_I(ev, 0x70) - 1;
+        p->at++;
+        if (p->at < 5 && p->bld[p->at] != 0) {
+            e->stage--;
             return;
         }
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        e->stage++;
         return;
     case 3:
-        r = gm_FindChar(HM_I(ev, 0xac));
-        if (r == 0 || HM_I(r, 0x16c) == 0) {
-            HM_I(ev, 0x70) = -1;
+        agent = (AICHAR *)gm_FindChar(p->agent);
+        if (agent == 0 || agent->bld == 0) {
+            e->stage = -1;
             return;
         }
-        cm_SendChrGotoBuilding(HM_I(ev, 0xac), *(int *)(HM_I(r, 0x16c) + 1), -1, 0, 0, (char *)(unsigned)&full_data_628eb8);
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        cm_SendChrGotoBuilding(p->agent, agent->bld->id, -1, 0, 0, "PAKT MIT DEM TOD");
+        e->stage++;
         return;
     case 4:
-        r = gm_FindChar(HM_I(ev, 0xac));
-        if (r == 0 || HM_I(r, 0x16c) == 0 || HM_I(HM_I(r, 0x184), 0x128) == 0) {
-            HM_I(ev, 0x70) = -1;
+        agent = (AICHAR *)gm_FindChar(p->agent);
+        if (agent == 0 || agent->bld == 0 || agent->scene->actions == 0) {
+            e->stage = -1;
             return;
         }
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 4, 0);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 4, 0);
         return;
     }
 }
 /* 0x570bf0, a plunder message: 0x4c4830 (a[0], b + 4, the byte 0x6f1bc5, a[3]), 0x4c4a60 (b + 4, 0x1cc, 4, 1, 0), the text 0x40fe to a[0] (flag 1, 0x5f4) */
 
-void he_Unk570bf0(int *a, int b)
+void he_PlunderTakePrice(int *a, int b)
 {
     char text[0x400];
 
@@ -23727,7 +23742,7 @@ void he_Unk570bf0(int *a, int b)
 }
 /* 0x570c70, the text 0x40ff (the word of b) to a[0] (flag 1, 0x5f4) */
 
-void he_Unk570c70(int *a, int b)
+void he_PlunderFailNews(int *a, int b)
 {
     char text[0x400];
 
@@ -23770,7 +23785,7 @@ void he_Unk570cc0(int ev)
     if (state != 1)
         return;
     if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
-        he_Unk570c70((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
+        he_PlunderFailNews((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
@@ -23785,14 +23800,14 @@ void he_Unk570cc0(int ev)
     if (state == -1)
         return;
     if (state == 0) {
-        he_Unk570bf0((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
+        he_PlunderTakePrice((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
         he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
     if (state != 1)
         return;
-    he_Unk570c70((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
+    he_PlunderFailNews((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
     he_ReleaseSlot(ev);
     he_FreeEvent((int *)ev);
 }
@@ -23803,8 +23818,8 @@ int gm_GetWorth(unsigned short id);                 /* 0x50a640 */
 int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
-void he_Unk570bf0(int *a, int b);   /* 0x570bf0 */
-void he_Unk570c70(int *a, int b);   /* 0x570c70 */
+void he_PlunderTakePrice(int *a, int b);   /* 0x570bf0 */
+void he_PlunderFailNews(int *a, int b);   /* 0x570c70 */
 int he_OpenEventSlot();                 /* 0x53d6f0 */
 int gm_ClockSeason();                 /* 0x4fe350 */
 int gm_BuildingSkill();                 /* 0x5092e0 */
