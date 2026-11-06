@@ -844,7 +844,7 @@ typedef struct G28REC {
     int state;                          /* 0x28, 0: the owner still asks cm_CutsceneReady before its time (cm_UpdateParties;
                                            no other reader known, the name a reasoned guess) */
     int window;                         /* 0x2c, the form the local run prints the members' texts in (d2_SetForm) */
-    unsigned char used;                 /* 0x30, the number of members[] (ai_Unk4e51b0: at most 16) */
+    unsigned char used;                 /* 0x30, the number of members[] (cm_AddPartyMember: at most 16) */
     char pad31[3];
     int members[16];                    /* 0x34, the members' netIds (-1 for one removed, cm_RemovePartyMember) */
     unsigned char offerKind;            /* 0x74, of a wedding party (he.c's offer event): the offer's kind (HEOFFER.kind) */
