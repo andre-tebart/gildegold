@@ -9016,10 +9016,11 @@ typedef struct LCEXCHROW {          /* 0x1c bytes, a row of the money lender's e
                                        fills them, ai_ClickedExchangeRecord finds the clicked one) */
     int icon;                       /* 0x00, the row's input icon (d2_WinOpenInputIcon), -1: none */
     int text;                       /* 0x04, its text object (d2_CreateWinText) */
-    int pad08;
+    int name;                       /* 0x08, the text with the player slot's name (ai_ShowExchangeRows) */
     int good;                       /* 0x0c, the currency good of the row (an object of the class 9 in the list,
                                        gm_Query(list, 1, 4, 9); its name txt_ObjectNames, its icon good + 0xdf), 0: free */
-    int pad10;
+    unsigned char player;           /* 0x10, the player slot the row names (ai_ShowExchangeRows) */
+    char pad11[3];
     int value;                      /* 0x14, the icon's value, the amount picked (d2_GetObjValue) */
     int available;                  /* 0x18, the amount the list holds in it (gm_CurrencyDivide) */
 } LCEXCHROW;
@@ -9176,59 +9177,55 @@ int ai_FillExchangeRows(int list, LCEXCHROW *rows, int view, int form, char inpu
     }
     return sel;
 }
-/* 0x59c450, draws the rows of the money lender's exchange window (608 B, ROUGH): for each 7-int record with a
-   good (+8) a button (0x469ee0 or 0x4731d0 at x = (0x6ed980 + 8 - 0x30) / 2, y = i * 0x4c), the text
-   (0x473650) with the good name 0x143c860 via 0x5176d0, the city name "%s" 0x5f8318 (0x7e3f40 + the record
-   byte +0xc * 0x2f4) and the good text; the controls get 0x54 / 0xbe, the flag +0x5c and +0x44 */
-
-void ai_Unk59c450(int param_1, int param_2, int param_3, int param_4)
+/* 0x59c450, shows the rows of the money lender's exchange window that hold a good (594 B), at most 16, 0x4c apart in
+   the form view / form: the good's icon (an input icon 0x82 with input, else a clickable picture), below it a centred
+   text with the good's name ("%S") and under that one with the name of the row's player slot
+   @deep read the whole function against the original: the 16-row loop over y (0x4c steps, return on a row
+   without good), the input icon / picture branch, both texts, fonts, centring and widths all match; the
+   remaining hunk is induction: VC6 gives us an IV edi = i * 0x4c + 0x3f (mov edi, 0x3f; lea eax, [edi -
+   0xf]) where the original recomputes i * 0x4c from i each row (lea edx, [ebx + ebx*8]; lea edi, [ebx +
+   edx*2]; shl edi, 2; lea ecx, [edi + 0x30]; add edi, 0x3f), plus the load-order cross above; a pointer
+   walk over the rows gave the same; a strength-reduction variant round (references: M8 at +0xeb: ours
+   refers to d2_LastWindow (0x6ed938), the original's field to 0x6ed980 (d2_LastWindowPtr,
+   d2_LastWindowPtrC, d2_LastWindowPtrT), explained: the M8 at +0xeb is a load order: both sides load
+   d2_LastWindow and d2_LastWindowPtr for the same d2_CreateWinText call, ours in the other order (the text
+   call's arguments are the same: (w - 0xbe) >> 1, i * 0x4c + 0x30, ch_EmptyName, d2_LastWindow)) */
+void ai_ShowExchangeRows(LCEXCHROW *rows, int view, int form, int input)
 {
     char text[0x80];
-    int *rec;
     int i;
     int y;
-    int v;
 
     i = 0;
-    y = 0;
-    rec = (int *)(param_1 + 4);
-    for (;;) {
-        if (rec[2] == 0)
+    for (y = 0; y < 0x4c0; y += 0x4c) {
+        if (rows[i].good == 0)
             return;
-        d2_SetForm(param_2, param_3);
-        if (param_4 == 0) {
-            v = d2_WinOpenPic((d2_LastWindowPtr->w - 0x30) >> 1, i * 0x4c, rec[2] + 0xdf,
-                             U_I((unsigned)&d2_LastWindow));
-            rec[-1] = v;
-            U_I(U_I((unsigned)&d2_Objs) + 0x4c + v * 0x2ec) = 1;
+        d2_SetForm(view, form);
+        if (input != 0) {
+            rows[i].icon = d2_WinOpenInputIcon((d2_LastWindowPtr->w - 0x30) >> 1, y, rows[i].good + 0xdf, 0x82,
+                                               d2_LastWindow);
         } else {
-            v = d2_WinOpenInputIcon((d2_LastWindowPtr->w - 0x30) >> 1, y, rec[2] + 0xdf, 0x82,
-                             U_I((unsigned)&d2_LastWindow));
-            rec[-1] = v;
+            rows[i].icon = d2_WinOpenPic((d2_LastWindowPtr->w - 0x30) >> 1, i * 0x4c, rows[i].good + 0xdf,
+                                         d2_LastWindow);
+            d2_Objs[rows[i].icon].interactive = 1;
         }
-        U_I(U_I((unsigned)&d2_Objs) + 0x44 + rec[-1] * 0x2ec) = 1;
-        v = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x30, (char *)(unsigned)&ch_EmptyName,
-                         U_I((unsigned)&d2_LastWindow));
-        *rec = v;
-        txt_Format(text, "%S", U_I((unsigned)&txt_ObjectNames + rec[2] * 8));
-        d2_SetObjText(*rec, text);
-        d2_SetObjFont(rec[-1], 0x54);
-        d2_SetObjFont(*rec, 0x54);
-        U_I(U_I((unsigned)&d2_Objs) + 0x5c + *rec * 0x2ec) = 1;
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + *rec * 0x2ec) = 0xbe;
-        v = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x3f, (char *)(unsigned)&ch_EmptyName,
-                         U_I((unsigned)&d2_LastWindow));
-        rec[1] = v;
-        txt_Format(text, "%s", (char *)(unsigned)&ai_PlayerSlots + *(unsigned char *)(rec + 3) * 0x2f4);
-        d2_SetObjText(rec[1], text);
-        d2_SetObjFont(rec[1], 0x54);
-        y += 0x4c;
-        U_I(U_I((unsigned)&d2_Objs) + 0x5c + rec[1] * 0x2ec) = 1;
+        d2_Objs[rows[i].icon].textShadow = 1;
+        rows[i].text = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x30, ch_EmptyName,
+                                        d2_LastWindow);
+        txt_Format(text, "%S", txt_ObjectNames[rows[i].good][0]);
+        d2_SetObjText(rows[i].text, text);
+        d2_SetObjFont(rows[i].icon, 0x54);
+        d2_SetObjFont(rows[i].text, 0x54);
+        d2_Objs[rows[i].text].centred = 1;
+        d2_Objs[rows[i].text].w = 0xbe;
+        rows[i].name = d2_CreateWinText((d2_LastWindowPtr->w - 0xbe) >> 1, i * 0x4c + 0x3f, ch_EmptyName,
+                                        d2_LastWindow);
+        txt_Format(text, "%s", ((GMPLAYERSLOT *)ai_PlayerSlots)[rows[i].player].name);
+        d2_SetObjText(rows[i].name, text);
+        d2_SetObjFont(rows[i].name, 0x54);
+        d2_Objs[rows[i].name].centred = 1;
+        d2_Objs[rows[i].name].w = 0xbe;
         i++;
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + 0x14 + rec[1] * 0x2ec) = 0xbe;
-        rec += 7;
-        if (y >= 0x4c0)
-            return;
     }
 }
 /* 0x59c6b0, the index of the clicked record of the money lender's exchange list: while the latched left click
@@ -9642,7 +9639,7 @@ void ai_MoneyExchangeWindow(int param_1)
     U_I(((unsigned)&ai_Unkf8f39c + 0x128) + n) = 0xe;
     d2_SetForm(win, 3);
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &ctl[0], 2, U_I((unsigned)&full_data_14405d8), U_I((unsigned)&full_data_144a118));
-    ai_Unk59c450((int)recsB, win, 4, 0);
+    ai_ShowExchangeRows((LCEXCHROW *)recsB, win, 4, 0);
     for (i = 0; i < 16; i++)
         if (recsB[i * 7] != -1)
             d2_SetObjEnabled(recsB[i * 7], 0);

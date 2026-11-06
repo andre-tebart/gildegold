@@ -2667,3 +2667,4 @@
 2026-11-06T12:30:26 0x0059b630 func ai_Unk59b630 -> ai_BorrowerLoansWindow by:main why:0x59b630 lists the loans (gm_CreditEvents) of the borrower ai_CreditGiverWindow picks at the bank: amount 0x18e0, due date 0x18e1, interest 0x18e2
 2026-11-06T12:31:54 0x0059b880 func ai_Unk59b880 -> ai_CreditReleaseWindow by:main why:0x59b880 opens locations\geldleihe\geldleihe_KreditFreigabe: the bank owner's interest (field 0x65) and money sliders
 2026-11-06T12:39:33 0x0059c120 func ai_Unk59c120 -> ai_FillExchangeRows by:main why:fills the exchange window's 16 rows from an object list's currency objects (gm_Query 1,4,9), the icons, texts and amounts
+2026-11-06T12:40:54 0x0059c450 func ai_Unk59c450 -> ai_ShowExchangeRows by:main why:shows the exchange window's rows: per good an icon, the good's name and the player slot's name
