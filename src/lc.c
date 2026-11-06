@@ -6756,40 +6756,37 @@ void ai_EspionageAmountMenu(void)
 
 int gm_HasAdultRelative(); float gm_AddHealth(unsigned short id, int d); int ai_TutorialOff(); int ai_Unk5b4590();
 
-/* 0x5973f0, the wine-cellar window "locations\wohnsitz\weinkeller" (272 B): 0x4741f0 / 0x475600, the texts
-   0x515960 (0x42cf / 0x42d1), the pump 0x5309a0 (this, 0x677c7); the click 0 (0xf8a668) resolves the
-   character's drink (0x506480 with the record 0x770b80 + player * 0x21c and the local choice): failure gives
-   the text 0x143a1c0[0x42d2 + (choice != 0)] through 0x521150, success 0x4fca40 (the word 0x770b80 + player *
-   0x21c, -0x7d0); the click 1 or the state 0x14681c1 sets 0x6f22a0; the exit 0x4758f0 */
-void ai_Unk5973f0(void)
+/* 0x5973f0, the suicide window of the residence (the SELBSTMORD plate; the form "locations\wohnsitz\weinkeller",
+   texts 0x42cf / 0x42d1): button 0 asks gm_HasAdultRelative of the player's record; with an adult relative (an
+   heir) the player's character loses 2000 health (gm_AddHealth -0x7d0) and the window stays, else the text
+   txt_Ptrs[0x42d2] (no relative) or [0x42d3] (none adult) and it closes; button 1, a right click or the escape
+   key close it */
+void ai_SuicideWindow(void)
 {
     int win;
-    unsigned int player;
-    int r;
-    int sel;
+    int relatives;
+    AICHARREC *ch;
 
-    player = U_W((unsigned)&ai_PlayerId);
+    ch = &((AICHARREC *)ai_Chars)[ai_PlayerId];
     win = d2_OpenForm(0, 0, "locations\\wohnsitz\\weinkeller");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
     io_PrintText(0x42cf);
     d2_SetForm(win, 2);
     io_PrintText(0x42d1);
-    while (sv_RunFrame(ai_Unk5973f0, 0x677c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0 && *(char *)((unsigned)&kb_Down + 0x1) == 0) {
-            if (U_I((unsigned)&d2_ClickedId) == 0) {
-                sel = U_I((unsigned)&d2_ClickedId);
-                r = gm_HasAdultRelative((void *)((unsigned)&ai_Chars + player * 0x21c), &sel);
-                if (r == 0)
-                    sv_MessageBox(U_I((unsigned)&d2_Strings + (0x42d2 + (sel != 0)) * 4), 0);
-                else
-                    gm_AddHealth(U_W((unsigned)&ai_Chars + player * 0x21c), 0xfffff830);
-            } else if (U_I((unsigned)&d2_ClickedId) == 1) {
-                U_I((unsigned)&sv_PopRequest) = 1;
-            }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
+    while (sv_RunFrame(ai_SuicideWindow, 0x677c7) != 0) {
+        if (dm_L.rup == 0 && kb_Down[1] == 0) {
+            if (d2_ClickedId == 0) {
+                relatives = d2_ClickedId;
+                if (gm_HasAdultRelative((char *)ch, &relatives) != 0) {
+                    gm_AddHealth(ch->id, -0x7d0);
+                    continue;
+                }
+                sv_MessageBox(txt_Ptrs[relatives != 0 ? 0x42d3 : 0x42d2], 0);
+            } else if (d2_ClickedId != 1)
+                continue;
         }
+        sv_PopRequest = 1;
     }
     d2_CloseView(win);
 }
@@ -6844,7 +6841,7 @@ void ai_Unk597500(int param_1, int param_2)
         } else if (U_I((unsigned)&ai_ClickedObject) == spionage) {
             ai_EspionageAmountMenu();
         } else if (U_I((unsigned)&ai_ClickedObject) == selbstmord) {
-            ai_Unk5973f0();
+            ai_SuicideWindow();
         }
         r = sv_RunFrame(ai_Unk597500, 0x67fff);
     }
