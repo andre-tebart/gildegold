@@ -1123,6 +1123,18 @@ typedef struct LCAMBUSHEVENT {     /* the ambush event 0x48's word over AIJOB's 
     char pad00[0xac];
     char place[0x20];              /* 0xac, the name of the scene object the gang lies in wait at */
 } LCAMBUSHEVENT;
+typedef struct LCSEARCHEVENT {     /* the search event 0x14's words over AIJOB's union (ai_TradeSearchWindow counts them) */
+    char pad00[0xac];
+    unsigned char count;           /* 0xac, how many characters search */
+    char padad;
+    unsigned short good;           /* 0xae, the good searched for */
+} LCSEARCHEVENT;
+typedef struct LCSEARCHWORDS {     /* the search message 0x14's words at AIMSG +0x58 (msg.arg) */
+    unsigned char count;           /* 0x58, how many of ids[] are set */
+    char pad59;
+    unsigned short good;           /* 0x5a, the good searched for */
+    int room;                      /* 0x5c, the objId of the room the search starts from */
+} LCSEARCHWORDS;
 #pragma pack(pop)
 
 #pragma pack(push, 1)
@@ -5728,167 +5740,166 @@ void ai_CarpenterContact(AIBLD *bld, int room)
 
 void d2_SetObjEnabled(); void d2_SetCaption(); int d2_WinOpenPic(short x, short y, int pic, int win);
 
-/* 0x595480, the trade search window of the kind 0x14 (1408 B, ROUGH SKELETON from the Ghidra pseudocode): the
-   searched goods 0x1c4 / 0x1c5 / 0x1c6, the record 0x4ffe90 (0x2a); the building kind record 0x7e3f30 + kind *
-   0x24d: ' ' gives 0x2af then (byte +0x247 >= 2) 0x2b0, 0x1f gives 0x293 / 0x294 / 0x295, other kinds give
-   three (or with the byte +0x247 <= 1 two) entries; 0x520fe0; the sums of the stock byte +0xac per kind over the
-   buildings 0x53e400 (2, 0, 0x14, 3) / 0x53e300 (matched by their +0xae); the window "HANDEL\HANDEL_SUCHEN"
-   (0x4741f0 / 0x475600 / 0x475f70, 0x52e6d0 (0x70f, 0x741), 0x515960 (0x17fe), 0x58bbd0), the controls
-   0x4731d0 (the texts 0x143c860, +0x4c = 1, 0x1c0 = 3, 0x1cc = 100, 0x1d0 = 0x10, 0x74 = 0x54, 0x473540,
-   0x475e40); per frame the sums again (0x58d720 / 0x58dd00) and the texts 0x5176d0 (0x17ff for 1, 0x5f8318
-   for the kind, 0x1800 for more); the click on a control builds the message (type 0x14, the character
-   0x770b84, the building, the clock 0x770ae0 .., the kind, param_2 + 2, the six character slots, the count) and
-   runs 0x4c2d20 / 0x4c4b70 / 0x4c3ae0 / 0x4c3b10, or 0x521150 (0x14401c4, 4) when no character; the pump
-   0x5309a0 (this, 0x677c7); the exit 0x52ae40 / 0x525440 / 0x4758f0 / 0x52d7a0 */
-void ai_TradeSearchWindow(unsigned char *param_1, int param_2)
-{
-    unsigned int kinds[7];
-    int sums[3];
-    int win;
-    int ctrls[4];
-    int rec;
-    int b;
-    int i;
-    int n;
-    unsigned int kind;
-    int char1;
-    char text[0x100];
-    unsigned char msg[0xf8];
+/* 0x595480, the search window of a building ("HANDEL\HANDEL_SUCHEN", frame texts 0x70f / 0x741, title 0x17fe):
+   the goods the building's people can search for (0x1c4 .. 0x1c6; type class 0x20: 0x2af, with level 2 also
+   0x2b0; class 0x1f: 0x293 .. 0x295; class 8 or level 1: the first two) as picture buttons, each captioned
+   with the searches running (the search events 0x14 of the building, LCSEARCHEVENT: 1 the text 0x17ff, more
+   0x1800, none the good's name), next to the store's goods list. A click on a good posts the search message
+   0x14 (the good, the room object, up to six selected characters) and waits for its slot; no selected
+   character gives the text 0x1801. Nothing when the building's character is busy (sv_CheckCharacterFlag)
+   @deep Rebuilt whole from the original 0x595480..0x5959ff (410 vs 405 instructions, same size 1408):
+   goods table by building class, the search-event counts (LCSEARCHEVENT +0xac count / +0xae good), the
+   picture buttons, the per-frame captions (0x17ff / 0x1800 / %s with the good's text), the click -> search
+   message 0x14 (LCSEARCHWORDS over msg.arg: count, good, room objId; ids filled by a j<6 loop that VC6
+   turns into rep stosd), slot wait, sv_CameraFollow tail call; every statement, constant, callee and
+   reference reads equal. Left: allocation only. Ours keeps the constant 0 in esi (xor esi,esi in the
+   prologue; push esi / cmp eax,esi for every 0 argument and null test up to the frame loop, e.g. -0x5954a0
+   push esi | +push 0, -0x59557f cmp eax,esi | +test eax,eax) and 2 in edi, so edi is pushed in the
+   prologue (original: esi=2 only, ebx/edi pushed after sv_CheckCharacterFlag) and the frame loop gets a
+   re-entry block (-0x595740 jmp X / xor esi,esi) - the slot offsets shift by that push (slots 48) and the
+   epilogue pops differ (fpu 13 = the pop order). Tried: a separate caption-loop counter, i declared first,
+   the class-8 / level condition as one if, implicit null tests, an unsigned char count: no change (the
+   count one worse). */
 
-    kinds[0] = 0x1c4;
-    kinds[1] = 0x1c5;
-    kinds[2] = 0x1c6;
-    kinds[6] = gm_Query(*(int *)(param_1 + 0x5d), 2, 6, 0, 0x2a);
-    kind = *param_1;
-    rec = U_I((unsigned)&ai_BTypes) + kind * 0x24d;
-    if (*(char *)rec == ' ') {
-        kinds[0] = 0x2af;
+void ai_TradeSearchWindow(AIBLD *bld, AIROOM *room)
+{
+    int n;
+    int goods[3];
+    int searches[3];
+    int store;
+    int win;
+    int buttons[3];
+    AIMSG msg;
+    char text[0x100];
+    int i;
+    int sel;
+    int x;
+    int good;
+    int slot;
+    int id;
+    int picked;
+    AIBTYPE *type;
+    LCSEARCHEVENT *ev;
+
+    goods[0] = 0x1c4;
+    goods[1] = 0x1c5;
+    goods[2] = 0x1c6;
+    store = gm_Query((void *)bld->objList, 2, 6, 0, 0x2a);
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    if (type->buildingClass == 0x20) {
+        goods[0] = 0x2af;
         n = 1;
-        if (*(unsigned char *)(rec + 0x247) >= 2) {
-            kinds[1] = 0x2b0;
+        if (type->level >= 2) {
+            goods[1] = 0x2b0;
             n = 2;
         }
-    } else if (*(char *)rec == 0x1f) {
-        kinds[0] = 0x293;
-        kinds[1] = 0x294;
-        kinds[2] = 0x295;
+    } else if (type->buildingClass == 0x1f) {
+        goods[0] = 0x293;
+        goods[1] = 0x294;
+        goods[2] = 0x295;
         n = 3;
-    } else if (*(char *)rec != 8 && *(unsigned char *)(rec + 0x247) > 1) {
-        n = 3;
-    } else {
+    } else if (type->buildingClass == 8) {
         n = 2;
+    } else {
+        n = 3;
+        if (type->level < 2)
+            n = 2;
     }
-    if (sv_CheckCharacterFlag(param_1) != 0)
+    if (sv_CheckCharacterFlag(bld) != 0)
         return;
-    sums[0] = 0;
-    sums[1] = 0;
-    sums[2] = 0;
-    for (b = he_FindEvent(2, 0, 0x14, 3, U_I(param_1 + 1)); b != 0; b = he_NextEvent()) {
-        for (i = 0; i < 3; i++) {
-            if (*(unsigned short *)(b + 0xae) == kinds[i]) {
-                sums[i] += *(unsigned char *)(b + 0xac);
+    searches[0] = 0;
+    searches[1] = 0;
+    searches[2] = 0;
+    for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x14, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
+        for (i = 0; i < 3; i++)
+            if (ev->good == goods[i]) {
+                searches[i] += ev->count;
                 break;
             }
-        }
-    }
     win = d2_OpenForm(0, 0, "HANDEL\\HANDEL_SUCHEN");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_OpenWindowFrame(U_I((unsigned)&d2_LastWindow), 0x70f, 0x741);
+    sv_OpenWindowFrame(d2_LastWindow, 0x70f, 0x741);
     d2_SetForm(win, 3);
     io_PrintText(0x17fe);
-    sv_OpenPlayerBar(param_1, 0);
+    sv_OpenPlayerBar(bld, 0);
     ai_InitProductionTables();
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
-    kind = *(unsigned short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4);
+    x = d2_Wins[d2_LastWindow].w / 2 - 0xa8;
     for (i = 0; i < n; i++) {
-        int id = d2_WinOpenPic((int)kind / 2 - 0x80, i * 0x50 + 0x19, kinds[i] + 0xdf, U_I((unsigned)&d2_LastWindow));
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x4c) = 1;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1c0) = 3;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1cc) = 100;
-        U_I(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x1d0) = 0x10;
-        *(unsigned short *)(U_I((unsigned)&d2_Objs) + id * 0x2ec + 0x74) = 0x54;
-        d2_SetCaption(id, U_I((unsigned)&txt_ObjectNames + kinds[i] * 8));
-        ctrls[i] = id;
+        good = goods[i];
+        id = d2_WinOpenPic(x + 0x28, i * 0x50 + 0x19, good + 0xdf, d2_LastWindow);
+        d2_Objs[id].interactive = 1;
+        d2_Objs[id].style = 3;
+        d2_Objs[id].captionX = 100;
+        d2_Objs[id].captionY = 0x10;
+        d2_Objs[id].font = 0x54;
+        d2_SetCaption(id, txt_ObjectNames[good][0]);
+        buttons[i] = id;
         d2_SetObjEnabled(id, 1);
     }
     d2_SetPointerSprite(0, 0);
-    ai_UpdateProdGoodsList(param_1, kinds[6]);
-    ai_LayoutProdGoodsList(win, 1, 0, param_1);
-    while (sv_RunFrame(ai_TradeSearchWindow, 0x677c7) != 0) {
-        ai_UpdateProdGoodsList(param_1, kinds[6]);
-        ai_LayoutProdGoodsList(win, 1, 0, param_1);
-        sums[0] = 0;
-        sums[1] = 0;
-        sums[2] = 0;
-        for (b = he_FindEvent(2, 0, 0x14, 3, U_I(param_1 + 1)); b != 0; b = he_NextEvent()) {
-            for (i = 0; i < 3; i++) {
-                if (*(unsigned short *)(b + 0xae) == kinds[i]) {
-                    sums[i] += *(unsigned char *)(b + 0xac);
+    ai_UpdateProdGoodsList(bld, store);
+    ai_LayoutProdGoodsList(win, 1, 0, bld);
+    while (sv_RunFrame((int)ai_TradeSearchWindow, 0x677c7) != 0) {
+        ai_UpdateProdGoodsList(bld, store);
+        ai_LayoutProdGoodsList(win, 1, 0, bld);
+        searches[0] = 0;
+        searches[1] = 0;
+        searches[2] = 0;
+        for (ev = (LCSEARCHEVENT *)he_FindEvent(2, 0, 0x14, 3, bld->id); ev != 0; ev = (LCSEARCHEVENT *)he_NextEvent())
+            for (i = 0; i < 3; i++)
+                if (ev->good == goods[i]) {
+                    searches[i] += ev->count;
                     break;
                 }
-            }
-        }
         d2_SetForm(win, 2);
         for (i = 0; i < n; i++) {
-            d2_SetObjEnabled(ctrls[i], 1);
-            if (sums[i] == 1)
-                txt_Format(text, 0x17ff, 1);
-            else if ((int)sums[i] < 2)
-                txt_Format(text, "%s", kinds[i] * 2 + 0x9a8);
+            d2_SetObjEnabled(buttons[i], 1);
+            if (searches[i] == 1)
+                txt_Format(text, 0x17ff, searches[i], goods[i] * 2 + 0x9a8);
+            else if (searches[i] > 1)
+                txt_Format(text, 0x1800, searches[i], goods[i] * 2 + 0x9a8);
             else
-                txt_Format(text, 0x1800, sums[i]);
-            d2_SetCaption(ctrls[i], text);
+                txt_Format(text, "%s", goods[i] * 2 + 0x9a8);
+            d2_SetCaption(buttons[i], text);
         }
-        if (U_I((unsigned)&d2_ClickedId) == -1) {
-            if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-                U_I((unsigned)&sv_PopRequest) = 1;
-        } else {
-            for (i = 0; i < n; i++) {
-                if (ctrls[i] == U_I((unsigned)&d2_PointerObj))
+        if (d2_ClickedId != -1) {
+            sel = -1;
+            for (i = 0; i < n; i++)
+                if (buttons[i] == d2_PointerObj) {
+                    sel = i;
                     break;
-            }
-            if (i < n) {
-                memset(msg, 0, 0xf8);
-                *(unsigned char *)(msg + 4) = 0x14;
-                *(unsigned char *)(msg + 0x36) = 1;
-                *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + *(unsigned short *)(param_1 + 0x27) * 0x87);
-                *(int *)(msg + 0xc) = U_I(param_1 + 1);
-                *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-                *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-                *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-                *(unsigned short *)(msg + 0x34) = *(unsigned short *)((unsigned)&ai_Time + 0xc);
-                *(unsigned short *)(msg + 0x5a) = kinds[i];
-                *(int *)(msg + 0x5c) = U_I(param_2 + 2);
-                memset(msg + 0x38, 0, 0x18);
-                kind = 0;
-                for (b = 0, i = 0; i < 6; i++) {
-                    if (*(char *)((unsigned)&ai_CharInts + i * 0x87) != 0) {
-                        *(int *)(msg + 0x38 + b * 4) = U_I((unsigned)&ai_CharInts + i * 0x87);
-                        b++;
-                    }
                 }
-                for (; b < 6; b++)
-                    *(int *)(msg + 0x38 + b * 4) = -1;
-                *(unsigned char *)(msg + 0x58) = b;
-                if (b == 0) {
-                    sv_MessageBox(U_I((unsigned)&full_data_14401c4), 4);
-                } else {
+            if (sel != -1) {
+                memset(&msg, 0, sizeof(msg));
+                msg.type = 0x14;
+                msg.flags = 1;
+                msg.to = ai_CharInts[bld->owner][0];
+                msg.fromId = bld->id;
+                msg.time = ai_Time;
+                ((LCSEARCHWORDS *)msg.arg)->good = (unsigned short)goods[sel];
+                ((LCSEARCHWORDS *)msg.arg)->room = room->objId;
+                picked = 0;
+                for (i = 0; i < 0x300 && picked < 6; i++)
+                    if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                        msg.ids[picked++] = ai_CharInts[i][0];
+                for (i = picked; i < 6; i++)
+                    msg.ids[i] = -1;
+                ((LCSEARCHWORDS *)msg.arg)->count = (unsigned char)picked;
+                if (picked != 0) {
                     snd_PlayFavourComment();
                     sv_ClearSelection();
-                    *msg = 0;
-                    /* ROUGH: the message goes through 0x4c4b70 / the confirmation 0x4c3ae0 / 0x4c3b10 */
-                    kind = cm_SendLongMessage(msg);
-                    b = cm_GetSlotState(kind);
-                    while (b == 0) {
+                    slot = cm_SendLongMessage((char *)&msg);
+                    while (cm_GetSlotState(slot) == 0)
                         sv_RunFrame(0, 0x20007);
-                        b = cm_GetSlotState(kind);
-                    }
-                    cm_GetSlotValue(kind);
-                }
+                    cm_GetSlotValue(slot);
+                } else
+                    sv_MessageBox(txt_Ptrs[0x1801], 4);
             }
-        }
+        } else if (dm_L.rup != 0)
+            sv_PopRequest = 1;
     }
     sv_ClearSelection();
     sv_ClosePlayerBar();
