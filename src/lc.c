@@ -1202,7 +1202,7 @@ typedef struct AIROOM {            /* the room object sv_PanelShown / the driver
 #pragma pack(push, 1)
 typedef struct G8USEVIEW {              /* a local view of am.h's G8USE (am.h cannot be included here yet): the
                                            record ai_UseGood hands to a Domizil record's use callback (+0x14) */
-    void *obj;                          /* 0x00, the object record used */
+    struct AIOBJ *obj;                  /* 0x00, the object record used (G8USE.obj; its +0 id) */
     int target;                         /* 0x04, the target reference (G8USE.target) */
     int arg;                            /* 0x08 */
     int effect;                         /* 0x0c, 1 the use took effect, 0 not, -1 backfired (G8USE.effect) */
@@ -26431,37 +26431,32 @@ int ai_QuarrelCallback(AICHARREC *ch, int *req)
     }
     return 1;
 }
-/* 0x5d0e60, a message callback (177 B): param_2 a record (+0x10 set to 1), param_3 the message record
-   (+2 the type, +4 the handle, +0 the word, the counters +0x80 .. +0x84). 0x505ca0 (5, pick) gives a
-   shuffled 0 .. 4 order; the first index whose counter param_3[0x80 + i] is below 0xfc runs the trial
-   step 0x5d08c0 (the record, the index) and is remembered. Type 6: 0x4c5870 (the handle) and the text
-   0x5176d0 (0xfe8, the word at *(int *) param_3 * 2 + 0xd71, the index + 0x16b7) through 0x5cf820.
-   Returns 1. */
+/* 0x5d0e60, the use callback of the Domizil good 0x168 (the +0x14 pointer of the table entry 0x62c5e0):
+   marks the use handled, then 0x505ca0 (5, pick) gives a shuffled 0 .. 4 order and the first pick whose
+   skill counter ch->skills[pick[i]] is below 0xfc runs the trial step 0x5d08c0 (ch, the pick) and is
+   remembered. A kind 6 character: 0x4c5870 (ch->netId) and the text 0x5176d0 (0xfe8, the used object's
+   id * 2 + 0xd71, the pick + 0x16b7) through the use-object panel 0x5cf820. Returns 1. */
 
-int ai_Unk5d0e60(int param_1, int param_2, int param_3)
+int ai_UseGoodTrialStep(AICHARREC *ch, G8USEVIEW *use)
 {
     int pick[5];
     char text[0x800];
     int i;
     int n;
-    int found;
+    int found = 0;
 
-    (void)param_1;
-    *(int *)(param_2 + 0x10) = 1;
+    use->handled = 1;
     gm_Shuffled(5, pick);
-    n = 0;
-    found = 0;
-    for (i = 0; i < 5 && n < 1; i++) {
-        if (*(unsigned char *)(param_3 + pick[i] + 0x80) < 0xfc) {
-            ai_ApplyTrialStep(param_3, pick[i]);
+    for (i = 0, n = 0; n < 1 && i < 5; i++) {
+        if (ch->skills[pick[i]] < 0xfc) {
+            ai_ApplyTrialStep((int)ch, pick[i]);
             found = pick[i];
             n++;
         }
     }
-    if (*(char *)(param_3 + 2) == 6) {
-        cm_SendSkillsChanged(*(int *)(param_3 + 4));
-        txt_Format(text, (char *)0xfe8,
-                      *(unsigned short *)(*(int *)param_3) * 2 + 0xd71, found + 0x16b7);
+    if (ch->kind == 6) {
+        cm_SendSkillsChanged(ch->netId);
+        txt_Format(text, 0xfe8, use->obj->id * 2 + 0xd71, found + 0x16b7);
         ai_UseObjPanel(text);
     }
     return 1;
