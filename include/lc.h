@@ -4,6 +4,7 @@
 #define LC_H
 
 struct AIBLD;
+struct D2SURF;
 struct AIOBJ;
 struct D3SCENE;
 struct D3OBJECT;
@@ -228,16 +229,17 @@ typedef struct LCMAPWIN {          /* 0x27ac bytes, the town map window's record
     char name[0x68];               /* 0x05c, the title */
     char pad0c4[0x18];
     LCMAPMARK marks[0x100];        /* 0x0dc, the buildings, sorted by their scene row */
-    int ids18dc[0x300];            /* 0x18dc, cleared to -1 by ai_BuildTownMap */
+    int controls[0x300];           /* 0x18dc, the control objects, -1 free (ai_BuildTownMap clears them,
+                                      ai_CloseMapWindow removes them) */
     int siteCtrls[0x80];           /* 0x24dc, the controls of ai_PlacementSites' entries (flag 8; the original writes up to 0x100) */
     int spotCtrls[0x10];           /* 0x26dc, the controls of the ambush spots found (flag 4), packed */
     char pad271c[0x88];
     int nMarks;                    /* 0x27a4 */
-    int tile;                      /* 0x27a8, the saved background tile */
+    struct D2SURF *tile;           /* 0x27a8, the background tile the open saved (d2_BackgroundTile) */
 } LCMAPWIN;
 void ai_MapCellToScreen(LCMAPMARK *m, int originX, int originY);  /* 0x5a6b70, the town map pixel of a mark's scene cell */
 void ai_BuildTownMap(LCMAPWIN *m);  /* 0x5a6cb0, places the marks of the town map window */
-void ai_Unk5a78a0(int *m_);  /* 0x5a78a0 */
+int ai_OpenTownMap(LCMAPWIN *m);  /* 0x5a78a0, opens the town map window */
 void ai_Unk5a7cd0(int *m_);  /* 0x5a7cd0 */
 void ai_CloseMapWindow(int *m_);  /* 0x5a82f0 */
 void ai_GypsyDeliveryText(unsigned short *param_1, int param_2, int *param_3);  /* 0x5a9470 */

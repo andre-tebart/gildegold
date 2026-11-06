@@ -906,7 +906,7 @@ void rt_EditCartRoute(char *c)
     m[1] = 0x10;
     m[0x16] = 0x723;
     strcpy((char *)&m[0x17], txt_PanelBtnCart);
-    ai_Unk5a78a0(m);
+    ai_OpenTownMap(m);
     ai_BuildTownMap(m);
     rt_Unk6f074c = d2_CopySurface(rt_MapSurface);
     rt_MarkCount = 0;

@@ -14260,7 +14260,7 @@ void ai_CityWatchListener(AIBLD *bld)
 }
 /* 0x5a6c40, the four control pictures of the map window (102 B): on the screen window at (0, 0) the picture
    id, at (0, 0x1a2) id + 1, at (0, 0x78) id + 2 and at (0x243, 0x78) id + 3, each raised (d2_WinOpenPic,
-   d2_RaiseObject); its caller ai_Unk5a78a0 passes the map's child window and the base id (0x727 / 0x72b / 0x723 /
+   d2_RaiseObject); its caller ai_OpenTownMap passes the map's child window and the base id (0x727 / 0x72b / 0x723 /
    0x71f, by the record's flags) */
 
 void ai_PlaceMapControls(int screen, int id)
@@ -14334,7 +14334,7 @@ void ai_BuildTownMap(LCMAPWIN *m)
         m->marks[i].bld = 0;
     }
     memset(m->siteCtrls, 0xff, sizeof(m->siteCtrls));
-    memset(m->ids18dc, 0xff, sizeof(m->ids18dc));
+    memset(m->controls, 0xff, sizeof(m->controls));
     m->nMarks = 0;
 
     /* the player's buildings */
@@ -14536,53 +14536,47 @@ int d2_SetForm(int view, int n); int d2_CreateChildWindow(short x, short y, shor
 void d2_CloseView(int view); void d2_RemoveObj(); void d2_ScrollWindowBy();
 void ai_CharInfoWindow(); int d2_CreatePicObj(); unsigned char *ai_FindItemGroup();
 
-/* 0x5a78a0, the map window's open (317 B): the previous screen 0x6ed930 is saved (+0x27a8), the window
-   "Misc\Landkarte2" 0x62c274 (0x4741f0) takes the screen 0x6f26ac, the map screen 0x472aa0 (0x4a, 0x4c, 0x206,
-   0x164) is stored at +8 and 0x6ed938, the screen's +0x38c is set; the control bar 0x5a6c40 (the screen, the id
-   +0x16, else 0x727 (flag 4) / 0x72b (2) / 0x723 (1 or 8 with the title at +0x5c) / 0x71f), then the form 1 with
-   the title 0x515960 and the form 2 with the flag 0x10 */
-void ai_Unk5a78a0(int *m_)
+/* 0x5a78a0, opens the town map window "Misc\Landkarte2" for the record m: the town map bitmap becomes the background
+   tile (the old one is kept in m->tile), the map child window (0x4a, 0x4c, 0x206 x 0x164) gets the tiled background,
+   the control bar ai_PlaceMapControls the request's own base id or by the flags 0x727 (4), 0x72b (2), 0x723 (1 or 8
+   with a title) or 0x71f; form 1 shows the title, flag 0x10 form 2. Returns the view */
+int ai_OpenTownMap(LCMAPWIN *m)
 {
-    char *p = (char *)m_;
-    int view;
-    int screen;
-    int id;
-
-    *(int *)(p + 0x27a8) = *(int *)((unsigned)&d2_BackgroundTile);
-    *(int *)((unsigned)&d2_BackgroundTile) = *(int *)((unsigned)&rt_MapSurface);
-    view = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62c274);
-    m_[0] = view;
-    d2_PlaceMainWindow(view, 3);
-    d2_SetForm(view, 0);
-    screen = d2_CreateChildWindow(0x4a, 0x4c, 0x206, 0x164, 0, *(int *)((unsigned)&d2_LastWindow));
-    m_[2] = screen;
-    *(int *)((unsigned)&d2_LastWindow) = screen;
-    *(int *)(*(int *)((unsigned)&d2_LastWindowPtr) + 0x38c) = 1;
-    d2_SetForm(view, 0);
-    id = m_[0x16];
-    if (id == 0) {
-        if (*(unsigned char *)(p + 4) & 4)
-            id = 0x727;
-        else if (*(unsigned char *)(p + 4) & 2)
-            id = 0x72b;
-        else if ((*(unsigned char *)(p + 4) & 1) && (char *)(p + 0x5c) != 0)
-            id = 0x723;
-        else if ((*(unsigned char *)(p + 4) & 8) && (char *)(p + 0x5c) != 0)
-            id = 0x723;
+    m->tile = d2_BackgroundTile;
+    d2_BackgroundTile = (struct D2SURF *)rt_MapSurface;
+    m->view = d2_OpenForm(0, 0, "Misc\\Landkarte2");
+    d2_PlaceMainWindow(m->view, 3);
+    d2_SetForm(m->view, 0);
+    m->screen = d2_CreateChildWindow(0x4a, 0x4c, 0x206, 0x164, 0, d2_LastWindow);
+    d2_LastWindow = m->screen;
+    d2_LastWindowPtr->tileBackground = 1;
+    d2_SetForm(m->view, 0);
+    if (m->req[0x13] == 0) {
+        if (m->flags & 4)
+            ai_PlaceMapControls(d2_LastWindow, 0x727);
+        else if (m->flags & 2)
+            ai_PlaceMapControls(d2_LastWindow, 0x72b);
+        else if ((m->flags & 1) && m->name != 0)
+            ai_PlaceMapControls(d2_LastWindow, 0x723);
+        else if ((m->flags & 8) && m->name != 0)
+            ai_PlaceMapControls(d2_LastWindow, 0x723);
         else
-            id = 0x71f;
+            ai_PlaceMapControls(d2_LastWindow, 0x71f);
+    } else {
+        ai_PlaceMapControls(d2_LastWindow, m->req[0x13]);
     }
-    ai_PlaceMapControls(screen, id);
-    if ((char *)(p + 0x5c) != 0) {
-        d2_SetForm(view, 1);
-        d2_RaiseWindow(screen);
-        io_PrintText((int)(p + 0x5c));
+    if (m->name != 0) {
+        d2_SetForm(m->view, 1);
+        d2_RaiseWindow(d2_LastWindow);
+        io_PrintText(m->name);
     }
-    if (*(unsigned char *)(p + 4) & 0x10) {
-        d2_SetForm(view, 2);
-        d2_RaiseWindow(screen);
+    if (m->flags & 0x10) {
+        d2_SetForm(m->view, 2);
+        d2_RaiseWindow(d2_LastWindow);
     }
+    return m->view;
 }
+
 /* 0x5a79e0, the map drag scroll (473 B): while the mouse drag 0x14673a8 is held (0x6f26bc), the scroll of the
    screen record (+0x258 / +0x248) follows the drag position 0x14683c0 / 0x14683c2 from the anchors 0x6f26a4 /
    0x6f26a8; the previous anchors 0x6f268c .. and the bounds 0x6f2698 / 0x5f3238 / 0x6f26b4 / 0x6310b0 etc. are
@@ -14842,13 +14836,6 @@ void ai_Unk5a7cd0(int *m_)
     if (*(unsigned char *)(((unsigned)&kb_Down + 0xcd)) != 0)
         d2_ScrollWindowBy(4, 0, *(int *)((unsigned)&d2_LastWindow));
 }
-typedef struct MAPWINDOW {          /* 0x27ac bytes, the record of the town map window (ai_Unk5a78a0 fills it, ai_MapPick holds one) */
-    int view;                       /* +0x000, the window */
-    char pad04[0x18dc - 4];
-    int controls[0x300];            /* +0x18dc, the control objects, -1 free */
-    char pad24dc[0x27a8 - 0x24dc];
-    struct D2SURF *tile;            /* +0x27a8, the background tile the open saved */
-} MAPWINDOW;
 
 /* 0x5a82f0, the town map window's close (78 B): the background tile saved at +0x27a8 goes back to
    d2_BackgroundTile, d2_CloseView closes the window, the 0x300 control objects of +0x18dc are removed
@@ -14856,7 +14843,7 @@ typedef struct MAPWINDOW {          /* 0x27ac bytes, the record of the town map 
 
 void ai_CloseMapWindow(int *m_)
 {
-    MAPWINDOW *m = (MAPWINDOW *)m_;
+    LCMAPWIN *m = (LCMAPWIN *)m_;
     int i;
 
     d2_BackgroundTile = m->tile;
@@ -17081,7 +17068,7 @@ int ai_MapPick(int param_1, int param_2, char *param_3, int param_4, int param_5
         strcpy(map.name, param_3);
     else
         map.name[0] = *(char *)(unsigned)&ch_EmptyName;
-    ai_Unk5a78a0((int *)&map);
+    ai_OpenTownMap((LCMAPWIN *)&map);
     ai_BuildTownMap((LCMAPWIN *)&map);
     if (sv_RunFrame(ai_MapPick, 0x677c7) == 0)
         return 0;
