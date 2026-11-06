@@ -280,7 +280,7 @@ void cm_SendCancelParty(int a);                                                 
 int cm_SendCutsceneReady(void *p);                                                       /* 0x4c5f20, its send slot (cm_GetSlotState) */
 void cm_SendMoneyDelta(int a, int b);                                                 /* 0x4c5f60 */
 void cm_SendMessage5b(int a, int b, int c);                                          /* 0x4c5fa0 */
-void cm_SendTradeMessage(char *p);                                                      /* 0x4c5fe0 */
+int cm_SendTradeMessage(AMTTRADE *p);                                                   /* 0x4c5fe0 */
 void cm_SendAddSkill(int a, int b, int c);                                          /* 0x4c6020 */
 void cm_SendSpyReport(char *o, void *p);                                             /* 0x4c6060 */
 void cm_SendGraveOrder(void *p);                                                      /* 0x4c60b0 */

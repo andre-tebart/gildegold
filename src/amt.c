@@ -710,7 +710,7 @@ int amt_SendOfficeSwap(char *requester, char *b, char *c)
                 m.a = o1.idx;
                 m.b = o2.idx;
                 m.v = 6;
-                return ((int (*)(char *))cm_SendTradeMessage)(&m);
+                return cm_SendTradeMessage(&m);
             }
         }
     }

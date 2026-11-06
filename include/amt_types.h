@@ -48,6 +48,12 @@ typedef struct AMTMSG {                 /* the office message of amt_SendOfficeM
     int b;                              /* 0x07, the second character's netId or -1 */
     char pad[4];                        /* 0x0b */
 } AMTMSG;
+typedef struct AMTTRADE {               /* the swap message (10 bytes), the data of message 0x5c (cm_SendTradeMessage,
+                                           amt_SendOfficeSwap) */
+    int id;                             /* 0x00, the requester's netId */
+    unsigned char a, b;                 /* 0x04, the two offices (AMTREC.idx) */
+    int v;                              /* 0x06, 6: an office swap (amt_ExecuteSwapMessage) */
+} AMTTRADE;
 #pragma pack(pop)
 
 #endif

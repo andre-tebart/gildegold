@@ -118,11 +118,6 @@ typedef struct AMTSET {                 /* the office message of 0x4e67a0 (12 by
     char code;                          /* 0x06, unused here */
     int x14;                            /* 0x07, the second character or -1 */
 } AMTSET;
-typedef struct AMTTRADE {               /* the swap message (10 bytes) */
-    int id;
-    unsigned char a, b;
-    int v;
-} AMTTRADE;
 #pragma pack(pop)
 typedef struct AMTRANGE {               /* 0x1c bytes, the ranges of 0x4e78f0 */
     short s0, s1;

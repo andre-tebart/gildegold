@@ -2188,15 +2188,16 @@ void cm_SendMessage5b(int a, int b, int c)
     m.heldRounds.all = c;
     cm_QueueSend(&m);
 }
-/* 0x4c5fe0, message 0x5c: the 10-byte trade record p (the office-swap request of amt_SendOfficeSwap) */
+/* 0x4c5fe0, sends message 0x5c, the office-swap request p (an AMTTRADE, built by amt_SendOfficeSwap); returns the
+   slot cm_QueueSend gives it (lc.c's counter-espionage wrapper 0x5cb1e0 waits on it) */
 
-void cm_SendTradeMessage(char *p)
+int cm_SendTradeMessage(AMTTRADE *p)
 {
     G17MSG m;
 
     m.type = 0x5c;
-    *(G17B10 *)m.data = *(G17B10 *)p;
-    cm_QueueSend(&m);
+    m.trade = *p;
+    return cm_QueueSend(&m);
 }
 /* 0x4c6020, message 0x5d */
 

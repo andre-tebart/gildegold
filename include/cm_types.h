@@ -684,6 +684,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17CHARIDMSG skills;            /* 0x10, message 0x43 */
         AMTAPP app;                     /* 0x10, message 0x44 */
         AMTMSG office;                  /* 0x10, message 0x45 */
+        AMTTRADE trade;                 /* 0x10, message 0x5c */
         GVDECMSG decision;              /* 0x10, message 0x46 */
         G17CHARCLEARMSG clear;          /* 0x10, message 0x47 */
         G17SETJOBMSG setJob;            /* 0x10, message 0x48 */
