@@ -422,7 +422,7 @@ extern int ch_CurrentScriptGroup;
 extern char ch_StepSample[];
 extern int d2_CutsceneActive;
 extern unsigned sv_SceneEventTime;  /* 0x6237c8, sv.h */
-extern GAPDATA full_data_6f2314[];
+extern struct AIOBJ *sv_LastRoom;  /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building) */
 extern int snd_RoomBank;
 extern int sv_FrameBase;
 extern int sv_FrameDepth;
@@ -10104,7 +10104,7 @@ void ai_EnterBuilding(unsigned char *param_1, int param_2)
     sv_ResetSelection();
     sv_ClearSelection();
     kind = U_I((unsigned)&d3_CurrentScene);
-    U_I((unsigned)&full_data_6f2314) = 0;
+    sv_LastRoom = 0;
     *(short *)(param_1 + 0x29) = (short)param_2;
     saved1 = U_I((unsigned)&sv_ViewPosX);
     saved2 = U_I((unsigned)&sv_ViewPosY);
@@ -10218,7 +10218,7 @@ void ai_EnterBuilding(unsigned char *param_1, int param_2)
             default: ai_PumpFrames(room); break;
             }
             ai_CampaignStep(0x1a, room, 0, 0);
-            U_I((unsigned)&full_data_6f2314) = (int)room;
+            sv_LastRoom = (struct AIOBJ *)room;
             /* ROUGH: 0x4284a0 / 0x429e90 / 0x52bb70 of the device record and 0x5fb5b0 callback +0x294 */
             if (U_I((unsigned)&evt_LastId) != -1)
                 sv_RunFramesUntilStopped(U_I((unsigned)&evt_LastId));

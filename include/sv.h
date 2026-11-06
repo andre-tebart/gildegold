@@ -352,6 +352,7 @@ extern int sv_CharsOn;                                    /* 0x623eac */
 extern int sv_WorldOn;                                    /* 0x623eb0 */
 extern int sv_CityPanelOn;                                    /* 0x623eb4 */
 extern unsigned char sv_InMissionComplete;                    /* 0x6f23f1 */
+extern struct AIOBJ *sv_LastRoom;              /* 0x6f2314, the room whose handler ai_EnterBuilding ran last (cleared on entering a building) */
 extern int sv_PendingMoney;                    /* 0x6f22dc, the money the money panel adds to the player's (the credit window: the limit minus the amount chosen; the transport window: minus the goods' total) */
 extern int d3t_Snow;                                    /* 0x76061c */
 extern int d3_SkyLayers[6];                                 /* 0x760620, the sky layer handles (sv creates 0 .. 2) */
