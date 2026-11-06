@@ -12814,7 +12814,15 @@ char * he_NextEvent(void);
    the text 0x19fa. Else the text 0x19f7 (the owner, target) and the buttons: the first posts the spy message 0x40
    (the target, the guild building, up to eight selected characters as ids, flags 1; the text 0x1a5e when nobody
    is selected), the second and a right click close it. The selection is cleared after the window; returns 1 once
-   the spying was ordered */
+   the spying was ordered
+   @deep Read whole against the original and reconstructed as ai_BriberyWindow's sibling; every call,
+   argument, store and branch matches (ours 241, the original 242). Left: register allocation. The original
+   keeps the uncovered counter in a stack slot (inc dword ptr [esp+0x10], +0x118) and bld / n / the type
+   pointer in esi / edi / ebp; ours keeps uncovered in ebp (xor ebp, ebp at +0x12, inc ebp at +0x115) and
+   the others in edx / esi / edi, so the result flag moves to [esp+0x10] (+0x27e, +0x2f0). Tried: the two
+   declarations swapped (no change). The message fields are scheduled differently (the original loads
+   target->id before the ids memset, +0x213); the prover stops there (the same value loaded at another
+   time). */
 int ai_GuildSpyWindow(int ctx, AIBLD *target)
 {
     int done;
