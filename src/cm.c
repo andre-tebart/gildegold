@@ -6718,7 +6718,7 @@ unsigned int *cm_LobbyPlayerList()
 {
     return cm_LobbyList;
 }
-/* 0x4cd5e0 */
+/* 0x4cd5e0, the lobby record (CMLOBBYPLAYER) of the player id, else a free one; 0 for id 0 */
 
 char *cm_LobbyFindPlayer(int id)
 {
