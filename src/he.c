@@ -24693,11 +24693,12 @@ void he_RunMeeting(int ev)
     gm_AddTime(&e->end, 0x16, 0, 0);
     cm_SendExSetHE(-1, ev);
 }
-/* 0x5726a0, the alloc of the event 0x91: state 0 */
-
+/* 0x5726a0, the alloc of the meeting scene event 0x91: stage 0 */
 void he_AllocMeetingScene(int ev)
 {
-    HM_I(ev, 0x70) = 0;
+    AIJOB *e = (AIJOB *)ev;
+
+    e->stage = 0;
 }
 /* 0x5726b0, the run of the event 0x91 (the meeting scene object): while the partner event 0x90 (he_FindEvent) is
    active and the building (gm_BuildQuery, the event's from) has a scene object, it keeps the scene object the event
