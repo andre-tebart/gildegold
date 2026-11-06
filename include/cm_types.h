@@ -441,6 +441,14 @@ typedef struct G17MONEYMSG {            /* 8 bytes, the data of message 0x5a (cm
     int delta;                          /* 0x04, added to its +0x194 */
 } G17MONEYMSG;
 
+typedef struct G17HELDROUNDSMSG {       /* 12 bytes, the data of message 0x5b (cm_SendMessage5b, its handler
+                                           0x4ccb10 adds delta to the character's heldRounds +0x1b1, clamped
+                                           0..0xff, and passes all to amt_ClearOfficesIfAll) */
+    int charId;                         /* 0x00, the character */
+    int delta;                          /* 0x04, added to its heldRounds */
+    int all;                            /* 0x08, amt_ClearOfficesIfAll's all */
+} G17HELDROUNDSMSG;
+
 typedef struct G17REMOVEMSG {           /* 12 bytes, the data of message 0x2b (handler 0x4c9450) */
     int holder;                         /* 0x00, the id of the building, character or object holding it (gm_FindById) */
     int objId;                          /* 0x04, of a building: the id of its object whose list holds it (gm_Query key 1),
@@ -714,6 +722,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17PARTYMSG leaveParty;         /* 0x10, message 0x2a */
         G17PARTYIDMSG cancelParty;      /* 0x10, message 0x58 */
         G17MONEYMSG money;              /* 0x10, message 0x5a */
+        G17HELDROUNDSMSG heldRounds;    /* 0x10, message 0x5b */
         G17REMOVEMSG remove;            /* 0x10, message 0x2b */
         G17PLANTMSG plant;              /* 0x10, message 0x2c */
         G17WALKMSG walk;                /* 0x10, message 0x2e */

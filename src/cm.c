@@ -2175,16 +2175,17 @@ void cm_SendMoneyDelta(int a, int b)
     m.money.delta = b;
     cm_QueueSend(&m);
 }
-/* 0x4c5fa0, message 0x5b */
+/* 0x4c5fa0, sends message 0x5b: the heldRounds delta b of character a, with amt_ClearOfficesIfAll's all flag c
+   (its handler 0x4ccb10 adds b to heldRounds, clamped 0..0xff) */
 
 void cm_SendMessage5b(int a, int b, int c)
 {
     G17MSG m;
 
-    G17_I(m, 0) = a;
+    m.heldRounds.charId = a;
     m.type = 0x5b;
-    G17_I(m, 4) = b;
-    G17_I(m, 8) = c;
+    m.heldRounds.delta = b;
+    m.heldRounds.all = c;
     cm_QueueSend(&m);
 }
 /* 0x4c5fe0, message 0x5c: the 10-byte trade record p (the office-swap request of amt_SendOfficeSwap) */
