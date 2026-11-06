@@ -23769,7 +23769,7 @@ int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
 void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
-void he_PlunderFailNews(int *a, int b);   /* 0x570c70 */
+void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
 
 /* 0x5707a0, the run handler of the plunder event 0x8a ("PAKT MIT DEM TOD"; alloc he_AllocPlunder): stage -1 / -2,
    a missing agent (the netId +0xac) or one without health take the agent out of the event's group
@@ -23854,7 +23854,7 @@ void he_RunPlunder(int ev)
                 if (util_RandomU(2) != 0)
                     he_PlunderTakePrice(deal, &ai_CharsT[idx]);
                 else
-                    he_PlunderFailNews(deal, (int)&ai_CharsT[idx]);
+                    he_PlunderFailNews(deal, &ai_CharsT[idx]);
             }
         }
         p->at++;
@@ -23895,13 +23895,13 @@ void he_PlunderTakePrice(int *a, AICHAR *c)
     txt_Format(text, 0x40fe, c->id, a[3]);
     he_ShowNews(a[0], -1, text, 1, 0x5f4, 0);
 }
-/* 0x570c70, the text 0x40ff (the word of b) to a[0] (flag 1, 0x5f4) */
+/* 0x570c70, the text 0x40ff (the character's id) to a[0] (flag 1, 0x5f4) */
 
-void he_PlunderFailNews(int *a, int b)
+void he_PlunderFailNews(int *a, AICHAR *c)
 {
     char text[0x400];
 
-    txt_Format(text, 0x40ff, *(unsigned short *)b);
+    txt_Format(text, 0x40ff, c->id);
     he_ShowNews(a[0], -1, text, 1, 0x5f4, 0);
 }
 
@@ -23947,7 +23947,7 @@ void he_RunPlunderOffer(int ev)
         return;
     case 1:
         if (gm_CompareTime(&ai_Time, &e->end) > 0) {
-            he_PlunderFailNews(d->deal, (int)&ai_CharsT[ai_PlayerId]);
+            he_PlunderFailNews(d->deal, &ai_CharsT[ai_PlayerId]);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
             return;
@@ -23968,7 +23968,7 @@ void he_RunPlunderOffer(int ev)
             return;
         }
         if (id == 1) {
-            he_PlunderFailNews(d->deal, (int)&ai_CharsT[ai_PlayerId]);
+            he_PlunderFailNews(d->deal, &ai_CharsT[ai_PlayerId]);
             he_ReleaseSlot(ev);
             he_FreeEvent((int *)ev);
         }
@@ -23983,7 +23983,7 @@ int gm_ConvertMoney(int a, unsigned char k); /* 0x5085b0 */
 void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); /* 0x4c4830 */
 void cm_SendSetField(int a, int b, int c, int d, int e); /* 0x4c4a60 */
 void he_PlunderTakePrice(int *a, AICHAR *c);   /* 0x570bf0 */
-void he_PlunderFailNews(int *a, int b);   /* 0x570c70 */
+void he_PlunderFailNews(int *a, AICHAR *c);   /* 0x570c70 */
 int he_OpenEventSlot();                 /* 0x53d6f0 */
 int gm_ClockSeason();                 /* 0x4fe350 */
 int gm_BuildingSkill();                 /* 0x5092e0 */
