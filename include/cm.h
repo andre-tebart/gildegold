@@ -303,7 +303,7 @@ int cm_CheckApplication(G17MSG *m);                                             
 int cm_CheckOfficeMessage(G17MSG *m);                                                     /* 0x4c67a0, check of 0x45 */
 int cm_CheckDarkCorner(G17MSG *m);                                                     /* 0x4c67c0, check of 0x53 */
 int cm_CheckTableRequest(G17MSG *m);                                                     /* 0x4c6870, check of 0x54 */
-int ai_Unk4c69c0(G17MSG *m);                                                     /* 0x4c69c0, check of 0x59 */
+int cm_CheckCutsceneReady(G17MSG *m);                                                     /* 0x4c69c0, check of 0x59 */
 int ai_Unk4c6a20(G17MSG *m, G17STAT *s);                                         /* 0x4c6a20, handler of 0, 3, 5..7 */
 int ai_Unk4c6a50(G17MSG *m, G17STAT *s);                                         /* 0x4c6a50, handler of 1 */
 int ai_Unk4c6a60(G17MSG *m, G17STAT *s);                                         /* 0x4c6a60, handler of 4 */
