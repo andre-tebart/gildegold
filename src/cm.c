@@ -6916,18 +6916,19 @@ char *cm_CharWeaponAny(char *c)
     }
     return ai_FindWeaponRecord(0);
 }
-/* 0x4cda50, as 0x4cda00; a record of kind 1 / 2 whose entry has nothing left (+0x20) is not taken */
+/* 0x4cda50, as cm_CharWeaponAny; a record of kind 1 / 2 whose item has nothing left (AIOBJ.usesLeft) is not taken */
 
 char *cm_CharWeapon(char *c)
 {
-    char *q, *r;
+    AIOBJ *q;
+    AIWEAPON *r;
 
-    for (q = gm_Query(*(int *)(c + 0x178), 1, 5); q != 0; q = gm_QueryNext()) {
-        r = ai_FindWeaponRecord(*(unsigned short *)q);
+    for (q = (AIOBJ *)gm_Query(((AICHAR *)c)->inventory, 1, 5); q != 0; q = (AIOBJ *)gm_QueryNext()) {
+        r = (AIWEAPON *)ai_FindWeaponRecord(q->id);
         if (r != 0) {
-            if ((*(int *)(r + 0x58) == 1 || *(int *)(r + 0x58) == 2) && *(int *)(q + 0x20) <= 0)
+            if ((r->kind == 1 || r->kind == 2) && q->usesLeft <= 0)
                 return ai_FindWeaponRecord(0);
-            return r;
+            return (char *)r;
         }
     }
     return ai_FindWeaponRecord(0);
