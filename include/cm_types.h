@@ -191,6 +191,11 @@ typedef struct G17TAKEOVERMSG {         /* 8 bytes, the data of message 0xd (0x4
     int taken;                          /* 0x04, the character taken over */
 } G17TAKEOVERMSG;
 
+typedef struct G17DELETEMSG {           /* 2 bytes, the data of message 0xe (cm_SendDeleteObject, its handler 0x4c6ec0
+                                           removes the object id) */
+    unsigned short objectId;            /* 0x00 */
+} G17DELETEMSG;
+
 typedef struct G17SELLMSG {             /* 0x17 bytes, the data of message 0x11 (cm_SendExSellObject, its handler 0x4c70b0
                                            "cm_ExSellObjekt") */
     int buyer;                          /* 0x00, the id (building, object or character) the goods go to, -1: none */
@@ -481,6 +486,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17CHARMSG chr;                 /* 0x10, message 0xb */
         G17NAMEDCHARMSG named;          /* 0x10, message 0xc */
         G17TAKEOVERMSG takeover;        /* 0x10, message 0xd */
+        G17DELETEMSG del;               /* 0x10, message 0xe */
         G17SELLMSG sell;                /* 0x10, message 0x11 */
         G17MAKEMSG make;                /* 0x10, message 0x12 */
         G17MOVEMSG move;                /* 0x10, message 0x13 */

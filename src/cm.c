@@ -1198,7 +1198,7 @@ void cm_SendDeleteObject(int id)
     G17MSG m;
 
     m.type = 0xe;
-    G17_S(m, 0) = (short)id;
+    m.del.objectId = (unsigned short)id;
     cm_QueueSend(&m);
 }
 /* 0x4c47e0, message 0xf: moves d of the goods / money of player c from a to b (-1: none); returns its send slot (cm_GetSlotState) */
