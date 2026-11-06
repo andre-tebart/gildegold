@@ -1231,6 +1231,13 @@ typedef struct HEPLUNDER {              /* the plunder event 0x8a's words over A
     unsigned short victims[5];          /* 0xc8, the character picked at each building (ai_PickPartnerRandomWalk's
                                            exclusion list: the run handler passes it with n = 4) */
 } HEPLUNDER;
+typedef struct HEPLUNDERDEAL {          /* the plunder offer 0x8b's words over AIJOB's union (the message's arg[0..3] from
+                                           he_RunPlunder; its run handler 0x570cc0) */
+    char pad00[0xac];
+    int deal[4];                        /* 0xac, the deal he_PlunderTakePrice / he_PlunderFailNews take: [0] the client's
+                                           netId (the plunder event's character), [1] the agent's, [2] the victim's,
+                                           [3] the price */
+} HEPLUNDERDEAL;
 #define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
                                            ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
@@ -23187,7 +23194,7 @@ void he_Unk571640(int ev);          /* 0x571640 */
 void he_AllocPlunder(int ev);          /* 0x5706e0 */
 void he_RunPlunder(int ev);          /* 0x5707a0 */
 void he_Unk572860(int ev);          /* 0x572860 */
-void he_Unk570cc0(int ev);          /* 0x570cc0 */
+void he_RunPlunderOffer(int ev);          /* 0x570cc0 */
 void he_Unk571990(int ev);          /* 0x571990 */
 void he_Unk5719e0(int ev);          /* 0x5719e0 */
 void he_Unk571ac0(int ev);          /* 0x571ac0 */
@@ -23209,7 +23216,7 @@ int he_RegisterEventTypes88(void)
             if (he_SetEventHandlers(0x8c, (void *)he_Unk570ef0, (void *)he_Unk571000) == 0) {
                 if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                     if (he_SetEventHandlers(0x8a, (void *)he_AllocPlunder, (void *)he_RunPlunder) == 0) {
-                        if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_Unk570cc0) == 0) {
+                        if (he_SetEventHandlers(0x8b, (void *)he_Unk572860, (void *)he_RunPlunderOffer) == 0) {
                             if (he_SetEventHandlers(0x8d, (void *)he_Unk571550, (void *)he_Unk571640) == 0) {
                                 if (he_SetEventHandlers(0x8e, (void *)he_Unk571990, (void *)he_Unk5719e0) == 0) {
                                     if (he_SetEventHandlers(0x8f, (void *)he_Unk571ac0, (void *)he_Unk571c30) == 0) {
@@ -23752,64 +23759,73 @@ void he_PlunderFailNews(int *a, int b)
 
 int he_OpenEventSlot();                 /* 0x53d6f0 */
 
-/* 0x570cc0, the run of the event 0x8b (a fight / attack of the character +0xac on the player +8): a missing character or a player without the bit 1 of +0x770d4c -> state -2; -2 releases the window +0x74 (0x53d800) and frees; state 0 opens the window 0x53d6f0 (0x6269c0, 0x5ec), 0x475600 / 0x475f70, the texts 0x602568 and 0x40fd and 0x4c27d0 (-7, .., 0x628ecc, -1, 0), state 1; state 1: due (0x4fe210) -> text 0x40ff (0x570c70), 0x53d800, free; the window missing -> state 0; the actor 0xf8aac4 != window +8 or 0xf8a668 -1 -> nothing; 0xf8a668 0 -> 0x570bf0; 1 -> 0x570c70, then 0x53d800 and free. ROUGH */
-void he_Unk570cc0(int ev)
+/* 0x570cc0, the run handler of the plunder offer 0x8b (he_RunPlunder sends it to a player victim; its words over
+   AIJOB's union are the plunder deal HEPLUNDERDEAL): a missing client (the deal's netId) or a player whose
+   flags1cc bit 0 is set (he_RunPlunder skips such a victim) end it (stage -2: the event bar slot is released, the event freed). Stage 0 opens the
+   offer window ("Berufe\Messagebox_Meisterpruefung") with the text 0x40fd (the client, the price) and the voice
+   "_NACHRICHTEN_FRIEDHOF_09", stage 1; a window that could not be opened frees the event. Stage 1: past the
+   due time the offer counts as refused (he_PlunderFailNews); without the window back to stage 0; a click on its
+   button 0 pays the price (he_PlunderTakePrice), on button 1 refuses; either ends the event. */
+void he_RunPlunderOffer(int ev)
 {
-    char *per = (char *)gm_FindChar(HM_I(ev, 0xac));
-    int state;
+    AIJOB *e = (AIJOB *)ev;
+    HEPLUNDERDEAL *d = (HEPLUNDERDEAL *)ev;
+    AICHAR *client;
+    int id;
 
-    if (per == 0 || (HM_B(((unsigned)&ai_Selected + 0x44) + *(unsigned short *)(ev + 8) * 0x21c, 0) & 1) == 0)
-        HM_I(ev, 0x70) = -2;
-    state = HM_I(ev, 0x70);
-    if (state == -2) {
-        if (HM_I(ev, 0x74) != 0)
+    client = (AICHAR *)gm_FindChar(d->deal[0]);
+    if (client == 0 || (ai_CharsT[e->chr].flags1cc & 1))
+        e->stage = -2;
+    if (e->stage == -2) {
+        if (e->slot != 0)
             he_ReleaseSlot(ev);
         he_FreeEvent((int *)ev);
         return;
     }
-    if (state == 0) {
-        if (HM_I(ev, 0x74) == 0)
+    switch (e->stage) {
+    case 0:
+        if (e->slot == 0)
             he_OpenEventSlot(ev, 0, 0, "Berufe\\Messagebox_Meisterpruefung", 0x5ec);
-        if (HM_I(ev, 0x74) == 0) {
+        if (e->slot == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d2_CentreViewWindows(HM_I(HM_I(ev, 0x74), 8));
-        d2_SetForm(HM_I(HM_I(ev, 0x74), 8), 0);
-        io_PrintText((unsigned)"$C");
-        io_PrintText(0x40fd, *(unsigned short *)per, HM_I(ev, 0xb8));
-        snd_QueueVoice(-7, 0, (char *)(unsigned)&full_data_628ecc, -1, 0);
-        HM_I(ev, 0x70) = 1;
+        d2_CentreViewWindows(e->slot->win);
+        d2_SetForm(e->slot->win, 0);
+        io_PrintText("$C");
+        io_PrintText((char *)0x40fd, client->id, d->deal[3]);
+        snd_QueueVoice(-7, 0, "_NACHRICHTEN_FRIEDHOF_09", -1, 0);
+        e->stage = 1;
+        return;
+    case 1:
+        if (gm_CompareTime(&ai_Time, &e->end) > 0) {
+            he_PlunderFailNews(d->deal, (int)&ai_CharsT[ai_PlayerId]);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (e->slot == 0) {
+            e->stage = 0;
+            return;
+        }
+        if (d2_ClickedForm != e->slot->win)
+            return;
+        id = d2_ClickedId;
+        if (id == -1)
+            return;
+        if (id == 0) {
+            he_PlunderTakePrice(d->deal, (int)&ai_CharsT[ai_PlayerId]);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+            return;
+        }
+        if (id == 1) {
+            he_PlunderFailNews(d->deal, (int)&ai_CharsT[ai_PlayerId]);
+            he_ReleaseSlot(ev);
+            he_FreeEvent((int *)ev);
+        }
         return;
     }
-    if (state != 1)
-        return;
-    if (gm_CompareTime(&ai_Time, ev + 0x52) > 0) {
-        he_PlunderFailNews((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-        he_ReleaseSlot(ev);
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (HM_I(ev, 0x74) == 0) {
-        HM_I(ev, 0x70) = 0;
-        return;
-    }
-    if (*(int *)(unsigned)&d2_ClickedForm != HM_I(HM_I(ev, 0x74), 8))
-        return;
-    state = *(int *)(unsigned)&d2_ClickedId;
-    if (state == -1)
-        return;
-    if (state == 0) {
-        he_PlunderTakePrice((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-        he_ReleaseSlot(ev);
-        he_FreeEvent((int *)ev);
-        return;
-    }
-    if (state != 1)
-        return;
-    he_PlunderFailNews((int *)(ev + 0xac), (unsigned)&ai_Chars + *(unsigned short *)(unsigned)&ai_PlayerId * 0x21c);
-    he_ReleaseSlot(ev);
-    he_FreeEvent((int *)ev);
 }
 
 int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 */
