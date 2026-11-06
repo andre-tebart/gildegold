@@ -22043,15 +22043,18 @@ void he_RunConstruction(int ev)
         break;
     }
 }
-/* 0x56cdd0, the alloc of an event of the type 0x4c: both clocks (+0x52 / +0x60) = the start clock (+0x44), due 10 units later (0x4fe140), state 0, +0xac = -1 */
+/* 0x56cdd0, the allocation handler of the mission check event 0x4c (he_RunMissionCheck): both clocks (end and
+   clock60) start at the event's start clock, the end is 10 minutes later, the stage is 0 and the slot is -1 */
 
-void he_AllocMissionCheck(int ev)
+void he_AllocMissionCheck(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = *(AITIME *)(ev + 0x44);
-    *(AITIME *)(ev + 0x60) = *(AITIME *)(ev + 0x44);
-    *(int *)(ev + 0x70) = 0;
-    *(int *)(ev + 0xac) = -1;
-    gm_AddTime(ev + 0x52, 0, 0xa, 0);
+    HEMISSIONCHECK *m = (HEMISSIONCHECK *)ev;
+
+    ev->end = ev->start;
+    ev->clock60 = ev->start;
+    ev->stage = 0;
+    m->slot = -1;
+    gm_AddTime(&ev->end, 0, 0xa, 0);
 }
 
 int ai_IsMissionFulfilled();
