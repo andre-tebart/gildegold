@@ -1269,6 +1269,9 @@ typedef struct HEGRAVETRAINING {        /* the training job 0x8f's words over AI
     int objId;                          /* 0xb4, the id of the building's object it trains at (0x211), -1: none */
     AITIME until;                       /* 0xb8, the time the training ends: 3 hours after the first due time */
 } HEGRAVETRAINING;
+#define MEETING_KINDS_LO 0x807c4116    /* the building kinds 1, 2, 4, 8, 0xa, 0xe, 0x12 .. 0x16 and 0x1f whose people a
+                                           meeting's disease reaches (he_Unk572310's 1 << kind mask, kinds below 0x20) */
+#define MEETING_KINDS_HI 1             /* the same for the kinds from 0x20 on: 0x20 */
 #define PLUNDER_PARTNER_FLAGS 0x700408  /* the partner-chain flags the plunder event's victim search passes
                                            ai_PickPartnerRandomWalk (an immediate, no address; the bits are not read) */
 typedef struct HEMEETING {              /* the meeting event 0x90's words over AIJOB's union (its alloc he_AllocMeeting and
@@ -24341,7 +24344,7 @@ void he_AllocMeeting(int ev)
 int gm_GetDisease();                 /* 0x5051d0 */
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v);                 /* 0x4c3c00 */
 
-/* 0x5720f0, the meeting's disease lottery (he_Unk572310 calls it per character): with the chance `chance`
+/* 0x5720f0, the meeting's disease lottery (he_SpreadMeetingDisease calls it per character): with the chance `chance`
    (util_RandomF) the character ch catches one of the diseases of the group `kind` that it does not have yet (its
    word v02c holds the diseases 2 .. 9 as bit fields): kind 2 the diseases 2 / 3, kind 1 the diseases 4 / 5, any
    other 6 and a coin throw of 7 / 8 (one of two free ones by a coin throw). The disease's record (gm_GetDisease)
@@ -24430,71 +24433,95 @@ int he_CatchMeetingDisease(AICHAR *ch, float chance, int kind, float *health)
     }
     return 0;
 }
-/* 0x572310, the meeting search of the event 0x90 (a = the building, b = the radius kind 2 / 1 / other, c = the kind of the meeting, d = the low 2 bits of the character's +4): the building pointer +0x61 must exist; each of the 0x100 record slots of 0x889f74 (0xa9 bytes: the kind of 0x7e3f30 and the player word +0x27) whose kind bit (0x807c4116 / bit 0) is allowed, with a building and a character +0x61 within the radius (1500 / 800 / 400) of the building: each character record 0x770b80 (0x21c, id word != -1, kind +2 < 10, +4 & 3 == d) that this record owns (+0x16c = 3, +0x170 = 2, own building = 1) gets the lottery 0x5720f0 (chance (1 - dist / radius) * 0.5 + 0.25, c): mode 3 -> 0x5417d0 (0, ch, building, the record, v, f), mode 1 of a kind 6 / 7 -> the text 0x163c and the message 0x53dda0 (+0x5f7, 0x631090) */
-
-
-void he_Unk572310(int a, int b, int c, unsigned int d)
+/* 0x572310, the disease spread of a meeting (the meeting event 0x90's run handler calls it): around the building
+   b (it needs its 3D object) every other building of a kind in the meeting mask (the kinds 1, 2, 4, 8, 0xa, 0xe,
+   0x12 .. 0x16, 0x1f and 0x20) with an owner who is not the player and an object within the radius (radius kind 2:
+   1500, 1: 800, else 400) is visited; each character of the round's quarter (netId & 3 == group: the meeting
+   passes its round HEMEETING.rounds) who works there (bld:
+   mode 3), lives there (bld2: mode 2) or owns it (mode 1) gets the disease lottery he_CatchMeetingDisease of the
+   kind group `kind` with the chance (1 - dist / radius) * 0.5 + 0.25. A disease caught by a worker is reported as
+   the owner's character illness (he_CharIllness); one caught by a player owner (kind 6 / 7) is told to it (the
+   text 0x163c with the disease's name 0x1632 + kind). The positions are three 16-byte vectors as the original's
+   frame shows (0x844: the text, five words, three D3VECTOR4).
+   @deep read whole against 0x572310..0x5725ab and fixed the meaning (all 768 characters, not 0x80; the
+   building type through ai_BTypesT with the unsigned kind > 0x1f split; the 0x807c4116 / 1 kind masks; the
+   player test against *ai_PlayerChar; bld 3 / bld2 2 / owner 1 modes; the chance (ai_FloatOne - dist /
+   lim) * 0.5f + 0.25f; he_CharIllness / the 0x163c news); the frame now equals the original's 0x844 with
+   three D3VECTOR4 locals (pos, at, d). Left: instruction selection and allocation only - the original
+   copies the object positions with the FPU ('+ fld dword ptr [eax + 0x4c]; fstp dword ptr [esp + 0x14]'
+   and keeps at.x / at.y on the FPU stack, storing only at.z) where ours copies with integer moves ('- mov
+   ecx, dword ptr [eax + 0x4c] ... mov dword ptr [esp + 0x24], ecx'), and the register choice that follows
+   (regs 60). Tried: field-wise and struct copies, D3VECTOR / D3VECTOR4 / separate floats, * 1.0f /
+   (float)(double) spellings - VC6 kept the integer copy */
+void he_SpreadMeetingDisease(AIBLD *b, int radiusKind, int kind, int group)
 {
     char text[0x800];
-    char *per, *rec, *other, *bldrec, *ch;
-    float x, y, z, dist, lim, f;
+    float lim, dist, f;
+    D3VECTOR4 pos, at, d;
     unsigned int lo, hi;
     int i, n, v, mode;
-    unsigned short bld;
+    AIBTYPE *bt;
+    AIBLD *rec;
+    AICHAR *owner, *ch;
+    D3OBJECT *o;
 
-    per = *(char **)(a + 0x61);
-    if (per == 0)
+    if (b->object == 0)
         return;
-    if (b == 2)
+    if (radiusKind == 2)
         lim = 1500.0f;
-    else if (b == 1)
+    else if (radiusKind == 1)
         lim = 800.0f;
     else
         lim = 400.0f;
-    x = *(float *)(per + 0x4c);
-    y = *(float *)(per + 0x50);
-    z = *(float *)(per + 0x54);
-    for (n = 0; n < 0xa900; n += 0xa9) {
-        rec = (char *)(*(int *)(unsigned)&ai_Blds + n);
+    o = (D3OBJECT *)b->object;
+    pos.x = o->pos.x;
+    pos.y = o->pos.y;
+    pos.z = o->pos.z;
+    for (n = 0; n < 0x100; n++) {
+        rec = &ai_BldsT[n];
         lo = 0;
         hi = 0;
-        if (*(unsigned char *)((unsigned)&ai_BTypes + rec[0] * 0x24d) < 0x20)
-            lo = 1 << *(unsigned char *)((unsigned)&ai_BTypes + rec[0] * 0x24d);
+        bt = &ai_BTypesT[rec->type];
+        if ((unsigned char)bt->kind > 0x1f)
+            hi = 1 << ((unsigned char)bt->kind - 0x20);
         else
-            hi = 1 << (*(unsigned char *)((unsigned)&ai_BTypes + rec[0] * 0x24d) - 0x20);
-        bld = *(unsigned short *)(rec + 0x27);
-        if (bld == 0xffff || bld == *(unsigned short *)(unsigned)&ai_PlayerChar)
+            lo = 1 << (unsigned char)bt->kind;
+        if (rec->owner == 0xffff || rec->owner == *ai_PlayerChar)
             continue;
-        other = *(char **)(rec + 0x61);
-        if (other == 0)
+        if (rec->object == 0)
             continue;
-        if ((lo & 0x807c4116) == 0 && (hi & 1) == 0)
+        if ((lo & MEETING_KINDS_LO) == 0 && (hi & MEETING_KINDS_HI) == 0)
             continue;
-        dist = sqrt((x - *(float *)(other + 0x4c)) * (x - *(float *)(other + 0x4c)) +
-                    (y - *(float *)(other + 0x50)) * (y - *(float *)(other + 0x50)) +
-                    (z - *(float *)(other + 0x54)) * (z - *(float *)(other + 0x54)));
+        o = (D3OBJECT *)rec->object;
+        at.x = o->pos.x;
+        at.y = o->pos.y;
+        at.z = o->pos.z;
+        d.x = pos.x - at.x;
+        d.y = pos.y - at.y;
+        d.z = pos.z - at.z;
+        owner = &ai_CharsT[rec->owner];
+        dist = (float)sqrt(d.z * d.z + d.y * d.y + d.x * d.x);
         if (dist > lim)
             continue;
-        bldrec = (char *)((unsigned)&ai_Chars + bld * 0x21c);
-        for (i = 0; i < 0x80; i++) {
-            ch = (char *)((unsigned)&ai_Chars + i * 0x21c);
-            if (*(short *)ch == -1 || HM_B(ch, 2) >= 0xa || (HM_I(ch, 4) & 3) != (int)d)
+        for (i = 0; i < 0x300; i++) {
+            ch = &ai_CharsT[i];
+            if (ch->id == 0xffff || ch->kind >= 0xa || (int)(ch->netId & 3) != group)
                 continue;
-            if (HM_I(ch, 0x16c) != 0 && HM_I(ch, 0x16c) == (int)rec)
+            if (ch->bld != 0 && ch->bld == rec)
                 mode = 3;
-            else if (HM_I(ch, 0x170) != 0 && HM_I(ch, 0x170) == (int)rec)
+            else if (ch->bld2 != 0 && ch->bld2 == rec)
                 mode = 2;
-            else if (bldrec != ch)
-                continue;
-            else
+            else if (owner == ch)
                 mode = 1;
-            v = he_CatchMeetingDisease((AICHAR *)ch, (1.0f - dist / lim) * 0.5f + 0.25f, c, &f);
+            else
+                continue;
+            v = he_CatchMeetingDisease(ch, (ai_FloatOne - dist / lim) * 0.5f + 0.25f, kind, &f);
             if (v != 0) {
                 if (mode == 3)
-                    he_CharIllness(0, (AICHAR *)ch, (AICHAR *)bldrec, (AIBLD *)rec, v, f);
-                else if (mode == 1 && (HM_B(ch, 2) == 6 || HM_B(ch, 2) == 7)) {
+                    he_CharIllness(0, ch, owner, rec, v, f);
+                else if (mode == 1 && (ch->kind == 6 || ch->kind == 7)) {
                     txt_Format(text, 0x163c, v + 0x1632);
-                    he_ShowNews(HM_I(ch, 4), -1, text, 0, 0x5f7, (char *)(unsigned)&ch_EmptyName);
+                    he_ShowNews(ch->netId, -1, text, 0, 0x5f7, ch_EmptyName);
                 }
             }
         }
@@ -24519,7 +24546,7 @@ void he_Unk5725b0(int ev)
     if (HM_I(ev, 0x70) != 0)
         return;
     if (HM_I(ev, 0xb8) < 4) {
-        he_Unk572310((int)bld, HM_I(ev, 0xb0), HM_I(ev, 0xb4), HM_I(ev, 0xb8));
+        he_SpreadMeetingDisease((AIBLD *)bld, HM_I(ev, 0xb0), HM_I(ev, 0xb4), HM_I(ev, 0xb8));
         gm_AddTime(ev + 0x52, 0, 0x1e, 0);
         HM_I(ev, 0xb8) = HM_I(ev, 0xb8) + 1;
         cm_SendExSetHE(0, ev);
