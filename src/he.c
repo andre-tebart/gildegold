@@ -25684,65 +25684,73 @@ done:                               /* no contact object: -1 */
     m->bld = -1;
     e->stage = 0;
 }
-/* 0x5746b0, the scene of the event 0xa1 (the meeting, ROUGH): the figure +0xc (0x505df0) and the building +0x10 (0x4fea50); the
-   non-zero words +0xc8 .. +0xce are looked up (0x4a5760 (per, n, words, out)); each found record pays the figure through
-   0x4c4880 (per +4, -1, 1, 0x6f1bc5, 0, word) or, from the level +0xe 3 and the sixth entry on, raises +0xac by the value
-   (0x5089c0 / 0x5de518); text 0x41f2 (0x41f1 when none paid, 0x41f0 with the count, 0x5176d0), the payment (0x4c4830) and the
-   message 0x5ff (0x53dda0) to per +4 */
-
-void he_Unk5746b0(int ev)
+/* 0x5746b0, the payout at the end of the meeting event 0xa1 (its run 0x5748d0): the character netId (gm_FindChar) and
+   the building from (gm_FindById) must exist. The meeting's objects objs[] (the non-zero ones) are looked up in his
+   inventory (ai_FindWantedItems: per object the entry, st[0] the inventory's entries); an object he already holds 3 of,
+   or one he lacks while his inventory has 6 entries, adds its price (gm_GoodsPrice) to the income; any other he gets
+   (cm_SendExSellObject, one of it). He is paid the income (cm_SendMoveGoodsUnchecked) and told (the news 0x5ff, the
+   text 0x41f0 with the building around 0x41f2 (objects given) or 0x41f1 (none), both with the income). The objects
+   are read by the record's index from objs[] again (equal to the found ones while no zero lies between them). */
+void he_MeetingPayout(int ev)
 {
-    char text[0x200];
-    char text2[0x100];
-    char *per, *bld;
-    int tab[4][4];
-    int words[4], pay[4];
-    int n, i, k, np;
+    AIJOB *e = (AIJOB *)ev;
+    HEMEET4 *m = (HEMEET4 *)ev;
+    char *bld;
+    int st[3];                          /* ai_FindWantedItems: st[0] the inventory's entries */
+    int given[4];
+    int want[4][4];                     /* ai_FindWantedItems' records: [0] the object, [3] the inventory entry (AIOBJ) */
+    char text[0x100];
+    char text2[0x200];
+    AICHAR *per;
+    AIOBJ *entry;
+    unsigned short *obj;
+    int (*row)[4];
+    int n, i, ngiven;
 
-    per = (char *)gm_FindChar(HM_I(ev, 0xc));
+    per = (AICHAR *)gm_FindChar(e->netId);
     if (per == 0)
         return;
-    gm_FindById(&bld, 0, 0, HM_I(ev, 0x10));
+    gm_FindById(&bld, 0, 0, e->from);
     if (bld == 0)
         return;
-    memset(tab, 0, sizeof tab);
+    memset(want, 0, sizeof(want));
     n = 0;
-    for (k = 0; k < 4; k++) {
-        unsigned short v = *(unsigned short *)(ev + 0xc8 + k * 2);
-        if (v != 0)
-            tab[n++][0] = v;
+    for (i = 0; i < 4; i++) {
+        if (m->objs[i] != 0)
+            want[n++][0] = m->objs[i];
     }
-    np = 0;
     if (n != 0) {
-        ai_FindWantedItems(per, n, tab, &words[0]);
-        for (i = 0; i < n; i++) {
-            char *rec = (char *)tab[i][1];
-            if (rec != 0) {
-                if (HM_I(rec, 0xe) >= 3) {
-                    gm_GoodsPrice(tab[i][0], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                    HM_I(ev, 0xac) = HM_I(ev, 0xac) + _ftol();
+        ai_FindWantedItems(per, n, want, st);
+        ngiven = 0;
+        obj = m->objs;
+        row = want;
+        for (i = 0; i < n; i++, obj++, row++) {
+            if (*obj == 0)
+                continue;
+            entry = (AIOBJ *)(*row)[3];
+            if (entry != 0) {
+                if (entry->count >= 3) {
+                    m->income += (int)gm_GoodsPrice(*obj, ai_OwnPlayer);
                 } else {
-                    cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, tab[i][0]);
-                    pay[np++] = tab[i][0];
+                    given[ngiven++] = *obj;
+                    cm_SendExSellObject(per->netId, -1, *obj, 1, ai_OwnPlayer, 0);
                 }
-            } else if (words[0] >= 6) {
-                gm_GoodsPrice(tab[i][0], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                HM_I(ev, 0xac) = HM_I(ev, 0xac) + _ftol();
+            } else if (st[0] >= 6) {
+                m->income += (int)gm_GoodsPrice(*obj, ai_OwnPlayer);
             } else {
-                cm_SendExSellObject(HM_I(per, 4), -1, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0, tab[i][0]);
-                pay[np++] = tab[i][0];
+                st[0]++;
+                given[ngiven++] = *obj;
+                cm_SendExSellObject(per->netId, -1, *obj, 1, ai_OwnPlayer, 0);
             }
         }
-        if (np != 0)
-            txt_Format(text, 0x41f2, HM_I(ev, 0xac));
-        else
-            txt_Format(text, 0x41f1, HM_I(ev, 0xac));
-    } else {
-        txt_Format(text, 0x41f1, HM_I(ev, 0xac));
     }
-    cm_SendMoveGoodsUnchecked(HM_I(per, 4), -1, *(unsigned char *)(unsigned)&ai_OwnPlayer, HM_I(ev, 0xac));
-    txt_Format(text2, 0x41f0, np, text);
-    he_ShowNews(HM_I(per, 4), -1, text2, 0, 0x5ff, 0);
+    if (n != 0 && ngiven != 0)
+        txt_Format(text, 0x41f2, m->income);
+    else
+        txt_Format(text, 0x41f1, m->income);
+    cm_SendMoveGoodsUnchecked(per->netId, -1, ai_OwnPlayer, m->income);
+    txt_Format(text2, 0x41f0, bld, text);
+    he_ShowNews(per->netId, -1, text2, 0, 0x5ff, 0);
 }
 
 void *gm_GetGebaeudeHauptraum(unsigned char *b); /* 0x501ce0 */
@@ -25799,7 +25807,7 @@ void he_Unk5748d0(int ev)
     if (state == 1) {
         sv_IsAtDoor(ev);
         sv_MoveToGroup(0, 0, 0x1f, ev);
-        he_Unk5746b0(ev);
+        he_MeetingPayout(ev);
         return;
     }
     if (state == 2) {
