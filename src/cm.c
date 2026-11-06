@@ -2140,7 +2140,7 @@ void cm_SendChrDelete(int a)
     G17MSG m;
 
     m.type = 0x57;
-    G17_I(m, 0) = a;
+    m.chrDelete.charId = a;
     cm_QueueSend(&m);
 }
 /* 0x4c5ef0, message 0x58 */
