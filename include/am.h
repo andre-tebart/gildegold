@@ -164,9 +164,9 @@ typedef struct AIARG {                  /* 0x18 bytes, what a decide callback fi
 
 typedef struct AIJOBX {                 /* a job (0x53e400 / 0x53e300 list) */
     char pad00[4];
-    int unk04;                          /* 0x04 */
+    int id;                             /* 0x04, the event id (ai.h AIJOB.id) */
     char pad08[0xa4];
-    int unkac;                          /* 0xac, a building id */
+    int bldId;                          /* 0xac, a building id (ai.h AIJOB.bldId) */
     union {
         int unkb0;                      /* 0xb0 */
         int price;                      /* 0xb0, of a building offer (kind 0x1b, +0xac the building) the asking price (0x497fa0 sets it against two thirds of the buyer's money) */
@@ -245,8 +245,8 @@ typedef struct AIBTX {                  /* 0x24d bytes, an AIBTYPE (ai.h) as the
         unsigned short b;               /* 0x0a5 */
     } p[64];                            /* 0x0a3, per entry of k: two more goods */
     char pad1a3[0xa4];
-    unsigned char unk247;               /* 0x247, a count (level) */
-    unsigned char unk248;               /* 0x248, its maximum */
+    unsigned char level;                /* 0x247, a count (level): ai.h AIBTYPE.level */
+    unsigned char maxLevel;             /* 0x248, its maximum: ai.h AIBTYPE.maxLevel */
     char pad249[4];
 } AIBTX;
 

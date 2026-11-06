@@ -4771,7 +4771,8 @@ int ai_ExecuteRepairBuilding(AIPER *p, AIARG *s1, AIARG *s2)
    one shared return 16 at the end (113 ins but 1027 bytes, reverted). Left: the unmerged credit tail
    (size), the found-loop's lea/mov scheduling (lea edx,[eax+eax*2] / mov cl,[eax+edx*4] vs add ecx,edi /
    lea / mov cl,[eax]), the lim slot ([esp+0x18] vs [esp+0x24]) and the v / r slot rotation in both credit
-   computations. Q2: AIBTX.unk247 (a per-type level count, 0x248 its maximum) has no evidenced name yet.
+   computations. Q2: AIBTX.level / AIBTX.maxLevel are ai.h AIBTYPE.level / maxLevel (the type's
+   level count and the top of its line).
    (size: 432 vs 409 instructions, explained: ours 432 vs 409: the 23 instructions are our second copy of
    the credit tail (fmul -0.5 / fadd 0.25 / fcompp / fnstsw / and / jne / the ai_DecideTakeCredit call /
    epilogue, ours 0x498452..0x4984a0): the original computes the kind 5 quotients and jumps into the kind 0
@@ -4839,7 +4840,7 @@ found:
     else
         ok[3] = 0;
     if (p->bld2) {
-        n = AI_BTX[p->bld2->type].unk247;
+        n = AI_BTX[p->bld2->type].level;
         for (i = 0; i <= n - 1; i++)
             ok[i] = 0;
     }
@@ -5209,15 +5210,15 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
             bt = &AI_BTX[AI_BLDX[i].type];
             k = gm_BuildingJob(bt->kind);
             if (k > 0 && k < 0x10) {
-                tot += bt->unk247;
+                tot += bt->level;
                 cnt++;
-                if (bt->unk247 == 1)
+                if (bt->level == 1)
                     ones++;
             }
         }
     }
     if (tot && (!p->bld2 || (p->bld2->type != 7
-            && (float)(AI_BTX[p->bld2->type].unk247 - AI_BTX[4].unk247 + 1) / tot < 0.33f))) {
+            && (float)(AI_BTX[p->bld2->type].level - AI_BTX[4].level + 1) / tot < 0.33f))) {
         AI_ZERO(&t1, sizeof(t1));
         AI_ZERO(&t1, sizeof(t1));
         r = ai_DecideBuildResidence(0x13, p, 0, &t1, &t2);
@@ -5233,13 +5234,13 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         bl = &AI_BLDX[i];
         if (bl->type && bl->owner == p->id && !(bl->flags5a & 0x41)) {
             bt = &AI_BTX[bl->type];
-            if (bt->unk247 < bt->unk248) {
+            if (bt->level < bt->maxLevel) {
                 k = gm_BuildingJob(bt->kind);
                 r = gm_TitleJobI(p->id, k);
                 if (r) {
                     n = gm_TitlesLeft(r);
                     n = n / 2 + n % 2;
-                    if (n > bt->unk247 && k != 7) {
+                    if (n > bt->level && k != 7) {
                         int v1, d1;
 
                         v1 = (int)(gm_BuildingKindValue(bl->type + 1) * 0.3f);
@@ -5259,7 +5260,7 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         o2->arg = 1;
                         return 0x13;
                     }
-                    if (k == 7 && n > bt->unk247)
+                    if (k == 7 && n > bt->level)
                         sel = bl->type + 1;
                 }
             }
@@ -5307,10 +5308,10 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
         s1.kind = 0;
         s2.kind = 0;
         for (bl = AI_501190_3(1, 5, k); s1.kind == 0 && bl; bl = AI_BUILDNEXT()) {
-            if (AI_BTX[bl->type].unk247 <= h && (bl->flags5a & 2)) {
+            if (AI_BTX[bl->type].level <= h && (bl->flags5a & 2)) {
                 for (j = AI_JOBS1B(); j; j = AI_JOBNEXT()) {
-                    if (j->unkac == bl->id) {
-                        v = j->unkb0;
+                    if (j->bldId == bl->id) {
+                        v = j->price;
                         if (lim < v) {
                             r = gm_EquipmentValue(bl, bl->level);
                             lim = v - lim;
@@ -5325,7 +5326,7 @@ int ai_DecideBuildBusiness(int a, AIPER *p, int b, AIARG *o1, AIARG *o2)
                         s1.ref = bl->id;
                         s1.arg = 1;
                         s2.kind = 8;
-                        s2.ref = j->unk04;
+                        s2.ref = j->id;
                         break;
                     }
                 }
