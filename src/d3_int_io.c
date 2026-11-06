@@ -496,7 +496,7 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
     D3VECTOR4 v;
     int col;
     int fcol;
-    float end, start;
+    int end, start;
     char cam[0x100];
     void *in;
     D3OBJECT *o, *b;
@@ -528,11 +528,11 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                     x = 0;
                     if (version >= 0x3a6c00b7)
                         bio_rd_i(in, &x);
-                    D3IO_SCENEB4(d3_DefaultScene) = x;
+                    ((D3IFSCENE *)d3_DefaultScene)->mapSize = x;
                     bio_rd_i(in, &col);
-                    bio_rd_i(in, (int *)&start);
-                    bio_rd_i(in, (int *)&end);
-                    d3_SetFog(*(int *)&start, *(int *)&end, col);
+                    bio_rd_i(in, &start);
+                    bio_rd_i(in, &end);
+                    d3_SetFog(start, end, col);
                 }
                 for (x = 0; x < 7; x++) {
                     d3if_Levels[x].amb.x = d3_AmbientColor.x;
@@ -613,16 +613,16 @@ char d3_LoadScene(char *name, void *f, D3IOPROGRESS progress)
                 d3sm_Destroy(d3sm_Shadow);
                 d3sm_Shadow = 0;
             }
-            if (!D3IO_SCENEB4(d3_DefaultScene))
-                D3IO_SCENEB4(d3_DefaultScene) = d3_Terrain ? 0x80 : 0x40;
+            if (!((D3IFSCENE *)d3_DefaultScene)->mapSize)
+                ((D3IFSCENE *)d3_DefaultScene)->mapSize = d3_Terrain ? 0x80 : 0x40;
             if (d3_Terrain)
-                D3IO_SCENEAC(d3_DefaultScene) = d3_Terrain;
+                d3_DefaultScene->map = d3_Terrain;
             tex_ReloadAll(0, (int)progress);
             d3_Busy--;
             if (name)
-                strncpy((char *)d3_DefaultScene, name, 0x7f);
+                strncpy(d3_DefaultScene->name, name, 0x7f);
             d3_DefaultScene->loaded = 1;
-            D3IO_SCENE3D8(d3_DefaultScene) = 0;
+            ((D3IFSCENE *)d3_DefaultScene)->sceneFlags = 0;
             return 1;
         }
         if (!f)
