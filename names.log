@@ -2749,3 +2749,4 @@
 2026-11-06T18:41:46 0x00554820 data he_Unk554820 -> he_AllocCustomersHire by:main why:registered as the alloc handler of events 6 (customers, he_RunCustomers) and 7 (hire, he_RunHire) at he.c:20064 / 20066; it copies the start clock into the due clock and adds 15 minutes
 2026-11-06T18:44:50 0x00557160 data he_Unk557160 -> he_AllocMessageBox by:main why:registered as the alloc handler of event 17 with he_RunMessageBox (he.c:20078); its words are HEMSGBOX (voice +0xec), the record AIJOB
 2026-11-06T18:47:07 0x00557b30 data he_Unk557b30 -> he_AllocSlotOrderStore by:main why:the alloc handler he_SetEventHandlers registers for the slot order event 18 and the store extension event 19 (src/he.c:20083, 20085)
+2026-11-06T18:48:12 0x00557d70 data he_Unk557d70 -> he_AllocHerbGathering by:main why:the alloc handler he_SetEventHandlers registers for the herb gathering event 20 (src/he.c:20090), whose run handler is he_RunHerbGathering

@@ -572,7 +572,7 @@ typedef struct HESTOREEXT {             /* the store extension event 19's words 
     int obj;                            /* 0xac, the objId of the store object (gm_FindById) */
     int rounds;                         /* 0xb0, the extension rounds still to run, one capacity unit each */
 } HESTOREEXT;
-typedef struct HEHERBS {                /* the herb gathering event 20's words over AIJOB's union (he_Unk557d70 /
+typedef struct HEHERBS {                /* the herb gathering event 20's words over AIJOB's union (he_AllocHerbGathering /
                                            he_RunHerbGathering); the gatherers' netIds are AIJOB.ids[] */
     char pad00[0xac];
     unsigned char n;                    /* 0xac, the gatherers in AIJOB.ids[] */
@@ -13265,33 +13265,38 @@ void he_RunStoreExtension(int ev)
     }
     he_FreeEvent((int *)ev);
 }
-/* 0x557d70, the allocation handler of the group event: the +0xac persons (ids from +0x8c) that exist are sent (0x524260 (0, 0, type, ev)); with none the record is freed, else state 1 and the event is posted 5 later */
+/* 0x557d70, the allocation handler of the herb gathering event 20 (HEHERBS): every gatherer id (AIJOB.ids, HEHERBS.n
+   of them) that exists is moved to the event's group (sv_MoveToGroup); with none the event is freed, else stage 1
+   and due in 5 minutes */
 
-void he_Unk557d70(int ev)
+void he_AllocHerbGathering(int ev)
 {
-    int i, p, any = 0;
+    AIJOB *e = (AIJOB *)ev;
+    HEHERBS *h = (HEHERBS *)ev;
+    AICHAR *p;
+    int i, any = 0;
 
-    for (i = 0; i < *(unsigned char *)(ev + 0xac); i++) {
-        p = gm_FindChar(*(int *)(ev + 0x8c + i * 4));
+    for (i = 0; i < h->n; i++) {
+        p = (AICHAR *)gm_FindChar(e->ids[i]);
         if (p != 0) {
             any |= 1;
-            sv_MoveToGroup(0, 0, *(unsigned short *)p, ev);
+            sv_MoveToGroup(0, 0, p->id, (char *)ev);
         }
     }
     if (any == 0) {
         he_FreeEvent((int *)ev);
         return;
     }
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    *(int *)(ev + 0x70) = 1;
-    gm_AddTime(ev + 0x52, 0, 5, 0);
+    e->end = ai_Time;
+    e->stage = 1;
+    gm_AddTime(&e->end, 0, 5, 0);
 }
 
 int gm_ClockSeason();
 int gm_FreeCapacity();
 int sv_IsAtDoor();
 
-/* 0x557e20, the run handler of the herb gathering event 20 (HEHERBS; allocated by he_Unk557d70, which gathers the
+/* 0x557e20, the run handler of the herb gathering event 20 (HEHERBS; allocated by he_AllocHerbGathering, which gathers the
    group). Outside the day hours of the season (gm_DayStartHours .. gm_DayEndHours) it waits 5 minutes, except when
    cancelled; without the event's character it is freed. Stage 1: the nearest building of type 0xb to the event's
    building (AIJOB.from, by the 3D distance of their objects; none: cancelled) becomes the field and the gatherers
@@ -20087,7 +20092,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(19, (void *)he_AllocSlotOrderStore, (void *)he_RunStoreExtension) != 0)
         return 1;
-    if (he_SetEventHandlers(20, (void *)he_Unk557d70, (void *)he_RunHerbGathering) != 0)
+    if (he_SetEventHandlers(20, (void *)he_AllocHerbGathering, (void *)he_RunHerbGathering) != 0)
         return 1;
     sv_RegisterActivity(20, 0, 1, 1280, 174);
     if (he_SetEventHandlers(21, (void *)he_Unk5584d0, (void *)he_RunAnimalHunt) != 0)
