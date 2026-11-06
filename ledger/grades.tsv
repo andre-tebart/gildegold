@@ -1458,7 +1458,7 @@ exe	0x0047e7f0	ai_CanAct	ai	byte	readable
 exe	0x0047e840	ai_IsLocalWorker	ai	byte	readable		
 exe	0x0047e8b0	ai_IsLocalJob	ai	byte	readable		
 exe	0x0047e940	ai_ResetJob	ai	byte	readable		
-exe	0x0047e990	ai_Unk47e990	ai	byte	draft	deep	
+exe	0x0047e990	ai_RunMasterEvaluation	ai	byte	draft	deep	
 exe	0x0047ec20	ai_PlanSlots	ai	byte	readable		
 exe	0x0047ed60	ai_SendRemoveEmptyGoods	ai	byte	readable		
 exe	0x0047edb0	ai_EvaluateProduction	ai	draft	readable	deep	
@@ -2296,17 +2296,17 @@ exe	0x004c7e20	cm_ExCreateObject	cm	byte	readable
 exe	0x004c7e90	cm_ExFieldDeltas	cm	shape	readable		
 exe	0x004c7f70	cm_ExFieldValues	cm	byte	readable		
 exe	0x004c8050	cm_ExMoodDeltas	cm	byte	readable		
-exe	0x004c8110	ai_Unk4c8110	cm	byte	draft		
-exe	0x004c81d0	ai_Unk4c81d0	cm	shape	draft		
+exe	0x004c8110	cm_ExSetField	cm	byte	readable		
+exe	0x004c81d0	cm_ExFloatDelta	cm	byte	readable		
 exe	0x004c8240	cm_ExRelations	cm	shape	readable		
-exe	0x004c85c0	ai_Unk4c85c0	cm	shape	draft		
-exe	0x004c87a0	ai_Unk4c87a0	cm	byte	draft		
-exe	0x004c88a0	ai_Unk4c88a0	cm	byte	draft		
-exe	0x004c8990	ai_Unk4c8990	cm	byte	draft		
+exe	0x004c85c0	cm_ExLongMessage	cm	shape	readable		
+exe	0x004c87a0	cm_ExSetHE	cm	byte	readable		
+exe	0x004c88a0	cm_ExTime	cm	byte	readable		
+exe	0x004c8990	cm_ExGameOver	cm	byte	readable		
 exe	0x004c89b0	cm_ExSysMessage	cm	byte	readable		
-exe	0x004c8de0	ai_Unk4c8de0	cm	byte	draft		
+exe	0x004c8de0	cm_ExKillCharacter	cm	byte	readable		
 exe	0x004c8e70	cm_ExAddStraftat	cm	byte	readable		
-exe	0x004c9090	ai_Unk4c9090	cm	byte	draft		
+exe	0x004c9090	cm_ExRetireCrime	cm	byte	readable		
 exe	0x004c90d0	ai_Unk4c90d0	cm	byte	draft		
 exe	0x004c9110	ai_Unk4c9110	cm	byte	draft		
 exe	0x004c9170	cm_ExSendCutInfo	cm	byte	readable		
@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -4432,7 +4432,7 @@ exe	0x005ba620	ai_FindUsableGood	lc	byte	readable
 exe	0x005ba660	ai_FindUsableGoodIndex	lc	byte	readable		
 exe	0x005ba6b0	ai_InventoryHas	lc	byte	readable		
 exe	0x005ba700	ai_BuildingHasItem	lc	byte	readable		
-exe	0x005ba750	ai_Unk5ba750	lc	draft	draft		
+exe	0x005ba750	lc_UpdateGoodsReserves	lc	draft	draft		
 exe	0x005ba980	ai_Unk5ba980	lc	draft	draft		
 exe	0x005bac10	ai_InventoryPanel	lc	draft	draft		
 exe	0x005bae10	ai_EquipRowsInit	lc	draft	readable	deep	
