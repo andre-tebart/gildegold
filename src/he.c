@@ -437,7 +437,7 @@ typedef struct HEEV39 {                 /* the event 0x39's words over AIJOB's u
                                            the message box, any other decides by gm_LikingChance */
     int amount;                         /* 0xb4, the sum asked for */
 } HEEV39;
-typedef struct HEEV38 {                 /* the event 0x38's word over AIJOB's union (he_Unk55e5c0 / he_RunEvent38); the
+typedef struct HEEV38 {                 /* the event 0x38's word over AIJOB's union (he_AllocEvent38 / he_RunEvent38); the
                                            building is AIJOB.from */
     char pad00[0xac];
     int amount;                         /* 0xac, divided by gm_PlayerFactor (1000) and times 20: the relation change */
@@ -16155,14 +16155,14 @@ void he_RunWorkerTheft(int ev)
         break;
     }
 }
-/* 0x55e5c0, the allocation handler: due clock now + 4 hours (0x4fe140 (clock, 0, 0, 4)) */
+/* 0x55e5c0, the allocation handler of the event 0x38 (he_RunEvent38): the due clock is the game clock plus 4 hours */
 
-void he_Unk55e5c0(int ev)
+void he_AllocEvent38(AIJOB *ev)
 {
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 4, 0, 0);
+    ev->end = ai_Time;
+    gm_AddTime(&ev->end, 4, 0, 0);
 }
-/* 0x55e600, the run handler of the event 0x38 (its alloc handler he_Unk55e5c0 makes it due in 4 hours): stages -2 / -1
+/* 0x55e600, the run handler of the event 0x38 (its alloc handler he_AllocEvent38 makes it due in 4 hours): stages -2 / -1
    free the record, a later stage leaves it. At stage 0 the building AIJOB.from (none: freed) is looked up and the
    event character's relation to every character working there (AICHAR.bld) changes by 20 times HEEV38.amount /
    gm_PlayerFactor (1000, the own player); an event character of the kind 6 / 7 (a player) gets the message box
@@ -20166,7 +20166,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(52, (void *)he_AllocDueIsStart, (void *)he_RunWorkerTheft) != 0)
         return 1;
-    if (he_SetEventHandlers(56, (void *)he_Unk55e5c0, (void *)he_RunEvent38) != 0)
+    if (he_SetEventHandlers(56, (void *)he_AllocEvent38, (void *)he_RunEvent38) != 0)
         return 1;
     if (he_SetEventHandlers(57, (void *)he_AllocEvent39_3e, (void *)he_RunEvent39) != 0)
         return 1;
