@@ -999,7 +999,8 @@ int _tr_tally (s, dist, lc)
 /* ===========================================================================
  * Send the block data compressed using the given Huffman trees
  */
-/* 0x4671e0 */
+/* 0x4671e0, writes the block data compressed with the given literal and distance trees: one literal or
+   length/distance pair per buffered symbol, then the end-of-block code */
 local void compress_block(s, ltree, dtree)
     deflate_state *s;
     ct_data *ltree; /* literal tree */
