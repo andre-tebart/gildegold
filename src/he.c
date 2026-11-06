@@ -55,8 +55,9 @@
    HEGRAVETRAINING (0x8f) and HEMEETING (0x90), HEMEETSCENE / HEMEETNAME (the meeting scene object 0x91), HEGRAVELEASE (the grave
     lease answer 0x92), HETRIALCASE (the trial 0xa0) and HEMEET4 (the circus show 0xa1), and over AIOBJ
    HETAVERNOBJ / HEOBJ1B5VALUE (the tavern's object 0x1b5); the hint table he_Hints (0x6fa260, HEHINT), the tip
-   order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20)
-   and the domicile news key he_NewsDomizil11 (0x628e40) and the secret room's agent name he_AssassinName
+   order he_TipOrder (0x6fa1e0) and the tip texts txt_TipTexts (0x1442430) are typed and he_InitBetrieb (0x627b20),
+   the domicile news key he_NewsDomizil11 (0x628e40), the activity names he_ActivityUpgrade / he_ActivityRawMaterial /
+   he_ActivityGraveCare (0x628e70 / 0x628e7c / 0x628e8c) and the secret room's agent name he_AssassinName
    (0x628dc8) are named. AIJOB's fields between
    0x14 and 0xac are named only as the message's words; a member added to AIJOB / AIMSG / G28REC can flip other
    units' matches by declaration set (ai_Unk483a60, ord_CountGridObjects are debt for it; ai_TutorialInitChapter3

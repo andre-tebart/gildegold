@@ -3536,7 +3536,7 @@ exe	0x0053f430	he_InnStaffLeave	he	shape	readable
 exe	0x0053f500	he_ClearInnDarkCorner	he	shape	readable		
 exe	0x0053f5b0	he_TopUpCharMoney	he	byte	readable		
 exe	0x0053f6b0	he_SpawnFounders	he	draft	readable	deep	
-exe	0x00540c90	he_PostEvent67	he	shape	draft	deep	
+exe	0x00540c90	he_PostEvent67	he	byte	draft	deep	
 exe	0x00540e40	he_InnReport	he	byte	readable		
 exe	0x00540fe0	he_DailyEventChecks	he	byte	readable		
 exe	0x00541010	he_PostEvent3a	he	byte	readable		
@@ -3854,22 +3854,22 @@ exe	0x0056f1b0	he_SecretRoomAccuse	he	byte	readable
 exe	0x0056f260	he_FindMeetingSlot	he	shape	readable		
 exe	0x0056f2e0	he_SecretRoomAttack	he	byte	readable		
 exe	0x0056f360	he_NoEvent9aFor	he	byte	readable		
-exe	0x0056f3b0	he_NoEvent9bFor	he	byte	draft		
+exe	0x0056f3b0	he_NoEvent9bFor	he	byte	readable		
 exe	0x0056f3f0	he_SecretRoomDomizil	he	shape	readable		
 exe	0x0056f600	he_FindNearestSpying	he	draft	readable	deep	
 exe	0x0056f740	he_SecretRoomCatchSpy	he	shape	readable		
-exe	0x0056f980	he_RegisterEventTypes88	he	byte	draft		
-exe	0x0056fbc0	he_SetLifeByAge	he	shape	draft		
-exe	0x0056fc50	he_AllocHaunting	he	byte	draft		
+exe	0x0056f980	he_RegisterEventTypes88	he	byte	readable		
+exe	0x0056fbc0	he_SetLifeByAge	he	shape	readable		
+exe	0x0056fc50	he_AllocHaunting	he	byte	readable		
 exe	0x0056fda0	he_RunHaunting	he	byte	readable		
-exe	0x00570130	he_AllocDecay	he	byte	draft		
+exe	0x00570130	he_AllocDecay	he	byte	readable		
 exe	0x005702e0	he_RunDecay	he	draft	readable	deep	
 exe	0x005706e0	he_AllocPlunder	he	draft	readable	deep	
 exe	0x005707a0	he_RunPlunder	he	shape	readable		
-exe	0x00570bf0	he_PlunderTakePrice	he	byte	draft		
-exe	0x00570c70	he_PlunderFailNews	he	byte	draft		
+exe	0x00570bf0	he_PlunderTakePrice	he	byte	readable		
+exe	0x00570c70	he_PlunderFailNews	he	byte	readable		
 exe	0x00570cc0	he_RunPlunderOffer	he	shape	readable		
-exe	0x00570ea0	he_NoEvent88Pair	he	byte	draft		
+exe	0x00570ea0	he_NoEvent88Pair	he	byte	readable		
 exe	0x00570ef0	he_AllocMasterWork	he	shape	draft		
 exe	0x00571000	he_RunMasterWork	he	shape	readable		
 exe	0x00571550	he_AllocGraveCare	he	shape	draft		
@@ -3881,10 +3881,10 @@ exe	0x00571c30	he_RunGraveTraining	he	shape	readable
 exe	0x00571f60	he_AllocMeeting	he	shape	readable		
 exe	0x005720f0	he_CatchMeetingDisease	he	draft	readable	deep	
 exe	0x00572310	he_SpreadMeetingDisease	he	draft	readable	deep	
-exe	0x005725b0	he_Unk5725b0	he	byte	draft		
+exe	0x005725b0	he_RunMeeting	he	byte	draft		
 exe	0x005726a0	he_AllocMeetingScene	he	byte	draft		
 exe	0x005726b0	he_RunMeetingScene	he	byte	readable		
-exe	0x00572860	he_Unk572860	he	byte	draft		
+exe	0x00572860	he_AllocPlunderOfferLease	he	byte	draft		
 exe	0x005728d0	he_AnswerGraveLease	he	byte	readable		
 exe	0x005729c0	he_ExamCancelled	he	byte	readable		
 exe	0x00572a50	he_RunGraveLease	he	shape	readable		
