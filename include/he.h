@@ -148,6 +148,7 @@ typedef struct HEBLDMODEL {             /* 0x50 bytes, a record of he_BuildingMo
     char model[0x40];                   /* 0x10, the construction model's group file */
 } HEBLDMODEL;
 extern HEBLDMODEL he_BuildingModels[37]; /* 0x627e98, the construction models, the record with type 0 ends it */
+extern char he_VoiceHealing[20];        /* 0x627b0c, the voice "_NACHRICHTEN_HS_80" of the healing event 0x6c's news 0x1a18 */
 extern char he_InitBetrieb[12];         /* 0x627b20, the scene name the new-worker event's run handler 0x565940 plays */
 extern char he_NewsDomizil11[24];       /* 0x628e40, the second text (the sound key) of the news 0x5fb the domicile event 0x9b's run sends */
 

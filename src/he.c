@@ -192,13 +192,13 @@ extern char * ai_BTypes;
 extern char * cm_FieldObject;
 extern const int sv_PhaseMinutes[24];
 extern GAPDATA full_rdata_5ebb44[];
+extern GAPDATA full_rdata_5ebb40[];
 extern double ai_Unk5eb990;
 extern GAPDATA full_rdata_5ee020[];
 extern unsigned char ai_OwnPlayer;
 extern unsigned short * ai_PlayerChar;
 #include "sv_types.h"
 extern SVWEATHER sv_Weather;  /* 0x760488, sv.c (he.c does not include sv.h yet) */
-extern GAPDATA full_data_627b0c[];
 extern char gm_TagGebaeudePROT[24];
 extern float gm_DayStartHours[];
 extern OPTIONBYTES ai_GameSwitches;
@@ -311,6 +311,7 @@ typedef void (*HEALLOC)(AIJOB *ev);     /* an event type's alloc handler (regist
 #define ai_PickActionBuildingI ((int (*)(struct AIPER *, int, __int64, int, float, int *))ai_PickActionBuilding)  /* 0x4a63f0 with lo an int: @original he_AllocBrawl passes its (null) home building there, the register as it is (push edi; a float parameter would convert it) */
 
 extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
+#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f */
 #define AICHAR_FLAGS1C8 0x71  /* the ai_CharInts index of AICHAR.flags1c8 (ai.h, +0x1c8; ai_CharInts starts at +4) */
 #define SLOT(i) ((int *)((unsigned)&he_EventSlots + (i) * 12))
 
@@ -18891,16 +18892,16 @@ void he_RunStormEvent(int ev)
         return;
     }
 }
-typedef struct HEHEAL {                 /* the healing event 0x6c's words over AIJOB's union (he_AllocHealing / he_Unk565620) */
+typedef struct HEHEAL {                 /* the healing event 0x6c's words over AIJOB's union (he_AllocHealing / he_RunHealing) */
     char pad00[0xac];
     int charId;                         /* 0xac, the netId of the character healed (gm_FindChar) */
-    int amount;                         /* 0xb0, the health left to heal, 200 at the allocation (the run's step takes it down) */
+    unsigned amount;                    /* 0xb0, the health left to heal, 200 at the allocation (the run's step takes it down) */
     AITIME end;                         /* 0xb4, the next run (AIJOB.end6c) */
     char padc2[2];
     int room;                           /* 0xc4, the room object the character is sent to (gm_FindObjectInst), -1: none */
 } HEHEAL;
 
-/* 0x565500, the allocation handler of the healing event 0x6c (he_Unk565620): the character AIJOB.ownerCh is sent into
+/* 0x565500, the allocation handler of the healing event 0x6c (he_RunHealing): the character AIJOB.ownerCh is sent into
    its building (the message's from) and that room, the health left is 200, the clocks are now and the next run is
    400 minutes ahead */
 
@@ -18924,54 +18925,60 @@ void he_AllocHealing(AIJOB *ev)
     gm_AddTime(&x->end, 0, 400, 0);
 }
 
-/* 0x565620, a Ghidra miss: the run handler of the healing event ("Heilen", type 0x6c): state 0 heals the player 0x505df0 (+0xac) step by step: the elapsed time since +0x60 (0x4fe280) * 0.1 * 5 is the step, the stat 0x4fc8e0 times 100.0
-   plus the step must stay below 100.0 (0x4fca40 (id, ftol (step)), the rest +0xb0 -= step, the next run 10 units ahead), else the next state; +0x60 = now; state 1 releases the lock 0x524260 (obj +0x10, 0, id) and sends the
-   news 0x1a18 ("_NACHRICHTEN_HS_80") then frees; -1 / -2 release the lock and free (ROUGH) */
 float gm_HealthRatio(short *c);
 
-/* 0x565620 */
-void he_Unk565620(int ev)
+/* 0x565620, the run handler of the healing event 0x6c (its alloc handler he_AllocHealing): stage 0 heals the character
+   AIJOB.ownerCh step by step - the minutes since the last step (AIJOB.clock60) times 0.5 is the step, the health ratio
+   times 100.0 plus the step must stay below 100.0 (gm_HealthRatio, gm_AddHealth), else the stage advances; the due clock
+   is 10 minutes ahead and the last step time is now. Stage 1 releases the character from the job (sv_MoveToGroup with no
+   group) and tells its owner (news 0x1a18, the voice he_VoiceHealing), then frees the record; the stages -2 / -1 release
+   it and free it too */
+
+void he_RunHealing(AIJOB *ev)
 {
-    int p, o, d;
+    HEHEAL *x = (HEHEAL *)ev;
+    AICHAR *c;
+    AIBLD *b;
+    int d;
     float step;
     float v;
     char text[0x200];
 
-    switch (*(int *)(ev + 0x70)) {
+    switch (ev->stage) {
     case 0:
-        p = gm_FindChar(*(int *)(ev + 0xac));
-        if (p == 0) {
+        c = (AICHAR *)gm_FindChar(x->charId);
+        if (c == 0) {
             he_FreeEvent((int *)ev);
             return;
         }
-        d = gm_MinutesBetween(ev + 0x60, (unsigned)&ai_Time);
+        d = gm_MinutesBetween(&ev->clock60, &ai_Time);
         step = 5.0f * ((float)d * 0.1f);
-        v = gm_HealthRatio(p) * 100.0;
-        if (*(unsigned *)(ev + 0xb0) > 0 && step + v < 100.0f) {
-            gm_AddHealth(*(unsigned short *)p, (int)step);
-            *(int *)(ev + 0xb0) = (int)((double)*(unsigned *)(ev + 0xb0) - step);
-            *(AITIME *)(ev + 0x52) = ai_Time;
-            gm_AddTime(ev + 0x52, 0, 10, 0);
+        v = gm_HealthRatio((short *)c) * 100.0;
+        if (x->amount > 0 && step + v < ai_FloatHundred) {
+            gm_AddHealth(c->id, (int)step);
+            x->amount = (int)((double)x->amount - step);
+            ev->end = ai_Time;
+            gm_AddTime(&ev->end, 0, 10, 0);
         } else {
-            *(int *)(ev + 0x70) = *(int *)(ev + 0x70) + 1;
+            ev->stage++;
         }
-        *(AITIME *)(ev + 0x60) = ai_Time;
+        ev->clock60 = ai_Time;
         return;
     case 1:
-        p = gm_FindChar(*(int *)(ev + 0xac));
-        o = gm_FindBuildingById(*(int *)(ev + 0x10));
-        if (p != 0 && o != 0) {
-            sv_MoveToGroup(o, *(unsigned short *)p, 0, 0);
-            txt_Format(text, 0x1a18, o, *(unsigned short *)p);
-            he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f2, *(int *)(ev + 0x10), -1, 0, (unsigned)&full_data_627b0c);
+        c = (AICHAR *)gm_FindChar(x->charId);
+        b = (AIBLD *)gm_FindBuildingById(ev->from);
+        if (c != 0 && b != 0) {
+            sv_MoveToGroup((unsigned char *)b, 0, c->id, 0);
+            txt_Format(text, 0x1a18, b, c->id);
+            he_MessageBoxQuickjump(ai_CharInts[ev->chr][0], -1, text, 0, 0x5f2, ev->from, -1, 0, he_VoiceHealing);
         }
         he_FreeEvent((int *)ev);
         return;
     case -2:
     case -1:
-        p = gm_FindChar(*(int *)(ev + 0xac));
-        if (p != 0)
-            sv_MoveToGroup(0, 0, *(unsigned short *)p, 0);
+        c = (AICHAR *)gm_FindChar(x->charId);
+        if (c != 0)
+            sv_MoveToGroup(0, 0, c->id, 0);
         he_FreeEvent((int *)ev);
         return;
     default:
@@ -20219,7 +20226,7 @@ int he_RegisterEventTypes02(void)
         return 1;
     if (he_SetEventHandlers(80, (void *)he_AllocStorm, (void *)he_RunStormEvent) != 0)
         return 1;
-    if (he_SetEventHandlers(108, (void *)he_AllocHealing, (void *)he_Unk565620) != 0)
+    if (he_SetEventHandlers(108, (void *)he_AllocHealing, (void *)he_RunHealing) != 0)
         return 1;
     sv_RegisterActivity(108, "Heilen", 0, 1285, -1);
     if (he_SetEventHandlers(110, (void *)he_AllocNewWorker, (void *)he_RunNewWorker) != 0)
