@@ -25638,11 +25638,13 @@ void he_AllocGypsySlowdown(int ev)
     e->end = ai_Time;
     gm_AddTime(&e->end, 0x18, 0, 0);
 }
-/* 0x5740d0, the run of the event 0x9f: -2 / -1 free */
+/* 0x5740d0, the run of the event 0x9f: the stage -2 / -1 (a free record) frees the event */
 
 void he_RunGypsySlowdown(int ev)
 {
-    if (HM_I(ev, 0x70) == -1 || HM_I(ev, 0x70) == -2)
+    AIJOB *e = (AIJOB *)ev;
+
+    if (e->stage == -1 || e->stage == -2)
         he_FreeEvent((int *)ev);
 }
 /* 0x5740f0, 1 when an event of the type 0x9f of the player word of `a` exists (0x53e400 (2, 0, 0x9f, 2, word)) */
