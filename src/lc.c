@@ -12806,112 +12806,103 @@ void ai_BurglaryStart(int building)
 
 char * he_NextEvent(void);
 
-/* 0x5a41d0, the espionage window "locations\diebesgilde\diebesgilde_spionage" (777 B, ROUGH): the owner
-   guard (0xffff closes it) and the gate 0x553cc0 (param_1) with the text 0x1a92 (the owner slot, param_1);
-   the guild record 0x6f2308 or 0x6f230c and the building kind record 0x7e3f30 + its byte * 0x24d; the walk of
-   the guild's rooms 0x4ffe90 (rec + 0x5d, 1, 0, 0xca) / 0x4ffcc0 collects those whose +0x2a is not param_1 + 1
-   (up to 0x40), then the carriers 0x53e400 (2, 2, the player slot, 0, 0x40) / 0x53e300: every carrier whose
-   +0xac matches no collected +0x2a counts; with the total < 2 * the kind byte +0x247 the text 0x19fa (the
-   total, 0x6f2308) and out; else the window 0x4741f0 / 0x475600 / 0x476f80 / 0x475f70 (1) with the text 0x19f7
-   (the record word, param_1) and the two buttons 0x475b80 (the text and +1); the pump 0x5309a0 (this, 0x677c7):
-   the first button builds the AIMSG (type 0x40 at +4, the player id at +8, 1 at +0x36, param_1 + 1 at +0x58,
-   0x6f2308 + 1 at +0x5c and at +0x38 up to 8 ids with the byte +0x184) and sends it 0x4c4b70 / 0x4c2d20, or
-   shows the text 0x1440b38 with no crew; the exit 0x4758f0 and 0x52ae40; returns 1 after a send */
-int ai_Unk5a41d0(int param_1)
+/* 0x5a41d0, the thieves' guild spying window "locations\diebesgilde\diebesgilde_spionage" (the map pick's callback:
+   ai_MapPick calls it with its context, not read here, and the picked building target; nothing for none or an
+   ownerless one). A building without a protection event (he_NoProtectionEvent 0) gives the text 0x1a92. The spy
+   reports (objects 0xca) the player's building holds on other buildings and the player's running spy events 0x40
+   on buildings no such report covers count against twice the level of the player's building type: at the limit
+   the text 0x19fa. Else the text 0x19f7 (the owner, target) and the buttons: the first posts the spy message 0x40
+   (the target, the guild building, up to eight selected characters as ids, flags 1; the text 0x1a5e when nobody
+   is selected), the second and a right click close it. The selection is cleared after the window; returns 1 once
+   the spying was ordered */
+int ai_GuildSpyWindow(int ctx, AIBLD *target)
 {
-    int list[0x40];
-    int n = 0;
-    int cnt = 0;
+    int done;
+    int uncovered;
+    AIMSG msg;
+    AIOBJ *reports[0x10];
+    char limitText[0x100];
+    char text[0x400];
     int win;
-    int ctl1;
-    int ctl2;
-    int done = 0;
+    int ok;
+    int cancel;
+    int base;
+    int n;
     int i;
-    int total;
-    char *rec;
-    char *kind;
-    char *p;
-    char buf[0x100];
-    char msg[0x80];
+    AIBTYPE *type;
+    AIBLD *bld;
+    AIOBJ *o;
+    AIJOB *ev;
+    AICHARREC *ch;
 
-    if (param_1 == 0)
+    uncovered = 0;
+    done = 0;
+    if (target == 0 || target->owner == 0xffff)
         return 0;
-    if (U_W(param_1 + 0x27) == 0xffff)
-        return 0;
-    if (he_NoProtectionEvent(param_1) == 0) {
-        txt_Format(buf, 0x1a92, U_W(param_1 + 0x27), param_1);
-        sv_MessageBox(buf, 0);
+    if (he_NoProtectionEvent(target) == 0) {
+        txt_Format(text, 0x1a92, target->owner, target);
+        sv_MessageBox(text, uncovered);
         return 0;
     }
-    rec = (char *)U_I((unsigned)&ai_PlayerBuilding);
-    if (rec == 0) {
-        rec = (char *)U_I((unsigned)&ai_FallbackBuilding);
-    }
-    kind = (char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)U_I((unsigned)&ai_PlayerBuilding) * 0x24d);
-    if (rec != 0) {
-        for (p = (char *)gm_Query(U_I(rec + 0x5d), 1, 0, 0xca); p != 0;
-             p = (char *)gm_QueryNext()) {
-            if (U_I(p + 0x2a) != U_I(param_1 + 1))
-                list[n++] = (int)p;
-        }
-    }
-    for (p = (char *)he_FindEvent(2, 2, U_W((unsigned)&ai_PlayerId), 0, 0x40); p != 0;
-         p = (char *)he_NextEvent()) {
-        for (i = 0; i < n; i++) {
-            if (U_I(p + 0xac) == U_I(list[i] + 0x2a))
+    n = 0;
+    bld = 0;
+    if (ai_PlayerBuilding != 0)
+        bld = (AIBLD *)ai_PlayerBuilding;
+    else if (ai_FallbackBuilding != 0)
+        bld = (AIBLD *)ai_FallbackBuilding;
+    type = &((AIBTYPE *)ai_BTypes)[((AIBLD *)ai_PlayerBuilding)->kind];
+    if (bld != 0)
+        for (o = (AIOBJ *)gm_Query((void *)bld->objList, 1, 0, 0xca); o != 0; o = (AIOBJ *)gm_QueryNext())
+            if (o->reportBld != target->id)
+                reports[n++] = o;
+    for (ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x40); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        for (i = 0; i < n; i++)
+            if (ev->bldId == reports[i]->reportBld)
                 break;
-        }
         if (i >= n)
-            cnt++;
+            uncovered++;
     }
-    total = n + cnt;
-    if (total < 2 * *(unsigned char *)(kind + 0x247)) {
-        txt_Format(buf, 0x19fa, total, U_I((unsigned)&ai_PlayerBuilding));
-        sv_MessageBox(buf, 0);
+    n += uncovered;
+    if (n >= type->level * 2) {
+        txt_Format(limitText, 0x19fa, n, ai_PlayerBuilding);
+        sv_MessageBox(limitText, 0);
         return 0;
     }
+    ch = &((AICHARREC *)ai_Chars)[target->owner];
     win = d2_OpenForm(0, 0, "locations\\diebesgilde\\diebesgilde_spionage");
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
-    i = io_PrintText(0x19f7, U_W((char *)(unsigned)&ai_Chars + U_W(param_1 + 0x27) * 0x21c), param_1);
-    ctl1 = d2_GetWinObj(win, 1, i);
-    ctl2 = d2_GetWinObj(win, 1, i + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&d2_PointerObj) == ctl1) {
-            *(unsigned char *)(msg + 4) = 0x40;
-            U_I(msg + 8) = U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c);
-            *(unsigned char *)(msg + 0x36) = 1;
-            U_I(msg + 0x58) = U_I(param_1 + 1);
-            U_I(msg + 0x5c) = U_I(U_I((unsigned)&ai_PlayerBuilding) + 1);
-            for (i = 0; i < 8; i++)
-                U_I(msg + 0x38 + i * 4) = -1;
-            i = 0;
-            for (p = (char *)(unsigned)&ai_CharInts; (int)p < ((unsigned)((unsigned)ai_CharInts + 0x653fe) + 0x2) && i < 8; p += 0x21c) {
-                if (*(unsigned char *)(p + 0x184) != 0) {
-                    U_I(msg + 0x38 + i * 4) = U_I(p);
-                    i++;
-                }
-            }
-            if (i != 0) {
-                cm_SendLongMessage(msg);
+    base = io_PrintText(0x19f7, ch->id, target);
+    ok = d2_GetWinObj(win, 1, base);
+    cancel = d2_GetWinObj(win, 1, base + 1);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == ok) {
+            memset(msg.ids, 0xff, sizeof(msg.ids));
+            msg.type = 0x40;
+            msg.flags = 1;
+            msg.arg[0] = target->id;
+            msg.to = ai_CharInts[ai_PlayerId][0];
+            msg.arg[1] = ((AIBLD *)ai_PlayerBuilding)->id;
+            n = 0;
+            for (i = 0; i < 0x300 && n < 8; i++)
+                if (((AICHARREC *)ai_Chars)[i].selected != 0)
+                    msg.ids[n++] = ai_CharInts[i][0];
+            if (n != 0) {
+                cm_SendLongMessage((char *)&msg);
                 done = 1;
                 snd_PlayFavourComment();
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else {
-                sv_MessageBox((char *)U_I((unsigned)&full_data_1440b38), 0);
-                U_I((unsigned)&sv_PopRequest) = 1;
-                done = 1;
-            }
-        } else if (U_I((unsigned)&d2_PointerObj) == ctl2) {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        }
-        if (sv_RunFrame(ai_Unk5a41d0, 0x677c7) == 0)
-            break;
-    }
+            } else
+                sv_MessageBox(txt_Ptrs[0x1a5e], 0);
+            sv_PopRequest = 1;
+        } else if (d2_PointerObj == cancel)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame(ai_GuildSpyWindow, 0x677c7) != 0);
     d2_CloseView(win);
     sv_ClearSelection();
     return done;
@@ -12941,7 +12932,7 @@ void ai_EspionageStart(unsigned char *param_1)
     req[4] = 7;
     req[19] = 0x727;
     txt_Format(buf, 0x19f6);
-    ai_MapPick(1, req, buf, (void *)(unsigned)&ai_Unk5a41d0, 0);
+    ai_MapPick(1, req, buf, (void *)(unsigned)&ai_GuildSpyWindow, 0);
     sv_ClosePlayerBar();
     sv_ClearSelection();
 }
