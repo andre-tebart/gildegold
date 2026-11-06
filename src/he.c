@@ -23239,8 +23239,8 @@ void he_AllocMeeting(int ev);          /* 0x571f60 */
 void he_Unk5725b0(int ev);          /* 0x5725b0 */
 void he_AllocMeetingScene(int ev);          /* 0x5726a0 */
 void he_RunMeetingScene(int ev);          /* 0x5726b0 */
-void he_Unk572b90(int ev);          /* 0x572b90 */
-void he_Unk572bf0(int ev);          /* 0x572bf0 */
+void he_AllocGraveyardWorkers(int ev);          /* 0x572b90 */
+void he_RunGraveyardWorkers(int ev);          /* 0x572bf0 */
 void he_Unk572fd0(int ev);          /* 0x572fd0 */
 void he_RunGraveLease(int ev);          /* 0x572a50 */
 
@@ -23258,7 +23258,7 @@ int he_RegisterEventTypes88(void)
                                     if (he_SetEventHandlers(0x8f, (void *)he_AllocGraveTraining, (void *)he_RunGraveTraining) == 0) {
                                         if (he_SetEventHandlers(0x90, (void *)he_AllocMeeting, (void *)he_Unk5725b0) == 0) {
                                             if (he_SetEventHandlers(0x91, (void *)he_AllocMeetingScene, (void *)he_RunMeetingScene) == 0) {
-                                                if (he_SetEventHandlers(0x93, (void *)he_Unk572b90, (void *)he_Unk572bf0) == 0) {
+                                                if (he_SetEventHandlers(0x93, (void *)he_AllocGraveyardWorkers, (void *)he_RunGraveyardWorkers) == 0) {
                                                     if (he_SetEventHandlers(0x94, (void *)he_Unk55e3a0, (void *)he_Unk572fd0) == 0) {
                                                         if (he_SetEventHandlers(0x92, (void *)he_Unk572860, (void *)he_RunGraveLease) == 0) {
                                                             sv_RegisterActivity(0x8d, (char *)(unsigned)&full_data_628e8c, 1, 0x513, -1);
@@ -24756,7 +24756,7 @@ void he_RunGraveLease(int ev)
 void gm_SetTime(struct AITIME *c, unsigned char hour, unsigned min, unsigned sec); /* 0x4fe1e0 */
 
 /* 0x572b90, the alloc of the event 0x93: the due clock +0x52 = now + 6 hours (0x4fe1e0), the second clock +0x60 = the due clock */
-void he_Unk572b90(int ev)
+void he_AllocGraveyardWorkers(int ev)
 {
     *(AITIME *)(ev + 0x52) = ai_Time;
     gm_SetTime(ev + 0x52, 6, 0, 0);
@@ -24771,123 +24771,108 @@ void ai_EndCharExtra(char *o, int f); /* 0x587c40 */
 float gm_GoodsPrice(unsigned id, unsigned char p); /* 0x5089c0 */
 int ls_GetLanguage();                 /* 0x5190a0 */
 
-/* 0x572bf0, the run of the event 0x93 (the working of a building 0x1d): -2 / -1 free. State 0: the building 0x501190 (1, 5, 0x1d) with a player word; the value 0x5092e0 (+0x15) * 0x5eb950 + 0x5eb94c; the characters +0x770b80 (0x21c) whose +0x16c is the building are collected; each one: 0x42ec20 over the value -> when over: 0x587c40 (char, 1) for the kinds 4 / 0x8c / 0x8d without +0x1b4 bit 0; when under and 0x42ec20 <= 0x5eb7e8: 0x50c520 (building +0x27, char) against -(0x42ec00 (0x4a)), then the message 0x94 (+4 = 0x94, +8 = the player word of the event, +0xc = building +4, +0x28 clock, +0x36 = 1, +0x58 = event +4) via 0x4c4b70. Tail: due now + 0x14 + 0x42ec00 (0x14), state + 1. State 1: the same collection with 0x50a810 / 0x501b50, a random pick 0x42ec00 (count), 0x5089c0, 0x4c4880, 0x5190a0 and the texts 0x414b / 0x229, the message 0x53dee0 (0x5f2, 0x629000), 0x501030 / 0x4ffcc0; then the tail. State 2: due now + 0x1e, state + 1. State 3: due now + 0x1e, state 0. ROUGH */
-void he_Unk572bf0(int ev)
+/* 0x572bf0, the run handler of the graveyard workers' event 0x93 (alloc 0x572b90, first due at 6:00), a four-stage
+   cycle over every graveyard building (gm_BuildQuery (1, 5, 0x1d)): -2 / -1 free the event. Stage 0, for each owned
+   graveyard: its workers (the characters whose bld is it) are tested against 0.75 + 0.0025 * the building's skill
+   0x15; one above it whose job is 4 / 0x8c / 0x8d and who is not player-led (flags1b4 bit 0) ends that job
+   (ai_EndCharExtra (.., 1)); one below it and above 0.5, without a job, whose owner's opinion of him beats
+   -random(0x4a), gets the message 0x94 (to the event's character, from the building, arg[0] his netId). Stage 1,
+   for each graveyard: its player-led workers of the job 0 / 4 / 0x8c / 0x8d other than the master (gm_FindCharacterByMaster)
+   end their job (ai_EndCharExtra (.., 0)) above 0.75, or below it when the master is player-led and the worker has a
+   model. Both stages are due again in 20 + random(20) minutes, the stages 2 and 3 in 30 minutes (3 back to 0).
+   While a graveyard has no owner (0xffff) stage 0 never takes the next one: the original's loop is written so. */
+void he_RunGraveyardWorkers(int ev)
 {
-    char *chars[0x20];
-    char msg[0xf8];
-    char text[0x100];
-    char *per, *bld, *ch;
-    float f;
-    int i, n, cnt, v, k;
+    AIJOB *e = (AIJOB *)ev;
+    AICHAR *chars[0x20];
+    AIMSG msg;
+    AIBLD *bld;
+    AICHAR *ch, *master;
+    float r, chance;
+    int i, n, v;
 
-    switch (HM_I(ev, 0x70)) {
-    case -2:
-    case -1:
-        he_FreeEvent((int *)ev);
-        return;
+    switch (e->stage) {
     case 0:
-        bld = (char *)gm_BuildQuery(1, 5, 0x1d);
-        if (bld == 0)
-            goto tail;
-        if (*(unsigned short *)(bld + 0x27) != 0xffff) {
-            n = gm_BuildingSkill(bld, 0x15, 1);
-            f = (float)n * (0.00249999994f);
-            cnt = 0;
-            for (ch = (char *)(unsigned)&ai_Chars; (int)ch < (unsigned)((unsigned)ai_Chars + 0x65400); ch += 0x21c) {
-                if (*(unsigned short *)ch != 0xffff && HM_I(ch, 0x16c) == (int)bld)
-                    chars[cnt++] = ch;
-            }
-            if (cnt > 0) {
-                f += *(float *)(unsigned)&ai_Unk5eb94c;
-                for (i = 0; i < cnt; i++) {
-                    if (util_RandomF() <= f) {
-                        if (util_RandomF() <= *(double *)(unsigned)&full_rdata_5eb7e8) {
+        bld = (AIBLD *)gm_BuildQuery(1, 5, 0x1d);
+        while (bld != 0) {
+            if (bld->owner != 0xffff) {
+                chance = (float)gm_BuildingSkill(bld, 0x15, 1) * 0.0025f;
+                n = 0;
+                for (ch = ai_CharsT; (int)ch < (int)&ai_CharsT[768]; ch++) {
+                    if (ch->id != 0xffff && ch->bld == bld)
+                        chars[n++] = ch;
+                }
+                if (n > 0) {
+                    chance += 0.75f;
+                    for (i = 0; i < n; i++) {
+                        r = util_RandomF();
+                        if (r > chance) {
                             ch = chars[i];
-                            if (HM_I(ch, 0x17c) == 0) {
-                                v = gm_Opinion(*(unsigned short *)(bld + 0x27), *(unsigned short *)ch);
-                                k = -(util_Random(0x4a) & 0xffff);
-                                if (k < v) {
-                                    memset(msg, 0, 0xf8);
-                                    HM_B(msg, 4) = 0x94;
-                                    HM_I(msg, 8) = *(unsigned short *)(ev + 8);
-                                    HM_I(msg, 0xc) = HM_I(bld, 4);
-                                    *(AITIME *)(msg + 0x28) = ai_Time;
-                                    HM_B(msg, 0x36) = 1;
-                                    HM_I(msg, 0x58) = HM_I(ev, 4);
-                                    cm_SendLongMessage(msg);
+                            if (!(ch->flags1b4 & 1) && (ch->jobKind == 4 || ch->jobKind == 0x8c || ch->jobKind == 0x8d))
+                                ai_EndCharExtra((char *)ch, 1);
+                        } else if (r > 0.5) {
+                            ch = chars[i];
+                            if (ch->job == 0) {
+                                v = gm_Opinion(bld->owner, ch->id);
+                                if (-(util_Random(0x4a) & 0xffff) < v) {
+                                    memset(&msg, 0, sizeof(msg));
+                                    msg.type = 0x94;
+                                    msg.to = e->chr;
+                                    msg.fromId = bld->id;
+                                    msg.time = ai_Time;
+                                    msg.flags = 1;
+                                    msg.arg[0] = ch->netId;
+                                    cm_SendLongMessage((char *)&msg);
                                 }
                             }
                         }
-                    } else {
-                        ch = chars[i];
-                        if (!(HM_B(ch, 0x1b4) & 1) &&
-                            (HM_B(ch, 0x180) == 4 || HM_B(ch, 0x180) == 0x8c || HM_B(ch, 0x180) == 0x8d))
-                            ai_EndCharExtra(ch, 1);
                     }
                 }
+                bld = (AIBLD *)gm_BuildNext();
             }
         }
-tail:
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0x14 + (util_Random(0x14) & 0xffff), 0);
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0x14 + (util_Random(0x14) & 0xffff), 0);
+        e->stage++;
         return;
     case 1:
-        bld = (char *)gm_BuildQuery(1, 5, 0x1d);
-        if (bld == 0)
-            goto tail;
-        per = (char *)gm_FindCharacterByMaster(bld);
-        cnt = 0;
-        for (ch = (char *)(unsigned)&ai_Chars; (int)ch < (unsigned)((unsigned)ai_Chars + 0x65400); ch += 0x21c) {
-            if (*(unsigned short *)ch != 0xffff && HM_I(ch, 0x16c) == (int)bld)
-                chars[cnt++] = ch;
-        }
-        gm_BuildingSkill(bld, 0x15, 1);
-        for (i = 0; i < cnt; i++) {
-            ch = chars[i];
-            if (!(HM_B(ch, 0x1b4) & 1))
-                continue;
-            if (!(HM_B(ch, 0x180) == 4 || HM_B(ch, 0x180) == 0x8c || HM_B(ch, 0x180) == 0x8d || HM_B(ch, 0x180) == 0))
-                continue;
-            if (per != 0 && per == ch)
-                continue;
-            if (util_RandomF() <= *(float *)(unsigned)&ai_Unk5eb94c) {
-                if (per != 0 && (HM_B(per, 0x1b4) & 1) && HM_I(ch, 0x184) != 0) {
-                    ai_EndCharExtra(ch, 0);
+        for (bld = (AIBLD *)gm_BuildQuery(1, 5, 0x1d); bld != 0; bld = (AIBLD *)gm_BuildNext()) {
+            master = (AICHAR *)gm_FindCharacterByMaster(bld);
+            n = 0;
+            for (ch = ai_CharsT; (int)ch < (int)&ai_CharsT[768]; ch++) {
+                if (ch->id != 0xffff && ch->bld == bld)
+                    chars[n++] = ch;
+            }
+            gm_BuildingSkill(bld, 0x15, 1);
+            for (i = 0; i < n; i++) {
+                ch = chars[i];
+                if (!(ch->flags1b4 & 1))
                     continue;
-                }
-            } else if (per == 0 || !(HM_B(per, 0x1b4) & 1) || HM_I(ch, 0x184) == 0) {
-                ai_EndCharExtra(ch, 0);
-                continue;
-            }
-            ai_EndCharExtra(ch, 0);
-        }
-        gm_BuildNext();
-        per = (char *)gm_BuildingMainObject(bld);
-        if (cnt > 0) {
-            n = util_Random(cnt) & 0xffff;
-            ch = chars[n];
-            if (ch != 0) {
-                gm_GoodsPrice(*(unsigned short *)ch, *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                cm_SendExSellObject(-1, HM_I(bld, 4), *(unsigned short *)ch, 1, *(unsigned char *)(unsigned)&ai_OwnPlayer, 0);
-                if (ls_GetLanguage() == 0 || ls_GetLanguage() == 1) {
-                    txt_Format(text, 0x414b, 0x229, HM_I(ch, 0x16c), *(unsigned short *)ch * 2 + 0x9a8);
-                }
-                he_MessageBoxQuickjump(*(int *)((unsigned)&ai_CharInts + *(unsigned short *)(ev + 8) * 0x21c), -1, text, 0, 0x5f2, 0, *(int *)(per + 2), (char *)(unsigned)&full_data_629000, 0);
+                if (ch->jobKind != 4 && ch->jobKind != 0x8c && ch->jobKind != 0x8d && ch->jobKind != 0)
+                    continue;
+                if (master != 0 && master == ch)
+                    continue;
+                if (util_RandomF() > 0.75f || (master != 0 && (master->flags1b4 & 1) && ch->model != 0))
+                    ai_EndCharExtra((char *)ch, 0);
             }
         }
-        he_FreeEvent((int *)ev);
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0x14 + (util_Random(0x14) & 0xffff), 0);
+        e->stage++;
         return;
     case 2:
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-        HM_I(ev, 0x70) = HM_I(ev, 0x70) + 1;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0x1e, 0);
+        e->stage++;
         return;
     case 3:
-        *(AITIME *)(ev + 0x52) = ai_Time;
-        gm_AddTime(ev + 0x52, 0, 0x1e, 0);
-        HM_I(ev, 0x70) = 0;
+        e->end = ai_Time;
+        gm_AddTime(&e->end, 0, 0x1e, 0);
+        e->stage = 0;
+        return;
+    case -2:
+    case -1:
+        he_FreeEvent((int *)ev);
         return;
     }
 }
