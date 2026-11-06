@@ -72,7 +72,7 @@
    (HESECRETROOM, with HESPYING), the haunting 0x88 (HEHAUNTING) and the breath of decay 0x89 (HEDECAY).
    Open: types: the handlers past 0x570300 other than the plunder / master work / grave care / death due / grave
    training / meeting disease ones up to 0x5725b0, the grave lease 0x92, the graveyard workers 0x93 / theft 0x94
-   (HEGRAVETHEFT) and the gypsy approaches 0x573760 .. 0x573c20 (and the alloc handlers 0x565d10, 0x5662d0, 0x567620, 0x570ef0,
+   (HEGRAVETHEFT) and the gypsy approaches 0x573760 .. 0x573c20 (and the alloc handlers 0x570ef0,
    0x571550, 0x571990, 0x571ac0) still read the event and message records through raw offsets
    Open: head: gm_StockBlocks / gm_StockPrice are declared here for he_RunMarketSupervisor (f3gm.h not included)
    Open: head: no prototypes for gm_AddTime, gm_FindCharacterByMaster, cm_GetSlotState and others (ai.h / f3gm.h /

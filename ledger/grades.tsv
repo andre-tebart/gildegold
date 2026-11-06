@@ -3787,21 +3787,21 @@ exe	0x00565500	he_AllocHealing	he	byte	readable
 exe	0x00565620	he_RunHealing	he	byte	readable		
 exe	0x00565850	he_AllocNewWorker	he	byte	readable		
 exe	0x00565940	he_RunNewWorker	he	byte	readable		
-exe	0x00565b00	he_Unk565b00	he	byte	draft		
-exe	0x00565b60	he_Unk565b60	he	byte	draft		
-exe	0x00565d10	he_Unk565d10	he	byte	draft		
+exe	0x00565b00	he_AllocDiePlayer	he	byte	readable		
+exe	0x00565b60	he_RunDiePlayer	he	byte	readable		
+exe	0x00565d10	he_AllocKillPlayer	he	byte	readable		
 exe	0x00565db0	he_RunKillPlayer	he	shape	readable		
-exe	0x005662d0	he_Unk5662d0	he	byte	draft		
+exe	0x005662d0	he_AllocNightWatch	he	byte	readable		
 exe	0x00566370	he_RunNightWatch	he	shape	readable		
 exe	0x00566830	he_RunRobbery	he	draft	readable	deep	
-exe	0x00567620	he_Unk567620	he	byte	draft		
+exe	0x00567620	he_AllocTitleDue	he	byte	readable		
 exe	0x00567660	he_RunTitleDue	he	byte	readable		
 exe	0x00567810	he_OpenHelpEvents	he	byte	readable		
-exe	0x005679b0	he_Unk5679b0	he	byte	draft		
+exe	0x005679b0	he_AllocHint	he	byte	readable		
 exe	0x00567a80	he_RunHint	he	draft	readable	deep	
-exe	0x00567b80	he_Unk567b80	he	byte	draft		
+exe	0x00567b80	he_AllocTip	he	byte	readable		
 exe	0x00567c00	he_RunTip	he	draft	readable	deep	
-exe	0x00567d20	he_Unk567d20	he	byte	draft		
+exe	0x00567d20	he_AllocTutorialBuildingTour	he	byte	readable		
 exe	0x00567d60	he_RunTutorialBuildingTour	he	draft	readable	deep	
 exe	0x00567f00	he_Unk567f00	he	byte	draft		
 exe	0x00567f50	he_PatrolStep	he	shape	readable		
