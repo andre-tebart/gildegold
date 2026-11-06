@@ -2353,17 +2353,17 @@ exe	0x004cc050	cm_ExObjCell	cm	shape	readable
 exe	0x004cc110	cm_ExWalkPath	cm	shape	readable		
 exe	0x004cc1b0	cm_ExCutEntry	cm	byte	readable		
 exe	0x004cc270	cm_ExCutEntryUpdate	cm	byte	readable		
-exe	0x004cc330	ai_Unk4cc330	cm	byte	draft		
-exe	0x004cc390	ai_Unk4cc390	cm	shape	draft		
+exe	0x004cc330	cm_ExDamage	cm	byte	readable		
+exe	0x004cc390	cm_ExDarkCorner	cm	shape	readable		
 exe	0x004cc510	cm_ExTableRequest	cm	byte	readable		
 exe	0x004cc720	cm_PlaceFighter	cm	byte	readable		
-exe	0x004cc7b0	ai_Unk4cc7b0	cm	byte	draft		
-exe	0x004cc8e0	ai_Unk4cc8e0	cm	byte	draft		
-exe	0x004cc920	ai_Unk4cc920	cm	byte	draft		
-exe	0x004cc980	ai_Unk4cc980	cm	byte	draft		
-exe	0x004cca10	ai_Unk4cca10	cm	byte	draft		
-exe	0x004ccaa0	ai_Unk4ccaa0	cm	byte	draft		
-exe	0x004ccb10	ai_Unk4ccb10	cm	shape	draft		
+exe	0x004cc7b0	cm_ExFightCommand	cm	byte	readable		
+exe	0x004cc8e0	cm_ExMessageRecord	cm	byte	readable		
+exe	0x004cc920	cm_ExChrDelete	cm	byte	readable		
+exe	0x004cc980	cm_ExCancelParty	cm	byte	readable		
+exe	0x004cca10	cm_ExCutsceneReady	cm	byte	readable		
+exe	0x004ccaa0	cm_ExMoneyDelta	cm	byte	readable		
+exe	0x004ccb10	cm_ExHeldRounds	cm	shape	readable		
 exe	0x004ccbd0	ai_Unk4ccbd0	cm	shape	draft		
 exe	0x004ccc20	cm_ExAddSkill	cm	shape	readable		
 exe	0x004ccce0	ai_Unk4ccce0	cm	byte	draft		
@@ -2494,11 +2494,11 @@ exe	0x004d6970	ai_Unk4d6970	cm	shape	draft
 exe	0x004d6a50	ai_Unk4d6a50	cm	byte	draft		
 exe	0x004d6b70	ai_Unk4d6b70	cm	byte	draft		
 exe	0x004d6ba0	cm_FighterAct	cm	byte	readable		
-exe	0x004d6f60	ai_Unk4d6f60	cm	byte	draft		
-exe	0x004d6f90	ai_Unk4d6f90	cm	byte	draft		
-exe	0x004d7000	ai_Unk4d7000	cm	byte	draft		
-exe	0x004d70a0	ai_Unk4d70a0	cm	byte	draft		
-exe	0x004d7150	ai_Unk4d7150	cm	byte	draft		
+exe	0x004d6f60	cm_FightSlotStop	cm	byte	draft		
+exe	0x004d6f90	cm_FightSlotCheer	cm	byte	draft		
+exe	0x004d7000	cm_FightSlotPickUp	cm	byte	draft		
+exe	0x004d70a0	cm_FightSlotPutDown	cm	byte	draft		
+exe	0x004d7150	cm_FightSlotWinner	cm	byte	draft		
 exe	0x004d7190	cm_PlantEscapeFlag	cm	draft	readable	deep	
 exe	0x004d7360	cm_Attack	cm	draft	readable	deep	
 exe	0x004d76a0	cm_RunCutOrders	cm	draft	readable	deep	
