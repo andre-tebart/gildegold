@@ -4328,7 +4328,7 @@ exe	0x005a8870	ai_DrawSettingGood	lc	shape	readable
 exe	0x005a88e0	ai_SettingFactor	lc	byte	readable		
 exe	0x005a8900	ai_SetSettingFactor	lc	byte	readable		
 exe	0x005a8920	ai_FreeSettings	lc	byte	readable		
-exe	0x005a8940	ai_SaveSettings	lc	draft	draft		
+exe	0x005a8940	ai_SaveSettings	lc	shape	readable		
 exe	0x005a8a20	ai_LoadSettings	lc	byte	readable		
 exe	0x005a8b80	ai_ShowIndulgenceNews	lc	byte	readable		
 exe	0x005a8c00	ai_ShowPaymentNews	lc	byte	readable		
@@ -4353,8 +4353,8 @@ exe	0x005a9690	ai_TellGraveNeglect	lc	byte	readable
 exe	0x005a96e0	ai_NotifySale	lc	byte	readable		
 exe	0x005a9780	ai_TellGravesPaid	lc	byte	readable		
 exe	0x005a97e0	ai_ShowGraveOrderExtended	lc	byte	readable		
-exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	draft	draft		
-exe	0x005a9910	ai_HauntingText	lc	draft	draft		
+exe	0x005a9880	ai_ShowGraveOrderCancelled	lc	byte	readable		
+exe	0x005a9910	ai_HauntingText	lc	byte	readable		
 exe	0x005a9990	ai_TellGraveWorkSuccess	lc	byte	readable		
 exe	0x005a99e0	ai_TellGraveWorkFailure	lc	byte	readable		
 exe	0x005a9a30	ai_GraveyardMessage	lc	draft	readable	deep	
@@ -4367,10 +4367,10 @@ exe	0x005a9d00	ai_DomizilMessageAge	lc	byte	readable
 exe	0x005a9d60	ai_DomizilMessageTask	lc	byte	readable		
 exe	0x005a9dd0	ai_DomizilMessagePlace	lc	byte	readable		
 exe	0x005a9e40	ai_DomizilMessage12	lc	byte	readable		
-exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	draft	draft		
+exe	0x005a9e90	ai_RandomDomizilGoodNotIn	lc	draft	readable	deep	
 exe	0x005a9f10	ai_DomizilGoodInRange	lc	shape	readable		
-exe	0x005a9f80	ai_AskBonusAmount	lc	draft	draft		
-exe	0x005aa0d0	ai_CreatePersonnelRow	lc	draft	draft		
+exe	0x005a9f80	ai_AskBonusAmount	lc	shape	readable		
+exe	0x005aa0d0	ai_CreatePersonnelRow	lc	shape	readable		
 exe	0x005aa1f0	ai_FillPersonnelRow	lc	byte	readable		
 exe	0x005aa4b0	ai_DomizilFreeRow	lc	byte	readable		
 exe	0x005aa520	ai_FillVacantPersonnelRow	lc	byte	readable		
@@ -4378,13 +4378,13 @@ exe	0x005aa700	ai_ShowBldCarts	lc	draft	readable	deep
 exe	0x005aa9a0	ai_UpdateBldCarts	lc	draft	readable	deep	
 exe	0x005aab80	ai_PersonnelBook	lc	draft	readable	deep	
 exe	0x005ac110	ai_MercenaryBook	lc	draft	readable	deep	
-exe	0x005ad000	ai_AskHelperBonus	lc	draft	draft		
+exe	0x005ad000	ai_AskHelperBonus	lc	shape	readable		
 exe	0x005ad150	ai_HelperBook	lc	draft	readable	deep	
 exe	0x005ae240	ai_BuyCartWindow	lc	shape	readable		
 exe	0x005ae570	ai_SellCarts	lc	byte	readable		
 exe	0x005ae6b0	ai_Unk5ae6b0	lc	draft	draft		
 exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
-exe	0x005ae8e0	ai_CartAtBuilding	lc	draft	draft		
+exe	0x005ae8e0	ai_CartAtBuilding	lc	shape	readable		
 exe	0x005ae9a0	ai_Unk5ae9a0	lc	draft	draft		
 exe	0x005af010	ai_Unk5af010	lc	draft	draft		
 exe	0x005af1a0	ai_OpenTransport	lc	byte	readable		
@@ -4402,7 +4402,7 @@ exe	0x005b3f30	ai_BeatingCallback	lc	draft	draft
 exe	0x005b4340	ai_Unk5b4340	lc	draft	draft		
 exe	0x005b4590	ai_EvidenceBookWindow	lc	draft	draft		
 exe	0x005b4820	ai_Unk5b4820	lc	draft	draft		
-exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	draft		
+exe	0x005b4bf0	ai_OpenRobberBribe	lc	draft	draft	deep	
 exe	0x005b4c60	ai_DrohbriefAmountCB	lc	draft	draft		
 exe	0x005b4fb0	ai_DrohbriefWindow	lc	byte	readable		
 exe	0x005b5010	ai_DenounceWindow	lc	draft	draft		
