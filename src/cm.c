@@ -2004,7 +2004,7 @@ void cm_SendCharHalt(int a)
     G17MSG m;
 
     m.type = 0x4d;
-    G17_I(m, 0) = a;
+    m.halt.charId = a;
     cm_QueueSend(&m);
 }
 /* 0x4c5bc0, message 0x4e with two texts */

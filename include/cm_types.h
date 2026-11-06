@@ -550,9 +550,9 @@ typedef struct G17LOADSIZEMSG {         /* 4 bytes, the data of message 8 (cm_Se
 } G17LOADSIZEMSG;
 
 typedef struct G17CHARIDMSG {           /* 4 bytes, the data of the messages that carry one character id: 0x31
-                                           (cm_SendChrStop, its handler 0x4c9c10 stops the actions of "sp_<charId>")
-                                           and 0x43 (cm_SendSkillsChanged, its handler 0x4cb850 shows its building
-                                           objects) */
+                                           (cm_SendChrStop, its handler 0x4c9c10 stops the actions of "sp_<charId>"),
+                                           0x43 (cm_SendSkillsChanged, its handler 0x4cb850 shows its building
+                                           objects) and 0x4d (cm_SendCharHalt, its handler 0x4cbff0) */
     int charId;                         /* 0x00, the character */
 } G17CHARIDMSG;
 
@@ -628,6 +628,7 @@ typedef struct G17MSG {                 /* 0x99 bytes, a game message (its head 
         G17HELLOMSG hello;              /* 0x10, message 3 */
         G17LOADSIZEMSG load;            /* 0x10, message 8 */
         G17CHARIDMSG stop;              /* 0x10, message 0x31 */
+        G17CHARIDMSG halt;              /* 0x10, message 0x4d */
         G17CARTSTATEMSG cart;           /* 0x10, message 0x33 */
         G17STAGEMSG stage;              /* 0x10, message 0x34 */
         G17ANIMMSG anim;                /* 0x10, message 0x37 */
