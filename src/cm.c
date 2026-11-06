@@ -6646,9 +6646,11 @@ G18LOG *cm_LobbyChatFirst()
     }
     return &cm_LobbyChat[i];
 }
-/* 0x4cd4c0, the next line of the ring (0: no more) */
+/* 0x4cd4c0, the next line the lobby chat window reads after cm_LobbyChatFirst: advances the read index
+   cm_LobbyChatPos (15 wraps to 0) and returns that line; 0 when the cursor reaches the write index
+   cm_LobbyChatNext */
 
-G18LOG *ai_Unk4cd4c0()
+G18LOG *cm_LobbyChatNextLine()
 {
     int i = cm_LobbyChatPos;
 

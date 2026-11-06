@@ -501,7 +501,7 @@ char *cm_LobbyFreeRecord();  /* 0x4cd350 */
 char *cm_LobbyRecord(int id);  /* 0x4cd380 */
 void cm_LobbyAddChat(int id, int to, char *text);  /* 0x4cd3c0 */
 G18LOG *cm_LobbyChatFirst();  /* 0x4cd480 */
-G18LOG *ai_Unk4cd4c0();  /* 0x4cd4c0 */
+G18LOG *cm_LobbyChatNextLine();  /* 0x4cd4c0 */
 void cm_LobbyClearChat();  /* 0x4cd500 */
 int cm_LobbyAllReady();  /* 0x4cd510 */
 void cm_LobbyStart(int a, int b);  /* 0x4cd580 */

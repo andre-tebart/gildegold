@@ -602,7 +602,7 @@ void lobby_ShowChat(void)
             sprintf(text, (char *)(unsigned)&full_data_62aad0, id, (char *)(p + 0x40), U_I((unsigned)&full_data_144abf8), (char *)p);
         }
         id = io_PrintText(text);
-        p = ai_Unk4cd4c0();
+        p = cm_LobbyChatNextLine();
     }
     if (U_I((unsigned)&full_data_6f2680) < U_I((unsigned)&full_data_6f2684) && -1 < id &&
         *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I((unsigned)&d2_LastWindow) * 0x3c4) < q) {
