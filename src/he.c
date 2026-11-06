@@ -23029,7 +23029,7 @@ void he_AllocEvent9a(int ev)
     AIJOB *e = (AIJOB *)ev;
 
     e->end = ai_Time;
-    if (he_NoEvent9aFor(e->bldId, gm_FindChar(e->id2)) != 0) {
+    if (he_NoEvent9aFor(e->bldId, (AICHAR *)gm_FindChar(e->id2)) != 0) {
         gm_AddTime(&e->end, 0x18, 0, 0);
         cm_SendExSetHE(0, ev);
     }
@@ -23152,14 +23152,14 @@ int he_SecretRoomAttack(int a, unsigned short *b, int c)
     }
     return 0;
 }
-/* 0x56f360, 1 when no running event of the type 0x9a has both +0xac == a and +0xb0 == the dword at b + 4; 0 when one does */
+/* 0x56f360, 1 when no running event of the type 0x9a has both the building bldId and the netId of the character c; 0 when one does */
 
-int he_NoEvent9aFor(int a, int b)
+int he_NoEvent9aFor(int bldId, AICHAR *c)
 {
-    int r;
+    AIJOB *r;
 
-    for (r = (int)he_FindEvent(1, 0, 0x9a); r != 0; r = (int)he_NextEvent()) {
-        if (HM_I(r, 0xac) == a && HM_I(r, 0xb0) == *(int *)(b + 4))
+    for (r = (AIJOB *)he_FindEvent(1, 0, 0x9a); r != 0; r = (AIJOB *)he_NextEvent()) {
+        if (r->bldId == bldId && r->id2 == c->netId)
             return 0;
     }
     return 1;
