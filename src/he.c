@@ -604,7 +604,7 @@ typedef struct HEEV17 {                 /* the event type 0x17's words over AIJO
     char pad00[0xb4];
     AITIME due;                         /* 0xb4, the due clock the allocation handler copies to AIJOB.end */
 } HEEV17;
-typedef struct HESABOTAGE {             /* the sabotage event 25's words over AIJOB's union (he_Unk558e70 / he_RunSabotage);
+typedef struct HESABOTAGE {             /* the sabotage event 25's words over AIJOB's union (he_AllocSabotage / he_RunSabotage);
                                            AIJOB.from is the building the saboteur is hired at and goes back to */
     char pad00[0xac];
     int target;                         /* 0xac, the id of the building attacked */
@@ -13735,23 +13735,27 @@ void he_RunEvent17(int ev)
         break;
     }
 }
-/* 0x558e70, the allocation handler of the "SABOTAGE" message event: due now + 1; with no building (+0x10 = -1) the first of the kind 0x16 (else 0xf) is taken; +0xc4 = -1 and +0xc8 = 0x4c59f0 (0, +0x10, -1, 0, 1, 0x174, "SABOTAGE") */
+/* 0x558e70, the allocation handler of the sabotage event 25 ("SABOTAGE"): the due clock is now + 1 minute; with no
+   building (AIJOB.from -1) the first inn (kind 0x16, else 0xf) is taken; the saboteur is -1 and the spawn request's
+   slot goes to HESABOTAGE.slot */
 
-void he_Unk558e70(int ev)
+void he_AllocSabotage(int ev)
 {
-    int b;
+    AIJOB *e = (AIJOB *)ev;
+    HESABOTAGE *s = (HESABOTAGE *)ev;
+    AIBLD *b;
 
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    gm_AddTime(ev + 0x52, 0, 1, 0);
-    if (*(int *)(ev + 0x10) == -1) {
-        b = gm_BuildQuery(1, 5, 0x16);
+    e->end = ai_Time;
+    gm_AddTime(&e->end, 0, 1, 0);
+    if (e->from == -1) {
+        b = (AIBLD *)gm_BuildQuery(1, 5, 0x16);
         if (b == 0)
-            b = gm_BuildQuery(1, 5, 0xf);
+            b = (AIBLD *)gm_BuildQuery(1, 5, 0xf);
         if (b != 0)
-            *(int *)(ev + 0x10) = *(int *)(b + 1);
+            e->from = b->id;
     }
-    *(int *)(ev + 0xc4) = -1;
-    *(int *)(ev + 0xc8) = ((int (*)(int, int, int, int, int, int, const char *))cm_SendSpawnCharacter)(0, *(int *)(ev + 0x10), -1, 0, 1, 0x174, "SABOTAGE");
+    s->saboteur = -1;
+    s->slot = cm_SendSpawnCharacterR(0, e->from, -1, 0, 1, 0x174, "SABOTAGE");
 }
 
 int gv_Accuse();
@@ -13762,7 +13766,7 @@ int ord_DispatchOrder(int id, char *c, int *m);
 int ai_InventoryHas(void *ch, int id);
 void gm_SendMoneyDelta(int a, int b);
 
-/* 0x558f10, the run handler of the sabotage event 25 (HESABOTAGE; allocated by he_Unk558e70, which asks for the
+/* 0x558f10, the run handler of the sabotage event 25 (HESABOTAGE; allocated by he_AllocSabotage, which asks for the
    saboteur, "SABOTAGE"). Every stage waits while a cm request is pending (HESABOTAGE.slot). Stage 0: the spawned
    saboteur (none: cancelled) is paid for by the event's character (its player record's spyPaid, a money move to the
    own player) and joins the event's group. 1: it walks to the target building (gone: cancelled). 2: once arrived
@@ -20115,7 +20119,7 @@ int he_RegisterEventTypes02(void)
     sv_RegisterActivity(22, "Trainieren", 0, 1289, -1);
     if (he_SetEventHandlers(23, (void *)he_AllocEvent17, (void *)he_RunEvent17) != 0)
         return 1;
-    if (he_SetEventHandlers(25, (void *)he_Unk558e70, (void *)he_RunSabotage) != 0)
+    if (he_SetEventHandlers(25, (void *)he_AllocSabotage, (void *)he_RunSabotage) != 0)
         return 1;
     if (he_SetEventHandlers(24, (void *)he_AllocSpying, (void *)he_RunSpying) != 0)
         return 1;
