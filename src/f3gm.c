@@ -477,7 +477,7 @@ struct AMTKIND; int amt_GetKind(int k, struct AMTKIND *out);                   /
 float gm_AddHealth(unsigned short id, int d);  /* 0x4fca40 */
 float gm_GetSkill(char *c, int skill);                     /* 0x504ec0 */
 float gm_Mix(int a, int b, int c);                     /* 0x504e20 */
-void ai_BeginNeedBlock(char *p);                     /* 0x4c3e70 */
+void ai_BeginNeedBlock(struct AICHAR *p);                     /* 0x4c3e70 */
 int ai_AddNeedDelta(int k, float v);                     /* 0x4c3eb0 */
 void ai_SendNeedBlock(void);                     /* 0x4c4a20 */
 void gm_ShiftLoyalty();                   /* 0x4fb0e0 */
@@ -674,7 +674,7 @@ void gm_UpdateWorthMood(void)
         gm_NetMsgCount++;
         cm_SendFloatDelta(c->netId, 0x1e4, -(c->mood3Rate - (float)((lim + q) * 0.5)));
         q = -(c->mood[3][2] - c->mood[3][2] * 0.95);
-        ai_BeginNeedBlock((char *)c);
+        ai_BeginNeedBlock(c);
         ai_AddNeedDelta(3, q);
         ai_SendNeedBlock();
         gm_NetMsgCount++;

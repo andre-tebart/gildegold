@@ -64,7 +64,7 @@ extern int ai_NeedBlockLen;                /* 0xa68d20, bytes used in ai_NeedBlo
 extern G17MSG *cm_RecvQueue;            /* 0xa68d24, the received messages */
 extern char *cm_FieldObject;              /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 extern int cm_SplitMsgLen;                /* 0xa68d30, length of cm_SplitMsg */
-extern char *ai_Unka68d34;              /* 0xa68d34 */
+extern struct AICHAR *ai_NeedBlockChar;       /* 0xa68d34 */
 extern unsigned char cm_LongMsg[];    /* 0xa68d40, a joined long message */
 extern G17MSG cm_SendRing[0x8000];     /* 0xa69140, the send ring */
 extern G17STAT cm_SendStates[0x8000];    /* 0xf31160 */
@@ -178,7 +178,7 @@ void cm_BeginFieldBlock(char *o, int id);                                       
 int cm_AddFieldDelta(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3c00 */
 int cm_AddFieldValues(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3d00 */
 int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, void *v); /* 0x4c3d90 */
-void ai_BeginNeedBlock(char *p);                                                      /* 0x4c3e70 */
+void ai_BeginNeedBlock(struct AICHAR *p);                                             /* 0x4c3e70 */
 int ai_AddNeedDelta(int k, float v);                                        /* 0x4c3eb0 */
 void cm_SetSpeedLevel(unsigned int v);                                               /* 0x4c3ef0 */
 void cm_RaiseSpeedLevel(void);                                                         /* 0x4c3f20 */

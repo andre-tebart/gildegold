@@ -722,7 +722,7 @@ int amt_ApplyForOffice(char *c, unsigned int kind);                             
 int ai_ExecuteBuyBuilding(G5CH *p, AIARG *s1);                            /* 0x498470 */
 
 int ai_GetDesireByName(char *s);                                      /* 0x4a47c0, a need name -> index */
-void ai_BeginNeedBlock(char *p);                                     /* 0x4c3e70 */
+void ai_BeginNeedBlock(struct AICHAR *p);                            /* 0x4c3e70 */
 int ai_AddNeedDelta(int k, float v);                    /* 0x4c3eb0 */
 void ai_SendNeedBlock(void);                                        /* 0x4c4a20 */
 int gm_ExpectedDeathAge(char *c);                                      /* 0x4fc7a0 */

@@ -3680,7 +3680,7 @@ int ai_ExecuteAction(int i)
     int k;
 
     if (G5_CHARS[i].act != 0 && G5_ACTS[G5_CHARS[i].act].exec != 0 && G5_ACTS[G5_CHARS[i].act].exec(p, &p->arg1, &p->arg2) != 0) {
-        ai_BeginNeedBlock(p);
+        ai_BeginNeedBlock((struct AICHAR *)p);
         for (k = 0; k < 4; k++) {
             if (G5_ACTS[p->prev].w1[k].k < 14)
                 ai_AddNeedDelta(G5_ACTS[p->prev].w1[k].k, G5_ACTS[p->prev].w1[k].w * -0.5f);

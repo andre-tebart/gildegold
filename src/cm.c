@@ -776,15 +776,15 @@ int cm_AddFieldValue(unsigned char size, unsigned char n, unsigned short field, 
     }
     return 0;
 }
-/* 0x4c3e70, starts the second field block about p (its id at +4) */
+/* 0x4c3e70, starts the second field block about the character p (its netId) */
 
-void ai_BeginNeedBlock(char *p)
+void ai_BeginNeedBlock(struct AICHAR *p)
 {
-    ai_NeedBlock.id = *(int *)(p + 4);
+    ai_NeedBlock.id = p->netId;
     ai_NeedBlock.n = 0;
     memset(ai_NeedBlock.buf, 0, sizeof(ai_NeedBlock.buf));
     ai_NeedBlockLen = 0;
-    ai_Unka68d34 = p;
+    ai_NeedBlockChar = p;
 }
 /* 0x4c3eb0, adds the pair (k, v) to the second field block */
 
@@ -16799,7 +16799,7 @@ extern int ai_NeedBlockLen;
 extern G17MSG * cm_RecvQueue;
 extern char * cm_FieldObject;
 extern int cm_SplitMsgLen;
-extern char * ai_Unka68d34;
+extern struct AICHAR * ai_NeedBlockChar;
 extern unsigned char cm_LongMsg[1024];
 extern G17MSG cm_SendRing[0x8000];
 extern char * cm_LoadBuf;
@@ -17041,7 +17041,7 @@ int ai_NeedBlockLen = 0;  /* 0xa68d20, bytes used in ai_NeedBlock.buf */
 G17MSG * cm_RecvQueue = 0;  /* 0xa68d24, the received messages */
 char * cm_FieldObject = 0;  /* 0xa68d2c, the object of the field block (fields are offsets into it) */
 int cm_SplitMsgLen = 0;  /* 0xa68d30, length of cm_SplitMsg */
-char * ai_Unka68d34 = 0;  /* 0xa68d34 */
+struct AICHAR * ai_NeedBlockChar = 0;  /* 0xa68d34, the character ai_BeginNeedBlock builds the block for */
 unsigned char cm_LongMsg[1024] = {0};  /* 0xa68d40, a joined long message */
 G17MSG cm_SendRing[0x8000] = {0};  /* 0xa69140, the send ring */
 char * cm_LoadBuf = 0;  /* 0xf31140, the load buffer ("cm_LoadBuf") */
