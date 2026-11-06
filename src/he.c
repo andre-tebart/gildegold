@@ -25653,11 +25653,11 @@ int he_HasEvent9f(AICHAR *a)
 {
     return he_FindEvent(2, 0, 0x9f, 2, a->id) != 0;
 }
-/* 0x5741d0, the event of the type 0xa0 whose +0x10 argument is the word after `a` (0x53e400 (2, 0, 0xa0, 3, ..)), 0 when none */
+/* 0x5741d0, the curse event 0xa0 the building `a` sent (he_FindEvent (2, 0, 0xa0, 3, a->id): its from id), 0 when none */
 
 char *ai_FindCurseEvent(char *a)
 {
-    return he_FindEvent(2, 0, 0xa0, 3, *(int *)(a + 1));
+    return he_FindEvent(2, 0, 0xa0, 3, ((AIBLD *)a)->id);
 }
 /* 0x574120, the alloc of the event 0xa0: nothing while paused (opts & 4); start and end = now; when gm_AllowAll is set
    the end moves 1 hour ahead, else 24 hours with the hour 0x13 + random (2); the minute 0 and the handler scheduled with 0 */
