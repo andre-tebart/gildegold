@@ -1085,6 +1085,9 @@ typedef struct HEAHMDAY {               /* the alchemist's daily laboratory even
     char pad00[0xac];
     int bonus;                          /* 0xac, nonzero: the next run adds a bonus to the alchemist record's value
                                            instead of the roll (0 at the start; he_LabIncident sets it to the mishap it ran) */
+    int payloadB0;                      /* 0xb0, a kind-specific payload word the alloc clears to -1 (none); no handler of
+                                           event 0x98 reads it, cm_SendExSetHE sends it in the event's data block */
+    int payloadB4;                      /* 0xb4, the second such word, -1: none */
 } HEAHMDAY;
 typedef struct HEHAUNTING {             /* the graveyard owner's haunting event 0x88's words over AIJOB's union (the message's
                                            arg[0 .. 3]: am.c ai_ExecGraveyardOwner0, sv_t.c; he_AllocHaunting / he_RunHaunting) */
@@ -22483,26 +22486,25 @@ void he_RunTrainShare(int ev)
 }
 /* 0x56dd20, the alloc of the research event 0x98 (not while paused, flags +0x78 & 4): the clock +0x52 = now, the hour set to a random 9 .. 16 (or 13 on the next day from 20 on), +0xac = 0, +0xb0 / +0xb4 = -1, and the handler scheduled (0x4c4c60) into +0x84 */
 
-void he_AllocAlchemistDay(int ev)
+void he_AllocAlchemistDay(AIJOB *e)
 {
+    HEAHMDAY *d = (HEAHMDAY *)e;
     int h;
 
-    if (*(unsigned char *)(ev + 0x78) & 4)
+    if (e->opts & 4)
         return;
-    *(AITIME *)(ev + 0x52) = ai_Time;
-    if (*(unsigned short *)(ev + 0x56) < 0x14) {
-        if (*(unsigned short *)(ev + 0x56) < 9) {
-            h = util_Random(8);
-            *(unsigned short *)(ev + 0x56) = h + 9;
-        }
-    } else {
-        *(unsigned short *)(ev + 0x56) = 0xd;
-        *(int *)(ev + 0x52) += 1;
+    e->end = ai_Time;
+    if (e->end.hour > 0x13) {
+        e->end.hour = 0xd;
+        e->end.year += 1;
+    } else if (e->end.hour < 9) {
+        h = util_Random(8);
+        e->end.hour = h + 9;
     }
-    *(int *)(ev + 0xac) = 0;
-    *(int *)(ev + 0xb0) = -1;
-    *(int *)(ev + 0xb4) = -1;
-    *(int *)(ev + 0x84) = cm_SendExSetHE(0, ev);
+    d->bonus = 0;
+    d->payloadB0 = -1;
+    d->payloadB4 = -1;
+    e->exSlot = cm_SendExSetHE(0, (char *)e);
 }
 /* 0x56ddc0, true when the room `kind` of the building b (0x24b the alchemist's laboratory, 0x256 the cannon
    room, 0x266 the cabinet) is locked (a task runs in it): its object (0x4ffe90 (b->objList, 2, 6, 0, kind))
