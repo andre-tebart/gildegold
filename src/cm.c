@@ -72,6 +72,7 @@ extern GAPDATA full_data_602568[];
 extern GAPDATA full_data_60d5a4[];
 extern GAPDATA full_data_60d5b4[];
 extern GAPDATA full_data_92bcb8[];
+extern GAPDATA full_rdata_5ebb40[];
 
 
 #define G17_I(m, o) (*(int *)&(m).data[o])
@@ -132,6 +133,7 @@ extern GAPDATA full_data_92bcb8[];
 #define d2_ObjsC (*(char **)&d2_Objs)  /* 0xf8f080, d2_Objs (d2.c: D2OBJ *) read bytewise, as this unit does (+ obj * 0x2ec) */
 #define ai_GoodsT (*(AIGOOD **)&ai_Goods)  /* 0x91aaf0, ai_Goods (cm.h: char *) as the AIGOOD records it points to */
 #define cm_CutInfosT (*(CMCUTINFO (*)[16])&cm_CutInfos)  /* 0x92cae0, cm_CutInfos (char[16][0x35c]) as the cutscene records */
+#define ai_FloatHundred (*(float *)&full_rdata_5ebb40)  /* 0x5ebb40, VC6's pooled 100.0f (main.c's rdata gap block) */
 #define cm_LongMsgCut (*(CMCUTINFO *)&cm_LongMsg)  /* 0xa68d40, cm_LongMsg (cm.h: unsigned char[]) as the cutscene record message 0x26 joins */
 #define ai_BTypesT (*(AIBTYPE **)&ai_BTypes)  /* 0x7e3f30, ai_BTypes (cm.h: char *) as the AIBTYPE records it points to */
 #define ai_TimeCopyT (*(AITIME *)&ai_TimeCopy)  /* 0x75e130, ai_TimeCopy (cm.h: int[4]) as the AITIME copy it holds */
@@ -16791,11 +16793,11 @@ int cm_DialogTimer(int dlg, int a, int c)
 
     v = 100;
     if (c != 0) {
-        ai_Unk6f0dc0 = d3_Time;
-        ai_Unk60d374 = a;
+        cm_DialogStart = d3_Time;
+        cm_DialogLength = a;
         d2_SetObjEnabled(dlg, 0);
     } else {
-        v = (int)((1.0f - (float)(unsigned int)(d3_Time - ai_Unk6f0dc0) / ai_Unk60d374) * 100.0f);
+        v = (int)((ai_FloatOne - (float)(unsigned int)(d3_Time - cm_DialogStart) / cm_DialogLength) * ai_FloatHundred);
         v = v > 0 ? v : 0;
     }
     d2_SetObjValue(dlg, 0, 100, v);
@@ -17154,7 +17156,7 @@ int cm_SceneDuration = 10;  /* 0x60d364 */
 int cm_TextBox = -1;  /* 0x60d368 */
 int cm_SceneEnterScript = -1;  /* 0x60d36c, -1 or the object waited for ( */
 int cm_DuelVariantCount = 1;  /* 0x60d370, the number of duel variants in cm_DuelVariants (cm_DuelInitVariants) */
-int ai_Unk60d374 = 1;  /* 0x60d374 */
+int cm_DialogLength = 1;  /* 0x60d374 */
 char ai_Unk60dd24 = 48;  /* 0x60dd24 */
 char ai_Unk60dd68 = 49;  /* 0x60dd68 */
 /* 0x4db700 .. 0x4dd95d (one function; Ghidra's 0x4dc7c0 lies inside it), the trial scene (the run function of the scene kind 2, called with the party m) of a session request m (+0x30 count, +0x34 .. +0x48 the characters: accused, accuser, judge, two
@@ -17236,7 +17238,7 @@ int cm_DuelVariantPos = 0;  /* 0x6f0db0, the cursor into cm_DuelVariants (cm_Due
 struct D3SKYLAYER *cm_SkyLayer = 0;  /* 0x6f0db4 */
 struct D3SKY *cm_SceneSky = 0;  /* 0x6f0db8 */
 int cm_SceneRain = 0;  /* 0x6f0dbc */
-int ai_Unk6f0dc0 = 0;  /* 0x6f0dc0 */
+int cm_DialogStart = 0;  /* 0x6f0dc0 */
 char cm_MessageBoxOpen = 0;  /* 0x6f0dc4 */
 char * ai_PickedObject = 0;  /* 0x6f22e8 */
 int ai_PickedChar = 0;  /* 0x6f22f8 */

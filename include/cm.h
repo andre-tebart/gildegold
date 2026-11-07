@@ -1113,9 +1113,9 @@ void cm_InitScenes(void);  /* 0x4e5770, clears the party records and registers t
 
 
 extern unsigned int cut_RandState;  /* 0x92c4e0, the random seed of the scenes */
-extern int ai_Unk6f0dc0;  /* 0x6f0dc0 */
+extern int cm_DialogStart;  /* 0x6f0dc0 */
 
-extern int ai_Unk60d374;  /* 0x60d374 */
+extern int cm_DialogLength;  /* 0x60d374 */
 
 int d2_CreateRadioGroup(int n, ...);  /* 0x46c490 */
 void d2_RadioAdd(int g, int obj);  /* 0x46c560 */
