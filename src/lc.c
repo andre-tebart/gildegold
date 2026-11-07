@@ -29055,24 +29055,25 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
     d2_CloseView(win);
     return 2;
 }
-/* 0x5c72d0, a bar chart of the 0x91ab10 table (393 B, ROUGH): the thresholds 500 / 1000 / 2000 / 4000 /
-   8000 / 10000 / 15000 / 20000 / 50000; the maximum of the table entries 0x91ab10 + i * 0x14 (5 dwords);
-   the value param_6 clamped up to the smallest threshold above it; the bars 0x4764f0 (0x2d + i * the
-   scale, the float field of the entry) with the scale (param_6 - 0x69) / 16; the last bar at
-   (scale * 3 + 9) * 5. Returns the clamped value. ROUGH: the float arguments of 0x4764f0 are lost in
-   Ghidra (the __ftol pairs) */
+/* 0x5c72d0, the rating chart of the statistics window (ai_Unk5c7970, its flag 1; 393 B): the top value is the
+   first of the thresholds 500 .. 20000 above the highest of the rounds' rating bases (ord_StatisticsHistory[].base)
+   and the running ai_RatingBase (else that value); the rounds' bases are drawn as grey (0x33) line segments, scale
+   = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by (height - 0x1e) / top per unit, the last one
+   to the running ai_RatingBase. v0 .. v9 (the window's ten values) are not read. Returns the top value */
 
-int ai_Unk5c72d0(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
-                 int param_7, int param_8, int param_9, int param_10, int param_11, int param_12)
+int ai_PlotRatingBaseChart(int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7, int v8, int v9,
+                           int width, int height)
 {
+    float bottom;
     int limits[9];
-    int max;
     int scale;
-    int v;
-    int i;
+    int top;
     int x;
-    int *p;
+    int i;
+    float unit;
 
+    scale = (width - 0x69) / 16;
+    top = -1;
     limits[0] = 500;
     limits[1] = 1000;
     limits[2] = 2000;
@@ -29082,26 +29083,28 @@ int ai_Unk5c72d0(int param_1, int param_2, int param_3, int param_4, int param_5
     limits[6] = 15000;
     limits[7] = 20000;
     limits[8] = 50000;
-    scale = (param_11 - 0x69) / 16;
-    max = -1;
-    for (p = (int *)((unsigned)&ord_StatisticsHistory + 0x10); p < (int *)((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x10); p += 5) {
-        if (max < *p)
-            max = *p;
+    for (i = 0; i < 16; i++) {
+        if (ord_StatisticsHistory[i].base > top)
+            top = ord_StatisticsHistory[i].base;
     }
-    v = max;
+    top = (int)max(ai_RatingBase, (float)top);
     for (i = 0; i < 8; i++) {
-        if (v < limits[i]) {
-            v = limits[i];
+        if (top < limits[i]) {
+            top = limits[i];
             break;
         }
     }
+    unit = (float)(height - 0x1e) / top;
+    bottom = (float)(height - 0x16);
     x = 0x2d;
-    for (p = (int *)((unsigned)&ord_StatisticsHistory + 0x10); p < (int *)((unsigned)&ord_StatisticsHistory + 0x13c); p += 5) {
-        d2_PlotLine(x, (int)*(float *)((char *)p - 4));
+    for (i = 0; i < 15; i++) {
+        d2_PlotLine(x, (int)(bottom - ord_StatisticsHistory[i].base * unit), x + scale,
+                    (int)(bottom - ord_StatisticsHistory[i + 1].base * unit), 0x33, 0x33, 0x33);
         x += scale;
     }
-    d2_PlotLine((scale * 3 + 9) * 5, (int)*(float *)((char *)((unsigned)&ord_StatisticsHistory + 0x13c) - 4));
-    return v;
+    d2_PlotLine(0x2d + scale * 15, (int)(bottom - ord_StatisticsHistory[15].base * unit), 0x2d + scale * 16,
+                (int)(bottom - ai_RatingBase * unit), 0x33, 0x33, 0x33);
+    return top;
 }
 /* 0x5c7460, the second bar chart (640 B, ROUGH): the maximum of the floats 0x91ab0c + i * 0x14, the
    bars 0x4764f0 (0x2d + i * the scale, the float) with the colour 0x10 / 0xee / 0x10 and the scale
@@ -29259,7 +29262,7 @@ void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_
     w = *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + param_12 * 0x3c4);
     scale = (h - 0x69) / 16;
     if (param_1 & 1)
-        ret = ai_Unk5c72d0(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9,
+        ret = ai_PlotRatingBaseChart(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9,
                            param_10, param_11, h - 1, w);
     *(char *)(unsigned)&d2_PenSize = 1;
     if (param_1 & 2)
