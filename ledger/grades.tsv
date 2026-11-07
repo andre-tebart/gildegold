@@ -4445,7 +4445,7 @@ exe	0x005bc0f0	ai_FreePicture	lc	byte	readable
 exe	0x005bc110	ai_ChooseCoatOfArms	lc	byte	readable		
 exe	0x005bc420	ai_OpenMoneyInfoPage	lc	byte	readable		
 exe	0x005bc6d0	ai_OpenBuildingListPage	lc	byte	readable		
-exe	0x005bc790	ai_BuildingDetailWindow	lc	byte	readable		
+exe	0x005bc790	ai_BuildingDetailWindow	lc	shape	readable		
 exe	0x005bc9c0	ai_OpenMasterListPage	lc	draft	readable	deep	
 exe	0x005bcc70	ai_PlayerStatsPanel	lc	shape	readable		
 exe	0x005bd060	ai_AmountLimit	lc	byte	readable		
@@ -4459,15 +4459,15 @@ exe	0x005bd5e0	ai_ShowAmountRows	lc	draft	readable	deep
 exe	0x005bdb60	ai_ShowOfficeRows	lc	byte	readable		
 exe	0x005be1d0	ai_AmountRowStatus	lc	byte	readable		
 exe	0x005be3b0	ai_AmountRow	lc	byte	readable		
-exe	0x005be720	ai_DrawAmountRow	lc	draft	draft		
+exe	0x005be720	ai_DrawAmountRow	lc	byte	readable		
 exe	0x005bea00	ai_SpecialAmountList	lc	shape	readable		
-exe	0x005bea50	ai_SpecialAmountListWindow	lc	draft	draft		
-exe	0x005bf0d0	ai_Unk5bf0d0	lc	draft	draft		
-exe	0x005bf300	ai_Unk5bf300	lc	draft	draft		
-exe	0x005bf4f0	ai_Unk5bf4f0	lc	draft	draft		
-exe	0x005bf6f0	ai_Unk5bf6f0	lc	draft	draft		
-exe	0x005bf7c0	ai_Unk5bf7c0	lc	draft	draft		
-exe	0x005bfa90	ai_Unk5bfa90	lc	draft	draft		
+exe	0x005bea50	ai_SpecialAmountListWindow	lc	draft	readable	deep	
+exe	0x005bf0d0	ai_FillFamilyTab	lc	draft	readable	deep	
+exe	0x005bf300	ai_FillFriendsTab	lc	byte	readable		
+exe	0x005bf4f0	ai_FillEnemiesTab	lc	byte	readable		
+exe	0x005bf6f0	ai_FillLoversTab	lc	draft	readable	deep	
+exe	0x005bf7c0	ai_FillWeddingTab	lc	draft	readable	deep	
+exe	0x005bfa90	ai_FillQuarrelTab	lc	draft	readable	deep	
 exe	0x005bfc40	ai_Unk5bfc40	lc	draft	draft		
 exe	0x005bfd90	ai_Unk5bfd90	lc	draft	draft		
 exe	0x005bfed0	ai_AmountPageSwitch	lc	shape	readable		

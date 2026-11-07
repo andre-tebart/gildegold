@@ -23,12 +23,15 @@
    AIJOB.thiefClass / thief); the player stats panel (ai_PlayerStatsPanel) and its pages (ai_OpenMoneyInfoPage,
    ai_OpenBuildingListPage with ai_ShowBuildingRows, ai_OpenMasterListPage with its rows LCMASTERROW, the building
    detail ai_BuildingDetailWindow) and the coat of arms choice; lc_CharRecs reads ai_Chars as AICHARREC. The
-   special-amount lists build their rows (LCAMOUNTROW) with ai_ShowAmountRows / ai_ShowOfficeRows / ai_AmountRow
-   and ai_AmountRowStatus (lc.h declares the last two on struct LCAMOUNTROW).
+   special-amount lists build their rows (LCAMOUNTROW) with ai_ShowAmountRows / ai_ShowOfficeRows / ai_AmountRow /
+   ai_DrawAmountRow and ai_AmountRowStatus (lc.h declares them on struct LCAMOUNTROW); the list window
+   (ai_SpecialAmountListWindow) writes the corner icons in line, and the special-amount window's tab table
+   ai_AmountTabs fills its pages with ai_FillFamilyTab, ai_FillFriendsTab, ai_FillEnemiesTab, ai_FillLoversTab,
+   ai_FillWeddingTab and ai_FillQuarrelTab (one signature: me, max (0: count only), rows, the partner filter).
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS, LCKIDNAPEVENT (he.c's
-   HEEV3C) and LCRANSOMEVENT (he.c's HEEV3D, which no header holds) are local views over AIJOB / AIMSG.arg (the gang leader, the group members and
+   HEEV3C), LCRANSOMEVENT (he.c's HEEV3D) and LCOFFEREVENT (he.c's HEOFFER; no header holds these) are local views over AIJOB / AIMSG.arg (the gang leader, the group members and
    the watch plan words are written as AIMSG.arg[n]); a member added to ai_types.h's AIJOB or AIMSG unions moves the declaration-set matches of
    ord_CountGridObjects and ai.c's ai_Unk483a60 (both debt) and of sv_t's tutorial builders (tie-break).
    Open: types: the amount-menu config (AMOUNTCFG), the frame stack (SVFRAME, 0x75f780), the remaining character /
