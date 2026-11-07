@@ -24076,13 +24076,33 @@ int ai_OpenMoneyInfoPage(void)
     }
     return win;
 }
-/* 0x5bc6d0, a window over the player 0x6f25b8 (192 B, ROUGH SKELETON): a 0xc-byte frame; the body is a
-   comment */
+#define ai_StatsBldCount (*(int *)&full_data_6f2f80)  /* 0x6f2f80, the rows of the stats panel's building page (ai_ShowCarrierRows) */
+#define ai_StatsBldRows (*(int (*)[0x80])&full_data_6f4ce0)  /* 0x6f4ce0, the controls of the stats panel's building page rows */
 
-int ai_Unk5bc6d0(void)
+/* 0x5bc6d0, opens the building list page "panel\geb_liste_2" of the player stats panel (its second entry): the
+   caption 0xb2, the player's rows (ai_ShowCarrierRows into ai_StatsBldRows, their count in ai_StatsBldCount) under
+   scroll buttons; returns the form */
+
+int ai_OpenBuildingListPage(void)
 {
-    /* ROUGH SKELETON: the 0xc-byte frame */
-    return 0;
+    int bar;
+    int up;
+    int down;
+    int win;
+    AICHARREC *ch;
+
+    ch = &lc_CharRecs[ai_PlayerId];
+    win = d2_OpenForm(0, 0, "panel\\geb_liste_2");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(win, 1);
+    io_PrintText(0xb2);
+    d2_SetForm(win, 2);
+    ai_StatsBldCount = ai_ShowCarrierRows((unsigned short *)ch, 0x80, ai_StatsBldRows);
+    d2_SetForm(win, 0);
+    sv_CreateScrollButtons(0x206, 0x167, d2_LastWindow, d2_GetViewWin(win, 2), 0x40, &down, &up, &bar);
+    return win;
 }
 /* 0x5bc790, a window over the kind record 0x7e3f30 (560 B, ROUGH SKELETON): a 0x54-byte frame; the body is a
    comment */
@@ -24134,7 +24154,7 @@ int ai_PlayerStatsPanel(void)
     d2_SetForm(win, 3);
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 3, U_I((unsigned)&full_data_144a134), U_I((unsigned)&full_data_144a138), U_I((unsigned)&full_data_144a13c));
     ctrlA = ai_OpenMoneyInfoPage();
-    ctrlB = ai_Unk5bc6d0();
+    ctrlB = ai_OpenBuildingListPage();
     ctrlC = ai_Unk5bc9c0();
     id = d2_CreateRadioGroup(3, out[0], out[1], out[2]);
     off = id * 0x8c;
