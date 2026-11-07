@@ -16639,15 +16639,15 @@ int cm_PartyById(int id)
     }
     return 0;
 }
-/* 0x4e50e0, the member slot (0x92cae0, 0x35c bytes; the id at +0x10) with the id */
+/* 0x4e50e0, the cutscene record cm_CutInfos whose playerId is id; 0 without */
 
 int cm_CutInfoById(int id)
 {
     int i;
 
     for (i = 0; i < 16; i++) {
-        if (*(int *)(cm_CutInfos[i] + 0x10) == id)
-            return (int)cm_CutInfos[i];
+        if (cm_CutInfosT[i].playerId == id)
+            return (int)&cm_CutInfosT[i];
     }
     return 0;
 }
