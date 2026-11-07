@@ -2989,3 +2989,5 @@
 2026-11-07T17:20:32 0x004f7400 data ord_EspionageRelationOrder -> ord_PeaceOrder by:main why:its form is "privillegien\frieden_stiften" (0x62d5fc): the ask raises two characters relations to each other (+15..54 both ways)
 2026-11-07T17:22:45 0x005cc700 func ai_EspionagePayment2 -> ai_ConvertWindow by:main why:its form is "privillegien\bekehren" (0x62d61c): the ask sets the other-faith characters field 0xc (faith) to the asker's
 2026-11-07T17:22:45 0x004f7300 data ord_EspionagePaymentOrder2 -> ord_ConvertOrder by:main why:its form is "privillegien\bekehren" (0x62d61c): the ask sets the other-faith characters field 0xc (faith) to the asker's
+2026-11-07T17:27:38 0x005cca40 func ai_EspionageAmountWindow -> ai_PenanceWindow by:main why:its form is "privillegien\abbitte" (0x62d634): the ask pays 1..9 to retire as many crimes (gv_RetireCrimesOf)
+2026-11-07T17:27:38 0x004f74f0 data ord_EspionageAmountOrder -> ord_PenanceOrder by:main why:its form is "privillegien\abbitte" (0x62d634): the ask pays 1..9 to retire as many crimes (gv_RetireCrimesOf)

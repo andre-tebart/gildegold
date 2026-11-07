@@ -28847,7 +28847,8 @@ typedef struct LCORDMSG {          /* the message record of an order (gv.h ORDMS
     union {
         int law;                   /* 0x004, of the law orders: the decision record (AIDEC.id) the office may change
                                       (gv.h ORDMSG.law) */
-        int amount;                /* 0x004, of the bewitch order asked of the AI: what it pays, 1 .. 5 (ai_BewitchOrder) */
+        int amount;                /* 0x004, of the bewitch order asked of the AI: what it pays, 1 .. 5 (ai_BewitchOrder);
+                                      of the penance order: the crimes it buys off, 1 .. 9 (ai_PenanceWindow) */
     };
     int value;                     /* 0x008, of the law orders asked of the AI: the value it wants (ai_LawPrivilegeWindow) */
     char pad00c[8];
@@ -31478,71 +31479,64 @@ int ai_ConvertWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return done;
 }
-/* 0x5cca40, the espionage amount window 0x62d634 (455 B): param_1 is the message record (the AIMSG: +2
-   the type 6, +4 the handle, +0x194 the amount), param_2 the request (dword +4 the value 1 .. 9). Types
-   other than 6: the value outside 1 .. 9 or above the record +0x194 returns 0x60; the setter 0x4f3a30
-   (the handle, the value) and the close 0x4c5f60 (-the value), return 0. Type 6: the window 0x4741f0 /
-   0x476f80 / 0x475600 / 0x475f70 with the text 0x515960 (0x1dea) and the three controls 0x475b80
-   (t+1, t+2 and the slider t); the slider 0x475cb0 (1, 9, 1); the first click 0x475980 and 0x520f90
-   (the value) close 0x4c5f60 (-the value), set 0x4f3a30 and show 0x5176d0 (0x1deb, the result) /
-   0x521150, return 1; the second click sets 0x6f22a0; the pump 0x5309a0 (this, 0x657c7) and the end
-   0x4758f0. */
+/* 0x5cca40, the penance order's ask (ord_PenanceOrder, kinds 3 / 4) "privillegien\abbitte": me buys off its crimes,
+   one per money unit (1 .. 9): it pays them (cm_SendMoneyDelta) and its oldest open crimes are retired
+   (gv_RetireCrimesOf). The AI (not kind 6) names the number in m->amount: 0, or 0x60 when it is outside 1 .. 9 or
+   above its money. A player (kind 6) sets it on the window's slider (0x1dea) whose first button, when the player has
+   the money (sv_CheckMoney), does it and tells 0x1deb (the number retired); either button or a right click close
+   it. Returns 1 once it was done, else 0 */
 
-int ai_EspionageAmountWindow(int param_1, int *param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_PenanceWindow(AICHARREC *me, LCORDMSG *m)
 {
     char text[0x100];
     int win;
-    int btn1;
-    int btn2;
+    int ok;
+    int cancel;
     int slider;
     int t;
-    int value;
-    int v;
-    int ret;
+    int n;
+    int done;
 
-    ret = 0;
-    if (*(char *)(param_1 + 2) != 6) {
-        value = param_2[1];
-        if (value < 1 || value > 9 || value > *(int *)(param_1 + 0x194))
+    if (me->kind != 6) {
+        if (m->amount < 1 || m->amount > 9 || m->amount > me->money)
             return 0x60;
-        gv_RetireCrimesOf(*(int *)(param_1 + 4), value);
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), -value);
-        if (*(char *)(param_1 + 2) != 6)
-            return 0;
+        gv_RetireCrimesOf(me->netId, m->amount);
+        cm_SendMoneyDelta(me->netId, -m->amount);
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d634);
-    d2_SetPointerSprite(0, 0);
-    d2_CentreViewWindows(win);
-    d2_SetForm(win, 1);
-    t = io_PrintText(0x1dea);
-    btn1 = d2_GetWinObj(win, 1, t + 1);
-    btn2 = d2_GetWinObj(win, 1, t + 2);
-    slider = d2_GetWinObj(win, 1, t);
-    d2_SetObjValue(slider, 1, 9, 1);
-    *(int *)(unsigned)&d2_ClickedId = -1;
-    do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_PointerObj == btn1) {
-                value = d2_GetObjValue(slider);
-                if (sv_CheckMoney(param_1, value) != 0) {
-                    cm_SendMoneyDelta(*(int *)(param_1 + 4), -value);
-                    v = gv_RetireCrimesOf(*(int *)(param_1 + 4), value);
-                    txt_Format(text, (char *)0x1deb, v);
-                    sv_MessageBox(text, 0);
-                    ret = 1;
-                    *(int *)(unsigned)&sv_PopRequest = 1;
+    if (me->kind == 6) {
+        done = 0;
+        win = d2_OpenForm(0, 0, "privillegien\\abbitte");
+        d2_SetPointerSprite(0, 0);
+        d2_CentreViewWindows(win);
+        d2_SetForm(win, 1);
+        t = io_PrintText(0x1dea);
+        ok = d2_GetWinObj(win, 1, t + 1);
+        cancel = d2_GetWinObj(win, 1, t + 2);
+        slider = d2_GetWinObj(win, 1, t);
+        d2_SetObjValue(slider, 1, 9, 1);
+        d2_ClickedId = -1;
+        do {
+            if (d2_ClickedId != -1) {
+                if (d2_PointerObj == ok) {
+                    n = d2_GetObjValue(slider);
+                    if (sv_CheckMoney(me, n) != 0) {
+                        cm_SendMoneyDelta(me->netId, -n);
+                        txt_Format(text, 0x1deb, gv_RetireCrimesOf(me->netId, n));
+                        sv_MessageBox(text, 0);
+                        done = 1;
+                        sv_PopRequest = 1;
+                    }
+                } else if (d2_PointerObj == cancel) {
+                    sv_PopRequest = 1;
                 }
-            } else if (*(int *)(unsigned)&d2_PointerObj == btn2) {
-                *(int *)(unsigned)&sv_PopRequest = 1;
             }
-        }
-        if (*(int *)((unsigned)&dm_L + 0x20) != 0)
-            *(int *)(unsigned)&sv_PopRequest = 1;
-        if (sv_RunFrame(ai_EspionageAmountWindow, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    } while (1);
+            if (dm_L.rup)
+                sv_PopRequest = 1;
+        } while (sv_RunFrame((int)ai_PenanceWindow, 0x657c7) != 0);
+        d2_CloseView(win);
+        return done;
+    }
+    return 0;
 }
 /* 0x5ccc10, the espionage overview window (1738 B, ROUGH SKELETON: no Ghidra export; from the
    disassembly): a 0x1450-byte frame (__chkstk 0x5de9c0); param_1 is the message record (the AIMSG: +0
