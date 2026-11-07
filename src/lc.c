@@ -791,6 +791,7 @@ extern GAPDATA full_data_6f2f64[];
 #define ai_TransportEscort (*(char *)&full_data_6f2f64)  /* 0x6f2f64, the escort kind of the last transport order (ai_TransportWindow clears it, the order sets it to the cart's AIOBJ.escort) */
 #define lc_ReserveTime (*(AITIME *)((char *)&full_data_6f2f64 + 4))  /* 0x6f2f68, when lc_UpdateGoodsReserves ran last (set to ai_Time at its end) */
 #define lc_ReserveCursor (*(int *)((char *)&full_data_6f2f64 + 0x14))  /* 0x6f2f78, the first character lc_UpdateGoodsReserves checks next (32 per call) */
+#define ai_EquipRowCount (*(int *)((char *)&full_data_6f2f64 + 0x18))  /* 0x6f2f7c, the rows of the equip window in use (ai_UpdateEquipRows counts them each frame) */
 extern GAPDATA full_data_6f3680[];
 #pragma pack(push, 1)
 typedef struct G8INVOBJ {               /* an object of a character's inventory (AIOBJ, ai_types.h, read as a held good:
@@ -23329,16 +23330,16 @@ typedef struct AIEQUIPSLOT {            /* 8 bytes, an equipment slot of an equi
 } AIEQUIPSLOT;
 
 typedef struct AIEQUIPROW {             /* 0x40 bytes, a row of the equip window's table ai_EquipRows (32 rows) */
-    unsigned char *ch;                  /* 0x00, the scene character shown, 0: a free row */
-    int obj04;                          /* 0x04, a list object (d2_RemoveObj), -1 none */
-    int obj08;                          /* 0x08, a list object (d2_RemoveObj), -1 none */
-    int window;                         /* 0x0c, the row's window (d2_LastWindow), -1 none */
-    AIEQUIPSLOT slot[6];                /* 0x10, the six equipment slots */
+    AICHARREC *ch;                      /* 0x00, the scene character shown, 0: a free row */
+    int portrait;                       /* 0x04, the character's portrait picture object (AICHARREC.picture), -1 none */
+    int frame;                          /* 0x08, the row's frame picture object (picture 0x74c), -1 none */
+    int window;                         /* 0x0c, the row's child window (name, health and skill bars), -1 none */
+    AIEQUIPSLOT slot[6];                /* 0x10, the six equipment slots: the character's goods as input icons */
 } AIEQUIPROW;
 #pragma pack(pop)
 
 /* 0x5bae10, the init of the equip window's row table (64 B): every row of ai_EquipRows is freed (the character 0,
-   the objects -1, the six slots -1 / 0), so that ai_Unk5bae50 finds no row in use
+   the objects -1, the six slots -1 / 0), so that ai_UpdateEquipRows finds no row in use
    @deep read whole against 0x5bae10 to 0x5bae4b: every statement matches - the four header fields 0 and
    -1, the 6-count slot loop with -1 and 0, the 32-row walk; 20 vs 19 instructions, the only hunk is the
    outer loop bound: ours lea eax, ecx-8; cmp eax, ai_EquipRows+0x800; jl, the original cmp ecx,
@@ -23354,8 +23355,8 @@ void ai_EquipRowsInit(void)
 
     for (row = (AIEQUIPROW *)ai_EquipRows; (int)row < (int)((AIEQUIPROW *)ai_EquipRows + 0x20); row++) {
         row->ch = 0;
-        row->obj04 = -1;
-        row->obj08 = -1;
+        row->portrait = -1;
+        row->frame = -1;
         row->window = -1;
         for (k = 0; k < 6; k++) {
             row->slot[k].pic = -1;
@@ -23363,14 +23364,126 @@ void ai_EquipRowsInit(void)
         }
     }
 }
-/* 0x5bae50, a helper with two parameters (192 B, ROUGH SKELETON): a 0xc-byte frame; the body is a comment */
+#define ai_EquipRowTab ((AIEQUIPROW *)ai_EquipRows)  /* the row table as its rows */
+/* 0x5bae50, the per-frame update of the equip window's rows (ai_EquipWindow): a row whose character left the
+   scene (ai_SceneChars) is freed with its objects; a shown row drops the slots of goods the character no longer
+   holds, prints the name and health ("$C%1N2 %i%%") and the two skill bars (texts 0x16ac / 0x16ad, skills[3] /
+   [2]) into its window, and shows each good of the inventory (but those of type 9) in a slot as an input icon with
+   the held count; a scene character of the job groups 10 .. 12 without a row gets the first free one (frame,
+   portrait, window, text 0x16ab). Returns 1 when a slot holds a picked amount (it goes to the pointer) */
 
-int ai_Unk5bae50(int param_1, int param_2)
+
+int ai_UpdateEquipRows(int view, int form)
 {
-    /* ROUGH SKELETON: the 0xc-byte frame */
-    (void)param_1;
-    (void)param_2;
-    return 0;
+    int *sc;
+    AIEQUIPROW *row;
+    AIOBJ *item;
+    AICHARREC *ch;
+    int r;
+    int i;
+    int group;
+    int picked;
+
+    picked = 0;
+    d2_SetForm(view, form);
+    ai_EquipRowCount = 0;
+    for (r = 0; r < 0x20; r++) {
+        if (ai_EquipRowTab[r].ch == 0)
+            continue;
+        ai_EquipRowCount++;
+        for (sc = ai_SceneChars; (int)sc < (int)&ai_SceneChars[0x20]; sc++)
+            if ((int)ai_EquipRowTab[r].ch == *sc)
+                goto shown;
+        /* the character left the scene: free the row */
+        ai_EquipRowTab[r].ch = 0;
+        if (ai_EquipRowTab[r].portrait != -1) {
+            d2_RemoveObj(ai_EquipRowTab[r].portrait);
+            ai_EquipRowTab[r].portrait = -1;
+        }
+        if (ai_EquipRowTab[r].frame != -1) {
+            d2_RemoveObj(ai_EquipRowTab[r].frame);
+            ai_EquipRowTab[r].frame = -1;
+        }
+        if (ai_EquipRowTab[r].window != -1) {
+            d2_RemoveObj(ai_EquipRowTab[r].window);
+            ai_EquipRowTab[r].window = -1;
+        }
+        continue;
+shown:
+        d2_LastWindow = ai_EquipRowTab[r].window;
+        for (i = 0; i < 6; i++) {
+            if (ai_EquipRowTab[r].slot[i].obj != 0
+                && gm_Query((void *)ai_EquipRowTab[r].ch->inventory, 1, 0, ai_EquipRowTab[r].slot[i].obj) == 0) {
+                d2_RemoveObj(ai_EquipRowTab[r].slot[i].pic);
+                ai_EquipRowTab[r].slot[i].pic = -1;
+                ai_EquipRowTab[r].slot[i].obj = 0;
+            }
+        }
+        d2_LastWindow = ai_EquipRowTab[r].window;
+        io_PrintText("$C%1N2 %i%%", ai_EquipRowTab[r].ch->id,
+                     (int)(gm_HealthRatio((short *)ai_EquipRowTab[r].ch) * 100.0));
+        io_PrintText(0x16ac);
+        sv_ValueBar(0x50, 0x16, ai_EquipRowTab[r].ch->skills[3], 0x4f1);
+        io_PrintText(0x16ad);
+        sv_ValueBar(0x50, 0x25, ai_EquipRowTab[r].ch->skills[2], 0x4f1);
+        for (item = (AIOBJ *)gm_Query((void *)ai_EquipRowTab[r].ch->inventory, 1, 5); item != 0;
+             item = (AIOBJ *)gm_QueryNext()) {
+            if (((AIGOOD *)ai_Goods)[item->id].type == 9)
+                continue;
+            for (i = 0; i < 6; i++)
+                if (ai_EquipRowTab[r].slot[i].obj == item->id)
+                    goto have;
+            /* a new good: the first free slot shows it */
+            d2_SetForm(view, form);
+            for (i = 0; i < 6; i++) {
+                if (ai_EquipRowTab[r].slot[i].obj == 0) {
+                    ai_EquipRowTab[r].slot[i].pic = d2_WinOpenInputIcon(i * 0x36 + 0x50, r * 0x78 + 0x28,
+                                                                        item->id + 0xdf, 10, d2_LastWindow);
+                    ai_EquipRowTab[r].slot[i].obj = item->id;
+                    break;
+                }
+            }
+have:
+            d2_SetObjValue(ai_EquipRowTab[r].slot[i].pic, 0, item->count, d2_GetObjValue(ai_EquipRowTab[r].slot[i].pic));
+        }
+    }
+    /* a scene character of the job groups 10 .. 12 without a row gets the first free one */
+    for (sc = ai_SceneChars; (int)sc < (int)&ai_SceneChars[0x20]; sc++) {
+        if (*sc == 0)
+            continue;
+        group = gm_TitleJobGroup(((AICHARREC *)*sc)->title);
+        if (group < 10 || group > 12)
+            continue;
+        for (row = ai_EquipRowTab; (int)row < (int)(ai_EquipRowTab + 0x20); row++)
+            if ((int)row->ch == *sc)
+                goto next;
+        for (r = 0, row = ai_EquipRowTab; (int)row < (int)(ai_EquipRowTab + 0x20); row++, r++) {
+            if (row->ch == 0) {
+                d2_SetForm(view, form);
+                ai_EquipRowTab[r].ch = (AICHARREC *)*sc;
+                ai_EquipRowTab[r].frame = d2_WinOpenPic(0, r * 0x78, 0x74c, d2_LastWindow);
+                d2_Objs[ai_EquipRowTab[r].frame].interactive = 1;
+                ai_EquipRowTab[r].portrait = d2_WinOpenPic(0x10, r * 0x78 + 5, ai_EquipRowTab[r].ch->picture, d2_LastWindow);
+                ai_EquipRowTab[r].window = d2_CreateChildWindow(0x40, r * 0x78, 0xb4, 0x50, 0x10, d2_LastWindow);
+                d2_SetObjFont(d2_Wins[ai_EquipRowTab[r].window].parent, 0x54);
+                io_PrintText(0x16ab, ai_EquipRowTab[r].ch->id, ai_EquipRowTab[r].ch->skills[3]);
+                break;
+            }
+        }
+next:;
+    }
+    /* the picked amounts go to the pointer */
+    for (r = 0; r < 0x20; r++) {
+        if (ai_EquipRowTab[r].ch == 0)
+            continue;
+        for (i = 0; i < 6; i++) {
+            if (ai_EquipRowTab[r].slot[i].pic != -1 && d2_GetObjValue(ai_EquipRowTab[r].slot[i].pic) != 0) {
+                d2_AddPointerItem(ai_EquipRowTab[r].slot[i].obj + 0xdf, d2_GetObjValue(ai_EquipRowTab[r].slot[i].pic));
+                picked = 1;
+            }
+        }
+    }
+    return picked;
 }
 /* 0x5bb2d0, whether a good fits the building class of a character (112 B): the character's building (+0x16c,
    0 when absent) gives its kind byte into the building-type records 0x7e3f30; their class byte must be 4 for the
