@@ -8618,12 +8618,14 @@ void ai_ArmGateGuards(CMGUARDREC *rec, unsigned char kind)
         CM_ARM_GUARD(0x160, 0xd2);
     }
 }
-/* 0x4d0f80, a callback: an object of kind 3 gets +0x224 = 0; returns 1 */
+/* 0x4d0f80, the object walk's callback: an object of kind 3 gets its mask (D3OBJECT.mask) cleared; returns 1 */
 
 char cm_ClearKind3MaskCB(char *o)
 {
-    if (*(int *)(o + 0x220) == 3)
-        *(int *)(o + 0x224) = 0;
+    D3OBJECT *obj = (D3OBJECT *)o;
+
+    if (obj->kind == 3)
+        obj->mask = 0;
     return 1;
 }
 
