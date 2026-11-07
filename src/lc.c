@@ -33930,14 +33930,68 @@ int ai_UseGoodDrainSkill(AICHARREC *ch, G8USEVIEW *use)
     use->handled = 1;
     return 1;
 }
-/* 0x5d1b30, an action callback of the record table 0x62c420 (record 54 at 0x62ca08, the text id 0x2bc,
-   624 B): the request 0x5b2180, the character (0x5c1130 menu / 0x505df0), 0x4fea50, a 0x42ec00 pick,
-   0x4c4b00, the float 0x42ec20 through __ftol 0x5de518, 0x4fca40, the texts 0x5176d0, one message
-   0x53dda0 and the panel 0x5cf820. Frame 0xbe0. */
+/* 0x5d1b30, the use callback of the Domizil good 0x2bc (the +0x14 pointer of the table entry 0x62ca08): picks a
+   building and a character, for a player (kind 6) on the town map (ai_MapPick with the prompt txt_Ptrs[0x9b],
+   the class filter 0x1a0744300, kind 6) and then with the special-amount menu (the gypsy filter, mode 0x400,
+   leaving out the building's owner: option14 3, ids[0]; the prompt txt_Ptrs[0x9c]), else the character
+   use->target (gm_FindChar) and the building use->arg (gm_FindById); a missing one -> 0. The character's
+   relation to the building's owner falls by 20 + a random 0 .. 31 (cm_SendRelations, handed the character's
+   id), and every kind 0 character in the building loses 10 .. 30% of its life (gm_AddHealth). A player
+   character (kind 6 / 7) gets the news 0x100b (the owner, the building; key 0x5fb), a player user sees the
+   text 0x109b (the character, the owner, the building) inside 0xfe8 in the use-object panel. Marks the use
+   handled and returns 1. */
 
-int ai_Unk5d1b30(void)
+int ai_UseGoodHarmBuilding(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AIBLD *bld;
+    AMOUNTCFG cfg;
+    char text[0x200];
+    char news[0x800];
+    AICHARREC *target;
+    int i;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        cfg.flags = 1;
+        cfg.mode = -1;
+        cfg.kind = 6;
+        cfg.filter = 0x1a0744300;
+        bld = (AIBLD *)ai_MapPick(1, &cfg, txt_Ptrs[0x9b], 0, 0);
+        if (bld == 0)
+            return 0;
+        cfg.option14 = 3;
+        cfg.ids[0] = bld->owner;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x9c], 0, 0);
+        if (target == 0)
+            return 0;
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target == 0)
+            return 0;
+        gm_FindById((int *)&bld, 0, 0, use->arg);
+        if (bld == 0)
+            return 0;
+    }
+    cm_SendRelations(target->id, lc_CharRecs[bld->owner].netId, -20 - (util_Random(0x20) & 0xffff), 1);
+    for (i = 0; i < 0x300; i++) {
+        if (lc_CharRecs[i].kind == 0 && lc_CharRecs[i].bld == bld)
+            gm_AddHealth(i, -((util_RandomF() * 0.2f + 0.1f) * lc_CharRecs[i].f01c));
+    }
+    if (target->kind == 6 || target->kind == 7) {
+        txt_Format(news, 0x100b, bld->owner, bld->owner, bld);
+        he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+    }
+    if (ch->kind == 6) {
+        txt_Format(text, 0x109b, target->id, bld->owner, bld);
+        txt_Format(news, 0xfe8, text);
+        ai_UseObjPanel(news);
+    }
+    use->handled = 1;
+    return 1;
 }
 /* 0x5d1da0, an action callback of the record table 0x62c420 (record 55 at 0x62ca24, the text id 0x2bd,
    528 B): the request 0x5b2180, 0x4fea50, three 0x4ffe90 walks, two float 0x42ec20 through __ftol
