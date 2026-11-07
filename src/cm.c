@@ -10822,7 +10822,7 @@ void cm_FightEndDialog(char *a)
    ca in ebp; ours i in edi, cb only in the slot (mov eax,[esp+0x10] before each mov dx,[eax]), the target
    building in esi vs edi; role kept in ebp on our side vs a slot ([esp+0x30]). */
 
-int ai_Unk4d60b0(char *a)
+int cm_CheckFight(char *a)
 {
     char buf[0x400];
     int rc[0x2e];
@@ -16913,7 +16913,7 @@ void cm_InitScenes(void)
     cm_RegisterSceneKind(0, (int)cm_RunPictureShow, (int)d3io_NoopCallback, 0, 0, 0);
     cm_RegisterSceneKind(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     cm_RegisterSceneKind(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
-    cm_RegisterSceneKind(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
+    cm_RegisterSceneKind(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)cm_CheckFight, 1);
     cm_RegisterSceneKind(4, (int)cm_RunDuel, (int)cm_DuelAskPlayer, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
     cm_RegisterSceneKind(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     cm_RegisterSceneKind(6, (int)cm_RunWedding, 0, 0, (int)cm_CheckWedding, 0);
