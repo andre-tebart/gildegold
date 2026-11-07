@@ -289,7 +289,7 @@ int cm_SendGraveMove(void *p);                                                  
 void cm_SendRaiseDead(void *p);                                                      /* 0x4c6130 */
 void cm_SendCreateAlchemist(void *p);                                                      /* 0x4c6170 */
 void cm_SendCommand(void *p);                                                      /* 0x4c61b0 */
-void cm_SendMasterChange(G28REC *p, struct AICHAR *q);                                   /* 0x4c61f0 */
+int cm_SendMasterChange(G28REC *p, struct AICHAR *q);                                    /* 0x4c61f0, returns the message's send slot */
 int cm_SendEffectLoad(int *p);                                                       /* 0x4c6230 */
 int cm_SendShots(void *p);                                                      /* 0x4c6260 */
 void cm_SendSetRoute(AIOBJ *o, RTPOINT *pts);                                        /* 0x4c62a0, rt.c's route points */
