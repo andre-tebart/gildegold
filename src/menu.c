@@ -290,19 +290,19 @@ int ai_MessageBox(int param_1, int param_2)
         if ((param_2 & 0x10) == 0) {
             if ((param_2 & 0x20) == 0) {
                 if ((param_2 & 0x100) != 0) {
-                    win = d2_OpenForm(0, 0, "misc\Messagebox_NONE_PERGA");
+                    win = d2_OpenForm(0, 0, "misc\\Messagebox_NONE_PERGA");
                     d2_SetForm(win, 1);
                     goto created;
                 }
-                name = "misc\Messagebox";
+                name = "misc\\Messagebox";
             } else {
-                name = "misc\Messagebox_VERY_BIG";
+                name = "misc\\Messagebox_VERY_BIG";
             }
         } else {
-            name = "misc\Messagebox_BIG";
+            name = "misc\\Messagebox_BIG";
         }
     } else {
-        name = "misc\Messagebox_Autosize";
+        name = "misc\\Messagebox_Autosize";
     }
     win = d2_OpenForm(0, 0, name);
 created:

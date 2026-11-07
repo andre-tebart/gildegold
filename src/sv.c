@@ -1118,45 +1118,45 @@ void sv_LoadGroundplan(void)
         sv_GroundplanSurf = 0;
     }
     bt = &ai_BTypesT[b->type];
-    sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->name);
+    sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", d2_GfxDir, bt->name);
     sv_GroundplanSurf = d2_LoadBmpSurface(name);
     if (sv_GroundplanSurf == 0) {
         cls = gm_BuildingClass(b->type);
         if (cls == 1) {
             if (bt->kind == 0x16)
-                sprintf(name, "%sbmp\groundplans\riss_wirtshaus.bmp", d2_GfxDir);
+                sprintf(name, "%sbmp\\groundplans\\riss_wirtshaus.bmp", d2_GfxDir);
             else if (bt->kind == 0x0e)
-                sprintf(name, "%sbmp\groundplans\riss_parfuemerie.bmp", d2_GfxDir);
+                sprintf(name, "%sbmp\\groundplans\\riss_parfuemerie.bmp", d2_GfxDir);
             else if (bt->kind == 8)
-                sprintf(name, "%sbmp\groundplans\riss_tinkturei.bmp", d2_GfxDir);
+                sprintf(name, "%sbmp\\groundplans\\riss_tinkturei.bmp", d2_GfxDir);
             else {
-                sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->name);
+                sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", d2_GfxDir, bt->name);
                 sv_GroundplanSurf = d2_LoadBmpSurface(name);
                 if (sv_GroundplanSurf != 0)
                     goto loaded;
-                sprintf(name, "%sbmp\groundplans\riss_handwerksbetrieb.bmp", d2_GfxDir);
+                sprintf(name, "%sbmp\\groundplans\\riss_handwerksbetrieb.bmp", d2_GfxDir);
             }
         } else if (cls == 3) {
             if (bt->kind == 0x0f)
-                sprintf(name, "%sbmp\groundplans\riss_rathaus.bmp", d2_GfxDir);
+                sprintf(name, "%sbmp\\groundplans\\riss_rathaus.bmp", d2_GfxDir);
             else if (bt->kind == 1)
-                sprintf(name, "%sbmp\groundplans\Riss_Arbeiterunterkunft.bmp", d2_GfxDir);
+                sprintf(name, "%sbmp\\groundplans\\Riss_Arbeiterunterkunft.bmp", d2_GfxDir);
         } else if (cls == 5)
-            sprintf(name, "%sbmp\groundplans\riss_zunfthaus.bmp", d2_GfxDir);
+            sprintf(name, "%sbmp\\groundplans\\riss_zunfthaus.bmp", d2_GfxDir);
         else if (bt->kind == 5)
-            sprintf(name, "%sbmp\groundplans\riss_geldleihe.bmp", d2_GfxDir);
+            sprintf(name, "%sbmp\\groundplans\\riss_geldleihe.bmp", d2_GfxDir);
         else if (bt->kind == 9)
-            sprintf(name, "%sbmp\groundplans\riss_lagerhaus.bmp", d2_GfxDir);
+            sprintf(name, "%sbmp\\groundplans\\riss_lagerhaus.bmp", d2_GfxDir);
         else if (bt->kind == 7)
-            sprintf(name, "%sbmp\groundplans\riss_kirche.bmp", d2_GfxDir);
+            sprintf(name, "%sbmp\\groundplans\\riss_kirche.bmp", d2_GfxDir);
         else if (bt->kind == 0x13)
-            sprintf(name, "%sbmp\groundplans\riss_stadtwache.bmp", d2_GfxDir);
+            sprintf(name, "%sbmp\\groundplans\\riss_stadtwache.bmp", d2_GfxDir);
         else {
-            sprintf(name, "%sbmp\groundplans\riss_%s.bmp", d2_GfxDir, bt->name);
+            sprintf(name, "%sbmp\\groundplans\\riss_%s.bmp", d2_GfxDir, bt->name);
             sv_GroundplanSurf = d2_LoadBmpSurface(name);
             if (sv_GroundplanSurf != 0)
                 goto loaded;
-            sprintf(name, "%sbmp\groundplans\riss_handwerksbetrieb.bmp", d2_GfxDir);
+            sprintf(name, "%sbmp\\groundplans\\riss_handwerksbetrieb.bmp", d2_GfxDir);
         }
         if (sv_GroundplanSurf == 0) {
             sv_GroundplanSurf = d2_LoadBmpSurface(name);

@@ -908,7 +908,7 @@ int main_PlayerCountDialog(void)
     int ok, form, slider, run;
 
     ok = 0;
-    form = d2_OpenForm(0, 0, "Menu\CHOOSE_PLAYERCOUNT");
+    form = d2_OpenForm(0, 0, "Menu\\CHOOSE_PLAYERCOUNT");
     d2_CentreViewWindows(form);
     slider = d2_GetWinObj(form, 0, 0);
     if (ai_NumPlayers < 2)
@@ -2297,7 +2297,7 @@ int main_ChoosePlayer(int mask, int flag)
     init_PlayerProfile.coat = GetPrivateProfileIntA("Network", "Wappen", 0, ai_OptionsFile) + 0x59a;
     init_PlayerProfile.sex = (unsigned char)GetPrivateProfileIntA("Network", "Geschlecht", 0, ai_OptionsFile);
     init_PlayerProfile.faith = (unsigned char)GetPrivateProfileIntA("Network", "Glauben", 0, ai_OptionsFile);
-    f = d2_OpenForm(0, 0, "Menu\CHOOSEPLAYER");
+    f = d2_OpenForm(0, 0, "Menu\\CHOOSEPLAYER");
     d2_CentreViewWindows(f);
     io_TownDisplayName(((unsigned)&ai_DataPath + 0x220), txt);
     d2_SetForm(f, 1);
@@ -2474,7 +2474,7 @@ int main_ChooseHistory(void)
     b1 = -1;
     hist = 0xff;
     back = 0;
-    f = d2_OpenForm(0, 0, "Menu\CHOOSEHISTORY");
+    f = d2_OpenForm(0, 0, "Menu\\CHOOSEHISTORY");
     d2_CentreViewWindows(f);
     d2_SetForm(f, 0);
     if (ls_GetLanguage() != 0) {
