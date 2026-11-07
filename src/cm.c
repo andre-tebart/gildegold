@@ -9283,11 +9283,11 @@ char *cm_NearestEscapeObject(char *c)
 /* 0x4d2550, a callback: collects the objects "WARE_" whose owner (+0x200, a record with the side in +0xa) is not the side
    of the character c into cm_PointList[cm_PointCount++] */
 
-char ai_Unk4d2550(char *o, char *c)
+char cm_CollectWareObject(char *o, char *c)
 {
-    char *side = *(char **)(c + 0x16c);
+    AICHAR *side = (AICHAR *)((AICHAR *)c)->bld;    /* in a fight bld is the side's leader (cm_AddFighter) */
 
-    if (strncmp(o, "WARE_", 5) == 0 && *(int *)(*(char **)(o + 0x200) + 0xa) != *(unsigned short *)side)
+    if (strncmp(o, "WARE_", 5) == 0 && ((AIOBJ *)((D3OBJECT *)o)->owner)->fightSide != side->id)
         cm_PointList[cm_PointCount++] = o;
     return 1;
 }
@@ -9303,7 +9303,7 @@ char *ai_Unk4d25a0(char *c)
     int i, n;
 
     cm_PointCount = 0;
-    d3_ForEachObject(d3_DefaultScene, 0, 0x40, ai_Unk4d2550, c);
+    d3_ForEachObject(d3_DefaultScene, 0, 0x40, cm_CollectWareObject, c);
     m = *(char **)(*(char **)(c + 0x184) + 0x34);
     d3_PointToWorld(m, m + 0x4c, v);
     n = cm_PointCount;

@@ -744,7 +744,7 @@ extern const double ai_Unk5edc60;  /* 0x5edc60 */
 int cm_MostThreatenedCellNear(char *c, int cx, int cy, int r, int *ox, int *oy);  /* 0x4d22d0 */
 char cm_CollectEscapeObject(char *o, int *list);  /* 0x4d2450 */
 char *cm_NearestEscapeObject(char *c);  /* 0x4d2490 */
-char ai_Unk4d2550(char *o, char *c);  /* 0x4d2550 */
+char cm_CollectWareObject(char *o, char *c);  /* 0x4d2550 */
 char *ai_Unk4d25a0(char *c);  /* 0x4d25a0 */
 char cm_CollectConquerPoint(char *o);  /* 0x4d2650 */
 struct D3OBJECT *cm_NearestConquerPoint(struct AICHAR *c);  /* 0x4d2680 */
