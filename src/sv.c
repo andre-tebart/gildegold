@@ -3,8 +3,8 @@
    0x531670, main.c's program level code. Names are ours.
    Open: the start and the end rest on the .data order only.
    Open: sv.c includes ai.h but not d2.h yet: its char * declarations of d2_Objs / d2_LastWindowPtr and its K&R
-   d2_BlitPartMode supersede d2.h's, so the d2 records go through the SV* views and the SV_I / SV_W address macros.
-   This blocks Q4 / Q7 of every function that touches widgets or calls a K&R d2 / gfx prototype.
+   d2_BlitPartMode supersede d2.h's, so the d2 records go through the SV* views, the SV_I / SV_W address macros and
+   the typed view sv_D2Objs (D2OBJ *); Q7 of every function that calls a K&R d2 / gfx prototype stays open.
    Open: head: include/gfx.h, include/d2.h unsettled (d2_Objs / d2_LastWindowPtr char *, d2_AddHitRect and
    d2_BlitPartMode K&R; 39 K&R d2 prototypes whose calls need a re-grade); also not included: cm.h (the same
    d2_Objs / d2_LastWindowPtr clash; the cm_SendChr* / cm_PartyById calls stay without a prototype), f3snd.h rt.h sblib.h
