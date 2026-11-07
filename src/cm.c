@@ -11945,10 +11945,10 @@ void cm_DeleteSceneChars()
 /* ---- cut.c (joined) ---- */
 
 /* 0x4d8c70, draws the next picture 0x4df of a stack (o + 0x2c counts them, 10 up each) on the window 0x6ed938 */
-void cm_StackPicture(int unused, char *o)
+void cm_StackPicture(int unused, CMAMOUNTROW *o)
 {
-    ((int (*)(short, short, int, int))d2_WinOpenPic)(0x8c, (short)(0x44 - *(short *)(o + 0x2c) * 10), 0x4df, d2_LastWindow);
-    *(int *)(o + 0x2c) = *(int *)(o + 0x2c) + 1;
+    ((int (*)(short, short, int, int))d2_WinOpenPic)(0x8c, (short)(0x44 - (short)o->x2c * 10), 0x4df, d2_LastWindow);
+    o->x2c++;
 }
 /* 0x4d8cb0, the fight result list (a) or one more picture of its three stacks: b set: the three headings (texts 0x12d3 / 0x12d4 / 0x12d5)
    in the window 0x6ed938 and the counters 0x6f0d6c / 0x6f0d68 / 0x6f0d70 cleared; else the next picture 0x4df of stack c (0, 1, 2) */
@@ -12426,7 +12426,7 @@ void cm_RunCouncilSession(G28REC *a)
                         cm_RunSceneTicks(0x3e8);
                         d2_Objs[applicantRows[e].ctl].highlighted = 1;
                         d2_SetForm(viewLeft, e + 1);
-                        cm_StackPicture(e + 1, (char *)&applicantRows[e]);
+                        cm_StackPicture(e + 1, &applicantRows[e]);
                         d2_SetForm(view, 0);
                         io_PrintText(0x12df, applicants[e]->id);
                         cm_RunSceneTicks(0xfa0);
