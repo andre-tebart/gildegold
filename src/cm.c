@@ -9968,18 +9968,20 @@ void cm_LayBombAction(char *ev)
         G19_FIGHTER_SYNC(att);
     }
 }
-/* 0x4d3a30, a bomb event: the attacker's worker count synced, 0x4ce5d0 at the target */
+/* 0x4d3a30, a bomb event: for the player's side the thrower's used weapon item is synced (its uses field -1),
+   then a grenade (cm_ThrowGrenade, 0x4ce5d0) is thrown from the thrower's body to the cell aimed at */
 
 void cm_ThrowBombAction(char *ev)
 {
-    char *att = *(char **)(ev + 0x17c);
+    CHACTION *b = (CHACTION *)ev;
+    AICHAR *att = b->bomb.thrower;
     AIOBJ *r;
     int vv;
 
-    if (*(int *)(cm_CutChar + 4) == cm_FightOwner) {
+    if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner) {
         G19_FIGHTER_SYNC(att);
     }
-    cm_ThrowGrenade(*(float **)(*(char **)(att + 0x184) + 0x34) + 0x13, *(int *)(ev + 0x180), *(int *)(ev + 0x184));
+    cm_ThrowGrenade(&att->scene->obj->pos, b->bomb.x, b->bomb.y);
 }
 /* 0x4d3ac0, 0x402480 on the attacker's record */
 
