@@ -11,7 +11,10 @@ typedef struct G9DOMIZIL {              /* 0x1c bytes, an entry of the Domizil t
                                            with gm_AddTime's minute argument), 0: none */
     char pad08[8];
     unsigned int mask;                  /* 0x10, tested against the character's goodsMask (0x1ec) */
-    char pad14[8];
+    void *use;                          /* 0x14, the use callback ai_UseGood calls (the character, the G8USE request), 0: none */
+    unsigned short rank;                /* 0x18, the rank the good asks for (the use window prints it with text 0xfe3;
+                                           lc's range lookup tests it; the name is a reasoned guess) */
+    char pad1a[2];
 } G9DOMIZIL;
 
 #pragma pack(push, 1)

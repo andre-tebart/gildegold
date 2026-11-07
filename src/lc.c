@@ -1143,7 +1143,9 @@ typedef struct AICHARREC {         /* the character record fields this unit read
     char pad1b2[0x16];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
     unsigned int flags1cc;         /* 0x1cc, ai_char.h AICHAR.flags1cc (0x800: a bribe raises the relation by 6 instead of 4) */
-    char pad1d0[0x4c];
+    char pad1d0[0x1c];
+    unsigned int goodsMask;        /* 0x1ec, the classes of the Domizil goods in use (G9DOMIZIL.mask; ai_UseGood sets them) */
+    char pad1f0[0x2c];
 } AICHARREC;                       /* 0x21c bytes, ai_Chars[768] */
 #pragma pack(pop)
 
@@ -23187,12 +23189,76 @@ void lc_UpdateGoodsReserves(void)
     lc_ReserveTime = ai_Time;
     lc_ReserveCursor = (i + 1) % 0x300;
 }
-/* 0x5ba980, a window with three counters (656 B, ROUGH SKELETON): a 0x418-byte frame; the body is a comment */
+/* 0x5ba980, asks whether the player uses the inventory good o (the inventory panel's click on a Domizil good):
+   the form "panel\useobj" prints text 0xfe3 (its name and rank) when the good's mask leaves the player's
+   goodsMask free, else 0xfe4 (it is in use); the first click id uses it: ai_UseGood for the player with the
+   request {o, -1, -1}, returning its effect; the second asks text 0xfe6 and sells every amount picked in the
+   inventory rows (cm_SendExSellObject) unless ai_GameFlags has 0x80; a right release closes it. Returns 0 when
+   nothing was used */
 
-int ai_Unk5ba980(void)
+int ai_UseGoodWindow(G8INVOBJ *o)
 {
-    /* ROUGH SKELETON: the 0x418-byte frame */
-    return 0;
+    char text[0x400];
+    G8USEVIEW use = {0};
+    int index;
+    G9DOMIZIL *rec;
+    int win;
+    int used;
+    int n;
+    int i;
+
+    used = 0;
+    rec = (G9DOMIZIL *)ai_FindUsableGoodIndex(o->id, &index);
+    if (rec != 0) {
+        win = d2_OpenForm(0, 0, ai_UseObjForm);
+        d2_CentreViewWindows(win);
+        d2_SetForm(win, 1);
+        if ((rec->mask & ((AICHARREC *)ai_Chars)[ai_PlayerId].goodsMask) == 0 && ai_FindUsableGood(o->id) != 0)
+            io_PrintText(0xfe3, o->id * 2 + 0x9a8, rec->rank, o->id * 2 + 0x9a8);
+        else
+            io_PrintText(0xfe4, o->id * 2 + 0x9a8);
+        d2_SetPointerSprite(0, 0);
+        sv_ResetScreenClip();
+        d2_ClickedId = -1;
+        do {
+            if (dm_L.rup != 0) {
+                sv_PopRequest = 1;
+                used = 0;
+            }
+            if (d2_ClickedId != -1) {
+                if (d2_ClickedId == 0) {
+                    used = 1;
+                    sv_PopRequest = 1;
+                } else if (d2_ClickedId == 1 && !(ai_GameFlags & 0x80)) {
+                    /* sell the amounts picked in the inventory rows */
+                    txt_Format(text, 0xfe6, o->id * 2 + 0x9a8, o->id * 2 + 0x9a8);
+                    d2_SetViewEnabled(win, 0);
+                    if (sv_MessageBox(text, 1) != 0) {
+                        for (i = 0; i < 6; i++) {
+                            if (ai_InvSlots[i].obj != 0 && (n = d2_GetObjValue(ai_InvSlots[i].ctl)) != 0) {
+                                cm_SendExSellObject(-1, ai_InvChar->netId, ai_InvSlots[i].obj->id, n, ai_OwnPlayer, 0);
+                                d2_SetObjValue(ai_InvSlots[i].ctl, 0, 999, 0);
+                            }
+                        }
+                        d2_ClearPointerItems();
+                    }
+                    d2_SetViewEnabled(win, 1);
+                    used = 0;
+                    sv_PopRequest = 1;
+                }
+            }
+        } while (sv_RunFrame((int)ai_UseGoodWindow, 0x677c7) != 0);
+        d2_CloseView(win);
+        if (!used)
+            return 0;
+        use.obj = (struct AIOBJ *)o;
+        use.target = -1;
+        use.arg = -1;
+        use.effect = 0;
+        use.handled = 0;
+        ai_UseGood((int)ai_Chars[ai_PlayerId], (int *)&use);
+    }
+    return use.effect;
 }
 /* 0x5bac10, a window gated by 0x62c418 == -1 (512 B, ROUGH SKELETON): the 0x1000 path after the check; the body
    is a comment */
