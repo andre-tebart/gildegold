@@ -3676,7 +3676,7 @@ void ai_ConstructionWindow(void)
 int ai_MapPick(); int gm_IsHomeType(); void sv_SelectPanelObject(unsigned char *o, int b, char *c); void sv_FlyCameraToObject(int o); void sv_CameraToObject();
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c); void init_ShowBuildingScene(unsigned char *b, int slot); void init_FinishBuildingScene(unsigned char *b, unsigned short *o);
 int d3t_PlaceObjectV(struct D3OBJECT *camera, struct D3VECTOR *pos, struct D3VECTOR *dir, int unk, char flags); int gm_ClockSeason(); void init_AfterTownLoad(void); void d3fl_MakeDivide();
-int ai_ChooseCoatOfArms(); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
+void ai_ChooseCoatOfArms(void); void snd_StartMarketAmbience(void); int tb_SetFunctionOff(); void snd_StopMarketAmbience(void);
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_EnterBuilding(); void ai_EnterOwnBuilding(); void ai_MarketStandListener();
@@ -23914,12 +23914,90 @@ void ai_FreePicture(void)
         d2_FreeSurface(rt_MapSurface);
     rt_MapSurface = 0;
 }
-/* 0x5bc110, a window "0x62d0b0" (784 B, ROUGH SKELETON): an 0xac-byte frame; the body is a comment */
+/* 0x5bc110, the coat of arms choice "misc\choosewappen" (ai_GameFrame, when a relative of the player took the
+   player's crest): the eight crests 0x59a .. 0x5a1 as a radio group, each disabled while another player character
+   (kind 5 .. 7) bears it (AICHARREC.ref54); the OK button (text 0x7f) is enabled with a crest picked. OK sets the
+   player's crest (cm field block on ref54) and, when no other player character bears it, closes the window and
+   sends the system message 0xd with the player's id */
 
-int ai_ChooseCoatOfArms(void)
+void ai_ChooseCoatOfArms(void)
 {
-    /* ROUGH SKELETON: the window "0x62d0b0" and the 0xac-byte frame */
-    return 0;
+    int ok;
+    int group;
+    int value;
+    int win;
+    int arms[8];
+    int msg[0x1f];
+    int i;
+    int k;
+    int taken;
+    int slot;
+    int c;
+    AICHARREC *ch;
+
+    win = d2_OpenForm(0, 0, "misc\\choosewappen");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(win, 1);
+    io_PrintText(0x85);
+    d2_SetForm(win, 2);
+    group = d2_CreateRadioGroup(0);
+    for (i = 0; i < 8; i++) {
+        arms[i] = d2_WinOpenPic(i * 0x30 + 0xa, 0x78, i + 0x59a, d2_LastWindow);
+        d2_RadioAdd(group, arms[i]);
+    }
+    /* the crests other player characters bear (the original counts the crest down against the button up) */
+    for (i = 0; i < 8; i++) {
+        for (c = 0; c < 0x300; c++) {
+            if (lc_CharRecs[c].id != 0xffff && lc_CharRecs[c].ref54 == 0x59a - i && lc_CharRecs[c].id != ai_PlayerId
+                && (lc_CharRecs[c].kind == 6 || lc_CharRecs[c].kind == 7 || lc_CharRecs[c].kind == 5))
+                d2_SetObjEnabled(arms[i], 0);
+        }
+    }
+    d2_SetForm(win, 3);
+    ok = d2_GetWinObj(win, 3, io_PrintText(0x7f));
+    d2_Radios[group].sel = -1;
+    sv_ResetScreenClip();
+    do {
+        for (i = 0; i < 8; i++) {
+            d2_SetObjEnabled(arms[i], 1);
+            for (c = 0; c < 0x300; c++) {
+                if (lc_CharRecs[c].id != 0xffff && lc_CharRecs[c].ref54 == i + 0x59a && lc_CharRecs[c].id != ai_PlayerId
+                    && (lc_CharRecs[c].kind == 6 || lc_CharRecs[c].kind == 7 || lc_CharRecs[c].kind == 5))
+                    d2_SetObjEnabled(arms[i], 0);
+            }
+        }
+        if (d2_Radios[group].sel != -1)
+            d2_SetObjEnabled(ok, 1);
+        else
+            d2_SetObjEnabled(ok, 0);
+        if (d2_ClickedId == 0 && d2_Radios[group].sel != -1) {
+            ch = &lc_CharRecs[ai_PlayerId];
+            value = d2_Radios[group].sel + 0x59a;
+            taken = 0;
+            cm_BeginFieldBlock((char *)ch, ch->netId);
+            cm_AddFieldValue(4, 1, (unsigned short)((char *)&ch->ref54 - cm_FieldObject), &value);
+            slot = cm_SendFieldValues();
+            while (cm_GetSlotState(slot) == 0)
+                sv_PumpNet();
+            for (k = 0; k < 8; k++) {
+                for (c = 0; c < 0x300; c++) {
+                    if (lc_CharRecs[c].id != 0xffff && lc_CharRecs[c].ref54 == d2_Radios[group].sel + 0x59a && lc_CharRecs[c].id != ai_PlayerId
+                        && (lc_CharRecs[c].kind == 6 || lc_CharRecs[c].kind == 7 || lc_CharRecs[c].kind == 5))
+                        taken = 1;
+                }
+            }
+            if (taken == 0) {
+                sv_PopRequest = 1;
+                memset(msg, 0, sizeof(msg));
+                msg[0] = ai_PlayerId;
+                cm_SendExSysMessage(0xd, msg);
+            }
+        }
+    } while (sv_RunFrame((int)ai_ChooseCoatOfArms, 0x677c7) != 0);
+    d2_RadioClear(group);
+    d2_CloseView(win);
 }
 /* 0x5bc420, a window (688 B, ROUGH SKELETON): an 0xa4-byte frame; the body is a comment */
 
