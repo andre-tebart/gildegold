@@ -8256,30 +8256,34 @@ int cm_OrderConquer(char *rec, char *c, char *tgt)
     q->cellZ = z;
     return 1;
 }
-/* 0x4d0380, an order kind 6 with the name of the object tgt, copied to +0x10 of the order record that goes to 0x4c5c40;
-   -1 when the point is not on the ground or the character c has a job (+0x1ac). Rough draft. */
+/* 0x4d0380, an order kind 6 (walk to the goods store) for the character c: its entry (cm_CutEntrySlot, b0c cleared
+   there) is copied with state 6, the name of the object tgt (dummy), held = a and turn = the low byte of tgt's point,
+   and sent as message 0x50 (cm_SendCutEntry). -1 when the point is not on the ground or the character c is in a job
+   (AICHAR.v1ac). */
 
 int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a)
 {
-    char *sc = (char *)d3_DefaultScene->hmap;
-    char *q;
+    D3SM *hmap = (D3SM *)d3_DefaultScene->hmap;
+    D3OBJECT *o = (D3OBJECT *)tgt;
+    CMCUTENTRY *q;
+    CMCUTENTRY order;
     float v[4];
-    int L[11];
-    int x, z, h;
+    int x, z;
+    float y;
 
     cm_CharWeapon(c);
-    d3_PointToWorld(tgt, tgt + 0x4c, v);
-    if ((char)d3_GetHeightAt(sc, v, &x, &z, &h) == 0 || *(int *)(c + 0x1ac) != 0)
+    d3_PointToWorld(o, &o->pos, (D3VECTOR *)v);
+    if (d3_GetHeightAt(hmap, (D3VECTOR *)v, &x, &z, &y) == 0 || ((AICHAR *)c)->v1ac != 0)
         return -1;
-    q = (char *)cm_CutEntrySlot(rec, c);
-    q[0xc] = 0;
-    memcpy(L, q, 0x2c);
-    L[0] = *(int *)(c + 4);
-    L[1] = 6;
-    strcpy((char *)&L[4], tgt);
-    ((char *)L)[0x1c] = a;
-    ((char *)L)[0x1d] = ((char *)v)[0];
-    cm_SendCutEntry(*(int *)(rec + 0x10), L);
+    q = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+    q->b0c = 0;
+    memcpy(&order, q, sizeof(order));
+    order.charId = ((AICHAR *)c)->netId;
+    order.state = 6;
+    strcpy(order.dummy, tgt);
+    order.held = a;
+    order.turn = ((char *)v)[0];
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
 /* 0x4d0460, orders the character c of the cutscene record rec (CMCUTINFO) to the best ground cell within 8 rings of
    its own (cm_BestCellNear, formation type 4): its entry (cm_CutEntrySlot, b0c cleared there) is copied with state 7 and
