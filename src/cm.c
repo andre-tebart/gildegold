@@ -15345,29 +15345,31 @@ void cm_AuctionAskAI(CMCUTINFO *r, CMAUCTION *m)
         r->session.answer = x + x % 32;
     }
 }
-/* 0x4e2860, the scene of a sale (the message m: +0x14 the object, +0x34 the seller, +0x38 .. +0x44 the buyers): the scene of the object
-   (0x4fea50 -> 0x4e2910 with 0x17) or "ob_SALON.ed3", a pause of 5, then every buyer changes his opinion of the seller by +10 (0x4c4b00, both ways) */
+/* 0x4e2860, the run function of scene kind 11, the sale of the object m->thing (of the seller m->members[0] to the
+   buyers m->members[1 .. 4]): the scene of the object (gm_FindById, cm_ShowObjectScene with the place id 0x17), or
+   "ob_SALON.ed3" when it has none; a pause of 5 ticks, then every buyer and the seller raise their relation to each
+   other by 10 (cm_SendRelations, both ways) */
 
-void cm_RunSale(char *m)
+void cm_RunSale(G28REC *m)
 {
     int o, f, i;
     int *p;
 
     f = 0;
     cm_PlaySpecialTrack(0);
-    gm_FindById(&o, 0, 0, *(int *)(m + 0x14));
+    gm_FindById(&o, 0, 0, m->thing);
     if (o != 0)
-        cm_ShowObjectScene(o, 0x17);
+        cm_ShowObjectScene((char *)o, 0x17);
     else {
         f = 1;
         cm_LoadEventScene("ob_SALON.ed3");
     }
     cm_WaitTicks(5);
-    p = (int *)(m + 0x38);
+    p = &m->members[1];
     for (i = 0; i < 4; i++, p++) {
         if (*p != -1) {
-            cm_SendRelations(*(int *)(m + 0x34), *p, 10, 1);
-            cm_SendRelations(*p, *(int *)(m + 0x34), 10, 1);
+            cm_SendRelations(m->members[0], *p, 10, 1);
+            cm_SendRelations(*p, m->members[0], 10, 1);
         }
     }
     if (f != 0) {
