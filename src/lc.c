@@ -32619,79 +32619,71 @@ int ai_InterrogationWindow1(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5cf020, the interrogation window variant 2 (576 B): the twin of 0x5cede0 with the menu 0x5bea50
-   (5, cfg, U_I (0x1441a34), 0x631090, 0), the text 0x515960 (0x1e1e, the id, 4) and 0x5ced50 (.., 2). */
+/* 0x5cf020, the interrogation order's ask, variant 2 (ord_InterrogationOrder3, the callers push (c, m)): the twin
+   of ai_InterrogationWindow1 with the message 0x45 of variant 2, the office list of kind 5, the caption
+   txt_Ptrs[0x1e1d] and the text 0x1e1e (the holder's id, the price 4) */
 
-int ai_InterrogationWindow2(int param_1, int param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_InterrogationWindow2(AICHARREC *me, LCORDMSG *m)
 {
-    int cfg[20];
+    AICHARREC *ch;
+    AMOUNTCFG cfg;
     int win;
     int t;
-    int click1;
-    int click2;
-    int rec;
-    int h;
-    int i;
+    int yes;
+    int no;
+    int slot;
     int ret;
 
-    ret = 2;
-    if (*(char *)(param_1 + 2) != 6) {
-        if ((*(unsigned int *)(param_1 + 0x1c8) & 0x100) != 0)
+    if (me->kind != 6) {
+        if ((me->powerFlags & 0x100) != 0)
             return 0x20;
-        if (*(int *)(param_1 + 0x194) < 4)
+        if (me->money < 4)
             return 0x20;
-        i = gm_FindChar(*(int *)(param_2 + 0x214));
-        if (i == 0)
+        ch = (AICHARREC *)gm_FindChar(m->target);
+        if (ch == 0)
             return 0x60;
-        if (*(char *)(i + 0x166) == 0)
+        if (ch->officeKind == 0)
             return 0x60;
-        ai_SendInterrogationRefusal(param_1, i, 2);
+        ai_SendInterrogationRefusal((char *)me, (char *)ch, 2);
         return 0x10;
     }
-    for (i = 0; i < 20; i++)
-        cfg[i] = 0;
-    if ((*(unsigned int *)(param_1 + 0x1c8) & 0x100) != 0) {
-        sv_MessageBox(U_I(((unsigned)&ai_MessageFilterTexts + 0x40)));
+    ret = 2;
+    memset(&cfg, 0, sizeof(cfg));
+    if ((me->powerFlags & 0x100) != 0) {
+        sv_MessageBox(txt_Ptrs[0x1ce0], 0);
         return 0x81;
     }
-    cfg[1] = 0xc00;
-    cfg[2] = 0xa7fdfbb6;
-    cfg[3] = 1;
-    cfg[4] = 6;
-    rec = ai_SpecialAmountListWindow(5, cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x534)), (char *)(unsigned)&ch_EmptyName, 0);
-    if (rec == 0)
+    cfg.mode = 0xc00;
+    cfg.filter = gypsyFilter;
+    cfg.kind = 6;
+    ch = (AICHARREC *)ai_SpecialAmountListWindow(5, (unsigned int *)&cfg, txt_Ptrs[0x1e1d], ch_EmptyName, 0);
+    if (ch == 0)
         return 2;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d5c4);
+    win = d2_OpenForm(0, 0, "privillegien\\verhoer");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    t = io_PrintText(0x1e1e, *(unsigned short *)rec, 4);
-    click1 = d2_GetWinObj(win, 1, t);
-    click2 = d2_GetWinObj(win, 1, t + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == click1) {
-                i = sv_CheckMoney(param_1, 4);
-                if (i != 0) {
-                    h = ai_SendInterrogationRefusal(param_1, rec, 2);
-                    if (h != -1)
-                        while (cm_GetSlotState(h) == 0)
-                            sv_PumpNet();
-                    U_I((unsigned)&sv_PopRequest) = 1;
-                    ret = 0x91;
-                }
-            } else if (U_I((unsigned)&d2_PointerObj) == click2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+    t = io_PrintText(0x1e1e, ch->id, 4);
+    yes = d2_GetWinObj(win, 1, t);
+    no = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == yes && sv_CheckMoney(me, 4) != 0) {
+                slot = ai_SendInterrogationRefusal((char *)me, (char *)ch, 2);
+                while (slot != -1 && cm_GetSlotState(slot) == 0)
+                    sv_PumpNet();
+                sv_PopRequest = 1;
+                ret = 0x91;
+            } else if (d2_PointerObj == no) {
+                sv_PopRequest = 1;
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_InterrogationWindow2, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_InterrogationWindow2, 0x657c7) != 0);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5cf260, the profession chooser "privillegien_CHOOSEPROFESSION2" 0x62d660 (656 B): param_1 the
    request record, param_2 the character record. The price (int)((float)gm_GetWorth (*param_1) * 0.015f

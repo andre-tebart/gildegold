@@ -226,7 +226,7 @@ struct AICHARREC; struct LCORDMSG; int ai_HatredWindow(struct AICHARREC *me, str
 void ai_Interrogate(struct AICHARREC *me, struct AICHARREC *ch);  /* 0x5ce4b0, carries out the interrogation */
 int ai_InterrogationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ce610, the interrogation order's ask */
 int ai_InterrogationWindow1(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cede0, the interrogation order's ask, variant 1 */
-int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
+int ai_InterrogationWindow2(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cf020, the interrogation order's ask, variant 2 */
 struct AICHARREC; struct LCORDMSG; int ai_LawPrivilegeWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca150 */
 struct AICHARREC; struct LCORDMSG; int ai_MisappropriationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca860 */
 struct LCORDMSG; int ai_CourtshipWindow(struct AICHARREC *ch, struct LCORDMSG *m);  /* 0x5c6d00, the courtship order's ask (lc.c LCORDMSG: gv.h ORDMSG) */
