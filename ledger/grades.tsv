@@ -2487,7 +2487,7 @@ exe	0x004d4090	cm_LootList	cm	byte	readable
 exe	0x004d4340	cm_FightPortraits	cm	byte	readable		
 exe	0x004d4540	cm_FightStartDialog	cm	draft	draft	deep	
 exe	0x004d4d70	cm_FightEndDialog	cm	draft	draft	deep	
-exe	0x004d60b0	ai_Unk4d60b0	cm	draft	draft	deep	
+exe	0x004d60b0	cm_CheckFight	cm	draft	draft	deep	
 exe	0x004d63e0	cm_RunFight	cm	shape	readable		
 exe	0x004d6930	cm_FightResult	cm	byte	readable		
 exe	0x004d6970	cm_FightFrame	cm	shape	readable		
@@ -2598,20 +2598,20 @@ exe	0x004e50e0	cm_CutInfoById	cm	byte	readable
 exe	0x004e5120	cm_FreePartySlot	cm	byte	readable		
 exe	0x004e5150	cm_AllocParty	cm	byte	readable		
 exe	0x004e5180	cm_ClearParty	cm	byte	readable		
-exe	0x004e51b0	cm_AddPartyMember	cm	shape	draft		
-exe	0x004e5210	cm_RemovePartyMember	cm	shape	draft		
-exe	0x004e52a0	cut_RandSeed	cm	byte	draft		
-exe	0x004e52c0	cut_GetRandSeed	cm	byte	draft		
-exe	0x004e52f0	cm_Random	cm	byte	draft		
-exe	0x004e5360	cm_RandomFloat	cm	byte	draft		
-exe	0x004e53e0	cm_DialogTimer	cm	byte	draft		
+exe	0x004e51b0	cm_AddPartyMember	cm	shape	readable		
+exe	0x004e5210	cm_RemovePartyMember	cm	shape	readable		
+exe	0x004e52a0	cut_RandSeed	cm	byte	readable		
+exe	0x004e52c0	cut_GetRandSeed	cm	byte	readable		
+exe	0x004e52f0	cm_Random	cm	byte	readable		
+exe	0x004e5360	cm_RandomFloat	cm	byte	readable		
+exe	0x004e53e0	cm_DialogTimer	cm	byte	readable		
 exe	0x004e5470	cm_MessageBox	cm	draft	readable	deep	
-exe	0x004e5730	ai_Unk4e5730	cm	byte	draft		
-exe	0x004e5770	cm_InitScenes	cm	byte	draft		
-exe	0x004e58e0	ai_Unk4e58e0	cm	shape	draft		
-exe	0x004e5980	ai_Unk4e5980	cm	byte	draft		
-exe	0x004e5a40	ai_Unk4e5a40	cm	byte	draft		
-exe	0x004e5a90	ai_Unk4e5a90	cm	byte	draft		
+exe	0x004e5730	cm_RegisterSceneKind	cm	byte	readable		
+exe	0x004e5770	cm_InitScenes	cm	byte	readable		
+exe	0x004e58e0	ai_DumpPersonHead	cm	shape	readable		
+exe	0x004e5980	ai_DumpPersonStats	cm	byte	readable		
+exe	0x004e5a40	ai_DumpPersonSkills	cm	byte	readable		
+exe	0x004e5a90	ai_DumpPersonOffices	cm	byte	readable		
 exe	0x004e5af0	ai_Unk4e5af0	cm	byte	draft		
 exe	0x004e5b50	ai_Unk4e5b50	cm	byte	draft		
 exe	0x004e5bf0	ai_DebugDumpPerson	cm	byte	draft		
