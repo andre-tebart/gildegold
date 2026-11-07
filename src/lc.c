@@ -26409,33 +26409,184 @@ int ai_AmountMenu(AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(AICHARR
     d2_CloseView(win);
     return r;
 }
-/* 0x5c1500, the special-amount list window opened by the menu 0x5c1b20 (1394 B, ROUGH SKELETON): the window
-   "special_amt2" 0x62d204 (0x4741f0 (0, 0, text) / 0x475600), frame 0x2ec; the body (the record rows, the
-   click dispatch and the pump 0x5309a0) is left as a comment. The tail returns through 0x52d7a0 (the caller
-   0x5c1b20 exits there) */
+/* 0x5c1500, the office list of one amount kind "special\amt2" (1394 B), the callback of the Rathaus office info
+   menu (ai_OpenAmountKindMenu): the caption (the kind's name 0x12b2 + kind, or the text 0xa0 with the viewing
+   character) and the offices of the column kind (1 .. 6 and 8: amt_GetColumnOffices, 7: amt_GetColumn7Offices,
+   up to 6) as rows with their holders (gm_FindChar), the corner icons written in line as in
+   ai_SpecialAmountListWindow, drawn by ai_ShowOfficeRows (ai_ShowAmountRows for the kinds 0 / 7) with their
+   frames and sliders enabled. Another kind, or no office, returns at once (the window stays open). Holding the
+   right button on a row's slider views the list as that character; a click on a row's frame opens the info box
+   of the row's office (ai_AmountInfoWindow, the window disabled meanwhile; a vacant seat ends the viewing) */
 
-int ai_AmountListWindow(int param_1)
+void ai_AmountListWindow(int kind)
 {
+    AICHARREC *viewer;
+    int viewing;
     int win;
+    LCAMOUNTROW rows[8];
+    AMTREC seats7[6];
+    AMTREC seats[6];
+    AICHARREC *c;
+    AIJOB *ev;
+    float health;
+    int redraw;
+    int n;
+    int i;
+    int hit;
 
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d204);
+    n = 0;
+    viewer = 0;
+    win = d2_OpenForm(0, 0, "special\\amt2");
     d2_CentreViewWindows(win);
-    /* ROUGH SKELETON: the record rows of the page, the click dispatch and the pump 0x5309a0 (this, 0x657c7);
-       the tail 0x4758f0 (win) */
+    viewing = 0;
+    redraw = 1;
+    do {
+        if (redraw) {
+            d2_SetForm(win, 2);
+            io_PrintText("$C");
+            if (viewing != 0)
+                io_PrintText(0xa0, viewer->id);
+            else
+                io_PrintText("$Z$[%s$]", kind + 0x12b2);
+            d2_SetForm(win, 3);
+            io_PrintText("$C");
+            d2_SetForm(win, 1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            for (i = 0; i < 8; i++) {
+                rows[i].rec = 0;
+                rows[i].ctl[0] = -1;
+                rows[i].office = 0;
+            }
+            if ((kind > 0 && kind < 7) || kind == 8) {
+                n = amt_GetColumnOffices(kind, 6, seats);
+                for (i = 0; i < n; i++) {
+                    rows[i].rec = (AICHARREC *)gm_FindChar(seats[i].owner);
+                    rows[i].office = seats[i].kind;
+                }
+            } else if (kind == 7) {
+                n = amt_GetColumn7Offices(0, 6, seats7);
+                for (i = 0; i < n; i++) {
+                    rows[i].rec = (AICHARREC *)gm_FindChar(seats7[i].owner);
+                    rows[i].office = seats7[i].kind;
+                }
+            } else {
+                return;
+            }
+            if (n == 0)
+                return;
+            for (i = 0; i < n; i++) {
+                /* the corner icons, as ai_AmountRowStatus (written out here: the original has the code in line) */
+                if (rows[i].rec == 0)
+                    continue;
+                rows[i].icons[0] = rows[i].rec->faith ? 0x6c9 : 0x6ca;
+                rows[i].icons[1] = 0;
+                if (lc_CharRecs[ai_PlayerId].sex != rows[i].rec->sex && (rows[i].rec->powerFlags & LC_LOVER_FLAG) != 0) {
+                    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x6f); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                        if (ev->partner1 == lc_CharRecs[ai_PlayerId].netId && rows[i].rec->netId == ev->partner2) {
+                            rows[i].icons[1] = 0x6cc;
+                            break;
+                        }
+                    }
+                }
+                rows[i].icons[2] = 0;
+                if (gv_HeldCrimeCount(rows[i].rec->netId, ai_PlayerId) > 0) {
+                    rows[i].icons[2] = 0x6cd;
+                } else {
+                    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                        if (ev->chr == ai_PlayerId && rows[i].rec->netId == ev->id4) {
+                            rows[i].icons[2] = 0x6ce;
+                            break;
+                        }
+                    }
+                }
+                rows[i].icons[3] = 0;
+                for (ev = (AIJOB *)he_FindEvent(1, 0, 0x45); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                    if (ev->partner1 == lc_CharRecs[ai_PlayerId].netId && rows[i].rec->netId == ev->partner2) {
+                        rows[i].icons[3] = 0x6cb;
+                        break;
+                    }
+                }
+                if (rows[i].icons[3] == 0) {
+                    health = gm_CharacterHealth(rows[i].rec);
+                    if (health < ai_FloatHundred)
+                        rows[i].icons[3] = 0x6d2;
+                    else if (health < 350.0f)
+                        rows[i].icons[3] = 0x6d1;
+                    else if (health < 650.0f)
+                        rows[i].icons[3] = 0x6d0;
+                    else
+                        rows[i].icons[3] = 0x6cf;
+                }
+            }
+            if (kind == 0 || kind == 7)
+                ai_ShowAmountRows(d2_LastWindow, kind, 0, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
+            else
+                ai_ShowOfficeRows(d2_LastWindow, kind, 0, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
+            for (i = 0; i < n; i++) {
+                d2_SetObjEnabled(rows[i].ctl[0], 1);
+                if (rows[i].ctl[1] != -1)
+                    d2_SetObjEnabled(rows[i].ctl[1], 1);
+            }
+            redraw = 0;
+        }
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (dm_L.rhold != 0 && viewing == 0) {
+            viewer = 0;
+            hit = -1;
+            for (i = 0; i < n; i++) {
+                if (rows[i].ctl[1] == d2_PointerObj) {
+                    hit = i;
+                    break;
+                }
+            }
+            if (hit > -1 && hit < n && rows[hit].rec != 0) {
+                viewer = 0;
+                redraw = 1;
+                if (rows[hit].rec->id != 0xffff) {
+                    viewing = 1;
+                    viewer = rows[hit].rec;
+                }
+            }
+        } else if (dm_L.rhold == 0 && viewing != 0) {
+            viewing = 0;
+            viewer = 0;
+            redraw = 1;
+        } else if (dm_L.lclick != 0 && d2_ClickedId != -1) {
+            hit = -1;
+            for (i = 0; i < n; i++) {
+                if (rows[i].ctl[0] == d2_PointerObj) {
+                    hit = i;
+                    break;
+                }
+            }
+            if (hit > -1 && hit < n) {
+                c = rows[hit].rec;
+                if (c == 0 || c->id == 0xffff) {
+                    viewer = 0;
+                    viewing = 0;
+                }
+                d2_SetViewEnabled(win, 0);
+                ai_AmountInfoWindow(rows[hit].office, c);
+                d2_SetViewEnabled(win, 1);
+            }
+            redraw = 1;
+        }
+    } while (sv_RunFrame(ai_AmountListWindow, 0x657c7) != 0);
     d2_CloseView(win);
-    (void)param_1;
-    return 0;
 }
 extern char ai_AmountInfoFmt[16];
 extern char ai_AmountInfoForm[16];
 /* 0x5c1a80, the info box of an amount kind (the form "special\amtinfo"): the caption ai_AmountInfoFmt over
    the kind's name text (0x253 + kind), the two texts 2 * kind + 0x134b / 0x134c, then the frame pump
-   (0x5309a0, this, 0x657c7) with dm_L.rup ending it; closes the view */
+   (0x5309a0, this, 0x657c7) with dm_L.rup ending it; closes the view. Both callers also pass a character
+   (the row's holder, or 0), which the box does not read */
 
-void ai_AmountInfoWindow(int kind)
+void ai_AmountInfoWindow(int kind, AICHARREC *ch)
 {
     int win;
 
+    (void)ch;
     win = d2_OpenForm(0, 0, ai_AmountInfoForm);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 2);
@@ -26451,7 +26602,7 @@ void ai_AmountInfoWindow(int kind)
     d2_CloseView(win);
 }
 
-int ai_AmountListWindow(); int ai_AgendaOfficeList();
+int ai_AgendaOfficeList();
 
 /* 0x5c1b20, the office info entry of the Rathaus name plate: opens the seven-button amount kind menu
    (ai_AmountKindMenu) with the amount list window (ai_AmountListWindow) as its callback and the

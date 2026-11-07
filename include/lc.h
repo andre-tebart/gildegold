@@ -65,6 +65,7 @@ void ai_EquipWindow(struct AIBLD *bld);                 /* 0x5bb350, the equip w
 void ai_BuildingWindow(struct AIBLD *bld);              /* 0x5b84f0, the options window of a building (sell, renovate, upgrade, ...) */
 void ai_ManagedBuildingWindow(struct AIBLD *bld);       /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 */
 struct AMOUNTCFG; struct AICHARREC;
+void ai_AmountInfoWindow(int kind, struct AICHARREC *ch);  /* 0x5c1a80, the info box of an amount kind (ch is not read) */
 int ai_AmountMenu(struct AMOUNTCFG *cfg, char *caption, int prompt, int (*pick)(struct AICHARREC *, int));  /* 0x5c1130, the special-amount menu: returns the chosen character record (0: none) */
 void ai_PersonnelBook(struct AIBLD *bld, char *model);  /* 0x5aab80, the personnel book of a building (ob_PERSONALBUCH) */
 void ai_MercenaryBook(struct AIBLD *bld, char *model);  /* 0x5ac110, the mercenary book of a building (ob_SOELDNERBUCH) */
