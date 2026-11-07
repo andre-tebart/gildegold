@@ -13738,23 +13738,24 @@ int cm_DuelSinkDown(char *c, int dmg)
     }
     return 0;
 }
-/* 0x4de5e0, fills the 0x92bcc0 table (0x505ca0) for n entries */
+/* 0x4de5e0, starts the duel's variant order: gm_Shuffled (0x505ca0) fills cm_DuelVariants with 0 .. n - 1, the count and
+   the cursor are set */
 
 void cm_DuelInitVariants(int n)
 {
-    gm_Shuffled(n, ai_Unk92bcc0);
-    ai_Unk60d370 = n;
-    ai_Unk6f0db0 = 0;
+    gm_Shuffled(n, cm_DuelVariants);
+    cm_DuelVariantCount = n;
+    cm_DuelVariantPos = 0;
 }
-/* 0x4de610, the next number of the table modulo n */
+/* 0x4de610, the next duel variant: the cursor's entry of cm_DuelVariants modulo n, the cursor advanced */
 
 int cm_DuelVariant(int n)
 {
     int i, r;
 
-    i = ai_Unk6f0db0 % ai_Unk60d370;
-    r = ai_Unk92bcc0[i] % n;
-    ai_Unk6f0db0 = ai_Unk6f0db0 + 1;
+    i = cm_DuelVariantPos % cm_DuelVariantCount;
+    r = cm_DuelVariants[i] % n;
+    cm_DuelVariantPos = cm_DuelVariantPos + 1;
     return r;
 }
 /* 0x4de640, the pistol shot of a duel (the action cm_DuelRound queues: a->shot.shooter shoots at a->shot.target): the hit
@@ -17001,7 +17002,7 @@ extern char ai_Crimes[0x5a00];
 extern int cm_SavedScene;
 extern int cm_DuelRight;
 extern int cm_DuelLeft;
-extern int ai_Unk92bcc0[128];
+extern int cm_DuelVariants[128];
 extern int cm_OrderTicks;
 extern unsigned short cm_DisabledObjs[768];
 extern unsigned int ai_Unk92c4e0;
@@ -17137,7 +17138,7 @@ int cm_DialogFrameFlags = 464838;  /* 0x60d360, the frame wait of the dialogs ( 
 int cm_SceneDuration = 10;  /* 0x60d364 */
 int cm_TextBox = -1;  /* 0x60d368 */
 int cm_SceneEnterScript = -1;  /* 0x60d36c, -1 or the object waited for ( */
-int ai_Unk60d370 = 1;  /* 0x60d370 */
+int cm_DuelVariantCount = 1;  /* 0x60d370, the number of duel variants in cm_DuelVariants (cm_DuelInitVariants) */
 int ai_Unk60d374 = 1;  /* 0x60d374 */
 char ai_Unk60dd24 = 48;  /* 0x60dd24 */
 char ai_Unk60dd68 = 49;  /* 0x60dd68 */
@@ -17216,7 +17217,7 @@ unsigned char cm_DuelLeftInsultWon = 0;  /* 0x6f0daa, the left duellist won the 
 unsigned char cm_DuelRightInsultWon = 0;  /* 0x6f0dab, the right duellist won the insult round: the left one shoots worse */
 unsigned char cm_DuelLeftRollWon = 0;  /* 0x6f0dac, the left duellist won the roll round (cm_DuelRound): the right one's shot does less damage */
 unsigned char cm_DuelRightRollWon = 0;  /* 0x6f0dad, the right duellist won the roll round: the left one's shot does less damage */
-int ai_Unk6f0db0 = 0;  /* 0x6f0db0 */
+int cm_DuelVariantPos = 0;  /* 0x6f0db0, the cursor into cm_DuelVariants (cm_DuelVariant advances it) */
 struct D3SKYLAYER *cm_SkyLayer = 0;  /* 0x6f0db4 */
 struct D3SKY *cm_SceneSky = 0;  /* 0x6f0db8 */
 int cm_SceneRain = 0;  /* 0x6f0dbc */
@@ -17243,7 +17244,7 @@ int cm_SavedScene = 0;  /* 0x925510 */
 G28REC cm_Parties[96] = {0};  /* 0x925520 */
 int cm_DuelRight = 0;  /* 0x92bca0 */
 int cm_DuelLeft = 0;  /* 0x92bca4 */
-int ai_Unk92bcc0[128] = {0};  /* 0x92bcc0 */
+int cm_DuelVariants[128] = {0};  /* 0x92bcc0, the shuffled order of the duel variants (gm_Shuffled fills it) */
 int cm_OrderTicks = 0;  /* 0x92bec0 */
 unsigned short cm_DisabledObjs[768] = {0};  /* 0x92bee0 */
 unsigned int ai_Unk92c4e0 = 0;  /* 0x92c4e0, the random seed of the scenes */

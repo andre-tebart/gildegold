@@ -938,9 +938,9 @@ int cm_WaitTicks();  /* 0x4e3420 */
 void cm_SinkDownAction(struct CHACTION *a);  /* 0x4de4b0 */
 int cm_DuelSinkDown(char *c, int dmg);  /* 0x4de530 */
 void cm_DuelRound(struct AICHAR *a, struct AICHAR *b, char *side);  /* 0x4de900 */
-extern int ai_Unk60d370;  /* 0x60d370 */
-extern int ai_Unk6f0db0;  /* 0x6f0db0 */
-extern int ai_Unk92bcc0[];  /* 0x92bcc0 */
+extern int cm_DuelVariantCount;  /* 0x60d370 */
+extern int cm_DuelVariantPos;  /* 0x6f0db0 */
+extern int cm_DuelVariants[];  /* 0x92bcc0 */
 void gm_Shuffled(unsigned char n, int *out);  /* 0x505ca0 */
 void cm_DuelInitVariants(int n);  /* 0x4de5e0 */
 int cm_DuelVariant(int n);  /* 0x4de610 */
