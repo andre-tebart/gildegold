@@ -20,8 +20,11 @@
    (AIMSG.roomUpgrade), upgrade (message 0x1e), buy offer (0x21), fire fighting and technique effect windows.
    The thieves' guild windows: the equip window (ai_EquipWindow, its rows AIEQUIPROW in ai_EquipRows kept by
    ai_UpdateEquipRows) and the training window (ai_TrainingWindow, rows LCTRAINROW, the thief message 0x16 and
-   AIJOB.thiefClass / thief); the player stats panel's pages (ai_OpenMoneyInfoPage, ai_OpenBuildingListPage, the
-   building detail ai_BuildingDetailWindow) and the coat of arms choice; lc_CharRecs reads ai_Chars as AICHARREC.
+   AIJOB.thiefClass / thief); the player stats panel (ai_PlayerStatsPanel) and its pages (ai_OpenMoneyInfoPage,
+   ai_OpenBuildingListPage with ai_ShowBuildingRows, ai_OpenMasterListPage with its rows LCMASTERROW, the building
+   detail ai_BuildingDetailWindow) and the coat of arms choice; lc_CharRecs reads ai_Chars as AICHARREC. The
+   special-amount lists build their rows (LCAMOUNTROW) with ai_ShowAmountRows / ai_ShowOfficeRows / ai_AmountRow
+   and ai_AmountRowStatus (lc.h declares the last two on struct LCAMOUNTROW).
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS, LCKIDNAPEVENT (he.c's
@@ -49,6 +52,9 @@
    between di_input's literals and d3_tools' d3t_SunFadeStart, before four corner vectors), named in main.c's gap block.
    Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
    ai_EnterBuilding writes it), named in main.c's gap block.
+   Open: data: the stats panel's master list rows ai_MasterRows (0x6f40e0) and its scroll buttons ai_MasterDown /
+   ai_MasterUp / ai_MasterBar (0x6f3870, 0x6f4080, 0x6f4ee0) are views of main.c's full_data blocks (this unit
+   is their only user, the owner not settled).
    Open: data: 0x6f3840 ai_InvSlots (the inventory child window's six LCINVSLOT rows) is a view of main.c's
    full_data_6f3680, and 0x6f2f64 ai_TransportEscort, 0x6f2f68 lc_ReserveTime and 0x6f2f78 lc_ReserveCursor
    (the Domizil goods' clock) are views of full_data_6f2f64; their owner (this unit, the only reader and writer, or
