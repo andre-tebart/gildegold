@@ -33044,88 +33044,92 @@ int ai_UseGoodInfectOwner(AICHARREC *ch, G8USEVIEW *use)
     }
     return 0;
 }
-/* 0x5cff70, the espionage owner window (2384 B, ROUGH SKELETON): param_1 the message record (+2 the
-   type, +4 the handle), param_2 the request record. Type 6: the config cfg (20 dwords, [0] = 1, [1] =
-   -1, [2] = 0xa0744300, [3] = 1, [4] = 6, [7 .. 14] = -1) with the text 0x5176d0 (0x9b) creates the
-   spy request 0x5b2180 (1, cfg, text, 0, 0); other types: the building 0x501190 (1, 1, param_2[1]).
-   Then a 0x76 record (zeroed, +8 the handle, +0xc = -1, the clock +0x28 .. +0x34, +0x36 = 10, +0x58
-   the +4 dword of the request record (the Ghidra +1 dword view), +0x6e = 0x178) is sent by 0x4c4b70
-   with the object block 0x4c3ba0 / 0x4c3c00 (+0x25 the request +4) / 0x4c49a0 and the flag 0x4c4a60
-   (the request +4, 0x5a, 2, 0x20); then a 0x77 record (+0x36 = 1) the same way, 0x4c4a60 (0x5a, 2,
-   0x20) and, when the owner word +0x27 is not 0xffff and of kind 6 / 7, the text 0x5176d0 (0xff2, the
-   record) through 0x53dda0 (the owner's character 0x770b84 + owner * 0x21c, -1, the key 0x5fb).
-   Return 1 (0 when a request could not be created). ROUGH: the disassembly shows a second 0x5b2180
-   block at 0x5d07f4 and a scan from 0x770d45 after the messages (a candidate loop) that Ghidra folded
-   away; not written yet. */
+/* 0x5cff70, the use callback of the Domizil good 0x178 (reached through its table entry +0x14): picks the target
+   building, for a player (kind 6) on the town map (ai_MapPick with the prompt 0x9b, the building class filter
+   0x1a0744300), else the building use->target; none -> 0. Sends the effect message 0x76 (to the user, the clock,
+   flags 10, the building's id, the good 0x178: the points effect he_CreatePointsEffect), then the send-home
+   message 0x77 (flags 1, the building's id; he_StartSendHomeEvent), stores the building's id into the used
+   object's bldId and sets the bit 0x20 of the building's word 0x5a (cm_SendSetField). An owner (not 0xffff) of
+   kind 6 / 7 gets the news 0xff2 about the building (key 0x5fb). Returns 1. The message is cleared with
+   D3_ZERO before and after the 0x76 message in each path, as the original's code has it.
+   @deep Rewritten from the original's whole extent (938 B; the old ROUGH note of a second ai_MapPick block
+   was past the end): typed AICHARREC / G8USEVIEW / AMOUNTCFG / AIMSG (effect words), both paths written
+   out as the original has them with the D3_ZERO before and after the 0x76 message; every call, argument,
+   constant and store matches (252 vs 260 instructions). Left: (1) frame layout: the original puts msg next
+   to the D3_ZERO temps (ebp-0x104) and cfg below it (ebp-0x154), ours cfg at ebp-0x5c and msg at ebp-0x154
+   (declaration order and names tried, no effect); (2) scheduling of the message stores (ai_Time's 14-byte
+   copy and the type / fromId / flags stores in another order); (3) the original holds 0 in edi from the
+   entry (xor edi,edi; the path-2 failure returns mov eax,edi), ours none. Tried: early returns vs if (bld
+   != 0) { .. } else return 0 (kept, -23 ins). (references: M8 at +0xbd: ours refers to ai_Time (0x770ae0),
+   the original's field to 0x770ae8 (ai_Time+0x8) (and 3 more), explained: the M8 lines are the ai_Time
+   struct copy in another load order: both sides load ai_Time, +4, +8 and the +0xc word once per message,
+   the alignment pairs different loads) */
 
-int ai_Unk5cff70(int param_1, int *param_2)
+int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
 {
-    int cfg[20];
+    AIMSG msg;
+    AMOUNTCFG cfg;
     char text[0x100];
-    char buf[0x800];
-    int rec[0x3e];
-    int h;
-    int i;
-    int owner;
+    char news[0x800];
+    AIBLD *bld;
+    int *id;
 
-    if (*(char *)(param_1 + 2) == 6) {
-        for (i = 0; i < 20; i++)
-            cfg[i] = 0;
-        for (i = 7; i < 15; i++)
-            cfg[i] = -1;
-        txt_Format(text, (char *)0x9b);
-        cfg[0] = 1;
-        cfg[1] = -1;
-        cfg[2] = 0xa0744300;
-        cfg[3] = 1;
-        cfg[4] = 6;
-        h = ai_MapPick(1, (int)cfg, text, 0, 0);
-        if (h == 0)
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9b);
+        cfg.flags = 1;
+        cfg.mode = -1;
+        cfg.kind = 6;
+        cfg.filter = 0x1a0744300;
+        bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
+        if (bld != 0) {
+            D3_ZERO(&msg, sizeof(msg));
+            msg.to = ch->netId;
+            msg.time = ai_Time;
+            id = &bld->id;
+            msg.type = 0x76;
+            msg.fromId = -1;
+            msg.flags = 10;
+            msg.effect.target = *id;
+            msg.effect.good = 0x178;
+            cm_SendLongMessage((char *)&msg);
+            D3_ZERO(&msg, sizeof(msg));
+        } else {
             return 0;
+        }
     } else {
-        h = gm_BuildQuery(1, 1, param_2[1]);
-        if (h == 0)
+        bld = (AIBLD *)gm_BuildQuery(1, 1, use->target);
+        if (bld != 0) {
+            D3_ZERO(&msg, sizeof(msg));
+            msg.to = ch->netId;
+            msg.time = ai_Time;
+            id = &bld->id;
+            msg.type = 0x76;
+            msg.fromId = -1;
+            msg.flags = 10;
+            msg.effect.target = *id;
+            msg.effect.good = 0x178;
+            cm_SendLongMessage((char *)&msg);
+            D3_ZERO(&msg, sizeof(msg));
+        } else {
             return 0;
+        }
     }
-    for (i = 0; i < 0x3e; i++)
-        rec[i] = 0;
-    *(char *)((char *)rec + 4) = 0x76;
-    rec[2] = *(int *)(param_1 + 4);
-    rec[3] = -1;
-    rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_Time.hour);
-    rec[12] = U_I(((unsigned)&ai_Time + 0x8));
-    *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-    *(char *)((char *)rec + 0x36) = 10;
-    rec[0x16] = *(int *)(h + 4);
-    *(short *)((char *)rec + 0x6e) = 0x178;
-    cm_SendLongMessage(rec);
-    cm_BeginFieldBlock((char *)*param_2, *(int *)(*param_2 + 2));
-    cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x25, (void *)(h + 4));
+    msg.to = ch->netId;
+    msg.time = ai_Time;
+    msg.type = 0x77;
+    msg.fromId = -1;
+    msg.flags = 1;
+    msg.effect.target = *id;
+    cm_SendLongMessage((char *)&msg);
+    cm_BeginFieldBlock((char *)use->obj, use->obj->objId);
+    cm_AddFieldDelta(4, 1, (unsigned short)((char *)&use->obj->bldId - cm_FieldObject), id);
     cm_SendFieldDeltas();
-    cm_SendSetField(*(int *)(h + 4), 0x5a, 2, 0x20, 0);
-    for (i = 0; i < 0x3e; i++)
-        rec[i] = 0;
-    *(char *)((char *)rec + 4) = 0x77;
-    rec[2] = *(int *)(param_1 + 4);
-    rec[3] = -1;
-    rec[10] = U_I((unsigned)&ai_Time);
-    rec[11] = U_I((unsigned)&ai_Time.hour);
-    rec[12] = U_I(((unsigned)&ai_Time + 0x8));
-    *(short *)((char *)rec + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-    *(char *)((char *)rec + 0x36) = 1;
-    rec[0x16] = *(int *)(h + 4);
-    cm_SendLongMessage(rec);
-    cm_BeginFieldBlock((char *)*param_2, *(int *)(*param_2 + 2));
-    cm_AddFieldDelta(4, 1, (short)(*param_2 - *(unsigned short *)(unsigned)&cm_FieldObject) + 0x25, (void *)(h + 4));
-    cm_SendFieldDeltas();
-    cm_SendSetField(*(int *)(h + 4), 0x5a, 2, 0x20, 0);
-    owner = U_W(h + 0x27);
-    if (owner != 0xffff &&
-        (*(unsigned char *)(((unsigned)&ai_Chars + 0x2) + owner * 0x21c) == 6 ||
-         *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + owner * 0x21c) == 7)) {
-        txt_Format(buf, (char *)0xff2, h);
-        he_ShowNews(U_I((unsigned)&ai_CharInts + owner * 0x21c), -1, buf, 0, 0x5fb, 0);
+    cm_SendSetField(*id, 0x5a, 2, 0x20, 0);
+    if (bld->owner != 0xffff && (lc_CharRecs[bld->owner].kind == 6 || lc_CharRecs[bld->owner].kind == 7)) {
+        txt_Format(news, 0xff2, bld);
+        he_ShowNews(lc_CharRecs[bld->owner].netId, -1, news, 0, 0x5fb, 0);
     }
     return 1;
 }

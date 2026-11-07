@@ -471,7 +471,8 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     } u;
                 };
                 struct {                        /* the effect message 0x76 of a Domizil good used on a target (the event
-                                                   keeps these words 0x54 further: AIJOB.effectGood at 0xc2) */
+                                                   keeps these words 0x54 further: AIJOB.effectGood at 0xc2) and
+                                                   the send-home message 0x77 of the good 0x178 (target only) */
                     int target;                 /* 0x58, the id of the target (a building) */
                     char pad5c[0x12];
                     unsigned short good;        /* 0x6e, the Domizil good (G9DOMIZIL.id) */
