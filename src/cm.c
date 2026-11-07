@@ -15588,8 +15588,7 @@ void cm_WaitGroupScripts(void)
 void cm_LoadEventScene(char *name)
 {
     char path[0x80];
-    int idx, sh, t, k;
-    int (*cb)();
+    int idx, sh, k;
 
     if (cm_SkipEvents != 0)
         return;
@@ -15601,16 +15600,16 @@ void cm_LoadEventScene(char *name)
     d3if_SelectScene(idx, 0);
     if (d3_Terrain != 0) {
         if (ai_GfxFloorLod == 0) {
-            *(unsigned char *)((char *)d3_Terrain + 0x1c70) = (*(unsigned char *)((char *)d3_Terrain + 0x1c70) & 0xeb) | 0x8;
+            ((D3FLMAP *)d3_Terrain)->lod = 2;
             sh = 2;
         } else {
-            *(unsigned char *)((char *)d3_Terrain + 0x1c70) = (*(unsigned char *)((char *)d3_Terrain + 0x1c70) & 0xe7) | 0x4;
+            ((D3FLMAP *)d3_Terrain)->lod = 1;
             sh = 1;
         }
         d3fl_SetDetail(0x40);
         d3fl_SetShift((struct D3FLMAP *)d3_Terrain, sh >> 1, 1);
     }
-    if (((char *)cm_CurrentFight)[0x26] & 0x20) {
+    if (((G28REC *)cm_CurrentFight)->flags & 0x20) {
         d2_ClearSurface(d2_ScreenSurf);
         G27_FRAME(d2_ScreenSurf, d2_BackSurf);
         sv_RunFrame(0, 0x86);
@@ -15621,14 +15620,8 @@ void cm_LoadEventScene(char *name)
     k = cm_SceneDepth + 1;
     evt_NoGroup = -2;
     cm_SceneDepth = k;
-    if (d3_DefaultScene != 0) {
-        t = (int)d3_DefaultScene->events;
-        if (t != 0) {
-            cb = *(int (**)())(t + 0x210);
-            if (cb != 0)
-                cb(d3_DefaultScene, 4, t + 0x214, 0);
-        }
-    }
+    if (d3_DefaultScene != 0 && d3_DefaultScene->events != 0 && d3_DefaultScene->events[4].fn != 0)
+        d3_DefaultScene->events[4].fn(d3_DefaultScene, 4, d3_DefaultScene->events[4].name, 0);
     cm_SceneEnterScript = evt_LastId;
     d3if_Prerender(1);
     if (cm_SceneFade != 0) {
