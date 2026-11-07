@@ -32270,52 +32270,45 @@ int ai_FaithAccusationWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5ce4b0, the spy payment handler (345 B, ROUGH SKELETON: no Ghidra export; from the disassembly):
-   param_1 the message record (the AIMSG: +2 the type 6 / 7, +4 the id, +0x166 the kind), param_2 the
-   request (+4 the handle). The kind 0x4e6f10 / 0x4e6fc0 (the kind, 6, the ids) list; its entries: the
-   message's own id pays 0x4c4b00 (the request handle, the id, 0x64, 1) and, for the types 6 / 7, the
-   text 0x5176d0 (0x1e0a, the id) and the message 0x53dda0 (the handle, -1, 0, the text, 0x5fb, the key
-   0x62d694); other ids pay (the id, -0x14, 1) after the target 0x505df0 and send the same text to the
-   target. ROUGH SKELETON: the second text block and the return values are not written. */
+/* 0x5ce4b0, carries out the interrogation (ai_InterrogationWindow): me questions ch, whose office column holds up
+   to 6 offices (amt_KindColumn, amt_GetColumnOffices). ch himself gains 100 relation to me and, a player, the news
+   0x1e0a (me's id, "_NACHRICHTEN_NEU_05"); every other holder of the column loses 20 and, a player, gets the news
+   0x1e0b (me, ch, me; "_NACHRICHTEN_NEU_06"). Then me's flag 0x80000 (AICHARREC.flags1cc, interrogated: the window
+   refuses a second one) is set */
 
-int ai_Unk5ce4b0(int param_1, int param_2)
+void ai_Interrogate(AICHARREC *me, AICHARREC *ch)
 {
-    int ids[0x100];
-    char text[0x100];
-    int kindrec;
-    int count;
-    int id;
-    int target;
+    AMTREC offices[6];
+    char text[0x200];
+    char news[0x200];
+    AICHARREC *holder;
+    int col;
+    int n;
     int i;
 
-    kindrec = amt_KindColumn(*(unsigned char *)(param_1 + 0x166));
-    count = amt_GetColumnOffices(kindrec, 6, ids);
-    if (count <= 0)
-        return 0x60;   /* ROUGH: the tail at 0x5ce5e6 */
-    for (i = 0; i < count; i++) {
-        id = ids[i];
-        if (id == -1)
-            break;
-        if (*(int *)(param_1 + 4) == id) {
-            cm_SendRelations(*(int *)(param_2 + 4), id, 0x64, 1);
-            if (*(char *)(param_1 + 2) == 6 || *(char *)(param_1 + 2) == 7) {
-                txt_Format(text, (char *)0x1e0a, *(unsigned short *)param_2);
-                he_ShowNews(*(int *)(param_1 + 4), 0xffffffff, 0, text, 0x5fb,
-                             (char *)(unsigned)&full_data_62d694);
+    col = amt_KindColumn(ch->officeKind);
+    n = amt_GetColumnOffices(col, 6, offices);
+    for (i = 0; i < n; i++) {
+        if (offices[i].owner == -1)
+            continue;
+        if (ch->netId == offices[i].owner) {
+            cm_SendRelations(me->netId, offices[i].owner, 100, 1);
+            if (ch->kind == 6 || ch->kind == 7) {
+                txt_Format(text, 0x1e0a, me->id);
+                he_ShowNews(ch->netId, -1, text, 0, 0x5fb, "_NACHRICHTEN_NEU_05");
             }
         } else {
-            target = gm_FindChar(id);
-            if (target == 0)
+            holder = (AICHARREC *)gm_FindChar(offices[i].owner);
+            if (holder == 0)
                 continue;
-            cm_SendRelations(*(int *)(param_2 + 4), id, 0xffffffec, 1);
-            if (*(char *)(target + 2) == 6 || *(char *)(target + 2) == 7) {
-                txt_Format(text, (char *)0x1e0a, *(unsigned short *)param_2);
-                he_ShowNews(*(int *)(target + 4), 0xffffffff, 0, text, 0x5fb,
-                             (char *)(unsigned)&full_data_62d694);
+            cm_SendRelations(me->netId, offices[i].owner, -20, 1);
+            if (holder->kind == 6 || holder->kind == 7) {
+                txt_Format(news, 0x1e0b, me->id, ch->id, me->id);
+                he_ShowNews(holder->netId, -1, news, 0, 0x5fb, "_NACHRICHTEN_NEU_06");
             }
         }
     }
-    return 0x10;   /* ROUGH */
+    cm_SendSetField(me->netId, 0x1cc, 4, 0x80000, 0);
 }
 
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e); int gm_TitleNumber();
@@ -32347,7 +32340,7 @@ int ai_InterrogationWindow(int param_1, int param_2)  /* @original: the callers 
             return 0x60;
         if (*(char *)(i + 0x166) == 0)
             return 0x60;
-        ai_Unk5ce4b0(param_1, i);
+        ai_Interrogate((AICHARREC *)param_1, (AICHARREC *)i);
         return 0x10;
     }
     ret = 2;
@@ -32375,7 +32368,7 @@ int ai_InterrogationWindow(int param_1, int param_2)  /* @original: the callers 
     for (;;) {
         if (U_I((unsigned)&d2_ClickedId) != -1) {
             if (U_I((unsigned)&d2_PointerObj) == click1) {
-                ai_Unk5ce4b0(param_1, rec);
+                ai_Interrogate((AICHARREC *)param_1, (AICHARREC *)rec);
                 ret = 0x91;
                 U_I((unsigned)&sv_PopRequest) = 1;
             } else if (U_I((unsigned)&d2_PointerObj) == click2) {

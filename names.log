@@ -3002,3 +3002,4 @@
 2026-11-07T17:55:33 0x005cde90 func ai_SpyTargetHandler -> ai_AccusationWindow by:main why:it opens the trial (ai_OpenTrial) for the AI and the evidence book "privillegien\Beweise_Sichten" whose rows open ai_AccuseWindow for a player
 2026-11-07T17:55:33 0x004f50f0 data ord_SpyTargetOrder -> ord_AccusationOrder by:main why:it opens the trial (ai_OpenTrial) for the AI and the evidence book "privillegien\Beweise_Sichten" whose rows open ai_AccuseWindow for a player
 2026-11-07T17:59:34 0x005ce1a0 func ai_SpyTargetFlagHandler -> ai_FaithAccusationWindow by:main why:0x5ce1a0 is ai_AccusationWindow's twin opening the trial with ai_OpenTrial byFaith=1 (the judge of me's faith)
+2026-11-07T18:01:51 0x005ce4b0 func ai_Unk5ce4b0 -> ai_Interrogate by:main why:0x5ce4b0 is what ai_InterrogationWindow's confirm button runs: relations of ch's office colleagues, the news 0x1e0a / 0x1e0b, me's flag 0x80000 the window checks

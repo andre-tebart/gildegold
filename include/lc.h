@@ -223,6 +223,7 @@ int ai_ConvertWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cc700, th
 struct AICHARREC; struct LCORDMSG; int ai_PeaceWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cc2b0, the peace order's ask */
 int ai_ChangeProfessionWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cd400, the profession change */
 struct AICHARREC; struct LCORDMSG; int ai_HatredWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cb4f0, the hatred order's ask */
+void ai_Interrogate(struct AICHARREC *me, struct AICHARREC *ch);  /* 0x5ce4b0, carries out the interrogation */
 int ai_InterrogationWindow(int param_1, int param_2);  /* 0x5ce610 */
 int ai_InterrogationWindow1(int param_1, int param_2);  /* 0x5cede0 */
 int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
