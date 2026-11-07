@@ -34670,13 +34670,57 @@ int ai_UseGoodSkillBonus(AICHARREC *ch)
     cm_SendLongMessage((char *)&m.msg);
     return 1;
 }
-/* 0x5d3270, an action callback of the record table 0x62c420 (record 41 at 0x62c89c, the text id 0x29a,
-   the value 0x5a0, 320 B): the character (0x5c1130 menu / 0x505df0), 0x4c4a60, the 0x5ba660 lookup,
-   the texts 0x5176d0 and the panel 0x5cf820. */
+#define LC_F1CC_DISTRUST 0x400000  /* AICHARREC flags1cc: the distrust bit (poker.c AIPER_F1CC_DISTRUST: -0.2 trust) */
+/* 0x5d3270, the use callback of the Domizil good 0x29a (record 41 at 0x62c89c of the table 0x62c420): picks the
+   target character, for a player (kind 6) with the special-amount menu (flags 1, the gypsy filter, mode 0x400,
+   the prompt 0x9c), else the character use->target (gm_FindChar); none -> 0. Sets the target's flags1cc bit
+   0x400000 (the distrust bit poker.c's AIPER_F1CC_DISTRUST reads: -0.2 trust). A player user sees, inside 0xfe8,
+   the text whose id is the good's rank + 1 (formatted with the target) in the use-object panel. Marks the use
+   handled and returns 1.
+   @deep Reconstructed from the stub, read whole against the original and written typed as its twin
+   ai_UseGoodPettyLoss (AMOUNTCFG flags 1 / mode 0x400 / kind 6 / gypsyFilter, gm_FindChar,
+   cm_SendSetField(target->netId, 0x1cc, 4, 0x400000, 0), FindUsable rank + 1 text in 0xfe8, use->handled =
+   1); every call, argument, constant and store matches, the null return too. Left (the same as
+   ai_UseGoodPettyLoss, the lead's Open: layout TU effect): the original calls ai_FindUsableGoodIndex at
+   +0xcf before loading target->id for txt_Format(line, rank + 1, target->id) and defers the pop to the
+   final add esp, 0x24; ours pushes target->id (mov cx, [esi]; push ecx at +0xd3) before the call and pops
+   8 at once (add esp, 8; final add esp, 0x1c), the slot hunks [esp+0x16c]->[0x174] etc. follow from that.
+   The prover's call difference counts the early-pushed target->id as a third argument of 0x5ba660: no
+   meaning difference. */
 
-int ai_Unk5d3270(void)
+int ai_UseGoodDistrust(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int index;
+    AMOUNTCFG cfg;
+    char text[0x100];
+    char line[0x200];
+    char news[0x400];
+    AICHARREC *target;
+    G9DOMIZIL *found;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 1;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+    }
+    if (target == 0)
+        return 0;
+    cm_SendSetField(target->netId, 0x1cc, 4, LC_F1CC_DISTRUST, 0);
+    if (ch->kind == 6) {
+        found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+        txt_Format(line, found->rank + 1, target->id);
+        txt_Format(news, 0xfe8, line);
+        ai_UseObjPanel(news);
+    }
+    use->handled = 1;
+    return 1;
 }
 
 extern int * ai_BauplatzList;
