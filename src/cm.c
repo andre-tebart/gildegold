@@ -16587,30 +16587,31 @@ int cm_FirstPendingParty(void)
         return cm_PartyById(best);
     return 0;
 }
-/* 0x4e4f80, runs all pending parties (0x4e4f40) of the player pl that he is a member of: his field +0x208 holds the id of the party while it runs
-   (0x4e4060), every party is dropped (0x4e5180) and the field is sent back (0x4c3d90); 1 when one ran. ROUGH */
+/* 0x4e4f80, runs all pending parties (cm_FirstPendingParty) of the player pl that he is a member of: his
+   partyId holds the id of the party while it runs (cm_ExecCutscene), every party is dropped (cm_ClearParty)
+   and the field is sent back (cm_AddFieldValue / cm_SendFieldValues); 1 when one ran */
 
 char ai_RunPendingParties(int pl)
 {
+    G28REC *p;
     char ret;
     int save;
-    int p;
 
     ret = 0;
-    save = ai_CharInts[pl][0x208 / 4];
-    p = cm_FirstPendingParty();
+    save = ai_CharsT[pl].partyId;
+    p = (G28REC *)cm_FirstPendingParty();
     while (p != 0) {
-        if (cm_IsPartyMember(ai_CharInts[pl][0], (char *)p) != 0) {
-            ai_CharInts[pl][0x208 / 4] = *(int *)p;
-            cm_ExecCutscene(p);
-            ai_CharInts[pl][0x208 / 4] = -1;
+        if (cm_IsPartyMember(ai_CharsT[pl].netId, (char *)p) != 0) {
+            ai_CharsT[pl].partyId = p->id;
+            cm_ExecCutscene((char *)p);
+            ai_CharsT[pl].partyId = -1;
             ret = 1;
         }
-        cm_ClearParty(*(int *)p);
-        p = cm_FirstPendingParty();
+        cm_ClearParty(p->id);
+        p = (G28REC *)cm_FirstPendingParty();
     }
-    cm_BeginFieldBlock((char *)ai_CharInts[pl] - 4, ai_CharInts[pl][0]);
-    cm_AddFieldValue(4, 1, (unsigned short)(pl * 0x21c - (int)cm_FieldObject + (int)ai_Unk770d8c), &save);
+    cm_BeginFieldBlock((char *)&ai_CharsT[pl], ai_CharsT[pl].netId);
+    cm_AddFieldValue(4, 1, (unsigned short)((int)&ai_CharsT[pl].partyId - (int)cm_FieldObject), &save);
     cm_SendFieldValues();
     return ret;
 }
