@@ -28843,7 +28843,9 @@ typedef struct LCORDMSG {          /* the message record of an order (gv.h ORDMS
     char text[0x200];              /* 0x014, the text the handlers fill */
     int target;                    /* 0x214, of an ask that names a character (the courtship): its netId (gv.h
                                       ORDMSG.target) */
-    char pad218[8];
+    char pad218[4];
+    struct AICHARREC *partner;     /* 0x21c, the partner character (gv.h ORDMSG.partner; the privileges panel sets it
+                                      to the player's partner of the pair event 0x45) */
 } LCORDMSG;
 /* 0x5c6aa0, the courtship list "privillegien\werbung1" (604 B): the caption 0x1ce3 and up to nine candidates of ch
    (ai_FindCandidateIds) as amount rows in a grid of three columns spread over the list part's width (the frame
@@ -29545,180 +29547,167 @@ void ai_PlayerComparePanel(void)
 
 int ord_PrivilegeDialog();
 
-/* 0x5c8640, the privileges panel "panel_privilegien" 0x62d480 (1403 B, ROUGH SKELETON): the flag byte
-   0x770d31 + 0x6f25b8 * 0x21c (already open -> 0x4f8200 (0x144153c, 0, 0x657c7)); the gate 0x5763c0 (2) and
-   the state step 0x576040 (8, 0, 0, 0); the state array arr[0x88] (arr[0] = 1) and the 0x3a entry values
-   cur[] (1) compared with 0x4f81c0 (i, 0x770b80 + 0x6f25b8 * 0x21c, arr); the refresh every 500 clock ticks
-   (0x6333cc); the open char local_404 from the carrier walk 0x53e400 (1, 0, 0x45) / 0x505df0 (record +0xb0)
-   against the character 0x770b84 + 0x6f25b8 * 0x21c (record +0xac); the pages 0x1cdd / 0x1cde / 0x1cdc /
-   0x1cdb via 0x515960 and the buttons 0x475b80 / 0x475590; the entry controls 0xf8f080 + id * 0x2ec (+0x3c /
-   +0x50 = 1) and the value 9 special case; the message 0x472270 (-1, -1, screen, screen, 0x767) when ten
-   entries are shown; the pump 0x5309a0 and the end 0x4758f0 / 0x576040 (8, 0, 1, 0). ROUGH: the pages and
-   the click / redraw split follow the pseudocode; the string globals 0x625150 / 0x602568 / 0x60c6c0. */
+/* 0x5c8640, the privileges panel "panel_privilegien" (1403 B): a held player character gets the privilege dialog
+   with the text 0x1cdf instead; else, when the run allows it (ai_RunAllows 2), between the campaign steps 8 it lists
+   the orders (ord_DispatchOrder, the 0x3a handlers) the player's character may give: page 2 its own orders (those
+   answering 2, and greyed the ones answering 9), page 10 the orders with its partner of the pair event 0x45 (found
+   when the office power 0x100 is used or a partner was known), switched by the partner button (0x1cdc / 0x1cdb with
+   the partner's id). Every 500 clock ticks or on a change the handlers are asked again and the list rebuilt; a click
+   on an order runs it (kind 3 / 4) and redraws when it reports a change. The right button closes the panel */
 void ai_PrivilegesPanel(void)
 {
-    int arr[0x88];
-    char title[520];
-    int save0;
-    int save1;
-    int open;
-    int win;
     int changed;
-    int selected;
-    int page;
+    int rows;
+    AICHARREC *partner;
+    int button;
+    unsigned int next;
+    char fmt[8] = "%ia[%s]";
+    LCORDMSG msg;
+    int answers[0x3a];
     int ids[0x3a];
-    unsigned int cur[0x3a];
+    AICHARREC *old;
+    AIJOB *job;
+    int page;
+    int win;
     int i;
-    int k;
     int v;
-    int *p;
-    unsigned int last;
+    int k;
 
-    save0 = *(int *)(unsigned)&full_data_625150;
-    save1 = *(int *)(unsigned)&full_data_625154;
-    selected = -1;
+    button = -1;
     page = 2;
-    open = 0;
-    if (*(char *)(((unsigned)&ai_Selected + 0x29) + *(int *)(unsigned)&ai_PlayerId * 0x21c) != 0) {
-        ord_PrivilegeDialog(*(int *)((unsigned)&ai_MessageFilterTexts + 0x3c), 0, 0x657c7);
+    partner = 0;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].heldRounds != 0) {
+        ord_PrivilegeDialog(txt_Ptrs[0x1cdf], 0, 0x657c7);
         return;
     }
     if (!ai_RunAllows(2))
         return;
     ai_CampaignStep(8, 0, 0, 0);
-    for (p = arr, i = 0; i < 0x88; i++)
-        *p++ = 0;
-    arr[0] = 1;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d480);
+    memset(&msg, 0, sizeof(msg));
+    msg.kind = 1;
+    win = d2_OpenForm(0, 0, "panel\\privilegien");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     changed = 1;
     for (i = 0; i < 0x3a; i++)
-        cur[i] = 1;
-    *(int *)(unsigned)&d2_ClickedId = -1;
-    last = *(unsigned int *)(unsigned)&d3_Time;
+        answers[i] = 1;
+    d2_ClickedId = -1;
+    next = d3_Time;
     do {
-        int old;
-
-        old = open;
-        selected = 0;
-        if (last <= *(unsigned int *)(unsigned)&d3_Time || changed) {
-            last = *(unsigned int *)(unsigned)&d3_Time + 500;
-            if ((*(unsigned int *)(((unsigned)&ai_Selected + 0x40) + *(int *)(unsigned)&ai_PlayerId * 0x21c) & 0x100) != 0 || open != 0) {
-                p = (int *)he_FindEvent(1, 0, 0x45);
-                while (p != 0) {
-                    if (*(int *)((char *)p + 0xac) == *(int *)((unsigned)&ai_CharInts + *(int *)(unsigned)&ai_PlayerId * 0x21c)) {
-                        open = (int)gm_FindChar(*(int *)((char *)p + 0xb0));
-                        goto found;
-                    }
-                    p = (int *)he_NextEvent();
+        rows = 0;
+        if (next <= d3_Time || changed) {
+            next = d3_Time + 500;
+            old = partner;
+            if ((((AICHARREC *)ai_Chars)[ai_PlayerId].powerFlags & 0x100) != 0 || partner != 0) {
+                for (job = (AIJOB *)he_FindEvent(1, 0, 0x45); job != 0; job = (AIJOB *)he_NextEvent()) {
+                    if (job->partner1 == ((AICHARREC *)ai_Chars)[ai_PlayerId].netId)
+                        break;
                 }
-                open = 0;
+                if (job != 0)
+                    partner = (AICHARREC *)gm_FindChar(job->partner2);
+                else
+                    partner = 0;
             }
-found:
-            if (open == old && (open != 0 || (arr[0] != 2 && selected == -1))) {
-                arr[0] = (page == 2) ? 1 : 2;
-            } else {
+            msg.partner = partner;
+            if (partner != old || (partner == 0 && (msg.kind == 2 || button != -1))) {
                 changed = 1;
                 page = 2;
-                arr[0] = 1;
             }
+            if (page == 2)
+                msg.kind = 1;
+            else
+                msg.kind = 2;
             for (i = 0; i < 0x3a; i++) {
-                v = ord_DispatchOrder(i, (char *)((unsigned)&ai_Chars + *(int *)(unsigned)&ai_PlayerId * 0x21c), arr);
-                if ((unsigned int)v != cur[i])
+                v = ord_DispatchOrder(i, ai_Chars[ai_PlayerId], (int *)&msg);
+                if (v != answers[i])
                     changed = 1;
-                cur[i] = v;
+                answers[i] = v;
             }
             if (changed) {
                 changed = 0;
                 d2_SetForm(win, 2);
-                io_PrintText((char *)(unsigned)"$C");
-                selected = -1;
-                *(int *)(((unsigned)&ai_Unkf8f13c + 0x228) + *(int *)(unsigned)&d2_LastWindow * 0x3c4) = 0;
-                *(int *)(((unsigned)&ai_Unkf8f13c + 0x22c) + *(int *)(unsigned)&d2_LastWindow * 0x3c4) = 0;
+                io_PrintText("$C");
+                button = -1;
+                d2_Wins[d2_LastWindow].contentHeight = 0;
+                d2_Wins[d2_LastWindow].scrollY = 0;
                 if (page == 2) {
                     d2_SetForm(win, 1);
                     io_PrintText(0x1cdd);
-                    if (open != 0) {
+                    if (partner != 0) {
                         d2_SetForm(win, 3);
-                        v = io_PrintText(0x1cdc, *(short *)open);
-                        selected = d2_GetWinObj(win, 3, v);
+                        button = d2_GetWinObj(win, 3, io_PrintText(0x1cdc, partner->id));
                     }
                 } else if (page == 10) {
                     d2_SetForm(win, 1);
-                    if (open == 0) {
-                        io_PrintText(0x1cdd);
-                        page = 2;
-                    } else {
+                    if (partner != 0) {
                         io_PrintText(0x1cde);
                         d2_SetForm(win, 3);
-                        v = io_PrintText(0x1cdb, *(short *)open);
-                        selected = d2_GetWinObj(win, 3, v);
+                        button = d2_GetWinObj(win, 3, io_PrintText(0x1cdb, partner->id));
+                    } else {
+                        io_PrintText(0x1cdd);
+                        page = 2;
                     }
                 }
                 d2_SetForm(win, 2);
-                arr[0] = (page != 2) + 1;
-                i = 0;
-                do {
+                msg.kind = (page != 2) + 1;
+                for (i = 0; i < 0x3a; i++) {
                     ids[i] = -1;
-                    v = ord_DispatchOrder(i, (char *)((unsigned)&ai_Chars + *(int *)(unsigned)&ai_PlayerId * 0x21c), arr);
-                    cur[i] = v;
+                    v = ord_DispatchOrder(i, ai_Chars[ai_PlayerId], (int *)&msg);
+                    answers[i] = v;
                     if (v == page) {
-                        if (selected != 0)
-                            io_PrintText((char *)(unsigned)&cm_TextNewline);
-                        v = io_PrintText(&save0, title);
-                        k = d2_GetWinObj(win, 2, v);
-                        ids[i] = k;
-                        selected++;
+                        if (rows != 0)
+                            io_PrintText(cm_TextNewline);
+                        ids[i] = d2_GetWinObj(win, 2, io_PrintText(fmt, msg.text));
+                        rows++;
                     } else if (page == 2 && v == 9) {
-                        if (selected != 0)
-                            io_PrintText((char *)(unsigned)&cm_TextNewline);
-                        v = io_PrintText(&save0, title);
-                        k = d2_GetWinObj(win, 2, v);
+                        if (rows != 0)
+                            io_PrintText(cm_TextNewline);
+                        k = d2_GetWinObj(win, 2, io_PrintText(fmt, msg.text));
                         ids[i] = -1;
-                        *(int *)((unsigned)&d2_Objs + k * 0x2ec + 0x3c) = 1;
-                        *(int *)((unsigned)&d2_Objs + k * 0x2ec + 0x50) = 1;
-                        selected++;
+                        d2_Objs[k].clickDisabled = 1;
+                        d2_Objs[k].greyed = 1;
+                        rows++;
                     }
-                    i++;
-                } while (i < 0x3a);
-                if (selected < 10) {
-                    d2_SetForm(win, 4);
-                    io_PrintText((char *)(unsigned)"$C");
-                } else {
-                    d2_SetForm(win, 2);
-                    k = *(int *)(unsigned)&d2_LastWindow;
-                    d2_SetForm(win, 4);
-                    io_PrintText((char *)(unsigned)"$C");
-                    d2_CreateScrollButtons(-1, -1, k, k, 0x767);
                 }
-                selected = open;
+                if (rows > 9) {
+                    d2_SetForm(win, 2);
+                    k = d2_LastWindow;
+                    d2_SetForm(win, 4);
+                    io_PrintText("$C");
+                    d2_CreateScrollButtons(-1, -1, d2_LastWindow, k, 0x767);
+                } else {
+                    d2_SetForm(win, 4);
+                    io_PrintText("$C");
+                }
             }
         }
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_PointerObj == selected) {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == button) {
                 changed = 1;
-                page = (page == 2) ? 10 : 2;
+                page = page == 2 ? 10 : 2;
             } else {
                 for (i = 0; i < 0x3a; i++) {
-                    if (*(int *)(unsigned)&d2_PointerObj == ids[i]) {
+                    if (d2_PointerObj == ids[i]) {
                         d2_SetViewEnabled(win, 0);
-                        arr[0] = (page != 2) + 3;
-                        v = ord_DispatchOrder(i, (char *)((unsigned)&ai_Chars + *(int *)(unsigned)&ai_PlayerId * 0x21c), arr);
-                        if ((char)v < 0) {
+                        msg.kind = (page != 2) + 3;
+                        v = ord_DispatchOrder(i, ai_Chars[ai_PlayerId], (int *)&msg);
+                        if (v & 0x80) {
                             changed = 1;
-                            cur[i] = v & 10;
+                            answers[i] = v & 10;
                         }
-                        arr[0] = (page != 2) + 1;
+                        if (page == 2)
+                            msg.kind = 1;
+                        else
+                            msg.kind = 2;
                         d2_SetViewEnabled(win, 1);
                         break;
                     }
                 }
             }
         }
-        if (*(int *)((unsigned)&dm_L + 0x20))
-            *(int *)(unsigned)&sv_PopRequest = 1;
-    } while (sv_RunFrame(ai_PrivilegesPanel, 0x657c7) != 0);
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_PrivilegesPanel, 0x657c7) != 0);
     d2_CloseView(win);
     ai_CampaignStep(8, 0, 1, 0);
 }
