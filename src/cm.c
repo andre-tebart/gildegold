@@ -14341,27 +14341,28 @@ void cm_DuelChooseRound(CMCUTINFO *r, G28REC *m)
     }
     d2_CloseView(view);
 }
-/* 0x4dff80, the answer of a computer challenged person (m + 0x94): with 0x6f0d7c == 0 the question of 0x4dfcb0 (1 / 0 by a roll of 10 > 7),
-   else the choice of 0x4dfdd0 (4 with 50 %, 2 with 35 %, 3 with 15 %) */
+/* 0x4dff80, the answer of a computer duellist (the member record r's duel.round): with cm_ScenePartyRuns == 0 the
+   question of cm_DuelAskPlayer (1 / 0 by a roll of 10 > 7), else the choice of cm_DuelChooseRound (4 with 50 %, 2 with
+   35 %, 3 with 15 %) */
 
-void ai_Unk4dff80(char *m)
+void cm_DuelAskAI(CMCUTINFO *r)
 {
-    int r;
+    int n;
 
     if (cm_ScenePartyRuns == 0) {
         if ((unsigned int)cm_Random(10) > 7)
-            m[0x94] = 1;
+            r->duel.round = 1;
         else
-            m[0x94] = 0;
+            r->duel.round = 0;
         return;
     }
-    r = cm_Random(100);
-    if (r > 0x32)
-        m[0x94] = 4;
-    else if (r > 0xf)
-        m[0x94] = 2;
+    n = cm_Random(100);
+    if (n > 0x32)
+        r->duel.round = 4;
+    else if (n > 0xf)
+        r->duel.round = 2;
     else
-        m[0x94] = 3;
+        r->duel.round = 3;
 }
 /* 0x4dfff0, asks the player (0x4dfcb0 without the flag 0x6f0d7c, else the choice 0x4dfdd0) */
 
@@ -16897,7 +16898,7 @@ void cm_InitScenes(void)
     ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
     ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
-    ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)ai_Unk4dff80, (int)cm_DuelAftermath, 0);
+    ai_Unk4e5730(4, (int)cm_RunDuel, (int)ai_Unk4dfff0, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
     ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
