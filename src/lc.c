@@ -34221,7 +34221,15 @@ int ai_UseGoodHoldRound(AICHARREC *ch, G8USEVIEW *use)
    with the partner bit 1 or 2 by the player's sex), else the character use->target (gm_FindChar); none -> 0.
    The target's relation to the user rises by 25 (cm_SendRelations); a player target (kind 6 / 7) gets the news
    0xffa naming the user (key 0x5ec). A player user sees the text 0xfe8 (the good's rank + 1, the target) in the
-   use-object panel, and the use is marked handled. Returns 1. */
+   use-object panel, and the use is marked handled. Returns 1.
+   @deep Read whole against the original and written typed (AMOUNTCFG with the sex-dependent partner bit,
+   AICHARREC target, G9DOMIZIL found); every call, argument, constant, store and branch matches in order.
+   Left is VC6's constant-in-register choice: the original holds ret (edi) = 1 and uses it for the 4th
+   cm_SendRelations argument (push edi at +0xe3) and use->handled (mov [ebx+0x10], edi at +0x154), and
+   compares kind with the immediate 6 (+0xf3, +0x133) where ours keeps 6 in ebx (cmp al, bl) and pushes 1;
+   plus the filter's high dword stored after the call setup (+0x9e, order). Tried: handled = ret /
+   relations(ret) (no change), ret = 1 placement in both paths and a goto done tail (worse, 15 / 36 ins),
+   the mode / filter store order (fixed: 39 -> 12). */
 
 int ai_UseGoodCharmPartner(AICHARREC *ch, G8USEVIEW *use)
 {
