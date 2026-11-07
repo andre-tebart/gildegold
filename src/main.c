@@ -3822,7 +3822,7 @@ void main_RoundReport(void)
             do {
                 if (kind[i] == 0)
                     break;
-                io_PrintText("%L%s %i %R%T%A", kind[i] + 0x1f64, cnt[i], sum[i]);
+                io_PrintText("$L%s %i%%:$R-%T$A", kind[i] + 0x1f64, cnt[i], sum[i]);
                 t = sum[i];
                 w1f8 -= t;
                 w200 += t;
@@ -3953,7 +3953,7 @@ void main_UpdateFigure(int i)
                     ev[0x1e] = 1;
                     ev[0x1c] = ev[2];
                     cm_SendLongMessage(ev);
-                    sprintf(txt, "Meisterpr\xfc" "fung started: player_id:%i beruf:%i grad:%i", U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
+                    sprintf(txt, "MeisterPr\xfc" "fung started: player_id:%i beruf:%i grad:%i", U_I((unsigned)&ai_CharInts + base), *(char *)(((unsigned)&ai_CharInts + 0x160) + base), pr + 1);
                     cm_SendMoneyDelta(U_I((unsigned)&ai_CharInts + base), -4);
                 }
             }

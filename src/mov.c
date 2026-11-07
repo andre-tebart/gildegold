@@ -184,7 +184,7 @@ int mov_Open(char *file, HWND hwnd, HINSTANCE hinst, int x, int y, int w, int h,
     m->window->lpVtbl->put_BackgroundPalette(m->window, 0);
     }
     } else
-        sprintf(buf, "%s: invalid window %x", file, hwnd);
+        sprintf(buf, "hwnd ung\xfc" "ltig !\nfilename: %s\nHWND:%d", file, hwnd);
     }
     return id;
 fail:

@@ -818,7 +818,7 @@ void d3_DrawSortedD3D(void)
     float zmin;
     D3PTRI *t;
     int i;
-    struct IDirect3DTexture2 *last;
+    struct IDirect3DTexture2 *oldtext;
     D3CLIPINFO *clip;
     D3CVERT **vl;
     D3CVERT *q;
@@ -828,7 +828,7 @@ void d3_DrawSortedD3D(void)
     D3TLV tmp;
 
     wrap = 0;
-    last = 0;
+    oldtext = 0;
     cur = 0;
     d3_Unkfc2dc0 = 0;
     d3_TextureSwitches = 0;
@@ -853,10 +853,10 @@ void d3_DrawSortedD3D(void)
             p = vb;
             n = 0;
             cur = (D3TEXV *)t->tex;
-            if (!d3_Unk63345d && cur && cur->d3dtex != last) {
-                last = cur->d3dtex;
+            if (!d3_Unk63345d && cur && cur->d3dtex != oldtext) {
+                oldtext = cur->d3dtex;
 #line 1219
-                D3DCHECK(d3d_Device->lpVtbl->SetTexture(d3d_Device, 0, last));
+                D3DCHECK(d3d_Device->lpVtbl->SetTexture(d3d_Device, 0, oldtext));
                 d3_TextureSwitches++;
                 if (cur->flags & 8)
                     d3_Unkfc2dc0 += (cur->bytes * cur->w * cur->w) >> 3;

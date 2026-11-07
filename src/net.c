@@ -275,11 +275,11 @@ ret1:
     if (net_Conn.rx->idx != -1) {
         if (net_Conn.rx->seq != net_Seq + 1) {
             if (net_Conn.rx->seq == cm_LastSyncCount)
-                sprintf(buf, "nt_Recv(): Received a Command with ID %d, expected %d", net_Conn.rx->seq, cm_LastSyncCount);
+                sprintf(buf, "nt_Recv(): Received a Command with Count == cm_LastSyncCount, cmd->Count is %li, LastRequCnt is %li", net_Conn.rx->seq, cm_LastSyncCount);
             else if (net_Conn.rx->type == ' ' && net_Conn.rx->cmd == 14)
-                sprintf(buf, "nt_Recv(): Received Sync (cmd->CmdID %d, LastCmdID %d)", net_Conn.rx->seq, net_Seq);
+                sprintf(buf, "nt_Recv(): Received Sync, cmd->Count is %li, LastRequCnt is %li", net_Conn.rx->seq, net_Seq);
             else {
-                sprintf(buf, "nt_Recv(): Lost a Command (cmd->CmdID %d, LastCmdID %d)", net_Conn.rx->seq, net_Seq);
+                sprintf(buf, "nt_Recv(): Lost a Command, cmd->Count is %li, nt_LastRequCount is %li", net_Conn.rx->seq, net_Seq);
                 net_Seq = net_Conn.rx->seq;
             }
         } else

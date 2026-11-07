@@ -3828,7 +3828,7 @@ unsigned int flags;
         d2_WinOpenPic(win->w - 0xc, win->h - 10, d2_ScrollMarkerPic + 2, i);
     }
     if (flags & 0x10)
-        win->text = mem_Alloc(0x17d0, "d2_t:win->txt");
+        win->text = mem_Alloc(0x17d0, "d2_t:w->txt");
     d2_LastWindowPtr = win;
     d2_LastWindow = i;
     return i;

@@ -328,8 +328,8 @@ void snd_UpdateAnimals(void)
         t = F3SND_TIME;
         if (ai_Unk6f0b9c != gm_ClockSeason(&ai_Time))
             ai_Unk6f0b9c = gm_ClockSeason(&ai_Time);
-        SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped (reason: sound off) %i");
-        SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped (reason: sound off) %i");
+        SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped, reason: !(boden && snd_AmbientActive) ! Handlevalue is %x");
+        SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped, reason: !(boden && snd_AmbientActive) ! Handlevalue is %x");
         a = ai_Unk602bd8[ai_Unk6f0b9c];
         a[0].last = t;
         a[1].last = t;
@@ -374,35 +374,35 @@ void snd_UpdateAnimals(void)
                 else
                     k = *(int *)(ai_Unk6f0b98 + 0xc);
                 if (ai_Unk6f0b98 == 0 || k <= 2) {
-                    sprintf(ai_Unk6f0960, "About to trigger hpLocusts! Handle: %i Count: %i", ai_Unk6f0b98, k);
+                    sprintf(ai_Unk6f0960, "About to trigger hpLocusts ! Handlevalue before triggering is %x, loopCount is %d.", ai_Unk6f0b98, k);
                     ai_Unk6f0b98 = sb_PlaySampleI(0, "Grillen_l", rand() % ai_Unk602bd8[ai_Unk6f0b9c][1].count + 2,
                         0x3f, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f), 0, 0);
-                    sprintf(ai_Unk6f0960, "hpLocusts triggered!  Handlevalue: %i", ai_Unk6f0b98);
+                    sprintf(ai_Unk6f0960, "hpLocusts triggered ! Handlevalue is %x", ai_Unk6f0b98);
                 }
             }
             if (ai_Unk6f0b9c == 1) {
                 if (ai_Unk6f0b94 == 0) {
                     ai_Unk6f0b94 = sb_PlaySampleI(0, "Grillen_l", 0, 0x3f, (int)(0.7f * h * 127.0f) >> 1, 0, 0);
-                    sprintf(ai_Unk6f0960, "hpLocustsPerm triggered!  Handlevalue: %i", ai_Unk6f0b94);
+                    sprintf(ai_Unk6f0960, "hpLocustsPerm triggered ! Handlevalue is %x", ai_Unk6f0b94);
                 } else {
                     sb_SetVolumeI(ai_Unk6f0b94, (int)(0.7f * h * 127.0f) >> 1);
-                    sprintf(ai_Unk6f0960, "hpLocustsPerm volume adjusted!  Handlevalue: %i", ai_Unk6f0b94);
+                    sprintf(ai_Unk6f0960, "hpLocustsPerm volume adjusted ! Handlevalue is %x", ai_Unk6f0b94);
                 }
             } else if (ai_Unk6f0b94 != 0) {
-                sprintf(ai_Unk6f0960, "hpLocustsPerm stopped (reason: season) %i", ai_Unk6f0b94);
+                sprintf(ai_Unk6f0960, "hpLocustsPerm stopped, reason: s_season != GM_SUMMER ! Handlevalue is %x", ai_Unk6f0b94);
                 sb_Stop(ai_Unk6f0b94, 0);
                 ai_Unk6f0b94 = 0;
                 *(int *)(ai_Unk6f0b94 + 0x18) = 0;
             }
         } else if (n < 0x65 && ai_Unk6f0b9c != 3) {
-            sprintf(ai_Unk6f0960, "Adjusting Volume for hpLocusts: %i %i", ai_Unk6f0b98, ai_Unk6f0b94);
+            sprintf(ai_Unk6f0960, "Adjusting Volume for hpLocusts (%x) and hpLocustsPerm (%x) !", ai_Unk6f0b98, ai_Unk6f0b94);
             if (ai_Unk6f0b94 != 0)
                 sb_SetVolumeI(ai_Unk6f0b94, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
             if (ai_Unk6f0b98 != 0)
                 sb_SetVolumeI(ai_Unk6f0b98, (int)(h * ai_Unk602bd8[ai_Unk6f0b9c][1].vol * 127.0f) >> 1);
         } else {
-            SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped (reason: numDrops) %i");
-            SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped (reason: numDrops) %i");
+            SND_STOPLOG(ai_Unk6f0b94, "hpLocustsPerm stopped, reason: numDropsModifier > 100 || s_season == GM_WINTER ! Handlevalue is %x");
+            SND_STOPLOG(ai_Unk6f0b98, "hpLocusts stopped, reason: numDropsModifier > 100 || s_season == GM_WINTER ! Handlevalue is %x");
         }
         a = ai_Unk602bd8[ai_Unk6f0b9c];
         if ((unsigned int)(rand() % 2000 + a[4].interval) < t - a[4].last) {
@@ -886,13 +886,13 @@ int snd_FindVoiceSample(int id, int bank, char *text, int var)
             s = sb_GetVariationI(bank, buf, var);
             if (s != 0)
                 return s;
-            sprintf(buf, "Voicesample not found in variation: %s %i", text, var);
+            sprintf(buf, "Voicesample not found in variation:\n%s %i", text, var);
             return 0;
         }
     }
     s = sb_GetSample(bank, buf);
     if (s == 0)
-        sprintf(buf, "Voicesample not found: %s", text);
+        sprintf(buf, "Voicesample not found:\n%s", text);
     return s;
 }
 /* 0x4c2760, plays the voice sample of speaker id in bank now (snd_FindVoiceSample) at the voice volume,
@@ -1071,7 +1071,7 @@ void snd_PlaySelectedClick(void)
    their favour with the player: the average gm_Liking favour over the selected workers selects the text
    ("SCHLECHTE_GUNST" < 0x32, "MITTLERE_GUNST" < 0x4b, "GUTE_GUNST" above), spoken by the more numerous
    sex (w / m, the last selected woman / man), -5 (a neutral voice) when the preferred one is missing
-   @deep 65 code hunks, same operation / scheduling only: the whole original 0x4c2d20..0x4c2f2f read against the source, every constant and callee corresponds (the 0.4 double gate, snd_LoadVoiceBank of ARBEITER_KOMMENTARE_BEFEHL_HANDWERKER.sbf, the 0x20 selected-worker scan at 0x7603a0 with the +0x188 selected and +9 sex bytes, men/women counts, the float favour sum truncated per step (fiadd + __ftol), f /= men+women, the 0x32/0x4b thresholds, the w/m choice and the -5 fallback, SCHLECHTE/MITTLERE/GUTE_GUNST). Left: ours CSEs snd_VoiceBankOrders into edx across the tail where the original compares memory (cmp ds:0x6f0cbc,esi) and reloads in every play branch; the original's out-of-line early-return block at 0x4c2e2a; the init store order (mov edi,ebx) and eax/edx choice for the men+women add. Readability debt after this session: Q2 ai_SceneChars (now unsigned short *[0x20]), gm_Liking. */
+   @deep 65 code hunks, same operation / scheduling only: the whole original 0x4c2d20..0x4c2f2f read against the source, every constant and callee corresponds (the 0.4 double gate, snd_LoadVoiceBank of ARBEITER_KOMMENTARE_BEFEHL_HANDWERK.sbf, the 0x20 selected-worker scan at 0x7603a0 with the +0x188 selected and +9 sex bytes, men/women counts, the float favour sum truncated per step (fiadd + __ftol), f /= men+women, the 0x32/0x4b thresholds, the w/m choice and the -5 fallback, SCHLECHTE/MITTLERE/GUTE_GUNST). Left: ours CSEs snd_VoiceBankOrders into edx across the tail where the original compares memory (cmp ds:0x6f0cbc,esi) and reloads in every play branch; the original's out-of-line early-return block at 0x4c2e2a; the init store order (mov edi,ebx) and eax/edx choice for the men+women add. Readability debt after this session: Q2 ai_SceneChars (now unsigned short *[0x20]), gm_Liking. */
 
 void snd_PlayFavourComment(void)
 {
@@ -1091,7 +1091,7 @@ void snd_PlayFavourComment(void)
     if (util_RandomF() > 0.4)
         return;
     if (snd_VoiceBankOrders == 0)
-        snd_VoiceBankOrders = snd_LoadVoiceBank("ARBEITER_KOMMENTARE_BEFEHL_HANDWERKER.sbf", 0);
+        snd_VoiceBankOrders = snd_LoadVoiceBank("ARBEITER_KOMMENTARE_BEFEHL_HANDWERK.sbf", 0);
     for (i = 0; i < 0x20; i++) {
         c = (AICHAR *)ai_SceneChars[i];
         if (c != 0 && c->selected != 0) {

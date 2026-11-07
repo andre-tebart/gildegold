@@ -2686,7 +2686,7 @@ int ch_GetWaypoints(D3SM *h, CHARACTER *ch, CHWAYPT *out)
     return 1;
 }
 /* 0x4079b0, walk actions: checks the next path cells against the nearby characters others[0..n-1] and,
-   if one blocks the way, marks them in the ground map and searches a new path around them ("ch_GetNewPath"
+   if one blocks the way, marks them in the ground map and searches a new path around them ("ch:GetNewPath"
    is the mem_Alloc tag). Returns the new path length, 0 nothing to do, -1 failed, -2 no way around.
    @deep B3 draft, 2291/2768 bytes, 382 differing instructions of 842. Read hunk by hunk against tools/asmdiff and the original 0x4079b0..0x40847f: same statements, one stack slot more (frame 0x9bc vs 0x9b8) and the scalars permuted over the slots (ours tx/tz 0x1c/0x20 vs 0x20/0x24, gx/gz 0x2c/0x30 vs 0x30/0x2c, sx/cx 0x34/0x38 vs 0x20/0x24), oa in edi vs esi; plus two scheduled forms read as the same source: the contacts loop base (ours shares the memset's edx = &ch->contacts, original lea ecx,[ebp+0x94] and stores ch at [ecx-4]) and the rest-buffer loop (original walks path by index in edi and rest by a pointer at rest+1, [ecx-1]/[ecx], ours q at [eax]/[eax+1]). spell menu: 20 reload entries, all re-reading ch/others[i] fields the source already re-reads; dup-tail 407a28/407b3d/408420 are the k==last?0xd:1 and retryAt!=-1?0xd:1 calls already written as two-armed calls; 74 slots hunks. Leads tried this session, one build each: dead locals fx/fz/sz/ret removed (original slot sharing; byte-identical, kept); rest[nrest*2] counter form instead of q++ (2253 bytes but 432 asm lines, reverted - the original does walk the buffer by pointer); contacts store order and the transport?cur-2:cur if/else (byte-identical, reverted). Q2 gap left: u.walk.unk0fc - written -1 by all four path (re)builders (0x408387 ch_GetNewPath, 0x408652 ch_PathToTarget, 0x408984 ch_InitWalk, 0x409d1e ch_ActWalkCells) and read nowhere: the whole ch TU disassembly has only those four [reg+0xfc] references and chc.c never touches 0xfc, so no role name can be evidenced. Everything else named: CHARACTER.contactSteps (0x8e), CHARACTER.speedScale (0x1a4), u.walk.flags + CH_WALK_* (0x160), CHARACTER.pathType (0x240, the path_Find unit type), CH_ACTIONS reads the typed ch->actions (Q4 gone). */
 
@@ -2881,7 +2881,7 @@ int ch_GetNewPath(CHARACTER *ch, int n, CHARACTER **others)
                     mem_Free(a->u.walk.path);
                     a->u.walk.path = 0;
                 }
-                a->u.walk.path = mem_Alloc((cnt + nrest) * 2, "ch_GetNewPath");
+                a->u.walk.path = mem_Alloc((cnt + nrest) * 2, "ch:GetNewPath");
                 tz = ch_ThinPath(ch, &ch_Path, (CHPATHPT *)a->u.walk.path, (CHWALKDEF *)h);
                 for (k = 0; k < nrest; k++) {
                     ((unsigned char *)a->u.walk.path)[(tz + k) * 2] = rest[k * 2];
