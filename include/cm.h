@@ -922,7 +922,7 @@ int amt_GetOffice(unsigned char i, struct AMTREC *out);  /* 0x4e6f30, amt.c (thi
 int amt_GetKind(int k, struct AMTKIND *out);  /* 0x4e6f80 */
 int amt_GetOfficeApplicants();  /* 0x4e76b0 */
 
-int cm_AskDeposeVote(char *a, char *b, char *c, int *out);  /* 0x4da9e0 */
+int cm_AskDeposeVote(struct AICHAR *a, struct AICHAR *b, struct AICHAR *c, int *out);  /* 0x4da9e0 */
 int cm_AskElectVote(unsigned char office, struct AICHAR *b, int *ids, int *click);  /* 0x4dab50 */
 void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m);  /* 0x4dada0 */
 

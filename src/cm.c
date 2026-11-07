@@ -12511,7 +12511,7 @@ void cm_RunCouncilSession(G28REC *a)
 }
 /* 0x4da9e0, the vote dialog "cutscenes\\sitzungen" (buttons from the text 0x12c6): the answer of the player's choice; *out the click */
 
-int cm_AskDeposeVote(char *a, char *b, char *c, int *out)
+int cm_AskDeposeVote(AICHAR *a, AICHAR *b, AICHAR *c, int *out)
 {
     int v, b1, b2, b3, dlg, r;
     int tmp[1];
@@ -12520,11 +12520,11 @@ int cm_AskDeposeVote(char *a, char *b, char *c, int *out)
     v = d2_OpenForm(0, 0, "cutscenes\\sitzungen");
     ((void (*)(int, int))d2_PlaceMainWindow)(v, 1);
     d2_SetForm(v, 0);
-    r = io_PrintText(0x12c6, *(unsigned short *)b, *(unsigned short *)a);
+    r = io_PrintText(0x12c6, b->id, a->id);
     b1 = d2_GetWinObj(v, 0, r);
     d2_GetWinObj(v, 0, r + 1);
     b3 = d2_GetWinObj(v, 0, r + 2);
-    dlg = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
+    dlg = d2_WinOpenSlider((d2_LastWindowPtr->w - 300) / 2 - 8, 8, 300, 0, 100, 0x75, 0x42, d2_LastWindow);
     cm_DialogTimer(dlg, 0x5dc, 1);
     r = ai_TrustedOfTwo(a, b, c, tmp);
     d2_ClickedId = -1;
@@ -12623,7 +12623,7 @@ void cm_SessionAskPlayer(CMCUTINFO *r, CMSESSIONREQ *m)
         challenger = (AICHAR *)gm_FindChar(m->ids[1]);
         if (holder == 0 || challenger == 0)
             return;
-        res = cm_AskDeposeVote((char *)c, (char *)holder, (char *)challenger, &click);
+        res = cm_AskDeposeVote(c, holder, challenger, &click);
         r->session.click = click;
     } else {
         if (m->mode != 2)
