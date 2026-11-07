@@ -561,6 +561,15 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
             char buildPath[0x5c];       /* 0x9c, the path of the building's model group ("...gebaeude/*gb_<NAME>.ogr");
                                            the size is reasoned: up to the record's end */
         };
+        struct {                        /* the espionage message 0x18 (lc.c ai_EspionageAmountCB); the event keeps
+                                           the words 0x54 further on (AIJOB.id4 is the target) */
+            int bld;                    /* 0x58, the spying player's own building (AICHAR.bld2's id), -1: none */
+            char pad5c[0x14];
+            int target;                 /* 0x70, the netId of the character spied on */
+            char pad74[0x1c];
+            int price;                  /* 0x90, the price paid */
+            int length;                 /* 0x94, the length picked on the slider, 0 .. 2 */
+        } espionage;
     };
 } AIMSG;
 

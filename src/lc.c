@@ -19956,15 +19956,102 @@ int ai_SabotageCallback(char *ch, AIBLD *target)
     d2_CloseView(win);
     return ordered;
 }
-/* 0x5b3ad0, a Ghidra-missed start (1117 B, ROUGH SKELETON): the seam is the ret of 0x5b3630 at 0x5b3acf (no nop
-   padding between the two) and the address is taken at 0x5b3cf5 (`0x5309a0 (0x5b3ad0, 0x677c7)`, the pump
-   callback); a 0x510-byte frame, the player 0x6f25b8 and 0x53e400 (... 0x18 ...) first; the body is left as a
-   comment */
+/* 0x5b3ad0, the espionage window "locations\\wohnsitz\\spy" (ai_EspionageAmountMenu's amount menu callback, with the
+   picked character ch). An espionage event 0x18 of the player already on ch asks (text 0x42c1) to end it: yes
+   sets its end time to now and sends it (cm_SendExSetHE). Five running ones give the text 0x42c0. Else the window:
+   the caption 0x42be, a slider of three lengths (texts 0x42bb .. 0x42bd), and every frame the price 0x42b8 for ch:
+   0.5 % of the player's worth plus 0.5 % of ch's, times 1 + 0.33 * the length. Its first button (0x42b9) sends
+   the espionage message 0x18 (the player's building, ch, the price, the length; in the cm group "spionage") when
+   the player has the price, tells it with the text 0x42bf and closes; the second button (0x42ba), a right click or
+   an empty pick close it. Returns 1 once the espionage was ordered, else 0 */
 
-int ai_EspionageAmountCB(void)
+int ai_EspionageAmountCB(AICHARREC *ch)
 {
-    /* ROUGH SKELETON: the 0x510-byte frame */
-    return 0;
+    int ordered;
+    int running;
+    int win;
+    int caption;
+    int slider;
+    int base;
+    int price;
+    int buttons[2];
+    float factor;
+    float own;
+    AIJOB *ev;
+    AIMSG msg;
+    char text[0x400];
+
+    ordered = 0;
+    running = 0;
+    for (ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->id4 == ch->netId) {
+            txt_Format(text, 0x42c1, ch->id);
+            if (sv_MessageBox(text, 0x101) != 0) {
+                ev->end = ai_Time;
+                ev->exSlot = cm_SendExSetHE(-1, ev);
+            }
+            return 0;
+        }
+        running++;
+    }
+    if (running >= 5) {
+        txt_Format(text, 0x42c0, 5);
+        sv_MessageBox(text, 0x104);
+        return 0;
+    }
+    win = d2_OpenForm(0, 0, "locations\\wohnsitz\\spy");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(win, 2);
+    caption = d2_CreateWinText(0, 3, txt_Ptrs[0x42be], d2_LastWindow);
+    d2_Objs[caption].centred = 1;
+    d2_Objs[caption].w = d2_Wins[d2_LastWindow].w;
+    d2_SetObjFont(caption, 0x54);
+    slider = d2_WinOpenSlider(0x57, 0x14, 0xc8, 0, 100, 0x7b, 0x82, d2_LastWindow);
+    d2_SetObjValue(slider, 0, 2, 0, 1);
+    d2_SetList(slider, 3, txt_Ptrs[0x42bb], txt_Ptrs[0x42bc], txt_Ptrs[0x42bd]);
+    d2_SetForm(win, 3);
+    sv_ButtonRow(d2_LastWindow, 0, buttons, 2, txt_Ptrs[0x42b9], txt_Ptrs[0x42ba]);
+    while (sv_RunFrame((int)ai_EspionageAmountCB, 0x677c7) != 0) {
+        if (dm_L.rup != 0 || ch->id == 0xffff) {
+            sv_PopRequest = 1;
+            continue;
+        }
+        factor = d2_GetObjValue(slider) * 0.33f + 1.0f;
+        own = gm_GetWorth(((AICHARREC *)ai_Chars)[ai_PlayerId].id) * 0.005f;
+        base = (int)(own + gm_GetWorth(ch->id) * 0.005f);
+        price = (int)(base * factor);
+        d2_SetForm(win, 1);
+        io_PrintText("$C");
+        io_PrintText(0x42b8, price, ch->id);
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == buttons[0] && sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], price, ai_OwnPlayer) != 0) {
+            msg.type = 0x18;
+            msg.flags = 2;
+            msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+            msg.fromId = -1;
+            msg.espionage.target = ch->netId;
+            msg.espionage.bld = ((AICHARREC *)ai_Chars)[ai_PlayerId].bld2 != 0 ?
+                                ((AIBLD *)((AICHARREC *)ai_Chars)[ai_PlayerId].bld2)->id : -1;
+            msg.espionage.price = price;
+            cm_BeginGroup("spionage");
+            msg.espionage.length = d2_GetObjValue(slider);
+            cm_SendLongMessage((char *)&msg);
+            cm_EndGroup("spionage");
+            txt_Format(text, 0x42bf, ch->id);
+            sv_MessageBox(text, 0x100);
+            sv_PopRequest = 1;
+            ordered = 1;
+        } else if (d2_PointerObj == buttons[1]) {
+            sv_PopRequest = 1;
+        }
+    }
+    d2_CloseView(win);
+    sv_CameraFollow();
+    return ordered;
 }
 /* 0x5b3f30, a Ghidra-missed start (1035 B, ROUGH SKELETON): the seam is the ret at 0x5b3f2c and the three nops
    to 0x5b3f30; a 0x744-byte frame with the 0x88-dword block at +0x130 cleared, the player 0x6f25b8 read first;
