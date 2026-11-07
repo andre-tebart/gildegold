@@ -26048,16 +26048,43 @@ int ai_ShowCandidacyTab(int view, int page, int scrollPage, unsigned int n, LCAM
     d2_Wins[d2_LastWindow].visible = 0x70;
     return 1;
 }
-/* 0x5c0790, a tab fill of the special-amount window (277 B, ROUGH SKELETON): as 0x5bffb0, three parameters
-   and the page records; only reached through the fill table 0x62d154 */
+/* 0x5c0790, the rows of the special-amount window's office tab (tab 7, 277 B): with n rows, switches to the page
+   (ai_AmountPageSwitch view, page, scrollPage), centres the caption txt_Ptrs[0x16aa] at the top and draws the rows
+   from y 0x28 down, 0x70 apart (ai_AmountRow at 0x4b, titled); before the first row of each office (x34, filled
+   office by office by ai_FillOfficeTab) it centres the office's name txt_Ptrs[0x253 + office] as a heading 0x19
+   high; enables the rows' sliders, restores the page's scroll offset and sets its scroll step 0x70; returns 1
+   (0 without rows) */
 
-int ai_Unk5c0790(int param_1, int param_2, int param_3, int param_4)
+int ai_ShowOfficeTab(int view, int page, int scrollPage, unsigned int n, LCAMOUNTROW *rows)
 {
-    if (param_4 == 0)
+    unsigned int i;
+    int half;
+    int y;
+    int office;
+    int saved;
+
+    if (n == 0)
         return 0;
-    ai_AmountPageSwitch(param_1, param_2, param_3);
-    /* ROUGH SKELETON: the rows of the page */
-    return 0;
+    saved = ai_AmountPageSwitch(view, page, scrollPage);
+    half = d2_Wins[d2_LastWindow].w / 2;
+    ai_CentredText(txt_Ptrs[0x16aa], half, 8, half * 2, 0x55);
+    y = 0x28;
+    office = 0x28;  /* the original starts the last office at the first row's y (ebp = esi = 0x28) */
+    for (i = 0; i < n; i++) {
+        if (rows[i].x34 != office) {
+            office = rows[i].x34;
+            ai_CentredText(txt_Ptrs[0x253 + office], half, y, half * 2, 0x55);
+            y += 0x19;
+        }
+        rows[i].x = 0x4b;
+        rows[i].y = y;
+        ai_AmountRow(0x4b, y, d2_LastWindow, 0x56, &rows[i], 1);
+        y += 0x70;
+    }
+    ai_EnableAmountRows(n, rows);
+    d2_Wins[d2_LastWindow].scrollY = saved;
+    d2_Wins[d2_LastWindow].visible = 0x70;
+    return 1;
 }
 typedef struct AIAMOUNTTAB {            /* 0x14 bytes, one tab of the special-amount list window's tab table:
                                            {id, count, control, fill function of the page, row builder} */
@@ -32730,7 +32757,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 4, 0, -1, ai_FillWeddingTab, ai_ShowWeddingTab },
     { 5, 0, -1, ai_FillQuarrelTab, ai_ShowQuarrelTab },
     { 6, 0, -1, ai_FillCandidacyTab, ai_ShowCandidacyTab },
-    { 7, 0, -1, ai_FillOfficeTab, ai_Unk5c0790 },
+    { 7, 0, -1, ai_FillOfficeTab, ai_ShowOfficeTab },
 };
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
 char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */

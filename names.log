@@ -2949,3 +2949,4 @@
 2026-11-07T13:43:25 0x005c03e0 func ai_Unk5c03e0 -> ai_ShowWeddingTab by:main why:the special-amount tab 4 row builder (ai_AmountTabs[4].rows): the couple's names as the heading and the wedding's rows with their role texts
 2026-11-07T13:46:40 0x005c0550 func ai_Unk5c0550 -> ai_ShowQuarrelTab by:main why:the special-amount tab 5 row builder (ai_AmountTabs[5].rows): the caption and the quarrel rows with their role texts, as ai_ShowFamilyTab
 2026-11-07T13:48:00 0x005c0650 func ai_Unk5c0650 -> ai_ShowCandidacyTab by:main why:the show handler of ai_AmountTabs row 6 beside ai_FillCandidacyTab: the candidacy tab's rows
+2026-11-07T13:48:51 0x005c0790 func ai_Unk5c0790 -> ai_ShowOfficeTab by:main why:the show handler of ai_AmountTabs row 7 beside ai_FillOfficeTab: the office tab's rows, headed by office
