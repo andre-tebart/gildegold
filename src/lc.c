@@ -25747,17 +25747,56 @@ unsigned int ai_FillCandidacyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *r
     }
     return i;
 }
-/* 0x5bfd90, a page fill variant (314 B, ROUGH SKELETON): the byte +0x166 of param_1 as the guard, the frame
-   0x18; only reached through the fill table 0x62d154. The body is left as a comment */
+/* 0x5bfd90, the fill of the special-amount window's office tab (tab 7, 314 B): while me holds an office
+   (AICHARREC.officeKind), the characters applying (AICHARREC.appliedOffice) for one of the open offices me is
+   eligible for (amt_GetEligibleOffices, up to 4). With max 0 it only counts them; else it fills up to max rows
+   with them, office by office (LCAMOUNTROW.rec, x34 the office), each with the corner icons (ai_AmountRowStatus)
+   and the partner filter filter (ai_PassesPartnerFilter, pickable); returns the count */
 
-int ai_Unk5bfd90(int param_1, int param_2, int *param_3, int param_4)
+unsigned int ai_FillOfficeTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
-    /* ROUGH SKELETON: the guard byte +0x166 and the record fill */
-    (void)param_1;
-    (void)param_2;
-    (void)param_3;
-    (void)param_4;
-    return 0;
+    int offices[4];
+    AICHARREC *c;
+    unsigned int n;
+    int nOffices;
+    int k;
+    int i;
+
+    n = 0;
+    if (me->officeKind == 0)
+        return 0;
+    nOffices = amt_GetEligibleOffices((char *)me, 4, offices);
+    if (nOffices == 0)
+        return 0;
+    if (max == 0) {
+        for (i = 0; i < 768; i++) {
+            if (((AICHARREC *)ai_Chars)[i].appliedOffice != 0) {
+                for (k = 0; k < nOffices; k++) {
+                    if (offices[k] == ((AICHARREC *)ai_Chars)[i].appliedOffice) {
+                        n++;
+                        break;
+                    }
+                }
+            }
+        }
+        return n;
+    }
+    for (k = 0; k < nOffices; k++) {
+        if (n >= max)
+            break;
+        for (c = (AICHARREC *)ai_Chars; (int)c < (int)ai_Chars[768]; c++) {
+            if (offices[k] == c->appliedOffice) {
+                rows[n].rec = c;
+                rows[n].x34 = offices[k];
+                ai_AmountRowStatus(&rows[n]);
+                rows[n].pickable = ai_PassesPartnerFilter(me->id, rows[n].rec->id, filter, 0);
+                n++;
+                if (n >= max)
+                    break;
+            }
+        }
+    }
+    return n;
 }
 /* 0x5bfed0, prepares a page of the special-amount window (144 B): selects the page param_2 of the view
    param_1, saves the page window's scroll offset, clears its text ("$C") and removes its objects. With the
@@ -32550,7 +32589,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 4, 0, -1, ai_FillWeddingTab, ai_Unk5c03e0 },
     { 5, 0, -1, ai_FillQuarrelTab, ai_Unk5c0550 },
     { 6, 0, -1, ai_FillCandidacyTab, ai_Unk5c0650 },
-    { 7, 0, -1, ai_Unk5bfd90, ai_Unk5c0790 },
+    { 7, 0, -1, ai_FillOfficeTab, ai_Unk5c0790 },
 };
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
 char ai_AmountInfoForm[16] = "special\\amtinfo";  /* 0x62d244, the form of the amount info box (d2_OpenForm) */
