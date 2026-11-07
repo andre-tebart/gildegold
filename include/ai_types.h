@@ -126,6 +126,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                 int cartBld;                    /* 0xb4, of the job a cart runs (AIOBJ.job24): the building (sv_RefreshPanel prints its kind) */
                 int id3;                        /* 0xb4, a third id: of a kind 0x1a the character sv_SpeakPicked looks up */
                 struct { char padid4[0x10]; int id4; };       /* 0xc4, of a kind 0x18: the character sv_SpeakPicked looks up */
+                struct { char padst18[0x14]; AITIME stopped18; }; /* 0xc8, of an espionage event 0x18: the time the AI's
+                                                              counter-espionage ended it (ai_CounterEspionage) */
                 struct { char padt8f[4]; AITIME end8f; };     /* 0xb8, of the kinds 0x8f / 0x16 and the building job 0x1c: the end time */
                 struct { char padt61[0x10]; AITIME start61; }; /* 0xc4, of a job kind 0x61: the start of its eight hours */
                 struct { char padt48[0x18]; AITIME end48; };  /* 0xcc, of a job kind 0x48 (stage 1): the end time */

@@ -277,7 +277,7 @@ void ai_GypsyDeliveryText(void *from, int n, void **to);  /* 0x5a9470, the gypsy
 struct AICHARREC; struct LCORDMSG; int ai_BlackmailBuildingListener(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5c9550 */
 struct AICHARREC; struct LCORDMSG; int ai_BlackmailContact(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5c9c50 */
 struct AICHARREC; struct LCORDMSG; int ai_IntimidateContact(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5c9ff0 */
-int ai_CounterEspionage(int param_1, int *m);  /* 0x5cae00 */
+int ai_CounterEspionage(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cae00, the counter-espionage order's ask */
 int ai_CounterEspionageWindow(int *param_1, int param_2);  /* 0x5cb250 */
 int ai_AmountLimit(int param_1, int param_2, int param_3, int *param_4);  /* 0x5bd060 */
 void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId);  /* 0x5c4150, the family tree window */

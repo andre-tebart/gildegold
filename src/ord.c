@@ -853,7 +853,7 @@ int ord_CounterEspionageOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1c8 & 0x200) != 0)
             return 9;
         if (m[0] == 3)
-            ai_CounterEspionage(c, m);
+            ai_CounterEspionage((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -863,7 +863,7 @@ int ord_CounterEspionageOrder(char *c, int *m)
         if (j != 0x13 && j != 0x14 && j != 0x18 && j != 0x1a)
             return 1;
         if (m[0] == 4) {
-            ai_CounterEspionage(c, m);
+            ai_CounterEspionage((struct AICHARREC *)c, (struct LCORDMSG *)m);
             return 0xa;
         }
         if (c[2] == 6)
