@@ -34179,13 +34179,42 @@ int ai_UseGoodDrainActionPoints8(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d2440, an action callback of the record table 0x62c420 (record 61 at 0x62cacc, the text id 0x2c3,
-   320 B): the character (0x5c1130 menu / 0x505df0), 0x5ba6b0, the float 0x42ec20, the close 0x4c5fa0,
-   the texts 0x5176d0 and the panel 0x5cf820. Frame 0x950. */
+/* 0x5d2440, the use callback of the Domizil record 61 (0x62cacc, the text id 0x2c3): picks the target character,
+   for a player (kind 6) with the special-amount menu (the gypsy filter, mode 0x400, the prompt 0x9c), else the
+   character use->target (gm_FindChar); none -> 0. Unless the target holds the good 0x2c4 and util_RandomF() <=
+   0.75, it is held one round more (cm_SendMessage5b, heldRounds + 1). Marks the use handled; a player user sees
+   the text 0x10a9 (the target) inside 0xfe8 in the use-object panel. Returns 1. */
 
-int ai_Unk5d2440(void)
+int ai_UseGoodHoldRound(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AMOUNTCFG cfg;
+    char text[0x200];
+    char news[0x400];
+    AICHARREC *target;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+    }
+    if (target == 0)
+        return 0;
+    if (ai_InventoryHas(target, 0x2c4) == 0 || util_RandomF() > 0.75f)
+        cm_SendMessage5b(target->netId, 1, 0);
+    use->handled = 1;
+    if (ch->kind == 6) {
+        txt_Format(text, 0x10a9, target->id);
+        txt_Format(news, 0xfe8, text);
+        ai_UseObjPanel(news);
+    }
+    return 1;
 }
 /* 0x5d2580, an action callback of the record table 0x62c420 (record 32 at 0x62c7a0, the text id 0x229,
    416 B): the character (0x5c1130 menu / 0x505df0), one 0x4c4b00 line, the text 0x5176d0, one message
