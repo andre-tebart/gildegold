@@ -3019,3 +3019,4 @@
 2026-11-07T19:05:56 0x005d1da0 data ai_Unk5d1da0 -> ai_UseGoodSpoilStock by:main why:the use callback of the Domizil good 0x2bd: every good in a building's store loses 10..30% of its count (cm_SendExSellObject)
 2026-11-07T19:12:41 0x005d2320 func ai_Unk5d2320 -> ai_UseGoodDrainActionPoints8 by:main why:the use callback of Domizil record 60: sets flags1cc bit 0x200000, which main_RundenBeginn charges as 8 action points (the AP event 0xf2c)
 2026-11-07T19:13:33 0x005d2440 func ai_Unk5d2440 -> ai_UseGoodHoldRound by:main why:the use callback of Domizil record 61: the target is held one more round (cm_SendMessage5b +1) unless the good 0x2c4 protects it (75%)
+2026-11-07T19:14:42 0x005d2580 func ai_Unk5d2580 -> ai_UseGoodCharmPartner by:main why:the use callback of Domizil record 32: a character picked by sex (the partner filter bit by the player's sex) gets its relation to the user raised by 25 (cm_SendRelations)

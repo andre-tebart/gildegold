@@ -34216,13 +34216,55 @@ int ai_UseGoodHoldRound(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d2580, an action callback of the record table 0x62c420 (record 32 at 0x62c7a0, the text id 0x229,
-   416 B): the character (0x5c1130 menu / 0x505df0), one 0x4c4b00 line, the text 0x5176d0, one message
-   0x53dda0, the 0x5ba660 lookup, the texts and the panel 0x5cf820. Frame 0xa50. */
+/* 0x5d2580, the use callback of the Domizil record 32 (0x62c7a0, the text id 0x229): picks the target character,
+   for a player (kind 6) with the special-amount menu (flags 1, the gypsy filter, the prompt 0x9c, mode 0x400
+   with the partner bit 1 or 2 by the player's sex), else the character use->target (gm_FindChar); none -> 0.
+   The target's relation to the user rises by 25 (cm_SendRelations); a player target (kind 6 / 7) gets the news
+   0xffa naming the user (key 0x5ec). A player user sees the text 0xfe8 (the good's rank + 1, the target) in the
+   use-object panel, and the use is marked handled. Returns 1. */
 
-int ai_Unk5d2580(void)
+int ai_UseGoodCharmPartner(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int index;
+    AMOUNTCFG cfg;
+    char text[0x100];
+    char news[0x400];
+    AICHARREC *target;
+    G9DOMIZIL *found;
+    int ret;
+
+    ret = 0;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        ret = 1;
+        cfg.flags = 1;
+        cfg.kind = 6;
+        cfg.mode = ((lc_CharRecs[ai_PlayerId].sex != 0) + 1) | 0x400;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+        if (target == 0)
+            return 0;
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target != 0)
+            ret = 1;
+    }
+    if (target != 0) {
+        cm_SendRelations(ch->netId, target->netId, 25, 1);
+        if (target->kind == 6 || target->kind == 7) {
+            txt_Format(news, 0xffa, ch->id);
+            he_ShowNews(target->netId, -1, news, 0, 0x5ec, 0);
+        }
+        if (ch->kind == 6) {
+            found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+            use->handled = 1;
+            txt_Format(news, 0xfe8, found->rank + 1, target->id);
+            ai_UseObjPanel(news);
+        }
+    }
+    return ret;
 }
 /* 0x5d2720, an action callback of the record table 0x62c420 (record 34 at 0x62c7d8, the text id 0x22c,
    the value 0xb40, 576 B): the character (0x5c1130 menu / 0x505df0), two record builders 0x4c4b70,
