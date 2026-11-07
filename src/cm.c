@@ -9030,7 +9030,7 @@ void cm_PlaceFighters(int *ids, char *side)
 void cm_FightIntro()
 {
     int r;
-    char *s;
+    EVTSCRIPT *s;
 
     d2_CutsceneActive = 1;
     if (snd_MusicEnabled != 0) {
@@ -9049,10 +9049,10 @@ void cm_FightIntro()
     sv_FrameMask = 0x7d6c6;
     sv_UpdateWeather();
     sv_UpdateSkyPhase(&ai_Time);
-    s = (char *)evt_Load("cutscenes\\kampf\\Kampf_Intro_Fluege.esc");
+    s = evt_Load("cutscenes\\kampf\\Kampf_Intro_Fluege.esc");
     if (s != 0) {
-        evt_RunScript((EVTSCRIPT *)s);
-        cm_WaitEventStop(*(int *)(s + 0x100));
+        evt_RunScript(s);
+        cm_WaitEventStop(s->id);
     }
     d2_CutsceneActive = 0;
 }
