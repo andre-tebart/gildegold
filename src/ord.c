@@ -145,7 +145,7 @@ unsigned ord_ApplyForOffice(ORDCHAR *c, int *m)
             || ((ch = (ORDCHAR *)gm_FindChar(c->partner)) != 0 && (ch->health == 0 || ch->kind == 0x0f)))) {
         r = 2;
         if (m[0] == 3) {
-            r = ai_OfficeApplication((short *)c, (int)m);
+            r = ai_CourtshipWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
             r |= 2;
         } else if (m[0] == 1 && c->kind == 6) {
             ev = (ORDEVENT *)he_FindEvent(1, 0, 0x41);

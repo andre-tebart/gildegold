@@ -227,7 +227,7 @@ int ai_InterrogationWindow1(int param_1, int param_2);  /* 0x5cede0 */
 int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
 int ai_LawPrivilegeWindow(int param_1, int *param_2);  /* 0x5ca150 */
 int ai_MisappropriationWindow(unsigned short *param_1, int *param_2);  /* 0x5ca860 */
-int ai_OfficeApplication(short *param_1, int param_2);  /* 0x5c6d00 */
+struct LCORDMSG; int ai_CourtshipWindow(struct AICHARREC *ch, struct LCORDMSG *m);  /* 0x5c6d00, the courtship order's ask (lc.c LCORDMSG: gv.h ORDMSG) */
 int ai_SpyTargetFlagHandler(int param_1, int *param_2);  /* 0x5ce1a0 */
 int ai_SpyTargetHandler(int param_1, int *param_2);  /* 0x5cde90 */
 void ai_ShowCharacterNews(unsigned short *cRec, char *text);  /* 0x5a9110 */

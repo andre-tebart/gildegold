@@ -28829,13 +28829,22 @@ int ai_CourtshipConfirm(AICHARREC *ch)
     di_ClearEvents(0x11);
     return v;
 }
+typedef struct LCORDMSG {          /* the message record of an order (gv.h ORDMSG, which this unit cannot include): the
+                                      order handlers get it with the character (ord_DispatchOrder) */
+    int kind;                      /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */
+    char pad004[0x10];
+    char text[0x200];              /* 0x014, the text the handlers fill */
+    int target;                    /* 0x214, of an ask that names a character (the courtship): its netId (gv.h
+                                      ORDMSG.target) */
+    char pad218[8];
+} LCORDMSG;
 /* 0x5c6aa0, the courtship list "privillegien\werbung1" (604 B): the caption 0x1ce3 and up to nine candidates of ch
    (ai_FindCandidateIds) as amount rows in a grid of three columns spread over the list part's width (the frame
    picture 0x5da), each with the text 0x1ce4 of the courtship rounds the player needs for them (ai_CourtshipRounds)
    below it. A click on a row opens the confirm ai_CourtshipConfirm (the list's objects disabled meanwhile); a
    confirmed courtship closes the list and returns 0x92, a right click returns 2 */
 
-int ai_CourtshipListWindow(G8CHARREC *ch)
+int ai_CourtshipListWindow(G8CHARREC *ch, LCORDMSG *m)
 {
     int n;
     int result;
@@ -28888,103 +28897,161 @@ int ai_CourtshipListWindow(G8CHARREC *ch)
     d2_CloseView(win);
     return result;
 }
-/* 0x5c6d00, the office application (1488 B, ROUGH): param_1 = the request record (+2 the id, +6 the
-   byte 6 = the office route), param_2 = the building; the job walk 0x53e400 (1, 0, 0x41) for the id
-   (+0xac) gives the state 1 .. 4 (+0xbb / +0xba the two bytes) and the record 0x505df0 (+0xb0); a
-   non-6 record with a +0x214 candidate (0x505df0, the +8 byte) sends the AIMSG 0x41 (the clock, the id,
-   +0x5c the candidate) and returns 0x10, else 0x20; state 1 -> 0x5c6aa0; else the window
-   "privillegien_werbung2" 0x62d40c with the texts 0x1cf3 / 0x1ce7 / 0x1ce3 / 0x1d31 / 0x1cf4 ..
-   0x1cf8 and the four buttons; the frame loop 0x5309a0 (this, 0x657c7): a button click (the 0x21040
-   gold check) rolls 0x42ec00 for the new rank (the texts 0x1cf9 / 0x1d02), adds the rank to +0xb8,
-   when +0xb9 is reached writes the clock into +0x52 and 0x4fe140, clears +0xba, 0x4c4c60 (0, the job)
-   into +0x84 and 0x4c47e0 / 0x521150; the fourth button confirms 0x1cfa; the exit 0x4758f0, returns 2.
-   ROUGH: the button / rank ladder is condensed from Ghidra */
+/* 0x5c6d00, the courtship order's ask (ord.c ord_ApplyForOffice, kind 3; 1479 B): ch the asking character, m the order
+   message. ch's courtship event 0x41 (he_FindEvent, AIJOB.partner1 = ch) gives the state: none 1, running 2, done
+   (pairDone) 3, a round to pay (pairDrawn) 4. A character that is no player (kind != 6) without a courtship posts
+   the courtship message 0x41 for m->target when that character exists and lives (returns 0x10); else it returns 0x20.
+   A player without one gets the candidate list (ai_CourtshipListWindow); else the window ai_CourtshipForm: the
+   caption 0x1cf3 and 0x1ce7 (ch, the partner, the rounds left) while it runs, 0x1ce3 / 0x1d31 (the partner) once done,
+   and in a round to pay 0x1cf4 (the partner, the rounds left) and the three gift buttons 0x1cf5 .. 0x1cf7 (the gift
+   text 0x1d11 + pairPick, pairPrice) with the close button 0x1cf8. A gift the player can pay counts gain rounds,
+   (pick - the partner's b00d) / 9 * 3 + 0.5 clamped to 0 .. 3 (a round due when the rounds are reached: an hour on),
+   posts the event again (cm_SendExSetHE), pays pairPrice (cm_SendMoveGoods) and tells the partner's answer 0x1cf9
+   (text 0x1d02 + a random pick by the gain); the close button tells 0x1cfa and posts the event. Returns 2
+   @deep reconstructed and read the whole function 0x5c6d00..0x5c72c7 (was the ROUGH ai_OfficeApplication):
+   the courtship event walk (AIJOB.partner1/partner2, pairDone/pairDrawn states 1..4), the non-player
+   courtship message 0x41 (AIMSG, m->target, gv.h ORDMSG.target union added), the list window call with
+   both arguments, the werbung2 texts 0x1ce7/0x1ce3/0x1d31/0x1cf4, the gift buttons 0x1cf5..0x1cf8
+   (pairPick/pairPrice), the gift gain (pick - b00d) * 0.11111111 clamped at 0, *3 + 0.5, the 0x1d02 answer
+   pick, pairRound/end/gm_AddTime, cm_SendExSetHE, cm_SendMoveGoods, the close 0x1cfa; the frame now
+   matches (btns[9]). Left: the local layout of prices[3] / picks[3] (ours prices at +0x34 / picks at
+   +0x28, the original the other way; the picks copy loop is 'xor ecx; add ecx,4; mov dl,[edi]; inc edi;
+   mov [esp+ecx+0x30],edx; cmp ecx,0xc' in the original, an indexed loop in ours, and prices stay in
+   ebp/ebx/edx there), the message's store scheduling (+0xe7: the original loads p->netId before the memset
+   and interleaves the AITIME copy), the out-of-line placement of 'mov bl,3' and the gain<=0 util_Random(5)
+   block (+0x434/+0x461), and register renaming; tried six orders of the message stores, four forms of the
+   gain clamp (ternary, min, if/else, switch), a single int[15] and int[2][3] for the gift words,
+   declaration orders. 417 vs 421 instructions. */
 
-int ai_OfficeApplication(short *param_1, int param_2)
+int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
 {
-    int win;
-    char *job;
-    char *cand;
     int state;
-    int id;
+    int partner;
+    int win;
+    int level;
+    int price;
+    int left;
+    int prices[3];
+    int picks[3];
+    int btns[9];               /* the gift buttons and the close button in [0 .. 3]; the original's frame holds nine */
+    AIJOB *ev;
+    AICHARREC *p;
+    AIMSG msg;
+    char answer[0x200];
+    char closing[0x200];
     int i;
-    int v;
-    int u;
-    char c;
-    char text[0x200];
-    int ids[15];
+    int gain;
+    char rounds;
+    int r;
 
     state = 1;
-    id = -1;
-    job = (char *)he_FindEvent(1, 0, 0x41);
-    while (job != 0) {
-        if (U_I(job + 0xac) == U_I((char *)param_1 + 4)) {
-            id = U_I(job + 0xb0);
+    level = 0;
+    partner = -1;
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x41); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->partner1 == ch->netId) {
             state = 2;
-            if (job[0xbb] == 1)
+            partner = ev->partner2;
+            if (ev->pairDone == 1)
                 state = 3;
-            if (job[0xba] == 1)
+            if (ev->pairDrawn == 1)
                 state = 4;
             break;
         }
-        job = (char *)he_NextEvent();
     }
-    if (*((char *)param_1 + 2) != 6) {
-        cand = (char *)gm_FindChar(U_I((char *)param_2 + 0x214));
-        if (job == 0 && cand != 0 && cand[8] != 0) {
-            /* ROUGH: the AIMSG 0x41 (memset 0xf8, +4 = 0x41, +8 the id, +0x28 .. the clock, +0x58 the
-               id, +0x5c the candidate id) through 0x4c4b70; returns 0x10 */
+    if (ch->kind != 6) {
+        if (ev != 0)
+            return 0x20;
+        p = (AICHARREC *)gm_FindChar(m->target);
+        if (p != 0 && p->health != 0) {
+            memset(&msg, 0, sizeof(msg));
+            msg.type = 0x41;
+            msg.to = ch->netId;
+            msg.fromId = ch->netId;
+            msg.time = ai_Time;
+            msg.flags = 2;
+            msg.arg[0] = ch->netId;
+            msg.arg[1] = p->netId;
+            cm_SendLongMessage((char *)&msg);
             return 0x10;
         }
         return 0x20;
     }
     if (state == 1)
-        return ai_CourtshipListWindow(param_1);
+        return ai_CourtshipListWindow((G8CHARREC *)ch, m);
     win = d2_OpenForm(0, 0, ai_CourtshipForm);
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
     d2_SetForm(win, 1);
     io_PrintText(0x1cf3);
     if (state == 2) {
-        io_PrintText(0x1ce7, *param_1, U_W((char *)gm_FindChar(id)), (unsigned char)(job[0xb9] - job[0xb8]), 0x5d);
+        p = (AICHARREC *)gm_FindChar(partner);
+        io_PrintText(0x1ce7, ch->id, p->id, max(0, ev->pairRounds - ev->pairRound), 0x5d);
     } else if (state == 3) {
+        p = (AICHARREC *)gm_FindChar(partner);
         io_PrintText(0x1ce3);
-        io_PrintText(0x1d31, U_W((char *)gm_FindChar(id)));
+        io_PrintText(0x1d31, p->id);
     } else if (state == 4) {
-        /* ROUGH: the three amount buttons 0x1cf5 .. 0x1cf7 (the +0xc0 / +0xc4 / +0xc8 amounts) and
-           the confirm 0x1cf8 through 0x475b80 (win, 1) */
-        io_PrintText(0x1cf4, U_W((char *)gm_FindChar(id)), 0x5d, (unsigned char)(job[0xb9] - job[0xb8]), 0x5d);
-        ids[6] = d2_GetWinObj(win, 1, io_PrintText(0x1cf5, job[0xbc] + 0x1d11, U_I(job + 0xc0)));
-        ids[7] = d2_GetWinObj(win, 1, io_PrintText(0x1cf6, job[0xbd] + 0x1d11, U_I(job + 0xc4)));
-        ids[8] = d2_GetWinObj(win, 1, io_PrintText(0x1cf7, job[0xbe] + 0x1d11, U_I(job + 0xc8)));
-        ids[9] = d2_GetWinObj(win, 1, io_PrintText(0x1cf8));
+        p = (AICHARREC *)gm_FindChar(partner);
+        prices[0] = ev->pairPrice[0];
+        prices[1] = ev->pairPrice[1];
+        prices[2] = ev->pairPrice[2];
+        level = p->b00d;
+        for (i = 0; i < 3; i++)
+            picks[i] = ev->pairPick[i];
+        io_PrintText(0x1cf4, p->id, 0x5d, ev->pairRounds - ev->pairRound, 0x5d);
+        btns[0] = d2_GetWinObj(win, 1, io_PrintText(0x1cf5, picks[0] + 0x1d11, prices[0]));
+        btns[1] = d2_GetWinObj(win, 1, io_PrintText(0x1cf6, picks[1] + 0x1d11, prices[1]));
+        btns[2] = d2_GetWinObj(win, 1, io_PrintText(0x1cf7, picks[2] + 0x1d11, prices[2]));
+        btns[3] = d2_GetWinObj(win, 1, io_PrintText(0x1cf8));
     }
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1 && state == 4) {
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1 && state == 4) {
             for (i = 0; i < 4; i++) {
-                if (U_I((unsigned)&d2_PointerObj) == ids[i + 6])
+                if (d2_PointerObj == btns[i])
                     break;
             }
             if (i < 3) {
-                u = ids[i];
-                if (sv_CheckGoodAmount((char *)(unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c, u, U_I((unsigned)&ai_OwnPlayer)) != 0) {
-                    /* ROUGH: the rank gain (the __ftol, the 0x42ec00 rolls 5 / 4 / 3 with the offsets
-                       5 / 9 / 0xc, the text 0x1cf9 with 0x1d02), +0xb8 += the gain, at +0xb9 the clock
-                       into +0x52 .. +0x5e with 0x4fe140 (job + 0x52, 0, 1, 0), +0xba = 0, 0x4c4c60 (0,
-                       job) into +0x84, 0x4c47e0 and 0x521150 (text, 0) */
-                    U_I((unsigned)&sv_PopRequest) = 1;
+                price = prices[i];
+                if (sv_CheckGoodAmountB((char *)&lc_CharRecs[ai_PlayerId], price, ai_OwnPlayer)) {
+                    rounds = 0;
+                    p = (AICHARREC *)gm_FindChar(partner);
+                    left = picks[i] - level;
+                    gain = (int)(max(left * 0.11111111f, 0.0f) * 3.0f + 0.5f);
+                    if (gain > 0) {
+                        rounds = gain >= 3 ? 3 : gain;
+                        if (gain == 1)
+                            r = (util_Random(5) & 0xffff) + 5;
+                        else if (gain == 2)
+                            r = (util_Random(4) & 0xffff) + 9;
+                        else
+                            r = (util_Random(3) & 0xffff) + 0xc;
+                    } else {
+                        r = util_Random(5) & 0xffff;
+                    }
+                    txt_Format(answer, 0x1cf9, p->id, r + 0x1d02);
+                    ev->pairRound += rounds;
+                    if (ev->pairRound >= ev->pairRounds) {
+                        ev->end = ai_Time;
+                        gm_AddTime(&ev->end, 0, 1, 0);
+                    }
+                    ev->pairDrawn = 0;
+                    ev->exSlot = cm_SendExSetHE(0, ev);
+                    cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, price);
+                    sv_MessageBox(answer, 0);
+                    sv_PopRequest = 1;
                 }
             } else if (i == 3) {
-                /* ROUGH: the confirmation 0x1cfa (the job record), +0xba = 0, 0x4c4c60, 0x521150 */
-                U_I((unsigned)&sv_PopRequest) = 1;
+                txt_Format(closing, 0x1cfa, ((AICHARREC *)gm_FindChar(partner))->id);
+                ev->pairDrawn = 0;
+                ev->exSlot = cm_SendExSetHE(0, ev);
+                sv_MessageBox(closing, 0);
+                sv_PopRequest = 1;
             }
         }
-        if (sv_RunFrame(ai_OfficeApplication, 0x657c7) == 0)
-            break;
-    }
+    } while (sv_RunFrame((int)ai_CourtshipWindow, 0x657c7) != 0);
     d2_CloseView(win);
     return 2;
 }

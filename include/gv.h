@@ -218,7 +218,11 @@ typedef struct ORDMSG {
     int kind;                       /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */
     char pad004[0x10];
     char text[0x200];               /* 0x014, the text the handlers fill */
-    int answerFlag;                 /* 0x214, 1 = the answer handler picked this order; stored as an int */
+    union {
+        int answerFlag;             /* 0x214, 1 = the answer handler picked this order; stored as an int */
+        int target;                 /* 0x214, of an ask that names a character (the courtship, lc.c ai_CourtshipWindow):
+                                       its netId */
+    };
     char pad218[4];
     ORDCHAR *partner;               /* 0x21c, the partner character of an answer */
 } ORDMSG;
