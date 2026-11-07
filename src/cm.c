@@ -9056,20 +9056,20 @@ void cm_FightIntro()
     }
     d2_CutsceneActive = 0;
 }
-/* 0x4d1eb0, the outro: stops the stream ai_Unk6f0d4c and runs the cutscene "Kampf_outro_flug" */
+/* 0x4d1eb0, the outro: stops the stream cm_FightAmbient and runs the cutscene "Kampf_outro_flug" */
 
 void cm_FightOutro()
 {
-    char *s;
+    EVTSCRIPT *s;
 
-    if (ai_Unk6f0d4c != 0)
-        msx_StopAmbient(ai_Unk6f0d4c);
+    if (cm_FightAmbient != 0)
+        msx_StopAmbient(cm_FightAmbient);
     sv_FrameMask = 0x7d6c6;
     d2_CutsceneActive = 1;
-    s = (char *)evt_Load("cutscenes\\kampf\\Kampf_outro_flug.esc");
+    s = evt_Load("cutscenes\\kampf\\Kampf_outro_flug.esc");
     if (s != 0) {
-        evt_RunScript((EVTSCRIPT *)s);
-        cm_WaitEventStop(*(int *)(s + 0x100));
+        evt_RunScript(s);
+        cm_WaitEventStop(s->id);
     }
     d2_CutsceneActive = 0;
 }
@@ -11835,11 +11835,11 @@ void cm_FightLoop(char *a)
     r = util_RandomU(100);
     cm_CollectSceneChars();
     ai_Unk4d6a50(a);
-    ai_Unk6f0d4c = 0;
+    cm_FightAmbient = 0;
     if (r < 0x32)
-        ai_Unk6f0d4c = msx_PlayAmbient("Athmos\\Kampfathmo_1.mp3", 0xb);
+        cm_FightAmbient = msx_PlayAmbient("Athmos\\Kampfathmo_1.mp3", 0xb);
     else
-        ai_Unk6f0d4c = msx_PlayAmbient("Athmos\\Kampfathmo_2.mp3", 0xb);
+        cm_FightAmbient = msx_PlayAmbient("Athmos\\Kampfathmo_2.mp3", 0xb);
     ai_Unk6f0ce4 = 0;
     while (sv_RunFrame(cm_FightLoop, 0xfd6c6) != 0 && cm_FightSettled == 0) {
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
@@ -17169,7 +17169,7 @@ int cm_AttackerTauntVoices = 0;  /* 0x6f0d3c */
 int cm_DefenderTauntVoices = 0;  /* 0x6f0d40 */
 int cm_AttackerPainVoices = 0;  /* 0x6f0d44 */
 int cm_DefenderPainVoices = 0;  /* 0x6f0d48 */
-int ai_Unk6f0d4c = 0;  /* 0x6f0d4c */
+int cm_FightAmbient = 0;  /* 0x6f0d4c */
 int cm_AttackerRole = 0;  /* 0x6f0d50 */
 int cm_DefenderRole = 0;  /* 0x6f0d54 */
 int cm_FlagObjectCount = 0;  /* 0x6f0d58 */

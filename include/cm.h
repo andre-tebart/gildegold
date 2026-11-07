@@ -736,7 +736,7 @@ struct AICHAR *cm_NearestEnemy(struct AICHAR *c);  /* 0x4d1f10, the enemy the fi
 void snd_PlaySpecialTrack(char *name);  /* 0x4c23f0 */
 extern int snd_MusicEnabled;  /* 0x6f2578 */
 extern int sv_FrameMask;  /* 0x760638 */
-extern int ai_Unk6f0d4c;  /* 0x6f0d4c */
+extern int cm_FightAmbient;  /* 0x6f0d4c */
 
 float cm_ThreatAt(struct AICHAR *c, int a, int b, float limit);  /* 0x4d2010, the threat at a height map vertex for the fighter c */
 extern const double ai_Unk5edc60;  /* 0x5edc60 */
