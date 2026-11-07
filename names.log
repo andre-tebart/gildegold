@@ -3048,3 +3048,5 @@
 2026-11-07T21:27:58 0x006f0d64 data ai_Unk6f0d64 -> cm_FightForm by:main why:builds the fight UI: d2_OpenForm returns the form view 0x6f0d64 that 0x4d6b70 closes, the slider 0x60cb68 takes the caption 0x143e8b4 (txt_Ptrs) and is the button 0x4d6970 watches
 2026-11-07T21:27:58 0x0143e8b4 data ai_Unk143e8b4 -> cm_FightButtonText by:main why:builds the fight UI: d2_OpenForm returns the form view 0x6f0d64 that 0x4d6b70 closes, the slider 0x60cb68 takes the caption 0x143e8b4 (txt_Ptrs) and is the button 0x4d6970 watches
 2026-11-07T21:28:34 0x004d6b70 data ai_Unk4d6b70 -> cm_CloseFightUI by:main why:closes the fight UI that 0x4d6a50 built: d2_CloseView(cm_FightForm), clears the form, the marks and the portraits
+2026-11-07T21:35:24 0x006f0ce4 data ai_Unk6f0ce4 -> cm_FightPaused by:main why:cm_FightLoop: the pause toggle flag (ai_Unk6f0ce4) and the status text it shows while paused (ai_Unk143e674, a txt_Ptrs slot)
+2026-11-07T21:35:24 0x0143e674 data ai_Unk143e674 -> txt_FightPaused by:main why:cm_FightLoop: the pause toggle flag (ai_Unk6f0ce4) and the status text it shows while paused (ai_Unk143e674, a txt_Ptrs slot)

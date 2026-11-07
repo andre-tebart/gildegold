@@ -53,7 +53,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define ai_ContactTextTerrarium                  (*(char * *)((char *)txt_Ptrs + 0x02db8))  /* 0x143cf78 */
 #define full_data_143df38                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x03d78))  /* 0x143df38 */
 #define full_data_143df40                        (*(unsigned char (*)[1848])((char *)txt_Ptrs + 0x03d80))  /* 0x143df40 */
-#define ai_Unk143e674                            (*(char * *)((char *)txt_Ptrs + 0x044b4))  /* 0x143e674 */
+#define txt_FightPaused                            (*(char * *)((char *)txt_Ptrs + 0x044b4))  /* 0x143e674 */
 #define txt_WeaponEmpty15e                            (*(int *)((char *)txt_Ptrs + 0x046e4))  /* 0x143e8a4 */
 #define txt_WeaponEmpty174                            (*(int *)((char *)txt_Ptrs + 0x046e8))  /* 0x143e8a8 */
 #define txt_WeaponEmpty176                            (*(int *)((char *)txt_Ptrs + 0x046ec))  /* 0x143e8ac */

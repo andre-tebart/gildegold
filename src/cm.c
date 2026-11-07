@@ -11845,7 +11845,7 @@ void cm_FightLoop(char *a)
 {
     unsigned int t;
     int i, r;
-    char *o;
+    AICHAR *o;
 
     t = tb_Calls - 0x15e;
     r = util_RandomU(100);
@@ -11856,36 +11856,36 @@ void cm_FightLoop(char *a)
         cm_FightAmbient = msx_PlayAmbient("Athmos\\Kampfathmo_1.mp3", 0xb);
     else
         cm_FightAmbient = msx_PlayAmbient("Athmos\\Kampfathmo_2.mp3", 0xb);
-    ai_Unk6f0ce4 = 0;
+    cm_FightPaused = 0;
     while (sv_RunFrame(cm_FightLoop, 0xfd6c6) != 0 && cm_FightSettled == 0) {
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
-            ai_Unk6f0ce4 = ai_Unk6f0ce4 == 0;
+            cm_FightPaused = cm_FightPaused == 0;
             for (i = 0; i < 32; i++) {
-                o = (char *)ai_SceneCharsT[i];
-                if (o != 0 && *(char **)(*(char **)(o + 0x184) + 0x88) == (char *)d3_DefaultScene)
-                    ch_PauseAnim(*(char **)(o + 0x184), ai_Unk6f0ce4);
+                o = ai_SceneCharsT[i];
+                if (o != 0 && CM_CHR(o)->scene == d3_DefaultScene)
+                    ch_PauseAnim(CM_CHR(o), cm_FightPaused);
             }
             sv_SetStatusText(&ch_EmptyName);
         }
-        if (ai_Unk6f0ce4 != 0)
-            sv_SetStatusText(ai_Unk143e674);
+        if (cm_FightPaused != 0)
+            sv_SetStatusText(txt_FightPaused);
         else
             cm_FightFrame(a);
-        if (cm_FightWinner == 0 && cm_FightSettled == 0 && ai_Unk6f0ce4 == 0) {
+        if (cm_FightWinner == 0 && cm_FightSettled == 0 && cm_FightPaused == 0) {
             if (tb_Calls > t + 0x1a4) {
-                for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
-                    if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1) {
-                        o = gm_FindChar(*(int *)(cm_FightRecord + 0x34 + i * 4));
-                        if (o != 0 && o[2] != 6 && o[2] != 7)
+                for (i = 0; i < cm_FightRecordT->nChars; i++) {
+                    if (cm_FightRecordT->charIds[i] != -1) {
+                        o = (AICHAR *)gm_FindChar(cm_FightRecordT->charIds[i]);
+                        if (o != 0 && o->kind != 6 && o->kind != 7)
                             cm_GiveFightOrders((int)o);
                     }
                 }
                 t = tb_Calls;
             }
-            if (*(int *)(cm_CutChar + 4) == cm_FightOwner) {
+            if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner) {
                 cm_CheckFightWinner(cm_FightRecordT);
-                for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
-                    if (*(int *)(cm_FightRecord + 0x34 + i * 4) != -1)
+                for (i = 0; i < cm_FightRecordT->nChars; i++) {
+                    if (cm_FightRecordT->charIds[i] != -1)
                         cm_RunCutOrders(&cm_CutInfosT[i]);
                 }
             }
@@ -17064,7 +17064,7 @@ extern int cm_PickCellZ;
 /* ai_Unk143ab0c: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143b3d8: view of txt_Ptrs (build/mk_txt_views.py) */
 /* ai_Unk143b3e4: view of txt_Ptrs (build/mk_txt_views.py) */
-/* ai_Unk143e674: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_FightPaused: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_WeaponEmpty15e: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_WeaponEmpty174: view of txt_Ptrs (build/mk_txt_views.py) */
 /* txt_WeaponEmpty176: view of txt_Ptrs (build/mk_txt_views.py) */
@@ -17160,7 +17160,7 @@ int cm_NoticeCount = 0;  /* 0x6f0cd4 */
 int cm_LobbyChatCount = 0;  /* 0x6f0cd8, the lines in the ring (at most 15) */
 int cm_LobbyChatPos = 0;  /* 0x6f0cdc, the index of the line the chat window reads next (cm_LobbyChatFirst / 0x4cd4c0) */
 char * cm_HoverObject = 0;  /* 0x6f0ce0 */
-int ai_Unk6f0ce4 = 0;  /* 0x6f0ce4, fight paused */
+int cm_FightPaused = 0;  /* 0x6f0ce4, fight paused */
 int cm_FightDefender = 0;  /* 0x6f0ce8 */
 int cm_FightAttacker = 0;  /* 0x6f0cec */
 char * cm_PickMarker = 0;  /* 0x6f0cf0 */

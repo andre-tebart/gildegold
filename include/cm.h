@@ -847,7 +847,7 @@ void ch_SetVisible();  /* 0x402480 */
 extern int cm_OrderTicks;  /* 0x92bec0 */
 void cm_RunCutOrders(CMCUTINFO *rec);  /* 0x4d76a0 */
 
-extern int ai_Unk6f0ce4;  /* 0x6f0ce4, fight paused */
+extern int cm_FightPaused;  /* 0x6f0ce4, fight paused */
 
 extern int cm_ScenePartyRuns;  /* 0x6f0d7c */
 struct MSXTRACK * msx_PlayAmbient(char *name, int vol);  /* 0x4243f0 */
