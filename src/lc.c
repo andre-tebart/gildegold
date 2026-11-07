@@ -34566,13 +34566,52 @@ int ai_UseGoodStaffBonus(AICHARREC *ch, G8USEVIEW *use)
     cm_SendSetField(bld->id, 0x5a, 2, 0x1000, 0);
     return 1;
 }
-/* 0x5d3030, an action callback of the record table 0x62c420 (record 43 at 0x62c8d4, the text id 0x29c,
-   the value 0x5a0, 400 B): the character (0x5c1130 menu / 0x505df0), one record builder 0x4c4b70, the
-   0x5ba660 lookup, the texts 0x5176d0 and the panel 0x5cf820. */
+/* 0x5d3030, the use callback of the Domizil record 43 (0x62c8d4, the text id 0x29c): picks the target character,
+   for a player (kind 6) with the special-amount menu (flags 1, the gypsy filter, mode 0x400, the prompt 0x9c),
+   else the character use->target (gm_FindChar); none -> 0. Sends it the event message 0xa3 (the petty loss of
+   he.c's he_AllocPettyLoss / he_RunPettyLoss: it loses money over the next rounds; now, flags 1). A player user
+   sees, inside 0xfe8, the text whose id is the good's rank + 1 (formatted with the target) in the use-object
+   panel. Marks the use handled and returns 1. */
 
-int ai_Unk5d3030(void)
+int ai_UseGoodPettyLoss(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int index;
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    char text[0x100];
+    char line[0x200];
+    char news[0x400];
+    AICHARREC *target;
+    G9DOMIZIL *found;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 1;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+    }
+    if (target == 0)
+        return 0;
+    msg.to = target->netId;
+    msg.time = ai_Time;
+    msg.type = 0xa3;
+    msg.fromId = -1;
+    msg.flags = 1;
+    cm_SendLongMessage((char *)&msg);
+    if (ch->kind == 6) {
+        found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+        txt_Format(line, found->rank + 1, target->id);
+        txt_Format(news, 0xfe8, line);
+        ai_UseObjPanel(news);
+    }
+    use->handled = 1;
+    return 1;
 }
 /* 0x5d31c0, the use callback of the Domizil good 0x297 (one of am.c's education goods 0x168 / 0x16c /
    0x297 / 0x2b7, the +0x14 pointer of the table entry 0x62c848): posts two skill-bonus messages 0x82

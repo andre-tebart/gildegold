@@ -3023,3 +3023,4 @@
 2026-11-07T19:19:05 0x005d2720 func ai_Unk5d2720 -> ai_UseGoodWeakenSkills3 by:main why:the use callback of Domizil record 34: the skill-bonus message 0x82 lowers skill 3 by 0.35 for 48 hours (a twin of ai_UseGoodWeakenSkills)
 2026-11-07T19:20:14 0x005d2960 func ai_Unk5d2960 -> ai_UseGoodFrameChar by:main why:the use callback of Domizil record 36: the target is accused (gv_Accuse) of a random law in force (gv_Decisions with valueText 2), twice with the good 0x2c5
 2026-11-07T19:21:34 0x005d2bc0 func ai_Unk5d2bc0 -> ai_UseGoodFrameChar2 by:main why:the use callback of Domizil record 37, the twin of ai_UseGoodFrameChar: two accusations (gv_Accuse) of random laws in force, four with the good 0x2c5
+2026-11-07T19:22:25 0x005d3030 func ai_Unk5d3030 -> ai_UseGoodPettyLoss by:main why:the use callback of Domizil record 43: sends the target the event message 0xa3 (he.c he_AllocPettyLoss / he_RunPettyLoss: the target loses money over a few rounds)
