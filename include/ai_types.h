@@ -68,6 +68,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                         unsigned short hi;      /* 0xae */
                     } w;
                 } u;
+                unsigned char thiefClass;       /* 0xac, of the thief event 0x16 (AIMSG.thiefClass, 0x54 further on): 2 / 3,
+                                                   the two thief rows of lc.c ai_TrainingWindow */
                 struct {                        /* 0xac, of the talent training event 0x60 (AIMSG.training, 0x54 further on) */
                     char padac[2];
                     unsigned char talent;       /* 0xae, the talent it raises, 0 .. 4 (lc.c ai_TalentWindow names it) */
@@ -94,6 +96,8 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                                                    to AIOBJ.lvl1c and checked against AIBTYPE.min0 */
                 int capacityOrder;              /* 0xb0, of a kind 0x13 store capacity order (the type 0x13 message
                                                    ai_StorageWindow posts): the capacity levels it adds to AIOBJ.count */
+                int thief;                      /* 0xb0, of the thief event 0x16 the netId of the thief (AIMSG.arg[1];
+                                                   lc.c ai_TrainingWindow selects it) */
                 unsigned char payer;            /* 0xb0, of the payment event 0x27 the paying player's slot (AIMSG.payment.player;
                                                    he.c HEEV27.player, lc.c ai_MoneyExchangeWindow names it) */
             };

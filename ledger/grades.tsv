@@ -1469,7 +1469,7 @@ exe	0x004817a0	ai_CalcAngriff	ai	draft	draft	deep
 exe	0x00481ef0	ai_CalcMeisterDiebe	ai	draft	draft	deep	
 exe	0x00482f00	ai_CalcMeisterRaeuber	ai	draft	readable	deep	
 exe	0x004836a0	ai_CalcMeisterBank	ai	byte	draft	deep	
-exe	0x00483a60	ai_Unk483a60	ai	byte	draft	deep	
+exe	0x00483a60	ai_Unk483a60	ai	shape	draft	deep	byte+draft -> shape+draft at 47fe9542: ai_types.h AIJOB gains the thief event 0x16's words (thiefClass at 0xac, the thief's netId at 0xb0; AIMSG.thiefClass is the same byte 0x54 earlier) instead of local views or raw offsets in lc's ai_TrainingWindow: a truer shared type. ai_Unk483a60 uses neither member; under the changed declaration set it only swaps stack slots (slots 12, its existing @deep note), as the lc lead comment notes for every AIJOB / AIMSG member (ord_CountGridObjects is debt for the same cause), so its byte match was no evidence of the original's source [waits for: match-deep on its slot allocation, or the declaration set of ai.c's includes (ai.h > ai_types.h)]
 exe	0x00483d30	ai_StartBuildingWork	ai	shape	draft	deep	
 exe	0x00483ee0	ai_EndWorkerPose	ai	byte	readable		
 exe	0x00483fc0	ai_Unk483fc0	ai	draft	draft	deep	

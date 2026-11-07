@@ -4960,7 +4960,7 @@ void ai_KontorContact(AIBLD *bld)
             else if (ai_ClickedObject == gelage)
                 ai_GelageWindow(bld);
             else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh)
-                ai_TrainingWindow((int)bld);
+                ai_TrainingWindow(bld);
         }
         r = sv_RunFrame(ai_KontorContact, 0x67fff);
     }
@@ -5084,7 +5084,7 @@ void ai_StoneKontorContact(AIBLD *bld)
             else if (ai_ClickedObject == produktion)
                 ai_ProductionGoodsWindow((int)bld);
             else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh)
-                ai_TrainingWindow((int)bld);
+                ai_TrainingWindow(bld);
         }
         r = sv_RunFrame(ai_StoneKontorContact, 0x67fff);
     }
@@ -5694,7 +5694,7 @@ void ai_CriminalContact(AIBLD *bld)
                 ai_EquipWindow(bld);
             else if (ai_ClickedObject == ziel || ai_ClickedObject == stroh ||
                      ai_ClickedObject == regen)
-                ai_TrainingWindow((int)bld);
+                ai_TrainingWindow(bld);
             else if (ai_ClickedObject == lauer)
                 ai_BreakInWindow((int)bld);
             else if (ai_ClickedObject == angriff)
@@ -14273,7 +14273,7 @@ void ai_TrainingRoomListener(AIBLD *bld)
         }
         if ((ai_BuildingPerms & 0x200) && ai_ClickedObject != 0 &&
             (ai_ClickedObject == ziel || ai_ClickedObject == nacht || ai_ClickedObject == regeneration))
-            ai_TrainingWindow((int)bld);
+            ai_TrainingWindow(bld);
     } while (sv_RunFrame(ai_TrainingRoomListener, 0x67fff) != 0);
 }
 /* 0x5a6b50, the text of a city name (24 B): 0x5176d0 formats the value with "%1G" 0x61168c into buf */
@@ -23665,11 +23665,12 @@ rows:
     d2_CloseView(win);
     sv_CameraFollow();
 }
-typedef struct LCTRAINROW {             /* 0x1c bytes, a row of the training window (ai_TrainingWindow keeps three) */
+#define lc_CharRecs ((AICHARREC *)ai_Chars)  /* the character records as AICHARREC */
+
+typedef struct LCTRAINROW {             /* 0xc bytes, a row of the training window (ai_TrainingWindow keeps three) */
     int pic;                            /* 0x00, the training's picture (0x762 + the row), interactive */
     int frame;                          /* 0x04, the row's frame picture 0x74c */
     int window;                         /* 0x08, the row's child window (font 0x54) */
-    char pad0c[0x10];
 } LCTRAINROW;
 
 /* 0x5bb950, opens a row of the training window in win (ai_TrainingWindow, the rows 0 .. 2 with the pictures 0x762 ..
@@ -23689,13 +23690,221 @@ int ai_OpenTrainingRow(int n, int pic, LCTRAINROW *row, int win)
     d2_Wins[row->window].font = 0x54;
     return row->frame;
 }
-/* 0x5bba00, a window (2368 B, ROUGH SKELETON): param_1, a 0x938-byte frame; the body is a comment */
+/* 0x5bba00, the training window "special\training" of the building bld (2368 B; the TRAINING plate, panel text
+   0x1a46): three rows (ai_OpenTrainingRow, the pictures 0x762 .. 0x764) on the background "Training_DIEB" (the
+   building classes 4 / 0x10) or "Training_SOLDAT", fading in over the first frames. The rows 0 / 1 train thieves of
+   the classes 2 / 3 (the thief message 0x16, enabled by the rooms 0x35 / 0x34), the row 2 the characters of the
+   event 0x6c (the class 4 needs the room 0x5d, the class 0x10 the room 0x5e); each row shows its count. A row
+   clicked with characters selected sends them (sv_MoveToGroup, cm_SendLongMessage) up to three thieves in all
+   (text 0x1a4a past it, 0x1a49 when none went); clicked without, it selects the row's characters
+   @deep Reconstructed whole from 0x5bba00..0x5bc0eb (523 vs 517 instructions): the form, the three
+   ai_OpenTrainingRow rows, the DIEB / SOLDAT background, the room-enable queries 0x35 / 0x34 / 0x5d /
+   0x5e, the alpha fade (min(elapsed/750, 0.4), test ah,5 / jnp matched), the right click, the 0x16 / 0x6c
+   event counts and captions, the send loops (thief message 0x16 with memset, 0x6c without), the selection
+   branch, the closing calls; every callee, constant and string reads equal. Left: (1) the click loop over
+   rows: ours strength-reduces rows[row].pic into a pointer kept in a slot (0x5bbd52 '- lea edx,[esp+0x28];
+   mov [esp+0x18],edx; mov eax,[esp+0x18]; mov eax,[eax]' | '+ lea edx,[edi+edi*2]; mov
+   eax,[esp+edx*4+0x24]'; 0x5bbf94 '- mov ecx,[esp+0x18]; add ecx,0xc') which costs the extra slot (frame
+   0x93c vs 0x938, all frame/slot hunks); tried the if-block form and the operand order: no change. (2) the
+   msg.time struct copy scheduling in both send loops (ours loads ai_Time / +4 / +0xc in another order:
+   0x5bbde8 '- mov eax,[ai_Time]' | '+ mov eax,[ai_TimeHourW]'); tried 8 statement orders of
+   type/to/fromId/time/flags/arg0: none better. Allocation and scheduling only. (references: M8 at +0x3e6:
+   ours refers to ai_Time (0x770ae0), the original's field to 0x770ae4 (ai_TimeHourW) (and 1 more),
+   explained: the two M8 lines are the 14-byte AITIME copy msg.time = ai_Time read in another order
+   (crosswise loads of the same struct's words into the same msg words); every store's target and source
+   match) */
 
-int ai_TrainingWindow(int param_1)
+void ai_TrainingWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x938-byte frame */
-    (void)param_1;
-    return 0;
+    int row;                            /* first the row 0's enable flag, then the row clicked */
+    int n2;                             /* first the row 1's enable flag, then the thieves of the class 2 */
+    int win;
+    int n3;
+    int start;
+    LCTRAINROW rows[3];
+    __int64 elapsed;
+    AIMSG msg;
+    char text[0x800];
+    AIBTYPE *type;
+    int parent;
+    int en2;
+    int n6c;
+    int i;
+    int count;
+    int cls;
+    double alpha;
+    AICHARREC *ch;
+    AIJOB *ev;
+
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    en2 = 0;
+    row = 0;
+    n2 = 0;
+    win = d2_OpenForm(0, 0, "special\\training");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_OpenWindowFrame(d2_LastWindow, 0x72f, 0);
+    d2_SetForm(win, 3);
+    io_PrintText(0x1a46);
+    sv_OpenPlayerBar((int)bld, 1);
+    d2_SetForm(win, 2);
+    parent = d2_LastWindow;
+    ai_OpenTrainingRow(0, 0x762, &rows[0], parent);
+    ai_OpenTrainingRow(1, 0x763, &rows[1], parent);
+    ai_OpenTrainingRow(2, 0x764, &rows[2], parent);
+    d2_SetForm(win, 1);
+    if (type->buildingClass == 4 || type->buildingClass == 0x10)
+        d2_SetBackgroundTexture("Training_DIEB", d2_LastWindowPtr->id);
+    else
+        d2_SetBackgroundTexture("Training_SOLDAT", d2_LastWindowPtr->id);
+    d2_LastWindowPtr->alpha = 0;
+    start = d3_Time;
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x35) != 0)
+        row = 1;
+    if (gm_Query((void *)bld->objList, 2, 6, 0, 0x34) != 0)
+        n2 = 1;
+    if (type->buildingClass == 4) {
+        if (gm_Query((void *)bld->objList, 2, 6, 0, 0x5d) != 0)
+            en2 = 1;
+    } else if (type->buildingClass == 0x10) {
+        if (gm_Query((void *)bld->objList, 2, 6, 0, 0x5e) != 0)
+            en2 = 1;
+    } else {
+        en2 = 1;
+    }
+    if (row != 0)
+        d2_SetObjEnabled(rows[0].pic, 1);
+    else
+        d2_SetObjEnabled(rows[0].pic, 0);
+    if (n2 != 0)
+        d2_SetObjEnabled(rows[1].pic, 1);
+    else
+        d2_SetObjEnabled(rows[1].pic, 0);
+    if (en2 != 0)
+        d2_SetObjEnabled(rows[2].pic, 1);
+    else
+        d2_SetObjEnabled(rows[2].pic, 0);
+    do {
+        d2_SetForm(win, 1);
+        elapsed = (unsigned)(d3_Time - start);
+        alpha = elapsed * 0.0013333333333333333;
+        d2_LastWindowPtr->alpha = (float)(alpha < 0.4 ? alpha : 0.4);
+        if (dm_L.rup != 0) {
+            if (d2_CountPointerItems() == 0)
+                sv_PopRequest = 1;
+            else
+                sv_ClearSelection();
+        }
+        /* the thieves of the classes 2 / 3 and the characters of the event 0x6c on their way */
+        n2 = 0;
+        n3 = 0;
+        for (ev = (AIJOB *)he_FindEvent(2, 0, 0x16, 3, bld->id); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->thiefClass == 2)
+                n2++;
+            else if (ev->thiefClass == 3)
+                n3++;
+        }
+        n6c = 0;
+        for (ev = (AIJOB *)he_FindEvent(2, 0, 0x6c, 3, bld->id); ev != 0; ev = (AIJOB *)he_NextEvent())
+            n6c++;
+        d2_LastWindow = rows[0].window;
+        io_PrintText("$C %i %ii %1s$A %1S", n2, 0x51e, 0x1a47, 0x16b9);
+        d2_LastWindow = rows[1].window;
+        io_PrintText("$C %i %ii %1s$A %1S", n3, 0x51e, 0x1a47, 0x16ba);
+        d2_LastWindow = rows[2].window;
+        io_PrintText("$C %i %ii %1s", n6c, 0x51e, 0x1a48);
+        if (d2_ClickedId != -1 && d2_CountPointerItems() != 0) {
+            /* a row clicked with characters selected: send them */
+            for (row = 0; row < 3; row++) {
+                if (rows[row].pic == -1 || d2_PointerObj != rows[row].pic)
+                    continue;
+                count = n3 + n2;
+                if (row == 0 || row == 1) {
+                    for (i = 0; i < 0x300; i++) {
+                        if (lc_CharRecs[i].selected == 0)
+                            continue;
+                        memset(&msg, 0, sizeof(msg));
+                        if (lc_CharRecs[i].job != 0 && lc_CharRecs[i].job->kind == 0x16)
+                            count--;
+                        if (count >= 3) {
+                            count = 4;
+                            goto sent;
+                        }
+                        msg.type = 0x16;
+                        msg.flags = 1;
+                        msg.to = ai_CharInts[ai_PlayerId][0];
+                        msg.fromId = bld->id;
+                        msg.time = ai_Time;
+                        if (sv_PanelShown != 0)
+                            msg.arg[2] = ((AIOBJ *)sv_PanelShown)->objId;
+                        else
+                            msg.arg[2] = -1;
+                        msg.arg[1] = lc_CharRecs[i].netId;
+                        msg.thiefClass = (row != 0) + 2;
+                        sv_MoveToGroup((unsigned char *)bld, 0, lc_CharRecs[i].id, 0);
+                        cm_SendLongMessage((char *)&msg);
+                        count++;
+                    }
+                } else {
+                    for (i = 0; i < 0x300; i++) {
+                        if (count >= 3)
+                            break;
+                        if (lc_CharRecs[i].selected == 0)
+                            continue;
+                        msg.type = 0x6c;
+                        msg.to = ai_CharInts[bld->owner][0];
+                        msg.fromId = bld->id;
+                        msg.time = ai_Time;
+                        msg.flags = 1;
+                        msg.arg[0] = lc_CharRecs[i].netId;
+                        if (sv_PanelShown != 0 && *sv_PanelShown != 0xfd)
+                            msg.arg[6] = ((AIOBJ *)sv_PanelShown)->objId;
+                        else
+                            msg.arg[6] = -1;
+                        sv_MoveToGroup((unsigned char *)bld, 0, lc_CharRecs[i].id, 0);
+                        cm_SendLongMessage((char *)&msg);
+                        count++;
+                    }
+                }
+                if (count != 0) {
+sent:
+                    snd_PlayFavourComment();
+                    sv_ClearSelection();
+                    if (count > 3) {
+                        txt_Format(text, 0x1a4a, 3);
+                        sv_MessageBox(text, 0);
+                    }
+                    break;
+                }
+                sv_MessageBox(txt_Ptrs[0x1a49], 0);
+            }
+        } else if (d2_ClickedId != -1 && d2_CountPointerItems() == 0) {
+            /* a row clicked without a selection: select its characters */
+            for (row = 0; row < 3; row++)
+                if (rows[row].pic != -1 && d2_PointerObj == rows[row].pic)
+                    goto select;
+            continue;
+select:
+            {
+                if (row != 2) {
+                    cls = (row != 0) + 2;
+                    for (ev = (AIJOB *)he_FindEvent(2, 0, 0x16, 3, bld->id); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                        if (ev->thiefClass == cls && (ch = (AICHARREC *)gm_FindChar(ev->thief)) != 0)
+                            ch->selected = 1;
+                    }
+                } else {
+                    for (ev = (AIJOB *)he_FindEvent(2, 0, 0x6c, 3, bld->id); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                        if ((ch = (AICHARREC *)gm_FindChar(ev->ownerCh)) != 0)
+                            ch->selected = 1;
+                    }
+                }
+            }
+        }
+    } while (sv_RunFrame((int)ai_TrainingWindow, 0x677c7) != 0);
+    sv_ClosePlayerBar();
+    d2_CloseView(win);
+    sv_CameraFollow();
+    sv_ClearSelection();
 }
 /* 0x5bc0f0, the release of the picture 0x6f26ac (32 B): 0x478fc0 frees it, the id is reset */
 
