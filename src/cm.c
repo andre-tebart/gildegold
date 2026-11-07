@@ -8312,19 +8312,21 @@ int cm_OrderToBestCell(char *rec, char *c)
     order.x = z;
     cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
-/* 0x4d0520, an order kind 8 for the character c */
+/* 0x4d0520, the formation type 3's order for the character c: its entry (cm_CutEntrySlot, b0c cleared there) is copied
+   with state 8 and no target and sent as message 0x50 (cm_SendCutEntry); case 8 of cm_RunCutOrders then sends fight
+   command 6 once the previous order slot is done (the character waits). */
 
-void ai_Unk4d0520(char *rec, char *c)
+void cm_OrderWait(char *rec, char *c)
 {
-    char *q;
-    int L[11];
+    CMCUTENTRY *q;
+    CMCUTENTRY order;
 
-    q = (char *)cm_CutEntrySlot(rec, c);
-    q[0xc] = 0;
-    memcpy(L, q, 0x2c);
-    L[0] = *(int *)(c + 4);
-    L[1] = 8;
-    cm_SendCutEntry(*(int *)(rec + 0x10), L);
+    q = (CMCUTENTRY *)cm_CutEntrySlot(rec, c);
+    q->b0c = 0;
+    memcpy(&order, q, sizeof(order));
+    order.charId = ((AICHAR *)c)->netId;
+    order.state = 8;
+    cm_SendCutEntry(((CMCUTINFO *)rec)->playerId, &order);
 }
 
 #define cm_OrderWare3 ((int (*)(char *, char *, char *))cm_OrderWare)
@@ -9781,7 +9783,7 @@ void cm_CarryOutOrder(char *rec, char *c)
         cm_OrderToBestCell(rec, c);
         return;
     case 3:
-        ai_Unk4d0520(rec, c);
+        cm_OrderWait(rec, c);
         return;
     }
 }

@@ -660,7 +660,7 @@ int cm_OrderConquer(char *rec, char *c, char *tgt);  /* 0x4d02d0 */
 int cm_OrderWare(char *rec, char *c, char *tgt, unsigned char a);  /* 0x4d0380 */
 
 int cm_OrderToBestCell(char *rec, char *c);  /* 0x4d0460 */
-void ai_Unk4d0520(char *rec, char *c);  /* 0x4d0520 */
+void cm_OrderWait(char *rec, char *c);  /* 0x4d0520 */
 int cm_BestCellNear(char *c, int cx, int cy, int r, int *ox, int *oy);  /* 0x4d2170 */
 
 char cm_OrderClick(char *rec, char *c);  /* 0x4d0570 */
