@@ -5862,7 +5862,6 @@ GAPDATA full_data_6f26c0[8] = { 0 };  /* 0x6f26c0 */
 GAPDATA full_data_6f2f64[28] = { 0 };  /* 0x6f2f64 */
 GAPDATA full_data_6f2f80[4] = { 0 };  /* 0x6f2f80 */
 GAPDATA full_data_6f2f84[4] = { 0 };  /* 0x6f2f84 */
-GAPDATA full_data_6f2f88[4] = { 0 };  /* 0x6f2f88 */
 GAPDATA full_data_6f3680[496] = { 0 };  /* 0x6f3680 */
 GAPDATA full_data_6f3870[16] = { 0 };  /* 0x6f3870 */
 GAPDATA ai_EquipRows[0x800] = { 0 };  /* 0x6f3880, one table: 32 rows of 0x40 (ai_UpdateEquipRows walks 0x6f3880 .. 0x6f4080 by 0x40 at 0x5bb143) */

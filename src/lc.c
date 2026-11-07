@@ -989,7 +989,6 @@ extern GAPDATA full_data_5fe7d0[];
 extern GAPDATA full_data_62d43c[];
 extern char ai_PlayerSlots[4][0x2f4];
 extern GAPDATA full_data_62d440[];
-extern GAPDATA full_data_6f2f88[];
 extern GAPDATA full_rdata_5eb8a8[];
 extern GAPDATA full_data_62d458[];
 extern GAPDATA full_data_62d468[];
@@ -29405,8 +29404,8 @@ void ai_CityStatsPanel(void)
     colors[11] = 0xee;
     colors[12] = 0x10;
     colors[13] = 0xee;
-    if (*(unsigned short *)(unsigned)&full_data_6f2f88 == 0)
-        *(unsigned short *)(unsigned)&full_data_6f2f88 = 1;
+    if (ai_StatsChartFlags == 0)
+        ai_StatsChartFlags = 1;
     if (!ai_RunAllows(0x10))
         return;
     ai_CampaignStep(0xc, 0, 0, 0);
@@ -29423,7 +29422,7 @@ void ai_CityStatsPanel(void)
     io_PrintText(0x1f21, (int)f);
     io_PrintText(0x1f22, (int)f);
     d2_SetForm(win, 3);
-    ai_DrawStatisticsCharts(*(unsigned short *)(unsigned)&full_data_6f2f88, stats, d2_LastWindow);
+    ai_DrawStatisticsCharts(ai_StatsChartFlags, stats, d2_LastWindow);
     d2_SetForm(win, 4);
     h = *(short *)((unsigned)&ai_Unkf8f128 + *(int *)(unsigned)&d2_LastWindow * 0x3c4);
     for (i = 0; i < 5; i++) {
@@ -29432,7 +29431,7 @@ void ai_CityStatsPanel(void)
         y = d2_CreateWinText(*(int *)(unsigned)&d2_LastWindow, 0x19, i * 0x1e + 4);
         *(int *)((unsigned)&d2_Objs + id * 0x2ec + 0x4c) = 1;
         *(int *)((unsigned)&d2_Objs + id * 0x2ec + 0x48) = 1;
-        d2_SetObjValue(id, (*(unsigned short *)(unsigned)&full_data_6f2f88 & (1 << i)) != 0);
+        d2_SetObjValue(id, (ai_StatsChartFlags & (1 << i)) != 0);
         for (k = 0; k < 10; k++) {
             d2_PlotLine(h - 1, y + k, h - 0xb, y + k, colors[i * 3], colors[i * 3 + 1],
                          colors[i * 3 + 2]);
@@ -29442,13 +29441,13 @@ void ai_CityStatsPanel(void)
     *(int *)(unsigned)&d2_ClickedId = -1;
     do {
         if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            *(unsigned short *)(unsigned)&full_data_6f2f88 = 0;
+            ai_StatsChartFlags = 0;
             for (i = 0; i < 5; i++) {
                 if (d2_GetObjValue(ids[i]))
-                    *(unsigned short *)(unsigned)&full_data_6f2f88 |= (1 << i);
+                    ai_StatsChartFlags |= (1 << i);
             }
             d2_SetForm(win, 3);
-            ai_DrawStatisticsCharts(*(unsigned short *)(unsigned)&full_data_6f2f88, stats, d2_LastWindow);
+            ai_DrawStatisticsCharts(ai_StatsChartFlags, stats, d2_LastWindow);
         }
         if (*(int *)((unsigned)&dm_L + 0x20))
             *(int *)(unsigned)&sv_PopRequest = 1;
@@ -33318,6 +33317,7 @@ int ai_Dragging = 0;  /* 0x6f26bc, 1 while the town map is dragged */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
 char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
 struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
+unsigned short ai_StatsChartFlags = 0;  /* 0x6f2f88, the charts the statistics panel shows (ai_CityStatsPanel: bit i the legend row i, 1 at the first open) */
 unsigned int ai_AmountTab = 0;  /* 0x6f2f8c, the open tab of the special-amount window (ai_SpecialAmountWindow, 0 .. 7; 8: no tab has rows) */
 int ai_MasterLetterPage = 0;  /* 0x6f2f90, the open page of the master letter window (ai_MasterLetterSettings): 0 the work settings, 1 the goods weights */
 int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
