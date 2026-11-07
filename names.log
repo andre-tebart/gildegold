@@ -3037,3 +3037,4 @@
 2026-11-07T21:07:13 0x004d2490 func ai_Unk4d2490 -> cm_NearestEscapeObject by:main why:returns the closest object named sp_ESCAPE to the character c (walks the scene with cm_CollectEscapeObject), or 0
 2026-11-07T21:08:27 0x004d2550 data ai_Unk4d2550 -> cm_CollectWareObject by:main why:a d3_ForEachObject callback: appends each WARE_ object whose AIOBJ.fightSide (the owner's +0xa) is not the side leader's id (c->bld in a fight) to cm_PointList
 2026-11-07T21:08:55 0x004d25a0 data ai_Unk4d25a0 -> cm_NearestWareObject by:main why:returns the closest object collected by cm_CollectWareObject (a WARE_ good of the other fight side) to the character c, or 0
+2026-11-07T21:15:35 0x004d3ac0 data ai_Unk4d3ac0 -> cm_CheerAction by:main why:cm_FightSlotCheer queues it for fight command 1 (cheer) with the animation gestik/jubeln; it hides that character's model

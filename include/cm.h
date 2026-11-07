@@ -786,7 +786,7 @@ extern double ai_Unk5eb8e0;  /* 0x5eb8e0 */
 void cm_HitAction(struct CHACTION *a);  /* 0x4d3550 */
 void cm_LayBombAction(char *ev);  /* 0x4d3980 */
 void cm_ThrowBombAction(char *ev);  /* 0x4d3a30 */
-void ai_Unk4d3ac0(char *ev);  /* 0x4d3ac0 */
+void cm_CheerAction(char *ev);  /* 0x4d3ac0 */
 void ai_Unk4d3ae0(char *ev);  /* 0x4d3ae0 */
 struct AICHAR *cm_CheckFightWinner(struct CMFIGHTREC *rec);  /* 0x4d3b30 */
 int cm_LootStock(char *a, char *b, char *d, char *t);  /* 0x4d3d10 */

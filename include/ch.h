@@ -335,6 +335,10 @@ struct CHACTION {                   /* 0x194 bytes, 2000 of them in ch_Queue; fu
             struct AICHAR *target;      /* 0x17c */
             struct AICHAR *shooter;     /* 0x180 */
         } shot;
+        struct {                        /* a fighter's cheer (cm.c: cm_FightSlotCheer queues it, cm_CheerAction) */
+            int unk178;
+            struct AICHAR *fighter;     /* 0x17c, the cheering character */
+        } cheer;
     };
     char stop;                      /* 0x190 */
     char pad191[0x3];

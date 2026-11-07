@@ -9983,11 +9983,14 @@ void cm_ThrowBombAction(char *ev)
     }
     cm_ThrowGrenade(&att->scene->obj->pos, b->bomb.x, b->bomb.y);
 }
-/* 0x4d3ac0, 0x402480 on the attacker's record */
+/* 0x4d3ac0, a fighter's cheer (fight command 1, cm_FightSlotCheer with "gestik/jubeln"): the cheering character's
+   model is hidden (ch_SetVisible, 0x402480) */
 
-void ai_Unk4d3ac0(char *ev)
+void cm_CheerAction(char *ev)
 {
-    ch_SetVisible(*(char **)(*(char **)(ev + 0x17c) + 0x184), 0);
+    CHACTION *b = (CHACTION *)ev;
+
+    ch_SetVisible(b->cheer.fighter->scene, 0);
 }
 /* 0x4d3ae0, the target puts its carried object down: the object (+0x1ac of the attacker) belongs to the defender's side now */
 
@@ -11200,7 +11203,7 @@ void cm_FightSlotCheer(char *f)
 
     if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
         c = cm_FindFighter(*(int *)f);
-        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&ai_Unk4d3ac0, 5, 0x2e, 1);
+        ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&cm_CheerAction, 5, 0x2e, 1);
         *(char **)(ev + 0x17c) = c;
         strcpy(ev + 0xf0, "gestik/jubeln");
     }
