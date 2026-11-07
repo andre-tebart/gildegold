@@ -9143,7 +9143,7 @@ void ai_CreditGiverWindow(AIBLD *bank)
             sv_PopRequest = 1;
         if (rebuild) {
             d2_SetForm(win, 2);
-            for (i = 0; i < 16; i++) {
+            for (i = 0; i <= 15; i++) {
                 if (rows[i].child != -1) {
                     d2_RemoveWindow(rows[i].child);
                     d2_RemoveObj(rows[i].pic);
@@ -9544,7 +9544,7 @@ void ai_ExchangeWindow(AIBLD *bank)
         if (dm_L.rup != 0) {
             if (d2_CountPointerItems() != 0) {
                 d2_EndInputEdit();
-                for (i = 0; i < 16; i++) {
+                for (i = 0; i <= 15; i++) {
                     if (bankRows[i].icon != -1)
                         d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
                     if (ownRows[i].icon != -1)
@@ -9655,7 +9655,7 @@ void ai_ExchangeWindow(AIBLD *bank)
                         ai_FillExchangeRows(bank->objList, bankRows, win, 5, 1);
                         sv_SetStatusText(txt_Ptrs[0x18fe]);
                         d2_EndInputEdit();
-                        for (i = 0; i < 16; i++) {
+                        for (i = 0; i <= 15; i++) {
                             if (bankRows[i].icon != -1)
                                 d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
                             if (ownRows[i].icon != -1)
@@ -9703,7 +9703,7 @@ void ai_ExchangeWindow(AIBLD *bank)
                         ai_FillExchangeRows(bank->objList, bankRows, win, 5, 1);
                         sv_SetStatusText(txt_Ptrs[0x18fe]);
                         d2_EndInputEdit();
-                        for (i = 0; i < 16; i++) {
+                        for (i = 0; i <= 15; i++) {
                             if (bankRows[i].icon != -1)
                                 d2_SetObjValue(bankRows[i].icon, 0, 0, 0);
                             if (ownRows[i].icon != -1)
@@ -18962,7 +18962,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
         if (d2_ClickedId == -1 || changed != 0 || listShown == 0) {
             if (d2_ClickedId != -1 && changed == 0 && dropActive == 0) {
                 /* a click on a cart selects it */
-                for (i = 0; i < 16; i++) {
+                for (i = 0; i <= 15; i++) {
                     c = rows[i].cart;
                     if (c != 0 && d2_PointerObj == rows[i].pic) {
                         if (c->flags20 & 1)
@@ -19094,7 +19094,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                 applied = 1.0f;
                 if (util_RandomF() < 0.25f)
                     applied = factor;
-                for (i = 0; i < 16; i++) {
+                for (i = 0; i <= 15; i++) {
                     c = rows[i].cart;
                     if (c == 0 || (c->flags20 & 1))
                         continue;
@@ -19162,7 +19162,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
         } else if (d2_HitWindow == ai_ChildWindowId && dm_L.lclick != 0 && dropActive == 0 && changed != 0
                    && (priced != 0 || own != 0)) {
             /* the goods picked from the carts dropped on the inventory window go to the player */
-            for (i = 0; i < 16; i++) {
+            for (i = 0; i <= 15; i++) {
                 c = rows[i].cart;
                 if (c == 0 || (c->flags20 & 1))
                     continue;
@@ -19235,7 +19235,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         }
                     }
                 } else if (changed != 0) {
-                    for (i = 0; i < 16; i++) {
+                    for (i = 0; i <= 15; i++) {
                         c = rows[i].cart;
                         if (c == 0)
                             continue;
@@ -19270,7 +19270,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
             if (dest != 0 && dest != bld) {
                 fee = 0;
                 if (gm_IsHomeType(dest) == 0 && gm_IsHomeType(bld) == 0) {
-                    for (i = 0; i < 16; i++) {
+                    for (i = 0; i <= 15; i++) {
                         c = rows[i].cart;
                         if (c == 0 || rows[i].selected == 0)
                             continue;
@@ -19291,7 +19291,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                         fee += ai_SendTransportOrder(ai_PlayerId, c, bld, dest);
                     }
                 } else {
-                    for (i = 0; i < 16; i++) {
+                    for (i = 0; i <= 15; i++) {
                         c = rows[i].cart;
                         if (c == 0 || rows[i].selected == 0)
                             continue;
@@ -19323,7 +19323,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
             n = 0;
             cost = 0;
             maxEmpty = 0;
-            for (i = 0; i < 16; i++) {
+            for (i = 0; i <= 15; i++) {
                 c = rows[i].cart;
                 if (c == 0 || rows[i].selected == 0)
                     continue;
@@ -19342,7 +19342,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
                 if (sv_MessageBox(text3, 0x101) != 0
                     && sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
                     cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, owner, cost);
-                    for (i = 0; i < 16; i++) {
+                    for (i = 0; i <= 15; i++) {
                         c = rows[i].cart;
                         if (c == 0 || rows[i].selected == 0)
                             continue;
@@ -19378,7 +19378,7 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
         } else if (d2_PointerObj == btn3 && (ai_GameFlags & 0x80) == 0) {
             /* sell the selected carts */
             n = 0;
-            for (i = 0; i < 16; i++) {
+            for (i = 0; i <= 15; i++) {
                 if (n >= 0x20)
                     break;
                 if (rows[i].cart != 0 && rows[i].selected != 0)
@@ -28306,7 +28306,7 @@ void ai_FamilyTreeWindow(int netId, unsigned char flags, int caption, int callId
 }
 
 int gm_GetGoodsValue();
-void ai_ShowMissions(int owner); int ai_ChooseProfessionWindow(); int ai_UniversityWindow(); int ai_GiftWindow();
+void ai_ShowMissions(int owner); int ai_UniversityWindow(); int ai_GiftWindow();
 
 /* 0x5c5310, the character info panel "panel\info_spieler" of the character chr (the family tree window opens it):
    page 1 the name (text 0x1f53), page 2 the birth date ("*d.m.y"), the death date ("+d.m.y") or the age, the
@@ -32685,75 +32685,66 @@ int ai_InterrogationWindow2(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5cf260, the profession chooser "privillegien_CHOOSEPROFESSION2" 0x62d660 (656 B): param_1 the
-   request record, param_2 the character record. The price (int)((float)gm_GetWorth (*param_1) * 0.015f
-   (0x5ecec8)); the window 0x4741f0 (0, 0, 0x62d660) with the text 0x515960 (0x1a9a, the own byte +9 ?
-   0x1aa1 : 0x1aa0, the id, the price); the sixteen 0x5a2 .. 0x5b1 icons in a 5 x 3 grid: the width word
-   +8 of the screen record 0xf8f128 + screen * 0x3c4 over 5, the height word +0xa over 3, the offset
-   0x1d978 of U_I (0x6ed918) as the margin; each control 0x4731d0 gets the visible flag +0x4c = 1, the
-   picture +0x1c0 = 3, the string of the table 0x143a97c at +0xbc and +0x1bc = 0x56. The pump
-   0x5309a0 (U_I (0x760638)): a click 0x5a2 + i with U_I (0x1467398) sends the message (type 0x5e, +8 the
-   request + 4, +0xc = -1, +0x36 = 0x12, +0x58 = param_1 + 4, +0x5c the byte 0x5043d0 (i + 1, 1),
-   +0x60 the price) and returns 1; the exit 0x4758f0. */
+/* 0x5cf260, the profession chooser "privillegien\CHOOSEPROFESSION2" (ai_CharInfoPanel): parent apprentices child.
+   The fee is 1.5 % of the parent's worth (gm_GetWorth); the caption 0x1a9a names the child (0x1aa0 / 0x1aa1 by
+   sex, the id) and the fee. The fifteen profession pictures 0x5a2 .. 0x5b0 stand in a 5 x 3 grid over the form
+   (columns of (width - 0x40) / 5, rows of (height - 0x84) / 3, centred by the picture 0x5a2's width), each
+   interactive with the style 3 and the caption txt_Ptrs[0x1ef + i] in the font 0x56. A left click on a picture
+   sends the apprenticeship message 0x5e to the child (flags 0x12; the parent, the building class gm_TitleNumber
+   (profession, 1), the fee) and closes the window; a right click closes it. Returns 1 once the left button was
+   clicked, else 0 */
 
-int ai_ChooseProfessionWindow(unsigned short *param_1, unsigned short *param_2)
+int ai_ChooseProfessionWindow(AICHARREC *parent, AICHARREC *child)
 {
-    int rec[0x3e];
+    AIMSG msg;
+    int fee;
     int win;
-    int price;
-    int h;
-    int w;
+    int colW;
+    int rowH;
     int dx;
-    int y;
-    int ctrl;
     int i;
+    int pic;
     int ret;
 
-    price = (int)((float)gm_GetWorth(*param_1) * 0.015f);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d660);
+    fee = (int)((float)gm_GetWorth(parent->id) * 0.015f);
+    win = d2_OpenForm(0, 0, "privillegien\\CHOOSEPROFESSION2");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    h = *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + U_I((unsigned)&d2_LastWindow) * 0x3c4);
-    w = (*(short *)((unsigned)&ai_Unkf8f128 + U_I((unsigned)&d2_LastWindow) * 0x3c4) - 0x40) / 5;
-    dx = (w - *(short *)(U_I((unsigned)&d2_Pics) + 0x1d978)) / 2;
-    io_PrintText(0x1a9a, (*(char *)((char *)param_2 + 9) != 0) + 0x1aa0, *param_2, price);
-    for (i = 0; i < 0x10; i++) {
-        ctrl = d2_WinOpenPic((i % 5) * w + 0x20 + dx,
-                            (i / 5) * ((h - 0x84) / 3) + 100 + dx, i + 0x5a2,
-                            U_I((unsigned)&d2_LastWindow)) * 0x2ec + U_I((unsigned)&d2_Objs);
-        *(int *)(ctrl + 0x4c) = 1;
-        *(int *)(ctrl + 0x1c0) = 3;
-        strcpy((char *)(ctrl + 0xbc), ((char **)((unsigned)&ai_Unk143a680 + 0x2fc))[i]);
-        *(int *)(ctrl + 0x1bc) = 0x56;
+    colW = (d2_Wins[d2_LastWindow].w - 0x40) / 5;
+    rowH = (d2_Wins[d2_LastWindow].h - 0x84) / 3;
+    dx = (colW - d2_Pics[0x5a2].w) / 2;
+    io_PrintText(0x1a9a, (child->sex != 0) + 0x1aa0, child->id, fee);
+    for (i = 1; i <= 15; i++) {
+        pic = d2_WinOpenPic((i - 1) % 5 * colW + dx + 0x20, (i - 1) / 5 * rowH + dx + 0x64, i + 0x5a1, d2_LastWindow);
+        d2_Objs[pic].interactive = 1;
+        d2_Objs[pic].style = 3;
+        strcpy(d2_Objs[pic].caption, txt_Ptrs[0x1ee + i]);
+        d2_Objs[pic].capfont = 0x56;
     }
     ret = 0;
-    for (;;) {
-        if (sv_RunFrame(ai_ChooseProfessionWindow, U_I((unsigned)&sv_FrameMask)) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
-            if (U_I(((unsigned)&dm_L + 0x18)) != 0) {
-                ret = 1;
-                for (i = 0; i < 0x10; i++) {
-                    if (U_I((unsigned)&d2_ClickedId) == i + 0x5a2) {
-                        *(char *)((char *)rec + 4) = 0x5e;
-                        rec[2] = *(int *)(param_2 + 2);
-                        rec[3] = -1;
-                        *(char *)((char *)rec + 0x36) = 0x12;
-                        rec[0x16] = *(int *)(param_1 + 2);
-                        *(char *)((char *)rec + 0x5c) = gm_TitleNumber(i + 1, 1);
-                        rec[0x18] = price;
-                        cm_SendLongMessage(rec);
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                        break;
-                    }
+    while (sv_RunFrame((int)ai_ChooseProfessionWindow, sv_FrameMask) != 0) {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (dm_L.lclick != 0) {
+            ret = 1;
+            for (i = 0; i <= 15; i++) {
+                if (d2_ClickedId == i + 0x5a2) {
+                    msg.flags = 0x12;
+                    msg.to = child->netId;
+                    msg.type = 0x5e;
+                    msg.fromId = -1;
+                    msg.apprenticeship.parent = parent->netId;
+                    msg.apprenticeship.bldClass = gm_TitleNumber(i + 1, 1);
+                    msg.apprenticeship.price = fee;
+                    cm_SendLongMessage(&msg);
+                    sv_PopRequest = 1;
+                    break;
                 }
             }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
         }
     }
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5cf4f0, the identity window "special_uni" 0x62d6bc (816 B): param_1 unused, param_2 the character
    record. The character's own record 0x770b80 + U_W (0x6f25b8) * 0x21c is copied by 0x4948f0 into

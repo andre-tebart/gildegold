@@ -512,6 +512,13 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     char pad5d[3];
                     int amount;                 /* 0x60, the amount paid out, the messenger's fee taken */
                 } payment;
+                struct {                        /* the apprenticeship message 0x5e (lc.c ai_ChooseProfessionWindow; am.c's
+                                                   ai_ExecuteApprenticeship fills it as G8MSG) */
+                    int parent;                 /* 0x58, the netId of the parent who pays */
+                    unsigned char bldClass;     /* 0x5c, the building class the child learns in (gm_TitleNumber) */
+                    char pad5d[3];
+                    int price;                  /* 0x60, the fee */
+                } apprenticeship;
                 struct {                        /* the study message 0x5f ("Studium", ai_ExecuteStudy) */
                     int ch;                     /* 0x58, the netId of the character who pays */
                     int pad5c;
