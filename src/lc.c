@@ -45,7 +45,11 @@
    them, their AI path sending what the player's window sends (AIMSG.letter of 0x47, arg[] of 0x45 / 0x4b); the
    privileges panel lists the orders. The privilege asks of the "privillegien" forms (the hatred, the peace, the
    conversion, the penance, the miracle with its six outcomes ai_Miracle, the profession change) and the accusation
-   (ai_AccusationWindow, its evidence rows ai_AccuseWindow) end in the trial message 0x2c (ai_OpenTrial).
+   (ai_AccusationWindow and its twin by faith ai_FaithAccusationWindow, the evidence rows ai_AccuseWindow) end in
+   the trial message 0x2c (ai_OpenTrial). The interrogation asks (ai_InterrogationWindow -> ai_Interrogate, the
+   variants ai_InterrogationWindow1 / 2) and the dismissal (ai_DismissalHandler) pick their holder through
+   AMOUNTCFG and mark me in AICHARREC.flags1cc / powerFlags; the character info panel's apprenticeship and
+   university windows send AIMSG.apprenticeship (0x5e) and AIMSG.study (0x5f).
    Open: head: am.h / gv.h / cm.h are not included: ai_FindPartnersRandomWalk, ai_PickPartnerRandomWalk,
    amt_SendOfficeMessage, cm_SendSetJob, gv_SortCrimesByLaw and the two judges are copied declarations.
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's

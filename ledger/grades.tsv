@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4550,16 +4550,16 @@ exe	0x005cd400	ai_ChangeProfessionWindow	lc	shape	readable
 exe	0x005cd8c0	ai_OpenTrial	lc	byte	readable		
 exe	0x005cdb90	ai_AccuseWindow	lc	byte	readable		
 exe	0x005cde90	ai_AccusationWindow	lc	draft	readable	deep	
-exe	0x005ce1a0	ai_SpyTargetFlagHandler	lc	draft	draft		
-exe	0x005ce4b0	ai_Unk5ce4b0	lc	draft	draft		
-exe	0x005ce610	ai_InterrogationWindow	lc	draft	draft		
-exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	draft	readable	deep	
-exe	0x005ce950	ai_DismissalHandler	lc	draft	draft		
+exe	0x005ce1a0	ai_FaithAccusationWindow	lc	draft	readable	deep	
+exe	0x005ce4b0	ai_Interrogate	lc	byte	readable		
+exe	0x005ce610	ai_InterrogationWindow	lc	byte	readable		
+exe	0x005ce7f0	ai_WorkerDismissalWindow	lc	shape	readable	deep	
+exe	0x005ce950	ai_DismissalHandler	lc	byte	readable		
 exe	0x005ced50	ai_SendInterrogationRefusal	lc	byte	readable		
-exe	0x005cede0	ai_InterrogationWindow1	lc	draft	draft		
-exe	0x005cf020	ai_InterrogationWindow2	lc	draft	draft		
-exe	0x005cf260	ai_ChooseProfessionWindow	lc	draft	draft		
-exe	0x005cf4f0	ai_UniversityWindow	lc	draft	draft		
+exe	0x005cede0	ai_InterrogationWindow1	lc	byte	readable		
+exe	0x005cf020	ai_InterrogationWindow2	lc	byte	readable		
+exe	0x005cf260	ai_ChooseProfessionWindow	lc	byte	readable		
+exe	0x005cf4f0	ai_UniversityWindow	lc	draft	readable	deep	
 exe	0x005cf820	ai_UseObjPanel	lc	byte	readable		
 exe	0x005cf8a0	ai_UseGood	lc	draft	draft		
 exe	0x005cfb60	ai_UseGoodAddMoney	lc	byte	readable		
