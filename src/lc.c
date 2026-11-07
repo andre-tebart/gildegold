@@ -29059,10 +29059,9 @@ int ai_CourtshipWindow(AICHARREC *ch, LCORDMSG *m)
    first of the thresholds 500 .. 20000 above the highest of the rounds' rating bases (ord_StatisticsHistory[].base)
    and the running ai_RatingBase (else that value); the rounds' bases are drawn as grey (0x33) line segments, scale
    = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by (height - 0x1e) / top per unit, the last one
-   to the running ai_RatingBase. v0 .. v9 (the window's ten values) are not read. Returns the top value */
+   to the running ai_RatingBase. The current statistics stats (by value) are not read. Returns the top value */
 
-int ai_PlotRatingBaseChart(int v0, int v1, int v2, int v3, int v4, int v5, int v6, int v7, int v8, int v9,
-                           int width, int height)
+int ai_PlotRatingBaseChart(ORDSTATS stats, int width, int height)
 {
     float bottom;
     int limits[9];
@@ -29106,30 +29105,36 @@ int ai_PlotRatingBaseChart(int v0, int v1, int v2, int v3, int v4, int v5, int v
                 (int)(bottom - ai_RatingBase * unit), 0x33, 0x33, 0x33);
     return top;
 }
-/* 0x5c7460, the second bar chart (640 B, ROUGH): the maximum of the floats 0x91ab0c + i * 0x14, the
-   bars 0x4764f0 (0x2d + i * the scale, the float) with the colour 0x10 / 0xee / 0x10 and the scale
-   (param_6 - 0x69) / 16; the last bar at (scale * 3 + 9) * 5 */
+/* 0x5c7460, the score chart of the statistics window (ai_Unk5c7970, its flag 2; 255 B): the rounds' overall scores
+   (ord_StatisticsHistory[].score, 0 .. 1) as green (0x10, 0xee, 0x10) line segments, scale = (width - 0x69) / 16
+   apart from x 0x2d, y from height - 0x20 + 10 up by height - 0x1e for a score of 1, the last one to the current
+   score stats.score. The highest score is looked for and not used */
 
-void ai_Unk5c7460(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
-                  int param_7, int param_8, int param_9, int param_10, int param_11, int param_12)
+void ai_PlotScoreChart(ORDSTATS stats, int width, int height)
 {
-    float max;
+    float unit;
+    float bottom;
+    float top;
     int scale;
     int x;
-    float *p;
+    int i;
 
-    max = -1.0f;
-    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0xc); p += 5) {
-        if (max < *p)
-            max = *p;
+    scale = (width - 0x69) / 16;
+    top = -1.0f;
+    for (i = 0; i < 16; i++) {
+        if (top < ord_StatisticsHistory[i].score)
+            top = ord_StatisticsHistory[i].score;
     }
-    scale = (param_11 - 0x69) / 16;
+    unit = (float)(height - 0x1e);
+    bottom = (float)(height - 0x20) + 10.0f;
     x = 0x2d;
-    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)&ord_StatisticsHistory + 0x138); p += 5) {
-        d2_PlotLine(x, (int)*p);
+    for (i = 0; i < 15; i++) {
+        d2_PlotLine(x, (int)(bottom - ord_StatisticsHistory[i].score * unit), x + scale,
+                    (int)(bottom - ord_StatisticsHistory[i + 1].score * unit), 0x10, 0xee, 0x10);
         x += scale;
     }
-    d2_PlotLine((scale * 3 + 9) * 5, (int)*(float *)((char *)((unsigned)&ord_StatisticsHistory + 0x138) - 4));
+    d2_PlotLine(0x2d + scale * 15, (int)(bottom - ord_StatisticsHistory[15].score * unit), 0x2d + scale * 16,
+                (int)(bottom - stats.score * unit), 0x10, 0xee, 0x10);
 }
 /* 0x5c7560, the third bar chart (384 B, ROUGH): the bars 0x4764f0 (0x2d + i * the scale, the float of
    0x91ab14 + i * 0x14) with the colour 0xee / 0xee / 0x10 and the scale (param_6 - 0x69) / 16; the last
@@ -29262,12 +29267,10 @@ void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_
     w = *(short *)(((unsigned)&ai_Unkf8f128 + 0x2) + param_12 * 0x3c4);
     scale = (h - 0x69) / 16;
     if (param_1 & 1)
-        ret = ai_PlotRatingBaseChart(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9,
-                           param_10, param_11, h - 1, w);
+        ret = ai_PlotRatingBaseChart(*(ORDSTATS *)&param_2, h - 1, w);  /* param_2 .. param_11: the ORDSTATS the original copies */
     *(char *)(unsigned)&d2_PenSize = 1;
     if (param_1 & 2)
-        ai_Unk5c7460(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10,
-                     param_11, h - 1, w);
+        ai_PlotScoreChart(*(ORDSTATS *)&param_2, h - 1, w);
     if (param_1 & 4)
         ai_Unk5c7800(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10,
                      param_11, h - 1, w);
