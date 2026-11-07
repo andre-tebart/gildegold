@@ -797,7 +797,7 @@ int cm_FightStartDialog(char *a);  /* 0x4d4540 */
 void cm_FightEndDialog(char *a);  /* 0x4d4d70 */
 int ai_Unk4d60b0(char *a);  /* 0x4d60b0 */
 void cm_FightResult(char *r);  /* 0x4d6930 */
-void ai_Unk4d6970(char *r);  /* 0x4d6970 */
+void cm_FightFrame(char *r);  /* 0x4d6970 */
 void ai_Unk4d6a50();  /* 0x4d6a50 */
 void ai_Unk4d6b70();  /* 0x4d6b70 */
 extern int cm_PickCellX;  /* 0xfa5f00 */
@@ -807,8 +807,8 @@ void d2_CenterObj();  /* 0x46c1d0 */
 extern int cm_SceneDeadline;  /* 0x6f0d84 */
 extern int cm_SceneTicks;  /* 0x6f0d80 */
 extern int cm_SceneTimedOut;  /* 0x6f0d88 */
-extern int ai_Unk60cb64;  /* 0x60cb64 */
-extern int ai_Unk60cb68;  /* 0x60cb68 */
+extern int cm_FightTimeBar;  /* 0x60cb64 */
+extern int cm_FightButton;  /* 0x60cb68 */
 extern int ai_Unk6f0d64;  /* 0x6f0d64 */
 
 extern int cm_TextBox;  /* 0x60d368 */

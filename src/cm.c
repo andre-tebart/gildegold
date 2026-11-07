@@ -11028,16 +11028,16 @@ void cm_FightResult(char *r)
     } else
         ((CMCUTINFO *)r)->result = 1;
 }
-/* 0x4d6970, one frame of the fight UI (r: the fight record): the view 0x60cb64 sized to the fight area, the redraws
-   0x525ff0 .. 0x4ce830, and the click on the button 0x60cb68 (while 0x6f0d88 / 0x6f0cf4 are clear) sends message 0x50 with
-   the fight record of the player's character (0x4cdf00) marked 5, else the dialog is closed (0x6f22a0) */
+/* 0x4d6970, one frame of the fight UI (r: the fight record): the countdown bar cm_FightTimeBar sized to the fight area,
+   the redraws 0x525ff0 .. 0x4ce830, and the click on the button cm_FightButton (while 0x6f0d88 / 0x6f0cf4 are clear) sends
+   message 0x50 with the cut entry of the player's character (0x4cdf00) in state 5, else the dialog is closed (0x6f22a0) */
 
-void ai_Unk4d6970(char *r)
+void cm_FightFrame(char *r)
 {
-    int sl[11];
-    int *q;
+    CMCUTENTRY sl;
+    CMCUTENTRY *q;
 
-    d2_SetObjValue(ai_Unk60cb64, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
+    d2_SetObjValue(cm_FightTimeBar, 0, cm_SceneDuration, cm_SceneDeadline - cm_SceneTicks + 1);
     sv_BorderCameraView();
     cm_UpdatePortraits();
     cm_UpdatePointer();
@@ -11048,12 +11048,12 @@ void ai_Unk4d6970(char *r)
     cm_UpdateBombs();
     cm_UpdateGrenades();
     if (cm_SceneTimedOut == 0 && cm_FightWinner == 0) {
-        if (d2_ClickedId != -1 && d2_PointerObj == ai_Unk60cb68) {
-            q = cm_CutEntrySlot(r, cm_CutChar);
-            memcpy(sl, q, 0x2c);
-            sl[0] = *(int *)(cm_CutChar + 4);
-            sl[1] = 5;
-            cm_SendCutEntry(*(int *)(r + 0x10), sl);
+        if (d2_ClickedId != -1 && d2_PointerObj == cm_FightButton) {
+            q = (CMCUTENTRY *)cm_CutEntrySlot(r, cm_CutChar);
+            memcpy(&sl, q, sizeof(CMCUTENTRY));
+            sl.charId = ((AICHAR *)cm_CutChar)->netId;
+            sl.state = 5;
+            cm_SendCutEntry(((CMCUTINFO *)r)->playerId, &sl);
         }
     } else
         sv_PopRequest = 1;
@@ -11070,11 +11070,11 @@ void ai_Unk4d6a50()
     ((void (*)(int, int))d2_PlaceMainWindow)(v, 3);
     d2_SetForm(v, 0);
     t = d2_WinCreateSlider(0x10, 0xc, 0xbf, ai_Unk143e8b4, d2_LastWindow);
-    ai_Unk60cb68 = t;
+    cm_FightButton = t;
     G19_R(t, 0x5c, int) = 1;
-    d2_CenterObj(ai_Unk60cb68);
+    d2_CenterObj(cm_FightButton);
     t = d2_WinOpenSlider((*(short *)(d2_LastWindowPtrC + 8) - 0x190) / 2, 0x37, 0x190, 0, cm_SceneDuration, 0x83, 0x42, d2_LastWindow);
-    ai_Unk60cb64 = t;
+    cm_FightTimeBar = t;
     G19_R(t, 0x74, short) = 0x54;
     G19_R(*(int *)(ai_Unkf8f39c - 0x10 + d2_LastWindow * 0x3c4), 0x4c, int) = 1;
     d2_SetForm(cm_TextBox, 0);
@@ -11865,7 +11865,7 @@ void cm_FightLoop(char *a)
         if (ai_Unk6f0ce4 != 0)
             sv_SetStatusText(ai_Unk143e674);
         else
-            ai_Unk4d6970(a);
+            cm_FightFrame(a);
         if (cm_FightWinner == 0 && cm_FightSettled == 0 && ai_Unk6f0ce4 == 0) {
             if (tb_Calls > t + 0x1a4) {
                 for (i = 0; i < (unsigned char)cm_FightRecord[0x30]; i++) {
@@ -17123,8 +17123,8 @@ char ai_WeaponRecordData[920] = { 84, 1, 0, 0, 120, 5, 20, 0, 1, 4, 1, 0, 0, 0, 
 float cm_DefenseFactor = 1.0f;  /* 0x60cb58 */
 int cm_FightOwner = -1;  /* 0x60cb5c */
 int cm_FightView = -1;  /* 0x60cb60 */
-int ai_Unk60cb64 = -1;  /* 0x60cb64 */
-int ai_Unk60cb68 = -1;  /* 0x60cb68 */
+int cm_FightTimeBar = -1;  /* 0x60cb64 */
+int cm_FightButton = -1;  /* 0x60cb68 */
 int cm_DialogFrameFlags = 464838;  /* 0x60d360, the frame wait of the dialogs ( */
 int cm_SceneDuration = 10;  /* 0x60d364 */
 int cm_TextBox = -1;  /* 0x60d368 */
