@@ -31798,27 +31798,118 @@ int ai_MiracleWindow(void *chp, int *m)
         }
     } while (1);
 }
-/* 0x5cd400, the espionage result window "privillegien\gegenspionage3" 0x62d660 (1211 B, ROUGH
-   SKELETON: no Ghidra export; from the disassembly): type 6 only (other types go to 0x5cd8b1). The
-   frame 0x61c; 0x576040 (9, 0, 0, 0) and the window 0x4741f0 / 0x475600 / 0x475f70 (1); the caption
-   0x1d36 through 0x515960 (the screen record 0xf8f120 + 0x6ed938 * 0x3c4, the words +8 / +0xa and the
-   picture 0x6ed918 + 0x1d978); the record 0x143a97c and the branch 0x130 / 0x18f by the message byte
-   +9. ROUGH SKELETON: the controls, the rows and the pump 0x5309a0 are not written. */
+void cm_SendSetJob(int id, int job);  /* 0x4c59b0 (cm.h, not included) */
+/* 0x5cd400, the profession change (ord.c's handler 0x4f4ff0, a player's ask) "privillegien\CHOOSEPROFESSION2": a
+   grid of 15 professions, 5 to a row, the caption 0x1d36; a profession me holds a title in is labelled with it and
+   the titles left (the format txt_Ptrs[0x1d39]), me's own one is disabled. While a running event 0x26 of the player
+   blocks it (he_FindEvent) a click only tells 0x15bd; else a click on another profession asks 0x1d37 for its price
+   (4 for one me holds a title in, else 8; sv_CheckMoney) and on yes sets me's job to its title (or the group's first,
+   gm_TitleNumber) and pays (cm_SendSetJob, cm_SendMoneyDelta). The campaign step 9 brackets the window. Returns 0x10
+   once me changed, else 0 (and 0 for any other kind) */
 
-int ai_EspionageResult(int param_1, int *m)  /* m: the handler's second argument (unused here): the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_ChangeProfessionWindow(AICHARREC *me, LCORDMSG *m)
 {
     int win;
-    char text[0x100];
+    char **name;
+    int group;
+    int base;
+    int ret;
+    int w;
+    int h;
+    char caption[0x200];
+    char text[0x400];
+    int dx;
+    int i;
+    int job;
+    int obj;
+    char *s;
+    char *d;
+    int cost;
 
-    if (*(char *)(param_1 + 2) != 6)
-        return 0;   /* ROUGH: the other path at 0x5cd8b1 is not written */
-    ai_CampaignStep(9, 0, 0, 0);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d660);
-    d2_CentreViewWindows(win);
-    d2_SetForm(win, 0);
-    io_PrintText(0x1d36);
-    /* ROUGH SKELETON: the screen coordinates, the record 0x143a97c, the controls and the pump are not
-       written yet */
+    if (me->kind == 6) {
+        ret = 0;
+        ai_CampaignStep(9, 0, 0, 0);
+        win = d2_OpenForm(0, 0, "privillegien\\CHOOSEPROFESSION2");
+        d2_CentreViewWindows(win);
+        d2_SetForm(win, 0);
+        w = (d2_Wins[d2_LastWindow].w - 0x40) / 5;
+        h = (d2_Wins[d2_LastWindow].h - 0x84) / 3;
+        dx = (w - d2_Pics[0x5a2].w) / 2;
+        io_PrintText(0x1d36);
+        base = me->sex ? 0x18f : 0x130;
+        name = &txt_Ptrs[0x1ef];
+        for (group = 1; group <= 15; group++) {
+            i = group - 1;
+            job = gm_TitleJob(me->id, group);
+            obj = d2_WinOpenPic((i % 5) * w + dx + 0x20, (i / 5) * h + dx + 0x64, i + 0x5a2, d2_LastWindow);
+            d2_Objs[obj].interactive = 1;
+            d2_Objs[obj].style = 3;
+            d2_SetObjFont(obj, 0x56);
+            d2_Objs[obj].centred = 1;
+            d2_Objs[obj].captionX = -50;
+            d2_Objs[obj].captionY = 0x44;
+            if (job != 0)
+                sprintf(caption, txt_Ptrs[0x1d39], gm_TitlesLeft(job), txt_Ptrs[job + base]);
+            else
+                caption[0] = 0;
+            d2_SetCaption(obj, caption);
+            d2_Objs[obj].w = 0xa4;
+            if (job == me->jobId) {
+                d2_SetObjEnabled(obj, 0);
+            } else if (job == 0) {
+                d2_Objs[obj].capfont = 0x56;
+                d2_Objs[obj].picW = 0xa4;
+                s = *name;
+                d = d2_Objs[obj].caption;
+                while ((*d++ = *s++) != 0)
+                    ;
+            }
+            name++;
+        }
+        d2_ClickedId = -1;
+        while (sv_RunFrame((int)ai_ChangeProfessionWindow, 0x657c7) != 0) {
+            if (dm_L.rup)
+                sv_PopRequest = 1;
+            if (dm_L.lclick && d2_PointerObj != -1) {
+                if (he_FindEvent(2, 2, ai_PlayerId, 0, 0x26) != 0) {
+                    txt_Format(caption, 0x15bd, ai_PlayerId,
+                               (lc_CharRecs[ai_PlayerId].sex ? 0x18f : 0x130) + lc_CharRecs[ai_PlayerId].jobId - 1);
+                    sv_MessageBox(caption, 4);
+                } else {
+                    d2_EnableViewObjects(win, 0);
+                    for (i = 0; i <= 15; i++)
+                        if (d2_ClickedId == i + 0x5a2)
+                            break;
+                    if (i <= 15) {
+                        job = gm_TitleJob(me->id, i + 1);
+                        cost = job != 0 ? -4 : -8;
+                        if (job != me->jobId && sv_CheckMoney(me, -cost) != 0) {
+                            for (i = 0; i <= 15; i++) {
+                                if (d2_ClickedId == i + 0x5a2) {
+                                    group = i + 1;
+                                    job = gm_TitleJob(me->id, group);
+                                    if (job == 0)
+                                        job = gm_TitleNumber(group, 1);
+                                    txt_Format(text, 0x1d37, -cost, job + base);
+                                    if (sv_MessageBox(text, 1) != 0) {
+                                        cm_SendSetJob(me->netId, job);
+                                        cm_SendMoneyDelta(me->netId, cost);
+                                        sv_PopRequest = 1;
+                                        ret = 0x10;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    d2_EnableViewObjects(win, 1);
+                }
+            }
+        }
+        d2_CloseView(win);
+        ai_CampaignStep(9, 0, 1, 0);
+        return ret;
+    }
     return 0;
 }
 /* 0x5cd8c0, the spy-slot handler (713 B, ROUGH SKELETON: no Ghidra export; from the disassembly):

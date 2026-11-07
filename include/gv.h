@@ -549,7 +549,7 @@ unsigned ord_ApplyForOffice(ORDCHAR *c, int *m);  /* 0x4f4e20 */
 char * he_NextEvent(void);                   /* 0x53e300 */
 
 int ord_LevelOrder(char *c, int *m);     /* 0x4f4f20 */
-int ord_EspionageResultOrder(char *c, int *m);     /* 0x4f4ff0 */
+int ord_ChangeProfessionOrder(char *c, int *m);     /* 0x4f4ff0 */
 int ord_PrivilegeDialog(char *text, int mode, int arg);  /* 0x4f8200, the privilege dialog */
 
 int gv_SetTableRecord(struct AICHAR *c, int i, int v);  /* 0x4f2750 */
