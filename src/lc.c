@@ -46,14 +46,16 @@
    Open: data: 0x6f2314 sv_LastRoom, owner sv or f3gm (between sv's sv_PanelShown and f3gm's ai_PermsDirty; only
    ai_EnterBuilding writes it), named in main.c's gap block.
    Open: data: 0x6f3840 ai_InvSlots (the inventory child window's six LCINVSLOT rows) is a view of main.c's
-   full_data_6f3680 and 0x6f2f64 ai_TransportEscort one of full_data_6f2f64; their owner (this unit, the only
-   reader and writer, or main) is not settled. The transport window's cart rows are LCCARTROW, the inventory
-   window's character ai_InvChar (0x6f2f60, after ai_NewsSecond).
+   full_data_6f3680, and 0x6f2f64 ai_TransportEscort, 0x6f2f68 lc_ReserveTime and 0x6f2f78 lc_ReserveCursor
+   (the Domizil goods' clock) are views of full_data_6f2f64; their owner (this unit, the only reader and writer, or
+   main) is not settled. The transport window's cart rows are LCCARTROW, the inventory window's character
+   ai_InvChar (0x6f2f60, after ai_NewsSecond), its objects G8INVOBJ (a view of AIOBJ: its union does not reach the
+   use stamp at +0x2d).
    Open: data: 0x62a56c ai_FmtLabel ("%s:", ai_TechEffectsWindow's captions) is a view of main.c's full_data_62a56c;
    its owner (sv_t declares it too) is not settled.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
-   ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h
+   ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rt.h
    hmt.h mission.h menu.h vfs.h; held by own declarations that differ from the owner's: ai_Time,
    d3sm_GetVertex, d2_CreateWinText, AIBLD, AIBTYPE, cm_SendExSetHE, d3sm_Pick; calls whose argument count differs from
    the definition (read the original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText,
