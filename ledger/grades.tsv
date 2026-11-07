@@ -4004,7 +4004,7 @@ exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
 exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4125,10 +4125,10 @@ exe	0x0058c680	ai_UpdateResourceColumns	lc	draft	readable	deep
 exe	0x0058cc10	ai_UpdateProdColumns	lc	draft	readable	deep	
 exe	0x0058d720	ai_UpdateProdGoodsList	lc	draft	readable	deep	
 exe	0x0058dd00	ai_LayoutProdGoodsList	lc	byte	readable		
-exe	0x0058e130	ai_Unk58e130	lc	draft	draft	deep	
-exe	0x0058e440	ai_Unk58e440	lc	draft	draft	deep	
+exe	0x0058e130	ai_UpdateMarketGoodsList	lc	draft	draft	deep	
+exe	0x0058e440	ai_LayoutMarketGoodsList	lc	draft	draft	deep	
 exe	0x0058e6a0	ai_ShowProdSlot	lc	draft	readable	deep	
-exe	0x0058ee30	ai_Unk58ee30	lc	draft	draft	deep	
+exe	0x0058ee30	ai_UpdateStoreGoods	lc	draft	draft	deep	
 exe	0x0058f290	ai_LayoutStoreGoods	lc	byte	readable		
 exe	0x0058f510	ai_MarketContact	lc	byte	readable		
 exe	0x0058f620	ai_PumpFrames	lc	byte	readable		
@@ -4382,19 +4382,19 @@ exe	0x005ad000	ai_AskHelperBonus	lc	shape	readable
 exe	0x005ad150	ai_HelperBook	lc	draft	readable	deep	
 exe	0x005ae240	ai_BuyCartWindow	lc	shape	readable		
 exe	0x005ae570	ai_SellCarts	lc	byte	readable		
-exe	0x005ae6b0	ai_Unk5ae6b0	lc	draft	draft		
+exe	0x005ae6b0	ai_SendTransportOrder	lc	byte	readable		
 exe	0x005ae870	ai_TransportOrderDue	lc	byte	readable		
 exe	0x005ae8e0	ai_CartAtBuilding	lc	shape	readable		
-exe	0x005ae9a0	ai_Unk5ae9a0	lc	draft	draft		
-exe	0x005af010	ai_Unk5af010	lc	draft	draft		
+exe	0x005ae9a0	ai_TransportFromLager	lc	shape	readable		
+exe	0x005af010	ai_TransportGoodsTotal	lc	draft	readable	deep	
 exe	0x005af1a0	ai_OpenTransport	lc	byte	readable		
 exe	0x005af1b0	ai_OpenTransportSell	lc	byte	readable		
 exe	0x005af1c0	ai_OpenTransportBuy	lc	byte	readable		
-exe	0x005af1d0	ai_TransportWindow	lc	draft	draft		
-exe	0x005b2090	ai_Unk5b2090	lc	draft	draft		
-exe	0x005b2180	ai_MapPick	lc	draft	draft		
-exe	0x005b2530	ai_Unk5b2530	lc	draft	draft		
-exe	0x005b26b0	ai_StorageWindow	lc	draft	draft		
+exe	0x005af1d0	ai_TransportWindow	lc	draft	readable	deep	
+exe	0x005b2090	ai_LoadTownMap	lc	shape	readable		
+exe	0x005b2180	ai_MapPick	lc	byte	readable		
+exe	0x005b2530	ai_NewStorageSlotWindow	lc	shape	readable		
+exe	0x005b26b0	ai_StorageWindow	lc	draft	readable	deep	
 exe	0x005b3130	ai_FiveTextWindow	lc	draft	draft		
 exe	0x005b3630	ai_SabotageCallback	lc	draft	draft		
 exe	0x005b3ad0	ai_EspionageAmountCB	lc	draft	draft		
@@ -4425,8 +4425,8 @@ exe	0x005b92e0	ai_LiquidateAssets	lc	draft	draft
 exe	0x005b9730	ai_Kind1eWindow	lc	draft	draft		
 exe	0x005b9db0	ai_PickedObjectWindow	lc	draft	draft		
 exe	0x005b9f30	ai_GelageWindow	lc	draft	draft		
-exe	0x005ba1c0	ai_Unk5ba1c0	lc	draft	draft		
-exe	0x005ba290	ai_Unk5ba290	lc	draft	draft		
+exe	0x005ba1c0	ai_OpenInventoryWindow	lc	draft	draft		
+exe	0x005ba290	ai_UpdateInventoryWindow	lc	draft	draft		
 exe	0x005ba600	ai_CloseChildWindow	lc	byte	readable		
 exe	0x005ba620	ai_FindUsableGood	lc	byte	readable		
 exe	0x005ba660	ai_FindUsableGoodIndex	lc	byte	readable		
