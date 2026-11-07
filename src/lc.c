@@ -25824,27 +25824,45 @@ int ai_AmountPageSwitch(int view, int page, int scrollPage)
     }
     return saved;
 }
-/* 0x5bff80, enables the slider (row +8, the object of d2_WinOpenSlider that ai_AmountRow makes) of every one
-   of the count rows of 0x38 bytes (0xe dwords) of a special-amount row list */
+/* 0x5bff80, enables the slider (LCAMOUNTROW.ctl[1], the object of d2_WinOpenSlider that ai_AmountRow makes) of
+   every one of the count rows of a special-amount row list */
 
-void ai_EnableAmountRows(int count, int *rows)
+void ai_EnableAmountRows(int count, LCAMOUNTROW *rows)
 {
     for (; count > 0; count--) {
-        d2_SetObjEnabled(rows[2], 1);
-        rows += 0xe;
+        d2_SetObjEnabled(rows->ctl[1], 1);
+        rows++;
     }
 }
-/* 0x5bffb0, a tab fill of the special-amount window (249 B, ROUGH SKELETON): with the count param_4 set, the
-   page switch 0x5bfed0 (param_1, param_2, param_3) and the rows of the page; only reached through the fill
-   table 0x62d154 */
+/* 0x5bffb0, the rows of the special-amount window's family tab (tab 0, 249 B): with n rows, switches to the page
+   (ai_AmountPageSwitch view, page, scrollPage), centres the caption txt_Ptrs[0x1690] at the top and draws each
+   row (ai_AmountRow at 0x4b, 0x28 + 0x70 per row, titled) with its relation text txt_Ptrs[0x1691 + x2c] right
+   aligned beside it; enables the rows' sliders, restores the page's scroll offset and sets its scroll step 0x70;
+   returns 1 (0 without rows) */
 
-int ai_Unk5bffb0(int param_1, int param_2, int param_3, int param_4)
+int ai_ShowFamilyTab(int view, int page, int scrollPage, unsigned int n, LCAMOUNTROW *rows)
 {
-    if (param_4 == 0)
+    unsigned int i;
+    int half;
+    int y;
+    int saved;
+
+    if (n == 0)
         return 0;
-    ai_AmountPageSwitch(param_1, param_2, param_3);
-    /* ROUGH SKELETON: the rows of the page */
-    return 0;
+    saved = ai_AmountPageSwitch(view, page, scrollPage);
+    half = d2_Wins[d2_LastWindow].w / 2;
+    ai_CentredText(txt_Ptrs[0x1690], half, 8, half * 2, 0x55);
+    for (i = 0; i < n; i++) {
+        y = 0x28 + i * 0x70;
+        rows[i].x = 0x4b;
+        rows[i].y = y;
+        ai_AmountRow(0x4b, y, d2_LastWindow, 0x56, &rows[i], 1);
+        ai_RightAlignedText(txt_Ptrs[0x1691 + rows[i].x2c], 0x14a, y + 0x1e, 0xc8, 0x55);
+    }
+    ai_EnableAmountRows(n, rows);
+    d2_Wins[d2_LastWindow].scrollY = saved;
+    d2_Wins[d2_LastWindow].visible = 0x70;
+    return 1;
 }
 /* 0x5c00b0, a tab fill of the special-amount window (259 B, ROUGH SKELETON): as 0x5bffb0, the page switch
    0x5bfed0 (param_1, param_2, param_3) and the rows */
@@ -32582,7 +32600,7 @@ char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the so
 int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_OpenInventoryWindow creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
-    { 0, 0, -1, ai_FillFamilyTab, ai_Unk5bffb0 },
+    { 0, 0, -1, ai_FillFamilyTab, ai_ShowFamilyTab },
     { 1, 0, -1, ai_FillFriendsTab, ai_Unk5c00b0 },
     { 2, 0, -1, ai_FillEnemiesTab, ai_Unk5c01c0 },
     { 3, 0, -1, ai_FillLoversTab, ai_Unk5c02d0 },
