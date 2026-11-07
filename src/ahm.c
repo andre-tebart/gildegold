@@ -424,13 +424,13 @@ int ahm_LoadIni(void)
             goto fail;
         for (i = 0; i < ai_PlayerPrototypeCount; i++) {
             sprintf(sec, "PLR_%li", i);
-            GetPrivateProfileStringA(sec, "ATTR0", "0", buf, 0x100, ini);
+            GetPrivateProfileStringA(sec, "ATTR0", "42", buf, 0x100, ini);
             ai_PlayerPrototypes[i].plr.attr[0] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR1", "0", buf, 0x100, ini);
+            GetPrivateProfileStringA(sec, "ATTR1", "42", buf, 0x100, ini);
             ai_PlayerPrototypes[i].plr.attr[1] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR2", "0", buf, 0x100, ini);
+            GetPrivateProfileStringA(sec, "ATTR2", "42", buf, 0x100, ini);
             ai_PlayerPrototypes[i].plr.attr[2] = ahm_ClampAttr(buf);
-            GetPrivateProfileStringA(sec, "ATTR3", "0", buf, 0x100, ini);
+            GetPrivateProfileStringA(sec, "ATTR3", "42", buf, 0x100, ini);
             ai_PlayerPrototypes[i].plr.attr[3] = ahm_ClampAttr(buf);
             GetPrivateProfileStringA(sec, "ATTR4", "20", buf, 0x100, ini);
             p = (char *)(long)atoi(buf);
@@ -454,9 +454,9 @@ int ahm_LoadIni(void)
             if (ai_RecipePrototypes != 0) {
                 for (i = 0; i < ai_RecipePrototypeCount; i++) {
                     sprintf(sec, "RCP_%li", i);
-                    GetPrivateProfileStringA(sec, "ATTR0", "25", buf, 0x100, ini);
+                    GetPrivateProfileStringA(sec, "ATTR0", "50", buf, 0x100, ini);
                     ai_RecipePrototypes[i].rcp.a = ahm_ClampShare(buf);
-                    GetPrivateProfileStringA(sec, "ATTR1", "50", buf, 0x100, ini);
+                    GetPrivateProfileStringA(sec, "ATTR1", "25", buf, 0x100, ini);
                     ai_RecipePrototypes[i].rcp.b = ahm_ClampShare(buf);
                     GetPrivateProfileStringA(sec, "RCPID", "ob_NULL", buf, 0x100, ini);
                     ai_RecipePrototypes[i].rcp.id = ahm_ObjectId(buf);

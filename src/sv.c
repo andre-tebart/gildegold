@@ -3266,7 +3266,7 @@ void sv_ColourBanners(int c)
 }
 /* 0x528490, the chimney smoke of the building b (not of kind 7, with a model): when its first worker (a living character
    of job kind 4 in b, not of kind 10) has no job or a job without argc8, and the hour lies inside the season's day hours
-   (gm_DayStartHours .. gm_DayEndHours), the smoke effect "effekte\Schornstein_dunkel_esc" is started at the model's
+   (gm_DayStartHours .. gm_DayEndHours), the smoke effect "effekte\Schornstein_dunkel.esc" is started at the model's
    "dummy_RAUCH_0" dummy (in scene 0) unless one runs; its id is kept in b->smokeEffect and its group cleared. Otherwise a
    running smoke effect is stopped and b->smokeEffect set to -1
    @deep read whole against 0x528490..0x52865c and rewritten typed (AIBLD.smokeEffect 0x95, AIJOB.argc8,
@@ -3302,7 +3302,7 @@ void sv_UpdateChimneySmoke(AIBLD *b)
                     scene = d3_CurrentScene;
                     d3if_SelectScene(0, 1);
                     d = d3_FindObject((int)b->object, 0x100, 0, "dummy_RAUCH_0");
-                    if (d != 0 && (e = evt_Load("effekte\\Schornstein_dunkel_esc")) != 0) {
+                    if (d != 0 && (e = evt_Load("effekte\\Schornstein_dunkel.esc")) != 0) {
                         d3_PointToWorld(d, &d->pos, (D3VECTOR *)&pos);
                         if (evt_RunScriptArgs(e, 3, (int)pos.x, (int)pos.y, (int)pos.z) != 0)
                             b->smokeEffect = e->id;
