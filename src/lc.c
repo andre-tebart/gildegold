@@ -33851,13 +33851,34 @@ int ai_UseGoodTributeClaim(AICHARREC *ch)
     }
     return 1;
 }
-/* 0x5d18c0, an action callback of the record table 0x62c420 (record 50 at 0x62c998, the text id 0x2b8,
-   208 B): type 6 takes the character from the 0x5c1130 menu, other types from 0x505df0 (param_2 + 4),
-   the text 0x5176d0 and 0x4c4a60. Frame 0x150. */
+/* 0x5d18c0, the use callback of the Domizil good 0x2b8 (the +0x14 pointer of the table entry 0x62c998): picks the
+   target character, for a player (kind 6) with the special-amount menu (the gypsy filter, mode 0x400, the
+   prompt 0x9c), else the character use->target (gm_FindChar); none -> 0. Sets the bit 0x100000 of the
+   target's flags1cc (cm_SendSetField): the next round start (main_RundenBeginn) charges it 3 action points
+   (the AP event 0xf18) unless it holds the good 0x2c4, and clears the bit. Returns 1. */
 
-int ai_Unk5d18c0(void)
+int ai_UseGoodDrainActionPoints(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AMOUNTCFG cfg;
+    char text[0x100];
+    AICHARREC *target;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+    }
+    if (target == 0)
+        return 0;
+    cm_SendSetField(target->netId, 0x1cc, 4, 0x100000, 0);
+    return 1;
 }
 /* 0x5d1990, an action callback of the record table 0x62c420 (record 53 at 0x62c9ec, the text id 0x2bb,
    416 B): the character (0x5c1130 menu / 0x505df0), a 0x505ca0 (5) pick, 0x4c6020, the texts 0x5176d0,
