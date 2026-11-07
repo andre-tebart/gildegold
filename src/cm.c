@@ -9851,11 +9851,11 @@ int cm_CheckDeath(AICHAR *c)
 }
 
 #define G19_FIGHTER_SYNC(ch)                                                          \
-    r = cm_CharWeaponItem(ch);                                                             \
+    r = (AIOBJ *)cm_CharWeaponItem((char *)(ch));                                          \
     if (r != 0) {                                                                     \
         vv = -1;                                                                      \
-        cm_BeginFieldBlock(r, *(int *)(r + 2));                                             \
-        cm_AddFieldValues(4, 1, (unsigned short)(r - cm_FieldObject + 0x20), &vv);           \
+        cm_BeginFieldBlock((char *)r, r->objId);                                            \
+        cm_AddFieldValues(4, 1, (unsigned short)((char *)&r->usesLeft - cm_FieldObject), &vv); \
         cm_SendFieldDeltas();                                                               \
     }
 
@@ -9956,14 +9956,15 @@ void cm_HitAction(CHACTION *a)
 
 void cm_LayBombAction(char *ev)
 {
-    char *att = *(char **)(ev + 0x180);
-    char *k, *r;
+    AICHAR *att = ((CHACTION *)ev)->pot.thrower;
+    AIWEAPON *k;
+    AIOBJ *r;
     int vv;
 
-    k = cm_CharWeapon(att);
-    cm_LayBomb(*(char **)(*(char **)(att + 0x184) + 0x34) + 0x4c);
+    k = (AIWEAPON *)cm_CharWeapon((char *)att);
+    cm_LayBomb(&att->scene->obj->pos);
     sb_PlaySampleI(cm_BombSounds, "ZuendschnurBrennt_l_01", 3, 0x3f, 0x7f, 0, 0);
-    if (*(int *)(cm_CutChar + 4) == cm_FightOwner && (*(int *)(k + 0x58) == 1 || *(int *)(k + 0x58) == 2)) {
+    if (((AICHAR *)cm_CutChar)->netId == cm_FightOwner && (k->kind == 1 || k->kind == 2)) {
         G19_FIGHTER_SYNC(att);
     }
 }
@@ -9972,7 +9973,7 @@ void cm_LayBombAction(char *ev)
 void cm_ThrowBombAction(char *ev)
 {
     char *att = *(char **)(ev + 0x17c);
-    char *r;
+    AIOBJ *r;
     int vv;
 
     if (*(int *)(cm_CutChar + 4) == cm_FightOwner) {
