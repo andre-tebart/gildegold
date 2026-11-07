@@ -205,14 +205,17 @@ void d2_SetObjValue();                                     /* 0x475cb0, d2.h (K&
 #define d2_SetObjValue5 ((void (*)(int, int, int, int, int))d2_SetObjValue) /* the 5-argument call of the gypsy windows */
 typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special-amount menu ai_AmountMenu (lc.c) */
     int flags;                          /* +0x00, 1 / 0x20400 / 0x2040a .. (the gypsy windows: 1) */
-    int mode;                           /* +0x04, 0x400 */
+    int mode;                           /* +0x04, 0x400: the partner filter bits (lc.c ai_PassesPartnerFilter) */
     unsigned __int64 filter;            /* +0x08, 0x1a7fdfbb6 (the gypsy windows), 0x1a07c43a0 (the sabotage) */
     int kind;                           /* +0x10, 6 */
     int option14;                       /* +0x14, 2 in the blood revenge window (meaning not derived) */
     int lockSecond;                     /* +0x18, nonzero: ai_AmountMenu leaves its second button (picture 0x599)
                                            without input (ai_GuildLevel3Entry sets it) */
     unsigned short ids[16];             /* +0x1c, the character ids the menu leaves out / lists, 0xffff = none */
-    char pad3c[0x10];
+    char pad3c[4];
+    int liking;                         /* +0x40, nonzero: ai_PassesPartnerFilter wants the liking in [likingMin, likingMax] */
+    float likingMin;                    /* +0x44 */
+    float likingMax;                    /* +0x48 */
     int option4c;                       /* +0x4c, 0x727 (the sabotage menu, the graveyard's fog target pick), 0x71f
                                            (ai_HandleMapKey's pick; meaning not derived) */
 } AMOUNTCFG;
