@@ -7277,7 +7277,8 @@ int ai_DuelAct(); void ai_DuelNextPhase(); int ai_DuelOpponentAction(); int ai_D
 typedef struct LCFIN {                  /* what gm_PlayerRecord finds for a character (ai.h AIFIN; ai.h cannot be included here yet) */
     char pad00[0x28];
     int spyPaid;                        /* 0x28, AIFIN.spyPaid: the money paid to spies and bribed characters (ai_BribeAmountCB) */
-    char pad2c[0x1c];
+    char pad2c[0x18];
+    int renovationSpent;                /* 0x44, AIFIN.renovationSpent: the money paid for renovations (ai_RenovationWindow) */
     int loansRepaid;                    /* 0x48, AIFIN.loansRepaid: the loan sums paid back at a money lender (ai_RepayLoan) */
     char pad4c[4];
     int cartSpent;                      /* 0x50, AIFIN.cartSpent: the money paid for new carts (ai_BuyCartWindow) */
@@ -21326,18 +21327,124 @@ void ai_SellBuildingWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_SellBuildingWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b6b20, a window over a record (902 B, ROUGH SKELETON): param_1 read at +1, 0x509b10 (the record, 0x64)
-   first, a 0x11c-byte frame; the body is a comment */
+/* 0x5b6b20, the renovation window "Panel\Gebaeude_Renovieren" (ai_BuildingWindow, ai_ManagedBuildingWindow): a
+   building at its full level 100 gets the note txt_Ptrs[0x17ca]. Else a level point costs 0.5 % of the
+   building's equipment value, at least 128; the text 0x17c8 offers a quarter, half or all of the missing points
+   (the three buttons, their costs) and a fourth button closes. A pick sends the renovation message 0x1c (from
+   -1, flags 1, arg[0] the building, arg[1] the points) in the group "renovieren" with the payment: from the
+   building's class treasury when it is the player character's (sv_CheckStock), else from the player's own
+   money (sv_CheckGoodAmount, counted in the player record's renovationSpent). A right click, the building gone
+   or no longer enterable (flags5aw 0x400) close it
+   @deep Reconstructed whole against the original 0x5b6b20..0x5b6ea5 (the full-level note txt_Ptrs[0x17ca],
+   0.5 % of gm_EquipmentValue per point clamped to 128 (perPoint kept on the FPU across the early return,
+   as the original), the text 0x17c8 with the quarter / half / all costs, the four buttons, the found /
+   flags5aw 0x400 / right-click closes, the message 0x1c with arg[0] the building and arg[1] the points,
+   the treasury payment through gm_ClassTreasury + sv_CheckStock or the player's through sv_CheckGoodAmount
+   + LCFIN.renovationSpent, cm_BeginGroup / cm_EndGroup renovieren). Left is allocation and tail merging:
+   ours caches -1 in eax for the d2_ClickedId test and msg.fromId (or eax,-1; cmp ecx,eax; mov
+   [esp+0x40],eax at +0x16b..+0x1b3) where the original compares with the immediate and stores 0xffffffff;
+   the original reloads bld into ebp at the loop top (jmp over 'mov ebp,[esp+0x130]' on entry), ours holds
+   it elsewhere; the two cm_SendMoveGoods calls: the original keeps one per payment branch (their &msg
+   pushes take ecx / eax), ours cross-jumps them into one 'push -1; call cm_SendMoveGoods' tail (calls: x1
+   vs x2, the same arguments per path) --divergence: the call count differs only by that merge */
 
-int ai_Unk5b6b20(int param_1)
+void ai_RenovationWindow(AIBLD *bld)
 {
-    int rec;
+    int bldId;
+    int missing;
+    float perPoint;
+    float total;
+    int win;
+    int text;
+    int costAll;
+    int costHalf;
+    int costQuarter;
+    int btnQuarter;
+    int btnHalf;
+    int btnAll;
+    int btnClose;
+    int cost;
+    int points;
+    AIBLD *found;
+    AIROOM *treasury;
+    LCFIN *fin;
+    AIMSG msg;
 
-    rec = U_I(param_1 + 1);
-    gm_EquipmentValue(param_1, 0x64);
-    /* ROUGH SKELETON: the 0x11c-byte frame */
-    (void)rec;
-    return 0;
+    bldId = bld->id;
+    perPoint = (float)gm_EquipmentValue(bld, 100);
+    missing = 100 - bld->level;
+    if (missing <= 0) {
+        sv_MessageBox(txt_Ptrs[0x17ca], 4);
+        return;
+    }
+    perPoint *= 0.005f;
+    if (128.0f > perPoint)
+        perPoint = 128.0f;
+    win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Renovieren");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 2);
+    total = missing * perPoint;
+    costAll = (int)total;
+    costHalf = (int)(total * 0.5);
+    costQuarter = (int)(total * 0.25);
+    text = io_PrintText(0x17c8, bld, costQuarter, costHalf, costAll);
+    btnQuarter = d2_GetWinObj(win, 2, text);
+    btnHalf = d2_GetWinObj(win, 2, text + 1);
+    btnAll = d2_GetWinObj(win, 2, text + 2);
+    btnClose = d2_GetWinObj(win, 2, text + 3);
+    d2_SetPointerSprite(0, 0);
+    sv_RunFrame(0, 0x677c7);
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == btnQuarter || d2_PointerObj == btnHalf || d2_PointerObj == btnAll) {
+                cost = 0;
+                points = 0;
+                msg.type = 0x1c;
+                msg.fromId = -1;
+                msg.flags = 1;
+                msg.to = ai_CharInts[ai_PlayerId][0];
+                msg.arg[0] = bld->id;
+                if (d2_PointerObj == btnQuarter) {
+                    points = (int)(missing * 0.25);
+                    cost = costQuarter;
+                } else if (d2_PointerObj == btnHalf) {
+                    points = (int)(missing * 0.5);
+                    cost = costHalf;
+                } else if (d2_PointerObj == btnAll) {
+                    points = missing;
+                    cost = costAll;
+                }
+                if (bld->owner == *ai_PlayerChar) {
+                    treasury = (AIROOM *)gm_ClassTreasury(bld);
+                    if (treasury == 0 || sv_CheckStockB(treasury, treasury->list, cost, ai_OwnPlayer) == 0)
+                        continue;
+                    msg.arg[1] = points;
+                    cm_BeginGroup("renovieren");
+                    cm_SendMoveGoods(-1, treasury->objId, ai_OwnPlayer, cost);
+                } else {
+                    if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) == 0)
+                        continue;
+                    fin = (LCFIN *)gm_PlayerRecord(ai_Chars[ai_PlayerId]);
+                    if (fin != 0)
+                        fin->renovationSpent += cost;
+                    msg.arg[1] = points;
+                    cm_BeginGroup("renovieren");
+                    cm_SendMoveGoods(-1, ai_CharInts[ai_PlayerId][0], ai_OwnPlayer, cost);
+                }
+                cm_SendLongMessage((char *)&msg);
+                cm_EndGroup("renovieren");
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == btnClose) {
+                sv_PopRequest = 1;
+            }
+        }
+    } while (sv_RunFrame((int)ai_RenovationWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b6eb0, a carrier walk window (304 B, ROUGH SKELETON): param_1, the walk 0x53e400 (0, 0x1b) style loop, a
    0x1b flag; the body is a comment */
