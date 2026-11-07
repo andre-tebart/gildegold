@@ -579,7 +579,7 @@ int ord_MedicusOrder(char *c, int *m);     /* 0x4f5070 */
 int ord_SpyTargetOrder(char *c, int *m);     /* 0x4f50f0 */
 
 int ord_BlackmailBuildingOrder(char *c, int *m);     /* 0x4f5190 */
-int ord_BlackmailContactVariantOrder(char *c, int *m);     /* 0x4f52e0 */
+int ord_IntimidateOrder(char *c, int *m);     /* 0x4f52e0 */
 int ord_BlackmailContactOrder(char *c, int *m);     /* 0x4f5350 */
 int ord_EmbezzlementOrder(char *c, int *m);     /* 0x4f5c30 */
 int ord_LawOrder(char *c, int *m);     /* 0x4f5d50 */

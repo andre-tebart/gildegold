@@ -30263,49 +30263,47 @@ int ai_IntimidateWindow(AICHARREC *ch)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5c9ff0, the blackmail contact variant (342 B): param_1 is the message record (AIMSG: +2 the type, +4
-   the handle), param_2 the building (+0x214 the target id). Types 6 / 7: the request record local_188 (20
-   dwords, +4 = 0x400, +0x10 = 6, +8 = 0xa7fdfbb6, +0xc = 1) with the text 0x5176d0 (0x1d61) through the
-   window 0x5c1130 (record, text, 0, the callback 0x5c9df0); returns whether the window opened. Other types:
-   the target 0x505df0 (none -> 0x60), the close 0x4c5f60 (-2) and the message record (kind byte 0x4b /
-   type 2, the clock 0x770ae0 .., the handle, the target handle) sent by 0x4c4b70, return 0x10. */
+/* 0x5c9ff0, the intimidation order's ask (ord_IntimidateOrder, kind 3) for the character me with the order message
+   m. Of another kind than 6 / 7 (the AI): no character m->target: 0x60; else me pays 2 and sends the message 0x4b
+   to it as ai_IntimidateWindow does: 0x10. A player picks the victim in the amount menu (mode 0x400, kind 6, the
+   gypsy filter, the caption 0x1d61) with ai_IntimidateWindow as its pick callback: 1 when one was picked, else 0 */
 
-unsigned char ai_BlackmailContactVariant(int param_1, int param_2)  /* @original: the callers push (c, m) (0x4f52e0); the body reads byte offsets of the int params, which the draft keeps */
+int ai_IntimidateContact(AICHARREC *me, LCORDMSG *m)
 {
-    int rec[0x3e];
-    int cfg[20];
-    char text[64];
-    int i;
-    int target;
+    int ret;
+    AICHARREC *victim;
 
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7) {
-        target = (int)gm_FindChar(*(int *)(param_2 + 0x214));
-        if (target == 0)
+    ret = 0;
+    if (me->kind != 6 && me->kind != 7) {
+        AIMSG msg;
+
+        victim = (AICHARREC *)gm_FindChar(m->target);
+        if (victim == 0)
             return 0x60;
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffe);
-        for (i = 0; i < 0x3e; i++)
-            rec[i] = 0;
-        *(char *)((char *)rec + 4) = 0x4b;
-        rec[2] = *(int *)(param_1 + 4);
-        rec[3] = *(int *)(param_1 + 4);
-        rec[0x16] = *(int *)(param_1 + 4);
-        rec[10] = *(int *)(unsigned)&ai_Time;
-        rec[11] = *(int *)(unsigned)&ai_Time.hour;
-        rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
-        *(short *)((char *)rec + 0x34) = *(short *)((unsigned)&ai_Time + 0xc);
-        *(char *)((char *)rec + 0x36) = 2;
-        rec[0x17] = *(int *)(target + 4);
-        cm_SendLongMessage(rec);
+        cm_SendMoneyDelta(me->netId, -2);
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0x4b;
+        msg.to = me->netId;
+        msg.fromId = me->netId;
+        msg.flags = 2;
+        msg.time = ai_Time;
+        msg.arg[1] = victim->netId;
+        msg.arg[0] = me->netId;
+        cm_SendLongMessage((char *)&msg);
         return 0x10;
+    } else {
+        AMOUNTCFG cfg;
+        char text[0x40];
+
+        memset(&cfg, 0, sizeof(cfg));
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        txt_Format(text, 0x1d61);
+        if (ai_AmountMenu(&cfg, text, 0, ai_IntimidateWindow) != 0)
+            ret = 1;
     }
-    for (i = 0; i < 20; i++)
-        cfg[i] = 0;
-    cfg[1] = 0x400;
-    cfg[4] = 6;
-    cfg[2] = 0xa7fdfbb6;
-    cfg[3] = 1;
-    txt_Format(text, (char *)0x1d61);
-    return ai_AmountMenu(cfg, text, 0, (void *)ai_IntimidateWindow) != 0;
+    return ret;
 }
 
 int gv_SetTableRecord(struct AICHAR *c, int i, int v);   /* 0x4f2750 */

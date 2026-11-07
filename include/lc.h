@@ -276,7 +276,7 @@ unsigned char *ai_FindItemGroup(char *good);  /* 0x5a84d0, the item group (am_ty
 void ai_GypsyDeliveryText(void *from, int n, void **to);  /* 0x5a9470, the gypsys' delivery news of the sender from (a character) about its n targets to */
 struct AICHARREC; struct LCORDMSG; int ai_BlackmailBuildingListener(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5c9550 */
 struct AICHARREC; struct LCORDMSG; int ai_BlackmailContact(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5c9c50 */
-unsigned char ai_BlackmailContactVariant(int param_1, int param_2);  /* 0x5c9ff0 */
+struct AICHARREC; struct LCORDMSG; int ai_IntimidateContact(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5c9ff0 */
 int ai_CounterEspionage(int param_1, int *m);  /* 0x5cae00 */
 int ai_CounterEspionageWindow(int *param_1, int param_2);  /* 0x5cb250 */
 int ai_AmountLimit(int param_1, int param_2, int param_3, int *param_4);  /* 0x5bd060 */
