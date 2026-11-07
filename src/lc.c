@@ -30613,70 +30613,60 @@ int ai_MisappropriationWindow(AICHARREC *me, LCORDMSG *m)
     }
     return ret;
 }
-/* 0x5caab0, the bewitch window "privillegien\becircen" 0x62d554 (544 B, a Ghidra-missed start: reached only
-   as the callback of 0x5cacd0's menu 0x5c1130): param_1 is the message record (the AIMSG: +0 the id, +9 the
-   flag). The player's character (0x770b80 + U_W(0x6f25b8) * 0x21c) byte +9 against the record's +9 first:
-   equal shows the text 0x5176d0 (0x1db1 and 0x1db3 when the byte is set, else 0x1db2) and returns 0.
-   Otherwise the window 0x4741f0 / 0x476f80 / 0x475600 / 0x475f70 with the text 0x515960 (0x1db4, the id
-   twice), the button 0x475b80 and the slider 0x475cb0 (1, 5, 1); a click (0x475980 and 0x520f90 of the
-   character with the value) pays 0x494d40 (the character, the record, the value), closes 0x4c5f60 (-the
-   value), sends 0x4c4b00 (the handle, the character +4, the payment, 1), shows 0x5176d0 (0x1db5, the id
-   twice) / 0x521150 and sets 0x6f22a0 = 4, return 1; the second click sets 2. The pump 0x5309a0 (this,
-   0x657c7) and the end 0x4758f0. ROUGH: the record by offset. */
+/* 0x5caab0, the bewitch window "privillegien\becircen" (the amount menu callback of 0x5cacd0, with the picked
+   character ch). A ch of the player's own sex gets the text 0x1db1 (with 0x1db3 for a woman, 0x1db2 for a man)
+   and 0. Else the window with the text 0x1db4 (ch twice) and a slider 1 .. 5; its first button, when the player
+   has the slider's amount (sv_CheckMoney), pays it for ch's relation (ai_RelationGain), takes it from the
+   player (cm_SendMoneyDelta), sends the relation change to ch (cm_SendRelations), tells it (0x1db5, ch twice)
+   and closes with 1; the second button or a right click close it. Returns 1 once ch was bewitched, else 0 */
 
-int ai_Unk5caab0(int param_1)
+int ai_BewitchWindow(AICHARREC *ch)
 {
-    char text[256];
-    unsigned short *chr;
+    char text[0x100];
     int win;
-    int btn;
-    int v;
-    int r;
-    int ret;
+    int slider;
+    int amount;
+    int gain;
+    int done;
 
-    chr = (unsigned short *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c);
-    if (*(char *)((char *)chr + 9) == *(char *)(param_1 + 9)) {
-        if (*(char *)((char *)chr + 9) != 0)
-            txt_Format(text, (char *)0x1db1, 0x1db3);
+    done = 0;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == ch->sex) {
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].sex == 0)
+            txt_Format(text, 0x1db1, 0x1db2);
         else
-            txt_Format(text, (char *)0x1db1, 0x1db2);
+            txt_Format(text, 0x1db1, 0x1db3);
         sv_MessageBox(text, 0);
         return 0;
     }
-    ret = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d554);
+    win = d2_OpenForm(0, 0, "privillegien\\becircen");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    btn = d2_GetWinObj(win, 1, io_PrintText(0x1db4, *(unsigned short *)param_1,
-                                            *(unsigned short *)param_1));
-    d2_SetObjValue(btn, 1, 5, 1);
-    *(int *)(unsigned)&d2_ClickedId = -1;
+    slider = d2_GetWinObj(win, 1, io_PrintText(0x1db4, ch->id, ch->id));
+    d2_SetObjValue(slider, 1, 5, 1);
+    d2_ClickedId = -1;
     do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                v = d2_GetObjValue(btn);
-                if (sv_CheckMoney(chr, v) != 0) {
-                    r = ai_RelationGain(chr, (void *)param_1, v);
-                    cm_SendMoneyDelta(U_I((char *)chr + 4), -v);
-                    cm_SendRelations(*(int *)(param_1 + 4), U_I((char *)chr + 4), r, 1);
-                    txt_Format(text, (char *)0x1db5, *(unsigned short *)param_1,
-                                 *(unsigned short *)param_1);
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                amount = d2_GetObjValue(slider);
+                if (sv_CheckMoney(ai_Chars[ai_PlayerId], amount) != 0) {
+                    gain = ai_RelationGain(ai_Chars[ai_PlayerId], ch, amount);
+                    cm_SendMoneyDelta(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -amount);
+                    cm_SendRelations(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, ch->netId, gain, 1);
+                    txt_Format(text, 0x1db5, ch->id, ch->id);
                     sv_MessageBox(text, 0);
-                    *(int *)(unsigned)&sv_PopRequest = 4;
-                    ret = 1;
+                    sv_PopRequest = 4;
+                    done = 1;
                 }
-            } else if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                *(int *)(unsigned)&sv_PopRequest = 2;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 2;
             }
         }
-        if (*(int *)((unsigned)&dm_L + 0x20) != 0)
-            *(int *)(unsigned)&sv_PopRequest = 1;
-        if (sv_RunFrame(ai_Unk5caab0, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    } while (1);
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_BewitchWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return done;
 }
 /* 0x5cacd0, the embezzlement contract handler (302 B, a char result): param_1 is the message record (the
    AIMSG: +2 the type 6 / 7, +4 the handle, +9 a flag, +0x194 the amount), param_2 the request (dword +4
@@ -30704,7 +30694,7 @@ char ai_EmbezzlementContract(int param_1, int param_2)  /* @original: the caller
         cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
         txt_Format(text, (char *)0x1dae,
                      *(char *)(param_1 + 9) == 0 ? 0x1daf : 0x1db0);
-        return ai_AmountMenu((int)cfg, (int)text, 0, (int)ai_Unk5caab0) != 0;
+        return ai_AmountMenu((int)cfg, (int)text, 0, (int)ai_BewitchWindow) != 0;
     }
     n = *(int *)(param_2 + 4);
     if (n > *(int *)(param_1 + 0x194) || n < 1 || n > 5)
