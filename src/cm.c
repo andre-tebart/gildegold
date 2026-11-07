@@ -14214,7 +14214,7 @@ void cm_RunDuel(G28REC *m)
     cm_ClearDamagePops();
     cm_EndSpecialTrack();
 }
-/* 0x4dfa20, the duel's aftermath (the fourth callback of the duel event, ai_Unk4e5730 kind 4) for the duellists
+/* 0x4dfa20, the duel's aftermath (the fourth callback of the duel event, cm_RegisterSceneKind kind 4) for the duellists
    m->members[0] / [1]: when one of them is held (heldRounds) the players' characters (kinds 6 / 7) among them get the news
    txt_DuelHeldNews; else when one is dead (gm_HealthRatio <= 0) the other's player gets txt_DuelDeathNews; else each
    player's character among them sends a note naming the other (text 0x11ca + txt_DuelNoteTail, cm_SendPartyNote) and the
@@ -14387,7 +14387,7 @@ void cm_RunPictureShow(G28REC *m)
     cm_WaitTicks(5);
     cm_LeaveEventScene();
 }
-/* 0x4e0040, the execution's aftermath (the fourth callback of the execution event, ai_Unk4e5730 kind 5 with the scene
+/* 0x4e0040, the execution's aftermath (the fourth callback of the execution event, cm_RegisterSceneKind kind 5 with the scene
    0x4e01e0) for the delinquent m->members[0]: unless m->zero7d is set, the delinquent's player (kinds 6 / 7) gets the note
    text 0x11c5 + txt_ExecNoteTail; then every player's character among the other members gets the note text 0x11c8 with
    the delinquent's name (cm_SendPartyNote). The loop is written in both branches, as the original has it twice.
@@ -14428,7 +14428,7 @@ int cm_ExecutionAftermath(G28REC *m)
     return 1;
 }
 #define CUT_NAMEREC(c) ((c) != 0 ? (char *)gm_CharNameRecord((c)->id) : (char *)gm_NameRecord((unsigned short)util_RandomU(2), (unsigned short)util_RandomU(0x5e) + 1))  /* a character's name record, a random one for none */
-/* 0x4e01e0, one execution (the scene callback of the execution event, ai_Unk4e5730 kind 5) of the delinquent
+/* 0x4e01e0, one execution (the scene callback of the execution event, cm_RegisterSceneKind kind 5) of the delinquent
    m->members[0] with the others m->members[1] .. [3], the way m->variant 0 .. 4 (head, gallows (1, 2), shovel, cannon):
    the scene "Richtplatz.ed3" with a random sky of a random weather (1 heavy, 2 medium, else fair; the heavy one also calls
    cm_StartSceneRain(500)), the track "ArmerDelinquent", the four names (members [1], [0], [2], [3], a random name for one
@@ -16891,7 +16891,7 @@ int cm_MessageBox(int id, int flags)
 /* 0x4e5730, registers the scene kind: the run function (+0), the callbacks of the members of the kind 6 (+4) and of the others (+8), the check (+0x10) and
    the flag +0xc (1: cm_RunSceneParty asks the members all at once, 0: one after the other) */
 
-void ai_Unk4e5730(int kind, int run, int cb4, int cb8, int check, char flag)
+void cm_RegisterSceneKind(int kind, int run, int cb4, int cb8, int check, char flag)
 {
     cm_KindRun[kind * 5] = run;
     cm_KindAskPlayer[kind * 5] = cb4;
@@ -16910,18 +16910,18 @@ void cm_InitScenes(void)
     memset(cm_Parties, 0, 0x6780);
     for (i = 0; i < 96; i++)
         cm_Parties[i].id = -1;
-    ai_Unk4e5730(0, (int)cm_RunPictureShow, (int)d3io_NoopCallback, 0, 0, 0);
-    ai_Unk4e5730(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
-    ai_Unk4e5730(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
-    ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
-    ai_Unk4e5730(4, (int)cm_RunDuel, (int)cm_DuelAskPlayer, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
-    ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
-    ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)cm_CheckWedding, 0);
-    ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)cm_CheckBirth, 0);
-    ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
-    ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
-    ai_Unk4e5730(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)cm_CheckAuction, 1);
-    ai_Unk4e5730(11, (int)cm_RunSale, 0, 0, 0, 0);
+    cm_RegisterSceneKind(0, (int)cm_RunPictureShow, (int)d3io_NoopCallback, 0, 0, 0);
+    cm_RegisterSceneKind(1, (int)cm_RunCouncilSession, (int)cm_SessionAskPlayer, (int)cm_SessionAskAI, 0, 0);
+    cm_RegisterSceneKind(2, (int)cm_RunTrial, (int)cm_TrialAskPlayer, (int)cm_TrialAskAI, (int)cm_CheckTrial, 0);
+    cm_RegisterSceneKind(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
+    cm_RegisterSceneKind(4, (int)cm_RunDuel, (int)cm_DuelAskPlayer, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
+    cm_RegisterSceneKind(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
+    cm_RegisterSceneKind(6, (int)cm_RunWedding, 0, 0, (int)cm_CheckWedding, 0);
+    cm_RegisterSceneKind(7, (int)cm_RunBirth, 0, 0, (int)cm_CheckBirth, 0);
+    cm_RegisterSceneKind(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
+    cm_RegisterSceneKind(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
+    cm_RegisterSceneKind(10, (int)cm_RunAuction, (int)cm_AuctionAskPlayer, (int)cm_AuctionAskAI, (int)cm_CheckAuction, 1);
+    cm_RegisterSceneKind(11, (int)cm_RunSale, 0, 0, 0, 0);
     cm_ResetCutInfos(0);
 }
 /* 0x4e58e0, the debug dump of a person (log of the cutscenes): one line of tab separated fields (time, +4, id, the name of the kind (0x60eae0, 24 bytes each) ...) */
