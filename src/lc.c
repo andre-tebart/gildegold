@@ -19270,41 +19270,32 @@ int ai_TransportWindow(AIBLD *bld, unsigned int mode)
     ai_CampaignStep(0x23, 0, 1, 0);
     return 0;
 }
-/* 0x5b2090, the player's screen image (235 B): sprintf (path, 0x62cce8, 0xf8ef80, 0x7e3f40 + the player
-   0x6f1bc5 * 0x2f4 (the names 0x7e3f40, 0x2f4 bytes per player)); the picture 0x478b50 (path) gives its
-   width +4 and height +8; the 0x40-byte record at +0 is cleared and gets them at +4 / +8, then 0x478cc0 (&rec)
-   resolves the picture 0x6f26ac, 0x479020 loads it and 0x478bd0 (0, 0, the width, the height, the +0x1c, 0, 0,
-   the id) builds the control; the globals 0x6f4ee8 = the width, 0x6f4ee4 = the height; the scale 0x62c270 =
-   7.5 (0x40f00000), 5.33 (0x40aa8f5c) below the width 0x780; 0x4790e0 / 0x478fc0 free the picture */
+/* 0x5b2090, loads the town map picture "<gfx>bmp\maps\<player slot name>.bmp" of the own player (235 B,
+   main_GameLoop): its pixels are converted into a new surface rt_MapSurface of the bitmap's size (d2_MakeSurface
+   flags 0xb, d2_ConvertRgbTo16), ai_MapSize / ai_MapHeight take the size and ai_MapCellScale the pixels per
+   map cell: 7.5, 5.33 for a map narrower than 0x780; the bitmap is freed */
 
-void ai_Unk5b2090(void)
+void ai_LoadTownMap(void)
 {
+    D2SURF desc;
     char path[0x104];
-    int rec[0x10];
-    int w;
-    int h;
-    int id;
-    int bmp;
+    D2SURF *bmp;
 
-    sprintf(path, (char *)(unsigned)&full_data_62cce8, (char *)(unsigned)&d2_GfxDir,
-            (char *)((unsigned)&ai_PlayerSlots + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4));
+    sprintf(path, "%sbmp\\maps\\%s.bmp", d2_GfxDir, ai_PlayerSlots[ai_OwnPlayer]);
     bmp = d2_LoadBmpSurface(path);
     if (bmp != 0) {
-        w = *(int *)(bmp + 4);
-        h = *(int *)(bmp + 8);
-        memset(rec, 0, sizeof(rec));
-        rec[1] = w;
-        rec[2] = h;
-        id = d2_MakeSurface(rec, 0xb);
-        U_I((unsigned)&rt_MapSurface) = id;
-        d2_LockSurface(id);
-        d2_ConvertRgbTo16(0, 0, w, h, *(int *)(bmp + 0x1c), 0, 0, U_I((unsigned)&rt_MapSurface));
-        U_I((unsigned)&ai_MapSize) = w;
-        ai_MapHeight = h;
+        memset(&desc, 0, sizeof(desc));
+        desc.w = bmp->w;
+        desc.h = bmp->h;
+        rt_MapSurface = (char *)d2_MakeSurface(&desc, 0xb);
+        d2_LockSurface((D2SURF *)rt_MapSurface);
+        d2_ConvertRgbTo16(0, 0, bmp->w, bmp->h, (unsigned char *)bmp->bits, 0, 0, (D2SURF *)rt_MapSurface);
+        ai_MapSize = bmp->w;
+        ai_MapHeight = bmp->h;
         ai_MapCellScale = 7.5f;
-        if (w < 0x780)
+        if (ai_MapSize < 0x780)
             ai_MapCellScale = 5.33f;
-        d2_UnlockSurface(U_I((unsigned)&rt_MapSurface));
+        d2_UnlockSurface((D2SURF *)rt_MapSurface);
         d2_FreeSurface(bmp);
     }
 }

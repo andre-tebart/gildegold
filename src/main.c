@@ -4811,7 +4811,7 @@ void main_GameLoop(int ctl)
             hst_LoadPlayerTexts();
     }
     sv_PumpMessages();
-    ai_Unk5b2090();
+    ai_LoadTownMap();
     sv_PumpMessages();
     main_CloseLoadingScreen();
     U_I((unsigned)&d2_CutsceneActive) = 0;
