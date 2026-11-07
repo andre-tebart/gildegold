@@ -1064,7 +1064,17 @@ int ls_WriteAvatars(void *f)
 {
     return gv_WriteAvatars(f);
 }
-/* 0x51bdc0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer @deep B3 code hunks 762: the draft copies Ghidra element indices as byte offsets - the player table 0x6fab40 has 0x400 records of 0x14c bytes (original add eax,0x14c at 0x51bdde) but the draft writes 0x6fab48 + i*0xa6, 0x6fab50 + i*0x53, 0x6fabb0 + i*0x53, 0x6fabbc[i*0x53], 0x6fabc0 + i*0x53 instead of base+8/0x10/0x70/0x7c/0x80; the 0x100 records at 0x74e1e0 have stride 0xa4 (add eax,0xa4 at 0x51c040; index*4 at 0x51c07c) and the draft steps a char* by 0x29; the 0x100 records at 0x758ca0 have stride 0x50 (add eax,0x50 at 0x51c1bd; fields +8/+0xc/+0x10, 0x40 bytes at +0x10) and the draft steps by 0x14; so the whole function needs the rewrite with corrected bases (the 0x51b340 note: patching addresses alone makes unitdiff worse because every block's register shape changes). Also the prologue: the original runs the first count loop in eax/ecx and pushes ebx/ebp/esi/edi only at 0x51bde8, ours pushes at entry (same shape as 0x51aff0). Q1/Q2/Q3/Q5 open, no evidence for the three record tables' names */
+/* 0x51bdc0, ROUGH: converted from the Ghidra pseudocode, absolute data addresses; save writer. Known errors (the
+   round-start autosave crashes here, build/crash/play-20261107-162319): the draft copies Ghidra element indices as
+   byte offsets - the player table 0x6fab40 has 0x400 records of 0x14c bytes (original add eax,0x14c at 0x51bdde)
+   but the draft writes 0x6fab48 + i*0xa6, 0x6fab50 + i*0x53, 0x6fabb0 + i*0x53, 0x6fabbc[i*0x53], 0x6fabc0 + i*0x53
+   instead of base+8/0x10/0x70/0x7c/0x80 (the text buffer write uses sign-extended bytes as pointer and size; the
+   original writes [rec+0x80] (4) then vfs_fwrite([rec+0x7c], [rec+0x80]) when both are nonzero, else a 4-byte 0;
+   the draft's else path zeroes f itself, so later writes go to file 0); the 0x100 records at 0x74e1e0
+   (gm_CarryRecs) have stride 0xa4 (add eax,0xa4 at 0x51c040; the first write goes through the record's ref
+   pointer + 4) and the draft steps a char* by 0x29; the 0x100 records at 0x758ca0 (he_ApEvents) have stride 0x50
+   (add eax,0x50 at 0x51c1bd; fields +8/+0xc/+0x10, 0x40 bytes at +0x10) and the draft steps by 0x14. The reader
+   0x51fb90 reads the same layout. Needs the rewrite with corrected bases. */
 
 int ls_WritePlayerTable(int f)
 {
