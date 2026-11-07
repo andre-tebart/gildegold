@@ -24951,53 +24951,49 @@ int ai_AmountRow(int x, int y, int win, int font, LCAMOUNTROW *row, int titled)
     }
     return 0;
 }
-/* 0x5be720, one compact row of the special-amount list (416 B): the control 0x4731d0 (0x5da), the icon, the
-   four texts, the 0x46a960 slider (0x442) with 0x50c550, the 0x6d3 page mark of the winner +0x210, the
-   window list +0x4c / +0x1c0 / +0x2e8 and the icon 0x54 of the kinds 5 / 6 / 7 at x - 0x20 */
+/* 0x5be720, one compact special-amount row at (x, y) in the current window (734 B, ai_AmountRow without the texts):
+   the frame picture 0x5da; for a character the portrait, the corner icons (ai_AmountRowStatus), the liking slider of
+   the player (disabled; 0 for kind 7, none for kind 6), the mark 0x6d3 right of the frame when the character is the
+   player's partner, the frame clickable with the character as its user record when the row is pickable, and the
+   family picture (AICHARREC.ref54) of the kinds 5 .. 7 left of it; a vacant row shows the picture 0x4fb; win is
+   not read (the pictures go to d2_LastWindow); returns 0 */
 
-int ai_DrawAmountRow(int param_1, int param_2, int param_3, int *param_4)
+int ai_DrawAmountRow(int x, int y, int win, LCAMOUNTROW *row)
 {
-    int ix, kind;
-    char *chr;
+    int cx;
 
-    ix = *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) / 2 + param_1;
-    param_4[1] = d2_WinOpenPic(param_1, param_2, 0x5da, U_I((unsigned)&d2_LastWindow));
-    param_4[2] = -1;
-    if (param_4[0] == 0) {
-        d2_WinOpenPic((ix - *(short *)(U_I((unsigned)&d2_Pics) + 0x1a2ac) / 2) - 3, param_2 + 1, 0x4fb,
-                     U_I((unsigned)&d2_LastWindow));
-    } else {
-        chr = (char *)param_4[0];
-        param_4[6] = d2_WinOpenPic((ix - *(short *)(U_I((unsigned)&d2_Pics) + 0x50 + U_I(chr + 0x18c) * 0x54) / 2) - 3,
-                                  param_2 + 1, U_I(chr + 0x18c), U_I((unsigned)&d2_LastWindow));
-        d2_WinOpenPic(param_1 + 3, param_2 + 3, param_4[7], U_I((unsigned)&d2_LastWindow));
-        if (param_4[8] != 0)
-            d2_WinOpenPic(param_1 + 3, param_2 + 3 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, param_4[8],
-                         U_I((unsigned)&d2_LastWindow));
-        if (param_4[9] != 0)
-            d2_WinOpenPic(param_1 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10, param_2 + 3, param_4[9],
-                         U_I((unsigned)&d2_LastWindow));
-        d2_WinOpenPic(param_1 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8) - 0x10,
-                     param_2 + 3 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) - 0x13, param_4[10], U_I((unsigned)&d2_LastWindow));
-        if (*(char *)(chr + 2) != 6) {
-            param_4[2] = d2_WinOpenSlider(ix - 0x23, *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebda) + 2 + param_2, 0x40, 0,
-                                      100, 0x75, 0x442, U_I((unsigned)&d2_LastWindow));
-            if (*(char *)(chr + 2) == 7)
-                d2_SetObjValue(param_4[2], 0, 100, 0);
+    cx = d2_Pics[0x5da].w / 2 + x;
+    row->ctl[0] = d2_WinOpenPic(x, y, 0x5da, d2_LastWindow);
+    row->ctl[1] = -1;
+    if (row->rec != 0) {
+        row->portrait = d2_WinOpenPic(cx - d2_Pics[row->rec->picture].w / 2 - 3, y + 1, row->rec->picture,
+                                      d2_LastWindow);
+        d2_WinOpenPic(x + 3, y + 3, row->icons[0], d2_LastWindow);
+        if (row->icons[1] != 0)
+            d2_WinOpenPic(x + 3, d2_Pics[0x5da].h + y - 0x13, row->icons[1], d2_LastWindow);
+        if (row->icons[2] != 0)
+            d2_WinOpenPic(d2_Pics[0x5da].w + x - 0x10, y + 3, row->icons[2], d2_LastWindow);
+        d2_WinOpenPic(d2_Pics[0x5da].w + x - 0x10, d2_Pics[0x5da].h + y - 0x13, row->icons[3], d2_LastWindow);
+        if (row->rec->kind != 6) {
+            row->ctl[1] = d2_WinOpenSlider(cx - 0x23, d2_Pics[0x5da].h + y + 2, 0x40, 0, 100, 0x75, 0x442,
+                                           d2_LastWindow);
+            if (row->rec->kind == 7)
+                d2_SetObjValue(row->ctl[1], 0, 100, 0, 1);
             else
-                d2_SetObjValue(param_4[2], 0, 100, (int)gm_Liking(U_W((unsigned)&ai_PlayerId), *(unsigned short *)chr, 1));
-            d2_SetObjEnabled(param_4[2], 0);
+                d2_SetObjValue(row->ctl[1], 0, 100, (int)gm_Liking(ai_PlayerId, row->rec->id, 1));
+            d2_SetObjEnabled(row->ctl[1], 0);
         }
-        if (U_I(chr + 0x210) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c))
-            d2_WinOpenPic(param_1 + *(short *)(U_I((unsigned)&d2_Pics) + 0x1ebd8), param_2, 0x6d3, U_I((unsigned)&d2_LastWindow));
-        if (param_4[0xc] != 0) {
-            U_I((unsigned)&d2_Objs + param_4[1] * 0x2ec + 0x4c) = 1;
-            U_I((unsigned)&d2_Objs + param_4[1] * 0x2ec + 0x1c0) = 3;
-            U_I((unsigned)&d2_Objs + param_4[1] * 0x2ec + 0x2e8) = param_4[0];
+        if (row->rec->partner == lc_CharRecs[ai_PlayerId].netId)
+            d2_WinOpenPic(d2_Pics[0x5da].w + x, y, 0x6d3, d2_LastWindow);
+        if (row->pickable != 0) {
+            d2_Objs[row->ctl[0]].interactive = 1;
+            d2_Objs[row->ctl[0]].style = 3;
+            d2_Objs[row->ctl[0]].user = row->rec;
         }
-        kind = *(char *)(chr + 2);
-        if (kind == 5 || kind == 6 || kind == 7)
-            d2_WinOpenPic(param_1 - 0x20, param_2, U_I(chr + 0x54), U_I((unsigned)&d2_LastWindow));
+        if (row->rec->kind == 5 || row->rec->kind == 6 || row->rec->kind == 7)
+            d2_WinOpenPic(x - 0x20, y, row->rec->ref54, d2_LastWindow);
+    } else {
+        d2_WinOpenPic(cx - d2_Pics[0x4fb].w / 2 - 3, y + 1, 0x4fb, d2_LastWindow);
     }
     return 0;
 }
