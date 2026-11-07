@@ -55,7 +55,8 @@
    the definition (read the original's pushes): vfs_GetPath, d2_SetViewEnabled, d2_GetWinObj, d2_CreateWinText,
    d2_GetObjValue, d3_LoadGroup, d2_GetViewWin, sv_MessageBox, d2_CreateScrollButtons, d2_PlotLine,
    sv_CheckGoodAmount, d2_SetObjValue, d2_PlaceMainWindow, d3t_PlayAnim, d3t_SetTreeColor,
-   sv_CreateScrollButtons.
+   sv_CreateScrollButtons. gv.h is in the way of its cm_SendSetField (void) results the unit reads, so the evidence
+   windows copy gv.h's prototypes of gv_HeldCrimesOf / gv_RankCulpritsAll / gv_HeldCrimeCount (their 16-bit holder).
    unit of rea 8cef7d5b (src/game/unk_58bbd0.c); boundaries in decl/text.dcl */
 #define GAPDATA __declspec(align(1)) unsigned char
 #define init_LeaveTownSceneB ((int (*)())init_LeaveTownScene)  /* 0x5136b0 (f3init.c, void): @original the call passes more arguments than the draft definition names, compiled without a prototype (as before the definition's spelling reached this unit) */
