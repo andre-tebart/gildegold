@@ -642,7 +642,7 @@ int d2_CreatePicObj();  /* 0x46cd80 */
 int d2_CreateWindow();  /* 0x472390 */
 int d2_CreateWinText(short x, short y, char *text, int win);  /* 0x473650 */
 
-void ai_Unk4cfeb0();  /* 0x4cfeb0 */
+void cm_ClickSceneChar();  /* 0x4cfeb0 */
 int snd_QueueVoice(int id, int bank, char *text, int var, unsigned int delay);  /* 0x4c27d0 */
 extern int ai_ClickedObject;  /* 0x6f22e4 */
 extern int cm_AttackerClickVoices;  /* 0x6f0d24 */

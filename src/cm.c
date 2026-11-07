@@ -197,8 +197,6 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
-#define ai_Unk7603a0V (*(char * (*)[])&ai_SceneChars)  /* 0x7603a0, @original ai_Unk4cfeb0 (0x4cfeb0, byte) walks the table as pointers, `pp < ai_Unk760420V` its end: the int[32] / float spellings make it draft (15) */
-#define ai_Unk760420V (*(char * (*)[])&sv_SkyScale)  /* 0x760420, @original the end of ai_Unk7603a0V's walk in ai_Unk4cfeb0 (0x4cfeb0, byte) */
 #define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (poker.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
@@ -8089,34 +8087,36 @@ void cm_ClosePortraits()
         }
     }
 }
-/* 0x4cfeb0, the click on an own object of the pick ai_PickedObject (type 2) while characters are selected: the first selected
-   character that stands still gets the comment "_ARBEITER_KOMMENTARE_KLICK", the object is marked (+0x188). Rough draft. */
+/* 0x4cfeb0, the click on an own character object (ai_PickedObject, D3OBJECT.kind 2) while characters are selected: the first
+   selected standing scene character is marked (AICHAR.selected) and gets the click comment "_ARBEITER_KOMMENTARE_KLICK" from
+   the attacker's or the defender's voice bank (by its building); the picked object becomes ai_ClickedObject. */
 
-void ai_Unk4cfeb0()
+void cm_ClickSceneChar()
 {
-    char *t = cm_CutChar;
-    char *c, *sel, *o, **pp;
+    AICHAR *t = (AICHAR *)cm_CutChar;
+    AICHAR *c, *o, **pp;
+    D3OBJECT *sel;
 
     ai_ClickedObject = 0;
-    for (pp = ai_Unk7603a0V; (int)pp < (int)ai_Unk760420V; pp++) {
+    for (pp = ai_SceneCharsT; (int)pp < (int)(ai_SceneCharsT + 32); pp++) {
         c = *pp;
-        if (c != 0 && c[0x188] != 0 && (ai_LedSelectBits(*(unsigned short *)t, c) & 0x800) && *(int *)(c + 0x184) != 0 &&
-            c[8] != 0)
+        if (c != 0 && c->selected != 0 && (ai_LedSelectBits(t->id, (char *)c) & 0x800) && c->scene != 0 &&
+            c->health != 0)
             break;
     }
     if (dm_L.lup != 0 && d2_PointerObj == -1) {
-        sel = ai_PickedObject;
-        if (sel != 0 && *(int *)(sel + 0x220) == 2) {
-            o = *(char **)(sel + 0x200);
-            if ((ai_LedSelectBits(*(unsigned short *)t, o) & 0x800) && kb_Down[0x36] == 0 &&
-                (c == 0 || cm_OtherBuilding(c, o) == 0)) {
+        sel = (D3OBJECT *)ai_PickedObject;
+        if (sel != 0 && sel->kind == 2) {
+            o = sel->owner;
+            if ((ai_LedSelectBits(t->id, (char *)o) & 0x800) && kb_Down[0x36] == 0 &&
+                (c == 0 || cm_OtherBuilding((char *)c, (char *)o) == 0)) {
                 cm_ClearMarks();
-                o[0x188] = 1;
-                if (*(int *)(o + 0x16c) == cm_FightAttacker)
-                    snd_QueueVoice(*(unsigned short *)o, cm_AttackerClickVoices, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
+                o->selected = 1;
+                if ((int)o->bld == cm_FightAttacker)
+                    snd_QueueVoice(o->id, cm_AttackerClickVoices, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
                 else
-                    snd_QueueVoice(*(unsigned short *)o, cm_DefenderClickVoices, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
-                sel = ai_PickedObject;
+                    snd_QueueVoice(o->id, cm_DefenderClickVoices, "_ARBEITER_KOMMENTARE_KLICK", -1, 0);
+                sel = (D3OBJECT *)ai_PickedObject;
             }
         }
         ai_ClickedObject = (int)sel;
@@ -11020,7 +11020,7 @@ void ai_Unk4d6970(char *r)
     sv_BorderCameraView();
     cm_UpdatePortraits();
     cm_UpdatePointer();
-    ai_Unk4cfeb0();
+    cm_ClickSceneChar();
     cm_FightMouse(r);
     cm_UpdateSceneChars();
     cm_UpdateCharInfoWins(r);
@@ -11835,7 +11835,7 @@ void cm_FightLoop(char *a)
         if ((ai_GameFlags & 4) == 0 && kb_Last == 0x39) {
             ai_Unk6f0ce4 = ai_Unk6f0ce4 == 0;
             for (i = 0; i < 32; i++) {
-                o = ai_Unk7603a0V[i];
+                o = (char *)ai_SceneCharsT[i];
                 if (o != 0 && *(char **)(*(char **)(o + 0x184) + 0x88) == (char *)d3_DefaultScene)
                     ch_PauseAnim(*(char **)(o + 0x184), ai_Unk6f0ce4);
             }
