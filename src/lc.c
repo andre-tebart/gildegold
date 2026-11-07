@@ -24104,14 +24104,64 @@ int ai_OpenBuildingListPage(void)
     sv_CreateScrollButtons(0x206, 0x167, d2_LastWindow, d2_GetViewWin(win, 2), 0x40, &down, &up, &bar);
     return win;
 }
-/* 0x5bc790, a window over the kind record 0x7e3f30 (560 B, ROUGH SKELETON): a 0x54-byte frame; the body is a
-   comment */
+/* 0x5bc790, the building detail window "panel\player_stats_geb_detail" (a row of the stats panel's building page
+   clicked): the building's name, its level (text 0xa3) and the lines of its balance (gm_BuildingBalance) that are
+   not zero: 0xa4, 0xa5, the master's wage 0xa6 (with the first job's name), the title wages 0xa7, then
+   0xa8 .. 0xad, the round sum 0xae (0xb3 for the building classes 4 / 0x10 / 0x13), 0xaf, and the result as a
+   profit 0xb0 or a loss 0xb1; it stays until a right click */
 
-int ai_Unk5bc790(unsigned char *param_1)
+void ai_BuildingDetailWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x54-byte frame */
-    (void)param_1;
-    return 0;
+    int balance[0x15];
+    AIBTYPE *type;
+    int win;
+
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    win = d2_OpenForm(0x3c, 0, "panel\\player_stats_geb_detail");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 2);
+    io_PrintText("$[%1G$]", bld);
+    d2_SetForm(win, 1);
+    gm_BuildingClass(bld->kind);
+    gm_BuildingBalance((unsigned char *)bld, ai_PlayerId, balance);
+    io_PrintText(0xa3, gm_BuildingLevel((char *)bld));
+    if (balance[0] != 0)
+        io_PrintText(0xa4, balance[0]);
+    if (balance[2] != 0)
+        io_PrintText(0xa5, balance[2]);
+    if (balance[6] != 0)
+        io_PrintText(0xa6, type->jobs[0] + 0x130, balance[6]);
+    if (balance[4] + balance[5] != 0)
+        io_PrintText(0xa7, balance[4] + balance[5]);
+    if (balance[8] != 0)
+        io_PrintText(0xa8, balance[8]);
+    if (balance[0xc] != 0)
+        io_PrintText(0xa9, balance[0xc]);
+    if (balance[0xf] != 0)
+        io_PrintText(0xaa, balance[0xf]);
+    if (balance[0xd] != 0)
+        io_PrintText(0xab, balance[0xd]);
+    if (balance[0xe] != 0)
+        io_PrintText(0xac, balance[0xe]);
+    if (balance[0x13] != 0)
+        io_PrintText(0xad, balance[0x13]);
+    if (balance[0x12] != 0) {
+        if (type->buildingClass == 4 || type->buildingClass == 0x10 || type->buildingClass == 0x13)
+            io_PrintText(0xb3, balance[0x12]);
+        else
+            io_PrintText(0xae, balance[0x12]);
+    }
+    if (balance[1] != 0)
+        io_PrintText(0xaf, balance[1]);
+    if (balance[0x14] > 0)
+        io_PrintText(0xb0, balance[0x14]);
+    else if (balance[0x14] < 0)
+        io_PrintText(0xb1, balance[0x14] + balance[0x12]);
+    while (sv_RunFrame((int)ai_BuildingDetailWindow, 0x677c7) != 0) {
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    }
+    d2_CloseView(win);
 }
 /* 0x5bc9c0, a window (688 B, ROUGH SKELETON): a 0x10c-byte frame; the body is a comment */
 
@@ -24187,7 +24237,7 @@ int ai_PlayerStatsPanel(void)
             for (i = 0; i < U_I((unsigned)&full_data_6f2f80); i++) {
                 if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&full_data_6f4ce0 + i * 4)) {
                     d2_EnableViewObjects(win, 0);
-                    ai_Unk5bc790((unsigned char *)U_I((unsigned)&d2_Objs + U_I((unsigned)&d2_PointerObj) * 0x2ec + 0x2e8));
+                    ai_BuildingDetailWindow((AIBLD *)U_I((unsigned)&d2_Objs + U_I((unsigned)&d2_PointerObj) * 0x2ec + 0x2e8));
                     d2_EnableViewObjects(win, 1);
                     break;
                 }
