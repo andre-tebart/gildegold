@@ -420,7 +420,8 @@ typedef struct CMCUTINFO {              /* 0x35c bytes, cm_CutInfos[16]: a playe
             unsigned char round;        /* 0x94, the round the player chose: 2 insult, 3 roll, 4 pistol shot */
         } duel;
     };
-    char pad354[8];
+    int result;                         /* 0x354, the fight's result: 0 settled (the loot sent), 1 not (cm_FightResult) */
+    int lootValue;                      /* 0x358, the loot value of a settled fight (cm_FightResult, cm_FightLootValue) */
 } CMCUTINFO;
 typedef char cm_AssertCMCUTINFO[sizeof(CMCUTINFO) == 0x35c ? 1 : -1];
 

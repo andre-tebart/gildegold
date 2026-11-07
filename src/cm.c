@@ -11023,10 +11023,10 @@ void cm_RunFight(CMFIGHTREC *a)
 void cm_FightResult(char *r)
 {
     if (cm_FightSettled != 0) {
-        *(int *)(r + 0x354) = 0;
-        *(int *)(r + 0x358) = cm_FightLootValue;
+        ((CMCUTINFO *)r)->result = 0;
+        ((CMCUTINFO *)r)->lootValue = cm_FightLootValue;
     } else
-        *(int *)(r + 0x354) = 1;
+        ((CMCUTINFO *)r)->result = 1;
 }
 /* 0x4d6970, one frame of the fight UI (r: the fight record): the view 0x60cb64 sized to the fight area, the redraws
    0x525ff0 .. 0x4ce830, and the click on the button 0x60cb68 (while 0x6f0d88 / 0x6f0cf4 are clear) sends message 0x50 with
