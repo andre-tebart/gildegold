@@ -164,7 +164,10 @@ typedef struct AIPOS {                  /* filled by gv_GetTableRecord */
 typedef struct AIFIN {                  /* what gm_PlayerRecord finds for a character */
     unsigned short w00;                 /* 0x00, the character's AICHAR.w050 (cm.c 0x4c6cd0 copies it) */
     char family[0x10];                  /* 0x02, the family name (cm.c 0x4c6cd0 sets it with the character's) */
-    char pad12[0x12];
+    char pad12[0xa];                    /* 0x12 */
+    int lootTakings;                    /* 0x1c, the loot value a won fight / raid took from the loser's goods
+                                           (cm_LootStock and cm_LootCarts add it to the winner's record) */
+    char pad20[0x4];                    /* 0x20 */
     int madeValue;                      /* 0x24, the price value of the goods its workshops made (cm.c 0x4c78c0 adds it
                                            with the building's AIBLD.roundSums[0]) */
     int spyPaid;                        /* 0x28, the money the player paid to the cabinet's spies (ai_CabinetSpyWindow adds each payment) */

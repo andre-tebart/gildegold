@@ -789,7 +789,7 @@ void cm_ThrowBombAction(char *ev);  /* 0x4d3a30 */
 void cm_CheerAction(char *ev);  /* 0x4d3ac0 */
 void cm_PickUpAction(char *ev);  /* 0x4d3ae0 */
 struct AICHAR *cm_CheckFightWinner(struct CMFIGHTREC *rec);  /* 0x4d3b30 */
-int cm_LootStock(char *a, char *b, char *d, char *t);  /* 0x4d3d10 */
+int cm_LootStock(AIBLD *a, AIBLD *b, struct AICHAR *d, struct AICHAR *t);  /* 0x4d3d10 */
 int cm_FightRole(unsigned char *b);  /* 0x4d4050 */
 int ai_Unk4d4090(int x, int y, int mode);  /* 0x4d4090 */
 void ai_Unk4d4340(int *ids, int x, int y);  /* 0x4d4340 */
