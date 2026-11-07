@@ -24272,116 +24272,115 @@ void * d2_SetFont(int font); void d2_DrawTextBox(); void d2_FillPaintbox(int x, 
 int gm_EquipmentValue(); void d2_RadioSelect(int g, int sel);
 int ai_PassesPartnerFilter(unsigned short param_1, unsigned short param_2, unsigned int *param_3, int param_4);
 
-/* 0x5bcc70, the player stats panel ("Panel_player_stats" 0x62d134, 1000 B): the radio group 0x46c490 over
-   the three entry controls of 0x5bc420 / 0x5bc6d0 / 0x5bc9c0, the record 0xfa5aa0 + id * 0x8c (the flags at
-   +0, the selected entry at +8), the carrier record of the player (0x770cf8 + player * 0x21c), the click
-   dispatch 0xf8a668 / 0x5fe710 with the window list 0xf8f080 + id * 0x2ec, the text control rows
-   0x6f40e4 .. 0x6f4cf4 (six dwords per row: the id -4, the cached value -1 and the three texts) and the
-   pump 0x5309a0 (this, 0x657c7). The record 0x6f2f84 keeps the last selected entry */
-int ai_PlayerStatsPanel(void)
+#define ai_StatsPage (*(int *)&full_data_6f2f84)  /* 0x6f2f84, the stats panel's page selected last (its radio group's sel) */
+
+/* 0x5bcc70, the player stats panel "Panel\player_stats" (1000 B, run by ai_RunAllows(0x800), campaign step 0x13):
+   the button row of the texts 0x3fdd .. 0x3fdf over its three pages, the money page (ai_OpenMoneyInfoPage), the
+   building list page (ai_OpenBuildingListPage) and the master list page (ai_OpenMasterListPage, its button off
+   without masters) in a radio group that starts on the page picked last (ai_StatsPage). Per frame: shows the
+   picked page, refills the money rows, opens the building detail window for a clicked building row, scrolls the
+   master list by its buttons and sends a changed master budget input to the building (AIBLD.budget, in the
+   player's money: gm_PlayerFactor) and the change to its master (AICHARREC.budget) */
+void ai_PlayerStatsPanel(void)
 {
-    int win;
-    int ctrlA, ctrlB, ctrlC;
-    int id;
-    int off;
-    int sel;
-    int i;
-    int h;
     int out[3];
-    int *p;
-    int k;
+    int value;
+    int win;
+    int moneyPage;
+    int bldPage;
+    int masterPage;
+    int radio;
+    int i;
+    int down;
+    int list;
+    AICHARREC *master;
 
     if (ai_RunAllows(0x800) == 0)
-        return 0;
+        return;
     ai_CampaignStep(0x13, 0, 0, 0);
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d134);
+    win = d2_OpenForm(0, 0, "Panel\\player_stats");
     d2_CentreViewWindows(win);
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_SetForm(win, 3);
-    sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 3, U_I((unsigned)&full_data_144a134), U_I((unsigned)&full_data_144a138), U_I((unsigned)&full_data_144a13c));
-    ctrlA = ai_OpenMoneyInfoPage();
-    ctrlB = ai_OpenBuildingListPage();
-    ctrlC = ai_OpenMasterListPage();
-    id = d2_CreateRadioGroup(3, out[0], out[1], out[2]);
-    off = id * 0x8c;
-    U_I((unsigned)&d2_Radios + off) |= 1;
-    d2_RadioSelect(id, U_I((unsigned)&full_data_6f2f84));
-    if (ctrlC == -1)
+    sv_ButtonRow(d2_LastWindow, 0, out, 3, txt_Ptrs[0x3fdd], txt_Ptrs[0x3fde], txt_Ptrs[0x3fdf]);
+    moneyPage = ai_OpenMoneyInfoPage();
+    bldPage = ai_OpenBuildingListPage();
+    masterPage = ai_OpenMasterListPage();
+    radio = d2_CreateRadioGroup(3, out[0], out[1], out[2]);
+    d2_Radios[radio].flags |= 1;
+    d2_RadioSelect(radio, ai_StatsPage);
+    if (masterPage == -1)
         d2_SetObjEnabled(out[2], 0);
     do {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        sel = U_I((unsigned)&d2_RadioSel + off);
-        if (sel == 0) {
-            d2_SetViewEnabled(ctrlA, 1);
-            d2_SetViewEnabled(ctrlB, 0);
-            d2_SetViewEnabled(ctrlC, 0);
-        } else if (sel == 1) {
-            d2_SetViewEnabled(ctrlB, 1);
-            d2_SetViewEnabled(ctrlA, 0);
-            d2_SetViewEnabled(ctrlC, 0);
-        } else if (sel == 2) {
-            d2_SetViewEnabled(ctrlC, 1);
-            d2_SetViewEnabled(ctrlB, 0);
-            d2_SetViewEnabled(ctrlA, 0);
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_Radios[radio].sel == 0) {
+            d2_SetViewEnabled(moneyPage, 1);
+            d2_SetViewEnabled(bldPage, 0);
+            d2_SetViewEnabled(masterPage, 0);
+        } else if (d2_Radios[radio].sel == 1) {
+            d2_SetViewEnabled(bldPage, 1);
+            d2_SetViewEnabled(moneyPage, 0);
+            d2_SetViewEnabled(masterPage, 0);
+        } else if (d2_Radios[radio].sel == 2) {
+            d2_SetViewEnabled(masterPage, 1);
+            d2_SetViewEnabled(bldPage, 0);
+            d2_SetViewEnabled(moneyPage, 0);
         }
-        if (ctrlA != -1) {
-            d2_SetForm(ctrlA, 1);
-            ai_FillExchangeRows(U_I(((unsigned)&ai_Unk770cec + 0xc) + U_W((unsigned)&ai_PlayerId) * 0x21c), (int *)(unsigned)&full_data_6f3680, ctrlA, 1, 0);
+        if (moneyPage != -1) {
+            d2_SetForm(moneyPage, 1);
+            ai_FillExchangeRows(lc_CharRecs[ai_PlayerId].inventory, ai_StatsMoneyRows, moneyPage, 1, 0);
         }
-        if (ctrlB != -1 && U_I((unsigned)&d2_ClickedId) != -1 && U_I((unsigned)&full_data_6f2f80) > 0) {
-            for (i = 0; i < U_I((unsigned)&full_data_6f2f80); i++) {
-                if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&full_data_6f4ce0 + i * 4)) {
+        if (bldPage != -1 && d2_ClickedId != -1) {
+            for (i = 0; i < ai_StatsBldCount; i++) {
+                if (d2_PointerObj == ai_StatsBldRows[i]) {
                     d2_EnableViewObjects(win, 0);
-                    ai_BuildingDetailWindow((AIBLD *)U_I((unsigned)&d2_Objs + U_I((unsigned)&d2_PointerObj) * 0x2ec + 0x2e8));
+                    ai_BuildingDetailWindow((AIBLD *)d2_Objs[d2_PointerObj].user);
                     d2_EnableViewObjects(win, 1);
                     break;
                 }
             }
         }
-        if (ctrlC != -1) {
-            d2_SetForm(ctrlC, 0);
-            if (U_I((unsigned)&d2_ClickedId) != -1) {
-                k = d2_GetViewWin(ctrlC, 3);
-                h = d2_GetViewWin(ctrlC, 2);
-                if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&full_data_6f3870)) {
-                    d2_ScrollWindowBy(0, 0x3e, k);
-                    k = 0x3e;
-                } else if (U_I((unsigned)&d2_PointerObj) == U_I((unsigned)&full_data_6f4080)) {
-                    d2_ScrollWindowBy(0, -0x3e, k);
-                    k = -0x3e;
+        if (masterPage != -1) {
+            d2_SetForm(masterPage, 0);
+            if (d2_ClickedId != -1) {
+                down = d2_GetViewWin(masterPage, 3);
+                list = d2_GetViewWin(masterPage, 2);
+                if (d2_PointerObj == ai_MasterDown) {
+                    d2_ScrollWindowBy(0, 0x3e, down);
+                    d2_ScrollWindowBy(0, 0x3e, list);
+                } else if (d2_PointerObj == ai_MasterUp) {
+                    d2_ScrollWindowBy(0, -0x3e, down);
+                    d2_ScrollWindowBy(0, -0x3e, list);
                 }
-                d2_ScrollWindowBy(0, k, h);
             }
-            for (p = (int *)(unsigned)(full_data_6f40e0 + 0x14); p < (int *)(unsigned)((unsigned)(full_data_6f40e0 + 0xc14)); p += 6) {
-                if (p[-4] != -1 && p[-1] != d2_GetObjValue(p[-4])) {
-                    h = d2_GetObjValue(p[-4], *(unsigned char *)(unsigned)&ai_OwnPlayer);
-                    i = ((int (*)(int))gm_PlayerFactor)(h);
-                    cm_BeginFieldBlock((char *)*p, U_I(*p + 1));
-                    cm_AddFieldDelta(4, 1, (short)*p - (short)U_I((unsigned)&cm_FieldObject) + 0x39, &i);
+            for (i = 0; i < 0x80; i++) {
+                if (ai_MasterRows[i].input != -1 && ai_MasterRows[i].budget != d2_GetObjValue(ai_MasterRows[i].input)) {
+                    value = gm_PlayerFactor(d2_GetObjValue(ai_MasterRows[i].input), ai_OwnPlayer);
+                    cm_BeginFieldBlock((char *)ai_MasterRows[i].bld, ai_MasterRows[i].bld->id);
+                    cm_AddFieldDelta(4, 1, (unsigned short)((char *)&ai_MasterRows[i].bld->budget - cm_FieldObject), &value);
                     cm_SendFieldDeltas();
-                    k = gm_FindCharacterByMaster(*p);
-                    i = i - U_I(*p + 0x39);
-                    cm_BeginFieldBlock((char *)k, U_I(k + 4));
-                    cm_AddFieldValues(4, 1, (k - U_I((unsigned)&cm_FieldObject)) + 0x1b8, &i);
+                    master = (AICHARREC *)gm_FindCharacterByMaster((int)ai_MasterRows[i].bld);
+                    value -= ai_MasterRows[i].bld->budget;
+                    cm_BeginFieldBlock((char *)master, master->netId);
+                    cm_AddFieldValues(4, 1, (char *)&master->budget - cm_FieldObject, &value);
                     cm_SendFieldDeltas();
-                    p[-1] = d2_GetObjValue(p[-4]);
+                    ai_MasterRows[i].budget = d2_GetObjValue(ai_MasterRows[i].input);
                 }
             }
         }
-    } while (sv_RunFrame(ai_PlayerStatsPanel, 0x657c7) != 0);
-    U_I((unsigned)&full_data_6f2f84) = U_I((unsigned)&d2_RadioSel + off);
-    d2_RadioClear(id);
+    } while (sv_RunFrame((int)ai_PlayerStatsPanel, 0x657c7) != 0);
+    ai_StatsPage = d2_Radios[radio].sel;
+    d2_RadioClear(radio);
     d2_CloseView(win);
-    if (ctrlA != -1)
-        d2_CloseView(ctrlA);
-    if (ctrlB != -1)
-        d2_CloseView(ctrlB);
-    if (ctrlC != -1)
-        d2_CloseView(ctrlC);
+    if (moneyPage != -1)
+        d2_CloseView(moneyPage);
+    if (bldPage != -1)
+        d2_CloseView(bldPage);
+    if (masterPage != -1)
+        d2_CloseView(masterPage);
     ai_CampaignStep(0x13, 0, 1, 0);
-    return 0;
 }
 /* 0x5bd060, the upper limit of an amount box (88 B): with from (the lower end) and steps (of 10000) positive,
    *out = the larger of from and min(money, steps * 10000 + from); returns 1, else 0. The original computes the
