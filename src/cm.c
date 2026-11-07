@@ -15480,13 +15480,13 @@ int cm_StartScript(char *name)
 
 int cm_StartEventArg(char *name, int arg)
 {
-    char *p;
+    EVTSCRIPT *p;
 
     if (cm_SkipEvents == 0) {
-        p = (char *)evt_Load(name);
+        p = evt_Load(name);
         if (p != 0) {
-            evt_RunCommand((EVTSCRIPT *)p, arg);
-            return *(int *)(p + 0x100);
+            evt_RunCommand(p, arg);
+            return p->id;
         }
     }
     return 0;
