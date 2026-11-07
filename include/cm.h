@@ -973,7 +973,7 @@ int cm_StartSceneRain();  /* 0x4e33d0 */
 int cm_StopSceneRain();  /* 0x4e33f0 */
 int cm_DestroySceneSky();  /* 0x4e3390 */
 void cm_RunExecution(G28REC *m);  /* 0x4e01e0 */
-int ai_Unk4e0580(char *m);  /* 0x4e0580 */
+int cm_CheckWedding(G28REC *m);  /* 0x4e0580 */
 void sb_Stop();  /* 0x427290 */
 int cm_EndWedding(int *s);  /* 0x4e06d0 */
 int cm_RunSceneTicksOrClick();  /* 0x4e3490 */

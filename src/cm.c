@@ -14499,39 +14499,41 @@ void cm_RunExecution(G28REC *m)
     d2_CutsceneActive = 0;
     cm_EndSpecialTrack();
 }
-/* 0x4e0580, announces a wedding (the message m: +0x34 / +0x38 the two, of different sex): the text 0x11c3 for the first (0x4e48b0), the text
-   0x11c4 (both names) to every character of the kinds 6 / 7 who is neither of them (0x53dda0); 1 when the first is a person of the kinds
-   6 / 7, else the two get the state 0x1c8 (0x4c4a60) */
+/* 0x4e0580, the check function of the wedding (scene kind 6, run function 0x4e0770) for its party m: of its two
+   members m->members[0] / [1] the first gets the note text 0x11c3 naming the second (cm_SendPartyNote) when both exist
+   and are of different sex; when the first is a player's character (kind 6 / 7) or an official (kind 5) every other
+   player's character gets the news text 0x11c4 with both names (he_ShowNews). 1 when the first is a player's character,
+   else both get the field 0x1c8 (cm_SendSetField) and 0 */
 
-int ai_Unk4e0580(char *m)
+int cm_CheckWedding(G28REC *m)
 {
     char buf[0x200];
-    char *a, *b;
+    AICHAR *a, *b;
     int i;
 
-    a = (char *)gm_FindChar(*(int *)(m + 0x34));
-    b = (char *)gm_FindChar(*(int *)(m + 0x38));
+    a = (AICHAR *)gm_FindChar(m->members[0]);
+    b = (AICHAR *)gm_FindChar(m->members[1]);
     if (a != 0) {
-        if (b != 0 && a[9] != b[9]) {
-            if (a[2] == 6 || a[2] == 7) {
-                txt_Format(buf, 0x11c3, *(unsigned short *)b);
+        if (b != 0 && a->sex != b->sex) {
+            if (a->kind == 6 || a->kind == 7) {
+                txt_Format(buf, 0x11c3, b->id);
                 cm_SendPartyNote(a, m, buf, "_PA_WERBUNG_EVENT_ZUSAGE_M1_00");
             }
-            if (a[2] == 6 || a[2] == 7 || a[2] == 5) {
-                txt_Format(buf, 0x11c4, *(unsigned short *)a, *(unsigned short *)b);
+            if (a->kind == 6 || a->kind == 7 || a->kind == 5) {
+                txt_Format(buf, 0x11c4, a->id, b->id);
                 for (i = 0; i < 768; i++) {
-                    if ((ai_Chars[i][2] == 6 || ai_Chars[i][2] == 7) && ai_CharInts[i][0] != *(int *)(a + 4) &&
-                        ai_CharInts[i][0] != *(int *)(b + 4))
-                        he_ShowNews(ai_CharInts[i][0], -1, buf, 0, 0x5fe, "_PA_WERBUNG_EVENT_NACHRICHT_HOCHZEIT_M1_00");
+                    if ((ai_CharsT[i].kind == 6 || ai_CharsT[i].kind == 7) && ai_CharsT[i].netId != a->netId &&
+                        ai_CharsT[i].netId != b->netId)
+                        he_ShowNews(ai_CharsT[i].netId, -1, buf, 0, 0x5fe, "_PA_WERBUNG_EVENT_NACHRICHT_HOCHZEIT_M1_00");
                 }
             }
-            if (a[2] == 6 || a[2] == 7)
+            if (a->kind == 6 || a->kind == 7)
                 return 1;
         }
-        cm_SendSetField(*(int *)(a + 4), 0x1c8, 4, 0, 0x40000);
+        cm_SendSetField(a->netId, 0x1c8, 4, 0, 0x40000);
     }
     if (b != 0)
-        cm_SendSetField(*(int *)(b + 4), 0x1c8, 4, 0, 0x40000);
+        cm_SendSetField(b->netId, 0x1c8, 4, 0, 0x40000);
     return 0;
 }
 /* 0x4e06d0, ends a wedding scene s (s[0] the scene, s[1] its view, s[2] a sample bank, s[3] a playing sample): the exit scene
@@ -16902,7 +16904,7 @@ void cm_InitScenes(void)
     ai_Unk4e5730(3, (int)cm_RunFight, (int)cm_FightMember, 0, (int)ai_Unk4d60b0, 1);
     ai_Unk4e5730(4, (int)cm_RunDuel, (int)cm_DuelAskPlayer, (int)cm_DuelAskAI, (int)cm_DuelAftermath, 0);
     ai_Unk4e5730(5, (int)cm_RunExecution, 0, 0, (int)cm_ExecutionAftermath, 0);
-    ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)ai_Unk4e0580, 0);
+    ai_Unk4e5730(6, (int)cm_RunWedding, 0, 0, (int)cm_CheckWedding, 0);
     ai_Unk4e5730(7, (int)cm_RunBirth, 0, 0, (int)ai_Unk4e0e90, 0);
     ai_Unk4e5730(8, (int)cm_RunDeath, 0, 0, (int)cm_DeathSceneCheck, 0);
     ai_Unk4e5730(9, (int)cm_RunBankruptcy, 0, 0, 0, 0);
