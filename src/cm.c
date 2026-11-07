@@ -7492,19 +7492,19 @@ int cm_ObjectOwner(char *c)
 }
 /* 0x4ceb80, waits for the event id to end, then stops it */
 
-void ai_Unk4ceb80(int id)
+void cm_WaitEventStop(int id)
 {
     char *e;
 
     if (cm_SkipEvents != 0)
         return;
     if (sv_RunFrame(0, 0x7d6c6) != 0) {
-        while (dm_L.rup == 0 && kb_Last == 0) {
+        do {
+            if (dm_L.rup != 0 || kb_Last != 0)
+                break;
             if (evt_FindById(id) == 0)
                 return;
-            if (sv_RunFrame(0, 0x7d6c6) == 0)
-                break;
-        }
+        } while (sv_RunFrame(0, 0x7d6c6) != 0);
     }
     e = (char *)evt_FindById(id);
     if (e != 0)
@@ -9041,7 +9041,7 @@ void cm_FightIntro()
     s = (char *)evt_Load("cutscenes\\kampf\\Kampf_Intro_Fluege.esc");
     if (s != 0) {
         evt_RunScript((EVTSCRIPT *)s);
-        ai_Unk4ceb80(*(int *)(s + 0x100));
+        cm_WaitEventStop(*(int *)(s + 0x100));
     }
     d2_CutsceneActive = 0;
 }
@@ -9058,7 +9058,7 @@ void cm_FightOutro()
     s = (char *)evt_Load("cutscenes\\kampf\\Kampf_outro_flug.esc");
     if (s != 0) {
         evt_RunScript((EVTSCRIPT *)s);
-        ai_Unk4ceb80(*(int *)(s + 0x100));
+        cm_WaitEventStop(*(int *)(s + 0x100));
     }
     d2_CutsceneActive = 0;
 }

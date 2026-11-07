@@ -568,7 +568,7 @@ extern char cm_Grenades[];  /* 0x935a00 */
 
 int cm_UpdateGrenades();  /* 0x4ce830 */
 int cm_ObjectOwner(char *c);  /* 0x4ceb70 */
-void ai_Unk4ceb80(int id);  /* 0x4ceb80 */
+void cm_WaitEventStop(int id);  /* 0x4ceb80 */
 void cm_CloseCharInfoWins();  /* 0x4cec00 */
 void cm_OpenCharInfoWin(int a, char *c);  /* 0x4cec30 */
 void ai_Unk4ced80(int a);  /* 0x4ced80 */
