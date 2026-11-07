@@ -16955,9 +16955,12 @@ void ai_DumpPersonStats(char *c, char *buf)
 }
 /* 0x4e5a40, the five bytes +0x80 .. +0x84 of a person as a tab separated line */
 
-void ai_Unk4e5a40(char *c, char *buf)
+void ai_DumpPersonSkills(char *c, char *buf)
 {
-    sprintf(buf, "%i\t%i\t%i\t%i\t%i\t", (unsigned char)c[0x80], (unsigned char)c[0x81], (unsigned char)c[0x82], (unsigned char)c[0x83], (unsigned char)c[0x84]);
+    AICHAR *p;
+
+    p = (AICHAR *)c;
+    sprintf(buf, "%i\t%i\t%i\t%i\t%i\t", p->skills[0], p->skills[1], p->skills[2], p->skills[3], p->skills[4]);
 }
 /* 0x4e5a90, the four names (0x143ab0c) of the bytes +0x166 .. +0x169 of a person */
 
@@ -17003,7 +17006,7 @@ void ai_DebugDumpPerson(char *c)
         memset(buf, 0, sizeof(buf));
         ai_DumpPersonHead(c, buf + strlen(buf));
         ai_DumpPersonStats(c, buf + strlen(buf));
-        ai_Unk4e5a40(c, buf + strlen(buf));
+        ai_DumpPersonSkills(c, buf + strlen(buf));
         ai_Unk4e5a90(c, buf + strlen(buf));
         ai_Unk4e5af0(c, buf + strlen(buf));
         ai_Unk4e5b50(c, buf + strlen(buf));
