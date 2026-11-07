@@ -15863,7 +15863,7 @@ int cm_PlaySpecialTrack(char *name)
         return ((int (*)(char *))snd_PlaySpecialTrack)(name);
     }
 }
-/* 0x4e3640 */
+/* 0x4e3640, ends the special track and restores the ambient sounds and the music volume (snd_EndSpecialTrack), nothing in the replay mode */
 
 int cm_EndSpecialTrack(void)
 {
