@@ -25700,17 +25700,52 @@ unsigned int ai_FillQuarrelTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
     }
     return n;
 }
-/* 0x5bfc40, a page fill variant (335 B, ROUGH SKELETON): the byte +0x168 of param_1 as the guard, the frame
-   0x2c; only reached through the fill table 0x62d154. The body is left as a comment */
+/* 0x5bfc40, the fill of the special-amount window's candidacy tab (tab 6, 335 B): while me applies for an office
+   (AICHARREC.appliedOffice), the office's applicants (amt_GetOfficeApplicants, up to 6) and up to three other
+   characters applying for the same office. With max 0 it only counts them; else rows[0].x34 is the office and the
+   rows take the applicants (x2c 0, up to min(max, count)) then the other characters (x2c 1, up to max rows in all),
+   each with the corner icons (ai_AmountRowStatus) and the partner filter filter (ai_PassesPartnerFilter, pickable);
+   returns the rows filled */
 
-int ai_Unk5bfc40(int param_1, int param_2, int *param_3, int param_4)
+unsigned int ai_FillCandidacyTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
-    /* ROUGH SKELETON: the guard byte +0x168 and the record fill */
-    (void)param_1;
-    (void)param_2;
-    (void)param_3;
-    (void)param_4;
-    return 0;
+    char *applicants[6];
+    AICHARREC *rivals[3];
+    AICHARREC *c;
+    int nApplicants;
+    int nRivals;
+    unsigned int i;
+    int j;
+
+    if (me->appliedOffice == 0)
+        return 0;
+    nApplicants = amt_GetOfficeApplicants(me->appliedOffice, 6, applicants);
+    nRivals = 0;
+    for (c = (AICHARREC *)ai_Chars; (int)c < (int)ai_Chars[768]; c++) {  /* a signed compare (jl) in the original */
+        if (nRivals >= 3)
+            break;
+        if (c->id != 0xffff && c->id != me->id && c->appliedOffice == me->appliedOffice)
+            rivals[nRivals++] = c;
+    }
+    if (max == 0)
+        return nRivals + nApplicants;
+    rows[0].x34 = me->appliedOffice;
+    for (i = 0; i < (max < (unsigned int)nApplicants ? max : nApplicants); i++) {
+        rows[i].rec = (AICHARREC *)applicants[i];
+        rows[i].x2c = 0;
+        ai_AmountRowStatus(&rows[i]);
+        rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
+    }
+    for (j = 0; j < nRivals; j++) {
+        if (i >= max)
+            break;
+        rows[i].rec = rivals[j];
+        rows[i].x2c = 1;
+        ai_AmountRowStatus(&rows[i]);
+        rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
+        i++;
+    }
+    return i;
 }
 /* 0x5bfd90, a page fill variant (314 B, ROUGH SKELETON): the byte +0x166 of param_1 as the guard, the frame
    0x18; only reached through the fill table 0x62d154. The body is left as a comment */
@@ -32514,7 +32549,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 3, 0, -1, ai_FillLoversTab, ai_Unk5c02d0 },
     { 4, 0, -1, ai_FillWeddingTab, ai_Unk5c03e0 },
     { 5, 0, -1, ai_FillQuarrelTab, ai_Unk5c0550 },
-    { 6, 0, -1, ai_Unk5bfc40, ai_Unk5c0650 },
+    { 6, 0, -1, ai_FillCandidacyTab, ai_Unk5c0650 },
     { 7, 0, -1, ai_Unk5bfd90, ai_Unk5c0790 },
 };
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
