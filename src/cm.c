@@ -8075,20 +8075,19 @@ void cm_BuildPortraits()
 }
 /* 0x4cfe70, removes the portrait boxes cm_Portraits[6] again */
 
-void ai_Unk4cfe70()
+void cm_ClosePortraits()
 {
-    int *p = (int *)((char *)cm_Portraits + 8);
+    int i;
     int t;
 
-    do {
-        if (p[0] != -1) {
-            d2_RemoveWindow(p[0]);
-            t = p[-1];
-            p[0] = -1;
+    for (i = 0; i < 6; i++) {
+        if (cm_Portraits[i].win != -1) {
+            d2_RemoveWindow(cm_Portraits[i].win);
+            t = cm_Portraits[i].frame;
+            cm_Portraits[i].win = -1;
             d2_RemoveObj(t);
         }
-        p += 8;
-    } while ((int)p < (int)((unsigned)&cm_Portraits + 0xc8));
+    }
 }
 /* 0x4cfeb0, the click on an own object of the pick ai_PickedObject (type 2) while characters are selected: the first selected
    character that stands still gets the comment "_ARBEITER_KOMMENTARE_KLICK", the object is marked (+0x188). Rough draft. */
@@ -11059,7 +11058,7 @@ void ai_Unk4d6a50()
     G19_R(*(int *)(ai_Unkf8f39c - 0x10 + d2_LastWindow * 0x3c4), 0x4c, int) = 1;
     d2_SetForm(cm_TextBox, 0);
     io_PrintText("$C");
-    ai_Unk4cfe70();
+    cm_ClosePortraits();
     cm_BuildPortraits();
 }
 /* 0x4d6b70, closes the fight UI: the view 0x6f0d64, 0x4d08c0, the portrait boxes */
@@ -11069,7 +11068,7 @@ void ai_Unk4d6b70()
     d2_CloseView(ai_Unk6f0d64);
     ai_Unk6f0d64 = 0;
     cm_ClearMarks();
-    ai_Unk4cfe70();
+    cm_ClosePortraits();
 }
 /* 0x4d6ba0, the action of one fighter (f): the target's health is set; a blow (not with the pot 0x174 or the bomb
    0x176) by a fighter that is idle or walking / standing (action 0x2d / 0x3a) shouts the attack (1 in 10), takes the
