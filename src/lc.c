@@ -26016,15 +26016,37 @@ int ai_ShowQuarrelTab(int view, int page, int scrollPage, unsigned int n, LCAMOU
     d2_Wins[d2_LastWindow].visible = 0x70;
     return 1;
 }
-/* 0x5c0650, a tab fill of the special-amount window (312 B, ROUGH SKELETON): as 0x5bffb0, frame 0x204 */
+/* 0x5c0650, the rows of the special-amount window's candidacy tab (tab 6, 312 B): with n rows, switches to the page
+   (ai_AmountPageSwitch view, page, scrollPage), centres the caption txt_Ptrs[0x16a7] (formatted with the office's
+   text id 0x253 + rows[0].x34) at the top and draws each row (ai_AmountRow at 0x4b, 0x28 + 0x70 per row, titled)
+   with its role text txt_Ptrs[0x16a8 + x2c] (applicant or rival) right aligned beside it; enables the rows'
+   sliders, restores the page's scroll offset and sets its scroll step 0x70; returns 1 (0 without rows) */
 
-int ai_Unk5c0650(int param_1, int param_2, int param_3, int param_4)
+int ai_ShowCandidacyTab(int view, int page, int scrollPage, unsigned int n, LCAMOUNTROW *rows)
 {
-    if (param_4 == 0)
+    char caption[0x200];
+    unsigned int i;
+    int half;
+    int y;
+    int saved;
+
+    if (n == 0)
         return 0;
-    ai_AmountPageSwitch(param_1, param_2, param_3);
-    /* ROUGH SKELETON: the rows of the page (frame 0x204) */
-    return 0;
+    saved = ai_AmountPageSwitch(view, page, scrollPage);
+    half = d2_Wins[d2_LastWindow].w / 2;
+    txt_Format(caption, 0x16a7, rows[0].x34 + 0x253);
+    ai_CentredText(caption, half, 8, half * 2, 0x55);
+    for (i = 0; i < n; i++) {
+        y = 0x28 + i * 0x70;
+        rows[i].x = 0x4b;
+        rows[i].y = y;
+        ai_AmountRow(0x4b, y, d2_LastWindow, 0x56, &rows[i], 1);
+        ai_RightAlignedText(txt_Ptrs[0x16a8 + rows[i].x2c], 0x14a, y + 0x1e, 0xc8, 0x55);
+    }
+    ai_EnableAmountRows(n, rows);
+    d2_Wins[d2_LastWindow].scrollY = saved;
+    d2_Wins[d2_LastWindow].visible = 0x70;
+    return 1;
 }
 /* 0x5c0790, a tab fill of the special-amount window (277 B, ROUGH SKELETON): as 0x5bffb0, three parameters
    and the page records; only reached through the fill table 0x62d154 */
@@ -32707,7 +32729,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 3, 0, -1, ai_FillLoversTab, ai_ShowLoversTab },
     { 4, 0, -1, ai_FillWeddingTab, ai_ShowWeddingTab },
     { 5, 0, -1, ai_FillQuarrelTab, ai_ShowQuarrelTab },
-    { 6, 0, -1, ai_FillCandidacyTab, ai_Unk5c0650 },
+    { 6, 0, -1, ai_FillCandidacyTab, ai_ShowCandidacyTab },
     { 7, 0, -1, ai_FillOfficeTab, ai_Unk5c0790 },
 };
 char ai_AmountInfoFmt[16] = "$Z$[ %s $]$A$Z";  /* 0x62d234, the caption of the amount info box (io_PrintText's %s is the name text 0x253 + kind) */
