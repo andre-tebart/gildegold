@@ -8572,9 +8572,9 @@ void cm_PlaceFlagObjects()
     cm_FlagObjectCount = 0;
     d3_ForEachObject(d3_DefaultScene, 0, 0x100, cm_CreateDummyFlag, 0);
 }
-/* 0x4d0cd0, the first free (-1) of 16 slots, else -1 */
+/* 0x4d0cd0, the first free (-1) netId slot of the 16 of a CMGUARDREC, else -1 */
 
-int ai_Unk4d0cd0(int *a)
+int cm_FreeNetIdSlot(int *a)
 {
     int i;
 
@@ -8589,7 +8589,7 @@ int ai_Unk4d0cd0(int *a)
    address); only these two fields are read here, the rest of its layout is not known */
 typedef struct CMGUARDREC {
     char pad000[0x80];
-    int netIds[16];                 /* 0x080, the netIds of the guards already armed, -1 = a free slot (ai_Unk4d0cd0) */
+    int netIds[16];                 /* 0x080, the netIds of the guards already armed, -1 = a free slot (cm_FreeNetIdSlot) */
     char pad0c0[0x50];
     int kind;                       /* 0x110, the kind of arming last asked for (1 .. 3) */
 } CMGUARDREC;
@@ -8598,7 +8598,7 @@ typedef struct CMGUARDREC {
 /* arms the next guard: takes the first free slot i of rec, the character ai_KindBChars[i] gives up its weapons and
    gets the item ITEM, loses its v024 health and its skill sk83 is set to SKILL (a field delta of the character).
    The original repeats this code inline (the four copies of 0x4d0cf0 reload ai_KindBChars[i] each time) */
-#define CM_ARM_GUARD(ITEM, SKILL)                                                                             i = ai_Unk4d0cd0(rec->netIds);                                                                           rec->netIds[i] = ai_KindBCharsT[i]->netId;                                                               cm_DiscardWeapons((char *)ai_KindBCharsT[i]);                                                            cm_SendExSellObject(ai_KindBCharsT[i]->netId, -1, ITEM, 1, ai_OwnPlayer, 0);                              gm_AddHealth(ai_KindBCharsT[i]->id, -ai_KindBCharsT[i]->v024);                                            skill = SKILL;                                                                                            cm_BeginFieldBlock((char *)ai_KindBCharsT[i], ai_KindBCharsT[i]->netId);                                  cm_AddFieldDelta(1, 1, (unsigned short)((char *)ai_KindBCharsT[i] - cm_FieldObject + 0x83), &skill);      cm_SendFieldDeltas()
+#define CM_ARM_GUARD(ITEM, SKILL)                                                                             i = cm_FreeNetIdSlot(rec->netIds);                                                                           rec->netIds[i] = ai_KindBCharsT[i]->netId;                                                               cm_DiscardWeapons((char *)ai_KindBCharsT[i]);                                                            cm_SendExSellObject(ai_KindBCharsT[i]->netId, -1, ITEM, 1, ai_OwnPlayer, 0);                              gm_AddHealth(ai_KindBCharsT[i]->id, -ai_KindBCharsT[i]->v024);                                            skill = SKILL;                                                                                            cm_BeginFieldBlock((char *)ai_KindBCharsT[i], ai_KindBCharsT[i]->netId);                                  cm_AddFieldDelta(1, 1, (unsigned short)((char *)ai_KindBCharsT[i] - cm_FieldObject + 0x83), &skill);      cm_SendFieldDeltas()
 
 /* 0x4d0cf0, arms the guards of the town gate event: kind 1 two guards with the item 0x156 (sk83 = 0xa8), kinds 2 / 3
    one with 0x158 and one with 0x160 (sk83 = 0xd2); a nonzero kind is kept in rec->kind (reasoned: the items replace
