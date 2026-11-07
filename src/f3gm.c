@@ -9845,7 +9845,7 @@ char gm_TreeNodes[3328] = {0};  /* 0x76fde0, the family records ( */
 int gm_TechTreeView = 0;  /* 0x770af0, the view of the tech tree form (gm_TechTreeWindow) */
 /* ai_Unkfb1030: view of d2_Views (tools/data_views.py) */
 /* ai_Unkf8f128: view of d2_Wins (tools/data_views.py) */
-void d2_PlotLine();                     /* 0x4764f0 */
+void d2_PlotLine(int x0, int y0, int x1, int y1, unsigned char r, unsigned char g, unsigned char b);  /* 0x4764f0 */
 void cm_SendBuildingDestroyed(int a);                     /* 0x4c5510 */
 float gm_Liking();
 int gm_LayoutTree();

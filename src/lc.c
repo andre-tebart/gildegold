@@ -27913,7 +27913,7 @@ int ai_LawSelectionEntry(AIBLD *bld, AMOUNTCFG *filter, char *text, void (*cb)(A
     return (int)ai_PickBuildingChar(bld, filter, text, cb);
 }
 
-void d2_PlotLine();
+void d2_PlotLine(int x0, int y0, int x1, int y1, unsigned char r, unsigned char g, unsigned char b);  /* 0x4764f0 */
 
 typedef struct LCFAMILYBOX {        /* 0x10 bytes, one box of the family tree window */
     unsigned short id;             /* 0x00, the character id, 0xffff: the box is empty */
@@ -29261,7 +29261,7 @@ int d2_TextWidth();
    crossing: both sides load d2_Wins[win].w (0xf8f128) into the width register first and .h (0xf8f12a)
    second; the aligner pairs ours' ebp load with the original's ebp load) */
 
-void ai_DrawStatisticsCharts(int flags, ORDSTATS stats, int win)
+void ai_DrawStatisticsCharts(unsigned short flags, ORDSTATS stats, int win)
 {
     unsigned char old;
     int top;
@@ -29366,92 +29366,99 @@ void ai_DrawStatisticsCharts(int flags, ORDSTATS stats, int win)
 
 float ord_GetStatistics(int *o);
 
-/* 0x5c7f00, the statistics panel window "panel_statistik_stadt" 0x62d440 (1520 B, ROUGH SKELETON): the gate
-   0x5763c0 and the state step 0x576040 (0xc, 0, 0, 0); the window 0x4741f0 / 0x476f80 / 0x475600 and the
-   page setup 0x515960 (0x1f0e with the player record 0x7e3f60 + 0x6f1bc5 * 0x2f4 and the clock 0x770ae0,
-   0x1f14 .. 0x1f22 with the value / rank texts); the chart values of 0x4f9e00 and the charts 0x5c7970 with
-   the flag word 0x6f2f88 (the screen 0x6ed938); the five legend rows (0x4731d0, the text 0x5176d0, the
-   control 0x473650 with the record 0xf8f080 + id * 0x2ec (+0x48 / +0x4c = 1), the toggle 0x475cb0, and ten
-   colour lines 0x4764f0 per row from the 14-byte colour table 0x33 / 0x10 / 0xee); the pump 0x5309a0 and
-   the flag rebuild 0x475980 over the five ids. ROUGH: the label section (0x4f9e00 args, 0x5176d0 ids) and
-   the pump arguments are sketched from the pseudocode. */
+/* 0x5c7f00, the statistics panel "panel_statistik_stadt" (995 B): when the run allows it (ai_RunAllows 0x10) and
+   between the campaign steps 0xc, it opens the form and prints the town's name with the date (0x1f0e), the running
+   rating, the rank texts of the overall score (0x1f16 + 0 .. 4) and the combined rating (0x1f1c + 0 .. 4) and the
+   two shares without the first / second object in percent; page 3 holds the charts ai_DrawStatisticsCharts draws
+   by ai_StatsChartFlags, page 4 the legend: five check boxes with their texts 0x1f25 .. and a colour bar of the
+   chart. A click on the legend rebuilds the flags from the check boxes and redraws the charts; the right button
+   closes the panel
+   @deep Reconstructed in full against the original: the colour table, the flag default,
+   ai_RunAllows/ai_CampaignStep, the form, the five texts (0x1f0e with GMPLAYERSLOT.townName and ai_Time,
+   0x1f14 the rating, 0x1f15/0x1f1b the rank texts min(4,..), 0x1f21/0x1f22 the shares max(..,0)*100; the
+   ord_GetStatistics result is discarded as in the original), the charts page, the legend loop (WinOpenPic,
+   txt_Format, CreateWinText, interactive/checkable, SetObjValue of the flag bit computed before the calls,
+   ten colour lines with the byte colours pushed raw: d2_PlotLine/d2_Plot/d2_PutPixelRGB now take unsigned
+   char r,g,b as dd_RGB does), and the redraw loop. Every call, argument and constant compared. Left:
+   allocation in the legend loop: the original keeps the line y (9 + 30*i) and the colour pointer in frame
+   slots [esp+0x20]/[esp+0x24] (frame 0x158) and the counter in ebx, ours keeps the colour pointer in ebx,
+   y at [esp+0x10] (frame 0x154); hunks 0x5c8102 (25), 0x5c813b (11), 0x5c8168 (7), 0x5c817f (16) are those
+   moves and the recomputed i*30 (+5 / +4). (references: M8 at +0x213: ours refers to d2_LastWindow
+   (0x6ed938), the original's field to 0x6f2f88 (ai_StatsChartFlags), explained: the M8 at the legend
+   loop's first load is two loads that cross: ours loads d2_LastWindow (WinOpenPic's argument) before
+   ai_StatsChartFlags (the flag bit), the original the other way; both read both) */
 void ai_CityStatsPanel(void)
 {
-    unsigned char colors[14];
+    unsigned char colors[15];
     ORDSTATS stats;
     int ids[5];
     char buf[0x100];
     int win;
     int i;
     int k;
-    int id;
-    int y;
-    int h;
-    int flag;
-    float f;
+    int obj;
+    int checked;
 
     colors[0] = 0x33;
     colors[1] = 0x33;
-    colors[2] = 0x10;
-    colors[3] = 0xee;
-    colors[4] = 0x10;
-    colors[5] = 0xee;
-    colors[6] = 0x10;
+    colors[2] = 0x33;
+    colors[3] = 0x10;
+    colors[4] = 0xee;
+    colors[5] = 0x10;
+    colors[6] = 0xee;
     colors[7] = 0x10;
-    colors[8] = 0xee;
+    colors[8] = 0x10;
     colors[9] = 0xee;
-    colors[10] = 0;
-    colors[11] = 0xee;
-    colors[12] = 0x10;
-    colors[13] = 0xee;
+    colors[10] = 0xee;
+    colors[11] = 0;
+    colors[12] = 0xee;
+    colors[13] = 0x10;
+    colors[14] = 0xee;
     if (ai_StatsChartFlags == 0)
         ai_StatsChartFlags = 1;
     if (!ai_RunAllows(0x10))
         return;
     ai_CampaignStep(0xc, 0, 0, 0);
-    win = d2_OpenForm((char *)(unsigned)&full_data_62d440, 0, 0);
+    win = d2_OpenForm(0, 0, "panel\\statistik_stadt");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1f0e, ((unsigned)&ai_PlayerSlots + 0x20) + *(unsigned char *)(unsigned)&ai_OwnPlayer * 0x2f4, (unsigned)&ai_Time);
-    f = ord_GetStatistics((int *)&stats);
+    io_PrintText(0x1f0e, ((GMPLAYERSLOT *)ai_PlayerSlots)[ai_OwnPlayer].townName, &ai_Time);
+    ord_GetStatistics((int *)&stats);
     d2_SetForm(win, 2);
     io_PrintText(0x1f14, (int)ai_RatingBase);
-    io_PrintText(0x1f15, min(4, (int)((f + *(double *)(unsigned)&full_rdata_5eb8a8) * (2.5))) + 0x1f16);
-    io_PrintText(0x1f1b, min(4, (int)(f * *(float *)(unsigned)&ai_Unk5eb988)) + 0x1f1c);
-    io_PrintText(0x1f21, (int)f);
-    io_PrintText(0x1f22, (int)f);
+    io_PrintText(0x1f15, min(4, (int)((stats.score + 1.0) * 2.5)) + 0x1f16);
+    io_PrintText(0x1f1b, min(4, (int)(stats.col[2] * 5.0f)) + 0x1f1c);
+    io_PrintText(0x1f21, (int)max(stats.col[1] * 100.0f, 0.0));
+    io_PrintText(0x1f22, (int)(max(stats.col[3], 0.0) * 100.0));
     d2_SetForm(win, 3);
     ai_DrawStatisticsCharts(ai_StatsChartFlags, stats, d2_LastWindow);
     d2_SetForm(win, 4);
-    h = *(short *)((unsigned)&ai_Unkf8f128 + *(int *)(unsigned)&d2_LastWindow * 0x3c4);
     for (i = 0; i < 5; i++) {
-        id = d2_WinOpenPic(5, i * 0x1e + 5, i + 0x1f25, *(int *)(unsigned)&d2_LastWindow);
+        checked = (ai_StatsChartFlags & (1 << i)) != 0;
+        obj = d2_WinOpenPic(5, i * 30 + 5, 0, d2_LastWindow);
+        ids[i] = obj;
         txt_Format(buf, i + 0x1f25);
-        y = d2_CreateWinText(*(int *)(unsigned)&d2_LastWindow, 0x19, i * 0x1e + 4);
-        *(int *)((unsigned)&d2_Objs + id * 0x2ec + 0x4c) = 1;
-        *(int *)((unsigned)&d2_Objs + id * 0x2ec + 0x48) = 1;
-        d2_SetObjValue(id, (ai_StatsChartFlags & (1 << i)) != 0);
-        for (k = 0; k < 10; k++) {
-            d2_PlotLine(h - 1, y + k, h - 0xb, y + k, colors[i * 3], colors[i * 3 + 1],
-                         colors[i * 3 + 2]);
-        }
-        ids[i] = id;
+        d2_CreateWinText(0x19, i * 30 + 4, buf, d2_LastWindow);
+        d2_Objs[obj].interactive = 1;
+        d2_Objs[obj].checkable = 1;
+        d2_SetObjValue(obj, checked);
+        for (k = 0; k < 10; k++)
+            d2_PlotLine(d2_Wins[d2_LastWindow].w - 1, i * 30 + 9 + k, d2_Wins[d2_LastWindow].w - 0xb, i * 30 + 9 + k,
+                        colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
     }
-    *(int *)(unsigned)&d2_ClickedId = -1;
+    d2_ClickedId = -1;
     do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
+        if (d2_ClickedId != -1) {
             ai_StatsChartFlags = 0;
-            for (i = 0; i < 5; i++) {
-                if (d2_GetObjValue(ids[i]))
-                    ai_StatsChartFlags |= (1 << i);
-            }
+            for (i = 0; i < 5; i++)
+                ai_StatsChartFlags |= d2_GetObjValue(ids[i]) ? 1 << i : 0;
             d2_SetForm(win, 3);
             ai_DrawStatisticsCharts(ai_StatsChartFlags, stats, d2_LastWindow);
         }
-        if (*(int *)((unsigned)&dm_L + 0x20))
-            *(int *)(unsigned)&sv_PopRequest = 1;
-    } while (sv_RunFrame(ai_CityStatsPanel, 0x657c7) != 0);
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_CityStatsPanel, 0x657c7) != 0);
     d2_CloseView(win);
     ai_CampaignStep(0xc, 0, 1, 0);
 }

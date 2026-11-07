@@ -434,11 +434,11 @@ extern unsigned char d2_PenSize;  /* 0x6ed97c, the pen size of d2_Plot (0: one p
 extern D2DISSOLVE *d2_CurrentDissolve;    /* 0xf8abc8 */
 extern D2FRCT d2_PointerItems[6];   /* 0xf8ab80, the item list drawn next to the pointer */
 extern volatile int tb_Calls;       /* 0x6333d8, timer callbacks */
-int d2_PutPixelRGB(int x, int y, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf); /* 0x4799e0 */
+int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g, unsigned char b, D2SURF *surf); /* 0x4799e0 */
 int d2_GetViewWin(int view, int i);                  /* 0x475ff0 */
 void d2_SetObjFont(int obj, int font);               /* 0x4760b0 */
-void d2_Plot(int x, int y, int r, int g, int b);   /* 0x476220 */
-void d2_PlotLine(int x0, int y0, int x1, int y1, int r, int g, int b); /* 0x4764f0 */
+void d2_Plot(int x, int y, unsigned char r, unsigned char g, unsigned char b);   /* 0x476220 */
+void d2_PlotLine(int x0, int y0, int x1, int y1, unsigned char r, unsigned char g, unsigned char b); /* 0x4764f0 */
 void d2_ClearPaintbox(void);                            /* 0x476710 */
 void d2_FillPaintbox(int x, int y, int w, int h);      /* 0x476760 */
 D2FADE *d2_StartFade(int x, int y, int w, int h, char *name, int dur, unsigned int flags); /* 0x4767d0 */

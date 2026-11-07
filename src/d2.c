@@ -5418,7 +5418,7 @@ void d2_DissolveStep(D2DISSOLVE *d)
 }
 /* 0x476220, plots a point (pen size 0, 1 or 2) on the paintbox of the current window */
 
-void d2_Plot(int x, int y, int r, int g, int b)
+void d2_Plot(int x, int y, unsigned char r, unsigned char g, unsigned char b)
 {
     D2PAINTWIN *w = WIN(d2_LastWindow);
     int pen;
@@ -5464,7 +5464,7 @@ void d2_Plot(int x, int y, int r, int g, int b)
 }
 /* 0x4764f0, line on the paintbox (Bresenham) @deep Read whole function against original: axis-parallel cases, sign/delta setup, and both Bresenham loops now mirror it (increments straight/diagonal precomputed before the loop, if (e >= 0) step+diagonal else straight; instruction count 226 = 226). Remaining hunks are allocation: the second vertical loop keeps its counter in the y1 parameter slot (ours: dec eax; mov [esp+0x28], eax) where the original copies it to edi; the original keeps straight/diagonal in eax/ecx at loop top and stores them at [esp+0x20]/[esp+0x1c] (ours [esp+0x1c]/[esp+0x10], loading one inside the branch); x0/dx in ebx/ebp swapped. y0+=sy before/after e+= flips VC6 into tail-merging the add (code 192 -> 156 with e first). */
 
-void d2_PlotLine(int x0, int y0, int x1, int y1, int r, int g, int b)
+void d2_PlotLine(int x0, int y0, int x1, int y1, unsigned char r, unsigned char g, unsigned char b)
 {
     int e, straight, diagonal, sx, sy, dx, dy;
 

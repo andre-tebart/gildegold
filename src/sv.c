@@ -1062,7 +1062,7 @@ extern int d3_CurrentScene;                /* 0x633444 */
 int sprintf(char *buf, const char *fmt, ...);                     /* 0x5de652 */
 struct D2SURF * d2_LoadBmpSurface();                     /* 0x478b50 */
 void d2_GetPixelColour();                     /* 0x4798f0 */
-int d2_PutPixelRGB();                     /* 0x4799e0 */
+struct D2SURF; int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g, unsigned char b, struct D2SURF *surf);  /* 0x4799e0 */
 void ai_SwitchRoom(int param_1, unsigned short param_2);                     /* 0x59e0a0 */
 unsigned gm_PermissionBits(unsigned p1, unsigned char *b, unsigned short *o, int c);                     /* 0x503530 */
 int d2_FindPic();                     /* 0x468890 */

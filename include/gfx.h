@@ -111,7 +111,7 @@ void d2_Convert16ToRgb(int a, int b, unsigned int w, unsigned int h, unsigned sh
 
 /* declared in other units' headers before (moved to the owner) */
 int d2_PutPixelClipped(int x, int y, unsigned short color, D2SURF *surf);  /* 0x479b90 */
-int d2_PutPixelRGB(int x, int y, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf);  /* 0x4799e0 */
+int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g, unsigned char b, D2SURF *surf);  /* 0x4799e0 */
 void d2_SetSurfaceClip(int x, int y, int w, int h, D2SURF *surf);  /* 0x479cd0 */
 int d2_UnlockSurface(D2SURF *s);  /* 0x4790e0 */
 void d2_GetPixelColour(int x, int y, D2SURF *surf, unsigned char *rgb);  /* 0x4798f0 */

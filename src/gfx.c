@@ -1595,7 +1595,7 @@ void d2_GetPixelColour(int x, int y, D2SURF *surf, unsigned char *rgb)
    average; 15 / 16 bpp: dd_RGB; 24 bpp: 3 bytes; 32 bpp: a dword), clipped to the surface's clip rectangle;
    1 if plotted, 0 when outside the clip or surf is NULL (the pen d2_Plot and the outline below use it) */
 
-int d2_PutPixelRGB(int x, int y, unsigned int r, unsigned int g, unsigned int b, D2SURF *surf)
+int d2_PutPixelRGB(int x, int y, unsigned char r, unsigned char g, unsigned char b, D2SURF *surf)
 {
     unsigned char bpp;
     DWORD c;
