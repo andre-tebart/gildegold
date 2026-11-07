@@ -25920,15 +25920,33 @@ int ai_ShowEnemiesTab(int view, int page, int scrollPage, unsigned int n, LCAMOU
     d2_Wins[d2_LastWindow].visible = 0x70;
     return 1;
 }
-/* 0x5c02d0, a tab fill of the special-amount window (259 B, ROUGH SKELETON): as 0x5bffb0 */
+/* 0x5c02d0, the rows of the special-amount window's lovers tab (tab 3, 259 B): with n rows, switches to the page
+   (ai_AmountPageSwitch view, page, scrollPage), centres the caption txt_Ptrs[0x169d] at the top and draws each
+   row centred (ai_AmountRow, the frame picture 0x5da's width, 0x28 + 0x70 per row, titled); enables the rows'
+   sliders, restores the page's scroll offset and sets its scroll step 0x70; returns 1 (0 without rows) */
 
-int ai_Unk5c02d0(int param_1, int param_2, int param_3, int param_4)
+int ai_ShowLoversTab(int view, int page, int scrollPage, unsigned int n, LCAMOUNTROW *rows)
 {
-    if (param_4 == 0)
+    unsigned int i;
+    int half;
+    int y;
+    int saved;
+
+    if (n == 0)
         return 0;
-    ai_AmountPageSwitch(param_1, param_2, param_3);
-    /* ROUGH SKELETON: the rows of the page */
-    return 0;
+    saved = ai_AmountPageSwitch(view, page, scrollPage);
+    half = d2_Wins[d2_LastWindow].w / 2;
+    ai_CentredText(txt_Ptrs[0x169d], half, 8, half * 2, 0x55);
+    for (i = 0; i < n; i++) {
+        y = 0x28 + i * 0x70;
+        rows[i].x = (d2_Wins[d2_LastWindow].w - d2_Pics[0x5da].w) / 2;
+        rows[i].y = y;
+        ai_AmountRow(rows[i].x, y, d2_LastWindow, 0x56, &rows[i], 1);
+    }
+    ai_EnableAmountRows(n, rows);
+    d2_Wins[d2_LastWindow].scrollY = saved;
+    d2_Wins[d2_LastWindow].visible = 0x70;
+    return 1;
 }
 /* 0x5c03e0, a tab fill of the special-amount window (367 B, ROUGH SKELETON): as 0x5bffb0, frame 0x104 */
 
@@ -32638,7 +32656,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 0, 0, -1, ai_FillFamilyTab, ai_ShowFamilyTab },
     { 1, 0, -1, ai_FillFriendsTab, ai_ShowFriendsTab },
     { 2, 0, -1, ai_FillEnemiesTab, ai_ShowEnemiesTab },
-    { 3, 0, -1, ai_FillLoversTab, ai_Unk5c02d0 },
+    { 3, 0, -1, ai_FillLoversTab, ai_ShowLoversTab },
     { 4, 0, -1, ai_FillWeddingTab, ai_Unk5c03e0 },
     { 5, 0, -1, ai_FillQuarrelTab, ai_Unk5c0550 },
     { 6, 0, -1, ai_FillCandidacyTab, ai_Unk5c0650 },
