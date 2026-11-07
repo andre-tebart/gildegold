@@ -33567,70 +33567,109 @@ int ai_UseGoodTrialStep(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d0f20, an action callback of the record table 0x62c420 (record 17 at 0x62c5fc, the text id 0x16a,
-   992 B): param_1 the message record (+2 the type), param_2 a state record (+0x10 set to 1, +4 the
-   character handle). Type 6: the caption 0x5176d0 and the menu 0x5c1130 (the config 0x400 / 6 / the two
-   ids 0x5eed68 / 0x5eed6c) give the character; other types take it from 0x505df0 (param_2 + 4). Then
-   0x5ba6b0 (param_1, 0x2c5) picks a value used as 1 / 2, and two random picks 0x42ec00 (0x300) walk the
-   0x300 character records 0x770b80 + i * 0x21c, skipping the ids of param_1, param_2 (and of the first
-   pick), the free records (word +0 == -1) and the kinds +2 >= 0xa; the byte 0x770ce6 must be nonzero.
-   The tail (0x4c4b00, 0x5176d0, 0x53dda0, 0x5ba660 and the panel 0x5cf820) is comments.
-   ROUGH (layout 2026-10-24, tools/disasm.py): the pick loops are drafted; the text / message tail is not. */
+/* 0x5d0f20, the use callback of the Domizil good 0x16a (the +0x14 pointer of the table entry 0x62c5fc): marks the
+   use handled and picks the target character, for a player (kind 6) with the special-amount menu (the gypsy
+   filter, mode 0x400, the prompt 0x9c), else the character use->target (gm_FindChar); none -> 0. Three random
+   office holders (ai_Chars from a random start, steps 1 / 7 / 13: a used record of kind below 10 with an office,
+   not the target, the user or an earlier pick) each get the target's relation lowered by 20, 40 when the user
+   holds the good 0x2c5 (cm_SendRelations). A player target (kind 6 / 7) gets the news 0xfec naming the three,
+   each player pick the news 0xfed naming the target (key 0x5fb); a player user sees the text 0xfe8 (the good's
+   rank + 1 and the three) in the use-object panel. Returns 1.
+   @deep Read whole against the original and rewritten typed (AICHARREC ch / target / pick[3], G8USEVIEW
+   use, AMOUNTCFG cfg, lc_CharRecs); every call, argument, constant and store matches in order (the draft
+   compared the picks with use instead of ch, had two picks of three and no tail). The ret = 0 / if (target
+   != 0) { .. ret = 1; } form gives the original's zero register and two epilogues. Left: (1) at the end
+   the original calls ai_FindUsableGoodIndex (+0x361) before loading the three pick ids for txt_Format
+   0xfe8; ours (+0x35b) loads them first and calls after, because VC6 sees our earlier-defined
+   ai_FindUsableGoodIndex write only *index (the same TU-boundary effect as ai_UseGood, lc lead Open:
+   layout); the inline and separate-statement spellings give the same code, so the M8 at +0x3b0
+   (ai_UseObjPanel | txt_Format) is this misalignment; (2) allocation: the zero in esi where the original
+   has ebx, ebp pushed after the null test (ours +0x5d0fc3 push ebp) where the original pushes it at entry,
+   the loop counters in ebp/esi swapped, and loop 1's dec ebp scheduled after the idiv (the original
+   before). (references: M8 at +0x3b0: ours refers to ai_UseObjPanel (0x5cf820), the original's field to
+   0x5176d0 (txt_Format), explained: the M8 is the call reordered across the pick id loads (VC6 sees the
+   callee in our TU), not another callee: both sides call txt_Format and ai_UseObjPanel once at the end) */
 
-int ai_Unk5d0f20(int param_1, int param_2)
+int ai_UseGoodLowerOfficialRelations(AICHARREC *ch, G8USEVIEW *use)
 {
-    char text[0x800];
-    int cfg[8];
-    int actor;
-    int first;
-    int second;
-    int seed;
-    int tries;
+    AICHARREC *pick[3];
+    int index;
+    AMOUNTCFG cfg;
+    char text[0x100];
+    char news[0x800];
+    AICHARREC *target;
+    G9DOMIZIL *found;
+    int level;
+    int amount;
+    int ret;
+    int id;
+    int n;
+    int i;
 
-    *(int *)(param_2 + 0x10) = 1;
-    if (*(char *)(param_1 + 2) == 6) {
-        /* ROUGH: the caption id of 0x5176d0 (text) and the config block fields are not read yet; the
-           disassembly stores the ids U_I(0x5eed68) / U_I(0x5eed6c), 0x400 and 6 into the block at
-           esp+0x40 and calls 0x5c1130 (the block, the text, 0, 0). */
-        cfg[0] = U_I(((unsigned)&gypsyFilter));
-        cfg[1] = U_I(((unsigned)&gypsyFilter + 4));
-        cfg[2] = 0x400;
-        cfg[3] = 6;
-        txt_Format(text, (char *)0);
-        actor = ai_AmountMenu(cfg, text, 0, 0);
+    use->handled = 1;
+    ret = 0;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
     } else {
-        actor = gm_FindChar(*(int *)(param_2 + 4));
+        target = (AICHARREC *)gm_FindChar(use->target);
     }
-    if (actor == 0)
-        return 0;
-    first = 0;
-    second = 0;
-    seed = util_Random(0x300) & 0xffff;
-    for (tries = 0x300; tries != 0; tries--) {
-        if (seed != *(unsigned short *)actor && seed != *(unsigned short *)param_2 &&
-            *(short *)((unsigned)&ai_Chars + seed * 0x21c) != -1 &&
-            *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + seed * 0x21c) < 0xa &&
-            *(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + seed * 0x21c) != 0) {
-            first = (unsigned)&ai_Chars + seed * 0x21c;
-            break;
+    if (target != 0) {
+        level = ai_InventoryHas(ch, 0x2c5) != 0 ? 2 : 1;
+        id = util_Random(0x300) & 0xffff;
+        for (n = 0x300; n != 0; n--) {
+            if (id != target->id && id != ch->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
+                lc_CharRecs[id].officeKind != 0) {
+                pick[0] = &lc_CharRecs[id];
+                break;
+            }
+            id = (id + 1) % 0x300;
         }
-        seed = (seed + 1) % 0x300;
-    }
-    seed = util_Random(0x300) & 0xffff;
-    for (tries = 0x300; tries != 0; tries--) {
-        if (seed != *(unsigned short *)actor && seed != *(unsigned short *)param_2 &&
-            (first == 0 || seed != *(unsigned short *)first) &&
-            *(short *)((unsigned)&ai_Chars + seed * 0x21c) != -1 &&
-            *(unsigned char *)(((unsigned)&ai_Chars + 0x2) + seed * 0x21c) < 0xa &&
-            *(unsigned char *)(((unsigned)&ai_CharInts + 0x162) + seed * 0x21c) != 0) {
-            second = (unsigned)&ai_Chars + seed * 0x21c;
-            break;
+        id = util_Random(0x300) & 0xffff;
+        for (n = 0x300; n != 0; n--) {
+            if (id != target->id && id != ch->id && id != pick[0]->id && lc_CharRecs[id].id != 0xffff &&
+                lc_CharRecs[id].kind < 10 && lc_CharRecs[id].officeKind != 0) {
+                pick[1] = &lc_CharRecs[id];
+                break;
+            }
+            id = (id + 7) % 0x300;
         }
-        seed = (seed + 1) % 0x300;
+        id = util_Random(0x300) & 0xffff;
+        for (n = 0x300; n != 0; n--) {
+            if (id != target->id && id != ch->id && id != pick[0]->id && id != pick[1]->id &&
+                lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 && lc_CharRecs[id].officeKind != 0) {
+                pick[2] = &lc_CharRecs[id];
+                break;
+            }
+            id = (id + 13) % 0x300;
+        }
+        amount = level * -20;
+        cm_SendRelations(target->netId, pick[0]->netId, amount, 1);
+        cm_SendRelations(target->netId, pick[1]->netId, amount, 1);
+        cm_SendRelations(target->netId, pick[2]->netId, amount, 1);
+        if (target->kind == 6 || target->kind == 7) {
+            txt_Format(news, 0xfec, pick[0]->id, pick[1]->id, pick[2]->id);
+            he_ShowNews(target->netId, -1, news, 1, 0x5fb, 0);
+        }
+        txt_Format(news, 0xfed, target->id);
+        for (i = 0; i < 3; i++) {
+            if (pick[i]->kind == 6 || pick[i]->kind == 7)
+                he_ShowNews(pick[i]->netId, -1, news, 0, 0x5fb, 0);
+        }
+        if (ch->kind == 6) {
+            found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+            txt_Format(news, 0xfe8, found->rank + 1, pick[0]->id, pick[1]->id, pick[2]->id);
+            ai_UseObjPanel(news);
+        }
+        ret = 1;
     }
-    /* ROUGH: the three 0x4c4b00 calls, the texts 0x5176d0, the messages 0x53dda0, the 0x5ba660
-       lookup and the panel 0x5cf820 follow. */
-    return 0;
+    return ret;
 }
 /* 0x5d1300, an action callback of the record table 0x62c420 (record 19 at 0x62c634, the text id 0x16c,
    224 B): the trial step pick of 0x5d0e60 - 0x505ca0 (5, the picks); up to two picks whose counter
