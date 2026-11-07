@@ -775,6 +775,7 @@ extern int d2_ClickedId;
 extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
 extern GAPDATA full_data_6f2f64[];
+#define ai_TransportEscort (*(char *)&full_data_6f2f64)  /* 0x6f2f64, the escort kind of the last transport order (ai_TransportWindow clears it, the order sets it to the cart's AIOBJ.escort) */
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
@@ -1236,7 +1237,6 @@ extern AITIME ai_Time;                   /* 0x770ae0, the game clock */
 #include "amt_types.h"
 #include "ch.h"
 #define sv_SelectPanelObjectK ((int (*)())sv_SelectPanelObject)  /* 0x52c4c0?: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
-#define gm_LevelPayoutK ((int (*)())gm_LevelPayout)  /* 0x50a970: @original this unit's calls were compiled without a prototype (as the K&R declaration it had before the definition's spelling) */
 #define ai_GfxDetailI (*(int *)&ai_GfxDetail)  /* 0x6f35c4 (menu.c: unsigned char): @original ai_ShowVgObjects reads the detail as a dword and takes its low byte (0x58f9d7 mov ecx, dword ptr [0x6f35c4] / and edx, 0xff); the byte object compiles to mov cl, byte ptr */
 #define d2_CreatePicObjS ((int (*)(short, short, int))d2_CreatePicObj)  /* 0x46cd80 (d2.h: int x, y): @original the town map update adds the window position to the mark pixel in 16 bits (0x5a8052 mov dx, word ptr [eax + 4] / add dx, di / push edx), as d2.c's callers */
 /* 0x58bbd0, the production window's table init (400 B): the five-entry table 0x6f4f08 (-1 / -1 every 0x14 B) and
@@ -17855,61 +17855,54 @@ void ai_SellCarts(int n, AIOBJ **carts)
         cm_SendMoveGoods(ai_CharInts[ai_PlayerId][0], -1, ai_OwnPlayer, price);
     }
 }
-/* 0x5ae6b0, a transport order message (415 B): every carrier of the kind 0x11 (0x53e400 (2, 3, the +2 field of
-   param_2, 0, 0x11)) gets the clock (+0x52 .. +0x5e) and +0x70 = -1; 0x576340 (0x24, param_4, 0, 0) must answer 1;
-   the AIMSG 0xf8 bytes: type 0xf (+4), the character 0x770b84 + param_1 * 0x21c (+8), -1 (+0xc), the clock
-   (+0x28 .. +0x36 = 2), the +2 of param_2 (+0x58), the +1 of param_3 (+0x5c) and of param_4 (+0x60), and the
-   char +0x28 of param_2 at +0x78 (also the global 0x6f2f64); 0x4c4b70 sends it; the amount 0x50aa00 / 0x50a970 of
-   the +0x28 field is paid to 0x770b84 + param_1 * 0x21c (0x4c4830); for the player 0x6f25b8 the event 0x24 is
-   confirmed (0x576040) */
+/* 0x5ae6b0, sends the transport order of a cart from one building to another (440 B, ai_TransportWindow per
+   picked cart): the cart's carrier events (kind 0x11, key 3 = the cart's objId) end now (the game clock, stage
+   -1); the script must confirm the order (ai_ScriptQuery 0x24 on the destination); the message 0xf to the
+   character who (its netId; flags 2, the clock + 1 s) names the cart, the source and the destination building ids
+   and the escort; an escort is paid for (gm_LevelPayout of the goods' value, cm_SendMoveGoodsUnchecked) and the
+   fee returned; the player's own order steps the campaign (event 0x24); 0 when the script refuses */
 
-int ai_Unk5ae6b0(unsigned int param_1, int param_2, int param_3, int param_4)
+int ai_SendTransportOrder(unsigned int who, AIOBJ *cart, AIBLD *from, AIBLD *to)
 {
-    char msg[0xf8];
-    char rec[176];
-    int carrier;
-    int v;
+    int fee = 0;
+    AIMSG msg;
+    AIRECIPE goods;
+    AIJOB *ev;
 
-    carrier = he_FindEvent(2, 3, *(int *)(param_2 + 2), 0, 0x11);
-    while (carrier != 0) {
-        *(int *)(carrier + 0x52) = U_I((unsigned)&ai_Time);
-        *(int *)(carrier + 0x56) = U_I((unsigned)&ai_Time.hour);
-        *(int *)(carrier + 0x5a) = U_I(((unsigned)&ai_Time + 0x8));
-        U_W(carrier + 0x5e) = U_W(((unsigned)&ai_Time + 0xc));
-        *(int *)(carrier + 0x70) = -1;
-        carrier = he_NextEvent();
+    ev = (AIJOB *)he_FindEvent(2, 3, cart->objId, 0, 0x11);
+    while (ev != 0) {
+        ev->end = ai_Time;
+        ev->stage = -1;
+        ev = (AIJOB *)he_NextEvent();
     }
-    if (ai_ScriptQuery(0x24, param_4, 0, 0) != 1)
-        return 0;
-    memset(msg, 0, 0xf8);
-    *(unsigned char *)(msg + 4) = 0xf;
-    *(int *)(msg + 8) = U_I((unsigned)&ai_CharInts + param_1 * 0x21c);
-    *(int *)(msg + 0xc) = -1;
-    *(int *)(msg + 0x28) = U_I((unsigned)&ai_Time);
-    *(int *)(msg + 0x2c) = U_I((unsigned)&ai_Time.hour);
-    *(int *)(msg + 0x30) = U_I(((unsigned)&ai_Time + 0x8));
-    U_W(msg + 0x34) = U_W(((unsigned)&ai_Time + 0xc));
-    *(unsigned char *)(msg + 0x36) = 2;
-    *(int *)(msg + 0x58) = *(int *)(param_2 + 2);
-    *(int *)(msg + 0x5c) = *(int *)(param_3 + 1);
-    *(int *)(msg + 0x60) = *(int *)(param_4 + 1);
-    U_I((unsigned)&full_data_6f2f64) = *(char *)(param_2 + 0x28);
-    *(int *)(msg + 0x78) = U_I((unsigned)&full_data_6f2f64);
-    cm_SendLongMessage((char *)msg);
-    v = 0;
-    if (*(char *)(param_2 + 0x28) != 0) {
-        gm_StallGoodsList((void *)param_2, (void *)rec);
-        v = gm_LevelPayoutK(U_I(rec + 0xb0), *(char *)(param_2 + 0x28));
-        cm_SendMoveGoodsUnchecked(-1, U_I((unsigned)&ai_CharInts + param_1 * 0x21c), *(unsigned char *)(unsigned)&ai_OwnPlayer, v);
+    if (ai_ScriptQuery(0x24, to, 0, 0) == 1) {
+        memset(&msg, 0, sizeof(msg));
+        msg.type = 0xf;
+        msg.to = ((AICHARREC *)ai_Chars)[who].netId;
+        msg.fromId = -1;
+        msg.flags = 2;
+        msg.time = ai_Time;
+        gm_AddTime(&msg.time, 0, 0, 1);
+        msg.car = cart->objId;
+        msg.n = from->id;
+        msg.ch = to->id;
+        msg.dst[5] = cart->escort;
+        ai_TransportEscort = (char)msg.dst[5];
+        cm_SendLongMessage((char *)&msg);
+        if (cart->escort != 0) {
+            gm_StallGoodsList((char *)cart, (unsigned *)&goods);
+            fee = gm_LevelPayout(goods.pada8[2], cart->escort);
+            cm_SendMoveGoodsUnchecked(-1, ((AICHARREC *)ai_Chars)[who].netId, ai_OwnPlayer, fee);
+        }
+        if (who == ai_PlayerId)
+            ai_CampaignStep(0x24, to, 0, 0);
     }
-    if (param_1 == U_W((unsigned)&ai_PlayerId))
-        ai_CampaignStep(0x24, param_4, 0, 0);
-    return v;
+    return fee;
 }
 /* 0x5ae870, makes the transport order of a cart due now (100 B): walks the events of the kind 0xf (he_FindEvent
    (1, 0, 0xf)); the one whose +0xac is the cart's object id (+2) gets the game clock as its end time (+0x52 ..
    0x5e) and is posted (cm_SendExSetHE (-1, it)); the transport window calls it for each cart of the picked
-   building before it sends the new order (ai_Unk5ae6b0) */
+   building before it sends the new order (ai_SendTransportOrder) */
 
 void ai_TransportOrderDue(AIOBJ *cart)
 {
