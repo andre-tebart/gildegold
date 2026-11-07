@@ -29136,24 +29136,35 @@ void ai_PlotScoreChart(ORDSTATS stats, int width, int height)
     d2_PlotLine(0x2d + scale * 15, (int)(bottom - ord_StatisticsHistory[15].score * unit), 0x2d + scale * 16,
                 (int)(bottom - stats.score * unit), 0x10, 0xee, 0x10);
 }
-/* 0x5c7560, the third bar chart (384 B, ROUGH): the bars 0x4764f0 (0x2d + i * the scale, the float of
-   0x91ab14 + i * 0x14) with the colour 0xee / 0xee / 0x10 and the scale (param_6 - 0x69) / 16; the last
-   bar at (scale * 3 + 9) * 5 */
+/* 0x5c7560, the first-object chart of the statistics window (ai_Unk5c7970, its flag 8; 325 B): the rounds' shares
+   of characters without the first object (ord_StatisticsHistory[].noFirst, 0 .. 1, below 0 drawn as 0) as yellow
+   (0xee, 0xee, 0x10) line segments, scale = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by
+   height - 0x1e for a share of 1, the last one to the current share stats.col[1] */
 
-void ai_Unk5c7560(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6,
-                  int param_7, int param_8, int param_9, int param_10, int param_11, int param_12)
+void ai_PlotNoFirstChart(ORDSTATS stats, int width, int height)
 {
     int scale;
     int x;
-    unsigned int *p;
+    int i;
+    float bottom;
+    float unit;
+    float from;
+    float to;
 
-    scale = (param_11 - 0x69) / 16;
+    scale = (width - 0x69) / 16;
+    unit = (float)(height - 0x1e);
+    bottom = (float)(height - 0x16);
     x = 0x2d;
-    for (p = (unsigned int *)((unsigned)&ord_StatisticsHistory + 0x14); (int)p < (unsigned)((unsigned)ord_StatisticsHistory + 0x140); p += 5) {
-        d2_PlotLine(x, (int)*(float *)((char *)p - 4));
+    for (i = 1; i < 16; i++) {
+        from = max(ord_StatisticsHistory[i - 1].noFirst, 0.0);
+        to = max(ord_StatisticsHistory[i].noFirst, 0.0);
+        d2_PlotLine(x, (int)(bottom - from * unit), x + scale, (int)(bottom - to * unit), 0xee, 0xee, 0x10);
         x += scale;
     }
-    d2_PlotLine((scale * 3 + 9) * 5, (int)*(float *)((char *)(unsigned)&gm_OwnNameHeads - 4));
+    from = max(ord_StatisticsHistory[15].noFirst, 0.0);
+    to = max(stats.col[1], 0.0);
+    d2_PlotLine(0x2d + scale * 15, (int)(bottom - from * unit), 0x2d + scale * 16, (int)(bottom - to * unit), 0xee, 0xee,
+                0x10);
 }
 /* 0x5c76b0, a bar chart of the 0x91ab08 / 0x91ab1c float pairs (325 B): the rectangles 0x4764f0 (x, y1,
    x + scale, y2, 0xee, 0x10, 0xee) between the consecutive floats 0x91ab08 + i * 0x14 and
@@ -29275,8 +29286,7 @@ void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_
         ai_Unk5c7800(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10,
                      param_11, h - 1, w);
     if (param_1 & 8)
-        ai_Unk5c7560(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10,
-                     param_11, h - 1, w);
+        ai_PlotNoFirstChart(*(ORDSTATS *)&param_2, h - 1, w);
     if (param_1 & 0x10)
         ai_Unk5c76b0(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10,
                      param_11, h - 1, w);
