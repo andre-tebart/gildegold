@@ -17966,134 +17966,158 @@ int ai_CartAtBuilding(AIBLD *bld, AIOBJ *cart)
     }
     return 0;
 }
-/* 0x5ae9a0, the transport from the warehouse (1648 B, ROUGH): the kind record 0x7e3f30 + kind * 0x24d; with no
-   building (param_5) the player's one 0x4ffe90 (0, 2, 7, 1, param_1), else the failure text 0x62cc94
-   "ob_TransportFromLager(): ...". 0x4c3b30 opens the message, then both carrier tables (0x6f58a0 .. 0x6f5a60
-   and 0x6f4f60 .. 0x6f52e0, 0x38-byte rows: the good +0, the control id +0x10, the available +0x30) are walked:
-   the amount 0x475980 (0x50acf0 / 0x50ad70 against the building's stock), the price 0x5089c0 (1.1 for a "\n"
-   kind, else the float +0x49 of the record; the +0x65 amount for the modes 2 / 4), the character check
-   0x521040 of 0x770b80 + 0x6f25b8 * 0x21c, the limit 0x5085f0 and the confirmation 0x576340 (0x25 / 0x2a for
-   the +1 flag, 0x27 / 0x29 for the +8 flag) with 0x576040; the order 0x4c4880, the text 0x5176d0 (0xec) /
-   0x52e330 / 0x426fa0 ("RollenKurz_s_01" 0x60c28c, 0x3f, 0x7f) and the slider 0x475cb0. 0x4c3b40 then
-   0x4c3b50 are waited on (0x52fe00) and 1 returns */
+/* 0x5ae9a0, the transport of the picked goods between a warehouse and the building bld ("ob_TransportFromLager",
+   1643 B, ai_TransportWindow): without a source object the warehouse lagerId (gm_Query kind 7 by id) takes
+   the goods (gm_FreeStallCapacity: what fits), else the source gives them (gm_TakeableCount); the goods grids
+   ai_ProdGoods2 then ai_ProdGoods are walked, each slot with a picked amount (its check control) is priced
+   when priced is set (the goods price at the market class 0xa * 1.1, else * bld->priceFactor; the modes 2 / 4
+   at the building's player slot), checked against the player's money (sv_CheckGoodAmount of the total over
+   factor), and a factor whose change to the total is below gm_PlayerFactor (1, player) becomes 1.0; the mode
+   bits 8 / 1 need the script's consent (ai_ScriptQuery 0x29 / 0x27, 0x2a / 0x25 for a source or the warehouse,
+   then ai_CampaignStep); the move goes out as cm_SendExSellObject (lagerId, the cart, the goods, n, player,
+   the price over factor), a changed price shows the text 0xec with the difference and plays
+   "RollenKurz_s_01", and the slot's control drops by n. The moves are one send group, waited for; 1 */
 
-int ai_Unk5ae9a0(int param_1, int param_2, unsigned char *param_3, int param_4, int param_5,
-                 float param_6, int param_7, unsigned int param_8)
+int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char *source, float factor,
+                          unsigned char player, unsigned int mode)
 {
+    float total;
+    float price;
+    float inv;
+    char *lager;
+    AIBTYPE *bt;
     char text[256];
-    float v;
-    int rec;
-    char *kind;
+    LCPRODSLOT *slot;
     int n;
-    int m;
-    int r;
-    int *row;
+    int limit;
+    int i;
 
-    rec = 0;
-    kind = 0;
-    v = 0.0f;
-    if (param_3 != 0)
-        kind = (char *)(U_I((unsigned)&ai_BTypes) + *param_3 * 0x24d);
-    if (param_5 == 0) {
-        rec = gm_Query(0, 2, 7, 1, param_1);
-        if (rec == 0) {
-            err_Message((char *)(unsigned)&full_data_62cc94);
+    lager = 0;
+    bt = 0;
+    if (bld != 0)
+        bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    if (source == 0) {
+        lager = gm_Query(0, 2, 7, 1, lagerId);
+        if (lager == 0) {
+            err_Message("ob_TransportFromLager(): Could not find lager by id...");
             return 0;
         }
     }
     cm_BeginSendGroup();
-    for (row = (int *)(unsigned)&ai_ProdGoods2; (int)row < (unsigned)((unsigned)((char *)ai_ProdGoods2 + 0x1c0)); row += 0xe) {
-        if (row[4] == -1 || d2_GetObjValue(row[4]) == 0)
+    for (i = 0; i < 8; i++) {
+        slot = &ai_ProdGoods2[i];
+        if (slot->check == -1 || d2_GetObjValue(slot->check) == 0)
             continue;
-        n = d2_GetObjValue(row[4]);
-        if (param_5 == 0) {
-            if (rec != 0)
-                n = gm_FreeStallCapacity(rec, row[0], n);
+        n = d2_GetObjValue(slot->check);
+        if (source == 0) {
+            if (lager != 0)
+                n = gm_FreeStallCapacity(lager, slot->good, n);
         } else {
-            n = gm_TakeableCount(param_5, row[0], n);
+            n = gm_TakeableCount(source, slot->good, n);
         }
         if (n <= 0)
             continue;
-        if (param_4 == 0) {
-            v = 0.0f;
+        if (priced != 0) {
+            if (bt->buildingClass == 0xa)
+                price = gm_GoodsPrice(slot->good, player) * 1.1;
+            else
+                price = gm_GoodsPrice(slot->good, player) * bld->priceFactor;
+            if (mode == 2 || mode == 4)
+                price = gm_GoodsPrice(slot->good, (unsigned char)bld->playerSlot);
         } else {
-            if (*kind == 0xa)
-                v = gm_GoodsPrice(row[0], param_7) * 1.1;
-            else
-                v = gm_GoodsPrice(row[0], param_7) * *(float *)(param_3 + 0x49);
-            if (param_8 == 2 || param_8 == 4)
-                v = gm_GoodsPrice(row[0], param_3[0x65]);
+            price = 0.0f;
         }
-        if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), (int)param_7) == 0)
+        total = n * price;
+        inv = ai_FloatOne / factor;
+        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(inv * total), player) == 0)
             continue;
-        if (row[0xc] < 0)
+        if (slot->amount < 0)
             continue;
-        m = gm_PlayerFactor(1, param_7);
-        /* ROUGH: the __ftol of the price against the limit m */
-        r = (int)v;
-        if (r < m)
-            param_6 = 1.0f;
-        if ((param_8 & 8) == 0) {
-            if ((param_8 & 1) == 0) {
-                cm_SendExSellObject(param_1, *(int *)(param_2 + 2), row[0], n, param_7, (int)v);
-                if (v != 0.0f && param_6 != 1.0f) {
-                    txt_Format(text, 0xec, (int)v);
-                    sv_SetStatusText(text);
-                    sb_PlaySample(0, (char *)(unsigned)"RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
-                }
-                m = d2_GetObjValue(row[4], 0);
-                d2_SetObjValue(row[4], 0, row[0xc], m - n);
-            } else if (param_5 == 0) {
-                if (ai_ScriptQuery(0x25, param_3, 0, row[0]) != 0) {
-                    ai_CampaignStep(0x25, param_3, 0, row[0]);
-                    goto order;
-                }
-            } else if (ai_ScriptQuery(0x2a, param_3, 0, row[0]) != 0) {
-                ai_CampaignStep(0x2a, param_3, 0, row[0]);
-                goto order;
+        limit = gm_PlayerFactor(1, player);
+        if (abs((int)(inv * n * price - total)) < limit)
+            factor = 1.0f;
+        if (mode & 8) {
+            if (source != 0) {
+                if (ai_ScriptQuery(0x29, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x29, bld, 0, slot->good);
+            } else {
+                if (ai_ScriptQuery(0x27, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x27, bld, 0, slot->good);
             }
-        } else if (param_5 == 0) {
-            if (ai_ScriptQuery(0x27, param_3, 0, row[0]) != 0) {
-                ai_CampaignStep(0x27, param_3, 0, row[0]);
-                goto order;
+        } else if (mode & 1) {
+            if (source != 0) {
+                if (ai_ScriptQuery(0x2a, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x2a, bld, 0, slot->good);
+            } else {
+                if (ai_ScriptQuery(0x25, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x25, bld, 0, slot->good);
             }
-        } else if (ai_ScriptQuery(0x29, param_3, 0, row[0]) != 0) {
-            ai_CampaignStep(0x29, param_3, 0, row[0]);
-order:
-            cm_SendExSellObject(param_1, *(int *)(param_2 + 2), row[0], n, param_7, (int)v);
-            if (v != 0.0f && param_6 != 1.0f) {
-                txt_Format(text, 0xec, (int)v);
-                sv_SetStatusText(text);
-                sb_PlaySample(0, (char *)(unsigned)"RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
-            }
-            m = d2_GetObjValue(row[4], 0);
-            d2_SetObjValue(row[4], 0, row[0xc], m - n);
         }
+        cm_SendExSellObject(lagerId, cart->objId, slot->good, n, player, (int)(price / factor));
+        if (price != ai_FloatZero && factor != 1.0) {
+            txt_Format(text, 0xec, (int)(total * factor - total));
+            sv_SetStatusText(text);
+            sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
+        }
+        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check, 0) - n);
     }
-    row = (int *)(unsigned)&ai_ProdGoods;
-    do {
-        if (row[4] != -1 && d2_GetObjValue(row[4]) != 0) {
-            n = d2_GetObjValue(row[4]);
-            if (param_5 == 0)
-                n = gm_FreeStallCapacity(rec, row[0]);
-            else
-                n = gm_TakeableCount(param_5, row[0], n);
-            if (n > 0) {
-                if (param_4 == 0)
-                    v = 0.0f;
-                else
-                    v = gm_GoodsPrice(row[0], param_7) * *(float *)(param_3 + 0x49);
-                if (sv_CheckGoodAmount((char *)((unsigned)&ai_Chars + U_W((unsigned)&ai_PlayerId) * 0x21c), (int)param_7) != 0 &&
-                    row[0xc] >= 0) {
-                    /* ROUGH: the same limit / confirmation block as above */
-                    cm_SendExSellObject(param_1, *(int *)(param_2 + 2), row[0], n, param_7, (int)v);
-                    m = d2_GetObjValue(row[4], 0);
-                    d2_SetObjValue(row[4], 0, row[0xc], m - n);
-                }
+    for (i = 0; i < 16; i++) {
+        slot = &ai_ProdGoods[i];
+        if (slot->check == -1 || d2_GetObjValue(slot->check) == 0)
+            continue;
+        n = d2_GetObjValue(slot->check);
+        if (source == 0)
+            n = gm_FreeStallCapacity(lager, slot->good, n);
+        else
+            n = gm_TakeableCount(source, slot->good, n);
+        if (n <= 0)
+            continue;
+        if (priced != 0)
+            price = gm_GoodsPrice(slot->good, player) * bld->priceFactor;
+        else
+            price = 0.0f;
+        total = n * price;
+        inv = ai_FloatOne / factor;
+        if (sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], (int)(inv * total), player) == 0)
+            continue;
+        if (slot->amount < 0)
+            continue;
+        limit = gm_PlayerFactor(1, player);
+        if (abs((int)(inv * n * price - total)) < limit)
+            factor = 1.0f;
+        if (mode & 8) {
+            if (source != 0) {
+                if (ai_ScriptQuery(0x29, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x29, bld, 0, slot->good);
+            } else {
+                if (ai_ScriptQuery(0x27, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x27, bld, 0, slot->good);
+            }
+        } else if (mode & 1) {
+            if (source != 0) {
+                if (ai_ScriptQuery(0x2a, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x2a, bld, 0, slot->good);
+            } else {
+                if (ai_ScriptQuery(0x25, bld, 0, slot->good) == 0)
+                    continue;
+                ai_CampaignStep(0x25, bld, 0, slot->good);
             }
         }
-        row += 0xe;
-    } while ((int)row <= (unsigned)((unsigned)((char *)ai_ProdGoods + 0x37f)));
+        cm_SendExSellObject(lagerId, cart->objId, slot->good, n, player, (int)(price / factor));
+        if (price != ai_FloatZero && factor != 1.0) {
+            txt_Format(text, 0xec, (int)(total * factor - total));
+            sv_SetStatusText(text);
+            sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
+        }
+        d2_SetObjValue(slot->check, 0, slot->amount, d2_GetObjValue(slot->check, 0) - n);
+    }
     cm_EndSendGroup();
     while (cm_SendGroupState() == 0)
         sv_PumpNet();
