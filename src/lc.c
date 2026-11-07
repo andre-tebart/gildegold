@@ -31045,58 +31045,92 @@ int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return done;
 }
-/* 0x5cba90, the espionage payment handler (880 B, ROUGH SKELETON: no Ghidra function; from the
-   disassembly): param_1 is the message record (the AIMSG: +0 the id, +2 the type, +4 the handle, +0x194
-   the amount, +0x1c8 the flags with 0x8000), param_2 the request (+0x214 the target id). Types other
-   than 6: the amount < 2 or the flag 0x8000 clear returns 0x20; the target 0x505df0 (missing -> 0x60);
-   the close 0x4c5f60 (-2 the message, -3 the target) and the carrier 0x4c4a60 (0x1c8, 4, 0x8000); a
-   target of the type 6 / 7 gets the text 0x5176d0 (0x1dda, the id, 3) and the message 0x53dda0 (the
-   target +4 twice, 0, the text, 0x5fb, the key 0x6269ac); return 0x10. Type 6: the flag 0x8000 clear
-   shows the text 0x5176d0 (0x1ce0) / 0x521150 and returns 0x81; else the config (0x400, 0x5eed68,
-   0x5eed6c, 6) and the text 0x1dd7 open the menu 0x5c1130; the rest of the window is left as a comment.
-   ROUGH SKELETON. */
+#define LC_POWER_HEARING 0x8000  /* AICHARREC.powerFlags: the office's hearing used (ai_HearingWindow) */
+/* 0x5cba90, the hearing order's ask (ord_HearingOrder, kinds 3 / 4) "privillegien\verhoer": me summons a character
+   to a hearing, once per office (LC_POWER_HEARING not yet set): me pays 2 and the character 3 (cm_SendMoneyDelta),
+   the power is marked used on me's powerFlags (cm_SendSetField), and a player character summoned gets the news 0x1dda (me, the 3;
+   "_NACHRICHTEN_HS_20"). The AI (not kind 6) names it in m->target: 0x10, 0x20 without the 2 or with the power used,
+   0x60 for an unknown character. A player who used it gets the text 0x1ce0 and 0x81; else the amount menu (0x1dd7; none:
+   2), then the window (0x1dd8) whose first button, when the player has the 2 (sv_CheckMoney), does it, waits for the
+   field message, tells 0x1dd9 and returns 0x81; the second button or a right click close it with 2 */
 
-int ai_EspionagePayment(int param_1, int param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_HearingWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int cfg[0x14];
-    char text[0x100];
-    int target;
     int ret;
-    int i;
+    int cancel;
+    int ok;
+    AMOUNTCFG cfg;
+    char text[0x200];
+    AICHARREC *target;
+    int win;
+    int t;
+    int h;
 
-    ret = 2;
-    if (*(char *)(param_1 + 2) != 6) {
-        if (*(int *)(param_1 + 0x194) < 2)
+    if (me->kind != 6) {
+        if (me->money < 2)
             return 0x20;
-        if (!(*(int *)(param_1 + 0x1c8) & 0x8000))
+        if (me->powerFlags & LC_POWER_HEARING)
             return 0x20;
-        target = gm_FindChar(*(int *)(param_2 + 0x214));
+        target = (AICHARREC *)gm_FindChar(m->target);
         if (target == 0)
             return 0x60;
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffe);
-        cm_SendMoneyDelta(*(int *)(target + 4), 0xfffffffd);
-        cm_SendSetField(*(int *)(param_1 + 4), 0x1c8, 4, 0x8000, 0);
-        if (*(char *)(target + 2) == 6 || *(char *)(target + 2) == 7) {
-            txt_Format(text, (char *)0x1dda, *(unsigned short *)param_1, 3);
-            he_ShowNews(*(int *)(target + 4), *(int *)(target + 4), 0, text, 0x5fb,
-                         "_NACHRICHTEN_HS_20");
+        cm_SendMoneyDelta(me->netId, -2);
+        cm_SendMoneyDelta(target->netId, -3);
+        cm_SendSetField(me->netId, 0x1c8, 4, LC_POWER_HEARING, 0);
+        if (target->kind == 6 || target->kind == 7) {
+            txt_Format(text, 0x1dda, me->id, 3);
+            he_ShowNews(target->netId, target->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
         }
         return 0x10;
     }
-    for (i = 0; i < 0x14; i++)
-        cfg[i] = 0;
-    if (!(*(int *)(param_1 + 0x1c8) & 0x8000)) {
-        txt_Format(text, (char *)0x1ce0);
+    ret = 2;
+    memset(&cfg, 0, sizeof(cfg));
+    if (me->powerFlags & LC_POWER_HEARING) {
+        txt_Format(text, 0x1ce0);
         sv_MessageBox(text, 0);
         return 0x81;
     }
-    cfg[1] = 0x400;
-    cfg[2] = U_I(((unsigned)&gypsyFilter));
-    cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-    cfg[4] = 6;
-    txt_Format(text, (char *)0x1dd7);
-    ret = ai_AmountMenu((int)cfg, (int)text, 0, 0);
-    /* ROUGH SKELETON: the menu result and the window body after it are not written yet */
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    txt_Format(text, 0x1dd7);
+    target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    if (target == 0)
+        return 2;
+    win = d2_OpenForm(0, 0, "privillegien\\verhoer");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    t = io_PrintText(0x1dd8, 2, target->id, target->id, 3, 2);
+    ok = d2_GetWinObj(win, 1, t);
+    cancel = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                if (sv_CheckMoney(me, 2) != 0) {
+                    cm_SendMoneyDelta(me->netId, -2);
+                    cm_SendMoneyDelta(target->netId, -3);
+                    h = cm_SendSetField(me->netId, 0x1c8, 4, LC_POWER_HEARING, 0);
+                    while (cm_GetSlotState(h) == 0)
+                        sv_PumpNet();
+                    txt_Format(text, 0x1dd9, target->id, target->id, 3, target->id, 3);
+                    sv_MessageBox(text, 0);
+                    if (target->kind == 6 || target->kind == 7) {
+                        txt_Format(text, 0x1dda, me->id, 3);
+                        he_ShowNews(target->netId, target->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+                    }
+                    sv_PopRequest = 1;
+                    ret = 0x81;
+                }
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_HearingWindow, 0x657c7) != 0);
+    d2_CloseView(win);
     return ret;
 }
 /* 0x5cbe00, the espionage order handler (1195 B, ROUGH SKELETON: no Ghidra export; from the

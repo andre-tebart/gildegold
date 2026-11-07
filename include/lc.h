@@ -218,7 +218,7 @@ struct AICHARREC; struct LCORDMSG; int ai_DismissOfficeAsk(struct AICHARREC *me,
 int ai_EspionageAmountWindow(int param_1, int *param_2);  /* 0x5cca40 */
 int ai_EspionageOrderHandler(int param_1, int *param_2);  /* 0x5cbe00 */
 int ai_EspionageOverviewHandler(void *ch, int *m);  /* 0x5cd2e0 */
-int ai_EspionagePayment(int param_1, int param_2);  /* 0x5cba90 */
+struct AICHARREC; struct LCORDMSG; int ai_HearingWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cba90, the hearing order's ask */
 int ai_EspionagePayment2(int param_1, int *m);  /* 0x5cc700 */
 int ai_EspionageRelation(int param_1, int *param_2);  /* 0x5cc2b0 */
 int ai_EspionageResult(int param_1, int *m);  /* 0x5cd400 */

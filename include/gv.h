@@ -605,7 +605,7 @@ int ord_MisappropriationOrder(char *c, int *m);     /* 0x4f6b40 */
 
 int ord_SeatSwapOrder(char *c, int *m);     /* 0x4f6e00 */
 int ord_HatredOrder(char *c, int *m);     /* 0x4f6f10 */
-int ord_EspionagePaymentOrder(char *c, int *m);     /* 0x4f70f0 */
+int ord_HearingOrder(char *c, int *m);     /* 0x4f70f0 */
 int ord_EspionageOrder(char *c, int *m);     /* 0x4f7200 */
 int ord_EspionagePaymentOrder2(char *c, int *m);     /* 0x4f7300 */
 int ord_EspionageRelationOrder(char *c, int *m);     /* 0x4f7400 */
