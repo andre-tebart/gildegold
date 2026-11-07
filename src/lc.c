@@ -31912,29 +31912,88 @@ int ai_ChangeProfessionWindow(AICHARREC *me, LCORDMSG *m)
     }
     return 0;
 }
-/* 0x5cd8c0, the spy-slot handler (713 B, ROUGH SKELETON: no Ghidra export; from the disassembly):
-   param_1 the message record (the AIMSG: +4 the handle), param_2 the request (the two words at +0 and
-   the handle +4), param_3 a flag. The building walk 0x501190 (1, 6) / 0x501030 looks for a building
-   whose kind record (0x7e3f30 + the kind byte * 0x24d) starts with 0xf; none returns 0x10. The found
-   building builds the request record (the kind byte 0x2c, the type byte 2, the message handle, the
-   player's character 0x770b84 + U_W (0x6f25b8) * 0x21c, the two words of the request and the four -1
-   slots) and sends it; the rest is left as a comment. The call site 0x5cde90 passes a fourth 0. ROUGH
-   SKELETON. */
+int ai_PickPartnerRandomWalk(struct AIPER *p, unsigned int fl, int n, unsigned short *ids, float lo, float hi, unsigned short *id); /* 0x4a5d30 (am.h, not included) */
+extern struct AICHAR *ai_JudgeCatholic;    /* 0x6f1bfc (gv.h), the catholic judge */
+extern struct AICHAR *ai_JudgeProtestant;  /* 0x6f1c00 (gv.h), the protestant judge */
+#define LC_TRIAL_PICK_FLAGS 0xc00          /* the ai_PickPartnerRandomWalk flags of the trial's assessors (bits not read) */
+/* 0x5cd8c0, opens a trial (the message 0x2c to the player, flags 2): me accuses target of n crimes. Only while a
+   building of the class 0xf stands (gm_BuildQuery 1, 6); else nothing is sent. The judge is the holder of the office
+   0xd, else one of the two judges at random; with byFaith the judge of me's faith. The holder of the office 0x11 sits
+   in when neither side holds it (his seat only from three crimes on), and two assessors come from the random walk
+   (ai_PickPartnerRandomWalk, the ids already seated left out): 0x40 when one is missing, else 0x10 */
 
-int ai_Unk5cd8c0(int param_1, int *param_2, int param_3, int param_4)
+int ai_OpenTrial(AICHARREC *me, AICHARREC *target, int n, int byFaith)
 {
-    int bld;
+    unsigned short seated[4];
+    int picked;
+    AIMSG msg;
+    unsigned char *bld;
+    unsigned int i;
 
-    bld = gm_BuildQuery(1, 6);
-    while (bld != 0) {
-        if (*(unsigned char *)(U_I((unsigned)&ai_BTypes) + *(unsigned char *)bld * 0x24d) == 0xf)
+    seated[0] = 0xffff;
+    seated[1] = 0xffff;
+    seated[2] = 0xffff;
+    seated[3] = 0xffff;
+    for (bld = gm_BuildQuery(1, 6); bld != 0; bld = gm_BuildNext())
+        if (((AIBTYPE *)ai_BTypes)[((AIBLD *)bld)->kind].buildingClass == 0xf)
             break;
-        bld = gm_BuildNext();
-    }
     if (bld == 0)
         return 0x10;
-    /* ROUGH SKELETON: the AIMSG record (the kind byte 0x2c, the type byte 2, the handle, the player's
-       character, the request words and the four -1 slots) and the send are not written yet */
+    msg.type = 0x2c;
+    msg.flags = 2;
+    msg.to = me->netId;
+    msg.fromId = lc_CharRecs[ai_PlayerId].netId;
+    msg.arg[0] = me->netId;
+    msg.arg[1] = target->netId;
+    seated[0] = target->id;
+    msg.arg[2] = -1;
+    msg.arg[3] = -1;
+    msg.arg[4] = -1;
+    msg.arg[5] = -1;
+    if (byFaith == 0) {
+        for (i = 0; i < 768; i++) {
+            if (lc_CharRecs[i].officeKind == 0xd) {
+                msg.arg[2] = lc_CharRecs[i].netId;
+                seated[1] = lc_CharRecs[i].id;
+                break;
+            }
+        }
+        if (msg.arg[2] == -1) {
+            if (util_RandomU(2) != 0) {
+                msg.arg[2] = ((AICHARREC *)ai_JudgeCatholic)->netId;
+                seated[1] = ((AICHARREC *)ai_JudgeCatholic)->id;
+            } else {
+                msg.arg[2] = ((AICHARREC *)ai_JudgeProtestant)->netId;
+                seated[1] = ((AICHARREC *)ai_JudgeProtestant)->id;
+            }
+        }
+    } else {
+        msg.arg[2] = me->faith == 0 ? ((AICHARREC *)ai_JudgeCatholic)->netId : ((AICHARREC *)ai_JudgeProtestant)->netId;
+        seated[1] = me->faith == 0 ? ((AICHARREC *)ai_JudgeCatholic)->id : ((AICHARREC *)ai_JudgeProtestant)->id;
+    }
+    if (target->officeKind != 0x11 && me->officeKind != 0x11) {
+        for (i = 0; i < 768; i++) {
+            if (lc_CharRecs[i].officeKind == 0x11) {
+                if (n > 2)
+                    msg.arg[5] = lc_CharRecs[i].netId;
+                seated[2] = lc_CharRecs[i].id;
+                break;
+            }
+        }
+    }
+    if (ai_PickPartnerRandomWalk((struct AIPER *)me, LC_TRIAL_PICK_FLAGS, 4, seated, 0.0f, 100.0f,
+                                 (unsigned short *)&picked) == 0)
+        return 0x40;
+    if (seated[2] == 0xffff)
+        seated[2] = picked;
+    else
+        seated[3] = picked;
+    msg.arg[3] = lc_CharRecs[(unsigned short)picked].netId;
+    if (ai_PickPartnerRandomWalk((struct AIPER *)me, LC_TRIAL_PICK_FLAGS, 4, seated, 0.0f, 100.0f,
+                                 (unsigned short *)&picked) == 0)
+        return 0x40;
+    msg.arg[4] = lc_CharRecs[(unsigned short)picked].netId;
+    cm_SendLongMessage((char *)&msg);
     return 0x10;
 }
 /* 0x5cdb90, the spy list window "privillegien\spionage2" 0x62cd7c (760 B, ROUGH SKELETON: no Ghidra
@@ -31995,7 +32054,7 @@ int ai_SpyTargetHandler(int param_1, int *param_2)  /* @original: the callers pu
         n = gv_HeldCrimesOf(param_2[0x214], ids, *(unsigned short *)param_1);
         if (n == 0)
             return 0x60;
-        return ai_Unk5cd8c0(param_1, (int *)target, n, 0);
+        return ai_OpenTrial((AICHARREC *)param_1, (AICHARREC *)target, n, 0);
     }
     /* ROUGH SKELETON: the window at 0x5cdf48 (the rows and the pump 0x5309a0) is not written yet */
     return 0x20;
@@ -32024,7 +32083,7 @@ int ai_SpyTargetFlagHandler(int param_1, int *param_2)  /* @original: the caller
         n = gv_HeldCrimesOf(param_2[0x214], ids, *(unsigned short *)param_1);
         if (n == 0)
             return 0x60;
-        return ai_Unk5cd8c0(param_1, (int *)target, n, 1);
+        return ai_OpenTrial((AICHARREC *)param_1, (AICHARREC *)target, n, 1);
     }
     /* ROUGH SKELETON: the window at 0x5ce258 (the rows and the pump 0x5309a0) is not written yet */
     return 0x20;
