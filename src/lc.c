@@ -16,6 +16,8 @@
    ai_HelperBook) keep their rows as G9DOMIZILROW and post the hire requests 6 / 7 as AIMSG.hireTitle / hireRows /
    hireMaster (the running event's AIJOB.hireTitle); the building's cart list (ai_ShowBldCarts / ai_UpdateBldCarts)
    keeps its carts in ai_BldCarts, and the transport window buys and sells carts (ai_BuyCartWindow, ai_SellCarts).
+   The building options windows (ai_BuildingWindow, ai_ManagedBuildingWindow) open the sale, renovation, room upgrade
+   (AIMSG.roomUpgrade), upgrade (message 0x1e), buy offer (0x21), fire fighting and technique effect windows.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
    table use AIMSG: ai_UseEventGood, the money messenger AIMSG.payment).
    Open: types: the event / message words LCAMBUSHEVENT, LCSEARCHEVENT, LCSEARCHWORDS, LCKIDNAPEVENT (he.c's
@@ -47,6 +49,8 @@
    full_data_6f3680 and 0x6f2f64 ai_TransportEscort one of full_data_6f2f64; their owner (this unit, the only
    reader and writer, or main) is not settled. The transport window's cart rows are LCCARTROW, the inventory
    window's character ai_InvChar (0x6f2f60, after ai_NewsSecond).
+   Open: data: 0x62a56c ai_FmtLabel ("%s:", ai_TechEffectsWindow's captions) is a view of main.c's full_data_62a56c;
+   its owner (sv_t declares it too) is not settled.
    Open: head: sv.h, so sv_CheckCharacterFlag / sv_ClearSelection and the other sv calls of the listeners and map
    picks stay without a prototype (M7); and not included yet (dcp headers conflicts lc HEADER): ahm.h
    ai.h am.h amt.h anm.h ch.h chc.h cm.h d2.h d3_int_io.h d3_tools.h f3snd.h gfx.h gv.h hst.h rd.h rt.h

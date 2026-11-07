@@ -4003,8 +4003,8 @@ exe	0x00578370	ai_TutorialStop	sv_t	byte	readable
 exe	0x00578440	ai_TutorialFreeRuns	sv_t	byte	readable		
 exe	0x005784a0	ai_TutorialInitMainIntro	sv_t	byte	readable		
 exe	0x00578570	ai_TutorialInitChapter1	sv_t	byte	readable		
-exe	0x00578e40	ai_TutorialInitChapter2	sv_t	byte	readable		
-exe	0x00579570	ai_TutorialInitChapter3	sv_t	draft	readable		
+exe	0x00578e40	ai_TutorialInitChapter2	sv_t	shape	readable		
+exe	0x00579570	ai_TutorialInitChapter3	sv_t	shape	readable		
 exe	0x0057aa80	ai_TutorialInitChapter4	sv_t	byte	readable		
 exe	0x0057aeb0	ai_TutorialInitChapter5	sv_t	byte	readable		
 exe	0x0057b750	ai_TutorialInitMainOutro	sv_t	byte	readable		
@@ -4414,14 +4414,14 @@ exe	0x005b5e80	ai_FeastWindow	lc	draft	readable	deep
 exe	0x005b6950	ai_SellBuildingWindow	lc	byte	readable		
 exe	0x005b6b20	ai_RenovationWindow	lc	draft	readable	deep	
 exe	0x005b6eb0	ai_WithdrawSaleWindow	lc	byte	readable		
-exe	0x005b6fe0	ai_Unk5b6fe0	lc	draft	draft		
-exe	0x005b7690	ai_Unk5b7690	lc	draft	draft		
-exe	0x005b7b80	ai_Unk5b7b80	lc	draft	draft		
-exe	0x005b7dd0	ai_TechEffectsWindow	lc	draft	draft		
-exe	0x005b82a0	ai_Unk5b82a0	lc	draft	draft		
-exe	0x005b84f0	ai_BuildingWindow	lc	draft	draft		
-exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	draft	draft		
-exe	0x005b92e0	ai_LiquidateAssets	lc	draft	draft		
+exe	0x005b6fe0	ai_RoomUpgradeWindow	lc	draft	readable	deep	
+exe	0x005b7690	ai_UpgradeBuilding	lc	draft	readable	deep	
+exe	0x005b7b80	ai_BuyBuildingOfferWindow	lc	shape	readable		
+exe	0x005b7dd0	ai_TechEffectsWindow	lc	draft	readable	deep	
+exe	0x005b82a0	ai_FireFightingWindow	lc	shape	readable		
+exe	0x005b84f0	ai_BuildingWindow	lc	draft	readable	deep	
+exe	0x005b8fc0	ai_ManagedBuildingWindow	lc	shape	readable		
+exe	0x005b92e0	ai_LiquidateAssets	lc	draft	readable	deep	
 exe	0x005b9730	ai_Kind1eWindow	lc	draft	draft		
 exe	0x005b9db0	ai_PickedObjectWindow	lc	draft	draft		
 exe	0x005b9f30	ai_GelageWindow	lc	draft	draft		
