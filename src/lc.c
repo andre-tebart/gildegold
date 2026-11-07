@@ -31133,57 +31133,148 @@ int ai_HearingWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5cbe00, the espionage order handler (1195 B, ROUGH SKELETON: no Ghidra export; from the
-   disassembly): param_1 is the message record (the AIMSG: +0 the id, +2 the type 6, +4 the handle, +0x194
-   the amount, +0x1c8 the flags with 0x80), param_2 the request (dword +0: 3 (the message) or 4 (with
-   +0x21c the owner), +0x214 / +0x218 the two character ids). Types other than 6: the amount < 5 returns
-   0x20; the owner (the message when the request type is 3 and the message flag 0x80 is clear; else the
-   request +0x21c) must exist and its flag 0x80 must be clear, else 0x60; the target 0x505df0 and the
-   building 0x501190 (the second id, 1, 1) must exist, else 0x60; the close 0x4c5f60 (-5) and the carrier
-   0x4c4a60 (0x1c8, 4, 0x80); the carrier's owner 0x770b82 + U_W (carrier + 0x27) * 0x21c of type 6 / 7
-   gets the text 0x5176d0 (the target id, the carrier, the id); the rest (the window at 0x5cbf5b) is left
-   as a comment. ROUGH SKELETON. */
+#define LC_POWER_EXPEL 0x80  /* AICHARREC.powerFlags: the office's worker expulsion used (ai_ExpelWorkerWindow) */
+/* 0x5cbe00, the expel-worker order's ask (ord_ExpelWorkerOrder, kinds 3 / 4) "privillegien\arbeiter_ausweisen": the
+   office holder (me for kind 3, m->partner for kind 4; none: 0x60), once per office (LC_POWER_EXPEL not yet set), has
+   a worker of a building removed: me pays 5, the power is marked used, the building's owner, when a player, gets the
+   news 0x1ddf (me, the building, the worker; "_NACHRICHTEN_HS_20"), the player inherits the worker's estate
+   (gm_InheritEstate) and the worker is killed (cm_SendKillCharacter). The AI (not kind 6) names the worker in
+   m->target and the building in m->target2: 0x10, 0x20 without the 5, 0x60 when the power is used or one is
+   unknown (its news goes to the owner's id, not its netId, as in the original). A player who used the power gets
+   0x1ce0 and 0x81; else the map pick of a building (0x1ddc; none or no owner: 0), the window (0x1ddd: the 5, the
+   owner, the building) whose first button, when the player has the 5 (sv_CheckMoney), does it for a kind 0 worker
+   in that building from a random start (none: only the payment) and tells 0x1dde: 0x81; the second button or a
+   right click close it with 0
+   @deep Rewritten whole from the original 0x5cbe00..0x5cc2ab (the draft was a skeleton): both branches
+   read statement by statement against the disassembly (holder by m->kind, the power bit 0x80, gm_FindChar
+   / gm_BuildQuery(1, 1, target2), the payment, cm_SendSetField, the owner news with the owner index as pid
+   in the AI branch, gm_InheritEstate / cm_SendKillCharacter, the map pick with mode 0x410 and flags 0, the
+   slot wait, the random worker search (i+1) % 0x300 over id != 0xffff, bld, kind 0); ours=373
+   original=373. Left is allocation: the original keeps me in ebx through the AI branch (ours reloads it
+   into edx), the constant 0x80 in cl (test byte ptr [ebx+0x1c8], cl; ours mov cl,[..]; test cl,cl; js -
+   the same bit-7 test, where the prover stops), the search loop keeps bld in the slot [esp+0x18] with
+   0xffff in ebp and tests cmp byte ptr [kind], 0 (ours bld in ebx, mov dl / test dl), ret in ebp (ours
+   [esp+0x14]); the rest regs / slots. Tried a mask variable for 0x80 (no change). */
 
-int ai_EspionageOrderHandler(int param_1, int *param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_ExpelWorkerWindow(AICHARREC *me, LCORDMSG *m)
 {
-    char text[0x100];
-    int owner;
-    int target;
-    int carrier;
-    int chr;
+    AICHARREC *holder;
+    int cancel;
+    AIBLD *bld;
+    int ok;
+    AMOUNTCFG cfg;
+    char text[0x300];
+    AICHARREC *target;
+    AICHARREC *owner;
+    AICHARREC *worker;
+    int ret;
+    int win;
+    int t;
+    int h;
+    int i;
+    int n;
 
-    if (*(char *)(param_1 + 2) != 6) {
-        if (*(int *)(param_1 + 0x194) < 5)
+    if (me->kind != 6) {
+        if (me->money < 5)
             return 0x20;
-        if (*param_2 == 3 && !(*(unsigned char *)(param_1 + 0x1c8) & 0x80)) {
-            owner = param_1;
+        if (m->kind == 3 && !(me->powerFlags & LC_POWER_EXPEL)) {
+            holder = me;
         } else {
-            if (*param_2 != 4)
+            if (m->kind != 4)
                 return 0x60;
-            owner = param_2[0x87];
-            if (owner == 0)
-                return 0x60;
-            if (*(unsigned char *)(owner + 0x1c8) & 0x80)
+            holder = m->partner;
+            if (holder == 0 || (holder->powerFlags & LC_POWER_EXPEL))
                 return 0x60;
         }
-        target = gm_FindChar(param_2[0x214]);
+        target = (AICHARREC *)gm_FindChar(m->target);
         if (target == 0)
             return 0x60;
-        carrier = gm_BuildQuery(param_2[0x218], 1, 1);
-        if (carrier == 0)
+        bld = (AIBLD *)gm_BuildQuery(1, 1, m->target2);
+        if (bld == 0)
             return 0x60;
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffb);
-        cm_SendSetField(*(int *)(owner + 4), 0x1c8, 4, 0x80, 0);
-        chr = ((unsigned)&ai_Chars + 0x2) + U_W(carrier + 0x27) * 0x21c;
-        if (*(char *)chr == 6 || *(char *)chr == 7) {
-            txt_Format(text, (char *)*(unsigned short *)target);   /* ROUGH: the format/args */
+        cm_SendMoneyDelta(me->netId, -5);
+        cm_SendSetField(holder->netId, 0x1c8, 4, LC_POWER_EXPEL, 0);
+        if (((AICHARREC *)ai_Chars)[bld->owner].kind == 6 || ((AICHARREC *)ai_Chars)[bld->owner].kind == 7) {
+            txt_Format(text, 0x1ddf, me->id, bld, target->id);
+            he_ShowNews(bld->owner, bld->owner, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
         }
-        /* ROUGH SKELETON: the message chain and the return value are not written yet */
-        return 0;
+        gm_InheritEstate((struct ORDCHAR *)target, (struct ORDCHAR *)ai_PlayerChar);
+        cm_SendKillCharacter(target->netId, 1);
+        return 0x10;
     }
-    /* ROUGH SKELETON: type 6 opens the window at 0x5cbf5b (the carrier records 0x501190, the rows and
-       the pump 0x5309a0 are not written yet) */
-    return 0;
+    memset(&cfg, 0, sizeof(cfg));
+    if (m->kind == 3) {
+        holder = me;
+    } else if (m->kind == 4 && m->partner != 0) {
+        holder = m->partner;
+    } else {
+        return 0x60;
+    }
+    if (holder->powerFlags & LC_POWER_EXPEL) {
+        txt_Format(text, 0x1ce0);
+        sv_MessageBox(text, 0);
+        return 0x81;
+    }
+    ret = 0;
+    cfg.mode = 0x410;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    cfg.flags = 0;
+    txt_Format(text, 0x1ddc);
+    bld = (AIBLD *)ai_MapPick(1, &cfg, text, 0, 0);
+    if (bld == 0)
+        return 0;
+    if (bld->owner == 0xffff)
+        return 0;
+    owner = &((AICHARREC *)ai_Chars)[bld->owner];
+    win = d2_OpenForm(0, 0, ai_WorkerDismissalForm);
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    t = io_PrintText(0x1ddd, 5, owner->id, bld);
+    ok = d2_GetWinObj(win, 1, t);
+    cancel = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                if (sv_CheckMoney(me, 5) != 0) {
+                    cm_SendMoneyDelta(me->netId, -5);
+                    h = cm_SendSetField(holder->netId, 0x1c8, 4, LC_POWER_EXPEL, 0);
+                    while (cm_GetSlotState(h) == 0)
+                        sv_PumpNet();
+                    txt_Format(text, 0x1dde);
+                    sv_MessageBox(text, 0);
+                    worker = 0;
+                    i = util_RandomU(0x300);
+                    for (n = 0x300; n != 0; n--) {
+                        if (((AICHARREC *)ai_Chars)[i].id != 0xffff && ((AICHARREC *)ai_Chars)[i].bld == bld &&
+                            ((AICHARREC *)ai_Chars)[i].kind == 0) {
+                            worker = &((AICHARREC *)ai_Chars)[i];
+                            break;
+                        }
+                        i = (i + 1) % 0x300;
+                    }
+                    if (worker != 0) {
+                        if (owner->kind == 6 || owner->kind == 7) {
+                            txt_Format(text, 0x1ddf, me->id, bld, worker->id);
+                            he_ShowNews(owner->netId, owner->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+                        }
+                        gm_InheritEstate((struct ORDCHAR *)worker, (struct ORDCHAR *)ai_PlayerChar);
+                        cm_SendKillCharacter(worker->netId, 1);
+                    }
+                    ret = 0x81;
+                    sv_PopRequest = 1;
+                }
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_ExpelWorkerWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5cc2b0, the espionage relation handler (1104 B, ROUGH SKELETON: no Ghidra export; from the
    disassembly): param_1 is the message record (the AIMSG: +2 the type 6, +4 the handle, +0x194 the

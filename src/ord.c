@@ -1135,7 +1135,7 @@ int ord_HearingOrder(char *c, int *m)
 }
 /* 0x4f7200, an order handler (c, m; kinds 1 / 3 and the answers 2 / 4) like 0x4f66b0 for the job(s) 0x16, 0x19 (+0x166 of c; of m[0x87] for 2 / 4, where c needs the flag 0x100 of +0x1c8): runs 0x5cbe00, a player's text 0x1ddb (m + 0x14), 9 with the flag 0x200, 0xa for 4 / 2, else 2 */
 
-int ord_EspionageOrder(char *c, int *m)
+int ord_ExpelWorkerOrder(char *c, int *m)
 {
     char *t;
     unsigned char j;
@@ -1149,7 +1149,7 @@ int ord_EspionageOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1c8 & 0x200) != 0)
             return 9;
         if (m[0] == 3)
-            ai_EspionageOrderHandler(c, m);
+            ai_ExpelWorkerWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -1159,7 +1159,7 @@ int ord_EspionageOrder(char *c, int *m)
         if (j != 0x16 && j != 0x19)
             return 1;
         if (m[0] == 4) {
-            ai_EspionageOrderHandler(c, m);
+            ai_ExpelWorkerWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
             return 0xa;
         }
         if (ORD_CHAR(c)->kind == 6)

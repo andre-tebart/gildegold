@@ -92,6 +92,7 @@ void gm_FreeObject(int o);  /* 0x5034b0 */
 int gm_SkillPoints(char *c, int skill);  /* 0x504e00 */
 int gm_HasAdultRelative(char *c, int *n);  /* 0x506480 */
 unsigned gm_TakeOverCharacter(int a, int b);  /* 0x5064d0 */
+struct ORDCHAR; void gm_InheritEstate(struct ORDCHAR *dead, struct ORDCHAR *heir);  /* 0x506890, the heir inherits the dead character's estate */
 struct ORDCHAR; void gm_ForfeitEstate(struct ORDCHAR *c, char *out, int flag);  /* 0x506e70, the character c forfeits its estate after a lost fight; the announcement into out */
 struct ORDBLD; unsigned short gm_CreateCharacter(int type, int a2, int a3, unsigned short a4, struct ORDBLD *a5, unsigned a6, int a7, int a8);  /* 0x507690 */
 unsigned short *gm_ObjectBuildingOwner(unsigned short *o);  /* 0x50a050 */
