@@ -888,7 +888,7 @@ exe	0x0044a2c0	d3_WriteObject	d3_interface	byte	draft	deep
 exe	0x0044a770	d3_WriteMap	d3_interface	byte	readable		
 exe	0x0044a9e0	d3_SceneVersion	d3_interface	byte	readable		
 exe	0x0044aa10	d3_SaveScene	d3_interface	byte	readable		
-exe	0x0044abb0	rd_object	d3_int_io	byte	draft		
+exe	0x0044abb0	rd_object	d3_int_io	byte	readable		
 exe	0x0044b920	d3io_ReadFloor	d3_int_io	shape	readable		
 exe	0x0044be60	d3_LoadScene	d3_int_io	byte	readable		
 exe	0x0044c3f0	d3_LoadGroup	d3_int_io	shape	readable		
@@ -970,7 +970,7 @@ exe	0x0044f7a0	bgi_Flags	d3_io_b	byte	readable
 exe	0x0044f7d0	bgi_SkipDword	d3_io_b	byte	readable		
 exe	0x0044f7f0	bgi_Attach	d3_io_b	byte	readable		
 exe	0x0044f870	d3_ReadBGF	d3_io_b	byte	readable		
-exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	shape	draft		
+exe	0x0044f8c0	d3_LoadBinaryAnimStream	d3_io_b	shape	readable		
 exe	0x004506f0	d3_BGFCanWeld	d3_io_b	byte	readable		
 exe	0x004507a0	d3_OpenFastChunk	d3_io_b	byte	readable		
 exe	0x00450860	d3_FindBGF	d3_io_fl	draft	draft	deep	
@@ -1937,7 +1937,7 @@ exe	0x004b3e70	ai_ChooseMissionType	mission	byte	readable
 exe	0x004b4040	ai_ChooseMission	mission	shape	readable	deep	
 exe	0x004b4280	ai_ChooseMissionFrom	mission	byte	readable		
 exe	0x004b44e0	ai_CountMissionEvent	mission	byte	readable		
-exe	0x004b4550	ai_CondMissionMoney3	mission	byte	draft	hard	
+exe	0x004b4550	ai_CondMissionMoney3	mission	byte	readable		
 exe	0x004b4590	ai_CondTitlesLeft	mission	byte	readable		
 exe	0x004b45c0	ai_CondRankTimed	mission	byte	readable		
 exe	0x004b45f0	ai_CondWorth	mission	byte	readable		
@@ -3325,7 +3325,7 @@ exe	0x00524260	sv_MoveToGroup	sv	draft	readable	deep
 exe	0x00524770	sv_IsAtDoor	sv	byte	readable		
 exe	0x00524810	sv_IsCartAtDoor	sv	byte	readable		
 exe	0x00524900	sv_CharStateIcons	sv	byte	readable		
-exe	0x00524990	sv_UpdateMemberList	sv	byte	draft		
+exe	0x00524990	sv_UpdateMemberList	sv	byte	readable		
 exe	0x00525220	sv_OpenPlayerBar	sv	byte	readable		
 exe	0x00525440	sv_ClosePlayerBar	sv	byte	readable		
 exe	0x00525480	sv_ClockSeason	sv	byte	readable		
@@ -4599,7 +4599,7 @@ exe	0x005d2f20	ai_UseEventGood	lc	shape	readable
 exe	0x005d2f90	ai_UseGoodStaffBonus	lc	byte	readable		
 exe	0x005d3030	ai_UseGoodPettyLoss	lc	draft	readable	deep	
 exe	0x005d31c0	ai_UseGoodSkillBonus	lc	byte	readable		
-exe	0x005d3270	ai_Unk5d3270	lc	draft	draft		
+exe	0x005d3270	ai_UseGoodDistrust	lc	draft	readable	deep	
 exe	0x005d33b0	ai_ListFiles	menu	byte	readable		
 exe	0x005d34b0	ai_FilePickWindow	menu	shape	readable		
 exe	0x005d3810	ai_MessageBox	menu	draft	draft	deep	
