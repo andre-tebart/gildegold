@@ -3072,3 +3072,4 @@
 2026-11-07T21:56:57 0x006f0d98 data ai_Unk6f0d98 -> cm_SceneInflateFlags by:main why:0x6f0d98 is written only in 0x4e2910 (cm_ShowObjectScene): it holds d3_SceneFlags while the object scene is inflated (d3_InflateScene) and then the same value without the stop bit 2; no reader exists
 2026-11-07T22:08:21 0x004e4f40 func ai_Unk4e4f40 -> cm_FirstPendingParty by:main why:the pending party (flags 1) with the smallest id, found by ai_RunPendingParties (main_BeginPlayerRound) which runs and drops the pending parties of a player's round
 2026-11-07T22:10:00 0x004e5120 data ai_Unk4e5120 -> cm_FreePartySlot by:main why:the first free scene party record (cm_Parties with id -1), used by cm_AllocParty to store a copy of a new party and give it the next id
+2026-11-07T22:11:40 0x0092c4e0 data ai_Unk92c4e0 -> cut_RandState by:main why:the linear congruential state of the scene random generator (cut_RandSeed, cut_GetRandSeed, cm_Random, cm_RandomFloat)

@@ -1112,7 +1112,7 @@ int cm_FreePartySlot();  /* 0x4e5120 */
 void cm_InitScenes(void);  /* 0x4e5770, clears the party records and registers the 12 scene kinds */
 
 
-extern unsigned int ai_Unk92c4e0;  /* 0x92c4e0, the random seed of the scenes */
+extern unsigned int cut_RandState;  /* 0x92c4e0, the random seed of the scenes */
 extern int ai_Unk6f0dc0;  /* 0x6f0dc0 */
 
 extern int ai_Unk60d374;  /* 0x60d374 */

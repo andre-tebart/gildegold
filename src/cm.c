@@ -15448,7 +15448,7 @@ void cm_ShowObjectScene(char *o, int id)
 /* ai_Unk925538: view of cm_Parties (tools/data_views.py) */
 
 /* the random seed of the scenes (0x92c4e0), a linear congruence; the number is the high word modulo 0x7fff */
-#define G28_HI (*(unsigned short *)((char *)&ai_Unk92c4e0 + 2))  /* 0x92c4e2 */
+#define G28_HI (*(unsigned short *)((char *)&cut_RandState + 2))  /* 0x92c4e2 */
 
 
 /* 0x4e2bd0, d2_SetViewEnabled for the scene helpers: in the replay mode (cm_SkipEvents) the view is always disabled */
@@ -16748,7 +16748,7 @@ void cut_RandSeed(unsigned int seed)
 {
     char buf[0x40];
 
-    ai_Unk92c4e0 = seed;
+    cut_RandState = seed;
     sprintf(buf, "cut_randseed: %i", seed);
 }
 /* 0x4e52c0, the seed (logged "cut_getrandseed: %i") */
@@ -16757,8 +16757,8 @@ unsigned int cut_GetRandSeed(void)
 {
     char buf[0x40];
 
-    sprintf(buf, "cut_getrandseed: %i", ai_Unk92c4e0);
-    return ai_Unk92c4e0;
+    sprintf(buf, "cut_getrandseed: %i", cut_RandState);
+    return cut_RandState;
 }
 /* 0x4e52f0, a random number below n (logged "cut_rnd: %i"), 0 for n == 0 */
 
@@ -16768,7 +16768,7 @@ unsigned int cm_Random(unsigned int n)
 
     if (n == 0)
         return 0;
-    ai_Unk92c4e0 = ai_Unk92c4e0 * 0x41c64e6d + 0x3039;
+    cut_RandState = cut_RandState * 0x41c64e6d + 0x3039;
     sprintf(buf, "cut_rnd: %i", G28_HI % 0x7fffu);
     return (G28_HI % 0x7fffu) % n;
 }
@@ -16778,7 +16778,7 @@ double cm_RandomFloat(void)
 {
     char buf[0x40];
 
-    ai_Unk92c4e0 = ai_Unk92c4e0 * 0x41c64e6d + 0x3039;
+    cut_RandState = cut_RandState * 0x41c64e6d + 0x3039;
     sprintf(buf, "cut_rndfloat: %f", (float)(G28_HI % 0x7fffu) * 3.0518509e-5f);
     return (float)(G28_HI % 0x7fffu) * 3.0518509e-5f;
 }
@@ -17020,7 +17020,7 @@ extern int cm_DuelLeft;
 extern int cm_DuelVariants[128];
 extern int cm_OrderTicks;
 extern unsigned short cm_DisabledObjs[768];
-extern unsigned int ai_Unk92c4e0;
+extern unsigned int cut_RandState;
 extern int cm_KindRun[1];
 extern int cm_KindAskPlayer[1];
 extern int cm_KindAskOther[1];
@@ -17262,7 +17262,7 @@ int cm_DuelLeft = 0;  /* 0x92bca4 */
 int cm_DuelVariants[128] = {0};  /* 0x92bcc0, the shuffled order of the duel variants (gm_Shuffled fills it) */
 int cm_OrderTicks = 0;  /* 0x92bec0 */
 unsigned short cm_DisabledObjs[768] = {0};  /* 0x92bee0 */
-unsigned int ai_Unk92c4e0 = 0;  /* 0x92c4e0, the random seed of the scenes */
+unsigned int cut_RandState = 0;  /* 0x92c4e0, the random seed of the scenes */
 int cm_KindRun[1] = {0};  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
 int cm_KindAskPlayer[1] = {0};  /* 0x92c504, the scene kind table (5 ints per kind) */
 int cm_KindAskOther[1] = {0};  /* 0x92c508 */
