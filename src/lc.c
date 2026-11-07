@@ -25379,80 +25379,64 @@ unsigned int ai_FillFriendsTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *row
     }
     return n;
 }
-/* 0x5bf4f0, the relation-sorted candidate list of a special-amount page, second variant (501 B, ROUGH): the
-   characters 0x770b80 + i * 0x21c of the kinds 2 .. 7 (alive, not param_1); with param_2 == 0 the count is
-   the relation 0x50c550 > the float 0x5ed0fc (or the same world +0x210); a count fills the records (0xe
-   dwords, the relation slot +0x2c starts at 100) by insertion, a same-world character entering with the
-   constant 0x5eb788 and the relation of the others converted by 0x5de518; the 0x5be1d0 init and the
-   0x5c33c0 result at +0x30 close. ROUGH: the exact compare directions are from the disassembly */
+/* 0x5bf4f0, the fill of the special-amount window's enemies tab (tab 2, 501 B): the characters other than me,
+   alive and of the kinds 2 .. 7 whom me likes at most 33 (gm_Liking), and me's partner (taken as liking 0). With
+   max 0 it only counts them; else it sets max rows of rows to the liking 100 and keeps the max least liked: a
+   character liked less than the last row takes it (LCAMOUNTROW.rec, x2c the liking) and bubbles up the list; the
+   count (at most max) gets the corner icons (ai_AmountRowStatus) and the partner filter filter
+   (ai_PassesPartnerFilter, pickable); returns the count */
 
-unsigned int ai_Unk5bf4f0(short *param_1, unsigned int param_2, int *param_3, int param_4)
+unsigned int ai_FillEnemiesTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
     unsigned int n;
-    unsigned int i;
-    char *p;
-    int *rec;
-    float f;
-    int *q;
-    int t;
+    AICHARREC *c;
+    AICHARREC *t;
+    float like;
+    unsigned int k;
+    int i;
 
     n = 0;
-    if (param_2 == 0) {
-        for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
-            if (p == (char *)param_1 || *(short *)p == -1)
-                continue;
-            if (*(unsigned char *)(p + 2) < 2 || *(unsigned char *)(p + 2) > 7)
-                continue;
-            f = gm_Liking(*(short *)p, *(short *)param_1, 1);
-            if (f > *(float *)(unsigned)&full_rdata_5ed0fc || U_I(p + 0x210) == U_I((char *)param_1 + 4))
+    if (max == 0) {
+        for (i = 0; i < 0x300; i++) {
+            c = &lc_CharRecs[i];
+            if (c != me && c->id != 0xffff && c->kind >= 2 && c->kind <= 7 &&
+                (gm_Liking(me->id, c->id, 1) <= 33.0f || c->partner == me->netId))
                 n++;
         }
         return n;
     }
-    for (i = 0; i < param_2 * 0x38 / 4; i++)
-        param_3[i] = 0;
-    rec = param_3;
-    for (i = 0; i < param_2; i++) {
-        rec[0xb] = 100;
-        rec += 0xe;
-    }
-    for (p = (char *)(unsigned)&ai_Chars; p < (char *)(unsigned)((unsigned)ai_Chars + 0x65400); p += 0x21c) {
-        if (p == (char *)param_1 || *(short *)p == -1)
+    memset(rows, 0, max * sizeof(LCAMOUNTROW));
+    for (k = 0; k < max; k++)
+        rows[k].x2c = 100;
+    for (i = 0; i < 0x300; i++) {
+        c = &lc_CharRecs[i];
+        if (c == me || c->id == 0xffff || c->kind < 2 || c->kind > 7)
             continue;
-        if (*(unsigned char *)(p + 2) < 2 || *(unsigned char *)(p + 2) > 7)
-            continue;
-        if (U_I(p + 0x210) != U_I((char *)param_1 + 4)) {
-            f = gm_Liking(*(short *)param_1, *(short *)p, 1);
-            if (!(f > *(float *)(unsigned)&full_rdata_5ed0fc))
-                continue;
-        } else {
-            f = *(float *)(unsigned)&ai_FloatZero;
-        }
-        if (n < param_2 && (n == 0 || f >= (float)param_3[param_2 * 0xe - 3])) {
-            rec = param_3 + n * 0xe;
-            rec[0] = (int)p;
-            param_3[param_2 * 0xe - 3] = (int)f;
+        if (c->partner == me->netId)
+            like = 0.0f;
+        else
+            like = gm_Liking(me->id, c->id, 1);
+        if (like <= 33.0f && like < rows[max - 1].x2c) {
+            rows[max - 1].rec = c;
+            rows[max - 1].x2c = (int)like;
             n++;
-            q = param_3 + n * 0xe - 3;
-            for (i = n - 1; i > 0; i--, q -= 0xe) {
-                if (*q < q[0xe]) {
-                    t = q[-0xb];
-                    q[-0xb] = q[3];
-                    q[3] = t;
-                    *q = q[0xe];
-                    q[0xe] = (int)f;
+            for (k = max - 1; k != 0; k--) {
+                if (rows[k - 1].x2c > rows[k].x2c) {
+                    t = rows[k - 1].rec;
+                    like = rows[k - 1].x2c;
+                    rows[k - 1].rec = rows[k].rec;
+                    rows[k - 1].x2c = rows[k].x2c;
+                    rows[k].rec = t;
+                    rows[k].x2c = (int)like;
                 }
             }
         }
     }
-    if (n > param_2)
-        n = param_2;
-    rec = param_3;
-    for (i = 0; i < n; i++) {
-        ai_AmountRowStatus(rec);
-        rec[0xc] = ai_PassesPartnerFilter(*(unsigned short *)param_1, *(unsigned short *)rec[0],
-                                (unsigned int *)param_4, 0);
-        rec += 0xe;
+    if (n >= max)
+        n = max;
+    for (i = 0; i < (int)n; i++) {
+        ai_AmountRowStatus(&rows[i]);
+        rows[i].pickable = ai_PassesPartnerFilter(me->id, rows[i].rec->id, filter, 0);
     }
     return n;
 }
@@ -32331,7 +32315,7 @@ char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-obje
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_FillFamilyTab, ai_Unk5bffb0 },
     { 1, 0, -1, ai_FillFriendsTab, ai_Unk5c00b0 },
-    { 2, 0, -1, ai_Unk5bf4f0, ai_Unk5c01c0 },
+    { 2, 0, -1, ai_FillEnemiesTab, ai_Unk5c01c0 },
     { 3, 0, -1, ai_Unk5bf6f0, ai_Unk5c02d0 },
     { 4, 0, -1, ai_Unk5bf7c0, ai_Unk5c03e0 },
     { 5, 0, -1, ai_Unk5bfa90, ai_Unk5c0550 },
