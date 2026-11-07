@@ -3006,3 +3006,4 @@
 2026-11-07T18:29:41 0x005cfc00 func ai_Unk5cfc00 -> ai_UseGoodInfectOwner by:main why:the use callback of the Domizil good 0x177: the owner of the picked building catches a disease (gm_CatchDisease)
 2026-11-07T18:32:07 0x005cff70 func ai_Unk5cff70 -> ai_UseGoodSendHome by:main why:the use callback of the Domizil good 0x178: sends the effect 0x76 and the send-home message 0x77 (he_StartSendHomeEvent) for the picked building
 2026-11-07T18:36:33 0x005d0320 func ai_Unk5d0320 -> ai_UseGoodWeakenSkills by:main why:the use callback of the Domizil good 0x17b (table entry 0x62c730): the skill-bonus message 0x82 with -1/6 on skills 3 and 2 for 24 hours to the picked character
+2026-11-07T18:39:02 0x005d0530 func ai_Unk5d0530 -> ai_UseGoodWeakenSkills2 by:main why:the use callback of the Domizil good 0x17d (table entry 0x62c768), the twin of ai_UseGoodWeakenSkills: the skill-bonus message 0x82 with -1/6 on skill 0 and -1/3 on skill 4

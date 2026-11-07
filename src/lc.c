@@ -33195,57 +33195,57 @@ int ai_UseGoodWeakenSkills(AICHARREC *ch, G8USEVIEW *use)
     }
     return 0;
 }
-/* 0x5d0530, a message callback (423 B), the twin of 0x5d0320: param_1 the message record (+2 the
-   type), param_2 the request record (+4 the target id). Type 6: the same config / window 0x5c1130
-   (cfg, text 0x9c, 0, 0) and then the type 0x82 message (+8 the record + 4, +0xc = -1, +0x36 = 2,
-   +0x58 = 0, +0x59 = 4, +0x5c = 0xbe2aaaab (-1/6), +0x60 = 0xbeaaaaab (-1/3), +0x64 = 0x18) through
-   0x4c4b70; other types: only the target 0x505df0 (param_2 + 4), no message. When the target's type is
-   6 / 7 the text 0x5176d0 (0xff6) goes through 0x53dda0 (the target + 4, -1, 0, 0x5fb). Returns 1 (0
-   without a record / target). */
+/* 0x5d0530, the use callback of the Domizil good 0x17d (reached through its table entry +0x14), the twin of
+   ai_UseGoodWeakenSkills: a player (kind 6) picks the target character with the same special-amount menu (prompt
+   0x9c) and sends it the skill-bonus message 0x82: skill 0 loses 1/6 and skill 4 loses 1/3 for 24 hours (flags
+   2); for any other user the target is use->target (gm_FindChar) and no message is sent. A player target (kind
+   6 / 7) gets the news 0xff6 (key 0x5fb). Returns 1, 0 without a target. */
 
-int ai_Unk5d0530(int param_1, int param_2)
+int ai_UseGoodWeakenSkills2(AICHARREC *ch, G8USEVIEW *use)
 {
-    int cfg[20];
-    char cfgtext[0x100];
-    char text[0x200];
-    int rec[0x3e];
-    int req;
-    int i;
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    char text[0x100];
+    char news[0x800];
+    AICHARREC *target;
 
-    if (*(char *)(param_1 + 2) != 6) {
-        req = gm_FindChar(*(int *)(param_2 + 4));
-        if (req == 0)
-            return 0;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+        if (target != 0) {
+            msg.to = target->netId;
+            msg.type = 0x82;
+            msg.fromId = -1;
+            msg.flags = 2;
+            msg.skillBonus.skill1 = 0;
+            msg.skillBonus.bonus1 = -1.0f / 6.0f;
+            msg.skillBonus.skill2 = 4;
+            msg.skillBonus.bonus2 = -1.0f / 3.0f;
+            msg.skillBonus.hours = 24;
+            cm_SendLongMessage((char *)&msg);
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0xff6);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            return 1;
+        }
     } else {
-        for (i = 0; i < 20; i++)
-            cfg[i] = 0;
-        for (i = 7; i < 15; i++)
-            cfg[i] = -1;
-        txt_Format(cfgtext, (char *)0x9c);
-        cfg[0] = 0;
-        cfg[1] = 0x400;
-        cfg[2] = U_I(((unsigned)&gypsyFilter));
-        cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-        cfg[4] = 6;
-        req = ai_AmountMenu(cfg, cfgtext, 0, 0);
-        if (req == 0)
-            return 0;
-        *(char *)((char *)rec + 4) = 0x82;
-        rec[2] = *(int *)(req + 4);
-        rec[3] = -1;
-        *(char *)((char *)rec + 0x36) = 2;
-        *(char *)((char *)rec + 0x58) = 0;
-        *(char *)((char *)rec + 0x59) = 4;
-        *(int *)((char *)rec + 0x5c) = 0xbe2aaaab;
-        *(int *)((char *)rec + 0x60) = 0xbeaaaaab;
-        *(int *)((char *)rec + 0x64) = 0x18;
-        cm_SendLongMessage(rec);
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target != 0) {
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0xff6);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            return 1;
+        }
     }
-    if (*(char *)(req + 2) == 6 || *(char *)(req + 2) == 7) {
-        txt_Format(text, (char *)0xff6);
-        he_ShowNews(*(int *)(req + 4), -1, text, 0, 0x5fb, 0);
-    }
-    return 1;
+    return 0;
 }
 /* 0x5d06e0, the use callback of the Domizil good 0x17e (the +0x14 pointer of the table entry 0x62c784;
    the "Unversehrtheit" good ai_DecideUseHealthObject wants while a character has an ailment): clears the
