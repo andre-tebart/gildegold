@@ -2411,30 +2411,30 @@ exe	0x004cdf80	cm_FightCutEntry	cm	shape	readable
 exe	0x004cdfe0	cm_CellUsable	cm	byte	readable		
 exe	0x004ce040	cm_FindNearCell	cm	shape	readable		
 exe	0x004ce130	cm_FindFighter	cm	byte	readable		
-exe	0x004ce170	ai_LedSelectBits	cm	byte	draft		
+exe	0x004ce170	ai_LedSelectBits	cm	byte	readable		
 exe	0x004ce1b0	cm_CharObjDistXZ	cm	shape	readable		
 exe	0x004ce200	cm_CharCellDistXZ	cm	byte	readable		
-exe	0x004ce270	cm_OtherBuilding	cm	byte	draft		
+exe	0x004ce270	cm_OtherBuilding	cm	byte	readable		
 exe	0x004ce290	cm_LayBomb	cm	byte	readable		
 exe	0x004ce300	cm_UpdateBombs	cm	draft	readable	deep	
 exe	0x004ce5d0	cm_ThrowGrenade	cm	shape	readable		
 exe	0x004ce830	cm_UpdateGrenades	cm	draft	readable	deep	
-exe	0x004ceb70	cm_ObjectOwner	cm	byte	draft		
-exe	0x004ceb80	ai_Unk4ceb80	cm	shape	draft		
+exe	0x004ceb70	cm_ObjectOwner	cm	byte	readable		
+exe	0x004ceb80	cm_WaitEventStop	cm	byte	readable		
 exe	0x004cec00	cm_CloseCharInfoWins	cm	byte	readable		
 exe	0x004cec30	cm_OpenCharInfoWin	cm	shape	readable		
-exe	0x004ced80	ai_Unk4ced80	cm	byte	draft		
+exe	0x004ced80	cm_UpdateCharInfoWins	cm	byte	readable		
 exe	0x004cedc0	cm_ShowDamage	cm	byte	readable		
 exe	0x004cee20	cm_UpdateDamagePops	cm	shape	readable		
 exe	0x004cef80	cm_InitDamagePops	cm	byte	readable		
 exe	0x004cefa0	cm_ClearDamagePops	cm	byte	readable		
-exe	0x004cefe0	cm_CloseFightView	cm	byte	draft		
+exe	0x004cefe0	cm_CloseFightView	cm	byte	readable		
 exe	0x004cf000	cm_UpdateSceneChars	cm	draft	readable	deep	
-exe	0x004cf370	cm_DrawScrollArrows	cm	shape	draft		
+exe	0x004cf370	cm_DrawScrollArrows	cm	shape	readable		
 exe	0x004cf670	cm_UpdatePointer	cm	draft	readable	deep	
 exe	0x004cf9c0	cm_UpdatePortraits	cm	draft	readable	deep	
 exe	0x004cfc10	cm_BuildPortraits	cm	shape	readable		
-exe	0x004cfe70	ai_Unk4cfe70	cm	byte	draft		
+exe	0x004cfe70	cm_ClosePortraits	cm	byte	readable		
 exe	0x004cfeb0	ai_Unk4cfeb0	cm	byte	draft		
 exe	0x004cffd0	cm_OrderAttack	cm	draft	readable	deep	
 exe	0x004d0200	cm_OrderEscape	cm	byte	readable		
