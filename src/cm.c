@@ -6001,7 +6001,7 @@ int cm_ExFightCommand(G17MSG *m, G17STAT *s)
             cm_FightSlotPutDown(&m->fight.slot);
         break;
     case 7:                                         /* the winner so far */
-        cm_FightSlotWinner((char *)&m->fight.slot);
+        cm_FightSlotWinner(&m->fight.slot);
         break;
     case 3:                                         /* escape */
         if (c->health != 0) {
@@ -11257,16 +11257,16 @@ void cm_FightSlotPutDown(CMFIGHTSLOT *f)
         strcpy(a->u.name, "spezial/einhaendig_vom_boden_nehmen");
     }
 }
-/* 0x4d7150, the character of the record r is the winner so far (0x6f0cf4): text 0x11b7 */
+/* 0x4d7150, the character in the fight slot f is the winner so far (cm_FightWinner): text 0x11b7 */
 
-void cm_FightSlotWinner(char *r)
+void cm_FightSlotWinner(CMFIGHTSLOT *f)
 {
     char buf[0x100];
-    char *c;
+    AICHAR *c;
 
-    c = gm_FindChar(*(int *)r);
+    c = (AICHAR *)gm_FindChar(f->id);
     cm_FightWinner = (int)c;
-    txt_Format(buf, 0x11b7, G20_US(c));
+    txt_Format(buf, 0x11b7, c->id);
     sv_SetStatusText(buf);
 }
 /* 0x4d7190, the escape flag of a fighter action f: the escape dummy named by f gets the fighter as its owner (the
