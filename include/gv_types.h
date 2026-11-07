@@ -1,7 +1,18 @@
-/* The order statistics records of gv.h (ord.c's ord_Statistics, ord_StatisticsHistory, ord_MessageRecord) and the AI
+/* The order statistics records of gv.h (ord.c's ord_Statistics, ord_StatisticsHistory, ord_MessageRecord), the wage record ORDWAGES (gm_CharacterWages) and the AI
    decision record AIDEC (gv_GetTableRecord) and a graveyard's list entry GVENTRY (gv_ListEntry, he.c's graveyard work), for the units that declare them without the rest of gv.h: types only. gv.h includes it. */
 #ifndef GV_TYPES_H
 #define GV_TYPES_H
+
+/* the wage record of gm_CharacterWages (0x4fa700): the two profession ids, the wage kind and the three amounts */
+typedef struct ORDWAGES {
+    unsigned char job;              /* 0x000, the profession id (character +0x166) */
+    unsigned char job2;             /* 0x001, the second profession id (character +0x169) */
+    unsigned char kind;             /* 0x002, the wage kind 0x23 .. 0x27 */
+    char pad003;
+    int amount;                     /* 0x004, the wage of the first profession */
+    int amount2;                    /* 0x008, the wage of the second profession */
+    int amount3;                    /* 0x00c, the wage of the kind */
+} ORDWAGES;
 
 typedef struct GVENTRY {                /* 0x14 bytes, an entry of a graveyard's lists (gv_AllocGraveyard) */
     int size;                           /* 0x00, the list (grave size) 0 .. 3 it belongs to */

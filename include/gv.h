@@ -202,17 +202,6 @@ typedef char gv_AssertGVAVATAR[sizeof(GVAVATAR) == 0xf4 ? 1 : -1];
 #define ORD_CHARS ((ORDCHAR *)ai_Chars)
 #define ORD_CHAR(p) ((ORDCHAR *)(p))   /* a raw character record as the order handlers read it */
 
-/* the wage record of gm_CharacterWages (0x4fa700): the two profession ids, the wage kind and the three amounts */
-typedef struct ORDWAGES {
-    unsigned char job;              /* 0x000, the profession id (character +0x166) */
-    unsigned char job2;             /* 0x001, the second profession id (character +0x169) */
-    unsigned char kind;             /* 0x002, the wage kind 0x23 .. 0x27 */
-    char pad003;
-    int amount;                     /* 0x004, the wage of the first profession */
-    int amount2;                    /* 0x008, the wage of the second profession */
-    int amount3;                    /* 0x00c, the wage of the kind */
-} ORDWAGES;
-
 /* the message record of an order (c = the character, m = this record): the handlers write their text at +0x14 */
 typedef struct ORDMSG {
     int kind;                       /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */

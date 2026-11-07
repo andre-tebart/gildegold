@@ -950,7 +950,7 @@ int ord_MisappropriationOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1c8 & ORD_FLAG_BLOCKED) != 0)
             return 1;
         if (m[0] == 3)
-            r = ai_MisappropriationWindow(c, m);
+            r = ai_MisappropriationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return r | 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -961,7 +961,7 @@ int ord_MisappropriationOrder(char *c, int *m)
         if ((ORD_CHAR(t)->flags1c8 & ORD_FLAG_BLOCKED) != 0)
             return 1;
         if (m[0] == 4) {
-            r = ai_MisappropriationWindow(c, m);
+            r = ai_MisappropriationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         } else if (ORD_CHAR(c)->kind == 6)
             txt_Format(ORD_MSG(m)->text, "%s", 0x1dc1);
         return r | 0xa;
