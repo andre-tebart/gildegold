@@ -27538,7 +27538,7 @@ accept:
     return 1;
 }
 
-int gm_ResearchClass(); void *ai_Unk5c3bb0();
+int gm_ResearchClass();
 
 /* 0x5c37a0, whether the building bld passes the amount menu's building filter cfg for the character me (480 B
    .. its switch table 0x5c3980): no filter passes all, no building or character none, an empty filter (no kind
@@ -27714,12 +27714,181 @@ int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
     }
     return match && ownerOk && listed;
 }
+typedef struct LCPICKROW {         /* 0x20 bytes, one character row of ai_PickBuildingChar */
+    int icon;                      /* 0x00, the row's picture object 0x5db, the click target */
+    int portrait;                  /* 0x04, the character's portrait (AICHARREC.picture) */
+    int name;                      /* 0x08, the name text */
+    int bar;                       /* 0x0c, the liking slider (disabled: a bar) */
+    int pad10;
+    int id;                        /* 0x14, the character id */
+    int pad18[2];
+} LCPICKROW;
+
+/* 0x5c3bb0, the character choice of a building, the window "Gesetze\Auswahl2" (1357 B): lists the building's master
+   and owner, then (building class 1 / 2, a home) the characters living in it (AICHARREC.bld2) or (the classes 4 .. 9,
+   0xb .. 0xe, 0x10, 0x12 .. 0x16) the ones working in it (AICHARREC.bld), up to 16 rows, the caption caption when
+   given and the scroll buttons past two rows. Each row is the picture 0x5db, the portrait, the name centred below it
+   and the player's liking of the character as a disabled bar; a row cfg's partner filter refuses is greyed and not
+   clickable (or left out when cfg->flags is 0). A click on a row returns its character record, or with a callback cb
+   calls cb (the record, bld) and redraws the rows; a right click closes the window. Returns the picked record or 0
+   @deep reconstructed the whole function against the original 0x5c3bb0..0x5c40fd (rows LCPICKROW 0x20 B
+   with id at +0x14, the master/owner/bld2/bld loops read through bld-> and bt->buildingClass as the
+   original's CSE shows, the 'if (n != 0)' guard of the row loop, the shown/step form that gives mov
+   eax,0x5a / xor eax,eax / add ebp,eax, the liking bar, the click search). Left: the two loop heads
+   schedule the row pointer and the ai_Chars start in another order with another temp: ours 'mov eax, esi;
+   mov edx, ai_Chars; shl eax, 5; lea edi, [esp+eax+0x68]', the original 'mov edx, esi; shl edx, 5; lea
+   edi, [esp+edx+0x68]; mov edx, ai_Chars' (and the same at 0x5c3cca with ecx/edx); the rest is regs
+   (eax/ecx/edx renaming). 417 vs 417 instructions. */
+
+AICHARREC *ai_PickBuildingChar(AIBLD *bld, AMOUNTCFG *cfg, char *caption, void (*cb)(AICHARREC *, AIBLD *))
+{
+    LCPICKROW rows[16];
+    char text[32];
+    AICHARREC *result;
+    AICHARREC *c;
+    int win;
+    int listWin;
+    int radio;
+    int n;
+    int i;
+    int y;
+    int w;
+    int h;
+    int draw;
+    int usable;
+    int shown;
+    int step;
+    int liking;
+    int label;
+    int bar;
+    int sel;
+    AIBTYPE *bt;
+
+    result = 0;
+    radio = -1;
+    n = 0;
+    draw = 1;
+    if (bld == 0)
+        return 0;
+    if (bld->masterId != 0xffff)
+        rows[n++].id = bld->masterId;
+    if (bld->owner != 0xffff && bld->masterId != bld->owner)
+        rows[n++].id = bld->owner;
+    bt = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    if (bt->buildingClass == 1 || bt->buildingClass == 2) {
+        for (c = lc_CharRecs; (int)c < (int)ai_Chars[768]; c++) {
+            if (n >= 16)
+                break;
+            if (c->bld2 == (int)bld && c->id != bld->masterId && c->id != bld->owner)
+                rows[n++].id = c->id;
+        }
+    }
+    if ((bt->buildingClass > 3 && bt->buildingClass < 10) || (bt->buildingClass > 10 && bt->buildingClass < 15) ||
+        bt->buildingClass == 16 || (bt->buildingClass > 17 && bt->buildingClass < 23)) {
+        for (c = lc_CharRecs; (int)c < (int)ai_Chars[768]; c++) {
+            if (n >= 16)
+                break;
+            if (c->bld == bld && c->id != bld->masterId && c->id != bld->owner)
+                rows[n++].id = c->id;
+        }
+    }
+    win = d2_OpenForm(0, 0, "Gesetze\\Auswahl2");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    if (caption != 0) {
+        d2_SetForm(win, 1);
+        io_PrintText(caption);
+    }
+    if (n > 2) {               /* the list part (2) scrolls by the buttons on the frame part (0) */
+        d2_SetForm(win, 2);
+        listWin = d2_LastWindow;
+        d2_SetForm(win, 0);
+        d2_CreateScrollButtons(-1, -1, d2_LastWindow, listWin, 0x767);
+    }
+    d2_ClickedId = -1;
+    do {
+        if (draw) {
+            d2_SetForm(win, 2);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            w = d2_Pics[0x5db].w;
+            h = d2_Pics[0x5db].h;
+            if (n != 0) {
+            y = 0x1e;
+            for (i = 0; i < n; i++) {
+                usable = 1;
+                shown = 1;
+                if (cfg != 0 && cfg->mode != 0) {
+                    usable = ai_PassesPartnerFilter(ai_PlayerId, (unsigned short)rows[i].id, cfg, (int)bld);
+                    shown = cfg->flags | usable;
+                }
+                if (shown != 0) {
+                    rows[i].icon = d2_WinOpenPic(0x96, y, 0x5db, d2_LastWindow);
+                    if (usable) {
+                        if (radio == -1)
+                            radio = d2_CreateRadioGroup(1, rows[i].icon);
+                        else
+                            d2_RadioAdd(radio, rows[i].icon);
+                    }
+                    liking = (int)gm_Liking(ai_PlayerId, rows[i].id, 1);
+                    rows[i].portrait = d2_WinOpenPic(0x98, y + 1, lc_CharRecs[rows[i].id].picture, d2_LastWindow);
+                    txt_Format(text, (int)ai_CharNameFmt, rows[i].id);
+                    label = d2_CreateWinText(0x96 - (0xa0 - w) / 2, h + y - 0x46, text, d2_LastWindow);
+                    rows[i].name = label;
+                    d2_Objs[label].centred = 1;
+                    d2_Objs[label].w = 0xa0;
+                    d2_SetObjFont(label, 0x56);
+                    d2_Objs[rows[i].icon].interactive = usable;
+                    d2_Objs[rows[i].icon].greyed = usable == 0;
+                    bar = d2_WinOpenSlider(0x8c, h + y + 4, 0x40, 0, 100, 0x75, 0x442, d2_LastWindow);
+                    rows[i].bar = bar;
+                    d2_SetObjValue(bar, 0, 100, liking);
+                    d2_SetObjEnabled(bar, 0);
+                    d2_MoveObj(d2_LastWindowPtr->x - (d2_Objs[bar].w - w) / 2 + 0x96, d2_LastWindowPtr->y + h + y + 4, bar);
+                    step = 0x5a;
+                } else {
+                    step = 0;
+                }
+                y += step;
+            }
+            }
+            draw = 0;
+        }
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            sel = -1;
+            for (i = 0; i < n; i++) {
+                if (d2_PointerObj == rows[i].icon) {
+                    sel = i;
+                    break;
+                }
+            }
+            if (sel > -1) {
+                result = &lc_CharRecs[rows[sel].id];
+                if (cb != 0) {
+                    cb(result, bld);
+                    draw = 1;
+                    if (radio != -1)
+                        d2_RadioClear(radio);
+                    radio = -1;
+                } else {
+                    sv_PopRequest = 1;
+                }
+            }
+        }
+    } while (sv_RunFrame((int)ai_PickBuildingChar, 0x677c7) != 0);
+    if (radio != -1)
+        d2_RadioClear(radio);
+    d2_CloseView(win);
+    return result;
+}
+
 /* 0x5c4100, the law selection entry of the map pick 0x5b2180: the picked building record; when its kind has a
    research class (0x50b090, the class written over the parameter) it returns 0, else it opens the law selection
    window 0x5c3bb0 (param_2 the filter, param_3 the caption text, param_4 the pick callback)
    @deep read the whole original 0x5c4100..0x5c414b and reconciled every statement: the bld guard,
    gm_ResearchClass(*bld, &cls) with the class in the reused argument slot, the return of
-   sv_ReturnZero(cls) when the class is set and of ai_Unk5c3bb0(bld, filter, text, cb) otherwise. The only
+   sv_ReturnZero(cls) when the class is set and of ai_PickBuildingChar(bld, filter, text, cb) otherwise. The only
    hunk left is that return form: the original returns sv_ReturnZero by a tail jmp (mov edx,[esp+8]; pop
    esi; mov [esp+4],edx; jmp 0x52a040), ours by push edx / call / add esp,4 (asmdiff: ours 33 ins, the
    original 31, differing 6, the same callee and argument). Tried the class local and the class written
@@ -27728,148 +27897,15 @@ int ai_PassesMapPickFilter(AICHARREC *me, AMOUNTCFG *cfg, AIBLD *bld)
    only when the callee's argument layout equals the caller's (checked with scratch files), so the source
    form that yields this jmp is not found */
 
-int ai_LawSelectionEntry(unsigned char *bld, int *filter, int text, void (*cb)())
+int ai_LawSelectionEntry(AIBLD *bld, AMOUNTCFG *filter, char *text, void (*cb)(AICHARREC *, AIBLD *))
 {
     int cls;
 
     if (bld == 0)
         return 0;
-    if (gm_ResearchClass(*bld, &cls) != 0)
+    if (gm_ResearchClass(bld->kind, &cls) != 0)
         return sv_ReturnZeroV(cls);
-    return (int)ai_Unk5c3bb0(bld, filter, text, cb);
-}
-/* 0x5c3bb0, the law selection window "Gesetze\Auswahl2" 0x62d2ec (1360 B, ROUGH): the character ids of
-   param_1 (+0x25 / +0x27, then the characters of the kinds 1 / 2 whose +0xb8 owner is param_1, and of the
-   kinds 4 .. 9 / 0xb .. 0xe / 0x10 / 0x12 .. 0x16 whose +0xb6 owner is param_1), up to 0x10; the window
-   0x4741f0 (0, 0, 0x62d2ec), 0x476f80, 0x475600, the caption param_3 when nonzero (0x475f70 (win, 1),
-   0x515960 (param_3)) and the 0x72270 frame when there are more than two ids; the rows (0x4731d0 (0x96, y,
-   0x5db) the icon, 0x50c550 the relation (__ftol), 0x4731d0 (0x98, y + 1, 0x770d0c + id * 0x21c) the
-   picture, 0x5176d0 (text, 0x62a564, the id), 0x473650 (the x / y of the icon, the text, screen),
-   0x4760b0 (ctrl, 0x56), 0x46a960 (0x8c, y + 4, 0x40, 0, 100, 0x75, 0x442) the slider, 0x475cb0,
-   0x475e40 (slider, 0) and 0x46cda0); the filter 0x5c33c0 (0x6f25b8, the id, param_2, param_1) hides the
-   row; a click runs the callback param_4 (the character record, param_1) or sets 0x6f22a0; the radio
-   0x46c490 / 0x46c560 / 0x46c600, the pump 0x5309a0 (this, 0x677c7) and 0x4758f0 (win). ROUGH: the row
-   x / y arithmetic of 0x46cda0 and the exact guards of the 0x72270 block are from Ghidra */
-
-void *ai_Unk5c3bb0(unsigned char *param_1, int *param_2, int param_3, void (*param_4)())
-{
-    int win;
-    int ids[16];
-    int ctrls[16];
-    char text[32];
-    void *result;
-    int radio;
-    int n;
-    int i;
-    int y;
-    int draw;
-    unsigned short a;
-    unsigned short b;
-    unsigned char kind;
-    unsigned int id;
-    int v;
-
-    result = 0;
-    radio = -1;
-    draw = 1;
-    if (param_1 == 0)
-        return 0;
-    a = *(unsigned short *)(param_1 + 0x25);
-    n = 0;
-    if (a != 0xffff) {
-        ids[0] = a;
-        n = 1;
-    }
-    b = *(unsigned short *)(param_1 + 0x27);
-    if (b != 0xffff && a != b) {
-        ids[n] = b;
-        n++;
-    }
-    kind = *(unsigned char *)(U_I((unsigned)&ai_BTypes) + *param_1 * 0x24d);
-    if (kind == 1 || kind == 2) {
-        for (i = 0; i < 0x300 && n < 0x10; i++) {
-            if (*(unsigned char **)((unsigned)&ai_Chars + i * 0x21c + 0x170) == param_1 &&
-                *(unsigned short *)((unsigned)&ai_Chars + i * 0x21c) != a &&
-                *(unsigned short *)((unsigned)&ai_Chars + i * 0x21c) != b)
-                ids[n++] = *(unsigned short *)((unsigned)&ai_Chars + i * 0x21c);
-        }
-    }
-    if ((kind > 3 && kind < 10) || (kind > 10 && kind < 0xf) || kind == 0x10 || (kind > 0x11 && kind < 0x17)) {
-        for (i = 0; i < 0x300 && n < 0x10; i++) {
-            if (*(unsigned char **)((unsigned)&ai_Chars + i * 0x21c + 0x16c) == param_1 &&
-                *(unsigned short *)((unsigned)&ai_Chars + i * 0x21c) != a &&
-                *(unsigned short *)((unsigned)&ai_Chars + i * 0x21c) != b)
-                ids[n++] = *(unsigned short *)((unsigned)&ai_Chars + i * 0x21c);
-        }
-    }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d2ec);
-    d2_SetPointerSprite(0, 0);
-    d2_CentreViewWindows(win);
-    if (param_3 != 0) {
-        d2_SetForm(win, 1);
-        io_PrintText(param_3);
-    }
-    if (n > 2) {
-        d2_SetForm(win, 2);
-        d2_SetForm(win, 0);
-        d2_CreateScrollButtons(-1, -1, U_I((unsigned)&d2_LastWindow), U_I((unsigned)&d2_LastWindow), 0x767);
-    }
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (draw) {
-            d2_SetForm(win, 2);
-            d2_RemoveWindowObjects(U_I((unsigned)&d2_LastWindow), 1);
-            y = 0x1e;
-            for (i = 0; i < n; i++) {
-                v = 1;
-                if (param_2 != 0 && param_2[1] != 0) {
-                    v = ai_PassesPartnerFilter(U_W((unsigned)&ai_PlayerId), ids[i], param_2, param_1);
-                    if (*param_2 == 0 && v == 0)
-                        continue;   /* ROUGH: the hidden row builds no controls */
-                }
-                ctrls[i] = d2_WinOpenPic(0x96, y, 0x5db, U_I((unsigned)&d2_LastWindow));
-                if (v != 0) {
-                    if (radio == -1)
-                        radio = d2_CreateRadioGroup(1);
-                    else
-                        d2_RadioAdd(radio, ctrls[i]);
-                }
-                id = ids[i];
-                d2_WinOpenPic(0x98, y + 1, U_I(((unsigned)&ai_Selected + 0x4) + id * 0x87), U_I((unsigned)&d2_LastWindow));
-                txt_Format(text, (int)ai_CharNameFmt, id);
-                /* ROUGH: the text control 0x473650 (x, y, text, screen), 0x4760b0 (ctrl, 0x56) and the
-                   slider 0x46a960 (0x8c, y + 4, 0x40, 0, 100, 0x75, 0x442) with 0x475cb0 / 0x475e40 /
-                   0x46cda0 */
-                y += 0x5a;
-            }
-            draw = 0;
-        }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            for (i = 0; i < n; i++) {
-                if (U_I((unsigned)&d2_PointerObj) == ctrls[i]) {
-                    result = (void *)((unsigned)&ai_Chars + ids[i] * 0x21c);
-                    if (param_4 == 0) {
-                        U_I((unsigned)&sv_PopRequest) = 1;
-                    } else {
-                        param_4(result, param_1);
-                        draw = 1;
-                        if (radio != -1)
-                            d2_RadioClear(radio);
-                        radio = -1;
-                    }
-                    break;
-                }
-            }
-        }
-        if (sv_RunFrame(ai_Unk5c3bb0, 0x677c7) == 0)
-            break;
-    }
-    if (radio != -1)
-        d2_RadioClear(radio);
-    d2_CloseView(win);
-    return result;
+    return (int)ai_PickBuildingChar(bld, filter, text, cb);
 }
 
 void d2_PlotLine();
