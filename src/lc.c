@@ -32002,7 +32002,7 @@ int ai_OpenTrial(AICHARREC *me, AICHARREC *target, int n, int byFaith)
     return 0x10;
 }
 /* 0x5cdb90, the accusation window "privillegien\Beweise_Details" (the accusation order's ask, ai_AccusationWindow /
-   ai_SpyTargetFlagHandler, for me and a culprit of its list): as ai_EvidenceDetailsWindow the crimes of culprit
+   ai_FaithAccusationWindow, for me and a culprit of its list): as ai_EvidenceDetailsWindow the crimes of culprit
    that me holds (gv_HeldCrimesOf), sorted by law, each a row of its law's name and pictures, the caption 0x1742;
    when the order 0x16 reports the flag 2 for the culprit the text 0x174a, else the accuse button 0x1745, enabled
    only while one of the crimes is open (state 1) and culprit is not me. The button opens the trial (ai_OpenTrial)
@@ -32172,34 +32172,103 @@ int ai_AccusationWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return ret;
 }
-/* 0x5ce1a0, the spy target handler with the flag set (775 B, ROUGH SKELETON: no Ghidra export; from the
-   disassembly; the twin of 0x5cde90): param_1 the message record (the AIMSG: +0 the id, +2 the type
-   6 / 7, +0x166 the kind 0xd refused), param_2 the request (+0x214 the target id). Types other than
-   6 / 7: the target 0x505df0 (missing or kind 0xd -> 0x60); the list 0x4f3fe0 (the target id, the ids,
-   the message id) must be nonempty (else 0x60) and goes to ai_OpenTrial (the message, the target, the
-   count, 1). Types 6 / 7 open the window at 0x5ce258. ROUGH SKELETON: the window path is a comment. */
+/* 0x5ce1a0, the accusation by faith (ord_SpyTargetFlagOrder, the jobs 0x12 / 0x16): ai_AccusationWindow's twin
+   whose trial is held by the judge of me's faith (ai_OpenTrial byFaith 1). The AI (not kind 6 / 7) names the
+   culprit in m->target: the trial opens unless me or he holds the office 0xd, he is unknown or me holds none of
+   his crimes (0x60). A player gets the evidence book "privillegien\Beweise_Sichten" (one amount row per culprit,
+   "%i (%i) %s", or the text 0x1741); a clicked row opens its accusation window (ai_AccuseWindow), whose result it
+   returns (0x20 when none was opened); a right click closes it. The frame pump names ai_AccusationWindow as its
+   owner (the original's copy)
+   @deep Rewritten whole from the original 0x5ce1a0..0x5ce4a7 (was a skeleton) as the twin of
+   ai_AccusationWindow: the AI branch (office 0xd refusals, gm_FindChar, gv_HeldCrimesOf, ai_OpenTrial
+   byFaith 1) and the player's evidence book (caption 0x173f, gv_RankCulpritsAll rows, "%i (%i) %s",
+   0x1741, ai_AccuseWindow's result returned, sv_RunFrame owner ai_AccusationWindow as the original pushes
+   0x5cde90) read and matched call by call; ours=245 original=246, no ref/literal difference. Left, the
+   same as the twin: the frame layout of the three int[0x20] arrays (original open 0x5c, ids 0xdc, total
+   0x15c; ours ids 0x5c, open 0xdc: slot hunks at 0x5ce216 / 0x5ce2b0 / 0x5ce2e3 / 0x5ce2f4) and the one
+   store of the AI branch's crime count to [esp+0x5c] (mov dword ptr [esp + 0x5c], eax at 0x5ce228, dead
+   after) that ours keeps in eax. */
 
-int ai_SpyTargetFlagHandler(int param_1, int *param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_FaithAccusationWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int ids[0x100];
-    int target;
     int n;
+    int count;
+    int i;
+    int win;
+    int list;
+    int sel;
+    int ret;
+    AICHARREC *ch;
+    char text[0x40];
+    int open[0x20];
+    int ids[0x20];
+    int total[0x20];
+    LCAMOUNTROW rows[0x20];
 
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7) {
-        if (*(unsigned char *)(param_1 + 0x166) == 0xd)
+    ret = 0x20;
+    if (me->kind != 6 && me->kind != 7) {
+        if (me->officeKind == 0xd)
             return 0x60;
-        target = gm_FindChar(param_2[0x214]);
-        if (target == 0)
+        ch = (AICHARREC *)gm_FindChar(m->target);
+        if (ch == 0 || ch->officeKind == 0xd)
             return 0x60;
-        if (*(unsigned char *)(target + 0x166) == 0xd)
-            return 0x60;
-        n = gv_HeldCrimesOf(param_2[0x214], ids, *(unsigned short *)param_1);
+        n = gv_HeldCrimesOf(m->target, ids, me->id);
         if (n == 0)
             return 0x60;
-        return ai_OpenTrial((AICHARREC *)param_1, (AICHARREC *)target, n, 1);
+        return ai_OpenTrial(me, ch, n, 1);
     }
-    /* ROUGH SKELETON: the window at 0x5ce258 (the rows and the pump 0x5309a0) is not written yet */
-    return 0x20;
+    win = d2_OpenForm(0, 0, "privillegien\\Beweise_Sichten");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    io_PrintText(0x173f);
+    d2_SetForm(win, 2);
+    list = d2_LastWindow;
+    d2_SetForm(win, 3);
+    d2_CreateScrollButtons(-1, -1, d2_LastWindow, list, 0x767);
+    count = gv_RankCulpritsAll(ids, open, total, me->id);
+    n = 0;
+    for (i = 0; i < count; i++) {
+        ch = (AICHARREC *)gm_FindChar(ids[i]);
+        if (ch != 0) {
+            rows[n].rec = ch;
+            rows[n].x2c = total[i];
+            rows[n].x34 = open[i];
+            ai_AmountRowStatus(&rows[n]);
+            rows[n].pickable = 1;
+            n++;
+        }
+    }
+    d2_SetForm(win, 2);
+    if (n != 0) {
+        for (i = 0; i < n; i++) {
+            txt_Format(text, "%i (%i) %s", rows[i].x2c, rows[i].x34, (rows[i].x2c != 1) + 0x1748);
+            rows[i].x = 0x32;
+            rows[i].y = i * 0x69 + 10;
+            ai_AmountRow(0x32, i * 0x69 + 10, d2_LastWindow, 0x56, &rows[i], 1);
+            ai_RightAlignedText(text, d2_Wins[d2_LastWindow].w - 0xf, i * 0x69 + 10 + 0x2d, 200, 0x55);
+        }
+    } else {
+        io_PrintText(0x1741, ai_PlayerId);
+    }
+    d2_SetPointerSprite(0, 0);
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (d2_ClickedId != -1) {
+            sel = -1;
+            for (i = 0; i < n; i++) {
+                if (d2_PointerObj == rows[i].ctl[0]) {
+                    sel = i;
+                    break;
+                }
+            }
+            if (sel > -1)
+                ret = ai_AccuseWindow(me, rows[sel].rec);
+        }
+    } while (sv_RunFrame((int)ai_AccusationWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5ce4b0, the spy payment handler (345 B, ROUGH SKELETON: no Ghidra export; from the disassembly):
    param_1 the message record (the AIMSG: +2 the type 6 / 7, +4 the id, +0x166 the kind), param_2 the

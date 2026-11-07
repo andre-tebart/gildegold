@@ -1289,7 +1289,7 @@ int ord_SpyTargetFlagOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1c8 & 0x200) != 0)
             return 9;
         if (m[0] == 3)
-            ai_SpyTargetFlagHandler(c, m);
+            ai_FaithAccusationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -1299,7 +1299,7 @@ int ord_SpyTargetFlagOrder(char *c, int *m)
         if (j != 0x12 && j != 0x16)
             return 1;
         if (m[0] == 4) {
-            ai_SpyTargetFlagHandler(c, m);
+            ai_FaithAccusationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
             return 0xa;
         }
         if (ORD_CHAR(c)->kind == 6)

@@ -3001,3 +3001,4 @@
 2026-11-07T17:53:58 0x005cdb90 func ai_Unk5cdb90 -> ai_AccuseWindow by:main why:the evidence-details form with the accuse button 0x1745 that opens the trial (ai_OpenTrial); called by the accusation handlers 0x5cde90 / 0x5ce1a0
 2026-11-07T17:55:33 0x005cde90 func ai_SpyTargetHandler -> ai_AccusationWindow by:main why:it opens the trial (ai_OpenTrial) for the AI and the evidence book "privillegien\Beweise_Sichten" whose rows open ai_AccuseWindow for a player
 2026-11-07T17:55:33 0x004f50f0 data ord_SpyTargetOrder -> ord_AccusationOrder by:main why:it opens the trial (ai_OpenTrial) for the AI and the evidence book "privillegien\Beweise_Sichten" whose rows open ai_AccuseWindow for a player
+2026-11-07T17:59:34 0x005ce1a0 func ai_SpyTargetFlagHandler -> ai_FaithAccusationWindow by:main why:0x5ce1a0 is ai_AccusationWindow's twin opening the trial with ai_OpenTrial byFaith=1 (the judge of me's faith)

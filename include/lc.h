@@ -229,7 +229,7 @@ int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
 struct AICHARREC; struct LCORDMSG; int ai_LawPrivilegeWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca150 */
 struct AICHARREC; struct LCORDMSG; int ai_MisappropriationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca860 */
 struct LCORDMSG; int ai_CourtshipWindow(struct AICHARREC *ch, struct LCORDMSG *m);  /* 0x5c6d00, the courtship order's ask (lc.c LCORDMSG: gv.h ORDMSG) */
-int ai_SpyTargetFlagHandler(int param_1, int *param_2);  /* 0x5ce1a0 */
+int ai_FaithAccusationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ce1a0, the accusation by faith (ai_AccusationWindow's twin) */
 int ai_AccusationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cde90, the accusation order's ask */
 void ai_ShowCharacterNews(unsigned short *cRec, char *text);  /* 0x5a9110 */
 void ai_ShowEvidenceVoidNews(unsigned short *toldRec, unsigned short *culpritRec);  /* 0x5a9430 */
