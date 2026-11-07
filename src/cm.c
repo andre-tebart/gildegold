@@ -5994,7 +5994,7 @@ int cm_ExFightCommand(G17MSG *m, G17STAT *s)
         break;
     case 4:                                         /* pick up the object at its place */
         if (c->health != 0)
-            cm_FightSlotPickUp((char *)&m->fight.slot);
+            cm_FightSlotPickUp(&m->fight.slot);
         break;
     case 5:                                         /* put down the object it carries */
         if (c->health != 0)
@@ -11211,24 +11211,26 @@ void cm_FightSlotCheer(CMFIGHTSLOT *f)
         strcpy(ev->u.name, "gestik/jubeln");
     }
 }
-/* 0x4d7000, the fighter slot f picks up the object lying at its place (+0x10): the object (0x449690) is marked as owned
-   by the character's side, event 0x4d3ae0 */
+/* 0x4d7000, the fighter slot f picks up the object lying at its place (dummy): the object (0x449690) is marked as
+   owned by the character's side (AIOBJ.fightSide), event 0x4d3ae0 */
 
-void cm_FightSlotPickUp(char *f)
+void cm_FightSlotPickUp(CMFIGHTSLOT *f)
 {
-    char *c, *side, *o, *ev;
+    AICHAR *c, *side;
+    D3OBJECT *o;
+    CHACTION *ev;
 
-    if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = cm_FindFighter(*(int *)f);
-        side = *(char **)(c + 0x16c);
-        ch_StopActions(*(char **)(c + 0x184));
-        o = (char *)d3_FindObject(0, 0x40, 0, f + 0x10);
+    if (f->active != 0 && f->id != -1) {
+        c = (AICHAR *)cm_FindFighter(f->id);
+        side = (AICHAR *)c->bld;
+        ch_StopActions(c->scene);
+        o = d3_FindObject(0, 0x40, 0, f->dummy);
         if (o != 0) {
-            *(int *)(*(char **)(o + 0x200) + 0xa) = G20_US(side);
-            ev = (char *)ch_AddActionCBK(*(char **)(c + 0x184), (unsigned)&cm_PickUpAction, 5, 0x2e, 1);
-            *(char **)(ev + 0x17c) = c;
-            *(char **)(ev + 0x180) = o;
-            strcpy(ev + 0xf0, "spezial/einhaendig_vom_boden_nehmen");
+            ((AIOBJ *)o->owner)->fightSide = side->id;
+            ev = ch_AddActionCBK(c->scene, (unsigned)&cm_PickUpAction, 5, 0x2e, 1);
+            ev->pickUp.fighter = c;
+            ev->pickUp.object = o;
+            strcpy(ev->u.name, "spezial/einhaendig_vom_boden_nehmen");
         }
     }
 }

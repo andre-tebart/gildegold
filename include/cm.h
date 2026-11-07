@@ -461,7 +461,7 @@ int ch_Delete();  /* 0x4028a0 */
 void cm_FighterAct(CMFIGHTSLOT *f);  /* 0x4d6ba0, the action of one fighter (message 0x55) */
 void cm_FightSlotStop(CMFIGHTSLOT *f);  /* 0x4d6f60 */
 void cm_FightSlotCheer(CMFIGHTSLOT *f);  /* 0x4d6f90 */
-void cm_FightSlotPickUp(char *f);  /* 0x4d7000 */
+void cm_FightSlotPickUp(CMFIGHTSLOT *f);  /* 0x4d7000 */
 void cm_FightSlotPutDown(char *f);  /* 0x4d70a0 */
 void cm_FightSlotWinner(char *r);  /* 0x4d7150 */
 int cm_Attack(CMCUTINFO *rec, struct AICHAR *c, struct AICHAR *g);  /* 0x4d7360 */
