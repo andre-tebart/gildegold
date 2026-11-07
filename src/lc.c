@@ -23999,12 +23999,82 @@ void ai_ChooseCoatOfArms(void)
     d2_RadioClear(group);
     d2_CloseView(win);
 }
-/* 0x5bc420, a window (688 B, ROUGH SKELETON): an 0xa4-byte frame; the body is a comment */
+#define ai_StatsMoneyRows (*(LCEXCHROW (*)[16])&full_data_6f3680)  /* 0x6f3680, the currency rows of the stats panel's money page (ai_FillExchangeRows) */
 
-int ai_Unk5bc420(void)
+/* 0x5bc420, opens the money page "Panel\geld_info_2" of the player stats panel (ai_PlayerStatsPanel's first
+   entry): the captions 0x1f3e / 0x1f3f / 0x1f40, the player's currencies (ai_FillExchangeRows of the inventory
+   into ai_StatsMoneyRows) and the player's loans (gm_CreditEvents, the text 0x18cb at nine) as rows of a frame
+   0x75a and a child window with the text 0x1f41 (the bank, the amount, the interest, the due date) under scroll
+   buttons; returns the form */
+
+int ai_OpenMoneyInfoPage(void)
 {
-    /* ROUGH SKELETON: the 0xa4-byte frame */
-    return 0;
+    int rowW;
+    int down;
+    int n;
+    int up;
+    int bar;
+    HELOAN *loans[9];
+    CREDITLISTROW rows[9];
+    int win;
+    int i;
+    char *bank;
+
+    up = -1;
+    down = -1;
+    bar = -1;
+    for (i = 0; i < 16; i++) {
+        ai_StatsMoneyRows[i].icon = -1;
+        ai_StatsMoneyRows[i].good = 0;
+    }
+    for (i = 0; i < 9; i++) {
+        rows[i].child = -1;
+        rows[i].pic = -1;
+        rows[i].loan = 0;
+    }
+    win = d2_OpenForm(0, 0, "Panel\\geld_info_2");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_SetForm(win, 2);
+    io_PrintText(0x1f3e);
+    d2_SetForm(win, 4);
+    io_PrintText(0x1f3f);
+    d2_SetForm(win, 5);
+    io_PrintText(0x1f40);
+    d2_SetForm(win, 1);
+    ai_FillExchangeRows(lc_CharRecs[ai_PlayerId].inventory, ai_StatsMoneyRows, win, 1, 0);
+    for (i = 0; i < 9; i++) {
+        if (rows[i].child != -1) {
+            d2_RemoveWindow(rows[i].child);
+            d2_RemoveObj(rows[i].pic);
+            rows[i].child = -1;
+            rows[i].pic = -1;
+            rows[i].loan = 0;
+        }
+    }
+    gm_CreditEvents(ai_PlayerId, 0, loans);
+    n = gm_CreditEvents(ai_PlayerId, 0, loans);
+    d2_SetForm(win, 3);
+    io_PrintText("$C");
+    if (n >= 9)
+        io_PrintText(0x18cb);
+    rowW = d2_Pics[0x75a].w;
+    d2_SetForm(win, 0);
+    sv_CreateScrollButtons(0x215, 0x16b, d2_LastWindow, d2_GetViewWin(win, 3), 0x6a, &down, &up, &bar);
+    for (i = 0; i < n; i++) {
+        d2_SetForm(win, 3);
+        rows[i].pic = d2_WinOpenPic((d2_LastWindowPtr->w - rowW) >> 1, i * 0x6a, 0x75a, d2_LastWindow);
+        rows[i].child = d2_CreateChildWindow((d2_LastWindowPtr->w - rowW) >> 1, i * 0x6a + 4, rowW, 0x62, 0x10,
+                                             d2_LastWindow);
+        rows[i].loan = loans[i];
+        d2_Wins[rows[i].child].font = 0x56;
+        d2_Wins[rows[i].child].ml = 0x10;
+        bank = gm_FindBuildingById(((AIJOB *)rows[i].loan)->bldId);
+        if (bank != 0)
+            io_PrintText(0x1f41, bank, rows[i].loan->amount, rows[i].loan->interest, &rows[i].loan->due);
+    }
+    return win;
 }
 /* 0x5bc6d0, a window over the player 0x6f25b8 (192 B, ROUGH SKELETON): a 0xc-byte frame; the body is a
    comment */
@@ -24063,7 +24133,7 @@ int ai_PlayerStatsPanel(void)
     sv_FitForm(U_I((unsigned)&d2_LastWindow));
     d2_SetForm(win, 3);
     sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, out, 3, U_I((unsigned)&full_data_144a134), U_I((unsigned)&full_data_144a138), U_I((unsigned)&full_data_144a13c));
-    ctrlA = ai_Unk5bc420();
+    ctrlA = ai_OpenMoneyInfoPage();
     ctrlB = ai_Unk5bc6d0();
     ctrlC = ai_Unk5bc9c0();
     id = d2_CreateRadioGroup(3, out[0], out[1], out[2]);

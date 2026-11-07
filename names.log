@@ -2926,3 +2926,4 @@
 2026-11-07T12:03:34 0x005ba980 func ai_Unk5ba980 -> ai_UseGoodWindow by:main why:the form panel\useobj (ai_UseObjForm): asks to use the inventory good (texts 0xfe3 / 0xfe4) and runs ai_UseGood for the player
 2026-11-07T12:11:03 0x005bae50 func ai_Unk5bae50 -> ai_UpdateEquipRows by:main why:0x5bae50 updates the equip window's row table ai_EquipRows each frame (frees rows of characters gone, fills slots from the inventory, adds rows for job groups 10..12); called by ai_EquipWindow
 2026-11-07T12:20:15 0x005bb950 func ai_Unk5bb950 -> ai_OpenTrainingRow by:main why:0x5bb950 opens one row (frame 0x74c, picture, child window) of the training window; ai_TrainingWindow calls it for rows 0..2
+2026-11-07T12:36:46 0x005bc420 func ai_Unk5bc420 -> ai_OpenMoneyInfoPage by:main why:0x5bc420 opens the stats panel's money page Panel\geld_info_2 (currencies, loans) and returns the form; ai_PlayerStatsPanel's first entry
