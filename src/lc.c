@@ -25479,19 +25479,142 @@ unsigned int ai_FillLoversTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows
     }
     return n;
 }
-/* 0x5bf7c0, a page fill variant (717 B, ROUGH SKELETON): the local 0xc8 (200) and the carrier walk
-   0x53e400 (1, 0, 0x2c) with the two 0x505df0 ids of the +0xac owner and the +0xb0 id against param_1, the
-   records of 0xe dwords and the 0x5be1d0 / 0x5c33c0 tail; only reached through the fill table 0x62d154.
-   The body is left as a comment (frame 0x38) */
+#pragma pack(push, 1)
+typedef struct LCOFFEREVENT {           /* the wedding offer event 0x2c's words over AIJOB's union (he.c HEOFFER, same
+                                           layout) */
+    char pad00[0xac];
+    int who[6];                         /* 0xac, the characters of the wedding: the suitor, the partner, then four
+                                           guests (the last -1 for none) */
+    char kind;                          /* 0xc4, the offer kind */
+    AITIME clock;                       /* 0xc5, when the wedding takes place */
+} LCOFFEREVENT;
+#pragma pack(pop)
+/* 0x5bf7c0, the fill of the special-amount window's wedding tab (tab 4, 717 B): the weddings (the offer events 0x2c)
+   me takes part in whose six characters exist (the last guest may be missing). With max 0 it counts their
+   characters (5 or 6 per wedding); else it fills rows with the characters of the soonest such wedding at most 200
+   years ahead (LCAMOUNTROW.rec, x2c the role: 0 the suitor, 1 the partner, 2, 3, 3, 4 the guests; x34 the event's
+   id), up to max of them, each with the corner icons (ai_AmountRowStatus) and the partner filter filter
+   (ai_PassesPartnerFilter, pickable); returns the count
+   @deep Read the whole function against the original and reconstructed it from the skeleton (the wedding
+   offer events 0x2c, LCOFFEREVENT a local view of he.c's HEOFFER): the count path (5 or 6 characters per
+   wedding me takes part in) and the fill path (the soonest wedding within 200, the roles 0 1 2 3 3 4, x34
+   the event id, the corner icons and the partner filter). 218 vs 218 instructions, the same branches and
+   calls; left is allocation: in the count path the original keeps mine in ebx and me in ebp, ours mine in
+   ebp and me in edi; in the fill path the original keeps mine in ebp, me in esi (reloaded at +0x162) and
+   caches n in ebp in the row loop (xor ebp, ebp; mov [esp+0x10], ebp at the loop exit), ours keeps me in
+   ebp and n in its slot (+0x25f, +0x28f). Tried: the k = 5 placement (fixed the branch target at +0xce;
+   moves the count path's registers). */
 
-int ai_Unk5bf7c0(int param_1, int param_2, int *param_3, int param_4)
+unsigned int ai_FillWeddingTab(AICHARREC *me, unsigned int max, LCAMOUNTROW *rows, unsigned int *filter)
 {
-    /* ROUGH SKELETON: the carrier list of the page (see the comment) */
-    (void)param_1;
-    (void)param_2;
-    (void)param_3;
-    (void)param_4;
-    return 0;
+    AICHARREC *guests[6];
+    int roles[6];
+    LCOFFEREVENT *ev;
+    AICHARREC *c;
+    unsigned int n;
+    unsigned int j;
+    int soonest;
+    int mine;
+    int k;
+
+    soonest = 200;
+    n = 0;
+    if (max == 0) {
+        for (ev = (LCOFFEREVENT *)he_FindEvent(1, 0, 0x2c); ev != 0; ev = (LCOFFEREVENT *)he_NextEvent()) {
+            mine = 0;
+            c = (AICHARREC *)gm_FindChar(ev->who[0]);
+            if (c == 0)
+                continue;
+            if (c == me)
+                mine = 1;
+            c = (AICHARREC *)gm_FindChar(ev->who[1]);
+            if (c == 0)
+                continue;
+            if (c == me)
+                mine = 1;
+            c = (AICHARREC *)gm_FindChar(ev->who[2]);
+            if (c == 0)
+                continue;
+            if (c == me)
+                mine = 1;
+            c = (AICHARREC *)gm_FindChar(ev->who[3]);
+            if (c == 0)
+                continue;
+            if (c == me)
+                mine = 1;
+            c = (AICHARREC *)gm_FindChar(ev->who[4]);
+            if (c == 0)
+                continue;
+            k = 5;
+            if (c == me)
+                mine = 1;
+            c = (AICHARREC *)gm_FindChar(ev->who[5]);
+            if (c != 0) {
+                k = 6;
+                if (c == me)
+                    mine = 1;
+            }
+            if (mine)
+                n += k;
+        }
+        return n;
+    }
+    for (ev = (LCOFFEREVENT *)he_FindEvent(1, 0, 0x2c); ev != 0; ev = (LCOFFEREVENT *)he_NextEvent()) {
+        if (ev->clock.year - ai_Time.year > soonest)
+            continue;
+        mine = 0;
+        guests[0] = (AICHARREC *)gm_FindChar(ev->who[0]);
+        if (guests[0] == 0)
+            continue;
+        roles[0] = 0;
+        if (guests[0] == me)
+            mine = 1;
+        guests[1] = (AICHARREC *)gm_FindChar(ev->who[1]);
+        if (guests[1] == 0)
+            continue;
+        roles[1] = 1;
+        if (guests[1] == me)
+            mine = 1;
+        guests[2] = (AICHARREC *)gm_FindChar(ev->who[2]);
+        if (guests[2] == 0)
+            continue;
+        roles[2] = 2;
+        if (guests[2] == me)
+            mine = 1;
+        guests[3] = (AICHARREC *)gm_FindChar(ev->who[3]);
+        if (guests[3] == 0)
+            continue;
+        roles[3] = 3;
+        if (guests[3] == me)
+            mine = 1;
+        guests[4] = (AICHARREC *)gm_FindChar(ev->who[4]);
+        if (guests[4] == 0)
+            continue;
+        roles[4] = 3;
+        if (guests[4] == me)
+            mine = 1;
+        guests[5] = (AICHARREC *)gm_FindChar(ev->who[5]);
+        if (guests[5] != 0) {
+            roles[5] = 4;
+            if (guests[5] == me)
+                mine = 1;
+        }
+        if (!mine)
+            continue;
+        soonest = ev->clock.year - ai_Time.year;
+        n = 0;
+        for (j = 0; j < 6 && j < max; j++) {
+            if (guests[j] != 0) {
+                rows[n].rec = guests[j];
+                rows[n].x2c = roles[j];
+                rows[n].x34 = ((AIJOB *)ev)->id;
+                ai_AmountRowStatus(&rows[n]);
+                rows[n].pickable = ai_PassesPartnerFilter(me->id, rows[n].rec->id, filter, 0);
+                n++;
+            }
+        }
+    }
+    return n;
 }
 /* 0x5bfa90, a page fill variant (428 B, ROUGH SKELETON): the character +0x1c8 flag 0x400, the carrier walk
    0x53e400 (1, 0, 0x47), the records of 0xe dwords and the 0x5be1d0 / 0x5c33c0 tail; only reached through
@@ -32318,7 +32441,7 @@ AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {i
     { 1, 0, -1, ai_FillFriendsTab, ai_Unk5c00b0 },
     { 2, 0, -1, ai_FillEnemiesTab, ai_Unk5c01c0 },
     { 3, 0, -1, ai_FillLoversTab, ai_Unk5c02d0 },
-    { 4, 0, -1, ai_Unk5bf7c0, ai_Unk5c03e0 },
+    { 4, 0, -1, ai_FillWeddingTab, ai_Unk5c03e0 },
     { 5, 0, -1, ai_Unk5bfa90, ai_Unk5c0550 },
     { 6, 0, -1, ai_Unk5bfc40, ai_Unk5c0650 },
     { 7, 0, -1, ai_Unk5bfd90, ai_Unk5c0790 },

@@ -2937,3 +2937,4 @@
 2026-11-07T13:24:52 0x005bf300 func ai_Unk5bf300 -> ai_FillFriendsTab by:main why:tab 1 fill of the special-amount window (ai_AmountTabs[1].fill): the characters the given one likes at least 75 (gm_Liking), sorted by liking
 2026-11-07T13:26:10 0x005bf4f0 func ai_Unk5bf4f0 -> ai_FillEnemiesTab by:main why:tab 2 fill of the special-amount window (ai_AmountTabs[2].fill): the characters the given one likes at most 33 (gm_Liking) and the partner, sorted by liking ascending
 2026-11-07T13:26:57 0x005bf6f0 func ai_Unk5bf6f0 -> ai_FillLoversTab by:main why:tab 3 fill of the special-amount window (ai_AmountTabs[3].fill): the partners of the character's pair events 0x6f (the kept lovers, as ai_AmountRowStatus's 0x6cc icon)
+2026-11-07T13:30:41 0x005bf7c0 func ai_Unk5bf7c0 -> ai_FillWeddingTab by:main why:tab 4 fill of the special-amount window (ai_AmountTabs[4].fill): the characters of the wedding offer events 0x2c (he.c HEOFFER) the given character takes part in
