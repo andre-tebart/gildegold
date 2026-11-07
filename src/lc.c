@@ -33708,16 +33708,74 @@ int ai_UseGoodTwoTrialSteps(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d13e0, an action callback of the record table 0x62c420 (record 22 at 0x62c688, the text id 0x170,
-   672 B): three random picks 0x42ec00 (0x300 over the 0x300 character records 0x770b80, as 0x5d0f20),
-   three 0x4c4b00 lines, the texts 0x5176d0, one message 0x53dda0, the 0x5ba660 lookup, the panel
-   0x5cf820. Frame 0x810.
-   ROUGH STUB (layout 2026-10-24, tools/disasm.py): not written, the call sequence above is from the
-   disassembly. */
+/* 0x5d13e0, the use callback of the Domizil good 0x170 (the +0x14 pointer of the table entry 0x62c688): marks the
+   use handled; three random characters of the other sex (ai_Chars from a random start, steps 1 / 7 / 13: a
+   used record of kind below 10, not the user or an earlier pick; the first one must hold an office) each get
+   their relation to the user raised by 20 (cm_SendRelations). Each player pick (kind 6 / 7) gets the news
+   0xfef naming the user (key 0x5ec); a player user sees the text 0xfe8 (the good's rank + 1 and the three) in
+   the use-object panel. Returns 1.
+   @deep Read whole against the original and written typed (AICHARREC ch / pick[3], G8USEVIEW use,
+   lc_CharRecs; the stub had no body): every call, argument, constant and condition matches in order (the
+   first pick also wants an office, the later two only the other sex). Left: (1) at the end the original
+   calls ai_FindUsableGoodIndex (+0x23a) before loading the three pick ids for txt_Format 0xfe8; ours
+   (+0x234) loads them first, because VC6 sees our earlier-defined ai_FindUsableGoodIndex write only *index
+   (the TU-boundary effect of ai_UseGood, lc lead Open: layout; inline and separate-statement spellings
+   give the same code); (2) allocation: the loop counters in edi/esi where the original has esi/edi in
+   loops 2 and 3, and loop 1's dec edi scheduled after the idiv (the original's +0x5d1452 dec edi before
+   the inc). */
 
-int ai_Unk5d13e0(void)
+int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AICHARREC *pick[3];
+    int index;
+    char news[0x800];
+    G9DOMIZIL *found;
+    int id;
+    int n;
+    int i;
+
+    use->handled = 1;
+    id = util_Random(0x300) & 0xffff;
+    for (n = 0x300; n != 0; n--) {
+        if (id != ch->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
+            lc_CharRecs[id].sex != ch->sex && lc_CharRecs[id].officeKind != 0) {
+            pick[0] = &lc_CharRecs[id];
+            break;
+        }
+        id = (id + 1) % 0x300;
+    }
+    id = util_Random(0x300) & 0xffff;
+    for (n = 0x300; n != 0; n--) {
+        if (id != ch->id && id != pick[0]->id && lc_CharRecs[id].id != 0xffff && lc_CharRecs[id].kind < 10 &&
+            lc_CharRecs[id].sex != ch->sex) {
+            pick[1] = &lc_CharRecs[id];
+            break;
+        }
+        id = (id + 7) % 0x300;
+    }
+    id = util_Random(0x300) & 0xffff;
+    for (n = 0x300; n != 0; n--) {
+        if (id != ch->id && id != pick[0]->id && id != pick[1]->id && lc_CharRecs[id].id != 0xffff &&
+            lc_CharRecs[id].kind < 10 && lc_CharRecs[id].sex != ch->sex) {
+            pick[2] = &lc_CharRecs[id];
+            break;
+        }
+        id = (id + 13) % 0x300;
+    }
+    cm_SendRelations(ch->netId, pick[0]->netId, 20, 1);
+    cm_SendRelations(ch->netId, pick[1]->netId, 20, 1);
+    cm_SendRelations(ch->netId, pick[2]->netId, 20, 1);
+    txt_Format(news, 0xfef, ch->id);
+    for (i = 0; i < 3; i++) {
+        if (pick[i]->kind == 6 || pick[i]->kind == 7)
+            he_ShowNews(pick[i]->netId, -1, news, 0, 0x5ec, 0);
+    }
+    if (ch->kind == 6) {
+        found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+        txt_Format(news, 0xfe8, found->rank + 1, pick[0]->id, pick[1]->id, pick[2]->id);
+        ai_UseObjPanel(news);
+    }
+    return 1;
 }
 /* 0x5d1680, an action callback of the record table 0x62c420 (record 21 at 0x62c66c, the text id 0x16d,
    432 B): type 6 takes the character from the 0x5c1130 menu (the config block 0x400 / 6 and the
