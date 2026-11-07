@@ -2901,7 +2901,7 @@ exe	0x004f81c0	ord_DispatchOrder	ord	byte	readable
 exe	0x004f8200	ord_PrivilegeDialog	ord	byte	readable		
 exe	0x004f82a0	ord_ResetStatistics	ord	byte	readable		
 exe	0x004f8300	ord_GetGridCell	ord	byte	readable		
-exe	0x004f8360	ord_CountGridObjects	ord	shape	readable	deep	
+exe	0x004f8360	ord_CountGridObjects	ord	draft	readable	deep	shape+readable -> draft+readable at 7fefab32: ai_types.h AIMSG / AIJOB gain the talent training message 0x60's word (AIMSG.training.talent at 0x5a, AIJOB.training.talent at 0xae; am.h's AIXMSG.skill names the same byte) instead of raw offsets in lc's ai_TalentWindow (now shape): a truer shared type. ord_CountGridObjects uses neither member; it only swaps two stack slots ([esp+0x10] / [esp+0x14]) and a register pair under the changed declaration set, as the lc lead comment notes for every AIJOB / AIMSG member, so its shape match was no evidence of the original's source [waits for: match-deep on its slot allocation, or the declaration set of ord.c's includes (gv.h > ai_types.h)]
 exe	0x004f8460	ord_AddGridAmount	ord	draft	readable	deep	
 exe	0x004f8590	ord_SubGridAmount	ord	draft	readable	deep	
 exe	0x004f86a0	ord_RandomCellPoint	ord	byte	readable		

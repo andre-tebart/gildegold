@@ -6246,7 +6246,7 @@ void ai_MixingContact(AIBLD *bld, int room)
     }
 }
 
-int ai_AmountMenu(); int ai_FiveTextWindow(); void ai_OpenRobberBribe(); int ai_DrohbriefWindow();
+int ai_AmountMenu(); void ai_TalentWindow(struct AIBLD *bld, int room, int talent); void ai_OpenRobberBribe(); int ai_DrohbriefWindow();
 void ai_PamphletWindow(int bld);
 
 /* 0x5962b0, the stonecutter contact listener: it releases the name plates, pumps the frame (sv_RunFrame, this,
@@ -6314,7 +6314,7 @@ typedef struct AMOUNTCFG {              /* 0x50 bytes, the config of the special
    plate runs its order: the sabotage map pick (ai_MapPick with the config flags 1, mode -1, filter 0x3e07c43b4,
    kind 6, and the prompt 0x16ff; callback ai_SabotageCallback), the beating amount menu (ai_AmountMenu with mode 0x400,
    kind 6, the gypsy filter, the prompt 0x1707; callback ai_BeatingCallback), the night-and-fog window
-   (ai_FiveTextWindow variant 2) or the bribe (ai_OpenRobberBribe) */
+   (ai_TalentWindow, talent 2) or the bribe (ai_OpenRobberBribe) */
 
 void ai_RobberContact(int bld, int room)
 {
@@ -6354,7 +6354,7 @@ void ai_RobberContact(int bld, int room)
             ai_AmountMenu(&beat, beatText, 0, ai_BeatingCallback);
             sv_CameraFollow();
         } else if (ai_ClickedObject == nightFog)
-            ai_FiveTextWindow(bld, room, 2);
+            ai_TalentWindow(bld, room, 2);
         else if (ai_ClickedObject == bribe)
             ai_OpenRobberBribe(bld);
     }
@@ -6391,7 +6391,7 @@ void ai_RhetoricContact(int bld, int room)
             } else if (ai_ClickedObject == pamphlet) {
                 ai_PamphletWindow(bld);
             } else if (ai_ClickedObject == rhetorik) {
-                ai_FiveTextWindow(bld, room, 4);
+                ai_TalentWindow(bld, room, 4);
             }
         }
         r = sv_RunFrame(ai_RhetoricContact, 0x67fff);
@@ -6406,8 +6406,8 @@ int cm_SendExSetHE(); /* @original: the callers here push the key as an int and 
    it opens is "locations\wohnsitz\fest"): it releases the name plates and pumps the frame (sv_RunFrame, this, mask
    0x67fff) while the screen stays on top; every frame it registers the three plates contact_FESTGEBEN (text
    txt_Ptrs[0x1766], throw a feast), contact_KAMPF (text 0x16ae, the brawl) and contact_ANSCHWAERZEN (text 0x175e,
-   denounce). A clicked plate opens its window: the feast window ai_FeastWindow, the five-text window
-   ai_FiveTextWindow in mode 3, or the denounce window ai_DenounceWindow (then the camera follows) */
+   denounce). A clicked plate opens its window: the feast window ai_FeastWindow, the talent window
+   ai_TalentWindow for the talent 3, or the denounce window ai_DenounceWindow (then the camera follows) */
 void ai_FeastContact(AIBLD *bld, int room)
 {
     int r;
@@ -6425,7 +6425,7 @@ void ai_FeastContact(AIBLD *bld, int room)
             if (ai_ClickedObject == fest) {
                 ai_FeastWindow(bld, room);
             } else if (ai_ClickedObject == kampf) {
-                ai_FiveTextWindow(bld, room, 3);
+                ai_TalentWindow(bld, room, 3);
             } else if (ai_ClickedObject == ansch) {
                 ai_DenounceWindow(bld);
                 sv_CameraFollow();
@@ -6887,9 +6887,9 @@ void ai_StudyContact(AIBLD *bld, int room)
         }
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == verhandeln)
-                ai_FiveTextWindow(bld, room, 0);
+                ai_TalentWindow(bld, room, 0);
             else if (ai_ClickedObject == handwerk)
-                ai_FiveTextWindow(bld, room, 1);
+                ai_TalentWindow(bld, room, 1);
             else if (ai_ClickedObject == beweis)
                 ai_EvidenceBookWindow(bld);
             else if (ai_ClickedObject == meister)
@@ -19714,23 +19714,136 @@ void ai_StorageWindow(AIBLD *bld, int list)
     d2_CloseView(win);
     ai_CampaignStep(0x1d, bld, 1, 0);
 }
-/* 0x5b3130, a window with five text slots (1272 B, ROUGH SKELETON): the carrier 0x53e400 (2, 2, 0, 0x60, the
-   player 0x6f25b8) first, the five caption ids 0x25e / 0x264 / 0x26a / 0x270 / 0x276 in a 0x358-byte frame;
-   the window body is left as a comment */
+/* 0x5b3130, the talent window "Special\Talente" (the robber / rhetoric / tavern contact listeners): the player's
+   talent `talent` (0 .. 4, AICHARREC.skills) with its picture (pics + level / 42, at most 5) and value bar, and the
+   offer to train it for a price by its level (1 / 2 / 4 / 6 / 9 / 12, one less when the order 0x3a / 0x1a / 0x17 /
+   0x18 / 0x19 of the talent reports the flag 2); a running training event 0x60 of the player shows its progress
+   instead, a talent of 252 or more cannot be trained. OK pays the price (cm_SendMoneyDelta) and sends the
+   training message 0x60 (AIMSG.training, as am.c's ai_ExecuteTrainSkill) */
 
-int ai_FiveTextWindow(void)
+void ai_TalentWindow(struct AIBLD *bld, int room, int talent)
 {
-    int rec;
-    int texts[5];
+    AIMSG msg;
+    int pics[5];
+    int orders[5];
+    int discount;
+    int canTrain;
+    int form;
+    int bar;
+    int w;
+    int text;
+    unsigned char price;
+    float level;
+    float total;
+    AIJOB *ev;
+    int arg[0x88];
 
-    texts[0] = 0x25e;
-    texts[1] = 0x264;
-    texts[2] = 0x26a;
-    texts[3] = 0x270;
-    texts[4] = 0x276;
-    rec = he_FindEvent(2, 2, 0, 0x60, U_W((unsigned)&ai_PlayerId));
-    /* ROUGH SKELETON: the window, the five controls and the pump loop of the 0x358 frame */
-    return 0;
+    pics[0] = 0x25e;
+    pics[1] = 0x264;
+    pics[2] = 0x26a;
+    pics[3] = 0x270;
+    pics[4] = 0x276;
+    ev = (AIJOB *)he_FindEvent(2, 2, ai_PlayerId, 0, 0x60);
+    memset(arg, 0, sizeof(arg));
+    canTrain = 0;
+    orders[0] = 0x3a;
+    orders[1] = 0x1a;
+    orders[2] = 0x17;
+    orders[3] = 0x18;
+    orders[4] = 0x19;
+    arg[0] = 1;
+    if (talent >= 5)
+        return;
+    discount = (ord_DispatchOrder(orders[talent], ai_Chars[ai_PlayerId], arg) & 2) ? -1 : 0;
+    if (((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] < 0x2a)
+        price = 1;
+    else if (((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] < 0x54)
+        price = 2;
+    else if (((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] < 0x7e)
+        price = 4;
+    else if (((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] < 0xa8)
+        price = 6;
+    else
+        price = ((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] < 0xd2 ? 9 : 12;
+    price += discount;
+    form = d2_OpenForm(0, 0, "Special\\Talente");
+    d2_SetForm(form, 0);
+    sv_FitForm(d2_LastWindow);
+    d2_CentreViewWindows(form);
+    d2_SetForm(form, 1);
+    d2_SetPointerSprite(0, 0);
+    text = talent + 0x16b7;
+    io_PrintText(0x16af, text);
+    io_PrintText(talent + 0x16c3);
+    d2_SetForm(form, 2);
+    w = d2_Wins[d2_LastWindow].w;
+    level = ((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] * 0.023809524f;
+    if (!(level < 5.0f))
+        level = 5.0f;
+    bar = d2_WinOpenPic(w / 2 - 0x18, 4, (int)(pics[talent] + level), d2_LastWindow);
+    sv_ValueBar(w / 2 - 0x23, 0x3c, ((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent], 0x4df);
+    d2_SetForm(form, 3);
+    if (ev != 0) {
+        io_PrintText(0x16b3, ev->training.talent + 0x16b7, text);
+    } else if (((AICHARREC *)ai_Chars)[ai_PlayerId].skills[talent] >= 0xfc) {
+        io_PrintText(0x16b2);
+    } else {
+        if (((AICHARREC *)ai_Chars)[ai_PlayerId].money >= price) {
+            if (discount == 0) {
+                switch (ls_GetLanguage()) {
+                case 0:
+                    io_PrintText(0x16b1, price, text);
+                    break;
+                case 1:
+                    io_PrintText(0x16b1, price, text);
+                    break;
+                }
+            } else {
+                switch (ls_GetLanguage()) {
+                case 0:
+                    io_PrintText(0x16b0, (((AICHARREC *)ai_Chars)[ai_PlayerId].sex ? 0x27b : 0x253) + ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice,
+                                 price, text);
+                    break;
+                case 1:
+                    io_PrintText(0x16b0, (((AICHARREC *)ai_Chars)[ai_PlayerId].sex ? 0x27b : 0x253) + ((AICHARREC *)ai_Chars)[ai_PlayerId].secondOffice,
+                                 text, price);
+                    break;
+                }
+            }
+            canTrain = 1;
+        } else {
+            io_PrintText(0x16b4, price, text);
+        }
+    }
+    do {
+        if (ev != 0 && bar != -1) {
+            AITIME due;
+
+            due = ev->start;
+            gm_AddTime((struct AITIME *)&due, 5, 0, 0);
+            total = (float)gm_MinutesBetween(&ev->start, &ev->end);
+            d2_Objs[bar].fillFraction = (float)gm_MinutesBetween(&ev->start, &ai_Time) / total;
+        }
+        if (dm_L.rup != 0 && d2_FocusedInput == 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
+            if (canTrain) {
+                cm_SendMoneyDelta(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -(int)price);
+                msg.flags = 1;
+                msg.type = 0x60;
+                msg.training.talent = (unsigned char)talent;
+                msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                msg.fromId = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                cm_SendLongMessage((char *)&msg);
+                ai_CampaignStep(0x2c, 0, 0, talent);
+                sv_PopRequest = 1;
+            }
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_TalentWindow, 0x677c7) != 0);
+    sv_CameraFollow();
+    d2_CloseView(form);
 }
 /* 0x5b3630, a Ghidra-missed start (1184 B, ROUGH SKELETON): the seam is the ret at 0x5b3626 and the nine nops to
    0x5b3630; a 0x7c4-byte frame, param_1 tested first; it ends with the ret at 0x5b3acf. The body is left as a

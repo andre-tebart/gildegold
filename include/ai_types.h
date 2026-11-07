@@ -68,6 +68,10 @@ typedef struct AIJOB {                  /* 0x14c bytes, a job / event record (he
                         unsigned short hi;      /* 0xae */
                     } w;
                 } u;
+                struct {                        /* 0xac, of the talent training event 0x60 (AIMSG.training, 0x54 further on) */
+                    char padac[2];
+                    unsigned char talent;       /* 0xae, the talent it raises, 0 .. 4 (lc.c ai_TalentWindow names it) */
+                } training;
             };
             union {
                 int unkb0;                      /* 0xb0 */
@@ -501,6 +505,11 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     unsigned char subject;      /* 0x64, the offer chosen (s2->ref) */
                     unsigned char level;        /* 0x65, the offer's second value (s2->arg2) */
                 } study;
+                struct {                        /* the talent training message 0x60 (lc.c ai_TalentWindow, am.c
+                                                   ai_ExecuteTrainSkill / ai_ExecuteTrainJobSkill as am.h's AIXMSG.skill) */
+                    char pad58[2];
+                    unsigned char talent;       /* 0x5a, the talent (AICHAR.skills index) the training raises */
+                } training;
             };
             union {
                 int amount[3];                  /* 0x88, of the bought goods */
