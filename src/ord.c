@@ -214,7 +214,7 @@ int ord_MedicusOrder(char *c, int *m)
     if ((k == 3 || k == 1) && (ORD_CHAR(c)->flags1c8 & 0x40) == 0
         && (ORD_CHAR(c)->v024 < -20.0 || (ORD_CHAR(c)->v02c & 0xfffffff0) != 0)) {
         if (k == 3)
-            return ai_MedicusHandler(c, m);
+            return ai_MedicusHandler((struct AICHARREC *)c, (struct LCORDMSG *)m);
         if (k == 1 && ORD_CHAR(c)->kind == 6)
             txt_Format(m + 5, "%s", 0x1d3a);
         return 2;

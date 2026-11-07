@@ -1138,7 +1138,9 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       by gm_AgeCharacter, the character dies when it is used up) */
     float f020;                    /* 0x020, ai_char.h AICHAR.f020 (the character info panel offers a jobless child
                                       the profession choice when it is at most the age + 4) */
-    char pad024[8];
+    int v024;                      /* 0x024, ai_char.h AICHAR.v024: below 0 the character is hurt (ord.c's medicus
+                                      order tests it below -20); the medicus heals half of it (gm_AddHealth) */
+    char pad028[4];
     unsigned int ailments;         /* 0x02c, the ailment counters (am.h G5CH.ailments; ai_char.h AICHAR.v02c):
                                       the fields at bits 0, 4, 8, 12, 14, 17, 20, 23, 25 (4, 4, 4, 2, 3, 3, 3, 2, 4
                                       bits), the daily step 0x4fbe90 halves each, the diseases 2 .. 9 sit in the
@@ -29712,92 +29714,82 @@ void ai_PrivilegesPanel(void)
     ai_CampaignStep(8, 0, 1, 0);
 }
 
-/* 0x5c8bc0, the medicus privilege handler (803 B, ROUGH): a message record (param_1, the AIMSG by word
-   offsets: +0 the id, +2 the type, +4 the handle, +0x24 the amount, +0x194 the choice count). Types 6 / 7
-   open the window "privillegien_medicus" 0x62d494 with the two buttons 0x515960 (0x1d3b, 2, the price
-   (int)0x50a640 (id)) / 0x475b80; a click on the first tests 0x520f90 (2) and 0x521040, closes 0x4c5f60
-   (-2) and writes the text 0x5176d0 (0x5f8318, 0x1d3c / 0x1d3d / 0x1d3e); 0x42ec00 (2) == 0 copies the
-   first text, else pays 0x4c47e0 (-1, handle, 0x6f1bc5, price), clears with 0x505840, waits on 0x4c3ae0
-   (0x4c4a60 (handle, 0x1c8, 4, 0x40, 0)) with the pump 0x52fe00, shows 0x521150 and sets 0x6f22a0; the
-   return 0x81. The other types pay 0x4c47e0 when the amount > 1 and return 0x11, else 0; the pump
-   0x5309a0 and the end 0x4758f0. ROUGH: the strcpy blocks of the pseudocode are written as strcpy. */
-int ai_MedicusHandler(unsigned short *param_1, void *unused)
+/* 0x5c8bc0, the medicus order's ask (ord_MedicusOrder, kind 3) on the hurt or sick character ch (803 B): a character
+   of another kind than 6 / 7 with at least 2 in money pays the medicus 2 and gets the order's flag 0x40, and in
+   one of two cases is healed by half its hurt (v024), cured of a disease and the player paid 2 % of its worth:
+   0x11; else 0. A kind 6 / 7 character's player gets the window "privillegien\medicus" with the offer (0x1d3b,
+   the price 2 % of the worth) and its two buttons: yes pays 2 (sv_CheckMoney / sv_CheckGoodAmount), and in one of
+   two cases cures a disease and pays the price to the player (the texts 0x1d3c + 0x1d3d / 0x1d3e), waits for the
+   flag 0x40 to be set and shows the text: 0x81; no or the right button closes the window: 2 */
+int ai_MedicusHandler(AICHARREC *ch, LCORDMSG *m)
 {
-    char buf[256];
-    char text[1024];
+    int price;
     int ret;
     int win;
-    int btn1;
-    int btn2;
-    int t;
-    int absv;
-    int v;
-    float f;
+    char note[0x100];
+    char text[0x400];
+    int heal;
+    int yes;
+    int no;
+    int slot;
 
     ret = 2;
-    if (*(char *)((char *)param_1 + 2) != 6 && *(char *)((char *)param_1 + 2) != 7) {
-        if (*(int *)((char *)param_1 + 0x194) > 1) {
-            absv = *(int *)((char *)param_1 + 0x24);
-            if (absv < 0)
-                absv = -absv;
-            f = ((float (*)(unsigned short))gm_GetWorth)(*param_1);   /* the price */
-            cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), 0xfffffffe);
-            cm_SendSetField(*(int *)((char *)param_1 + 4), 0x1c8, 4, 0x40, 0);
-            if (util_Random(2) != 0) {
-                cm_SendMoveGoods(0xffffffff, *(int *)((char *)param_1 + 4), *(int *)(unsigned)&ai_OwnPlayer, (int)f);
-                gm_AddHealth(*param_1, absv / 2);
-                gm_CureDisease((char *)param_1);
-            }
-            return 0x11;
+    if (ch->kind != 6 && ch->kind != 7) {
+        if (ch->money < 2)
+            return 0;
+        heal = abs(ch->v024) / 2;
+        price = (int)(gm_GetWorth(ch->id) * 0.02f);
+        cm_SendMoneyDelta(ch->netId, -2);
+        cm_SendSetField(ch->netId, 0x1c8, 4, 0x40, 0);
+        if ((short)util_Random(2) != 0) {
+            cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, price);
+            gm_AddHealth(ch->id, heal);
+            gm_CureDisease((char *)ch);
         }
-        return 0;
+        return 0x11;
     }
-    f = ((float (*)(unsigned short))gm_GetWorth)(*param_1);   /* the price */
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d494);
+    price = (int)(gm_GetWorth(ch->id) * 0.02f);
+    win = d2_OpenForm(0, 0, "privillegien\\medicus");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    t = io_PrintText(0x1d3b, 2, (int)f);
-    btn1 = d2_GetWinObj(win, 1, t);
-    btn2 = d2_GetWinObj(win, 1, t + 1);
-    *(int *)(unsigned)&d2_ClickedId = -1;
+    slot = io_PrintText(0x1d3b, 2, price);
+    yes = d2_GetWinObj(win, 1, slot);
+    no = d2_GetWinObj(win, 1, slot + 1);
+    d2_ClickedId = -1;
     do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_PointerObj == btn1) {
-                if (sv_CheckMoney(param_1, 2) != 0 &&
-                    sv_CheckGoodAmount(param_1, (int)f, *(int *)(unsigned)&ai_OwnPlayer) != 0) {
-                    cm_SendMoneyDelta(*(int *)((char *)param_1 + 4), 0xfffffffe);
-                    txt_Format(text, (char *)0x1d3c);
-                    if (util_Random(2) == 0) {
-                        txt_Format(buf, "%s", 0x1d3e);
-                        strcpy(text, buf);
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == yes) {
+                if (sv_CheckMoney(ch, 2) != 0 && sv_CheckGoodAmountB((char *)ch, price, ai_OwnPlayer) != 0) {
+                    cm_SendMoneyDelta(ch->netId, -2);
+                    txt_Format(text, 0x1d3c);
+                    if ((short)util_Random(2) != 0) {
+                        txt_Format(note, "%s", 0x1d3d);
+                        strcat(text, note);
+                        cm_SendMoveGoods(-1, ch->netId, ai_OwnPlayer, price);
+                        gm_CureDisease((char *)ch);
                     } else {
-                        txt_Format(buf, "%s", 0x1d3d);
-                        strcpy(text, buf);
-                        cm_SendMoveGoods(0xffffffff, *(int *)((char *)param_1 + 4), *(int *)(unsigned)&ai_OwnPlayer,
-                                     (int)f);
-                        gm_CureDisease((char *)param_1);
+                        txt_Format(note, "%s", 0x1d3e);
+                        strcat(text, note);
                     }
-                    btn1 = -1;
-                    btn2 = -1;
+                    yes = -1;
+                    no = -1;
                     ret = 0x81;
-                    v = cm_SendSetField(*(int *)((char *)param_1 + 4), 0x1c8, 4, 0x40, 0);
-                    while (cm_GetSlotState(v) == 0)
+                    slot = cm_SendSetField(ch->netId, 0x1c8, 4, 0x40, 0);
+                    while (cm_GetSlotState(slot) == 0)
                         sv_PumpNet();
                     sv_MessageBox(text, 0);
-                    *(int *)(unsigned)&sv_PopRequest = 1;
+                    sv_PopRequest = 1;
                 }
-            } else if (*(int *)(unsigned)&d2_PointerObj == btn2) {
-                *(int *)(unsigned)&sv_PopRequest = 1;
+            } else if (d2_PointerObj == no) {
+                sv_PopRequest = 1;
             }
         }
-        if (*(int *)((unsigned)&dm_L + 0x20))
-            *(int *)(unsigned)&sv_PopRequest = 1;
-        if (sv_RunFrame(ai_MedicusHandler, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    } while (1);
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_MedicusHandler, 0x657c7) != 0);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5c8ef0, the divorce privilege handler (927 B, ROUGH): a message record (param_1, the AIMSG by word
    offsets: +0 the id, +2 the type, +4 the handle, +9 a flag, +0xd a byte, +0x24 the amount, +0x5c the
