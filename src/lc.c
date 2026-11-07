@@ -27117,54 +27117,40 @@ void ai_MasterHireWindow(AIBLD *bld, int mode)
     } while (sv_RunFrame(ai_MasterHireWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5c2a10, the master letter window's profession rows (400 B): 0x475f70 (win, 1 / 2) with the texts
-   0x602568 / 0x1949 / 0x602568; seven rows of 0x30 bytes: the record param_2 + i * 8 (+0 the object id,
-   +4 / +5 two bytes) gives the picture control 0x4731d0 (0xf, i * 0x30, id + 0xdf, screen), its record
-   0xf8f080 + id * 0x2ec (+0x1c0 = 3, +0x2e8 = 0x91aaf0 + id * 0x41, +0x4c = 1, +0x28 = the +5 byte == 0),
-   param_4[i] = the control and the slider 0x46a960 (100, 0xc + i * 0x30, 200, 0, 0x64, 0x7b, 0x802,
-   screen) into param_3[i] (0x475cb0 (slider, 0, 0x64, the +4 byte), 0x475e40 (slider, the +5 byte == 0));
-   a zero record gives -1 in both arrays */
+/* 0x5c2a10, fills the master letter window's goods page (400 B): the title text 0x1949, then one row per slot of
+   the production setting (seven, 0x30 pixels apart): the good's picture (d2 style 3, its AIGOOD record as the
+   object's user data, interactive, checked while the slot is not locked) into locks[i] and the weight slider
+   (0 .. 100, the slot's weight, disabled while locked) into sliders[i]; an empty slot gives -1 in both */
 
-void ai_Unk5c2a10(int param_1, char *param_2, int *param_3, int *param_4)
+void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
 {
     int i;
     int y;
-    int id;
-    int ctrl;
     int pic;
-    int slider;
-    int *p;
-    int d;
 
-    d2_SetForm(param_1, 1);
-    io_PrintText((unsigned)"$C");
+    d2_SetForm(win, 1);
+    io_PrintText("$C");
     io_PrintText(0x1949);
-    d2_SetForm(param_1, 2);
-    io_PrintText((unsigned)"$C");
-    p = param_3;
-    d = (int)param_4 - (int)param_3;
-    y = 0xc;
-    for (i = 0; i < 7; i++) {
-        id = *(int *)(param_2 + i * 8);
-        if (id == 0) {
-            *p = -1;
-            *(int *)((char *)p + d) = -1;
+    d2_SetForm(win, 2);
+    io_PrintText("$C");
+    i = 0;
+    for (y = 0xc; y < 0x15c; y += 0x30) {
+        if (slots[i].good == 0) {
+            sliders[i] = -1;
+            locks[i] = -1;
         } else {
-            pic = d2_WinOpenPic(0xf, i * 0x30, id + 0xdf, U_I((unsigned)&d2_LastWindow));
-            ctrl = U_I((unsigned)&d2_Objs) + pic * 0x2ec;
-            *(int *)(ctrl + 0x1c0) = 3;
-            *(int *)(ctrl + 0x2e8) = U_I((unsigned)&ai_Goods) + id * 0x41;
+            pic = d2_WinOpenPic(0xf, i * 0x30, slots[i].good + 0xdf, d2_LastWindow);
+            d2_Objs[pic].style = 3;
+            d2_Objs[pic].user = &((AIGOOD *)ai_Goods)[slots[i].good];
             d2_SetObjEnabled(pic, 1);
-            *(int *)(ctrl + 0x4c) = 1;
-            *(int *)(ctrl + 0x28) = *(unsigned char *)(param_2 + i * 8 + 5) == 0;
-            *(int *)((char *)p + d) = pic;
-            slider = d2_WinOpenSlider(100, y, 200, 0, 0x64, 0x7b, 0x802, U_I((unsigned)&d2_LastWindow));
-            *p = slider;
-            d2_SetObjValue(slider, 0, 0x64, *(unsigned char *)(param_2 + i * 8 + 4));
-            d2_SetObjEnabled(slider, *(unsigned char *)(param_2 + i * 8 + 5) == 0);
+            d2_Objs[pic].interactive = 1;
+            d2_Objs[pic].checked = slots[i].lock == 0;
+            locks[i] = pic;
+            sliders[i] = d2_WinOpenSlider(100, y, 200, 0, 0x64, 0x7b, 0x802, d2_LastWindow);
+            d2_SetObjValue(sliders[i], 0, 0x64, slots[i].weight);
+            d2_SetObjEnabled(sliders[i], slots[i].lock == 0);
         }
-        p++;
-        y += 0x30;
+        i++;
     }
 }
 /* 0x5c2b90, the master letter window "berufe\meisterbrief_2" 0x62d2d4 (1648 B, ROUGH): the production
@@ -27193,8 +27179,8 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     int a;
     int b;
     int v;
-    int pics[7];
     int sliders[7];
+    int locks[7];
     int checks[4];
     int i;
     int j;
@@ -27206,7 +27192,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     set.flags = -1;
     recs = (char *)ai_FindSettingSlots(*(int *)(param_1 + 1));
     for (i = 0; i < 7; i++)
-        pics[i] = -1;
+        sliders[i] = -1;
     if (recs == 0 && (recs = (char *)ai_ProdSetting(param_1)) == 0) {
         mode = -1;
         U_I((unsigned)&full_data_6f2f90) = 0;
@@ -27223,7 +27209,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
     if (U_I((unsigned)&full_data_6f2f90) == 0) {
         ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
     } else {
-        ai_Unk5c2a10(win, recs, pics, sliders);
+        ai_ShowSettingGoods(win, (G8SLOT *)recs, sliders, locks);
     }
     if (mode != -1) {
         d2_SetForm(win, 3);
@@ -27237,14 +27223,14 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
             if (U_I(((unsigned)&dm_L + 0x10)) != 0) {
                 if (U_I((unsigned)&full_data_6f2f90) == 1) {
                     for (i = 0; i < 7; i++) {
-                        if (U_I((unsigned)&d2_PointerObj) == pics[i]) {
-                            if (pics[i] != -1) {
+                        if (U_I((unsigned)&d2_PointerObj) == sliders[i]) {
+                            if (sliders[i] != -1) {
                                 U_I((unsigned)&d2_ClickedId) = -1;
-                                v = d2_GetObjValue(pics[i]);
+                                v = d2_GetObjValue(sliders[i]);
                                 ai_SetSettingWeight(param_1, *(int *)(recs + i * 8), v);
                                 for (j = 0; j < 7; j++) {
-                                    if (pics[j] != -1)
-                                        d2_SetObjValue(pics[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
+                                    if (sliders[j] != -1)
+                                        d2_SetObjValue(sliders[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
                                 }
                             }
                             break;
@@ -27260,11 +27246,11 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
         }
         if (U_I(((unsigned)&dm_L + 0x18)) != 0 && U_I((unsigned)&d2_PointerObj) != -1) {
             for (j = 0; j < 7; j++) {
-                if (U_I((unsigned)&d2_PointerObj) == sliders[j]) {
+                if (U_I((unsigned)&d2_PointerObj) == locks[j]) {
                     unsigned char c = *(unsigned char *)(recs + j * 8 + 5);
                     *(unsigned char *)(recs + j * 8 + 5) = c == 0;
-                    U_I(U_I((unsigned)&d2_Objs) + 0x28 + sliders[j] * 0x2ec) = c != 0;
-                    d2_SetObjEnabled(pics[j], *(unsigned char *)(recs + j * 8 + 5) == 0);
+                    U_I(U_I((unsigned)&d2_Objs) + 0x28 + locks[j] * 0x2ec) = c != 0;
+                    d2_SetObjEnabled(sliders[j], *(unsigned char *)(recs + j * 8 + 5) == 0);
                 }
             }
         }
@@ -27278,13 +27264,13 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
                     U_I((unsigned)&d2_PointerObj) = -1;
                 } else {
                     for (i = 0; i < 7; i++) {
-                        if (U_I((unsigned)&d2_PointerObj) == pics[i]) {
-                            if (pics[i] != -1) {
-                                v = d2_GetObjValue(pics[i]);
+                        if (U_I((unsigned)&d2_PointerObj) == sliders[i]) {
+                            if (sliders[i] != -1) {
+                                v = d2_GetObjValue(sliders[i]);
                                 ai_SetSettingWeight(param_1, *(int *)(recs + i * 8), v);
                                 for (j = 0; j < 7; j++) {
-                                    if (pics[j] != -1)
-                                        d2_SetObjValue(pics[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
+                                    if (sliders[j] != -1)
+                                        d2_SetObjValue(sliders[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
                                 }
                             }
                             break;
@@ -27294,7 +27280,7 @@ void ai_Unk5c2b90(char *param_1, short *param_2)
             } else if (U_I((unsigned)&full_data_6f2f90) == 0) {
                 a = d2_GetObjValue(b);
                 if (U_I((unsigned)&d2_PointerObj) == tab1) {
-                    ai_Unk5c2a10(win, recs, pics, sliders);
+                    ai_ShowSettingGoods(win, (G8SLOT *)recs, sliders, locks);
                     U_I((unsigned)&full_data_6f2f90) = 1;
                     U_I((unsigned)&d2_PointerObj) = -1;
                 } else {
