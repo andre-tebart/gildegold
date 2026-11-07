@@ -29202,45 +29202,41 @@ void ai_PlotNoSecondChart(ORDSTATS stats, int width, int height)
     d2_PlotLine(0x2d + scale * 15, (int)(bottom - from * unit), 0x2d + scale * 16, (int)(bottom - to * unit), 0xee, 0x10,
                 0xee);
 }
-/* 0x5c7800, the sibling bar chart (325 B): first the maximum of the floats 0x91ab0c + i * 0x14 (the caller's
-   scale value; computed and not read again), then the same rectangles 0x4764f0 (x, y1, x + scale, y2, 0xee,
-   0x10, 0x10) between the floats 0x91ab04 + i * 0x14 and 0x91ab18 + i * 0x14 clamped at 0, x = 0x2d + i *
-   scale, the scale / the height / the baseline as in 0x5c76b0; the last bar x = (scale * 3 + 9) * 5 ..
-   scale * 16 + 0x2d with the value 0x91ac30 and param_4. ROUGH. */
+/* 0x5c7800, the combined rating chart of the statistics window (ai_Unk5c7970, its flag 4; 356 B): the rounds'
+   combined ratings (ord_StatisticsHistory[].combined, 0 .. 1, below 0 drawn as 0) as red (0xee, 0x10, 0x10) line
+   segments, scale = (width - 0x69) / 16 apart from x 0x2d, y from height - 0x16 up by height - 0x1e for a rating of
+   1, the last one to the current rating stats.col[2]. The highest score is looked for and not used */
 
-void ai_Unk5c7800(int p1, int p2, int p3, float v4, int p5, int p6, int p7, int p8, int p9, int p10,
-                  int p11, int p12)
+void ai_PlotCombinedChart(ORDSTATS stats, int width, int height)
 {
-    float maxv;
-    float h;
-    float base;
-    float *p;
     int scale;
     int x;
-    float a;
-    float b;
+    int i;
+    float top;
+    float bottom;
+    float unit;
+    float from;
+    float to;
 
-    maxv = -1.0f;
-    for (p = (float *)((unsigned)&ord_StatisticsHistory + 0xc); (int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0xc); p += 5) {
-        if (maxv < *p)
-            maxv = *p;
+    scale = (width - 0x69) / 16;
+    top = -1.0f;
+    for (i = 0; i < 16; i++) {
+        if (top < ord_StatisticsHistory[i].score)
+            top = ord_StatisticsHistory[i].score;
     }
-    h = (float)(p12 - 0x1e);
-    base = (float)(p12 - 0x16);
-    scale = (p11 - 0x69) / 16;
+    unit = (float)(height - 0x1e);
+    bottom = (float)(height - 0x16);
     x = 0x2d;
-    p = (float *)((unsigned)&ord_StatisticsHistory + 0x18);
-    do {
-        a = *(float *)((char *)p - 0x14);
-        b = *p;
-        d2_PlotLine(x, (int)(base - max(0.0, a) * h), x + scale, (int)(base - max(0.0, b) * h),
-                     0xee, 0x10, 0x10);
-        p = (float *)((char *)p + 0x14);
+    for (i = 1; i < 16; i++) {
+        from = max(ord_StatisticsHistory[i - 1].combined, 0.0);
+        to = max(ord_StatisticsHistory[i].combined, 0.0);
+        d2_PlotLine(x, (int)(bottom - from * unit), x + scale, (int)(bottom - to * unit), 0xee, 0x10, 0x10);
         x += scale;
-    } while ((int)p < ((unsigned)((unsigned)ord_StatisticsHistory + 0x140) + 0x4));
-    a = *(float *)((unsigned)&ord_StatisticsHistory + 0x130);
-    d2_PlotLine((scale * 3 + 9) * 5, (int)(base - max(0.0, a) * h), scale * 16 + 0x2d,
-                 (int)(base - max(0.0, v4) * h), 0xee, 0x10, 0x10);
+    }
+    from = max(ord_StatisticsHistory[15].combined, 0.0);
+    to = max(stats.col[2], 0.0);
+    d2_PlotLine(0x2d + scale * 15, (int)(bottom - from * unit), 0x2d + scale * 16, (int)(bottom - to * unit), 0xee, 0x10,
+                0x10);
 }
 
 int d2_TextWidth();
@@ -29283,8 +29279,7 @@ void ai_Unk5c7970(int param_1, int param_2, int param_3, int param_4, int param_
     if (param_1 & 2)
         ai_PlotScoreChart(*(ORDSTATS *)&param_2, h - 1, w);
     if (param_1 & 4)
-        ai_Unk5c7800(param_2, param_3, param_4, param_5, param_6, param_7, param_8, param_9, param_10,
-                     param_11, h - 1, w);
+        ai_PlotCombinedChart(*(ORDSTATS *)&param_2, h - 1, w);
     if (param_1 & 8)
         ai_PlotNoFirstChart(*(ORDSTATS *)&param_2, h - 1, w);
     if (param_1 & 0x10)
