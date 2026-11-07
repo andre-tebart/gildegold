@@ -197,6 +197,7 @@ typedef struct CMBOMB {             /* 8 bytes, one of the 32 bombs of cm_Bombs 
 #define ahm_CreateAlchemistI ((int (*)(int *))ahm_CreateAlchemist)  /* 0x4ec500 (ahm.h: unsigned short): @original the caller 0x4ccf90 reads the id as an int (no and eax,0xffff) */
 #define cm_FightersT (*(AICHAR (*)[32])&cm_Fighters)  /* 0x930600, cm_Fighters (char[], with the 0x1000 bytes after the 32 records) as its AICHAR records */
 #define ai_SceneCharsT (*(AICHAR *(*)[32])&ai_SceneChars)  /* 0x7603a0, ai_SceneChars (f3init.h: int[32]) as the AICHAR pointers it holds */
+#define cm_FlagObjectsT (*(D3OBJECT *(*)[32])&cm_FlagObjects)  /* 0x935980, cm_FlagObjects (cm.h: char *[]) as the D3OBJECTs it holds */
 #define ai_TrustedOfFourB ((int (*)(unsigned char, AICHAR *, int *, int *))ai_TrustedOfFour)  /* 0x4aad30 (poker.h: int k): @original cm_AskElectVote (0x4dab50, byte) pushes its unsigned char office raw (push ebp), cm_SessionAskAI (0x4dae90) a byte (mov al / push eax) */
 #define d2_LastWindowPtrT (*(struct D2WIN **)&d2_LastWindowPtr)  /* 0x6ed980, d2_LastWindowPtr (d2.c: D2WIN *) as the window record */
 typedef struct CMAMOUNTROW {        /* 0x38 bytes, one row of the special-amount list (ai_AmountRowStatus / ai_AmountRow read it
@@ -8520,13 +8521,14 @@ void cm_CollectSceneChars()
             *p++ = r;
     }
 }
-/* 0x4d0a80, a callback of the object walk: the dummies "dummy_sp_ESCAPE" get a flag object "ub_FLUCHTFLAGGE" (named
-   "sp_ESCAPE", the animation "anim_FLUCHTFLAGGE.baf"), "dummy_CONQUER" one "ub_CONQUER" (named "sp_CONQUER_<n>"), both
-   kept in cm_FlagObjects[cm_FlagObjectCount++]; returns 1. Rough draft. */
+/* 0x4d0a80, the object walk's callback for the flag dummies: "dummy_sp_ESCAPE" gets a flag object "ub_FLUCHTFLAGGE"
+   (named "sp_ESCAPE", the animation "anim_FLUCHTFLAGGE.baf"), "dummy_CONQUER" one "ub_CONQUER" (named
+   "sp_CONQUER_<n>"), both kind 4 with mask 1 and kept in cm_FlagObjects[cm_FlagObjectCount++]; returns 1. */
 
-char ai_Unk4d0a80(char *o)
+char cm_CreateDummyFlag(char *o)
 {
-    char *r;
+    D3OBJECT *obj = (D3OBJECT *)o;
+    D3OBJECT *r;
     float pos[4];
     float rot[3];
 
@@ -8534,15 +8536,15 @@ char ai_Unk4d0a80(char *o)
         rot[0] = 0;
         rot[1] = 0;
         rot[2] = 0;
-        d3_PointToWorld(o, o + 0x4c, pos);
-        r = (char *)d3_CreateObject(0, pos, rot, "ub_FLUCHTFLAGGE");
-        cm_FlagObjects[cm_FlagObjectCount] = r;
-        strcpy(r, "sp_ESCAPE");
-        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x220) = 4;
-        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x224) = 1;
-        cm_FlagObjects[cm_FlagObjectCount][0x212] = (cm_FlagObjects[cm_FlagObjectCount][0x212] & 0xf7) | 4;
-        cm_FlagObjects[cm_FlagObjectCount][0x212] |= 0x40;
-        d3t_PlayAnim(cm_FlagObjects[cm_FlagObjectCount], "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
+        d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)pos);
+        r = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ub_FLUCHTFLAGGE");
+        cm_FlagObjectsT[cm_FlagObjectCount] = r;
+        strcpy(r->name, "sp_ESCAPE");
+        cm_FlagObjectsT[cm_FlagObjectCount]->kind = 4;
+        cm_FlagObjectsT[cm_FlagObjectCount]->mask = 1;
+        cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags = (cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags & 0xf7) | 4;
+        cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags |= 0x40;
+        d3t_PlayAnim(cm_FlagObjectsT[cm_FlagObjectCount], "sonstiges/anim_FLUCHTFLAGGE.baf", 1);
         cm_FlagObjectCount++;
         return 1;
     }
@@ -8550,15 +8552,15 @@ char ai_Unk4d0a80(char *o)
         rot[0] = 0;
         rot[1] = 0;
         rot[2] = 0;
-        d3_PointToWorld(o, o + 0x4c, pos);
-        r = (char *)d3_CreateObject(0, pos, rot, "ub_CONQUER");
-        cm_FlagObjects[cm_FlagObjectCount] = r;
-        d3if_SelectTextureSet(r, *(int *)(r + 0x1cc), 1, 1);
-        sprintf(cm_FlagObjects[cm_FlagObjectCount], "sp_CONQUER_%i", cm_FlagObjectCount);
-        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x200) = 0;
-        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x220) = 4;
-        *(int *)(cm_FlagObjects[cm_FlagObjectCount] + 0x224) = 1;
-        cm_FlagObjects[cm_FlagObjectCount][0x212] = (cm_FlagObjects[cm_FlagObjectCount][0x212] & 0xf7) | 4;
+        d3_PointToWorld(obj, &obj->pos, (D3VECTOR *)pos);
+        r = d3_CreateObject(0, (D3VECTOR *)pos, (D3VECTOR *)rot, "ub_CONQUER");
+        cm_FlagObjectsT[cm_FlagObjectCount] = r;
+        d3if_SelectTextureSet(r, (D3SURF *)r->info, 1, 1);
+        sprintf(cm_FlagObjectsT[cm_FlagObjectCount]->name, "sp_CONQUER_%i", cm_FlagObjectCount);
+        cm_FlagObjectsT[cm_FlagObjectCount]->owner = 0;
+        cm_FlagObjectsT[cm_FlagObjectCount]->kind = 4;
+        cm_FlagObjectsT[cm_FlagObjectCount]->mask = 1;
+        cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags = (cm_FlagObjectsT[cm_FlagObjectCount]->stateFlags & 0xf7) | 4;
         cm_FlagObjectCount++;
     }
     return 1;
@@ -8568,7 +8570,7 @@ char ai_Unk4d0a80(char *o)
 void cm_PlaceFlagObjects()
 {
     cm_FlagObjectCount = 0;
-    d3_ForEachObject(d3_DefaultScene, 0, 0x100, ai_Unk4d0a80, 0);
+    d3_ForEachObject(d3_DefaultScene, 0, 0x100, cm_CreateDummyFlag, 0);
 }
 /* 0x4d0cd0, the first free (-1) of 16 slots, else -1 */
 

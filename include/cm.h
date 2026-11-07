@@ -678,7 +678,7 @@ int gm_CreateCharModel();  /* 0x4fbb80 */
 extern const double cm_WeaponSpeedScale;  /* 0x5eb9b8 */
 
 void cm_CollectSceneChars();  /* 0x4d0a30 */
-char ai_Unk4d0a80(char *o);  /* 0x4d0a80 */
+char cm_CreateDummyFlag(char *o);  /* 0x4d0a80 */
 extern int cm_FlagObjectCount;  /* 0x6f0d58 */
 extern char *cm_FlagObjects[];  /* 0x935980 */
 
