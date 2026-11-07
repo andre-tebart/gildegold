@@ -24836,66 +24836,58 @@ int ai_ShowOfficeRows(int win, int kind, unsigned int *filter, int n, LCAMOUNTRO
 float gm_CharacterHealth(); int amt_HasColumn7Holder(); int d2_WinCreateSlider();
 void d2_SetObjWidth(int obj, short w); int amt_GetColumnOffices(int col, int max, struct AMTREC *out);
 
-/* 0x5be1d0, the status of a special-amount record (100 B): the record id +4, the kind +0xc, the +0x1c8
-   flags; field +0x1c = 0x6ca - (the byte +0xc != 0), +0x20 the 0x6cc carrier match (0x53e400 (1, 0, 0x6f)
-   over the +0xac owner and the +0xb0 id), +0x24 the 0x6cd / 0x6ce contact, +0x28 the 0x6cb .. 0x6d2
-   price class from 0x4fc820; returns 1 */
-int ai_AmountRowStatus(int *param_1)
-{
-    int chr;
-    int car;
-    float f;
+#define LC_LOVER_FLAG 0x800000  /* AICHAR.flags1c8 bit 23: has a keeper (he.c HE_LOVER_FLAG, cm.c CM_KEEPER_FLAG) */
 
-    chr = *param_1;
-    if (chr == 0)
+/* 0x5be1d0, the four corner icons of a special-amount row (477 B): the faith (0x6c9 / 0x6ca), the lover (0x6cc: a
+   kept character (LC_LOVER_FLAG) of the other sex whose pair event 0x6f the player keeps), the
+   crimes (0x6cd: gv_HeldCrimeCount against the player, else 0x6ce: a crime event 0x18 the player was told of about
+   the character), and the pair event 0x45 with the player (0x6cb) or else the health (gm_CharacterHealth below
+   100 / 350 / 650: 0x6d2 / 0x6d1 / 0x6d0, else 0x6cf); returns 1, 0 for a row without a character */
+int ai_AmountRowStatus(LCAMOUNTROW *row)
+{
+    AIJOB *ev;
+    float health;
+
+    if (row->rec == 0)
         return 0;
-    param_1[8] = 0;
-    param_1[7] = 0x6ca - (*(char *)(chr + 0xc) != 0);
-    if (*(char *)((unsigned)&ai_CharSex + U_W((unsigned)&ai_PlayerId) * 0x21c) != *(char *)(chr + 9) &&
-        (U_I(chr + 0x1c8) & ((unsigned)&ai_Relations + 0x1aca0)) != 0) {
-        car = he_FindEvent(1, 0, 0x6f);
-        while (car != 0) {
-            if (U_I(car + 0xac) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c) &&
-                U_I(chr + 4) == U_I(car + 0xb0)) {
-                param_1[8] = 0x6cc;
+    row->icons[0] = row->rec->faith ? 0x6c9 : 0x6ca;
+    row->icons[1] = 0;
+    if (lc_CharRecs[ai_PlayerId].sex != row->rec->sex && (row->rec->powerFlags & LC_LOVER_FLAG) != 0) {
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x6f); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->partner1 == lc_CharRecs[ai_PlayerId].netId && row->rec->netId == ev->partner2) {
+                row->icons[1] = 0x6cc;
                 break;
             }
-            car = he_NextEvent();
         }
     }
-    param_1[9] = 0;
-    if (gv_HeldCrimeCount(U_I(chr + 4), U_W((unsigned)&ai_PlayerId)) < 1) {
-        car = he_FindEvent(1, 0, 0x18);
-        while (car != 0) {
-            if (U_W(car + 8) == U_W((unsigned)&ai_PlayerId) && U_I(chr + 4) == U_I(car + 0xc4)) {
-                param_1[9] = 0x6ce;
-                break;
-            }
-            car = he_NextEvent();
-        }
+    row->icons[2] = 0;
+    if (gv_HeldCrimeCount(row->rec->netId, ai_PlayerId) > 0) {
+        row->icons[2] = 0x6cd;
     } else {
-        param_1[9] = 0x6cd;
+        for (ev = (AIJOB *)he_FindEvent(1, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+            if (ev->chr == ai_PlayerId && row->rec->netId == ev->id4) {
+                row->icons[2] = 0x6ce;
+                break;
+            }
+        }
     }
-    param_1[10] = 0;
-    car = he_FindEvent(1, 0, 0x45);
-    while (car != 0) {
-        if (U_I(car + 0xac) == U_I((unsigned)&ai_CharInts + U_W((unsigned)&ai_PlayerId) * 0x21c) &&
-            U_I(chr + 4) == U_I(car + 0xb0)) {
-            param_1[10] = 0x6cb;
+    row->icons[3] = 0;
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x45); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+        if (ev->partner1 == lc_CharRecs[ai_PlayerId].netId && row->rec->netId == ev->partner2) {
+            row->icons[3] = 0x6cb;
             break;
         }
-        car = he_NextEvent();
     }
-    if (param_1[10] == 0) {
-        f = gm_CharacterHealth(chr);
-        if (f < 100.0f)
-            param_1[10] = 0x6d2;
-        else if (f < 350.0f)
-            param_1[10] = 0x6d1;
-        else if (f < 650.0f)
-            param_1[10] = 0x6d0;
+    if (row->icons[3] == 0) {
+        health = gm_CharacterHealth(row->rec);
+        if (health < ai_FloatHundred)
+            row->icons[3] = 0x6d2;
+        else if (health < 350.0f)
+            row->icons[3] = 0x6d1;
+        else if (health < 650.0f)
+            row->icons[3] = 0x6d0;
         else
-            param_1[10] = 0x6cf;
+            row->icons[3] = 0x6cf;
     }
     return 1;
 }
