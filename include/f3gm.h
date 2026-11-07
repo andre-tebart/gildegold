@@ -152,6 +152,7 @@ int gm_BuildingGoodsList(char *b, unsigned *out, int kind);  /* 0x5098a0 */
 int gm_BuildingLevel(char *c);  /* 0x508d70 */
 int gm_BuildingRank(unsigned char *b);  /* 0x5090b0 */
 int gm_BuildingSkill(unsigned char *b, unsigned k, int flag);  /* 0x5092e0 */
+int gm_BuildingKindSkill(int kind, unsigned k);  /* 0x5093a0, the level the building kind reaches in skill k (gm_BuildingSkill without the instance) */
 float gm_CharAge(unsigned short id);  /* 0x505e30, the age (+0x0a) of the character id */
 float gm_StaffFactor(unsigned char *b, int n, int *ids);  /* 0x50cdc0, the staff factor of the building b with the persons ids[0 .. n - 1] */
 int gm_CollectOffers(int goods);  /* 0x500c20 */

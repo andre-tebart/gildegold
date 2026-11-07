@@ -789,6 +789,8 @@ typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child
     AIOBJ *obj;                         /* 0x4, the inventory object (its id the goods), 0: empty */
 } LCINVSLOT;
 #define ai_InvSlots (*(LCINVSLOT (*)[6])((char *)&full_data_6f3680 + 0x1c0))  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow, the transport window) */
+extern GAPDATA full_data_62a56c[];
+#define ai_FmtLabel (*(char (*)[4])&full_data_62a56c)  /* 0x62a56c, "%s:": a label's format (ai_TechEffectsWindow's skill captions) */
 #define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
 extern short d2_ScreenW;
 extern int d2_HitWindow;
@@ -3635,7 +3637,7 @@ int ai_ChooseCoatOfArms(); void snd_StartMarketAmbience(void); int tb_SetFunctio
 void d2_CopyCaption(char *caption); void sv_SetStatusText(char *s); void sv_ResetSelection(void);
 struct AIBLD; void sv_UpdateChimneySmoke(struct AIBLD *b); int ai_ScriptQuery();
 int gm_IsType10(unsigned char *b); void ai_EnterBuilding(); void ai_EnterOwnBuilding(); void ai_MarketStandListener();
-int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); int ai_TechEffectsWindow();
+int gm_TechTreeWindow(); int d2_GetWinObj(); void sv_SetResearchClass(unsigned char *o); void ai_TechEffectsWindow(AIBLD *bld);
 float gm_ItemPrice(int item, unsigned char n); int sv_CheckStock(); int sv_CheckGoodAmount();
 void cm_BeginGroup(const char *s); void cm_SendMoveGoodsUnchecked(int a, int b, unsigned char c, int d); int cm_SendMoveGoods(int a, int b, unsigned char c, int d); short * gm_PlayerRecord(char *c);
 int cm_SendLongMessage(char *msg); int cm_EndGroup(const char *s); int cm_GetSlotState(); void cm_SendMoneyDelta(int a, int b);
@@ -21864,13 +21866,116 @@ void ai_BuyBuildingOfferWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_BuyBuildingOfferWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b7dd0, a window (1232 B, ROUGH SKELETON): param_1, a 0x5d8-byte frame; the body is a comment */
+/* 0x5b7dd0, the effects window of a building's techniques "techtree\auswirkungen" (ai_TechTreeWindow,
+   ai_BuildingWindow): the text 0x17e0 (the building), a close button (text 0x17e1) and per skill 1 .. 36 the
+   building kind can reach (gm_BuildingKindSkill) a caption (txt_Ptrs[0xf98 + 2 * skill]) and a slider up to that
+   level (6 for skill 3, 4 for skill 0x24) showing the building's levels (gm_BuildingSkill 1 / 0); the rows share the
+   window's height. A click on a caption shows the skill's text pair 0xf98 / 0xf99 + 2 * skill in a message box
+   @deep reconstructed from the stub against the whole original 0x5b7dd0..0x5b8293 (the order table with
+   its 18-value initializer then 1..36, the sliders memset -1, the kind-skill count, step = (int)(10.0f / n
+   * 24.0f), the caption / slider rows, the close button, the caption click message box $Z$[%s$]$N%s, the
+   per-frame slider refresh with the original's unused first gm_BuildingSkill call); ours 341 vs 342 ins.
+   Left is register allocation: the original keeps win in ebp through the frame loop and reloads bld from
+   its argument slot at every use (mov edx,[esp+0x5ec]), ours keeps bld in ebp/ebx and win in edi, so the
+   loop head is entered twice in ours (+0xd1: or ebx,-1 / mov [d2_ClickedId],ebx duplicated, the -1
+   compares against ebx instead of an immediate +0x115/+0x13b/+0x14b), the slider refresh keeps the slider
+   in edi (+0x1dc) where the original compares the slot in memory, and the step / y / top slots are
+   assigned other registers (+0x51..+0x9b: step in edi vs a slot). The prover stops at the d2_Objs reload
+   scheduled before / after the pics[i] store (+0x1da) */
 
-int ai_TechEffectsWindow(int param_1)
+void ai_TechEffectsWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x5d8-byte frame */
-    (void)param_1;
-    return 0;
+    int n;
+    int y;
+    int step;
+    int win;
+    int bldId;
+    int top;
+    int close;
+    int order[37] = { 1, 2, 0xb, 0xc, 9, 5, 6, 3, 4, 0xa, 0xd, 0xe, 0xf, 0x10, 0x11, 7, 8, 0 };
+    int sliders[37];
+    int pics[37];
+    char text[0x400];
+    int i;
+    int skill;
+    int max;
+    int pic;
+
+    bldId = bld->id;
+    for (i = 0; i < 0x24; i++)
+        order[i] = i + 1;
+    memset(sliders, 0xff, sizeof(sliders));
+    order[0x24] = 0;
+    win = d2_OpenForm(0, 0, "techtree\\auswirkungen");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 1);
+    io_PrintText(0x17e0, bld);
+    d2_SetForm(win, 3);
+    close = d2_GetWinObj(win, 3, io_PrintText(0x17e1));
+    d2_SetForm(win, 2);
+    n = 0;
+    for (i = 0; order[i] != 0; i++)
+        if (gm_BuildingKindSkill(bld->kind, order[i]) != 0)
+            n++;
+    step = (int)(10.0f / n * 24.0f);
+    top = (d2_LastWindowPtr->h - step * n) / 2 + 0xe;
+    n = 0;
+    y = top;
+    for (i = 0; (skill = order[i]) != 0; i++) {
+        if (gm_BuildingKindSkill(bld->kind, skill) != 0) {
+            pic = d2_WinOpenPic(0, step * n + top, 0, d2_LastWindow);
+            pics[i] = pic;
+            d2_Objs[pic].style = 3;
+            d2_Objs[pic].font = 0x55;
+            txt_Format(text, ai_FmtLabel, txt_Ptrs[0xf98 + skill * 2]);
+            d2_SetCaption(pic, text);
+            d2_Objs[pic].interactive = 1;
+            if (skill == 3)
+                max = 6;
+            else if (skill == 0x24)
+                max = 4;
+            else
+                max = gm_BuildingKindSkill(bld->kind, skill);
+            sliders[i] = d2_WinOpenSlider(0x140, y, 0x82, 0, max, 0x6f, 0x56, d2_LastWindow);
+            d2_SetObjValue(sliders[i], 0, max, 0, 0);
+            n++;
+            y += step;
+        } else {
+            pics[i] = -1;
+        }
+    }
+    d2_ClickedId = -1;
+    do {
+        if ((bld->flags5aw & 0x400) != 0 || gm_FindBuildingById(bldId) == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0 || (d2_ClickedId != -1 && d2_PointerObj == close))
+            sv_PopRequest = 1;
+        if (d2_ClickedId != -1) {
+            for (i = 0; (skill = order[i]) != 0; i++) {
+                if (pics[i] != -1 && d2_PointerObj == pics[i]) {
+                    txt_Format(text, "$Z$[%s$]$N%s", skill * 2 + 0xf98, skill * 2 + 0xf99);
+                    d2_EnableViewObjects(win, 0);
+                    sv_MessageBox(text, 0x10);
+                    d2_EnableViewObjects(win, 1);
+                }
+            }
+        }
+        for (i = 0; (skill = order[i]) != 0; i++) {
+            if (gm_BuildingKindSkill(bld->kind, skill) != 0 && sliders[i] != -1) {
+                if (skill == 3)
+                    max = 6;
+                else if (skill == 0x24)
+                    max = 4;
+                else
+                    max = gm_BuildingKindSkill(bld->kind, skill);
+                gm_BuildingSkill((unsigned char *)bld, skill, 0);    /* its value unused (the original calls it too) */
+                d2_SetObjValue(sliders[i], 0, max, gm_BuildingSkill((unsigned char *)bld, skill, 1),
+                               gm_BuildingSkill((unsigned char *)bld, skill, 0));
+            }
+        }
+    } while (sv_RunFrame((int)ai_TechEffectsWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b82a0, a record window (590 B, ROUGH SKELETON): param_1 (the +1 field), a 0xc-byte frame; the body is a
    comment */
