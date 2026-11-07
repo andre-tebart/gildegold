@@ -1423,7 +1423,7 @@ int ord_InterrogationOrder(char *c, int *m)
         if ((ORD_CHAR(c)->flags1cc & 0x80000) != 0)
             return 1;
         if (m[0] == 3)
-            r = ai_InterrogationWindow(c, m);
+            r = ai_InterrogationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return r | 2;
     }
     if (m[0] == 4 || m[0] == 2) {
@@ -1434,7 +1434,7 @@ int ord_InterrogationOrder(char *c, int *m)
         if ((ORD_CHAR(t)->flags1cc & 0x80000) != 0)
             return 1;
         if (m[0] == 4) {
-            r = ai_InterrogationWindow(c, m);
+            r = ai_InterrogationWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         } else if (ORD_CHAR(c)->kind == 6)
             txt_Format(m + 5, "%s", 0x1e07);
         return r | 0xa;

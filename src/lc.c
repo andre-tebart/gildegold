@@ -32313,75 +32313,69 @@ void ai_Interrogate(AICHARREC *me, AICHARREC *ch)
 
 int amt_SendOfficeMessage(unsigned char a, char *b, char *c, unsigned char d, unsigned char e); int gm_TitleNumber();
 
-/* 0x5ce610, the interrogation window "privillegien_verhoer" 0x62d5c4 (469 B): param_1 is the message
-   record (AIMSG: +2 the type, +0x1cc the flags, +4 the handle), param_2 the request (+0x214 the target
-   id). Type 6: the config record cfg (20 dwords, +4 = 0xc00, +8 = 0xa7fdfbb6, +0xc = 1, +0x10 = 6) opens
-   the request window 0x5c1130 (cfg, U_I (0x14419e0), 0, 0); the window 0x4741f0 (0, 0, 0x62d5c4) with
-   the text 0x515960 (0x1e09, the id) and its two buttons 0x475b80; click 0 -> 0x5ce4b0 (the message, the
-   request), 0x91; the pump 0x5309a0, the exit 0x4758f0, the flag 0x80000 -> 0x20 (0x81 after 0x521150
-   (U_I (0x1441540))). Other types: the target 0x505df0, no target / no kind byte +0x166 -> 0x60, else
-   0x5ce4b0 and 0x10. */
-int ai_InterrogationWindow(int param_1, int param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+/* 0x5ce610, the interrogation order's ask (ord.c, the callers push (c, m)): the AI (not kind 6) interrogates the
+   character m->target unless me already did (AICHARREC.flags1cc 0x80000: 0x20), he is unknown or holds no office
+   (0x60): ai_Interrogate, 0x10. A player who already did gets the message box txt_Ptrs[0x1ce0] (0x81); else he picks
+   the character from the amount menu (mode 0xc00, the gypsyFilter classes, kind 6, the title txt_Ptrs[0x1e08]; none:
+   2) and confirms in the window "privillegien\verhoer" (the text 0x1e09 with the character's id, its two buttons):
+   the first runs ai_Interrogate (0x91), the second or a right click closes it (2) */
+
+int ai_InterrogationWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int cfg[20];
+    AMOUNTCFG cfg;
+    AICHARREC *ch;
     int win;
     int text;
-    int click1;
-    int click2;
-    int rec;
-    int i;
+    int yes;
+    int no;
     int ret;
 
-    if (*(char *)(param_1 + 2) != 6) {
-        if ((*(unsigned int *)(param_1 + 0x1cc) & 0x80000) != 0)
+    if (me->kind != 6) {
+        if ((me->flags1cc & 0x80000) != 0)
             return 0x20;
-        i = gm_FindChar(*(int *)(param_2 + 0x214));
-        if (i == 0)
+        ch = (AICHARREC *)gm_FindChar(m->target);
+        if (ch == 0)
             return 0x60;
-        if (*(char *)(i + 0x166) == 0)
+        if (ch->officeKind == 0)
             return 0x60;
-        ai_Interrogate((AICHARREC *)param_1, (AICHARREC *)i);
+        ai_Interrogate(me, ch);
         return 0x10;
     }
     ret = 2;
-    for (i = 0; i < 20; i++)
-        cfg[i] = 0;
-    if ((*(unsigned int *)(param_1 + 0x1cc) & 0x80000) != 0) {
-        sv_MessageBox(U_I(((unsigned)&ai_MessageFilterTexts + 0x40)));
+    memset(&cfg, 0, sizeof(cfg));
+    if ((me->flags1cc & 0x80000) != 0) {
+        sv_MessageBox(txt_Ptrs[0x1ce0], 0);
         return 0x81;
     }
-    cfg[1] = 0xc00;
-    cfg[2] = 0xa7fdfbb6;
-    cfg[3] = 1;
-    cfg[4] = 6;
-    rec = ai_AmountMenu(cfg, U_I(((unsigned)&ai_MessageFilterTexts + 0x4e0)), 0, 0);
-    if (rec == 0)
+    cfg.mode = 0xc00;
+    cfg.filter = gypsyFilter;
+    cfg.kind = 6;
+    ch = (AICHARREC *)ai_AmountMenu(&cfg, txt_Ptrs[0x1e08], 0, 0);
+    if (ch == 0)
         return 2;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d5c4);
+    win = d2_OpenForm(0, 0, "privillegien\\verhoer");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    text = io_PrintText(0x1e09, *(unsigned short *)rec);
-    click1 = d2_GetWinObj(win, 1, text);
-    click2 = d2_GetWinObj(win, 1, text + 1);
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
-            if (U_I((unsigned)&d2_PointerObj) == click1) {
-                ai_Interrogate((AICHARREC *)param_1, (AICHARREC *)rec);
+    text = io_PrintText(0x1e09, ch->id);
+    yes = d2_GetWinObj(win, 1, text);
+    no = d2_GetWinObj(win, 1, text + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == yes) {
+                ai_Interrogate(me, ch);
                 ret = 0x91;
-                U_I((unsigned)&sv_PopRequest) = 1;
-            } else if (U_I((unsigned)&d2_PointerObj) == click2) {
-                U_I((unsigned)&sv_PopRequest) = 1;
+                sv_PopRequest = 1;
+            } else if (d2_PointerObj == no) {
+                sv_PopRequest = 1;
             }
         }
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-        if (sv_RunFrame(ai_InterrogationWindow, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_InterrogationWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return ret;
 }
 /* 0x5ce7f0, the worker dismissal window "privillegien_arbeiter_ausweisen" (352 B): the character ch, kinds
    6 / 7 only; its office (the byte +0x166) through amt_GetFirstOffice (the list out[0]); the window
