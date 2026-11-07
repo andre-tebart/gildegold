@@ -310,7 +310,7 @@ int main_PreloadSound(char *f);         /* 0x537c70 */
 #define util_RandomInt ((int (*)(unsigned short))util_Random)  /* 0x42ec00 as tr.c defines it: @original this unit reads the full int result (0x53b8c9 util_Random(4) + 0x20 pushed without the 16-bit mask ai.h's unsigned short prototype adds) */
 #define d2_SetObjValue4 ((void (*)(int, int, int, int))d2_SetObjValue)  /* the 4-argument call (as menu.h) */
 int main_ChooseCity(int unused, int host);  /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
-   "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0: +5 the name, +9 the object name, +0x34 the player limit; diff[i] = limit - players (0x62489c)),
+   "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0, an LSHEADER: +5 the name, from which the city point is created (ai_CreateCityPoint, its dummy "dummy_<NAME>"), +0x30 slotByte the player limit; diff[i] = limit - players (0x62489c)),
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
@@ -2705,17 +2705,28 @@ void main_ChooseOpponents(int n)
     d2_CloseView(f);
 }
 /* 0x537230, the player setup / city choice of a new game ("Menu\CHOOSECITY", the start menu page "Startmenu/A_Stadtwahl.esc"; host = 1 for a network host (the list of ".NET" files, else ".CTY"): lists the city files
-   "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0: +5 the name, +9 the object name, +0x34 the player limit; diff[i] = limit - players (0x62489c)),
+   "gamedata/cities/*" (0x5d33b0: up to 64 records of 0x210 bytes, the path at +0x109), reads each header (0x51cee0, an LSHEADER: +5 the name, from which the city point is created (ai_CreateCityPoint, its dummy "dummy_<NAME>"), +0x30 slotByte the player limit; diff[i] = limit - players (0x62489c)),
    creates the name object of the city (0x59a2c0 "stadt_<name>", the text plate 0x52e1c0 from the table 0x143a1c0 by the key "_STADTAUSWAHL_<NAME>_INFO+0" (0x42e770)), puts the city tower "sp_STADTTURM" (0x446e10,
    "sonstiges\wimpel_STADTTURM.baf") over the picked city (the pick object 0x448630 with a name starting with "stadt_" selects: sel; the default is the object of the 5th city) and shows its description
    ("_STADTAUSWAHL_<NAME>_BESCHR+0"); the buttons: ok (or enter / 0x1c) goes on to main_ChooseDifficulty and main_ChooseHistory (host: ends at once), the second button opens the opponent
-   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused) @deep read against the original and rebuilt (193 -> 32 ins, size equal): the ListFiles call as if / else per extension, strcpy for the three inline copies (the name from d2_Strings or the header, "stadt_<name>" into the object, the city name into ai_DataPath + 0x220), the screen size through two locals (H loaded first) for d3_SetViewport, if / do .. while frame loop, the two button tests as plain ifs (the original's jump threading), d3if_Pick prototyped in d3_interface.h (floats, not doubles), the texts txt_Ptrs[0x42cc / 0x42cd]. Left: (1) slots: the original has cityobj at esp+0x294 and buf4 at 0x394 (ours swapped) and hdr 4 bytes lower; declaration order has no effect; (2) scheduling: the tower position loads (ecx/edx/eax from sel+0x4c..0x54) before the d3_CreateObject pushes, pos[2] stored after the zeros; a D3VECTOR struct copy makes it worse (123 ins) */
+   selection main_ChooseOpponents (diff of the picked city); returns 1 when a game was set up (the second parameter is the host flag, the first unused)
+   @deep read against the original and rebuilt (193 -> 26 ins, size equal): the ListFiles call as if / else
+   per extension, strcpy for the three inline copies (the name from d2_Strings or the header,
+   "stadt_<name>" into the object, the city name into ai_DataPath + 0x220), the screen size through two
+   locals (H loaded first) for d3_SetViewport, if / do .. while frame loop, the two button tests as plain
+   ifs (the original's jump threading), d3if_Pick prototyped in d3_interface.h (floats, not doubles), the
+   texts txt_Ptrs[0x42cc / 0x42cd]; the header is an LSHEADER, its name (+5) and slotByte (+0x30) loads
+   match the original. Left: (1) slots: the original has cityobj at esp+0x294 and buf4 at 0x394 (ours
+   swapped); declaration order and a block-scoped buf4 have no effect; (2) scheduling: the tower position
+   loads (ecx/edx/eax from sel+0x4c..0x54) before the d3_CreateObject pushes, pos[2] stored after the
+   zeros; a D3VECTOR struct copy makes it worse (123 ins) */
 
 int main_ChooseCity(int unused, int host)
 {
     int ret, tower, last, cap, n, i, k, f, sel, f1, f2, h, ok, opp, out[2], w, ht;
     int cityobj[64], diff[64];
-    char recs[64][0x210], hdr[0xfc], key[0x100], name[0x40], buf4[0x100];
+    char recs[64][0x210], key[0x100], name[0x40], buf4[0x100];
+    LSHEADER hdr;
     float pos[4], rot[3];
     char *s, *d;
     char c;
@@ -2738,23 +2749,23 @@ int main_ChooseCity(int unused, int host)
         f = vfs_Tfopen(recs[i] + 0x109, (char *)(unsigned)"rb", (int)vfs_Root);
         if (f == 0)
             return 0;
-        if (ls_ReadSaveHeader(f, hdr) == 0) {
+        if (ls_ReadSaveHeader(f, (int *)&hdr) == 0) {
             vfs_fclose(f);
             return 0;
         }
         vfs_fclose(f);
-        diff[i] = (signed char)hdr[0x34] - (U_I((unsigned)&ai_NumPlayers) & 0xff);
-        h = ai_CreateCityPoint(hdr + 9);
+        diff[i] = (signed char)hdr.slotByte - (U_I((unsigned)&ai_NumPlayers) & 0xff);
+        h = ai_CreateCityPoint(hdr.name);
         cityobj[i] = h;
         if (h != 0) {
-            sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr + 5);
+            sprintf(key, "_STADTAUSWAHL_%s_INFO+0", hdr.name);
             _strupr(key);
             k = txt_FindKey(key);
             if (k != -1)
                 strcpy(name, d2_Strings[k]);
             else
-                strcpy(name, hdr + 5);
-            sprintf(buf4, "stadt_%s", hdr + 5);
+                strcpy(name, hdr.name);
+            sprintf(buf4, "stadt_%s", hdr.name);
             strcpy((char *)h, buf4);
             sv_RegisterNamePlate(buf4, name, 0);
         }
