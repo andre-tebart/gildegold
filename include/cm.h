@@ -1108,7 +1108,7 @@ int cm_FirstPendingParty();  /* 0x4e4f40 */
 char ai_RunPendingParties(int pl);  /* 0x4e4f80, runs the pending parties of the player pl */
 void ai_DebugDumpPerson(char *c);  /* 0x4e5bf0, the debug dump of a person */
 int cm_FindPartyOfKind();  /* 0x4e5050 */
-int ai_Unk4e5120();  /* 0x4e5120 */
+int cm_FreePartySlot();  /* 0x4e5120 */
 void cm_InitScenes(void);  /* 0x4e5770, clears the party records and registers the 12 scene kinds */
 
 

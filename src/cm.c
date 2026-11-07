@@ -16651,9 +16651,10 @@ int cm_CutInfoById(int id)
     }
     return 0;
 }
-/* 0x4e5120, the first free party record (id -1), 0 without */
+/* 0x4e5120, the first free scene party record of cm_Parties (id -1), 0 without; cm_AllocParty stores a
+   new party there */
 
-int ai_Unk4e5120(void)
+int cm_FreePartySlot(void)
 {
     int i;
 
@@ -16669,7 +16670,7 @@ int cm_AllocParty(int *src)
 {
     G28REC *r;
 
-    r = (G28REC *)ai_Unk4e5120();
+    r = (G28REC *)cm_FreePartySlot();
     if (r != 0) {
         memcpy(r, src, 0x114);
         r->id = ai_NextPartyId;
