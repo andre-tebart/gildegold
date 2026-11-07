@@ -256,7 +256,7 @@ int ord_BlackmailBuildingOrder(char *c, int *m)
     if ((ORD_CHAR(c)->flags1c8 & 0x100) != 0)
         return 1;
     if (m[0] == 3) {
-        ai_BlackmailBuildingListener(c, m);
+        ai_BlackmailBuildingListener((struct AICHARREC *)c, (struct LCORDMSG *)m);
         return 2;
     }
     if (m[0] == 1 && c[2] == 6)
