@@ -3014,3 +3014,4 @@
 2026-11-07T18:59:08 0x005d13e0 func ai_Unk5d13e0 -> ai_UseGoodCharmOtherSex by:main why:the use callback of the Domizil good 0x170: three characters of the other sex raise their relation to the user by 20 (cm_SendRelations)
 2026-11-07T19:00:22 0x005d1680 func ai_Unk5d1680 -> ai_UseGoodSowDiscord by:main why:the use callback of the Domizil good 0x16d: two characters' relations to each other fall by 25 both ways (cm_SendRelations)
 2026-11-07T19:02:10 0x005d18c0 data ai_Unk5d18c0 -> ai_UseGoodDrainActionPoints by:main why:the use callback of the Domizil good 0x2b8: sets flags1cc 0x100000, which main_RundenBeginn turns into a -3 AP event
+2026-11-07T19:03:11 0x005d1990 func ai_Unk5d1990 -> ai_UseGoodDrainSkill by:main why:the use callback of the Domizil good 0x2bb: lowers one of the target's skills by 21 (cm_SendAddSkill -0x15)

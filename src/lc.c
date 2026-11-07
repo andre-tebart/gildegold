@@ -33880,13 +33880,55 @@ int ai_UseGoodDrainActionPoints(AICHARREC *ch, G8USEVIEW *use)
     cm_SendSetField(target->netId, 0x1cc, 4, 0x100000, 0);
     return 1;
 }
-/* 0x5d1990, an action callback of the record table 0x62c420 (record 53 at 0x62c9ec, the text id 0x2bb,
-   416 B): the character (0x5c1130 menu / 0x505df0), a 0x505ca0 (5) pick, 0x4c6020, the texts 0x5176d0,
-   one message 0x53dda0 and the panel 0x5cf820. Frame 0xa64. */
+/* 0x5d1990, the use callback of the Domizil good 0x2bb (the +0x14 pointer of the table entry 0x62c9ec): picks the
+   target character, for a player (kind 6) with the special-amount menu (the gypsy filter, mode 0x400, the
+   prompt 0x9c), else the character use->target (gm_FindChar); none -> 0. In a shuffled 0 .. 4 order
+   (gm_Shuffled) the first skill in which the user is above 21 is lowered by 21 for the target
+   (cm_SendAddSkill); a player target (kind 6 / 7) gets the news 0x100a naming the skill (0x16b7 + it, key
+   0x5fb), and a player user sees the text 0x1099 (the target, the skill) inside 0xfe8 in the use-object
+   panel. Marks the use handled and returns 1. */
 
-int ai_Unk5d1990(void)
+int ai_UseGoodDrainSkill(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    int pick[5];
+    AMOUNTCFG cfg;
+    char text[0x200];
+    char news[0x800];
+    AICHARREC *target;
+    int i;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+    }
+    if (target == 0)
+        return 0;
+    gm_Shuffled(5, pick);
+    for (i = 0; i < 5; i++) {
+        if (ch->skills[pick[i]] > 0x15) {
+            cm_SendAddSkill(target->netId, pick[i], -0x15);
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0x100a, pick[i] + 0x16b7);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            if (ch->kind == 6) {
+                txt_Format(text, 0x1099, target->id, pick[i] + 0x16b7);
+                txt_Format(news, 0xfe8, text);
+                ai_UseObjPanel(news);
+            }
+            break;
+        }
+    }
+    use->handled = 1;
+    return 1;
 }
 /* 0x5d1b30, an action callback of the record table 0x62c420 (record 54 at 0x62ca08, the text id 0x2bc,
    624 B): the request 0x5b2180, the character (0x5c1130 menu / 0x505df0), 0x4fea50, a 0x42ec00 pick,
