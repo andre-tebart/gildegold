@@ -1098,6 +1098,14 @@ typedef struct AITASKVIEW {       /* the character's model record fields this un
     int scriptGroup;               /* 0x30, the group of the script that created / moved it (the room object's id) */
 } AITASKVIEW;
 
+typedef struct LCWORKSET {       /* the work settings a building keeps at AIBLD +0x99 (ai_bld.h AIBLD.workSet) and a
+                                      hired worker takes over into AICHAR.flags1b4 .. target (ai_char.h; cm_ExHire
+                                      copies them as 16 bytes); the master letter window passes them by value */
+    unsigned int flags;            /* +0x0, the order flags (bit 0 .. 3: the page's four checkboxes) */
+    int budget;                    /* +0x4, AICHAR.budget */
+    int prod;                      /* +0x8, AICHAR.prod (the item the workshop makes) */
+    int target;                    /* +0xc, AICHAR.target (a building id or -1) */
+} LCWORKSET;
 typedef struct AICHARREC {         /* the character record fields this unit reads (ai_char.h AICHAR, same layout;
                                       G8CHARREC below is the view of the news messages) */
     unsigned short id;             /* 0x000, the character's id (AIBLD.owner refers to it) */
@@ -1162,10 +1170,17 @@ typedef struct AICHARREC {         /* the character record fields this unit read
                                       (cm_AddFieldValues 0x1ac) and shows it with the text 0x1964 */
     char pad1b0;
     unsigned char heldRounds;      /* 0x1b1, the rounds the character is held (ai_char.h AICHAR.heldRounds) */
-    char pad1b2[6];
-    int budget;                    /* 0x1b8, the money the character may spend (ai_char.h AICHAR.budget; main_EndRound
+    char pad1b2[2];
+    union {
+        LCWORKSET workSet;         /* 0x1b4, the work settings the character took over from its building (ai_char.h
+                                      AICHAR.flags1b4 .. target; the master letter window edits them) */
+        struct {
+            unsigned int flags1b4; /* 0x1b4, the order flags (ai_char.h AICHAR.flags1b4) */
+            int budget;            /* 0x1b8, the money the character may spend (ai_char.h AICHAR.budget; main_EndRound
                                       copies the building's budget to its jobs; the master list page shows it) */
-    char pad1bc[0xc];
+        };
+    };
+    char pad1c4[4];
     unsigned int powerFlags;       /* 0x1c8, the office-power bits already used (ai_char.h AICHAR.powerFlags) */
     unsigned int flags1cc;         /* 0x1cc, ai_char.h AICHAR.flags1cc (0x800: a bribe raises the relation by 6 instead of 4) */
     char pad1d0[0x1c];
@@ -1229,15 +1244,8 @@ typedef struct AIBLD {             /* the building record fields this unit reads
         ORDCREDIT credits[3];      /* 0x71, of a bank the credit offers kept for the player (gv.h ORDBLD.credits) */
     };
     int smokeEffect;               /* 0x95, the running chimney smoke effect (evt_FindById), -1 none (ai_bld.h AIBLD.smokeEffect) */
+    LCWORKSET workSet;             /* 0x99, the work settings a hired worker takes over (ai_bld.h AIBLD.workSet) */
 } AIBLD;
-typedef struct LCWORKSET {       /* the work settings a building keeps at AIBLD +0x99 (ai_bld.h AIBLD.workSet) and a
-                                      hired worker takes over into AICHAR.flags1b4 .. target (ai_char.h; cm_ExHire
-                                      copies them as 16 bytes); the master letter window passes them by value */
-    unsigned int flags;            /* +0x0, the order flags (bit 0 .. 3: the page's four checkboxes) */
-    int budget;                    /* +0x4, AICHAR.budget */
-    int prod;                      /* +0x8, AICHAR.prod (the item the workshop makes) */
-    int target;                    /* +0xc, AICHAR.target (a building id or -1) */
-} LCWORKSET;
 typedef struct LCFIREEVENT {       /* the fire event 0x3d's word over AIJOB's union (its alloc 0x564860; the jail check
                                       0x591ad0 reads the burning building here) */
     char pad00[0xac];
@@ -14979,7 +14987,7 @@ typedef struct G8BLD {                  /* a local view of gv.h's ORDBLD (gv.h c
 typedef struct G8SLOT {                 /* one {good, weight, lock} slot of a setting (the table at +0xc, stride 8) */
     int good;                           /* +0x00, the good id of the slot */
     unsigned char weight;               /* +0x04, the slot's weight in percent (ai_FillSettingWeights sums the seven to 100) */
-    unsigned char lock;                 /* +0x05, 1 when the row is locked (ai_Unk5c2b90 toggles it) */
+    unsigned char lock;                 /* +0x05, 1 when the row is locked (ai_MasterLetterSettings toggles it) */
     char pad06[2];
 } G8SLOT;
 typedef struct G8SETTING {              /* a production setting record (the list 0x6f26c0, the next at +0x48) */
@@ -27152,172 +27160,163 @@ void ai_ShowSettingGoods(int win, G8SLOT *slots, int *sliders, int *locks)
         i++;
     }
 }
-/* 0x5c2b90, the master letter window "berufe\meisterbrief_2" 0x62d2d4 (1648 B, ROUGH): the production
-   settings record 0x5a8540 (param_1 + 1) or 0x5a8560 (param_1) of the character, else 0x6f2f90 = 0, and
-   0x5a8850 (param_1); the window 0x4741f0 (0, 0, 0x62d2d4), 0x52ea30 (screen), the percent 0x5085b0
-   (param_1 + 0x39, 0x6f1bc5); the page 0: the checkboxes 0x5c2490 (win, &a, &b, aiStack_48, param_1,
-   *param_2, the flag word of param_2 + 0xda, &master, recs), the page 1: the seven rows 0x5c2a10 (win,
-   recs, local_38, the sliders 0x5c2a1c); the two page tabs 0x475f70 (win, 3) / 0x52e350 (screen, 0,
-   &tab1, 2, 0x143df40, 0x144a714). The frame loop 0x5309a0 (0x5c2b90, 0x677c7): the row clicks
-   (0x475980 the value, 0x5a8710 the weight, 0x475cb0 (ctrl, 0, 100, the byte +4)), the master slider
-   (0x5a8900 (param_1, the percent * 0.01)), the checkbox clicks (the byte +5 toggled, the control record
-   0xf8f080 + id * 0x2ec + 0x28, 0x475e40), the page switches (0x6f2f90 0 / 1) and the four order flags
-   (0x4c3ba0 / 0x4c3c00 / 0x4c49a0 on param_1 + 0x39 and param_2 + 0x1b4 / + 0x1b8); the exit writes
-   0x5085f0 (b, 0x6f1bc5) back into param_1 + 0x39 and the delta into param_2 + 0x1b8, then 0x4758f0
-   the work settings (param_2 + 0x1b4, 16 bytes) go to 0x5c2490 by value (LCWORKSET) */
+/* 0x5c2b90, the master letter window "berufe\_meisterbrief_2" of a building's master (1609 B .. its switch tables
+   0x5c31dc / 0x5c31ec): the building's production setting (ai_FindSettingSlots, else a new one by ai_ProdSetting,
+   refreshed; none: only the work settings page, no page tabs), the budget converted for the player, and the page
+   ai_MasterLetterPage shows: 0 the work settings (ai_ShowWorkSettingsPage), 1 the goods weights
+   (ai_ShowSettingGoods), switched by the two tabs (txt_Ptrs 0xf60 / 0x4155). A goods slider sets the good's weight
+   (ai_SetSettingWeight) and redraws the seven, a goods picture toggles the slot's lock, the factor slider sets the
+   setting's factor (percent * 0.01), a checkbox of the work settings sets or clears its order flag in the master's
+   and the building's work settings (field deltas). The exit writes the chosen budget into the building and adds
+   the difference to the master's budget */
 
-void ai_Unk5c2b90(char *param_1, short *param_2)
+void ai_MasterLetterSettings(AIBLD *bld, AICHARREC *ch)
 {
+    int hasSetting;
+    G8SLOT *slots;
+    int budget;
+    int budgetCtrl;
+    int factorCtrl;
     int win;
-    char *recs;
+    int workTab;
+    int goodsTab;
+    int delta;
     LCWORKSET set;
-    int tab1;
-    int tab2;
-    int master;
-    int percent;
-    int a;
-    int b;
-    int v;
+    int checks[4];
     int sliders[7];
     int locks[7];
-    int checks[4];
     int i;
-    int j;
-    int mode;
 
-    mode = 0;
-    master = -1;
-    tab2 = -1;
-    set.flags = -1;
-    recs = (char *)ai_FindSettingSlots(*(int *)(param_1 + 1));
-    for (i = 0; i < 7; i++)
-        sliders[i] = -1;
-    if (recs == 0 && (recs = (char *)ai_ProdSetting(param_1)) == 0) {
-        mode = -1;
+    hasSetting = 1;
+    workTab = -1;
+    goodsTab = -1;
+    factorCtrl = -1;
+    slots = ai_FindSettingSlots(bld->id);
+    memset(sliders, -1, sizeof(sliders));
+    if (slots == 0 && (slots = ai_ProdSetting((int)bld)) == 0) {
         ai_MasterLetterPage = 0;
+        hasSetting = 0;
     } else {
-        ai_RefreshProdSetting(param_1);
+        ai_RefreshProdSetting((G8BLD *)bld);
     }
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d2d4);
+    win = d2_OpenForm(0, 0, "berufe\\_meisterbrief_2");
     d2_SetForm(win, 0);
-    sv_FitForm(U_I((unsigned)&d2_LastWindow));
+    sv_FitForm(d2_LastWindow);
     d2_CentreViewWindows(win);
     d2_SetPointerSprite(0, 0);
-    a = gm_ConvertMoney(*(int *)(param_1 + 0x39), U_I((unsigned)&ai_OwnPlayer));
-    set = *(LCWORKSET *)((char *)param_2 + 0x1b4);
-    if (ai_MasterLetterPage == 0) {
-        ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
-    } else {
-        ai_ShowSettingGoods(win, (G8SLOT *)recs, sliders, locks);
-    }
-    if (mode != -1) {
+    budget = gm_ConvertMoney(bld->budget, ai_OwnPlayer);
+    set = ch->workSet;
+    if (ai_MasterLetterPage == 0)
+        ai_ShowWorkSettingsPage(win, &budgetCtrl, &budget, checks, bld, ch->id, ch->workSet, &factorCtrl,
+                                (G8SETTAIL *)slots);
+    else
+        ai_ShowSettingGoods(win, slots, sliders, locks);
+    if (hasSetting) {
+        int tabs[2];
+
         d2_SetForm(win, 3);
-        sv_ButtonRow(U_I((unsigned)&d2_LastWindow), 0, &tab1, 2, (void *)(unsigned)&full_data_143df40, (void *)(unsigned)&full_data_144a714);
-        tab2 = tab1;
-        /* ROUGH: local_64 = the second id the 0x52e350 block gives (the second tab control) */
+        sv_ButtonRow(d2_LastWindow, 0, tabs, 2, txt_Ptrs[0xf60], txt_Ptrs[0x4155]);
+        workTab = tabs[0];
+        goodsTab = tabs[1];
     }
-    U_I((unsigned)&d2_ClickedId) = -1;
-    for (;;) {
-        if (U_I(((unsigned)&dm_L + 0x20)) == 0) {
-            if (U_I(((unsigned)&dm_L + 0x10)) != 0) {
-                if (ai_MasterLetterPage == 1) {
-                    for (i = 0; i < 7; i++) {
-                        if (U_I((unsigned)&d2_PointerObj) == sliders[i]) {
-                            if (sliders[i] != -1) {
-                                U_I((unsigned)&d2_ClickedId) = -1;
-                                v = d2_GetObjValue(sliders[i]);
-                                ai_SetSettingWeight(param_1, *(int *)(recs + i * 8), v);
-                                for (j = 0; j < 7; j++) {
-                                    if (sliders[j] != -1)
-                                        d2_SetObjValue(sliders[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
-                                }
-                            }
-                            break;
-                        }
-                    }
-                } else if (ai_MasterLetterPage == 0 && master != -1 && U_I((unsigned)&d2_PointerObj) == master) {
-                    v = d2_GetObjValue(master);
-                    ai_SetSettingFactor(param_1, (float)v * 0.01);
-                }
-            }
-        } else {
-            U_I((unsigned)&sv_PopRequest) = 1;
-        }
-        if (U_I(((unsigned)&dm_L + 0x18)) != 0 && U_I((unsigned)&d2_PointerObj) != -1) {
-            for (j = 0; j < 7; j++) {
-                if (U_I((unsigned)&d2_PointerObj) == locks[j]) {
-                    unsigned char c = *(unsigned char *)(recs + j * 8 + 5);
-                    *(unsigned char *)(recs + j * 8 + 5) = c == 0;
-                    U_I(U_I((unsigned)&d2_Objs) + 0x28 + locks[j] * 0x2ec) = c != 0;
-                    d2_SetObjEnabled(sliders[j], *(unsigned char *)(recs + j * 8 + 5) == 0);
-                }
-            }
-        }
-        if (U_I((unsigned)&d2_ClickedId) != -1) {
+    d2_ClickedId = -1;
+    do {
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (dm_L.ldown != 0) {
             if (ai_MasterLetterPage == 1) {
-                if (U_I((unsigned)&d2_PointerObj) == tab2) {
-                    /* ROUGH: 0x5c2490 (win, &a, &b, checks, param_1, *param_2, flags, &master, recs) again;
-                       then 0x6f2f90 = 0, 0x5fe710 = -1 */
-                    ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set, &master, (G8SETTAIL *)recs);
+                for (i = 0; i < 7; i++)
+                    if (d2_PointerObj == sliders[i])
+                        break;
+                if (i < 7 && sliders[i] != -1) {
+                    d2_ClickedId = -1;
+                    ai_SetSettingWeight((int)bld, slots[i].good, d2_GetObjValue(sliders[i]));
+                    for (i = 0; i < 7; i++)
+                        if (sliders[i] != -1)
+                            d2_SetObjValue(sliders[i], 0, 100, slots[i].weight);
+                }
+            } else if (ai_MasterLetterPage == 0 && factorCtrl != -1 && d2_PointerObj == factorCtrl) {
+                ai_SetSettingFactor((int)bld, d2_GetObjValue(factorCtrl) * 0.01f);
+            }
+        }
+        if (dm_L.lclick != 0 && d2_PointerObj != -1) {
+            for (i = 0; i < 7; i++) {
+                if (d2_PointerObj == locks[i]) {
+                    slots[i].lock = slots[i].lock == 0;
+                    d2_Objs[locks[i]].checked = slots[i].lock == 0;
+                    d2_SetObjEnabled(sliders[i], slots[i].lock == 0);
+                }
+            }
+        }
+        if (d2_ClickedId != -1) {
+            if (ai_MasterLetterPage == 1) {
+                if (d2_PointerObj == workTab) {
+                    ai_ShowWorkSettingsPage(win, &budgetCtrl, &budget, checks, bld, ch->id, set, &factorCtrl,
+                                            (G8SETTAIL *)slots);
                     ai_MasterLetterPage = 0;
-                    U_I((unsigned)&d2_PointerObj) = -1;
+                    d2_PointerObj = -1;
                 } else {
-                    for (i = 0; i < 7; i++) {
-                        if (U_I((unsigned)&d2_PointerObj) == sliders[i]) {
-                            if (sliders[i] != -1) {
-                                v = d2_GetObjValue(sliders[i]);
-                                ai_SetSettingWeight(param_1, *(int *)(recs + i * 8), v);
-                                for (j = 0; j < 7; j++) {
-                                    if (sliders[j] != -1)
-                                        d2_SetObjValue(sliders[j], 0, 100, *(unsigned char *)(recs + j * 8 + 4));
-                                }
-                            }
+                    for (i = 0; i < 7; i++)
+                        if (d2_PointerObj == sliders[i])
                             break;
-                        }
+                    if (i < 7) {
+                        ai_SetSettingWeight((int)bld, slots[i].good, d2_GetObjValue(sliders[i]));
+                        for (i = 0; i < 7; i++)
+                            if (sliders[i] != -1)
+                                d2_SetObjValue(sliders[i], 0, 100, slots[i].weight);
                     }
                 }
             } else if (ai_MasterLetterPage == 0) {
-                a = d2_GetObjValue(b);
-                if (U_I((unsigned)&d2_PointerObj) == tab1) {
-                    ai_ShowSettingGoods(win, (G8SLOT *)recs, sliders, locks);
+                budget = d2_GetObjValue(budgetCtrl);
+                if (d2_PointerObj == goodsTab) {
+                    ai_ShowSettingGoods(win, slots, sliders, locks);
                     ai_MasterLetterPage = 1;
-                    U_I((unsigned)&d2_PointerObj) = -1;
+                    d2_PointerObj = -1;
                 } else {
-                    for (j = 0; j < 4; j++) {
-                        if (U_I((unsigned)&d2_PointerObj) == -1)
+                    for (i = 0; i < 4; i++) {
+                        if (d2_PointerObj == -1)
                             break;
-                        if (U_I((unsigned)&d2_PointerObj) == checks[j]) {
-                            set = *(LCWORKSET *)((char *)param_2 + 0x1b4);
-                            if (d2_GetObjValue(checks[j]) == 0)
-                                set.flags &= ~(1 << j);
-                            else
-                                set.flags |= 1 << j;
-                            cm_BeginFieldBlock((char *)param_2, *(int *)((char *)param_2 + 2));
-                            cm_AddFieldDelta(4, 1, (char *)param_2 + 0x1b4 - U_I((unsigned)&cm_FieldObject), &set.flags);
+                        if (d2_PointerObj == checks[i]) {
+                            set = ch->workSet;
+                            if (d2_GetObjValue(checks[i]) != 0) {
+                                switch (i) {
+                                case 0: set.flags |= 1; break;
+                                case 1: set.flags |= 2; break;
+                                case 2: set.flags |= 4; break;
+                                case 3: set.flags |= 8; break;
+                                }
+                            } else {
+                                switch (i) {
+                                case 0: set.flags &= ~1; break;
+                                case 1: set.flags &= ~2; break;
+                                case 2: set.flags &= ~4; break;
+                                case 3: set.flags &= ~8; break;
+                                }
+                            }
+                            cm_BeginFieldBlock((char *)ch, ch->netId);
+                            cm_AddFieldDelta(4, 1, (char *)&ch->workSet - cm_FieldObject, &set);
                             cm_SendFieldDeltas();
-                            cm_BeginFieldBlock(param_1, *(int *)(param_1 + 1));
-                            cm_AddFieldDelta(4, 1, param_1 + 0x99 - U_I((unsigned)&cm_FieldObject), &set.flags);
+                            cm_BeginFieldBlock((char *)bld, bld->id);
+                            cm_AddFieldDelta(4, 1, (char *)&bld->workSet - cm_FieldObject, &set);
                             cm_SendFieldDeltas();
-                            ai_ShowWorkSettingsPage(win, &b, &a, checks, (AIBLD *)param_1, *param_2, set,
-                                         &master, (G8SETTAIL *)recs);
-                            U_I((unsigned)&d2_PointerObj) = -1;
+                            ai_ShowWorkSettingsPage(win, &budgetCtrl, &budget, checks, bld, ch->id, set,
+                                                    &factorCtrl, (G8SETTAIL *)slots);
+                            d2_PointerObj = -1;
                         }
                     }
                 }
             }
         }
-        if (sv_RunFrame(ai_Unk5c2b90, 0x677c7) == 0)
-            break;
-    }
+    } while (sv_RunFrame(ai_MasterLetterSettings, 0x677c7) != 0);
     if (ai_MasterLetterPage == 0)
-        a = d2_GetObjValue(b);
-    a = gm_PlayerFactor(a, U_I((unsigned)&ai_OwnPlayer));
-    cm_BeginFieldBlock(param_1, *(int *)(param_1 + 1));
-    cm_AddFieldDelta(4, 1, param_1 + 0x39 - U_I((unsigned)&cm_FieldObject), &a);
+        budget = d2_GetObjValue(budgetCtrl);
+    budget = gm_PlayerFactor(budget, ai_OwnPlayer);
+    cm_BeginFieldBlock((char *)bld, bld->id);
+    cm_AddFieldDelta(4, 1, (char *)&bld->budget - cm_FieldObject, &budget);
     cm_SendFieldDeltas();
-    v = a - *(int *)(param_1 + 0x39);
-    cm_BeginFieldBlock((char *)param_2, *(int *)((char *)param_2 + 2));
-    cm_AddFieldValues(4, 1, (char *)param_2 + 0x1b8 - U_I((unsigned)&cm_FieldObject), &v);
+    delta = budget - bld->budget;
+    cm_BeginFieldBlock((char *)ch, ch->netId);
+    cm_AddFieldValues(4, 1, (char *)&ch->budget - cm_FieldObject, &delta);
     cm_SendFieldDeltas();
     d2_CloseView(win);
 }
@@ -27381,7 +27380,7 @@ void ai_MasterLetterWindow(unsigned char *param_1)
         sv_CameraFollow();
         return;
     case 0x30:
-        ai_Unk5c2b90((char *)param_1, (short *)ch);
+        ai_MasterLetterSettings((AIBLD *)param_1, (AICHARREC *)ch);
         sv_CameraFollow();
         return;
     case 0x40:
