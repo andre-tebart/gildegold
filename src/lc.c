@@ -33777,15 +33777,59 @@ int ai_UseGoodCharmOtherSex(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d1680, an action callback of the record table 0x62c420 (record 21 at 0x62c66c, the text id 0x16d,
-   432 B): type 6 takes the character from the 0x5c1130 menu (the config block 0x400 / 6 and the
-   0x5eed68 / 0x5eed6c ids), other types from 0x505df0 (param_2 + 4); then the two lines 0x4c4b00, the
-   text 0x5176d0 and the messages 0x53dda0. Frame 0x550.
-   ROUGH STUB (layout 2026-10-24, tools/disasm.py). */
+/* 0x5d1680, the use callback of the Domizil good 0x16d (the +0x14 pointer of the table entry 0x62c66c): picks
+   two characters, for a player (kind 6) with two special-amount menus (the gypsy filter, mode 0x400, the
+   prompts 0x9c and 0x9e; the second leaves out the first pick: option14 3, ids[0]), else the characters
+   use->target and use->arg (gm_FindChar); a missing one -> 0. Their relations to each other fall by 25 both
+   ways (cm_SendRelations); each player of the two (kind 6 / 7) gets the news 0xfee naming the other (key
+   0x5fb). Returns 1. */
 
-int ai_Unk5d1680(void)
+int ai_UseGoodSowDiscord(AICHARREC *ch, G8USEVIEW *use)
 {
-    return 0;
+    AMOUNTCFG cfg;
+    char text[0x100];
+    char news[0x400];
+    AICHARREC *a;
+    AICHARREC *b;
+    int ret;
+
+    ret = 0;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+        if (a == 0)
+            goto done;
+        cfg.option14 = 3;
+        cfg.ids[0] = a->id;
+        txt_Format(text, 0x9e);
+        b = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    } else {
+        a = (AICHARREC *)gm_FindChar(use->target);
+        b = (AICHARREC *)gm_FindChar(use->arg);
+        if (a == 0)
+            goto done;
+    }
+    if (b != 0) {
+        ret = 1;
+        cm_SendRelations(a->netId, b->netId, -25, 1);
+        cm_SendRelations(b->netId, a->netId, -25, 1);
+        if (a->kind == 6 || a->kind == 7) {
+            txt_Format(news, 0xfee, b->id);
+            he_ShowNews(a->netId, -1, news, 0, 0x5fb, 0);
+        }
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(news, 0xfee, a->id);
+            he_ShowNews(b->netId, -1, news, 0, 0x5fb, 0);
+        }
+    }
+done:
+    return ret;
 }
 /* 0x5d1830, the use callback of the Domizil good 0x15c (the +0x14 pointer of the table entry 0x62c4ac):
    walks the running tribute events 0x35 (0x53e400 (1, 0, 0x35) / 0x53e300) and, for each whose collector
