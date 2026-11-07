@@ -21446,14 +21446,47 @@ void ai_RenovationWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_RenovationWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b6eb0, a carrier walk window (304 B, ROUGH SKELETON): param_1, the walk 0x53e400 (0, 0x1b) style loop, a
-   0x1b flag; the body is a comment */
+/* 0x5b6eb0, the window of a building that is up for sale (ai_BuildingWindow): the sale window
+   "Panel\Gebaeude_Verkaufen_pergament" shows the text 0x17cc (the building, the asking price of its sale event
+   0x1b, AIJOB.salePrice); its first button withdraws the sale (the building's field 0x5a loses the flag 2,
+   cm_SendSetField, and the event is freed), the second button, a right click, the building gone or no longer
+   enterable (flags5aw 0x400) close it */
 
-int ai_Unk5b6eb0(int param_1)
+void ai_WithdrawSaleWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the walk and the window body */
-    (void)param_1;
-    return 1;
+    int bldId;
+    int win;
+    int withdraw;
+    AIBLD *found;
+    AIJOB *ev;
+
+    bldId = bld->id;
+    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x1b); ev != 0; ev = (AIJOB *)he_NextEvent())
+        if (ev->bldId == bld->id)
+            break;
+    win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Verkaufen_pergament");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 2);
+    withdraw = d2_GetWinObj(win, 2, io_PrintText(0x17cc, bld, ev->salePrice));
+    d2_SetPointerSprite(0, 0);
+    sv_RunFrame(0, 0x677c7);
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
+            if (d2_PointerObj == withdraw) {
+                cm_SendSetField(bld->id, 0x5a, 2, 0, 2);
+                he_FreeEvent(ev);
+                sv_PopRequest = 1;
+            }
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_WithdrawSaleWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b6fe0, a list window (672 B, ROUGH SKELETON): param_1, three counters (esi / ebp / ebx) and a 0x2a8-byte
    frame; the body is a comment */
