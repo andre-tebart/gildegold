@@ -25012,29 +25012,208 @@ int ai_SpecialAmountList(G8CHARREC *ch, char *text)
     cfg.kind = 6;
     return ai_SpecialAmountWindow((int)&cfg, text, 0, 0);
 }
-/* 0x5bea50, the special-amount list window ("special_amt2" 0x62d204, 1648 B, ROUGH SKELETON): the caption
-   pages 0x475f70 (2 / 3 / 1) with 0x515960 (the kind names 0x62a9a8 / the character name), the record
-   array (8 records of 0xe dwords), the fills 0x4e70f0 (kind 7) / 0x4e6fc0 (kinds 1 .. 6 and 8), the
-   per-record init of 0x5be1d0 (the texts 0x6ca .. 0x6d2), the row builders 0x5bd5e0 (kind 0 / 7) /
-   0x5bdb60 (the others), the click dispatch 0x1467398 / 0xf8a668 / 0x5fe710 with the callback param_5 and
-   the pump 0x5309a0 (this, 0x657c7); 0x4758f0 (win) at the end. The body is left as a comment */
+/* 0x5bea50, the special-amount list window "special\amt2" (1655 B): the caption (the kind's name 0x12b2 + kind, or
+   the text 0xa0 with the viewing character), the subcaption caption or caption2, and up to 8 rows: the kind 0 the
+   first characters of the kinds 6 / 7 / 5, the kinds 1 .. 6 the six offices of the column kind, 7 the six of
+   amt_GetColumn7Offices, 8 the five of the column 8 (another kind or no row: the window closes at once and returns
+   0). Each row gets its corner icons (ai_AmountRowStatus), then ai_ShowAmountRows (kinds 0 / 7) or ai_ShowOfficeRows
+   draws them from the viewpoint of the viewing character or the player. Holding the right button on a row's slider
+   views the list as that character; a click on a row's frame chooses its character: without pick the window closes
+   with it, else pick (character, 0) decides (the window disabled meanwhile); a vacant seat ends the viewing. Returns
+   the chosen character record (0: none)
+   @deep Reconstructed the whole body (1655 B) against the original: captions, the row fill of the kinds 0
+   / 1..6 / 7 / 8, the corner icons written out in line (the original inlines ai_AmountRowStatus's code;
+   __inline on the definition drops the out-of-line copy other units link to), ai_ShowAmountRows /
+   ai_ShowOfficeRows, the rup / rhold / lclick dispatch and the pick callback. 497 vs 499 instructions;
+   every remaining code hunk is register allocation: the original keeps viewing in ebx (spilled to
+   [esp+0x1c]) and reloads win from [esp+0x18] for each d2_SetForm / d2_SetViewEnabled / d2_CloseView, ours
+   keeps win in ebx and viewing in a slot (hunks at +0xa, +0x3a, +0x56, +0x49b, +0x539, +0x54a, +0x5dc,
+   +0x5ee, +0x624). Tried: declaration order, an extra viewing = 0 at the top (dead-store eliminated),
+   &c->kind as the loop bound (fixed the bound compare). The prover stops at the first call only because
+   the string literal's address differs (0xf00dc900 vs 0x62d204, same bytes). */
 
-int ai_SpecialAmountListWindow(int param_1, int param_2, int param_3, int param_4, int param_5)
+int ai_SpecialAmountListWindow(int kind, unsigned int *filter, char *caption, char *caption2,
+                               int (*pick)(AICHARREC *, int))
 {
+    int viewing;
+    LCAMOUNTROW rows[8];
+    AMTREC seats8[5];
+    AMTREC seats[6];
+    AMTREC seats7[6];
+    AICHARREC *chosen;
+    AICHARREC *viewer;
+    AICHARREC *c;
+    AIJOB *ev;
+    float health;
+    int redraw;
     int win;
-    int r;
+    int n;
+    int i;
+    int hit;
 
-    r = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d204);
+    chosen = 0;
+    viewer = 0;
+    n = 0;
+    win = d2_OpenForm(0, 0, "special\\amt2");
     d2_CentreViewWindows(win);
-    /* ROUGH SKELETON: the captions, the record fill and the row builders listed above; the loop ends on
-       the pump and the click / the callback decides r */
-    while (sv_RunFrame(ai_SpecialAmountListWindow, 0x657c7) != 0) {
-        if (U_I(((unsigned)&dm_L + 0x20)) != 0)
-            U_I((unsigned)&sv_PopRequest) = 1;
-    }
+    viewing = 0;
+    redraw = 1;
+    do {
+        if (redraw) {
+            d2_SetForm(win, 2);
+            io_PrintText("$C");
+            if (viewing != 0)
+                io_PrintText(0xa0, viewer->id);
+            else
+                io_PrintText("$Z$[%s$]", kind + 0x12b2);
+            d2_SetForm(win, 3);
+            io_PrintText("$C");
+            if (caption != 0)
+                io_PrintText(caption);
+            else if (caption2 != 0)
+                io_PrintText(caption2);
+            d2_SetForm(win, 1);
+            d2_RemoveWindowObjects(d2_LastWindow, 1);
+            for (i = 0; i < 8; i++) {
+                rows[i].rec = 0;
+                rows[i].ctl[0] = -1;
+                rows[i].office = 0;
+            }
+            if (kind == 0) {
+                n = 0;
+                for (c = lc_CharRecs; (int)&c->kind < (int)&lc_CharRecs[0x300].kind && n < 8; c++) {
+                    if (c->kind == 6 || c->kind == 7 || c->kind == 5)
+                        rows[n++].rec = c;
+                }
+            } else if (kind > 0 && kind < 7) {
+                n = amt_GetColumnOffices(kind, 6, seats);
+                for (i = 0; i < n; i++) {
+                    rows[i].rec = (AICHARREC *)gm_FindChar(seats[i].owner);
+                    rows[i].office = seats[i].kind;
+                }
+            } else if (kind == 7) {
+                n = amt_GetColumn7Offices(0, 6, seats7);
+                for (i = 0; i < n; i++) {
+                    rows[i].rec = (AICHARREC *)gm_FindChar(seats7[i].owner);
+                    rows[i].office = seats7[i].kind;
+                }
+            } else if (kind == 8) {
+                n = amt_GetColumnOffices(kind, 5, seats8);
+                for (i = 0; i < n; i++) {
+                    rows[i].rec = (AICHARREC *)gm_FindChar(seats8[i].owner);
+                    rows[i].office = seats8[i].kind;
+                }
+            } else {
+                n = 0;
+            }
+            if (n == 0) {
+                sv_PopRequest = 1;
+                sv_RunFrame(ai_SpecialAmountListWindow, 0x657c7);
+                d2_CloseView(win);
+                return 0;
+            }
+            for (i = 0; i < n; i++) {
+                /* the corner icons, as ai_AmountRowStatus (written out here: the original has the code in line) */
+                if (rows[i].rec == 0)
+                    continue;
+                rows[i].icons[0] = rows[i].rec->faith ? 0x6c9 : 0x6ca;
+                rows[i].icons[1] = 0;
+                if (lc_CharRecs[ai_PlayerId].sex != rows[i].rec->sex && (rows[i].rec->powerFlags & LC_LOVER_FLAG) != 0) {
+                    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x6f); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                        if (ev->partner1 == lc_CharRecs[ai_PlayerId].netId && rows[i].rec->netId == ev->partner2) {
+                            rows[i].icons[1] = 0x6cc;
+                            break;
+                        }
+                    }
+                }
+                rows[i].icons[2] = 0;
+                if (gv_HeldCrimeCount(rows[i].rec->netId, ai_PlayerId) > 0) {
+                    rows[i].icons[2] = 0x6cd;
+                } else {
+                    for (ev = (AIJOB *)he_FindEvent(1, 0, 0x18); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                        if (ev->chr == ai_PlayerId && rows[i].rec->netId == ev->id4) {
+                            rows[i].icons[2] = 0x6ce;
+                            break;
+                        }
+                    }
+                }
+                rows[i].icons[3] = 0;
+                for (ev = (AIJOB *)he_FindEvent(1, 0, 0x45); ev != 0; ev = (AIJOB *)he_NextEvent()) {
+                    if (ev->partner1 == lc_CharRecs[ai_PlayerId].netId && rows[i].rec->netId == ev->partner2) {
+                        rows[i].icons[3] = 0x6cb;
+                        break;
+                    }
+                }
+                if (rows[i].icons[3] == 0) {
+                    health = gm_CharacterHealth(rows[i].rec);
+                    if (health < ai_FloatHundred)
+                        rows[i].icons[3] = 0x6d2;
+                    else if (health < 350.0f)
+                        rows[i].icons[3] = 0x6d1;
+                    else if (health < 650.0f)
+                        rows[i].icons[3] = 0x6d0;
+                    else
+                        rows[i].icons[3] = 0x6cf;
+                }
+            }
+            if (kind == 0 || kind == 7)
+                ai_ShowAmountRows(d2_LastWindow, kind, filter, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
+            else
+                ai_ShowOfficeRows(d2_LastWindow, kind, filter, n, rows, viewer ? viewer : &lc_CharRecs[ai_PlayerId]);
+            redraw = 0;
+        }
+        if (dm_L.rup != 0) {
+            sv_PopRequest = 1;
+        } else if (dm_L.rhold != 0 && viewing == 0) {
+            chosen = 0;
+            viewer = 0;
+            hit = -1;
+            for (i = 0; i < n; i++) {
+                if (rows[i].ctl[1] == d2_PointerObj) {
+                    hit = i;
+                    break;
+                }
+            }
+            if (hit > -1 && hit < n && rows[hit].rec != 0) {
+                viewer = 0;
+                redraw = 1;
+                if (rows[hit].rec->id != 0xffff) {
+                    viewing = 1;
+                    viewer = rows[hit].rec;
+                }
+            }
+        } else if (dm_L.rhold == 0 && viewing != 0) {
+            viewing = 0;
+            viewer = 0;
+            redraw = 1;
+        } else if (dm_L.lclick != 0 && d2_ClickedId != -1) {
+            chosen = 0;
+            hit = -1;
+            for (i = 0; i < n; i++) {
+                if (rows[i].ctl[0] == d2_PointerObj) {
+                    hit = i;
+                    break;
+                }
+            }
+            if (hit > -1 && hit < n) {
+                c = rows[hit].rec;
+                if (c->id == 0xffff) {
+                    viewing = 0;
+                    viewer = 0;
+                } else if (pick == 0) {
+                    chosen = c;
+                    sv_PopRequest = 1;
+                } else {
+                    d2_SetViewEnabled(win, 0);
+                    chosen = pick(c, 0) ? c : 0;
+                    d2_SetViewEnabled(win, 1);
+                }
+            }
+            redraw = 1;
+        }
+    } while (sv_RunFrame(ai_SpecialAmountListWindow, 0x657c7) != 0);
     d2_CloseView(win);
-    return r;
+    return (int)chosen;
 }
 /* 0x5bf0d0, the candidate count / list of a special-amount page (560 B): with param_2 == 0 it counts the
    characters 0x770b80 + i * 0x21c that are not param_1, alive (word 0 != -1), of the kind byte +2 < 10 and
