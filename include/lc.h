@@ -228,6 +228,7 @@ int ai_InterrogationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ce6
 int ai_InterrogationWindow1(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cede0, the interrogation order's ask, variant 1 */
 int ai_InterrogationWindow2(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cf020, the interrogation order's ask, variant 2 */
 int ai_ChooseProfessionWindow(struct AICHARREC *parent, struct AICHARREC *child);  /* 0x5cf260, the profession chooser: parent apprentices child */
+int ai_UniversityWindow(struct AICHARREC *parent, struct AICHARREC *child);  /* 0x5cf4f0, the university window: the player sends child to study */
 struct AICHARREC; struct LCORDMSG; int ai_LawPrivilegeWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca150 */
 struct AICHARREC; struct LCORDMSG; int ai_MisappropriationWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5ca860 */
 struct LCORDMSG; int ai_CourtshipWindow(struct AICHARREC *ch, struct LCORDMSG *m);  /* 0x5c6d00, the courtship order's ask (lc.c LCORDMSG: gv.h ORDMSG) */
