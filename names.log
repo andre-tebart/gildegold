@@ -2922,3 +2922,4 @@
 2026-11-07T11:29:27 0x005b82a0 func ai_Unk5b82a0 -> ai_FireFightingWindow by:main why:opens Panel\Gebaeude_Brand_loeschen and ends the building's burning event 0x4f by chance for money
 2026-11-07T11:45:14 0x005b9730 func ai_Kind1eWindow -> ob_HandleBepflanzung by:main why:its own error string 0x62cf68 'ob_HandleBepflanzung(): Could not load 3D-Objekt-roup'; it plants vegetation (pfl_ models, the PFLANZBAR ground, cm_SetPlant)
 2026-11-07T11:45:18 0x00623898 data sv_PanelKind1eBtn -> sv_PanelPlantBtn by:main why:the panel button whose click opens ob_HandleBepflanzung (the plant bar) in ai_WoodKontorContact
+2026-11-07T11:49:23 0x005b9db0 func ai_PickedObjectWindow -> ai_HandlePickedPlant by:main why:veg_FindPlantObject of ai_PickedObject in the building's plants: the caption of the plant, or the harvest event 0x28 (HE_ERNTEN) for the selected characters

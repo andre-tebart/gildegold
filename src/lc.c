@@ -4936,6 +4936,7 @@ void ai_KontorContact(AIBLD *bld)
     ai_CampaignStep(0x1c, (int)bld, 0, 0);
 }
 void ob_HandleBepflanzung(AIBLD *bld);
+void ai_HandlePickedPlant(AIBLD *bld, int plants);
 /* 0x593b00, the wood-kontor contact listener (416 B): 0x52e190; the context *(param_1 + 0x71); the pump
    0x5309a0 (this, 0x67fff); while the flag 0x6f231c has 0x200: LAGER (0x1441f90, 0xe), PRODUKTION_HOLZ
    (0x1442128, 0x13), GELAGE (0x1441f88, 0x16), TRANSPORT (0x1441fa0, 0x15), ZIELSCHEIBE (0x1440acc, 0xc),
@@ -4974,7 +4975,7 @@ void ai_WoodKontorContact(AIBLD *bld)
             stroh = sv_RegisterNamePlate("ob_STROHPUPPE", ai_ContactTextTraining, 0xc);
         }
         ai_TradeContactChecks();
-        ai_PickedObjectWindow(bld, plants);
+        ai_HandlePickedPlant(bld, plants);
         if (ai_ClickedObject != 0) {
             if (ai_ClickedObject == transport)
                 ai_OpenTransport(bld);
@@ -5058,7 +5059,7 @@ void ai_StoneKontorContact(AIBLD *bld)
     }
 }
 
-int ai_PickedObjectWindow();
+
 int ai_MapPick();
 
 /* 0x593e80, the information listener (186 B): the plates released (0x52e190) and registered again every frame
@@ -22815,15 +22816,56 @@ void ob_HandleBepflanzung(AIBLD *bld)
         d2_SetViewEnabled(sv_PanelForm, 1);
     d2_CloseView(view);
 }
-/* 0x5b9db0, a window gated by 0x6f22e8 (368 B, ROUGH SKELETON): with 0x6f22e8 == 0 it returns early, a
-   0xf8-byte frame; the body is a comment */
+/* 0x5b9db0, the plant under the pointer (ai_PickedObject) of the building's vegetation map plants, every frame of
+   the wood-kontor listener: with characters selected, a left release on a ripe plant (growth state above 1, or
+   gm_AllowAll) sends each selected character the harvest event 0x28 (HE_ERNTEN of cm_EventNames: the building,
+   the character's netId, the plant's id); else the caption names the plant (text 0x8f with its object name) or
+   says it is not ripe yet (text 0x8e) */
 
-int ai_PickedObjectWindow(void)
+void ai_HandlePickedPlant(AIBLD *bld, int plants)
 {
-    if (U_I((unsigned)&ai_PickedObject) == 0)
-        return 0;
-    /* ROUGH SKELETON: the 0xf8-byte frame */
-    return 0;
+    G15PLANT *plant;
+    int i;
+
+    if (ai_PickedObject == 0)
+        return;
+    plant = veg_FindPlantObject((G15PLANT *)plants, ai_PickedObject);
+    if (ai_SelectedCount != 0) {
+        if (plant == 0)
+            return;
+        if ((plant->state > 1 || gm_AllowAll != 0) && dm_L.lup != 0) {
+            for (i = 0; i < 768; i++) {
+                if (((AICHARREC *)ai_Chars)[i].selected != 0) {
+                    AIMSG msg;
+
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x28;
+                    msg.to = ai_CharInts[ai_PlayerId][0];
+                    msg.fromId = bld->id;
+                    msg.nIds = 1;
+                    msg.reserved14 = 0;
+                    msg.time = ai_Time;
+                    msg.flags = 1;
+                    msg.arg[3] = plant->id;
+                    msg.arg[0] = bld->id;
+                    msg.arg[1] = ((AICHARREC *)ai_Chars)[i].netId;
+                    cm_SendLongMessage((char *)&msg);
+                    snd_PlayFavourComment();
+                }
+            }
+            return;
+        }
+    }
+    if (plant == 0)
+        return;
+    if (plant->state > 1) {
+        char text[0xf8];
+
+        sprintf(text, txt_Ptrs[0x8f], txt_ObjectNames[plant->type][0]);
+        d2_CopyCaption(text);
+    } else {
+        d2_CopyCaption(txt_Ptrs[0x8e]);
+    }
 }
 /* 0x5b9f30, a window "0x62cfdc" (560 B, ROUGH SKELETON): a 0xfc-byte frame; the body is a comment */
 
