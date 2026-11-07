@@ -16382,9 +16382,9 @@ int cm_IsPartyMember(int id, char *m)
    id and the object id of the building's main room (of a home: its object of type 0xfd), -1 without; textFlags 0xe
    when the party's flags have bit 0x10 and it has a building, else 0xc */
 
-void cm_SendPartyNote(int *a, char *b, char *text, char *extra)
+void cm_SendPartyNote(AICHAR *a, G28REC *b, char *text, char *extra)
 {
-    G28REC *party = (G28REC *)b;
+    G28REC *party = b;
     CMNOTE note;
     AIBLD *bld;
     AIOBJ *o;
@@ -16394,7 +16394,7 @@ void cm_SendPartyNote(int *a, char *b, char *text, char *extra)
     note.head.type = 0x11;
     note.head.fromId = -1;
     note.head.flags = 9;
-    note.head.to = ((AICHAR *)a)->netId;
+    note.head.to = a->netId;
     note.head.arg[0] = 0x5ec;
     if (party->thing != -1 && (party->flags & 0x10))
         note.head.textFlags = 0xe;

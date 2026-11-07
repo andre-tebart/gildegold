@@ -819,7 +819,7 @@ void cm_RunSceneParty(char *m, int ctx);  /* 0x4e3830 */
 char d3_SetLightSet(unsigned int set, float t, float scale, char calc);  /* 0x449de0 */
 extern int cm_SceneDuration;  /* 0x60d364 */
 extern int cm_FightFixedLight;  /* 0x6f244c */
-void cm_SendPartyNote();  /* 0x4e48b0 */
+void cm_SendPartyNote(struct AICHAR *a, G28REC *b, char *text, char *extra);  /* 0x4e48b0 */
 
 
 
