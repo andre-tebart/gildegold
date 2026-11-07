@@ -2919,3 +2919,4 @@
 2026-11-07T11:13:48 0x005b6fe0 func ai_Unk5b6fe0 -> ai_RoomUpgradeWindow by:main why:opens Panel\Gebaeude_Raum_Erweitern and sends the room_upgrade message 0x1f with the upgrade good
 2026-11-07T11:22:46 0x005b7690 func ai_Unk5b7690 -> ai_UpgradeBuilding by:main why:asks the price of the next type of the line (text 0x17d5) and sends the building_upgrade message 0x1e
 2026-11-07T11:24:07 0x005b7b80 func ai_Unk5b7b80 -> ai_BuyBuildingOfferWindow by:main why:sends the offer message 0x21 with a slider price to the building master's player (text 0x17de)
+2026-11-07T11:29:27 0x005b82a0 func ai_Unk5b82a0 -> ai_FireFightingWindow by:main why:opens Panel\Gebaeude_Brand_loeschen and ends the building's burning event 0x4f by chance for money

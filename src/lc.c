@@ -21977,14 +21977,79 @@ void ai_TechEffectsWindow(AIBLD *bld)
     } while (sv_RunFrame((int)ai_TechEffectsWindow, 0x677c7) != 0);
     d2_CloseView(win);
 }
-/* 0x5b82a0, a record window (590 B, ROUGH SKELETON): param_1 (the +1 field), a 0xc-byte frame; the body is a
-   comment */
+/* 0x5b82a0, the fire fighting window of a burning building "Panel\Gebaeude_Brand_loeschen" (ai_BuildingWindow):
+   the text 0x17e4 (the building) and three offers (text 0x17e5: 1, 2 or 4 money for a chance of 0.2, 0.5 or 0.8).
+   A pick the player's money covers is paid (gm_SendMoneyDelta); on success the building's burning event 0x4f is
+   handed to cm_SendExSetHE (its exSlot) with the note txt_Ptrs[0x17f7] and the window closes, else the note
+   txt_Ptrs[0x17f8]. The second button, a right click, the building gone or no longer enterable close it */
 
-int ai_Unk5b82a0(int param_1)
+void ai_FireFightingWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0xc-byte frame */
-    (void)param_1;
-    return 0;
+    int bldId;
+    int win;
+    int text;
+    int low;
+    int mid;
+    int high;
+    int cost;
+    float chance;
+    AIBLD *found;
+    AIJOB *ev;
+
+    bldId = bld->id;
+    win = d2_OpenForm(0, 0, "Panel\\Gebaeude_Brand_loeschen");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    io_PrintText(0x17e4, bld);
+    d2_SetForm(win, 2);
+    text = io_PrintText(0x17e5, 1, 2, 4);
+    low = d2_GetWinObj(win, 2, text);
+    mid = d2_GetWinObj(win, 2, text + 1);
+    high = d2_GetWinObj(win, 2, text + 2);
+    d2_SetPointerSprite(0, 0);
+    sv_RunFrame(0, 0x677c7);
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == 0) {
+            cost = 1;
+            if (d2_PointerObj == low) {
+                chance = 0.2f;
+            } else if (d2_PointerObj == mid) {
+                chance = 0.5f;
+                cost = 2;
+            } else if (d2_PointerObj == high) {
+                chance = 0.8f;
+                cost = 4;
+            } else {
+                continue;
+            }
+            if (sv_CheckMoney(ai_Chars[ai_PlayerId], cost) == 0)
+                continue;
+            gm_SendMoneyDelta(ai_CharInts[ai_PlayerId][0], -cost);
+            d2_SetViewEnabled(win, 0);
+            if (util_RandomF() < chance) {
+                for (ev = (AIJOB *)he_FindEvent(1, 0, 0x4f); ev != 0; ev = (AIJOB *)he_NextEvent())
+                    if (ev->bldId == bld->id)
+                        break;
+                if (ev != 0) {
+                    ev->exSlot = cm_SendExSetHE(-1, ev);
+                    sv_MessageBox(txt_Ptrs[0x17f7], 4);
+                }
+                sv_PopRequest = 1;
+                d2_SetViewEnabled(win, 1);
+            } else {
+                sv_MessageBox(txt_Ptrs[0x17f8], 4);
+                d2_SetViewEnabled(win, 1);
+            }
+        } else if (d2_ClickedId == 1) {
+            sv_PopRequest = 1;
+        }
+    } while (sv_RunFrame((int)ai_FireFightingWindow, 0x677c7) != 0);
+    d2_CloseView(win);
 }
 /* 0x5b84f0, a window (2752 B, ROUGH SKELETON): param_1, a 0x9d0-byte frame; the body is a comment */
 
