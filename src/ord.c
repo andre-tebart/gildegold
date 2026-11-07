@@ -593,7 +593,7 @@ int ord_LawOrder(char *c, int *m)
         m[1] = rec[0] & 0xff;
         if (m[0] == 3) {
             ORD_MSG(m)->answerFlag = 1;
-            r = ai_LawPrivilegeWindow(c, m);
+            r = ai_LawPrivilegeWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         }
         return r | 2;
     }
@@ -609,7 +609,7 @@ int ord_LawOrder(char *c, int *m)
         m[1] = rec[0] & 0xff;
         if (m[0] == 4) {
             ORD_MSG(m)->answerFlag = 1;
-            r = ai_LawPrivilegeWindow(c, m);
+            r = ai_LawPrivilegeWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         } else if (ORD_CHAR(c)->kind == 6)
             gv_TableRecordText(ORD_MSG(m)->text, rec[0] & 0xff);
         return r | 0xa;
@@ -639,7 +639,7 @@ int ord_LawOrder2(char *c, int *m)
         m[1] = rec[0] & 0xff;
         if (m[0] == 3) {
             ORD_MSG(m)->answerFlag = 2;
-            r = ai_LawPrivilegeWindow(c, m);
+            r = ai_LawPrivilegeWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         }
         return r | 2;
     }
@@ -655,7 +655,7 @@ int ord_LawOrder2(char *c, int *m)
         m[1] = rec[0] & 0xff;
         if (m[0] == 4) {
             ORD_MSG(m)->answerFlag = 2;
-            r = ai_LawPrivilegeWindow(c, m);
+            r = ai_LawPrivilegeWindow((struct AICHARREC *)c, (struct LCORDMSG *)m);
         } else if (ORD_CHAR(c)->kind == 6)
             gv_TableRecordText(ORD_MSG(m)->text, rec[0] & 0xff);
         return r | 0xa;

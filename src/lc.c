@@ -28841,10 +28841,17 @@ int ai_CourtshipConfirm(AICHARREC *ch)
 typedef struct LCORDMSG {          /* the message record of an order (gv.h ORDMSG, which this unit cannot include): the
                                       order handlers get it with the character (ord_DispatchOrder) */
     int kind;                      /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */
-    char pad004[0x10];
+    int law;                       /* 0x004, of the law orders: the decision record (AIDEC.id) the office may change
+                                      (gv.h ORDMSG.law) */
+    int value;                     /* 0x008, of the law orders asked of the AI: the value it wants (ai_LawPrivilegeWindow) */
+    char pad00c[8];
     char text[0x200];              /* 0x014, the text the handlers fill */
-    int target;                    /* 0x214, of an ask that names a character (the courtship): its netId (gv.h
+    union {
+        int target;                /* 0x214, of an ask that names a character (the courtship): its netId (gv.h
                                       ORDMSG.target) */
+        int answerFlag;            /* 0x214, of the law orders: which of the office's decisions, 1 / 2 (gv.h
+                                      ORDMSG.answerFlag) */
+    };
     char pad218[4];
     struct AICHARREC *partner;     /* 0x21c, the partner character (gv.h ORDMSG.partner; the privileges panel sets it
                                       to the player's partner of the pair event 0x45) */
@@ -30308,140 +30315,138 @@ int ai_IntimidateContact(AICHARREC *me, LCORDMSG *m)
 
 int gv_SetTableRecord(struct AICHAR *c, int i, int v);   /* 0x4f2750 */
 
-/* 0x5ca150, the law / privilege window "privillegien_gesetz" 0x62d518 (1019 B, ROUGH): param_1 is the
-   message record (AIMSG: +2 the type, +4 the handle, +0x194 the amount), param_2 a record (dword +0: 3
-   (the message's id) or 4 (with +0x21c the owner), +4 the law id, +8 the value, +0x214 the mode 1 / 2 (the
-   flags 0x80000 / 0x100000)). The law info 0x4f2720 (id, out: the category byte and the three bounds
-   min / max / current) and the setter 0x4f2750. Type 6 opens the window 0x4741f0 with the text 0x515960
-   (0x1ba9) and one of four button pairs 0x515960 (0x13d0 / 0x13da / 0x13e3 / 0x13e9 with the category
-   0x13fd + law * 5 and the current value offsets 0x13dd / 0x13ec) / 0x475b80; the slider 0x475cb0
-   (min, max, current), the state 0x475980 / 0x475e40; a click (0x520f90 (2)) applies 0x4f2750 (the value -
-   the current), waits 0x4c3ae0, closes 0x4c5f60 (-2) and reopens the carrier 0x4c4a60 (owner handle, 0x1c8,
-   4, the flag). Other types check the bounds and apply the change, return 0 / 0x20 / 0x60 / 0x80. The pump
-   0x5309a0 and the end 0x4758f0. The law info is the AIDEC record (the original's [esp+0x24]: +1 the category,
-   +4 / +8 the bounds min / max, +0x18 the current value). */
-int ai_LawPrivilegeWindow(int param_1, int *param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+/* 0x5ca150, the law order's ask (ord_LawOrder / ord_LawOrder2, kinds 3 / 4) "privillegien\gesetz": the character me
+   changes the decision m->law (AIDEC) of an office, the office's character being me (kind 3) or m->partner (kind 4;
+   none or another kind: 0x60). m->answerFlag 1 / 2 picks the office flag 0x80000 / 0x100000 set on it afterwards
+   (else 0x60). The AI (not kind 6) needs 2 in money (else 0x20) and a value m->value within the record's bounds
+   other than its current one (else 0x60): it sets it (gv_SetTableRecord), pays 2 and sets the flag: 0. A player gets
+   the window (caption 0x1ba9) with the decision's text by its valueText (0: the number with a slider min .. max;
+   1: the names 0x13dd + it; 2: a switch 0x13e7 - cur; 3: the names 0x13ec + it; others: 0 at once); the apply button
+   is enabled once the value differs. Button 0, me paying 2 (sv_CheckMoney): the new value (a switch: 1 - cur), the
+   set waited for, me pays 2 and the flag is set: 0x80; button 1 or the right button close it */
+
+int ai_LawPrivilegeWindow(AICHARREC *me, LCORDMSG *m)
 {
-    AIDEC rec;                          /* the law's decision record (0x24 bytes; the old 16-byte buffer took the copy 20 bytes past its end) */
-    int ctrls[2];
-    int win;
-    int owner;
-    int apply;
-    int flag;
-    int h;
-    int t;
-    int v;
-    int cat;
-    int cur;
     int base;
+    int flag;
+    AICHARREC *owner;
+    int apply;
     int ret;
+    int win;
+    int word;
+    int t;
+    int ctrl;
+    int ctrl2;
+    int h;
+    int v;
+    int from;
 
     ret = 0;
-    if (*param_2 == 3) {
-        owner = param_1;
+    if (m->kind == 3) {
+        owner = me;
+    } else if (m->kind == 4 && m->partner != 0) {
+        owner = m->partner;
     } else {
-        if (*param_2 != 4)
-            return 0x60;
-        owner = param_2[0x87];
-        if (owner == 0)
-            return 0x60;
+        return 0x60;
     }
-    if (param_2[0x85] == 1)
+    if (m->answerFlag == 1)
         flag = 0x80000;
-    else if (param_2[0x85] == 2)
+    else if (m->answerFlag == 2)
         flag = 0x100000;
     else
         return 0x60;
-    if (*(char *)(param_1 + 2) != 6) {
-        if (*(int *)(param_1 + 0x194) < 2)
+    if (me->kind != 6) {
+        AIDEC rec;
+
+        if (me->money < 2)
             return 0x20;
-        if (gv_GetTableRecord(param_2[1], (int *)&rec) == 0)
+        if (gv_GetTableRecord(m->law, &rec) == 0)
             return 0x60;
-        if (param_2[2] == rec.cur || rec.max < param_2[2] || param_2[2] < rec.min)
+        if (m->value == rec.cur || m->value > rec.max || m->value < rec.min)
             return 0x60;
-        gv_SetTableRecord(param_1, rec.id, param_2[2]);
-        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffe);
-        cm_SendSetField(*(int *)(owner + 4), 0x1c8, 4, flag, 0);
-        if (*(char *)(param_1 + 2) != 6)
-            return 0;
+        gv_SetTableRecord((struct AICHAR *)me, rec.id, m->value);
+        cm_SendMoneyDelta(me->netId, -2);
+        cm_SendSetField(owner->netId, 0x1c8, 4, flag, 0);
     }
-    memset(&rec, 0, sizeof(rec));
-    if (gv_GetTableRecord(param_2[1], (int *)&rec) == 0)
-        return 0;
-    cat = rec.valueText;
-    cur = rec.cur;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d518);
-    d2_SetPointerSprite(0, 0);
-    d2_CentreViewWindows(win);
-    d2_SetForm(win, 1);
-    io_PrintText(0x1ba9);
-    base = 0;
-    apply = 1;
-    switch (cat) {
-    case 0:
-        t = io_PrintText(0x13d0, rec.id * 5 + 0x13fd, 0x13d3);
-        ctrls[0] = d2_GetWinObj(win, 1, t);
-        ctrls[1] = d2_GetWinObj(win, 1, t + 1);
-        d2_SetObjValue(ctrls[0], rec.min, rec.max, cur);
+    if (me->kind == 6) {
+        AIDEC rec = {0};
+
         base = 0;
-        break;
-    case 1:
-        t = io_PrintText(0x13da, rec.id * 5 + 0x13fd, 0x13dd, cur + 0x13dd);
-        ctrls[0] = d2_GetWinObj(win, 1, t);
-        ctrls[1] = d2_GetWinObj(win, 1, t + 1);
-        base = 0x13dd;
-        break;
-    case 2:
-        t = io_PrintText(0x13e3, rec.id * 5 + 0x13fd, rec.id * 5 + 0x13fd, 0x13e7 - cur);
-        ctrls[0] = d2_GetWinObj(win, 1, t);
-        ctrls[1] = -1;
-        apply = 0;
-        break;
-    case 3:
-        t = io_PrintText(0x13e9, 0x13ec, cur + 0x13ec);
-        ctrls[0] = d2_GetWinObj(win, 1, t);
-        ctrls[1] = d2_GetWinObj(win, 1, t + 1);
-        base = 0x13ec;
-        break;
-    default:
-        return 0;
-    }
-    *(int *)(unsigned)&d2_ClickedId = -1;
-    do {
-        if (apply) {
-            v = d2_GetObjValue(ctrls[0]);
-            d2_SetObjEnabled(ctrls[1], (v - base == cur) || ctrls[1] == -1 ? 0 : 1);
+        apply = 1;
+        ctrl2 = -1;
+        if (gv_GetTableRecord(m->law, &rec) == 0)
+            return 0;
+        word = rec.id * 5 + 0x13fd;
+        win = d2_OpenForm(0, 0, "privillegien\\gesetz");
+        d2_SetPointerSprite(0, 0);
+        d2_CentreViewWindows(win);
+        d2_SetForm(win, 1);
+        io_PrintText(0x1ba9);
+        switch (rec.valueText) {
+        case 0:
+            t = io_PrintText(0x13d0, word, 0x13d3);
+            ctrl = d2_GetWinObj(win, 1, t);
+            ctrl2 = d2_GetWinObj(win, 1, t + 1);
+            d2_SetObjValue(ctrl, rec.min, rec.max, rec.cur);
+            base = 0;
+            break;
+        case 1:
+            t = io_PrintText(0x13da, word, 0x13dd, rec.cur + 0x13dd);
+            ctrl = d2_GetWinObj(win, 1, t);
+            ctrl2 = d2_GetWinObj(win, 1, t + 1);
+            base = 0x13dd;
+            break;
+        case 2:
+            ctrl = d2_GetWinObj(win, 1, io_PrintText(0x13e3, word, word, 0x13e7 - rec.cur));
+            apply = 0;
+            break;
+        case 3:
+            t = io_PrintText(0x13e9, 0x13ec, rec.cur + 0x13ec);
+            ctrl = d2_GetWinObj(win, 1, t);
+            ctrl2 = d2_GetWinObj(win, 1, t + 1);
+            base = 0x13ec;
+            break;
+        default:
+            return 0;
         }
-        if (*(int *)((unsigned)&dm_L + 0x20) != 0)
-            *(int *)(unsigned)&sv_PopRequest = 1;
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                if (sv_CheckMoney((char *)param_1, 2) != 0) {
-                    if (cat == 2) {
-                        v = 1;
-                        base = rec.cur;
-                    } else {
-                        v = d2_GetObjValue(ctrls[0]);
-                    }
-                    ret = 0x80;
-                    h = ((int (*)(int, int, int))gv_SetTableRecord)(param_1, rec.id, v - base);
-                    if (h != -1) {
-                        while (cm_GetSlotState(h) == 0)
-                            sv_PumpNet();
-                        cm_SendMoneyDelta(*(int *)(param_1 + 4), 0xfffffffe);
-                        cm_SendSetField(*(int *)(owner + 4), 0x1c8, 4, flag, 0);
-                    }
-                    *(int *)(unsigned)&sv_PopRequest = 1;
-                }
-            } else if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                *(int *)(unsigned)&sv_PopRequest = 1;
+        d2_ClickedId = -1;
+        do {
+            if (apply) {
+                if (d2_GetObjValue(ctrl) - base == rec.cur || ctrl2 == -1)
+                    d2_SetObjEnabled(ctrl2, 0);
+                else
+                    d2_SetObjEnabled(ctrl2, 1);
             }
-        }
-        if (sv_RunFrame(ai_LawPrivilegeWindow, 0x657c7) == 0) {
-            d2_CloseView(win);
-            return ret;
-        }
-    } while (1);
+            if (dm_L.rup)
+                sv_PopRequest = 1;
+            if (d2_ClickedId != -1) {
+                if (d2_ClickedId == 0) {
+                    if (sv_CheckMoney(me, 2) != 0) {
+                        if (rec.valueText == 2) {
+                            v = 1;
+                            from = rec.cur;
+                        } else {
+                            v = d2_GetObjValue(ctrl);
+                            from = base;
+                        }
+                        ret = 0x80;
+                        h = gv_SetTableRecord((struct AICHAR *)me, rec.id, v - from);
+                        if (h != -1) {
+                            while (cm_GetSlotState(h) == 0)
+                                sv_PumpNet();
+                            cm_SendMoneyDelta(me->netId, -2);
+                            cm_SendSetField(owner->netId, 0x1c8, 4, flag, 0);
+                        }
+                        sv_PopRequest = 1;
+                    }
+                } else if (d2_ClickedId == 1) {
+                    sv_PopRequest = 1;
+                }
+            }
+        } while (sv_RunFrame((int)ai_LawPrivilegeWindow, 0x657c7) != 0);
+        d2_CloseView(win);
+    }
+    return ret;
 }
 
 int amt_GetKind(); int amt_FindOffice(); int amt_SendOfficeCandidates(); int ai_RelationGain();

@@ -216,7 +216,10 @@ typedef struct ORDWAGES {
 /* the message record of an order (c = the character, m = this record): the handlers write their text at +0x14 */
 typedef struct ORDMSG {
     int kind;                       /* 0x000, 1 do / 2 answer / 3 ask / 4 answer */
-    char pad004[0x10];
+    int law;                        /* 0x004, of the law orders: the decision record (AIDEC.id) the office may change */
+    int value;                      /* 0x008, of the law orders asked of the AI: the value it wants (lc.c
+                                       ai_LawPrivilegeWindow) */
+    char pad00c[8];
     char text[0x200];               /* 0x014, the text the handlers fill */
     union {
         int answerFlag;             /* 0x214, 1 = the answer handler picked this order; stored as an int */
