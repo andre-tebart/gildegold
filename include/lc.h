@@ -63,7 +63,7 @@ int ai_GelageWindow(int building);                      /* 0x5b9f30, the "specia
 int ai_TrainingWindow(int building);                    /* 0x5bba00, the "special\training" window (regeneration / target / straw-dummy plates) */
 int ai_EquipWindow(int building);                       /* 0x5bb350, the equip window of the AUSRUESTEN / weapon-stand plates */
 void ai_BuildingWindow(struct AIBLD *bld);              /* 0x5b84f0, the options window of a building (sell, renovate, upgrade, ...) */
-int ai_ManagedBuildingWindow(int building);              /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 (reasoned) */
+void ai_ManagedBuildingWindow(struct AIBLD *bld);       /* 0x5b8fc0, its variant for the classes 3 / 5 with the permission 0x10 */
 int ai_AmountMenu(int cfg, int title, int text, int check);  /* 0x5c1130, the special-amount menu (cfg: an AMOUNTCFG, menu.h) */
 void ai_PersonnelBook(struct AIBLD *bld, char *model);  /* 0x5aab80, the personnel book of a building (ob_PERSONALBUCH) */
 void ai_MercenaryBook(struct AIBLD *bld, char *model);  /* 0x5ac110, the mercenary book of a building (ob_SOELDNERBUCH) */

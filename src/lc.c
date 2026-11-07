@@ -22377,13 +22377,107 @@ void ai_BuildingWindow(AIBLD *bld)
     if (bld->masterId == ai_PlayerId)
         ai_CampaignStep(0x10, bld, 1, 0);
 }
-/* 0x5b8fc0, a window (800 B, ROUGH SKELETON): param_1, a 0x18-byte frame; the body is a comment */
+/* 0x5b8fc0, the options window of a managed building (sv_UpdatePanel: a building of the classes 3 / 5 with the
+   permission 0x10) "Panel\gebaeude_optionen_pergament": sets the research class (sv_SetResearchClass, cleared on
+   close) and, rebuilt whenever the building's flags 0x5a change, shows its state (text 0x179e, for another's
+   building first 0x17a0: the condition texts 0x17b1 / 0x17bb by the level, the equipment value; a home's residents
+   0x17a2) with the renovation (0x17a5), technique tree (0x17ac, not for the type class 3), room upgrade (0x17a8,
+   when the type takes more than one) and upgrade (0x17ab, off with flag 0x40) buttons; flag 4 disables the first
+   two */
 
-int ai_ManagedBuildingWindow(int param_1)
+void ai_ManagedBuildingWindow(AIBLD *bld)
 {
-    /* ROUGH SKELETON: the 0x18-byte frame */
-    (void)param_1;
-    return 0;
+    int techBtn;
+    int renovateBtn;
+    int lastFlags;
+    int value;
+    int roomBtn;
+    int bldId;
+    AIBTYPE *type;
+    int upgradeBtn;
+    int redraw;
+    int win;
+    int cond;
+    AIBLD *found;
+
+    type = &((AIBTYPE *)ai_BTypes)[bld->kind];
+    upgradeBtn = -1;
+    lastFlags = -1;
+    techBtn = -1;
+    renovateBtn = -1;
+    roomBtn = -1;
+    redraw = 1;
+    bldId = bld->id;
+    win = d2_OpenForm(0, 0, "Panel\\gebaeude_optionen_pergament");
+    d2_CentreViewWindows(win);
+    d2_SetPointerSprite(0, 0);
+    value = gm_EquipmentValue(bld, bld->level);
+    sv_SetResearchClass((unsigned char *)bld);
+    do {
+        found = (AIBLD *)gm_FindBuildingById(bldId);
+        if ((bld->flags5aw & 0x400) != 0 || found == 0)
+            sv_PopRequest = 1;
+        if (bld->flags5aw != lastFlags)
+            redraw = 1;
+        lastFlags = bld->flags5aw;
+        if (redraw != 0) {
+            d2_SetForm(win, 1);
+            cond = (int)(9 - gm_BuildingLevel((char *)bld) / 10 + 0.5);
+            if (bld->owner != ai_PlayerId && bld->masterId != ai_PlayerId) {
+                io_PrintText(0x17a0, bld->masterId, bld, cond + 0x17b1, cond + 0x17bb, value);
+                if (type->buildingClass == 1)
+                    io_PrintText(0x17a2, bld->residents);
+            }
+            io_PrintText(0x179e, bld, cond + 0x17b1, cond + 0x17bb, value);
+            if (type->buildingClass == 1)
+                io_PrintText(0x17a2, bld->residents);
+            renovateBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a5));
+            if (type->buildingClass != 3)
+                techBtn = d2_GetWinObj(win, 1, io_PrintText(0x17ac));
+            if (type->extensions > 1)
+                roomBtn = d2_GetWinObj(win, 1, io_PrintText(0x17a8));
+            upgradeBtn = d2_GetWinObj(win, 1, io_PrintText(0x17ab));
+            redraw = 0;
+        }
+        if ((bld->flags5a & 4) != 0) {
+            if (techBtn != -1)
+                d2_SetObjEnabled(techBtn, 0);
+            if (renovateBtn != -1)
+                d2_SetObjEnabled(renovateBtn, 0);
+        }
+        if (upgradeBtn != -1) {
+            if ((bld->flags5a & 0x40) != 0)
+                d2_SetObjEnabled(upgradeBtn, 0);
+            else
+                d2_SetObjEnabled(upgradeBtn, 1);
+        }
+        if (dm_L.rup != 0)
+            sv_PopRequest = 1;
+        if (d2_ClickedId == -1)
+            continue;
+        if (d2_PointerObj == techBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_TechTreeWindow((int)bld, 0xfd);
+            d2_SetViewEnabled(win, 1);
+            continue;
+        }
+        if (d2_PointerObj == renovateBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_RenovationWindow(bld);
+        } else if (d2_PointerObj == roomBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_RoomUpgradeWindow(bld);
+        } else if (d2_PointerObj == upgradeBtn) {
+            d2_SetViewEnabled(win, 0);
+            ai_UpgradeBuilding(bld);
+        } else {
+            continue;
+        }
+        d2_SetViewEnabled(win, 1);
+        redraw = 1;
+    } while (sv_RunFrame((int)ai_ManagedBuildingWindow, 0x677c7) != 0);
+    d2_CloseView(win);
+    sv_ResearchClass = 0;
 }
 /* 0x5b92e0, a window (1104 B, ROUGH SKELETON): param_1, a 0x110-byte frame; the body is a comment */
 

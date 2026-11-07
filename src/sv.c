@@ -4434,7 +4434,7 @@ void sv_UpdatePanel(void)
             cls = gm_BuildingClass(SV_SELBLD->type);
             sv_PanelPerms = gm_PermissionBits(ai_PlayerId, (unsigned char *)sv_SelectedObject, 0, 0);
             if ((cls == 3 || cls == 5) && (sv_PanelPerms & 0x10) != 0)
-                ai_ManagedBuildingWindow((int)sv_SelectedObject);
+                ai_ManagedBuildingWindow((AIBLD *)sv_SelectedObject);
             else
                 ai_BuildingWindow((AIBLD *)sv_SelectedObject);
         }
