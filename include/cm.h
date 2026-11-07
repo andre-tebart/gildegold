@@ -799,7 +799,7 @@ int ai_Unk4d60b0(char *a);  /* 0x4d60b0 */
 void cm_FightResult(char *r);  /* 0x4d6930 */
 void cm_FightFrame(char *r);  /* 0x4d6970 */
 void cm_BuildFightUI();  /* 0x4d6a50 */
-void ai_Unk4d6b70();  /* 0x4d6b70 */
+void cm_CloseFightUI();  /* 0x4d6b70 */
 extern int cm_PickCellX;  /* 0xfa5f00 */
 extern int cm_PickCellZ;  /* 0xfa5f04 */
 int d2_WinCreateSlider();  /* 0x46bf10 */

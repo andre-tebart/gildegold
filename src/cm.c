@@ -11082,9 +11082,9 @@ void cm_BuildFightUI()
     cm_ClosePortraits();
     cm_BuildPortraits();
 }
-/* 0x4d6b70, closes the fight UI: the view 0x6f0d64, 0x4d08c0, the portrait boxes */
+/* 0x4d6b70, closes the fight UI: the form cm_FightForm, the marks (0x4d08c0), the portrait boxes */
 
-void ai_Unk4d6b70()
+void cm_CloseFightUI()
 {
     d2_CloseView(cm_FightForm);
     cm_FightForm = 0;
@@ -11888,7 +11888,7 @@ void cm_FightLoop(char *a)
         if (cm_FightWinner != 0 || cm_FightSettled != 0)
             sv_PopRequest = 1;
     }
-    ai_Unk4d6b70();
+    cm_CloseFightUI();
 }
 /* 0x4d8b10, the fight member callback (kind 3, a: the member record): on the first run of the scene party only the fight
    result (cm_FightResult), on the later runs the fight loop
