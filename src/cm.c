@@ -9798,15 +9798,15 @@ void cm_CarryOutOrder(char *rec, char *c)
 
 void cm_FallDownAction(char *c)
 {
-    float rot[3];
-    char *b;
+    D3VECTOR rot;
+    D3OBJECT *b;
 
-    rot[0] = 0;
-    rot[1] = 0;
-    rot[2] = 0;
-    rot[1] = (float)(cm_Random(0x168) * cm_Pi * cm_Inv180);
+    rot.x = 0;
+    rot.y = 0;
+    rot.z = 0;
+    rot.y = (float)(cm_Random(0x168) * cm_Pi * cm_Inv180);
     sb_PlaySampleI(0, "Koerperfaellt", 1, 0x3f, 0x7f, 0, 0);
-    b = (char *)d3_CreateObject(0, *(char **)(*(char **)(c + 0x14) + 0x34) + 0x4c, rot, "ub_Blutlache");
+    b = d3_CreateObject(0, &((CHACTION *)c)->ch->obj->pos, &rot, "ub_Blutlache");
     d3t_PlayAnim(b, "sonstiges\\ub_Blutlache.baf", 0x12);
 }
 /* 0x4d3390, the death of the fighter c once its health ratio (gm_HealthRatio) is below 0.05: blood spray at the body
