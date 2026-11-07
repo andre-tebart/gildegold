@@ -533,6 +533,13 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                     int bld;                    /* 0x58, the building upgraded (AIBLD.id) */
                     unsigned short good;        /* 0x5c, the upgrade good built in (ai_Goods type 2 or 6) */
                 } roomUpgrade;
+                struct {                        /* the blackmail contact's letter 0x47 (lc.c ai_BlackmailContactWindow,
+                                                   ai_BlackmailContact) */
+                    int from;                   /* 0x58, the netId of the sender */
+                    int victim;                 /* 0x5c, the netId of the character it is sent to */
+                    unsigned short text1;       /* 0x60, its first text, 0x1d6d + a roll 0 .. 8 */
+                    unsigned short text2;       /* 0x62, its second text, 0x1d76 + a roll 0 .. 8 */
+                } letter;
             };
             union {
                 int amount[3];                  /* 0x88, of the bought goods */
