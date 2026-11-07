@@ -414,19 +414,19 @@ void lobby_ShowMyPlayer(void)
     io_PrintText((char *)(unsigned)"$C");
     id = d2_WinOpenPic(5, 10, lobby_Player.coat + 0x59a, U_I((unsigned)&d2_LastWindow));
     x = *(short *)(U_I((unsigned)&d2_Objs) + 0x14 + id * 0x2ec) + 0xf;
-    u = (char *)U_I(((unsigned)&ai_Unk143a610 + 0x4));
+    u = (char *)U_I(((unsigned)&txt_HonourTitles + 0x4));
     if (lobby_Player.sex != 0)
         u = (char *)U_I((unsigned)&full_data_143a63c);
     sprintf(text, (char *)(unsigned)"%s %s %s", u, lobby_Player.firstName, lobby_Player.familyName);
     id = d2_CreateWinText(x, 10, text, U_I((unsigned)&d2_LastWindow));
     y = *(short *)(U_I((unsigned)&d2_Objs) + 0x16 + id * 0x2ec);
     if (lobby_Player.sex == 1)
-        u = (char *)U_I(((unsigned)&ai_Unk143a680 + 0x17c) + lobby_Player.job * 4);
+        u = (char *)U_I(((unsigned)&txt_JobNames + 0x17c) + lobby_Player.job * 4);
     else
-        u = (char *)U_I((unsigned)&ai_Unk143a680 + lobby_Player.job * 4);
+        u = (char *)U_I((unsigned)&txt_JobNames + lobby_Player.job * 4);
     sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe0), u);
     d2_CreateWinText(x, y + 0xc, text, U_I((unsigned)&d2_LastWindow));
-    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&ai_Unk143b3d8 + lobby_Player.faith * 4));
+    sprintf(text, (char *)(unsigned)&full_data_62aaac, U_I((unsigned)&full_data_144abe4), U_I((unsigned)&txt_FaithNames + lobby_Player.faith * 4));
     d2_CreateWinText(x, y + 2 + y + 0xc, text, U_I((unsigned)&d2_LastWindow));
 }
 /* 0x58ad20, waits for the player list (128 B): 0x4cd610 and its answer 0x4c3ae0; the list 0x4cd5d0 -> 0x6f267c;
@@ -477,7 +477,7 @@ void lobby_ShowPlayers(void)
         if (p == 0)
             continue;
         id = d2_WinOpenPic(5, y, p[3] + 0x59a, U_I((unsigned)&d2_LastWindow));
-        u = (char *)U_I(((unsigned)&ai_Unk143a610 + 0x4));
+        u = (char *)U_I(((unsigned)&txt_HonourTitles + 0x4));
         if ((char)p[4] != 0)
             u = (char *)U_I((unsigned)&full_data_143a63c);
         sprintf(text, (char *)(unsigned)&full_data_62aab4, u, (char *)p + 0x12, (char *)p + 0x22);
@@ -539,7 +539,7 @@ int lobby_ChooseProfession(int param)
         n = id * 0x2ec;
         U_I(n + 0x4c + U_I((unsigned)&d2_Objs)) = 1;
         U_I(n + 0x1c0 + U_I((unsigned)&d2_Objs)) = 3;
-        strcpy((char *)(n + 0xbc + U_I((unsigned)&d2_Objs)), (char *)U_I(ids[i] * 4 + ((unsigned)&ai_Unk143a680 + 0x2f8)));
+        strcpy((char *)(n + 0xbc + U_I((unsigned)&d2_Objs)), (char *)U_I(ids[i] * 4 + ((unsigned)&txt_JobNames + 0x2f8)));
         U_I(n + 0x1bc + U_I((unsigned)&d2_Objs)) = 0x56;
         d2_RadioAdd(obj, id);
     }

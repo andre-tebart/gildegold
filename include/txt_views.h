@@ -23,17 +23,17 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_143a3f0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x00230))  /* 0x143a3f0 */
 #define ai_ContactTextParchment                 (*(char * *)((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4, the text the ub_INFORMATIONSPERGAMENT plate of the room 0x14c listener shows (ai_GuildHallListener); the wording is unknown */
 #define txt_InfoPanelButtons                            (*(int (*)[7])((char *)txt_Ptrs + 0x003c8))  /* 0x143a588 */
-#define ai_Unk143a610                            (*(char * (*)[2])((char *)txt_Ptrs + 0x00450))  /* 0x143a610 */
+#define txt_HonourTitles                            (*(char * (*)[2])((char *)txt_Ptrs + 0x00450))  /* 0x143a610 */
 #define txt_PseudoCharName                            (*(char * *)((char *)txt_Ptrs + 0x00458))  /* 0x143a618 */
 #define full_data_143a63c                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x0047c))  /* 0x143a63c */
-#define ai_Unk143a680                            (*(char * (*)[221])((char *)txt_Ptrs + 0x004c0))  /* 0x143a680 */
-#define ai_Unk143a9f4                            (*(char * (*)[70])((char *)txt_Ptrs + 0x00834))  /* 0x143a9f4 */
+#define txt_JobNames                            (*(char * (*)[221])((char *)txt_Ptrs + 0x004c0))  /* 0x143a680 */
+#define txt_TitleNames                            (*(char * (*)[70])((char *)txt_Ptrs + 0x00834))  /* 0x143a9f4 */
 #define ai_Unk143ab0c                            (*(char * (*)[84])((char *)txt_Ptrs + 0x0094c))  /* 0x143ab0c */
 #define txt_MaleFirstNames                            (*(char * (*)[197])((char *)txt_Ptrs + 0x00a9c))  /* 0x143ac5c */
 #define txt_FemaleFirstNames                            (*(char * (*)[130])((char *)txt_Ptrs + 0x00db0))  /* 0x143af70 */
 #define txt_FamilyNames                            (*(char * (*)[152])((char *)txt_Ptrs + 0x00fb8))  /* 0x143b178 */
-#define ai_Unk143b3d8                            (*(char * (*)[3])((char *)txt_Ptrs + 0x01218))  /* 0x143b3d8 */
-#define ai_Unk143b3e4                            (*(char * (*)[4])((char *)txt_Ptrs + 0x01224))  /* 0x143b3e4 */
+#define txt_FaithNames                            (*(char * (*)[3])((char *)txt_Ptrs + 0x01218))  /* 0x143b3d8 */
+#define txt_SexNames                            (*(char * (*)[4])((char *)txt_Ptrs + 0x01224))  /* 0x143b3e4 */
 #define txt_NoRelative                            (*(char * *)((char *)txt_Ptrs + 0x01234))  /* 0x143b3f4 */
 #define full_data_143b3f8                        (*(unsigned char (*)[12])((char *)txt_Ptrs + 0x01238))  /* 0x143b3f8 */
 #define ai_BuildingNames                         (*(int (*)[1304])((char *)txt_Ptrs + 0x01240))  /* 0x143b400 */

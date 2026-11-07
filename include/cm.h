@@ -1129,7 +1129,7 @@ extern char cm_MessageBoxOpen;  /* 0x6f0dc4 */
 extern int cm_KindRun[];  /* 0x92c500, the scene kind table: run, callbacks, flag, check */
 void d3io_NoopCallback(void *t);  /* 0x44ee40 */
 
-extern char ai_Unk60eae0[][24];  /* 0x60eae0, the names of the NPC kinds */
+extern char ai_CharKindNames[][24];  /* 0x60eae0, the names of the NPC kinds */
 
 
 

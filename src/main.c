@@ -5299,7 +5299,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE prev, char *cmd, int show)
             k = 0x38;
             if (*(char *)(unsigned)&full_data_6f2470 != 0) {
                 for (i = 0; i < 0x5f; i++) {
-                    if (_strcmpi((char *)(unsigned)&full_data_6f2470, ((char **)(unsigned)&ai_Unk143a680)[i]) == 0) {
+                    if (_strcmpi((char *)(unsigned)&full_data_6f2470, ((char **)(unsigned)&txt_JobNames)[i]) == 0) {
                         k = i;
                         break;
                     }
