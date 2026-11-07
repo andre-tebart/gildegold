@@ -188,29 +188,14 @@ extern unsigned short ai_PlayerId;
 
 
 
-/* 0x5ba6b0, the views of ai_InventoryHas and ai_BuildingHasItem: the character's inventory (AICHAR +0x178,
-   ai.h) and the object 0x4ffe90 finds in it (AIOBJ: the type id at +0, the state flag at +0x21, the building
-   id at +0x25) */
+/* 0x5ba6b0, the view of ai_InventoryHas: the character's inventory (AICHAR +0x178, ai.h); the object found in
+   it is lc.c's G8INVOBJ */
 #pragma pack(push, 1)
 typedef struct G8INVCHAR {
     char pad00[0x178];
     int inventory;                      /* +0x178, the character's object list (AICHAR.inventory) */
 } G8INVCHAR;
 
-typedef struct G8INVOBJ {
-    unsigned short id;                  /* +0x00, the object's type id (AIOBJ.id) */
-    char pad02[0xc];
-    int count;                          /* +0x0e, how many (AIOBJ.count; the inventory window's amount control) */
-    char pad12[0xa];
-    int minutesUsed;                    /* +0x1c, of a Domizil good in use: the minutes of its effect gone (reasoned
-                                           guess: ai_UpdateInventoryWindow fills its control by 1 - this / G9DOMIZIL.minutes) */
-    char pad20;
-    int active;                         /* +0x21, nonzero when the object counts as held, a Domizil good: while its
-                                           effect runs (reasoned guess: ai_InventoryHas tests it; the inventory
-                                           window disables the good's control and shows the fill while it is set) */
-    int bldId;                          /* +0x25, the id of the building the object stands in (reasoned guess:
-                                           ai_BuildingHasItem compares it with AIBLD.id) */
-} G8INVOBJ;
 #pragma pack(pop)
 
 void ai_FreeSettings(void);                                        /* 0x5a8920 */
@@ -297,7 +282,7 @@ void ai_GameFrame(void);  /* 0x591520 */
 void ai_DropObjectAt(struct D3OBJECT *obj, struct D3VECTOR *target);  /* 0x58feb0 */
 void ai_ShowPurchaseNews(unsigned short *param_1, char *param_2, int param_3, int param_4);  /* 0x5a8c50 */
 void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec);  /* 0x5a9170 */
-int lc_UpdateGoodsReserves(void);  /* 0x5ba750 */
+void lc_UpdateGoodsReserves(void);  /* 0x5ba750 */
 int ai_DrawSettingGood(int param_1);  /* 0x5a8870 */
 float ai_SettingFactor(int param_1);  /* 0x5a88e0 */
 void ai_ShowPartingNews(unsigned short *param_1, unsigned short *param_2);  /* 0x5a8ee0 */

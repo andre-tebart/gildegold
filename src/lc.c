@@ -787,7 +787,32 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
 extern GAPDATA full_data_6f2f64[];
 #define ai_TransportEscort (*(char *)&full_data_6f2f64)  /* 0x6f2f64, the escort kind of the last transport order (ai_TransportWindow clears it, the order sets it to the cart's AIOBJ.escort) */
+#define lc_ReserveTime (*(AITIME *)((char *)&full_data_6f2f64 + 4))  /* 0x6f2f68, when lc_UpdateGoodsReserves ran last (set to ai_Time at its end) */
+#define lc_ReserveCursor (*(int *)((char *)&full_data_6f2f64 + 0x14))  /* 0x6f2f78, the first character lc_UpdateGoodsReserves checks next (32 per call) */
 extern GAPDATA full_data_6f3680[];
+#pragma pack(push, 1)
+typedef struct G8INVOBJ {               /* an object of a character's inventory (AIOBJ, ai_types.h, read as a held good:
+                                           ai_InventoryHas, ai_BuildingHasItem, the inventory window, the Domizil
+                                           goods' clock lc_UpdateGoodsReserves); AIOBJ's union does not reach +0x2d */
+    unsigned short id;                  /* +0x00, the object's type id (AIOBJ.id) */
+    int objId;                          /* +0x02, AIOBJ.objId */
+    int ownerId;                        /* +0x06, the id of the character holding it (AIOBJ.ownerId; the Domizil clock
+                                           sells the used-up good from it) */
+    char pad0a[4];
+    int count;                          /* +0x0e, how many (AIOBJ.count; the inventory window's amount control) */
+    char pad12[0xa];
+    int minutesLeft;                    /* +0x1c, of a Domizil good in use: the minutes its effect still runs
+                                           (lc_UpdateGoodsReserves counts it down from G9DOMIZIL.minutes) */
+    char pad20;
+    int active;                         /* +0x21, nonzero when the object counts as held, of a Domizil good while its
+                                           effect runs (ai_InventoryHas tests it; lc_UpdateGoodsReserves clears it
+                                           when minutesLeft runs out; the name is a reasoned guess) */
+    int bldId;                          /* +0x25, the id of the building the object stands in (reasoned guess:
+                                           ai_BuildingHasItem compares it with AIBLD.id) */
+    char pad29[4];
+    AITIME since;                       /* +0x2d, of a Domizil good in use: when minutesLeft was last counted down */
+} G8INVOBJ;
+#pragma pack(pop)
 typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0) */
     int ctl;                            /* 0x0, its amount control */
     G8INVOBJ *obj;                      /* 0x4, the inventory object (its id the goods), 0: empty */
@@ -22947,7 +22972,7 @@ void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int te
 /* 0x5ba290, the inventory child window's frame: for ai_InvChar, each of the six ai_InvSlots rows whose object
    left the inventory loses its control; the others get their amount (the control's range 0 .. count) and caption
    ("<name>~ <count> <text 0x3fe9>"), a Domizil good in use (active) its control disabled and filled by the part
-   of its effect left, else enabled and empty; an amount picked in a control goes to the pointer (good + 0xdf).
+   of its effect used up (1 - minutesLeft / G9DOMIZIL.minutes), else enabled and empty; an amount picked in a control goes to the pointer (good + 0xdf).
    Every inventory good not of type 9 and not shown yet gets the first free row: an input icon of the child window
    at column k % 3, row k / 3, styled 0x23, with the caption "<name>~ <count> Stück", and the same Domizil state.
    Returns 1 when some amount was picked */
@@ -22984,7 +23009,7 @@ int ai_UpdateInventoryWindow(void)
         if (use != 0) {
             if (ai_InvSlots[i].obj->active != 0) {
                 d2_SetObjEnabled(ai_InvSlots[i].ctl, 0);
-                d2_Objs[ai_InvSlots[i].ctl].fillFraction = 1.0 - (double)ai_InvSlots[i].obj->minutesUsed / use->minutes;
+                d2_Objs[ai_InvSlots[i].ctl].fillFraction = 1.0 - (double)ai_InvSlots[i].obj->minutesLeft / use->minutes;
             } else {
                 d2_SetObjEnabled(ai_InvSlots[i].ctl, 1);
                 d2_Objs[ai_InvSlots[i].ctl].greyed = 0;
@@ -23020,7 +23045,7 @@ int ai_UpdateInventoryWindow(void)
                     if (ai_InvSlots[k].obj->active != 0) {
                         d2_SetObjEnabled(ai_InvSlots[k].ctl, 0);
                         d2_Objs[ai_InvSlots[k].ctl].fillFraction =
-                            1.0 - (double)ai_InvSlots[k].obj->minutesUsed / use->minutes;
+                            1.0 - (double)ai_InvSlots[k].obj->minutesLeft / use->minutes;
                     } else {
                         d2_SetObjEnabled(ai_InvSlots[k].ctl, 1);
                     }
@@ -23095,13 +23120,72 @@ int ai_BuildingHasItem(AIBLD *bld, int id)
         return 1;
     return 0;
 }
-/* 0x5ba750, a window gated by the player 0x6f25b8 == 0x300 (448 B, ROUGH SKELETON): a 0x404-byte frame; the
-   body is a comment */
+/* 0x5ba750, the clock of the Domizil goods in use (cm's frame, while the player is a character): 32 characters
+   per call from lc_ReserveCursor on; each Domizil good with a duration (G9DOMIZIL.minutes) that is active loses
+   the minutes since its own stamp; when its time runs out it turns inactive, the character of kind 6 gets the
+   news 0x1bc9 (_NACHRICHTEN_HS_37, the good's name text), the good 0x178 clears the flag 0x20 of its building's
+   word 0x5a, and a character that can act (ai_CanAct) and is not of kind 7 sells it (one, cm_SendExSellObject);
+   a good without a duration is set inactive. Stamps lc_ReserveTime and moves the cursor on
+   @deep Reconstructed in full from 0x5ba750..0x5ba979: the 32-character window from lc_ReserveCursor, the
+   inventory walk, the Domizil duration count-down with the stamp copy, the run-out branch (news 0x1bc9 for
+   kind 6, the 0x5a flag 0x20 of the 0x178 good's building, the sale when ai_CanAct and kind != 7), the
+   inactive branch, the end stamp and cursor; every call, argument, constant and string read against the
+   original; ours 159 vs 160 instructions, frame equal. Left: register rotation only (asmdiff: eax/ecx/edx
+   swapped through the body, e.g. +0x86 xor edx,edx / push edx vs xor eax,eax / push eax; the cursor reload
+   +0x1c2 mov edx,[cursor]; add edx,0x20 vs mov eax,[cursor]; lea ecx,[eax+0x20]); the two AITIME copies
+   (o->since = ai_Time, lc_ReserveTime = ai_Time) load and store the same four parts in another register
+   order. A variant round. (references: M8 at +0xd2: ours refers to ai_Time+0x4 (0x770ae4), the original's
+   field to 0x770ae0 (ai_Time) (and 5 more), explained: the M8 ref lines are the two 14-byte AITIME copies:
+   the same loads and stores of ai_Time and lc_ReserveTime in another order (the alignment pairs ai_Time+4
+   with ai_Time); no other object is read or written; the prover stops only at the byte push of
+   ai_OwnPlayer through another register (Ins8Lo of a different upper half)) */
 
-int lc_UpdateGoodsReserves(void)
+void lc_UpdateGoodsReserves(void)
 {
-    /* ROUGH SKELETON: the 0x404-byte frame */
-    return 0;
+    char text[0x400];
+    G8INVOBJ *o;
+    G9DOMIZIL *use;
+    AIBLD *bld;
+    int i;
+
+    if (ai_PlayerId >= 0x300)
+        return;
+    gm_MinutesBetween(&lc_ReserveTime, &ai_Time);
+    for (i = lc_ReserveCursor; i < lc_ReserveCursor + 0x20 && i < 0x300; i++) {
+        if (((AICHARREC *)ai_Chars)[i].id == 0xffff)
+            continue;
+        for (o = (G8INVOBJ *)gm_Query((void *)((AICHARREC *)ai_Chars)[i].inventory, 1, 5); o != 0;
+             o = (G8INVOBJ *)gm_QueryNext()) {
+            use = (G9DOMIZIL *)ai_FindUsableGood(o->id);
+            if (use == 0)
+                continue;
+            if (use->minutes > 0) {
+                if (o->active == 0)
+                    continue;
+                o->minutesLeft -= gm_MinutesBetween(&o->since, &ai_Time);
+                o->since = ai_Time;
+                if (o->minutesLeft >= 0)
+                    continue;
+                /* the effect ran out */
+                o->active = 0;
+                if (((AICHARREC *)ai_Chars)[i].kind == 6) {
+                    txt_Format(text, 0x1bc9, o->id * 2 + 0x9a8);
+                    he_ShowNews(ai_CharInts[i][0], -1, text, 0, 0x5ec, "_NACHRICHTEN_HS_37");
+                }
+                if (o->id == 0x178) {
+                    bld = (AIBLD *)gm_BuildQuery(1, 1, o->bldId);
+                    if (bld != 0)
+                        cm_SendSetField(bld->id, 0x5a, 2, 0, 0x20);
+                }
+                if (ai_CanAct(ai_Chars[i]) && ((AICHARREC *)ai_Chars)[i].kind != 7)
+                    cm_SendExSellObject(-1, o->ownerId, o->id, 1, ai_OwnPlayer, 0);
+            } else if (o->active != 0) {
+                o->active = 0;
+            }
+        }
+    }
+    lc_ReserveTime = ai_Time;
+    lc_ReserveCursor = (i + 1) % 0x300;
 }
 /* 0x5ba980, a window with three counters (656 B, ROUGH SKELETON): a 0x418-byte frame; the body is a comment */
 

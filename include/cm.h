@@ -355,7 +355,7 @@ void gm_CountCharacters(void);  /* 0x4fdfd0 */
 char * he_NextEvent(void);  /* 0x53e300 */
 void he_RunEvents();  /* 0x53ed70 */
 void ai_NotifyPlayerOfChar(unsigned short *cRec, unsigned short *pRec);  /* 0x5a9170 */
-int lc_UpdateGoodsReserves();  /* 0x5ba750 */
+void lc_UpdateGoodsReserves(void);  /* 0x5ba750 */
 void ai_ApplyOptions(void);  /* 0x5d5e90 */
 extern const int cm_SpeedTicks[];  /* 0x5edc10 */
 extern int cm_SpeedTick;  /* 0x60bd80 */
