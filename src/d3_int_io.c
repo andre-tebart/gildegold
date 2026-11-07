@@ -1,8 +1,6 @@
 /* d3_int_io.c -- scene file reader ("d3_int_io:" allocation tag, "rd_object()" in an error message): the object
    tree (0x44abb0) and the floor (0x44b920). Its own TU (see d3_obj.c). The next function,
    d3_LoadScene (0x44be60), calls both. Names are ours except rd_object.
-   Open: rd_object reads D3OBJECT fields d3.h does not name yet (0x05c / 0x090 / 0x09c / 0x19c / 0x1a0 / 0x200 /
-   0x214, the D3IO_200 macro); naming them is shared d3.h work.
    unit of rea 8cef7d5b (src/game/d3_int_io.c); boundaries in decl/text.dcl */
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +39,7 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
     int n;
     int i, k;
     int kind = 0;
-    int unk200 = 0;
+    int owner = 0;
     char name[0x100];
     char buf[0x100];
     int type, cnt;
@@ -53,7 +51,7 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
     if (c) {
         bio_rd_s(f, name);
         if (version >= 0x3a6c00b2)
-            bio_rd_i(f, &unk200);
+            bio_rd_i(f, &owner);
         if (version >= 0x3a6c00ab)
             bio_rd_i(f, &kind);
         bio_rd_i(f, &n);
@@ -99,8 +97,8 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
         }
         obj = d3_SpawnObject(type, name);
         type = obj->type;
-        D3IO_200(obj) = unk200;
-        D3_X(obj)->kind = kind;
+        obj->owner = (void *)owner;
+        obj->kind = kind;
         obj->parent = parent;
         if (parent)
             D3IO_FL(obj)->a0 = 0;
@@ -132,7 +130,7 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
                 }
             }
             bio_rd_i(f, &n);
-            D3_X(obj)->unk214 = n;
+            obj->meshMode = n;
             bio_rd_i(f, &n);
             if (version >= 0x3a6c00a4) {
                 if (n > 0) {
@@ -173,13 +171,13 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
             bio_rd_c(f, &c);
             D3IO_FL(obj)->b0 = c;
             if (c) {
-                bio_rd_v3(f, (int *)&D3_X(obj)->unk05c);
-                bio_rd_v3(f, (int *)&D3_X(obj)->unk090);
+                bio_rd_v3(f, (int *)&obj->savedPos);
+                bio_rd_v3(f, (int *)&obj->savedRot);
             }
             if (version >= 0x3a6c00af) {
                 for (i = 0; i < 10; i++) {
-                    bio_rd_v3(f, &D3_X(obj)->unk09c[i].v[0]);
-                    bio_rd_v3(f, &D3_X(obj)->unk09c[i].v[3]);
+                    bio_rd_v3(f, (int *)&obj->views[i].pos);
+                    bio_rd_v3(f, (int *)&obj->views[i].dir);
                 }
             }
             break;
@@ -190,8 +188,8 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
                 D3IO_FL(obj)->b0 = 1;
             bio_rd_i(f, (int *)&D3_X(obj)->radius);
             bio_rd_v3(f, (int *)&D3_X(obj)->pos);
-            bio_rd_v3(f, (int *)&D3_X(obj)->unk05c);
-            bio_rd_v3(f, (int *)&D3_X(obj)->unk090);
+            bio_rd_v3(f, (int *)&obj->savedPos);
+            bio_rd_v3(f, (int *)&obj->savedRot);
             break;
         case 5:
         case 6:
@@ -205,15 +203,15 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
                     bio_rd_c(f, &c);
                     D3IO_FL(obj)->b4 = c;
                 }
-                bio_rd_i(f, (int *)&D3_X(obj)->unk090.x);
-                bio_rd_i(f, (int *)&D3_X(obj)->unk090.y);
-                bio_rd_i(f, (int *)&D3_X(obj)->unk090.z);
-                bio_rd_v3(f, (int *)&D3_X(obj)->unk05c);
+                bio_rd_i(f, (int *)&obj->lightParams.x);
+                bio_rd_i(f, (int *)&obj->lightParams.y);
+                bio_rd_i(f, (int *)&obj->lightParams.z);
+                bio_rd_v3(f, (int *)&obj->lightColor);
                 bio_rd_v3(f, (int *)&D3_X(obj)->pos);
                 bio_rd_v3(f, (int *)&D3_X(obj)->rot);
                 if (version >= 0x3a6c00ac) {
-                    bio_rd_i(f, (int *)&D3_X(obj)->light->unk19c);
-                    bio_rd_i(f, &D3_X(obj)->light->unk1a0);
+                    bio_rd_i(f, (int *)&D3_X(obj)->light->flicker);
+                    bio_rd_i(f, &D3_X(obj)->light->interval);
                 }
                 for (i = 0; i < cnt; i++) {
                     bio_rd_i(f, (int *)&D3IO_KEYS(obj)[i].f28);
@@ -245,13 +243,13 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
                     bio_rd_i(f, (int *)&D3_X(obj)->rot.z);
                 else
                     D3_X(obj)->rot.z = 1.0f;
-                D3_X(obj)->unk090.x = D3_X(obj)->rot.x;
-                D3_X(obj)->unk090.y = D3_X(obj)->rot.y;
-                D3_X(obj)->unk090.z = D3_X(obj)->rot.z;
+                obj->lightParams.x = D3_X(obj)->rot.x;
+                obj->lightParams.y = D3_X(obj)->rot.y;
+                obj->lightParams.z = D3_X(obj)->rot.z;
                 D3_X(obj)->rot.x = 0.0f;
                 D3_X(obj)->rot.y = 0.0f;
                 D3_X(obj)->rot.z = 0.0f;
-                bio_rd_v3(f, (int *)&D3_X(obj)->unk05c);
+                bio_rd_v3(f, (int *)&obj->lightColor);
                 bio_rd_v3(f, (int *)&D3_X(obj)->pos);
                 if (version >= 0x3a6c00a1) {
                     cnt = d3_SceneVersion(version);
@@ -275,18 +273,18 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
                     }
                 } else {
                     for (i = 0; i < 7; i++) {
-                        D3IO_KEYS(obj)[i].f28 = D3_X(obj)->unk090.x;
-                        D3IO_KEYS(obj)[i].f24 = D3_X(obj)->unk090.y;
-                        D3IO_KEYS(obj)[i].f2c = D3_X(obj)->unk090.z;
+                        D3IO_KEYS(obj)[i].f28 = obj->lightParams.x;
+                        D3IO_KEYS(obj)[i].f24 = obj->lightParams.y;
+                        D3IO_KEYS(obj)[i].f2c = obj->lightParams.z;
                         D3IO_KEYS(obj)[i].v00.x = D3_X(obj)->pos.x;
                         D3IO_KEYS(obj)[i].v00.y = D3_X(obj)->pos.y;
                         D3IO_KEYS(obj)[i].v00.z = D3_X(obj)->pos.z;
-                        D3IO_KEYS(obj)[i].v18.x = D3_X(obj)->unk05c.x;
-                        D3IO_KEYS(obj)[i].v18.y = D3_X(obj)->unk05c.y;
-                        D3IO_KEYS(obj)[i].v18.z = D3_X(obj)->unk05c.z;
-                        D3IO_KEYS(obj)[i].v0c.x = D3_X(obj)->unk090.x;
-                        D3IO_KEYS(obj)[i].v0c.y = D3_X(obj)->unk090.y;
-                        D3IO_KEYS(obj)[i].v0c.z = D3_X(obj)->unk090.z;
+                        D3IO_KEYS(obj)[i].v18.x = obj->lightColor.x;
+                        D3IO_KEYS(obj)[i].v18.y = obj->lightColor.y;
+                        D3IO_KEYS(obj)[i].v18.z = obj->lightColor.z;
+                        D3IO_KEYS(obj)[i].v0c.x = obj->lightParams.x;
+                        D3IO_KEYS(obj)[i].v0c.y = obj->lightParams.y;
+                        D3IO_KEYS(obj)[i].v0c.z = obj->lightParams.z;
                     }
                 }
             }
@@ -297,7 +295,7 @@ D3OBJECT *rd_object(void *f, D3OBJECT *parent, unsigned int version, char reload
         }
         d3_SetObjectRot(obj, &D3_X(obj)->rot);
         d3_SetObjectPos(obj, &D3_X(obj)->pos);
-        if (D3_X(obj)->kind == 1)
+        if (obj->kind == 1)
             D3IO_FL(obj)->a5 = 0;
         D3IO_FL(obj)->b1 = 1;
         if (bang) {
@@ -698,7 +696,7 @@ int d3io_FindStock(char *name)
 }
 /* 0x44c610, builds surf from the stock object `name`: vertices and triangles, vertex colours from the colour
    key, the texture set; counts the surface (unless it is the shadow surface 3)
-   @deep spell.py menu: both hunks 'no menu rule' (44c737 add ecx,edx / mov esi,ecx vs lea esi,[ecx+edx*1]; 44c9cf is the alignment nop that follows from the 1-byte length difference), diffclass: code. Read the hunk against tools/disasm.py 0x44c720 0x40: same value, only the add/lea spelling differs - VC6 computed '(D3IOTEX *)d3_Textures + tri->src->tex' into a temp (ecx, the dead index register) and copied it to tex (esi) at the store. Tried this session: the double-assignment form 'tri->tex = tex = ...' (byte-identical, reverted). Already tried in the 2026-10-22 session (unit note): int ti = tri->src->tex before the test, ti + (D3IOTEX *)d3_Textures, a D3TEXTURE * local with casts at the uses, &((D3IOTEX *)d3_Textures)[i], tex += i, (int)d3_Textures + (i << 7) / * 0x80 - all identical or worse. Readability done: Q4 via D3IOCOL union (all / b,g,r,a) and D3IOVERT.col40/col44 typed D3IOCOL, D3IO_214 macro body now the typed field D3_X(o)->unk214 (byte-neutral, check 2567). Left: the register-allocation choice that makes the sum's target esi instead of the dead operand - match-deep's toolbox. */
+   @deep spell.py menu: both hunks 'no menu rule' (44c737 add ecx,edx / mov esi,ecx vs lea esi,[ecx+edx*1]; 44c9cf is the alignment nop that follows from the 1-byte length difference), diffclass: code. Read the hunk against tools/disasm.py 0x44c720 0x40: same value, only the add/lea spelling differs - VC6 computed '(D3IOTEX *)d3_Textures + tri->src->tex' into a temp (ecx, the dead index register) and copied it to tex (esi) at the store. Tried this session: the double-assignment form 'tri->tex = tex = ...' (byte-identical, reverted). Already tried in the 2026-10-22 session (unit note): int ti = tri->src->tex before the test, ti + (D3IOTEX *)d3_Textures, a D3TEXTURE * local with casts at the uses, &((D3IOTEX *)d3_Textures)[i], tex += i, (int)d3_Textures + (i << 7) / * 0x80 - all identical or worse. Readability done: Q4 via D3IOCOL union (all / b,g,r,a) and D3IOVERT.col40/col44 typed D3IOCOL, D3IO_214 macro body now the typed field D3_X(o)->unk214, now meshMode (byte-neutral, check 2567). Left: the register-allocation choice that makes the sum's target esi instead of the dead operand - match-deep's toolbox. */
 
 void d3io_AttachStock(D3OBJECT *obj, D3SURF *surf, char *name)
 {

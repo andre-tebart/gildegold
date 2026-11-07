@@ -47,7 +47,6 @@ typedef struct D3IOOBJFLAGS {      /* D3OBJECT::state..stateFlags as the reader 
     unsigned char c7 : 1;
 } D3IOOBJFLAGS;
 #define D3IO_FL(o) ((D3IOOBJFLAGS *)&(o)->state)
-#define D3IO_200(o) (*(int *)((char *)(o) + 0x200))
 
 typedef struct D3IOLIGHTKEY {       /* D3LIGHTENTRY (0x38 bytes) as the reader fills it (d3_io_t.h's D3IOKEY is the animation key) */
     D3VECTOR v00;
@@ -178,7 +177,7 @@ typedef struct D3IOSURF {           /* 0x198 bytes, D3SURF as the stock attach f
     char pad196[0x2];
 } D3IOSURF;
 
-#define D3IO_214(o) (D3_X(o)->unk214)
+#define D3IO_214(o) (D3_X(o)->meshMode)
 void d3io_AttachStock(D3OBJECT *obj, D3SURF *surf, char *name);                        /* 0x44c610 */
 #define D3IO_SCENEB4(s) (*(int *)((char *)(s) + 0xb4))
 #define D3IO_SCENEAC(s) (*(void **)((char *)(s) + 0xac))

@@ -1468,7 +1468,7 @@ void d3_WriteObject(VFSFILE *f, D3OBJECT *obj)
             bio_wr_c(f, obj->stateFlags >> 4 & 1);
             bio_wr_c(f, obj->stateFlags >> 5 & 1);
             bio_wr_c(f, obj->stateFlags >> 6 & 1);
-            bio_wr_i(f, D3_X(obj)->unk214);
+            bio_wr_i(f, D3_X(obj)->meshMode);
             if (D3_X(obj)->mesh) {
                 bio_wr_i(f, ((unsigned char *)D3_X(obj)->mesh)[0x96c]);
                 if (((unsigned char *)D3_X(obj)->mesh)[0x96c] > 0) {

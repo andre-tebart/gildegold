@@ -107,7 +107,10 @@ struct D3OBJECT {
                                        (d3t_SetColor), 0xc = shadow mask tested against D3SM.mask, 0x10 = cast
                                        shadows despite the mask, 0x80 = world matrix current (d3_UpdateWorldMatrix) */
     unsigned char flags;            /* 0x213 */
-    char pad214[0x4];
+    int meshMode;                   /* 0x214, reasoned guess at the meaning: 0 from d3_InitObject, 3 for the
+                                       shadow_fake object (d3_Init), 4 once d3io_AttachStock adds a level-of-detail
+                                       surface, else the scene file's value for the mesh types 1 / 4 (rd_object /
+                                       d3_WriteObject); no reader in the original's code besides the writer */
     int type;                       /* 0x218, 4 = mesh */
     int type0;                      /* 0x21c, the object's real type: d3if_Show saves it there while it hides
                                        the object as type 1, and the spawn sets it (D3OBJX.type0, d3_engine.h) */

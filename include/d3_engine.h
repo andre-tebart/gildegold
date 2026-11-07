@@ -281,8 +281,8 @@ typedef struct D3LIGHTINFO {        /* 0x1ac bytes, "d3:SpawnObject(lightinfo)",
     char pad188[0xc];
     int time;                       /* 0x194, last flicker step (d3_Time); D3LDATA.time in d3_light.h */
     int unk198;
-    float unk19c;
-    int unk1a0;
+    float flicker;                  /* 0x19c, D3LDATA.flicker (d3_light.h); 0.3 from d3_InitObject, else the scene file's */
+    int interval;                   /* 0x1a0, D3LDATA.interval (d3_light.h); 15 from d3_InitObject, else the scene file's */
     int unk1a4;
     char pad1a8[0x4];
 } D3LIGHTINFO;
@@ -320,7 +320,7 @@ typedef struct D3OBJX {             /* 0x228 bytes, the whole D3OBJECT as far as
     unsigned char objectFlags;      /* 0x211 (D3OBJECT::objectFlags) */
     unsigned char stateFlags;
     unsigned char flags;
-    int unk214;
+    int meshMode;                   /* 0x214, D3OBJECT.meshMode (d3.h) */
     int type;                       /* 0x218 */
     int type0;                      /* 0x21c, the object's real type (D3OBJECT::type0): saved while d3if_Show hides it, set at spawn */
     int kind;                       /* 0x220 */

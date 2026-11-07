@@ -1344,7 +1344,7 @@ char d3_Init(D3INITCFG *cfg, HWND wnd, int unk)
     d3_InitShadows(d3_Cfg.shadowSize, 0x80, 0x40, 0x20, 0, 0x40, 0x20);
     d3sky_InitColors();
     d3s_Object = d3_SpawnObject(4, "shadow_fake");
-    D3_X(d3s_Object)->unk214 = 3;
+    D3_X(d3s_Object)->meshMode = 3;
     d3s_Object->objectFlags |= 0x20;
     d3_AddObjectDrawData(d3s_Object);
     D3_MESH(d3s_Object)->nsurf = 1;
@@ -1832,7 +1832,7 @@ void d3_InitObject(D3OBJECT *obj)
         D3_X(obj)->unk09c[i].v[5] = 0;
     }
     obj->objectFlags = obj->objectFlags & 0xa2 | 2;
-    D3_X(obj)->unk214 = 0;
+    D3_X(obj)->meshMode = 0;
     obj->prev = 0;
     obj->next = 0;
     obj->child = 0;
@@ -1850,8 +1850,8 @@ void d3_InitObject(D3OBJECT *obj)
     D3_X(obj)->unk044 = 0;
     if (D3_X(obj)->light) {
         D3_X(obj)->light->unk198 = 0;
-        D3_X(obj)->light->unk1a0 = 15;
-        D3_X(obj)->light->unk19c = 0.3f;
+        D3_X(obj)->light->interval = 15;
+        D3_X(obj)->light->flicker = 0.3f;
         D3_X(obj)->light->unk1a4 = 0;
         for (i = 0; i < 7; i++) {
             D3_X(obj)->light->e[i].unk34 = 15;
