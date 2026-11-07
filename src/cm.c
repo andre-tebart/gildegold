@@ -5998,7 +5998,7 @@ int cm_ExFightCommand(G17MSG *m, G17STAT *s)
         break;
     case 5:                                         /* put down the object it carries */
         if (c->health != 0)
-            cm_FightSlotPutDown((char *)&m->fight.slot);
+            cm_FightSlotPutDown(&m->fight.slot);
         break;
     case 7:                                         /* the winner so far */
         cm_FightSlotWinner((char *)&m->fight.slot);
@@ -11234,25 +11234,27 @@ void cm_FightSlotPickUp(CMFIGHTSLOT *f)
         }
     }
 }
-/* 0x4d70a0, the fighter slot f puts down the object it carries (+0x1ac) at its place */
+/* 0x4d70a0, the fighter slot f puts down the object it carries (AICHAR.v1ac) at its place */
 
-void cm_FightSlotPutDown(char *f)
+void cm_FightSlotPutDown(CMFIGHTSLOT *f)
 {
-    char *c, *o, *p, *a;
+    AICHAR *c;
+    D3OBJECT *o, *body;
+    CHACTION *a;
 
-    if (*(int *)(f + 4) != 0 && *(int *)f != -1) {
-        c = cm_FindFighter(*(int *)f);
-        ch_StopActions(*(char **)(c + 0x184));
-        d3_FindObject(0, 0x40, 0, f + 0x10);
-        o = *(char **)(c + 0x1ac);
+    if (f->active != 0 && f->id != -1) {
+        c = (AICHAR *)cm_FindFighter(f->id);
+        ch_StopActions(c->scene);
+        d3_FindObject(0, 0x40, 0, f->dummy);
+        o = (D3OBJECT *)c->v1ac;
         if (o != 0) {
-            p = *(char **)(*(char **)(c + 0x184) + 0x34);
-            d3_SetWorldPosRot(o, p + 0x4c, p + 0x18c);
+            body = c->scene->obj;
+            d3_SetWorldPosRot(o, (float *)&body->pos, &body->matrix);
             d3if_Show(o, 1);
-            *(int *)(c + 0x1ac) = 0;
+            c->v1ac = 0;
         }
-        a = (char *)ch_AddAction(*(char **)(c + 0x184), 0x2e, 1);
-        strcpy(a + 0xf0, "spezial/einhaendig_vom_boden_nehmen");
+        a = ch_AddAction(c->scene, 0x2e, 1);
+        strcpy(a->u.name, "spezial/einhaendig_vom_boden_nehmen");
     }
 }
 /* 0x4d7150, the character of the record r is the winner so far (0x6f0cf4): text 0x11b7 */
