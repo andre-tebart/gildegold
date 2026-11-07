@@ -19887,7 +19887,10 @@ int ai_SabotageCallback(char *ch, AIBLD *target)
     int ok;
     AIJOB *ev;
     AIWINDOWROW row;
-    AIMSG msg;
+    union {
+        AIMSG msg;
+        char text[0x100];               /* a short note reuses the message's buffer */
+    } buf;
     char note[0x80];
     char text[0x400];
     int arg[0x88];
@@ -19921,8 +19924,8 @@ int ai_SabotageCallback(char *ch, AIBLD *target)
         return 0;
     }
     if (he_NoProtectionEvent((int)target) == 0) {
-        txt_Format((char *)&msg, 0x1705, target);
-        sv_MessageBox((char *)&msg, 0);
+        txt_Format(buf.text, 0x1705, target);
+        sv_MessageBox(buf.text, 0);
         return 0;
     }
     if (he_NoEvent88Pair((struct AICHAR *)ch, (struct AICHAR *)ai_Chars[ai_PlayerId]) == 0) {
@@ -19948,14 +19951,14 @@ int ai_SabotageCallback(char *ch, AIBLD *target)
         if (dm_L.rup != 0 || d2_ClickedId == 1)
             sv_PopRequest = 1;
         if (d2_ClickedId == 0 && ok != -1 && d2_PointerObj == ok) {
-            msg.type = 0x19;
-            msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
-            msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
-            msg.flags = 1;
-            msg.sabotage.price = price;
-            msg.sabotage.bld = target->id;
+            buf.msg.type = 0x19;
+            buf.msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+            buf.msg.fromId = ((AIBLD *)ai_PlayerBuilding)->id;
+            buf.msg.flags = 1;
+            buf.msg.sabotage.price = price;
+            buf.msg.sabotage.bld = target->id;
             cm_BeginGroup("sabotage");
-            cm_SendLongMessage((char *)&msg);
+            cm_SendLongMessage((char *)&buf.msg);
             cm_EndGroup("sabotage");
             txt_Format(note, 0x1701, target->masterId, target->kind * 14 + 0x48e);
             sv_MessageBox(note, 0);
