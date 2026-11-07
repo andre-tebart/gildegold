@@ -34274,12 +34274,72 @@ int ai_UseGoodCharmPartner(AICHARREC *ch, G8USEVIEW *use)
     }
     return ret;
 }
-/* 0x5d2720, an action callback of the record table 0x62c420 (record 34 at 0x62c7d8, the text id 0x22c,
-   the value 0xb40, 576 B): the character (0x5c1130 menu / 0x505df0), two record builders 0x4c4b70,
-   the texts 0x5176d0, the messages 0x53dda0, the 0x5ba660 lookup and the panel 0x5cf820. */
+/* 0x5d2720, the use callback of the Domizil record 34 (0x62c7d8, the text id 0x22c), a twin of
+   ai_UseGoodWeakenSkills: picks the target character, for a player (kind 6) with the special-amount menu (the
+   gypsy filter, mode 0x400, the prompt 0x9c), else the character use->target (gm_FindChar); none -> 0. Sends it
+   the skill-bonus message 0x82: skill 3 loses 0.35 for 48 hours (flags 2; skill2 is 5, bonus2 is left unset as
+   the original leaves it). A player target (kind 6 / 7) gets the news 0xffb (key 0x5fb); a player user sees the
+   text 0xfe8 (the good's rank + 1, the target) in the use-object panel and the use is marked handled. Returns 1.
+   Both paths are written out in full, as the original's code has them. */
 
-int ai_Unk5d2720(void)
+int ai_UseGoodWeakenSkills3(AICHARREC *ch, G8USEVIEW *use)
 {
+    int index;
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    char text[0x100];
+    char news[0x800];
+    AICHARREC *target;
+    G9DOMIZIL *found;
+
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+        if (target != 0) {
+            msg.to = target->netId;
+            msg.type = 0x82;
+            msg.fromId = -1;
+            msg.flags = 2;
+            msg.skillBonus.skill1 = 3;
+            msg.skillBonus.bonus1 = -0.35f;
+            msg.skillBonus.skill2 = 5;
+            msg.skillBonus.hours = 48;
+            cm_SendLongMessage((char *)&msg);
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0xffb);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            found = (G9DOMIZIL *)ai_FindUsableGoodIndex(use->obj->id, &index);
+            use->handled = 1;
+            txt_Format(news, 0xfe8, found->rank + 1, target->id);
+            ai_UseObjPanel(news);
+            return 1;
+        }
+    } else {
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target != 0) {
+            msg.to = target->netId;
+            msg.type = 0x82;
+            msg.fromId = -1;
+            msg.flags = 2;
+            msg.skillBonus.skill1 = 3;
+            msg.skillBonus.bonus1 = -0.35f;
+            msg.skillBonus.skill2 = 5;
+            msg.skillBonus.hours = 48;
+            cm_SendLongMessage((char *)&msg);
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0xffb);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            return 1;
+        }
+    }
     return 0;
 }
 /* 0x5d2960, an action callback of the record table 0x62c420 (record 36 at 0x62c810, the text id 0x22b,
