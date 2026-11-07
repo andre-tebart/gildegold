@@ -3005,3 +3005,4 @@
 2026-11-07T18:01:51 0x005ce4b0 func ai_Unk5ce4b0 -> ai_Interrogate by:main why:0x5ce4b0 is what ai_InterrogationWindow's confirm button runs: relations of ch's office colleagues, the news 0x1e0a / 0x1e0b, me's flag 0x80000 the window checks
 2026-11-07T18:29:41 0x005cfc00 func ai_Unk5cfc00 -> ai_UseGoodInfectOwner by:main why:the use callback of the Domizil good 0x177: the owner of the picked building catches a disease (gm_CatchDisease)
 2026-11-07T18:32:07 0x005cff70 func ai_Unk5cff70 -> ai_UseGoodSendHome by:main why:the use callback of the Domizil good 0x178: sends the effect 0x76 and the send-home message 0x77 (he_StartSendHomeEvent) for the picked building
+2026-11-07T18:36:33 0x005d0320 func ai_Unk5d0320 -> ai_UseGoodWeakenSkills by:main why:the use callback of the Domizil good 0x17b (table entry 0x62c730): the skill-bonus message 0x82 with -1/6 on skills 3 and 2 for 24 hours to the picked character

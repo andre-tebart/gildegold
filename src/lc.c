@@ -33133,58 +33133,67 @@ int ai_UseGoodSendHome(AICHARREC *ch, G8USEVIEW *use)
     }
     return 1;
 }
-/* 0x5d0320, a message callback (517 B): param_1 the message record (+2 the type), param_2 the request
-   record (+4 the target id). Type 6: the config cfg (20 dwords, [1] = 0x400, [2] / [3] = U_I
-   (0x5eed68) / U_I (0x5eed6c), [4] = 6, [7 .. 14] = -1) with the text 0x5176d0 (0x9c) opens the window
-   0x5c1130 (cfg, text, 0, 0); other types: the target 0x505df0 (param_2 + 4), 0 when absent. The type
-   0x82 message: +8 the handle (the record + 4), +0xc = -1, +0x36 = 2, +0x58 = 3, +0x59 = 2, +0x5c /
-   +0x60 = 0xbe2aaaab (the float -1/6), +0x64 = 0x18; sent by 0x4c4b70; when the record's type is 6 /
-   7 the text 0x5176d0 (0xff8) goes through 0x53dda0 (the record + 4, -1, 0, 0x5fb). Returns 1 (0
-   without a record / target). */
+/* 0x5d0320, the use callback of the Domizil good 0x17b (reached through its table entry +0x14): picks the target
+   character, for a player (kind 6) with the special-amount menu (ai_AmountMenu, the gypsy filter, mode 0x400, the
+   prompt 0x9c), else the character use->target (gm_FindChar); none -> 0. Sends it the skill-bonus message 0x82:
+   the skills 3 and 2 lose 1/6 each for 24 hours (flags 2). A player target (kind 6 / 7) gets the news 0xff8 (key
+   0x5fb). Returns 1. Both paths are written out in full, as the original's code has them. */
 
-int ai_Unk5d0320(int param_1, int param_2)
+int ai_UseGoodWeakenSkills(AICHARREC *ch, G8USEVIEW *use)
 {
-    int cfg[20];
-    char cfgtext[0x100];
-    char text[0x200];
-    int rec[0x3e];
-    int req;
-    int i;
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    char text[0x100];
+    char news[0x800];
+    AICHARREC *target;
 
-    if (*(char *)(param_1 + 2) != 6) {
-        req = gm_FindChar(*(int *)(param_2 + 4));
-        if (req == 0)
-            return 0;
+    if (ch->kind == 6) {
+        memset(&cfg, 0, sizeof(cfg));
+        memset(cfg.ids, 0xff, sizeof(cfg.ids));
+        txt_Format(text, 0x9c);
+        cfg.flags = 0;
+        cfg.mode = 0x400;
+        cfg.kind = 6;
+        cfg.filter = gypsyFilter;
+        target = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+        if (target != 0) {
+            msg.to = target->netId;
+            msg.type = 0x82;
+            msg.fromId = -1;
+            msg.flags = 2;
+            msg.skillBonus.skill1 = 3;
+            msg.skillBonus.bonus1 = -1.0f / 6.0f;
+            msg.skillBonus.skill2 = 2;
+            msg.skillBonus.bonus2 = -1.0f / 6.0f;
+            msg.skillBonus.hours = 24;
+            cm_SendLongMessage((char *)&msg);
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0xff8);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            return 1;
+        }
     } else {
-        for (i = 0; i < 20; i++)
-            cfg[i] = 0;
-        for (i = 7; i < 15; i++)
-            cfg[i] = -1;
-        txt_Format(cfgtext, (char *)0x9c);
-        cfg[0] = 0;
-        cfg[1] = 0x400;
-        cfg[2] = U_I(((unsigned)&gypsyFilter));
-        cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-        cfg[4] = 6;
-        req = ai_AmountMenu(cfg, cfgtext, 0, 0);
-        if (req == 0)
-            return 0;
+        target = (AICHARREC *)gm_FindChar(use->target);
+        if (target != 0) {
+            msg.to = target->netId;
+            msg.type = 0x82;
+            msg.fromId = -1;
+            msg.flags = 2;
+            msg.skillBonus.skill1 = 3;
+            msg.skillBonus.bonus1 = -1.0f / 6.0f;
+            msg.skillBonus.skill2 = 2;
+            msg.skillBonus.bonus2 = -1.0f / 6.0f;
+            msg.skillBonus.hours = 24;
+            cm_SendLongMessage((char *)&msg);
+            if (target->kind == 6 || target->kind == 7) {
+                txt_Format(news, 0xff8);
+                he_ShowNews(target->netId, -1, news, 0, 0x5fb, 0);
+            }
+            return 1;
+        }
     }
-    *(char *)((char *)rec + 4) = 0x82;
-    rec[2] = *(int *)(req + 4);
-    rec[3] = -1;
-    *(char *)((char *)rec + 0x36) = 2;
-    *(char *)((char *)rec + 0x58) = 3;
-    *(char *)((char *)rec + 0x59) = 2;
-    *(int *)((char *)rec + 0x5c) = 0xbe2aaaab;
-    *(int *)((char *)rec + 0x60) = 0xbe2aaaab;
-    *(int *)((char *)rec + 0x64) = 0x18;
-    cm_SendLongMessage(rec);
-    if (*(char *)(req + 2) == 6 || *(char *)(req + 2) == 7) {
-        txt_Format(text, (char *)0xff8);
-        he_ShowNews(*(int *)(req + 4), -1, text, 0, 0x5fb, 0);
-    }
-    return 1;
+    return 0;
 }
 /* 0x5d0530, a message callback (423 B), the twin of 0x5d0320: param_1 the message record (+2 the
    type), param_2 the request record (+4 the target id). Type 6: the same config / window 0x5c1130

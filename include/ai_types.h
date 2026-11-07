@@ -470,6 +470,15 @@ typedef struct AIMSG {                  /* 0xf8 bytes, given to cm_SendLongMessa
                         } s;
                     } u;
                 };
+                struct {                        /* the skill-bonus message 0x82 (its event's words GMSKILLEV, 0x54
+                                                   further; he_StartSkillBonus) */
+                    unsigned char skill1;       /* 0x58, the first skill number (GMSKILLEV.skill1) */
+                    unsigned char skill2;       /* 0x59, the second skill number */
+                    char pad5a[2];
+                    float bonus1;               /* 0x5c, the bonus for skill1 (negative: a malus) */
+                    float bonus2;               /* 0x60, the bonus for skill2 */
+                    int hours;                  /* 0x64, how long it lasts (HESKILLBONUS.hours) */
+                } skillBonus;
                 struct {                        /* the effect message 0x76 of a Domizil good used on a target (the event
                                                    keeps these words 0x54 further: AIJOB.effectGood at 0xc2) and
                                                    the send-home message 0x77 of the good 0x178 (target only) */

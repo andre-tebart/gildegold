@@ -11,7 +11,7 @@ typedef struct G9DOMIZIL {              /* 0x1c bytes, an entry of the Domizil t
                                            with gm_AddTime's minute argument), 0: none */
     int law;                            /* 0x08, the law broken by using the good (ai_UseGood passes it to gv_Accuse),
                                            -1: none */
-    char pad0c[4];
+    float weight;                       /* 0x0c, 1.0 .. 6.0: am.c's AI scales the use action's weight by it */
     unsigned int mask;                 /* 0x10, tested against the character's goodsMask (0x1ec) */
     void *use;                          /* 0x14, the use callback ai_UseGood calls (the character, the G8USE request), 0: none */
     unsigned short rank;                /* 0x18, the rank the good asks for (the use window prints it with text 0xfe3;
