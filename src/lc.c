@@ -28858,7 +28858,8 @@ typedef struct LCORDMSG {          /* the message record of an order (gv.h ORDMS
         int answerFlag;            /* 0x214, of the law orders: which of the office's decisions, 1 / 2 (gv.h
                                       ORDMSG.answerFlag) */
     };
-    char pad218[4];
+    int target2;                   /* 0x218, of the hatred order asked of the AI: the second character's netId
+                                      (ai_HatredWindow; the first is target) */
     struct AICHARREC *partner;     /* 0x21c, the partner character (gv.h ORDMSG.partner; the privileges panel sets it
                                       to the player's partner of the pair event 0x45) */
 } LCORDMSG;
@@ -30919,59 +30920,130 @@ int ai_SeatSwapWindow(AICHARREC *me, LCORDMSG *m)
     d2_CloseView(win);
     return 1;
 }
-/* 0x5cb4f0, the espionage window (1440 B, ROUGH SKELETON: no Ghidra function; from the disassembly):
-   param_1 is the request record (+2 the type 6 / 7, +0x194 the amount, +0x214 / +0x218 the two character
-   ids), param_2 the player slot (0x509e60). Types other than 6 / 7: the amount < 4 returns 0x20; the two
-   characters 0x505df0 (missing -> 0x20); the price (int)((float)(0x50a640 (one) + 0x50a640 (the other)) *
-   0x5eb78c) against the money 0x509e60 (param_2) (too little -> 0x20); the two rolls 0x42ec00 (0x1e) + 3
-   and the relations 0x50c520 (both directions), then the message 0x53dda0 (the text 0x1dd3) and the
-   second message (0x6269ac, 0x5fb), return 0x10. Type 6 / 7: the config (0x400, 0x5eed68, 0x5eed6c, 6)
-   and the texts 0x1dcf / 0x1dd0 open the menu 0x5c1130 twice; the payment and the texts after it are
-   left as a comment. ROUGH SKELETON. */
+/* 0x5cb4f0, the hatred order's ask (ord_HatredOrder, kinds 3 / 4) "privillegien\hass_erzeugen": me sets two
+   characters against each other. The price is 2 % of their two worths (gm_GetWorth); each one's relation to the other
+   drops by a random 3 .. 32 less its opinion of the other less 0x7f (cm_SendRelations both ways), me pays the price
+   to the bank (cm_SendMoveGoods) and 4 (cm_SendMoneyDelta), and a player among the two gets the news 0x1dd3 naming
+   the other ("_NACHRICHTEN_HS_20"). The AI (not kind 6) names them in m->target / m->target2: 0x10, or 0x20 when it
+   has less than 4, one is unknown or its goods are worth less than the price. A player (kind 6) picks them in two
+   amount menus (texts 0x1dcf, 0x1dd0; none: 0), then the window (0x1dd1: the 4, the price, the two) whose first
+   button, when the player has the 4 (sv_CheckMoney) and the price (sv_CheckGoodAmount), does it and tells 0x1dd2;
+   either button or a right click close it. Returns 1 once it was done, else 0
+   @deep Rewritten whole from the original 0x5cb4f0..0x5cba80 (the draft was a skeleton): every call,
+   argument, constant and branch read and matched; ours=462 original=462. Left: one hunk at +0x220 (the
+   player branch's AMOUNTCFG set-up): the original loads the high word of gypsyFilter (mov edx,[0x5eed6c])
+   before the rep stosd and stores done=0 as an immediate after the txt_Format pushes; ours loads both
+   words after the memset (lc.c declares gypsyFilter const volatile like menu.c's definition, so VC6 cannot
+   hoist the load; a non-volatile extern in lc.c is an M5 against menu.c:34) and stores done from eax
+   before the rep stosd. Tried done=0 before the memset, after txt_Format (85 bytes off but code 22) and at
+   the top (worse). The rest is slots (o1/o2, price) and regs. A declaration question (the volatile of
+   gypsyFilter), not a statement. */
 
-int ai_EspionageWindow(int param_1, int param_2)  /* @original: the callers push (c, m); the draft body reads its own byte offsets of the parameters */
+int ai_HatredWindow(AICHARREC *me, LCORDMSG *m)
 {
-    int cfg[0x14];
-    char text[0x100];
-    int chr1;
-    int chr2;
+    int done;
+    int ok;
     int price;
-    int r;
-    int i;
+    int o1;
+    int cancel;
+    int win;
+    int o2;
+    AMOUNTCFG cfg;
+    char text[0x100];
+    AICHARREC *a;
+    AICHARREC *b;
+    int r1;
+    int r2;
+    int t;
 
-    if (*(char *)(param_1 + 2) != 6 && *(char *)(param_1 + 2) != 7) {
-        if (*(int *)(param_1 + 0x194) < 4)
+    if (me->kind != 6) {
+        if (me->money < 4)
             return 0x20;
-        chr1 = gm_FindChar(*(int *)(param_1 + 0x214));
-        chr2 = gm_FindChar(*(int *)(param_1 + 0x218));
-        if (chr1 == 0 || chr2 == 0)
+        a = (AICHARREC *)gm_FindChar(m->target);
+        if (a == 0)
             return 0x20;
-        price = (int)((float)(gm_GetWorth(*(unsigned short *)chr2) +
-                              gm_GetWorth(*(unsigned short *)chr1)) * (0.0199999996f));
-        if (gm_GetGoodsValue(param_2) < price)
+        b = (AICHARREC *)gm_FindChar(m->target2);
+        if (b == 0)
             return 0x20;
-        gm_Opinion(*(unsigned short *)chr1, *(unsigned short *)chr2);
-        gm_Opinion(*(unsigned short *)chr2, *(unsigned short *)chr1);
-        /* ROUGH SKELETON: the two rolls 0x42ec00 (0x1e) + 3, the payment and the messages 0x53dda0
-           (the text 0x1dd3 and the key 0x6269ac / 0x5fb) are not written yet */
+        t = gm_GetWorth(b->id);
+        price = (int)((float)(t + gm_GetWorth(a->id)) * 0.02f);
+        if (gm_GetGoodsValue(me) < price)
+            return 0x20;
+        r1 = util_RandomU(0x1e) + 3;
+        r2 = util_RandomU(0x1e) + 3;
+        o1 = gm_Opinion(a->id, b->id);
+        o2 = gm_Opinion(b->id, a->id);
+        cm_SendRelations(a->netId, b->netId, r1 - o1 - 0x7f, 1);
+        cm_SendRelations(b->netId, a->netId, r2 - o2 - 0x7f, 1);
+        cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
+        cm_SendMoneyDelta(me->netId, -4);
+        if (a->kind == 6 || a->kind == 7) {
+            txt_Format(text, 0x1dd3, b->id, b->id);
+            he_ShowNews(a->netId, a->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+        }
+        if (b->kind == 6 || b->kind == 7) {
+            txt_Format(text, 0x1dd3, a->id, a->id);
+            he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+        }
         return 0x10;
     }
-    for (i = 0; i < 0x14; i++)
-        cfg[i] = 0;
-    cfg[1] = 0x400;
-    cfg[2] = U_I(((unsigned)&gypsyFilter));
-    cfg[3] = U_I(((unsigned)&gypsyFilter + 4));
-    cfg[4] = 6;
-    txt_Format(text, (char *)0x1dcf);
-    r = ai_AmountMenu((int)cfg, (int)text, 0, 0);
-    if (r == 0)
+    memset(&cfg, 0, sizeof(cfg));
+    cfg.mode = 0x400;
+    cfg.kind = 6;
+    cfg.filter = gypsyFilter;
+    done = 0;
+    txt_Format(text, 0x1dcf);
+    a = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    if (a == 0)
         return 0;
-    txt_Format(text, (char *)0x1dd0, *(unsigned short *)r);
-    r = ai_AmountMenu((int)cfg, (int)text, 0, 0);
-    if (r == 0)
+    txt_Format(text, 0x1dd0, a->id);
+    b = (AICHARREC *)ai_AmountMenu(&cfg, text, 0, 0);
+    if (b == 0)
         return 0;
-    /* ROUGH SKELETON: the menu result, the payment and the texts 0x1dd1 .. are not written yet */
-    return 0x10;
+    t = gm_GetWorth(b->id);
+    price = (int)((float)(t + gm_GetWorth(a->id)) * 0.02f);
+    win = d2_OpenForm(0, 0, "privillegien\\hass_erzeugen");
+    d2_SetPointerSprite(0, 0);
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 1);
+    t = io_PrintText(0x1dd1, 4, price, a->id, b->id);
+    ok = d2_GetWinObj(win, 1, t);
+    cancel = d2_GetWinObj(win, 1, t + 1);
+    d2_ClickedId = -1;
+    do {
+        if (d2_ClickedId != -1) {
+            if (d2_PointerObj == ok) {
+                if (sv_CheckMoney(me, 4) != 0 && sv_CheckGoodAmountB((char *)me, price, ai_OwnPlayer) != 0) {
+                    r1 = util_RandomU(0x1e) + 3;
+                    r2 = util_RandomU(0x1e) + 3;
+                    o1 = gm_Opinion(a->id, b->id);
+                    o2 = gm_Opinion(b->id, a->id);
+                    cm_SendRelations(a->netId, b->netId, r1 - o1 - 0x7f, 1);
+                    cm_SendRelations(b->netId, a->netId, r2 - o2 - 0x7f, 1);
+                    cm_SendMoveGoods(-1, me->netId, ai_OwnPlayer, price);
+                    cm_SendMoneyDelta(me->netId, -4);
+                    txt_Format(text, 0x1dd2, a->id, b->id);
+                    sv_MessageBox(text, 0);
+                    if (a->kind == 6 || a->kind == 7) {
+                        txt_Format(text, 0x1dd3, b->id, b->id);
+                        he_ShowNews(a->netId, a->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+                    }
+                    if (b->kind == 6 || b->kind == 7) {
+                        txt_Format(text, 0x1dd3, a->id, a->id);
+                        he_ShowNews(b->netId, b->netId, text, 0, 0x5fb, "_NACHRICHTEN_HS_20");
+                    }
+                    sv_PopRequest = 1;
+                    done = 1;
+                }
+            } else if (d2_PointerObj == cancel) {
+                sv_PopRequest = 1;
+            }
+        }
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_HatredWindow, 0x657c7) != 0);
+    d2_CloseView(win);
+    return done;
 }
 /* 0x5cba90, the espionage payment handler (880 B, ROUGH SKELETON: no Ghidra function; from the
    disassembly): param_1 is the message record (the AIMSG: +0 the id, +2 the type, +4 the handle, +0x194

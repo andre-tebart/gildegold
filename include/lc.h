@@ -222,7 +222,7 @@ int ai_EspionagePayment(int param_1, int param_2);  /* 0x5cba90 */
 int ai_EspionagePayment2(int param_1, int *m);  /* 0x5cc700 */
 int ai_EspionageRelation(int param_1, int *param_2);  /* 0x5cc2b0 */
 int ai_EspionageResult(int param_1, int *m);  /* 0x5cd400 */
-int ai_EspionageWindow(int param_1, int param_2);  /* 0x5cb4f0 */
+struct AICHARREC; struct LCORDMSG; int ai_HatredWindow(struct AICHARREC *me, struct LCORDMSG *m);  /* 0x5cb4f0, the hatred order's ask */
 int ai_InterrogationWindow(int param_1, int param_2);  /* 0x5ce610 */
 int ai_InterrogationWindow1(int param_1, int param_2);  /* 0x5cede0 */
 int ai_InterrogationWindow2(int param_1, int param_2);  /* 0x5cf020 */
