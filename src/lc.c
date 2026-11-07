@@ -30211,67 +30211,55 @@ int ai_BlackmailContact(AICHARREC *me, LCORDMSG *m)
     }
     return ret;
 }
-/* 0x5c9df0, the blackmail payment window (511 B, a Ghidra-missed start): param_1 is the message record
-   (AIMSG: +0 the id, +4 the handle). The window 0x4741f0 (0x62d4f8) with 0x476f80 / 0x475600 and the text
-   0x515960 (0x1d62, id, 2, id, id). Click 0: 0x520f90 (the character 0x770b80 + 0x6f25b8 * 0x21c, 2), the
-   close 0x4c5f60 (the character 0x770b84 + 0x6f25b8 * 0x21c, -2), the message record (kind byte 0x4b /
-   type 2, the clock 0x770ae0 .., the character 0x770b84 + .., the handle) sent by 0x4c4b70, the date
-   0x4fe140 (0x18) and the text 0x5176d0 (0x1d63, the date, id) / 0x521150, 0x6f22a0 = 4, return 1. Click 1:
-   0x6f22a0 = 2. The pump 0x5309a0 and the end 0x4758f0. ROUGH: the record fields by offset. */
+/* 0x5c9df0, the intimidation window "privillegien\furcht_einfloessen" (the pick callback of the intimidation order
+   0x5c9ff0's amount menu) for the picked character ch: the offer 0x1d62 (ch's id twice, 2, its id). Button 0, the player paying 2
+   (sv_CheckMoney): the player pays 2 and sends the message 0x4b (the player to the player, arg[0] the player,
+   arg[1] ch, flags 2, sent now), then the text 0x1d63 with the clock 0x18 hours ahead and ch's id; sv_PopRequest 4,
+   returns 1. Button 1: sv_PopRequest 2; the right button 1 */
 
-int ai_Unk5c9df0(unsigned short *param_1)
+int ai_IntimidateWindow(AICHARREC *ch)
 {
-    int rec[0x3e];
-    int date[6];
     char text[0x100];
+    AIMSG msg;
+    AITIME due;
     int win;
-    int i;
     int ret;
-    int charid;
 
     ret = 0;
-    win = d2_OpenForm(0, 0, (char *)(unsigned)&full_data_62d4f8);
+    win = d2_OpenForm(0, 0, "privillegien\\furcht_einfloessen");
     d2_SetPointerSprite(0, 0);
     d2_CentreViewWindows(win);
     d2_SetForm(win, 1);
-    io_PrintText(0x1d62, *param_1, 2, *param_1, *param_1);
-    *(int *)(unsigned)&d2_ClickedId = -1;
+    io_PrintText(0x1d62, ch->id, ch->id, 2, ch->id);
+    d2_ClickedId = -1;
     do {
-        if (*(int *)(unsigned)&d2_ClickedId != -1) {
-            if (*(int *)(unsigned)&d2_ClickedId == 0) {
-                if (sv_CheckMoney((char *)((unsigned)&ai_Chars + *(int *)(unsigned)&ai_PlayerId * 0x21c), 2) != 0) {
-                    charid = *(int *)((unsigned)&ai_CharInts + *(int *)(unsigned)&ai_PlayerId * 0x21c);
-                    cm_SendMoneyDelta(charid, 0xfffffffe);
-                    for (i = 0; i < 0x3e; i++)
-                        rec[i] = 0;
-                    *(char *)((char *)rec + 4) = 0x4b;
-                    rec[2] = charid;
-                    rec[3] = charid;
-                    rec[0x16] = charid;
-                    rec[10] = *(int *)(unsigned)&ai_Time;
-                    rec[11] = *(int *)(unsigned)&ai_Time.hour;
-                    rec[12] = *(int *)((unsigned)&ai_Time + 0x8);
-                    *(short *)((char *)rec + 0x38) = *(short *)((unsigned)&ai_Time + 0xc);
-                    *(char *)((char *)rec + 0x36) = 2;
-                    rec[0x17] = *(int *)((char *)param_1 + 4);
-                    cm_SendLongMessage(rec);
-                    date[0] = *(int *)(unsigned)&ai_Time;
-                    date[1] = *(int *)(unsigned)&ai_Time.hour;
-                    date[2] = *(int *)((unsigned)&ai_Time + 0x8);
-                    *(short *)&date[3] = *(short *)((unsigned)&ai_Time + 0xc);
-                    gm_AddTime(date, 0x18, 0, 0);
-                    txt_Format(text, (char *)0x1d63, date, *param_1);
+        if (d2_ClickedId != -1) {
+            if (d2_ClickedId == 0) {
+                if (sv_CheckMoney(&((AICHARREC *)ai_Chars)[ai_PlayerId], 2) != 0) {
+                    cm_SendMoneyDelta(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, -2);
+                    memset(&msg, 0, sizeof(msg));
+                    msg.type = 0x4b;
+                    msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                    msg.fromId = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                    msg.flags = 2;
+                    msg.time = ai_Time;
+                    msg.arg[0] = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                    msg.arg[1] = ch->netId;
+                    cm_SendLongMessage((char *)&msg);
+                    due = ai_Time;
+                    gm_AddTime(&due, 0x18, 0, 0);
+                    txt_Format(text, 0x1d63, &due, ch->id);
                     sv_MessageBox(text, 0);
-                    *(int *)(unsigned)&sv_PopRequest = 4;
+                    sv_PopRequest = 4;
                     ret = 1;
                 }
-            } else if (*(int *)(unsigned)&d2_ClickedId == 1) {
-                *(int *)(unsigned)&sv_PopRequest = 2;
+            } else if (d2_ClickedId == 1) {
+                sv_PopRequest = 2;
             }
         }
-        if (*(int *)((unsigned)&dm_L + 0x20) != 0)
-            *(int *)(unsigned)&sv_PopRequest = 1;
-    } while (sv_RunFrame(ai_Unk5c9df0, 0x657c7) != 0);
+        if (dm_L.rup)
+            sv_PopRequest = 1;
+    } while (sv_RunFrame((int)ai_IntimidateWindow, 0x657c7) != 0);
     d2_CloseView(win);
     return ret;
 }
@@ -30317,7 +30305,7 @@ unsigned char ai_BlackmailContactVariant(int param_1, int param_2)  /* @original
     cfg[2] = 0xa7fdfbb6;
     cfg[3] = 1;
     txt_Format(text, (char *)0x1d61);
-    return ai_AmountMenu(cfg, text, 0, (void *)ai_Unk5c9df0) != 0;
+    return ai_AmountMenu(cfg, text, 0, (void *)ai_IntimidateWindow) != 0;
 }
 
 int gv_SetTableRecord(struct AICHAR *c, int i, int v);   /* 0x4f2750 */
