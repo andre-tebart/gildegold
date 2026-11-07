@@ -7164,13 +7164,14 @@ char *cm_FindFighter(int id)
     }
     return 0;
 }
-/* 0x4ce170 */
+/* 0x4ce170, the select bits of the fighter c: 0x800 when its side leader (bld in a fight) is the character idx,
+   or when gm_AllowAll is set */
 
 int ai_LedSelectBits(int idx, char *c)
 {
     int r = 0;
 
-    if (*(char **)(c + 0x16c) == ai_Chars[idx])
+    if ((AICHAR *)((AICHAR *)c)->bld == (AICHAR *)ai_Chars[idx])
         r = 0x800;
     if (gm_AllowAll != 0)
         r = 0x800;
