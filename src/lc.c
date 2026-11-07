@@ -776,6 +776,15 @@ extern int d2_LastWindow;
 extern GAPDATA full_data_62cc6c[];
 extern GAPDATA full_data_6f2f64[];
 #define ai_TransportEscort (*(char *)&full_data_6f2f64)  /* 0x6f2f64, the escort kind of the last transport order (ai_TransportWindow clears it, the order sets it to the cart's AIOBJ.escort) */
+extern GAPDATA full_data_6f3680[];
+typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0) */
+    int ctl;                            /* 0x0, its amount control */
+    AIOBJ *obj;                         /* 0x4, the inventory object (its id the goods), 0: empty */
+} LCINVSLOT;
+#define ai_InvSlots (*(LCINVSLOT (*)[6])((char *)&full_data_6f3680 + 0x1c0))  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow, the transport window) */
+#define d2_OpenFormS ((int (*)(short, short, char *))d2_OpenForm)  /* @original: the transport window computes x = d2_ScreenW - 0x68 in 16 bits (0x5af336 mov ax, [d2_ScreenW]; sub ax, 0x68; push eax), as sv_OpenPlayerBar */
+extern short d2_ScreenW;
+extern int d2_HitWindow;
 extern char * ai_BTypes;
 extern GAPDATA full_data_60c28c[];
 extern GAPDATA full_data_62cc94[];
@@ -2166,7 +2175,7 @@ void d2_SetObjValue();
    param_1 + 0x14) refresh the rows 0x6f4f90, and the text check 0x475980 of the controls 0x6f4f70 (window +0x18
    == 0x41) gives the return 1
    @deep B: 186 code hunks left after the one meaning fix the original's frame proves: the 68-dword kind table is a local automatic array (the original does sub esp,0x110 and initialises every entry on the stack), not the static const it was; 255 -> 186 hunks. What remains is code shape: the original's init stores interleave in another order (e.g. it writes 0x74, 0x78, 0x88, 0x98 .. with edx/esi where ours writes 0x74 early with ecx), the table walks compare with jl in the original and jb here (pointer compare), and the row search keeps the id in dx and walks a pointer with add 0x38 / inc / cmp / jl against our mov di,WORD PTR + cmp eax,esi. No other missing statement or constant. Q1/Q2/Q3/Q4 also open */
-int ai_Unk58e130(int param_1, int param_2)
+int ai_UpdateMarketGoodsList(int param_1, int param_2)
 {
     int tbl[68] = {
         2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0,
@@ -2229,7 +2238,7 @@ int ai_Unk58e130(int param_1, int param_2)
    0x476c70
    @deep B: 309 code hunks; 608 B ROUGH short column display (title controls 0x6f4f10, texts 0x469250, positions (width - icon width) / 2 and (row height + 0x1c) * i, visibility 0x46cda0 on 0xf8f124 + scr * 0x3c4, the rows through 0x58e6a0 with param_5 = 3, the entry texts 0x476c00): broad layout/register shape only, no meaning error found by reading */
 
-void ai_Unk58e440(int param_1, int param_2, int param_3, int param_4)
+void ai_LayoutMarketGoodsList(int param_1, int param_2, int param_3, int param_4)
 {
     int *p;
     int *q;
@@ -2470,7 +2479,7 @@ char * gm_FindGoods(int p, unsigned id);
    0x1467398 the clicked entry 0x5fe710 cycles its state +0x1c (0x4c3ba0 / 0x4c3d90 / 0x4c49e0); the text check
    0x475980 (window +0x18 == 0x41) gives the return 1
    @deep B: 445 code hunks; ROUGH reverse direction table. The 68-dword kind table looked like 0x58e130's (the original has sub esp,0x114 + stack init stores of 2 / 3 / 4), and it is an automatic int tbl[68] (the original fills it on the stack at 0x58ee51.., register stores; a static one has no counterpart in the exe's data and cannot be linked), although that form has more hunks (470 vs 445). No other meaning error found; the row fill / second pass / click cycle are all present, the difference is code shape */
-int ai_Unk58ee30(int param_1, short *param_2)
+int ai_UpdateStoreGoods(int param_1, short *param_2)
 {
     int tbl[68] = {
         2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0,
@@ -18135,7 +18144,7 @@ int ai_TransportFromLager(int lagerId, AIOBJ *cart, AIBLD *bld, int priced, char
    'sub esp, 8' (sum [esp+0x10] and bt [esp+0x14] as locals, n in bld's slot [esp+0x1c]). Tried: other
    declaration orders, n block-scoped per loop, mode as int / unsigned: no change in the slot choice */
 
-void ai_TransportGoodsTotal(AIBLD *bld, int unused, int mode)
+void ai_TransportGoodsTotal(AIBLD *bld, float factor, int mode)
 {
     int n;
     LCPRODSLOT *slot;
@@ -18187,34 +18196,1078 @@ void ai_TransportGoodsTotal(AIBLD *bld, int unused, int mode)
 
 int ai_OpenTransport(int building)
 {
-    return ai_TransportWindow(building, 1);
+    return ai_TransportWindow((AIBLD *)building, 1);
 }
 /* 0x5af1b0, a forwarder of 0x5af1d0 with the mode 2 (16 B) */
 
 int ai_OpenTransportSell(int building)
 {
-    return ai_TransportWindow(building, 2);
+    return ai_TransportWindow((AIBLD *)building, 2);
 }
 /* 0x5af1c0, a forwarder of 0x5af1d0 with the mode 4 (16 B) */
 
 int ai_OpenTransportBuy(int building)
 {
-    return ai_TransportWindow(building, 4);
+    return ai_TransportWindow((AIBLD *)building, 4);
 }
-/* 0x5af1d0, the transport window (11968 B, ROUGH SKELETON): the modes 1 / 2 / 4 of the forwarders 0x5af1a0 ..
-   0x5af1c0; a 0x1848-byte frame (__chkstk) with the 0x2d-dword table at +0x15c cleared, then one huge window
-   build: the transport records of this unit (0x5ae870, 0x5ae6b0, 0x5ae8e0, 0x5ae9a0), the transport windows
-   0x58d720 / 0x58dd00 / 0x58ee30 / 0x58f290, the controls 0x4731d0 / 0x475b80 / 0x475aa0 / 0x475f70, the
-   amounts 0x5089c0 / 0x508a20, the texts 0x5176d0 / 0x52e330 / 0x521150, the sliders 0x475cb0, the carrier
-   walk 0x53e400 / 0x53e300, the events 0x576040 / 0x576340 and the order 0x4c4880, on the window table
-   0xf8aad0 and the key 0x62c418. The body is left as a stub: the Ghidra pseudocode (build/ghidra/5af1d0.c,
-   1354 lines, its parameters lost) needs the disassembly, and VC6 spins on a first full draft of this size */
+typedef struct LCCARTROW {              /* 0xf0 bytes, a cart row of the transport window (ai_TransportWindow's 16) */
+    AIOBJ *cart;                        /* 0x00, the cart, 0: a free row */
+    AIJOB *job;                         /* 0x04, its running transport order (event 0xf, AIJOB.u.id the cart's objId) */
+    int selected;                       /* 0x08, picked for the buttons (a click on the cart picture toggles it) */
+    int pic;                            /* 0x0c, the cart picture (0x4ae + the cart's kind) */
+    int win;                            /* 0x10, the child window its goods sit in */
+    int slider;                         /* 0x14, the fill bar (AIOBJ.fill) */
+    int escortPic;                      /* 0x18, the escort picture 0x5e8 + AIOBJ.escort, its caption the escort's fee */
+    int label;                          /* 0x1c, the route label (patrol on / off text); a click edits the route */
+    AIRECIPE goods;                     /* 0x20, not read by the window */
+    int goodsCtl[3];                    /* 0xd8, per goods slot its input icon (the goods' icon + 0xdf), -1: none */
+    int goodsPic[3];                    /* 0xe4, per goods slot its stock slider, -1: none */
+} LCCARTROW;
 
-int ai_TransportWindow(int param_1, int param_2)
+/* 0x5af1d0, the transport window "Handel\Handel_Transport" of the building bld (11961 B; ai_OpenTransport /
+   ai_OpenTransportSell / ai_OpenTransportBuy pass the modes 1 / 2 / 4, sv_UpdatePanel 1, the market stand 8 |
+   1). Mode 8 first opens the market stand's info panel with its seven panel buttons (a click on one picks that
+   building and closes the window) and works on ai_MarketBuilding. The goods store the window trades with is
+   found in the shown panel object's list or the building's (gm_Query kinds 0xff / 5 / 0x11 / 0x2a / 0x116, the
+   modes 2 / 4: 0x1db / 0x1dc); mode 1 has the four buttons send / repair / buy carts / sell carts, the others
+   one. Each frame the player's carts at the building (gm_Query kind 0x1d of the cart building src, the market
+   class: the building of kind 0x44) fill the 16 rows (LCCARTROW: the cart picture, its fill slider, the escort
+   picture whose click cycles AIOBJ.escort 0 .. 2 and the route label that opens rt_EditCartRoute), a row per
+   cart with its goods (gm_StallGoodsList) as input icons and sliders; the running transport events 0xf mark
+   their carts. A click on a cart picture selects it (or, with the goods list shown, moves the picked goods
+   into it, ai_TransportFromLager); dropping goods on the window or the inventory child window moves them
+   between the cart, the store and the player's inventory (cm_SendExSellObject, the price at the market class
+   0.9, else the building's priceFactor, a random 1 in 4 times the health factor). The send button picks the
+   destination on the map (ai_MapPick 0x11) and orders every selected cart there (ai_TransportOrderDue,
+   ai_SendTransportOrder; their escort fees summed in the text 0xe3), the repair button refills the selected
+   carts (gm_ItemPrice of the cart * 0.008 per missing percent, the message 0x10), the others buy or sell
+   carts; 0x527 empties the goods back. sv_PendingMoney follows the goods total (ai_TransportGoodsTotal).
+   @deep Reconstructed whole from the stub against the original (3426 instructions read end to end): the
+   mode 8 info panel, the store queries per mode, the 16 cart rows (LCCARTROW), the row cleanup / add /
+   goods-control sync, the transport events, the inventory child window (ai_InvSlots, ai_InvChar), the
+   button enabling, the right-button reset, the click / drop branches (ai_TransportFromLager,
+   cm_SendExSellObject, gm_FreeCapacity / gm_TakeableCount), the 0x527 clear, send (ai_MapPick 0x11,
+   ai_SendTransportOrder), repair (message 0x10), buy / sell carts, the goods total and the close. 3417 vs
+   3426 instructions, frame equal (0x1848). Fixed on the way: the own branches inverted (je to own=1),
+   btns[8], two drop prices, the row y in an int (32-bit as the original), the goods slider x / y / stock
+   as statements. Left: block layout and allocation: VC6 keeps ebp = -1 and the cart cursor in a slot in
+   the original (ours ebx), the row walk pointer based at the row start in the original vs a field inside
+   the row in ours ([esi] vs [esi-0xc], [ebx] vs [ebx-8]), selected tested as 'mov eax,[ebx+8]; test' vs
+   'cmp [ebx],0', the escort / message field stores scheduled in another order (0x5b0161, 0x5b0197,
+   0x5b1d55), the click branch's C block placed after A in the original (0x5b0b1c) vs after the drop
+   branches in ours, and the merged sv_SetStatusText tail of the two 0xee status texts (references: M8 at
+   +0xad8: ours refers to d2_RemoveObj (0x46e710), the original's field to 0x46c9e0 (d2_DeleteObject) (and
+   1 more), explained: the two ref lines (d2_RemoveObj | d2_DeleteObject at +0xad8, ai_Time+8 | +0xc at
+   +0x2be3) are alignment artifacts: the cleanup calls d2_RemoveObj / d2_DeleteObject in the original's
+   order (goods icon, goods slider, row slider, escort picture, label) and the message copies all of
+   ai_Time; the call count sv_SetStatusText 8 vs 7 is the original's cross-jumped tail of the two
+   'txt_Format(buffer, 0xee, b); sv_SetStatusText(buffer)' paths) */
+
+int ai_TransportWindow(AIBLD *bld, unsigned int mode)
 {
-    int rec[0x2d];
+    AIRECIPE goods = { 0 };
+    AIOBJ *stall = 0;
+    AIOBJ *marketObj = 0;
+    char *goodsRec = 0;
+    AIBLD *src = bld;
+    AIOBJ *picked = 0;
+    int slotX[3][3] = { { 0x51, 0, 0 }, { 0x30, 0x71, 0 }, { 0x11, 0x52, 0x93 } };
+    int listShown = 0;
+    int market = 0;
+    int priced = 0;
+    int canTrade = 0;
+    int own = 0;
+    int dropActive = 0;
+    float factor = 1.0f;
+    int boxValue = -1;
+    int panelBtns[7] = { -1, -1, -1, -1, -1, -1, -1 };
+    int panelIds[7] = { 0x95, 0x92, 0x93, 0x94, 0x97, 0x96, 0x2db };
+    int panelForm = -1;
+    AIBLD *b = bld;
+    unsigned int mode8 = mode & 8;
+    unsigned int mode1;
+    AIBTYPE *bt;
+    AIBLD *home;
+    AIBLD *dest;
+    AIOBJ *cart;
+    AIOBJ *c;
+    AIOBJ *sobj;
+    AIOBJ *found;
+    AIJOB *ev;
+    LCINVSLOT *s;
+    LCCARTROW rows[16];
+    AIOBJ *pickCarts[32];
+    AIOBJ *sellCarts[32];
+    AMOUNTCFG cfg;
+    AIMSG msg;
+    AITIME due;
+    GMDATE date;
+    int btns[8];
+    int btn0, btn1, btn2, btn3;
+    int scrollUp, scrollDown, scrollBar;
+    int routeBox, clearBtn;
+    int win;
+    int owner;
+    int pic;
+    int i, j, k, n, v, ok;
+    int changed;
+    int x, y, stock;
+    int match, freeRow, notFull, item, ctl, max, price, fee, cost, empty, maxEmpty, limit;
+    float applied, total, sellPrice, loadPrice, unit;
+    char esc;
+    char text1[0x100];
+    char text2[0x100];
+    char text3[0x100];
+    char text4[0x100];
+    char text5[0x100];
 
-    memset(rec, 0, sizeof(rec));
+    if (mode8) {
+        panelForm = d2_OpenFormS(d2_ScreenW - 0x68, 0x106, "panel\\infopanel_marktstand");
+        for (i = 0; i < 7; i++) {
+            panelBtns[i] = sv_AddPanelButton(0, i * 0x18 + 0xc, txt_InfoPanelButtons[i]);
+            if (*sv_PanelShown == panelIds[i]) {
+                d2_Objs[panelBtns[i]].checked = 1;
+                d2_Objs[panelBtns[i]].highlighted = 1;
+            }
+        }
+        b = ai_MarketBuilding;
+    }
+    ai_TransportEscort = 0;
+    bt = &((AIBTYPE *)ai_BTypes)[b->kind];
+    if (sv_PanelShown != 0) {
+        mode1 = mode & 1;
+        if (mode1) {
+            marketObj = (AIOBJ *)gm_Query((void *)((AIOBJ *)sv_PanelShown)->list, 2, 0, 0xff, 6);
+            if ((stall = (AIOBJ *)gm_Query((void *)((AIOBJ *)sv_PanelShown)->list, 2, 4, 5, 6)) == 0
+                && (stall = (AIOBJ *)gm_Query((void *)((AIOBJ *)sv_PanelShown)->list, 1, 4, 0x11)) == 0
+                && (stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x2a, 6)) == 0)
+                stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x116, 6);
+        } else if (mode == 2) {
+            stall = (AIOBJ *)gm_Query((void *)((AIOBJ *)sv_PanelShown)->list, 2, 0, 0x1db, 6);
+        } else if (mode == 4) {
+            stall = (AIOBJ *)gm_Query((void *)((AIOBJ *)sv_PanelShown)->list, 2, 0, 0x1dc, 6);
+        }
+    } else {
+        mode1 = mode & 1;
+        if (mode1) {
+            if ((stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x2a, 6)) == 0)
+                stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x116, 6);
+        } else if (mode == 2) {
+            stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x1db, 6);
+        } else if (mode == 4) {
+            stall = (AIOBJ *)gm_Query((void *)b->objList, 2, 0, 0x1dc, 6);
+        }
+    }
+    if (stall != 0)
+        goodsRec = ai_Goods + stall->id * 0x41;
+    for (i = 0; i < 16; i++) {
+        rows[i].pic = -1;
+        rows[i].win = -1;
+        rows[i].slider = -1;
+        rows[i].escortPic = -1;
+        rows[i].cart = 0;
+        rows[i].job = 0;
+        rows[i].selected = 0;
+        for (j = 0; j < 3; j++) {
+            rows[i].goodsCtl[j] = -1;
+            rows[i].goodsPic[j] = -1;
+        }
+    }
+    ai_CampaignStep(0x23, bld, 0, 0);
+    win = d2_OpenForm(0, 0, "Handel\\Handel_Transport");
+    d2_CentreViewWindows(win);
+    d2_SetForm(win, 4);
+    if (mode1) {
+        sv_ButtonRow(d2_LastWindow, 0, btns, 4, txt_Ptrs[0xd3], txt_Ptrs[0xd2], txt_Ptrs[0xd1], txt_Ptrs[0xd4]);
+        btn2 = btns[2];
+        btn3 = btns[3];
+        owner = ai_OwnPlayer;
+        btn1 = btns[1];
+    } else {
+        sv_ButtonRow(d2_LastWindow, 0, btns, 1, txt_Ptrs[0xd3]);
+        btn1 = -1;
+        btn2 = -1;
+        btn3 = -1;
+        owner = b->playerSlot;
+    }
+    btn0 = btns[0];
+    d2_SetForm(win, 0);
+    if (mode == 2) {
+        priced = 1;
+        factor = gm_HealthFactor(ai_PlayerId);
+    } else if (mode == 4) {
+        canTrade = 1;
+        factor = gm_HealthFactor(ai_PlayerId);
+    } else if (b->owner != ai_PlayerId) {
+        if (bt->buildingClass == 0xa) {
+            market = 1;
+            src = (AIBLD *)gm_BuildQuery(1, 0, 0x44);
+            priced = 1;
+            factor = gm_HealthFactor(ai_PlayerId);
+        }
+        canTrade = 1;
+        if (btn1 != -1)
+            d2_EnableObject(btn1, 0);
+        if (btn2 != -1)
+            d2_EnableObject(btn2, 0);
+        if (btn3 != -1)
+            d2_EnableObject(btn3, 0);
+    } else {
+        own = 1;
+    }
+    d2_SetForm(win, 0);
+    if (ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0) {
+        sv_OpenWindowFrame(d2_LastWindow, 0x70b, 0x73f);
+    } else {
+        pic = 0x70b;
+        if (bt->buildingClass == 0x13 || bt->buildingClass == 4 || bt->buildingClass == 0x10)
+            pic = 0x72f;
+        else if (bt->buildingClass == 8 || bt->buildingClass == 0xe)
+            pic = 0x70f;
+        else if (bt->buildingClass == 6)
+            pic = 0x713;
+        else if (bt->buildingClass == 0x16)
+            pic = 0x717;
+        else if (bt->buildingClass == 0xd || bt->buildingClass == 0xc || bt->buildingClass == 0xb)
+            pic = 0x71b;
+        else if (bt->buildingClass == 2 || bt->buildingClass == 7)
+            pic = 0x737;
+        if (canTrade == 0)
+            sv_OpenWindowFrame(d2_LastWindow, pic, 0x741);
+        else
+            sv_OpenWindowFrame(d2_LastWindow, pic, 0x73f);
+    }
+    sv_CreateScrollButtons(0x270, 0x15c, d2_LastWindow, d2_GetViewWin(win, 2), 0x5e2, &scrollUp, &scrollDown,
+                           &scrollBar);
+    d2_Objs[scrollBar].font = 0x54;
+    d2_SetForm(win, 3);
+    if (mode == 2)
+        io_PrintText(0xd0, ai_PlayerSlots[b->playerSlot]);
+    else if (mode == 4)
+        io_PrintText(0xcf, ai_PlayerSlots[b->playerSlot]);
+    else if (sv_PanelShown != 0 && ai_PlayerBuilding == 0 && ai_FallbackBuilding == 0)
+        io_PrintText(*sv_PanelShown * 2 + 0x9a8);
+    else if (canTrade == 0)
+        io_PrintText(0xcc);
+    else
+        io_PrintText(0xcd);
+    d2_SetForm(win, 2);
+    ai_InitProductionTables();
+    d2_SetPointerSprite(0, 0);
+    d2_SetForm(win, 0);
+    ai_OpenInventoryWindow(d2_LastWindow, 0x172, 0x64, ai_PlayerId, 0x1f3c);
+    d2_SetForm(win, 0);
+    routeBox = d2_WinOpenPic(0x261, 0xd2, 0x528, d2_LastWindow);
+    d2_Objs[routeBox].style = 3;
+    d2_Objs[routeBox].checkable = 1;
+    clearBtn = d2_WinOpenPic(0x261, 0x104, 0x527, d2_LastWindow);
+    d2_Objs[clearBtn].style = 3;
+    sv_ResetScreenClip();
+    do {
+        if ((ai_BuildingPerms & 0x200) == 0 && ai_IsBuildingOpen(b, 0, 0) == 0) {
+            if (ai_PlayerId != b->owner) {
+                priced = 0;
+                canTrade = 0;
+                own = 0;
+            } else {
+                own = 1;
+            }
+        } else if (b->owner != ai_PlayerId) {
+            if (bt->buildingClass == 0xa) {
+                market = 1;
+                priced = 1;
+            }
+            canTrade = 1;
+        } else {
+            own = 1;
+        }
+        if (ai_InventoryHas(ai_Chars[ai_PlayerId], 0x299) != 0)
+            canTrade = 1;
+        if (mode8 && d2_ClickedId != -1) {
+            for (i = 0; i < 7; i++) {
+                if (d2_PointerObj == panelBtns[i]) {
+                    picked = (AIOBJ *)gm_Query(0, 2, 7, 0, panelIds[i]);
+                    sv_PopRequest = 1;
+                }
+            }
+        }
+        if (bt->buildingClass == 0xa) {
+            if (stall != 0) {
+                listShown = ai_UpdateMarketGoodsList(stall, marketObj);
+                ai_LayoutMarketGoodsList(win, 1, 1, b);
+            }
+        } else if (stall != 0) {
+            if (*goodsRec == 5) {
+                listShown = ai_UpdateProdGoodsList(b, stall);
+                ai_LayoutProdGoodsList(win, 1, 1, b);
+            } else if (*goodsRec == 0x11) {
+                listShown = ai_UpdateStoreGoods(b, stall);
+                ai_LayoutStoreGoods(win, 1, 1, b, stall);
+            }
+        }
+
+        /* the rows whose cart left (or runs an order, or stands elsewhere) are cleared */
+        for (i = 0; i < 16; i++) {
+            c = rows[i].cart;
+            if (c == 0)
+                continue;
+            if (gm_Query((void *)src->objList, 2, 1, c->objId, 3, ai_PlayerId) != 0 && rows[i].job == 0
+                && (gm_IsType10((unsigned char *)bld) == 0 || ai_CartAtBuilding(bld, c) != 0))
+                continue;
+            if (rows[i].pic != -1) {
+                rows[i].cart = 0;
+                d2_RemoveObj(rows[i].pic);
+                rows[i].pic = -1;
+                rows[i].job = 0;
+            }
+            for (j = 0; j < 3; j++) {
+                if (rows[i].goodsCtl[j] != -1) {
+                    d2_RemoveObj(rows[i].goodsCtl[j]);
+                    d2_DeleteObject(rows[i].goodsPic[j]);
+                    rows[i].goodsCtl[j] = -1;
+                    rows[i].goodsPic[j] = -1;
+                }
+            }
+            d2_DeleteObject(rows[i].slider);
+            rows[i].slider = -1;
+            d2_RemoveObj(rows[i].escortPic);
+            rows[i].escortPic = -1;
+            d2_RemoveObj(rows[i].label);
+            rows[i].label = -1;
+            if (rows[i].win != -1) {
+                d2_RemoveWindow(rows[i].win);
+                rows[i].win = -1;
+            }
+        }
+
+        /* the player's carts at the building get a row each */
+        cart = (AIOBJ *)gm_Query((void *)src->objList, 2, 4, 0x1d, 3, ai_PlayerId);
+        for (k = 0; k < 16; k++) {
+            if (cart == 0)
+                break;
+            d2_SetForm(win, 2);
+            if (gm_IsType10((unsigned char *)bld) == 0 || ai_CartAtBuilding(bld, cart) != 0) {
+                for (i = 0; i < 16; i++)
+                    if (rows[i].cart != 0 && rows[i].cart->objId == cart->objId)
+                        break;
+                if (i >= 16) {
+                    for (freeRow = 0; freeRow < 16; freeRow++)
+                        if (rows[freeRow].cart == 0)
+                            break;
+                    ev = (AIJOB *)he_FindEvent(3, 0, 0xf, 2, ai_PlayerId, 3, cart->objId);
+                    if (freeRow < 16 && ev == 0) {
+                        y = (d2_Pics[0x5e2].h + 0x16) * freeRow;
+                        rows[freeRow].cart = cart;
+                        rows[freeRow].pic = d2_WinOpenPic(0x10, y + 0x16, cart->id + 0x4ae, d2_LastWindow);
+                        rows[freeRow].escortPic = d2_WinOpenPic(0x18, y + 0x54, 0x5e8, d2_LastWindow);
+                        rows[freeRow].label = d2_WinOpenPic(0xac, y + 0x54, 0x5eb, d2_LastWindow);
+                        d2_Objs[rows[freeRow].escortPic].interactive = 1;
+                        d2_Objs[rows[freeRow].escortPic].style = 0x43;
+                        d2_Objs[rows[freeRow].escortPic].caption[0] = ch_EmptyName[0];
+                        d2_Objs[rows[freeRow].label].interactive = 1;
+                        d2_Objs[rows[freeRow].label].style = 0x43;
+                        strcpy(d2_Objs[rows[freeRow].label].caption, txt_PanelBtnCart);
+                        d2_SetObjFont(rows[freeRow].label, 0x54);
+                        rows[freeRow].slider = d2_WinOpenSlider(0x4b, (d2_Pics[0x5e2].h + 0x16) * freeRow + 0x59, 0x50, 0,
+                                                                0x64, 0x65, 0x2a, d2_LastWindow);
+                        rows[freeRow].win = d2_CreateChildWindow(0x10, y + 0x26, 0xc8,
+                                                                 0x40, 0x10, d2_LastWindow);
+                        d2_SetObjFont(d2_Wins[rows[freeRow].win].parent, 0x53);
+                        d2_Objs[rows[freeRow].pic].interactive = 1;
+                        for (ev = (AIJOB *)he_FindEvent(2, 3, cart->objId, 0, 0x11); ev != 0;
+                             ev = (AIJOB *)he_NextEvent()) {
+                            ev->end = ai_Time;
+                            ev->stage = -1;
+                        }
+                    }
+                }
+            }
+            cart = (AIOBJ *)gm_QueryNext();
+        }
+
+        /* the running transport orders 0xf of the player mark their carts */
+        for (i = 0; i < 16; i++)
+            rows[i].job = 0;
+        for (ev = (AIJOB *)he_FindEvent(2, 0, 0xf, 2, ai_PlayerId); ev != 0; ev = (AIJOB *)he_NextEvent())
+            for (i = 0; i < 16; i++)
+                if (rows[i].cart != 0 && ev->u.id == rows[i].cart->objId)
+                    rows[i].job = ev;
+
+        /* each row: its window, the goods controls, the escort and route controls */
+        changed = 0;
+        for (i = 0; i < 16; i++) {
+            if (rows[i].win != -1) {
+                d2_LastWindow = rows[i].win;
+                io_PrintText("$C");
+            }
+            c = rows[i].cart;
+            if (c == 0)
+                continue;
+            gm_StallGoodsList((char *)c, (unsigned *)&goods);
+            for (j = 0; j < goods.n; j++) {
+                if (rows[i].goodsCtl[j] != -1) {
+                    if (listShown)
+                        d2_Objs[rows[i].goodsCtl[j]].clickDisabled = 1;
+                    else
+                        d2_Objs[rows[i].goodsCtl[j]].clickDisabled = 0;
+                }
+            }
+            if (c->flags13 & 0x20)
+                io_PrintText("$Z%s", 0xde);
+            if (rows[i].slider != -1)
+                d2_SetObjValue(rows[i].slider, 0, 100, c->fill);
+            if (rows[i].escortPic != -1) {
+                if (d2_Objs[rows[i].escortPic].pic != c->escort + 0x5e8)
+                    d2_SetObjPic(rows[i].escortPic, c->escort + 0x5e8);
+                txt_Format(d2_Objs[rows[i].escortPic].caption, c->escort + 0xe4, gm_LevelPayout(goods.pada8[2], c->escort));
+                if (d2_ClickedId != -1 && d2_PointerObj == rows[i].escortPic) {
+                    if ((c->flags20 & 1) == 0) {
+                        esc = c->escort = (c->escort + 1) % 3;
+                        cm_BeginFieldBlock((char *)c, c->objId);
+                        cm_AddFieldValue(1, 1, 0x28, &esc);
+                        cm_SendFieldValues();
+                    } else {
+                        sv_SetStatusText(txt_Ptrs[0xf0]);
+                    }
+                }
+            }
+            if (rows[i].label != -1)
+                d2_SetCaption(rows[i].label, c->patrolOn ? txt_Ptrs[0x42eb] : txt_Ptrs[0x42ea]);
+            if (d2_ClickedId != -1 && d2_PointerObj == rows[i].label && (c->flags20 & 1) == 0) {
+                d2_SetViewEnabled(win, 0);
+                rt_EditCartRoute((char *)c);
+                d2_SetViewEnabled(win, 1);
+            }
+            if ((c->flags13 & 0x20) == 0 && (c->flags20 & 1) == 0) {
+                d2_Objs[rows[i].pic].greyed = 0;
+            } else {
+                rows[i].selected = 0;
+                d2_Objs[rows[i].pic].greyed = 1;
+            }
+            if (rows[i].selected)
+                d2_Objs[rows[i].pic].highlighted = 1;
+            else
+                d2_Objs[rows[i].pic].highlighted = 0;
+            gm_StallGoodsList((char *)c, (unsigned *)&goods);
+            d2_SetForm(win, 2);
+            for (j = 0; j < goods.n; j++) {
+                match = -1;
+                for (k = 0; k < goods.count; k++) {
+                    if (rows[i].goodsCtl[j] != -1 && goods.item[k] != 0
+                        && goods.item[k] + 0xdf == d2_Objs[rows[i].goodsCtl[j]].pic) {
+                        match = k;
+                        break;
+                    }
+                }
+                if (match == -1 && rows[i].goodsCtl[j] != -1) {
+                    d2_RemoveObj(rows[i].goodsCtl[j]);
+                    if (rows[i].goodsPic[j] != -1)
+                        d2_DeleteObject(rows[i].goodsPic[j]);
+                    rows[i].goodsCtl[j] = -1;
+                    rows[i].goodsPic[j] = -1;
+                }
+            }
+            for (k = 0; k < goods.count; k++) {
+                item = goods.item[k];
+                if (item == 0)
+                    continue;
+                for (j = 0; j < goods.n; j++) {
+                    if (rows[i].goodsCtl[j] != -1 && d2_Objs[rows[i].goodsCtl[j]].pic == item + 0xdf) {
+                        ctl = rows[i].goodsCtl[j];
+                        v = d2_GetObjValue(ctl);
+                        if (v > 0)
+                            changed = 1;
+                        max = goods.max[k];
+                        d2_SetObjValue(ctl, 0, goods.amount[k], v);
+                        d2_SetObjValue(rows[i].goodsPic[j], 0, max, goods.amount[k] - v);
+                        d2_Objs[ctl].style = 0x22;
+                        d2_Objs[ctl].captionX = -1;
+                        d2_Objs[ctl].captionY = 0;
+                        d2_Objs[ctl].centred = 1;
+                        sprintf(d2_Objs[ctl].caption, "%s~ %li %s", txt_ObjectNames[goods.item[k]][0], goods.amount[k] - v,
+                                txt_AmountUnit);
+                        break;
+                    }
+                }
+                if (j < goods.n)
+                    continue;
+                for (j = 0; j < goods.n; j++) {
+                    if (rows[i].goodsCtl[j] == -1) {
+                        stock = gm_ListStock((short *)goods.pada8[3], goods.item[k]);
+                        x = slotX[rows[i].cart->id - 0x134][j] - d2_Wins[d2_LastWindow].x + d2_Objs[rows[i].pic].x;
+                        y = (d2_Pics[0x5e2].h + 0x16) * i + 0x1e;
+                        rows[i].goodsPic[j] = d2_WinOpenSlider(x - 8, y - 5, 0x2f, 0, stock, 0x6a, 0x2d, d2_LastWindow);
+                        rows[i].goodsCtl[j] = d2_WinOpenInputIcon(x, y, goods.item[k] + 0xdf, 0x8a, d2_LastWindow);
+                        d2_SetObjFont(rows[i].goodsCtl[j], 0x54);
+                        break;
+                    }
+                }
+            }
+        }
+
+        /* the inventory child window follows the route box */
+        if (ai_ChildWindowId != -1) {
+            if (listShown == 0) {
+                dropActive = ai_UpdateInventoryWindow();
+                v = d2_GetObjValue(routeBox);
+                if (boxValue != v) {
+                    if (v != 0) {
+                        d2_EnableObject(d2_Wins[ai_ChildWindowId].parent, 1);
+                        d2_SetForm(win, 2);
+                        d2_EnableObject(d2_Wins[d2_LastWindow].parent, 0);
+                    } else {
+                        d2_EnableObject(d2_Wins[ai_ChildWindowId].parent, 0);
+                        d2_SetForm(win, 2);
+                        d2_EnableObject(d2_Wins[d2_LastWindow].parent, 1);
+                    }
+                }
+                boxValue = v;
+            } else {
+                ai_UpdateInventoryWindow();
+            }
+        }
+
+        /* the buttons need a selected cart; send needs one that is not full */
+        notFull = 0;
+        n = 0;
+        for (i = 0; i < 16; i++) {
+            if (rows[i].cart != 0 && rows[i].selected != 0) {
+                if (rows[i].cart->fill < 100)
+                    notFull = 1;
+                n++;
+            }
+        }
+        if (n == 0) {
+            d2_Objs[btn0].clickDisabled = 1;
+            d2_Objs[btn0].greyed = 1;
+            if (mode1) {
+                if (btn3 != -1) {
+                    d2_Objs[btn3].clickDisabled = 1;
+                    d2_Objs[btn3].greyed = 1;
+                }
+                if (btn1 != -1) {
+                    d2_Objs[btn1].clickDisabled = 1;
+                    d2_Objs[btn1].greyed = 1;
+                }
+            }
+        } else {
+            d2_Objs[btn0].clickDisabled = 0;
+            d2_Objs[btn0].greyed = 0;
+            if (btn3 != -1) {
+                d2_Objs[btn3].clickDisabled = 0;
+                d2_Objs[btn3].greyed = 0;
+            }
+            if (mode1) {
+                if (notFull && btn1 != -1) {
+                    d2_Objs[btn1].clickDisabled = 0;
+                    d2_Objs[btn1].greyed = 0;
+                } else {
+                    d2_Objs[btn1].clickDisabled = 1;
+                    d2_Objs[btn1].greyed = 1;
+                }
+            }
+        }
+        if (listShown == 0 && dropActive == 0)
+            d2_ClearPointerItems();
+        if (changed) {
+            for (i = 0; i < 16; i++)
+                if (rows[i].cart != 0)
+                    for (j = 0; j < 3; j++)
+                        if (rows[i].goodsPic[j] != -1)
+                            d2_AddPointerItem(d2_Objs[rows[i].goodsCtl[j]].pic, d2_GetObjValue(rows[i].goodsCtl[j]));
+        }
+
+        /* the right button drops the picked goods, closes the route box or the window */
+        if (dm_L.rup != 0) {
+            if (d2_CountPointerItems() != 0) {
+                d2_EndInputEdit();
+                for (i = 0; i < 16; i++)
+                    if (rows[i].cart != 0)
+                        for (j = 0; j < 3; j++)
+                            if (rows[i].goodsCtl[j] != -1)
+                                d2_SetObjValue(rows[i].goodsCtl[j], 0, 0, 0);
+                for (k = 0; k < 8; k++)
+                    if (ai_ProdGoods2[k].check != -1)
+                        d2_SetObjValue(ai_ProdGoods2[k].check, 0, 0, 0);
+                for (k = 0; k < 16; k++)
+                    if (ai_ProdGoods[k].check != -1)
+                        d2_SetObjValue(ai_ProdGoods[k].check, 0, 0, 0);
+                for (k = 0; k < 6; k++)
+                    if (ai_InvSlots[k].obj != 0)
+                        d2_SetObjValue(ai_InvSlots[k].ctl, 0, 0, 0);
+                changed = 0;
+                listShown = 0;
+                dropActive = 0;
+                d2_ClearPointerItems();
+            } else if (d2_GetObjValue(routeBox) != 0) {
+                d2_SetObjValue(routeBox, 0);
+                boxValue = 0;
+            } else if (ai_RunAllowsWindow() == 1) {
+                sv_PopRequest = 1;
+                if (picked == 0 && sv_SelectedObject == 0)
+                    sv_CameraFollow();
+            }
+        }
+
+        if (d2_ClickedId == -1 || changed != 0 || listShown == 0) {
+            if (d2_ClickedId != -1 && changed == 0 && dropActive == 0) {
+                /* a click on a cart selects it */
+                for (i = 0; i < 16; i++) {
+                    c = rows[i].cart;
+                    if (c != 0 && d2_PointerObj == rows[i].pic) {
+                        if (c->flags20 & 1)
+                            sv_SetStatusText(txt_Ptrs[0xf0]);
+                        else
+                            rows[i].selected = !rows[i].selected;
+                    }
+                }
+            } else if (d2_HitWindow == d2_Views[win].wins[1] && dropActive != 0 && dm_L.lup != 0) {
+                /* inventory goods dropped on the window go into the store */
+                if (own != 0) {
+                    for (k = 0; k < 6; k++) {
+                        s = &ai_InvSlots[k];
+                        if (s->obj == 0)
+                            continue;
+                        item = s->obj->id;
+                        ok = 1;
+                        v = d2_GetObjValue(s->ctl);
+                        if (v == 0)
+                            continue;
+                        if (priced) {
+                            if (market)
+                                sellPrice = gm_GoodsPrice(item, owner) * 0.9;
+                            else
+                                sellPrice = gm_GoodsPrice(item, owner) * b->priceFactor;
+                        } else {
+                            sellPrice = 0.0f;
+                        }
+                        if (marketObj != 0 && gm_Query((void *)marketObj->list, 1, 0, item) == 0)
+                            ok = 0;
+                        n = gm_FreeCapacity(stall, item, v);
+                        if (ok && n) {
+                            cm_SendExSellObject(stall->objId, ai_InvChar->netId, item, n, owner, (int)sellPrice);
+                            d2_SetObjValue(s->ctl, 0, 100, 0);
+                        }
+                    }
+                } else {
+                    txt_Format(text3, 0xef);
+                    sv_MessageBox(text3, 0x100);
+                }
+            } else if (d2_HitWindow == ai_ChildWindowId && dm_L.lup != 0 && dropActive == 0 && listShown != 0) {
+                /* goods of the list dropped on the inventory window go to the player */
+                if (canTrade == 0 && own == 0) {
+                    txt_Format(text5, 0xee, b);
+                    sv_SetStatusText(text5);
+                } else {
+                    d2_EndInputEdit();
+                    if (util_RandomF() < 0.25f)
+                        ai_TransportFromLager(ai_InvChar->netId, stall, b, canTrade, ai_Chars[ai_PlayerId], factor, owner, mode);
+                    else
+                        ai_TransportFromLager(ai_InvChar->netId, stall, b, canTrade, ai_Chars[ai_PlayerId], 1.0f, owner, mode);
+                    for (k = 0; k < 6; k++)
+                        if (ai_InvSlots[k].obj != 0)
+                            d2_SetObjValue(ai_InvSlots[k].ctl, 0, 0, 0);
+                    di_ClearButtons();
+                }
+            } else if (d2_ClickedId != -1 && dropActive != 0 && dm_L.lclick != 0) {
+                /* inventory goods dropped on a cart go into it */
+                found = 0;
+                for (i = 0; i < 16; i++)
+                    if (rows[i].cart != 0 && rows[i].pic == d2_PointerObj)
+                        break;
+                if (i < 16) {
+                    c = rows[i].cart;
+                    if (c->flags20 & 1) {
+                        sv_SetStatusText(txt_Ptrs[0xf0]);
+                    } else {
+                        found = c;
+                        rows[i].selected = 1;
+                    }
+                }
+                if (found != 0) {
+                    for (k = 0; k < 6; k++) {
+                        s = &ai_InvSlots[k];
+                        sobj = (AIOBJ *)gm_Query((void *)found->list, 1, 0, 0x1dd);
+                        if (s->obj == 0)
+                            continue;
+                        item = s->obj->id;
+                        v = d2_GetObjValue(s->ctl);
+                        if (v == 0)
+                            continue;
+                        if (priced) {
+                            if (market)
+                                loadPrice = gm_GoodsPrice(item, owner) * 0.9;
+                            else
+                                loadPrice = gm_GoodsPrice(item, owner) * b->priceFactor;
+                        } else {
+                            loadPrice = 0.0f;
+                        }
+                        n = gm_FreeCapacity(sobj, item, v);
+                        if (n == 0)
+                            continue;
+                        cm_SendExSellObject(sobj->objId, ai_InvChar->netId, item, n, owner, (int)loadPrice);
+                        d2_SetObjValue(s->ctl, 0, 100, 0);
+                    }
+                }
+            }
+        } else {
+            /* a click on a cart moves the goods picked in the list into it */
+            for (i = 0; i < 16; i++)
+                if (rows[i].cart != 0 && rows[i].pic == d2_PointerObj)
+                    break;
+            if (i < 16) {
+                c = rows[i].cart;
+                if (c->flags20 & 1) {
+                    sv_SetStatusText(txt_Ptrs[0xf0]);
+                } else {
+                    rows[i].selected = 1;
+                    if (c != 0) {
+                        if (canTrade == 0 && own == 0) {
+                            txt_Format(text4, 0xee, b);
+                            sv_SetStatusText(text4);
+                        } else {
+                            sobj = (AIOBJ *)gm_Query((void *)c->list, 1, 0, 0x1dd);
+                            d2_EndInputEdit();
+                            if (util_RandomF() < 0.25f)
+                                ai_TransportFromLager(sobj->objId, stall, b, canTrade, 0, factor, owner, mode);
+                            else
+                                ai_TransportFromLager(sobj->objId, stall, b, canTrade, 0, 1.0f, owner, mode);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (d2_HitWindow == d2_Views[win].wins[1] && changed != 0 && dm_L.lclick != 0) {
+            /* the goods picked from the carts dropped on the window go into the store */
+            if (priced != 0 || own != 0) {
+                applied = 1.0f;
+                if (util_RandomF() < 0.25f)
+                    applied = factor;
+                for (i = 0; i < 16; i++) {
+                    c = rows[i].cart;
+                    if (c == 0 || (c->flags20 & 1))
+                        continue;
+                    sobj = (AIOBJ *)gm_Query((void *)c->list, 1, 0, 0x1dd);
+                    for (j = 0; j < 3; j++) {
+                        ctl = rows[i].goodsCtl[j];
+                        if (ctl == -1)
+                            continue;
+                        item = d2_Objs[ctl].pic - 0xdf;
+                        ok = 1;
+                        if (priced) {
+                            if (market)
+                                price = (int)(gm_GoodsPrice(item, owner) * 0.9);
+                            else
+                                price = (int)(gm_GoodsPrice(item, owner) * b->priceFactor);
+                            if (mode == 2 || mode == 4)
+                                price = (int)gm_GoodsPrice(item, (unsigned char)b->playerSlot);
+                        } else {
+                            price = 0;
+                        }
+                        if (marketObj != 0 && gm_Query((void *)marketObj->list, 1, 0, item) == 0)
+                            ok = 0;
+                        v = d2_GetObjValue(ctl);
+                        if (ok == 0) {
+                            if (v > 0) {
+                                txt_Format(text2, 0xeb, item * 2 + 0x9a8);
+                                sv_MessageBox(text2, 0x100);
+                            }
+                        } else if (v > 0) {
+                            n = gm_FreeCapacity(stall, item, v);
+                            total = n * price;
+                            limit = gm_PlayerFactor(1, ai_OwnPlayer);
+                            if ((int)(total * applied - total) < limit)
+                                applied = 1.0f;
+                            if (mode8) {
+                                if (ai_ScriptQuery(0x28, b, 0, item) == 0)
+                                    continue;
+                                ai_CampaignStep(0x28, b, 0, item);
+                            } else if (mode1) {
+                                if (ai_ScriptQuery(0x26, b, 0, item) == 0)
+                                    continue;
+                                ai_CampaignStep(0x26, b, 0, item);
+                            }
+                            if (n > 0)
+                                cm_SendExSellObject(stall->objId, sobj->objId, item, n, owner, (int)(price * applied));
+                            if (applied != 1.0 && n > 0) {
+                                txt_Format(text2, 0xed, (int)(total * applied - total));
+                                sv_SetStatusText(text2);
+                                sb_PlaySample(0, "RollenKurz_s_01", 1, 0x3f, 0x7f, 0, 0);
+                            }
+                            if (n > 0)
+                                d2_SetObjValue(ctl, 0, 100, 0);
+                        }
+                    }
+                }
+            }
+            d2_ClearPointerItems();
+            for (k = 0; k < 8; k++)
+                if (ai_ProdGoods2[k].check != -1)
+                    d2_SetObjValue(ai_ProdGoods2[k].check, 0, 0, 0);
+            for (k = 0; k < 16; k++)
+                if (ai_ProdGoods[k].check != -1)
+                    d2_SetObjValue(ai_ProdGoods[k].check, 0, 0, 0);
+            di_ClearButtons();
+        } else if (d2_HitWindow == ai_ChildWindowId && dm_L.lclick != 0 && dropActive == 0 && changed != 0
+                   && (priced != 0 || own != 0)) {
+            /* the goods picked from the carts dropped on the inventory window go to the player */
+            for (i = 0; i < 16; i++) {
+                c = rows[i].cart;
+                if (c == 0 || (c->flags20 & 1))
+                    continue;
+                sobj = (AIOBJ *)gm_Query((void *)c->list, 1, 0, 0x1dd);
+                for (j = 0; j < 3; j++) {
+                    ctl = rows[i].goodsCtl[j];
+                    if (ctl == -1)
+                        continue;
+                    item = d2_Objs[ctl].pic - 0xdf;
+                    ok = 1;
+                    if (marketObj != 0 && gm_Query((void *)marketObj->list, 1, 0, item) == 0)
+                        ok = 0;
+                    v = d2_GetObjValue(ctl);
+                    if (ok && v > 0) {
+                        n = gm_TakeableCount(ai_Chars[ai_PlayerId], item, v);
+                        if (n > 0) {
+                            cm_SendExSellObject(((AICHARREC *)ai_Chars)[ai_PlayerId].netId, sobj->objId, item, n, owner, 0);
+                            d2_SetObjValue(ctl, 0, 100, 0);
+                        }
+                    }
+                }
+            }
+            d2_ClearPointerItems();
+            for (k = 0; k < 8; k++)
+                if (ai_ProdGoods2[k].check != -1)
+                    d2_SetObjValue(ai_ProdGoods2[k].check, 0, 0, 0);
+            for (k = 0; k < 16; k++)
+                if (ai_ProdGoods[k].check != -1)
+                    d2_SetObjValue(ai_ProdGoods[k].check, 0, 0, 0);
+            di_ClearButtons();
+        }
+
+        if (clearBtn != -1) {
+            if (changed == 0 ? (listShown != 0 && market == 0 && b->owner == ai_PlayerId) : listShown == 0) {
+                d2_Objs[clearBtn].interactive = 1;
+                d2_Objs[clearBtn].greyed = 0;
+                d2_Objs[clearBtn].style = 3;
+            } else {
+                d2_Objs[clearBtn].interactive = 0;
+                d2_Objs[clearBtn].greyed = 1;
+            }
+        }
+
+        if (d2_ClickedId != 0) {
+            /* 0x527 empties the picked goods back */
+            if (d2_ClickedId == 0x527 && sv_MessageBox(txt_Ptrs[0xf9], 0x101) != 0) {
+                if (listShown != 0) {
+                    if (priced == 0) {
+                        for (k = 0; k < 8; k++) {
+                            if (ai_ProdGoods2[k].check == -1)
+                                continue;
+                            v = d2_GetObjValue(ai_ProdGoods2[k].check);
+                            if (v > 0) {
+                                cm_SendExSellObject(-1, stall->objId, ai_ProdGoods2[k].good, v, ai_OwnPlayer, 0);
+                                d2_SetObjValue(ai_ProdGoods2[k].check, 0, ai_ProdGoods2[k].amount, 0);
+                            } else if (v < 0) {
+                                cm_SendRemoveGoods(stall->objId, ai_ProdGoods2[k].good);
+                            }
+                        }
+                        for (k = 0; k < 16; k++) {
+                            if (ai_ProdGoods[k].check == -1)
+                                continue;
+                            v = d2_GetObjValue(ai_ProdGoods[k].check);
+                            if (v > 0) {
+                                cm_SendExSellObject(-1, stall->objId, ai_ProdGoods[k].good, v, ai_OwnPlayer, 0);
+                                d2_SetObjValue(ai_ProdGoods[k].check, 0, ai_ProdGoods[k].amount, 0);
+                            } else if (v < 0) {
+                                cm_SendRemoveGoods(stall->objId, ai_ProdGoods[k].good);
+                            }
+                        }
+                    }
+                } else if (changed != 0) {
+                    for (i = 0; i < 16; i++) {
+                        c = rows[i].cart;
+                        if (c == 0)
+                            continue;
+                        sobj = (AIOBJ *)gm_Query((void *)c->list, 1, 0, 0x1dd);
+                        for (j = 0; j < 3; j++) {
+                            ctl = rows[i].goodsCtl[j];
+                            if (ctl == -1)
+                                continue;
+                            item = d2_Objs[ctl].pic - 0xdf;
+                            v = d2_GetObjValue(ctl);
+                            if (v > 0) {
+                                cm_SendExSellObject(-1, sobj->objId, item, v, ai_OwnPlayer, 0);
+                                d2_SetObjValue(ctl, 0, goods.amount[i], 0);
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (d2_PointerObj == btn0) {
+            /* send: pick the destination on the map and order the selected carts there */
+            memset(&cfg, 0, sizeof(cfg));
+            cfg.mode = 0x400;
+            cfg.kind = 0;
+            cfg.filter = 0x40000001f07d7fb0;
+            d2_SetViewEnabled(win, 0);
+            n = 0;
+            for (i = 0; i < 16; i++)
+                if (rows[i].cart != 0 && rows[i].selected != 0)
+                    pickCarts[n++] = rows[i].cart;
+            txt_Format(text1, 0xce, n, 0xc10);
+            dest = (AIBLD *)ai_MapPick(0x11, &cfg, text1, 0, 0);
+            if (dest != 0 && dest != bld) {
+                fee = 0;
+                if (gm_IsHomeType(dest) == 0 && gm_IsHomeType(bld) == 0) {
+                    for (i = 0; i < 16; i++) {
+                        c = rows[i].cart;
+                        if (c == 0 || rows[i].selected == 0)
+                            continue;
+                        if (dest->kind == 0x47 && c->id != 0x136) {
+                            txt_Format(text1, 0xe9);
+                            sv_MessageBox(text1, 0x100);
+                            continue;
+                        }
+                        home = 0;
+                        if (ai_PlayerBuilding != 0)
+                            home = (AIBLD *)ai_PlayerBuilding;
+                        else if (ai_FallbackBuilding != 0)
+                            home = (AIBLD *)ai_FallbackBuilding;
+                        if (home == 0 || (((AIBTYPE *)ai_BTypes)[home->kind].buildingClass != 0x1e
+                                          && ((AIBTYPE *)ai_BTypes)[home->kind].buildingClass != 0x1d))
+                            snd_PlayFavourComment();
+                        ai_TransportOrderDue(c);
+                        fee += ai_SendTransportOrder(ai_PlayerId, c, bld, dest);
+                    }
+                } else {
+                    for (i = 0; i < 16; i++) {
+                        c = rows[i].cart;
+                        if (c == 0 || rows[i].selected == 0)
+                            continue;
+                        if (dest->kind == 0x47 && c->id != 0x136) {
+                            txt_Format(text1, 0xe9);
+                            sv_MessageBox(text1, 0x100);
+                            continue;
+                        }
+                        home = 0;
+                        if (ai_PlayerBuilding != 0)
+                            home = (AIBLD *)ai_PlayerBuilding;
+                        else if (ai_FallbackBuilding != 0)
+                            home = (AIBLD *)ai_FallbackBuilding;
+                        if (home == 0 || (((AIBTYPE *)ai_BTypes)[home->kind].buildingClass != 0x1e
+                                          && ((AIBTYPE *)ai_BTypes)[home->kind].buildingClass != 0x1d))
+                            snd_PlayFavourComment();
+                        ai_TransportOrderDue(c);
+                        fee += ai_SendTransportOrder(ai_PlayerId, c, bld, dest);
+                    }
+                }
+                if (fee > 0) {
+                    txt_Format(text1, 0xe3, fee);
+                    sv_SetStatusText(text1);
+                }
+            }
+            d2_SetViewEnabled(win, 1);
+        } else if (d2_PointerObj == btn1 && (ai_GameFlags & 0x80) == 0) {
+            /* repair: refill the selected carts, 0.008 of the cart's price per missing percent, 4 minutes each */
+            n = 0;
+            cost = 0;
+            maxEmpty = 0;
+            for (i = 0; i < 16; i++) {
+                c = rows[i].cart;
+                if (c == 0 || rows[i].selected == 0)
+                    continue;
+                unit = gm_ItemPrice(c->id, 100) * 0.008f;
+                empty = 100 - c->fill;
+                if (empty > maxEmpty)
+                    maxEmpty = empty;
+                cost += empty * unit;
+                n++;
+            }
+            if (n != 0) {
+                due = ai_Time;
+                gm_AddTime(&due, 0, maxEmpty * 4, 0);
+                gm_ClockToDate(&due, (unsigned char *)&date);
+                txt_Format(text3, 0xdd, cost, n, date.day, date.month, date.year);
+                if (sv_MessageBox(text3, 0x101) != 0
+                    && sv_CheckGoodAmountB(ai_Chars[ai_PlayerId], cost, ai_OwnPlayer) != 0) {
+                    cm_SendMoveGoods(-1, ((AICHARREC *)ai_Chars)[ai_PlayerId].netId, owner, cost);
+                    for (i = 0; i < 16; i++) {
+                        c = rows[i].cart;
+                        if (c == 0 || rows[i].selected == 0)
+                            continue;
+                        memset(&msg, 0, sizeof(msg));
+                        msg.type = 0x10;
+                        msg.flags = 1;
+                        msg.fromId = bld->id;
+                        msg.to = ((AICHARREC *)ai_Chars)[ai_PlayerId].netId;
+                        msg.time = ai_Time;
+                        gm_AddTime(&msg.time, 0, 0, 10);
+                        msg.car = c->objId;
+                        msg.dst[0] = 4;
+                        msg.u.s.cost = 1;
+                        msg.n = 100 - c->fill;
+                        cm_SendLongMessage((char *)&msg);
+                    }
+                }
+            }
+        } else if (d2_PointerObj == btn2 && (ai_GameFlags & 0x80) == 0) {
+            /* buy a cart */
+            d2_SetViewEnabled(win, 0);
+            ai_BuyCartWindow(b);
+            d2_SetViewEnabled(win, 1);
+            if (goodsRec != 0) {
+                if (*goodsRec == 5) {
+                    listShown = ai_UpdateProdGoodsList(b, stall);
+                    ai_LayoutProdGoodsList(win, 1, 1, b);
+                } else if (*goodsRec == 0x11) {
+                    listShown = ai_UpdateStoreGoods(b, stall);
+                    ai_LayoutStoreGoods(win, 1, 1, b, stall);
+                }
+            }
+        } else if (d2_PointerObj == btn3 && (ai_GameFlags & 0x80) == 0) {
+            /* sell the selected carts */
+            n = 0;
+            for (i = 0; i < 16; i++) {
+                if (n >= 0x20)
+                    break;
+                if (rows[i].cart != 0 && rows[i].selected != 0)
+                    sellCarts[n++] = rows[i].cart;
+            }
+            ai_SellCarts(n, sellCarts);
+        }
+
+        if (b->owner != ai_PlayerId) {
+            if (btn1 != -1)
+                d2_EnableObject(btn1, 0);
+            if (btn2 != -1)
+                d2_EnableObject(btn2, 0);
+            if (btn3 != -1)
+                d2_EnableObject(btn3, 0);
+        }
+        if (d2_GetObjValue(routeBox) != 0) {
+            d2_EnableObject(d2_Wins[ai_ChildWindowId].parent, 1);
+            d2_SetForm(win, 2);
+            d2_EnableObject(d2_Wins[d2_LastWindow].parent, 0);
+        } else {
+            d2_EnableObject(d2_Wins[ai_ChildWindowId].parent, 0);
+            d2_SetForm(win, 2);
+            d2_EnableObject(d2_Wins[d2_LastWindow].parent, 1);
+        }
+        if (canTrade != 0 && listShown != 0)
+            ai_TransportGoodsTotal(b, factor, mode);
+        else
+            sv_PendingMoney = 0;
+    } while (sv_RunFrame((int)ai_TransportWindow, 0x657c7) != 0);
+    ai_CloseChildWindow();
+    d2_ClearPointerItems();
+    d2_CloseView(win);
+    sv_PendingMoney = 0;
+    if (mode8) {
+        d2_CloseView(panelForm);
+        sv_PanelShown = (unsigned short *)picked;
+    }
+    ai_CampaignStep(0x23, 0, 1, 0);
     return 0;
 }
 /* 0x5b2090, the player's screen image (235 B): sprintf (path, 0x62cce8, 0xf8ef80, 0x7e3f40 + the player
@@ -18735,10 +19788,12 @@ int ai_GelageWindow(int building)
     (void)building;
     return 0;
 }
-/* 0x5ba1c0, a cleanup gated by 0x62c418 (208 B, ROUGH SKELETON): only when 0x62c418 == -1; the body is a
-   comment */
+/* 0x5ba1c0, opens the inventory child window of the character charId (197 B, ROUGH SKELETON): only while
+   ai_ChildWindowId is -1; clears the six ai_InvSlots rows (-1, 0), points ai_InvChar at ai_Chars[charId], creates
+   the child window (x, y, 0xcd, 0xc4, 0x10, win) as ai_ChildWindowId with the picture 0x587, an inner child window
+   (0, 0x2c, its width, 0x1e, 0x110) with the font 0x54, and prints the text; the body is still a stub */
 
-int ai_Unk5ba1c0(void)
+int ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text)
 {
     if (ai_ChildWindowId != -1)
         return 0;
@@ -18747,7 +19802,7 @@ int ai_Unk5ba1c0(void)
 }
 /* 0x5ba290, a window over the list 0x6f2f60 (880 B, ROUGH SKELETON): a 0x8-byte frame; the body is a comment */
 
-int ai_Unk5ba290(void)
+int ai_UpdateInventoryWindow(void)
 {
     /* ROUGH SKELETON: the list 0x6f2f60 and the window body */
     return 0;
@@ -26879,7 +27934,7 @@ char ai_NewsKeyHS46[20] = "_NACHRICHTEN_HS_46";  /* 0x62c2ac, the second text of
 char ai_NewsKeyFriedhof12[28] = "_NACHRICHTEN_FRIEDHOF_12";  /* 0x62c364, the sound of the graveyard work news ai_TellGraveWorkSuccess (event 0x5fb) */
 char ai_NewsKeyFriedhof13[28] = "_NACHRICHTEN_FRIEDHOF_13";  /* 0x62c380, the sound of the graveyard work news (event 0x5fb) */
 char ai_NewsKeyFriedhof00[28] = "_NACHRICHTEN_FRIEDHOF_00";  /* 0x62c39c, the sound of the graveyard news ai_GraveyardMessage (event 0x5fa) */
-int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_Unk5ba1c0 creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
+int ai_ChildWindowId = -1;  /* 0x62c418, the child window ai_OpenInventoryWindow creates (d2_CreateChildWindow over its character list), -1: none; ai_CloseChildWindow removes it, the transport window and ai_InventoryPanel compare it with the clicked id */
 char ai_UseObjForm[13] = "panel\\useobj";  /* 0x62d010, the form of the use-object panel (d2_OpenForm) */
 AIAMOUNTTAB ai_AmountTabs[8] = {       /* 0x62d148, one table: 8 rows of 0x14 {id 0..7, count, control, two handlers}; ai_ClearAmountTabs clears count and control, the ids run 0..7 from 0x62d148 and row 7 ends where "%G" starts */
     { 0, 0, -1, ai_Unk5bf0d0, ai_Unk5bffb0 },
@@ -26912,7 +27967,8 @@ int ai_DragStartX = 0;  /* 0x6f26b4, the mouse position (dm_L) the drag began at
 int ai_DragStartY = 0;  /* 0x6f26b8 */
 int ai_Dragging = 0;  /* 0x6f26bc, 1 while the town map is dragged */
 char ai_NewsText[1024] = { 0 };  /* 0x6f26c8, the shared text buffer of the unit's news messages: txt_Format writes the text into it, he_ShowNews shows it */
-char ai_NewsSecond[1180] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText) */
+char ai_NewsSecond[1176] = { 0 };  /* 0x6f2ac8, the second text buffer of the news messages that append a part (txt_Format into it, strcat onto ai_NewsText); its size is the room up to ai_InvChar */
+struct AICHARREC *ai_InvChar = 0;  /* 0x6f2f60, the character whose inventory the inventory child window (ai_OpenInventoryWindow) lists: ai_OpenInventoryWindow points it at ai_Chars[id]; the transport window sends its goods by its netId */
 int ai_BldCartCount = 0;  /* 0x6f40a0, the number of carts in ai_BldCarts (gm_BuildingCarts, at most 3) */
 struct AIOBJ *ai_BldCarts[3] = { 0 };  /* 0x6f40a4, the carts of the building the cart list shows */
 int ai_BldCartButtons[3] = { 0 };  /* 0x6f40b0, per cart the button to its destination building (picture 5), -1: none */

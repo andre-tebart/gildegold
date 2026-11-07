@@ -55,7 +55,7 @@ void ai_CheckBuildSites(void);          /* 0x58fb60 */
 /* 0x61168c: the "%1G" format of the map's city names (ai_FormatCityName). */
 void ai_TradeContactChecks(void);       /* 0x5912c0, the pending trade / master checks every contact listener runs once per frame */
 /* The windows the building contacts open (defined far below their callers in the .c). */
-int ai_TransportWindow(int building, int mode);          /* 0x5af1d0, the transport window of a building (sv_UpdatePanel: mode 1) */
+int ai_TransportWindow(struct AIBLD *bld, unsigned int mode);          /* 0x5af1d0, the transport window of a building (sv_UpdatePanel: mode 1) */
 int ai_StorageWindow(int building, int list);           /* 0x5b26b0, the store window */
 int ai_ProductionGoodsWindow(struct AIBLD *bld);        /* 0x593150, the goods / production window a kontor contact opens */
 void ai_SpyReportsWindow(struct AIBLD *bld);           /* 0x5a45c0, the spy reports window "locations\diebesgilde\diebesgilde_informationen" of a guild building */
@@ -146,13 +146,17 @@ extern char ai_CourtshipForm[24];       /* 0x62d40c, the form of the courtship (
 extern char ai_WorkerDismissalForm[32];  /* 0x62d5dc, the form of the worker dismissal window "privillegien\arbeiter_ausweisen" (ai_WorkerDismissalWindow) */
 extern char ai_EspionageOverviewForm[20];  /* 0x62d64c, the form of the espionage overview window "privillegien\wunder" (ai_EspionageOverviewHandler) */
 extern char ai_NewsText[1024];          /* 0x6f26c8, the shared text buffer of the unit's news messages (txt_Format into it, he_ShowNews reads it) */
-extern char ai_NewsSecond[1180];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
+extern char ai_NewsSecond[1176];        /* 0x6f2ac8, the second text buffer of the news messages that append a part */
+extern struct AICHARREC *ai_InvChar;     /* 0x6f2f60, the character whose inventory the inventory child window lists */
 extern int ai_BldCartCount;             /* 0x6f40a0, the number of carts in ai_BldCarts (at most 3) */
 extern struct AIOBJ *ai_BldCarts[3];    /* 0x6f40a4, the carts of the building the cart list shows (gm_BuildingCarts) */
 extern int ai_BldCartButtons[3];        /* 0x6f40b0, per cart the button to its destination building, -1: none */
 extern int ai_BldCartTexts[3];          /* 0x6f40bc, per cart its text control, -1: none */
 extern unsigned char ai_GfxDetail;  /* 0x6f35c4, the "details" key */
-extern int ai_ChildWindowId;            /* 0x62c418, the child window ai_Unk5ba1c0 creates and ai_CloseChildWindow removes, -1: none */
+int ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int text);  /* 0x5ba1c0, opens the inventory child window of the character charId */
+int ai_UpdateInventoryWindow(void);                    /* 0x5ba290, the inventory child window's frame (1 while goods are picked from it) */
+void ai_CloseChildWindow(void);            /* 0x5ba600, closes the inventory child window */
+extern int ai_ChildWindowId;            /* 0x62c418, the child window ai_OpenInventoryWindow creates and ai_CloseChildWindow removes, -1: none */
 
 /* 0x6f22e4: the object clicked in the scene (cm.h declares it for the units that include cm.h) */
 extern int ai_ClickedObject;

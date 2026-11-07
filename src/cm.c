@@ -10173,7 +10173,7 @@ int ai_Unk4d4090(int x, int y, int mode)
             G19_R(t, 0x14, short) = 0x50;
             G19_R(t, 0x5c, int) = 1;
             sprintf(buf, "%i ", *(int *)(q + 0xe));
-            strcat(buf, ai_Unk144a160);
+            strcat(buf, txt_AmountUnit);
             d2_SetObjText(t, buf);
             t2 = d2_CreateWinText(px - 0x10, py + 0x34, &ch_EmptyName, d2_LastWindow);
             G19_R(t2, 0x74, short) = 0x56;
@@ -17273,4 +17273,4 @@ char d2_CaptionCopy[0x80] = {0}; /* 0xf8aae0, the d2 caption / status text buffe
 /* ai_Unkf8f39c: view of d2_Wins (tools/data_views.py) */
 int cm_PickCellX = {0}; /* 0xfa5f00 */
 int cm_PickCellZ = {0}; /* 0xfa5f04 */
-/* ai_Unk144a160: view of txt_Ptrs (build/mk_txt_views.py) */
+/* txt_AmountUnit: view of txt_Ptrs (build/mk_txt_views.py) */

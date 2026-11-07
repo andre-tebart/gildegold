@@ -22,7 +22,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define txt_Tribune                              (*(char * *)((char *)txt_Ptrs + 0x0022c))  /* 0x143a3ec, text 0x8b: the name plate text of the market stand ob_TRIBUENE (ai_MarketStandListener) */
 #define full_data_143a3f0                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x00230))  /* 0x143a3f0 */
 #define ai_ContactTextParchment                 (*(char * *)((char *)txt_Ptrs + 0x00234))  /* 0x143a3f4, the text the ub_INFORMATIONSPERGAMENT plate of the room 0x14c listener shows (ai_GuildHallListener); the wording is unknown */
-#define ai_Unk143a588                            (*(int (*)[7])((char *)txt_Ptrs + 0x003c8))  /* 0x143a588 */
+#define txt_InfoPanelButtons                            (*(int (*)[7])((char *)txt_Ptrs + 0x003c8))  /* 0x143a588 */
 #define ai_Unk143a610                            (*(char * (*)[2])((char *)txt_Ptrs + 0x00450))  /* 0x143a610 */
 #define txt_PseudoCharName                            (*(char * *)((char *)txt_Ptrs + 0x00458))  /* 0x143a618 */
 #define full_data_143a63c                        (*(unsigned char (*)[68])((char *)txt_Ptrs + 0x0047c))  /* 0x143a63c */
@@ -267,7 +267,7 @@ extern char *txt_Ptrs[0x4800];    /* 0x143a1c0, each text in its file's buffer *
 #define full_data_144a134                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ff74))  /* 0x144a134 */
 #define full_data_144a138                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ff78))  /* 0x144a138 */
 #define full_data_144a13c                        (*(unsigned char (*)[36])((char *)txt_Ptrs + 0x0ff7c))  /* 0x144a13c */
-#define ai_Unk144a160                            (*(char * *)((char *)txt_Ptrs + 0x0ffa0))  /* 0x144a160 */
+#define txt_AmountUnit                            (*(char * *)((char *)txt_Ptrs + 0x0ffa0))  /* 0x144a160 */
 #define ai_ContactTextBreakOut                   (*(char * *)((char *)txt_Ptrs + 0x0ffbc))  /* 0x144a17c, the hover text of the contact_AUSBRECHEN plate (ai_KidnapContact -> ai_HostageEscape) */
 #define full_data_144a19c                        (*(unsigned char (*)[8])((char *)txt_Ptrs + 0x0ffdc))  /* 0x144a19c */
 #define full_data_144a1a4                        (*(unsigned char (*)[4])((char *)txt_Ptrs + 0x0ffe4))  /* 0x144a1a4 */

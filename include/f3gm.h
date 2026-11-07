@@ -58,6 +58,7 @@ int gm_BathObjectCount(char *b);  /* 0x50cf60 */
 int gm_CurseObjectCount(char *b);  /* 0x50cfd0 */
 int gm_ObjectBuilding(int o);  /* 0x50a0f0 */
 int gm_TakeableCount(char *c, int proto, int n);  /* 0x50ad70 */
+float gm_HealthFactor(int c);  /* 0x508a20 */
 int gm_FreeStallCapacity(char *l, int id, int n);  /* 0x50acf0, how many of the goods the stall object l can still take, at most n */
 void gm_ChangeBuildingState(unsigned char *b, int d);  /* 0x50cad0 */
 int gm_ListWorkers(unsigned char *b, int *out);  /* 0x502eb0, the worker lists of the building b (out[1 ..], out[0x19 ..]); returns their number */
