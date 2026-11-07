@@ -35,6 +35,12 @@
    production setting's goods (ai_ShowSettingGoods). The partner, building and map-pick filters
    (ai_PassesPartnerFilter / ai_PassesBuildingFilter / ai_PassesMapPickFilter) read AMOUNTCFG: mode (the partner
    bits), classMask (the building classes), kind (the owner test), option14, ids and the liking range.
+   The courtship order's ask (ai_CourtshipWindow, from ord.c with the order message as LCORDMSG, gv.h ORDMSG) reads
+   the courtship event 0x41 as AIJOB.partner1 / pair*, lists the candidates (ai_CourtshipListWindow) and rates them
+   (ai_CourtshipRounds); the statistics window's charts (ai_PlotRatingBaseChart, ai_PlotScoreChart,
+   ai_PlotNoFirstChart ..) take the current ORDSTATS by value and read ord_StatisticsHistory.
+   Open: types: the statistics window ai_Unk5c7970 still takes the ORDSTATS as ten ints and passes *(ORDSTATS *)&param_2
+   to the typed charts; its two charts 0x5c76b0 / 0x5c7800 still take the ints.
    Open: types: the amount rows and tabs (ai_ShowAmountRows, ai_Fill*Tab, ai_SpecialAmountListWindow) and am.c's
    partner chain still pass that filter as unsigned int *.
    Open: the AIMSG message records are built by raw offsets in most functions (the use callbacks of the Domizil
@@ -28908,7 +28914,7 @@ int ai_CourtshipListWindow(G8CHARREC *ch, LCORDMSG *m)
    (pick - the partner's b00d) / 9 * 3 + 0.5 clamped to 0 .. 3 (a round due when the rounds are reached: an hour on),
    posts the event again (cm_SendExSetHE), pays pairPrice (cm_SendMoveGoods) and tells the partner's answer 0x1cf9
    (text 0x1d02 + a random pick by the gain); the close button tells 0x1cfa and posts the event. Returns 2
-   @deep reconstructed and read the whole function 0x5c6d00..0x5c72c7 (was the ROUGH ai_OfficeApplication):
+   @deep reconstructed and read the whole function 0x5c6d00..0x5c72c7 (was the draft ai_OfficeApplication):
    the courtship event walk (AIJOB.partner1/partner2, pairDone/pairDrawn states 1..4), the non-player
    courtship message 0x41 (AIMSG, m->target, gv.h ORDMSG.target union added), the list window call with
    both arguments, the werbung2 texts 0x1ce7/0x1ce3/0x1d31/0x1cf4, the gift buttons 0x1cf5..0x1cf8
