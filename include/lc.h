@@ -199,9 +199,15 @@ typedef struct G8INVCHAR {
 
 typedef struct G8INVOBJ {
     unsigned short id;                  /* +0x00, the object's type id (AIOBJ.id) */
-    char pad02[0x1f];
-    int active;                         /* +0x21, nonzero when the object counts as held (reasoned guess: the
-                                           reader ai_InventoryHas tests it; no writer of the field is drafted) */
+    char pad02[0xc];
+    int count;                          /* +0x0e, how many (AIOBJ.count; the inventory window's amount control) */
+    char pad12[0xa];
+    int minutesUsed;                    /* +0x1c, of a Domizil good in use: the minutes of its effect gone (reasoned
+                                           guess: ai_UpdateInventoryWindow fills its control by 1 - this / G9DOMIZIL.minutes) */
+    char pad20;
+    int active;                         /* +0x21, nonzero when the object counts as held, a Domizil good: while its
+                                           effect runs (reasoned guess: ai_InventoryHas tests it; the inventory
+                                           window disables the good's control and shows the fill while it is set) */
     int bldId;                          /* +0x25, the id of the building the object stands in (reasoned guess:
                                            ai_BuildingHasItem compares it with AIBLD.id) */
 } G8INVOBJ;

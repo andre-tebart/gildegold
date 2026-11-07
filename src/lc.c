@@ -790,7 +790,7 @@ extern GAPDATA full_data_6f2f64[];
 extern GAPDATA full_data_6f3680[];
 typedef struct LCINVSLOT {              /* 8 bytes, a row of the inventory child window (ai_OpenInventoryWindow clears them: -1, 0) */
     int ctl;                            /* 0x0, its amount control */
-    AIOBJ *obj;                         /* 0x4, the inventory object (its id the goods), 0: empty */
+    G8INVOBJ *obj;                      /* 0x4, the inventory object (its id the goods), 0: empty */
 } LCINVSLOT;
 #define ai_InvSlots (*(LCINVSLOT (*)[6])((char *)&full_data_6f3680 + 0x1c0))  /* 0x6f3840, the six rows of the inventory child window (ai_OpenInventoryWindow, the transport window) */
 extern GAPDATA full_data_62a56c[];
@@ -22944,12 +22944,92 @@ void ai_OpenInventoryWindow(int win, int x, int y, unsigned short charId, int te
     d2_Wins[d2_LastWindow].font = 0x54;
     io_PrintText(text);
 }
-/* 0x5ba290, a window over the list 0x6f2f60 (880 B, ROUGH SKELETON): a 0x8-byte frame; the body is a comment */
+/* 0x5ba290, the inventory child window's frame: for ai_InvChar, each of the six ai_InvSlots rows whose object
+   left the inventory loses its control; the others get their amount (the control's range 0 .. count) and caption
+   ("<name>~ <count> <text 0x3fe9>"), a Domizil good in use (active) its control disabled and filled by the part
+   of its effect left, else enabled and empty; an amount picked in a control goes to the pointer (good + 0xdf).
+   Every inventory good not of type 9 and not shown yet gets the first free row: an input icon of the child window
+   at column k % 3, row k / 3, styled 0x23, with the caption "<name>~ <count> Stück", and the same Domizil state.
+   Returns 1 when some amount was picked */
 
 int ai_UpdateInventoryWindow(void)
 {
-    /* ROUGH SKELETON: the list 0x6f2f60 and the window body */
-    return 0;
+    AICHARREC *ch;
+    G8INVOBJ *o;
+    G9DOMIZIL *use;
+    int picked;
+    int value;
+    int i;
+    int k;
+
+    ch = ai_InvChar;
+    picked = 0;
+    if (ch == 0)
+        return 0;
+    for (i = 0; i < 6; i++) {
+        if (ai_InvSlots[i].obj == 0)
+            continue;
+        if (gm_Query((void *)ch->inventory, 1, 0, ai_InvSlots[i].obj->id) == 0) {
+            /* the object left the inventory */
+            ai_InvSlots[i].obj = 0;
+            d2_RemoveObj(ai_InvSlots[i].ctl);
+            ai_InvSlots[i].ctl = -1;
+            continue;
+        }
+        value = d2_GetObjValue(ai_InvSlots[i].ctl);
+        d2_SetObjValue(ai_InvSlots[i].ctl, 0, ai_InvSlots[i].obj->count, value);
+        sprintf(d2_Objs[ai_InvSlots[i].ctl].caption, "%s~ %li %s", txt_ObjectNames[ai_InvSlots[i].obj->id][0],
+                ai_InvSlots[i].obj->count, txt_Ptrs[0x3fe9]);
+        use = (G9DOMIZIL *)ai_FindUsableGood(ai_InvSlots[i].obj->id);
+        if (use != 0) {
+            if (ai_InvSlots[i].obj->active != 0) {
+                d2_SetObjEnabled(ai_InvSlots[i].ctl, 0);
+                d2_Objs[ai_InvSlots[i].ctl].fillFraction = 1.0 - (double)ai_InvSlots[i].obj->minutesUsed / use->minutes;
+            } else {
+                d2_SetObjEnabled(ai_InvSlots[i].ctl, 1);
+                d2_Objs[ai_InvSlots[i].ctl].greyed = 0;
+                d2_Objs[ai_InvSlots[i].ctl].fillFraction = 0;
+            }
+        }
+        if (value != 0) {
+            d2_SetPointerItem(ai_InvSlots[i].obj->id + 0xdf, value);
+            picked = 1;
+        }
+    }
+    for (o = (G8INVOBJ *)gm_Query((void *)ch->inventory, 1, 5); o != 0; o = (G8INVOBJ *)gm_QueryNext()) {
+        if (((AIGOOD *)ai_Goods)[o->id].type == 9)
+            continue;
+        for (k = 0; k < 6; k++)
+            if (ai_InvSlots[k].obj == o)
+                break;
+        if (k < 6)
+            continue;
+        for (k = 0; k < 6; k++) {
+            if (ai_InvSlots[k].obj == 0) {
+                /* the first free row takes the good */
+                ai_InvSlots[k].obj = o;
+                ai_InvSlots[k].ctl = d2_WinOpenInputIcon(k % 3 * 0x38 + 0x15, k / 3 * 0x36 + 0x4a, o->id + 0xdf, 10,
+                                                         ai_ChildWindowId);
+                d2_Objs[ai_InvSlots[k].ctl].style = 0x23;
+                d2_Objs[ai_InvSlots[k].ctl].captionX = -1;
+                d2_Objs[ai_InvSlots[k].ctl].captionY = 0;
+                sprintf(d2_Objs[ai_InvSlots[k].ctl].caption, "%s~ %li St\xfc" "ck", txt_ObjectNames[ai_InvSlots[k].obj->id][0],
+                        ai_InvSlots[k].obj->count);
+                use = (G9DOMIZIL *)ai_FindUsableGood(ai_InvSlots[k].obj->id);
+                if (use != 0) {
+                    if (ai_InvSlots[k].obj->active != 0) {
+                        d2_SetObjEnabled(ai_InvSlots[k].ctl, 0);
+                        d2_Objs[ai_InvSlots[k].ctl].fillFraction =
+                            1.0 - (double)ai_InvSlots[k].obj->minutesUsed / use->minutes;
+                    } else {
+                        d2_SetObjEnabled(ai_InvSlots[k].ctl, 1);
+                    }
+                }
+                break;
+            }
+        }
+    }
+    return picked;
 }
 /* 0x5ba600, closes the panel's child window (32 B): clears the pointer items (d2_ClearPointerItems), removes the
    window ai_ChildWindowId and sets it to -1; the transport window and ai_InventoryPanel call it at their exit */
